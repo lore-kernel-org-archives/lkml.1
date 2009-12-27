@@ -1,75 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751432AbZL0UTn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751464AbZL0UUL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751432AbZL0UTn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Dec 2009 15:19:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751181AbZL0UTm
+	id S1751464AbZL0UUL (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Dec 2009 15:20:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751235AbZL0UUK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Dec 2009 15:19:42 -0500
-Received: from isrv.corpit.ru ([81.13.33.159]:57329 "EHLO isrv.corpit.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751166AbZL0UTl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Dec 2009 15:19:41 -0500
-Message-ID: <4B37C159.5080202@msgid.tls.msk.ru>
-Date: Sun, 27 Dec 2009 23:19:37 +0300
-From: Michael Tokarev <mjt@tls.msk.ru>
-Organization: Telecom Service, JSC
-User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090706)
+	Sun, 27 Dec 2009 15:20:10 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:26890 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751053AbZL0UUI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Dec 2009 15:20:08 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:x-system-of-record;
+	b=gZ5DyL/e3G8IqQWquzMQDnioy0xNX4QH+ZlOiiSNo4F/v3OtwjR1M9zfA0G8eQxHX
+	HViZe+jvrQHx6MA4WbS+Q==
 MIME-Version: 1.0
-To: Alain Knaff <alain@knaff.lu>
-CC: Tvrtko Ursulin <tvrtko.ursulin@sophos.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: 2.6.33-rc1: LZMA kernel fails to decompress
-References: <200912211643.18173.tvrtko.ursulin@sophos.com> <4B2FEC10.6050900@msgid.tls.msk.ru> <4B37AC87.1070607@knaff.lu>
-In-Reply-To: <4B37AC87.1070607@knaff.lu>
-X-Enigmail-Version: 0.95.0
-OpenPGP: id=804465C5
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20091227201514.GA29174@elf.ucw.cz>
+References: <20091205221100.GA32522@elf.ucw.cz>
+	 <1260054737.23633.35.camel@desktop>
+	 <a55d774e0912051638u7858878cg7cf62905c3c005c1@mail.gmail.com>
+	 <d6200be20912112142r7bdf8f18o31edd4457aa64998@mail.gmail.com>
+	 <1260627482.20913.7.camel@desktop>
+	 <d6200be20912121434x1a247837w75c518ba20fe684f@mail.gmail.com>
+	 <20091213212504.GD5114@elf.ucw.cz>
+	 <d6200be20912142234ia050c67p34fd2672e7248170@mail.gmail.com>
+	 <20091227093537.GD11737@elf.ucw.cz>
+	 <20091227201514.GA29174@elf.ucw.cz>
+Date: Sun, 27 Dec 2009 12:20:02 -0800
+Message-ID: <a55d774e0912271220p1d102b1dr398e0524c9386702@mail.gmail.com>
+Subject: Re: tree with htc dream support
+From: Brian Swetland <swetland@google.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: "Arve Hj?nnev?g" <arve@android.com>,
+       Daniel Walker <dwalker@codeaurora.org>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+       Iliyan Malchev <malchev@google.com>, linux-kernel@codeaurora.org,
+       Greg KH <greg@kroah.com>
+Content-Type: text/plain; charset=UTF-8
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alain Knaff wrote:
-> Michael Tokarev wrote:
->> Tvrtko Ursulin wrote:
->>> Hi,
->>>
->>> When run under VMware, LZMA compressed 2.6.33-rc1 instantly reboots in the 
->>> decompression stage. At least I suppose so, because switching to GZIP makes 
->>> it work.
->> Switch /bin/sh from dash to bash and recompile (actually relink) - it should work.
+On Sun, Dec 27, 2009 at 12:15 PM, Pavel Machek <pavel@ucw.cz> wrote:
+> On Sun 2009-12-27 10:35:38, Pavel Machek wrote:
+>> Hi!
 >>
->> /mjt
-> 
-> I can confirm this. A similar issue used to exist for older kernels,
-> which then got fixed by replacing "echo" with "/bin/echo" in the
-> size_append command scripts/Makefile.lib . The reason why this was
-> needed is that some shells (such as dash) have a defective built-in echo
-> command. Specifying the full path forces to use the system echo command
-> rather than the broken shell builtin.
-> 
-> In 2.6.33, for some reason, echo has been replaced with printf. With a
-> _pathless_ printf! The fix is the same as in earlier kernels: add the path.
+>> > > One more wish list item: many drivers are now available in
+>> > > drivers/staging/dream, and are being slowly cleaned up. Would it be
+>> > > possible to start using those for android-msm-2.6.32 tree?
+>> > >
+>> > > You'll need to reapply some stuff I had to remove (like wakelocks),
+>> > > but it should be still better/less work long term to patch those back
+>> > > in than maintaining separate copy. Diff should get much smaller...
+>> >
+>> > I do plan to look at these, but I don't know when I'll get to it.
+>>
+>> So... this switches qdsp5 code from private version to version in
+>> staging. It actually boots.
+>
+> And when I replace .c's in qdsp5 with -msm version, it also works,
+> with diff being reasonably small.
+>
+> Now... how does camera driver work? I did not drivers/media/video/msm/
+> driver into the kernel, but camera application seems to still
+> work...?!
 
-It should be pathless, or else we'll come to issue when printf is in /bin
-vs /usr/bin and the like.
+Depends which version of the camera userspace code you've got.  The
+stuff for cupcake/donut talks directly to the DSP and the DSP
+interacts with the VFE (video frontend, the camera data transport).  I
+believe the new camera driver bypasses some (all?) of that and deals
+with the VFE directly.  At least on 8k that's how it works (no DSP
+involvement at all).
 
-But you're wrong, and this has been discussed already in this very thread.
-Neither approach is right.  The whole issues is not because of "defects"
-in sh or printf or echo, but because of over-expectations. POSIX does not
-specify that printf should support \x (hexadecimal) escape sequences or
-that echo should interpret _any_ escape sequences at all.  "Non-defective"
-system echo is *extension* to standard.  Set $POSIXLY_CORRECT with GNU
-echo or printf and you should have the same issue again.
-
-> With the attached patch applied, the kernel compiles correctly even if
-> sh is linked to dash.
-
-What I think should be done here is to revert my patch (that replaces
-/bin/echo with printf, so that /bin/echo will be used) and test the
-real solution, which is to stop doing all this hackery altogether,
-and calculate the size the right way instead.  Sam already posted a
-possible solution, and it seems to be correct.
-
-/mjt
+Brian
