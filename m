@@ -1,115 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751983AbZL1VJJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751837AbZL1VIc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751983AbZL1VJJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Dec 2009 16:09:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751695AbZL1VJH
+	id S1751837AbZL1VIc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Dec 2009 16:08:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751088AbZL1VIc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Dec 2009 16:09:07 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:59131 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751909AbZL1VJF (ORCPT
+	Mon, 28 Dec 2009 16:08:32 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:6524 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751468AbZL1VIb convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Dec 2009 16:09:05 -0500
-Date: Mon, 28 Dec 2009 22:08:01 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Michael Stone <michael@laptop.org>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       linux-security-module@vger.kernel.org, Andi Kleen <andi@firstfloor.org>,
-       David Lang <david@lang.hm>, Oliver Hartkopp <socketcan@hartkopp.net>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Valdis Kletnieks <Valdis.Kletnieks@vt.edu>,
-       Bryan Donlan <bdonlan@gmail.com>, Evgeniy Polyakov <zbr@ioremap.net>,
-       "C. Scott Ananian" <cscott@cscott.net>,
-       James Morris <jmorris@namei.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Bernie Innocenti <bernie@codewiz.org>,
-       Mark Seaborn <mrs@mythic-beasts.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Am?rico Wang <xiyou.wangcong@gmail.com>,
-       Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
-       Samir Bellabes <sam@synack.fr>,
-       Casey Schaufler <casey@schaufler-ca.com>,
-       "Serge E. Hallyn" <serue@us.ibm.com>
-Subject: Re: RFC: disablenetwork facility. (v4)
-Message-ID: <20091228210801.GA1945@ucw.cz>
-References: <20091228101006.GA19984@elf.ucw.cz> <20091228163108.GC13266@heat>
+	Mon, 28 Dec 2009 16:08:31 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=nms8frzvBNLFgbHYknbB1I2YuZuEIj/Pzl5/MF/TQthGP8oPNpE72fF0xkpgRZI12
+	MAcWEJtOmwGjD40GfYgww==
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091228163108.GC13266@heat>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20091228204848.GB1637@ucw.cz>
+References: <20091213212504.GD5114@elf.ucw.cz>
+	 <20091227093537.GD11737@elf.ucw.cz>
+	 <20091227201514.GA29174@elf.ucw.cz>
+	 <a55d774e0912271220p1d102b1dr398e0524c9386702@mail.gmail.com>
+	 <20091227203704.GK11737@elf.ucw.cz>
+	 <20091227211322.GB29174@elf.ucw.cz>
+	 <a55d774e0912271646m1b82687cy427083e64e91e323@mail.gmail.com>
+	 <20091227101824.GB1478@ucw.cz>
+	 <a55d774e0912281224y7360dfdbu8a251743026bdd28@mail.gmail.com>
+	 <20091228204848.GB1637@ucw.cz>
+Date: Mon, 28 Dec 2009 13:08:27 -0800
+Message-ID: <a55d774e0912281308u1c20c84cl4f264aa366445131@mail.gmail.com>
+Subject: Re: tree with htc dream support
+From: Brian Swetland <swetland@google.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: =?UTF-8?B?QXJ2ZSBIasO4bm5ldsOlZw==?= <arve@android.com>,
+       Daniel Walker <dwalker@codeaurora.org>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+       Iliyan Malchev <malchev@google.com>, Greg KH <greg@kroah.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
->>   1. Anyone depending on their network for authentication already has to deal
->>      with availability faults. disablenetwork doesn't change anything
->>      fundamental there.
+On Mon, Dec 28, 2009 at 12:48 PM, Pavel Machek <pavel@ucw.cz> wrote:
+>> > In the short run... the code is staging quality, so it should be in
+>> > staging... and you'll not have to mainain so huge diff. (-20 kLoc).
+>>
+>> The core smd stuff is really not that large.  The central smd.[ch] are
+>> about 1300 lines, and proc_comm.[ch] are about 400 lines.  Is it
+>> possible to get some review/feedback as to what's "staging quality"
+>> about this code so we can clean it up?  I'd rather just fix the
+>> issues
 >
->> Actually it does. Policy may well be "If the network works, noone can
->> log in locally, because administration is normally done over
->> network. If the network fails, larger set of people is allowed in,
->> because something clearly went wrong and we want anyone going around
->> to fix it."
+> Just submit it to Daniel W., ccing rmk and l-a-k, and I'm sure you'll
+> get feedback.
 >
-> Have you actually seen this security policy in real life? I ask because it
-> seems quite far-fetched to me. Networks are just too easy to attack. Seems to
-> me, from this casual description, that you're just asking to be ARP- or
-> DNS-poisoned and rooted with this one.
-
-It is little far-fetched; but it would make sense on 'secure' network,
-where you can't do arp attacks. You can bet that someone out there
-does it.
-
->> Please learn how setuid works. 
+> For a start, checkpatch has some mild complains.
 >
-> I am quite familiar with how setuid works. I was suggesting a number of ways to
-> modify the behavior of su's *ancestors*; not su. (I apoligize that my writing
-> was not more clear on this point.) 
+>> and get the core stuff in there so clock, power, etc support is there
+>> for the platform rather than have it live in staging purgatory.
+>>
+>> Since this stuff is integral to mach-msm, required for essential
+>> operation of the platform, and makes sense to be part of the mach-msm
+>> codebase, why not just fix it there rather than move it out into
+>> staging and then back?  I'm not sure what that gains us.
 >
-> In retrospect, substituting "abort()" for "disablenetwork()" better explains my
-> point. Who can call disablenetwork() to cause a problem who can't just as well
-> have called abort() or kill(0, SIGSTOP) at the same time?
+> Well, it is in staging now. I just want you to use the existing
+> version, instead of adding another one.
 
-You can't sigstop sendmail, right?
+I'm trying to understand where the version in staging came from, how
+it's been changed, etc, so I can resolve that against what we have
+that's known good and shipping today and make sure we're not losing
+bugfixes and such along the way.
 
-> Still, I take your point that there may be people out there who have written
-> configurations for setuid executables under the belief that their networks are
-> reliable and available in the presence of attackers.
+Do you remember where the smd code that you put into staging came
+from, exactly?  Unfortunately since things have been moved, modified,
+renamed, etc, getting clean diffs is a bit of an adventure right now.
 
-Good.
+When I'm back in the office (on vacation at the moment, trying to stay
+caught up on email though) I'll have to start figuring out what went
+where and how different it is from what we have today, say in Arve's
+.33 based tree.
 
->> You should either:
->
->> a) make disablenetwork reset to "enablenetwork" during setuid exec
->> b) disallow setuid execs for tasks that have network disabled.
->
-> Neither of these work. The first is incorrect because a disablenetwork'ed
-> process could transmit anything it wants through ping. The second is one that I
-> feel is unsafe because I don't feel that I can predict its
->consequences.
-
-Ok, you could just remove ping from your systems, but I see, b) is
-better solution. 
-
-Why do you think it is unsafe? Its clearly secure, at least from 'user
-can't attack other users on shared machine'...
-
-It may cause some failures, but given how rare setuid stuff is these
-days, I doubt it.
-
-> However, there's a third option that I think might work. What do you think of
-> treating being network-disabled the same way we treat RLIMIT_NOFILE? That is,
-> what about:
->
-> c) permit capable processes (such as euid 0) to remove networking restrictions
->    by further calls to prctl(PR_SET_NETWORK)?
-
-I'm afraid that does not help... you'd have to audit/modify existing
-setuid programs to keep system secure. No-no.
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Brian
