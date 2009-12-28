@@ -1,72 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752292AbZL1Wyi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752299AbZL1W7B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752292AbZL1Wyi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Dec 2009 17:54:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752256AbZL1Wyg
+	id S1752299AbZL1W7B (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Dec 2009 17:59:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752100AbZL1W7A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Dec 2009 17:54:36 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:57892 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752215AbZL1Wye (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Dec 2009 17:54:34 -0500
-Date: Tue, 29 Dec 2009 09:54:32 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: David Miller <davem@davemloft.net>, <netdev@vger.kernel.org>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Samuel Ortiz <sameo@linux.intel.com>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       Holger Schurig <holgerschurig@googlemail.com>
-Subject: linux-next: manual merge of the net tree with the wireless-current
- tree
-Message-Id: <20091229095432.f39a887e.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 3.0.0beta4 (GTK+ 2.18.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
+	Mon, 28 Dec 2009 17:59:00 -0500
+Received: from exprod6og110.obsmtp.com ([64.18.1.25]:42494 "HELO
+	exprod6og110.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752049AbZL1W7A convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Dec 2009 17:59:00 -0500
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 7BIT
+Subject: [PATCH] drivers/net/r8169.c: use %pM to shown MAC address
+Date: Mon, 28 Dec 2009 17:59:03 -0500
+Message-ID: <BD79186B4FD85F4B8E60E381CAEE19090200F4C6@mi8nycmail19.Mi8.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] drivers/net/r8169.c: use %pM to shown MAC address
+Thread-Index: AcqIEVnpwgURppdhRAKjHqCG2dkUMw==
+From: "H Hartley Sweeten" <hartleys@visionengravers.com>
+To: <linux-kernel@vger.kernel.org>, <netdev@vger.kernel.org>
+Cc: "David Miller" <davem@davemloft.net>
+X-OriginalArrivalTime: 28 Dec 2009 22:58:58.0033 (UTC) FILETIME=[567CEE10:01CA8811]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+Use the %pM kernel extension to display the MAC address.
 
-Today's linux-next merge of the net tree got a conflict in
-drivers/net/wireless/libertas/scan.c between commit
-659c8e5243caf14564155ad8421404f044dd8031 ("libertas: Remove carrier
-signaling from the scan code") from the wireless-current tree and commit
-602114ae595af6c89eab149cf9f939e3f7ef4a34 ("libertas: add access functions
-for mesh open/connect status") from the net tree.
+Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
+Cc: David S. Miller <davem@davemloft.net>
 
-I fixed it up (see below) and can carry the fix for a while.
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+---
 
-diff --cc drivers/net/wireless/libertas/scan.c
-index b0b1c78,4a0c3e3..0000000
---- a/drivers/net/wireless/libertas/scan.c
-+++ b/drivers/net/wireless/libertas/scan.c
-@@@ -632,13 -635,16 +632,13 @@@ out2
-  	priv->scan_channel = 0;
-  
-  out:
- -	if (priv->connect_status == LBS_CONNECTED) {
- -		netif_carrier_on(priv->dev);
- -		if (!priv->tx_pending_len)
- -			netif_wake_queue(priv->dev);
- -	}
- -	if (priv->mesh_dev && lbs_mesh_connected(priv)) {
- -		netif_carrier_on(priv->mesh_dev);
- -		if (!priv->tx_pending_len)
- -			netif_wake_queue(priv->mesh_dev);
- -	}
- +	if (priv->connect_status == LBS_CONNECTED && !priv->tx_pending_len)
- +		netif_wake_queue(priv->dev);
- +
-- 	if (priv->mesh_dev && (priv->mesh_connect_status == LBS_CONNECTED) &&
-++	if (priv->mesh_dev && lbs_mesh_connected(priv) &&
- +	    !priv->tx_pending_len)
- +		netif_wake_queue(priv->mesh_dev);
- +
-  	kfree(chan_list);
-  
-  	lbs_deb_leave_args(LBS_DEB_SCAN, "ret %d", ret);
+diff --git a/drivers/net/r8169.c b/drivers/net/r8169.c
+index 60f96c4..c403ce0 100644
+--- a/drivers/net/r8169.c
++++ b/drivers/net/r8169.c
+@@ -3188,15 +3188,10 @@ rtl8169_init_one(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	if (netif_msg_probe(tp)) {
+ 		u32 xid = RTL_R32(TxConfig) & 0x9cf0f8ff;
+ 
+-		printk(KERN_INFO "%s: %s at 0x%lx, "
+-		       "%2.2x:%2.2x:%2.2x:%2.2x:%2.2x:%2.2x, "
+-		       "XID %08x IRQ %d\n",
++		printk(KERN_INFO "%s: %s at 0x%lx, %pM, XID %08x IRQ %d\n",
+ 		       dev->name,
+ 		       rtl_chip_info[tp->chipset].name,
+-		       dev->base_addr,
+-		       dev->dev_addr[0], dev->dev_addr[1],
+-		       dev->dev_addr[2], dev->dev_addr[3],
+-		       dev->dev_addr[4], dev->dev_addr[5], xid, dev->irq);
++		       dev->base_addr, dev->dev_addr, xid, dev->irq);
+ 	}
+ 
+ 	rtl8169_init_phy(dev, tp); 
