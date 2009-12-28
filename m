@@ -1,81 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752044AbZL1PKI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752114AbZL1PN1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752044AbZL1PKI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Dec 2009 10:10:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751714AbZL1PKH
+	id S1752114AbZL1PN1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Dec 2009 10:13:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751714AbZL1PN0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Dec 2009 10:10:07 -0500
-Received: from casper.infradead.org ([85.118.1.10]:37926 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751297AbZL1PKG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Dec 2009 10:10:06 -0500
-Subject: Re: [RFC 12/12][PATCH] SCHED_DEADLINE: modified sched_*_ex API
-From: Peter Zijlstra <peterz@infradead.org>
-To: Raistlin <raistlin@linux.it>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       michael trimarchi <michael@evidence.eu.com>,
-       Fabio Checconi <fabio@gandalf.sssup.it>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Dhaval Giani <dhaval.giani@gmail.com>,
-       Johan Eker <johan.eker@ericsson.com>, "p.faure" <p.faure@akatech.ch>,
-       Chris Friesen <cfriesen@nortel.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Henrik Austad <henrik@austad.us>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Darren Hart <darren@dvhart.com>,
-       Sven-Thorsten Dietrich <sven@thebigcorporation.com>,
-       Bjoern Brandenburg <bbb@cs.unc.edu>,
-       Tommaso Cucinotta <tommaso.cucinotta@sssup.it>,
-       "giuseppe.lipari" <giuseppe.lipari@sssup.it>,
-       Juri Lelli <juri.lelli@gmail.com>
-In-Reply-To: <1255708086.6228.469.camel@Palantir>
-References: <1255707324.6228.448.camel@Palantir>
-	 <1255708086.6228.469.camel@Palantir>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 28 Dec 2009 16:09:18 +0100
-Message-ID: <1262012958.7135.124.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 28 Dec 2009 10:13:26 -0500
+Received: from zfrontend2.aha.ru ([195.2.83.148]:35385 "EHLO aha.ru"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751414AbZL1PNZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Dec 2009 10:13:25 -0500
+From: "werner" <w.landgraf@ru.ru>
+Subject: kernel problem 2.6.33-rc2
+To: anisse@astier.eu, lenb@kernel.org, randy.dunlap@ORACLE.COM,
+       linux-kernel@vger.kernel.org
+X-Mailer: CommuniGate Pro WebUser Interface v.4.3.12
+Date: Mon, 28 Dec 2009 11:13:18 -0400
+Message-ID: <web-124852048@zbackend1.aha.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII;
+	format=flowed
+Content-Transfer-Encoding: 7BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-10-16 at 17:48 +0200, Raistlin wrote:
-> @@ -6807,9 +6811,10 @@ out_unlock:
->  /**
->   * sys_sched_getparam - get the DEADLINE task parameters of a thread
->   * @pid: the pid in question.
-> + * @len: size of data pointed by param_ex.
->   * @param_ex: structure containing the new parameters (deadline, runtime, etc.).
->   */
-> -SYSCALL_DEFINE2(sched_getparam_ex, pid_t, pid,
-> +SYSCALL_DEFINE3(sched_getparam_ex, pid_t, pid, unsigned, len,
->                 struct sched_param_ex __user *, param_ex)
->  {
->         struct sched_param_ex lp;
-> @@ -6818,6 +6823,8 @@ SYSCALL_DEFINE2(sched_getparam_ex, pid_t, pid,
->  
->         if (!param_ex || pid < 0)
->                 return -EINVAL;
-> +       if (len < sizeof(struct sched_param_ex))
-> +               return -EINVAL;
->  
->         read_lock(&tasklist_lock);
->         p = find_process_by_pid(pid);
 
-This allows len > sizeof().
+   hello
+  
+  all the patches don't work. During booting happens the 
+same as reported before.
+  With 2.6.33-rc1 my server runs nice: 
+http://guyane.dyn-o-saur.com/info.php
 
-> @@ -6837,7 +6844,7 @@ SYSCALL_DEFINE2(sched_getparam_ex, pid_t, pid,
->         /*
->          * This one might sleep, we cannot do it with a spinlock held ...
->          */
-> -       retval = copy_to_user(param_ex, &lp, sizeof(*param_ex)) ? -EFAULT : 0;
-> +       retval = copy_to_user(param_ex, &lp, len) ? -EFAULT : 0;
->  
->         return retval; 
 
-Which would copy more than lp, resulting in a stack leak, right?
+  
+  For transparency, here are: two folders 2.6.33-rc2-git01 
+and 02, including the patched subroutines and the patches 
+itself what you sent me (however the patchs didnt work 
+properly, in dell-wmi and hp-wmi occured errors of 1 hunk 
+, so that I ended patching it manually, pls verify the 
+subroutines if i patched it right); and the resulting 
+kernel packages (including everything: patched source, 
+kernel, modules -- please download them only if really 
+necessary):
+  
+    ftp://guyane.dyn-o-saur.com
 
 
 
+
+  I can try still any 2.6.33-rc1-gitX git if you think 
+this is senseful. Also, you can send me next patches BUT 
+IN THE NORMAL FORMAT OF KERNEL git.bz2 PATCHES (give them 
+any -git number) inclusive the Makefile patch, so that I 
+don't need patching manually which can result in next 
+errors.
+  
+
+
+  W.Landgraf
+---
+Professional hosting for everyone - http://www.host.ru
