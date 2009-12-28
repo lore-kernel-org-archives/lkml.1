@@ -1,61 +1,268 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751665AbZL1Oa4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751773AbZL1Ojw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751665AbZL1Oa4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Dec 2009 09:30:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751415AbZL1Oa4
+	id S1751773AbZL1Ojw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Dec 2009 09:39:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751691AbZL1Ojv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Dec 2009 09:30:56 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:50849 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751414AbZL1Oaz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Dec 2009 09:30:55 -0500
-Subject: Re: [RFC 8/12][PATCH] SCHED_DEADLINE: wait next instance syscall
- added.
-From: Peter Zijlstra <peterz@infradead.org>
-To: Raistlin <raistlin@linux.it>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       michael trimarchi <michael@evidence.eu.com>,
-       Fabio Checconi <fabio@gandalf.sssup.it>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Dhaval Giani <dhaval.giani@gmail.com>,
-       Johan Eker <johan.eker@ericsson.com>, "p.faure" <p.faure@akatech.ch>,
-       Chris Friesen <cfriesen@nortel.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Henrik Austad <henrik@austad.us>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Darren Hart <darren@dvhart.com>,
-       Sven-Thorsten Dietrich <sven@thebigcorporation.com>,
-       Bjoern Brandenburg <bbb@cs.unc.edu>,
-       Tommaso Cucinotta <tommaso.cucinotta@sssup.it>,
-       "giuseppe.lipari" <giuseppe.lipari@sssup.it>,
-       Juri Lelli <juri.lelli@gmail.com>
-In-Reply-To: <1255707898.6228.463.camel@Palantir>
-References: <1255707324.6228.448.camel@Palantir>
-	 <1255707898.6228.463.camel@Palantir>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 28 Dec 2009 15:30:01 +0100
-Message-ID: <1262010601.7135.113.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	Mon, 28 Dec 2009 09:39:51 -0500
+Received: from mailgw.kvados.cz ([194.213.53.146]:19212 "EHLO mailgw.kvados.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751682AbZL1Oju (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Dec 2009 09:39:50 -0500
+X-Greylist: delayed 323 seconds by postgrey-1.27 at vger.kernel.org; Mon, 28 Dec 2009 09:39:50 EST
+From: Milan Dadok <milan@dadok.name>
+To: <kaber@trash.net>, <uaca@i.hate.spam.alumni.uv.es>,
+       <johann.baudy@gnu-log.net>
+CC: <linux-kernel@vger.kernel.org>, <netdev@vger.kernel.org>
+Subject: [PATCH] 0/1 net: packet: Keep 802.1Q VLAN tag in packet on SOCK_DGRAM socket
+Date: Mon, 28 Dec 2009 15:34:23 +0100
+Message-ID: <004401ca87ca$da08e500$8e1aaf00$@name>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Microsoft Office Outlook 12.0
+Thread-Index: AcqHytkiq42uyRZMQFeDayOw9U+diw==
+Content-Language: cs
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-10-16 at 17:44 +0200, Raistlin wrote:
-> This commit introduces another new SCHED_DEADLINE related syscall. It is
-> called sched_wait_interval() and it has close-to-clock_nanosleep semantic.
-> 
-> However, for SCHED_DEADLINE tasks, it should be the call with which each
-> job closes its current instance. In fact, in this case, the task is put to
-> sleep and, when it wakes up, the scheduler is informed that a new job
-> arrived, saving the overhead that usually comes with a task activation
-> to enforce maximum task bandwidth.
+Hi all,
 
-The changelog suggests (and a very brief looks seems to confirm) that
-this code could be much smaller by using hrtimer_nanosleep().
+I found next bug in af_socket.c during testing why 
+tcpdump -i any -env
+don't show correctly outgoing 802.1Q packet 
 
-The implementation as presented seems to only call ->wait_interval()
-when the timer arms, which seems like a bug, we should always call it,
-regardless of whether we're on a period boundary.
+Vanilla kernel 2.6.31 display something like that
+14:45:51.237238 Out 00:1b:21:xx:xx:xx ethertype Unknown (0x0033), length 72:
+
+In function tpacket_rcv (and packet_rcv - I don't patch that for now) there
+is comment
+/* Special case: outgoing packets have ll header at head */
+skb_pull(skb, skb_network_offset(skb))
+
+Normally that is true, but on physical network card with no hw vlan
+acceleration ll header contains VLAN tag too, added by upper dev in
+vlan_dev.c.
+So we must remove only ll header of current physical dev, not bytes added by
+upper dev (ie. vlan_dev.c)
+With more nested vlan devices it is going to be more complicated.
+
+			hard_header_len   network_offset    must leave from
+ll header
+vlan1099@vlan1010 26			14                0 = 14 - 14 = 26 -
+(26-22) - (22-18) - (18-14)
+vlan1010@vlan10   22			18      1x8021Q   4 = 18 - 14 = 22 -
+(22-18) - (18-14)
+vlan10@eth1       18			22      2x8021Q	8 = 22 - 14 = 18 -
+(18-14)
+eth1              14			26      3x8021Q	12 = 26 - 14
+
+Next patch don't look nicely and need more work (move is_vlan_dev to another
+.h, support another encapsulation, non ETH devices etc.), but it is working
+for me.
+There may be another solution of this too.
+
+tcpdump -env -i any 'host 192.168.101.11 or (vlan and host 192.168.101.11)'
+15:14:47.103377  In 00:1b:21:xx:xx:xx ethertype 802.1Q (0x8100), length 80:
+vlan 51, p 0, ethertype IPv4, 77.75.72.3 > 192.168.101.11: ICMP echo reply,
+id 512, seq 28192, length 40
+15:14:47.103377  In 00:1b:21:xx:xx:xx ethertype IPv4 (0x0800), length 76:
+77.75.72.3 > 192.168.101.11: ICMP echo reply, id 512, seq 28192, length 40
+15:14:47.103398 Out 00:0a:5e:xx:xx:xx ethertype IPv4 (0x0800), length 76:
+77.75.72.3 > 192.168.101.11: ICMP echo reply, id 512, seq 28192, length 40
+15:14:47.103406 Out 00:0a:5e:xx:xx:xx ethertype 802.1Q (0x8100), length 80:
+vlan 10, p 0, ethertype IPv4, 77.75.72.3 > 192.168.101.11: ICMP echo reply,
+id 512, seq 28192, length 40
+
+I tested it on vlan1010@vlan10 interface too.
+
+Milan
+
+PS. to fully support VLAN in tcpdump I made next patches to libpcap, I'm
+going to send it to tcpdump maintainer.
+(any comments on 'kernel filter don't have access to skb VLAN TCI field'?)
+
+Patch to libpcap
+
+This patch is for tcpdump correclly filter and display VLAN encapsulated
+packet.
+
+My testing configuration was
+eth0 - hw vlan accelerated network card
+eth1 - no hw vlan accelerated network card
+many vlan1,vlan51
+
+These command now works correctlly
+tcpdump -env -i eth0 not vlan
+tcpdump -env -i eth1 not vlan
+tcpdump -env -i eth0 vlan 51
+tcpdump -env -i eth1 vlan 51
+tcpdump -env -i any vlan 51
+tcpdump -env -i any
+
+tcpdump -env -i any 'host 192.168.111.11 or (vlan and host 192.168.111.11)'
+that works too - it show correctly 1 routed packet on 4 interfaces (in
+eth0,in vlan1,out vlan2,out eth1)
+(vconfig set_flag 1 1 on all vlans)
+
+Solved bugs
+
+- on any interface 802.1Q packet from hw vlan accelerated card (in,out) was
+not displayed correctly
+  because SLL header does not have same len as MAC header (!= 2 * ETH_ALEN)
+
+- userland filter was run before sll and 802.1Q packet restoring, but
+offsets in filter was counted
+  with sll and 802.1Q headers already in packet
+
+- if filter have vlan condition, filter must be in userland, because kernel
+filter don't have access to skb VLAN TCI field
+
+- There must be one kernel patch applied to kernel 2.6.32 for correctly
+display and filter 802.1q packet on any interface 
+
+diff -urpN pcap-linux.c.orig pcap-linux.c
+--- pcap-linux.c.orig   2009-12-26 10:56:30.000000000 +0100
++++ pcap-linux.c        2009-12-28 15:11:38.000000000 +0100
+@@ -1933,6 +1933,7 @@ pcap_setfilter_linux_common(pcap_t *hand
+                return -1;
+ #endif /* SO_ATTACH_FILTER */
+
++       printf("Using %s filter\n", handle->md.use_bpf?"kernel":"userland");
+        return 0;
+ }
+
+@@ -3072,23 +3073,6 @@ pcap_read_linux_mmap(pcap_t *handle, int
+                        return -1;
+                }
+
+-               /* run filter on received packet
+-                * If the kernel filtering is enabled we need to run the
+-                * filter until all the frames present into the ring
+-                * at filter creation time are processed.
+-                * In such case md.use_bpf is used as a counter for the
+-                * packet we need to filter.
+-                * Note: alternatively it could be possible to stop applying
+-                * the filter when the ring became empty, but it can
+possibly
+-                * happen a lot later... */
+-               bp = (unsigned char*)h.raw + tp_mac;
+-               run_bpf = (!handle->md.use_bpf) ||
+-                       ((handle->md.use_bpf>1) && handle->md.use_bpf--);
+-               if (run_bpf && handle->fcode.bf_insns &&
+-                               (bpf_filter(handle->fcode.bf_insns, bp,
+-                                       tp_len, tp_snaplen) == 0))
+-                       goto skip;
+-
+                /*
+                 * Do checks based on packet direction.
+                 */
+@@ -3117,11 +3101,7 @@ pcap_read_linux_mmap(pcap_t *handle, int
+                                goto skip;
+                }
+
+-               /* get required packet info from ring header */
+-               pcaphdr.ts.tv_sec = tp_sec;
+-               pcaphdr.ts.tv_usec = tp_usec;
+-               pcaphdr.caplen = tp_snaplen;
+-               pcaphdr.len = tp_len;
++               bp = (unsigned char*)h.raw + tp_mac;
+
+                /* if required build in place the sll header*/
+                if (handle->md.cooked) {
+@@ -3163,27 +3143,58 @@ pcap_read_linux_mmap(pcap_t *handle, int
+                        hdrp->sll_protocol = sll->sll_protocol;
+
+                        /* update packet len */
+-                       pcaphdr.caplen += SLL_HDR_LEN;
+-                       pcaphdr.len += SLL_HDR_LEN;
++                       tp_snaplen += SLL_HDR_LEN;
++                       tp_len += SLL_HDR_LEN;
+                }
+
+ #ifdef HAVE_TPACKET2
+-               if (handle->md.tp_version == TPACKET_V2 && h.h2->tp_vlan_tci
+&&
+-                   tp_snaplen >= 2 * ETH_ALEN) {
++               /*
++                * Add VLAN TAG if set in TPACKET2
++                */
++               if (handle->md.tp_version == TPACKET_V2 &&
+(h.h2->tp_vlan_tci)) {
+                        struct vlan_tag *tag;
++                       int ethlen;
+
+                        bp -= VLAN_TAG_LEN;
+-                       memmove(bp, bp + VLAN_TAG_LEN, 2 * ETH_ALEN);
+
+-                       tag = (struct vlan_tag *)(bp + 2 * ETH_ALEN);
++                       if (!handle->md.cooked) {
++                               ethlen = 2 * ETH_ALEN;
++                       } else {
++                               ethlen = sizeof(struct sll_header) -
+sizeof(sll->sll_protocol);
++                       }
++                       memmove(bp, bp + VLAN_TAG_LEN, ethlen);
++                       tag = (struct vlan_tag *)(bp + ethlen);
++
+                        tag->vlan_tpid = htons(ETH_P_8021Q);
+                        tag->vlan_tci = htons(h.h2->tp_vlan_tci);
+
+-                       pcaphdr.caplen += VLAN_TAG_LEN;
+-                       pcaphdr.len += VLAN_TAG_LEN;
++                       tp_snaplen += VLAN_TAG_LEN;
++                       tp_len += VLAN_TAG_LEN;
+                }
+ #endif
+
++               /* run filter on received packet
++                * If the kernel filtering is enabled we need to run the
++                * filter until all the frames present into the ring
++                * at filter creation time are processed.
++                * In such case md.use_bpf is used as a counter for the
++                * packet we need to filter.
++                * Note: alternatively it could be possible to stop applying
++                * the filter when the ring became empty, but it can
+possibly
++                * happen a lot later... */
++               run_bpf = (!handle->md.use_bpf) ||
++                       ((handle->md.use_bpf>1) && handle->md.use_bpf--);
++               if (run_bpf && handle->fcode.bf_insns &&
++                               (bpf_filter(handle->fcode.bf_insns, bp,
++                                       tp_len, tp_snaplen) == 0))
++                       goto skip;
++
++               /* get required packet info from ring header */
++               pcaphdr.ts.tv_sec = tp_sec;
++               pcaphdr.ts.tv_usec = tp_usec;
++               pcaphdr.caplen = tp_snaplen;
++               pcaphdr.len = tp_len;
++
+                /*
+                 * The only way to tell the kernel to cut off the
+                 * packet at a snapshot length is with a filter program;
+@@ -4270,6 +4281,7 @@ iface_get_arptype(int fd, const char *de
+ }
+
+ #ifdef SO_ATTACH_FILTER
++static u_int orig_nl;
+ static int
+ fix_program(pcap_t *handle, struct sock_fprog *fcode, int is_mmapped)
+ {
+@@ -4295,6 +4307,13 @@ fix_program(pcap_t *handle, struct sock_
+        fcode->len = len;
+        fcode->filter = (struct sock_filter *) f;
+
++       /*
++        * Is filter testing some encapsulated packets - VLAN, MPLS?
++        * put to userland after encapsulated packet is restored from TCI
++        */
++       if (handle->md.tp_version == TPACKET_V2 && orig_nl!=-1U)
++               return 0;
++
+        for (i = 0; i < len; ++i) {
+                p = &f[i];
+                /*
+
 
