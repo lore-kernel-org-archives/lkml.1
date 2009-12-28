@@ -1,67 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751287AbZL1IZt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751206AbZL1I0p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751287AbZL1IZt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Dec 2009 03:25:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751137AbZL1IZs
+	id S1751206AbZL1I0p (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Dec 2009 03:26:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750936AbZL1I0p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Dec 2009 03:25:48 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:53450 "EHLO mx3.mail.elte.hu"
+	Mon, 28 Dec 2009 03:26:45 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:53652 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751073AbZL1IZr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Dec 2009 03:25:47 -0500
-Date: Mon, 28 Dec 2009 09:25:09 +0100
+	id S1750858AbZL1I0o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Dec 2009 03:26:44 -0500
+Date: Mon, 28 Dec 2009 09:26:32 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Joerg Roedel <joerg.roedel@amd.com>
-Cc: Ingo Molnar <mingo@redhat.com>, x86@kernel.org,
-       linux-kernel@vger.kernel.org, stable@kernel.org
-Subject: Re: [PATCH 2/2] x86/amd-iommu: Fix initialization failure panic
-Message-ID: <20091228082509.GG28652@elte.hu>
-References: <1261408929-6261-1-git-send-email-joerg.roedel@amd.com>
- <1261408929-6261-3-git-send-email-joerg.roedel@amd.com>
+To: Len Brown <lenb@kernel.org>
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Bjorn Helgaas <bjorn.helgaas@hp.com>, Myron Stowe <myron.stowe@hp.com>
+Subject: Re: -tip: origin tree build failure
+Message-ID: <20091228082632.GH28652@elte.hu>
+References: <20091217075025.GA314@elte.hu>
+ <alpine.LFD.2.00.0912261448100.4089@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1261408929-6261-3-git-send-email-joerg.roedel@amd.com>
+In-Reply-To: <alpine.LFD.2.00.0912261448100.4089@localhost.localdomain>
 User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: 0.0
+X-ELTE-SpamScore: -2.0
 X-ELTE-SpamLevel: 
 X-ELTE-SpamCheck: no
 X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Joerg Roedel <joerg.roedel@amd.com> wrote:
+* Len Brown <lenb@kernel.org> wrote:
 
-> The assumption that acpi_table_parse passes the return value
-> of the hanlder function to the caller proved wrong
-> recently. The return value of the handler function is
-> totally ignored. This makes the initialization code for AMD
-> IOMMU buggy in a way that could cause a kernel panic on
-> initialization. This patch fixes the issue in the AMD IOMMU
-> driver.
+> ...
+> > build failure on x86, for CONFIG_ACPI=n && CONFIG_IPMI_SI=y:
+> > 
+> >  drivers/char/ipmi/ipmi_si_intf.c:3208: error: 'ipmi_pnp_driver' undeclared (first use in this function)
+> ...
 > 
-> Cc: stable@kernel.org
-> Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
-> ---
->  arch/x86/kernel/amd_iommu_init.c |   10 ++++++++++
->  1 files changed, 10 insertions(+), 0 deletions(-)
+> > -#ifdef CONFIG_PNP
+> > +#ifdef CONFIG_ACPI
+> >  	pnp_register_driver(&ipmi_pnp_driver);
+> >  #endif
+> ...
 > 
-> diff --git a/arch/x86/kernel/amd_iommu_init.c b/arch/x86/kernel/amd_iommu_init.c
-> index 1dca9c3..fb490ce 100644
-> --- a/arch/x86/kernel/amd_iommu_init.c
-> +++ b/arch/x86/kernel/amd_iommu_init.c
-> @@ -138,6 +138,11 @@ int amd_iommus_present;
->  bool amd_iommu_np_cache __read_mostly;
->  
->  /*
-> + * Set to true if ACPI table parsing and hardware intialization went properly
-> + */
-> +static bool amd_iommu_initialized;
+> Hi Ingo,
+> As my tree inflicted this one and I don't see your patch upstream,
+> I'll include your fix with my "for -rc2" push.
 
-Btw., could this new variable be __init?
+Thanks!
 
 	Ingo
