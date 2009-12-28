@@ -1,74 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752059AbZL1Jxd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752064AbZL1Jzv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752059AbZL1Jxd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Dec 2009 04:53:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751873AbZL1Jxc
+	id S1752064AbZL1Jzv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Dec 2009 04:55:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751924AbZL1Jzu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Dec 2009 04:53:32 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:47814 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751581AbZL1Jxc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Dec 2009 04:53:32 -0500
-Date: Mon, 28 Dec 2009 10:53:14 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Jay Fenlason <fenlason@redhat.com>
-Subject: Re: On "ratelimit: Use per ratelimit context locking"
-Message-ID: <20091228095314.GI24690@elte.hu>
-References: <4B2E0CFB.30806@s5r6.in-berlin.de>
+	Mon, 28 Dec 2009 04:55:50 -0500
+Received: from ey-out-2122.google.com ([74.125.78.25]:43338 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751735AbZL1Jzu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Dec 2009 04:55:50 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=TjVj1uqcok/qcx4hteuwYE4VEi6mIOJr09iwfe1gzr5obcPl6IG2LSB9u7GWLv9d1+
+         T9bX3L+OhRrsA+G1zd0iHTlm6/Umb6wF+mlXnZt/AQbYz8OYQzbaPqQYp2SMt7h05383
+         /0hBEDG+wCbFGf23TS+Oo5/dInaj58noc1hi0=
+Date: Mon, 28 Dec 2009 12:55:46 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Naga Chumbalkar <nagananda.chumbalkar@hp.com>, x86@kernel.org,
+       linux-kernel@vger.kernel.org, oprofile-list@lists.sf.net,
+       tglx@linutronix.de
+Subject: Re: [PATCH] x86, perfctr: remove unused func
+	avail_to_resrv_perfctr_nmi()
+Message-ID: <20091228095546.GA4884@lenovo>
+References: <20091224015441.6005.4408.sendpatchset@localhost.localdomain> <20091224150458.GA5143@lenovo> <20091228083845.GK28652@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4B2E0CFB.30806@s5r6.in-berlin.de>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20091228083845.GK28652@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
-
-> Hi Ingo,
+On Mon, Dec 28, 2009 at 09:38:45AM +0100, Ingo Molnar wrote:
 > 
-> in pre 2.6.33-rc1 commit 979f693d you wrote: "I'd like to use
-> printk_ratelimit() in atomic context, but that's not possible right now
-> due to the spinlock usage this commit introduced more than a year ago:
-> 717115e: printk ratelimiting rewrite".?,?
+> * Cyrill Gorcunov <gorcunov@gmail.com> wrote:
 > 
-> By not possible, do you mean it would be an outright bug to call
-> printk_ratelimit in atomic context prior to 979f693d, or merely a
-> performance issue?  If the former, under which circumstances would the
-> bug hit?
+> > On Thu, Dec 24, 2009 at 01:54:47AM +0000, Naga Chumbalkar wrote:
+> > > avail_to_resrv_perfctr_nmi() is neither EXPORT'd, nor used in the file.
+> > > So remove it.
+> > > 
+> > > Signed-off-by: Naga Chumbalkar <nagananda.chumbalkar@hp.com>
+> > > ---
+> > >  arch/x86/include/asm/nmi.h             |    1 -
+> > >  arch/x86/kernel/cpu/perfctr-watchdog.c |   11 -----------
+> > >  2 files changed, 0 insertions(+), 12 deletions(-)
+> > > 
+> > 
+> > Hi Naga, this looks good to me! Thanks.
+> > 
+> > Is there any plans to use this routine in future
+> > so we shouldn't touch this snippet?
 > 
-> I'm asking because one of my commits actually introduced a
-> printk_ratelimit use in an interrupt handler shortly before 2.6.32 was
-> released.  In my testing, it didn't occur to me that there might be a
-> problem.
+> Not that i know of.
+
+ok, then we could apply this patch I think, at least for
+a while.
+
 > 
-> ?http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=979f693def9084a452846365dfde5dcb28366333
-> ?http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=717115e1a5856b57af0f71e1df7149108294fc10
+> In fact we should transform/migrate the NMI watchdog driver by making it based 
+> on a kernel-internal created perf event. (which is what the NMI watchdog 
+> really is: a periodic NMI event occuring once per second and running a 
+> callback function.)
 
-There used to be a global lock:
+Yes, this would be great. I'll try to find out some time for this
+task, though no promises :) If someone get it done earlier I would
+really appreciate.
 
-  static DEFINE_SPINLOCK(ratelimit_lock);
-
-which is now per ratelimit context. The case i was after was to use the 
-ratelimit state from NMI context. With NMIs we can lock up if an NMI hits when 
-some other code uses the ratelimit code. It's a small but existing race 
-window.
-
-OTOH, IRQ context use of printk ratelimit was safe before (and after) this 
-commit - so i think your code should be safe too.
-
-Hope that helps,
-
-	Ingo
+> 
+> That would give us NMI watchdog support on all future x86 CPUs, automatically 
+> - without having to extend the arch/x86/kernel/cpu/perfctr-watchdog.c code for 
+> it.
+> 
+> 	Ingo
+> 
+	-- Cyrill
