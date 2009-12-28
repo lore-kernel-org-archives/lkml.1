@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752520AbZL1WD6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752353AbZL1WDB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752520AbZL1WD6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Dec 2009 17:03:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752303AbZL1WDB
-	(ORCPT <rfc822;linux-kernel-outgoing>);
+	id S1752353AbZL1WDB (ORCPT <rfc822;w@1wt.eu>);
 	Mon, 28 Dec 2009 17:03:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752291AbZL1WC6
+	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Mon, 28 Dec 2009 17:02:58 -0500
 Received: from ey-out-2122.google.com ([74.125.78.26]:47692 "EHLO
 	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752216AbZL1WCu (ORCPT
+	with ESMTP id S1752269AbZL1WCz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Dec 2009 17:02:50 -0500
+	Mon, 28 Dec 2009 17:02:55 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=rxtpiVAGSqZx+pJlZ4nxprPFi73UW45cM8873MnRPAdSVp7TBQOkmQPGJwEb48qaoi
-         aLUVPzKhH3RjK1Dp8Pdg4y8soxg4NdAWFC9TsRHYY10WhlQbsmcI3CbqrPwV9qpkPHIb
-         V8sl/E9PD3ScppmkxMnuAyKzFwL3pCUFZ/XGA=
+        b=nw5FcEXOe/jw4MjK5sOPeElFzUwexEsaJoa+JyVozum5/dr0TQyrkwnM9tGdoXkBwy
+         zgf8xrlvMAG8Dj4ORz2h8hNZT8CDzrYENEWxSZP+A+1ILrzNehOyaUbWW90yJVcdKb6L
+         +ZtSVVEFfIV5TnbrqX4r/h32EKVeCR3Z8i5XE=
 From: Johan Hovold <jhovold@gmail.com>
 To: Greg Kroah-Hartman <gregkh@suse.de>
 Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Johan Hovold <jhovold@gmail.com>, Oliver Neukum <oliver@neukum.name>
-Subject: [PATCH 08/14] USB: kl5kusb105: fix DMA buffers on stack
-Date: Mon, 28 Dec 2009 23:01:52 +0100
-Message-Id: <1262037718-31424-9-git-send-email-jhovold@gmail.com>
+       Johan Hovold <jhovold@gmail.com>
+Subject: [PATCH 09/14] USB: mct_u232: fix DMA buffers on stack
+Date: Mon, 28 Dec 2009 23:01:53 +0100
+Message-Id: <1262037718-31424-10-git-send-email-jhovold@gmail.com>
 X-Mailer: git-send-email 1.6.6
 In-Reply-To: <1262037718-31424-1-git-send-email-jhovold@gmail.com>
 References: <1262037718-31424-1-git-send-email-jhovold@gmail.com>
@@ -30,153 +30,178 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Cc: Oliver Neukum <oliver@neukum.name>
+
 Signed-off-by: Johan Hovold <jhovold@gmail.com>
 ---
- drivers/usb/serial/kl5kusb105.c |   63 +++++++++++++++++++++++++++-----------
- 1 files changed, 45 insertions(+), 18 deletions(-)
+ drivers/usb/serial/mct_u232.c |   67 +++++++++++++++++++++++++++++++++--------
+ 1 files changed, 54 insertions(+), 13 deletions(-)
 
-diff --git a/drivers/usb/serial/kl5kusb105.c b/drivers/usb/serial/kl5kusb105.c
-index 3a78738..731964b 100644
---- a/drivers/usb/serial/kl5kusb105.c
-+++ b/drivers/usb/serial/kl5kusb105.c
-@@ -212,10 +212,19 @@ static int klsi_105_get_line_state(struct usb_serial_port *port,
- 				   unsigned long *line_state_p)
+diff --git a/drivers/usb/serial/mct_u232.c b/drivers/usb/serial/mct_u232.c
+index cd009cb..67e86b0 100644
+--- a/drivers/usb/serial/mct_u232.c
++++ b/drivers/usb/serial/mct_u232.c
+@@ -231,19 +231,25 @@ static int mct_u232_calculate_baud_rate(struct usb_serial *serial,
+ static int mct_u232_set_baud_rate(struct tty_struct *tty,
+ 	struct usb_serial *serial, struct usb_serial_port *port, speed_t value)
+ {
++	u8 *buf;
+ 	__le32 divisor;
+ 	int rc;
+-	unsigned char zero_byte = 0;
+-	unsigned char cts_enable_byte = 0;
+ 	speed_t speed;
+ 
++	buf = kmalloc(4, GFP_KERNEL);
++	if (!buf) {
++		dev_err(&port->dev, "%s - memory allocation failed\n",
++				__func__);
++		return -ENOMEM;
++	}
++
+ 	divisor = cpu_to_le32(mct_u232_calculate_baud_rate(serial, value,
+ 								&speed));
+-
++	*(u32 *)buf = divisor;
+ 	rc = usb_control_msg(serial->dev, usb_sndctrlpipe(serial->dev, 0),
+ 				MCT_U232_SET_BAUD_RATE_REQUEST,
+ 				MCT_U232_SET_REQUEST_TYPE,
+-				0, 0, &divisor, MCT_U232_SET_BAUD_RATE_SIZE,
++				0, 0, buf, MCT_U232_SET_BAUD_RATE_SIZE,
+ 				WDR_TIMEOUT);
+ 	if (rc < 0)	/*FIXME: What value speed results */
+ 		dev_err(&port->dev, "Set BAUD RATE %d failed (error = %d)\n",
+@@ -268,11 +274,11 @@ static int mct_u232_set_baud_rate(struct tty_struct *tty,
+ 	   value of 1 is used by this driver), data will not be transmitted to
+ 	   a device which is not asserting 'CTS'.
+ 	*/
+-
++	buf[0] = 0;
+ 	rc = usb_control_msg(serial->dev, usb_sndctrlpipe(serial->dev, 0),
+ 				MCT_U232_SET_UNKNOWN1_REQUEST,
+ 				MCT_U232_SET_REQUEST_TYPE,
+-				0, 0, &zero_byte, MCT_U232_SET_UNKNOWN1_SIZE,
++				0, 0, buf, MCT_U232_SET_UNKNOWN1_SIZE,
+ 				WDR_TIMEOUT);
+ 	if (rc < 0)
+ 		dev_err(&port->dev, "Sending USB device request code %d "
+@@ -280,76 +286,111 @@ static int mct_u232_set_baud_rate(struct tty_struct *tty,
+ 			rc);
+ 
+ 	if (port && C_CRTSCTS(tty))
+-	   cts_enable_byte = 1;
++		buf[0] = 1;
++	else
++		buf[0] = 0;
+ 
+ 	dbg("set_baud_rate: send second control message, data = %02X",
+-							cts_enable_byte);
++							buf[0]);
+ 	rc = usb_control_msg(serial->dev, usb_sndctrlpipe(serial->dev, 0),
+ 			MCT_U232_SET_CTS_REQUEST,
+ 			MCT_U232_SET_REQUEST_TYPE,
+-			0, 0, &cts_enable_byte, MCT_U232_SET_CTS_SIZE,
++			0, 0, buf, MCT_U232_SET_CTS_SIZE,
+ 			WDR_TIMEOUT);
+ 	if (rc < 0)
+ 		dev_err(&port->dev, "Sending USB device request code %d "
+ 			"failed (error = %d)\n", MCT_U232_SET_CTS_REQUEST, rc);
+ 
++	kfree(buf);
+ 	return rc;
+ } /* mct_u232_set_baud_rate */
+ 
+ static int mct_u232_set_line_ctrl(struct usb_serial *serial, unsigned char lcr)
  {
  	int rc;
--	__u8 status_buf[KLSI_STATUSBUF_LEN] = { -1, -1};
-+	u8 *status_buf;
- 	__u16 status;
- 
- 	dev_info(&port->serial->dev->dev, "sending SIO Poll request\n");
++	u8 *buf;
 +
-+	status_buf = kmalloc(KLSI_STATUSBUF_LEN, GFP_KERNEL);
-+	if (!status_buf) {
-+		dev_err(&port->dev, "%s - out of memory for status buffer.\n",
-+				__func__);
++	buf = kmalloc(1, GFP_KERNEL);
++	if (!buf) {
++		dev_err(&serial->dev->dev,
++			"%s - memory allocation failed\n", __func__);
 +		return -ENOMEM;
 +	}
-+	status_buf[0] = 0xff;
-+	status_buf[1] = 0xff;
- 	rc = usb_control_msg(port->serial->dev,
- 			     usb_rcvctrlpipe(port->serial->dev, 0),
- 			     KL5KUSB105A_SIO_POLL,
-@@ -236,6 +245,8 @@ static int klsi_105_get_line_state(struct usb_serial_port *port,
- 
- 		*line_state_p = klsi_105_status2linestate(status);
- 	}
-+
-+	kfree(status_buf);
++	buf[0] = lcr;
+ 	rc = usb_control_msg(serial->dev, usb_sndctrlpipe(serial->dev, 0),
+ 			MCT_U232_SET_LINE_CTRL_REQUEST,
+ 			MCT_U232_SET_REQUEST_TYPE,
+-			0, 0, &lcr, MCT_U232_SET_LINE_CTRL_SIZE,
++			0, 0, buf, MCT_U232_SET_LINE_CTRL_SIZE,
+ 			WDR_TIMEOUT);
+ 	if (rc < 0)
+ 		dev_err(&serial->dev->dev,
+ 			"Set LINE CTRL 0x%x failed (error = %d)\n", lcr, rc);
+ 	dbg("set_line_ctrl: 0x%x", lcr);
++	kfree(buf);
  	return rc;
- }
+ } /* mct_u232_set_line_ctrl */
  
-@@ -364,7 +375,7 @@ static int  klsi_105_open(struct tty_struct *tty, struct usb_serial_port *port)
+ static int mct_u232_set_modem_ctrl(struct usb_serial *serial,
+ 				   unsigned int control_state)
+ {
++	u8 *buf;
  	int rc;
- 	int i;
- 	unsigned long line_state;
--	struct klsi_105_port_settings cfg;
-+	struct klsi_105_port_settings *cfg;
- 	unsigned long flags;
+ 	unsigned char mcr = MCT_U232_MCR_NONE;
  
- 	dbg("%s port %d", __func__, port->number);
-@@ -376,12 +387,18 @@ static int  klsi_105_open(struct tty_struct *tty, struct usb_serial_port *port)
- 	 * Then read the modem line control and store values in
- 	 * priv->line_state.
- 	 */
--	cfg.pktlen   = 5;
--	cfg.baudrate = kl5kusb105a_sio_b9600;
--	cfg.databits = kl5kusb105a_dtb_8;
--	cfg.unknown1 = 0;
--	cfg.unknown2 = 1;
--	klsi_105_chg_port_settings(port, &cfg);
-+	cfg = kmalloc(sizeof(*cfg), GFP_KERNEL);
-+	if (!cfg) {
-+		dev_err(&port->dev, "%s - out of memory for config buffer.\n",
-+				__func__);
++	buf = kmalloc(1, GFP_KERNEL);
++	if (!buf) {
++		dev_err(&serial->dev->dev,
++			"%s - memory allocation failed\n", __func__);
 +		return -ENOMEM;
 +	}
-+	cfg->pktlen   = 5;
-+	cfg->baudrate = kl5kusb105a_sio_b9600;
-+	cfg->databits = kl5kusb105a_dtb_8;
-+	cfg->unknown1 = 0;
-+	cfg->unknown2 = 1;
-+	klsi_105_chg_port_settings(port, cfg);
++
+ 	if (control_state & TIOCM_DTR)
+ 		mcr |= MCT_U232_MCR_DTR;
+ 	if (control_state & TIOCM_RTS)
+ 		mcr |= MCT_U232_MCR_RTS;
  
- 	/* set up termios structure */
- 	spin_lock_irqsave(&priv->lock, flags);
-@@ -391,11 +408,11 @@ static int  klsi_105_open(struct tty_struct *tty, struct usb_serial_port *port)
- 	priv->termios.c_lflag = tty->termios->c_lflag;
- 	for (i = 0; i < NCCS; i++)
- 		priv->termios.c_cc[i] = tty->termios->c_cc[i];
--	priv->cfg.pktlen   = cfg.pktlen;
--	priv->cfg.baudrate = cfg.baudrate;
--	priv->cfg.databits = cfg.databits;
--	priv->cfg.unknown1 = cfg.unknown1;
--	priv->cfg.unknown2 = cfg.unknown2;
-+	priv->cfg.pktlen   = cfg->pktlen;
-+	priv->cfg.baudrate = cfg->baudrate;
-+	priv->cfg.databits = cfg->databits;
-+	priv->cfg.unknown1 = cfg->unknown1;
-+	priv->cfg.unknown2 = cfg->unknown2;
- 	spin_unlock_irqrestore(&priv->lock, flags);
++	buf[0] = mcr;
+ 	rc = usb_control_msg(serial->dev, usb_sndctrlpipe(serial->dev, 0),
+ 			MCT_U232_SET_MODEM_CTRL_REQUEST,
+ 			MCT_U232_SET_REQUEST_TYPE,
+-			0, 0, &mcr, MCT_U232_SET_MODEM_CTRL_SIZE,
++			0, 0, buf, MCT_U232_SET_MODEM_CTRL_SIZE,
+ 			WDR_TIMEOUT);
+ 	if (rc < 0)
+ 		dev_err(&serial->dev->dev,
+ 			"Set MODEM CTRL 0x%x failed (error = %d)\n", mcr, rc);
+ 	dbg("set_modem_ctrl: state=0x%x ==> mcr=0x%x", control_state, mcr);
  
- 	/* READ_ON and urb submission */
-@@ -441,6 +458,7 @@ static int  klsi_105_open(struct tty_struct *tty, struct usb_serial_port *port)
- 		retval = rc;
++	kfree(buf);
+ 	return rc;
+ } /* mct_u232_set_modem_ctrl */
  
- exit:
-+	kfree(cfg);
- 	return retval;
- } /* klsi_105_open */
- 
-@@ -714,10 +732,17 @@ static void klsi_105_set_termios(struct tty_struct *tty,
- 	unsigned int old_iflag = old_termios->c_iflag;
- 	unsigned int cflag = tty->termios->c_cflag;
- 	unsigned int old_cflag = old_termios->c_cflag;
--	struct klsi_105_port_settings cfg;
-+	struct klsi_105_port_settings *cfg;
- 	unsigned long flags;
- 	speed_t baud;
- 
-+	cfg = kmalloc(sizeof(*cfg), GFP_KERNEL);
-+	if (!cfg) {
-+		dev_err(&port->dev, "%s - out of memory for config buffer.\n",
-+				__func__);
-+		return;
+ static int mct_u232_get_modem_stat(struct usb_serial *serial,
+ 						unsigned char *msr)
+ {
++	u8 *buf;
+ 	int rc;
++
++	buf = kmalloc(1, GFP_KERNEL);
++	if (!buf) {
++		dev_err(&serial->dev->dev,
++			"%s - memory allocation failed\n", __func__);
++		*msr = 0;
++		return -ENOMEM;
 +	}
 +
- 	/* lock while we are modifying the settings */
- 	spin_lock_irqsave(&priv->lock, flags);
- 
-@@ -793,11 +818,11 @@ static void klsi_105_set_termios(struct tty_struct *tty,
- 		case CS5:
- 			dbg("%s - 5 bits/byte not supported", __func__);
- 			spin_unlock_irqrestore(&priv->lock, flags);
--			return ;
-+			goto err;
- 		case CS6:
- 			dbg("%s - 6 bits/byte not supported", __func__);
- 			spin_unlock_irqrestore(&priv->lock, flags);
--			return ;
-+			goto err;
- 		case CS7:
- 			priv->cfg.databits = kl5kusb105a_dtb_7;
- 			break;
-@@ -856,11 +881,13 @@ static void klsi_105_set_termios(struct tty_struct *tty,
- #endif
- 		;
- 	}
--	memcpy(&cfg, &priv->cfg, sizeof(cfg));
-+	memcpy(cfg, &priv->cfg, sizeof(*cfg));
- 	spin_unlock_irqrestore(&priv->lock, flags);
- 
- 	/* now commit changes to device */
--	klsi_105_chg_port_settings(port, &cfg);
-+	klsi_105_chg_port_settings(port, cfg);
-+err:
-+	kfree(cfg);
- } /* klsi_105_set_termios */
- 
+ 	rc = usb_control_msg(serial->dev, usb_rcvctrlpipe(serial->dev, 0),
+ 			MCT_U232_GET_MODEM_STAT_REQUEST,
+ 			MCT_U232_GET_REQUEST_TYPE,
+-			0, 0, msr, MCT_U232_GET_MODEM_STAT_SIZE,
++			0, 0, buf, MCT_U232_GET_MODEM_STAT_SIZE,
+ 			WDR_TIMEOUT);
+ 	if (rc < 0) {
+ 		dev_err(&serial->dev->dev,
+ 			"Get MODEM STATus failed (error = %d)\n", rc);
+ 		*msr = 0;
+-	}
++	} else
++		*msr = buf[0];
+ 	dbg("get_modem_stat: 0x%x", *msr);
++	kfree(buf);
+ 	return rc;
+ } /* mct_u232_get_modem_stat */
  
 -- 
 1.6.6
