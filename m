@@ -1,94 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751282AbZL1NuI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751197AbZL1OCi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751282AbZL1NuI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Dec 2009 08:50:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751026AbZL1NuG
+	id S1751197AbZL1OCi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Dec 2009 09:02:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751026AbZL1OCh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Dec 2009 08:50:06 -0500
-Received: from mo-p00-ob.rzone.de ([81.169.146.162]:26106 "EHLO
-	mo-p00-ob.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750858AbZL1NuE (ORCPT
+	Mon, 28 Dec 2009 09:02:37 -0500
+Received: from casper.infradead.org ([85.118.1.10]:58388 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750892AbZL1OCh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Dec 2009 08:50:04 -0500
-X-RZG-AUTH: :P2MHfkW8eP4Mre39l357AZT/I7AY/7nT2yrT1q0ngWNsKR9Dbc7nsXJ75kzJrrGVGv4=
-X-RZG-CLASS-ID: mo00
-Message-ID: <4B38B786.9020609@hartkopp.net>
-Date: Mon, 28 Dec 2009 14:49:58 +0100
-From: Oliver Hartkopp <socketcan@hartkopp.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090706)
-MIME-Version: 1.0
-To: Julia Lawall <julia@diku.dk>
-CC: Urs Thuermann <urs.thuermann@volkswagen.de>,
-       Oliver Hartkopp <oliver.hartkopp@volkswagen.de>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org,
-       chri <chripell@gmail.com>, chripell@evolware.org
-Subject: Re: [PATCH 4/5] drivers/net/can: Correct NULL test
-References: <Pine.LNX.4.64.0912272227290.20548@ask.diku.dk>
-In-Reply-To: <Pine.LNX.4.64.0912272227290.20548@ask.diku.dk>
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 28 Dec 2009 09:02:37 -0500
+Subject: Re: perf: counter and event question
+From: Peter Zijlstra <peterz@infradead.org>
+To: Tim Blechmann <tim@klingt.org>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <4B38AE1D.8060703@klingt.org>
+References: <4B389391.8050303@klingt.org> <1261999573.7135.83.camel@laptop>
+	 <4B38A707.4060904@klingt.org> <1262005413.7135.98.camel@laptop>
+	 <4B38AE1D.8060703@klingt.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 28 Dec 2009 15:02:12 +0100
+Message-ID: <1262008932.7135.101.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Julia Lawall wrote:
-> From: Julia Lawall <julia@diku.dk>
+On Mon, 2009-12-28 at 14:09 +0100, Tim Blechmann wrote:
+> >>>> like it is impossible to sample instructions with a period of 1? 
+> >>>
+> >>> Pretty much, imagine the cpu getting a trap every cycle.
+> >>
+> >> is this a hardware restriction? a slowdown is acceptable for me, as long
+> >> as i am able to collect a huge number of samples accurately ...
+> > 
+> > Large number of samples and sample interval are only related through the
+> > runtime of your application.
+> > 
+> > Use a sensible period (~10k ins) and run a 'little' longer.
+> 
+> well, for my application, i am not interested in statistical data, but
+> in the order of the events ...
+> (i am not doing profiling, but trying to gather a sequence of
+> machine-structured data for an artistic project)
 
-Thanks Julia!
+Well, then use the branch tracer, that will give you the relation
+between blocks of code and is actually doable.
 
-I added Christian Pellegrin who is the author of this driver in CC.
-
-An obvious copy/paste error :-)
-
-Regards,
-Oliver
-
-Acked-by: Oliver Hartkopp <oliver@hartkopp.net>
-
-> 
-> Test the just-allocated value for NULL rather than some other value.
-> 
-> The semantic patch that makes this change is as follows:
-> (http://coccinelle.lip6.fr/)
-> 
-> // <smpl>
-> @@
-> expression x,y;
-> statement S;
-> @@
-> 
-> x = \(kmalloc\|kcalloc\|kzalloc\)(...);
-> (
-> if ((x) == NULL) S
-> |
-> if (
-> -   y
-> +   x
->        == NULL)
->  S
-> )
-> // </smpl>
-> 
-> Signed-off-by: Julia Lawall <julia@diku.dk>
-> 
-> ---
->  drivers/net/can/mcp251x.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff -u -p a/drivers/net/can/mcp251x.c b/drivers/net/can/mcp251x.c
-> --- a/drivers/net/can/mcp251x.c
-> +++ b/drivers/net/can/mcp251x.c
-> @@ -990,7 +990,7 @@ static int __devinit mcp251x_can_probe(s
->  			goto error_tx_buf;
->  		}
->  		priv->spi_rx_buf = kmalloc(SPI_TRANSFER_BUF_LEN, GFP_KERNEL);
-> -		if (!priv->spi_tx_buf) {
-> +		if (!priv->spi_rx_buf) {
->  			ret = -ENOMEM;
->  			goto error_rx_buf;
->  		}
-> --
-> To unsubscribe from this list: send the line "unsubscribe netdev" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+But I guess you could hack out the throttle and run the cycle counter
+with period=1 for userspace only.
 
