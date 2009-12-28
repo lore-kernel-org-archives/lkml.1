@@ -1,91 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752356AbZL1KN0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752325AbZL1KO7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752356AbZL1KN0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Dec 2009 05:13:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752327AbZL1KNX
+	id S1752325AbZL1KO7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Dec 2009 05:14:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752090AbZL1KO6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Dec 2009 05:13:23 -0500
-Received: from hera.kernel.org ([140.211.167.34]:48204 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752280AbZL1KNQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Dec 2009 05:13:16 -0500
-Date: Mon, 28 Dec 2009 10:10:55 GMT
-From: tip-bot for Simon Kagstrom <simon.kagstrom@netinsight.net>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       simon.kagstrom@netinsight.net, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, simon.kagstrom@netinsight.net, mingo@elte.hu
-In-Reply-To: <20091223110818.442d848e@marrow.netinsight.se>
-References: <20091223110818.442d848e@marrow.netinsight.se>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:sched/urgent] sched: might_sleep(): Make file parameter const char *
-Message-ID: <tip-d894837f23f491aa7ed167aae767fc07cfe6e6e6@git.kernel.org>
-Git-Commit-ID: d894837f23f491aa7ed167aae767fc07cfe6e6e6
-X-Mailer: tip-git-log-daemon
+	Mon, 28 Dec 2009 05:14:58 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:44085 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751906AbZL1KO5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Dec 2009 05:14:57 -0500
+Date: Mon, 28 Dec 2009 11:14:49 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Didier Spaier <didier.spaier@epsm.fr>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, len.brown@intel.com,
+       ibm-acpi@hmh.eng.br, kernel list <linux-kernel@vger.kernel.org>,
+       ibm-acpi-devel@lists.sourceforge.net
+Subject: Re: [ibm-acpi-devel] 2.6.33-rc2: regression: gkrellm no longer
+ shows all the temperatures on thinkpad x60
+Message-ID: <20091228101448.GB19984@elf.ucw.cz>
+References: <20091227215722.GN11737@elf.ucw.cz>
+ <4B37DE8F.1000806@epsm.fr>
+ <20091227222659.GP11737@elf.ucw.cz>
+ <4B37E09B.10309@epsm.fr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <4B37E09B.10309@epsm.fr>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  d894837f23f491aa7ed167aae767fc07cfe6e6e6
-Gitweb:     http://git.kernel.org/tip/d894837f23f491aa7ed167aae767fc07cfe6e6e6
-Author:     Simon Kagstrom <simon.kagstrom@netinsight.net>
-AuthorDate: Wed, 23 Dec 2009 11:08:18 +0100
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Mon, 28 Dec 2009 10:50:13 +0100
+On Sun 2009-12-27 23:32:59, Didier Spaier wrote:
+> Pavel Machek wrote:
+> >On Sun 2009-12-27 23:24:15, Didier Spaier wrote:
+> >>Pavel Machek wrote:
+> >>>...I'll have to find out where gkrell got that info. It worked in
+> >>>2.6.32.
+> >>>
+> >>>									Pavel
+> >>Only to make sure... What is the output of cat /proc/acpi/ibm/thermal?
+> >>
+> >>I ask that question because I noticed battery temperature 0° displayed  by conky after updating to 2.6.32.2.
+> >>Looking at my .conkyrc I saw I tried to display ${smapi_bat_temp 0}
+> >but I had forgotten to re-install the tp_smapi module.
+> >
+> >Uhuh, there's no /proc/acpi/ibm:
+> >
+> >ls /proc/acpi/ibm         ls: cannot access /proc/acpi/ibm: No
+> >such file or directory
+> >
+> >. I guess that's the problem :-(. Config is:
+> >
+> >CONFIG_THINKPAD_ACPI=y
+> ># CONFIG_THINKPAD_ACPI_DEBUGFACILITIES is not set
+> ># CONFIG_THINKPAD_ACPI_DEBUG is not set
+> >CONFIG_THINKPAD_ACPI_UNSAFE_LEDS=y
+> >CONFIG_THINKPAD_ACPI_VIDEO=y
+> ># CONFIG_THINKPAD_ACPI_HOTKEY_POLL is not set
+> >
+> >...so I do not see "enable legacy interface" option.
 
-sched: might_sleep(): Make file parameter const char *
+> bash-3.1$ grep THINKPAD_ACPI /boot/config-2.6.32.2strip
+> CONFIG_THINKPAD_ACPI=m
+> CONFIG_THINKPAD_ACPI_DEBUGFACILITIES=y
+> CONFIG_THINKPAD_ACPI_DEBUG=y
+> CONFIG_THINKPAD_ACPI_UNSAFE_LEDS=y
+> CONFIG_THINKPAD_ACPI_VIDEO=y
+> CONFIG_THINKPAD_ACPI_HOTKEY_POLL=y
+> bash-3.1$
+> 
+> I suggest you modularize THINKPAD_ACPI.
 
-Fixes a warning when building with g++:
+How would modular version help?
 
- warning: deprecated conversion from string constant to 'char*'
-
-And the file parameter use is constant, so mark it as such.
-
-Signed-off-by: Simon Kagstrom <simon.kagstrom@netinsight.net>
-Cc: peterz@infradead.org
-LKML-Reference: <20091223110818.442d848e@marrow.netinsight.se>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- include/linux/kernel.h |    5 +++--
- kernel/sched.c         |    2 +-
- 2 files changed, 4 insertions(+), 3 deletions(-)
-
-diff --git a/include/linux/kernel.h b/include/linux/kernel.h
-index 3fc9f5a..785d7d1 100644
---- a/include/linux/kernel.h
-+++ b/include/linux/kernel.h
-@@ -124,7 +124,7 @@ extern int _cond_resched(void);
- #endif
- 
- #ifdef CONFIG_DEBUG_SPINLOCK_SLEEP
--  void __might_sleep(char *file, int line, int preempt_offset);
-+  void __might_sleep(const char *file, int line, int preempt_offset);
- /**
-  * might_sleep - annotation for functions that can sleep
-  *
-@@ -138,7 +138,8 @@ extern int _cond_resched(void);
- # define might_sleep() \
- 	do { __might_sleep(__FILE__, __LINE__, 0); might_resched(); } while (0)
- #else
--  static inline void __might_sleep(char *file, int line, int preempt_offset) { }
-+  static inline void __might_sleep(const char *file, int line,
-+				   int preempt_offset) { }
- # define might_sleep() do { might_resched(); } while (0)
- #endif
- 
-diff --git a/kernel/sched.c b/kernel/sched.c
-index c535cc4..64298a5 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -9694,7 +9694,7 @@ static inline int preempt_count_equals(int preempt_offset)
- 	return (nested == PREEMPT_INATOMIC_BASE + preempt_offset);
- }
- 
--void __might_sleep(char *file, int line, int preempt_offset)
-+void __might_sleep(const char *file, int line, int preempt_offset)
- {
- #ifdef in_atomic
- 	static unsigned long prev_jiffy;	/* ratelimiting */
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
