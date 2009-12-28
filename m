@@ -1,31 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752155AbZL1QdV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751948AbZL1IrF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752155AbZL1QdV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Dec 2009 11:33:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751690AbZL1QdU
+	id S1751948AbZL1IrF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Dec 2009 03:47:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751837AbZL1IrE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Dec 2009 11:33:20 -0500
-Received: from toroondcbmts03.bellnexxia.net ([207.236.237.37]:52802 "EHLO
-	toroondcbmts03-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751423AbZL1QdU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Dec 2009 11:33:20 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AqtUADX6N0vP7O0g/2dsb2JhbACDaYcLhF1HihSCA6gehQx8hwCBL4IuVgQ
-Message-ID: <20091228034359.G0VZS.20263.root@toroondcbfep03>
-Date: Mon, 28 Dec 2009 3:43:59 -0500
-From: Microsoft Award Department <master.opticians@bellnet.ca>
-Reply-To: ms.claimsdept@admin.in.th
-Subject: 
+	Mon, 28 Dec 2009 03:47:04 -0500
+Received: from mga09.intel.com ([134.134.136.24]:33118 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751810AbZL1IrB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Dec 2009 03:47:01 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.47,461,1257148800"; 
+   d="scan'208";a="479565039"
+Date: Mon, 28 Dec 2009 16:46:59 +0800
+From: Shaohua Li <shaohua.li@intel.com>
+To: Corrado Zoccolo <czoccolo@gmail.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
+       "jmoyer@redhat.com" <jmoyer@redhat.com>,
+       "Zhang, Yanmin" <yanmin.zhang@intel.com>
+Subject: Re: [PATCH]cfq-iosched: don't take requests with long distence as
+ close
+Message-ID: <20091228084659.GA31389@sli10-desk.sh.intel.com>
+References: <20091224005506.GA7879@sli10-desk.sh.intel.com>
+ <4e5e476b0912250216n2b4aceacyf22a0e73425efd3a@mail.gmail.com>
+ <20091228020348.GB28115@sli10-desk.sh.intel.com>
+ <4e5e476b0912280036r6e55587dj66952fcd6ff4d08b@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-X-Priority: 3 (Normal)
-Sensitivity: Normal
-X-Originating-IP: from 173.162.144.44 by webmail.en.bellnet.ca; Mon, 28 Dec 2009 3:43:59 -0500
-To: unlisted-recipients:; (no To-header on input)
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <4e5e476b0912280036r6e55587dj66952fcd6ff4d08b@mail.gmail.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-MICROSOFT has awarded you 500,000.00 Great British Pounds. To File claim send info: Names,Address,Age,Country.
+On Mon, Dec 28, 2009 at 04:36:39PM +0800, Corrado Zoccolo wrote:
+> Hi Shaohua,
+> On Mon, Dec 28, 2009 at 3:03 AM, Shaohua Li <shaohua.li@intel.com> wrote:
+> > On Fri, Dec 25, 2009 at 06:16:27PM +0800, Corrado Zoccolo wrote:
+> >> Hi Shaohua,
+> >> On Thu, Dec 24, 2009 at 1:55 AM, Shaohua Li <shaohua.li@intel.com> wrote:
+> >> > df5fe3e8e13883f58dc97489076bbcc150789a21
+> >> > b3b6d0408c953524f979468562e7e210d8634150
+> >> > The coop merge is too aggressive. For example, if two tasks are reading two
+> >> > files where the two files have some adjecent blocks, cfq will immediately
+> >> > merge them. cfq_rq_close() also has trouble, sometimes the seek_mean is very
+> >> > big. I did a test to make cfq_rq_close() always checks the distence according
+> >> > to CIC_SEEK_THR, but still saw a lot of wrong merge. (BTW, why we take a long
+> >> > distence far away request as close. Taking them close doesn't improve any thoughtput
+> >> > to me. Maybe we should always use CIC_SEEK_THR as close criteria).
+> >> Yes, when deciding if two queues are going to be merged, we should use
+> >> the constant CIC_SEEK_THR.
+> >
+> > seek_mean could be very big sometimes, using it as close criteria is meanless
+> > as this doen't improve any performance. So if it's big, let's fallback to
+> > default value.
+> 
+> meanless -> meaningless (also in the comment within code)
+oops
+ 
+> > Signed-off-by: Shaohua Li<shaohua.li@intel.com>
+> >
+> > diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+> > index e2f8046..8025605 100644
+> > --- a/block/cfq-iosched.c
+> > +++ b/block/cfq-iosched.c
+> > @@ -1682,6 +1682,10 @@ static inline int cfq_rq_close(struct cfq_data *cfqd, struct cfq_queue *cfqq,
+> >        if (!sample_valid(cfqq->seek_samples))
+> >                sdist = CFQQ_SEEK_THR;
+> >
+> > +       /* if seek_mean is big, using it as close criteria is meanless */
+> > +       if (sdist > CFQQ_SEEK_THR)
+> > +               sdist = CFQQ_SEEK_THR;
+> > +
+> >        return cfq_dist_from_last(cfqd, rq) <= sdist;
+> >  }
+> >
+> >
+> This changes also the cfq_should_preempt behaviour, where a large
+> seek_mean could be meaningful, so I think it is better to add a
+> boolean parameter to cfq_rq_close, to distinguish whether we are
+> preempting or looking for queue merges, and make the new code
+> conditional on merging.
+can you explain why it's meaningful for cfq_should_preempt()? Unless sdist is
+very big, for example > 10*seek_mean, the preempt seems not meaningless.
+
+Thanks,
+Shaohua
