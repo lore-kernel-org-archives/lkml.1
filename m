@@ -1,54 +1,501 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751466AbZL1DWk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751502AbZL1DXx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751466AbZL1DWk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Dec 2009 22:22:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751111AbZL1DWj
+	id S1751502AbZL1DXx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Dec 2009 22:23:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751113AbZL1DXw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Dec 2009 22:22:39 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:50394 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751048AbZL1DWj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Dec 2009 22:22:39 -0500
-Message-ID: <4B38246C.3020209@redhat.com>
-Date: Sun, 27 Dec 2009 22:22:20 -0500
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Lightning/1.0pre Thunderbird/3.0
+	Sun, 27 Dec 2009 22:23:52 -0500
+Received: from mail-yx0-f187.google.com ([209.85.210.187]:34911 "EHLO
+	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751093AbZL1DXw convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Dec 2009 22:23:52 -0500
 MIME-Version: 1.0
-To: Minchan Kim <minchan.kim@gmail.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [PATCH -mmotm-2009-12-10-17-19] Prevent churning of zero page
- in LRU list.
-References: <20091228115315.76b1ecd0.minchan.kim@barrios-desktop>
-In-Reply-To: <20091228115315.76b1ecd0.minchan.kim@barrios-desktop>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20091228114325.e9b3b3d6.kamezawa.hiroyu@jp.fujitsu.com>
+References: <cover.1261858972.git.kirill@shutemov.name>
+	 <3f29ccc3c93e2defd70fc1c4ca8c133908b70b0b.1261858972.git.kirill@shutemov.name>
+	 <59a7f92356bf1508f06d12c501a7aa4feffb1bbc.1261858972.git.kirill@shutemov.name>
+	 <c2379f3965225b6d62e64c64f8c0e67fee085d7f.1261858972.git.kirill@shutemov.name>
+	 <7a4e1d758b98ca633a0be06e883644ad8813c077.1261858972.git.kirill@shutemov.name>
+	 <20091228114325.e9b3b3d6.kamezawa.hiroyu@jp.fujitsu.com>
+Date: Mon, 28 Dec 2009 05:23:51 +0200
+Message-ID: <cc557aab0912271923v4a4ed8cco168193c63efd44f@mail.gmail.com>
+Subject: Re: [PATCH v4 4/4] memcg: implement memory thresholds
+From: "Kirill A. Shutemov" <kirill@shutemov.name>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: containers@lists.linux-foundation.org, linux-mm@kvack.org,
+       Paul Menage <menage@google.com>, Li Zefan <lizf@cn.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Pavel Emelyanov <xemul@openvz.org>, Dan Malek <dan@embeddedalley.com>,
+       Vladislav Buzov <vbuzov@embeddedalley.com>,
+       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
+       Alexander Shishkin <virtuoso@slind.org>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/27/2009 09:53 PM, Minchan Kim wrote:
+On Mon, Dec 28, 2009 at 4:43 AM, KAMEZAWA Hiroyuki
+<kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> On Sun, 27 Dec 2009 04:09:02 +0200
+> "Kirill A. Shutemov" <kirill@shutemov.name> wrote:
 >
-> VM doesn't add zero page to LRU list.
-> It means zero page's churning in LRU list is pointless.
->
-> As a matter of fact, zero page can't be promoted by mark_page_accessed
-> since it doesn't have PG_lru.
->
-> This patch prevent unecessary mark_page_accessed call of zero page
-> alghouth caller want FOLL_TOUCH.
->
-> Signed-off-by: Minchan Kim<minchan.kim@gmail.com>
+>> It allows to register multiple memory and memsw thresholds and gets
+>> notifications when it crosses.
+>>
+>> To register a threshold application need:
+>> - create an eventfd;
+>> - open memory.usage_in_bytes or memory.memsw.usage_in_bytes;
+>> - write string like "<event_fd> <memory.usage_in_bytes> <threshold>" to
+>>   cgroup.event_control.
+>>
+>> Application will be notified through eventfd when memory usage crosses
+>> threshold in any direction.
+>>
+>> It's applicable for root and non-root cgroup.
+>>
+>> It uses stats to track memory usage, simmilar to soft limits. It checks
+>> if we need to send event to userspace on every 100 page in/out. I guess
+>> it's good compromise between performance and accuracy of thresholds.
+>>
+>> Signed-off-by: Kirill A. Shutemov <kirill@shutemov.name>
+>> ---
+>>  Documentation/cgroups/memory.txt |   19 +++-
+>>  mm/memcontrol.c                  |  275 ++++++++++++++++++++++++++++++++++++++
+>>  2 files changed, 293 insertions(+), 1 deletions(-)
+>>
+>> diff --git a/Documentation/cgroups/memory.txt b/Documentation/cgroups/memory.txt
+>> index b871f25..195af07 100644
+>> --- a/Documentation/cgroups/memory.txt
+>> +++ b/Documentation/cgroups/memory.txt
+>> @@ -414,7 +414,24 @@ NOTE1: Soft limits take effect over a long period of time, since they involve
+>>  NOTE2: It is recommended to set the soft limit always below the hard limit,
+>>         otherwise the hard limit will take precedence.
+>>
+>> -8. TODO
+>> +8. Memory thresholds
+>> +
+>> +Memory controler implements memory thresholds using cgroups notification
+>> +API (see cgroups.txt). It allows to register multiple memory and memsw
+>> +thresholds and gets notifications when it crosses.
+>> +
+>> +To register a threshold application need:
+>> + - create an eventfd using eventfd(2);
+>> + - open memory.usage_in_bytes or memory.memsw.usage_in_bytes;
+>> + - write string like "<event_fd> <memory.usage_in_bytes> <threshold>" to
+>> +   cgroup.event_control.
+>> +
+>> +Application will be notified through eventfd when memory usage crosses
+>> +threshold in any direction.
+>> +
+>> +It's applicable for root and non-root cgroup.
+>> +
+>> +9. TODO
+>>
+>>  1. Add support for accounting huge pages (as a separate controller)
+>>  2. Make per-cgroup scanner reclaim not-shared pages first
+>> diff --git a/mm/memcontrol.c b/mm/memcontrol.c
+>> index 36eb7af..3a0a6a1 100644
+>> --- a/mm/memcontrol.c
+>> +++ b/mm/memcontrol.c
+>> @@ -6,6 +6,10 @@
+>>   * Copyright 2007 OpenVZ SWsoft Inc
+>>   * Author: Pavel Emelianov <xemul@openvz.org>
+>>   *
+>> + * Memory thresholds
+>> + * Copyright (C) 2009 Nokia Corporation
+>> + * Author: Kirill A. Shutemov
+>> + *
+>>   * This program is free software; you can redistribute it and/or modify
+>>   * it under the terms of the GNU General Public License as published by
+>>   * the Free Software Foundation; either version 2 of the License, or
+>> @@ -39,6 +43,8 @@
+>>  #include <linux/mm_inline.h>
+>>  #include <linux/page_cgroup.h>
+>>  #include <linux/cpu.h>
+>> +#include <linux/eventfd.h>
+>> +#include <linux/sort.h>
+>>  #include "internal.h"
+>>
+>>  #include <asm/uaccess.h>
+>> @@ -56,6 +62,7 @@ static int really_do_swap_account __initdata = 1; /* for remember boot option*/
+>>  #endif
+>>
+>>  #define SOFTLIMIT_EVENTS_THRESH (1000)
+>> +#define THRESHOLDS_EVENTS_THRESH (100)
+>>
+>>  /*
+>>   * Statistics for memory cgroup.
+>> @@ -72,6 +79,8 @@ enum mem_cgroup_stat_index {
+>>       MEM_CGROUP_STAT_SWAPOUT, /* # of pages, swapped out */
+>>       MEM_CGROUP_STAT_SOFTLIMIT, /* decrements on each page in/out.
+>>                                       used by soft limit implementation */
+>> +     MEM_CGROUP_STAT_THRESHOLDS, /* decrements on each page in/out.
+>> +                                     used by threshold implementation */
+>>
+>>       MEM_CGROUP_STAT_NSTATS,
+>>  };
+>> @@ -182,6 +191,20 @@ struct mem_cgroup_tree {
+>>
+>>  static struct mem_cgroup_tree soft_limit_tree __read_mostly;
+>>
+>> +struct mem_cgroup_threshold {
+>> +     struct eventfd_ctx *eventfd;
+>> +     u64 threshold;
+>> +};
+>> +
+>> +struct mem_cgroup_threshold_ary {
+>> +     unsigned int size;
+>> +     atomic_t cur;
+>> +     struct mem_cgroup_threshold entries[0];
+>> +};
+>> +
+> Why "array" is a choice here ? IOW, why not list ?
 
-The code looks correct, but I wonder how frequently we run into
-the zero page in this code, vs. how much the added cost is of
-having this extra code in follow_page.
+We need be able to walk by thresholds in both directions to be fast.
+AFAIK, It's impossible with RCU-protected list.
 
-What kind of problem were you running into that motivated you
-to write this patch?
+> How many waiters are expected as usual workload ?
 
--- 
-All rights reversed.
+Array of thresholds reads every 100 page in/out for every CPU.
+Write access only when registering new threshold.
+
+>> +static bool mem_cgroup_threshold_check(struct mem_cgroup* mem);
+>> +static void mem_cgroup_threshold(struct mem_cgroup* mem);
+>> +
+>>  /*
+>>   * The memory controller data structure. The memory controller controls both
+>>   * page cache and RSS per cgroup. We would eventually like to provide
+>> @@ -233,6 +256,15 @@ struct mem_cgroup {
+>>       /* set when res.limit == memsw.limit */
+>>       bool            memsw_is_minimum;
+>>
+>> +     /* protect arrays of thresholds */
+>> +     struct mutex thresholds_lock;
+>> +
+>> +     /* thresholds for memory usage. RCU-protected */
+>> +     struct mem_cgroup_threshold_ary *thresholds;
+>> +
+>> +     /* thresholds for mem+swap usage. RCU-protected */
+>> +     struct mem_cgroup_threshold_ary *memsw_thresholds;
+>> +
+>>       /*
+>>        * statistics. This must be placed at the end of memcg.
+>>        */
+>> @@ -525,6 +557,8 @@ static void mem_cgroup_charge_statistics(struct mem_cgroup *mem,
+>>               __mem_cgroup_stat_add_safe(cpustat,
+>>                               MEM_CGROUP_STAT_PGPGOUT_COUNT, 1);
+>>       __mem_cgroup_stat_add_safe(cpustat, MEM_CGROUP_STAT_SOFTLIMIT, -1);
+>> +     __mem_cgroup_stat_add_safe(cpustat, MEM_CGROUP_STAT_THRESHOLDS, -1);
+>> +
+>>       put_cpu();
+>>  }
+>>
+>> @@ -1510,6 +1544,8 @@ charged:
+>>       if (mem_cgroup_soft_limit_check(mem))
+>>               mem_cgroup_update_tree(mem, page);
+>>  done:
+>> +     if (mem_cgroup_threshold_check(mem))
+>> +             mem_cgroup_threshold(mem);
+>>       return 0;
+>>  nomem:
+>>       css_put(&mem->css);
+>> @@ -2075,6 +2111,8 @@ __mem_cgroup_uncharge_common(struct page *page, enum charge_type ctype)
+>>
+>>       if (mem_cgroup_soft_limit_check(mem))
+>>               mem_cgroup_update_tree(mem, page);
+>> +     if (mem_cgroup_threshold_check(mem))
+>> +             mem_cgroup_threshold(mem);
+>>       /* at swapout, this memcg will be accessed to record to swap */
+>>       if (ctype != MEM_CGROUP_CHARGE_TYPE_SWAPOUT)
+>>               css_put(&mem->css);
+>> @@ -3071,12 +3109,246 @@ static int mem_cgroup_swappiness_write(struct cgroup *cgrp, struct cftype *cft,
+>>       return 0;
+>>  }
+>>
+>> +static bool mem_cgroup_threshold_check(struct mem_cgroup *mem)
+>> +{
+>> +     bool ret = false;
+>> +     int cpu;
+>> +     s64 val;
+>> +     struct mem_cgroup_stat_cpu *cpustat;
+>> +
+>> +     cpu = get_cpu();
+>> +     cpustat = &mem->stat.cpustat[cpu];
+>> +     val = __mem_cgroup_stat_read_local(cpustat, MEM_CGROUP_STAT_THRESHOLDS);
+>> +     if (unlikely(val < 0)) {
+>> +             __mem_cgroup_stat_set(cpustat, MEM_CGROUP_STAT_THRESHOLDS,
+>> +                             THRESHOLDS_EVENTS_THRESH);
+>> +             ret = true;
+>> +     }
+>> +     put_cpu();
+>> +     return ret;
+>> +}
+>> +
+>> +static void __mem_cgroup_threshold(struct mem_cgroup *memcg, bool swap)
+>> +{
+>> +     struct mem_cgroup_threshold_ary *thresholds;
+>> +     u64 usage = mem_cgroup_usage(memcg, swap);
+>> +     int i, cur;
+>> +
+>> +     rcu_read_lock();
+>> +     if (!swap) {
+>> +             thresholds = rcu_dereference(memcg->thresholds);
+>> +     } else {
+>> +             thresholds = rcu_dereference(memcg->memsw_thresholds);
+>> +     }
+>> +
+>> +     if (!thresholds)
+>> +             goto unlock;
+>> +
+>> +     cur = atomic_read(&thresholds->cur);
+>> +
+>> +     /* Check if a threshold crossed in any direction */
+>> +
+>> +     for(i = cur; i >= 0 &&
+>> +             unlikely(thresholds->entries[i].threshold > usage); i--) {
+>> +             atomic_dec(&thresholds->cur);
+>> +             eventfd_signal(thresholds->entries[i].eventfd, 1);
+>> +     }
+>> +
+>> +     for(i = cur + 1; i < thresholds->size &&
+>> +             unlikely(thresholds->entries[i].threshold <= usage); i++) {
+>> +             atomic_inc(&thresholds->cur);
+>> +             eventfd_signal(thresholds->entries[i].eventfd, 1);
+>> +     }
+>> +unlock:
+>> +     rcu_read_unlock();
+>> +}
+>> +
+>> +static void mem_cgroup_threshold(struct mem_cgroup *memcg)
+>> +{
+>> +     __mem_cgroup_threshold(memcg, false);
+>> +     if (do_swap_account)
+>> +             __mem_cgroup_threshold(memcg, true);
+>> +}
+>> +
+>> +static int compare_thresholds(const void *a, const void *b)
+>> +{
+>> +     const struct mem_cgroup_threshold *_a = a;
+>> +     const struct mem_cgroup_threshold *_b = b;
+>> +
+>> +     return _a->threshold - _b->threshold;
+>> +}
+>> +
+>> +static int mem_cgroup_register_event(struct cgroup *cgrp, struct cftype *cft,
+>> +             struct eventfd_ctx *eventfd, const char *args)
+>> +{
+>> +     struct mem_cgroup *memcg = mem_cgroup_from_cont(cgrp);
+>> +     struct mem_cgroup_threshold_ary *thresholds, *thresholds_new;
+>> +     int type = MEMFILE_TYPE(cft->private);
+>> +     u64 threshold, usage;
+>> +     int size;
+>> +     int i, ret;
+>> +
+>> +     ret = res_counter_memparse_write_strategy(args, &threshold);
+>> +     if (ret)
+>> +             return ret;
+>> +
+>> +     mutex_lock(&memcg->thresholds_lock);
+>> +     if (type == _MEM)
+>> +             thresholds = memcg->thresholds;
+>> +     else if (type == _MEMSWAP)
+>> +             thresholds = memcg->memsw_thresholds;
+>> +     else
+>> +             BUG();
+>> +
+>> +     usage = mem_cgroup_usage(memcg, type == _MEMSWAP);
+>> +
+>> +     /* Check if a threshold crossed before adding a new one */
+>> +     if (thresholds)
+>> +             __mem_cgroup_threshold(memcg, type == _MEMSWAP);
+>> +
+>> +     if (thresholds)
+>> +             size = thresholds->size + 1;
+>> +     else
+>> +             size = 1;
+>> +
+>> +     /* Allocate memory for new array of thresholds */
+>> +     thresholds_new = kmalloc(sizeof(*thresholds_new) +
+>> +                     size * sizeof(struct mem_cgroup_threshold),
+>> +                     GFP_KERNEL);
+>> +     if (!thresholds_new) {
+>> +             ret = -ENOMEM;
+>> +             goto unlock;
+>> +     }
+>> +     thresholds_new->size = size;
+>> +
+>> +     /* Copy thresholds (if any) to new array */
+>> +     if (thresholds)
+>> +             memcpy(thresholds_new->entries, thresholds->entries,
+>> +                             thresholds->size *
+>> +                             sizeof(struct mem_cgroup_threshold));
+>> +     /* Add new threshold */
+>> +     thresholds_new->entries[size - 1].eventfd = eventfd;
+>> +     thresholds_new->entries[size - 1].threshold = threshold;
+>> +
+>> +     /* Sort thresholds. Registering of new threshold isn't time-critical */
+>> +     sort(thresholds_new->entries, size,
+>> +                     sizeof(struct mem_cgroup_threshold),
+>> +                     compare_thresholds, NULL);
+>> +
+>> +     /* Find current threshold */
+>> +     atomic_set(&thresholds_new->cur, -1);
+>> +     for(i = 0; i < size; i++) {
+>> +             if (thresholds_new->entries[i].threshold < usage)
+>> +                     atomic_inc(&thresholds_new->cur);
+>> +     }
+>> +
+>> +     /*
+>> +      * We need to increment refcnt to be sure that all thresholds
+>> +      * will be unregistered before calling __mem_cgroup_free()
+>> +      */
+>> +     mem_cgroup_get(memcg);
+>> +
+>> +     if (type == _MEM)
+>> +             rcu_assign_pointer(memcg->thresholds, thresholds_new);
+>> +     else
+>> +             rcu_assign_pointer(memcg->memsw_thresholds, thresholds_new);
+>> +
+>> +     synchronize_rcu();
+>
+> Could you add explanation when you use synchronize_rcu() ?
+
+It uses before freeing old array of thresholds to be sure than nobody uses it.
+
+>> +     kfree(thresholds);
+>
+> Can't this be freed by RCU instead of synchronize_rcu() ?
+
+Yes, this can. But I don't think that (un)registering os thresholds is
+time critical.
+I think my variant is more clean.
+
+>> +unlock:
+>> +     mutex_unlock(&memcg->thresholds_lock);
+>> +
+>> +     return ret;
+>> +}
+>> +
+>> +static int mem_cgroup_unregister_event(struct cgroup *cgrp, struct cftype *cft,
+>> +             struct eventfd_ctx *eventfd)
+>> +{
+>> +     struct mem_cgroup *memcg = mem_cgroup_from_cont(cgrp);
+>> +     struct mem_cgroup_threshold_ary *thresholds, *thresholds_new;
+>> +     int type = MEMFILE_TYPE(cft->private);
+>> +     u64 usage;
+>> +     int size = 0;
+>> +     int i, j, ret;
+>> +
+>> +     mutex_lock(&memcg->thresholds_lock);
+>> +     if (type == _MEM)
+>> +             thresholds = memcg->thresholds;
+>> +     else if (type == _MEMSWAP)
+>> +             thresholds = memcg->memsw_thresholds;
+>> +     else
+>> +             BUG();
+>> +
+>> +     /*
+>> +      * Something went wrong if we trying to unregister a threshold
+>> +      * if we don't have thresholds
+>> +      */
+>> +     BUG_ON(!thresholds);
+>> +
+>> +     usage = mem_cgroup_usage(memcg, type == _MEMSWAP);
+>> +
+>> +     /* Check if a threshold crossed before removing */
+>> +     __mem_cgroup_threshold(memcg, type == _MEMSWAP);
+>> +
+>> +     /* Calculate new number of threshold */
+>> +     for(i = 0; i < thresholds->size; i++) {
+>> +             if (thresholds->entries[i].eventfd != eventfd)
+>> +                     size++;
+>> +     }
+>> +
+>> +     /* Set thresholds array to NULL if we don't have thresholds */
+>> +     if (!size) {
+>> +             thresholds_new = NULL;
+>> +             goto assign;
+>> +     }
+>> +
+>> +     /* Allocate memory for new array of thresholds */
+>> +     thresholds_new = kmalloc(sizeof(*thresholds_new) +
+>> +                     size * sizeof(struct mem_cgroup_threshold),
+>> +                     GFP_KERNEL);
+>> +     if (!thresholds_new) {
+>> +             ret = -ENOMEM;
+>> +             goto unlock;
+>> +     }
+>> +     thresholds_new->size = size;
+>> +
+>> +     /* Copy thresholds and find current threshold */
+>> +     atomic_set(&thresholds_new->cur, -1);
+>> +     for(i = 0, j = 0; i < thresholds->size; i++) {
+>> +             if (thresholds->entries[i].eventfd == eventfd)
+>> +                     continue;
+>> +
+>> +             thresholds_new->entries[j] = thresholds->entries[i];
+>> +             if (thresholds_new->entries[j].threshold < usage)
+>> +                     atomic_inc(&thresholds_new->cur);
+> It's better to do atomic set after loop.
+
+We need one more counter to do this. Do you like it?
+
+>> +             j++;
+>> +     }
+>
+> Hmm..is this "copy array" usual coding style for handling eventfd ?
+
+Since we store only pointer to struct eventfd_ctx, I don't see a problem.
+
+>> +
+>> +assign:
+>> +     if (type == _MEM)
+>> +             rcu_assign_pointer(memcg->thresholds, thresholds_new);
+>> +     else
+>> +             rcu_assign_pointer(memcg->memsw_thresholds, thresholds_new);
+>> +
+>> +     synchronize_rcu();
+>> +
+>> +     for(i = 0; i < thresholds->size - size; i++)
+>> +             mem_cgroup_put(memcg);
+>> +
+>> +     kfree(thresholds);
+>> +unlock:
+>> +     mutex_unlock(&memcg->thresholds_lock);
+>> +
+>> +     return ret;
+>> +}
+>>
+>>  static struct cftype mem_cgroup_files[] = {
+>>       {
+>>               .name = "usage_in_bytes",
+>>               .private = MEMFILE_PRIVATE(_MEM, RES_USAGE),
+>>               .read_u64 = mem_cgroup_read,
+>> +             .register_event = mem_cgroup_register_event,
+>> +             .unregister_event = mem_cgroup_unregister_event,
+>>       },
+>>       {
+>>               .name = "max_usage_in_bytes",
+>> @@ -3128,6 +3400,8 @@ static struct cftype memsw_cgroup_files[] = {
+>>               .name = "memsw.usage_in_bytes",
+>>               .private = MEMFILE_PRIVATE(_MEMSWAP, RES_USAGE),
+>>               .read_u64 = mem_cgroup_read,
+>> +             .register_event = mem_cgroup_register_event,
+>> +             .unregister_event = mem_cgroup_unregister_event,
+>>       },
+>>       {
+>>               .name = "memsw.max_usage_in_bytes",
+>> @@ -3367,6 +3641,7 @@ mem_cgroup_create(struct cgroup_subsys *ss, struct cgroup *cont)
+>>       if (parent)
+>>               mem->swappiness = get_swappiness(parent);
+>>       atomic_set(&mem->refcnt, 1);
+>> +     mutex_init(&mem->thresholds_lock);
+>>       return &mem->css;
+>>  free_out:
+>>       __mem_cgroup_free(mem);
+>> --
+>> 1.6.5.7
+>>
