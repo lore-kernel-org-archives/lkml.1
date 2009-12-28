@@ -1,119 +1,196 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751363AbZL1BWU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751131AbZL1BVz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751363AbZL1BWU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Dec 2009 20:22:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750942AbZL1BWQ
+	id S1751131AbZL1BVz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Dec 2009 20:21:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750913AbZL1BVy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Dec 2009 20:22:16 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:54792 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750913AbZL1BWM (ORCPT
+	Sun, 27 Dec 2009 20:21:54 -0500
+Received: from mail-yx0-f187.google.com ([209.85.210.187]:59251 "EHLO
+	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750823AbZL1BVx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Dec 2009 20:22:12 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Mon, 28 Dec 2009 10:19:02 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "minchan.kim@gmail.com" <minchan.kim@gmail.com>,
-       cl@linux-foundation.org
-Subject: Re: [RFC PATCH] asynchronous page fault.
-Message-Id: <20091228101902.4a7feac1.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20091228093606.9f2e666c.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20091225105140.263180e8.kamezawa.hiroyu@jp.fujitsu.com>
-	<1261915391.15854.31.camel@laptop>
-	<20091228093606.9f2e666c.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 27 Dec 2009 20:21:53 -0500
+From: Nitin Gupta <ngupta@vflare.org>
+To: Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: [PATCH 1/2] [mmotm] Add notifiers for various swap events
+Date: Mon, 28 Dec 2009 06:49:59 +0530
+Message-Id: <1261963200-7136-1-git-send-email-ngupta@vflare.org>
+X-Mailer: git-send-email 1.6.2.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 28 Dec 2009 09:36:06 +0900
-KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+Events:
+ - Swapon
+ - Swapoff
+ - When a swap slot is freed
 
-> == one vma ==
-> # Samples: 1338964273489
-> #
-> # Overhead          Command             Shared Object  Symbol
-> # ........  ...............  ........................  ......
-> #
->     26.90%  multi-fault-all  [kernel]                  [k] clear_page_c
->             |
->             --- clear_page_c
->                 __alloc_pages_nodemask
->                 handle_mm_fault
->                 do_page_fault
->                 page_fault
->                 0x400940
->                |
->                 --100.00%-- (nil)
-> 
->     20.65%  multi-fault-all  [kernel]                  [k] _raw_spin_lock
->             |
->             --- _raw_spin_lock
->                |
->                |--85.07%-- free_pcppages_bulk
->                |          free_hot_cold_page
-> 
->     ....<snip>
->     3.94%  multi-fault-all  [kernel]                  [k] find_vma_speculative
->             |
->             --- find_vma_speculative
->                |
->                |--99.40%-- do_page_fault
->                |          page_fault
->                |          0x400940
->                |          |
->                |           --100.00%-- (nil)
->                |
->                 --0.60%-- page_fault
->                           0x400940
->                           |
->                            --100.00%-- (nil)
-> ==
-> 
-A small modification for avoiding atomic_add_unless() makes following score.
-(used atomic_inc()->atomic_read() instead of that.)
-==
-     2.55%  multi-fault-all  [kernel]                  [k] vma_put
-            |
-            --- vma_put
-               |
-               |--98.87%-- do_page_fault
-               |          page_fault
-               |          0x400940
-               |          (nil)
-               |
-                --1.13%-- page_fault
-                          0x400940
-                          (nil)
-     0.65%  multi-fault-all  [kernel]                  [k] find_vma_speculative
-            |
-            --- find_vma_speculative
-               |
-               |--95.55%-- do_page_fault
-               |          page_fault
-               |          0x400940
-               |          |
-               |           --100.00%-- (nil)
-               |
-                --4.45%-- page_fault
-                          0x400940
-                          (nil)
-==
-Hmm...maybe worth to consider some.
-I hope something good pops up to me after new year vacation.
+This is required for ramzswap module which implements RAM based block
+devices to be used as swap disks. These devices require a notification
+on these events to function properly.
 
-Regards,
--Kame
+Currently, I'm not sure if any of these event notifiers have any other
+users. However, adding ramzswap specific hooks instead of this generic
+approach resulted in a bad/hacky code.
 
+For SWAP_EVENT_SLOT_FREE, callbacks are made under swap_lock. Currently, this
+is not a problem since ramzswap is the only user and the callback it registers
+can be safely made under this lock. However, if this event finds more users,
+we might have to work on reducing contention on this lock (per-swap lock?).
 
+Signed-off-by: Nitin Gupta <ngupta@vflare.org>
+---
+ include/linux/swap.h |   12 +++++++++
+ mm/swapfile.c        |   67 ++++++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 79 insertions(+), 0 deletions(-)
 
-
+diff --git a/include/linux/swap.h b/include/linux/swap.h
+index a2602a8..5fd2ac7 100644
+--- a/include/linux/swap.h
++++ b/include/linux/swap.h
+@@ -150,6 +150,12 @@ enum {
+ 	SWP_SCANNING	= (1 << 8),	/* refcount in scan_swap_map */
+ };
+ 
++enum swap_event {
++	SWAP_EVENT_SWAPON,
++	SWAP_EVENT_SWAPOFF,
++	SWAP_EVENT_SLOT_FREE,
++};
++
+ #define SWAP_CLUSTER_MAX 32
+ 
+ #define SWAP_MAP_MAX	0x3e	/* Max duplication count, in first swap_map */
+@@ -180,6 +186,7 @@ struct swap_info_struct {
+ 	struct swap_extent *curr_swap_extent;
+ 	struct swap_extent first_swap_extent;
+ 	struct block_device *bdev;	/* swap device or bdev of swap file */
++	struct atomic_notifier_head slot_free_notify_list;
+ 	struct file *swap_file;		/* seldom referenced */
+ 	unsigned int old_block_size;	/* seldom referenced */
+ };
+@@ -329,8 +336,13 @@ extern sector_t map_swap_page(struct page *, struct block_device **);
+ extern sector_t swapdev_block(int, pgoff_t);
+ extern int reuse_swap_page(struct page *);
+ extern int try_to_free_swap(struct page *);
++extern int register_swap_event_notifier(struct notifier_block *nb,
++			enum swap_event event, unsigned long val);
++extern int unregister_swap_event_notifier(struct notifier_block *nb,
++			enum swap_event event, unsigned long val);
+ struct backing_dev_info;
+ 
++
+ /* linux/mm/thrash.c */
+ extern struct mm_struct *swap_token_mm;
+ extern void grab_swap_token(struct mm_struct *);
+diff --git a/mm/swapfile.c b/mm/swapfile.c
+index 6c0585b..301905d 100644
+--- a/mm/swapfile.c
++++ b/mm/swapfile.c
+@@ -57,6 +57,9 @@ static struct swap_list_t swap_list = {-1, -1};
+ static struct swap_info_struct *swap_info[MAX_SWAPFILES];
+ 
+ static DEFINE_MUTEX(swapon_mutex);
++static BLOCKING_NOTIFIER_HEAD(swapon_notify_list);
++static BLOCKING_NOTIFIER_HEAD(swapoff_notify_list);
++
+ 
+ static inline unsigned char swap_count(unsigned char ent)
+ {
+@@ -583,6 +586,8 @@ static unsigned char swap_entry_free(struct swap_info_struct *p,
+ 			swap_list.next = p->type;
+ 		nr_swap_pages++;
+ 		p->inuse_pages--;
++		atomic_notifier_call_chain(&p->slot_free_notify_list,
++					offset, p->swap_file);
+ 	}
+ 
+ 	return usage;
+@@ -1609,6 +1614,7 @@ SYSCALL_DEFINE1(swapoff, const char __user *, specialfile)
+ 	p->swap_map = NULL;
+ 	p->flags = 0;
+ 	spin_unlock(&swap_lock);
++	blocking_notifier_call_chain(&swapoff_notify_list, type, swap_file);
+ 	mutex_unlock(&swapon_mutex);
+ 	vfree(swap_map);
+ 	/* Destroy swap account informatin */
+@@ -2022,7 +2028,9 @@ SYSCALL_DEFINE2(swapon, const char __user *, specialfile, int, swap_flags)
+ 		swap_list.head = swap_list.next = type;
+ 	else
+ 		swap_info[prev]->next = type;
++	ATOMIC_INIT_NOTIFIER_HEAD(&p->slot_free_notify_list);
+ 	spin_unlock(&swap_lock);
++	blocking_notifier_call_chain(&swapon_notify_list, type, swap_file);
+ 	mutex_unlock(&swapon_mutex);
+ 	error = 0;
+ 	goto out;
+@@ -2446,3 +2454,62 @@ static void free_swap_count_continuations(struct swap_info_struct *si)
+ 		}
+ 	}
+ }
++
++int register_swap_event_notifier(struct notifier_block *nb,
++				enum swap_event event, unsigned long val)
++{
++	switch (event) {
++	case SWAP_EVENT_SWAPON:
++		return blocking_notifier_chain_register(
++					&swapon_notify_list, nb);
++	case SWAP_EVENT_SWAPOFF:
++		return blocking_notifier_chain_register(
++					&swapoff_notify_list, nb);
++	case SWAP_EVENT_SLOT_FREE:
++		{
++		struct swap_info_struct *sis;
++
++		if (val > nr_swapfiles)
++			goto out;
++		sis = swap_info[val];
++		return atomic_notifier_chain_register(
++				&sis->slot_free_notify_list, nb);
++		}
++	default:
++		pr_err("Invalid swap event: %d\n", event);
++	};
++
++out:
++	return -EINVAL;
++}
++EXPORT_SYMBOL_GPL(register_swap_event_notifier);
++
++int unregister_swap_event_notifier(struct notifier_block *nb,
++				enum swap_event event, unsigned long val)
++{
++	switch (event) {
++	case SWAP_EVENT_SWAPON:
++		return blocking_notifier_chain_unregister(
++					&swapon_notify_list, nb);
++	case SWAP_EVENT_SWAPOFF:
++		return blocking_notifier_chain_unregister(
++					&swapoff_notify_list, nb);
++	case SWAP_EVENT_SLOT_FREE:
++		{
++		struct swap_info_struct *sis;
++
++		if (val > nr_swapfiles)
++			goto out;
++		sis = swap_info[val];
++		return atomic_notifier_chain_unregister(
++				&sis->slot_free_notify_list, nb);
++		}
++	default:
++		pr_err("Invalid swap event: %d\n", event);
++	};
++
++out:
++	return -EINVAL;
++}
++EXPORT_SYMBOL_GPL(unregister_swap_event_notifier);
++
+-- 
+1.6.2.5
 
