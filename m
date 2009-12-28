@@ -1,71 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751646AbZL1UOV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751670AbZL1UR1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751646AbZL1UOV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Dec 2009 15:14:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751475AbZL1UOU
+	id S1751670AbZL1UR1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Dec 2009 15:17:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751432AbZL1UR0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Dec 2009 15:14:20 -0500
-Received: from khc.piap.pl ([195.187.100.11]:55106 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750995AbZL1UOT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Dec 2009 15:14:19 -0500
-From: Krzysztof Halasa <khc@pm.waw.pl>
-To: linux-crypto@vger.kernel.org
-Cc: lkml <linux-kernel@vger.kernel.org>
-Subject: Re: Crypto test results unused?
-References: <m3ws07q865.fsf@intrepid.localdomain>
-Date: Mon, 28 Dec 2009 21:14:17 +0100
-In-Reply-To: <m3ws07q865.fsf@intrepid.localdomain> (Krzysztof Halasa's message
-	of "Mon, 28 Dec 2009 19:12:50 +0100")
-Message-ID: <m37hs6rh46.fsf@intrepid.localdomain>
+	Mon, 28 Dec 2009 15:17:26 -0500
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:62631 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751283AbZL1UR0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Dec 2009 15:17:26 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=om/5fgCZ7ao4gQcGqkTXvmbk4+IxYrGySNEATGY78YZgzpBKS0K337Ven8FzQuDbqW
+         2tmr9VEiJQ6P7XP7RfMcoa/NOt04s1YYz7YEP4g6JQhJOuUizjLa3FribEgDtz8ybED2
+         6EMFHknyn3IWI9zxXACRjxRjoL+zpaZlOTfVk=
+Date: Mon, 28 Dec 2009 12:17:20 -0800
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Paul Rolland <rol@as2917.net>
+Cc: Ingo Molnar <mingo@elte.hu>, Len Brown <lenb@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Matthew Garrett <mjg@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, rol@witbe.net
+Subject: Re: -tip: origin tree boot crash
+Message-ID: <20091228201720.GA4253@core.coreip.homeip.net>
+References: <alpine.LFD.2.00.0912241350510.11961@localhost.localdomain>
+ <20091225102731.GA25513@elte.hu>
+ <alpine.LFD.2.00.0912261504460.4089@localhost.localdomain>
+ <alpine.LFD.2.00.0912262316530.14053@localhost.localdomain>
+ <20091228094444.GG24690@elte.hu>
+ <20091228120125.GA10911@elte.hu>
+ <20091228160212.1f70d825@tux.DEF.witbe.net>
+ <20091228175301.4e89aa65@tux.DEF.witbe.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091228175301.4e89aa65@tux.DEF.witbe.net>
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Krzysztof Halasa <khc@pm.waw.pl> writes:
+Hi Paul,
 
-> is the core crypto code supposed to "kill" algorithms which fail the
-> test?
->
-> On little-endian IXP4xx 3 hardware-assisted algorithms fail (due to
-> apparently unrelated bug which I will take care of). It seems the kernel
-> is still using these failing algorithms (my debugging code adds extra
-> fields to the /proc output):
->
-> alg: skcipher: Test 1 failed on encryption for ecb(des)-ixp4xx
-> 00000000: 01 23 45 67 89 ab cd e7
-> alg: skcipher: Test 1 failed on encryption for ecb(des3_ede)-ixp4xx
-> 00000000: 73 6f 6d 65 64 61 74 61
-> alg: skcipher: Test 1 failed on encryption for ecb(aes)-ixp4xx
-> 00000000: 00 11 22 33 44 55 66 77 88 99 aa bb cc dd ee ff
->
-> # grep 'ecb(des)-ixp4xx\|ecb(des3_ede)-ixp4xx\|ecb(aes)-ixp4xx' /proc/cryp
-> to -A 6
-> driver       : ecb(aes)-ixp4xx
-> module       : ixp4xx_crypto
-> priority     : 300
-> refcnt       : 1
-> flags        : 0x85
-> ptr          : 0xbf020074
-> selftest     : unknown
-> ^^^^^^^^^^^^^^^^^^^^^^
+On Mon, Dec 28, 2009 at 05:53:01PM +0100, Paul Rolland wrote:
+> 
+> Fixed this completely with the following two patches on top of 2.6.33-rc2 :
+> 
+> --- wmi.c.orig  2009-12-28 17:27:15.000000000 +0100
+> +++ wmi.c       2009-12-28 17:39:01.000000000 +0100
+> @@ -488,12 +488,13 @@
+>  {
+>         struct wmi_block *block;
+>         acpi_status status;
+> +       bool err;
+>  
+>         if (!guid || !handler)
+>                 return AE_BAD_PARAMETER;
+>  
+> -       find_guid(guid, &block);
+> -       if (!block)
+> +       err = find_guid(guid, &block);
+> +       if (!err)
+>                 return AE_NOT_EXIST;
+>  
+>         if (block->handler)
+> @@ -517,12 +518,13 @@
+>  {
+>         struct wmi_block *block;
+>         acpi_status status;
+> +       bool err;
+>  
+>         if (!guid)
+>                 return AE_BAD_PARAMETER;
+>  
+> -       find_guid(guid, &block);
+> -       if (!block)
+> +       err = find_guid(guid, &block);
+> +       if (!err)
+>                 return AE_NOT_EXIST;
+>  
+>         if (!block->handler)
+> 
+> --- dell-wmi.c.orig     2009-12-28 17:49:09.000000000 +0100
+> +++ dell-wmi.c  2009-12-28 17:41:36.000000000 +0100
+> @@ -343,7 +343,7 @@
+>                 printk(KERN_ERR
+>                         "dell-wmi: Unable to register notify handler - %d\n",
+>                         err);
+> -               return err;
+> +               return -err;
 
-I think probably crypto_alg_tested() should mark the failing algorithm
-somehow?
-void crypto_alg_tested(const char *name, int err)
-{
-	...
-found:
-	q->cra_flags |= CRYPTO_ALG_DEAD;
-	alg = test->adult;
+This still leaks AE_* error codes to the upper layers which do not care
+for them and expect the errors from Exxxx namespace.
 
-  >>>>>>>>>>>>> maybe here? if (err) mark_as_failed(alg); <<<<<<<<<<<<<<<<
+I wonder why wmi is not using standard error codes but instead decided
+to come up with it's own.
 
-	if (err || list_empty(&alg->cra_list))
-		goto complete;
-
-	alg->cra_flags |= CRYPTO_ALG_TESTED;
 -- 
-Krzysztof Halasa
+Dmitry
