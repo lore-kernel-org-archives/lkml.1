@@ -1,51 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751326AbZL1To1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751375AbZL1Tri@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751326AbZL1To1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Dec 2009 14:44:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751088AbZL1To0
+	id S1751375AbZL1Tri (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Dec 2009 14:47:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751181AbZL1Trh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Dec 2009 14:44:26 -0500
-Received: from khc.piap.pl ([195.187.100.11]:47918 "EHLO khc.piap.pl"
+	Mon, 28 Dec 2009 14:47:37 -0500
+Received: from mail.perches.com ([173.55.12.10]:1441 "EHLO mail.perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750892AbZL1ToZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Dec 2009 14:44:25 -0500
-From: Krzysztof Halasa <khc@pm.waw.pl>
-To: linux-crypto@vger.kernel.org
-Cc: lkml <linux-kernel@vger.kernel.org>
-Subject: Re: Crypto test results unused?
-References: <m3ws07q865.fsf@intrepid.localdomain>
-Date: Mon, 28 Dec 2009 20:44:20 +0100
-In-Reply-To: <m3ws07q865.fsf@intrepid.localdomain> (Krzysztof Halasa's message
-	of "Mon, 28 Dec 2009 19:12:50 +0100")
-Message-ID: <m3eimerii3.fsf@intrepid.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1750988AbZL1Trg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Dec 2009 14:47:36 -0500
+Subject: Re: [RFC/PATCH] x86: Use KERN_DEFAULT log-level in __show_regs()
+From: Joe Perches <joe@perches.com>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: mingo@elte.hu, vegard.nossum@gmail.com, akpm@linux-foundation.org,
+       x86@kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <1261988819.4641.2.camel@penberg-laptop>
+References: <1261988819.4641.2.camel@penberg-laptop>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 28 Dec 2009 11:47:34 -0800
+Message-ID: <1262029654.3352.27.camel@Joe-Laptop.home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> int crypto_register_alg(struct crypto_alg *alg)
-> {
-> 	struct crypto_larval *larval;
-> 	int err;
->
-> 	err = crypto_check_alg(alg);
-> 	if (err)
-> 		return err;
->
-> 	down_write(&crypto_alg_sem);
-> 	larval = __crypto_register_alg(alg);
-> 	up_write(&crypto_alg_sem);
->
-> 	if (IS_ERR(larval))
-> 		return PTR_ERR(larval);
->
-> 	crypto_wait_for_test(larval);
->
-> At this point alg->cra_flags includes CRYPTO_ALG_DEAD (due to failed
-> test), but larval->alg.cra_flags has only the original flags (0x85).
+On Mon, 2009-12-28 at 10:26 +0200, Pekka Enberg wrote:
+> From: Pekka Enberg <penberg@cs.helsinki.fi>
+> 
+> Andrew Morton reported a strange looking kmemcheck warning:
+> 
+>   WARNING: kmemcheck: Caught 32-bit read from uninitialized memory (ffff88004fba6c20)
+>   0000000000000000310000000000000000000000000000002413000000c9ffff
+>    u u u u u u u u u u u u u u u u i i i i i i i i u u u u u u u u
+> 
+>    [<ffffffff810af3aa>] kmemleak_scan+0x25a/0x540
+>    [<ffffffff810afbcb>] kmemleak_scan_thread+0x5b/0xe0
+>    [<ffffffff8104d0fe>] kthread+0x9e/0xb0
+>    [<ffffffff81003074>] kernel_thread_helper+0x4/0x10
+>    [<ffffffffffffffff>] 0xffffffffffffffff
+> 
+> The above printout is missing register dump completely. The problem here is
+> that the output comes from syslog which doesn't show KERN_INFO log-level
+> messages. We didn't see this before because both of us were testing on 32-bit
+> kernels which use the _default_ log-level.
+> 
+> Fix that up by explicitly using KERN_DEFAULT log-level for __show_regs()
+> printks.
+> 
+> Cc: Vegard Nossum <vegard.nossum@gmail.com>
+> Cc: Andrew Morton <akpm@linux-foundation.org>
+> Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+> ---
+>  arch/x86/kernel/process.c    |    4 ++--
+>  arch/x86/kernel/process_32.c |   14 +++++++-------
+>  arch/x86/kernel/process_64.c |   24 ++++++++++++------------
+>  3 files changed, 21 insertions(+), 21 deletions(-)
+> 
+> diff --git a/arch/x86/kernel/process.c b/arch/x86/kernel/process.c
+> index 98c2cde..c6ee241 100644
+> --- a/arch/x86/kernel/process.c
+> +++ b/arch/x86/kernel/process.c
+> @@ -103,8 +103,8 @@ void show_regs_common(void)
+>  	if (!product)
+>  		product = "";
+>  
+> -	printk("\n");
+> -	printk(KERN_INFO "Pid: %d, comm: %.20s %s %s %.*s %s/%s\n",
+> +	printk(KERN_CONT "\n");
+> +	printk(KERN_DEFAULT "Pid: %d, comm: %.20s %s %s %.*s %s/%s\n",
 
-Actually it seems all alg->cra_flags are CRYPTO_ALG_DEAD at this point,
-not only these which failed tests. Will look at it soon.
--- 
-Krzysztof Halasa
+What is the reason to convert KERN_INFO to KERN_DEFAULT here?
+
+The original commit for KERN_DEFAULT said:
+
+    This adds a KERN_DEFAULT loglevel marker, for when you cannot decide
+    which loglevel you want, and just want to keep an existing printk
+    with the default loglevel.
+    
+    The difference between having KERN_DEFAULT and having no log-level
+    marker at all is two-fold:
+    
+     - having the log-level marker will now force a new-line if the
+       previous printout had not added one (perhaps because it forgot,
+       but perhaps because it expected a continuation)
+    
+     - having a log-level marker is required if you are printing out a
+       message that otherwise itself could perhaps otherwise be mistaken
+       for a log-level.
+
+
