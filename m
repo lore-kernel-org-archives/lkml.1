@@ -1,75 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751261AbZL1B1X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751218AbZL1Blr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751261AbZL1B1X (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Dec 2009 20:27:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751159AbZL1B1W
+	id S1751218AbZL1Blr (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Dec 2009 20:41:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751139AbZL1Blr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Dec 2009 20:27:22 -0500
-Received: from mga14.intel.com ([143.182.124.37]:16310 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751111AbZL1B1W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Dec 2009 20:27:22 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
-   d="scan'208";a="227014956"
-Subject: Re: lvds downclocking breaks on G45/thinkpad T500
-From: ykzhao <yakui.zhao@intel.com>
-To: Andres Freund <andres@anarazel.de>
-Cc: David Airlie <airlied@linux.ie>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "dri-devel@lists.sourceforge.net" <dri-devel@lists.sourceforge.net>,
-       Adam Jackson <ajax@redhat.com>
-In-Reply-To: <200912271518.57886.andres@anarazel.de>
-References: <200912261749.30839.andres@anarazel.de>
-	 <200912261841.55828.andres@anarazel.de>
-	 <1261919455.4499.31.camel@localhost.localdomain>
-	 <200912271518.57886.andres@anarazel.de>
-Content-Type: text/plain
-Organization: Intel Open Source Technology Center
-Date: Mon, 28 Dec 2009 09:24:48 +0800
-Message-Id: <1261963488.4499.34.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 7bit
+	Sun, 27 Dec 2009 20:41:47 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:53637 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751126AbZL1Blq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Dec 2009 20:41:46 -0500
+Date: Mon, 28 Dec 2009 02:41:41 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Roland Dreier <rdreier@cisco.com>
+Cc: Stefani Seibold <stefani@seibold.net>, Andi Kleen <andi@firstfloor.org>,
+       linux-kernel@vger.kernel.org, akpm@osdl.org
+Subject: Re: [PATCH] [0/6] kfifo fixes/improvements
+Message-ID: <20091228014141.GE2399@basil.fritz.box>
+References: <200912271003.631128760@firstfloor.org> <1261949800.25298.18.camel@wall-e> <adahbrcyn1l.fsf@roland-alpha.cisco.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <adahbrcyn1l.fsf@roland-alpha.cisco.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-12-27 at 22:18 +0800, Andres Freund wrote:
-> On Sunday 27 December 2009 14:10:55 ykzhao wrote:
-> > On Sun, 2009-12-27 at 01:41 +0800, Andres Freund wrote:
-> > > On Saturday 26 December 2009 17:49:29 Andres Freund wrote:
-> > > > On 2.6.33-rc1 I noticed that the display of my T500 with a G45 reacts
-> > > > very slowly (you can see the text appearing) and colors take a time to
-> > > > "solidify". I.e. making a white terminal black takes some seconds. ...
-> > > > Anything I can do to help analyzing the issue?
-> > >
-> > > Thats with recent git checkouts of xorg btw, if thats relevant (which I
-> > > doubt a bit).
-> > >
-> > > The missing config is attached now as well.
-> > 
-> > It will be great if you can open a new bug on
-> > bugs.freedesktop.org(Product=xorg, component = driver/intel) and attach
-> > the following info:
-> >     1. add the boot option of "drm.debug=0x06" and attach the output of
-> > dmesg.
-> >     2. attach the output of "xrandr -q --verbose"
-> >     3. attach the vbios.dump, which can be obtained by using the
-> > following command:
-> >         echo 1 > /sys/devices/pci0000:00/0000:00:02.0/rom
-> >         cat /sys/devices/pci0000:00/0000:00:02.0/rom
-> >     4. attach the output of Xorg.0.log
-> Is it relevant whether I boot a kernel with the patch really enabled?
-
-I don't know whether it is relevant with my patch. In fact my patch only
-checks whether the LVDS downclock is found and then set the
-corresponding flag. 
-
-Anyway, please open a new bug and I will investigate it.
-
-thanks.
-   Yakui
+On Sun, Dec 27, 2009 at 04:12:06PM -0800, Roland Dreier wrote:
 > 
-> Andres
+>  > I am not happy to see you to take over my project. Especial as most of
+>  > your fixes are part of my new macro based implementation. Have a look at
+>  > http://patchwork.kernel.org/patch/69093/
+> 
+> I don't really understand.  You spent a lot of time getting the kfifo
+> stuff merged, and now you want to merge (quoting from that patch above)
+> "a complete reimplementation of the new kfifo API"?
+> 
+> What happened here?  Couldn't you have done the reimplementation before
+> merging?
 
+I guess the reimplementation came too late (happens sometimes)
+And I agree that making kfifos record oriented makes sense.
+
+Still now that the old one is in we have to fix it at least
+until there are no users left.
+
+-Andi
+-- 
+ak@linux.intel.com -- Speaking for myself only.
