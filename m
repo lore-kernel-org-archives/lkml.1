@@ -1,28 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751523AbZL1KIM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752224AbZL1KLF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751523AbZL1KIM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Dec 2009 05:08:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751405AbZL1KIK
+	id S1752224AbZL1KLF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Dec 2009 05:11:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752160AbZL1KK6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Dec 2009 05:08:10 -0500
-Received: from hera.kernel.org ([140.211.167.34]:36256 "EHLO hera.kernel.org"
+	Mon, 28 Dec 2009 05:10:58 -0500
+Received: from hera.kernel.org ([140.211.167.34]:36436 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750921AbZL1KIJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Dec 2009 05:08:09 -0500
-Date: Mon, 28 Dec 2009 10:07:32 GMT
-From: tip-bot for Naga Chumbalkar <nagananda.chumbalkar@hp.com>
+	id S1752072AbZL1KKv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Dec 2009 05:10:51 -0500
+Date: Mon, 28 Dec 2009 10:07:47 GMT
+From: tip-bot for Pekka Enberg <penberg@cs.helsinki.fi>
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       nagananda.chumbalkar@hp.com, tglx@linutronix.de, gorcunov@gmail.com,
-       mingo@elte.hu
+       torvalds@linux-foundation.org, penberg@cs.helsinki.fi,
+       vegard.nossum@gmail.com, arjan@infradead.org, akpm@linux-foundation.org,
+       tglx@linutronix.de, mingo@elte.hu
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       nagananda.chumbalkar@hp.com, tglx@linutronix.de, gorcunov@gmail.com,
-       mingo@elte.hu
-In-Reply-To: <20091224015441.6005.4408.sendpatchset@localhost.localdomain>
-References: <20091224015441.6005.4408.sendpatchset@localhost.localdomain>
+       penberg@cs.helsinki.fi, torvalds@linux-foundation.org,
+       vegard.nossum@gmail.com, arjan@infradead.org, akpm@linux-foundation.org,
+       tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <1261988819.4641.2.camel@penberg-laptop>
+References: <1261988819.4641.2.camel@penberg-laptop>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perf/core] x86, perfctr: Remove unused func avail_to_resrv_perfctr_nmi()
-Message-ID: <tip-fd2a50a0240f5f5b59070474eabd83a85720a406@git.kernel.org>
-Git-Commit-ID: fd2a50a0240f5f5b59070474eabd83a85720a406
+Subject: [tip:x86/urgent] x86: Use KERN_DEFAULT log-level in __show_regs()
+Message-ID: <tip-d015a092989d673df44a5ad6866dc5d5006b7a2a@git.kernel.org>
+Git-Commit-ID: d015a092989d673df44a5ad6866dc5d5006b7a2a
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -31,59 +33,167 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  fd2a50a0240f5f5b59070474eabd83a85720a406
-Gitweb:     http://git.kernel.org/tip/fd2a50a0240f5f5b59070474eabd83a85720a406
-Author:     Naga Chumbalkar <nagananda.chumbalkar@hp.com>
-AuthorDate: Thu, 24 Dec 2009 01:54:47 +0000
+Commit-ID:  d015a092989d673df44a5ad6866dc5d5006b7a2a
+Gitweb:     http://git.kernel.org/tip/d015a092989d673df44a5ad6866dc5d5006b7a2a
+Author:     Pekka Enberg <penberg@cs.helsinki.fi>
+AuthorDate: Mon, 28 Dec 2009 10:26:59 +0200
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Mon, 28 Dec 2009 09:36:46 +0100
+CommitDate: Mon, 28 Dec 2009 09:40:21 +0100
 
-x86, perfctr: Remove unused func avail_to_resrv_perfctr_nmi()
+x86: Use KERN_DEFAULT log-level in __show_regs()
 
-avail_to_resrv_perfctr_nmi() is neither EXPORT'd, nor used in
-the file. So remove it.
+Andrew Morton reported a strange looking kmemcheck warning:
 
-Signed-off-by: Naga Chumbalkar <nagananda.chumbalkar@hp.com>
-Acked-by: Cyrill Gorcunov <gorcunov@gmail.com>
-Cc: oprofile-list@lists.sf.net
-LKML-Reference: <20091224015441.6005.4408.sendpatchset@localhost.localdomain>
+  WARNING: kmemcheck: Caught 32-bit read from uninitialized memory (ffff88004fba6c20)
+  0000000000000000310000000000000000000000000000002413000000c9ffff
+   u u u u u u u u u u u u u u u u i i i i i i i i u u u u u u u u
+
+   [<ffffffff810af3aa>] kmemleak_scan+0x25a/0x540
+   [<ffffffff810afbcb>] kmemleak_scan_thread+0x5b/0xe0
+   [<ffffffff8104d0fe>] kthread+0x9e/0xb0
+   [<ffffffff81003074>] kernel_thread_helper+0x4/0x10
+   [<ffffffffffffffff>] 0xffffffffffffffff
+
+The above printout is missing register dump completely. The
+problem here is that the output comes from syslog which doesn't
+show KERN_INFO log-level messages. We didn't see this before
+because both of us were testing on 32-bit kernels which use the
+_default_ log-level.
+
+Fix that up by explicitly using KERN_DEFAULT log-level for
+__show_regs() printks.
+
+Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Vegard Nossum <vegard.nossum@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Arjan van de Ven <arjan@infradead.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
+LKML-Reference: <1261988819.4641.2.camel@penberg-laptop>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- arch/x86/include/asm/nmi.h             |    1 -
- arch/x86/kernel/cpu/perfctr-watchdog.c |   11 -----------
- 2 files changed, 0 insertions(+), 12 deletions(-)
+ arch/x86/kernel/process.c    |    4 ++--
+ arch/x86/kernel/process_32.c |   14 +++++++-------
+ arch/x86/kernel/process_64.c |   24 ++++++++++++------------
+ 3 files changed, 21 insertions(+), 21 deletions(-)
 
-diff --git a/arch/x86/include/asm/nmi.h b/arch/x86/include/asm/nmi.h
-index 139d4c1..93da9c3 100644
---- a/arch/x86/include/asm/nmi.h
-+++ b/arch/x86/include/asm/nmi.h
-@@ -19,7 +19,6 @@ extern void die_nmi(char *str, struct pt_regs *regs, int do_panic);
- extern int check_nmi_watchdog(void);
- extern int nmi_watchdog_enabled;
- extern int avail_to_resrv_perfctr_nmi_bit(unsigned int);
--extern int avail_to_resrv_perfctr_nmi(unsigned int);
- extern int reserve_perfctr_nmi(unsigned int);
- extern void release_perfctr_nmi(unsigned int);
- extern int reserve_evntsel_nmi(unsigned int);
-diff --git a/arch/x86/kernel/cpu/perfctr-watchdog.c b/arch/x86/kernel/cpu/perfctr-watchdog.c
-index 898df97..74f4e85 100644
---- a/arch/x86/kernel/cpu/perfctr-watchdog.c
-+++ b/arch/x86/kernel/cpu/perfctr-watchdog.c
-@@ -115,17 +115,6 @@ int avail_to_resrv_perfctr_nmi_bit(unsigned int counter)
+diff --git a/arch/x86/kernel/process.c b/arch/x86/kernel/process.c
+index 98c2cde..c6ee241 100644
+--- a/arch/x86/kernel/process.c
++++ b/arch/x86/kernel/process.c
+@@ -103,8 +103,8 @@ void show_regs_common(void)
+ 	if (!product)
+ 		product = "";
  
- 	return !test_bit(counter, perfctr_nmi_owner);
+-	printk("\n");
+-	printk(KERN_INFO "Pid: %d, comm: %.20s %s %s %.*s %s/%s\n",
++	printk(KERN_CONT "\n");
++	printk(KERN_DEFAULT "Pid: %d, comm: %.20s %s %s %.*s %s/%s\n",
+ 		current->pid, current->comm, print_tainted(),
+ 		init_utsname()->release,
+ 		(int)strcspn(init_utsname()->version, " "),
+diff --git a/arch/x86/kernel/process_32.c b/arch/x86/kernel/process_32.c
+index 9c517b5..37ad1e0 100644
+--- a/arch/x86/kernel/process_32.c
++++ b/arch/x86/kernel/process_32.c
+@@ -139,16 +139,16 @@ void __show_regs(struct pt_regs *regs, int all)
+ 
+ 	show_regs_common();
+ 
+-	printk("EIP: %04x:[<%08lx>] EFLAGS: %08lx CPU: %d\n",
++	printk(KERN_DEFAULT "EIP: %04x:[<%08lx>] EFLAGS: %08lx CPU: %d\n",
+ 			(u16)regs->cs, regs->ip, regs->flags,
+ 			smp_processor_id());
+ 	print_symbol("EIP is at %s\n", regs->ip);
+ 
+-	printk("EAX: %08lx EBX: %08lx ECX: %08lx EDX: %08lx\n",
++	printk(KERN_DEFAULT "EAX: %08lx EBX: %08lx ECX: %08lx EDX: %08lx\n",
+ 		regs->ax, regs->bx, regs->cx, regs->dx);
+-	printk("ESI: %08lx EDI: %08lx EBP: %08lx ESP: %08lx\n",
++	printk(KERN_DEFAULT "ESI: %08lx EDI: %08lx EBP: %08lx ESP: %08lx\n",
+ 		regs->si, regs->di, regs->bp, sp);
+-	printk(" DS: %04x ES: %04x FS: %04x GS: %04x SS: %04x\n",
++	printk(KERN_DEFAULT " DS: %04x ES: %04x FS: %04x GS: %04x SS: %04x\n",
+ 	       (u16)regs->ds, (u16)regs->es, (u16)regs->fs, gs, ss);
+ 
+ 	if (!all)
+@@ -158,19 +158,19 @@ void __show_regs(struct pt_regs *regs, int all)
+ 	cr2 = read_cr2();
+ 	cr3 = read_cr3();
+ 	cr4 = read_cr4_safe();
+-	printk("CR0: %08lx CR2: %08lx CR3: %08lx CR4: %08lx\n",
++	printk(KERN_DEFAULT "CR0: %08lx CR2: %08lx CR3: %08lx CR4: %08lx\n",
+ 			cr0, cr2, cr3, cr4);
+ 
+ 	get_debugreg(d0, 0);
+ 	get_debugreg(d1, 1);
+ 	get_debugreg(d2, 2);
+ 	get_debugreg(d3, 3);
+-	printk("DR0: %08lx DR1: %08lx DR2: %08lx DR3: %08lx\n",
++	printk(KERN_DEFAULT "DR0: %08lx DR1: %08lx DR2: %08lx DR3: %08lx\n",
+ 			d0, d1, d2, d3);
+ 
+ 	get_debugreg(d6, 6);
+ 	get_debugreg(d7, 7);
+-	printk("DR6: %08lx DR7: %08lx\n",
++	printk(KERN_DEFAULT "DR6: %08lx DR7: %08lx\n",
+ 			d6, d7);
  }
--
--/* checks the an msr for availability */
--int avail_to_resrv_perfctr_nmi(unsigned int msr)
--{
--	unsigned int counter;
--
--	counter = nmi_perfctr_msr_to_bit(msr);
--	BUG_ON(counter > NMI_MAX_COUNTER_BITS);
--
--	return !test_bit(counter, perfctr_nmi_owner);
--}
- EXPORT_SYMBOL(avail_to_resrv_perfctr_nmi_bit);
  
- int reserve_perfctr_nmi(unsigned int msr)
+diff --git a/arch/x86/kernel/process_64.c b/arch/x86/kernel/process_64.c
+index 52fbd0c..f9e0331 100644
+--- a/arch/x86/kernel/process_64.c
++++ b/arch/x86/kernel/process_64.c
+@@ -161,19 +161,19 @@ void __show_regs(struct pt_regs *regs, int all)
+ 	unsigned int ds, cs, es;
+ 
+ 	show_regs_common();
+-	printk(KERN_INFO "RIP: %04lx:[<%016lx>] ", regs->cs & 0xffff, regs->ip);
++	printk(KERN_DEFAULT "RIP: %04lx:[<%016lx>] ", regs->cs & 0xffff, regs->ip);
+ 	printk_address(regs->ip, 1);
+-	printk(KERN_INFO "RSP: %04lx:%016lx  EFLAGS: %08lx\n", regs->ss,
++	printk(KERN_DEFAULT "RSP: %04lx:%016lx  EFLAGS: %08lx\n", regs->ss,
+ 			regs->sp, regs->flags);
+-	printk(KERN_INFO "RAX: %016lx RBX: %016lx RCX: %016lx\n",
++	printk(KERN_DEFAULT "RAX: %016lx RBX: %016lx RCX: %016lx\n",
+ 	       regs->ax, regs->bx, regs->cx);
+-	printk(KERN_INFO "RDX: %016lx RSI: %016lx RDI: %016lx\n",
++	printk(KERN_DEFAULT "RDX: %016lx RSI: %016lx RDI: %016lx\n",
+ 	       regs->dx, regs->si, regs->di);
+-	printk(KERN_INFO "RBP: %016lx R08: %016lx R09: %016lx\n",
++	printk(KERN_DEFAULT "RBP: %016lx R08: %016lx R09: %016lx\n",
+ 	       regs->bp, regs->r8, regs->r9);
+-	printk(KERN_INFO "R10: %016lx R11: %016lx R12: %016lx\n",
++	printk(KERN_DEFAULT "R10: %016lx R11: %016lx R12: %016lx\n",
+ 	       regs->r10, regs->r11, regs->r12);
+-	printk(KERN_INFO "R13: %016lx R14: %016lx R15: %016lx\n",
++	printk(KERN_DEFAULT "R13: %016lx R14: %016lx R15: %016lx\n",
+ 	       regs->r13, regs->r14, regs->r15);
+ 
+ 	asm("movl %%ds,%0" : "=r" (ds));
+@@ -194,21 +194,21 @@ void __show_regs(struct pt_regs *regs, int all)
+ 	cr3 = read_cr3();
+ 	cr4 = read_cr4();
+ 
+-	printk(KERN_INFO "FS:  %016lx(%04x) GS:%016lx(%04x) knlGS:%016lx\n",
++	printk(KERN_DEFAULT "FS:  %016lx(%04x) GS:%016lx(%04x) knlGS:%016lx\n",
+ 	       fs, fsindex, gs, gsindex, shadowgs);
+-	printk(KERN_INFO "CS:  %04x DS: %04x ES: %04x CR0: %016lx\n", cs, ds,
++	printk(KERN_DEFAULT "CS:  %04x DS: %04x ES: %04x CR0: %016lx\n", cs, ds,
+ 			es, cr0);
+-	printk(KERN_INFO "CR2: %016lx CR3: %016lx CR4: %016lx\n", cr2, cr3,
++	printk(KERN_DEFAULT "CR2: %016lx CR3: %016lx CR4: %016lx\n", cr2, cr3,
+ 			cr4);
+ 
+ 	get_debugreg(d0, 0);
+ 	get_debugreg(d1, 1);
+ 	get_debugreg(d2, 2);
+-	printk(KERN_INFO "DR0: %016lx DR1: %016lx DR2: %016lx\n", d0, d1, d2);
++	printk(KERN_DEFAULT "DR0: %016lx DR1: %016lx DR2: %016lx\n", d0, d1, d2);
+ 	get_debugreg(d3, 3);
+ 	get_debugreg(d6, 6);
+ 	get_debugreg(d7, 7);
+-	printk(KERN_INFO "DR3: %016lx DR6: %016lx DR7: %016lx\n", d3, d6, d7);
++	printk(KERN_DEFAULT "DR3: %016lx DR6: %016lx DR7: %016lx\n", d3, d6, d7);
+ }
+ 
+ void show_regs(struct pt_regs *regs)
