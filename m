@@ -1,30 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752224AbZL1KLF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751478AbZL1KIj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752224AbZL1KLF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Dec 2009 05:11:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752160AbZL1KK6
+	id S1751478AbZL1KIj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Dec 2009 05:08:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751026AbZL1KIh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Dec 2009 05:10:58 -0500
-Received: from hera.kernel.org ([140.211.167.34]:36436 "EHLO hera.kernel.org"
+	Mon, 28 Dec 2009 05:08:37 -0500
+Received: from hera.kernel.org ([140.211.167.34]:36288 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752072AbZL1KKv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Dec 2009 05:10:51 -0500
-Date: Mon, 28 Dec 2009 10:07:47 GMT
-From: tip-bot for Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       torvalds@linux-foundation.org, penberg@cs.helsinki.fi,
-       vegard.nossum@gmail.com, arjan@infradead.org, akpm@linux-foundation.org,
+	id S1750942AbZL1KIg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Dec 2009 05:08:36 -0500
+Date: Mon, 28 Dec 2009 10:08:03 GMT
+From: tip-bot for Ulrich Drepper <drepper@redhat.com>
+Cc: linux-kernel@vger.kernel.org, drepper@redhat.com, hpa@zytor.com,
+       mingo@redhat.com, penberg@cs.helsinki.fi, tglx@linutronix.de,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, drepper@redhat.com,
+       linux-kernel@vger.kernel.org, penberg@cs.helsinki.fi,
        tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       penberg@cs.helsinki.fi, torvalds@linux-foundation.org,
-       vegard.nossum@gmail.com, arjan@infradead.org, akpm@linux-foundation.org,
-       tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <1261988819.4641.2.camel@penberg-laptop>
-References: <1261988819.4641.2.camel@penberg-laptop>
+In-Reply-To: <200912192140.nBJLeSfA028905@hs20-bc2-1.build.redhat.com>
+References: <200912192140.nBJLeSfA028905@hs20-bc2-1.build.redhat.com>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:x86/urgent] x86: Use KERN_DEFAULT log-level in __show_regs()
-Message-ID: <tip-d015a092989d673df44a5ad6866dc5d5006b7a2a@git.kernel.org>
-Git-Commit-ID: d015a092989d673df44a5ad6866dc5d5006b7a2a
+Subject: [tip:perf/core] perf tools: Do a few more directory handling optimizations
+Message-ID: <tip-659d8cfbb225f1fa5a4f8671a847ef3ab5a89660@git.kernel.org>
+Git-Commit-ID: 659d8cfbb225f1fa5a4f8671a847ef3ab5a89660
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -33,167 +31,187 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  d015a092989d673df44a5ad6866dc5d5006b7a2a
-Gitweb:     http://git.kernel.org/tip/d015a092989d673df44a5ad6866dc5d5006b7a2a
-Author:     Pekka Enberg <penberg@cs.helsinki.fi>
-AuthorDate: Mon, 28 Dec 2009 10:26:59 +0200
+Commit-ID:  659d8cfbb225f1fa5a4f8671a847ef3ab5a89660
+Gitweb:     http://git.kernel.org/tip/659d8cfbb225f1fa5a4f8671a847ef3ab5a89660
+Author:     Ulrich Drepper <drepper@redhat.com>
+AuthorDate: Sat, 19 Dec 2009 16:40:28 -0500
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Mon, 28 Dec 2009 09:40:21 +0100
+CommitDate: Mon, 28 Dec 2009 10:18:37 +0100
 
-x86: Use KERN_DEFAULT log-level in __show_regs()
+perf tools: Do a few more directory handling optimizations
 
-Andrew Morton reported a strange looking kmemcheck warning:
+A few more optimizations for perf when dealing with directories.
 
-  WARNING: kmemcheck: Caught 32-bit read from uninitialized memory (ffff88004fba6c20)
-  0000000000000000310000000000000000000000000000002413000000c9ffff
-   u u u u u u u u u u u u u u u u i i i i i i i i u u u u u u u u
+Some of them significantly cut down the work which has to be
+done. d_type should always be set; otherwise fix the kernel
+code. And there are functions available to parse fstab-like
+files, so use them.
 
-   [<ffffffff810af3aa>] kmemleak_scan+0x25a/0x540
-   [<ffffffff810afbcb>] kmemleak_scan_thread+0x5b/0xe0
-   [<ffffffff8104d0fe>] kthread+0x9e/0xb0
-   [<ffffffff81003074>] kernel_thread_helper+0x4/0x10
-   [<ffffffffffffffff>] 0xffffffffffffffff
-
-The above printout is missing register dump completely. The
-problem here is that the output comes from syslog which doesn't
-show KERN_INFO log-level messages. We didn't see this before
-because both of us were testing on 32-bit kernels which use the
-_default_ log-level.
-
-Fix that up by explicitly using KERN_DEFAULT log-level for
-__show_regs() printks.
-
-Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Arjan van de Ven <arjan@infradead.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
-LKML-Reference: <1261988819.4641.2.camel@penberg-laptop>
+Signed-off-by: Ulrich Drepper <drepper@redhat.com>
+Acked-by: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: a.p.zijlstra@chello.nl
+Cc: acme@redhat.com
+Cc: eranian@google.com
+Cc: fweisbec@gmail.com
+Cc: lizf@cn.fujitsu.com
+Cc: paulus@samba.org
+Cc: xiaoguangrong@cn.fujitsu.com
+LKML-Reference: <200912192140.nBJLeSfA028905@hs20-bc2-1.build.redhat.com>
+[ v2: two small stylistic fixlets ]
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- arch/x86/kernel/process.c    |    4 ++--
- arch/x86/kernel/process_32.c |   14 +++++++-------
- arch/x86/kernel/process_64.c |   24 ++++++++++++------------
- 3 files changed, 21 insertions(+), 21 deletions(-)
+ tools/perf/builtin-kmem.c          |   17 ++++--------
+ tools/perf/util/trace-event-info.c |   50 ++++++++++++++++-------------------
+ 2 files changed, 29 insertions(+), 38 deletions(-)
 
-diff --git a/arch/x86/kernel/process.c b/arch/x86/kernel/process.c
-index 98c2cde..c6ee241 100644
---- a/arch/x86/kernel/process.c
-+++ b/arch/x86/kernel/process.c
-@@ -103,8 +103,8 @@ void show_regs_common(void)
- 	if (!product)
- 		product = "";
+diff --git a/tools/perf/builtin-kmem.c b/tools/perf/builtin-kmem.c
+index 4c06828..05dc5a7 100644
+--- a/tools/perf/builtin-kmem.c
++++ b/tools/perf/builtin-kmem.c
+@@ -92,23 +92,18 @@ static void setup_cpunode_map(void)
+ 	if (!dir1)
+ 		return;
  
--	printk("\n");
--	printk(KERN_INFO "Pid: %d, comm: %.20s %s %s %.*s %s/%s\n",
-+	printk(KERN_CONT "\n");
-+	printk(KERN_DEFAULT "Pid: %d, comm: %.20s %s %s %.*s %s/%s\n",
- 		current->pid, current->comm, print_tainted(),
- 		init_utsname()->release,
- 		(int)strcspn(init_utsname()->version, " "),
-diff --git a/arch/x86/kernel/process_32.c b/arch/x86/kernel/process_32.c
-index 9c517b5..37ad1e0 100644
---- a/arch/x86/kernel/process_32.c
-+++ b/arch/x86/kernel/process_32.c
-@@ -139,16 +139,16 @@ void __show_regs(struct pt_regs *regs, int all)
+-	while (true) {
+-		dent1 = readdir(dir1);
+-		if (!dent1)
+-			break;
+-
+-		if (sscanf(dent1->d_name, "node%u", &mem) < 1)
++	while ((dent1 = readdir(dir1)) != NULL) {
++		if (dent1->d_type != DT_DIR ||
++		    sscanf(dent1->d_name, "node%u", &mem) < 1)
+ 			continue;
  
- 	show_regs_common();
+ 		snprintf(buf, PATH_MAX, "%s/%s", PATH_SYS_NODE, dent1->d_name);
+ 		dir2 = opendir(buf);
+ 		if (!dir2)
+ 			continue;
+-		while (true) {
+-			dent2 = readdir(dir2);
+-			if (!dent2)
+-				break;
+-			if (sscanf(dent2->d_name, "cpu%u", &cpu) < 1)
++		while ((dent2 = readdir(dir2)) != NULL) {
++			if (dent2->d_type != DT_LNK ||
++			    sscanf(dent2->d_name, "cpu%u", &cpu) < 1)
+ 				continue;
+ 			cpunode_map[cpu] = mem;
+ 		}
+diff --git a/tools/perf/util/trace-event-info.c b/tools/perf/util/trace-event-info.c
+index cace355..dfef238 100644
+--- a/tools/perf/util/trace-event-info.c
++++ b/tools/perf/util/trace-event-info.c
+@@ -20,6 +20,7 @@
+  */
+ #define _GNU_SOURCE
+ #include <dirent.h>
++#include <mntent.h>
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <string.h>
+@@ -103,28 +104,28 @@ static const char *find_debugfs(void)
+ {
+ 	static char debugfs[MAX_PATH+1];
+ 	static int debugfs_found;
+-	char type[100];
+ 	FILE *fp;
++	struct mntent *m;
  
--	printk("EIP: %04x:[<%08lx>] EFLAGS: %08lx CPU: %d\n",
-+	printk(KERN_DEFAULT "EIP: %04x:[<%08lx>] EFLAGS: %08lx CPU: %d\n",
- 			(u16)regs->cs, regs->ip, regs->flags,
- 			smp_processor_id());
- 	print_symbol("EIP is at %s\n", regs->ip);
+ 	if (debugfs_found)
+ 		return debugfs;
  
--	printk("EAX: %08lx EBX: %08lx ECX: %08lx EDX: %08lx\n",
-+	printk(KERN_DEFAULT "EAX: %08lx EBX: %08lx ECX: %08lx EDX: %08lx\n",
- 		regs->ax, regs->bx, regs->cx, regs->dx);
--	printk("ESI: %08lx EDI: %08lx EBP: %08lx ESP: %08lx\n",
-+	printk(KERN_DEFAULT "ESI: %08lx EDI: %08lx EBP: %08lx ESP: %08lx\n",
- 		regs->si, regs->di, regs->bp, sp);
--	printk(" DS: %04x ES: %04x FS: %04x GS: %04x SS: %04x\n",
-+	printk(KERN_DEFAULT " DS: %04x ES: %04x FS: %04x GS: %04x SS: %04x\n",
- 	       (u16)regs->ds, (u16)regs->es, (u16)regs->fs, gs, ss);
+-	if ((fp = fopen("/proc/mounts","r")) == NULL)
++	fp = setmntent("/proc/mounts", "r");
++	if (!fp)
+ 		die("Can't open /proc/mounts for read");
  
- 	if (!all)
-@@ -158,19 +158,19 @@ void __show_regs(struct pt_regs *regs, int all)
- 	cr2 = read_cr2();
- 	cr3 = read_cr3();
- 	cr4 = read_cr4_safe();
--	printk("CR0: %08lx CR2: %08lx CR3: %08lx CR4: %08lx\n",
-+	printk(KERN_DEFAULT "CR0: %08lx CR2: %08lx CR3: %08lx CR4: %08lx\n",
- 			cr0, cr2, cr3, cr4);
+-	while (fscanf(fp, "%*s %"
+-		      STR(MAX_PATH)
+-		      "s %99s %*s %*d %*d\n",
+-		      debugfs, type) == 2) {
+-		if (strcmp(type, "debugfs") == 0)
++	while ((m = getmntent(fp)) != NULL) {
++		if (strcmp(m->mnt_type, "debugfs") == 0) {
++			strcpy(debugfs, m->mnt_dir);
++			debugfs_found = 1;
+ 			break;
++		}
+ 	}
+-	fclose(fp);
  
- 	get_debugreg(d0, 0);
- 	get_debugreg(d1, 1);
- 	get_debugreg(d2, 2);
- 	get_debugreg(d3, 3);
--	printk("DR0: %08lx DR1: %08lx DR2: %08lx DR3: %08lx\n",
-+	printk(KERN_DEFAULT "DR0: %08lx DR1: %08lx DR2: %08lx DR3: %08lx\n",
- 			d0, d1, d2, d3);
+-	if (strcmp(type, "debugfs") != 0)
+-		die("debugfs not mounted, please mount");
++	endmntent(fp);
  
- 	get_debugreg(d6, 6);
- 	get_debugreg(d7, 7);
--	printk("DR6: %08lx DR7: %08lx\n",
-+	printk(KERN_DEFAULT "DR6: %08lx DR7: %08lx\n",
- 			d6, d7);
+-	debugfs_found = 1;
++	if (!debugfs_found)
++		die("debugfs not mounted, please mount");
+ 
+ 	return debugfs;
  }
+@@ -317,7 +318,8 @@ static void copy_event_system(const char *sys, struct tracepoint_path *tps)
+ 		die("can't read directory '%s'", sys);
  
-diff --git a/arch/x86/kernel/process_64.c b/arch/x86/kernel/process_64.c
-index 52fbd0c..f9e0331 100644
---- a/arch/x86/kernel/process_64.c
-+++ b/arch/x86/kernel/process_64.c
-@@ -161,19 +161,19 @@ void __show_regs(struct pt_regs *regs, int all)
- 	unsigned int ds, cs, es;
+ 	while ((dent = readdir(dir))) {
+-		if (strcmp(dent->d_name, ".") == 0 ||
++		if (dent->d_type != DT_DIR ||
++		    strcmp(dent->d_name, ".") == 0 ||
+ 		    strcmp(dent->d_name, "..") == 0 ||
+ 		    !name_in_tp_list(dent->d_name, tps))
+ 			continue;
+@@ -334,7 +336,8 @@ static void copy_event_system(const char *sys, struct tracepoint_path *tps)
  
- 	show_regs_common();
--	printk(KERN_INFO "RIP: %04lx:[<%016lx>] ", regs->cs & 0xffff, regs->ip);
-+	printk(KERN_DEFAULT "RIP: %04lx:[<%016lx>] ", regs->cs & 0xffff, regs->ip);
- 	printk_address(regs->ip, 1);
--	printk(KERN_INFO "RSP: %04lx:%016lx  EFLAGS: %08lx\n", regs->ss,
-+	printk(KERN_DEFAULT "RSP: %04lx:%016lx  EFLAGS: %08lx\n", regs->ss,
- 			regs->sp, regs->flags);
--	printk(KERN_INFO "RAX: %016lx RBX: %016lx RCX: %016lx\n",
-+	printk(KERN_DEFAULT "RAX: %016lx RBX: %016lx RCX: %016lx\n",
- 	       regs->ax, regs->bx, regs->cx);
--	printk(KERN_INFO "RDX: %016lx RSI: %016lx RDI: %016lx\n",
-+	printk(KERN_DEFAULT "RDX: %016lx RSI: %016lx RDI: %016lx\n",
- 	       regs->dx, regs->si, regs->di);
--	printk(KERN_INFO "RBP: %016lx R08: %016lx R09: %016lx\n",
-+	printk(KERN_DEFAULT "RBP: %016lx R08: %016lx R09: %016lx\n",
- 	       regs->bp, regs->r8, regs->r9);
--	printk(KERN_INFO "R10: %016lx R11: %016lx R12: %016lx\n",
-+	printk(KERN_DEFAULT "R10: %016lx R11: %016lx R12: %016lx\n",
- 	       regs->r10, regs->r11, regs->r12);
--	printk(KERN_INFO "R13: %016lx R14: %016lx R15: %016lx\n",
-+	printk(KERN_DEFAULT "R13: %016lx R14: %016lx R15: %016lx\n",
- 	       regs->r13, regs->r14, regs->r15);
+ 	rewinddir(dir);
+ 	while ((dent = readdir(dir))) {
+-		if (strcmp(dent->d_name, ".") == 0 ||
++		if (dent->d_type != DT_DIR ||
++		    strcmp(dent->d_name, ".") == 0 ||
+ 		    strcmp(dent->d_name, "..") == 0 ||
+ 		    !name_in_tp_list(dent->d_name, tps))
+ 			continue;
+@@ -394,26 +397,21 @@ static void read_event_files(struct tracepoint_path *tps)
+ 		die("can't read directory '%s'", path);
  
- 	asm("movl %%ds,%0" : "=r" (ds));
-@@ -194,21 +194,21 @@ void __show_regs(struct pt_regs *regs, int all)
- 	cr3 = read_cr3();
- 	cr4 = read_cr4();
+ 	while ((dent = readdir(dir))) {
+-		if (strcmp(dent->d_name, ".") == 0 ||
++		if (dent->d_type != DT_DIR ||
++		    strcmp(dent->d_name, ".") == 0 ||
+ 		    strcmp(dent->d_name, "..") == 0 ||
+ 		    strcmp(dent->d_name, "ftrace") == 0 ||
+ 		    !system_in_tp_list(dent->d_name, tps))
+ 			continue;
+-		sys = malloc_or_die(strlen(path) + strlen(dent->d_name) + 2);
+-		sprintf(sys, "%s/%s", path, dent->d_name);
+-		ret = stat(sys, &st);
+-		free(sys);
+-		if (ret < 0)
+-			continue;
+-		if (S_ISDIR(st.st_mode))
+-			count++;
++		count++;
+ 	}
  
--	printk(KERN_INFO "FS:  %016lx(%04x) GS:%016lx(%04x) knlGS:%016lx\n",
-+	printk(KERN_DEFAULT "FS:  %016lx(%04x) GS:%016lx(%04x) knlGS:%016lx\n",
- 	       fs, fsindex, gs, gsindex, shadowgs);
--	printk(KERN_INFO "CS:  %04x DS: %04x ES: %04x CR0: %016lx\n", cs, ds,
-+	printk(KERN_DEFAULT "CS:  %04x DS: %04x ES: %04x CR0: %016lx\n", cs, ds,
- 			es, cr0);
--	printk(KERN_INFO "CR2: %016lx CR3: %016lx CR4: %016lx\n", cr2, cr3,
-+	printk(KERN_DEFAULT "CR2: %016lx CR3: %016lx CR4: %016lx\n", cr2, cr3,
- 			cr4);
+ 	write_or_die(&count, 4);
  
- 	get_debugreg(d0, 0);
- 	get_debugreg(d1, 1);
- 	get_debugreg(d2, 2);
--	printk(KERN_INFO "DR0: %016lx DR1: %016lx DR2: %016lx\n", d0, d1, d2);
-+	printk(KERN_DEFAULT "DR0: %016lx DR1: %016lx DR2: %016lx\n", d0, d1, d2);
- 	get_debugreg(d3, 3);
- 	get_debugreg(d6, 6);
- 	get_debugreg(d7, 7);
--	printk(KERN_INFO "DR3: %016lx DR6: %016lx DR7: %016lx\n", d3, d6, d7);
-+	printk(KERN_DEFAULT "DR3: %016lx DR6: %016lx DR7: %016lx\n", d3, d6, d7);
- }
- 
- void show_regs(struct pt_regs *regs)
+ 	rewinddir(dir);
+ 	while ((dent = readdir(dir))) {
+-		if (strcmp(dent->d_name, ".") == 0 ||
++		if (dent->d_type != DT_DIR ||
++		    strcmp(dent->d_name, ".") == 0 ||
+ 		    strcmp(dent->d_name, "..") == 0 ||
+ 		    strcmp(dent->d_name, "ftrace") == 0 ||
+ 		    !system_in_tp_list(dent->d_name, tps))
+@@ -422,10 +420,8 @@ static void read_event_files(struct tracepoint_path *tps)
+ 		sprintf(sys, "%s/%s", path, dent->d_name);
+ 		ret = stat(sys, &st);
+ 		if (ret >= 0) {
+-			if (S_ISDIR(st.st_mode)) {
+-				write_or_die(dent->d_name, strlen(dent->d_name) + 1);
+-				copy_event_system(sys, tps);
+-			}
++			write_or_die(dent->d_name, strlen(dent->d_name) + 1);
++			copy_event_system(sys, tps);
+ 		}
+ 		free(sys);
+ 	}
