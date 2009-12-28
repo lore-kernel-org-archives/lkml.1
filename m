@@ -1,103 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751670AbZL1UR1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751712AbZL1UYY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751670AbZL1UR1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Dec 2009 15:17:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751432AbZL1UR0
+	id S1751712AbZL1UYY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Dec 2009 15:24:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751638AbZL1UYY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Dec 2009 15:17:26 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:62631 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751283AbZL1UR0 (ORCPT
+	Mon, 28 Dec 2009 15:24:24 -0500
+Received: from smtp-out.google.com ([216.239.44.51]:16275 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751583AbZL1UYX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Dec 2009 15:17:26 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=om/5fgCZ7ao4gQcGqkTXvmbk4+IxYrGySNEATGY78YZgzpBKS0K337Ven8FzQuDbqW
-         2tmr9VEiJQ6P7XP7RfMcoa/NOt04s1YYz7YEP4g6JQhJOuUizjLa3FribEgDtz8ybED2
-         6EMFHknyn3IWI9zxXACRjxRjoL+zpaZlOTfVk=
-Date: Mon, 28 Dec 2009 12:17:20 -0800
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Paul Rolland <rol@as2917.net>
-Cc: Ingo Molnar <mingo@elte.hu>, Len Brown <lenb@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Matthew Garrett <mjg@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, rol@witbe.net
-Subject: Re: -tip: origin tree boot crash
-Message-ID: <20091228201720.GA4253@core.coreip.homeip.net>
-References: <alpine.LFD.2.00.0912241350510.11961@localhost.localdomain>
- <20091225102731.GA25513@elte.hu>
- <alpine.LFD.2.00.0912261504460.4089@localhost.localdomain>
- <alpine.LFD.2.00.0912262316530.14053@localhost.localdomain>
- <20091228094444.GG24690@elte.hu>
- <20091228120125.GA10911@elte.hu>
- <20091228160212.1f70d825@tux.DEF.witbe.net>
- <20091228175301.4e89aa65@tux.DEF.witbe.net>
+	Mon, 28 Dec 2009 15:24:23 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:x-system-of-record;
+	b=yaJZ4It3Q5cy4Mumgb46EcZRKUo7uL1EtxdUdNWXDofSrbSFWEX5B4ae+WekAIwY+
+	q+6dzAJ9eHMWwE7KWGtyQ==
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091228175301.4e89aa65@tux.DEF.witbe.net>
-User-Agent: Mutt/1.5.20 (2009-08-17)
+In-Reply-To: <20091227101824.GB1478@ucw.cz>
+References: <1260627482.20913.7.camel@desktop>
+	 <20091213212504.GD5114@elf.ucw.cz>
+	 <d6200be20912142234ia050c67p34fd2672e7248170@mail.gmail.com>
+	 <20091227093537.GD11737@elf.ucw.cz>
+	 <20091227201514.GA29174@elf.ucw.cz>
+	 <a55d774e0912271220p1d102b1dr398e0524c9386702@mail.gmail.com>
+	 <20091227203704.GK11737@elf.ucw.cz>
+	 <20091227211322.GB29174@elf.ucw.cz>
+	 <a55d774e0912271646m1b82687cy427083e64e91e323@mail.gmail.com>
+	 <20091227101824.GB1478@ucw.cz>
+Date: Mon, 28 Dec 2009 12:24:20 -0800
+Message-ID: <a55d774e0912281224y7360dfdbu8a251743026bdd28@mail.gmail.com>
+Subject: Re: tree with htc dream support
+From: Brian Swetland <swetland@google.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: "Arve Hj?nnev?g" <arve@android.com>,
+       Daniel Walker <dwalker@codeaurora.org>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+       Iliyan Malchev <malchev@google.com>, linux-kernel@codeaurora.org,
+       Greg KH <greg@kroah.com>
+Content-Type: text/plain; charset=UTF-8
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Paul,
+On Sun, Dec 27, 2009 at 2:18 AM, Pavel Machek <pavel@ucw.cz> wrote:
+> Hi!
+>
+>> > Switch smd code to the version in staging. Something to apply to
+>> > dream/ tree I'd say... and yes, it still works.
+>>
+>> I think we might want to consider leaving at least the core smd code
+>> under mach-msm.
+>
+> In the long run, I agree.
+>
+> In the short run... the code is staging quality, so it should be in
+> staging... and you'll not have to mainain so huge diff. (-20 kLoc).
 
-On Mon, Dec 28, 2009 at 05:53:01PM +0100, Paul Rolland wrote:
-> 
-> Fixed this completely with the following two patches on top of 2.6.33-rc2 :
-> 
-> --- wmi.c.orig  2009-12-28 17:27:15.000000000 +0100
-> +++ wmi.c       2009-12-28 17:39:01.000000000 +0100
-> @@ -488,12 +488,13 @@
->  {
->         struct wmi_block *block;
->         acpi_status status;
-> +       bool err;
->  
->         if (!guid || !handler)
->                 return AE_BAD_PARAMETER;
->  
-> -       find_guid(guid, &block);
-> -       if (!block)
-> +       err = find_guid(guid, &block);
-> +       if (!err)
->                 return AE_NOT_EXIST;
->  
->         if (block->handler)
-> @@ -517,12 +518,13 @@
->  {
->         struct wmi_block *block;
->         acpi_status status;
-> +       bool err;
->  
->         if (!guid)
->                 return AE_BAD_PARAMETER;
->  
-> -       find_guid(guid, &block);
-> -       if (!block)
-> +       err = find_guid(guid, &block);
-> +       if (!err)
->                 return AE_NOT_EXIST;
->  
->         if (!block->handler)
-> 
-> --- dell-wmi.c.orig     2009-12-28 17:49:09.000000000 +0100
-> +++ dell-wmi.c  2009-12-28 17:41:36.000000000 +0100
-> @@ -343,7 +343,7 @@
->                 printk(KERN_ERR
->                         "dell-wmi: Unable to register notify handler - %d\n",
->                         err);
-> -               return err;
-> +               return -err;
+The core smd stuff is really not that large.  The central smd.[ch] are
+about 1300 lines, and proc_comm.[ch] are about 400 lines.  Is it
+possible to get some review/feedback as to what's "staging quality"
+about this code so we can clean it up?  I'd rather just fix the issues
+and get the core stuff in there so clock, power, etc support is there
+for the platform rather than have it live in staging purgatory.
 
-This still leaks AE_* error codes to the upper layers which do not care
-for them and expect the errors from Exxxx namespace.
+Since this stuff is integral to mach-msm, required for essential
+operation of the platform, and makes sense to be part of the mach-msm
+codebase, why not just fix it there rather than move it out into
+staging and then back?  I'm not sure what that gains us.
 
-I wonder why wmi is not using standard error codes but instead decided
-to come up with it's own.
-
--- 
-Dmitry
+Brian
