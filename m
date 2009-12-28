@@ -1,87 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751602AbZL1JC1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751454AbZL1JLb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751602AbZL1JC1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Dec 2009 04:02:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751401AbZL1JCW
+	id S1751454AbZL1JLb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Dec 2009 04:11:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751061AbZL1JLa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Dec 2009 04:02:22 -0500
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:55493 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750961AbZL1JCS (ORCPT
+	Mon, 28 Dec 2009 04:11:30 -0500
+Received: from mail-yx0-f187.google.com ([209.85.210.187]:44746 "EHLO
+	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750961AbZL1JLa convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Dec 2009 04:02:18 -0500
-Subject: [PATCH] x86,kmemcheck: Use KERN_WARNING for error reporting
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: vegard.nossum@gmail.com
-Cc: akpm@linux-foundation.org, x86@kernel.org, mingo@elte.hu,
-       linux-kernel@vger.kernel.org
-Date: Mon, 28 Dec 2009 11:02:15 +0200
-Message-Id: <1261990935.4641.7.camel@penberg-laptop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 7bit
-X-Mailer: Evolution 2.26.1 
+	Mon, 28 Dec 2009 04:11:30 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=loxonYEcGn0XhYDI8+Q7OK7gdc8WRYqLU2R1LC19Rtl5WKiRhQwrfBDAF9E8cUtBHE
+         cSVZlVGot/GR/011I3iP2ULJjkEYOeii9Sjct73Ax089a9U7DVDqG5LdAisONAIgIGFV
+         n5tpdkBxzZWPdCDIiMoRVzp57OrRBVnLOFQG0=
+MIME-Version: 1.0
+In-Reply-To: <20091228084659.GA31389@sli10-desk.sh.intel.com>
+References: <20091224005506.GA7879@sli10-desk.sh.intel.com>
+	 <4e5e476b0912250216n2b4aceacyf22a0e73425efd3a@mail.gmail.com>
+	 <20091228020348.GB28115@sli10-desk.sh.intel.com>
+	 <4e5e476b0912280036r6e55587dj66952fcd6ff4d08b@mail.gmail.com>
+	 <20091228084659.GA31389@sli10-desk.sh.intel.com>
+Date: Mon, 28 Dec 2009 10:11:25 +0100
+Message-ID: <4e5e476b0912280111s6a977251m3416341b4bd2c272@mail.gmail.com>
+Subject: Re: [PATCH]cfq-iosched: don't take requests with long distence as 
+	close
+From: Corrado Zoccolo <czoccolo@gmail.com>
+To: Shaohua Li <shaohua.li@intel.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
+       "jmoyer@redhat.com" <jmoyer@redhat.com>,
+       "Zhang, Yanmin" <yanmin.zhang@intel.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Pekka Enberg <penberg@cs.helsinki.fi>
+Hi Shaohua,
+On Mon, Dec 28, 2009 at 9:46 AM, Shaohua Li <shaohua.li@intel.com> wrote:
+> On Mon, Dec 28, 2009 at 04:36:39PM +0800, Corrado Zoccolo wrote:
+>> Hi Shaohua,
+>> On Mon, Dec 28, 2009 at 3:03 AM, Shaohua Li <shaohua.li@intel.com> wrote:
+>> > On Fri, Dec 25, 2009 at 06:16:27PM +0800, Corrado Zoccolo wrote:
+>> >> Hi Shaohua,
+>> >> On Thu, Dec 24, 2009 at 1:55 AM, Shaohua Li <shaohua.li@intel.com> wrote:
+>> >> > df5fe3e8e13883f58dc97489076bbcc150789a21
+>> >> > b3b6d0408c953524f979468562e7e210d8634150
+>> >> > The coop merge is too aggressive. For example, if two tasks are reading two
+>> >> > files where the two files have some adjecent blocks, cfq will immediately
+>> >> > merge them. cfq_rq_close() also has trouble, sometimes the seek_mean is very
+>> >> > big. I did a test to make cfq_rq_close() always checks the distence according
+>> >> > to CIC_SEEK_THR, but still saw a lot of wrong merge. (BTW, why we take a long
+>> >> > distence far away request as close. Taking them close doesn't improve any thoughtput
+>> >> > to me. Maybe we should always use CIC_SEEK_THR as close criteria).
+>> >> Yes, when deciding if two queues are going to be merged, we should use
+>> >> the constant CIC_SEEK_THR.
+>> >
+>> > seek_mean could be very big sometimes, using it as close criteria is meanless
+>> > as this doen't improve any performance. So if it's big, let's fallback to
+>> > default value.
+>>
+>> meanless -> meaningless (also in the comment within code)
+> oops
+>
+>> > Signed-off-by: Shaohua Li<shaohua.li@intel.com>
+>> >
+>> > diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+>> > index e2f8046..8025605 100644
+>> > --- a/block/cfq-iosched.c
+>> > +++ b/block/cfq-iosched.c
+>> > @@ -1682,6 +1682,10 @@ static inline int cfq_rq_close(struct cfq_data *cfqd, struct cfq_queue *cfqq,
+>> >        if (!sample_valid(cfqq->seek_samples))
+>> >                sdist = CFQQ_SEEK_THR;
+>> >
+>> > +       /* if seek_mean is big, using it as close criteria is meanless */
+>> > +       if (sdist > CFQQ_SEEK_THR)
+>> > +               sdist = CFQQ_SEEK_THR;
+>> > +
+>> >        return cfq_dist_from_last(cfqd, rq) <= sdist;
+>> >  }
+>> >
+>> >
+>> This changes also the cfq_should_preempt behaviour, where a large
+>> seek_mean could be meaningful, so I think it is better to add a
+>> boolean parameter to cfq_rq_close, to distinguish whether we are
+>> preempting or looking for queue merges, and make the new code
+>> conditional on merging.
+> can you explain why it's meaningful for cfq_should_preempt()? Unless sdist is
+> very big, for example > 10*seek_mean, the preempt seems not meaningless.
 
-As suggested by Vegard Nossum, use KERN_WARNING for error reporting to make
-sure kmemcheck reports end up in syslog.
+Disk access time is a complex function, but for rotational disks it is
+'sort of' increasing with the amplitude of the seek. So, if you have a
+new request that is within the mean seek distance (even if it is
+larger than our constant), it is good to chose this request instead of
+waiting for an other one from the active queue (this behaviour is the
+same exhibited by AS, so we need a good reason to change).
 
-Cc: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
----
-Vegard, how do you want to merge this? Andrew? Ingo? I can also pick it
-up in my tree if you ACK it.
+This is reasonable for chosing the next request, but not to determine
+if two queues have to be merged (since they can depart soon), so my
+suggestion is to differentiate using a parameter.
 
- arch/x86/mm/kmemcheck/error.c |   19 +++++++++----------
- 1 files changed, 9 insertions(+), 10 deletions(-)
+>
+> Thanks,
+> Shaohua
+>
 
-diff --git a/arch/x86/mm/kmemcheck/error.c b/arch/x86/mm/kmemcheck/error.c
-index 4901d0d..af3b6c8 100644
---- a/arch/x86/mm/kmemcheck/error.c
-+++ b/arch/x86/mm/kmemcheck/error.c
-@@ -106,26 +106,25 @@ void kmemcheck_error_recall(void)
- 
- 	switch (e->type) {
- 	case KMEMCHECK_ERROR_INVALID_ACCESS:
--		printk(KERN_ERR  "WARNING: kmemcheck: Caught %d-bit read "
--			"from %s memory (%p)\n",
-+		printk(KERN_WARNING "WARNING: kmemcheck: Caught %d-bit read from %s memory (%p)\n",
- 			8 * e->size, e->state < ARRAY_SIZE(desc) ?
- 				desc[e->state] : "(invalid shadow state)",
- 			(void *) e->address);
- 
--		printk(KERN_INFO);
-+		printk(KERN_WARNING);
- 		for (i = 0; i < SHADOW_COPY_SIZE; ++i)
--			printk("%02x", e->memory_copy[i]);
--		printk("\n");
-+			printk(KERN_CONT "%02x", e->memory_copy[i]);
-+		printk(KERN_CONT "\n");
- 
--		printk(KERN_INFO);
-+		printk(KERN_WARNING);
- 		for (i = 0; i < SHADOW_COPY_SIZE; ++i) {
- 			if (e->shadow_copy[i] < ARRAY_SIZE(short_desc))
--				printk(" %c", short_desc[e->shadow_copy[i]]);
-+				printk(KERN_CONT " %c", short_desc[e->shadow_copy[i]]);
- 			else
--				printk(" ?");
-+				printk(KERN_CONT " ?");
- 		}
--		printk("\n");
--		printk(KERN_INFO "%*c\n", 2 + 2
-+		printk(KERN_CONT "\n");
-+		printk(KERN_WARNING "%*c\n", 2 + 2
- 			* (int) (e->address & (SHADOW_COPY_SIZE - 1)), '^');
- 		break;
- 	case KMEMCHECK_ERROR_BUG:
--- 
-1.6.0.4
-
-
-
+Thanks
+Corrado
