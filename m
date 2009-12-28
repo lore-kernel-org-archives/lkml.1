@@ -1,65 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752125AbZL1RRo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752449AbZL1RSB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752125AbZL1RRo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Dec 2009 12:17:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751225AbZL1RRn
+	id S1752449AbZL1RSB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Dec 2009 12:18:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752304AbZL1RSA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Dec 2009 12:17:43 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:47952 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751162AbZL1RRm (ORCPT
+	Mon, 28 Dec 2009 12:18:00 -0500
+Received: from exprod6og101.obsmtp.com ([64.18.1.181]:50232 "HELO
+	exprod6og101.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751423AbZL1RR7 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Dec 2009 12:17:42 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=sCjxR2dOJ5+4r/PYRSBiyLvCnzLiCcnMRno4k/ICah7Mz6m2zQSSp+0j9j+61dpV3Y
-         XbAoeLXfHZuIH+9E6uq8anO1xGu+t/A/GVph689yisD9TZs1YMt5u4ZdUxJVMBIN/U6B
-         zu4dD4wpe2CHe1KarUL8swT9FzaXxmLZLV9zk=
-Date: Mon, 28 Dec 2009 18:17:37 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Alexander Beregalov <a.beregalov@gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.33-rc0: reiserfs: inconsistent lock state
-Message-ID: <20091228171733.GA5014@nowhere>
-References: <a4423d670912111406g5967eb1fw93e49de242fbf54@mail.gmail.com> <20091214110921.GA5168@nowhere> <a4423d670912141211q3e63011ftfd526ec541b09d44@mail.gmail.com> <20091216224117.GA5014@nowhere> <a4423d670912200409w51690618i229b31c8c00f8dc4@mail.gmail.com>
+	Mon, 28 Dec 2009 12:17:59 -0500
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <a4423d670912200409w51690618i229b31c8c00f8dc4@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Subject: init/initramfs.c: fix "symbol shadows an earlier one" noise
+Date: Mon, 28 Dec 2009 12:17:58 -0500
+Message-ID: <BD79186B4FD85F4B8E60E381CAEE19090200F473@mi8nycmail19.Mi8.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: init/initramfs.c: fix "symbol shadows an earlier one" noise
+Thread-Index: AcqH4bPIumi60NOVSfmaLpruJdblWQ==
+From: "H Hartley Sweeten" <hartleys@visionengravers.com>
+To: <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 28 Dec 2009 17:17:58.0220 (UTC) FILETIME=[B37D38C0:01CA87E1]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Dec 20, 2009 at 03:09:33PM +0300, Alexander Beregalov wrote:
-> Hi Frederic
-> 
-> This is Linus's v2.6.33-rc1-96-gdd59f6c
-> plus your 47376ceba5 "reiserfs: Fix reiserfs lock <-> inode mutex
-> dependency inversion"
-> 
-> [ INFO: inconsistent lock state ]
-> 2.6.33-rc1-00101-g476ef56 #1
-> ---------------------------------
-> inconsistent {RECLAIM_FS-ON-W} -> {IN-RECLAIM_FS-W} usage.
-> kswapd0/313 [HC0[0]:SC0[0]:HE1:SE1] takes:
->  (&REISERFS_SB(s)->lock){+.+.?.}, at: [<c1111048>]
-> reiserfs_write_lock_once+0x28/0x50
-> {RECLAIM_FS-ON-W} state was registered at:
->   [<c104e522>] mark_held_locks+0x62/0x90
->   [<c104e5ea>] lockdep_trace_alloc+0x9a/0xc0
->   [<c108efa6>] kmem_cache_alloc+0x26/0xf0
->   [<c1085a0c>] __get_vm_area_node+0x6c/0xf0
->   [<c10860fe>] __vmalloc_node+0x7e/0xa0
->   [<c108629b>] vmalloc+0x2b/0x30
->   [<c110d4ba>] journal_init+0x2a/0x9f0
+The symbol 'count' is a local global variable in this file.  The
+function clean_rootfs() should use a different symbol name to
+prevent "symbol shadows an earlier one" noise.
 
+Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
 
+---
 
-Oh right, I fixed a vmalloc under reiserfs lock
-in the mount path but there are some others remaining.
-
-Will fix, thanks!
-
+diff --git a/init/initramfs.c b/init/initramfs.c
+index b37d34b..37d3859 100644
+--- a/init/initramfs.c
++++ b/init/initramfs.c
+@@ -525,7 +525,7 @@ static void __init clean_rootfs(void)
+ 	int fd;
+ 	void *buf;
+ 	struct linux_dirent64 *dirp;
+-	int count;
++	int num;
+ 
+ 	fd = sys_open("/", O_RDONLY, 0);
+ 	WARN_ON(fd < 0);
+@@ -539,9 +539,9 @@ static void __init clean_rootfs(void)
+ 	}
+ 
+ 	dirp = buf;
+-	count = sys_getdents64(fd, dirp, BUF_SIZE);
+-	while (count > 0) {
+-		while (count > 0) {
++	num = sys_getdents64(fd, dirp, BUF_SIZE);
++	while (num > 0) {
++		while (num > 0) {
+ 			struct stat st;
+ 			int ret;
+ 
+@@ -554,12 +554,12 @@ static void __init clean_rootfs(void)
+ 					sys_unlink(dirp->d_name);
+ 			}
+ 
+-			count -= dirp->d_reclen;
++			num -= dirp->d_reclen;
+ 			dirp = (void *)dirp + dirp->d_reclen;
+ 		}
+ 		dirp = buf;
+ 		memset(buf, 0, BUF_SIZE);
+-		count = sys_getdents64(fd, dirp, BUF_SIZE);
++		num = sys_getdents64(fd, dirp, BUF_SIZE);
+ 	}
+ 
+ 	sys_close(fd); 
