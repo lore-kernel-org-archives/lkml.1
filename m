@@ -1,91 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751472AbZL1TyR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751514AbZL1UBt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751472AbZL1TyR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Dec 2009 14:54:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751253AbZL1TyQ
+	id S1751514AbZL1UBt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Dec 2009 15:01:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751271AbZL1UBt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Dec 2009 14:54:16 -0500
-Received: from smtp4-g21.free.fr ([212.27.42.4]:46370 "EHLO smtp4-g21.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751181AbZL1TyQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Dec 2009 14:54:16 -0500
-Message-ID: <4B390CDF.5070102@epsm.fr>
-Date: Mon, 28 Dec 2009 20:54:07 +0100
-From: Didier Spaier <didier.spaier@epsm.fr>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090820)
+	Mon, 28 Dec 2009 15:01:49 -0500
+Received: from mho-01-ewr.mailhop.org ([204.13.248.71]:63426 "EHLO
+	mho-01-ewr.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751088AbZL1UBs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Dec 2009 15:01:48 -0500
+X-Mail-Handler: MailHop Outbound by DynDNS
+X-Originating-IP: 72.249.23.125
+X-Report-Abuse-To: abuse@dyndns.com (see http://www.dyndns.com/services/mailhop/outbound_abuse.html for abuse reporting information)
+X-MHO-User: U2FsdGVkX1/UzlOL0OIevino/m8/p+d9
+Date: Mon, 28 Dec 2009 12:01:45 -0800
+From: Tony Lindgren <tony@atomide.com>
+To: Felipe Balbi <felipe.balbi@nokia.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-omap@vger.kernel.org,
+       Samuel Ortiz <sameo@linux.intel.com>
+Subject: Re: mfd: twl4030-irq: irq_desc->lock converted to raw_spinlock_t
+Message-ID: <20091228200145.GN3512@atomide.com>
+References: <1261998172-29760-1-git-send-email-felipe.balbi@nokia.com>
+ <1261998172-29760-5-git-send-email-felipe.balbi@nokia.com>
 MIME-Version: 1.0
-To: Pavel Machek <pavel@ucw.cz>
-CC: "Rafael J. Wysocki" <rjw@sisk.pl>, len.brown@intel.com,
-       ibm-acpi@hmh.eng.br, kernel list <linux-kernel@vger.kernel.org>,
-       ibm-acpi-devel@lists.sourceforge.net
-Subject: Re: [ibm-acpi-devel] 2.6.33-rc2: regression: gkrellm no longer shows
- all the temperatures on thinkpad x60
-References: <20091227215722.GN11737@elf.ucw.cz> <4B37DE8F.1000806@epsm.fr>	<20091227222659.GP11737@elf.ucw.cz> <4B37E09B.10309@epsm.fr> <20091228101448.GB19984@elf.ucw.cz>
-In-Reply-To: <20091228101448.GB19984@elf.ucw.cz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1261998172-29760-5-git-send-email-felipe.balbi@nokia.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote:
-> On Sun 2009-12-27 23:32:59, Didier Spaier wrote:
->> Pavel Machek wrote:
->>> On Sun 2009-12-27 23:24:15, Didier Spaier wrote:
->>>> Pavel Machek wrote:
->>>>> ...I'll have to find out where gkrell got that info. It worked in
->>>>> 2.6.32.
->>>>>
->>>>> 									Pavel
->>>> Only to make sure... What is the output of cat /proc/acpi/ibm/thermal?
->>>>
->>>> I ask that question because I noticed battery temperature 0° displayed  by conky after updating to 2.6.32.2.
->>>> Looking at my .conkyrc I saw I tried to display ${smapi_bat_temp 0}
->>> but I had forgotten to re-install the tp_smapi module.
->>>
->>> Uhuh, there's no /proc/acpi/ibm:
->>>
->>> ls /proc/acpi/ibm         ls: cannot access /proc/acpi/ibm: No
->>> such file or directory
->>>
->>> . I guess that's the problem :-(. Config is:
->>>
->>> CONFIG_THINKPAD_ACPI=y
->>> # CONFIG_THINKPAD_ACPI_DEBUGFACILITIES is not set
->>> # CONFIG_THINKPAD_ACPI_DEBUG is not set
->>> CONFIG_THINKPAD_ACPI_UNSAFE_LEDS=y
->>> CONFIG_THINKPAD_ACPI_VIDEO=y
->>> # CONFIG_THINKPAD_ACPI_HOTKEY_POLL is not set
->>>
->>> ...so I do not see "enable legacy interface" option.
+* Felipe Balbi <felipe.balbi@nokia.com> [091228 03:04]:
+> commit 239007b8440abff689632f50cdf0f2b9e895b534 converted
+> the spinlock_t to raw_spinlock_t. Unfortunately twl4030-irq
+> was left aside on the conversion.
 > 
->> bash-3.1$ grep THINKPAD_ACPI /boot/config-2.6.32.2strip
->> CONFIG_THINKPAD_ACPI=m
->> CONFIG_THINKPAD_ACPI_DEBUGFACILITIES=y
->> CONFIG_THINKPAD_ACPI_DEBUG=y
->> CONFIG_THINKPAD_ACPI_UNSAFE_LEDS=y
->> CONFIG_THINKPAD_ACPI_VIDEO=y
->> CONFIG_THINKPAD_ACPI_HOTKEY_POLL=y
->> bash-3.1$
->>
->> I suggest you modularize THINKPAD_ACPI.
+> Cc: Tony Lindgren <tony@atomide.com>
+> Cc: linux-omap@vger.kernel.org
+> Acked-by: Thomas Gleixner <tglx@linutronix.de>
+> Signed-off-by: Felipe Balbi <felipe.balbi@nokia.com>
 > 
-> How would modular version help?
+> ---
 > 
-I can't tell you how exactly.
+> resending because it wasn't applied before
 
-But I can tell that is *does* work as a module, at least with 2.6.32.2.
+This should go via Samuel as it's MFD related.
 
-Plus, reading Documentation/laptops/thinkpad-acpi make obvious IMHO,
-though not explicitly stated, that it is supposed to be built as a module.
+Acked-by: Tony Lindgren <tony@atomide.com>
 
-For instance 'grep module thinkpad-acpi|wc -l'  returns 17 here ;)
-
-And how the 'modprobe' command (founded twice in the same file) is supposed
-to work with a driver built in the kernel image?
-
-But of course deciding to try that or not is up to you :-)
-
-Best regards,
-
-Didier
+ 
+> 
+>  drivers/mfd/twl4030-irq.c |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/mfd/twl4030-irq.c b/drivers/mfd/twl4030-irq.c
+> index 20d29ba..9df9a5a 100644
+> --- a/drivers/mfd/twl4030-irq.c
+> +++ b/drivers/mfd/twl4030-irq.c
+> @@ -568,12 +568,12 @@ static void twl4030_sih_do_edge(struct work_struct *work)
+>  
+>  		bytes[byte] &= ~(0x03 << off);
+>  
+> -		spin_lock_irq(&d->lock);
+> +		raw_spin_lock_irq(&d->lock);
+>  		if (d->status & IRQ_TYPE_EDGE_RISING)
+>  			bytes[byte] |= BIT(off + 1);
+>  		if (d->status & IRQ_TYPE_EDGE_FALLING)
+>  			bytes[byte] |= BIT(off + 0);
+> -		spin_unlock_irq(&d->lock);
+> +		raw_spin_unlock_irq(&d->lock);
+>  
+>  		edge_change &= ~BIT(i);
+>  	}
