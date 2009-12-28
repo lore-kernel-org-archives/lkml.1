@@ -1,81 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751488AbZL1UEV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751646AbZL1UOV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751488AbZL1UEV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Dec 2009 15:04:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751253AbZL1UEU
+	id S1751646AbZL1UOV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Dec 2009 15:14:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751475AbZL1UOU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Dec 2009 15:04:20 -0500
-Received: from www84.your-server.de ([213.133.104.84]:48229 "EHLO
-	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751088AbZL1UEU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Dec 2009 15:04:20 -0500
-Subject: Re: [PATCH] [0/6] kfifo fixes/improvements
-From: Stefani Seibold <stefani@seibold.net>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: linux-kernel@vger.kernel.org, akpm@osdl.org
-In-Reply-To: <20091228172651.GE4994@basil.fritz.box>
-References: <200912271003.631128760@firstfloor.org>
-	 <1261949800.25298.18.camel@wall-e> <20091227233816.GC2399@basil.fritz.box>
-	 <1261986136.808.2.camel@wall-e> <20091228145749.GD4994@basil.fritz.box>
-	 <1262016510.12656.25.camel@wall-e>  <20091228172651.GE4994@basil.fritz.box>
-Content-Type: text/plain; charset="ISO-8859-15"
-Date: Mon, 28 Dec 2009 21:04:13 +0100
-Message-ID: <1262030653.15368.37.camel@wall-e>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 
-Content-Transfer-Encoding: 7bit
-X-Authenticated-Sender: stefani@seibold.net
+	Mon, 28 Dec 2009 15:14:20 -0500
+Received: from khc.piap.pl ([195.187.100.11]:55106 "EHLO khc.piap.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750995AbZL1UOT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Dec 2009 15:14:19 -0500
+From: Krzysztof Halasa <khc@pm.waw.pl>
+To: linux-crypto@vger.kernel.org
+Cc: lkml <linux-kernel@vger.kernel.org>
+Subject: Re: Crypto test results unused?
+References: <m3ws07q865.fsf@intrepid.localdomain>
+Date: Mon, 28 Dec 2009 21:14:17 +0100
+In-Reply-To: <m3ws07q865.fsf@intrepid.localdomain> (Krzysztof Halasa's message
+	of "Mon, 28 Dec 2009 19:12:50 +0100")
+Message-ID: <m37hs6rh46.fsf@intrepid.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Montag, den 28.12.2009, 18:26 +0100 schrieb Andi Kleen:
-> First having to rely on another large patchkit makes 
-> it annoying to develop for this (it's the linux kernel
-> equivalent of DLL hell), but ok. I hope the interface
-> doesn't change again at least.
-> 
+Krzysztof Halasa <khc@pm.waw.pl> writes:
 
-The interface hasn't been changed, only the implementation. So it should
-be not a big issue for the users of the kfifo API! Programming is
-sometimes like evolution. But i think the macro based version is now the
-right and best solution which a lot of benefits for the users. 
+> is the core crypto code supposed to "kill" algorithms which fail the
+> test?
+>
+> On little-endian IXP4xx 3 hardware-assisted algorithms fail (due to
+> apparently unrelated bug which I will take care of). It seems the kernel
+> is still using these failing algorithms (my debugging code adds extra
+> fields to the /proc output):
+>
+> alg: skcipher: Test 1 failed on encryption for ecb(des)-ixp4xx
+> 00000000: 01 23 45 67 89 ab cd e7
+> alg: skcipher: Test 1 failed on encryption for ecb(des3_ede)-ixp4xx
+> 00000000: 73 6f 6d 65 64 61 74 61
+> alg: skcipher: Test 1 failed on encryption for ecb(aes)-ixp4xx
+> 00000000: 00 11 22 33 44 55 66 77 88 99 aa bb cc dd ee ff
+>
+> # grep 'ecb(des)-ixp4xx\|ecb(des3_ede)-ixp4xx\|ecb(aes)-ixp4xx' /proc/cryp
+> to -A 6
+> driver       : ecb(aes)-ixp4xx
+> module       : ixp4xx_crypto
+> priority     : 300
+> refcnt       : 1
+> flags        : 0x85
+> ptr          : 0xbf020074
+> selftest     : unknown
+> ^^^^^^^^^^^^^^^^^^^^^^
 
-> > So please draw back this patch, you will get exactly what you want and
-> > need in the next release. I have now a clean, slim and fast
-> > implementation. All what i need is a review and some ack's
-> 
-> How about the current users for 2.6.33?  Unless they are not 
-> record oriented or always put in power-of-two records they will
-> need this patch, otherwise they risk desynchronization on fifo
-> full.
-> 
-> I think the patch is needed.
-> 
+I think probably crypto_alg_tested() should mark the failing algorithm
+somehow?
+void crypto_alg_tested(const char *name, int err)
+{
+	...
+found:
+	q->cra_flags |= CRYPTO_ALG_DEAD;
+	alg = test->adult;
 
-It is exactly the same behavior as the old kfifo API, so no user relies
-on the new "kfifo_in atomic" feature. The only user is you. And it is
-easy for you to to check if enough room is available with kfifo_avail()
-before calling kfifo_in(). That is exactly what your patch do inside the
-kfifo_in() function. 
+  >>>>>>>>>>>>> maybe here? if (err) mark_as_failed(alg); <<<<<<<<<<<<<<<<
 
-> Also should drop the unused interfaces for 2.6.33 before anyone
-> else tries to use them and gets the same nasty surprise as me.
-> 
+	if (err || list_empty(&alg->cra_list))
+		goto complete;
 
-Nasty surprise? Sorry, but i accepted all your patches, excluded one,
-which breaks my future work. And i implemented all your suggestions in
-my new macro based kfifo API in less than a day. So where is the
-problem? You modified the interface not me! Nobody relies currently on
-your patches, it's only you.
- 
-I will send a patch to Andrew for removing kfifo_*_rec() functions if
-you like and i hope for your cooperation. Again please draw back your
-"kfifo_in atomic" patch. 
-
-And for 2.6.34 everything will be fine :-)
-
-Stefani
-
-
+	alg->cra_flags |= CRYPTO_ALG_TESTED;
+-- 
+Krzysztof Halasa
