@@ -1,32 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752003AbZL1QJS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752182AbZL1QKX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752003AbZL1QJS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Dec 2009 11:09:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751199AbZL1QJQ
+	id S1752182AbZL1QKX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Dec 2009 11:10:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751298AbZL1QKT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Dec 2009 11:09:16 -0500
-Received: from mga01.intel.com ([192.55.52.88]:44516 "EHLO mga01.intel.com"
+	Mon, 28 Dec 2009 11:10:19 -0500
+Received: from mga02.intel.com ([134.134.136.20]:39140 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751311AbZL1QJO convert rfc822-to-8bit (ORCPT
+	id S1751966AbZL1QKM convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Dec 2009 11:09:14 -0500
+	Mon, 28 Dec 2009 11:10:12 -0500
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,459,1257148800"; 
-   d="scan'208";a="526759011"
+X-IronPort-AV: E=Sophos;i="4.47,463,1257148800"; 
+   d="scan'208";a="479637269"
 From: "Sosnowski, Maciej" <maciej.sosnowski@intel.com>
 To: "Williams, Dan J" <dan.j.williams@intel.com>
-CC: "linux-raid@vger.kernel.org" <linux-raid@vger.kernel.org>,
+CC: "stable@kernel.org" <stable@kernel.org>, Simon Horman <horms@verge.net.au>,
+       "linux-raid@vger.kernel.org" <linux-raid@vger.kernel.org>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Date: Mon, 28 Dec 2009 16:09:11 +0000
-Subject: RE: [PATCH 2/3] async_tx: expand async raid6 test to cover ioatdma
- corner	case
-Thread-Topic: [PATCH 2/3] async_tx: expand async raid6 test to cover ioatdma
- corner	case
-Thread-Index: AcqDZqz/LuHkiPD9S4+8OscwC5/7GQEcV5gA
-Message-ID: <129600E5E5FB004392DDC3FB599660D7CB3710BB@irsmsx504.ger.corp.intel.com>
+Date: Mon, 28 Dec 2009 16:09:44 +0000
+Subject: RE: [PATCH 3/3] ioat2,3: put channel hardware in known state at init
+Thread-Topic: [PATCH 3/3] ioat2,3: put channel hardware in known state at
+ init
+Thread-Index: AcqDZrAboUp1uzDhSGyWTFM4apTg4AEcWk/Q
+Message-ID: <129600E5E5FB004392DDC3FB599660D7CB3710BC@irsmsx504.ger.corp.intel.com>
 References: <20091223002518.32335.27768.stgit@dwillia2-linux.ch.intel.com>
- <20091223002600.32335.55048.stgit@dwillia2-linux.ch.intel.com>
-In-Reply-To: <20091223002600.32335.55048.stgit@dwillia2-linux.ch.intel.com>
+ <20091223002606.32335.87363.stgit@dwillia2-linux.ch.intel.com>
+In-Reply-To: <20091223002606.32335.87363.stgit@dwillia2-linux.ch.intel.com>
 Accept-Language: en-US
 Content-Language: en-US
 X-MS-Has-Attach: 
@@ -40,9 +40,16 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Williams, Dan J wrote:
-> Add explicit 11 and 12 disks cases to exercise the 0 < src_cnt % 8 < 3
-> corner case in the ioatdma driver.
+> Put the ioat2 and ioat3 state machines in the halted state with all
+> errors cleared.
 > 
+> The ioat1 init path is not disturbed for stability, there are no
+> reported ioat1 initiaization issues.
+> 
+> Cc: <stable@kernel.org>
+> Reported-by: Roland Dreier <rdreier@cisco.com>
+> Tested-by: Roland Dreier <rdreier@cisco.com>
+> Acked-by: Simon Horman <horms@verge.net.au>
 > Signed-off-by: Dan Williams <dan.j.williams@intel.com>
 > ---
 
