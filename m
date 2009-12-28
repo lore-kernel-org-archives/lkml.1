@@ -1,96 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751632AbZL1GF5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751672AbZL1GMj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751632AbZL1GF5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Dec 2009 01:05:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750963AbZL1GFz
+	id S1751672AbZL1GMj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Dec 2009 01:12:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751612AbZL1GMh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Dec 2009 01:05:55 -0500
-Received: from lists.laptop.org ([18.85.2.145]:43808 "EHLO mail.laptop.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750818AbZL1GFy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Dec 2009 01:05:54 -0500
-Date: Mon, 28 Dec 2009 01:07:59 -0500
-From: Michael Stone <michael@laptop.org>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       linux-security-module@vger.kernel.org, Andi Kleen <andi@firstfloor.org>,
-       David Lang <david@lang.hm>, Oliver Hartkopp <socketcan@hartkopp.net>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Valdis Kletnieks <Valdis.Kletnieks@vt.edu>,
-       Bryan Donlan <bdonlan@gmail.com>, Evgeniy Polyakov <zbr@ioremap.net>,
-       "C. Scott Ananian" <cscott@cscott.net>,
-       James Morris <jmorris@namei.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Bernie Innocenti <bernie@codewiz.org>,
-       Mark Seaborn <mrs@mythic-beasts.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       =?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>,
-       Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
-       Samir Bellabes <sam@synack.fr>,
-       Casey Schaufler <casey@schaufler-ca.com>,
-       "Serge E. Hallyn" <serue@us.ibm.com>,
-       Michael Stone <michael@laptop.org>
-Subject: Re: RFC: disablenetwork facility. (v4)
-Message-ID: <20091228060759.GB13266@heat>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Disposition: inline
-In-Reply-To: <20091227190802.GH11737@elf.ucw.cz>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 28 Dec 2009 01:12:37 -0500
+Received: from mga03.intel.com ([143.182.124.21]:7038 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750963AbZL1GMh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Dec 2009 01:12:37 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
+   d="scan'208";a="227060990"
+From: Huang Ying <ying.huang@intel.com>
+To: lenb@kernel.org
+Cc: ak@linux.intel.com, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org
+Subject: [PATCH -v3 0/5] ACPI, APEI, APEI basic support
+Date: Mon, 28 Dec 2009 14:12:19 +0800
+Message-Id: <1261980744-4450-1-git-send-email-ying.huang@intel.com>
+X-Mailer: git-send-email 1.6.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote:
-> "I can't see" is not strong enough test, I'd say.
-> 
-> For example, I can easily imagine something like pam falling back to
-> local authentication when network is unavailable. If you disable
-> network for su...
-> 
-> It would be also extremely easy to DoS something like sendmail -- if
-> it forks into background and then serves other users' requests.
 
-Pavel,
+APEI stands for ACPI Platform Error Interface, which allows to report
+errors (for example from chipset) to the operating system. This
+improves NMI handling especially. In addition it supports error
+serialization and error injection.
 
-I spent some time this afternoon reflecting on the scenarios that you sketched
-above. This reflection resulted in three concrete responses:
+This patchset provides basic support for APEI, some important parts
+such as ERST, HEST generic error source and BEST are still missing
+because they are not finalized yet.
 
-   1. Anyone depending on their network for authentication already has to deal
-      with availability faults. disablenetwork doesn't change anything
-      fundamental there.
+The HEST tabling parsing code will be used by PCIE AER intialization
+code to prevent touching PCIE root port in firmware first mode. EINJ
+can be used to test some RAS related code such as MCE and PCIE AER.
 
-   2. Anyone able to use disablenetwork to block a privilege escalation via su
-      or to influence sendmail will be able to disrupt the privilege escalation
-      or mail transfer by manipulating the ancestors of su or sendmail in plenty
-      of other ways including, for example, via ptrace(), kill(), manipulation
-      of PATH, manipulation of X11 events and IPC, manipulation of TTYs, and so
-      on. 
 
-   3. As I pointed out before, disablenetwork _is_ controlled by a build-time
-      configuration option, its use _is_ still subject to any existing MAC
-      policy, and it _is_ easy to control for simply by talking to a
-      known-unrestricted process over an unrestricted IPC channel like a Unix
-      socket.
+v3:
 
-and a short meta-response:
+ - Use acpi_os_read/write_port.
 
-   As I see it, the whole point of isolation facilities like disablenetwork is
-   to convert _nasty_ faults like secrecy and integrity faults into _local_
-   availability faults. Consequently, it is completely unsurprising that we
-   can't meet stringent availability goals via isolation without either relaxing
-   our other security goals or falling back to strong assumptions about the
-   state of our initial environment.
+ - Fix error message for firmware bug.
 
-   However, we should not therefore ignore the bottom line which is that
-   the additional isolation enabled by disablenetwork represents an excellent
-   security risk/reward tradeoff for many people and should be made more widely
-   available to these people on these grounds.
+ - Remove hest_exit.
 
-Regards,
+v2:
 
-Michael
-
-P.S. - Thanks again for your assistance in thinking through these scenarios and
-in refining the security case for the disablenetwork feature.
+ - Separate pre-map + atomic read/write into atomicio.c from
+   apei-base.c and in separated patch.
