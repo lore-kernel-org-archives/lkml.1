@@ -1,80 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751420AbZL1Pis@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751100AbZL1Pjm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751420AbZL1Pis (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Dec 2009 10:38:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750963AbZL1Pir
+	id S1751100AbZL1Pjm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Dec 2009 10:39:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750872AbZL1Pjm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Dec 2009 10:38:47 -0500
-Received: from mail-yw0-f176.google.com ([209.85.211.176]:60980 "EHLO
-	mail-yw0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750905AbZL1Piq (ORCPT
+	Mon, 28 Dec 2009 10:39:42 -0500
+Received: from mail-yx0-f187.google.com ([209.85.210.187]:50229 "EHLO
+	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750762AbZL1Pjl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Dec 2009 10:38:46 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=BauOdRPRTxMabZxBaTswQVNtWvESqvC384CetcG9e99XXenQvn3MVi06XnhVTMwBGQ
-         m3jToedDzyliv1us1ulAuke9hJ9mcLsvOPluZxf3ZnHbBK0N5P3VpPS+Ce02JjzAhadt
-         cejHwKtXdZCbb0K+A8hM8iBn1tSTJs4+vu930=
-Date: Mon, 28 Dec 2009 23:32:36 +0800
-From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
-To: liu weni <qingshenlwy@gmail.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       viro <viro@zeniv.linux.org.uk>
-Subject: Re: [PATCHv3 1/3]posix_acl: add the pointer check into
-	fs/posix_acl.c
-Message-ID: <20091228153236.GB10490@hack>
-References: <b3657a100912280659oda68e2o73527ec58b35075b@mail.gmail.com> <b3657a100912280700h3e8fbb13iba7f0357feff36e3@mail.gmail.com>
+	Mon, 28 Dec 2009 10:39:41 -0500
+Message-ID: <4B38D0CF.9000403@vflare.org>
+Date: Mon, 28 Dec 2009 21:07:51 +0530
+From: Nitin Gupta <ngupta@vflare.org>
+Reply-To: ngupta@vflare.org
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <b3657a100912280700h3e8fbb13iba7f0357feff36e3@mail.gmail.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+To: Andi Kleen <andi@firstfloor.org>
+CC: Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/2] [mmotm] Add notifiers for various swap events
+References: <1261963200-7136-1-git-send-email-ngupta@vflare.org> <87eimf87m5.fsf@basil.nowhere.org>
+In-Reply-To: <87eimf87m5.fsf@basil.nowhere.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 28, 2009 at 11:00:58PM +0800, liu weni wrote:
->If the acl pointer is NULL or have some error, the acl is invalid.
->The Macro of FOREACH_ACL_ENTRY will make some error.
->
->---
->Signed-off-by: Liuwenyi <qingshenlwy@gmail.com>
->Cc: Alexander Viro <viro@zeniv.linux.org.uk>
->Cc: linux-fsdevel@vger.kernel.org
->Cc: linux-kernel@vger.kernel.org
->
->---
->diff --git a/fs/posix_acl.c b/fs/posix_acl.c
->index 39df95a..45f8afa 100644
->--- a/fs/posix_acl.c
->+++ b/fs/posix_acl.c
->@@ -76,6 +76,12 @@ posix_acl_valid(const struct posix_acl *acl)
-> 	unsigned int id = 0;  /* keep gcc happy */
-> 	int needs_mask = 0;
->
->+	if (!acl)
->+		return -EINVAL;
->+
->+	if (IS_ERR)
+On 12/28/2009 08:32 PM, Andi Kleen wrote:
+> Nitin Gupta <ngupta@vflare.org> writes:
+> 
+>> Events:
+>>  - Swapon
+>>  - Swapoff
+>>  - When a swap slot is freed
+>>
+>> This is required for ramzswap module which implements RAM based block
+>> devices to be used as swap disks. These devices require a notification
+>> on these events to function properly.
+> 
+> The first question to ask is if compressed swap is worth
+> it. Do you have benchmark numbers showing it to be an improvement?
+> Are there cases where it is slower than uncompressed swap?
+> 
 
-Did you even do a compile test?
-I don't think this line will work...
+http://code.google.com/p/compcache/wiki/Performance
+This contains data for both positive and negative cases.
+Also, it is currently being used on (unofficial) Android builds where
+it shows noticeable performance gains compared to plain SSD swap.
+
+> 
+>> Currently, I'm not sure if any of these event notifiers have any other
+>> users. However, adding ramzswap specific hooks instead of this generic
+>> approach resulted in a bad/hacky code.
+> 
+> If there's only a single user I think it's preferable to call
+> directly. That makes the code much easier to read and understand.
+> In the end notifiers are a form of code obfuscation.
+> 
+
+Adding ramzswap code in place of generic swap slot free notification
+is bad since ramzswap is just another module and might not be selected
+for compilation. So, the code will include some unnecessary #ifdef'ery.
+
+I think SLOT_FREE notifier is the major worry which is surely too
+ramzswap specific (who else would want notification so often).
+
+However, SWAPON and SWAPOFF events are fairly generic and (I hope) should
+find some more users in future. If its okay to keep just these two notifiers,
+I will replace SWAP_NOTIFY notifier with a simple callback function in
+swap_info_struct. In future, if this event finds more users, I will revert
+back to this generic notifier.
+
+> The main use for notifiers would be if something is a optional
+> module, but that's not the case here.
 
 
->+		return PTR_ERR(acl);
->+
-> 	FOREACH_ACL_ENTRY(pa, acl, pe) {
-> 		if (pa->e_perm & ~(ACL_READ|ACL_WRITE|ACL_EXECUTE))
-> 			return -EINVAL;
->--
->To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->the body of a message to majordomo@vger.kernel.org
->More majordomo info at  http://vger.kernel.org/majordomo-info.html
->Please read the FAQ at  http://www.tux.org/lkml/
+ramzswap is an optional module.
 
--- 
-Live like a child, think like the god.
- 
+Thanks,
+Nitin
