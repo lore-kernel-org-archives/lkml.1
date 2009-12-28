@@ -1,185 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751502AbZL1NR2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751282AbZL1NuI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751502AbZL1NR2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Dec 2009 08:17:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751043AbZL1NR2
+	id S1751282AbZL1NuI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Dec 2009 08:50:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751026AbZL1NuG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Dec 2009 08:17:28 -0500
-Received: from fg-out-1718.google.com ([72.14.220.153]:32779 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750794AbZL1NR1 (ORCPT
+	Mon, 28 Dec 2009 08:50:06 -0500
+Received: from mo-p00-ob.rzone.de ([81.169.146.162]:26106 "EHLO
+	mo-p00-ob.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750858AbZL1NuE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Dec 2009 08:17:27 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :x-enigmail-version:content-type;
-        b=GmMBoFwVog2IiaRE8z+aNs6NKVB4sVt+crMQ3+vMs7RGQfI6AbngCkap55W7tma5FF
-         qlYxIZZUvaCmCNL6jzBS7WoC/MhX3p4kVxk4C9EQXpMZiojI+hxW2CsTtcOVeIGSPc2e
-         NdktrbkBju/EMGbhrvqYGcfvJ9rw2PcxxX4Wo=
-Message-ID: <4B38AFDE.8000203@gmail.com>
-Date: Mon, 28 Dec 2009 14:17:18 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-13.1 Thunderbird/3.0
+	Mon, 28 Dec 2009 08:50:04 -0500
+X-RZG-AUTH: :P2MHfkW8eP4Mre39l357AZT/I7AY/7nT2yrT1q0ngWNsKR9Dbc7nsXJ75kzJrrGVGv4=
+X-RZG-CLASS-ID: mo00
+Message-ID: <4B38B786.9020609@hartkopp.net>
+Date: Mon, 28 Dec 2009 14:49:58 +0100
+From: Oliver Hartkopp <socketcan@hartkopp.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090706)
 MIME-Version: 1.0
-To: Jiri Kosina <jkosina@suse.cz>
-CC: linux-input@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Christian Schuerer-Waldheim <csw@xray.at>
-Subject: Re: Device IDs for new Apple Wireless Keyboard
-X-Enigmail-Version: 1.0
-Content-Type: multipart/mixed;
- boundary="------------080702090106000903070908"
+To: Julia Lawall <julia@diku.dk>
+CC: Urs Thuermann <urs.thuermann@volkswagen.de>,
+       Oliver Hartkopp <oliver.hartkopp@volkswagen.de>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org,
+       chri <chripell@gmail.com>, chripell@evolware.org
+Subject: Re: [PATCH 4/5] drivers/net/can: Correct NULL test
+References: <Pine.LNX.4.64.0912272227290.20548@ask.diku.dk>
+In-Reply-To: <Pine.LNX.4.64.0912272227290.20548@ask.diku.dk>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------080702090106000903070908
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Julia Lawall wrote:
+> From: Julia Lawall <julia@diku.dk>
 
-Hi, I added some proper CCs. For me they look good. Care to add
-signed-off-by line? Thanks.
+Thanks Julia!
 
----- original message ----
-Hello Jiri,
+I added Christian Pellegrin who is the author of this driver in CC.
 
-I'm writing to you because you are the last in the list of contributors
-in the
-file hid-apple.c of the linux kernel.
+An obvious copy/paste error :-)
 
-Since November 2009 Apple is selling a new make of its Wireless Keyboard,
-which have new device IDs. In order to make the kernel driver hid-apple to
-take care about this new devices, the new IDs have to be added. I've
-created
-patches for the 2.6.31 and 2.6.32 kernel. Could you please integrate
-them into
-the main kernel?
+Regards,
+Oliver
 
-If you are not responsible for it anymore, please tell me whom I may
-contact
-instead. Thank you!
+Acked-by: Oliver Hartkopp <oliver@hartkopp.net>
 
-N.B.: The ID of the JIS-version is an assumption. The other two IDs
-where read
-from the new devices.
+> 
+> Test the just-allocated value for NULL rather than some other value.
+> 
+> The semantic patch that makes this change is as follows:
+> (http://coccinelle.lip6.fr/)
+> 
+> // <smpl>
+> @@
+> expression x,y;
+> statement S;
+> @@
+> 
+> x = \(kmalloc\|kcalloc\|kzalloc\)(...);
+> (
+> if ((x) == NULL) S
+> |
+> if (
+> -   y
+> +   x
+>        == NULL)
+>  S
+> )
+> // </smpl>
+> 
+> Signed-off-by: Julia Lawall <julia@diku.dk>
+> 
+> ---
+>  drivers/net/can/mcp251x.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff -u -p a/drivers/net/can/mcp251x.c b/drivers/net/can/mcp251x.c
+> --- a/drivers/net/can/mcp251x.c
+> +++ b/drivers/net/can/mcp251x.c
+> @@ -990,7 +990,7 @@ static int __devinit mcp251x_can_probe(s
+>  			goto error_tx_buf;
+>  		}
+>  		priv->spi_rx_buf = kmalloc(SPI_TRANSFER_BUF_LEN, GFP_KERNEL);
+> -		if (!priv->spi_tx_buf) {
+> +		if (!priv->spi_rx_buf) {
+>  			ret = -ENOMEM;
+>  			goto error_rx_buf;
+>  		}
+> --
+> To unsubscribe from this list: send the line "unsubscribe netdev" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
-Greetings,
-
-Christian Schürer-Waldheim
-
-
-
---------------080702090106000903070908
-Content-Type: text/x-patch;
- name="apple-wireless-keyboard-2009-linux-2.6.31.9.diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
- filename="apple-wireless-keyboard-2009-linux-2.6.31.9.diff"
-
-=== modified file 'drivers/hid/hid-apple.c'
---- old/drivers/hid/hid-apple.c	2009-12-23 23:29:17 +0000
-+++ new/drivers/hid/hid-apple.c	2009-12-23 23:51:58 +0000
-@@ -413,6 +413,13 @@
- 			APPLE_ISO_KEYBOARD },
- 	{ HID_BLUETOOTH_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_ALU_WIRELESS_JIS),
- 		.driver_data = APPLE_NUMLOCK_EMULATION | APPLE_HAS_FN },
-+	{ HID_BLUETOOTH_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_ALU_WIRELESS_2009_ANSI),
-+		.driver_data = APPLE_NUMLOCK_EMULATION | APPLE_HAS_FN },
-+	{ HID_BLUETOOTH_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_ALU_WIRELESS_2009_ISO),
-+		.driver_data = APPLE_NUMLOCK_EMULATION | APPLE_HAS_FN |
-+			APPLE_ISO_KEYBOARD },
-+	{ HID_BLUETOOTH_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_ALU_WIRELESS_2009_JIS),
-+		.driver_data = APPLE_NUMLOCK_EMULATION | APPLE_HAS_FN },
- 	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_WELLSPRING_ANSI),
- 		.driver_data = APPLE_HAS_FN },
- 	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_WELLSPRING_ISO),
-
-=== modified file 'drivers/hid/hid-core.c'
---- old/drivers/hid/hid-core.c	2009-12-23 23:29:17 +0000
-+++ new/drivers/hid/hid-core.c	2009-12-23 23:51:58 +0000
-@@ -1250,6 +1250,9 @@
- 	{ HID_BLUETOOTH_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_ALU_WIRELESS_ANSI) },
- 	{ HID_BLUETOOTH_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_ALU_WIRELESS_ISO) },
- 	{ HID_BLUETOOTH_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_ALU_WIRELESS_JIS) },
-+	{ HID_BLUETOOTH_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_ALU_WIRELESS_2009_ANSI) },
-+	{ HID_BLUETOOTH_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_ALU_WIRELESS_2009_ISO) },
-+	{ HID_BLUETOOTH_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_ALU_WIRELESS_2009_JIS) },
- 	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_WELLSPRING_ANSI) },
- 	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_WELLSPRING_ISO) },
- 	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_WELLSPRING_JIS) },
-
-=== modified file 'drivers/hid/hid-ids.h'
---- old/drivers/hid/hid-ids.h	2009-12-23 23:29:17 +0000
-+++ new/drivers/hid/hid-ids.h	2009-12-23 23:51:58 +0000
-@@ -82,6 +82,9 @@
- #define USB_DEVICE_ID_APPLE_ALU_WIRELESS_ANSI  0x022c
- #define USB_DEVICE_ID_APPLE_ALU_WIRELESS_ISO   0x022d
- #define USB_DEVICE_ID_APPLE_ALU_WIRELESS_JIS   0x022e
-+#define USB_DEVICE_ID_APPLE_ALU_WIRELESS_2009_ANSI  0x0239
-+#define USB_DEVICE_ID_APPLE_ALU_WIRELESS_2009_ISO   0x023a
-+#define USB_DEVICE_ID_APPLE_ALU_WIRELESS_2009_JIS   0x023b
- #define USB_DEVICE_ID_APPLE_WELLSPRING2_ANSI	0x0230
- #define USB_DEVICE_ID_APPLE_WELLSPRING2_ISO	0x0231
- #define USB_DEVICE_ID_APPLE_WELLSPRING2_JIS	0x0232
-
-
-
-
---------------080702090106000903070908
-Content-Type: text/x-patch;
- name="apple-wireless-keyboard-2009-linux-2.6.32.2.diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
- filename="apple-wireless-keyboard-2009-linux-2.6.32.2.diff"
-
-=== modified file 'drivers/hid/hid-apple.c'
---- old/drivers/hid/hid-apple.c	2009-12-24 00:17:19 +0000
-+++ new/drivers/hid/hid-apple.c	2009-12-24 00:19:58 +0000
-@@ -413,6 +413,13 @@
- 			APPLE_ISO_KEYBOARD },
- 	{ HID_BLUETOOTH_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_ALU_WIRELESS_JIS),
- 		.driver_data = APPLE_NUMLOCK_EMULATION | APPLE_HAS_FN },
-+	{ HID_BLUETOOTH_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_ALU_WIRELESS_2009_ANSI),
-+		.driver_data = APPLE_NUMLOCK_EMULATION | APPLE_HAS_FN },
-+	{ HID_BLUETOOTH_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_ALU_WIRELESS_2009_ISO),
-+		.driver_data = APPLE_NUMLOCK_EMULATION | APPLE_HAS_FN |
-+			APPLE_ISO_KEYBOARD },
-+	{ HID_BLUETOOTH_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_ALU_WIRELESS_2009_JIS),
-+		.driver_data = APPLE_NUMLOCK_EMULATION | APPLE_HAS_FN },
- 	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_WELLSPRING_ANSI),
- 		.driver_data = APPLE_HAS_FN },
- 	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_WELLSPRING_ISO),
-
-=== modified file 'drivers/hid/hid-core.c'
---- old/drivers/hid/hid-core.c	2009-12-24 00:17:19 +0000
-+++ new/drivers/hid/hid-core.c	2009-12-24 00:19:58 +0000
-@@ -1278,6 +1278,9 @@
- 	{ HID_BLUETOOTH_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_ALU_WIRELESS_ANSI) },
- 	{ HID_BLUETOOTH_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_ALU_WIRELESS_ISO) },
- 	{ HID_BLUETOOTH_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_ALU_WIRELESS_JIS) },
-+	{ HID_BLUETOOTH_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_ALU_WIRELESS_2009_ANSI) },
-+	{ HID_BLUETOOTH_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_ALU_WIRELESS_2009_ISO) },
-+	{ HID_BLUETOOTH_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_ALU_WIRELESS_2009_JIS) },
- 	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_WELLSPRING_ANSI) },
- 	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_WELLSPRING_ISO) },
- 	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_WELLSPRING_JIS) },
-
-=== modified file 'drivers/hid/hid-ids.h'
---- old/drivers/hid/hid-ids.h	2009-12-24 00:17:19 +0000
-+++ new/drivers/hid/hid-ids.h	2009-12-24 00:19:58 +0000
-@@ -82,6 +82,9 @@
- #define USB_DEVICE_ID_APPLE_ALU_WIRELESS_ANSI  0x022c
- #define USB_DEVICE_ID_APPLE_ALU_WIRELESS_ISO   0x022d
- #define USB_DEVICE_ID_APPLE_ALU_WIRELESS_JIS   0x022e
-+#define USB_DEVICE_ID_APPLE_ALU_WIRELESS_2009_ANSI  0x0239
-+#define USB_DEVICE_ID_APPLE_ALU_WIRELESS_2009_ISO   0x023a
-+#define USB_DEVICE_ID_APPLE_ALU_WIRELESS_2009_JIS   0x023b
- #define USB_DEVICE_ID_APPLE_WELLSPRING2_ANSI	0x0230
- #define USB_DEVICE_ID_APPLE_WELLSPRING2_ISO	0x0231
- #define USB_DEVICE_ID_APPLE_WELLSPRING2_JIS	0x0232
-
-
-
-
---------------080702090106000903070908--
