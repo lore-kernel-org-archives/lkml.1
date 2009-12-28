@@ -1,53 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751368AbZL1KVM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751258AbZL1KVe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751368AbZL1KVM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Dec 2009 05:21:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750962AbZL1KVK
+	id S1751258AbZL1KVe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Dec 2009 05:21:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751261AbZL1KVd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Dec 2009 05:21:10 -0500
-Received: from relay.atmel.no ([80.232.32.139]:51108 "EHLO relay.atmel.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750761AbZL1KVJ convert rfc822-to-8bit (ORCPT
+	Mon, 28 Dec 2009 05:21:33 -0500
+Received: from mail-yw0-f176.google.com ([209.85.211.176]:65076 "EHLO
+	mail-yw0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750962AbZL1KVc convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Dec 2009 05:21:09 -0500
-Date: Mon, 28 Dec 2009 11:20:28 +0100
-From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-To: Peter =?UTF-8?B?SMO8d2U=?= <PeterHuewe@gmx.de>
-Cc: "Hans-Christian Egtvedt" <hans-christian.egtvedt@atmel.com>,
-       Nicolas Ferre <nicolas.ferre@atmel.com>,
-       Haavard Skinnemoen <hskinnemoen@atmel.com>,
+	Mon, 28 Dec 2009 05:21:32 -0500
+MIME-Version: 1.0
+In-Reply-To: <84144f020912272213u38389b79i25a0f50855d55673@mail.gmail.com>
+References: <1261963200-7136-1-git-send-email-ngupta@vflare.org>
+	 <84144f020912272213u38389b79i25a0f50855d55673@mail.gmail.com>
+Date: Mon, 28 Dec 2009 15:51:31 +0530
+Message-ID: <d760cf2d0912280221s7d24fac6u571243fdd2c71862@mail.gmail.com>
+Subject: Re: [PATCH 1/2] [mmotm] Add notifiers for various swap events
+From: Nitin Gupta <ngupta@vflare.org>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Peter Ma <pma@mediamatech.com>, linux-kernel@vger.kernel.org,
-       linux-mmc@vger.kernel.org
-Subject: Re: [PATCH] arch/avr32: Fix build failure for avr32 caused by typo
-Message-ID: <20091228112028.5babace2@hskinnemoen-d830>
-In-Reply-To: <200912281059.30450.PeterHuewe@gmx.de>
-References: <200912252008.45602.PeterHuewe@gmx.de>
-	<20091228091318.454c4713@hcegtvedt.norway.atmel.com>
-	<200912281059.30450.PeterHuewe@gmx.de>
-Organization: Atmel
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+       linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter HÃ¼we <PeterHuewe@gmx.de> wrote:
-> Great, thanks for the update.
-> The only thing that still catches my eye is that the kzalloc line can fail, so 
-> you should perhaps add something like
-> if (!slave) {
-> 	printk(KERN_ERR "No memory left for at32ap700x: at32_add_device_mc");
-> 	goto fail;
-> }
+On Mon, Dec 28, 2009 at 11:43 AM, Pekka Enberg <penberg@cs.helsinki.fi> wrote:
+> On Mon, Dec 28, 2009 at 3:19 AM, Nitin Gupta <ngupta@vflare.org> wrote:
+>> Events:
+>>  - Swapon
+>>  - Swapoff
+>>  - When a swap slot is freed
 
-I agree, except that this is extremely unlikely to happen, so we should
-either drop the printk() or use pr_debug() in order to waste as little
-memory as possible in production systems.
+<snip>
 
-I think your first patch is good as it is, so I will apply it. Please
-send any additional fixes as a separate patch.
+> This looks good to me. Hugh? Nitin, does this patch cause any
+> performance hit for the !CONFIG_RAMZSWAP case?
+>
 
-Haavard
+I have not yet collected any data to check overhead in !RAMZSWAP
+case but an empty notifier chain is essentially equivalent to:
+
+rcu_read_lock()
+        nb = rcu_dereference(*nl);
+rcu_read_unlock()
+
+This should not cause any performance problem. Anyway, I will
+try to come up with some numbers to confirm this.
+
+Thanks for looking into this.
+Nitin
