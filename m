@@ -1,77 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751514AbZL1UBt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751488AbZL1UEV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751514AbZL1UBt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Dec 2009 15:01:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751271AbZL1UBt
+	id S1751488AbZL1UEV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Dec 2009 15:04:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751253AbZL1UEU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Dec 2009 15:01:49 -0500
-Received: from mho-01-ewr.mailhop.org ([204.13.248.71]:63426 "EHLO
-	mho-01-ewr.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751088AbZL1UBs (ORCPT
+	Mon, 28 Dec 2009 15:04:20 -0500
+Received: from www84.your-server.de ([213.133.104.84]:48229 "EHLO
+	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751088AbZL1UEU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Dec 2009 15:01:48 -0500
-X-Mail-Handler: MailHop Outbound by DynDNS
-X-Originating-IP: 72.249.23.125
-X-Report-Abuse-To: abuse@dyndns.com (see http://www.dyndns.com/services/mailhop/outbound_abuse.html for abuse reporting information)
-X-MHO-User: U2FsdGVkX1/UzlOL0OIevino/m8/p+d9
-Date: Mon, 28 Dec 2009 12:01:45 -0800
-From: Tony Lindgren <tony@atomide.com>
-To: Felipe Balbi <felipe.balbi@nokia.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-omap@vger.kernel.org,
-       Samuel Ortiz <sameo@linux.intel.com>
-Subject: Re: mfd: twl4030-irq: irq_desc->lock converted to raw_spinlock_t
-Message-ID: <20091228200145.GN3512@atomide.com>
-References: <1261998172-29760-1-git-send-email-felipe.balbi@nokia.com>
- <1261998172-29760-5-git-send-email-felipe.balbi@nokia.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1261998172-29760-5-git-send-email-felipe.balbi@nokia.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Mon, 28 Dec 2009 15:04:20 -0500
+Subject: Re: [PATCH] [0/6] kfifo fixes/improvements
+From: Stefani Seibold <stefani@seibold.net>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: linux-kernel@vger.kernel.org, akpm@osdl.org
+In-Reply-To: <20091228172651.GE4994@basil.fritz.box>
+References: <200912271003.631128760@firstfloor.org>
+	 <1261949800.25298.18.camel@wall-e> <20091227233816.GC2399@basil.fritz.box>
+	 <1261986136.808.2.camel@wall-e> <20091228145749.GD4994@basil.fritz.box>
+	 <1262016510.12656.25.camel@wall-e>  <20091228172651.GE4994@basil.fritz.box>
+Content-Type: text/plain; charset="ISO-8859-15"
+Date: Mon, 28 Dec 2009 21:04:13 +0100
+Message-ID: <1262030653.15368.37.camel@wall-e>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.2 
+Content-Transfer-Encoding: 7bit
+X-Authenticated-Sender: stefani@seibold.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Felipe Balbi <felipe.balbi@nokia.com> [091228 03:04]:
-> commit 239007b8440abff689632f50cdf0f2b9e895b534 converted
-> the spinlock_t to raw_spinlock_t. Unfortunately twl4030-irq
-> was left aside on the conversion.
+Am Montag, den 28.12.2009, 18:26 +0100 schrieb Andi Kleen:
+> First having to rely on another large patchkit makes 
+> it annoying to develop for this (it's the linux kernel
+> equivalent of DLL hell), but ok. I hope the interface
+> doesn't change again at least.
 > 
-> Cc: Tony Lindgren <tony@atomide.com>
-> Cc: linux-omap@vger.kernel.org
-> Acked-by: Thomas Gleixner <tglx@linutronix.de>
-> Signed-off-by: Felipe Balbi <felipe.balbi@nokia.com>
+
+The interface hasn't been changed, only the implementation. So it should
+be not a big issue for the users of the kfifo API! Programming is
+sometimes like evolution. But i think the macro based version is now the
+right and best solution which a lot of benefits for the users. 
+
+> > So please draw back this patch, you will get exactly what you want and
+> > need in the next release. I have now a clean, slim and fast
+> > implementation. All what i need is a review and some ack's
 > 
-> ---
+> How about the current users for 2.6.33?  Unless they are not 
+> record oriented or always put in power-of-two records they will
+> need this patch, otherwise they risk desynchronization on fifo
+> full.
 > 
-> resending because it wasn't applied before
+> I think the patch is needed.
+> 
 
-This should go via Samuel as it's MFD related.
+It is exactly the same behavior as the old kfifo API, so no user relies
+on the new "kfifo_in atomic" feature. The only user is you. And it is
+easy for you to to check if enough room is available with kfifo_avail()
+before calling kfifo_in(). That is exactly what your patch do inside the
+kfifo_in() function. 
 
-Acked-by: Tony Lindgren <tony@atomide.com>
+> Also should drop the unused interfaces for 2.6.33 before anyone
+> else tries to use them and gets the same nasty surprise as me.
+> 
 
+Nasty surprise? Sorry, but i accepted all your patches, excluded one,
+which breaks my future work. And i implemented all your suggestions in
+my new macro based kfifo API in less than a day. So where is the
+problem? You modified the interface not me! Nobody relies currently on
+your patches, it's only you.
  
-> 
->  drivers/mfd/twl4030-irq.c |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/mfd/twl4030-irq.c b/drivers/mfd/twl4030-irq.c
-> index 20d29ba..9df9a5a 100644
-> --- a/drivers/mfd/twl4030-irq.c
-> +++ b/drivers/mfd/twl4030-irq.c
-> @@ -568,12 +568,12 @@ static void twl4030_sih_do_edge(struct work_struct *work)
->  
->  		bytes[byte] &= ~(0x03 << off);
->  
-> -		spin_lock_irq(&d->lock);
-> +		raw_spin_lock_irq(&d->lock);
->  		if (d->status & IRQ_TYPE_EDGE_RISING)
->  			bytes[byte] |= BIT(off + 1);
->  		if (d->status & IRQ_TYPE_EDGE_FALLING)
->  			bytes[byte] |= BIT(off + 0);
-> -		spin_unlock_irq(&d->lock);
-> +		raw_spin_unlock_irq(&d->lock);
->  
->  		edge_change &= ~BIT(i);
->  	}
+I will send a patch to Andrew for removing kfifo_*_rec() functions if
+you like and i hope for your cooperation. Again please draw back your
+"kfifo_in atomic" patch. 
+
+And for 2.6.34 everything will be fine :-)
+
+Stefani
+
+
