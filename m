@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751970AbZL1V1O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752030AbZL1VaG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751970AbZL1V1O (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Dec 2009 16:27:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751417AbZL1V1N
+	id S1752030AbZL1VaG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Dec 2009 16:30:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751884AbZL1VaE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Dec 2009 16:27:13 -0500
-Received: from lennier.cc.vt.edu ([198.82.162.213]:44423 "EHLO
+	Mon, 28 Dec 2009 16:30:04 -0500
+Received: from lennier.cc.vt.edu ([198.82.162.213]:38879 "EHLO
 	lennier.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751294AbZL1V1L (ORCPT
+	with ESMTP id S1751447AbZL1VaC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Dec 2009 16:27:11 -0500
+	Mon, 28 Dec 2009 16:30:02 -0500
 X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Michael Stone <michael@laptop.org>
-Cc: Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org,
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Michael Stone <michael@laptop.org>, linux-kernel@vger.kernel.org,
        netdev@vger.kernel.org, linux-security-module@vger.kernel.org,
        Andi Kleen <andi@firstfloor.org>, David Lang <david@lang.hm>,
        Oliver Hartkopp <socketcan@hartkopp.net>,
@@ -25,22 +25,23 @@ Cc: Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org,
        Bernie Innocenti <bernie@codewiz.org>,
        Mark Seaborn <mrs@mythic-beasts.com>,
        Randy Dunlap <randy.dunlap@oracle.com>,
-       =?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>,
+       Am?rico Wang <xiyou.wangcong@gmail.com>,
        Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
        Samir Bellabes <sam@synack.fr>,
        Casey Schaufler <casey@schaufler-ca.com>,
        "Serge E. Hallyn" <serue@us.ibm.com>
 Subject: Re: RFC: disablenetwork facility. (v4)
-In-Reply-To: Your message of "Mon, 28 Dec 2009 11:31:09 EST."
-             <20091228163108.GC13266@heat>
+In-Reply-To: Your message of "Mon, 28 Dec 2009 21:55:11 +0100."
+             <20091228205511.GD1637@ucw.cz>
 From: Valdis.Kletnieks@vt.edu
-References: <20091228163108.GC13266@heat>
+References: <20091227190802.GH11737@elf.ucw.cz> <20091228060759.GB13266@heat> <20091228101006.GA19984@elf.ucw.cz> <8817.1262011044@localhost>
+            <20091228205511.GD1637@ucw.cz>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1262035489_4431P";
+Content-Type: multipart/signed; boundary="==_Exmh_1262035681_4431P";
 	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
-Date: Mon, 28 Dec 2009 16:24:49 -0500
-Message-ID: <14145.1262035489@localhost>
+Date: Mon, 28 Dec 2009 16:28:01 -0500
+Message-ID: <14362.1262035681@localhost>
 X-Mirapoint-Received-SPF: 128.173.14.107 localhost Valdis.Kletnieks@vt.edu 2 pass
 X-Mirapoint-IP-Reputation: reputation=neutral-1,
 	source=Fixed,
@@ -49,7 +50,7 @@ X-Mirapoint-IP-Reputation: reputation=neutral-1,
 X-Junkmail-Info: (45) HELO_LOCALHOST
 X-Junkmail-Status: score=45/50, host=vivi.cc.vt.edu
 X-Junkmail-SD-Raw: score=unknown,
-	refid=str=0001.0A020204.4B392223.0098,ss=1,fgs=0,
+	refid=str=0001.0A020207.4B3922E3.0041,ss=1,fgs=0,
 	ip=0.0.0.0,
 	so=2009-09-22 00:05:22,
 	dmn=2009-09-10 00:05:08,
@@ -59,48 +60,29 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1262035489_4431P
+--==_Exmh_1262035681_4431P
 Content-Type: text/plain; charset=us-ascii
 
-On Mon, 28 Dec 2009 11:31:09 EST, Michael Stone said:
+On Mon, 28 Dec 2009 21:55:11 +0100, Pavel Machek said:
 
-> > Actually it does. Policy may well be "If the network works, noone can
-> > log in locally, because administration is normally done over
-> > network. If the network fails, larger set of people is allowed in,
-> > because something clearly went wrong and we want anyone going around
-> > to fix it."
-> 
-> Have you actually seen this security policy in real life? I ask because it
-> seems quite far-fetched to me. Networks are just too easy to attack. Seems to
-> me, from this casual description, that you're just asking to be ARP- or
-> DNS-poisoned and rooted with this one.
+> it is really only required for binaries setuid to someone else, but
+> that would be too ugly. (Plus, as someone said, ping is great for
+> leaking data out.)
 
-Actually, I've seen a *lot* of similar "if things fail, more people can login
-to fix it" policies.  For instance, a default Fedora box will require a root
-password to login - but if you can't get to multi-user because the box is
-scrozzled and boot into single user, no root password is required.
+Hmm... How is it "too ugly"?  It's just a 'euid != uid' comparison? Or
+am I missing some contortion required?
 
-So if you're using Fedora and LDAP authentication, and reboot to single-user
-to fix an LDAP issue, you do in fact have that policy in real life...
-
-(And before you start shouting "but that's a stupid config to make root login
-depend on LDAP", note that for many Microsoft Active Directory shops, they add
-machines with Administrator rights for an Active Directory group, and then
-disable local Administrator, which is exactly the same thing...  Stupid or
-not, it's a *very* common policy.)
-
-
---==_Exmh_1262035489_4431P
+--==_Exmh_1262035681_4431P
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.10 (GNU/Linux)
 Comment: Exmh version 2.5 07/13/2001
 
-iD8DBQFLOSIhcC3lWbTT17ARAgF0AJoDigVJ9mt3CDqRFsu0uX9a8tpYewCeNvKT
-5W8Pmh/BccabcO7s/2p9ymk=
-=xP2S
+iD8DBQFLOSLhcC3lWbTT17ARAg/ZAJ9NYXYgMgDeFldLbAEUOl3ERXBbFgCgphiL
+RBooQz2/zh8w6oXPl9jHmII=
+=4Hwy
 -----END PGP SIGNATURE-----
 
---==_Exmh_1262035489_4431P--
+--==_Exmh_1262035681_4431P--
 
