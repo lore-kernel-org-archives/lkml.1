@@ -1,133 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751461AbZL1SAG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751541AbZL1SMz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751461AbZL1SAG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Dec 2009 13:00:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750963AbZL1SAF
+	id S1751541AbZL1SMz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Dec 2009 13:12:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751323AbZL1SMy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Dec 2009 13:00:05 -0500
-Received: from e8.ny.us.ibm.com ([32.97.182.138]:58693 "EHLO e8.ny.us.ibm.com"
+	Mon, 28 Dec 2009 13:12:54 -0500
+Received: from khc.piap.pl ([195.187.100.11]:56026 "EHLO khc.piap.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750892AbZL1SAB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Dec 2009 13:00:01 -0500
-Message-ID: <4B38F21B.2020504@us.ibm.com>
-Date: Mon, 28 Dec 2009 09:59:55 -0800
-From: Darren Hart <dvhltc@us.ibm.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	id S1751192AbZL1SMx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Dec 2009 13:12:53 -0500
+From: Krzysztof Halasa <khc@pm.waw.pl>
+To: linux-crypto@vger.kernel.org
+Cc: lkml <linux-kernel@vger.kernel.org>
+Subject: Crypto test results unused?
+Date: Mon, 28 Dec 2009 19:12:50 +0100
+Message-ID: <m3ws07q865.fsf@intrepid.localdomain>
 MIME-Version: 1.0
-To: Steven Rostedt <rostedt@goodmis.org>,
-       "lkml, " <linux-kernel@vger.kernel.org>
-Subject: [PATCH] trace-cmd: Cleanup 64-bit handling for python wrapper
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 45afc359aa81cbce7a5ea559dc9625489d343f5f Mon Sep 17 00:00:00 2001
-From: Darren Hart <dvhltc@us.ibm.com>
-Date: Mon, 28 Dec 2009 09:36:30 -0800
-Subject: [PATCH] trace-cmd: Cleanup 64-bit handling for python wrapper
+Hi,
 
-Wrap pevent_read_number_field() with a more intelligent wrapper that
-returns None on error and a python long on success. Eliminate the hi/lo
-64 bit marshalling junk.
+is the core crypto code supposed to "kill" algorithms which fail the
+test?
 
-Use a typemap to get automatic struct accessors (ie record_ts_get()) to
-return a python long for unsigned long long fields rather than
-truncating to 32-bits.
+On little-endian IXP4xx 3 hardware-assisted algorithms fail (due to
+apparently unrelated bug which I will take care of). It seems the kernel
+is still using these failing algorithms (my debugging code adds extra
+fields to the /proc output):
 
-Signed-off-by: Darren Hart <dvhltc@us.ibm.com>
----
- ctracecmd.i |   20 +++++++++++---------
- tracecmd.py |   15 +++------------
- 2 files changed, 14 insertions(+), 21 deletions(-)
+alg: skcipher: Test 1 failed on encryption for ecb(des)-ixp4xx
+00000000: 01 23 45 67 89 ab cd e7
+alg: skcipher: Test 1 failed on encryption for ecb(des3_ede)-ixp4xx
+00000000: 73 6f 6d 65 64 61 74 61
+alg: skcipher: Test 1 failed on encryption for ecb(aes)-ixp4xx
+00000000: 00 11 22 33 44 55 66 77 88 99 aa bb cc dd ee ff
 
-diff --git a/ctracecmd.i b/ctracecmd.i
-index 20a681c..4b17327 100644
---- a/ctracecmd.i
-+++ b/ctracecmd.i
-@@ -6,19 +6,21 @@
- #include "trace-cmd.h"
- %}
- 
--/* typemaps must come before the implementation of wrapped functions */
--extern int pevent_read_number_field_32(struct format_field *f, void *data,
--                                       unsigned long *OUTPUT, unsigned long *OUTPUT);
-+%typemap(out) unsigned long long {
-+$result = PyLong_FromUnsignedLongLong((unsigned long long) $1);
-+} 
- 
- %inline %{
--int pevent_read_number_field_32(struct format_field *f, void *data, unsigned long *hi, unsigned long *lo)
-+PyObject *pevent_read_number_field_py(struct format_field *f, void *data)
- {
--        unsigned long long val64;
-+        unsigned long long val;
-         int ret;
--        ret = pevent_read_number_field(f, data, &val64);
--        *hi = (unsigned long)(val64>>32);
--        *lo = (unsigned long)((val64<<32)>>32);
--        return ret;
-+
-+        ret = pevent_read_number_field(f, data, &val);
-+        if (ret)
-+                Py_RETURN_NONE;
-+        else
-+                return PyLong_FromUnsignedLongLong(val);
- }
- %}
- 
-diff --git a/tracecmd.py b/tracecmd.py
-index 6520a48..f9a2708 100644
---- a/tracecmd.py
-+++ b/tracecmd.py
-@@ -31,13 +31,6 @@ and it is recommended applications not use it directly.
- TODO: consider a complete class hierarchy of ftrace events...
- """
- 
--def _pevent_read_number_field(field, data):
--    ret,hi,lo = pevent_read_number_field_32(field, data)
--    if ret == 0:
--        return ret,long(long(hi).__lshift__(32)+lo)
--    return ret,None
--
--
- class Event(object):
-     def __init__(self, trace, record):
-         self.trace = trace
-@@ -46,8 +39,8 @@ class Event(object):
-         self.ec = pevent_data_event_from_type(trace.pe, type)
- 
-     def __str__(self):
--        return "%f %s: pid=%d comm=%s type=%d" % \
--               (self.ts, self.name, self.num_field("common_pid"), self.comm, self.type)
-+        return "%d.%d %s: pid=%d comm=%s type=%d" % \
-+               (self.ts/1000000000, self.ts%1000000000, self.name, self.num_field("common_pid"), self.comm, self.type)
- 
- 
-     # TODO: consider caching the results of the properties
-@@ -65,7 +58,6 @@ class Event(object):
- 
-     @property
-     def ts(self):
--        # FIXME: this currently returns a float instead of a 64bit nsec value
-         return record_ts_get(self.rec)
- 
-     @property
-@@ -73,9 +65,8 @@ class Event(object):
-         return pevent_data_type(self.trace.pe, self.rec)
- 
-     def num_field(self, name):
--        # FIXME: need to find an elegant way to handle 64bit fields
-         f = pevent_find_any_field(self.ec, name)
--        ret,val = _pevent_read_number_field(f, record_data_get(self.rec))
-+        val = pevent_read_number_field_py(f, record_data_get(self.rec))
-         return val
- 
- 
+# grep 'ecb(des)-ixp4xx\|ecb(des3_ede)-ixp4xx\|ecb(aes)-ixp4xx' /proc/cryp
+to -A 6
+driver       : ecb(aes)-ixp4xx
+module       : ixp4xx_crypto
+priority     : 300
+refcnt       : 1
+flags        : 0x85
+ptr          : 0xbf020074
+selftest     : unknown
+^^^^^^^^^^^^^^^^^^^^^^
+--
+driver       : ecb(des3_ede)-ixp4xx
+module       : ixp4xx_crypto
+priority     : 300
+refcnt       : 1
+flags        : 0x85
+ptr          : 0xbf01fe94
+selftest     : unknown
+--
+driver       : ecb(des)-ixp4xx
+module       : ixp4xx_crypto
+priority     : 300
+refcnt       : 1
+flags        : 0x85
+ptr          : 0xbf01fcb4
+selftest     : unknown
+
+I traced the problem to crypto/algapi.c:
+
+int crypto_register_alg(struct crypto_alg *alg)
+{
+	struct crypto_larval *larval;
+	int err;
+
+	err = crypto_check_alg(alg);
+	if (err)
+		return err;
+
+	down_write(&crypto_alg_sem);
+	larval = __crypto_register_alg(alg);
+	up_write(&crypto_alg_sem);
+
+	if (IS_ERR(larval))
+		return PTR_ERR(larval);
+
+	crypto_wait_for_test(larval);
+
+At this point alg->cra_flags includes CRYPTO_ALG_DEAD (due to failed
+test), but larval->alg.cra_flags has only the original flags (0x85).
+
+I'm not sure what's the best fix.
+Currently 2.6.31.9, seems to be present in 2.6.32, too.
 -- 
-1.6.3.3
--- 
-Darren Hart
-IBM Linux Technology Center
-Real-Time Linux Team
+Krzysztof Halasa
