@@ -1,37 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751564AbZL1Es7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751523AbZL1EsV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751564AbZL1Es7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Dec 2009 23:48:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751297AbZL1Es7
+	id S1751523AbZL1EsV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Dec 2009 23:48:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751282AbZL1EsU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Dec 2009 23:48:59 -0500
-Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:37784 "EHLO
-	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751113AbZL1Es6 (ORCPT
+	Sun, 27 Dec 2009 23:48:20 -0500
+Received: from mail-yx0-f187.google.com ([209.85.210.187]:59699 "EHLO
+	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751192AbZL1EsT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Dec 2009 23:48:58 -0500
-Date: Mon, 28 Dec 2009 13:42:45 +0900
-From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-To: "Kirill A. Shutemov" <kirill@shutemov.name>
-Cc: containers@lists.linux-foundation.org, linux-mm@kvack.org,
-       Paul Menage <menage@google.com>, Li Zefan <lizf@cn.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
+	Sun, 27 Dec 2009 23:48:19 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:x-mailer:mime-version
+         :content-type:content-transfer-encoding;
+        b=A8y08odV2HaLXzvgMqhg73A84w2eJ2mOMnhv3knPh9OEK9lyM0R0kZ12zcmyoVX5Ak
+         PNUKcVnezeOet7OsuMUb01ZA+xQZhumVFC/Z9VD7HzpxUC8hMrqZK+jg64OQOziaR96X
+         HipRll+kO5fJs9URnN9h0Gg1xE8tt8dOvKjKk=
+Date: Mon, 28 Dec 2009 13:46:19 +0900
+From: Minchan Kim <minchan.kim@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: lkml <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Matt Mackall <mpm@selenic.com>,
        KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Pavel Emelyanov <xemul@openvz.org>, Dan Malek <dan@embeddedalley.com>,
-       Vladislav Buzov <vbuzov@embeddedalley.com>,
-       Alexander Shishkin <virtuoso@slind.org>, linux-kernel@vger.kernel.org,
-       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Subject: Re: [PATCH v4 4/4] memcg: implement memory thresholds
-Message-Id: <20091228134245.8db992d1.nishimura@mxp.nes.nec.co.jp>
-In-Reply-To: <7a4e1d758b98ca633a0be06e883644ad8813c077.1261858972.git.kirill@shutemov.name>
-References: <cover.1261858972.git.kirill@shutemov.name>
-	<3f29ccc3c93e2defd70fc1c4ca8c133908b70b0b.1261858972.git.kirill@shutemov.name>
-	<59a7f92356bf1508f06d12c501a7aa4feffb1bbc.1261858972.git.kirill@shutemov.name>
-	<c2379f3965225b6d62e64c64f8c0e67fee085d7f.1261858972.git.kirill@shutemov.name>
-	<7a4e1d758b98ca633a0be06e883644ad8813c077.1261858972.git.kirill@shutemov.name>
-Organization: NEC Soft, Ltd.
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.10.14; i686-pc-mingw32)
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Subject: [PATCH -mmotm-2009-12-10-17-19] Fix wrong rss count of smaps
+Message-Id: <20091228134619.92ba28f6.minchan.kim@barrios-desktop>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -39,114 +34,58 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 27 Dec 2009 04:09:02 +0200, "Kirill A. Shutemov" <kirill@shutemov.name> wrote:
-> It allows to register multiple memory and memsw thresholds and gets
-> notifications when it crosses.
-> 
-> To register a threshold application need:
-> - create an eventfd;
-> - open memory.usage_in_bytes or memory.memsw.usage_in_bytes;
-> - write string like "<event_fd> <memory.usage_in_bytes> <threshold>" to
->   cgroup.event_control.
-> 
-> Application will be notified through eventfd when memory usage crosses
-> threshold in any direction.
-> 
-> It's applicable for root and non-root cgroup.
-> 
-> It uses stats to track memory usage, simmilar to soft limits. It checks
-> if we need to send event to userspace on every 100 page in/out. I guess
-> it's good compromise between performance and accuracy of thresholds.
-> 
-> Signed-off-by: Kirill A. Shutemov <kirill@shutemov.name>
-> ---
->  Documentation/cgroups/memory.txt |   19 +++-
->  mm/memcontrol.c                  |  275 ++++++++++++++++++++++++++++++++++++++
->  2 files changed, 293 insertions(+), 1 deletions(-)
-> 
-> diff --git a/Documentation/cgroups/memory.txt b/Documentation/cgroups/memory.txt
-> index b871f25..195af07 100644
-> --- a/Documentation/cgroups/memory.txt
-> +++ b/Documentation/cgroups/memory.txt
-> @@ -414,7 +414,24 @@ NOTE1: Soft limits take effect over a long period of time, since they involve
->  NOTE2: It is recommended to set the soft limit always below the hard limit,
->         otherwise the hard limit will take precedence.
->  
-> -8. TODO
-> +8. Memory thresholds
-> +
-> +Memory controler implements memory thresholds using cgroups notification
-> +API (see cgroups.txt). It allows to register multiple memory and memsw
-> +thresholds and gets notifications when it crosses.
-> +
-> +To register a threshold application need:
-> + - create an eventfd using eventfd(2);
-> + - open memory.usage_in_bytes or memory.memsw.usage_in_bytes;
-> + - write string like "<event_fd> <memory.usage_in_bytes> <threshold>" to
-> +   cgroup.event_control.
-> +
-> +Application will be notified through eventfd when memory usage crosses
-> +threshold in any direction.
-> +
-> +It's applicable for root and non-root cgroup.
-> +
-> +9. TODO
->  
->  1. Add support for accounting huge pages (as a separate controller)
->  2. Make per-cgroup scanner reclaim not-shared pages first
-> diff --git a/mm/memcontrol.c b/mm/memcontrol.c
-> index 36eb7af..3a0a6a1 100644
-> --- a/mm/memcontrol.c
-> +++ b/mm/memcontrol.c
-It would be a nitpick, but my patch(http://marc.info/?l=linux-mm-commits&m=126152804420992&w=2)
-has already modified here.
 
-I think it might be better for you to apply my patches by hand or wait for next mmotm
-to be released to avoid bothering Andrew.
-(There is enough time left till the next merge window :))
+I am not sure we have to account zero page with file_rss. 
+Hugh and Kame's new zero page doesn't do it. 
+As side effect of this, we can prevent innocent process which have a lot
+of zero page when OOM happens. 
+(But I am not sure there is a process like this :)
+So I think not file_rss counting is not bad. 
 
-(snip)
+RSS counting zero page with file_rss helps any program using smaps?
+If we have to keep the old behavior, I have to remake this patch. 
 
-> +static void __mem_cgroup_threshold(struct mem_cgroup *memcg, bool swap)
-> +{
-> +	struct mem_cgroup_threshold_ary *thresholds;
-> +	u64 usage = mem_cgroup_usage(memcg, swap);
-> +	int i, cur;
-> +
-I think calling mem_cgroup_usage() after checking "if(!thresholds)"
-decreases the overhead a little when we don't set any thresholds.
-I've confirmed that the change makes the assembler output different.
+== CUT_HERE ==
 
-> +	rcu_read_lock();
-> +	if (!swap) {
-> +		thresholds = rcu_dereference(memcg->thresholds);
-> +	} else {
-> +		thresholds = rcu_dereference(memcg->memsw_thresholds);
-> +	}
-> +
-> +	if (!thresholds)
-> +		goto unlock;
-> +
-> +	cur = atomic_read(&thresholds->cur);
-> +
-> +	/* Check if a threshold crossed in any direction */
-> +
-> +	for(i = cur; i >= 0 &&
-> +		unlikely(thresholds->entries[i].threshold > usage); i--) {
-> +		atomic_dec(&thresholds->cur);
-> +		eventfd_signal(thresholds->entries[i].eventfd, 1);
-> +	}
-> +
-> +	for(i = cur + 1; i < thresholds->size &&
-> +		unlikely(thresholds->entries[i].threshold <= usage); i++) {
-> +		atomic_inc(&thresholds->cur);
-> +		eventfd_signal(thresholds->entries[i].eventfd, 1);
-> +	}
-> +unlock:
-> +	rcu_read_unlock();
-> +}
-> +
+Long time ago, We regards zero page as file_rss and
+vm_normal_page doesn't return NULL.
+
+But now, we reinstated ZERO_PAGE and vm_normal_page's implementation
+can return NULL in case of zero page. Also we don't count it with
+file_rss any more.
+
+Then, RSS and PSS can't be matched.
+For consistency, Let's ignore zero page in smaps_pte_range.
+
+CC: Matt Mackall <mpm@selenic.com>
+Signed-off-by: Minchan Kim <minchan.kim@gmail.com>
+---
+ fs/proc/task_mmu.c |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
+
+diff --git a/fs/proc/task_mmu.c b/fs/proc/task_mmu.c
+index 47c03f4..f277c4a 100644
+--- a/fs/proc/task_mmu.c
++++ b/fs/proc/task_mmu.c
+@@ -361,12 +361,11 @@ static int smaps_pte_range(pmd_t *pmd, unsigned long addr, unsigned long end,
+ 		if (!pte_present(ptent))
+ 			continue;
+ 
+-		mss->resident += PAGE_SIZE;
+-
+ 		page = vm_normal_page(vma, addr, ptent);
+ 		if (!page)
+ 			continue;
+ 
++		mss->resident += PAGE_SIZE;
+ 		/* Accumulate the size in pages that have been accessed. */
+ 		if (pte_young(ptent) || PageReferenced(page))
+ 			mss->referenced += PAGE_SIZE;
+-- 
+1.5.6.3
 
 
-Thanks,
-Daisuke Nishimura.
+
+-- 
+Kind regards,
+Minchan Kim
