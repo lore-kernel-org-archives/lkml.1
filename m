@@ -1,50 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751218AbZL1Blr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751293AbZL1Byt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751218AbZL1Blr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Dec 2009 20:41:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751139AbZL1Blr
+	id S1751293AbZL1Byt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Dec 2009 20:54:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751159AbZL1Bys
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Dec 2009 20:41:47 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:53637 "EHLO
+	Sun, 27 Dec 2009 20:54:48 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:52361 "EHLO
 	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751126AbZL1Blq (ORCPT
+	with ESMTP id S1751048AbZL1Bys (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Dec 2009 20:41:46 -0500
-Date: Mon, 28 Dec 2009 02:41:41 +0100
+	Sun, 27 Dec 2009 20:54:48 -0500
+Date: Mon, 28 Dec 2009 02:54:46 +0100
 From: Andi Kleen <andi@firstfloor.org>
-To: Roland Dreier <rdreier@cisco.com>
-Cc: Stefani Seibold <stefani@seibold.net>, Andi Kleen <andi@firstfloor.org>,
-       linux-kernel@vger.kernel.org, akpm@osdl.org
-Subject: Re: [PATCH] [0/6] kfifo fixes/improvements
-Message-ID: <20091228014141.GE2399@basil.fritz.box>
-References: <200912271003.631128760@firstfloor.org> <1261949800.25298.18.camel@wall-e> <adahbrcyn1l.fsf@roland-alpha.cisco.com>
+To: Alain Knaff <alain@knaff.lu>
+Cc: Andi Kleen <andi@firstfloor.org>, Arjan van de Ven <arjan@infradead.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Mark Hounschell <markh@compro.net>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       "dmarkh@cfl.rr.com" <dmarkh@cfl.rr.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "fdutils@fdutils.linux.lu" <fdutils@fdutils.linux.lu>,
+       "Li, Shaohua" <shaohua.li@intel.com>, Ingo Molnar <mingo@elte.hu>,
+       morgan@physics.ucla.edu, JONES@UINPLA.NPL.UIUC.EDU
+Subject: Re: [Fdutils] DMA cache consistency bug introduced in 2.6.28
+Message-ID: <20091228015446.GA3012@basil.fritz.box>
+References: <4B32386B.2060509@compro.net> <alpine.LFD.2.00.0912230828230.6879@localhost.localdomain> <87bphpd4rt.fsf@basil.nowhere.org> <alpine.LFD.2.00.0912230845550.6879@localhost.localdomain> <20091223170832.GH20539@basil.fritz.box> <20091225132116.6c9089f2@infradead.org> <20091225203304.GA22306@basil.fritz.box> <20091226103835.68479100@infradead.org> <20091226164029.GA10256@basil.fritz.box> <4B3752F5.3080205@knaff.lu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <adahbrcyn1l.fsf@roland-alpha.cisco.com>
+In-Reply-To: <4B3752F5.3080205@knaff.lu>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Dec 27, 2009 at 04:12:06PM -0800, Roland Dreier wrote:
-> 
->  > I am not happy to see you to take over my project. Especial as most of
->  > your fixes are part of my new macro based implementation. Have a look at
->  > http://patchwork.kernel.org/patch/69093/
-> 
-> I don't really understand.  You spent a lot of time getting the kfifo
-> stuff merged, and now you want to merge (quoting from that patch above)
-> "a complete reimplementation of the new kfifo API"?
-> 
-> What happened here?  Couldn't you have done the reimplementation before
-> merging?
+> disable_hlt/enable_hlt was only needed to work around a bug on TM4000
+> (Texas Instrument) Laptops which were popular around 1994 / 1995.
 
-I guess the reimplementation came too late (happens sometimes)
-And I agree that making kfifos record oriented makes sense.
+I don't think we can fully drop support for these systems.
 
-Still now that the old one is in we have to fix it at least
-until there are no users left.
+Did they have an unique PCI ID or something else that could be tested
+for?
+
+Perhaps it could be just a white list like dmi_year > 1995 to disable.
+
+Depending on how often floppies are still used this might save
+non trivial amounts of power on newer systems :)
+
+Anyways it would be probably good to convert this to the new infrastructure,
+and remove the old hooks, but the interrupt-context issue would
+need to be fixed first.
 
 -Andi
 -- 
