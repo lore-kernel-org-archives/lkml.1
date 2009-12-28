@@ -1,29 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751875AbZL1IFx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751903AbZL1IGc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751875AbZL1IFx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Dec 2009 03:05:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751491AbZL1IFw
+	id S1751903AbZL1IGc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Dec 2009 03:06:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751709AbZL1IGb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Dec 2009 03:05:52 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:39750 "EHLO mx3.mail.elte.hu"
+	Mon, 28 Dec 2009 03:06:31 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:39828 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751380AbZL1IFw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Dec 2009 03:05:52 -0500
-Date: Mon, 28 Dec 2009 09:05:28 +0100
+	id S1751614AbZL1IGb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Dec 2009 03:06:31 -0500
+Date: Mon, 28 Dec 2009 09:06:15 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Arnaldo Carvalho de Melo <acme@infradead.org>
-Cc: linux-kernel@vger.kernel.org, Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Fr??d??ric Weisbecker <fweisbec@gmail.com>,
-       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH 01/10] perf record: We should fork only if a program was
- specified to run
-Message-ID: <20091228080528.GB28652@elte.hu>
-References: <1261957026-15580-1-git-send-email-acme@infradead.org>
+To: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, Paul Mackerras <paulus@samba.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Clark Williams <williams@redhat.com>, John Kacur <jkacur@redhat.com>
+Subject: Re: [PATCH] perf_event: mount debugfs automatically
+Message-ID: <20091228080615.GC28652@elte.hu>
+References: <4B383DE3.3070702@cn.fujitsu.com>
+ <20091228074426.GA20039@elte.hu>
+ <4B386615.7000207@cn.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1261957026-15580-1-git-send-email-acme@infradead.org>
+In-Reply-To: <4B386615.7000207@cn.fujitsu.com>
 User-Agent: Mutt/1.5.20 (2009-08-17)
 X-ELTE-SpamScore: 0.0
 X-ELTE-SpamLevel: 
@@ -36,7 +37,15 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Note, i moved the first two patches into perf/urgent (as they are fixes), the 
-others into perf/core.
+* Xiao Guangrong <xiaoguangrong@cn.fujitsu.com> wrote:
+
+> > But your idea is sound if we only do the first half: we should mount it 
+> > under /sys/kernel/debug/ if it's not mounted already [and that directory 
+> > is available], and leave it mounted there.
+> > 
+> 
+> Um, i'll rewrite it and just mount it under /sys/kernel/debug
+
+Yeah, i think that will work better. Thanks!
 
 	Ingo
