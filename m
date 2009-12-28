@@ -1,105 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751909AbZL1IKn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751898AbZL1ILa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751909AbZL1IKn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Dec 2009 03:10:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751797AbZL1IKm
+	id S1751898AbZL1ILa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Dec 2009 03:11:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751162AbZL1IL3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Dec 2009 03:10:42 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:37704 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750975AbZL1IKl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Dec 2009 03:10:41 -0500
-Date: Mon, 28 Dec 2009 09:10:21 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Marin Mitov <mitov@issp.bas.bg>, Dave Jones <davej@redhat.com>
-Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@redhat.com,
-       hpa@zytor.com
-Subject: Re: [BUG] agpgart-amd64 not initialized in 2.6.33-rc2
-Message-ID: <20091228081021.GD28652@elte.hu>
-References: <200912271719.39306.mitov@issp.bas.bg>
- <20091228153704Z.fujita.tomonori@lab.ntt.co.jp>
- <200912280918.36067.mitov@issp.bas.bg>
+	Mon, 28 Dec 2009 03:11:29 -0500
+Received: from mail-yw0-f176.google.com ([209.85.211.176]:63492 "EHLO
+	mail-yw0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751128AbZL1IL2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Dec 2009 03:11:28 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:cc:content-type;
+        b=fEx3gFZA1dbflgDidlK/YHBybpgYDtKDv87Mr/a2K/lSRT5o7+tCbFG/ywDniaPfj1
+         Qf2dmFQUH8B3RiWVmEmLCI7dXTWIIxK/blBCcoGQQs/ZTKtmKOlIMx6Z5TSI+michXeN
+         TdkwLBvl8W+pE487NEdf7CfDAsXe1e0ZI0/eI=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200912280918.36067.mitov@issp.bas.bg>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Date: Mon, 28 Dec 2009 17:11:27 +0900
+Message-ID: <aec7e5c30912280011j4e8528e5r34bc1bcfb6a4dd1a@mail.gmail.com>
+Subject: v2.6.33-rc2 build error - missing tmio mmc patches
+From: Magnus Damm <magnus.damm@gmail.com>
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Cc: SH-Linux <linux-sh@vger.kernel.org>, Ian Molton <ian@mnementh.co.uk>,
+       Samuel Ortiz <sameo@linux.intel.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi everyone,
 
-* Marin Mitov <mitov@issp.bas.bg> wrote:
+v2.6.33-rc2 does not build in the case of CONFIG_MFD_SH_MOBILE_SDHI=y.
+Linux-next used to build just fine when I developed the driver, but
+now it looks like some tmio-mmc patches present in linux-next never
+made it into -rc.
 
-> On Monday 28 December 2009 08:37:33 am FUJITA Tomonori wrote:
-> > On Sun, 27 Dec 2009 17:19:39 +0200
-> > Marin Mitov <mitov@issp.bas.bg> wrote:
-> > 
-> > > Hi all,
-> > > 
-> > > Recently (2.6.33-rc2 kernel, x86_64, 4GB RAM) I found (in dmesg):
-> > > 
-> > > [drm:mga_do_agp_dma_bootstrap] *ERROR* Unable to acquire AGP: -19
-> > > 
-> > > and there is no /dev/agpgart device on the machine while all is OK 
-> > > if booting 2.6.32.2. 
-> > > 
-> > > In both kernels I have:
-> > > 
-> > > CONFIG_AGP=y
-> > > CONFIG_AGP_AMD64=y
-> > > 
-> > > CONFIG_GART_IOMMU=y
-> > > 
-> > > but nevertheless dmesg shows:
-> > > 
-> > > PCI-DMA: Using software bounce buffering for IO (SWIOTLB)
-> > > 
-> > > due to quirks in via K8T800Pro host bridge.
-> > > 
-> > > Looking for the reason I found that agp_amd64_init() appears in:
-> > > 
-> > > #ifndef CONFIG_GART_IOMMU
-> > > module_init(agp_amd64_init);
-> > > module_exit(agp_amd64_cleanup);
-> > > #endif
-> > > 
-> > >  /*  so it is not invoked here due to CONFIG_GART_IOMMU=y   */
-> > > 
-> > > and also appears in:
-> > >  
-> > > arch/x86/kernel/pci-gart_64.c, function: gart_iommu_init()
-> > > 
-> > > The last one is part of the struct x86_init_ops(struct x86_init_iommu, as a function pointer) 
-> > > only if gart-iommu is successfully detected, which is not the case here due to the quirk, 
-> > > so agp_amd64_init() is not invoked here neither. 
-> > > 
-> > > Sure, configuring the kernel without CONFIG_GART_IOMMU=y (which is not user selectable)
-> > > 
-> > > should solve the problem, but usually users do not know about quirks, so it should
-> > > work even as set here (and it works up to 2.6.32.2). I believe the bug is introduced
-> > > with the changes in the order iommu detect/init works for 2.6.33.
-> > > 
-> > > I am here for additional info/tests.
-> > 
-> > Sorry about the regression. Does this works?
-> 
-> Yes, it works for me, thank you.
+  CC      drivers/mfd/sh_mobile_sdhi.o
+drivers/mfd/sh_mobile_sdhi.c: In function 'sh_mobile_sdhi_probe':
+drivers/mfd/sh_mobile_sdhi.c:100: error: 'struct tmio_mmc_data' has no
+member named 'set_pwr'
+make[2]: *** [drivers/mfd/sh_mobile_sdhi.o] Error 1
 
-Great! Fujita-san, mind sending a fully changelogged version of the patch with 
-Tested-by and your Signed-off-by?
+In more detail, the missing patch is here:
+http://git.mnementh.co.uk/cgi-bin/gitweb.cgi?p=linux-2.6-im.git;a=commitdiff;h=4cd83bd05e6c817a4a72ababd82bf5ae700c021d
 
-Dave, do you want to push this fix to Linus, or should we do it via 
-x86/urgent?
+What needs to be done to get the patch above included in rc3? Is there
+anything I can do?
 
 Thanks,
 
-	Ingo
+/ magnus
