@@ -1,113 +1,165 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751454AbZL1JLb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751151AbZL1JRz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751454AbZL1JLb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Dec 2009 04:11:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751061AbZL1JLa
+	id S1751151AbZL1JRz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Dec 2009 04:17:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750962AbZL1JRy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Dec 2009 04:11:30 -0500
-Received: from mail-yx0-f187.google.com ([209.85.210.187]:44746 "EHLO
-	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750961AbZL1JLa convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Dec 2009 04:11:30 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=loxonYEcGn0XhYDI8+Q7OK7gdc8WRYqLU2R1LC19Rtl5WKiRhQwrfBDAF9E8cUtBHE
-         cSVZlVGot/GR/011I3iP2ULJjkEYOeii9Sjct73Ax089a9U7DVDqG5LdAisONAIgIGFV
-         n5tpdkBxzZWPdCDIiMoRVzp57OrRBVnLOFQG0=
-MIME-Version: 1.0
-In-Reply-To: <20091228084659.GA31389@sli10-desk.sh.intel.com>
-References: <20091224005506.GA7879@sli10-desk.sh.intel.com>
-	 <4e5e476b0912250216n2b4aceacyf22a0e73425efd3a@mail.gmail.com>
-	 <20091228020348.GB28115@sli10-desk.sh.intel.com>
-	 <4e5e476b0912280036r6e55587dj66952fcd6ff4d08b@mail.gmail.com>
-	 <20091228084659.GA31389@sli10-desk.sh.intel.com>
-Date: Mon, 28 Dec 2009 10:11:25 +0100
-Message-ID: <4e5e476b0912280111s6a977251m3416341b4bd2c272@mail.gmail.com>
-Subject: Re: [PATCH]cfq-iosched: don't take requests with long distence as 
-	close
-From: Corrado Zoccolo <czoccolo@gmail.com>
-To: Shaohua Li <shaohua.li@intel.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
-       "jmoyer@redhat.com" <jmoyer@redhat.com>,
-       "Zhang, Yanmin" <yanmin.zhang@intel.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Mon, 28 Dec 2009 04:17:54 -0500
+Received: from sh.osrg.net ([192.16.179.4]:56237 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750936AbZL1JRy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Dec 2009 04:17:54 -0500
+Date: Mon, 28 Dec 2009 18:11:56 +0900
+To: mingo@elte.hu
+Cc: mitov@issp.bas.bg, davej@redhat.com, fujita.tomonori@lab.ntt.co.jp,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@redhat.com,
+       hpa@zytor.com
+Subject: Re: [BUG] agpgart-amd64 not initialized in 2.6.33-rc2
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20091228081021.GD28652@elte.hu>
+References: <20091228153704Z.fujita.tomonori@lab.ntt.co.jp>
+	<200912280918.36067.mitov@issp.bas.bg>
+	<20091228081021.GD28652@elte.hu>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20091228181118C.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Mon, 28 Dec 2009 18:11:57 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Shaohua,
-On Mon, Dec 28, 2009 at 9:46 AM, Shaohua Li <shaohua.li@intel.com> wrote:
-> On Mon, Dec 28, 2009 at 04:36:39PM +0800, Corrado Zoccolo wrote:
->> Hi Shaohua,
->> On Mon, Dec 28, 2009 at 3:03 AM, Shaohua Li <shaohua.li@intel.com> wrote:
->> > On Fri, Dec 25, 2009 at 06:16:27PM +0800, Corrado Zoccolo wrote:
->> >> Hi Shaohua,
->> >> On Thu, Dec 24, 2009 at 1:55 AM, Shaohua Li <shaohua.li@intel.com> wrote:
->> >> > df5fe3e8e13883f58dc97489076bbcc150789a21
->> >> > b3b6d0408c953524f979468562e7e210d8634150
->> >> > The coop merge is too aggressive. For example, if two tasks are reading two
->> >> > files where the two files have some adjecent blocks, cfq will immediately
->> >> > merge them. cfq_rq_close() also has trouble, sometimes the seek_mean is very
->> >> > big. I did a test to make cfq_rq_close() always checks the distence according
->> >> > to CIC_SEEK_THR, but still saw a lot of wrong merge. (BTW, why we take a long
->> >> > distence far away request as close. Taking them close doesn't improve any thoughtput
->> >> > to me. Maybe we should always use CIC_SEEK_THR as close criteria).
->> >> Yes, when deciding if two queues are going to be merged, we should use
->> >> the constant CIC_SEEK_THR.
->> >
->> > seek_mean could be very big sometimes, using it as close criteria is meanless
->> > as this doen't improve any performance. So if it's big, let's fallback to
->> > default value.
->>
->> meanless -> meaningless (also in the comment within code)
-> oops
->
->> > Signed-off-by: Shaohua Li<shaohua.li@intel.com>
->> >
->> > diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
->> > index e2f8046..8025605 100644
->> > --- a/block/cfq-iosched.c
->> > +++ b/block/cfq-iosched.c
->> > @@ -1682,6 +1682,10 @@ static inline int cfq_rq_close(struct cfq_data *cfqd, struct cfq_queue *cfqq,
->> >        if (!sample_valid(cfqq->seek_samples))
->> >                sdist = CFQQ_SEEK_THR;
->> >
->> > +       /* if seek_mean is big, using it as close criteria is meanless */
->> > +       if (sdist > CFQQ_SEEK_THR)
->> > +               sdist = CFQQ_SEEK_THR;
->> > +
->> >        return cfq_dist_from_last(cfqd, rq) <= sdist;
->> >  }
->> >
->> >
->> This changes also the cfq_should_preempt behaviour, where a large
->> seek_mean could be meaningful, so I think it is better to add a
->> boolean parameter to cfq_rq_close, to distinguish whether we are
->> preempting or looking for queue merges, and make the new code
->> conditional on merging.
-> can you explain why it's meaningful for cfq_should_preempt()? Unless sdist is
-> very big, for example > 10*seek_mean, the preempt seems not meaningless.
+On Mon, 28 Dec 2009 09:10:21 +0100
+Ingo Molnar <mingo@elte.hu> wrote:
 
-Disk access time is a complex function, but for rotational disks it is
-'sort of' increasing with the amplitude of the seek. So, if you have a
-new request that is within the mean seek distance (even if it is
-larger than our constant), it is good to chose this request instead of
-waiting for an other one from the active queue (this behaviour is the
-same exhibited by AS, so we need a good reason to change).
+> 
+> * Marin Mitov <mitov@issp.bas.bg> wrote:
+> 
+> > On Monday 28 December 2009 08:37:33 am FUJITA Tomonori wrote:
+> > > On Sun, 27 Dec 2009 17:19:39 +0200
+> > > Marin Mitov <mitov@issp.bas.bg> wrote:
+> > > 
+> > > > Hi all,
+> > > > 
+> > > > Recently (2.6.33-rc2 kernel, x86_64, 4GB RAM) I found (in dmesg):
+> > > > 
+> > > > [drm:mga_do_agp_dma_bootstrap] *ERROR* Unable to acquire AGP: -19
+> > > > 
+> > > > and there is no /dev/agpgart device on the machine while all is OK 
+> > > > if booting 2.6.32.2. 
+> > > > 
+> > > > In both kernels I have:
+> > > > 
+> > > > CONFIG_AGP=y
+> > > > CONFIG_AGP_AMD64=y
+> > > > 
+> > > > CONFIG_GART_IOMMU=y
+> > > > 
+> > > > but nevertheless dmesg shows:
+> > > > 
+> > > > PCI-DMA: Using software bounce buffering for IO (SWIOTLB)
+> > > > 
+> > > > due to quirks in via K8T800Pro host bridge.
+> > > > 
+> > > > Looking for the reason I found that agp_amd64_init() appears in:
+> > > > 
+> > > > #ifndef CONFIG_GART_IOMMU
+> > > > module_init(agp_amd64_init);
+> > > > module_exit(agp_amd64_cleanup);
+> > > > #endif
+> > > > 
+> > > >  /*  so it is not invoked here due to CONFIG_GART_IOMMU=y   */
+> > > > 
+> > > > and also appears in:
+> > > >  
+> > > > arch/x86/kernel/pci-gart_64.c, function: gart_iommu_init()
+> > > > 
+> > > > The last one is part of the struct x86_init_ops(struct x86_init_iommu, as a function pointer) 
+> > > > only if gart-iommu is successfully detected, which is not the case here due to the quirk, 
+> > > > so agp_amd64_init() is not invoked here neither. 
+> > > > 
+> > > > Sure, configuring the kernel without CONFIG_GART_IOMMU=y (which is not user selectable)
+> > > > 
+> > > > should solve the problem, but usually users do not know about quirks, so it should
+> > > > work even as set here (and it works up to 2.6.32.2). I believe the bug is introduced
+> > > > with the changes in the order iommu detect/init works for 2.6.33.
+> > > > 
+> > > > I am here for additional info/tests.
+> > > 
+> > > Sorry about the regression. Does this works?
+> > 
+> > Yes, it works for me, thank you.
+> 
+> Great! Fujita-san, mind sending a fully changelogged version of the patch with 
+> Tested-by and your Signed-off-by?
 
-This is reasonable for chosing the next request, but not to determine
-if two queues have to be merged (since they can depart soon), so my
-suggestion is to differentiate using a parameter.
+=
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Subject: [PATCH] x86/agp: fix agp_amd64_init() initialization with CONFIG_GART_IOMMU enabled
 
->
-> Thanks,
-> Shaohua
->
+drivers/char/agp/amd64-agp.c has:
 
-Thanks
-Corrado
+#ifndef CONFIG_GART_IOMMU
+module_init(agp_amd64_init);
+module_exit(agp_amd64_cleanup);
+#endif
+
+agp_amd64_init() was called via gart_iommu_init with CONFIG_GART_IOMMU=y
+agp_amd64_init() was called via module_init with CONFIG_GART_IOMMU=n
+
+The commit 75f1cdf1dda92cae037ec848ae63690d91913eac changes the x86
+dma initialization routine: gart_iommu_init() is called only when GART
+IOMMU is detected. So when GART IOMMU isn't detected, agp_amd64_init
+isn't called.
+
+Marin Mitov reported this issue:
+
+http://marc.info/?l=linux-kernel&m=126192729110083&w=2
+
+With this patch, agp_amd64_init() is always called via module_init
+(the above ifndef is removed). If agp_amd64_init() is called via
+gart_iommu_init() earlier, agp_amd64_init() finishes without doing
+anything (when it is called via module_init).
+
+Reported-by: Marin Mitov <mitov@issp.bas.bg>
+Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Tested-by: Marin Mitov <mitov@issp.bas.bg>
+---
+ drivers/char/agp/amd64-agp.c |    9 +++++----
+ 1 files changed, 5 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/char/agp/amd64-agp.c b/drivers/char/agp/amd64-agp.c
+index 2fb2e6c..5aa7a58 100644
+--- a/drivers/char/agp/amd64-agp.c
++++ b/drivers/char/agp/amd64-agp.c
+@@ -725,9 +725,14 @@ static struct pci_driver agp_amd64_pci_driver = {
+ int __init agp_amd64_init(void)
+ {
+ 	int err = 0;
++	static int done = 0;
+ 
+ 	if (agp_off)
+ 		return -EINVAL;
++
++	if (done++)
++		return agp_bridges_found ? 0 : -ENODEV;
++
+ 	err = pci_register_driver(&agp_amd64_pci_driver);
+ 	if (err < 0)
+ 		return err;
+@@ -771,12 +776,8 @@ static void __exit agp_amd64_cleanup(void)
+ 	pci_unregister_driver(&agp_amd64_pci_driver);
+ }
+ 
+-/* On AMD64 the PCI driver needs to initialize this driver early
+-   for the IOMMU, so it has to be called via a backdoor. */
+-#ifndef CONFIG_GART_IOMMU
+ module_init(agp_amd64_init);
+ module_exit(agp_amd64_cleanup);
+-#endif
+ 
+ MODULE_AUTHOR("Dave Jones <davej@redhat.com>, Andi Kleen");
+ module_param(agp_try_unsupported, bool, 0);
+-- 
+1.5.6.5
+
