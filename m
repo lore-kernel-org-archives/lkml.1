@@ -1,69 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751864AbZL1Oo5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751916AbZL1Opb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751864AbZL1Oo5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Dec 2009 09:44:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751727AbZL1Oo4
+	id S1751916AbZL1Opb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Dec 2009 09:45:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751894AbZL1Opa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Dec 2009 09:44:56 -0500
-Received: from casper.infradead.org ([85.118.1.10]:51069 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751739AbZL1Oo4 (ORCPT
+	Mon, 28 Dec 2009 09:45:30 -0500
+Received: from lennier.cc.vt.edu ([198.82.162.213]:34391 "EHLO
+	lennier.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751684AbZL1Op3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Dec 2009 09:44:56 -0500
-Subject: Re: [RFC 9/12][PATCH] SCHED_DEADLINE: system wide bandwidth
- management
-From: Peter Zijlstra <peterz@infradead.org>
-To: Raistlin <raistlin@linux.it>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       michael trimarchi <michael@evidence.eu.com>,
-       Fabio Checconi <fabio@gandalf.sssup.it>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Dhaval Giani <dhaval.giani@gmail.com>,
-       Johan Eker <johan.eker@ericsson.com>, "p.faure" <p.faure@akatech.ch>,
-       Chris Friesen <cfriesen@nortel.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Henrik Austad <henrik@austad.us>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Darren Hart <darren@dvhart.com>,
-       Sven-Thorsten Dietrich <sven@thebigcorporation.com>,
-       Bjoern Brandenburg <bbb@cs.unc.edu>,
-       Tommaso Cucinotta <tommaso.cucinotta@sssup.it>,
-       "giuseppe.lipari" <giuseppe.lipari@sssup.it>,
-       Juri Lelli <juri.lelli@gmail.com>
-In-Reply-To: <1255707940.6228.464.camel@Palantir>
-References: <1255707324.6228.448.camel@Palantir>
-	 <1255707940.6228.464.camel@Palantir>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 28 Dec 2009 15:44:09 +0100
-Message-ID: <1262011449.7135.116.camel@laptop>
+	Mon, 28 Dec 2009 09:45:29 -0500
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Cc: serge@hallyn.com, serue@us.ibm.com, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org
+Subject: Re: A basic question about the security_* hooks
+In-Reply-To: Your message of "Mon, 28 Dec 2009 20:51:49 +0900."
+             <200912282051.BIF64080.VOMtFOOLSHJFFQ@I-love.SAKURA.ne.jp>
+From: Valdis.Kletnieks@vt.edu
+References: <20091225055034.GA374@us.ibm.com> <20091226195043.GA1945@heat> <20091227031631.GA17629@hallyn.com> <200912271302.JBH64754.JtLMFQVOSOFFHO@I-love.SAKURA.ne.jp> <22669.1261911374@localhost>
+            <200912282051.BIF64080.VOMtFOOLSHJFFQ@I-love.SAKURA.ne.jp>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+Content-Type: multipart/signed; boundary="==_Exmh_1262011518_3923P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
+Date: Mon, 28 Dec 2009 09:45:18 -0500
+Message-ID: <9071.1262011518@localhost>
+X-Mirapoint-Received-SPF: 128.173.34.103 localhost Valdis.Kletnieks@vt.edu 2 pass
+X-Mirapoint-IP-Reputation: reputation=neutral-1,
+	source=Fixed,
+	refid=n/a,
+	actions=MAILHURDLE SPF TAG
+X-Junkmail-Info: (45) HELO_LOCALHOST
+X-Junkmail-Status: score=45/50, host=steiner.cc.vt.edu
+X-Junkmail-SD-Raw: score=unknown,
+	refid=str=0001.0A02020A.4B38C47E.025C,ss=1,fgs=0,
+	ip=0.0.0.0,
+	so=2009-09-22 00:05:22,
+	dmn=2009-09-10 00:05:08,
+	mode=multiengine
+X-Junkmail-IWF: false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-10-16 at 17:45 +0200, Raistlin wrote:
-> This commit adds the capability of controlling the maximum, system wide,
-> CPU bandwidth that is devoted to SCHED_DEADLINE tasks.
-> 
-> This is done by means of two files:
->  - /proc/sys/kernel/sched_deadline_runtime_us,
->  - /proc/sys/kernel/sched_deadline_period_us.
-> The ratio runtime/period is the total bandwidth all the SCHED_DEADLINE tasks
-> can use in the system as a whole.
-> Trying to create tasks in such a way that they exceed this limitation will
-> fail, as soon as the bandwidth cap would be overcome.
-> 
-> Default value is _zero_ bandwidth available, thus write some numbers in those
-> files before trying to start some SCHED_DEADLINE task. Setting runtime > period
-> is allowed (i.e., more than 100% bandwidth available for -deadline tasks),
-> since it makes more than sense in SMP systems.
+--==_Exmh_1262011518_3923P
+Content-Type: text/plain; charset=us-ascii
 
-Right, so the current rt bandwidth controls go up to 100%, where 100% is
-root_domain wide. That is, the bandwidth usage scale is irrespective of
-the number of cpus.
+On Mon, 28 Dec 2009 20:51:49 +0900, Tetsuo Handa said:
 
-If that was the best choice could of course be argued, but since we have
-that, it would be strange to add another set of controls which do not
-conform.
+> Yes, to fix SELinux is the right answer if we can integrate TOMOYO into
+> SELinux. But SELinux had been advertised as label based access control and had
+> been rejecting pathname based access control. I doubt SELinux wants to
+> integrate pathname based access control.
+
+No, that's missing the point.  Let's say you have an SELinux system, and
+you want to use TOMOYO on top of it (or the other way around, it works either
+way).  Now hopefully, you're not doing it just to prove it can be done, you're
+doing it because you have a specific issue or threat model that TOMOYO can
+address that SELinux can't - for instance "A program can do FOO, BAR, and
+then BAZ, and SELinux is unable to stop that but TOMOYO can".
+
+So the question becomes "*why* can't SELinux stop FOO, BAR, BAZ, and can it
+be fixed to be able to do so?"
+
+
+--==_Exmh_1262011518_3923P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFLOMR+cC3lWbTT17ARAnJ5AJ0fA0y0nQQ2UEX0VEqrV3GQPWY20gCeMgL2
+/aqOLJXng/m84uHVdGJ1XT4=
+=sEf6
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1262011518_3923P--
 
