@@ -1,87 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751837AbZL1VIc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751970AbZL1V1O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751837AbZL1VIc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Dec 2009 16:08:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751088AbZL1VIc
+	id S1751970AbZL1V1O (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Dec 2009 16:27:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751417AbZL1V1N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Dec 2009 16:08:32 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:6524 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751468AbZL1VIb convert rfc822-to-8bit (ORCPT
+	Mon, 28 Dec 2009 16:27:13 -0500
+Received: from lennier.cc.vt.edu ([198.82.162.213]:44423 "EHLO
+	lennier.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751294AbZL1V1L (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Dec 2009 16:08:31 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=nms8frzvBNLFgbHYknbB1I2YuZuEIj/Pzl5/MF/TQthGP8oPNpE72fF0xkpgRZI12
-	MAcWEJtOmwGjD40GfYgww==
-MIME-Version: 1.0
-In-Reply-To: <20091228204848.GB1637@ucw.cz>
-References: <20091213212504.GD5114@elf.ucw.cz>
-	 <20091227093537.GD11737@elf.ucw.cz>
-	 <20091227201514.GA29174@elf.ucw.cz>
-	 <a55d774e0912271220p1d102b1dr398e0524c9386702@mail.gmail.com>
-	 <20091227203704.GK11737@elf.ucw.cz>
-	 <20091227211322.GB29174@elf.ucw.cz>
-	 <a55d774e0912271646m1b82687cy427083e64e91e323@mail.gmail.com>
-	 <20091227101824.GB1478@ucw.cz>
-	 <a55d774e0912281224y7360dfdbu8a251743026bdd28@mail.gmail.com>
-	 <20091228204848.GB1637@ucw.cz>
-Date: Mon, 28 Dec 2009 13:08:27 -0800
-Message-ID: <a55d774e0912281308u1c20c84cl4f264aa366445131@mail.gmail.com>
-Subject: Re: tree with htc dream support
-From: Brian Swetland <swetland@google.com>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: =?UTF-8?B?QXJ2ZSBIasO4bm5ldsOlZw==?= <arve@android.com>,
-       Daniel Walker <dwalker@codeaurora.org>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-       Iliyan Malchev <malchev@google.com>, Greg KH <greg@kroah.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-X-System-Of-Record: true
+	Mon, 28 Dec 2009 16:27:11 -0500
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Michael Stone <michael@laptop.org>
+Cc: Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, linux-security-module@vger.kernel.org,
+       Andi Kleen <andi@firstfloor.org>, David Lang <david@lang.hm>,
+       Oliver Hartkopp <socketcan@hartkopp.net>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Bryan Donlan <bdonlan@gmail.com>, Evgeniy Polyakov <zbr@ioremap.net>,
+       "C. Scott Ananian" <cscott@cscott.net>,
+       James Morris <jmorris@namei.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Bernie Innocenti <bernie@codewiz.org>,
+       Mark Seaborn <mrs@mythic-beasts.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       =?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>,
+       Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
+       Samir Bellabes <sam@synack.fr>,
+       Casey Schaufler <casey@schaufler-ca.com>,
+       "Serge E. Hallyn" <serue@us.ibm.com>
+Subject: Re: RFC: disablenetwork facility. (v4)
+In-Reply-To: Your message of "Mon, 28 Dec 2009 11:31:09 EST."
+             <20091228163108.GC13266@heat>
+From: Valdis.Kletnieks@vt.edu
+References: <20091228163108.GC13266@heat>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1262035489_4431P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Mon, 28 Dec 2009 16:24:49 -0500
+Message-ID: <14145.1262035489@localhost>
+X-Mirapoint-Received-SPF: 128.173.14.107 localhost Valdis.Kletnieks@vt.edu 2 pass
+X-Mirapoint-IP-Reputation: reputation=neutral-1,
+	source=Fixed,
+	refid=n/a,
+	actions=MAILHURDLE SPF TAG
+X-Junkmail-Info: (45) HELO_LOCALHOST
+X-Junkmail-Status: score=45/50, host=vivi.cc.vt.edu
+X-Junkmail-SD-Raw: score=unknown,
+	refid=str=0001.0A020204.4B392223.0098,ss=1,fgs=0,
+	ip=0.0.0.0,
+	so=2009-09-22 00:05:22,
+	dmn=2009-09-10 00:05:08,
+	mode=multiengine
+X-Junkmail-IWF: false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 28, 2009 at 12:48 PM, Pavel Machek <pavel@ucw.cz> wrote:
->> > In the short run... the code is staging quality, so it should be in
->> > staging... and you'll not have to mainain so huge diff. (-20 kLoc).
->>
->> The core smd stuff is really not that large.  The central smd.[ch] are
->> about 1300 lines, and proc_comm.[ch] are about 400 lines.  Is it
->> possible to get some review/feedback as to what's "staging quality"
->> about this code so we can clean it up?  I'd rather just fix the
->> issues
->
-> Just submit it to Daniel W., ccing rmk and l-a-k, and I'm sure you'll
-> get feedback.
->
-> For a start, checkpatch has some mild complains.
->
->> and get the core stuff in there so clock, power, etc support is there
->> for the platform rather than have it live in staging purgatory.
->>
->> Since this stuff is integral to mach-msm, required for essential
->> operation of the platform, and makes sense to be part of the mach-msm
->> codebase, why not just fix it there rather than move it out into
->> staging and then back?  I'm not sure what that gains us.
->
-> Well, it is in staging now. I just want you to use the existing
-> version, instead of adding another one.
+--==_Exmh_1262035489_4431P
+Content-Type: text/plain; charset=us-ascii
 
-I'm trying to understand where the version in staging came from, how
-it's been changed, etc, so I can resolve that against what we have
-that's known good and shipping today and make sure we're not losing
-bugfixes and such along the way.
+On Mon, 28 Dec 2009 11:31:09 EST, Michael Stone said:
 
-Do you remember where the smd code that you put into staging came
-from, exactly?  Unfortunately since things have been moved, modified,
-renamed, etc, getting clean diffs is a bit of an adventure right now.
+> > Actually it does. Policy may well be "If the network works, noone can
+> > log in locally, because administration is normally done over
+> > network. If the network fails, larger set of people is allowed in,
+> > because something clearly went wrong and we want anyone going around
+> > to fix it."
+> 
+> Have you actually seen this security policy in real life? I ask because it
+> seems quite far-fetched to me. Networks are just too easy to attack. Seems to
+> me, from this casual description, that you're just asking to be ARP- or
+> DNS-poisoned and rooted with this one.
 
-When I'm back in the office (on vacation at the moment, trying to stay
-caught up on email though) I'll have to start figuring out what went
-where and how different it is from what we have today, say in Arve's
-.33 based tree.
+Actually, I've seen a *lot* of similar "if things fail, more people can login
+to fix it" policies.  For instance, a default Fedora box will require a root
+password to login - but if you can't get to multi-user because the box is
+scrozzled and boot into single user, no root password is required.
 
-Brian
+So if you're using Fedora and LDAP authentication, and reboot to single-user
+to fix an LDAP issue, you do in fact have that policy in real life...
+
+(And before you start shouting "but that's a stupid config to make root login
+depend on LDAP", note that for many Microsoft Active Directory shops, they add
+machines with Administrator rights for an Active Directory group, and then
+disable local Administrator, which is exactly the same thing...  Stupid or
+not, it's a *very* common policy.)
+
+
+--==_Exmh_1262035489_4431P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFLOSIhcC3lWbTT17ARAgF0AJoDigVJ9mt3CDqRFsu0uX9a8tpYewCeNvKT
+5W8Pmh/BccabcO7s/2p9ymk=
+=xP2S
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1262035489_4431P--
+
