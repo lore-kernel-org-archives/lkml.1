@@ -1,93 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752249AbZL1KMb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752028AbZL1KKj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752249AbZL1KMb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Dec 2009 05:12:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752174AbZL1KMa
+	id S1752028AbZL1KKj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Dec 2009 05:10:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751721AbZL1KKS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Dec 2009 05:12:30 -0500
-Received: from hera.kernel.org ([140.211.167.34]:48150 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751704AbZL1KM3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Dec 2009 05:12:29 -0500
-Date: Mon, 28 Dec 2009 10:09:52 GMT
-From: tip-bot for Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
-       mingo@redhat.com, jkacur@redhat.com, williams@redhat.com,
-       peterz@infradead.org, xiaoguangrong@cn.fujitsu.com, fweisbec@gmail.com,
-       tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
-       linux-kernel@vger.kernel.org, jkacur@redhat.com, williams@redhat.com,
-       peterz@infradead.org, xiaoguangrong@cn.fujitsu.com, fweisbec@gmail.com,
-       tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <4B387122.7090801@cn.fujitsu.com>
-References: <4B387122.7090801@cn.fujitsu.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perf/core] perf trace: Fix forgotten close of file/dir
-Message-ID: <tip-9967411e5b324a908e344d6ce66b77bd5d372c3e@git.kernel.org>
-Git-Commit-ID: 9967411e5b324a908e344d6ce66b77bd5d372c3e
-X-Mailer: tip-git-log-daemon
+	Mon, 28 Dec 2009 05:10:18 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:56411 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751284AbZL1KKQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Dec 2009 05:10:16 -0500
+Date: Mon, 28 Dec 2009 11:10:06 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Michael Stone <michael@laptop.org>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       linux-security-module@vger.kernel.org, Andi Kleen <andi@firstfloor.org>,
+       David Lang <david@lang.hm>, Oliver Hartkopp <socketcan@hartkopp.net>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Valdis Kletnieks <Valdis.Kletnieks@vt.edu>,
+       Bryan Donlan <bdonlan@gmail.com>, Evgeniy Polyakov <zbr@ioremap.net>,
+       "C. Scott Ananian" <cscott@cscott.net>,
+       James Morris <jmorris@namei.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Bernie Innocenti <bernie@codewiz.org>,
+       Mark Seaborn <mrs@mythic-beasts.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       =?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>,
+       Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
+       Samir Bellabes <sam@synack.fr>,
+       Casey Schaufler <casey@schaufler-ca.com>,
+       "Serge E. Hallyn" <serue@us.ibm.com>
+Subject: Re: RFC: disablenetwork facility. (v4)
+Message-ID: <20091228101006.GA19984@elf.ucw.cz>
+References: <20091227190802.GH11737@elf.ucw.cz>
+ <20091228060759.GB13266@heat>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20091228060759.GB13266@heat>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  9967411e5b324a908e344d6ce66b77bd5d372c3e
-Gitweb:     http://git.kernel.org/tip/9967411e5b324a908e344d6ce66b77bd5d372c3e
-Author:     Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-AuthorDate: Mon, 28 Dec 2009 16:49:38 +0800
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Mon, 28 Dec 2009 10:36:36 +0100
+Hi!
 
-perf trace: Fix forgotten close of file/dir
+> >"I can't see" is not strong enough test, I'd say.
+> >
+> >For example, I can easily imagine something like pam falling back to
+> >local authentication when network is unavailable. If you disable
+> >network for su...
+> >
+> >It would be also extremely easy to DoS something like sendmail -- if
+> >it forks into background and then serves other users' requests.
+> 
+> Pavel,
+> 
+> I spent some time this afternoon reflecting on the scenarios that you sketched
+> above. This reflection resulted in three concrete responses:
 
-Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Clark Williams <williams@redhat.com>
-Cc: John Kacur <jkacur@redhat.com>
-LKML-Reference: <4B387122.7090801@cn.fujitsu.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- tools/perf/util/trace-event-info.c |    5 +++++
- 1 files changed, 5 insertions(+), 0 deletions(-)
+There's more. You are introducing security holes. Don't.
 
-diff --git a/tools/perf/util/trace-event-info.c b/tools/perf/util/trace-event-info.c
-index 535176d..407fd65 100644
---- a/tools/perf/util/trace-event-info.c
-+++ b/tools/perf/util/trace-event-info.c
-@@ -253,6 +253,8 @@ static void read_header_files(void)
- 	write_or_die("header_page", 12);
- 	write_or_die(&size, 8);
- 	check_size = copy_file_fd(fd);
-+	close(fd);
-+
- 	if (size != check_size)
- 		die("wrong size for '%s' size=%lld read=%lld",
- 		    path, size, check_size);
-@@ -271,6 +273,7 @@ static void read_header_files(void)
- 	if (size != check_size)
- 		die("wrong size for '%s'", path);
- 	put_tracing_file(path);
-+	close(fd);
- }
- 
- static bool name_in_tp_list(char *sys, struct tracepoint_path *tps)
-@@ -337,6 +340,7 @@ static void copy_event_system(const char *sys, struct tracepoint_path *tps)
- 
- 		free(format);
- 	}
-+	closedir(dir);
- }
- 
- static void read_ftrace_files(struct tracepoint_path *tps)
-@@ -407,6 +411,7 @@ static void read_event_files(struct tracepoint_path *tps)
- 		free(sys);
- 	}
- 
-+	closedir(dir);
- 	put_tracing_file(path);
- }
- 
+>   1. Anyone depending on their network for authentication already has to deal
+>      with availability faults. disablenetwork doesn't change anything
+>      fundamental there.
+
+Actually it does. Policy may well be "If the network works, noone can
+log in locally, because administration is normally done over
+network. If the network fails, larger set of people is allowed in,
+because something clearly went wrong and we want anyone going around
+to fix it."
+
+>   2. Anyone able to use disablenetwork to block a privilege escalation via su
+>      or to influence sendmail will be able to disrupt the privilege escalation
+>      or mail transfer by manipulating the ancestors of su or sendmail in plenty
+>      of other ways including, for example, via ptrace(), kill(), manipulation
+>      of PATH, manipulation of X11 events and IPC, manipulation of TTYs, and so
+>      on.
+
+Please learn how setuid works. No, you can't ptrace su. Yes, su has to
+deal with poisonous PATH. setuid programs are generally carefully
+written to handle _known_ problems. You are adding disablenetwork that
+they'll need to handle, and that's bad.
+
+>   3. As I pointed out before, disablenetwork _is_ controlled by a build-time
+>      configuration option, its use _is_ still subject to any existing MAC
+
+CONFIG_ADD_SECURITY_HOLE is still bad idea.
+
+You should either:
+
+a) make disablenetwork reset to "enablenetwork" during setuid exec
+
+or
+
+b) disallow setuid execs for tasks that have network disabled.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
