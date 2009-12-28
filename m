@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751821AbZL1KKU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752129AbZL1KJt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751821AbZL1KKU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Dec 2009 05:10:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751618AbZL1KKR
+	id S1752129AbZL1KJt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Dec 2009 05:09:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751721AbZL1KJq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Dec 2009 05:10:17 -0500
-Received: from hera.kernel.org ([140.211.167.34]:36398 "EHLO hera.kernel.org"
+	Mon, 28 Dec 2009 05:09:46 -0500
+Received: from hera.kernel.org ([140.211.167.34]:36364 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751167AbZL1KKO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Dec 2009 05:10:14 -0500
-Date: Mon, 28 Dec 2009 10:08:18 GMT
-From: tip-bot for Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: linux-kernel@vger.kernel.org, ananth@in.ibm.com, hpa@zytor.com,
-       mingo@redhat.com, heiko.carstens@de.ibm.com, tglx@linutronix.de,
-       mhiramat@redhat.com, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, ananth@in.ibm.com,
-       linux-kernel@vger.kernel.org, heiko.carstens@de.ibm.com,
-       tglx@linutronix.de, mhiramat@redhat.com, mingo@elte.hu
-In-Reply-To: <20091221120224.GA4471@osiris.boeblingen.de.ibm.com>
-References: <20091221120224.GA4471@osiris.boeblingen.de.ibm.com>
+	id S1751222AbZL1KJn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Dec 2009 05:09:43 -0500
+Date: Mon, 28 Dec 2009 10:08:35 GMT
+From: tip-bot for Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       akpm@linux-foundation.org, penberg@cs.helsinki.fi,
+       vegard.nossum@gmail.com, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       penberg@cs.helsinki.fi, akpm@linux-foundation.org,
+       vegard.nossum@gmail.com, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <1261990935.4641.7.camel@penberg-laptop>
+References: <1261990935.4641.7.camel@penberg-laptop>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perf/urgent] kprobes: Fix distinct type warning
-Message-ID: <tip-c2ef6661ce62e26a8c0978e521fab646128a144b@git.kernel.org>
-Git-Commit-ID: c2ef6661ce62e26a8c0978e521fab646128a144b
+Subject: [tip:x86/urgent] x86, kmemcheck: Use KERN_WARNING for error reporting
+Message-ID: <tip-c0ca9da442df82b67095f230f24762042f9f3b7d@git.kernel.org>
+Git-Commit-ID: c0ca9da442df82b67095f230f24762042f9f3b7d
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -31,43 +31,64 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  c2ef6661ce62e26a8c0978e521fab646128a144b
-Gitweb:     http://git.kernel.org/tip/c2ef6661ce62e26a8c0978e521fab646128a144b
-Author:     Heiko Carstens <heiko.carstens@de.ibm.com>
-AuthorDate: Mon, 21 Dec 2009 13:02:24 +0100
+Commit-ID:  c0ca9da442df82b67095f230f24762042f9f3b7d
+Gitweb:     http://git.kernel.org/tip/c0ca9da442df82b67095f230f24762042f9f3b7d
+Author:     Pekka Enberg <penberg@cs.helsinki.fi>
+AuthorDate: Mon, 28 Dec 2009 11:02:15 +0200
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Mon, 28 Dec 2009 10:25:31 +0100
+CommitDate: Mon, 28 Dec 2009 10:28:35 +0100
 
-kprobes: Fix distinct type warning
+x86, kmemcheck: Use KERN_WARNING for error reporting
 
-Every time I see this:
+As suggested by Vegard Nossum, use KERN_WARNING for error
+reporting to make sure kmemcheck reports end up in syslog.
 
- kernel/kprobes.c: In function 'register_kretprobe':
- kernel/kprobes.c:1038: warning: comparison of distinct pointer types lacks a cast
-
-I'm wondering if something changed in common code and we need to
-do something for s390. Apparently that's not the case.
-Let's get rid of this annoying warning.
-
-Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
-Acked-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Cc: Masami Hiramatsu <mhiramat@redhat.com>
-LKML-Reference: <20091221120224.GA4471@osiris.boeblingen.de.ibm.com>
+Suggested-by: Vegard Nossum <vegard.nossum@gmail.com>
+Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+LKML-Reference: <1261990935.4641.7.camel@penberg-laptop>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- kernel/kprobes.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ arch/x86/mm/kmemcheck/error.c |   19 +++++++++----------
+ 1 files changed, 9 insertions(+), 10 deletions(-)
 
-diff --git a/kernel/kprobes.c b/kernel/kprobes.c
-index e5342a3..b7df302 100644
---- a/kernel/kprobes.c
-+++ b/kernel/kprobes.c
-@@ -1035,7 +1035,7 @@ int __kprobes register_kretprobe(struct kretprobe *rp)
- 	/* Pre-allocate memory for max kretprobe instances */
- 	if (rp->maxactive <= 0) {
- #ifdef CONFIG_PREEMPT
--		rp->maxactive = max(10, 2 * num_possible_cpus());
-+		rp->maxactive = max_t(unsigned int, 10, 2*num_possible_cpus());
- #else
- 		rp->maxactive = num_possible_cpus();
- #endif
+diff --git a/arch/x86/mm/kmemcheck/error.c b/arch/x86/mm/kmemcheck/error.c
+index 4901d0d..af3b6c8 100644
+--- a/arch/x86/mm/kmemcheck/error.c
++++ b/arch/x86/mm/kmemcheck/error.c
+@@ -106,26 +106,25 @@ void kmemcheck_error_recall(void)
+ 
+ 	switch (e->type) {
+ 	case KMEMCHECK_ERROR_INVALID_ACCESS:
+-		printk(KERN_ERR  "WARNING: kmemcheck: Caught %d-bit read "
+-			"from %s memory (%p)\n",
++		printk(KERN_WARNING "WARNING: kmemcheck: Caught %d-bit read from %s memory (%p)\n",
+ 			8 * e->size, e->state < ARRAY_SIZE(desc) ?
+ 				desc[e->state] : "(invalid shadow state)",
+ 			(void *) e->address);
+ 
+-		printk(KERN_INFO);
++		printk(KERN_WARNING);
+ 		for (i = 0; i < SHADOW_COPY_SIZE; ++i)
+-			printk("%02x", e->memory_copy[i]);
+-		printk("\n");
++			printk(KERN_CONT "%02x", e->memory_copy[i]);
++		printk(KERN_CONT "\n");
+ 
+-		printk(KERN_INFO);
++		printk(KERN_WARNING);
+ 		for (i = 0; i < SHADOW_COPY_SIZE; ++i) {
+ 			if (e->shadow_copy[i] < ARRAY_SIZE(short_desc))
+-				printk(" %c", short_desc[e->shadow_copy[i]]);
++				printk(KERN_CONT " %c", short_desc[e->shadow_copy[i]]);
+ 			else
+-				printk(" ?");
++				printk(KERN_CONT " ?");
+ 		}
+-		printk("\n");
+-		printk(KERN_INFO "%*c\n", 2 + 2
++		printk(KERN_CONT "\n");
++		printk(KERN_WARNING "%*c\n", 2 + 2
+ 			* (int) (e->address & (SHADOW_COPY_SIZE - 1)), '^');
+ 		break;
+ 	case KMEMCHECK_ERROR_BUG:
