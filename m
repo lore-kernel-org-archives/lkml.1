@@ -1,209 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751235AbZL1AjT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751398AbZL1Akg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751235AbZL1AjT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Dec 2009 19:39:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751139AbZL1AjS
+	id S1751398AbZL1Akg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Dec 2009 19:40:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751151AbZL1Akf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Dec 2009 19:39:18 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:57178 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751093AbZL1AjS (ORCPT
+	Sun, 27 Dec 2009 19:40:35 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:52964 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751145AbZL1Ake (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Dec 2009 19:39:18 -0500
+	Sun, 27 Dec 2009 19:40:34 -0500
 X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Mon, 28 Dec 2009 09:36:06 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "minchan.kim@gmail.com" <minchan.kim@gmail.com>,
-       cl@linux-foundation.org
-Subject: Re: [RFC PATCH] asynchronous page fault.
-Message-Id: <20091228093606.9f2e666c.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <1261915391.15854.31.camel@laptop>
-References: <20091225105140.263180e8.kamezawa.hiroyu@jp.fujitsu.com>
-	<1261915391.15854.31.camel@laptop>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Borislav Petkov <petkovbb@googlemail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       David Airlie <airlied@linux.ie>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: drm_vm.c:drm_mmap: possible circular locking dependency detected (was: Re: Linux 2.6.33-rc2 - Merry Christmas ...)
+Cc: kosaki.motohiro@jp.fujitsu.com
+In-Reply-To: <20091226094504.GA6214@liondog.tnic>
+References: <alpine.LFD.2.00.0912241350510.11961@localhost.localdomain> <20091226094504.GA6214@liondog.tnic>
+Message-Id: <20091228092712.AA8C.A69D9226@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Mon, 28 Dec 2009 09:40:30 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 27 Dec 2009 13:03:11 +0100
-Peter Zijlstra <peterz@infradead.org> wrote:
+Hi
 
-> On Fri, 2009-12-25 at 10:51 +0900, KAMEZAWA Hiroyuki wrote:
-> >  /*
-> > + * Returns vma which contains given address. This scans rb-tree in speculative
-> > + * way and increment a reference count if found. Even if vma exists in rb-tree,
-> > + * this function may return NULL in racy case. So, this function cannot be used
-> > + * for checking whether given address is valid or not.
-> > + */
-> > +struct vm_area_struct *
-> > +find_vma_speculative(struct mm_struct *mm, unsigned long addr)
-> > +{
-> > +       struct vm_area_struct *vma = NULL;
-> > +       struct vm_area_struct *vma_tmp;
-> > +       struct rb_node *rb_node;
-> > +
-> > +       if (unlikely(!mm))
-> > +               return NULL;;
-> > +
-> > +       rcu_read_lock();
-> > +       rb_node = rcu_dereference(mm->mm_rb.rb_node);
-> > +       vma = NULL;
-> > +       while (rb_node) {
-> > +               vma_tmp = rb_entry(rb_node, struct vm_area_struct, vm_rb);
-> > +
-> > +               if (vma_tmp->vm_end > addr) {
-> > +                       vma = vma_tmp;
-> > +                       if (vma_tmp->vm_start <= addr)
-> > +                               break;
-> > +                       rb_node = rcu_dereference(rb_node->rb_left);
-> > +               } else
-> > +                       rb_node = rcu_dereference(rb_node->rb_right);
-> > +       }
-> > +       if (vma) {
-> > +               if ((vma->vm_start <= addr) && (addr < vma->vm_end)) {
-> > +                       if (!atomic_inc_not_zero(&vma->refcnt))
+Quick analysis is here.
+
+> Hi,
 > 
-> And here you destroy pretty much all advantage of having done the
-> lockless lookup ;-)
+> this jumped into dmesg upon resume (.config and dmesg are attached in
+> the previous "EHCI resume sysfs duplicates..." message in this thread):
 > 
-Hmm ? for single-thread apps ? This patch's purpose is not for lockless
-lookup, it's just a part of work. My purpose is avoiding false-sharing.
-
-2.6.33-rc2's score of the same test program is here.
-
-    75.42%  multi-fault-all  [kernel]                  [k] _raw_spin_lock_irqsav
-            |
-            --- _raw_spin_lock_irqsave
-               |
-               |--49.13%-- __down_read_trylock
-               |          down_read_trylock
-               |          do_page_fault
-               |          page_fault
-               |          0x400950
-               |          |
-               |           --100.00%-- (nil)
-               |
-               |--46.92%-- __up_read
-               |          up_read
-               |          |
-               |          |--99.99%-- do_page_fault
-               |          |          page_fault
-               |          |          0x400950
-               |          |          (nil)
-               |           --0.01%-- [...]
-
-Most of time is used for up/down read.
-
-Here is a comparison between
- - page fault by 8 threads on one vma
- - page fault by 8 threads on 8 vma on x86-64.
-
-== one vma ==
-# Samples: 1338964273489
-#
-# Overhead          Command             Shared Object  Symbol
-# ........  ...............  ........................  ......
-#
-    26.90%  multi-fault-all  [kernel]                  [k] clear_page_c
-            |
-            --- clear_page_c
-                __alloc_pages_nodemask
-                handle_mm_fault
-                do_page_fault
-                page_fault
-                0x400940
-               |
-                --100.00%-- (nil)
-
-    20.65%  multi-fault-all  [kernel]                  [k] _raw_spin_lock
-            |
-            --- _raw_spin_lock
-               |
-               |--85.07%-- free_pcppages_bulk
-               |          free_hot_cold_page
-
-    ....<snip>
-    3.94%  multi-fault-all  [kernel]                  [k] find_vma_speculative
-            |
-            --- find_vma_speculative
-               |
-               |--99.40%-- do_page_fault
-               |          page_fault
-               |          0x400940
-               |          |
-               |           --100.00%-- (nil)
-               |
-                --0.60%-- page_fault
-                          0x400940
-                          |
-                           --100.00%-- (nil)
-==
-
-== 8 vma ==
-    27.98%  multi-fault-all  [kernel]                  [k] clear_page_c
-            |
-            --- clear_page_c
-                __alloc_pages_nodemask
-                handle_mm_fault
-                do_page_fault
-                page_fault
-                0x400950
-               |
-                --100.00%-- (nil)
-
-    21.91%  multi-fault-all  [kernel]                  [k] _raw_spin_lock
-            |
-            --- _raw_spin_lock
-               |
-               |--77.01%-- free_pcppages_bulk
-               |          free_hot_cold_page
-               |          __pagevec_free
-               |          release_pages
-...<snip>
-
-     0.21%  multi-fault-all  [kernel]                  [k] find_vma_speculative
-            |
-            --- find_vma_speculative
-               |
-               |--87.50%-- do_page_fault
-               |          page_fault
-               |          0x400950
-               |          |
-               |           --100.00%-- (nil)
-               |
-                --12.50%-- page_fault
-                          0x400950
-                          |
-                           --100.00%-- (nil)
-==
-Yes, this atomic_inc_unless adds some overhead. But this isn't as bad as
-false sharing in mmap_sem. Anyway, as Minchan pointed out, this code contains
-bug. I consider this part again.
-
-
-> The idea is to let the RCU lock span whatever length you need the vma
-> for, the easy way is to simply use PREEMPT_RCU=y for now, 
-
-I tried to remove his kind of reference count trick but I can't do that
-without synchronize_rcu() somewhere in unmap code. I don't like that and
-use this refcnt.
-
-> the hard way
-> is to also incorporate the drop-mmap_sem on blocking patches from a
-> while ago.
+> =======================================================
+> [ INFO: possible circular locking dependency detected ]
+> 2.6.33-rc2-00001-g6d7daec #1
+> -------------------------------------------------------
+> Xorg/3076 is trying to acquire lock:
+>  (&dev->struct_mutex){+.+.+.}, at: [<ffffffff81223fd4>] drm_mmap+0x38/0x5c
 > 
-"drop-mmap_sem if block" is no help for this false-sharing problem.
+> but task is already holding lock:
+>  (&mm->mmap_sem){++++++}, at: [<ffffffff810b7509>] sys_mmap_pgoff+0xd6/0x1b4
+> 
+> which lock already depends on the new lock.
+> 
+> 
+> the existing dependency chain (in reverse order) is:
+> 
+> -> #3 (&mm->mmap_sem){++++++}:
+>        [<ffffffff810694c0>] __lock_acquire+0x1373/0x16fd
+>        [<ffffffff8106993c>] lock_acquire+0xf2/0x116
+>        [<ffffffff810bb2b5>] might_fault+0x95/0xb8			<- mmap_sem
+>        [<ffffffff810e87d6>] filldir+0x75/0xd0				<- sysfs_mutex
+>        [<ffffffff8112be2a>] sysfs_readdir+0x10f/0x149
+>        [<ffffffff810e895b>] vfs_readdir+0x6b/0xa8
+>        [<ffffffff810e8ae1>] sys_getdents+0x81/0xd1
+>        [<ffffffff810022f2>] system_call_fastpath+0x16/0x1b
+> 
+> -> #2 (sysfs_mutex){+.+.+.}:
+>        [<ffffffff810694c0>] __lock_acquire+0x1373/0x16fd
+>        [<ffffffff8106993c>] lock_acquire+0xf2/0x116
+>        [<ffffffff813e9e5c>] mutex_lock_nested+0x63/0x354
+>        [<ffffffff8112c488>] sysfs_addrm_start+0x26/0x28		<- sysfs_mutex
+>        [<ffffffff8112c940>] sysfs_remove_dir+0x52/0x8d
+>        [<ffffffff8118b6f9>] kobject_del+0x16/0x37
+>        [<ffffffff8118b758>] kobject_release+0x3e/0x66
+>        [<ffffffff8118c5b5>] kref_put+0x43/0x4d
+>        [<ffffffff8118b674>] kobject_put+0x47/0x4b
+>        [<ffffffff813e11c1>] cacheinfo_cpu_callback+0xa2/0xdb
+>        [<ffffffff8105c317>] notifier_call_chain+0x37/0x63
+>        [<ffffffff8105c3c7>] raw_notifier_call_chain+0x14/0x16
+>        [<ffffffff813d58ec>] _cpu_down+0x1a5/0x29a			<- cpu_hotplug.lock
+>        [<ffffffff8103c851>] disable_nonboot_cpus+0x74/0x10d
+>        [<ffffffff8107793e>] hibernation_snapshot+0x99/0x1d3
+>        [<ffffffff81077b46>] hibernate+0xce/0x172
+>        [<ffffffff810768d4>] state_store+0x5c/0xd3
+>        [<ffffffff8118b48b>] kobj_attr_store+0x17/0x19
+>        [<ffffffff8112b4bd>] sysfs_write_file+0x108/0x144
+>        [<ffffffff810daf53>] vfs_write+0xb2/0x153
+>        [<ffffffff810db0b7>] sys_write+0x4a/0x71
+>        [<ffffffff810022f2>] system_call_fastpath+0x16/0x1b
+> 
+> -> #1 (cpu_hotplug.lock){+.+.+.}:
+>        [<ffffffff810694c0>] __lock_acquire+0x1373/0x16fd
+>        [<ffffffff8106993c>] lock_acquire+0xf2/0x116
+>        [<ffffffff813e9e5c>] mutex_lock_nested+0x63/0x354
+>        [<ffffffff8103c980>] get_online_cpus+0x3c/0x50			<- cpu_hotplug.lock
+>        [<ffffffff81014c1a>] mtrr_del_page+0x3e/0x13c
+>        [<ffffffff81014d5f>] mtrr_del+0x47/0x4f
+>        [<ffffffff8121c23b>] drm_rmmap_locked+0xdc/0x1a2
+>        [<ffffffff812226e3>] drm_master_destroy+0x86/0x11f
+>        [<ffffffff8118c5b5>] kref_put+0x43/0x4d
+>        [<ffffffff812225c4>] drm_master_put+0x20/0x2b
+>        [<ffffffff8121ea71>] drm_release+0x54b/0x688			<- dev->struct_mutex
+>        [<ffffffff810dbb24>] __fput+0x125/0x1e7
+>        [<ffffffff810dbc00>] fput+0x1a/0x1c
+>        [<ffffffff810d8d02>] filp_close+0x5d/0x67
+>        [<ffffffff810d8db9>] sys_close+0xad/0xe7
+>        [<ffffffff810022f2>] system_call_fastpath+0x16/0x1b
+> 
+> -> #0 (&dev->struct_mutex){+.+.+.}:
+>        [<ffffffff81069170>] __lock_acquire+0x1023/0x16fd
+>        [<ffffffff8106993c>] lock_acquire+0xf2/0x116
+>        [<ffffffff813e9e5c>] mutex_lock_nested+0x63/0x354
+>        [<ffffffff81223fd4>] drm_mmap+0x38/0x5c			<- dev->struct_mutex
+>        [<ffffffff810c34f5>] mmap_region+0x2e0/0x4ff
+>        [<ffffffff810c39a4>] do_mmap_pgoff+0x290/0x2f3
+>        [<ffffffff810b7529>] sys_mmap_pgoff+0xf6/0x1b4
+>        [<ffffffff8100719b>] sys_mmap+0x22/0x27			<- mmap_sem
+>        [<ffffffff810022f2>] system_call_fastpath+0x16/0x1b
 
-Thanks,
--Kame
-
+This output seems to suggest need to fix drm.
 
 
 
