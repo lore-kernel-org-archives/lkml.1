@@ -1,69 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752502AbZL1LGx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752408AbZL1LHl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752502AbZL1LGx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Dec 2009 06:06:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752486AbZL1LGw
+	id S1752408AbZL1LHl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Dec 2009 06:07:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752075AbZL1LHk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Dec 2009 06:06:52 -0500
-Received: from astoria.ccjclearline.com ([64.235.106.9]:40143 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752469AbZL1LGv (ORCPT
+	Mon, 28 Dec 2009 06:07:40 -0500
+Received: from relay.atmel.no ([80.232.32.139]:50129 "EHLO relay.atmel.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752085AbZL1LHj convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Dec 2009 06:06:51 -0500
-Date: Mon, 28 Dec 2009 06:06:17 -0500 (EST)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: updated list of "unused" CONFIG variables now online
-Message-ID: <alpine.LFD.2.00.0912280602360.13623@localhost>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+	Mon, 28 Dec 2009 06:07:39 -0500
+Date: Mon, 28 Dec 2009 12:07:23 +0100
+From: Hans-Christian Egtvedt <hans-christian.egtvedt@atmel.com>
+To: Peter =?UTF-8?B?SMO8d2U=?= <PeterHuewe@gmx.de>
+Cc: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>,
+       Nicolas Ferre <nicolas.ferre@atmel.com>,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Ma <pma@mediamatech.com>, linux-kernel@vger.kernel.org,
+       linux-mmc@vger.kernel.org
+Subject: Re: [PATCH] arch/avr32: Fix build failure for avr32 caused by typo
+Message-ID: <20091228120723.6a22367e@hcegtvedt.norway.atmel.com>
+In-Reply-To: <200912281134.36763.PeterHuewe@gmx.de>
+References: <200912252008.45602.PeterHuewe@gmx.de>
+	<200912281059.30450.PeterHuewe@gmx.de>
+	<20091228112028.5babace2@hskinnemoen-d830>
+	<200912281134.36763.PeterHuewe@gmx.de>
+Organization: Atmel
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.18.3; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 28 Dec 2009 11:34:36 +0100
+Peter Hüwe <PeterHuewe@gmx.de> wrote:
 
-  based on this morning's "git pull", i've updated the list of
-tree-wide CONFIG variables that are defined in a Kconfig file
-somewhere but don't appear to be tested:
+> Am Montag 28 Dezember 2009 11:20:28 schrieb Haavard Skinnemoen:
+> > Peter Hüwe <PeterHuewe@gmx.de> wrote:
+> > > Great, thanks for the update.
+> > > The only thing that still catches my eye is that the kzalloc line can
+> > > fail, so you should perhaps add something like
+> > > if (!slave) {
+> > > 	printk(KERN_ERR "No memory left for at32ap700x: at32_add_device_mc");
+> > > 	goto fail;
+> > > }
+> > 
+> > I agree, except that this is extremely unlikely to happen, so we should
+> > either drop the printk() or use pr_debug() in order to waste as little
+> > memory as possible in production systems.
+> ok.
+>
 
-http://www.crashcourse.ca/wiki/index.php/Unused_CONFIG_variables
+I skipped the print message, as no other platform devices will print
+similar information. If people really need this kind of information
+they could provide a patch adding it for all the platform devices.
 
-  a note:  some of those variables are starting to look depressingly
-familiar as they've been around for *years*.  in many cases, they
-don't hurt as they simply have no value if they're defined but not
-tested.
+> > I think your first patch is good as it is, so I will apply it. Please
+> > send any additional fixes as a separate patch.
+> 
+> Okay thanks for applying.
+> 
+> @Hans: can you create the cleanup patch or should I ?
+> 
 
-  on the other hand, that list is a good way to identify typoes, as in
-this example:
+I'll do it, should arrive here shortly.
 
-  ===== USB_ETH_EEM
-  drivers/usb/gadget/Kconfig:681:config USB_ETH_EEM
-  drivers/usb/gadget/ether.c:262:#ifdef USB_ETH_EEM
-
-that's clearly a typo since the #ifdef should be using a "CONFIG_"
-prefix -- that's the sort of thing that's flagged at that page.
-
-  it's all broken down by top-level directory and subdirectory so pick
-a subdirectory and see if anything looks odd or removable.
-
-rday
---
-
-========================================================================
-Robert P. J. Day                               Waterloo, Ontario, CANADA
-
-            Linux Consulting, Training and Kernel Pedantry.
-
-Web page:                                          http://crashcourse.ca
-Twitter:                                       http://twitter.com/rpjday
-========================================================================
+-- 
+Best regards,
+Hans-Christian Egtvedt
