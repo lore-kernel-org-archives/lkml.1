@@ -1,117 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751949AbZL1V2a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752073AbZL1VeQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751949AbZL1V2a (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Dec 2009 16:28:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751417AbZL1V23
+	id S1752073AbZL1VeQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Dec 2009 16:34:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751293AbZL1VeP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Dec 2009 16:28:29 -0500
-Received: from relay3.sgi.com ([192.48.152.1]:42445 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751323AbZL1V23 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Dec 2009 16:28:29 -0500
-Message-ID: <4B3922F9.3060905@sgi.com>
-Date: Mon, 28 Dec 2009 13:28:25 -0800
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Mon, 28 Dec 2009 16:34:15 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:42155 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751181AbZL1VeO convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Dec 2009 16:34:14 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=Z6U63IOBqPc6mG1lro58+PnBnMPFDSXDsF6L14GNryi2YRu55Sgm0R+niEafYPb5+3
+         Q9hB5IJYBLOl9JA6PP5/4FPAOmBSWg3GpWdqPIneMwg5V443svPI0Z0DEoN0KIE+5848
+         6VSEmHoG6NNMVzwA8desaMBHP8nMkoI/JmHaA=
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Ingo Molnar <mingo@elte.hu>, Robin Holt <holt@sgi.com>,
-       Jack Steiner <steiner@sgi.com>, stable@kernel.org, x86@kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] x86_64 SGI UV: Fix writes to led registers on remote uv hubs.
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20091228205511.GD1637@ucw.cz>
+References: <20091227190802.GH11737@elf.ucw.cz> <20091228060759.GB13266@heat> 
+	<20091228101006.GA19984@elf.ucw.cz> <8817.1262011044@localhost> 
+	<20091228205511.GD1637@ucw.cz>
+From: Bryan Donlan <bdonlan@gmail.com>
+Date: Mon, 28 Dec 2009 16:33:52 -0500
+Message-ID: <3e8340490912281333l1459f769yf621a36ad1ed6482@mail.gmail.com>
+Subject: Re: RFC: disablenetwork facility. (v4)
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Valdis.Kletnieks@vt.edu, Michael Stone <michael@laptop.org>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       linux-security-module@vger.kernel.org, Andi Kleen <andi@firstfloor.org>,
+       David Lang <david@lang.hm>, Oliver Hartkopp <socketcan@hartkopp.net>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Evgeniy Polyakov <zbr@ioremap.net>,
+       "C. Scott Ananian" <cscott@cscott.net>,
+       James Morris <jmorris@namei.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Bernie Innocenti <bernie@codewiz.org>,
+       Mark Seaborn <mrs@mythic-beasts.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       "Am?rico Wang" <xiyou.wangcong@gmail.com>,
+       Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
+       Samir Bellabes <sam@synack.fr>,
+       Casey Schaufler <casey@schaufler-ca.com>,
+       "Serge E. Hallyn" <serue@us.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-x86_64 SGI UV: Fix writes to led registers on remote uv hubs.
+On Mon, Dec 28, 2009 at 3:55 PM, Pavel Machek <pavel@ucw.cz> wrote:
+> On Mon 2009-12-28 09:37:24, Valdis.Kletnieks@vt.edu wrote:
+>> On Mon, 28 Dec 2009 11:10:06 +0100, Pavel Machek said:
+>>
+>> > a) make disablenetwork reset to "enablenetwork" during setuid exec
+>>
+>> That won't work either.  If you only make it 'setuid==0' binaries, you still
+>> break 'setuid-FOO' binaries that require the net. If you just check the setuid
+>> bit, it allows a trivial escape by creating a setuid-yourself binary and using
+>> that to exec something else (now with network access, because we apparently
+>> don't have a way to remember the previous setting).
+>
+>
+> it is really only required for binaries setuid to someone else, but
+> that would be too ugly. (Plus, as someone said, ping is great for
+> leaking data out.)
 
-The wrong address was being used to write the SCIR led regs on remote
-hubs.  Also, there was an inconsistency between how BIOS and the kernel
-indexed these regs.  Standardize on using the lower 6 bits of the APIC
-ID as the index.
+No, this is not sufficient; one needs only to find a setuid process
+that can be convinced to run a program with the original (pre-suid)
+privileges. For example, one could invoke gpg (older versions setuid
+so it can lock memory, executes user code for the passphrase input
+agent) or pulseaudio (in some cases setuid to go realtime, loads user
+plugins) or screen (setuid for sharing sessions, obviously executes
+user programs) or at/cron (did you remember to deny access to these?)
+...
 
-This patch fixes the problem of writing to an errant address to a cpu # >= 64.
+Or one can target a non-root setuid program that may have security
+holes - how about nethack?
 
-Signed-off-by: Mike Travis <travis@sgi.com>
-Reviewed-by: Jack Steiner <steiner@sgi.com>
-Cc: stable@kernel.org
----
- arch/x86/include/asm/uv/uv_hub.h   |   20 +++++++++++++++++++-
- arch/x86/kernel/apic/x2apic_uv_x.c |   12 ++++++------
- 2 files changed, 25 insertions(+), 7 deletions(-)
+While in modern distros these uses of setuid may be rare, they can
+exist, and under the old security model they were safe. Not so
+anymore. As such, re-enabling network access upon executing a setuid
+program is not acceptable.
 
---- linux.orig/arch/x86/include/asm/uv/uv_hub.h
-+++ linux/arch/x86/include/asm/uv/uv_hub.h
-@@ -338,6 +338,18 @@
- 	return UV_GLOBAL_GRU_MMR_BASE | offset | (pnode << uv_hub_info->m_val);
- }
- 
-+static inline void uv_write_global_mmr8(int pnode, unsigned long offset,
-+				unsigned char val)
-+{
-+	writeb(val, uv_global_mmr64_address(pnode, offset));
-+}
-+
-+static inline unsigned char uv_read_global_mmr8(int pnode,
-+						 unsigned long offset)
-+{
-+	return readb(uv_global_mmr64_address(pnode, offset));
-+}
-+
- /*
-  * Access hub local MMRs. Faster than using global space but only local MMRs
-  * are accessible.
-@@ -457,11 +469,17 @@
- 	}
- }
- 
-+static inline unsigned long uv_scir_offset(int apicid)
-+{
-+	return SCIR_LOCAL_MMR_BASE | (apicid & 0x3f);
-+}
-+
- static inline void uv_set_cpu_scir_bits(int cpu, unsigned char value)
- {
- 	if (uv_cpu_hub_info(cpu)->scir.state != value) {
-+		uv_write_global_mmr8(uv_cpu_to_pnode(cpu),
-+				uv_cpu_hub_info(cpu)->scir.offset, value);
- 		uv_cpu_hub_info(cpu)->scir.state = value;
--		uv_write_local_mmr8(uv_cpu_hub_info(cpu)->scir.offset, value);
- 	}
- }
- 
---- linux.orig/arch/x86/kernel/apic/x2apic_uv_x.c
-+++ linux/arch/x86/kernel/apic/x2apic_uv_x.c
-@@ -632,8 +632,10 @@
- 	uv_rtc_init();
- 
- 	for_each_present_cpu(cpu) {
-+		int apicid = per_cpu(x86_cpu_to_apicid, cpu);
-+
- 		nid = cpu_to_node(cpu);
--		pnode = uv_apicid_to_pnode(per_cpu(x86_cpu_to_apicid, cpu));
-+		pnode = uv_apicid_to_pnode(apicid);
- 		blade = boot_pnode_to_blade(pnode);
- 		lcpu = uv_blade_info[blade].nr_possible_cpus;
- 		uv_blade_info[blade].nr_possible_cpus++;
-@@ -654,15 +656,13 @@
- 		uv_cpu_hub_info(cpu)->gnode_extra = gnode_extra;
- 		uv_cpu_hub_info(cpu)->global_mmr_base = mmr_base;
- 		uv_cpu_hub_info(cpu)->coherency_domain_number = sn_coherency_id;
--		uv_cpu_hub_info(cpu)->scir.offset = SCIR_LOCAL_MMR_BASE + lcpu;
-+		uv_cpu_hub_info(cpu)->scir.offset = uv_scir_offset(apicid);
- 		uv_node_to_blade[nid] = blade;
- 		uv_cpu_to_blade[cpu] = blade;
- 		max_pnode = max(pnode, max_pnode);
- 
--		printk(KERN_DEBUG "UV: cpu %d, apicid 0x%x, pnode %d, nid %d, "
--			"lcpu %d, blade %d\n",
--			cpu, per_cpu(x86_cpu_to_apicid, cpu), pnode, nid,
--			lcpu, blade);
-+		printk(KERN_DEBUG "UV: cpu %d, apicid 0x%x, pnode %d, nid %d, lcpu %d, blade %d\n",
-+			cpu, apicid, pnode, nid, lcpu, blade);
- 	}
- 
- 	/* Add blade/pnode info for nodes without cpus */
+That said, I do feel this is a separate issue. The process should
+first drop its ability to suid; then it can freely apply additional
+restrictions without there being any risk of breaking setuid
+applications.
+
+In short, how does this sound:
+* Add an API to allow processes to permanently revoke their own
+ability to gain privileges from setuid-exec
+* Add this disablenetwork facility, conditional on dropping
+setuid-exec abilities
+
+This also paves the way for:
+* Allow processes that have dropped said suid ability to freely create
+new namespaces (and chroot)
+
+Which, combined with doing whatever audits are necessary to allow
+cross-network-namespace uses of unix domain sockets, actually
+eliminates the need for the disablenetwork API. :)
