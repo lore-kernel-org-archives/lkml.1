@@ -1,94 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751541AbZL1SMz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751772AbZL1SNV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751541AbZL1SMz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Dec 2009 13:12:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751323AbZL1SMy
+	id S1751772AbZL1SNV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Dec 2009 13:13:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751630AbZL1SNR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Dec 2009 13:12:54 -0500
-Received: from khc.piap.pl ([195.187.100.11]:56026 "EHLO khc.piap.pl"
+	Mon, 28 Dec 2009 13:13:17 -0500
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:57518 "EHLO e2.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751192AbZL1SMx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Dec 2009 13:12:53 -0500
-From: Krzysztof Halasa <khc@pm.waw.pl>
-To: linux-crypto@vger.kernel.org
-Cc: lkml <linux-kernel@vger.kernel.org>
-Subject: Crypto test results unused?
-Date: Mon, 28 Dec 2009 19:12:50 +0100
-Message-ID: <m3ws07q865.fsf@intrepid.localdomain>
+	id S1751616AbZL1SNP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Dec 2009 13:13:15 -0500
+Date: Mon, 28 Dec 2009 12:13:16 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>, viro@ZenIV.linux.org.uk,
+       michael@laptop.org, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, linux-security-module@vger.kernel.org,
+       andi@firstfloor.org, david@lang.hm, socketcan@hartkopp.net,
+       alan@lxorguk.ukuu.org.uk, herbert@gondor.apana.org.au,
+       Valdis.Kletnieks@vt.edu, bdonlan@gmail.com, zbr@ioremap.net,
+       cscott@cscott.net, jmorris@namei.org, ebiederm@xmission.com,
+       bernie@codewiz.org, mrs@mythic-beasts.com, randy.dunlap@oracle.com,
+       xiyou.wangcong@gmail.com, sam@synack.fr, casey@schaufler-ca.com
+Subject: Re: RFC: disablenetwork facility. (v4)
+Message-ID: <20091228181316.GA16277@us.ibm.com>
+References: <20091227010441.GA12077@heat>
+ <200912271736.GDB17180.OFJHOOQStMFLVF@I-love.SAKURA.ne.jp>
+ <20091227083857.GC11737@elf.ucw.cz>
+ <200912272049.FIB35755.OMFFOOJQtVLFSH@I-love.SAKURA.ne.jp>
+ <20091227150300.GB19414@hallyn.com>
+ <20091227190802.GH11737@elf.ucw.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091227190802.GH11737@elf.ucw.cz>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Quoting Pavel Machek (pavel@ucw.cz):
+> Hi!
+> 
+> > > I think seccomp() is too much restricted to apply for general applications.
+> > > Most applications will need some other syscalls in addition to exit(), read()
+> > > and write(). Most applications cannot use seccomp().
+> > > 
+> > > What I want to do is similar to seccomp(), but allows userland process to
+> > > forbid some syscalls like execve(), mount(), chroot(), link(), unlink(),
+> > > socket(), bind(), listen() etc. selectively.
+> > 
+> > The nice thing about the disablenetwork module is that (AFAICS so far)
+> > it actually is safe for an unprivileged user to do.  I can't think of
+> > any setuid-root software which, if started with restricted-network by
+> > an unprivileged user, would become unsafe rather than simply
+> > failing.
+> 
+> "I can't see" is not strong enough test, I'd say.
+> 
+> For example, I can easily imagine something like pam falling back to
+> local authentication when network is unavailable. If you disable
+> network for su...
+> 
+> It would be also extremely easy to DoS something like sendmail -- if
+> it forks into background and then serves other users' requests.
 
-is the core crypto code supposed to "kill" algorithms which fail the
-test?
+But you can just as easily unplug the network cable (or flip the
+wireless switch).  So in the case of authentication, either your
+nsswitch.conf says to fall back to files, or it doesn't - in either
+case it's what you expected...
 
-On little-endian IXP4xx 3 hardware-assisted algorithms fail (due to
-apparently unrelated bug which I will take care of). It seems the kernel
-is still using these failing algorithms (my debugging code adds extra
-fields to the /proc output):
+Michael, a few possibilities have been brought up.  To toss in
+one more, what about making a separate capability CAP_NETWORK_REENABLE,
+and requiring that in order to reset prctl(PR_SET_NETWORK) or
+whatever?  Then if you don't want to allow that, you can drop
+CAP_NETWORK_REENABLE from your bounding set, and you'll never
+be able to reset it.
 
-alg: skcipher: Test 1 failed on encryption for ecb(des)-ixp4xx
-00000000: 01 23 45 67 89 ab cd e7
-alg: skcipher: Test 1 failed on encryption for ecb(des3_ede)-ixp4xx
-00000000: 73 6f 6d 65 64 61 74 61
-alg: skcipher: Test 1 failed on encryption for ecb(aes)-ixp4xx
-00000000: 00 11 22 33 44 55 66 77 88 99 aa bb cc dd ee ff
+It's not just a silly extra step - dropping CAP_NETWORK_REENABLE
+from your bounding set requires privilege, so now we are at
+least saying that it takes privilege to allow a less-privileged
+process to stop a more-privileged process from regaining network
+requires privilege later.
 
-# grep 'ecb(des)-ixp4xx\|ecb(des3_ede)-ixp4xx\|ecb(aes)-ixp4xx' /proc/cryp
-to -A 6
-driver       : ecb(aes)-ixp4xx
-module       : ixp4xx_crypto
-priority     : 300
-refcnt       : 1
-flags        : 0x85
-ptr          : 0xbf020074
-selftest     : unknown
-^^^^^^^^^^^^^^^^^^^^^^
---
-driver       : ecb(des3_ede)-ixp4xx
-module       : ixp4xx_crypto
-priority     : 300
-refcnt       : 1
-flags        : 0x85
-ptr          : 0xbf01fe94
-selftest     : unknown
---
-driver       : ecb(des)-ixp4xx
-module       : ixp4xx_crypto
-priority     : 300
-refcnt       : 1
-flags        : 0x85
-ptr          : 0xbf01fcb4
-selftest     : unknown
+That specific example isn't good - the problem is, someone has to sit
+there knowing to do the prctl(PR_SET_NETWORK).  It doesn't do anything
+to prevent the nefarious unprivileged user from doing
+prctl(PR_DROP_NETWORK) and then running a setuid-root daemon, and if the
+daemon doesn't know about PR_SET_NETWORK then it still will run without
+priv.
 
-I traced the problem to crypto/algapi.c:
+So I prefer a similar but slightly different construct - the key
+being requiring privilege to be able to say "it's ok to deny privileged
+software network".  We can either
 
-int crypto_register_alg(struct crypto_alg *alg)
-{
-	struct crypto_larval *larval;
-	int err;
+	1. introduce a sysctl which says whether or not setuid-root
+	   re-enables network by default,
+or
+	2. add an extra bit to your per-task network data, which
+	   again says "for root we re-enable network" or not.
+or heck
+	3. make it a boot flag.
 
-	err = crypto_check_alg(alg);
-	if (err)
-		return err;
+In any case, the idea would be that on your bitfrost systems init, or
+some early privileged process, would say "for me and all my children,
+if an unprivileged process does PR_DROP_NETWORK then that holds even
+for setuid-root programs.
 
-	down_write(&crypto_alg_sem);
-	larval = __crypto_register_alg(alg);
-	up_write(&crypto_alg_sem);
-
-	if (IS_ERR(larval))
-		return PTR_ERR(larval);
-
-	crypto_wait_for_test(larval);
-
-At this point alg->cra_flags includes CRYPTO_ALG_DEAD (due to failed
-test), but larval->alg.cra_flags has only the original flags (0x85).
-
-I'm not sure what's the best fix.
-Currently 2.6.31.9, seems to be present in 2.6.32, too.
--- 
-Krzysztof Halasa
+-serge
