@@ -1,91 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751842AbZL1UnN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751594AbZL1UrG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751842AbZL1UnN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Dec 2009 15:43:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751122AbZL1UnL
+	id S1751594AbZL1UrG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Dec 2009 15:47:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751293AbZL1UrF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Dec 2009 15:43:11 -0500
-Received: from mail-fx0-f225.google.com ([209.85.220.225]:59529 "EHLO
-	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751447AbZL1UnK convert rfc822-to-8bit (ORCPT
+	Mon, 28 Dec 2009 15:47:05 -0500
+Received: from smtp-out.google.com ([216.239.44.51]:22896 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750988AbZL1UrC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Dec 2009 15:43:10 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type
-         :content-transfer-encoding;
-        b=BE26sD+O/DoxH3vK1iSMHIGF1DqmRZ6hQF3Coc3bgYG3fXYTj19jJsiMsaWjDBEkcI
-         X7RiSst38HKTt9jQm8v3aItFOLhB/N07g8AtMlA0FdP5g1h7ZsNnhWfsMgQFMX3IhI6n
-         GFfFNFDTDe6xA6FcD2ubmOOo0vwzGxjkpc6UQ=
+	Mon, 28 Dec 2009 15:47:02 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=ual36I9iLLrn4daT7PLUYgRn79CVWj7XtB19Vyev5sIt88Yzoi/htkvV1Bd8vSo8N
+	DClQctRnL+eLQjO5pMOag==
+Date: Mon, 28 Dec 2009 12:46:55 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Emese Revfy <re.emese@gmail.com>
+cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
+       cl@linux-foundation.org, torvalds@linux-foundation.org
+Subject: Re: [PATCH 3/4] Constify struct kset_uevent_ops for 	2.6.32-git-053fe57ac
+ v2
+In-Reply-To: <4B355AEF.3060508@gmail.com>
+Message-ID: <alpine.DEB.2.00.0912281244400.12772@chino.kir.corp.google.com>
+References: <cover.1260663000.git.re.emese@gmail.com>  <eff97be7c5839477c88f7ba61ef100f38c58bf7d.1260663000.git.re.emese@gmail.com> <84144f020912250331h23b8b724v73cf70c384d385ec@mail.gmail.com> <4B355AEF.3060508@gmail.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Date: Mon, 28 Dec 2009 15:43:07 -0500
-Message-ID: <b3eb0ed40912281243p3f59f9f6vb278f25e18eaa172@mail.gmail.com>
-Subject: Oops in 2.6.27.39 vanilla kernel with latest DTrace linux port
-From: Soumendu Satapathy <satapathy.soumendu@gmail.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-http://patchwork.kernel.org/patch/69319/
+On Sat, 26 Dec 2009, Emese Revfy wrote:
 
-I have sent my patch to the DTrace for linux author. he will try to
-incorporate it in the standard release.
+> >> diff --git a/mm/slub.c b/mm/slub.c
+> >> index 4996fc7..fb63aca 100644
+> >> --- a/mm/slub.c
+> >> +++ b/mm/slub.c
+> >> @@ -4522,7 +4522,7 @@ static int uevent_filter(struct kset *kset, struct kobject *kobj)
+> >>        return 0;
+> >>  }
+> >>
+> >> -static struct kset_uevent_ops slab_uevent_ops = {
+> >> +static const struct kset_uevent_ops slab_uevent_ops = {
+> >>        .filter = uevent_filter,
+> >>  };
+> > 
+> >   CC      mm/slub.o
+> > mm/slub.c: In function 'slab_sysfs_init':
+> > mm/slub.c:4679: warning: passing argument 2 of 'kset_create_and_add'
+> > discards qualifiers from pointer target type
+> > include/linux/kobject.h:164: note: expected 'struct kset_uevent_ops *'
+> > but argument is of type 'const struct kset_uevent_ops *'
+> > 
+> > Hmm?
+> > 
+> 
+> I double checked both the declaration and definitions of the affected
+> function/structure and they are consistently const here.
+> Can you tell me what patch/tree combination you encountered this warning with?
+> Thanks, Emese
+> 
 
-- soumendu
-
----------- Forwarded message ----------
-From:  <fox@crisp.demon.co.uk>
-Date: Wed, Dec 23, 2009 at 5:25 AM
-Subject: Re: Fwd: Opps in 2.6.27.39 vanilla kernel with DTrace
-To: satapathy.soumendu@gmail.com
-
-
-
-> From: Soumendu Satapathy
-> Date: Tue, Dec 22, 2009 at 11:18 AM
-> Subject: Opps in 2.6.27.39 vanilla kernel with DTrace
-> To: blog@crisp.demon.co.uk
->
->
-> Hi Paul,
->
-> 10/10/2009 09:50PM        814,999
-> dtrace-20091010.tar.bz2
-> ( I used this tarrball )
-> I was able to use the DTrace perfectly well with 2.6.18 (x86_64). But I had
-> problems with the latest DTrace  port on 2.6.27.39.(x86_64).
->
-> I did the following changes inside the routine mem_set_writable() (
-> driver/dtrace_linux.c) and I could make it work with 2.6.27.39.
->
-> if (pmd_large(*pmd)) {
->                 pte = (pte_t *)pmd;
-> }
-> else {
->                 pte = pte_offset_kernel(pmd, addr);
->  }
->
-> thanks
-> Soumendu Sekhar Satapathy
-
-Thank you Soumendu - glad you got that working, and let me know the
-patch. I will try incorporating that into the standard release.
-
-seasons greetings.
-
-
-
-+-------------------------------------------------------------------------+
-| CRiSP WebNews:        http://www.crisp.demon.co.uk/webnews.html         |
-+-----------------------------+-------------------------------------------+
-| CRiSP - Flexible editor     | CRiSP, syn. for BRIEF                     |
-| www.twitter.com/crispeditor | Internet:          CRiSP.Editor@gmail.com |
-|                             | WWW: (mine)  http://www.crisp.demon.co.uk |
-|                             | WWW:                 http://www.crisp.com |
-|                             | WWW:           http://www.pacemaker.co.uk |
-+-------------------------------------------------------------------------+
-   5707* display.c: Fix last fix: couldnt move cursor on the bottom
-         window of a split window.
+The warning emitted by gcc is pretty explicit; the second formal of 
+kset_create_and_add() takes a 'struct kset_uevent_ops *' type while you're 
+now passing 'const struct kset_uevent_ops *' as the result of your change.  
+That said, kset_create() could probably be modified with the const 
+qualifier, but that's outside the scope of your patchset and would have to 
+be proposed seperately.
