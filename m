@@ -1,47 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751307AbZL1NBo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751357AbZL1NEM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751307AbZL1NBo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Dec 2009 08:01:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751137AbZL1NBo
+	id S1751357AbZL1NEM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Dec 2009 08:04:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751026AbZL1NEM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Dec 2009 08:01:44 -0500
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:39306 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750892AbZL1NBn (ORCPT
+	Mon, 28 Dec 2009 08:04:12 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:36901 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750913AbZL1NEL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Dec 2009 08:01:43 -0500
-X-Sasl-enc: 74r9gu8XAryc414ILXSYMZiHji0dxOJyaxCYZy0pNzz7 1262005302
-Date: Mon, 28 Dec 2009 11:01:38 -0200
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: kernel list <linux-kernel@vger.kernel.org>, ibm-acpi@hmh.eng.br,
-       len.brown@intel.com, ibm-acpi-devel@lists.sourceforge.net,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [ibm-acpi-devel] 2.6.33-rc2: regression: gkrellm no longer
- shows all the temperatures on thinkpad x60
-Message-ID: <20091228130138.GA19362@khazad-dum.debian.net>
-References: <20091227215722.GN11737@elf.ucw.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091227215722.GN11737@elf.ucw.cz>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
- 1CDB 0FE3
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Mon, 28 Dec 2009 08:04:11 -0500
+Subject: Re: perf: counter and event question
+From: Peter Zijlstra <peterz@infradead.org>
+To: Tim Blechmann <tim@klingt.org>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <4B38A707.4060904@klingt.org>
+References: <4B389391.8050303@klingt.org> <1261999573.7135.83.camel@laptop>
+	 <4B38A707.4060904@klingt.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 28 Dec 2009 14:03:33 +0100
+Message-ID: <1262005413.7135.98.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Please apply the latest stack of patches (sent them to acpi-test
-yesterday).
+On Mon, 2009-12-28 at 13:39 +0100, Tim Blechmann wrote:
+> On 12/28/2009 12:26 PM, Peter Zijlstra wrote:
+> > On Mon, 2009-12-28 at 12:16 +0100, Tim Blechmann wrote:
+> >> like it is impossible to sample instructions with a period of 1? 
+> > 
+> > Pretty much, imagine the cpu getting a trap every cycle.
+> 
+> is this a hardware restriction? a slowdown is acceptable for me, as long
+> as i am able to collect a huge number of samples accurately ...
 
-It is failing to register the ALSA mixer for some reason, and due
-to a bug, it is not loading the module at all.  I will look at the reason it
-is failing to register the ALSA mixer soon.  Meanwhile, the patches I sent
-to Len make sure the module can still load sucessfully.
+Large number of samples and sample interval are only related through the
+runtime of your application.
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+Use a sensible period (~10k ins) and run a 'little' longer.
+
+
+
