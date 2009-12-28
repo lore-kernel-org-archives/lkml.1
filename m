@@ -1,44 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751735AbZL1LBt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752478AbZL1LGS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751735AbZL1LBt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Dec 2009 06:01:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750942AbZL1LBs
+	id S1752478AbZL1LGS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Dec 2009 06:06:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752408AbZL1LGO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Dec 2009 06:01:48 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:38119 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750710AbZL1LBr (ORCPT
+	Mon, 28 Dec 2009 06:06:14 -0500
+Received: from smtp.nokia.com ([192.100.122.230]:17518 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752073AbZL1LGL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Dec 2009 06:01:47 -0500
-Subject: Re: [PATCH] perf lock: Implement basic sorting function of perf
- lock
-From: Peter Zijlstra <peterz@infradead.org>
-To: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Paul Mackerras <paulus@samba.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-In-Reply-To: <1261277805-27023-1-git-send-email-mitake@dcl.info.waseda.ac.jp>
-References: <1261277805-27023-1-git-send-email-mitake@dcl.info.waseda.ac.jp>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 28 Dec 2009 12:01:04 +0100
-Message-ID: <1261998064.7135.74.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	Mon, 28 Dec 2009 06:06:11 -0500
+From: Felipe Balbi <felipe.balbi@nokia.com>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Felipe Balbi <felipe.balbi@nokia.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>, linux-usb@vger.kernel.org
+Subject: [PATCH 4/4] usb: otg: twl4030: move to request_threaded_irq
+Date: Mon, 28 Dec 2009 13:02:48 +0200
+Message-Id: <1261998172-29760-1-git-send-email-felipe.balbi@nokia.com>
+X-Mailer: git-send-email 1.6.6.rc0
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
+X-Patchwork-Id: 67249
+X-OriginalArrivalTime: 28 Dec 2009 11:04:30.0919 (UTC) FILETIME=[87B26D70:01CA87AD]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-12-20 at 11:56 +0900, Hitoshi Mitake wrote:
-> +static struct lock_stat *lock_stat_findnew(void *addr, const char *name)
-> +{
-> +       struct list_head *entry = lockhashentry(addr);
-> +       struct lock_stat *ret, *new;
+move to request_threaded_irq() on twl4030 children.
 
+Cc: Greg Kroah-Hartman <gregkh@suse.de>
+Cc: linux-usb@vger.kernel.org
+Signed-off-by: Felipe Balbi <felipe.balbi@nokia.com>
 
-Right, so you use a hash table to match lock instances, I suppose that's
-faster than an rb-tree?
+---
 
-Do you also remove instances after a match to keep the hash relatively
-small?
+resending because it wasn't applied before
 
+drivers/usb/otg/twl4030-usb.c |   10 +---------
+ 1 files changed, 1 insertions(+), 9 deletions(-)
+
+diff --git a/drivers/usb/otg/twl4030-usb.c b/drivers/usb/otg/twl4030-usb.c
+index bd9883f..36bcd5f 100644
+--- a/drivers/usb/otg/twl4030-usb.c
++++ b/drivers/usb/otg/twl4030-usb.c
+@@ -576,14 +576,6 @@ static irqreturn_t twl4030_usb_irq(int irq, void *_twl)
+ 	struct twl4030_usb *twl = _twl;
+ 	int status;
+ 
+-#ifdef CONFIG_LOCKDEP
+-	/* WORKAROUND for lockdep forcing IRQF_DISABLED on us, which
+-	 * we don't want and can't tolerate.  Although it might be
+-	 * friendlier not to borrow this thread context...
+-	 */
+-	local_irq_enable();
+-#endif
+-
+ 	status = twl4030_usb_linkstat(twl);
+ 	if (status != USB_LINK_UNKNOWN) {
+ 
+@@ -702,7 +694,7 @@ static int __devinit twl4030_usb_probe(struct platform_device *pdev)
+ 	 * need both handles, otherwise just one suffices.
+ 	 */
+ 	twl->irq_enabled = true;
+-	status = request_irq(twl->irq, twl4030_usb_irq,
++	status = request_threaded_irq(twl->irq, NULL, twl4030_usb_irq,
+ 			IRQF_TRIGGER_FALLING | IRQF_TRIGGER_RISING,
+ 			"twl4030_usb", twl);
+ 	if (status < 0) {
