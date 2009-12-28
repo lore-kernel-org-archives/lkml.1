@@ -1,58 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751751AbZL1QYX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751982AbZL1Q04@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751751AbZL1QYX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Dec 2009 11:24:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751337AbZL1QYW
+	id S1751982AbZL1Q04 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Dec 2009 11:26:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751548AbZL1Q0z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Dec 2009 11:24:22 -0500
-Received: from exprod6og115.obsmtp.com ([64.18.1.35]:37777 "HELO
-	exprod6og115.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751200AbZL1QYW convert rfc822-to-8bit (ORCPT
+	Mon, 28 Dec 2009 11:26:55 -0500
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:51079 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750962AbZL1Q0z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Dec 2009 11:24:22 -0500
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Mon, 28 Dec 2009 11:26:55 -0500
+Date: Tue, 29 Dec 2009 00:26:48 +0800
+From: Yin Kangkai <kernel@holddreams.com>
+To: Nitin Gupta <ngupta@vflare.org>
+Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/2] [mmotm] ramzswap: add handlers for various swap
+	events
+Message-ID: <20091228162648.GA29309@kai-nas>
+References: <1261963200-7136-1-git-send-email-ngupta@vflare.org> <1261963200-7136-2-git-send-email-ngupta@vflare.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: RE: [PATCH 1/5] arch/arm: Correct NULL test
-Date: Mon, 28 Dec 2009 11:24:19 -0500
-Message-ID: <BD79186B4FD85F4B8E60E381CAEE19090200F461@mi8nycmail19.Mi8.com>
-In-Reply-To: <Pine.LNX.4.64.0912272307310.20548@ask.diku.dk>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 1/5] arch/arm: Correct NULL test
-Thread-Index: AcqHQaDbtfuuqEwpRpuVrGZLaGNYSQAmDDQg
-References: <Pine.LNX.4.64.0912272226360.20548@ask.diku.dk><20091227215106.GA18317@pengutronix.de> <Pine.LNX.4.64.0912272307310.20548@ask.diku.dk>
-From: "H Hartley Sweeten" <hartleys@visionengravers.com>
-To: "Julia Lawall" <julia@diku.dk>,
-       =?iso-8859-1?Q?Uwe_Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-Cc: <kernel-janitors@vger.kernel.org>, <linux@arm.linux.org.uk>,
-       <linux-kernel@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>
-X-OriginalArrivalTime: 28 Dec 2009 16:24:19.0892 (UTC) FILETIME=[35375740:01CA87DA]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1261963200-7136-2-git-send-email-ngupta@vflare.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, December 27, 2009 3:08 PM, Julia Lawall wrote:
->>>  	dbgfs_chan = kmalloc(sizeof(*dbgfs_state) * num_dma_channels,
->>>  			     GFP_KERNEL);
->>> -	if (!dbgfs_state)
->>> +	if (!dbgfs_chan)
->>>  		goto err_alloc;
->> Shouldn't the malloc line read:
->> 
->> 	... = kmalloc(sizeof(*dbgfs_chan) * ...)
->> 	                      ^^^^^^^^^^
->> 
->> ?
->
-> Good point, thanks.  I will send a revised patch.
+On 2009-12-28, 06:50 +0530, Nitin Gupta wrote:
+> +	ret = register_swap_event_notifier(&ramzswap_swapon_nb,
+> +				SWAP_EVENT_SWAPON, 0);
+> +	if (ret) {
+> +		pr_err("Error registering swapon notifier\n");
+> +		goto out;
+> +	}
+> +
+> +	ret = register_swap_event_notifier(&ramzswap_swapoff_nb,
+> +				SWAP_EVENT_SWAPOFF, 0);
+> +	if (ret) {
 
-Wouldn't this be clearer?
+Sorry, but an unregister here?
 
-	... = kmalloc(sizeof(struct dentry) * ...)
-
-Regards,
-Hartley
+> +		pr_err("Error registering swapoff notifier\n");
+> +		goto out;
+> +	}
+> +
