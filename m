@@ -1,55 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751414AbZL1TfH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751326AbZL1To1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751414AbZL1TfH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Dec 2009 14:35:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751253AbZL1TfG
+	id S1751326AbZL1To1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Dec 2009 14:44:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751088AbZL1To0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Dec 2009 14:35:06 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:60393 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751283AbZL1TfF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Dec 2009 14:35:05 -0500
-Message-ID: <4B390836.70100@zytor.com>
-Date: Mon, 28 Dec 2009 11:34:14 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
+	Mon, 28 Dec 2009 14:44:26 -0500
+Received: from khc.piap.pl ([195.187.100.11]:47918 "EHLO khc.piap.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750892AbZL1ToZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Dec 2009 14:44:25 -0500
+From: Krzysztof Halasa <khc@pm.waw.pl>
+To: linux-crypto@vger.kernel.org
+Cc: lkml <linux-kernel@vger.kernel.org>
+Subject: Re: Crypto test results unused?
+References: <m3ws07q865.fsf@intrepid.localdomain>
+Date: Mon, 28 Dec 2009 20:44:20 +0100
+In-Reply-To: <m3ws07q865.fsf@intrepid.localdomain> (Krzysztof Halasa's message
+	of "Mon, 28 Dec 2009 19:12:50 +0100")
+Message-ID: <m3eimerii3.fsf@intrepid.localdomain>
 MIME-Version: 1.0
-To: Michael Tokarev <mjt@tls.msk.ru>
-CC: Alain Knaff <alain@knaff.lu>, Tvrtko Ursulin <tvrtko.ursulin@sophos.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: 2.6.33-rc1: LZMA kernel fails to decompress
-References: <200912211643.18173.tvrtko.ursulin@sophos.com> <4B2FEC10.6050900@msgid.tls.msk.ru> <4B37AC87.1070607@knaff.lu> <4B37C159.5080202@msgid.tls.msk.ru>
-In-Reply-To: <4B37C159.5080202@msgid.tls.msk.ru>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/27/2009 12:19 PM, Michael Tokarev wrote:
-> 
-> What I think should be done here is to revert my patch (that replaces
-> /bin/echo with printf, so that /bin/echo will be used) and test the
-> real solution, which is to stop doing all this hackery altogether,
-> and calculate the size the right way instead.  Sam already posted a
-> possible solution, and it seems to be correct.
-> 
+> int crypto_register_alg(struct crypto_alg *alg)
+> {
+> 	struct crypto_larval *larval;
+> 	int err;
+>
+> 	err = crypto_check_alg(alg);
+> 	if (err)
+> 		return err;
+>
+> 	down_write(&crypto_alg_sem);
+> 	larval = __crypto_register_alg(alg);
+> 	up_write(&crypto_alg_sem);
+>
+> 	if (IS_ERR(larval))
+> 		return PTR_ERR(larval);
+>
+> 	crypto_wait_for_test(larval);
+>
+> At this point alg->cra_flags includes CRYPTO_ALG_DEAD (due to failed
+> test), but larval->alg.cra_flags has only the original flags (0x85).
 
-Yes, but it moves the calculation from generic to x86-specific code,
-which makes it problematic.
-
-I never figured out how to make a generic rule in Kbuild (unlike in
-standard GNU make) depend on a helper application, but doing a helper
-application for this is probably the sane thing.
-
-Either this, or use Perl, which handles this kind of crap sanely.  I'm
-really less than half joking.
-
-	-hpa
-
+Actually it seems all alg->cra_flags are CRYPTO_ALG_DEAD at this point,
+not only these which failed tests. Will look at it soon.
 -- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
-
+Krzysztof Halasa
