@@ -1,62 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752141AbZL1WnQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752170AbZL1WrA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752141AbZL1WnQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Dec 2009 17:43:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751750AbZL1WnP
+	id S1752170AbZL1WrA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Dec 2009 17:47:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751913AbZL1Wq7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Dec 2009 17:43:15 -0500
-Received: from exprod6ob109.obsmtp.com ([64.18.1.22]:33869 "HELO psmtp.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1751088AbZL1WnO convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Dec 2009 17:43:14 -0500
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
+	Mon, 28 Dec 2009 17:46:59 -0500
+Received: from lo.gmane.org ([80.91.229.12]:47182 "EHLO lo.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751294AbZL1Wq6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Dec 2009 17:46:58 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Andres Salomon <dilinger@queued.net>
+Subject: Re: [PATCH 12/14] USB: oti6858: fix DMA buffer on stack
+Date: Mon, 28 Dec 2009 17:46:19 -0500
+Message-ID: <20091228174619.3c5b2132@mycelium.queued.net>
+References: <1262037718-31424-1-git-send-email-jhovold@gmail.com>
+	<1262037718-31424-13-git-send-email-jhovold@gmail.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: [PATCH] drivers/net/lib82596.c: use %pM to shown MAC address
-Date: Mon, 28 Dec 2009 17:43:17 -0500
-Message-ID: <BD79186B4FD85F4B8E60E381CAEE19090200F4C1@mi8nycmail19.Mi8.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] drivers/net/lib82596.c: use %pM to shown MAC address
-Thread-Index: AcqIDyX16g2IQYRwQsuSQV9Y9igTTw==
-From: "H Hartley Sweeten" <hartleys@visionengravers.com>
-To: <linux-kernel@vger.kernel.org>, <netdev@vger.kernel.org>
-Cc: "David Miller" <davem@davemloft.net>
-X-OriginalArrivalTime: 28 Dec 2009 22:43:11.0962 (UTC) FILETIME=[2295F3A0:01CA880F]
+Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: wireless.queued.net
+In-Reply-To: <1262037718-31424-13-git-send-email-jhovold@gmail.com>
+X-Newsreader: Claws Mail 3.7.3 (GTK+ 2.18.5; i486-pc-linux-gnu)
+Cc: linux-usb@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use the %pM kernel extension to display the MAC address.
+On Mon, 28 Dec 2009 23:01:56 +0100
+Johan Hovold <jhovold@gmail.com> wrote:
 
-The only difference in the output is that the MAC address is
-shown in the usual colon-separated hex notation instead of
-space-separated.
+[...]
+> diff --git a/drivers/usb/serial/oti6858.c
+> b/drivers/usb/serial/oti6858.c index c644e26..2ae97e7 100644
+> --- a/drivers/usb/serial/oti6858.c
+> +++ b/drivers/usb/serial/oti6858.c
+> @@ -302,7 +302,7 @@ void send_data(struct work_struct *work)
+>  	struct usb_serial_port *port = priv->port;
+>  	int count = 0, result;
+>  	unsigned long flags;
+> -	unsigned char allow;
+> +	u8 *allow;
+>  
+>  	dbg("%s(port = %d)", __func__, port->number);
+>  
 
-Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
-Cc: David S. Miller <davem@davemloft.net>
+Erm, am I missing something here?  You're removing a 1 byte
+stack variable and replacing it with a 4 byte (pointer) stack
+variable?  What's the point of that, exactly?
 
----
 
-diff --git a/drivers/net/lib82596.c b/drivers/net/lib82596.c
-index b117f7f..b60efd4 100644
---- a/drivers/net/lib82596.c
-+++ b/drivers/net/lib82596.c
-@@ -1094,11 +1094,9 @@ static int __devinit i82596_probe(struct net_device *dev)
- 		return i;
- 	};
- 
--	DEB(DEB_PROBE, printk(KERN_INFO "%s: 82596 at %#3lx,",
--			      dev->name, dev->base_addr));
--	for (i = 0; i < 6; i++)
--		DEB(DEB_PROBE, printk(" %2.2X", dev->dev_addr[i]));
--	DEB(DEB_PROBE, printk(" IRQ %d.\n", dev->irq));
-+	DEB(DEB_PROBE, printk(KERN_INFO "%s: 82596 at %#3lx, %pM IRQ %d.\n",
-+			      dev->name, dev->base_addr, dev->dev_addr,
-+			      dev->irq));
- 	DEB(DEB_INIT, printk(KERN_INFO
- 			     "%s: dma at 0x%p (%d bytes), lp->scb at 0x%p\n",
- 			     dev->name, dma, (int)sizeof(struct i596_dma), 
+
