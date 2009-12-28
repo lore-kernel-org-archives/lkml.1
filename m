@@ -1,62 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751340AbZL1TX3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751414AbZL1TfH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751340AbZL1TX3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Dec 2009 14:23:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751195AbZL1TX2
+	id S1751414AbZL1TfH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Dec 2009 14:35:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751253AbZL1TfG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Dec 2009 14:23:28 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:55314 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751127AbZL1TX2 (ORCPT
+	Mon, 28 Dec 2009 14:35:06 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:60393 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751283AbZL1TfF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Dec 2009 14:23:28 -0500
-Date: Mon, 28 Dec 2009 20:23:25 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Andi Kleen <andi@firstfloor.org>, Nitin Gupta <ngupta@vflare.org>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/2] [mmotm] Add notifiers for various swap events
-Message-ID: <20091228192325.GG4994@basil.fritz.box>
-References: <1261963200-7136-1-git-send-email-ngupta@vflare.org> <87eimf87m5.fsf@basil.nowhere.org> <4B38D0CF.9000403@vflare.org> <20091228172903.GF4994@basil.fritz.box> <4B38FC42.7000204@cs.helsinki.fi>
+	Mon, 28 Dec 2009 14:35:05 -0500
+Message-ID: <4B390836.70100@zytor.com>
+Date: Mon, 28 Dec 2009 11:34:14 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B38FC42.7000204@cs.helsinki.fi>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Michael Tokarev <mjt@tls.msk.ru>
+CC: Alain Knaff <alain@knaff.lu>, Tvrtko Ursulin <tvrtko.ursulin@sophos.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: 2.6.33-rc1: LZMA kernel fails to decompress
+References: <200912211643.18173.tvrtko.ursulin@sophos.com> <4B2FEC10.6050900@msgid.tls.msk.ru> <4B37AC87.1070607@knaff.lu> <4B37C159.5080202@msgid.tls.msk.ru>
+In-Reply-To: <4B37C159.5080202@msgid.tls.msk.ru>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>> The first question to ask is if compressed swap is worth
->>>> it. Do you have benchmark numbers showing it to be an improvement?
->>>> Are there cases where it is slower than uncompressed swap?
->>>>
->>> http://code.google.com/p/compcache/wiki/Performance
->>
->> That should be included in the changelog of the patches.
->
-> Which patches? The driver is already in staging and there's a pointer to 
-> the home page in
+On 12/27/2009 12:19 PM, Michael Tokarev wrote:
+> 
+> What I think should be done here is to revert my patch (that replaces
+> /bin/echo with printf, so that /bin/echo will be used) and test the
+> real solution, which is to stop doing all this hackery altogether,
+> and calculate the size the right way instead.  Sam already posted a
+> possible solution, and it seems to be correct.
+> 
 
-How can it be in staging if there are no hooks for it yet?
+Yes, but it moves the calculation from generic to x86-specific code,
+which makes it problematic.
 
->>> ramzswap is an optional module.
->>
->> I have some doubts on the wisdom of making swap algorithms modular.
->> Better compile them in. Then you don't need messy notifiers either.
->
-> What's so messy about them? The whole point of having the notifiers is to 
-> avoid CONFIG_RAMZSWAP in core kernel code...
+I never figured out how to make a generic rule in Kbuild (unlike in
+standard GNU make) depend on a helper application, but doing a helper
+application for this is probably the sane thing.
 
-They make the code much harder to read and follow. When you try to follow
-the code flow and you find a notifier it's always a complicated operation
-to figure out what code will end up being called.
+Either this, or use Perl, which handles this kind of crap sanely.  I'm
+really less than half joking.
 
-Sometimes they are needed, but they have a high cost in maintainability.
+	-hpa
 
--Andi
 -- 
-ak@linux.intel.com -- Speaking for myself only.
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
+
