@@ -1,70 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751383AbZL1CDw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751354AbZL1CIc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751383AbZL1CDw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Dec 2009 21:03:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751206AbZL1CDv
+	id S1751354AbZL1CIc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Dec 2009 21:08:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751141AbZL1CIc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Dec 2009 21:03:51 -0500
-Received: from mga09.intel.com ([134.134.136.24]:29075 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750995AbZL1CDu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Dec 2009 21:03:50 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,461,1257148800"; 
-   d="scan'208";a="582438991"
-Date: Mon, 28 Dec 2009 10:03:48 +0800
-From: Shaohua Li <shaohua.li@intel.com>
-To: Corrado Zoccolo <czoccolo@gmail.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
-       "jmoyer@redhat.com" <jmoyer@redhat.com>,
-       "Zhang, Yanmin" <yanmin.zhang@intel.com>
-Subject: [PATCH]cfq-iosched: don't take requests with long distence as close
-Message-ID: <20091228020348.GB28115@sli10-desk.sh.intel.com>
-References: <20091224005506.GA7879@sli10-desk.sh.intel.com>
- <4e5e476b0912250216n2b4aceacyf22a0e73425efd3a@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4e5e476b0912250216n2b4aceacyf22a0e73425efd3a@mail.gmail.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Sun, 27 Dec 2009 21:08:32 -0500
+Received: from lennier.cc.vt.edu ([198.82.162.213]:48972 "EHLO
+	lennier.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751056AbZL1CIb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Dec 2009 21:08:31 -0500
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: daw-news@taverner.cs.berkeley.edu (David Wagner)
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: A basic question about the security_* hooks
+In-Reply-To: Your message of "Sun, 27 Dec 2009 20:28:23 GMT."
+             <hh8g17$qlu$1@taverner.cs.berkeley.edu>
+From: Valdis.Kletnieks@vt.edu
+References: <20091225055034.GA374@us.ibm.com> <20091227031631.GA17629@hallyn.com> <200912271302.JBH64754.JtLMFQVOSOFFHO@I-love.SAKURA.ne.jp> <22669.1261911374@localhost>
+            <hh8g17$qlu$1@taverner.cs.berkeley.edu>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1261966107_3923P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Sun, 27 Dec 2009 21:08:27 -0500
+Message-ID: <16474.1261966107@localhost>
+X-Mirapoint-Received-SPF: 128.173.34.103 localhost Valdis.Kletnieks@vt.edu 2 pass
+X-Mirapoint-IP-Reputation: reputation=neutral-1,
+	source=Fixed,
+	refid=n/a,
+	actions=MAILHURDLE SPF TAG
+X-Junkmail-Info: (45) HELO_LOCALHOST
+X-Junkmail-Status: score=45/50, host=steiner.cc.vt.edu
+X-Junkmail-SD-Raw: score=unknown,
+	refid=str=0001.0A020205.4B38131C.0162,ss=1,fgs=0,
+	ip=0.0.0.0,
+	so=2009-09-22 00:05:22,
+	dmn=2009-09-10 00:05:08,
+	mode=multiengine
+X-Junkmail-IWF: false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Dec 25, 2009 at 06:16:27PM +0800, Corrado Zoccolo wrote:
-> Hi Shaohua,
-> On Thu, Dec 24, 2009 at 1:55 AM, Shaohua Li <shaohua.li@intel.com> wrote:
-> > df5fe3e8e13883f58dc97489076bbcc150789a21
-> > b3b6d0408c953524f979468562e7e210d8634150
-> > The coop merge is too aggressive. For example, if two tasks are reading two
-> > files where the two files have some adjecent blocks, cfq will immediately
-> > merge them. cfq_rq_close() also has trouble, sometimes the seek_mean is very
-> > big. I did a test to make cfq_rq_close() always checks the distence according
-> > to CIC_SEEK_THR, but still saw a lot of wrong merge. (BTW, why we take a long
-> > distence far away request as close. Taking them close doesn't improve any thoughtput
-> > to me. Maybe we should always use CIC_SEEK_THR as close criteria).
-> Yes, when deciding if two queues are going to be merged, we should use
-> the constant CIC_SEEK_THR.
+--==_Exmh_1261966107_3923P
+Content-Type: text/plain; charset=us-ascii
 
-seek_mean could be very big sometimes, using it as close criteria is meanless
-as this doen't improve any performance. So if it's big, let's fallback to
-default value.
+On Sun, 27 Dec 2009 20:28:23 GMT, David Wagner said:
 
-Signed-off-by: Shaohua Li<shaohua.li@intel.com>
+> Read the thread, where you can find the answer *why*.  The question has
+> already been answered.
 
-diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
-index e2f8046..8025605 100644
---- a/block/cfq-iosched.c
-+++ b/block/cfq-iosched.c
-@@ -1682,6 +1682,10 @@ static inline int cfq_rq_close(struct cfq_data *cfqd, struct cfq_queue *cfqq,
- 	if (!sample_valid(cfqq->seek_samples))
- 		sdist = CFQQ_SEEK_THR;
- 
-+	/* if seek_mean is big, using it as close criteria is meanless */
-+	if (sdist > CFQQ_SEEK_THR)
-+		sdist = CFQQ_SEEK_THR;
-+
- 	return cfq_dist_from_last(cfqd, rq) <= sdist;
- }
- 
+That was the *original* use case for Michael Stone's module. However, in the
+mail that I was specifically replying to:
+
+On Sun, 27 Dec 2009 13:02:54 +0900, Tetsuo Handa said:
+> I believe TOMOYO can safely coexist with other security modules.
+> Why TOMOYO must not be used with SELinux or Smack or AppArmor?
+> What interference are you worrying when enabling TOMOYO with SELinux or Smack
+> or AppArmor?
+
+Tetsuo asked specifically about the issues of composing two MAC implementations,
+so I answered that issue as opposed to "composing a MAC with a small LSM".
+
+I agree that composing a MAC system plus something small should be easier -
+as far back as April 2002 there was discussion of stacking SELinux and the
+OWLSM (openwall/grsecurity style patches).  And we've *still* not managed to
+get a solution for that issue (though Serge Hallyn did a yeoman job in trying
+to get a stacker accepted back in 2004 or so).
+
+I wonder if we need to go look at Serge's patch set again.  It's getting tiring
+to revisit the issue every 18 months when somebody wants a small LSM, but can't
+do it because large MACs have essentially co-opted the interface.
+
+
+--==_Exmh_1261966107_3923P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFLOBMbcC3lWbTT17ARAmLgAJ9ReeHv0FKZF2hyWH+Ny/DqOQZs1QCfUU/+
+f//ZHu8RryMdT6FEHlX2avM=
+=5Ayg
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1261966107_3923P--
+
