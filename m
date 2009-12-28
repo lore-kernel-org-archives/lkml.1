@@ -1,104 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751093AbZL1JCL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751602AbZL1JC1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751093AbZL1JCL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Dec 2009 04:02:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750892AbZL1JCJ
+	id S1751602AbZL1JC1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Dec 2009 04:02:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751401AbZL1JCW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Dec 2009 04:02:09 -0500
-Received: from mail-yx0-f187.google.com ([209.85.210.187]:63138 "EHLO
-	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750710AbZL1JCH (ORCPT
+	Mon, 28 Dec 2009 04:02:22 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:55493 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750961AbZL1JCS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Dec 2009 04:02:07 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=IPVpzYbvLDxf7yUUQgmqf+mPk/AaxqVcLcGFg7cQq5pC2VhHeAyWGQaEB0E6nLE20d
-         9QWxUxa/4Uj0dgzlf5vmaHhHwNJyAEAl1rrVzNXpBfKuASC7RLyUmbwrSxYyOibWDOBS
-         ozdNxLszMgE87qsc0O0F+x349l9osAC1v1oow=
-MIME-Version: 1.0
-In-Reply-To: <20091228033554.GB15242@sli10-desk.sh.intel.com>
-References: <20091225091030.GA28365@sli10-desk.sh.intel.com>
-	 <4e5e476b0912250144l96c4d34v300910216e5c7a08@mail.gmail.com>
-	 <20091228033554.GB15242@sli10-desk.sh.intel.com>
-Date: Mon, 28 Dec 2009 10:02:06 +0100
-Message-ID: <4e5e476b0912280102t2278d7a5ld3e8784f52f2be31@mail.gmail.com>
-Subject: Re: [RFC]cfq-iosched: quantum check tweak
-From: Corrado Zoccolo <czoccolo@gmail.com>
-To: Shaohua Li <shaohua.li@intel.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
-       "Zhang, Yanmin" <yanmin.zhang@intel.com>
-Content-Type: text/plain; charset=UTF-8
+	Mon, 28 Dec 2009 04:02:18 -0500
+Subject: [PATCH] x86,kmemcheck: Use KERN_WARNING for error reporting
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: vegard.nossum@gmail.com
+Cc: akpm@linux-foundation.org, x86@kernel.org, mingo@elte.hu,
+       linux-kernel@vger.kernel.org
+Date: Mon, 28 Dec 2009 11:02:15 +0200
+Message-Id: <1261990935.4641.7.camel@penberg-laptop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Shaohua,
-On Mon, Dec 28, 2009 at 4:35 AM, Shaohua Li <shaohua.li@intel.com> wrote:
-> On Fri, Dec 25, 2009 at 05:44:40PM +0800, Corrado Zoccolo wrote:
->> On Fri, Dec 25, 2009 at 10:10 AM, Shaohua Li <shaohua.li@intel.com> wrote:
->> > Currently a queue can only dispatch up to 4 requests if there are other queues.
->> > This isn't optimal, device can handle more requests, for example, AHCI can
->> > handle 31 requests. I can understand the limit is for fairness, but we could
->> > do some tweaks:
->> > 1. if the queue still has a lot of slice left, sounds we could ignore the limit
->> ok. You can even scale the limit proportionally to the remaining slice
->> (see below).
-> I can't understand the meaning of below scale. cfq_slice_used_soon() means
-> dispatched requests can finish before slice is used, so other queues will not be
-> impacted. I thought/hope a cfq_slice_idle time is enough to finish the
-> dispatched requests.
-cfq_slice_idle is 8ms, that is the average time to complete 1 request
-on most disks. If you have more requests dispatched on a
-NCQ-rotational disk (non-RAID), it will take more time. Probably a
-linear formula is not the most accurate, but still more accurate than
-taking just 1 cfq_slice_idle. If you can experiment a bit, you could
-also try:
- cfq_slice_idle * ilog2(nr_dispatched+1)
- cfq_slice_idle * (1<<(ilog2(nr_dispatched+1)>>1))
+From: Pekka Enberg <penberg@cs.helsinki.fi>
 
->
->> > 2. we could keep the check only when cfq_latency is on. For uses who don't care
->> > about latency should be happy to have device fully piped on.
->> I wouldn't overload low_latency with this meaning. You can obtain the
->> same by setting the quantum to 32.
-> As this impact fairness, so natually thought we could use low_latency. I'll remove
-> the check in next post.
-Great.
->> > I have a test of random direct io of two threads, each has 32 requests one time
->> > without patch: 78m/s
->> > with tweak 1: 138m/s
->> > with two tweaks and disable latency: 156m/s
->>
->> Please, test also with competing seq/random(depth1)/async workloads,
->> and measure also introduced latencies.
-> depth1 should be ok, as if device can only send one request, it should not require
-> more requests from ioscheduler.
-I mean have a run with, at the same time:
-* one seq reader,
-* h random readers with depth 1 (non-aio)
-* one async seq writer
-* k random readers with large depth.
-In this way, you can see if the changes you introduce to boost your
-workload affect more realistic scenarios, in which various workloads
-are mixed.
-I explicitly add the depth1 random readers, since they are sceduled
-differently than the large (>4) depth ones.
+As suggested by Vegard Nossum, use KERN_WARNING for error reporting to make
+sure kmemcheck reports end up in syslog.
 
-> I'll do more checks. The time is hard to choose (I choose cfq_slice-idle here) to
-> balance thoughput and latency. Do we have creteria to measure this? See the patch
-> passes some tests, so it's ok for latency.
+Cc: Vegard Nossum <vegard.nossum@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+---
+Vegard, how do you want to merge this? Andrew? Ingo? I can also pick it
+up in my tree if you ACK it.
 
-Max latency should be near 300ms (compare with and without the patch),
-for a reasonable number of concurrent processes (300ms/#proc <
-2*idle_slice).
+ arch/x86/mm/kmemcheck/error.c |   19 +++++++++----------
+ 1 files changed, 9 insertions(+), 10 deletions(-)
 
-Thanks,
-Corrado
+diff --git a/arch/x86/mm/kmemcheck/error.c b/arch/x86/mm/kmemcheck/error.c
+index 4901d0d..af3b6c8 100644
+--- a/arch/x86/mm/kmemcheck/error.c
++++ b/arch/x86/mm/kmemcheck/error.c
+@@ -106,26 +106,25 @@ void kmemcheck_error_recall(void)
+ 
+ 	switch (e->type) {
+ 	case KMEMCHECK_ERROR_INVALID_ACCESS:
+-		printk(KERN_ERR  "WARNING: kmemcheck: Caught %d-bit read "
+-			"from %s memory (%p)\n",
++		printk(KERN_WARNING "WARNING: kmemcheck: Caught %d-bit read from %s memory (%p)\n",
+ 			8 * e->size, e->state < ARRAY_SIZE(desc) ?
+ 				desc[e->state] : "(invalid shadow state)",
+ 			(void *) e->address);
+ 
+-		printk(KERN_INFO);
++		printk(KERN_WARNING);
+ 		for (i = 0; i < SHADOW_COPY_SIZE; ++i)
+-			printk("%02x", e->memory_copy[i]);
+-		printk("\n");
++			printk(KERN_CONT "%02x", e->memory_copy[i]);
++		printk(KERN_CONT "\n");
+ 
+-		printk(KERN_INFO);
++		printk(KERN_WARNING);
+ 		for (i = 0; i < SHADOW_COPY_SIZE; ++i) {
+ 			if (e->shadow_copy[i] < ARRAY_SIZE(short_desc))
+-				printk(" %c", short_desc[e->shadow_copy[i]]);
++				printk(KERN_CONT " %c", short_desc[e->shadow_copy[i]]);
+ 			else
+-				printk(" ?");
++				printk(KERN_CONT " ?");
+ 		}
+-		printk("\n");
+-		printk(KERN_INFO "%*c\n", 2 + 2
++		printk(KERN_CONT "\n");
++		printk(KERN_WARNING "%*c\n", 2 + 2
+ 			* (int) (e->address & (SHADOW_COPY_SIZE - 1)), '^');
+ 		break;
+ 	case KMEMCHECK_ERROR_BUG:
+-- 
+1.6.0.4
 
->
-> Thanks,
-> Shaohua
->
+
+
