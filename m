@@ -1,91 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752093AbZL1J7c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752110AbZL1J7s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752093AbZL1J7c (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Dec 2009 04:59:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751906AbZL1J7c
+	id S1752110AbZL1J7s (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Dec 2009 04:59:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752104AbZL1J7r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Dec 2009 04:59:32 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:64415 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751894AbZL1J7b (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Dec 2009 04:59:31 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=wLrNpRZIKlH2lmEdz2xUSYfchrW1/fdDOp0lSg5npihS260pZbbCX1rPhDPH/XsrmO
-         MhdaBa6mZ9Pn9nv9cU0WVuoenLuv8gH3CYA723oWftii9QIk/RHleomNhbqNny4e/D2F
-         fkfX7RvvnCTpNkXg7fAVcxVzttsdbeIbAoyEM=
+	Mon, 28 Dec 2009 04:59:47 -0500
+Received: from mail.gmx.net ([213.165.64.20]:46351 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752100AbZL1J7q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Dec 2009 04:59:46 -0500
+X-Authenticated: #12255092
+X-Provags-ID: V01U2FsdGVkX19yU88FRQlylwdMT8d355eBaoZaIHI6det11C3j1a
+	LQFUXL5qEZ3ApX
+From: Peter =?iso-8859-1?q?H=FCwe?= <PeterHuewe@gmx.de>
+To: "Hans-Christian Egtvedt" <hans-christian.egtvedt@atmel.com>
+Subject: Re: [PATCH] arch/avr32: Fix build failure for avr32 caused by typo
+Date: Mon, 28 Dec 2009 10:59:30 +0100
+User-Agent: KMail/1.12.3 (Linux/2.6.27-05415-g69a8594; KDE/4.3.3; x86_64; ; )
+Cc: Nicolas Ferre <nicolas.ferre@atmel.com>,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Ma <pma@mediamatech.com>, linux-kernel@vger.kernel.org,
+       linux-mmc@vger.kernel.org
+References: <200912252008.45602.PeterHuewe@gmx.de> <20091228091318.454c4713@hcegtvedt.norway.atmel.com>
+In-Reply-To: <20091228091318.454c4713@hcegtvedt.norway.atmel.com>
 MIME-Version: 1.0
-In-Reply-To: <20091228144302.864f2e97.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20091228134619.92ba28f6.minchan.kim@barrios-desktop>
-	 <20091228134752.44d13c34.kamezawa.hiroyu@jp.fujitsu.com>
-	 <20091228143154.ec0431b5.minchan.kim@barrios-desktop>
-	 <20091228144302.864f2e97.kamezawa.hiroyu@jp.fujitsu.com>
-Date: Mon, 28 Dec 2009 18:59:30 +0900
-Message-ID: <28c262360912280159r69612770j97e30c3948c88c92@mail.gmail.com>
-Subject: Re: [PATCH -mmotm-2009-12-10-17-19] Fix wrong rss count of smaps
-From: Minchan Kim <minchan.kim@gmail.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Matt Mackall <mpm@selenic.com>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200912281059.30450.PeterHuewe@gmx.de>
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.49
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 28, 2009 at 2:43 PM, KAMEZAWA Hiroyuki
-<kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> On Mon, 28 Dec 2009 14:31:54 +0900
-> Minchan Kim <minchan.kim@gmail.com> wrote:
->>
->> > BTW, how about counting ZERO page in smaps? Ignoring them completely sounds
->> > not very good.
->>
->> I am not use it is useful.
->>
->> zero page snapshot of ongoing process is useful?
->> Doesn't Admin need to know about zero page?
->> Let's admins use it well. If we remove zero page again?
->> How many are applications use smaps?
->> Did we have a problem without it?
->>
-> My concern is that hiding indormation which was exported before.
-> No more than that and no strong demand.
->
->
->> When I think of it, there are too many qeustions.
->> Most important thing to add new statistics is just need of customer.
->>
->> Frankly speaking, I don't have good scenario of using zero page.
->> Do you have any scenario it is valueable?
->>
-> read before write ? maybe sometimes happens.
->
-> For example. current glibc's calloc() avoids memset() if the pages are
-> dropped by MADVISE (without unmap).
->
-> Before starting zero-page works, I checked "questions" in lkml and
-> found some reports that some applications start to go OOM after zero-page
-> removal.
->
-> For me, I know one of my customer's application depends on behavior of
-> zero page (on RHEL5). So, I tried to add again it before RHEL6 because
-> I think removal of zero-page corrupts compatibility.
->
+Am Montag 28 Dezember 2009 09:13:18 schrieb Hans-Christian Egtvedt:
+> On Fri, 25 Dec 2009 20:08:45 +0100
+> 
+> Peter Huewe <PeterHuewe@gmx.de> wrote:
+> > This patch fixes a build failure introduced by the patch
+> >   atmel-mci: change use of dma slave interface by Nicolas Ferre
+> > by changing mci_dma_slave to the correct name of mci_dma_data
+> >
+> > This should make the avr32 tree build again.
+> 
+> Ah, great, I have not gotten around to test this yet. Thanks for the
+> patch. I've done some minor changes and also fixed the kzalloc/kfree
+> error handling. Please see the inlined patch below.
+> 
 
-Okay. I will repost the patch.
-
-> Thanks,
-> -Kame
->
->
+> @@ -1344,7 +1344,7 @@ at32_add_device_mci(unsigned int id, struct
+>  mci_platform_data *data) ARRAY_SIZE(atmel_mci0_resource)))
+>  		goto fail;
+> 
+> -	slave = kzalloc(sizeof(struct mci_dma_slave), GFP_KERNEL);
+> +	slave = kzalloc(sizeof(struct mci_dma_data), GFP_KERNEL);
+> 
+>  	slave->sdata.dma_dev = &dw_dmac0_device.dev;
+>  	slave->sdata.reg_width = DW_DMA_SLAVE_WIDTH_32BIT;
 
 
+Great, thanks for the update.
+The only thing that still catches my eye is that the kzalloc line can fail, so 
+you should perhaps add something like
+if (!slave) {
+	printk(KERN_ERR "No memory left for at32ap700x: at32_add_device_mc");
+	goto fail;
+}
 
--- 
-Kind regards,
-Minchan Kim
+(not tested :)
+
+
+Apart from that:
+Acked-By: Peter Huewe <peterhuewe@gmx.de>
+
+
+Thanks and best regards,
+Peter
