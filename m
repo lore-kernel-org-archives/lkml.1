@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751323AbZL1CCK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751383AbZL1CDw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751323AbZL1CCK (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Dec 2009 21:02:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751113AbZL1CCJ
+	id S1751383AbZL1CDw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Dec 2009 21:03:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751206AbZL1CDv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Dec 2009 21:02:09 -0500
-Received: from mga03.intel.com ([143.182.124.21]:16361 "EHLO mga03.intel.com"
+	Sun, 27 Dec 2009 21:03:51 -0500
+Received: from mga09.intel.com ([134.134.136.24]:29075 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750935AbZL1CCH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Dec 2009 21:02:07 -0500
+	id S1750995AbZL1CDu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 27 Dec 2009 21:03:50 -0500
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
-   d="scan'208";a="227020127"
-Date: Mon, 28 Dec 2009 10:02:03 +0800
+X-IronPort-AV: E=Sophos;i="4.47,461,1257148800"; 
+   d="scan'208";a="582438991"
+Date: Mon, 28 Dec 2009 10:03:48 +0800
 From: Shaohua Li <shaohua.li@intel.com>
 To: Corrado Zoccolo <czoccolo@gmail.com>
 Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
        "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
        "jmoyer@redhat.com" <jmoyer@redhat.com>,
        "Zhang, Yanmin" <yanmin.zhang@intel.com>
-Subject: Re: cfq-iosched: tiobench regression
-Message-ID: <20091228020203.GA28115@sli10-desk.sh.intel.com>
+Subject: [PATCH]cfq-iosched: don't take requests with long distence as close
+Message-ID: <20091228020348.GB28115@sli10-desk.sh.intel.com>
 References: <20091224005506.GA7879@sli10-desk.sh.intel.com>
  <4e5e476b0912250216n2b4aceacyf22a0e73425efd3a@mail.gmail.com>
 MIME-Version: 1.0
@@ -46,15 +46,25 @@ On Fri, Dec 25, 2009 at 06:16:27PM +0800, Corrado Zoccolo wrote:
 > > to me. Maybe we should always use CIC_SEEK_THR as close criteria).
 > Yes, when deciding if two queues are going to be merged, we should use
 > the constant CIC_SEEK_THR.
-Ok, will prepare a seperate patch for this.
 
-> > So sounds we need make split more aggressive. But the split is too lazay,
-> > which requires to wait 1s. Time based check isn't reliable as queue might not
-> > run at given time, so uses a small time isn't ok.
-> 1s is too much, but I wouldn't abandon a time based approach. To fix
-> the problem of queue not being run, you can consider a slice. If at
-> the end of the slice, the queue is seeky, you split it.
-Sounds good, will take this way.
+seek_mean could be very big sometimes, using it as close criteria is meanless
+as this doen't improve any performance. So if it's big, let's fallback to
+default value.
 
-Thanks,
-Shaohua
+Signed-off-by: Shaohua Li<shaohua.li@intel.com>
+
+diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+index e2f8046..8025605 100644
+--- a/block/cfq-iosched.c
++++ b/block/cfq-iosched.c
+@@ -1682,6 +1682,10 @@ static inline int cfq_rq_close(struct cfq_data *cfqd, struct cfq_queue *cfqq,
+ 	if (!sample_valid(cfqq->seek_samples))
+ 		sdist = CFQQ_SEEK_THR;
+ 
++	/* if seek_mean is big, using it as close criteria is meanless */
++	if (sdist > CFQQ_SEEK_THR)
++		sdist = CFQQ_SEEK_THR;
++
+ 	return cfq_dist_from_last(cfqd, rq) <= sdist;
+ }
+ 
