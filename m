@@ -1,119 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752134AbZL1Q3I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752246AbZL1Qdu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752134AbZL1Q3I (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Dec 2009 11:29:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751349AbZL1Q3G
+	id S1752246AbZL1Qdu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Dec 2009 11:33:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751898AbZL1Qdt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Dec 2009 11:29:06 -0500
-Received: from lists.laptop.org ([18.85.2.145]:37053 "EHLO mail.laptop.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750938AbZL1Q3F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Dec 2009 11:29:05 -0500
-Date: Mon, 28 Dec 2009 11:31:09 -0500
-From: Michael Stone <michael@laptop.org>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       linux-security-module@vger.kernel.org, Andi Kleen <andi@firstfloor.org>,
-       David Lang <david@lang.hm>, Oliver Hartkopp <socketcan@hartkopp.net>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Valdis Kletnieks <Valdis.Kletnieks@vt.edu>,
-       Bryan Donlan <bdonlan@gmail.com>, Evgeniy Polyakov <zbr@ioremap.net>,
-       "C. Scott Ananian" <cscott@cscott.net>,
-       James Morris <jmorris@namei.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Bernie Innocenti <bernie@codewiz.org>,
-       Mark Seaborn <mrs@mythic-beasts.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       =?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>,
-       Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
-       Samir Bellabes <sam@synack.fr>,
-       Casey Schaufler <casey@schaufler-ca.com>,
-       "Serge E. Hallyn" <serue@us.ibm.com>,
-       Michael Stone <michael@laptop.org>
-Subject: Re: RFC: disablenetwork facility. (v4)
-Message-ID: <20091228163108.GC13266@heat>
+	Mon, 28 Dec 2009 11:33:49 -0500
+Received: from mail.windriver.com ([147.11.1.11]:40665 "EHLO
+	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751690AbZL1Qds (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Dec 2009 11:33:48 -0500
+Message-ID: <4B38DDC5.4080202@windriver.com>
+Date: Mon, 28 Dec 2009 10:33:09 -0600
+From: Jason Wessel <jason.wessel@windriver.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Disposition: inline
-In-Reply-To: <20091228101006.GA19984@elf.ucw.cz>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Peter Zijlstra <peterz@infradead.org>
+CC: linux-kernel@vger.kernel.org, kgdb-bugreport@lists.sourceforge.net,
+       mingo@elte.hu, mort@sgi.com, linux-arch@vger.kernel.org
+Subject: Re: [PATCH 05/37] kdb: core for kgdb back end
+References: <1261603190-5036-1-git-send-email-jason.wessel@windriver.com> <1261603190-5036-2-git-send-email-jason.wessel@windriver.com> <1261603190-5036-3-git-send-email-jason.wessel@windriver.com> <1261603190-5036-4-git-send-email-jason.wessel@windriver.com> <1261603190-5036-5-git-send-email-jason.wessel@windriver.com> <1261603190-5036-6-git-send-email-jason.wessel@windriver.com> <1261652672.4937.189.camel@laptop>
+In-Reply-To: <1261652672.4937.189.camel@laptop>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 28 Dec 2009 16:33:09.0721 (UTC) FILETIME=[7104D490:01CA87DB]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Pavel,
+Peter Zijlstra wrote:
+> On Wed, 2009-12-23 at 15:19 -0600, Jason Wessel wrote:
+>> +kdb_prio(char *name, struct rt_prio_array *array, kdb_printf_t xxx_printf,
+[..]
+>> +kdb_runqueue(unsigned long cpu, kdb_printf_t xxx_printf)
+[..]
 > 
-> I spent some time this afternoon reflecting on the scenarios that you sketched
-> above. This reflection resulted in three concrete responses:
-
-> There's more. You are introducing security holes. Don't.
-
-My users care about things like stopping compromised processes from leaking
-their documents or sending spam; they do not use the network in the ways you
-seem to be concerned about.
-
->   1. Anyone depending on their network for authentication already has to deal
->      with availability faults. disablenetwork doesn't change anything
->      fundamental there.
-
-> Actually it does. Policy may well be "If the network works, noone can
-> log in locally, because administration is normally done over
-> network. If the network fails, larger set of people is allowed in,
-> because something clearly went wrong and we want anyone going around
-> to fix it."
-
-Have you actually seen this security policy in real life? I ask because it
-seems quite far-fetched to me. Networks are just too easy to attack. Seems to
-me, from this casual description, that you're just asking to be ARP- or
-DNS-poisoned and rooted with this one.
-
->   2. Anyone able to use disablenetwork to block a privilege escalation via su
->      or to influence sendmail will be able to disrupt the privilege escalation
->      or mail transfer by manipulating the ancestors of su or sendmail in plenty
->      of other ways including, for example, via ptrace(), kill(), manipulation
->      of PATH, manipulation of X11 events and IPC, manipulation of TTYs, and so
->      on.
-
-> Please learn how setuid works. 
-
-I am quite familiar with how setuid works. I was suggesting a number of ways to
-modify the behavior of su's *ancestors*; not su. (I apoligize that my writing
-was not more clear on this point.) 
-
-In retrospect, substituting "abort()" for "disablenetwork()" better explains my
-point. Who can call disablenetwork() to cause a problem who can't just as well
-have called abort() or kill(0, SIGSTOP) at the same time?
-
-Still, I take your point that there may be people out there who have written
-configurations for setuid executables under the belief that their networks are
-reliable and available in the presence of attackers.
-
->>   3. As I pointed out before, disablenetwork _is_ controlled by a build-time
->>      configuration option, its use _is_ still subject to any existing MAC
+> So what is this code supposed to do? It looks like it simply cannot be
+> correct.
 > 
-> CONFIG_ADD_SECURITY_HOLE is still bad idea.
 
-Perhaps for your users. For me and for the users of my software, having
-CONFIGURE_SECURITY_DISABLENETWORK is far better than not having it because it
-permits us to close many other far more significant holes.
+Beyond the fact that the code may not be right, it is a small part of a kdb module which is not included, and these functions can immediately disappear.  For reference, the original kdb module was called "kdbm_sched" and I believe it was intended as an aid to help debug the scheduler and process priorities in earlier versions of the kernel.
 
-> You should either:
+I have removed all this code and reduced the patch to kernel/sched.c to the following.  The reason we need the attached patch is to be able to call curr_task() for kdb to perform some basic per cpu task analysis while the system is stopped.
 
-> a) make disablenetwork reset to "enablenetwork" during setuid exec
-> b) disallow setuid execs for tasks that have network disabled.
+Thanks,
+Jason.
 
-Neither of these work. The first is incorrect because a disablenetwork'ed
-process could transmit anything it wants through ping. The second is one that I
-feel is unsafe because I don't feel that I can predict its consequences.
-
-However, there's a third option that I think might work. What do you think of
-treating being network-disabled the same way we treat RLIMIT_NOFILE? That is,
-what about:
-
-c) permit capable processes (such as euid 0) to remove networking restrictions
-    by further calls to prctl(PR_SET_NETWORK)?
-
-Regards,
-
-Michael
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -9784,9 +9784,9 @@ void normalize_rt_tasks(void)
+ 
+ #endif /* CONFIG_MAGIC_SYSRQ */
+ 
+-#ifdef CONFIG_IA64
++#if defined(CONFIG_IA64) || defined(CONFIG_KGDB_KDB)
+ /*
+- * These functions are only useful for the IA64 MCA handling.
++ * These functions are only useful for the IA64 MCA handling, or kdb.
+  *
+  * They can only be called when the whole system has been
+  * stopped - every CPU needs to be quiescent, and no scheduling
