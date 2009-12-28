@@ -1,52 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752355AbZL1Q7I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752369AbZL1RJJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752355AbZL1Q7I (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Dec 2009 11:59:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752256AbZL1Q7G
+	id S1752369AbZL1RJJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Dec 2009 12:09:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752146AbZL1RJH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Dec 2009 11:59:06 -0500
-Received: from exprod6og110.obsmtp.com ([64.18.1.25]:59019 "HELO
-	exprod6og110.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751966AbZL1Q7F convert rfc822-to-8bit (ORCPT
+	Mon, 28 Dec 2009 12:09:07 -0500
+Received: from exprod6og112.obsmtp.com ([64.18.1.29]:50760 "HELO
+	exprod6og112.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751894AbZL1RJG convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Dec 2009 11:59:05 -0500
+	Mon, 28 Dec 2009 12:09:06 -0500
 X-MimeOLE: Produced By Microsoft Exchange V6.5
 Content-class: urn:content-classes:message
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7BIT
-Subject: [PATCH] kernel/time/jiffies.c: local symbols should be static
-Date: Mon, 28 Dec 2009 11:59:01 -0500
-Message-ID: <BD79186B4FD85F4B8E60E381CAEE19090200F468@mi8nycmail19.Mi8.com>
+Subject: RE: [PATCH 1/5] arch/arm: Correct NULL test
+Date: Mon, 28 Dec 2009 12:09:04 -0500
+Message-ID: <BD79186B4FD85F4B8E60E381CAEE19090200F46E@mi8nycmail19.Mi8.com>
+In-Reply-To: <Pine.LNX.4.64.0912281747570.6928@ask.diku.dk>
 X-MS-Has-Attach: 
 X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] kernel/time/jiffies.c: local symbols should be static
-Thread-Index: AcqH3w3IRI4T22IFR+SM9BPgy47hXQ==
+Thread-Topic: [PATCH 1/5] arch/arm: Correct NULL test
+Thread-Index: AcqH3ftdfh8otKYeSvuF1bUQbDYOIQAAkr+A
+References: <Pine.LNX.4.64.0912272226360.20548@ask.diku.dk><20091227215106.GA18317@pengutronix.de> <Pine.LNX.4.64.0912272307310.20548@ask.diku.dk> <BD79186B4FD85F4B8E60E381CAEE19090200F461@mi8nycmail19.Mi8.com> <Pine.LNX.4.64.0912281747570.6928@ask.diku.dk>
 From: "H Hartley Sweeten" <hartleys@visionengravers.com>
-To: <linux-kernel@vger.kernel.org>
-Cc: <johnstul@us.ibm.com>
-X-OriginalArrivalTime: 28 Dec 2009 16:59:01.0537 (UTC) FILETIME=[0DF92910:01CA87DF]
+To: "Julia Lawall" <julia@diku.dk>
+Cc: =?iso-8859-1?Q?Uwe_Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>,
+       <kernel-janitors@vger.kernel.org>, <linux@arm.linux.org.uk>,
+       <linux-kernel@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>
+X-OriginalArrivalTime: 28 Dec 2009 17:09:04.0488 (UTC) FILETIME=[755C2E80:01CA87E0]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The symbol 'clocksource_jiffies' is not exported and should be static.
+On Monday, December 28, 2009 9:51 AM, Julia Lawall wrote:
+> On Mon, 28 Dec 2009, H Hartley Sweeten wrote:
+>
+>> On Sunday, December 27, 2009 3:08 PM, Julia Lawall wrote:
+>>>>>  	dbgfs_chan = kmalloc(sizeof(*dbgfs_state) * num_dma_channels,
+>>>>>  			     GFP_KERNEL);
+>>>>> -	if (!dbgfs_state)
+>>>>> +	if (!dbgfs_chan)
+>>>>>  		goto err_alloc;
+>>>> Shouldn't the malloc line read:
+>>>> 
+>>>> 	... = kmalloc(sizeof(*dbgfs_chan) * ...)
+>>>> 	                      ^^^^^^^^^^
+>>>> 
+>>>> ?
+>>>
+>>> Good point, thanks.  I will send a revised patch.
+>> 
+>> Wouldn't this be clearer?
+>> 
+>> 	... = kmalloc(sizeof(struct dentry) * ...)
+>
+> Documentation/CodingStyle thinks otherwise:
+>
+> "The preferred form for passing a size of a struct is the following:
+>
+> 	p = kmalloc(sizeof(*p), ...);
+>
+> The alternative form where struct name is spelled out hurts readability 
+> and introduces an opportunity for a bug when the pointer variable type is 
+> changed but the corresponding sizeof that is passed to a memory allocator 
+> is not."
+>
+> And actually, in this case, sizeof(struct dentry) would be wrong, because 
+> the type of dbgfs_chan is struct dentry **, not struct dentry *.  What is 
+> wanted is an array of pointers.
 
-Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
-Cc: John Stultz <johnstul@us.ibm.com>
+Ah, missed that.  Thanks for pointing it out.
 
----
-
-diff --git a/kernel/time/jiffies.c b/kernel/time/jiffies.c
-index 5404a84..36d2d83 100644
---- a/kernel/time/jiffies.c
-+++ b/kernel/time/jiffies.c
-@@ -55,7 +55,7 @@ static cycle_t jiffies_read(struct clocksource *cs)
- 	return (cycle_t) jiffies;
- }
- 
--struct clocksource clocksource_jiffies = {
-+static struct clocksource clocksource_jiffies = {
- 	.name		= "jiffies",
- 	.rating		= 1, /* lowest valid rating*/
- 	.read		= jiffies_read, 
+Regards,
+Hartley
