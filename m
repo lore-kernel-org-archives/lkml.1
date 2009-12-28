@@ -1,68 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752112AbZL1KmL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751699AbZL1KlM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752112AbZL1KmL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Dec 2009 05:42:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751405AbZL1KmJ
+	id S1751699AbZL1KlM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Dec 2009 05:41:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751395AbZL1KlL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Dec 2009 05:42:09 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:56437 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751354AbZL1KmI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Dec 2009 05:42:08 -0500
-Message-ID: <4B388B0D.4000203@cn.fujitsu.com>
-Date: Mon, 28 Dec 2009 18:40:13 +0800
-From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Frederic Weisbecker <fweisbec@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, Paul Mackerras <paulus@samba.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH v2 2/5]: trace_event: export HZ in timer's tracepoint
- format
-References: <4B27702F.1080507@cn.fujitsu.com> <20091215142325.GC5833@nowhere> <4B30C2D1.4030006@cn.fujitsu.com> <4B30C3A0.909@cn.fujitsu.com> <20091228075417.GB20039@elte.hu>
-In-Reply-To: <20091228075417.GB20039@elte.hu>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Mon, 28 Dec 2009 05:41:11 -0500
+Received: from casper.infradead.org ([85.118.1.10]:42542 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751026AbZL1KlK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Dec 2009 05:41:10 -0500
+Subject: Re: [RFC PATCH] asynchronous page fault.
+From: Peter Zijlstra <peterz@infradead.org>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "minchan.kim@gmail.com" <minchan.kim@gmail.com>,
+       cl@linux-foundation.org
+In-Reply-To: <1261996258.7135.67.camel@laptop>
+References: <20091225105140.263180e8.kamezawa.hiroyu@jp.fujitsu.com>
+	 <1261915391.15854.31.camel@laptop>
+	 <20091228093606.9f2e666c.kamezawa.hiroyu@jp.fujitsu.com>
+	 <1261989047.7135.3.camel@laptop>
+	 <27db4d47e5a95e7a85942c0278892467.squirrel@webmail-b.css.fujitsu.com>
+	 <1261996258.7135.67.camel@laptop>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 28 Dec 2009 11:40:41 +0100
+Message-ID: <1261996841.7135.69.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 2009-12-28 at 11:30 +0100, Peter Zijlstra wrote:
+> On Mon, 2009-12-28 at 18:58 +0900, KAMEZAWA Hiroyuki wrote:
+> > Peter Zijlstra さんは書きました：
+> > > On Mon, 2009-12-28 at 09:36 +0900, KAMEZAWA Hiroyuki wrote:
+> > >>
+> > >> > The idea is to let the RCU lock span whatever length you need the vma
+> > >> > for, the easy way is to simply use PREEMPT_RCU=y for now,
+> > >>
+> > >> I tried to remove his kind of reference count trick but I can't do that
+> > >> without synchronize_rcu() somewhere in unmap code. I don't like that and
+> > >> use this refcnt.
+> > >
+> > > Why, because otherwise we can access page tables for an already unmapped
+> > > vma? Yeah that is the interesting bit ;-)
+> > >
+> > Without that
+> >   vma->a_ops->fault()
+> > and
+> >   vma->a_ops->unmap()
+> > can be called at the same time. and vma->vm_file can be dropped while
+> > vma->a_ops->fault() is called. etc...
+> 
+> Right, so acquiring the PTE lock will either instantiate page tables for
+> a non-existing vma, leaving you with an interesting mess to clean up, or
+> you can also RCU free the page tables (in the same RCU domain as the
+> vma) which will mostly[*] avoid that issue.
+> 
+> [ To make live really really interesting you could even re-use the
+>   page-tables and abort the RCU free when the region gets re-mapped
+>   before the RCU callbacks happen, this will avoid a free/alloc cycle
+>   for fast remapping workloads. ]
+> 
+> Once you hold the PTE lock, you can validate the vma you looked up,
+> since ->unmap() syncs against it. If at that time you find the
+> speculative vma is dead, you fail and re-try the fault.
+> 
+> [*] there still is the case of faulting on an address that didn't
+> previously have page-tables hence the unmap page table scan will have
+> skipped it -- my hacks simply leaked page tables here, but the idea was
+> to acquire the mmap_sem for reading and cleanup properly.
 
+Alternatively, we could mark vma's dead in some way before we do the
+unmap, then whenever we hit the page-table alloc path, we check against
+the speculative vma and bail if it died.
 
-Ingo Molnar wrote:
+That might just work.. will need to ponder it a bit more.
 
-> 
-> I think we can do something slightly different and more efficient: just create 
-> a new timer event to report the value of HZ.
-> 
-> That way we dont clutter the timer_expire_entry record format with a 
-> repetitive HZ field. It's an extra 4 bytes overhead: that has to be written, 
-> passed along, copied and thrown away in 99.9999% of the cases - such overhead 
-> should be avoided.
-> 
-> If you created a special timer_params event, which would produce precisely one 
-> event when triggered via say a new perf ioctl. I.e. add something like this to 
-> perf_event.h:
-> 
->   #define PERF_EVENT_IOC_INJECT       _IOW('$', 7, __u64)
-> 
-> and add code to kernel/perf_event.c's perf_ioctl() function that takes that 
-> __u64 parameter as an event ID and injects an 'artificial' event.
-> 
-> Such a new feature would be useful for other things as well: backtesting rare 
-> events, injecting other types of 'parameter/query events', etc.
-> 
-> There might be more details to this, but it would be a useful scheme IMO - and 
-> it would still integrate nicely with the whole ftrace event enumeration scheme 
-> so tooling support would be easier.
-> 
-> What do you think?
-> 
-
-Sure, this is the better way, i'll fix it address your suggestion in the next version.
-
-Thanks,
-Xiao
