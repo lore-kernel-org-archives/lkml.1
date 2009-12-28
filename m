@@ -1,68 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752060AbZL1WlI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751994AbZL1WYh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752060AbZL1WlI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Dec 2009 17:41:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751780AbZL1WlG
+	id S1751994AbZL1WYh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Dec 2009 17:24:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751364AbZL1WYg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Dec 2009 17:41:06 -0500
-Received: from Mycroft.westnet.com ([216.187.52.7]:54505 "EHLO
-	mycroft.westnet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751711AbZL1WlF (ORCPT
+	Mon, 28 Dec 2009 17:24:36 -0500
+Received: from exprod6og112.obsmtp.com ([64.18.1.29]:52533 "HELO
+	exprod6og112.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751760AbZL1WYf convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Dec 2009 17:41:05 -0500
-X-Greylist: delayed 1508 seconds by postgrey-1.27 at vger.kernel.org; Mon, 28 Dec 2009 17:41:04 EST
+	Mon, 28 Dec 2009 17:24:35 -0500
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <19257.11789.248634.904859@stoffel.org>
-Date: Mon, 28 Dec 2009 17:15:41 -0500
-From: "John Stoffel" <john@stoffel.org>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Michael Tokarev <mjt@tls.msk.ru>, Alain Knaff <alain@knaff.lu>,
-       Tvrtko Ursulin <tvrtko.ursulin@sophos.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: 2.6.33-rc1: LZMA kernel fails to decompress
-In-Reply-To: <4B390836.70100@zytor.com>
-References: <200912211643.18173.tvrtko.ursulin@sophos.com>
-	<4B2FEC10.6050900@msgid.tls.msk.ru>
-	<4B37AC87.1070607@knaff.lu>
-	<4B37C159.5080202@msgid.tls.msk.ru>
-	<4B390836.70100@zytor.com>
-X-Mailer: VM 8.0.9 under Emacs 22.3.1 (i486-pc-linux-gnu)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Subject: [PATCH] simeth.c: use %pM to shown MAC address
+Date: Mon, 28 Dec 2009 17:24:38 -0500
+Message-ID: <BD79186B4FD85F4B8E60E381CAEE19090200F4B7@mi8nycmail19.Mi8.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] simeth.c: use %pM to shown MAC address
+Thread-Index: AcqIDIsDzgG3eFPvSg2XPg7b+y6/WQ==
+From: "H Hartley Sweeten" <hartleys@visionengravers.com>
+To: <linux-kernel@vger.kernel.org>, <linux-ia64@vger.kernel.org>
+Cc: "David Miller" <davem@davemloft.net>
+X-OriginalArrivalTime: 28 Dec 2009 22:24:33.0854 (UTC) FILETIME=[882435E0:01CA880C]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>>> "H" == H Peter Anvin <hpa@zytor.com> writes:
+Use the %pM kernel extension to display the HwAddr.
 
-H> On 12/27/2009 12:19 PM, Michael Tokarev wrote:
->> 
->> What I think should be done here is to revert my patch (that replaces
->> /bin/echo with printf, so that /bin/echo will be used) and test the
->> real solution, which is to stop doing all this hackery altogether,
->> and calculate the size the right way instead.  Sam already posted a
->> possible solution, and it seems to be correct.
->> 
+The only difference in the output is that the MAC address is
+shown in the usual colon-separated hex notation instead of
+space-separated.
 
-H> Yes, but it moves the calculation from generic to x86-specific code,
-H> which makes it problematic.
+Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
+Cc: David S. Miller <davem@davemloft.net>
 
-H> I never figured out how to make a generic rule in Kbuild (unlike in
-H> standard GNU make) depend on a helper application, but doing a
-H> helper application for this is probably the sane thing.
+---
 
-H> Either this, or use Perl, which handles this kind of crap sanely.
-H> I'm really less than half joking.
-
-Yeah, I've never understood this mania to purge the build process of
-any and all use of perl.  If anything, it should *all* be perl so as
-to simplify the maint since it's all the same, no matter where you run
-perl.
-
-And for those who say "but I need to compile the kernel in my
-miniscule, locked down environment" my reply is "cross-compile".
-
-Heck, even pure C code would do the trick here.
-
-John
+diff --git a/arch/ia64/hp/sim/simeth.c b/arch/ia64/hp/sim/simeth.c
+index 7e81966..3489b0d 100644
+--- a/arch/ia64/hp/sim/simeth.c
++++ b/arch/ia64/hp/sim/simeth.c
+@@ -193,7 +193,7 @@ simeth_probe1(void)
+ 	unsigned char mac_addr[ETH_ALEN];
+ 	struct simeth_local *local;
+ 	struct net_device *dev;
+-	int fd, i, err, rc;
++	int fd, err, rc;
+ 
+ 	/*
+ 	 * XXX Fix me
+@@ -236,12 +236,8 @@ simeth_probe1(void)
+ 	 */
+ 	netdev_connect(dev->irq);
+ 
+-	printk(KERN_INFO "%s: hosteth=%s simfd=%d, HwAddr",
+-	       dev->name, simeth_device, local->simfd);
+-	for(i = 0; i < ETH_ALEN; i++) {
+-		printk(" %2.2x", dev->dev_addr[i]);
+-	}
+-	printk(", IRQ %d\n", dev->irq);
++	printk(KERN_INFO "%s: hosteth=%s simfd=%d, HwAddr %pM, IRQ %d\n",
++	       dev->name, simeth_device, local->simfd, dev->dev_addr, dev->irq);
+ 
+ 	return 0;
+ } 
