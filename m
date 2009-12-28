@@ -1,66 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752517AbZL1X1Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752498AbZL1X3L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752517AbZL1X1Y (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Dec 2009 18:27:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752146AbZL1X1X
+	id S1752498AbZL1X3L (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Dec 2009 18:29:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752062AbZL1X3K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Dec 2009 18:27:23 -0500
-Received: from exprod6og103.obsmtp.com ([64.18.1.185]:56487 "HELO
-	exprod6og103.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751975AbZL1X1X convert rfc822-to-8bit (ORCPT
+	Mon, 28 Dec 2009 18:29:10 -0500
+Received: from mail-iw0-f171.google.com ([209.85.223.171]:39460 "EHLO
+	mail-iw0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750988AbZL1X3J convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Dec 2009 18:27:23 -0500
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Mon, 28 Dec 2009 18:29:09 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=pr5ylfF6cMeFR1hvquKi4Re3xOy1421bqmHsYEghDNkeHMX5WNo18WRuS9G9rDC7cy
+         LxiRWmEmD2EosXjscLjhywI+R1au09eMHNf0yzblC1ElfN6E8Bdj0MNO0vpM14y6MKoL
+         ywNg+ZV4XTjbmmBr0FyZ/4zK+x5+xmE2YkQxk=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: [PATCH] drivers/net/usb/rtl8150.c: use %pM to shown MAC address
-Date: Mon, 28 Dec 2009 18:27:27 -0500
-Message-ID: <BD79186B4FD85F4B8E60E381CAEE19090200F4CC@mi8nycmail19.Mi8.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] drivers/net/usb/rtl8150.c: use %pM to shown MAC address
-Thread-Index: AcqIFVFiMy2nL7NbTbWZW1TNDNvpiw==
-From: "H Hartley Sweeten" <hartleys@visionengravers.com>
-To: <linux-kernel@vger.kernel.org>, <netdev@vger.kernel.org>
-Cc: "David Miller" <davem@davemloft.net>
-X-OriginalArrivalTime: 28 Dec 2009 23:27:21.0462 (UTC) FILETIME=[4DCF9160:01CA8815]
+In-Reply-To: <20091228153236.GB10490@hack>
+References: <b3657a100912280659oda68e2o73527ec58b35075b@mail.gmail.com>
+	 <b3657a100912280700h3e8fbb13iba7f0357feff36e3@mail.gmail.com>
+	 <20091228153236.GB10490@hack>
+Date: Tue, 29 Dec 2009 07:29:05 +0800
+Message-ID: <b3657a100912281529t7a21d0c8v14d34c18b5a8207f@mail.gmail.com>
+Subject: Re: [PATCHv3 1/3]posix_acl: add the pointer check into fs/posix_acl.c
+From: liu weni <qingshenlwy@gmail.com>
+To: =?ISO-8859-1?Q?Am=E9rico_Wang?= <xiyou.wangcong@gmail.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       viro <viro@zeniv.linux.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use the %pM kernel extension to display the MAC address.
+Sorry. I forgot diff it again.
 
-Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
-Cc: David S. Miller <davem@davemloft.net>
-
----
-
-diff --git a/drivers/net/usb/rtl8150.c b/drivers/net/usb/rtl8150.c
-index f14d225..dfc7e9f 100644
---- a/drivers/net/usb/rtl8150.c
-+++ b/drivers/net/usb/rtl8150.c
-@@ -313,20 +313,17 @@ static int rtl8150_set_mac_address(struct net_device *netdev, void *p)
- {
- 	struct sockaddr *addr = p;
- 	rtl8150_t *dev = netdev_priv(netdev);
--	int i;
- 
- 	if (netif_running(netdev))
- 		return -EBUSY;
- 
- 	memcpy(netdev->dev_addr, addr->sa_data, netdev->addr_len);
--	dbg("%s: Setting MAC address to ", netdev->name);
--	for (i = 0; i < 5; i++)
--		dbg("%02X:", netdev->dev_addr[i]);
--	dbg("%02X\n", netdev->dev_addr[i]);
-+	dbg("%s: Setting MAC address to %pM\n", netdev->name, netdev->dev_addr);
- 	/* Set the IDR registers. */
- 	set_registers(dev, IDR, netdev->addr_len, netdev->dev_addr);
- #ifdef EEPROM_WRITE
- 	{
-+	int i;
- 	u8 cr;
- 	/* Get the CR contents. */
- 	get_registers(dev, CR, 1, &cr); 
+2009/12/28 Américo Wang <xiyou.wangcong@gmail.com>:
+> On Mon, Dec 28, 2009 at 11:00:58PM +0800, liu weni wrote:
+>>If the acl pointer is NULL or have some error, the acl is invalid.
+>>The Macro of FOREACH_ACL_ENTRY will make some error.
+>>
+>>---
+>>Signed-off-by: Liuwenyi <qingshenlwy@gmail.com>
+>>Cc: Alexander Viro <viro@zeniv.linux.org.uk>
+>>Cc: linux-fsdevel@vger.kernel.org
+>>Cc: linux-kernel@vger.kernel.org
+>>
+>>---
+>>diff --git a/fs/posix_acl.c b/fs/posix_acl.c
+>>index 39df95a..45f8afa 100644
+>>--- a/fs/posix_acl.c
+>>+++ b/fs/posix_acl.c
+>>@@ -76,6 +76,12 @@ posix_acl_valid(const struct posix_acl *acl)
+>>       unsigned int id = 0;  /* keep gcc happy */
+>>       int needs_mask = 0;
+>>
+>>+      if (!acl)
+>>+              return -EINVAL;
+>>+
+>>+      if (IS_ERR)
+>
+> Did you even do a compile test?
+> I don't think this line will work...
+>
+>
+>>+              return PTR_ERR(acl);
+>>+
+>>       FOREACH_ACL_ENTRY(pa, acl, pe) {
+>>               if (pa->e_perm & ~(ACL_READ|ACL_WRITE|ACL_EXECUTE))
+>>                       return -EINVAL;
+>>--
+>>To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>>the body of a message to majordomo@vger.kernel.org
+>>More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>>Please read the FAQ at  http://www.tux.org/lkml/
+>
+> --
+> Live like a child, think like the god.
+>
+>
