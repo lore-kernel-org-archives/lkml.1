@@ -1,196 +1,160 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751131AbZL1BVz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751258AbZL1BWB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751131AbZL1BVz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Dec 2009 20:21:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750913AbZL1BVy
+	id S1751258AbZL1BWB (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Dec 2009 20:22:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751192AbZL1BV7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Dec 2009 20:21:54 -0500
-Received: from mail-yx0-f187.google.com ([209.85.210.187]:59251 "EHLO
-	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750823AbZL1BVx (ORCPT
+	Sun, 27 Dec 2009 20:21:59 -0500
+Received: from mail-yw0-f176.google.com ([209.85.211.176]:62990 "EHLO
+	mail-yw0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751145AbZL1BV4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Dec 2009 20:21:53 -0500
+	Sun, 27 Dec 2009 20:21:56 -0500
 From: Nitin Gupta <ngupta@vflare.org>
 To: Hugh Dickins <hugh.dickins@tiscali.co.uk>,
        Pekka Enberg <penberg@cs.helsinki.fi>,
        KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 Cc: Andrew Morton <akpm@linux-foundation.org>,
        linux-kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH 1/2] [mmotm] Add notifiers for various swap events
-Date: Mon, 28 Dec 2009 06:49:59 +0530
-Message-Id: <1261963200-7136-1-git-send-email-ngupta@vflare.org>
+Subject: [PATCH 2/2] [mmotm] ramzswap: add handlers for various swap events
+Date: Mon, 28 Dec 2009 06:50:00 +0530
+Message-Id: <1261963200-7136-2-git-send-email-ngupta@vflare.org>
 X-Mailer: git-send-email 1.6.2.5
+In-Reply-To: <1261963200-7136-1-git-send-email-ngupta@vflare.org>
+References: <1261963200-7136-1-git-send-email-ngupta@vflare.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Events:
- - Swapon
- - Swapoff
- - When a swap slot is freed
-
-This is required for ramzswap module which implements RAM based block
-devices to be used as swap disks. These devices require a notification
-on these events to function properly.
-
-Currently, I'm not sure if any of these event notifiers have any other
-users. However, adding ramzswap specific hooks instead of this generic
-approach resulted in a bad/hacky code.
-
-For SWAP_EVENT_SLOT_FREE, callbacks are made under swap_lock. Currently, this
-is not a problem since ramzswap is the only user and the callback it registers
-can be safely made under this lock. However, if this event finds more users,
-we might have to work on reducing contention on this lock (per-swap lock?).
+In particular, add handler for SWAP_EVENT_SLOT_FREE event.
+The handler frees memory associated with given swap slot,
+eliminating any stale data in corresponding ramzswap device.
 
 Signed-off-by: Nitin Gupta <ngupta@vflare.org>
 ---
- include/linux/swap.h |   12 +++++++++
- mm/swapfile.c        |   67 ++++++++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 79 insertions(+), 0 deletions(-)
+ drivers/staging/ramzswap/ramzswap_drv.c   |   69 +++++++++++++++++++++++++++++
+ drivers/staging/ramzswap/ramzswap_drv.h   |    1 +
+ drivers/staging/ramzswap/ramzswap_ioctl.h |    1 +
+ 3 files changed, 71 insertions(+), 0 deletions(-)
 
-diff --git a/include/linux/swap.h b/include/linux/swap.h
-index a2602a8..5fd2ac7 100644
---- a/include/linux/swap.h
-+++ b/include/linux/swap.h
-@@ -150,6 +150,12 @@ enum {
- 	SWP_SCANNING	= (1 << 8),	/* refcount in scan_swap_map */
- };
+diff --git a/drivers/staging/ramzswap/ramzswap_drv.c b/drivers/staging/ramzswap/ramzswap_drv.c
+index b839f05..1808fdb 100644
+--- a/drivers/staging/ramzswap/ramzswap_drv.c
++++ b/drivers/staging/ramzswap/ramzswap_drv.c
+@@ -276,6 +276,7 @@ void ramzswap_ioctl_get_stats(struct ramzswap *rzs,
+ 	s->failed_reads = rs->failed_reads;
+ 	s->failed_writes = rs->failed_writes;
+ 	s->invalid_io = rs->invalid_io;
++	s->notify_free = rs->notify_free;
+ 	s->pages_zero = rs->pages_zero;
  
-+enum swap_event {
-+	SWAP_EVENT_SWAPON,
-+	SWAP_EVENT_SWAPOFF,
-+	SWAP_EVENT_SLOT_FREE,
+ 	s->good_compress_pct = good_compress_perc;
+@@ -1366,6 +1367,60 @@ static void destroy_device(struct ramzswap *rzs)
+ 	if (rzs->queue)
+ 		blk_cleanup_queue(rzs->queue);
+ }
++static int ramzswap_slot_free_notify(struct notifier_block *self,
++			unsigned long index, void *swap_file)
++{
++	struct ramzswap *rzs;
++
++	rzs = ((struct file *)swap_file)->private_data;
++	ramzswap_free_page(rzs, index);
++	stat_inc(rzs->stats.notify_free);
++	return 0;
++}
++
++static struct notifier_block ramzswap_slot_free_nb = {
++	.notifier_call = ramzswap_slot_free_notify
 +};
 +
- #define SWAP_CLUSTER_MAX 32
- 
- #define SWAP_MAP_MAX	0x3e	/* Max duplication count, in first swap_map */
-@@ -180,6 +186,7 @@ struct swap_info_struct {
- 	struct swap_extent *curr_swap_extent;
- 	struct swap_extent first_swap_extent;
- 	struct block_device *bdev;	/* swap device or bdev of swap file */
-+	struct atomic_notifier_head slot_free_notify_list;
- 	struct file *swap_file;		/* seldom referenced */
- 	unsigned int old_block_size;	/* seldom referenced */
- };
-@@ -329,8 +336,13 @@ extern sector_t map_swap_page(struct page *, struct block_device **);
- extern sector_t swapdev_block(int, pgoff_t);
- extern int reuse_swap_page(struct page *);
- extern int try_to_free_swap(struct page *);
-+extern int register_swap_event_notifier(struct notifier_block *nb,
-+			enum swap_event event, unsigned long val);
-+extern int unregister_swap_event_notifier(struct notifier_block *nb,
-+			enum swap_event event, unsigned long val);
- struct backing_dev_info;
- 
++static int ramzswap_swapon_notify(struct notifier_block *self,
++			unsigned long swap_id, void *swap_file)
++{
++	int ret = 0;
++	struct block_device *bdev;
++	struct file *file;
++	struct inode *inode;
++	struct ramzswap *rzs;
 +
- /* linux/mm/thrash.c */
- extern struct mm_struct *swap_token_mm;
- extern void grab_swap_token(struct mm_struct *);
-diff --git a/mm/swapfile.c b/mm/swapfile.c
-index 6c0585b..301905d 100644
---- a/mm/swapfile.c
-+++ b/mm/swapfile.c
-@@ -57,6 +57,9 @@ static struct swap_list_t swap_list = {-1, -1};
- static struct swap_info_struct *swap_info[MAX_SWAPFILES];
- 
- static DEFINE_MUTEX(swapon_mutex);
-+static BLOCKING_NOTIFIER_HEAD(swapon_notify_list);
-+static BLOCKING_NOTIFIER_HEAD(swapoff_notify_list);
++	/* cache ramzswap struct associated with this swap_file */
++	file = (struct file *)swap_file;
++	inode = file->f_mapping->host;
++	bdev = I_BDEV(inode);
++	rzs = bdev->bd_disk->private_data;
++	file->private_data = rzs;
 +
++	ret = register_swap_event_notifier(&ramzswap_slot_free_nb,
++				SWAP_EVENT_SLOT_FREE, swap_id);
++	if (ret)
++		pr_err("Error registering swap free notifier\n");
++	return ret;
++}
++
++static int ramzswap_swapoff_notify(struct notifier_block *self,
++			unsigned long swap_id, void *swap_file)
++{
++	unregister_swap_event_notifier(&ramzswap_slot_free_nb,
++				SWAP_EVENT_SLOT_FREE, swap_id);
++	return 0;
++}
++
++
++static struct notifier_block ramzswap_swapon_nb = {
++	.notifier_call = ramzswap_swapon_notify
++};
++
++static struct notifier_block ramzswap_swapoff_nb = {
++	.notifier_call = ramzswap_swapoff_notify
++};
  
- static inline unsigned char swap_count(unsigned char ent)
+ static int __init ramzswap_init(void)
  {
-@@ -583,6 +586,8 @@ static unsigned char swap_entry_free(struct swap_info_struct *p,
- 			swap_list.next = p->type;
- 		nr_swap_pages++;
- 		p->inuse_pages--;
-+		atomic_notifier_call_chain(&p->slot_free_notify_list,
-+					offset, p->swap_file);
- 	}
+@@ -1399,6 +1454,20 @@ static int __init ramzswap_init(void)
+ 	for (i = 0; i < num_devices; i++)
+ 		create_device(&devices[i], i);
  
- 	return usage;
-@@ -1609,6 +1614,7 @@ SYSCALL_DEFINE1(swapoff, const char __user *, specialfile)
- 	p->swap_map = NULL;
- 	p->flags = 0;
- 	spin_unlock(&swap_lock);
-+	blocking_notifier_call_chain(&swapoff_notify_list, type, swap_file);
- 	mutex_unlock(&swapon_mutex);
- 	vfree(swap_map);
- 	/* Destroy swap account informatin */
-@@ -2022,7 +2028,9 @@ SYSCALL_DEFINE2(swapon, const char __user *, specialfile, int, swap_flags)
- 		swap_list.head = swap_list.next = type;
- 	else
- 		swap_info[prev]->next = type;
-+	ATOMIC_INIT_NOTIFIER_HEAD(&p->slot_free_notify_list);
- 	spin_unlock(&swap_lock);
-+	blocking_notifier_call_chain(&swapon_notify_list, type, swap_file);
- 	mutex_unlock(&swapon_mutex);
- 	error = 0;
- 	goto out;
-@@ -2446,3 +2454,62 @@ static void free_swap_count_continuations(struct swap_info_struct *si)
- 		}
- 	}
- }
++	ret = register_swap_event_notifier(&ramzswap_swapon_nb,
++				SWAP_EVENT_SWAPON, 0);
++	if (ret) {
++		pr_err("Error registering swapon notifier\n");
++		goto out;
++	}
 +
-+int register_swap_event_notifier(struct notifier_block *nb,
-+				enum swap_event event, unsigned long val)
-+{
-+	switch (event) {
-+	case SWAP_EVENT_SWAPON:
-+		return blocking_notifier_chain_register(
-+					&swapon_notify_list, nb);
-+	case SWAP_EVENT_SWAPOFF:
-+		return blocking_notifier_chain_register(
-+					&swapoff_notify_list, nb);
-+	case SWAP_EVENT_SLOT_FREE:
-+		{
-+		struct swap_info_struct *sis;
++	ret = register_swap_event_notifier(&ramzswap_swapoff_nb,
++				SWAP_EVENT_SWAPOFF, 0);
++	if (ret) {
++		pr_err("Error registering swapoff notifier\n");
++		goto out;
++	}
 +
-+		if (val > nr_swapfiles)
-+			goto out;
-+		sis = swap_info[val];
-+		return atomic_notifier_chain_register(
-+				&sis->slot_free_notify_list, nb);
-+		}
-+	default:
-+		pr_err("Invalid swap event: %d\n", event);
-+	};
-+
-+out:
-+	return -EINVAL;
-+}
-+EXPORT_SYMBOL_GPL(register_swap_event_notifier);
-+
-+int unregister_swap_event_notifier(struct notifier_block *nb,
-+				enum swap_event event, unsigned long val)
-+{
-+	switch (event) {
-+	case SWAP_EVENT_SWAPON:
-+		return blocking_notifier_chain_unregister(
-+					&swapon_notify_list, nb);
-+	case SWAP_EVENT_SWAPOFF:
-+		return blocking_notifier_chain_unregister(
-+					&swapoff_notify_list, nb);
-+	case SWAP_EVENT_SLOT_FREE:
-+		{
-+		struct swap_info_struct *sis;
-+
-+		if (val > nr_swapfiles)
-+			goto out;
-+		sis = swap_info[val];
-+		return atomic_notifier_chain_unregister(
-+				&sis->slot_free_notify_list, nb);
-+		}
-+	default:
-+		pr_err("Invalid swap event: %d\n", event);
-+	};
-+
-+out:
-+	return -EINVAL;
-+}
-+EXPORT_SYMBOL_GPL(unregister_swap_event_notifier);
-+
+ 	return 0;
+ out:
+ 	unregister_blkdev(ramzswap_major, "ramzswap");
+diff --git a/drivers/staging/ramzswap/ramzswap_drv.h b/drivers/staging/ramzswap/ramzswap_drv.h
+index a6ea240..adc841a 100644
+--- a/drivers/staging/ramzswap/ramzswap_drv.h
++++ b/drivers/staging/ramzswap/ramzswap_drv.h
+@@ -124,6 +124,7 @@ struct ramzswap_stats {
+ 	u64 failed_reads;	/* can happen when memory is too low */
+ 	u64 failed_writes;	/* should NEVER! happen */
+ 	u64 invalid_io;		/* non-swap I/O requests */
++	u64 notify_free;	/* no. of swap slot free notifications */
+ 	u32 pages_zero;		/* no. of zero filled pages */
+ 	u32 pages_stored;	/* no. of pages currently stored */
+ 	u32 good_compress;	/* % of pages with compression ratio<=50% */
+diff --git a/drivers/staging/ramzswap/ramzswap_ioctl.h b/drivers/staging/ramzswap/ramzswap_ioctl.h
+index c713a09..ec50416 100644
+--- a/drivers/staging/ramzswap/ramzswap_ioctl.h
++++ b/drivers/staging/ramzswap/ramzswap_ioctl.h
+@@ -27,6 +27,7 @@ struct ramzswap_ioctl_stats {
+ 	u64 failed_reads;	/* can happen when memory is too low */
+ 	u64 failed_writes;	/* should NEVER! happen */
+ 	u64 invalid_io;		/* non-swap I/O requests */
++	u64 notify_free;	/* no. of swap slot free notifications */
+ 	u32 pages_zero;		/* no. of zero filled pages */
+ 	u32 good_compress_pct;	/* no. of pages with compression ratio<=50% */
+ 	u32 pages_expand_pct;	/* no. of incompressible pages */
 -- 
 1.6.2.5
 
