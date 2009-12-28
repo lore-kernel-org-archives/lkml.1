@@ -1,68 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752637AbZL1Xkb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752291AbZL1Xpd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752637AbZL1Xkb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Dec 2009 18:40:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752585AbZL1Xka
+	id S1752291AbZL1Xpd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Dec 2009 18:45:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751947AbZL1Xpc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Dec 2009 18:40:30 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:36295 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751253AbZL1Xk3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Dec 2009 18:40:29 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Volker Lanz <vl@fidra.de>
-Subject: Re: [BISECTED, REGRESSION] Successful resume from suspend but freezes after I/O
-Date: Tue, 29 Dec 2009 00:40:53 +0100
-User-Agent: KMail/1.12.3 (Linux/2.6.33-rc2-tst; KDE/4.3.3; x86_64; ; )
-Cc: Yinghai Lu <yinghai@kernel.org>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu
-References: <200912071856.48125.vl@fidra.de> <200912080213.20502.vl@fidra.de> <200912210955.00086.vl@fidra.de>
-In-Reply-To: <200912210955.00086.vl@fidra.de>
+	Mon, 28 Dec 2009 18:45:32 -0500
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:60999 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751879AbZL1Xpb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Dec 2009 18:45:31 -0500
+Date: Mon, 28 Dec 2009 18:41:56 -0500
+From: "John W. Linville" <linville@tuxdriver.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
+       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Samuel Ortiz <sameo@linux.intel.com>,
+       Holger Schurig <holgerschurig@googlemail.com>
+Subject: Re: linux-next: manual merge of the net tree with the
+	wireless-current tree
+Message-ID: <20091228234155.GD13285@tuxdriver.com>
+References: <20091229095432.f39a887e.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200912290040.53803.rjw@sisk.pl>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091229095432.f39a887e.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 21 December 2009, Volker Lanz wrote:
-> On Tuesday 08 December 2009 02:13:20 Volker Lanz wrote:
-> > On Tuesday 08 December 2009 00:05:11 Yinghai Lu wrote:
-> > > the updated e820 table is the same to the one for 2.6.29...
-> > >
-> > > so could be some other patch cause the problem.
-> > >
-> > > please check if revert
-> > > 2547089ca2db132e307ef68848ba029a8ec2f341
-> > > could help.
-> > 
-> > I reverted to one commit before that, which would be
-> > eaa959df299157e2640fcb3321537501b6afd9e6
-> > if I am not mistaken. I built and booted that kernel and could reproduce
-> >  the freeze with it (TBH this was not surprising to me, because I
-> >  originally pinned down the problem by bisecting the commits and this
-> >  commit is after the one bisecting found. Am I missing a detail here?)
-> > 
-> > But strangely enough the freeze this time produced an oops before it locked
-> > the machine. I couldn't save it to a file but took a picture. The
-> >  screenshot is here:
-> > http://banane.volker-lanz.de/08122009013.jpg
-> > The oops is _not _reproducable. After a reboot with this same kernel, a
-> > suspend/resume cycle and some I/O the machine locks again without showing
-> >  the oops.
-> > 
-> > Volker
-> > 
+On Tue, Dec 29, 2009 at 09:54:32AM +1100, Stephen Rothwell wrote:
+> Hi all,
 > 
-> Any news on this problem? Anything else I can do to help debug the situation? 
-> The prospect of being confined to distros with kernels < 2.6.29 for the next 
-> couple of years on this machine worries me, obviously.
+> Today's linux-next merge of the net tree got a conflict in
+> drivers/net/wireless/libertas/scan.c between commit
+> 659c8e5243caf14564155ad8421404f044dd8031 ("libertas: Remove carrier
+> signaling from the scan code") from the wireless-current tree and commit
+> 602114ae595af6c89eab149cf9f939e3f7ef4a34 ("libertas: add access functions
+> for mesh open/connect status") from the net tree.
+> 
+> I fixed it up (see below) and can carry the fix for a while.
 
-I have created a Bugzilla entry for this bug at
-http://bugzilla.kernel.org/show_bug.cgi?id=14921
+You have the correct fix.  I'll get this resolved in my trees soon.
 
-Please use it for further tracking of this bug.
+Thanks,
 
-Rafael
+John
+-- 
+John W. Linville		Someday the world will need a hero, and you
+linville@tuxdriver.com			might be all we have.  Be ready.
