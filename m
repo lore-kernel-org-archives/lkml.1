@@ -1,125 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751662AbZL1Htb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751631AbZL1Hya@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751662AbZL1Htb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Dec 2009 02:49:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751195AbZL1Hta
+	id S1751631AbZL1Hya (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Dec 2009 02:54:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751214AbZL1Hya
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Dec 2009 02:49:30 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:45107 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751053AbZL1Hta (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Dec 2009 02:49:30 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>, Mel Gorman <mel@csn.ul.ie>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: [PATCH 4/4] memcg: add anon_scan_ratio to memory.stat file
-Cc: kosaki.motohiro@jp.fujitsu.com
-In-Reply-To: <20091228164451.A687.A69D9226@jp.fujitsu.com>
-References: <20091228164451.A687.A69D9226@jp.fujitsu.com>
-Message-Id: <20091228164857.A690.A69D9226@jp.fujitsu.com>
+	Mon, 28 Dec 2009 02:54:30 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:57011 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751167AbZL1Hy3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Dec 2009 02:54:29 -0500
+Date: Mon, 28 Dec 2009 08:54:17 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>, Paul Mackerras <paulus@samba.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH v2 2/5]: trace_event: export HZ in timer's tracepoint
+ format
+Message-ID: <20091228075417.GB20039@elte.hu>
+References: <4B27702F.1080507@cn.fujitsu.com>
+ <20091215142325.GC5833@nowhere>
+ <4B30C2D1.4030006@cn.fujitsu.com>
+ <4B30C3A0.909@cn.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Mon, 28 Dec 2009 16:49:27 +0900 (JST)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B30C3A0.909@cn.fujitsu.com>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-anon_scan_ratio feature doesn't only useful for global VM pressure
-analysis, but it also useful for memcg memroy pressure analysis.
 
-Then, this patch add anon_scan_ratio field to memory.stat file too.
+* Xiao Guangrong <xiaoguangrong@cn.fujitsu.com> wrote:
 
-Instead, following debug statistics was removed. It isn't so user and/or
-developer friendly.
+> Export HZ in timer's tracepoint, we can use it to get
+> TIMER/ITIMER_VIRTUAL/ITIMER_PROF exact latency and it's
+> suggested by Ingo
+> 
+> Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+> ---
+>  include/trace/events/timer.h |    5 ++++-
+>  1 files changed, 4 insertions(+), 1 deletions(-)
+> 
+> diff --git a/include/trace/events/timer.h b/include/trace/events/timer.h
+> index 13ec15a..7749ae5 100644
+> --- a/include/trace/events/timer.h
+> +++ b/include/trace/events/timer.h
+> @@ -74,14 +74,17 @@ TRACE_EVENT(timer_expire_entry,
+>  	TP_STRUCT__entry(
+>  		__field( void *,	timer	)
+>  		__field( unsigned long,	now	)
+> +		__field( int,		hz	)
+>  	),
+>  
+>  	TP_fast_assign(
+>  		__entry->timer		= timer;
+>  		__entry->now		= jiffies;
+> +		__entry->hz		= HZ;
+>  	),
+>  
+> -	TP_printk("timer=%p now=%lu", __entry->timer, __entry->now)
+> +	TP_printk("timer=%p now=%lu HZ=%d", __entry->timer, __entry->now,
+> +		  __entry->hz)
+>  );
 
-	- recent_rotated_anon
-	- recent_rotated_file
-	- recent_scanned_anon
-	- recent_scanned_file
+I think we can do something slightly different and more efficient: just create 
+a new timer event to report the value of HZ.
 
-This removing don't cause ABI issue. because it was enclosed
-CONFIG_DEBUG_VM.
+That way we dont clutter the timer_expire_entry record format with a 
+repetitive HZ field. It's an extra 4 bytes overhead: that has to be written, 
+passed along, copied and thrown away in 99.9999% of the cases - such overhead 
+should be avoided.
 
-Cc: Balbir Singh <balbir@linux.vnet.ibm.com>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
----
- mm/memcontrol.c |   43 +++++++++++++++++++------------------------
- 1 files changed, 19 insertions(+), 24 deletions(-)
+If you created a special timer_params event, which would produce precisely one 
+event when triggered via say a new perf ioctl. I.e. add something like this to 
+perf_event.h:
 
-diff --git a/mm/memcontrol.c b/mm/memcontrol.c
-index 325df12..daa027c 100644
---- a/mm/memcontrol.c
-+++ b/mm/memcontrol.c
-@@ -2950,6 +2950,9 @@ static int mem_control_stat_show(struct cgroup *cont, struct cftype *cft,
- {
- 	struct mem_cgroup *mem_cont = mem_cgroup_from_cont(cont);
- 	struct mcs_total_stat mystat;
-+	struct zone *zone;
-+	unsigned long total_anon = 0;
-+	unsigned long total_scan_anon = 0;
- 	int i;
- 
- 	memset(&mystat, 0, sizeof(mystat));
-@@ -2978,34 +2981,26 @@ static int mem_control_stat_show(struct cgroup *cont, struct cftype *cft,
- 		cb->fill(cb, memcg_stat_strings[i].total_name, mystat.stat[i]);
- 	}
- 
--#ifdef CONFIG_DEBUG_VM
- 	cb->fill(cb, "inactive_ratio", calc_inactive_ratio(mem_cont, NULL));
- 
--	{
--		int nid, zid;
-+	for_each_populated_zone(zone) {
-+		int nid = zone->zone_pgdat->node_id;
-+		int zid = zone_idx(zone);
- 		struct mem_cgroup_per_zone *mz;
--		unsigned long recent_rotated[2] = {0, 0};
--		unsigned long recent_scanned[2] = {0, 0};
--
--		for_each_online_node(nid)
--			for (zid = 0; zid < MAX_NR_ZONES; zid++) {
--				mz = mem_cgroup_zoneinfo(mem_cont, nid, zid);
--
--				recent_rotated[0] +=
--					mz->reclaim_stat.recent_rotated[0];
--				recent_rotated[1] +=
--					mz->reclaim_stat.recent_rotated[1];
--				recent_scanned[0] +=
--					mz->reclaim_stat.recent_scanned[0];
--				recent_scanned[1] +=
--					mz->reclaim_stat.recent_scanned[1];
--			}
--		cb->fill(cb, "recent_rotated_anon", recent_rotated[0]);
--		cb->fill(cb, "recent_rotated_file", recent_rotated[1]);
--		cb->fill(cb, "recent_scanned_anon", recent_scanned[0]);
--		cb->fill(cb, "recent_scanned_file", recent_scanned[1]);
-+		unsigned long anon;
-+		unsigned long ratio;
-+
-+		mz = mem_cgroup_zoneinfo(mem_cont, nid, zid);
-+
-+		anon = MEM_CGROUP_ZSTAT(mz, LRU_INACTIVE_ANON);
-+		anon += MEM_CGROUP_ZSTAT(mz, LRU_ACTIVE_ANON);
-+
-+		ratio = get_anon_scan_ratio(zone, mem_cont, mem_cont->swappiness);
-+
-+		total_anon += anon;
-+		total_scan_anon += anon * ratio;
- 	}
--#endif
-+	cb->fill(cb, "anon_scan_ratio", total_scan_anon / total_anon);
- 
- 	return 0;
- }
--- 
-1.6.5.2
+  #define PERF_EVENT_IOC_INJECT       _IOW('$', 7, __u64)
 
+and add code to kernel/perf_event.c's perf_ioctl() function that takes that 
+__u64 parameter as an event ID and injects an 'artificial' event.
 
+Such a new feature would be useful for other things as well: backtesting rare 
+events, injecting other types of 'parameter/query events', etc.
 
+There might be more details to this, but it would be a useful scheme IMO - and 
+it would still integrate nicely with the whole ftrace event enumeration scheme 
+so tooling support would be easier.
+
+What do you think?
+
+	Ingo
