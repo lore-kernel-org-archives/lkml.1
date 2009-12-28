@@ -1,71 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751994AbZL1WYh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751790AbZL1WfF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751994AbZL1WYh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Dec 2009 17:24:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751364AbZL1WYg
+	id S1751790AbZL1WfF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Dec 2009 17:35:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751181AbZL1WfB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Dec 2009 17:24:36 -0500
-Received: from exprod6og112.obsmtp.com ([64.18.1.29]:52533 "HELO
-	exprod6og112.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751760AbZL1WYf convert rfc822-to-8bit (ORCPT
+	Mon, 28 Dec 2009 17:35:01 -0500
+Received: from exprod6og101.obsmtp.com ([64.18.1.181]:34579 "HELO
+	exprod6og101.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751253AbZL1WfA convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Dec 2009 17:24:35 -0500
+	Mon, 28 Dec 2009 17:35:00 -0500
 X-MimeOLE: Produced By Microsoft Exchange V6.5
 Content-class: urn:content-classes:message
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7BIT
-Subject: [PATCH] simeth.c: use %pM to shown MAC address
-Date: Mon, 28 Dec 2009 17:24:38 -0500
-Message-ID: <BD79186B4FD85F4B8E60E381CAEE19090200F4B7@mi8nycmail19.Mi8.com>
+Subject: [PATCH] drivers/net/igbvf/netdev.c: use %pM to shown MAC address
+Date: Mon, 28 Dec 2009 17:35:04 -0500
+Message-ID: <BD79186B4FD85F4B8E60E381CAEE19090200F4BE@mi8nycmail19.Mi8.com>
 X-MS-Has-Attach: 
 X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] simeth.c: use %pM to shown MAC address
-Thread-Index: AcqIDIsDzgG3eFPvSg2XPg7b+y6/WQ==
+Thread-Topic: [PATCH] drivers/net/igbvf/netdev.c: use %pM to shown MAC address
+Thread-Index: AcqIDgADJmwYYClcSOuat37sXEDd5w==
 From: "H Hartley Sweeten" <hartleys@visionengravers.com>
-To: <linux-kernel@vger.kernel.org>, <linux-ia64@vger.kernel.org>
+To: <linux-kernel@vger.kernel.org>, <netdev@vger.kernel.org>
 Cc: "David Miller" <davem@davemloft.net>
-X-OriginalArrivalTime: 28 Dec 2009 22:24:33.0854 (UTC) FILETIME=[882435E0:01CA880C]
+X-OriginalArrivalTime: 28 Dec 2009 22:34:58.0858 (UTC) FILETIME=[FCAC40A0:01CA880D]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use the %pM kernel extension to display the HwAddr.
-
-The only difference in the output is that the MAC address is
-shown in the usual colon-separated hex notation instead of
-space-separated.
+Use the %pM kernel extension to display the MAC address.
 
 Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
 Cc: David S. Miller <davem@davemloft.net>
 
 ---
 
-diff --git a/arch/ia64/hp/sim/simeth.c b/arch/ia64/hp/sim/simeth.c
-index 7e81966..3489b0d 100644
---- a/arch/ia64/hp/sim/simeth.c
-+++ b/arch/ia64/hp/sim/simeth.c
-@@ -193,7 +193,7 @@ simeth_probe1(void)
- 	unsigned char mac_addr[ETH_ALEN];
- 	struct simeth_local *local;
- 	struct net_device *dev;
--	int fd, i, err, rc;
-+	int fd, err, rc;
+diff --git a/drivers/net/igbvf/netdev.c b/drivers/net/igbvf/netdev.c
+index e9dd95f..1326232 100644
+--- a/drivers/net/igbvf/netdev.c
++++ b/drivers/net/igbvf/netdev.c
+@@ -2608,11 +2608,7 @@ static void igbvf_print_device_info(struct igbvf_adapter *adapter)
+ 	struct pci_dev *pdev = adapter->pdev;
  
- 	/*
- 	 * XXX Fix me
-@@ -236,12 +236,8 @@ simeth_probe1(void)
- 	 */
- 	netdev_connect(dev->irq);
+ 	dev_info(&pdev->dev, "Intel(R) 82576 Virtual Function\n");
+-	dev_info(&pdev->dev, "Address: %02x:%02x:%02x:%02x:%02x:%02x\n",
+-	         /* MAC address */
+-	         netdev->dev_addr[0], netdev->dev_addr[1],
+-	         netdev->dev_addr[2], netdev->dev_addr[3],
+-	         netdev->dev_addr[4], netdev->dev_addr[5]);
++	dev_info(&pdev->dev, "Address: %pM\n", netdev->dev_addr);
+ 	dev_info(&pdev->dev, "MAC: %d\n", hw->mac.type);
+ }
  
--	printk(KERN_INFO "%s: hosteth=%s simfd=%d, HwAddr",
--	       dev->name, simeth_device, local->simfd);
--	for(i = 0; i < ETH_ALEN; i++) {
--		printk(" %2.2x", dev->dev_addr[i]);
--	}
--	printk(", IRQ %d\n", dev->irq);
-+	printk(KERN_INFO "%s: hosteth=%s simfd=%d, HwAddr %pM, IRQ %d\n",
-+	       dev->name, simeth_device, local->simfd, dev->dev_addr, dev->irq);
+@@ -2777,11 +2773,8 @@ static int __devinit igbvf_probe(struct pci_dev *pdev,
+ 	memcpy(netdev->perm_addr, adapter->hw.mac.addr, netdev->addr_len);
  
- 	return 0;
- } 
+ 	if (!is_valid_ether_addr(netdev->perm_addr)) {
+-		dev_err(&pdev->dev, "Invalid MAC Address: "
+-		        "%02x:%02x:%02x:%02x:%02x:%02x\n",
+-		        netdev->dev_addr[0], netdev->dev_addr[1],
+-		        netdev->dev_addr[2], netdev->dev_addr[3],
+-		        netdev->dev_addr[4], netdev->dev_addr[5]);
++		dev_err(&pdev->dev, "Invalid MAC Address: %pM\n",
++		        netdev->dev_addr);
+ 		err = -EIO;
+ 		goto err_hw_init;
+ 	} 
