@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752337AbZL1WEu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752199AbZL1WCs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752337AbZL1WEu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Dec 2009 17:04:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752527AbZL1WEq
+	id S1752199AbZL1WCs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Dec 2009 17:02:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752161AbZL1WCo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Dec 2009 17:04:46 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:60134 "EHLO
+	Mon, 28 Dec 2009 17:02:44 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:61514 "EHLO
 	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752143AbZL1WCm (ORCPT
+	with ESMTP id S1752156AbZL1WCn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Dec 2009 17:02:42 -0500
+	Mon, 28 Dec 2009 17:02:43 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=d+R+QJ0FQzTPMxPg5TDGlSeBc0x/hAGXkK++uLExK56q2BEa1phy4ooHJFcS8xCHmK
-         riahfQXISvoW0iJCOygbn+0NIA2jLyv14NV/7m4fSfiEAomRolH4D1Il+IxK6g9uQGDV
-         AMIMGKJW0tgdkd3aPZBpH3GRn65YhsOLRBRsM=
+        b=n78Uioo3V6/XgPyPzEmlO4P7qLXzADSZxqi0XpgAejgBvGquj2aPWySjVlU0orKqXt
+         Il1OHtDIimVGK4kJWnN0lXd3Lkixszjn5SgrEJM3ZHle6ul3DX/dJ4nJxRQFpSjcqn55
+         aPmwjRPMZnlfQhnsD+xBTR2XZzwyTHW4k0qko=
 From: Johan Hovold <jhovold@gmail.com>
 To: Greg Kroah-Hartman <gregkh@suse.de>
 Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Johan Hovold <jhovold@gmail.com>, Lonnie Mendez <dignome@gmail.com>
-Subject: [PATCH 05/14] USB: cypress_m8: fix endianess bug
-Date: Mon, 28 Dec 2009 23:01:49 +0100
-Message-Id: <1262037718-31424-6-git-send-email-jhovold@gmail.com>
+       Johan Hovold <jhovold@gmail.com>
+Subject: [PATCH 06/14] USB: io_ti: fix DMA buffers on stack
+Date: Mon, 28 Dec 2009 23:01:50 +0100
+Message-Id: <1262037718-31424-7-git-send-email-jhovold@gmail.com>
 X-Mailer: git-send-email 1.6.6
 In-Reply-To: <1262037718-31424-1-git-send-email-jhovold@gmail.com>
 References: <1262037718-31424-1-git-send-email-jhovold@gmail.com>
@@ -30,34 +30,170 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Cc: Lonnie Mendez <dignome@gmail.com>
+
 Signed-off-by: Johan Hovold <jhovold@gmail.com>
 ---
- drivers/usb/serial/cypress_m8.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/usb/serial/io_ti.c |   66 ++++++++++++++++++++++++++++++++------------
+ 1 files changed, 48 insertions(+), 18 deletions(-)
 
-diff --git a/drivers/usb/serial/cypress_m8.c b/drivers/usb/serial/cypress_m8.c
-index 478983f..b34c812 100644
---- a/drivers/usb/serial/cypress_m8.c
-+++ b/drivers/usb/serial/cypress_m8.c
-@@ -379,7 +379,7 @@ static int cypress_serial_control(struct tty_struct *tty,
- 					__func__, new_baudrate);
+diff --git a/drivers/usb/serial/io_ti.c b/drivers/usb/serial/io_ti.c
+index d4cc0f7..1691f07 100644
+--- a/drivers/usb/serial/io_ti.c
++++ b/drivers/usb/serial/io_ti.c
+@@ -413,11 +413,18 @@ static int write_boot_mem(struct edgeport_serial *serial,
+ {
+ 	int status = 0;
+ 	int i;
+-	__u8 temp;
++	u8 *temp;
  
- 		/* fill the feature_buffer with new configuration */
--		*((u_int32_t *)feature_buffer) = new_baudrate;
-+		*((u32 *)feature_buffer) = cpu_to_le32(new_baudrate);
- 		feature_buffer[4] |= data_bits;   /* assign data bits in 2 bit space ( max 3 ) */
- 		/* 1 bit gap */
- 		feature_buffer[4] |= (stop_bits << 3);   /* assign stop bits in 1 bit space */
-@@ -456,7 +456,7 @@ static int cypress_serial_control(struct tty_struct *tty,
- 			/* store the config in one byte, and later
- 			   use bit masks to check values */
- 			priv->current_config = feature_buffer[4];
--			priv->baud_rate = *((u_int32_t *)feature_buffer);
-+			priv->baud_rate = le32_to_cpup((u32 *)feature_buffer);
- 			spin_unlock_irqrestore(&priv->lock, flags);
- 		}
+ 	/* Must do a read before write */
+ 	if (!serial->TiReadI2C) {
+-		status = read_boot_mem(serial, 0, 1, &temp);
++		temp = kmalloc(1, GFP_KERNEL);
++		if (!temp) {
++			dev_err(&serial->serial->dev->dev,
++					"%s - out of memory\n", __func__);
++			return -ENOMEM;
++		}
++		status = read_boot_mem(serial, 0, 1, temp);
++		kfree(temp);
+ 		if (status)
+ 			return status;
  	}
+@@ -935,37 +942,47 @@ static int build_i2c_fw_hdr(__u8 *header, struct device *dev)
+ static int i2c_type_bootmode(struct edgeport_serial *serial)
+ {
+ 	int status;
+-	__u8 data;
++	u8 *data;
++
++	data = kmalloc(1, GFP_KERNEL);
++	if (!data) {
++		dev_err(&serial->serial->dev->dev,
++				"%s - out of memory\n", __func__);
++		return -ENOMEM;
++	}
+ 
+ 	/* Try to read type 2 */
+ 	status = ti_vread_sync(serial->serial->dev, UMPC_MEMORY_READ,
+-				DTK_ADDR_SPACE_I2C_TYPE_II, 0, &data, 0x01);
++				DTK_ADDR_SPACE_I2C_TYPE_II, 0, data, 0x01);
+ 	if (status)
+ 		dbg("%s - read 2 status error = %d", __func__, status);
+ 	else
+-		dbg("%s - read 2 data = 0x%x", __func__, data);
+-	if ((!status) && (data == UMP5152 || data == UMP3410)) {
++		dbg("%s - read 2 data = 0x%x", __func__, *data);
++	if ((!status) && (*data == UMP5152 || *data == UMP3410)) {
+ 		dbg("%s - ROM_TYPE_II", __func__);
+ 		serial->TI_I2C_Type = DTK_ADDR_SPACE_I2C_TYPE_II;
+-		return 0;
++		goto out;
+ 	}
+ 
+ 	/* Try to read type 3 */
+ 	status = ti_vread_sync(serial->serial->dev, UMPC_MEMORY_READ,
+-				DTK_ADDR_SPACE_I2C_TYPE_III, 0,	&data, 0x01);
++				DTK_ADDR_SPACE_I2C_TYPE_III, 0,	data, 0x01);
+ 	if (status)
+ 		dbg("%s - read 3 status error = %d", __func__, status);
+ 	else
+-		dbg("%s - read 2 data = 0x%x", __func__, data);
+-	if ((!status) && (data == UMP5152 || data == UMP3410)) {
++		dbg("%s - read 2 data = 0x%x", __func__, *data);
++	if ((!status) && (*data == UMP5152 || *data == UMP3410)) {
+ 		dbg("%s - ROM_TYPE_III", __func__);
+ 		serial->TI_I2C_Type = DTK_ADDR_SPACE_I2C_TYPE_III;
+-		return 0;
++		goto out;
+ 	}
+ 
+ 	dbg("%s - Unknown", __func__);
+ 	serial->TI_I2C_Type = DTK_ADDR_SPACE_I2C_TYPE_II;
+-	return -ENODEV;
++	status = -ENODEV;
++out:
++	kfree(data);
++	return status;
+ }
+ 
+ static int bulk_xfer(struct usb_serial *serial, void *buffer,
+@@ -1113,7 +1130,7 @@ static int download_fw(struct edgeport_serial *serial)
+ 				I2C_DESC_TYPE_FIRMWARE_BASIC, rom_desc);
+ 		if (start_address != 0) {
+ 			struct ti_i2c_firmware_rec *firmware_version;
+-			__u8 record;
++			u8 *record;
+ 
+ 			dbg("%s - Found Type FIRMWARE (Type 2) record",
+ 								__func__);
+@@ -1165,6 +1182,15 @@ static int download_fw(struct edgeport_serial *serial)
+ 				    OperationalMajorVersion,
+ 				    OperationalMinorVersion);
+ 
++				record = kmalloc(1, GFP_KERNEL);
++				if (!record) {
++					dev_err(dev, "%s - out of memory.\n",
++							__func__);
++					kfree(firmware_version);
++					kfree(rom_desc);
++					kfree(ti_manuf_desc);
++					return -ENOMEM;
++				}
+ 				/* In order to update the I2C firmware we must
+ 				 * change the type 2 record to type 0xF2. This
+ 				 * will force the UMP to come up in Boot Mode.
+@@ -1177,13 +1203,14 @@ static int download_fw(struct edgeport_serial *serial)
+ 				 * firmware will update the record type from
+ 				 * 0xf2 to 0x02.
+ 				 */
+-				record = I2C_DESC_TYPE_FIRMWARE_BLANK;
++				*record = I2C_DESC_TYPE_FIRMWARE_BLANK;
+ 
+ 				/* Change the I2C Firmware record type to
+ 				   0xf2 to trigger an update */
+ 				status = write_rom(serial, start_address,
+-						sizeof(record),	&record);
++						sizeof(*record), record);
+ 				if (status) {
++					kfree(record);
+ 					kfree(firmware_version);
+ 					kfree(rom_desc);
+ 					kfree(ti_manuf_desc);
+@@ -1196,19 +1223,21 @@ static int download_fw(struct edgeport_serial *serial)
+ 				 */
+ 				status = read_rom(serial,
+ 							start_address,
+-							sizeof(record),
+-							&record);
++							sizeof(*record),
++							record);
+ 				if (status) {
++					kfree(record);
+ 					kfree(firmware_version);
+ 					kfree(rom_desc);
+ 					kfree(ti_manuf_desc);
+ 					return status;
+ 				}
+ 
+-				if (record != I2C_DESC_TYPE_FIRMWARE_BLANK) {
++				if (*record != I2C_DESC_TYPE_FIRMWARE_BLANK) {
+ 					dev_err(dev,
+ 						"%s - error resetting device\n",
+ 						__func__);
++					kfree(record);
+ 					kfree(firmware_version);
+ 					kfree(rom_desc);
+ 					kfree(ti_manuf_desc);
+@@ -1226,6 +1255,7 @@ static int download_fw(struct edgeport_serial *serial)
+ 						__func__, status);
+ 
+ 				/* return an error on purpose. */
++				kfree(record);
+ 				kfree(firmware_version);
+ 				kfree(rom_desc);
+ 				kfree(ti_manuf_desc);
 -- 
 1.6.6
 
