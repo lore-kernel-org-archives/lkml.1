@@ -1,97 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751103AbZL1Hr1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751222AbZL1HsM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751103AbZL1Hr1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Dec 2009 02:47:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750858AbZL1Hr0
+	id S1751222AbZL1HsM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Dec 2009 02:48:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750962AbZL1HsL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Dec 2009 02:47:26 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:42336 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750794AbZL1HrZ (ORCPT
+	Mon, 28 Dec 2009 02:48:11 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:37009 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750858AbZL1HsK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Dec 2009 02:47:25 -0500
+	Mon, 28 Dec 2009 02:48:10 -0500
 X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
 From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 To: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
        Andrew Morton <akpm@linux-foundation.org>,
        Balbir Singh <balbir@linux.vnet.ibm.com>, Mel Gorman <mel@csn.ul.ie>,
        KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: [PATCH 1/4] vmstat: remove zone->lock from walk_zones_in_node
+Subject: [PATCH 2/4] vmscan: get_scan_ratio cleanup
 Cc: kosaki.motohiro@jp.fujitsu.com
-Message-Id: <20091228164451.A687.A69D9226@jp.fujitsu.com>
+In-Reply-To: <20091228164451.A687.A69D9226@jp.fujitsu.com>
+References: <20091228164451.A687.A69D9226@jp.fujitsu.com>
+Message-Id: <20091228164733.A68A.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
 X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Mon, 28 Dec 2009 16:47:22 +0900 (JST)
+Date: Mon, 28 Dec 2009 16:48:06 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The zone->lock is one of performance critical locks. Then, it shouldn't
-be hold for long time. Currently, we have four walk_zones_in_node()
-usage and almost use-case don't need to hold zone->lock.
+The get_scan_ratio() should have all scan-ratio related calculations.
+Thus, this patch move some calculation into get_scan_ratio.
 
-Thus, this patch move locking responsibility from walk_zones_in_node
-to its sub function. Also this patch kill unnecessary zone->lock taking.
-
-Cc: Mel Gorman <mel@csn.ul.ie>
 Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 ---
- mm/vmstat.c |    8 +++++---
- 1 files changed, 5 insertions(+), 3 deletions(-)
+ mm/vmscan.c |   23 ++++++++++++++---------
+ 1 files changed, 14 insertions(+), 9 deletions(-)
 
-diff --git a/mm/vmstat.c b/mm/vmstat.c
-index 6051fba..a5d45bc 100644
---- a/mm/vmstat.c
-+++ b/mm/vmstat.c
-@@ -418,15 +418,12 @@ static void walk_zones_in_node(struct seq_file *m, pg_data_t *pgdat,
- {
- 	struct zone *zone;
- 	struct zone *node_zones = pgdat->node_zones;
--	unsigned long flags;
+diff --git a/mm/vmscan.c b/mm/vmscan.c
+index 2bbee91..640486b 100644
+--- a/mm/vmscan.c
++++ b/mm/vmscan.c
+@@ -1501,6 +1501,13 @@ static void get_scan_ratio(struct zone *zone, struct scan_control *sc,
+ 	unsigned long ap, fp;
+ 	struct zone_reclaim_stat *reclaim_stat = get_reclaim_stat(zone, sc);
  
- 	for (zone = node_zones; zone - node_zones < MAX_NR_ZONES; ++zone) {
- 		if (!populated_zone(zone))
- 			continue;
- 
--		spin_lock_irqsave(&zone->lock, flags);
- 		print(m, pgdat, zone);
--		spin_unlock_irqrestore(&zone->lock, flags);
- 	}
- }
- 
-@@ -455,6 +452,7 @@ static void pagetypeinfo_showfree_print(struct seq_file *m,
- 					pg_data_t *pgdat, struct zone *zone)
- {
- 	int order, mtype;
-+	unsigned long flags;
- 
- 	for (mtype = 0; mtype < MIGRATE_TYPES; mtype++) {
- 		seq_printf(m, "Node %4d, zone %8s, type %12s ",
-@@ -468,8 +466,11 @@ static void pagetypeinfo_showfree_print(struct seq_file *m,
- 
- 			area = &(zone->free_area[order]);
- 
-+			spin_lock_irqsave(&zone->lock, flags);
- 			list_for_each(curr, &area->free_list[mtype])
- 				freecount++;
-+			spin_unlock_irqrestore(&zone->lock, flags);
++	/* If we have no swap space, do not bother scanning anon pages. */
++	if (!sc->may_swap || (nr_swap_pages <= 0)) {
++		percent[0] = 0;
++		percent[1] = 100;
++		return;
++	}
 +
- 			seq_printf(m, "%6lu ", freecount);
+ 	anon  = zone_nr_lru_pages(zone, sc, LRU_ACTIVE_ANON) +
+ 		zone_nr_lru_pages(zone, sc, LRU_INACTIVE_ANON);
+ 	file  = zone_nr_lru_pages(zone, sc, LRU_ACTIVE_FILE) +
+@@ -1598,22 +1605,20 @@ static void shrink_zone(int priority, struct zone *zone,
+ 	unsigned long nr_reclaimed = sc->nr_reclaimed;
+ 	unsigned long nr_to_reclaim = sc->nr_to_reclaim;
+ 	struct zone_reclaim_stat *reclaim_stat = get_reclaim_stat(zone, sc);
+-	int noswap = 0;
+ 
+-	/* If we have no swap space, do not bother scanning anon pages. */
+-	if (!sc->may_swap || (nr_swap_pages <= 0)) {
+-		noswap = 1;
+-		percent[0] = 0;
+-		percent[1] = 100;
+-	} else
+-		get_scan_ratio(zone, sc, percent);
++	get_scan_ratio(zone, sc, percent);
+ 
+ 	for_each_evictable_lru(l) {
+ 		int file = is_file_lru(l);
+ 		unsigned long scan;
+ 
++		if (percent[file] == 0) {
++			nr[l] = 0;
++			continue;
++		}
++
+ 		scan = zone_nr_lru_pages(zone, sc, l);
+-		if (priority || noswap) {
++		if (priority) {
+ 			scan >>= priority;
+ 			scan = (scan * percent[file]) / 100;
  		}
- 		seq_putc(m, '\n');
-@@ -709,6 +710,7 @@ static void zoneinfo_show_print(struct seq_file *m, pg_data_t *pgdat,
- 							struct zone *zone)
- {
- 	int i;
-+
- 	seq_printf(m, "Node %d, zone %8s", pgdat->node_id, zone->name);
- 	seq_printf(m,
- 		   "\n  pages free     %lu"
 -- 
 1.6.5.2
-
 
 
 
