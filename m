@@ -1,68 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751492AbZL1ERi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751564AbZL1Es7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751492AbZL1ERi (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 27 Dec 2009 23:17:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751141AbZL1ERh
+	id S1751564AbZL1Es7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 27 Dec 2009 23:48:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751297AbZL1Es7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 27 Dec 2009 23:17:37 -0500
-Received: from e28smtp01.in.ibm.com ([122.248.162.1]:60195 "EHLO
-	e28smtp01.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751111AbZL1ERh (ORCPT
+	Sun, 27 Dec 2009 23:48:59 -0500
+Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:37784 "EHLO
+	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751113AbZL1Es6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 27 Dec 2009 23:17:37 -0500
-Date: Mon, 28 Dec 2009 09:47:31 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Rik van Riel <riel@redhat.com>
-Cc: Minchan Kim <minchan.kim@gmail.com>,
+	Sun, 27 Dec 2009 23:48:58 -0500
+Date: Mon, 28 Dec 2009 13:42:45 +0900
+From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+To: "Kirill A. Shutemov" <kirill@shutemov.name>
+Cc: containers@lists.linux-foundation.org, linux-mm@kvack.org,
+       Paul Menage <menage@google.com>, Li Zefan <lizf@cn.fujitsu.com>,
        Andrew Morton <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [PATCH -mmotm-2009-12-10-17-19] Prevent churning of zero page in
- LRU list.
-Message-ID: <20091228041731.GI3601@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <20091228115315.76b1ecd0.minchan.kim@barrios-desktop>
- <4B38246C.3020209@redhat.com>
- <20091228035639.GG3601@balbir.in.ibm.com>
- <20091228035738.GH3601@balbir.in.ibm.com>
- <4B383017.4070308@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <4B383017.4070308@redhat.com>
-User-Agent: Mutt/1.5.20 (2009-08-17)
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Pavel Emelyanov <xemul@openvz.org>, Dan Malek <dan@embeddedalley.com>,
+       Vladislav Buzov <vbuzov@embeddedalley.com>,
+       Alexander Shishkin <virtuoso@slind.org>, linux-kernel@vger.kernel.org,
+       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Subject: Re: [PATCH v4 4/4] memcg: implement memory thresholds
+Message-Id: <20091228134245.8db992d1.nishimura@mxp.nes.nec.co.jp>
+In-Reply-To: <7a4e1d758b98ca633a0be06e883644ad8813c077.1261858972.git.kirill@shutemov.name>
+References: <cover.1261858972.git.kirill@shutemov.name>
+	<3f29ccc3c93e2defd70fc1c4ca8c133908b70b0b.1261858972.git.kirill@shutemov.name>
+	<59a7f92356bf1508f06d12c501a7aa4feffb1bbc.1261858972.git.kirill@shutemov.name>
+	<c2379f3965225b6d62e64c64f8c0e67fee085d7f.1261858972.git.kirill@shutemov.name>
+	<7a4e1d758b98ca633a0be06e883644ad8813c077.1261858972.git.kirill@shutemov.name>
+Organization: NEC Soft, Ltd.
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Rik van Riel <riel@redhat.com> [2009-12-27 23:12:07]:
-
-> On 12/27/2009 10:57 PM, Balbir Singh wrote:
-> >* Balbir Singh<balbir@linux.vnet.ibm.com>  [2009-12-28 09:26:39]:
-> >
-> >>* Rik van Riel<riel@redhat.com>  [2009-12-27 22:22:20]:
-> >>
-> >>>On 12/27/2009 09:53 PM, Minchan Kim wrote:
-> >>>>
-> >>>>VM doesn't add zero page to LRU list.
->      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+On Sun, 27 Dec 2009 04:09:02 +0200, "Kirill A. Shutemov" <kirill@shutemov.name> wrote:
+> It allows to register multiple memory and memsw thresholds and gets
+> notifications when it crosses.
 > 
-> >>Frequent moving of zero page should ideally put it to the head of the
-> >>LRU list, leaving it untouched is likely to cause it to be scanned
-> >>often - no? Should this be moved to the unevictable list?
-> >>
-> >
-> >Sorry, I replied to wrong email, I should have been clearer that this
-> >question is for Minchan Kim.
+> To register a threshold application need:
+> - create an eventfd;
+> - open memory.usage_in_bytes or memory.memsw.usage_in_bytes;
+> - write string like "<event_fd> <memory.usage_in_bytes> <threshold>" to
+>   cgroup.event_control.
 > 
-> The answer to your question is all the way up in
-> Minchan Kim's original email.
+> Application will be notified through eventfd when memory usage crosses
+> threshold in any direction.
 > 
-> The zero page is never on the LRU lists to begin with.
->
+> It's applicable for root and non-root cgroup.
+> 
+> It uses stats to track memory usage, simmilar to soft limits. It checks
+> if we need to send event to userspace on every 100 page in/out. I guess
+> it's good compromise between performance and accuracy of thresholds.
+> 
+> Signed-off-by: Kirill A. Shutemov <kirill@shutemov.name>
+> ---
+>  Documentation/cgroups/memory.txt |   19 +++-
+>  mm/memcontrol.c                  |  275 ++++++++++++++++++++++++++++++++++++++
+>  2 files changed, 293 insertions(+), 1 deletions(-)
+> 
+> diff --git a/Documentation/cgroups/memory.txt b/Documentation/cgroups/memory.txt
+> index b871f25..195af07 100644
+> --- a/Documentation/cgroups/memory.txt
+> +++ b/Documentation/cgroups/memory.txt
+> @@ -414,7 +414,24 @@ NOTE1: Soft limits take effect over a long period of time, since they involve
+>  NOTE2: It is recommended to set the soft limit always below the hard limit,
+>         otherwise the hard limit will take precedence.
+>  
+> -8. TODO
+> +8. Memory thresholds
+> +
+> +Memory controler implements memory thresholds using cgroups notification
+> +API (see cgroups.txt). It allows to register multiple memory and memsw
+> +thresholds and gets notifications when it crosses.
+> +
+> +To register a threshold application need:
+> + - create an eventfd using eventfd(2);
+> + - open memory.usage_in_bytes or memory.memsw.usage_in_bytes;
+> + - write string like "<event_fd> <memory.usage_in_bytes> <threshold>" to
+> +   cgroup.event_control.
+> +
+> +Application will be notified through eventfd when memory usage crosses
+> +threshold in any direction.
+> +
+> +It's applicable for root and non-root cgroup.
+> +
+> +9. TODO
+>  
+>  1. Add support for accounting huge pages (as a separate controller)
+>  2. Make per-cgroup scanner reclaim not-shared pages first
+> diff --git a/mm/memcontrol.c b/mm/memcontrol.c
+> index 36eb7af..3a0a6a1 100644
+> --- a/mm/memcontrol.c
+> +++ b/mm/memcontrol.c
+It would be a nitpick, but my patch(http://marc.info/?l=linux-mm-commits&m=126152804420992&w=2)
+has already modified here.
 
-Aahh.. my bad... I should have looked at it more closely! 
+I think it might be better for you to apply my patches by hand or wait for next mmotm
+to be released to avoid bothering Andrew.
+(There is enough time left till the next merge window :))
 
--- 
-	Balbir
+(snip)
+
+> +static void __mem_cgroup_threshold(struct mem_cgroup *memcg, bool swap)
+> +{
+> +	struct mem_cgroup_threshold_ary *thresholds;
+> +	u64 usage = mem_cgroup_usage(memcg, swap);
+> +	int i, cur;
+> +
+I think calling mem_cgroup_usage() after checking "if(!thresholds)"
+decreases the overhead a little when we don't set any thresholds.
+I've confirmed that the change makes the assembler output different.
+
+> +	rcu_read_lock();
+> +	if (!swap) {
+> +		thresholds = rcu_dereference(memcg->thresholds);
+> +	} else {
+> +		thresholds = rcu_dereference(memcg->memsw_thresholds);
+> +	}
+> +
+> +	if (!thresholds)
+> +		goto unlock;
+> +
+> +	cur = atomic_read(&thresholds->cur);
+> +
+> +	/* Check if a threshold crossed in any direction */
+> +
+> +	for(i = cur; i >= 0 &&
+> +		unlikely(thresholds->entries[i].threshold > usage); i--) {
+> +		atomic_dec(&thresholds->cur);
+> +		eventfd_signal(thresholds->entries[i].eventfd, 1);
+> +	}
+> +
+> +	for(i = cur + 1; i < thresholds->size &&
+> +		unlikely(thresholds->entries[i].threshold <= usage); i++) {
+> +		atomic_inc(&thresholds->cur);
+> +		eventfd_signal(thresholds->entries[i].eventfd, 1);
+> +	}
+> +unlock:
+> +	rcu_read_unlock();
+> +}
+> +
+
+
+Thanks,
+Daisuke Nishimura.
