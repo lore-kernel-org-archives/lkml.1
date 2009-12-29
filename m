@@ -1,117 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752063AbZL2Oak@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752148AbZL2ObW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752063AbZL2Oak (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Dec 2009 09:30:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751871AbZL2Oaj
+	id S1752148AbZL2ObW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Dec 2009 09:31:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751570AbZL2ObV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Dec 2009 09:30:39 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:39864 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751812AbZL2Oai (ORCPT
+	Tue, 29 Dec 2009 09:31:21 -0500
+Received: from casper.infradead.org ([85.118.1.10]:57780 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751494AbZL2ObU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Dec 2009 09:30:38 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:from:to:cc:subject:references:x-url:x-pgp-fp:x-pgp:date
-         :in-reply-to:message-id:user-agent:mime-version:content-type;
-        b=JW+k/vbauiptGpGl0hZe58OoT/a1ZecV1iZiVZT44ExcrlWyknbGvi+DnMzBNL6we1
-         GNVQQOiGHH56cJLqu5AXMY1wrTwMBe9eEeIENFouRZb3JAmNozj2nt+ryLQXKkLfduc0
-         4sC9KEJh3vhH3g628fHZB4vHfwGwNzCnRF/AY=
-From: Michal Nazarewicz <mina86@tlen.pl>
-To: darshan.ghumare@gmail.com
-Cc: linux-c-programming@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: Msync Invalid Arg
-References: <22791256.21262087525518.JavaMail.root@wombat>
-X-Url: http://mina86.com/
-X-PGP-FP: 9134 06FA 7AD8 D134 9D0C  C33F 532C CB00 B7C6 DF1E
-X-PGP: B7C6DF1E
-Date: Tue, 29 Dec 2009 15:30:24 +0100
-In-Reply-To: <22791256.21262087525518.JavaMail.root@wombat> (darshan ghumare's
-	message of "Tue, 29 Dec 2009 06:52:05 -0500")
-Message-ID: <87vdfphmyn.fsf@erwin.mina86.com>
-User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/23.1 (Slckware Linux)
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="=-=-=";
-	micalg=pgp-sha1; protocol="application/pgp-signature"
+	Tue, 29 Dec 2009 09:31:20 -0500
+Subject: Re: [RFC 0/12][PATCH] SCHED_DEADLINE: core of the scheduling class
+From: Peter Zijlstra <peterz@infradead.org>
+To: Raistlin <raistlin@linux.it>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       michael trimarchi <michael@evidence.eu.com>,
+       Fabio Checconi <fabio@gandalf.sssup.it>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Dhaval Giani <dhaval.giani@gmail.com>,
+       Johan Eker <johan.eker@ericsson.com>, "p.faure" <p.faure@akatech.ch>,
+       Chris Friesen <cfriesen@nortel.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Henrik Austad <henrik@austad.us>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Darren Hart <darren@dvhart.com>,
+       Sven-Thorsten Dietrich <sven@thebigcorporation.com>,
+       Bjoern Brandenburg <bbb@cs.unc.edu>,
+       Tommaso Cucinotta <tommaso.cucinotta@sssup.it>,
+       "giuseppe.lipari" <giuseppe.lipari@sssup.it>,
+       Juri Lelli <juri.lelli@gmail.com>
+In-Reply-To: <1255707614.6228.453.camel@Palantir>
+References: <1255707324.6228.448.camel@Palantir>
+	 <1255707614.6228.453.camel@Palantir>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 29 Dec 2009 15:30:42 +0100
+Message-ID: <1262097042.7135.150.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---=-=-=
-Content-Transfer-Encoding: quoted-printable
+On Fri, 2009-10-16 at 17:40 +0200, Raistlin wrote:
+> +struct task_struct *pick_next_task_deadline(struct rq *rq)
+> +{
+> +       struct sched_dl_entity *dl_se;
+> +       struct task_struct *p;
+> +       struct dl_rq *dl_rq;
+> +
+> +       dl_rq = &rq->dl;
+> +
+> +       if (likely(!dl_rq->dl_nr_running))
+> +               return NULL;
+> +
+> +       dl_se = pick_next_deadline_entity(rq, dl_rq);
+> +       BUG_ON(!dl_se);
+> +
+> +       p = deadline_task_of(dl_se);
+> +       p->se.exec_start = rq->clock;
+> +#ifdef CONFIG_SCHED_HRTICK
+> +       if (hrtick_enabled(rq))
+> +               start_hrtick_deadline(rq, p);
+> +#endif
+> +       return p;
+> +} 
 
-darshan.ghumare@gmail.com writes:
+I'm not sure about actually using hrtick like this, I'd expect
+SCHED_DEADLINE to always use hrtimers when available.  The only reason
+to use some of the hrtick infrastructure is to re-use the hrtick_start()
+logic which uses IPIs to ensure we program the timer on the right cpu
+(so we can schedule from it).
 
-> Whne I try to execute following code I get "Invalid Argumemt" error
-> message in msync.
+The whole IPI mess requires USE_GENERIC_SMP_HELPERS, which makes
+CONFIG_HRTICK useful (ensures we have hrtimers enabled and have generic
+IPI bits)
 
-/* Code rewritten to be shorter */
-
-> #include <fcntl.h>
-> #include <stdio.h>
-> #include <stdlib.h>
-> #include <string.h>
-> #include <sys/mman.h>
-> #include <unistd.h>
->=20
-> #define DIE_IF(cnd, msg) do{ if (cnd) { perror(msg); return 1; } }while(0)
->=20
-> int main(void)
-> {
-> 	char data[20];
-> 	void *addr;
-> 	int fd, ret;
->=20
-> 	fd =3D open("/dev/mem", O_RDWR | O_SYNC);
-> 	DIE_IF(fd < 0, "open");
->=20
-> 	addr =3D mmap(0, 4096, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
-> 	DIE_IF(addr =3D=3D MAP_FAILED, "mmap");
->=20
-> 	strcpy(data, "Test Msg");
-> 	ret =3D write(fd, data, strlen(data));
-> 	DIE_IF(ret < 0, "write");
->=20
-> 	ret =3D msync(addr, 4096, MS_SYNC);
-> 	DIE_IF(ret < 0, "msync");
->=20
-> 	ret =3D lseek(fd, 0, SEEK_SET);
-> 	DIE_IF(ret < 0, "lseek");
->=20
-> 	memset(data, 0, sizeof data);
-> 	ret =3D read(fd, data, sizeof data);
-> 	DIE_IF(ret < 0, "read");
-> 	printf("Read: %s.\n", data);
->=20
-> 	return 0;
-> }
+The problem is that things like hrtick_enabled() also check
+sched_feat(HRTICK) which is disabled by default (because programming the
+clock hw on each schedule was found too expensive) but that should not
+stop SCHED_DEADLINE from using it.
 
 
-The msync(2) fails because /dev/mem driver (drivers/char/mem.c) does not
-implement fsync file operation which is used by msync(2) system call.
 
-This sort of makes sense since there is no need to sync the /dev/mem
-file -- there is no backing storage on hard drive or anywhere, when you
-write data there you write directly to the memory and same goes for
-reading.
-
-Anyhow, I'm Ccing this to linux-kernel as maybe we need a dummy fsync
-operation for /dev/mem which would do nothing and return zero?
-
-=2D-
-Best regards,                                         _     _
- .o. | Liege of Serenly Enlightened Majesty of      o' \,=3D./ `o
- ..o | Computer Science,  Michal "mina86" Nazarewicz   (o o)
- ooo +--<mina86*tlen.pl>--<jid:mina86*jabber.org>--ooO--(_)--Ooo--
-
---=-=-=
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.12 (GNU/Linux)
-
-iEYEARECAAYFAks6EokACgkQUyzLALfG3x4DJQCffDNvg08atG4/kAtlS3cNVARo
-cJYAniaVQS2Lo5kytNwCJe1JQh/j4uvN
-=2ln3
------END PGP SIGNATURE-----
---=-=-=--
