@@ -1,71 +1,213 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752196AbZL2UCU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751551AbZL2TjG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752196AbZL2UCU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Dec 2009 15:02:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752154AbZL2UCT
+	id S1751551AbZL2TjG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Dec 2009 14:39:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751206AbZL2TjF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Dec 2009 15:02:19 -0500
-Received: from ns1.siteground211.com ([209.62.36.12]:53080 "EHLO
-	serv01.siteground211.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752127AbZL2UCS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Dec 2009 15:02:18 -0500
-Subject: Re: [PATCH] OMAP2: add USB platform data and initialization for
- Nokia N800 and N810
-From: Felipe Balbi <me@felipebalbi.com>
-Reply-To: me@felipebalbi.com
-To: Tony Lindgren <tony@atomide.com>
-Cc: Luke-Jr <luke@dashjr.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
-       "Balbi Felipe (Nokia-D/Helsinki)" <felipe.balbi@nokia.com>,
-       Kalle Valo <kalle.valo@iki.fi>
-In-Reply-To: <20091229192407.GA3512@atomide.com>
-References: <200912290152.16357.luke@dashjr.org>
-	 <20091229192407.GA3512@atomide.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 29 Dec 2009 21:35:49 +0200
-Message-ID: <1262115349.28789.79.camel@gandalf>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 
+	Tue, 29 Dec 2009 14:39:05 -0500
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:43266 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751184AbZL2TjC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Dec 2009 14:39:02 -0500
+Message-ID: <4B3A5AD1.8020001@us.ibm.com>
+Date: Tue, 29 Dec 2009 11:38:57 -0800
+From: Darren Hart <dvhltc@us.ibm.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: Steven Rostedt <rostedt@goodmis.org>,
+       "lkml, " <linux-kernel@vger.kernel.org>
+Subject: [PATCH] trace-view: add getopt support to gui tools for input file
+ (resend)
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - serv01.siteground211.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - felipebalbi.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+>From b3acaddbe845dd3296374a32951b29616519da86 Mon Sep 17 00:00:00 2001
+From: Darren Hart <dvhltc@us.ibm.com>
+Date: Tue, 29 Dec 2009 11:17:37 -0800
+Subject: [PATCH] trace-cmd: add getopt support to gui tools for input file
 
-On Tue, 2009-12-29 at 11:24 -0800, Tony Lindgren wrote:
-> Great. The comment from Russell earlier was that we should be now using
-> clkdev to do things like this and get rid of the _set_clock functions.
-> In musb_core.c are already using the clk directly if set_clock is NULL.
-> 
-> Can you try the patch below? If it works, just merge it into your
-> patch.
+Signed-off-by: Darren Hart <dvhltc@us.ibm.com>
+---
+ kernel-shark.c     |   28 +++++++++++++++++++++++++++-
+ trace-graph-main.c |   28 +++++++++++++++++++++++++++-
+ trace-view-main.c  |   29 ++++++++++++++++++++++++++++-
+ 3 files changed, 82 insertions(+), 3 deletions(-)
 
-Yes, let's do like Tony suggested. I'm removing the old set_clock stuff
-completely, patches are available at my git tree, here are the links:
-
-http://gitorious.org/usb/usb/commit/ca415cf06a4843e93041fe73f7f1867e066b48a3
-http://gitorious.org/usb/usb/commit/013f8457a1ba0dd3f36811f647b0fe904128292e
-http://gitorious.org/usb/usb/commit/e2ecae4c5b01415dbbf714c7217178c31a9a5dd1
-http://gitorious.org/usb/usb/commit/874afb373ea75ff0a3a360802a53357affa27df0
-http://gitorious.org/usb/usb/commit/6d47fc9858c17faea8a454e147839c878737a0f1
-http://gitorious.org/usb/usb/commit/62b8d94df7739cb60bae0369b8265e588f518841
-http://gitorious.org/usb/usb/commit/e06629acd44936fe87d34d188c8dfb54abd7915c
-
-Tony, if you want I can send you a pull request will all the patches I
-have prepared on top of your tree. There's only one dependence which I
-can ship in the same pull request.
-
-Sames goes to Kevin regarding davinci tree. I just have to subscribe in
-order to be able to send the patches there.
-
+diff --git a/kernel-shark.c b/kernel-shark.c
+index 158b9ac..0d72459 100644
+--- a/kernel-shark.c
++++ b/kernel-shark.c
+@@ -18,12 +18,15 @@
+  *
+  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  */
++#define _GNU_SOURCE
+ #include <stdio.h>
+ #include <string.h>
+ #include <stdarg.h>
+ #include <fcntl.h>
+ #include <unistd.h>
+ #include <gtk/gtk.h>
++#include <getopt.h>
++#include <string.h>
+ 
+ #include "trace-compat.h"
+ #include "trace-cmd.h"
+@@ -34,7 +37,15 @@
+ #define TRACE_WIDTH	800
+ #define TRACE_HEIGHT	600
+ 
+-#define input_file "trace.dat"
++#define default_input_file "trace.dat"
++static char *input_file = default_input_file;
++
++void usage(char *prog)
++{
++	printf("Usage: %s\n", prog);
++	printf("  -h	Display this help message\n");
++	printf("  -i	input_file, default is %s\n", default_input_file);
++}
+ 
+ /* graph callbacks */
+ 
+@@ -161,6 +172,21 @@ void kernel_shark(int argc, char **argv)
+ 	GtkWidget *draw;
+ 	GtkWidget *label;
+ 	GtkWidget *spin;
++	int c;
++
++	while ((c = getopt(argc, argv, "hi:")) != -1) {
++		switch(c) {
++		case 'h':
++			usage(basename(argv[0]));
++			return;
++		case 'i':
++			input_file = optarg;
++			break;
++		default:
++			/* assume the other options are for gtk */
++			break;
++		}
++	}
+ 
+ 	info = g_new0(typeof(*info), 1);
+ 	if (!info)
+diff --git a/trace-graph-main.c b/trace-graph-main.c
+index 4eb257f..54194e1 100644
+--- a/trace-graph-main.c
++++ b/trace-graph-main.c
+@@ -1,4 +1,7 @@
++#define _GNU_SOURCE
+ #include <gtk/gtk.h>
++#include <getopt.h>
++#include <string.h>
+ 
+ #include "trace-cmd.h"
+ #include "trace-graph.h"
+@@ -7,10 +10,18 @@
+ 
+ #define TRACE_WIDTH	800
+ #define TRACE_HEIGHT	600
+-#define input_file "trace.dat"
+ 
++#define default_input_file "trace.dat"
++static char *input_file = default_input_file;
+ static struct graph_info *ginfo;
+ 
++void usage(char *prog)
++{
++	printf("Usage: %s\n", prog);
++	printf("  -h	Display this help message\n");
++	printf("  -i	input_file, default is %s\n", default_input_file);
++}
++
+ /* Callback for the clicked signal of the Exit button */
+ static void
+ exit_clicked (GtkWidget *widget, gpointer data)
+@@ -42,6 +53,21 @@ void trace_graph(int argc, char **argv)
+ 	GtkWidget *sub_item;
+ 	GtkWidget *scrollwin;
+ 	GtkWidget *draw;
++	int c;
++
++	while ((c = getopt(argc, argv, "hi:")) != -1) {
++		switch(c) {
++		case 'h':
++			usage(basename(argv[0]));
++			return;
++		case 'i':
++			input_file = optarg;
++			break;
++		default:
++			/* assume the other options are for gtk */
++			break;
++		}
++	}
+ 
+ 	handle = tracecmd_open(input_file);
+ 
+diff --git a/trace-view-main.c b/trace-view-main.c
+index c0eb716..5b6eb7b 100644
+--- a/trace-view-main.c
++++ b/trace-view-main.c
+@@ -1,4 +1,7 @@
++#define _GNU_SOURCE
+ #include <gtk/gtk.h>
++#include <getopt.h>
++#include <string.h>
+ 
+ #include "trace-cmd.h"
+ #include "trace-view.h"
+@@ -7,11 +10,20 @@
+ 
+ #define TRACE_WIDTH	800
+ #define TRACE_HEIGHT	600
+-#define input_file "trace.dat"
++
++#define default_input_file "trace.dat"
++static char *input_file = default_input_file;
+ 
+ GtkWidget *trace_tree;
+ static struct tracecmd_input *handle;
+ 
++void usage(char *prog)
++{
++	printf("Usage: %s\n", prog);
++	printf("  -h	Display this help message\n");
++	printf("  -i	input_file, default is %s\n", default_input_file);
++}
++
+ /* Callback for the clicked signal of the Exit button */
+ static void
+ exit_clicked (GtkWidget *widget, gpointer data)
+@@ -76,6 +88,21 @@ void trace_view(int argc, char **argv)
+ 	GtkWidget *scrollwin;
+ 	GtkWidget *label;
+ 	GtkWidget *spin;
++	int c;
++
++	while ((c = getopt(argc, argv, "hi:")) != -1) {
++		switch(c) {
++		case 'h':
++			usage(basename(argv[0]));
++			return;
++		case 'i':
++			input_file = optarg;
++			break;
++		default:
++			/* assume the other options are for gtk */
++			break;
++		}
++	}
+ 
+ 	handle = tracecmd_open(input_file);
+ 
 -- 
-balbi
-
+1.6.3.3
+-- 
+Darren Hart
+IBM Linux Technology Center
+Real-Time Linux Team
