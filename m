@@ -1,63 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751977AbZL2S2s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751647AbZL2SER@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751977AbZL2S2s (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Dec 2009 13:28:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751873AbZL2S2r
+	id S1751647AbZL2SER (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Dec 2009 13:04:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751483AbZL2SEQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Dec 2009 13:28:47 -0500
-Received: from dsl-67-204-24-19.acanac.net ([67.204.24.19]:50197 "EHLO
-	emergent.ellipticsemi.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751528AbZL2S2q (ORCPT
+	Tue, 29 Dec 2009 13:04:16 -0500
+Received: from out02.mta.xmission.com ([166.70.13.232]:60237 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751452AbZL2SEO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Dec 2009 13:28:46 -0500
-X-Greylist: delayed 932 seconds by postgrey-1.27 at vger.kernel.org; Tue, 29 Dec 2009 13:28:46 EST
-Date: Tue, 29 Dec 2009 13:00:05 -0500
-From: Nick Bowler <nbowler@elliptictech.com>
-To: Alan Cox <alan@linux.intel.com>, linux-kernel@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [Regression, bisected] Receive failure in et131x.
-Message-ID: <20091229180005.GA23030@emergent.ellipticsemi.com>
-Mail-Followup-To: Alan Cox <alan@linux.intel.com>,
-	linux-kernel@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>
+	Tue, 29 Dec 2009 13:04:14 -0500
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Cc: Michael Stone <michael@laptop.org>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, linux-security-module@vger.kernel.org,
+       Andi Kleen <andi@firstfloor.org>, David Lang <david@lang.hm>,
+       Oliver Hartkopp <socketcan@hartkopp.net>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Valdis Kletnieks <Valdis.Kletnieks@vt.edu>,
+       Bryan Donlan <bdonlan@gmail.com>, Evgeniy Polyakov <zbr@ioremap.net>,
+       "C. Scott Ananian" <cscott@cscott.net>,
+       James Morris <jmorris@namei.org>, Bernie Innocenti <bernie@codewiz.org>,
+       Mark Seaborn <mrs@mythic-beasts.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       =?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>,
+       Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
+       Samir Bellabes <sam@synack.fr>,
+       Casey Schaufler <casey@schaufler-ca.com>, Pavel Machek <pavel@ucw.cz>,
+       Al Viro <viro@ZenIV.linux.org.uk>
+References: <20091229050114.GC14362@heat> <m1y6km11lj.fsf@fess.ebiederm.org>
+	<20091229151146.GA32153@us.ibm.com>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Tue, 29 Dec 2009 10:03:57 -0800
+In-Reply-To: <20091229151146.GA32153@us.ibm.com> (Serge E. Hallyn's message of "Tue\, 29 Dec 2009 09\:11\:46 -0600")
+Message-ID: <m1pr5xy7w2.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Organization: Elliptic Technologies Inc.
-User-Agent: Mutt/1.5.20 (2009-06-14)
+X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa03 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;"Serge E. Hallyn" <serue@us.ibm.com>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -3.0 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0000]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa03 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.1 XMSolicitRefs_0 Weightloss drug
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
+Subject: Re: RFC: disablenetwork facility. (v4)
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: Yes (on in01.mta.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Continuing the theme from the last release cycle -- my PCI-express
-et131x card (which works in 2.6.32) fails in the latest Linus git.  The
-card works at first (DHCP and NFS mounts during bootup are OK) but
-quickly fails once any reasonable traffic is put through it.  Transmit
-seems to continue to work after a failure, but receive is mostly dead
-forever -- the occasional frame appears to make it through.  The kernel
-log contains many messages of the following form:
+"Serge E. Hallyn" <serue@us.ibm.com> writes:
+>
+> I have two comments on the idea:
+>
+> 1. We don't want to complicate the current capabilities
+>    concepts and API, so if we do something like this,
+>    we should make sure not to try to store these
+>    unprivileged capabilities with the current privilege
+>    capabilities.
 
-et131x 0000:02:00.0: NICRxPkts PSR Entry 1546 indicates length of 12920 and/or bad bi(614)
-et131x 0000:02:00.0: NICRxPkts PSR Entry 1547 indicates length of 27745 and/or bad bi(92)
-et131x 0000:02:00.0: NICRxPkts PSR Entry 1548 indicates length of 30064 and/or bad bi(116)
-...
+I was afraid there might be a complication like that.
+Then the user interface side of what I am proposing
+needs some more thought.
 
-Bisection reveals the following.
+> In my last email last night I detailed a way to use regular
+> capabilities to make the prctl(PR_SET_NETWORK, PR_DROP_NET)
+> safer.
 
-99fd99f618daecae638550275cb132ab1ffe464c is the first bad commit
-commit 99fd99f618daecae638550275cb132ab1ffe464c
-Author: Alan Cox <alan@linux.intel.com>
-Date:   Wed Nov 18 14:07:58 2009 +0000
+Yes.  I missed that earlier my apologies.
 
-    Staging: et131x: clean up the avail fields in the rx registers
+>> I can see one of two possible reasons you are avoiding the
+>> suggestion to disable setuid root.
+>> - You have a use for setuid root executables in your contained
+>>   environment.  If you do what is that use?
+>
+> I don't think Michael was avoiding that.  Rather, we haven't quite
+> spelled out what it means to disable setuid root, and we haven't
+> (to my satisfaction) detailed how setuid root would undo the
+> prctl(PR_SET_NETWORK, PR_DROP_NET) - i.e. is it only on a
+> privilege-granting setuid-root, or all setuids?
 
-    These have a wrap bit but again need little work to clean out. There are a
-    couple of uglies left that want addressing in later clean up. Notably we should
-    probably keep the local psr copy and wrap as two values.
+Michael finds suid-root granting network access incompatible
+with what he is trying to achieve.  The practical example is
+network denied applications may communicate with the outside
+world by calling ping.
 
-    Signed-off-by: Alan Cox <alan@linux.intel.com>
-    Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> Eric, let me specifically point out a 'disable setuid-root'
+> problem on linux: root still owns most of the system even when
+> it's not privileged.  So does "disable setuid-root" mean
+> we don't allow exec of setuid-root binaries at all, or that
+> we don't setuid to root, or that we just don't raise privileges
+> for setuid-root?
 
-:040000 040000 8f0034c85fab183134fa19c7d58cee687991b6e7 a98b1db6fa82d8107fc5699fa2ae0851f38a14b0 M      drivers
+The semantics I am suggesting under the title "disable suid exec" are
+to flag a process such that, that process and any future children may
+not increase their kernel enforced privileges.  In practice this means
+attempts to exec any suid binaries will fail.  Likewise attempting to
+exec a binary flagged with in the filesystem to gain capabilities will
+also fail.
 
--- 
-Nick Bowler, Elliptic Technologies (http://www.elliptictech.com/)
+This would appear to require denying of ptracing applications
+with other/more privileges, failing attempts to raise the
+capabilities on one of the processes, and I think failing
+all setuid/setgid calls.
+
+In my conception this is a useful subset of unshare(USERNS) that can
+be easily implemented now.
+
+>> - Disabling suid root executables is an indirect path to your
+>>   goal.
+>> 
+>> The problem with the disable_network semantics you want
+>> is that they allow you to perform a denial of service attack
+>> on privileged users.  An unprivileged DOS attack is unsuitable
+>> for a general purpose feature in a general purpose kernel.
+>
+> Though to be honest I'm still unconvinced that the disablenetwork
+> is dangerous.  I think long-term a more general solution like what
+> I outlined above might be good, but short-term a sysctl that
+> turns on or off the ability to drop network would suffice imo.
+
+I have seen the following arguments put forth.
+  - Certain kinds of logging are broken from suid executables.
+  - Certain questionable but existing user space authentication
+    policies will be broken.
+
+That is enough for me to strongly suspect someone with a more
+devious mind than myself could find something worse.  I know
+it took me over a year to figure out how someone could exploit
+unshare(NETNS).
+
+The goal is to find something that unprivileged applications can use
+safely, and can be available by default in distro kernels.
+
+A syscall that removes the ability to exec suid executables appears to
+meet that goal, as well as be the necessary prerequisite for enabling
+other forms of isolation without causing security problems.
+
+Eric
