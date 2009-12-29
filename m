@@ -1,79 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752508AbZL2BGV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752538AbZL2BLf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752508AbZL2BGV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Dec 2009 20:06:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752283AbZL2BGU
+	id S1752538AbZL2BLf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Dec 2009 20:11:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752077AbZL2BLe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Dec 2009 20:06:20 -0500
-Received: from mailget.neusoft.com ([210.83.25.69]:64437 "EHLO
-	mailgate.neusoft.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1751063AbZL2BGT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Dec 2009 20:06:19 -0500
-X-IronPort-AV: E=McAfee;i="5400,1158,5845"; a="6482163"
-Date: Tue, 29 Dec 2009 09:08:21 +0800 (CST)
-From: fengxiangjun <fengxiangjun@neusoft.com>
-Subject: Re: 2.6.32.2 SATA link detect failed, 2.6.32.1 works fine
-In-reply-to: <4B388246.3040100@kernel.org>
-X-X-Sender: fengxj@darkstar.example.net
-To: Tejun Heo <tj@kernel.org>
-Cc: Robert Hancock <hancockrwd@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org
-Message-id: <alpine.LNX.2.00.0912290904140.1689@darkstar.example.net>
-MIME-version: 1.0
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
-References: <alpine.LNX.2.00.0912211855460.1689@darkstar.example.net>
- <4B30134C.1050609@gmail.com>
- <alpine.LNX.2.00.0912220859060.1686@darkstar.example.net>
- <51f3faa70912211708j200ab584wa835ffe50981415e@mail.gmail.com>
- <alpine.LNX.2.00.0912220955341.1696@darkstar.example.net>
- <4B31DB17.4050509@kernel.org>
- <alpine.LNX.2.00.0912231719440.1694@darkstar.example.net>
- <4B331957.7030906@kernel.org>
- <alpine.LNX.2.00.0912241535340.1682@darkstar.example.net>
- <4B331D93.2010000@kernel.org>
- <alpine.LNX.2.00.0912241557170.1682@darkstar.example.net>
- <alpine.LNX.2.00.0912242010350.1691@darkstar.example.net>
- <4B336153.8090206@kernel.org>
- <alpine.LNX.2.00.0912250931510.1680@darkstar.example.net>
- <4B34C097.1000206@kernel.org>
- <alpine.LNX.2.00.0912260919490.1729@darkstar.example.net>
- <4B388246.3040100@kernel.org>
-Content-Transfer-Encoding: 7bit
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+	Mon, 28 Dec 2009 20:11:34 -0500
+Received: from e7.ny.us.ibm.com ([32.97.182.137]:51808 "EHLO e7.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751936AbZL2BLd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Dec 2009 20:11:33 -0500
+Date: Mon, 28 Dec 2009 17:11:37 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, a.p.zijlstra@chello.nl, cl@linux-foundation.org,
+       Heiko Carstens <heiko.carstens@de.ibm.com>
+Subject: Re: lockdep possible recursive lock in slab parent->list->rlock in
+	rc2
+Message-ID: <20091229011137.GA8469@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20091227120622.GA480@basil.fritz.box> <1261917194.5933.2.camel@penberg-laptop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1261917194.5933.2.camel@penberg-laptop>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-Hi,
-
-> > Just reboot 3 times, and test STR, every thing works fine.
-> > And the 3 reboots have the same message:
-> > 
-> > ata1.00: link resume succeeded after 1 retries
+On Sun, Dec 27, 2009 at 02:33:14PM +0200, Pekka Enberg wrote:
+> Hi Andi,
 > 
-> Cool, does it ever boot without the message?
+> On Sun, 2009-12-27 at 13:06 +0100, Andi Kleen wrote:
+> > Get this on a NFS root system while booting
+> > This must be a recent change in the last week, 
+> > I didn't see it in a post rc1 git* from last week
+> > (I haven't done a exact bisect)
+> > 
+> > It's triggered by the r8169 driver close function, 
+> > but looks more like a slab problem?
+> > 
+> > I haven't checked it in detail if the locks are 
+> > really different or just lockdep not knowing 
+> > enough classes.
+> 
+> I broke the lockdep annotations in commit
+> ce79ddc8e2376a9a93c7d42daf89bfcbb9187e62 ("SLAB: Fix lockdep annotations
+> for CPU hotplug"). Does this fix things for you? Heiko, the following
+> patch should fix it for you too.
 
-Yesterday, the boot message has no such line(just boot 1 time).
+And no lockdep warnings here, either.  I did get the following
+new-to-me preempt_count underflow, but doubt that it is related.
 
-Today, there is.
+							Thanx, Paul
 
-$ dmesg | grep ata1.00
-ata1.00: link resume succeeded after 1 retries
-ata1.00: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
-ata1.00: ATA-7: WDC WD800JD-60LSA5, 10.01E03, max UDMA/100
-ata1.00: 156301488 sectors, multi 16: LBA48
-ata1.00: configured for UDMA/100
+Badness at kernel/sched.c:5350
+NIP: c0000000005b2e58 LR: c0000000005b2e3c CTR: c000000000025f0c
+REGS: c000000042893b30 TRAP: 0700   Not tainted  (2.6.33-rc2-autokern1)
+MSR: 8000000000029032 <EE,ME,CE,IR,DR>  CR: 22000082  XER: 0000000c
+TASK = c00000007d8737e0[0] 'swapper' THREAD: c000000042890000 CPU: 2
+GPR00: 0000000000000000 c000000042893db0 c0000000009c07f8 0000000000000001 
+GPR04: 0000000000000001 0000000000000006 0000000000000001 000000000000004a 
+GPR08: 0000000000000000 c00000000128adb8 c00000000088aa20 c000000000a0da08 
+GPR12: 0000000000000002 c0000000009df880 0000000000000000 0000000000c00020 
+GPR16: 0000000000000002 0000000000000000 0000000000000000 0000000000000000 
+GPR20: 0000000000000000 c0000000009e24b0 0000000000000001 c0000000009df480 
+GPR24: 0000000000000000 c0000000009d8628 c0000000009df880 0000000000000002 
+GPR28: c0000000009e2068 c0000000009d8628 c00000000093c000 c000000042890000 
+NIP [c0000000005b2e58] .sub_preempt_count+0x58/0xc8
+LR [c0000000005b2e3c] .sub_preempt_count+0x3c/0xc8
+Call Trace:
+[c000000042893db0] [c000000042893e30] 0xc000000042893e30 (unreliable)
+[c000000042893e30] [c000000000014d38] .cpu_idle+0x1f0/0x20c
+[c000000042893ec0] [c0000000005ba678] .start_secondary+0x380/0x3c4
+[c000000042893f90] [c000000000008264] .start_secondary_prolog+0x10/0x14
+Instruction dump:
+78290464 80090014 7f801800 40bc0074 4bd45745 60000000 2fa30000 419e0070 
+e93e8a08 80090000 2f800000 409e0060 <0fe00000> 48000058 78000620 2fa00000 
+BUG: scheduling while atomic: swapper/0/0x00000000
+INFO: lockdep is turned off.
+Modules linked in: ehea
+Call Trace:
+[c000000042897bf0] [c0000000000123b0] .show_stack+0x70/0x184 (unreliable)
+[c000000042897ca0] [c00000000005eaa0] .__schedule_bug+0xa4/0xc4
+[c000000042897d30] [c0000000005abe4c] .schedule+0xd8/0xa8c
+[c000000042897e30] [c000000000014d40] .cpu_idle+0x1f8/0x20c
+[c000000042897ec0] [c0000000005ba678] .start_secondary+0x380/0x3c4
+[c000000042897f90] [c000000000008264] .start_secondary_prolog+0x10/0x14
 
-Thanks.
----------------------------------------------------------------------------------------------------
-Confidentiality Notice: The information contained in this e-mail and any accompanying attachment(s) 
-is intended only for the use of the intended recipient and may be confidential and/or privileged of 
-Neusoft Corporation, its subsidiaries and/or its affiliates. If any reader of this communication is 
-not the intended recipient, unauthorized use, forwarding, printing,  storing, disclosure or copying 
-is strictly prohibited, and may be unlawful.If you have received this communication in error,please 
-immediately notify the sender by return e-mail, and delete the original message and all copies from 
-your system. Thank you. 
----------------------------------------------------------------------------------------------------
-
+> diff --git a/mm/slab.c b/mm/slab.c
+> index 7d41f15..7451bda 100644
+> --- a/mm/slab.c
+> +++ b/mm/slab.c
+> @@ -654,7 +654,7 @@ static void init_node_lock_keys(int q)
+> 
+>  		l3 = s->cs_cachep->nodelists[q];
+>  		if (!l3 || OFF_SLAB(s->cs_cachep))
+> -			return;
+> +			continue;
+>  		lockdep_set_class(&l3->list_lock, &on_slab_l3_key);
+>  		alc = l3->alien;
+>  		/*
+> @@ -665,7 +665,7 @@ static void init_node_lock_keys(int q)
+>  		 * for alloc_alien_cache,
+>  		 */
+>  		if (!alc || (unsigned long)alc == BAD_ALIEN_MAGIC)
+> -			return;
+> +			continue;
+>  		for_each_node(r) {
+>  			if (alc[r])
+>  				lockdep_set_class(&alc[r]->lock,
+> 
+> 
