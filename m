@@ -1,74 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752112AbZL2UNu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752354AbZL2UNa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752112AbZL2UNu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Dec 2009 15:13:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752427AbZL2UNt
+	id S1752354AbZL2UNa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Dec 2009 15:13:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752190AbZL2UN3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Dec 2009 15:13:49 -0500
-Received: from astoria.ccjclearline.com ([64.235.106.9]:50413 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751677AbZL2UNs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Dec 2009 15:13:48 -0500
-Date: Tue, 29 Dec 2009 15:13:14 -0500 (EST)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost
-To: Jeff Garzik <jeff@garzik.org>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: what's the purpose of MAXHOSTNAMELEN?
-In-Reply-To: <4B3A5B15.5060807@garzik.org>
-Message-ID: <alpine.LFD.2.00.0912291507490.2610@localhost>
-References: <alpine.LFD.2.00.0912291416230.4967@localhost> <4B3A5B15.5060807@garzik.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Tue, 29 Dec 2009 15:13:29 -0500
+Received: from mgw1.diku.dk ([130.225.96.91]:53334 "EHLO mgw1.diku.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751554AbZL2UN2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Dec 2009 15:13:28 -0500
+Date: Tue, 29 Dec 2009 21:13:26 +0100 (CET)
+From: Julia Lawall <julia@diku.dk>
+To: Rolf Eike Beer <eike-kernel@sf-tec.de>
+Cc: James.Bottomley@suse.de, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH 3/5] drivers/scsi : Correct the size argument to kmalloc
+In-Reply-To: <200912292102.43373.eike-kernel@sf-tec.de>
+Message-ID: <Pine.LNX.4.64.0912292113110.4001@ask.diku.dk>
+References: <Pine.LNX.4.64.0912292015420.4001@ask.diku.dk>
+ <200912292102.43373.eike-kernel@sf-tec.de>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 29 Dec 2009, Jeff Garzik wrote:
-... snip ..
+From: Julia Lawall <julia@diku.dk>
 
-> >    so lots of people define it but no one uses it.  it *is*
-> > exported to user space in /usr/include/asm/param.h, but i still
-> > have no idea what it's for in user space.  obsolete?
->
-> According to RFC 1034, "Each node has a label, which is zero to 63
-> octets in length"
->
-> What is it used for in userspace, and why is it export from the
-> kernel?  Good question...
+In each case, the destination of the allocation has type struct **, so the
+elements of the array should have pointer type, not structure type.
 
-  it's not clear what value that macro has in user space since (as
-i've always understood it) the point of exporting a macro like that to
-user space is so that user space apps can *agree* with kernel code
-that employs the same macro.
+The semantic patch that makes this change is as follows:
+(http://coccinelle.lip6.fr/)
 
-  but if absolutely *nothing* in the kernel uses that macro, then
-there's nothing for user space to "agree" with.  in other words, that
-macro cannot *possibly* have any meaningful value in user space. does
-that make sense?
+// <smpl>
+@disable sizeof_type_expr@
+type T;
+T **x;
+@@
 
-  my reaction at this point is to simply remove that macro definition
-from include/asm-generic/param.h.  anything in user space that's using
-that macro is simply using a macro with a completely arbitrary value.
+  x =
+  <+...sizeof(
+- T
++ *x
+  )...+>
+// </smpl>
 
-rday
---
+Signed-off-by: Julia Lawall <julia@diku.dk>
 
-========================================================================
-Robert P. J. Day                               Waterloo, Ontario, CANADA
+---
+ drivers/scsi/aic94xx/aic94xx_init.c |    4 ++--
+ drivers/scsi/ch.c                   |    2 +-
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
-            Linux Consulting, Training and Kernel Pedantry.
-
-Web page:                                          http://crashcourse.ca
-Twitter:                                       http://twitter.com/rpjday
-========================================================================
+diff -u -p a/drivers/scsi/aic94xx/aic94xx_init.c b/drivers/scsi/aic94xx/aic94xx_init.c
+--- a/drivers/scsi/aic94xx/aic94xx_init.c
++++ b/drivers/scsi/aic94xx/aic94xx_init.c
+@@ -687,9 +687,9 @@ static int asd_register_sas_ha(struct as
+ {
+ 	int i;
+ 	struct asd_sas_phy   **sas_phys =
+-		kmalloc(ASD_MAX_PHYS * sizeof(struct asd_sas_phy), GFP_KERNEL);
++		kcalloc(ASD_MAX_PHYS, sizeof(*sas_phys), GFP_KERNEL);
+ 	struct asd_sas_port  **sas_ports =
+-		kmalloc(ASD_MAX_PHYS * sizeof(struct asd_sas_port), GFP_KERNEL);
++		kcalloc(ASD_MAX_PHYS, sizeof(*sas_ports), GFP_KERNEL);
+ 
+ 	if (!sas_phys || !sas_ports) {
+ 		kfree(sas_phys);
+diff -u -p a/drivers/scsi/ch.c b/drivers/scsi/ch.c
+--- a/drivers/scsi/ch.c
++++ b/drivers/scsi/ch.c
+@@ -351,7 +351,7 @@ ch_readconfig(scsi_changer *ch)
+ 	}
+ 
+ 	/* look up the devices of the data transfer elements */
+-	ch->dt = kmalloc(ch->counts[CHET_DT]*sizeof(struct scsi_device),
++	ch->dt = kcalloc(ch->counts[CHET_DT], sizeof(*ch->dt),
+ 			 GFP_KERNEL);
+ 
+ 	if (!ch->dt) {
