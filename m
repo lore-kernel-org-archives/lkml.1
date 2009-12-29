@@ -1,57 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751842AbZL2SMs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751934AbZL2SOE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751842AbZL2SMs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Dec 2009 13:12:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751564AbZL2SMr
+	id S1751934AbZL2SOE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Dec 2009 13:14:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751571AbZL2SOB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Dec 2009 13:12:47 -0500
-Received: from static-72-93-233-3.bstnma.fios.verizon.net ([72.93.233.3]:50955
-	"EHLO mail.wilsonet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751507AbZL2SMq (ORCPT
+	Tue, 29 Dec 2009 13:14:01 -0500
+Received: from out4.smtp.messagingengine.com ([66.111.4.28]:53614 "EHLO
+	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751536AbZL2SOA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Dec 2009 13:12:46 -0500
-Message-ID: <4B3A4698.4080705@wilsonet.com>
-Date: Tue, 29 Dec 2009 13:12:40 -0500
-From: Jarod Wilson <jarod@wilsonet.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
+	Tue, 29 Dec 2009 13:14:00 -0500
+X-Sasl-enc: bPQ/4ogFdNcptQ2Sb8mSL8KccC9uLrP/NoftumTBDTE6 1262110439
+Date: Tue, 29 Dec 2009 16:13:56 -0200
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Pavel Machek <pavel@ucw.cz>
+Subject: Re: [Bug #14942] gkrellm no longer shows all the temperatures on
+ thinkpad x60
+Message-ID: <20091229181356.GA30466@khazad-dum.debian.net>
+References: <LptzGUUXbTK.A.MSF.ymhOLB@chimera>
+ <NJVdobuNFNK.A.MHG.BnhOLB@chimera>
 MIME-Version: 1.0
-To: Dan Carpenter <error27@gmail.com>, Jarod Wilson <jarod@redhat.com>,
-       linux-input@vger.kernel.org, linux-media@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] input: imon driver for SoundGraph iMON/Antec Veris IR
- devices
-References: <20091228051155.GA14301@redhat.com> <20091229164856.GA29476@bicker>
-In-Reply-To: <20091229164856.GA29476@bicker>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <NJVdobuNFNK.A.MHG.BnhOLB@chimera>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+ 1CDB 0FE3
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/29/2009 12:01 PM, Dan Carpenter wrote:
->
-> I ran smatch (http://repo.or.cz/w/smatch.git) on it and there are
-> some bugs worth fixing.
->
-> drivers/input/misc/imon.c +331 free_imon_context(7) error: dereferencing freed memory 'context'
-> Move the debug line earlier.
->
-> drivers/input/misc/imon.c +1812 imon_probe(216) error: dereferencing undefined:  'context->idev'
-> drivers/input/misc/imon.c +1876 imon_probe(280) error: dereferencing undefined:  'context->touch'
-> The allocation func can return NULL.  They probably won't fail in real
-> life, but it will slightly annoy every person checking running smatch
-> over the entire kernel (me).
->
-> drivers/input/misc/imon.c +1979 imon_probe(383) error: double unlock 'mutex:&context->lock'
-> drivers/input/misc/imon.c +1983 imon_probe(387) error: double unlock 'mutex:&context->lock'
-> It sometimes unlocks both before and after the goto.
+On Tue, 29 Dec 2009, Rafael J. Wysocki wrote:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
+> 
+> The following bug entry is on the current list of known regressions
+> from 2.6.32.  Please verify if it still should be listed and let me know
+> (either way).
+> 
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14942
+> Subject		: gkrellm no longer shows all the temperatures on thinkpad x60
+> Submitter	: Pavel Machek <pavel@ucw.cz>
+> Date		: 2009-12-27 21:57 (3 days old)
+> References	: http://marc.info/?l=linux-kernel&m=126195107005565&w=4
+> Handled-By	: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
 
-Yeah, I think I've actually already fixed every one of these problems in 
-the past 24 hours (a few just a few minutes ago), stay tuned for a 
-repost, hopefully later today. :)
-
-Thanks much,
+Patch already in acpi-test, waiting push to mainline.
 
 -- 
-Jarod Wilson
-jarod@wilsonet.com
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
