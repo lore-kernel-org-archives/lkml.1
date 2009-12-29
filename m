@@ -1,50 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751704AbZL2Nqo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751859AbZL2NyL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751704AbZL2Nqo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Dec 2009 08:46:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751612AbZL2Nqn
+	id S1751859AbZL2NyL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Dec 2009 08:54:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751818AbZL2NyK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Dec 2009 08:46:43 -0500
-Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:59163 "EHLO
-	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751113AbZL2Nqn (ORCPT
+	Tue, 29 Dec 2009 08:54:10 -0500
+Received: from ppp-156-114.adsl.restena.lu ([158.64.156.114]:38539 "EHLO
+	bonbons.gotdns.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751630AbZL2NyJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Dec 2009 08:46:43 -0500
-Date: Tue, 29 Dec 2009 14:46:41 +0100
-From: Andreas Mohr <andi@lisas.de>
-To: Martin Knoblauch <spamtrap@knobisoft.de>
-Cc: linux-kernel@vger.kernel.org, Andreas Mohr <andi@lisas.de>
-Subject: Re: 2.6.33-next build errors (x86_64 defconfig) on RHEL-4.3
-Message-ID: <20091229134641.GA10515@rhlx01.hs-esslingen.de>
-References: <55527.63156.qm@web113308.mail.gq1.yahoo.com> <696574.90670.qm@web113305.mail.gq1.yahoo.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <696574.90670.qm@web113305.mail.gq1.yahoo.com>
-X-Priority: none
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 29 Dec 2009 08:54:09 -0500
+Date: Tue, 29 Dec 2009 14:54:03 +0100
+From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
+To: "Benjamin Li" <benli@broadcom.com>
+Cc: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "Michael Chan" <mchan@broadcom.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: BNX2: Kernel crashes with 2.6.31 and 2.6.31.9
+Message-ID: <20091229145403.39f82773@pluto.restena.lu>
+In-Reply-To: <1262077540.12520.4.camel@localhost>
+References: <20091229084929.54912c0c@pluto.restena.lu>
+	<1262077540.12520.4.camel@localhost>
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.6; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-On Tue, Dec 29, 2009 at 01:50:12AM -0800, Martin Knoblauch wrote:
->  Not surprisingly, the problem still exists in next-20091229 :-) But actually, I think it might be even as old as 2.6.31-rc3. See
+On Tue, 29 Dec 2009 01:05:40 "Benjamin Li" <benli@broadcom.com> wrote:
+> Hi Bruno,
 > 
-> http://lkml.org/lkml/2009/7/14/120
+> It looks like the the NULL dereference is happening at a0fc.
 > 
-> for reference. Different (still older toolchain), but very similar failure.
+> a0f8:       48 8b 42 70             mov 0x70(%rdx),%rax 
+> a0fc:       0f b7 10                movzwl (%rax),%edx
+> a0ff:       31 c0                   xor    %eax,%eax
 > 
-> @Andreas: did you ever had this resolved? I never saw a followup
+> The offset of 0x70 is the bp field in the bnx2_napi structure.  (Seen
+> in the bnx2_napi structure dump below)  These lines are found in the
+> routine, bnx2_get_hw_tx_cons() which look like they were inlined by
+> the compiler.  More specifically it looks like the dereference of the
+> hw_tx_cons_ptr failed.
+> 
+> cons = *bnapi->hw_tx_cons_ptr;
+> 
+> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=blob;f=drivers/net/bnx2.c;h=06b901152d4487fa04164437cc179661b44657fe;hb=74fca6a42863ffacaf7ba6f1936a9f228950f657#l2761
+> 
+> To be sure this is the case, could you send the .config file you are
+> using or if you could send me the bnx2 kernel module built with the
+> CFLAG '-g', then we can definitely verify where in the code it is
+> crashing.
+> 
+> Did you see anything suspicious in the system kernel logs?  If you
+> could isolate the logs from when the machine booted to when it crash
+> and send it to us it would be very helpful. 
 
-Sorry, I don't remember that any more (perhaps removing some CONFIG
-fixed it), especially since this problem was then overlayed by
-a __udivdi3 problem in the same low-versioned environment:
-http://lkml.org/lkml/2009/10/9/230
+It crashes every now and then (since netconsole is enabled it does not
+survive 24 hours :( ) while or just after transmitting log messages with
+netconsole, the messages being transmitted are logging that occurs with
+netfilter 'LOG' target.
 
-I thus decommissioned that RHEL3 installation and downgraded to RHEL5
-(it managed to do away with any custom kernel builds entirely, among
-other things - an interesting approach to fix the problem)
+Sample output as seen by netconsole recipient (1 packet per line, IP
+addresses masked):
 
-Andreas Mohr
+[ 2115.949606] (reject)output: IN= OUT=eth0
+SRC=***.**.*.** DST=**.***.**.***
+LEN=60 TOS=0x00 PREC=0x00 TTL=64 ID=29589
+DF
+PROTO=TCP
+SPT=58991 DPT=80
+WINDOW=5840
+RES=0x00
+SYN
+URGP=0
+
+[ 2115.949704] (reject)output: IN= OUT=eth0
+SRC=***.**.*.** DST=**.***.**.***
+[ 2115.949729] BUG: unable to handle kernel NULL pointer dereference at (null)
+[ 2115.949732] IP: [<ffffffffa00680fc>] bnx2_poll_work+0x2c/0x12d0 [bnx2]
+[ 2115.949742] PGD 5b6f0067 PUD 59c04067 PMD 0
+[ 2115.949744] Oops: 0000 [#1] SMP
+[ 2115.949746] last sysfs file: /sys/kernel/uevent_seqnum
+[ 2115.949749] CPU 3
+[ 2115.949750] Modules linked in: dm_round_robin scsi_dh_rdac ipmi_devintf netconsole squashfs configfs zlib_inflate ext2 loop dm_multipath scsi_dh dm_mod sg sr_mod cdrom ata_piix h
+pwdt qla2xxx ipmi_si ahci bnx2 ipmi_msghandler libata uhci_hcd ehci_hcd
+[ 2115.949764] Pid: 7926, comm: php-cgi Not tainted 2.6.31.9-x86_64 #1 ProLiant DL360 G5
+[ 2115.949766] RIP: 0010:[<ffffffffa00680fc>]  [<ffffffffa00680fc>] bnx2_poll_work+0x2c/0x12d0 [bnx2]
+
+Looks like netpoll is triggering suicide on BNX2.
+
+Any way to get the NULL-pointer non-fatal would help a lot! (any
+sensible thing to do when bnapi->hw_tx_cons_ptr is NULL that would
+allow the system to continue working without killing everything?)
+
+
+Regards,
+Bruno
