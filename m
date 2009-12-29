@@ -1,226 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752942AbZL2WO5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752975AbZL2WPM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752942AbZL2WO5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Dec 2009 17:14:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752279AbZL2WO4
+	id S1752975AbZL2WPM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Dec 2009 17:15:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752191AbZL2WPH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Dec 2009 17:14:56 -0500
-Received: from mail-ew0-f171.google.com ([209.85.219.171]:54842 "EHLO
-	mail-ew0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752277AbZL2WOz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Dec 2009 17:14:55 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :content-type;
-        b=o3YoaaXbbDib1R6CyvFIH+BuF00GTGHtvlSkb5ot57NZbSg9pch6VzCH4s8/MJVvWX
-         A6xWz6xVFR1S0RFWmqf6MaeaKcvXlile2qHWbuaP2Sq6s781vPdlcPas7lBNqiq8cBVS
-         9qEdyo4P8gQNlA5sHZCrjM6qT+5OXKJGPzbpc=
+	Tue, 29 Dec 2009 17:15:07 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:40761 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752953AbZL2WPC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Dec 2009 17:15:02 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Gertjan van Wingerde <gwingerde@gmail.com>
+Subject: Re: 2.6.33-rc2: Reported regressions 2.6.31 -> 2.6.32
+Date: Tue, 29 Dec 2009 23:15:31 +0100
+User-Agent: KMail/1.12.3 (Linux/2.6.33-rc2-tst; KDE/4.3.3; x86_64; ; )
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Network Development <netdev@vger.kernel.org>,
+       Linux Wireless List <linux-wireless@vger.kernel.org>
+References: <oBElxfTZdhL.A.bx.-vhOLB@chimera> <4B3A2497.1030506@gmail.com>
+In-Reply-To: <4B3A2497.1030506@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <925fecc30912291357q75022c29nea59450146f56049@mail.gmail.com>
-References: <925fecc30912291357q75022c29nea59450146f56049@mail.gmail.com>
-Date: Wed, 30 Dec 2009 01:14:53 +0300
-Message-ID: <925fecc30912291414k21866fbew19f41bfe0e8aeb22@mail.gmail.com>
-Subject: Re: Hussyfan Nymphets
-From: Gabrielle Hemphill <diqebuahekuyjo22400@gmail.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200912292315.31679.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-*
-*
-Lolita Porn ===>> http://beam.to/xxxvids
-*
-*
-ls nymphets
-hussyfan vicky
-underage preteens bbs r(at)ygold hussyfan
-hussyfan lolita
-lovely nymphets
-naughty nimphet hussyfan
-pthc pedo hussyfan r(at)ygold gallery
-vicky hussyfan
-nubile nymphets
-pthc bbs hussyfan
-banned ukranian nymphets hardcore
-nymphet pedo
-japanese nymphets
-pre teen nymphet
-cute nymphets
-nymphet bbs
-candy hussyfan bbs
-nymphet blog
-nymphet pics
-video nymphet
-nymphet models
-elite nymphets
-nude hussyfan
-hussyfan free
-ukrainian nymphet
-free nymphets
-incest lolita sex pthc hussyfan pedo gallery pics
-astral nymphets
-pthc hussyfan loli dorki
-hussyfan sasha
-preteen nymphet
-nymphet russian
-nymphet forum
-hussyfan
-hussyfan guestbook
-hussyfan lolitaguy babyshivid beautypink
-hussyfan zshare
-teen nymphets
-little nymphet
-hussyfan preteen
-free hussyfan
-pthc hussyfan
-usenet hussyfan
-forum hussyfan
-nymphets preteen
-pthc hussyfan pictures
-tiny nymphets
-pthc raygold hussyfan
-teen nymphet
-sweet nymphets
-hussyfan stories
-hussyfan sites
-nymphets studio
-young nymphet
-underage nymphet
-hussyfan pthc r(at)ygold babshivid
-preteen nymphets
-tiny angel nymphets
-model nymphets
-pedo pthc bbs cp hussyfan
-vicky r(at)ygold loli pthc cp hussyfan
-nymphet
-nymphet model
-preteen underage nymphet
-preteen nymphets bbs
-russian nymphet
-little lolita nymphets
-pedo cyber lolita pjk hussyfan
-young nymphets
-pthc hussyfan r(at)ygold
-nude teen nymphet girls top sites
-ls magazine sites nymphets
-hussyfan gallery
-nymphets ukrainian nymphet
-hussyfans
-nymphet portal
-eternal nymphets
-nymphets lolita
-hussyfan pthc
-child nymphets
-nude nymphets
-hussyfan asian girl naked
-banned russian nymphets hardcore
-nymphets
-youth hussyfan forum
-nymphet tgp
-lolita hussyfan videos
-hussyfan nude
-hussyfan suck
-non nude nymphets
-preteen hussyfan model
-ukranian nymphets
-erotic nymphets
-tiny nymphet nude
-bbs and nymphet
-nymphet lolita
-nymphet art
-who is jenny hussyfan
-young naked nymphets
-kingpass hussyfan
-hussyfan torrent
-naked nymphets
-hussyfan ru
-tiny nymphet tgp
-hussyfan hardcore girls
-underground nymphet
-nymphets art photography
-hussyfan forum
-video nymphets
-hussyfan newsgroup
-naked nymphet
-hussyfan pthc pics
-r(at)ygold hussyfan
-ukrainian nymphet models
-gallery nymphets
-nymphet porn
-hussyfan lordofthering
-underage nymphets
-nymphets land
-nude nymphet
-lolita hussyfan
-board hussyfan
-nymphet sex
-hussyfan rapidshare
-r(at)ygold pthc hussyfan
-young photography hussyfan
-ls magazine nymphet
-nymphet galleries
-lo nymphets
-hussyfan pthc r(at)ygold
-bbs nymphet
-nymphets bbs
-hussyfan bbs links
-ukrainian nymphets
-wild nymphets
-pthc, r(at)ygold, lsm, hussyfan
-r(at)ygold hussyfan pthc forum
-guestbook hussyfan
-nudism nymphet lolita
-really young nymphets
-hussyfan bbs
-acrobatic nymphets
-nymphets ukrainian
-preteen nude gallery pics hussyfan
-bbs hussyfan
-illegal hussyfan
-preteen little nymphets
-hussyfan board
-hussyfan preteen pics
-petite nymphets
-index of hussyfan
-young video models pedo nymphet lolita
-hussyfan torrents
-girl nymphets lolita
-lolita nymphets
-nymphets gallery
-very little nymphets
-foto hard hussyfan
-rapideshare hussyfan
-illegal nymphets
-lolita nymphet
-russian nymphets
-hussyfan model
-kinder hussyfan
-pthc hussyfan liluplanet
-hussyfan pthc trish&dragon
-magic nymphets
-young nymphets art
-free nymphet
-hussyfan kdquality
-young nymphets art young nymphet
-nymphet nude
-nymphets nude
-hussyfan sex
-hussyfan little girlie
-hussyfan nudes
-guestbook sandra hussyfan
-hussyfan little girlie pic
-preteen hussyfan
-hussyfan pics
-little nymphets
-emule server hussyfan
-nymphet girls
-parent directory hussyfan
-child hussyfan
-preteen nymphets art
-hussyfan photos
-top nymphets
-nymphet lolitas
+On Tuesday 29 December 2009, Gertjan van Wingerde wrote:
+> Hi Rafael,
+> 
+> On 12/29/09 16:26, Rafael J. Wysocki wrote:
+> > 
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14896
+> > Subject		: REGRESSION for RT2561/RT61 in 2.6.32, related to power saving
+> > Submitter	: Alan Stern <stern@rowland.harvard.edu>
+> > Date		: 2009-12-06 22:12 (24 days old)
+> > References	: http://marc.info/?l=linux-kernel&m=126013756829691&w=4
+> > Handled-By	: Gertjan van Wingerde <gwingerde@gmail.com>
+> > 
+> 
+> This one is fixed via a patch that is queued to be merged into 2.6.33. Is submitted
+> for stable as well.
+> See http://marc.info/?l=linux-wireless&m=126090994909576&w=2
+
+OK, bug entry updated accordingly.
+
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14731
+> > Subject		: rt61pci regression
+> > Submitter	: tim blechmann <tim@klingt.org>
+> > Date		: 2009-12-04 09:33 (26 days old)
+> > 
+> 
+> I believe this problem to be the same as the previous one, and the fix indicated above
+> should fix this as well.
+> Note however that the submitter had presumably unrelated issues that caused him not to 
+> be able to validate the workaround of disabling powersaving.
+
+Closed as a duplicate of bug #14896.
+
+Rafael
