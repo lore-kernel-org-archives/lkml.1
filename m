@@ -1,50 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752062AbZL2D5n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752144AbZL2EFj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752062AbZL2D5n (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Dec 2009 22:57:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751642AbZL2D5m
+	id S1752144AbZL2EFj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Dec 2009 23:05:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751530AbZL2EFi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Dec 2009 22:57:42 -0500
-Received: from mail-pz0-f171.google.com ([209.85.222.171]:61849 "EHLO
-	mail-pz0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751547AbZL2D5l (ORCPT
+	Mon, 28 Dec 2009 23:05:38 -0500
+Received: from mail-px0-f189.google.com ([209.85.216.189]:47855 "EHLO
+	mail-px0-f189.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751416AbZL2EFi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Dec 2009 22:57:41 -0500
+	Mon, 28 Dec 2009 23:05:38 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:cc:content-type;
-        b=BOGBhq0Egk/MgEG33o4uiAwTlc8zE/7SvxEtz5ywBlzX2yLfH3i1RQCD0zCyWAl0Ys
-         bnwS4wJPzO3tEmWFf/LEoT1XyxR9OxR3MhZ5AStsJaudGSs+GfYVTg6zOdJaH0hhBr88
-         Op1qNG3fAoCoyemc+6OleLEqhuoD81ip4Wu9U=
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=MnXOSsioK1g3MPW/pekn5rCr2pdiVYliFPbxP87f7sJjzvODeKy4y8LtdYuRQ2zI6g
+         /7U47vKorhxu2EjH6fQH65bzSTXvpf/ZsG1oqsDPxdu14jcXkMXiCbdpiSvGFU+XFTFR
+         7FM96tQ+Lvw3GzIZ32sesPAbsefYJvrhG+tgY=
 MIME-Version: 1.0
-Date: Tue, 29 Dec 2009 09:57:41 +0600
-Message-ID: <b9df5fa10912281957n5b0ab34fgc1b2ffb239fb8e87@mail.gmail.com>
-Subject: [PATCH] input, misc: Fix CONFIG_PM defination in wistron_btns.c
-From: Rakib Mullick <rakib.mullick@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Miloslav Trmac <mitr@volny.cz>
-Content-Type: text/plain; charset=ISO-8859-1
+In-Reply-To: <20091228164451.A687.A69D9226@jp.fujitsu.com>
+References: <20091228164451.A687.A69D9226@jp.fujitsu.com>
+Date: Tue, 29 Dec 2009 13:05:37 +0900
+Message-ID: <28c262360912282005x68315a62l7ffde637febc7646@mail.gmail.com>
+Subject: Re: [PATCH 1/4] vmstat: remove zone->lock from walk_zones_in_node
+From: Minchan Kim <minchan.kim@gmail.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>, Mel Gorman <mel@csn.ul.ie>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- Fix CONFIG_PM defination.
-We were warned by the following warning:
+On Mon, Dec 28, 2009 at 4:47 PM, KOSAKI Motohiro
+<kosaki.motohiro@jp.fujitsu.com> wrote:
+> The zone->lock is one of performance critical locks. Then, it shouldn't
+> be hold for long time. Currently, we have four walk_zones_in_node()
+> usage and almost use-case don't need to hold zone->lock.
 
-drivers/input/misc/wistron_btns.c:1331:5: warning: "CONFIG_PM" is not defined
+I agree.
 
-Signed-off-by: Rakib Mullick <rakib.mullick@gmail.com>
----
+We can use walk_zone_in_node freely to show the information related to zone.
 
---- linus/drivers/input/misc/wistron_btns.c	2009-12-28 12:37:50.000000000 +0600
-+++ rakib/drivers/input/misc/wistron_btns.c	2009-12-28 14:48:43.000000000 +0600
-@@ -1328,7 +1328,7 @@ static struct platform_driver wistron_dr
- 	.driver		= {
- 		.name	= "wistron-bios",
- 		.owner	= THIS_MODULE,
--#if CONFIG_PM
-+#ifdef CONFIG_PM
- 		.pm	= &wistron_pm_ops,
- #endif
- 	},
+- frag_show_print : the number of free pages per order.
+- pagetypeinfo_showfree_print : the number of free page per migration type
+- pagetypeinfo_showblockcount_print : the number of pages in zone per
+migration type
+- zoneinfo_show_print : many info about zone.
+
+Do we want to show exact value? No.
+If we want it, it's not enough zone->lock only.
+After all, All of things would be transient value.
+
+>
+> Thus, this patch move locking responsibility from walk_zones_in_node
+> to its sub function. Also this patch kill unnecessary zone->lock taking.
+>
+> Cc: Mel Gorman <mel@csn.ul.ie>
+> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Reviewed-by: Minchan Kim <minchan.kim@gmail.com>
+
+-- 
+Kind regards,
+Minchan Kim
