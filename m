@@ -1,90 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752792AbZL2MCf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752801AbZL2MFT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752792AbZL2MCf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Dec 2009 07:02:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752756AbZL2MCf
+	id S1752801AbZL2MFT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Dec 2009 07:05:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752760AbZL2MFS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Dec 2009 07:02:35 -0500
-Received: from astoria.ccjclearline.com ([64.235.106.9]:44558 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752740AbZL2MCe (ORCPT
+	Tue, 29 Dec 2009 07:05:18 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:53347 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752756AbZL2MFR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Dec 2009 07:02:34 -0500
-Date: Tue, 29 Dec 2009 07:01:49 -0500 (EST)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: short list of invalid Kconfig "select" directives
-Message-ID: <alpine.LFD.2.00.0912290700170.14826@localhost>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+	Tue, 29 Dec 2009 07:05:17 -0500
+Subject: Re: [PATCH 2/3] perf tools: remove pid option from stat
+From: Peter Zijlstra <peterz@infradead.org>
+To: Liming Wang <liming.wang@windriver.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Paul Mackerras <paulus@samba.org>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <1262075829-16257-2-git-send-email-liming.wang@windriver.com>
+References: <1262075829-16257-1-git-send-email-liming.wang@windriver.com>
+	 <1262075829-16257-2-git-send-email-liming.wang@windriver.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 29 Dec 2009 13:04:11 +0100
+Message-ID: <1262088251.7135.131.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 2009-12-29 at 16:37 +0800, Liming Wang wrote:
+> pid option is useless for stat, so remove it.
 
-  not sure if i posted this already, but it's a short list of Kconfig
-"select" directives that select non-existent CONFIG variables.  do
-with it what you will.
+Hmm, it shouldn't be.. and instead of removing it I would suggesting
+fixing this.
 
-===== CRYPTO_SHASH
-crypto/Kconfig:308:	select CRYPTO_SHASH
-crypto/Kconfig:446:	select CRYPTO_SHASH
-===== GCD
-arch/arm/plat-pxa/include/plat/i2c.h:39:*  7.  GCD      1 (Disables i2c unit response to general call messages as a slave)
-arch/mips/Kconfig:45:	select GCD
-drivers/i2c/busses/i2c-pxa.c:184:	PXA_BIT(ICR_GCD,    "GCD",	NULL),
-fs/jffs2/background.c:99:		/* Problem - immediately after bootup, the GCD spends a lot
-fs/jffs2/background.c:103:		 * doesn't help, either (presumably because userspace and GCD
-fs/jffs2/background.c:106:		 * This forces the GCD to slow the hell down.   Pulling an
-sound/core/Kconfig:8:	select GCD
-===== GENERIC_HAS_IOMAP
-arch/score/Kconfig:16:	select GENERIC_HAS_IOMAP
-arch/score/Kconfig:22:	select GENERIC_HAS_IOMAP
-arch/score/Kconfig:28:	select GENERIC_HAS_IOMAP
-===== HAVE_READQ
-arch/x86/Kconfig:22:	select HAVE_READQ
-===== HAVE_WRITEQ
-arch/x86/Kconfig:23:	select HAVE_WRITEQ
-===== MACH_NEO1973
-arch/arm/mach-s3c2442/Kconfig:32:	select MACH_NEO1973
-===== MPC5121_ADS_CPLD
-arch/powerpc/platforms/512x/Kconfig:18:	select MPC5121_ADS_CPLD
-===== PPC_FSL_BOOK3E
-arch/powerpc/platforms/85xx/Kconfig:151:	select PPC_FSL_BOOK3E
-===== S3C2410_PWM
-arch/arm/mach-s3c2442/Kconfig:33:	select S3C2410_PWM
-===== S3C_DEVICE_NAND
-arch/arm/plat-s3c24xx/Kconfig:11:	select S3C_DEVICE_NAND
-===== SFFSDR_FPGA
-sound/soc/davinci/Kconfig:40:	select SFFSDR_FPGA
-===== SIBYTE_CFE
-arch/mips/sibyte/Kconfig:74:	select SIBYTE_CFE
-===== SPI_MASTER_OF
-drivers/spi/Kconfig:139:	select SPI_MASTER_OF
-===== USB_GADGET_S3C_HSOTG_PIO
-drivers/usb/gadget/Kconfig:297:	select USB_GADGET_S3C_HSOTG_PIO
-===== XEN_XENBUS_FRONTEND
-drivers/input/Kconfig:168:	select XEN_XENBUS_FRONTEND
-drivers/video/Kconfig:2084:	select XEN_XENBUS_FRONTEND
+> Signed-off-by: Liming Wang <liming.wang@windriver.com>
+> ---
+>  tools/perf/builtin-stat.c |    3 ---
+>  1 files changed, 0 insertions(+), 3 deletions(-)
+> 
+> diff --git a/tools/perf/builtin-stat.c b/tools/perf/builtin-stat.c
+> index c70d720..e3b31a3 100644
+> --- a/tools/perf/builtin-stat.c
+> +++ b/tools/perf/builtin-stat.c
+> @@ -71,7 +71,6 @@ static int			run_idx				=  0;
+>  static int			run_count			=  1;
+>  static int			inherit				=  1;
+>  static int			scale				=  1;
+> -static pid_t			target_pid			= -1;
+>  static pid_t			child_pid			= -1;
+>  static int			null_run			=  0;
+>  
+> @@ -471,8 +470,6 @@ static const struct option options[] = {
+>  		     parse_events),
+>  	OPT_BOOLEAN('i', "inherit", &inherit,
+>  		    "child tasks inherit counters"),
+> -	OPT_INTEGER('p', "pid", &target_pid,
+> -		    "stat events on existing pid"),
+>  	OPT_BOOLEAN('a', "all-cpus", &system_wide,
+>  		    "system-wide collection from all CPUs"),
+>  	OPT_BOOLEAN('c', "scale", &scale,
 
-rday
---
 
-========================================================================
-Robert P. J. Day                               Waterloo, Ontario, CANADA
-
-            Linux Consulting, Training and Kernel Pedantry.
-
-Web page:                                          http://crashcourse.ca
-Twitter:                                       http://twitter.com/rpjday
-========================================================================
