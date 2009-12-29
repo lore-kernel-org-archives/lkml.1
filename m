@@ -1,85 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752666AbZL2I32@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752735AbZL2JFI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752666AbZL2I32 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Dec 2009 03:29:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751642AbZL2I31
+	id S1752735AbZL2JFI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Dec 2009 04:05:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752706AbZL2JE6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Dec 2009 03:29:27 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:50599 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750775AbZL2I30 (ORCPT
+	Tue, 29 Dec 2009 04:04:58 -0500
+Received: from mail.windriver.com ([147.11.1.11]:57432 "EHLO
+	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751642AbZL2JEv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Dec 2009 03:29:26 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:to:cc:subject:references:from:date:in-reply-to:message-id
-         :user-agent:mime-version:content-type;
-        b=dGYsMlnWZ/apegEWJ//1oPeARpbQ2TbN4hreupOn1AaXFXjaU64XYFnyoleC3PNQCP
-         acP1NhYi73EEL2p4k3h/JQHaU2qiSQvw1qvYkv+Ir0SuplHt/ZQbl0pj6nk1UO8HeIIn
-         x0lgGqUu+wE0Es+wF6McjxMuzWHQww3IXa+Aw=
-To: "Luke-Jr" <luke@dashjr.org>
-Cc: "linux-kernel\@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-omap\@vger.kernel.org" <linux-omap@vger.kernel.org>,
-       "Balbi Felipe \(Nokia-D\/Helsinki\)" <felipe.balbi@nokia.com>
-Subject: Re: [PATCH] OMAP2: add USB platform data and initialization for Nokia N800 and N810
-References: <200912290152.16357.luke@dashjr.org>
-From: Kalle Valo <kalle.valo@iki.fi>
-Date: Tue, 29 Dec 2009 10:29:22 +0200
-In-Reply-To: <200912290152.16357.luke@dashjr.org> (Luke-Jr's message of "Tue\, 29 Dec 2009 01\:52\:04 -0600")
-Message-ID: <87d41yxjx9.fsf@purkki.valot.fi>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 29 Dec 2009 04:04:51 -0500
+From: Liming Wang <liming.wang@windriver.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Paul Mackerras <paulus@samba.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       Liming Wang <liming.wang@windriver.com>
+Subject: [PATCH 1/3] perf tools: unify event type description
+Date: Tue, 29 Dec 2009 16:37:07 +0800
+Message-Id: <1262075829-16257-1-git-send-email-liming.wang@windriver.com>
+X-Mailer: git-send-email 1.6.0.3
+X-OriginalArrivalTime: 29 Dec 2009 09:03:39.0308 (UTC) FILETIME=[CFD026C0:01CA8865]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Luke-Jr" <luke@dashjr.org> writes:
+make event type description to a unified array and
+the array index consistent to perf_type_id.
 
-> Add platform data and initialization for USB on Nokia N800 and N810 devices
-> via the TUSB6010 chipset.
+Signed-off-by: Liming Wang <liming.wang@windriver.com>
+---
+ tools/perf/util/parse-events.c |   19 ++++++++++---------
+ 1 files changed, 10 insertions(+), 9 deletions(-)
 
-Excellent, thank you for doing this.
-
-> Tested on Nokia N810 in Linux-OMAP tree. Mainline is not bootable yet.
-
-What's the problem in mainline? I haven't tested n8x0 for months :(
-
-> --- a/arch/arm/mach-omap2/Kconfig
-> +++ b/arch/arm/mach-omap2/Kconfig
-> @@ -117,6 +117,11 @@ config MACH_NOKIA_N8X0
->  	select MACH_NOKIA_N810
->  	select MACH_NOKIA_N810_WIMAX
->  
-> +config MACH_NOKIA_N8X0_USB
-> +	bool
-> +	depends on MACH_NOKIA_N8X0 && MACH_OMAP2_TUSB6010
-> +	default y
-> +
-
-Is is really needed to add new kconfig variable? Can't we just use
-MACH_OMAP2_TUSB6010 in code?
-
-> --- /dev/null
-> +++ b/arch/arm/mach-omap2/board-n8x0-usb.c
-
-I think a separate file is not needed, it's not that much code. I
-recommend to just adding it directly to board-n8x0.c. It's simple and
-easier for everyone.
-
-> --- a/arch/arm/mach-omap2/board-n8x0.c
-> +++ b/arch/arm/mach-omap2/board-n8x0.c
-> @@ -109,8 +109,16 @@ static void __init n8x0_init_irq(void)
->  	omap_gpio_init();
->  }
->  
-> +#ifdef CONFIG_MACH_NOKIA_N8X0_LCD
-> +extern void n8x0_usb_init(void);
-> +#else
-> +static inline void n8x0_usb_init (void) {}
-> +#endif
-
-CONFIG_MACH_NOKIA_N8X0_LCD does not look right here.
-
+diff --git a/tools/perf/util/parse-events.c b/tools/perf/util/parse-events.c
+index e5bc0fb..dc585a8 100644
+--- a/tools/perf/util/parse-events.c
++++ b/tools/perf/util/parse-events.c
+@@ -835,11 +835,12 @@ int parse_filter(const struct option *opt __used, const char *str,
+ }
+ 
+ static const char * const event_type_descriptors[] = {
+-	"",
+ 	"Hardware event",
+ 	"Software event",
+ 	"Tracepoint event",
+ 	"Hardware cache event",
++	"Raw hardware event descriptor",
++	"Hardware breakpoint",
+ };
+ 
+ /*
+@@ -872,7 +873,7 @@ static void print_tracepoint_events(void)
+ 			snprintf(evt_path, MAXPATHLEN, "%s:%s",
+ 				 sys_dirent.d_name, evt_dirent.d_name);
+ 			printf("  %-42s [%s]\n", evt_path,
+-				event_type_descriptors[PERF_TYPE_TRACEPOINT+1]);
++				event_type_descriptors[PERF_TYPE_TRACEPOINT]);
+ 		}
+ 		closedir(evt_dir);
+ 	}
+@@ -892,9 +893,7 @@ void print_events(void)
+ 	printf("List of pre-defined events (to be used in -e):\n");
+ 
+ 	for (i = 0; i < ARRAY_SIZE(event_symbols); i++, syms++) {
+-		type = syms->type + 1;
+-		if (type >= ARRAY_SIZE(event_type_descriptors))
+-			type = 0;
++		type = syms->type;
+ 
+ 		if (type != prev_type)
+ 			printf("\n");
+@@ -919,17 +918,19 @@ void print_events(void)
+ 			for (i = 0; i < PERF_COUNT_HW_CACHE_RESULT_MAX; i++) {
+ 				printf("  %-42s [%s]\n",
+ 					event_cache_name(type, op, i),
+-					event_type_descriptors[4]);
++					event_type_descriptors[PERF_TYPE_HW_CACHE]);
+ 			}
+ 		}
+ 	}
+ 
+ 	printf("\n");
+-	printf("  %-42s [raw hardware event descriptor]\n",
+-		"rNNN");
++	printf("  %-42s [%s]\n",
++		"rNNN", event_type_descriptors[PERF_TYPE_RAW]);
+ 	printf("\n");
+ 
+-	printf("  %-42s [hardware breakpoint]\n", "mem:<addr>[:access]");
++	printf("  %-42s [%s]\n",
++			"mem:<addr>[:access]",
++			event_type_descriptors[PERF_TYPE_BREAKPOINT]);
+ 	printf("\n");
+ 
+ 	print_tracepoint_events();
 -- 
-Kalle Valo
+1.6.0.3
+
