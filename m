@@ -1,56 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752144AbZL2UAk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752260AbZL2UCv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752144AbZL2UAk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Dec 2009 15:00:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752065AbZL2UAk
+	id S1752260AbZL2UCv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Dec 2009 15:02:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752231AbZL2UCu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Dec 2009 15:00:40 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:56300 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752023AbZL2UAi convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Dec 2009 15:00:38 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=W+B6SGkWNR/wh2jWWnkcWynPs3Rl30NRYDsZOMFPMT0l4rvBF7is6C05PlZmQSZs84
-         z+BelyCAkiq0FF2lavVPhr7kBurbMcfUz1WdLW7C+eOdXbqlkbAIQD7+oS6pBM7rQpKk
-         EIWsNANERZicYmkTlMH6bO4dt4nNyZwj+TyqA=
+	Tue, 29 Dec 2009 15:02:50 -0500
+Received: from mail.sf-mail.de ([62.27.20.61]:43208 "EHLO mail.sf-mail.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752187AbZL2UCs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Dec 2009 15:02:48 -0500
+From: Rolf Eike Beer <eike-kernel@sf-tec.de>
+To: Julia Lawall <julia@diku.dk>
+Subject: Re: [PATCH 3/5] drivers/scsi : Correct the size argument to kmalloc
+Date: Tue, 29 Dec 2009 21:02:42 +0100
+User-Agent: KMail/1.13.0 (Linux/2.6.31.5-0.1-desktop; KDE/4.3.85; i686; ; )
+Cc: James.Bottomley@suse.de, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+References: <Pine.LNX.4.64.0912292015420.4001@ask.diku.dk>
+In-Reply-To: <Pine.LNX.4.64.0912292015420.4001@ask.diku.dk>
 MIME-Version: 1.0
-In-Reply-To: <LptzGUUXbTK.A.MSF.ymhOLB@chimera>
-References: <LptzGUUXbTK.A.MSF.ymhOLB@chimera>
-Date: Tue, 29 Dec 2009 21:00:35 +0100
-Message-ID: <b170af450912291200r73a56d55n5e9a68043a503907@mail.gmail.com>
-Subject: Re: 2.6.33-rc2: Reported regressions from 2.6.32
-From: =?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Network Development <netdev@vger.kernel.org>,
-       Linux ACPI <linux-acpi@vger.kernel.org>,
-       Linux PM List <linux-pm@lists.linux-foundation.org>,
-       Linux SCSI List <linux-scsi@vger.kernel.org>,
-       Linux Wireless List <linux-wireless@vger.kernel.org>,
-       DRI <dri-devel@lists.sourceforge.net>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: multipart/signed;
+  boundary="nextPart1699455.DbQ32g4QYV";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200912292102.43373.eike-kernel@sf-tec.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/12/29 Rafael J. Wysocki <rjw@sisk.pl>:
-> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=14910
-> Subject         : Stable version 2.6.32.2 broke my KMS Radeon setup
-> Submitter       : Ruud Linders <kernelml@xs4all.nl>
-> Date            : 2009-12-20 12:02 (10 days old)
-> References      : http://marc.info/?l=linux-kernel&m=126131105608871&w=4
+--nextPart1699455.DbQ32g4QYV
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-Has patch (I think it was even submitted to Linus).
+Julia Lawall wrote:
+> From: Julia Lawall <julia@diku.dk>
+>=20
+> In each case, the destination of the allocation has type struct **, so the
+> elements of the array should have pointer type, not structure type.
 
--- 
-Rafał
+Maybe they should even by kcalloc'ed?
+
+Eike
+
+--nextPart1699455.DbQ32g4QYV
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.12 (GNU/Linux)
+
+iEYEABECAAYFAks6YGMACgkQXKSJPmm5/E6KCQCgnrkOEo9hY7DsSefSyUa1QSdj
+2isAn2F4oFROAFlqgHz5UWGrRjyh+yGp
+=scYj
+-----END PGP SIGNATURE-----
+
+--nextPart1699455.DbQ32g4QYV--
