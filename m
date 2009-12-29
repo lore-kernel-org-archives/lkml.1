@@ -1,167 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752647AbZL2F44@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752054AbZL2GIT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752647AbZL2F44 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Dec 2009 00:56:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751764AbZL2F4z
+	id S1752054AbZL2GIT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Dec 2009 01:08:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750877AbZL2GIS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Dec 2009 00:56:55 -0500
-Received: from e31.co.us.ibm.com ([32.97.110.149]:58059 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750855AbZL2F4y (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Dec 2009 00:56:54 -0500
-Date: Mon, 28 Dec 2009 23:56:53 -0600
+	Tue, 29 Dec 2009 01:08:18 -0500
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:43090 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750725AbZL2GIR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Dec 2009 01:08:17 -0500
+Date: Tue, 29 Dec 2009 00:08:15 -0600
 From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Michael Stone <michael@laptop.org>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       linux-security-module@vger.kernel.org, Andi Kleen <andi@firstfloor.org>,
-       David Lang <david@lang.hm>, Oliver Hartkopp <socketcan@hartkopp.net>,
+To: Bryan Donlan <bdonlan@gmail.com>
+Cc: Pavel Machek <pavel@ucw.cz>, Valdis.Kletnieks@vt.edu,
+       Michael Stone <michael@laptop.org>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, linux-security-module@vger.kernel.org,
+       Andi Kleen <andi@firstfloor.org>, David Lang <david@lang.hm>,
+       Oliver Hartkopp <socketcan@hartkopp.net>,
        Alan Cox <alan@lxorguk.ukuu.org.uk>,
        Herbert Xu <herbert@gondor.apana.org.au>,
-       Valdis Kletnieks <Valdis.Kletnieks@vt.edu>,
-       Bryan Donlan <bdonlan@gmail.com>, Evgeniy Polyakov <zbr@ioremap.net>,
+       Evgeniy Polyakov <zbr@ioremap.net>,
        "C. Scott Ananian" <cscott@cscott.net>,
        James Morris <jmorris@namei.org>,
        "Eric W. Biederman" <ebiederm@xmission.com>,
        Bernie Innocenti <bernie@codewiz.org>,
        Mark Seaborn <mrs@mythic-beasts.com>,
        Randy Dunlap <randy.dunlap@oracle.com>,
-       =?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>,
+       Am?rico Wang <xiyou.wangcong@gmail.com>,
        Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
        Samir Bellabes <sam@synack.fr>,
-       Casey Schaufler <casey@schaufler-ca.com>, Pavel Machek <pavel@ucw.cz>,
-       Al Viro <viro@ZenIV.linux.org.uk>
+       Casey Schaufler <casey@schaufler-ca.com>
 Subject: Re: RFC: disablenetwork facility. (v4)
-Message-ID: <20091229055653.GB23714@us.ibm.com>
-References: <20091228181316.GA16277@us.ibm.com>
- <20091229050114.GC14362@heat>
+Message-ID: <20091229060815.GA25125@us.ibm.com>
+References: <20091227190802.GH11737@elf.ucw.cz>
+ <20091228060759.GB13266@heat>
+ <20091228101006.GA19984@elf.ucw.cz>
+ <8817.1262011044@localhost>
+ <20091228205511.GD1637@ucw.cz>
+ <3e8340490912281333l1459f769yf621a36ad1ed6482@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20091229050114.GC14362@heat>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <3e8340490912281333l1459f769yf621a36ad1ed6482@mail.gmail.com>
 User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Michael Stone (michael@laptop.org):
-> Serge,
+Quoting Bryan Donlan (bdonlan@gmail.com):
+> On Mon, Dec 28, 2009 at 3:55 PM, Pavel Machek <pavel@ucw.cz> wrote:
+> > On Mon 2009-12-28 09:37:24, Valdis.Kletnieks@vt.edu wrote:
+> >> On Mon, 28 Dec 2009 11:10:06 +0100, Pavel Machek said:
+> >>
+> >> > a) make disablenetwork reset to "enablenetwork" during setuid exec
+> >>
+> >> That won't work either.  If you only make it 'setuid==0' binaries, you still
+> >> break 'setuid-FOO' binaries that require the net. If you just check the setuid
+> >> bit, it allows a trivial escape by creating a setuid-yourself binary and using
+> >> that to exec something else (now with network access, because we apparently
+> >> don't have a way to remember the previous setting).
+> >
+> >
+> > it is really only required for binaries setuid to someone else, but
+> > that would be too ugly. (Plus, as someone said, ping is great for
+> > leaking data out.)
 > 
-> I think that Pavel's point, at its strongest and most general, could be
-> rephrased as:
+> No, this is not sufficient; one needs only to find a setuid process
+> that can be convinced to run a program with the original (pre-suid)
+> privileges. For example, one could invoke gpg (older versions setuid
+> so it can lock memory, executes user code for the passphrase input
+> agent) or pulseaudio (in some cases setuid to go realtime, loads user
+> plugins) or screen (setuid for sharing sessions, obviously executes
+> user programs) or at/cron (did you remember to deny access to these?)
+> ...
 > 
->   "Adding *any* interesting isolation facility to the kernel breaks backwards
->    compatibility for *some* program [in a way that violates security goals]."
+> Or one can target a non-root setuid program that may have security
+> holes - how about nethack?
 > 
-> The reason is the one that I identified in my previous note:
+> While in modern distros these uses of setuid may be rare, they can
+> exist, and under the old security model they were safe. Not so
+> anymore. As such, re-enabling network access upon executing a setuid
+> program is not acceptable.
 > 
->   "The purpose of isolation facilities is to create membranes inside which
->    grievous security faults are converted into availability faults."
+> That said, I do feel this is a separate issue. The process should
+> first drop its ability to suid; then it can freely apply additional
+> restrictions without there being any risk of breaking setuid
+> applications.
 > 
-> The question then is simply:
-> 
->   "How do we want to deal with the compatibility-breaking changes created by
->    introducing new isolation facilities?"
-> 
-> So far, I've seen the following suggestions:
-> 
->   a) setuid restores pre-isolation semantics
-> 
->         - Doesn't work for me because it violates the security guarantee of the
->           isolation primitive
-> 
->   b) setuid is an escape-hatch
-> 
->         - Probably the cleanest in the long-run
-> 
->         - Doesn't, by itself, suffice for Pavel since it violates backwards
->           compatibility
-> 
->   c) signal to the kernel through a privileged mechanism that
->      backwards-incompatible isolation may or may not be used
-> 
->         - No problems seen so far.
-> 
-> I would be happy with (c), assuming we can agree on an appropriate signalling
-> mechanism and default.
-> 
-> So far, two defaults have been proposed:
-> 
->   default-deny incompatible isolation (Pavel)
->   default-permit incompatible isolation (Michael)
-> 
-> So far, several signalling mechanisms have been proposed:
-> 
->   1) enabling a kernel config option implies default-permit
-> 
->         - My favorite; apparently insufficient for Pavel?
+> In short, how does this sound:
+> * Add an API to allow processes to permanently revoke their own
+> ability to gain privileges from setuid-exec
 
-default under what conditions?  any setuid?  setuid-root?
+Well, this is possible now, but requires privilege:  Remove
+any bit not in pP from the bounding set.
 
->   2) default-deny; disablesuid grants disablenetwork
-> 
->         - "disablesuid" is my name for the idea of dropping the privilege of
->           exec'ing setuid binaries
-> 
->         - Suggested by Pavel and supported by several others.
-> 
->         - I think it has the same backwards-compatibility problem as
->           disablenetwork: disablesuid is an isolation primitive.
-> 
->   3) default-deny; dropping a capability from the bounding set grants "permit"
-> 
->         - Suggested by Serge; seems nicely fine-grained but rather indirect
+Removing the requirement for privilege to do so has some conerns.  Do we
+force a task to then run with absolutely no capabilities, or can it just
+stop itself from gaining new ones?  If the latter, then we are close to
+re-raising the sendmail-capabilities bug.  The main difference would be
+that you must already have the capbilities you want to keep, but I'm
+not convinced that's sufficient.
 
-Actually I think it's the opposite of what you said here:  so long as the
-capability is in pE, you can regain network.  So it would require a privileged
-process early on (like init or login) to remove the capability from the
-bounding set (bc doing so requires CAP_SETPCAP), but once that was done,
-the resulting process and it's children could not require the capability,
-and, without the capability, could not regain network.  Point being that
-privileged userspace had to actively allow userspace to trap a setuid root
-binary without networking.
+A function which can be called without privilege, which empties out
+all capability sets and the bounding set, that may be safe.  Still might
+cause a setuid-root app which is running as root but with no privilege
+to be confused and mess up the system...
 
-I think during exec we can simply check for this capability in pE, and
-if present then re-enable network if turned off.  Then setuid-root binaries
-will raise that bit (if it's in the bounding set) automatically.  Now,
-that means setuid-nonroot binaries will not reset network.  Though you
-could make that happen by doing setcap cap_net_allownet+pe /the/file.
-Does that suffice?
-
->   4) default-deny; setting a sysctl implies permit
+> * Add this disablenetwork facility, conditional on dropping
+> setuid-exec abilities
 > 
->         - Suggested by Serge; works fine for me
-
-That still leaves the question of when we re-allow network.  Any
-setuid?
-
->   5) default-deny; setting a kernel boot argument implies permit
+> This also paves the way for:
+> * Allow processes that have dropped said suid ability to freely create
+> new namespaces (and chroot)
 > 
->         - Suggested by Serge; I like the sysctl better.
-> 
-> I am happiest with (1) and, if (1) isn't good enough, with (4).
-> 
-> Pavel, what do you think of (4)?
-> 
-> Regards,
-> 
-> Michael
-> 
-> P.S. - I'd be happy to know more about existing precedent on introducing
-> compatibility-breaking changes if any comes to mind. (For example, how were the
-> Linux-specific rlimits handled?)
-> 
-> P.P.S. - On a completely unrelated note: imagine trying to use SELinux (or your
-> favorite MAC framework) to restrict the use of prctl(PR_SET_NETWORK,
-> PR_NETWORK_OFF). Am I right that sys_prctl() contains a
-> time-of-check-to-time-of-use (TOCTTOU) race (with security_task_prctl() as the
-> check and with prctl_set_network() as the use) as a result of the actual
-> argument being passed by address rather than by value?
-
-I'm probably misunderstanding your question, but just in case I'm not:  the
-answer is that you wouldn't use the prctl interface anyway.  You would strictly
-use domain transitions.  Instead of doing prctl(PR_SET_NETWORK, PR_NETWORK_OFF)
-you would move yourself from the user_u:user_r:network_allowed domain to the
-user_u:user_r:network_disallowed domain.
-
--serge
+> Which, combined with doing whatever audits are necessary to allow
+> cross-network-namespace uses of unix domain sockets, actually
+> eliminates the need for the disablenetwork API. :)
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-security-module" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
