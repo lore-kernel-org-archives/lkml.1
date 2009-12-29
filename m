@@ -1,82 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752354AbZL2UNa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752226AbZL2UUG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752354AbZL2UNa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Dec 2009 15:13:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752190AbZL2UN3
+	id S1752226AbZL2UUG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Dec 2009 15:20:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751871AbZL2UUF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Dec 2009 15:13:29 -0500
-Received: from mgw1.diku.dk ([130.225.96.91]:53334 "EHLO mgw1.diku.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751554AbZL2UN2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Dec 2009 15:13:28 -0500
-Date: Tue, 29 Dec 2009 21:13:26 +0100 (CET)
-From: Julia Lawall <julia@diku.dk>
-To: Rolf Eike Beer <eike-kernel@sf-tec.de>
-Cc: James.Bottomley@suse.de, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH 3/5] drivers/scsi : Correct the size argument to kmalloc
-In-Reply-To: <200912292102.43373.eike-kernel@sf-tec.de>
-Message-ID: <Pine.LNX.4.64.0912292113110.4001@ask.diku.dk>
-References: <Pine.LNX.4.64.0912292015420.4001@ask.diku.dk>
- <200912292102.43373.eike-kernel@sf-tec.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 29 Dec 2009 15:20:05 -0500
+Received: from vms173015pub.verizon.net ([206.46.173.15]:61128 "EHLO
+	vms173015pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751524AbZL2UUE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Dec 2009 15:20:04 -0500
+Date: Tue, 29 Dec 2009 15:19:44 -0500 (EST)
+From: Len Brown <lenb@kernel.org>
+X-X-Sender: lenb@localhost.localdomain
+To: Sid Boyce <sboyce@blueyonder.co.uk>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, x86@kernel.org
+Subject: Re: All kernels after 2.6.32-git10  show only 1 CPU ** NOT Fixed in
+ 2.6.33-rc2 either **
+In-reply-to: <4B393CDF.5040404@blueyonder.co.uk>
+Message-id: <alpine.LFD.2.00.0912291512380.14938@localhost.localdomain>
+References: <4B324B76.9020901@blueyonder.co.uk>
+ <4B33670C.7050503@blueyonder.co.uk> <4B341149.9010106@blueyonder.co.uk>
+ <4B363EEE.8020108@blueyonder.co.uk>
+ <alpine.LFD.2.00.0912261457550.4089@localhost.localdomain>
+ <4B37F16D.1040000@blueyonder.co.uk> <4B37F3F8.5000108@blueyonder.co.uk>
+ <4B38C3AF.1060509@blueyonder.co.uk> <4B393CDF.5040404@blueyonder.co.uk>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Julia Lawall <julia@diku.dk>
+On Mon, 28 Dec 2009, Sid Boyce wrote:
 
-In each case, the destination of the allocation has type struct **, so the
-elements of the array should have pointer type, not structure type.
+> This dmesg is from a freshly built 2.6.32. The following do not appear
+> in later 2.6.32-git or 2.6.33-rc kernels.
+> # grep LAPIC /DMESG_2.6.32_tindog
+> ACPI: LAPIC (acpi_id[0x00] lapic_id[0x00] enabled)
+> ACPI: LAPIC (acpi_id[0x01] lapic_id[0x01] enabled)
+> ACPI: LAPIC (acpi_id[0x02] lapic_id[0x02] disabled)
+> ACPI: LAPIC (acpi_id[0x03] lapic_id[0x03] disabled)
+> ACPI: LAPIC_NMI (acpi_id[0x00] high edge lint[0x1])
+> ACPI: LAPIC_NMI (acpi_id[0x01] high edge lint[0x1])
+> ACPI: LAPIC_NMI (acpi_id[0x02] high edge lint[0x1])
+> ACPI: LAPIC_NMI (acpi_id[0x03] high edge lint[0x1]
 
-The semantic patch that makes this change is as follows:
-(http://coccinelle.lip6.fr/)
+Right, your local apic is not found, ie this is missing
+in the 2.6.33 dmesg:
 
-// <smpl>
-@disable sizeof_type_expr@
-type T;
-T **x;
-@@
+ACPI: Local APIC address 0xfee00000
 
-  x =
-  <+...sizeof(
-- T
-+ *x
-  )...+>
-// </smpl>
+Strange, as CONFIG_X86_LOCAL_APIC=y
 
-Signed-off-by: Julia Lawall <julia@diku.dk>
+-Len
+Len Brown, Intel Open Source Technology Center
 
----
- drivers/scsi/aic94xx/aic94xx_init.c |    4 ++--
- drivers/scsi/ch.c                   |    2 +-
- 2 files changed, 3 insertions(+), 3 deletions(-)
 
-diff -u -p a/drivers/scsi/aic94xx/aic94xx_init.c b/drivers/scsi/aic94xx/aic94xx_init.c
---- a/drivers/scsi/aic94xx/aic94xx_init.c
-+++ b/drivers/scsi/aic94xx/aic94xx_init.c
-@@ -687,9 +687,9 @@ static int asd_register_sas_ha(struct as
- {
- 	int i;
- 	struct asd_sas_phy   **sas_phys =
--		kmalloc(ASD_MAX_PHYS * sizeof(struct asd_sas_phy), GFP_KERNEL);
-+		kcalloc(ASD_MAX_PHYS, sizeof(*sas_phys), GFP_KERNEL);
- 	struct asd_sas_port  **sas_ports =
--		kmalloc(ASD_MAX_PHYS * sizeof(struct asd_sas_port), GFP_KERNEL);
-+		kcalloc(ASD_MAX_PHYS, sizeof(*sas_ports), GFP_KERNEL);
- 
- 	if (!sas_phys || !sas_ports) {
- 		kfree(sas_phys);
-diff -u -p a/drivers/scsi/ch.c b/drivers/scsi/ch.c
---- a/drivers/scsi/ch.c
-+++ b/drivers/scsi/ch.c
-@@ -351,7 +351,7 @@ ch_readconfig(scsi_changer *ch)
- 	}
- 
- 	/* look up the devices of the data transfer elements */
--	ch->dt = kmalloc(ch->counts[CHET_DT]*sizeof(struct scsi_device),
-+	ch->dt = kcalloc(ch->counts[CHET_DT], sizeof(*ch->dt),
- 			 GFP_KERNEL);
- 
- 	if (!ch->dt) {
