@@ -1,17 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753792AbZL2Ppb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753171AbZL2Pcj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753792AbZL2Ppb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Dec 2009 10:45:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752383AbZL2PpF
+	id S1753171AbZL2Pcj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Dec 2009 10:32:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752875AbZL2Pch
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Dec 2009 10:45:05 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:39184 "EHLO ogre.sisk.pl"
+	Tue, 29 Dec 2009 10:32:37 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:39164 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753185AbZL2Pcs convert rfc822-to-8bit (ORCPT
+	id S1752763AbZL2Pcd convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Dec 2009 10:32:48 -0500
+	Tue, 29 Dec 2009 10:32:33 -0500
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Miles Lane" <miles.lane@gmail.com>
+       "Gautham R Shenoy" <ego@in.ibm.com>, "Ingo Molnar" <mingo@elte.hu>,
+       "Mike Galbraith" <efault@gmx.de>,
+       "Peter Zijlstra" <peterz@infradead.org>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
 References: <oBElxfTZdhL.A.bx.-vhOLB@chimera>
 In-Reply-To: <oBElxfTZdhL.A.bx.-vhOLB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -19,10 +22,10 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <srmJ8vMxKPH.A.sdE.8xhOLB@chimera>
-Subject: [Bug #14485] System lockup running "cat /sys/kernel/debug/dri/0/i915_regs"
+Message-ID: <srmJ8vMxKPH.A.pME.sxhOLB@chimera>
+Subject: [Bug #14621] specjbb2005 and aim7 regression with 2.6.32-rc kernels
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Tue, 29 Dec 2009 16:28:43 +0100 (CET)
+Date: Tue, 29 Dec 2009 16:28:44 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -35,10 +38,10 @@ introduced between 2.6.31 and 2.6.32.  Please verify if it still should
 be listed and let me know (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14485
-Subject		: System lockup running "cat /sys/kernel/debug/dri/0/i915_regs"
-Submitter	: Miles Lane <miles.lane@gmail.com>
-Date		: 2009-10-26 4:00 (65 days old)
-References	: http://marc.info/?l=linux-kernel&m=125652968117713&w=4
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14621
+Subject		: specjbb2005 and aim7 regression with 2.6.32-rc kernels
+Submitter	: Zhang, Yanmin <yanmin_zhang@linux.intel.com>
+Date		: 2009-11-06 7:38 (54 days old)
+References	: http://marc.info/?l=linux-kernel&m=125749310413174&w=4
 
 
