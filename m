@@ -1,19 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752510AbZL2PJF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752590AbZL2PNQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752510AbZL2PJF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Dec 2009 10:09:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752375AbZL2PIz
+	id S1752590AbZL2PNQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Dec 2009 10:13:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752557AbZL2PNO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Dec 2009 10:08:55 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:38856 "EHLO ogre.sisk.pl"
+	Tue, 29 Dec 2009 10:13:14 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:38900 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752274AbZL2PIx convert rfc822-to-8bit (ORCPT
+	id S1752346AbZL2PNL convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Dec 2009 10:08:53 -0500
+	Tue, 29 Dec 2009 10:13:11 -0500
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Ben Hutchings" <ben@decadent.org.uk>,
-       "David S. Miller" <davem@davemloft.net>,
-       "Delete This Account" <speedyboyinovator@hotmail.com>
+       "Andrew Lutomirski" <luto@mit.edu>
 References: <LptzGUUXbTK.A.MSF.ymhOLB@chimera>
 In-Reply-To: <LptzGUUXbTK.A.MSF.ymhOLB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -21,10 +19,10 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <NJVdobuNFNK.A.Sw.tnhOLB@chimera>
-Subject: [Bug #14791] Something has been broken in the network stack this week
+Message-ID: <NJVdobuNFNK.A.Zg.inhOLB@chimera>
+Subject: [Bug #14887] suspend doesn't work on X200s
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Tue, 29 Dec 2009 16:05:38 +0100 (CET)
+Date: Tue, 29 Dec 2009 16:09:57 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -37,9 +35,10 @@ from 2.6.32.  Please verify if it still should be listed and let me know
 (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14791
-Subject		: Something has been broken in the network stack this week
-Submitter	: Delete This Account <speedyboyinovator@hotmail.com>
-Date		: 2009-12-12 13:06 (18 days old)
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14887
+Subject		: suspend doesn't work on X200s
+Submitter	: Andrew Lutomirski <luto@mit.edu>
+Date		: 2009-12-22 0:45 (8 days old)
+References	: http://marc.info/?l=linux-kernel&m=126144274102396&w=4
 
 
