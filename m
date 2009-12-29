@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752912AbZL2Pb6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753013AbZL2Pcw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752912AbZL2Pb6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Dec 2009 10:31:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752333AbZL2Pb4
+	id S1753013AbZL2Pcw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Dec 2009 10:32:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752875AbZL2Pcq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Dec 2009 10:31:56 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:39156 "EHLO ogre.sisk.pl"
+	Tue, 29 Dec 2009 10:32:46 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:39169 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752274AbZL2Pby convert rfc822-to-8bit (ORCPT
+	id S1753019AbZL2Pcp convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Dec 2009 10:31:54 -0500
+	Tue, 29 Dec 2009 10:32:45 -0500
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "=?utf-8?q?Eddy=20Petri=C8=99or?=" <eddy.petrisor+linbug@gmail.com>
+       "Duncan" <1i5t5.duncan@cox.net>, "Greg Kroah-Hartman" <gregkh@suse.de>
 References: <oBElxfTZdhL.A.bx.-vhOLB@chimera>
 In-Reply-To: <oBElxfTZdhL.A.bx.-vhOLB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -19,8 +19,8 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <srmJ8vMxKPH.A.6DF.byhOLB@chimera>
-Subject: [Bug #14417] [Regression] Wireless driver iwlagn+iwlcore doesn't work after resume (needs reloading)
+Message-ID: <srmJ8vMxKPH.A.a3E.PyhOLB@chimera>
+Subject: [Bug #14442] resume after hibernate: /dev/sdb drops and returns as /dev/sde
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Date: Tue, 29 Dec 2009 16:28:42 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -35,9 +35,9 @@ introduced between 2.6.31 and 2.6.32.  Please verify if it still should
 be listed and let me know (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14417
-Subject		: [Regression] Wireless driver iwlagn+iwlcore doesn't work after resume (needs reloading)
-Submitter	: Eddy Petrișor <eddy.petrisor+linbug@gmail.com>
-Date		: 2009-10-16 11:07 (75 days old)
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14442
+Subject		: resume after hibernate: /dev/sdb drops and returns as /dev/sde
+Submitter	: Duncan <1i5t5.duncan@cox.net>
+Date		: 2009-10-20 01:52 (71 days old)
 
 
