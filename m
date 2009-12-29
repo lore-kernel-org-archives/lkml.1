@@ -1,52 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752348AbZL2Coe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752062AbZL2D5n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752348AbZL2Coe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Dec 2009 21:44:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751711AbZL2Cod
+	id S1752062AbZL2D5n (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Dec 2009 22:57:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751642AbZL2D5m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Dec 2009 21:44:33 -0500
-Received: from mail-yx0-f187.google.com ([209.85.210.187]:45908 "EHLO
-	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751653AbZL2Coc (ORCPT
+	Mon, 28 Dec 2009 22:57:42 -0500
+Received: from mail-pz0-f171.google.com ([209.85.222.171]:61849 "EHLO
+	mail-pz0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751547AbZL2D5l (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Dec 2009 21:44:32 -0500
-Message-ID: <4B396CA7.6070701@vflare.org>
-Date: Tue, 29 Dec 2009 08:12:47 +0530
-From: Nitin Gupta <ngupta@vflare.org>
-Reply-To: ngupta@vflare.org
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
+	Mon, 28 Dec 2009 22:57:41 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:cc:content-type;
+        b=BOGBhq0Egk/MgEG33o4uiAwTlc8zE/7SvxEtz5ywBlzX2yLfH3i1RQCD0zCyWAl0Ys
+         bnwS4wJPzO3tEmWFf/LEoT1XyxR9OxR3MhZ5AStsJaudGSs+GfYVTg6zOdJaH0hhBr88
+         Op1qNG3fAoCoyemc+6OleLEqhuoD81ip4Wu9U=
 MIME-Version: 1.0
-To: Yin Kangkai <kernel@holddreams.com>
-CC: Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/2] [mmotm] ramzswap: add handlers for various swap	events
-References: <1261963200-7136-1-git-send-email-ngupta@vflare.org> <1261963200-7136-2-git-send-email-ngupta@vflare.org> <20091228162648.GA29309@kai-nas>
-In-Reply-To: <20091228162648.GA29309@kai-nas>
+Date: Tue, 29 Dec 2009 09:57:41 +0600
+Message-ID: <b9df5fa10912281957n5b0ab34fgc1b2ffb239fb8e87@mail.gmail.com>
+Subject: [PATCH] input, misc: Fix CONFIG_PM defination in wistron_btns.c
+From: Rakib Mullick <rakib.mullick@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Miloslav Trmac <mitr@volny.cz>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/28/2009 09:56 PM, Yin Kangkai wrote:
-> On 2009-12-28, 06:50 +0530, Nitin Gupta wrote:
->> +	ret = register_swap_event_notifier(&ramzswap_swapon_nb,
->> +				SWAP_EVENT_SWAPON, 0);
->> +	if (ret) {
->> +		pr_err("Error registering swapon notifier\n");
->> +		goto out;
->> +	}
->> +
->> +	ret = register_swap_event_notifier(&ramzswap_swapoff_nb,
->> +				SWAP_EVENT_SWAPOFF, 0);
->> +	if (ret) {
-> 
-> Sorry, but an unregister here?
+ Fix CONFIG_PM defination.
+We were warned by the following warning:
 
-Oh, I missed it. I will add it in next patch revision.
+drivers/input/misc/wistron_btns.c:1331:5: warning: "CONFIG_PM" is not defined
 
-Thanks,
-Nitin
+Signed-off-by: Rakib Mullick <rakib.mullick@gmail.com>
+---
+
+--- linus/drivers/input/misc/wistron_btns.c	2009-12-28 12:37:50.000000000 +0600
++++ rakib/drivers/input/misc/wistron_btns.c	2009-12-28 14:48:43.000000000 +0600
+@@ -1328,7 +1328,7 @@ static struct platform_driver wistron_dr
+ 	.driver		= {
+ 		.name	= "wistron-bios",
+ 		.owner	= THIS_MODULE,
+-#if CONFIG_PM
++#ifdef CONFIG_PM
+ 		.pm	= &wistron_pm_ops,
+ #endif
+ 	},
