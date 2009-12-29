@@ -1,102 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752601AbZL2HeU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752660AbZL2HrR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752601AbZL2HeU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Dec 2009 02:34:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751533AbZL2HeT
+	id S1752660AbZL2HrR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Dec 2009 02:47:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752546AbZL2HrQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Dec 2009 02:34:19 -0500
-Received: from e28smtp06.in.ibm.com ([122.248.162.6]:41557 "EHLO
-	e28smtp06.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751359AbZL2HeT (ORCPT
+	Tue, 29 Dec 2009 02:47:16 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:50786 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751820AbZL2HrP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Dec 2009 02:34:19 -0500
-Date: Tue, 29 Dec 2009 13:04:12 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mel@csn.ul.ie>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [PATCH 2/4] vmscan: get_scan_ratio cleanup
-Message-ID: <20091229073412.GN3601@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <20091228164451.A687.A69D9226@jp.fujitsu.com>
- <20091228164733.A68A.A69D9226@jp.fujitsu.com>
+	Tue, 29 Dec 2009 02:47:15 -0500
+Message-ID: <4B39B402.2040708@cs.helsinki.fi>
+Date: Tue, 29 Dec 2009 09:47:14 +0200
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20091228164733.A68A.A69D9226@jp.fujitsu.com>
-User-Agent: Mutt/1.5.20 (2009-08-17)
+To: Joe Perches <joe@perches.com>, Ingo Molnar <mingo@elte.hu>,
+       Vegard Nossum <vegard.nossum@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>, x86@kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [RFC/PATCH] x86: Use KERN_DEFAULT log-level in __show_regs()
+References: <1261988819.4641.2.camel@penberg-laptop>	 <1262029654.3352.27.camel@Joe-Laptop.home>	 <4B39AAF3.4060605@cs.helsinki.fi> <1262072421.1888.57.camel@Joe-Laptop.home>
+In-Reply-To: <1262072421.1888.57.camel@Joe-Laptop.home>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> [2009-12-28 16:48:06]:
+Hi Joe,
 
-> The get_scan_ratio() should have all scan-ratio related calculations.
-> Thus, this patch move some calculation into get_scan_ratio.
+[ I'm restoring CC, dunno if I broke accidentally. ]
+
+Joe Perches kirjoitti:
+> On Tue, 2009-12-29 at 09:08 +0200, Pekka Enberg wrote:
+>> Joe Perches kirjoitti:
+>>> What is the reason to convert KERN_INFO to KERN_DEFAULT here?
+>> To be consistent with rest of __show_regs() log-levels.
 > 
-> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> ---
->  mm/vmscan.c |   23 ++++++++++++++---------
->  1 files changed, 14 insertions(+), 9 deletions(-)
+> What log level is DEFAULT?
 > 
-> diff --git a/mm/vmscan.c b/mm/vmscan.c
-> index 2bbee91..640486b 100644
-> --- a/mm/vmscan.c
-> +++ b/mm/vmscan.c
-> @@ -1501,6 +1501,13 @@ static void get_scan_ratio(struct zone *zone, struct scan_control *sc,
->  	unsigned long ap, fp;
->  	struct zone_reclaim_stat *reclaim_stat = get_reclaim_stat(zone, sc);
+> It's default 4 or WARNING, but I'd guess you had to
+> look to find it.
 > 
-> +	/* If we have no swap space, do not bother scanning anon pages. */
-> +	if (!sc->may_swap || (nr_swap_pages <= 0)) {
-> +		percent[0] = 0;
-> +		percent[1] = 100;
-> +		return;
-> +	}
-> +
-
-
->  	anon  = zone_nr_lru_pages(zone, sc, LRU_ACTIVE_ANON) +
->  		zone_nr_lru_pages(zone, sc, LRU_INACTIVE_ANON);
->  	file  = zone_nr_lru_pages(zone, sc, LRU_ACTIVE_FILE) +
-> @@ -1598,22 +1605,20 @@ static void shrink_zone(int priority, struct zone *zone,
->  	unsigned long nr_reclaimed = sc->nr_reclaimed;
->  	unsigned long nr_to_reclaim = sc->nr_to_reclaim;
->  	struct zone_reclaim_stat *reclaim_stat = get_reclaim_stat(zone, sc);
-> -	int noswap = 0;
+> Does anyone override it?
 > 
-> -	/* If we have no swap space, do not bother scanning anon pages. */
-> -	if (!sc->may_swap || (nr_swap_pages <= 0)) {
-> -		noswap = 1;
-> -		percent[0] = 0;
-> -		percent[1] = 100;
-> -	} else
-> -		get_scan_ratio(zone, sc, percent);
-> +	get_scan_ratio(zone, sc, percent);
+> Why not simply specify KERN_WARNING for all of them?
 
-Where do we set noswap? Is percent[0] == 0 used to indicate noswap =
-1?
+For the reasons outlined here:
 
-> 
->  	for_each_evictable_lru(l) {
->  		int file = is_file_lru(l);
->  		unsigned long scan;
-> 
-> +		if (percent[file] == 0) {
-> +			nr[l] = 0;
-> +			continue;
-> +		}
-> +
+> from:
+> $ git log -1 e28d713704117bca0820c732210df6075b09f13b
+> This adds a KERN_DEFAULT loglevel marker, for when you cannot decide
+> which loglevel you want, and just want to keep an existing printk
+> with the default loglevel.
 
-Is this really needed? Won't nr_scan_try_batch handle it correctly?
+The whole point of the patch is to unify 32-bit and 64-bit wrt 
+log-levels. The 32-bit version _is_ using KERN_DEFAULT implicitly and 
+KERN_INFO is arguably wrong which is why I decided to go with the 
+former. That way I don't need to go and audit all the callers of 
+__show_regs() to see if KERN_WARN or some other level makes sense for them.
 
->  		scan = zone_nr_lru_pages(zone, sc, l);
-> -		if (priority || noswap) {
-> +		if (priority) {
->  			scan >>= priority;
->  			scan = (scan * percent[file]) / 100;
->  		}
-
--- 
-	Balbir
+			Pekka
