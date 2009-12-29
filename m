@@ -1,129 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752772AbZL2Juh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752750AbZL2JuQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752772AbZL2Juh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Dec 2009 04:50:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752399AbZL2Jug
+	id S1752750AbZL2JuQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Dec 2009 04:50:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752686AbZL2JuP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Dec 2009 04:50:36 -0500
-Received: from lo.gmane.org ([80.91.229.12]:40582 "EHLO lo.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752716AbZL2Juf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Dec 2009 04:50:35 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Miguel Calleja <mcalleja1@telecable.es>
-Subject: Re: Linux 2.6.33-rc2 - Blank screen for Intel KMS
-Date: Tue, 29 Dec 2009 09:50:09 +0000 (UTC)
-Message-ID: <hhcjch$5ns$1@ger.gmane.org>
-References: <alpine.LFD.2.00.0912241350510.11961@localhost.localdomain>
-	<hh2dl2$ler$1@ger.gmane.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: cm-83-97-192-133.telecable.es
-User-Agent: Pan/0.133 (House of Butterflies)
+	Tue, 29 Dec 2009 04:50:15 -0500
+Received: from web113305.mail.gq1.yahoo.com ([98.136.167.5]:35666 "HELO
+	web113305.mail.gq1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751642AbZL2JuN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Dec 2009 04:50:13 -0500
+Message-ID: <696574.90670.qm@web113305.mail.gq1.yahoo.com>
+X-YMail-OSG: i7s_BVoVM1kSFZA3BNpki9EhfNiCwHD9mI8ttBb1Syv_xGci.m7M6uisQ4uIkje4P5FzUeEqgqZGbZXgueR5ATxTU8ARXSL5des7aytScJGAsH6Ox1ruI_j2I1HmZ2R4gTwmNZaALXu6r6QmgaNOMcfH_BdabPGSolbO3EJUkQVW1UtdIlnJWBBvIDtSxiFXJP3R1TjYlEhRmYPTrqJblrCu8WG0QclwGkajYbQdXK5dnEBd6u7_ZWdozuhOOjYQBpkE66g8owa4.5NpMkPZk7x2hy6hjYUdcieEdOoY8jBIYsLVBJK9Ma891QdWEFxcZioNZxmPxiVh1.q6n.P9R5enhdUYMUVO6OJXAkfTRyk8WlXsO33x63AQpU1CiQanMxRF6igD5m8c7Lom0Y5EuvD3FycgiupH56ascR9p0g--
+X-RocketYMMF: knobi.rm
+X-Mailer: YahooMailRC/240.3 YahooMailWebService/0.8.100.260964
+References: <55527.63156.qm@web113308.mail.gq1.yahoo.com>
+Date: Tue, 29 Dec 2009 01:50:12 -0800 (PST)
+From: Martin Knoblauch <spamtrap@knobisoft.de>
+Subject: Re: 2.6.33-next build errors (x86_64 defconfig) on RHEL-4.3
+To: Martin Knoblauch <spamtrap@knobisoft.de>, linux-kernel@vger.kernel.org
+Cc: Andreas Mohr <andi@lisas.de>
+In-Reply-To: <55527.63156.qm@web113308.mail.gq1.yahoo.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-El Fri, 25 Dec 2009 13:10:58 +0000, Miguel Calleja escribió:
+----- Original Message ----
 
-> I've upgraded from 2.6.32 and I get a blank screen when the system is
-> starting KMS. My motherboard is an Intel DG43NB with onboard video. I
-> traced back to the patch that stopped working on my system and it is
-> patch-2.6.32-git7. patch-2.6.32-git6 works fine.
+> From: Martin Knoblauch <spamtrap@knobisoft.de>
+> To: linux-kernel@vger.kernel.org
+> Cc: spam trap <spamtrap@knobisoft.de>
+> Sent: Mon, December 28, 2009 10:51:07 AM
+> Subject: 2.6.33-next build errors (x86_64 defconfig) on RHEL-4.3
+> 
+> Hi,
+> 
+> when trying to build 2.6.32.2 or 2.6.33-next on RHEL-4.3(64-bit userland), I get 
+> the following errors (this is from 2.6.33-next-20091228):
+> 
+> ================================
+> # make defconfig
+> # make CONFIG_DEBUG_SECTION_MISMATCH=y
+>   .
+>   .
+>   AS      arch/x86/lib/rwlock_64.o
+>   AS      arch/x86/lib/thunk_64.o
+>   CC      arch/x86/lib/usercopy_64.o
+>   AR      arch/x86/lib/lib.a
+>   LD      vmlinux.o
+>   MODPOST vmlinux.o
+> WARNING: vmlinux.o(.text+0xd2f04): Section mismatch in reference from the 
+> function hugetlb_register_node() to the function 
+> .init.text:hugetlb_sysfs_add_hstate()
+> The function hugetlb_register_node() references
+> the function __init hugetlb_sysfs_add_hstate().
+> This is often because hugetlb_register_node lacks a __init
+> annotation or the annotation of hugetlb_sysfs_add_hstate is wrong.
+> 
+> WARNING: vmlinux.o(.text+0x20805a): Section mismatch in reference from the 
+> function dmar_ir_support() to the variable .init.data:dmar_tbl
+> The function dmar_ir_support() references
+> the variable __initdata dmar_tbl.
+> This is often because dmar_ir_support lacks a __initdata
+> annotation or the annotation of dmar_tbl is wrong.
+> 
+> WARNING: vmlinux.o(.text+0x222941): Section mismatch in reference from the 
+> function acpi_early_processor_set_pdc() to the variable 
+> .cpuinit.data:processor_idle_dmi_table
+> The function acpi_early_processor_set_pdc() references
+> the variable __cpuinitdata processor_idle_dmi_table.
+> This is often because acpi_early_processor_set_pdc lacks a __cpuinitdata
+> annotation or the annotation of processor_idle_dmi_table is wrong.
+> 
+> WARNING: vmlinux.o(.text+0x410dce): Section mismatch in reference from the 
+> function pcibios_scan_specific_bus() to the function 
+> .devinit.text:pci_scan_bus_on_node()
+> The function pcibios_scan_specific_bus() references
+> the function __devinit pci_scan_bus_on_node().
+> This is often because pcibios_scan_specific_bus lacks a __devinit
+> annotation or the annotation of pci_scan_bus_on_node is wrong.
+> 
+>   GEN     .version
+>   CHK     include/generated/compile.h
+>   UPD     include/generated/compile.h
+>   CC      init/version.o
+>   LD      init/built-in.o
+>   LD      .tmp_vmlinux1
+> drivers/built-in.o(.init.text+0x63ee): In function `con_init':
+> : undefined reference to `.L949'
+> make: *** [.tmp_vmlinux1] Error 1
+> ================================
+> 
+> 
+> For 2.6.32.2 I only get the "undefined reference to `.L949' error.
+> 
+> And yes, I know that RHEL-4.3 is old. But it is still widely used.
+> 
+> # gcc -v
+> Reading specs from /usr/lib/gcc/x86_64-redhat-linux/3.4.5/specs
+> Configured with: ../configure --prefix=/usr --mandir=/usr/share/man 
+> --infodir=/usr/share/info --enable-shared --enable-threads=posix 
+> --disable-checking --with-system-zlib --enable-__cxa_atexit 
+> --disable-libunwind-exceptions --enable-java-awt=gtk --host=x86_64-redhat-linux
+> Thread model: posix
+> gcc version 3.4.5 20051201 (Red Hat 3.4.5-2)
+> # as -v
+> GNU assembler version 2.15.92.0.2 (x86_64-redhat-linux) using BFD version 
+> 2.15.92.0.2 20040927
+> # ldd -v
+> ldd: missing file arguments
+> Try `ldd --help' for more information.
+> #
+> 
 
-I've bisected the kernel and have found that my problem is due to this 
-commit:
+ Not surprisingly, the problem still exists in next-20091229 :-) But actually, I think it might be even as old as 2.6.31-rc3. See
 
-commit fc816655236cd9da162356e96e74c7cfb0834d92
+http://lkml.org/lkml/2009/7/14/120
 
-drm/i915: Don't set up HDMI ports that aren't in the BIOS device table.
+for reference. Different (still older toolchain), but very similar failure.
 
-author	Zhao Yakui <yakui.zhao@intel.com>	
-	Tue, 24 Nov 2009 01:48:45 +0000 (09:48 +0800)
-committer	Eric Anholt <eric@anholt.net>	
-	Tue, 1 Dec 2009 00:41:48 +0000 (16:41 -0800)
-Use the child device array to decide whether the given HDMI output should 
-be
-initialized. If the given HDMI port can't be found in child device array,
-it is not present and won't be initialized.
+@Andreas: did you ever had this resolved? I never saw a followup
 
-Signed-off-by: Zhao Yakui <yakui.zhao@intel.com>
-Signed-off-by: Eric Anholt <eric@anholt.net>
-
-diff --git a/drivers/gpu/drm/i915/intel_hdmi.c  b/drivers/gpu/drm/i915/
-intel_hdmi.c
-index c33451a..2ff5d03 100644 (file)
---- a/drivers/gpu/drm/i915/intel_hdmi.c
-+++ b/drivers/gpu/drm/i915/intel_hdmi.c
-@@ -225,7 +225,52 @@ static const struct drm_encoder_funcs 
-intel_hdmi_enc_funcs = {
-        .destroy = intel_hdmi_enc_destroy,
- };
- 
--
-+/*
-+ * Enumerate the child dev array parsed from VBT to check whether
-+ * the given HDMI is present.
-+ * If it is present, return 1.
-+ * If it is not present, return false.
-+ * If no child dev is parsed from VBT, it assumes that the given
-+ * HDMI is present.
-+ */
-+int hdmi_is_present_in_vbt(struct drm_device *dev, int hdmi_reg)
-+{
-+       struct drm_i915_private *dev_priv = dev->dev_private;
-+       struct child_device_config *p_child;
-+       int i, hdmi_port, ret;
-+
-+       if (!dev_priv->child_dev_num)
-+               return 1;
-+
-+       if (hdmi_reg == SDVOB)
-+               hdmi_port = DVO_B;
-+       else if (hdmi_reg == SDVOC)
-+               hdmi_port = DVO_C;
-+       else if (hdmi_reg == HDMIB)
-+               hdmi_port = DVO_B;
-+       else if (hdmi_reg == HDMIC)
-+               hdmi_port = DVO_C;
-+       else if (hdmi_reg == HDMID)
-+               hdmi_port = DVO_D;
-+       else
-+               return 0;
-+
-+       ret = 0;
-+       for (i = 0; i < dev_priv->child_dev_num; i++) {
-+               p_child = dev_priv->child_dev + i;
-+               /*
-+                * If the device type is not HDMI, continue.
-+                */
-+               if (p_child->device_type != DEVICE_TYPE_HDMI)
-+                       continue;
-+               /* Find the HDMI port */
-+               if (p_child->dvo_port == hdmi_port) {
-+                       ret = 1;
-+                       break;
-+               }
-+       }
-+       return ret;
-+}
- void intel_hdmi_init(struct drm_device *dev, int sdvox_reg)
- {
-        struct drm_i915_private *dev_priv = dev->dev_private;
-@@ -233,6 +278,10 @@ void intel_hdmi_init(struct drm_device *dev, int 
-sdvox_reg)
-        struct intel_output *intel_output;
-        struct intel_hdmi_priv *hdmi_priv;
- 
-+       if (!hdmi_is_present_in_vbt(dev, sdvox_reg)) {
-+               DRM_DEBUG_KMS("HDMI is not present. Ignored it \n");
-+               return;
-+       }
-        intel_output = kcalloc(sizeof(struct intel_output) +
-                               sizeof(struct intel_hdmi_priv), 1, 
-GFP_KERNEL);
-        if (!intel_output)
+Cheers
+Martin
 
