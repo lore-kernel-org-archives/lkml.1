@@ -1,92 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753093AbZL2Wgg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753119AbZL2WiH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753093AbZL2Wgg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Dec 2009 17:36:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753033AbZL2Wgf
+	id S1753119AbZL2WiH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Dec 2009 17:38:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753106AbZL2WiG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Dec 2009 17:36:35 -0500
-Received: from e36.co.us.ibm.com ([32.97.110.154]:48397 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752600AbZL2Wge (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Dec 2009 17:36:34 -0500
-Date: Tue, 29 Dec 2009 16:36:31 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Benny Amorsen <benny+usenet@amorsen.dk>,
-       Bryan Donlan <bdonlan@gmail.com>, Michael Stone <michael@laptop.org>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       linux-security-module@vger.kernel.org, Andi Kleen <andi@firstfloor.org>,
-       David Lang <david@lang.hm>, Oliver Hartkopp <socketcan@hartkopp.net>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Valdis Kletnieks <Valdis.Kletnieks@vt.edu>,
-       Evgeniy Polyakov <zbr@ioremap.net>,
-       "C. Scott Ananian" <cscott@cscott.net>,
-       James Morris <jmorris@namei.org>, Bernie Innocenti <bernie@codewiz.org>,
-       Mark Seaborn <mrs@mythic-beasts.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       =?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>,
-       Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
-       Samir Bellabes <sam@synack.fr>,
-       Casey Schaufler <casey@schaufler-ca.com>, Pavel Machek <pavel@ucw.cz>,
-       Al Viro <viro@zeniv.linux.org.uk>
-Subject: Re: RFC: disablenetwork facility. (v4)
-Message-ID: <20091229223631.GB22578@us.ibm.com>
-References: <20091229050114.GC14362@heat>
- <m1y6km11lj.fsf@fess.ebiederm.org>
- <20091229151146.GA32153@us.ibm.com>
- <3e8340490912290805s103fb789y13acea4a84669b20@mail.gmail.com>
- <m3oclhzgm4.fsf@ursa.amorsen.dk>
- <m17hs5y0mg.fsf@fess.ebiederm.org>
- <20091229211139.0732a0c1@lxorguk.ukuu.org.uk>
- <m1iqbpwjtp.fsf@fess.ebiederm.org>
+	Tue, 29 Dec 2009 17:38:06 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:40859 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753087AbZL2WiF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Dec 2009 17:38:05 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Thomas Meyer <thomas@m3y3r.de>
+Subject: Re: [Bug #14670] i915: playing video via XVideo extension makes the screen flicker
+Date: Tue, 29 Dec 2009 23:38:33 +0100
+User-Agent: KMail/1.12.3 (Linux/2.6.33-rc2-tst; KDE/4.3.3; x86_64; ; )
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Eric Anholt <eric@anholt.net>, Jesse Barnes <jbarnes@virtuousgeek.org>
+References: <oBElxfTZdhL.A.bx.-vhOLB@chimera> <srmJ8vMxKPH.A.2TD.WxhOLB@chimera> <1262120568.3523.4.camel@localhost.localdomain>
+In-Reply-To: <1262120568.3523.4.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m1iqbpwjtp.fsf@fess.ebiederm.org>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200912292338.33319.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Eric W. Biederman (ebiederm@xmission.com):
-> Alan Cox <alan@lxorguk.ukuu.org.uk> writes:
+On Tuesday 29 December 2009, Thomas Meyer wrote:
+> Am Dienstag, den 29.12.2009, 16:28 +0100 schrieb Rafael J. Wysocki:
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14670
+> > Subject		: i915: playing video via XVideo extension makes the screen flicker
+> > Submitter	: Thomas Meyer <thomas@m3y3r.de>
+> > Date		: 2009-11-23 13:15 (37 days old)
 > 
-> >> > Execute != read. The executable file may contain secrets which must not
-> >> > be available to the user running the setuid program. If you fail the
-> >> > setuid, the user will be able to ptrace() and then the secret is
-> >> > revealed.
-> >> >
-> >> > It's amazing how many security holes appear from what seems like a very
-> >> > simple request.
-> >> 
-> >> Do we have a security hole in nosuid mount option?
-> >> Can someone write a patch to fix it?
-> >
-> > If a setuid app can read a key when its erroneously not set setuid then
-> > the user can read it too.
-> >
-> > Anything you can do with ptrace you can do yourself !
+> Need to boot 2.6.32.2 with "nomodeset" option to make the above bug go
+> away. Without "nomodeset" option, i.e. the default for intel kms, the
+> system behaves very strangley/sluggish under 2.6.32.2.
 > 
-> Now that I think about it this is really something completely separate
-> from setuid.  This is about being able to read the text segment with
-> ptrace when you on have execute permissions on the file.
-> 
-> I just skimmed through fs/exec.c and we set the undumpable process
-> flag in that case so ptrace should not work in that case.
+> So yes, please still list this bug.
 
-And in fact you can't do a new ptrace_attach, but if you're already
-tracing the task when it execs the unreadable-but-executable file,
-then the ptrace can continue.
+OK, thanks for the update.
 
-Just looking at the code, it appears 2.2 was the same way (though I
-could be missing where it used to enforce that).
-
-So, is that intended?  What exactly would we do about it if not?
-Just refuse exec of a unreadable-but-executable file if we're
-being traced?
-
-> So short of a bug in the implementation we have no security hole.
-> 
-> Eric
+Rafael
