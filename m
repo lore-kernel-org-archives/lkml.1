@@ -1,58 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752119AbZL2VGJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752269AbZL2VHR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752119AbZL2VGJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Dec 2009 16:06:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751994AbZL2VGH
+	id S1752269AbZL2VHR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Dec 2009 16:07:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751934AbZL2VHP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Dec 2009 16:06:07 -0500
-Received: from vps2.mechanicalrealm.com ([66.216.20.21]:53036 "EHLO
-	zinan.dashjr.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751938AbZL2VGF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Dec 2009 16:06:05 -0500
-From: "Luke-Jr" <luke@dashjr.org>
-To: Kalle Valo <kalle.valo@iki.fi>
-Subject: Re: [PATCH] OMAP2: add USB platform data and initialization for Nokia N800 and N810
-Date: Tue, 29 Dec 2009 15:05:46 -0600
-User-Agent: KMail/1.12.3 (Linux/2.6.32-gentoo; KDE/4.3.3; x86_64; ; )
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
-       "Balbi Felipe \(Nokia-D\/Helsinki\)" <felipe.balbi@nokia.com>
-References: <200912290152.16357.luke@dashjr.org> <200912290246.57663.luke@dashjr.org> <873a2uxip9.fsf@purkki.valot.fi>
-In-Reply-To: <873a2uxip9.fsf@purkki.valot.fi>
-X-PGP-Key-Fingerprint: CE5A D56A 36CC 69FA E7D2 3558 665F C11D D53E 9583
-X-PGP-Key-ID: 665FC11DD53E9583
-X-PGP-Keyserver: x-hkp://subkeys.pgp.bet
+	Tue, 29 Dec 2009 16:07:15 -0500
+Received: from smtp1.it.da.ut.ee ([193.40.5.66]:58430 "EHLO smtp1.it.da.ut.ee"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751876AbZL2VHO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Dec 2009 16:07:14 -0500
+Date: Tue, 29 Dec 2009 23:07:12 +0200 (EET)
+From: Meelis Roos <mroos@linux.ee>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Alan Cox <alan@linux.intel.com>, Jeff Garzik <jeff@garzik.org>,
+       Jeff Garzik <jgarzik@redhat.com>,
+       "linux-ide@vger.kernel.org"@ogre.sisk.pl
+Subject: Re: [Bug #14909] pata_cmd64x broken in 2.6.33-rc1
+In-Reply-To: <NJVdobuNFNK.A.DYH.UnhOLB@chimera>
+Message-ID: <alpine.SOC.1.00.0912292306020.975@math.ut.ee>
+References: <LptzGUUXbTK.A.MSF.ymhOLB@chimera> <NJVdobuNFNK.A.DYH.UnhOLB@chimera>
+User-Agent: Alpine 1.00 (SOC 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200912291505.51230.luke@dashjr.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 29 December 2009 02:55:46 am Kalle Valo wrote:
-> Having lots of small files is difficult IMHO.
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14909
+> Subject		: pata_cmd64x broken in 2.6.33-rc1
+> Submitter	: Meelis Roos <mroos@linux.ee>
+> Date		: 2009-12-19 22:23 (11 days old)
+> First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=d43744390e460dce6626fb8de2c02a24ff650005
+> References	: http://marc.info/?l=linux-kernel&m=126126142501594&w=4
 
-The last-working N8x0 support (Linux-OMAP 2.6.30-rc8) required 1706 lines of 
-platform data and initialization, split up into 6 files:
-	590	N800 + i2c + FM + keyboard + light sensor + LED + LCD + temp + SPI + WiFi
-		 + touchscreen + OneNAND
-	47	N810
-	175	USB
-	362	MMC
-	156	DSP
-	376	camera
+Fixed as of 2.6.33-rc2 - just retested the upstream fix.
 
-The largest OMAP2 single-board file is merely 689 lines (3430sdp).
-N900/RX-51, totalling 863 lines itself, is split over 2 files.
-
-I think 4 or 5 files with ~350 lines is more manageable than a single 1700-
-line board file, especially when considering that parts depend on multiple 
-configuration options (LCD, which turns out to be a 128-line file, depends on 
-3 config options: N8x0, Blizzard, and MIPID).
-
-Thoughts?
-
-Luke
+-- 
+Meelis Roos (mroos@linux.ee)
