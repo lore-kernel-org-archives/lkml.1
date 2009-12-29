@@ -1,52 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751365AbZL2Tfn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752196AbZL2UCU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751365AbZL2Tfn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Dec 2009 14:35:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751235AbZL2Tfm
+	id S1752196AbZL2UCU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Dec 2009 15:02:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752154AbZL2UCT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Dec 2009 14:35:42 -0500
-Received: from toccata.ens-lyon.fr ([140.77.166.68]:48383 "EHLO
-	toccata.ens-lyon.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751051AbZL2Tfl (ORCPT
+	Tue, 29 Dec 2009 15:02:19 -0500
+Received: from ns1.siteground211.com ([209.62.36.12]:53080 "EHLO
+	serv01.siteground211.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752127AbZL2UCS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Dec 2009 14:35:41 -0500
-X-Greylist: delayed 429 seconds by postgrey-1.27 at vger.kernel.org; Tue, 29 Dec 2009 14:35:40 EST
-Date: Tue, 29 Dec 2009 20:28:27 +0100
-From: Samuel Thibault <samuel.thibault@ens-lyon.org>
-To: "Robert P. J. Day" <rpjday@crashcourse.ca>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: what's the purpose of MAXHOSTNAMELEN?
-Message-ID: <20091229192827.GF4815@const>
-Mail-Followup-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
-	"Robert P. J. Day" <rpjday@crashcourse.ca>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <alpine.LFD.2.00.0912291416230.4967@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <alpine.LFD.2.00.0912291416230.4967@localhost>
-User-Agent: Mutt/1.5.12-2006-07-14
+	Tue, 29 Dec 2009 15:02:18 -0500
+Subject: Re: [PATCH] OMAP2: add USB platform data and initialization for
+ Nokia N800 and N810
+From: Felipe Balbi <me@felipebalbi.com>
+Reply-To: me@felipebalbi.com
+To: Tony Lindgren <tony@atomide.com>
+Cc: Luke-Jr <luke@dashjr.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
+       "Balbi Felipe (Nokia-D/Helsinki)" <felipe.balbi@nokia.com>,
+       Kalle Valo <kalle.valo@iki.fi>
+In-Reply-To: <20091229192407.GA3512@atomide.com>
+References: <200912290152.16357.luke@dashjr.org>
+	 <20091229192407.GA3512@atomide.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 29 Dec 2009 21:35:49 +0200
+Message-ID: <1262115349.28789.79.camel@gandalf>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.2 
+Content-Transfer-Encoding: 7bit
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - serv01.siteground211.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - felipebalbi.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert P. J. Day, le Tue 29 Dec 2009 14:19:30 -0500, a écrit :
->   so lots of people define it but no one uses it.  it *is* exported to
-> user space in /usr/include/asm/param.h, but i still have no idea what
-> it's for in user space.  obsolete?
+Hi,
 
-It's like all these *MAX* #defines: they are a bad way to express the
-system limitations.  They are bad because they end up compiled-in, but
-also because people understand them as "a typical allocation length" and
-get lazy.  The typical example is PATH_MAX, which is #defined to 4096.
-A _lot_ of applications thus keep allocating 4KB for all paths.
+On Tue, 2009-12-29 at 11:24 -0800, Tony Lindgren wrote:
+> Great. The comment from Russell earlier was that we should be now using
+> clkdev to do things like this and get rid of the _set_clock functions.
+> In musb_core.c are already using the clk directly if set_clock is NULL.
+> 
+> Can you try the patch below? If it works, just merge it into your
+> patch.
 
-See
-http://www.gnu.org/software/hurd/hurd/porting/guidelines.html#PATH_MAX_tt_MAX_PATH_tt_MAXPATHL
+Yes, let's do like Tony suggested. I'm removing the old set_clock stuff
+completely, patches are available at my git tree, here are the links:
 
-If you could drop it (would be completely POSIX-compliant), that'd be a
-great service to GNU/Hurd porters, but I bet you'll also get a lot of
-angry people.
+http://gitorious.org/usb/usb/commit/ca415cf06a4843e93041fe73f7f1867e066b48a3
+http://gitorious.org/usb/usb/commit/013f8457a1ba0dd3f36811f647b0fe904128292e
+http://gitorious.org/usb/usb/commit/e2ecae4c5b01415dbbf714c7217178c31a9a5dd1
+http://gitorious.org/usb/usb/commit/874afb373ea75ff0a3a360802a53357affa27df0
+http://gitorious.org/usb/usb/commit/6d47fc9858c17faea8a454e147839c878737a0f1
+http://gitorious.org/usb/usb/commit/62b8d94df7739cb60bae0369b8265e588f518841
+http://gitorious.org/usb/usb/commit/e06629acd44936fe87d34d188c8dfb54abd7915c
 
-Samuel
+Tony, if you want I can send you a pull request will all the patches I
+have prepared on top of your tree. There's only one dependence which I
+can ship in the same pull request.
+
+Sames goes to Kevin regarding davinci tree. I just have to subscribe in
+order to be able to send the patches there.
+
+-- 
+balbi
+
