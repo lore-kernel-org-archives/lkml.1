@@ -1,31 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752910AbZL2WIg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752927AbZL2WOU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752910AbZL2WIg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Dec 2009 17:08:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752631AbZL2WIf
+	id S1752927AbZL2WOU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Dec 2009 17:14:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752069AbZL2WOS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Dec 2009 17:08:35 -0500
-Received: from mail.parknet.co.jp ([210.171.160.6]:43086 "EHLO
+	Tue, 29 Dec 2009 17:14:18 -0500
+Received: from mail.parknet.co.jp ([210.171.160.6]:42463 "EHLO
 	mail.parknet.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752156AbZL2WIf (ORCPT
+	with ESMTP id S1752141AbZL2WOS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Dec 2009 17:08:35 -0500
+	Tue, 29 Dec 2009 17:14:18 -0500
 From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Maciej J. Woloszyk" <mat@esi.com.pl>
-Subject: Re: [Bug #14730] sky2 won't work after suspend/resume cycle
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Bjorn Helgaas" <bjorn.helgaas@hp.com>,
+       David =?iso-8859-1?Q?H=E4rdeman?= <david@hardeman.nu>,
+       "Len Brown" <lenb@kernel.org>,
+       Malte =?iso-8859-1?Q?Schr=F6der?= <maltesch@gmx.de>
+Subject: Re: [Bug #14889] System wakeup by time not working anymore
 References: <oBElxfTZdhL.A.bx.-vhOLB@chimera>
-	<srmJ8vMxKPH.A.6LD.JxhOLB@chimera>
-	<878wcltyg5.fsf@devron.myhome.or.jp> <200912292229.47644.rjw@sisk.pl>
-Date: Wed, 30 Dec 2009 07:08:30 +0900
-In-Reply-To: <200912292229.47644.rjw@sisk.pl> (Rafael J. Wysocki's message of
-	"Tue, 29 Dec 2009 22:29:47 +0100")
-Message-ID: <874on9tov5.fsf@devron.myhome.or.jp>
+	<srmJ8vMxKPH.A.BaC.ZwhOLB@chimera>
+	<87k4w5u1fr.fsf@devron.myhome.or.jp> <200912292235.50104.rjw@sisk.pl>
+Date: Wed, 30 Dec 2009 07:14:13 +0900
+In-Reply-To: <200912292235.50104.rjw@sisk.pl> (Rafael J. Wysocki's message of
+	"Tue, 29 Dec 2009 22:35:50 +0100")
+Message-ID: <87zl51sa16.fsf@devron.myhome.or.jp>
 User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.90 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -43,26 +48,22 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 >> > be listed and let me know (either way).
 >> >
 >> >
->> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14730
->> > Subject		: sky2 won't work after suspend/resume cycle
->> > Submitter	: Maciej J. Woloszyk <mat@esi.com.pl>
->> > Date		: 2009-12-04 09:02 (26 days old)
+>> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14889
+>> > Subject		: System wakeup by time not working anymore
+>> > Submitter	: Malte Schröder <maltesch@gmx.de>
+>> > Date		: 2009-12-03 18:06 (27 days old)
+>> > First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=abd6633c67925f90775bb74755f9c547e30f1f20
+>> > References	: http://marc.info/?l=linux-kernel&m=125986362631900&w=4
 >> 
->> This seems to be related to commit 4b77b0a2ba27d64f58f16d8d4d48d8319dda36ff.
+>> Specified commit would break the pnp driver which is using
+>> driver->shutdown.
 >> 
->> It clears dev->state_saved blindly, but pci_pm_resume() calls
->> pci_restore_standard_config() before pm->resume() (by probably
->> historical reason).
+>> Could you test this (untested) patch?
 >
-> The other way around.  pci_restore_standard_config() is the new thing and the
-> pci_restore_state() in ->resume() is supposed to be unnecessary.  Unfortunately
-> in this case the restoration of PCI config registers in
-> pci_restore_standard_config() doesn't work.
->
-> I'd like to understand the reason, but temporarily we can just set
-> pdev->state_saved to 1 in sky2_resume(), as proposed in the bug entry.
+> Could you please also attach the patch to the Bugzilla entry?
 
-Sure. However, it might not be only sky2. Well, anyway, another likely
-one is - restore() should be called after pci_pm_default_resume()?
+Ok, I've attached the same patch to bugzilla.
+
+Thanks.
 -- 
 OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
