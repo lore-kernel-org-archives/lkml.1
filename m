@@ -1,119 +1,278 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752695AbZL2IA1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752673AbZL2IAY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752695AbZL2IA1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Dec 2009 03:00:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752675AbZL2IAY
-	(ORCPT <rfc822;linux-kernel-outgoing>);
+	id S1752673AbZL2IAY (ORCPT <rfc822;w@1wt.eu>);
 	Tue, 29 Dec 2009 03:00:24 -0500
-Received: from ppp-156-114.adsl.restena.lu ([158.64.156.114]:51146 "EHLO
-	bonbons.gotdns.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752579AbZL2IAX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752614AbZL2IAX
+	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Tue, 29 Dec 2009 03:00:23 -0500
-Date: Tue, 29 Dec 2009 08:49:29 +0100
-From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
-To: netdev@vger.kernel.org, Michael Chan <mchan@broadcom.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: BNX2: Kernel crashes with 2.6.31 and 2.6.31.9
-Message-ID: <20091229084929.54912c0c@pluto.restena.lu>
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.6; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Received: from vps2.mechanicalrealm.com ([66.216.20.21]:34400 "EHLO
+	zinan.dashjr.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751950AbZL2IAW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Dec 2009 03:00:22 -0500
+X-Greylist: delayed 463 seconds by postgrey-1.27 at vger.kernel.org; Tue, 29 Dec 2009 03:00:22 EST
+From: "Luke-Jr" <luke@dashjr.org>
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: [PATCH] OMAP2: add USB platform data and initialization for Nokia N800 and N810
+Date: Tue, 29 Dec 2009 01:52:04 -0600
+User-Agent: KMail/1.12.3 (Linux/2.6.32-gentoo; KDE/4.3.3; x86_64; ; )
+Cc: "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
+       "Balbi Felipe (Nokia-D/Helsinki)" <felipe.balbi@nokia.com>,
+       Kalle Valo <kalle.valo@iki.fi>
+X-PGP-Key-Fingerprint: CE5A D56A 36CC 69FA E7D2 3558 665F C11D D53E 9583
+X-PGP-Key-ID: 665FC11DD53E9583
+X-PGP-Keyserver: x-hkp://subkeys.pgp.bet
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200912290152.16357.luke@dashjr.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On a system that was running 2.6.31 since last September I got two
-crashes this December at night (cause unknown), yesterday after second
-crash I updated kernel to 2.6.31.9 and enabled netconsole in the hope
-to get some information about the cause of the crash.
+Add platform data and initialization for USB on Nokia N800 and N810 devices
+via the TUSB6010 chipset.
 
-Today system crashed once again and all I got is the following
-incomplete trace on the receiving side of netconsole:
+Tested on Nokia N810 in Linux-OMAP tree. Mainline is not bootable yet.
 
-[24701.841185] BUG: unable to handle kernel NULL pointer dereference at (null)
-[24701.841188] IP: [<ffffffffa00610fc>] bnx2_poll_work+0x2c/0x12d0 [bnx2]
-[24701.841197] PGD 16509067 PUD 4e776067 PMD 0
-[24701.841199] Oops: 0000 [#1] SMP
-[24701.841202] last sysfs file: /sys/kernel/uevent_seqnum
-[24701.841204] CPU 0
-[24701.841205] Modules linked in: ipmi_devintf squashfs ext2
-zlib_inflate netconsole configfs loop dm_round_robin scsi_dh_rdac
-dm_multipath scsi_dh dm_mod sg sr_mod cdrom ata_piix i pmi_si
-ipmi_msghandler qla2xxx ahci bnx2 hpwdt uhci_hcd ehci_hcd libata
-[24701.841218] Pid: 11273, comm: php-cgi Not tainted 2.6.31.9-x86_64 #1 ProLiant DL360 G5
-[24701.841220] RIP: 0010:[<ffffffffa00610fc>]  [<ffffffffa00610fc>] bnx2_poll_work+0x2c/0x12d0 [bnx2]
+Signed-off-by: Luke Dashjr <luke_linuxkern@dashjr.org>
+---
+ arch/arm/mach-omap2/Kconfig          |    5 +
+ arch/arm/mach-omap2/Makefile         |    1 +
+ arch/arm/mach-omap2/board-n8x0-usb.c |  173 ++++++++++++++++++++++++++++++++++
+ arch/arm/mach-omap2/board-n8x0.c     |    8 ++
+ 4 files changed, 187 insertions(+), 0 deletions(-)
+ create mode 100644 arch/arm/mach-omap2/board-n8x0-usb.c
 
-
-Running objdump on the bnx2.ko module I get the following:
-000000000000a0d0 <bnx2_poll_work>:
-    a0d0:       41 57                   push   %r15
-    a0d2:       41 56                   push   %r14
-    a0d4:       41 55                   push   %r13
-    a0d6:       41 54                   push   %r12
-    a0d8:       55                      push   %rbp
-    a0d9:       53                      push   %rbx
-    a0da:       48 81 ec 28 01 00 00    sub    $0x128,%rsp
-    a0e1:       48 89 7c 24 18          mov    %rdi,0x18(%rsp)
-    a0e6:       48 89 74 24 10          mov    %rsi,0x10(%rsp)
-    a0eb:       89 54 24 0c             mov    %edx,0xc(%rsp)
-    a0ef:       89 4c 24 08             mov    %ecx,0x8(%rsp)
-    a0f3:       48 8b 54 24 10          mov    0x10(%rsp),%rdx
-    a0f8:       48 8b 42 70             mov    0x70(%rdx),%rax
-    a0fc:       0f b7 10                movzwl (%rax),%edx
-    a0ff:       31 c0                   xor    %eax,%eax
-    a101:       48 8b 4c 24 10          mov    0x10(%rsp),%rcx
-    a106:       80 fa ff                cmp    $0xff,%dl
-    a109:       0f 94 c0                sete   %al
-    a10c:       01 c2                   add    %eax,%edx
-    a10e:       66 39 91 1a 02 00 00    cmp    %dx,0x21a(%rcx)
-    a115:       0f 84 78 01 00 00       je     a293 <bnx2_poll_work+0x1c3>
-    a11b:       48 8b 57 08             mov    0x8(%rdi),%rdx
-    a11f:       48 89 f8                mov    %rdi,%rax
-    a122:       48 8b 9a 00 03 00 00    mov    0x300(%rdx),%rbx
-    a129:       48 83 c0 40             add    $0x40,%rax
-    a12d:       48 29 c1                sub    %rax,%rcx
-    a130:       48 89 c8                mov    %rcx,%rax
-    a133:       48 c1 f8 06             sar    $0x6,%rax
-    a137:       69 c0 39 8e e3 38       imul   $0x38e38e39,%eax,%eax
-    a13d:       48 c1 e0 07             shl    $0x7,%rax
-    a141:       48 01 d8                add    %rbx,%rax
-    a144:       48 89 44 24 20          mov    %rax,0x20(%rsp)
-    a149:       48 8b 7c 24 10          mov    0x10(%rsp),%rdi
-    a14e:       48 8b 47 70             mov    0x70(%rdi),%rax
-    a152:       44 0f b7 30             movzwl (%rax),%r14d
-    a156:       31 c0                   xor    %eax,%eax
-    a158:       0f b7 9f 18 02 00 00    movzwl 0x218(%rdi),%ebx
-    a15f:       41 80 fe ff             cmp    $0xff,%r14b
-    a163:       0f 94 c0                sete   %al
-    a166:       45 31 ff                xor    %r15d,%r15d
-    a169:       41 01 c6                add    %eax,%r14d
-    a16c:       66 44 39 f3             cmp    %r14w,%bx
-    a170:       0f 84 ee 00 00 00       je     a264 <bnx2_poll_work+0x194>
-    a176:       66 2e 0f 1f 84 00 00    nopw   %cs:0x0(%rax,%rax,1)
-    a17d:       00 00 00 
-    a180:       0f b6 cb                movzbl %bl,%ecx
-    a183:       48 8b 44 24 10          mov    0x10(%rsp),%rax
-    a188:       44 0f b7 e1             movzwl %cx,%r12d
-    a18c:       49 c1 e4 04             shl    $0x4,%r12
-    a190:       4c 03 a0 10 02 00 00    add    0x210(%rax),%r12
-    a197:       4d 8b 2c 24             mov    (%r12),%r13
-    a19b:       66 41 83 7c 24 08 00    cmpw   $0x0,0x8(%r12)
-    a1a2:       41 0f 18 8d bc 00 00    prefetcht0 0xbc(%r13)
-    a1a9:       00 
-                ...
-
-
-Kernel is compiled on Gentoo (64bit):
-  Linux version 2.6.31.9-x86_64 () (gcc version 4.3.4 (Gentoo 4.3.4 p1.0, pie-10.1.5) ) #1 SMP Mon Dec 28 15:49:16 CET 2009
-The affected server (HP DL360 G5) is running OpenSuSE-11.1,
-32bit userspace
-
-Any idea if there is a recent patch that could fix this issue? At the
-crashing time the server was not specifically loaded and had around
-200 packets/s network traffic.
-
-Regards,
-Bruno
+diff --git a/arch/arm/mach-omap2/Kconfig b/arch/arm/mach-omap2/Kconfig
+index 10eafa7..e3c913c 100644
+--- a/arch/arm/mach-omap2/Kconfig
++++ b/arch/arm/mach-omap2/Kconfig
+@@ -117,6 +117,11 @@ config MACH_NOKIA_N8X0
+ 	select MACH_NOKIA_N810
+ 	select MACH_NOKIA_N810_WIMAX
+ 
++config MACH_NOKIA_N8X0_USB
++	bool
++	depends on MACH_NOKIA_N8X0 && MACH_OMAP2_TUSB6010
++	default y
++
+ config MACH_NOKIA_RX51
+ 	bool "Nokia RX-51 board"
+ 	depends on ARCH_OMAP3 && ARCH_OMAP34XX
+diff --git a/arch/arm/mach-omap2/Makefile b/arch/arm/mach-omap2/Makefile
+index b32678b..e890b2b 100644
+--- a/arch/arm/mach-omap2/Makefile
++++ b/arch/arm/mach-omap2/Makefile
+@@ -86,6 +86,7 @@ obj-$(CONFIG_MACH_OMAP3_PANDORA)	+= board-omap3pandora.o \
+ obj-$(CONFIG_MACH_OMAP_3430SDP)		+= board-3430sdp.o \
+ 					   mmc-twl4030.o
+ obj-$(CONFIG_MACH_NOKIA_N8X0)		+= board-n8x0.o
++obj-$(CONFIG_MACH_NOKIA_N8X0_USB)	+= board-n8x0-usb.o
+ obj-$(CONFIG_MACH_NOKIA_RX51)		+= board-rx51.o \
+ 					   board-rx51-sdram.o \
+ 					   board-rx51-peripherals.o \
+diff --git a/arch/arm/mach-omap2/board-n8x0-usb.c b/arch/arm/mach-omap2/board-n8x0-usb.c
+new file mode 100644
+index 0000000..2254ebd
+--- /dev/null
++++ b/arch/arm/mach-omap2/board-n8x0-usb.c
+@@ -0,0 +1,173 @@
++/*
++ * linux/arch/arm/mach-omap2/board-n8x0-usb.c
++ *
++ * Copyright (C) 2006 Nokia Corporation
++ * Author: Juha Yrjola
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#include <linux/types.h>
++#include <linux/delay.h>
++#include <linux/platform_device.h>
++#include <linux/clk.h>
++#include <linux/err.h>
++#include <linux/gpio.h>
++#include <linux/usb/musb.h>
++
++#include <plat/gpmc.h>
++
++#define TUSB_ASYNC_CS		1
++#define TUSB_SYNC_CS		4
++#define GPIO_TUSB_INT		58
++#define GPIO_TUSB_ENABLE	0
++
++static int tusb_set_power(int state);
++static int tusb_set_clock(struct clk *osc_ck, int state);
++
++#if	defined(CONFIG_USB_MUSB_OTG)
++#	define BOARD_MODE	MUSB_OTG
++#elif	defined(CONFIG_USB_MUSB_PERIPHERAL)
++#	define BOARD_MODE	MUSB_PERIPHERAL
++#else	/* defined(CONFIG_USB_MUSB_HOST) */
++#	define BOARD_MODE	MUSB_HOST
++#endif
++
++static struct musb_hdrc_eps_bits musb_eps[] = {
++	{	"ep1_tx", 5,	},
++	{	"ep1_rx", 5,	},
++	{	"ep2_tx", 5,	},
++	{	"ep2_rx", 5,	},
++	{	"ep3_tx", 3,	},
++	{	"ep3_rx", 3,	},
++	{	"ep4_tx", 3,	},
++	{	"ep4_rx", 3,	},
++	{	"ep5_tx", 2,	},
++	{	"ep5_rx", 2,	},
++	{	"ep6_tx", 2,	},
++	{	"ep6_rx", 2,	},
++	{	"ep7_tx", 2,	},
++	{	"ep7_rx", 2,	},
++	{	"ep8_tx", 2,	},
++	{	"ep8_rx", 2,	},
++	{	"ep9_tx", 2,	},
++	{	"ep9_rx", 2,	},
++	{	"ep10_tx", 2,	},
++	{	"ep10_rx", 2,	},
++	{	"ep11_tx", 2,	},
++	{	"ep11_rx", 2,	},
++	{	"ep12_tx", 2,	},
++	{	"ep12_rx", 2,	},
++	{	"ep13_tx", 2,	},
++	{	"ep13_rx", 2,	},
++	{	"ep14_tx", 2,	},
++	{	"ep14_rx", 2,	},
++	{	"ep15_tx", 2,	},
++	{	"ep15_rx", 2,	},
++};
++
++static struct musb_hdrc_config musb_config = {
++	.multipoint	= 1,
++	.dyn_fifo	= 1,
++	.soft_con	= 1,
++	.dma		= 1,
++	.num_eps	= 16,
++	.dma_channels	= 7,
++	.ram_bits	= 12,
++	.eps_bits	= musb_eps,
++};
++
++static struct musb_hdrc_platform_data tusb_data = {
++	.mode		= BOARD_MODE,
++	.set_power	= tusb_set_power,
++	.set_clock	= tusb_set_clock,
++	.min_power	= 25,	/* x2 = 50 mA drawn from VBUS as peripheral */
++	.power		= 100,	/* Max 100 mA VBUS for host mode */
++	.clock		= "osc_ck",
++	.config		= &musb_config,
++};
++
++/*
++ * Enable or disable power to TUSB6010. When enabling, turn on 3.3 V and
++ * 1.5 V voltage regulators of PM companion chip. Companion chip will then
++ * provide then PGOOD signal to TUSB6010 which will release it from reset.
++ */
++static int tusb_set_power(int state)
++{
++	int i, retval = 0;
++
++	if (state) {
++		gpio_set_value(GPIO_TUSB_ENABLE, 1);
++		msleep(1);
++
++		/* Wait until TUSB6010 pulls INT pin down */
++		i = 100;
++		while (i && gpio_get_value(GPIO_TUSB_INT)) {
++			msleep(1);
++			i--;
++		}
++
++		if (!i) {
++			printk(KERN_ERR "tusb: powerup failed\n");
++			retval = -ENODEV;
++		}
++	} else {
++		gpio_set_value(GPIO_TUSB_ENABLE, 0);
++		msleep(10);
++	}
++
++	return retval;
++}
++
++static int		osc_ck_on;
++
++static int tusb_set_clock(struct clk *osc_ck, int state)
++{
++	if (state) {
++		if (osc_ck_on > 0)
++			return -ENODEV;
++
++		clk_enable(osc_ck);
++		osc_ck_on = 1;
++	} else {
++		if (osc_ck_on == 0)
++			return -ENODEV;
++
++		clk_disable(osc_ck);
++		osc_ck_on = 0;
++	}
++
++	return 0;
++}
++
++void __init n8x0_usb_init(void)
++{
++	int ret = 0;
++	static char	announce[] __initdata = KERN_INFO "TUSB 6010\n";
++
++	/* PM companion chip power control pin */
++	ret = gpio_request(GPIO_TUSB_ENABLE, "TUSB6010 enable");
++	if (ret != 0) {
++		printk(KERN_ERR "Could not get TUSB power GPIO%i\n",
++		       GPIO_TUSB_ENABLE);
++		return;
++	}
++	gpio_direction_output(GPIO_TUSB_ENABLE, 0);
++
++	tusb_set_power(0);
++
++	ret = tusb6010_setup_interface(&tusb_data, TUSB6010_REFCLK_19, 2,
++					TUSB_ASYNC_CS, TUSB_SYNC_CS,
++					GPIO_TUSB_INT, 0x3f);
++	if (ret != 0)
++		goto err;
++
++	printk(announce);
++
++	return;
++
++err:
++	gpio_free(GPIO_TUSB_ENABLE);
++}
+diff --git a/arch/arm/mach-omap2/board-n8x0.c b/arch/arm/mach-omap2/board-n8x0.c
+index 764ab1e..c9395e1 100644
+--- a/arch/arm/mach-omap2/board-n8x0.c
++++ b/arch/arm/mach-omap2/board-n8x0.c
+@@ -109,8 +109,16 @@ static void __init n8x0_init_irq(void)
+ 	omap_gpio_init();
+ }
+ 
++#ifdef CONFIG_MACH_NOKIA_N8X0_LCD
++extern void n8x0_usb_init(void);
++#else
++static inline void n8x0_usb_init (void) {}
++#endif
++
+ static void __init n8x0_init_machine(void)
+ {
++	n8x0_usb_init();
++
+ 	/* FIXME: add n810 spi devices */
+ 	spi_register_board_info(n800_spi_board_info,
+ 				ARRAY_SIZE(n800_spi_board_info));
+-- 
+1.6.4.4
 
