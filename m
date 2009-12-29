@@ -1,81 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751670AbZL2RlP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751977AbZL2S2s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751670AbZL2RlP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Dec 2009 12:41:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751436AbZL2RlO
+	id S1751977AbZL2S2s (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Dec 2009 13:28:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751873AbZL2S2r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Dec 2009 12:41:14 -0500
-Received: from mail.parknet.co.jp ([210.171.160.6]:34862 "EHLO
-	mail.parknet.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751316AbZL2RlO (ORCPT
+	Tue, 29 Dec 2009 13:28:47 -0500
+Received: from dsl-67-204-24-19.acanac.net ([67.204.24.19]:50197 "EHLO
+	emergent.ellipticsemi.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751528AbZL2S2q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Dec 2009 12:41:14 -0500
-From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Debora Velarde <debora@linux.vnet.ibm.com>,
-       Rajiv Andrade <srajiv@linux.vnet.ibm.com>,
-       Marcel Selhorst <m.selhorst@sirrix.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] tpm_infineon: Fix suspend/resume handler for pnp_driver
-Date: Wed, 30 Dec 2009 02:41:10 +0900
-Message-ID: <87d41xu18p.fsf@devron.myhome.or.jp>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.90 (gnu/linux)
+	Tue, 29 Dec 2009 13:28:46 -0500
+X-Greylist: delayed 932 seconds by postgrey-1.27 at vger.kernel.org; Tue, 29 Dec 2009 13:28:46 EST
+Date: Tue, 29 Dec 2009 13:00:05 -0500
+From: Nick Bowler <nbowler@elliptictech.com>
+To: Alan Cox <alan@linux.intel.com>, linux-kernel@vger.kernel.org
+Cc: Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [Regression, bisected] Receive failure in et131x.
+Message-ID: <20091229180005.GA23030@emergent.ellipticsemi.com>
+Mail-Followup-To: Alan Cox <alan@linux.intel.com>,
+	linux-kernel@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Organization: Elliptic Technologies Inc.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Continuing the theme from the last release cycle -- my PCI-express
+et131x card (which works in 2.6.32) fails in the latest Linus git.  The
+card works at first (DHCP and NFS mounts during bootup are OK) but
+quickly fails once any reasonable traffic is put through it.  Transmit
+seems to continue to work after a failure, but receive is mostly dead
+forever -- the occasional frame appears to make it through.  The kernel
+log contains many messages of the following form:
 
-With recent quick review, I found the bug of tpm_infineon. (I don't have
-this device, and compile test only)
+et131x 0000:02:00.0: NICRxPkts PSR Entry 1546 indicates length of 12920 and/or bad bi(614)
+et131x 0000:02:00.0: NICRxPkts PSR Entry 1547 indicates length of 27745 and/or bad bi(92)
+et131x 0000:02:00.0: NICRxPkts PSR Entry 1548 indicates length of 30064 and/or bad bi(116)
+...
 
+Bisection reveals the following.
 
-PNP driver must use pnp_driver->suspend/resume anymore.
+99fd99f618daecae638550275cb132ab1ffe464c is the first bad commit
+commit 99fd99f618daecae638550275cb132ab1ffe464c
+Author: Alan Cox <alan@linux.intel.com>
+Date:   Wed Nov 18 14:07:58 2009 +0000
 
-Signed-off-by: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
----
+    Staging: et131x: clean up the avail fields in the rx registers
 
- drivers/char/tpm/tpm_infineon.c |   20 +++++++++++++++-----
- 1 file changed, 15 insertions(+), 5 deletions(-)
+    These have a wrap bit but again need little work to clean out. There are a
+    couple of uglies left that want addressing in later clean up. Notably we should
+    probably keep the local psr copy and wrap as two values.
 
-diff -puN drivers/char/tpm/tpm_infineon.c~tpm-pnp_driver-convert drivers/char/tpm/tpm_infineon.c
---- linux-2.6/drivers/char/tpm/tpm_infineon.c~tpm-pnp_driver-convert	2009-12-30 02:27:07.000000000 +0900
-+++ linux-2.6-hirofumi/drivers/char/tpm/tpm_infineon.c	2009-12-30 02:27:07.000000000 +0900
-@@ -611,16 +611,26 @@ static __devexit void tpm_inf_pnp_remove
- 	}
- }
- 
-+static int tpm_pnp_suspend(struct pnp_dev *dev, pm_message_t pm_state)
-+{
-+	return tpm_pm_suspend(&dev->dev, pm_state);
-+}
-+
-+static int tpm_pnp_resume(struct pnp_dev *dev)
-+{
-+	return tpm_pm_resume(&dev->dev);
-+}
-+
- static struct pnp_driver tpm_inf_pnp_driver = {
- 	.name = "tpm_inf_pnp",
--	.driver = {
--		.owner = THIS_MODULE,
--		.suspend = tpm_pm_suspend,
--		.resume = tpm_pm_resume,
--	},
- 	.id_table = tpm_pnp_tbl,
- 	.probe = tpm_inf_pnp_probe,
- 	.remove = __devexit_p(tpm_inf_pnp_remove),
-+	.suspend = tpm_pnp_suspend,
-+	.resume = tpm_pnp_resume,
-+	.driver = {
-+		.owner = THIS_MODULE,
-+	},
- };
- 
- static int __init init_inf(void)
-_
+    Signed-off-by: Alan Cox <alan@linux.intel.com>
+    Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+:040000 040000 8f0034c85fab183134fa19c7d58cee687991b6e7 a98b1db6fa82d8107fc5699fa2ae0851f38a14b0 M      drivers
 
 -- 
-OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Nick Bowler, Elliptic Technologies (http://www.elliptictech.com/)
