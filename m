@@ -1,63 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752633AbZL2F0T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752163AbZL2Fm6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752633AbZL2F0T (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Dec 2009 00:26:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752164AbZL2F0S
+	id S1752163AbZL2Fm6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Dec 2009 00:42:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751359AbZL2Fm6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Dec 2009 00:26:18 -0500
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:55203 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750939AbZL2F0R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Dec 2009 00:26:17 -0500
-Date: Mon, 28 Dec 2009 23:26:18 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Michael Stone <michael@laptop.org>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       linux-security-module@vger.kernel.org, Andi Kleen <andi@firstfloor.org>,
-       David Lang <david@lang.hm>, Oliver Hartkopp <socketcan@hartkopp.net>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Valdis Kletnieks <Valdis.Kletnieks@vt.edu>,
-       Bryan Donlan <bdonlan@gmail.com>, Evgeniy Polyakov <zbr@ioremap.net>,
-       "C. Scott Ananian" <cscott@cscott.net>,
-       James Morris <jmorris@namei.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Bernie Innocenti <bernie@codewiz.org>,
-       Mark Seaborn <mrs@mythic-beasts.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       =?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>,
-       Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
-       Samir Bellabes <sam@synack.fr>,
-       Casey Schaufler <casey@schaufler-ca.com>, Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 1/3] Security: Add disablenetwork interface. (v4)
-Message-ID: <20091229052618.GA23714@us.ibm.com>
-References: <20091228181357.GB16277@us.ibm.com>
- <20091229012158.GA14362@heat>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091229012158.GA14362@heat>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Tue, 29 Dec 2009 00:42:58 -0500
+Received: from mtoichi13.ns.itscom.net ([219.110.2.183]:50083 "EHLO
+	mtoichi13.ns.itscom.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750955AbZL2Fm5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Dec 2009 00:42:57 -0500
+From: "J. R. Okajima" <hooanon05@yahoo.co.jp>
+To: viro@ZenIV.linux.org.uk
+Cc: linux-kernel@vger.kernel.org, zohar@us.ibm.com, jmorris@namei.org,
+       "J. R. Okajima" <hooanon05@yahoo.co.jp>
+Subject: [PATCH] pipe, call path_put() after put_filp() in the error path
+Date: Tue, 29 Dec 2009 14:42:49 +0900
+Message-Id: <1262065369-19741-1-git-send-email-hooanon05@yahoo.co.jp>
+X-Mailer: git-send-email 1.6.1.284.g5dc13
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Michael Stone (michael@laptop.org):
-> Serge Hallyn wrote:
-> >Is there any reason not to handle these in
-> >  disablenetwork_security_prctl()
-> >?
-> 
-> I'm afraid that I don't understand what you're asking here. Are you just saying
-> that you'd like me to rename the functions that implement the interface logic
-> to something that begins with "disablenetwork_"?
+The commit 6c21a7f "LSM: imbed ima calls in the security hooks"
+which moves the ima_file_free() call within security_file_free()
+brought a problem into pipe.c.
+In the error path of pipe(2), the allocated resources are freed by
+path_put() and put_filp() (in this order). Since security_file_free()
+refers f_dentry and ima_file_free() refers f_dentry->d_inode, path_put()
+should be called after put_filp().
 
-Sorry, for some reason I was thinking you still had a
-security_operations *disablenetwork_ops.  But you don't, so
-my comment is silly.  Please ignore.
+Signed-off-by: J. R. Okajima <hooanon05@yahoo.co.jp>
+---
+ fs/pipe.c |    7 +++++--
+ 1 files changed, 5 insertions(+), 2 deletions(-)
 
-> Regards, and thanks for all your help,
+diff --git a/fs/pipe.c b/fs/pipe.c
+index 37ba29f..90b543d 100644
+--- a/fs/pipe.c
++++ b/fs/pipe.c
+@@ -1004,9 +1004,10 @@ struct file *create_write_pipe(int flags)
+ 
+ void free_write_pipe(struct file *f)
+ {
++	struct path path = f->f_path;
+ 	free_pipe_info(f->f_dentry->d_inode);
+-	path_put(&f->f_path);
+ 	put_filp(f);
++	path_put(&path);
+ }
+ 
+ struct file *create_read_pipe(struct file *wrf, int flags)
+@@ -1028,6 +1029,7 @@ int do_pipe_flags(int *fd, int flags)
+ 	struct file *fw, *fr;
+ 	int error;
+ 	int fdw, fdr;
++	struct path path;
+ 
+ 	if (flags & ~(O_CLOEXEC | O_NONBLOCK))
+ 		return -EINVAL;
+@@ -1061,8 +1063,9 @@ int do_pipe_flags(int *fd, int flags)
+  err_fdr:
+ 	put_unused_fd(fdr);
+  err_read_pipe:
+-	path_put(&fr->f_path);
++	path = fr->f_path;
+ 	put_filp(fr);
++	path_put(&path);
+  err_write_pipe:
+ 	free_write_pipe(fw);
+ 	return error;
+-- 
+1.6.1.284.g5dc13
 
-My pleasure, and thanks for the patience.
-
--serge
