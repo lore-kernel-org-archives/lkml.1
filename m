@@ -1,64 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751693AbZL2FNk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752545AbZL2Fex@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751693AbZL2FNk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Dec 2009 00:13:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750939AbZL2FNj
+	id S1752545AbZL2Fex (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Dec 2009 00:34:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751359AbZL2Few
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Dec 2009 00:13:39 -0500
-Received: from mail-fx0-f225.google.com ([209.85.220.225]:61775 "EHLO
-	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750873AbZL2FNi convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Dec 2009 00:13:38 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=Aq91zv7TFnZynUCBNSsXz8eeUY1fSPdoiQoUJluD+CaNOIH2BDiXepBetLUC/nAQcb
-         qqzmb3JdKlmOIYBiGLWYaiuQ14UcBMKgNHjQ2yiR/AWjVHhesV3y7Wpc4DKscvV1Q7GM
-         UuuNeGL917mDOXnnlwmdlUajCLMsPRofA3qtk=
-MIME-Version: 1.0
-In-Reply-To: <SNT125-W13609FA0551FB1FDE1FD4BC37A0@phx.gbl>
-References: <SNT125-W13609FA0551FB1FDE1FD4BC37A0@phx.gbl>
-Date: Tue, 29 Dec 2009 00:13:37 -0500
-Message-ID: <ea6602020912282113u2268daeel77fb052e830656c5@mail.gmail.com>
-Subject: Re: Happy birthday Linus!
-From: Vikram Dhillon <dhillonv10@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Tue, 29 Dec 2009 00:34:52 -0500
+Received: from mga09.intel.com ([134.134.136.24]:17521 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750775AbZL2Few (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Dec 2009 00:34:52 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.47,466,1257148800"; 
+   d="scan'208";a="479802088"
+Subject: Re: tbench regression with 2.6.33-rc1
+From: Lin Ming <ming.m.lin@intel.com>
+To: Mike Galbraith <efault@gmx.de>
+Cc: "peterz@infradead.org" <peterz@infradead.org>,
+       "mingo@elte.hu" <mingo@elte.hu>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+In-Reply-To: <1262064292.6412.30.camel@marge.simson.net>
+References: <1261739467.10685.18.camel@minggr.sh.intel.com>
+	 <1261902760.6201.33.camel@marge.simson.net>
+	 <1262052582.10685.59.camel@minggr.sh.intel.com>
+	 <1262064292.6412.30.camel@marge.simson.net>
+Content-Type: text/plain
+Date: Tue, 29 Dec 2009 13:19:19 +0800
+Message-Id: <1262063959.13697.6.camel@minggr.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 (2.24.1-2.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Happy Birthday, I am a little late so sorry about that. Keep up the
-good work, I just started learning about kernel programming, and I can
-be certain that Linux will soon take over the world :D
+On Tue, 2009-12-29 at 13:24 +0800, Mike Galbraith wrote:
+> On Tue, 2009-12-29 at 10:09 +0800, Lin Ming wrote:
+> > And also no regression if I run tbench with RT scheduler on tulsa
+> > machine, as below command,
+> > 
+> > schedtool -R -p 20 -e tbench_srv &
+> > schedtool -R -p 20 -e tbench 32
+> 
+> Hm, odd.  I'd expect tbench to suffer when run SCHED_RR, and here it
+> does, achieving roughly 85% of lowest SCHED_OTHER throughput.
 
-Regards,
-Vikram Dhillon
+Here is some misunderstanding.
+I compared SCHED_RR tbench with 2.6.32 and 2.6.33-rc1 and no regression
+found.
 
-~~~
-There are lots of Linux users who don't care how the kernel works, but
-only want to use it. That is a tribute to how good Linux is.
--- Linus Torvalds
+For the same kernel, SCHED_RR tbench only achieved ~40% of SCHED_OTHER
+throughput.
 
+Lin Ming
 
-
-On Mon, Dec 28, 2009 at 9:41 PM, Yuhong Bao <yuhongbao_386@hotmail.com> wrote:
->
-> This has just been posted on Slashdot:
-> http://www.linuxjournal.com/content/happy-birthday-linus
-> BTW, I wonder, did you get a 387-compatible coprocessor later?
->
-> Yuhong Bao
->
-> _________________________________________________________________
-> Hotmail: Free, trusted and rich email service.
-> http://clk.atdmt.com/GBL/go/171222984/direct/01/--
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
