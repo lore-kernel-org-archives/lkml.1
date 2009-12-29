@@ -1,99 +1,166 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752990AbZL2Q0p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753224AbZL2Q2W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752990AbZL2Q0p (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Dec 2009 11:26:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752888AbZL2Q0m
+	id S1753224AbZL2Q2W (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Dec 2009 11:28:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753025AbZL2Q2S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Dec 2009 11:26:42 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:46226 "EHLO
+	Tue, 29 Dec 2009 11:28:18 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:34838 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752650AbZL2Q0l (ORCPT
+	with ESMTP id S1752836AbZL2Q0k (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Dec 2009 11:26:41 -0500
-X-Authority-Analysis: v=1.0 c=1 a=koKUlpq98SUA:10 a=omOdbC7AAAAA:8 a=meVymXHHAAAA:8 a=nuYltA4d6o793rn2EusA:9 a=REuMhl2XboJsMJ8p9ZEpLwa6NKAA:4 a=jeBq3FmKZ4MA:10
+	Tue, 29 Dec 2009 11:26:40 -0500
+X-Authority-Analysis: v=1.0 c=1 a=eaBxBUcXajkA:10 a=omOdbC7AAAAA:8 a=meVymXHHAAAA:8 a=__W6ry8KEva1xxJOUvgA:9 a=VD2KdF_oCBYd2dPG8EkA:7 a=VRSDfqdd3hsbFnrCubnSvzxMgYkA:4 a=jeBq3FmKZ4MA:10
 X-Cloudmark-Score: 0
 X-Originating-IP: 74.67.89.75
-Message-Id: <20091229162637.702893387@goodmis.org>
+Message-Id: <20091229162638.026516574@goodmis.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 29 Dec 2009 11:22:35 -0500
+Date: Tue, 29 Dec 2009 11:22:36 -0500
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Peter Zijlstra <peterz@infradead.org>,
        Frederic Weisbecker <fweisbec@gmail.com>,
        Li Zefan <lizf@cn.fujitsu.com>, Lai Jiangshan <laijs@cn.fujitsu.com>
-Subject: [PATCH 04/10] tracing: Fix sign fields in ftrace_define_fields_##call()
+Subject: [PATCH 05/10] tracing: Add print_fmt field
 References: <20091229162231.441352392@goodmis.org>
-Content-Disposition: inline; filename=0004-tracing-Fix-sign-fields-in-ftrace_define_fields_-cal.patch
+Content-Disposition: inline; filename=0005-tracing-Add-print_fmt-field.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Lai Jiangshan <laijs@cn.fujitsu.com>
 
-Add is_signed_type() call to trace_define_field() in ftrace macros.
+This is part of a patch set that removes the show_format method
+in the ftrace event macros.
 
-The code previously just passed in 0 (false), disregarding whether
-or not the field was actually a signed type.
+The print_fmt field is added to hold the string that shows
+the print_fmt in the event format files. This patch only adds
+the field but it is currently not used. Later patches will use
+this field to enable us to remove the show_format field
+and function.
 
 Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
-LKML-Reference: <4B273D3A.6020007@cn.fujitsu.com>
+LKML-Reference: <4B273D3E.2000704@cn.fujitsu.com>
 Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 ---
- include/trace/ftrace.h      |    7 ++++---
- kernel/trace/trace_export.c |    7 ++++---
- 2 files changed, 8 insertions(+), 6 deletions(-)
+ include/linux/ftrace_event.h |    1 +
+ include/trace/ftrace.h       |   28 +++++++++++++++++++++++++++-
+ kernel/trace/trace_export.c  |    7 +++++++
+ 3 files changed, 35 insertions(+), 1 deletions(-)
 
+diff --git a/include/linux/ftrace_event.h b/include/linux/ftrace_event.h
+index 2233c98..bd23d8e 100644
+--- a/include/linux/ftrace_event.h
++++ b/include/linux/ftrace_event.h
+@@ -121,6 +121,7 @@ struct ftrace_event_call {
+ 	int			(*regfunc)(struct ftrace_event_call *);
+ 	void			(*unregfunc)(struct ftrace_event_call *);
+ 	int			id;
++	const char		*print_fmt;
+ 	int			(*raw_init)(struct ftrace_event_call *);
+ 	int			(*show_format)(struct ftrace_event_call *,
+ 					       struct trace_seq *);
 diff --git a/include/trace/ftrace.h b/include/trace/ftrace.h
-index 7352315..c6fe03e 100644
+index c6fe03e..3351d85 100644
 --- a/include/trace/ftrace.h
 +++ b/include/trace/ftrace.h
-@@ -414,7 +414,8 @@ ftrace_raw_output_##call(struct trace_iterator *iter, int flags)	\
- 	BUILD_BUG_ON(len > MAX_FILTER_STR_VAL);				\
- 	ret = trace_define_field(event_call, #type "[" #len "]", #item,	\
- 				 offsetof(typeof(field), item),		\
--				 sizeof(field.item), 0, FILTER_OTHER);	\
-+				 sizeof(field.item),			\
-+				 is_signed_type(type), FILTER_OTHER);	\
- 	if (ret)							\
- 		return ret;
+@@ -722,8 +722,20 @@ static struct trace_event ftrace_event_type_##call = {			\
  
-@@ -422,8 +423,8 @@ ftrace_raw_output_##call(struct trace_iterator *iter, int flags)	\
- #define __dynamic_array(type, item, len)				       \
- 	ret = trace_define_field(event_call, "__data_loc " #type "[]", #item,  \
- 				 offsetof(typeof(field), __data_loc_##item),   \
--				 sizeof(field.__data_loc_##item), 0,	       \
--				 FILTER_OTHER);
-+				 sizeof(field.__data_loc_##item),	       \
-+				 is_signed_type(type), FILTER_OTHER);
+ #include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
  
- #undef __string
- #define __string(item, src) __dynamic_array(char, item, -1)
++#undef __entry
++#define __entry REC
++
++#undef __print_flags
++#undef __print_symbolic
++#undef __get_dynamic_array
++#undef __get_str
++
++#undef TP_printk
++#define TP_printk(fmt, args...) "\"" fmt "\", "  __stringify(args)
++
+ #undef DECLARE_EVENT_CLASS
+-#define DECLARE_EVENT_CLASS(call, proto, args, tstruct, assign, print)
++#define DECLARE_EVENT_CLASS(call, proto, args, tstruct, assign, print)	\
++static const char print_fmt_##call[] = print;
+ 
+ #undef DEFINE_EVENT
+ #define DEFINE_EVENT(template, call, proto, args)			\
+@@ -737,6 +749,7 @@ __attribute__((section("_ftrace_events"))) event_##call = {		\
+ 	.raw_init		= trace_event_raw_init,			\
+ 	.regfunc		= ftrace_raw_reg_event_##call,		\
+ 	.unregfunc		= ftrace_raw_unreg_event_##call,	\
++	.print_fmt		= print_fmt_##template,			\
+ 	.show_format		= ftrace_format_##template,		\
+ 	.define_fields		= ftrace_define_fields_##template,	\
+ 	_TRACE_PROFILE_INIT(call)					\
+@@ -745,6 +758,8 @@ __attribute__((section("_ftrace_events"))) event_##call = {		\
+ #undef DEFINE_EVENT_PRINT
+ #define DEFINE_EVENT_PRINT(template, call, proto, args, print)		\
+ 									\
++static const char print_fmt_##call[] = print;				\
++									\
+ static struct ftrace_event_call __used					\
+ __attribute__((__aligned__(4)))						\
+ __attribute__((section("_ftrace_events"))) event_##call = {		\
+@@ -754,6 +769,7 @@ __attribute__((section("_ftrace_events"))) event_##call = {		\
+ 	.raw_init		= trace_event_raw_init,			\
+ 	.regfunc		= ftrace_raw_reg_event_##call,		\
+ 	.unregfunc		= ftrace_raw_unreg_event_##call,	\
++	.print_fmt		= print_fmt_##call,			\
+ 	.show_format		= ftrace_format_##call,			\
+ 	.define_fields		= ftrace_define_fields_##template,	\
+ 	_TRACE_PROFILE_INIT(call)					\
+@@ -837,6 +853,16 @@ __attribute__((section("_ftrace_events"))) event_##call = {		\
+ 
+ #ifdef CONFIG_EVENT_PROFILE
+ 
++#undef __entry
++#define __entry entry
++
++#undef __get_dynamic_array
++#define __get_dynamic_array(field)	\
++		((void *)__entry + (__entry->__data_loc_##field & 0xffff))
++
++#undef __get_str
++#define __get_str(field) (char *)__get_dynamic_array(field)
++
+ #undef __perf_addr
+ #define __perf_addr(a) __addr = (a)
+ 
 diff --git a/kernel/trace/trace_export.c b/kernel/trace/trace_export.c
-index 511bc36..9978a4f 100644
+index 9978a4f..95d14b6 100644
 --- a/kernel/trace/trace_export.c
 +++ b/kernel/trace/trace_export.c
-@@ -158,7 +158,8 @@ ftrace_format_##name(struct ftrace_event_call *unused,			\
- 	BUILD_BUG_ON(len > MAX_FILTER_STR_VAL);				\
- 	ret = trace_define_field(event_call, #type "[" #len "]", #item,	\
- 				 offsetof(typeof(field), item),		\
--				 sizeof(field.item), 0, FILTER_OTHER);	\
-+				 sizeof(field.item),			\
-+				 is_signed_type(type), FILTER_OTHER);	\
- 	if (ret)							\
- 		return ret;
+@@ -203,6 +203,9 @@ static int ftrace_raw_init_event(struct ftrace_event_call *call)
+ 	return 0;
+ }
  
-@@ -168,8 +169,8 @@ ftrace_format_##name(struct ftrace_event_call *unused,			\
- 	ret = trace_define_field(event_call, #type "[" #len "]", #item,	\
- 				 offsetof(typeof(field),		\
- 					  container.item),		\
--				 sizeof(field.container.item), 0,	\
--				 FILTER_OTHER);				\
-+				 sizeof(field.container.item),		\
-+				 is_signed_type(type), FILTER_OTHER);	\
- 	if (ret)							\
- 		return ret;
++#undef __entry
++#define __entry REC
++
+ #undef __field
+ #define __field(type, item)
  
+@@ -218,6 +221,9 @@ static int ftrace_raw_init_event(struct ftrace_event_call *call)
+ #undef __dynamic_array
+ #define __dynamic_array(type, item)
+ 
++#undef F_printk
++#define F_printk(fmt, args...) #fmt ", "  __stringify(args)
++
+ #undef FTRACE_ENTRY
+ #define FTRACE_ENTRY(call, struct_name, type, tstruct, print)		\
+ 									\
+@@ -228,6 +234,7 @@ __attribute__((section("_ftrace_events"))) event_##call = {		\
+ 	.id			= type,					\
+ 	.system			= __stringify(TRACE_SYSTEM),		\
+ 	.raw_init		= ftrace_raw_init_event,		\
++	.print_fmt		= print,				\
+ 	.show_format		= ftrace_format_##call,			\
+ 	.define_fields		= ftrace_define_fields_##call,		\
+ };									\
 -- 
 1.6.5
 
