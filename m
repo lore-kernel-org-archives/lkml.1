@@ -1,118 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752678AbZL2IlJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752690AbZL2IrK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752678AbZL2IlJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Dec 2009 03:41:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751601AbZL2IlI
+	id S1752690AbZL2IrK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Dec 2009 03:47:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752654AbZL2IrJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Dec 2009 03:41:08 -0500
-Received: from www84.your-server.de ([213.133.104.84]:39153 "EHLO
-	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751373AbZL2IlH (ORCPT
+	Tue, 29 Dec 2009 03:47:09 -0500
+Received: from vps2.mechanicalrealm.com ([66.216.20.21]:51225 "EHLO
+	zinan.dashjr.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752624AbZL2IrI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Dec 2009 03:41:07 -0500
-Subject: Re: [PATCH] [0/6] kfifo fixes/improvements
-From: Stefani Seibold <stefani@seibold.net>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: linux-kernel@vger.kernel.org, akpm@osdl.org
-In-Reply-To: <20091228204003.GH4994@basil.fritz.box>
-References: <200912271003.631128760@firstfloor.org>
-	 <1261949800.25298.18.camel@wall-e> <20091227233816.GC2399@basil.fritz.box>
-	 <1261986136.808.2.camel@wall-e> <20091228145749.GD4994@basil.fritz.box>
-	 <1262016510.12656.25.camel@wall-e> <20091228172651.GE4994@basil.fritz.box>
-	 <1262030653.15368.37.camel@wall-e>  <20091228204003.GH4994@basil.fritz.box>
-Content-Type: text/plain; charset="ISO-8859-15"
-Date: Tue, 29 Dec 2009 09:40:56 +0100
-Message-ID: <1262076056.23095.21.camel@wall-e>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 
+	Tue, 29 Dec 2009 03:47:08 -0500
+From: "Luke-Jr" <luke@dashjr.org>
+To: Kalle Valo <kalle.valo@iki.fi>
+Subject: Re: [PATCH] OMAP2: add USB platform data and initialization for Nokia N800 and N810
+Date: Tue, 29 Dec 2009 02:46:50 -0600
+User-Agent: KMail/1.12.3 (Linux/2.6.32-gentoo; KDE/4.3.3; x86_64; ; )
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
+       "Balbi Felipe \(Nokia-D\/Helsinki\)" <felipe.balbi@nokia.com>
+References: <200912290152.16357.luke@dashjr.org> <87d41yxjx9.fsf@purkki.valot.fi>
+In-Reply-To: <87d41yxjx9.fsf@purkki.valot.fi>
+X-PGP-Key-Fingerprint: CE5A D56A 36CC 69FA E7D2 3558 665F C11D D53E 9583
+X-PGP-Key-ID: 665FC11DD53E9583
+X-PGP-Keyserver: x-hkp://subkeys.pgp.bet
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Authenticated-Sender: stefani@seibold.net
+Message-Id: <200912290246.57663.luke@dashjr.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Montag, den 28.12.2009, 21:40 +0100 schrieb Andi Kleen:
-
-
-> OK i checked and they all use power-of-two currently so by sheer
-> luck (I doubt it is by design) they work. Still I think that
-> open deathtrap should be fixed.
+On Tuesday 29 December 2009 02:29:22 am Kalle Valo wrote:
+> "Luke-Jr" <luke@dashjr.org> writes:
+> > Tested on Nokia N810 in Linux-OMAP tree. Mainline is not bootable yet.
 > 
+> What's the problem in mainline? I haven't tested n8x0 for months :(
 
-It is fixed, and i hope it will be included in 2.6.34.
+Lack of platform support, as far as I know.
+Until we have cbus, there's no way to get the LCD powered...
 
-> I also don't understand how that patch "breaks your future work"
-> Please elaborate on that.
+> > --- a/arch/arm/mach-omap2/Kconfig
+> > +++ b/arch/arm/mach-omap2/Kconfig
+> > @@ -117,6 +117,11 @@ config MACH_NOKIA_N8X0
+> >  	select MACH_NOKIA_N810
+> >  	select MACH_NOKIA_N810_WIMAX
+> >
+> > +config MACH_NOKIA_N8X0_USB
+> > +	bool
+> > +	depends on MACH_NOKIA_N8X0 && MACH_OMAP2_TUSB6010
+> > +	default y
+> > +
 > 
-
-Very difficult to explain in a email, but i will try it:
-
-The new macro based kfifo API handles everything as elements of a given
-type. So you can have the old "unsigned char"-fifo, but also fifo of
-every other type like int's, struct's and so on. The kfifo_in() and
-kfifo_out() len parameter is than in the meaning of elements not bytes.
-So you are able to process more than one value at a time and the macros
-will return the number of processed elements (not bytes). 
-
-kfifo_in(), kfifo_out() and kfifi_out_peek() are more in a meaning of a
-max. memcpy(). For a single value it is better to use new introduced
-macros kfifo_put(), kfifo_get() and kfifo_peek(), which doesn't require
-the len parameter and are faster pod data types.
-
-With this solution i have full compatibility to the orig kfifo
-implementation, i can fill a fifo with a minimum of operations, and   
-the desynchronization problem is also gone.
-
-Have a look at example:
-
-#include "kfifo.h"
-
-#define FIFO_ELEMS	32
-
-// declare a fifo named test with 32 int's
-static DECLARE_KFIFO(test, int, FIFO_ELEMS);
-
-void testfunc(void)
-{
-	int		i;
-	int		buf[6];
-	unsigned int 	ret;
-
-	INIT_KFIFO(test);
-
-	for(i = 20; i != 30; i++)
-		kfifo_put(&test, &i);
-
-	// show the number of elements in the fifo
-	printk("queue len: %u\n", kfifo_len(&test)); 
-
-	// get max. two int elements from the fifo
-	ret = kfifo_out(&test, buf, 2);
-
-	// show the number of processed elements
-	printk("ret: %d\n", ret);
-
-	// put max. two int elements in the fifo
-	ret = kfifo_in(&test, buf, 2);
-
-	// show the number of processed elements
-	printk("ret: %d\n", ret);
-
-	if (kfifo_peek(&test, &i))
-		printk("%d\n", i);
-
-	while(kfifo_get(&test, &i))
-		printk("%d\n", i);
-}
-
-> -Andi
+> Is is really needed to add new kconfig variable? Can't we just use
+> MACH_OMAP2_TUSB6010 in code?
 > 
-> P.S.: I must say you make it really hard to use kfifos.
+> I think a separate file is not needed, it's not that much code. I
+> recommend to just adding it directly to board-n8x0.c. It's simple and
+> easier for everyone.
+
+Seemed simpler to manage in a separate file, though not as necessary as the 
+LCD stuff (which I also have a patch against mainline for, but it needs 
+tahvo...)
+
+> > --- a/arch/arm/mach-omap2/board-n8x0.c
+> > +++ b/arch/arm/mach-omap2/board-n8x0.c
+> > @@ -109,8 +109,16 @@ static void __init n8x0_init_irq(void)
+> >  	omap_gpio_init();
+> >  }
+> >
+> > +#ifdef CONFIG_MACH_NOKIA_N8X0_LCD
+> > +extern void n8x0_usb_init(void);
+> > +#else
+> > +static inline void n8x0_usb_init (void) {}
+> > +#endif
 > 
+> CONFIG_MACH_NOKIA_N8X0_LCD does not look right here.
 
-Sorry, that was not my intention. But the old API was much harder to
-use ;-)
+Heh, looks like my isolate-and-merge-to-mainline got messed up there.
+Of course it should be CONFIG_MACH_NOKIA_N8X0_USB :)
 
-Stefani
+Also, scripts/checkpatch.pl gave me a warning about the extern in a .c file, 
+but I couldn't figure out where else it could reasonably go. Any ideas? :/
 
-
+Luke
