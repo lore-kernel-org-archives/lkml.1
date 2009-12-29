@@ -1,68 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752617AbZL2HYh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752601AbZL2HeU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752617AbZL2HYh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Dec 2009 02:24:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751533AbZL2HYg
+	id S1752601AbZL2HeU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Dec 2009 02:34:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751533AbZL2HeT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Dec 2009 02:24:36 -0500
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:42130 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751373AbZL2HYf (ORCPT
+	Tue, 29 Dec 2009 02:34:19 -0500
+Received: from e28smtp06.in.ibm.com ([122.248.162.6]:41557 "EHLO
+	e28smtp06.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751359AbZL2HeT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Dec 2009 02:24:35 -0500
-Message-ID: <4B39AEB2.5040809@cs.helsinki.fi>
-Date: Tue, 29 Dec 2009 09:24:34 +0200
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+	Tue, 29 Dec 2009 02:34:19 -0500
+Date: Tue, 29 Dec 2009 13:04:12 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mel@csn.ul.ie>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [PATCH 2/4] vmscan: get_scan_ratio cleanup
+Message-ID: <20091229073412.GN3601@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <20091228164451.A687.A69D9226@jp.fujitsu.com>
+ <20091228164733.A68A.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-To: Emese Revfy <re.emese@gmail.com>
-CC: linux-kernel@vger.kernel.org, rientjes@google.com, cl@linux-foundation.org,
-       torvalds@linux-foundation.org
-Subject: Re: [PATCH 3/4] Constify struct kset_uevent_ops for 	2.6.32-git-053fe57ac
- v2
-References: <cover.1260663000.git.re.emese@gmail.com>	 <eff97be7c5839477c88f7ba61ef100f38c58bf7d.1260663000.git.re.emese@gmail.com> <84144f020912250331h23b8b724v73cf70c384d385ec@mail.gmail.com> <4B355AEF.3060508@gmail.com>
-In-Reply-To: <4B355AEF.3060508@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20091228164733.A68A.A69D9226@jp.fujitsu.com>
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Emese Revfy kirjoitti:
-> Pekka Enberg wrote:
->> On Mon, Dec 14, 2009 at 2:00 AM,  <re.emese@gmail.com> wrote:
->>> From: Emese Revfy <re.emese@gmail.com>
->>>
->>>
->>> Signed-off-by: Emese Revfy <re.emese@gmail.com>
->>> ---
->>>  mm/slub.c |    2 +-
->>>  1 files changed, 1 insertions(+), 1 deletions(-)
->>>
->>> diff --git a/mm/slub.c b/mm/slub.c
->>> index 4996fc7..fb63aca 100644
->>> --- a/mm/slub.c
->>> +++ b/mm/slub.c
->>> @@ -4522,7 +4522,7 @@ static int uevent_filter(struct kset *kset, struct kobject *kobj)
->>>        return 0;
->>>  }
->>>
->>> -static struct kset_uevent_ops slab_uevent_ops = {
->>> +static const struct kset_uevent_ops slab_uevent_ops = {
->>>        .filter = uevent_filter,
->>>  };
->>   CC      mm/slub.o
->> mm/slub.c: In function 'slab_sysfs_init':
->> mm/slub.c:4679: warning: passing argument 2 of 'kset_create_and_add'
->> discards qualifiers from pointer target type
->> include/linux/kobject.h:164: note: expected 'struct kset_uevent_ops *'
->> but argument is of type 'const struct kset_uevent_ops *'
->>
->> Hmm?
->>
-> 
-> I double checked both the declaration and definitions of the affected
-> function/structure and they are consistently const here.
-> Can you tell me what patch/tree combination you encountered this warning with?
+* KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> [2009-12-28 16:48:06]:
 
-2.6.33-rc2 with your patch.
+> The get_scan_ratio() should have all scan-ratio related calculations.
+> Thus, this patch move some calculation into get_scan_ratio.
+> 
+> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> ---
+>  mm/vmscan.c |   23 ++++++++++++++---------
+>  1 files changed, 14 insertions(+), 9 deletions(-)
+> 
+> diff --git a/mm/vmscan.c b/mm/vmscan.c
+> index 2bbee91..640486b 100644
+> --- a/mm/vmscan.c
+> +++ b/mm/vmscan.c
+> @@ -1501,6 +1501,13 @@ static void get_scan_ratio(struct zone *zone, struct scan_control *sc,
+>  	unsigned long ap, fp;
+>  	struct zone_reclaim_stat *reclaim_stat = get_reclaim_stat(zone, sc);
+> 
+> +	/* If we have no swap space, do not bother scanning anon pages. */
+> +	if (!sc->may_swap || (nr_swap_pages <= 0)) {
+> +		percent[0] = 0;
+> +		percent[1] = 100;
+> +		return;
+> +	}
+> +
+
+
+>  	anon  = zone_nr_lru_pages(zone, sc, LRU_ACTIVE_ANON) +
+>  		zone_nr_lru_pages(zone, sc, LRU_INACTIVE_ANON);
+>  	file  = zone_nr_lru_pages(zone, sc, LRU_ACTIVE_FILE) +
+> @@ -1598,22 +1605,20 @@ static void shrink_zone(int priority, struct zone *zone,
+>  	unsigned long nr_reclaimed = sc->nr_reclaimed;
+>  	unsigned long nr_to_reclaim = sc->nr_to_reclaim;
+>  	struct zone_reclaim_stat *reclaim_stat = get_reclaim_stat(zone, sc);
+> -	int noswap = 0;
+> 
+> -	/* If we have no swap space, do not bother scanning anon pages. */
+> -	if (!sc->may_swap || (nr_swap_pages <= 0)) {
+> -		noswap = 1;
+> -		percent[0] = 0;
+> -		percent[1] = 100;
+> -	} else
+> -		get_scan_ratio(zone, sc, percent);
+> +	get_scan_ratio(zone, sc, percent);
+
+Where do we set noswap? Is percent[0] == 0 used to indicate noswap =
+1?
+
+> 
+>  	for_each_evictable_lru(l) {
+>  		int file = is_file_lru(l);
+>  		unsigned long scan;
+> 
+> +		if (percent[file] == 0) {
+> +			nr[l] = 0;
+> +			continue;
+> +		}
+> +
+
+Is this really needed? Won't nr_scan_try_batch handle it correctly?
+
+>  		scan = zone_nr_lru_pages(zone, sc, l);
+> -		if (priority || noswap) {
+> +		if (priority) {
+>  			scan >>= priority;
+>  			scan = (scan * percent[file]) / 100;
+>  		}
+
+-- 
+	Balbir
