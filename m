@@ -1,41 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751975AbZL2OAx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752078AbZL2OLP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751975AbZL2OAx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Dec 2009 09:00:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751734AbZL2OAw
+	id S1752078AbZL2OLP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Dec 2009 09:11:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752013AbZL2OLN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Dec 2009 09:00:52 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:38451 "EHLO ogre.sisk.pl"
+	Tue, 29 Dec 2009 09:11:13 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:60466 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751529AbZL2OAw convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Dec 2009 09:00:52 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Miguel Calleja <mcalleja1@telecable.es>
-Subject: Re: Linux 2.6.33-rc2 - Blank screen for Intel KMS
-Date: Tue, 29 Dec 2009 15:01:17 +0100
-User-Agent: KMail/1.12.3 (Linux/2.6.33-rc2-tst; KDE/4.3.3; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org, Zhao Yakui <yakui.zhao@intel.com>,
-       Eric Anholt <eric@anholt.net>, Jesse Barnes <jbarnes@virtuousgeek.org>
-References: <alpine.LFD.2.00.0912241350510.11961@localhost.localdomain> <hh2dl2$ler$1@ger.gmane.org> <hhcjch$5ns$1@ger.gmane.org>
-In-Reply-To: <hhcjch$5ns$1@ger.gmane.org>
+	id S1752002AbZL2OLL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Dec 2009 09:11:11 -0500
+Date: Tue, 29 Dec 2009 16:07:43 +0200
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: Gregory Haskins <gregory.haskins@gmail.com>
+Cc: Avi Kivity <avi@redhat.com>, Andi Kleen <andi@firstfloor.org>,
+       kvm@vger.kernel.org, Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       netdev@vger.kernel.org,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Anthony Liguori <anthony@codemonkey.ws>, Ingo Molnar <mingo@elte.hu>,
+       torvalds@linux-foundation.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: vhost net on 10ge with x2apic
+Message-ID: <20091229140743.GC10234@redhat.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Message-Id: <200912291501.17129.rjw@sisk.pl>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 29 December 2009, Miguel Calleja wrote:
-> El Fri, 25 Dec 2009 13:10:58 +0000, Miguel Calleja escribió:
-> 
-> > I've upgraded from 2.6.32 and I get a blank screen when the system is
-> > starting KMS. My motherboard is an Intel DG43NB with onboard video. I
-> > traced back to the patch that stopped working on my system and it is
-> > patch-2.6.32-git7. patch-2.6.32-git6 works fine.
+Got hold of some 10Ge cards and did some light benchmarking of kvm networking
+with and without vhost net accelerator, while enabling x2apic emulation.
+I've put a summary of results here:
+http://www.linux-kvm.org/page/VhostNet#Performance
 
-I can reproduce this issue on one of my test boxes.
+Main conclusions: vhost net improves latency (a lot) and bandwidth/cpu
+utilization (less).  With x2apic and a recent guest, virtio userspace
+has decent bandwidth but high latency and cpu utilization.  vhost net
+bandwidth can get very close to native bandwidth (95%).
+We still have work to do tuning virtio guest drivers.
 
-Rafael
+-- 
+MST
