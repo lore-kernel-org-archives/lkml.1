@@ -1,74 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752037AbZL2XoA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752126AbZL2Xtm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752037AbZL2XoA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Dec 2009 18:44:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751420AbZL2Xn7
+	id S1752126AbZL2Xtm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Dec 2009 18:49:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751900AbZL2Xtl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Dec 2009 18:43:59 -0500
-Received: from ns1.siteground211.com ([209.62.36.12]:52081 "EHLO
-	serv01.siteground211.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751258AbZL2Xn6 (ORCPT
+	Tue, 29 Dec 2009 18:49:41 -0500
+Received: from mail-fx0-f225.google.com ([209.85.220.225]:59195 "EHLO
+	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751800AbZL2Xtk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Dec 2009 18:43:58 -0500
-Subject: Question of resource_size() implementation
-From: Felipe Balbi <me@felipebalbi.com>
-Reply-To: me@felipebalbi.com
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 30 Dec 2009 01:43:54 +0200
-Message-ID: <1262130234.28789.112.camel@gandalf>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 
-Content-Transfer-Encoding: 7bit
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - serv01.siteground211.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - felipebalbi.com
+	Tue, 29 Dec 2009 18:49:40 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type:content-transfer-encoding;
+        b=IUQavs3J7FCnRiViiBO9/i6+1xr6NWjSCLpTKgEJaDkGVnWu6cbv7XWsYqOiQ7FtFl
+         TYCpP60IQT65SiwAp67Egn1LxWSHPzr0D3IMOUidYALm19SfH+lcmSMfSX3HAo+aaxNZ
+         gwF4LL53wgRZj3/kYOFP5EmmxF2LwotJFdrf4=
+Message-ID: <4B3A9589.6060201@googlemail.com>
+Date: Wed, 30 Dec 2009 00:49:29 +0100
+From: =?ISO-8859-1?Q?Ren=E9_Bolldorf?= <xsecute@googlemail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.5) Gecko/20091204 Thunderbird/3.0
+MIME-Version: 1.0
+To: Greg Kroah-Hartman <gregkh@suse.de>
+CC: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH]drivers/usb/core/sysfs.c:201 unused variable 'value'
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+The variable 'value' is unused in 'set_reset_quirk()'.
 
-I'm wondering whether the +1 in resource_size() is actually necessary.
-To illustrate the problem imagine we have two subsequent 4k memory areas
-which should be passed to ioremap(). When passing those address spaces
-to the drivers we will use struct resource and define something like:
+Greetings René Bolldorf
 
-#define MEM_AREA1_BASE	0x480ab000
-#define MEM_AREA2_BASE	0x480ac000
+--- ./drivers/usb/core/sysfs.c	2009-12-29 23:57:30.579982912 +0100
++++ ./drivers/usb/core/sysfs.c	2009-12-29 23:58:19.114982484 +0100
+@@ -198,7 +198,7 @@ set_reset_quirk(struct device *dev, stru
+  		const char *buf, size_t count)
+  {
+  	struct usb_device	*udev = to_usb_device(dev);
+-	int			config, value;
++	int			config;
 
-struct resource my_device_resources = {
-	{
-		.start	= MEM_AREA1_BASE,
-		.end	= MEM_AREA1_BASE + SZ_4K - 1,
-		.flags	= IORESOURCE_MEM,
-	},
-	{
-		.start	= MEM_AREA2_BASE,
-		.end	= MEM_AREA2_BASE + SZ_4K - 1,
-		.flags	= IORESOURCE_MEM,
-	},
-};
-
-that -1 would cause us to pass the correct end for each area,
-respectively 0x480abfff and 0x480acffff, right ?
-
-But resource_size() is defined as:
-
-static inline resource_size_t resource_size(const struct resource *res)
-{
-	return res->end - res->start + 1;
-}
-
-then we put +1 again and the end addresses would then become
-respectively 0x480ac000 and 0x480ad0000. Wouldn't we then fail ioremap()
-of the second area ? wouldn't it return -EBUSY ? Are we off-by-one
-here ? Or is this all expected ?
-
-I have to say, I didn't test this on real hw yet...
-
--- 
-balbi
-
+  	if (sscanf(buf, "%d", &config) != 1 || config < 0 || config > 1)
+  		return -EINVAL;
