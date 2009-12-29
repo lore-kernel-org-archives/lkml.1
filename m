@@ -1,66 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752366AbZL2BEJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752508AbZL2BGV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752366AbZL2BEJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Dec 2009 20:04:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752143AbZL2BEI
+	id S1752508AbZL2BGV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Dec 2009 20:06:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752283AbZL2BGU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Dec 2009 20:04:08 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:52539 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752126AbZL2BEH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Dec 2009 20:04:07 -0500
-Message-ID: <4B39557D.6000600@cn.fujitsu.com>
-Date: Tue, 29 Dec 2009 09:03:57 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
-MIME-Version: 1.0
-To: Ben Blum <bblum@andrew.cmu.edu>
-CC: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       akpm@linux-foundation.org, Paul Menage <menage@google.com>
-Subject: Re: [PATCH 2/4] cgroups: subsystem module loading interface
-References: <20091221203253.GA5683@andrew.cmu.edu> <20091221203613.GC5683@andrew.cmu.edu> <4B3850F4.4090203@cn.fujitsu.com> <20091228124029.GB4824@andrew.cmu.edu>
-In-Reply-To: <20091228124029.GB4824@andrew.cmu.edu>
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 28 Dec 2009 20:06:20 -0500
+Received: from mailget.neusoft.com ([210.83.25.69]:64437 "EHLO
+	mailgate.neusoft.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1751063AbZL2BGT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 28 Dec 2009 20:06:19 -0500
+X-IronPort-AV: E=McAfee;i="5400,1158,5845"; a="6482163"
+Date: Tue, 29 Dec 2009 09:08:21 +0800 (CST)
+From: fengxiangjun <fengxiangjun@neusoft.com>
+Subject: Re: 2.6.32.2 SATA link detect failed, 2.6.32.1 works fine
+In-reply-to: <4B388246.3040100@kernel.org>
+X-X-Sender: fengxj@darkstar.example.net
+To: Tejun Heo <tj@kernel.org>
+Cc: Robert Hancock <hancockrwd@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org
+Message-id: <alpine.LNX.2.00.0912290904140.1689@darkstar.example.net>
+MIME-version: 1.0
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+References: <alpine.LNX.2.00.0912211855460.1689@darkstar.example.net>
+ <4B30134C.1050609@gmail.com>
+ <alpine.LNX.2.00.0912220859060.1686@darkstar.example.net>
+ <51f3faa70912211708j200ab584wa835ffe50981415e@mail.gmail.com>
+ <alpine.LNX.2.00.0912220955341.1696@darkstar.example.net>
+ <4B31DB17.4050509@kernel.org>
+ <alpine.LNX.2.00.0912231719440.1694@darkstar.example.net>
+ <4B331957.7030906@kernel.org>
+ <alpine.LNX.2.00.0912241535340.1682@darkstar.example.net>
+ <4B331D93.2010000@kernel.org>
+ <alpine.LNX.2.00.0912241557170.1682@darkstar.example.net>
+ <alpine.LNX.2.00.0912242010350.1691@darkstar.example.net>
+ <4B336153.8090206@kernel.org>
+ <alpine.LNX.2.00.0912250931510.1680@darkstar.example.net>
+ <4B34C097.1000206@kernel.org>
+ <alpine.LNX.2.00.0912260919490.1729@darkstar.example.net>
+ <4B388246.3040100@kernel.org>
 Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> +	write_lock(&css_set_lock);
->>> +	for (i = 0; i < CSS_SET_TABLE_SIZE; i++) {
->>> +		struct css_set *cg;
->>> +		struct hlist_node *node, *tmp;
->>> +		struct hlist_head *bucket = &css_set_table[i], *new_bucket;
->> Please add a blank line between variable declaration and other code.
->>
->> And elsewhere in this patchset.
->>
+
+Hi,
+
+> > Just reboot 3 times, and test STR, every thing works fine.
+> > And the 3 reboots have the same message:
+> > 
+> > ata1.00: link resume succeeded after 1 retries
 > 
-> checkpatch.pl didn't trip on this [and the more screenspace-intensive
-> comment style]; are they cgroups-specific style requirements or from
-> somewhere higher up?
-> 
+> Cool, does it ever boot without the message?
 
-You'll find the comment style in Documentation/CodingStyle:
+Yesterday, the boot message has no such line(just boot 1 time).
 
-==============
-The preferred style for long (multi-line) comments is:
+Today, there is.
 
-        /*
-         * This is the preferred style for multi-line
-         * comments in the Linux kernel source code.
-         * Please use it consistently.
-         *
-         * Description:  A column of asterisks on the left side,
-         * with beginning and ending almost-blank lines.
-         */
-==============
+$ dmesg | grep ata1.00
+ata1.00: link resume succeeded after 1 retries
+ata1.00: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
+ata1.00: ATA-7: WDC WD800JD-60LSA5, 10.01E03, max UDMA/100
+ata1.00: 156301488 sectors, multi 16: LBA48
+ata1.00: configured for UDMA/100
 
-Though the other coding style is not documented, I think it's
-well accepted.
+Thanks.
+---------------------------------------------------------------------------------------------------
+Confidentiality Notice: The information contained in this e-mail and any accompanying attachment(s) 
+is intended only for the use of the intended recipient and may be confidential and/or privileged of 
+Neusoft Corporation, its subsidiaries and/or its affiliates. If any reader of this communication is 
+not the intended recipient, unauthorized use, forwarding, printing,  storing, disclosure or copying 
+is strictly prohibited, and may be unlawful.If you have received this communication in error,please 
+immediately notify the sender by return e-mail, and delete the original message and all copies from 
+your system. Thank you. 
+---------------------------------------------------------------------------------------------------
 
-You'll hardly find code that breaks this style, say in kernel/* and
-mm/*. And you can see that people pointed out this when they were
-reviewing patches.
-
-And the fact is it does make the code more readable.
