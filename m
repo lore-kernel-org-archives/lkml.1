@@ -1,67 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752144AbZL2EFj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752340AbZL2EJ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752144AbZL2EFj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 28 Dec 2009 23:05:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751530AbZL2EFi
+	id S1752340AbZL2EJ0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 28 Dec 2009 23:09:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751700AbZL2EJZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 28 Dec 2009 23:05:38 -0500
-Received: from mail-px0-f189.google.com ([209.85.216.189]:47855 "EHLO
-	mail-px0-f189.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751416AbZL2EFi (ORCPT
+	Mon, 28 Dec 2009 23:09:25 -0500
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:62713 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751583AbZL2EJZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 28 Dec 2009 23:05:38 -0500
+	Mon, 28 Dec 2009 23:09:25 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=MnXOSsioK1g3MPW/pekn5rCr2pdiVYliFPbxP87f7sJjzvODeKy4y8LtdYuRQ2zI6g
-         /7U47vKorhxu2EjH6fQH65bzSTXvpf/ZsG1oqsDPxdu14jcXkMXiCbdpiSvGFU+XFTFR
-         7FM96tQ+Lvw3GzIZ32sesPAbsefYJvrhG+tgY=
+        h=mime-version:date:message-id:subject:from:to:cc:content-type;
+        b=JL3xhDfngP86n6p86VP2n0yY8+at2b6MPRgTpl3aSk+sOGYL+GkeQNAaF9axi8tW14
+         YofvzJ9kmdukwS+s8u/zNqn/UrXCdWa8WlilPUFuFETogqR+Mzd0x5exIum0b2JHXH52
+         bvcF2tkKqQ6TV19hhzS5D7XEI4L+983dzG1Yc=
 MIME-Version: 1.0
-In-Reply-To: <20091228164451.A687.A69D9226@jp.fujitsu.com>
-References: <20091228164451.A687.A69D9226@jp.fujitsu.com>
-Date: Tue, 29 Dec 2009 13:05:37 +0900
-Message-ID: <28c262360912282005x68315a62l7ffde637febc7646@mail.gmail.com>
-Subject: Re: [PATCH 1/4] vmstat: remove zone->lock from walk_zones_in_node
-From: Minchan Kim <minchan.kim@gmail.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>, Mel Gorman <mel@csn.ul.ie>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8
+Date: Tue, 29 Dec 2009 10:09:24 +0600
+Message-ID: <b9df5fa10912282009x5d0d2de4q36ab8a1f29d5a7de@mail.gmail.com>
+Subject: [PATCH] input, mouse: Change the prototype of functions in lifebook.c
+From: Rakib Mullick <rakib.mullick@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Alessandro Rubini <rubini@vision.unipv.it>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 28, 2009 at 4:47 PM, KOSAKI Motohiro
-<kosaki.motohiro@jp.fujitsu.com> wrote:
-> The zone->lock is one of performance critical locks. Then, it shouldn't
-> be hold for long time. Currently, we have four walk_zones_in_node()
-> usage and almost use-case don't need to hold zone->lock.
+ When CONFIG_PM=n, then we are warned by the following warning:
 
-I agree.
+drivers/input/mouse/lifebook.c:33: warning: 'lifebook_limit_serio3'
+defined but not used
+drivers/input/mouse/lifebook.c:41: warning: 'lifebook_set_6byte_proto'
+defined but not used
 
-We can use walk_zone_in_node freely to show the information related to zone.
 
-- frag_show_print : the number of free pages per order.
-- pagetypeinfo_showfree_print : the number of free page per migration type
-- pagetypeinfo_showblockcount_print : the number of pages in zone per
-migration type
-- zoneinfo_show_print : many info about zone.
+Signed-off-by: Rakib Mullick <rakib.mullick@gmail.com>
+---
 
-Do we want to show exact value? No.
-If we want it, it's not enough zone->lock only.
-After all, All of things would be transient value.
+--- linus/drivers/input/mouse/lifebook.c	2009-12-28 12:37:51.000000000 +0600
++++ rakib/drivers/input/mouse/lifebook.c	2009-12-28 15:02:02.000000000 +0600
+@@ -29,7 +29,7 @@ static bool lifebook_present;
 
->
-> Thus, this patch move locking responsibility from walk_zones_in_node
-> to its sub function. Also this patch kill unnecessary zone->lock taking.
->
-> Cc: Mel Gorman <mel@csn.ul.ie>
-> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Reviewed-by: Minchan Kim <minchan.kim@gmail.com>
+ static const char *desired_serio_phys;
 
--- 
-Kind regards,
-Minchan Kim
+-static int lifebook_limit_serio3(const struct dmi_system_id *d)
++static inline int lifebook_limit_serio3(const struct dmi_system_id *d)
+ {
+ 	desired_serio_phys = "isa0060/serio3";
+ 	return 0;
+@@ -37,7 +37,7 @@ static int lifebook_limit_serio3(const s
+
+ static bool lifebook_use_6byte_proto;
+
+-static int lifebook_set_6byte_proto(const struct dmi_system_id *d)
++static inline int lifebook_set_6byte_proto(const struct dmi_system_id *d)
+ {
+ 	lifebook_use_6byte_proto = true;
+ 	return 0;
