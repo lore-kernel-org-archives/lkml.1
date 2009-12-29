@@ -1,75 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752163AbZL2Fm6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752473AbZL2FtL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752163AbZL2Fm6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Dec 2009 00:42:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751359AbZL2Fm6
+	id S1752473AbZL2FtL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Dec 2009 00:49:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751711AbZL2FtK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Dec 2009 00:42:58 -0500
-Received: from mtoichi13.ns.itscom.net ([219.110.2.183]:50083 "EHLO
-	mtoichi13.ns.itscom.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750955AbZL2Fm5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Dec 2009 00:42:57 -0500
-From: "J. R. Okajima" <hooanon05@yahoo.co.jp>
-To: viro@ZenIV.linux.org.uk
-Cc: linux-kernel@vger.kernel.org, zohar@us.ibm.com, jmorris@namei.org,
-       "J. R. Okajima" <hooanon05@yahoo.co.jp>
-Subject: [PATCH] pipe, call path_put() after put_filp() in the error path
-Date: Tue, 29 Dec 2009 14:42:49 +0900
-Message-Id: <1262065369-19741-1-git-send-email-hooanon05@yahoo.co.jp>
-X-Mailer: git-send-email 1.6.1.284.g5dc13
+	Tue, 29 Dec 2009 00:49:10 -0500
+Received: from mail.gmx.net ([213.165.64.20]:36391 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751229AbZL2FtJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Dec 2009 00:49:09 -0500
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1+jArBV2RGjgpI3x/2z4ogtw7miWyAyzcn8CkVb7b
+	IiLY2rsBXOKn5D
+Subject: Re: tbench regression with 2.6.33-rc1
+From: Mike Galbraith <efault@gmx.de>
+To: Lin Ming <ming.m.lin@intel.com>
+Cc: "peterz@infradead.org" <peterz@infradead.org>,
+       "mingo@elte.hu" <mingo@elte.hu>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+In-Reply-To: <1262063959.13697.6.camel@minggr.sh.intel.com>
+References: <1261739467.10685.18.camel@minggr.sh.intel.com>
+	 <1261902760.6201.33.camel@marge.simson.net>
+	 <1262052582.10685.59.camel@minggr.sh.intel.com>
+	 <1262064292.6412.30.camel@marge.simson.net>
+	 <1262063959.13697.6.camel@minggr.sh.intel.com>
+Content-Type: text/plain
+Date: Tue, 29 Dec 2009 06:49:05 +0100
+Message-Id: <1262065745.17082.0.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.61
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The commit 6c21a7f "LSM: imbed ima calls in the security hooks"
-which moves the ima_file_free() call within security_file_free()
-brought a problem into pipe.c.
-In the error path of pipe(2), the allocated resources are freed by
-path_put() and put_filp() (in this order). Since security_file_free()
-refers f_dentry and ima_file_free() refers f_dentry->d_inode, path_put()
-should be called after put_filp().
+On Tue, 2009-12-29 at 13:19 +0800, Lin Ming wrote:
+> On Tue, 2009-12-29 at 13:24 +0800, Mike Galbraith wrote:
+> > On Tue, 2009-12-29 at 10:09 +0800, Lin Ming wrote:
+> > > And also no regression if I run tbench with RT scheduler on tulsa
+> > > machine, as below command,
+> > > 
+> > > schedtool -R -p 20 -e tbench_srv &
+> > > schedtool -R -p 20 -e tbench 32
+> > 
+> > Hm, odd.  I'd expect tbench to suffer when run SCHED_RR, and here it
+> > does, achieving roughly 85% of lowest SCHED_OTHER throughput.
+> 
+> Here is some misunderstanding.
+> I compared SCHED_RR tbench with 2.6.32 and 2.6.33-rc1 and no regression
+> found.
+> 
+> For the same kernel, SCHED_RR tbench only achieved ~40% of SCHED_OTHER
+> throughput.
 
-Signed-off-by: J. R. Okajima <hooanon05@yahoo.co.jp>
----
- fs/pipe.c |    7 +++++--
- 1 files changed, 5 insertions(+), 2 deletions(-)
+Ah.  Thanks for the clarification.
 
-diff --git a/fs/pipe.c b/fs/pipe.c
-index 37ba29f..90b543d 100644
---- a/fs/pipe.c
-+++ b/fs/pipe.c
-@@ -1004,9 +1004,10 @@ struct file *create_write_pipe(int flags)
- 
- void free_write_pipe(struct file *f)
- {
-+	struct path path = f->f_path;
- 	free_pipe_info(f->f_dentry->d_inode);
--	path_put(&f->f_path);
- 	put_filp(f);
-+	path_put(&path);
- }
- 
- struct file *create_read_pipe(struct file *wrf, int flags)
-@@ -1028,6 +1029,7 @@ int do_pipe_flags(int *fd, int flags)
- 	struct file *fw, *fr;
- 	int error;
- 	int fdw, fdr;
-+	struct path path;
- 
- 	if (flags & ~(O_CLOEXEC | O_NONBLOCK))
- 		return -EINVAL;
-@@ -1061,8 +1063,9 @@ int do_pipe_flags(int *fd, int flags)
-  err_fdr:
- 	put_unused_fd(fdr);
-  err_read_pipe:
--	path_put(&fr->f_path);
-+	path = fr->f_path;
- 	put_filp(fr);
-+	path_put(&path);
-  err_write_pipe:
- 	free_write_pipe(fw);
- 	return error;
--- 
-1.6.1.284.g5dc13
+	-Mike
 
