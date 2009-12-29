@@ -1,57 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752882AbZL2VeT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752863AbZL2Vdw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752882AbZL2VeT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Dec 2009 16:34:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751670AbZL2VeN
+	id S1752863AbZL2Vdw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Dec 2009 16:33:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752848AbZL2Vdt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Dec 2009 16:34:13 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:40513 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752633AbZL2VeM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Dec 2009 16:34:12 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Zephaniah E. Hull" <warp-spam_kernel@aehallh.com>,
-       David Woodhouse <david.woodhouse@intel.com>
-Subject: Re: [Bug #14862] intel-agp breaks X, regression from 2.6.31
-Date: Tue, 29 Dec 2009 22:34:31 +0100
-User-Agent: KMail/1.12.3 (Linux/2.6.33-rc2-tst; KDE/4.3.3; x86_64; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-References: <oBElxfTZdhL.A.bx.-vhOLB@chimera> <20091229184220.GO19249@aehallh.com> <20091229185926.GP19249@aehallh.com>
-In-Reply-To: <20091229185926.GP19249@aehallh.com>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+	Tue, 29 Dec 2009 16:33:49 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:57084 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752847AbZL2Vdr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Dec 2009 16:33:47 -0500
+Date: Tue, 29 Dec 2009 21:35:19 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Bryan Donlan <bdonlan@gmail.com>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Benny Amorsen <benny+usenet@amorsen.dk>,
+       "Serge E. Hallyn" <serue@us.ibm.com>,
+       Michael Stone <michael@laptop.org>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, linux-security-module@vger.kernel.org,
+       Andi Kleen <andi@firstfloor.org>, David Lang <david@lang.hm>,
+       Oliver Hartkopp <socketcan@hartkopp.net>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Valdis Kletnieks <Valdis.Kletnieks@vt.edu>,
+       Evgeniy Polyakov <zbr@ioremap.net>,
+       "C. Scott Ananian" <cscott@cscott.net>,
+       James Morris <jmorris@namei.org>, Bernie Innocenti <bernie@codewiz.org>,
+       Mark Seaborn <mrs@mythic-beasts.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       =?UTF-8?B?QW3DqXJpY28=?= Wang <xiyou.wangcong@gmail.com>,
+       Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
+       Samir Bellabes <sam@synack.fr>,
+       Casey Schaufler <casey@schaufler-ca.com>, Pavel Machek <pavel@ucw.cz>,
+       Al Viro <viro@zeniv.linux.org.uk>
+Subject: Re: RFC: disablenetwork facility. (v4)
+Message-ID: <20091229213519.09644bf9@lxorguk.ukuu.org.uk>
+In-Reply-To: <3e8340490912291314m5e1b72e6s6e394d0a8cf95d00@mail.gmail.com>
+References: <20091229050114.GC14362@heat>
+	<m1y6km11lj.fsf@fess.ebiederm.org>
+	<20091229151146.GA32153@us.ibm.com>
+	<3e8340490912290805s103fb789y13acea4a84669b20@mail.gmail.com>
+	<m3oclhzgm4.fsf@ursa.amorsen.dk>
+	<m17hs5y0mg.fsf@fess.ebiederm.org>
+	<20091229211139.0732a0c1@lxorguk.ukuu.org.uk>
+	<3e8340490912291314m5e1b72e6s6e394d0a8cf95d00@mail.gmail.com>
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.18.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <200912292234.31575.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 29 December 2009, Zephaniah E. Hull wrote:
-> On Tue, Dec 29, 2009 at 01:42:20PM -0500, Zephaniah E. Hull wrote:
-> > On Tue, Dec 29, 2009 at 04:28:51PM +0100, Rafael J. Wysocki wrote:
-> > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14862
-> > > Subject		: intel-agp breaks X, regression from 2.6.31
-> > > Submitter	: Zephaniah E. Hull. <warp-spam_kernel@aehallh.com>
-> > > Date		: 2009-12-22 22:59 (8 days old)
-> > 
-> > I plan on testing 2.6.32.2 later today in hopes that some of the IOMMU
-> > changes will have done something in regards to this.
-> 
-> #14627 and this bug are duplicates.
-> 
-> Bugs #14900, and #14728 look very suspiciously like they might be the
-> same thing as well.
-> 
-> I would be interested to see if commenting out:
-> '#define USE_PCI_DMA_API 1' in drivers/char/agp/intel-agp.c fixes the
-> problem for those bugs as well.
-> 
-> I suspect that some better run time checking is called for here.
+> The security hole is that secrets in a setuid application with
+> other-exec but no other-read permission can be read when the
+> filesystem is mounted nosuid.
 
-Thanks for the update.
+Erm no
 
-David, has there been any progress with bug #14627?
+We enforce the following anyway to prevent execution being permitted to
+make file copies. Most Unixen do although its historical value is
+primarily to prevent people "stealing valuable proprietary intellectual
+software assets".
 
-Rafael
+
+      } else if (file_permission(bprm->file, MAY_READ) ||
+                    bprm->interp_flags & BINPRM_FLAGS_ENFORCE_NONDUMP)
+      { 
+             set_dumpable(current->mm, suid_dumpable);
+      }
+
+There does appear to be a small race in modern versions of that code
+which wants swatting.
+
