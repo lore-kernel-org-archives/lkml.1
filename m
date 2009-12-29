@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752566AbZL2TQS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752590AbZL2TQb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752566AbZL2TQS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Dec 2009 14:16:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752475AbZL2TQO
+	id S1752590AbZL2TQb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Dec 2009 14:16:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752565AbZL2TQ2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Dec 2009 14:16:14 -0500
-Received: from mgw1.diku.dk ([130.225.96.91]:59597 "EHLO mgw1.diku.dk"
+	Tue, 29 Dec 2009 14:16:28 -0500
+Received: from mgw1.diku.dk ([130.225.96.91]:59614 "EHLO mgw1.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752389AbZL2TQF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Dec 2009 14:16:05 -0500
-Date: Tue, 29 Dec 2009 20:16:03 +0100 (CET)
+	id S1752481AbZL2TQY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Dec 2009 14:16:24 -0500
+Date: Tue, 29 Dec 2009 20:16:22 +0100 (CET)
 From: Julia Lawall <julia@diku.dk>
-To: James.Bottomley@suse.de, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH 3/5] drivers/scsi : Correct the size argument to kmalloc
-Message-ID: <Pine.LNX.4.64.0912292015420.4001@ask.diku.dk>
+To: gregkh@suse.de, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: [PATCH 4/5] drivers/usb : Correct the size argument to kzalloc
+Message-ID: <Pine.LNX.4.64.0912292016040.4001@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -23,7 +23,7 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Julia Lawall <julia@diku.dk>
 
-In each case, the destination of the allocation has type struct **, so the
+urb_priv->tds has type struct td **, not struct td *, so the
 elements of the array should have pointer type, not structure type.
 
 The semantic patch that makes this change is as follows:
@@ -45,34 +45,18 @@ T **x;
 Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
- drivers/scsi/aic94xx/aic94xx_init.c |    4 ++--
- drivers/scsi/ch.c                   |    2 +-
- 2 files changed, 3 insertions(+), 3 deletions(-)
+ drivers/usb/host/fhci-hcd.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff -u -p a/drivers/scsi/aic94xx/aic94xx_init.c b/drivers/scsi/aic94xx/aic94xx_init.c
---- a/drivers/scsi/aic94xx/aic94xx_init.c
-+++ b/drivers/scsi/aic94xx/aic94xx_init.c
-@@ -687,9 +687,9 @@ static int asd_register_sas_ha(struct as
- {
- 	int i;
- 	struct asd_sas_phy   **sas_phys =
--		kmalloc(ASD_MAX_PHYS * sizeof(struct asd_sas_phy), GFP_KERNEL);
-+		kmalloc(ASD_MAX_PHYS * sizeof(*sas_phys), GFP_KERNEL);
- 	struct asd_sas_port  **sas_ports =
--		kmalloc(ASD_MAX_PHYS * sizeof(struct asd_sas_port), GFP_KERNEL);
-+		kmalloc(ASD_MAX_PHYS * sizeof(*sas_ports), GFP_KERNEL);
+diff -u -p a/drivers/usb/host/fhci-hcd.c b/drivers/usb/host/fhci-hcd.c
+--- a/drivers/usb/host/fhci-hcd.c
++++ b/drivers/usb/host/fhci-hcd.c
+@@ -432,7 +432,7 @@ static int fhci_urb_enqueue(struct usb_h
+ 		return -ENOMEM;
  
- 	if (!sas_phys || !sas_ports) {
- 		kfree(sas_phys);
-diff -u -p a/drivers/scsi/ch.c b/drivers/scsi/ch.c
---- a/drivers/scsi/ch.c
-+++ b/drivers/scsi/ch.c
-@@ -351,7 +351,7 @@ ch_readconfig(scsi_changer *ch)
- 	}
- 
- 	/* look up the devices of the data transfer elements */
--	ch->dt = kmalloc(ch->counts[CHET_DT]*sizeof(struct scsi_device),
-+	ch->dt = kmalloc(ch->counts[CHET_DT]*sizeof(*ch->dt),
- 			 GFP_KERNEL);
- 
- 	if (!ch->dt) {
+ 	/* allocate the private part of the URB */
+-	urb_priv->tds = kzalloc(size * sizeof(struct td), mem_flags);
++	urb_priv->tds = kzalloc(size * sizeof(*urb_priv->tds), mem_flags);
+ 	if (!urb_priv->tds) {
+ 		kfree(urb_priv);
+ 		return -ENOMEM;
