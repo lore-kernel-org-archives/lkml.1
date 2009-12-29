@@ -1,60 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751783AbZL2TnN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751760AbZL2Ttr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751783AbZL2TnN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Dec 2009 14:43:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751577AbZL2TnL
+	id S1751760AbZL2Ttr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Dec 2009 14:49:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751577AbZL2Ttq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Dec 2009 14:43:11 -0500
-Received: from mail-fx0-f225.google.com ([209.85.220.225]:44513 "EHLO
-	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751392AbZL2TnG (ORCPT
+	Tue, 29 Dec 2009 14:49:46 -0500
+Received: from ns1.siteground211.com ([209.62.36.12]:52238 "EHLO
+	serv01.siteground211.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751488AbZL2Ttp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Dec 2009 14:43:06 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=lC8Y+iisIBEVKeBvXCB8tGGeX05mpsotL2iCqbxO2lcoIWSO3h7PFtdKjW7B4u8koL
-         U+/nToD5nRdgQ46CqbT1sHw6NyqvWGIKUS9L2PTRENpvU98Hcwu1/shBRZ5RK5NUu25G
-         9SV8M4zCRk4zm1kG3R/iu53WGss1vCilanMZ0=
-Message-ID: <4B3A5BC2.10207@gmail.com>
-Date: Tue, 29 Dec 2009 20:42:58 +0100
-From: Jarek Poplawski <jarkao2@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090812)
-MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Network Development <netdev@vger.kernel.org>,
-       Linux ACPI <linux-acpi@vger.kernel.org>,
-       Linux PM List <linux-pm@lists.linux-foundation.org>,
-       Linux SCSI List <linux-scsi@vger.kernel.org>,
-       Linux Wireless List <linux-wireless@vger.kernel.org>,
-       DRI <dri-devel@lists.sourceforge.net>,
-       =?UTF-8?B?TcOhcnRvbiBOw6ltZXRo?= <nm127@freemail.hu>
-Subject: Re: 2.6.33-rc2: Reported regressions 2.6.31 -> 2.6.32
-References: <oBElxfTZdhL.A.bx.-vhOLB@chimera>
-In-Reply-To: <oBElxfTZdhL.A.bx.-vhOLB@chimera>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+	Tue, 29 Dec 2009 14:49:45 -0500
+X-Greylist: delayed 820 seconds by postgrey-1.27 at vger.kernel.org; Tue, 29 Dec 2009 14:49:45 EST
+Subject: Re: [PATCH] OMAP2: add USB platform data and initialization for
+ Nokia N800 and N810
+From: Felipe Balbi <me@felipebalbi.com>
+Reply-To: me@felipebalbi.com
+To: Tony Lindgren <tony@atomide.com>
+Cc: Luke-Jr <luke@dashjr.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
+       "Balbi Felipe (Nokia-D/Helsinki)" <felipe.balbi@nokia.com>,
+       Kalle Valo <kalle.valo@iki.fi>
+In-Reply-To: <20091229194215.GD3512@atomide.com>
+References: <200912290152.16357.luke@dashjr.org>
+	 <20091229192407.GA3512@atomide.com> <1262115349.28789.79.camel@gandalf>
+	 <20091229194215.GD3512@atomide.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 29 Dec 2009 21:49:35 +0200
+Message-ID: <1262116175.28789.82.camel@gandalf>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.2 
+Content-Transfer-Encoding: 7bit
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - serv01.siteground211.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - felipebalbi.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki wrote, On 12/29/2009 04:26 PM:
+Hi,
 
-...
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14794
-> Subject		: IP address assigned by DHCP is dropped after ~40 seconds
-> Submitter	: Márton Németh <nm127@freemail.hu>
-> Date		: 2009-12-13 08:59 (17 days old)
+On Tue, 2009-12-29 at 11:42 -0800, Tony Lindgren wrote:
+> That would be great!
+
+Ok good. So I'll mark all my pending patches as Superseeded or something
+better on patchwork then by tomorrow I'll resend all of them, plus the
+pull request.
+
+> > Sames goes to Kevin regarding davinci tree. I just have to subscribe in
+> > order to be able to send the patches there.
 > 
+> FYI, I think Kevin is on vacation right now.
+
+good to know. The patch going to Greg right now only marks the fields as
+__deprecated so it shouldn't be a big problem to wait a bit.
 
 
-IMHO this bug might be considered as fixed by updating a userspace tool
-(KNetworkManager) - unless somebody wants to seek for the exact reason...
+-- 
+balbi
 
-Jarek P.
