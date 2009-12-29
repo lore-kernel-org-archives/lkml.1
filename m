@@ -1,65 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751900AbZL2TyF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752003AbZL2T4M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751900AbZL2TyF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Dec 2009 14:54:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751403AbZL2TyF
+	id S1752003AbZL2T4M (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Dec 2009 14:56:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751725AbZL2T4M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Dec 2009 14:54:05 -0500
-Received: from mho-02-ewr.mailhop.org ([204.13.248.72]:52848 "EHLO
-	mho-02-ewr.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751368AbZL2TyC (ORCPT
+	Tue, 29 Dec 2009 14:56:12 -0500
+Received: from toccata.ens-lyon.org ([140.77.166.68]:45104 "EHLO
+	toccata.ens-lyon.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751624AbZL2T4L (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Dec 2009 14:54:02 -0500
-X-Mail-Handler: MailHop Outbound by DynDNS
-X-Originating-IP: 72.249.23.125
-X-Report-Abuse-To: abuse@dyndns.com (see http://www.dyndns.com/services/mailhop/outbound_abuse.html for abuse reporting information)
-X-MHO-User: U2FsdGVkX19Bzo1eDHNnruy8xXlRvcgZ
-Date: Tue, 29 Dec 2009 11:53:54 -0800
-From: Tony Lindgren <tony@atomide.com>
-To: Felipe Balbi <me@felipebalbi.com>
-Cc: Luke-Jr <luke@dashjr.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
-       "Balbi Felipe (Nokia-D/Helsinki)" <felipe.balbi@nokia.com>,
-       Kalle Valo <kalle.valo@iki.fi>
-Subject: Re: [PATCH] OMAP2: add USB platform data and initialization for
- Nokia N800 and N810
-Message-ID: <20091229195354.GH3512@atomide.com>
-References: <200912290152.16357.luke@dashjr.org>
- <20091229192407.GA3512@atomide.com>
- <1262115349.28789.79.camel@gandalf>
- <20091229194215.GD3512@atomide.com>
- <1262116175.28789.82.camel@gandalf>
+	Tue, 29 Dec 2009 14:56:11 -0500
+Date: Tue, 29 Dec 2009 20:56:08 +0100
+From: Samuel Thibault <samuel.thibault@ens-lyon.org>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: "Robert P. J. Day" <rpjday@crashcourse.ca>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: what's the purpose of MAXHOSTNAMELEN?
+Message-ID: <20091229195608.GG4815@const>
+Mail-Followup-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
+	Jeff Garzik <jeff@garzik.org>,
+	"Robert P. J. Day" <rpjday@crashcourse.ca>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <alpine.LFD.2.00.0912291416230.4967@localhost> <4B3A5B15.5060807@garzik.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <1262116175.28789.82.camel@gandalf>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <4B3A5B15.5060807@garzik.org>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Felipe Balbi <me@felipebalbi.com> [091229 11:48]:
-> Hi,
+Jeff Garzik, le Tue 29 Dec 2009 14:40:05 -0500, a écrit :
+> On 12/29/2009 02:19 PM, Robert P. J. Day wrote:
+> >arch/s390/include/asm/param.h:#define MAXHOSTNAMELEN	64	/* max 
+> >length of hostname */
+> >
+> >   so lots of people define it but no one uses it.  it *is* exported to
+> >user space in /usr/include/asm/param.h, but i still have no idea what
+> >it's for in user space.  obsolete?
 > 
-> On Tue, 2009-12-29 at 11:42 -0800, Tony Lindgren wrote:
-> > That would be great!
-> 
-> Ok good. So I'll mark all my pending patches as Superseeded or something
-> better on patchwork then by tomorrow I'll resend all of them, plus the
-> pull request.
+> According to RFC 1034, "Each node has a label, which is zero to 63 
+> octets in length"
 
-Sounds good. Please keep two separate queues: Fixes for the -rc cycle,
-and new code for next merge window.
- 
-> > > Sames goes to Kevin regarding davinci tree. I just have to subscribe in
-> > > order to be able to send the patches there.
-> > 
-> > FYI, I think Kevin is on vacation right now.
-> 
-> good to know. The patch going to Greg right now only marks the fields as
-> __deprecated so it shouldn't be a big problem to wait a bit.
+That's for Internet networks.  Other kinds of networks could implement
+more.  It could make sense to restrict ourself to Internet standards,
+but we don't :)
 
-OK
+> What is it used for in userspace, and why is it export from the kernel? 
 
-Tony
+Gethostname, typically, but also all kinds of functions that provide a
+hostname.  It's also quite often completely badly used, for instance for
+getnameinfo()...
+
+You have Debian's list on
+http://unstable.buildd.net/buildd/hurd-i386_Failed.html
+
+Samuel
