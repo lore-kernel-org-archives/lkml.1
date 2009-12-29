@@ -1,97 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752360AbZL2TIy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752420AbZL2TP1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752360AbZL2TIy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Dec 2009 14:08:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752211AbZL2TIx
+	id S1752420AbZL2TP1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Dec 2009 14:15:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752350AbZL2TP1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Dec 2009 14:08:53 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:62326 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751889AbZL2TIw convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Dec 2009 14:08:52 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=V8UeBCf7leuK4atHsUpTQEnnj5bOzfhvJFQPNlb4HYemNCJ7qDwiC3GdDo1U92zHZh
-         ZeubRoAw904KY6q+CJpQXx2IPFZ11x5NwG0XfeXl0G9MK5BrDB8xliADAvg2gIxT6Nok
-         BxFxNUqke7B6xacW3V+F3RmG1TCaavzskTXtI=
+	Tue, 29 Dec 2009 14:15:27 -0500
+Received: from mgw1.diku.dk ([130.225.96.91]:59555 "EHLO mgw1.diku.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752259AbZL2TP0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Dec 2009 14:15:26 -0500
+Date: Tue, 29 Dec 2009 20:15:23 +0100 (CET)
+From: Julia Lawall <julia@diku.dk>
+To: dwmw2@infradead.org, linux-mtd@lists.infradead.org,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: [PATCH 1/5] drivers/mtd : Correct the size argument to kzalloc
+Message-ID: <Pine.LNX.4.64.0912292015001.4001@ask.diku.dk>
 MIME-Version: 1.0
-In-Reply-To: <m1fx6ty6ds.fsf@fess.ebiederm.org>
-References: <20091229050114.GC14362@heat> <m1y6km11lj.fsf@fess.ebiederm.org> 
-	<20091229151146.GA32153@us.ibm.com> <3e8340490912290805s103fb789y13acea4a84669b20@mail.gmail.com> 
-	<20091229163939.GA6984@us.ibm.com> <3e8340490912290901y60d7daf2w5778c25f44972955@mail.gmail.com> 
-	<m1fx6ty6ds.fsf@fess.ebiederm.org>
-From: Bryan Donlan <bdonlan@gmail.com>
-Date: Tue, 29 Dec 2009 14:08:30 -0500
-Message-ID: <3e8340490912291108t7e000e75p8264fa585f831464@mail.gmail.com>
-Subject: Re: RFC: disablenetwork facility. (v4)
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: "Serge E. Hallyn" <serue@us.ibm.com>, Michael Stone <michael@laptop.org>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       linux-security-module@vger.kernel.org, Andi Kleen <andi@firstfloor.org>,
-       David Lang <david@lang.hm>, Oliver Hartkopp <socketcan@hartkopp.net>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Valdis Kletnieks <Valdis.Kletnieks@vt.edu>,
-       Evgeniy Polyakov <zbr@ioremap.net>,
-       "C. Scott Ananian" <cscott@cscott.net>,
-       James Morris <jmorris@namei.org>, Bernie Innocenti <bernie@codewiz.org>,
-       Mark Seaborn <mrs@mythic-beasts.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       =?ISO-8859-1?Q?Am=E9rico_Wang?= <xiyou.wangcong@gmail.com>,
-       Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
-       Samir Bellabes <sam@synack.fr>,
-       Casey Schaufler <casey@schaufler-ca.com>, Pavel Machek <pavel@ucw.cz>,
-       Al Viro <viro@zeniv.linux.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 29, 2009 at 1:36 PM, Eric W. Biederman
-<ebiederm@xmission.com> wrote:
-> Bryan Donlan <bdonlan@gmail.com> writes:
->
->> On Tue, Dec 29, 2009 at 11:39 AM, Serge E. Hallyn <serue@us.ibm.com> wrote:
->>> Quoting Bryan Donlan (bdonlan@gmail.com):
->>>> On Tue, Dec 29, 2009 at 10:11 AM, Serge E. Hallyn <serue@us.ibm.com> wrote:
->>>> > Eric, let me specifically point out a 'disable setuid-root'
->>>> > problem on linux: root still owns most of the system even when
->>>> > it's not privileged.  So does "disable setuid-root" mean
->>>> > we don't allow exec of setuid-root binaries at all, or that
->>>> > we don't setuid to root, or that we just don't raise privileges
->>>> > for setuid-root?
->>>>
->>>> I, for one, think it would be best to handle it exactly like the
->>>> nosuid mount option - that is, pretend the file doesn't have any
->>>> setuid bits set. There's no reason to deny execution; if the process
->>>> would otherwise be able to execute it, it can also copy the file to
->>>> make a non-suid version and execute that instead. And some programs
->>>> can operate with reduced function without setuid. For example, screen
->>>> comes to mind; it needs root to share screen sessions between multiple
->>>> users, but can operate for a single user just fine without root, and
->>>> indeed the latter is usually the default configuration.
->>>
->>> That's fine with me, seems safe for a fully unprivileged program to
->>> use, and would make sense to do through one of the securebits set
->>> with prctl(PR_SET_SECUREBITS).
->>>
->>> In addition, I assume we would also refuse to honor file capabilities?
->>
->> Yes - essentially a one-time switch saying "never allow me to gain
->> capabilities again".
->
-> That is what I was thinking.  Does setresuid case problems?  Assuming
-> the application that drop permissions could have successfully
-> called setresuid?
+From: Julia Lawall <julia@diku.dk>
 
-It's probably reasonable to require that real == effective == saved ==
-fs UID (and same for GID); anything else brings up sticky issues of
-"which UID is a higher capability?"
-If a process does this call, it's effectively saying that the only way
-it's going to be accessing resources beyond its current UID and
-capabilities is by talking to another process over a (unix domain)
-socket.
+mtd_list has type struct mtd_info **, not struct mtd_info *, so the
+elements of the array should have pointer type, not structure type.
+
+The semantic patch that makes this change is as follows:
+(http://coccinelle.lip6.fr/)
+
+// <smpl>
+@disable sizeof_type_expr@
+type T;
+T **x;
+@@
+
+  x =
+  <+...sizeof(
+- T
++ *x
+  )...+>
+// </smpl>
+
+Signed-off-by: Julia Lawall <julia@diku.dk>
+
+---
+ drivers/mtd/maps/physmap_of.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff -u -p a/drivers/mtd/maps/physmap_of.c b/drivers/mtd/maps/physmap_of.c
+--- a/drivers/mtd/maps/physmap_of.c
++++ b/drivers/mtd/maps/physmap_of.c
+@@ -217,7 +217,7 @@ static int __devinit of_flash_probe(stru
+ 
+ 	dev_set_drvdata(&dev->dev, info);
+ 
+-	mtd_list = kzalloc(sizeof(struct mtd_info) * count, GFP_KERNEL);
++	mtd_list = kzalloc(sizeof(*mtd_list) * count, GFP_KERNEL);
+ 	if (!mtd_list)
+ 		goto err_flash_remove;
+ 
