@@ -1,74 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752603AbZL2TUH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752637AbZL2TVa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752603AbZL2TUH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Dec 2009 14:20:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752461AbZL2TUF
+	id S1752637AbZL2TVa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Dec 2009 14:21:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752490AbZL2TV3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Dec 2009 14:20:05 -0500
-Received: from astoria.ccjclearline.com ([64.235.106.9]:47038 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752459AbZL2TUB (ORCPT
+	Tue, 29 Dec 2009 14:21:29 -0500
+Received: from mta4.srv.hcvlny.cv.net ([167.206.4.199]:40607 "EHLO
+	mta4.srv.hcvlny.cv.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752462AbZL2TV2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Dec 2009 14:20:01 -0500
-Date: Tue, 29 Dec 2009 14:19:30 -0500 (EST)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: what's the purpose of MAXHOSTNAMELEN?
-Message-ID: <alpine.LFD.2.00.0912291416230.4967@localhost>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+	Tue, 29 Dec 2009 14:21:28 -0500
+Date: Tue, 29 Dec 2009 14:20:48 -0500
+From: Michael Breuer <mbreuer@majjas.com>
+Subject: Re: sky2 panic in 2.6.32.1 under load (new oops)
+In-reply-to: <4B3A5566.7060400@gmail.com>
+To: Jarek Poplawski <jarkao2@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "Berck E. Nash" <flyboy@gmail.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org,
+       Stephen Hemminger <shemminger@linux-foundation.org>
+Message-id: <4B3A5690.7080604@majjas.com>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7BIT
+References: <4B300A2A.8040305@gmail.com> <4B300E30.9090707@majjas.com>
+ <4B3114E3.1070602@majjas.com> <4B329FA3.9090904@majjas.com>
+ <20091223230102.4bb0100e.akpm@linux-foundation.org>
+ <4B34E847.8010809@majjas.com> <4B3A5566.7060400@gmail.com>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.5)
+ Gecko/20091204 Lightning/1.0b2pre Thunderbird/3.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 12/29/2009 2:15 PM, Jarek Poplawski wrote:
+> Michael Breuer wrote, On 12/25/2009 05:28 PM:
+>
+>    
+>>    More data points - I'm able to reliably recreate this now.
+>> While I thought it was coincidence, each and every time I hit this issue
+>> there is a DHCP renew event immediately before the first error.
+>>      
+>
+> Maybe it's totally unconnected and some different NetworkManager, but FYI,
+> there was reported a strange interaction of KNetworkManager vs 2.6.32:
+> http://bugzilla.kernel.org/show_bug.cgi?id=14794
+>
+> Jarek P.
+>    
+Interesting, but I don't think it's related. The interface in question 
+is not under the control of NetworkManager; I'm not using KDE, and the 
+connection isn't dropping - just getting DHCPINFORM from the attached 
+client that is generating load.
+>    
+>> The crash occurs while under load - in my case seems that the traffic is
+>> actually IPV6 (hadn't noticed that before).
+>> I ran nethogs on a remote display - the reported rx rate on the IPV6 smb
+>> connection at the time of the lockup was 33889.688 KB/sec on a 1gbit
+>> nic. I've got two events like this - don't recall if the earlier one was
+>> the exact same # - but it was in the ballpark.
+>>
+>>      
+> ...
+>    
+>>>> Dec 23 17:33:29 mail NetworkManager:<info>    (eth0): carrier now ON
+>>>> (device state 1)
+>>>> Dec 23 17:33:30 mail named[4284]: client 114.80.99.2#44695: view
+>>>> External: query (cache) './NS/IN' denied
+>>>> Dec 23 17:33:38 mail named[4284]: error (connection refused) resolving
+>>>> '121.93.27.216.blackholes.mail-abuse.org/A/IN': 168.61.5.195#53
+>>>> Dec 23 17:33:44 mail kernel: sky2 eth0: tx timeout
+>>>> Dec 23 17:33:44 mail kernel: sky2 eth0: disabling interface
+>>>> Dec 23 17:33:44 mail kernel: sky2 eth0: enabling interface
+>>>> Dec 23 17:33:44 mail NetworkManager:<info>    (eth0): carrier now OFF
+>>>> (device state 1)
+>>>> Dec 23 17:33:49 mail kernel: sky2 eth0: Link is up at 1000 Mbps, full
+>>>> duplex, flow control both
+>>>> Dec 23 17:33:49 mail NetworkManager:<info>    (eth0): carrier now ON
+>>>> (device state 1)
+>>>> Dec 23 17:33:52 mail dhcpd: DHCPINFORM from 10.0.0.11 via eth0
+>>>> Dec 23 17:33:52 mail dhcpd: DHCPACK to 10.0.0.11 (00:1a:92:8d:30:81) via
+>>>> eth0
+>>>> Dec 23 17:34:01 mail smbd[24783]: [2009/12/23 17:34:01,  0]
+>>>> lib/util_sock.c:539(read_fd_with_timeout)
+>>>> Dec 23 17:34:01 mail smbd[24783]: [2009/12/23 17:34:01,  0]
+>>>> lib/util_sock.c:1491(get_peer_addr_internal)
+>>>> Dec 23 17:34:01 mail smbd[24783]:   getpeername failed. Error was
+>>>> Transport endpoint is not connected
+>>>> Dec 23 17:34:01 mail smbd[24783]:   read_fd_with_timeout: client 0.0.0.0
+>>>> read error = Connection reset by peer.
+>>>> Dec 23 17:34:04 mail abrt: Kerneloops: Reported 1 kernel oopses to Abrt
+>>>> Dec 23 17:34:04 mail abrtd: Directory 'kerneloops-1261607644-1' creation
+>>>> detected
+>>>> Dec 23 17:34:04 mail abrtd: Getting local universal unique identification
+>>>> Dec 23 17:34:04 mail abrtd: New crash, saving
+>>>> Dec 23 17:34:04 mail abrtd: Activation of plugin 'RunApp' was not
+>>>> successful: Plugin 'RunApp' is not registered
+>>>> Dec 23 17:34:04 mail kernel: sky2 eth0: tx timeout
+>>>> Dec 23 17:34:04 mail kernel: sky2 eth0: disabling interface
+>>>> Dec 23 17:34:04 mail kernel: sky2 eth0: enabling interface
+>>>> Dec 23 17:34:04 mail NetworkManager:<info>    (eth0): carrier now OFF
+>>>> (device state 1)
+>>>> Dec 23 17:34:09 mail kernel: sky2 eth0: Link is up at 1000 Mbps, full
+>>>> duplex, flow control both
+>>>> Dec 23 17:34:09 mail NetworkManager:<info>    (eth0): carrier now ON
+>>>> (device state 1)
+>>>> Dec 23 17:34:11 mail logger: ping of potter failed
+>>>> Dec 23 17:34:19 mail kernel: sky2 eth0: tx timeout
+>>>> Dec 23 17:34:19 mail kernel: sky2 eth0: disabling interface
+>>>> Dec 23 17:34:19 mail kernel: sky2 eth0: enabling interface
+>>>> Dec 23 17:34:19 mail NetworkManager:<info>    (eth0): carrier now OFF
+>>>> (device state 1)
+>>>> Dec 23 17:34:22 mail kernel: sky2 eth0: Link is up at 1000 Mbps, full
+>>>> duplex, flow control both
+>>>> Dec 23 17:34:22 mail NetworkManager:<info>    (eth0): carrier now ON
+>>>> (device state 1)
+>>>>          
 
-  in prepping for coalescing a lot of param.h files, i'm curious about
-the purpose of this macro:
-
-$ grep -rw MAXHOSTNAMELEN *
-arch/s390/include/asm/param.h:#define MAXHOSTNAMELEN	64	/* max length of hostname */
-arch/sparc/include/asm/param.h:#define MAXHOSTNAMELEN	64	/* max length of hostname */
-arch/alpha/include/asm/param.h:#define MAXHOSTNAMELEN	64	/* max length of hostname */
-arch/mn10300/include/asm/param.h:#define MAXHOSTNAMELEN	64	/* max length of hostname */
-arch/arm/include/asm/param.h:#define MAXHOSTNAMELEN  64
-arch/m32r/include/asm/param.h:#define MAXHOSTNAMELEN	64	/* max length of hostname */
-arch/mips/include/asm/param.h:#define MAXHOSTNAMELEN	64	/* max length of hostname */
-arch/m68k/include/asm/param.h:#define MAXHOSTNAMELEN	64	/* max length of hostname */
-arch/xtensa/include/asm/param.h:#define MAXHOSTNAMELEN	64	/* max length of hostname */
-arch/ia64/include/asm/param.h:#define MAXHOSTNAMELEN	64	/* max length of hostname */
-arch/h8300/include/asm/param.h:#define MAXHOSTNAMELEN	64	/* max length of hostname */
-arch/avr32/include/asm/param.h:#define MAXHOSTNAMELEN	64
-arch/cris/include/asm/param.h:#define MAXHOSTNAMELEN	64	/* max length of hostname */
-arch/um/include/asm/param.h:#define MAXHOSTNAMELEN  64      /* max length of hostname */
-arch/powerpc/include/asm/param.h:#define MAXHOSTNAMELEN	64	/* max length of hostname */
-arch/parisc/include/asm/param.h:#define MAXHOSTNAMELEN	64	/* max length of hostname */
-arch/frv/include/asm/param.h:#define MAXHOSTNAMELEN		64	/* max length of hostname */
-include/asm-generic/param.h:#define MAXHOSTNAMELEN	64	/* max length of hostname */
-include/net/sctp/structs.h:#include <asm/param.h>		/* We get MAXHOSTNAMELEN.     */
-$
-
-  so lots of people define it but no one uses it.  it *is* exported to
-user space in /usr/include/asm/param.h, but i still have no idea what
-it's for in user space.  obsolete?
-
-rday
---
-
-========================================================================
-Robert P. J. Day                               Waterloo, Ontario, CANADA
-
-            Linux Consulting, Training and Kernel Pedantry.
-
-Web page:                                          http://crashcourse.ca
-Twitter:                                       http://twitter.com/rpjday
-========================================================================
