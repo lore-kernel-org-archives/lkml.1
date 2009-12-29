@@ -1,104 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751969AbZL2HX5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752229AbZL2HIi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751969AbZL2HX5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Dec 2009 02:23:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751373AbZL2HX4
+	id S1752229AbZL2HIi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Dec 2009 02:08:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751373AbZL2HIh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Dec 2009 02:23:56 -0500
-Received: from mail.bencastricum.nl ([213.84.203.196]:49615 "EHLO
-	bencastricum.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751229AbZL2HX4 (ORCPT
+	Tue, 29 Dec 2009 02:08:37 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:42317 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750775AbZL2HIh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Dec 2009 02:23:56 -0500
-X-Greylist: delayed 437 seconds by postgrey-1.27 at vger.kernel.org; Tue, 29 Dec 2009 02:23:55 EST
-Message-ID: <B1CA7293D55045EF86492E734D43A1E0@seven>
-From: "Ben Castricum" <mail0912@bencastricum.nl>
-To: <linux-kernel@vger.kernel.org>, <linux-ext4@vger.kernel.org>
-Subject: Kernel BUG 2.6.33-rc2 
-Date: Tue, 29 Dec 2009 08:08:02 +0100
+	Tue, 29 Dec 2009 02:08:37 -0500
+Message-ID: <4B39AAF3.4060605@cs.helsinki.fi>
+Date: Tue, 29 Dec 2009 09:08:35 +0200
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	format=flowed;
-	charset="iso-8859-1";
-	reply-type=response
+To: Joe Perches <joe@perches.com>
+CC: mingo@elte.hu, vegard.nossum@gmail.com, akpm@linux-foundation.org,
+       x86@kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC/PATCH] x86: Use KERN_DEFAULT log-level in __show_regs()
+References: <1261988819.4641.2.camel@penberg-laptop> <1262029654.3352.27.camel@Joe-Laptop.home>
+In-Reply-To: <1262029654.3352.27.camel@Joe-Laptop.home>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook Express 6.00.2900.5843
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.5579
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Joe Perches kirjoitti:
+> On Mon, 2009-12-28 at 10:26 +0200, Pekka Enberg wrote:
+>> From: Pekka Enberg <penberg@cs.helsinki.fi>
+>>
+>> Andrew Morton reported a strange looking kmemcheck warning:
+>>
+>>   WARNING: kmemcheck: Caught 32-bit read from uninitialized memory (ffff88004fba6c20)
+>>   0000000000000000310000000000000000000000000000002413000000c9ffff
+>>    u u u u u u u u u u u u u u u u i i i i i i i i u u u u u u u u
+>>
+>>    [<ffffffff810af3aa>] kmemleak_scan+0x25a/0x540
+>>    [<ffffffff810afbcb>] kmemleak_scan_thread+0x5b/0xe0
+>>    [<ffffffff8104d0fe>] kthread+0x9e/0xb0
+>>    [<ffffffff81003074>] kernel_thread_helper+0x4/0x10
+>>    [<ffffffffffffffff>] 0xffffffffffffffff
+>>
+>> The above printout is missing register dump completely. The problem here is
+>> that the output comes from syslog which doesn't show KERN_INFO log-level
+>> messages. We didn't see this before because both of us were testing on 32-bit
+>> kernels which use the _default_ log-level.
+>>
+>> Fix that up by explicitly using KERN_DEFAULT log-level for __show_regs()
+>> printks.
+>>
+>> Cc: Vegard Nossum <vegard.nossum@gmail.com>
+>> Cc: Andrew Morton <akpm@linux-foundation.org>
+>> Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+>> ---
+>>  arch/x86/kernel/process.c    |    4 ++--
+>>  arch/x86/kernel/process_32.c |   14 +++++++-------
+>>  arch/x86/kernel/process_64.c |   24 ++++++++++++------------
+>>  3 files changed, 21 insertions(+), 21 deletions(-)
+>>
+>> diff --git a/arch/x86/kernel/process.c b/arch/x86/kernel/process.c
+>> index 98c2cde..c6ee241 100644
+>> --- a/arch/x86/kernel/process.c
+>> +++ b/arch/x86/kernel/process.c
+>> @@ -103,8 +103,8 @@ void show_regs_common(void)
+>>  	if (!product)
+>>  		product = "";
+>>  
+>> -	printk("\n");
+>> -	printk(KERN_INFO "Pid: %d, comm: %.20s %s %s %.*s %s/%s\n",
+>> +	printk(KERN_CONT "\n");
+>> +	printk(KERN_DEFAULT "Pid: %d, comm: %.20s %s %s %.*s %s/%s\n",
+> 
+> What is the reason to convert KERN_INFO to KERN_DEFAULT here?
 
-I just seem to be hitting this bug since I upgraded to Slack 13 and started 
-using EXT4 yesterday. The file copy is between 2 EXT4 filesytems. I can 
-trigger this bug pretty reliable. After the bug occurs, systems seems to be 
-unusable and needs a reboot.
-
-my .config can be found at http://www.bencastricum.nl/.config (when the 
-system hasn't crashed)
-
-I appreciate any suggestions.
-
-Ben
-
-------------[ cut here ]------------
-Kernel BUG at b01b70cd [verbose debug info unavailable]
-invalid opcode: 0000 [#1] SMP
-last sysfs file: /sys/devices/pci0000:00/0000:00:1f.3/i2c-0/0-002e/cpu0_vid
-Modules linked in: af_packet ipt_MASQUERADE ipt_REJECT ipt_LOG xt_recent 
-xt_tcpudp xt_state iptable_filter nf_conntrack_ftp iptable_nat ip_tables 
-nf_nat x_tables nf_conntrack_ipv4 nf_conntrack nf_defrag_ipv4 dm_mod lm85 
-hwmon_vid hwmon cdc_acm snd_intel8x0 snd_ac97_codec uhci_hcd ac97_bus 
-snd_pcm 8250_pnp tg3 8250 snd_timer firmware_class serial_core ehci_hcd snd 
-8139too soundcore usbcore libphy mii i2c_i801 snd_page_alloc sr_mod psmouse 
-nls_base cdrom sg
-
-Pid: 8035, comm: cp Not tainted 2.6.33-rc2 #340 085Ch/HP d530 SFF(PL110ES)
-EIP: 0060:[<b01b70cd>] EFLAGS: 00010297 CPU: 0
-EIP is at ext4_get_blocks+0x1e0/0x398
-EAX: 00000001 EBX: 00000004 ECX: cf5af6d0 EDX: f6d19090
-ESI: 00000002 EDI: cf5af6d0 EBP: b780fc44 ESP: b780fc0c
- DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
-Process cp (pid: 8035, ti=b780f000 task=b78cc800 task.ti=b780f000)
-Stack:
- f6b32e80 0000000f cf5af748 cf5af738 00000001 e3001100 b780fcf5 f6bef800
-<0> 00000001 000001d9 00000040 00000040 0000000a b780fcf4 b780fd38 b01b761b
-<0> 0000010c 00000000 00000040 b780fcf4 0000000d b780fc88 b01e81db b780fea0
-Call Trace:
- [<b01b761b>] ? mpage_da_map_blocks+0xa2/0x71e
- [<b01e81db>] ? radix_tree_tag_set+0x55/0xa8
- [<b0159219>] ? __set_page_dirty_nobuffers+0xd1/0xdd
- [<b0153c03>] ? unlock_page+0x3e/0x41
- [<b01b6329>] ? ext4_writepage+0xeb/0x2a1
- [<b01e7e0d>] ? __lookup_tag+0x8d/0xe7
- [<b01e7edd>] ? radix_tree_gang_lookup_tag_slot+0x76/0x95
- [<b01536b2>] ? find_get_pages_tag+0x2b/0xdd
- [<b01b833b>] ? mpage_add_bh_to_extent+0x9d/0xb7
- [<b01b8462>] ? __mpage_da_writepage+0x10d/0x153
- [<b015884d>] ? write_cache_pages+0x158/0x214
- [<b01b8355>] ? __mpage_da_writepage+0x0/0x153
- [<b01b80e7>] ? ext4_da_writepages+0x450/0x607
- [<b011cf02>] ? __wake_up+0x31/0x3b
- [<b01d1551>] ? jbd2_journal_stop+0x22d/0x238
- [<b01d226d>] ? jbd2_journal_start+0x8c/0xb7
- [<b01bcedb>] ? ext4_orphan_del+0x16f/0x185
- [<b01b7c97>] ? ext4_da_writepages+0x0/0x607
- [<b015894c>] ? do_writepages+0x1c/0x28
- [<b015454c>] ? __filemap_fdatawrite_range+0x59/0x65
- [<b0154f95>] ? filemap_flush+0x15/0x17
- [<b01b6506>] ? ext4_alloc_da_blocks+0x27/0x29
- [<b01b1e48>] ? ext4_release_file+0x1c/0x85
- [<b0175f5a>] ? __fput+0xca/0x150
- [<b0175ff9>] ? fput+0x19/0x1b
- [<b0173964>] ? filp_close+0x48/0x52
- [<b01739d6>] ? sys_close+0x68/0x9f
- [<b02e0a7d>] ? syscall_call+0x7/0xb
-Code: e8 52 ee ff ff 89 c3 8b 87 14 02 00 00 39 c3 76 04 0f 0b eb fe 29 d8 
-89 45 e8 75 04 31 f6 eb 4d 8b b7 18 02 00 00 39 75 e8 7d 04 <0f> 0b eb fe 29 
-75 e8 8b 45 e8 99 f7 d8 83 d2 00 f7 da 89 45 c8
-EIP: [<b01b70cd>] ext4_get_blocks+0x1e0/0x398 SS:ESP 0068:b780fc0c
----[ end trace 95d6264240212785 ]---
-------------[ cut here ]------------
-
+To be consistent with rest of __show_regs() log-levels.
