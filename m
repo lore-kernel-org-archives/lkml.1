@@ -1,72 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751571AbZL2MQ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751616AbZL2MXb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751571AbZL2MQ2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Dec 2009 07:16:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751515AbZL2MQ0
+	id S1751616AbZL2MXb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Dec 2009 07:23:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751363AbZL2MXb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Dec 2009 07:16:26 -0500
-Received: from casper.infradead.org ([85.118.1.10]:50046 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751184AbZL2MQZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Dec 2009 07:16:25 -0500
-Subject: Re: [RFC 1/12][PATCH] Extended scheduling parameters structure
- added.
-From: Peter Zijlstra <peterz@infradead.org>
-To: Raistlin <raistlin@linux.it>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       michael trimarchi <michael@evidence.eu.com>,
-       Fabio Checconi <fabio@gandalf.sssup.it>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Dhaval Giani <dhaval.giani@gmail.com>,
-       Johan Eker <johan.eker@ericsson.com>, "p.faure" <p.faure@akatech.ch>,
-       Chris Friesen <cfriesen@nortel.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Henrik Austad <henrik@austad.us>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Darren Hart <darren@dvhart.com>,
-       Sven-Thorsten Dietrich <sven@thebigcorporation.com>,
-       Bjoern Brandenburg <bbb@cs.unc.edu>,
-       Tommaso Cucinotta <tommaso.cucinotta@sssup.it>,
-       "giuseppe.lipari" <giuseppe.lipari@sssup.it>,
-       Juri Lelli <juri.lelli@gmail.com>
-In-Reply-To: <1255707535.6228.451.camel@Palantir>
-References: <1255707324.6228.448.camel@Palantir>
-	 <1255707535.6228.451.camel@Palantir>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 29 Dec 2009 13:15:43 +0100
-Message-ID: <1262088943.7135.137.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 29 Dec 2009 07:23:31 -0500
+Received: from 0122700014.0.fullrate.dk ([95.166.99.235]:57662 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751184AbZL2MXa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Dec 2009 07:23:30 -0500
+Date: Tue, 29 Dec 2009 13:23:28 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: [GIT PULL] block bits for 2.6.33-rc3
+Message-ID: <20091229122328.GR4489@kernel.dk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-10-16 at 17:38 +0200, Raistlin wrote:
+Hi Linus,
 
->  include/linux/sched.h |    8 ++++++++
->  1 files changed, 8 insertions(+), 0 deletions(-)
-> 
-> diff --git a/include/linux/sched.h b/include/linux/sched.h
-> index 75e6e60..ac9837c 100644
-> --- a/include/linux/sched.h
-> +++ b/include/linux/sched.h
-> @@ -94,6 +94,14 @@ struct sched_param {
->  
->  #include <asm/processor.h>
->  
-> +struct sched_param_ex {
-> +	int sched_priority;
-> +	struct timespec sched_runtime;
-> +	struct timespec sched_deadline;
-> +	struct timespec sched_period;
-> +	int sched_flags;
-> +};
-> +
->  struct exec_domain;
->  struct futex_pi_state;
->  struct robust_list_head;
+A round of collected fixes for the current 2.6.33-rc2 kernel. The
+shortlog lists a duplicated entry, the reason being that I integrated a
+fix that was also added in the drbd branch I later pulled in.
 
-Why separate this change from the introduction of the new system calls?
+  git://git.kernel.dk/linux-2.6-block.git for-linus
 
+Andrew Morton (1):
+      aoe: switch to the new bio_flush_dcache_pages() interface
+
+Emese Revfy (1):
+      drbd: Constify struct file_operations
+
+FUJITA Tomonori (1):
+      block: remove Documentation/block/as-iosched.txt
+
+H Hartley Sweeten (1):
+      drivers/block/mg_disk.c: use resource_size()
+
+Huang Weiyi (2):
+      drbd: remove duplicated #include
+      drbd: remove unused #include <linux/version.h>
+
+Jens Axboe (1):
+      Merge branch 'for-jens' of git://git.drbd.org/linux-2.6-drbd into for-linus
+
+Julia Lawall (1):
+      drivers/block/DAC960.c: use DAC960_V2_Controller
+
+Martin K. Petersen (2):
+      block: Fix topology stacking for data and discard alignment
+      block: Fix incorrect alignment offset reporting and update documentation
+
+OGAWA Hirofumi (1):
+      block: Honor the gfp_mask for alloc_page() in blkdev_issue_discard()
+
+Roel Kluin (2):
+      drbd: fix test of unsigned in _drbd_fault_random()
+      drbd: Fix test of unsigned in _drbd_fault_random()
+
+Shaohua Li (1):
+      cfq-iosched: don't regard requests with long distance as close
+
+Vivek Goyal (3):
+      cfq-iosched: Remove the check for same cfq group from allow_merge
+      cfq-iosched: Get rid of nr_groups
+      cfq-iosched: Remove prio_change logic for workload selection
+
+ Documentation/block/00-INDEX       |    2 -
+ Documentation/block/as-iosched.txt |  172 ------------------------------------
+ block/blk-barrier.c                |    2 +-
+ block/blk-settings.c               |  121 ++++++++++++++++---------
+ block/cfq-iosched.c                |   67 ++++----------
+ drivers/block/DAC960.c             |    2 +-
+ drivers/block/aoe/aoecmd.c         |   17 +----
+ drivers/block/drbd/drbd_int.h      |    2 +-
+ drivers/block/drbd/drbd_main.c     |    5 +-
+ drivers/block/drbd/drbd_proc.c     |    2 +-
+ drivers/block/drbd/drbd_receiver.c |    1 -
+ drivers/block/drbd/drbd_worker.c   |    2 -
+ drivers/block/mg_disk.c            |    2 +-
+ include/linux/blkdev.h             |   11 ++-
+ 14 files changed, 115 insertions(+), 293 deletions(-)
+ delete mode 100644 Documentation/block/as-iosched.txt
+
+-- 
+Jens Axboe
 
