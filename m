@@ -1,213 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751551AbZL2TjG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751389AbZL2TkM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751551AbZL2TjG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Dec 2009 14:39:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751206AbZL2TjF
+	id S1751389AbZL2TkM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Dec 2009 14:40:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751340AbZL2TkL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Dec 2009 14:39:05 -0500
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:43266 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751184AbZL2TjC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Dec 2009 14:39:02 -0500
-Message-ID: <4B3A5AD1.8020001@us.ibm.com>
-Date: Tue, 29 Dec 2009 11:38:57 -0800
-From: Darren Hart <dvhltc@us.ibm.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Tue, 29 Dec 2009 14:40:11 -0500
+Received: from mail-gx0-f211.google.com ([209.85.217.211]:48489 "EHLO
+	mail-gx0-f211.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751307AbZL2TkI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Dec 2009 14:40:08 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=QX5ufVV14kcW/Rf5rq0MTXlIDBHW6KXDSf2jRumo4qDTlGe4IjrXRQAj9MTak5tGdi
+         QEciJFM2hxdT4AC2utV3TtLO5iYdKjtq9lhqk6daQCJ2z53E9J6c2Gn5no/2ZVSJXGje
+         MBO3DXJ4czF+3j3nSyd5Oe9iZ2df9l7S/jRGU=
+Message-ID: <4B3A5B15.5060807@garzik.org>
+Date: Tue, 29 Dec 2009 14:40:05 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
 MIME-Version: 1.0
-To: Steven Rostedt <rostedt@goodmis.org>,
-       "lkml, " <linux-kernel@vger.kernel.org>
-Subject: [PATCH] trace-view: add getopt support to gui tools for input file
- (resend)
-Content-Type: text/plain; charset=ISO-8859-1
+To: "Robert P. J. Day" <rpjday@crashcourse.ca>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: what's the purpose of MAXHOSTNAMELEN?
+References: <alpine.LFD.2.00.0912291416230.4967@localhost>
+In-Reply-To: <alpine.LFD.2.00.0912291416230.4967@localhost>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From b3acaddbe845dd3296374a32951b29616519da86 Mon Sep 17 00:00:00 2001
-From: Darren Hart <dvhltc@us.ibm.com>
-Date: Tue, 29 Dec 2009 11:17:37 -0800
-Subject: [PATCH] trace-cmd: add getopt support to gui tools for input file
+On 12/29/2009 02:19 PM, Robert P. J. Day wrote:
+>
+>    in prepping for coalescing a lot of param.h files, i'm curious about
+> the purpose of this macro:
+>
+> $ grep -rw MAXHOSTNAMELEN *
+> arch/s390/include/asm/param.h:#define MAXHOSTNAMELEN	64	/* max length of hostname */
+> arch/sparc/include/asm/param.h:#define MAXHOSTNAMELEN	64	/* max length of hostname */
+> arch/alpha/include/asm/param.h:#define MAXHOSTNAMELEN	64	/* max length of hostname */
+> arch/mn10300/include/asm/param.h:#define MAXHOSTNAMELEN	64	/* max length of hostname */
+> arch/arm/include/asm/param.h:#define MAXHOSTNAMELEN  64
+> arch/m32r/include/asm/param.h:#define MAXHOSTNAMELEN	64	/* max length of hostname */
+> arch/mips/include/asm/param.h:#define MAXHOSTNAMELEN	64	/* max length of hostname */
+> arch/m68k/include/asm/param.h:#define MAXHOSTNAMELEN	64	/* max length of hostname */
+> arch/xtensa/include/asm/param.h:#define MAXHOSTNAMELEN	64	/* max length of hostname */
+> arch/ia64/include/asm/param.h:#define MAXHOSTNAMELEN	64	/* max length of hostname */
+> arch/h8300/include/asm/param.h:#define MAXHOSTNAMELEN	64	/* max length of hostname */
+> arch/avr32/include/asm/param.h:#define MAXHOSTNAMELEN	64
+> arch/cris/include/asm/param.h:#define MAXHOSTNAMELEN	64	/* max length of hostname */
+> arch/um/include/asm/param.h:#define MAXHOSTNAMELEN  64      /* max length of hostname */
+> arch/powerpc/include/asm/param.h:#define MAXHOSTNAMELEN	64	/* max length of hostname */
+> arch/parisc/include/asm/param.h:#define MAXHOSTNAMELEN	64	/* max length of hostname */
+> arch/frv/include/asm/param.h:#define MAXHOSTNAMELEN		64	/* max length of hostname */
+> include/asm-generic/param.h:#define MAXHOSTNAMELEN	64	/* max length of hostname */
+> include/net/sctp/structs.h:#include<asm/param.h>		/* We get MAXHOSTNAMELEN.     */
+> $
+>
+>    so lots of people define it but no one uses it.  it *is* exported to
+> user space in /usr/include/asm/param.h, but i still have no idea what
+> it's for in user space.  obsolete?
 
-Signed-off-by: Darren Hart <dvhltc@us.ibm.com>
----
- kernel-shark.c     |   28 +++++++++++++++++++++++++++-
- trace-graph-main.c |   28 +++++++++++++++++++++++++++-
- trace-view-main.c  |   29 ++++++++++++++++++++++++++++-
- 3 files changed, 82 insertions(+), 3 deletions(-)
+According to RFC 1034, "Each node has a label, which is zero to 63 
+octets in length"
 
-diff --git a/kernel-shark.c b/kernel-shark.c
-index 158b9ac..0d72459 100644
---- a/kernel-shark.c
-+++ b/kernel-shark.c
-@@ -18,12 +18,15 @@
-  *
-  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  */
-+#define _GNU_SOURCE
- #include <stdio.h>
- #include <string.h>
- #include <stdarg.h>
- #include <fcntl.h>
- #include <unistd.h>
- #include <gtk/gtk.h>
-+#include <getopt.h>
-+#include <string.h>
- 
- #include "trace-compat.h"
- #include "trace-cmd.h"
-@@ -34,7 +37,15 @@
- #define TRACE_WIDTH	800
- #define TRACE_HEIGHT	600
- 
--#define input_file "trace.dat"
-+#define default_input_file "trace.dat"
-+static char *input_file = default_input_file;
-+
-+void usage(char *prog)
-+{
-+	printf("Usage: %s\n", prog);
-+	printf("  -h	Display this help message\n");
-+	printf("  -i	input_file, default is %s\n", default_input_file);
-+}
- 
- /* graph callbacks */
- 
-@@ -161,6 +172,21 @@ void kernel_shark(int argc, char **argv)
- 	GtkWidget *draw;
- 	GtkWidget *label;
- 	GtkWidget *spin;
-+	int c;
-+
-+	while ((c = getopt(argc, argv, "hi:")) != -1) {
-+		switch(c) {
-+		case 'h':
-+			usage(basename(argv[0]));
-+			return;
-+		case 'i':
-+			input_file = optarg;
-+			break;
-+		default:
-+			/* assume the other options are for gtk */
-+			break;
-+		}
-+	}
- 
- 	info = g_new0(typeof(*info), 1);
- 	if (!info)
-diff --git a/trace-graph-main.c b/trace-graph-main.c
-index 4eb257f..54194e1 100644
---- a/trace-graph-main.c
-+++ b/trace-graph-main.c
-@@ -1,4 +1,7 @@
-+#define _GNU_SOURCE
- #include <gtk/gtk.h>
-+#include <getopt.h>
-+#include <string.h>
- 
- #include "trace-cmd.h"
- #include "trace-graph.h"
-@@ -7,10 +10,18 @@
- 
- #define TRACE_WIDTH	800
- #define TRACE_HEIGHT	600
--#define input_file "trace.dat"
- 
-+#define default_input_file "trace.dat"
-+static char *input_file = default_input_file;
- static struct graph_info *ginfo;
- 
-+void usage(char *prog)
-+{
-+	printf("Usage: %s\n", prog);
-+	printf("  -h	Display this help message\n");
-+	printf("  -i	input_file, default is %s\n", default_input_file);
-+}
-+
- /* Callback for the clicked signal of the Exit button */
- static void
- exit_clicked (GtkWidget *widget, gpointer data)
-@@ -42,6 +53,21 @@ void trace_graph(int argc, char **argv)
- 	GtkWidget *sub_item;
- 	GtkWidget *scrollwin;
- 	GtkWidget *draw;
-+	int c;
-+
-+	while ((c = getopt(argc, argv, "hi:")) != -1) {
-+		switch(c) {
-+		case 'h':
-+			usage(basename(argv[0]));
-+			return;
-+		case 'i':
-+			input_file = optarg;
-+			break;
-+		default:
-+			/* assume the other options are for gtk */
-+			break;
-+		}
-+	}
- 
- 	handle = tracecmd_open(input_file);
- 
-diff --git a/trace-view-main.c b/trace-view-main.c
-index c0eb716..5b6eb7b 100644
---- a/trace-view-main.c
-+++ b/trace-view-main.c
-@@ -1,4 +1,7 @@
-+#define _GNU_SOURCE
- #include <gtk/gtk.h>
-+#include <getopt.h>
-+#include <string.h>
- 
- #include "trace-cmd.h"
- #include "trace-view.h"
-@@ -7,11 +10,20 @@
- 
- #define TRACE_WIDTH	800
- #define TRACE_HEIGHT	600
--#define input_file "trace.dat"
-+
-+#define default_input_file "trace.dat"
-+static char *input_file = default_input_file;
- 
- GtkWidget *trace_tree;
- static struct tracecmd_input *handle;
- 
-+void usage(char *prog)
-+{
-+	printf("Usage: %s\n", prog);
-+	printf("  -h	Display this help message\n");
-+	printf("  -i	input_file, default is %s\n", default_input_file);
-+}
-+
- /* Callback for the clicked signal of the Exit button */
- static void
- exit_clicked (GtkWidget *widget, gpointer data)
-@@ -76,6 +88,21 @@ void trace_view(int argc, char **argv)
- 	GtkWidget *scrollwin;
- 	GtkWidget *label;
- 	GtkWidget *spin;
-+	int c;
-+
-+	while ((c = getopt(argc, argv, "hi:")) != -1) {
-+		switch(c) {
-+		case 'h':
-+			usage(basename(argv[0]));
-+			return;
-+		case 'i':
-+			input_file = optarg;
-+			break;
-+		default:
-+			/* assume the other options are for gtk */
-+			break;
-+		}
-+	}
- 
- 	handle = tracecmd_open(input_file);
- 
--- 
-1.6.3.3
--- 
-Darren Hart
-IBM Linux Technology Center
-Real-Time Linux Team
+What is it used for in userspace, and why is it export from the kernel? 
+  Good question...
+
+	Jeff
+
+
+
