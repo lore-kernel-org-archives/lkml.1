@@ -1,18 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753089AbZL2PUP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752737AbZL2POV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753089AbZL2PUP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Dec 2009 10:20:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753060AbZL2PTs
+	id S1752737AbZL2POV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Dec 2009 10:14:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752739AbZL2PN5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Dec 2009 10:19:48 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:38925 "EHLO ogre.sisk.pl"
+	Tue, 29 Dec 2009 10:13:57 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:38935 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752576AbZL2PNx convert rfc822-to-8bit (ORCPT
+	id S1752709AbZL2PNz convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Dec 2009 10:13:53 -0500
+	Tue, 29 Dec 2009 10:13:55 -0500
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Alexander Beregalov" <a.beregalov@gmail.com>,
-       "Frederic Weisbecker" <fweisbec@gmail.com>
+       "Vincent ETIENNE" <ve@vetienne.net>, "Yinghai Lu" <yinghai@kernel.org>
 References: <LptzGUUXbTK.A.MSF.ymhOLB@chimera>
 In-Reply-To: <LptzGUUXbTK.A.MSF.ymhOLB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -20,10 +19,10 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <NJVdobuNFNK.A.0O.fnhOLB@chimera>
-Subject: [Bug #14899] reiserfs: inconsistent lock state
+Message-ID: <NJVdobuNFNK.A.LvH.ZnhOLB@chimera>
+Subject: [Bug #14906] boot problem bisected to commit 99935a7a59
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Tue, 29 Dec 2009 16:09:57 +0100 (CET)
+Date: Tue, 29 Dec 2009 16:09:58 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -36,13 +35,12 @@ from 2.6.32.  Please verify if it still should be listed and let me know
 (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14899
-Subject		: reiserfs: inconsistent lock state
-Submitter	: Alexander Beregalov <a.beregalov@gmail.com>
-Date		: 2009-12-11 22:06 (19 days old)
-References	: http://marc.info/?l=linux-kernel&m=126056920702515&w=4
-Handled-By	: Frederic Weisbecker <fweisbec@gmail.com>
-Patch		: http://patchwork.kernel.org/patch/67256/
-		  http://patchwork.kernel.org/patch/67257/
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14906
+Subject		: boot problem bisected to commit 99935a7a59
+Submitter	: Vincent ETIENNE <ve@vetienne.net>
+Date		: 2009-12-19 16:07 (11 days old)
+References	: http://marc.info/?l=linux-kernel&m=126123946509316&w=4
+Handled-By	: Yinghai Lu <yinghai@kernel.org>
+Patch		: http://patchwork.kernel.org/patch/68941/
 
 
