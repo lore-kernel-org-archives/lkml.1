@@ -1,51 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752175AbZL3LzW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751818AbZL3L3Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752175AbZL3LzW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Dec 2009 06:55:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752055AbZL3LzU
+	id S1751818AbZL3L3Z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Dec 2009 06:29:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751631AbZL3L3Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Dec 2009 06:55:20 -0500
-Received: from mail.windriver.com ([147.11.1.11]:63682 "EHLO
-	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751873AbZL3LzR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Dec 2009 06:55:17 -0500
-From: Liming Wang <liming.wang@windriver.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>,
-       Paul Mackerras <paulus@samba.org>, Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       Liming Wang <liming.wang@windriver.com>
-Subject: [PATCH 1/1] perf_event: add check for group_list if the parent isn't counted
-Date: Wed, 30 Dec 2009 19:28:07 +0800
-Message-Id: <1262172487-13694-1-git-send-email-liming.wang@windriver.com>
-X-Mailer: git-send-email 1.6.0.3
-X-OriginalArrivalTime: 30 Dec 2009 11:54:39.0047 (UTC) FILETIME=[DD81D570:01CA8946]
+	Wed, 30 Dec 2009 06:29:24 -0500
+Received: from mgw1.diku.dk ([130.225.96.91]:45382 "EHLO mgw1.diku.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751605AbZL3L3X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Dec 2009 06:29:23 -0500
+Date: Wed, 30 Dec 2009 12:29:20 +0100 (CET)
+From: Julia Lawall <julia@diku.dk>
+To: Joe Perches <joe@perches.com>
+Cc: Rolf Eike Beer <eike-kernel@sf-tec.de>, James.Bottomley@suse.de,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH 3/5] drivers/scsi : Correct the size argument to kmalloc
+In-Reply-To: <1262121796.1888.190.camel@Joe-Laptop.home>
+Message-ID: <Pine.LNX.4.64.0912301228540.23134@ask.diku.dk>
+References: <Pine.LNX.4.64.0912292015420.4001@ask.diku.dk> 
+ <200912292102.43373.eike-kernel@sf-tec.de>  <Pine.LNX.4.64.0912292103180.4001@ask.diku.dk>
+ <1262121796.1888.190.camel@Joe-Laptop.home>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If the parent has no entry in group_list, child_ctx will not be
-allocated, which will lead dereference of a NULL child_ctx.
+On Tue, 29 Dec 2009, Joe Perches wrote:
 
-Signed-off-by: Liming Wang <liming.wang@windriver.com>
----
- kernel/perf_event.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+> On Tue, 2009-12-29 at 21:04 +0100, Julia Lawall wrote:
+> > On Tue, 29 Dec 2009, Rolf Eike Beer wrote:
+> > > Julia Lawall wrote:
+> > > > From: Julia Lawall <julia@diku.dk>
+> > > > In each case, the destination of the allocation has type struct **, so the
+> > > > elements of the array should have pointer type, not structure type.
+> > > Maybe they should even by kcalloc'ed?
+> > I thought about that, but in response to another patch someone seemed to 
+> > think kcalloc was not very useful.  But I can certainly change it in this 
+> > case.
+> 
+> I think kcalloc is useful and should be used when the
+> allocated array of elements needs to be zeroed.
+> 
+> It appears the uses in 1/5 and 3/5 don't need it but
+> maybe patch 2/5 and 4/5 should use kcalloc.
 
-diff --git a/kernel/perf_event.c b/kernel/perf_event.c
-index 5b987b4..3664c4b 100644
---- a/kernel/perf_event.c
-+++ b/kernel/perf_event.c
-@@ -5126,6 +5126,8 @@ int perf_event_init_task(struct task_struct *child)
- 	 */
- 	mutex_lock(&parent_ctx->mutex);
- 
-+	if (list_empty(&parent_ctx->group_list))
-+		goto exit;
- 	/*
- 	 * We dont have to disable NMIs - we are only looking at
- 	 * the list, not manipulating it:
--- 
-1.6.0.3
+I will look into changing them too.
 
+julia
