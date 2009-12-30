@@ -1,71 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752162AbZL3Ii2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752260AbZL3IuY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752162AbZL3Ii2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Dec 2009 03:38:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752003AbZL3Ii2
+	id S1752260AbZL3IuY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Dec 2009 03:50:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752093AbZL3IuX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Dec 2009 03:38:28 -0500
-Received: from chello212186124096.11.vie.surfer.at ([212.186.124.96]:59259
-	"EHLO wiesinger.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751042AbZL3Ii1 (ORCPT
+	Wed, 30 Dec 2009 03:50:23 -0500
+Received: from mail.turknet.net.tr ([193.192.98.182]:56407 "EHLO
+	mail.turknet.net.tr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751051AbZL3IuX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Dec 2009 03:38:27 -0500
-X-Greylist: delayed 376 seconds by postgrey-1.27 at vger.kernel.org; Wed, 30 Dec 2009 03:38:27 EST
-Date: Wed, 30 Dec 2009 09:31:35 +0100 (CET)
-From: Gerhard Wiesinger <lists@wiesinger.com>
-To: linux-kernel@vger.kernel.org
-Subject: ESX Server - GPL violation - found proof !?!
-Message-ID: <alpine.LFD.2.00.0912300928070.20863@bbs.intern>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Wed, 30 Dec 2009 03:50:23 -0500
+Message-ID: <4B3B144B.1050704@netone.com.tr>
+Date: Wed, 30 Dec 2009 10:50:19 +0200
+From: Tarkan Erimer <tarkane@netone.com.tr>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-16.1 Lightning/1.0b2pre Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
-X-MailScanner-Information-wiesinger-com: Please contact the ISP for more information
-X-wiesinger-com-MailScanner-ID: nBU8VZrp021385
-X-MailScanner-wiesinger-com: Found to be clean
-X-MailScanner-SpamCheck-wiesinger-com: not spam, SpamAssassin (not cached,
-	score=-3.668, required 4.5, ALL_TRUSTED -1.80, AWL -0.66,
-	BAYES_00 -2.60, PLING_QUERY 1.39)
-X-MailScanner-From: lists@wiesinger.com
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: Re: [Bug #14900] drm_i915 error
+References: <LptzGUUXbTK.A.MSF.ymhOLB@chimera> <NJVdobuNFNK.A.WG.dnhOLB@chimera>
+In-Reply-To: <NJVdobuNFNK.A.WG.dnhOLB@chimera>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 30 Dec 2009 08:50:20.0747 (UTC) FILETIME=[1E3F29B0:01CA892D]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On 12/29/2009 05:09 PM, Rafael J. Wysocki wrote:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
+>
+> The following bug entry is on the current list of known regressions
+> from 2.6.32.  Please verify if it still should be listed and let me know
+> (either way).
+>
+>
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14900
+> Subject		: drm_i915 error
+> Submitter	: Tarkan Erimer <tarkane@netone.com.tr>
+> Date		: 2009-12-14 12:50 (16 days old)
+> References	: http://marc.info/?l=linux-kernel&m=126079504930147&w=4
+>
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
+>   
+I confirm that, as of Linux-2.6.33-rc2, this regression is not
+reproducible anymore. So, you can close this bug report.
+Thanks and happy new year! :-)
 
-After looking for Buslogic VMWare docs I found the following:
-There were often rumors that ESX server is based on Linux GPL code. I 
-think I've found a prove for it from an official VMWare/EMC document (just 
-save the PDF document for reference):
-http://www.vmware.com/pdf/esx_15_manual.pdf
-p.269:
-ESX Server's Mylex (Buslogic) driver is based on the Linux BusLogic 
-version 2.1.15 driver.
-
-p.270:
-The ESX Server uses two different drivers to support the device family, 
-one based on the Linux ncr53c8xx version 3.4.3b driver and the other on 
-the sym53c8xx version 1.7.3 driver.
-
-More clearly stated that ESX SERVER is based on Linux driver GPL code and 
-therefore ESX Server is derived work of Linux GPL v2 code and therefore 
-the WHOLE ESX SERVER has to be put under GPL v2 (even when run as userland 
-program of a Linux kernel, because the ESX source/driver depends on the 
-Linux kernel and Linux GPL code is linked).
-
-This is at least valid for VMWare ESX server 1.5.
-
-Any comments? Any plans?
-
-Ciao,
-Gerhard Wiesinger
-
---
-http://www.wiesinger.com
-
-Some references:
-http://blog.scottlowe.org/2007/08/19/the-linux-kernel-binary-modules-and-esx-server/
-http://www.theregister.co.uk/2007/08/16/vmware_derived_from_linux/
-http://linux.slashdot.org/article.pl?sid=07/08/14/1618241
-http://communities.vmware.com/thread/98813?start=15&amp;tstart=0
-http://downloads.vmware.com/d/info/datacenter_downloads/vmware_infrastructure_3/3_5#open_source
-http://downloads.vmware.com/d/info/datacenter_downloads/vmware_vsphere_4/4#open_source
+Tarkan
