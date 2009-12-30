@@ -1,51 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751529AbZL3LRs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751667AbZL3L0s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751529AbZL3LRs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Dec 2009 06:17:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751326AbZL3LRr
+	id S1751667AbZL3L0s (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Dec 2009 06:26:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751522AbZL3L0s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Dec 2009 06:17:47 -0500
-Received: from 0122700014.0.fullrate.dk ([95.166.99.235]:42208 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751137AbZL3LRr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Dec 2009 06:17:47 -0500
-Date: Wed, 30 Dec 2009 12:17:45 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Andrew Lutomirski <luto@mit.edu>
-Subject: Re: [Bug #14887] suspend doesn't work on X200s
-Message-ID: <20091230111745.GC4489@kernel.dk>
-References: <LptzGUUXbTK.A.MSF.ymhOLB@chimera> <NJVdobuNFNK.A.Zg.inhOLB@chimera>
+	Wed, 30 Dec 2009 06:26:48 -0500
+Received: from 62.1.125.199.dsl.dyn.forthnet.gr ([62.1.125.199]:31018 "EHLO
+	poseidon.vergina.dyndns.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751483AbZL3L0r (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Dec 2009 06:26:47 -0500
+Message-ID: <4B3B38F2.6090006@asyr.hopto.org>
+Date: Wed, 30 Dec 2009 13:26:42 +0200
+From: Thanasis <thanasis@asyr.hopto.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091229 Thunderbird/3.0 ThunderBrowse/3.2.6.8
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <NJVdobuNFNK.A.Zg.inhOLB@chimera>
+To: gentoo-user@lists.gentoo.org
+CC: Dirk Heinrichs <dirk.heinrichs@online.de>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [gentoo-user] RAM installed vs reported
+References: <4B3B3043.20400@asyr.hopto.org> <200912301208.54359.dirk.heinrichs@online.de>
+In-Reply-To: <200912301208.54359.dirk.heinrichs@online.de>
+Content-Type: text/plain; charset=ISO-8859-7
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 29 2009, Rafael J. Wysocki wrote:
-> This message has been generated automatically as a part of a report
-> of recent regressions.
-> 
-> The following bug entry is on the current list of known regressions
-> from 2.6.32.  Please verify if it still should be listed and let me know
-> (either way).
-> 
-> 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14887
-> Subject		: suspend doesn't work on X200s
-> Submitter	: Andrew Lutomirski <luto@mit.edu>
-> Date		: 2009-12-22 0:45 (8 days old)
-> References	: http://marc.info/?l=linux-kernel&m=126144274102396&w=4
-
-Works fine for me on an x200s. The only issue I seem to have is that
-sometimes it suspends immediately upon resume again, presumably the lid
-close event is re-triggered (or something to that extent). Apart from
-that, 2.6.32 and current -git works fine for me.
-
--- 
-Jens Axboe
-
+on 12/30/2009 01:08 PM Dirk Heinrichs wrote the following:
+> Am Mittwoch 30 Dezember 2009 11:49:39 schrieb Thanasis:
+>> I have a netbook (Acer Aspire One A110L) and installed a 1GB DDR2 in the
+>> available slot, for a total of 1.5GB or RAM.
+>> The BIOS reports it as 1.5GB and so does grml linux (booting from usb),
+>> but the installed gentoo linux reports only 904600 kB:
+>
+> With more than 1G of memory, you should set CONFIG_HIGHMEM4G=y.
+> HTH...
+> 	Dirk
+I thought CONFIG_HIGHMEM4G had to do with more than 4GB of RAM.
+Now I can see that the associated help says it is for an amount between
+1 and 4GB.
+That should be it. The option name confused me.
+I will try it and report back.
+Thanks :-)
