@@ -1,74 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753711AbZL3VQp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753782AbZL3VQr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753711AbZL3VQp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Dec 2009 16:16:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753249AbZL3VQo
+	id S1753782AbZL3VQr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Dec 2009 16:16:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753763AbZL3VQq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Dec 2009 16:16:44 -0500
-Received: from mail-px0-f189.google.com ([209.85.216.189]:40350 "EHLO
-	mail-px0-f189.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752552AbZL3VQn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Dec 2009 16:16:43 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=references:message-id:from:to:in-reply-to:content-type
-         :content-transfer-encoding:x-mailer:mime-version:subject:date:cc;
-        b=lK046SKqVnQOD1/mDEUVdOLFHPvobSOASQjrMQwtV+b4TeE5DgUP9NabcxnnHKU8Qr
-         Esccia3XTZ+cV/n7PzMLfdEj6rA+g8NeF/VP1Ae2Vm0KcSc26/A38KmpW6DDSnSp6251
-         fGC34KzbEozfnA6cWMPmVi7S1KFEicWYlX/J8=
-References: <20091227214924.GB16279@core.coreip.homeip.net> <alpine.LFD.2.00.0912301257340.11961@localhost.localdomain>
-Message-Id: <C08FBDE4-7143-46E4-9DB8-912E870D0008@gmail.com>
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.0912301257340.11961@localhost.localdomain>
-Content-Type: text/plain;
-	charset=us-ascii;
-	format=flowed;
-	delsp=yes
-Content-Transfer-Encoding: 7bit
-X-Mailer: iPhone Mail (7C144)
-Mime-Version: 1.0 (iPhone Mail 7C144)
-Subject: Re: [git pull] Input updates for 2.6.33-rc2
-Date: Wed, 30 Dec 2009 13:16:31 -0800
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>
+	Wed, 30 Dec 2009 16:16:46 -0500
+Received: from 0122700014.0.fullrate.dk ([95.166.99.235]:35699 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753541AbZL3VQp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Dec 2009 16:16:45 -0500
+Date: Wed, 30 Dec 2009 22:16:43 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Corrado Zoccolo <czoccolo@gmail.com>
+Cc: Linux-Kernel <linux-kernel@vger.kernel.org>,
+       Jeff Moyer <jmoyer@redhat.com>, Vivek Goyal <vgoyal@redhat.com>,
+       Shaohua Li <shaohua.li@intel.com>,
+       Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+Subject: Re: [PATCH] cfq-iosched: replace sync_flight by
+	rq_in_driver[BLK_RW_SYNC]
+Message-ID: <20091230211643.GO4489@kernel.dk>
+References: <1262185738-11942-1-git-send-email-czoccolo@gmail.com> <20091230184748.GF4489@kernel.dk> <4e5e476b0912301250x4a0de523v8c1d0a03720c8fa8@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4e5e476b0912301250x4a0de523v8c1d0a03720c8fa8@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Dec 30 2009, Corrado Zoccolo wrote:
+> On Wed, Dec 30, 2009 at 7:47 PM, Jens Axboe <jens.axboe@oracle.com> wrote:
+> > On Wed, Dec 30 2009, Corrado Zoccolo wrote:
+> >> According to my intuition (and brief testing), sync_flight is always
+> >> equal to rq_in_driver[BLK_RW_SYNC] at the point of usage, so it can
+> >> be removed and replaced by the other.
+> >
+> > They are not fully identical. ->sync_flight is incremented on insertion
+> > on the dispatch list, ->rq_in_driver not until the request is activated
+> > (eg the driver has retrieved it and wants to dispatch to the hardware).
+> Usually (only exceptions are forced dispatch, or when a conflict in the
+> rb tree is found), a request is activated as soon as cfq returns from
+> cfq_dispatch_requests.
 
+Yes, but then it may be deactivated immediately for requeue.
 
+> > They will usually be identical, but that may not be true for requeues
+> > for instance.
+> 
+> For our purpose, it is sufficient that in cfq_may_dispatch, they are either
+> both 0 or both non-0.
+> Since we have sync_flight >= rq_in_driver[1], the only question is:
+> can the number of requests in the driver drop to 0 with requests still
+> in flight?
 
+It's mostly a theoretical issue, but yes it could happen. I'm assuming
+you mean ->rq_in_driver[1] == 0 while ->sync_flight != 0. But then we
+are into the area of some starvation problem, in hardware or in the
+kernel. So it's not likely, but still.
 
-On Dec 30, 2009, at 12:58 PM, Linus Torvalds <torvalds@linux-foundation.org 
- > wrote:
+> I'm asking because to drain async requests, we are using the rq_in_driver
+> counter instead. Maybe they need the same treatment.
 
->
->
-> On Sun, 27 Dec 2009, Dmitry Torokhov wrote:
->>
->> 8 files changed, 84 insertions(+), 70 deletions(-)
->
-> I get
->
-> 14 files changed, 94 insertions(+), 96 deletions(-)
->
-> so unpulled.
->
-> If you updated your tree on purpose, you need to send me an email  
-> saying
-> so (preferably as a reply to your previous "please pull", so that  
-> when I
-> see the old one and it doesn't match what I get, I can then also see  
-> the
-> new one without having to search for it)
-
-Yes, I just updated that branch with more fixes, not seeing any pulls  
-after rc2 i thought you were gone till after New Year. I will resend  
-updated pull request later tonight.
+In theory, yes the same applies there. Normal operations would not have
+that distinction between activated and on dispatch list.
 
 -- 
-Dmitry
+Jens Axboe
 
