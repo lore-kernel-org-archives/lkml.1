@@ -1,80 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753247AbZL3SfP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753253AbZL3ShH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753247AbZL3SfP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Dec 2009 13:35:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753019AbZL3SfO
+	id S1753253AbZL3ShH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Dec 2009 13:37:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753019AbZL3ShG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Dec 2009 13:35:14 -0500
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:60715 "EHLO e1.ny.us.ibm.com"
+	Wed, 30 Dec 2009 13:37:06 -0500
+Received: from hera.kernel.org ([140.211.167.34]:35616 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752717AbZL3SfL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Dec 2009 13:35:11 -0500
-Date: Wed, 30 Dec 2009 12:35:13 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: "Andrew G. Morgan" <morgan@kernel.org>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Bryan Donlan <bdonlan@gmail.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Benny Amorsen <benny+usenet@amorsen.dk>,
-       Michael Stone <michael@laptop.org>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, linux-security-module@vger.kernel.org,
-       Andi Kleen <andi@firstfloor.org>, David Lang <david@lang.hm>,
-       Oliver Hartkopp <socketcan@hartkopp.net>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Valdis Kletnieks <Valdis.Kletnieks@vt.edu>,
-       Evgeniy Polyakov <zbr@ioremap.net>,
-       "C. Scott Ananian" <cscott@cscott.net>,
-       James Morris <jmorris@namei.org>, Bernie Innocenti <bernie@codewiz.org>,
-       Mark Seaborn <mrs@mythic-beasts.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       =?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>,
-       Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
-       Samir Bellabes <sam@synack.fr>,
-       Casey Schaufler <casey@schaufler-ca.com>, Pavel Machek <pavel@ucw.cz>,
-       Al Viro <viro@zeniv.linux.org.uk>
-Subject: Re: [RFC][PATCH v2] Unprivileged: Disable raising of privileges
-Message-ID: <20091230183513.GC14493@us.ibm.com>
-References: <m17hs5y0mg.fsf@fess.ebiederm.org>
- <20091229211139.0732a0c1@lxorguk.ukuu.org.uk>
- <m1iqbpwjtp.fsf@fess.ebiederm.org>
- <20091229223631.GB22578@us.ibm.com>
- <m1aax1uoa3.fsf_-_@fess.ebiederm.org>
- <3e8340490912291954v5a837a26p64bd776102d281d7@mail.gmail.com>
- <m1r5qdt721.fsf@fess.ebiederm.org>
- <3e8340490912292057g3e87eaabn115f85b78af2b08c@mail.gmail.com>
- <m1d41w62zc.fsf_-_@fess.ebiederm.org>
- <551280e50912300652r1007dee0j8de750bf33af9b3c@mail.gmail.com>
+	id S1752856AbZL3ShF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Dec 2009 13:37:05 -0500
+Date: Wed, 30 Dec 2009 18:36:32 GMT
+From: tip-bot for Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       rostedt@goodmis.org, tglx@linutronix.de, mhiramat@redhat.com,
+       laijs@cn.fujitsu.com
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       rostedt@goodmis.org, tglx@linutronix.de, laijs@cn.fujitsu.com,
+       mhiramat@redhat.com
+In-Reply-To: <4B273D27.5040009@cn.fujitsu.com>
+References: <4B273D27.5040009@cn.fujitsu.com>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:tracing/urgent] tracing/kprobe: Show sign of fields in trace_kprobe format files
+Message-ID: <tip-79b408210885b9f7f0b067b07a09d68f4da3a700@git.kernel.org>
+Git-Commit-ID: 79b408210885b9f7f0b067b07a09d68f4da3a700
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <551280e50912300652r1007dee0j8de750bf33af9b3c@mail.gmail.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Andrew G. Morgan (morgan@kernel.org):
-> Eric,
-> 
-> I'm not clear why capabilities need to be manipulated by this feature
-> (the pure capability support already has a feature for disabling
-> privilege and blocking unsafe, or insufficient privilege, execution).
+Commit-ID:  79b408210885b9f7f0b067b07a09d68f4da3a700
+Gitweb:     http://git.kernel.org/tip/79b408210885b9f7f0b067b07a09d68f4da3a700
+Author:     Lai Jiangshan <laijs@cn.fujitsu.com>
+AuthorDate: Tue, 15 Dec 2009 15:39:19 +0800
+Committer:  Steven Rostedt <rostedt@goodmis.org>
+CommitDate: Wed, 30 Dec 2009 10:27:03 -0500
 
-Not entirely - this option would also prevent file capabilities from
-being honored.
+tracing/kprobe: Show sign of fields in trace_kprobe format files
 
-> Perhaps I'm just unclear what features can be more safely enabled with
-> this in effect - that is, your description suggests that this is why
-> you are doing this, but leaves it unclear what they are. Could you
-> take a few moments to enumerate some of them?
+The format files of trace_kprobe do not show the sign of the fields.
+The other format files show the field signed type of the fields and
+this patch makes the trace_kprobe formats consistent with the others.
 
-There are two desirable features which are at the moment unsafe for
-unprivileged users, because it allows them to fool privileged (setuid
-or bearing file capabilities) programs.  One is to unconditionally
-restrict privilege to yourself and all your descendents.  The recent
-disablenetwork patchset is one example.  The other is the ability to
-make substantial changes to your environment in a private namespace.
-A private namespace can protect already-running privileged program,
-but cannot protect privilege-bearing binaries.  Unless we prevent
-them from bearing privilege.  Which is what this patch does.
+Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+LKML-Reference: <4B273D27.5040009@cn.fujitsu.com>
+Acked-by: Masami Hiramatsu <mhiramat@redhat.com>
+Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+---
+ kernel/trace/trace_kprobe.c |    7 ++++---
+ 1 files changed, 4 insertions(+), 3 deletions(-)
 
--serge
+diff --git a/kernel/trace/trace_kprobe.c b/kernel/trace/trace_kprobe.c
+index 7ecab06..83f1e6e 100644
+--- a/kernel/trace/trace_kprobe.c
++++ b/kernel/trace/trace_kprobe.c
+@@ -1182,10 +1182,11 @@ static int __probe_event_show_format(struct trace_seq *s,
+ #undef SHOW_FIELD
+ #define SHOW_FIELD(type, item, name)					\
+ 	do {								\
+-		ret = trace_seq_printf(s, "\tfield: " #type " %s;\t"	\
+-				"offset:%u;\tsize:%u;\n", name,		\
++		ret = trace_seq_printf(s, "\tfield:" #type " %s;\t"	\
++				"offset:%u;\tsize:%u;\tsigned:%d;\n", name,\
+ 				(unsigned int)offsetof(typeof(field), item),\
+-				(unsigned int)sizeof(type));		\
++				(unsigned int)sizeof(type),		\
++				is_signed_type(type));			\
+ 		if (!ret)						\
+ 			return 0;					\
+ 	} while (0)
