@@ -1,103 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753288AbZL3Sh2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753276AbZL3SiK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753288AbZL3Sh2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Dec 2009 13:37:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753276AbZL3ShY
+	id S1753276AbZL3SiK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Dec 2009 13:38:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753148AbZL3SiJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Dec 2009 13:37:24 -0500
-Received: from hera.kernel.org ([140.211.167.34]:35627 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753019AbZL3ShT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Dec 2009 13:37:19 -0500
-Date: Wed, 30 Dec 2009 18:37:02 GMT
-From: tip-bot for Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       rostedt@goodmis.org, tglx@linutronix.de, laijs@cn.fujitsu.com
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       rostedt@goodmis.org, tglx@linutronix.de, laijs@cn.fujitsu.com
-In-Reply-To: <4B273D3A.6020007@cn.fujitsu.com>
-References: <4B273D3A.6020007@cn.fujitsu.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:tracing/urgent] tracing: Fix sign fields in ftrace_define_fields_##call()
-Message-ID: <tip-fb7ae981cb9fe8665b9da97e8734745e030c151d@git.kernel.org>
-Git-Commit-ID: fb7ae981cb9fe8665b9da97e8734745e030c151d
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
+	Wed, 30 Dec 2009 13:38:09 -0500
+Received: from mta5.srv.hcvlny.cv.net ([167.206.4.200]:52721 "EHLO
+	mta5.srv.hcvlny.cv.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752924AbZL3SiI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Dec 2009 13:38:08 -0500
+Date: Wed, 30 Dec 2009 13:37:35 -0500
+From: Michael Breuer <mbreuer@majjas.com>
+Subject: Re: sky2 panic in 2.6.32.1 under load (new oops)
+In-reply-to: <20091230101046.2816d545@nehalam>
+To: Stephen Hemminger <shemminger@vyatta.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "Berck E. Nash" <flyboy@gmail.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org
+Message-id: <4B3B9DEF.3090006@majjas.com>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7BIT
+References: <4B300A2A.8040305@gmail.com> <4B300E30.9090707@majjas.com>
+ <4B3114E3.1070602@majjas.com> <4B329FA3.9090904@majjas.com>
+ <20091223230102.4bb0100e.akpm@linux-foundation.org>
+ <4B34E847.8010809@majjas.com> <20091225152200.1cf11dfe@nehalam>
+ <4B3581C7.8000702@majjas.com> <20091226095723.7ac82b18@nehalam>
+ <4B367409.5060202@majjas.com> <4B379378.4000102@majjas.com>
+ <20091227102238.0df149f9@nehalam> <4B37B7E2.5070307@majjas.com>
+ <20091229093023.3ad24786@nehalam> <4B3A5048.9090700@majjas.com>
+ <20091229114938.1f4d1c5c@nehalam> <4B3AFFE8.3060409@majjas.com>
+ <20091229235942.51bf733d@nehalam> <4B3B7488.6080503@majjas.com>
+ <20091230101046.2816d545@nehalam>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.5)
+ Gecko/20091204 Lightning/1.0b2pre Thunderbird/3.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  fb7ae981cb9fe8665b9da97e8734745e030c151d
-Gitweb:     http://git.kernel.org/tip/fb7ae981cb9fe8665b9da97e8734745e030c151d
-Author:     Lai Jiangshan <laijs@cn.fujitsu.com>
-AuthorDate: Tue, 15 Dec 2009 15:39:38 +0800
-Committer:  Steven Rostedt <rostedt@goodmis.org>
-CommitDate: Wed, 30 Dec 2009 10:27:06 -0500
+On 12/30/2009 1:10 PM, Stephen Hemminger wrote:
+> On Wed, 30 Dec 2009 10:40:56 -0500
+> Michael Breuer<mbreuer@majjas.com>  wrote:
+>
+>    
+>> Dec 30 10:37:14 mail kernel: sky2 0000:06:00.0: error interrupt
+>> status=0x40000008
+>> Dec 30 10:37:14 mail kernel: sky2 Tx ring pending=31...40 report=35 done=35
+>> Dec 30 10:37:14 mail kernel: 30: 0x0: 0xeb50c0ca(9014)
+>> Dec 30 10:37:14 mail kernel: 32: 0x0: 0xeb5080ca(9014)
+>> Dec 30 10:37:14 mail kernel: 34: 0x0: 0xeb5040ca(9014)
+>> Dec 30 10:37:14 mail kernel: 36: 0x0: 0xeb5000ca(9014)
+>> Dec 30 10:37:14 mail kernel: 38: 0x0: 0xeb4fc0ca(9014)
+>>      
+> You must be using 9K MTU.  Do you see the problem with smaller
+> MTU?
+>    
+Yes - decided to try 9k in the past day or so. Can redo with smaller 
+again & debug if it would be helpful.
+>    
+>> Dec 30 10:37:14 mail kernel: sky2 0000:06:00.0: error interrupt
+>> status=0x40000008
+>> Dec 30 10:37:14 mail kernel: sky2 Tx ring pending=87...92 report=89 done=91
+>> Dec 30 10:37:14 mail kernel: 86: 0x0: 0xeafd80ca(9014)
+>> Dec 30 10:37:14 mail kernel: 88: 0x0: 0xeafd40ca(9014)
+>> Dec 30 10:37:14 mail kernel: 90: 0x0: 0xeafd00ca(9014)
+>> Dec 30 10:37:15 mail kernel: sky2 0000:06:00.0: error interrupt status=0x8
+>> Dec 30 10:37:15 mail kernel: sky2 Tx ring pending=39...42 report=39 done=41
+>> Dec 30 10:37:15 mail kernel: 38: 0x0: 0xe5fec0ca(9014)
+>> Dec 30 10:37:15 mail kernel: 40: 0x0: 0xe5fe80ca(9014)
+>> Dec 30 10:37:15 mail kernel: sky2 0000:06:00.0: error interrupt
+>> status=0x40000008
+>> Dec 30 10:37:15 mail kernel: sky2 Tx ring pending=117...124 report=119
+>> done=119
+>> Dec 30 10:37:15 mail kernel: 116: 0x0: 0xe5d6c0ca(9014)
+>> Dec 30 10:37:15 mail kernel: 118: 0x0: 0xe5d680ca(9014)
+>> Dec 30 10:37:15 mail kernel: 120: 0x0: 0xe5d660ca(5938)
+>> Dec 30 10:37:15 mail kernel: 122: 0x0: 0xe5d640ca(4213)
+>>      
+>    
 
-tracing: Fix sign fields in ftrace_define_fields_##call()
-
-Add is_signed_type() call to trace_define_field() in ftrace macros.
-
-The code previously just passed in 0 (false), disregarding whether
-or not the field was actually a signed type.
-
-Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
-LKML-Reference: <4B273D3A.6020007@cn.fujitsu.com>
-Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
----
- include/trace/ftrace.h      |    7 ++++---
- kernel/trace/trace_export.c |    7 ++++---
- 2 files changed, 8 insertions(+), 6 deletions(-)
-
-diff --git a/include/trace/ftrace.h b/include/trace/ftrace.h
-index 7352315..c6fe03e 100644
---- a/include/trace/ftrace.h
-+++ b/include/trace/ftrace.h
-@@ -414,7 +414,8 @@ ftrace_raw_output_##call(struct trace_iterator *iter, int flags)	\
- 	BUILD_BUG_ON(len > MAX_FILTER_STR_VAL);				\
- 	ret = trace_define_field(event_call, #type "[" #len "]", #item,	\
- 				 offsetof(typeof(field), item),		\
--				 sizeof(field.item), 0, FILTER_OTHER);	\
-+				 sizeof(field.item),			\
-+				 is_signed_type(type), FILTER_OTHER);	\
- 	if (ret)							\
- 		return ret;
- 
-@@ -422,8 +423,8 @@ ftrace_raw_output_##call(struct trace_iterator *iter, int flags)	\
- #define __dynamic_array(type, item, len)				       \
- 	ret = trace_define_field(event_call, "__data_loc " #type "[]", #item,  \
- 				 offsetof(typeof(field), __data_loc_##item),   \
--				 sizeof(field.__data_loc_##item), 0,	       \
--				 FILTER_OTHER);
-+				 sizeof(field.__data_loc_##item),	       \
-+				 is_signed_type(type), FILTER_OTHER);
- 
- #undef __string
- #define __string(item, src) __dynamic_array(char, item, -1)
-diff --git a/kernel/trace/trace_export.c b/kernel/trace/trace_export.c
-index 458e5bf..d4fa5dc 100644
---- a/kernel/trace/trace_export.c
-+++ b/kernel/trace/trace_export.c
-@@ -158,7 +158,8 @@ ftrace_format_##name(struct ftrace_event_call *unused,			\
- 	BUILD_BUG_ON(len > MAX_FILTER_STR_VAL);				\
- 	ret = trace_define_field(event_call, #type "[" #len "]", #item,	\
- 				 offsetof(typeof(field), item),		\
--				 sizeof(field.item), 0, FILTER_OTHER);	\
-+				 sizeof(field.item),			\
-+				 is_signed_type(type), FILTER_OTHER);	\
- 	if (ret)							\
- 		return ret;
- 
-@@ -168,8 +169,8 @@ ftrace_format_##name(struct ftrace_event_call *unused,			\
- 	ret = trace_define_field(event_call, #type "[" #len "]", #item,	\
- 				 offsetof(typeof(field),		\
- 					  container.item),		\
--				 sizeof(field.container.item), 0,	\
--				 FILTER_OTHER);				\
-+				 sizeof(field.container.item),		\
-+				 is_signed_type(type), FILTER_OTHER);	\
- 	if (ret)							\
- 		return ret;
- 
