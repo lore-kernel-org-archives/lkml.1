@@ -1,72 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752106AbZL3XuB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752570AbZL3X5s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752106AbZL3XuB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Dec 2009 18:50:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751543AbZL3XuA
+	id S1752570AbZL3X5s (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Dec 2009 18:57:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752506AbZL3X5o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Dec 2009 18:50:00 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:52278 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751529AbZL3XuA (ORCPT
+	Wed, 30 Dec 2009 18:57:44 -0500
+Received: from moutng.kundenserver.de ([212.227.17.9]:60184 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752415AbZL3X5n (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Dec 2009 18:50:00 -0500
-Message-ID: <4B3BE63B.70907@zytor.com>
-Date: Wed, 30 Dec 2009 15:46:03 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
+	Wed, 30 Dec 2009 18:57:43 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: Jiri Slaby <jslaby@novell.com>
+Subject: Re: [PATCH 15/16] COMPAT: add get/put_compat_rlimit
+Date: Thu, 31 Dec 2009 00:55:37 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; x86_64; ; )
+Cc: jirislaby@gmail.com, mingo@elte.hu, nhorman@tuxdriver.com,
+       sfr@canb.auug.org.au, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, marcin.slusarz@gmail.com, tglx@linutronix.de,
+       mingo@redhat.com, hpa@zytor.com, torvalds@linux-foundation.org,
+       James Morris <jmorris@namei.org>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>
+References: <4B040A03.2020508@gmail.com> <1258555922-2064-15-git-send-email-jslaby@novell.com>
+In-Reply-To: <1258555922-2064-15-git-send-email-jslaby@novell.com>
 MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@suse.de>
-CC: Arnaldo Carvalho de Melo <acme@infradead.org>,
-       Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Paul Mackerras <paulus@samba.org>, "Frank Ch. Eigler" <fche@redhat.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] x86: record relocation offset
-References: <vxv6sfpjggfx6v68yv1eecrx.1262215615671@email.android.com> <1262216506.2749.254.camel@mulgrave.site>
-In-Reply-To: <1262216506.2749.254.camel@mulgrave.site>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200912310055.37707.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1/dGp8jjiJKGnM/Pxz8FFiBjPexDIs9jOeGPYI
+ Eym3fxXA7mxSBbgWjBHkzJ2H4Fe42rjFMtPUUPDWEALBD9STW7
+ g1+2TF5Lqbj6BfXXcT9Gg==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/30/2009 03:41 PM, James Bottomley wrote:
-> On Wed, 2009-12-30 at 15:26 -0800, H. Peter Anvin wrote:
->> Modules are a completely separate thing - they are linked (not even
->> just relocated) at insertion time, so they need to be tracked
->> separately.
-> 
-> The reasons I gave was why _text relocation didn't work properly for
-> systemtap.  The first paragraph was just giving a precis of history
-> explaining to Arnaldo why he remembered there was a problem with _text
-> based relocations.
-> 
->> The statement that a _text-based relocation is insufficient is false.
->> The entire x86-32 monolithic kernel is relocated as a unit.  The
->> x86-64 kernel, too, is relocated as a unit, but using the page tables,
->> which means it always runs at the compile-time-selected virtual
->> address.
-> 
-> Confused now ... you just repeated what I said in the second paragraph,
-> but made it sound like you are disagreeing?
-> 
+On Wednesday 18 November 2009, Jiri Slaby wrote:
+> @@ -284,17 +317,12 @@ asmlinkage long compat_sys_setrlimit(unsigned int resource,
+>         if (resource >= RLIM_NLIMITS)
+>                 return -EINVAL;
+>  
+> -       if (!access_ok(VERIFY_READ, rlim, sizeof(*rlim)) ||
+> -           __get_user(r.rlim_cur, &rlim->rlim_cur) ||
+> -           __get_user(r.rlim_max, &rlim->rlim_max))
+> -               return -EFAULT;
+> +       ret = get_compat_rlimit(&r, rlim);
+> +       if (ret)
+> +               return ret;
+>  
+> -       if (r.rlim_cur == COMPAT_RLIM_INFINITY)
+> -               r.rlim_cur = RLIM_INFINITY;
+> -       if (r.rlim_max == COMPAT_RLIM_INFINITY)
+> -               r.rlim_max = RLIM_INFINITY;
+>         set_fs(KERNEL_DS);
+> -       ret = sys_setrlimit(resource, (struct rlimit __user *) &r);
+> +       ret = sys_setrlimit(resource, (struct rlimit __force __user *)&r);
+>         set_fs(old_fs);
+>         return ret;
 
-We might have a bit of a context mismatch.
+Since you are already rewriting the whole function here, it would be
+nice if you could just call do_setrlimit() with the kernel pointer
+instead of the set_fs() and __force tricks. For getrlimit, it may
+be easier to just open-code the whole function, and for your new
+functions, you could pass the pid into do_setrlimit instead of the
+task in order to reduce code duplication between compat_sys_setprlimit
+and sys_setprlimit.
+If you interpret a pid argument of zero as 'current', we can deprecate
+the kernel implementation of setrlimit and getrlimit for future
+architecture ports.
 
-The first I saw of this thread was a proposed patch that would give the
-relocation offset of the monolithic kernel, both on 32 and 64 bits,
-without any explanation of the usage model.  As such, from my point of
-view this has always been about the monolithic kernel, until your post
-mentioned modules (which the proposed patch would have done nothing about.)
+Yes, I realize my reply is late in this thread, but I assume your patch
+is still current since it hasn't made it into 2.6.33.
 
-The monolithic kernel offset is a single scalar constant; each module,
-of course, is completely different.
-
-	-hpa
-
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
-
+	Arnd
