@@ -1,44 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752394AbZL3Mex@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752342AbZL3Mrc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752394AbZL3Mex (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Dec 2009 07:34:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751951AbZL3Mew
+	id S1752342AbZL3Mrc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Dec 2009 07:47:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751782AbZL3Mrc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Dec 2009 07:34:52 -0500
-Received: from mail-fx0-f225.google.com ([209.85.220.225]:60478 "EHLO
-	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751719AbZL3Mev (ORCPT
+	Wed, 30 Dec 2009 07:47:32 -0500
+Received: from out01.mta.xmission.com ([166.70.13.231]:54089 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751283AbZL3Mra (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Dec 2009 07:34:51 -0500
+	Wed, 30 Dec 2009 07:47:30 -0500
+To: Bryan Donlan <bdonlan@gmail.com>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Benny Amorsen <benny+usenet@amorsen.dk>,
+       Michael Stone <michael@laptop.org>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, linux-security-module@vger.kernel.org,
+       Andi Kleen <andi@firstfloor.org>, David Lang <david@lang.hm>,
+       Oliver Hartkopp <socketcan@hartkopp.net>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Valdis Kletnieks <Valdis.Kletnieks@vt.edu>,
+       Evgeniy Polyakov <zbr@ioremap.net>,
+       "C. Scott Ananian" <cscott@cscott.net>,
+       James Morris <jmorris@namei.org>, Bernie Innocenti <bernie@codewiz.org>,
+       Mark Seaborn <mrs@mythic-beasts.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       =?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>,
+       Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
+       Samir Bellabes <sam@synack.fr>,
+       Casey Schaufler <casey@schaufler-ca.com>, Pavel Machek <pavel@ucw.cz>,
+       Al Viro <viro@zeniv.linux.org.uk>
+References: <20091229050114.GC14362@heat>
+	<3e8340490912290805s103fb789y13acea4a84669b20@mail.gmail.com>
+	<m3oclhzgm4.fsf@ursa.amorsen.dk> <m17hs5y0mg.fsf@fess.ebiederm.org>
+	<20091229211139.0732a0c1@lxorguk.ukuu.org.uk>
+	<m1iqbpwjtp.fsf@fess.ebiederm.org> <20091229223631.GB22578@us.ibm.com>
+	<m1aax1uoa3.fsf_-_@fess.ebiederm.org>
+	<3e8340490912291954v5a837a26p64bd776102d281d7@mail.gmail.com>
+	<m1r5qdt721.fsf@fess.ebiederm.org>
+	<3e8340490912292057g3e87eaabn115f85b78af2b08c@mail.gmail.com>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Wed, 30 Dec 2009 04:47:02 -0800
+In-Reply-To: <3e8340490912292057g3e87eaabn115f85b78af2b08c@mail.gmail.com> (Bryan Donlan's message of "Tue\, 29 Dec 2009 23\:57\:50 -0500")
+Message-ID: <m1k4w4633t.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-Date: Wed, 30 Dec 2009 23:34:49 +1100
-X-Google-Sender-Auth: 0e267c90476b6bfc
-Message-ID: <7574305f0912300434q1bf23b32sf3fb2b6554d79c4c@mail.gmail.com>
-Subject: BFS v0.313 CPU scheduler for 2.6.32
-From: Con Kolivas <kernel@kolivas.org>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa01 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;Bryan Donlan <bdonlan@gmail.com>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  1.5 TR_Symld_Words too many words that have symbols inside
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -3.0 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0000]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa01 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
+Subject: Re: [RFC][PATCH] Unprivileged: Disable acquisition of privileges
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: Yes (on in01.mta.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A stupid mismerge in __might_sleep meant that with the right config
-options dmesg would have been swamped with false warnings. This also
-was making BFS consume a lot of CPU under certain conditions in
-combination with preempt RCU.
+Bryan Donlan <bdonlan@gmail.com> writes:
 
-Thanks to Jayson R King for picking it up!
+> On Tue, Dec 29, 2009 at 11:33 PM, Eric W. Biederman
+> <ebiederm@xmission.com> wrote:
+>> Bryan Donlan <bdonlan@gmail.com> writes:
+>>
+>>> Is this sufficient for other security models such as selinux or
+>>> TOMOYO? Can processes in these models gain privileges through means
+>>> not restricted here?
+>>
+>> The LSM is primarily about returning -EPERM more often.
+>> Except for the prctl and the capability hooks I am not aware
+>> of anywhere a LSM can increase a processes capabilities.
+>
+> I'm more concerned about a case where a privilege that the LSM
+> currently denies is lifted by execing some executable - this is still
+> an increase in privilege, even though the LSM only adds additional
+> restrictions. That is:
+>
+> 1) Initial state: LSM denies access to /somefile (although normal
+> POSIX permissions would permit access)
+> 2) Disable capability-gaining
+> 3) Disable network access with proposed API
+> 4) Exec some application, which is labeled in a way that permits
+> access to /somefile
+> 5) Application fails to access the network, then does something to /somefile
+>
+> I'm not entirely sure if step 4) can happen in any of the currently
+> existing LSMs - if it's not possible to gain privileges in them via a
+> suid-like mechanism, this isn't a problem, but it's something that
+> needs to be checked for.
 
-There are no other changes in this version compared to 312
+A reasonable concern.  When the glitches get worked out of this patch
+I intend to allow much more dangerous things like unprivileged unsharing
+of all of the namespaces, and unprivileged mounts.
 
-full patch:
-http://ck.kolivas.org/patches/bfs/2.6.32-sched-bfs-313.patch
+It appears I missed a place where MNT_NOSUID was handled in selinux.
+So I will be adding a bprm->nosuid field so I don't have to duplicate
+the MNT_NOSUID check everywhere it is used.
 
-incremental:
-http://ck.kolivas.org/patches/bfs/2.6.32-bfs312-313.patch
+I don't understand TOMOYO  I think it is file based access control,
+which suggests there is not a suid like mechanism.
 
-I highly recommend BFS users upgrade.
+Smack and selinux are label based.  Selinux at least can switch labels
+on exec, but it handles NOSUID already.
 
-Regards,
---
--ck
+Looking a little farther if I assume that lsm implementations that
+implement the set_creds hook need attention.  Only selinux has
+an interesting set_creds implementation and it handles nosuid already.
+
+So I think we are ok.
+
+Eric
