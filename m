@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752598AbZL3MWj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752693AbZL3MW6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752598AbZL3MWj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Dec 2009 07:22:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751875AbZL3MWi
+	id S1752693AbZL3MW6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Dec 2009 07:22:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752536AbZL3MW4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Dec 2009 07:22:38 -0500
-Received: from hera.kernel.org ([140.211.167.34]:42448 "EHLO hera.kernel.org"
+	Wed, 30 Dec 2009 07:22:56 -0500
+Received: from hera.kernel.org ([140.211.167.34]:42463 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751395AbZL3MWh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Dec 2009 07:22:37 -0500
-Date: Wed, 30 Dec 2009 12:21:33 GMT
-From: tip-bot for FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+	id S1751790AbZL3MWz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Dec 2009 07:22:55 -0500
+Date: Wed, 30 Dec 2009 12:21:50 GMT
+From: tip-bot for Yinghai Lu <yinghai@kernel.org>
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       fujita.tomonori@lab.ntt.co.jp, tglx@linutronix.de, mingo@elte.hu,
-       mitov@issp.bas.bg
+       yinghai@kernel.org, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org, tglx@linutronix.de, mingo@elte.hu
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       fujita.tomonori@lab.ntt.co.jp, tglx@linutronix.de, mitov@issp.bas.bg,
-       mingo@elte.hu
-In-Reply-To: <20091228181118C.fujita.tomonori@lab.ntt.co.jp>
-References: <20091228181118C.fujita.tomonori@lab.ntt.co.jp>
+       yinghai@kernel.org, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <4B398ECD.1080506@kernel.org>
+References: <4B398ECD.1080506@kernel.org>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:x86/urgent] x86/agp: Fix agp_amd64_init() initialization with CONFIG_GART_IOMMU enabled
-Message-ID: <tip-f405d2c02395a74d3883bd03ded36457aa3697ad@git.kernel.org>
-Git-Commit-ID: f405d2c02395a74d3883bd03ded36457aa3697ad
+Subject: [tip:x86/apic] x86: Increase NR_IRQS and nr_irqs
+Message-ID: <tip-9959c888a38b0f25b0e81a480f537d6489348442@git.kernel.org>
+Git-Commit-ID: 9959c888a38b0f25b0e81a480f537d6489348442
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -31,80 +31,94 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  f405d2c02395a74d3883bd03ded36457aa3697ad
-Gitweb:     http://git.kernel.org/tip/f405d2c02395a74d3883bd03ded36457aa3697ad
-Author:     FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-AuthorDate: Mon, 28 Dec 2009 18:11:56 +0900
+Commit-ID:  9959c888a38b0f25b0e81a480f537d6489348442
+Gitweb:     http://git.kernel.org/tip/9959c888a38b0f25b0e81a480f537d6489348442
+Author:     Yinghai Lu <yinghai@kernel.org>
+AuthorDate: Mon, 28 Dec 2009 21:08:29 -0800
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 30 Dec 2009 11:52:04 +0100
+CommitDate: Wed, 30 Dec 2009 11:55:59 +0100
 
-x86/agp: Fix agp_amd64_init() initialization with CONFIG_GART_IOMMU enabled
+x86: Increase NR_IRQS and nr_irqs
 
-with CONFIG_GART_IOMMU enabled drivers/char/agp/amd64-agp.c has:
+I have a system with lots of igb and ixgbe, when iov/vf are
+enabled for them, we hit the limit of 3064.
 
- #ifndef CONFIG_GART_IOMMU
- module_init(agp_amd64_init);
- module_exit(agp_amd64_cleanup);
- #endif
+when system has 20 pcie installed, and one card has 2
+functions, and one function needs 64 msi-x,
+ may need 20 * 2 * 64 = 2560 for msi-x
 
-agp_amd64_init() was called via gart_iommu_init with
-CONFIG_GART_IOMMU=y agp_amd64_init() was called via module_init
-with CONFIG_GART_IOMMU=n
+but if iov and vf are enabled
+ may need 20 * 2 * 64 * 3 = 7680 for msi-x
+assume system with 5 ioapic, nr_irqs_gsi will be 120.
 
-The commit 75f1cdf1dda92cae037ec848ae63690d91913eac changes the
-x86 dma initialization routine: gart_iommu_init() is called only
-when GART IOMMU is detected. So when GART IOMMU isn't detected,
-agp_amd64_init isn't called.
+NR_CPUS = 512, and nr_cpu_ids = 128
+will have NR_IRQS = 256 + 512 * 64 = 33024
+will have nr_irqs = 120 + 8 * 128 + 120 * 64 = 8824
 
-Marin Mitov reported this issue:
+When SPARSE_IRQ is not set, there is no increase with kernel data
+size.
 
- http://marc.info/?l=linux-kernel&m=126192729110083&w=2
+when NR_CPUS=128, and SPARSE_IRQ is set:
+   text		   data	    bss		   dec		 hex	filename
+21837444	4216564	12480736	38534744	24bfe58	vmlinux.before
+21837442	4216580	12480736	38534758	24bfe66	vmlinux.after
+when NR_CPUS=4096, and SPARSE_IRQ is set
+   text		   data	    bss		   dec		 hex	filename
+21878619	5610244	13415392	40904255	270263f	vmlinux.before
+21878617	5610244	13415392	40904253	270263d	vmlinux.after
 
-With this patch, agp_amd64_init() is always called via
-module_init (the above ifndef is removed). If agp_amd64_init()
-is called via gart_iommu_init() earlier, agp_amd64_init()
-finishes without doing anything (when it is called via
-module_init).
-
-Reported-by: Marin Mitov <mitov@issp.bas.bg>
-Tested-by: Marin Mitov <mitov@issp.bas.bg>
-Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: davej@redhat.com
-LKML-Reference: <20091228181118C.fujita.tomonori@lab.ntt.co.jp>
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+LKML-Reference: <4B398ECD.1080506@kernel.org>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- drivers/char/agp/amd64-agp.c |    9 +++++----
- 1 files changed, 5 insertions(+), 4 deletions(-)
+ arch/x86/include/asm/irq_vectors.h |   12 ++++++------
+ arch/x86/kernel/apic/io_apic.c     |    2 +-
+ 2 files changed, 7 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/char/agp/amd64-agp.c b/drivers/char/agp/amd64-agp.c
-index 2fb2e6c..5aa7a58 100644
---- a/drivers/char/agp/amd64-agp.c
-+++ b/drivers/char/agp/amd64-agp.c
-@@ -725,9 +725,14 @@ static struct pci_driver agp_amd64_pci_driver = {
- int __init agp_amd64_init(void)
- {
- 	int err = 0;
-+	static int done = 0;
+diff --git a/arch/x86/include/asm/irq_vectors.h b/arch/x86/include/asm/irq_vectors.h
+index 4611f08..3ab43df 100644
+--- a/arch/x86/include/asm/irq_vectors.h
++++ b/arch/x86/include/asm/irq_vectors.h
+@@ -154,21 +154,21 @@ static inline int invalid_vm86_irq(int irq)
  
- 	if (agp_off)
- 		return -EINVAL;
-+
-+	if (done++)
-+		return agp_bridges_found ? 0 : -ENODEV;
-+
- 	err = pci_register_driver(&agp_amd64_pci_driver);
- 	if (err < 0)
- 		return err;
-@@ -771,12 +776,8 @@ static void __exit agp_amd64_cleanup(void)
- 	pci_unregister_driver(&agp_amd64_pci_driver);
- }
+ #define NR_IRQS_LEGACY			  16
  
--/* On AMD64 the PCI driver needs to initialize this driver early
--   for the IOMMU, so it has to be called via a backdoor. */
--#ifndef CONFIG_GART_IOMMU
- module_init(agp_amd64_init);
- module_exit(agp_amd64_cleanup);
--#endif
+-#define CPU_VECTOR_LIMIT		(  8 * NR_CPUS      )
+ #define IO_APIC_VECTOR_LIMIT		( 32 * MAX_IO_APICS )
  
- MODULE_AUTHOR("Dave Jones <davej@redhat.com>, Andi Kleen");
- module_param(agp_try_unsupported, bool, 0);
+ #ifdef CONFIG_X86_IO_APIC
+ # ifdef CONFIG_SPARSE_IRQ
++#  define CPU_VECTOR_LIMIT		(64 * NR_CPUS)
+ #  define NR_IRQS					\
+ 	(CPU_VECTOR_LIMIT > IO_APIC_VECTOR_LIMIT ?	\
+ 		(NR_VECTORS + CPU_VECTOR_LIMIT)  :	\
+ 		(NR_VECTORS + IO_APIC_VECTOR_LIMIT))
+ # else
+-#  if NR_CPUS < MAX_IO_APICS
+-#   define NR_IRQS 			(NR_VECTORS + 4*CPU_VECTOR_LIMIT)
+-#  else
+-#   define NR_IRQS			(NR_VECTORS + IO_APIC_VECTOR_LIMIT)
+-#  endif
++#  define CPU_VECTOR_LIMIT		(32 * NR_CPUS)
++#  define NR_IRQS					\
++	(CPU_VECTOR_LIMIT < IO_APIC_VECTOR_LIMIT ?	\
++		(NR_VECTORS + CPU_VECTOR_LIMIT)  :	\
++		(NR_VECTORS + IO_APIC_VECTOR_LIMIT))
+ # endif
+ #else /* !CONFIG_X86_IO_APIC: */
+ # define NR_IRQS			NR_IRQS_LEGACY
+diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
+index de00c46..d9cd1f1 100644
+--- a/arch/x86/kernel/apic/io_apic.c
++++ b/arch/x86/kernel/apic/io_apic.c
+@@ -3840,7 +3840,7 @@ int __init arch_probe_nr_irqs(void)
+ 	/*
+ 	 * for MSI and HT dyn irq
+ 	 */
+-	nr += nr_irqs_gsi * 16;
++	nr += nr_irqs_gsi * 64;
+ #endif
+ 	if (nr < nr_irqs)
+ 		nr_irqs = nr;
