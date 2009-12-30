@@ -1,153 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752533AbZL3Qt5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752685AbZL3Qx5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752533AbZL3Qt5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Dec 2009 11:49:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752327AbZL3Qt4
+	id S1752685AbZL3Qx5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Dec 2009 11:53:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752523AbZL3Qx4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Dec 2009 11:49:56 -0500
-Received: from mk-filter-4-a-1.mail.uk.tiscali.com ([212.74.100.55]:8896 "EHLO
-	mk-filter-4-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752248AbZL3Qt4 (ORCPT
+	Wed, 30 Dec 2009 11:53:56 -0500
+Received: from mail.windriver.com ([147.11.1.11]:34589 "EHLO
+	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752495AbZL3Qx4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Dec 2009 11:49:56 -0500
-X-Trace: 313807448/mk-filter-4.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.28.176/None/hugh.dickins@tiscali.co.uk
-X-SBRS: None
-X-RemoteIP: 79.69.28.176
-X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
-X-SMTP-AUTH: 
-X-Originating-Country: GB/UNITED KINGDOM
-X-MUA: Alpine 2.00 (LSU 1167 2008-08-23)
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AnQBAIcTO0tPRRyw/2dsb2JhbAAI10aEMQSBaA
-X-IronPort-AV: E=Sophos;i="4.47,476,1257120000"; 
-   d="scan'208";a="313807448"
-Date: Wed, 30 Dec 2009 16:49:52 +0000 (GMT)
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-X-X-Sender: hugh@sister.anvils
-To: Minchan Kim <minchan.kim@gmail.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [PATCH 2/3 -mmotm-2009-12-10-17-19] Count zero page as
- file_rss
-In-Reply-To: <4B38876F.6010204@gmail.com>
-Message-ID: <alpine.LSU.2.00.0912301619500.3369@sister.anvils>
-References: <ceeec51bdc2be64416e05ca16da52a126b598e17.1258773030.git.minchan.kim@gmail.com> <ae2928fe7bb3d94a7ca18d3b3274fdfeb009803a.1258773030.git.minchan.kim@gmail.com> <4B38876F.6010204@gmail.com>
-User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
+	Wed, 30 Dec 2009 11:53:56 -0500
+Message-ID: <4B3B8577.6050801@windriver.com>
+Date: Wed, 30 Dec 2009 10:53:11 -0600
+From: Jason Wessel <jason.wessel@windriver.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Frederic Weisbecker <fweisbec@gmail.com>, Jan Kiszka <jan.kiszka@web.de>
+CC: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Mackerras <paulus@samba.org>, lkml <linux-kernel@vger.kernel.org>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       "K.Prasad" <prasad@linux.vnet.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [RFC] Fix 2.6.33 x86 regression to kgdb hw breakpoints - dueto
+ perf API changes
+References: <4B227F2C.7050403@windriver.com> <20091212132428.GB22389@elte.hu> <20091212135216.GA18597@elte.hu> <4B2404C6.2050003@windriver.com> <20091230163903.GA5024@nowhere>
+In-Reply-To: <20091230163903.GA5024@nowhere>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 30 Dec 2009 16:53:11.0882 (UTC) FILETIME=[92638AA0:01CA8970]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 28 Dec 2009, Minchan Kim wrote:
-> I missed Hugh. 
+Frederic Weisbecker wrote:
+> On Sat, Dec 12, 2009 at 03:01:58PM -0600, Jason Wessel wrote:
+>   
+>> Ingo Molnar wrote:
+>>     
+>>> Basically we have two options:
+>>>
+>>>  A- change kgdb to use the hw-breakpoints highlevel APIs (i'd prefer 
+>>>     that)
+>>>
+>>>   
+>>>       
+>> Right now we can't because the high level code uses all sorts of mutexes
+>> and sync points to get the hw breakpoints installs on the various
+>> processors.  After I re-spun my RFC patch, I found another problem.  I
+>> do use the high level code to create a block of 4 (struct perf_event **)
+>> structures, but doing so ultimately calls the reserve hw breakpoint even
+>> though they are marked as disabled when created.
+>>
+>> Should I, or can I change that behavior?
+>>     
+>
+>
+>
+> We could probably have a helper that allocates a disabled breakpoint
+> without reserving it.
 
-Thank you: it is sweet of you to say so :)
+I worked around that restriction for now, in the current version of the
+kgdb patches.  When kgdb registers with the die notifier in its init
+phase, it allocates the perf structures via the perf API and
+subsequently disables the breakpoints with the low level API.
 
-> 
-> Minchan Kim wrote:
-> > Long time ago, we counted zero page as file_rss.
-> > But after reinstanted zero page, we don't do it.
-> > It means rss of process would be smaller than old.
-> > 
-> > It could chage OOM victim selection.
+>  But the problem remains: you'll need to take
+> locks when you eventually reserve it and when you activate it.
+>
+> The fact that it can happen from nmi is really a problem.
+>
+>   
 
-Eh?  We don't use rss for OOM victim selection, we use total_vm.
+I talked with Jan a bit with respect to this problem.  He recommended to
+possibly allow kgdb to obtain hw breakpoints locklessly and to break
+reservations that exist with the low level API.  The current patch in
+the kgdb series does not break reservations, it only uses a slot that is
+not already in use.  Let us call the scenarios A and B.
 
-I know that's under discussion, and there are good arguments on
-both sides (I incline to the rss side, but see David's point about
-predictability); but here you seem to be making an argument for
-back-compatibility, yet there is no such issue in OOM victim selection.
+A) allow kgdb to break existing reservations
+B) kgdb can use what is not reserved, without locks
 
-And if we do decide that rss is appropriate for OOM victim selection,
-then we would prefer to keep the ZERO_PAGE out of rss, wouldn't we?
+What is missing right now is a notification mechanism and a separate
+count for the debugger as to what is in use.   I tend to think that B is
+the right default approach, but Jan was leaning towards scenario A.
 
-> > 
-> > Kame reported following as
-> > "Before starting zero-page works, I checked "questions" in lkml and
-> > found some reports that some applications start to go OOM after zero-page
-> > removal.
-> > 
-> > For me, I know one of my customer's application depends on behavior of
-> > zero page (on RHEL5). So, I tried to add again it before RHEL6 because
-> > I think removal of zero-page corrupts compatibility."
-> > 
-> > So how about adding zero page as file_rss again for compatibility?
+> Is there any possibility that we know the user has started a
+> kgdb session, and then reserve as much hardware breakpoints
+> as we can in kgdb at this time?
+>
+>   
 
-I think not.
+That is the way I implemented it the first time.  Reserve all the slots,
+and then nothing else could use them.  That didn't work out too well
+because then the user space could not make use of hw breakpoints,
+granted this never worked before with user space + kernel space sharing
+between ptrace and kgdb.
 
-KAMEZAWA-san can correct me (when he returns in the New Year) if I'm
-wrong, but I don't think his customer's OOMs had anything to do with
-whether the ZERO_PAGE was counted in file_rss or not: the OOMs came
-from the fact that many pages were being used up where just the one
-ZERO_PAGE had been good before.  Wouldn't he have complained if the
-zero_pfn patches hadn't solved that problem?
+Jason.
 
-You are right that I completely overlooked the issue of whether to
-include the ZERO_PAGE in rss counts (now being a !vm_normal_page,
-it was just natural to leave it out); and I overlooked the fact that
-it used to be counted into file_rss in the old days (being !PageAnon).
 
-So I'm certainly at fault for that, and thank you for bringing the
-issue to attention; but once considered, I can't actually see a good
-reason why we should add code to count ZERO_PAGEs into file_rss now.
-And if this patch falls, then 1/3 and 3/3 would fall also.
-
-And the patch below would be incomplete anyway, wouldn't it?
-There would need to be a matching change to zap_pte_range(),
-but I don't see that.
-
-We really don't want to be adding more and more ZERO_PAGE/zero_pfn
-tests around the place if we can avoid them: KOSAKI-san has a strong
-argument for adding such a test in kernel/futex.c, but I don't the
-argument here.
-
-Hugh
-
-> > 
-> > Signed-off-by: Minchan Kim <minchan.kim@gmail.com>
-> > ---
-> >  mm/memory.c |    7 +++++--
-> >  1 files changed, 5 insertions(+), 2 deletions(-)
-> > 
-> > diff --git a/mm/memory.c b/mm/memory.c
-> > index 3743fb5..a4ba271 100644
-> > --- a/mm/memory.c
-> > +++ b/mm/memory.c
-> > @@ -1995,6 +1995,7 @@ static int do_wp_page(struct mm_struct *mm, struct vm_area_struct *vma,
-> >  	int reuse = 0, ret = 0;
-> >  	int page_mkwrite = 0;
-> >  	struct page *dirty_page = NULL;
-> > +	int zero_pfn = 0;
-> >  
-> >  	old_page = vm_normal_page(vma, address, orig_pte);
-> >  	if (!old_page) {
-> > @@ -2117,7 +2118,8 @@ gotten:
-> >  	if (unlikely(anon_vma_prepare(vma)))
-> >  		goto oom;
-> >  
-> > -	if (is_zero_pfn(pte_pfn(orig_pte))) {
-> > +	zero_pfn = is_zero_pfn(pte_pfn(orig_pte));
-> > +	if (zero_pfn) {
-> >  		new_page = alloc_zeroed_user_highpage_movable(vma, address);
-> >  		if (!new_page)
-> >  			goto oom;
-> > @@ -2147,7 +2149,7 @@ gotten:
-> >  	 */
-> >  	page_table = pte_offset_map_lock(mm, pmd, address, &ptl);
-> >  	if (likely(pte_same(*page_table, orig_pte))) {
-> > -		if (old_page) {
-> > +		if (old_page || zero_pfn) {
-> >  			if (!PageAnon(old_page)) {
-> >  				dec_mm_counter(mm, file_rss);
-> >  				inc_mm_counter(mm, anon_rss);
-> > @@ -2650,6 +2652,7 @@ static int do_anonymous_page(struct mm_struct *mm, struct vm_area_struct *vma,
-> >  		spin_lock(ptl);
-> >  		if (!pte_none(*page_table))
-> >  			goto unlock;
-> > +		inc_mm_counter(mm, file_rss);
-> >  		goto setpte;
-> >  	}
-> >  
