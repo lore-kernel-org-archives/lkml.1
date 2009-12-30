@@ -1,116 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753305AbZL3VG3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753435AbZL3VLc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753305AbZL3VG3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Dec 2009 16:06:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751972AbZL3VG2
+	id S1753435AbZL3VLc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Dec 2009 16:11:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753238AbZL3VLb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Dec 2009 16:06:28 -0500
-Received: from thunk.org ([69.25.196.29]:45098 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751401AbZL3VG1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Dec 2009 16:06:27 -0500
-Date: Wed, 30 Dec 2009 16:06:22 -0500
-From: tytso@mit.edu
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [GIT PULL] ext4 updates for v2.6.33
-Message-ID: <20091230210622.GE828@thunk.org>
-Mail-Followup-To: tytso@mit.edu,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <E1NOdOL-0001s1-4J@closure.thunk.org>
- <alpine.LFD.2.00.0912301249520.11961@localhost.localdomain>
+	Wed, 30 Dec 2009 16:11:31 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:36154 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752859AbZL3VLa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Dec 2009 16:11:30 -0500
+Date: Wed, 30 Dec 2009 13:10:51 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+cc: Borislav Petkov <petkovbb@googlemail.com>, David Airlie <airlied@linux.ie>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Greg KH <greg@kroah.com>, "Eric W. Biederman" <ebiederm@xmission.com>,
+       Al Viro <viro@ZenIV.linux.org.uk>
+Subject: Re: drm_vm.c:drm_mmap: possible circular locking dependency detected
+ (was: Re: Linux 2.6.33-rc2 - Merry Christmas ...)
+In-Reply-To: <20091228092712.AA8C.A69D9226@jp.fujitsu.com>
+Message-ID: <alpine.LFD.2.00.0912301259220.11961@localhost.localdomain>
+References: <alpine.LFD.2.00.0912241350510.11961@localhost.localdomain> <20091226094504.GA6214@liondog.tnic> <20091228092712.AA8C.A69D9226@jp.fujitsu.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0912301249520.11961@localhost.localdomain>
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@thunk.org
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 30, 2009 at 12:51:11PM -0800, Linus Torvalds wrote:
+
+
+On Mon, 28 Dec 2009, KOSAKI Motohiro wrote:
+> >        [<ffffffff810694c0>] __lock_acquire+0x1373/0x16fd
+> >        [<ffffffff8106993c>] lock_acquire+0xf2/0x116
+> >        [<ffffffff810bb2b5>] might_fault+0x95/0xb8			<- mmap_sem
+> >        [<ffffffff810e87d6>] filldir+0x75/0xd0				<- sysfs_mutex
+> >        [<ffffffff8112be2a>] sysfs_readdir+0x10f/0x149
 > 
-> I don't get the diffstat you claim, so I'm unpulling. I've got a lot of 
-> extra work in fs/ext4/inode.c, and fewer lines in fs/ext4/extents.c, for a 
-> total of
-> 
->   15 files changed, 189 insertions(+), 94 deletions(-)
-> 
-> instead of you claimed
-> 
-> >  15 files changed, 108 insertions(+), 24 deletions(-)
-> 
-> Hmm?
+> This output seems to suggest need to fix drm.
 
-Sorry, I was going to send you a note about it just now, but I hadn't
-gotten around to hitting the send button yet.
+Actually, this painful dependency may technically be a bug in drm, but at 
+the same time, it's really filldir() that makes it _very_ hard for certain 
+locking scenarios because it has that callback to the VFS layer that takes 
+the mmap_sem, and sysfs itself wants the sysfs_mutex in paths where it is 
+not at all unreasonable to hold the mmap_sem.
 
-I had updated the for_linus branch to fix a regression that had shown
-up in -rc2 due to an quota/ext4 journal fix that turned out to cause a
-BUG_ON to trip in fs/ext4/inode.c:1063 (kernel bug #14936, on Rafael's
-regression list) when mounting unconverted ext3 file systems using the
-ext4 file system driver.  It was hitting a lot of users who had been
-playing with ext4, so I wanted to get the fix to you as soon as
-possible.
+We've seen it several times (yes, mostly with drm, but it's been seen with 
+others too), and it's very annoying. It can be fixed by having very 
+careful readdir implementations, but I really would blame sysfs in 
+particular for having a very annoying lock reversal issue when used 
+reasonably.
 
-Here's the updated summary:
+So the optimal situation would be for sysfs to not have that annoying lock 
+dependency, and it would really have to be sysfs_readdir() that drops the 
+sysfs_mutex around the filldir call (and that obviously implies having to 
+re-validate and be really careful).
 
-git://git.kernel.org/pub/scm/linux/kernel/git/tytso/ext4.git for_linus
+Added Eric and Greg to the cc, in case the sysfs people want to solve it.
 
-						- Ted
+The other alternative would be to fix this on a VFS layer by changing how 
+'readdir/filldir' interacts, and instead make it fill in a kernel buffer - 
+avoiding the mmap_sem issue entirely. And than later (in readdir) that 
+kernel buffer could be copied to user space without holding any other 
+locks.
 
- Documentation/filesystems/ext4.txt |    2 +-
- fs/ext4/Kconfig                    |    1 +
- fs/ext4/block_validity.c           |    1 -
- fs/ext4/extents.c                  |   28 ++++++-
- fs/ext4/fsync.c                    |   16 +++-
- fs/ext4/inode.c                    |  171 ++++++++++++++++++++----------------
- fs/ext4/mballoc.h                  |    1 -
- fs/ext4/super.c                    |    6 +-
- fs/ext4/xattr.c                    |    2 +
- fs/fs-writeback.c                  |   17 ++++
- fs/jbd2/checkpoint.c               |   15 +++
- fs/jbd2/commit.c                   |   19 +++--
- fs/jbd2/journal.c                  |    2 +-
- include/linux/jbd2.h               |    1 +
- include/linux/writeback.h          |    1 +
- 15 files changed, 189 insertions(+), 94 deletions(-)
+I like the VFS approach because I think we could possibly use that as a 
+first approach to eventually try to think about caching readdir() results 
+at a VFS level - readdir() is currently the _only_ main filesystem 
+callback that always calls into the low-level filesystem, and always takes 
+a lot of locks. I'm adding Al to the Cc for that - he knows about this 
+issue from me previously thinking aloud along these lines.
 
-Andrew Morton (2):
-      ext4: fix unsigned long long printk warning in super.c
-      jbd2: don't use __GFP_NOFAIL in journal_init_common()
+And yes, one option would be to just fix drm - by avoiding calling any 
+sysfs functions while holding the mmap_lock (either in the mmap callback 
+or the page fault paths). However, as mentioned, I really do think that 
+the blame can be laid on sysfs for trying to be a nice generic interface, 
+but having a damn inconvenient locking model.
 
-Aneesh Kumar K.V (1):
-      ext4: Ensure zeroout blocks have no dirty metadata
-
-David Howells (1):
-      ext4: Don't ask about supporting ext2/3 in ext4 if ext4 is not configured
-
-Eric Sandeen (2):
-      fs-writeback: Add helper function to start writeback if idle
-      ext4: flush delalloc blocks when space is low
-
-Fang Wenqi (1):
-      ext4: Update documentation to correct the inode_readahead_blks option name
-
-Huang Weiyi (1):
-      ext4: remove unused #include <linux/version.h>
-
-Julia Lawall (1):
-      ext4: Eliminate potential double free on error path
-
-Richard Kennedy (1):
-      ext4: return correct wbc.nr_to_write in ext4_da_writepages
-
-Surbhi Palande (1):
-      ext4: replace BUG() with return -EIO in ext4_ext_get_blocks
-
-Theodore Ts'o (3):
-      ext4: add module aliases for ext2 and ext3
-      ext4, jbd2: Add barriers for file systems with exernal journals
-      ext4: Patch up how we claim metadata blocks for quota purposes
-
+			Linus
