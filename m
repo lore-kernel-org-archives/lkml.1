@@ -1,83 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753404AbZL3Uj6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753532AbZL3Umc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753404AbZL3Uj6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Dec 2009 15:39:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753075AbZL3Uj6
+	id S1753532AbZL3Umc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Dec 2009 15:42:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753381AbZL3Umb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Dec 2009 15:39:58 -0500
-Received: from casper.infradead.org ([85.118.1.10]:45717 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753057AbZL3Uj5 (ORCPT
+	Wed, 30 Dec 2009 15:42:31 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:54067 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752789AbZL3Uma (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Dec 2009 15:39:57 -0500
-Date: Wed, 30 Dec 2009 18:39:36 -0200
-From: Arnaldo Carvalho de Melo <acme@infradead.org>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
+	Wed, 30 Dec 2009 15:42:30 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
+        b=UtJioLN0HbFBC6vlf4JtdUZhaUzLdjo+uAdKUDL6P0pw2GXArnLcJZktmZ/wVwvNaD
+         tH+WWrs0UH5d6uxIiVZ7MsOZn+2YzLjGoryWr1xRHYq4qO5TaV7l1Tk7yT+hzhqhiNGQ
+         JPZyW7JKqy+/z44JSImeaW+NmtS7o5oY0X+Cg=
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
        Frederic Weisbecker <fweisbec@gmail.com>,
-       Paul Mackerras <paulus@samba.org>, "Frank Ch. Eigler" <fche@redhat.com>,
-       fche LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/3] x86: record relocation offset
-Message-ID: <20091230203936.GA2384@ghostprotocols.net>
-References: <4B3AC5CD.1000502@cn.fujitsu.com>
- <4B3AC629.4030504@cn.fujitsu.com>
- <20091230131518.GD2956@ghostprotocols.net>
- <4B3BADDA.8040102@zytor.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B3BADDA.8040102@zytor.com>
-X-Url: http://oops.ghostprotocols.net:81/blog
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <acme@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+       Alexander Beregalov <a.beregalov@gmail.com>,
+       Chris Mason <chris.mason@oracle.com>, Ingo Molnar <mingo@elte.hu>,
+       Christian Kujau <lists@nerdbynature.de>
+Subject: [PATCH 0/5] reiserfs lock inversion fixes on xattr
+Date: Wed, 30 Dec 2009 21:42:22 +0100
+Message-Id: <1262205747-9208-1-git-send-regression-fweisbec@gmail.com>
+X-Mailer: git-send-email 1.6.2.3
+In-Reply-To: <1262150491-9983-1-git-send-regression-fweisbec@gmail.com>
+References: <1262150491-9983-1-git-send-regression-fweisbec@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Wed, Dec 30, 2009 at 11:45:30AM -0800, H. Peter Anvin escreveu:
-> On 12/30/2009 05:15 AM, Arnaldo Carvalho de Melo wrote:
-> > I'm no expert on the intricacies of boot_params, but all the other hunks
-> > seems sensible, but can't we provide a non-perf specific way of getting
-> > the relocate_offset? I guess other tools would also love to have it.
+Hi,
 
-> > What about systemtap, don't they solve this in some other way? Frank?
-> 
-> I at one point proposed that boot_params should be exported in toto via
-> sysfs.  This got rather brutally shut down as "it's just a debugging
-> feature" and got moved to debugfs (/debug/boot_params/data).  However,
-> the entire boot_params structure is available there.
-> 
-> Regardless of the reporting method, the patch passing this in by
-> modifying the early assembly code, though, is more than a little
-> pointless.  The kernel already knows where it is loaded -- obviously, by
-> sheer necessity -- and knows how it was itself configured, and as such
-> we can do this calculation in C code without modifying boot_params or
-> the early bootstrap.
+Christian Kujau's use of dbench to test reiserfs xattr has inspired me.
+I tried dbench -x yesterday and got various soft-lockups and lockdep
+reports.
 
-Yeah, rereading the start of this discussion it now seems to me that
-what is happening is that a valid vmlinux is found, i.e. one with the
-same buildid as the buildid found in the perf.data file but then the
-kernel, at the time of perf record, was relocated, not matching what is
-in the vmlinux file.
+I fixed all those I've seen in this batch and it passed through 6 hours
+of stress testing (if a loop of dbench -x -t 60 20 can be called stress
+testing) and things look pretty fine now.
 
-So what we need to do is to figure this out at 'perf record' time and
-encode this in the header, so that later, at 'perf report' time, we can
-use a matching vmlinux and do the relocation (store this relocation
-offset in struct map->start for the kernel map)  to get the right
-results.
+I hope you can give it a try (and/or review) before I send the whole
+to Linus.
 
-Problem is that at 'perf record' time we may not have access to the
-vmlinux file, and thus not be able to figure out the relocation applied
-in that boot.
+Thanks!
 
-Then, at a later time, and possibly on another machine, on another arch,
-we try to map back IPs to symbols, the /proc/kallsyms is completely
-unrelated and we now have a vmlinux unrelocated...
+It's on:
 
-So we need a way to get the relocation applied at 'perf record' time and
-encode it in the perf.data header. Ideas about how to do that?
+git://git.kernel.org/pub/scm/linux/kernel/git/frederic/random-tracing.git
+        reiserfs/kill-bkl
 
-- Arnaldo
+How to get it:
+
+git-clone git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
+cd linux-2.6.git
+git-pull git://git.kernel.org/pub/scm/linux/kernel/git/frederic/random-tracing.git reiserfs/kill-bkl
+
+Frederic Weisbecker (5):
+  reiserfs: Relax lock before open xattr dir in reiserfs_xattr_set_handle()
+  reiserfs: Fix unwanted recursive reiserfs lock in reiserfs_unlink()
+  reiserfs: Fix journal mutex <-> inode mutex lock inversion
+  reiserfs: Safely acquire i_mutex from reiserfs_for_each_xattr
+  reiserfs: Safely acquire i_mutex from xattr_rmdir
+
+ fs/reiserfs/namei.c |    7 ++++---
+ fs/reiserfs/xattr.c |   20 ++++++++++++++------
+ 2 files changed, 18 insertions(+), 9 deletions(-)
+
