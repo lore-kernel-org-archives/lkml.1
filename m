@@ -1,85 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752392AbZL3GVy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752320AbZL3GVq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752392AbZL3GVy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Dec 2009 01:21:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752360AbZL3GVv
+	id S1752320AbZL3GVq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Dec 2009 01:21:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752196AbZL3GVp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Dec 2009 01:21:51 -0500
-Received: from vms173003pub.verizon.net ([206.46.173.3]:55393 "EHLO
-	vms173003pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752336AbZL3GVs (ORCPT
+	Wed, 30 Dec 2009 01:21:45 -0500
+Received: from mail-iw0-f171.google.com ([209.85.223.171]:58206 "EHLO
+	mail-iw0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751974AbZL3GVo convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Dec 2009 01:21:48 -0500
-Date: Wed, 30 Dec 2009 01:21:42 -0500 (EST)
-From: Len Brown <lenb@kernel.org>
-X-X-Sender: lenb@localhost.localdomain
-To: Paul Rolland <rol@as2917.net>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Matthew Garrett <mjg@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, rol@witbe.net,
-       linux-acpi@vger.kernel.org, werner <w.landgraf@ru.ru>
-Subject: [PATCH] dell-wmi: sys_init_module: 'dell_wmi'->init suspiciously
- returned 21, it should follow 0/-E convention
-In-reply-to: <20091228175301.4e89aa65@tux.DEF.witbe.net>
-Message-id: <alpine.LFD.2.00.0912300119190.15839@localhost.localdomain>
-References: <alpine.LFD.2.00.0912241350510.11961@localhost.localdomain>
- <20091225102731.GA25513@elte.hu>
- <alpine.LFD.2.00.0912261504460.4089@localhost.localdomain>
- <alpine.LFD.2.00.0912262316530.14053@localhost.localdomain>
- <20091228094444.GG24690@elte.hu> <20091228120125.GA10911@elte.hu>
- <20091228160212.1f70d825@tux.DEF.witbe.net>
- <20091228175301.4e89aa65@tux.DEF.witbe.net>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 30 Dec 2009 01:21:44 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=SdmUxI63yFxE6MX+mTkMkFo5qIyUB/JaYw26n6IFCJ5+yj51TuTfqKxB0SC5JP0xyJ
+         Q1rHoyTkWvyztHdsE6iZLPEYyqmx/b4VWjlPmntw+KzLt+i6n3s/LF7JvI3CSkng7BaV
+         OFDxpi0IYy8qVUJE5SWLqGzz+HQcB5r6t8Nzk=
+MIME-Version: 1.0
+In-Reply-To: <alpine.LFD.2.00.0912291435070.14938@localhost.localdomain>
+References: <20091229094202.25818e9b@nehalam>
+	 <alpine.LFD.2.00.0912291435070.14938@localhost.localdomain>
+Date: Wed, 30 Dec 2009 15:21:43 +0900
+Message-ID: <2f11576a0912292221r7ba59e9dw431c7b43b578a04@mail.gmail.com>
+Subject: Re: ACPI warning from alloc_pages_nodemask on boot (2.6.33 
+	regression)
+From: KOSAKI Motohiro <kosaki.motohiro@gmail.com>
+To: Len Brown <lenb@kernel.org>
+Cc: Stephen Hemminger <shemminger@vyatta.com>, linux-acpi@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-mm@kvack.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Len Brown <len.brown@intel.com>
+>> [    1.611664] ACPI Warning: Incorrect checksum in table [OEMB] - 94, should be 8C (20091214/tbutils-314)
+>> [    1.611698] ACPI: SSDT 00000000bf7980c0 00403 (v01 DpgPmm  P001Ist 00000011 INTL 20060113)
+>> [    1.613966] ACPI: SSDT 00000000bf7984d0 00403 (v01 DpgPmm  P002Ist 00000012 INTL 20060113)
+>> [    1.616242] ACPI: SSDT 00000000bf7988e0 00403 (v01 DpgPmm  P003Ist 00000012 INTL 20060113)
+>> [    1.618526] ACPI: SSDT 00000000bf798cf0 00403 (v01 DpgPmm  P004Ist 00000012 INTL 20060113)
+>> [    1.620817] ACPI: SSDT 00000000bf799100 00403 (v01 DpgPmm  P005Ist 00000012 INTL 20060113)
+>> [    1.623112] ACPI: SSDT 00000000bf799510 00403 (v01 DpgPmm  P006Ist 00000012 INTL 20060113)
+>> [    1.625409] ACPI: SSDT 00000000bf799920 00403 (v01 DpgPmm  P007Ist 00000012 INTL 20060113)
+>> [    1.627734] ACPI: SSDT 00000000bf799d30 00403 (v01 DpgPmm  P008Ist 00000012 INTL 20060113)
+>> [    1.630020] ------------[ cut here ]------------
+>> [    1.630026] WARNING: at mm/page_alloc.c:1812 __alloc_pages_nodemask+0x617/0x730()
+>
+>        if (order >= MAX_ORDER) {
+>                WARN_ON_ONCE(!(gfp_mask & __GFP_NOWARN));
+>                return NULL;
+>        }
+>
+> I don't know what the mm alloc code is complaining about here.
 
-wmi_install_notify_handler() returns an acpi_error,
-but dell_wmi_init() needs return a -errno style error.
+first, exceeding MAX_ORDER makes to return NULL since linux 1.x. then
+alloc_pages(MAX_ORDER) is wrong usage generally,
+but we hope to allow following usage:
 
-Signed-off-by: Len Brown <len.brown@intel.com>
----
- drivers/platform/x86/dell-wmi.c |    9 +++++----
- 1 files changed, 5 insertions(+), 4 deletions(-)
+    page = alloc_pages(__GFP_nowarn, big-order)
+    if (!page)
+        page = alloc_pages(small-order)
 
-diff --git a/drivers/platform/x86/dell-wmi.c b/drivers/platform/x86/dell-wmi.c
-index 916ccb2..4c7e702 100644
---- a/drivers/platform/x86/dell-wmi.c
-+++ b/drivers/platform/x86/dell-wmi.c
-@@ -323,6 +323,7 @@ static int __init dell_wmi_input_setup(void)
- static int __init dell_wmi_init(void)
- {
- 	int err;
-+	acpi_status status;
- 
- 	if (wmi_has_guid(DELL_EVENT_GUID)) {
- 		printk(KERN_WARNING "dell-wmi: No known WMI GUID found\n");
-@@ -336,14 +337,14 @@ static int __init dell_wmi_init(void)
- 	if (err)
- 		return err;
- 
--	err = wmi_install_notify_handler(DELL_EVENT_GUID,
-+	status = wmi_install_notify_handler(DELL_EVENT_GUID,
- 					 dell_wmi_notify, NULL);
--	if (err) {
-+	if (ACPI_FAILURE(status)) {
- 		input_unregister_device(dell_wmi_input_dev);
- 		printk(KERN_ERR
- 			"dell-wmi: Unable to register notify handler - %d\n",
--			err);
--		return err;
-+			status);
-+		return -ENODEV;
- 	}
- 
- 	return 0;
--- 
-1.6.6.rc4.11.g129a5
+It is the reason of __GFP_NOWARN check.
+I guess ACPI don't need large `contenious' memory.
 
 
+>
+>> [    1.630028] Hardware name: System Product Name
+>> [    1.630029] Modules linked in:
+>> [    1.630032] Pid: 1, comm: swapper Not tainted 2.6.33-rc2 #4
+>> [    1.630034] Call Trace:
+>> [    1.630038]  [<ffffffff810532a8>] warn_slowpath_common+0x78/0xb0
+>> [    1.630041]  [<ffffffff810532ef>] warn_slowpath_null+0xf/0x20
+>> [    1.630044]  [<ffffffff810e65a7>] __alloc_pages_nodemask+0x617/0x730
+>> [    1.630048]  [<ffffffff81114d14>] alloc_page_interleave+0x34/0x90
+>> [    1.630050]  [<ffffffff81115444>] alloc_pages_current+0xc4/0xd0
+>> [    1.630053]  [<ffffffff810e5549>] __get_free_pages+0x9/0x50
+>> [    1.630055]  [<ffffffff8111ef3b>] __kmalloc+0x1bb/0x1f0
+>> [    1.630059]  [<ffffffff81089bdd>] ? trace_hardirqs_on+0xd/0x10
+>> [    1.630064]  [<ffffffff812cae3e>] acpi_os_allocate+0x25/0x27
+>> [    1.630067]  [<ffffffff812cafab>] acpi_ex_load_op+0xd8/0x260
+>> [    1.630070]  [<ffffffff812cd89e>] acpi_ex_opcode_1A_1T_0R+0x25/0x4b
+>> [    1.630073]  [<ffffffff812c5008>] acpi_ds_exec_end_op+0xea/0x3d6
+>> [    1.630076]  [<ffffffff812d7532>] acpi_ps_parse_loop+0x7d9/0x95f
+>> [    1.630079]  [<ffffffff812c58cf>] ? acpi_ds_call_control_method+0x166/0x1d7
+>> [    1.630082]  [<ffffffff812d6641>] acpi_ps_parse_aml+0x9a/0x2b9
+>> [    1.630085]  [<ffffffff812d7d3a>] acpi_ps_execute_method+0x1c8/0x29a
+>> [    1.630088]  [<ffffffff812d2f4d>] acpi_ns_evaluate+0xe1/0x1a8
+>> [    1.630090]  [<ffffffff812d29a1>] acpi_evaluate_object+0xf9/0x1f2
+>> [    1.630094]  [<ffffffff812bda07>] acpi_processor_set_pdc+0x1be/0x1e8
+>> [    1.630097]  [<ffffffff812bda3a>] early_init_pdc+0x9/0xf
+>> [    1.630100]  [<ffffffff812d4a96>] acpi_ns_walk_namespace+0xb9/0x187
+>> [    1.630102]  [<ffffffff812bda31>] ? early_init_pdc+0x0/0xf
+>> [    1.630105]  [<ffffffff812bda31>] ? early_init_pdc+0x0/0xf
+>> [    1.630108]  [<ffffffff812d27e0>] acpi_walk_namespace+0x85/0xbf
+>> [    1.630111]  [<ffffffff81cc7da9>] ? acpi_init+0x0/0x12f
+>> [    1.630113]  [<ffffffff81cc7da9>] ? acpi_init+0x0/0x12f
+>> [    1.630116]  [<ffffffff812bd7c6>] acpi_early_processor_set_pdc+0x3a/0x3c
+>> [    1.630119]  [<ffffffff81cc7c80>] acpi_bus_init+0xb5/0x1de
+>> [    1.630123]  [<ffffffff8128239e>] ? kobject_create_and_add+0x3e/0x80
+>> [    1.630126]  [<ffffffff81cc2f0c>] ? genhd_device_init+0x0/0x7b
+>> [    1.630128]  [<ffffffff81cc7da9>] ? acpi_init+0x0/0x12f
+>> [    1.630131]  [<ffffffff81cc7e1a>] acpi_init+0x71/0x12f
+>> [    1.630134]  [<ffffffff81002047>] do_one_initcall+0x37/0x1a0
+>> [    1.630137]  [<ffffffff81ca1731>] kernel_init+0x166/0x1bc
+>> [    1.630140]  [<ffffffff8100a3e4>] kernel_thread_helper+0x4/0x10
+>> [    1.630144]  [<ffffffff814f95d0>] ? restore_args+0x0/0x30
+>> [    1.630147]  [<ffffffff81ca15cb>] ? kernel_init+0x0/0x1bc
+>> [    1.630149]  [<ffffffff8100a3e0>] ? kernel_thread_helper+0x0/0x10
+>> [    1.630156] ---[ end trace f17e946d22a56015 ]---
+>> [    1.630159] ACPI Error (psparse-0537): Method parse/execution failed [\_PR_.P009._OSC] (Node ffff8801b9069c20), AE_NO_MEMORY
+>> [    1.630196] ACPI Error (psparse-0537): Method parse/execution failed [\_PR_.P009._PDC] (Node ffff8801b9069c00), AE_NO_MEMORY
+>
+> We've changed both the _OSC and _PDC code in this release.
+> In particular, _PDC is being evaluated earler than last release
+> in an attempt to be more Windows compatible...
+>
+> Stephen,
+> Please attach the output from acpidump to a new bugzilla entry
+> and point this thread to it.
+>
+> thanks,
+> Len Brown, Intel Open Source Technology Center
+>
+>
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
