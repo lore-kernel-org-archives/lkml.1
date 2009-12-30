@@ -1,73 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753797AbZL3VaG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753786AbZL3V3F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753797AbZL3VaG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Dec 2009 16:30:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753574AbZL3VaF
+	id S1753786AbZL3V3F (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Dec 2009 16:29:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753125AbZL3V3D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Dec 2009 16:30:05 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:57780 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753425AbZL3VaB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Dec 2009 16:30:01 -0500
-Date: Wed, 30 Dec 2009 13:29:45 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
+	Wed, 30 Dec 2009 16:29:03 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:44137 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752847AbZL3V3B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Dec 2009 16:29:01 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 To: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Subject: Re: kprobes: get rid of distinct type warning
-Message-Id: <20091230132945.f32f49fd.akpm@linux-foundation.org>
-In-Reply-To: <20091221120224.GA4471@osiris.boeblingen.de.ibm.com>
-References: <20091221101549.GA3850@osiris.boeblingen.de.ibm.com>
-	<20091221111759.GA12670@in.ibm.com>
-	<20091221120224.GA4471@osiris.boeblingen.de.ibm.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Subject: Re: [Bug #14630] sched_rt_periodic_timer vs cpu hotplug
+Date: Wed, 30 Dec 2009 22:29:46 +0100
+User-Agent: KMail/1.12.3 (Linux/2.6.33-rc2-tst; KDE/4.3.3; x86_64; ; )
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+References: <oBElxfTZdhL.A.bx.-vhOLB@chimera> <1262104619.7135.161.camel@laptop> <20091230081800.GA4304@osiris.boeblingen.de.ibm.com>
+In-Reply-To: <20091230081800.GA4304@osiris.boeblingen.de.ibm.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200912302229.46223.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 21 Dec 2009 13:02:24 +0100
-Heiko Carstens <heiko.carstens@de.ibm.com> wrote:
+On Wednesday 30 December 2009, Heiko Carstens wrote:
+> On Tue, Dec 29, 2009 at 05:36:59PM +0100, Peter Zijlstra wrote:
+> > On Tue, 2009-12-29 at 16:28 +0100, Rafael J. Wysocki wrote:
+> > > This message has been generated automatically as a part of a report
+> > > of regressions introduced between 2.6.31 and 2.6.32.
+> > > 
+> > > The following bug entry is on the current list of known regressions
+> > > introduced between 2.6.31 and 2.6.32.  Please verify if it still should
+> > > be listed and let me know (either way).
+> > > 
+> > > 
+> > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14630
+> > > Subject		: sched_rt_periodic_timer vs cpu hotplug
+> > > Submitter	: Heiko Carstens <heiko.carstens@de.ibm.com>
+> > > Date		: 2009-11-11 10:18 (49 days old)
+> > > References	: http://marc.info/?l=linux-kernel&m=125793470309588&w=4
+> > > Handled-By	: Peter Zijlstra <peterz@infradead.org>
+> > > Patch		: http://patchwork.kernel.org/patch/60250/
+> > 
+> > git branch -a --contains 047106ad
+> > 
+> > seems to suggest that this made it to Linus' tree.
+> 
+> Any chance to get this into -stable? Since it seems it got only merged
+> after 2.6.32.
 
-> Of course the patch wouldn't help for CONFIG_PREEMPT and !CONFIG_SMP since
-> we would have a comparison of a signed and and unsigned value again *sigh*.
+Can you please send a notification to stable@kernel.org (CC to Greg KH perhaps)?
 
-We should fix that, shouldn't we?  Rather than working around it at one
-caller site.
-
-: #if NR_CPUS > 1
-: #define num_online_cpus()	cpumask_weight(cpu_online_mask)
-: #define num_possible_cpus()	cpumask_weight(cpu_possible_mask)
-: #define num_present_cpus()	cpumask_weight(cpu_present_mask)
-: #define num_active_cpus()	cpumask_weight(cpu_active_mask)
-: #define cpu_online(cpu)		cpumask_test_cpu((cpu), cpu_online_mask)
-: #define cpu_possible(cpu)	cpumask_test_cpu((cpu), cpu_possible_mask)
-: #define cpu_present(cpu)	cpumask_test_cpu((cpu), cpu_present_mask)
-: #define cpu_active(cpu)		cpumask_test_cpu((cpu), cpu_active_mask)
-: #else
-: #define num_online_cpus()	1
-: #define num_possible_cpus()	1
-: #define num_present_cpus()	1
-: #define num_active_cpus()	1
-: #define cpu_online(cpu)		((cpu) == 0)
-: #define cpu_possible(cpu)	((cpu) == 0)
-: #define cpu_present(cpu)	((cpu) == 0)
-: #define cpu_active(cpu)		((cpu) == 0)
-: #endif
-
-The num_*() "functions" return unsigned on SMP and int on UP.  This is
-wrong.
-
-The cpu_*() "functions" got lucky and return int in both cases.
-
-Personally I think it's neatest if a quantity which can never be
-negative is held in an unsigned type.  Than includes anything starting
-with "num".  But for expediency's sake we could live with making these
-things consistently return "int".
-
-Alas, changing those four num_*() "functions" to return int on SMP is a
-pretty wide-reaching change and will probably expose warts.
-
+Rafael
