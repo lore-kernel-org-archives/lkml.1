@@ -1,112 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752941AbZL3RuW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753005AbZL3Rw5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752941AbZL3RuW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Dec 2009 12:50:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752091AbZL3RuV
+	id S1753005AbZL3Rw5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Dec 2009 12:52:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752809AbZL3Rw4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Dec 2009 12:50:21 -0500
-Received: from mta1.srv.hcvlny.cv.net ([167.206.4.196]:34876 "EHLO
-	mta1.srv.hcvlny.cv.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752593AbZL3RuU (ORCPT
+	Wed, 30 Dec 2009 12:52:56 -0500
+Received: from mail-fx0-f225.google.com ([209.85.220.225]:44424 "EHLO
+	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752802AbZL3Rwz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Dec 2009 12:50:20 -0500
-Date: Wed, 30 Dec 2009 12:49:44 -0500
-From: Michael Breuer <mbreuer@majjas.com>
-Subject: Re: sky2 panic in 2.6.32.1 under load (new oops)
-In-reply-to: <20091229235835.1f260eb0@nehalam>
-To: Stephen Hemminger <shemminger@vyatta.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "Berck E. Nash" <flyboy@gmail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org
-Message-id: <4B3B92B8.7010208@majjas.com>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7BIT
-References: <4B300A2A.8040305@gmail.com> <4B300E30.9090707@majjas.com>
- <4B3114E3.1070602@majjas.com> <4B329FA3.9090904@majjas.com>
- <20091223230102.4bb0100e.akpm@linux-foundation.org>
- <4B34E847.8010809@majjas.com> <20091225152200.1cf11dfe@nehalam>
- <4B3581C7.8000702@majjas.com> <20091226095723.7ac82b18@nehalam>
- <4B367409.5060202@majjas.com> <4B379378.4000102@majjas.com>
- <20091227102238.0df149f9@nehalam> <4B37B7E2.5070307@majjas.com>
- <20091229093023.3ad24786@nehalam> <4B3A5048.9090700@majjas.com>
- <20091229114938.1f4d1c5c@nehalam> <4B3AFFE8.3060409@majjas.com>
- <20091229235835.1f260eb0@nehalam>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.5)
- Gecko/20091204 Lightning/1.0b2pre Thunderbird/3.0
+	Wed, 30 Dec 2009 12:52:55 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mail-followup-to:references
+         :mime-version:content-type:content-disposition:in-reply-to
+         :user-agent;
+        b=ij76X5DDbTkdNGGDjfpDJiYQL7do3amsGzGn/ejCshxPQJoCof1W+8++nJk+hDn2/K
+         VZd8IAokUkgGZyYj4MwOW8cNyn+k2DGqunldsmPDELSuyVQpLGfesG//hsQiC3u7Pu2i
+         tz3z9U7q5FsLWMUOXEqRBczNIo6MRTG+2nxdw=
+Date: Wed, 30 Dec 2009 19:50:36 +0200
+From: Dan Carpenter <error27@gmail.com>
+To: Johan Hovold <jhovold@gmail.com>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch] USB: serial: fix DMA buffers on stack for io_edgeport.c
+Message-ID: <20091230175036.GB21362@bicker>
+Mail-Followup-To: Dan Carpenter <error27@gmail.com>,
+	Johan Hovold <jhovold@gmail.com>,
+	Greg Kroah-Hartman <gregkh@suse.de>, linux-usb@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+References: <1262037718-31424-1-git-send-email-jhovold@gmail.com> <20091230160645.GC29476@bicker> <20091230171457.GA15063@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091230171457.GA15063@localhost>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/30/2009 2:58 AM, Stephen Hemminger wrote:
-> On Wed, 30 Dec 2009 02:23:20 -0500
-> Michael Breuer<mbreuer@majjas.com>  wrote:
->
->    
->> Ok - I called dump_txring from sky2_net_intr:
->> --- a/drivers/net/sky2.c
->> +++ b/drivers/net/sky2.c
->> @@ -2725,8 +2791,10 @@ static void sky2_watchdog(unsigned long arg)
->>    /* Hardware/software error handling */
->>    static void sky2_err_intr(struct sky2_hw *hw, u32 status)
->>    {
->> -       if (net_ratelimit())
->> +       if (net_ratelimit()) {
->>                   dev_warn(&hw->pdev->dev, "error interrupt
->> status=%#x\n", status);
->> +               dump_txring(hw, 0);
->> +       }
->>
->>           if (status&  Y2_IS_HW_ERR)
->>                   sky2_hw_intr(hw);
->>
->> And got this:
->> Dec 30 02:17:23 mail kernel: sky2 0000:06:00.0: error interrupt
->> status=0x40000008
->> Dec 30 02:17:23 mail kernel: sky2 0000:06:00.0: error interrupt
->> status=0x40000008
->> Dec 30 02:17:23 mail kernel: sky2 Tx ring pending=28...30 report=29 done=29
->> Dec 30 02:17:23 mail kernel: sky2 Tx ring pending=28...30 report=29 done=29
->> Dec 30 02:17:23 mail kernel: sky2 0000:06:00.0: error interrupt status=0x8
->> Dec 30 02:17:23 mail kernel: sky2 0000:06:00.0: error interrupt status=0x8
->> Dec 30 02:17:23 mail kernel: sky2 Tx ring pending=30...32 report=30 done=31
->> Dec 30 02:17:23 mail kernel: sky2 Tx ring pending=30...32 report=30 done=31
->>
->>      
-> I notice that you have NOUVEAU Nvidia drivers loaded? The one difference in HW
-> between your board and mine is that I have ATI video card.
->
->    
-Seems the problem is linked to auditd and X11 (but not nouveau).
+On Wed, Dec 30, 2009 at 06:14:58PM +0100, Johan Hovold wrote:
+> Hey Dan,
+> 
+> Looks like you forgot to free StringDesc:
+> 
 
-Today, I ran a bunch of scenarios. I first determined that the problem 
-only manifest in runlevel 5. Next, this occurred with or without KMS and 
-with or without nouveau. This happened whether or not I was logged in 
-(local or remote), and regardless of window manager (xdm, gdm, kdm). I 
-then checked to see what else was different between runlevel 3 and 5 - 
-only thing was auditd. I disabled auditd and reran - no errors.
+Gar...   That's embarrassing.  I'm really sorry about that.
 
-Now for the odd stuff:
+I will send an updated patch tomorrow.
 
-The errors only manifest if the high throughput data transfer is 
-initiated when the system is in runlevel 5 and auditd was started by 
-init when transitioning from runlevel 3 to 5. For example, the following 
-scenarios do not cause the errors to manifest:
+Also smatch sort of should have caught that with the --spammy option but
+it didn't.  :/  In general the leak checks are pretty terrible.  Will 
+look at this as well.
 
-runlevel3; start auditd runlevel 5; start transfer
-runlevel3; chkconfig auditd off; runlevel5; start auditd; start transfer
-runlevel3; start transfer (note: errors do not occur if I transition to 
-runlevel 5 after the high bandwidth transfer has started)
-runlevel3; startx; start transfer
-
-The only way I get the problem to manifest is transition to runlevel 5 
-with chkconfig auditd on (level 5 only) and then initate the windows 
-backup.
-
-I'm guessing that there is some sort of race condition happening between 
-X (xdm/gdm/kdm/greeter?) and auditd that is somehow corrupting 
-something. I'd hazard a more or less obvious guess that whatever's being 
-corrupted differs when there is already a high throughput transfer under 
-way.
+regards,
+dan carpenter
 
