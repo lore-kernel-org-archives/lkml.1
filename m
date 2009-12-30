@@ -1,238 +1,163 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753717AbZL3VPL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753744AbZL3VPn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753717AbZL3VPL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Dec 2009 16:15:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753369AbZL3VPJ
+	id S1753744AbZL3VPn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Dec 2009 16:15:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753732AbZL3VPm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Dec 2009 16:15:09 -0500
-Received: from out01.mta.xmission.com ([166.70.13.231]:45781 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753340AbZL3VPF (ORCPT
+	Wed, 30 Dec 2009 16:15:42 -0500
+Received: from mta5.srv.hcvlny.cv.net ([167.206.4.200]:54981 "EHLO
+	mta5.srv.hcvlny.cv.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753549AbZL3VPl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Dec 2009 16:15:05 -0500
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: "Andrew G. Morgan" <morgan@kernel.org>, Bryan Donlan <bdonlan@gmail.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Benny Amorsen <benny+usenet@amorsen.dk>,
-       Michael Stone <michael@laptop.org>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, linux-security-module@vger.kernel.org,
-       Andi Kleen <andi@firstfloor.org>, David Lang <david@lang.hm>,
-       Oliver Hartkopp <socketcan@hartkopp.net>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Valdis Kletnieks <Valdis.Kletnieks@vt.edu>,
-       Evgeniy Polyakov <zbr@ioremap.net>,
-       "C. Scott Ananian" <cscott@cscott.net>,
-       James Morris <jmorris@namei.org>, Bernie Innocenti <bernie@codewiz.org>,
-       Mark Seaborn <mrs@mythic-beasts.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>,
-       Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
-       Samir Bellabes <sam@synack.fr>,
-       Casey Schaufler <casey@schaufler-ca.com>, Pavel Machek <pavel@ucw.cz>,
-       Al Viro <viro@zeniv.linux.org.uk>
-Subject: [RFC][PATCH v3] Unprivileged: Disable raising of privileges
-References: <m1iqbpwjtp.fsf@fess.ebiederm.org>
-	<20091229223631.GB22578@us.ibm.com>
-	<m1aax1uoa3.fsf_-_@fess.ebiederm.org>
-	<3e8340490912291954v5a837a26p64bd776102d281d7@mail.gmail.com>
-	<m1r5qdt721.fsf@fess.ebiederm.org>
-	<3e8340490912292057g3e87eaabn115f85b78af2b08c@mail.gmail.com>
-	<m1d41w62zc.fsf_-_@fess.ebiederm.org>
-	<551280e50912300652r1007dee0j8de750bf33af9b3c@mail.gmail.com>
-	<20091230183513.GC14493@us.ibm.com> <m1fx6suswz.fsf@fess.ebiederm.org>
-	<20091230201712.GA23999@us.ibm.com>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Wed, 30 Dec 2009 13:15:01 -0800
-In-Reply-To: <20091230201712.GA23999@us.ibm.com> (Serge E. Hallyn's message of "Wed\, 30 Dec 2009 14\:17\:12 -0600")
-Message-ID: <m1hbr8tb8q.fsf_-_@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Scanned: No (on in01.mta.xmission.com); SAEximRunCond expanded to false
+	Wed, 30 Dec 2009 16:15:41 -0500
+Date: Wed, 30 Dec 2009 16:15:08 -0500
+From: Michael Breuer <mbreuer@majjas.com>
+Subject: Re: audit.c skb - tty race condition - was sky2 panic in 2.6.32.1
+ under load (new oops)
+In-reply-to: <4B3BBBA4.5090400@majjas.com>
+To: Stephen Hemminger <shemminger@vyatta.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "Berck E. Nash" <flyboy@gmail.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org
+Message-id: <4B3BC2DC.7030201@majjas.com>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7BIT
+References: <4B300A2A.8040305@gmail.com> <4B300E30.9090707@majjas.com>
+ <4B3114E3.1070602@majjas.com> <4B329FA3.9090904@majjas.com>
+ <20091223230102.4bb0100e.akpm@linux-foundation.org>
+ <4B34E847.8010809@majjas.com> <20091225152200.1cf11dfe@nehalam>
+ <4B3581C7.8000702@majjas.com> <20091226095723.7ac82b18@nehalam>
+ <4B367409.5060202@majjas.com> <4B379378.4000102@majjas.com>
+ <20091227102238.0df149f9@nehalam> <4B37B7E2.5070307@majjas.com>
+ <20091229093023.3ad24786@nehalam> <4B3A5048.9090700@majjas.com>
+ <20091229114938.1f4d1c5c@nehalam> <4B3AFFE8.3060409@majjas.com>
+ <20091229235835.1f260eb0@nehalam> <4B3B92B8.7010208@majjas.com>
+ <4B3BA6E6.40906@majjas.com> <4B3BBBA4.5090400@majjas.com>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.5)
+ Gecko/20091204 Lightning/1.0b2pre Thunderbird/3.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-If we can know that a process will never raise
-it's priveleges we can enable a lot of features
-without privilege (such as unsharing namespaces
-and unprivileged mounts) that otherwise would be unsafe,
-because they could break assumptions of existing
-suid executables.
-
-To allow this to be used as a sand boxing feature
-also disable ptracing other executables without
-this new restriction.
-
-For the moment I have used a per thread flag because
-we are out of per process flags.
-
-To ensure all descendants get this flag I rely on
-the default copying of procss structures.
-
-Added bprm->nosuid to make remove the need to add
-duplicate error prone checks.  This ensures that
-the disabling of suid executables is exactly the
-same as MNT_NOSUID.
-
-Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
----
- arch/x86/include/asm/thread_info.h |    2 ++
- fs/exec.c                          |    6 ++++--
- include/linux/binfmts.h            |    1 +
- include/linux/prctl.h              |    3 +++
- kernel/ptrace.c                    |    4 ++++
- kernel/sys.c                       |   21 +++++++++++++++++++++
- security/commoncap.c               |    3 +--
- security/selinux/hooks.c           |    2 +-
- 8 files changed, 37 insertions(+), 5 deletions(-)
-
-diff --git a/arch/x86/include/asm/thread_info.h b/arch/x86/include/asm/thread_info.h
-index 375c917..e716203 100644
---- a/arch/x86/include/asm/thread_info.h
-+++ b/arch/x86/include/asm/thread_info.h
-@@ -82,6 +82,7 @@ struct thread_info {
- #define TIF_SYSCALL_EMU		6	/* syscall emulation active */
- #define TIF_SYSCALL_AUDIT	7	/* syscall auditing active */
- #define TIF_SECCOMP		8	/* secure computing */
-+#define TIF_NOSUID		9	/* suid exec permanently disabled */
- #define TIF_MCE_NOTIFY		10	/* notify userspace of an MCE */
- #define TIF_USER_RETURN_NOTIFY	11	/* notify kernel of userspace return */
- #define TIF_NOTSC		16	/* TSC is not accessible in userland */
-@@ -107,6 +108,7 @@ struct thread_info {
- #define _TIF_SYSCALL_EMU	(1 << TIF_SYSCALL_EMU)
- #define _TIF_SYSCALL_AUDIT	(1 << TIF_SYSCALL_AUDIT)
- #define _TIF_SECCOMP		(1 << TIF_SECCOMP)
-+#define _TIF_NOSUID		(1 << TIF_NOSUID)
- #define _TIF_MCE_NOTIFY		(1 << TIF_MCE_NOTIFY)
- #define _TIF_USER_RETURN_NOTIFY	(1 << TIF_USER_RETURN_NOTIFY)
- #define _TIF_NOTSC		(1 << TIF_NOTSC)
-diff --git a/fs/exec.c b/fs/exec.c
-index 632b02e..5cba5ac 100644
---- a/fs/exec.c
-+++ b/fs/exec.c
-@@ -1131,8 +1131,10 @@ int prepare_binprm(struct linux_binprm *bprm)
- 	/* clear any previous set[ug]id data from a previous binary */
- 	bprm->cred->euid = current_euid();
- 	bprm->cred->egid = current_egid();
--
--	if (!(bprm->file->f_path.mnt->mnt_flags & MNT_NOSUID)) {
-+	bprm->nosuid =
-+		(bprm->file->f_path.mnt->mnt_flags & MNT_NOSUID) ||
-+		test_tsk_thread_flag(current, TIF_NOSUID);
-+	if (bprm->nosuid) {
- 		/* Set-uid? */
- 		if (mode & S_ISUID) {
- 			bprm->per_clear |= PER_CLEAR_ON_SETID;
-diff --git a/include/linux/binfmts.h b/include/linux/binfmts.h
-index cd4349b..c3b5a30 100644
---- a/include/linux/binfmts.h
-+++ b/include/linux/binfmts.h
-@@ -44,6 +44,7 @@ struct linux_binprm{
- #ifdef __alpha__
- 	unsigned int taso:1;
- #endif
-+	unsigned int nosuid:1;	/* True if suid bits are ignored */
- 	unsigned int recursion_depth;
- 	struct file * file;
- 	struct cred *cred;	/* new credentials */
-diff --git a/include/linux/prctl.h b/include/linux/prctl.h
-index a3baeb2..8adc517 100644
---- a/include/linux/prctl.h
-+++ b/include/linux/prctl.h
-@@ -102,4 +102,7 @@
- 
- #define PR_MCE_KILL_GET 34
- 
-+#define PR_SET_NOSUID	35
-+#define PR_GET_NOSUID	36
-+
- #endif /* _LINUX_PRCTL_H */
-diff --git a/kernel/ptrace.c b/kernel/ptrace.c
-index 23bd09c..b91040c 100644
---- a/kernel/ptrace.c
-+++ b/kernel/ptrace.c
-@@ -152,6 +152,10 @@ int __ptrace_may_access(struct task_struct *task, unsigned int mode)
- 	if (!dumpable && !capable(CAP_SYS_PTRACE))
- 		return -EPERM;
- 
-+	if (test_tsk_thread_flag(current, TIF_NOSUID) &&
-+	    !test_tsk_thread_flag(task, TIF_NOSUID))
-+		return -EPERM;
-+
- 	return security_ptrace_access_check(task, mode);
- }
- 
-diff --git a/kernel/sys.c b/kernel/sys.c
-index 26a6b73..8731f2a 100644
---- a/kernel/sys.c
-+++ b/kernel/sys.c
-@@ -1578,6 +1578,27 @@ SYSCALL_DEFINE5(prctl, int, option, unsigned long, arg2, unsigned long, arg3,
- 			else
- 				error = PR_MCE_KILL_DEFAULT;
- 			break;
-+		case PR_SET_NOSUID:
-+		{
-+			const struct cred *cred = current->cred;
-+			error = -EINVAL;
-+			/* Don't support cases that could be unsafe */
-+			if (	(cred->uid != cred->suid) ||
-+				(cred->uid != cred->euid) ||
-+				(cred->uid != cred->fsuid) ||
-+				(cred->gid != cred->sgid) ||
-+				(cred->gid != cred->egid) ||
-+				(cred->gid != cred->fsgid) ||
-+				!cap_isclear(cred->cap_permitted) ||
-+				(atomic_read(&current->signal->count) != 1))
-+				break;
-+			error = 0;
-+			set_tsk_thread_flag(current, TIF_NOSUID);
-+			break;
-+		}
-+		case PR_GET_NOSUID:
-+			error = !!test_tsk_thread_flag(current, TIF_NOSUID);
-+			break;
- 		default:
- 			error = -EINVAL;
- 			break;
-diff --git a/security/commoncap.c b/security/commoncap.c
-index f800fdb..34500e3 100644
---- a/security/commoncap.c
-+++ b/security/commoncap.c
-@@ -389,7 +389,7 @@ static int get_file_caps(struct linux_binprm *bprm, bool *effective)
- 	if (!file_caps_enabled)
- 		return 0;
- 
--	if (bprm->file->f_vfsmnt->mnt_flags & MNT_NOSUID)
-+	if (bprm->nosuid)
- 		return 0;
- 
- 	dentry = dget(bprm->file->f_dentry);
-@@ -868,7 +868,6 @@ int cap_task_prctl(int option, unsigned long arg2, unsigned long arg3,
- 		else
- 			new->securebits &= ~issecure_mask(SECURE_KEEP_CAPS);
- 		goto changed;
--
- 	default:
- 		/* No functionality available - continue with default */
- 		error = -ENOSYS;
-diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
-index 7a374c2..bd77a2b 100644
---- a/security/selinux/hooks.c
-+++ b/security/selinux/hooks.c
-@@ -2147,7 +2147,7 @@ static int selinux_bprm_set_creds(struct linux_binprm *bprm)
- 	COMMON_AUDIT_DATA_INIT(&ad, FS);
- 	ad.u.fs.path = bprm->file->f_path;
- 
--	if (bprm->file->f_path.mnt->mnt_flags & MNT_NOSUID)
-+	if (bprm->nosuid)
- 		new_tsec->sid = old_tsec->sid;
- 
- 	if (new_tsec->sid == old_tsec->sid) {
--- 
-1.6.5.2.143.g8cc62
+On 12/30/2009 3:44 PM, Michael Breuer wrote:
+> A couple more observations:
+>
+> 1) enabling auditd for runlevel 3 mitigates the issue
+> 2) starting a remote x session (XDMCP) while under load and while 
+> auditd is already running also triggers the sky2 interrupt status 
+> messages - so maybe not tty1 - but some sort of X & auditd 
+> interaction. Even in this case, the frequency of the error messages is 
+> much less than when auditd is started in runlevel 5 for the first time.
+And just for some certainty - running with audit=0, the errors do not 
+manifest.
+>
+> On 12/30/2009 2:15 PM, Michael Breuer wrote:
+>> And now looking at audit.c it seems reasonable that there is a race 
+>> condition when auditd is started at roughly the same time as X. I'm 
+>> guessing that the kaudit thread is fired up; the tty connected; and 
+>> at the same time X grabs the tty. Somewhere in there an skb gets 
+>> hosed and is then reused by whatever comes along - in my case sky2 as 
+>> that's where the subsequent demand is. If the demand happens first, 
+>> the contaminated skb (dk in what way yet) is probably waiting to 
+>> manifest as some other bug that's been frustrating people.
+>> On 12/30/2009 12:49 PM, Michael Breuer wrote:
+>>> On 12/30/2009 2:58 AM, Stephen Hemminger wrote:
+>>>> On Wed, 30 Dec 2009 02:23:20 -0500
+>>>> Michael Breuer<mbreuer@majjas.com>  wrote:
+>>>>
+>>>>> Ok - I called dump_txring from sky2_net_intr:
+>>>>> --- a/drivers/net/sky2.c
+>>>>> +++ b/drivers/net/sky2.c
+>>>>> @@ -2725,8 +2791,10 @@ static void sky2_watchdog(unsigned long arg)
+>>>>>    /* Hardware/software error handling */
+>>>>>    static void sky2_err_intr(struct sky2_hw *hw, u32 status)
+>>>>>    {
+>>>>> -       if (net_ratelimit())
+>>>>> +       if (net_ratelimit()) {
+>>>>>                   dev_warn(&hw->pdev->dev, "error interrupt
+>>>>> status=%#x\n", status);
+>>>>> +               dump_txring(hw, 0);
+>>>>> +       }
+>>>>>
+>>>>>           if (status&  Y2_IS_HW_ERR)
+>>>>>                   sky2_hw_intr(hw);
+>>>>>
+>>>>> And got this:
+>>>>> Dec 30 02:17:23 mail kernel: sky2 0000:06:00.0: error interrupt
+>>>>> status=0x40000008
+>>>>> Dec 30 02:17:23 mail kernel: sky2 0000:06:00.0: error interrupt
+>>>>> status=0x40000008
+>>>>> Dec 30 02:17:23 mail kernel: sky2 Tx ring pending=28...30 
+>>>>> report=29 done=29
+>>>>> Dec 30 02:17:23 mail kernel: sky2 Tx ring pending=28...30 
+>>>>> report=29 done=29
+>>>>> Dec 30 02:17:23 mail kernel: sky2 0000:06:00.0: error interrupt 
+>>>>> status=0x8
+>>>>> Dec 30 02:17:23 mail kernel: sky2 0000:06:00.0: error interrupt 
+>>>>> status=0x8
+>>>>> Dec 30 02:17:23 mail kernel: sky2 Tx ring pending=30...32 
+>>>>> report=30 done=31
+>>>>> Dec 30 02:17:23 mail kernel: sky2 Tx ring pending=30...32 
+>>>>> report=30 done=31
+>>>>>
+>>>> I notice that you have NOUVEAU Nvidia drivers loaded? The one 
+>>>> difference in HW
+>>>> between your board and mine is that I have ATI video card.
+>>>>
+>>> Seems the problem is linked to auditd and X11 (but not nouveau).
+>>>
+>>> Today, I ran a bunch of scenarios. I first determined that the 
+>>> problem only manifest in runlevel 5. Next, this occurred with or 
+>>> without KMS and with or without nouveau. This happened whether or 
+>>> not I was logged in (local or remote), and regardless of window 
+>>> manager (xdm, gdm, kdm). I then checked to see what else was 
+>>> different between runlevel 3 and 5 - only thing was auditd. I 
+>>> disabled auditd and reran - no errors.
+>>>
+>>> Now for the odd stuff:
+>>>
+>>> The errors only manifest if the high throughput data transfer is 
+>>> initiated when the system is in runlevel 5 and auditd was started by 
+>>> init when transitioning from runlevel 3 to 5. For example, the 
+>>> following scenarios do not cause the errors to manifest:
+>>>
+>>> runlevel3; start auditd runlevel 5; start transfer
+>>> runlevel3; chkconfig auditd off; runlevel5; start auditd; start 
+>>> transfer
+>>> runlevel3; start transfer (note: errors do not occur if I transition 
+>>> to runlevel 5 after the high bandwidth transfer has started)
+>>> runlevel3; startx; start transfer
+>>>
+>>> The only way I get the problem to manifest is transition to runlevel 
+>>> 5 with chkconfig auditd on (level 5 only) and then initate the 
+>>> windows backup.
+>>>
+>>> I'm guessing that there is some sort of race condition happening 
+>>> between X (xdm/gdm/kdm/greeter?) and auditd that is somehow 
+>>> corrupting something. I'd hazard a more or less obvious guess that 
+>>> whatever's being corrupted differs when there is already a high 
+>>> throughput transfer under way.
+>>>
+>>> -- 
+>>> To unsubscribe from this list: send the line "unsubscribe 
+>>> linux-kernel" in
+>>> the body of a message to majordomo@vger.kernel.org
+>>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>>> Please read the FAQ at  http://www.tux.org/lkml/
+>>
+>> -- 
+>> To unsubscribe from this list: send the line "unsubscribe 
+>> linux-kernel" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>> Please read the FAQ at  http://www.tux.org/lkml/
+>
+> -- 
+> To unsubscribe from this list: send the line "unsubscribe 
+> linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
