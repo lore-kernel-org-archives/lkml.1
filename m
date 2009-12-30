@@ -1,77 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752886AbZL3Rsx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752941AbZL3RuW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752886AbZL3Rsx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Dec 2009 12:48:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752624AbZL3Rsw
+	id S1752941AbZL3RuW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Dec 2009 12:50:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752091AbZL3RuV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Dec 2009 12:48:52 -0500
-Received: from THUNK.ORG ([69.25.196.29]:45459 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752163AbZL3Rsv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Dec 2009 12:48:51 -0500
-Date: Wed, 30 Dec 2009 12:48:49 -0500
-From: tytso@mit.edu
-To: Dmitry Monakhov <dmonakhov@openvz.org>
-Cc: Alexander Beregalov <a.beregalov@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-ext4@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>,
-       dmitry.torokhov@gmail.com, Jan Kara <jack@suse.cz>, aanisimov@inbox.ru,
-       pl4nkton@googlemail.com
-Subject: Re: 2.6.33-rc1: kernel BUG at fs/ext4/inode.c:1063 (sparc)
-Message-ID: <20091230174849.GN4429@thunk.org>
-Mail-Followup-To: tytso@mit.edu, Dmitry Monakhov <dmonakhov@openvz.org>,
-	Alexander Beregalov <a.beregalov@gmail.com>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	linux-ext4@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>,
-	dmitry.torokhov@gmail.com, Jan Kara <jack@suse.cz>,
-	aanisimov@inbox.ru, pl4nkton@googlemail.com
-References: <a4423d670912241449y2da43d5fi3e5a18c114b84178@mail.gmail.com>
- <87hbrfdylc.fsf@openvz.org>
- <a4423d670912251133u795338a4wd32d5cdef8c36c75@mail.gmail.com>
- <87eimir4yk.fsf@openvz.org>
- <a4423d670912271232y5bb928f7wb667ca71f1a93f8a@mail.gmail.com>
- <20091227225216.GB4429@thunk.org>
- <a4423d670912271502n13957e8boc168fdc75444dc09@mail.gmail.com>
- <20091228035159.GC4429@thunk.org>
- <20091230053720.GK4429@thunk.org>
- <87k4w4vbvy.fsf@openvz.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <87k4w4vbvy.fsf@openvz.org>
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@thunk.org
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+	Wed, 30 Dec 2009 12:50:21 -0500
+Received: from mta1.srv.hcvlny.cv.net ([167.206.4.196]:34876 "EHLO
+	mta1.srv.hcvlny.cv.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752593AbZL3RuU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Dec 2009 12:50:20 -0500
+Date: Wed, 30 Dec 2009 12:49:44 -0500
+From: Michael Breuer <mbreuer@majjas.com>
+Subject: Re: sky2 panic in 2.6.32.1 under load (new oops)
+In-reply-to: <20091229235835.1f260eb0@nehalam>
+To: Stephen Hemminger <shemminger@vyatta.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "Berck E. Nash" <flyboy@gmail.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org
+Message-id: <4B3B92B8.7010208@majjas.com>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7BIT
+References: <4B300A2A.8040305@gmail.com> <4B300E30.9090707@majjas.com>
+ <4B3114E3.1070602@majjas.com> <4B329FA3.9090904@majjas.com>
+ <20091223230102.4bb0100e.akpm@linux-foundation.org>
+ <4B34E847.8010809@majjas.com> <20091225152200.1cf11dfe@nehalam>
+ <4B3581C7.8000702@majjas.com> <20091226095723.7ac82b18@nehalam>
+ <4B367409.5060202@majjas.com> <4B379378.4000102@majjas.com>
+ <20091227102238.0df149f9@nehalam> <4B37B7E2.5070307@majjas.com>
+ <20091229093023.3ad24786@nehalam> <4B3A5048.9090700@majjas.com>
+ <20091229114938.1f4d1c5c@nehalam> <4B3AFFE8.3060409@majjas.com>
+ <20091229235835.1f260eb0@nehalam>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.5)
+ Gecko/20091204 Lightning/1.0b2pre Thunderbird/3.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 30, 2009 at 04:18:09PM +0300, Dmitry Monakhov wrote:
-> 
-> IMHO we may drop i_allocated_meta_block in ext4_release_file()
-> But while looking in to this function i've found another question
-> about locking
-> static int ext4_release_file(struct inode *inode, struct file *filp)
-> {
-> 	if (EXT4_I(inode)->i_state & EXT4_STATE_DA_ALLOC_CLOSE) {
-> 		ext4_alloc_da_blocks(inode);
-> 		EXT4_I(inode)->i_state &= ~EXT4_STATE_DA_ALLOC_CLOSE;
-> <<< Seems what i_state modification must being protected by i_mutex,
->  but currently caller don't have to hold it.
+On 12/30/2009 2:58 AM, Stephen Hemminger wrote:
+> On Wed, 30 Dec 2009 02:23:20 -0500
+> Michael Breuer<mbreuer@majjas.com>  wrote:
+>
+>    
+>> Ok - I called dump_txring from sky2_net_intr:
+>> --- a/drivers/net/sky2.c
+>> +++ b/drivers/net/sky2.c
+>> @@ -2725,8 +2791,10 @@ static void sky2_watchdog(unsigned long arg)
+>>    /* Hardware/software error handling */
+>>    static void sky2_err_intr(struct sky2_hw *hw, u32 status)
+>>    {
+>> -       if (net_ratelimit())
+>> +       if (net_ratelimit()) {
+>>                   dev_warn(&hw->pdev->dev, "error interrupt
+>> status=%#x\n", status);
+>> +               dump_txring(hw, 0);
+>> +       }
+>>
+>>           if (status&  Y2_IS_HW_ERR)
+>>                   sky2_hw_intr(hw);
+>>
+>> And got this:
+>> Dec 30 02:17:23 mail kernel: sky2 0000:06:00.0: error interrupt
+>> status=0x40000008
+>> Dec 30 02:17:23 mail kernel: sky2 0000:06:00.0: error interrupt
+>> status=0x40000008
+>> Dec 30 02:17:23 mail kernel: sky2 Tx ring pending=28...30 report=29 done=29
+>> Dec 30 02:17:23 mail kernel: sky2 Tx ring pending=28...30 report=29 done=29
+>> Dec 30 02:17:23 mail kernel: sky2 0000:06:00.0: error interrupt status=0x8
+>> Dec 30 02:17:23 mail kernel: sky2 0000:06:00.0: error interrupt status=0x8
+>> Dec 30 02:17:23 mail kernel: sky2 Tx ring pending=30...32 report=30 done=31
+>> Dec 30 02:17:23 mail kernel: sky2 Tx ring pending=30...32 report=30 done=31
+>>
+>>      
+> I notice that you have NOUVEAU Nvidia drivers loaded? The one difference in HW
+> between your board and mine is that I have ATI video card.
+>
+>    
+Seems the problem is linked to auditd and X11 (but not nouveau).
 
-(I'm answering this in a separate message since it really is a
-separate question).
+Today, I ran a bunch of scenarios. I first determined that the problem 
+only manifest in runlevel 5. Next, this occurred with or without KMS and 
+with or without nouveau. This happened whether or not I was logged in 
+(local or remote), and regardless of window manager (xdm, gdm, kdm). I 
+then checked to see what else was different between runlevel 3 and 5 - 
+only thing was auditd. I disabled auditd and reran - no errors.
 
-Yeah, that looks like a problem --- and it exists in more than just
-this one place.  Unfortunately using i_mutex to protect updates to
-i_state is a bit heavyweight.  What I'm thinking about doing is
-converting all of the references the i_state flags to use set_bit,
-clear_bit, and test_bit, since this will allow us to safely and
-cleanly set/clear/test individual bits.
+Now for the odd stuff:
 
-A quick audit of ext3 seems to show this is potentially a problem with
-ext3 as well (specifically, in fs/ext3/xattr.c's use of
-EXT3_STATE_XATTR).
+The errors only manifest if the high throughput data transfer is 
+initiated when the system is in runlevel 5 and auditd was started by 
+init when transitioning from runlevel 3 to 5. For example, the following 
+scenarios do not cause the errors to manifest:
 
-						- Ted
+runlevel3; start auditd runlevel 5; start transfer
+runlevel3; chkconfig auditd off; runlevel5; start auditd; start transfer
+runlevel3; start transfer (note: errors do not occur if I transition to 
+runlevel 5 after the high bandwidth transfer has started)
+runlevel3; startx; start transfer
+
+The only way I get the problem to manifest is transition to runlevel 5 
+with chkconfig auditd on (level 5 only) and then initate the windows 
+backup.
+
+I'm guessing that there is some sort of race condition happening between 
+X (xdm/gdm/kdm/greeter?) and auditd that is somehow corrupting 
+something. I'd hazard a more or less obvious guess that whatever's being 
+corrupted differs when there is already a high throughput transfer under 
+way.
+
