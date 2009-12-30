@@ -1,93 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752004AbZL3XpG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752196AbZL3XpV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752004AbZL3XpG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Dec 2009 18:45:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751470AbZL3XpF
+	id S1752196AbZL3XpV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Dec 2009 18:45:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752090AbZL3XpT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Dec 2009 18:45:05 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:48347 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751416AbZL3XpE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Dec 2009 18:45:04 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=i9Y/2AB3BTe5mSYxOo3cmsLdhGpOK9LTdc27jBdGXQ7f3P/xxJ5SAY+F6pW88tW3o7
-         Gs6m4oOKoAgY9JeG6wAsotRE6liEGPZbdOnm5WhN3Bf5j/7S1lE6yBLjm+d3eK87Oi3p
-         mRY55JbU41I6FM6B3GLJ6FBdMiHJkGgjyZknc=
-Date: Thu, 31 Dec 2009 00:45:00 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: "K.Prasad" <prasad@linux.vnet.ibm.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Roland McGrath <roland@redhat.com>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Vegard Nossum <vegardno@ifi.uio.no>, Oleg Nesterov <oleg@redhat.com>
-Subject: Re: [RFC Patch 1/2][Bugfix][x86][hw-breakpoint] Clear reserved
-	bits of DR6 in do_debug()
-Message-ID: <20091230234458.GA23808@nowhere>
-References: <20091226175533.149765731@linux.vnet.ibm.com> <20091226182725.GB9494@in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091226182725.GB9494@in.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 30 Dec 2009 18:45:19 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:54202 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752060AbZL3XpP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Dec 2009 18:45:15 -0500
+Date: Thu, 31 Dec 2009 10:45:05 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       stable@kernel.org, Shaun Ruffell <sruffell@digium.com>,
+       Joerg Roedel <joerg.roedel@amd.com>
+Subject: linux-next: tip tree build warning
+Message-Id: <20091231104505.7cb8a241.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 3.0.0beta4 (GTK+ 2.18.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Thu__31_Dec_2009_10_45_05_+1100_0+o1s1Wk2Sh.PVT7"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Dec 26, 2009 at 11:57:25PM +0530, K.Prasad wrote:
-> Clear the reserved bits from the stored copy of debug status register (DR6).
-> This will help easy bitwise operations.
-> 
-> Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
-> ---
->  arch/x86/include/asm/debugreg.h |    3 +++
->  arch/x86/kernel/traps.c         |    3 +++
->  2 files changed, 6 insertions(+)
-> 
-> Index: linux-2.6-tip/arch/x86/include/asm/debugreg.h
-> ===================================================================
-> --- linux-2.6-tip.orig/arch/x86/include/asm/debugreg.h
-> +++ linux-2.6-tip/arch/x86/include/asm/debugreg.h
-> @@ -14,6 +14,9 @@
->     which debugging register was responsible for the trap.  The other bits
->     are either reserved or not of interest to us. */
->  
-> +/* Define reserved bits in DR6 which are always set to 1 */
-> +#define DR6_RESERVED	(0xFFFF0FF0)
-> +
+--Signature=_Thu__31_Dec_2009_10_45_05_+1100_0+o1s1Wk2Sh.PVT7
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
+Hi all,
 
-The 12th bit seems to be also reserved.
-Shouldn't it be 0xffff1ff0 ?
+Today's (and the previous few) linux-next build (powerpc allyesconfig)
+produced this warning:
 
-What kind of bitwise operations do you think it could help?
+lib/dma-debug.c: In function 'dma_debug_device_change':
+lib/dma-debug.c:680: warning: 'return' with no value, in function returning=
+ non-void
 
-All of the operations I can find on dr6 are simple masks
-test/set/clear.
+Introduced by commit f797d9881b62c2ddb1d2e7bd80d87141949c84aa
+("dma-debug: Do not add notifier when dma debugging is disabled").
 
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
+--Signature=_Thu__31_Dec_2009_10_45_05_+1100_0+o1s1Wk2Sh.PVT7
+Content-Type: application/pgp-signature
 
->  #define DR_TRAP0	(0x1)		/* db0 */
->  #define DR_TRAP1	(0x2)		/* db1 */
->  #define DR_TRAP2	(0x4)		/* db2 */
-> Index: linux-2.6-tip/arch/x86/kernel/traps.c
-> ===================================================================
-> --- linux-2.6-tip.orig/arch/x86/kernel/traps.c
-> +++ linux-2.6-tip/arch/x86/kernel/traps.c
-> @@ -534,6 +534,9 @@ dotraplinkage void __kprobes do_debug(st
->  
->  	get_debugreg(dr6, 6);
->  
-> +	/* Filter out all the reserved bits which are preset to 1 */
-> +	dr6 &= ~DR6_RESERVED;
-> +
->  	/* Catch kmemcheck conditions first of all! */
->  	if ((dr6 & DR_STEP) && kmemcheck_trap(regs))
->  		return;
-> 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
 
+iEYEARECAAYFAks75gEACgkQjjKRsyhoI8x7VQCgm3TZZdO49kQ9bnLVoZU+f03H
+CdEAnjwfYFGMK7z9esJ8woesR6tSI33E
+=4rZo
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__31_Dec_2009_10_45_05_+1100_0+o1s1Wk2Sh.PVT7--
