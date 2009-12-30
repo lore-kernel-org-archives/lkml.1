@@ -1,60 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753403AbZL3Tuq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753394AbZL3Tpy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753403AbZL3Tuq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Dec 2009 14:50:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753195AbZL3Tuq
+	id S1753394AbZL3Tpy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Dec 2009 14:45:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753312AbZL3Tpy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Dec 2009 14:50:46 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:44001 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752350AbZL3Tup (ORCPT
+	Wed, 30 Dec 2009 14:45:54 -0500
+Received: from mk-filter-1-a-1.mail.uk.tiscali.com ([212.74.100.52]:57429 "EHLO
+	mk-filter-1-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753311AbZL3Tpx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Dec 2009 14:50:45 -0500
-Message-ID: <4B3BADDA.8040102@zytor.com>
-Date: Wed, 30 Dec 2009 11:45:30 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
+	Wed, 30 Dec 2009 14:45:53 -0500
+X-Trace: 318078915/mk-filter-1.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.28.176/None/hugh.dickins@tiscali.co.uk
+X-SBRS: None
+X-RemoteIP: 79.69.28.176
+X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
+X-SMTP-AUTH: 
+X-Originating-Country: GB/UNITED KINGDOM
+X-MUA: Alpine 2.00 (LSU 1167 2008-08-23)
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AnQBAAI9O0tPRRyw/2dsb2JhbAAI1wiEMQQ
+X-IronPort-AV: E=Sophos;i="4.47,476,1257120000"; 
+   d="scan'208";a="318078915"
+Date: Wed, 30 Dec 2009 19:45:48 +0000 (GMT)
+From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+X-X-Sender: hugh@sister.anvils
+To: Eric Anholt <eric@anholt.net>
+cc: Dave Airlie <airlied@linux.ie>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       linux-kernel@vger.kernel.org, dri-devel@lists.sf.net
+Subject: drm: gem_object_free without struct_mutex
+Message-ID: <alpine.LSU.2.00.0912301934070.25797@sister.anvils>
+User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
 MIME-Version: 1.0
-To: Arnaldo Carvalho de Melo <acme@infradead.org>
-CC: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Paul Mackerras <paulus@samba.org>, "Frank Ch. Eigler" <fche@redhat.com>,
-       fche LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/3] x86: record relocation offset
-References: <4B3AC5CD.1000502@cn.fujitsu.com> <4B3AC629.4030504@cn.fujitsu.com> <20091230131518.GD2956@ghostprotocols.net>
-In-Reply-To: <20091230131518.GD2956@ghostprotocols.net>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/30/2009 05:15 AM, Arnaldo Carvalho de Melo wrote:
-> 
-> I'm no expert on the intricacies of boot_params, but all the other hunks
-> seems sensible, but can't we provide a non-perf specific way of getting
-> the relocate_offset? I guess other tools would also love to have it.
-> 
-> What about systemtap, don't they solve this in some other way? Frank?
-> 
+I've changed BUG_ON to WARN_ON in drm_gem.c (patch at bottom) to
+get this dmesg when I resume after suspend, instead of crashing.
 
-I at one point proposed that boot_params should be exported in toto via
-sysfs.  This got rather brutally shut down as "it's just a debugging
-feature" and got moved to debugfs (/debug/boot_params/data).  However,
-the entire boot_params structure is available there.
+Perhaps it's a patch that should go in, perhaps not, but obviously
+the real problem lies elsewhere.  Happens with 2.6.33-rc1 and -rc2.
 
-Regardless of the reporting method, the patch passing this in by
-modifying the early assembly code, though, is more than a little
-pointless.  The kernel already knows where it is loaded -- obviously, by
-sheer necessity -- and knows how it was itself configured, and as such
-we can do this calculation in C code without modifying boot_params or
-the early bootstrap.
+No surprise if I'm stupidly misconfigured to get the "pin power context"
+error in the first place (.config on demand), but I don't deserve to BUG!
 
-	-hpa
+Hugh
 
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
+[drm:intel_init_clock_gating] *ERROR* failed to pin power context: -16
+------------[ cut here ]------------
+WARNING: at drivers/gpu/drm/drm_gem.c:438 drm_gem_object_free+0x20/0x5e()
+Hardware name: ESPRIMO Mobile V5505           
+Modules linked in: snd_pcm_oss snd_mixer_oss snd_seq snd_seq_device
+Pid: 3793, comm: s2ram Not tainted 2.6.33-rc2 #4
+Call Trace:
+ [<7815298e>] warn_slowpath_common+0x59/0x6b
+ [<781529b3>] warn_slowpath_null+0x13/0x18
+ [<78317c1a>] ? drm_gem_object_free+0x20/0x5e
+ [<78317c1a>] drm_gem_object_free+0x20/0x5e
+ [<78317bfa>] ? drm_gem_object_free+0x0/0x5e
+ [<7829df11>] kref_put+0x38/0x45
+ [<7833a5f0>] intel_init_clock_gating+0x232/0x271
+ [<78317bfa>] ? drm_gem_object_free+0x0/0x5e
+ [<7832c307>] i915_restore_state+0x21a/0x2b3
+ [<7832379d>] i915_resume+0x3c/0xbb
+ [<78174fe5>] ? trace_hardirqs_on_caller+0xfc/0x123
+ [<7831c756>] ? drm_class_resume+0x0/0x3e
+ [<7831c78d>] drm_class_resume+0x37/0x3e
+ [<78351e0a>] legacy_resume+0x1e/0x51
+ [<78351ece>] device_resume+0x91/0xab
+ [<7831c756>] ? drm_class_resume+0x0/0x3e
+ [<78352226>] dpm_resume+0x58/0x10f
+ [<783522fb>] dpm_resume_end+0x1e/0x2c
+ [<78180f80>] suspend_devices_and_enter+0x61/0x84
+ [<78180ff8>] enter_state+0x55/0x83
+ [<7818091c>] state_store+0x94/0xaa
+ [<7829d09e>] kobj_attr_store+0x1e/0x23
+ [<782098e0>] sysfs_write_file+0x66/0x99
+ [<781cd2f0>] vfs_write+0x8a/0x108
+ [<781cd408>] sys_write+0x3c/0x63
+ [<78125c10>] sysenter_do_call+0x12/0x36
+---[ end trace a343537f29950fda ]---
 
+[PATCH] gem: free just WARN_ON(!mutex_is_locked)
+
+drm_gem_object_free() WARN_ON(!mutex_is_locked) instead of BUG_ON:
+i915_resume()->i915_restore_state()->intel_init_clock_gating()
+is currently causing it to trigger with my config.
+
+Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+---
+
+ drivers/gpu/drm/drm_gem.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- 2.6.33-rc2/drivers/gpu/drm/drm_gem.c	2009-12-03 03:51:21.000000000 +0000
++++ linux/drivers/gpu/drm/drm_gem.c	2009-12-26 18:29:57.000000000 +0000
+@@ -435,7 +435,7 @@ drm_gem_object_free(struct kref *kref)
+ 	struct drm_gem_object *obj = (struct drm_gem_object *) kref;
+ 	struct drm_device *dev = obj->dev;
+ 
+-	BUG_ON(!mutex_is_locked(&dev->struct_mutex));
++	WARN_ON(!mutex_is_locked(&dev->struct_mutex));
+ 
+ 	if (dev->driver->gem_free_object != NULL)
+ 		dev->driver->gem_free_object(obj);
