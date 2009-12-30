@@ -1,81 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752060AbZL3W2o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752296AbZL3Wcz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752060AbZL3W2o (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Dec 2009 17:28:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751470AbZL3W2n
+	id S1752296AbZL3Wcz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Dec 2009 17:32:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751577AbZL3Wcy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Dec 2009 17:28:43 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:42284 "EHLO
+	Wed, 30 Dec 2009 17:32:54 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:55526 "EHLO
 	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751100AbZL3W2n (ORCPT
+	with ESMTP id S1751470AbZL3Wcx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Dec 2009 17:28:43 -0500
+	Wed, 30 Dec 2009 17:32:53 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=H2MwuSkQoBy5edIIoINW7MkNy2XiY4TB6TMr905gRhIwKKH8Y/LX9u7qG+wzNkF5yi
-         nxHDHIAwBV7i1e08ywR9Z2cr9IaqfuB3Dz+4rYIxujPKInSY9oq2Mt8cXynKKmtQVFKD
-         ghbhqxmymPxiJ1X/LMxPdgwx8DSbjo9WU1l0k=
-Date: Wed, 30 Dec 2009 23:28:39 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: "K.Prasad" <prasad@linux.vnet.ibm.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "mingo@elte.hu" <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [Patch 1/1] Introduce register_user_hbp_by_pid() and
-	unregister_user_hbp_by_pid()
-Message-ID: <20091230222837.GI6322@nowhere>
-References: <20091217172010.GB5457@in.ibm.com> <20091217172253.GC5457@in.ibm.com> <20091218204744.GC5004@nowhere> <20091221184631.GB24535@in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091221184631.GB24535@in.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=L1gs/ItQvgVRknijQPb5tMoUsHPgGYsRVr1G587RZS0GkVXq4Idp3m160ofyZx9aTL
+         WNQYPTxqmUeJcmuUvByyL6TYW6QbjkzHyxYWBxPSB5KJJrfky8xxn1Cou8QJ2unVjIaE
+         QuXgxYEdy4PV48mGcm6LNhard4KYbJJMLWET8=
+From: Johan Hovold <jhovold@gmail.com>
+To: Greg Kroah-Hartman <gregkh@suse.de>
+Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Johan Hovold <jhovold@gmail.com>, stable <stable@kernel.org>
+Subject: [PATCH] USB: serial: fix memory leak in generic driver
+Date: Wed, 30 Dec 2009 23:32:00 +0100
+Message-Id: <1262212320-4793-1-git-send-email-jhovold@gmail.com>
+X-Mailer: git-send-email 1.6.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 22, 2009 at 12:16:31AM +0530, K.Prasad wrote:
-> On Fri, Dec 18, 2009 at 09:47:48PM +0100, Frederic Weisbecker wrote:
-> > > +
-> > > +	do {
-> > > +		mutex_lock(&start->perf_event_mutex);
-> > > +		list_for_each_entry_safe(bp, temp_bp, &start->perf_event_list,
-> > > +					 owner_entry) {
-> > > +			if (bp->attr.type != PERF_TYPE_BREAKPOINT)
-> > > +				continue;
-> > > +			unregister_hw_breakpoint(bp);
-> > > +			break;
-> > 
-> > Do you really want to unregister all of them? What about those
-> > that may have been registered using perf syscall?
-> > 
-> 
-> Seems that I got influenced heavily by the PPC64 design (was coding
-> simultaneously for it :-)...will accept a "struct perf_event_attr *" and
-> use that to identify appropriate breakpoint.
+URB transfer buffer was never freed when using multi-urb writes.
 
+Regression introduced by commit 715b1dc01fe44537e8fce9566e4bb48d6821d84b
+(USB: usb_debug, usb_generic_serial: implement multi urb write).
 
-:)
+Currently the only driver enabling multi-urb writes is usb_debug.
 
+Cc: stable <stable@kernel.org>
+Signed-off-by: Johan Hovold <jhovold@gmail.com>
+---
+ drivers/usb/serial/generic.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/usb/serial/generic.c b/drivers/usb/serial/generic.c
+index f1ea3a3..187259c 100644
+--- a/drivers/usb/serial/generic.c
++++ b/drivers/usb/serial/generic.c
+@@ -489,6 +489,8 @@ void usb_serial_generic_write_bulk_callback(struct urb *urb)
+ 	dbg("%s - port %d", __func__, port->number);
  
-> > And this function needs rcu too.
-> > 
-> > I don't see any in-kernel user for this new feature.
-> > That would be required to integrate it.
-> >
-> 
-> The proposed interfaces, as obvious, are mere wrappers over existing
-> (un)register_user_* interfaces, and don't do anything vastly different
-> in order to demonstrate them separately.
-> 
-> I can get a sample kernel module ready - that consumes pid and user-space
-> address to track write accesses, if you prefer it.
-
-
-Ok. The code looks good and useful.
-
-But the usual philosophy in the kernel is to not add code
-that is left unused upstream. And samples don't substitute a user.
-I'm not sure this is a good idea to merge this.
+ 	if (port->serial->type->max_in_flight_urbs) {
++		kfree(urb->transfer_buffer);
++
+ 		spin_lock_irqsave(&port->lock, flags);
+ 		--port->urbs_in_flight;
+ 		port->tx_bytes_flight -= urb->transfer_buffer_length;
+-- 
+1.6.6
 
