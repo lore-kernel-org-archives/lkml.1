@@ -1,75 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752572AbZL3RbN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752679AbZL3Rdm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752572AbZL3RbN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Dec 2009 12:31:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752472AbZL3RbM
+	id S1752679AbZL3Rdm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Dec 2009 12:33:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752486AbZL3Rdm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Dec 2009 12:31:12 -0500
-Received: from mail1.radix.net ([207.192.128.31]:47159 "EHLO mail1.radix.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752394AbZL3RbL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Dec 2009 12:31:11 -0500
-Subject: Re: [PATCH] [0/6] kfifo fixes/improvements
-From: Andy Walls <awalls@radix.net>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Vikram Dhillon <dhillonv10@gmail.com>,
-       Stefani Seibold <stefani@seibold.net>, Andi Kleen <andi@firstfloor.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "akpm@osdl.org" <akpm@osdl.org>
-In-Reply-To: <20091230020830.GA7049@core.coreip.homeip.net>
-References: <20091227233816.GC2399@basil.fritz.box>
-	 <1261986136.808.2.camel@wall-e> <20091228145749.GD4994@basil.fritz.box>
-	 <1262016510.12656.25.camel@wall-e> <20091228172651.GE4994@basil.fritz.box>
-	 <1262030653.15368.37.camel@wall-e> <20091228204003.GH4994@basil.fritz.box>
-	 <1262076056.23095.21.camel@wall-e>
-	 <64D5262E-28CF-41E8-9425-F8C5DD0A2265@gmail.com>
-	 <ea6602020912291718n103694aft78ef15b65081a996@mail.gmail.com>
-	 <20091230020830.GA7049@core.coreip.homeip.net>
-Content-Type: text/plain
-Date: Wed, 30 Dec 2009 12:29:12 -0500
-Message-Id: <1262194152.5645.10.camel@palomino.walls.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
-Content-Transfer-Encoding: 7bit
+	Wed, 30 Dec 2009 12:33:42 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:56570 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752149AbZL3Rdl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Dec 2009 12:33:41 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=isYrr3wCvgrg1m7NwKYxqC8zhR/T/ZGtuY1CAt5SfviiR3UvHP1DaorDZpvo2DX8no
+         raLcb4sCNq0hBAsQ6s69o/H9meaYQXAy/kyro4NVOx4CXTwTF2R6IqhECebPGMXB7YcX
+         0m41ZJeC4A95k/QjhDnfxB4/l8qCSVQG9mw9I=
+Date: Wed, 30 Dec 2009 18:33:37 +0100
+From: Johan Hovold <jhovold@gmail.com>
+To: Dan Carpenter <error27@gmail.com>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Johan Hovold <jhovold@gmail.com>
+Subject: Re: [PATCH 00/14] USB: serial: fix DMA buffers on stack and
+ endianess bugs
+Message-ID: <20091230173337.GB15063@localhost>
+References: <1262037718-31424-1-git-send-email-jhovold@gmail.com>
+ <20091230160610.GB29476@bicker>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091230160610.GB29476@bicker>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-12-29 at 18:08 -0800, Dmitry Torokhov wrote:
-> A: http://en.wikipedia.org/wiki/Top_post
-> Q: Were do I find info about this thing called top-posting?
-> A: Because it messes up the order in which people normally read text.
-> Q: Why is top-posting such a bad thing?
+On Wed, Dec 30, 2009 at 06:06:11PM +0200, Dan Carpenter wrote:
+> On Mon, Dec 28, 2009 at 11:01:44PM +0100, Johan Hovold wrote:
+> > Hi, 
+> > 
+> > These patches should address all remaining instances of DMA buffers on stack
+> > (being passed to usb_control_msg) for the usb serial drivers. They also fix a
+> > few endianess bugs I found along the way and do some minor clean up.
+> > 
 > 
-> On Tue, Dec 29, 2009 at 08:18:50PM -0500, Vikram Dhillon wrote:
-> > IMHO you can process elements rather than bytes, which is a good
-> > improvement, but then again its my opinion, if others don't like it
-> > then we can always change it :D
+> Wow.  You have inspired me again to update smatch.  It didn't catch any of
+> those.
 > 
-> Right, I was not arguing against having a record-oriented interface, I
-> was questioning the utility of processing several records at a time.
-> Kfifo users that I have seen so far were working in a record-at-a-time
-> mode.
+> Smatch found one other dma bug so I'll send a patch for it.  (I would feel like
+> a jerk leaving it for you to fix on top of all the other stuff you have
+> done.)
 
-I have a use case in linux/drivers/media/video/cx23885/cx23888-ir.c
-right now.
+Good catch. I only backtracked from direct calls to usb_control_msg. :)
+Doing so by hand can be quite tedious so automatic testing for this is
+greatly appreciated.
 
-I have a hardware fifo that can hold up to 8 values, 17 bits each - and
-the high bit of the value is a flag indicating if more data is in the
-hardware fifo.
-
-The hardware fifo watermark for generating an interrupt is 4 or more
-values in the hardware fifo.
-
-I use a kfifo that needs to be protected with a spinlock.
-
-It in much better in the IRQ context to drain the hardware fifo and then
-put records in the kfifo all at once (or at least in groups of 8 or less
-but usually greater than 1).
-
-Regards,
-Andy
-
-> Thanks.
-
+Thanks,
+Johan
 
