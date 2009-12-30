@@ -1,103 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752193AbZL3WDd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752355AbZL3WOr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752193AbZL3WDd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Dec 2009 17:03:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752001AbZL3WDd
+	id S1752355AbZL3WOr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Dec 2009 17:14:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752290AbZL3WOr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Dec 2009 17:03:33 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:46144 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751829AbZL3WDc (ORCPT
+	Wed, 30 Dec 2009 17:14:47 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:43335 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752260AbZL3WOq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Dec 2009 17:03:32 -0500
-Date: Wed, 30 Dec 2009 14:03:25 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Borislav Petkov <petkovbb@googlemail.com>,
-       David Airlie <airlied@linux.ie>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Greg KH <greg@kroah.com>, Al Viro <viro@ZenIV.linux.org.uk>
-Subject: Re: drm_vm.c:drm_mmap: possible circular locking dependency detected
- (was: Re: Linux 2.6.33-rc2 - Merry Christmas ...)
-In-Reply-To: <m11victac1.fsf@fess.ebiederm.org>
-Message-ID: <alpine.LFD.2.00.0912301348320.11961@localhost.localdomain>
-References: <alpine.LFD.2.00.0912241350510.11961@localhost.localdomain> <20091226094504.GA6214@liondog.tnic> <20091228092712.AA8C.A69D9226@jp.fujitsu.com> <alpine.LFD.2.00.0912301259220.11961@localhost.localdomain> <m11victac1.fsf@fess.ebiederm.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Wed, 30 Dec 2009 17:14:46 -0500
+Subject: Re: [PATCH 1/3] x86: record relocation offset
+From: "H. Peter Anvin" <hpa@zytor.com>
+Date: Wed, 30 Dec 2009 14:09:47 -0800
+To: Arnaldo Carvalho de Melo <acme@infradead.org>
+CC: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Paul Mackerras <paulus@samba.org>, "Frank Ch. Eigler" <fche@redhat.com>,
+       linux-kernel@vger.kernel.org, James Bottomley <James.Bottomley@suse.de>
+Message-ID: <21grx5jirei08wl5eqklb4fd.1262210987153@email.android.com>
+Content-Type: multipart/mixed; boundary="----YNFT58D523WHH6AAC5P72UO3OJVJXH"
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+------YNFT58D523WHH6AAC5P72UO3OJVJXH
+Content-Type: text/plain;
+ charset=utf-8
+Content-Transfer-Encoding: base64
 
+QXJlIHdlIGNvbmNlcm5lZCBhYm91dCB2aXJ0dWFsIG9yIHBoeXNpY2FsIGFkZHJlc3NlcywgaGVy
+ZT8gIEknbSBhc3N1bWluZyB2aXJ0dWFsOyBpbiB0aGF0IGNhc2UgZG8gbm90ZSB0aGF0IHdlIG9u
+bHkgYWN0dWFsbHkgcmVsb2NhdGUgdGhlIGtlcm5lbCBvbiAzMiBiaXRzIC0gb24gNjQgYml0cyB0
+aGUgcmVsb2NhdGlvbiBpcyBkb25lIGF0IHRoZSBwYWdlIHRhYmxlIGxldmVsIHNpbmNlIHdlIG5l
+ZWQgdGhlIGhpZ2ggbWFwIGFueXdheS4KCk9uIDMyIGJpdHMgb25lIGNhbiBjb21wYXJlIGFueSBv
+bmUgc3ltYm9sIGJlZm9yZSBhbmQgYWZ0ZXIgcmVsb2NhdGlvbiAtIGl0IG9idmlvdXNseSBkb2Vz
+bid0IG1hdHRlciB3aGljaCBzeW1ib2wgYXMgbG9uZyBhcyBpdCBpcyB0aGUgc2FtZS4gIFRoZSBr
+ZXJuZWwgc3RhcnQgd2lsbCBiZSBnaXZlbiBieSBfdGV4dCBvciBzdGFydHVwXzMyOyBpZiB0aGF0
+IGZlZWxzIHRvbyAiZnV6enkiIHdlIGNvdWxkIG9mIGNvdXJzZSBhZGQgYSBzcGVjaWZpYyBrZXJu
+ZWwgc3RhcnQgc3ltYm9sIGV4cGxpY2l0bHkgZm9yIHRoYXQgcHVycG9zZS4KCiJBcm5hbGRvIENh
+cnZhbGhvIGRlIE1lbG8iIDxhY21lQGluZnJhZGVhZC5vcmc+IHdyb3RlOgoKPkVtIFdlZCwgRGVj
+IDMwLCAyMDA5IGF0IDA2OjM5OjM2UE0gLTAyMDAsIEFybmFsZG8gQ2FydmFsaG8gZGUgTWVsbyBl
+c2NyZXZldToNCj4+IEVtIFdlZCwgRGVjIDMwLCAyMDA5IGF0IDExOjQ1OjMwQU0gLTA4MDAsIEgu
+IFBldGVyIEFudmluIGVzY3JldmV1Og0KPj4gPiBUaGUga2VybmVsIGFscmVhZHkga25vd3Mgd2hl
+cmUgaXQgaXMgbG9hZGVkIC0tIG9idmlvdXNseSwgYnkgc2hlZXINCj4+ID4gbmVjZXNzaXR5IC0t
+IGFuZCBrbm93cyBob3cgaXQgd2FzIGl0c2VsZiBjb25maWd1cmVkLCBhbmQgYXMgc3VjaCB3ZQ0K
+Pj4gPiBjYW4gZG8gdGhpcyBjYWxjdWxhdGlvbiBpbiBDIGNvZGUgd2l0aG91dCBtb2RpZnlpbmcg
+Ym9vdF9wYXJhbXMgb3INCj4+ID4gdGhlIGVhcmx5IGJvb3RzdHJhcC4NCj4+IA0KPj4gUHJvYmxl
+bSBpcyB0aGF0IGF0ICdwZXJmIHJlY29yZCcgdGltZSB3ZSBtYXkgbm90IGhhdmUgYWNjZXNzIHRv
+IHRoZQ0KPj4gdm1saW51eCBmaWxlLCBhbmQgdGh1cyBub3QgYmUgYWJsZSB0byBmaWd1cmUgb3V0
+IHRoZSByZWxvY2F0aW9uIGFwcGxpZWQNCj4+IGluIHRoYXQgYm9vdC4NCj4+IA0KPj4gVGhlbiwg
+YXQgYSBsYXRlciB0aW1lLCBhbmQgcG9zc2libHkgb24gYW5vdGhlciBtYWNoaW5lLCBvbiBhbm90
+aGVyIGFyY2gsDQo+PiB3ZSB0cnkgdG8gbWFwIGJhY2sgSVBzIHRvIHN5bWJvbHMsIHRoZSAvcHJv
+Yy9rYWxsc3ltcyBpcyBjb21wbGV0ZWx5DQo+PiB1bnJlbGF0ZWQgYW5kIHdlIG5vdyBoYXZlIGEg
+dm1saW51eCB1bnJlbG9jYXRlZC4uLg0KPj4gDQo+PiBTbyB3ZSBuZWVkIGEgd2F5IHRvIGdldCB0
+aGUgcmVsb2NhdGlvbiBhcHBsaWVkIGF0ICdwZXJmIHJlY29yZCcgdGltZSBhbmQNCj4+IGVuY29k
+ZSBpdCBpbiB0aGUgcGVyZi5kYXRhIGhlYWRlci4gSWRlYXMgYWJvdXQgaG93IHRvIGRvIHRoYXQ/
+DQo+DQo+V2VsbCwgSSBndWVzcyB3ZSBjb3VsZCBkbyB0aGUgX3N0ZXh0IHRyaWNrIGFnYWluLCBz
+dG9yaW5nIGl0cyB2YWx1ZSwNCj50YWtlbiBmcm9tIC9wcm9jL2thbGxzeW1zLCBpbnRvIHRoZSBw
+ZXJmLmRhdGEgaGVhZGVyLCB0aGVuIGZpZ3VyaW5nIG91dA0KPnRoZSByZWxvY2F0aW9uIGJ5IGxv
+b2tpbmcgYXQgaXRzIHZhbHVlIGluIHRoZSB2bWxpbnV4IHN5bXRhYi4NCj4NCj5UaGVyZSB3ZXJl
+IGNvbmNlcm5zIGluIHRoZSBwYXN0IGFib3V0IHJlbHlpbmcgb24gX3N0ZXh0LCBJSVJDLCBKYW1l
+cz8NCj4NCj4tIEFybmFsZG8NCgotLQpTZW50IGZyb20gbXkgbW9iaWxlIHBob25lLiBQbGVhc2Ug
+ZXhjdXNlIGFueSBsYWNrIG9mIGZvcm1hdHRpbmcu
 
-On Wed, 30 Dec 2009, Eric W. Biederman wrote:
+------YNFT58D523WHH6AAC5P72UO3OJVJXH--
 
-> Linus Torvalds <torvalds@linux-foundation.org> writes:
-> 
-> > We've seen it several times (yes, mostly with drm, but it's been seen with 
-> > others too), and it's very annoying. It can be fixed by having very 
-> > careful readdir implementations, but I really would blame sysfs in 
-> > particular for having a very annoying lock reversal issue when used 
-> > reasonably.
-> 
-> Maybe.  The mnmap_sem has some interesting issues all of it's own.
-> What reasonable thing is the drm doing that is causing problems?
-
-The details are in the original thread on lkml, but it boils down to 
-basically (the below may not be the exact sequence, but it's close)
-
- - drm_mmap (called with mmap_sem) takes 'dev->struct_mutex' to protect 
-   it's own device data (very reasonable)
-
- - drm_release takes 'dev->struct_mutex' again to protect its own data, 
-   and calls "mtrr_del_page()" which ends up taking cpu_hotplug.lock.
-
-   Again, that doesn't sound "wrong" in any way.
-
- - hibernate ends up with the sequence: _cpu_down (cpu_hotplug.lock) ->  ..
-   kref_put .. -> sysfs_addrm_start (sysfs_mutex)
-
-   Again, nothing suspicious or "bad", and this part of the dependency 
-   chain has nothing to do with the DRM code itself.
-
- - sysfs_readdir() (and this is the big problem) holds sysfs_mutex in its
-   readdir implementation over the call to filldir. And filldir copies the 
-   data to user space, so now you have sysfs_mutex -> mmap_sem.
-
-See? None of the chains look bad. Except sysfs_readdir() obviously has 
-that sysfs_mutex -> mmap_sem thing, which is _very_ annoying, because now 
-you end up with a chain like
-
-   mmap_sem -> dev->struct_mutex -> cpu_hotplug.lock -> sysfs_mutex -> mmap_sem
-
-and I think you'll agree that of all the lock chains, the place to break 
-the association is at sysfs_mutex. And the obvious place to break it would 
-be that last "sysfs_mutex -> mmap_sem" stage.
-
-> > Added Eric and Greg to the cc, in case the sysfs people want to solve it.
-> 
-> There are scalability reasons for dropping the sysfs_mutex in sysfs_readdir
-> and I have some tenative patches for that.  I will take a look after I
-> come back from the holidays, in a couple of days.  I don't understand
-> the issue as described.
-
-Ok, hopefully the above chain explains it to you, and also makes it clear 
-that it's rather hard to break anywhere else, and it's not somebody else 
-doing anything "obviously bogus".
-
-Btw, the scalability issues with readdir() in general is why I'd be open 
-to try to change the rules for filldir(), and always make it a kernel 
-space copy. I suspect a number of users would like being able to use 
-spinlocks over filldir, but it's currently impossible. 
-
-However, we have a lot of filldir implementations (knfsd and several 
-different system call interfaces), and while some of them already use 
-kernel buffers (eg knfsd) others would need to allocate temporary storage 
-and then do a double copy. And I suspect even things like knfsd do things 
-like sleep and take locks, so it's possible that actually getting to the 
-point where filldir could be spinlock-safe would be infeasible.
-
-			Linus
