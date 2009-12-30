@@ -1,54 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752338AbZL3GUB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752392AbZL3GVy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752338AbZL3GUB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Dec 2009 01:20:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752290AbZL3GUA
+	id S1752392AbZL3GVy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Dec 2009 01:21:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752360AbZL3GVv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Dec 2009 01:20:00 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:39245 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752217AbZL3GT7 (ORCPT
+	Wed, 30 Dec 2009 01:21:51 -0500
+Received: from vms173003pub.verizon.net ([206.46.173.3]:55393 "EHLO
+	vms173003pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752336AbZL3GVs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Dec 2009 01:19:59 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=JgDfG9KUMsTWFdRwQ0A2YeNbekMGZ8JvyTC3wm10YpQIKo3/+IfGlVL7O7Kzj6qzl1
-         dsgw/YJl/5ZEWUCzpoOyIqrHIUH5ch5qECFXeNF8xDWPWXdLbvaJ0ooCKoo0yxYXL0GQ
-         q4WQpGvJqPr1boKSk1V/w0grKDawAae2zFxTs=
-Date: Tue, 29 Dec 2009 22:19:55 -0800
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Rakib Mullick <rakib.mullick@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Alessandro Rubini <rubini@vision.unipv.it>
-Subject: Re: [PATCH] input, mouse: Change the prototype of functions in
- lifebook.c
-Message-ID: <20091230061955.GI2186@core.coreip.homeip.net>
-References: <b9df5fa10912282009x5d0d2de4q36ab8a1f29d5a7de@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <b9df5fa10912282009x5d0d2de4q36ab8a1f29d5a7de@mail.gmail.com>
-User-Agent: Mutt/1.5.20 (2009-08-17)
+	Wed, 30 Dec 2009 01:21:48 -0500
+Date: Wed, 30 Dec 2009 01:21:42 -0500 (EST)
+From: Len Brown <lenb@kernel.org>
+X-X-Sender: lenb@localhost.localdomain
+To: Paul Rolland <rol@as2917.net>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Matthew Garrett <mjg@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, rol@witbe.net,
+       linux-acpi@vger.kernel.org, werner <w.landgraf@ru.ru>
+Subject: [PATCH] dell-wmi: sys_init_module: 'dell_wmi'->init suspiciously
+ returned 21, it should follow 0/-E convention
+In-reply-to: <20091228175301.4e89aa65@tux.DEF.witbe.net>
+Message-id: <alpine.LFD.2.00.0912300119190.15839@localhost.localdomain>
+References: <alpine.LFD.2.00.0912241350510.11961@localhost.localdomain>
+ <20091225102731.GA25513@elte.hu>
+ <alpine.LFD.2.00.0912261504460.4089@localhost.localdomain>
+ <alpine.LFD.2.00.0912262316530.14053@localhost.localdomain>
+ <20091228094444.GG24690@elte.hu> <20091228120125.GA10911@elte.hu>
+ <20091228160212.1f70d825@tux.DEF.witbe.net>
+ <20091228175301.4e89aa65@tux.DEF.witbe.net>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 29, 2009 at 10:09:24AM +0600, Rakib Mullick wrote:
->  When CONFIG_PM=n, then we are warned by the following warning:
-> 
-> drivers/input/mouse/lifebook.c:33: warning: 'lifebook_limit_serio3'
-> defined but not used
-> drivers/input/mouse/lifebook.c:41: warning: 'lifebook_set_6byte_proto'
-> defined but not used
-> 
+From: Len Brown <len.brown@intel.com>
 
-I suppose it is CONFIG_DMI, not CONFIG_PM... In fact, we should simply
-make this driver depend on CONFIG_DMI.
+wmi_install_notify_handler() returns an acpi_error,
+but dell_wmi_init() needs return a -errno style error.
 
-Thanks for reporting this.
+Signed-off-by: Len Brown <len.brown@intel.com>
+---
+ drivers/platform/x86/dell-wmi.c |    9 +++++----
+ 1 files changed, 5 insertions(+), 4 deletions(-)
 
+diff --git a/drivers/platform/x86/dell-wmi.c b/drivers/platform/x86/dell-wmi.c
+index 916ccb2..4c7e702 100644
+--- a/drivers/platform/x86/dell-wmi.c
++++ b/drivers/platform/x86/dell-wmi.c
+@@ -323,6 +323,7 @@ static int __init dell_wmi_input_setup(void)
+ static int __init dell_wmi_init(void)
+ {
+ 	int err;
++	acpi_status status;
+ 
+ 	if (wmi_has_guid(DELL_EVENT_GUID)) {
+ 		printk(KERN_WARNING "dell-wmi: No known WMI GUID found\n");
+@@ -336,14 +337,14 @@ static int __init dell_wmi_init(void)
+ 	if (err)
+ 		return err;
+ 
+-	err = wmi_install_notify_handler(DELL_EVENT_GUID,
++	status = wmi_install_notify_handler(DELL_EVENT_GUID,
+ 					 dell_wmi_notify, NULL);
+-	if (err) {
++	if (ACPI_FAILURE(status)) {
+ 		input_unregister_device(dell_wmi_input_dev);
+ 		printk(KERN_ERR
+ 			"dell-wmi: Unable to register notify handler - %d\n",
+-			err);
+-		return err;
++			status);
++		return -ENODEV;
+ 	}
+ 
+ 	return 0;
 -- 
-Dmitry
+1.6.6.rc4.11.g129a5
+
+
