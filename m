@@ -1,135 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752320AbZL3GVq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752388AbZL3GWf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752320AbZL3GVq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Dec 2009 01:21:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752196AbZL3GVp
+	id S1752388AbZL3GWf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Dec 2009 01:22:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751989AbZL3GWe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Dec 2009 01:21:45 -0500
-Received: from mail-iw0-f171.google.com ([209.85.223.171]:58206 "EHLO
-	mail-iw0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751974AbZL3GVo convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Dec 2009 01:21:44 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=SdmUxI63yFxE6MX+mTkMkFo5qIyUB/JaYw26n6IFCJ5+yj51TuTfqKxB0SC5JP0xyJ
-         Q1rHoyTkWvyztHdsE6iZLPEYyqmx/b4VWjlPmntw+KzLt+i6n3s/LF7JvI3CSkng7BaV
-         OFDxpi0IYy8qVUJE5SWLqGzz+HQcB5r6t8Nzk=
+	Wed, 30 Dec 2009 01:22:34 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:49805 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751974AbZL3GWe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Dec 2009 01:22:34 -0500
+Message-ID: <4B3AF19E.1010201@cn.fujitsu.com>
+Date: Wed, 30 Dec 2009 14:22:22 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
-In-Reply-To: <alpine.LFD.2.00.0912291435070.14938@localhost.localdomain>
-References: <20091229094202.25818e9b@nehalam>
-	 <alpine.LFD.2.00.0912291435070.14938@localhost.localdomain>
-Date: Wed, 30 Dec 2009 15:21:43 +0900
-Message-ID: <2f11576a0912292221r7ba59e9dw431c7b43b578a04@mail.gmail.com>
-Subject: Re: ACPI warning from alloc_pages_nodemask on boot (2.6.33 
-	regression)
-From: KOSAKI Motohiro <kosaki.motohiro@gmail.com>
-To: Len Brown <lenb@kernel.org>
-Cc: Stephen Hemminger <shemminger@vyatta.com>, linux-acpi@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-mm@kvack.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: Frederic Weisbecker <fweisbec@gmail.com>
+CC: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       "K.Prasad" <prasad@linux.vnet.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH 1/4] ksym_tracer: Fix to make the tracer work
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> [    1.611664] ACPI Warning: Incorrect checksum in table [OEMB] - 94, should be 8C (20091214/tbutils-314)
->> [    1.611698] ACPI: SSDT 00000000bf7980c0 00403 (v01 DpgPmm  P001Ist 00000011 INTL 20060113)
->> [    1.613966] ACPI: SSDT 00000000bf7984d0 00403 (v01 DpgPmm  P002Ist 00000012 INTL 20060113)
->> [    1.616242] ACPI: SSDT 00000000bf7988e0 00403 (v01 DpgPmm  P003Ist 00000012 INTL 20060113)
->> [    1.618526] ACPI: SSDT 00000000bf798cf0 00403 (v01 DpgPmm  P004Ist 00000012 INTL 20060113)
->> [    1.620817] ACPI: SSDT 00000000bf799100 00403 (v01 DpgPmm  P005Ist 00000012 INTL 20060113)
->> [    1.623112] ACPI: SSDT 00000000bf799510 00403 (v01 DpgPmm  P006Ist 00000012 INTL 20060113)
->> [    1.625409] ACPI: SSDT 00000000bf799920 00403 (v01 DpgPmm  P007Ist 00000012 INTL 20060113)
->> [    1.627734] ACPI: SSDT 00000000bf799d30 00403 (v01 DpgPmm  P008Ist 00000012 INTL 20060113)
->> [    1.630020] ------------[ cut here ]------------
->> [    1.630026] WARNING: at mm/page_alloc.c:1812 __alloc_pages_nodemask+0x617/0x730()
->
->        if (order >= MAX_ORDER) {
->                WARN_ON_ONCE(!(gfp_mask & __GFP_NOWARN));
->                return NULL;
->        }
->
-> I don't know what the mm alloc code is complaining about here.
+ksym tracer doesn't work:
 
-first, exceeding MAX_ORDER makes to return NULL since linux 1.x. then
-alloc_pages(MAX_ORDER) is wrong usage generally,
-but we hope to allow following usage:
+ # echo tasklist_lock:rw- > ksym_trace_filter
+ -bash: echo: write error: No such device
 
-    page = alloc_pages(__GFP_nowarn, big-order)
-    if (!page)
-        page = alloc_pages(small-order)
+It's because we pass to perf_event_create_kernel_counter()
+a cpu number which is not present.
 
-It is the reason of __GFP_NOWARN check.
-I guess ACPI don't need large `contenious' memory.
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+---
+ kernel/hw_breakpoint.c    |   10 +++++++---
+ kernel/trace/trace_ksym.c |    1 -
+ 2 files changed, 7 insertions(+), 4 deletions(-)
 
+diff --git a/kernel/hw_breakpoint.c b/kernel/hw_breakpoint.c
+index dbcbf6a..50dbd59 100644
+--- a/kernel/hw_breakpoint.c
++++ b/kernel/hw_breakpoint.c
+@@ -40,6 +40,7 @@
+ #include <linux/percpu.h>
+ #include <linux/sched.h>
+ #include <linux/init.h>
++#include <linux/cpu.h>
+ #include <linux/smp.h>
+ 
+ #include <linux/hw_breakpoint.h>
+@@ -388,7 +389,8 @@ register_wide_hw_breakpoint(struct perf_event_attr *attr,
+ 	if (!cpu_events)
+ 		return ERR_PTR(-ENOMEM);
+ 
+-	for_each_possible_cpu(cpu) {
++	get_online_cpus();
++	for_each_online_cpu(cpu) {
+ 		pevent = per_cpu_ptr(cpu_events, cpu);
+ 		bp = perf_event_create_kernel_counter(attr, cpu, -1, triggered);
+ 
+@@ -399,18 +401,20 @@ register_wide_hw_breakpoint(struct perf_event_attr *attr,
+ 			goto fail;
+ 		}
+ 	}
++	put_online_cpus();
+ 
+ 	return cpu_events;
+ 
+ fail:
+-	for_each_possible_cpu(cpu) {
++	for_each_online_cpu(cpu) {
+ 		pevent = per_cpu_ptr(cpu_events, cpu);
+ 		if (IS_ERR(*pevent))
+ 			break;
+ 		unregister_hw_breakpoint(*pevent);
+ 	}
++	put_online_cpus();
++
+ 	free_percpu(cpu_events);
+-	/* return the error if any */
+ 	return ERR_PTR(err);
+ }
+ EXPORT_SYMBOL_GPL(register_wide_hw_breakpoint);
+diff --git a/kernel/trace/trace_ksym.c b/kernel/trace/trace_ksym.c
+index faf37fa..340b6ff 100644
+--- a/kernel/trace/trace_ksym.c
++++ b/kernel/trace/trace_ksym.c
+@@ -197,7 +197,6 @@ int process_new_ksym_entry(char *ksymname, int op, unsigned long addr)
+ 	entry->attr.bp_addr = addr;
+ 	entry->attr.bp_len = HW_BREAKPOINT_LEN_4;
+ 
+-	ret = -EAGAIN;
+ 	entry->ksym_hbp = register_wide_hw_breakpoint(&entry->attr,
+ 					ksym_hbp_handler);
+ 
+-- 
+1.6.3
 
->
->> [    1.630028] Hardware name: System Product Name
->> [    1.630029] Modules linked in:
->> [    1.630032] Pid: 1, comm: swapper Not tainted 2.6.33-rc2 #4
->> [    1.630034] Call Trace:
->> [    1.630038]  [<ffffffff810532a8>] warn_slowpath_common+0x78/0xb0
->> [    1.630041]  [<ffffffff810532ef>] warn_slowpath_null+0xf/0x20
->> [    1.630044]  [<ffffffff810e65a7>] __alloc_pages_nodemask+0x617/0x730
->> [    1.630048]  [<ffffffff81114d14>] alloc_page_interleave+0x34/0x90
->> [    1.630050]  [<ffffffff81115444>] alloc_pages_current+0xc4/0xd0
->> [    1.630053]  [<ffffffff810e5549>] __get_free_pages+0x9/0x50
->> [    1.630055]  [<ffffffff8111ef3b>] __kmalloc+0x1bb/0x1f0
->> [    1.630059]  [<ffffffff81089bdd>] ? trace_hardirqs_on+0xd/0x10
->> [    1.630064]  [<ffffffff812cae3e>] acpi_os_allocate+0x25/0x27
->> [    1.630067]  [<ffffffff812cafab>] acpi_ex_load_op+0xd8/0x260
->> [    1.630070]  [<ffffffff812cd89e>] acpi_ex_opcode_1A_1T_0R+0x25/0x4b
->> [    1.630073]  [<ffffffff812c5008>] acpi_ds_exec_end_op+0xea/0x3d6
->> [    1.630076]  [<ffffffff812d7532>] acpi_ps_parse_loop+0x7d9/0x95f
->> [    1.630079]  [<ffffffff812c58cf>] ? acpi_ds_call_control_method+0x166/0x1d7
->> [    1.630082]  [<ffffffff812d6641>] acpi_ps_parse_aml+0x9a/0x2b9
->> [    1.630085]  [<ffffffff812d7d3a>] acpi_ps_execute_method+0x1c8/0x29a
->> [    1.630088]  [<ffffffff812d2f4d>] acpi_ns_evaluate+0xe1/0x1a8
->> [    1.630090]  [<ffffffff812d29a1>] acpi_evaluate_object+0xf9/0x1f2
->> [    1.630094]  [<ffffffff812bda07>] acpi_processor_set_pdc+0x1be/0x1e8
->> [    1.630097]  [<ffffffff812bda3a>] early_init_pdc+0x9/0xf
->> [    1.630100]  [<ffffffff812d4a96>] acpi_ns_walk_namespace+0xb9/0x187
->> [    1.630102]  [<ffffffff812bda31>] ? early_init_pdc+0x0/0xf
->> [    1.630105]  [<ffffffff812bda31>] ? early_init_pdc+0x0/0xf
->> [    1.630108]  [<ffffffff812d27e0>] acpi_walk_namespace+0x85/0xbf
->> [    1.630111]  [<ffffffff81cc7da9>] ? acpi_init+0x0/0x12f
->> [    1.630113]  [<ffffffff81cc7da9>] ? acpi_init+0x0/0x12f
->> [    1.630116]  [<ffffffff812bd7c6>] acpi_early_processor_set_pdc+0x3a/0x3c
->> [    1.630119]  [<ffffffff81cc7c80>] acpi_bus_init+0xb5/0x1de
->> [    1.630123]  [<ffffffff8128239e>] ? kobject_create_and_add+0x3e/0x80
->> [    1.630126]  [<ffffffff81cc2f0c>] ? genhd_device_init+0x0/0x7b
->> [    1.630128]  [<ffffffff81cc7da9>] ? acpi_init+0x0/0x12f
->> [    1.630131]  [<ffffffff81cc7e1a>] acpi_init+0x71/0x12f
->> [    1.630134]  [<ffffffff81002047>] do_one_initcall+0x37/0x1a0
->> [    1.630137]  [<ffffffff81ca1731>] kernel_init+0x166/0x1bc
->> [    1.630140]  [<ffffffff8100a3e4>] kernel_thread_helper+0x4/0x10
->> [    1.630144]  [<ffffffff814f95d0>] ? restore_args+0x0/0x30
->> [    1.630147]  [<ffffffff81ca15cb>] ? kernel_init+0x0/0x1bc
->> [    1.630149]  [<ffffffff8100a3e0>] ? kernel_thread_helper+0x0/0x10
->> [    1.630156] ---[ end trace f17e946d22a56015 ]---
->> [    1.630159] ACPI Error (psparse-0537): Method parse/execution failed [\_PR_.P009._OSC] (Node ffff8801b9069c20), AE_NO_MEMORY
->> [    1.630196] ACPI Error (psparse-0537): Method parse/execution failed [\_PR_.P009._PDC] (Node ffff8801b9069c00), AE_NO_MEMORY
->
-> We've changed both the _OSC and _PDC code in this release.
-> In particular, _PDC is being evaluated earler than last release
-> in an attempt to be more Windows compatible...
->
-> Stephen,
-> Please attach the output from acpidump to a new bugzilla entry
-> and point this thread to it.
->
-> thanks,
-> Len Brown, Intel Open Source Technology Center
->
->
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
