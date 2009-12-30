@@ -1,81 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753377AbZL3TpG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753403AbZL3Tuq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753377AbZL3TpG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Dec 2009 14:45:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753311AbZL3TpF
+	id S1753403AbZL3Tuq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Dec 2009 14:50:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753195AbZL3Tuq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Dec 2009 14:45:05 -0500
-Received: from mail.parknet.co.jp ([210.171.160.6]:43903 "EHLO
-	mail.parknet.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753292AbZL3TpE (ORCPT
+	Wed, 30 Dec 2009 14:50:46 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:44001 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752350AbZL3Tup (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Dec 2009 14:45:04 -0500
-From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-To: Marvin <marvin24@gmx.de>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: vfs related crash in 2.6.33-rc2
-References: <200912301733.19077.marvin24@gmx.de>
-Date: Thu, 31 Dec 2009 04:44:59 +0900
-In-Reply-To: <200912301733.19077.marvin24@gmx.de> (Marvin's message of "Wed,
-	30 Dec 2009 17:33:18 +0100")
-Message-ID: <87637oi6v8.fsf@devron.myhome.or.jp>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.90 (gnu/linux)
+	Wed, 30 Dec 2009 14:50:45 -0500
+Message-ID: <4B3BADDA.8040102@zytor.com>
+Date: Wed, 30 Dec 2009 11:45:30 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Arnaldo Carvalho de Melo <acme@infradead.org>
+CC: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Paul Mackerras <paulus@samba.org>, "Frank Ch. Eigler" <fche@redhat.com>,
+       fche LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/3] x86: record relocation offset
+References: <4B3AC5CD.1000502@cn.fujitsu.com> <4B3AC629.4030504@cn.fujitsu.com> <20091230131518.GD2956@ghostprotocols.net>
+In-Reply-To: <20091230131518.GD2956@ghostprotocols.net>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Marvin <marvin24@gmx.de> writes:
+On 12/30/2009 05:15 AM, Arnaldo Carvalho de Melo wrote:
+> 
+> I'm no expert on the intricacies of boot_params, but all the other hunks
+> seems sensible, but can't we provide a non-perf specific way of getting
+> the relocate_offset? I guess other tools would also love to have it.
+> 
+> What about systemtap, don't they solve this in some other way? Frank?
+> 
 
-> Hi,
->
-> I'm getting a lot of these:
->
-> kernel: general protection fault: 0000 [#1] SMP
-> kernel: last sysfs file: /sys/devices/pci0000:00/0000:00:18.3/modalias
-> kernel: CPU 0
-> kernel: Pid: 12177, comm: packagekitd Not tainted 2.6.33-rc2 #1 GA-MA69VM-S2/GA-
-> MA69VM-S2
-> kernel: RIP: 0010:[<ffffffff81111984>]  [<ffffffff81111984>] __d_lookup+0x84/0x140
-> kernel: RSP: 0018:ffff880032281bf8  EFLAGS: 00010286
-> kernel: RAX: bc004303ff008e00 RBX: bc004303ff008e00 RCX: 0000000000000011
-> kernel: RDX: 018721e0aefe22a8 RSI: ffff880032281ce8 RDI: ffff88003b4c8540
-> kernel: RBP: ffff880032281c48 R08: 0016c3c8f8b84e99 R09: 0000000000001000
-> kernel: R10: 61746f742f363331 R11: 0000000000000246 R12: bc004303ff008de8
-> kernel: R13: ffff88003b4c8540 R14: 00000000afeb6093 R15: ffff880032281ce8
-> kernel: FS:  00007fcee6297910(0000) GS:ffff880001a00000(0000) knlGS:00000000f76ba6c0
-> kernel: CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-> kernel: CR2: 00007fcee6288b3c CR3: 000000000be7c000 CR4: 00000000000006f0
-> kernel: DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-> kernel: DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-> kernel: Process packagekitd (pid: 12177, threadinfo ffff880032280000, task 
-> ffff88003a874320)
-> kernel: Stack:
-> kernel: ffff880032281c18 ffff88002150201c 0000000d264cf090 000000000000000d
-> kernel: <0> ffff880032281c48 ffff880032281dd8 ffff880032281cf8 ffff880032281ce8
-> kernel: <0> ffff880038aa9a00 ffff880032281cf8 ffff880032281c98 ffffffff811069c5
-> kernel: Call Trace:
-> kernel: [<ffffffff811069c5>] do_lookup+0x55/0x270
-> kernel: [<ffffffff8110905d>] link_path_walk+0x69d/0xe70
-> kernel: [<ffffffff811099b8>] path_walk+0x58/0xc0
-> kernel: [<ffffffff81109a73>] do_path_lookup+0x53/0xa0
-> kernel: [<ffffffff8110a6a3>] user_path_at+0x53/0xa0
-> kernel: [<ffffffff811edcab>] ? _atomic_dec_and_lock+0x6b/0x90
-> kernel: [<ffffffff811013f3>] ? cp_new_stat+0xf3/0x110
-> kernel: [<ffffffff81101617>] vfs_fstatat+0x37/0x70
-> kernel: [<ffffffff811016b9>] vfs_lstat+0x19/0x20
-> kernel: [<ffffffff811016df>] sys_newlstat+0x1f/0x50
-> kernel: [<ffffffff81002d2b>] system_call_fastpath+0x16/0x1b
-> kernel: Code: e0 03 48 03 05 ee df 75 00 48 8b 18 8b 45 c4 48 85 db 48 89 45 c8 75 0f 
-> eb 71 0f 1f 44 00 00 48 8b 1b 48 85 db 74 64 4c 8d 63 e8 <48> 8b 03 45 39 74 24 30 0f 
-> 18 08 75 e7 4d 39 6c 24 28 75 e0 49
-> kernel: RIP  [<ffffffff81111984>] __d_lookup+0x84/0x140
-> kernel: RSP <ffff880032281bf8>
-> kernel: ---[ end trace 20357edf03a4cafd ]---
->
-> filesystem is ext4 (in case it matters). 
+I at one point proposed that boot_params should be exported in toto via
+sysfs.  This got rather brutally shut down as "it's just a debugging
+feature" and got moved to debugfs (/debug/boot_params/data).  However,
+the entire boot_params structure is available there.
 
-BTW, are you using nfs client on this machine?
+Regardless of the reporting method, the patch passing this in by
+modifying the early assembly code, though, is more than a little
+pointless.  The kernel already knows where it is loaded -- obviously, by
+sheer necessity -- and knows how it was itself configured, and as such
+we can do this calculation in C code without modifying boot_params or
+the early bootstrap.
+
+	-hpa
+
 -- 
-OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
+
