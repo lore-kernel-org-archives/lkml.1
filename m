@@ -1,59 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753071AbZL3TaW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753235AbZL3Tak@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753071AbZL3TaW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Dec 2009 14:30:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752807AbZL3TaV
+	id S1753235AbZL3Tak (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Dec 2009 14:30:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752934AbZL3Taj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Dec 2009 14:30:21 -0500
-Received: from mail.parknet.co.jp ([210.171.160.6]:57696 "EHLO
-	mail.parknet.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752574AbZL3TaV (ORCPT
+	Wed, 30 Dec 2009 14:30:39 -0500
+Received: from exprod6og102.obsmtp.com ([64.18.1.183]:39598 "HELO
+	exprod6og102.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752816AbZL3Tai convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Dec 2009 14:30:21 -0500
-From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-To: Kay Sievers <kay.sievers@vrfy.org>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       Miklos Szeredi <miklos@szeredi.hu>
-Subject: Re: [PATCH 02/10] vfs: get_sb_single() - do not pass options twice
-References: <20091223194955.GB18101@kroah.com>
-	<1261597963-18323-2-git-send-email-gregkh@suse.de>
-	<87my14h9vo.fsf@devron.myhome.or.jp>
-	<ac3eb2510912301005g4870332cm63ebb497c9faf9da@mail.gmail.com>
-Date: Thu, 31 Dec 2009 04:30:11 +0900
-In-Reply-To: <ac3eb2510912301005g4870332cm63ebb497c9faf9da@mail.gmail.com>
-	(Kay Sievers's message of "Wed, 30 Dec 2009 19:05:58 +0100")
-Message-ID: <87hbr8w98c.fsf@devron.myhome.or.jp>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.90 (gnu/linux)
+	Wed, 30 Dec 2009 14:30:38 -0500
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Subject: [PATCH] arch/powerpc/boot/devtree.c: use %pM to show MAC address
+Date: Wed, 30 Dec 2009 14:30:39 -0500
+Message-ID: <BD79186B4FD85F4B8E60E381CAEE19090200F65E@mi8nycmail19.Mi8.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] arch/powerpc/boot/devtree.c: use %pM to show MAC address
+Thread-Index: AcqJhpFX52mm8R2tQHCy6qV3E2wwNA==
+From: "H Hartley Sweeten" <hartleys@visionengravers.com>
+To: <linux-kernel@vger.kernel.org>, <linuxppc-dev@ozlabs.org>
+X-OriginalArrivalTime: 30 Dec 2009 19:30:37.0339 (UTC) FILETIME=[9051E6B0:01CA8986]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kay Sievers <kay.sievers@vrfy.org> writes:
+Use the %pM kernel extension to display the MAC address.
 
-> On Sun, Dec 27, 2009 at 13:36, OGAWA Hirofumi
-> <hirofumi@mail.parknet.co.jp> wrote:
->>> Filesystem code usually destroys the option buffer while
->>> parsing it. This leads to errors when the same buffer is
->>> passed twice. In case we fill a new superblock do not call
->>> remount.
->
->> This breaks the historical behavior. Several users of get_sb_single() is
->> parse data only on ->remount_fs. Well, ok, I like new behavior actually.
->> But we need to convert to new behavior such users.
->>
->> I've listed all possibly affected users up (if I'm not missing). This
->> means, using both data on ->fill_super and ->remount_fs is devtmpfs
->> only. And capifs, usbfs, devpts would be needed the patch.
->
-> Hmm, these filesystem are probably not going to overwrite their own
-> default options with their own special parameters to parse when they
-> allocate their superblock. That would be pretty weird, wouldn't it?
-> Seems they currently don't even pass "data" pointer around at that
-> time.
+Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
 
-Oops, I was missing that those all fs was using kern_mount(). Sorry for
-noise.
--- 
-OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+---
+
+diff --git a/arch/powerpc/boot/devtree.c b/arch/powerpc/boot/devtree.c
+index a7e21a3..a2f07a5 100644
+--- a/arch/powerpc/boot/devtree.c
++++ b/arch/powerpc/boot/devtree.c
+@@ -93,10 +93,7 @@ void dt_fixup_mac_address_by_alias(const char *alias, const u8 *addr)
+ 	void *devp = find_node_by_alias(alias);
+ 
+ 	if (devp) {
+-		printf("%s: local-mac-address <-"
+-		       " %02x:%02x:%02x:%02x:%02x:%02x\n\r", alias,
+-		       addr[0], addr[1], addr[2],
+-		       addr[3], addr[4], addr[5]);
++		printf("%s: local-mac-address <- %pM\n\r", alias, addr);
+ 
+ 		setprop(devp, "local-mac-address", addr, 6);
+ 	}
+@@ -108,10 +105,7 @@ void dt_fixup_mac_address(u32 index, const u8 *addr)
+ 	                                     (void*)&index, sizeof(index));
+ 
+ 	if (devp) {
+-		printf("ENET%d: local-mac-address <-"
+-		       " %02x:%02x:%02x:%02x:%02x:%02x\n\r", index,
+-		       addr[0], addr[1], addr[2],
+-		       addr[3], addr[4], addr[5]);
++		printf("ENET%d: local-mac-address <- %pM\n\r", index, addr);
+ 
+ 		setprop(devp, "local-mac-address", addr, 6);
+ 	} 
