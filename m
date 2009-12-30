@@ -1,40 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753058AbZL3S0T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752847AbZL3OeK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753058AbZL3S0T (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Dec 2009 13:26:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752767AbZL3S0S
+	id S1752847AbZL3OeK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Dec 2009 09:34:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752781AbZL3OeJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Dec 2009 13:26:18 -0500
-Received: from toroondcbque01-srv.bellnexxia.net ([207.236.237.45]:44959 "EHLO
-	toroondcbque01-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752687AbZL3S0S (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Dec 2009 13:26:18 -0500
-X-Greylist: delayed 14399 seconds by postgrey-1.27 at vger.kernel.org; Wed, 30 Dec 2009 13:26:17 EST
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ap2bABbtOkvP7O0f/2dsb2JhbACBK4JBiguBRox2rRWGZ4ZzgS2CLlYEimk
-Message-ID: <20091230092607.OJVPX.4843.root@toroondcbfep02>
-Date: Wed, 30 Dec 2009 9:26:06 -0500
-From: "Sgt.Anthony Raymond" <viva.city@bellnet.ca>
-Reply-To: sgt_rayanthony@w.cn
-Subject: Info
+	Wed, 30 Dec 2009 09:34:09 -0500
+Received: from mgw1.diku.dk ([130.225.96.91]:59071 "EHLO mgw1.diku.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752597AbZL3OeI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Dec 2009 09:34:08 -0500
+Date: Wed, 30 Dec 2009 15:34:04 +0100 (CET)
+From: Julia Lawall <julia@diku.dk>
+To: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH 2/5] drivers/net : Correct the size argument to kzalloc
+In-Reply-To: <Pine.LNX.4.64.0912292015240.4001@ask.diku.dk>
+Message-ID: <Pine.LNX.4.64.0912301533280.23134@ask.diku.dk>
+References: <Pine.LNX.4.64.0912292015240.4001@ask.diku.dk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-X-Priority: 3 (Normal)
-Sensitivity: Normal
-X-Originating-IP: from 65.49.2.154 by webmail.en.bellnet.ca; Wed, 30 Dec 2009 9:26:06 -0500
-To: unlisted-recipients:; (no To-header on input)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+To: netdev@vger.kernel.org,linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
 
---
-I am Sgt.Anthony Raymond of the Engineering Unit of the US Army in Ba'qubah,Iraq.
+Subject: [PATCH 2/5] drivers/net : Correct the size argument to kzalloc
 
-We have the sum of $25,000,000 USD we made from some Oil deal that we want you to help us to receive. Since we are working here on Official capacity we cannot keep this funds hence my contacting you.
 
-If you are interested, do get back to me so that i can give you further details.
+----------------------------
 
-Sgt. Anthony Raymond
+From: Julia Lawall <julia@diku.dk>
+
+lp->rx_skb has type struct sk_buff **, not struct sk_buff *, so the
+elements of the array should have pointer type, not structure type.
+
+Convert kzalloc to kcalloc as well.
+
+The semantic patch that makes this change is as follows:
+(http://coccinelle.lip6.fr/)
+
+// <smpl>
+@disable sizeof_type_expr@
+type T;
+T **x;
+@@
+
+  x =
+  <+...sizeof(
+- T
++ *x
+  )...+>
+// </smpl>
+
+Signed-off-by: Julia Lawall <julia@diku.dk>
+
+---
+ drivers/net/ll_temac_main.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff -u -p a/drivers/net/ll_temac_main.c b/drivers/net/ll_temac_main.c
+--- a/drivers/net/ll_temac_main.c
++++ b/drivers/net/ll_temac_main.c
+@@ -134,7 +134,7 @@ static int temac_dma_bd_init(struct net_
+ 	struct sk_buff *skb;
+ 	int i;
+ 
+-	lp->rx_skb = kzalloc(sizeof(struct sk_buff)*RX_BD_NUM, GFP_KERNEL);
++	lp->rx_skb = kcalloc(RX_BD_NUM, sizeof(*lp->rx_skb), GFP_KERNEL);
+ 	/* allocate the tx and rx ring buffer descriptors. */
+ 	/* returns a virtual addres and a physical address. */
+ 	lp->tx_bd_v = dma_alloc_coherent(ndev->dev.parent,
