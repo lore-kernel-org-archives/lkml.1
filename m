@@ -1,70 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752548AbZL3ISW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752530AbZL3ISH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752548AbZL3ISW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Dec 2009 03:18:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751612AbZL3ISU
+	id S1752530AbZL3ISH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Dec 2009 03:18:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752318AbZL3ISF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Dec 2009 03:18:20 -0500
-Received: from astoria.ccjclearline.com ([64.235.106.9]:34502 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752392AbZL3IST (ORCPT
+	Wed, 30 Dec 2009 03:18:05 -0500
+Received: from mtagate6.de.ibm.com ([195.212.17.166]:49902 "EHLO
+	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752243AbZL3ISD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Dec 2009 03:18:19 -0500
-Date: Wed, 30 Dec 2009 03:17:47 -0500 (EST)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost
-To: Valdis.Kletnieks@vt.edu
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: simplify numerous param.h's by including
- <asm-generic/param.h>?
-In-Reply-To: <9192.1262110147@localhost>
-Message-ID: <alpine.LFD.2.00.0912300316070.11919@localhost>
-References: <alpine.LFD.2.00.0912291224520.2860@localhost> <9192.1262110147@localhost>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Wed, 30 Dec 2009 03:18:03 -0500
+Date: Wed, 30 Dec 2009 09:18:00 +0100
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: Re: [Bug #14630] sched_rt_periodic_timer vs cpu hotplug
+Message-ID: <20091230081800.GA4304@osiris.boeblingen.de.ibm.com>
+References: <oBElxfTZdhL.A.bx.-vhOLB@chimera>
+ <srmJ8vMxKPH.A.UwD.jxhOLB@chimera>
+ <1262104619.7135.161.camel@laptop>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1262104619.7135.161.camel@laptop>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 29 Dec 2009, Valdis.Kletnieks@vt.edu wrote:
+On Tue, Dec 29, 2009 at 05:36:59PM +0100, Peter Zijlstra wrote:
+> On Tue, 2009-12-29 at 16:28 +0100, Rafael J. Wysocki wrote:
+> > This message has been generated automatically as a part of a report
+> > of regressions introduced between 2.6.31 and 2.6.32.
+> > 
+> > The following bug entry is on the current list of known regressions
+> > introduced between 2.6.31 and 2.6.32.  Please verify if it still should
+> > be listed and let me know (either way).
+> > 
+> > 
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14630
+> > Subject		: sched_rt_periodic_timer vs cpu hotplug
+> > Submitter	: Heiko Carstens <heiko.carstens@de.ibm.com>
+> > Date		: 2009-11-11 10:18 (49 days old)
+> > References	: http://marc.info/?l=linux-kernel&m=125793470309588&w=4
+> > Handled-By	: Peter Zijlstra <peterz@infradead.org>
+> > Patch		: http://patchwork.kernel.org/patch/60250/
+> 
+> git branch -a --contains 047106ad
+> 
+> seems to suggest that this made it to Linus' tree.
 
-> On Tue, 29 Dec 2009 12:30:23 EST, "Robert P. J. Day" said:
-> >
-> >   a brief perusal of the numerous param.h files under
-> > arch/<arch>/include/asm shows that most of them could be replaced with
-> > a simple
-> >
-> >   #include <asm-generic/param.h>
->
-> >   worth doing?  not worth doing?
->
-> Anytime you can fix "You are in a twisty maze of #include files, all
-> subtly different" issues, it is a Good Thing.
->
-> Thanks for all the de-cruftifying efforts you've made.
-
-  ok, so i'm assuming there's no legitimate objection to having
-numerous arch-specific param.h files simply refer to
-<asm-generic/param.h> if that's appropriate.  i'll submit individual
-patches on a per-arch basis to the appropriate MLs.
-
-rday
---
-
-========================================================================
-Robert P. J. Day                               Waterloo, Ontario, CANADA
-
-            Linux Consulting, Training and Kernel Pedantry.
-
-Web page:                                          http://crashcourse.ca
-Twitter:                                       http://twitter.com/rpjday
-========================================================================
+Any chance to get this into -stable? Since it seems it got only merged
+after 2.6.32.
