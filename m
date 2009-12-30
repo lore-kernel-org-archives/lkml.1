@@ -1,148 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751507AbZL3JOh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752260AbZL3JSb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751507AbZL3JOh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Dec 2009 04:14:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751047AbZL3JOg
+	id S1752260AbZL3JSb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Dec 2009 04:18:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751797AbZL3JS1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Dec 2009 04:14:36 -0500
-Received: from 0122700014.0.fullrate.dk ([95.166.99.235]:55432 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750820AbZL3JOf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Dec 2009 04:14:35 -0500
-Date: Wed, 30 Dec 2009 10:14:34 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Evgeniy Polyakov <zbr@ioremap.net>,
+	Wed, 30 Dec 2009 04:18:27 -0500
+Received: from mail.parknet.co.jp ([210.171.160.6]:38140 "EHLO
+	mail.parknet.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751772AbZL3JSX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Dec 2009 04:18:23 -0500
+From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+To: Malte =?iso-8859-1?Q?Schr=F6der?= <maltesch@gmx.de>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Alexander Beregalov <a.beregalov@gmail.com>
-Subject: Re: [Bug #14894] pohmelfs: NULL pointer dereference
-Message-ID: <20091230091433.GU4489@kernel.dk>
-References: <oBElxfTZdhL.A.bx.-vhOLB@chimera> <srmJ8vMxKPH.A.iAC.TwhOLB@chimera> <20091229163512.GA4958@ioremap.net> <200912292237.54182.rjw@sisk.pl>
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Bjorn Helgaas" <bjorn.helgaas@hp.com>,
+       David =?iso-8859-1?Q?H=E4rdeman?= <david@hardeman.nu>,
+       "Len Brown" <lenb@kernel.org>
+Subject: Re: [Bug #14889] System wakeup by time not working anymore
+References: <oBElxfTZdhL.A.bx.-vhOLB@chimera>
+	<srmJ8vMxKPH.A.BaC.ZwhOLB@chimera>
+	<87k4w5u1fr.fsf@devron.myhome.or.jp>
+	<20091230095607.7229baf4@highlander.home.lan>
+Date: Wed, 30 Dec 2009 18:18:14 +0900
+In-Reply-To: <20091230095607.7229baf4@highlander.home.lan> ("Malte
+ =?iso-8859-1?Q?Schr=F6der=22's?=
+	message of "Wed, 30 Dec 2009 09:56:07 +0100")
+Message-ID: <87pr5wx1k9.fsf@devron.myhome.or.jp>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.90 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200912292237.54182.rjw@sisk.pl>
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 29 2009, Rafael J. Wysocki wrote:
-> On Tuesday 29 December 2009, Evgeniy Polyakov wrote:
-> > On Tue, Dec 29, 2009 at 04:28:52PM +0100, Rafael J. Wysocki (rjw@sisk.pl) wrote:
-> > > This message has been generated automatically as a part of a report
-> > > of regressions introduced between 2.6.31 and 2.6.32.
-> > > 
-> > > The following bug entry is on the current list of known regressions
-> > > introduced between 2.6.31 and 2.6.32.  Please verify if it still should
-> > > be listed and let me know (either way).
-> > > 
-> > > 
-> > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14894
-> > > Subject		: pohmelfs: NULL pointer dereference
-> > > Submitter	: Alexander Beregalov <a.beregalov@gmail.com>
-> > > Date		: 2009-12-02 1:11 (28 days old)
-> > > References	: http://marc.info/?l=linux-kernel&m=125971633107940&w=4
-> > > Handled-By	: Evgeniy Polyakov <zbr@ioremap.net>
-> > 
-> > Yes, I saw this regression and there is a patch to handle this, but it
-> > kind of disables sync at all. Jens Axboe, who introduced per-bdi
-> > writeback patches, did not yet reply.
-> 
-> Well, Jens, what's your opinion about that?
+Malte Schröder <maltesch@gmx.de> writes:
 
-Since pohmelfs isn't tied to a single block device, it needs to setup a
-backing dev like nfs/btrfs/etc do. Here's a completely untested patch.
+> On Wed, 30 Dec 2009 02:36:56 +0900
+> OGAWA Hirofumi <hirofumi@mail.parknet.co.jp> wrote:
+>
+>> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
+>> 
+>> > This message has been generated automatically as a part of a report
+>> > of regressions introduced between 2.6.31 and 2.6.32.
+>> >
+>> > The following bug entry is on the current list of known regressions
+>> > introduced between 2.6.31 and 2.6.32.  Please verify if it still should
+>> > be listed and let me know (either way).
+>> >
+>> >
+>> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14889
+>> > Subject		: System wakeup by time not working anymore
+>> > Submitter	: Malte Schröder <maltesch@gmx.de>
+>> > Date		: 2009-12-03 18:06 (27 days old)
+>> > First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=abd6633c67925f90775bb74755f9c547e30f1f20
+>> > References	: http://marc.info/?l=linux-kernel&m=125986362631900&w=4
+>> 
+>> Specified commit would break the pnp driver which is using
+>> driver->shutdown.
+>> 
+>> Could you test this (untested) patch?
+>
+> I tried to reproduce the problem, it looks like it is working now :)
 
-diff --git a/drivers/staging/pohmelfs/inode.c b/drivers/staging/pohmelfs/inode.c
-index f69b778..cd25811 100644
---- a/drivers/staging/pohmelfs/inode.c
-+++ b/drivers/staging/pohmelfs/inode.c
-@@ -36,6 +36,7 @@
- #define POHMELFS_MAGIC_NUM	0x504f482e
- 
- static struct kmem_cache *pohmelfs_inode_cache;
-+static atomic_t psb_bdi_num = ATOMIC_INIT(0);
- 
- /*
-  * Removes inode from all trees, drops local name cache and removes all queued
-@@ -1331,6 +1332,8 @@ static void pohmelfs_put_super(struct super_block *sb)
- 	pohmelfs_crypto_exit(psb);
- 	pohmelfs_state_exit(psb);
- 
-+	bdi_destroy(&psb->bdi);
-+
- 	kfree(psb);
- 	sb->s_fs_info = NULL;
- }
-@@ -1815,11 +1818,22 @@ static int pohmelfs_fill_super(struct super_block *sb, void *data, int silent)
- 	if (!psb)
- 		goto err_out_exit;
- 
-+	err = bdi_init(&psb->bdi);
-+	if (err)
-+		goto err_out_free_sb;
-+
-+	err = bdi_register(&psb->bdi, NULL, "pfs-%d", atomic_inc_return(&psb_bdi_num));
-+	if (err) {
-+		bdi_destroy(&psb->bdi);
-+		goto err_out_free_sb;
-+	}
-+
- 	sb->s_fs_info = psb;
- 	sb->s_op = &pohmelfs_sb_ops;
- 	sb->s_magic = POHMELFS_MAGIC_NUM;
- 	sb->s_maxbytes = MAX_LFS_FILESIZE;
- 	sb->s_blocksize = PAGE_SIZE;
-+	sb->s_bdi = &psb->bdi;
- 
- 	psb->sb = sb;
- 
-@@ -1863,11 +1877,11 @@ static int pohmelfs_fill_super(struct super_block *sb, void *data, int silent)
- 
- 	err = pohmelfs_parse_options((char *) data, psb, 0);
- 	if (err)
--		goto err_out_free_sb;
-+		goto err_out_free_bdi;
- 
- 	err = pohmelfs_copy_crypto(psb);
- 	if (err)
--		goto err_out_free_sb;
-+		goto err_out_free_bdi;
- 
- 	err = pohmelfs_state_init(psb);
- 	if (err)
-@@ -1916,6 +1930,8 @@ err_out_state_exit:
- err_out_free_strings:
- 	kfree(psb->cipher_string);
- 	kfree(psb->hash_string);
-+err_out_free_bdi:
-+	bdi_destroy(&psb->bdi);
- err_out_free_sb:
- 	kfree(psb);
- err_out_exit:
-diff --git a/drivers/staging/pohmelfs/netfs.h b/drivers/staging/pohmelfs/netfs.h
-index 623a07d..01cba00 100644
---- a/drivers/staging/pohmelfs/netfs.h
-+++ b/drivers/staging/pohmelfs/netfs.h
-@@ -18,6 +18,7 @@
- 
- #include <linux/types.h>
- #include <linux/connector.h>
-+#include <linux/backing-dev.h>
- 
- #define POHMELFS_CN_IDX			5
- #define POHMELFS_CN_VAL			0
-@@ -624,6 +625,8 @@ struct pohmelfs_sb {
- 
- 	struct super_block	*sb;
- 
-+	struct backing_dev_info	bdi;
-+
- 	/*
- 	 * Algorithm strings.
- 	 */
+Thanks for testing.
 
+Andrew, could you handle this pnp breakage fix?
 -- 
-Jens Axboe
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
 
+
+[PATCH] rtc_cmos: convert shutdown to new pnp_driver->shutdown
+
+commit abd6633c67925f90775bb74755f9c547e30f1f20 adds shutdown method
+to bus driver blindly. With it, driver->shutdown is invalid anymore.
+
+Use pnp_driver->shutdown instead.
+
+Signed-off-by: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+---
+
+ drivers/rtc/rtc-cmos.c |    9 +++------
+ 1 file changed, 3 insertions(+), 6 deletions(-)
+
+diff -puN drivers/rtc/rtc-cmos.c~rtc-cmos-shutdown-fix drivers/rtc/rtc-cmos.c
+--- linux-2.6/drivers/rtc/rtc-cmos.c~rtc-cmos-shutdown-fix	2009-12-30 01:25:10.000000000 +0900
++++ linux-2.6-hirofumi/drivers/rtc/rtc-cmos.c	2009-12-30 01:27:36.000000000 +0900
+@@ -1096,9 +1096,9 @@ static int cmos_pnp_resume(struct pnp_de
+ #define	cmos_pnp_resume		NULL
+ #endif
+ 
+-static void cmos_pnp_shutdown(struct device *pdev)
++static void cmos_pnp_shutdown(struct pnp_dev *pnp)
+ {
+-	if (system_state == SYSTEM_POWER_OFF && !cmos_poweroff(pdev))
++	if (system_state == SYSTEM_POWER_OFF && !cmos_poweroff(&pnp->dev))
+ 		return;
+ 
+ 	cmos_do_shutdown();
+@@ -1117,15 +1117,12 @@ static struct pnp_driver cmos_pnp_driver
+ 	.id_table	= rtc_ids,
+ 	.probe		= cmos_pnp_probe,
+ 	.remove		= __exit_p(cmos_pnp_remove),
++	.shutdown	= cmos_pnp_shutdown,
+ 
+ 	/* flag ensures resume() gets called, and stops syslog spam */
+ 	.flags		= PNP_DRIVER_RES_DO_NOT_CHANGE,
+ 	.suspend	= cmos_pnp_suspend,
+ 	.resume		= cmos_pnp_resume,
+-	.driver		= {
+-		.name	  = (char *)driver_name,
+-		.shutdown = cmos_pnp_shutdown,
+-	}
+ };
+ 
+ #endif	/* CONFIG_PNP */
+_
