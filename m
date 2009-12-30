@@ -1,74 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752291AbZL3GTj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752338AbZL3GUB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752291AbZL3GTj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Dec 2009 01:19:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752162AbZL3GTi
+	id S1752338AbZL3GUB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Dec 2009 01:20:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752290AbZL3GUA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Dec 2009 01:19:38 -0500
-Received: from vms173015pub.verizon.net ([206.46.173.15]:49092 "EHLO
-	vms173015pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751989AbZL3GTi (ORCPT
+	Wed, 30 Dec 2009 01:20:00 -0500
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:39245 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752217AbZL3GT7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Dec 2009 01:19:38 -0500
-Date: Wed, 30 Dec 2009 01:19:12 -0500 (EST)
-From: Len Brown <lenb@kernel.org>
-X-X-Sender: lenb@localhost.localdomain
-To: Paul Rolland <rol@as2917.net>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Matthew Garrett <mjg@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, rol@witbe.net,
-       werner <w.landgraf@ru.ru>, linux-acpi@vger.kernel.org
-Subject: [PATCH] wmi: check find_guid() return value to prevent oops
-In-reply-to: <20091228175301.4e89aa65@tux.DEF.witbe.net>
-Message-id: <alpine.LFD.2.00.0912300116430.15839@localhost.localdomain>
-References: <alpine.LFD.2.00.0912241350510.11961@localhost.localdomain>
- <20091225102731.GA25513@elte.hu>
- <alpine.LFD.2.00.0912261504460.4089@localhost.localdomain>
- <alpine.LFD.2.00.0912262316530.14053@localhost.localdomain>
- <20091228094444.GG24690@elte.hu> <20091228120125.GA10911@elte.hu>
- <20091228160212.1f70d825@tux.DEF.witbe.net>
- <20091228175301.4e89aa65@tux.DEF.witbe.net>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 30 Dec 2009 01:19:59 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=JgDfG9KUMsTWFdRwQ0A2YeNbekMGZ8JvyTC3wm10YpQIKo3/+IfGlVL7O7Kzj6qzl1
+         dsgw/YJl/5ZEWUCzpoOyIqrHIUH5ch5qECFXeNF8xDWPWXdLbvaJ0ooCKoo0yxYXL0GQ
+         q4WQpGvJqPr1boKSk1V/w0grKDawAae2zFxTs=
+Date: Tue, 29 Dec 2009 22:19:55 -0800
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Rakib Mullick <rakib.mullick@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alessandro Rubini <rubini@vision.unipv.it>
+Subject: Re: [PATCH] input, mouse: Change the prototype of functions in
+ lifebook.c
+Message-ID: <20091230061955.GI2186@core.coreip.homeip.net>
+References: <b9df5fa10912282009x5d0d2de4q36ab8a1f29d5a7de@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <b9df5fa10912282009x5d0d2de4q36ab8a1f29d5a7de@mail.gmail.com>
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: rol@as2917.net <Paul Rolland>
+On Tue, Dec 29, 2009 at 10:09:24AM +0600, Rakib Mullick wrote:
+>  When CONFIG_PM=n, then we are warned by the following warning:
+> 
+> drivers/input/mouse/lifebook.c:33: warning: 'lifebook_limit_serio3'
+> defined but not used
+> drivers/input/mouse/lifebook.c:41: warning: 'lifebook_set_6byte_proto'
+> defined but not used
+> 
 
-Signed-off-by: rol@as2917.net <Paul Rolland>
-Signed-off-by: Len Brown <len.brown@intel.com>
----
- drivers/platform/x86/wmi.c |    6 ++----
- 1 files changed, 2 insertions(+), 4 deletions(-)
+I suppose it is CONFIG_DMI, not CONFIG_PM... In fact, we should simply
+make this driver depend on CONFIG_DMI.
 
-diff --git a/drivers/platform/x86/wmi.c b/drivers/platform/x86/wmi.c
-index 9f93d6c..cc9ad74 100644
---- a/drivers/platform/x86/wmi.c
-+++ b/drivers/platform/x86/wmi.c
-@@ -492,8 +492,7 @@ wmi_notify_handler handler, void *data)
- 	if (!guid || !handler)
- 		return AE_BAD_PARAMETER;
- 
--	find_guid(guid, &block);
--	if (!block)
-+	if (!find_guid(guid, &block))
- 		return AE_NOT_EXIST;
- 
- 	if (block->handler)
-@@ -521,8 +520,7 @@ acpi_status wmi_remove_notify_handler(const char *guid)
- 	if (!guid)
- 		return AE_BAD_PARAMETER;
- 
--	find_guid(guid, &block);
--	if (!block)
-+	if (!find_guid(guid, &block))
- 		return AE_NOT_EXIST;
- 
- 	if (!block->handler)
+Thanks for reporting this.
+
 -- 
-1.6.6.rc4.11.g129a5
-
+Dmitry
