@@ -1,87 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752397AbZL3RPF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752745AbZL3RPY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752397AbZL3RPF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Dec 2009 12:15:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752123AbZL3RPE
+	id S1752745AbZL3RPY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Dec 2009 12:15:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752557AbZL3RPX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Dec 2009 12:15:04 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:39759 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752090AbZL3RPC (ORCPT
+	Wed, 30 Dec 2009 12:15:23 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:58865
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752278AbZL3RPU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Dec 2009 12:15:02 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=GXUzzbwU+nZNbTyLzfBHQ1H16uVOHfI+WXD6q/R94uhLxJIBd4qUh1PR3uvgkwfEhV
-         CSdFMB/vy0azNJCsSHyomXXYxIu6yCABzjbuHp4UYhtDJJxhDvdtSKl4CObB4RldUUZl
-         hHLfmh5k2ydMr5rWD/GwyZryPqS0V9FpE96c4=
-Date: Wed, 30 Dec 2009 18:14:58 +0100
-From: Johan Hovold <jhovold@gmail.com>
-To: Dan Carpenter <error27@gmail.com>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Johan Hovold <jhovold@gmail.com>
-Subject: Re: [patch] USB: serial: fix DMA buffers on stack for io_edgeport.c
-Message-ID: <20091230171457.GA15063@localhost>
-References: <1262037718-31424-1-git-send-email-jhovold@gmail.com>
- <20091230160645.GC29476@bicker>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091230160645.GC29476@bicker>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Wed, 30 Dec 2009 12:15:20 -0500
+Date: Wed, 30 Dec 2009 09:15:20 -0800 (PST)
+Message-Id: <20091230.091520.193699933.davem@davemloft.net>
+To: hartleys@visionengravers.com
+Cc: linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org
+Subject: Re: [PATCH] simeth.c: use %pM to shown MAC address
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <BD79186B4FD85F4B8E60E381CAEE19090200F4B7@mi8nycmail19.Mi8.com>
+References: <BD79186B4FD85F4B8E60E381CAEE19090200F4B7@mi8nycmail19.Mi8.com>
+X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hey Dan,
+From: "H Hartley Sweeten" <hartleys@visionengravers.com>
+Date: Mon, 28 Dec 2009 17:24:38 -0500
 
-Looks like you forgot to free StringDesc:
+> Use the %pM kernel extension to display the HwAddr.
+> 
+> The only difference in the output is that the MAC address is
+> shown in the usual colon-separated hex notation instead of
+> space-separated.
+> 
+> Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
 
-> --- orig/drivers/usb/serial/io_edgeport.c	2009-12-30 16:20:35.000000000 +0200
-> +++ devel/drivers/usb/serial/io_edgeport.c	2009-12-30 16:25:27.000000000 +0200
-> @@ -372,21 +372,24 @@ static void update_edgeport_E2PROM(struc
->   ************************************************************************/
->  static int get_string(struct usb_device *dev, int Id, char *string, int buflen)
->  {
-> -	struct usb_string_descriptor StringDesc;
-> +	struct usb_string_descriptor *StringDesc;
->  	struct usb_string_descriptor *pStringDesc;
->  
->  	dbg("%s - USB String ID = %d", __func__, Id);
->  
-> +	StringDesc = kmalloc(sizeof(*StringDesc), GFP_KERNEL);
-> +	if (!StringDesc)
-> +		return 0;
->  	if (!usb_get_descriptor(dev, USB_DT_STRING, Id,
-> -					&StringDesc, sizeof(StringDesc)))
-> +					StringDesc, sizeof(*StringDesc)))
-
-here
-
->  		return 0;
->  
-> -	pStringDesc = kmalloc(StringDesc.bLength, GFP_KERNEL);
-> +	pStringDesc = kmalloc(StringDesc->bLength, GFP_KERNEL);
->  	if (!pStringDesc)
-
-here
-
->  		return 0;
->  
->  	if (!usb_get_descriptor(dev, USB_DT_STRING, Id,
-> -					pStringDesc, StringDesc.bLength)) {
-> +					pStringDesc, StringDesc->bLength)) {
-
-here
-
->  		kfree(pStringDesc);
->  		return 0;
->  	}
-
-and here.
-
-Thanks,
-Johan
-
+Applied.
