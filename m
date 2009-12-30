@@ -1,83 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753276AbZL3SiK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753258AbZL3SkO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753276AbZL3SiK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Dec 2009 13:38:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753148AbZL3SiJ
+	id S1753258AbZL3SkO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Dec 2009 13:40:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753042AbZL3SkN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Dec 2009 13:38:09 -0500
-Received: from mta5.srv.hcvlny.cv.net ([167.206.4.200]:52721 "EHLO
-	mta5.srv.hcvlny.cv.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752924AbZL3SiI (ORCPT
+	Wed, 30 Dec 2009 13:40:13 -0500
+Received: from exprod6og105.obsmtp.com ([64.18.1.189]:39884 "HELO
+	exprod6og105.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752767AbZL3SkM convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Dec 2009 13:38:08 -0500
-Date: Wed, 30 Dec 2009 13:37:35 -0500
-From: Michael Breuer <mbreuer@majjas.com>
-Subject: Re: sky2 panic in 2.6.32.1 under load (new oops)
-In-reply-to: <20091230101046.2816d545@nehalam>
-To: Stephen Hemminger <shemminger@vyatta.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "Berck E. Nash" <flyboy@gmail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org
-Message-id: <4B3B9DEF.3090006@majjas.com>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7BIT
-References: <4B300A2A.8040305@gmail.com> <4B300E30.9090707@majjas.com>
- <4B3114E3.1070602@majjas.com> <4B329FA3.9090904@majjas.com>
- <20091223230102.4bb0100e.akpm@linux-foundation.org>
- <4B34E847.8010809@majjas.com> <20091225152200.1cf11dfe@nehalam>
- <4B3581C7.8000702@majjas.com> <20091226095723.7ac82b18@nehalam>
- <4B367409.5060202@majjas.com> <4B379378.4000102@majjas.com>
- <20091227102238.0df149f9@nehalam> <4B37B7E2.5070307@majjas.com>
- <20091229093023.3ad24786@nehalam> <4B3A5048.9090700@majjas.com>
- <20091229114938.1f4d1c5c@nehalam> <4B3AFFE8.3060409@majjas.com>
- <20091229235942.51bf733d@nehalam> <4B3B7488.6080503@majjas.com>
- <20091230101046.2816d545@nehalam>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.5)
- Gecko/20091204 Lightning/1.0b2pre Thunderbird/3.0
+	Wed, 30 Dec 2009 13:40:12 -0500
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Subject: [PATCH] drivers/net/ixgbe/ixgbe_common.c: use %pM to show MAC address
+Date: Wed, 30 Dec 2009 13:40:04 -0500
+Message-ID: <BD79186B4FD85F4B8E60E381CAEE19090200F642@mi8nycmail19.Mi8.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] drivers/net/ixgbe/ixgbe_common.c: use %pM to show MAC address
+Thread-Index: AcqJf4CX0hayYq/1TPWC5lzd0F7fzg==
+From: "H Hartley Sweeten" <hartleys@visionengravers.com>
+To: <linux-kernel@vger.kernel.org>, <netdev@vger.kernel.org>
+Cc: "David Miller" <davem@davemloft.net>
+X-OriginalArrivalTime: 30 Dec 2009 18:40:04.0265 (UTC) FILETIME=[80778990:01CA897F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/30/2009 1:10 PM, Stephen Hemminger wrote:
-> On Wed, 30 Dec 2009 10:40:56 -0500
-> Michael Breuer<mbreuer@majjas.com>  wrote:
->
->    
->> Dec 30 10:37:14 mail kernel: sky2 0000:06:00.0: error interrupt
->> status=0x40000008
->> Dec 30 10:37:14 mail kernel: sky2 Tx ring pending=31...40 report=35 done=35
->> Dec 30 10:37:14 mail kernel: 30: 0x0: 0xeb50c0ca(9014)
->> Dec 30 10:37:14 mail kernel: 32: 0x0: 0xeb5080ca(9014)
->> Dec 30 10:37:14 mail kernel: 34: 0x0: 0xeb5040ca(9014)
->> Dec 30 10:37:14 mail kernel: 36: 0x0: 0xeb5000ca(9014)
->> Dec 30 10:37:14 mail kernel: 38: 0x0: 0xeb4fc0ca(9014)
->>      
-> You must be using 9K MTU.  Do you see the problem with smaller
-> MTU?
->    
-Yes - decided to try 9k in the past day or so. Can redo with smaller 
-again & debug if it would be helpful.
->    
->> Dec 30 10:37:14 mail kernel: sky2 0000:06:00.0: error interrupt
->> status=0x40000008
->> Dec 30 10:37:14 mail kernel: sky2 Tx ring pending=87...92 report=89 done=91
->> Dec 30 10:37:14 mail kernel: 86: 0x0: 0xeafd80ca(9014)
->> Dec 30 10:37:14 mail kernel: 88: 0x0: 0xeafd40ca(9014)
->> Dec 30 10:37:14 mail kernel: 90: 0x0: 0xeafd00ca(9014)
->> Dec 30 10:37:15 mail kernel: sky2 0000:06:00.0: error interrupt status=0x8
->> Dec 30 10:37:15 mail kernel: sky2 Tx ring pending=39...42 report=39 done=41
->> Dec 30 10:37:15 mail kernel: 38: 0x0: 0xe5fec0ca(9014)
->> Dec 30 10:37:15 mail kernel: 40: 0x0: 0xe5fe80ca(9014)
->> Dec 30 10:37:15 mail kernel: sky2 0000:06:00.0: error interrupt
->> status=0x40000008
->> Dec 30 10:37:15 mail kernel: sky2 Tx ring pending=117...124 report=119
->> done=119
->> Dec 30 10:37:15 mail kernel: 116: 0x0: 0xe5d6c0ca(9014)
->> Dec 30 10:37:15 mail kernel: 118: 0x0: 0xe5d680ca(9014)
->> Dec 30 10:37:15 mail kernel: 120: 0x0: 0xe5d660ca(5938)
->> Dec 30 10:37:15 mail kernel: 122: 0x0: 0xe5d640ca(4213)
->>      
->    
+Use the %pM kernel extension to display the MAC address.
 
+The only difference in the output is that the MAC address is
+shown in the usual colon-separated hex notation.
+
+Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
+Cc: David S. Miller <davem@davemloft.net>
+
+---
+
+diff --git a/drivers/net/ixgbe/ixgbe_common.c b/drivers/net/ixgbe/ixgbe_common.c
+index 688b8ca..1cedb9a 100644
+--- a/drivers/net/ixgbe/ixgbe_common.c
++++ b/drivers/net/ixgbe/ixgbe_common.c
+@@ -1278,19 +1278,11 @@ s32 ixgbe_init_rx_addrs_generic(struct ixgbe_hw *hw)
+ 		/* Get the MAC address from the RAR0 for later reference */
+ 		hw->mac.ops.get_mac_addr(hw, hw->mac.addr);
+ 
+-		hw_dbg(hw, " Keeping Current RAR0 Addr =%.2X %.2X %.2X ",
+-		       hw->mac.addr[0], hw->mac.addr[1],
+-		       hw->mac.addr[2]);
+-		hw_dbg(hw, "%.2X %.2X %.2X\n", hw->mac.addr[3],
+-		       hw->mac.addr[4], hw->mac.addr[5]);
++		hw_dbg(hw, " Keeping Current RAR0 Addr =%pM\n", hw->mac.addr);
+ 	} else {
+ 		/* Setup the receive address. */
+ 		hw_dbg(hw, "Overriding MAC Address in RAR[0]\n");
+-		hw_dbg(hw, " New MAC Addr =%.2X %.2X %.2X ",
+-		       hw->mac.addr[0], hw->mac.addr[1],
+-		       hw->mac.addr[2]);
+-		hw_dbg(hw, "%.2X %.2X %.2X\n", hw->mac.addr[3],
+-		       hw->mac.addr[4], hw->mac.addr[5]);
++		hw_dbg(hw, " New MAC Addr =%pM\n", hw->mac.addr);
+ 
+ 		hw->mac.ops.set_rar(hw, 0, hw->mac.addr, 0, IXGBE_RAH_AV);
+ 	} 
