@@ -1,103 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753338AbZL3Th1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753371AbZL3Ti2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753338AbZL3Th1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Dec 2009 14:37:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753212AbZL3Th1
+	id S1753371AbZL3Ti2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Dec 2009 14:38:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753249AbZL3Ti1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Dec 2009 14:37:27 -0500
-Received: from lider.pardus.org.tr ([193.140.100.216]:42722 "EHLO
-	lider.pardus.org.tr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753165AbZL3Th0 (ORCPT
+	Wed, 30 Dec 2009 14:38:27 -0500
+Received: from exprod6og106.obsmtp.com ([64.18.1.191]:58870 "HELO
+	exprod6og106.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753212AbZL3Ti0 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Dec 2009 14:37:26 -0500
-Message-ID: <4B3BABF4.2060301@pardus.org.tr>
-Date: Wed, 30 Dec 2009 21:37:24 +0200
-From: =?UTF-8?B?T3phbiDDh2HEn2xheWFu?= <ozan@pardus.org.tr>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Wed, 30 Dec 2009 14:38:26 -0500
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: Robert Hancock <hancockrwd@gmail.com>
-CC: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Disabling IRQ #20 problem with JMicron SATA-PATA Controller
-References: <4B3B177E.60103@pardus.org.tr> <4B3BA9D9.10102@gmail.com>
-In-Reply-To: <4B3BA9D9.10102@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Subject: [PATCH] drivers/atm/fore200e.c: use %pM to show MAC address
+Date: Wed, 30 Dec 2009 14:38:25 -0500
+Message-ID: <BD79186B4FD85F4B8E60E381CAEE19090200F663@mi8nycmail19.Mi8.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] drivers/atm/fore200e.c: use %pM to show MAC address
+Thread-Index: AcqJh6d2BiW0sqA9QKO64PHBMxQAAg==
+From: "H Hartley Sweeten" <hartleys@visionengravers.com>
+To: <linux-kernel@vger.kernel.org>, <netdev@vger.kernel.org>
+Cc: "David Miller" <davem@davemloft.net>
+X-OriginalArrivalTime: 30 Dec 2009 19:38:24.0057 (UTC) FILETIME=[A6816A90:01CA8987]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert Hancock wrote:
->
-> You say this only happens if the JMicron controller is enabled and set
-> to AHCI mode? That's odd because it's the IRQ for the main Intel
-> controller that it's complaining about. If that's really the IRQ it's
-> using then I wonder how the system continues booting at all after it's
-> disabled. Can you post /proc/interrupts output?
->
-> My other suggestions would be make sure you have the latest BIOS
-> installed, and try a newer kernel if possible..
+Use the %pM kernel extension to display the MAC address.
 
-I was wrong as the issue appears randomly even if the JMicron controller
-is disabled. I've already updated to the latest BIOS.
+Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
+Cc: David S. Miller <davem@davemloft.net>
 
-Here's the /proc/interrupts output on a system which didn't complain yet
-about the IRQ issue:
+---
 
-          CPU0       CPU1       CPU2       CPU3       CPU4      
-CPU5       CPU6       CPU7
-20:          0          0     208895          0          0         
-0          0       3723   IO-APIC-fasteoi   ahci
-
-
-I rechecked kern.log and observed that the trace differs in terms of the
-handler function:
-
-Dec 28 11:32:07 redd kernel: [   57.201100] Call Trace:
-Dec 28 11:32:07 redd kernel: [   57.201108]  [<c01759cf>]
-__report_bad_irq+0x2e/0x6f
-Dec 28 11:32:07 redd kernel: [   57.201113]  [<c0175b00>]
-note_interrupt+0xf0/0x148
-Dec 28 11:32:07 redd kernel: [   57.201116]  [<c017601e>]
-handle_fasteoi_irq+0x7d/0x9b
-Dec 28 11:32:07 redd kernel: [   57.201122]  [<c0104cdb>]
-handle_irq+0x3b/0x48
-Dec 28 11:32:07 redd kernel: [   57.201126]  [<c0104648>] do_IRQ+0x40/0x83
-Dec 28 11:32:07 redd kernel: [   57.201130]  [<c0103889>]
-common_interrupt+0x29/0x30
-Dec 28 11:32:07 redd kernel: [   57.201135]  [<c0108662>] ?
-mwait_idle+0x6b/0x89
-Dec 28 11:32:07 redd kernel: [   57.201139]  [<c01024b1>] cpu_idle+0x49/0x64
-Dec 28 11:32:07 redd kernel: [   57.201145]  [<c03fde07>]
-start_secondary+0xc6/0xc8
-Dec 28 11:32:07 redd kernel: [   57.201148] handlers:
-Dec 28 11:32:07 redd kernel: [   57.201149] [<f8076414>]
-(ahci_interrupt+0x0/0xa8 [ahci])
-Dec 28 11:32:07 redd kernel: [   57.201158] Disabling IRQ #20
-
---
-
-Dec 30 09:35:30 redd kernel: [144782.793812] Call Trace:
-Dec 30 09:35:30 redd kernel: [144782.793822]  [<c01759cf>]
-__report_bad_irq+0x2e/0x6f
-Dec 30 09:35:30 redd kernel: [144782.793827]  [<c0175b00>]
-note_interrupt+0xf0/0x148
-Dec 30 09:35:30 redd kernel: [144782.793830]  [<c017601e>]
-handle_fasteoi_irq+0x7d/0x9b
-Dec 30 09:35:30 redd kernel: [144782.793836]  [<c0104cdb>]
-handle_irq+0x3b/0x48
-Dec 30 09:35:30 redd kernel: [144782.793840]  [<c0104648>] do_IRQ+0x40/0x83
-Dec 30 09:35:30 redd kernel: [144782.793844]  [<c0103889>]
-common_interrupt+0x29/0x30
-Dec 30 09:35:30 redd kernel: [144782.793849]  [<c0108662>] ?
-mwait_idle+0x6b/0x89
-Dec 30 09:35:30 redd kernel: [144782.793853]  [<c01024b1>]
-cpu_idle+0x49/0x64
-Dec 30 09:35:30 redd kernel: [144782.793859]  [<c03fde07>]
-start_secondary+0xc6/0xc8
-Dec 30 09:35:30 redd kernel: [144782.793862] handlers:
-Dec 30 09:35:30 redd kernel: [144782.793863] [<f86c1eba>]
-(ata_sff_interrupt+0x0/0xab [libata])
-Dec 30 09:35:30 redd kernel: [144782.793895] [<f86c1eba>]
-(ata_sff_interrupt+0x0/0xab [libata])
-Dec 30 09:35:30 redd kernel: [144782.793919] Disabling IRQ #20
-
+diff --git a/drivers/atm/fore200e.c b/drivers/atm/fore200e.c
+index bc53fed..f7d6eba 100644
+--- a/drivers/atm/fore200e.c
++++ b/drivers/atm/fore200e.c
+@@ -2064,12 +2064,10 @@ fore200e_get_esi(struct fore200e* fore200e)
+ 	return -EBUSY;
+     }
+ 	
+-    printk(FORE200E "device %s, rev. %c, S/N: %d, ESI: %02x:%02x:%02x:%02x:%02x:%02x\n", 
++    printk(FORE200E "device %s, rev. %c, S/N: %d, ESI: %pM\n",
+ 	   fore200e->name, 
+ 	   (prom->hw_revision & 0xFF) + '@',    /* probably meaningless with SBA boards */
+-	   prom->serial_number & 0xFFFF,
+-	   prom->mac_addr[ 2 ], prom->mac_addr[ 3 ], prom->mac_addr[ 4 ],
+-	   prom->mac_addr[ 5 ], prom->mac_addr[ 6 ], prom->mac_addr[ 7 ]);
++	   prom->serial_number & 0xFFFF, &prom->mac_addr[2]);
+ 	
+     for (i = 0; i < ESI_LEN; i++) {
+ 	fore200e->esi[ i ] = fore200e->atm_dev->esi[ i ] = prom->mac_addr[ i + 2 ];
+@@ -2845,13 +2843,12 @@ fore200e_proc_read(struct atm_dev *dev, loff_t* pos, char* page)
+ 		"   interrupt line:\t\t%s\n"
+ 		"   physical base address:\t0x%p\n"
+ 		"   virtual base address:\t0x%p\n"
+-		"   factory address (ESI):\t%02x:%02x:%02x:%02x:%02x:%02x\n"
++		"   factory address (ESI):\t%pM\n"
+ 		"   board serial number:\t\t%d\n\n",
+ 		fore200e_irq_itoa(fore200e->irq),
+ 		(void*)fore200e->phys_base,
+ 		fore200e->virt_base,
+-		fore200e->esi[0], fore200e->esi[1], fore200e->esi[2],
+-		fore200e->esi[3], fore200e->esi[4], fore200e->esi[5],
++		fore200e->esi,
+ 		fore200e->esi[4] * 256 + fore200e->esi[5]);
+ 
+ 	return len; 
