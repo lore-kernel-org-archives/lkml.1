@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752470AbZL3H67@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752462AbZL3IAA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752470AbZL3H67 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Dec 2009 02:58:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752337AbZL3H67
+	id S1752462AbZL3IAA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Dec 2009 03:00:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751612AbZL3H77
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Dec 2009 02:58:59 -0500
-Received: from mail.vyatta.com ([76.74.103.46]:35900 "EHLO mail.vyatta.com"
+	Wed, 30 Dec 2009 02:59:59 -0500
+Received: from mail.vyatta.com ([76.74.103.46]:35956 "EHLO mail.vyatta.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752158AbZL3H66 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Dec 2009 02:58:58 -0500
-Date: Tue, 29 Dec 2009 23:58:35 -0800
+	id S1751510AbZL3H77 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Dec 2009 02:59:59 -0500
+Date: Tue, 29 Dec 2009 23:59:42 -0800
 From: Stephen Hemminger <shemminger@vyatta.com>
 To: Michael Breuer <mbreuer@majjas.com>
 Cc: Andrew Morton <akpm@linux-foundation.org>,
@@ -17,7 +17,7 @@ Cc: Andrew Morton <akpm@linux-foundation.org>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
        netdev@vger.kernel.org
 Subject: Re: sky2 panic in 2.6.32.1 under load (new oops)
-Message-ID: <20091229235835.1f260eb0@nehalam>
+Message-ID: <20091229235942.51bf733d@nehalam>
 In-Reply-To: <4B3AFFE8.3060409@majjas.com>
 References: <4B300A2A.8040305@gmail.com>
 	<4B300E30.9090707@majjas.com>
@@ -48,23 +48,6 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 On Wed, 30 Dec 2009 02:23:20 -0500
 Michael Breuer <mbreuer@majjas.com> wrote:
 
-> Ok - I called dump_txring from sky2_net_intr:
-> --- a/drivers/net/sky2.c
-> +++ b/drivers/net/sky2.c
-> @@ -2725,8 +2791,10 @@ static void sky2_watchdog(unsigned long arg)
->   /* Hardware/software error handling */
->   static void sky2_err_intr(struct sky2_hw *hw, u32 status)
->   {
-> -       if (net_ratelimit())
-> +       if (net_ratelimit()) {
->                  dev_warn(&hw->pdev->dev, "error interrupt 
-> status=%#x\n", status);
-> +               dump_txring(hw, 0);
-> +       }
-> 
->          if (status & Y2_IS_HW_ERR)
->                  sky2_hw_intr(hw);
-> 
 > And got this:
 > Dec 30 02:17:23 mail kernel: sky2 0000:06:00.0: error interrupt 
 > status=0x40000008
@@ -76,9 +59,8 @@ Michael Breuer <mbreuer@majjas.com> wrote:
 > Dec 30 02:17:23 mail kernel: sky2 0000:06:00.0: error interrupt status=0x8
 > Dec 30 02:17:23 mail kernel: sky2 Tx ring pending=30...32 report=30 done=31
 > Dec 30 02:17:23 mail kernel: sky2 Tx ring pending=30...32 report=30 done=31
-> 
 
-I notice that you have NOUVEAU Nvidia drivers loaded? The one difference in HW
-between your board and mine is that I have ATI video card.
+The interesting bits are only output at DEBUG level.  So either change kernel
+log level or syslog.
 
 -- 
