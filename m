@@ -1,243 +1,232 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753582AbZL3VWK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753767AbZL3VY1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753582AbZL3VWK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Dec 2009 16:22:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753411AbZL3VWI
+	id S1753767AbZL3VY1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Dec 2009 16:24:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753505AbZL3VY1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Dec 2009 16:22:08 -0500
-Received: from mta1.srv.hcvlny.cv.net ([167.206.4.196]:58261 "EHLO
-	mta1.srv.hcvlny.cv.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753391AbZL3VWH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Dec 2009 16:22:07 -0500
-Date: Wed, 30 Dec 2009 16:21:35 -0500
-From: Michael Breuer <mbreuer@majjas.com>
-Subject: Re: audit.c skb - tty race condition - was sky2 panic in 2.6.32.1
- under load (new oops)
-In-reply-to: <4B3BC2DC.7030201@majjas.com>
-To: Stephen Hemminger <shemminger@vyatta.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "Berck E. Nash" <flyboy@gmail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org
-Message-id: <4B3BC45F.5080302@majjas.com>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7BIT
-References: <4B300A2A.8040305@gmail.com> <4B300E30.9090707@majjas.com>
- <4B3114E3.1070602@majjas.com> <4B329FA3.9090904@majjas.com>
- <20091223230102.4bb0100e.akpm@linux-foundation.org>
- <4B34E847.8010809@majjas.com> <20091225152200.1cf11dfe@nehalam>
- <4B3581C7.8000702@majjas.com> <20091226095723.7ac82b18@nehalam>
- <4B367409.5060202@majjas.com> <4B379378.4000102@majjas.com>
- <20091227102238.0df149f9@nehalam> <4B37B7E2.5070307@majjas.com>
- <20091229093023.3ad24786@nehalam> <4B3A5048.9090700@majjas.com>
- <20091229114938.1f4d1c5c@nehalam> <4B3AFFE8.3060409@majjas.com>
- <20091229235835.1f260eb0@nehalam> <4B3B92B8.7010208@majjas.com>
- <4B3BA6E6.40906@majjas.com> <4B3BBBA4.5090400@majjas.com>
- <4B3BC2DC.7030201@majjas.com>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.5)
- Gecko/20091204 Lightning/1.0b2pre Thunderbird/3.0
+	Wed, 30 Dec 2009 16:24:27 -0500
+Received: from mga09.intel.com ([134.134.136.24]:36206 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753472AbZL3VY0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Dec 2009 16:24:26 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.47,477,1257148800"; 
+   d="scan'208";a="480228108"
+Subject: [GIT PULL] dmaengine/async_tx fixes for 2.6.33-rc3
+From: Dan Williams <dan.j.williams@intel.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-raid <linux-raid@vger.kernel.org>,
+       Maciej Sosnowski <maciej.sosnowski@intel.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 30 Dec 2009 14:22:12 -0700
+Message-ID: <1262208132.32461.48.camel@dwillia2-linux.ch.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.2 (2.28.2-1.fc12) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/30/2009 4:15 PM, Michael Breuer wrote:
-> On 12/30/2009 3:44 PM, Michael Breuer wrote:
->> A couple more observations:
->>
->> 1) enabling auditd for runlevel 3 mitigates the issue
->> 2) starting a remote x session (XDMCP) while under load and while 
->> auditd is already running also triggers the sky2 interrupt status 
->> messages - so maybe not tty1 - but some sort of X & auditd 
->> interaction. Even in this case, the frequency of the error messages 
->> is much less than when auditd is started in runlevel 5 for the first 
->> time.
-> And just for some certainty - running with audit=0, the errors do not 
-> manifest.
-Disregard - took way longer, but they're back:
-Dec 30 16:16:42 mail kernel: sky2 0000:06:00.0: error interrupt 
-status=0x40000008
-Dec 30 16:16:42 mail kernel: sky2 Tx ring pending=72...74 report=73 done=73
-Dec 30 16:16:42 mail kernel: 72: 0x0: 0xb18a00be(8490)
-Dec 30 16:16:42 mail kernel: sky2 0000:06:00.0: error interrupt 
-status=0x40000008
-Dec 30 16:16:42 mail kernel: sky2 Tx ring pending=86...88 report=87 done=88
-Dec 30 16:16:42 mail kernel: 86: 0x0: 0xb1a140be(9014)
-Dec 30 16:16:58 mail kernel: sky2 0000:06:00.0: error interrupt 
-status=0x40000008
-Dec 30 16:16:58 mail kernel: sky2 Tx ring pending=50...52 report=51 done=52
-Dec 30 16:16:58 mail kernel: 50: 0x0: 0xac27c0be(8490)
-Dec 30 16:17:15 mail kernel: sky2 0000:06:00.0: error interrupt status=0x8
-Dec 30 16:17:15 mail kernel: sky2 Tx ring pending=16...18 report=16 done=17
-Dec 30 16:17:15 mail kernel: 16: 0x0: 0xa67ec0be(8490)
-Dec 30 16:17:15 mail kernel: sky2 0000:06:00.0: error interrupt 
-status=0x40000008
-Dec 30 16:17:15 mail kernel: sky2 Tx ring pending=122...124 report=123 
-done=124
-Dec 30 16:17:15 mail kernel: 122: 0x0: 0xa68980be(8490)
-Dec 30 16:17:16 mail kernel: sky2 0000:06:00.0: error interrupt 
-status=0x40000008
-Dec 30 16:17:16 mail kernel: sky2 Tx ring pending=66...68 report=67 done=67
-Dec 30 16:17:16 mail kernel: 66: 0x0: 0xa67200be(8490)
-Dec 30 16:17:16 mail kernel: sky2 0000:06:00.0: error interrupt 
-status=0x40000008
-Dec 30 16:17:16 mail kernel: sky2 Tx ring pending=74...76 report=75 done=76
-Dec 30 16:17:16 mail kernel: 74: 0x0: 0xa659c0be(8490)
-Dec 30 16:17:21 mail dhcpd: DHCPINFORM from 10.0.0.11 via eth0
-Dec 30 16:17:21 mail dhcpd: DHCPACK to 10.0.0.11 (00:1a:92:8d:30:81) via 
-eth0
-Dec 30 16:18:01 mail kernel: sky2 0000:06:00.0: error interrupt 
-status=0x40000008
-Dec 30 16:18:01 mail kernel: sky2 Tx ring pending=0...2 report=1 done=1
-Dec 30 16:18:01 mail kernel: 0: 0x0: 0x926580be(8490)
-Dec 30 16:18:04 mail kernel: sky2 0000:06:00.0: error interrupt 
-status=0x40000008
-Dec 30 16:18:04 mail kernel: sky2 Tx ring pending=116...118 report=117 
-done=117
-Dec 30 16:18:04 mail kernel: 116: 0x0: 0x91f380be(8490)
-Dec 30 16:18:04 mail kernel: sky2 0000:06:00.0: error interrupt status=0x8
-Dec 30 16:18:04 mail kernel: sky2 Tx ring pending=102...104 report=102 
-done=103
-Dec 30 16:18:04 mail kernel: 102: 0x0: 0x91ed80be(8490)
-Dec 30 16:18:05 mail kernel: sky2 0000:06:00.0: error interrupt 
-status=0x40000008
-Dec 30 16:18:05 mail kernel: sky2 Tx ring pending=64...68 report=65 done=68
-Dec 30 16:18:05 mail kernel: 64: 0x0: 0x91d340be(8490)
-Dec 30 16:18:05 mail kernel: 66: 0x0: 0x920040ca(105)
-Dec 30 16:18:06 mail kernel: sky2 0000:06:00.0: error interrupt 
-status=0x40000008
-Dec 30 16:18:06 mail kernel: sky2 Tx ring pending=82...86 report=83 done=83
-Dec 30 16:18:06 mail kernel: 82: 0x0: 0x91bf80be(9014)
-Dec 30 16:18:06 mail kernel: 84: 0x0: 0x91bec0be(7518)
-Dec 30 16:18:06 mail kernel: sky2 0000:06:00.0: error interrupt 
-status=0x40000008
-Dec 30 16:18:06 mail kernel: sky2 Tx ring pending=83...86 report=85 done=86
-Dec 30 16:18:06 mail kernel: 82: 0x0: 0x91bf80be(9014)
-Dec 30 16:18:06 mail kernel: 84: 0x0: 0x91bec0be(7518)
-Dec 30 16:18:06 mail kernel: sky2 0000:06:00.0: error interrupt 
-status=0x40000008
-Dec 30 16:18:06 mail kernel: sky2 Tx ring pending=85...88 report=87 done=87
-Dec 30 16:18:06 mail kernel: 84: 0x0: 0x91bec0be(7518)
-Dec 30 16:18:06 mail kernel: 86: 0x0: 0x91b080be(8398)
-Dec 30 16:18:08 mail kernel: sky2 0000:06:00.0: error interrupt status=0x8
-Dec 30 16:18:08 mail kernel: sky2 Tx ring pending=28...30 report=28 done=29
-Dec 30 16:18:08 mail kernel: 28: 0x0: 0x919500be(8506)
-... continues ...
->>
->> On 12/30/2009 2:15 PM, Michael Breuer wrote:
->>> And now looking at audit.c it seems reasonable that there is a race 
->>> condition when auditd is started at roughly the same time as X. I'm 
->>> guessing that the kaudit thread is fired up; the tty connected; and 
->>> at the same time X grabs the tty. Somewhere in there an skb gets 
->>> hosed and is then reused by whatever comes along - in my case sky2 
->>> as that's where the subsequent demand is. If the demand happens 
->>> first, the contaminated skb (dk in what way yet) is probably waiting 
->>> to manifest as some other bug that's been frustrating people.
->>> On 12/30/2009 12:49 PM, Michael Breuer wrote:
->>>> On 12/30/2009 2:58 AM, Stephen Hemminger wrote:
->>>>> On Wed, 30 Dec 2009 02:23:20 -0500
->>>>> Michael Breuer<mbreuer@majjas.com>  wrote:
->>>>>
->>>>>> Ok - I called dump_txring from sky2_net_intr:
->>>>>> --- a/drivers/net/sky2.c
->>>>>> +++ b/drivers/net/sky2.c
->>>>>> @@ -2725,8 +2791,10 @@ static void sky2_watchdog(unsigned long arg)
->>>>>>    /* Hardware/software error handling */
->>>>>>    static void sky2_err_intr(struct sky2_hw *hw, u32 status)
->>>>>>    {
->>>>>> -       if (net_ratelimit())
->>>>>> +       if (net_ratelimit()) {
->>>>>>                   dev_warn(&hw->pdev->dev, "error interrupt
->>>>>> status=%#x\n", status);
->>>>>> +               dump_txring(hw, 0);
->>>>>> +       }
->>>>>>
->>>>>>           if (status&  Y2_IS_HW_ERR)
->>>>>>                   sky2_hw_intr(hw);
->>>>>>
->>>>>> And got this:
->>>>>> Dec 30 02:17:23 mail kernel: sky2 0000:06:00.0: error interrupt
->>>>>> status=0x40000008
->>>>>> Dec 30 02:17:23 mail kernel: sky2 0000:06:00.0: error interrupt
->>>>>> status=0x40000008
->>>>>> Dec 30 02:17:23 mail kernel: sky2 Tx ring pending=28...30 
->>>>>> report=29 done=29
->>>>>> Dec 30 02:17:23 mail kernel: sky2 Tx ring pending=28...30 
->>>>>> report=29 done=29
->>>>>> Dec 30 02:17:23 mail kernel: sky2 0000:06:00.0: error interrupt 
->>>>>> status=0x8
->>>>>> Dec 30 02:17:23 mail kernel: sky2 0000:06:00.0: error interrupt 
->>>>>> status=0x8
->>>>>> Dec 30 02:17:23 mail kernel: sky2 Tx ring pending=30...32 
->>>>>> report=30 done=31
->>>>>> Dec 30 02:17:23 mail kernel: sky2 Tx ring pending=30...32 
->>>>>> report=30 done=31
->>>>>>
->>>>> I notice that you have NOUVEAU Nvidia drivers loaded? The one 
->>>>> difference in HW
->>>>> between your board and mine is that I have ATI video card.
->>>>>
->>>> Seems the problem is linked to auditd and X11 (but not nouveau).
->>>>
->>>> Today, I ran a bunch of scenarios. I first determined that the 
->>>> problem only manifest in runlevel 5. Next, this occurred with or 
->>>> without KMS and with or without nouveau. This happened whether or 
->>>> not I was logged in (local or remote), and regardless of window 
->>>> manager (xdm, gdm, kdm). I then checked to see what else was 
->>>> different between runlevel 3 and 5 - only thing was auditd. I 
->>>> disabled auditd and reran - no errors.
->>>>
->>>> Now for the odd stuff:
->>>>
->>>> The errors only manifest if the high throughput data transfer is 
->>>> initiated when the system is in runlevel 5 and auditd was started 
->>>> by init when transitioning from runlevel 3 to 5. For example, the 
->>>> following scenarios do not cause the errors to manifest:
->>>>
->>>> runlevel3; start auditd runlevel 5; start transfer
->>>> runlevel3; chkconfig auditd off; runlevel5; start auditd; start 
->>>> transfer
->>>> runlevel3; start transfer (note: errors do not occur if I 
->>>> transition to runlevel 5 after the high bandwidth transfer has 
->>>> started)
->>>> runlevel3; startx; start transfer
->>>>
->>>> The only way I get the problem to manifest is transition to 
->>>> runlevel 5 with chkconfig auditd on (level 5 only) and then initate 
->>>> the windows backup.
->>>>
->>>> I'm guessing that there is some sort of race condition happening 
->>>> between X (xdm/gdm/kdm/greeter?) and auditd that is somehow 
->>>> corrupting something. I'd hazard a more or less obvious guess that 
->>>> whatever's being corrupted differs when there is already a high 
->>>> throughput transfer under way.
->>>>
->>>> -- 
->>>> To unsubscribe from this list: send the line "unsubscribe 
->>>> linux-kernel" in
->>>> the body of a message to majordomo@vger.kernel.org
->>>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->>>> Please read the FAQ at  http://www.tux.org/lkml/
->>>
->>> -- 
->>> To unsubscribe from this list: send the line "unsubscribe 
->>> linux-kernel" in
->>> the body of a message to majordomo@vger.kernel.org
->>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->>> Please read the FAQ at  http://www.tux.org/lkml/
->>
->> -- 
->> To unsubscribe from this list: send the line "unsubscribe 
->> linux-kernel" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->> Please read the FAQ at  http://www.tux.org/lkml/
->
-> -- 
-> To unsubscribe from this list: send the line "unsubscribe 
-> linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Hi Linus, please pull from:
+
+     git://git.kernel.org/pub/scm/linux/kernel/git/djbw/async_tx.git fixes
+
+...to receive:
+
+Dan Williams (4):
+      ioat3: fix p-disabled q-continuation
+      async_tx: expand async raid6 test to cover ioatdma corner case
+      ioat2,3: put channel hardware in known state at init
+      Merge branch 'ioat' into fixes
+
+Guennadi Liakhovetski (1):
+      sh: fix DMA driver's descriptor chaining and cookie assignment
+
+Julia Lawall (2):
+      drivers/dma: drop unnecesary memset
+      drivers/dma: Correct use after free
+
+Nicolas Ferre (1):
+      dma: at_hdmac: correct incompatible type for argument 1 of 'spin_lock_bh'
+
+1/ A shdma fix from Guennadi that has been pending for a while, but
+finally acked by the original driver author.
+2/ Some Coccinelle fixes from Julia.
+3/ A typo fix in at_hdmac from Nicolas.
+4/ Two ioatdma driver fixes, one for a kexec reboot regression reported
+by Roland, and a descriptor processing error when performing raid
+recovery on a 11 or 12-disk raid6 array.
+
+All of these have been in -next for a week or so.  Maciej has also
+recently acked them, but to preserve the commit-ids I did not rebase.
+
+ crypto/async_tx/raid6test.c  |    7 +
+ drivers/dma/at_hdmac.c       |    4 +-
+ drivers/dma/coh901318.c      |    2 +-
+ drivers/dma/dw_dmac.c        |    2 -
+ drivers/dma/ioat/dma.c       |    2 +-
+ drivers/dma/ioat/dma.h       |   18 +++
+ drivers/dma/ioat/dma_v2.c    |   69 +++++++---
+ drivers/dma/ioat/dma_v2.h    |    2 +
+ drivers/dma/ioat/dma_v3.c    |   60 ++++++--
+ drivers/dma/ioat/registers.h |    1 +
+ drivers/dma/shdma.c          |  324 +++++++++++++++++++++++++++---------------
+ drivers/dma/shdma.h          |    9 +-
+ 12 files changed, 341 insertions(+), 159 deletions(-)
+
+One note, this diffstat was created by hand via a test merge branch as
+the one created by 'git request-pull' was:
+
+     806 files changed, 13676 insertions(+), 6334 deletions(-)
+
+Not sure where that came from, the 'fixes' branch was based on
+2.6.32-rc6 while the ioat changes were based on 2.6.32.
+
+--
+Dan
+
+
+commit f80ca163d65903276bec7045a484a79c0897eb2d
+Merge: 0794ec8 a6d52d7
+Author: Dan Williams <dan.j.williams@intel.com>
+Date:   Tue Dec 22 17:21:47 2009 -0700
+
+    Merge branch 'ioat' into fixes
+
+commit 0794ec8ce327ec74416b569b8fb1951274693700
+Author: Julia Lawall <julia@diku.dk>
+Date:   Tue Dec 22 21:30:59 2009 +0100
+
+    drivers/dma: Correct use after free
+    
+    Move the kfree after the iounmap that refers to the same structure.
+    
+    A simplified version of the semantic match that finds this problem is as
+    follows: (http://coccinelle.lip6.fr/)
+    
+    // <smpl>
+    @@
+    expression x,e;
+    identifier f;
+    iterator I;
+    statement S;
+    @@
+    
+    *kfree(x);
+    ... when != &x
+        when != x = e
+        when != I(x,...) S
+    *x->f
+    // </smpl>
+    
+    Signed-off-by: Julia Lawall <julia@diku.dk>
+    Signed-off-by: Dan Williams <dan.j.williams@intel.com>
+
+commit 1e9d1b13efae7e0a2705611d47ae5f07e27015f0
+Author: Julia Lawall <julia@diku.dk>
+Date:   Sat Dec 19 08:30:30 2009 +0100
+
+    drivers/dma: drop unnecesary memset
+    
+    memset of 0 is not needed after kzalloc
+    
+    The semantic patch that makes this change is as follows:
+    (http://coccinelle.lip6.fr/)
+    
+    // <smpl>
+    @@
+    expression x;
+    statement S;
+    @@
+    
+    x = kzalloc(...);
+    if (x == NULL) S
+    ... when != x
+    -memset(x,0,...);// </smpl>
+    
+    Signed-off-by: Julia Lawall <julia@diku.dk>
+    Signed-off-by: Dan Williams <dan.j.williams@intel.com>
+
+commit a6d52d70677e99bdb89b6921c265d0a58c22e597
+Author: Dan Williams <dan.j.williams@intel.com>
+Date:   Sat Dec 19 15:36:02 2009 -0700
+
+    ioat2,3: put channel hardware in known state at init
+    
+    Put the ioat2 and ioat3 state machines in the halted state with all
+    errors cleared.
+    
+    The ioat1 init path is not disturbed for stability, there are no
+    reported ioat1 initiaization issues.
+    
+    Cc: <stable@kernel.org>
+    Reported-by: Roland Dreier <rdreier@cisco.com>
+    Tested-by: Roland Dreier <rdreier@cisco.com>
+    Acked-by: Simon Horman <horms@verge.net.au>
+    Signed-off-by: Dan Williams <dan.j.williams@intel.com>
+
+commit e02a0e47a3f061c1a53fc4376332a988ec047e8a
+Author: Dan Williams <dan.j.williams@intel.com>
+Date:   Thu Dec 17 13:55:38 2009 -0700
+
+    async_tx: expand async raid6 test to cover ioatdma corner case
+    
+    Add explicit 11 and 12 disks cases to exercise the 0 < src_cnt % 8 < 3
+    corner case in the ioatdma driver.
+    
+    Signed-off-by: Dan Williams <dan.j.williams@intel.com>
+
+commit cd78809f6191485a90ea6c92c2b58900ab5c156f
+Author: Dan Williams <dan.j.williams@intel.com>
+Date:   Thu Dec 17 13:52:39 2009 -0700
+
+    ioat3: fix p-disabled q-continuation
+    
+    When continuing a pq calculation the driver needs 3 extra sources.  The
+    driver can perform a 3 source calculation with a single descriptor, but
+    needs an extended descriptor to process up to 8 sources in one
+    operation.  However, in the p-disabled case only one extra source is
+    needed.  When continuing a p-disabled operation there are occasions
+    (i.e. 0 < src_cnt % 8 < 3) where the tail operation does not need an
+    extended descriptor.  Properly account for this fact otherwise invalid
+    'dmacount' values will be written to hardware usually causing the
+    channel to halt with 'invalid descriptor' errors.
+    
+    Cc: <stable@kernel.org>
+    Signed-off-by: Dan Williams <dan.j.williams@intel.com>
+
+commit 3542a113ab2f5880f1b62e5909d754250fb57d6b
+Author: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Date:   Thu Dec 17 09:41:39 2009 -0700
+
+    sh: fix DMA driver's descriptor chaining and cookie assignment
+    
+    The SH DMA driver wrongly assigns negative cookies to transfer descriptors,
+    also, its chaining of partial descriptors is broken. The latter problem is
+    usually invisible, because maximum transfer size per chunk is 16M, but if you
+    artificially set this limit lower, the driver fails. Since cookies are also
+    used in chunk management, both these problems are fixed in one patch. As side
+    effects a possible memory leak, when descriptors are prepared, but not
+    submitted, and multiple races have also been fixed.
+    
+    Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+    Acked-by: Paul Mundt <lethal@linux-sh.org>
+    Acked-by: Nobuhiro Iwamatsu <iwamatsu@nigauri.org>
+    Signed-off-by: Dan Williams <dan.j.williams@intel.com>
+
+commit 4297a462f455e38f08976df7b16c849614a287da
+Author: Nicolas Ferre <nicolas.ferre@atmel.com>
+Date:   Wed Dec 16 16:28:03 2009 +0100
+
+    dma: at_hdmac: correct incompatible type for argument 1 of 'spin_lock_bh'
+    
+    Correct a typo error in locking calls.
+    
+    Cc: <stable@kernel.org>
+    Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
+    Signed-off-by: Dan Williams <dan.j.williams@intel.com>
+
+
 
