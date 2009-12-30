@@ -1,66 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752525AbZL3MEo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752565AbZL3MJy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752525AbZL3MEo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Dec 2009 07:04:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752388AbZL3MEn
+	id S1752565AbZL3MJy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Dec 2009 07:09:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752127AbZL3MJx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Dec 2009 07:04:43 -0500
-Received: from ns1.siteground211.com ([209.62.36.12]:56551 "EHLO
-	serv01.siteground211.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752369AbZL3MEm (ORCPT
+	Wed, 30 Dec 2009 07:09:53 -0500
+Received: from mail-fx0-f225.google.com ([209.85.220.225]:37506 "EHLO
+	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752118AbZL3MJw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Dec 2009 07:04:42 -0500
-Subject: Re: [PATCH] OMAP2: add USB platform data and initialization for
- Nokia N800 and N810
-From: Felipe Balbi <me@felipebalbi.com>
-Reply-To: me@felipebalbi.com
-To: Luke-Jr <luke@dashjr.org>
-Cc: Kalle Valo <kalle.valo@iki.fi>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
-       "Balbi Felipe (Nokia-D/Helsinki)" <felipe.balbi@nokia.com>
-In-Reply-To: <200912300302.29725.luke@dashjr.org>
-References: <200912290152.16357.luke@dashjr.org>
-	 <200912292110.42122.luke@dashjr.org> <87pr5xvslk.fsf@purkki.valot.fi>
-	 <200912300302.29725.luke@dashjr.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 30 Dec 2009 14:04:33 +0200
-Message-ID: <1262174673.28789.188.camel@gandalf>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 
-Content-Transfer-Encoding: 7bit
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - serv01.siteground211.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - felipebalbi.com
+	Wed, 30 Dec 2009 07:09:52 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=gyV8tpjssAv4HAA3xUQ95qs8Yc+TPjM/XNyAiYeIOLmXTOx24DOKiHWCuU9HPTYXL6
+         neyiDG94S/9yhEpwv3BNZWG3LcsUCGVaecsS1P6xd+UCtAgnFAIGuYlLeIBd3OKG4DX5
+         xl8+/5fDhy9SGIZ+4ErpPfU7pOdYUf6388PiU=
+From: Corrado Zoccolo <czoccolo@gmail.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Linux-Kernel <linux-kernel@vger.kernel.org>,
+       Jeff Moyer <jmoyer@redhat.com>, Vivek Goyal <vgoyal@redhat.com>,
+       Shaohua Li <shaohua.li@intel.com>,
+       Gui Jianfeng <guijianfeng@cn.fujitsu.com>,
+       Corrado Zoccolo <czoccolo@gmail.com>
+Subject: [PATCH] cfq-iosched: non-rot devices do not need queue merging
+Date: Wed, 30 Dec 2009 13:10:04 +0100
+Message-Id: <1262175004-2132-1-git-send-email-czoccolo@gmail.com>
+X-Mailer: git-send-email 1.6.4.4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Non rotational devices' performances are not affected by
+distance of requests, so there is no point in having overhead
+to merge queues of nearby requests.
 
-On Wed, 2009-12-30 at 03:02 -0600, Luke-Jr wrote:
-> On Wednesday 30 December 2009 01:17:11 am Kalle Valo wrote:
-> > "Luke-Jr" <luke@dashjr.org> writes:
-> > > On that topic, is there a reason the newer code is under a unified "N8x0"
-> > > config option instead of the split N800/N810 that was used for the old
-> > > code, or is that simply a symptom of the currently-supported features all
-> > > being common?
-> > 
-> > IIRC, I just used one common n8x0 file because the n810 board file was
-> > very small and I didn't see any benefit from having it separately.
-> 
-> Yeah, that's because someone put all the N810 code in the N800 file ;)
-> 
-> Will probably at least split out the differences, if there's no other reason, 
-> then. Since I'm doing this stuff only for my own personal interest, I'll 
-> probably not bother to do much with N800 support unless someone feels like 
-> sending me one when I finish N810 (definitely not touching N800 before then).
+Signed-off-by: Corrado Zoccolo <czoccolo@gmail.com>
+---
+ block/cfq-iosched.c |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
 
-I think it's not worth the effort. Those boards share a lot of code.
-You'll end up with several small board files
-
+diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+index 918c7fd..01bb0f3 100644
+--- a/block/cfq-iosched.c
++++ b/block/cfq-iosched.c
+@@ -1268,7 +1268,8 @@ static void cfq_prio_tree_add(struct cfq_data *cfqd, struct cfq_queue *cfqq)
+ 		return;
+ 	if (!cfqq->next_rq)
+ 		return;
+-
++	if (blk_queue_nonrot(cfqd->queue))
++		return;
+ 	cfqq->p_root = &cfqd->prio_trees[cfqq->org_ioprio];
+ 	__cfqq = cfq_prio_tree_lookup(cfqd, cfqq->p_root,
+ 				      blk_rq_pos(cfqq->next_rq), &parent, &p);
+@@ -1689,7 +1690,7 @@ static struct cfq_queue *cfqq_close(struct cfq_data *cfqd,
+ 	struct cfq_queue *__cfqq;
+ 	sector_t sector = cfqd->last_position;
+ 
+-	if (RB_EMPTY_ROOT(root))
++	if (RB_EMPTY_ROOT(root) || blk_queue_nonrot(cfqd->queue))
+ 		return NULL;
+ 
+ 	/*
 -- 
-balbi
+1.6.4.4
 
