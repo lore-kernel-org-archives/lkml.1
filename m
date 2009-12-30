@@ -1,104 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752155AbZL3RDm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752397AbZL3RPF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752155AbZL3RDm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Dec 2009 12:03:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751683AbZL3RDl
+	id S1752397AbZL3RPF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Dec 2009 12:15:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752123AbZL3RPE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Dec 2009 12:03:41 -0500
-Received: from mk-filter-4-a-1.mail.uk.tiscali.com ([212.74.100.55]:9056 "EHLO
-	mk-filter-4-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751631AbZL3RDl (ORCPT
+	Wed, 30 Dec 2009 12:15:04 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:39759 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752090AbZL3RPC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Dec 2009 12:03:41 -0500
-X-Trace: 313817291/mk-filter-4.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.28.176/None/hugh.dickins@tiscali.co.uk
-X-SBRS: None
-X-RemoteIP: 79.69.28.176
-X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
-X-SMTP-AUTH: 
-X-Originating-Country: GB/UNITED KINGDOM
-X-MUA: Alpine 2.00 (LSU 1167 2008-08-23)
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AnQBAM8WO0tPRRyw/2dsb2JhbAAIy04Ii1uCQQiBaAQ
-X-IronPort-AV: E=Sophos;i="4.47,476,1257120000"; 
-   d="scan'208";a="313817291"
-Date: Wed, 30 Dec 2009 17:03:31 +0000 (GMT)
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-X-X-Sender: hugh@sister.anvils
-To: Minchan Kim <minchan.kim@gmail.com>
-cc: Rik van Riel <riel@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [PATCH -mmotm-2009-12-10-17-19] Prevent churning of zero page
- in LRU list.
-In-Reply-To: <20091228130926.6874d7b2.minchan.kim@barrios-desktop>
-Message-ID: <alpine.LSU.2.00.0912301653200.4532@sister.anvils>
-References: <20091228115315.76b1ecd0.minchan.kim@barrios-desktop> <4B38246C.3020209@redhat.com> <20091228130926.6874d7b2.minchan.kim@barrios-desktop>
-User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
+	Wed, 30 Dec 2009 12:15:02 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=GXUzzbwU+nZNbTyLzfBHQ1H16uVOHfI+WXD6q/R94uhLxJIBd4qUh1PR3uvgkwfEhV
+         CSdFMB/vy0azNJCsSHyomXXYxIu6yCABzjbuHp4UYhtDJJxhDvdtSKl4CObB4RldUUZl
+         hHLfmh5k2ydMr5rWD/GwyZryPqS0V9FpE96c4=
+Date: Wed, 30 Dec 2009 18:14:58 +0100
+From: Johan Hovold <jhovold@gmail.com>
+To: Dan Carpenter <error27@gmail.com>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Johan Hovold <jhovold@gmail.com>
+Subject: Re: [patch] USB: serial: fix DMA buffers on stack for io_edgeport.c
+Message-ID: <20091230171457.GA15063@localhost>
+References: <1262037718-31424-1-git-send-email-jhovold@gmail.com>
+ <20091230160645.GC29476@bicker>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091230160645.GC29476@bicker>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 28 Dec 2009, Minchan Kim wrote:
-> On Sun, 27 Dec 2009 22:22:20 -0500
-> Rik van Riel <riel@redhat.com> wrote:
-> > On 12/27/2009 09:53 PM, Minchan Kim wrote:
-> > >
-> > > VM doesn't add zero page to LRU list.
-> > > It means zero page's churning in LRU list is pointless.
-> > >
-> > > As a matter of fact, zero page can't be promoted by mark_page_accessed
-> > > since it doesn't have PG_lru.
-> > >
-> > > This patch prevent unecessary mark_page_accessed call of zero page
-> > > alghouth caller want FOLL_TOUCH.
-> > >
-> > > Signed-off-by: Minchan Kim<minchan.kim@gmail.com>
-> > 
-> > The code looks correct, but I wonder how frequently we run into
-> > the zero page in this code, vs. how much the added cost is of
-> > having this extra code in follow_page.
-> > 
-> > What kind of problem were you running into that motivated you
-> > to write this patch?
-> 
-> I didn't have experienced any problem in this case. 
-> In fact, I found that while trying to make patch smap_pte_change. 
-> 
-> Long time ago when we have a zero page, we regards it to file_rss. 
-> So while we see the smaps, vm_normal_page returns zero page and we can
-> calculate it properly with PSS. 
-> 
-> But now we don't acccout zero page to file_rss. 
-> I am not sure we have to account it with file_rss. 
-> So I think now smaps_pte_range's resident count routine also is changed. 
-> 
-> Anyway, I think my patch doesn't have much cost since many customers of 
-> follow_page are already not a fast path.
-> 
-> I tend to agree with your opinion "How frequently we runt into the zero page?"
-> But my thought GUP is export function which can be used for anything by anyone.
-> 
-> Thanks for the review, Rik. 
+Hey Dan,
 
-I'm guessing that you've now dropped the idea of this patch,
-since it wasn't included along with your 1/3, 2/3, 3/3.
+Looks like you forgot to free StringDesc:
 
-You thought the ZERO_PAGE was moving around the LRUs, but now
-realize that it isn't, so accept there's no need for this patch?
+> --- orig/drivers/usb/serial/io_edgeport.c	2009-12-30 16:20:35.000000000 +0200
+> +++ devel/drivers/usb/serial/io_edgeport.c	2009-12-30 16:25:27.000000000 +0200
+> @@ -372,21 +372,24 @@ static void update_edgeport_E2PROM(struc
+>   ************************************************************************/
+>  static int get_string(struct usb_device *dev, int Id, char *string, int buflen)
+>  {
+> -	struct usb_string_descriptor StringDesc;
+> +	struct usb_string_descriptor *StringDesc;
+>  	struct usb_string_descriptor *pStringDesc;
+>  
+>  	dbg("%s - USB String ID = %d", __func__, Id);
+>  
+> +	StringDesc = kmalloc(sizeof(*StringDesc), GFP_KERNEL);
+> +	if (!StringDesc)
+> +		return 0;
+>  	if (!usb_get_descriptor(dev, USB_DT_STRING, Id,
+> -					&StringDesc, sizeof(StringDesc)))
+> +					StringDesc, sizeof(*StringDesc)))
 
-There's lots of places where we could shave a little time off dealing
-with the ZERO_PAGE by adding tests for it; but at the expense of
-adding code to normal paths of the system, slowing them down.
+here
 
-If there's a proven reason for doing so somewhere, yes, we should
-add such tests to avoid significant cacheline bouncing; but without
-good reason, we just let ZERO_PAGEs fall through the code as they do.
+>  		return 0;
+>  
+> -	pStringDesc = kmalloc(StringDesc.bLength, GFP_KERNEL);
+> +	pStringDesc = kmalloc(StringDesc->bLength, GFP_KERNEL);
+>  	if (!pStringDesc)
 
-I believe that get_user_pages() on ZERO_PAGEs is exceptional, beyond
-the cases of coredumping and mlock and make_pages_present; but if
-you've evidence for adding a test somewhere, please provide it.
+here
 
-Hugh
+>  		return 0;
+>  
+>  	if (!usb_get_descriptor(dev, USB_DT_STRING, Id,
+> -					pStringDesc, StringDesc.bLength)) {
+> +					pStringDesc, StringDesc->bLength)) {
+
+here
+
+>  		kfree(pStringDesc);
+>  		return 0;
+>  	}
+
+and here.
+
+Thanks,
+Johan
+
