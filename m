@@ -1,150 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752114AbZL3FlY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752162AbZL3FqT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752114AbZL3FlY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Dec 2009 00:41:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751758AbZL3FlX
+	id S1752162AbZL3FqT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Dec 2009 00:46:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752048AbZL3FqS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Dec 2009 00:41:23 -0500
-Received: from mga14.intel.com ([143.182.124.37]:26988 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751294AbZL3FlW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Dec 2009 00:41:22 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
-   d="scan'208";a="227706418"
-Date: Wed, 30 Dec 2009 13:41:19 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Quentin Barnes <qbarnes+nfs@yahoo-inc.com>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org, Nick Piggin <npiggin@suse.de>
-Message-ID: <20091230054119.GB16308@localhost>
+	Wed, 30 Dec 2009 00:46:18 -0500
+Received: from acsinet11.oracle.com ([141.146.126.233]:39115 "EHLO
+	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751294AbZL3FqR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Dec 2009 00:46:17 -0500
+Message-ID: <4B3AE891.5010508@oracle.com>
+Date: Wed, 30 Dec 2009 13:43:45 +0800
+From: Tao Ma <tao.ma@oracle.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: michaelc@cs.wisc.edu, open-iscsi@googlegroups.com
+CC: linux-kernel@vger.kernel.org
+Subject: iscsi warning in 2.6.33-rc2
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt357.oracle.com [141.146.40.157]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090207.4B3AE91C.0191:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton <akpm@linux-foundation.org> 
-CC: Steven Whitehouse <swhiteho@redhat.com>
-Subject: Re: [RFC][PATCH] Disabling read-ahead makes I/O of large reads
-	small
-Reply-To: 
-In-Reply-To: <87aax18xms.fsf@basil.nowhere.org>
+Hi all,
+	I met with this warning when using iscsi with the 2.6.33-rc2.
 
-Hi Quentin,
+------------[ cut here ]------------
+WARNING: at drivers/scsi/libiscsi_tcp.c:996 
+iscsi_tcp_task_xmit+0x15e/0x2b8 [libiscsi_tcp]()
+Hardware name: OptiPlex 745
+unexpected fifo state
+Modules linked in: ipt_REJECT xt_tcpudp iptable_filter ip_tables 
+x_tables bridge stp netconsole autofs4 hidp rfcomm l2cap crc16 bluetooth 
+rfkill ocfs2_dlmfs ocfs2_stack_o2cb ocfs2_dlm ocfs2_nodemanager 
+ocfs2_stackglue configfs sunrpc ib_iser rdma_cm ib_cm iw_cm ib_sa ib_mad 
+ib_core ib_addr ipv6 iscsi_tcp libiscsi_tcp libiscsi 
+scsi_transport_iscsi dm_mirror dm_region_hash dm_log dm_multipath dm_mod 
+video output sbs sbshc battery acpi_memhotplug ac lp sg 
+snd_hda_codec_analog snd_hda_intel dcdbas rtc_cmos tg3 snd_hda_codec 
+rtc_core parport_pc rtc_lib libphy sr_mod cdrom parport tpm_tis 
+serio_raw snd_seq_dummy tpm tpm_bios snd_seq_oss snd_seq_midi_event 
+button snd_seq e1000 snd_seq_device shpchp snd_pcm_oss snd_mixer_oss 
+i2c_i801 i2c_core snd_pcm snd_timer snd soundcore snd_page_alloc pcspkr 
+ata_piix libata sd_mod scsi_mod ext3 jbd ehci_hcd ohci_hcd uhci_hcd 
+[last unloaded: microcode]
+Pid: 4125, comm: iscsi_q_4 Not tainted 2.6.33-rc2 #1
+Call Trace:
+  [<ffffffffa028a34c>] ? iscsi_xmitworker+0x0/0x2ae [libiscsi]
+  [<ffffffffa029ae77>] ? iscsi_tcp_task_xmit+0x15e/0x2b8 [libiscsi_tcp]
+  [<ffffffff8203712f>] ? warn_slowpath_common+0x77/0x8e
+  [<ffffffff820371a2>] ? warn_slowpath_fmt+0x51/0x59
+  [<ffffffff822f3ba0>] ? _raw_spin_lock_bh+0x9/0x1f
+  [<ffffffffa029ae77>] ? iscsi_tcp_task_xmit+0x15e/0x2b8 [libiscsi_tcp]
+  [<ffffffffa028a34c>] ? iscsi_xmitworker+0x0/0x2ae [libiscsi]
+  [<ffffffffa028984f>] ? iscsi_xmit_task+0x45/0x83 [libiscsi]
+  [<ffffffffa028a4d9>] ? iscsi_xmitworker+0x18d/0x2ae [libiscsi]
+  [<ffffffff8204be27>] ? worker_thread+0x146/0x1e0
+  [<ffffffff8204e79b>] ? autoremove_wake_function+0x0/0x2e
+  [<ffffffff8204bce1>] ? worker_thread+0x0/0x1e0
+  [<ffffffff8204e4a7>] ? kthread+0x79/0x81
+  [<ffffffff82003614>] ? kernel_thread_helper+0x4/0x10
+  [<ffffffff8204e42e>] ? kthread+0x0/0x81
+  [<ffffffff82003610>] ? kernel_thread_helper+0x0/0x10
+---[ end trace 962db674bc379fa3 ]---
 
-Quentin Barnes <qbarnes+nfs@yahoo-inc.com> writes:
+http://pastebin.com/m62a71466
 
-> Adding the posix_fadvise(..., POSIX_FADV_RANDOM) call sets
+iscsi target is
+[root@ocfs2-test1 ~]# cat /etc/distro-release
+Openfiler NSA 2.3
 
-Have you tried w/o POSIX_FADV_RANDOM (ie. comment out the fadivse call)?
-It should be able to achieve the same good performance. The heuristic
-readahead logic should detect that the application is doing random
-reads.
+iscsi initiator is
+[root@ocfs2-test2 ~]# rpm -qa|grep iscsi
+iscsi-initiator-utils-6.2.0.868-0.18.el5
 
-> ra_pages=0.  This has a very odd side-effect in the kernel.  Once
-> read-ahead is disabled, subsequent calls to read(2) are now done in
-> the kernel via ->readpage() callback doing I/O one page at a time!
-> 
-> Pouring through the code in mm/filemap.c I see that the kernel has
-> commingled read-ahead and plain read implementations.  The algorithms
-> have much in common, so I can see why it was done, but it left this
-> anomaly of severely pimping read(2) calls on file descriptors with
-> read-ahead disabled.
-> 
-> 
-> For example, with a read(2) of 98K bytes of a file opened with
-> O_DIRECT accessed over NFSv3 with rsize=32768, I see:
-> =========
-> V3 ACCESS Call (Reply In 249), FH:0xf3a8e519
-> V3 ACCESS Reply (Call In 248)
-> V3 READ Call (Reply In 321), FH:0xf3a8e519 Offset:0 Len:32768
-> V3 READ Call (Reply In 287), FH:0xf3a8e519 Offset:32768 Len:32768
-> V3 READ Call (Reply In 356), FH:0xf3a8e519 Offset:65536 Len:32768
-> V3 READ Reply (Call In 251) Len:32768
-> V3 READ Reply (Call In 250) Len:32768
-> V3 READ Reply (Call In 252) Len:32768
-> =========
-> I would expect three READs issued of size 32K, and that's exactly
-> what I see.
-> 
-> 
-> For the same file without O_DIRECT but with read-ahead disabled
-> (its ra_pages=0), I see:
-> =========
-> V3 ACCESS Call (Reply In 167), FH:0xf3a8e519
-> V3 ACCESS Reply (Call In 166)
-> V3 READ Call (Reply In 172), FH:0xf3a8e519 Offset:0 Len:4096 
-> V3 READ Reply (Call In 168) Len:4096
-> V3 READ Call (Reply In 177), FH:0xf3a8e519 Offset:4096 Len:4096  
-> V3 READ Reply (Call In 173) Len:4096 
-> V3 READ Call (Reply In 182), FH:0xf3a8e519 Offset:8192 Len:4096
-> V3 READ Reply (Call In 178) Len:4096
-> [... READ Call/Reply pairs repeated another 21 times ...]
-> =========
-> Now I see 24 READ calls of 4K each!
+The other thing I can confirm is that I didn't meet with such problem in 
+2.6.32-rc8.
 
-Good catch, Thank you very much!
+Regards,
+Tao
 
-> A workaround for this kernel problem is to hack the app to do a
-> readahead(2) call prior to the read(2), however, I would think a
-> better approach would be to fix the kernel.  I came up with the
-> included patch that once applied restores the expected read(2)
-> behavior.  For the latter test case above of a file with read-ahead
-> disabled but now with the patch below applied, I now see:
-> =========
-> V3 ACCESS Call (Reply In 1350), FH:0xf3a8e519
-> V3 ACCESS Reply (Call In 1349)
-> V3 READ Call (Reply In 1387), FH:0xf3a8e519 Offset:0 Len:32768
-> V3 READ Call (Reply In 1421), FH:0xf3a8e519 Offset:32768 Len:32768
-> V3 READ Call (Reply In 1456), FH:0xf3a8e519 Offset:65536 Len:32768
-> V3 READ Reply (Call In 1351) Len:32768
-> V3 READ Reply (Call In 1352) Len:32768
-> V3 READ Reply (Call In 1353) Len:32768
-> =========
-> Which is what I would expect -- back to just three 32K READs.
-> 
-> After this change, the overall performance of the application
-> increased by 313%!
 
-And awesome improvements!
-
-> 
-> I have no idea if my patch is the appropriate fix.  I'm well out of
-> my area in this part of the kernel.  It solves this one problem, but
-> I have no idea how many boundary cases it doesn't cover or even if
-> it is the right way to go about addressing this issue.
-> 
-> Is this behavior of shorting I/O of read(2) considered a bug?  And
-> is this approach for a fix approriate?
-
-The approach is mostly OK for the bug. However one issue is missed --
-the ra_pages is somehow overloaded. I try to fix the problems in the
-two patches just posted. Will that solve your problem?
-
-Thanks,
-Fengguang
-
-> 
-> --- linux-2.6.32.2/mm/filemap.c 2009-12-18 16:27:07.000000000 -0600
-> +++ linux-2.6.32.2-rapatch/mm/filemap.c 2009-12-24 13:07:07.000000000 -0600
-> @@ -1012,9 +1012,13 @@ static void do_generic_file_read(struct 
->  find_page:
->                 page = find_get_page(mapping, index);
->                 if (!page) {
-> -                       page_cache_sync_readahead(mapping,
-> -                                       ra, filp,
-> -                                       index, last_index - index);
-> +                       if (ra->ra_pages)
-> +                               page_cache_sync_readahead(mapping,
-> +                                               ra, filp,
-> +                                               index, last_index - index);
-> +                       else
-> +                               force_page_cache_readahead(mapping, filp,
-> +                                               index, last_index - index);
->                         page = find_get_page(mapping, index);
->                         if (unlikely(page == NULL))
->                                 goto no_cached_page;
