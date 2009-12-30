@@ -1,67 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752055AbZL3Vqf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752023AbZL3Vvt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752055AbZL3Vqf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Dec 2009 16:46:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751797AbZL3Vqe
+	id S1752023AbZL3Vvt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Dec 2009 16:51:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751896AbZL3Vvs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Dec 2009 16:46:34 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:44262 "EHLO ogre.sisk.pl"
+	Wed, 30 Dec 2009 16:51:48 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:44283 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751734AbZL3Vqd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Dec 2009 16:46:33 -0500
+	id S1751829AbZL3Vvr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Dec 2009 16:51:47 -0500
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Ruud Linders <kernelml@xs4all.nl>
-Subject: Re: [Bug #14910] Stable version 2.6.32.2 broke my KMS Radeon setup
-Date: Wed, 30 Dec 2009 22:47:17 +0100
+To: tytso@mit.edu
+Subject: Re: [Bug #14936] kernel BUG at fs/ext4/inode.c:1063 if attempted to use non-ext4 partition with ext4
+Date: Wed, 30 Dec 2009 22:52:12 +0100
 User-Agent: KMail/1.12.3 (Linux/2.6.33-rc2-tst; KDE/4.3.3; x86_64; ; )
 Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-References: <LptzGUUXbTK.A.MSF.ymhOLB@chimera> <NJVdobuNFNK.A.oNH.TnhOLB@chimera> <4B3B2B3D.40204@xs4all.nl>
-In-Reply-To: <4B3B2B3D.40204@xs4all.nl>
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Gene Heskett <gene.heskett@verizon.net>, okias <d.okias@gmail.com>
+References: <LptzGUUXbTK.A.MSF.ymhOLB@chimera> <20091229165712.GH4429@thunk.org> <20091230190120.GQ4429@thunk.org>
+In-Reply-To: <20091230190120.GQ4429@thunk.org>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
-  charset="utf-8"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200912302247.17239.rjw@sisk.pl>
+Message-Id: <200912302252.12140.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 30 December 2009, Ruud Linders wrote:
-> On 12/29/2009 04:09 PM, Rafael J. Wysocki wrote:
-> > This message has been generated automatically as a part of a report
-> > of recent regressions.
+On Wednesday 30 December 2009, tytso@mit.edu wrote:
+> On Tue, Dec 29, 2009 at 11:57:12AM -0500, tytso@MIT.EDU wrote:
+> > On Tue, Dec 29, 2009 at 04:10:01PM +0100, Rafael J. Wysocki wrote:
+> > > 
+> > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14936
+> > > Subject		: kernel BUG at fs/ext4/inode.c:1063 if attempted to use non-ext4 partition with ext4
+> > > Submitter	: Gene Heskett <gene.heskett@verizon.net>
+> > > Date		: 2009-12-26 14:13 (4 days old)
+> > > References	: http://marc.info/?l=linux-kernel&m=126183682330809&w=4
+> > > 		  http://marc.info/?l=linux-kernel&m=126169372613898&w=4
 > > 
-> > The following bug entry is on the current list of known regressions
-> > from 2.6.32.  Please verify if it still should be listed and let me know
-> > (either way).
+> > Bisected to commit d21cd8, and reverting this commit seems to fix the
+> > problem.  The problem appeared between -rc1 and -rc2.  It was a fix
+> > that was pushed as part of a quota/ext4 fixes.  For more information:
 > > 
+> > http://marc.info/?l=linux-ext4&m=126197233225936&w=2
 > > 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14910
-> > Subject		: Stable version 2.6.32.2 broke my KMS Radeon setup
-> > Submitter	: Ruud Linders <kernelml@xs4all.nl>
-> > Date		: 2009-12-20 12:02 (10 days old)
-> > References	: http://marc.info/?l=linux-kernel&m=126131105608871&w=4
-> > 
-> > 
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > Please read the FAQ at  http://www.tux.org/lkml/
+> > I will take a look at this to see if I can find an easy fix;
+> > otherwise, we'll probably want to revert commit d21cd8 before -rc3.
 > 
-> This one can be closed as it's not an 2.6.33 issue  (I'm running
-> 2.6.33-rc1 with KMS just fine)
+> I'm working on a fix, and have a proposed patch.  See the thread on
+> linux-ext4 here:
 > 
-> See also  http://patchwork.kernel.org/patch/69076/ for stable patch to
-> fix it in 2.6.32.3.
+> http://marc.info/?l=linux-kernel&m=126219515024315&w=2
+> 
+> This patch also fixes the dq_claim_space kerneloops problem as
+> well....
 
-Thanks for the update.
-
-This one has been dropped from the list of recent regressions already.  Please
-close the bug when it's fixed in -stable (or let me know if you can't close it).
-
-If the patch doesn't appear in .32.3, please send a notification to
-stable@kernel.org.
+Thanks, I've added your patch to the Bugzilla entry.
 
 Rafael
