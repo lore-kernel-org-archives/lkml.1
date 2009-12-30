@@ -1,83 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753057AbZL3PFo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753097AbZL3PIy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753057AbZL3PFo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Dec 2009 10:05:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753037AbZL3PFn
+	id S1753097AbZL3PIy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Dec 2009 10:08:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753078AbZL3PIw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Dec 2009 10:05:43 -0500
-Received: from e28smtp01.in.ibm.com ([122.248.162.1]:38776 "EHLO
-	e28smtp01.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752981AbZL3PFn (ORCPT
+	Wed, 30 Dec 2009 10:08:52 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:45236 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753072AbZL3PIv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Dec 2009 10:05:43 -0500
-Date: Wed, 30 Dec 2009 20:35:30 +0530
-From: "K.Prasad" <prasad@linux.vnet.ibm.com>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/4] ksym_tracer: Fix to make the tracer work
-Message-ID: <20091230150530.GA3401@in.ibm.com>
-Reply-To: prasad@linux.vnet.ibm.com
-References: <4B3AF19E.1010201@cn.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B3AF19E.1010201@cn.fujitsu.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Wed, 30 Dec 2009 10:08:51 -0500
+Subject: Re: [PATCH 1/1] perf_event: add check for group_list if the parent
+ isn't counted
+From: Peter Zijlstra <peterz@infradead.org>
+To: Wang Liming <liming.wang@windriver.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
+       Paul Mackerras <paulus@samba.org>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <4B3B657B.2070009@windriver.com>
+References: <1262172487-13694-1-git-send-email-liming.wang@windriver.com>
+	 <1262176125.7135.207.camel@laptop>  <4B3B657B.2070009@windriver.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 30 Dec 2009 16:08:04 +0100
+Message-ID: <1262185684.7135.222.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 30, 2009 at 02:22:22PM +0800, Li Zefan wrote:
-> ksym tracer doesn't work:
-> 
->  # echo tasklist_lock:rw- > ksym_trace_filter
->  -bash: echo: write error: No such device
-> 
-> It's because we pass to perf_event_create_kernel_counter()
-> a cpu number which is not present.
-> 
-> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-> ---
->  kernel/hw_breakpoint.c    |   10 +++++++---
->  kernel/trace/trace_ksym.c |    1 -
->  2 files changed, 7 insertions(+), 4 deletions(-)
-> 
-> diff --git a/kernel/hw_breakpoint.c b/kernel/hw_breakpoint.c
-> index dbcbf6a..50dbd59 100644
-> --- a/kernel/hw_breakpoint.c
-> +++ b/kernel/hw_breakpoint.c
-> @@ -40,6 +40,7 @@
->  #include <linux/percpu.h>
->  #include <linux/sched.h>
->  #include <linux/init.h>
-> +#include <linux/cpu.h>
->  #include <linux/smp.h>
-> 
->  #include <linux/hw_breakpoint.h>
-> @@ -388,7 +389,8 @@ register_wide_hw_breakpoint(struct perf_event_attr *attr,
->  	if (!cpu_events)
->  		return ERR_PTR(-ENOMEM);
-> 
-> -	for_each_possible_cpu(cpu) {
-> +	get_online_cpus();
-> +	for_each_online_cpu(cpu) {
->  		pevent = per_cpu_ptr(cpu_events, cpu);
->  		bp = perf_event_create_kernel_counter(attr, cpu, -1, triggered);
->
+On Wed, 2009-12-30 at 22:36 +0800, Wang Liming wrote:
+> > Best I can make of it is that there is a race where the parent gets his
+> > context instantiated and we manage to get the mutex before the other
+> > thread manages to add the first event.
+> > 
+> > Then we observe parent_event_ctx but have an empty list.
+> > 
+> > Is that it?
+> I didn't find this case.
+> In my case, if I perf record a existing process with "--pid" and finish record,
+> and if later the recorded process forks a process, the condition will occur.
 
-Frederic must have used for_each_possible_cpu() to account for CPUs that
-are offline at the time of registration, but may eventually turn online.
-Since register_wide_hw_breakpoint() interface is designed to deliver
-system-wide breakpoints, the debug registers of a new online CPU will
-should have the breakpoints populated to comprehensively notify all
-memory accesses over target address.
+Ah, right, that will lead to the same state, since closing the last
+counter will not remove the context.
 
-I'd rather wait to hear from Frederic to know why
-perf_event_create_kernel_counter() returns an error when run for an
-offline cpu and how it can be solved.
+Does the below also fix your issue?
 
-Thanks,
-K.Prasad
+---
+Subject: perf: Fix NULL deref in inheritance code
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Date: Wed Dec 30 16:00:35 CET 2009
+
+Liming found a NULL deref when a task has a perf context but no counters 
+when it forks.
+
+This can occur in two cases, a race during construction where the fork hits
+after installing the context but before the first counter gets inserted, or
+more reproducably, a fork after the last counter is closed (which leaves the
+context around).
+
+CC: stable@kernel.org
+Reported-by: Wang Liming <liming.wang@windriver.com>
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+ kernel/perf_event.c |    5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+Index: linux-2.6/kernel/perf_event.c
+===================================================================
+--- linux-2.6.orig/kernel/perf_event.c
++++ linux-2.6/kernel/perf_event.c
+@@ -5149,7 +5149,7 @@ int perf_event_init_task(struct task_str
+ 					    GFP_KERNEL);
+ 			if (!child_ctx) {
+ 				ret = -ENOMEM;
+-				goto exit;
++				break;
+ 			}
+ 
+ 			__perf_event_init_context(child_ctx, child);
+@@ -5165,7 +5165,7 @@ int perf_event_init_task(struct task_str
+ 		}
+ 	}
+ 
+-	if (inherited_all) {
++	if (child_ctx && inherited_all) {
+ 		/*
+ 		 * Mark the child context as a clone of the parent
+ 		 * context, or of whatever the parent is a clone of.
+@@ -5185,7 +5185,6 @@ int perf_event_init_task(struct task_str
+ 		get_ctx(child_ctx->parent_ctx);
+ 	}
+ 
+-exit:
+ 	mutex_unlock(&parent_ctx->mutex);
+ 
+ 	perf_unpin_context(parent_ctx);
+
 
