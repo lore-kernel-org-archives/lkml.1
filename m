@@ -1,113 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753042AbZLaCKs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752325AbZL3WMV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753042AbZLaCKs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Dec 2009 21:10:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752829AbZLaCKr
+	id S1752325AbZL3WMV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Dec 2009 17:12:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752260AbZL3WMU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Dec 2009 21:10:47 -0500
-Received: from gateway06.websitewelcome.com ([67.18.1.11]:44616 "HELO
-	gateway06.websitewelcome.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752790AbZLaCKq convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Dec 2009 21:10:46 -0500
-Subject: Re: booting with linux kernel 2.6.32.2
-From: clownix <clownix@clownix.net>
-To: ranjith kumar <ranjithproxy@gmail.com>
-Cc: "linux.kernel" <linux.kernel@googlegroups.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, linux-net@vger.kernel.org
-In-Reply-To: <31cff80d0912301257r2a904701jda31d84b72405e01@mail.gmail.com>
-References: <31cff80d0912301257r2a904701jda31d84b72405e01@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 30 Dec 2009 23:12:14 +0100
-Message-Id: <1262211134.15862.6.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.0 (2.28.0-2.fc12) 
-Content-Transfer-Encoding: 8BIT
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - gator713.hostgator.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - clownix.net
+	Wed, 30 Dec 2009 17:12:20 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:63440 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752178AbZL3WMT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Dec 2009 17:12:19 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=O9SU9CzC4aMajS0gvFnXNfEBpbbokEfn1NFcdiQvMdeY4pMcu07qoOa4sv9i/LUP0m
+         jKBUesGH+X0xf21u5N0VsvdI180kDvFQ9A6aLysILvPrhFZU0RuZ+g7WlIMayvtBU9fg
+         mav/TVBnbqmusDjG5DRBP6hkGwEdmxN4Djdm4=
+Date: Wed, 30 Dec 2009 23:12:15 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Wenji Huang <wenji.huang@oracle.com>
+Cc: John Kacur <jkacur@redhat.com>, linux-kernel@vger.kernel.org,
+       acme@redhat.com, mingo@elte.hu
+Subject: Re: [PATCH] perf: fix incorrect return value for else case
+Message-ID: <20091230221213.GH6322@nowhere>
+References: <1261387359-1933-1-git-send-email-wenji.huang@oracle.com> <520f0cf10912210723j1ac91183n3d7970b96b95ef23@mail.gmail.com> <4B302070.5000905@oracle.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B302070.5000905@oracle.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If you do 
+On Tue, Dec 22, 2009 at 09:27:12AM +0800, Wenji Huang wrote:
+> John Kacur wrote:
+>> On Mon, Dec 21, 2009 at 10:22 AM, Wenji Huang <wenji.huang@oracle.com> wrote:
+>>> Return original cmd instead of adding prefix.
+>>>
+>>> Signed-off-by: Wenji Huang <wenji.huang@oracle.com>
+>>> ---
+>>>  tools/perf/builtin-help.c |    2 +-
+>>>  1 files changed, 1 insertions(+), 1 deletions(-)
+>>>
+>>> diff --git a/tools/perf/builtin-help.c b/tools/perf/builtin-help.c
+>>> index 9f810b1..ca77df5 100644
+>>> --- a/tools/perf/builtin-help.c
+>>> +++ b/tools/perf/builtin-help.c
+>>> @@ -317,7 +317,7 @@ static const char *cmd_to_page(const char *perf_cmd)
+>>>        else if (is_perf_command(perf_cmd))
+>>>                return prepend("perf-", perf_cmd);
+>>>        else
+>>> -               return prepend("perf-", perf_cmd);
+>>> +               return perf_cmd;
+>>>  }
+>>>
+>>>  static void setup_man_path(void)
+>>> --
+>>> 1.5.6
+>>
+>> Sorry - I believe we should NAK this patch.
+>> It would turn the following
+>>
+>> ./perf nonsuchcmd --help
+>> No manual entry for perf-nonsuchcmd
+>>
+>> into
+>>
+>> ./perf nonsuchcmd --help
+>> No manual entry for nonsuchcmd
+>>
+>> The former is correct, the name of the man page includes the prefix "perf-"
+>>
+>> NAK
+>>
+>> (cc-ing Frederic in case he sees it differently)
 
-blkid
 
-you see all your UUID and the corresponding dev, UUID is a unique
-identifier, this is why it is a long name.
+I personally don't mind.
+Having either
 
-For the kernel config, try to take your own in the /boot/config-2.6...
-Try:
+	./perf nonsuchcmd --help
+	No manual entry for perf-nonsuchcmd
+or
 
-cp /boot/config-2.6...  .config
-make menuconfig
-       exit/save
-make
-make modules_install
-make install
+	./perf nonsuchcmd --help
+	No manual entry for nonsuchcmd
+
+both make sense for the user.
 
 
+>>
+> Thanks. Since we think the former is better, why not make
+> the code compact? Like,
+>
+> diff --git a/tools/perf/builtin-help.c b/tools/perf/builtin-help.c
+> index 9f810b1..65e2691 100644
+> --- a/tools/perf/builtin-help.c
+> +++ b/tools/perf/builtin-help.c
+> @@ -314,8 +314,6 @@ static const char *cmd_to_page(const char *perf_cmd)
+>                 return "perf";
+>         else if (!prefixcmp(perf_cmd, "perf"))
+>                 return perf_cmd;
+> -       else if (is_perf_command(perf_cmd))
+> -               return prepend("perf-", perf_cmd);
+>         else
+>                 return prepend("perf-", perf_cmd);
+>  }
 
 
-Le jeudi 31 décembre 2009 à 02:27 +0530, ranjith kumar a écrit :
-> Hi,
-> 
-> I am using fedora 10.
-> I downloaded linux kernel 2.6.32.2 and run the follwing commands to
-> build and install it.
-> 
-> 1) make defconfig
-> 2) make
-> 4)make modules
-> 5)make all
-> 6)make modules_install
-> 7)make install
-> 
-> After that the contents of  /boot/grub/menu.lst are:
-> ------------------------------------------------------------------------
->   1 # grub.conf generated by anaconda
->       2 #
->       3 # Note that you do not have to rerun grub after making changes
-> to this file
->       4 # NOTICE:  You have a /boot partition.  This means that
->       5 #          all kernel and initrd paths are relative to /boot/, eg.
->       6 #          root (hd0,2)
->       7 #          kernel /vmlinuz-version ro root=/dev/VolGroup00/LogVol00
->       8 #          initrd /initrd-version.img
->       9 #boot=/dev/sda
->      10 default=2
->      11 timeout=5
->      12 splashimage=(hd0,2)/grub/splash.xpm.gz
->      13 hiddenmenu
->      14 title Fedora (2.6.32.2)
->      15         root (hd0,2)
->      16         kernel /vmlinuz-2.6.32.2 ro
-> root=UUID=80c4c9bd-8110-4f79-8bdc-dd69e38bf299
->      17         initrd /initrd-2.6.32.2.img
->      18 title Fedora (2.6.27.5-117.fc10.i686)
->      19         root (hd0,2)
->      20         kernel /vmlinuz-2.6.27.5-117.fc10.i686 ro
-> root=UUID=80c4c9bd-8110-4f79-8bdc-dd69e38bf299
->      21         initrd /initrd-2.6.27.5-117.fc10.i686.img
->      22 title Windows Vista
->      23         rootnoverify (hd0,0)
->      24         chainloader +1
-> ---------------------------------------------------------------------------------------------------------
-> 1) When I rebooted the machine and selected "Fedora (2.6.32.2)" from
-> grub's menu,
-> why fedora(old fedora 10 which was there initially) is booting instead
-> of linux kernel 2.6.32.2 ???
-> 
-> 2) what does "ro root=UUID=80c4c9bd-8110-4f79-8bdc-dd69e38bf299" means
-> in /boot/grub/menu.lst ?
-> 
-> Thanks in advance.
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-net" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-
+Agreed!
+Thanks.
 
