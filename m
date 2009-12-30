@@ -1,51 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751502AbZL3A1P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751517AbZL3AQQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751502AbZL3A1P (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Dec 2009 19:27:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750986AbZL3A1O
+	id S1751517AbZL3AQQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Dec 2009 19:16:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751368AbZL3AQP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Dec 2009 19:27:14 -0500
-Received: from cantor.suse.de ([195.135.220.2]:44648 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750936AbZL3A1O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Dec 2009 19:27:14 -0500
-Date: Tue, 29 Dec 2009 16:11:31 -0800
-From: Greg KH <gregkh@suse.de>
-To: Emese Revfy <re.emese@gmail.com>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
-       rientjes@google.com, cl@linux-foundation.org,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org, rjw@sisk.pl,
-       rusty@rustcorp.com.au
-Subject: Re: [PATCH 1/1] Constify struct kset_uevent_ops for 2.6.33-rc2
-Message-ID: <20091230001131.GA19830@suse.de>
-References: <cover.1260663000.git.re.emese@gmail.com> <eff97be7c5839477c88f7ba61ef100f38c58bf7d.1260663000.git.re.emese@gmail.com> <84144f020912250331h23b8b724v73cf70c384d385ec@mail.gmail.com> <4B355AEF.3060508@gmail.com> <4B39AEB2.5040809@cs.helsinki.fi> <4B3A6D63.4070700@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B3A6D63.4070700@gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Tue, 29 Dec 2009 19:16:15 -0500
+Received: from ns1.siteground211.com ([209.62.36.12]:57179 "EHLO
+	serv01.siteground211.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751340AbZL3AQP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Dec 2009 19:16:15 -0500
+Subject: Re: Question of resource_size() implementation
+From: Felipe Balbi <me@felipebalbi.com>
+Reply-To: me@felipebalbi.com
+To: Joe Perches <joe@perches.com>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <1262131932.1888.202.camel@Joe-Laptop.home>
+References: <1262130234.28789.112.camel@gandalf>
+	 <1262131932.1888.202.camel@Joe-Laptop.home>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 30 Dec 2009 02:16:11 +0200
+Message-ID: <1262132171.28789.136.camel@gandalf>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.2 
+Content-Transfer-Encoding: 7bit
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - serv01.siteground211.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - felipebalbi.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 29, 2009 at 09:58:11PM +0100, Emese Revfy wrote:
-> >> I double checked both the declaration and definitions of the affected
-> >> function/structure and they are consistently const here.
-> >> Can you tell me what patch/tree combination you encountered this
-> >> warning with?
-> > 
-> > 2.6.33-rc2 with your patch.
+On Tue, 2009-12-29 at 16:12 -0800, Joe Perches wrote:
+> On Wed, 2009-12-30 at 01:43 +0200, Felipe Balbi wrote:
+> > I'm wondering whether the +1 in resource_size() is actually necessary.
+> > resource_size() is defined as:
+> []
+> > static inline resource_size_t resource_size(const struct resource *res)
+> > {
+> > 	return res->end - res->start + 1;
+> > }
+> > Are we off-by-one
+> > here ? Or is this all expected ?
 > 
-> Here is the updated patch for 2.6.33-rc2 in one piece.
-> Emese
+> Imagine you have 1 byte sized resources.
 > 
+> AREA1 = 0x40000000
+> AREA2 = 0x40000001
 > 
-> From: Emese Revfy <re.emese@gmail.com>
+> area1.start = 0x40000000
+> area1.end   = 0x40000000
 > 
-> Constify struct kset_uevent_ops.
+> area2.start = 0x40000001
+> area2.end   = 0x40000001
 
-Why is this needed?  What does it accomplish?
+(adding lkml back to the loop)
 
-thanks,
+in that you wouldn't use any of the SZ_* macros and simply hardcode
+start and end, right ? then you would define:
 
-greg k-h
+area1.start = 0x40000000
+area1.end = 0x40000001
+
+and ioremap 2 bytes due to +1 in resource_size().
+
+-- 
+balbi
+
