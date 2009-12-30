@@ -1,86 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752483AbZL3IDN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752521AbZL3II4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752483AbZL3IDN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Dec 2009 03:03:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752312AbZL3IDM
+	id S1752521AbZL3II4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Dec 2009 03:08:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752468AbZL3IIz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Dec 2009 03:03:12 -0500
-Received: from static-72-93-233-3.bstnma.fios.verizon.net ([72.93.233.3]:43527
-	"EHLO mail.wilsonet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751612AbZL3IDL convert rfc822-to-8bit (ORCPT
+	Wed, 30 Dec 2009 03:08:55 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:50680 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752498AbZL3IIz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Dec 2009 03:03:11 -0500
-Subject: Re: [PATCH] input: imon driver for SoundGraph iMON/Antec Veris IR devices
-Mime-Version: 1.0 (Apple Message framework v1077)
-Content-Type: text/plain; charset=us-ascii
-From: Jarod Wilson <jarod@wilsonet.com>
-In-Reply-To: <2044EA95-168E-4ACE-A19E-732BB4A34CA7@gmail.com>
-Date: Wed, 30 Dec 2009 03:02:51 -0500
-Cc: Jarod Wilson <jarod@redhat.com>,
-       "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>,
-       "linux-media@vger.kernel.org" <linux-media@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Content-Transfer-Encoding: 8BIT
-Message-Id: <1430BBF0-3A61-471E-86A9-E85CF153A150@wilsonet.com>
-References: <2044EA95-168E-4ACE-A19E-732BB4A34CA7@gmail.com>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-X-Mailer: Apple Mail (2.1077)
+	Wed, 30 Dec 2009 03:08:55 -0500
+Date: Wed, 30 Dec 2009 00:07:24 -0800
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+To: Michael Breuer <mbreuer@majjas.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "Berck E. Nash" <flyboy@gmail.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org
+Subject: Re: sky2 panic in 2.6.32.1 under load (new oops)
+Message-ID: <20091230000724.4083e7dd@nehalam>
+In-Reply-To: <20091223230102.4bb0100e.akpm@linux-foundation.org>
+References: <4B300A2A.8040305@gmail.com>
+	<4B300E30.9090707@majjas.com>
+	<4B3114E3.1070602@majjas.com>
+	<4B329FA3.9090904@majjas.com>
+	<20091223230102.4bb0100e.akpm@linux-foundation.org>
+Organization: Linux Foundation
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Dec 29, 2009, at 5:30 PM, Dmitry Torokhov wrote:
+On Wed, 23 Dec 2009 23:01:02 -0800
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-> On Tue, Dec 29, 2009 at 12:04:00AM -0500, Jarod Wilson wrote:
->> On Dec 28, 2009, at 4:31 AM, Dmitry Torokhov wrote:
->>> 
->>> Hm, will this work on big-endian?
->> 
->> Good question. Not sure offhand. Probably not. Unfortunately, the only devices I have to test with at the moment are integrated into cases with x86 boards in them, so testing isn't particularly straight-forward. I should probably get ahold of one of the plain external usb devices to play with... Mind if I just add a TODO marker near that for now?
->> 
-> 
-> How about just do le32_to_cpu() instead of memcpy()ing and that's
-> probably it?
+> > Dec 23 17:32:58 mail kernel: DRHD: handling fault status reg 2
+> > Dec 23 17:32:58 mail kernel: DMAR:[DMA Read] Request device [06:00.0] 
+> > fault addr fff8423fe000
+> > Dec 23 17:32:58 mail kernel: DMAR:[fault reason 06] PTE Read access is 
+> > not set
+> > Dec 23 17:32:58 mail kernel: sky2 0000:06:00.0: error interrupt 
+> > status=0x80000000
+> > Dec 23 17:32:58 mail kernel: sky2 0000:06:00.0: PCI hardware error (0x2010)
+> > Dec 23 17:33:06 mail kernel: ------------[ cut here ]------------
+> > Dec 23 17:33:06 mail kernel: WARNING: at net/sched/sch_generic.c:255 
+> > dev_watchdog+0xf3/0x161()
+> > Dec 23 17:33:06 mail kernel: Hardware name: System Product Name
+> > Dec 23 17:33:06 mail kernel: NETDEV WATCHDOG: eth0 (sky2): transmit 
 
-Hrm. My endian-fu sucks. Not sure what the right way to do it without the memcpy is. I thought I had something together than would work, using 2 lines (memcpy, then le32_to_cpu), but I just realized that'll go south on the keys where we're only looking at half the buffer (i.e., the wrong half on big-endian)... Will see what I can do to fix that up in the morning, was hoping to get this out tonight, but its nearly 3am (again)...
+Just to reiterate, these are consistent with a DMA error on transmit.
+Since is 4 seconds after the DHCPACK, they probably are not related, except
+that when DHCP renew may have caused more traffic.
 
-Also, forgot to reply to this bit last time:
-
->> +	init_completion(&context->tx.finished);
->> +	atomic_set(&(context->tx.busy), 1);
-> 
-> What does this atomic give you? Atomic operations do not imply memory
-> barriers IIRC...
-
-Code is borrowed from lirc_imon from before my time, honestly hadn't really looked into that much until now. I'm guessing it was *supposed* to provide an assurance that later readers saw the correct value for busy, but indeed, I don't think its actually guaranteeing that. I've changed busy to a bool and inserted smp_rmb()'s after each change to it, which I think *will* provide the desired guarantee. (In practice, its been working just fine either way for me so far).
-
->>> We have pretty different behavior depending on the interface, maybe the
->>> driver should be split further?
->> 
->> This is what we'll call a "fun" topic... These devices expose two interfaces, and a while back in the lirc_imon days, they actually loaded up as two separate lirc devices. But there's a catch: they can't operate independently. Some keys come in via intf0, some via intf1, even from the very same remote. And the interfaces share a hardware-internal buffer (or something), and if you're only listening to one of the two devices, and a key is decoded and sent via the interface you're not listening to, it wedges the entire device until you flush the other interface. Horribly bad hardware design at play there, imo, but meh. What exactly did you have in mind as far as a split? (And/or does it still apply with the above info taken into consideration? ;).
-> 
-> Ok, fair enough. I'd still want to see larger functions split up a bit though.
-
-I've hacked imon_probe() up into 6 different functions now:
-
-imon_probe()
- -> imon_init_intf0()
-  -> imon_init_idev()
-  -> imon_init_display()
- -> imon_init_intf1()
-  -> imon_init_touch()
-
-(and there was an existing imon_set_ir_protocol() in the mix)
-
-Quite a bit more manageable and readable now, I think. Haven't looked yet for other candidates for similar refactoring. Were there others you had in mind? At a glance, imon_incoming_packet() seems to be the only remaining function that is particularly hefty. Well, imon_probe() is still ~180 lines, but it used to be north of 400, I think... So perhaps I try trimming imon_probe() a bit more, and see what can be done to make imon_incoming_packet() less chunky.
-
-Current work-in-progress pushed to git.kernel.org again.
-
-Thanks much,
-
--- 
-Jarod Wilson
-jarod@wilsonet.com
-
-
-
+Are you using something like network console or kgdb, or anything that could
+be using some unusual network I/O?
