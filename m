@@ -1,93 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751630AbZL3CFp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751773AbZL3CIh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751630AbZL3CFp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Dec 2009 21:05:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751284AbZL3CFp
+	id S1751773AbZL3CIh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Dec 2009 21:08:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751455AbZL3CIg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Dec 2009 21:05:45 -0500
-Received: from mail-fx0-f225.google.com ([209.85.220.225]:64164 "EHLO
-	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751258AbZL3CFo convert rfc822-to-8bit (ORCPT
+	Tue, 29 Dec 2009 21:08:36 -0500
+Received: from mail-px0-f189.google.com ([209.85.216.189]:46869 "EHLO
+	mail-px0-f189.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751341AbZL3CIf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Dec 2009 21:05:44 -0500
+	Tue, 29 Dec 2009 21:08:35 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=ca04mUn0/Crvk1X6NpnwCVOmiNP5WD1BlBHWoUUl5xQ33flbcNVL1/EKRV/WNKCwHc
-         wldT/Bzfaox+sYOKI2A2Wal9IvyKjI8pTkzr1KVFYi3kRB3T+CgHcpEnNpShCKnnUb+/
-         9Vo6G7qG8CaMSUfBJqdtCPbhxxKMyo6V6JuAY=
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=qGBVur5vx3Fk29iJpDieGk9WNhiGXFIr8dzypLn8nZtaWx3Dfi7gR7wcjHpx6ycc8e
+         oYwlpGjEVcK3QZ/yTFx2VdFq36jvKcbbtfxPb4G7SyDFgnf9q4/TsbrULktzSAEblsiM
+         pEjKbnYX8kacOoUyxA9KvvNT+rTMXBKFyOsQk=
+Date: Tue, 29 Dec 2009 18:08:30 -0800
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Vikram Dhillon <dhillonv10@gmail.com>
+Cc: Stefani Seibold <stefani@seibold.net>, Andi Kleen <andi@firstfloor.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "akpm@osdl.org" <akpm@osdl.org>
+Subject: Re: [PATCH] [0/6] kfifo fixes/improvements
+Message-ID: <20091230020830.GA7049@core.coreip.homeip.net>
+References: <20091227233816.GC2399@basil.fritz.box>
+ <1261986136.808.2.camel@wall-e>
+ <20091228145749.GD4994@basil.fritz.box>
+ <1262016510.12656.25.camel@wall-e>
+ <20091228172651.GE4994@basil.fritz.box>
+ <1262030653.15368.37.camel@wall-e>
+ <20091228204003.GH4994@basil.fritz.box>
+ <1262076056.23095.21.camel@wall-e>
+ <64D5262E-28CF-41E8-9425-F8C5DD0A2265@gmail.com>
+ <ea6602020912291718n103694aft78ef15b65081a996@mail.gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <alpine.LFD.2.00.0912292002370.6803@localhost>
-References: <alpine.LFD.2.00.0912291929010.6325@localhost>
-	 <20091230115610.c10599b8.sfr@canb.auug.org.au>
-	 <alpine.LFD.2.00.0912292002370.6803@localhost>
-Date: Tue, 29 Dec 2009 21:05:42 -0500
-Message-ID: <ea6602020912291805l2a1bd85cx9af7a4312aabfa17@mail.gmail.com>
-Subject: Re: [PATCH] Remove macro MAXHOSTNAMELEN from <asm-generic/param.h>.
-From: Vikram Dhillon <dhillonv10@gmail.com>
-To: "Robert P. J. Day" <rpjday@crashcourse.ca>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <ea6602020912291718n103694aft78ef15b65081a996@mail.gmail.com>
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I agree with you, the only place this macro is being used in glibc,
-there are some really nice packages like MATLAB that depend on it, but
-in distributions like Solaris there are conflicts in the newer version
-and glibc so the trend seems to be moving away from glibc dependency
-because of those conflicts. We might more of packages moving away from
-glibc so let's wait and see what happens next :D
+A: http://en.wikipedia.org/wiki/Top_post
+Q: Were do I find info about this thing called top-posting?
+A: Because it messes up the order in which people normally read text.
+Q: Why is top-posting such a bad thing?
 
-Regards,
-Vikram Dhillon
+On Tue, Dec 29, 2009 at 08:18:50PM -0500, Vikram Dhillon wrote:
+> IMHO you can process elements rather than bytes, which is a good
+> improvement, but then again its my opinion, if others don't like it
+> then we can always change it :D
 
-~~~
-There are lots of Linux users who don't care how the kernel works, but
-only want to use it. That is a tribute to how good Linux is.
--- Linus Torvalds
+Right, I was not arguing against having a record-oriented interface, I
+was questioning the utility of processing several records at a time.
+Kfifo users that I have seen so far were working in a record-at-a-time
+mode.
 
+Thanks.
 
-
-On Tue, Dec 29, 2009 at 8:03 PM, Robert P. J. Day <rpjday@crashcourse.ca> wrote:
-> On Wed, 30 Dec 2009, Stephen Rothwell wrote:
->
->> Hi Robert,
->>
->> On Tue, 29 Dec 2009 19:32:15 -0500 (EST) "Robert P. J. Day" <rpjday@crashcourse.ca> wrote:
->> >
->> > Since nothing in the entire tree makes use of this macro, remove
->> > it. This removal should eventually propagate to all of the
->> > arch-specific param.h files.
->>
->> Except if the only place this is picked up by glibc is the kernel
->> header files, then it will disappear from user mode and some
->> packages may break.
->
->  true, but this still takes me back to my original observation -- why
-> is this macro being defined in a kernel header file if the kernel
-> itself has absolutely no interest in it and doesn't use it in any way?
->
->  if glibc wants it, it might as well define it.
->
-> rday
-> --
->
->
-> ========================================================================
-> Robert P. J. Day                               Waterloo, Ontario, CANADA
->
->            Linux Consulting, Training and Kernel Pedantry.
->
-> Web page:                                          http://crashcourse.ca
-> Twitter:                                       http://twitter.com/rpjday
-> ========================================================================
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+-- 
+Dmitry
