@@ -1,35 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751763AbZL3Dlx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751839AbZL3DuS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751763AbZL3Dlx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Dec 2009 22:41:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751565AbZL3Dlw
+	id S1751839AbZL3DuS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Dec 2009 22:50:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751602AbZL3DuP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Dec 2009 22:41:52 -0500
-Received: from mtoichi11.ns.itscom.net ([219.110.2.181]:60362 "EHLO
-	mtoichi11.ns.itscom.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751502AbZL3Dlw (ORCPT
+	Tue, 29 Dec 2009 22:50:15 -0500
+Received: from e38.co.us.ibm.com ([32.97.110.159]:47724 "EHLO
+	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751556AbZL3DuN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Dec 2009 22:41:52 -0500
-From: hooanon05@yahoo.co.jp
-Subject: Re: Q. d_alloc() in pipe(2) 
-To: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
-Cc: viro@ZenIV.linux.org.uk, linux-kernel@vger.kernel.org
-In-Reply-To: <20091229150235.GA2927@hack>
-References: <20021.1262066120@jrobl> <20091229150235.GA2927@hack>
-Date: Wed, 30 Dec 2009 12:41:48 +0900
-Message-ID: <8472.1262144508@jrobl>
+	Tue, 29 Dec 2009 22:50:13 -0500
+Date: Tue, 29 Dec 2009 21:50:08 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Benny Amorsen <benny+usenet@amorsen.dk>,
+       Bryan Donlan <bdonlan@gmail.com>, Michael Stone <michael@laptop.org>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       linux-security-module@vger.kernel.org, Andi Kleen <andi@firstfloor.org>,
+       David Lang <david@lang.hm>, Oliver Hartkopp <socketcan@hartkopp.net>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Valdis Kletnieks <Valdis.Kletnieks@vt.edu>,
+       Evgeniy Polyakov <zbr@ioremap.net>,
+       "C. Scott Ananian" <cscott@cscott.net>,
+       James Morris <jmorris@namei.org>, Bernie Innocenti <bernie@codewiz.org>,
+       Mark Seaborn <mrs@mythic-beasts.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       =?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>,
+       Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
+       Samir Bellabes <sam@synack.fr>,
+       Casey Schaufler <casey@schaufler-ca.com>, Pavel Machek <pavel@ucw.cz>,
+       Al Viro <viro@zeniv.linux.org.uk>
+Subject: Re: RFC: disablenetwork facility. (v4)
+Message-ID: <20091230035008.GA6819@us.ibm.com>
+References: <20091229050114.GC14362@heat>
+ <m1y6km11lj.fsf@fess.ebiederm.org>
+ <20091229151146.GA32153@us.ibm.com>
+ <3e8340490912290805s103fb789y13acea4a84669b20@mail.gmail.com>
+ <m3oclhzgm4.fsf@ursa.amorsen.dk>
+ <m17hs5y0mg.fsf@fess.ebiederm.org>
+ <20091229211139.0732a0c1@lxorguk.ukuu.org.uk>
+ <m1iqbpwjtp.fsf@fess.ebiederm.org>
+ <20091229223631.GB22578@us.ibm.com>
+ <m1zl51uoqd.fsf@fess.ebiederm.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m1zl51uoqd.fsf@fess.ebiederm.org>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-Amrico Wang:
-> >But d_alloc() refers name->len which is uninitialized.
+Quoting Eric W. Biederman (ebiederm@xmission.com):
+> "Serge E. Hallyn" <serue@us.ibm.com> writes:
 > 
-> Well, it is initialized to 0. :)
+> > Quoting Eric W. Biederman (ebiederm@xmission.com):
+> >> Alan Cox <alan@lxorguk.ukuu.org.uk> writes:
+> >> 
+> >> >> > Execute != read. The executable file may contain secrets which must not
+> >> >> > be available to the user running the setuid program. If you fail the
+> >> >> > setuid, the user will be able to ptrace() and then the secret is
+> >> >> > revealed.
+> >> >> >
+> >> >> > It's amazing how many security holes appear from what seems like a very
+> >> >> > simple request.
+> >> >> 
+> >> >> Do we have a security hole in nosuid mount option?
+> >> >> Can someone write a patch to fix it?
+> >> >
+> >> > If a setuid app can read a key when its erroneously not set setuid then
+> >> > the user can read it too.
+> >> >
+> >> > Anything you can do with ptrace you can do yourself !
+> >> 
+> >> Now that I think about it this is really something completely separate
+> >> from setuid.  This is about being able to read the text segment with
+> >> ptrace when you on have execute permissions on the file.
+> >> 
+> >> I just skimmed through fs/exec.c and we set the undumpable process
+> >> flag in that case so ptrace should not work in that case.
+> >
+> > And in fact you can't do a new ptrace_attach, but if you're already
+> > tracing the task when it execs the unreadable-but-executable file,
+> > then the ptrace can continue.
+> >
+> > Just looking at the code, it appears 2.2 was the same way (though I
+> > could be missing where it used to enforce that).
+> >
+> > So, is that intended?  What exactly would we do about it if not?
+> > Just refuse exec of a unreadable-but-executable file if we're
+> > being traced?
+> 
+> In common cap we drop the new capabilities if we are being ptraced.
+> Look for brm->unsafe.
 
-I didn't know that.
-Thanx.
+Yes - that isn't the issue.  The issue is with a file to which
+we have execute permission but not read.  If user hallyn has two
+terminals open, and terminal one does ./foo then terminal two
+cannot do strace -f -p `pidof foo`.  But user hallyn can do
+strace -f -p ./foo and succeed.
 
+So we refuse ptrace_attach to an existing process with dumpable
+turned off, but a pre-existing ptrace attach isn't affected by
+executing a file which causes dumpable to be unset.
 
-J. R. Okajima
+It goes back to finding a way to figure out what is inside the
+file when the installer obviously thought we shouldn't be able
+to read the file.
+
+Do we care?  <shrug>
+
+-serge
