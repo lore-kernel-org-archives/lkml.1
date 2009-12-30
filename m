@@ -1,80 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752503AbZL3Jof@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752473AbZL3JqL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752503AbZL3Jof (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Dec 2009 04:44:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752207AbZL3Joe
+	id S1752473AbZL3JqL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Dec 2009 04:46:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752207AbZL3JqJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Dec 2009 04:44:34 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:50413 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752156AbZL3Joe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Dec 2009 04:44:34 -0500
-Date: Wed, 30 Dec 2009 10:44:17 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Steven Rostedt <rostedt@goodmis.org>, Paul Mackerras <paulus@samba.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH v3 1/5] perf_event: introduce 'inject' event and get HZ
-Message-ID: <20091230094417.GC18190@elte.hu>
-References: <4B27702F.1080507@cn.fujitsu.com>
- <20091215142325.GC5833@nowhere>
- <4B30C2D1.4030006@cn.fujitsu.com>
- <4B30C3A0.909@cn.fujitsu.com>
- <20091228075417.GB20039@elte.hu>
- <4B3991C1.6060303@cn.fujitsu.com>
- <1262164786.7135.166.camel@laptop>
- <20091230092830.GA18190@elte.hu>
- <1262165789.7135.170.camel@laptop>
+	Wed, 30 Dec 2009 04:46:09 -0500
+Received: from astoria.ccjclearline.com ([64.235.106.9]:39457 "EHLO
+	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751377AbZL3JqJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Dec 2009 04:46:09 -0500
+Date: Wed, 30 Dec 2009 04:45:34 -0500 (EST)
+From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+X-X-Sender: rpjday@localhost
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+cc: takata@linux-m32r.org
+Subject: [PATCH] MAINTAINERS: Identify M32R ML as moderated for
+ non-subscribers.
+Message-ID: <alpine.LFD.2.00.0912300444100.13969@localhost>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1262165789.7135.170.camel@laptop>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - crashcourse.ca
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Peter Zijlstra <peterz@infradead.org> wrote:
+Signed-off-by: Robert P. J. Day <rpjday@crashcourse.ca>
 
-> On Wed, 2009-12-30 at 10:28 +0100, Ingo Molnar wrote:
-> > * Peter Zijlstra <peterz@infradead.org> wrote:
-> > 
-> > > On Tue, 2009-12-29 at 13:21 +0800, Xiao Guangrong wrote:
-> > > > 'inject' event is a very useful feature and it's suggested by Ingo
-> > > > [ See http://lkml.org/lkml/2009/12/28/31 ]
-> > > 
-> > > I really dislike the name, event injection to me would be like a write() 
-> > > interface where you provide the actual event data to be stuffed in the 
-> > > output stream.
-> > > 
-> > > This just seems like a very weird way of getting data out. A kind of like 
-> > > sysconf() but done very strange.
-> > 
-> > What kind of API would you suggest?
-> 
-> sysconf() seems ideal for getting single, mostly constant variables out
-> of the kernel, we already have non POSIX (read Linux specific) names in
-> there.
-> 
-> _SC_KERNEL_RELOCATION_OFFSET
-> _SC_KERNEL_HZ
-> 
-> or somethings like that comes to mind.
+---
 
-Nah. HZ might be static here but we'll have more dynamic parameters so the 
-sysconf API is rather inflexible there.
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 66f5f7d..d87eaa6 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -3431,7 +3431,7 @@ S:	Maintained
 
-I was thinking of something that fits into existing perf API schemes, to keep 
-it simple and self-sufficient, and to allow for extensions/etc.
+ M32R ARCHITECTURE
+ M:	Hirokazu Takata <takata@linux-m32r.org>
+-L:	linux-m32r@ml.linux-m32r.org
++L:	linux-m32r@ml.linux-m32r.org (moderated for non-subscribers)
+ L:	linux-m32r-ja@ml.linux-m32r.org (in Japanese)
+ W:	http://www.linux-m32r.org/
+ S:	Maintained
 
-	Ingo
+rday
+--
+
+========================================================================
+Robert P. J. Day                               Waterloo, Ontario, CANADA
+
+            Linux Consulting, Training and Kernel Pedantry.
+
+Web page:                                          http://crashcourse.ca
+Twitter:                                       http://twitter.com/rpjday
+========================================================================
