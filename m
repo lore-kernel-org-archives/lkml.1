@@ -1,36 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753398AbZL3UGT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753457AbZL3UGr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753398AbZL3UGT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Dec 2009 15:06:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753242AbZL3UGT
+	id S1753457AbZL3UGr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Dec 2009 15:06:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753261AbZL3UGq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Dec 2009 15:06:19 -0500
-Received: from fmmailgate04.web.de ([217.72.192.242]:33778 "EHLO
-	fmmailgate04.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753148AbZL3UGS convert rfc822-to-8bit (ORCPT
+	Wed, 30 Dec 2009 15:06:46 -0500
+Received: from exprod6og107.obsmtp.com ([64.18.1.208]:59451 "HELO
+	exprod6og107.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753242AbZL3UGq convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Dec 2009 15:06:18 -0500
-Date: Wed, 30 Dec 2009 21:06:15 +0100
-Message-Id: <523138909@web.de>
+	Wed, 30 Dec 2009 15:06:46 -0500
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-From: Peter Paul <abnominales@web.de>
-To: linux-kernel@vger.kernel.org
-Subject: BCM70010 (crystalhd) Linux Driver
-Organization: http://freemail.web.de/
-X-Provags-Id: V01U2FsdGVkX1/UnZZZXXSu5VFelyuClZMBiY3bDxhafBylT4rkNV6i/C53l
- wsMthAAxjqD0GEWMls4yBZ5qsCvvHWdqNbknW1P6IUNf85Q/cuFXH23JGSgP
- A==
-Content-Type: text/plain; charset=iso-8859-15
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Subject: [PATCH] drivers/net/atl1c/atl1c_main.c: use %pM to show MAC address
+Date: Wed, 30 Dec 2009 15:06:46 -0500
+Message-ID: <BD79186B4FD85F4B8E60E381CAEE19090200F66D@mi8nycmail19.Mi8.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] drivers/net/atl1c/atl1c_main.c: use %pM to show MAC address
+Thread-Index: AcqJi51KHoa2YEU5QKqK5pJ+A8HxdA==
+From: "H Hartley Sweeten" <hartleys@visionengravers.com>
+To: <linux-kernel@vger.kernel.org>, <netdev@vger.kernel.org>
+Cc: "David Miller" <davem@davemloft.net>
+X-OriginalArrivalTime: 30 Dec 2009 20:06:44.0521 (UTC) FILETIME=[9C0FA190:01CA898B]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Broadcom has just released a linux driver for their BCM70012 and BCM70015 Crystal HD High Definition video decoders under the GPLv2 licence. [1]
-Maybe you want to have a look at them.
+Use the %pM kernel extension to display the MAC address.
 
-[1] http://www.broadcom.com/support/crystal_hd/
-___________________________________________________________
-Preisknaller: WEB.DE DSL Flatrate für nur 16,99 Euro/mtl.! 
-http://produkte.web.de/go/02/
+The only difference in the output is that the MAC address is
+shown in the usual colon-separated hex notation.
 
+Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
+Cc: David S. Miller <davem@davemloft.net>
+
+---
+
+diff --git a/drivers/net/atl1c/atl1c_main.c b/drivers/net/atl1c/atl1c_main.c
+index 2f4be59..77cde85 100644
+--- a/drivers/net/atl1c/atl1c_main.c
++++ b/drivers/net/atl1c/atl1c_main.c
+@@ -2596,11 +2596,8 @@ static int __devinit atl1c_probe(struct pci_dev *pdev,
+ 	memcpy(netdev->dev_addr, adapter->hw.mac_addr, netdev->addr_len);
+ 	memcpy(netdev->perm_addr, adapter->hw.mac_addr, netdev->addr_len);
+ 	if (netif_msg_probe(adapter))
+-		dev_dbg(&pdev->dev,
+-			"mac address : %02x-%02x-%02x-%02x-%02x-%02x\n",
+-			adapter->hw.mac_addr[0], adapter->hw.mac_addr[1],
+-			adapter->hw.mac_addr[2], adapter->hw.mac_addr[3],
+-			adapter->hw.mac_addr[4], adapter->hw.mac_addr[5]);
++		dev_dbg(&pdev->dev, "mac address : %pM\n",
++			adapter->hw.mac_addr);
+ 
+ 	atl1c_hw_set_mac_addr(&adapter->hw);
+ 	INIT_WORK(&adapter->common_task, atl1c_common_task); 
