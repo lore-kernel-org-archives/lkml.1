@@ -1,79 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752525AbZL3QHF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752149AbZL3QTe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752525AbZL3QHF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Dec 2009 11:07:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752280AbZL3QHE
+	id S1752149AbZL3QTe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Dec 2009 11:19:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751834AbZL3QTd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Dec 2009 11:07:04 -0500
-Received: from mail-fx0-f225.google.com ([209.85.220.225]:54592 "EHLO
-	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752383AbZL3QHB (ORCPT
+	Wed, 30 Dec 2009 11:19:33 -0500
+Received: from mk-filter-3-a-1.mail.uk.tiscali.com ([212.74.100.54]:29204 "EHLO
+	mk-filter-3-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751667AbZL3QTc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Dec 2009 11:07:01 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mail-followup-to:references
-         :mime-version:content-type:content-disposition:in-reply-to
-         :user-agent;
-        b=IBruhAmxYZiprt4DRKyPDJOobsfW95ERDLQVOC+Ort/MVj43Uz9NpqqAMuCId71Gr1
-         QVmMDXuETyYhePSGLfJWqKeObMXWrqkG5Rq+RWdeu6r35yiKooDLOK9g4rzxLofijeBY
-         3gvdsCQ2T7ylId1rmj8w5eBz1dJR+jCDZNIG4=
-Date: Wed, 30 Dec 2009 18:06:45 +0200
-From: Dan Carpenter <error27@gmail.com>
-To: Johan Hovold <jhovold@gmail.com>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [patch] USB: serial: fix DMA buffers on stack for io_edgeport.c
-Message-ID: <20091230160645.GC29476@bicker>
-Mail-Followup-To: Dan Carpenter <error27@gmail.com>,
-	Johan Hovold <jhovold@gmail.com>,
-	Greg Kroah-Hartman <gregkh@suse.de>, linux-usb@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-References: <1262037718-31424-1-git-send-email-jhovold@gmail.com>
+	Wed, 30 Dec 2009 11:19:32 -0500
+X-Trace: 314530632/mk-filter-3.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.28.176/None/hugh.dickins@tiscali.co.uk
+X-SBRS: None
+X-RemoteIP: 79.69.28.176
+X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
+X-SMTP-AUTH: 
+X-Originating-Country: GB/UNITED KINGDOM
+X-MUA: Alpine 2.00 (LSU 1167 2008-08-23)
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AnQBAFEMO0tPRRyw/2dsb2JhbAAIy04Ii0yCQQiBaAQ
+X-IronPort-AV: E=Sophos;i="4.47,476,1257120000"; 
+   d="scan'208";a="314530632"
+Date: Wed, 30 Dec 2009 16:19:29 +0000 (GMT)
+From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+X-X-Sender: hugh@sister.anvils
+To: Minchan Kim <minchan.kim@gmail.com>
+cc: Matt Mackall <mpm@selenic.com>, Andrew Morton <akpm@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [PATCH -mmotm-2009-12-10-17-19] Fix wrong rss count of smaps
+In-Reply-To: <20091230103349.1ec71aac.minchan.kim@barrios-desktop>
+Message-ID: <alpine.LSU.2.00.0912301612180.3369@sister.anvils>
+References: <20091228134619.92ba28f6.minchan.kim@barrios-desktop> <1262117339.3000.2023.camel@calx> <20091230103349.1ec71aac.minchan.kim@barrios-desktop>
+User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1262037718-31424-1-git-send-email-jhovold@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The original code did DMA on a stack variable, so I made it an allocated 
-pointer.
+On Wed, 30 Dec 2009, Minchan Kim wrote:
+> On Tue, 29 Dec 2009 14:08:59 -0600
+> Matt Mackall <mpm@selenic.com> wrote:
+> > On Mon, 2009-12-28 at 13:46 +0900, Minchan Kim wrote:
+> > > I am not sure we have to account zero page with file_rss. 
+> > > Hugh and Kame's new zero page doesn't do it. 
+> > > As side effect of this, we can prevent innocent process which have a lot
+> > > of zero page when OOM happens. 
+> > > (But I am not sure there is a process like this :)
+> > > So I think not file_rss counting is not bad. 
+> > > 
+> > > RSS counting zero page with file_rss helps any program using smaps?
+> > > If we have to keep the old behavior, I have to remake this patch. 
+> > > 
+> > > == CUT_HERE ==
+> > > 
+> > > Long time ago, We regards zero page as file_rss and
+> > > vm_normal_page doesn't return NULL.
+> > > 
+> > > But now, we reinstated ZERO_PAGE and vm_normal_page's implementation
+> > > can return NULL in case of zero page. Also we don't count it with
+> > > file_rss any more.
+> > > 
+> > > Then, RSS and PSS can't be matched.
+> > > For consistency, Let's ignore zero page in smaps_pte_range.
+> > > 
+> > 
+> > Not counting the zero page in RSS is fine with me. But will this patch
+> > make the total from smaps agree with get_mm_rss()?
+> 
+> Yes. Anon page fault handler also don't count zero page any more, now. 
+> Nonetheless, smaps counts it with resident. 
+> 
+> It's point of this patch. 
+> 
+> But I reposted both anon fault handler and here counts it as file_rss
+> as compatibility with old zero page counting.
+> Pz, Look at that. :)
 
-Compile tested only.
+I am getting confused between your different patches in this area,
+heading in different directions, not increments in the same series.
+But I think this is the one to which, like Matt, I'll say
 
-Signed-off-by: Dan Carpenter <error27@gmail.com>
+Acked-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
 
---- orig/drivers/usb/serial/io_edgeport.c	2009-12-30 16:20:35.000000000 +0200
-+++ devel/drivers/usb/serial/io_edgeport.c	2009-12-30 16:25:27.000000000 +0200
-@@ -372,21 +372,24 @@ static void update_edgeport_E2PROM(struc
-  ************************************************************************/
- static int get_string(struct usb_device *dev, int Id, char *string, int buflen)
- {
--	struct usb_string_descriptor StringDesc;
-+	struct usb_string_descriptor *StringDesc;
- 	struct usb_string_descriptor *pStringDesc;
- 
- 	dbg("%s - USB String ID = %d", __func__, Id);
- 
-+	StringDesc = kmalloc(sizeof(*StringDesc), GFP_KERNEL);
-+	if (!StringDesc)
-+		return 0;
- 	if (!usb_get_descriptor(dev, USB_DT_STRING, Id,
--					&StringDesc, sizeof(StringDesc)))
-+					StringDesc, sizeof(*StringDesc)))
- 		return 0;
- 
--	pStringDesc = kmalloc(StringDesc.bLength, GFP_KERNEL);
-+	pStringDesc = kmalloc(StringDesc->bLength, GFP_KERNEL);
- 	if (!pStringDesc)
- 		return 0;
- 
- 	if (!usb_get_descriptor(dev, USB_DT_STRING, Id,
--					pStringDesc, StringDesc.bLength)) {
-+					pStringDesc, StringDesc->bLength)) {
- 		kfree(pStringDesc);
- 		return 0;
- 	}
+> 
+> > 
+> > Regarding OOM handling: arguably RSS should play no role in OOM as it's
+> > practically meaningless in a shared memory system. If we were instead
+> 
+> It's very arguable issue for us that OOM depens on RSS.
+> 
+> > used per-process unshared pages as the metric (aka USS), we'd have a
+> > much better notion of how much memory an OOM kill would recover.
+> > Unfortunately, that's not trivial to track as the accounting on COW
+> > operations is not lightweight.
+> 
+> I think we can approximate it with the size of VM_SHARED vma of process
+> when VM calculate badness. 
+> What do you think about it?
+
+Sounds like it'll end up even harder to understand than by size or by rss.
+
+> 
+> Thanks for good idea, Matt. 
+> 
+> > 
+> > > CC: Matt Mackall <mpm@selenic.com>
+> > > Signed-off-by: Minchan Kim <minchan.kim@gmail.com>
+> > > ---
+> > >  fs/proc/task_mmu.c |    3 +--
+> > >  1 files changed, 1 insertions(+), 2 deletions(-)
+> > > 
+> > > diff --git a/fs/proc/task_mmu.c b/fs/proc/task_mmu.c
+> > > index 47c03f4..f277c4a 100644
+> > > --- a/fs/proc/task_mmu.c
+> > > +++ b/fs/proc/task_mmu.c
+> > > @@ -361,12 +361,11 @@ static int smaps_pte_range(pmd_t *pmd, unsigned long addr, unsigned long end,
+> > >  		if (!pte_present(ptent))
+> > >  			continue;
+> > >  
+> > > -		mss->resident += PAGE_SIZE;
+> > > -
+> > >  		page = vm_normal_page(vma, addr, ptent);
+> > >  		if (!page)
+> > >  			continue;
+> > >  
+> > > +		mss->resident += PAGE_SIZE;
+> > >  		/* Accumulate the size in pages that have been accessed. */
+> > >  		if (pte_young(ptent) || PageReferenced(page))
+> > >  			mss->referenced += PAGE_SIZE;
+> > > -- 
