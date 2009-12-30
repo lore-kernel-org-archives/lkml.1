@@ -1,54 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752725AbZL3Qzq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752155AbZL3RDm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752725AbZL3Qzq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Dec 2009 11:55:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752552AbZL3Qzq
+	id S1752155AbZL3RDm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Dec 2009 12:03:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751683AbZL3RDl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Dec 2009 11:55:46 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:43229 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752393AbZL3Qzp (ORCPT
+	Wed, 30 Dec 2009 12:03:41 -0500
+Received: from mk-filter-4-a-1.mail.uk.tiscali.com ([212.74.100.55]:9056 "EHLO
+	mk-filter-4-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751631AbZL3RDl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Dec 2009 11:55:45 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject
-         :content-type:content-transfer-encoding;
-        b=oQRRYXzOhC55QvJXSlINlnx2Dct+Lkku7EPtfGrv2gu7e60chG73wCiJOlD/8OTcb5
-         ERpB+0K5nD64X8BjFIsdnzG5qSpLVtCxDN0zAl0zR98oYHyS2yevc1DKjcChVs3E1uvb
-         /pri2UYr3ooy1g7LwNZaObEtNXfvnrN1JzbNw=
-Message-ID: <4B3B86CC.5010205@gmail.com>
-Date: Wed, 30 Dec 2009 17:58:52 +0100
-From: Roel Kluin <roel.kluin@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
+	Wed, 30 Dec 2009 12:03:41 -0500
+X-Trace: 313817291/mk-filter-4.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.28.176/None/hugh.dickins@tiscali.co.uk
+X-SBRS: None
+X-RemoteIP: 79.69.28.176
+X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
+X-SMTP-AUTH: 
+X-Originating-Country: GB/UNITED KINGDOM
+X-MUA: Alpine 2.00 (LSU 1167 2008-08-23)
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AnQBAM8WO0tPRRyw/2dsb2JhbAAIy04Ii1uCQQiBaAQ
+X-IronPort-AV: E=Sophos;i="4.47,476,1257120000"; 
+   d="scan'208";a="313817291"
+Date: Wed, 30 Dec 2009 17:03:31 +0000 (GMT)
+From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+X-X-Sender: hugh@sister.anvils
+To: Minchan Kim <minchan.kim@gmail.com>
+cc: Rik van Riel <riel@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Subject: Re: [PATCH -mmotm-2009-12-10-17-19] Prevent churning of zero page
+ in LRU list.
+In-Reply-To: <20091228130926.6874d7b2.minchan.kim@barrios-desktop>
+Message-ID: <alpine.LSU.2.00.0912301653200.4532@sister.anvils>
+References: <20091228115315.76b1ecd0.minchan.kim@barrios-desktop> <4B38246C.3020209@redhat.com> <20091228130926.6874d7b2.minchan.kim@barrios-desktop>
+User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
 MIME-Version: 1.0
-To: "James E.J. Bottomley" <James.Bottomley@suse.de>,
-       linux-scsi@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, kashyap.desai@lsi.com
-Subject: [PATCH] mpt2sas: Fix &&/|| confusion in _scsih_sas_device_status_change_event()
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This never evaluates to true.
+On Mon, 28 Dec 2009, Minchan Kim wrote:
+> On Sun, 27 Dec 2009 22:22:20 -0500
+> Rik van Riel <riel@redhat.com> wrote:
+> > On 12/27/2009 09:53 PM, Minchan Kim wrote:
+> > >
+> > > VM doesn't add zero page to LRU list.
+> > > It means zero page's churning in LRU list is pointless.
+> > >
+> > > As a matter of fact, zero page can't be promoted by mark_page_accessed
+> > > since it doesn't have PG_lru.
+> > >
+> > > This patch prevent unecessary mark_page_accessed call of zero page
+> > > alghouth caller want FOLL_TOUCH.
+> > >
+> > > Signed-off-by: Minchan Kim<minchan.kim@gmail.com>
+> > 
+> > The code looks correct, but I wonder how frequently we run into
+> > the zero page in this code, vs. how much the added cost is of
+> > having this extra code in follow_page.
+> > 
+> > What kind of problem were you running into that motivated you
+> > to write this patch?
+> 
+> I didn't have experienced any problem in this case. 
+> In fact, I found that while trying to make patch smap_pte_change. 
+> 
+> Long time ago when we have a zero page, we regards it to file_rss. 
+> So while we see the smaps, vm_normal_page returns zero page and we can
+> calculate it properly with PSS. 
+> 
+> But now we don't acccout zero page to file_rss. 
+> I am not sure we have to account it with file_rss. 
+> So I think now smaps_pte_range's resident count routine also is changed. 
+> 
+> Anyway, I think my patch doesn't have much cost since many customers of 
+> follow_page are already not a fast path.
+> 
+> I tend to agree with your opinion "How frequently we runt into the zero page?"
+> But my thought GUP is export function which can be used for anything by anyone.
+> 
+> Thanks for the review, Rik. 
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
----
- drivers/scsi/mpt2sas/mpt2sas_scsih.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+I'm guessing that you've now dropped the idea of this patch,
+since it wasn't included along with your 1/3, 2/3, 3/3.
 
-diff --git a/drivers/scsi/mpt2sas/mpt2sas_scsih.c b/drivers/scsi/mpt2sas/mpt2sas_scsih.c
-index efabea1..82c5474 100644
---- a/drivers/scsi/mpt2sas/mpt2sas_scsih.c
-+++ b/drivers/scsi/mpt2sas/mpt2sas_scsih.c
-@@ -4363,7 +4363,7 @@ _scsih_sas_device_status_change_event(struct MPT2SAS_ADAPTER *ioc,
- #endif
- 
- 	if (!(event_data->ReasonCode ==
--	    MPI2_EVENT_SAS_DEV_STAT_RC_INTERNAL_DEVICE_RESET &&
-+	    MPI2_EVENT_SAS_DEV_STAT_RC_INTERNAL_DEVICE_RESET ||
- 	   event_data->ReasonCode ==
- 	    MPI2_EVENT_SAS_DEV_STAT_RC_CMP_INTERNAL_DEV_RESET))
- 		return;
+You thought the ZERO_PAGE was moving around the LRUs, but now
+realize that it isn't, so accept there's no need for this patch?
+
+There's lots of places where we could shave a little time off dealing
+with the ZERO_PAGE by adding tests for it; but at the expense of
+adding code to normal paths of the system, slowing them down.
+
+If there's a proven reason for doing so somewhere, yes, we should
+add such tests to avoid significant cacheline bouncing; but without
+good reason, we just let ZERO_PAGEs fall through the code as they do.
+
+I believe that get_user_pages() on ZERO_PAGEs is exceptional, beyond
+the cases of coredumping and mlock and make_pages_present; but if
+you've evidence for adding a test somewhere, please provide it.
+
+Hugh
