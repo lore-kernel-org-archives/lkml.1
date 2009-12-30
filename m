@@ -1,61 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752638AbZL3Jox@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752542AbZL3J36@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752638AbZL3Jox (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Dec 2009 04:44:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752601AbZL3Jow
+	id S1752542AbZL3J36 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Dec 2009 04:29:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752252AbZL3J36
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Dec 2009 04:44:52 -0500
-Received: from mail.windriver.com ([147.11.1.11]:50067 "EHLO
-	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752580AbZL3Jov (ORCPT
+	Wed, 30 Dec 2009 04:29:58 -0500
+Received: from www84.your-server.de ([213.133.104.84]:53811 "EHLO
+	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751668AbZL3J35 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Dec 2009 04:44:51 -0500
-Message-ID: <4B3B1D6C.8050006@windriver.com>
-Date: Wed, 30 Dec 2009 17:29:16 +0800
-From: Wang Liming <liming.wang@windriver.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Paul Mackerras <paulus@samba.org>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] perf tools: remove pid option from stat
-References: <1262075829-16257-1-git-send-email-liming.wang@windriver.com> <1262075829-16257-2-git-send-email-liming.wang@windriver.com> <1262088251.7135.131.camel@laptop> <20091230092327.GA10486@elte.hu>
-In-Reply-To: <20091230092327.GA10486@elte.hu>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Wed, 30 Dec 2009 04:29:57 -0500
+Subject: Re: [PATCH] [0/6] kfifo fixes/improvements
+From: Stefani Seibold <stefani@seibold.net>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Vikram Dhillon <dhillonv10@gmail.com>, Andi Kleen <andi@firstfloor.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "akpm@osdl.org" <akpm@osdl.org>
+In-Reply-To: <20091230020830.GA7049@core.coreip.homeip.net>
+References: <20091227233816.GC2399@basil.fritz.box>
+	 <1261986136.808.2.camel@wall-e> <20091228145749.GD4994@basil.fritz.box>
+	 <1262016510.12656.25.camel@wall-e> <20091228172651.GE4994@basil.fritz.box>
+	 <1262030653.15368.37.camel@wall-e> <20091228204003.GH4994@basil.fritz.box>
+	 <1262076056.23095.21.camel@wall-e>
+	 <64D5262E-28CF-41E8-9425-F8C5DD0A2265@gmail.com>
+	 <ea6602020912291718n103694aft78ef15b65081a996@mail.gmail.com>
+	 <20091230020830.GA7049@core.coreip.homeip.net>
+Content-Type: text/plain; charset="ISO-8859-15"
+Date: Wed, 30 Dec 2009 10:29:50 +0100
+Message-ID: <1262165390.4153.3.camel@wall-e>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.2 
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 30 Dec 2009 09:44:00.0325 (UTC) FILETIME=[9D43C750:01CA8934]
+X-Authenticated-Sender: stefani@seibold.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Peter Zijlstra <peterz@infradead.org> wrote:
-> 
->> On Tue, 2009-12-29 at 16:37 +0800, Liming Wang wrote:
->>> pid option is useless for stat, so remove it.
->> Hmm, it shouldn't be.. and instead of removing it I would suggesting fixing 
->> this.
-> 
-> Yes. For exampe something like:
-> 
->   perf stat --repeat 10 --pid $(pidof firefox) sleep 1
-> 
-> Should show firefox's resource usage sampled over 10 seconds.
-> 
-> If this doesnt work it should be fixed. Plus i suspect we should allow:
-> 
->   perf stat --pid $(pidof firefox)
-> 
-> to run until Ctrl-C - like perf record allows.
-Yes, perf record works well with "--pid".
-I think stat can borrow come code from record.
-Please discard this patch.
 
-Liming Wang
+> On Tue, Dec 29, 2009 at 08:18:50PM -0500, Vikram Dhillon wrote:
+> > IMHO you can process elements rather than bytes, which is a good
+> > improvement, but then again its my opinion, if others don't like it
+> > then we can always change it :D
 > 
-> 	Ingo
+> Right, I was not arguing against having a record-oriented interface, I
+> was questioning the utility of processing several records at a time.
+> Kfifo users that I have seen so far were working in a record-at-a-time
+> mode.
 > 
+
+Fascinating, i get a lot of comments, but no one is trying the new macro
+base implementation. If someone would, this person would see, that is
+100% compatible to the current one and absolut easy to use. Please try
+it first bevor argue and complain.
+
+Stefani
+
 
