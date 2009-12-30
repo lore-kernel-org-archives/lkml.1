@@ -1,108 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753394AbZL3Tpy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753268AbZL3TtU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753394AbZL3Tpy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Dec 2009 14:45:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753312AbZL3Tpy
+	id S1753268AbZL3TtU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Dec 2009 14:49:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753173AbZL3TtT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Dec 2009 14:45:54 -0500
-Received: from mk-filter-1-a-1.mail.uk.tiscali.com ([212.74.100.52]:57429 "EHLO
-	mk-filter-1-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753311AbZL3Tpx (ORCPT
+	Wed, 30 Dec 2009 14:49:19 -0500
+Received: from smtp108.prem.mail.sp1.yahoo.com ([98.136.44.63]:46221 "HELO
+	smtp108.prem.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751701AbZL3TtS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Dec 2009 14:45:53 -0500
-X-Trace: 318078915/mk-filter-1.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.28.176/None/hugh.dickins@tiscali.co.uk
-X-SBRS: None
-X-RemoteIP: 79.69.28.176
-X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
-X-SMTP-AUTH: 
-X-Originating-Country: GB/UNITED KINGDOM
-X-MUA: Alpine 2.00 (LSU 1167 2008-08-23)
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AnQBAAI9O0tPRRyw/2dsb2JhbAAI1wiEMQQ
-X-IronPort-AV: E=Sophos;i="4.47,476,1257120000"; 
-   d="scan'208";a="318078915"
-Date: Wed, 30 Dec 2009 19:45:48 +0000 (GMT)
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-X-X-Sender: hugh@sister.anvils
-To: Eric Anholt <eric@anholt.net>
-cc: Dave Airlie <airlied@linux.ie>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       linux-kernel@vger.kernel.org, dri-devel@lists.sf.net
-Subject: drm: gem_object_free without struct_mutex
-Message-ID: <alpine.LSU.2.00.0912301934070.25797@sister.anvils>
-User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
+	Wed, 30 Dec 2009 14:49:18 -0500
+X-Yahoo-SMTP: OIJXglSswBDfgLtXluJ6wiAYv6_cnw--
+X-YMail-OSG: 5nyFUC4VM1mHdwQHvPI.92KUCwTLymAX6Cppj9AYka9FWcBYSLnLmc09EAQQK_mi06DTGQq4YQRwMtI2Fz1qQ0_invQQFHRa36ebRzox27mFQQSDOZzHhk4epoEUcy6H6g8RIBZvN2cK0OvjdshFFl8Mp71jDvsJ5Jz9oYDsExg2qOe.suh6MGwp_3Qun5d3NTjCWmotRFWOt2vcW1BS5WXgloWDuAM2_k6HrG92utROzncz_T41eEBj3GeBIEpYcJWmcsjxVGXvS7q0DF2ONHT1thiKxoOV3N6_wYN9kRkusJjsZJv43HEoL1iYXWu31aTLwnkj2UG9oX9GMWQGS4MD7VL2smln69oS__EJtZwJdA--
+X-Yahoo-Newman-Property: ymail-3
+Message-ID: <4B3BAEB7.3000208@schaufler-ca.com>
+Date: Wed, 30 Dec 2009 11:49:11 -0800
+From: Casey Schaufler <casey@schaufler-ca.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Kyle Moffett <kyle@moffetthome.net>
+CC: Michael Stone <michael@laptop.org>, "Serge E. Hallyn" <serue@us.ibm.com>,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       Andi Kleen <andi@firstfloor.org>, David Lang <david@lang.hm>,
+       Oliver Hartkopp <socketcan@hartkopp.net>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Valdis Kletnieks <Valdis.Kletnieks@vt.edu>,
+       Bryan Donlan <bdonlan@gmail.com>, Evgeniy Polyakov <zbr@ioremap.net>,
+       "C. Scott Ananian" <cscott@cscott.net>,
+       James Morris <jmorris@namei.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Bernie Innocenti <bernie@codewiz.org>,
+       Mark Seaborn <mrs@mythic-beasts.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       =?UTF-8?B?QW3DqXJpY28gV2FuZw==?= <xiyou.wangcong@gmail.com>,
+       Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
+       Samir Bellabes <sam@synack.fr>, Pavel Machek <pavel@ucw.cz>,
+       Casey Schaufler <casey@schaufler-ca.com>
+Subject: Re: A basic question about the security_* hooks
+References: <20091225055034.GA374@us.ibm.com> <20091226195043.GA1945@heat> 	<f73f7ab80912280724l10aef7ber4d4dc8da5aeaafa2@mail.gmail.com> 	<4B395EB8.4050902@schaufler-ca.com> <f73f7ab80912291102i22fb9e10v3b1b0eaba2e4f61d@mail.gmail.com>
+In-Reply-To: <f73f7ab80912291102i22fb9e10v3b1b0eaba2e4f61d@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I've changed BUG_ON to WARN_ON in drm_gem.c (patch at bottom) to
-get this dmesg when I resume after suspend, instead of crashing.
+Kyle Moffett wrote:
+> On Mon, Dec 28, 2009 at 20:43, Casey Schaufler <casey@schaufler-ca.com> wrote:
+>   
+>> Kyle Moffett wrote:
+>>     
+>>> On Sat, Dec 26, 2009 at 14:50, Michael Stone <michael@laptop.org> wrote:
+>>>       
+>>>> I'm willing to entertain pretty much any implementation or interface request
+>>>> which meets that goal and which implements the desired semantics.
+>>>>
+>>>>         
+>>> If you aren't using SELinux at this time (and therefore have no
+>>> existing policy), then it's actually pretty straightforward
+>>> (relatively speaking) to set up for your particular goals.  On top of
+>>> that, once you actually get the system set up, it's very easy to
+>>> extend your sandbox security model to additional processes, actions,
+>>> etc.
+>>>
+>>> [...]
+>>>       
+>> I would be very surprised if the policy you've described actually
+>> covered all the bases. I would also be surprised if a functional
+>> policy that meets the needs described was considerably smaller than
+>> Lake Michigan. It's really easy to toss off the basics of what needs
+>> to be done, it's quite another to get the whole thing right.
+>>
+>>     
+>>> If all you need is something much simpler, the policy
+>>> language is very flexible and easy to customize.
+>>>
+>>>       
+>> I'm willing to bet all the beers you can drink in a sitting that
+>> the policy would be bigger than the proposed LSM. You can count that
+>> in either bytes or lines.
+>>     
+>
+> If that bet's in Mountain Dew or "Bawls" energy drinks
+> (http://www.bawls.com/) instead of beer... then you've got a deal :-D
+>   
 
-Perhaps it's a patch that should go in, perhaps not, but obviously
-the real problem lies elsewhere.  Happens with 2.6.33-rc1 and -rc2.
+Hee hee. A sitting doesn't last very long with those beverages.
 
-No surprise if I'm stupidly misconfigured to get the "pin power context"
-error in the first place (.config on demand), but I don't deserve to BUG!
+> Here's a very fast first cut at such a policy.  In this version I
+> actually completely ignore the type-enforcement mechanism, although if
+> you decide to start mediating file access then you may want to
+> reenable it.  The policy is pretty straightforward and easy to read...
+> customizations would initially mostly be in the "constraint" rules.
+>   
 
-Hugh
+Wouldn't this policy prevent all processes from using the network,
+as opposed to the particular ones that need to be controlled?
+I can't claim to be the world's greatest policy expert, and I
+could have it wrong (it happens often enough) but wouldn't you
+need at least two labels, one for the restricted programs and
+one for the rest?
 
-[drm:intel_init_clock_gating] *ERROR* failed to pin power context: -16
-------------[ cut here ]------------
-WARNING: at drivers/gpu/drm/drm_gem.c:438 drm_gem_object_free+0x20/0x5e()
-Hardware name: ESPRIMO Mobile V5505           
-Modules linked in: snd_pcm_oss snd_mixer_oss snd_seq snd_seq_device
-Pid: 3793, comm: s2ram Not tainted 2.6.33-rc2 #4
-Call Trace:
- [<7815298e>] warn_slowpath_common+0x59/0x6b
- [<781529b3>] warn_slowpath_null+0x13/0x18
- [<78317c1a>] ? drm_gem_object_free+0x20/0x5e
- [<78317c1a>] drm_gem_object_free+0x20/0x5e
- [<78317bfa>] ? drm_gem_object_free+0x0/0x5e
- [<7829df11>] kref_put+0x38/0x45
- [<7833a5f0>] intel_init_clock_gating+0x232/0x271
- [<78317bfa>] ? drm_gem_object_free+0x0/0x5e
- [<7832c307>] i915_restore_state+0x21a/0x2b3
- [<7832379d>] i915_resume+0x3c/0xbb
- [<78174fe5>] ? trace_hardirqs_on_caller+0xfc/0x123
- [<7831c756>] ? drm_class_resume+0x0/0x3e
- [<7831c78d>] drm_class_resume+0x37/0x3e
- [<78351e0a>] legacy_resume+0x1e/0x51
- [<78351ece>] device_resume+0x91/0xab
- [<7831c756>] ? drm_class_resume+0x0/0x3e
- [<78352226>] dpm_resume+0x58/0x10f
- [<783522fb>] dpm_resume_end+0x1e/0x2c
- [<78180f80>] suspend_devices_and_enter+0x61/0x84
- [<78180ff8>] enter_state+0x55/0x83
- [<7818091c>] state_store+0x94/0xaa
- [<7829d09e>] kobj_attr_store+0x1e/0x23
- [<782098e0>] sysfs_write_file+0x66/0x99
- [<781cd2f0>] vfs_write+0x8a/0x108
- [<781cd408>] sys_write+0x3c/0x63
- [<78125c10>] sysenter_do_call+0x12/0x36
----[ end trace a343537f29950fda ]---
+> The only thing I actually had to write was the base-policy.pp file.  I
+> personally absolutely detest M4... so these particular files are
+> designed to be preprocessed with "cpp" instead.  Those 3 ".h" files
+> are simply lists of the kernel's access vectors and such run through
+> "sed" to convert the "#" comments into "//" comments.
+>
+> I have a Makefile I've been using personally to build that policy, but
+> right now it's rather interdependent with my working environment, so
+> it may take me several days to find the time to extract it cleanly.
+>
+> Cheers,
+> Kyle Moffett
+>   
 
-[PATCH] gem: free just WARN_ON(!mutex_is_locked)
-
-drm_gem_object_free() WARN_ON(!mutex_is_locked) instead of BUG_ON:
-i915_resume()->i915_restore_state()->intel_init_clock_gating()
-is currently causing it to trigger with my config.
-
-Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
----
-
- drivers/gpu/drm/drm_gem.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
---- 2.6.33-rc2/drivers/gpu/drm/drm_gem.c	2009-12-03 03:51:21.000000000 +0000
-+++ linux/drivers/gpu/drm/drm_gem.c	2009-12-26 18:29:57.000000000 +0000
-@@ -435,7 +435,7 @@ drm_gem_object_free(struct kref *kref)
- 	struct drm_gem_object *obj = (struct drm_gem_object *) kref;
- 	struct drm_device *dev = obj->dev;
- 
--	BUG_ON(!mutex_is_locked(&dev->struct_mutex));
-+	WARN_ON(!mutex_is_locked(&dev->struct_mutex));
- 
- 	if (dev->driver->gem_free_object != NULL)
- 		dev->driver->gem_free_object(obj);
