@@ -1,80 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751395AbZL3Vem@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751226AbZL3VeU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751395AbZL3Vem (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Dec 2009 16:34:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750820AbZL3Vel
+	id S1751226AbZL3VeU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Dec 2009 16:34:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750992AbZL3VeU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Dec 2009 16:34:41 -0500
-Received: from 0122700014.0.fullrate.dk ([95.166.99.235]:43728 "EHLO kernel.dk"
+	Wed, 30 Dec 2009 16:34:20 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:44162 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750698AbZL3Vek (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Dec 2009 16:34:40 -0500
-Date: Wed, 30 Dec 2009 22:34:39 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Corrado Zoccolo <czoccolo@gmail.com>
-Cc: Linux-Kernel <linux-kernel@vger.kernel.org>,
-       Jeff Moyer <jmoyer@redhat.com>, Vivek Goyal <vgoyal@redhat.com>,
-       Shaohua Li <shaohua.li@intel.com>,
-       Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-Subject: Re: [PATCH] cfq-iosched: non-rot devices do not need queue merging
-Message-ID: <20091230213439.GQ4489@kernel.dk>
-References: <1262175004-2132-1-git-send-email-czoccolo@gmail.com> <20091230184535.GE4489@kernel.dk> <4e5e476b0912301231k3214bb3dicbfc59d94623d72@mail.gmail.com> <20091230211138.GN4489@kernel.dk> <4e5e476b0912301321m7d6ab48dv58600b336b4a4cdd@mail.gmail.com>
+	id S1750701AbZL3VeT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Dec 2009 16:34:19 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: davidjon@xenontk.org
+Subject: Re: [Bug #14897] i915: Commit 0e442c60 causes flickering
+Date: Wed, 30 Dec 2009 22:35:03 +0100
+User-Agent: KMail/1.12.3 (Linux/2.6.33-rc2-tst; KDE/4.3.3; x86_64; ; )
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Eric Anholt <eric@anholt.net>, Jesse Barnes <jbarnes@virtuousgeek.org>
+References: <oBElxfTZdhL.A.bx.-vhOLB@chimera> <srmJ8vMxKPH.A.UwB.PwhOLB@chimera> <4B3AF1A7.60705@xenontk.org>
+In-Reply-To: <4B3AF1A7.60705@xenontk.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <4e5e476b0912301321m7d6ab48dv58600b336b4a4cdd@mail.gmail.com>
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200912302235.03809.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 30 2009, Corrado Zoccolo wrote:
-> On Wed, Dec 30, 2009 at 10:11 PM, Jens Axboe <jens.axboe@oracle.com> wrote:
-> > On Wed, Dec 30 2009, Corrado Zoccolo wrote:
-> >> On Wed, Dec 30, 2009 at 7:45 PM, Jens Axboe <jens.axboe@oracle.com> wrote:
-> >> > On Wed, Dec 30 2009, Corrado Zoccolo wrote:
-> >> >> Non rotational devices' performances are not affected by
-> >> >> distance of requests, so there is no point in having overhead
-> >> >> to merge queues of nearby requests.
-> >> >
-> >> > If the distance is zero, it may still make a big difference (at least
-> >> > for writes). This check would be better as "ncq and doesn't suck", ala
-> >> >
-> >> >        blk_queue_nonrot(q) && tagged
-> >> >
-> >> > like we do elsewhere.
-> >>
-> >> For reads, though, even flash cards and netbook ssds are completely
-> >> unaffected. I have done few experiments on my available disks:
-> >> * http://dl.dropbox.com/u/3525644/service_time.png (I used the
-> >> program: http://dl.dropbox.com/u/3525644/stride.c to get the graphs).
-> >
-> > Completely agree, it's writes that matter (as mentioned).
-> >
-> >> For distance 0, I think request merging will be more effective than
-> >> queue merging, moreover I think the multi-thread trick to have large
-> >
-> > Definitely true, but we don't allow cross cfqq merges to begin with.
-> >
-> >> I/O depth is used for reads, not writes (where simply issuing buffered
-> >> writes already achieves a similar effect), so I think it is safe to
-> >> disable it for all non-rotational devices.
-> >
-> > That still leaves direct writes. Granted it's a problem with a huge
-> > scope, but still.
-> Maybe I can mark sync queues that have write requests, and only add
-> those ones to the prio tree.
+On Wednesday 30 December 2009, David John wrote:
+> On 12/29/2009 08:58 PM, Rafael J. Wysocki wrote:
+> > This message has been generated automatically as a part of a report
+> > of regressions introduced between 2.6.31 and 2.6.32.
+> > 
+> > The following bug entry is on the current list of known regressions
+> > introduced between 2.6.31 and 2.6.32.  Please verify if it still should
+> > be listed and let me know (either way).
+> > 
+> > 
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14897
+> > Subject		: i915: Commit 0e442c60 causes flickering
+> > Submitter	: David John <davidjon@xenontk.org>
+> > Date		: 2009-12-09 17:26 (21 days old)
+> > First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=0e442c60dd39ac6924b11a20497734bd2303744c
+> > References	: http://marc.info/?l=linux-kernel&m=126037889600769&w=4
+> > 
+> > 
+> > 
+> 
+> This regression along with the associated one:
+> http://marc.info/?l=linux-kernel&m=126044443222694&w=2 is still present
+> in 2.6.33-rc2.
 
-That sounds like a solution and avoids the merge/breakup pain for (by
-far) most use cases.
+Thanks for the update.
 
-> For writes, merging queues (and therefore requests) can probably help
-> even the smart ssds.
-
-Yes, but we are getting to the point of having to be more careful about
-CPU cycles on SSDs. But lets do it, I'll be spending a good chunk of
-time on that very shortly anyway.
-
--- 
-Jens Axboe
-
+Rafael
