@@ -1,101 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752685AbZL3Qx5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752807AbZL3Q6P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752685AbZL3Qx5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Dec 2009 11:53:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752523AbZL3Qx4
+	id S1752807AbZL3Q6P (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Dec 2009 11:58:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752765AbZL3Q6O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Dec 2009 11:53:56 -0500
-Received: from mail.windriver.com ([147.11.1.11]:34589 "EHLO
-	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752495AbZL3Qx4 (ORCPT
+	Wed, 30 Dec 2009 11:58:14 -0500
+Received: from mail-gx0-f226.google.com ([209.85.217.226]:51678 "EHLO
+	mail-gx0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752717AbZL3Q6M (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Dec 2009 11:53:56 -0500
-Message-ID: <4B3B8577.6050801@windriver.com>
-Date: Wed, 30 Dec 2009 10:53:11 -0600
-From: Jason Wessel <jason.wessel@windriver.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Wed, 30 Dec 2009 11:58:12 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=rlZR0iBfE4rMe5H3UPQlOPdQYgCM1KXzWbNa8wYdDwDOIXlV2/+ocoX+uhEkIh01pQ
+         JgSVTTaJq+30//2hu+bAfp0DE0eqacS5eaLaLEOGCeLrQv5M+dog9Z4CKGRGp1CjYd/6
+         0d07GnuW3pakKCEX3+ht3BG9UugQJZsf0yC/s=
+Message-ID: <4B3B869F.8090003@lwfinger.net>
+Date: Wed, 30 Dec 2009 10:58:07 -0600
+From: Larry Finger <Larry.Finger@lwfinger.net>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090915 SUSE/3.0b4-3.6 Thunderbird/3.0b4
 MIME-Version: 1.0
-To: Frederic Weisbecker <fweisbec@gmail.com>, Jan Kiszka <jan.kiszka@web.de>
-CC: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>, lkml <linux-kernel@vger.kernel.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       "K.Prasad" <prasad@linux.vnet.ibm.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [RFC] Fix 2.6.33 x86 regression to kgdb hw breakpoints - dueto
- perf API changes
-References: <4B227F2C.7050403@windriver.com> <20091212132428.GB22389@elte.hu> <20091212135216.GA18597@elte.hu> <4B2404C6.2050003@windriver.com> <20091230163903.GA5024@nowhere>
-In-Reply-To: <20091230163903.GA5024@nowhere>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 30 Dec 2009 16:53:11.0882 (UTC) FILETIME=[92638AA0:01CA8970]
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Network Development <netdev@vger.kernel.org>,
+       Linux ACPI <linux-acpi@vger.kernel.org>,
+       Linux PM List <linux-pm@lists.linux-foundation.org>,
+       Linux SCSI List <linux-scsi@vger.kernel.org>,
+       Linux Wireless List <linux-wireless@vger.kernel.org>,
+       DRI <dri-devel@lists.sourceforge.net>
+Subject: Re: 2.6.33-rc2: Reported regressions 2.6.31 -> 2.6.32
+References: <oBElxfTZdhL.A.bx.-vhOLB@chimera>
+In-Reply-To: <oBElxfTZdhL.A.bx.-vhOLB@chimera>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Frederic Weisbecker wrote:
-> On Sat, Dec 12, 2009 at 03:01:58PM -0600, Jason Wessel wrote:
->   
->> Ingo Molnar wrote:
->>     
->>> Basically we have two options:
->>>
->>>  A- change kgdb to use the hw-breakpoints highlevel APIs (i'd prefer 
->>>     that)
->>>
->>>   
->>>       
->> Right now we can't because the high level code uses all sorts of mutexes
->> and sync points to get the hw breakpoints installs on the various
->> processors.  After I re-spun my RFC patch, I found another problem.  I
->> do use the high level code to create a block of 4 (struct perf_event **)
->> structures, but doing so ultimately calls the reserve hw breakpoint even
->> though they are marked as disabled when created.
->>
->> Should I, or can I change that behavior?
->>     
->
->
->
-> We could probably have a helper that allocates a disabled breakpoint
-> without reserving it.
-
-I worked around that restriction for now, in the current version of the
-kgdb patches.  When kgdb registers with the die notifier in its init
-phase, it allocates the perf structures via the perf API and
-subsequently disables the breakpoints with the low level API.
-
->  But the problem remains: you'll need to take
-> locks when you eventually reserve it and when you activate it.
->
-> The fact that it can happen from nmi is really a problem.
->
->   
-
-I talked with Jan a bit with respect to this problem.  He recommended to
-possibly allow kgdb to obtain hw breakpoints locklessly and to break
-reservations that exist with the low level API.  The current patch in
-the kgdb series does not break reservations, it only uses a slot that is
-not already in use.  Let us call the scenarios A and B.
-
-A) allow kgdb to break existing reservations
-B) kgdb can use what is not reserved, without locks
-
-What is missing right now is a notification mechanism and a separate
-count for the debugger as to what is in use.   I tend to think that B is
-the right default approach, but Jan was leaning towards scenario A.
-
-> Is there any possibility that we know the user has started a
-> kgdb session, and then reserve as much hardware breakpoints
-> as we can in kgdb at this time?
->
->   
-
-That is the way I implemented it the first time.  Reserve all the slots,
-and then nothing else could use them.  That didn't work out too well
-because then the user space could not make use of hw breakpoints,
-granted this never worked before with user space + kernel space sharing
-between ptrace and kgdb.
-
-Jason.
+On 12/29/2009 09:26 AM, Rafael J. Wysocki wrote:
+> [NOTES:
+>  * I really hope that at least _some_ of the bugs below have been already
+>    fixed, but I didn't have the time to search through all of the histories.
+>    _Please_ let me know which of them can be closed.
+>  * If you close one of the bugs in this list, please do your best to put the
+>    hash of the fix commit into the Bugzilla entry.]
+> 
+> This message contains a list of some regressions introduced between 2.6.31 and
+> 2.6.32, for which there are no fixes in the mainline I know of.  If any of them
+> have been fixed already, please let me know.
 
 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14743
+> Subject		: New rtl8187 rfkill support prevents using wlan completely.
+> Submitter	: Antti Kaijanmäki <antti@kaijanmaki.net>
+> Date		: 2009-12-05 20:10 (25 days old)
+
+
+This bug is fixed in mainline with commit
+70d57139f932b9ca21026253d02af71cf53d764a. This patch has also been backported to
+2.6.32.2. The status of the Bugzilla entry has been changed to "CLOSED with CODE
+FIX".
+
+Larry
