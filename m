@@ -1,56 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752631AbZL3QkA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752533AbZL3Qt5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752631AbZL3QkA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Dec 2009 11:40:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752470AbZL3Qj7
+	id S1752533AbZL3Qt5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Dec 2009 11:49:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752327AbZL3Qt4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Dec 2009 11:39:59 -0500
-Received: from ey-out-2122.google.com ([74.125.78.27]:4825 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752055AbZL3Qj6 (ORCPT
+	Wed, 30 Dec 2009 11:49:56 -0500
+Received: from mk-filter-4-a-1.mail.uk.tiscali.com ([212.74.100.55]:8896 "EHLO
+	mk-filter-4-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752248AbZL3Qt4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Dec 2009 11:39:58 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject
-         :content-type:content-transfer-encoding;
-        b=aSfZVvWMvxQrbM8cXlWHFcGZ2snZguwCs6iYMqvLjRs+yO25XwZZKqw3OR+MQDHWP8
-         ysAak/danI3J4dWSa+l/umMYBIfvDUCXWRlPFMju8Nt81kPxtTvDvZQWVqbfMwrM58QQ
-         rMKSHLoMBi0xrUI2cZYsVTWAlnNRRx8myuv9Y=
-Message-ID: <4B3B831A.507@gmail.com>
-Date: Wed, 30 Dec 2009 17:43:06 +0100
-From: Roel Kluin <roel.kluin@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
+	Wed, 30 Dec 2009 11:49:56 -0500
+X-Trace: 313807448/mk-filter-4.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.28.176/None/hugh.dickins@tiscali.co.uk
+X-SBRS: None
+X-RemoteIP: 79.69.28.176
+X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
+X-SMTP-AUTH: 
+X-Originating-Country: GB/UNITED KINGDOM
+X-MUA: Alpine 2.00 (LSU 1167 2008-08-23)
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AnQBAIcTO0tPRRyw/2dsb2JhbAAI10aEMQSBaA
+X-IronPort-AV: E=Sophos;i="4.47,476,1257120000"; 
+   d="scan'208";a="313807448"
+Date: Wed, 30 Dec 2009 16:49:52 +0000 (GMT)
+From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+X-X-Sender: hugh@sister.anvils
+To: Minchan Kim <minchan.kim@gmail.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [PATCH 2/3 -mmotm-2009-12-10-17-19] Count zero page as
+ file_rss
+In-Reply-To: <4B38876F.6010204@gmail.com>
+Message-ID: <alpine.LSU.2.00.0912301619500.3369@sister.anvils>
+References: <ceeec51bdc2be64416e05ca16da52a126b598e17.1258773030.git.minchan.kim@gmail.com> <ae2928fe7bb3d94a7ca18d3b3274fdfeb009803a.1258773030.git.minchan.kim@gmail.com> <4B38876F.6010204@gmail.com>
+User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
 MIME-Version: 1.0
-To: netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, mcarlson@broadcom.com,
-       davem@davemloft.net
-Subject: [PATCH] broadcom: Fix &&/|| confusion in bcm54xx_adjust_rxrefclk()
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This always evaluates to true.
+On Mon, 28 Dec 2009, Minchan Kim wrote:
+> I missed Hugh. 
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
----
- drivers/net/phy/broadcom.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+Thank you: it is sweet of you to say so :)
 
-diff --git a/drivers/net/phy/broadcom.c b/drivers/net/phy/broadcom.c
-index c13cf64..33c4b12 100644
---- a/drivers/net/phy/broadcom.c
-+++ b/drivers/net/phy/broadcom.c
-@@ -331,8 +331,8 @@ static void bcm54xx_adjust_rxrefclk(struct phy_device *phydev)
- 	bool clk125en = true;
- 
- 	/* Abort if we are using an untested phy. */
--	if (BRCM_PHY_MODEL(phydev) != PHY_ID_BCM57780 ||
--	    BRCM_PHY_MODEL(phydev) != PHY_ID_BCM50610 ||
-+	if (BRCM_PHY_MODEL(phydev) != PHY_ID_BCM57780 &&
-+	    BRCM_PHY_MODEL(phydev) != PHY_ID_BCM50610 &&
- 	    BRCM_PHY_MODEL(phydev) != PHY_ID_BCM50610M)
- 		return;
- 
+> 
+> Minchan Kim wrote:
+> > Long time ago, we counted zero page as file_rss.
+> > But after reinstanted zero page, we don't do it.
+> > It means rss of process would be smaller than old.
+> > 
+> > It could chage OOM victim selection.
+
+Eh?  We don't use rss for OOM victim selection, we use total_vm.
+
+I know that's under discussion, and there are good arguments on
+both sides (I incline to the rss side, but see David's point about
+predictability); but here you seem to be making an argument for
+back-compatibility, yet there is no such issue in OOM victim selection.
+
+And if we do decide that rss is appropriate for OOM victim selection,
+then we would prefer to keep the ZERO_PAGE out of rss, wouldn't we?
+
+> > 
+> > Kame reported following as
+> > "Before starting zero-page works, I checked "questions" in lkml and
+> > found some reports that some applications start to go OOM after zero-page
+> > removal.
+> > 
+> > For me, I know one of my customer's application depends on behavior of
+> > zero page (on RHEL5). So, I tried to add again it before RHEL6 because
+> > I think removal of zero-page corrupts compatibility."
+> > 
+> > So how about adding zero page as file_rss again for compatibility?
+
+I think not.
+
+KAMEZAWA-san can correct me (when he returns in the New Year) if I'm
+wrong, but I don't think his customer's OOMs had anything to do with
+whether the ZERO_PAGE was counted in file_rss or not: the OOMs came
+from the fact that many pages were being used up where just the one
+ZERO_PAGE had been good before.  Wouldn't he have complained if the
+zero_pfn patches hadn't solved that problem?
+
+You are right that I completely overlooked the issue of whether to
+include the ZERO_PAGE in rss counts (now being a !vm_normal_page,
+it was just natural to leave it out); and I overlooked the fact that
+it used to be counted into file_rss in the old days (being !PageAnon).
+
+So I'm certainly at fault for that, and thank you for bringing the
+issue to attention; but once considered, I can't actually see a good
+reason why we should add code to count ZERO_PAGEs into file_rss now.
+And if this patch falls, then 1/3 and 3/3 would fall also.
+
+And the patch below would be incomplete anyway, wouldn't it?
+There would need to be a matching change to zap_pte_range(),
+but I don't see that.
+
+We really don't want to be adding more and more ZERO_PAGE/zero_pfn
+tests around the place if we can avoid them: KOSAKI-san has a strong
+argument for adding such a test in kernel/futex.c, but I don't the
+argument here.
+
+Hugh
+
+> > 
+> > Signed-off-by: Minchan Kim <minchan.kim@gmail.com>
+> > ---
+> >  mm/memory.c |    7 +++++--
+> >  1 files changed, 5 insertions(+), 2 deletions(-)
+> > 
+> > diff --git a/mm/memory.c b/mm/memory.c
+> > index 3743fb5..a4ba271 100644
+> > --- a/mm/memory.c
+> > +++ b/mm/memory.c
+> > @@ -1995,6 +1995,7 @@ static int do_wp_page(struct mm_struct *mm, struct vm_area_struct *vma,
+> >  	int reuse = 0, ret = 0;
+> >  	int page_mkwrite = 0;
+> >  	struct page *dirty_page = NULL;
+> > +	int zero_pfn = 0;
+> >  
+> >  	old_page = vm_normal_page(vma, address, orig_pte);
+> >  	if (!old_page) {
+> > @@ -2117,7 +2118,8 @@ gotten:
+> >  	if (unlikely(anon_vma_prepare(vma)))
+> >  		goto oom;
+> >  
+> > -	if (is_zero_pfn(pte_pfn(orig_pte))) {
+> > +	zero_pfn = is_zero_pfn(pte_pfn(orig_pte));
+> > +	if (zero_pfn) {
+> >  		new_page = alloc_zeroed_user_highpage_movable(vma, address);
+> >  		if (!new_page)
+> >  			goto oom;
+> > @@ -2147,7 +2149,7 @@ gotten:
+> >  	 */
+> >  	page_table = pte_offset_map_lock(mm, pmd, address, &ptl);
+> >  	if (likely(pte_same(*page_table, orig_pte))) {
+> > -		if (old_page) {
+> > +		if (old_page || zero_pfn) {
+> >  			if (!PageAnon(old_page)) {
+> >  				dec_mm_counter(mm, file_rss);
+> >  				inc_mm_counter(mm, anon_rss);
+> > @@ -2650,6 +2652,7 @@ static int do_anonymous_page(struct mm_struct *mm, struct vm_area_struct *vma,
+> >  		spin_lock(ptl);
+> >  		if (!pte_none(*page_table))
+> >  			goto unlock;
+> > +		inc_mm_counter(mm, file_rss);
+> >  		goto setpte;
+> >  	}
+> >  
