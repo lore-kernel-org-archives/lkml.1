@@ -1,113 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752160AbZL3FV5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751993AbZL3Fhd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752160AbZL3FV5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Dec 2009 00:21:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752037AbZL3FVy
+	id S1751993AbZL3Fhd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Dec 2009 00:37:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750992AbZL3Fhc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Dec 2009 00:21:54 -0500
-Received: from mail-yx0-f187.google.com ([209.85.210.187]:64490 "EHLO
-	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750992AbZL3FVw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Dec 2009 00:21:52 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :content-type:content-transfer-encoding;
-        b=J8aQQILQirPHdxRVfPwB8BvWCTWjIyCIMv6z0iHnbZ4YgStt/8JgRWYDupwpTZbdLd
-         fLgMv7L6/GNIXP8eU7qZnib5P479Myf/cfgtMzl7ziVaEEn5j93nUdiejKbvQwKCQIzs
-         bHGkhAkAJDlpi3yzrg0XYMRD0p1OCkLuJtQ/U=
-Message-ID: <4B3AE419.8040401@gmail.com>
-Date: Wed, 30 Dec 2009 13:24:41 +0800
-From: "Helight.Xu" <helight.xu@gmail.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20091109)
+	Wed, 30 Dec 2009 00:37:32 -0500
+Received: from THUNK.ORG ([69.25.196.29]:46671 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750726AbZL3Fhb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Dec 2009 00:37:31 -0500
+Date: Wed, 30 Dec 2009 00:37:20 -0500
+From: tytso@mit.edu
+To: Alexander Beregalov <a.beregalov@gmail.com>,
+       Dmitry Monakhov <dmonakhov@openvz.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-ext4@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>,
+       dmitry.torokhov@gmail.com, Jan Kara <jack@suse.cz>, aanisimov@inbox.ru,
+       pl4nkton@googlemail.com
+Subject: Re: 2.6.33-rc1: kernel BUG at fs/ext4/inode.c:1063 (sparc)
+Message-ID: <20091230053720.GK4429@thunk.org>
+Mail-Followup-To: tytso@mit.edu,
+	Alexander Beregalov <a.beregalov@gmail.com>,
+	Dmitry Monakhov <dmonakhov@openvz.org>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	linux-ext4@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>,
+	dmitry.torokhov@gmail.com, Jan Kara <jack@suse.cz>,
+	aanisimov@inbox.ru, pl4nkton@googlemail.com
+References: <a4423d670912241428n6917d2adsad887548612cf8ce@mail.gmail.com>
+ <a4423d670912241449y2da43d5fi3e5a18c114b84178@mail.gmail.com>
+ <87hbrfdylc.fsf@openvz.org>
+ <a4423d670912251133u795338a4wd32d5cdef8c36c75@mail.gmail.com>
+ <87eimir4yk.fsf@openvz.org>
+ <a4423d670912271232y5bb928f7wb667ca71f1a93f8a@mail.gmail.com>
+ <20091227225216.GB4429@thunk.org>
+ <a4423d670912271502n13957e8boc168fdc75444dc09@mail.gmail.com>
+ <20091228035159.GC4429@thunk.org>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: linux-fsdevel@vger.kernel.org, Alexander Viro <viro@zeniv.linux.org.uk>
-Subject: [PATCH] some clean up in fs/proc
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091228035159.GC4429@thunk.org>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-EXPORT_SYMBOL(proc_symlink);
-EXPORT_SYMBOL(proc_mkdir);
-EXPORT_SYMBOL(create_proc_entry);
-EXPORT_SYMBOL(proc_create_data);
-EXPORT_SYMBOL(remove_proc_entry);
+On Sun, Dec 27, 2009 at 10:51:59PM -0500, tytso@MIT.EDU wrote:
+> OK, i've been able to reproduce the problem using xfsqa test #74
+> (fstest) when an ext3 file system is mounted the ext4 file system
+> driver.  I was then able to bisect it down to commit d21cd8f6, which
+> was introduced between 2.6.33-rc1 and 2.6.33-rc2, as part of
+> quota/ext4 patch series pushed by Jan.
 
-Those EXPORT_SYMBOL shouldn't be in fs/proc/root.c,
-should be in fs/proc/generic.c.
+OK, here's a patch which I think should avoid the BUG in
+fs/ext4/inode.c.  It should fix the regression, but in the long run we
+need to pretty seriously rethink how we account for the need for
+potentially new meta-data blocks when doing delayed allocation.
 
-Signed-off-by: Helight.Xu <helight.xu@gmail.com>
----
- fs/proc/generic.c |    5 +++++
- fs/proc/root.c    |    6 ------
- 2 files changed, 5 insertions(+), 6 deletions(-)
+The remaining problem with this machinery is that
+ext4_da_update_reserve_space() and ext4_da_release_space() is that
+they both try to calculate how many metadata blocks will potentially
+required by calculating ext4_calc_metadata_amount() based on the
+number of delayed allocation blocks found in i_reserved_data_blocks.
+The problem is that ext4_calc_metadata_amount() assumes that the
+number of blocks passed to it is contiguous, and what might be left
+remaining to be written in the page cache could be anything but
+contiguous.  This is a problem which has always been there, so it's
+not a regression per se; just a design flaw.
 
-diff --git a/fs/proc/generic.c b/fs/proc/generic.c
-index 480cb10..9580abe 100644
---- a/fs/proc/generic.c
-+++ b/fs/proc/generic.c
-@@ -662,6 +662,7 @@ struct proc_dir_entry *proc_symlink(const char *name,
-        }
-        return ent;
- }
-+EXPORT_SYMBOL(proc_symlink);
+The patch below should fixes the regression caused by commit d21cd8f,
+but we need to look much more closely to find a better way of
+accounting for the potential need for metadata for inodes facing
+delayed allocation.  Could people who are having problems with the BUG
+in line 1063 of fs/ext4/inode.c try this patch?
 
- struct proc_dir_entry *proc_mkdir_mode(const char *name, mode_t mode,
-                struct proc_dir_entry *parent)
-@@ -700,6 +701,7 @@ struct proc_dir_entry *proc_mkdir(const char *name,
+Thanks!!
+
+    	      	       		    	   - Ted
+
+
+commit 48b71e562ecd35ab12f6b6420a92fb3c9145da92
+Author: Theodore Ts'o <tytso@mit.edu>
+Date:   Wed Dec 30 00:04:04 2009 -0500
+
+    ext4: Patch up how we claim metadata blocks for quota purposes
+    
+    Commit d21cd8f triggered a BUG in the function
+    ext4_da_update_reserve_space() found in fs/ext4/inode.c, which was
+    caused by fact that ext4_calc_metadata_amount() can over-estimate how
+    many metadata blocks will be needed, especially when using direct
+    block-mapped files.  Work around this by not claiming any excess
+    metadata blocks than we are prepared to claim at this point.
+    
+    Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
+
+diff --git a/fs/ext4/inode.c b/fs/ext4/inode.c
+index 3e3b454..d6e84b4 100644
+--- a/fs/ext4/inode.c
++++ b/fs/ext4/inode.c
+@@ -1058,14 +1058,23 @@ static void ext4_da_update_reserve_space(struct inode *inode, int used)
+ 	mdb_free = EXT4_I(inode)->i_reserved_meta_blocks - mdb;
+ 
+ 	if (mdb_free) {
+-		/* Account for allocated meta_blocks */
++		/* 
++		 * Account for allocated meta_blocks; it is possible
++		 * for us to have allocated more meta blocks than we
++		 * are prepared to free at this point.  This is
++		 * because ext4_calc_metadata_amount can over-estimate
++		 * how many blocks are still needed.  So we may not be
++		 * able to claim all of the allocated meta blocks
++		 * right away.  The accounting will work out in the end...
++		 */
+ 		mdb_claim = EXT4_I(inode)->i_allocated_meta_blocks;
+-		BUG_ON(mdb_free < mdb_claim);
++		if (mdb_free < mdb_claim)
++			mdb_claim = mdb_free;
+ 		mdb_free -= mdb_claim;
+ 
+ 		/* update fs dirty blocks counter */
+ 		percpu_counter_sub(&sbi->s_dirtyblocks_counter, mdb_free);
+-		EXT4_I(inode)->i_allocated_meta_blocks = 0;
++		EXT4_I(inode)->i_allocated_meta_blocks -= mdb_claim;
+ 		EXT4_I(inode)->i_reserved_meta_blocks = mdb;
+ 	}
+ 
+@@ -1845,7 +1854,7 @@ repeat:
+ static void ext4_da_release_space(struct inode *inode, int to_free)
  {
-        return proc_mkdir_mode(name, S_IRUGO | S_IXUGO, parent);
- }
-+EXPORT_SYMBOL(proc_mkdir);
-
- struct proc_dir_entry *create_proc_entry(const char *name, mode_t mode,
-                                         struct proc_dir_entry *parent)
-@@ -728,6 +730,7 @@ struct proc_dir_entry *create_proc_entry(const char 
-*name, mode_t mode,
-        }
-        return ent;
- }
-+EXPORT_SYMBOL(create_proc_entry);
-
- struct proc_dir_entry *proc_create_data(const char *name, mode_t mode,
-                                        struct proc_dir_entry *parent,
-@@ -762,6 +765,7 @@ out_free:
- out:
-        return NULL;
- }
-+EXPORT_SYMBOL(proc_create_data);
-
- static void free_proc_entry(struct proc_dir_entry *de)
- {
-@@ -853,3 +857,4 @@ continue_removing:
-                        de->parent->name, de->name, de->subdir->name);
-        pde_put(de);
- }
-+EXPORT_SYMBOL(remove_proc_entry);
-diff --git a/fs/proc/root.c b/fs/proc/root.c
-index b080b79..757c069 100644
---- a/fs/proc/root.c
-+++ b/fs/proc/root.c
-@@ -220,9 +220,3 @@ void pid_ns_release_proc(struct pid_namespace *ns)
- {
-        mntput(ns->proc_mnt);
- }
--
--EXPORT_SYMBOL(proc_symlink);
--EXPORT_SYMBOL(proc_mkdir);
--EXPORT_SYMBOL(create_proc_entry);
--EXPORT_SYMBOL(proc_create_data);
--EXPORT_SYMBOL(remove_proc_entry);                                                                                                                                                                                                                         
-
--- 
-1.6.5.3
-
-
--- 
-Zhenwen Xu - Seven Helight
-Home Page: http://zhwen.org
-
+ 	struct ext4_sb_info *sbi = EXT4_SB(inode->i_sb);
+-	int total, mdb, mdb_free, release;
++	int total, mdb, mdb_free, mdb_claim, release;
+ 
+ 	if (!to_free)
+ 		return;		/* Nothing to release, exit */
+@@ -1874,6 +1883,16 @@ static void ext4_da_release_space(struct inode *inode, int to_free)
+ 	BUG_ON(mdb > EXT4_I(inode)->i_reserved_meta_blocks);
+ 	mdb_free = EXT4_I(inode)->i_reserved_meta_blocks - mdb;
+ 
++	if (mdb_free) {
++		/* Account for allocated meta_blocks */
++		mdb_claim = EXT4_I(inode)->i_allocated_meta_blocks;
++		if (mdb_free < mdb_claim)
++			mdb_claim = mdb_free;
++		mdb_free -= mdb_claim;
++
++		EXT4_I(inode)->i_allocated_meta_blocks -= mdb_claim;
++	}
++
+ 	release = to_free + mdb_free;
+ 
+ 	/* update fs dirty blocks counter for truncate case */
