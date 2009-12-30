@@ -1,47 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753692AbZL3U7G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753706AbZL3U7h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753692AbZL3U7G (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Dec 2009 15:59:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753361AbZL3U7F
+	id S1753706AbZL3U7h (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Dec 2009 15:59:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753407AbZL3U7g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Dec 2009 15:59:05 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:33428 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752957AbZL3U7C (ORCPT
+	Wed, 30 Dec 2009 15:59:36 -0500
+Received: from mail.parknet.co.jp ([210.171.160.6]:54253 "EHLO
+	mail.parknet.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753227AbZL3U7f (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Dec 2009 15:59:02 -0500
-Date: Wed, 30 Dec 2009 12:58:59 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-input@vger.kernel.org
-Subject: Re: [git pull] Input updates for 2.6.33-rc2
-In-Reply-To: <20091227214924.GB16279@core.coreip.homeip.net>
-Message-ID: <alpine.LFD.2.00.0912301257340.11961@localhost.localdomain>
-References: <20091227214924.GB16279@core.coreip.homeip.net>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Wed, 30 Dec 2009 15:59:35 -0500
+From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+To: Marvin <marvin24@gmx.de>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: vfs related crash in 2.6.33-rc2
+References: <200912301733.19077.marvin24@gmx.de>
+	<87637oi6v8.fsf@devron.myhome.or.jp>
+	<200912302144.36718.marvin24@gmx.de>
+Date: Thu, 31 Dec 2009 05:59:32 +0900
+In-Reply-To: <200912302144.36718.marvin24@gmx.de> (Marvin's message of "Wed,
+	30 Dec 2009 21:44:36 +0100")
+Message-ID: <87637omb4b.fsf@devron.myhome.or.jp>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.90 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Marvin <marvin24@gmx.de> writes:
 
-
-On Sun, 27 Dec 2009, Dmitry Torokhov wrote:
+>> Marvin <marvin24@gmx.de> writes:
+>> > Hi,
+>> >
+>> > I'm getting a lot of these:
+>> >
+>> > kernel: general protection fault: 0000 [#1] SMP
+>> > kernel: last sysfs file: /sys/devices/pci0000:00/0000:00:18.3/modalias
+>> > kernel: CPU 0
+>> > kernel: Pid: 12177, comm: packagekitd Not tainted 2.6.33-rc2 #1
+>> > ...
+>> >
+>> > filesystem is ext4 (in case it matters).
+>> 
+>> BTW, are you using nfs client on this machine?
+>>
 >
->  8 files changed, 84 insertions(+), 70 deletions(-)
+> um - yes, now that I think about it... I killed a nfs umount process (because of an 
+> offline server) shortly before the oopses started to fire.
 
-I get
+OK. Probably, this oops would be same with one which happened on my
+machine recently. That path in patch corrupts dcache hash, so it can be
+the cause of strange behavior or oops on dcache hash.
 
- 14 files changed, 94 insertions(+), 96 deletions(-)
+If so, the attached patch would fix it.
 
-so unpulled.
+Thanks.
+-- 
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
 
-If you updated your tree on purpose, you need to send me an email saying 
-so (preferably as a reply to your previous "please pull", so that when I 
-see the old one and it doesn't match what I get, I can then also see the 
-new one without having to search for it)
 
-		Linus
+Recent change is missing to update "rehash". With that change, it will
+become the cause of adding dentry to hash twice.
+
+This explains the reason of Oops (dereference the freed dentry in
+__d_lookup()) on my machine.
+
+Signed-off-by: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+---
+
+ fs/nfs/dir.c |    1 +
+ 1 file changed, 1 insertion(+)
+
+diff -puN fs/nfs/dir.c~nfs-d_rehash-fix fs/nfs/dir.c
+--- linux-2.6/fs/nfs/dir.c~nfs-d_rehash-fix	2009-12-28 06:18:09.000000000 +0900
++++ linux-2.6-hirofumi/fs/nfs/dir.c	2009-12-28 06:18:16.000000000 +0900
+@@ -1615,6 +1615,7 @@ static int nfs_rename(struct inode *old_
+ 				goto out;
+ 
+ 			new_dentry = dentry;
++			rehash = NULL;
+ 			new_inode = NULL;
+ 		}
+ 	}
+_
