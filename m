@@ -1,59 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751837AbZL3VoL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752004AbZL3VqL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751837AbZL3VoL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Dec 2009 16:44:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751659AbZL3VoK
+	id S1752004AbZL3VqL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Dec 2009 16:46:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751985AbZL3VqI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Dec 2009 16:44:10 -0500
-Received: from 0122700014.0.fullrate.dk ([95.166.99.235]:44114 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751551AbZL3VoJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Dec 2009 16:44:09 -0500
-Date: Wed, 30 Dec 2009 22:44:08 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Mikael Abrahamsson <swmike@swm.pp.se>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Andrew Lutomirski <luto@mit.edu>
-Subject: Re: [Bug #14887] suspend doesn't work on X200s
-Message-ID: <20091230214408.GS4489@kernel.dk>
-References: <LptzGUUXbTK.A.MSF.ymhOLB@chimera> <NJVdobuNFNK.A.Zg.inhOLB@chimera> <20091230111745.GC4489@kernel.dk> <alpine.DEB.1.10.0912301232570.27231@uplift.swm.pp.se>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0912301232570.27231@uplift.swm.pp.se>
+	Wed, 30 Dec 2009 16:46:08 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:38037 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751944AbZL3VqG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Dec 2009 16:46:06 -0500
+Date: Wed, 30 Dec 2009 13:44:55 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Mike Frysinger <vapier@gentoo.org>
+Cc: David Brownell <dbrownell@users.sourceforge.net>,
+       linux-kernel@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org,
+       Michael Hennerich <michael.hennerich@analog.com>,
+       Jean Delvare <khali@linux-fr.org>, David Brownell <david-b@pacbell.net>
+Subject: Re: [PATCH] gpio: adp5588-gpio: new driver for ADP5588 GPIO
+ expanders
+Message-Id: <20091230134455.fb07fefe.akpm@linux-foundation.org>
+In-Reply-To: <1261447302-16624-1-git-send-email-vapier@gentoo.org>
+References: <1261447302-16624-1-git-send-email-vapier@gentoo.org>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 30 2009, Mikael Abrahamsson wrote:
-> On Wed, 30 Dec 2009, Jens Axboe wrote:
->
->> Works fine for me on an x200s. The only issue I seem to have is that  
->> sometimes it suspends immediately upon resume again, presumably the lid 
->> close event is re-triggered (or something to that extent). Apart from  
->> that, 2.6.32 and current -git works fine for me.
->
-> There is an issue in 2.6.31 where it will panic (at least that's what I  
-> think it does, please see more details in  
-> <https://bugs.launchpad.net/bugs/473876>) when you have it plugged in,  
-> suspend, un-plug the power cable, and then resume it.
+On Mon, 21 Dec 2009 21:01:42 -0500
+Mike Frysinger <vapier@gentoo.org> wrote:
 
-I do that all the time, not a problem here. Tried it just now and it
-worked, but did the "I'll suspend immediately again". Pressing fn makes
-it wake up, though.
+> +config GPIO_ADP5588
+> +	tristate "ADP5588 I2C GPIO expander"
+> +	depends on I2C
+> +	help
+> +	  This option enables support for 18 GPIOs found
+> +	  on Analog Devices ADP5588 GPIO Expanders.
+> +	  To compile this driver as a module, choose M here: the module will be
+> +	  called adp5588-gpio.
 
->
-> According to 
-> <https://bugs.launchpad.net/ubuntu/+source/linux/+bug/467877> it has 
-> something to do with "event_when_closed_battery", I haven't tested it yet 
-> though, neither with 2.6.31 nor 2.6.32. Could be beneficial for more 
-> people to test though.
->
-> -- 
-> Mikael Abrahamsson    email: swmike@swm.pp.se
-
--- 
-Jens Axboe
+A neat little driver.  I don't see much to be gained by holding it off
+for 2.6.34, so I'll queue it for .33.
 
