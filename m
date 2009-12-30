@@ -1,76 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753280AbZL3TMd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752725AbZL3TQI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753280AbZL3TMd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Dec 2009 14:12:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752840AbZL3TMd
+	id S1752725AbZL3TQI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Dec 2009 14:16:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751701AbZL3TQH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Dec 2009 14:12:33 -0500
-Received: from moutng.kundenserver.de ([212.227.17.8]:51757 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752743AbZL3TMc (ORCPT
+	Wed, 30 Dec 2009 14:16:07 -0500
+Received: from exprod6og104.obsmtp.com ([64.18.1.187]:54647 "HELO
+	exprod6og104.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751468AbZL3TQG convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Dec 2009 14:12:32 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: David Daney <ddaney@caviumnetworks.com>
-Subject: Re: [PATCH] BUG(): CONFIG_BUG=n version of BUG() should be unreachable()
-Date: Wed, 30 Dec 2009 20:12:05 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; x86_64; ; )
-Cc: Alexander Beregalov <a.beregalov@gmail.com>, linux-kernel@vger.kernel.org,
-       David Miller <davem@davemloft.net>, sam@ravnborg.org,
-       dhowells@redhat.com
-References: <1261531032-15225-1-git-send-email-a.beregalov@gmail.com> <4B3171DF.4070903@caviumnetworks.com> <4B31743F.8070804@caviumnetworks.com>
-In-Reply-To: <4B31743F.8070804@caviumnetworks.com>
+	Wed, 30 Dec 2009 14:16:06 -0500
+X-Greylist: delayed 428 seconds by postgrey-1.27 at vger.kernel.org; Wed, 30 Dec 2009 14:16:05 EST
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200912302012.05827.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1/gV9ZGrscsLPC7NeYsMB5u04Jd1GoTky2kYCg
- otAR0uZi74R5TQyNCvQFySXJkALmMkqawm2pmFMtkUxjPN34Sz
- olgW+9luckVMN9LISAE6A==
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Subject: [PATCH] drivers/media/video/tveeprom.c: use %pM to show MAC address
+Date: Wed, 30 Dec 2009 14:13:10 -0500
+Message-ID: <BD79186B4FD85F4B8E60E381CAEE19090200F650@mi8nycmail19.Mi8.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] drivers/media/video/tveeprom.c: use %pM to show MAC address
+Thread-Index: AcqJhCAXnP9ao0PcRaSO9qNm/2B6Og==
+From: "H Hartley Sweeten" <hartleys@visionengravers.com>
+To: <linux-kernel@vger.kernel.org>, <linux-media@vger.kernel.org>
+X-OriginalArrivalTime: 30 Dec 2009 19:13:08.0538 (UTC) FILETIME=[1F2F91A0:01CA8984]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 23 December 2009, David Daney wrote:
-> David Daney wrote:
-> 
-> Well that may be too strong an objection, but I would really recommend 
-> deeper consideration.
-> 
-> If you use: #define BUG() __builtin_unreachable()
-> 
-> which is what your patch does for GCC >= 4.5, it is truly undefined what 
-> happens if it is ever reached.  One typical thing that might happen is 
-> that you start to try to execute data.  It is unclear to me if it is 
-> preferable in the kernel to do that, rather than loop endlessly.  You 
-> would likely achieve smaller code, but at what cost?
+Use the %pM kernel extension to display the MAC address.
 
-That is exactly what I was about to reply at first as well, but the
-definition is BUG() is really "this should never happen". Normally,
-i.e. CONFIG_BUG=y, we will print a stack dump and kill the running
-task here. The case that Alexander is patching is for !CONFIG_BUG,
-where we intentionally remove the handling for the unexpected bug
-in order to reduce code size. This option is really just for people
-that want to squeeze out every possibly byte from the kernel object
-code, while everyone else just enables CONFIG_BUG.
+Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
 
-Currently, this is "do { } while (0)", which on old compilers is
-the best approximation of doing the right thing there, but may
-cause build warnings.
+---
 
-__builtin_unreachable() is even better on gcc-4.5, because gcc may
-save a few more instructions and not print warnings any more. Getting
-into an undefined state here is not an issue, because if we get to 
-a BUG() statement, the system state is already known to be broken
-and !CONFIG_BUG means we don't even try to to improve it any more.
-
-The alternative "do { } while (1)" is not ideal, because an
-endless loop still requires more code (typically one instruction)
-than doing nothing at all.
-
-If there are only than a handful of places that actually cause a warning,
-using "do { } while (0)" (or __builtin_unreachable where available) and
-fixing up the code using it might be better.
-
-	Arnd
+diff --git a/drivers/media/video/tveeprom.c b/drivers/media/video/tveeprom.c
+index d533ea5..0a87749 100644
+--- a/drivers/media/video/tveeprom.c
++++ b/drivers/media/video/tveeprom.c
+@@ -680,10 +680,7 @@ void tveeprom_hauppauge_analog(struct i2c_client *c, struct tveeprom *tvee,
+ 	tveeprom_info("Hauppauge model %d, rev %s, serial# %d\n",
+ 		tvee->model, tvee->rev_str, tvee->serial_number);
+ 	if (tvee->has_MAC_address == 1)
+-		tveeprom_info("MAC address is %02X-%02X-%02X-%02X-%02X-%02X\n",
+-			tvee->MAC_address[0], tvee->MAC_address[1],
+-			tvee->MAC_address[2], tvee->MAC_address[3],
+-			tvee->MAC_address[4], tvee->MAC_address[5]);
++		tveeprom_info("MAC address is %pM\n", tvee->MAC_address);
+ 	tveeprom_info("tuner model is %s (idx %d, type %d)\n",
+ 		t_name1, tuner1, tvee->tuner_type);
+ 	tveeprom_info("TV standards%s%s%s%s%s%s%s%s (eeprom 0x%02x)\n", 
