@@ -1,68 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752106AbZL3M3d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752394AbZL3Mex@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752106AbZL3M3d (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Dec 2009 07:29:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751827AbZL3M3c
+	id S1752394AbZL3Mex (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Dec 2009 07:34:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751951AbZL3Mew
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Dec 2009 07:29:32 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:51289 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751614AbZL3M3c (ORCPT
+	Wed, 30 Dec 2009 07:34:52 -0500
+Received: from mail-fx0-f225.google.com ([209.85.220.225]:60478 "EHLO
+	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751719AbZL3Mev (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Dec 2009 07:29:32 -0500
-Subject: Re: [PATCH 1/1] perf_event: add check for group_list if the parent
- isn't counted
-From: Peter Zijlstra <peterz@infradead.org>
-To: Liming Wang <liming.wang@windriver.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
-       Paul Mackerras <paulus@samba.org>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <1262172487-13694-1-git-send-email-liming.wang@windriver.com>
-References: <1262172487-13694-1-git-send-email-liming.wang@windriver.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 30 Dec 2009 13:28:45 +0100
-Message-ID: <1262176125.7135.207.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 30 Dec 2009 07:34:51 -0500
+MIME-Version: 1.0
+Date: Wed, 30 Dec 2009 23:34:49 +1100
+X-Google-Sender-Auth: 0e267c90476b6bfc
+Message-ID: <7574305f0912300434q1bf23b32sf3fb2b6554d79c4c@mail.gmail.com>
+Subject: BFS v0.313 CPU scheduler for 2.6.32
+From: Con Kolivas <kernel@kolivas.org>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-12-30 at 19:28 +0800, Liming Wang wrote:
-> If the parent has no entry in group_list, child_ctx will not be
-> allocated, which will lead dereference of a NULL child_ctx.
+A stupid mismerge in __might_sleep meant that with the right config
+options dmesg would have been swamped with false warnings. This also
+was making BFS consume a lot of CPU under certain conditions in
+combination with preempt RCU.
 
-That changelog sucks.
+Thanks to Jayson R King for picking it up!
 
-Best I can make of it is that there is a race where the parent gets his
-context instantiated and we manage to get the mutex before the other
-thread manages to add the first event.
+There are no other changes in this version compared to 312
 
-Then we observe parent_event_ctx but have an empty list.
+full patch:
+http://ck.kolivas.org/patches/bfs/2.6.32-sched-bfs-313.patch
 
-Is that it?
+incremental:
+http://ck.kolivas.org/patches/bfs/2.6.32-bfs312-313.patch
 
-In that case, would it not be better to change the if (inherited_all)
-condition to if (inherited_all && child_ctx) ?
+I highly recommend BFS users upgrade.
 
-> Signed-off-by: Liming Wang <liming.wang@windriver.com>
-> ---
->  kernel/perf_event.c |    2 ++
->  1 files changed, 2 insertions(+), 0 deletions(-)
-> 
-> diff --git a/kernel/perf_event.c b/kernel/perf_event.c
-> index 5b987b4..3664c4b 100644
-> --- a/kernel/perf_event.c
-> +++ b/kernel/perf_event.c
-> @@ -5126,6 +5126,8 @@ int perf_event_init_task(struct task_struct *child)
->  	 */
->  	mutex_lock(&parent_ctx->mutex);
->  
-> +	if (list_empty(&parent_ctx->group_list))
-> +		goto exit;
->  	/*
->  	 * We dont have to disable NMIs - we are only looking at
->  	 * the list, not manipulating it:
-
-
+Regards,
+--
+-ck
