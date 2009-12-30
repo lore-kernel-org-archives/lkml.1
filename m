@@ -1,66 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752462AbZL3IAA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752483AbZL3IDN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752462AbZL3IAA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Dec 2009 03:00:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751612AbZL3H77
+	id S1752483AbZL3IDN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Dec 2009 03:03:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752312AbZL3IDM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Dec 2009 02:59:59 -0500
-Received: from mail.vyatta.com ([76.74.103.46]:35956 "EHLO mail.vyatta.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751510AbZL3H77 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Dec 2009 02:59:59 -0500
-Date: Tue, 29 Dec 2009 23:59:42 -0800
-From: Stephen Hemminger <shemminger@vyatta.com>
-To: Michael Breuer <mbreuer@majjas.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "Berck E. Nash" <flyboy@gmail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org
-Subject: Re: sky2 panic in 2.6.32.1 under load (new oops)
-Message-ID: <20091229235942.51bf733d@nehalam>
-In-Reply-To: <4B3AFFE8.3060409@majjas.com>
-References: <4B300A2A.8040305@gmail.com>
-	<4B300E30.9090707@majjas.com>
-	<4B3114E3.1070602@majjas.com>
-	<4B329FA3.9090904@majjas.com>
-	<20091223230102.4bb0100e.akpm@linux-foundation.org>
-	<4B34E847.8010809@majjas.com>
-	<20091225152200.1cf11dfe@nehalam>
-	<4B3581C7.8000702@majjas.com>
-	<20091226095723.7ac82b18@nehalam>
-	<4B367409.5060202@majjas.com>
-	<4B379378.4000102@majjas.com>
-	<20091227102238.0df149f9@nehalam>
-	<4B37B7E2.5070307@majjas.com>
-	<20091229093023.3ad24786@nehalam>
-	<4B3A5048.9090700@majjas.com>
-	<20091229114938.1f4d1c5c@nehalam>
-	<4B3AFFE8.3060409@majjas.com>
-Organization: Vyatta
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 30 Dec 2009 03:03:12 -0500
+Received: from static-72-93-233-3.bstnma.fios.verizon.net ([72.93.233.3]:43527
+	"EHLO mail.wilsonet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751612AbZL3IDL convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Dec 2009 03:03:11 -0500
+Subject: Re: [PATCH] input: imon driver for SoundGraph iMON/Antec Veris IR devices
+Mime-Version: 1.0 (Apple Message framework v1077)
+Content-Type: text/plain; charset=us-ascii
+From: Jarod Wilson <jarod@wilsonet.com>
+In-Reply-To: <2044EA95-168E-4ACE-A19E-732BB4A34CA7@gmail.com>
+Date: Wed, 30 Dec 2009 03:02:51 -0500
+Cc: Jarod Wilson <jarod@redhat.com>,
+       "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>,
+       "linux-media@vger.kernel.org" <linux-media@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Transfer-Encoding: 8BIT
+Message-Id: <1430BBF0-3A61-471E-86A9-E85CF153A150@wilsonet.com>
+References: <2044EA95-168E-4ACE-A19E-732BB4A34CA7@gmail.com>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+X-Mailer: Apple Mail (2.1077)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 30 Dec 2009 02:23:20 -0500
-Michael Breuer <mbreuer@majjas.com> wrote:
+On Dec 29, 2009, at 5:30 PM, Dmitry Torokhov wrote:
 
-> And got this:
-> Dec 30 02:17:23 mail kernel: sky2 0000:06:00.0: error interrupt 
-> status=0x40000008
-> Dec 30 02:17:23 mail kernel: sky2 0000:06:00.0: error interrupt 
-> status=0x40000008
-> Dec 30 02:17:23 mail kernel: sky2 Tx ring pending=28...30 report=29 done=29
-> Dec 30 02:17:23 mail kernel: sky2 Tx ring pending=28...30 report=29 done=29
-> Dec 30 02:17:23 mail kernel: sky2 0000:06:00.0: error interrupt status=0x8
-> Dec 30 02:17:23 mail kernel: sky2 0000:06:00.0: error interrupt status=0x8
-> Dec 30 02:17:23 mail kernel: sky2 Tx ring pending=30...32 report=30 done=31
-> Dec 30 02:17:23 mail kernel: sky2 Tx ring pending=30...32 report=30 done=31
+> On Tue, Dec 29, 2009 at 12:04:00AM -0500, Jarod Wilson wrote:
+>> On Dec 28, 2009, at 4:31 AM, Dmitry Torokhov wrote:
+>>> 
+>>> Hm, will this work on big-endian?
+>> 
+>> Good question. Not sure offhand. Probably not. Unfortunately, the only devices I have to test with at the moment are integrated into cases with x86 boards in them, so testing isn't particularly straight-forward. I should probably get ahold of one of the plain external usb devices to play with... Mind if I just add a TODO marker near that for now?
+>> 
+> 
+> How about just do le32_to_cpu() instead of memcpy()ing and that's
+> probably it?
 
-The interesting bits are only output at DEBUG level.  So either change kernel
-log level or syslog.
+Hrm. My endian-fu sucks. Not sure what the right way to do it without the memcpy is. I thought I had something together than would work, using 2 lines (memcpy, then le32_to_cpu), but I just realized that'll go south on the keys where we're only looking at half the buffer (i.e., the wrong half on big-endian)... Will see what I can do to fix that up in the morning, was hoping to get this out tonight, but its nearly 3am (again)...
+
+Also, forgot to reply to this bit last time:
+
+>> +	init_completion(&context->tx.finished);
+>> +	atomic_set(&(context->tx.busy), 1);
+> 
+> What does this atomic give you? Atomic operations do not imply memory
+> barriers IIRC...
+
+Code is borrowed from lirc_imon from before my time, honestly hadn't really looked into that much until now. I'm guessing it was *supposed* to provide an assurance that later readers saw the correct value for busy, but indeed, I don't think its actually guaranteeing that. I've changed busy to a bool and inserted smp_rmb()'s after each change to it, which I think *will* provide the desired guarantee. (In practice, its been working just fine either way for me so far).
+
+>>> We have pretty different behavior depending on the interface, maybe the
+>>> driver should be split further?
+>> 
+>> This is what we'll call a "fun" topic... These devices expose two interfaces, and a while back in the lirc_imon days, they actually loaded up as two separate lirc devices. But there's a catch: they can't operate independently. Some keys come in via intf0, some via intf1, even from the very same remote. And the interfaces share a hardware-internal buffer (or something), and if you're only listening to one of the two devices, and a key is decoded and sent via the interface you're not listening to, it wedges the entire device until you flush the other interface. Horribly bad hardware design at play there, imo, but meh. What exactly did you have in mind as far as a split? (And/or does it still apply with the above info taken into consideration? ;).
+> 
+> Ok, fair enough. I'd still want to see larger functions split up a bit though.
+
+I've hacked imon_probe() up into 6 different functions now:
+
+imon_probe()
+ -> imon_init_intf0()
+  -> imon_init_idev()
+  -> imon_init_display()
+ -> imon_init_intf1()
+  -> imon_init_touch()
+
+(and there was an existing imon_set_ir_protocol() in the mix)
+
+Quite a bit more manageable and readable now, I think. Haven't looked yet for other candidates for similar refactoring. Were there others you had in mind? At a glance, imon_incoming_packet() seems to be the only remaining function that is particularly hefty. Well, imon_probe() is still ~180 lines, but it used to be north of 400, I think... So perhaps I try trimming imon_probe() a bit more, and see what can be done to make imon_incoming_packet() less chunky.
+
+Current work-in-progress pushed to git.kernel.org again.
+
+Thanks much,
 
 -- 
+Jarod Wilson
+jarod@wilsonet.com
+
+
+
