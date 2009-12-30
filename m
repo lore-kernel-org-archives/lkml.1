@@ -1,63 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752196AbZL3XpV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752106AbZL3XuB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752196AbZL3XpV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Dec 2009 18:45:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752090AbZL3XpT
+	id S1752106AbZL3XuB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Dec 2009 18:50:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751543AbZL3XuA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Dec 2009 18:45:19 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:54202 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752060AbZL3XpP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Dec 2009 18:45:15 -0500
-Date: Thu, 31 Dec 2009 10:45:05 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       stable@kernel.org, Shaun Ruffell <sruffell@digium.com>,
-       Joerg Roedel <joerg.roedel@amd.com>
-Subject: linux-next: tip tree build warning
-Message-Id: <20091231104505.7cb8a241.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 3.0.0beta4 (GTK+ 2.18.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__31_Dec_2009_10_45_05_+1100_0+o1s1Wk2Sh.PVT7"
+	Wed, 30 Dec 2009 18:50:00 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:52278 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751529AbZL3XuA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Dec 2009 18:50:00 -0500
+Message-ID: <4B3BE63B.70907@zytor.com>
+Date: Wed, 30 Dec 2009 15:46:03 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
+MIME-Version: 1.0
+To: James Bottomley <James.Bottomley@suse.de>
+CC: Arnaldo Carvalho de Melo <acme@infradead.org>,
+       Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Paul Mackerras <paulus@samba.org>, "Frank Ch. Eigler" <fche@redhat.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] x86: record relocation offset
+References: <vxv6sfpjggfx6v68yv1eecrx.1262215615671@email.android.com> <1262216506.2749.254.camel@mulgrave.site>
+In-Reply-To: <1262216506.2749.254.camel@mulgrave.site>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__31_Dec_2009_10_45_05_+1100_0+o1s1Wk2Sh.PVT7
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On 12/30/2009 03:41 PM, James Bottomley wrote:
+> On Wed, 2009-12-30 at 15:26 -0800, H. Peter Anvin wrote:
+>> Modules are a completely separate thing - they are linked (not even
+>> just relocated) at insertion time, so they need to be tracked
+>> separately.
+> 
+> The reasons I gave was why _text relocation didn't work properly for
+> systemtap.  The first paragraph was just giving a precis of history
+> explaining to Arnaldo why he remembered there was a problem with _text
+> based relocations.
+> 
+>> The statement that a _text-based relocation is insufficient is false.
+>> The entire x86-32 monolithic kernel is relocated as a unit.  The
+>> x86-64 kernel, too, is relocated as a unit, but using the page tables,
+>> which means it always runs at the compile-time-selected virtual
+>> address.
+> 
+> Confused now ... you just repeated what I said in the second paragraph,
+> but made it sound like you are disagreeing?
+> 
 
-Hi all,
+We might have a bit of a context mismatch.
 
-Today's (and the previous few) linux-next build (powerpc allyesconfig)
-produced this warning:
+The first I saw of this thread was a proposed patch that would give the
+relocation offset of the monolithic kernel, both on 32 and 64 bits,
+without any explanation of the usage model.  As such, from my point of
+view this has always been about the monolithic kernel, until your post
+mentioned modules (which the proposed patch would have done nothing about.)
 
-lib/dma-debug.c: In function 'dma_debug_device_change':
-lib/dma-debug.c:680: warning: 'return' with no value, in function returning=
- non-void
+The monolithic kernel offset is a single scalar constant; each module,
+of course, is completely different.
 
-Introduced by commit f797d9881b62c2ddb1d2e7bd80d87141949c84aa
-("dma-debug: Do not add notifier when dma debugging is disabled").
+	-hpa
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
---Signature=_Thu__31_Dec_2009_10_45_05_+1100_0+o1s1Wk2Sh.PVT7
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAks75gEACgkQjjKRsyhoI8x7VQCgm3TZZdO49kQ9bnLVoZU+f03H
-CdEAnjwfYFGMK7z9esJ8woesR6tSI33E
-=4rZo
------END PGP SIGNATURE-----
-
---Signature=_Thu__31_Dec_2009_10_45_05_+1100_0+o1s1Wk2Sh.PVT7--
