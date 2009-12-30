@@ -1,71 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752355AbZL3WOr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753042AbZLaCKs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752355AbZL3WOr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Dec 2009 17:14:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752290AbZL3WOr
+	id S1753042AbZLaCKs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Dec 2009 21:10:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752829AbZLaCKr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Dec 2009 17:14:47 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:43335 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752260AbZL3WOq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Dec 2009 17:14:46 -0500
-Subject: Re: [PATCH 1/3] x86: record relocation offset
-From: "H. Peter Anvin" <hpa@zytor.com>
-Date: Wed, 30 Dec 2009 14:09:47 -0800
-To: Arnaldo Carvalho de Melo <acme@infradead.org>
-CC: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Paul Mackerras <paulus@samba.org>, "Frank Ch. Eigler" <fche@redhat.com>,
-       linux-kernel@vger.kernel.org, James Bottomley <James.Bottomley@suse.de>
-Message-ID: <21grx5jirei08wl5eqklb4fd.1262210987153@email.android.com>
-Content-Type: multipart/mixed; boundary="----YNFT58D523WHH6AAC5P72UO3OJVJXH"
-MIME-Version: 1.0
+	Wed, 30 Dec 2009 21:10:47 -0500
+Received: from gateway06.websitewelcome.com ([67.18.1.11]:44616 "HELO
+	gateway06.websitewelcome.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752790AbZLaCKq convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Dec 2009 21:10:46 -0500
+Subject: Re: booting with linux kernel 2.6.32.2
+From: clownix <clownix@clownix.net>
+To: ranjith kumar <ranjithproxy@gmail.com>
+Cc: "linux.kernel" <linux.kernel@googlegroups.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, linux-net@vger.kernel.org
+In-Reply-To: <31cff80d0912301257r2a904701jda31d84b72405e01@mail.gmail.com>
+References: <31cff80d0912301257r2a904701jda31d84b72405e01@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 30 Dec 2009 23:12:14 +0100
+Message-Id: <1262211134.15862.6.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.0 (2.28.0-2.fc12) 
+Content-Transfer-Encoding: 8BIT
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - gator713.hostgator.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - clownix.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------YNFT58D523WHH6AAC5P72UO3OJVJXH
-Content-Type: text/plain;
- charset=utf-8
-Content-Transfer-Encoding: base64
+If you do 
 
-QXJlIHdlIGNvbmNlcm5lZCBhYm91dCB2aXJ0dWFsIG9yIHBoeXNpY2FsIGFkZHJlc3NlcywgaGVy
-ZT8gIEknbSBhc3N1bWluZyB2aXJ0dWFsOyBpbiB0aGF0IGNhc2UgZG8gbm90ZSB0aGF0IHdlIG9u
-bHkgYWN0dWFsbHkgcmVsb2NhdGUgdGhlIGtlcm5lbCBvbiAzMiBiaXRzIC0gb24gNjQgYml0cyB0
-aGUgcmVsb2NhdGlvbiBpcyBkb25lIGF0IHRoZSBwYWdlIHRhYmxlIGxldmVsIHNpbmNlIHdlIG5l
-ZWQgdGhlIGhpZ2ggbWFwIGFueXdheS4KCk9uIDMyIGJpdHMgb25lIGNhbiBjb21wYXJlIGFueSBv
-bmUgc3ltYm9sIGJlZm9yZSBhbmQgYWZ0ZXIgcmVsb2NhdGlvbiAtIGl0IG9idmlvdXNseSBkb2Vz
-bid0IG1hdHRlciB3aGljaCBzeW1ib2wgYXMgbG9uZyBhcyBpdCBpcyB0aGUgc2FtZS4gIFRoZSBr
-ZXJuZWwgc3RhcnQgd2lsbCBiZSBnaXZlbiBieSBfdGV4dCBvciBzdGFydHVwXzMyOyBpZiB0aGF0
-IGZlZWxzIHRvbyAiZnV6enkiIHdlIGNvdWxkIG9mIGNvdXJzZSBhZGQgYSBzcGVjaWZpYyBrZXJu
-ZWwgc3RhcnQgc3ltYm9sIGV4cGxpY2l0bHkgZm9yIHRoYXQgcHVycG9zZS4KCiJBcm5hbGRvIENh
-cnZhbGhvIGRlIE1lbG8iIDxhY21lQGluZnJhZGVhZC5vcmc+IHdyb3RlOgoKPkVtIFdlZCwgRGVj
-IDMwLCAyMDA5IGF0IDA2OjM5OjM2UE0gLTAyMDAsIEFybmFsZG8gQ2FydmFsaG8gZGUgTWVsbyBl
-c2NyZXZldToNCj4+IEVtIFdlZCwgRGVjIDMwLCAyMDA5IGF0IDExOjQ1OjMwQU0gLTA4MDAsIEgu
-IFBldGVyIEFudmluIGVzY3JldmV1Og0KPj4gPiBUaGUga2VybmVsIGFscmVhZHkga25vd3Mgd2hl
-cmUgaXQgaXMgbG9hZGVkIC0tIG9idmlvdXNseSwgYnkgc2hlZXINCj4+ID4gbmVjZXNzaXR5IC0t
-IGFuZCBrbm93cyBob3cgaXQgd2FzIGl0c2VsZiBjb25maWd1cmVkLCBhbmQgYXMgc3VjaCB3ZQ0K
-Pj4gPiBjYW4gZG8gdGhpcyBjYWxjdWxhdGlvbiBpbiBDIGNvZGUgd2l0aG91dCBtb2RpZnlpbmcg
-Ym9vdF9wYXJhbXMgb3INCj4+ID4gdGhlIGVhcmx5IGJvb3RzdHJhcC4NCj4+IA0KPj4gUHJvYmxl
-bSBpcyB0aGF0IGF0ICdwZXJmIHJlY29yZCcgdGltZSB3ZSBtYXkgbm90IGhhdmUgYWNjZXNzIHRv
-IHRoZQ0KPj4gdm1saW51eCBmaWxlLCBhbmQgdGh1cyBub3QgYmUgYWJsZSB0byBmaWd1cmUgb3V0
-IHRoZSByZWxvY2F0aW9uIGFwcGxpZWQNCj4+IGluIHRoYXQgYm9vdC4NCj4+IA0KPj4gVGhlbiwg
-YXQgYSBsYXRlciB0aW1lLCBhbmQgcG9zc2libHkgb24gYW5vdGhlciBtYWNoaW5lLCBvbiBhbm90
-aGVyIGFyY2gsDQo+PiB3ZSB0cnkgdG8gbWFwIGJhY2sgSVBzIHRvIHN5bWJvbHMsIHRoZSAvcHJv
-Yy9rYWxsc3ltcyBpcyBjb21wbGV0ZWx5DQo+PiB1bnJlbGF0ZWQgYW5kIHdlIG5vdyBoYXZlIGEg
-dm1saW51eCB1bnJlbG9jYXRlZC4uLg0KPj4gDQo+PiBTbyB3ZSBuZWVkIGEgd2F5IHRvIGdldCB0
-aGUgcmVsb2NhdGlvbiBhcHBsaWVkIGF0ICdwZXJmIHJlY29yZCcgdGltZSBhbmQNCj4+IGVuY29k
-ZSBpdCBpbiB0aGUgcGVyZi5kYXRhIGhlYWRlci4gSWRlYXMgYWJvdXQgaG93IHRvIGRvIHRoYXQ/
-DQo+DQo+V2VsbCwgSSBndWVzcyB3ZSBjb3VsZCBkbyB0aGUgX3N0ZXh0IHRyaWNrIGFnYWluLCBz
-dG9yaW5nIGl0cyB2YWx1ZSwNCj50YWtlbiBmcm9tIC9wcm9jL2thbGxzeW1zLCBpbnRvIHRoZSBw
-ZXJmLmRhdGEgaGVhZGVyLCB0aGVuIGZpZ3VyaW5nIG91dA0KPnRoZSByZWxvY2F0aW9uIGJ5IGxv
-b2tpbmcgYXQgaXRzIHZhbHVlIGluIHRoZSB2bWxpbnV4IHN5bXRhYi4NCj4NCj5UaGVyZSB3ZXJl
-IGNvbmNlcm5zIGluIHRoZSBwYXN0IGFib3V0IHJlbHlpbmcgb24gX3N0ZXh0LCBJSVJDLCBKYW1l
-cz8NCj4NCj4tIEFybmFsZG8NCgotLQpTZW50IGZyb20gbXkgbW9iaWxlIHBob25lLiBQbGVhc2Ug
-ZXhjdXNlIGFueSBsYWNrIG9mIGZvcm1hdHRpbmcu
+blkid
 
-------YNFT58D523WHH6AAC5P72UO3OJVJXH--
+you see all your UUID and the corresponding dev, UUID is a unique
+identifier, this is why it is a long name.
+
+For the kernel config, try to take your own in the /boot/config-2.6...
+Try:
+
+cp /boot/config-2.6...  .config
+make menuconfig
+       exit/save
+make
+make modules_install
+make install
+
+
+
+
+Le jeudi 31 décembre 2009 à 02:27 +0530, ranjith kumar a écrit :
+> Hi,
+> 
+> I am using fedora 10.
+> I downloaded linux kernel 2.6.32.2 and run the follwing commands to
+> build and install it.
+> 
+> 1) make defconfig
+> 2) make
+> 4)make modules
+> 5)make all
+> 6)make modules_install
+> 7)make install
+> 
+> After that the contents of  /boot/grub/menu.lst are:
+> ------------------------------------------------------------------------
+>   1 # grub.conf generated by anaconda
+>       2 #
+>       3 # Note that you do not have to rerun grub after making changes
+> to this file
+>       4 # NOTICE:  You have a /boot partition.  This means that
+>       5 #          all kernel and initrd paths are relative to /boot/, eg.
+>       6 #          root (hd0,2)
+>       7 #          kernel /vmlinuz-version ro root=/dev/VolGroup00/LogVol00
+>       8 #          initrd /initrd-version.img
+>       9 #boot=/dev/sda
+>      10 default=2
+>      11 timeout=5
+>      12 splashimage=(hd0,2)/grub/splash.xpm.gz
+>      13 hiddenmenu
+>      14 title Fedora (2.6.32.2)
+>      15         root (hd0,2)
+>      16         kernel /vmlinuz-2.6.32.2 ro
+> root=UUID=80c4c9bd-8110-4f79-8bdc-dd69e38bf299
+>      17         initrd /initrd-2.6.32.2.img
+>      18 title Fedora (2.6.27.5-117.fc10.i686)
+>      19         root (hd0,2)
+>      20         kernel /vmlinuz-2.6.27.5-117.fc10.i686 ro
+> root=UUID=80c4c9bd-8110-4f79-8bdc-dd69e38bf299
+>      21         initrd /initrd-2.6.27.5-117.fc10.i686.img
+>      22 title Windows Vista
+>      23         rootnoverify (hd0,0)
+>      24         chainloader +1
+> ---------------------------------------------------------------------------------------------------------
+> 1) When I rebooted the machine and selected "Fedora (2.6.32.2)" from
+> grub's menu,
+> why fedora(old fedora 10 which was there initially) is booting instead
+> of linux kernel 2.6.32.2 ???
+> 
+> 2) what does "ro root=UUID=80c4c9bd-8110-4f79-8bdc-dd69e38bf299" means
+> in /boot/grub/menu.lst ?
+> 
+> Thanks in advance.
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-net" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
 
