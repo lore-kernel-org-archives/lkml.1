@@ -1,85 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751972AbZL3Xb6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751667AbZL3XaI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751972AbZL3Xb6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Dec 2009 18:31:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751515AbZL3Xb5
+	id S1751667AbZL3XaI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Dec 2009 18:30:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751475AbZL3XaH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Dec 2009 18:31:57 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:38752 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751502AbZL3Xb5 (ORCPT
+	Wed, 30 Dec 2009 18:30:07 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:56437 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751469AbZL3XaD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Dec 2009 18:31:57 -0500
-Subject: Re: [PATCH 1/3] x86: record relocation offset
-From: "H. Peter Anvin" <hpa@zytor.com>
-Date: Wed, 30 Dec 2009 15:26:55 -0800
-To: James Bottomley <James.Bottomley@suse.de>,
-       Arnaldo Carvalho de Melo <acme@infradead.org>
-CC: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Paul Mackerras <paulus@samba.org>, "Frank Ch. Eigler" <fche@redhat.com>,
-       linux-kernel@vger.kernel.org
-Message-ID: <vxv6sfpjggfx6v68yv1eecrx.1262215615671@email.android.com>
-Content-Type: multipart/mixed; boundary="----QH8V69TEGK02OUBPJ6I1LYBCYJRS0V"
-MIME-Version: 1.0
+	Wed, 30 Dec 2009 18:30:03 -0500
+Date: Wed, 30 Dec 2009 15:29:58 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Rakib Mullick <rakib.mullick@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Lee Schermerhorn <lee.schermerhorn@hp.com>
+Subject: Re: [PATCH] hugetlb: Fix section mismatch warning in hugetlb.c
+Message-Id: <20091230152958.9b6e174e.akpm@linux-foundation.org>
+In-Reply-To: <b9df5fa10912231905t69502923gee5aaf1c1b2efa6a@mail.gmail.com>
+References: <b9df5fa10912231905t69502923gee5aaf1c1b2efa6a@mail.gmail.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------QH8V69TEGK02OUBPJ6I1LYBCYJRS0V
-Content-Type: text/plain;
- charset=utf-8
-Content-Transfer-Encoding: base64
+On Thu, 24 Dec 2009 09:05:48 +0600
+Rakib Mullick <rakib.mullick@gmail.com> wrote:
 
-TW9kdWxlcyBhcmUgYSBjb21wbGV0ZWx5IHNlcGFyYXRlIHRoaW5nIC0gdGhleSBhcmUgbGlua2Vk
-IChub3QgZXZlbiBqdXN0IHJlbG9jYXRlZCkgYXQgaW5zZXJ0aW9uIHRpbWUsIHNvIHRoZXkgbmVl
-ZCB0byBiZSB0cmFja2VkIHNlcGFyYXRlbHkuCgpUaGUgc3RhdGVtZW50IHRoYXQgYSBfdGV4dC1i
-YXNlZCByZWxvY2F0aW9uIGlzIGluc3VmZmljaWVudCBpcyBmYWxzZS4gIFRoZSBlbnRpcmUgeDg2
-LTMyIG1vbm9saXRoaWMga2VybmVsIGlzIHJlbG9jYXRlZCBhcyBhIHVuaXQuICBUaGUgeDg2LTY0
-IGtlcm5lbCwgdG9vLCBpcyByZWxvY2F0ZWQgYXMgYSB1bml0LCBidXQgdXNpbmcgdGhlIHBhZ2Ug
-dGFibGVzLCB3aGljaCBtZWFucyBpdCBhbHdheXMgcnVucyBhdCB0aGUgY29tcGlsZS10aW1lLXNl
-bGVjdGVkIHZpcnR1YWwgYWRkcmVzcy4KCiAgICAtaHBhCgoiSmFtZXMgQm90dG9tbGV5IiA8SmFt
-ZXMuQm90dG9tbGV5QHN1c2UuZGU+IHdyb3RlOgoKPk9uIFdlZCwgMjAwOS0xMi0zMCBhdCAxOTo1
-OCAtMDIwMCwgQXJuYWxkbyBDYXJ2YWxobyBkZSBNZWxvIHdyb3RlOg0KPj4gRW0gV2VkLCBEZWMg
-MzAsIDIwMDkgYXQgMDY6Mzk6MzZQTSAtMDIwMCwgQXJuYWxkbyBDYXJ2YWxobyBkZSBNZWxvIGVz
-Y3JldmV1Og0KPj4gPiBFbSBXZWQsIERlYyAzMCwgMjAwOSBhdCAxMTo0NTozMEFNIC0wODAwLCBI
-LiBQZXRlciBBbnZpbiBlc2NyZXZldToNCj4+ID4gPiBUaGUga2VybmVsIGFscmVhZHkga25vd3Mg
-d2hlcmUgaXQgaXMgbG9hZGVkIC0tIG9idmlvdXNseSwgYnkgc2hlZXINCj4+ID4gPiBuZWNlc3Np
-dHkgLS0gYW5kIGtub3dzIGhvdyBpdCB3YXMgaXRzZWxmIGNvbmZpZ3VyZWQsIGFuZCBhcyBzdWNo
-IHdlDQo+PiA+ID4gY2FuIGRvIHRoaXMgY2FsY3VsYXRpb24gaW4gQyBjb2RlIHdpdGhvdXQgbW9k
-aWZ5aW5nIGJvb3RfcGFyYW1zIG9yDQo+PiA+ID4gdGhlIGVhcmx5IGJvb3RzdHJhcC4NCj4+ID4g
-DQo+PiA+IFByb2JsZW0gaXMgdGhhdCBhdCAncGVyZiByZWNvcmQnIHRpbWUgd2UgbWF5IG5vdCBo
-YXZlIGFjY2VzcyB0byB0aGUNCj4+ID4gdm1saW51eCBmaWxlLCBhbmQgdGh1cyBub3QgYmUgYWJs
-ZSB0byBmaWd1cmUgb3V0IHRoZSByZWxvY2F0aW9uIGFwcGxpZWQNCj4+ID4gaW4gdGhhdCBib290
-Lg0KPj4gPiANCj4+ID4gVGhlbiwgYXQgYSBsYXRlciB0aW1lLCBhbmQgcG9zc2libHkgb24gYW5v
-dGhlciBtYWNoaW5lLCBvbiBhbm90aGVyIGFyY2gsDQo+PiA+IHdlIHRyeSB0byBtYXAgYmFjayBJ
-UHMgdG8gc3ltYm9scywgdGhlIC9wcm9jL2thbGxzeW1zIGlzIGNvbXBsZXRlbHkNCj4+ID4gdW5y
-ZWxhdGVkIGFuZCB3ZSBub3cgaGF2ZSBhIHZtbGludXggdW5yZWxvY2F0ZWQuLi4NCj4+ID4gDQo+
-PiA+IFNvIHdlIG5lZWQgYSB3YXkgdG8gZ2V0IHRoZSByZWxvY2F0aW9uIGFwcGxpZWQgYXQgJ3Bl
-cmYgcmVjb3JkJyB0aW1lIGFuZA0KPj4gPiBlbmNvZGUgaXQgaW4gdGhlIHBlcmYuZGF0YSBoZWFk
-ZXIuIElkZWFzIGFib3V0IGhvdyB0byBkbyB0aGF0Pw0KPj4gDQo+PiBXZWxsLCBJIGd1ZXNzIHdl
-IGNvdWxkIGRvIHRoZSBfc3RleHQgdHJpY2sgYWdhaW4sIHN0b3JpbmcgaXRzIHZhbHVlLA0KPj4g
-dGFrZW4gZnJvbSAvcHJvYy9rYWxsc3ltcywgaW50byB0aGUgcGVyZi5kYXRhIGhlYWRlciwgdGhl
-biBmaWd1cmluZyBvdXQNCj4+IHRoZSByZWxvY2F0aW9uIGJ5IGxvb2tpbmcgYXQgaXRzIHZhbHVl
-IGluIHRoZSB2bWxpbnV4IHN5bXRhYi4NCj4NCj5TbyByZWFkaW5nIHRoZSB0aHJlYWQsIEkgdGhp
-bmsgdGhlIHByb2JsZW0gb25seSBleGlzdHMgZm9yIHg4NiBjb21waWxlZA0KPmFzIGEgcmVsb2Nh
-dGVhYmxlIGtlcm5lbC4NCj4NCj4+IFRoZXJlIHdlcmUgY29uY2VybnMgaW4gdGhlIHBhc3QgYWJv
-dXQgcmVseWluZyBvbiBfc3RleHQsIElJUkMsIEphbWVzPw0KPg0KPldlbGwsIHRoZSBvcmlnaW5h
-bCBjb25jZXJucyB3ZXJlIHRoYXQgX3RleHQgcmVsYXRpdmUgcmVsb2NhdGlvbg0KPnJlc29sdXRp
-b24gb25seSB3b3JrcyBmb3IgdGhlIGNvcmUga2VybmVsLCBub3QgZm9yIG1vZHVsZXMuDQo+QWRk
-aXRpb25hbGx5LCB0aGUga2VybmVsIGlzIGluIHNldmVyYWwgc2VjdGlvbnMsIG1vc3Qgbm90YWJs
-eSBpbml0IGFuZA0KPnJ1bnRpbWUgLi4uIHRoZXNlIG1heSBnZXQgbG9hZGVkIGF0IGRpZmZlcmVu
-dCBsb2NhdGlvbnMgc28gX3RleHQNCj5yZWxhdGl2ZSBzeW1ib2wgcmVzb2x1dGlvbiB3b24ndCB3
-b3JrIGluIGluaXQgc2VjdGlvbnMuDQo+DQo+UmlnaHQgYXQgdGhlIG1vbWVudCwgb25seSB4ODYg
-YW5kIHBwYyBkbyBhIHJlbG9jYXRhYmxlIGtlcm5lbCwgYW5kLCBhcyBJDQo+dW5kZXJzdGFuZCB0
-aGUgcHJvY2VzcywgdGhlIHdob2xlIGtlcm5lbCBpbWFnZSBnZXRzIGEgcmVsYXRpdmUgb2Zmc2V0
-DQo+YXBwbGllZCwgc28gYWxsIHNlY3Rpb25zIGdldCB0aGUgc2FtZSBvZmZzZXQuICBUaHVzLCBm
-b3IgdGhpcyBjYXNlIGl0DQo+bG9va3MgbGlrZSBjb21wdXRpbmcgdGhlIG9mZnNldCBmcm9tIGFu
-eSBrbm93biBzeW1ib2wgd291bGQgd29yaw0KPihpbmNsdWRpbmcgX3RleHQpLg0KPg0KPkphbWVz
-DQo+DQo+DQo+DQo+DQoKLS0KU2VudCBmcm9tIG15IG1vYmlsZSBwaG9uZS4gUGxlYXNlIGV4Y3Vz
-ZSBhbnkgbGFjayBvZiBmb3JtYXR0aW5nLg==
+>     The patch titled hugetlb-add-per-node-hstate-attributes.patch introduces
+>  the following section mismatch warning, due to a reference form non-init
+> function hugetlb_register_node to a init function hugetlb_sysfs_add_hstate.
+> 
+> LD      mm/built-in.o
+> WARNING: mm/built-in.o(.text+0x5396d): Section mismatch in reference
+> from the function hugetlb_register_node() to the function
+> .init.text:hugetlb_sysfs_add_hstate()
+> The function hugetlb_register_node() references
+> the function __init hugetlb_sysfs_add_hstate().
+> This is often because hugetlb_register_node lacks a __init
+> annotation or the annotation of hugetlb_sysfs_add_hstate is wrong.
+> 
+> ---
+> Signed-off-by: Rakib Mullick <rakib.mullick@gmail.com>
+> 
+> --- linus/mm/hugetlb.c	2009-12-18 15:52:35.000000000 +0600
+> +++ rakib/mm/hugetlb.c	2009-12-23 20:37:16.000000000 +0600
+> @@ -1515,7 +1515,7 @@ static struct attribute_group hstate_att
+>  	.attrs = hstate_attrs,
+>  };
+> 
+> -static int __init hugetlb_sysfs_add_hstate(struct hstate *h,
+> +static int hugetlb_sysfs_add_hstate(struct hstate *h,
+>  				struct kobject *parent,
+>  				struct kobject **hstate_kobjs,
+>  				struct attribute_group *hstate_attr_group)
 
-------QH8V69TEGK02OUBPJ6I1LYBCYJRS0V--
+I would be better to fix it the other way.  AFACIT,
+hugetlb_register_node() and both versions of
+hugetlb_register_all_nodes() should be marked __init.
 
