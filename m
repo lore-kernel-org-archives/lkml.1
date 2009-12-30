@@ -1,54 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751772AbZL3VnH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751837AbZL3VoL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751772AbZL3VnH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Dec 2009 16:43:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751127AbZL3VnG
+	id S1751837AbZL3VoL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Dec 2009 16:44:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751659AbZL3VoK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Dec 2009 16:43:06 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:44236 "EHLO ogre.sisk.pl"
+	Wed, 30 Dec 2009 16:44:10 -0500
+Received: from 0122700014.0.fullrate.dk ([95.166.99.235]:44114 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751086AbZL3VnF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Dec 2009 16:43:05 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Subject: Re: [Bug #14901] bisected crash due to "x86: Move swiotlb initialization before dma32_free_bootmem"
-Date: Wed, 30 Dec 2009 22:43:50 +0100
-User-Agent: KMail/1.12.3 (Linux/2.6.33-rc2-tst; KDE/4.3.3; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
-       mingo@elte.hu, rdreier@cisco.com, yinghai@kernel.org
-References: <LptzGUUXbTK.A.MSF.ymhOLB@chimera> <NJVdobuNFNK.A.A9H.cnhOLB@chimera> <20091230094819K.fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20091230094819K.fujita.tomonori@lab.ntt.co.jp>
+	id S1751551AbZL3VoJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Dec 2009 16:44:09 -0500
+Date: Wed, 30 Dec 2009 22:44:08 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Mikael Abrahamsson <swmike@swm.pp.se>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Andrew Lutomirski <luto@mit.edu>
+Subject: Re: [Bug #14887] suspend doesn't work on X200s
+Message-ID: <20091230214408.GS4489@kernel.dk>
+References: <LptzGUUXbTK.A.MSF.ymhOLB@chimera> <NJVdobuNFNK.A.Zg.inhOLB@chimera> <20091230111745.GC4489@kernel.dk> <alpine.DEB.1.10.0912301232570.27231@uplift.swm.pp.se>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200912302243.50182.rjw@sisk.pl>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.10.0912301232570.27231@uplift.swm.pp.se>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 30 December 2009, FUJITA Tomonori wrote:
-> On Tue, 29 Dec 2009 16:09:58 +0100 (CET)
-> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> 
-> > This message has been generated automatically as a part of a report
-> > of recent regressions.
-> > 
-> > The following bug entry is on the current list of known regressions
-> > from 2.6.32.  Please verify if it still should be listed and let me know
-> > (either way).
-> > 
-> > 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14901
-> > Subject		: bisected crash due to "x86: Move swiotlb initialization before dma32_free_bootmem"
-> > Submitter	: Roland Dreier <rdreier@cisco.com>
-> > Date		: 2009-12-15 7:47 (15 days old)
-> > References	: http://marc.info/?l=linux-kernel&m=126086324302061&w=4
-> > Handled-By	: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> > 		  Yinghai Lu <yinghai@kernel.org>
-> 
-> Already fixed by the commit 186a25026c44d1bfa97671110ff14dcd0c99678e.
+On Wed, Dec 30 2009, Mikael Abrahamsson wrote:
+> On Wed, 30 Dec 2009, Jens Axboe wrote:
+>
+>> Works fine for me on an x200s. The only issue I seem to have is that  
+>> sometimes it suspends immediately upon resume again, presumably the lid 
+>> close event is re-triggered (or something to that extent). Apart from  
+>> that, 2.6.32 and current -git works fine for me.
+>
+> There is an issue in 2.6.31 where it will panic (at least that's what I  
+> think it does, please see more details in  
+> <https://bugs.launchpad.net/bugs/473876>) when you have it plugged in,  
+> suspend, un-plug the power cable, and then resume it.
 
-Thanks, closed.
+I do that all the time, not a problem here. Tried it just now and it
+worked, but did the "I'll suspend immediately again". Pressing fn makes
+it wake up, though.
 
-Rafael
+>
+> According to 
+> <https://bugs.launchpad.net/ubuntu/+source/linux/+bug/467877> it has 
+> something to do with "event_when_closed_battery", I haven't tested it yet 
+> though, neither with 2.6.31 nor 2.6.32. Could be beneficial for more 
+> people to test though.
+>
+> -- 
+> Mikael Abrahamsson    email: swmike@swm.pp.se
+
+-- 
+Jens Axboe
+
