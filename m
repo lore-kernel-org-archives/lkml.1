@@ -1,232 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753767AbZL3VY1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753575AbZL3V3P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753767AbZL3VY1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Dec 2009 16:24:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753505AbZL3VY1
+	id S1753575AbZL3V3P (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Dec 2009 16:29:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753791AbZL3V3K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Dec 2009 16:24:27 -0500
-Received: from mga09.intel.com ([134.134.136.24]:36206 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753472AbZL3VY0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Dec 2009 16:24:26 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,477,1257148800"; 
-   d="scan'208";a="480228108"
-Subject: [GIT PULL] dmaengine/async_tx fixes for 2.6.33-rc3
-From: Dan Williams <dan.j.williams@intel.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-raid <linux-raid@vger.kernel.org>,
-       Maciej Sosnowski <maciej.sosnowski@intel.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 30 Dec 2009 14:22:12 -0700
-Message-ID: <1262208132.32461.48.camel@dwillia2-linux.ch.intel.com>
+	Wed, 30 Dec 2009 16:29:10 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:40111 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753788AbZL3V3H (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Dec 2009 16:29:07 -0500
+Date: Wed, 30 Dec 2009 21:29:31 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: ebiederm@xmission.com (Eric W. Biederman)
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>,
+       "Andrew G. Morgan" <morgan@kernel.org>,
+       Bryan Donlan <bdonlan@gmail.com>,
+       Benny Amorsen <benny+usenet@amorsen.dk>,
+       Michael Stone <michael@laptop.org>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, linux-security-module@vger.kernel.org,
+       Andi Kleen <andi@firstfloor.org>, David Lang <david@lang.hm>,
+       Oliver Hartkopp <socketcan@hartkopp.net>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Valdis Kletnieks <Valdis.Kletnieks@vt.edu>,
+       Evgeniy Polyakov <zbr@ioremap.net>,
+       "C. Scott Ananian" <cscott@cscott.net>,
+       James Morris <jmorris@namei.org>, Bernie Innocenti <bernie@codewiz.org>,
+       Mark Seaborn <mrs@mythic-beasts.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       =?UTF-8?B?QW3DqXJpY28=?= Wang <xiyou.wangcong@gmail.com>,
+       Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
+       Samir Bellabes <sam@synack.fr>,
+       Casey Schaufler <casey@schaufler-ca.com>, Pavel Machek <pavel@ucw.cz>,
+       Al Viro <viro@zeniv.linux.org.uk>
+Subject: Re: [RFC][PATCH v3] Unprivileged: Disable raising of privileges
+Message-ID: <20091230212931.233003b9@lxorguk.ukuu.org.uk>
+In-Reply-To: <m1hbr8tb8q.fsf_-_@fess.ebiederm.org>
+References: <m1iqbpwjtp.fsf@fess.ebiederm.org>
+	<20091229223631.GB22578@us.ibm.com>
+	<m1aax1uoa3.fsf_-_@fess.ebiederm.org>
+	<3e8340490912291954v5a837a26p64bd776102d281d7@mail.gmail.com>
+	<m1r5qdt721.fsf@fess.ebiederm.org>
+	<3e8340490912292057g3e87eaabn115f85b78af2b08c@mail.gmail.com>
+	<m1d41w62zc.fsf_-_@fess.ebiederm.org>
+	<551280e50912300652r1007dee0j8de750bf33af9b3c@mail.gmail.com>
+	<20091230183513.GC14493@us.ibm.com>
+	<m1fx6suswz.fsf@fess.ebiederm.org>
+	<20091230201712.GA23999@us.ibm.com>
+	<m1hbr8tb8q.fsf_-_@fess.ebiederm.org>
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.18.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 (2.28.2-1.fc12) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus, please pull from:
+> Added bprm->nosuid to make remove the need to add
+> duplicate error prone checks.  This ensures that
+> the disabling of suid executables is exactly the
+> same as MNT_NOSUID.
 
-     git://git.kernel.org/pub/scm/linux/kernel/git/djbw/async_tx.git fixes
-
-...to receive:
-
-Dan Williams (4):
-      ioat3: fix p-disabled q-continuation
-      async_tx: expand async raid6 test to cover ioatdma corner case
-      ioat2,3: put channel hardware in known state at init
-      Merge branch 'ioat' into fixes
-
-Guennadi Liakhovetski (1):
-      sh: fix DMA driver's descriptor chaining and cookie assignment
-
-Julia Lawall (2):
-      drivers/dma: drop unnecesary memset
-      drivers/dma: Correct use after free
-
-Nicolas Ferre (1):
-      dma: at_hdmac: correct incompatible type for argument 1 of 'spin_lock_bh'
-
-1/ A shdma fix from Guennadi that has been pending for a while, but
-finally acked by the original driver author.
-2/ Some Coccinelle fixes from Julia.
-3/ A typo fix in at_hdmac from Nicolas.
-4/ Two ioatdma driver fixes, one for a kexec reboot regression reported
-by Roland, and a descriptor processing error when performing raid
-recovery on a 11 or 12-disk raid6 array.
-
-All of these have been in -next for a week or so.  Maciej has also
-recently acked them, but to preserve the commit-ids I did not rebase.
-
- crypto/async_tx/raid6test.c  |    7 +
- drivers/dma/at_hdmac.c       |    4 +-
- drivers/dma/coh901318.c      |    2 +-
- drivers/dma/dw_dmac.c        |    2 -
- drivers/dma/ioat/dma.c       |    2 +-
- drivers/dma/ioat/dma.h       |   18 +++
- drivers/dma/ioat/dma_v2.c    |   69 +++++++---
- drivers/dma/ioat/dma_v2.h    |    2 +
- drivers/dma/ioat/dma_v3.c    |   60 ++++++--
- drivers/dma/ioat/registers.h |    1 +
- drivers/dma/shdma.c          |  324 +++++++++++++++++++++++++++---------------
- drivers/dma/shdma.h          |    9 +-
- 12 files changed, 341 insertions(+), 159 deletions(-)
-
-One note, this diffstat was created by hand via a test merge branch as
-the one created by 'git request-pull' was:
-
-     806 files changed, 13676 insertions(+), 6334 deletions(-)
-
-Not sure where that came from, the 'fixes' branch was based on
-2.6.32-rc6 while the ioat changes were based on 2.6.32.
-
---
-Dan
+Another fine example of why we have security hooks so that we don't get a
+kernel full of other "random security idea of the day" hacks.
 
 
-commit f80ca163d65903276bec7045a484a79c0897eb2d
-Merge: 0794ec8 a6d52d7
-Author: Dan Williams <dan.j.williams@intel.com>
-Date:   Tue Dec 22 17:21:47 2009 -0700
-
-    Merge branch 'ioat' into fixes
-
-commit 0794ec8ce327ec74416b569b8fb1951274693700
-Author: Julia Lawall <julia@diku.dk>
-Date:   Tue Dec 22 21:30:59 2009 +0100
-
-    drivers/dma: Correct use after free
-    
-    Move the kfree after the iounmap that refers to the same structure.
-    
-    A simplified version of the semantic match that finds this problem is as
-    follows: (http://coccinelle.lip6.fr/)
-    
-    // <smpl>
-    @@
-    expression x,e;
-    identifier f;
-    iterator I;
-    statement S;
-    @@
-    
-    *kfree(x);
-    ... when != &x
-        when != x = e
-        when != I(x,...) S
-    *x->f
-    // </smpl>
-    
-    Signed-off-by: Julia Lawall <julia@diku.dk>
-    Signed-off-by: Dan Williams <dan.j.williams@intel.com>
-
-commit 1e9d1b13efae7e0a2705611d47ae5f07e27015f0
-Author: Julia Lawall <julia@diku.dk>
-Date:   Sat Dec 19 08:30:30 2009 +0100
-
-    drivers/dma: drop unnecesary memset
-    
-    memset of 0 is not needed after kzalloc
-    
-    The semantic patch that makes this change is as follows:
-    (http://coccinelle.lip6.fr/)
-    
-    // <smpl>
-    @@
-    expression x;
-    statement S;
-    @@
-    
-    x = kzalloc(...);
-    if (x == NULL) S
-    ... when != x
-    -memset(x,0,...);// </smpl>
-    
-    Signed-off-by: Julia Lawall <julia@diku.dk>
-    Signed-off-by: Dan Williams <dan.j.williams@intel.com>
-
-commit a6d52d70677e99bdb89b6921c265d0a58c22e597
-Author: Dan Williams <dan.j.williams@intel.com>
-Date:   Sat Dec 19 15:36:02 2009 -0700
-
-    ioat2,3: put channel hardware in known state at init
-    
-    Put the ioat2 and ioat3 state machines in the halted state with all
-    errors cleared.
-    
-    The ioat1 init path is not disturbed for stability, there are no
-    reported ioat1 initiaization issues.
-    
-    Cc: <stable@kernel.org>
-    Reported-by: Roland Dreier <rdreier@cisco.com>
-    Tested-by: Roland Dreier <rdreier@cisco.com>
-    Acked-by: Simon Horman <horms@verge.net.au>
-    Signed-off-by: Dan Williams <dan.j.williams@intel.com>
-
-commit e02a0e47a3f061c1a53fc4376332a988ec047e8a
-Author: Dan Williams <dan.j.williams@intel.com>
-Date:   Thu Dec 17 13:55:38 2009 -0700
-
-    async_tx: expand async raid6 test to cover ioatdma corner case
-    
-    Add explicit 11 and 12 disks cases to exercise the 0 < src_cnt % 8 < 3
-    corner case in the ioatdma driver.
-    
-    Signed-off-by: Dan Williams <dan.j.williams@intel.com>
-
-commit cd78809f6191485a90ea6c92c2b58900ab5c156f
-Author: Dan Williams <dan.j.williams@intel.com>
-Date:   Thu Dec 17 13:52:39 2009 -0700
-
-    ioat3: fix p-disabled q-continuation
-    
-    When continuing a pq calculation the driver needs 3 extra sources.  The
-    driver can perform a 3 source calculation with a single descriptor, but
-    needs an extended descriptor to process up to 8 sources in one
-    operation.  However, in the p-disabled case only one extra source is
-    needed.  When continuing a p-disabled operation there are occasions
-    (i.e. 0 < src_cnt % 8 < 3) where the tail operation does not need an
-    extended descriptor.  Properly account for this fact otherwise invalid
-    'dmacount' values will be written to hardware usually causing the
-    channel to halt with 'invalid descriptor' errors.
-    
-    Cc: <stable@kernel.org>
-    Signed-off-by: Dan Williams <dan.j.williams@intel.com>
-
-commit 3542a113ab2f5880f1b62e5909d754250fb57d6b
-Author: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Date:   Thu Dec 17 09:41:39 2009 -0700
-
-    sh: fix DMA driver's descriptor chaining and cookie assignment
-    
-    The SH DMA driver wrongly assigns negative cookies to transfer descriptors,
-    also, its chaining of partial descriptors is broken. The latter problem is
-    usually invisible, because maximum transfer size per chunk is 16M, but if you
-    artificially set this limit lower, the driver fails. Since cookies are also
-    used in chunk management, both these problems are fixed in one patch. As side
-    effects a possible memory leak, when descriptors are prepared, but not
-    submitted, and multiple races have also been fixed.
-    
-    Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-    Acked-by: Paul Mundt <lethal@linux-sh.org>
-    Acked-by: Nobuhiro Iwamatsu <iwamatsu@nigauri.org>
-    Signed-off-by: Dan Williams <dan.j.williams@intel.com>
-
-commit 4297a462f455e38f08976df7b16c849614a287da
-Author: Nicolas Ferre <nicolas.ferre@atmel.com>
-Date:   Wed Dec 16 16:28:03 2009 +0100
-
-    dma: at_hdmac: correct incompatible type for argument 1 of 'spin_lock_bh'
-    
-    Correct a typo error in locking calls.
-    
-    Cc: <stable@kernel.org>
-    Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
-    Signed-off-by: Dan Williams <dan.j.williams@intel.com>
-
-
-
+Alan
