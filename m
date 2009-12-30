@@ -1,69 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753782AbZL3VQr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753534AbZL3VVL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753782AbZL3VQr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Dec 2009 16:16:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753763AbZL3VQq
+	id S1753534AbZL3VVL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Dec 2009 16:21:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752702AbZL3VVK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Dec 2009 16:16:46 -0500
-Received: from 0122700014.0.fullrate.dk ([95.166.99.235]:35699 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753541AbZL3VQp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Dec 2009 16:16:45 -0500
-Date: Wed, 30 Dec 2009 22:16:43 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Corrado Zoccolo <czoccolo@gmail.com>
+	Wed, 30 Dec 2009 16:21:10 -0500
+Received: from mail-yx0-f187.google.com ([209.85.210.187]:56091 "EHLO
+	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753339AbZL3VVJ convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Dec 2009 16:21:09 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=SfsKnoIn356n9K/rh9AumrdiB4HnMbbwsmtcd8//Ma4ROOzUUuNG3nRq3YhAvQdrKf
+         YrxRseRFAPW1OOZlbHTpn0oByP53KrBxQIov8IBrs1cScrDJ3RxuAlUiKwwDT/np8UVs
+         5ohlNmDZwRZeewJE5T5BZJLW1JLEJ6yoOAy1M=
+MIME-Version: 1.0
+In-Reply-To: <20091230211138.GN4489@kernel.dk>
+References: <1262175004-2132-1-git-send-email-czoccolo@gmail.com>
+	 <20091230184535.GE4489@kernel.dk>
+	 <4e5e476b0912301231k3214bb3dicbfc59d94623d72@mail.gmail.com>
+	 <20091230211138.GN4489@kernel.dk>
+Date: Wed, 30 Dec 2009 22:21:08 +0100
+Message-ID: <4e5e476b0912301321m7d6ab48dv58600b336b4a4cdd@mail.gmail.com>
+Subject: Re: [PATCH] cfq-iosched: non-rot devices do not need queue merging
+From: Corrado Zoccolo <czoccolo@gmail.com>
+To: Jens Axboe <jens.axboe@oracle.com>
 Cc: Linux-Kernel <linux-kernel@vger.kernel.org>,
        Jeff Moyer <jmoyer@redhat.com>, Vivek Goyal <vgoyal@redhat.com>,
        Shaohua Li <shaohua.li@intel.com>,
        Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-Subject: Re: [PATCH] cfq-iosched: replace sync_flight by
-	rq_in_driver[BLK_RW_SYNC]
-Message-ID: <20091230211643.GO4489@kernel.dk>
-References: <1262185738-11942-1-git-send-email-czoccolo@gmail.com> <20091230184748.GF4489@kernel.dk> <4e5e476b0912301250x4a0de523v8c1d0a03720c8fa8@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4e5e476b0912301250x4a0de523v8c1d0a03720c8fa8@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 30 2009, Corrado Zoccolo wrote:
-> On Wed, Dec 30, 2009 at 7:47 PM, Jens Axboe <jens.axboe@oracle.com> wrote:
-> > On Wed, Dec 30 2009, Corrado Zoccolo wrote:
-> >> According to my intuition (and brief testing), sync_flight is always
-> >> equal to rq_in_driver[BLK_RW_SYNC] at the point of usage, so it can
-> >> be removed and replaced by the other.
-> >
-> > They are not fully identical. ->sync_flight is incremented on insertion
-> > on the dispatch list, ->rq_in_driver not until the request is activated
-> > (eg the driver has retrieved it and wants to dispatch to the hardware).
-> Usually (only exceptions are forced dispatch, or when a conflict in the
-> rb tree is found), a request is activated as soon as cfq returns from
-> cfq_dispatch_requests.
+On Wed, Dec 30, 2009 at 10:11 PM, Jens Axboe <jens.axboe@oracle.com> wrote:
+> On Wed, Dec 30 2009, Corrado Zoccolo wrote:
+>> On Wed, Dec 30, 2009 at 7:45 PM, Jens Axboe <jens.axboe@oracle.com> wrote:
+>> > On Wed, Dec 30 2009, Corrado Zoccolo wrote:
+>> >> Non rotational devices' performances are not affected by
+>> >> distance of requests, so there is no point in having overhead
+>> >> to merge queues of nearby requests.
+>> >
+>> > If the distance is zero, it may still make a big difference (at least
+>> > for writes). This check would be better as "ncq and doesn't suck", ala
+>> >
+>> >        blk_queue_nonrot(q) && tagged
+>> >
+>> > like we do elsewhere.
+>>
+>> For reads, though, even flash cards and netbook ssds are completely
+>> unaffected. I have done few experiments on my available disks:
+>> * http://dl.dropbox.com/u/3525644/service_time.png (I used the
+>> program: http://dl.dropbox.com/u/3525644/stride.c to get the graphs).
+>
+> Completely agree, it's writes that matter (as mentioned).
+>
+>> For distance 0, I think request merging will be more effective than
+>> queue merging, moreover I think the multi-thread trick to have large
+>
+> Definitely true, but we don't allow cross cfqq merges to begin with.
+>
+>> I/O depth is used for reads, not writes (where simply issuing buffered
+>> writes already achieves a similar effect), so I think it is safe to
+>> disable it for all non-rotational devices.
+>
+> That still leaves direct writes. Granted it's a problem with a huge
+> scope, but still.
+Maybe I can mark sync queues that have write requests, and only add
+those ones to the prio tree.
+For writes, merging queues (and therefore requests) can probably help
+even the smart ssds.
 
-Yes, but then it may be deactivated immediately for requeue.
+Thanks,
+Corrado
+>
+> --
+> Jens Axboe
+>
+>
 
-> > They will usually be identical, but that may not be true for requeues
-> > for instance.
-> 
-> For our purpose, it is sufficient that in cfq_may_dispatch, they are either
-> both 0 or both non-0.
-> Since we have sync_flight >= rq_in_driver[1], the only question is:
-> can the number of requests in the driver drop to 0 with requests still
-> in flight?
 
-It's mostly a theoretical issue, but yes it could happen. I'm assuming
-you mean ->rq_in_driver[1] == 0 while ->sync_flight != 0. But then we
-are into the area of some starvation problem, in hardware or in the
-kernel. So it's not likely, but still.
-
-> I'm asking because to drain async requests, we are using the rq_in_driver
-> counter instead. Maybe they need the same treatment.
-
-In theory, yes the same applies there. Normal operations would not have
-that distinction between activated and on dispatch list.
 
 -- 
-Jens Axboe
+__________________________________________________________________________
 
+dott. Corrado Zoccolo                          mailto:czoccolo@gmail.com
+PhD - Department of Computer Science - University of Pisa, Italy
+--------------------------------------------------------------------------
+The self-confidence of a warrior is not the self-confidence of the average
+man. The average man seeks certainty in the eyes of the onlooker and calls
+that self-confidence. The warrior seeks impeccability in his own eyes and
+calls that humbleness.
+                               Tales of Power - C. Castaneda
