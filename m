@@ -1,70 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751991AbZL3BSh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752023AbZL3BSy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751991AbZL3BSh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Dec 2009 20:18:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751876AbZL3BSg
+	id S1752023AbZL3BSy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Dec 2009 20:18:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752003AbZL3BSx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Dec 2009 20:18:36 -0500
-Received: from mail-yw0-f176.google.com ([209.85.211.176]:56976 "EHLO
-	mail-yw0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751701AbZL3BSg (ORCPT
+	Tue, 29 Dec 2009 20:18:53 -0500
+Received: from mail-fx0-f225.google.com ([209.85.220.225]:60351 "EHLO
+	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751975AbZL3BSw convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Dec 2009 20:18:36 -0500
+	Tue, 29 Dec 2009 20:18:52 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version
-         :x-mailer:content-transfer-encoding;
-        b=pzbeAhdmZ1Sip3m51yukRBsWJcT0tvsPI0kl8aFkI5txDEd8TjGN0Jc9veUxP4luRb
-         wcla999p4VY1PTy0iBO24gK3kRw8mYXCzi6UsuOBvJsL0HPLjeibK/5ppzFTnYawVCxw
-         chOPC0j4MNZfYdzzg5T/R98kRY9Nv6cUbA0N8=
-Subject: [PATCH] drm/radeon/radeon_device.c: move a dereference below a
- NULL test
-From: Darren Jenkins <darrenrjenkins@gmail.com>
-To: David Airlie <airlied@linux.ie>,
-       dri-devel mailing list <dri-devel@lists.sourceforge.net>,
-       Kernel Janitors <kernel-janitors@vger.kernel.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 30 Dec 2009 12:18:30 +1100
-Message-ID: <1262135910.8733.23.camel@ICE-BOX>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=V+YIYUmbzLnOQ0Nm/Ncfvqn0SSDn/UeXSMK6u/gOr9bONLRC7XKyhZfE5w41fyM7Fp
+         dWCU4tmM8YmZut3RXXlBecJ4F3j5sL53BNrex5iNrqha2FNPwAVMl0KAQS3OkvpQb9kr
+         D+0KbxFWuoIzWLyZoKTMIGosIilgg9b1HK+fc=
+MIME-Version: 1.0
+In-Reply-To: <64D5262E-28CF-41E8-9425-F8C5DD0A2265@gmail.com>
+References: <200912271003.631128760@firstfloor.org>
+	 <20091227233816.GC2399@basil.fritz.box>
+	 <1261986136.808.2.camel@wall-e>
+	 <20091228145749.GD4994@basil.fritz.box>
+	 <1262016510.12656.25.camel@wall-e>
+	 <20091228172651.GE4994@basil.fritz.box>
+	 <1262030653.15368.37.camel@wall-e>
+	 <20091228204003.GH4994@basil.fritz.box>
+	 <1262076056.23095.21.camel@wall-e>
+	 <64D5262E-28CF-41E8-9425-F8C5DD0A2265@gmail.com>
+Date: Tue, 29 Dec 2009 20:18:50 -0500
+Message-ID: <ea6602020912291718n103694aft78ef15b65081a996@mail.gmail.com>
+Subject: Re: [PATCH] [0/6] kfifo fixes/improvements
+From: Vikram Dhillon <dhillonv10@gmail.com>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Stefani Seibold <stefani@seibold.net>, Andi Kleen <andi@firstfloor.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "akpm@osdl.org" <akpm@osdl.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If a NULL value is possible, the dereference should only occur after the
-NULL test.
+IMHO you can process elements rather than bytes, which is a good
+improvement, but then again its my opinion, if others don't like it
+then we can always change it :D
 
-Coverity CID: 13335
+Regards,
+Vikram Dhillon
 
-Signed-off-by: Darren Jenkins <darrenrjenkins@gmail.com>
-
-diff --git drivers/gpu/drm/radeon/radeon_device.c drivers/gpu/drm/radeon/radeon_device.c
-index 7c68480..0c51f8e 100644
---- drivers/gpu/drm/radeon/radeon_device.c
-+++ drivers/gpu/drm/radeon/radeon_device.c
-@@ -733,16 +733,18 @@ void radeon_device_fini(struct radeon_device *rdev)
-  */
- int radeon_suspend_kms(struct drm_device *dev, pm_message_t state)
- {
--	struct radeon_device *rdev = dev->dev_private;
-+	struct radeon_device *rdev;
- 	struct drm_crtc *crtc;
- 	int r;
- 
--	if (dev == NULL || rdev == NULL) {
-+	if (dev == NULL || dev->dev_private == NULL) {
- 		return -ENODEV;
- 	}
- 	if (state.event == PM_EVENT_PRETHAW) {
- 		return 0;
- 	}
-+	rdev = dev->dev_private;
-+
- 	/* unpin the front buffers */
- 	list_for_each_entry(crtc, &dev->mode_config.crtc_list, head) {
- 		struct radeon_framebuffer *rfb = to_radeon_framebuffer(crtc->fb);
+~~~
+There are lots of Linux users who don't care how the kernel works, but
+only want to use it. That is a tribute to how good Linux is.
+-- Linus Torvalds
 
 
+
+On Tue, Dec 29, 2009 at 5:27 PM, Dmitry Torokhov
+<dmitry.torokhov@gmail.com> wrote:
+> On Dec 29, 2009, at 12:40 AM, Stefani Seibold <stefani@seibold.net> wrote:
+>
+>> Am Montag, den 28.12.2009, 21:40 +0100 schrieb Andi Kleen:
+>>
+>>
+>>> OK i checked and they all use power-of-two currently so by sheer
+>>> luck (I doubt it is by design) they work. Still I think that
+>>> open deathtrap should be fixed.
+>>>
+>>
+>> It is fixed, and i hope it will be included in 2.6.34.
+>>
+>>> I also don't understand how that patch "breaks your future work"
+>>> Please elaborate on that.
+>>>
+>>
+>> Very difficult to explain in a email, but i will try it:
+>>
+>> The new macro based kfifo API handles everything as elements of a given
+>> type. So you can have the old "unsigned char"-fifo, but also fifo of
+>> every other type like int's, struct's and so on. The kfifo_in() and
+>> kfifo_out() len parameter is than in the meaning of elements not bytes.
+>> So you are able to process more than one value at a time and the macros
+>> will return the number of processed elements (not bytes).
+>
+> Does anyone want this kind of functionality though? Why can't we keep the
+> old interface as is (and maybe deprecate it) and use the new record API you
+> mentioned below for record-oriented kfifos.
+>
+> Thanks.
+>
+> --
+> Dmitry
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
