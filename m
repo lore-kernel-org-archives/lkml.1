@@ -1,72 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752599AbZL3KJi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752542AbZL3K2Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752599AbZL3KJi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Dec 2009 05:09:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752060AbZL3KJh
+	id S1752542AbZL3K2Q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Dec 2009 05:28:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752426AbZL3K2Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Dec 2009 05:09:37 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:58619 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751797AbZL3KJg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Dec 2009 05:09:36 -0500
-Date: Wed, 30 Dec 2009 11:09:35 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Michael Stone <michael@laptop.org>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       linux-security-module@vger.kernel.org, Andi Kleen <andi@firstfloor.org>,
-       David Lang <david@lang.hm>, Oliver Hartkopp <socketcan@hartkopp.net>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Valdis Kletnieks <Valdis.Kletnieks@vt.edu>,
-       Bryan Donlan <bdonlan@gmail.com>, Evgeniy Polyakov <zbr@ioremap.net>,
-       "C. Scott Ananian" <cscott@cscott.net>,
-       James Morris <jmorris@namei.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Bernie Innocenti <bernie@codewiz.org>,
-       Mark Seaborn <mrs@mythic-beasts.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       =?iso-8859-2?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>,
-       Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
-       Samir Bellabes <sam@synack.fr>,
-       Casey Schaufler <casey@schaufler-ca.com>,
-       "Serge E. Hallyn" <serue@us.ibm.com>
-Subject: Re: [PATCH 1/3] Security: Add disablenetwork interface. (v4)
-Message-ID: <20091230100935.GA32700@atrey.karlin.mff.cuni.cz>
-References: <20091227075335.GA11737@elf.ucw.cz> <20091229012523.GB14362@heat>
+	Wed, 30 Dec 2009 05:28:16 -0500
+Received: from wsp.xs4all.nl ([80.101.25.214]:56415 "EHLO wsprwl.xs4all.nl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752325AbZL3K2P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Dec 2009 05:28:15 -0500
+Message-ID: <4B3B2B3D.40204@xs4all.nl>
+Date: Wed, 30 Dec 2009 11:28:13 +0100
+From: Ruud Linders <kernelml@xs4all.nl>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091211 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091229012523.GB14362@heat>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: Re: [Bug #14910] Stable version 2.6.32.2 broke my KMS Radeon setup
+References: <LptzGUUXbTK.A.MSF.ymhOLB@chimera> <NJVdobuNFNK.A.oNH.TnhOLB@chimera>
+In-Reply-To: <NJVdobuNFNK.A.oNH.TnhOLB@chimera>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-> Pavel Machek wrote:
-> >>index 26a6b73..b48f021 100644
-> >>--- a/kernel/sys.c
-> >>+++ b/kernel/sys.c
-> >>@@ -35,6 +35,7 @@
-> >>  #include <linux/cpu.h>
-> >>  #include <linux/ptrace.h>
-> >>  #include <linux/fs_struct.h>
-> >>+#include <linux/prctl_network.h>
-> >>  
-> >>  #include <linux/compat.h>
-> >>  #include <linux/syscalls.h>
-> >
-> >Something seems to be wrong with whitespace here. Damaged patch?
+On 12/29/2009 04:09 PM, Rafael J. Wysocki wrote:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
 > 
-> Nope; kernel/sys.c has a newline there:
+> The following bug entry is on the current list of known regressions
+> from 2.6.32.  Please verify if it still should be listed and let me know
+> (either way).
 > 
->   http://repo.or.cz/w/linux-2.6.git/blob/HEAD:/kernel/sys.c#l36
 > 
-> Shall I remove it?
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14910
+> Subject		: Stable version 2.6.32.2 broke my KMS Radeon setup
+> Submitter	: Ruud Linders <kernelml@xs4all.nl>
+> Date		: 2009-12-20 12:02 (10 days old)
+> References	: http://marc.info/?l=linux-kernel&m=126131105608871&w=4
+> 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
-notice two spaces before include. something was definitely wrong there.
+This one can be closed as it's not an 2.6.33 issue  (I'm running
+2.6.33-rc1 with KMS just fine)
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+See also  http://patchwork.kernel.org/patch/69076/ for stable patch to
+fix it in 2.6.32.3.
+
+
+
