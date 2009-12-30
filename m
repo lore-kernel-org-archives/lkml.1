@@ -1,134 +1,363 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752149AbZL3QTe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752430AbZL3QW6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752149AbZL3QTe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Dec 2009 11:19:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751834AbZL3QTd
+	id S1752430AbZL3QW6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Dec 2009 11:22:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751846AbZL3QW5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Dec 2009 11:19:33 -0500
-Received: from mk-filter-3-a-1.mail.uk.tiscali.com ([212.74.100.54]:29204 "EHLO
-	mk-filter-3-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751667AbZL3QTc (ORCPT
+	Wed, 30 Dec 2009 11:22:57 -0500
+Received: from mx2.netapp.com ([216.240.18.37]:56699 "EHLO mx2.netapp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751842AbZL3QWz convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Dec 2009 11:19:32 -0500
-X-Trace: 314530632/mk-filter-3.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.28.176/None/hugh.dickins@tiscali.co.uk
-X-SBRS: None
-X-RemoteIP: 79.69.28.176
-X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
-X-SMTP-AUTH: 
-X-Originating-Country: GB/UNITED KINGDOM
-X-MUA: Alpine 2.00 (LSU 1167 2008-08-23)
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AnQBAFEMO0tPRRyw/2dsb2JhbAAIy04Ii0yCQQiBaAQ
-X-IronPort-AV: E=Sophos;i="4.47,476,1257120000"; 
-   d="scan'208";a="314530632"
-Date: Wed, 30 Dec 2009 16:19:29 +0000 (GMT)
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-X-X-Sender: hugh@sister.anvils
-To: Minchan Kim <minchan.kim@gmail.com>
-cc: Matt Mackall <mpm@selenic.com>, Andrew Morton <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [PATCH -mmotm-2009-12-10-17-19] Fix wrong rss count of smaps
-In-Reply-To: <20091230103349.1ec71aac.minchan.kim@barrios-desktop>
-Message-ID: <alpine.LSU.2.00.0912301612180.3369@sister.anvils>
-References: <20091228134619.92ba28f6.minchan.kim@barrios-desktop> <1262117339.3000.2023.camel@calx> <20091230103349.1ec71aac.minchan.kim@barrios-desktop>
-User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 30 Dec 2009 11:22:55 -0500
+X-IronPort-AV: E=Sophos;i="4.47,476,1257148800"; 
+   d="scan'208";a="294901539"
+Subject: Re: [PATCH] improve the performance of large sequential write NFS
+ workloads
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Jan Kara <jack@suse.cz>, Steve Rago <sar@nec-labs.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       "linux-nfs@vger.kernel.org" <linux-nfs@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "jens.axboe" <jens.axboe@oracle.com>,
+       Peter Staubach <staubach@redhat.com>,
+       Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>
+In-Reply-To: <20091225055617.GA8595@localhost>
+References: <1261015420.1947.54.camel@serenity>
+	 <1261037877.27920.36.camel@laptop> <20091219122033.GA11360@localhost>
+	 <1261232747.1947.194.camel@serenity> <20091222015907.GA6223@localhost>
+	 <1261578107.2606.11.camel@localhost> <20091223180551.GD3159@quack.suse.cz>
+	 <1261595574.6775.2.camel@localhost> <20091224025228.GA12477@localhost>
+	 <1261656281.3596.1.camel@localhost>  <20091225055617.GA8595@localhost>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
+Organization: NetApp
+Date: Wed, 30 Dec 2009 17:22:48 +0100
+Message-ID: <1262190168.7332.6.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.2 (2.28.2-1.fc12) 
+X-OriginalArrivalTime: 30 Dec 2009 16:22:53.0262 (UTC) FILETIME=[566826E0:01CA896C]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 30 Dec 2009, Minchan Kim wrote:
-> On Tue, 29 Dec 2009 14:08:59 -0600
-> Matt Mackall <mpm@selenic.com> wrote:
-> > On Mon, 2009-12-28 at 13:46 +0900, Minchan Kim wrote:
-> > > I am not sure we have to account zero page with file_rss. 
-> > > Hugh and Kame's new zero page doesn't do it. 
-> > > As side effect of this, we can prevent innocent process which have a lot
-> > > of zero page when OOM happens. 
-> > > (But I am not sure there is a process like this :)
-> > > So I think not file_rss counting is not bad. 
-> > > 
-> > > RSS counting zero page with file_rss helps any program using smaps?
-> > > If we have to keep the old behavior, I have to remake this patch. 
-> > > 
-> > > == CUT_HERE ==
-> > > 
-> > > Long time ago, We regards zero page as file_rss and
-> > > vm_normal_page doesn't return NULL.
-> > > 
-> > > But now, we reinstated ZERO_PAGE and vm_normal_page's implementation
-> > > can return NULL in case of zero page. Also we don't count it with
-> > > file_rss any more.
-> > > 
-> > > Then, RSS and PSS can't be matched.
-> > > For consistency, Let's ignore zero page in smaps_pte_range.
-> > > 
-> > 
-> > Not counting the zero page in RSS is fine with me. But will this patch
-> > make the total from smaps agree with get_mm_rss()?
+On Fri, 2009-12-25 at 13:56 +0800, Wu Fengguang wrote: 
+> On Thu, Dec 24, 2009 at 08:04:41PM +0800, Trond Myklebust wrote:
+> > That would indicate that we're cycling through writeback_single_inode()
+> > more than once. Why?
 > 
-> Yes. Anon page fault handler also don't count zero page any more, now. 
-> Nonetheless, smaps counts it with resident. 
+> Yes. The above sequence can happen for a 4MB sized dirty file.
+> The first COMMIT is done by L547, while the second COMMIT will be
+> scheduled either by __mark_inode_dirty(), or scheduled by L583
+> (depending on the time ACKs for L543 but missed L547 arrives:
+> if an ACK missed L578, the inode will be queued into b_dirty list,
+> but if any ACK arrives between L547 and L578, the inode will enter
+> b_more_io_wait, which is a to-be-introduced new dirty list). 
 > 
-> It's point of this patch. 
-> 
-> But I reposted both anon fault handler and here counts it as file_rss
-> as compatibility with old zero page counting.
-> Pz, Look at that. :)
+>          537         dirty = inode->i_state & I_DIRTY;
+>          538         inode->i_state |= I_SYNC;
+>          539         inode->i_state &= ~I_DIRTY;
+>          540 
+>          541         spin_unlock(&inode_lock);
+>          542 
+> ==>      543         ret = do_writepages(mapping, wbc);
+>          544 
+>          545         /* Don't write the inode if only I_DIRTY_PAGES was set */
+>          546         if (dirty & (I_DIRTY_SYNC | I_DIRTY_DATASYNC)) {
+> ==>      547                 int err = write_inode(inode, wait);
+>          548                 if (ret == 0)
+>          549                         ret = err;
+>          550         }
+>          551 
+>          552         if (wait) {
+>          553                 int err = filemap_fdatawait(mapping);
+>          554                 if (ret == 0)
+>          555                         ret = err;
+>          556         }
+>          557 
+>          558         spin_lock(&inode_lock);
+>          559         inode->i_state &= ~I_SYNC;
+>          560         if (!(inode->i_state & (I_FREEING | I_CLEAR))) {
+>          561                 if (mapping_tagged(mapping, PAGECACHE_TAG_DIRTY)) {
+>          562                         /*
+>          563                          * We didn't write back all the pages.  nfs_writepages()
+>          564                          * sometimes bales out without doing anything.
+>          565                          */
+>          566                         inode->i_state |= I_DIRTY_PAGES;
+>          567                         if (wbc->nr_to_write <= 0) {
+>          568                                 /*
+>          569                                  * slice used up: queue for next turn
+>          570                                  */
+>          571                                 requeue_io(inode);
+>          572                         } else {
+>          573                                 /*
+>          574                                  * somehow blocked: retry later
+>          575                                  */
+>          576                                 requeue_io_wait(inode);
+>          577                         }
+> ==>      578                 } else if (inode->i_state & I_DIRTY) {
+>          579                         /*
+>          580                          * At least XFS will redirty the inode during the
+>          581                          * writeback (delalloc) and on io completion (isize).
+>          582                          */
+> ==>      583                         requeue_io_wait(inode);
 
-I am getting confused between your different patches in this area,
-heading in different directions, not increments in the same series.
-But I think this is the one to which, like Matt, I'll say
+Hi Fengguang,
 
-Acked-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Apologies for having taken time over this. Do you see any improvement
+with the appended variant instead? It adds a new address_space_operation
+in order to do the commit. Furthermore, it ignores the commit request if
+the caller is just doing a WB_SYNC_NONE background flush, waiting
+instead for the ensuing WB_SYNC_ALL request...
 
-> 
-> > 
-> > Regarding OOM handling: arguably RSS should play no role in OOM as it's
-> > practically meaningless in a shared memory system. If we were instead
-> 
-> It's very arguable issue for us that OOM depens on RSS.
-> 
-> > used per-process unshared pages as the metric (aka USS), we'd have a
-> > much better notion of how much memory an OOM kill would recover.
-> > Unfortunately, that's not trivial to track as the accounting on COW
-> > operations is not lightweight.
-> 
-> I think we can approximate it with the size of VM_SHARED vma of process
-> when VM calculate badness. 
-> What do you think about it?
+Cheers
+  Trond
+-------------------------------------------------------------------------------------------------------- 
+VFS: Add a new inode state: I_UNSTABLE_PAGES
 
-Sounds like it'll end up even harder to understand than by size or by rss.
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
 
-> 
-> Thanks for good idea, Matt. 
-> 
-> > 
-> > > CC: Matt Mackall <mpm@selenic.com>
-> > > Signed-off-by: Minchan Kim <minchan.kim@gmail.com>
-> > > ---
-> > >  fs/proc/task_mmu.c |    3 +--
-> > >  1 files changed, 1 insertions(+), 2 deletions(-)
-> > > 
-> > > diff --git a/fs/proc/task_mmu.c b/fs/proc/task_mmu.c
-> > > index 47c03f4..f277c4a 100644
-> > > --- a/fs/proc/task_mmu.c
-> > > +++ b/fs/proc/task_mmu.c
-> > > @@ -361,12 +361,11 @@ static int smaps_pte_range(pmd_t *pmd, unsigned long addr, unsigned long end,
-> > >  		if (!pte_present(ptent))
-> > >  			continue;
-> > >  
-> > > -		mss->resident += PAGE_SIZE;
-> > > -
-> > >  		page = vm_normal_page(vma, addr, ptent);
-> > >  		if (!page)
-> > >  			continue;
-> > >  
-> > > +		mss->resident += PAGE_SIZE;
-> > >  		/* Accumulate the size in pages that have been accessed. */
-> > >  		if (pte_young(ptent) || PageReferenced(page))
-> > >  			mss->referenced += PAGE_SIZE;
-> > > -- 
+Add a new inode state to enable the vfs to commit the nfs unstable pages to
+stable storage once the write back of dirty pages is done.
+
+Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+---
+
+ fs/fs-writeback.c  |   27 +++++++++++++++++++++++++--
+ fs/nfs/file.c      |    1 +
+ fs/nfs/inode.c     |   16 ----------------
+ fs/nfs/internal.h  |    3 ++-
+ fs/nfs/super.c     |    2 --
+ fs/nfs/write.c     |   29 ++++++++++++++++++++++++++++-
+ include/linux/fs.h |    9 +++++++++
+ 7 files changed, 65 insertions(+), 22 deletions(-)
+
+
+diff --git a/fs/fs-writeback.c b/fs/fs-writeback.c
+index 49bc1b8..24bc817 100644
+--- a/fs/fs-writeback.c
++++ b/fs/fs-writeback.c
+@@ -388,6 +388,17 @@ static int write_inode(struct inode *inode, int sync)
+ }
+ 
+ /*
++ * Commit the NFS unstable pages.
++ */
++static int commit_unstable_pages(struct address_space *mapping,
++		struct writeback_control *wbc)
++{
++	if (mapping->a_ops && mapping->a_ops->commit_unstable_pages)
++		return mapping->a_ops->commit_unstable_pages(mapping, wbc);
++	return 0;
++}
++
++/*
+  * Wait for writeback on an inode to complete.
+  */
+ static void inode_wait_for_writeback(struct inode *inode)
+@@ -474,6 +485,18 @@ writeback_single_inode(struct inode *inode, struct writeback_control *wbc)
+ 	}
+ 
+ 	spin_lock(&inode_lock);
++	/*
++	 * Special state for cleaning NFS unstable pages
++	 */
++	if (inode->i_state & I_UNSTABLE_PAGES) {
++		int err;
++		inode->i_state &= ~I_UNSTABLE_PAGES;
++		spin_unlock(&inode_lock);
++		err = commit_unstable_pages(mapping, wbc);
++		if (ret == 0)
++			ret = err;
++		spin_lock(&inode_lock);
++	}
+ 	inode->i_state &= ~I_SYNC;
+ 	if (!(inode->i_state & (I_FREEING | I_CLEAR))) {
+ 		if ((inode->i_state & I_DIRTY_PAGES) && wbc->for_kupdate) {
+@@ -481,7 +504,7 @@ writeback_single_inode(struct inode *inode, struct writeback_control *wbc)
+ 			 * More pages get dirtied by a fast dirtier.
+ 			 */
+ 			goto select_queue;
+-		} else if (inode->i_state & I_DIRTY) {
++		} else if (inode->i_state & (I_DIRTY|I_UNSTABLE_PAGES)) {
+ 			/*
+ 			 * At least XFS will redirty the inode during the
+ 			 * writeback (delalloc) and on io completion (isize).
+@@ -1050,7 +1073,7 @@ void __mark_inode_dirty(struct inode *inode, int flags)
+ 
+ 	spin_lock(&inode_lock);
+ 	if ((inode->i_state & flags) != flags) {
+-		const int was_dirty = inode->i_state & I_DIRTY;
++		const int was_dirty = inode->i_state & (I_DIRTY|I_UNSTABLE_PAGES);
+ 
+ 		inode->i_state |= flags;
+ 
+diff --git a/fs/nfs/file.c b/fs/nfs/file.c
+index 6b89132..67e50ac 100644
+--- a/fs/nfs/file.c
++++ b/fs/nfs/file.c
+@@ -526,6 +526,7 @@ const struct address_space_operations nfs_file_aops = {
+ 	.migratepage = nfs_migrate_page,
+ 	.launder_page = nfs_launder_page,
+ 	.error_remove_page = generic_error_remove_page,
++	.commit_unstable_pages = nfs_commit_unstable_pages,
+ };
+ 
+ /*
+diff --git a/fs/nfs/inode.c b/fs/nfs/inode.c
+index faa0918..8341709 100644
+--- a/fs/nfs/inode.c
++++ b/fs/nfs/inode.c
+@@ -97,22 +97,6 @@ u64 nfs_compat_user_ino64(u64 fileid)
+ 	return ino;
+ }
+ 
+-int nfs_write_inode(struct inode *inode, int sync)
+-{
+-	int ret;
+-
+-	if (sync) {
+-		ret = filemap_fdatawait(inode->i_mapping);
+-		if (ret == 0)
+-			ret = nfs_commit_inode(inode, FLUSH_SYNC);
+-	} else
+-		ret = nfs_commit_inode(inode, 0);
+-	if (ret >= 0)
+-		return 0;
+-	__mark_inode_dirty(inode, I_DIRTY_DATASYNC);
+-	return ret;
+-}
+-
+ void nfs_clear_inode(struct inode *inode)
+ {
+ 	/*
+diff --git a/fs/nfs/internal.h b/fs/nfs/internal.h
+index 29e464d..7bb326f 100644
+--- a/fs/nfs/internal.h
++++ b/fs/nfs/internal.h
+@@ -211,7 +211,6 @@ extern int nfs_access_cache_shrinker(int nr_to_scan, gfp_t gfp_mask);
+ extern struct workqueue_struct *nfsiod_workqueue;
+ extern struct inode *nfs_alloc_inode(struct super_block *sb);
+ extern void nfs_destroy_inode(struct inode *);
+-extern int nfs_write_inode(struct inode *,int);
+ extern void nfs_clear_inode(struct inode *);
+ #ifdef CONFIG_NFS_V4
+ extern void nfs4_clear_inode(struct inode *);
+@@ -253,6 +252,8 @@ extern int nfs4_path_walk(struct nfs_server *server,
+ extern void nfs_read_prepare(struct rpc_task *task, void *calldata);
+ 
+ /* write.c */
++extern int nfs_commit_unstable_pages(struct address_space *mapping,
++		struct writeback_control *wbc);
+ extern void nfs_write_prepare(struct rpc_task *task, void *calldata);
+ #ifdef CONFIG_MIGRATION
+ extern int nfs_migrate_page(struct address_space *,
+diff --git a/fs/nfs/super.c b/fs/nfs/super.c
+index ce907ef..805c1a0 100644
+--- a/fs/nfs/super.c
++++ b/fs/nfs/super.c
+@@ -265,7 +265,6 @@ struct file_system_type nfs_xdev_fs_type = {
+ static const struct super_operations nfs_sops = {
+ 	.alloc_inode	= nfs_alloc_inode,
+ 	.destroy_inode	= nfs_destroy_inode,
+-	.write_inode	= nfs_write_inode,
+ 	.statfs		= nfs_statfs,
+ 	.clear_inode	= nfs_clear_inode,
+ 	.umount_begin	= nfs_umount_begin,
+@@ -334,7 +333,6 @@ struct file_system_type nfs4_referral_fs_type = {
+ static const struct super_operations nfs4_sops = {
+ 	.alloc_inode	= nfs_alloc_inode,
+ 	.destroy_inode	= nfs_destroy_inode,
+-	.write_inode	= nfs_write_inode,
+ 	.statfs		= nfs_statfs,
+ 	.clear_inode	= nfs4_clear_inode,
+ 	.umount_begin	= nfs_umount_begin,
+diff --git a/fs/nfs/write.c b/fs/nfs/write.c
+index d171696..187f3a9 100644
+--- a/fs/nfs/write.c
++++ b/fs/nfs/write.c
+@@ -441,7 +441,7 @@ nfs_mark_request_commit(struct nfs_page *req)
+ 	spin_unlock(&inode->i_lock);
+ 	inc_zone_page_state(req->wb_page, NR_UNSTABLE_NFS);
+ 	inc_bdi_stat(req->wb_page->mapping->backing_dev_info, BDI_RECLAIMABLE);
+-	__mark_inode_dirty(inode, I_DIRTY_DATASYNC);
++	mark_inode_unstable_pages(inode);
+ }
+ 
+ static int
+@@ -1406,11 +1406,38 @@ int nfs_commit_inode(struct inode *inode, int how)
+ 	}
+ 	return res;
+ }
++
++int nfs_commit_unstable_pages(struct address_space *mapping,
++		struct writeback_control *wbc)
++{
++	struct inode *inode = mapping->host;
++	int flags = FLUSH_SYNC;
++	int ret;
++
++	/* Don't commit if this is just a non-blocking flush */
++	if (wbc->sync_mode != WB_SYNC_ALL) {
++		mark_inode_unstable_pages(inode);
++		return 0;
++	}
++	if (wbc->nonblocking)
++		flags = 0;
++	ret = nfs_commit_inode(inode, flags);
++	if (ret > 0)
++		return 0;
++	return ret;
++}
++
+ #else
+ static inline int nfs_commit_list(struct inode *inode, struct list_head *head, int how)
+ {
+ 	return 0;
+ }
++
++int nfs_commit_unstable_pages(struct address_space *mapping,
++		struct writeback_control *wbc)
++{
++	return 0;
++}
+ #endif
+ 
+ long nfs_sync_mapping_wait(struct address_space *mapping, struct writeback_control *wbc, int how)
+diff --git a/include/linux/fs.h b/include/linux/fs.h
+index 9147ca8..ea0b7a3 100644
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -602,6 +602,8 @@ struct address_space_operations {
+ 	int (*is_partially_uptodate) (struct page *, read_descriptor_t *,
+ 					unsigned long);
+ 	int (*error_remove_page)(struct address_space *, struct page *);
++	int (*commit_unstable_pages)(struct address_space *,
++			struct writeback_control *);
+ };
+ 
+ /*
+@@ -1635,6 +1637,8 @@ struct super_operations {
+ #define I_CLEAR			64
+ #define __I_SYNC		7
+ #define I_SYNC			(1 << __I_SYNC)
++#define __I_UNSTABLE_PAGES	9
++#define I_UNSTABLE_PAGES	(1 << __I_UNSTABLE_PAGES)
+ 
+ #define I_DIRTY (I_DIRTY_SYNC | I_DIRTY_DATASYNC | I_DIRTY_PAGES)
+ 
+@@ -1649,6 +1653,11 @@ static inline void mark_inode_dirty_sync(struct inode *inode)
+ 	__mark_inode_dirty(inode, I_DIRTY_SYNC);
+ }
+ 
++static inline void mark_inode_unstable_pages(struct inode *inode)
++{
++	__mark_inode_dirty(inode, I_UNSTABLE_PAGES);
++}
++
+ /**
+  * inc_nlink - directly increment an inode's link count
+  * @inode: inode
+
