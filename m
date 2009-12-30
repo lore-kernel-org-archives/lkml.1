@@ -1,86 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753706AbZL3U7h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753305AbZL3VG3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753706AbZL3U7h (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Dec 2009 15:59:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753407AbZL3U7g
+	id S1753305AbZL3VG3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Dec 2009 16:06:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751972AbZL3VG2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Dec 2009 15:59:36 -0500
-Received: from mail.parknet.co.jp ([210.171.160.6]:54253 "EHLO
-	mail.parknet.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753227AbZL3U7f (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Dec 2009 15:59:35 -0500
-From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-To: Marvin <marvin24@gmx.de>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: vfs related crash in 2.6.33-rc2
-References: <200912301733.19077.marvin24@gmx.de>
-	<87637oi6v8.fsf@devron.myhome.or.jp>
-	<200912302144.36718.marvin24@gmx.de>
-Date: Thu, 31 Dec 2009 05:59:32 +0900
-In-Reply-To: <200912302144.36718.marvin24@gmx.de> (Marvin's message of "Wed,
-	30 Dec 2009 21:44:36 +0100")
-Message-ID: <87637omb4b.fsf@devron.myhome.or.jp>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.90 (gnu/linux)
+	Wed, 30 Dec 2009 16:06:28 -0500
+Received: from thunk.org ([69.25.196.29]:45098 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751401AbZL3VG1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Dec 2009 16:06:27 -0500
+Date: Wed, 30 Dec 2009 16:06:22 -0500
+From: tytso@mit.edu
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [GIT PULL] ext4 updates for v2.6.33
+Message-ID: <20091230210622.GE828@thunk.org>
+Mail-Followup-To: tytso@mit.edu,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <E1NOdOL-0001s1-4J@closure.thunk.org>
+ <alpine.LFD.2.00.0912301249520.11961@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0912301249520.11961@localhost.localdomain>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Marvin <marvin24@gmx.de> writes:
+On Wed, Dec 30, 2009 at 12:51:11PM -0800, Linus Torvalds wrote:
+> 
+> I don't get the diffstat you claim, so I'm unpulling. I've got a lot of 
+> extra work in fs/ext4/inode.c, and fewer lines in fs/ext4/extents.c, for a 
+> total of
+> 
+>   15 files changed, 189 insertions(+), 94 deletions(-)
+> 
+> instead of you claimed
+> 
+> >  15 files changed, 108 insertions(+), 24 deletions(-)
+> 
+> Hmm?
 
->> Marvin <marvin24@gmx.de> writes:
->> > Hi,
->> >
->> > I'm getting a lot of these:
->> >
->> > kernel: general protection fault: 0000 [#1] SMP
->> > kernel: last sysfs file: /sys/devices/pci0000:00/0000:00:18.3/modalias
->> > kernel: CPU 0
->> > kernel: Pid: 12177, comm: packagekitd Not tainted 2.6.33-rc2 #1
->> > ...
->> >
->> > filesystem is ext4 (in case it matters).
->> 
->> BTW, are you using nfs client on this machine?
->>
->
-> um - yes, now that I think about it... I killed a nfs umount process (because of an 
-> offline server) shortly before the oopses started to fire.
+Sorry, I was going to send you a note about it just now, but I hadn't
+gotten around to hitting the send button yet.
 
-OK. Probably, this oops would be same with one which happened on my
-machine recently. That path in patch corrupts dcache hash, so it can be
-the cause of strange behavior or oops on dcache hash.
+I had updated the for_linus branch to fix a regression that had shown
+up in -rc2 due to an quota/ext4 journal fix that turned out to cause a
+BUG_ON to trip in fs/ext4/inode.c:1063 (kernel bug #14936, on Rafael's
+regression list) when mounting unconverted ext3 file systems using the
+ext4 file system driver.  It was hitting a lot of users who had been
+playing with ext4, so I wanted to get the fix to you as soon as
+possible.
 
-If so, the attached patch would fix it.
+Here's the updated summary:
 
-Thanks.
--- 
-OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+git://git.kernel.org/pub/scm/linux/kernel/git/tytso/ext4.git for_linus
 
+						- Ted
 
-Recent change is missing to update "rehash". With that change, it will
-become the cause of adding dentry to hash twice.
+ Documentation/filesystems/ext4.txt |    2 +-
+ fs/ext4/Kconfig                    |    1 +
+ fs/ext4/block_validity.c           |    1 -
+ fs/ext4/extents.c                  |   28 ++++++-
+ fs/ext4/fsync.c                    |   16 +++-
+ fs/ext4/inode.c                    |  171 ++++++++++++++++++++----------------
+ fs/ext4/mballoc.h                  |    1 -
+ fs/ext4/super.c                    |    6 +-
+ fs/ext4/xattr.c                    |    2 +
+ fs/fs-writeback.c                  |   17 ++++
+ fs/jbd2/checkpoint.c               |   15 +++
+ fs/jbd2/commit.c                   |   19 +++--
+ fs/jbd2/journal.c                  |    2 +-
+ include/linux/jbd2.h               |    1 +
+ include/linux/writeback.h          |    1 +
+ 15 files changed, 189 insertions(+), 94 deletions(-)
 
-This explains the reason of Oops (dereference the freed dentry in
-__d_lookup()) on my machine.
+Andrew Morton (2):
+      ext4: fix unsigned long long printk warning in super.c
+      jbd2: don't use __GFP_NOFAIL in journal_init_common()
 
-Signed-off-by: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
----
+Aneesh Kumar K.V (1):
+      ext4: Ensure zeroout blocks have no dirty metadata
 
- fs/nfs/dir.c |    1 +
- 1 file changed, 1 insertion(+)
+David Howells (1):
+      ext4: Don't ask about supporting ext2/3 in ext4 if ext4 is not configured
 
-diff -puN fs/nfs/dir.c~nfs-d_rehash-fix fs/nfs/dir.c
---- linux-2.6/fs/nfs/dir.c~nfs-d_rehash-fix	2009-12-28 06:18:09.000000000 +0900
-+++ linux-2.6-hirofumi/fs/nfs/dir.c	2009-12-28 06:18:16.000000000 +0900
-@@ -1615,6 +1615,7 @@ static int nfs_rename(struct inode *old_
- 				goto out;
- 
- 			new_dentry = dentry;
-+			rehash = NULL;
- 			new_inode = NULL;
- 		}
- 	}
-_
+Eric Sandeen (2):
+      fs-writeback: Add helper function to start writeback if idle
+      ext4: flush delalloc blocks when space is low
+
+Fang Wenqi (1):
+      ext4: Update documentation to correct the inode_readahead_blks option name
+
+Huang Weiyi (1):
+      ext4: remove unused #include <linux/version.h>
+
+Julia Lawall (1):
+      ext4: Eliminate potential double free on error path
+
+Richard Kennedy (1):
+      ext4: return correct wbc.nr_to_write in ext4_da_writepages
+
+Surbhi Palande (1):
+      ext4: replace BUG() with return -EIO in ext4_ext_get_blocks
+
+Theodore Ts'o (3):
+      ext4: add module aliases for ext2 and ext3
+      ext4, jbd2: Add barriers for file systems with exernal journals
+      ext4: Patch up how we claim metadata blocks for quota purposes
+
