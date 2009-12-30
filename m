@@ -1,44 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751395AbZL3NAn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752758AbZL3NDa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751395AbZL3NAn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Dec 2009 08:00:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751283AbZL3NAm
+	id S1752758AbZL3NDa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Dec 2009 08:03:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751919AbZL3ND3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Dec 2009 08:00:42 -0500
-Received: from 62.1.125.199.dsl.dyn.forthnet.gr ([62.1.125.199]:38408 "EHLO
-	poseidon.vergina.dyndns.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751395AbZL3NAm (ORCPT
+	Wed, 30 Dec 2009 08:03:29 -0500
+Received: from mail-gx0-f226.google.com ([209.85.217.226]:35626 "EHLO
+	mail-gx0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752029AbZL3ND2 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Dec 2009 08:00:42 -0500
-Message-ID: <4B3B4EF6.7030800@asyr.hopto.org>
-Date: Wed, 30 Dec 2009 15:00:38 +0200
-From: Thanasis <thanasis@asyr.hopto.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091229 Thunderbird/3.0 ThunderBrowse/3.2.6.8
+	Wed, 30 Dec 2009 08:03:28 -0500
 MIME-Version: 1.0
-To: gentoo-user@lists.gentoo.org
-CC: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [SOLVED] RAM installed vs reported
-References: <4B3B3043.20400@asyr.hopto.org> <200912301208.54359.dirk.heinrichs@online.de>
-In-Reply-To: <200912301208.54359.dirk.heinrichs@online.de>
-Content-Type: text/plain; charset=ISO-8859-7
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20091228134245.8db992d1.nishimura@mxp.nes.nec.co.jp>
+References: <cover.1261858972.git.kirill@shutemov.name>
+	 <3f29ccc3c93e2defd70fc1c4ca8c133908b70b0b.1261858972.git.kirill@shutemov.name>
+	 <59a7f92356bf1508f06d12c501a7aa4feffb1bbc.1261858972.git.kirill@shutemov.name>
+	 <c2379f3965225b6d62e64c64f8c0e67fee085d7f.1261858972.git.kirill@shutemov.name>
+	 <7a4e1d758b98ca633a0be06e883644ad8813c077.1261858972.git.kirill@shutemov.name>
+	 <20091228134245.8db992d1.nishimura@mxp.nes.nec.co.jp>
+Date: Wed, 30 Dec 2009 15:03:25 +0200
+Message-ID: <cc557aab0912300503o68035872uedab7f840205b7a3@mail.gmail.com>
+Subject: Re: [PATCH v4 4/4] memcg: implement memory thresholds
+From: "Kirill A. Shutemov" <kirill@shutemov.name>
+To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Cc: containers@lists.linux-foundation.org, linux-mm@kvack.org,
+       Paul Menage <menage@google.com>, Li Zefan <lizf@cn.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Pavel Emelyanov <xemul@openvz.org>, Dan Malek <dan@embeddedalley.com>,
+       Vladislav Buzov <vbuzov@embeddedalley.com>,
+       Alexander Shishkin <virtuoso@slind.org>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-on 12/30/2009 01:08 PM Dirk Heinrichs wrote the following:
-> Am Mittwoch 30 Dezember 2009 11:49:39 schrieb Thanasis:
+On Mon, Dec 28, 2009 at 6:42 AM, Daisuke Nishimura
+<nishimura@mxp.nes.nec.co.jp> wrote:
+> It would be a nitpick, but my patch(http://marc.info/?l=linux-mm-commits&m=126152804420992&w=2)
+> has already modified here.
 >
->> I have a netbook (Acer Aspire One A110L) and installed a 1GB DDR2 in the
->> available slot, for a total of 1.5GB or RAM.
->> The BIOS reports it as 1.5GB and so does grml linux (booting from usb),
->> but the installed gentoo linux reports only 904600 kB:
+> I think it might be better for you to apply my patches by hand or wait for next mmotm
+> to be released to avoid bothering Andrew.
+> (There is enough time left till the next merge window :))
+
+I'll rebase it later.
+
+> (snip)
 >
-> With more than 1G of memory, you should set CONFIG_HIGHMEM4G=y.
->
-> HTH...
->
-> 	Dirk
-That did it !
-Thanks again.
-:-)
+>> +static void __mem_cgroup_threshold(struct mem_cgroup *memcg, bool swap)
+>> +{
+>> +     struct mem_cgroup_threshold_ary *thresholds;
+>> +     u64 usage = mem_cgroup_usage(memcg, swap);
+>> +     int i, cur;
+>> +
+> I think calling mem_cgroup_usage() after checking "if(!thresholds)"
+> decreases the overhead a little when we don't set any thresholds.
+> I've confirmed that the change makes the assembler output different.
+
+Thanks.
