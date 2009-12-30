@@ -1,110 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752353AbZL3WRZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751541AbZL3WW4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752353AbZL3WRZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Dec 2009 17:17:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751271AbZL3WRY
+	id S1751541AbZL3WW4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Dec 2009 17:22:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751047AbZL3WW4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Dec 2009 17:17:24 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:44365 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750992AbZL3WRX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Dec 2009 17:17:23 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Subject: Re: drm: gem_object_free without struct_mutex
-Date: Wed, 30 Dec 2009 23:17:48 +0100
-User-Agent: KMail/1.12.3 (Linux/2.6.33-rc2-tst; KDE/4.3.3; x86_64; ; )
-Cc: Eric Anholt <eric@anholt.net>, Dave Airlie <airlied@linux.ie>,
-       linux-kernel@vger.kernel.org, dri-devel@lists.sf.net,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-References: <alpine.LSU.2.00.0912301934070.25797@sister.anvils>
-In-Reply-To: <alpine.LSU.2.00.0912301934070.25797@sister.anvils>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200912302317.48530.rjw@sisk.pl>
+	Wed, 30 Dec 2009 17:22:56 -0500
+Received: from mail-fx0-f225.google.com ([209.85.220.225]:64846 "EHLO
+	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750995AbZL3WWz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Dec 2009 17:22:55 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
+        b=AQUec7mqe6wN07NjgMH2lmzc78BysRlOzrZHItuDTRzfODK7m7dsdDIVj5r104l07j
+         A+1C/uiLflsStA3NkbuTHGz0I8pt7+mAXbA6yaR6x76eqILsv1u+1GTks73akf6MyL5G
+         D+FgVbMm9q/mkdVN8p3SRRjb7JlbaEEtt7o2k=
+From: Corrado Zoccolo <czoccolo@gmail.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Linux-Kernel <linux-kernel@vger.kernel.org>,
+       Jeff Moyer <jmoyer@redhat.com>, Vivek Goyal <vgoyal@redhat.com>,
+       Shaohua Li <shaohua.li@intel.com>,
+       Gui Jianfeng <guijianfeng@cn.fujitsu.com>,
+       Corrado Zoccolo <czoccolo@gmail.com>
+Subject: [PATCH] cfq-iosched: non-rot devices do not need read queue merging
+Date: Wed, 30 Dec 2009 23:22:47 +0100
+Message-Id: <1262211768-10858-1-git-send-email-czoccolo@gmail.com>
+X-Mailer: git-send-email 1.6.4.4
+In-Reply-To: <20091230213439.GQ4489@kernel.dk>
+References: <20091230213439.GQ4489@kernel.dk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[CC to Jesse.]
+Non rotational devices' performances are not affected by
+distance of read requests, so there is no point in having
+overhead to merge such queues.
+This doesn't apply to writes, so this patch changes the
+queued[] field, to be indexed by READ/WRITE instead of
+SYNC/ASYNC, and only compute proximity for queues with
+WRITE requests.
 
-On Wednesday 30 December 2009, Hugh Dickins wrote:
-> I've changed BUG_ON to WARN_ON in drm_gem.c (patch at bottom) to
-> get this dmesg when I resume after suspend, instead of crashing.
-> 
-> Perhaps it's a patch that should go in, perhaps not, but obviously
-> the real problem lies elsewhere.  Happens with 2.6.33-rc1 and -rc2.
-> 
-> No surprise if I'm stupidly misconfigured to get the "pin power context"
-> error in the first place (.config on demand), but I don't deserve to BUG!
-> 
-> Hugh
-> 
-> [drm:intel_init_clock_gating] *ERROR* failed to pin power context: -16
-> ------------[ cut here ]------------
-> WARNING: at drivers/gpu/drm/drm_gem.c:438 drm_gem_object_free+0x20/0x5e()
-> Hardware name: ESPRIMO Mobile V5505           
-> Modules linked in: snd_pcm_oss snd_mixer_oss snd_seq snd_seq_device
-> Pid: 3793, comm: s2ram Not tainted 2.6.33-rc2 #4
-> Call Trace:
->  [<7815298e>] warn_slowpath_common+0x59/0x6b
->  [<781529b3>] warn_slowpath_null+0x13/0x18
->  [<78317c1a>] ? drm_gem_object_free+0x20/0x5e
->  [<78317c1a>] drm_gem_object_free+0x20/0x5e
->  [<78317bfa>] ? drm_gem_object_free+0x0/0x5e
->  [<7829df11>] kref_put+0x38/0x45
->  [<7833a5f0>] intel_init_clock_gating+0x232/0x271
->  [<78317bfa>] ? drm_gem_object_free+0x0/0x5e
->  [<7832c307>] i915_restore_state+0x21a/0x2b3
->  [<7832379d>] i915_resume+0x3c/0xbb
->  [<78174fe5>] ? trace_hardirqs_on_caller+0xfc/0x123
->  [<7831c756>] ? drm_class_resume+0x0/0x3e
->  [<7831c78d>] drm_class_resume+0x37/0x3e
->  [<78351e0a>] legacy_resume+0x1e/0x51
->  [<78351ece>] device_resume+0x91/0xab
->  [<7831c756>] ? drm_class_resume+0x0/0x3e
->  [<78352226>] dpm_resume+0x58/0x10f
->  [<783522fb>] dpm_resume_end+0x1e/0x2c
->  [<78180f80>] suspend_devices_and_enter+0x61/0x84
->  [<78180ff8>] enter_state+0x55/0x83
->  [<7818091c>] state_store+0x94/0xaa
->  [<7829d09e>] kobj_attr_store+0x1e/0x23
->  [<782098e0>] sysfs_write_file+0x66/0x99
->  [<781cd2f0>] vfs_write+0x8a/0x108
->  [<781cd408>] sys_write+0x3c/0x63
->  [<78125c10>] sysenter_do_call+0x12/0x36
-> ---[ end trace a343537f29950fda ]---
-> 
-> [PATCH] gem: free just WARN_ON(!mutex_is_locked)
-> 
-> drm_gem_object_free() WARN_ON(!mutex_is_locked) instead of BUG_ON:
-> i915_resume()->i915_restore_state()->intel_init_clock_gating()
-> is currently causing it to trigger with my config.
-> 
-> Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-> ---
-> 
->  drivers/gpu/drm/drm_gem.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> --- 2.6.33-rc2/drivers/gpu/drm/drm_gem.c	2009-12-03 03:51:21.000000000 +0000
-> +++ linux/drivers/gpu/drm/drm_gem.c	2009-12-26 18:29:57.000000000 +0000
-> @@ -435,7 +435,7 @@ drm_gem_object_free(struct kref *kref)
->  	struct drm_gem_object *obj = (struct drm_gem_object *) kref;
->  	struct drm_device *dev = obj->dev;
->  
-> -	BUG_ON(!mutex_is_locked(&dev->struct_mutex));
-> +	WARN_ON(!mutex_is_locked(&dev->struct_mutex));
->  
->  	if (dev->driver->gem_free_object != NULL)
->  		dev->driver->gem_free_object(obj);
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
-> 
+Signed-off-by: Corrado Zoccolo <czoccolo@gmail.com>
+---
+ block/cfq-iosched.c |   20 +++++++++++---------
+ 1 files changed, 11 insertions(+), 9 deletions(-)
+
+diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+index 918c7fd..7da9391 100644
+--- a/block/cfq-iosched.c
++++ b/block/cfq-iosched.c
+@@ -108,9 +108,9 @@ struct cfq_queue {
+ 	struct rb_root sort_list;
+ 	/* if fifo isn't expired, next request to serve */
+ 	struct request *next_rq;
+-	/* requests queued in sort_list */
++	/* requests queued in sort_list, indexed by READ/WRITE */
+ 	int queued[2];
+-	/* currently allocated requests */
++	/* currently allocated requests, indexed by READ/WRITE */
+ 	int allocated[2];
+ 	/* fifo list of requests in sort_list */
+ 	struct list_head fifo;
+@@ -1268,7 +1268,8 @@ static void cfq_prio_tree_add(struct cfq_data *cfqd, struct cfq_queue *cfqq)
+ 		return;
+ 	if (!cfqq->next_rq)
+ 		return;
+-
++	if (blk_queue_nonrot(cfqd->queue) && !cfqq->queued[WRITE])
++		return;
+ 	cfqq->p_root = &cfqd->prio_trees[cfqq->org_ioprio];
+ 	__cfqq = cfq_prio_tree_lookup(cfqd, cfqq->p_root,
+ 				      blk_rq_pos(cfqq->next_rq), &parent, &p);
+@@ -1337,10 +1338,10 @@ static void cfq_del_cfqq_rr(struct cfq_data *cfqd, struct cfq_queue *cfqq)
+ static void cfq_del_rq_rb(struct request *rq)
+ {
+ 	struct cfq_queue *cfqq = RQ_CFQQ(rq);
+-	const int sync = rq_is_sync(rq);
++	const int rw = rq_data_dir(rq);
+ 
+-	BUG_ON(!cfqq->queued[sync]);
+-	cfqq->queued[sync]--;
++	BUG_ON(!cfqq->queued[rw]);
++	cfqq->queued[rw]--;
+ 
+ 	elv_rb_del(&cfqq->sort_list, rq);
+ 
+@@ -1363,7 +1364,7 @@ static void cfq_add_rq_rb(struct request *rq)
+ 	struct cfq_data *cfqd = cfqq->cfqd;
+ 	struct request *__alias, *prev;
+ 
+-	cfqq->queued[rq_is_sync(rq)]++;
++	cfqq->queued[rq_data_dir(rq)]++;
+ 
+ 	/*
+ 	 * looks a little odd, but the first insert might return an alias.
+@@ -1393,7 +1394,7 @@ static void cfq_add_rq_rb(struct request *rq)
+ static void cfq_reposition_rq_rb(struct cfq_queue *cfqq, struct request *rq)
+ {
+ 	elv_rb_del(&cfqq->sort_list, rq);
+-	cfqq->queued[rq_is_sync(rq)]--;
++	cfqq->queued[rq_data_dir(rq)]--;
+ 	cfq_add_rq_rb(rq);
+ }
+ 
+@@ -1689,7 +1690,8 @@ static struct cfq_queue *cfqq_close(struct cfq_data *cfqd,
+ 	struct cfq_queue *__cfqq;
+ 	sector_t sector = cfqd->last_position;
+ 
+-	if (RB_EMPTY_ROOT(root))
++	if (RB_EMPTY_ROOT(root) ||
++	    (blk_queue_nonrot(cfqd->queue) && !cur_cfqq->queued[WRITE]))
+ 		return NULL;
+ 
+ 	/*
+-- 
+1.6.4.4
 
