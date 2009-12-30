@@ -1,55 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752090AbZL3VxK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752118AbZL3V5d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752090AbZL3VxK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Dec 2009 16:53:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751951AbZL3VxJ
+	id S1752118AbZL3V5d (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Dec 2009 16:57:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752073AbZL3V5d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Dec 2009 16:53:09 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:44302 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751829AbZL3VxH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Dec 2009 16:53:07 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [Bug #14940] cfq-iosched: tiobench regression
-Date: Wed, 30 Dec 2009 22:53:53 +0100
-User-Agent: KMail/1.12.3 (Linux/2.6.33-rc2-tst; KDE/4.3.3; x86_64; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Corrado Zoccolo <czoccolo@gmail.com>,
-       Gui Jianfeng <guijianfeng@cn.fujitsu.com>,
-       Shaohua Li <shaohua.li@intel.com>
-References: <LptzGUUXbTK.A.MSF.ymhOLB@chimera> <NJVdobuNFNK.A.1VG.EnhOLB@chimera> <20091230091818.GW4489@kernel.dk>
-In-Reply-To: <20091230091818.GW4489@kernel.dk>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+	Wed, 30 Dec 2009 16:57:33 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:38461 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751951AbZL3V5c (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Dec 2009 16:57:32 -0500
+Date: Wed, 30 Dec 2009 13:57:04 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: David Howells <dhowells@redhat.com>
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       uclinux-dev@uclinux.org, Mike Frysinger <vapier@gentoo.org>
+Subject: Re: [PATCH 1/4] FDPIC: Respect PT_GNU_STACK exec protection
+ markings when creating NOMMU stack
+Message-Id: <20091230135704.ccd0a129.akpm@linux-foundation.org>
+In-Reply-To: <20091222171725.11854.10647.stgit@warthog.procyon.org.uk>
+References: <20091222171725.11854.10647.stgit@warthog.procyon.org.uk>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <200912302253.53285.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 30 December 2009, Jens Axboe wrote:
-> On Tue, Dec 29 2009, Rafael J. Wysocki wrote:
-> > This message has been generated automatically as a part of a report
-> > of recent regressions.
-> > 
-> > The following bug entry is on the current list of known regressions
-> > from 2.6.32.  Please verify if it still should be listed and let me know
-> > (either way).
-> > 
-> > 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14940
-> > Subject		: cfq-iosched: tiobench regression
-> > Submitter	: Shaohua Li <shaohua.li@intel.com>
-> > Date		: 2009-12-24 0:55 (6 days old)
-> > References	: http://marc.info/?l=linux-kernel&m=126161612401994&w=4
-> 
-> I don't think this should be labelled as a regression. It was already
-> known that we'd have less throughput for the many clients cases, it was
-> a trade off that was made to improve latencies.
 
-OK, I've closed it as "documented".
+So these patches and the MN10300 ones didn't get merged.  Presumably
+because they're a grabbag of fixes and non-fixes and kinda-fixes with
+no particular ordering or precedence and they arrived newly-minted
+several days after the release of -rc1.
 
-Rafael
+I could suggest that you go back and sort them into 2.6.33-appropriate
+fixes and 2.6.34-appropriate non-fixes.
+
+Or you could try to cook up a good-sounding reason why the whole lot
+needs to go into 2.6.33.  If you believe that ;)
+
