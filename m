@@ -1,57 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751827AbZL3CNE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751900AbZL3Cdg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751827AbZL3CNE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 29 Dec 2009 21:13:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751210AbZL3CNB
+	id S1751900AbZL3Cdg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 29 Dec 2009 21:33:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751646AbZL3Cdf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 29 Dec 2009 21:13:01 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:56493 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750936AbZL3CNA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 29 Dec 2009 21:13:00 -0500
-Date: Wed, 30 Dec 2009 10:12:53 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Crypto Mailing List <linux-crypto@vger.kernel.org>
-Subject: Crypto Fixes for 2.6.33
-Message-ID: <20091230021253.GA17067@gondor.apana.org.au>
-References: <20081225001724.GA2813@gondor.apana.org.au> <20081225002020.GA2912@gondor.apana.org.au> <20090324044932.GA18245@gondor.apana.org.au> <20090613020512.GA21024@gondor.apana.org.au> <20090910141905.GA17948@gondor.apana.org.au> <20091020065442.GA5947@gondor.apana.org.au>
+	Tue, 29 Dec 2009 21:33:35 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:44560 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751524AbZL3Cdf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 29 Dec 2009 21:33:35 -0500
+Message-ID: <4B3ABBD5.2080302@redhat.com>
+Date: Tue, 29 Dec 2009 21:32:53 -0500
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091020065442.GA5947@gondor.apana.org.au>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Liming Wang <liming.wang@windriver.com>
+CC: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
+       Paul Mackerras <paulus@samba.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/3] perf probe: change CONFIG_KPROBE_TRACER to CONFIG_KPROBE_EVENT
+References: <1262075829-16257-1-git-send-email-liming.wang@windriver.com> <1262075829-16257-2-git-send-email-liming.wang@windriver.com> <1262075829-16257-3-git-send-email-liming.wang@windriver.com>
+In-Reply-To: <1262075829-16257-3-git-send-email-liming.wang@windriver.com>
+X-Enigmail-Version: 1.0
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus:
+Liming Wang wrote:
+> make the config name consistent
+> 
+> Signed-off-by: Liming Wang <liming.wang@windriver.com>
 
-This push fixes a regression in the hardware RNG core introduced
-by the recent API change.
+Ah, right. Thank you!
 
+Acked-by: Masami Hiramatsu <mhiramat@redhat.com>
 
-Please pull from
+> ---
+>  tools/perf/util/probe-event.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/tools/perf/util/probe-event.c b/tools/perf/util/probe-event.c
+> index 29465d4..8e532d9 100644
+> --- a/tools/perf/util/probe-event.c
+> +++ b/tools/perf/util/probe-event.c
+> @@ -368,7 +368,7 @@ static int open_kprobe_events(int flags, int mode)
+>  	if (ret < 0) {
+>  		if (errno == ENOENT)
+>  			die("kprobe_events file does not exist -"
+> -			    " please rebuild with CONFIG_KPROBE_TRACER.");
+> +			    " please rebuild with CONFIG_KPROBE_EVENT.");
+>  		else
+>  			die("Could not open kprobe_events file: %s",
+>  			    strerror(errno));
 
-git://git.kernel.org/pub/scm/linux/kernel/git/herbert/crypto-2.6.git
-
-or
-
-master.kernel.org:/pub/scm/linux/kernel/git/herbert/crypto-2.6.git
-
-
-Herbert Xu (1):
-      hwrng: core - Fix double unlock in rng_dev_read
-
- drivers/char/hw_random/core.c |    5 +++--
- 1 files changed, 3 insertions(+), 2 deletions(-)
-
-Thanks,
 -- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
+
