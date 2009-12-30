@@ -1,48 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753146AbZL3SB1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753107AbZL3SAs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753146AbZL3SB1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Dec 2009 13:01:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752778AbZL3SB1
+	id S1753107AbZL3SAs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Dec 2009 13:00:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752576AbZL3SAr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Dec 2009 13:01:27 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:52627 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752464AbZL3SB0 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Dec 2009 13:01:26 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:mime-version:content-type
-         :content-transfer-encoding:message-id;
-        b=M26I+m8/5Kxj52dIWow1e7PdTXvPJbSn7gcuDyFwsVzoF2iLlMWuYf8QswIyYyvJx7
-         WIfFfNq8UW4glSRH6CmtHrXZ/kGi+b+E3DNnHjeBjTXCJmt1ZAuKSa4RZWL+DoutLziI
-         I0tVjAnzd9xTRhkn0PULLKnA5a5lMyPMrj/kI=
-From: Miguel =?utf-8?q?Bot=C3=B3n?= <mboton@gmail.com>
-To: Thomas Backlund <tmb@mandriva.org>
-Subject: Re: BFS v0.313 CPU scheduler for 2.6.32
-Date: Wed, 30 Dec 2009 19:00:29 +0100
-User-Agent: KMail/1.12.3 (Linux/2.6.32-rc8-zen1; KDE/4.3.4; x86_64; ; )
-Cc: Con Kolivas <kernel@kolivas.org>, linux-kernel@vger.kernel.org
+	Wed, 30 Dec 2009 13:00:47 -0500
+Received: from e9.ny.us.ibm.com ([32.97.182.139]:36922 "EHLO e9.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752274AbZL3SAq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Dec 2009 13:00:46 -0500
+Date: Wed, 30 Dec 2009 12:00:45 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Benny Amorsen <benny+usenet@amorsen.dk>,
+       Bryan Donlan <bdonlan@gmail.com>, Michael Stone <michael@laptop.org>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       linux-security-module@vger.kernel.org, Andi Kleen <andi@firstfloor.org>,
+       David Lang <david@lang.hm>, Oliver Hartkopp <socketcan@hartkopp.net>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Valdis Kletnieks <Valdis.Kletnieks@vt.edu>,
+       Evgeniy Polyakov <zbr@ioremap.net>,
+       "C. Scott Ananian" <cscott@cscott.net>,
+       James Morris <jmorris@namei.org>, Bernie Innocenti <bernie@codewiz.org>,
+       Mark Seaborn <mrs@mythic-beasts.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       =?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>,
+       Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
+       Samir Bellabes <sam@synack.fr>,
+       Casey Schaufler <casey@schaufler-ca.com>, Pavel Machek <pavel@ucw.cz>,
+       Al Viro <viro@zeniv.linux.org.uk>
+Subject: Re: RFC: disablenetwork facility. (v4)
+Message-ID: <20091230180045.GA14493@us.ibm.com>
+References: <20091229151146.GA32153@us.ibm.com>
+ <3e8340490912290805s103fb789y13acea4a84669b20@mail.gmail.com>
+ <m3oclhzgm4.fsf@ursa.amorsen.dk>
+ <m17hs5y0mg.fsf@fess.ebiederm.org>
+ <20091229211139.0732a0c1@lxorguk.ukuu.org.uk>
+ <m1iqbpwjtp.fsf@fess.ebiederm.org>
+ <20091229223631.GB22578@us.ibm.com>
+ <m1zl51uoqd.fsf@fess.ebiederm.org>
+ <20091230035008.GA6819@us.ibm.com>
+ <m11vidulsq.fsf@fess.ebiederm.org>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Message-Id: <200912301900.29578.mboton@gmail.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m11vidulsq.fsf@fess.ebiederm.org>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 30, 2009 at 2:55 PM, Thomas Backlund <tmb@mandriva.org> wrote:
-> Nice.
+Quoting Eric W. Biederman (ebiederm@xmission.com):
+> "Serge E. Hallyn" <serue@us.ibm.com> writes:
 > 
-> any timeline for a version for 2.6.33 series kernels ?
+> >> In common cap we drop the new capabilities if we are being ptraced.
+> >> Look for brm->unsafe.
+> >
+> > Yes - that isn't the issue.
+> 
+> Right.  Sorry.  I saw that we set unsafe and totally
+> missed that we don't act on it in that case.
+> 
+> > It goes back to finding a way to figure out what is inside the
+> > file when the installer obviously thought we shouldn't be able
+> > to read the file.
+> >
+> > Do we care?  <shrug>
+> 
+> <shrug>
+> 
+> I expect two lines of testing bprm->unsafe and failing
+> at the right point would solve that. 
 
-If you want to try BFS on a 2.6.33 kernel, you can try this 'unofficial' port:
-http://git.zen-kernel.org/?p=kernel/zen.git;a=shortlog;h=refs/heads/sched-bfs
+But what is the right response?  Prevent excecution?  Stop the
+tracer?  Enter some one-shot mode where the whole exec appears
+as one step, but tracing continues if execution continues on a
+dumpable file?
 
-I'm currently using it with no issues so far.
-
-Greetings,
-
--- 
-Miguel Botón
+-serge
