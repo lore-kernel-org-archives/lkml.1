@@ -1,54 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753316AbZL3S7t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753349AbZL3TBh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753316AbZL3S7t (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Dec 2009 13:59:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753171AbZL3S7s
+	id S1753349AbZL3TBh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Dec 2009 14:01:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753331AbZL3TBf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Dec 2009 13:59:48 -0500
-Received: from mail.perches.com ([173.55.12.10]:1462 "EHLO mail.perches.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753030AbZL3S7s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Dec 2009 13:59:48 -0500
-Subject: Re: [PATCH] drivers/atm/lanai.c: use %pM to show MAC address
-From: Joe Perches <joe@perches.com>
-To: H Hartley Sweeten <hartleys@visionengravers.com>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       David Miller <davem@davemloft.net>
-In-Reply-To: <BD79186B4FD85F4B8E60E381CAEE19090200F645@mi8nycmail19.Mi8.com>
-References: <BD79186B4FD85F4B8E60E381CAEE19090200F645@mi8nycmail19.Mi8.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 30 Dec 2009 10:59:46 -0800
-Message-ID: <1262199586.2545.43.camel@Joe-Laptop.home>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 30 Dec 2009 14:01:35 -0500
+Received: from static-72-93-233-3.bstnma.fios.verizon.net ([72.93.233.3]:47930
+	"EHLO mail.wilsonet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753333AbZL3TBd convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Dec 2009 14:01:33 -0500
+Subject: Re: [PATCH] input: imon driver for SoundGraph iMON/Antec Veris IR devices
+Mime-Version: 1.0 (Apple Message framework v1077)
+Content-Type: text/plain; charset=us-ascii
+From: Jarod Wilson <jarod@wilsonet.com>
+In-Reply-To: <1430BBF0-3A61-471E-86A9-E85CF153A150@wilsonet.com>
+Date: Wed, 30 Dec 2009 14:01:18 -0500
+Cc: Jarod Wilson <jarod@redhat.com>, linux-input@vger.kernel.org,
+       linux-media@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8BIT
+Message-Id: <F1D74CA4-2BD9-43C4-8A8F-08B690A334F3@wilsonet.com>
+References: <2044EA95-168E-4ACE-A19E-732BB4A34CA7@gmail.com> <1430BBF0-3A61-471E-86A9-E85CF153A150@wilsonet.com>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+X-Mailer: Apple Mail (2.1077)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-12-30 at 13:50 -0500, H Hartley Sweeten wrote:
-> Use the %pM kernel extension to display the MAC address.
-> diff --git a/drivers/atm/lanai.c b/drivers/atm/lanai.c
-> index cf97c34..7fe7c32 100644
-> --- a/drivers/atm/lanai.c
-> +++ b/drivers/atm/lanai.c
-[]
-> @@ -2483,14 +2481,8 @@ static int lanai_proc_read(struct atm_dev *atmdev, loff_t *pos, char *page)
->  		return sprintf(page, "revision: board=%d, pci_if=%d\n",
->  		    lanai->board_rev, (int) lanai->pci->revision);
->  	if (left-- == 0)
-> -		return sprintf(page, "EEPROM ESI: "
-> -		    "%02X:%02X:%02X:%02X:%02X:%02X\n",
-> -		    lanai->eeprom[EEPROM_MAC + 0],
-> -		    lanai->eeprom[EEPROM_MAC + 1],
-> -		    lanai->eeprom[EEPROM_MAC + 2],
-> -		    lanai->eeprom[EEPROM_MAC + 3],
-> -		    lanai->eeprom[EEPROM_MAC + 4],
-> -		    lanai->eeprom[EEPROM_MAC + 5]);
-> +		return sprintf(page, "EEPROM ESI: %pM\n",
-> +		    &lanai->eeprom[EEPROM_MAC]);
+On Dec 30, 2009, at 3:02 AM, Jarod Wilson wrote:
 
-This is a user-visible change from upper case to lower case.
-Probably doesn't matter, but maybe...
+> On Dec 29, 2009, at 5:30 PM, Dmitry Torokhov wrote:
+> 
+>> On Tue, Dec 29, 2009 at 12:04:00AM -0500, Jarod Wilson wrote:
+>>> On Dec 28, 2009, at 4:31 AM, Dmitry Torokhov wrote:
+>>>> 
+>>>> Hm, will this work on big-endian?
+>>> 
+>>> Good question. Not sure offhand. Probably not. Unfortunately, the only devices I have to test with at the moment are integrated into cases with x86 boards in them, so testing isn't particularly straight-forward. I should probably get ahold of one of the plain external usb devices to play with... Mind if I just add a TODO marker near that for now?
+>>> 
+>> 
+>> How about just do le32_to_cpu() instead of memcpy()ing and that's
+>> probably it?
+> 
+> Hrm. My endian-fu sucks. Not sure what the right way to do it without the memcpy is. I thought I had something together than would work, using 2 lines (memcpy, then le32_to_cpu), but I just realized that'll go south on the keys where we're only looking at half the buffer (i.e., the wrong half on big-endian)... Will see what I can do to fix that up in the morning, was hoping to get this out tonight, but its nearly 3am (again)...
+
+Got something that works in place now. Well, definitely works on x86, works in theory on big-endian, haven't got a way to test it on the latter just yet.
+
+
+>> [...] I'd still want to see larger functions split up a bit though.
+> 
+> I've hacked imon_probe() up into 6 different functions now:
+> 
+> imon_probe()
+> -> imon_init_intf0()
+>  -> imon_init_idev()
+>  -> imon_init_display()
+> -> imon_init_intf1()
+>  -> imon_init_touch()
+> 
+> (and there was an existing imon_set_ir_protocol() in the mix)
+> 
+> Quite a bit more manageable and readable now, I think. Haven't looked yet for other candidates for similar refactoring. Were there others you had in mind? At a glance, imon_incoming_packet() seems to be the only remaining function that is particularly hefty. Well, imon_probe() is still ~180 lines, but it used to be north of 400, I think... So perhaps I try trimming imon_probe() a bit more, and see what can be done to make imon_incoming_packet() less chunky.
+
+Making good headway on imon_incoming_packet(), in-progress bits pushed again. Gotta take my son and a buddy to a movie. Life keeps getting in the way of me finishing this as quickly as I'd like... :)
+
+-- 
+Jarod Wilson
+jarod@wilsonet.com
+
 
 
