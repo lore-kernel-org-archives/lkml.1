@@ -1,81 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752175AbZLaKga@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752369AbZLaKu4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752175AbZLaKga (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Dec 2009 05:36:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751660AbZLaKga
+	id S1752369AbZLaKu4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Dec 2009 05:50:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752342AbZLaKuz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Dec 2009 05:36:30 -0500
-Received: from casper.infradead.org ([85.118.1.10]:47563 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751614AbZLaKg3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Dec 2009 05:36:29 -0500
-Date: Thu, 31 Dec 2009 08:36:09 -0200
-From: Arnaldo Carvalho de Melo <acme@infradead.org>
-To: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>,
-       James Bottomley <James.Bottomley@suse.de>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Paul Mackerras <paulus@samba.org>, "Frank Ch. Eigler" <fche@redhat.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] x86: record relocation offset
-Message-ID: <20091231103609.GE2384@ghostprotocols.net>
-References: <vxv6sfpjggfx6v68yv1eecrx.1262215615671@email.android.com>
- <1262216506.2749.254.camel@mulgrave.site>
- <4B3BE63B.70907@zytor.com>
- <20091231003046.GC2384@ghostprotocols.net>
- <4B3C13B0.6080600@cn.fujitsu.com>
+	Thu, 31 Dec 2009 05:50:55 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:61699 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752338AbZLaKuy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Dec 2009 05:50:54 -0500
+Message-ID: <4B3C819D.9000809@cn.fujitsu.com>
+Date: Thu, 31 Dec 2009 18:49:01 +0800
+From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B3C13B0.6080600@cn.fujitsu.com>
-X-Url: http://oops.ghostprotocols.net:81/blog
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <acme@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+To: Arnaldo Carvalho de Melo <acme@infradead.org>
+CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Paul Mackerras <paulus@samba.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 3/3] perf tools: adjust symbol address
+References: <4B3AC5CD.1000502@cn.fujitsu.com> <4B3AC69F.4070901@cn.fujitsu.com> <20091230131016.GC2956@ghostprotocols.net> <4B3C1397.8040307@cn.fujitsu.com> <20091231102938.GD2384@ghostprotocols.net>
+In-Reply-To: <20091231102938.GD2384@ghostprotocols.net>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Thu, Dec 31, 2009 at 11:00:00AM +0800, Xiao Guangrong escreveu:
-> Arnaldo Carvalho de Melo wrote:
 
-> > Conclusion: at 'perf record' time store the address of a well know
-> > symbol (_text) into the perf.data header. Later, at perf report time, if
-> > using a vmlinux file, calculate the relocation by subtracting the same
-> > well known symbol from the one stored in the header.
 
-> > So no need for ioctl or boot stuff.
+Arnaldo Carvalho de Melo wrote:
 
-> I'm little confused, how to get the load symbol address?
-> It's not a good way, if you get it from '/proc/kallsyms', we can't assume kernel
-> has this file.
+>> vmlinux* not know it's relocation or not, and we just handle the _specific_
+>> kernel at the time which match the current system. 
+> 
+> 'perf record' in one machine + 'perf report' in another should be
+> possible.
+>  
 
-Well, then its just a matter of exposing _text as
-/sys/kernel/sections/.text, as we already have for modules:
+Yeah, but current code not support this since it not record kernel build-id in
+perf.data while 'perf record' works, maybe you can fix it.
 
-[acme@ana linux-2.6-tip]$ cat /sys/module/ipv6/sections/.text 
-0xfa0c2000
-
-Which matches
-
-nf_conntrack_ipv6 17548 2 - Live 0xfa147000
-ipv6 239420 32 ip6t_REJECT,nf_conntrack_ipv6, Live 0xfa0c2000
-[acme@ana linux-2.6-tip]$
-
-But even as a quick transational assist, we can look at kallsyms at
-'perf record' time.
-
-> > I'll do that tomorrow, if Xiao doesn't beats me to it :-)
-
-> Of course, please do if you have a better way :-)
-
-I meant, if you didn't write the patch first, while I was sleeping :-)
-
-I'll work on it today after some coffee and errands.
-
-Best Regards,
-
-- Arnaldo
+Xiao
