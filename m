@@ -1,221 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752187AbZLaNvM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752342AbZLaOIu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752187AbZLaNvM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Dec 2009 08:51:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751624AbZLaNvM
+	id S1752342AbZLaOIu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Dec 2009 09:08:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752141AbZLaOIt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Dec 2009 08:51:12 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:40328 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751483AbZLaNvK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Dec 2009 08:51:10 -0500
-Message-ID: <4B3CACB3.8020901@gmail.com>
-Date: Thu, 31 Dec 2009 14:52:51 +0100
-From: Emese Revfy <re.emese@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090812)
+	Thu, 31 Dec 2009 09:08:49 -0500
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:49675 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752015AbZLaOIr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Dec 2009 09:08:47 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=doyRIJcd//XTyX0GiD6+g0YrBurwUEArAGyDqMEzGdUYQ+55pmYzn6PF7nBlROSPzV
+         po77PPthUXjCfdvZa1MS5qSh38ICNO49hFXMnAllCAabyalyqSJ8HM6xa8nVgLbhdJTa
+         DUQk6XtefBpm74IQg+vNhYfzK+aZ62DZ0GseY=
 MIME-Version: 1.0
-To: Greg KH <gregkh@suse.de>
-CC: Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
-       rientjes@google.com, cl@linux-foundation.org,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org, rjw@sisk.pl,
-       rusty@rustcorp.com.au, Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [PATCH 1/1] Constify struct kset_uevent_ops for 2.6.33-rc2
-References: <cover.1260663000.git.re.emese@gmail.com> <eff97be7c5839477c88f7ba61ef100f38c58bf7d.1260663000.git.re.emese@gmail.com> <84144f020912250331h23b8b724v73cf70c384d385ec@mail.gmail.com> <4B355AEF.3060508@gmail.com> <4B39AEB2.5040809@cs.helsinki.fi> <4B3A6D63.4070700@gmail.com> <20091230001131.GA19830@suse.de> <4B3BED7A.6020507@gmail.com> <20091231044039.GB27927@suse.de>
-In-Reply-To: <20091231044039.GB27927@suse.de>
+In-Reply-To: <m2bphfti1u.fsf@ssh.synack.fr>
+References: <m1iqbpwjtp.fsf@fess.ebiederm.org>
+	 <551280e50912300652r1007dee0j8de750bf33af9b3c@mail.gmail.com>
+	 <20091230183513.GC14493@us.ibm.com> <m1fx6suswz.fsf@fess.ebiederm.org>
+	 <20091230201712.GA23999@us.ibm.com>
+	 <m1hbr8tb8q.fsf_-_@fess.ebiederm.org>
+	 <20091230212931.233003b9@lxorguk.ukuu.org.uk>
+	 <m1skasrvnq.fsf@fess.ebiederm.org>
+	 <20091230230042.5d2e78ac@lxorguk.ukuu.org.uk>
+	 <m2bphfti1u.fsf@ssh.synack.fr>
+Date: Fri, 1 Jan 2010 00:08:44 +1000
+Message-ID: <e7d8f83e0912310608j2c52acabxbd57d24e2b3073ca@mail.gmail.com>
+Subject: Re: [RFC][PATCH v3] Unprivileged: Disable raising of privileges
+From: Peter Dolding <oiaohm@gmail.com>
+To: Samir Bellabes <sam@synack.fr>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Serge E. Hallyn" <serue@us.ibm.com>,
+       "Andrew G. Morgan" <morgan@kernel.org>,
+       Bryan Donlan <bdonlan@gmail.com>,
+       Benny Amorsen <benny+usenet@amorsen.dk>,
+       Michael Stone <michael@laptop.org>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, linux-security-module@vger.kernel.org,
+       Andi Kleen <andi@firstfloor.org>, David Lang <david@lang.hm>,
+       Oliver Hartkopp <socketcan@hartkopp.net>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Valdis Kletnieks <Valdis.Kletnieks@vt.edu>,
+       Evgeniy Polyakov <zbr@ioremap.net>,
+       "C. Scott Ananian" <cscott@cscott.net>,
+       James Morris <jmorris@namei.org>, Bernie Innocenti <bernie@codewiz.org>,
+       Mark Seaborn <mrs@mythic-beasts.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       =?ISO-8859-1?Q?Am=E9rico_Wang?= <xiyou.wangcong@gmail.com>,
+       Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
+       Casey Schaufler <casey@schaufler-ca.com>, Pavel Machek <pavel@ucw.cz>,
+       Al Viro <viro@zeniv.linux.org.uk>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Emese Revfy <re.emese@gmail.com>
+On Thu, Dec 31, 2009 at 11:00 PM, Samir Bellabes <sam@synack.fr> wrote:
+> Alan Cox <alan@lxorguk.ukuu.org.uk> writes:
+>
+>> Well to be fair its random regurgitated security idea of every year or
+>> two.
+>
+> true, last year the same kind of discussion occurs with the 'personal
+> firewall' aka a network MAC.
+> http://marc.info/?t=123247387500003&r=3&w=2
+> http://marc.info/?t=123187029200001&r=2&w=2
 
-Constify struct kset_uevent_ops.
+Lets step back for a moment.  What is the common issue with both.
 
-This is part of the ops structure constification
-effort started by Arjan van de Ven et al.
+The issue is simple.  "How to I generically tell the secuirty system
+want particular restrictions."
 
-Benefits of this constification:
+There is no generic LSM API for application or users to talk to the
+LSM and say I want the following restricted.   Of course the
+restrictions have to be tighter than what the profiles already say.
 
- * prevents modification of data that is shared
-   (referenced) by many other structure instances
-   at runtime
+To control the LSM the applications are expected to know what the LSM.
+ This has caused items like chrome major issues.
 
- * detects/prevents accidental (but not intentional)
-   modification attempts on archs that enforce
-   read-only kernel data at runtime
+Also by providing a generic LSM API there would be a base set of
+requirements for a LSM to provide to meet the requirements of the
+generic interfaces.
 
- * potentially better optimized code as the compiler
-   can assume that the const data cannot be changed
+Basically until a generic interface to talk to LSM module is provided
+these requests are going to keep coming.  Maybe assign secuirty ops
+string values that applications can say disable the following secuirty
+operations from me.
 
- * the compiler/linker move const data into .rodata
-   and therefore exclude them from false sharing
+Application does not need to be informed what is disabled from it.
 
-Signed-off-by: Emese Revfy <re.emese@gmail.com>
----
-
- drivers/base/bus.c      |    2 +-
- drivers/base/core.c     |    2 +-
- drivers/base/memory.c   |    2 +-
- fs/gfs2/sys.c           |    2 +-
- include/linux/kobject.h |   10 +++++-----
- kernel/params.c         |    2 +-
- lib/kobject.c           |    4 ++--
- lib/kobject_uevent.c    |    2 +-
- mm/slub.c               |    2 +-
- 9 files changed, 14 insertions(+), 14 deletions(-)
-
-diff --git a/drivers/base/bus.c b/drivers/base/bus.c
-index c0c5a43..2afe599 100644
---- a/drivers/base/bus.c
-+++ b/drivers/base/bus.c
-@@ -154,7 +154,7 @@ static int bus_uevent_filter(struct kset *kset, struct kobject *kobj)
- 	return 0;
- }
- 
--static struct kset_uevent_ops bus_uevent_ops = {
-+static const struct kset_uevent_ops bus_uevent_ops = {
- 	.filter = bus_uevent_filter,
- };
- 
-diff --git a/drivers/base/core.c b/drivers/base/core.c
-index 2820257..82bd3ff 100644
---- a/drivers/base/core.c
-+++ b/drivers/base/core.c
-@@ -252,7 +252,7 @@ static int dev_uevent(struct kset *kset, struct kobject *kobj,
- 	return retval;
- }
- 
--static struct kset_uevent_ops device_uevent_ops = {
-+static const struct kset_uevent_ops device_uevent_ops = {
- 	.filter =	dev_uevent_filter,
- 	.name =		dev_uevent_name,
- 	.uevent =	dev_uevent,
-diff --git a/drivers/base/memory.c b/drivers/base/memory.c
-index d7d77d4..0bcf8c2 100644
---- a/drivers/base/memory.c
-+++ b/drivers/base/memory.c
-@@ -44,7 +44,7 @@ static int memory_uevent(struct kset *kset, struct kobject *obj, struct kobj_uev
- 	return retval;
- }
- 
--static struct kset_uevent_ops memory_uevent_ops = {
-+static const struct kset_uevent_ops memory_uevent_ops = {
- 	.name		= memory_uevent_name,
- 	.uevent		= memory_uevent,
- };
-diff --git a/fs/gfs2/sys.c b/fs/gfs2/sys.c
-index 0dc3462..9be733e 100644
---- a/fs/gfs2/sys.c
-+++ b/fs/gfs2/sys.c
-@@ -576,7 +576,7 @@ static int gfs2_uevent(struct kset *kset, struct kobject *kobj,
- 	return 0;
- }
- 
--static struct kset_uevent_ops gfs2_uevent_ops = {
-+static const struct kset_uevent_ops gfs2_uevent_ops = {
- 	.uevent = gfs2_uevent,
- };
- 
-diff --git a/include/linux/kobject.h b/include/linux/kobject.h
-index 58ae8e0..57a1eaa 100644
---- a/include/linux/kobject.h
-+++ b/include/linux/kobject.h
-@@ -118,9 +118,9 @@ struct kobj_uevent_env {
- };
- 
- struct kset_uevent_ops {
--	int (*filter)(struct kset *kset, struct kobject *kobj);
--	const char *(*name)(struct kset *kset, struct kobject *kobj);
--	int (*uevent)(struct kset *kset, struct kobject *kobj,
-+	int (* const filter)(struct kset *kset, struct kobject *kobj);
-+	const char *(* const name)(struct kset *kset, struct kobject *kobj);
-+	int (* const uevent)(struct kset *kset, struct kobject *kobj,
- 		      struct kobj_uevent_env *env);
- };
- 
-@@ -155,14 +155,14 @@ struct kset {
- 	struct list_head list;
- 	spinlock_t list_lock;
- 	struct kobject kobj;
--	struct kset_uevent_ops *uevent_ops;
-+	const struct kset_uevent_ops *uevent_ops;
- };
- 
- extern void kset_init(struct kset *kset);
- extern int __must_check kset_register(struct kset *kset);
- extern void kset_unregister(struct kset *kset);
- extern struct kset * __must_check kset_create_and_add(const char *name,
--						struct kset_uevent_ops *u,
-+						const struct kset_uevent_ops *u,
- 						struct kobject *parent_kobj);
- 
- static inline struct kset *to_kset(struct kobject *kobj)
-diff --git a/kernel/params.c b/kernel/params.c
-index cf1b691..ac5de7d 100644
---- a/kernel/params.c
-+++ b/kernel/params.c
-@@ -737,7 +737,7 @@ static int uevent_filter(struct kset *kset, struct kobject *kobj)
- 	return 0;
- }
- 
--static struct kset_uevent_ops module_uevent_ops = {
-+static const struct kset_uevent_ops module_uevent_ops = {
- 	.filter = uevent_filter,
- };
- 
-diff --git a/lib/kobject.c b/lib/kobject.c
-index b512b74..cecf5a0 100644
---- a/lib/kobject.c
-+++ b/lib/kobject.c
-@@ -789,7 +789,7 @@ static struct kobj_type kset_ktype = {
-  * If the kset was not able to be created, NULL will be returned.
-  */
- static struct kset *kset_create(const char *name,
--				struct kset_uevent_ops *uevent_ops,
-+				const struct kset_uevent_ops *uevent_ops,
- 				struct kobject *parent_kobj)
- {
- 	struct kset *kset;
-@@ -832,7 +832,7 @@ static struct kset *kset_create(const char *name,
-  * If the kset was not able to be created, NULL will be returned.
-  */
- struct kset *kset_create_and_add(const char *name,
--				 struct kset_uevent_ops *uevent_ops,
-+				 const struct kset_uevent_ops *uevent_ops,
- 				 struct kobject *parent_kobj)
- {
- 	struct kset *kset;
-diff --git a/lib/kobject_uevent.c b/lib/kobject_uevent.c
-index 920a3ca..c9d3a3e 100644
---- a/lib/kobject_uevent.c
-+++ b/lib/kobject_uevent.c
-@@ -95,7 +95,7 @@ int kobject_uevent_env(struct kobject *kobj, enum kobject_action action,
- 	const char *subsystem;
- 	struct kobject *top_kobj;
- 	struct kset *kset;
--	struct kset_uevent_ops *uevent_ops;
-+	const struct kset_uevent_ops *uevent_ops;
- 	u64 seq;
- 	int i = 0;
- 	int retval = 0;
-diff --git a/mm/slub.c b/mm/slub.c
-index 8d71aaf..02b5a83 100644
---- a/mm/slub.c
-+++ b/mm/slub.c
-@@ -4538,7 +4538,7 @@ static int uevent_filter(struct kset *kset, struct kobject *kobj)
- 	return 0;
- }
- 
--static struct kset_uevent_ops slab_uevent_ops = {
-+static const struct kset_uevent_ops slab_uevent_ops = {
- 	.filter = uevent_filter,
- };
- 
+Peter Dolding
