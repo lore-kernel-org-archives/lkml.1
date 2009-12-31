@@ -1,83 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751474AbZLaGbM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751691AbZLaGcR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751474AbZLaGbM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Dec 2009 01:31:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751330AbZLaGbK
+	id S1751691AbZLaGcR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Dec 2009 01:32:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751360AbZLaGcQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Dec 2009 01:31:10 -0500
-Received: from smtpauth.net4india.com ([202.71.129.41]:49274 "EHLO
-	smtpauth.net4india.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751161AbZLaGbK (ORCPT
+	Thu, 31 Dec 2009 01:32:16 -0500
+Received: from moutng.kundenserver.de ([212.227.17.8]:64065 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751202AbZLaGcP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Dec 2009 01:31:10 -0500
-From: David John <davidjon@xenontk.org>
-To: airlied@gmail.com
-Cc: linux-kernel@vger.kernel.org, eric@anholt.net, jbarnes@virtuousgeek.org
-Subject: [PATCH v2] drm: Keep disabled outputs disabled after suspend / resume
-Date: Thu, 31 Dec 2009 12:00:46 +0530
-Message-Id: <1262241046-3740-1-BlackWidow-davidjon@xenontk.org>
-X-Mailer: BlackWidow
-In-Reply-To: <4B3C24BC.3040906@xenontk.org>
-References: <4B3C24BC.3040906@xenontk.org>
+	Thu, 31 Dec 2009 01:32:15 -0500
+Date: Wed, 30 Dec 2009 22:32:04 -0800 (PST)
+From: Christian Kujau <lists@nerdbynature.de>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+cc: LKML <linux-kernel@vger.kernel.org>,
+       Alexander Beregalov <a.beregalov@gmail.com>,
+       Chris Mason <chris.mason@oracle.com>, Ingo Molnar <mingo@elte.hu>,
+       reiserfs-devel@vger.kernel.org
+Subject: Re: [PATCH 0/5] reiserfs lock inversion fixes on xattr
+In-Reply-To: <1262205747-9208-1-git-send-regression-fweisbec@gmail.com>
+Message-ID: <alpine.DEB.2.01.0912301943020.3483@bogon.housecafe.de>
+References: <1262150491-9983-1-git-send-regression-fweisbec@gmail.com> <1262205747-9208-1-git-send-regression-fweisbec@gmail.com>
+User-Agent: Alpine 2.01 (DEB 1266 2009-07-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Provags-ID: V01U2FsdGVkX1/okd/VawiyvN3qm2B8MOrZ5Z7ClU6hmwGVwY3
+ 2+2rUBWCGY5KN71bgyaLH8jJ3JP27oMWwuhhqAwFtfmNk7tKc1
+ fVUh3/85CvQDDsVtHoX0w==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-With the current DRM code, an output that has been powered off
-from userspace will automatically power back on when resuming
-from suspend. This patch fixes this behaviour.
+On Wed, 30 Dec 2009 at 21:42, Frederic Weisbecker wrote:
+> I hope you can give it a try (and/or review) before I send the whole
+> to Linus.
 
-Tested only with the Intel i915 driver on an Intel GM45 Express
-chipset.
+Without your patches, "dbench -x" was pretty much instantly causing the 
+threads to lock up, forcing me to reboot the box. With LOCKDEP enabled, 
+warnings were printed. After applying your patches (and a reboot) I've run 
+"dbench -x" for quite a while now with different runtimes and number of
+clients and it's not locking up any more. I've tested with:
 
-Signed-off-by: David John <davidjon@xenontk.org>
+CONFIG_REISERFS_FS=y
+CONFIG_REISERFS_CHECK=y
+CONFIG_REISERFS_PROC_INFO=y
+CONFIG_REISERFS_FS_XATTR=y
+CONFIG_REISERFS_FS_POSIX_ACL=y
+# CONFIG_REISERFS_FS_SECURITY is not set
 
-diff --git a/drivers/gpu/drm/drm_crtc_helper.c b/drivers/gpu/drm/drm_crtc_helper.c
-index 4231d6d..aba79c4 100644
---- a/drivers/gpu/drm/drm_crtc_helper.c
-+++ b/drivers/gpu/drm/drm_crtc_helper.c
-@@ -216,7 +216,7 @@ bool drm_helper_crtc_in_use(struct drm_crtc *crtc)
- EXPORT_SYMBOL(drm_helper_crtc_in_use);
- 
- /**
-- * drm_disable_unused_functions - disable unused objects
-+ * drm_helper_disable_unused_functions - disable unused objects
-  * @dev: DRM device
-  *
-  * LOCKING:
-@@ -1162,6 +1162,9 @@ EXPORT_SYMBOL(drm_helper_mode_fill_fb_struct);
- int drm_helper_resume_force_mode(struct drm_device *dev)
- {
- 	struct drm_crtc *crtc;
-+	struct drm_encoder *encoder;
-+	struct drm_encoder_helper_funcs *encoder_funcs;
-+	struct drm_crtc_helper_funcs *crtc_funcs;
- 	int ret;
- 
- 	list_for_each_entry(crtc, &dev->mode_config.crtc_list, head) {
-@@ -1174,6 +1177,25 @@ int drm_helper_resume_force_mode(struct drm_device *dev)
- 
- 		if (ret == false)
- 			DRM_ERROR("failed to set mode on crtc %p\n", crtc);
-+
-+		/* Turn off outputs that were already powered off */
-+		if (drm_helper_choose_crtc_dpms(crtc)) {
-+			list_for_each_entry(encoder, &dev->mode_config.encoder_list, head) {
-+
-+				if(encoder->crtc != crtc)
-+					continue;
-+
-+				encoder_funcs = encoder->helper_private;
-+				if (encoder_funcs->dpms)
-+					(*encoder_funcs->dpms) (encoder,
-+								drm_helper_choose_encoder_dpms(encoder));
-+
-+				crtc_funcs = crtc->helper_private;
-+				if (crtc_funcs->dpms)
-+					(*crtc_funcs->dpms) (crtc,
-+							     drm_helper_choose_crtc_dpms(crtc));
-+			}
-+		}
- 	}
- 	/* disable the unused connectors while restoring the modesetting */
- 	drm_helper_disable_unused_functions(dev);
+...and a few "Kernel hacking" options set. Full config and dmesg:
+
+   http://nerdbynature.de/bits/2.6.33-rc1/reiserfs/t3/
+
+   (although I'm not really testing -rc1 but latest mainline -git
+    and your changes pulled)
+
+So, feel free to add:
+
+  Tested-by: Christian Kujau <lists@nerdbynature.de>
+
+I can't help with the code review though :-\
+
+Thanks!
+Christian.
+-- 
+BOFH excuse #208:
+
+Your mail is being routed through Germany ... and they're censoring us.
