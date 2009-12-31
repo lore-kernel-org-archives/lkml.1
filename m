@@ -1,69 +1,172 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752926AbZLaSPS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752916AbZLaSUX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752926AbZLaSPS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Dec 2009 13:15:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752871AbZLaSPR
+	id S1752916AbZLaSUX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Dec 2009 13:20:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752835AbZLaSUX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Dec 2009 13:15:17 -0500
-Received: from thunk.org ([69.25.196.29]:40078 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752863AbZLaSPQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Dec 2009 13:15:16 -0500
-Date: Thu, 31 Dec 2009 13:15:10 -0500
-From: tytso@mit.edu
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Gene Heskett <gene.heskett@verizon.net>, okias <d.okias@gmail.com>
-Subject: Re: [Bug #14936] kernel BUG at fs/ext4/inode.c:1063 if attempted
- to use non-ext4 partition with ext4
-Message-ID: <20091231181510.GF828@thunk.org>
-Mail-Followup-To: tytso@mit.edu, "Rafael J. Wysocki" <rjw@sisk.pl>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Kernel Testers List <kernel-testers@vger.kernel.org>,
-	Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-	Gene Heskett <gene.heskett@verizon.net>, okias <d.okias@gmail.com>
-References: <LptzGUUXbTK.A.MSF.ymhOLB@chimera>
- <20091229165712.GH4429@thunk.org>
- <20091230190120.GQ4429@thunk.org>
- <200912302252.12140.rjw@sisk.pl>
+	Thu, 31 Dec 2009 13:20:23 -0500
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:58092 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752804AbZLaSUV convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Dec 2009 13:20:21 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200912302252.12140.rjw@sisk.pl>
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@thunk.org
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+In-Reply-To: <20091231175257.GA7210@us.ibm.com>
+References: <551280e50912300652r1007dee0j8de750bf33af9b3c@mail.gmail.com>
+	 <m1fx6suswz.fsf@fess.ebiederm.org> <20091230201712.GA23999@us.ibm.com>
+	 <m1hbr8tb8q.fsf_-_@fess.ebiederm.org>
+	 <20091230212931.233003b9@lxorguk.ukuu.org.uk>
+	 <m1skasrvnq.fsf@fess.ebiederm.org>
+	 <20091230230042.5d2e78ac@lxorguk.ukuu.org.uk>
+	 <3e8340490912301844p4fddaf57ke58ceeba9582e0fa@mail.gmail.com>
+	 <20091231173334.5e3d7557@lxorguk.ukuu.org.uk>
+	 <20091231175257.GA7210@us.ibm.com>
+Date: Thu, 31 Dec 2009 10:20:18 -0800
+X-Google-Sender-Auth: 1a20ec5a99aa619d
+Message-ID: <551280e50912311020x2bdc5b1o699a601f67b91662@mail.gmail.com>
+Subject: Re: [RFC][PATCH v3] Unprivileged: Disable raising of privileges
+From: "Andrew G. Morgan" <morgan@kernel.org>
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Bryan Donlan <bdonlan@gmail.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Benny Amorsen <benny+usenet@amorsen.dk>,
+       Michael Stone <michael@laptop.org>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, linux-security-module@vger.kernel.org,
+       Andi Kleen <andi@firstfloor.org>, David Lang <david@lang.hm>,
+       Oliver Hartkopp <socketcan@hartkopp.net>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Valdis Kletnieks <Valdis.Kletnieks@vt.edu>,
+       Evgeniy Polyakov <zbr@ioremap.net>,
+       "C. Scott Ananian" <cscott@cscott.net>,
+       James Morris <jmorris@namei.org>, Bernie Innocenti <bernie@codewiz.org>,
+       Mark Seaborn <mrs@mythic-beasts.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       =?ISO-8859-1?Q?Am=E9rico_Wang?= <xiyou.wangcong@gmail.com>,
+       Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
+       Samir Bellabes <sam@synack.fr>,
+       Casey Schaufler <casey@schaufler-ca.com>, Pavel Machek <pavel@ucw.cz>,
+       Al Viro <viro@zeniv.linux.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 30, 2009 at 10:52:12PM +0100, Rafael J. Wysocki wrote:
-> > I'm working on a fix, and have a proposed patch.  See the thread on
-> > linux-ext4 here:
-> > 
-> > http://marc.info/?l=linux-kernel&m=126219515024315&w=2
-> > 
-> > This patch also fixes the dq_claim_space kerneloops problem as
-> > well....
-> 
-> Thanks, I've added your patch to the Bugzilla entry.
+Why not implement this as another securebit? So far as I can see the
+whole thing can be implemented in the capability LSM.
 
-This patch has been merged to mainline.  I'm working on improving
-things so that we don't lose performance by unnecessarily forcing
-delalloc blocks out to disk when the (wildly overestimated) number of
-required metadata blocks approaches the user's remaining quota or
-remaining free space on disk, but the fundamental fix is in mainline.
+What is less clear to me is whether per-process 'disabling of setuid
+bits on files' should force mandatory disabling of file capabilities.
+It seems as if disabling the transition of one luser to another luser
+through a setuid executable is something distinct from privilege
+escalation.
 
-(The performance hit was something I knew about when I pushed the
-patch to Linus, but after discussing things with Eric Sandeen, we
-figured that for users who were converting from ext3, which didn't
-have delayed allocation support at all, even with the performance hit
-when the user approached the quota limit, ext4 with delalloc+quota was
-still better than ext3 --- and I wanted a fix in mainline ASAP.
-Fortunately, it's not going to be that hard make the required metadata
-much more accurate.)
+Since there is already independent support for disabling file
+capabilities (the privilege escalation part), I see these two
+mechanisms as separable.
 
-	     	      	       	       	    - Ted
+Cheers
+
+Andrew
+
+On Thu, Dec 31, 2009 at 9:52 AM, Serge E. Hallyn <serue@us.ibm.com> wrote:
+> Quoting Alan Cox (alan@lxorguk.ukuu.org.uk):
+>> > I see this as being a security-model agnostic API - the reason being,
+>>
+>> Thats what everyone else says about their security model too
+>
+> LOL
+>
+>> > the application is specifying a policy for itself that has meaning in
+>> > all existing security models, and which does not require administrator
+>> > intervention to configure. Rather than reimplementing this for each
+>> > security model, it's far better to do it just once. Moreover, by
+>> > having a single, common API, the application can state the general
+>> > policy "I will never need to gain priviliges over exec" without
+>> > needing to know what LSM is in use.
+>>
+>> So it can sit in the security hooks and stack.
+>>
+>> > The future goal of this API is to allow us to relax restrictions on
+>> > creating new namespaces, chrooting, and otherwise altering the task's
+>> > environment in ways that may confuse privileged applications. Since
+>>
+>> All of which are security policy, general purpose and frequently part of
+>> the main LSM module loaded - in other words it's nothing of the sort when
+>> it comes to being separate. Its just another magic interface hook, and as
+>> I think the history of capability stuff in kernel shows it doesn't work
+>> that way.
+>>
+>> > security hooks are all about making the existing security restrictions
+>> > _stricter_, it's not easy to later relax these using the security hook
+>> > model. And once we put in the general requirement that "this task
+>> > shall never gain privilege", it should be safe to relax these
+>> > restrictions for _all_ security models.
+>>
+>> In which case the hooks can be tweaked. It's an interface it can be
+>> tuned  - and has been - eg for Tomoyo.
+>>
+>> > In short, this is something which is meaningful for all existing LSMs
+>>
+>> But is it - and if its combined with 500 other similar hooks and a set of
+>> system policies can you even work out the result ?
+>>
+>> > restrictions later, it doesn't make sense to put it in a LSM as they
+>> > stand now.
+>>
+>> And it certainly doesn't make sense to add this and the several hundred
+>> other variants of this "can't open sockets, can't mount, can't this,
+>> can't that ...." stuff continually being suggested by randomly extending
+>> other unrelated interfaces.
+>>
+>> Look up the sendmail security archive and you'll even find examples where
+>> enforcing extra security on setuid *caused* security problems to show up
+>> that were basically impossible to hit otherwise.
+>
+> That's exactly what we're trying to avoid :)  But I'm personally not
+> against making this an LSM.  As you say:
+>
+>> We have a security system, with a set of interfaces for attaching
+>> security models, please stop trying to go round the back of the kernel
+>> design because you can't be bothered to do the required work to do the
+>> job right and would rather add more unmaintainable crap all over the
+>> place.
+>>
+>> Yes it might mean the hooks need tweaking, yes it probably means the
+>
+> Yes, and in particular, we'll need to do something about data
+> ->security annotations, since, if we make this an LSM, then we can't
+> use a per-thread flag.
+>
+> This feature is used during exec and ptrace, not on hot-paths, so
+> dereferencing task->security would be fine.  But finding a way to
+> multiplex task->security so it can be used by Eric's nosuid lsm,
+> Michael's disablenetwork LSM, and SELinux/smack/apparmor, that
+> will likely take months, and, history shows, may never happen.
+>
+>> people who want these need to do some trivial stacking work, but if as
+>> many people are actually really interested as are having random 'lets add
+>> a button to disable reading serial ports on wednesday' ideas there should
+>> be no shortage of people to do the job right.
+>
+> Eric, the thing is, once an API goes upstream, we can't change it,
+> but in contrast we can change how task->security is used at any time.
+> So I'd suggest just adding
+>
+> #ifdef CONFIG_SECURITY_NOSUID
+>        short nosuid;
+> #endif
+>
+> or something like it next to the
+>
+> #ifdef CONFIG_SECURITY
+>        void *security;
+> #endif
+>
+> in struct cred and doing that for a first go.  You could
+> share that field with Michael's disablenetwork, or not if you
+> prefer - either way, it keeps you and SELinux out of each other's
+> ways.
+>
+> -serge
+>
