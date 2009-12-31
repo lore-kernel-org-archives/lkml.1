@@ -1,131 +1,259 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753094AbZLaEbW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753165AbZLaEb3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753094AbZLaEbW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Dec 2009 23:31:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752891AbZLaEbV
+	id S1753165AbZLaEb3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Dec 2009 23:31:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753117AbZLaEb1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Dec 2009 23:31:21 -0500
-Received: from mga03.intel.com ([143.182.124.21]:33108 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752739AbZLaEbU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Dec 2009 23:31:20 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
-   d="scan'208";a="228014349"
-Date: Thu, 31 Dec 2009 12:31:16 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Quentin Barnes <qbarnes+nfs@yahoo-inc.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       Nick Piggin <npiggin@suse.de>, Steven Whitehouse <swhiteho@redhat.com>,
-       Andi Kleen <andi@firstfloor.org>, David Howells <dhowells@redhat.com>,
-       Al Viro <viro@zeniv.linux.org.uk>, Jonathan Corbet <corbet@lwn.net>,
-       Christoph Hellwig <hch@infradead.org>
-Subject: [RFC][PATCH v2] readahead: introduce O_RANDOM_READ for
-	POSIX_FADV_RANDOM
-Message-ID: <20091231043116.GA19397@localhost>
-References: <20091225000717.GA26949@yahoo-inc.com> <87aax18xms.fsf@basil.nowhere.org> <20091230051540.GA16308@localhost> <20091230052402.GB26364@localhost> <873a2s8hmp.fsf@basil.nowhere.org>
+	Wed, 30 Dec 2009 23:31:27 -0500
+Received: from e38.co.us.ibm.com ([32.97.110.159]:37351 "EHLO
+	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753110AbZLaEbZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Dec 2009 23:31:25 -0500
+Message-ID: <4B3C2916.2050005@us.ibm.com>
+Date: Wed, 30 Dec 2009 20:31:18 -0800
+From: Darren Hart <dvhltc@us.ibm.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <873a2s8hmp.fsf@basil.nowhere.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Steven Rostedt <rostedt@goodmis.org>,
+       "lkml, " <linux-kernel@vger.kernel.org>
+Subject: [GIT PULL V2] trace-view: Self-adjusting fixed width trace-view
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[an updated patch for the previous two patches in this thread]
+Steven,
 
-This fixes inefficient page-by-page reads on POSIX_FADV_RANDOM.
+Please pull the latest for-rostedt/trace-view git tree from:
 
-POSIX_FADV_RANDOM used to set ra_pages=0, which leads to poor
-performance: a 16K read will be carried out in 4 _sync_ 1-page reads.
+   git://git.kernel.org/pub/scm/linux/kernel/git/dvhart/trace-cmd.git for-rostedt/trace-view
 
-In other places, ra_pages==0 means
-- it's ramfs/tmpfs/hugetlbfs/sysfs/configfs
-- some IO error happened
-where multi-page read IO won't help or should be avoided.
 
-POSIX_FADV_RANDOM actually want a different semantics: to disable the
-*heuristic* readahead algorithm, and to use a dumb one which faithfully
-submit read IO for whatever application requests.
+>From 882d2abd9571ba87c81c41b16275224de678dfa9 Mon Sep 17 00:00:00 2001
+From: Darren Hart <dvhltc@us.ibm.com>
+Date: Wed, 30 Dec 2009 11:09:53 -0800
+Subject: [PATCH] trace-view: Self-adjusting fixed width trace-view
 
-So introduce a flag O_RANDOM_READ for POSIX_FADV_RANDOM.
-It will be visible to fcntl(F_GETFL).
+By using fixed width columns and fixed height rows, the view can now
+render over 400k events without any noticable lag. This makes it so
+large traces can now be viewed in one "page" of the trace-view-model.
 
-Note that the random hint is not likely to help random reads performance
-noticeably. And it may be too permissive on huge request size (its IO
-size is not limited by read_ahead_kb).
+The new trace-view-data-func() is called when the view wants to render
+cell (which it only has to do when it's visible now that we use fixed
+sizings). Here we check the string width in pixels and resize the column
+if necessary. By tracking the max character width of each column, we can
+avoid doing the expensive Pango pixel width test as often. By adding a
+little extra padding, we anticipate one more character, further reducing
+the overhead. The first full scroll down and up shows no noticable lag
+due to these calculations once the optimizations were implemented.
 
-In Quentin's report (http://lkml.org/lkml/2009/12/24/145), the overall
-(NFS read) performance of the application increased by 313%!
+V2: fix an unused var warning and use a long when casting to a pointer.
 
-CC: Nick Piggin <npiggin@suse.de>
-CC: Andi Kleen <andi@firstfloor.org>
-CC: Steven Whitehouse <swhiteho@redhat.com>
-CC: David Howells <dhowells@redhat.com>
-CC: Al Viro <viro@zeniv.linux.org.uk>
-CC: Jonathan Corbet <corbet@lwn.net>
-CC: Christoph Hellwig <hch@infradead.org>
-Reported-by: Quentin Barnes <qbarnes+nfs@yahoo-inc.com>
-Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+Signed-off-by: Darren Hart <dvhltc@us.ibm.com>
 ---
- include/asm-generic/fcntl.h |    4 ++++
- mm/fadvise.c                |   10 +++++++++-
- mm/readahead.c              |    6 ++++++
- 3 files changed, 19 insertions(+), 1 deletion(-)
+ trace-view-store.h |    2 +-
+ trace-view.c       |  149 ++++++++++++++++++++++++++++++++-------------------
+ 2 files changed, 94 insertions(+), 57 deletions(-)
 
---- linux.orig/include/asm-generic/fcntl.h	2009-12-31 11:23:33.000000000 +0800
-+++ linux/include/asm-generic/fcntl.h	2009-12-31 11:24:45.000000000 +0800
-@@ -80,6 +80,10 @@
- #define O_NDELAY	O_NONBLOCK
- #endif
+diff --git a/trace-view-store.h b/trace-view-store.h
+index db755d5..35f1193 100644
+--- a/trace-view-store.h
++++ b/trace-view-store.h
+@@ -128,7 +128,7 @@ GType		trace_view_store_get_type (void);
  
-+#ifndef O_RANDOM_READ
-+#define O_RANDOM_READ	010000000
-+#endif
+ TraceViewStore	*trace_view_store_new (struct tracecmd_input *handle);
+ 
+-#define TRACE_VIEW_DEFAULT_MAX_ROWS 1000
++#define TRACE_VIEW_DEFAULT_MAX_ROWS 1000000
+ 
+ #if 0
+ void		trace_view_store_append_record (TraceViewStore   *trace_view_store,
+diff --git a/trace-view.c b/trace-view.c
+index dadf35c..d4a5bbd 100644
+--- a/trace-view.c
++++ b/trace-view.c
+@@ -22,6 +22,7 @@
+ #include <string.h>
+ #include <stdarg.h>
+ #include <gtk/gtk.h>
++#include <glib-object.h>
+ 
+ #include "trace-cmd.h"
+ #include "trace-local.h"
+@@ -39,6 +40,29 @@ enum {
+ 	NUM_COLS
+ };
+ 
++static char* col_labels[] = {
++	"#",
++	"CPU",
++	"Time Stamp",
++	"Task",
++	"PID",
++	"Latency",
++	"Event",
++	"Info",
++	NULL
++};
++static int col_chars[] = {
++	0,	/* INDEX */
++	0,	/* CPU */
++	0,	/* TS */
++	0,	/* COMM */
++	0,	/* PID */
++	0,	/* LAT */
++	0,	/* EVENT */
++	0,	/* INFO */
++	0
++};
 +
- #define F_DUPFD		0	/* dup */
- #define F_GETFD		1	/* get close_on_exec */
- #define F_SETFD		2	/* set/clear close_on_exec */
---- linux.orig/mm/fadvise.c	2009-12-31 11:25:05.000000000 +0800
-+++ linux/mm/fadvise.c	2009-12-31 12:16:20.000000000 +0800
-@@ -77,12 +77,20 @@ SYSCALL_DEFINE(fadvise64_64)(int fd, lof
- 	switch (advice) {
- 	case POSIX_FADV_NORMAL:
- 		file->f_ra.ra_pages = bdi->ra_pages;
-+		spin_lock(&file->f_lock);
-+		file->f_flags &= ~O_RANDOM_READ;
-+		spin_unlock(&file->f_lock);
- 		break;
- 	case POSIX_FADV_RANDOM:
--		file->f_ra.ra_pages = 0;
-+		spin_lock(&file->f_lock);
-+		file->f_flags |= O_RANDOM_READ;
-+		spin_unlock(&file->f_lock);
- 		break;
- 	case POSIX_FADV_SEQUENTIAL:
- 		file->f_ra.ra_pages = bdi->ra_pages * 2;
-+		spin_lock(&file->f_lock);
-+		file->f_flags &= ~O_RANDOM_READ;
-+		spin_unlock(&file->f_lock);
- 		break;
- 	case POSIX_FADV_WILLNEED:
- 		if (!mapping->a_ops->readpage) {
---- linux.orig/mm/readahead.c	2009-12-31 11:27:15.000000000 +0800
-+++ linux/mm/readahead.c	2009-12-31 11:28:21.000000000 +0800
-@@ -501,6 +501,12 @@ void page_cache_sync_readahead(struct ad
- 	if (!ra->ra_pages)
- 		return;
+ static GtkTreeModel *
+ create_trace_view_model(struct tracecmd_input *handle)
+ {
+@@ -75,6 +99,58 @@ spin_changed(gpointer data, GtkWidget *spin)
+ 	g_object_unref(model);
+ }
  
-+	/* be dumb */
-+	if (filp->f_flags & O_RANDOM_READ) {
-+		force_page_cache_readahead(mapping, filp, offset, req_size);
-+		return;
++void trace_view_data_func(GtkTreeViewColumn *column, GtkCellRenderer *renderer,
++			  GtkTreeModel *model, GtkTreeIter *iter,
++			  gpointer data)
++{
++	long col_num = (long)data;
++	int str_len, label_len;
++	gchar *text, *str;
++	int new_w, x_pad;
++	GValue val = {0};
++	GtkWidget *view;
++
++	PangoFontDescription *pfd;
++	PangoLayout *playout;
++
++	/* Put the text in the renderer. */
++	gtk_tree_model_get_value(model, iter, col_num, &val);
++	g_object_set_property(G_OBJECT(renderer), "text", &val);
++
++	g_object_get(G_OBJECT(renderer),
++			"text", &text,
++			"font-desc", &pfd, /* apparently don't have to free this */
++			NULL);
++
++	/* Make sure there is enough room to render the column label. */
++	str = text;
++	str_len = strlen(str);
++	label_len = strlen(col_labels[col_num]);
++	if (label_len > str_len) {
++		str = col_labels[col_num];
++		str_len = label_len;
 +	}
 +
- 	/* do read-ahead */
- 	ondemand_readahead(mapping, ra, filp, false, offset, req_size);
- }
++	/* Don't bother with pango unless we have more chars than the max. */
++	if (str_len > col_chars[col_num]) {
++		col_chars[col_num] = str_len;
++
++		view = GTK_WIDGET(gtk_tree_view_column_get_tree_view(column));
++		playout = gtk_widget_create_pango_layout(GTK_WIDGET(view), str);
++		pango_layout_set_font_description(playout, pfd);
++		pango_layout_get_pixel_size(playout, &new_w, NULL);
++		gtk_cell_renderer_get_padding(renderer, &x_pad, NULL);
++		/* +10 to avoid another adjustment for one char */
++		new_w += 2*x_pad + 10;
++
++		if (new_w > gtk_tree_view_column_get_width(column))
++			gtk_tree_view_column_set_fixed_width(column, new_w);
++	}
++
++	g_value_unset(&val);
++	g_free(text);
++}
++
+ void
+ trace_view_load(GtkWidget *view, struct tracecmd_input *handle,
+ 		GtkWidget *spin)
+@@ -94,62 +170,23 @@ trace_view_load(GtkWidget *view, struct tracecmd_input *handle,
+ 		     "family-set", TRUE,
+ 		     NULL);
+ 
+-	gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(view),
+-					     -1,
+-					     "#",
+-					     renderer,
+-					     "text", COL_INDEX,
+-					     NULL);
+-
+-	gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(view),
+-					     -1,
+-					     "CPU",
+-					     renderer,
+-					     "text", COL_CPU,
+-					     NULL);
+-
+-	gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(view),
+-					     -1,
+-					     "Time Stamp",
+-					     renderer,
+-					     "text", COL_TS,
+-					     NULL);
+-
+-	gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(view),
+-					     -1,
+-					     "Task",
+-					     renderer,
+-					     "text", COL_COMM,
+-					     NULL);
+-
+-	gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(view),
+-					     -1,
+-					     "PID",
+-					     renderer,
+-					     "text", COL_PID,
+-					     NULL);
+-
+-	gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(view),
+-					     -1,
+-					     "Latency",
+-					     fix_renderer,
+-					     "text", COL_LAT,
+-					     NULL);
+-
+-	gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(view),
+-					     -1,
+-					     "Event",
+-					     renderer,
+-					     "text", COL_EVENT,
+-					     NULL);
+-
+-	
+-	gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(view),
+-					     -1,
+-					     "Info",
+-					     fix_renderer,
+-					     "text", COL_INFO,
+-					     NULL);
++	/*
++	 * Set fixed height mode now which will cause all the columns below to
++	 * be created with their sizing property to be set to
++	 * GTK_TREE_VIEW_COLUMN_FIXED.
++	 */
++	gtk_tree_view_set_fixed_height_mode(GTK_TREE_VIEW(view), TRUE);
++
++	for (long c = 0; c < NUM_COLS; c++)
++	{
++		gtk_tree_view_insert_column_with_data_func(GTK_TREE_VIEW(view),
++				-1,
++				col_labels[c],
++				(c == COL_LAT || c == COL_INFO) ? fix_renderer : renderer,
++				trace_view_data_func,
++				(gpointer)c,
++				NULL);
++	}
+ 
+ 	model = create_trace_view_model(handle);
+ 
+-- 
+1.6.3.3
+-- 
+Darren Hart
+IBM Linux Technology Center
+Real-Time Linux Team
