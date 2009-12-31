@@ -1,37 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752739AbZLaB3j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752869AbZLaBjk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752739AbZLaB3j (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Dec 2009 20:29:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752252AbZLaB3i
+	id S1752869AbZLaBjk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Dec 2009 20:39:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752655AbZLaBjj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Dec 2009 20:29:38 -0500
-Received: from snt0-omc3-s2.snt0.hotmail.com ([65.55.90.141]:14628 "EHLO
-	snt0-omc3-s2.snt0.hotmail.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752029AbZLaB3i convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Dec 2009 20:29:38 -0500
-Message-ID: <SNT125-W41CEF6892DBE0B1FD99B4AC3780@phx.gbl>
-X-Originating-IP: [96.253.143.208]
-From: Yuhong Bao <yuhongbao_386@hotmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>, <mingo@redhat.com>
-CC: <linux-kernel@vger.kernel.org>
-Subject: Ubuntu 32-bit, 32-bit PAE, 64-bit Kernel Benchmarks
-Date: Wed, 30 Dec 2009 17:29:37 -0800
-Importance: Normal
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
+	Wed, 30 Dec 2009 20:39:39 -0500
+Received: from mga14.intel.com ([143.182.124.37]:60267 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752383AbZLaBjj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Dec 2009 20:39:39 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
+   d="scan'208";a="227984617"
+Date: Thu, 31 Dec 2009 09:39:36 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Quentin Barnes <qbarnes+nfs@yahoo-inc.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       Nick Piggin <npiggin@suse.de>, Steven Whitehouse <swhiteho@redhat.com>
+Subject: Re: [RFC][PATCH 2/2] readahead: avoid page-by-page reads on
+	POSIX_FADV_RANDOM
+Message-ID: <20091231013935.GA6570@localhost>
+References: <20091225000717.GA26949@yahoo-inc.com> <87aax18xms.fsf@basil.nowhere.org> <20091230051540.GA16308@localhost> <20091230052402.GB26364@localhost> <873a2s8hmp.fsf@basil.nowhere.org>
 MIME-Version: 1.0
-X-OriginalArrivalTime: 31 Dec 2009 01:29:38.0129 (UTC) FILETIME=[B7A19C10:01CA89B8]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <873a2s8hmp.fsf@basil.nowhere.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Dec 31, 2009 at 02:02:38AM +0800, Andi Kleen wrote:
+> Wu Fengguang <fengguang.wu@intel.com> writes:
+> >   * the ra fields can be accessed concurrently in a racy way.
+> > --- linux.orig/mm/fadvise.c	2009-12-30 13:02:03.000000000 +0800
+> > +++ linux/mm/fadvise.c	2009-12-30 13:23:05.000000000 +0800
+> > @@ -77,12 +77,14 @@ SYSCALL_DEFINE(fadvise64_64)(int fd, lof
+> >  	switch (advice) {
+> >  	case POSIX_FADV_NORMAL:
+> >  		file->f_ra.ra_pages = bdi->ra_pages;
+> > +		file->f_ra.flags &= ~RA_FLAG_RANDOM;
+> >  		break;
+> >  	case POSIX_FADV_RANDOM:
+> > -		file->f_ra.ra_pages = 0;
+> > +		file->f_ra.flags |= RA_FLAG_RANDOM;
+> 
+> What prevents this from racing with a parallel readahead
+> state modification, losing the bits?
 
-Given that Linus was once talking about the performance penalties of PAE and HIGHMEM64G, perhaps you'd find these benchmarks done by Phoronix of interest:
-http://www.phoronix.com/scan.php?page=article&item=ubuntu_32_pae
+Oh I pretended that the problem don't exist..
 
-Yuhong Bao
- 		 	   		  
-_________________________________________________________________
-Hotmail: Trusted email with powerful SPAM protection.
-http://clk.atdmt.com/GBL/go/177141665/direct/01/
+To be serious, the race only exist inside a mutithread application,
+where one single fd is shared between two threads, one is doing
+fadvise, another doing readahead.
+
+A sane application won't do fadvise(POSIX_FADV_RANDOM) while active
+reads are going one concurrently: this leads to indeterminate behavior
+by itself -- from which request the random hint takes effect?
+
+fadvise() shall always be in the same streamline with all reads.
+
+In real workloads, 1% applications may do POSIX_FADV_RANDOM, among
+which 1% applications may be broken. And if the race does happen, the
+impact is very small. So I choose to just ignore the race and use
+non-atomic operations..
+
+Thanks,
+Fengguang
