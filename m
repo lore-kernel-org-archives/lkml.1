@@ -1,26 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752809AbZLaRSI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752846AbZLaRcX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752809AbZLaRSI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Dec 2009 12:18:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752750AbZLaRSH
+	id S1752846AbZLaRcX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Dec 2009 12:32:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752722AbZLaRcW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Dec 2009 12:18:07 -0500
-Received: from xenotime.net ([72.52.64.118]:57111 "HELO xenotime.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752722AbZLaRSG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Dec 2009 12:18:06 -0500
-Date: Thu, 31 Dec 2009 09:18:15 -0800
-From: Randy Dunlap <rdunlap@xenotime.net>
-To: Jeff Layton <jlayton@redhat.com>
-Cc: Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org,
-       linux-nfs@vger.kernel.org
-Subject: Re: [PATCH] sunrpc: fix build-time warning
-Message-Id: <20091231091815.a1ea7e51.rdunlap@xenotime.net>
-In-Reply-To: <1262226195-27733-1-git-send-email-jlayton@redhat.com>
-References: <1262226195-27733-1-git-send-email-jlayton@redhat.com>
-Organization: YPO4
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+	Thu, 31 Dec 2009 12:32:22 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:60486 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752690AbZLaRcV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Dec 2009 12:32:21 -0500
+Date: Thu, 31 Dec 2009 17:33:34 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Bryan Donlan <bdonlan@gmail.com>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Serge E. Hallyn" <serue@us.ibm.com>,
+       "Andrew G. Morgan" <morgan@kernel.org>,
+       Benny Amorsen <benny+usenet@amorsen.dk>,
+       Michael Stone <michael@laptop.org>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, linux-security-module@vger.kernel.org,
+       Andi Kleen <andi@firstfloor.org>, David Lang <david@lang.hm>,
+       Oliver Hartkopp <socketcan@hartkopp.net>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Valdis Kletnieks <Valdis.Kletnieks@vt.edu>,
+       Evgeniy Polyakov <zbr@ioremap.net>,
+       "C. Scott Ananian" <cscott@cscott.net>,
+       James Morris <jmorris@namei.org>, Bernie Innocenti <bernie@codewiz.org>,
+       Mark Seaborn <mrs@mythic-beasts.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       =?UTF-8?B?QW3DqXJpY28=?= Wang <xiyou.wangcong@gmail.com>,
+       Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
+       Samir Bellabes <sam@synack.fr>,
+       Casey Schaufler <casey@schaufler-ca.com>, Pavel Machek <pavel@ucw.cz>,
+       Al Viro <viro@zeniv.linux.org.uk>
+Subject: Re: [RFC][PATCH v3] Unprivileged: Disable raising of privileges
+Message-ID: <20091231173334.5e3d7557@lxorguk.ukuu.org.uk>
+In-Reply-To: <3e8340490912301844p4fddaf57ke58ceeba9582e0fa@mail.gmail.com>
+References: <m1iqbpwjtp.fsf@fess.ebiederm.org>
+	<m1d41w62zc.fsf_-_@fess.ebiederm.org>
+	<551280e50912300652r1007dee0j8de750bf33af9b3c@mail.gmail.com>
+	<20091230183513.GC14493@us.ibm.com>
+	<m1fx6suswz.fsf@fess.ebiederm.org>
+	<20091230201712.GA23999@us.ibm.com>
+	<m1hbr8tb8q.fsf_-_@fess.ebiederm.org>
+	<20091230212931.233003b9@lxorguk.ukuu.org.uk>
+	<m1skasrvnq.fsf@fess.ebiederm.org>
+	<20091230230042.5d2e78ac@lxorguk.ukuu.org.uk>
+	<3e8340490912301844p4fddaf57ke58ceeba9582e0fa@mail.gmail.com>
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.18.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -28,43 +55,66 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 30 Dec 2009 21:23:15 -0500 Jeff Layton wrote:
+> I see this as being a security-model agnostic API - the reason being,
 
-> Commit 486bad2e40e938cd68fd853b7a9fa3115a9d3a4a introduced this warning
-> at build time on some 32-bit architectures:
-> 
-> net/sunrpc/auth_gss/auth_gss.c: In function 'gss_pipe_downcall':
-> net/sunrpc/auth_gss/auth_gss.c:660: warning: format '%ld' expects type 'long int', but argument 3 has type 'ssize_t
-> 
-> ...fix it by changing the length modifier in the printk.
-> 
-> Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
-> Signed-off-by: Jeff Layton <jlayton@redhat.com>
-> ---
->  net/sunrpc/auth_gss/auth_gss.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/net/sunrpc/auth_gss/auth_gss.c b/net/sunrpc/auth_gss/auth_gss.c
-> index 66cb89c..6de4f91 100644
-> --- a/net/sunrpc/auth_gss/auth_gss.c
-> +++ b/net/sunrpc/auth_gss/auth_gss.c
-> @@ -657,7 +657,7 @@ gss_pipe_downcall(struct file *filp, const char __user *src, size_t mlen)
->  			break;
->  		default:
->  			printk(KERN_CRIT "%s: bad return from "
-> -				"gss_fill_context: %ld\n", __func__, err);
-> +				"gss_fill_context: %Zd\n", __func__, err);
->  			BUG();
->  		}
->  		goto err_release_msg;
-> -- 
+Thats what everyone else says about their security model too
 
-I have that almost-same patch in my (unposted) linux-next patch queue,
-so basically, ack, except that we try to use 'z' instead of 'Z' nowadays.
+> the application is specifying a policy for itself that has meaning in
+> all existing security models, and which does not require administrator
+> intervention to configure. Rather than reimplementing this for each
+> security model, it's far better to do it just once. Moreover, by
+> having a single, common API, the application can state the general
+> policy "I will never need to gain priviliges over exec" without
+> needing to know what LSM is in use.
 
-My quick kernel source tree count is 173 %Z to 966 %z.
-(Please don't anyone start a project of converting %Z to %z.)
+So it can sit in the security hooks and stack.
 
+> The future goal of this API is to allow us to relax restrictions on
+> creating new namespaces, chrooting, and otherwise altering the task's
+> environment in ways that may confuse privileged applications. Since
 
----
-~Randy
+All of which are security policy, general purpose and frequently part of
+the main LSM module loaded - in other words it's nothing of the sort when
+it comes to being separate. Its just another magic interface hook, and as
+I think the history of capability stuff in kernel shows it doesn't work
+that way.
+
+> security hooks are all about making the existing security restrictions
+> _stricter_, it's not easy to later relax these using the security hook
+> model. And once we put in the general requirement that "this task
+> shall never gain privilege", it should be safe to relax these
+> restrictions for _all_ security models.
+
+In which case the hooks can be tweaked. It's an interface it can be
+tuned  - and has been - eg for Tomoyo.
+
+> In short, this is something which is meaningful for all existing LSMs
+
+But is it - and if its combined with 500 other similar hooks and a set of
+system policies can you even work out the result ?
+
+> restrictions later, it doesn't make sense to put it in a LSM as they
+> stand now.
+
+And it certainly doesn't make sense to add this and the several hundred
+other variants of this "can't open sockets, can't mount, can't this,
+can't that ...." stuff continually being suggested by randomly extending
+other unrelated interfaces.
+
+Look up the sendmail security archive and you'll even find examples where
+enforcing extra security on setuid *caused* security problems to show up
+that were basically impossible to hit otherwise.
+
+We have a security system, with a set of interfaces for attaching
+security models, please stop trying to go round the back of the kernel
+design because you can't be bothered to do the required work to do the
+job right and would rather add more unmaintainable crap all over the
+place.
+
+Yes it might mean the hooks need tweaking, yes it probably means the
+people who want these need to do some trivial stacking work, but if as
+many people are actually really interested as are having random 'lets add
+a button to disable reading serial ports on wednesday' ideas there should
+be no shortage of people to do the job right.
+
+Alan
