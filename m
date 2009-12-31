@@ -1,90 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752980AbZLaSJq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752926AbZLaSPS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752980AbZLaSJq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Dec 2009 13:09:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752931AbZLaSJp
+	id S1752926AbZLaSPS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Dec 2009 13:15:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752871AbZLaSPR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Dec 2009 13:09:45 -0500
-Received: from mta5.srv.hcvlny.cv.net ([167.206.4.200]:59509 "EHLO
-	mta5.srv.hcvlny.cv.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752926AbZLaSJo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Dec 2009 13:09:44 -0500
-Date: Thu, 31 Dec 2009 13:09:14 -0500
-From: Michael Breuer <mbreuer@majjas.com>
-Subject: Re: sky2 panic in 2.6.32.1 under load (new oops)
-In-reply-to: <20091230101046.2816d545@nehalam>
-To: Stephen Hemminger <shemminger@vyatta.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "Berck E. Nash" <flyboy@gmail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org
-Message-id: <4B3CE8CA.5050003@majjas.com>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7BIT
-References: <4B300A2A.8040305@gmail.com> <4B300E30.9090707@majjas.com>
- <4B3114E3.1070602@majjas.com> <4B329FA3.9090904@majjas.com>
- <20091223230102.4bb0100e.akpm@linux-foundation.org>
- <4B34E847.8010809@majjas.com> <20091225152200.1cf11dfe@nehalam>
- <4B3581C7.8000702@majjas.com> <20091226095723.7ac82b18@nehalam>
- <4B367409.5060202@majjas.com> <4B379378.4000102@majjas.com>
- <20091227102238.0df149f9@nehalam> <4B37B7E2.5070307@majjas.com>
- <20091229093023.3ad24786@nehalam> <4B3A5048.9090700@majjas.com>
- <20091229114938.1f4d1c5c@nehalam> <4B3AFFE8.3060409@majjas.com>
- <20091229235942.51bf733d@nehalam> <4B3B7488.6080503@majjas.com>
- <20091230101046.2816d545@nehalam>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.5)
- Gecko/20091204 Lightning/1.0b2pre Thunderbird/3.0
+	Thu, 31 Dec 2009 13:15:17 -0500
+Received: from thunk.org ([69.25.196.29]:40078 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752863AbZLaSPQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Dec 2009 13:15:16 -0500
+Date: Thu, 31 Dec 2009 13:15:10 -0500
+From: tytso@mit.edu
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Gene Heskett <gene.heskett@verizon.net>, okias <d.okias@gmail.com>
+Subject: Re: [Bug #14936] kernel BUG at fs/ext4/inode.c:1063 if attempted
+ to use non-ext4 partition with ext4
+Message-ID: <20091231181510.GF828@thunk.org>
+Mail-Followup-To: tytso@mit.edu, "Rafael J. Wysocki" <rjw@sisk.pl>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Kernel Testers List <kernel-testers@vger.kernel.org>,
+	Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+	Gene Heskett <gene.heskett@verizon.net>, okias <d.okias@gmail.com>
+References: <LptzGUUXbTK.A.MSF.ymhOLB@chimera>
+ <20091229165712.GH4429@thunk.org>
+ <20091230190120.GQ4429@thunk.org>
+ <200912302252.12140.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200912302252.12140.rjw@sisk.pl>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Did some more digging today... Haven't nailed it, but there's something 
-going on with X and tty...
+On Wed, Dec 30, 2009 at 10:52:12PM +0100, Rafael J. Wysocki wrote:
+> > I'm working on a fix, and have a proposed patch.  See the thread on
+> > linux-ext4 here:
+> > 
+> > http://marc.info/?l=linux-kernel&m=126219515024315&w=2
+> > 
+> > This patch also fixes the dq_claim_space kerneloops problem as
+> > well....
+> 
+> Thanks, I've added your patch to the Bugzilla entry.
 
-Among other things, when I telinit 3 && telinit 5 the tty keeps 
-switching between 7 and 8 (nothing else running on either tty). It would 
-appear that somehow the tty deallocation isn't complete when X restarts. 
-Also, X grabbing a tty seems to be a requisite step in recreating the 
-sky2 issue.
+This patch has been merged to mainline.  I'm working on improving
+things so that we don't lose performance by unnecessarily forcing
+delalloc blocks out to disk when the (wildly overestimated) number of
+required metadata blocks approaches the user's remaining quota or
+remaining free space on disk, but the fundamental fix is in mainline.
 
-On 12/30/2009 1:10 PM, Stephen Hemminger wrote:
-> On Wed, 30 Dec 2009 10:40:56 -0500
-> Michael Breuer<mbreuer@majjas.com>  wrote:
->
->    
->> Dec 30 10:37:14 mail kernel: sky2 0000:06:00.0: error interrupt
->> status=0x40000008
->> Dec 30 10:37:14 mail kernel: sky2 Tx ring pending=31...40 report=35 done=35
->> Dec 30 10:37:14 mail kernel: 30: 0x0: 0xeb50c0ca(9014)
->> Dec 30 10:37:14 mail kernel: 32: 0x0: 0xeb5080ca(9014)
->> Dec 30 10:37:14 mail kernel: 34: 0x0: 0xeb5040ca(9014)
->> Dec 30 10:37:14 mail kernel: 36: 0x0: 0xeb5000ca(9014)
->> Dec 30 10:37:14 mail kernel: 38: 0x0: 0xeb4fc0ca(9014)
->>      
-> You must be using 9K MTU.  Do you see the problem with smaller
-> MTU?
->
->    
->> Dec 30 10:37:14 mail kernel: sky2 0000:06:00.0: error interrupt
->> status=0x40000008
->> Dec 30 10:37:14 mail kernel: sky2 Tx ring pending=87...92 report=89 done=91
->> Dec 30 10:37:14 mail kernel: 86: 0x0: 0xeafd80ca(9014)
->> Dec 30 10:37:14 mail kernel: 88: 0x0: 0xeafd40ca(9014)
->> Dec 30 10:37:14 mail kernel: 90: 0x0: 0xeafd00ca(9014)
->> Dec 30 10:37:15 mail kernel: sky2 0000:06:00.0: error interrupt status=0x8
->> Dec 30 10:37:15 mail kernel: sky2 Tx ring pending=39...42 report=39 done=41
->> Dec 30 10:37:15 mail kernel: 38: 0x0: 0xe5fec0ca(9014)
->> Dec 30 10:37:15 mail kernel: 40: 0x0: 0xe5fe80ca(9014)
->> Dec 30 10:37:15 mail kernel: sky2 0000:06:00.0: error interrupt
->> status=0x40000008
->> Dec 30 10:37:15 mail kernel: sky2 Tx ring pending=117...124 report=119
->> done=119
->> Dec 30 10:37:15 mail kernel: 116: 0x0: 0xe5d6c0ca(9014)
->> Dec 30 10:37:15 mail kernel: 118: 0x0: 0xe5d680ca(9014)
->> Dec 30 10:37:15 mail kernel: 120: 0x0: 0xe5d660ca(5938)
->> Dec 30 10:37:15 mail kernel: 122: 0x0: 0xe5d640ca(4213)
->>      
->    
+(The performance hit was something I knew about when I pushed the
+patch to Linus, but after discussing things with Eric Sandeen, we
+figured that for users who were converting from ext3, which didn't
+have delayed allocation support at all, even with the performance hit
+when the user approached the quota limit, ext4 with delalloc+quota was
+still better than ext3 --- and I wanted a fix in mainline ASAP.
+Fortunately, it's not going to be that hard make the required metadata
+much more accurate.)
 
+	     	      	       	       	    - Ted
