@@ -1,57 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752004AbZLaM4d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751873AbZLaNAT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752004AbZLaM4d (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Dec 2009 07:56:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751659AbZLaM4c
+	id S1751873AbZLaNAT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Dec 2009 08:00:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751047AbZLaNAR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Dec 2009 07:56:32 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:49761 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751624AbZLaM4b (ORCPT
+	Thu, 31 Dec 2009 08:00:17 -0500
+Received: from bob75-7-88-160-5-175.fbx.proxad.net ([88.160.5.175]:50444 "EHLO
+	cerbere.dyndns.info" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750861AbZLaNAQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Dec 2009 07:56:31 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mail-followup-to:references
-         :mime-version:content-type:content-disposition:in-reply-to
-         :user-agent;
-        b=GdYyJF0ntx3aCbAHidqoaL/vfHT4Cwg4+a7P10Q5ySLdHnvQry0PEtfnmTpAS+8Kg0
-         DZAPWouL2G1/X91UJFURiVq5tzp7FoXx4gETgG/z5YAp571OfvawY2Nc6V0zKhYzg7pa
-         SgCYAr9GPQ3NbP03TkUJOnfuUzXMyn5qwZUYw=
-Date: Thu, 31 Dec 2009 13:56:24 +0100
-From: Borislav Petkov <petkovbb@googlemail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [GIT PULL] x86 fixes
-Message-ID: <20091231125624.GA14666@liondog.tnic>
-Mail-Followup-To: Borislav Petkov <petkovbb@googlemail.com>,
-	Ingo Molnar <mingo@elte.hu>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Andrew Morton <akpm@linux-foundation.org>
-References: <20091231120322.GA23326@elte.hu>
+	Thu, 31 Dec 2009 08:00:16 -0500
+From: Samir Bellabes <sam@synack.fr>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: ebiederm@xmission.com (Eric W. Biederman),
+       "Serge E. Hallyn" <serue@us.ibm.com>,
+       "Andrew G. Morgan" <morgan@kernel.org>,
+       Bryan Donlan <bdonlan@gmail.com>,
+       Benny Amorsen <benny+usenet@amorsen.dk>,
+       Michael Stone <michael@laptop.org>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, linux-security-module@vger.kernel.org,
+       Andi Kleen <andi@firstfloor.org>, David Lang <david@lang.hm>,
+       Oliver Hartkopp <socketcan@hartkopp.net>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Valdis Kletnieks <Valdis.Kletnieks@vt.edu>,
+       Evgeniy Polyakov <zbr@ioremap.net>,
+       "C. Scott Ananian" <cscott@cscott.net>,
+       James Morris <jmorris@namei.org>, Bernie Innocenti <bernie@codewiz.org>,
+       Mark Seaborn <mrs@mythic-beasts.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       =?iso-8859-15?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>,
+       Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
+       Casey Schaufler <casey@schaufler-ca.com>, Pavel Machek <pavel@ucw.cz>,
+       Al Viro <viro@zeniv.linux.org.uk>
+Subject: Re: [RFC][PATCH v3] Unprivileged: Disable raising of privileges
+References: <m1iqbpwjtp.fsf@fess.ebiederm.org>
+	<20091229223631.GB22578@us.ibm.com>
+	<m1aax1uoa3.fsf_-_@fess.ebiederm.org>
+	<3e8340490912291954v5a837a26p64bd776102d281d7@mail.gmail.com>
+	<m1r5qdt721.fsf@fess.ebiederm.org>
+	<3e8340490912292057g3e87eaabn115f85b78af2b08c@mail.gmail.com>
+	<m1d41w62zc.fsf_-_@fess.ebiederm.org>
+	<551280e50912300652r1007dee0j8de750bf33af9b3c@mail.gmail.com>
+	<20091230183513.GC14493@us.ibm.com> <m1fx6suswz.fsf@fess.ebiederm.org>
+	<20091230201712.GA23999@us.ibm.com>
+	<m1hbr8tb8q.fsf_-_@fess.ebiederm.org>
+	<20091230212931.233003b9@lxorguk.ukuu.org.uk>
+	<m1skasrvnq.fsf@fess.ebiederm.org>
+	<20091230230042.5d2e78ac@lxorguk.ukuu.org.uk>
+Date: Thu, 31 Dec 2009 14:00:13 +0100
+In-Reply-To: <20091230230042.5d2e78ac@lxorguk.ukuu.org.uk> (Alan Cox's message
+	of "Wed, 30 Dec 2009 23:00:42 +0000")
+Message-ID: <m2bphfti1u.fsf@ssh.synack.fr>
+User-Agent: Gnus/5.110003 (No Gnus v0.3) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20091231120322.GA23326@elte.hu>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 31, 2009 at 01:03:22PM +0100, Ingo Molnar wrote:
-> Shaun Ruffell (1):
-> 
->       dma-debug: Do not add notifier when dma debugging is disabled.
+Alan Cox <alan@lxorguk.ukuu.org.uk> writes:
 
-Looks like that last one breaks powerpc allyesconfig builds: 
+> Well to be fair its random regurgitated security idea of every year or
+> two.
 
-http://marc.info/?l=linux-next&m=126221673819746&w=2
+true, last year the same kind of discussion occurs with the 'personal
+firewall' aka a network MAC.
+http://marc.info/?t=123247387500003&r=3&w=2
+http://marc.info/?t=123187029200001&r=2&w=2
 
--- 
-Regards/Gruss,
-    Boris.
+> More to the point - we have security_* hooks so this kind of continuous
+> security proposal turdstream can stay out of the main part of the kernel.
+
+indeed, LSM framework was design to be the abstraction tool. the 3
+design rules were : 
+
+0. truly generic, where using a different security model is merely a
+   matter of loading a different kernel module;
+1. conceptually simple, minimally invasive, and efficient; and
+2. able to support the existing POSIX.1e capabilities logic as an
+   optional security module.
+
+so, 'minimally invasive' is keyword. what's why I don't understand the
+purpose of this kind of patch, even if I see the goal to achieve:
+
+ int security_socket_connect(struct socket *sock, struct sockaddr *address, int addrlen)
+ {
+-	return security_ops->socket_connect(sock, address, addrlen);
++	int ret = 0;
++
++	ret = security_ops->socket_connect(sock, address, addrlen);
++	if (ret)
++		goto out;
++
++#ifdef CONFIG_SECURITY_DISABLENETWORK
++	ret = disablenetwork_security_socket_connect(sock, address, addrlen);
++	if (ret)
++		goto out;
++#endif
++
++out:
++	return ret;
+ }
+
+This really seems to be a kind of stacking, but it's not. So are we
+going to move LSM framework to support stacking, or are we respecting
+the rules of LSM framework (respecting the abstract hooks) ?
+This change makes LSM framework no more generic at all.
