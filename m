@@ -1,68 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752449AbZLaLJA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752523AbZLaLP4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752449AbZLaLJA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Dec 2009 06:09:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752158AbZLaLJA
+	id S1752523AbZLaLP4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Dec 2009 06:15:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752427AbZLaLP4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Dec 2009 06:09:00 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:39659 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752091AbZLaLI7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Dec 2009 06:08:59 -0500
-Date: Thu, 31 Dec 2009 09:08:44 -0200
-From: Arnaldo Carvalho de Melo <acme@infradead.org>
-To: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Paul Mackerras <paulus@samba.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 3/3] perf tools: adjust symbol address
-Message-ID: <20091231110843.GF2384@ghostprotocols.net>
-References: <4B3AC5CD.1000502@cn.fujitsu.com>
- <4B3AC69F.4070901@cn.fujitsu.com>
- <20091230131016.GC2956@ghostprotocols.net>
- <4B3C1397.8040307@cn.fujitsu.com>
- <20091231102938.GD2384@ghostprotocols.net>
- <4B3C819D.9000809@cn.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B3C819D.9000809@cn.fujitsu.com>
-X-Url: http://oops.ghostprotocols.net:81/blog
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <acme@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Thu, 31 Dec 2009 06:15:56 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:17074 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752328AbZLaLPz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Dec 2009 06:15:55 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20091230135704.ccd0a129.akpm@linux-foundation.org>
+References: <20091230135704.ccd0a129.akpm@linux-foundation.org> <20091222171725.11854.10647.stgit@warthog.procyon.org.uk>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: dhowells@redhat.com, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, uclinux-dev@uclinux.org,
+       Mike Frysinger <vapier@gentoo.org>
+Subject: Re: [PATCH 1/4] FDPIC: Respect PT_GNU_STACK exec protection markings when creating NOMMU stack
+Date: Thu, 31 Dec 2009 11:15:39 +0000
+Message-ID: <24434.1262258139@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Thu, Dec 31, 2009 at 06:49:01PM +0800, Xiao Guangrong escreveu:
-> 
-> 
-> Arnaldo Carvalho de Melo wrote:
-> 
-> >> vmlinux* not know it's relocation or not, and we just handle the _specific_
-> >> kernel at the time which match the current system. 
-> > 
-> > 'perf record' in one machine + 'perf report' in another should be
-> > possible.
-> >  
-> 
-> Yeah, but current code not support this since it not record kernel build-id in
-> perf.data while 'perf record' works, maybe you can fix it.
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-Huh? Checking...
+> So these patches and the MN10300 ones didn't get merged.  Presumably
+> because they're a grabbag of fixes and non-fixes and kinda-fixes with
+> no particular ordering or precedence and they arrived newly-minted
+> several days after the release of -rc1.
+> 
+> I could suggest that you go back and sort them into 2.6.33-appropriate
+> fixes and 2.6.34-appropriate non-fixes.
+> 
+> Or you could try to cook up a good-sounding reason why the whole lot
+> needs to go into 2.6.33.  If you believe that ;)
 
-[root@ana tmp]# perf record -a -f sleep 1s
-[ perf record: Woken up 3 times to write data ]
-[ perf record: Captured and wrote 0.330 MB perf.data (~14404 samples) ]
-[root@ana tmp]# perf buildid-list | grep kallsyms
-a3301c8755357466e39d71b46e8f69aecf83c0e8 [kernel.kallsyms]
-a3301c8755357466e39d71b46e8f69aecf83c0e8 [kernel.kallsyms]
-[root@ana tmp]#
+I did send them, plus others, during the merge window (albeit near the end).
 
-In fact there is a bug, but the bug is either in 'perf buildid-list'
-showing it twice or it being recorded twice in 'perf record'.
+I then sent this lot after filtering out the extensions that should probably
+wait for the next merge window.
 
-- Arnaldo
+David
