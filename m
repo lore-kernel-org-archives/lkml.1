@@ -1,127 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751624AbZLaIkl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751528AbZLaInq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751624AbZLaIkl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Dec 2009 03:40:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751483AbZLaIki
+	id S1751528AbZLaInq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Dec 2009 03:43:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751047AbZLaInp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Dec 2009 03:40:38 -0500
-Received: from out01.mta.xmission.com ([166.70.13.231]:50691 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751468AbZLaIkh (ORCPT
+	Thu, 31 Dec 2009 03:43:45 -0500
+Received: from mk-filter-4-a-1.mail.uk.tiscali.com ([212.74.100.55]:64001 "EHLO
+	mk-filter-4-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750898AbZLaIno (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Dec 2009 03:40:37 -0500
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Borislav Petkov <petkovbb@googlemail.com>,
-       David Airlie <airlied@linux.ie>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Greg KH <greg@kroah.com>, Al Viro <viro@ZenIV.linux.org.uk>
-Subject: Re: drm_vm.c:drm_mmap: possible circular locking dependency detected (was: Re: Linux 2.6.33-rc2 - Merry Christmas ...)
-References: <alpine.LFD.2.00.0912241350510.11961@localhost.localdomain>
-	<20091226094504.GA6214@liondog.tnic>
-	<20091228092712.AA8C.A69D9226@jp.fujitsu.com>
-	<alpine.LFD.2.00.0912301259220.11961@localhost.localdomain>
-	<m11victac1.fsf@fess.ebiederm.org>
-	<alpine.LFD.2.00.0912301348320.11961@localhost.localdomain>
-From: ebiederm@xmission.com (Eric W. Biederman)
-In-Reply-To: <alpine.LFD.2.00.0912301348320.11961@localhost.localdomain> (Linus Torvalds's message of "Wed\, 30 Dec 2009 14\:03\:25 -0800 \(PST\)")
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
-Date: Thu, 31 Dec 2009 00:40:33 -0800
-Message-ID: <m1eimbtu2m.fsf@fess.ebiederm.org>
+	Thu, 31 Dec 2009 03:43:44 -0500
+X-Trace: 314146990/mk-filter-4.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.28.176/None/hugh.dickins@tiscali.co.uk
+X-SBRS: None
+X-RemoteIP: 79.69.28.176
+X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
+X-SMTP-AUTH: 
+X-Originating-Country: GB/UNITED KINGDOM
+X-MUA: Alpine 2.00 (LSU 1167 2008-08-23)
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApwBAFvzO0tPRRyw/2dsb2JhbAAI1ByEMQQ
+X-IronPort-AV: E=Sophos;i="4.47,480,1257120000"; 
+   d="scan'208";a="314146990"
+Date: Thu, 31 Dec 2009 08:43:39 +0000 (GMT)
+From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+X-X-Sender: hugh@sister.anvils
+To: Minchan Kim <minchan.kim@gmail.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [PATCH 2/3 -mmotm-2009-12-10-17-19] Count zero page as
+ file_rss
+In-Reply-To: <28c262360912301841r3ed43d31yc677fbc3a01fe5bb@mail.gmail.com>
+Message-ID: <alpine.LSU.2.00.0912310833560.26642@sister.anvils>
+References: <ceeec51bdc2be64416e05ca16da52a126b598e17.1258773030.git.minchan.kim@gmail.com>  <ae2928fe7bb3d94a7ca18d3b3274fdfeb009803a.1258773030.git.minchan.kim@gmail.com>  <4B38876F.6010204@gmail.com>  <alpine.LSU.2.00.0912301619500.3369@sister.anvils>
+ <28c262360912301841r3ed43d31yc677fbc3a01fe5bb@mail.gmail.com>
+User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Scanned: No (on in01.mta.xmission.com); SAEximRunCond expanded to false
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds <torvalds@linux-foundation.org> writes:
+On Thu, 31 Dec 2009, Minchan Kim wrote:
+> On Thu, Dec 31, 2009 at 1:49 AM, Hugh Dickins
+> <hugh.dickins@tiscali.co.uk> wrote:
+> >
+> > You are right that I completely overlooked the issue of whether to
+> > include the ZERO_PAGE in rss counts (now being a !vm_normal_page,
+> > it was just natural to leave it out); and I overlooked the fact that
+> > it used to be counted into file_rss in the old days (being !PageAnon).
+> >
+> > So I'm certainly at fault for that, and thank you for bringing the
+> > issue to attention; but once considered, I can't actually see a good
+> > reason why we should add code to count ZERO_PAGEs into file_rss now.
+> > And if this patch falls, then 1/3 and 3/3 would fall also.
+> >
+> > And the patch below would be incomplete anyway, wouldn't it?
+> > There would need to be a matching change to zap_pte_range(),
+> > but I don't see that.
+> 
+> Thanks.
+> If we think this patch is need, I will repost path with fix it.
+> 
+> What do you think?
 
-> On Wed, 30 Dec 2009, Eric W. Biederman wrote:
->
->> Linus Torvalds <torvalds@linux-foundation.org> writes:
->> 
->> > We've seen it several times (yes, mostly with drm, but it's been seen with 
->> > others too), and it's very annoying. It can be fixed by having very 
->> > careful readdir implementations, but I really would blame sysfs in 
->> > particular for having a very annoying lock reversal issue when used 
->> > reasonably.
->> 
->> Maybe.  The mnmap_sem has some interesting issues all of it's own.
->> What reasonable thing is the drm doing that is causing problems?
->
-> The details are in the original thread on lkml, but it boils down to 
-> basically (the below may not be the exact sequence, but it's close)
+If someone comes up with a convincing case in which their system
+is behaving significantly worse because the zero page is not being
+counted in rss now, then we shall probably want your patch.
 
-Thanks.
+But I still don't yet see a reason to add code just to keep the
+anon_rss+file_rss number looking the same as it was before, in this
+exceptional case where there's a significant number of zero pages.
 
->  - drm_mmap (called with mmap_sem) takes 'dev->struct_mutex' to protect 
->    it's own device data (very reasonable)
->
->  - drm_release takes 'dev->struct_mutex' again to protect its own data, 
->    and calls "mtrr_del_page()" which ends up taking cpu_hotplug.lock.
->
->    Again, that doesn't sound "wrong" in any way.
->
->  - hibernate ends up with the sequence: _cpu_down (cpu_hotplug.lock) ->  ..
->    kref_put .. -> sysfs_addrm_start (sysfs_mutex)
->
->    Again, nothing suspicious or "bad", and this part of the dependency 
->    chain has nothing to do with the DRM code itself.
-
-kobject_del with a lock held scares me.
-
-There is a possible deadlock (that lockdep is ignorant of) if you hold
-a lock over sysfs_deactivate() and if any sysfs file takes that lock.
-
-I won't argue with a claim of inconvenient locking semantics here, and
-this is different to the problem you are seeing (except that fixing this
-problem would happen to fix the filldir issue).
-
->  - sysfs_readdir() (and this is the big problem) holds sysfs_mutex in its
->    readdir implementation over the call to filldir. And filldir copies the 
->    data to user space, so now you have sysfs_mutex -> mmap_sem.
->
-> See? None of the chains look bad. Except sysfs_readdir() obviously has 
-> that sysfs_mutex -> mmap_sem thing, which is _very_ annoying, because now 
-> you end up with a chain like
->
->    mmap_sem -> dev->struct_mutex -> cpu_hotplug.lock -> sysfs_mutex -> mmap_sem
->
-> and I think you'll agree that of all the lock chains, the place to break 
-> the association is at sysfs_mutex. And the obvious place to break it would 
-> be that last "sysfs_mutex -> mmap_sem" stage.
-
-I agree that fixing sysfs_readdir to not hold the sysfs_mutex over filldir
-is useful to reduce the lock hold time if nothing else.
-
-The cheap fix here is mostly a matter of grabbing a reference to the
-sysfs_dirent and then revalidating that the reference is still useful
-after we reacquire the sysfs_mutex.  If not we already have the code for
-restarting from just an offset.  We just don't want to use it too much as
-that will give us O(n^2) times for sysfs readdir.
-
-I will see if I can dig up or regenerate my patch in the next couple of days.
-
->> > Added Eric and Greg to the cc, in case the sysfs people want to solve it.
->> 
->> There are scalability reasons for dropping the sysfs_mutex in sysfs_readdir
->> and I have some tenative patches for that.  I will take a look after I
->> come back from the holidays, in a couple of days.  I don't understand
->> the issue as described.
->
-> Ok, hopefully the above chain explains it to you, and also makes it clear 
-> that it's rather hard to break anywhere else, and it's not somebody else 
-> doing anything "obviously bogus".
-
-We very definitely have an ABBA deadlock with sysfs_deactivate and the
-cpu_hotplug.lock.  arch/x86/kernel/microcode_core.c:reload_store() is the
-code for a sysfs file that when written to calls get_online_cpus().
-
-Regardless of what we do with sysfs_readdir we need to see if we can
-fix cpu_down(), to remove this nasty deadlock.
-
-Eric
+Hugh
