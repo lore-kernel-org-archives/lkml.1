@@ -1,73 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753050AbZLaSsO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753068AbZLaSt7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753050AbZLaSsO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Dec 2009 13:48:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753025AbZLaSsN
+	id S1753068AbZLaSt7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Dec 2009 13:49:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753031AbZLaSt6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Dec 2009 13:48:13 -0500
-Received: from e23smtp03.au.ibm.com ([202.81.31.145]:38168 "EHLO
-	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752878AbZLaSsM (ORCPT
+	Thu, 31 Dec 2009 13:49:58 -0500
+Received: from e23smtp09.au.ibm.com ([202.81.31.142]:48970 "EHLO
+	e23smtp09.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753025AbZLaSt6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Dec 2009 13:48:12 -0500
-Date: Fri, 1 Jan 2010 00:18:04 +0530
+	Thu, 31 Dec 2009 13:49:58 -0500
+Date: Fri, 1 Jan 2010 00:19:49 +0530
 From: "K.Prasad" <prasad@linux.vnet.ibm.com>
 To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "mingo@elte.hu" <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [Patch 1/1] Introduce register_user_hbp_by_pid() and
-	unregister_user_hbp_by_pid()
-Message-ID: <20091231184804.GA3676@in.ibm.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Roland McGrath <roland@redhat.com>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Vegard Nossum <vegardno@ifi.uio.no>, Oleg Nesterov <oleg@redhat.com>
+Subject: Re: [RFC Patch 1/2][Bugfix][x86][hw-breakpoint] Clear reserved
+	bits of DR6 in do_debug()
+Message-ID: <20091231184949.GB3676@in.ibm.com>
 Reply-To: prasad@linux.vnet.ibm.com
-References: <20091217172010.GB5457@in.ibm.com> <20091217172253.GC5457@in.ibm.com> <20091218204744.GC5004@nowhere> <20091221184631.GB24535@in.ibm.com> <20091230222837.GI6322@nowhere>
+References: <20091226175533.149765731@linux.vnet.ibm.com> <20091226182725.GB9494@in.ibm.com> <20091230234458.GA23808@nowhere>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091230222837.GI6322@nowhere>
+In-Reply-To: <20091230234458.GA23808@nowhere>
 User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 30, 2009 at 11:28:39PM +0100, Frederic Weisbecker wrote:
-> On Tue, Dec 22, 2009 at 12:16:31AM +0530, K.Prasad wrote:
-> > On Fri, Dec 18, 2009 at 09:47:48PM +0100, Frederic Weisbecker wrote:
-> 
-> > > And this function needs rcu too.
-> > > 
-> > > I don't see any in-kernel user for this new feature.
-> > > That would be required to integrate it.
-> > >
+On Thu, Dec 31, 2009 at 12:45:00AM +0100, Frederic Weisbecker wrote:
+> On Sat, Dec 26, 2009 at 11:57:25PM +0530, K.Prasad wrote:
+> > Clear the reserved bits from the stored copy of debug status register (DR6).
+> > This will help easy bitwise operations.
 > > 
-> > The proposed interfaces, as obvious, are mere wrappers over existing
-> > (un)register_user_* interfaces, and don't do anything vastly different
-> > in order to demonstrate them separately.
+> > Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
+> > ---
+> >  arch/x86/include/asm/debugreg.h |    3 +++
+> >  arch/x86/kernel/traps.c         |    3 +++
+> >  2 files changed, 6 insertions(+)
 > > 
-> > I can get a sample kernel module ready - that consumes pid and user-space
-> > address to track write accesses, if you prefer it.
+> > Index: linux-2.6-tip/arch/x86/include/asm/debugreg.h
+> > ===================================================================
+> > --- linux-2.6-tip.orig/arch/x86/include/asm/debugreg.h
+> > +++ linux-2.6-tip/arch/x86/include/asm/debugreg.h
+> > @@ -14,6 +14,9 @@
+> >     which debugging register was responsible for the trap.  The other bits
+> >     are either reserved or not of interest to us. */
+> >  
+> > +/* Define reserved bits in DR6 which are always set to 1 */
+> > +#define DR6_RESERVED	(0xFFFF0FF0)
+> > +
 > 
 > 
-> Ok. The code looks good and useful.
+> The 12th bit seems to be also reserved.
+> Shouldn't it be 0xffff1ff0 ?
 > 
-> But the usual philosophy in the kernel is to not add code
-> that is left unused upstream. And samples don't substitute a user.
-> I'm not sure this is a good idea to merge this.
->
 
-Back to the old trick!...How about an ftrace plugin that accepts pid,
-user-space address and memory access type and traces all the IP
-addresses that caused access?
+The 12th bit is reserved to be 0 always.
 
-echo <pid>:<user_addr><access_type>  >  usym_trace_filter
-echo 567:0x1234567:rw- > usym_trace_filter
+> What kind of bitwise operations do you think it could help?
+> 
+> All of the operations I can find on dr6 are simple masks
+> test/set/clear.
+> 
 
-Breakpoint	IP
-------------	---------
-567:0x1234567	0x0abcdef
-
-I'm unsure if it sounds interesting at all, but I suspect it wouldn't be
-as easy as above to gather the shown information through any existing
-tools.
+As you found out later, this bitmask helps us in
+hw_breakpoint_handler().
 
 Thanks,
 K.Prasad
