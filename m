@@ -1,124 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752091AbZLaKeg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752175AbZLaKga@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752091AbZLaKeg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Dec 2009 05:34:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751614AbZLaKef
+	id S1752175AbZLaKga (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Dec 2009 05:36:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751660AbZLaKga
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Dec 2009 05:34:35 -0500
-Received: from mail-gx0-f211.google.com ([209.85.217.211]:55921 "EHLO
-	mail-gx0-f211.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751483AbZLaKee convert rfc822-to-8bit (ORCPT
+	Thu, 31 Dec 2009 05:36:30 -0500
+Received: from casper.infradead.org ([85.118.1.10]:47563 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751614AbZLaKg3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Dec 2009 05:34:34 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=RgLO/tQxAnTITirzcx17Wlio1jk7R9omXdTiWcOrBSqV6TErPe4NCjCFyHMpZsKaFB
-         wrgyZChgX8xmM/Rn1xFuoNbvwnQZmoa6f6/UUVCepJTqvdm91yEUVsFKoR0cbBqfoGTs
-         sEkkcOlK7dvckfWoujblpiyuy8n6tiE7XB6/0=
+	Thu, 31 Dec 2009 05:36:29 -0500
+Date: Thu, 31 Dec 2009 08:36:09 -0200
+From: Arnaldo Carvalho de Melo <acme@infradead.org>
+To: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>,
+       James Bottomley <James.Bottomley@suse.de>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Paul Mackerras <paulus@samba.org>, "Frank Ch. Eigler" <fche@redhat.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] x86: record relocation offset
+Message-ID: <20091231103609.GE2384@ghostprotocols.net>
+References: <vxv6sfpjggfx6v68yv1eecrx.1262215615671@email.android.com>
+ <1262216506.2749.254.camel@mulgrave.site>
+ <4B3BE63B.70907@zytor.com>
+ <20091231003046.GC2384@ghostprotocols.net>
+ <4B3C13B0.6080600@cn.fujitsu.com>
 MIME-Version: 1.0
-In-Reply-To: <1262250960.1819.68.camel@localhost>
-References: <1262250960.1819.68.camel@localhost>
-Date: Thu, 31 Dec 2009 11:34:32 +0100
-Message-ID: <4e5e476b0912310234mf9ccaadm771c637a3d107d18@mail.gmail.com>
-Subject: Re: fio mmap randread 64k more than 40% regression with 2.6.33-rc1
-From: Corrado Zoccolo <czoccolo@gmail.com>
-To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>, Shaohua Li <shaohua.li@intel.com>,
-       "jmoyer@redhat.com" <jmoyer@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B3C13B0.6080600@cn.fujitsu.com>
+X-Url: http://oops.ghostprotocols.net:81/blog
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <acme@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Yanmin,
-On Thu, Dec 31, 2009 at 10:16 AM, Zhang, Yanmin
-<yanmin_zhang@linux.intel.com> wrote:
-> Comparing with kernel 2.6.32, fio mmap randread 64k has more than 40% regression with
-> 2.6.33-rc1.
+Em Thu, Dec 31, 2009 at 11:00:00AM +0800, Xiao Guangrong escreveu:
+> Arnaldo Carvalho de Melo wrote:
 
-Can you compare the performance also with 2.6.31?
-I think I understand what causes your problem.
-2.6.32, with default settings, handled even random readers as
-sequential ones to provide fairness. This has benefits on single disks
-and JBODs, but causes harm on raids.
-For 2.6.33, we changed the way in which this is handled, restoring the
-enable_idle = 0 for seeky queues as it was in 2.6.31:
-@@ -2218,13 +2352,10 @@ cfq_update_idle_window(struct cfq_data *cfqd,
-struct cfq_queue *cfqq,
-       enable_idle = old_idle = cfq_cfqq_idle_window(cfqq);
+> > Conclusion: at 'perf record' time store the address of a well know
+> > symbol (_text) into the perf.data header. Later, at perf report time, if
+> > using a vmlinux file, calculate the relocation by subtracting the same
+> > well known symbol from the one stored in the header.
 
-       if (!atomic_read(&cic->ioc->nr_tasks) || !cfqd->cfq_slice_idle ||
--           (!cfqd->cfq_latency && cfqd->hw_tag && CFQQ_SEEKY(cfqq)))
-+           (sample_valid(cfqq->seek_samples) && CFQQ_SEEKY(cfqq)))
-               enable_idle = 0;
-(compare with 2.6.31:
-        if (!atomic_read(&cic->ioc->nr_tasks) || !cfqd->cfq_slice_idle ||
-            (cfqd->hw_tag && CIC_SEEKY(cic)))
-                enable_idle = 0;
-excluding the sample_valid check, it should be equivalent for you (I
-assume you have NCQ disks))
-and we provide fairness for them by servicing all seeky queues
-together, and then idling before switching to other ones.
+> > So no need for ioctl or boot stuff.
 
-The mmap 64k randreader will have a large seek_mean, resulting in
-being marked seeky, but will send 16 * 4k sequential requests one
-after the other, so alternating between those seeky queues will cause
-harm.
+> I'm little confused, how to get the load symbol address?
+> It's not a good way, if you get it from '/proc/kallsyms', we can't assume kernel
+> has this file.
 
-I'm working on a new way to compute seekiness of queues, that should
-fix your issue, correctly identifying those queues as non-seeky (for
-me, a queue should be considered seeky only if it submits more than 1
-seeky requests for 8 sequential ones).
+Well, then its just a matter of exposing _text as
+/sys/kernel/sections/.text, as we already have for modules:
 
->
-> The test scenario: 1 JBOD has 12 disks and every disk has 2 partitions. Create
-> 8 1-GB files per partition and start 8 processes to do rand read on the 8 files
-> per partitions. There are 8*24 processes totally. randread block size is 64K.
->
-> We found the regression on 2 machines. One machine has 8GB memory and the other has
-> 6GB.
->
-> Bisect is very unstable. The related patches are many instead of just one.
->
->
-> 1) commit 8e550632cccae34e265cb066691945515eaa7fb5
-> Author: Corrado Zoccolo <czoccolo@gmail.com>
-> Date:   Thu Nov 26 10:02:58 2009 +0100
->
->    cfq-iosched: fix corner cases in idling logic
->
->
-> This patch introduces about less than 20% regression. I just reverted below section
-> and this part regression disappear. It shows this regression is stable and not impacted
-> by other patches.
->
-> @@ -1253,9 +1254,9 @@ static void cfq_arm_slice_timer(struct cfq_data *cfqd)
->                return;
->
->        /*
-> -        * still requests with the driver, don't idle
-> +        * still active requests from this queue, don't idle
->         */
-> -       if (rq_in_driver(cfqd))
-> +       if (cfqq->dispatched)
->                return;
->
-This shouldn't affect you if all queues are marked as idle. Does just
-your patch:
-> -           (!cfq_cfqq_deep(cfqq) && sample_valid(cfqq->seek_samples)
-> -            && CFQQ_SEEKY(cfqq)))
-> +           (!cfqd->cfq_latency && !cfq_cfqq_deep(cfqq) &&
-> +               sample_valid(cfqq->seek_samples) && CFQQ_SEEKY(cfqq)))
-fix most of the regression without touching arm_slice_timer?
+[acme@ana linux-2.6-tip]$ cat /sys/module/ipv6/sections/.text 
+0xfa0c2000
 
-I guess
-> 5db5d64277bf390056b1a87d0bb288c8b8553f96.
-will still introduce a 10% regression, but this is needed to improve
-latency, and you can just disable low_latency to avoid it.
+Which matches
 
-Thanks,
-Corrado
+nf_conntrack_ipv6 17548 2 - Live 0xfa147000
+ipv6 239420 32 ip6t_REJECT,nf_conntrack_ipv6, Live 0xfa0c2000
+[acme@ana linux-2.6-tip]$
+
+But even as a quick transational assist, we can look at kallsyms at
+'perf record' time.
+
+> > I'll do that tomorrow, if Xiao doesn't beats me to it :-)
+
+> Of course, please do if you have a better way :-)
+
+I meant, if you didn't write the patch first, while I was sleeping :-)
+
+I'll work on it today after some coffee and errands.
+
+Best Regards,
+
+- Arnaldo
