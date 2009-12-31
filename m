@@ -1,166 +1,177 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751799AbZLaVHD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751944AbZLaVPW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751799AbZLaVHD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Dec 2009 16:07:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751524AbZLaVHB
+	id S1751944AbZLaVPW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Dec 2009 16:15:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751786AbZLaVPR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Dec 2009 16:07:01 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:48656 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751336AbZLaVHA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Dec 2009 16:07:00 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=wYzaTXdZdgcGxUy04DVoPcTiQf3AxDl1mHWwMSc27Z0t1xmNUy4mi8kLpjHtznfysK
-         JOYCploEnfDlIwuVssWkimBXAAE5bx7xd1eSvHx9Bp/aUdBZ0jrhcjGbOgGu8OEnyj3W
-         KUywEGt6Vg+VLpFMVPps9bWTNy+bgFMdS3Vek=
-Date: Thu, 31 Dec 2009 13:06:54 -0800
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>
-Subject: Re: [git pull] Input updates for 2.6.33-rc2
-Message-ID: <20091231210654.GA3874@core.coreip.homeip.net>
-References: <20091227214924.GB16279@core.coreip.homeip.net>
- <alpine.LFD.2.00.0912301257340.11961@localhost.localdomain>
- <C08FBDE4-7143-46E4-9DB8-912E870D0008@gmail.com>
- <20091231012252.GA13512@core.coreip.homeip.net>
- <alpine.LFD.2.00.0912311125310.11961@localhost.localdomain>
+	Thu, 31 Dec 2009 16:15:17 -0500
+Received: from mail.gmx.net ([213.165.64.20]:59959 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751605AbZLaVPP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Dec 2009 16:15:15 -0500
+X-Authenticated: #1045983
+X-Provags-ID: V01U2FsdGVkX1+HN9YTdMyHJ3/VP24gGZoqRM0Aph0rpIK7EdpjBA
+	Sx+9RGdSiBqDql
+Message-ID: <4B3D145C.2080106@gmx.de>
+Date: Thu, 31 Dec 2009 22:15:08 +0100
+From: Helge Deller <deller@gmx.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Lightning/1.0pre Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0912311125310.11961@localhost.localdomain>
-User-Agent: Mutt/1.5.20 (2009-08-17)
+To: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       ben@decadent.org.uk, tbm@cyrius.com
+CC: Kalle Valo <kalle.valo@iki.fi>, linux-kernel@vger.kernel.org,
+       linux-wireless@vger.kernel.org, linux-omap@vger.kernel.org,
+       rusty@rustcorp.com.au, akpm@linux-foundation.org, roland@redhat.com,
+       dave@hiauly1.hia.nrc.ca, Parisc List <linux-parisc@vger.kernel.org>
+Subject: Re: regression: crash from 'ls /sys/modules/wl1251_spi/notes'
+References: <87k4w4wux9.fsf@purkki.valot.fi> <1262188157.2749.21.camel@mulgrave.site>
+In-Reply-To: <1262188157.2749.21.camel@mulgrave.site>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.45
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 31, 2009 at 11:50:59AM -0800, Linus Torvalds wrote:
-> 
-> 
-> On Wed, 30 Dec 2009, Dmitry Torokhov wrote:
-> >
-> > Dmitry Torokhov (7):
-> >       Input: speed up suspend/shutdown for PS/2 mice and keyboards
-> 
-> Btw, the thing I like best about this commit is how it adds some comments 
-> on the keyboard commands.
-> 
-> That said, the naming and the comments aren't all that wonderful. I don't 
-> think you should use the word "RESET" for command f5/f6: the command is 
-> called "Set Default" (and ".. Disable" for f5), and there is no actual 
-> reset involved. 
-> 
+On 12/30/2009 04:49 PM, James Bottomley wrote:
+> A better, and more comprehensive patch would be to try not to count the
+> empty text sections when we're building the notes section (and actually
+> anywhere else in the file).  This patch actually relies on the fact that
+> if sh_size is zero for the text section it should be for the
+> corresponding notes section.  If that doesn't work, we'd actually have
+> to do the matching in the construction piece.
+>
+> Can you try it to see if it works for you?  If it doesn't, I'll try
+> matching notes to text.  It works fine on parisc, but as we don't have a
+> notes section, that's not saying much ...
+>
+> Thanks,
+>
+> James
 
-I guess it is just a matter of wording. For me "reset" and "revert to
-initial state" are pretty much the same.
 
-> So I suspect the command should be renamed to
-> 
-> 	#define ATKBD_CMD_SET_DEFAULTS_AND_DISABLE	0x00f5
+Ben Hutchings already sent a similar patch.
+See: http://patchwork.kernel.org/patch/68925/
 
-ATKBD_CMD_SET_DEFAULTS_AND_DISABLE_DATA_REPORTING :) I was just trying
-to follow the existing naming style. It was there before me and it does
-make sense to me still so I did not feel the neet to change it.
+IMHO James patch below seems better since it
+checks if a section will be allocated at a few more
+places...
 
-> 	#define ATKBD_CMD_SET_DEFAULTS			0x00f6
-> 
-> and then the comments wouldn't even be needed (and anybody reading the 
-> code would not have to look them up in the header file).
-> 
-> And then "ATKBD_CMD_RESET_BAT" should probably just be "ATKBD_CMD_RESET" 
-> (I wonder what the "BAT" part is all about?)
+Helge
 
-That came from Vojtech but I am pretty sure this stands for Basic
-Assurance Test since full reset for touchpads for example involves
-recalibration. See this excerpt from Synaptics docs:
 
-"At power-on, the PS/2 TouchPad performs a self-test and calibration,
-then transmits the completion code $AA and ID code $00. If the TouchPad
-fails its self-test, it transmits error code $FC and ID code $00.  This
-processing also occurs when a software Reset ($FF) command is received.
-The host should not attempt to send commands to the TouchPad until the
-calibration/self-test is complete."
+> ---
+>
+> diff --git a/kernel/module.c b/kernel/module.c
+> index e96b8ed..957f912 100644
+> --- a/kernel/module.c
+> +++ b/kernel/module.c
+> @@ -132,6 +132,11 @@ void __module_put_and_exit(struct module *mod, long code)
+>   }
+>   EXPORT_SYMBOL(__module_put_and_exit);
+>
+> +static inline int section_allocated(Elf_Shdr hdr)
+> +{
+> +	return (hdr.sh_flags&  SHF_ALLOC)&&  hdr.sh_size != 0;
+> +}
+> +
+>   /* Find a module section: 0 means not found. */
+>   static unsigned int find_sec(Elf_Ehdr *hdr,
+>   			     Elf_Shdr *sechdrs,
+> @@ -142,7 +147,7 @@ static unsigned int find_sec(Elf_Ehdr *hdr,
+>
+>   	for (i = 1; i<  hdr->e_shnum; i++)
+>   		/* Alloc bit cleared means "ignore it." */
+> -		if ((sechdrs[i].sh_flags&  SHF_ALLOC)
+> +		if (section_allocated(sechdrs[i])
+>   		&&  strcmp(secstrings+sechdrs[i].sh_name, name) == 0)
+>   			return i;
+>   	return 0;
+> @@ -1051,8 +1056,7 @@ static void add_sect_attrs(struct module *mod, unsigned int nsect,
+>
+>   	/* Count loaded sections and allocate structures */
+>   	for (i = 0; i<  nsect; i++)
+> -		if (sechdrs[i].sh_flags&  SHF_ALLOC
+> -		&&  sechdrs[i].sh_size)
+> +		if (section_allocated(sechdrs[i]))
+>   			nloaded++;
+>   	size[0] = ALIGN(sizeof(*sect_attrs)
+>   			+ nloaded * sizeof(sect_attrs->attrs[0]),
+> @@ -1070,9 +1074,7 @@ static void add_sect_attrs(struct module *mod, unsigned int nsect,
+>   	sattr =&sect_attrs->attrs[0];
+>   	gattr =&sect_attrs->grp.attrs[0];
+>   	for (i = 0; i<  nsect; i++) {
+> -		if (! (sechdrs[i].sh_flags&  SHF_ALLOC))
+> -			continue;
+> -		if (!sechdrs[i].sh_size)
+> +		if (!section_allocated(sechdrs[i]))
+>   			continue;
+>   		sattr->address = sechdrs[i].sh_addr;
+>   		sattr->name = kstrdup(secstrings + sechdrs[i].sh_name,
+> @@ -1156,7 +1158,7 @@ static void add_notes_attrs(struct module *mod, unsigned int nsect,
+>   	/* Count notes sections and allocate structures.  */
+>   	notes = 0;
+>   	for (i = 0; i<  nsect; i++)
+> -		if ((sechdrs[i].sh_flags&  SHF_ALLOC)&&
+> +		if (section_allocated(sechdrs[i])&&
+>   		(sechdrs[i].sh_type == SHT_NOTE))
+>   			++notes;
+>
+> @@ -1172,7 +1174,7 @@ static void add_notes_attrs(struct module *mod, unsigned int nsect,
+>   	notes_attrs->notes = notes;
+>   	nattr =&notes_attrs->attrs[0];
+>   	for (loaded = i = 0; i<  nsect; ++i) {
+> -		if (!(sechdrs[i].sh_flags&  SHF_ALLOC))
+> +		if (!section_allocated(sechdrs[i]))
+>   			continue;
+>   		if (sechdrs[i].sh_type == SHT_NOTE) {
+>   			nattr->attr.name = mod->sect_attrs->attrs[loaded].name;
+> @@ -1720,7 +1722,7 @@ static char elf_type(const Elf_Sym *sym,
+>   		return '?';
+>   	if (sechdrs[sym->st_shndx].sh_flags&  SHF_EXECINSTR)
+>   		return 't';
+> -	if (sechdrs[sym->st_shndx].sh_flags&  SHF_ALLOC
+> +	if (section_allocated(sechdrs[sym->st_shndx])
+>   	&&  sechdrs[sym->st_shndx].sh_type != SHT_NOBITS) {
+>   		if (!(sechdrs[sym->st_shndx].sh_flags&  SHF_WRITE))
+>   			return 'r';
+> @@ -1751,7 +1753,7 @@ static bool is_core_symbol(const Elf_Sym *src, const Elf_Shdr *sechdrs,
+>   		return false;
+>
+>   	sec = sechdrs + src->st_shndx;
+> -	if (!(sec->sh_flags&  SHF_ALLOC)
+> +	if (!section_allocated(*sec)
+>   #ifndef CONFIG_KALLSYMS_ALL
+>   	    || !(sec->sh_flags&  SHF_EXECINSTR)
+>   #endif
+> @@ -1913,7 +1915,7 @@ static void kmemleak_load_module(struct module *mod, Elf_Ehdr *hdr,
+>   	kmemleak_scan_area(mod, sizeof(struct module), GFP_KERNEL);
+>
+>   	for (i = 1; i<  hdr->e_shnum; i++) {
+> -		if (!(sechdrs[i].sh_flags&  SHF_ALLOC))
+> +		if (!section_allocated(sechdrs[i]))
+>   			continue;
+>   		if (strncmp(secstrings + sechdrs[i].sh_name, ".data", 5) != 0
+>   		&&  strncmp(secstrings + sechdrs[i].sh_name, ".bss", 4) != 0)
+> @@ -2139,7 +2141,7 @@ static noinline struct module *load_module(void __user *umod,
+>   	for (i = 0; i<  hdr->e_shnum; i++) {
+>   		void *dest;
+>
+> -		if (!(sechdrs[i].sh_flags&  SHF_ALLOC))
+> +		if (!section_allocated(sechdrs[i]))
+>   			continue;
+>
+>   		if (sechdrs[i].sh_entsize&  INIT_OFFSET_MASK)
+> @@ -2287,7 +2289,7 @@ static noinline struct module *load_module(void __user *umod,
+>   			continue;
+>
+>   		/* Don't bother with non-allocated sections */
+> -		if (!(sechdrs[info].sh_flags&  SHF_ALLOC))
+> +		if (!section_allocated(sechdrs[info]))
+>   			continue;
+>
+>   		if (sechdrs[i].sh_type == SHT_REL)
+>
+>
 
-> 
-> Oh, and command F5h is not always a "set defaults and disable". For some 
-> (all?) PS/2 mice it seems to be _just_ a "disable",
-
-Exactly, that is why it is called PSMOUSE_CMD_DISABLE when used in mouse
-context. However snippets of docs I have indicate that for keyboards it
-also causes them to reset to defaults.
-
-> and I'm not at all 
-> sure you should have used it for the psmouse_cleanup() function.
-
-I am using PSMOUSE_CMD_RESET_DIS (0xf6) in psmouse_cleanup().
-
-> You used 
-> to do a
-> 
-> 	psmouse_reset(psmouse);
-> 
-> which sent a full reset to the mouse (and waits for the two-byte ACK). It 
-> did _not_ disable the mouse - 
-
-It does actually, at least for some devices (incidentally the ones that
-may give trouble to the BIOS if left as is):
-
-"The reset state of the TouchPad is as follows:
-- Reported sample rate is 100 samples per second (see page 30).
-- Reported resolution is 4 counts per mm (see page 32).
-- Scaling is 1:1.
-- Stream mode is selected.
-- Data reporting is disabled. <---------------
-- Absolute mode is disabled."
-
-> that happened earlier in 
-> psmouse_deactivate(), when you sent it the PSMOUSE_CMD_DISABLE command.
-
-What happened before doing psmouse_reset() (which is PSMOUSE_CMD_RESET_BAT)
-should not matter because all previous state should be reset after it.
-
-> 
-> You changed that 'psmouse_reset()' to
-> 
-> 	/*
-> 	 * Reset the mouse to defaults (bare PS/2 protocol).
-> 	 */
-> 	        ps2_command(&psmouse->ps2dev, NULL, PSMOUSE_CMD_RESET_DIS);
-> 
-> which now disables it again, only to then later do
->         
-> 	/*      
-> 	 * Some boxes, such as HP nx7400, get terribly confused if mouse
-> 	 * is not fully enabled before suspending/shutting down.
-> 	 */     
-> 	        ps2_command(&psmouse->ps2dev, NULL, PSMOUSE_CMD_ENABLE);
-> 
-> which seems odd. IOW, Why do you do a "set defaults and disable" followed 
-> by a "enable", when you already had it disabled?
-
-We do not have "light reset" option, so we have to use "light reset and
-disable" to return to the bare 3-byte PS/2 protocol. Then we have to
-re-enable the device because BIOS on some HP notebooks would get
-confused and not suspend (or resume, I don't quite remember) if mouse
-left disabled.
-
-> 
-> I think the PSMOUSE_CMD_RESET that _used_ to be there would re-enable most 
-> mice, but now that you don't even do that any more, I get the feeling that 
-> the "set defaults and disable" should be just a "set defaults".
-
-There is no such command for mice unfortunately.
-
-> 
-> (You may have good reasons for having picked the "and disable" command. I 
-> just wonder what they are)
-> 
-> 		Linus
-
--- 
-Dmitry
