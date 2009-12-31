@@ -1,106 +1,221 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752143AbZLaNYn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752187AbZLaNvM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752143AbZLaNYn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Dec 2009 08:24:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751800AbZLaNYn
+	id S1752187AbZLaNvM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Dec 2009 08:51:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751624AbZLaNvM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Dec 2009 08:24:43 -0500
-Received: from mail-vw0-f192.google.com ([209.85.212.192]:34086 "EHLO
-	mail-vw0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751681AbZLaNYm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Dec 2009 08:24:42 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
-        b=mnmijaZ85bTed40IL/1S+2NvOqi5xn/nUvcjJFQobOXtA7KlCX1gV8oqb/kPPdbFaM
-         PaxGr1BWw2iZZSOZM9jP2U4xTQ1LD4VbY9+6DXSY9NgtQvvuwek52NG9g64QDuqQlD/x
-         znGN+vfGiyY/1T16YjyOuOWVyI0okE76S+tmw=
+	Thu, 31 Dec 2009 08:51:12 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:40328 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751483AbZLaNvK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Dec 2009 08:51:10 -0500
+Message-ID: <4B3CACB3.8020901@gmail.com>
+Date: Thu, 31 Dec 2009 14:52:51 +0100
+From: Emese Revfy <re.emese@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090812)
 MIME-Version: 1.0
-In-Reply-To: <1261994502.7135.51.camel@laptop>
-References: <1260934105-4472-1-git-send-email-mitake@dcl.info.waseda.ac.jp>
-	 <1260934105-4472-2-git-send-email-mitake@dcl.info.waseda.ac.jp>
-	 <1261041885.27920.110.camel@laptop>
-	 <a6b9f31a0912260543g62785a58w6432f546c2fa6488@mail.gmail.com>
-	 <1261994502.7135.51.camel@laptop>
-Date: Thu, 31 Dec 2009 22:24:40 +0900
-X-Google-Sender-Auth: 4c618dcfe266da5c
-Message-ID: <a6b9f31a0912310524ke0c8880o189fe4304a2ff229@mail.gmail.com>
-Subject: Re: [PATCH 2/2] perf lock: Fix output of tracing lock events
-From: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org,
-       Paul Mackerras <paulus@samba.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>
+To: Greg KH <gregkh@suse.de>
+CC: Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
+       rientjes@google.com, cl@linux-foundation.org,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org, rjw@sisk.pl,
+       rusty@rustcorp.com.au, Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [PATCH 1/1] Constify struct kset_uevent_ops for 2.6.33-rc2
+References: <cover.1260663000.git.re.emese@gmail.com> <eff97be7c5839477c88f7ba61ef100f38c58bf7d.1260663000.git.re.emese@gmail.com> <84144f020912250331h23b8b724v73cf70c384d385ec@mail.gmail.com> <4B355AEF.3060508@gmail.com> <4B39AEB2.5040809@cs.helsinki.fi> <4B3A6D63.4070700@gmail.com> <20091230001131.GA19830@suse.de> <4B3BED7A.6020507@gmail.com> <20091231044039.GB27927@suse.de>
+In-Reply-To: <20091231044039.GB27927@suse.de>
 Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 28, 2009 at 19:01, Peter Zijlstra <peterz@infradead.org> wrote:
-> On Sat, 2009-12-26 at 22:43 +0900, Hitoshi Mitake wrote:
->
->> > As to removing the waittime, I'm not sure, in this case, yes, but if you
->> > want some other processing that hooks straight into the tracepoints
->> > instead of using a logging structure, it might be useful.
->> >
->> > Removing that do_div() from there and exposing waittime as u64 in nsec,
->> > for sure, that do_div() is just silly.
->> >
->> >
->> >
->>
->> I was too egoist. perf lock is not an only one user of lock events.
->>
->> And I have a suggestion. Adding name of source files and lines of
->> lock instances may be good thing for human's readability.
->> How do you think?
->
-> file:line might be interesting indeed, but I worry about the size of the
-> event entry.. But lets see how that goes.
->
->> > Why do we need to have instance resolution?
->
-> You forgot to answer this question.
->
-> Is it purely because the waittime computation as done by lockstat is not
-> good enough for you -- should we not fix that instead, that'd benefit
-> more people.
->
->
->
+From: Emese Revfy <re.emese@gmail.com>
 
-Ah, sorry, let me answer to the question.
+Constify struct kset_uevent_ops.
 
-Yes, I need instance resolution. Name is not enough thing.
-Because there are locks which use name which is used by other locks.
-For example, at least 5 lock instances use the name "port_lock".
+This is part of the ops structure constification
+effort started by Arjan van de Ven et al.
 
-This is copied from output of cscope.
+Benefits of this constification:
 
-*** drivers/infiniband/core/user_mad.c:
-<global>[138]                  static DEFINE_SPINLOCK(port_lock);
+ * prevents modification of data that is shared
+   (referenced) by many other structure instances
+   at runtime
 
-*** drivers/net/ehea/ehea.h:
-<global>[473]                  struct mutex port_lock;
+ * detects/prevents accidental (but not intentional)
+   modification attempts on archs that enforce
+   read-only kernel data at runtime
 
-*** drivers/pcmcia/i82092.c:
-<global>[202]                  static DEFINE_SPINLOCK(port_lock);
+ * potentially better optimized code as the compiler
+   can assume that the const data cannot be changed
 
-*** drivers/pcmcia/pd6729.c:
-<global>[69]                   static DEFINE_SPINLOCK(port_lock);
+ * the compiler/linker move const data into .rodata
+   and therefore exclude them from false sharing
 
-*** drivers/usb/gadget/u_serial.c:
-<global>[94]                   spinlock_t port_lock;
+Signed-off-by: Emese Revfy <re.emese@gmail.com>
+---
 
-port_lock of ehea.h and u_serial.c is a member of struct,
-so number of instances with this name is more than 5.
+ drivers/base/bus.c      |    2 +-
+ drivers/base/core.c     |    2 +-
+ drivers/base/memory.c   |    2 +-
+ fs/gfs2/sys.c           |    2 +-
+ include/linux/kobject.h |   10 +++++-----
+ kernel/params.c         |    2 +-
+ lib/kobject.c           |    4 ++--
+ lib/kobject_uevent.c    |    2 +-
+ mm/slub.c               |    2 +-
+ 9 files changed, 14 insertions(+), 14 deletions(-)
 
-So we cannot distinguish between each lock instances by their name.
-
-And waittime caliculated by lockstat is valuable information,
-but we can also use timestamp.
-waittime is not equal to hold time, and every events have their timestamps.
-I think exploiting information from timestamps
-(which already be providec) is worthful.
+diff --git a/drivers/base/bus.c b/drivers/base/bus.c
+index c0c5a43..2afe599 100644
+--- a/drivers/base/bus.c
++++ b/drivers/base/bus.c
+@@ -154,7 +154,7 @@ static int bus_uevent_filter(struct kset *kset, struct kobject *kobj)
+ 	return 0;
+ }
+ 
+-static struct kset_uevent_ops bus_uevent_ops = {
++static const struct kset_uevent_ops bus_uevent_ops = {
+ 	.filter = bus_uevent_filter,
+ };
+ 
+diff --git a/drivers/base/core.c b/drivers/base/core.c
+index 2820257..82bd3ff 100644
+--- a/drivers/base/core.c
++++ b/drivers/base/core.c
+@@ -252,7 +252,7 @@ static int dev_uevent(struct kset *kset, struct kobject *kobj,
+ 	return retval;
+ }
+ 
+-static struct kset_uevent_ops device_uevent_ops = {
++static const struct kset_uevent_ops device_uevent_ops = {
+ 	.filter =	dev_uevent_filter,
+ 	.name =		dev_uevent_name,
+ 	.uevent =	dev_uevent,
+diff --git a/drivers/base/memory.c b/drivers/base/memory.c
+index d7d77d4..0bcf8c2 100644
+--- a/drivers/base/memory.c
++++ b/drivers/base/memory.c
+@@ -44,7 +44,7 @@ static int memory_uevent(struct kset *kset, struct kobject *obj, struct kobj_uev
+ 	return retval;
+ }
+ 
+-static struct kset_uevent_ops memory_uevent_ops = {
++static const struct kset_uevent_ops memory_uevent_ops = {
+ 	.name		= memory_uevent_name,
+ 	.uevent		= memory_uevent,
+ };
+diff --git a/fs/gfs2/sys.c b/fs/gfs2/sys.c
+index 0dc3462..9be733e 100644
+--- a/fs/gfs2/sys.c
++++ b/fs/gfs2/sys.c
+@@ -576,7 +576,7 @@ static int gfs2_uevent(struct kset *kset, struct kobject *kobj,
+ 	return 0;
+ }
+ 
+-static struct kset_uevent_ops gfs2_uevent_ops = {
++static const struct kset_uevent_ops gfs2_uevent_ops = {
+ 	.uevent = gfs2_uevent,
+ };
+ 
+diff --git a/include/linux/kobject.h b/include/linux/kobject.h
+index 58ae8e0..57a1eaa 100644
+--- a/include/linux/kobject.h
++++ b/include/linux/kobject.h
+@@ -118,9 +118,9 @@ struct kobj_uevent_env {
+ };
+ 
+ struct kset_uevent_ops {
+-	int (*filter)(struct kset *kset, struct kobject *kobj);
+-	const char *(*name)(struct kset *kset, struct kobject *kobj);
+-	int (*uevent)(struct kset *kset, struct kobject *kobj,
++	int (* const filter)(struct kset *kset, struct kobject *kobj);
++	const char *(* const name)(struct kset *kset, struct kobject *kobj);
++	int (* const uevent)(struct kset *kset, struct kobject *kobj,
+ 		      struct kobj_uevent_env *env);
+ };
+ 
+@@ -155,14 +155,14 @@ struct kset {
+ 	struct list_head list;
+ 	spinlock_t list_lock;
+ 	struct kobject kobj;
+-	struct kset_uevent_ops *uevent_ops;
++	const struct kset_uevent_ops *uevent_ops;
+ };
+ 
+ extern void kset_init(struct kset *kset);
+ extern int __must_check kset_register(struct kset *kset);
+ extern void kset_unregister(struct kset *kset);
+ extern struct kset * __must_check kset_create_and_add(const char *name,
+-						struct kset_uevent_ops *u,
++						const struct kset_uevent_ops *u,
+ 						struct kobject *parent_kobj);
+ 
+ static inline struct kset *to_kset(struct kobject *kobj)
+diff --git a/kernel/params.c b/kernel/params.c
+index cf1b691..ac5de7d 100644
+--- a/kernel/params.c
++++ b/kernel/params.c
+@@ -737,7 +737,7 @@ static int uevent_filter(struct kset *kset, struct kobject *kobj)
+ 	return 0;
+ }
+ 
+-static struct kset_uevent_ops module_uevent_ops = {
++static const struct kset_uevent_ops module_uevent_ops = {
+ 	.filter = uevent_filter,
+ };
+ 
+diff --git a/lib/kobject.c b/lib/kobject.c
+index b512b74..cecf5a0 100644
+--- a/lib/kobject.c
++++ b/lib/kobject.c
+@@ -789,7 +789,7 @@ static struct kobj_type kset_ktype = {
+  * If the kset was not able to be created, NULL will be returned.
+  */
+ static struct kset *kset_create(const char *name,
+-				struct kset_uevent_ops *uevent_ops,
++				const struct kset_uevent_ops *uevent_ops,
+ 				struct kobject *parent_kobj)
+ {
+ 	struct kset *kset;
+@@ -832,7 +832,7 @@ static struct kset *kset_create(const char *name,
+  * If the kset was not able to be created, NULL will be returned.
+  */
+ struct kset *kset_create_and_add(const char *name,
+-				 struct kset_uevent_ops *uevent_ops,
++				 const struct kset_uevent_ops *uevent_ops,
+ 				 struct kobject *parent_kobj)
+ {
+ 	struct kset *kset;
+diff --git a/lib/kobject_uevent.c b/lib/kobject_uevent.c
+index 920a3ca..c9d3a3e 100644
+--- a/lib/kobject_uevent.c
++++ b/lib/kobject_uevent.c
+@@ -95,7 +95,7 @@ int kobject_uevent_env(struct kobject *kobj, enum kobject_action action,
+ 	const char *subsystem;
+ 	struct kobject *top_kobj;
+ 	struct kset *kset;
+-	struct kset_uevent_ops *uevent_ops;
++	const struct kset_uevent_ops *uevent_ops;
+ 	u64 seq;
+ 	int i = 0;
+ 	int retval = 0;
+diff --git a/mm/slub.c b/mm/slub.c
+index 8d71aaf..02b5a83 100644
+--- a/mm/slub.c
++++ b/mm/slub.c
+@@ -4538,7 +4538,7 @@ static int uevent_filter(struct kset *kset, struct kobject *kobj)
+ 	return 0;
+ }
+ 
+-static struct kset_uevent_ops slab_uevent_ops = {
++static const struct kset_uevent_ops slab_uevent_ops = {
+ 	.filter = uevent_filter,
+ };
+ 
