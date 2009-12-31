@@ -1,91 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752030AbZLaHfy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752122AbZLaHxY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752030AbZLaHfy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Dec 2009 02:35:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751666AbZLaHfx
+	id S1752122AbZLaHxY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Dec 2009 02:53:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751938AbZLaHxX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Dec 2009 02:35:53 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:50841 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751471AbZLaHfw (ORCPT
+	Thu, 31 Dec 2009 02:53:23 -0500
+Received: from daytona.panasas.com ([67.152.220.89]:45342 "EHLO
+	daytona.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751855AbZLaHxX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Dec 2009 02:35:52 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=l8iu/vBCnOf3RT93ov0gguo8MrLRcxODb3CL372r031iwb09XuY6rXPnP4eH0OQles
-         vv8Hekg6gsDElJafvUlIiqKGLRWpPO0KcCvDtL/Lc39DIPo/D9wBBLCWtHl/o7oMaGHA
-         akFI+NxAlWPCXsMDKh8fP4YIAbdu58L44fdnI=
-Date: Wed, 30 Dec 2009 23:35:47 -0800
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Andy Walls <awalls@radix.net>
-Cc: Vikram Dhillon <dhillonv10@gmail.com>,
-       Stefani Seibold <stefani@seibold.net>, Andi Kleen <andi@firstfloor.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "akpm@osdl.org" <akpm@osdl.org>
-Subject: Re: [PATCH] [0/6] kfifo fixes/improvements
-Message-ID: <20091231073547.GA14333@core.coreip.homeip.net>
-References: <20091228145749.GD4994@basil.fritz.box>
- <1262016510.12656.25.camel@wall-e>
- <20091228172651.GE4994@basil.fritz.box>
- <1262030653.15368.37.camel@wall-e>
- <20091228204003.GH4994@basil.fritz.box>
- <1262076056.23095.21.camel@wall-e>
- <64D5262E-28CF-41E8-9425-F8C5DD0A2265@gmail.com>
- <ea6602020912291718n103694aft78ef15b65081a996@mail.gmail.com>
- <20091230020830.GA7049@core.coreip.homeip.net>
- <1262194152.5645.10.camel@palomino.walls.org>
+	Thu, 31 Dec 2009 02:53:23 -0500
+Message-ID: <4B3C586F.8020200@panasas.com>
+Date: Thu, 31 Dec 2009 09:53:19 +0200
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1262194152.5645.10.camel@palomino.walls.org>
-User-Agent: Mutt/1.5.20 (2009-08-17)
+To: James Bottomley <James.Bottomley@suse.de>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       open-osd <osd-dev@open-osd.org>, Benny Halevy <bhalevy@panasas.com>,
+       Alan Stern <stern@rowland.harvard.edu>
+CC: Stable Tree <stable@kernel.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [osd-dev] [PATCH] scsi_lib: Bug in completion of bidi commands
+References: <4B27AA77.3040002@panasas.com>
+In-Reply-To: <4B27AA77.3040002@panasas.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 31 Dec 2009 07:53:21.0518 (UTC) FILETIME=[52A3F8E0:01CA89EE]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 30, 2009 at 12:29:12PM -0500, Andy Walls wrote:
-> On Tue, 2009-12-29 at 18:08 -0800, Dmitry Torokhov wrote:
-> > A: http://en.wikipedia.org/wiki/Top_post
-> > Q: Were do I find info about this thing called top-posting?
-> > A: Because it messes up the order in which people normally read text.
-> > Q: Why is top-posting such a bad thing?
-> > 
-> > On Tue, Dec 29, 2009 at 08:18:50PM -0500, Vikram Dhillon wrote:
-> > > IMHO you can process elements rather than bytes, which is a good
-> > > improvement, but then again its my opinion, if others don't like it
-> > > then we can always change it :D
-> > 
-> > Right, I was not arguing against having a record-oriented interface, I
-> > was questioning the utility of processing several records at a time.
-> > Kfifo users that I have seen so far were working in a record-at-a-time
-> > mode.
+On 12/15/2009 05:25 PM, Boaz Harrosh wrote:
 > 
-> I have a use case in linux/drivers/media/video/cx23885/cx23888-ir.c
-> right now.
+> Because of the terrible structuring of scsi-bidi-commands
+> it breaks some of the life time rules of a scsi-command.
+> It is now not allowed to free up the block-request before
+> cleanup and partial deallocation of the scsi-command. (Which
+> is not so for none bidi commands)
 > 
-> I have a hardware fifo that can hold up to 8 values, 17 bits each - and
-> the high bit of the value is a flag indicating if more data is in the
-> hardware fifo.
+> The right fix to this problem would be to make bidi command
+> a first citizen by allocating a scsi_sdb pointer at scsi command
+> just like cmd->prot_sdb. The bidi sdb should be allocated/deallocated
+> as part of the get/put_command (Again like the prot_sdb) and the
+> current decoupling of scsi_cmnd and blk-request should be kept.
 > 
-> The hardware fifo watermark for generating an interrupt is 4 or more
-> values in the hardware fifo.
+> For now make sure scsi_release_buffers() is called before the
+> call to blk_end_request_all() which might cause the suicide of
+> the block requests. At best the leak of bidi buffers, at worse
+> a crash, as there is a race between the existence of the bidi_request
+> and the free of the associated bidi_sdb.
 > 
-> I use a kfifo that needs to be protected with a spinlock.
+> The reason this was never hit before is because only OSD has the potential
+> of doing asynchronous bidi commands. (So does bsg but it is never used)
+> And OSD clients just happen to do all their bidi commands synchronously, up
+> until recently.
 > 
-> It in much better in the IRQ context to drain the hardware fifo and then
-> put records in the kfifo all at once (or at least in groups of 8 or less
-> but usually greater than 1).
+> CC: Stable Tree <stable@kernel.org>
+> Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
 
-Hmm, so there you have a local buffer that you fill by reading from the
-device word by word, then you copy that data over into fifo and then you
-upper layer again fetches that fifo as byte stream...
+James hi.
 
-I'd probably simply move the processing that you are doing in
-cx23888_ir_rx_read() into cx23888_ir_irq_handler() (since it is very
-simple) and then used kfifo in simple byte mode (since that is what
-upper layer seem to expect).
+What about this BUG. It affects anybody doing bidi commands. The possibilities
+are an sglist leak at best, and a crash at worse.
 
--- 
-Dmitry
+I understand this code needs cleanup, but first things first. Lets first fix the
+bug, which should also go to stable. Then the cleanup can go to next merge window.
+
+BTW: Should I attempt a cleanup on current code, or should I wait for Alan's Patch
+to go in first?
+
+Thanks
+Boaz
+
+> ---
+>  drivers/scsi/scsi_lib.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/scsi/scsi_lib.c b/drivers/scsi/scsi_lib.c
+> index 5987da8..bc9a881 100644
+> --- a/drivers/scsi/scsi_lib.c
+> +++ b/drivers/scsi/scsi_lib.c
+> @@ -749,9 +749,9 @@ void scsi_io_completion(struct scsi_cmnd *cmd, unsigned int good_bytes)
+>  			 */
+>  			req->next_rq->resid_len = scsi_in(cmd)->resid;
+>  
+> +			scsi_release_buffers(cmd);
+>  			blk_end_request_all(req, 0);
+>  
+> -			scsi_release_buffers(cmd);
+>  			scsi_next_command(cmd);
+>  			return;
+>  		}
+
