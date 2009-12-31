@@ -1,121 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753141AbZLaCld@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753172AbZLaCoc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753141AbZLaCld (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Dec 2009 21:41:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752891AbZLaCld
+	id S1753172AbZLaCoc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Dec 2009 21:44:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752991AbZLaCob
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Dec 2009 21:41:33 -0500
-Received: from mail-pz0-f171.google.com ([209.85.222.171]:38860 "EHLO
-	mail-pz0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752745AbZLaClc convert rfc822-to-8bit (ORCPT
+	Wed, 30 Dec 2009 21:44:31 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:61188 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752891AbZLaCoa convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Dec 2009 21:41:32 -0500
+	Wed, 30 Dec 2009 21:44:30 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
          :cc:content-type:content-transfer-encoding;
-        b=ku2JLBuytB55ayE4tzYtbVajY7Mxa6Xhb1g172ng4VcW1U+6klOGymA8lkvB2NEsK9
-         tTu/Hq0Qreyb7PGdkJ89QYm9F1AtbLx6s8TaB6eLJdANlyykveI9jNKksF6QGUN9vW27
-         Mh0kuVgHpiXwNOalI8l721KCnC1NkKx7xPevQ=
+        b=TtlFY8E2brRg5zB+ZYA2+yncdbY+mmqjmhP+RH3YF90xQJ89K7UDjLZeXMpJj/kOYr
+         XAVNPPPUKEl21bC7Z9Vroz3DWf3TY8BPMJUOXy9B3Xyrvv4QEymeyzgmbMQJRD/SrAvZ
+         7hvRl+ab6Hk1gh0eeZYv7SDk65kMU8CG0wI9U=
 MIME-Version: 1.0
-In-Reply-To: <alpine.LSU.2.00.0912301619500.3369@sister.anvils>
-References: <ceeec51bdc2be64416e05ca16da52a126b598e17.1258773030.git.minchan.kim@gmail.com>
-	 <ae2928fe7bb3d94a7ca18d3b3274fdfeb009803a.1258773030.git.minchan.kim@gmail.com>
-	 <4B38876F.6010204@gmail.com>
-	 <alpine.LSU.2.00.0912301619500.3369@sister.anvils>
-Date: Thu, 31 Dec 2009 11:41:31 +0900
-Message-ID: <28c262360912301841r3ed43d31yc677fbc3a01fe5bb@mail.gmail.com>
-Subject: Re: [PATCH 2/3 -mmotm-2009-12-10-17-19] Count zero page as file_rss
-From: Minchan Kim <minchan.kim@gmail.com>
-To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8
+In-Reply-To: <20091230230042.5d2e78ac@lxorguk.ukuu.org.uk>
+References: <m1iqbpwjtp.fsf@fess.ebiederm.org> <m1d41w62zc.fsf_-_@fess.ebiederm.org> 
+	<551280e50912300652r1007dee0j8de750bf33af9b3c@mail.gmail.com> 
+	<20091230183513.GC14493@us.ibm.com> <m1fx6suswz.fsf@fess.ebiederm.org> 
+	<20091230201712.GA23999@us.ibm.com> <m1hbr8tb8q.fsf_-_@fess.ebiederm.org> 
+	<20091230212931.233003b9@lxorguk.ukuu.org.uk> <m1skasrvnq.fsf@fess.ebiederm.org> 
+	<20091230230042.5d2e78ac@lxorguk.ukuu.org.uk>
+From: Bryan Donlan <bdonlan@gmail.com>
+Date: Wed, 30 Dec 2009 21:44:05 -0500
+Message-ID: <3e8340490912301844p4fddaf57ke58ceeba9582e0fa@mail.gmail.com>
+Subject: Re: [RFC][PATCH v3] Unprivileged: Disable raising of privileges
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Serge E. Hallyn" <serue@us.ibm.com>,
+       "Andrew G. Morgan" <morgan@kernel.org>,
+       Benny Amorsen <benny+usenet@amorsen.dk>,
+       Michael Stone <michael@laptop.org>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, linux-security-module@vger.kernel.org,
+       Andi Kleen <andi@firstfloor.org>, David Lang <david@lang.hm>,
+       Oliver Hartkopp <socketcan@hartkopp.net>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Valdis Kletnieks <Valdis.Kletnieks@vt.edu>,
+       Evgeniy Polyakov <zbr@ioremap.net>,
+       "C. Scott Ananian" <cscott@cscott.net>,
+       James Morris <jmorris@namei.org>, Bernie Innocenti <bernie@codewiz.org>,
+       Mark Seaborn <mrs@mythic-beasts.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       =?ISO-8859-1?Q?Am=E9rico_Wang?= <xiyou.wangcong@gmail.com>,
+       Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
+       Samir Bellabes <sam@synack.fr>,
+       Casey Schaufler <casey@schaufler-ca.com>, Pavel Machek <pavel@ucw.cz>,
+       Al Viro <viro@zeniv.linux.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 31, 2009 at 1:49 AM, Hugh Dickins
-<hugh.dickins@tiscali.co.uk> wrote:
-> On Mon, 28 Dec 2009, Minchan Kim wrote:
->> I missed Hugh.
+On Wed, Dec 30, 2009 at 6:00 PM, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+> On Wed, 30 Dec 2009 13:36:57 -0800
+> ebiederm@xmission.com (Eric W. Biederman) wrote:
 >
-> Thank you: it is sweet of you to say so :)
->
+>> Alan Cox <alan@lxorguk.ukuu.org.uk> writes:
 >>
->> Minchan Kim wrote:
->> > Long time ago, we counted zero page as file_rss.
->> > But after reinstanted zero page, we don't do it.
->> > It means rss of process would be smaller than old.
+>> >> Added bprm->nosuid to make remove the need to add
+>> >> duplicate error prone checks.  This ensures that
+>> >> the disabling of suid executables is exactly the
+>> >> same as MNT_NOSUID.
 >> >
->> > It could chage OOM victim selection.
+>> > Another fine example of why we have security hooks so that we don't get a
+>> > kernel full of other "random security idea of the day" hacks.
+>>
+>> Well it comes from plan 9.  Except there they just simply did not
+>> implement suid.  What causes you to think dropping the ability
+>> to execute suid executables is a random security idea of the day?
 >
-> Eh? Â We don't use rss for OOM victim selection, we use total_vm.
+> Well to be fair its random regurgitated security idea of every year or
+> two.
 >
-> I know that's under discussion, and there are good arguments on
-> both sides (I incline to the rss side, but see David's point about
-> predictability); but here you seem to be making an argument for
-> back-compatibility, yet there is no such issue in OOM victim selection.
-
-Sorry, I totally confused that.
-
+> More to the point - we have security_* hooks so this kind of continuous
+> security proposal turdstream can stay out of the main part of the kernel.
 >
-> And if we do decide that rss is appropriate for OOM victim selection,
-> then we would prefer to keep the ZERO_PAGE out of rss, wouldn't we?
+> Cleaning up the mechanism by which NOSUID is handled in kernel seems a
+> good idea. Adding wacky new prctls and gunk for it doesn't, and belongs
+> in whatever security model you are using via the security hooks.
 
-If we start to use RSS, it's good that keep zero page out of rss in OOM aspect.
-But I am not sure it's good in smap aspect.
-Some smap user might want to know max memory usage in process.
-Zero page has a possibility to change real rss.
+I see this as being a security-model agnostic API - the reason being,
+the application is specifying a policy for itself that has meaning in
+all existing security models, and which does not require administrator
+intervention to configure. Rather than reimplementing this for each
+security model, it's far better to do it just once. Moreover, by
+having a single, common API, the application can state the general
+policy "I will never need to gain priviliges over exec" without
+needing to know what LSM is in use.
 
->
->> >
->> > Kame reported following as
->> > "Before starting zero-page works, I checked "questions" in lkml and
->> > found some reports that some applications start to go OOM after zero-page
->> > removal.
->> >
->> > For me, I know one of my customer's application depends on behavior of
->> > zero page (on RHEL5). So, I tried to add again it before RHEL6 because
->> > I think removal of zero-page corrupts compatibility."
->> >
->> > So how about adding zero page as file_rss again for compatibility?
->
-> I think not.
+The future goal of this API is to allow us to relax restrictions on
+creating new namespaces, chrooting, and otherwise altering the task's
+environment in ways that may confuse privileged applications. Since
+security hooks are all about making the existing security restrictions
+_stricter_, it's not easy to later relax these using the security hook
+model. And once we put in the general requirement that "this task
+shall never gain privilege", it should be safe to relax these
+restrictions for _all_ security models.
 
-At least,  we had accounted zero page as file_rss until remove zero page.
-That was my concern.
-I think we have to fix this for above compatibility regardless of OOM issue.
-
->
-> KAMEZAWA-san can correct me (when he returns in the New Year) if I'm
-> wrong, but I don't think his customer's OOMs had anything to do with
-> whether the ZERO_PAGE was counted in file_rss or not: the OOMs came
-> from the fact that many pages were being used up where just the one
-> ZERO_PAGE had been good before. Â Wouldn't he have complained if the
-> zero_pfn patches hadn't solved that problem?
->
-> You are right that I completely overlooked the issue of whether to
-> include the ZERO_PAGE in rss counts (now being a !vm_normal_page,
-> it was just natural to leave it out); and I overlooked the fact that
-> it used to be counted into file_rss in the old days (being !PageAnon).
->
-> So I'm certainly at fault for that, and thank you for bringing the
-> issue to attention; but once considered, I can't actually see a good
-> reason why we should add code to count ZERO_PAGEs into file_rss now.
-> And if this patch falls, then 1/3 and 3/3 would fall also.
->
-> And the patch below would be incomplete anyway, wouldn't it?
-> There would need to be a matching change to zap_pte_range(),
-> but I don't see that.
-
-Thanks.
-If we think this patch is need, I will repost path with fix it.
-
-What do you think?
-
--- 
-Kind regards,
-Minchan Kim
+In short, this is something which is meaningful for all existing LSMs
+and should be implemented in a central point, it will make things
+easier for the namespace folks, and since it will lead to relaxing
+restrictions later, it doesn't make sense to put it in a LSM as they
+stand now.
