@@ -1,72 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752869AbZLaBjk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752900AbZLaBoV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752869AbZLaBjk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Dec 2009 20:39:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752655AbZLaBjj
+	id S1752900AbZLaBoV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Dec 2009 20:44:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752470AbZLaBoU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Dec 2009 20:39:39 -0500
-Received: from mga14.intel.com ([143.182.124.37]:60267 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752383AbZLaBjj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Dec 2009 20:39:39 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
-   d="scan'208";a="227984617"
-Date: Thu, 31 Dec 2009 09:39:36 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Quentin Barnes <qbarnes+nfs@yahoo-inc.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       Nick Piggin <npiggin@suse.de>, Steven Whitehouse <swhiteho@redhat.com>
-Subject: Re: [RFC][PATCH 2/2] readahead: avoid page-by-page reads on
-	POSIX_FADV_RANDOM
-Message-ID: <20091231013935.GA6570@localhost>
-References: <20091225000717.GA26949@yahoo-inc.com> <87aax18xms.fsf@basil.nowhere.org> <20091230051540.GA16308@localhost> <20091230052402.GB26364@localhost> <873a2s8hmp.fsf@basil.nowhere.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <873a2s8hmp.fsf@basil.nowhere.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 30 Dec 2009 20:44:20 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:57573 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752404AbZLaBoT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 30 Dec 2009 20:44:19 -0500
+X-Authority-Analysis: v=1.0 c=1 a=saNOKxlm9mAA:10 a=7U3hwN5JcxgA:10 a=bTxtrCFKbuZ93E9ZVZUA:9 a=XDVISQ6WHFSh93Da13q2YfBHLYgA:4
+X-Cloudmark-Score: 0
+X-Originating-IP: 74.67.89.75
+Subject: Re: [RFC PATCH] dynamic debug - adding ring buffer storage support
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Jiri Olsa <jolsa@redhat.com>,
+       Jason Baron <jbaron@redhat.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <20091230225011.GJ6322@nowhere>
+References: <1261481526-17630-1-git-send-email-jolsa@redhat.com>
+	 <20091222153955.GD3308@redhat.com>
+	 <20091222161353.GB20225@jolsa.lab.eng.brq.redhat.com>
+	 <20091228092402.GD24690@elte.hu>  <20091230225011.GJ6322@nowhere>
+Content-Type: text/plain; charset="ISO-8859-15"
+Organization: Kihon Technologies Inc.
+Date: Wed, 30 Dec 2009 20:44:17 -0500
+Message-ID: <1262223857.28171.9.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 31, 2009 at 02:02:38AM +0800, Andi Kleen wrote:
-> Wu Fengguang <fengguang.wu@intel.com> writes:
-> >   * the ra fields can be accessed concurrently in a racy way.
-> > --- linux.orig/mm/fadvise.c	2009-12-30 13:02:03.000000000 +0800
-> > +++ linux/mm/fadvise.c	2009-12-30 13:23:05.000000000 +0800
-> > @@ -77,12 +77,14 @@ SYSCALL_DEFINE(fadvise64_64)(int fd, lof
-> >  	switch (advice) {
-> >  	case POSIX_FADV_NORMAL:
-> >  		file->f_ra.ra_pages = bdi->ra_pages;
-> > +		file->f_ra.flags &= ~RA_FLAG_RANDOM;
-> >  		break;
-> >  	case POSIX_FADV_RANDOM:
-> > -		file->f_ra.ra_pages = 0;
-> > +		file->f_ra.flags |= RA_FLAG_RANDOM;
+On Wed, 2009-12-30 at 23:50 +0100, Frederic Weisbecker wrote:
+
+> That said, I sometimes dream about one event per printk.
 > 
-> What prevents this from racing with a parallel readahead
-> state modification, losing the bits?
+> Having, say:
+> 
+> /debug/tracing/events/printk/
+>          |
+>          ---- kernel/
+>          |      |
+>          |      ------- time/
+>          |      |        |
+>          |      |        ---- clocksource.c
+>          |      |                 |
+>          |      |                 --- clocksource_unstable:218/
+>          |      |                 |            |
+>          |      |                 |            ---- format
+>          |      |                 |            |
+>          |      |                 |            ---- filter
+>          |      |                 |            |
+>          |      |                 |            ---- enable
+>          |      |                 --- [...]
+>          |      ------- [...]
+>          |
+>          ---- drivers/
+>          |       |
+>          |       ---- [...]
+>          |
+>          ---- [...]
+> 
+> 
+> That would give a total control over every printk, trace_printk, etc...
+> 
+> Too bad that would bloat the memory.
+> Well, that could be wrapped in a single, wildly implemented (understand:
+> not using TRACE_EVENT macro) trace event, something able to walk through
+> every calls of printk, trace_printk, early_printk, etc... and imitate
+> a per printk event granularity.
+> 
+> But still it needs to be useful...
 
-Oh I pretended that the problem don't exist..
 
-To be serious, the race only exist inside a mutithread application,
-where one single fd is shared between two threads, one is doing
-fadvise, another doing readahead.
+I think we can do the above without bloating memory. Yes we would not
+need the TRACE_EVENT macro for this. The TRACE_EVENT macro is just for
+generic tracing, but we could easily come up with something specific for
+the printk's that will not bloat the kernel as much.
 
-A sane application won't do fadvise(POSIX_FADV_RANDOM) while active
-reads are going one concurrently: this leads to indeterminate behavior
-by itself -- from which request the random hint takes effect?
+When I get some time, I may try to play with this idea.
 
-fadvise() shall always be in the same streamline with all reads.
+-- Steve
 
-In real workloads, 1% applications may do POSIX_FADV_RANDOM, among
-which 1% applications may be broken. And if the race does happen, the
-impact is very small. So I choose to just ignore the race and use
-non-atomic operations..
 
-Thanks,
-Fengguang
+
