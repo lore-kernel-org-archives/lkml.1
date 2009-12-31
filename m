@@ -1,128 +1,214 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752939AbZLaSGV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752982AbZLaSG2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752939AbZLaSGV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Dec 2009 13:06:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752893AbZLaSGU
+	id S1752982AbZLaSG2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Dec 2009 13:06:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752958AbZLaSGY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Dec 2009 13:06:20 -0500
-Received: from mail1.radix.net ([207.192.128.31]:40881 "EHLO mail1.radix.net"
+	Thu, 31 Dec 2009 13:06:24 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:46173 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752883AbZLaSGU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Dec 2009 13:06:20 -0500
-Subject: Re: [PATCH] [0/6] kfifo fixes/improvements
-From: Andy Walls <awalls@radix.net>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Vikram Dhillon <dhillonv10@gmail.com>,
-       Stefani Seibold <stefani@seibold.net>, Andi Kleen <andi@firstfloor.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "akpm@osdl.org" <akpm@osdl.org>
-In-Reply-To: <20091231073547.GA14333@core.coreip.homeip.net>
-References: <20091228145749.GD4994@basil.fritz.box>
-	 <1262016510.12656.25.camel@wall-e> <20091228172651.GE4994@basil.fritz.box>
-	 <1262030653.15368.37.camel@wall-e> <20091228204003.GH4994@basil.fritz.box>
-	 <1262076056.23095.21.camel@wall-e>
-	 <64D5262E-28CF-41E8-9425-F8C5DD0A2265@gmail.com>
-	 <ea6602020912291718n103694aft78ef15b65081a996@mail.gmail.com>
-	 <20091230020830.GA7049@core.coreip.homeip.net>
-	 <1262194152.5645.10.camel@palomino.walls.org>
-	 <20091231073547.GA14333@core.coreip.homeip.net>
-Content-Type: text/plain
-Date: Thu, 31 Dec 2009 13:03:53 -0500
-Message-Id: <1262282633.3055.40.camel@palomino.walls.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
+	id S1752931AbZLaSGW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Dec 2009 13:06:22 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [origin tree build failure] Re: [git pull] PCI fixes
+Date: Thu, 31 Dec 2009 19:06:35 +0100
+User-Agent: KMail/1.12.3 (Linux/2.6.33-rc2-tst; KDE/4.3.3; x86_64; ; )
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20091228081002.71f0e3b9@jbarnes-x200> <20091231122617.GA3508@elte.hu>
+In-Reply-To: <20091231122617.GA3508@elte.hu>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200912311906.35704.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-12-30 at 23:35 -0800, Dmitry Torokhov wrote:
-> On Wed, Dec 30, 2009 at 12:29:12PM -0500, Andy Walls wrote:
-> > On Tue, 2009-12-29 at 18:08 -0800, Dmitry Torokhov wrote:
-> > > A: http://en.wikipedia.org/wiki/Top_post
-> > > Q: Were do I find info about this thing called top-posting?
-> > > A: Because it messes up the order in which people normally read text.
-> > > Q: Why is top-posting such a bad thing?
-> > > 
-> > > On Tue, Dec 29, 2009 at 08:18:50PM -0500, Vikram Dhillon wrote:
-> > > > IMHO you can process elements rather than bytes, which is a good
-> > > > improvement, but then again its my opinion, if others don't like it
-> > > > then we can always change it :D
-> > > 
-> > > Right, I was not arguing against having a record-oriented interface, I
-> > > was questioning the utility of processing several records at a time.
-> > > Kfifo users that I have seen so far were working in a record-at-a-time
-> > > mode.
-> > 
-> > I have a use case in linux/drivers/media/video/cx23885/cx23888-ir.c
-> > right now.
-> > 
-> > I have a hardware fifo that can hold up to 8 values, 17 bits each - and
-> > the high bit of the value is a flag indicating if more data is in the
-> > hardware fifo.
-> > 
-> > The hardware fifo watermark for generating an interrupt is 4 or more
-> > values in the hardware fifo.
-> > 
-> > I use a kfifo that needs to be protected with a spinlock.
-> > 
-> > It in much better in the IRQ context to drain the hardware fifo and then
-> > put records in the kfifo all at once (or at least in groups of 8 or less
-> > but usually greater than 1).
+On Thursday 31 December 2009, Ingo Molnar wrote:
 > 
-> Hmm, so there you have a local buffer that you fill by reading from the
-> device word by word, then you copy that data over into fifo and then you
-> upper layer again fetches that fifo as byte stream...
+> * Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
+> 
+> > The following changes since commit 8bea8672edfca7ec5f661cafb218f1205863b343:
+> >   Stephen Rothwell (1):
+> >         mfd: compile fix for twl4030 renaming
+> > 
+> > are available in the git repository at:
+> > 
+> >   git://git.kernel.org/pub/scm/linux/kernel/git/jbarnes/pci-2.6 for-linus
+> > 
+> > A few misc fixes.  A few people have run into the CLS bug so far, which Csaba
+> > kindly provided a fix for (detection of PCI cache line size is a good
+> > improvement, but it will fail in some cases due to a virtualized or buggy
+> > platform).
+> > 
+> > This set also adds the device specific reset quirk code from Dexuan;
+> > needed for some devices especially in virtualized environments.
+> > 
+> > Benjamin Herrenschmidt (1):
+> >       PCI/cardbus: Add a fixup hook and fix powerpc
+> > 
+> > Csaba Henk (1):
+> >       PCI: Handle case when no pci device can provide cache line size hint
+> > 
+> > Detlef Riekenberg (1):
+> >       vgaarbiter: fix a typo in the vgaarbiter Documentation
+> > 
+> > Dexuan Cui (3):
+> >       PCI: support device-specific reset methods
+> >       PCI: add Intel USB specific reset method
+> >       PCI: add Intel 82599 Virtual Function specific reset method
+> > 
+> > Jiri Slaby (1):
+> >       PCI: fix section mismatch on update_res()
+> > 
+> > Rafael J. Wysocki (1):
+> >       PCI/PM: Propagate wake-up enable for PCIe devices too
+> > 
+> > Stefan Assmann (2):
+> >       PCI: change PCI nomenclature in drivers/pci/ (comment changes)
+> >       PCI: change PCI nomenclature in drivers/pci/ (non-comment changes)
+> > 
+> >  Documentation/vgaarbiter.txt           |    2 +-
+> >  arch/powerpc/kernel/pci-common.c       |   13 +++++++
+> >  arch/x86/pci/bus_numa.c                |    2 +-
+> >  drivers/pci/hotplug/shpchp.h           |    2 +-
+> >  drivers/pci/intel-iommu.c              |    6 ++--
+> >  drivers/pci/intr_remapping.c           |    2 +-
+> >  drivers/pci/pci-acpi.c                 |   10 +----
+> >  drivers/pci/pci.c                      |   30 +++++++++++++++--
+> >  drivers/pci/pci.h                      |    8 ++++
+> >  drivers/pci/pcie/aer/Kconfig.debug     |    4 +-
+> >  drivers/pci/pcie/aer/aer_inject.c      |    6 ++--
+> >  drivers/pci/pcie/aer/aerdrv.c          |    2 +-
+> >  drivers/pci/pcie/aer/aerdrv_acpi.c     |    2 +-
+> >  drivers/pci/pcie/aer/aerdrv_core.c     |    6 ++--
+> >  drivers/pci/pcie/aer/aerdrv_errprint.c |    4 +-
+> >  drivers/pci/pcie/aspm.c                |    4 +-
+> >  drivers/pci/pcie/portdrv_pci.c         |    2 +-
+> >  drivers/pci/quirks.c                   |   57 +++++++++++++++++++++++++++++++-
+> >  drivers/pci/search.c                   |    6 ++--
+> >  drivers/pcmcia/cardbus.c               |    2 +-
+> >  include/linux/pci.h                    |    3 ++
+> >  21 files changed, 135 insertions(+), 38 deletions(-)
+> 
+> FYI, a commit in this tree broke today's -tip build on x86:
+> 
+>  drivers/built-in.o: In function `pci_dev_reset':
+>  pci.c:(.text+0x95ed): undefined reference to `pci_dev_reset_methods'
+>  pci.c:(.text+0x95fd): undefined reference to `pci_dev_reset_methods'
+> 
+> I wont have time to bisect it today but wanted to give you a heads up.
 
-Well technically the upper layer should be fetching data as a 4 byte
-(u32 record) stream, but at the time I wrote my usage, kfifo only had
-byte oriented usage for reading out of the kfifo.
+This quite obviously is an upshot of
 
-Now that the spinlock has moved out of kfifo, I suppose when I convert
-to record based usage, I don't strictly need multiple record puts into
-the kfifo.  Since now my code can have fine grained control of when the
-spinlock is taken and released, when I move to record based, I could
-just put records into the kfifo one at a time with little penalty.
+commit b9c3b266411d27f1a6466c19d146d08db576bfea
+Author: Dexuan Cui <dexuan.cui@intel.com>
+Date:   Mon Dec 7 13:03:21 2009 +0800
 
-It really doesn't matter to me since the spinlock acquire and release,
-saving and restoring the processor flags, was the big penalty.
+    PCI: support device-specific reset methods
 
+and happens because you don't have CONFIG_PCI_QUIRKS defined in your
+(random?) .configs.
 
-> I'd probably simply move the processing that you are doing in
-> cx23888_ir_rx_read() into cx23888_ir_irq_handler() (since it is very
-> simple) and then used kfifo in simple byte mode (since that is what
-> upper layer seem to expect).
+The patch below should fix it.
 
-Well, the the upper layer is really in a work handler that calls
+Rafael
 
-	cx23885-input.c:cx23885_input_process_pulse_widths_rc5()
+---
+From: Rafael J. Wysocki <rjw@sisk.pl>
+Subject: PCI: Fix build if quirks are not enabled
 
-for RC-5 decoding for example.  It ends up calling cx23888_ir_rx_read()
-to read in a number of 4 bytes (u32) pulse width records in a batch.  It
-then feeds those records through the RC-5 decoding process one record at
-a time (because that was the simple way to implement a decoding state
-machine).
+After commit b9c3b266411d27f1a6466c19d146d08db576bfea
+(PCI: support device-specific reset methods) kernel building is
+broken if CONFIG_PCI_QUIRKS is unset.
 
-The idea was to avoid all the spinlock acquire release penalties
-associtaed with accessing the kfifo, and to avoid contention with the
-IRQ handler.
+Fix this by moving pci_dev_specific_reset() to drivers/pci/quirks.c
+and providing an empty replacement for !CONFIG_PCI_QUIRKS builds.
 
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+Reported-by: Ingo Molnar <mingo@elte.hu>
+---
+ drivers/pci/pci.c    |   15 ---------------
+ drivers/pci/pci.h    |    2 +-
+ drivers/pci/quirks.c |   19 ++++++++++++++++++-
+ 3 files changed, 19 insertions(+), 17 deletions(-)
 
-(BTW, I split the unit conversion work out to cx23888_ir_rx_read() with
-IRQ latency in mind.  Since this is a video capture card with other,
-more important interrupts to service, I just didn't want to spend any
-extra CPU cycles in the cx23888_ir_irq_handler than necessary.  A work
-handler context calling into cx23888_ir_rx_read() is a preferable
-context in which to perform unit conversions compared to an IRQ context,
-IMO.)
-	
-
-
-So in summary, I think any need I had for multiple record kfifo access
-can be worked around by having the spinlock separate from the kfifo
-calls.  However, with multiple record kfifo access methods available,
-I'd likely find a convenient use for such methods.
-
-Regards,
-Andy
-
+Index: linux-2.6/drivers/pci/quirks.c
+===================================================================
+--- linux-2.6.orig/drivers/pci/quirks.c
++++ linux-2.6/drivers/pci/quirks.c
+@@ -2684,14 +2684,31 @@ static int reset_intel_82599_sfp_virtfn(
+ 
+ #define PCI_DEVICE_ID_INTEL_82599_SFP_VF   0x10ed
+ 
+-struct pci_dev_reset_methods pci_dev_reset_methods[] = {
++static const struct pci_dev_reset_methods pci_dev_reset_methods[] = {
+ 	{ PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82599_SFP_VF,
+ 		 reset_intel_82599_sfp_virtfn },
+ 	{ PCI_VENDOR_ID_INTEL, PCI_ANY_ID,
+ 		reset_intel_generic_dev },
+ 	{ 0 }
+ };
++
++int pci_dev_specific_reset(struct pci_dev *dev, int probe)
++{
++	struct pci_dev_reset_methods *i;
++
++	for (i = pci_dev_reset_methods; i->reset; i++) {
++		if ((i->vendor == dev->vendor ||
++		     i->vendor == (u16)PCI_ANY_ID) &&
++		    (i->device == dev->device ||
++		     i->device == (u16)PCI_ANY_ID))
++			return i->reset(dev, probe);
++	}
++
++	return -ENOTTY;
++}
++
+ #else
+ void pci_fixup_device(enum pci_fixup_pass pass, struct pci_dev *dev) {}
++int pci_dev_specific_reset(struct pci_dev *dev, int probe) { return -ENOTTY; }
+ #endif
+ EXPORT_SYMBOL(pci_fixup_device);
+Index: linux-2.6/drivers/pci/pci.c
+===================================================================
+--- linux-2.6.orig/drivers/pci/pci.c
++++ linux-2.6/drivers/pci/pci.c
+@@ -2430,21 +2430,6 @@ static int pci_parent_bus_reset(struct p
+ 	return 0;
+ }
+ 
+-static int pci_dev_specific_reset(struct pci_dev *dev, int probe)
+-{
+-	struct pci_dev_reset_methods *i;
+-
+-	for (i = pci_dev_reset_methods; i->reset; i++) {
+-		if ((i->vendor == dev->vendor ||
+-		     i->vendor == (u16)PCI_ANY_ID) &&
+-		    (i->device == dev->device ||
+-		     i->device == (u16)PCI_ANY_ID))
+-			return i->reset(dev, probe);
+-	}
+-
+-	return -ENOTTY;
+-}
+-
+ static int pci_dev_reset(struct pci_dev *dev, int probe)
+ {
+ 	int rc;
+Index: linux-2.6/drivers/pci/pci.h
+===================================================================
+--- linux-2.6.orig/drivers/pci/pci.h
++++ linux-2.6/drivers/pci/pci.h
+@@ -328,6 +328,6 @@ struct pci_dev_reset_methods {
+ 	int (*reset)(struct pci_dev *dev, int probe);
+ };
+ 
+-extern struct pci_dev_reset_methods pci_dev_reset_methods[];
++extern int pci_dev_specific_reset(struct pci_dev *dev, int probe);
+ 
+ #endif /* DRIVERS_PCI_H */
