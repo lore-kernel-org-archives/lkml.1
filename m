@@ -1,109 +1,160 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753172AbZLaCoc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753167AbZLaCpq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753172AbZLaCoc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Dec 2009 21:44:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752991AbZLaCob
+	id S1753167AbZLaCpq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Dec 2009 21:45:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753009AbZLaCpp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Dec 2009 21:44:31 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:61188 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752891AbZLaCoa convert rfc822-to-8bit (ORCPT
+	Wed, 30 Dec 2009 21:45:45 -0500
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:60233 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752929AbZLaCpo convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Dec 2009 21:44:30 -0500
+	Wed, 30 Dec 2009 21:45:44 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
          :cc:content-type:content-transfer-encoding;
-        b=TtlFY8E2brRg5zB+ZYA2+yncdbY+mmqjmhP+RH3YF90xQJ89K7UDjLZeXMpJj/kOYr
-         XAVNPPPUKEl21bC7Z9Vroz3DWf3TY8BPMJUOXy9B3Xyrvv4QEymeyzgmbMQJRD/SrAvZ
-         7hvRl+ab6Hk1gh0eeZYv7SDk65kMU8CG0wI9U=
+        b=M1uVnW7Vwhe5L8Df6jqsyx3BxlAp7s2tDC2uZiJqqHm9lKV65nlQAJCDswcoubPpMh
+         P403AuBpgQg+qRE7L3hfpG3b2FmoRNhn10N9XqxChNsATJCZaF1ZG45xmcvsDJqF0tRg
+         uwLxgdkTQKzkSoRadTQklD/DSpoCYUr2jj7FQ=
 MIME-Version: 1.0
-In-Reply-To: <20091230230042.5d2e78ac@lxorguk.ukuu.org.uk>
-References: <m1iqbpwjtp.fsf@fess.ebiederm.org> <m1d41w62zc.fsf_-_@fess.ebiederm.org> 
-	<551280e50912300652r1007dee0j8de750bf33af9b3c@mail.gmail.com> 
-	<20091230183513.GC14493@us.ibm.com> <m1fx6suswz.fsf@fess.ebiederm.org> 
-	<20091230201712.GA23999@us.ibm.com> <m1hbr8tb8q.fsf_-_@fess.ebiederm.org> 
-	<20091230212931.233003b9@lxorguk.ukuu.org.uk> <m1skasrvnq.fsf@fess.ebiederm.org> 
-	<20091230230042.5d2e78ac@lxorguk.ukuu.org.uk>
-From: Bryan Donlan <bdonlan@gmail.com>
-Date: Wed, 30 Dec 2009 21:44:05 -0500
-Message-ID: <3e8340490912301844p4fddaf57ke58ceeba9582e0fa@mail.gmail.com>
-Subject: Re: [RFC][PATCH v3] Unprivileged: Disable raising of privileges
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Serge E. Hallyn" <serue@us.ibm.com>,
-       "Andrew G. Morgan" <morgan@kernel.org>,
-       Benny Amorsen <benny+usenet@amorsen.dk>,
-       Michael Stone <michael@laptop.org>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, linux-security-module@vger.kernel.org,
-       Andi Kleen <andi@firstfloor.org>, David Lang <david@lang.hm>,
-       Oliver Hartkopp <socketcan@hartkopp.net>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Valdis Kletnieks <Valdis.Kletnieks@vt.edu>,
-       Evgeniy Polyakov <zbr@ioremap.net>,
-       "C. Scott Ananian" <cscott@cscott.net>,
-       James Morris <jmorris@namei.org>, Bernie Innocenti <bernie@codewiz.org>,
-       Mark Seaborn <mrs@mythic-beasts.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       =?ISO-8859-1?Q?Am=E9rico_Wang?= <xiyou.wangcong@gmail.com>,
-       Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
-       Samir Bellabes <sam@synack.fr>,
-       Casey Schaufler <casey@schaufler-ca.com>, Pavel Machek <pavel@ucw.cz>,
-       Al Viro <viro@zeniv.linux.org.uk>
+In-Reply-To: <0F1B54C89D5F954D8535DB252AF412FA0553E3A0@chinexm1.ad.analog.com>
+References: <1261603190-5036-1-git-send-email-jason.wessel@windriver.com>
+	 <1261603190-5036-4-git-send-email-jason.wessel@windriver.com>
+	 <1261603190-5036-5-git-send-email-jason.wessel@windriver.com>
+	 <1261603190-5036-6-git-send-email-jason.wessel@windriver.com>
+	 <1261603190-5036-7-git-send-email-jason.wessel@windriver.com>
+	 <1261603190-5036-8-git-send-email-jason.wessel@windriver.com>
+	 <1261603190-5036-9-git-send-email-jason.wessel@windriver.com>
+	 <1261603190-5036-10-git-send-email-jason.wessel@windriver.com>
+	 <8bd0f97a0912261312x4b7c7df6s14ac0137b702044e@mail.gmail.com>
+	 <0F1B54C89D5F954D8535DB252AF412FA0553E3A0@chinexm1.ad.analog.com>
+Date: Thu, 31 Dec 2009 10:45:43 +0800
+Message-ID: <4e5ebad50912301845p35b1ea98l2f91c2a209ee863a@mail.gmail.com>
+Subject: Re: [PATCH 09/37] kgdb,blackfin: Add in kgdb_arch_set_pc for blackfin
+From: Sonic Zhang <sonic.adi@gmail.com>
+To: "Zhang, Sonic" <Sonic.Zhang@analog.com>
+Cc: Mike Frysinger <vapier.adi@gmail.com>,
+       Jason Wessel <jason.wessel@windriver.com>, linux-kernel@vger.kernel.org,
+       kgdb-bugreport@lists.sourceforge.net, kdb@oss.sgi.com, mingo@elte.hu
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 30, 2009 at 6:00 PM, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
-> On Wed, 30 Dec 2009 13:36:57 -0800
-> ebiederm@xmission.com (Eric W. Biederman) wrote:
+I have to recall my last wrong patch.
+
+In blackfin, kgdb is running in delayed exception IRQ5 other than in
+exception IRQ3 directly.  Register reti other than retx in pt_regs is
+the kgdb return address. So, don't put PC in gdb_regs into retx.
+
+Sonic Zhang
+
+Index: arch/blackfin/kernel/kgdb.c
+============================
+--- arch/blackfin/kernel/kgdb.c	(revision 8105)
++++ arch/blackfin/kernel/kgdb.c	(revision 8106)
+@@ -147,7 +147,7 @@
+ 	regs->lb1 = gdb_regs[BFIN_LB1];
+ 	regs->usp = gdb_regs[BFIN_USP];
+ 	regs->syscfg = gdb_regs[BFIN_SYSCFG];
+-	regs->retx = gdb_regs[BFIN_PC];
++	regs->retx = gdb_regs[BFIN_RETX];
+ 	regs->retn = gdb_regs[BFIN_RETN];
+ 	regs->rete = gdb_regs[BFIN_RETE];
+ 	regs->pc = gdb_regs[BFIN_PC];
+
+
+
+On Mon, Dec 28, 2009 at 6:17 PM, Zhang, Sonic <Sonic.Zhang@analog.com> wrote:
+> A little update.
 >
->> Alan Cox <alan@lxorguk.ukuu.org.uk> writes:
+> GDB uses field BFIN_PC as the resume address from debugging mode. But, field pc in struct pt_regs is where kernel resumes from an interrupt. So, BFIN_PC is actually retx when do kernel debugging.
+>
+>
+> Sonic
+>
+>
+> --- trunk/arch/blackfin/kernel/kgdb.c   2009-12-28 09:27:27 UTC (rev 8085)
+> +++ trunk/arch/blackfin/kernel/kgdb.c   2009-12-28 10:08:30 UTC (rev 8086)
+> @@ -79,7 +79,7 @@
+>        gdb_regs[BFIN_RETX] = regs->retx;
+>        gdb_regs[BFIN_RETN] = regs->retn;
+>        gdb_regs[BFIN_RETE] = regs->rete;
+> -       gdb_regs[BFIN_PC] = regs->pc;
+> +       gdb_regs[BFIN_PC] = regs->retx;
+>        gdb_regs[BFIN_CC] = 0;
+>        gdb_regs[BFIN_EXTRA1] = 0;
+>        gdb_regs[BFIN_EXTRA2] = 0;
+> @@ -150,7 +150,7 @@
+>        regs->retx = gdb_regs[BFIN_PC];
+>        regs->retn = gdb_regs[BFIN_RETN];
+>        regs->rete = gdb_regs[BFIN_RETE];
+> -       regs->pc = gdb_regs[BFIN_PC];
+> +       regs->pc = gdb_regs[BFIN_RETI];
+>
+>  #if 0                          /* can't change these */
+>        regs->astat = gdb_regs[BFIN_ASTAT];
+>
+>
+>
+>
+> -----Original Message-----
+> From: Mike Frysinger [mailto:vapier.adi@gmail.com]
+> Sent: Sunday, December 27, 2009 5:12 AM
+> To: Jason Wessel
+> Cc: linux-kernel@vger.kernel.org; kgdb-bugreport@lists.sourceforge.net; kdb@oss.sgi.com; mingo@elte.hu; Zhang, Sonic
+> Subject: Re: [PATCH 09/37] kgdb,blackfin: Add in kgdb_arch_set_pc for blackfin
+>
+> On Wed, Dec 23, 2009 at 16:19, Jason Wessel wrote:
+>> The new debug core api requires all architectures that use to debug
+>> core to implement a function to set the program counter.
 >>
->> >> Added bprm->nosuid to make remove the need to add
->> >> duplicate error prone checks.  This ensures that
->> >> the disabling of suid executables is exactly the
->> >> same as MNT_NOSUID.
->> >
->> > Another fine example of why we have security hooks so that we don't get a
->> > kernel full of other "random security idea of the day" hacks.
+>> CC: Mike Frysinger <vapier@gentoo.org>
+>> Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
+>> ---
+>>  arch/blackfin/kernel/kgdb.c |    5 +++++
+>>  1 files changed, 5 insertions(+), 0 deletions(-)
 >>
->> Well it comes from plan 9.  Except there they just simply did not
->> implement suid.  What causes you to think dropping the ability
->> to execute suid executables is a random security idea of the day?
+>> diff --git a/arch/blackfin/kernel/kgdb.c b/arch/blackfin/kernel/kgdb.c
+>> index f1036b6..5965188 100644
+>> --- a/arch/blackfin/kernel/kgdb.c
+>> +++ b/arch/blackfin/kernel/kgdb.c
+>> @@ -644,6 +644,11 @@ int kgdb_arch_remove_breakpoint(unsigned long
+>> addr, char *bundle)
+>>        return bfin_probe_kernel_write((char *)addr, bundle,
+>> BREAK_INSTR_SIZE);
+>>  }
+>>
+>> +void kgdb_arch_set_pc(struct pt_regs *regs, unsigned long ip) {
+>> +       regs->retx = ip;
+>> +}
+>> +
+>>  int kgdb_arch_init(void)
+>>  {
+>>        kgdb_single_step = 0;
 >
-> Well to be fair its random regurgitated security idea of every year or
-> two.
+> Sonic should be able to check this.  our pc handling seems a little wonky atm:
 >
-> More to the point - we have security_* hooks so this kind of continuous
-> security proposal turdstream can stay out of the main part of the kernel.
+> arch/blackfin/kernel/kgdb.c:
+> void pt_regs_to_gdb_regs(unsigned long *gdb_regs, struct pt_regs *regs) { ...
+>    gdb_regs[BFIN_RETI] = regs->pc;
+>    gdb_regs[BFIN_RETX] = regs->retx;
+>    gdb_regs[BFIN_PC] = regs->pc;
+> ...
+> }
+> ...
+> void gdb_regs_to_pt_regs(unsigned long *gdb_regs, struct pt_regs *regs) { ...
+>    regs->pc = gdb_regs[BFIN_PC];
+>    regs->retx = gdb_regs[BFIN_PC];
+>    /* nothing for BFIN_RETI */
+> ...
+> }
+> -mike
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 >
-> Cleaning up the mechanism by which NOSUID is handled in kernel seems a
-> good idea. Adding wacky new prctls and gunk for it doesn't, and belongs
-> in whatever security model you are using via the security hooks.
-
-I see this as being a security-model agnostic API - the reason being,
-the application is specifying a policy for itself that has meaning in
-all existing security models, and which does not require administrator
-intervention to configure. Rather than reimplementing this for each
-security model, it's far better to do it just once. Moreover, by
-having a single, common API, the application can state the general
-policy "I will never need to gain priviliges over exec" without
-needing to know what LSM is in use.
-
-The future goal of this API is to allow us to relax restrictions on
-creating new namespaces, chrooting, and otherwise altering the task's
-environment in ways that may confuse privileged applications. Since
-security hooks are all about making the existing security restrictions
-_stricter_, it's not easy to later relax these using the security hook
-model. And once we put in the general requirement that "this task
-shall never gain privilege", it should be safe to relax these
-restrictions for _all_ security models.
-
-In short, this is something which is meaningful for all existing LSMs
-and should be implemented in a central point, it will make things
-easier for the namespace folks, and since it will lead to relaxing
-restrictions later, it doesn't make sense to put it in a LSM as they
-stand now.
