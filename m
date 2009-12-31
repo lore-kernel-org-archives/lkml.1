@@ -1,77 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752887AbZLaSj7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753003AbZLaSlV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752887AbZLaSj7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Dec 2009 13:39:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752474AbZLaSj6
+	id S1753003AbZLaSlV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Dec 2009 13:41:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752756AbZLaSlS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Dec 2009 13:39:58 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:36568 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751536AbZLaSj6 (ORCPT
+	Thu, 31 Dec 2009 13:41:18 -0500
+Received: from out02.mta.xmission.com ([166.70.13.232]:38784 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752355AbZLaSlR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Dec 2009 13:39:58 -0500
-Date: Thu, 31 Dec 2009 10:39:41 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Yuhong Bao <yuhongbao_386@hotmail.com>
-cc: mingo@redhat.com, linux-kernel@vger.kernel.org
-Subject: Re: Ubuntu 32-bit, 32-bit PAE, 64-bit Kernel Benchmarks
-In-Reply-To: <SNT125-W41CEF6892DBE0B1FD99B4AC3780@phx.gbl>
-Message-ID: <alpine.LFD.2.00.0912311019580.11961@localhost.localdomain>
-References: <SNT125-W41CEF6892DBE0B1FD99B4AC3780@phx.gbl>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Thu, 31 Dec 2009 13:41:17 -0500
+To: "Andrew G. Morgan" <morgan@kernel.org>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Bryan Donlan <bdonlan@gmail.com>,
+       Benny Amorsen <benny+usenet@amorsen.dk>,
+       Michael Stone <michael@laptop.org>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, linux-security-module@vger.kernel.org,
+       Andi Kleen <andi@firstfloor.org>, David Lang <david@lang.hm>,
+       Oliver Hartkopp <socketcan@hartkopp.net>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Valdis Kletnieks <Valdis.Kletnieks@vt.edu>,
+       Evgeniy Polyakov <zbr@ioremap.net>,
+       "C. Scott Ananian" <cscott@cscott.net>,
+       James Morris <jmorris@namei.org>, Bernie Innocenti <bernie@codewiz.org>,
+       Mark Seaborn <mrs@mythic-beasts.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>,
+       Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
+       Samir Bellabes <sam@synack.fr>,
+       Casey Schaufler <casey@schaufler-ca.com>, Pavel Machek <pavel@ucw.cz>,
+       Al Viro <viro@zeniv.linux.org.uk>
+Subject: Re: [RFC][PATCH v3] Unprivileged: Disable raising of privileges
+References: <551280e50912300652r1007dee0j8de750bf33af9b3c@mail.gmail.com>
+	<m1fx6suswz.fsf@fess.ebiederm.org> <20091230201712.GA23999@us.ibm.com>
+	<m1hbr8tb8q.fsf_-_@fess.ebiederm.org>
+	<20091230212931.233003b9@lxorguk.ukuu.org.uk>
+	<m1skasrvnq.fsf@fess.ebiederm.org>
+	<20091230230042.5d2e78ac@lxorguk.ukuu.org.uk>
+	<3e8340490912301844p4fddaf57ke58ceeba9582e0fa@mail.gmail.com>
+	<20091231173334.5e3d7557@lxorguk.ukuu.org.uk>
+	<20091231175257.GA7210@us.ibm.com>
+	<551280e50912311020x2bdc5b1o699a601f67b91662@mail.gmail.com>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Thu, 31 Dec 2009 10:41:08 -0800
+In-Reply-To: <551280e50912311020x2bdc5b1o699a601f67b91662@mail.gmail.com> (Andrew G. Morgan's message of "Thu\, 31 Dec 2009 10\:20\:18 -0800")
+Message-ID: <m1oclfkmuz.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Scanned: No (on in02.mta.xmission.com); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+"Andrew G. Morgan" <morgan@kernel.org> writes:
 
+> Since there is already independent support for disabling file
+> capabilities (the privilege escalation part), I see these two
+> mechanisms as separable.
 
-On Wed, 30 Dec 2009, Yuhong Bao wrote:
-> 
-> Given that Linus was once talking about the performance penalties of PAE 
-> and HIGHMEM64G, perhaps you'd find these benchmarks done by Phoronix of 
-> interest:
->   http://www.phoronix.com/scan.php?page=article&item=ubuntu_32_pae
+I guess there is something that resembles support for disabling
+privilege escalation.  The problem is that it requires privilege to
+use it.
 
-PAE has no negative impact on user-land loads (aside from a potentially 
-really _tiny_ effect from just bigger page tables), and obviously means 
-that you actually have more RAM available, so it can be a big win.
+I have no problem with expressing this in a fine grained manner internally
+to the kernel but the user space interface needs to be atomic so that
+we can enable this all without privilege.
 
-The "25% cost" is purely kernel-side work when the kernel needs to 
-kmap/kunmap - which it only needs to do when it touches highmem pages 
-itself directly. Which is pretty rare - but when it happens a lot, it's 
-extremely expensive.
+Further I may be off but I think the implementation would be more
+challenging than what I have already posted.  That doesn't mean it
+won't be more useful long term.
 
-The worst load I've ever seen (which was the 25%+ case) needed btrfs 
-and heavy meta-data workloads (ie things like file creates/deletes, or 
-uncached lookups), because btrfs puts all its radix trees in highmem pages 
-and thus needs to kmap/kunmap them all. So that's one way to see heavy 
-kmap/kunmap loads.
-
-(In the meantime, I complained to the btrfs people about the CPU hogging 
-behavior, and afaik btrfs has improved since I did my kernel profiles of 
-the benchmarks, but I haven't re-done them)
-
-Theres' a potential secondary issue: my test-bed for that btrfs setup was 
-a netbook using Intel Atom. The performance profile of an Atom chip is 
-pretty different from any of the better out-of-order CPU's.
-
-Extra instructions cost a lot more. For example, out-of-order is 
-particularly good at handling "nonsense" instructions that aren't on a 
-critical path and aren't important for actual semantics - things like the 
-stack frame modifications etc are often almost "free" on out-of-order 
-CPU's because they only tend to have trivial dependencies that can be 
-worked around with things like the "stack engine" etc. So I seem to 
-remember that the "omit stack frame" option was a much bigger deal on Atom 
-than on a Core 2 Duo CPU, for example.
-
-So it's entirely possible that the TLB flushing (and eventual misses, of 
-course) involved with kmap()/kunmap() is much more expensive on Atom than 
-it is on a Core2 system. So it's possible that my 25% cost thing was for 
-pretty much a pessimal situation, due to a combination of heavy kernel 
-loads (I used "git status" as one of the btrfs/atom benchmarks - pretty 
-much _all_ it does is pathname lookups and readdir) with btrfs and atom.
-
-		Linus
+Eric
