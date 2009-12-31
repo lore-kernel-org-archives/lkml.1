@@ -1,144 +1,166 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751660AbZLaVBx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751799AbZLaVHD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751660AbZLaVBx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Dec 2009 16:01:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751336AbZLaVBw
+	id S1751799AbZLaVHD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Dec 2009 16:07:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751524AbZLaVHB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Dec 2009 16:01:52 -0500
-Received: from mga03.intel.com ([143.182.124.21]:47986 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751086AbZLaVBw convert rfc822-to-8bit (ORCPT
+	Thu, 31 Dec 2009 16:07:01 -0500
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:48656 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751336AbZLaVHA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Dec 2009 16:01:52 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
-   d="scan'208";a="228221990"
-From: "Smith, GeoffX" <geoffx.smith@intel.com>
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-CC: Arjan van de Ven <arjan@infradead.org>
-Date: Thu, 31 Dec 2009 13:01:49 -0800
-Subject: [PATCH] proc: Get/set timer slack through /proc
-Thread-Topic: [PATCH] proc: Get/set timer slack through /proc
-Thread-Index: AcqKXHhtfRu+nQSNRImj44DOWYbF2A==
-Message-ID: <354B2877CF17F44BB3FA44EB4DB0E5470C91CE1D19@orsmsx510.amr.corp.intel.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Thu, 31 Dec 2009 16:07:00 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=wYzaTXdZdgcGxUy04DVoPcTiQf3AxDl1mHWwMSc27Z0t1xmNUy4mi8kLpjHtznfysK
+         JOYCploEnfDlIwuVssWkimBXAAE5bx7xd1eSvHx9Bp/aUdBZ0jrhcjGbOgGu8OEnyj3W
+         KUywEGt6Vg+VLpFMVPps9bWTNy+bgFMdS3Vek=
+Date: Thu, 31 Dec 2009 13:06:54 -0800
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>
+Subject: Re: [git pull] Input updates for 2.6.33-rc2
+Message-ID: <20091231210654.GA3874@core.coreip.homeip.net>
+References: <20091227214924.GB16279@core.coreip.homeip.net>
+ <alpine.LFD.2.00.0912301257340.11961@localhost.localdomain>
+ <C08FBDE4-7143-46E4-9DB8-912E870D0008@gmail.com>
+ <20091231012252.GA13512@core.coreip.homeip.net>
+ <alpine.LFD.2.00.0912311125310.11961@localhost.localdomain>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0912311125310.11961@localhost.localdomain>
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Subject: Get/set timer_slack_ns through /proc
+On Thu, Dec 31, 2009 at 11:50:59AM -0800, Linus Torvalds wrote:
+> 
+> 
+> On Wed, 30 Dec 2009, Dmitry Torokhov wrote:
+> >
+> > Dmitry Torokhov (7):
+> >       Input: speed up suspend/shutdown for PS/2 mice and keyboards
+> 
+> Btw, the thing I like best about this commit is how it adds some comments 
+> on the keyboard commands.
+> 
+> That said, the naming and the comments aren't all that wonderful. I don't 
+> think you should use the word "RESET" for command f5/f6: the command is 
+> called "Set Default" (and ".. Disable" for f5), and there is no actual 
+> reset involved. 
+> 
 
-This patch makes the timer_slack_ns parameter accessible through the /proc system.
+I guess it is just a matter of wording. For me "reset" and "revert to
+initial state" are pretty much the same.
 
-On 9/1/2008, arjan@linux.intel.com submitted a patch to allow a process to set the timer slack value as part of the range timers feature.  Further, he noted that "Applications and admins can override this [the timer slack value] via the prctl()."
+> So I suspect the command should be renamed to
+> 
+> 	#define ATKBD_CMD_SET_DEFAULTS_AND_DISABLE	0x00f5
 
-We have found this feature useful in attempting to reduce system wakeups caused by timer interrupts.  But we have also found that while applications can set their own timer slack value, there is no provision for setting the timer slack for another process -- prctl() only operates on the current process.  
+ATKBD_CMD_SET_DEFAULTS_AND_DISABLE_DATA_REPORTING :) I was just trying
+to follow the existing naming style. It was there before me and it does
+make sense to me still so I did not feel the neet to change it.
 
-This patch solves the problem by adding a /proc entry point to show and set the timer_slack_ns value.  The new entry point is /proc/<procid>/task/<task_id>/timer_slack_ns and follows the same semantics as other single-valued /proc entry points.
+> 	#define ATKBD_CMD_SET_DEFAULTS			0x00f6
+> 
+> and then the comments wouldn't even be needed (and anybody reading the 
+> code would not have to look them up in the header file).
+> 
+> And then "ATKBD_CMD_RESET_BAT" should probably just be "ATKBD_CMD_RESET" 
+> (I wonder what the "BAT" part is all about?)
 
-Signed-off-by:  Geoff Smith <geoffx.smith@intel.com>
+That came from Vojtech but I am pretty sure this stands for Basic
+Assurance Test since full reset for touchpads for example involves
+recalibration. See this excerpt from Synaptics docs:
 
+"At power-on, the PS/2 TouchPad performs a self-test and calibration,
+then transmits the completion code $AA and ID code $00. If the TouchPad
+fails its self-test, it transmits error code $FC and ID code $00.  This
+processing also occurs when a software Reset ($FF) command is received.
+The host should not attempt to send commands to the TouchPad until the
+calibration/self-test is complete."
 
-diff --git a/fs/proc/base.c b/fs/proc/base.c
-index 18d5cc6..e8183c1 100644
---- a/fs/proc/base.c
-+++ b/fs/proc/base.c
-@@ -1331,6 +1331,82 @@ static const struct file_operations proc_pid_set_comm_operations = {
- 	.release	= single_release,
- };
- 
-+
-+/*
-+ * Show timer slack value
-+ */
-+static int timer_slack_ns_show(struct seq_file *m, void *v)
-+{
-+	struct inode *inode = m->private;
-+	struct task_struct *p;
-+
-+	p = get_proc_task(inode);
-+	if (!p)
-+		return -ESRCH;
-+	task_lock(p);
-+	seq_printf(m, "%lu", p->timer_slack_ns);
-+	task_unlock(p);
-+
-+	put_task_struct(p);
-+
-+	return 0;
-+}
-+
-+static ssize_t
-+timer_slack_ns_write(struct file *file, const char __user *buf,
-+	    size_t count, loff_t *offset)
-+{
-+	struct inode *inode = file->f_path.dentry->d_inode;
-+	struct task_struct *p;
-+	char buff[30];
-+	unsigned long timer_slack_ns;
-+	int err;
-+
-+	p = get_proc_task(inode);
-+	if (!p)
-+		return -ESRCH;
-+
-+	if (count > sizeof(buff))
-+		return -EFAULT;
-+
-+	buff[sizeof(buff)-1] = 0;
-+	if (strncpy_from_user(buff, buf, sizeof(buff)-1) < 0)
-+		return -EFAULT;
-+
-+	err = strict_strtoul(strstrip(buff), 0, &timer_slack_ns);
-+	if (err)
-+		return -EINVAL;
-+
-+	task_lock(p);
-+	p->timer_slack_ns = timer_slack_ns;
-+	task_unlock(p);
-+
-+	put_task_struct(p);
-+
-+	return count;
-+}
-+
-+static int timer_slack_ns_open(struct inode *inode, struct file *filp)
-+{
-+	int ret;
-+
-+	ret = single_open(filp, timer_slack_ns_show, NULL);
-+	if (!ret) {
-+		struct seq_file *m = filp->private_data;
-+
-+		m->private = inode;
-+	}
-+	return ret;
-+}
-+
-+static const struct file_operations proc_pid_timer_slack_ns_operations = {
-+	.open		= timer_slack_ns_open,
-+	.read		= seq_read,
-+	.write		= timer_slack_ns_write,
-+	.llseek		= seq_lseek,
-+	.release	= single_release,
-+};
-+
- /*
-  * We added or removed a vma mapping the executable. The vmas are only mapped
-  * during exec and are not mapped with the mmap system call.
-@@ -2906,6 +2982,7 @@ static const struct pid_entry tid_base_stuff[] = {
- 	REG("sched",     S_IRUGO|S_IWUSR, proc_pid_sched_operations),
- #endif
- 	REG("comm",      S_IRUGO|S_IWUSR, proc_pid_set_comm_operations),
-+	REG("timer_slack_ns", S_IRUGO|S_IWUSR, proc_pid_timer_slack_ns_operations),
- #ifdef CONFIG_HAVE_ARCH_TRACEHOOK
- 	INF("syscall",   S_IRUSR, proc_pid_syscall),
- #endif
+> 
+> Oh, and command F5h is not always a "set defaults and disable". For some 
+> (all?) PS/2 mice it seems to be _just_ a "disable",
 
+Exactly, that is why it is called PSMOUSE_CMD_DISABLE when used in mouse
+context. However snippets of docs I have indicate that for keyboards it
+also causes them to reset to defaults.
+
+> and I'm not at all 
+> sure you should have used it for the psmouse_cleanup() function.
+
+I am using PSMOUSE_CMD_RESET_DIS (0xf6) in psmouse_cleanup().
+
+> You used 
+> to do a
+> 
+> 	psmouse_reset(psmouse);
+> 
+> which sent a full reset to the mouse (and waits for the two-byte ACK). It 
+> did _not_ disable the mouse - 
+
+It does actually, at least for some devices (incidentally the ones that
+may give trouble to the BIOS if left as is):
+
+"The reset state of the TouchPad is as follows:
+- Reported sample rate is 100 samples per second (see page 30).
+- Reported resolution is 4 counts per mm (see page 32).
+- Scaling is 1:1.
+- Stream mode is selected.
+- Data reporting is disabled. <---------------
+- Absolute mode is disabled."
+
+> that happened earlier in 
+> psmouse_deactivate(), when you sent it the PSMOUSE_CMD_DISABLE command.
+
+What happened before doing psmouse_reset() (which is PSMOUSE_CMD_RESET_BAT)
+should not matter because all previous state should be reset after it.
+
+> 
+> You changed that 'psmouse_reset()' to
+> 
+> 	/*
+> 	 * Reset the mouse to defaults (bare PS/2 protocol).
+> 	 */
+> 	        ps2_command(&psmouse->ps2dev, NULL, PSMOUSE_CMD_RESET_DIS);
+> 
+> which now disables it again, only to then later do
+>         
+> 	/*      
+> 	 * Some boxes, such as HP nx7400, get terribly confused if mouse
+> 	 * is not fully enabled before suspending/shutting down.
+> 	 */     
+> 	        ps2_command(&psmouse->ps2dev, NULL, PSMOUSE_CMD_ENABLE);
+> 
+> which seems odd. IOW, Why do you do a "set defaults and disable" followed 
+> by a "enable", when you already had it disabled?
+
+We do not have "light reset" option, so we have to use "light reset and
+disable" to return to the bare 3-byte PS/2 protocol. Then we have to
+re-enable the device because BIOS on some HP notebooks would get
+confused and not suspend (or resume, I don't quite remember) if mouse
+left disabled.
+
+> 
+> I think the PSMOUSE_CMD_RESET that _used_ to be there would re-enable most 
+> mice, but now that you don't even do that any more, I get the feeling that 
+> the "set defaults and disable" should be just a "set defaults".
+
+There is no such command for mice unfortunately.
+
+> 
+> (You may have good reasons for having picked the "and disable" command. I 
+> just wonder what they are)
+> 
+> 		Linus
+
+-- 
+Dmitry
