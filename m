@@ -1,62 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751790AbZLaMZR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751993AbZLaM0Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751790AbZLaMZR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Dec 2009 07:25:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751322AbZLaMZP
+	id S1751993AbZLaM0Y (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Dec 2009 07:26:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751100AbZLaM0W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Dec 2009 07:25:15 -0500
-Received: from mx.treblig.org ([80.68.94.177]:45688 "EHLO mx.treblig.org"
+	Thu, 31 Dec 2009 07:26:22 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:36185 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750885AbZLaMZP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Dec 2009 07:25:15 -0500
-Date: Thu, 31 Dec 2009 12:19:58 +0000
-From: "Dr. David Alan Gilbert" <linux@treblig.org>
-To: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: perf: confused by cc1
-Message-ID: <20091231121957.GA3957@gallifrey>
-References: <20091231014714.GA8313@gallifrey> <4B3C1619.7060001@cn.fujitsu.com>
+	id S1750731AbZLaM0V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Dec 2009 07:26:21 -0500
+Date: Thu, 31 Dec 2009 13:26:17 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, linux-pci@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [origin tree build failure] Re: [git pull] PCI fixes
+Message-ID: <20091231122617.GA3508@elte.hu>
+References: <20091228081002.71f0e3b9@jbarnes-x200>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4B3C1619.7060001@cn.fujitsu.com>
-X-Chocolate: 70 percent or better cocoa solids preferably
-X-Operating-System: Linux/2.6.31.5-kvm-i386-2009-10-30 (i686)
-X-Uptime: 12:16:37 up 45 days, 19:26,  1 user,  load average: 0.00, 0.00,
-	0.00
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20091228081002.71f0e3b9@jbarnes-x200>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Xiao Guangrong (xiaoguangrong@cn.fujitsu.com) wrote:
+
+* Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
+
+> The following changes since commit 8bea8672edfca7ec5f661cafb218f1205863b343:
+>   Stephen Rothwell (1):
+>         mfd: compile fix for twl4030 renaming
 > 
-> Dr. David Alan Gilbert wrote:
-> > Hi,
-> >   I'm running 2.6.33rc2 and thought I'd have a play with perf; its
-> > symbol resolution code seems to be getting itself a bit confused however:
-
-<snip>
-
+> are available in the git repository at:
 > 
-> Your kernel is relocatable? See: http://lkml.org/lkml/2009/12/29/358
+>   git://git.kernel.org/pub/scm/linux/kernel/git/jbarnes/pci-2.6 for-linus
+> 
+> A few misc fixes.  A few people have run into the CLS bug so far, which Csaba
+> kindly provided a fix for (detection of PCI cache line size is a good
+> improvement, but it will fail in some cases due to a virtualized or buggy
+> platform).
+> 
+> This set also adds the device specific reset quirk code from Dexuan;
+> needed for some devices especially in virtualized environments.
+> 
+> Benjamin Herrenschmidt (1):
+>       PCI/cardbus: Add a fixup hook and fix powerpc
+> 
+> Csaba Henk (1):
+>       PCI: Handle case when no pci device can provide cache line size hint
+> 
+> Detlef Riekenberg (1):
+>       vgaarbiter: fix a typo in the vgaarbiter Documentation
+> 
+> Dexuan Cui (3):
+>       PCI: support device-specific reset methods
+>       PCI: add Intel USB specific reset method
+>       PCI: add Intel 82599 Virtual Function specific reset method
+> 
+> Jiri Slaby (1):
+>       PCI: fix section mismatch on update_res()
+> 
+> Rafael J. Wysocki (1):
+>       PCI/PM: Propagate wake-up enable for PCIe devices too
+> 
+> Stefan Assmann (2):
+>       PCI: change PCI nomenclature in drivers/pci/ (comment changes)
+>       PCI: change PCI nomenclature in drivers/pci/ (non-comment changes)
+> 
+>  Documentation/vgaarbiter.txt           |    2 +-
+>  arch/powerpc/kernel/pci-common.c       |   13 +++++++
+>  arch/x86/pci/bus_numa.c                |    2 +-
+>  drivers/pci/hotplug/shpchp.h           |    2 +-
+>  drivers/pci/intel-iommu.c              |    6 ++--
+>  drivers/pci/intr_remapping.c           |    2 +-
+>  drivers/pci/pci-acpi.c                 |   10 +----
+>  drivers/pci/pci.c                      |   30 +++++++++++++++--
+>  drivers/pci/pci.h                      |    8 ++++
+>  drivers/pci/pcie/aer/Kconfig.debug     |    4 +-
+>  drivers/pci/pcie/aer/aer_inject.c      |    6 ++--
+>  drivers/pci/pcie/aer/aerdrv.c          |    2 +-
+>  drivers/pci/pcie/aer/aerdrv_acpi.c     |    2 +-
+>  drivers/pci/pcie/aer/aerdrv_core.c     |    6 ++--
+>  drivers/pci/pcie/aer/aerdrv_errprint.c |    4 +-
+>  drivers/pci/pcie/aspm.c                |    4 +-
+>  drivers/pci/pcie/portdrv_pci.c         |    2 +-
+>  drivers/pci/quirks.c                   |   57 +++++++++++++++++++++++++++++++-
+>  drivers/pci/search.c                   |    6 ++--
+>  drivers/pcmcia/cardbus.c               |    2 +-
+>  include/linux/pci.h                    |    3 ++
+>  21 files changed, 135 insertions(+), 38 deletions(-)
 
-Yes it is, however the values I get for the symbols in all 3 cases seems
-to be the same:
+FYI, a commit in this tree broke today's -tip build on x86:
 
-dg@major:~$ readelf -s /lib/modules/2.6.33-rc2-major/build/vmlinux|grep " _text"|head -1
- 49775: ffffffff81000000     0 NOTYPE  GLOBAL DEFAULT    1 _text
-dg@major:~$ grep _text /lib/modules/2.6.33-rc2-major/build/System.map |head -1
-ffffffff81000000 T _text
-dg@major:~$ grep _text /proc/kallsyms |head -2
-ffffffff81000000 T _text
-ffffffff81023840 T set_kernel_text_ro
+ drivers/built-in.o: In function `pci_dev_reset':
+ pci.c:(.text+0x95ed): undefined reference to `pci_dev_reset_methods'
+ pci.c:(.text+0x95fd): undefined reference to `pci_dev_reset_methods'
 
-Do you think that it could still be the cause?
+I wont have time to bisect it today but wanted to give you a heads up.
+ 
+( About 20% failure rate in randconfigs, so it will be reported by others too 
+  i suspect. I suspect looking at the symbol names and the Kconfig rules 
+  around them the bug should be apparent. Or if not then the relevant Kconfig 
+  rules are, by definition, too complex ;-)
 
-Dave
--- 
- -----Open up your eyes, open up your mind, open up your code -------   
-/ Dr. David Alan Gilbert    | Running GNU/Linux on Alpha,68K| Happy  \ 
-\ gro.gilbert @ treblig.org | MIPS,x86,ARM,SPARC,PPC & HPPA | In Hex /
- \ _________________________|_____ http://www.treblig.org   |_______/
+	Ingo
