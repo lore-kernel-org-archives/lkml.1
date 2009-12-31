@@ -1,95 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752777AbZLaQtL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752790AbZLaQ4L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752777AbZLaQtL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Dec 2009 11:49:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752675AbZLaQtK
+	id S1752790AbZLaQ4L (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Dec 2009 11:56:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752675AbZLaQ4K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Dec 2009 11:49:10 -0500
-Received: from out01.mta.xmission.com ([166.70.13.231]:50101 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752625AbZLaQtJ (ORCPT
+	Thu, 31 Dec 2009 11:56:10 -0500
+Received: from toroondcbmts06.bellnexxia.net ([207.236.237.40]:53952 "EHLO
+	toroondcbmts06-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752673AbZLaQ4K (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Dec 2009 11:49:09 -0500
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: "Andrew G. Morgan" <morgan@kernel.org>, Bryan Donlan <bdonlan@gmail.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Benny Amorsen <benny+usenet@amorsen.dk>,
-       Michael Stone <michael@laptop.org>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, linux-security-module@vger.kernel.org,
-       Andi Kleen <andi@firstfloor.org>, David Lang <david@lang.hm>,
-       Oliver Hartkopp <socketcan@hartkopp.net>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Valdis Kletnieks <Valdis.Kletnieks@vt.edu>,
-       Evgeniy Polyakov <zbr@ioremap.net>,
-       "C. Scott Ananian" <cscott@cscott.net>,
-       James Morris <jmorris@namei.org>, Bernie Innocenti <bernie@codewiz.org>,
-       Mark Seaborn <mrs@mythic-beasts.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>,
-       Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
-       Samir Bellabes <sam@synack.fr>,
-       Casey Schaufler <casey@schaufler-ca.com>, Pavel Machek <pavel@ucw.cz>,
-       Al Viro <viro@zeniv.linux.org.uk>
-Subject: Re: [RFC][PATCH v3] Unprivileged: Disable raising of privileges
-References: <m1aax1uoa3.fsf_-_@fess.ebiederm.org>
-	<3e8340490912291954v5a837a26p64bd776102d281d7@mail.gmail.com>
-	<m1r5qdt721.fsf@fess.ebiederm.org>
-	<3e8340490912292057g3e87eaabn115f85b78af2b08c@mail.gmail.com>
-	<m1d41w62zc.fsf_-_@fess.ebiederm.org>
-	<551280e50912300652r1007dee0j8de750bf33af9b3c@mail.gmail.com>
-	<20091230183513.GC14493@us.ibm.com> <m1fx6suswz.fsf@fess.ebiederm.org>
-	<20091230201712.GA23999@us.ibm.com>
-	<m1hbr8tb8q.fsf_-_@fess.ebiederm.org>
-	<20091231152523.GA12969@us.ibm.com>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Thu, 31 Dec 2009 08:48:45 -0800
-In-Reply-To: <20091231152523.GA12969@us.ibm.com> (Serge E. Hallyn's message of "Thu\, 31 Dec 2009 09\:25\:23 -0600")
-Message-ID: <m18wcjnl76.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Thu, 31 Dec 2009 11:56:10 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AmkMAC5bPEvP7O0g/2dsb2JhbACDaIwQAbZkjS+BLYIuVgQ
+Message-ID: <20091231115556.4IXIU.26744.root@toroondcbfep03>
+Date: Thu, 31 Dec 2009 11:55:56 -0500
+From: info <smcfaul@on.aibn.com>
+Reply-To: drpat@8u8.hk
+To: info@winners.net
+Subject: =?utf-8?Q?=C2=A31,000,000.00_Pounds?=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Scanned: No (on in02.mta.xmission.com); SAEximRunCond expanded to false
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+X-Priority: 3 (Normal)
+Sensitivity: Normal
+X-Originating-IP: from 41.220.75.16 by webmail.en.bellnet.ca; Thu, 31 Dec 2009 11:55:56 -0500
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Serge E. Hallyn" <serue@us.ibm.com> writes:
-
->> diff --git a/security/commoncap.c b/security/commoncap.c
->> index f800fdb..34500e3 100644
->> --- a/security/commoncap.c
->> +++ b/security/commoncap.c
->> @@ -389,7 +389,7 @@ static int get_file_caps(struct linux_binprm *bprm, bool *effective)
->>  	if (!file_caps_enabled)
->>  		return 0;
->> 
->> -	if (bprm->file->f_vfsmnt->mnt_flags & MNT_NOSUID)
->> +	if (bprm->nosuid)
->>  		return 0;
->
-> I'm sorry, this may actually not be sufficient.
->
-> Could you try the following test on a kernel with this patch? :
->
-> 1. become root
-> 2. do prctl(PR_SET_NOSUID);
-> 3. run bash, and examine your capabilities in /proc/self/status
->
-> I think the code in security/commoncap.c:457-458 will re-raise your
-> capabilities.
-
-Right.  That is a legitimate issue.
-I almost guard against it with my test against with my start condition test
-of cap_isclear(cred->cap_permitted).
-
-Which causes this to fail for root in most situations.  I will add a
-test for the securebits, and deny this to root unless the securebits
-are such that root cannot gain privilege.
-
-Thanks for catching this.  I figured I might need a uid == 0 exclusion.
-Where the test was split when I wrote it I wasn't certain where to put it.
-
-Eric
+you won,confirm reciept by given your name age, phone number etc to agencyrose@9.cn
