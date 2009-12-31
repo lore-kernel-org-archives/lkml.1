@@ -1,54 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752827AbZLaRGN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752809AbZLaRSI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752827AbZLaRGN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Dec 2009 12:06:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752755AbZLaRGM
+	id S1752809AbZLaRSI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Dec 2009 12:18:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752750AbZLaRSH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Dec 2009 12:06:12 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:60097 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752722AbZLaRGL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Dec 2009 12:06:11 -0500
-Date: Thu, 31 Dec 2009 17:06:41 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Peter Dolding <oiaohm@gmail.com>
-Cc: Samir Bellabes <sam@synack.fr>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Serge E. Hallyn" <serue@us.ibm.com>,
-       "Andrew G. Morgan" <morgan@kernel.org>,
-       Bryan Donlan <bdonlan@gmail.com>,
-       Benny Amorsen <benny+usenet@amorsen.dk>,
-       Michael Stone <michael@laptop.org>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, linux-security-module@vger.kernel.org,
-       Andi Kleen <andi@firstfloor.org>, David Lang <david@lang.hm>,
-       Oliver Hartkopp <socketcan@hartkopp.net>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Valdis Kletnieks <Valdis.Kletnieks@vt.edu>,
-       Evgeniy Polyakov <zbr@ioremap.net>,
-       "C. Scott Ananian" <cscott@cscott.net>,
-       James Morris <jmorris@namei.org>, Bernie Innocenti <bernie@codewiz.org>,
-       Mark Seaborn <mrs@mythic-beasts.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       =?UTF-8?B?QW3DqXJpY28=?= Wang <xiyou.wangcong@gmail.com>,
-       Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
-       Casey Schaufler <casey@schaufler-ca.com>, Pavel Machek <pavel@ucw.cz>,
-       Al Viro <viro@zeniv.linux.org.uk>
-Subject: Re: [RFC][PATCH v3] Unprivileged: Disable raising of privileges
-Message-ID: <20091231170641.6dd46c6e@lxorguk.ukuu.org.uk>
-In-Reply-To: <e7d8f83e0912310608j2c52acabxbd57d24e2b3073ca@mail.gmail.com>
-References: <m1iqbpwjtp.fsf@fess.ebiederm.org>
-	<551280e50912300652r1007dee0j8de750bf33af9b3c@mail.gmail.com>
-	<20091230183513.GC14493@us.ibm.com>
-	<m1fx6suswz.fsf@fess.ebiederm.org>
-	<20091230201712.GA23999@us.ibm.com>
-	<m1hbr8tb8q.fsf_-_@fess.ebiederm.org>
-	<20091230212931.233003b9@lxorguk.ukuu.org.uk>
-	<m1skasrvnq.fsf@fess.ebiederm.org>
-	<20091230230042.5d2e78ac@lxorguk.ukuu.org.uk>
-	<m2bphfti1u.fsf@ssh.synack.fr>
-	<e7d8f83e0912310608j2c52acabxbd57d24e2b3073ca@mail.gmail.com>
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.18.5; x86_64-redhat-linux-gnu)
+	Thu, 31 Dec 2009 12:18:07 -0500
+Received: from xenotime.net ([72.52.64.118]:57111 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752722AbZLaRSG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Dec 2009 12:18:06 -0500
+Date: Thu, 31 Dec 2009 09:18:15 -0800
+From: Randy Dunlap <rdunlap@xenotime.net>
+To: Jeff Layton <jlayton@redhat.com>
+Cc: Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org,
+       linux-nfs@vger.kernel.org
+Subject: Re: [PATCH] sunrpc: fix build-time warning
+Message-Id: <20091231091815.a1ea7e51.rdunlap@xenotime.net>
+In-Reply-To: <1262226195-27733-1-git-send-email-jlayton@redhat.com>
+References: <1262226195-27733-1-git-send-email-jlayton@redhat.com>
+Organization: YPO4
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -56,35 +28,43 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Lets step back for a moment.  What is the common issue with both.
+On Wed, 30 Dec 2009 21:23:15 -0500 Jeff Layton wrote:
+
+> Commit 486bad2e40e938cd68fd853b7a9fa3115a9d3a4a introduced this warning
+> at build time on some 32-bit architectures:
 > 
-> The issue is simple.  "How to I generically tell the secuirty system
-> want particular restrictions."
+> net/sunrpc/auth_gss/auth_gss.c: In function 'gss_pipe_downcall':
+> net/sunrpc/auth_gss/auth_gss.c:660: warning: format '%ld' expects type 'long int', but argument 3 has type 'ssize_t
+> 
+> ...fix it by changing the length modifier in the printk.
+> 
+> Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
+> Signed-off-by: Jeff Layton <jlayton@redhat.com>
+> ---
+>  net/sunrpc/auth_gss/auth_gss.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/net/sunrpc/auth_gss/auth_gss.c b/net/sunrpc/auth_gss/auth_gss.c
+> index 66cb89c..6de4f91 100644
+> --- a/net/sunrpc/auth_gss/auth_gss.c
+> +++ b/net/sunrpc/auth_gss/auth_gss.c
+> @@ -657,7 +657,7 @@ gss_pipe_downcall(struct file *filp, const char __user *src, size_t mlen)
+>  			break;
+>  		default:
+>  			printk(KERN_CRIT "%s: bad return from "
+> -				"gss_fill_context: %ld\n", __func__, err);
+> +				"gss_fill_context: %Zd\n", __func__, err);
+>  			BUG();
+>  		}
+>  		goto err_release_msg;
+> -- 
 
-You don't. It's not "the security system", its a whole collection of
-completely different models of security and differing tools.
+I have that almost-same patch in my (unposted) linux-next patch queue,
+so basically, ack, except that we try to use 'z' instead of 'Z' nowadays.
 
-> There is no generic LSM API for application or users to talk to the
-> LSM and say I want the following restricted.
-
-That's a meaningless observation I think because security doesn't work
-that way. Removing specific features from a specific piece of code
-generally isn't a security feature - its only meaningful in the context
-of a more general policy and that policy expression isn't generic.
-
-> To control the LSM the applications are expected to know what the LSM.
->  This has caused items like chrome major issues.
-
-..
-
-> Application does not need to be informed what is disabled from it.
-
-So why does it cause chrome problems ?
+My quick kernel source tree count is 173 %Z to 966 %z.
+(Please don't anyone start a project of converting %Z to %z.)
 
 
-There are multiple security models because nobody can agree on what they
-should look like, just like multiple desktops. Each of them is based on a
-totally different conceptual model so the idea of a single interface to
-them is a bit meaningless.
-
-Alan
+---
+~Randy
