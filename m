@@ -1,42 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752126AbZLaJFZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752175AbZLaJLZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752126AbZLaJFZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Dec 2009 04:05:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751443AbZLaJFY
+	id S1752175AbZLaJLZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Dec 2009 04:11:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751564AbZLaJLZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Dec 2009 04:05:24 -0500
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:43141 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751390AbZLaJFX (ORCPT
+	Thu, 31 Dec 2009 04:11:25 -0500
+Received: from fw.wantstofly.org ([80.101.37.227]:54308 "EHLO
+	mail.wantstofly.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751443AbZLaJLY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Dec 2009 04:05:23 -0500
-Message-ID: <4B3C6942.3020204@cs.helsinki.fi>
-Date: Thu, 31 Dec 2009 11:05:06 +0200
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
-MIME-Version: 1.0
-To: Nitin Gupta <ngupta@vflare.org>
-CC: Andi Kleen <andi@firstfloor.org>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/2] [mmotm v2] ramzswap: add handlers for various swap
- events
-References: <1262232518-2841-1-git-send-email-ngupta@vflare.org> <1262232518-2841-2-git-send-email-ngupta@vflare.org>
-In-Reply-To: <1262232518-2841-2-git-send-email-ngupta@vflare.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 31 Dec 2009 04:11:24 -0500
+Date: Thu, 31 Dec 2009 10:11:22 +0100
+From: Lennert Buytenhek <buytenh@wantstofly.org>
+To: H Hartley Sweeten <hartleys@visionengravers.com>
+Cc: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, joe@perches.com
+Subject: Re: [PATCH] ep93xx_eth.c: general cleanup
+Message-ID: <20091231091122.GP1735@mail.wantstofly.org>
+References: <20091223.141458.193725880.davem@davemloft.net> <BD79186B4FD85F4B8E60E381CAEE19090200F635@mi8nycmail19.Mi8.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <BD79186B4FD85F4B8E60E381CAEE19090200F635@mi8nycmail19.Mi8.com>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nitin Gupta wrote:
-> The SWAPON handler sets callback which frees memory associated
-> with given swap slot, eliminating any stale data in corresponding
-> ramzswap device.
+On Wed, Dec 30, 2009 at 01:03:00PM -0500, H Hartley Sweeten wrote:
 
-I guess this changelog is too terse and should explain _why_ we want 
-this in more detail.
+> >> Wednesday, December 16, 2009 11:32 AM, Lennert Buytenhek wrote:
+> >>> On Wed, Dec 16, 2009 at 01:18:13PM -0500, H Hartley Sweeten wrote:
+> >>>
+> >>>> V3 - Change pr_fmt() as suggested by Joe Perches
+> >>>>      Don't remove DRV_MODULE_NAME and DRV_MODULE_VERSION
+> >>>>      Don't remove the message in ep93xx_eth_init_module()
+> >>>
+> >>> That's not what I meant, but alright, as you prefer.
+> >> 
+> >> Guess my parser is off line today.... ;-)
+> >> 
+> >> What did you mean?
+> >
+> > This patch also doesn't apply to current sources, so if you
+> > could also please respin this once you've resolved the feedback
+> > that would be great.
+> 
+> Lennert,
 
-			Pekka
+Hi Hartley,
+
+
+> Since I need to respin this patch what did you mean by this comment?
+> 
+> On Wednesday, December 16, 2009 11:09 AM, Lennert Buytenhek wrote:
+> > On Wed, Dec 16, 2009 at 01:06:10PM -0500, H Hartley Sweeten wrote:
+> >
+> >>>> General cleanup of the ep93xx_eth driver.
+> >>>
+> >>> Apart from keeping DRV_MODULE_NAME and DRV_MODULE_VERSION, I have
+> >>> no strong opinion about this one way or the other.  So I guess that
+> >>> means ACK.
+> >> 
+> >> I will add back the DRV_MODULE_NAME and DRV_MODULE_VERSION and repost.
+> >> 
+> >> What about the message in ep93xx_eth_init_module()?  Would you prefer
+> >> that one to stay?
+> >
+> > Most drivers I'm familiar with print a version message when they are
+> > first instantiated -- perhaps that makes more sense.
+> 
+> I will wait for your reply before updating the patch.
+
+What I meant was, most drivers seem to print a message at probe
+time, i.e. when they are attached to an actual device for the first
+time.
+
+Grepping for 'printed_version' in drivers/net/* actually turns up
+two variants:
+- Print the version message on the first probe.  (e.g. 3c59x)
+- Print the version message at module load time if we were built as
+  a module, while if we were built into the kernel, only print a
+  version message on the first probe.  (e.g. 8139too)
+
+At least in the case of ep93xx_eth, you can't even have it enabled if
+you're not building a kernel specifically for the ep93xx ARM SoC, and
+if you are building for the ep93xx, as far as I know we don't support
+any boards that don't have the ethernet brought out and so you're very
+likely to have ep93xx_eth enabled then, so whether you do it
+unconditionally at driver init time or at probe time will make no
+effective difference for the majority of cases.
+
+I.e. I can't really say I care much either way.
+
+
+cheers,
+Lennert
