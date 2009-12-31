@@ -1,30 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752616AbZLaAd5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752662AbZLaAiN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752616AbZLaAd5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Dec 2009 19:33:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751575AbZLaAd4
+	id S1752662AbZLaAiN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Dec 2009 19:38:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751575AbZLaAiM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Dec 2009 19:33:56 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:49386 "EHLO
+	Wed, 30 Dec 2009 19:38:12 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:63875 "EHLO
 	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751515AbZLaAdz (ORCPT
+	with ESMTP id S1751515AbZLaAiM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Dec 2009 19:33:55 -0500
+	Wed, 30 Dec 2009 19:38:12 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:cc:subject:message-id:references:mime-version
          :content-type:content-disposition:in-reply-to:user-agent;
-        b=wlt2esJSnPoaPzhtxohTXtC1NKGve+mywiVzAqHpKACDEfbi6Xc9vUhI+S0qwkWJSB
-         QTbM1bIiPl6mUkgbejzMemm4yEEGUl+bsoBmrEn+9MVxSbpa3EtQybE9IbrYImeYXtUh
-         XboU8WrKuoXu5WmJo70aksZEbRRcaq3/Ly510=
-Date: Thu, 31 Dec 2009 01:33:49 +0100
+        b=pQbG3ndY2gG0C9rN6Do96x/lcjpmjXxdb4MJhEROJQ3n3QY59eLrMOi26BZQTvyRNa
+         dLJtrDGcVQ2o4B99+LNPM1rgnDVN3/iqIpoi+o9CGElQoLldjCGDBvu7ANu5NdgcHMaz
+         ziTF0ickkmfHMM5xgk/BBpnc5/5O2/jLBROlA=
+Date: Thu, 31 Dec 2009 01:38:09 +0100
 From: Frederic Weisbecker <fweisbec@gmail.com>
 To: "K.Prasad" <prasad@linux.vnet.ibm.com>
 Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
        Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: [RFC Patch 2/2][Bugfix][x86][hw-breakpoint] Fix return-code to
 	notifier chain in hw_breakpoint_handler
-Message-ID: <20091231003348.GB23808@nowhere>
+Message-ID: <20091231003808.GC23808@nowhere>
 References: <20091226175533.149765731@linux.vnet.ibm.com> <20091226182833.GC9494@in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -74,10 +74,13 @@ On Sat, Dec 26, 2009 at 11:58:33PM +0530, K.Prasad wrote:
 > 
 
 
-Looks good. This stops any further checks though. This
-is fine in case we have the DR_STEP bit as we will
-toggle to NOTIFY_DONE. But what about vm86 case? Is it
-possible we might still have something to handle in this
-side? (although I don't quite understand how we can have
-a breakpoint triggered in vm86 mode).
+Oh and now that I see this patch, the previous one indeed makes sense
+with this check:
+
+if (dr6 & (~DR_TRAP_BITS))
+	rc = NOTIFY_DONE;
+
+That said, it means thread.debugreg6 won't get the reserved bits anymore.
+I see some use of them from kvm (it restores the reserved bits on guest<->host
+switch). Not sure if this inconsistency could affect kvm...
 
