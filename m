@@ -1,40 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753040AbZLaSl3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753050AbZLaSsO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753040AbZLaSl3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Dec 2009 13:41:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752863AbZLaSl2
+	id S1753050AbZLaSsO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Dec 2009 13:48:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753025AbZLaSsN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Dec 2009 13:41:28 -0500
-Received: from 62.1.125.199.dsl.dyn.forthnet.gr ([62.1.125.199]:19735 "EHLO
-	poseidon.vergina.dyndns.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753019AbZLaSl0 (ORCPT
+	Thu, 31 Dec 2009 13:48:13 -0500
+Received: from e23smtp03.au.ibm.com ([202.81.31.145]:38168 "EHLO
+	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752878AbZLaSsM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Dec 2009 13:41:26 -0500
-Message-ID: <4B3CF04E.8070603@asyr.hopto.org>
-Date: Thu, 31 Dec 2009 20:41:18 +0200
-From: Thanasis <thanasis@asyr.hopto.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091229 Thunderbird/3.0 ThunderBrowse/3.2.6.8
+	Thu, 31 Dec 2009 13:48:12 -0500
+Date: Fri, 1 Jan 2010 00:18:04 +0530
+From: "K.Prasad" <prasad@linux.vnet.ibm.com>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "mingo@elte.hu" <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [Patch 1/1] Introduce register_user_hbp_by_pid() and
+	unregister_user_hbp_by_pid()
+Message-ID: <20091231184804.GA3676@in.ibm.com>
+Reply-To: prasad@linux.vnet.ibm.com
+References: <20091217172010.GB5457@in.ibm.com> <20091217172253.GC5457@in.ibm.com> <20091218204744.GC5004@nowhere> <20091221184631.GB24535@in.ibm.com> <20091230222837.GI6322@nowhere>
 MIME-Version: 1.0
-To: Krzysztof Halasa <khc@pm.waw.pl>
-CC: gentoo-user@lists.gentoo.org, Dirk Heinrichs <dirk.heinrichs@online.de>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [gentoo-user] RAM installed vs reported
-References: <4B3B3043.20400@asyr.hopto.org>	<200912301208.54359.dirk.heinrichs@online.de>	<4B3B38F2.6090006@asyr.hopto.org> <m3fx6r8a0l.fsf@intrepid.localdomain>
-In-Reply-To: <m3fx6r8a0l.fsf@intrepid.localdomain>
-Content-Type: text/plain; charset=ISO-8859-7
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091230222837.GI6322@nowhere>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-on 12/31/2009 04:59 PM Krzysztof Halasa wrote the following:
-> Thanasis <thanasis@asyr.hopto.org> writes:
+On Wed, Dec 30, 2009 at 11:28:39PM +0100, Frederic Weisbecker wrote:
+> On Tue, Dec 22, 2009 at 12:16:31AM +0530, K.Prasad wrote:
+> > On Fri, Dec 18, 2009 at 09:47:48PM +0100, Frederic Weisbecker wrote:
+> 
+> > > And this function needs rcu too.
+> > > 
+> > > I don't see any in-kernel user for this new feature.
+> > > That would be required to integrate it.
+> > >
+> > 
+> > The proposed interfaces, as obvious, are mere wrappers over existing
+> > (un)register_user_* interfaces, and don't do anything vastly different
+> > in order to demonstrate them separately.
+> > 
+> > I can get a sample kernel module ready - that consumes pid and user-space
+> > address to track write accesses, if you prefer it.
+> 
+> 
+> Ok. The code looks good and useful.
+> 
+> But the usual philosophy in the kernel is to not add code
+> that is left unused upstream. And samples don't substitute a user.
+> I'm not sure this is a good idea to merge this.
 >
->> I thought CONFIG_HIGHMEM4G had to do with more than 4GB of RAM.
->> Now I can see that the associated help says it is for an amount between
->> 1 and 4GB.
->
-> Depends on the "split" used. With 2 GB : 2 GB you can have all-lowmem
-> 1.5 GB RAM, without CONFIG_HIGHMEM*. 2 GB of per-process address space
-> is usually not a problem.
-How do you implement that? What do you mean 2GB:2GB split ?
+
+Back to the old trick!...How about an ftrace plugin that accepts pid,
+user-space address and memory access type and traces all the IP
+addresses that caused access?
+
+echo <pid>:<user_addr><access_type>  >  usym_trace_filter
+echo 567:0x1234567:rw- > usym_trace_filter
+
+Breakpoint	IP
+------------	---------
+567:0x1234567	0x0abcdef
+
+I'm unsure if it sounds interesting at all, but I suspect it wouldn't be
+as easy as above to gather the shown information through any existing
+tools.
+
+Thanks,
+K.Prasad
+
