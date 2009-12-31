@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752834AbZLaPty@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752779AbZLaPtL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752834AbZLaPty (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Dec 2009 10:49:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752667AbZLaPtw
+	id S1752779AbZLaPtL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Dec 2009 10:49:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752571AbZLaPtH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Dec 2009 10:49:52 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:41339 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752747AbZLaPtB (ORCPT
+	Thu, 31 Dec 2009 10:49:07 -0500
+Received: from ey-out-2122.google.com ([74.125.78.25]:55540 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752758AbZLaPtF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Dec 2009 10:49:01 -0500
+	Thu, 31 Dec 2009 10:49:05 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=bY+AscoDei109zsJ+uNwFMaBFSJ8TQWtCM/kHZ9HW6bFmjRHreyXQDEeMnIB01CyUK
-         wSdH9BuX40ZLqQoNl8b2IJvZHwn0s0kooq9NOlfMVf66RhcLmbJ6hS7lmOavwggLMB75
-         eEnt+9Lf33q/twqWIsC1VrjcnOgxD9Qt5L+LY=
+        b=Kz8GUutr33NEShGWlVrAcv/tMOJwo2d8nowtOgzQMt79TtdjJA0tsN7dIXKGqGjRvl
+         w2ZQYYf/vaYm69bMf7fYkhe+jf0gYf97FEa8VWSBpvw6XFBPl9j3ZvY6jfgz/C8oOywC
+         4zQgYxYRAs+C9lS9gW7OWKzpwSZTGHOQ3h8/w=
 From: Johan Hovold <jhovold@gmail.com>
 To: Greg Kroah-Hartman <gregkh@suse.de>
 Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
        Johan Hovold <jhovold@gmail.com>
-Subject: [PATCH 09/13] USB: mos7720: fix DMA buffers on stack and clean up send_mos_cmd
-Date: Thu, 31 Dec 2009 16:48:05 +0100
-Message-Id: <1262274489-12447-10-git-send-email-jhovold@gmail.com>
+Subject: [PATCH 10/13] USB: mos7840: fix DMA buffers on stack and endianess bugs
+Date: Thu, 31 Dec 2009 16:48:06 +0100
+Message-Id: <1262274489-12447-11-git-send-email-jhovold@gmail.com>
 X-Mailer: git-send-email 1.6.6
 In-Reply-To: <1262037718-31424-1-git-send-email-jhovold@gmail.com>
 References: <1262037718-31424-1-git-send-email-jhovold@gmail.com>
@@ -30,70 +30,63 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Change data-argument type from (void *) to (u8 *) to prevent endianess
-problems.
 
 Signed-off-by: Johan Hovold <jhovold@gmail.com>
 ---
- drivers/usb/serial/mos7720.c |   34 +++++++++++++++++-----------------
- 1 files changed, 17 insertions(+), 17 deletions(-)
+ drivers/usb/serial/mos7840.c |   22 ++++++++++++++++++----
+ 1 files changed, 18 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/usb/serial/mos7720.c b/drivers/usb/serial/mos7720.c
-index 763e32a..e081dc0 100644
---- a/drivers/usb/serial/mos7720.c
-+++ b/drivers/usb/serial/mos7720.c
-@@ -275,13 +275,11 @@ static void mos7720_bulk_out_data_callback(struct urb *urb)
-  *	this function will be used for sending command to device
-  */
- static int send_mos_cmd(struct usb_serial *serial, __u8 request, __u16 value,
--			__u16 index, void *data)
-+			__u16 index, u8 *data)
+diff --git a/drivers/usb/serial/mos7840.c b/drivers/usb/serial/mos7840.c
+index 2cfe245..04bef4b 100644
+--- a/drivers/usb/serial/mos7840.c
++++ b/drivers/usb/serial/mos7840.c
+@@ -283,12 +283,19 @@ static int mos7840_get_reg_sync(struct usb_serial_port *port, __u16 reg,
  {
- 	int status;
--	unsigned int pipe;
+ 	struct usb_device *dev = port->serial->dev;
+ 	int ret = 0;
 +	u8 *buf;
- 	u16 product = le16_to_cpu(serial->dev->descriptor.idProduct);
--	__u8 requesttype;
--	__u16 size = 0x0000;
++
++	buf = kmalloc(VENDOR_READ_LENGTH, GFP_KERNEL);
++	if (!buf)
++		return -ENOMEM;
  
- 	if (value < MOS_MAX_PORT) {
- 		if (product == MOSCHIP_DEVICE_ID_7715)
-@@ -298,21 +296,23 @@ static int send_mos_cmd(struct usb_serial *serial, __u8 request, __u16 value,
- 	}
+ 	ret = usb_control_msg(dev, usb_rcvctrlpipe(dev, 0), MCS_RDREQ,
+-			      MCS_RD_RTYPE, 0, reg, val, VENDOR_READ_LENGTH,
++			      MCS_RD_RTYPE, 0, reg, buf, VENDOR_READ_LENGTH,
+ 			      MOS_WDR_TIMEOUT);
++	*val = buf[0];
+ 	dbg("mos7840_get_reg_sync offset is %x, return val %x", reg, *val);
+-	*val = (*val) & 0x00ff;
++
++	kfree(buf);
+ 	return ret;
+ }
  
- 	if (request == MOS_WRITE) {
--		request = (__u8)MOS_WRITE;
--		requesttype = (__u8)0x40;
--		value  = value + (__u16)*((unsigned char *)data);
--		data = NULL;
--		pipe = usb_sndctrlpipe(serial->dev, 0);
-+		value = value + *data;
-+		status = usb_control_msg(serial->dev,
-+				usb_sndctrlpipe(serial->dev, 0), MOS_WRITE,
-+				0x40, value, index, NULL, 0, MOS_WDR_TIMEOUT);
- 	} else {
--		request = (__u8)MOS_READ;
--		requesttype = (__u8)0xC0;
--		size = 0x01;
--		pipe = usb_rcvctrlpipe(serial->dev, 0);
-+		buf = kmalloc(1, GFP_KERNEL);
-+		if (!buf) {
-+			status = -ENOMEM;
-+			goto out;
-+		}
-+		status = usb_control_msg(serial->dev,
-+				usb_rcvctrlpipe(serial->dev, 0), MOS_READ,
-+				0xc0, value, index, buf, 1, MOS_WDR_TIMEOUT);
-+		*data = *buf;
-+		kfree(buf);
+@@ -341,6 +348,11 @@ static int mos7840_get_uart_reg(struct usb_serial_port *port, __u16 reg,
+ 	struct usb_device *dev = port->serial->dev;
+ 	int ret = 0;
+ 	__u16 Wval;
++	u8 *buf;
++
++	buf = kmalloc(VENDOR_READ_LENGTH, GFP_KERNEL);
++	if (!buf)
++		return -ENOMEM;
+ 
+ 	/* dbg("application number is %4x",
+ 	    (((__u16)port->number - (__u16)(port->serial->minor))+1)<<8); */
+@@ -364,9 +376,11 @@ static int mos7840_get_uart_reg(struct usb_serial_port *port, __u16 reg,
+ 		}
  	}
--
--	status = usb_control_msg(serial->dev, pipe, request, requesttype,
--				 value, index, data, size, MOS_WDR_TIMEOUT);
--
-+out:
- 	if (status < 0)
- 		dbg("Command Write failed Value %x index %x\n", value, index);
+ 	ret = usb_control_msg(dev, usb_rcvctrlpipe(dev, 0), MCS_RDREQ,
+-			      MCS_RD_RTYPE, Wval, reg, val, VENDOR_READ_LENGTH,
++			      MCS_RD_RTYPE, Wval, reg, buf, VENDOR_READ_LENGTH,
+ 			      MOS_WDR_TIMEOUT);
+-	*val = (*val) & 0x00ff;
++	*val = buf[0];
++
++	kfree(buf);
+ 	return ret;
+ }
  
 -- 
 1.6.6
