@@ -1,93 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751443AbZLaTvG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751630AbZLaUy6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751443AbZLaTvG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Dec 2009 14:51:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751336AbZLaTvE
+	id S1751630AbZLaUy6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Dec 2009 15:54:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751524AbZLaUy6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Dec 2009 14:51:04 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:49582 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751316AbZLaTvD (ORCPT
+	Thu, 31 Dec 2009 15:54:58 -0500
+Received: from casper.infradead.org ([85.118.1.10]:40044 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750898AbZLaUy5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Dec 2009 14:51:03 -0500
-Date: Thu, 31 Dec 2009 11:50:59 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>
-Subject: Re: [git pull] Input updates for 2.6.33-rc2
-In-Reply-To: <20091231012252.GA13512@core.coreip.homeip.net>
-Message-ID: <alpine.LFD.2.00.0912311125310.11961@localhost.localdomain>
-References: <20091227214924.GB16279@core.coreip.homeip.net> <alpine.LFD.2.00.0912301257340.11961@localhost.localdomain> <C08FBDE4-7143-46E4-9DB8-912E870D0008@gmail.com> <20091231012252.GA13512@core.coreip.homeip.net>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 31 Dec 2009 15:54:57 -0500
+Subject: Re: [PATCH] drivers/mtd/nand/gpio.c: use resource_size()
+From: David Woodhouse <dwmw2@infradead.org>
+To: H Hartley Sweeten <hartleys@visionengravers.com>
+Cc: kernel list <linux-kernel@vger.kernel.org>, linux-mtd@lists.infradead.org
+In-Reply-To: <BD79186B4FD85F4B8E60E381CAEE19090200EA54@mi8nycmail19.Mi8.com>
+References: <BD79186B4FD85F4B8E60E381CAEE19090200EA54@mi8nycmail19.Mi8.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 31 Dec 2009 20:54:41 +0000
+Message-ID: <1262292881.3181.5632.camel@macbook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.2 (2.28.2-1.fc12) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 2009-12-14 at 16:30 -0500, H Hartley Sweeten wrote:
+> 
+> -       release_mem_region(res0->start, res0->end - res0->start + 1);
+> +       release_mem_region(res0->start, resouce_size(res0)); 
 
+That's not going to compile. I fixed it up.
 
-On Wed, 30 Dec 2009, Dmitry Torokhov wrote:
->
-> Dmitry Torokhov (7):
->       Input: speed up suspend/shutdown for PS/2 mice and keyboards
+Every patch in this batch failed to apply cleanly with git-am, too --
+there was something odd about the whitespace at the end of each one.
 
-Btw, the thing I like best about this commit is how it adds some comments 
-on the keyboard commands.
+-- 
+David Woodhouse                            Open Source Technology Centre
+David.Woodhouse@intel.com                              Intel Corporation
 
-That said, the naming and the comments aren't all that wonderful. I don't 
-think you should use the word "RESET" for command f5/f6: the command is 
-called "Set Default" (and ".. Disable" for f5), and there is no actual 
-reset involved. 
-
-So I suspect the command should be renamed to
-
-	#define ATKBD_CMD_SET_DEFAULTS_AND_DISABLE	0x00f5
-	#define ATKBD_CMD_SET_DEFAULTS			0x00f6
-
-and then the comments wouldn't even be needed (and anybody reading the 
-code would not have to look them up in the header file).
-
-And then "ATKBD_CMD_RESET_BAT" should probably just be "ATKBD_CMD_RESET" 
-(I wonder what the "BAT" part is all about?)
-
-Oh, and command F5h is not always a "set defaults and disable". For some 
-(all?) PS/2 mice it seems to be _just_ a "disable", and I'm not at all 
-sure you should have used it for the psmouse_cleanup() function. You used 
-to do a
-
-	psmouse_reset(psmouse);
-
-which sent a full reset to the mouse (and waits for the two-byte ACK). It 
-did _not_ disable the mouse - that happened earlier in 
-psmouse_deactivate(), when you sent it the PSMOUSE_CMD_DISABLE command.
-
-You changed that 'psmouse_reset()' to
-
-	/*
-	 * Reset the mouse to defaults (bare PS/2 protocol).
-	 */
-	        ps2_command(&psmouse->ps2dev, NULL, PSMOUSE_CMD_RESET_DIS);
-
-which now disables it again, only to then later do
-        
-	/*      
-	 * Some boxes, such as HP nx7400, get terribly confused if mouse
-	 * is not fully enabled before suspending/shutting down.
-	 */     
-	        ps2_command(&psmouse->ps2dev, NULL, PSMOUSE_CMD_ENABLE);
-
-which seems odd. IOW, Why do you do a "set defaults and disable" followed 
-by a "enable", when you already had it disabled?
-
-I think the PSMOUSE_CMD_RESET that _used_ to be there would re-enable most 
-mice, but now that you don't even do that any more, I get the feeling that 
-the "set defaults and disable" should be just a "set defaults".
-
-(You may have good reasons for having picked the "and disable" command. I 
-just wonder what they are)
-
-		Linus
