@@ -1,71 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752740AbZLaQpE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752777AbZLaQtL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752740AbZLaQpE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Dec 2009 11:45:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752625AbZLaQpB
+	id S1752777AbZLaQtL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Dec 2009 11:49:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752675AbZLaQtK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Dec 2009 11:45:01 -0500
-Received: from ey-out-2122.google.com ([74.125.78.26]:17632 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752525AbZLaQpA (ORCPT
+	Thu, 31 Dec 2009 11:49:10 -0500
+Received: from out01.mta.xmission.com ([166.70.13.231]:50101 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752625AbZLaQtJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Dec 2009 11:45:00 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=YLRTNeNV3fJztZB68cGUYkEpV399rvMEf6en7kA8xiIx/8Vdf4zAwetCPRhN+k7Fh9
-         zUcDiEnkdAa9Xqnmb/LTKraDU/G0i3y0YORv5HggMOArFirmZjTT5KS9ICbF3Mrk5TCM
-         SjwA1zkle5Beiw2goaBi9ocgx08d2WzvrZfiA=
+	Thu, 31 Dec 2009 11:49:09 -0500
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Cc: "Andrew G. Morgan" <morgan@kernel.org>, Bryan Donlan <bdonlan@gmail.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Benny Amorsen <benny+usenet@amorsen.dk>,
+       Michael Stone <michael@laptop.org>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, linux-security-module@vger.kernel.org,
+       Andi Kleen <andi@firstfloor.org>, David Lang <david@lang.hm>,
+       Oliver Hartkopp <socketcan@hartkopp.net>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Valdis Kletnieks <Valdis.Kletnieks@vt.edu>,
+       Evgeniy Polyakov <zbr@ioremap.net>,
+       "C. Scott Ananian" <cscott@cscott.net>,
+       James Morris <jmorris@namei.org>, Bernie Innocenti <bernie@codewiz.org>,
+       Mark Seaborn <mrs@mythic-beasts.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>,
+       Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
+       Samir Bellabes <sam@synack.fr>,
+       Casey Schaufler <casey@schaufler-ca.com>, Pavel Machek <pavel@ucw.cz>,
+       Al Viro <viro@zeniv.linux.org.uk>
+Subject: Re: [RFC][PATCH v3] Unprivileged: Disable raising of privileges
+References: <m1aax1uoa3.fsf_-_@fess.ebiederm.org>
+	<3e8340490912291954v5a837a26p64bd776102d281d7@mail.gmail.com>
+	<m1r5qdt721.fsf@fess.ebiederm.org>
+	<3e8340490912292057g3e87eaabn115f85b78af2b08c@mail.gmail.com>
+	<m1d41w62zc.fsf_-_@fess.ebiederm.org>
+	<551280e50912300652r1007dee0j8de750bf33af9b3c@mail.gmail.com>
+	<20091230183513.GC14493@us.ibm.com> <m1fx6suswz.fsf@fess.ebiederm.org>
+	<20091230201712.GA23999@us.ibm.com>
+	<m1hbr8tb8q.fsf_-_@fess.ebiederm.org>
+	<20091231152523.GA12969@us.ibm.com>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Thu, 31 Dec 2009 08:48:45 -0800
+In-Reply-To: <20091231152523.GA12969@us.ibm.com> (Serge E. Hallyn's message of "Thu\, 31 Dec 2009 09\:25\:23 -0600")
+Message-ID: <m18wcjnl76.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-In-Reply-To: <20091231173719.6fee3a68@destiny.ordissimo>
-References: <2d0a357f0912310817p3b828239qc81994973fca1274@mail.gmail.com>
-	 <20091231173719.6fee3a68@destiny.ordissimo>
-Date: Thu, 31 Dec 2009 17:44:59 +0100
-Message-ID: <2d0a357f0912310844j7b46b593vc6f6c944248f3014@mail.gmail.com>
-Subject: Re: [2.6.33{rc2-git1,2}]: hp-wmi again broken
-From: Sedat Dilek <sedat.dilek@googlemail.com>
-To: Anisse Astier <anisse@astier.eu>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org,
-       len.brown@intel.com
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Scanned: No (on in02.mta.xmission.com); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tested-by: Sedat Dilek <sedat.dilek@gmail.com>
+"Serge E. Hallyn" <serue@us.ibm.com> writes:
 
-- Sedat -
+>> diff --git a/security/commoncap.c b/security/commoncap.c
+>> index f800fdb..34500e3 100644
+>> --- a/security/commoncap.c
+>> +++ b/security/commoncap.c
+>> @@ -389,7 +389,7 @@ static int get_file_caps(struct linux_binprm *bprm, bool *effective)
+>>  	if (!file_caps_enabled)
+>>  		return 0;
+>> 
+>> -	if (bprm->file->f_vfsmnt->mnt_flags & MNT_NOSUID)
+>> +	if (bprm->nosuid)
+>>  		return 0;
+>
+> I'm sorry, this may actually not be sufficient.
+>
+> Could you try the following test on a kernel with this patch? :
+>
+> 1. become root
+> 2. do prctl(PR_SET_NOSUID);
+> 3. run bash, and examine your capabilities in /proc/self/status
+>
+> I think the code in security/commoncap.c:457-458 will re-raise your
+> capabilities.
 
-On Thu, Dec 31, 2009 at 5:37 PM, Anisse Astier <anisse@astier.eu> wrote:
-> Hi Sedat,
->
-> On Thu, 31 Dec 2009 17:17:43 +0100, Sedat Dilek <sedat.dilek@googlemail.com> wrote :
->
->> Hi,
->>
->> I am not sure why this bug has re-entered from linux-acpi-2.6 to
->> linux-kernel, but I just wanted to report Anisse has re-send a fix for
->> hp-wmi [1].
->> The original bug was reported with appended patch in [2].
->> From 2.6.33-rc2 to 2.6.32-git2 hp-wmi is still broken.
->> Please, fix that cleanly in upstream, now.
->> Thanks.
->>
->> Kind Regards,
->> - Sedat -
->>
->> [1] ACPI & driver patches for 2.6.33-rc2
->> http://patchwork.kernel.org/patch/70398/
->> [2] [2.6.33-rc2] ACPI problems on HP nc6400 notebook
->> http://patchwork.kernel.org/patch/69745/
->
-> It would be nice if you could test the patch I sent, so that we had a
-> confirmation it's working. It's a (trivial)one-liner, but it was also a
-> one-liner that introduced the regression.
->
-> Thanks in advance.
->
-> Anisse
->
->
+Right.  That is a legitimate issue.
+I almost guard against it with my test against with my start condition test
+of cap_isclear(cred->cap_permitted).
+
+Which causes this to fail for root in most situations.  I will add a
+test for the securebits, and deny this to root unless the securebits
+are such that root cannot gain privilege.
+
+Thanks for catching this.  I figured I might need a uid == 0 exclusion.
+Where the test was split when I wrote it I wasn't certain where to put it.
+
+Eric
