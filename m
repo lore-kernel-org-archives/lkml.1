@@ -1,77 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753068AbZLaSt7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753080AbZLaSwc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753068AbZLaSt7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Dec 2009 13:49:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753031AbZLaSt6
+	id S1753080AbZLaSwc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Dec 2009 13:52:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753035AbZLaSwc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Dec 2009 13:49:58 -0500
-Received: from e23smtp09.au.ibm.com ([202.81.31.142]:48970 "EHLO
-	e23smtp09.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753025AbZLaSt6 (ORCPT
+	Thu, 31 Dec 2009 13:52:32 -0500
+Received: from mail-yw0-f176.google.com ([209.85.211.176]:52197 "EHLO
+	mail-yw0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753033AbZLaSwb convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Dec 2009 13:49:58 -0500
-Date: Fri, 1 Jan 2010 00:19:49 +0530
-From: "K.Prasad" <prasad@linux.vnet.ibm.com>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Roland McGrath <roland@redhat.com>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Vegard Nossum <vegardno@ifi.uio.no>, Oleg Nesterov <oleg@redhat.com>
-Subject: Re: [RFC Patch 1/2][Bugfix][x86][hw-breakpoint] Clear reserved
-	bits of DR6 in do_debug()
-Message-ID: <20091231184949.GB3676@in.ibm.com>
-Reply-To: prasad@linux.vnet.ibm.com
-References: <20091226175533.149765731@linux.vnet.ibm.com> <20091226182725.GB9494@in.ibm.com> <20091230234458.GA23808@nowhere>
+	Thu, 31 Dec 2009 13:52:31 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=dw/r4s0oWa6EpjNIxtGf114w0EHy1Q1bz1H50n0PVIouUyZZUKBmAARpfvMgOdYiEg
+         5482HBtGuJK5hHzdU1z3h4T/HwxV+rVMDVYTCtV2OsIgkFr4/+41toWDq3ZGgMQSho4z
+         5Ii1pfWJ/oiKnmrsS/KR6AqISgLABKs7/4t6o=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091230234458.GA23808@nowhere>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <20091226163600.GA16091@Pogoplug>
+References: <20091226163600.GA16091@Pogoplug>
+From: Mike Frysinger <vapier.adi@gmail.com>
+Date: Thu, 31 Dec 2009 13:52:08 -0500
+Message-ID: <8bd0f97a0912311052o160beeccl77282950a6b56367@mail.gmail.com>
+Subject: Re: [PATCH] Valid relocation symbol for FLAT format on ARM
+To: Jun Sun <jsun@junsun.net>
+Cc: linux-kernel@vger.kernel.org, uclinux-dev@uclinux.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 31, 2009 at 12:45:00AM +0100, Frederic Weisbecker wrote:
-> On Sat, Dec 26, 2009 at 11:57:25PM +0530, K.Prasad wrote:
-> > Clear the reserved bits from the stored copy of debug status register (DR6).
-> > This will help easy bitwise operations.
-> > 
-> > Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
-> > ---
-> >  arch/x86/include/asm/debugreg.h |    3 +++
-> >  arch/x86/kernel/traps.c         |    3 +++
-> >  2 files changed, 6 insertions(+)
-> > 
-> > Index: linux-2.6-tip/arch/x86/include/asm/debugreg.h
-> > ===================================================================
-> > --- linux-2.6-tip.orig/arch/x86/include/asm/debugreg.h
-> > +++ linux-2.6-tip/arch/x86/include/asm/debugreg.h
-> > @@ -14,6 +14,9 @@
-> >     which debugging register was responsible for the trap.  The other bits
-> >     are either reserved or not of interest to us. */
-> >  
-> > +/* Define reserved bits in DR6 which are always set to 1 */
-> > +#define DR6_RESERVED	(0xFFFF0FF0)
-> > +
-> 
-> 
-> The 12th bit seems to be also reserved.
-> Shouldn't it be 0xffff1ff0 ?
-> 
+On Sat, Dec 26, 2009 at 11:36, Jun Sun wrote:
+> Apparently newer GCC would generate ANCHOR symbols beyond the end of
+> data/bss segment on ARM CPUs. As a result, the exiting validity checking
+> for relocation symbols in FLAT format will fail.
+>
+> This also fixes a cosmetic error in printk. Text segment and data/bss
+> segment are allocated from two different areas. It is not meaningful to
+> give the diff between them in error reporting messages.
+>
+> Signed-off-by: Jun Sun <jsun@junsun.net>
+>
+> diff -Nru linux-2.6.32.2/arch/arm/include/asm/flat.h.orig linux-2.6.32.2/arch/arm/include/asm/flat.h
 
-The 12th bit is reserved to be 0 always.
+you really should use git to generate the patch.  if you're going to
+do it by hand, you need to format it correctly.  you're missing the
+--- marker between your change log and the start of the patch.
 
-> What kind of bitwise operations do you think it could help?
-> 
-> All of the operations I can find on dr6 are simple masks
-> test/set/clear.
-> 
+> --- linux-2.6.32.2/fs/binfmt_flat.c
+> +++ linux-2.6.32.2/fs/binfmt_flat.c
+> @@ -355,7 +355,7 @@
+>
+>        if (!flat_reloc_valid(r, start_brk - start_data + text_len)) {
+>                printk("BINFMT_FLAT: reloc outside program 0x%x (0 - 0x%x/0x%x)",
+> -                      (int) r,(int)(start_brk-start_code),(int)text_len);
+> +                      (int) r,(int)(start_brk-start_data+text_len),(int)text_len);
+>                goto failed;
+>        }
 
-As you found out later, this bitmask helps us in
-hw_breakpoint_handler().
-
-Thanks,
-K.Prasad
-
+this should be a separate patch since it is unrelated to your other change
+-mike
