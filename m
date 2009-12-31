@@ -1,72 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752495AbZLaAbM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752616AbZLaAd5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752495AbZLaAbM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Dec 2009 19:31:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751575AbZLaAbL
+	id S1752616AbZLaAd5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Dec 2009 19:33:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751575AbZLaAd4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Dec 2009 19:31:11 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:46272 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751515AbZLaAbK (ORCPT
+	Wed, 30 Dec 2009 19:33:56 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:49386 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751515AbZLaAdz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Dec 2009 19:31:10 -0500
-Date: Wed, 30 Dec 2009 22:30:46 -0200
-From: Arnaldo Carvalho de Melo <acme@infradead.org>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: James Bottomley <James.Bottomley@suse.de>,
-       Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Paul Mackerras <paulus@samba.org>, "Frank Ch. Eigler" <fche@redhat.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] x86: record relocation offset
-Message-ID: <20091231003046.GC2384@ghostprotocols.net>
-References: <vxv6sfpjggfx6v68yv1eecrx.1262215615671@email.android.com>
- <1262216506.2749.254.camel@mulgrave.site>
- <4B3BE63B.70907@zytor.com>
+	Wed, 30 Dec 2009 19:33:55 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=wlt2esJSnPoaPzhtxohTXtC1NKGve+mywiVzAqHpKACDEfbi6Xc9vUhI+S0qwkWJSB
+         QTbM1bIiPl6mUkgbejzMemm4yEEGUl+bsoBmrEn+9MVxSbpa3EtQybE9IbrYImeYXtUh
+         XboU8WrKuoXu5WmJo70aksZEbRRcaq3/Ly510=
+Date: Thu, 31 Dec 2009 01:33:49 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: "K.Prasad" <prasad@linux.vnet.ibm.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [RFC Patch 2/2][Bugfix][x86][hw-breakpoint] Fix return-code to
+	notifier chain in hw_breakpoint_handler
+Message-ID: <20091231003348.GB23808@nowhere>
+References: <20091226175533.149765731@linux.vnet.ibm.com> <20091226182833.GC9494@in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4B3BE63B.70907@zytor.com>
-X-Url: http://oops.ghostprotocols.net:81/blog
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <acme@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+In-Reply-To: <20091226182833.GC9494@in.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Wed, Dec 30, 2009 at 03:46:03PM -0800, H. Peter Anvin escreveu:
-> On 12/30/2009 03:41 PM, James Bottomley wrote:
-> > On Wed, 2009-12-30 at 15:26 -0800, H. Peter Anvin wrote:
-> >> The statement that a _text-based relocation is insufficient is false.
-> >> The entire x86-32 monolithic kernel is relocated as a unit.  The
-> >> x86-64 kernel, too, is relocated as a unit, but using the page tables,
-> >> which means it always runs at the compile-time-selected virtual
-> >> address.
-> > 
-> > Confused now ... you just repeated what I said in the second paragraph,
-> > but made it sound like you are disagreeing?
+On Sat, Dec 26, 2009 at 11:58:33PM +0530, K.Prasad wrote:
+> The hw-breakpoint handler will return NOTIFY_DONE for user-space breakpoints
+> to generate SIGTRAP signal (and not for kernel-space addresses). 
 > 
-> We might have a bit of a context mismatch.
+> Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
+> ---
+>  arch/x86/kernel/hw_breakpoint.c |    9 +++++++--
+>  1 file changed, 7 insertions(+), 2 deletions(-)
 > 
-> The first I saw of this thread was a proposed patch that would give the
-> relocation offset of the monolithic kernel, both on 32 and 64 bits,
-> without any explanation of the usage model.  As such, from my point of
-> view this has always been about the monolithic kernel, until your post
-> mentioned modules (which the proposed patch would have done nothing about.)
+> Index: linux-2.6-tip/arch/x86/kernel/hw_breakpoint.c
+> ===================================================================
+> --- linux-2.6-tip.orig/arch/x86/kernel/hw_breakpoint.c
+> +++ linux-2.6-tip/arch/x86/kernel/hw_breakpoint.c
+> @@ -502,8 +502,6 @@ static int __kprobes hw_breakpoint_handl
+>  		rcu_read_lock();
+>  
+>  		bp = per_cpu(bp_per_reg[i], cpu);
+> -		if (bp)
+> -			rc = NOTIFY_DONE;
+>  		/*
+>  		 * Reset the 'i'th TRAP bit in dr6 to denote completion of
+>  		 * exception handling
+> @@ -517,6 +515,13 @@ static int __kprobes hw_breakpoint_handl
+>  			rcu_read_unlock();
+>  			break;
+>  		}
+> +		/*
+> +		 * Further processing in do_debug() is needed for a) user-space
+> +		 * breakpoints (to generate signals) and b) when the system has
+> +		 * taken exception due to multiple causes
+> +		 */
+> +		if (bp->attr.bp_addr < TASK_SIZE)
+> +			rc = NOTIFY_DONE;
+>  
+>  		perf_bp_event(bp, args->regs);
+>  
 > 
-> The monolithic kernel offset is a single scalar constant; each module,
-> of course, is completely different.
 
-Conclusion: at 'perf record' time store the address of a well know
-symbol (_text) into the perf.data header. Later, at perf report time, if
-using a vmlinux file, calculate the relocation by subtracting the same
-well known symbol from the one stored in the header.
 
-So no need for ioctl or boot stuff.
+Looks good. This stops any further checks though. This
+is fine in case we have the DR_STEP bit as we will
+toggle to NOTIFY_DONE. But what about vm86 case? Is it
+possible we might still have something to handle in this
+side? (although I don't quite understand how we can have
+a breakpoint triggered in vm86 mode).
 
-I'll do that tomorrow, if Xiao doesn't beats me to it :-)
-
-- Arnaldo
