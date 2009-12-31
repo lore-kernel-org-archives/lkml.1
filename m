@@ -1,84 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752888AbZLaRwu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752866AbZLaRwP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752888AbZLaRwu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Dec 2009 12:52:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752804AbZLaRwr
+	id S1752866AbZLaRwP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Dec 2009 12:52:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752759AbZLaRwP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Dec 2009 12:52:47 -0500
-Received: from msux-gh1-uea02.nsa.gov ([63.239.67.2]:54996 "EHLO
-	msux-gh1-uea02.nsa.gov" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752803AbZLaRwq (ORCPT
+	Thu, 31 Dec 2009 12:52:15 -0500
+Received: from taverner.CS.Berkeley.EDU ([128.32.153.193]:36984 "EHLO
+	taverner.cs.berkeley.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752709AbZLaRwO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Dec 2009 12:52:46 -0500
-Subject: Re: A basic question about the security_* hooks
-From: "David P. Quigley" <dpquigl@tycho.nsa.gov>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Casey Schaufler <casey@schaufler-ca.com>,
-       Michael Stone <michael@laptop.org>, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, Andi Kleen <andi@firstfloor.org>,
-       David Lang <david@lang.hm>, Oliver Hartkopp <socketcan@hartkopp.net>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Valdis Kletnieks <Valdis.Kletnieks@vt.edu>,
-       Bryan Donlan <bdonlan@gmail.com>, Evgeniy Polyakov <zbr@ioremap.net>,
-       "C. Scott Ananian" <cscott@cscott.net>,
-       James Morris <jmorris@namei.org>, Bernie Innocenti <bernie@codewiz.org>,
-       Mark Seaborn <mrs@mythic-beasts.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       =?ISO-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>
-In-Reply-To: <20091225000542.GA22311@us.ibm.com>
-References: <20091224022902.GA24234@heat>
-	 <4B32F304.4040609@schaufler-ca.com> <m1hbrgildc.fsf@fess.ebiederm.org>
-	 <20091225000542.GA22311@us.ibm.com>
-Content-Type: text/plain
-Organization: National Security Agency
-Date: Thu, 31 Dec 2009 12:50:47 -0500
-Message-Id: <1262281847.22369.0.camel@moss-terrapins.epoch.ncsc.mil>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 7bit
+	Thu, 31 Dec 2009 12:52:14 -0500
+To: linux-kernel@vger.kernel.org
+Path: not-for-mail
+From: daw@cs.berkeley.edu (David Wagner)
+Newsgroups: isaac.lists.linux-kernel
+Subject: Re: [RFC][PATCH v3] Unprivileged: Disable raising of privileges
+Date: Thu, 31 Dec 2009 17:52:14 +0000 (UTC)
+Organization: University of California, Berkeley
+Message-ID: <hhioce$j9t$2@taverner.cs.berkeley.edu>
+References: <m1iqbpwjtp.fsf@fess.ebiederm.org> <20091230230042.5d2e78ac@lxorguk.ukuu.org.uk> <3e8340490912301844p4fddaf57ke58ceeba9582e0fa@mail.gmail.com> <20091231173334.5e3d7557@lxorguk.ukuu.org.uk>
+Reply-To: daw-news@taverner.cs.berkeley.edu (David Wagner)
+NNTP-Posting-Host: taverner.cs.berkeley.edu
+X-Trace: taverner.cs.berkeley.edu 1262281934 19773 128.32.153.193 (31 Dec 2009 17:52:14 GMT)
+X-Complaints-To: news@taverner.cs.berkeley.edu
+NNTP-Posting-Date: Thu, 31 Dec 2009 17:52:14 +0000 (UTC)
+X-Newsreader: trn 4.0-test76 (Apr 2, 2001)
+Originator: daw@taverner.cs.berkeley.edu (David Wagner)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-12-24 at 18:05 -0600, Serge E. Hallyn wrote:
-> Quoting Eric W. Biederman (ebiederm@xmission.com):
-> > Casey Schaufler <casey@schaufler-ca.com> writes:
-> > 
-> > > I'm behind you 100%. Use the LSM. Your module is exactly why we have
-> > > the blessed thing. Once we get a collection of otherwise unrelated
-> > > LSMs the need for a stacker will be sufficiently evident that we'll
-> > > be able to get one done properly.
-> > 
-> > My immediate impression is that the big limitation today is the
-> > sharing of the void * security data members of strucutres.
-> > 
-> > Otherwise multiple security modules could be as simple as.
-> > list_for_each(mod)
-> >         if (mod->op(...) != 0)
-> > 		return -EPERM.
-> > 
-> > It isn't hard to multiplex a single data field into several with a
-> > nice little abstraction.
-> > 
-> > With my maintainer of a general purpose kernel hat on I would love to
-> > be able to build in all of the security modules and select at boot
-> > time which ones were enabled.
-> 
-> You're supposed to be able to do that now - use the "security=smack"
-> or whatever boot option (see security/security.c:choose_lsm() ).
-> 
-> -serge
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Alan Cox  wrote:
+>Look up the sendmail security archive and you'll even find examples where
+>enforcing extra security on setuid *caused* security problems to show up
+>that were basically impossible to hit otherwise.
 
+Yes, we know: people have mentioned the sendmail bug multiple times
+in this thread.  That's exactly the hazard that this proposed patch
+was intended to help address.  That's exactly the hazard that all
+this discussion has been focused on.
 
-Ubuntu and SuSe currently do this and it is what allows them to ship a
-kernel with both AppArmor and SELinux support built in.
+This patch is not a security model.  It may facilitate other
+security models, hopefully, but it's not intended as a security
+model in itself.
 
-Dave
+>We have a security system, with a set of interfaces for attaching
+>security models, please stop trying to go round the back of the kernel
+>design because you can't be bothered to do the required work to do the
+>job right and would rather add more unmaintainable crap all over the
+>place.
 
+Got a constructive suggestion for a better way to implement this?
+My impression is that all thread participants have been happy to
+listen to constructive suggestions about alternative ways to achieve
+the goals, from people who have payed attention to the discussion and
+taken the time to understand the points that havee been raised so far.
