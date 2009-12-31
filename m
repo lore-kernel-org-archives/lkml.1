@@ -1,136 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752490AbZLaLP0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750911AbZLaLcB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752490AbZLaLP0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Dec 2009 06:15:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752328AbZLaLP0
+	id S1750911AbZLaLcB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Dec 2009 06:32:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750732AbZLaLcA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Dec 2009 06:15:26 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:45530 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752317AbZLaLPY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Dec 2009 06:15:24 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: [PATCH] PCI / PM: Use per-device D3 delays
-Date: Thu, 31 Dec 2009 12:15:54 +0100
-User-Agent: KMail/1.12.3 (Linux/2.6.33-rc2-tst; KDE/4.3.3; x86_64; ; )
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       "Maciej J. Woloszyk" <mat@esi.com.pl>
+	Thu, 31 Dec 2009 06:32:00 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:49755 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1750730AbZLaLcA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Dec 2009 06:32:00 -0500
+Message-ID: <4B3C8B3C.7070400@cn.fujitsu.com>
+Date: Thu, 31 Dec 2009 19:30:04 +0800
+From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
+To: Arnaldo Carvalho de Melo <acme@infradead.org>
+CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Paul Mackerras <paulus@samba.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 3/3] perf tools: adjust symbol address
+References: <4B3AC5CD.1000502@cn.fujitsu.com> <4B3AC69F.4070901@cn.fujitsu.com> <20091230131016.GC2956@ghostprotocols.net> <4B3C1397.8040307@cn.fujitsu.com> <20091231102938.GD2384@ghostprotocols.net> <4B3C819D.9000809@cn.fujitsu.com> <20091231110843.GF2384@ghostprotocols.net>
+In-Reply-To: <20091231110843.GF2384@ghostprotocols.net>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Message-Id: <200912311215.54412.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
 
-It turns out that some PCI devices require extra delays when changing
-power state from D3 to D0 (and the other way around).  Although this
-is against the PCI specification, we can handle it quite easily by
-allowing drivers to define arbitrary D3 delays for devices known to
-require extra time for switching power states.
 
-Introduce additional field d3_delay in struct pci_dev and use it to
-store the value of the device's D0->D3 delay, in miliseconds.  Make
-the PCI PM core code use the per-device d3_delay unless
-pci_pm_d3_delay is greater (in which case the latter is used).
-[This also allows the driver to specify d3_delay shorter than the
- 10 ms required by the PCI standard if the device is known to be able
- to handle that.]
+Arnaldo Carvalho de Melo wrote:
+> Em Thu, Dec 31, 2009 at 06:49:01PM +0800, Xiao Guangrong escreveu:
+>>
+>> Arnaldo Carvalho de Melo wrote:
+>>
+>>>> vmlinux* not know it's relocation or not, and we just handle the _specific_
+>>>> kernel at the time which match the current system. 
+>>> 'perf record' in one machine + 'perf report' in another should be
+>>> possible.
+>>>  
+>> Yeah, but current code not support this since it not record kernel build-id in
+>> perf.data while 'perf record' works, maybe you can fix it.
+> 
+> Huh? Checking...
+> 
+> [root@ana tmp]# perf record -a -f sleep 1s
+> [ perf record: Woken up 3 times to write data ]
+> [ perf record: Captured and wrote 0.330 MB perf.data (~14404 samples) ]
+> [root@ana tmp]# perf buildid-list | grep kallsyms
+> a3301c8755357466e39d71b46e8f69aecf83c0e8 [kernel.kallsyms]
+> a3301c8755357466e39d71b46e8f69aecf83c0e8 [kernel.kallsyms]
+> [root@ana tmp]#
+> 
+> In fact there is a bug, but the bug is either in 'perf buildid-list'
+> showing it twice or it being recorded twice in 'perf record'.
+> 
 
-Make the sky2 driver set d3_delay to 150 for devices handled by it.
+Ah, it seems some perf tools like 'perf kmem/sched' not use the build-id which it's
+recorded in perf.data and it use the current kernel's build-id:
 
-Fixes http://bugzilla.kernel.org/show_bug.cgi?id=14730 which is a
-listed regression from 2.6.30.
+perf kmem/sched -> perf_session__new() -> perf_session__create_kernel_maps() ->
+map_groups__create_kernel_maps() -> dsos__create_kernel():
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- drivers/net/sky2.c  |    1 +
- drivers/pci/pci.c   |   19 +++++++++++++++----
- include/linux/pci.h |    1 +
- 3 files changed, 17 insertions(+), 4 deletions(-)
+sysfs__read_build_id("/sys/kernel/notes", kernel->build_id,
+				 sizeof(kernel->build_id)
 
-Index: linux-2.6/include/linux/pci.h
-===================================================================
---- linux-2.6.orig/include/linux/pci.h
-+++ linux-2.6/include/linux/pci.h
-@@ -244,6 +244,7 @@ struct pci_dev {
- 	unsigned int	d2_support:1;	/* Low power state D2 is supported */
- 	unsigned int	no_d1d2:1;	/* Only allow D0 and D3 */
- 	unsigned int	wakeup_prepared:1;
-+	unsigned int	d3_delay;	/* D3->D0 transition time in ms */
- 
- #ifdef CONFIG_PCIEASPM
- 	struct pcie_link_state	*link_state;	/* ASPM link state. */
-Index: linux-2.6/drivers/pci/pci.c
-===================================================================
---- linux-2.6.orig/drivers/pci/pci.c
-+++ linux-2.6/drivers/pci/pci.c
-@@ -30,7 +30,17 @@ const char *pci_power_names[] = {
- };
- EXPORT_SYMBOL_GPL(pci_power_names);
- 
--unsigned int pci_pm_d3_delay = PCI_PM_D3_WAIT;
-+unsigned int pci_pm_d3_delay;
-+
-+static void pci_dev_d3_sleep(struct pci_dev *dev)
-+{
-+	unsigned int delay = dev->d3_delay;
-+
-+	if (delay < pci_pm_d3_delay)
-+		delay = pci_pm_d3_delay;
-+
-+	msleep(delay);
-+}
- 
- #ifdef CONFIG_PCI_DOMAINS
- int pci_domains_supported = 1;
-@@ -529,7 +539,7 @@ static int pci_raw_set_power_state(struc
- 	/* Mandatory power management transition delays */
- 	/* see PCI PM 1.1 5.6.1 table 18 */
- 	if (state == PCI_D3hot || dev->current_state == PCI_D3hot)
--		msleep(pci_pm_d3_delay);
-+		pci_dev_d3_sleep(dev);
- 	else if (state == PCI_D2 || dev->current_state == PCI_D2)
- 		udelay(PCI_PM_D2_DELAY);
- 
-@@ -1544,6 +1554,7 @@ void pci_pm_init(struct pci_dev *dev)
- 	}
- 
- 	dev->pm_cap = pm;
-+	dev->d3_delay = PCI_PM_D3_WAIT;
- 
- 	dev->d1_support = false;
- 	dev->d2_support = false;
-@@ -2382,12 +2393,12 @@ static int pci_pm_reset(struct pci_dev *
- 	csr &= ~PCI_PM_CTRL_STATE_MASK;
- 	csr |= PCI_D3hot;
- 	pci_write_config_word(dev, dev->pm_cap + PCI_PM_CTRL, csr);
--	msleep(pci_pm_d3_delay);
-+	pci_dev_d3_sleep(dev);
- 
- 	csr &= ~PCI_PM_CTRL_STATE_MASK;
- 	csr |= PCI_D0;
- 	pci_write_config_word(dev, dev->pm_cap + PCI_PM_CTRL, csr);
--	msleep(pci_pm_d3_delay);
-+	pci_dev_d3_sleep(dev);
- 
- 	return 0;
- }
-Index: linux-2.6/drivers/net/sky2.c
-===================================================================
---- linux-2.6.orig/drivers/net/sky2.c
-+++ linux-2.6/drivers/net/sky2.c
-@@ -4684,6 +4684,7 @@ static int __devinit sky2_probe(struct p
- 	INIT_WORK(&hw->restart_work, sky2_restart);
- 
- 	pci_set_drvdata(pdev, hw);
-+	pdev->d3_delay = 150;
- 
- 	return 0;
- 
+Hope i not misunderstand it. :-)
+
+Xiao
