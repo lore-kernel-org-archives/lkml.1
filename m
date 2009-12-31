@@ -1,47 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752657AbZLaQRq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752695AbZLaQeu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752657AbZLaQRq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Dec 2009 11:17:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752617AbZLaQRp
+	id S1752695AbZLaQeu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Dec 2009 11:34:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752624AbZLaQeu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Dec 2009 11:17:45 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:63349 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752565AbZLaQRp (ORCPT
+	Thu, 31 Dec 2009 11:34:50 -0500
+Received: from smtp110.plus.mail.re1.yahoo.com ([69.147.102.73]:20933 "HELO
+	smtp110.plus.mail.re1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752617AbZLaQet (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Dec 2009 11:17:45 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:cc:content-type;
-        b=NNYqivGHDJwktnKkZzsTwWEqQI8QAfkzZvE3KZH7/pW9aPLbTkoXREYLnWUy5gpFUs
-         zZlMNCrokN9GxwsQtnjuJh5qnWzBk+fqZE6a0jzI3nFJgtlKpYtvqZG4YQcNGaLV6sNk
-         6FFpycCa/2I4gptCW/soF3WOMiER8bBHqFxxE=
+	Thu, 31 Dec 2009 11:34:49 -0500
+X-Greylist: delayed 402 seconds by postgrey-1.27 at vger.kernel.org; Thu, 31 Dec 2009 11:34:49 EST
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.de;
+  h=Received:X-Yahoo-SMTP:X-YMail-OSG:X-Yahoo-Newman-Property:Content-Type:To:Date:MIME-Version:Content-Transfer-Encoding:From:Message-ID:User-Agent;
+  b=JbwTtr+XVSbmPYM8BwQuL7u+BDGevtq4CLMbNZVLdosdxX/0rZJxVzKU9/hxwBvkSzbIuTNrNhOqRjGWVlylYloKOtplgj7lU8hiOXnsamrLmoudCtw500QH+JUjg0Eaf70GWBy80ZQFwU7G4OoYQXU2T6/fnSvCuHVS6GZTGz0=  ;
+X-Yahoo-SMTP: uC.BI.uswBAruHW0iWRQVbi.qJETuMu06w--
+X-YMail-OSG: Z6xEqfIVM1m.dfC3T.mEO9veUE4xkZ0jYTDnkYv.1JFIya1x2w_No5dOwnWuMNTWAC4JefEYDmna0U893KhVF9_aI2kd9xUmUnJDxiNK2Fg10Cm0Ap9wQEG5Fx7ewgQ29wMnrDoW0LuwwMlxcSdiPcNzLrHXNd9rG19Sn3NHRGpZtCPQCTGtG7MokRx1EBKi3fRed8mgn6HTpKDOCQWjheb.P_EmbBtqnvR.6zjqTV4Oe5fyVWFcCYYnLRkq.xHHkKg0dgq0QYbddTetgXHuuL06WgA3C1YjPUrh0yYk81hy5BM4sHPMbFB3L7m60BNMEmzAMDlqe3gZdlamMp_R2vuzdV1fXy8izvsYFFBiKSlZMPw1QVVZp7VUgsm4A0W7fg--
+X-Yahoo-Newman-Property: ymail-3
+Content-Type: text/plain; charset=iso-8859-15; format=flowed; delsp=yes
+To: linux-kernel@vger.kernel.org
+Date: Thu, 31 Dec 2009 17:26:45 +0100
 MIME-Version: 1.0
-Date: Thu, 31 Dec 2009 17:17:43 +0100
-Message-ID: <2d0a357f0912310817p3b828239qc81994973fca1274@mail.gmail.com>
-Subject: [2.6.33{rc2-git1,2}]: hp-wmi again broken
-From: Sedat Dilek <sedat.dilek@googlemail.com>
-To: LKML <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org
-Cc: Anisse Astier <anisse@astier.eu>, len.brown@intel.com
-Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+From: "Christopher Astfalk" <christo_1989@yahoo.de>
+Message-ID: <op.u5s9av0jhjy1bs@christophers-pc>
+User-Agent: Opera Mail/10.10 (Win32)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-I am not sure why this bug has re-entered from linux-acpi-2.6 to
-linux-kernel, but I just wanted to report Anisse has re-send a fix for
-hp-wmi [1].
-The original bug was reported with appended patch in [2].
->From 2.6.33-rc2 to 2.6.32-git2 hp-wmi is still broken.
-Please, fix that cleanly in upstream, now.
-Thanks.
-
-Kind Regards,
-- Sedat -
-
-[1] ACPI & driver patches for 2.6.33-rc2
-http://patchwork.kernel.org/patch/70398/
-[2] [2.6.33-rc2] ACPI problems on HP nc6400 notebook
-http://patchwork.kernel.org/patch/69745/
+unsubscribe linux-kernel
