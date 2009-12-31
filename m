@@ -1,131 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753218AbZLaExS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750861AbZLaFEr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753218AbZLaExS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Dec 2009 23:53:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753192AbZLaExO
+	id S1750861AbZLaFEr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Dec 2009 00:04:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750732AbZLaFEq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Dec 2009 23:53:14 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:43294 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752958AbZLaExJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Dec 2009 23:53:09 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=o3XaRyxTlR3WJVl1RZqA7MBJSvlXqd9TyXZPP7gjjZW6a6htaPaP7EUYx1P4lTOJXA
-         AnUGxD0p8amnxCL971xMO7bFl7xAhbEO+jD1JW4v0Eh6b9dfU64M+6q2YBszJUCaNm0u
-         O2Z7P9VAYMDzDSZCyunmnzbb4S/OqdRgpkElI=
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
+	Thu, 31 Dec 2009 00:04:46 -0500
+Received: from mga14.intel.com ([143.182.124.37]:34653 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750720AbZLaFEp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Dec 2009 00:04:45 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
+   d="scan'208";a="228018771"
+Date: Thu, 31 Dec 2009 13:04:41 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Trond Myklebust <Trond.Myklebust@netapp.com>
+Cc: Jan Kara <jack@suse.cz>, Steve Rago <sar@nec-labs.com>,
        Peter Zijlstra <peterz@infradead.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 2/2] perf: Drop useless check for ignored frame
-Date: Thu, 31 Dec 2009 05:53:03 +0100
-Message-Id: <1262235183-5320-2-git-send-regression-fweisbec@gmail.com>
-X-Mailer: git-send-email 1.6.2.3
-In-Reply-To: <1262235183-5320-1-git-send-regression-fweisbec@gmail.com>
-References: <1262235183-5320-1-git-send-regression-fweisbec@gmail.com>
+       "linux-nfs@vger.kernel.org" <linux-nfs@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "jens.axboe" <jens.axboe@oracle.com>,
+       Peter Staubach <staubach@redhat.com>,
+       Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>
+Subject: Re: [PATCH] improve the performance of large sequential write NFS
+	workloads
+Message-ID: <20091231050441.GB19627@localhost>
+References: <20091219122033.GA11360@localhost> <1261232747.1947.194.camel@serenity> <20091222015907.GA6223@localhost> <1261578107.2606.11.camel@localhost> <20091223180551.GD3159@quack.suse.cz> <1261595574.6775.2.camel@localhost> <20091224025228.GA12477@localhost> <1261656281.3596.1.camel@localhost> <20091225055617.GA8595@localhost> <1262190168.7332.6.camel@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1262190168.7332.6.camel@localhost>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The check that ignores the debug and nmi stack frames is useless
-now that we have a frame pointer that makes us start at the right
-place. We don't anymore have to deal with these.
+Trond,
 
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Paul Mackerras <paulus@samba.org>
+On Thu, Dec 31, 2009 at 12:22:48AM +0800, Trond Myklebust wrote:
+
+> it ignores the commit request if the caller is just doing a
+> WB_SYNC_NONE background flush, waiting instead for the ensuing
+> WB_SYNC_ALL request...
+
+I'm afraid this will block balance_dirty_pages() until explicit
+sync/fsync calls: COMMITs are bad, however if we don't send them
+regularly, NR_UNSTABLE_NFS will grow large and block
+balance_dirty_pages() as well as throttle_vm_writeout()..
+
+        > +int nfs_commit_unstable_pages(struct address_space *mapping,
+        > +               struct writeback_control *wbc)
+        > +{
+        > +       struct inode *inode = mapping->host;
+        > +       int flags = FLUSH_SYNC;
+        > +       int ret;
+        > +
+==>     > +       /* Don't commit if this is just a non-blocking flush */
+==>     > +       if (wbc->sync_mode != WB_SYNC_ALL) {
+==>     > +               mark_inode_unstable_pages(inode);
+==>     > +               return 0;
+==>     > +       }
+        > +       if (wbc->nonblocking)
+        > +               flags = 0;
+        > +       ret = nfs_commit_inode(inode, flags);
+        > +       if (ret > 0)
+        > +               return 0;
+        > +       return ret;
+        > +}
+
+The NFS protocol provides no painless way to reclaim unstable pages
+other than the COMMIT (or sync write)..  This leaves us in a dilemma.
+
+We may reasonably reduce the number of COMMITs, and possibly even
+delay them for a while (and hope the server have writeback the pages
+before the COMMIT, somehow fragile).
+
+What we can obviously do is to avoid sending a COMMIT
+- if there are already an ongoing COMMIT for the same inode
+- or when there are ongoing WRITE for the inode
+  (are there easy way to detect this?)
+
+What do you think?
+
+Thanks,
+Fengguang
 ---
- arch/x86/include/asm/stacktrace.h |    2 --
- arch/x86/kernel/cpu/perf_event.c  |    8 --------
- arch/x86/kernel/dumpstack_32.c    |    5 -----
- arch/x86/kernel/dumpstack_64.c    |    5 -----
- 4 files changed, 0 insertions(+), 20 deletions(-)
+ fs/nfs/inode.c |    5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
-diff --git a/arch/x86/include/asm/stacktrace.h b/arch/x86/include/asm/stacktrace.h
-index 35e8912..4dab78e 100644
---- a/arch/x86/include/asm/stacktrace.h
-+++ b/arch/x86/include/asm/stacktrace.h
-@@ -3,8 +3,6 @@
- 
- extern int kstack_depth_to_print;
- 
--int x86_is_stack_id(int id, char *name);
--
- struct thread_info;
- struct stacktrace_ops;
- 
-diff --git a/arch/x86/kernel/cpu/perf_event.c b/arch/x86/kernel/cpu/perf_event.c
-index d616c06..b1bb8c5 100644
---- a/arch/x86/kernel/cpu/perf_event.c
-+++ b/arch/x86/kernel/cpu/perf_event.c
-@@ -2297,7 +2297,6 @@ void callchain_store(struct perf_callchain_entry *entry, u64 ip)
- 
- static DEFINE_PER_CPU(struct perf_callchain_entry, pmc_irq_entry);
- static DEFINE_PER_CPU(struct perf_callchain_entry, pmc_nmi_entry);
--static DEFINE_PER_CPU(int, in_ignored_frame);
- 
- 
- static void
-@@ -2313,10 +2312,6 @@ static void backtrace_warning(void *data, char *msg)
- 
- static int backtrace_stack(void *data, char *name)
- {
--	per_cpu(in_ignored_frame, smp_processor_id()) =
--			x86_is_stack_id(NMI_STACK, name) ||
--			x86_is_stack_id(DEBUG_STACK, name);
--
- 	return 0;
- }
- 
-@@ -2324,9 +2319,6 @@ static void backtrace_address(void *data, unsigned long addr, int reliable)
- {
- 	struct perf_callchain_entry *entry = data;
- 
--	if (per_cpu(in_ignored_frame, smp_processor_id()))
--		return;
--
- 	if (reliable)
- 		callchain_store(entry, addr);
- }
-diff --git a/arch/x86/kernel/dumpstack_32.c b/arch/x86/kernel/dumpstack_32.c
-index ae775ca..11540a1 100644
---- a/arch/x86/kernel/dumpstack_32.c
-+++ b/arch/x86/kernel/dumpstack_32.c
-@@ -18,11 +18,6 @@
- 
- #include "dumpstack.h"
- 
--/* Just a stub for now */
--int x86_is_stack_id(int id, char *name)
--{
--	return 0;
--}
- 
- void dump_trace(struct task_struct *task, struct pt_regs *regs,
- 		unsigned long *stack, unsigned long bp,
-diff --git a/arch/x86/kernel/dumpstack_64.c b/arch/x86/kernel/dumpstack_64.c
-index 0ad9597..676bc05 100644
---- a/arch/x86/kernel/dumpstack_64.c
-+++ b/arch/x86/kernel/dumpstack_64.c
-@@ -33,11 +33,6 @@ static char x86_stack_ids[][8] = {
- #endif
- };
- 
--int x86_is_stack_id(int id, char *name)
--{
--	return x86_stack_ids[id - 1] == name;
--}
--
- static unsigned long *in_exception_stack(unsigned cpu, unsigned long stack,
- 					 unsigned *usedp, char **idp)
- {
--- 
-1.6.2.3
-
+--- linux.orig/fs/nfs/inode.c	2009-12-25 09:25:38.000000000 +0800
++++ linux/fs/nfs/inode.c	2009-12-25 10:13:06.000000000 +0800
+@@ -105,8 +105,11 @@ int nfs_write_inode(struct inode *inode,
+ 		ret = filemap_fdatawait(inode->i_mapping);
+ 		if (ret == 0)
+ 			ret = nfs_commit_inode(inode, FLUSH_SYNC);
+-	} else
++	} else if (!radix_tree_tagged(&NFS_I(inode)->nfs_page_tree,
++				      NFS_PAGE_TAG_LOCKED))
+ 		ret = nfs_commit_inode(inode, 0);
++	else
++		ret = -EAGAIN;
+ 	if (ret >= 0)
+ 		return 0;
+ 	__mark_inode_dirty(inode, I_DIRTY_DATASYNC);
