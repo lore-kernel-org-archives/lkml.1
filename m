@@ -1,214 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752982AbZLaSG2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752980AbZLaSJq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752982AbZLaSG2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Dec 2009 13:06:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752958AbZLaSGY
+	id S1752980AbZLaSJq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Dec 2009 13:09:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752931AbZLaSJp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Dec 2009 13:06:24 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:46173 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752931AbZLaSGW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Dec 2009 13:06:22 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [origin tree build failure] Re: [git pull] PCI fixes
-Date: Thu, 31 Dec 2009 19:06:35 +0100
-User-Agent: KMail/1.12.3 (Linux/2.6.33-rc2-tst; KDE/4.3.3; x86_64; ; )
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20091228081002.71f0e3b9@jbarnes-x200> <20091231122617.GA3508@elte.hu>
-In-Reply-To: <20091231122617.GA3508@elte.hu>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200912311906.35704.rjw@sisk.pl>
+	Thu, 31 Dec 2009 13:09:45 -0500
+Received: from mta5.srv.hcvlny.cv.net ([167.206.4.200]:59509 "EHLO
+	mta5.srv.hcvlny.cv.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752926AbZLaSJo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Dec 2009 13:09:44 -0500
+Date: Thu, 31 Dec 2009 13:09:14 -0500
+From: Michael Breuer <mbreuer@majjas.com>
+Subject: Re: sky2 panic in 2.6.32.1 under load (new oops)
+In-reply-to: <20091230101046.2816d545@nehalam>
+To: Stephen Hemminger <shemminger@vyatta.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "Berck E. Nash" <flyboy@gmail.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org
+Message-id: <4B3CE8CA.5050003@majjas.com>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7BIT
+References: <4B300A2A.8040305@gmail.com> <4B300E30.9090707@majjas.com>
+ <4B3114E3.1070602@majjas.com> <4B329FA3.9090904@majjas.com>
+ <20091223230102.4bb0100e.akpm@linux-foundation.org>
+ <4B34E847.8010809@majjas.com> <20091225152200.1cf11dfe@nehalam>
+ <4B3581C7.8000702@majjas.com> <20091226095723.7ac82b18@nehalam>
+ <4B367409.5060202@majjas.com> <4B379378.4000102@majjas.com>
+ <20091227102238.0df149f9@nehalam> <4B37B7E2.5070307@majjas.com>
+ <20091229093023.3ad24786@nehalam> <4B3A5048.9090700@majjas.com>
+ <20091229114938.1f4d1c5c@nehalam> <4B3AFFE8.3060409@majjas.com>
+ <20091229235942.51bf733d@nehalam> <4B3B7488.6080503@majjas.com>
+ <20091230101046.2816d545@nehalam>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.5)
+ Gecko/20091204 Lightning/1.0b2pre Thunderbird/3.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 31 December 2009, Ingo Molnar wrote:
-> 
-> * Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
-> 
-> > The following changes since commit 8bea8672edfca7ec5f661cafb218f1205863b343:
-> >   Stephen Rothwell (1):
-> >         mfd: compile fix for twl4030 renaming
-> > 
-> > are available in the git repository at:
-> > 
-> >   git://git.kernel.org/pub/scm/linux/kernel/git/jbarnes/pci-2.6 for-linus
-> > 
-> > A few misc fixes.  A few people have run into the CLS bug so far, which Csaba
-> > kindly provided a fix for (detection of PCI cache line size is a good
-> > improvement, but it will fail in some cases due to a virtualized or buggy
-> > platform).
-> > 
-> > This set also adds the device specific reset quirk code from Dexuan;
-> > needed for some devices especially in virtualized environments.
-> > 
-> > Benjamin Herrenschmidt (1):
-> >       PCI/cardbus: Add a fixup hook and fix powerpc
-> > 
-> > Csaba Henk (1):
-> >       PCI: Handle case when no pci device can provide cache line size hint
-> > 
-> > Detlef Riekenberg (1):
-> >       vgaarbiter: fix a typo in the vgaarbiter Documentation
-> > 
-> > Dexuan Cui (3):
-> >       PCI: support device-specific reset methods
-> >       PCI: add Intel USB specific reset method
-> >       PCI: add Intel 82599 Virtual Function specific reset method
-> > 
-> > Jiri Slaby (1):
-> >       PCI: fix section mismatch on update_res()
-> > 
-> > Rafael J. Wysocki (1):
-> >       PCI/PM: Propagate wake-up enable for PCIe devices too
-> > 
-> > Stefan Assmann (2):
-> >       PCI: change PCI nomenclature in drivers/pci/ (comment changes)
-> >       PCI: change PCI nomenclature in drivers/pci/ (non-comment changes)
-> > 
-> >  Documentation/vgaarbiter.txt           |    2 +-
-> >  arch/powerpc/kernel/pci-common.c       |   13 +++++++
-> >  arch/x86/pci/bus_numa.c                |    2 +-
-> >  drivers/pci/hotplug/shpchp.h           |    2 +-
-> >  drivers/pci/intel-iommu.c              |    6 ++--
-> >  drivers/pci/intr_remapping.c           |    2 +-
-> >  drivers/pci/pci-acpi.c                 |   10 +----
-> >  drivers/pci/pci.c                      |   30 +++++++++++++++--
-> >  drivers/pci/pci.h                      |    8 ++++
-> >  drivers/pci/pcie/aer/Kconfig.debug     |    4 +-
-> >  drivers/pci/pcie/aer/aer_inject.c      |    6 ++--
-> >  drivers/pci/pcie/aer/aerdrv.c          |    2 +-
-> >  drivers/pci/pcie/aer/aerdrv_acpi.c     |    2 +-
-> >  drivers/pci/pcie/aer/aerdrv_core.c     |    6 ++--
-> >  drivers/pci/pcie/aer/aerdrv_errprint.c |    4 +-
-> >  drivers/pci/pcie/aspm.c                |    4 +-
-> >  drivers/pci/pcie/portdrv_pci.c         |    2 +-
-> >  drivers/pci/quirks.c                   |   57 +++++++++++++++++++++++++++++++-
-> >  drivers/pci/search.c                   |    6 ++--
-> >  drivers/pcmcia/cardbus.c               |    2 +-
-> >  include/linux/pci.h                    |    3 ++
-> >  21 files changed, 135 insertions(+), 38 deletions(-)
-> 
-> FYI, a commit in this tree broke today's -tip build on x86:
-> 
->  drivers/built-in.o: In function `pci_dev_reset':
->  pci.c:(.text+0x95ed): undefined reference to `pci_dev_reset_methods'
->  pci.c:(.text+0x95fd): undefined reference to `pci_dev_reset_methods'
-> 
-> I wont have time to bisect it today but wanted to give you a heads up.
+Did some more digging today... Haven't nailed it, but there's something 
+going on with X and tty...
 
-This quite obviously is an upshot of
+Among other things, when I telinit 3 && telinit 5 the tty keeps 
+switching between 7 and 8 (nothing else running on either tty). It would 
+appear that somehow the tty deallocation isn't complete when X restarts. 
+Also, X grabbing a tty seems to be a requisite step in recreating the 
+sky2 issue.
 
-commit b9c3b266411d27f1a6466c19d146d08db576bfea
-Author: Dexuan Cui <dexuan.cui@intel.com>
-Date:   Mon Dec 7 13:03:21 2009 +0800
+On 12/30/2009 1:10 PM, Stephen Hemminger wrote:
+> On Wed, 30 Dec 2009 10:40:56 -0500
+> Michael Breuer<mbreuer@majjas.com>  wrote:
+>
+>    
+>> Dec 30 10:37:14 mail kernel: sky2 0000:06:00.0: error interrupt
+>> status=0x40000008
+>> Dec 30 10:37:14 mail kernel: sky2 Tx ring pending=31...40 report=35 done=35
+>> Dec 30 10:37:14 mail kernel: 30: 0x0: 0xeb50c0ca(9014)
+>> Dec 30 10:37:14 mail kernel: 32: 0x0: 0xeb5080ca(9014)
+>> Dec 30 10:37:14 mail kernel: 34: 0x0: 0xeb5040ca(9014)
+>> Dec 30 10:37:14 mail kernel: 36: 0x0: 0xeb5000ca(9014)
+>> Dec 30 10:37:14 mail kernel: 38: 0x0: 0xeb4fc0ca(9014)
+>>      
+> You must be using 9K MTU.  Do you see the problem with smaller
+> MTU?
+>
+>    
+>> Dec 30 10:37:14 mail kernel: sky2 0000:06:00.0: error interrupt
+>> status=0x40000008
+>> Dec 30 10:37:14 mail kernel: sky2 Tx ring pending=87...92 report=89 done=91
+>> Dec 30 10:37:14 mail kernel: 86: 0x0: 0xeafd80ca(9014)
+>> Dec 30 10:37:14 mail kernel: 88: 0x0: 0xeafd40ca(9014)
+>> Dec 30 10:37:14 mail kernel: 90: 0x0: 0xeafd00ca(9014)
+>> Dec 30 10:37:15 mail kernel: sky2 0000:06:00.0: error interrupt status=0x8
+>> Dec 30 10:37:15 mail kernel: sky2 Tx ring pending=39...42 report=39 done=41
+>> Dec 30 10:37:15 mail kernel: 38: 0x0: 0xe5fec0ca(9014)
+>> Dec 30 10:37:15 mail kernel: 40: 0x0: 0xe5fe80ca(9014)
+>> Dec 30 10:37:15 mail kernel: sky2 0000:06:00.0: error interrupt
+>> status=0x40000008
+>> Dec 30 10:37:15 mail kernel: sky2 Tx ring pending=117...124 report=119
+>> done=119
+>> Dec 30 10:37:15 mail kernel: 116: 0x0: 0xe5d6c0ca(9014)
+>> Dec 30 10:37:15 mail kernel: 118: 0x0: 0xe5d680ca(9014)
+>> Dec 30 10:37:15 mail kernel: 120: 0x0: 0xe5d660ca(5938)
+>> Dec 30 10:37:15 mail kernel: 122: 0x0: 0xe5d640ca(4213)
+>>      
+>    
 
-    PCI: support device-specific reset methods
-
-and happens because you don't have CONFIG_PCI_QUIRKS defined in your
-(random?) .configs.
-
-The patch below should fix it.
-
-Rafael
-
----
-From: Rafael J. Wysocki <rjw@sisk.pl>
-Subject: PCI: Fix build if quirks are not enabled
-
-After commit b9c3b266411d27f1a6466c19d146d08db576bfea
-(PCI: support device-specific reset methods) kernel building is
-broken if CONFIG_PCI_QUIRKS is unset.
-
-Fix this by moving pci_dev_specific_reset() to drivers/pci/quirks.c
-and providing an empty replacement for !CONFIG_PCI_QUIRKS builds.
-
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-Reported-by: Ingo Molnar <mingo@elte.hu>
----
- drivers/pci/pci.c    |   15 ---------------
- drivers/pci/pci.h    |    2 +-
- drivers/pci/quirks.c |   19 ++++++++++++++++++-
- 3 files changed, 19 insertions(+), 17 deletions(-)
-
-Index: linux-2.6/drivers/pci/quirks.c
-===================================================================
---- linux-2.6.orig/drivers/pci/quirks.c
-+++ linux-2.6/drivers/pci/quirks.c
-@@ -2684,14 +2684,31 @@ static int reset_intel_82599_sfp_virtfn(
- 
- #define PCI_DEVICE_ID_INTEL_82599_SFP_VF   0x10ed
- 
--struct pci_dev_reset_methods pci_dev_reset_methods[] = {
-+static const struct pci_dev_reset_methods pci_dev_reset_methods[] = {
- 	{ PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82599_SFP_VF,
- 		 reset_intel_82599_sfp_virtfn },
- 	{ PCI_VENDOR_ID_INTEL, PCI_ANY_ID,
- 		reset_intel_generic_dev },
- 	{ 0 }
- };
-+
-+int pci_dev_specific_reset(struct pci_dev *dev, int probe)
-+{
-+	struct pci_dev_reset_methods *i;
-+
-+	for (i = pci_dev_reset_methods; i->reset; i++) {
-+		if ((i->vendor == dev->vendor ||
-+		     i->vendor == (u16)PCI_ANY_ID) &&
-+		    (i->device == dev->device ||
-+		     i->device == (u16)PCI_ANY_ID))
-+			return i->reset(dev, probe);
-+	}
-+
-+	return -ENOTTY;
-+}
-+
- #else
- void pci_fixup_device(enum pci_fixup_pass pass, struct pci_dev *dev) {}
-+int pci_dev_specific_reset(struct pci_dev *dev, int probe) { return -ENOTTY; }
- #endif
- EXPORT_SYMBOL(pci_fixup_device);
-Index: linux-2.6/drivers/pci/pci.c
-===================================================================
---- linux-2.6.orig/drivers/pci/pci.c
-+++ linux-2.6/drivers/pci/pci.c
-@@ -2430,21 +2430,6 @@ static int pci_parent_bus_reset(struct p
- 	return 0;
- }
- 
--static int pci_dev_specific_reset(struct pci_dev *dev, int probe)
--{
--	struct pci_dev_reset_methods *i;
--
--	for (i = pci_dev_reset_methods; i->reset; i++) {
--		if ((i->vendor == dev->vendor ||
--		     i->vendor == (u16)PCI_ANY_ID) &&
--		    (i->device == dev->device ||
--		     i->device == (u16)PCI_ANY_ID))
--			return i->reset(dev, probe);
--	}
--
--	return -ENOTTY;
--}
--
- static int pci_dev_reset(struct pci_dev *dev, int probe)
- {
- 	int rc;
-Index: linux-2.6/drivers/pci/pci.h
-===================================================================
---- linux-2.6.orig/drivers/pci/pci.h
-+++ linux-2.6/drivers/pci/pci.h
-@@ -328,6 +328,6 @@ struct pci_dev_reset_methods {
- 	int (*reset)(struct pci_dev *dev, int probe);
- };
- 
--extern struct pci_dev_reset_methods pci_dev_reset_methods[];
-+extern int pci_dev_specific_reset(struct pci_dev *dev, int probe);
- 
- #endif /* DRIVERS_PCI_H */
