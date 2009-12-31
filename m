@@ -1,57 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753093AbZLaCXT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753125AbZLaC0i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753093AbZLaCXT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Dec 2009 21:23:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752845AbZLaCXT
+	id S1753125AbZLaC0i (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 30 Dec 2009 21:26:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753011AbZLaC0i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Dec 2009 21:23:19 -0500
-Received: from cdptpa-omtalb.mail.rr.com ([75.180.132.122]:40479 "EHLO
-	cdptpa-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752735AbZLaCXS (ORCPT
+	Wed, 30 Dec 2009 21:26:38 -0500
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:47828 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752898AbZLaC0h (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Dec 2009 21:23:18 -0500
-X-Authority-Analysis: v=1.0 c=1 a=f7fQcPUqutgA:10 a=rOUgymgbAAAA:8 a=20KFwNOVAAAA:8 a=L1R48PyKPDoFwxzuPTsA:9 a=SbemwMtWDMmYNdYgzKR4YbcAfC4A:4 a=jEp0ucaQiEUA:10
-X-Cloudmark-Score: 0
-X-Originating-IP: 71.70.153.3
-From: Jeff Layton <jlayton@redhat.com>
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org,
-       linux-nfs@vger.kernel.org
-Subject: [PATCH] sunrpc: fix build-time warning
-Date: Wed, 30 Dec 2009 21:23:15 -0500
-Message-Id: <1262226195-27733-1-git-send-email-jlayton@redhat.com>
-X-Mailer: git-send-email 1.6.5.2
+	Wed, 30 Dec 2009 21:26:37 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=Zp4ZfdM2iOoS68M7WML8PxhrcUi5r1LuJpvDRzaQXBtDe0KUGHhKrhqxm/FVkS+xpK
+         fMnICkB/gqUyBRZZhfQ6iJWG4Hhdx6LzEC+TB401Q82gcpR4Ttxstn9uTna8xlWBlqVM
+         ctTVYgPq8U1O+xISOj0WYkh23D3HeOwtrT3SY=
+MIME-Version: 1.0
+In-Reply-To: <alpine.LSU.2.00.0912301653200.4532@sister.anvils>
+References: <20091228115315.76b1ecd0.minchan.kim@barrios-desktop>
+	 <4B38246C.3020209@redhat.com>
+	 <20091228130926.6874d7b2.minchan.kim@barrios-desktop>
+	 <alpine.LSU.2.00.0912301653200.4532@sister.anvils>
+Date: Thu, 31 Dec 2009 11:26:36 +0900
+Message-ID: <28c262360912301826r36e8a6c3ub6b6f341fbc9db71@mail.gmail.com>
+Subject: Re: [PATCH -mmotm-2009-12-10-17-19] Prevent churning of zero page in 
+	LRU list.
+From: Minchan Kim <minchan.kim@gmail.com>
+To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Cc: Rik van Riel <riel@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit 486bad2e40e938cd68fd853b7a9fa3115a9d3a4a introduced this warning
-at build time on some 32-bit architectures:
+Hi, Hugh.
 
-net/sunrpc/auth_gss/auth_gss.c: In function 'gss_pipe_downcall':
-net/sunrpc/auth_gss/auth_gss.c:660: warning: format '%ld' expects type 'long int', but argument 3 has type 'ssize_t
+On Thu, Dec 31, 2009 at 2:03 AM, Hugh Dickins
+<hugh.dickins@tiscali.co.uk> wrote:
+> On Mon, 28 Dec 2009, Minchan Kim wrote:
+>> On Sun, 27 Dec 2009 22:22:20 -0500
+>> Rik van Riel <riel@redhat.com> wrote:
+>> > On 12/27/2009 09:53 PM, Minchan Kim wrote:
+>> > >
+>> > > VM doesn't add zero page to LRU list.
+>> > > It means zero page's churning in LRU list is pointless.
+>> > >
+>> > > As a matter of fact, zero page can't be promoted by mark_page_accessed
+>> > > since it doesn't have PG_lru.
+>> > >
+>> > > This patch prevent unecessary mark_page_accessed call of zero page
+>> > > alghouth caller want FOLL_TOUCH.
+>> > >
+>> > > Signed-off-by: Minchan Kim<minchan.kim@gmail.com>
+>> >
+>> > The code looks correct, but I wonder how frequently we run into
+>> > the zero page in this code, vs. how much the added cost is of
+>> > having this extra code in follow_page.
+>> >
+>> > What kind of problem were you running into that motivated you
+>> > to write this patch?
+>>
+>> I didn't have experienced any problem in this case.
+>> In fact, I found that while trying to make patch smap_pte_change.
+>>
+>> Long time ago when we have a zero page, we regards it to file_rss.
+>> So while we see the smaps, vm_normal_page returns zero page and we can
+>> calculate it properly with PSS.
+>>
+>> But now we don't acccout zero page to file_rss.
+>> I am not sure we have to account it with file_rss.
+>> So I think now smaps_pte_range's resident count routine also is changed.
+>>
+>> Anyway, I think my patch doesn't have much cost since many customers of
+>> follow_page are already not a fast path.
+>>
+>> I tend to agree with your opinion "How frequently we runt into the zero page?"
+>> But my thought GUP is export function which can be used for anything by anyone.
+>>
+>> Thanks for the review, Rik.
+>
+> I'm guessing that you've now dropped the idea of this patch,
+> since it wasn't included along with your 1/3, 2/3, 3/3.
+> You thought the ZERO_PAGE was moving around the LRUs, but now
+> realize that it isn't, so accept there's no need for this patch?
 
-...fix it by changing the length modifier in the printk.
+I mentioned zero page was not moving around the LRU in changelog.
+The concern was just unecessary call of mark_page_accessed in zero page.
 
-Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
-Signed-off-by: Jeff Layton <jlayton@redhat.com>
----
- net/sunrpc/auth_gss/auth_gss.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+>
+> There's lots of places where we could shave a little time off dealing
+> with the ZERO_PAGE by adding tests for it; but at the expense of
+> adding code to normal paths of the system, slowing them down.
 
-diff --git a/net/sunrpc/auth_gss/auth_gss.c b/net/sunrpc/auth_gss/auth_gss.c
-index 66cb89c..6de4f91 100644
---- a/net/sunrpc/auth_gss/auth_gss.c
-+++ b/net/sunrpc/auth_gss/auth_gss.c
-@@ -657,7 +657,7 @@ gss_pipe_downcall(struct file *filp, const char __user *src, size_t mlen)
- 			break;
- 		default:
- 			printk(KERN_CRIT "%s: bad return from "
--				"gss_fill_context: %ld\n", __func__, err);
-+				"gss_fill_context: %Zd\n", __func__, err);
- 			BUG();
- 		}
- 		goto err_release_msg;
+Indeed. If it is only one  to check, I might insist on this with
+performance check.
+But if we have many palce to check, this case-by-case approach is a not good.
+
+>
+> If there's a proven reason for doing so somewhere, yes, we should
+> add such tests to avoid significant cacheline bouncing; but without
+> good reason, we just let ZERO_PAGEs fall through the code as they do.
+>
+> I believe that get_user_pages() on ZERO_PAGEs is exceptional, beyond
+> the cases of coredumping and mlock and make_pages_present; but if
+> you've evidence for adding a test somewhere, please provide it.
+
+Okay. Because you and Rik who have many experience in real workload
+dislike it and
+I have no number, I will drop this.
+
+Thanks for all reviewers.
+
+>
+> Hugh
+>
+
+
+
 -- 
-1.6.5.2
-
+Kind regards,
+Minchan Kim
