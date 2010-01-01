@@ -1,46 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752142Ab0AAV41@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752042Ab0AAWFe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752142Ab0AAV41 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jan 2010 16:56:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751800Ab0AAV40
+	id S1752042Ab0AAWFe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jan 2010 17:05:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751502Ab0AAWFd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jan 2010 16:56:26 -0500
-Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:60632 "EHLO
-	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751398Ab0AAV40 (ORCPT
+	Fri, 1 Jan 2010 17:05:33 -0500
+Received: from toccata.ens-lyon.org ([140.77.166.68]:35418 "EHLO
+	toccata.ens-lyon.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751500Ab0AAWFc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jan 2010 16:56:26 -0500
-Date: Fri, 1 Jan 2010 22:56:24 +0100
-From: Andreas Mohr <andi@lisas.de>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Andreas Mohr <andi@lisas.de>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linux PCI <linux-pci@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       "Maciej J. Woloszyk" <mat@esi.com.pl>
-Subject: Re: [PATCH] PCI / PM: Use per-device D3 delays
-Message-ID: <20100101215624.GA16354@rhlx01.hs-esslingen.de>
-References: <20100101170729.GA22252@rhlx01.hs-esslingen.de> <201001011955.27407.rjw@sisk.pl> <20100101201235.GA31960@rhlx01.hs-esslingen.de> <201001012242.28322.rjw@sisk.pl>
+	Fri, 1 Jan 2010 17:05:32 -0500
+Date: Fri, 1 Jan 2010 23:05:29 +0100
+From: Samuel Thibault <samuel.thibault@ens-lyon.org>
+To: Stefani Seibold <stefani@seibold.net>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] proc: revert to show stack information in /proc/{pid}/status
+Message-ID: <20100101220529.GL4620@const>
+Mail-Followup-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
+	Stefani Seibold <stefani@seibold.net>,
+	KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+	LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+	Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	Alexey Dobriyan <adobriyan@gmail.com>,
+	"Eric W. Biederman" <ebiederm@xmission.com>,
+	Randy Dunlap <randy.dunlap@oracle.com>,
+	Andrew Morton <akpm@linux-foundation.org>
+References: <20091231231051.1A1B.A69D9226@jp.fujitsu.com> <1262274494.14143.7.camel@wall-e> <20100101155630.1A1E.A69D9226@jp.fujitsu.com> <1262358616.11460.18.camel@wall-e>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <201001012242.28322.rjw@sisk.pl>
-X-Priority: none
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1262358616.11460.18.camel@wall-e>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 01, 2010 at 10:42:28PM +0100, Rafael J. Wysocki wrote:
-> On Friday 01 January 2010, Andreas Mohr wrote:
-> > Then why is the value lower-bounded by pci_pm_d3_delay
-> > (which, puzzlingly, was initialized to PCI_PM_D3_WAIT and thus 10
-> > before, which the patch now removes!),
-> 
-> That's because dev->d3_delay is initialized to PCI_PM_D3_WAIT for all devices.
+Stefani Seibold, le Fri 01 Jan 2010 16:10:16 +0100, a écrit :
+> But ps is not a performance critical application nor a cat
+> /proc/*/status!
 
-Doh, I should have viewn the altered mechanism correctly, sorry.
-Seems quite correct and useful after all.
+Errr, maybe not so much as some other operations, but a lot of tools use
+them, so it's really worth considering it.
 
-Andreas Mohr
+Samuel
