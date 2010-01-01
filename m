@@ -1,55 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751475Ab0AAHpK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751567Ab0AAJNr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751475Ab0AAHpK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jan 2010 02:45:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751339Ab0AAHpJ
+	id S1751567Ab0AAJNr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jan 2010 04:13:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751443Ab0AAJNq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jan 2010 02:45:09 -0500
-Received: from mail-qy0-f192.google.com ([209.85.221.192]:44011 "EHLO
-	mail-qy0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751086Ab0AAHpI convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jan 2010 02:45:08 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=kg7PWkxSUcWYmva3EuIbQMS74v/fwHH1+49yCBqMKmr9qe7ZwI44qX8J0EYhriDkMt
-         8r6cfA6oWJLlGZI9LgyNx8SwP4k1e1g3opUG6s4X063nVLbFvHWrmXCwtdaxEAjbIHX6
-         iJ/6eoMyWTALWdr8u8f6PDPKMcfpmj4OUlZ6g=
+	Fri, 1 Jan 2010 04:13:46 -0500
+Received: from wolff.to ([65.117.131.163]:35836 "HELO wolff.to"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751392Ab0AAJNp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Jan 2010 04:13:45 -0500
+Date: Fri, 1 Jan 2010 03:11:05 -0600
+From: Bruno Wolff III <bruno@wolff.to>
+To: Phillip Lougher <phillip@lougher.demon.co.uk>
+Cc: akpm@linux-foundation.org, linux-embedded@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       phillip.lougher@gmail.com, tim.bird@am.sony.com
+Subject: Re: [PATCH 0/9] Squashfs: Add support for LZMA compressed filesystems
+Message-ID: <20100101091105.GA29499@wolff.to>
+References: <E1NHZ6K-00029J-Sw@dylan.lougher.demon.co.uk>
+ <20091221231645.GA32141@wolff.to>
+ <4B300912.5060905@lougher.demon.co.uk>
+ <20091231120634.GC9930@wolff.to>
 MIME-Version: 1.0
-In-Reply-To: <f17812d70912312343x31656af6sdb4f3556e7022c05@mail.gmail.com>
-References: <f17812d70912312343x31656af6sdb4f3556e7022c05@mail.gmail.com>
-From: Eric Miao <eric.y.miao@gmail.com>
-Date: Fri, 1 Jan 2010 15:44:45 +0800
-Message-ID: <f17812d70912312344u4944906cj9310fe973d4854f3@mail.gmail.com>
-Subject: Re: driver core: make platform_device_id table const
-To: Kay Sievers <kay.sievers@vrfy.org>, Greg KH <gregkh@suse.de>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091231120634.GC9930@wolff.to>
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Forget to make linux-kernel CC'ed.
+On Thu, Dec 31, 2009 at 06:06:34 -0600,
+  Bruno Wolff III <bruno@wolff.to> wrote:
+> On Mon, Dec 21, 2009 at 23:47:30 +0000,
+>   Phillip Lougher <phillip@lougher.demon.co.uk> wrote:
+> > 
+> > It's very unlikely.  Andrew wanted it to spend a cycle in linux-next.  I'll then
+> > try for 2.6.34 merge.  I'm happy with that.
+> > 
+> > Phillip
+> 
+> linux-next still hasn't picked these patches up. It would give me more leverage
+> in getting the patches into Fedora 13 if they were to be in linux-next.
 
-On Fri, Jan 1, 2010 at 3:43 PM, Eric Miao <eric.y.miao@gmail.com> wrote:
-> The platform ID table is normally const, force that by adding the attribute.
->
->    Signed-off-by: Eric Miao <eric.y.miao@gmail.com>
->
-> diff --git a/include/linux/platform_device.h b/include/linux/platform_device.h
-> index 71ff887..f5c1e7b 100644
-> --- a/include/linux/platform_device.h
-> +++ b/include/linux/platform_device.h
-> @@ -21,7 +21,7 @@ struct platform_device {
->        u32             num_resources;
->        struct resource * resource;
->
-> -       struct platform_device_id       *id_entry;
-> +       const struct platform_device_id *id_entry;
->
->        /* arch specific additions */
->        struct pdev_archdata    archdata;
->
+I see that they made it into the January 1st linux-next tree. Thanks.
