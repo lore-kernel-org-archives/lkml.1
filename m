@@ -1,144 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752147Ab0AAQ1Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751932Ab0AAS4b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752147Ab0AAQ1Y (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jan 2010 11:27:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752011Ab0AAQ1Y
+	id S1751932Ab0AAS4b (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jan 2010 13:56:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751721Ab0AAS43
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jan 2010 11:27:24 -0500
-Received: from out02.mta.xmission.com ([166.70.13.232]:50701 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751988Ab0AAQ1W (ORCPT
+	Fri, 1 Jan 2010 13:56:29 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:36280 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751696Ab0AAS43 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jan 2010 11:27:22 -0500
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: "Andrew G. Morgan" <morgan@kernel.org>,
-       "Serge E. Hallyn" <serue@us.ibm.com>, Bryan Donlan <bdonlan@gmail.com>,
-       Benny Amorsen <benny+usenet@amorsen.dk>,
-       Michael Stone <michael@laptop.org>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, linux-security-module@vger.kernel.org,
-       Andi Kleen <andi@firstfloor.org>, David Lang <david@lang.hm>,
-       Oliver Hartkopp <socketcan@hartkopp.net>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Valdis Kletnieks <Valdis.Kletnieks@vt.edu>,
-       Evgeniy Polyakov <zbr@ioremap.net>,
-       "C. Scott Ananian" <cscott@cscott.net>,
-       James Morris <jmorris@namei.org>, Bernie Innocenti <bernie@codewiz.org>,
-       Mark Seaborn <mrs@mythic-beasts.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>,
-       Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
-       Samir Bellabes <sam@synack.fr>,
-       Casey Schaufler <casey@schaufler-ca.com>, Pavel Machek <pavel@ucw.cz>,
-       Al Viro <viro@ZenIV.linux.org.uk>
-Subject: Re: [RFC][PATCH v3] Unprivileged: Disable raising of privileges
-References: <551280e50912300652r1007dee0j8de750bf33af9b3c@mail.gmail.com>
-	<m1fx6suswz.fsf@fess.ebiederm.org> <20091230201712.GA23999@us.ibm.com>
-	<m1hbr8tb8q.fsf_-_@fess.ebiederm.org>
-	<20091230212931.233003b9@lxorguk.ukuu.org.uk>
-	<m1skasrvnq.fsf@fess.ebiederm.org>
-	<20091230230042.5d2e78ac@lxorguk.ukuu.org.uk>
-	<3e8340490912301844p4fddaf57ke58ceeba9582e0fa@mail.gmail.com>
-	<20091231173334.5e3d7557@lxorguk.ukuu.org.uk>
-	<20091231175257.GA7210@us.ibm.com>
-	<551280e50912311020x2bdc5b1o699a601f67b91662@mail.gmail.com>
-	<m1aawzm1tc.fsf@fess.ebiederm.org>
-	<20100101144300.023f47a5@lxorguk.ukuu.org.uk>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Fri, 01 Jan 2010 08:26:55 -0800
-In-Reply-To: <20100101144300.023f47a5@lxorguk.ukuu.org.uk> (Alan Cox's message of "Fri\, 1 Jan 2010 14\:43\:00 +0000")
-Message-ID: <m1zl4x4wq8.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Fri, 1 Jan 2010 13:56:29 -0500
+Date: Fri, 1 Jan 2010 10:56:15 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Borislav Petkov <petkovbb@googlemail.com>,
+       David Airlie <airlied@linux.ie>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Greg KH <greg@kroah.com>, Al Viro <viro@ZenIV.linux.org.uk>
+Subject: Re: [PATCH] sysfs: Cache the last sysfs_dirent to improve readdir
+ scalability
+In-Reply-To: <m11viaexlj.fsf_-_@fess.ebiederm.org>
+Message-ID: <alpine.LFD.2.00.1001011047580.3630@localhost.localdomain>
+References: <alpine.LFD.2.00.0912241350510.11961@localhost.localdomain> <20091226094504.GA6214@liondog.tnic> <20091228092712.AA8C.A69D9226@jp.fujitsu.com> <alpine.LFD.2.00.0912301259220.11961@localhost.localdomain> <m11victac1.fsf@fess.ebiederm.org>
+ <alpine.LFD.2.00.0912301348320.11961@localhost.localdomain> <m1fx6rtu31.fsf@fess.ebiederm.org> <alpine.LFD.2.00.0912311043330.11961@localhost.localdomain> <m11viaexlj.fsf_-_@fess.ebiederm.org>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Scanned: No (on in01.mta.xmission.com); SAEximRunCond expanded to false
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox <alan@lxorguk.ukuu.org.uk> writes:
 
->> - unprivileged process took action to prevent gaining a capability.
->> - exec'd suid sendmail.
->> - sendmail took action as root because it could not become someone else.
->
-> Which is a classic bug and replicated historically in cpu time, quota and
-> other similar "remove rights and then .." attacks.
 
-Exactly.  The problem that most limits the evolution of the unix
-userspace API for ordinary processes.  I want a per process disable so
-I can use advanced features of the API without being root (or a subset
-of root).
+On Fri, 1 Jan 2010, Eric W. Biederman wrote:
+> 
+> When sysfs_readdir stops short we now cache the next sysfs_dirent to
+> return to user space in filp->private_data.  There is no impact on the
+> rest of sysfs by doing this and in the common case it allows us to
+> pick up exactly where we left off with no seeking.
+> 
+> Additionally I drop and regrab the sysfs_mutex around filldir to avoid
+> a page fault arbitrarily increasing the hold time on the sysfs_mutex.
 
->> I would like to trivially stop that entire class of exploit by making
->> execing a suid ( or equivalent ) executable impossible.
->
-> Fine the LSM modules can already build such policies or you can add a new
-> LSM for it - it doesn't need whacky one off extensions to prctl.
+Ok, looks mostly sane, but a few things look odd.
 
-No it needs a proper system call. no_suid_for_me_and_my_children().
-Spelled nosuid to keep from breaking peoples fingers.
+>  
+> -	if (filp->f_pos == 0) {
+> +	if (!pos && filp->f_pos == 0) {
+>  		ino = parent_sd->s_ino;
+>  		if (filldir(dirent, ".", 1, filp->f_pos, ino, DT_DIR) == 0)
+>  			filp->f_pos++;
+>  	}
+> -	if (filp->f_pos == 1) {
+> +	if (!pos && filp->f_pos == 1) {
+>  		if (parent_sd->s_parent)
+>  			ino = parent_sd->s_parent->s_ino;
+>  		else
+> @@ -847,29 +879,35 @@ static int sysfs_readdir(struct file * filp, void * dirent, filldir_t filldir)
+>  		if (filldir(dirent, "..", 2, filp->f_pos, ino, DT_DIR) == 0)
+>  			filp->f_pos++;
+>  	}
+> -	if ((filp->f_pos > 1) && (filp->f_pos < INT_MAX)) {
+> -		mutex_lock(&sysfs_mutex);
+> -
+> -		/* Skip the dentries we have already reported */
+> -		pos = parent_sd->s_dir.children;
+> -		while (pos && (filp->f_pos > pos->s_ino))
+> -			pos = pos->s_sibling;
+> +	/* EOF? */
+> +	if (!pos && filp->f_pos > 2)
+> +		return 0;
 
-> Of course you could also have an LSM which undoes restrictions on suid
-> apps instead. Thats an equally valid model, just don't load both at once
-> and don't assume you have the one true model.
+These are all incorrect in the presense of 'lseek'. You can't do that
 
-Alan what are you talking about?  LSMs are not allowed to remove
-restrictions.
+	if (!pos && "test filp->f_pos")
 
-You are quite right that my initial patch is a bit hacky, I am doing
-my development in the open, proving that the concept can be sanely
-implemented with very little code, and getting feedback from people
-who know the area of code better than I do.  I know development in the
-open and not having everything perfect and committed to before you
-submit a patch is a strange concept on linux-kernel, but I am trying
-it out.
+thing, because you get all the wrong results for both the case of an lseek 
+before doing any readdir (which is undefined behavior, so I guess that's 
+technically ok) _and_ for the 'lseek back to zero _after_ doing a readdir' 
+case (which is _not_ undefined behavior!
 
-My target audience here are application developers.  Not professional
-system administrators, not distribution maintainers, and certainly
-not professional security trolls.
+It looks like it might be easy to fix by making a sysfs_llseek() function 
+that does something like
 
-I am about removing an impediment from the unix API for those
-applications that don't need it so they can use features that would
-otherwise be reserved to root and only root, because those features
-can be used to addle suid applications.
+	.. sysfs_llseek(..)
+	{
+		mutex_lock(&sysfs_mutex);
+		sysfs_release();
+		filp->private_data = NULL;
+		mutex_unlock(&sysfs_mutex);
 
-I am sick and fed up with the conversations that go:
-- I want to do X.
-- X has been implemented.
-- Sorry I can't use X as implemented because you have to be root to
-  use X.
+		return generic_file_llseek(..);
+	}
 
-In this case X was the network namespace, which for non-root
-users happens to act just like the proposed disable_network.
+or similar.  Except themn you'll need to change the EOF condition testing 
+and turn it into a re-validation event. Or maybe do the re-validation in 
+sysfs_llseek() itself, rather than just dropping the cached data.
 
-Putting something in an LSM versus anywhere else in the kernel still
-pollutes the pool and we still have to maintain it forever.  So my
-preference is for something small, trivial, that people can easily
-audit.
+Hmm? I haven't thought it through very deeply, so maybe I'm missing 
+something.
 
-I am not satisfied with my patch to disable suid yet, but it does
-look simple and in the right ballpark.  It certainly needs better
-integration with securebits and the like.
-
-So Alan would you please give some constructive criticism about:
-- Why this is a bad idea.
-- How to implement this so it is available to application developers
-  in general.
-
-As I see and I may be wrong the LSM and the security modules that
-exist today are useless unless you control the entire machine the
-kernel runs on.  Which applications short of Oracle do not.
-
-Personally I think I am on the sent of a good general feature that
-makes sense, is useful in a lot of situations, is useful to a lot of
-different people, and is useful in a lot of different ways.
-
-Anything we merge into the mainstream kernel we have to maintain
-forever, LSM or core feature.  I think this is a good backwards
-compatible feature that removes impediments to forward compatibility.
-
-Eric
-
+		Linus
