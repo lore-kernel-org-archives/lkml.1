@@ -1,78 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751739Ab0AABuz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751706Ab0AAB4N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751739Ab0AABuz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Dec 2009 20:50:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751470Ab0AABuy
+	id S1751706Ab0AAB4N (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Dec 2009 20:56:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751630Ab0AAB4M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Dec 2009 20:50:54 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:55587 "EHLO smtps.tip.net.au"
+	Thu, 31 Dec 2009 20:56:12 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:64517 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751374Ab0AABuy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Dec 2009 20:50:54 -0500
-Date: Fri, 1 Jan 2010 12:50:46 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Samuel Ortiz <sameo@linux.intel.com>, Tony Lindgren <tony@atomide.com>,
-       Santosh Shilimkar <santosh.shilimkar@ti.com>,
-       Balaji T K <balajitk@ti.com>, Rajendra Nayak <rnayak@ti.com>
-Subject: Re: linux-next: origin tree build warnings
-Message-Id: <20100101125046.23103597.sfr@canb.auug.org.au>
-In-Reply-To: <alpine.LFD.2.00.0912311731130.3630@localhost.localdomain>
-References: <20100101114238.83108321.sfr@canb.auug.org.au>
-	<alpine.LFD.2.00.0912311649070.3630@localhost.localdomain>
-	<20100101122259.394d5b19.sfr@canb.auug.org.au>
-	<alpine.LFD.2.00.0912311731130.3630@localhost.localdomain>
-X-Mailer: Sylpheed 3.0.0beta4 (GTK+ 2.18.5; i486-pc-linux-gnu)
+	id S1751531Ab0AAB4M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Dec 2009 20:56:12 -0500
+Date: Thu, 31 Dec 2009 20:54:54 -0500
+From: Jeff Layton <jlayton@redhat.com>
+To: Randy Dunlap <rdunlap@xenotime.net>
+Cc: Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org,
+       linux-nfs@vger.kernel.org
+Subject: Re: [PATCH] sunrpc: fix build-time warning
+Message-ID: <20091231205454.0f84f091@tupile.poochiereds.net>
+In-Reply-To: <20091231091815.a1ea7e51.rdunlap@xenotime.net>
+References: <1262226195-27733-1-git-send-email-jlayton@redhat.com>
+	<20091231091815.a1ea7e51.rdunlap@xenotime.net>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Fri__1_Jan_2010_12_50_46_+1100_+f/ApfY4Em8sMx3f"
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Fri__1_Jan_2010_12_50_46_+1100_+f/ApfY4Em8sMx3f
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Thu, 31 Dec 2009 09:18:15 -0800
+Randy Dunlap <rdunlap@xenotime.net> wrote:
 
-Hi Linus,
+> On Wed, 30 Dec 2009 21:23:15 -0500 Jeff Layton wrote:
+> 
+> > Commit 486bad2e40e938cd68fd853b7a9fa3115a9d3a4a introduced this warning
+> > at build time on some 32-bit architectures:
+> > 
+> > net/sunrpc/auth_gss/auth_gss.c: In function 'gss_pipe_downcall':
+> > net/sunrpc/auth_gss/auth_gss.c:660: warning: format '%ld' expects type 'long int', but argument 3 has type 'ssize_t
+> > 
+> > ...fix it by changing the length modifier in the printk.
+> > 
+> > Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
+> > Signed-off-by: Jeff Layton <jlayton@redhat.com>
+> > ---
+> >  net/sunrpc/auth_gss/auth_gss.c |    2 +-
+> >  1 files changed, 1 insertions(+), 1 deletions(-)
+> > 
+> > diff --git a/net/sunrpc/auth_gss/auth_gss.c b/net/sunrpc/auth_gss/auth_gss.c
+> > index 66cb89c..6de4f91 100644
+> > --- a/net/sunrpc/auth_gss/auth_gss.c
+> > +++ b/net/sunrpc/auth_gss/auth_gss.c
+> > @@ -657,7 +657,7 @@ gss_pipe_downcall(struct file *filp, const char __user *src, size_t mlen)
+> >  			break;
+> >  		default:
+> >  			printk(KERN_CRIT "%s: bad return from "
+> > -				"gss_fill_context: %ld\n", __func__, err);
+> > +				"gss_fill_context: %Zd\n", __func__, err);
+> >  			BUG();
+> >  		}
+> >  		goto err_release_msg;
+> > -- 
+> 
+> I have that almost-same patch in my (unposted) linux-next patch queue,
+> so basically, ack, except that we try to use 'z' instead of 'Z' nowadays.
+> 
+> My quick kernel source tree count is 173 %Z to 966 %z.
+> (Please don't anyone start a project of converting %Z to %z.)
+> 
 
-On Thu, 31 Dec 2009 17:32:11 -0800 (PST) Linus Torvalds <torvalds@linux-fou=
-ndation.org> wrote:
->
-> On Fri, 1 Jan 2010, Stephen Rothwell wrote:
-> >=20
-> > I have built drivers/mfd/twl4030-irq.o the same way as before but after
-> > applying your patch and the warnings are fixed.  I do not have the
-> > hardware and so cannot do a runtime test.
->=20
-> Ok, committed as "Reported-and-compile-tested-by:" you.
+If you have a patch queued up for this with the preferred qualifier,
+then I'm fine with dropping this one.
 
-Thanks.
-
-> Somebody should probably test it on real hardware, but I doubt the patch=
-=20
-> makes anything worse, and it _probably_ makes things better.
-
-With any luck :-)
-
---=20
 Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Fri__1_Jan_2010_12_50_46_+1100_+f/ApfY4Em8sMx3f
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAks9VPYACgkQjjKRsyhoI8xblQCffX4PTXKP3WsxxOoUua6CRBIL
-Y2UAnRfbYU6Fr+uIPyN/Wzh+bxgHaSuj
-=Hfmj
------END PGP SIGNATURE-----
-
---Signature=_Fri__1_Jan_2010_12_50_46_+1100_+f/ApfY4Em8sMx3f--
+-- 
+Jeff Layton <jlayton@redhat.com>
