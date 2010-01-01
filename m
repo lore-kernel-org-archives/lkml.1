@@ -1,123 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752093Ab0AAPLc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752086Ab0AAPQy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752093Ab0AAPLc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jan 2010 10:11:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751990Ab0AAPLb
+	id S1752086Ab0AAPQy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jan 2010 10:16:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751883Ab0AAPQx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jan 2010 10:11:31 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:58260 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751891Ab0AAPLa (ORCPT
+	Fri, 1 Jan 2010 10:16:53 -0500
+Received: from out02.mta.xmission.com ([166.70.13.232]:41771 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751829Ab0AAPQw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jan 2010 10:11:30 -0500
-Date: Fri, 1 Jan 2010 16:11:29 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Michael Stone <michael@laptop.org>
-Cc: "Serge E. Hallyn" <serue@us.ibm.com>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, linux-security-module@vger.kernel.org,
-       Andi Kleen <andi@firstfloor.org>, David Lang <david@lang.hm>,
-       Oliver Hartkopp <socketcan@hartkopp.net>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Valdis Kletnieks <Valdis.Kletnieks@vt.edu>,
-       Bryan Donlan <bdonlan@gmail.com>, Evgeniy Polyakov <zbr@ioremap.net>,
-       "C. Scott Ananian" <cscott@cscott.net>,
-       James Morris <jmorris@namei.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Bernie Innocenti <bernie@codewiz.org>,
-       Mark Seaborn <mrs@mythic-beasts.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Am?rico Wang <xiyou.wangcong@gmail.com>,
-       Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
-       Samir Bellabes <sam@synack.fr>,
-       Casey Schaufler <casey@schaufler-ca.com>,
-       Al Viro <viro@ZenIV.linux.org.uk>
-Subject: Re: RFC: disablenetwork facility. (v4)
-Message-ID: <20100101151129.GG3944@atrey.karlin.mff.cuni.cz>
-References: <20091228181316.GA16277@us.ibm.com> <20091229050114.GC14362@heat>
+	Fri, 1 Jan 2010 10:16:52 -0500
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Borislav Petkov <petkovbb@googlemail.com>,
+       David Airlie <airlied@linux.ie>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Greg KH <greg@kroah.com>, Al Viro <viro@ZenIV.linux.org.uk>,
+       Tejun Heo <tj@kernel.org>
+Subject: Re: drm_vm.c:drm_mmap: possible circular locking dependency detected (was: Re: Linux 2.6.33-rc2 - Merry Christmas ...)
+References: <alpine.LFD.2.00.0912241350510.11961@localhost.localdomain>
+	<20091226094504.GA6214@liondog.tnic>
+	<20091228092712.AA8C.A69D9226@jp.fujitsu.com>
+	<alpine.LFD.2.00.0912301259220.11961@localhost.localdomain>
+	<m11victac1.fsf@fess.ebiederm.org>
+	<alpine.LFD.2.00.0912301348320.11961@localhost.localdomain>
+	<m1fx6rtu31.fsf@fess.ebiederm.org>
+	<alpine.LFD.2.00.0912311043330.11961@localhost.localdomain>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Fri, 01 Jan 2010 07:16:46 -0800
+In-Reply-To: <alpine.LFD.2.00.0912311043330.11961@localhost.localdomain> (Linus Torvalds's message of "Thu\, 31 Dec 2009 11\:04\:48 -0800 \(PST\)")
+Message-ID: <m11vi9c0td.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091229050114.GC14362@heat>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Scanned: No (on in02.mta.xmission.com); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+Linus Torvalds <torvalds@linux-foundation.org> writes:
 
-> I think that Pavel's point, at its strongest and most general, could be
-> rephrased as:
-> 
->   "Adding *any* interesting isolation facility to the kernel breaks 
->   backwards
->    compatibility for *some* program [in a way that violates security 
->    goals]."
+> On Thu, 31 Dec 2009, Eric W. Biederman wrote:
+>> >
+>> >  - hibernate ends up with the sequence: _cpu_down (cpu_hotplug.lock) ->  ..
+>> >    kref_put .. -> sysfs_addrm_start (sysfs_mutex)
+>> >
+>> >    Again, nothing suspicious or "bad", and this part of the dependency 
+>> >    chain has nothing to do with the DRM code itself.
+>> 
+>> kobject_del with a lock held scares me.
+>
+> I would not object at _all_ if sysfs fixed the locking here instead of in 
+> filldir.
 
-Yep.
+I just sent you my sysfs filldir scalability patch, so we can take that
+red-herring off the plate.
 
-> So far, I've seen the following suggestions:
-> 
->   a) setuid restores pre-isolation semantics
-> 
->         - Doesn't work for me because it violates the security guarantee of 
->         the
->           isolation primitive 
+The problem as I see it is that kobject_del is convenient.
+kobject_del waits until all of the sysfs show and store methods for
+that kobject have stopped executing.  Which imposes the rule that
+kobject_del can not be called with any locks held that are taken in a
+sysfs show or store method.  This is all invisible to lockdep as the
+wait is done with a completion and not a lock.
 
-d) when any new isolation feature requires removing ability to
-exec(anything setuid) first.
-
->   b) setuid is an escape-hatch
-> 
->         - Probably the cleanest in the long-run
-> 
->         - Doesn't, by itself, suffice for Pavel since it violates backwards
->           compatibility
-> 
->   c) signal to the kernel through a privileged mechanism that
->      backwards-incompatible isolation may or may not be used
-> 
->         - No problems seen so far.
+Which unfortunately means fixing filldir only removes some noise from
+the picture, and completely hides the problem from lockdep.
 
 
-> I would be happy with (c), assuming we can agree on an appropriate 
-> signalling
-> mechanism and default.
-> 
-> So far, two defaults have been proposed:
-> 
->   default-deny incompatible isolation (Pavel)
+....
+
+Looking at the case I am familiar with in the networking layer I think
+I have stumbled on a way to sort out this locking problem.
+
+Today the network layer effectively does:
+rtnl_lock();
+device_del(dev);
+rtnl_unlock();
+kobject_put(dev);
 
 
-> So far, several signalling mechanisms have been proposed:
-> 
->   1) enabling a kernel config option implies default-permit
-> 
->         - My favorite; apparently insufficient for Pavel?
-> 
->   2) default-deny; disablesuid grants disablenetwork
-> 
->         - "disablesuid" is my name for the idea of dropping the privilege of
->           exec'ing setuid binaries
-> 
->         - Suggested by Pavel and supported by several others. 
+sysfs_deactivate happens in the device_del(), but if we were to move
+sysfs_deactivate into the final kobject_put then in theory we can
+continue to block and be friendly but not need to be called with
+locations where locks are held.
 
->         - I think it has the same backwards-compatibility problem as
->           disablenetwork: disablesuid is an isolation primitive.
+The core idea is to allow unlisting devices from sysfs under a lock
+while still waiting for all users to complete after it is safe to
+drop the lock.
 
-Which is ok, use can already arbitrarily break *his own* apps, eg. by
-using ptrace. Only with setuid in place it becomes security problem.
+Does that work for the cpu hotplug case?  Doing everything from
+notifiers makes me suspect it will fail.
 
->   4) default-deny; setting a sysctl implies permit
-> 
->         - Suggested by Serge; works fine for me
-...
-> I am happiest with (1) and, if (1) isn't good enough, with (4).
-> 
-> Pavel, what do you think of (4)?
 
-It is still bad idea: (2) is better solution.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+....
+
+
+Either way we will need some lockdep warnings for sysfs_deactivate
+so that the problem does not continue to hide and silently foul
+things up.  So I will see if I can cook something.
+
+Eric
