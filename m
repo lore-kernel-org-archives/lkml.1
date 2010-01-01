@@ -1,66 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751982Ab0AAOyx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752004Ab0AAOzo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751982Ab0AAOyx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jan 2010 09:54:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751795Ab0AAOyx
+	id S1752004Ab0AAOzo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jan 2010 09:55:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751905Ab0AAOzn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jan 2010 09:54:53 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:48914 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751706Ab0AAOyw (ORCPT
+	Fri, 1 Jan 2010 09:55:43 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:59902 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751793Ab0AAOzm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jan 2010 09:54:52 -0500
-Date: Fri, 1 Jan 2010 15:54:51 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Brian Swetland <swetland@google.com>
-Cc: Arve Hj??nnev??g <arve@android.com>,
-       Daniel Walker <dwalker@codeaurora.org>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-       Iliyan Malchev <malchev@google.com>, Greg KH <greg@kroah.com>
-Subject: Re: tree with htc dream support
-Message-ID: <20100101145451.GD3944@atrey.karlin.mff.cuni.cz>
-References: <20091227093537.GD11737@elf.ucw.cz> <20091227201514.GA29174@elf.ucw.cz> <a55d774e0912271220p1d102b1dr398e0524c9386702@mail.gmail.com> <20091227203704.GK11737@elf.ucw.cz> <20091227211322.GB29174@elf.ucw.cz> <a55d774e0912271646m1b82687cy427083e64e91e323@mail.gmail.com> <20091227101824.GB1478@ucw.cz> <a55d774e0912281224y7360dfdbu8a251743026bdd28@mail.gmail.com> <20091228204848.GB1637@ucw.cz> <a55d774e0912281308u1c20c84cl4f264aa366445131@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-2
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <a55d774e0912281308u1c20c84cl4f264aa366445131@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Fri, 1 Jan 2010 09:55:42 -0500
+Date: Fri, 1 Jan 2010 14:57:01 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Cc: Bryan Donlan <bdonlan@gmail.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Andrew G. Morgan" <morgan@kernel.org>,
+       Benny Amorsen <benny+usenet@amorsen.dk>,
+       Michael Stone <michael@laptop.org>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, linux-security-module@vger.kernel.org,
+       Andi Kleen <andi@firstfloor.org>, David Lang <david@lang.hm>,
+       Oliver Hartkopp <socketcan@hartkopp.net>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Valdis Kletnieks <Valdis.Kletnieks@vt.edu>,
+       Evgeniy Polyakov <zbr@ioremap.net>,
+       "C. Scott Ananian" <cscott@cscott.net>,
+       James Morris <jmorris@namei.org>, Bernie Innocenti <bernie@codewiz.org>,
+       Mark Seaborn <mrs@mythic-beasts.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       =?UTF-8?B?QW3DqXJpY28=?= Wang <xiyou.wangcong@gmail.com>,
+       Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
+       Samir Bellabes <sam@synack.fr>,
+       Casey Schaufler <casey@schaufler-ca.com>, Pavel Machek <pavel@ucw.cz>,
+       Al Viro <viro@zeniv.linux.org.uk>
+Subject: Re: [RFC][PATCH v3] Unprivileged: Disable raising of privileges
+Message-ID: <20100101145701.6432e7b7@lxorguk.ukuu.org.uk>
+In-Reply-To: <20091231175257.GA7210@us.ibm.com>
+References: <551280e50912300652r1007dee0j8de750bf33af9b3c@mail.gmail.com>
+	<20091230183513.GC14493@us.ibm.com>
+	<m1fx6suswz.fsf@fess.ebiederm.org>
+	<20091230201712.GA23999@us.ibm.com>
+	<m1hbr8tb8q.fsf_-_@fess.ebiederm.org>
+	<20091230212931.233003b9@lxorguk.ukuu.org.uk>
+	<m1skasrvnq.fsf@fess.ebiederm.org>
+	<20091230230042.5d2e78ac@lxorguk.ukuu.org.uk>
+	<3e8340490912301844p4fddaf57ke58ceeba9582e0fa@mail.gmail.com>
+	<20091231173334.5e3d7557@lxorguk.ukuu.org.uk>
+	<20091231175257.GA7210@us.ibm.com>
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.18.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+> dereferencing task->security would be fine.  But finding a way to
+> multiplex task->security so it can be used by Eric's nosuid lsm,
+> Michael's disablenetwork LSM, and SELinux/smack/apparmor, that
+> will likely take months, and, history shows, may never happen.
 
-(sorry for long response time, holidays with poor network connection).
+You assume firstly that it matters. If it doesn't matter and people don't
+want to mix SELinux etc with weird little hacks then the problem doesn't
+really arise anyway. If people do want to stack them then yes they'll
+have to do the work. Diddums, thats how it works, and filling the kernel
+with crap shortcuts just makes a bigger mess longer term and leaves a
+huge mess to sort out.
 
-> >> and get the core stuff in there so clock, power, etc support is there
-> >> for the platform rather than have it live in staging purgatory.
-> >>
-> >> Since this stuff is integral to mach-msm, required for essential
-> >> operation of the platform, and makes sense to be part of the mach-msm
-> >> codebase, why not just fix it there rather than move it out into
-> >> staging and then back?  I'm not sure what that gains us.
-> >
-> > Well, it is in staging now. I just want you to use the existing
-> > version, instead of adding another one.
+There are lots of trivial ways to implement a fast lookup per security
+context. The only real problem is figuring out how much space is needed
+and that's fairly trivial to do providing you don't try and be clever and
+reclaim slots unloading modules
+
+You just need void * security and an offset allocated per security module
+as its registered. We've even got library code to hand those out nicely
+alloc and free them (leaving holes on unload and refilling on reload)
+
+Then it all comes out as
+
+lsm_context = (struct my_lsm_context *)(task->security + lsm->offset)
+
+whoopee 1 clock.
+
+You pay a cost at LSM load time (which is extremely rare) to update all
+the tasks and introduce them to the LSM but you need to do that anyway to
+initialise your LSM state for each task.
+
+If people were serious about doing the work right rather than just trying
+to dump their pet neat idea into the kernel with no care about the cost
+I'd expect to see patches for sharing ->security, LSM stacking first.
+They are not hard technically.
+
+There are real issues about what it *means* to stack LSM modules
+semantically but thats a problem for the admin not the kernel so it's not
+a "hard" problem programming wise.
+
+> Eric, the thing is, once an API goes upstream, we can't change it,
+> but in contrast we can change how task->security is used at any time.
+> So I'd suggest just adding 
 > 
-> I'm trying to understand where the version in staging came from, how
-> it's been changed, etc, so I can resolve that against what we have
-> that's known good and shipping today and make sure we're not losing
-> bugfixes and such along the way.
+> #ifdef CONFIG_SECURITY_NOSUID
+> 	short nosuid;
+> #endif
 
-> Do you remember where the smd code that you put into staging came
-> from, exactly?  Unfortunately since things have been moved, modified,
-> renamed, etc, getting clean diffs is a bit of an adventure right
-> now.
+Should be a bitflag - then you can also fix some of the locking questions
+- the current code really doesn't consider locking issues at all - which
+needs fixing.
 
-I believe the version in staging is from 2.6.29-msm tree. Anyway,
-changes should be pretty simple to see on diff -u (I belive I tried
-that at one point).
-								Pavel
+> or something like it next to the
+> 
+> #ifdef CONFIG_SECURITY
+> 	void *security;
+> #endif
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+And 148 other #defines later it'll be a joyous mess.
+
+Its always easier short term to pee in the pond than install a toilet -
+it's just not a good long term plan.
+
