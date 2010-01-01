@@ -1,45 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752114Ab0AAPRS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752029Ab0AAPSU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752114Ab0AAPRS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jan 2010 10:17:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751896Ab0AAPRR
+	id S1752029Ab0AAPSU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jan 2010 10:18:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751883Ab0AAPST
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jan 2010 10:17:17 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:40432 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751810Ab0AAPRR (ORCPT
+	Fri, 1 Jan 2010 10:18:19 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:50906 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751815Ab0AAPST (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jan 2010 10:17:17 -0500
-To: "Robert P. J. Day" <rpjday@crashcourse.ca>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: backwards busy wait using "time_before()"??
-From: Andi Kleen <andi@firstfloor.org>
-References: <alpine.LFD.2.00.0912311136560.3596@localhost>
-Date: Fri, 01 Jan 2010 16:17:07 +0100
-In-Reply-To: <alpine.LFD.2.00.0912311136560.3596@localhost> (Robert P. J. Day's message of "Thu, 31 Dec 2009 11:40:42 -0500 (EST)")
-Message-ID: <87tyv57t3g.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
+	Fri, 1 Jan 2010 10:18:19 -0500
+Date: Fri, 1 Jan 2010 16:18:18 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Daniel Walker <dwalker@codeaurora.org>
+Cc: Brian Swetland <swetland@google.com>, Arve Hj?nnev?g <arve@android.com>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+       Iliyan Malchev <malchev@google.com>, linux-kernel@codeaurora.org,
+       Greg KH <greg@kroah.com>
+Subject: Re: tree with htc dream support
+Message-ID: <20100101151818.GI3944@atrey.karlin.mff.cuni.cz>
+References: <20091227093537.GD11737@elf.ucw.cz> <20091227201514.GA29174@elf.ucw.cz> <a55d774e0912271220p1d102b1dr398e0524c9386702@mail.gmail.com> <20091227203704.GK11737@elf.ucw.cz> <20091227211322.GB29174@elf.ucw.cz> <a55d774e0912271646m1b82687cy427083e64e91e323@mail.gmail.com> <20091227101824.GB1478@ucw.cz> <a55d774e0912281224y7360dfdbu8a251743026bdd28@mail.gmail.com> <20091228204848.GB1637@ucw.cz> <1262049913.17445.27.camel@desktop>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1262049913.17445.27.camel@desktop>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Robert P. J. Day" <rpjday@crashcourse.ca> writes:
+Hi!
 
->                 cpu_relax();                                            \
->         } while (time_before(end_jiffies, jiffies));                    \
->         succeeded;                                                      \
->         })
->
->
->   is it just me, or do those arguments to time_before() look
-> backwards?
+> > > >> > Switch smd code to the version in staging. Something to apply to
+> > > >> > dream/ tree I'd say... and yes, it still works.
+> > > >>
+> > > >> I think we might want to consider leaving at least the core smd code
+> > > >> under mach-msm.
+> > > >
+> > > > In the long run, I agree.
+> > > >
+> > > > In the short run... the code is staging quality, so it should be in
+> > > > staging... and you'll not have to mainain so huge diff. (-20 kLoc).
+> > > 
+> > > The core smd stuff is really not that large.  The central smd.[ch] are
+> > > about 1300 lines, and proc_comm.[ch] are about 400 lines.  Is it
+> > > possible to get some review/feedback as to what's "staging quality"
+> > > about this code so we can clean it up?  I'd rather just fix the
+> > > issues
+> > 
+> > Just submit it to Daniel W., ccing rmk and l-a-k, and I'm sure you'll
+> > get feedback.
+> 
+> I have it in my tree already .. My tree has some duplication over
+> staging, for instance the rpc code is mostly in my tree, as is the smd
+> code.
 
-Yes it looks backwards. The timeout path probably has been never
-tested.
-
--Andi
+Do you expect you can just merge those for 2.6.34? That would be
+great.
+									Pavel
 
 -- 
-ak@linux.intel.com -- Speaking for myself only.
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
