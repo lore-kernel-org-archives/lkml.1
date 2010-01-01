@@ -1,61 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752187Ab0AAXMN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752215Ab0AAXUe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752187Ab0AAXMN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jan 2010 18:12:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752059Ab0AAXMM
+	id S1752215Ab0AAXUe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jan 2010 18:20:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751668Ab0AAXUd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jan 2010 18:12:12 -0500
-Received: from casper.infradead.org ([85.118.1.10]:33286 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752038Ab0AAXML (ORCPT
+	Fri, 1 Jan 2010 18:20:33 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:54456 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751375Ab0AAXUc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jan 2010 18:12:11 -0500
-Date: Fri, 1 Jan 2010 15:14:37 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: "Smith, GeoffX" <geoffx.smith@intel.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] proc: Get/set timer slack through /proc
-Message-ID: <20100101151437.17834b25@infradead.org>
-In-Reply-To: <354B2877CF17F44BB3FA44EB4DB0E5470C91CE1D19@orsmsx510.amr.corp.intel.com>
-References: <354B2877CF17F44BB3FA44EB4DB0E5470C91CE1D19@orsmsx510.amr.corp.intel.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.6; i586-redhat-linux-gnu)
+	Fri, 1 Jan 2010 18:20:32 -0500
+Subject: Re: [PATCH] mm, lockdep: annotate reclaim context to zone reclaim
+ too
+From: Peter Zijlstra <peterz@infradead.org>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <1262339141-4682-1-git-send-email-kosaki.motohiro@jp.fujitsu.com>
+References: <1262339141-4682-1-git-send-email-kosaki.motohiro@jp.fujitsu.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sat, 02 Jan 2010 00:19:46 +0100
+Message-ID: <1262387986.16572.234.camel@laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 31 Dec 2009 13:01:49 -0800
-"Smith, GeoffX" <geoffx.smith@intel.com> wrote:
+On Fri, 2010-01-01 at 18:45 +0900, KOSAKI Motohiro wrote:
+> Commit cf40bd16fd (lockdep: annotate reclaim context) introduced reclaim
+> context annotation. But it didn't annotate zone reclaim. This patch do it.
 
-> Subject: Get/set timer_slack_ns through /proc
-> 
-> This patch makes the timer_slack_ns parameter accessible through
-> the /proc system.
-> 
-> On 9/1/2008, arjan@linux.intel.com submitted a patch to allow a
-> process to set the timer slack value as part of the range timers
-> feature.  Further, he noted that "Applications and admins can
-> override this [the timer slack value] via the prctl()."
-> 
-> We have found this feature useful in attempting to reduce system
-> wakeups caused by timer interrupts.  But we have also found that
-> while applications can set their own timer slack value, there is no
-> provision for setting the timer slack for another process -- prctl()
-> only operates on the current process.  
-> 
+And yet you didn't CC anyone involved in that patch, nor explain why you
+think it necessary, massive FAIL.
 
-this statement is incorrect btw;
-timerslack is explicitly inherited over exec, so you can have (and we
-do have) a utility similar to the nice program, that launches an
-application with a specific timer slack.
+The lockdep annotations cover all of kswapd() and direct reclaim through
+__alloc_pages_direct_reclaim(). So why would you need an explicit
+annotation in __zone_reclaim()?
+
+> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> ---
+>  mm/vmscan.c |    2 ++
+>  1 files changed, 2 insertions(+), 0 deletions(-)
+> 
+> diff --git a/mm/vmscan.c b/mm/vmscan.c
+> index 2bbee91..a039e78 100644
+> --- a/mm/vmscan.c
+> +++ b/mm/vmscan.c
+> @@ -2547,6 +2547,7 @@ static int __zone_reclaim(struct zone *zone, gfp_t gfp_mask, unsigned int order)
+>  	 * and RECLAIM_SWAP.
+>  	 */
+>  	p->flags |= PF_MEMALLOC | PF_SWAPWRITE;
+> +	lockdep_set_current_reclaim_state(gfp_mask);
+>  	reclaim_state.reclaimed_slab = 0;
+>  	p->reclaim_state = &reclaim_state;
+>  
+> @@ -2590,6 +2591,7 @@ static int __zone_reclaim(struct zone *zone, gfp_t gfp_mask, unsigned int order)
+>  
+>  	p->reclaim_state = NULL;
+>  	current->flags &= ~(PF_MEMALLOC | PF_SWAPWRITE);
+> +	lockdep_clear_current_reclaim_state();
+>  	return sc.nr_reclaimed >= nr_pages;
+>  }
+>  
 
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
