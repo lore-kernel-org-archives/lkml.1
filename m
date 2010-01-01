@@ -1,369 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752209Ab0AAQl2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752177Ab0AAXTB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752209Ab0AAQl2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jan 2010 11:41:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752142Ab0AAQlU
+	id S1752177Ab0AAXTB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jan 2010 18:19:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751740Ab0AAXS6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jan 2010 11:41:20 -0500
-Received: from isilmar.linta.de ([213.133.102.198]:54574 "EHLO linta.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752070Ab0AAQlS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jan 2010 11:41:18 -0500
-From: Dominik Brodowski <linux@dominikbrodowski.net>
-To: <linux-kernel@vger.kernel.org>, <linux-pci@vger.kernel.org>,
-       <linux-arch@vger.kernel.org>, <torvalds@linux-foundation.org>
-Cc: Dominik Brodowski <linux@dominikbrodowski.net>,
-       Bjorn Helgaas <bjorn.helgaas@hp.com>,
-       Yinghai Lu <yhlu.kernel@gmail.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: [PATCH 2/2] resource: mark struct resource as const
-Date: Fri,  1 Jan 2010 17:40:50 +0100
-Message-Id: <1262364050-8540-2-git-send-email-linux@dominikbrodowski.net>
-X-Mailer: git-send-email 1.6.3.3
-In-Reply-To: <20100101163811.GA8124@comet.dominikbrodowski.net>
-References: <20100101163811.GA8124@comet.dominikbrodowski.net>
+	Fri, 1 Jan 2010 18:18:58 -0500
+Received: from smtp110.prem.mail.sp1.yahoo.com ([98.136.44.55]:34847 "HELO
+	smtp110.prem.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751360Ab0AAXS5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Jan 2010 18:18:57 -0500
+X-Yahoo-SMTP: OIJXglSswBDfgLtXluJ6wiAYv6_cnw--
+X-YMail-OSG: 4P5IkxkVM1nezXd_XwDE_eiezgugkzP6q.C82Ic6EXqUD22jfqxiPl6D5.wd9YV3PCQoNfOHNIzgbD5GRvvTKcYEv.tY_ZmHwBOfjK.gtrRO4nLbY13_TbQGhVJ00eAj7n2nvXIE2sXNzaYyiinFBHnqcT1eCZPuUoju4fbf_LXCZ8bA3XCx0ALKZ8tgvBmxNDL6PcA66QlCOlx7xb.dnG2rbDGViDByZc.17HK3thztYcybtNVKmvQza08LP8Lfob1sDjbRsJkoIybmhUk-
+X-Yahoo-Newman-Property: ymail-3
+Message-ID: <4B3E82D9.7050708@schaufler-ca.com>
+Date: Fri, 01 Jan 2010 15:18:49 -0800
+From: Casey Schaufler <casey@schaufler-ca.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+MIME-Version: 1.0
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Andrew G. Morgan" <morgan@kernel.org>,
+       "Serge E. Hallyn" <serue@us.ibm.com>, Bryan Donlan <bdonlan@gmail.com>,
+       Benny Amorsen <benny+usenet@amorsen.dk>,
+       Michael Stone <michael@laptop.org>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, linux-security-module@vger.kernel.org,
+       Andi Kleen <andi@firstfloor.org>, David Lang <david@lang.hm>,
+       Oliver Hartkopp <socketcan@hartkopp.net>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Valdis Kletnieks <Valdis.Kletnieks@vt.edu>,
+       Evgeniy Polyakov <zbr@ioremap.net>,
+       "C. Scott Ananian" <cscott@cscott.net>,
+       James Morris <jmorris@namei.org>, Bernie Innocenti <bernie@codewiz.org>,
+       Mark Seaborn <mrs@mythic-beasts.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       =?ISO-8859-1?Q?Am=E9rico_Wang?= <xiyou.wangcong@gmail.com>,
+       Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
+       Samir Bellabes <sam@synack.fr>, Pavel Machek <pavel@ucw.cz>,
+       Al Viro <viro@ZenIV.linux.org.uk>,
+       Casey Schaufler <casey@schaufler-ca.com>
+Subject: Re: [RFC][PATCH v3] Unprivileged: Disable raising of privileges
+References: <551280e50912300652r1007dee0j8de750bf33af9b3c@mail.gmail.com>	<m1fx6suswz.fsf@fess.ebiederm.org>	<20091230201712.GA23999@us.ibm.com>	<m1hbr8tb8q.fsf_-_@fess.ebiederm.org>	<20091230212931.233003b9@lxorguk.ukuu.org.uk>	<m1skasrvnq.fsf@fess.ebiederm.org>	<20091230230042.5d2e78ac@lxorguk.ukuu.org.uk>	<3e8340490912301844p4fddaf57ke58ceeba9582e0fa@mail.gmail.com>	<20091231173334.5e3d7557@lxorguk.ukuu.org.uk>	<20091231175257.GA7210@us.ibm.com>	<551280e50912311020x2bdc5b1o699a601f67b91662@mail.gmail.com>	<m1aawzm1tc.fsf@fess.ebiederm.org>	<20100101144300.023f47a5@lxorguk.ukuu.org.uk>	<m1zl4x4wq8.fsf@fess.ebiederm.org>	<4B3E6A8B.7060705@schaufler-ca.com> <20100101223919.00b60938@lxorguk.ukuu.org.uk>
+In-Reply-To: <20100101223919.00b60938@lxorguk.ukuu.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Now that we return the new resource start position, there is no
-need to update "struct resource" inside the align function.
-Therefore, mark the struct resource as const.
+Alan Cox wrote:
+>> Sure. Not that it would be hard to do so. And have a careful look
+>> at the recent discussions on checkpoint/restart.
+>>     
+>
+> Indeed the LSM "no removal of restrictions" is simply a policy decision
+> that came about early on - no reason to assume it is a right policy
+> decision if it can be shown otherwise.
+>
+>   
+>> Application developers want systems that work the way the man pages
+>> say they work. They do not want additional or conditional restrictions.
+>>     
+>
+> I disagree somewhat. They want them to work they way they did when they
+> tested it and the way they believe it works. Most of them never read the
+> manual or the standards documents. Take a look at the whining when stat()
+> size data stopped happening by chance to reflect bytes queued in a pipe.
+>   
 
-Cc: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
-Signed-off-by: Dominik Brodowski <linux@dominikbrodowski.net>
----
- arch/alpha/kernel/pci.c                 |    2 +-
- arch/arm/kernel/bios32.c                |    2 +-
- arch/cris/arch-v32/drivers/pci/bios.c   |    2 +-
- arch/frv/mb93090-mb00/pci-frv.c         |    2 +-
- arch/ia64/pci/pci.c                     |    2 +-
- arch/mips/pci/pci.c                     |    2 +-
- arch/mips/pmc-sierra/yosemite/ht.c      |    2 +-
- arch/mn10300/unit-asb2305/pci-asb2305.c |    2 +-
- arch/parisc/kernel/pci.c                |    2 +-
- arch/powerpc/kernel/pci-common.c        |    2 +-
- arch/sh/drivers/pci/pci.c               |    2 +-
- arch/sparc/kernel/pci.c                 |    2 +-
- arch/sparc/kernel/pcic.c                |    2 +-
- arch/x86/pci/i386.c                     |    2 +-
- arch/xtensa/kernel/pci.c                |    4 ++--
- drivers/pci/bus.c                       |    2 +-
- drivers/pcmcia/rsrc_mgr.c               |    3 ++-
- drivers/pcmcia/rsrc_nonstatic.c         |    6 +++---
- include/linux/ioport.h                  |    2 +-
- include/linux/pci.h                     |    5 +++--
- kernel/resource.c                       |    4 ++--
- 21 files changed, 28 insertions(+), 26 deletions(-)
+Yeah, the good ones do at least try to consider both the documented
+and traditional behaviors.
 
-diff --git a/arch/alpha/kernel/pci.c b/arch/alpha/kernel/pci.c
-index 5cf111e..c9ab94e 100644
---- a/arch/alpha/kernel/pci.c
-+++ b/arch/alpha/kernel/pci.c
-@@ -127,7 +127,7 @@ DECLARE_PCI_FIXUP_FINAL(PCI_ANY_ID, PCI_ANY_ID, pcibios_fixup_final);
- #define GB			(1024*MB)
- 
- resource_size_t
--pcibios_align_resource(void *data, struct resource *res,
-+pcibios_align_resource(void *data, const struct resource *res,
- 		       resource_size_t size, resource_size_t align)
- {
- 	struct pci_dev *dev = data;
-diff --git a/arch/arm/kernel/bios32.c b/arch/arm/kernel/bios32.c
-index a7c85f8..bd397e0 100644
---- a/arch/arm/kernel/bios32.c
-+++ b/arch/arm/kernel/bios32.c
-@@ -616,7 +616,7 @@ char * __init pcibios_setup(char *str)
-  * but we want to try to avoid allocating at 0x2900-0x2bff
-  * which might be mirrored at 0x0100-0x03ff..
-  */
--resource_size_t pcibios_align_resource(void *data, struct resource *res,
-+resource_size_t pcibios_align_resource(void *data, const struct resource *res,
- 				resource_size_t size, resource_size_t align)
- {
- 	resource_size_t start = res->start;
-diff --git a/arch/cris/arch-v32/drivers/pci/bios.c b/arch/cris/arch-v32/drivers/pci/bios.c
-index 5811e2f..d4b9c36 100644
---- a/arch/cris/arch-v32/drivers/pci/bios.c
-+++ b/arch/cris/arch-v32/drivers/pci/bios.c
-@@ -42,7 +42,7 @@ int pci_mmap_page_range(struct pci_dev *dev, struct vm_area_struct *vma,
- }
- 
- resource_size_t
--pcibios_align_resource(void *data, struct resource *res,
-+pcibios_align_resource(void *data, const struct resource *res,
- 		       resource_size_t size, resource_size_t align)
- {
- 	resource_size_t start = res->start;
-diff --git a/arch/frv/mb93090-mb00/pci-frv.c b/arch/frv/mb93090-mb00/pci-frv.c
-index c947aa4..1ed15d7 100644
---- a/arch/frv/mb93090-mb00/pci-frv.c
-+++ b/arch/frv/mb93090-mb00/pci-frv.c
-@@ -33,7 +33,7 @@
-  * which might have be mirrored at 0x0100-0x03ff..
-  */
- resource_size_t
--pcibios_align_resource(void *data, struct resource *res,
-+pcibios_align_resource(void *data, const struct resource *res,
- 		       resource_size_t size, resource_size_t align)
- {
- 	resource_size_t start = res->start;
-diff --git a/arch/ia64/pci/pci.c b/arch/ia64/pci/pci.c
-index ef574cd..783c83b 100644
---- a/arch/ia64/pci/pci.c
-+++ b/arch/ia64/pci/pci.c
-@@ -548,7 +548,7 @@ pcibios_disable_device (struct pci_dev *dev)
- }
- 
- resource_size_t
--pcibios_align_resource (void *data, struct resource *res,
-+pcibios_align_resource (void *data, const struct resource *res,
- 		        resource_size_t size, resource_size_t align)
- {
- 	return res->start;
-diff --git a/arch/mips/pci/pci.c b/arch/mips/pci/pci.c
-index 9085988..f87f5e1 100644
---- a/arch/mips/pci/pci.c
-+++ b/arch/mips/pci/pci.c
-@@ -50,7 +50,7 @@ static int pci_initialized;
-  * which might have be mirrored at 0x0100-0x03ff..
-  */
- resource_size_t
--pcibios_align_resource(void *data, struct resource *res,
-+pcibios_align_resource(void *data, const struct resource *res,
- 		       resource_size_t size, resource_size_t align)
- {
- 	struct pci_dev *dev = data;
-diff --git a/arch/mips/pmc-sierra/yosemite/ht.c b/arch/mips/pmc-sierra/yosemite/ht.c
-index 5e41008..fd22597 100644
---- a/arch/mips/pmc-sierra/yosemite/ht.c
-+++ b/arch/mips/pmc-sierra/yosemite/ht.c
-@@ -345,7 +345,7 @@ int pcibios_enable_device(struct pci_dev *dev, int mask)
-         return pcibios_enable_resources(dev);
- }
- 
--resource_size_t pcibios_align_resource(void *data, struct resource *res,
-+resource_size_t pcibios_align_resource(void *data, const struct resource *res,
- 				resource_size_t size, resource_size_t align)
- {
-         struct pci_dev *dev = data;
-diff --git a/arch/mn10300/unit-asb2305/pci-asb2305.c b/arch/mn10300/unit-asb2305/pci-asb2305.c
-index 60f24a7..8182fff 100644
---- a/arch/mn10300/unit-asb2305/pci-asb2305.c
-+++ b/arch/mn10300/unit-asb2305/pci-asb2305.c
-@@ -31,7 +31,7 @@
-  * but we want to try to avoid allocating at 0x2900-0x2bff
-  * which might have be mirrored at 0x0100-0x03ff..
-  */
--resource_size_t pcibios_align_resource(void *data, struct resource *res,
-+resource_size_t pcibios_align_resource(void *data, const struct resource *res,
- 				resource_size_t size, resource_size_t align)
- {
- 	resource_size_t start = res->start;
-diff --git a/arch/parisc/kernel/pci.c b/arch/parisc/kernel/pci.c
-index 4463a31..5179e5e 100644
---- a/arch/parisc/kernel/pci.c
-+++ b/arch/parisc/kernel/pci.c
-@@ -254,7 +254,7 @@ EXPORT_SYMBOL(pcibios_bus_to_resource);
-  * Since we are just checking candidates, don't use any fields other
-  * than res->start.
-  */
--resource_size_t pcibios_align_resource(void *data, struct resource *res,
-+resource_size_t pcibios_align_resource(void *data, const struct resource *res,
- 				resource_size_t size, resource_size_t alignment)
- {
- 	resource_size_t mask, align, start = res->start;
-diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
-index 3e343b8..55045e7 100644
---- a/arch/powerpc/kernel/pci-common.c
-+++ b/arch/powerpc/kernel/pci-common.c
-@@ -1168,7 +1168,7 @@ static int skip_isa_ioresource_align(struct pci_dev *dev)
-  * but we want to try to avoid allocating at 0x2900-0x2bff
-  * which might have be mirrored at 0x0100-0x03ff..
-  */
--resource_size_t pcibios_align_resource(void *data, struct resource *res,
-+resource_size_t pcibios_align_resource(void *data, const struct resource *res,
- 				resource_size_t size, resource_size_t align)
- {
- 	struct pci_dev *dev = data;
-diff --git a/arch/sh/drivers/pci/pci.c b/arch/sh/drivers/pci/pci.c
-index b36ca82..96213fd 100644
---- a/arch/sh/drivers/pci/pci.c
-+++ b/arch/sh/drivers/pci/pci.c
-@@ -148,7 +148,7 @@ void __devinit pcibios_fixup_bus(struct pci_bus *bus)
-  * addresses to be allocated in the 0x000-0x0ff region
-  * modulo 0x400.
-  */
--resource_size_t pcibios_align_resource(void *data, struct resource *res,
-+resource_size_t pcibios_align_resource(void *data, const struct resource *res,
- 				resource_size_t size, resource_size_t align)
- {
- 	struct pci_dev *dev = data;
-diff --git a/arch/sparc/kernel/pci.c b/arch/sparc/kernel/pci.c
-index 6381ceb..e71e9ce 100644
---- a/arch/sparc/kernel/pci.c
-+++ b/arch/sparc/kernel/pci.c
-@@ -715,7 +715,7 @@ void pcibios_update_irq(struct pci_dev *pdev, int irq)
- {
- }
- 
--resource_size_t pcibios_align_resource(void *data, struct resource *res,
-+resource_size_t pcibios_align_resource(void *data, const struct resource *res,
- 				resource_size_t size, resource_size_t align)
- {
- 	return res->start;
-diff --git a/arch/sparc/kernel/pcic.c b/arch/sparc/kernel/pcic.c
-index 96fe494..49fcf5f 100644
---- a/arch/sparc/kernel/pcic.c
-+++ b/arch/sparc/kernel/pcic.c
-@@ -839,7 +839,7 @@ char * __devinit pcibios_setup(char *str)
- 	return str;
- }
- 
--resource_size_t pcibios_align_resource(void *data, struct resource *res,
-+resource_size_t pcibios_align_resource(void *data, const struct resource *res,
- 				resource_size_t size, resource_size_t align)
- {
- 	return res->start;
-diff --git a/arch/x86/pci/i386.c b/arch/x86/pci/i386.c
-index 924e40c..5a8fbf8 100644
---- a/arch/x86/pci/i386.c
-+++ b/arch/x86/pci/i386.c
-@@ -61,7 +61,7 @@ skip_isa_ioresource_align(struct pci_dev *dev) {
-  * which might have be mirrored at 0x0100-0x03ff..
-  */
- resource_size_t
--pcibios_align_resource(void *data, struct resource *res,
-+pcibios_align_resource(void *data, const struct resource *res,
- 			resource_size_t size, resource_size_t align)
- {
- 	struct pci_dev *dev = data;
-diff --git a/arch/xtensa/kernel/pci.c b/arch/xtensa/kernel/pci.c
-index d7efab0..cd10269 100644
---- a/arch/xtensa/kernel/pci.c
-+++ b/arch/xtensa/kernel/pci.c
-@@ -70,8 +70,8 @@ static int pci_bus_count;
-  * which might have be mirrored at 0x0100-0x03ff..
-  */
- resource_size_t
--pcibios_align_resource(void *data, struct resource *res, resource_size_t size,
--    		       resource_size_t align)
-+pcibios_align_resource(void *data, const struct resource *res,
-+		       resource_size_t size, resource_size_t align)
- {
- 	struct pci_dev *dev = data;
- 	resource_size_t start = res->start;
-diff --git a/drivers/pci/bus.c b/drivers/pci/bus.c
-index d29d69a..a26135b 100644
---- a/drivers/pci/bus.c
-+++ b/drivers/pci/bus.c
-@@ -37,7 +37,7 @@ pci_bus_alloc_resource(struct pci_bus *bus, struct resource *res,
- 		resource_size_t size, resource_size_t align,
- 		resource_size_t min, unsigned int type_mask,
- 		resource_size_t (*alignf)(void *,
--					  struct resource *,
-+					  const struct resource *,
- 					  resource_size_t,
- 					  resource_size_t),
- 		void *alignf_data)
-diff --git a/drivers/pcmcia/rsrc_mgr.c b/drivers/pcmcia/rsrc_mgr.c
-index f92a2da..f8401a0 100644
---- a/drivers/pcmcia/rsrc_mgr.c
-+++ b/drivers/pcmcia/rsrc_mgr.c
-@@ -114,7 +114,8 @@ struct pcmcia_align_data {
- 	unsigned long	offset;
- };
- 
--static resource_size_t pcmcia_align(void *align_data, struct resource *res,
-+static resource_size_t pcmcia_align(void *align_data,
-+				const struct resource *res,
- 				resource_size_t size, resource_size_t align)
- {
- 	struct pcmcia_align_data *data = align_data;
-diff --git a/drivers/pcmcia/rsrc_nonstatic.c b/drivers/pcmcia/rsrc_nonstatic.c
-index b659028..45d75dc 100644
---- a/drivers/pcmcia/rsrc_nonstatic.c
-+++ b/drivers/pcmcia/rsrc_nonstatic.c
-@@ -534,7 +534,7 @@ struct pcmcia_align_data {
- };
- 
- static resource_size_t
--pcmcia_common_align(void *align_data, struct resource *res,
-+pcmcia_common_align(void *align_data, const struct resource *res,
- 			resource_size_t size, resource_size_t align)
- {
- 	struct pcmcia_align_data *data = align_data;
-@@ -549,8 +549,8 @@ pcmcia_common_align(void *align_data, struct resource *res,
- }
- 
- static resource_size_t
--pcmcia_align(void *align_data, struct resource *res, resource_size_t size,
--		resource_size_t align)
-+pcmcia_align(void *align_data, const struct resource *res,
-+	resource_size_t size, resource_size_t align)
- {
- 	struct pcmcia_align_data *data = align_data;
- 	struct resource_map *m;
-diff --git a/include/linux/ioport.h b/include/linux/ioport.h
-index f4195de..4a81189 100644
---- a/include/linux/ioport.h
-+++ b/include/linux/ioport.h
-@@ -121,7 +121,7 @@ extern int allocate_resource(struct resource *root, struct resource *new,
- 			     resource_size_t size, resource_size_t min,
- 			     resource_size_t max, resource_size_t align,
- 			     resource_size_t (*alignf)(void *,
--						       struct resource *,
-+						       const struct resource *,
- 						       resource_size_t,
- 						       resource_size_t),
- 			     void *alignf_data);
-diff --git a/include/linux/pci.h b/include/linux/pci.h
-index 30a6e9b..f5cd77e 100644
---- a/include/linux/pci.h
-+++ b/include/linux/pci.h
-@@ -562,7 +562,7 @@ int __must_check pcibios_enable_device(struct pci_dev *, int mask);
- char *pcibios_setup(char *str);
- 
- /* Used only when drivers/pci/setup.c is used */
--resource_size_t pcibios_align_resource(void *, struct resource *,
-+resource_size_t pcibios_align_resource(void *, const struct resource *,
- 				resource_size_t,
- 				resource_size_t);
- void pcibios_update_irq(struct pci_dev *, int irq);
-@@ -790,7 +790,8 @@ int __must_check pci_bus_alloc_resource(struct pci_bus *bus,
- 			struct resource *res, resource_size_t size,
- 			resource_size_t align, resource_size_t min,
- 			unsigned int type_mask,
--			resource_size_t (*alignf)(void *, struct resource *,
-+			resource_size_t (*alignf)(void *,
-+						  const struct resource *,
- 						  resource_size_t,
- 						  resource_size_t),
- 			void *alignf_data);
-diff --git a/kernel/resource.c b/kernel/resource.c
-index e697f20..7fd123a 100644
---- a/kernel/resource.c
-+++ b/kernel/resource.c
-@@ -304,7 +304,7 @@ static int find_resource(struct resource *root, struct resource *new,
- 			 resource_size_t size, resource_size_t min,
- 			 resource_size_t max, resource_size_t align,
- 			 resource_size_t (*alignf)(void *,
--						   struct resource *,
-+						   const struct resource *,
- 						   resource_size_t,
- 						   resource_size_t),
- 			 void *alignf_data)
-@@ -361,7 +361,7 @@ int allocate_resource(struct resource *root, struct resource *new,
- 		      resource_size_t size, resource_size_t min,
- 		      resource_size_t max, resource_size_t align,
- 		      resource_size_t (*alignf)(void *,
--						struct resource *,
-+						const struct resource *,
- 						resource_size_t,
- 						resource_size_t),
- 		      void *alignf_data)
--- 
-1.6.3.3
+>   
+>> How many commercial applications start their installation instructions
+>> with "disable SELinux"? (Hint: lots)
+>>     
+>
+> And I am sure it time the sequence is going to go "Why did your business
+> web site get taken out for four weeks" / "We disabled SELinux as the app
+> said" / "Sue the app vendor"
+>   
+
+You have to demonstrate that SELinux would be prevented the outage.
+Not so easy.
+
+> If you tell someone to disable the safety systems on a crane you get
+> prosecuted.
+>   
+
+If you survive. The difference is the obvious physical harm.
+
+>>> I am sick and fed up with the conversations that go:
+>>> - I want to do X.
+>>> - X has been implemented.
+>>> - Sorry I can't use X as implemented because you have to be root to
+>>>   use X.
+>>>   
+>>>       
+>> Exasperated sigh. Privileged operations are privileged for a reason,
+>> not always a good reason mind you, but a reason nonetheless. If
+>> your application developers want to do things that require privilege
+>> you need to teach them how to write privileged programs safely. We've
+>> been working on exotic variations of system controls for decades
+>> and in the end your programmers have to write decent code because
+>> we haven't yet come up with a way to make all the things that people
+>> want their programs to do safe.
+>>     
+>
+> A useful question here would be to ask what it means to containerise
+> security. At the moment you can do this with virtual machines and while
+> its a nasty managability/security trade off the choice is there for the
+> most part and you can point at things like the amazon cloud as working
+> examples. We don't really have the notion of what setuidness means within
+> a container or how you can create a container which has its own internal
+> setuid, security model, LSM and 'superuser' but can't mess anything else
+> up, only for a virtual machine.
+>   
+
+I've said it many times. Separation is easy, sharing is hard. Isolated
+machines, dedicated machines, virtual machines, containers, Mandatory
+Access Control, and Discretionary Access Control and all means for
+separation. Each has mechanisms to allow controlled sharing. The setuid
+mechanism is primarily a DAC mechanism to allow Fred to give Barney
+access to resources that Fred has access to that Barney does not.
+Overloading the user ID with the root privilege model offered advantages
+in the days of computers with 64k of RAM, and we have that legacy to
+deal with. This tends to obfuscate the value of setuid for DAC.
+
+
+> [I'll note Hurd tried to explore this area in part because Hurd was
+>  designed around a model that history proved bogus - a big computer being
+>  equitably shared with all the power possible but without messing up other
+>  users]
+>
+> Alan
+>   
 
