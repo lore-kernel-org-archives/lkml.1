@@ -1,89 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752047Ab0AAPGK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752059Ab0AAPKi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752047Ab0AAPGK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jan 2010 10:06:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751951Ab0AAPGI
+	id S1752059Ab0AAPKi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jan 2010 10:10:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751990Ab0AAPKh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jan 2010 10:06:08 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:46237 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751691Ab0AAPGF (ORCPT
+	Fri, 1 Jan 2010 10:10:37 -0500
+Received: from www84.your-server.de ([213.133.104.84]:52845 "EHLO
+	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751951Ab0AAPKg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jan 2010 10:06:05 -0500
-Date: Fri, 1 Jan 2010 16:06:04 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Bryan Donlan <bdonlan@gmail.com>
-Cc: Valdis.Kletnieks@vt.edu, Michael Stone <michael@laptop.org>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       linux-security-module@vger.kernel.org, Andi Kleen <andi@firstfloor.org>,
-       David Lang <david@lang.hm>, Oliver Hartkopp <socketcan@hartkopp.net>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Evgeniy Polyakov <zbr@ioremap.net>,
-       "C. Scott Ananian" <cscott@cscott.net>,
-       James Morris <jmorris@namei.org>,
+	Fri, 1 Jan 2010 10:10:36 -0500
+Subject: Re: [PATCH] proc: revert to show stack information in
+ /proc/{pid}/status
+From: Stefani Seibold <stefani@seibold.net>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
        "Eric W. Biederman" <ebiederm@xmission.com>,
-       Bernie Innocenti <bernie@codewiz.org>,
-       Mark Seaborn <mrs@mythic-beasts.com>,
        Randy Dunlap <randy.dunlap@oracle.com>,
-       Am?rico Wang <xiyou.wangcong@gmail.com>,
-       Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
-       Samir Bellabes <sam@synack.fr>,
-       Casey Schaufler <casey@schaufler-ca.com>,
-       "Serge E. Hallyn" <serue@us.ibm.com>
-Subject: Re: RFC: disablenetwork facility. (v4)
-Message-ID: <20100101150604.GF3944@atrey.karlin.mff.cuni.cz>
-References: <20091227190802.GH11737@elf.ucw.cz> <20091228060759.GB13266@heat> <20091228101006.GA19984@elf.ucw.cz> <8817.1262011044@localhost> <20091228205511.GD1637@ucw.cz> <3e8340490912281333l1459f769yf621a36ad1ed6482@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <3e8340490912281333l1459f769yf621a36ad1ed6482@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20100101155630.1A1E.A69D9226@jp.fujitsu.com>
+References: <20091231231051.1A1B.A69D9226@jp.fujitsu.com>
+	 <1262274494.14143.7.camel@wall-e>
+	 <20100101155630.1A1E.A69D9226@jp.fujitsu.com>
+Content-Type: text/plain; charset="ISO-8859-15"
+Date: Fri, 01 Jan 2010 16:10:16 +0100
+Message-ID: <1262358616.11460.18.camel@wall-e>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.2 
+Content-Transfer-Encoding: 7bit
+X-Authenticated-Sender: stefani@seibold.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-
-> > it is really only required for binaries setuid to someone else, but
-> > that would be too ugly. (Plus, as someone said, ping is great for
-> > leaking data out.)
+Am Freitag, den 01.01.2010, 23:14 +0900 schrieb KOSAKI Motohiro:
+> > Am Donnerstag, den 31.12.2009, 23:12 +0900 schrieb KOSAKI Motohiro:
+> > > Commit d899bf7b (procfs: provide stack information for threads) introduced
+> > > to show stack information in /proc/{pid}/status. But it cause large performance
+> > > regression. Unfortunately /proc/{pid}/status is used ps command too and ps is
+> > > one of most important component. Because both to take mmap_sem and page table walk
+> > > are heavily operation.
+> > > 
+> > 
+> > /proc/<pid>/status is IMHO not a performance relevant thing. The main
+> > reason is to provide exact information about a running process.
 > 
-> No, this is not sufficient; one needs only to find a setuid process
-> that can be convinced to run a program with the original (pre-suid)
-
-Ok.
-
-> Or one can target a non-root setuid program that may have security
-> holes - how about nethack?
-
-Well, security holes are bad idea, who'd know?
-
-> That said, I do feel this is a separate issue. The process should
-> first drop its ability to suid; then it can freely apply additional
-> restrictions without there being any risk of breaking setuid
-> applications.
-
-ACK.
-
-> In short, how does this sound:
-> * Add an API to allow processes to permanently revoke their own
-> ability to gain privileges from setuid-exec
-> * Add this disablenetwork facility, conditional on dropping
-> setuid-exec abilities
+> No. You have to learn real world use case. if you think so, you should 
+> change ps before submit this change. This patch obviously make harm than worth. 
+> Nobody (except you) use it but everybody get regression.
 > 
-> This also paves the way for:
-> * Allow processes that have dropped said suid ability to freely create
-> new namespaces (and chroot)
 
-Works for me.
+It is fascinating that every developer means that only his personal view
+and requirements are the wisdom of the world.
+   
+> 
+> > > Thus, this patch revert it. Fortunately /proc/{pid}/task/{tid}/smaps
+> > > provide almost same information. we can use it.
+> > 
+> > Completely wrong. Where does smaps provides this kind of information?
+> > Where is there the high water mark of the stack usage?
+> 
+> You have to see you patch itself. show_map_vma() isn't only used by /proc/pid/maps,
+> but also be used by /proc/pid/smaps.
+> 
+> Now, /proc/{pid}/task/{tid}/smaps show following column.
+> 
+> 7fb97c181000-7fb97d1d1000 rw-p 00000000 00:00 0                          [threadstack:0084eff0]
+> Size:              16704 kB
+> Rss:                   8 kB
+> Pss:                   8 kB
+> Shared_Clean:          0 kB
+> Shared_Dirty:          0 kB
+> Private_Clean:         0 kB
+> Private_Dirty:         8 kB
+> Referenced:            8 kB
+> Swap:                  0 kB
+> KernelPageSize:        4 kB
+> MMUPageSize:           4 kB
+> 
+> It descibe
+>   - This vma is thread stack
+>   - vma size is 16704kB
+>   - stack vsz size in vma is 0x0084eff0 (~ 8508kB)
+>   - and, physical memory is used 8kB.
+> 
 
-> Which, combined with doing whatever audits are necessary to allow
-> cross-network-namespace uses of unix domain sockets, actually
-> eliminates the need for the disablenetwork API. :)
+But it don't describe the usage high water mark. With the information
+provided by proc/*/smaps this is not possible. It is very funny to get
+complains without checking. Your assertion is completely WRONG.
 
-Cool ;-).
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+> 
+> Anyway, I revert the regresstion patch as other regression patches. if you really want
+> this feature, you have three options.
+> 
+>   1. create new /proc file instead to use /proc/pid/status.
+
+This was discarded by Andrew. He prefered the inclusion
+in /proc/pid/status. 
+
+>   2. improve performance until typical use-case don't notice regression.
+
+Not possible.
+
+>   3. change ps and other /proc related userland implementation and resubmit this patch.
+
+ps works quiet well.
+
+> 
+> But even if you choose anything, You have to test both its functional and performance
+> _before_ submitting kernel patch.
+
+Teach me master! Do you think i don't know that is coast something?.
+Walking through the pages coast some runtime. But ps is not a
+performance critical application nor a cat /proc/*/status!
+
+Stefani
+
+
