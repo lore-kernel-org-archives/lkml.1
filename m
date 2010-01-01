@@ -1,63 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751972Ab0AAOxL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751982Ab0AAOyx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751972Ab0AAOxL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jan 2010 09:53:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751702Ab0AAOxJ
+	id S1751982Ab0AAOyx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jan 2010 09:54:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751795Ab0AAOyx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jan 2010 09:53:09 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:48774 "EHLO
+	Fri, 1 Jan 2010 09:54:53 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:48914 "EHLO
 	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751670Ab0AAOxI (ORCPT
+	with ESMTP id S1751706Ab0AAOyw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jan 2010 09:53:08 -0500
-Date: Fri, 1 Jan 2010 15:53:05 +0100
+	Fri, 1 Jan 2010 09:54:52 -0500
+Date: Fri, 1 Jan 2010 15:54:51 +0100
 From: Pavel Machek <pavel@ucw.cz>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Andrew G. Morgan" <morgan@kernel.org>,
-       "Serge E. Hallyn" <serue@us.ibm.com>, Bryan Donlan <bdonlan@gmail.com>,
-       Benny Amorsen <benny+usenet@amorsen.dk>,
-       Michael Stone <michael@laptop.org>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, linux-security-module@vger.kernel.org,
-       Andi Kleen <andi@firstfloor.org>, David Lang <david@lang.hm>,
-       Oliver Hartkopp <socketcan@hartkopp.net>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Valdis Kletnieks <Valdis.Kletnieks@vt.edu>,
-       Evgeniy Polyakov <zbr@ioremap.net>,
-       "C. Scott Ananian" <cscott@cscott.net>,
-       James Morris <jmorris@namei.org>, Bernie Innocenti <bernie@codewiz.org>,
-       Mark Seaborn <mrs@mythic-beasts.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Am?rico Wang <xiyou.wangcong@gmail.com>,
-       Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
-       Samir Bellabes <sam@synack.fr>,
-       Casey Schaufler <casey@schaufler-ca.com>,
-       Al Viro <viro@zeniv.linux.org.uk>
-Subject: Re: [RFC][PATCH v3] Unprivileged: Disable raising of privileges
-Message-ID: <20100101145305.GC3944@atrey.karlin.mff.cuni.cz>
-References: <m1hbr8tb8q.fsf_-_@fess.ebiederm.org> <20091230212931.233003b9@lxorguk.ukuu.org.uk> <m1skasrvnq.fsf@fess.ebiederm.org> <20091230230042.5d2e78ac@lxorguk.ukuu.org.uk> <3e8340490912301844p4fddaf57ke58ceeba9582e0fa@mail.gmail.com> <20091231173334.5e3d7557@lxorguk.ukuu.org.uk> <20091231175257.GA7210@us.ibm.com> <551280e50912311020x2bdc5b1o699a601f67b91662@mail.gmail.com> <m1aawzm1tc.fsf@fess.ebiederm.org> <20100101144300.023f47a5@lxorguk.ukuu.org.uk>
+To: Brian Swetland <swetland@google.com>
+Cc: Arve Hj??nnev??g <arve@android.com>,
+       Daniel Walker <dwalker@codeaurora.org>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+       Iliyan Malchev <malchev@google.com>, Greg KH <greg@kroah.com>
+Subject: Re: tree with htc dream support
+Message-ID: <20100101145451.GD3944@atrey.karlin.mff.cuni.cz>
+References: <20091227093537.GD11737@elf.ucw.cz> <20091227201514.GA29174@elf.ucw.cz> <a55d774e0912271220p1d102b1dr398e0524c9386702@mail.gmail.com> <20091227203704.GK11737@elf.ucw.cz> <20091227211322.GB29174@elf.ucw.cz> <a55d774e0912271646m1b82687cy427083e64e91e323@mail.gmail.com> <20091227101824.GB1478@ucw.cz> <a55d774e0912281224y7360dfdbu8a251743026bdd28@mail.gmail.com> <20091228204848.GB1637@ucw.cz> <a55d774e0912281308u1c20c84cl4f264aa366445131@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-2
 Content-Disposition: inline
-In-Reply-To: <20100101144300.023f47a5@lxorguk.ukuu.org.uk>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <a55d774e0912281308u1c20c84cl4f264aa366445131@mail.gmail.com>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > - unprivileged process took action to prevent gaining a capability.
-> > - exec'd suid sendmail.
-> > - sendmail took action as root because it could not become someone else.
+Hi!
+
+(sorry for long response time, holidays with poor network connection).
+
+> >> and get the core stuff in there so clock, power, etc support is there
+> >> for the platform rather than have it live in staging purgatory.
+> >>
+> >> Since this stuff is integral to mach-msm, required for essential
+> >> operation of the platform, and makes sense to be part of the mach-msm
+> >> codebase, why not just fix it there rather than move it out into
+> >> staging and then back?  I'm not sure what that gains us.
+> >
+> > Well, it is in staging now. I just want you to use the existing
+> > version, instead of adding another one.
 > 
-> Which is a classic bug and replicated historically in cpu time, quota and
-> other similar "remove rights and then .." attacks.
+> I'm trying to understand where the version in staging came from, how
+> it's been changed, etc, so I can resolve that against what we have
+> that's known good and shipping today and make sure we're not losing
+> bugfixes and such along the way.
 
-Yes, so from now on, when we add new "cpu cache misses quota", we
-should require prctl(I_SHOULD_NOT_BE_ABLE_TO_LAUNCH_SETUID) for
-unpriviledged users, first.
+> Do you remember where the smd code that you put into staging came
+> from, exactly?  Unfortunately since things have been moved, modified,
+> renamed, etc, getting clean diffs is a bit of an adventure right
+> now.
 
-
+I believe the version in staging is from 2.6.29-msm tree. Anyway,
+changes should be pretty simple to see on diff -u (I belive I tried
+that at one point).
 								Pavel
+
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
