@@ -1,49 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751721Ab0AARVH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751932Ab0AAR2k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751721Ab0AARVH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jan 2010 12:21:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751456Ab0AARVG
+	id S1751932Ab0AAR2k (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jan 2010 12:28:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751515Ab0AAR2j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jan 2010 12:21:06 -0500
-Received: from moutng.kundenserver.de ([212.227.126.186]:61502 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751266Ab0AARVF (ORCPT
+	Fri, 1 Jan 2010 12:28:39 -0500
+Received: from astoria.ccjclearline.com ([64.235.106.9]:35969 "EHLO
+	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751468Ab0AAR2i (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jan 2010 12:21:05 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: Michael Schutte <michi@uiae.at>
-Subject: Re: [PATCH] fs/compat_ioctl.c: Add KD[GS]KBDIACRUC to the compatible list
-Date: Fri, 1 Jan 2010 18:20:50 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org, Samuel Thibault <samuel.thibault@labri.fr>
-References: <20100101135606.GA3189@graeme>
-In-Reply-To: <20100101135606.GA3189@graeme>
+	Fri, 1 Jan 2010 12:28:38 -0500
+Date: Fri, 1 Jan 2010 12:28:03 -0500 (EST)
+From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+X-X-Sender: rpjday@localhost
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH] HVSI: Fix apparently backwards args to time_before() in
+ hvsi.c
+Message-ID: <alpine.LFD.2.00.1001011226020.24958@localhost>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201001011820.51144.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1+oMWMLUUy25xMbewNXhhQSBLzR9tdHXEmVnIi
- pSbsUDis6whqV4qG1nl+01EVMyzEF8OLLmIsSUKUlxsK85HIm6
- XcmuBzOVwFy161PCHEcpw==
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - crashcourse.ca
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 01 January 2010, Michael Schutte wrote:
-> Allow handling of Unicode compose sequences by 32-bit apps on a 64-bit
-> system.  The issue has been reported in <http://bugs.debian.org/540534>
-> and <http://lists.altlinux.org/pipermail/kbd/2009-December/000235.html>.
-> 
-> A formal check of the two affected ioctls in drivers/char/vt_ioctl.c
-> (introduced in 04c71976) and a test using x86 kbd 1.15.1 on a so patched
-> x86_64 kernel both confirm that KD[GS]KBDIACRUC are ioctl32()
-> compatible.
-> 
-> Signed-off-by: Michael Schutte <michi@uiae.at>
 
-Since 2.6.32, we handle all VT specific ioctls in the vt_compat_ioctl()
-function, which should fix this one implicitly. Please try to reproduce
-with a recent kernel.
+Signed-off-by: Robert P. J. Day <rpjday@crashcourse.ca>
 
-	Arnd
+---
+
+  no appropriate subsystem maintainer listed in MAINTAINERS.
+
+diff --git a/drivers/char/hvsi.c b/drivers/char/hvsi.c
+index 793b236..71c0fcd 100644
+--- a/drivers/char/hvsi.c
++++ b/drivers/char/hvsi.c
+@@ -711,7 +711,7 @@ static void hvsi_drain_input(struct hvsi_struct *hp)
+ 	uint8_t buf[HVSI_MAX_READ] __ALIGNED__;
+ 	unsigned long end_jiffies = jiffies + HVSI_TIMEOUT;
+
+-	while (time_before(end_jiffies, jiffies))
++	while (time_before(jiffies, end_jiffies))
+ 		if (0 == hvsi_read(hp, buf, HVSI_MAX_READ))
+ 			break;
+ }
+
+rday
+--
+
+========================================================================
+Robert P. J. Day                               Waterloo, Ontario, CANADA
+
+            Linux Consulting, Training and Kernel Pedantry.
+
+Web page:                                          http://crashcourse.ca
+Twitter:                                       http://twitter.com/rpjday
+========================================================================
