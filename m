@@ -1,61 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752134Ab0AAUMi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752134Ab0AAQzQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752134Ab0AAUMi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jan 2010 15:12:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751969Ab0AAUMh
+	id S1752134Ab0AAQzQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jan 2010 11:55:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752070Ab0AAQzP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jan 2010 15:12:37 -0500
-Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:38856 "EHLO
-	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751944Ab0AAUMh (ORCPT
+	Fri, 1 Jan 2010 11:55:15 -0500
+Received: from samir.ibcsolutions.de ([78.47.90.66]:50308 "EHLO
+	samir.ibcsolutions.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752011Ab0AAQzO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jan 2010 15:12:37 -0500
-Date: Fri, 1 Jan 2010 21:12:35 +0100
-From: Andreas Mohr <andi@lisas.de>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Andreas Mohr <andi@lisas.de>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linux PCI <linux-pci@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       "Maciej J. Woloszyk" <mat@esi.com.pl>
-Subject: Re: [PATCH] PCI / PM: Use per-device D3 delays
-Message-ID: <20100101201235.GA31960@rhlx01.hs-esslingen.de>
-References: <20100101170729.GA22252@rhlx01.hs-esslingen.de> <201001011955.27407.rjw@sisk.pl>
+	Fri, 1 Jan 2010 11:55:14 -0500
+X-Greylist: delayed 1481 seconds by postgrey-1.27 at vger.kernel.org; Fri, 01 Jan 2010 11:55:14 EST
+Message-ID: <4B3E6520.6030404@exys.org>
+Date: Fri, 01 Jan 2010 22:12:00 +0100
+From: Arvid Picciani <aep@exys.org>
+Organization: Asgaard Technologies
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.5) Gecko/20091215 Shredder/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <201001011955.27407.rjw@sisk.pl>
-X-Priority: none
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Maciej Rutecki <maciej.rutecki@gmail.com>
+CC: David <david@unsolicited.net>, linux-kernel@vger.kernel.org,
+       linux-wireless@vger.kernel.org
+Subject: Re: 2.6.33-rc1 - Weird hard hangs when rendering 'some' web-sites
+ in 	Firefox
+References: <4B2FEE46.5030700@unsolicited.net> <8db1092f1001010540l15c8f671y1f6a4a4417eb450b@mail.gmail.com>
+In-Reply-To: <8db1092f1001010540l15c8f671y1f6a4a4417eb450b@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On 01/01/2010 02:40 PM, Maciej Rutecki wrote:
+> I can confirm this. Probably it's related only to wireless
+> connections, wired seems be OK. My device is:
+> 08:00.0 Network controller: Intel Corporation PRO/Wireless 3945ABG
+> [Golan] Network Connection (rev 02)
 
-On Fri, Jan 01, 2010 at 07:55:27PM +0100, Rafael J. Wysocki wrote:
-> On Friday 01 January 2010, Andreas Mohr wrote:
-> > Hi,
-> > 
-> > While the bug report mentions "So it's just quirky hardware.",
-> > the implementation of your patch makes it seem like this delay attribute is
-> > totally "norm"al behaviour - I'm missing some more aggressive wording.
-> 
-> That's because it works both ways (please look at the changelog).
+i sometimes get a dead system by calling dhclient. (i dont use ff)
+Atheros AR9285.  happens only wth kms (intel 945G) enabled. Barely 
+reproduceable. Works with wired connection. This device has no rs232 
+connector, so i'm a bit out of ideas how to debug it.
 
-Ah, ok.
-
-> I know of a few devices that don't need the PCI-prescribed 10 ms wait when
-> going from D3 to D0 and their drivers may use the d3_delay field to actually
-> set a _shorter_ delay.
-
-Then why is the value lower-bounded by pci_pm_d3_delay
-(which, puzzlingly, was initialized to PCI_PM_D3_WAIT and thus 10
-before, which the patch now removes!), in pci_dev_d3_sleep()?
-(and pci_pm_d3_delay is being quirked in drivers/pci/quirks.c only,
-to 120)
-
-Confused,
-
-Andreas Mohr
+-- 
+Arvid
