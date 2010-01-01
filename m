@@ -1,117 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752112Ab0AAWi2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752110Ab0AAWMN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752112Ab0AAWi2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jan 2010 17:38:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751828Ab0AAWi1
+	id S1752110Ab0AAWMN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jan 2010 17:12:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751716Ab0AAWMM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jan 2010 17:38:27 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:53709 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751568Ab0AAWi0 (ORCPT
+	Fri, 1 Jan 2010 17:12:12 -0500
+Received: from mail-px0-f174.google.com ([209.85.216.174]:37891 "EHLO
+	mail-px0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751502Ab0AAWMK convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jan 2010 17:38:26 -0500
-Date: Fri, 1 Jan 2010 22:39:19 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Casey Schaufler <casey@schaufler-ca.com>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Andrew G. Morgan" <morgan@kernel.org>,
-       "Serge E. Hallyn" <serue@us.ibm.com>, Bryan Donlan <bdonlan@gmail.com>,
-       Benny Amorsen <benny+usenet@amorsen.dk>,
-       Michael Stone <michael@laptop.org>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, linux-security-module@vger.kernel.org,
-       Andi Kleen <andi@firstfloor.org>, David Lang <david@lang.hm>,
-       Oliver Hartkopp <socketcan@hartkopp.net>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Valdis Kletnieks <Valdis.Kletnieks@vt.edu>,
-       Evgeniy Polyakov <zbr@ioremap.net>,
-       "C. Scott Ananian" <cscott@cscott.net>,
-       James Morris <jmorris@namei.org>, Bernie Innocenti <bernie@codewiz.org>,
-       Mark Seaborn <mrs@mythic-beasts.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       =?UTF-8?B?QW3DqXJpY28=?= Wang <xiyou.wangcong@gmail.com>,
-       Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
-       Samir Bellabes <sam@synack.fr>, Pavel Machek <pavel@ucw.cz>,
-       Al Viro <viro@ZenIV.linux.org.uk>,
-       Casey Schaufler <casey@schaufler-ca.com>
-Subject: Re: [RFC][PATCH v3] Unprivileged: Disable raising of privileges
-Message-ID: <20100101223919.00b60938@lxorguk.ukuu.org.uk>
-In-Reply-To: <4B3E6A8B.7060705@schaufler-ca.com>
-References: <551280e50912300652r1007dee0j8de750bf33af9b3c@mail.gmail.com>
-	<m1fx6suswz.fsf@fess.ebiederm.org>
-	<20091230201712.GA23999@us.ibm.com>
-	<m1hbr8tb8q.fsf_-_@fess.ebiederm.org>
-	<20091230212931.233003b9@lxorguk.ukuu.org.uk>
-	<m1skasrvnq.fsf@fess.ebiederm.org>
-	<20091230230042.5d2e78ac@lxorguk.ukuu.org.uk>
-	<3e8340490912301844p4fddaf57ke58ceeba9582e0fa@mail.gmail.com>
-	<20091231173334.5e3d7557@lxorguk.ukuu.org.uk>
-	<20091231175257.GA7210@us.ibm.com>
-	<551280e50912311020x2bdc5b1o699a601f67b91662@mail.gmail.com>
-	<m1aawzm1tc.fsf@fess.ebiederm.org>
-	<20100101144300.023f47a5@lxorguk.ukuu.org.uk>
-	<m1zl4x4wq8.fsf@fess.ebiederm.org>
-	<4B3E6A8B.7060705@schaufler-ca.com>
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.18.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 1 Jan 2010 17:12:10 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=ZUt/+C65UCwxDOrpQub2nDHpqc3Irh9yqOGEUJOjrCESFCtHpROaHEAgn32YCw7d/W
+         V8043wMBhgG17IvypbLwD00GtYsMzNH2za/rBiWYO46JqkqM0JOpUN/OXW+HIpytX8Z2
+         NBsCu3Dz506Xubw21aYd+mSQRJGfK0jhIABp8=
+MIME-Version: 1.0
+In-Reply-To: <1262364050-8540-1-git-send-email-linux@dominikbrodowski.net>
+References: <20100101163811.GA8124@comet.dominikbrodowski.net>
+	 <1262364050-8540-1-git-send-email-linux@dominikbrodowski.net>
+Date: Fri, 1 Jan 2010 14:12:09 -0800
+X-Google-Sender-Auth: 1b48e28d3cb8c53f
+Message-ID: <86802c441001011412u1543c1afk6337cd6d3ea0f257@mail.gmail.com>
+Subject: Re: [PATCH 1/2] resource: align functions now return start of 
+	resource
+From: Yinghai Lu <yinghai@kernel.org>
+To: Dominik Brodowski <linux@dominikbrodowski.net>
+Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
+       linux-arch@vger.kernel.org, torvalds@linux-foundation.org,
+       Bjorn Helgaas <bjorn.helgaas@hp.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Sure. Not that it would be hard to do so. And have a careful look
-> at the recent discussions on checkpoint/restart.
+On Fri, Jan 1, 2010 at 8:40 AM, Dominik Brodowski
+<linux@dominikbrodowski.net> wrote:
+> As suggested by Linus, align functions should return the start
+> of a resource, not void. An update of "res->start" is no longer
+> necessary.
+>
+> Cc: Bjorn Helgaas <bjorn.helgaas@hp.com>
+> Cc: Yinghai Lu <yhlu.kernel@gmail.com>
+> Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
+> Signed-off-by: Dominik Brodowski <linux@dominikbrodowski.net>
+> ---
+>  arch/alpha/kernel/pci.c                 |    4 ++--
+>  arch/arm/kernel/bios32.c                |    8 +++++---
+>  arch/cris/arch-v32/drivers/pci/bios.c   |   14 ++++++--------
+>  arch/frv/mb93090-mb00/pci-frv.c         |   14 ++++++--------
+>  arch/ia64/pci/pci.c                     |    3 ++-
+>  arch/mips/pci/pci.c                     |    4 ++--
+>  arch/mips/pmc-sierra/yosemite/ht.c      |   10 +++++-----
+>  arch/mn10300/unit-asb2305/pci-asb2305.c |   16 +++++++---------
+>  arch/parisc/kernel/pci.c                |   10 +++++-----
+>  arch/powerpc/kernel/pci-common.c        |   13 ++++++-------
+>  arch/sh/drivers/pci/pci.c               |    6 +++---
+>  arch/sparc/kernel/pci.c                 |    5 +++--
+>  arch/sparc/kernel/pcic.c                |    5 +++--
+>  arch/x86/pci/i386.c                     |   12 +++++-------
+>  arch/xtensa/kernel/pci.c                |   11 +++++------
+>  drivers/pci/bus.c                       |    6 ++++--
+>  drivers/pcmcia/rsrc_mgr.c               |   12 ++++++------
+>  drivers/pcmcia/rsrc_nonstatic.c         |   16 +++++++++-------
+>  include/linux/ioport.h                  |    6 ++++--
+>  include/linux/pci.h                     |    8 +++++---
+>  kernel/resource.c                       |   14 +++++++++-----
+>  21 files changed, 102 insertions(+), 95 deletions(-)
+>
+> diff --git a/arch/alpha/kernel/pci.c b/arch/alpha/kernel/pci.c
+> index a91ba28..5cf111e 100644
+> --- a/arch/alpha/kernel/pci.c
+> +++ b/arch/alpha/kernel/pci.c
+> @@ -126,7 +126,7 @@ DECLARE_PCI_FIXUP_FINAL(PCI_ANY_ID, PCI_ANY_ID, pcibios_fixup_final);
+>  #define MB                     (1024*KB)
+>  #define GB                     (1024*MB)
+>
+> -void
+> +resource_size_t
+>  pcibios_align_resource(void *data, struct resource *res,
+>                       resource_size_t size, resource_size_t align)
+>  {
+> @@ -184,7 +184,7 @@ pcibios_align_resource(void *data, struct resource *res,
+>                }
+>        }
+>
+> -       res->start = start;
+> +       return start;
+>  }
+>  #undef KB
+>  #undef MB
+> diff --git a/arch/arm/kernel/bios32.c b/arch/arm/kernel/bios32.c
+> index 8096819..a7c85f8 100644
+> --- a/arch/arm/kernel/bios32.c
+> +++ b/arch/arm/kernel/bios32.c
+> @@ -616,15 +616,17 @@ char * __init pcibios_setup(char *str)
+>  * but we want to try to avoid allocating at 0x2900-0x2bff
+>  * which might be mirrored at 0x0100-0x03ff..
+>  */
+> -void pcibios_align_resource(void *data, struct resource *res,
+> -                           resource_size_t size, resource_size_t align)
+> +resource_size_t pcibios_align_resource(void *data, struct resource *res,
+> +                               resource_size_t size, resource_size_t align)
+>  {
+>        resource_size_t start = res->start;
+>
+>        if (res->flags & IORESOURCE_IO && start & 0x300)
+>                start = (start + 0x3ff) & ~0x3ff;
+>
+> -       res->start = (start + align - 1) & ~(align - 1);
+> +       start = (start + align - 1) & ~(align - 1);
+> +
+> +       return start;
+>  }
+>
+>  /**
+> diff --git a/arch/cris/arch-v32/drivers/pci/bios.c b/arch/cris/arch-v32/drivers/pci/bios.c
+> index 77ee319..5811e2f 100644
+> --- a/arch/cris/arch-v32/drivers/pci/bios.c
+> +++ b/arch/cris/arch-v32/drivers/pci/bios.c
+> @@ -41,18 +41,16 @@ int pci_mmap_page_range(struct pci_dev *dev, struct vm_area_struct *vma,
+>        return 0;
+>  }
+>
+> -void
+> +resource_size_t
+>  pcibios_align_resource(void *data, struct resource *res,
+>                       resource_size_t size, resource_size_t align)
+>  {
+> -       if (res->flags & IORESOURCE_IO) {
+> -               resource_size_t start = res->start;
+> +       resource_size_t start = res->start;
+>
+> -               if (start & 0x300) {
+> -                       start = (start + 0x3ff) & ~0x3ff;
+> -                       res->start = start;
+> -               }
+> -       }
+> +       if ((res->flags & IORESOURCE_IO) && (start & 0x300))
+> +               start = (start + 0x3ff) & ~0x3ff;
+> +
+> +       return start
 
-Indeed the LSM "no removal of restrictions" is simply a policy decision
-that came about early on - no reason to assume it is a right policy
-decision if it can be shown otherwise.
+missed ; here?
 
-> Application developers want systems that work the way the man pages
-> say they work. They do not want additional or conditional restrictions.
-
-I disagree somewhat. They want them to work they way they did when they
-tested it and the way they believe it works. Most of them never read the
-manual or the standards documents. Take a look at the whining when stat()
-size data stopped happening by chance to reflect bytes queued in a pipe.
-
-> How many commercial applications start their installation instructions
-> with "disable SELinux"? (Hint: lots)
-
-And I am sure it time the sequence is going to go "Why did your business
-web site get taken out for four weeks" / "We disabled SELinux as the app
-said" / "Sue the app vendor"
-
-If you tell someone to disable the safety systems on a crane you get
-prosecuted.
-
-
-> > I am sick and fed up with the conversations that go:
-> > - I want to do X.
-> > - X has been implemented.
-> > - Sorry I can't use X as implemented because you have to be root to
-> >   use X.
-> >   
-> Exasperated sigh. Privileged operations are privileged for a reason,
-> not always a good reason mind you, but a reason nonetheless. If
-> your application developers want to do things that require privilege
-> you need to teach them how to write privileged programs safely. We've
-> been working on exotic variations of system controls for decades
-> and in the end your programmers have to write decent code because
-> we haven't yet come up with a way to make all the things that people
-> want their programs to do safe.
-
-A useful question here would be to ask what it means to containerise
-security. At the moment you can do this with virtual machines and while
-its a nasty managability/security trade off the choice is there for the
-most part and you can point at things like the amazon cloud as working
-examples. We don't really have the notion of what setuidness means within
-a container or how you can create a container which has its own internal
-setuid, security model, LSM and 'superuser' but can't mess anything else
-up, only for a virtual machine.
-
-[I'll note Hurd tried to explore this area in part because Hurd was
- designed around a model that history proved bogus - a big computer being
- equitably shared with all the power possible but without messing up other
- users]
-
-Alan
+YH
