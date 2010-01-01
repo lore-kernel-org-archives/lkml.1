@@ -1,63 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751567Ab0AAK2o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751475Ab0AALlu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751567Ab0AAK2o (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jan 2010 05:28:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751227Ab0AAK2n
+	id S1751475Ab0AALlu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jan 2010 06:41:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751267Ab0AALlu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jan 2010 05:28:43 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:59083 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751220Ab0AAK2m (ORCPT
+	Fri, 1 Jan 2010 06:41:50 -0500
+Received: from out01.mta.xmission.com ([166.70.13.231]:55986 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751236Ab0AALlt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jan 2010 05:28:42 -0500
-Date: Fri, 1 Jan 2010 11:28:41 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Serge E. Hallyn" <serue@us.ibm.com>,
-       "Andrew G. Morgan" <morgan@kernel.org>,
-       Bryan Donlan <bdonlan@gmail.com>,
-       Benny Amorsen <benny+usenet@amorsen.dk>,
-       Michael Stone <michael@laptop.org>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, linux-security-module@vger.kernel.org,
-       Andi Kleen <andi@firstfloor.org>, David Lang <david@lang.hm>,
-       Oliver Hartkopp <socketcan@hartkopp.net>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Valdis Kletnieks <Valdis.Kletnieks@vt.edu>,
-       Evgeniy Polyakov <zbr@ioremap.net>,
-       "C. Scott Ananian" <cscott@cscott.net>,
-       James Morris <jmorris@namei.org>, Bernie Innocenti <bernie@codewiz.org>,
-       Mark Seaborn <mrs@mythic-beasts.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       =?iso-8859-2?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>,
-       Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
-       Samir Bellabes <sam@synack.fr>,
-       Casey Schaufler <casey@schaufler-ca.com>,
-       Al Viro <viro@zeniv.linux.org.uk>
-Subject: Re: [RFC][PATCH v3] Unprivileged: Disable raising of privileges
-Message-ID: <20100101102841.GA22924@atrey.karlin.mff.cuni.cz>
-References: <3e8340490912291954v5a837a26p64bd776102d281d7@mail.gmail.com> <m1r5qdt721.fsf@fess.ebiederm.org> <3e8340490912292057g3e87eaabn115f85b78af2b08c@mail.gmail.com> <m1d41w62zc.fsf_-_@fess.ebiederm.org> <551280e50912300652r1007dee0j8de750bf33af9b3c@mail.gmail.com> <20091230183513.GC14493@us.ibm.com> <m1fx6suswz.fsf@fess.ebiederm.org> <20091230201712.GA23999@us.ibm.com> <m1hbr8tb8q.fsf_-_@fess.ebiederm.org> <20091230212931.233003b9@lxorguk.ukuu.org.uk>
+	Fri, 1 Jan 2010 06:41:49 -0500
+To: daw-news@taverner.cs.berkeley.edu (David Wagner)
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: RFC: disablenetwork facility. (v4)
+References: <20091229050114.GC14362@heat> <m1y6km11lj.fsf@fess.ebiederm.org>
+	<hhev6r$n8b$1@taverner.cs.berkeley.edu>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Fri, 01 Jan 2010 03:41:43 -0800
+In-Reply-To: <hhev6r$n8b$1@taverner.cs.berkeley.edu> (David Wagner's message of "Wed\, 30 Dec 2009 07\:24\:11 +0000 \(UTC\)")
+Message-ID: <m1ws02hx1k.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091230212931.233003b9@lxorguk.ukuu.org.uk>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Scanned: No (on in02.mta.xmission.com); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > Added bprm->nosuid to make remove the need to add
-> > duplicate error prone checks.  This ensures that
-> > the disabling of suid executables is exactly the
-> > same as MNT_NOSUID.
-> 
-> Another fine example of why we have security hooks so that we don't get a
-> kernel full of other "random security idea of the day" hacks.
+daw@cs.berkeley.edu (David Wagner) writes:
 
-well... new unshare functionality depends on this. if unshare is
-important enough, this may not be lsm.
+> Eric W. Biederman wrote:
+>>The problem with the disable_network semantics you want
+>>is that they allow you to perform a denial of service attack
+>>on privileged users.  An unprivileged DOS attack is unsuitable
+>>for a general purpose feature in a general purpose kernel.
+>
+> I'm not persuaded yet.
 
-(and disablenetwork *should* depend on this)
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+I won't try hard to persuade you if you drop me off the cc list.
+
+> When you talk about DOS, let's be a bit more precise.  disablenetwork
+> gives a way to deny setuid programs access to the network.  It's not a
+> general-purpose DOS; it's denying access to the network only.  And the
+> network is fundamentally unreliable.  No security-critical mechanism
+> should be relying upon the availability of the network.
+
+The audit daemon should not rely on netlink?
+
+> So while I certainly can't rule out the possibility that disablenetwork
+> might introduce minor issues, I think there are fundamental reasons to
+> be skeptical that disablenetwork will introduce serious new security
+> problems.
+
+For me the case is simple.  I have seen several plausible sounding
+scenarios that get most of the way there.  I know I am stupid when
+it comes to security and that people exploiting problems are going
+to be looking harder than I will.  Therefore I think there is
+a reasonable chance this will introduce a security hole for someone.
+
+Eric
