@@ -1,372 +1,182 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752160Ab0AAUfI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752144Ab0AAWoB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752160Ab0AAUfI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jan 2010 15:35:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752021Ab0AAUfH
+	id S1752144Ab0AAWoB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jan 2010 17:44:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751949Ab0AAWoA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jan 2010 15:35:07 -0500
-Received: from mta5.srv.hcvlny.cv.net ([167.206.4.200]:54685 "EHLO
-	mta5.srv.hcvlny.cv.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751932Ab0AAUfF (ORCPT
+	Fri, 1 Jan 2010 17:44:00 -0500
+Received: from out02.mta.xmission.com ([166.70.13.232]:52290 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751834Ab0AAWoA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jan 2010 15:35:05 -0500
-Date: Fri, 01 Jan 2010 15:34:17 -0500
-From: Michael Breuer <mbreuer@majjas.com>
-Subject: Re: sky2 panic in 2.6.32.1 under load (tty NULL write)
-In-reply-to: <4B3E4C7D.2040802@majjas.com>
-To: Stephen Hemminger <shemminger@vyatta.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "Berck E. Nash" <flyboy@gmail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org
-Message-id: <4B3E5C49.9010409@majjas.com>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7BIT
-References: <4B300A2A.8040305@gmail.com> <4B300E30.9090707@majjas.com>
- <4B3114E3.1070602@majjas.com> <4B329FA3.9090904@majjas.com>
- <20091223230102.4bb0100e.akpm@linux-foundation.org>
- <4B34E847.8010809@majjas.com> <20091225152200.1cf11dfe@nehalam>
- <4B3581C7.8000702@majjas.com> <20091226095723.7ac82b18@nehalam>
- <4B367409.5060202@majjas.com> <4B379378.4000102@majjas.com>
- <20091227102238.0df149f9@nehalam> <4B37B7E2.5070307@majjas.com>
- <20091229093023.3ad24786@nehalam> <4B3A5048.9090700@majjas.com>
- <20091229114938.1f4d1c5c@nehalam> <4B3AFFE8.3060409@majjas.com>
- <20091229235942.51bf733d@nehalam> <4B3B7488.6080503@majjas.com>
- <20091230101046.2816d545@nehalam> <4B3CE8CA.5050003@majjas.com>
- <4B3E33EC.1060703@majjas.com> <4B3E4C7D.2040802@majjas.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5)
- Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
+	Fri, 1 Jan 2010 17:44:00 -0500
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Borislav Petkov <petkovbb@googlemail.com>,
+       David Airlie <airlied@linux.ie>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Greg KH <greg@kroah.com>, Al Viro <viro@ZenIV.linux.org.uk>
+Subject: [PATCH] sysfs: Cache the last sysfs_dirent to improve readdir scalability v2
+References: <alpine.LFD.2.00.0912241350510.11961@localhost.localdomain>
+	<20091226094504.GA6214@liondog.tnic>
+	<20091228092712.AA8C.A69D9226@jp.fujitsu.com>
+	<alpine.LFD.2.00.0912301259220.11961@localhost.localdomain>
+	<m11victac1.fsf@fess.ebiederm.org>
+	<alpine.LFD.2.00.0912301348320.11961@localhost.localdomain>
+	<m1fx6rtu31.fsf@fess.ebiederm.org>
+	<alpine.LFD.2.00.0912311043330.11961@localhost.localdomain>
+	<m11viaexlj.fsf_-_@fess.ebiederm.org>
+	<alpine.LFD.2.00.1001011047580.3630@localhost.localdomain>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Fri, 01 Jan 2010 14:43:53 -0800
+In-Reply-To: <alpine.LFD.2.00.1001011047580.3630@localhost.localdomain> (Linus Torvalds's message of "Fri\, 1 Jan 2010 10\:56\:15 -0800 \(PST\)")
+Message-ID: <m1y6kh30pi.fsf_-_@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Scanned: No (on in02.mta.xmission.com); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In single user mode:
 
-Looks like the first attempt to run mingetty on tty1 triggers a vhangup 
-of more than tty1. Also, the initial console (shell, etc) were open on 
-tty1 when I started mingetty on tty1. Looks like the subsequent vhangup 
-is what broke things. Also, the vhangup issued from mingetty seems to 
-have resulted in tty2 activity as well, although I don't see why it 
-should have.
+When sysfs_readdir stops short we now cache the next
+sysfs_dirent to return to user space in filp->private_data.
+There is no impact on the rest of sysfs by doing this and
+in the common case it allows us to pick up exactly where
+we left off with no seeking.
 
-Scenario:
+Additionally I drop and regrab the sysfs_mutex around
+filldir to avoid a page fault abritrarily increasing the
+hold time on the sysfs_mutex.
 
-Started in single user mode.
-did initctl start tty2 and then switched to tty2 and logged in:
-Jan  1 15:11:42 mail kernel: opening tty2...
-Jan  1 15:11:42 mail kernel: tty2 vhangup...
-Jan  1 15:11:42 mail kernel: tty_release_dev of tty2 (tty count=1)...
-Jan  1 15:11:42 mail kernel: freeing tty structure...
-Jan  1 15:11:42 mail kernel: opening tty2...
-Jan  1 15:11:42 mail kernel: tty2 vhangup...
-Jan  1 15:11:42 mail kernel: opening tty2...
-Jan  1 15:11:42 mail kernel: tty_release_dev of tty2 (tty count=2)...
-Jan  1 15:11:42 mail kernel: opening tty2...
-Jan  1 15:11:42 mail kernel: tty_release_dev of tty2 (tty count=2)...
-Jan  1 15:11:42 mail kernel: opening tty2...
-Jan  1 15:11:42 mail kernel: tty_release_dev of tty2 (tty count=2)...
+v2: Returned to using INT_MAX as the EOF condition.
+    seekdir is ambiguous unless all directory entries have
+    a unique f_pos value.
 
-Then (and note that time should have advanced, but didn't): initctl 
-start tty1 (previously, the initial shell from single user mode was up):
+Signed-off-by: Eric W. Biederman <ebiederm@aristanetworks.com>
+---
 
-Jan  1 15:11:42 mail kernel: opening tty1...
-Jan  1 15:11:42 mail kernel: tty1 vhangup...
-Jan  1 15:11:42 mail kernel: tty_release_dev of tty1 (tty count=3)...
-Jan  1 15:11:42 mail kernel: opening tty1...
-Jan  1 15:11:42 mail kernel: opening tty2...
-Jan  1 15:11:42 mail kernel: tty_release_dev of tty2 (tty count=2)...
-Jan  1 15:11:42 mail kernel: tty_release_dev of tty1 (tty count=3)...
-Jan  1 15:11:42 mail kernel: tty1 vhangup...
-Jan  1 15:11:42 mail kernel: error attempted to write to tty [0x(null)] 
-= NULL
-Jan  1 15:11:42 mail kernel: opening tty2...
-Jan  1 15:11:42 mail kernel: tty_release_dev of tty2 (tty count=2)...
-Jan  1 15:11:42 mail kernel: opening tty2...
-Jan  1 15:11:42 mail kernel: opening tty2...
-Jan  1 15:11:42 mail kernel: tty_release_dev of tty2 (tty count=3)...
-Jan  1 15:11:42 mail kernel: opening tty2...
-Jan  1 15:11:42 mail kernel: tty_release_dev of tty2 (tty count=3)...
-Jan  1 15:11:42 mail kernel: opening tty2...
-Jan  1 15:11:42 mail kernel: tty_release_dev of tty2 (tty count=3)...
-Jan  1 15:11:42 mail kernel: opening tty2...
-Jan  1 15:11:42 mail kernel: tty_release_dev of tty2 (tty count=3)...
-Jan  1 15:11:42 mail kernel: opening tty2...
-Jan  1 15:11:42 mail kernel: tty_release_dev of tty2 (tty count=3)...
-Jan  1 15:11:42 mail kernel: opening tty2...
-Jan  1 15:11:42 mail kernel: tty_release_dev of tty2 (tty count=3)...
-Jan  1 15:11:42 mail kernel: opening tty2...
-Jan  1 15:11:42 mail kernel: tty_release_dev of tty2 (tty count=3)...
-Jan  1 15:11:42 mail kernel: opening tty2...
-Jan  1 15:11:42 mail kernel: opening tty2...
-Jan  1 15:11:42 mail kernel: tty_release_dev of tty2 (tty count=4)...
+Linus good catch.
 
-While I was doing this, I was watching dmesg, not /var/log/message. 
-Didn't notice time was stuck...
-Then, I did telinit 5:
-Jan  1 15:11:42 mail kernel: sky2 eth1: enabling interface
-Jan  1 15:11:42 mail kernel: ADDRCONF(NETDEV_UP): eth1: link is not ready
-Jan  1 15:11:42 mail kernel: sky2 eth1: Link is up at 100 Mbps, full 
-duplex, flow control rx
-Jan  1 15:11:42 mail kernel: ADDRCONF(NETDEV_CHANGE): eth1: link becomes 
-ready
-Jan  1 15:11:42 mail kernel: opening tty2...
-Jan  1 15:11:42 mail kernel: tty_release_dev of tty2 (tty count=4)...
-Jan  1 15:11:42 mail kernel: opening tty1...
-Jan  1 15:11:42 mail kernel: tty_release_dev of tty1 (tty count=2)...
-Jan  1 15:11:42 mail kernel: opening tty1...
-Jan  1 15:11:42 mail kernel: tty_release_dev of tty1 (tty count=2)...
-Jan  1 15:11:42 mail kernel: opening tty1...
-Jan  1 15:11:42 mail kernel: tty_release_dev of tty1 (tty count=2)...
-Jan  1 15:11:42 mail kernel: opening tty1...
-Jan  1 15:11:42 mail kernel: tty_release_dev of tty1 (tty count=2)...
-Jan  1 15:11:42 mail kernel: opening tty1...
-Jan  1 15:11:42 mail kernel: tty_release_dev of tty1 (tty count=2)...
-Jan  1 15:11:42 mail kernel: opening tty1...
-Jan  1 15:11:42 mail kernel: tty_release_dev of tty1 (tty count=2)...
-Jan  1 15:11:42 mail kernel: opening tty1...
-Jan  1 15:11:42 mail kernel: tty_release_dev of tty1 (tty count=2)...
-Jan  1 15:11:42 mail kernel: opening tty1...
-Jan  1 15:11:42 mail kernel: tty_release_dev of tty1 (tty count=2)...
-Jan  1 15:11:42 mail kernel: IPv6 over IPv4 tunneling driver
-Jan  1 15:11:42 mail kernel: sit0: Disabled Privacy Extensions
-Jan  1 15:11:42 mail kernel: opening tty1...
-Jan  1 15:11:42 mail kernel: tty_release_dev of tty1 (tty count=2)...
-Jan  1 15:11:42 mail kernel: SELinux: initialized (dev cgroup, type 
-cgroup), uses genfs_contexts
-Jan  1 15:11:42 mail kernel: opening tty1...
-Jan  1 15:11:42 mail kernel: tty_release_dev of tty1 (tty count=2)...
-Jan  1 15:11:42 mail kernel: opening tty1...
-Jan  1 15:11:42 mail kernel: tty_release_dev of tty1 (tty count=2)...
-Jan  1 15:11:42 mail kernel: audit rule for LSM 'dhclient_t' is invalid
-Jan  1 15:11:42 mail kernel: audit rule for LSM 'mcstransd_t' is invalid
-Jan  1 15:11:42 mail kernel: audit rule for LSM 'samba_t' is invalid
-Jan  1 15:11:42 mail kernel: audit rule for LSM 'dhclient_t' is invalid
-Jan  1 15:11:42 mail kernel: audit rule for LSM 'mcstransd_t' is invalid
-Jan  1 15:11:42 mail kernel: audit rule for LSM 'samba_t' is invalid
-Jan  1 15:11:42 mail kernel: opening tty1...
-Jan  1 15:11:42 mail kernel: tty_release_dev of tty1 (tty count=2)...
-Jan  1 15:11:42 mail kernel: opening tty1...
-Jan  1 15:11:42 mail kernel: tty_release_dev of tty1 (tty count=2)...
-Jan  1 15:11:42 mail kernel: opening tty1...
-Jan  1 15:11:42 mail kernel: tty_release_dev of tty1 (tty count=2)...
-Jan  1 15:11:42 mail kernel: opening tty1...
-Jan  1 15:11:42 mail kernel: tty_release_dev of tty1 (tty count=2)...
-Jan  1 15:11:42 mail kernel: opening tty2...
-Jan  1 15:11:42 mail kernel: tty_release_dev of tty2 (tty count=4)...
-Jan  1 15:11:42 mail kernel: opening tty1...
-Jan  1 15:11:42 mail cpuspeed: Enabling ondemand cpu frequency scaling 
-governor
-Jan  1 15:11:42 mail kernel: tty_release_dev of tty1 (tty count=2)...
-Jan  1 15:11:42 mail kernel: opening tty1...
-Jan  1 15:11:42 mail kernel: tty_release_dev of tty1 (tty count=2)...
-Jan  1 15:11:42 mail kernel: opening tty1...
-Jan  1 15:11:42 mail kernel: tty_release_dev of tty1 (tty count=2)...
-Jan  1 15:11:42 mail kernel: opening tty1...
-Jan  1 15:11:42 mail kernel: tty_release_dev of tty1 (tty count=2)...
-Jan  1 15:11:42 mail kernel: opening tty1...
-Jan  1 15:11:42 mail kernel: tty_release_dev of tty1 (tty count=2)...
-Jan  1 15:11:42 mail kernel: opening tty1...
-Jan  1 15:11:42 mail kernel: tty_release_dev of tty1 (tty count=2)...
-Jan  1 15:11:42 mail kernel: opening tty1...
-Jan  1 15:11:42 mail kernel: tty_release_dev of tty1 (tty count=2)...
-Jan  1 15:11:42 mail kernel: opening tty1...
-Jan  1 15:11:42 mail kdump: kexec: loaded kdump kernel
-Jan  1 15:11:42 mail kdump: started up
-Jan  1 15:11:42 mail kernel: tty_release_dev of tty1 (tty count=2)...
-Jan  1 15:11:42 mail kernel: opening tty1...
-Jan  1 15:11:43 mail kernel: tty_release_dev of tty1 (tty count=2)...
+ fs/sysfs/dir.c |   82 +++++++++++++++++++++++++++++++++++++++++---------------
+ 1 files changed, 60 insertions(+), 22 deletions(-)
 
-This is when time increments again ... time jumped ahead and was OK by 
-the time ntp started. Looks like system time was OK, but syslog was 
-backlogged.
-
-On 01/01/2010 02:26 PM, Michael Breuer wrote:
-> Running with TTY_DEBUG_HANGUP:
->
-> On boot - lots of stuff opening and closing tty1. Once up and stable 
-> (runlevel 3), I did initctl stop tty1, and then initctl start tty1. 
-> This is what was logged:
->
-> Jan  1 14:03:21 mail root: close mingetty1
-> Jan  1 14:03:21 mail kernel: tty_release_dev of tty1 (tty count=6)...
-> Jan  1 14:03:21 mail kernel: tty_release_dev of tty1 (tty count=5)...
-> Jan  1 14:03:21 mail kernel: tty1 vhangup...
-> Jan  1 14:03:21 mail init: tty1 main process (6031) killed by TERM signal
-> Jan  1 14:03:36 mail root: start mingetty1
-> Jan  1 14:03:36 mail kernel: error attempted to write to tty 
-> [0x(null)] = NULL
-> Jan  1 14:03:36 mail kernel: opening tty1...
-> Jan  1 14:03:36 mail kernel: tty1 vhangup...
-> Jan  1 14:03:36 mail kernel: tty_release_dev of tty1 (tty count=5)...
->
-> Start/stop of mingetty on other ttys does not get the NULL write 
-> error. I am always getting the NULL error when starting mingetty on tty1.
->
-> For example:
-> Jan  1 14:04:11 mail root: restart mingetty2
-> Jan  1 14:04:11 mail init: tty2 main process (6029) killed by TERM signal
-> Jan  1 14:04:11 mail kernel: tty_release_dev of tty7 (tty count=2)...
-> Jan  1 14:04:11 mail kernel: tty_release_dev of tty2 (tty count=1)...
-> Jan  1 14:04:11 mail kernel: freeing tty structure...
-> Jan  1 14:04:11 mail kernel: opening tty2...
-> Jan  1 14:04:11 mail kernel: tty2 vhangup...
-> Jan  1 14:04:11 mail kernel: tty_release_dev of tty2 (tty count=1)...
-> Jan  1 14:04:11 mail kernel: freeing tty structure...
->
-> While starting/stopping tty2 and X was coming up, I also got this:
->
-> Jan  1 14:04:11 mail root: restart mingetty2
-> Jan  1 14:04:11 mail init: tty2 main process (6029) killed by TERM signal
-> Jan  1 14:04:11 mail kernel: tty_release_dev of tty7 (tty count=2)...
-> Jan  1 14:04:11 mail kernel: tty_release_dev of tty2 (tty count=1)...
-> Jan  1 14:04:11 mail kernel: freeing tty structure...
-> Jan  1 14:04:11 mail kernel: opening tty2...
-> Jan  1 14:04:11 mail kernel: tty2 vhangup...
-> Jan  1 14:04:11 mail kernel: tty_release_dev of tty2 (tty count=1)...
-> Jan  1 14:04:11 mail kernel: freeing tty structure...
-> Jan  1 14:04:17 mail gnome-session[6832]: WARNING: Could not parse 
-> desktop file 
-> /home/mbreuer/.config/autostart/xfce4-tips-autostart.desktop: Key file 
-> does not have key 'Name'
-> Jan  1 14:04:17 mail gnome-session[6832]: WARNING: could not read 
-> /home/mbreuer/.config/autostart/xfce4-tips-autostart.desktop
-> Jan  1 14:04:19 mail pulseaudio[7002]: pid.c: Stale PID file, 
-> overwriting.
-> Jan  1 14:04:20 mail kernel: opening tty2...
-> Jan  1 14:04:20 mail kernel: opening pts2...
-> Jan  1 14:04:20 mail kernel: opening pts2...
-> Jan  1 14:04:20 mail kernel: tty_release_dev of pts2 (tty count=3)...
-> Jan  1 14:04:20 mail kernel: opening pts2...
-> Jan  1 14:04:20 mail kernel: tty_release_dev of pts2 (tty count=3)...
-> Jan  1 14:04:20 mail kernel: opening pts3...
-> Jan  1 14:04:20 mail kernel: opening pts3...
-> Jan  1 14:04:20 mail kernel: tty_release_dev of pts3 (tty count=3)...
-> Jan  1 14:04:20 mail kernel: opening pts3...
-> Jan  1 14:04:20 mail kernel: tty_release_dev of pts3 (tty count=3)...
-> Jan  1 14:04:20 mail kernel: opening pts4...
-> Jan  1 14:04:20 mail kernel: opening pts4...
-> Jan  1 14:04:20 mail kernel: tty_release_dev of pts4 (tty count=3)...
-> Jan  1 14:04:20 mail kernel: opening pts4...
-> Jan  1 14:04:21 mail kernel: tty_release_dev of pts4 (tty count=3)...
-> Jan  1 14:04:21 mail kernel: DMA-API: debugging out of memory - disabling
-> Jan  1 14:04:23 mail pulseaudio[7417]: pid.c: Daemon already running.
-> Jan  1 14:04:24 mail kernel: sky2 0000:06:00.0: error interrupt 
-> status=0x8
-> Jan  1 14:04:24 mail kernel: sky2 Tx ring pending=45...52 report=45 
-> done=47
-> Jan  1 14:04:24 mail kernel: 44: 0x0: 0xf26a40be(9014)
-> Jan  1 14:04:24 mail kernel: 46: 0x0: 0xf26a00be(9014)
-> Jan  1 14:04:24 mail kernel: 48: 0x0: 0xf269c0be(9014)
-> Jan  1 14:04:24 mail kernel: 50: 0x0: 0xf26980be(9014)
-> Jan  1 14:04:24 mail kernel: sky2 0000:06:00.0: error interrupt 
-> status=0x8
-> Jan  1 14:04:24 mail kernel: sky2 Tx ring pending=47...52 report=47 
-> done=49
-> Jan  1 14:04:24 mail kernel: 46: 0x0: 0xf26a00be(9014)
-> Jan  1 14:04:24 mail kernel: 48: 0x0: 0xf269c0be(9014)
-> Jan  1 14:04:24 mail kernel: 50: 0x0: 0xf26980be(9014)
->
-> Note the sky2 errors (this time not under load).
->
-> It looks like there is something bad going on with the tty driver.
->
->
-> On 01/01/2010 12:42 PM, Michael Breuer wrote:
->> More results... Seems that this is related to the tty (or maybe vt or 
->> maybe console) driver. I had disabled mingetty on tty1 as a 
->> workaround to a Fedora/KDE issue. When I reenabled it, I was then 
->> able to recreate this problem (sky2) in runlevel 3.
->>
->> Retesting, it seems that the following conditions must be met in 
->> order for the interrupt errors to happen:
->>
->> 1) mingetty running on tty1 before the start of the test run
->> 2) High sustained incoming load - 25MB/sec or more (as reported by 
->> nethogs)
->> 3) I've only been able to recreate this using samba & a Windows 7 
->> backup - but there could be other triggers
->>
->> As it happens, much of my other data all came down to mingetty 
->> starting or not starting on tty1 at specific points of test 
->> preparation. At this point I can recreate 100% of the time if I 
->> ensure that there is a mingetty running on tty1, regardless of 
->> runlevel; and I can not recreate 100% of the time when there is no 
->> mingetty running on tty1 at the start of the test. The results do not 
->> change if I start or stop mingetty on tty1 during the test. It's 
->> possible that X running on tty1 may also trigger the issue, but I 
->> haven't tested that. Note that running mingetty on the other tty's 
->> does not affect the outcome of the test. The test is also unaffected 
->> if I chvt to or away from tty1 before the test. I do not have to be 
->> logged in at the console (on any vt) to trigger the issue.
->>
->> In a nutshell, to recreate: make sure there is a mingetty running on 
->> tty1, blast traffic into the system on eth0 (sky2).
->>
->>
->>
->>
->> On 12/31/2009 1:09 PM, Michael Breuer wrote:
->>> Did some more digging today... Haven't nailed it, but there's 
->>> something going on with X and tty...
->>>
->>> Among other things, when I telinit 3 && telinit 5 the tty keeps 
->>> switching between 7 and 8 (nothing else running on either tty). It 
->>> would appear that somehow the tty deallocation isn't complete when X 
->>> restarts. Also, X grabbing a tty seems to be a requisite step in 
->>> recreating the sky2 issue.
->>>
->>> On 12/30/2009 1:10 PM, Stephen Hemminger wrote:
->>>> On Wed, 30 Dec 2009 10:40:56 -0500
->>>> Michael Breuer<mbreuer@majjas.com>  wrote:
->>>>
->>>>> Dec 30 10:37:14 mail kernel: sky2 0000:06:00.0: error interrupt
->>>>> status=0x40000008
->>>>> Dec 30 10:37:14 mail kernel: sky2 Tx ring pending=31...40 
->>>>> report=35 done=35
->>>>> Dec 30 10:37:14 mail kernel: 30: 0x0: 0xeb50c0ca(9014)
->>>>> Dec 30 10:37:14 mail kernel: 32: 0x0: 0xeb5080ca(9014)
->>>>> Dec 30 10:37:14 mail kernel: 34: 0x0: 0xeb5040ca(9014)
->>>>> Dec 30 10:37:14 mail kernel: 36: 0x0: 0xeb5000ca(9014)
->>>>> Dec 30 10:37:14 mail kernel: 38: 0x0: 0xeb4fc0ca(9014)
->>>> You must be using 9K MTU.  Do you see the problem with smaller
->>>> MTU?
->>>>
->>>>> Dec 30 10:37:14 mail kernel: sky2 0000:06:00.0: error interrupt
->>>>> status=0x40000008
->>>>> Dec 30 10:37:14 mail kernel: sky2 Tx ring pending=87...92 
->>>>> report=89 done=91
->>>>> Dec 30 10:37:14 mail kernel: 86: 0x0: 0xeafd80ca(9014)
->>>>> Dec 30 10:37:14 mail kernel: 88: 0x0: 0xeafd40ca(9014)
->>>>> Dec 30 10:37:14 mail kernel: 90: 0x0: 0xeafd00ca(9014)
->>>>> Dec 30 10:37:15 mail kernel: sky2 0000:06:00.0: error interrupt 
->>>>> status=0x8
->>>>> Dec 30 10:37:15 mail kernel: sky2 Tx ring pending=39...42 
->>>>> report=39 done=41
->>>>> Dec 30 10:37:15 mail kernel: 38: 0x0: 0xe5fec0ca(9014)
->>>>> Dec 30 10:37:15 mail kernel: 40: 0x0: 0xe5fe80ca(9014)
->>>>> Dec 30 10:37:15 mail kernel: sky2 0000:06:00.0: error interrupt
->>>>> status=0x40000008
->>>>> Dec 30 10:37:15 mail kernel: sky2 Tx ring pending=117...124 
->>>>> report=119
->>>>> done=119
->>>>> Dec 30 10:37:15 mail kernel: 116: 0x0: 0xe5d6c0ca(9014)
->>>>> Dec 30 10:37:15 mail kernel: 118: 0x0: 0xe5d680ca(9014)
->>>>> Dec 30 10:37:15 mail kernel: 120: 0x0: 0xe5d660ca(5938)
->>>>> Dec 30 10:37:15 mail kernel: 122: 0x0: 0xe5d640ca(4213)
->>>
->>
->> -- 
->> To unsubscribe from this list: send the line "unsubscribe 
->> linux-kernel" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->> Please read the FAQ at  http://www.tux.org/lkml/
->
-> -- 
-> To unsubscribe from this list: send the line "unsubscribe 
-> linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
+index f05f230..5d88e30 100644
+--- a/fs/sysfs/dir.c
++++ b/fs/sysfs/dir.c
+@@ -827,11 +827,46 @@ static inline unsigned char dt_type(struct sysfs_dirent *sd)
+ 	return (sd->s_mode >> 12) & 15;
+ }
+ 
++static int sysfs_dir_release(struct inode *inode, struct file *filp)
++{
++	sysfs_put(filp->private_data);
++	return 0;
++}
++
++static struct sysfs_dirent *sysfs_dir_pos(struct sysfs_dirent *parent_sd,
++	ino_t ino, struct sysfs_dirent *pos)
++{
++	if (pos) {
++		int valid = !(pos->s_flags & SYSFS_FLAG_REMOVED) &&
++			pos->s_parent == parent_sd &&
++			ino == pos->s_ino;
++		sysfs_put(pos);
++		if (valid)
++			return pos;
++	}
++	pos = NULL;
++	if ((ino > 1) && (ino < INT_MAX)) {
++		pos = parent_sd->s_dir.children;
++		while (pos && (ino > pos->s_ino))
++			pos = pos->s_sibling;
++	}
++	return pos;
++}
++
++static struct sysfs_dirent *sysfs_dir_next_pos(struct sysfs_dirent *parent_sd,
++	ino_t ino, struct sysfs_dirent *pos)
++{
++	pos = sysfs_dir_pos(parent_sd, ino, pos);
++	if (pos)
++		pos = pos->s_sibling;
++	return pos;
++}
++
+ static int sysfs_readdir(struct file * filp, void * dirent, filldir_t filldir)
+ {
+ 	struct dentry *dentry = filp->f_path.dentry;
+ 	struct sysfs_dirent * parent_sd = dentry->d_fsdata;
+-	struct sysfs_dirent *pos;
++	struct sysfs_dirent *pos = filp->private_data;
+ 	ino_t ino;
+ 
+ 	if (filp->f_pos == 0) {
+@@ -847,29 +882,31 @@ static int sysfs_readdir(struct file * filp, void * dirent, filldir_t filldir)
+ 		if (filldir(dirent, "..", 2, filp->f_pos, ino, DT_DIR) == 0)
+ 			filp->f_pos++;
+ 	}
+-	if ((filp->f_pos > 1) && (filp->f_pos < INT_MAX)) {
+-		mutex_lock(&sysfs_mutex);
+-
+-		/* Skip the dentries we have already reported */
+-		pos = parent_sd->s_dir.children;
+-		while (pos && (filp->f_pos > pos->s_ino))
+-			pos = pos->s_sibling;
+-
+-		for ( ; pos; pos = pos->s_sibling) {
+-			const char * name;
+-			int len;
+-
+-			name = pos->s_name;
+-			len = strlen(name);
+-			filp->f_pos = ino = pos->s_ino;
++	mutex_lock(&sysfs_mutex);
++	for (pos = sysfs_dir_pos(parent_sd, filp->f_pos, pos);
++	     pos;
++	     pos = sysfs_dir_next_pos(parent_sd, filp->f_pos, pos)) {
++		const char * name;
++		unsigned int type;
++		int len, ret;
++
++		name = pos->s_name;
++		len = strlen(name);
++		ino = pos->s_ino;
++		type = dt_type(pos);
++		filp->f_pos = ino;
++		filp->private_data = sysfs_get(pos);
+ 
+-			if (filldir(dirent, name, len, filp->f_pos, ino,
+-					 dt_type(pos)) < 0)
+-				break;
+-		}
+-		if (!pos)
+-			filp->f_pos = INT_MAX;
+ 		mutex_unlock(&sysfs_mutex);
++		ret = filldir(dirent, name, len, filp->f_pos, ino, type);
++		mutex_lock(&sysfs_mutex);
++		if (ret < 0)
++			break;
++	}
++	mutex_unlock(&sysfs_mutex);
++	if ((filp->f_pos > 1) && !pos) { /* EOF */
++		filp->f_pos = INT_MAX;
++		filp->private_data = NULL;
+ 	}
+ 	return 0;
+ }
+@@ -878,5 +915,6 @@ static int sysfs_readdir(struct file * filp, void * dirent, filldir_t filldir)
+ const struct file_operations sysfs_dir_operations = {
+ 	.read		= generic_read_dir,
+ 	.readdir	= sysfs_readdir,
++	.release	= sysfs_dir_release,
+ 	.llseek		= generic_file_llseek,
+ };
+-- 
+1.6.5.2.143.g8cc62
 
