@@ -1,121 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752059Ab0AAPKi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752093Ab0AAPLc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752059Ab0AAPKi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jan 2010 10:10:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751990Ab0AAPKh
+	id S1752093Ab0AAPLc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jan 2010 10:11:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751990Ab0AAPLb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jan 2010 10:10:37 -0500
-Received: from www84.your-server.de ([213.133.104.84]:52845 "EHLO
-	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751951Ab0AAPKg (ORCPT
+	Fri, 1 Jan 2010 10:11:31 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:58260 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751891Ab0AAPLa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jan 2010 10:10:36 -0500
-Subject: Re: [PATCH] proc: revert to show stack information in
- /proc/{pid}/status
-From: Stefani Seibold <stefani@seibold.net>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
+	Fri, 1 Jan 2010 10:11:30 -0500
+Date: Fri, 1 Jan 2010 16:11:29 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Michael Stone <michael@laptop.org>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, linux-security-module@vger.kernel.org,
+       Andi Kleen <andi@firstfloor.org>, David Lang <david@lang.hm>,
+       Oliver Hartkopp <socketcan@hartkopp.net>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Valdis Kletnieks <Valdis.Kletnieks@vt.edu>,
+       Bryan Donlan <bdonlan@gmail.com>, Evgeniy Polyakov <zbr@ioremap.net>,
+       "C. Scott Ananian" <cscott@cscott.net>,
+       James Morris <jmorris@namei.org>,
        "Eric W. Biederman" <ebiederm@xmission.com>,
+       Bernie Innocenti <bernie@codewiz.org>,
+       Mark Seaborn <mrs@mythic-beasts.com>,
        Randy Dunlap <randy.dunlap@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20100101155630.1A1E.A69D9226@jp.fujitsu.com>
-References: <20091231231051.1A1B.A69D9226@jp.fujitsu.com>
-	 <1262274494.14143.7.camel@wall-e>
-	 <20100101155630.1A1E.A69D9226@jp.fujitsu.com>
-Content-Type: text/plain; charset="ISO-8859-15"
-Date: Fri, 01 Jan 2010 16:10:16 +0100
-Message-ID: <1262358616.11460.18.camel@wall-e>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 
-Content-Transfer-Encoding: 7bit
-X-Authenticated-Sender: stefani@seibold.net
+       Am?rico Wang <xiyou.wangcong@gmail.com>,
+       Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
+       Samir Bellabes <sam@synack.fr>,
+       Casey Schaufler <casey@schaufler-ca.com>,
+       Al Viro <viro@ZenIV.linux.org.uk>
+Subject: Re: RFC: disablenetwork facility. (v4)
+Message-ID: <20100101151129.GG3944@atrey.karlin.mff.cuni.cz>
+References: <20091228181316.GA16277@us.ibm.com> <20091229050114.GC14362@heat>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091229050114.GC14362@heat>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Freitag, den 01.01.2010, 23:14 +0900 schrieb KOSAKI Motohiro:
-> > Am Donnerstag, den 31.12.2009, 23:12 +0900 schrieb KOSAKI Motohiro:
-> > > Commit d899bf7b (procfs: provide stack information for threads) introduced
-> > > to show stack information in /proc/{pid}/status. But it cause large performance
-> > > regression. Unfortunately /proc/{pid}/status is used ps command too and ps is
-> > > one of most important component. Because both to take mmap_sem and page table walk
-> > > are heavily operation.
-> > > 
-> > 
-> > /proc/<pid>/status is IMHO not a performance relevant thing. The main
-> > reason is to provide exact information about a running process.
+Hi!
+
+> I think that Pavel's point, at its strongest and most general, could be
+> rephrased as:
 > 
-> No. You have to learn real world use case. if you think so, you should 
-> change ps before submit this change. This patch obviously make harm than worth. 
-> Nobody (except you) use it but everybody get regression.
+>   "Adding *any* interesting isolation facility to the kernel breaks 
+>   backwards
+>    compatibility for *some* program [in a way that violates security 
+>    goals]."
+
+Yep.
+
+> So far, I've seen the following suggestions:
 > 
-
-It is fascinating that every developer means that only his personal view
-and requirements are the wisdom of the world.
-   
+>   a) setuid restores pre-isolation semantics
 > 
-> > > Thus, this patch revert it. Fortunately /proc/{pid}/task/{tid}/smaps
-> > > provide almost same information. we can use it.
-> > 
-> > Completely wrong. Where does smaps provides this kind of information?
-> > Where is there the high water mark of the stack usage?
+>         - Doesn't work for me because it violates the security guarantee of 
+>         the
+>           isolation primitive 
+
+d) when any new isolation feature requires removing ability to
+exec(anything setuid) first.
+
+>   b) setuid is an escape-hatch
 > 
-> You have to see you patch itself. show_map_vma() isn't only used by /proc/pid/maps,
-> but also be used by /proc/pid/smaps.
+>         - Probably the cleanest in the long-run
 > 
-> Now, /proc/{pid}/task/{tid}/smaps show following column.
+>         - Doesn't, by itself, suffice for Pavel since it violates backwards
+>           compatibility
 > 
-> 7fb97c181000-7fb97d1d1000 rw-p 00000000 00:00 0                          [threadstack:0084eff0]
-> Size:              16704 kB
-> Rss:                   8 kB
-> Pss:                   8 kB
-> Shared_Clean:          0 kB
-> Shared_Dirty:          0 kB
-> Private_Clean:         0 kB
-> Private_Dirty:         8 kB
-> Referenced:            8 kB
-> Swap:                  0 kB
-> KernelPageSize:        4 kB
-> MMUPageSize:           4 kB
+>   c) signal to the kernel through a privileged mechanism that
+>      backwards-incompatible isolation may or may not be used
 > 
-> It descibe
->   - This vma is thread stack
->   - vma size is 16704kB
->   - stack vsz size in vma is 0x0084eff0 (~ 8508kB)
->   - and, physical memory is used 8kB.
+>         - No problems seen so far.
+
+
+> I would be happy with (c), assuming we can agree on an appropriate 
+> signalling
+> mechanism and default.
 > 
-
-But it don't describe the usage high water mark. With the information
-provided by proc/*/smaps this is not possible. It is very funny to get
-complains without checking. Your assertion is completely WRONG.
-
+> So far, two defaults have been proposed:
 > 
-> Anyway, I revert the regresstion patch as other regression patches. if you really want
-> this feature, you have three options.
+>   default-deny incompatible isolation (Pavel)
+
+
+> So far, several signalling mechanisms have been proposed:
 > 
->   1. create new /proc file instead to use /proc/pid/status.
-
-This was discarded by Andrew. He prefered the inclusion
-in /proc/pid/status. 
-
->   2. improve performance until typical use-case don't notice regression.
-
-Not possible.
-
->   3. change ps and other /proc related userland implementation and resubmit this patch.
-
-ps works quiet well.
-
+>   1) enabling a kernel config option implies default-permit
 > 
-> But even if you choose anything, You have to test both its functional and performance
-> _before_ submitting kernel patch.
+>         - My favorite; apparently insufficient for Pavel?
+> 
+>   2) default-deny; disablesuid grants disablenetwork
+> 
+>         - "disablesuid" is my name for the idea of dropping the privilege of
+>           exec'ing setuid binaries
+> 
+>         - Suggested by Pavel and supported by several others. 
 
-Teach me master! Do you think i don't know that is coast something?.
-Walking through the pages coast some runtime. But ps is not a
-performance critical application nor a cat /proc/*/status!
+>         - I think it has the same backwards-compatibility problem as
+>           disablenetwork: disablesuid is an isolation primitive.
 
-Stefani
+Which is ok, use can already arbitrarily break *his own* apps, eg. by
+using ptrace. Only with setuid in place it becomes security problem.
 
+>   4) default-deny; setting a sysctl implies permit
+> 
+>         - Suggested by Serge; works fine for me
+...
+> I am happiest with (1) and, if (1) isn't good enough, with (4).
+> 
+> Pavel, what do you think of (4)?
 
+It is still bad idea: (2) is better solution.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
