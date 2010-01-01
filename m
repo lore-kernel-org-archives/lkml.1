@@ -1,60 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752054Ab0AAP7l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752093Ab0AAQIA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752054Ab0AAP7l (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jan 2010 10:59:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751934Ab0AAP7k
+	id S1752093Ab0AAQIA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jan 2010 11:08:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751972Ab0AAQH7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jan 2010 10:59:40 -0500
-Received: from blu0-omc1-s12.blu0.hotmail.com ([65.55.116.23]:1035 "EHLO
-	blu0-omc1-s12.blu0.hotmail.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751916Ab0AAP7k (ORCPT
+	Fri, 1 Jan 2010 11:07:59 -0500
+Received: from ey-out-2122.google.com ([74.125.78.25]:10719 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751934Ab0AAQH6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jan 2010 10:59:40 -0500
-X-Originating-IP: [88.139.71.92]
-X-Originating-Email: [megastorage@hotmail.fr]
-Message-ID: <BLU0-SMTP2764E6FC68EB9C9FB8B95ACD770@phx.gbl>
-Date: Fri, 01 Jan 2010 16:59:48 +0100
-From: Megastorage <megastorage@hotmail.fr>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Fri, 1 Jan 2010 11:07:58 -0500
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: System stop with kernel 2.6.32.2 and kernel-linus 2.6.33.0-rc2
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 01 Jan 2010 15:59:38.0892 (UTC) FILETIME=[6C1FACC0:01CA8AFB]
+In-Reply-To: <4B3E0B9D.6080104@unsolicited.net>
+References: <4B2FEE46.5030700@unsolicited.net>
+	 <8db1092f1001010540l15c8f671y1f6a4a4417eb450b@mail.gmail.com>
+	 <4B3E0061.4000003@unsolicited.net>
+	 <8db1092f1001010619j66f8b494g86efdd8ddcc3e5e7@mail.gmail.com>
+	 <4B3E0B9D.6080104@unsolicited.net>
+Date: Fri, 1 Jan 2010 17:07:56 +0100
+Message-ID: <8db1092f1001010807i4d2e7c66kf707f6eecb8c9c5d@mail.gmail.com>
+Subject: Re: 2.6.33-rc1 - Weird hard hangs when rendering 'some' web-sites in 
+	Firefox
+From: Maciej Rutecki <maciej.rutecki@gmail.com>
+To: David <david@unsolicited.net>
+Cc: linux-kernel@vger.kernel.org,
+       Linux Wireless List <linux-wireless@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dear all,
+2010/1/1 David <david@unsolicited.net>:
 
-Sorry for my english, I'm french and I'm not an expert to report a bug.
+> The mystery deepens :-) Maybe these are separate issues?
 
-I working with Mandriva cooker.
+Maybe. I observed big activity LED light from wireless card, when system hangs.
 
-My system can start on kernel 2.6.31.6 whitout problem.
-
-If  I start on  the kernel  2.6.32.2, my system stop on this screen:
-http://img198.imageshack.us/img198/416/dscf2869k.jpg
-http://img24.imageshack.us/img24/9079/dscf2870.jpg
-
-I'm testing with the kernel-linus 2.6.33.0-RC2 faults to:
-http://img515.imageshack.us/i/dscf2871.jpg/
-
-
-My fstab:
-http://en.pastebin.ca/1734080
-
-My hardware configuration:
-Asus A8N-sli deluxe
-Raid system on the chipset nvidia and Silicon image.
-
-
-If you need more information. You can ask me.
-
-Thanks for your help.
-Stephane.
-
-
-
-
+Regards
+-- 
+Maciej Rutecki
+http://www.maciek.unixy.pl
