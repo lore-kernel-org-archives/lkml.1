@@ -1,75 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751662Ab0AAJ35@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751651Ab0AAJyK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751662Ab0AAJ35 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jan 2010 04:29:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751236Ab0AAJ34
+	id S1751651Ab0AAJyK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jan 2010 04:54:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751271Ab0AAJyJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jan 2010 04:29:56 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:43123 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751104Ab0AAJ3y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jan 2010 04:29:54 -0500
-Date: Fri, 1 Jan 2010 10:29:44 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Christian Kujau <lists@nerdbynature.de>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Alexander Beregalov <a.beregalov@gmail.com>,
-       Chris Mason <chris.mason@oracle.com>, reiserfs-devel@vger.kernel.org
-Subject: Re: [PATCH 0/5] reiserfs lock inversion fixes on xattr
-Message-ID: <20100101092944.GB12203@elte.hu>
-References: <1262150491-9983-1-git-send-regression-fweisbec@gmail.com>
- <1262205747-9208-1-git-send-regression-fweisbec@gmail.com>
- <alpine.DEB.2.01.0912301943020.3483@bogon.housecafe.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.01.0912301943020.3483@bogon.housecafe.de>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: 3.4
-X-ELTE-SpamLevel: sss
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=3.4 required=5.9 tests=FH_DATE_PAST_20XX autolearn=no SpamAssassin version=3.2.5
-	3.4 FH_DATE_PAST_20XX      The date is grossly in the future.
+	Fri, 1 Jan 2010 04:54:09 -0500
+Received: from mail-iw0-f171.google.com ([209.85.223.171]:51837 "EHLO
+	mail-iw0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751212Ab0AAJyH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Jan 2010 04:54:07 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:from:to:cc:subject:date:message-id:x-mailer;
+        b=tQa+Tfjp+U1EsMVUKICJ/qvTwf/TcxPsQDSit0kxXjVTlosukGymh8G28g2sYY2FZS
+         E8gKg7a09V3AV3Xp/KJkLDhDNVpyG3gGl1OUQH8zZ3C7wdipRhW+SHenYzWtnpGmF52i
+         T+ToF7QDcguAEA+PuNM1KJJApKNf/JSfji/T0=
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: linux-mm <linux-mm@kvack.org>, Andrew Morton <akpm@linux-foundation.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Subject: [PATCH] mm, lockdep: annotate reclaim context to zone reclaim too
+Date: Fri,  1 Jan 2010 18:45:41 +0900
+Message-Id: <1262339141-4682-1-git-send-email-kosaki.motohiro@jp.fujitsu.com>
+X-Mailer: git-send-email 1.6.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Commit cf40bd16fd (lockdep: annotate reclaim context) introduced reclaim
+context annotation. But it didn't annotate zone reclaim. This patch do it.
 
-* Christian Kujau <lists@nerdbynature.de> wrote:
+Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+---
+ mm/vmscan.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-> On Wed, 30 Dec 2009 at 21:42, Frederic Weisbecker wrote:
-> > I hope you can give it a try (and/or review) before I send the whole
-> > to Linus.
-> 
-> Without your patches, "dbench -x" was pretty much instantly causing the 
-> threads to lock up, forcing me to reboot the box. With LOCKDEP enabled, 
-> warnings were printed. After applying your patches (and a reboot) I've run 
-> "dbench -x" for quite a while now with different runtimes and number of
-> clients and it's not locking up any more. I've tested with:
-> 
-> CONFIG_REISERFS_FS=y
-> CONFIG_REISERFS_CHECK=y
-> CONFIG_REISERFS_PROC_INFO=y
-> CONFIG_REISERFS_FS_XATTR=y
-> CONFIG_REISERFS_FS_POSIX_ACL=y
-> # CONFIG_REISERFS_FS_SECURITY is not set
-> 
-> ...and a few "Kernel hacking" options set. Full config and dmesg:
-> 
->    http://nerdbynature.de/bits/2.6.33-rc1/reiserfs/t3/
-> 
->    (although I'm not really testing -rc1 but latest mainline -git
->     and your changes pulled)
-> 
-> So, feel free to add:
-> 
->   Tested-by: Christian Kujau <lists@nerdbynature.de>
+diff --git a/mm/vmscan.c b/mm/vmscan.c
+index 2bbee91..a039e78 100644
+--- a/mm/vmscan.c
++++ b/mm/vmscan.c
+@@ -2547,6 +2547,7 @@ static int __zone_reclaim(struct zone *zone, gfp_t gfp_mask, unsigned int order)
+ 	 * and RECLAIM_SWAP.
+ 	 */
+ 	p->flags |= PF_MEMALLOC | PF_SWAPWRITE;
++	lockdep_set_current_reclaim_state(gfp_mask);
+ 	reclaim_state.reclaimed_slab = 0;
+ 	p->reclaim_state = &reclaim_state;
+ 
+@@ -2590,6 +2591,7 @@ static int __zone_reclaim(struct zone *zone, gfp_t gfp_mask, unsigned int order)
+ 
+ 	p->reclaim_state = NULL;
+ 	current->flags &= ~(PF_MEMALLOC | PF_SWAPWRITE);
++	lockdep_clear_current_reclaim_state();
+ 	return sc.nr_reclaimed >= nr_pages;
+ }
+ 
+-- 
+1.6.6
 
-Frederic, i'd suggest you send this tree to Linus with Christian's tested-by 
-tags added ASAP - we better have these fixes in -rc3.
-
-Thanks,
-
-	Ingo
