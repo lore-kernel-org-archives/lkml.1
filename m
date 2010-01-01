@@ -1,107 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751982AbZLaVqc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752045Ab0AAADv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751982AbZLaVqc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 31 Dec 2009 16:46:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751810AbZLaVqb
+	id S1752045Ab0AAADv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 31 Dec 2009 19:03:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751834Ab0AAADu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 31 Dec 2009 16:46:31 -0500
-Received: from e38.co.us.ibm.com ([32.97.110.159]:33967 "EHLO
-	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751594AbZLaVqa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 31 Dec 2009 16:46:30 -0500
-Date: Thu, 31 Dec 2009 15:46:21 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: "Andrew G. Morgan" <morgan@kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Bryan Donlan <bdonlan@gmail.com>,
-       Benny Amorsen <benny+usenet@amorsen.dk>,
-       Michael Stone <michael@laptop.org>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, linux-security-module@vger.kernel.org,
-       Andi Kleen <andi@firstfloor.org>, David Lang <david@lang.hm>,
-       Oliver Hartkopp <socketcan@hartkopp.net>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Valdis Kletnieks <Valdis.Kletnieks@vt.edu>,
-       Evgeniy Polyakov <zbr@ioremap.net>,
-       "C. Scott Ananian" <cscott@cscott.net>,
-       James Morris <jmorris@namei.org>, Bernie Innocenti <bernie@codewiz.org>,
-       Mark Seaborn <mrs@mythic-beasts.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       =?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>,
-       Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
-       Samir Bellabes <sam@synack.fr>,
-       Casey Schaufler <casey@schaufler-ca.com>, Pavel Machek <pavel@ucw.cz>,
-       Al Viro <viro@zeniv.linux.org.uk>
-Subject: Re: [RFC][PATCH v3] Unprivileged: Disable raising of privileges
-Message-ID: <20091231214621.GA14116@us.ibm.com>
-References: <20091230201712.GA23999@us.ibm.com>
- <m1hbr8tb8q.fsf_-_@fess.ebiederm.org>
- <20091230212931.233003b9@lxorguk.ukuu.org.uk>
- <m1skasrvnq.fsf@fess.ebiederm.org>
- <20091230230042.5d2e78ac@lxorguk.ukuu.org.uk>
- <3e8340490912301844p4fddaf57ke58ceeba9582e0fa@mail.gmail.com>
- <20091231173334.5e3d7557@lxorguk.ukuu.org.uk>
- <20091231175257.GA7210@us.ibm.com>
- <551280e50912311020x2bdc5b1o699a601f67b91662@mail.gmail.com>
- <m1oclfkmuz.fsf@fess.ebiederm.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m1oclfkmuz.fsf@fess.ebiederm.org>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Thu, 31 Dec 2009 19:03:50 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:44526 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751184Ab0AAADu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 31 Dec 2009 19:03:50 -0500
+Date: Fri, 1 Jan 2010 11:03:27 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Dave Airlie <airlied@linux.ie>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: linux-next: agp tree build failure
+Message-Id: <20100101110327.425e0a0d.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 3.0.0beta4 (GTK+ 2.18.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Fri__1_Jan_2010_11_03_27_+1100_/yerdMF3Gfe5Qg_4"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Eric W. Biederman (ebiederm@xmission.com):
-> "Andrew G. Morgan" <morgan@kernel.org> writes:
-> 
-> > Since there is already independent support for disabling file
-> > capabilities (the privilege escalation part), I see these two
-> > mechanisms as separable.
-> 
-> I guess there is something that resembles support for disabling
-> privilege escalation.  The problem is that it requires privilege to
-> use it.
-> 
-> I have no problem with expressing this in a fine grained manner internally
-> to the kernel but the user space interface needs to be atomic so that
-> we can enable this all without privilege.
-> 
-> Further I may be off but I think the implementation would be more
-> challenging than what I have already posted.  That doesn't mean it
-> won't be more useful long term.
-> 
-> Eric
+--Signature=_Fri__1_Jan_2010_11_03_27_+1100_/yerdMF3Gfe5Qg_4
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Right, what we can currently do with capabilities is:
+Hi all,
 
-	1. drop capabilities from the bounding set.  This is
-	   privileged because it is fine-grained, and can trick
-	   capability-unaware privileged programs.
-	2. drop CAP_SETUID from pP, pI, and the bounding set,
-	   to prevent any future setuids.  Privileged for the
-	   same reason as 1.
-	3. set SECURE_NOROOT and SECURE_NOSUIDFIXUP, so that
-	   uid 0 won't automatically get privileges.
+Today's linux-next build (x86_64 allmodconfig) failed like this:
 
-It doesn't provide a way for stopping setuid on setuid binaries, though,
-and as we've previously noted, while we'd *like* to say that uids and
-privileges can be treated separately, in reality the unprivileged
-root user still owns most of the system.  So we should also provide the
-per-task nosuid bit, meaning do not change uid for a setuid binary.  This
-could be treated as another securebit,
+drivers/char/agp/amd64-agp.c: In function '__exittest':
+drivers/char/agp/amd64-agp.c:782: error: 'agp_amd64_cleanup' undeclared (fi=
+rst use in this function)
 
-	SECURE_NOSUID
+Caused by commit f405d2c02395a74d3883bd03ded36457aa3697ad ("x86/agp: Fix
+agp_amd64_init() initialization with CONFIG_GART_IOMMU enabled") from the
+origin tree interacting with commit
+e85c5c6542528aba88a5d811652cf0e2d44f7f07 ("drivers/char/agp/amd64-agp.c:
+squish warning") from the agp tree.
 
-So if the capabilities module supports a special
-	prctl(PR_SET_NOSUID)
-which at the same time completely empties pP, pE, pI, and
-the bounding set, and sets the SECURE_NOSUID securebit, that
-should be safe for an unprivileged user.  (There is no need
-for SECURE_NOROOT and SECURE_NOSUIDFIXUP in that case obviously).
+I reverted the agp tree commit.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-Or, it could set SECURE_NOSUID|SECURE_NOROOT|SECURE_NOSUID_FIXUP
-(and the corresponding _LOCKED bits).
+--Signature=_Fri__1_Jan_2010_11_03_27_+1100_/yerdMF3Gfe5Qg_4
+Content-Type: application/pgp-signature
 
--serge
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAks9O88ACgkQjjKRsyhoI8wWXQCgqfwKMCF2GnMqcYKQzcqxJY5N
+NlkAnj9dfNWi0RA0iwWnmx6zWWZR42iO
+=458C
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__1_Jan_2010_11_03_27_+1100_/yerdMF3Gfe5Qg_4--
