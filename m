@@ -1,42 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752093Ab0AAQIA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752116Ab0AAQKO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752093Ab0AAQIA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jan 2010 11:08:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751972Ab0AAQH7
+	id S1752116Ab0AAQKO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jan 2010 11:10:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751997Ab0AAQKN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jan 2010 11:07:59 -0500
-Received: from ey-out-2122.google.com ([74.125.78.25]:10719 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751934Ab0AAQH6 (ORCPT
+	Fri, 1 Jan 2010 11:10:13 -0500
+Received: from www84.your-server.de ([213.133.104.84]:60533 "EHLO
+	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751991Ab0AAQKM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jan 2010 11:07:58 -0500
-MIME-Version: 1.0
-In-Reply-To: <4B3E0B9D.6080104@unsolicited.net>
-References: <4B2FEE46.5030700@unsolicited.net>
-	 <8db1092f1001010540l15c8f671y1f6a4a4417eb450b@mail.gmail.com>
-	 <4B3E0061.4000003@unsolicited.net>
-	 <8db1092f1001010619j66f8b494g86efdd8ddcc3e5e7@mail.gmail.com>
-	 <4B3E0B9D.6080104@unsolicited.net>
-Date: Fri, 1 Jan 2010 17:07:56 +0100
-Message-ID: <8db1092f1001010807i4d2e7c66kf707f6eecb8c9c5d@mail.gmail.com>
-Subject: Re: 2.6.33-rc1 - Weird hard hangs when rendering 'some' web-sites in 
-	Firefox
-From: Maciej Rutecki <maciej.rutecki@gmail.com>
-To: David <david@unsolicited.net>
-Cc: linux-kernel@vger.kernel.org,
-       Linux Wireless List <linux-wireless@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
+	Fri, 1 Jan 2010 11:10:12 -0500
+Subject: Re: [PATCH] proc: revert to show stack information in
+ /proc/{pid}/status
+From: Stefani Seibold <stefani@seibold.net>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <87pr5t7rli.fsf@basil.nowhere.org>
+References: <20091231231051.1A1B.A69D9226@jp.fujitsu.com>
+	 <1262274494.14143.7.camel@wall-e>
+	 <20100101155630.1A1E.A69D9226@jp.fujitsu.com>
+	 <87pr5t7rli.fsf@basil.nowhere.org>
+Content-Type: text/plain; charset="ISO-8859-15"
+Date: Fri, 01 Jan 2010 17:09:53 +0100
+Message-ID: <1262362193.14370.6.camel@wall-e>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.2 
+Content-Transfer-Encoding: 7bit
+X-Authenticated-Sender: stefani@seibold.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2010/1/1 David <david@unsolicited.net>:
+Am Freitag, den 01.01.2010, 16:49 +0100 schrieb Andi Kleen:
+> KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> writes:
+> >
+> > Anyway, I revert the regresstion patch as other regression patches. if you really want
+> > this feature, you have three options.
+> >
+> >   1. create new /proc file instead to use /proc/pid/status.
+> >   2. improve performance until typical use-case don't notice regression.
+> >   3. change ps and other /proc related userland implementation and resubmit this patch.
+> >
+> > But even if you choose anything, You have to test both its functional and performance
+> > _before_ submitting kernel patch.
+> 
+> 
+> 4. Leave everything alone (revert all the commits) and use a ptrace
+> based tool to get this information when you need it.
+> 
 
-> The mystery deepens :-) Maybe these are separate issues?
+Without the stack_start and the fix for the bogus x86_64 KSTP_ESP it
+wouldn't be possible.
 
-Maybe. I observed big activity LED light from wireless card, when system hangs.
 
-Regards
--- 
-Maciej Rutecki
-http://www.maciek.unixy.pl
