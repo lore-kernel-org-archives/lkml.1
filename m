@@ -1,167 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752476Ab0ABVhg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751994Ab0ABWXk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752476Ab0ABVhg (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Jan 2010 16:37:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751212Ab0ABVhf
+	id S1751994Ab0ABWXk (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Jan 2010 17:23:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751212Ab0ABWXj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Jan 2010 16:37:35 -0500
-Received: from out02.mta.xmission.com ([166.70.13.232]:48552 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751191Ab0ABVhf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Jan 2010 16:37:35 -0500
-To: Greg KH <greg@kroah.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Borislav Petkov <petkovbb@googlemail.com>,
-       David Airlie <airlied@linux.ie>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Al Viro <viro@ZenIV.linux.org.uk>, Tejun Heo <tj@kernel.org>,
-       Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>
-Subject: [PATCH] sysfs: Add lockdep annotations for the sysfs active reference
-References: <alpine.LFD.2.00.0912241350510.11961@localhost.localdomain>
-	<20091226094504.GA6214@liondog.tnic>
-	<20091228092712.AA8C.A69D9226@jp.fujitsu.com>
-	<alpine.LFD.2.00.0912301259220.11961@localhost.localdomain>
-	<m11victac1.fsf@fess.ebiederm.org>
-	<alpine.LFD.2.00.0912301348320.11961@localhost.localdomain>
-	<m1fx6rtu31.fsf@fess.ebiederm.org>
-	<alpine.LFD.2.00.0912311043330.11961@localhost.localdomain>
-	<m11vi9c0td.fsf@fess.ebiederm.org> <4B3EB687.7000005@kernel.org>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Sat, 02 Jan 2010 13:37:12 -0800
-In-Reply-To: <4B3EB687.7000005@kernel.org> (Tejun Heo's message of "Sat\, 02 Jan 2010 11\:59\:19 +0900")
-Message-ID: <m11vi8yyrb.fsf_-_@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
-MIME-Version: 1.0
+	Sat, 2 Jan 2010 17:23:39 -0500
+Received: from outbound.icp-qv1-irony-out5.iinet.net.au ([203.59.1.105]:35138
+	"EHLO outbound.icp-qv1-irony-out5.iinet.net.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751064Ab0ABWXj convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Jan 2010 17:23:39 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AusAANBWP0t8qNTn/2dsb2JhbAAI0U6EMQQ
+X-IronPort-AV: E=Sophos;i="4.47,490,1257091200"; 
+   d="scan'208";a="87589191"
+Subject: [PATCH v3] mmc: Make ID freq configurable
+Mime-Version: 1.0 (Apple Message framework v1077)
 Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Scanned: No (on in01.mta.xmission.com); SAEximRunCond expanded to false
+From: Ben Nizette <bn@niasdigital.com>
+In-Reply-To: <20100102130809.121b7e10@mjolnir.ossman.eu>
+Date: Sun, 3 Jan 2010 09:23:30 +1100
+Cc: Hein_Tibosch <hein_tibosch@yahoo.es>,
+       Sascha Hauer <s.hauer@pengutronix.de>,
+       Adrian Hunter <adrian.hunter@nokia.com>, linux-mmc@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Matt Fleming <matt@console-pimps.org>
+Content-Transfer-Encoding: 8BIT
+Message-Id: <AD8E15FA-A476-4275-A750-5EB587A93CEC@niasdigital.com>
+References: <1246492196.2980.17.camel@linux-51e8.site> <20090702135849.21370282@hskinnemoen-d830> <1246537056.2980.60.camel@linux-51e8.site> <4B3E570C.2060602@yahoo.es> <63809451-ED1D-487A-AE63-F72B23D136D8@niasdigital.com> <4B3F019F.6010306@yahoo.es> <49985427-DCB9-40E1-815B-43C812B41DE3@niasdigital.com> <20100102130809.121b7e10@mjolnir.ossman.eu>
+To: Pierre Ossman <pierre@ossman.eu>
+X-Mailer: Apple Mail (2.1077)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Holding locks over device_del -> kobject_del -> sysfs_deactivate can
-cause deadlocks if those same locks are grabbed in sysfs show or store
-methods.
+On 02/01/2010, at 11:08 PM, Pierre Ossman wrote:
 
-The I model s_active count + completion as a sleeping read/write lock.
-I describe to lockdep sysfs_get_active as a read_trylock,
-sysfs_put_active as a read_unlock, and sysfs_deactivate as a
-write_lock and write_unlock pair.  This seems to capture the essence
-for purposes of finding deadlocks, and in my testing gives finds real
-issues and ignores non-issues.
+> On Sat, 2 Jan 2010 20:07:01 +1100
+> Ben Nizette <bn@niasdigital.com> wrote:
+> 
+>> 
+>> Pierre, thoughts?  All my cards were borderline spec but Hein's got a mainstream, common card which seems to completely ignore the spec.  Can we just take the few-hundred-uS hit and allow initialization down at the bottom end, say 100kHz?
+>> 
+> 
+> Broken cards seem to be all over the spectrum, so I wouldn't be
+> suprised if you find ones that break if you go too low as well.
 
-This brings us back to holding locks over kobject_del is a problem
-that ideally we should find a way of addressing, but at least lockdep
-can tell us about the problems instead of requiring developers to debug
-rare strange system deadlocks, that happen when sysfs files are removed
-while being written to.
+Yea good point, though given there might not even be a One Freq to Rule Them All, how about:
 
-Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+---8<---
+
+From: Ben Nizette <bn@niasdigital.com>
+Subject: [PATCH v3] mmc: Make ID freq configurable
+
+While the SD spec specifies a range of frequencies for the ID phase from 100-400kHz, not all cards play by the rules.  This patch adds a Kconfig option to allow the user to tweak this to their card/host config, though the default of 250kHz should be fine for all spec-abiding cards and most others besides.
+
+Signed-off-by: Ben Nizette <bn@niasdigital.com>
+
 ---
- fs/sysfs/dir.c   |   14 ++++++++++++--
- fs/sysfs/sysfs.h |   15 +++++++++++++++
- 2 files changed, 27 insertions(+), 2 deletions(-)
-
-diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
-index 5d88e30..5c4703d 100644
---- a/fs/sysfs/dir.c
-+++ b/fs/sysfs/dir.c
-@@ -106,8 +106,10 @@ static struct sysfs_dirent *sysfs_get_active(struct sysfs_dirent *sd)
- 			return NULL;
+diff --git a/drivers/mmc/core/Kconfig b/drivers/mmc/core/Kconfig
+index ab37a6d..a8e5003 100644
+--- a/drivers/mmc/core/Kconfig
++++ b/drivers/mmc/core/Kconfig
+@@ -14,3 +14,15 @@ config MMC_UNSAFE_RESUME
+          This option is usually just for embedded systems which use
+          a MMC/SD card for rootfs. Most people should say N here.
  
- 		t = atomic_cmpxchg(&sd->s_active, v, v + 1);
--		if (likely(t == v))
-+		if (likely(t == v)) {
-+			rwsem_acquire_read(&sd->dep_map, 0, 1, _RET_IP_);
- 			return sd;
-+		}
- 		if (t < 0)
- 			return NULL;
- 
-@@ -130,6 +132,7 @@ static void sysfs_put_active(struct sysfs_dirent *sd)
- 	if (unlikely(!sd))
- 		return;
- 
-+	rwsem_release(&sd->dep_map, 1, _RET_IP_);
- 	v = atomic_dec_return(&sd->s_active);
- 	if (likely(v != SD_DEACTIVATED_BIAS))
- 		return;
-@@ -194,15 +197,21 @@ static void sysfs_deactivate(struct sysfs_dirent *sd)
- 	BUG_ON(sd->s_sibling || !(sd->s_flags & SYSFS_FLAG_REMOVED));
- 	sd->s_sibling = (void *)&wait;
- 
-+	rwsem_acquire(&sd->dep_map, 0, 0, _RET_IP_);
- 	/* atomic_add_return() is a mb(), put_active() will always see
- 	 * the updated sd->s_sibling.
- 	 */
- 	v = atomic_add_return(SD_DEACTIVATED_BIAS, &sd->s_active);
- 
--	if (v != SD_DEACTIVATED_BIAS)
-+	if (v != SD_DEACTIVATED_BIAS) {
-+		lock_contended(&sd->dep_map, _RET_IP_);
- 		wait_for_completion(&wait);
-+	}
- 
- 	sd->s_sibling = NULL;
++config MMC_ID_FREQ
++       int "SD/MMC Card initialisation frequency (Hz)"
++       default 250000
++       help
++         The SD card specification allows for initialisation
++         frequencies from 100-400kHz however some broken cards are
++         known not to work across this whole range.
 +
-+	lock_acquired(&sd->dep_map, _RET_IP_);
-+	rwsem_release(&sd->dep_map, 1, _RET_IP_);
- }
- 
- static int sysfs_alloc_ino(ino_t *pino)
-@@ -345,6 +354,7 @@ struct sysfs_dirent *sysfs_new_dirent(const char *name, umode_t mode, int type)
- 
- 	atomic_set(&sd->s_count, 1);
- 	atomic_set(&sd->s_active, 0);
-+	sysfs_dirent_init_lockdep(sd);
- 
- 	sd->s_name = name;
- 	sd->s_mode = mode;
-diff --git a/fs/sysfs/sysfs.h b/fs/sysfs/sysfs.h
-index ca52e7b..cdd9377 100644
---- a/fs/sysfs/sysfs.h
-+++ b/fs/sysfs/sysfs.h
-@@ -8,6 +8,7 @@
-  * This file is released under the GPLv2.
-  */
- 
-+#include <linux/lockdep.h>
- #include <linux/fs.h>
- 
- struct sysfs_open_dirent;
-@@ -50,6 +51,9 @@ struct sysfs_inode_attrs {
- struct sysfs_dirent {
- 	atomic_t		s_count;
- 	atomic_t		s_active;
-+#ifdef CONFIG_DEBUG_LOCK_ALLOC
-+	struct lockdep_map	dep_map;
-+#endif
- 	struct sysfs_dirent	*s_parent;
- 	struct sysfs_dirent	*s_sibling;
- 	const char		*s_name;
-@@ -84,6 +88,17 @@ static inline unsigned int sysfs_type(struct sysfs_dirent *sd)
- 	return sd->s_flags & SYSFS_TYPE_MASK;
- }
- 
-+#ifdef CONFIG_DEBUG_LOCK_ALLOC
-+#define sysfs_dirent_init_lockdep(sd)				\
-+do {								\
-+	static struct lock_class_key __key;			\
-+								\
-+	lockdep_init_map(&sd->dep_map, "s_active", &__key, 0);	\
-+} while(0)
-+#else
-+#define sysfs_dirent_init_lockdep(sd) do {} while(0)
-+#endif
++         If you're having problems with a particular card not being
++         detected, you may try adjusting this frequency up or down
++         but for widest compatibility just leave it default.
 +
- /*
-  * Context structure to be used while adding/removing nodes.
-  */
--- 
-1.6.5.2.143.g8cc62
+diff --git a/drivers/mmc/core/core.c b/drivers/mmc/core/core.c
+index 7dab2e5..2eab68f 100644
+--- a/drivers/mmc/core/core.c
++++ b/drivers/mmc/core/core.c
+@@ -891,12 +891,17 @@ static void mmc_power_up(struct mmc_host *host)
+         */
+        mmc_delay(10);
+ 
+-       if (host->f_min > 400000) {
+-               pr_warning("%s: Minimum clock frequency too high for "
+-                               "identification mode\n", mmc_hostname(host));
++       /*
++        * CONFIG_MMC_ID_FREQ defaults to 250kHz which should be fine
++        * for most card/host combos.
++        */
++       if (host->f_min > CONFIG_MMC_ID_FREQ) {
++               pr_warning("%s: The host cannot reach the requested ID clock "
++                               "rate, identification may fail\n",
++                               mmc_hostname(host));
+                host->ios.clock = host->f_min;
+        } else
+-               host->ios.clock = 400000;
++               host->ios.clock = CONFIG_MMC_ID_FREQ;
+ 
+        host->ios.power_mode = MMC_POWER_ON;
+        mmc_set_ios(host);
 
