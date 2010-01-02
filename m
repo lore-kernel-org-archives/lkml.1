@@ -1,55 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752365Ab0ABNQp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752540Ab0ABN3g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752365Ab0ABNQp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Jan 2010 08:16:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752286Ab0ABNQo
+	id S1752540Ab0ABN3g (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Jan 2010 08:29:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752160Ab0ABN3f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Jan 2010 08:16:44 -0500
-Received: from qw-out-2122.google.com ([74.125.92.27]:12829 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752142Ab0ABNQo (ORCPT
+	Sat, 2 Jan 2010 08:29:35 -0500
+Received: from rekin23.go2.pl ([193.17.41.16]:53654 "EHLO rekin23.go2.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752154Ab0ABN3f convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Jan 2010 08:16:44 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type;
-        b=FgOq8tS4PbbbyIhBcO+gQgfOaT+6Xt59cTXVf0qAJgQUj7Uxz1oYsrW0xGqZhG0e8k
-         GwRmT21nWFVY7UXpbGKEBUwnbW1xy0VeJW19lNEz7MMDn3mXE5XIx9LcO3pyjSRG6hOc
-         qIFXmC4s9enznaBKfcWVTbecZWJJ8wTU1wsCE=
-MIME-Version: 1.0
-Date: Sat, 2 Jan 2010 21:16:42 +0800
-Message-ID: <78aa970c1001020516m3d2255fj38f02629e7d740c8@mail.gmail.com>
-Subject: how to get right euid?
-From: Kevin Qu <rofail@gmail.com>
-To: dhowells@redhat.com, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat, 2 Jan 2010 08:29:35 -0500
+Subject: =?UTF-8?Q?Re:_userspace_notification_from_module?=
+From: =?UTF-8?Q?Bart=C5=82omiej_Zimo=C5=84?= <uzi18@o2.pl>
+To: linux-kernel@vger.kernel.org
+Mime-Version: 1.0
+Message-ID: <686edb2c.6263643a.4b3f4a3b.b60b3@o2.pl>
+Date: Sat, 02 Jan 2010 14:29:31 +0100
+X-Originator: 83.12.131.34
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I wrote a kernel module and it create a "file" in /proc.
-The "file" permission is set to 644.
-When check access permission, I use :
+Dnia 2 stycznia 2010 13:36 	Daniel Borkmann <llug.dan@googlemail.com> napisał(a):
 
-if( op == 4 || (op ==2 && current->euid == 0) )
-        return 0;
+> Hi Bartłomiej,
+> 
+> Bartłomiej Zimoń wrote:
+> > Use inotify from userspace could be interesting for such data,
+> > but looks like sysfs/procfs doesn't send signal about data changed in file or maybe i'm wrong?
+> > 
+> > If sysfs/procfs is wrong for that so must create device file, but here secound problem 
+> > how to notify that file/buffer has new data?
+> 
+> Actually, the file content of a procfs file is volatile and generated on
+> the fly, just have a look at some device drivers or at the API.
+> 
 
-But it does not work on 2.6.29,
-so I changed it like below:
+As I fought. Reading now sources of some char drivers.
 
-if( op & 0x4 || (op & 0x2 && current_euid() == 0) )
-        return 0;
+> Did you have a look at the netlink protocol for communication from
+> kernel to userspace?
+> 
 
-It works when read from the "file" in /proc,
-but when write to it with sudo, like:
+Ok i will :)
 
-sudo echo "some thing" > /proc/my_file
+I will explain more what i'm going to do.
+The idea is simple. Kernel before suspend/resume sends notification to 
+registered kernel objects. So i have written small module to register
+there and want now pass these data to /dev/file. It is 1byte so not a big deal.
 
-It denied. (But it works when I su to superuser and do so.)
+I'm searching now for notification about new byte in buffer, as it is almost 
+clear for async: http://www.xml.com/ldd/chapter/book/ch05.html#t4
+but for sync still haven't find.
 
-So I checked the current_euid(),
-but it returns 1000 (not 0),Why?
+It could be interesting for NetworkManager to hook on such event.
 
-Thanks for help.
+Looks like my post arrives 2nd time in lkml.
 
-Rofail Qu
+Thx for reply.
+
+Best Regards.
+Bartłomiej Zimoń
+PLD Linux, Kadu Team
+
