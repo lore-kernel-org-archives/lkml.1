@@ -1,58 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752646Ab0ABNl6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752686Ab0ABO1P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752646Ab0ABNl6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Jan 2010 08:41:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752593Ab0ABNl5
+	id S1752686Ab0ABO1P (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Jan 2010 09:27:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752570Ab0ABO1P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Jan 2010 08:41:57 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:56382 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752344Ab0ABNl4 (ORCPT
+	Sat, 2 Jan 2010 09:27:15 -0500
+Received: from mailout1.go2.pl ([193.17.41.11]:43885 "EHLO mailout1.go2.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752569Ab0ABO1O convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Jan 2010 08:41:56 -0500
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Christian Kujau <lists@nerdbynature.de>,
-       Alexander Beregalov <a.beregalov@gmail.com>,
-       Chris Mason <chris.mason@oracle.com>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [GIT PULL] reiserfs fixes
-From: Andi Kleen <andi@firstfloor.org>
-References: <1262395636-8647-1-git-send-regression-fweisbec@gmail.com>
-Date: Sat, 02 Jan 2010 14:41:51 +0100
-In-Reply-To: <1262395636-8647-1-git-send-regression-fweisbec@gmail.com> (Frederic Weisbecker's message of "Sat,  2 Jan 2010 02:27:16 +0100")
-Message-ID: <87bphc7heo.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 2 Jan 2010 09:27:14 -0500
+Subject: =?UTF-8?Q?[suspend/resume]_Re:_userspace_notification_from_module?=
+From: =?UTF-8?Q?Bart=C5=82omiej_Zimo=C5=84?= <uzi18@o2.pl>
+To: linux-kernel@vger.kernel.org
+In-Reply-To: <4B3F5264.7000008@gmail.com>
+References: <686edb2c.6263643a.4b3f4a3b.b60b3@o2.pl> <4B3F5264.7000008@gmail.com>
+Mime-Version: 1.0
+Message-ID: <58607309.1e2f721f.4b3f57c0.807d3@o2.pl>
+Date: Sat, 02 Jan 2010 15:27:12 +0100
+X-Originator: 83.12.131.34
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Frederic Weisbecker <fweisbec@gmail.com> writes:
->
-> That's why you'll mostly find dependency inversion fixes based on
-> such pattern:
->
-> reiserfs_write_unlock()
-> mutex_lock(random_lock)
-> reiserfs_write_lock()
+Dnia 2 stycznia 2010 15:04 	Daniel Borkmann <danborkmann@googlemail.com> napisał(a):
+> Hi Bartłomiej,
+> 
+> Bartłomiej Zimoń wrote:
+> > Dnia 2 stycznia 2010 13:36 	Daniel Borkmann <llug.dan@googlemail.com> napisał(a):
+> > I will explain more what i'm going to do.
+> > The idea is simple. Kernel before suspend/resume sends notification to 
+> > registered kernel objects. So i have written small module to register
+> > there and want now pass these data to /dev/file. It is 1byte so not a big deal.
+> > 
+> > I'm searching now for notification about new byte in buffer, as it is almost 
+> > clear for async: http://www.xml.com/ldd/chapter/book/ch05.html#t4
+> > but for sync still haven't find.
+> 
+> This sounds very interesting... a "hack" could be the following:
+> 
+> Register your pids to the kernel module, e.g. via ioctl, and if the
+> (intra-kernel) notification will be delivered to your module you just
+> send a signal to your registered processes via kill_proc_info(). Guess
+> this is at least better than polling a file or sth similar.
+> 
+> I guess netlink could be the "cleaner" solution, but with more overhead?!
+> 
 
-These `workarounds' look rather ugly and are likely much slower
-than the BKL that was there before. Perhaps it's better to simply
-go back to the BKL until this can be all fixed properly
-(or a more faithful emulation for the BKL can be devised)?
+This looks like more simple and could be good, after all i think about sending this 
+module here to add to kernel. So if this solution could be ok i will start to code this part.
 
->
-> This is not beautiful but at least that's better than the bkl.
->
-> Oh and I expect other lock inversions will get reported in
-> the future due to rare and then yet untested paths.
+Question is now what signal to choose to not terminate process and to be compatible 
+with rest of Linux kernel?
 
-... and given that was the conversion really a good idea?
+Best regards
+Bartłomiej Zimoń
 
--Andi
-
-
--- 
-ak@linux.intel.com -- Speaking for myself only.
