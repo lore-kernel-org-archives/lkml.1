@@ -1,43 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752288Ab0ABCWc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752277Ab0ABBmx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752288Ab0ABCWc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jan 2010 21:22:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752196Ab0ABCWb
+	id S1752277Ab0ABBmx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jan 2010 20:42:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752191Ab0ABBmw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jan 2010 21:22:31 -0500
-Received: from hera.kernel.org ([140.211.167.34]:58163 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752191Ab0ABCWb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jan 2010 21:22:31 -0500
-Message-ID: <4B3EAE33.4060009@kernel.org>
-Date: Sat, 02 Jan 2010 11:23:47 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
+	Fri, 1 Jan 2010 20:42:52 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:35890 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752149Ab0ABBmw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 1 Jan 2010 20:42:52 -0500
+To: Samuel Thibault <samuel.thibault@ens-lyon.org>
+Cc: Stefani Seibold <stefani@seibold.net>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org
+Subject: Re: [PATCH] proc: revert to show stack information in /proc/{pid}/status
+From: Andi Kleen <andi@firstfloor.org>
+References: <20091231231051.1A1B.A69D9226@jp.fujitsu.com>
+	<1262274494.14143.7.camel@wall-e>
+	<20100101155630.1A1E.A69D9226@jp.fujitsu.com>
+	<1262358616.11460.18.camel@wall-e> <20100101220529.GL4620@const>
+Date: Sat, 02 Jan 2010 02:42:48 +0100
+In-Reply-To: <20100101220529.GL4620@const> (Samuel Thibault's message of "Fri, 1 Jan 2010 23:05:29 +0100")
+Message-ID: <87k4w1704n.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
 MIME-Version: 1.0
-To: Tim Blechmann <tim@klingt.org>
-CC: linux-kernel@vger.kernel.org, stern@rowland.harvard.edu, x86@kernel.org
-Subject: Re: 2.6.32 regression: unable to handle kernel paging request
-References: <4B269765.1070703@klingt.org> <4B2A2A7D.1050506@klingt.org> <4B2A93F2.3070407@klingt.org> <4B2AFBB1.3040609@kernel.org> <4B2B4838.6080509@klingt.org> <4B2F20E0.30804@kernel.org> <4B2F40C0.5020407@klingt.org> <4B33592B.6000107@kernel.org> <4B335964.6040202@klingt.org> <4B335DE6.9030102@kernel.org> <4B336303.2090403@kernel.org> <4B372E02.9050509@klingt.org> <4B3E6155.5080005@klingt.org>
-In-Reply-To: <4B3E6155.5080005@klingt.org>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Samuel Thibault <samuel.thibault@ens-lyon.org> writes:
 
-On 01/02/2010 05:55 AM, Tim Blechmann wrote:
-> trying to boot the current linus/master branch, i saw a similar issue as
-> before, but with binutils 2.20
+> Stefani Seibold, le Fri 01 Jan 2010 16:10:16 +0100, a écrit :
+>> But ps is not a performance critical application nor a cat
+>> /proc/*/status!
+>
+> Errr, maybe not so much as some other operations, but a lot of tools use
+> them, so it's really worth considering it.
 
-Given that the ldscript modification has been out in the wild for some
-time and you are the only one reporting this type of problem, I don't
-think it's likely to be a widespread problem.  Can you please try it
-from a clean installation just in case?
+As an historical anecdote one of my first patches to Linux ever made
+exactly the same mistake as Stefani's (adding mmap_sem to a proc file
+read by proc). It was quickly reverted again by Linus when the
+reports of ps not working under swapping poured in.
 
-Thanks.
+Same should be done with this patch (commit 9ebd4eba761b624a6a6c9189335adeddcb1fa0e0)
+
+-Andi
 
 -- 
-tejun
+ak@linux.intel.com -- Speaking for myself only.
