@@ -1,67 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751992Ab0ABTaV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752609Ab0ABOEf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751992Ab0ABTaV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Jan 2010 14:30:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751567Ab0ABTaU
+	id S1752609Ab0ABOEf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Jan 2010 09:04:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752477Ab0ABOEf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Jan 2010 14:30:20 -0500
-Received: from mail-yx0-f187.google.com ([209.85.210.187]:36699 "EHLO
-	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751516Ab0ABTaT (ORCPT
+	Sat, 2 Jan 2010 09:04:35 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:58234 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752092Ab0ABOEe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Jan 2010 14:30:19 -0500
+	Sat, 2 Jan 2010 09:04:34 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=b37GZfGLcjlD+v4sr1dV1RkGp5Vx6y1+BEgQJRuINatl2gX3syqy5jKtrChlAprwT6
-         CKdNnmap/q0D9fVd01CheCC5wUE+a9WRt/BHdeA4ds4Q741VpVQz0mELW8krOJ9y63FG
-         tHnhd3xXpm2LPMHwN9JJxpUn+5Q8SH0ctmwF4=
-Date: Sat, 2 Jan 2010 11:30:13 -0800
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: tglx@linutronix.de, Andi Kleen <andi@firstfloor.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2] timer: Introduce mod_timer_msec()
-Message-ID: <20100102193013.GA2232@core.coreip.homeip.net>
-References: <20100102104853.28505e39@infradead.org>
- <20100102105012.40d678f2@infradead.org>
- <877hs0724u.fsf@basil.nowhere.org>
- <20100102112108.574396fd@infradead.org>
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type;
+        b=Q0jsTVJxpbW8FYIC89gCyaFmvAsLP/1Dgef5FCc7vfKvekxzLK2U14r1E1lTAkIayd
+         4y6WQwH4n8PnZbN5y0oXAwVLAt58PJkzVikL7lYsVwhXqNgoN32b487FIF1CEzsrG8JD
+         1l8CgvQXYX4FrXnQKTp6/fKAFR8nB4jc+ArOo=
+Message-ID: <4B3F5264.7000008@gmail.com>
+Date: Sat, 02 Jan 2010 15:04:20 +0100
+From: Daniel Borkmann <danborkmann@googlemail.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090706)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100102112108.574396fd@infradead.org>
-User-Agent: Mutt/1.5.20 (2009-08-17)
+To: =?UTF-8?B?QmFydMWCb21pZWogWmltb8WE?= <uzi18@o2.pl>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: userspace notification from module
+References: <686edb2c.6263643a.4b3f4a3b.b60b3@o2.pl>
+In-Reply-To: <686edb2c.6263643a.4b3f4a3b.b60b3@o2.pl>
+X-Enigmail-Version: 0.96.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigD35EA0892E837536AD04B19E"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jan 02, 2010 at 11:21:08AM -0800, Arjan van de Ven wrote:
->  /**
-> + * mod_timer_msec - modify a timer's timeout, using relative milliseconds
-> + * @timer: the timer to be modified
-> + * @delay_ms: the desired minimum delay in milliseconds
-> + *
-> + * Changes the timeout of a timer similar to mod_timer().
-> + *
-> + * mod_timer_msec() takes relative milliseconds rather than absolute
-> + * jiffies as argument.
-> + *
-> + * The function returns whether it has modified a pending timer or not.
-> + * (ie. mod_timer_msec() of an inactive timer returns 0, mod_timer_msec() of
-> + * an active timer returns 1.)
-> + */
-> +int mod_timer_msec(struct timer_list *timer, unsigned long delay_ms)
-> +{
-> +	return mod_timer(timer, jiffies + msecs_to_jiffies(delay_ms));
-> +}
-> +EXPORT_SYMBOL(mod_timer_msec);
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigD35EA0892E837536AD04B19E
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-I wonder why isn't this an inline function? Seems tiny enough...  Other
-than that -  I'll gladly take input conversion patches.
+Hi Bart=C5=82omiej,
 
-Thanks.
+Bart=C5=82omiej Zimo=C5=84 wrote:
+> Dnia 2 stycznia 2010 13:36 	Daniel Borkmann <llug.dan@googlemail.com> n=
+apisa=C5=82(a):
+> I will explain more what i'm going to do.
+> The idea is simple. Kernel before suspend/resume sends notification to =
 
--- 
-Dmitry
+> registered kernel objects. So i have written small module to register
+> there and want now pass these data to /dev/file. It is 1byte so not a b=
+ig deal.
+>=20
+> I'm searching now for notification about new byte in buffer, as it is a=
+lmost=20
+> clear for async: http://www.xml.com/ldd/chapter/book/ch05.html#t4
+> but for sync still haven't find.
+
+This sounds very interesting... a "hack" could be the following:
+
+Register your pids to the kernel module, e.g. via ioctl, and if the
+(intra-kernel) notification will be delivered to your module you just
+send a signal to your registered processes via kill_proc_info(). Guess
+this is at least better than polling a file or sth similar.
+
+I guess netlink could be the "cleaner" solution, but with more overhead?!=
+
+
+Cheers,
+Daniel
+
+
+--------------enigD35EA0892E837536AD04B19E
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
+
+iEYEARECAAYFAks/UmQACgkQ5AxJm1m3CC/KlgCgkmOfUgofUQQXSnrCB6atJL7e
+4IQAnimDjQZLf++CzmGsfCn8jcakpqGq
+=Fhfa
+-----END PGP SIGNATURE-----
+
+--------------enigD35EA0892E837536AD04B19E--
