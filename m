@@ -1,126 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752031Ab0ABX3M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752126Ab0ABXOj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752031Ab0ABX3M (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Jan 2010 18:29:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751446Ab0ABX3M
+	id S1752126Ab0ABXOj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Jan 2010 18:14:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751446Ab0ABXOi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Jan 2010 18:29:12 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:49590 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751212Ab0ABX3L convert rfc822-to-8bit (ORCPT
+	Sat, 2 Jan 2010 18:14:38 -0500
+Received: from mail-fx0-f225.google.com ([209.85.220.225]:36319 "EHLO
+	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751191Ab0ABXOi convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Jan 2010 18:29:11 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: =?utf-8?q?Bart=C5=82omiej_Zimo=C5=84?= <uzi18@o2.pl>
-Subject: Re: [suspend/resume] Re: userspace notification from module
-Date: Sun, 3 Jan 2010 00:29:22 +0100
-User-Agent: KMail/1.12.3 (Linux/2.6.33-rc2-tst; KDE/4.3.3; x86_64; ; )
-Cc: Andy Walls <awalls@radix.net>,
-       Daniel Borkmann <danborkmann@googlemail.com>,
-       linux-kernel@vger.kernel.org,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Alan Stern <stern@rowland.harvard.edu>
-References: <686edb2c.6263643a.4b3f4a3b.b60b3@o2.pl> <201001022201.04281.rjw@sisk.pl> <7cf4f51f.5fc2a5cd.4b3fc3ad.c849c@o2.pl>
-In-Reply-To: <7cf4f51f.5fc2a5cd.4b3fc3ad.c849c@o2.pl>
+	Sat, 2 Jan 2010 18:14:38 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=qvqb0W0vsu6G3SgoZP3HmGCuzI1aVTZoXRygHvKJCoq6bhMcln1gCiFvHWq5A/ZSjb
+         vfVzTuNJX6TIJ6/yF0jrnYqzlv5gC8iN+b+f5CBm48OgQUB/URoXin66vreUHoEQ8Ctz
+         gPZHX62JoglLLl5oXqzlUaU6SJJY16+SqvTDs=
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
+In-Reply-To: <9e4733911001021403n7ba076d0na423ae50e2983171@mail.gmail.com>
+References: <523138909@web.de> <20091231131852.GB32492@centrinvest.ru>
+	 <20100101001931.GA1290@kroah.com>
+	 <1a297b361001020805y6b00af83g81cf8492aa73bc3b@mail.gmail.com>
+	 <20100102163449.GB5172@kroah.com>
+	 <1a297b361001021017y746e4acdsfcf307b0f363e21d@mail.gmail.com>
+	 <9e4733911001021403n7ba076d0na423ae50e2983171@mail.gmail.com>
+Date: Sun, 3 Jan 2010 03:14:35 +0400
+Message-ID: <1a297b361001021514h19f814d7w586fd0dbb66d98fa@mail.gmail.com>
+Subject: Re: [patch staging] BCM70010 (crystalhd) Linux Driver
+From: Manu Abraham <abraham.manu@gmail.com>
+To: Jon Smirl <jonsmirl@gmail.com>
+Cc: Greg KH <greg@kroah.com>, Peter Paul <abnominales@web.de>,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 8BIT
-Message-Id: <201001030029.22449.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 02 January 2010, Bartłomiej Zimoń wrote:
-> 
-> Dnia 2 stycznia 2010 22:01 "Rafael J. Wysocki" <rjw@sisk.pl> napisał(a):
-> 
-> > On Saturday 02 January 2010, Bartłomiej Zimoń wrote:
-> > > Dnia 2 stycznia 2010 16:56 	Daniel Borkmann <danborkmann@googlemail.com> napisał(a):
-> > > > Hi Andy,
-> > > > 
-> > > > 2010/1/2 Andy Walls <awalls@radix.net>:
-> > > > > Why not:
-> > > > >
-> > > > > a. write a module that implements a device node that supports poll(),
-> > > > > and
-> > > > >
-> > > > > b. have a user space process select() on the fd for read or exception
-> > > > > notification
-> > > > >
-> > > > > ?
-> > > > 
-> > > > This is, of course, another possible solution that is more "cleaner"
-> > > > than the one with the signals.
-> > > > Then, your userspace program would have another thread polling for the
-> > > > device node. Question is which timeout would be appropriate to be "CPU
-> > > > friendly" and to keep notification latency short?
-> > > > 
-> > > 
-> > > Just need as fast as possible solution and on the other hand acceptable for kernel sources.
-> > > Usually programs needs just to disconnect something or set one flag.
-> > > Even if program will have no time for this it could be enough just to send this precious info.
-> > 
-> > Perhaps I don't understand correctly what you're trying to achieve, but at the
-> > moment suspend is always started from user space, this way or another, and on
-> > the majority (all?) of the modern distros pm-utils is involved in that.
-> > So, why don't you provide a pm-utils hook for your process (like, for example,
-> > NetworkManager)?
-> > 
-> 
-> Thanks for Your answare.
-> Some points of my idea:
-> - don't think everyone want to use pm-utils (didn't say it is bad)
+On Sun, Jan 3, 2010 at 2:03 AM, Jon Smirl <jonsmirl@gmail.com> wrote:
+> On Sat, Jan 2, 2010 at 1:17 PM, Manu Abraham <abraham.manu@gmail.com> wrote:
+>> Hi Greg,
+>>
+>> On Sat, Jan 2, 2010 at 8:34 PM, Greg KH <greg@kroah.com> wrote:
+>>> On Sat, Jan 02, 2010 at 08:05:38PM +0400, Manu Abraham wrote:
+>>>> Hi Greg,
+>>>>
+>>>> > I'm glad to do so if someone wants to help work on it there and shephard
+>>>> > it into the main kernel tree.
+>>>>
+>>>> Please find the initial round of cleaned up patches for staging,
+>>>> applied against linux-next.
+>>>
+>>> Did you really author this driver? �If so, that's fine, just checking.
+>>> If not, please put the correct authorship "From:" in the patch.
+>>
+>> I am not the author of the driver. I just picked it up and cleaned it
+>> up for Coding style changes for it to be included.
+>
+> I'm not against this submission, but would it be better to wait until
+> Monday when the Broadcom authors are back as see if they want to
+> submit their own driver? That way changes would end up back in their
+> internal VCS.
 
-That certainly is true, but I think these people won't have a problem setting
-up their suspend scripts to trigger the notification anyway. :-)
 
-Point is, suspend hooks are used anyway by almost everyone (due to graphics,
-networking, faulty drivers), so I think you could just use this mechanism, be it
-pm-utils or something else.
+Sure, of course,
 
-To put it in a different way, you apparently want the kernel to notify the user
-space of an event originating from the user space and my question is why not
-to set up the user space to generate the notification without relying on the
-kernel to do that.
 
-> - this code is standard for all implementation of suspend/hibernate/resume
+> I'd like to see a real datasheet for this chip, the public one is
+> nothing but a marketing blurb.
 
-I guess you mean the existing kernel-side suspend/hibernate code.
+You mean a user manual with a description of the registers, don't you ?
+Decoder datasheets from whichever manufacturer rarely come into
+public. Even with NDA's it is quite hard to get hold of a "proper one"
 
-Sure, it is, but your module is going to export the kernel's internal interface
-outside the kernel, turning it into a real API and that is a _big_ _deal_.  The
-reason why it is a big deal is that while we often change the kernel's internal
-interfaces, we don't change APIs.  Once created, an API (I mean a real
-userland-kernel interface) is very difficult to change, because that most often
-leads to regressions which are quite nasty from the user's point of view.
-
-So, basically, you want us to declare that the kernel's internal
-suspend/hibernate notification mechanism won't change in the future, which is
-not something I'm going to do at this point.  Moreover, it hasn't been designed
-as an API and I don't think it's really suitable for this purpose.
-
-At least, that requires some more discussion, so please tell us why you need
-the kernel to notify the user space about suspend/hibernation.  IOW, what's the
-final purpose of this?  [Added some CCs.]
-
-> - it is small
-> - it have less overhead, dont need dbus and all rest services.
-
-That could have been a good argument if those services had not been used
-already, but that's not the case.
-
-> - could be even used partialy by pm-utils
-> - it is perfect just to notify about event
-
-OK, but why exactly do _you_ need that to happen?
-
-There's one important drawback of making the kernel generate the notification.
-Namely, even if your userspace task is notified by the kernel of a PM event,
-that doesn't mean it'll have the time to act upon that, because the kernel will
-attempt to freeze it right after the notification has been sent.  This means
-you'd need a way to make the kernel wait for your user space process to finish
-it's job before continuing the suspend/hibernate process.  Otherwise it's not
-going to be very useful.
-
-Rafael
+Regards,
+Manu
