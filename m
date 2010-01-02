@@ -1,93 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752679Ab0ABNwS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751955Ab0ABVk5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752679Ab0ABNwS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Jan 2010 08:52:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752392Ab0ABNwR
+	id S1751955Ab0ABVk5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Jan 2010 16:40:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751721Ab0ABVkz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Jan 2010 08:52:17 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:34059 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752227Ab0ABNwQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Jan 2010 08:52:16 -0500
-Date: Sat, 2 Jan 2010 13:55:25 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: daw-news@taverner.cs.berkeley.edu (David Wagner)
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [RFC][PATCH v3] Unprivileged: Disable raising of privileges
-Message-ID: <20100102135525.08fe85eb@lxorguk.ukuu.org.uk>
-In-Reply-To: <hhmoos$vnu$1@taverner.cs.berkeley.edu>
-References: <m1iqbpwjtp.fsf@fess.ebiederm.org>
-	<20091231170641.6dd46c6e@lxorguk.ukuu.org.uk>
-	<hhioif$j9t$3@taverner.cs.berkeley.edu>
-	<20100101144629.54fe6cb6@lxorguk.ukuu.org.uk>
-	<hhmoos$vnu$1@taverner.cs.berkeley.edu>
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.18.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 2 Jan 2010 16:40:55 -0500
+Received: from cantor.suse.de ([195.135.220.2]:47324 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751064Ab0ABVkz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Jan 2010 16:40:55 -0500
+Date: Sat, 2 Jan 2010 22:40:48 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jikos@twin.jikos.cz
+To: Jiri Slaby <jirislaby@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Neil Horman <nhorman@tuxdriver.com>, Oleg Nesterov <oleg@redhat.com>
+Subject: Re: [PULL] pull request for writable limits for 2.6.33-rc0
+In-Reply-To: <4B1FF9A1.2040305@gmail.com>
+Message-ID: <alpine.LRH.2.00.1001022239060.15694@twin.jikos.cz>
+References: <4B1D32D1.4090404@gmail.com> <4B1FF9A1.2040305@gmail.com>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> >Can be - but its historically been an endless source of bugs and flaws
-> >because the code being run after you take the rights away is being run in
-> >an environment it didn't expect and wasn't tested in.
+On Wed, 9 Dec 2009, Jiri Slaby wrote:
+
+> ---
+> The following changes since commit 2588465badb648a50cd19623f0dd0063c90d4e31:
+>   Linus Torvalds (1):
+>         Merge branch 'bkl-arch-for-linus' of
+> git://git.kernel.org/.../tip/linux-2.6-tip
 > 
-> Are you just *shrugging* at the goals underlying these efforts?
-> The goals of enabling privilege separation and sandboxing seem like
-> highly laudable goals to me.  I don't understand why anyone would
-> be opposed to efforts to achieve those goals.
+> are available in the git repository at:
+> 
+>   git://decibel.fi.muni.cz/~xslaby/linux writable_limits
+> 
+> Jiri Slaby (25):
+>       SECURITY: selinux, fix update_rlimit_cpu parameter
+>       SECURITY: add task_struct to setrlimit
+>       core: add task_struct to update_rlimit_cpu
+>       core: split sys_setrlimit
+>       core: allow setrlimit to non-current tasks
+>       core: optimize setrlimit for current task
+>       FS: proc, switch limits reading to fops
+>       FS: proc, make limits writable
+>       core: do security check under task_lock
+>       core: rename setrlimit to do_setrlimit
+>       resource: move kernel functions inside __KERNEL__
+>       core: posix-cpu-timers, cleanup rlimits usage
+>       resource: add helpers for fetching rlimits
+>       IA64: use helpers for rlimits
+>       PPC: use helpers for rlimits
+>       S390: use helpers for rlimits
+>       SPARC: use helpers for rlimits
+>       X86: use helpers for rlimits
+>       FS: use helpers for rlimits
+>       MM: use helpers for rlimits
+>       core: use helpers for rlimits
+>       misc: use helpers for rlimits
+>       core: implement getprlimit and setprlimit syscalls
+>       COMPAT: add get/put_compat_rlimit
+>       x86: add ia32 compat prlimit syscalls
+> 
+> Neil Horman (1):
+>       unistd: add __NR_[get|set]prlimit syscall numbers
+> 
+> Oleg Nesterov (1):
+>       sys_setrlimit: make sure ->rlim_max never grows
 
-I am just pointing out the dangers of continuing to blindly pursue that
-model without thinking about the bigger picture. Something Unix security
-has taught people is that the model of removing rights isn't the right
-one if applied simplistically.
+Hmm, so this seems to have missed thw 2.6.33 merge window, being dropped 
+in a silent way.
 
-A good example is how fd 0/1/2 is handled these days. The kernel or C
-library in the Linux case puts a setuid process into a sensible context
-rather than just saying "oh you removed the access to this fd, thats
-cool"
+Linus, is there any reason you have not pulled this for .33 (I can't see 
+any objections from previous reviews), or was this just forgotten?
 
-If you are going to add more and more "take away the right to" type
-features it's more and more important that an application can be run in
-the context it expects. That is running a setuid application should
-throw off various random restrictions automatically so that it gets the
-expected context, without cpu limit surprises, memory restrictions etc.
+Thanks,
 
-That in turn reads on the rest of your policy because you have to think
-very hard what kind of escape hatch you might be creating.
- 
-> Privilege-separation is a powerful software architecture technique.
-> It's been used in openssh, qmail, vsftpd, and other highly regarded
-> security-critical applications.  (When a software designer uses privilege
-> separation, he *intends* for his code to be run in a low-privilege
-> environment.  That's not a source of bugs.)
+-- 
+Jiri Kosina
+SUSE Labs, Novell Inc.
 
-Internally yes - its when stuff gets run from the outside it gets harder.
-
-> How many examples have there been?  I can think of one of any significance
-> (sendmail).  In any case, I would classify these flaws as inherently
-> relatively low-severity, because they can only be exploited by local
-> users.
-
-The number of file handle based attacks has been quite large if not very
-public. There have been lots of quota based attacks, some CPU limit based
-attacks, hangup bases attacks and more. Classics like SGI passwd for
-example.
-
-If you are really bored take a look how many setuid apps directly or
-indirectly call a memory allocator (usually indirectly via C lib
-functions) and don't check the result. Now play with the memory limits
-
-> Perhaps I'm reading you wrong, but I seem to sense an attitude where you
-> consider privilege separation and sandboxing to be relatively unimportant,
-> and where you consider the risk of local attacks on setuid programs to
-> be unavoidable and of paramount importance.  I'm surprised to get this
-> impression, because that seems narrow and counter-productive to me.
-
-I care about both. Working on building a mass market OS doesn't give you
-the privilege of saying "Oh but persohnally I don't give a **** about
-XYZ"
-
-Alan
