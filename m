@@ -1,65 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752617Ab0ABI0f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752646Ab0ABJHS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752617Ab0ABI0f (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Jan 2010 03:26:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752037Ab0ABI0e
+	id S1752646Ab0ABJHS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Jan 2010 04:07:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752628Ab0ABJHQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Jan 2010 03:26:34 -0500
-Received: from www84.your-server.de ([213.133.104.84]:60355 "EHLO
-	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751993Ab0ABI0d convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Jan 2010 03:26:33 -0500
-Subject: Re: [PATCH] proc: revert to show stack information in 
- /proc/{pid}/status
-From: Stefani Seibold <stefani@seibold.net>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Samuel Thibault <samuel.thibault@ens-lyon.org>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <2f11576a1001012153qec2ea0eo7a2762386ed22273@mail.gmail.com>
-References: <20091231231051.1A1B.A69D9226@jp.fujitsu.com>
-	 <1262274494.14143.7.camel@wall-e>
-	 <20100101155630.1A1E.A69D9226@jp.fujitsu.com>
-	 <1262358616.11460.18.camel@wall-e> <20100101220529.GL4620@const>
-	 <1262384490.16706.4.camel@wall-e>
-	 <2f11576a1001012153qec2ea0eo7a2762386ed22273@mail.gmail.com>
-Content-Type: text/plain; charset="ISO-8859-15"
-Date: Sat, 02 Jan 2010 09:26:16 +0100
-Message-ID: <1262420776.18097.3.camel@wall-e>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 
+	Sat, 2 Jan 2010 04:07:16 -0500
+Received: from outbound.icp-qv1-irony-out3.iinet.net.au ([203.59.1.148]:53787
+	"EHLO outbound.icp-qv1-irony-out3.iinet.net.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752593Ab0ABJHP convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Jan 2010 04:07:15 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AvcAANmaPkt8qNTn/2dsb2JhbAAI0RqEMQQ
+X-IronPort-AV: E=Sophos;i="4.47,488,1257091200"; 
+   d="scan'208";a="539465486"
+Subject: Re: [PATCH v2] mmc: lower init clock frequency to 300kHz
+Mime-Version: 1.0 (Apple Message framework v1077)
+Content-Type: text/plain; charset=us-ascii
+From: Ben Nizette <bn@niasdigital.com>
+In-Reply-To: <4B3F019F.6010306@yahoo.es>
+Date: Sat, 2 Jan 2010 20:07:01 +1100
+Cc: Pierre Ossman <pierre@ossman.eu>, Sascha Hauer <s.hauer@pengutronix.de>,
+       Adrian Hunter <adrian.hunter@nokia.com>, linux-mmc@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Matt Fleming <matt@console-pimps.org>
 Content-Transfer-Encoding: 8BIT
-X-Authenticated-Sender: stefani@seibold.net
+Message-Id: <49985427-DCB9-40E1-815B-43C812B41DE3@niasdigital.com>
+References: <1246492196.2980.17.camel@linux-51e8.site>	<20090702135849.21370282@hskinnemoen-d830> <1246537056.2980.60.camel@linux-51e8.site> <4B3E570C.2060602@yahoo.es> <63809451-ED1D-487A-AE63-F72B23D136D8@niasdigital.com> <4B3F019F.6010306@yahoo.es>
+To: Hein_Tibosch <hein_tibosch@yahoo.es>
+X-Mailer: Apple Mail (2.1077)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Samstag, den 02.01.2010, 14:53 +0900 schrieb KOSAKI Motohiro:
-> 2010/1/2 Stefani Seibold <stefani@seibold.net>:
-> > Am Freitag, den 01.01.2010, 23:05 +0100 schrieb Samuel Thibault:
-> >> Stefani Seibold, le Fri 01 Jan 2010 16:10:16 +0100, a écrit :
-> >> > But ps is not a performance critical application nor a cat
-> >> > /proc/*/status!
-> >>
-> >> Errr, maybe not so much as some other operations, but a lot of tools use
-> >> them, so it's really worth considering it.
-> >
-> > Right. And i am still trying to find some optimization. Stay tuned.
+
+(Adding linux CCs)
+
+On 02/01/2010, at 7:19 PM, Hein_Tibosch wrote:
+
+> Almost good: on my Kingston Elite Pro (50x) SD-card, initialization will
+> only succeed if F <= 282258 Hz.
+
+...
+
 > 
-> I can understand you feel sad. but don't worry. reverting is very usual event
-> on kernel development. You can retry anytime if you make optimized code.
+> I checked some datasheets of several makes:
+> 
+> Delkin microSD min 0 max 400
+> Swissbit min 0 max 400
+> Sandisk 100 - 400
+> Toshiba 100 - 400
+> ST electronics 0 400
+> SD-specification: Issue continues clock in frequency range of 100KHz-400KHz
+>  If the Average frequency of the SDCLK is less than 100KHz then the card
+>  may not be able to respond within the 1-second limit
+> 
+> So what about 100 or 150 Khz?
 
-I had analyzed the problem and there is only one solution. Create a new
-proc/<pid>/stack_usage entry, which was my first idea. This has absolut
-now side effects.
+Ah geez, yeah this something else I was hoping to avoid with the V1 patch - an endless stream of "oh shit, this card's even /moore/ broken!  Patch it, patch it good"
 
-I will write a patch and post it in the next days.
+Pierre, thoughts?  All my cards were borderline spec but Hein's got a mainstream, common card which seems to completely ignore the spec.  Can we just take the few-hundred-uS hit and allow initialization down at the bottom end, say 100kHz?
 
-Stefani
+<overkill> Or a KConfig option? </overkill>
 
+	--Ben.
 
