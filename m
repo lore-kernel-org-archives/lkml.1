@@ -1,389 +1,394 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751994Ab0AAVvh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752436Ab0ABVmy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751994Ab0AAVvh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jan 2010 16:51:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751502Ab0AAVvg
+	id S1752436Ab0ABVmy (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Jan 2010 16:42:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752107Ab0ABVmv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jan 2010 16:51:36 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:47918 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751500Ab0AAVvf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jan 2010 16:51:35 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: [PATCH][RFC] e1000e: Add basic runtime PM support (rev. 3) (was: [PATCH 0/12] PCI run-time PM support (rev. 2))
-Date: Fri, 1 Jan 2010 22:51:58 +0100
-User-Agent: KMail/1.12.3 (Linux/2.6.33-rc2-tst; KDE/4.3.3; x86_64; ; )
-Cc: Matthew Garrett <mjg@redhat.com>, Len Brown <lenb@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Linux PCI <linux-pci@vger.kernel.org>,
-       Oliver Neukum <oliver@neukum.org>, Bjorn Helgaas <bjorn.helgaas@hp.com>,
-       Shaohua Li <shaohua.li@intel.com>,
-       Francois Romieu <romieu@fr.zoreil.com>,
-       Jeff Kirsher <jeffrey.t.kirsher@intel.com>,
-       e1000-devel@lists.sourceforge.net
-References: <200912272057.10443.rjw@sisk.pl> <201001010229.24061.rjw@sisk.pl> <201001012003.07722.rjw@sisk.pl>
-In-Reply-To: <201001012003.07722.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201001012251.58150.rjw@sisk.pl>
+	Sat, 2 Jan 2010 16:42:51 -0500
+Received: from mta3.srv.hcvlny.cv.net ([167.206.4.198]:38968 "EHLO
+	mta3.srv.hcvlny.cv.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752078Ab0ABVms (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Jan 2010 16:42:48 -0500
+Date: Sat, 02 Jan 2010 16:42:22 -0500
+From: Michael Breuer <mbreuer@majjas.com>
+Subject: Re: sky2 panic in 2.6.32.1 under load (tty NULL write)
+In-reply-to: <4B3E5C49.9010409@majjas.com>
+To: Stephen Hemminger <shemminger@vyatta.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "Berck E. Nash" <flyboy@gmail.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org
+Message-id: <4B3FBDBE.6040202@majjas.com>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7BIT
+References: <4B300A2A.8040305@gmail.com> <4B300E30.9090707@majjas.com>
+ <4B3114E3.1070602@majjas.com> <4B329FA3.9090904@majjas.com>
+ <20091223230102.4bb0100e.akpm@linux-foundation.org>
+ <4B34E847.8010809@majjas.com> <20091225152200.1cf11dfe@nehalam>
+ <4B3581C7.8000702@majjas.com> <20091226095723.7ac82b18@nehalam>
+ <4B367409.5060202@majjas.com> <4B379378.4000102@majjas.com>
+ <20091227102238.0df149f9@nehalam> <4B37B7E2.5070307@majjas.com>
+ <20091229093023.3ad24786@nehalam> <4B3A5048.9090700@majjas.com>
+ <20091229114938.1f4d1c5c@nehalam> <4B3AFFE8.3060409@majjas.com>
+ <20091229235942.51bf733d@nehalam> <4B3B7488.6080503@majjas.com>
+ <20091230101046.2816d545@nehalam> <4B3CE8CA.5050003@majjas.com>
+ <4B3E33EC.1060703@majjas.com> <4B3E4C7D.2040802@majjas.com>
+ <4B3E5C49.9010409@majjas.com>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.5)
+ Gecko/20091204 Lightning/1.0b2pre Thunderbird/3.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 01 January 2010, Rafael J. Wysocki wrote:
-> On Friday 01 January 2010, Rafael J. Wysocki wrote:
-> > On Sunday 27 December 2009, Rafael J. Wysocki wrote:
-> > > Hi,
-> > > 
-> > > The following (updated) series of patches provides preliminary run-time power
-> > > management support for PCI devices through ACPI and/or the native PCIe PME.
-> > > 
-> > > Some patches have been modified since the previous iteration, one patch has
-> > > been merged and there's one more.
-> > > 
-> > > I've tested this patchset with the native PCIe PME mechanism using the r8169
-> > > driver on the MSI Wind U-100 (see the last patch for details) and with the ACPI
-> > > mechanism using the e1000e driver on the Toshiba Portege R500 (the patch still
-> > > requires some work to be shown in public ;-)).
-> > 
-> > The e1000e patch is now in a better shape IMO, at least it worked for me in all
-> > conditions I tested it, so it is appended below.
-> 
-> This one was actually buggy, as it triggered a netdevice.h BUG_ON() during
-> resume from suspend to RAM with network cable attached.
-> 
-> Appended is a new version that doesn't have this problem and enables runtime PM
-> in _probe(), so the device can be put into the low power state if _open()
-> hasn't been called yet (or after _close()).
+Made some more progress - hopefully someone can point me in the right 
+direction....
+Put extra debugging printk's into tty_io.c and learned that when init 
+starts the mingetty's, tty_release_dev is called for ptm0, and the tty 
+structure is freed (according to the debug log message) - but up to this 
+point, it had never been allocated. It looks like this is happening as 
+the result of vhangup for pts0 being invoked while in the middle of 
+closing (tty_release_dev) several tty1's. I'm guessing that's where 
+something is being stepped on, but haven't tracked it down quite yet. 
+Regardless, it's after this that I can generate sky2 network errors, and 
+not before. This does not seem to happen if I remove /etc/events.d/tty1 
+before boot.
 
-This one also has a few problems (triggers a warning about an already freed
-interrupt being freed again during suspend to RAM with the adapter suspended at
-run time if it is maganed by NetworkManager and doesn't put the adapter into
-the low power state if the link is not present from the start), so appended is
-a fixed one (at least it doesn't show any more problems in my testing).
 
-Rafael
+On 1/1/2010 3:34 PM, Michael Breuer wrote:
+> In single user mode:
+>
+> Looks like the first attempt to run mingetty on tty1 triggers a 
+> vhangup of more than tty1. Also, the initial console (shell, etc) were 
+> open on tty1 when I started mingetty on tty1. Looks like the 
+> subsequent vhangup is what broke things. Also, the vhangup issued from 
+> mingetty seems to have resulted in tty2 activity as well, although I 
+> don't see why it should have.
+>
+> Scenario:
+>
+> Started in single user mode.
+> did initctl start tty2 and then switched to tty2 and logged in:
+> Jan  1 15:11:42 mail kernel: opening tty2...
+> Jan  1 15:11:42 mail kernel: tty2 vhangup...
+> Jan  1 15:11:42 mail kernel: tty_release_dev of tty2 (tty count=1)...
+> Jan  1 15:11:42 mail kernel: freeing tty structure...
+> Jan  1 15:11:42 mail kernel: opening tty2...
+> Jan  1 15:11:42 mail kernel: tty2 vhangup...
+> Jan  1 15:11:42 mail kernel: opening tty2...
+> Jan  1 15:11:42 mail kernel: tty_release_dev of tty2 (tty count=2)...
+> Jan  1 15:11:42 mail kernel: opening tty2...
+> Jan  1 15:11:42 mail kernel: tty_release_dev of tty2 (tty count=2)...
+> Jan  1 15:11:42 mail kernel: opening tty2...
+> Jan  1 15:11:42 mail kernel: tty_release_dev of tty2 (tty count=2)...
+>
+> Then (and note that time should have advanced, but didn't): initctl 
+> start tty1 (previously, the initial shell from single user mode was up):
+>
+> Jan  1 15:11:42 mail kernel: opening tty1...
+> Jan  1 15:11:42 mail kernel: tty1 vhangup...
+> Jan  1 15:11:42 mail kernel: tty_release_dev of tty1 (tty count=3)...
+> Jan  1 15:11:42 mail kernel: opening tty1...
+> Jan  1 15:11:42 mail kernel: opening tty2...
+> Jan  1 15:11:42 mail kernel: tty_release_dev of tty2 (tty count=2)...
+> Jan  1 15:11:42 mail kernel: tty_release_dev of tty1 (tty count=3)...
+> Jan  1 15:11:42 mail kernel: tty1 vhangup...
+> Jan  1 15:11:42 mail kernel: error attempted to write to tty 
+> [0x(null)] = NULL
+> Jan  1 15:11:42 mail kernel: opening tty2...
+> Jan  1 15:11:42 mail kernel: tty_release_dev of tty2 (tty count=2)...
+> Jan  1 15:11:42 mail kernel: opening tty2...
+> Jan  1 15:11:42 mail kernel: opening tty2...
+> Jan  1 15:11:42 mail kernel: tty_release_dev of tty2 (tty count=3)...
+> Jan  1 15:11:42 mail kernel: opening tty2...
+> Jan  1 15:11:42 mail kernel: tty_release_dev of tty2 (tty count=3)...
+> Jan  1 15:11:42 mail kernel: opening tty2...
+> Jan  1 15:11:42 mail kernel: tty_release_dev of tty2 (tty count=3)...
+> Jan  1 15:11:42 mail kernel: opening tty2...
+> Jan  1 15:11:42 mail kernel: tty_release_dev of tty2 (tty count=3)...
+> Jan  1 15:11:42 mail kernel: opening tty2...
+> Jan  1 15:11:42 mail kernel: tty_release_dev of tty2 (tty count=3)...
+> Jan  1 15:11:42 mail kernel: opening tty2...
+> Jan  1 15:11:42 mail kernel: tty_release_dev of tty2 (tty count=3)...
+> Jan  1 15:11:42 mail kernel: opening tty2...
+> Jan  1 15:11:42 mail kernel: tty_release_dev of tty2 (tty count=3)...
+> Jan  1 15:11:42 mail kernel: opening tty2...
+> Jan  1 15:11:42 mail kernel: opening tty2...
+> Jan  1 15:11:42 mail kernel: tty_release_dev of tty2 (tty count=4)...
+>
+> While I was doing this, I was watching dmesg, not /var/log/message. 
+> Didn't notice time was stuck...
+> Then, I did telinit 5:
+> Jan  1 15:11:42 mail kernel: sky2 eth1: enabling interface
+> Jan  1 15:11:42 mail kernel: ADDRCONF(NETDEV_UP): eth1: link is not ready
+> Jan  1 15:11:42 mail kernel: sky2 eth1: Link is up at 100 Mbps, full 
+> duplex, flow control rx
+> Jan  1 15:11:42 mail kernel: ADDRCONF(NETDEV_CHANGE): eth1: link 
+> becomes ready
+> Jan  1 15:11:42 mail kernel: opening tty2...
+> Jan  1 15:11:42 mail kernel: tty_release_dev of tty2 (tty count=4)...
+> Jan  1 15:11:42 mail kernel: opening tty1...
+> Jan  1 15:11:42 mail kernel: tty_release_dev of tty1 (tty count=2)...
+> Jan  1 15:11:42 mail kernel: opening tty1...
+> Jan  1 15:11:42 mail kernel: tty_release_dev of tty1 (tty count=2)...
+> Jan  1 15:11:42 mail kernel: opening tty1...
+> Jan  1 15:11:42 mail kernel: tty_release_dev of tty1 (tty count=2)...
+> Jan  1 15:11:42 mail kernel: opening tty1...
+> Jan  1 15:11:42 mail kernel: tty_release_dev of tty1 (tty count=2)...
+> Jan  1 15:11:42 mail kernel: opening tty1...
+> Jan  1 15:11:42 mail kernel: tty_release_dev of tty1 (tty count=2)...
+> Jan  1 15:11:42 mail kernel: opening tty1...
+> Jan  1 15:11:42 mail kernel: tty_release_dev of tty1 (tty count=2)...
+> Jan  1 15:11:42 mail kernel: opening tty1...
+> Jan  1 15:11:42 mail kernel: tty_release_dev of tty1 (tty count=2)...
+> Jan  1 15:11:42 mail kernel: opening tty1...
+> Jan  1 15:11:42 mail kernel: tty_release_dev of tty1 (tty count=2)...
+> Jan  1 15:11:42 mail kernel: IPv6 over IPv4 tunneling driver
+> Jan  1 15:11:42 mail kernel: sit0: Disabled Privacy Extensions
+> Jan  1 15:11:42 mail kernel: opening tty1...
+> Jan  1 15:11:42 mail kernel: tty_release_dev of tty1 (tty count=2)...
+> Jan  1 15:11:42 mail kernel: SELinux: initialized (dev cgroup, type 
+> cgroup), uses genfs_contexts
+> Jan  1 15:11:42 mail kernel: opening tty1...
+> Jan  1 15:11:42 mail kernel: tty_release_dev of tty1 (tty count=2)...
+> Jan  1 15:11:42 mail kernel: opening tty1...
+> Jan  1 15:11:42 mail kernel: tty_release_dev of tty1 (tty count=2)...
+> Jan  1 15:11:42 mail kernel: audit rule for LSM 'dhclient_t' is invalid
+> Jan  1 15:11:42 mail kernel: audit rule for LSM 'mcstransd_t' is invalid
+> Jan  1 15:11:42 mail kernel: audit rule for LSM 'samba_t' is invalid
+> Jan  1 15:11:42 mail kernel: audit rule for LSM 'dhclient_t' is invalid
+> Jan  1 15:11:42 mail kernel: audit rule for LSM 'mcstransd_t' is invalid
+> Jan  1 15:11:42 mail kernel: audit rule for LSM 'samba_t' is invalid
+> Jan  1 15:11:42 mail kernel: opening tty1...
+> Jan  1 15:11:42 mail kernel: tty_release_dev of tty1 (tty count=2)...
+> Jan  1 15:11:42 mail kernel: opening tty1...
+> Jan  1 15:11:42 mail kernel: tty_release_dev of tty1 (tty count=2)...
+> Jan  1 15:11:42 mail kernel: opening tty1...
+> Jan  1 15:11:42 mail kernel: tty_release_dev of tty1 (tty count=2)...
+> Jan  1 15:11:42 mail kernel: opening tty1...
+> Jan  1 15:11:42 mail kernel: tty_release_dev of tty1 (tty count=2)...
+> Jan  1 15:11:42 mail kernel: opening tty2...
+> Jan  1 15:11:42 mail kernel: tty_release_dev of tty2 (tty count=4)...
+> Jan  1 15:11:42 mail kernel: opening tty1...
+> Jan  1 15:11:42 mail cpuspeed: Enabling ondemand cpu frequency scaling 
+> governor
+> Jan  1 15:11:42 mail kernel: tty_release_dev of tty1 (tty count=2)...
+> Jan  1 15:11:42 mail kernel: opening tty1...
+> Jan  1 15:11:42 mail kernel: tty_release_dev of tty1 (tty count=2)...
+> Jan  1 15:11:42 mail kernel: opening tty1...
+> Jan  1 15:11:42 mail kernel: tty_release_dev of tty1 (tty count=2)...
+> Jan  1 15:11:42 mail kernel: opening tty1...
+> Jan  1 15:11:42 mail kernel: tty_release_dev of tty1 (tty count=2)...
+> Jan  1 15:11:42 mail kernel: opening tty1...
+> Jan  1 15:11:42 mail kernel: tty_release_dev of tty1 (tty count=2)...
+> Jan  1 15:11:42 mail kernel: opening tty1...
+> Jan  1 15:11:42 mail kernel: tty_release_dev of tty1 (tty count=2)...
+> Jan  1 15:11:42 mail kernel: opening tty1...
+> Jan  1 15:11:42 mail kernel: tty_release_dev of tty1 (tty count=2)...
+> Jan  1 15:11:42 mail kernel: opening tty1...
+> Jan  1 15:11:42 mail kdump: kexec: loaded kdump kernel
+> Jan  1 15:11:42 mail kdump: started up
+> Jan  1 15:11:42 mail kernel: tty_release_dev of tty1 (tty count=2)...
+> Jan  1 15:11:42 mail kernel: opening tty1...
+> Jan  1 15:11:43 mail kernel: tty_release_dev of tty1 (tty count=2)...
+>
+> This is when time increments again ... time jumped ahead and was OK by 
+> the time ntp started. Looks like system time was OK, but syslog was 
+> backlogged.
+>
+> On 01/01/2010 02:26 PM, Michael Breuer wrote:
+>> Running with TTY_DEBUG_HANGUP:
+>>
+>> On boot - lots of stuff opening and closing tty1. Once up and stable 
+>> (runlevel 3), I did initctl stop tty1, and then initctl start tty1. 
+>> This is what was logged:
+>>
+>> Jan  1 14:03:21 mail root: close mingetty1
+>> Jan  1 14:03:21 mail kernel: tty_release_dev of tty1 (tty count=6)...
+>> Jan  1 14:03:21 mail kernel: tty_release_dev of tty1 (tty count=5)...
+>> Jan  1 14:03:21 mail kernel: tty1 vhangup...
+>> Jan  1 14:03:21 mail init: tty1 main process (6031) killed by TERM 
+>> signal
+>> Jan  1 14:03:36 mail root: start mingetty1
+>> Jan  1 14:03:36 mail kernel: error attempted to write to tty 
+>> [0x(null)] = NULL
+>> Jan  1 14:03:36 mail kernel: opening tty1...
+>> Jan  1 14:03:36 mail kernel: tty1 vhangup...
+>> Jan  1 14:03:36 mail kernel: tty_release_dev of tty1 (tty count=5)...
+>>
+>> Start/stop of mingetty on other ttys does not get the NULL write 
+>> error. I am always getting the NULL error when starting mingetty on 
+>> tty1.
+>>
+>> For example:
+>> Jan  1 14:04:11 mail root: restart mingetty2
+>> Jan  1 14:04:11 mail init: tty2 main process (6029) killed by TERM 
+>> signal
+>> Jan  1 14:04:11 mail kernel: tty_release_dev of tty7 (tty count=2)...
+>> Jan  1 14:04:11 mail kernel: tty_release_dev of tty2 (tty count=1)...
+>> Jan  1 14:04:11 mail kernel: freeing tty structure...
+>> Jan  1 14:04:11 mail kernel: opening tty2...
+>> Jan  1 14:04:11 mail kernel: tty2 vhangup...
+>> Jan  1 14:04:11 mail kernel: tty_release_dev of tty2 (tty count=1)...
+>> Jan  1 14:04:11 mail kernel: freeing tty structure...
+>>
+>> While starting/stopping tty2 and X was coming up, I also got this:
+>>
+>> Jan  1 14:04:11 mail root: restart mingetty2
+>> Jan  1 14:04:11 mail init: tty2 main process (6029) killed by TERM 
+>> signal
+>> Jan  1 14:04:11 mail kernel: tty_release_dev of tty7 (tty count=2)...
+>> Jan  1 14:04:11 mail kernel: tty_release_dev of tty2 (tty count=1)...
+>> Jan  1 14:04:11 mail kernel: freeing tty structure...
+>> Jan  1 14:04:11 mail kernel: opening tty2...
+>> Jan  1 14:04:11 mail kernel: tty2 vhangup...
+>> Jan  1 14:04:11 mail kernel: tty_release_dev of tty2 (tty count=1)...
+>> Jan  1 14:04:11 mail kernel: freeing tty structure...
+>> Jan  1 14:04:17 mail gnome-session[6832]: WARNING: Could not parse 
+>> desktop file 
+>> /home/mbreuer/.config/autostart/xfce4-tips-autostart.desktop: Key 
+>> file does not have key 'Name'
+>> Jan  1 14:04:17 mail gnome-session[6832]: WARNING: could not read 
+>> /home/mbreuer/.config/autostart/xfce4-tips-autostart.desktop
+>> Jan  1 14:04:19 mail pulseaudio[7002]: pid.c: Stale PID file, 
+>> overwriting.
+>> Jan  1 14:04:20 mail kernel: opening tty2...
+>> Jan  1 14:04:20 mail kernel: opening pts2...
+>> Jan  1 14:04:20 mail kernel: opening pts2...
+>> Jan  1 14:04:20 mail kernel: tty_release_dev of pts2 (tty count=3)...
+>> Jan  1 14:04:20 mail kernel: opening pts2...
+>> Jan  1 14:04:20 mail kernel: tty_release_dev of pts2 (tty count=3)...
+>> Jan  1 14:04:20 mail kernel: opening pts3...
+>> Jan  1 14:04:20 mail kernel: opening pts3...
+>> Jan  1 14:04:20 mail kernel: tty_release_dev of pts3 (tty count=3)...
+>> Jan  1 14:04:20 mail kernel: opening pts3...
+>> Jan  1 14:04:20 mail kernel: tty_release_dev of pts3 (tty count=3)...
+>> Jan  1 14:04:20 mail kernel: opening pts4...
+>> Jan  1 14:04:20 mail kernel: opening pts4...
+>> Jan  1 14:04:20 mail kernel: tty_release_dev of pts4 (tty count=3)...
+>> Jan  1 14:04:20 mail kernel: opening pts4...
+>> Jan  1 14:04:21 mail kernel: tty_release_dev of pts4 (tty count=3)...
+>> Jan  1 14:04:21 mail kernel: DMA-API: debugging out of memory - 
+>> disabling
+>> Jan  1 14:04:23 mail pulseaudio[7417]: pid.c: Daemon already running.
+>> Jan  1 14:04:24 mail kernel: sky2 0000:06:00.0: error interrupt 
+>> status=0x8
+>> Jan  1 14:04:24 mail kernel: sky2 Tx ring pending=45...52 report=45 
+>> done=47
+>> Jan  1 14:04:24 mail kernel: 44: 0x0: 0xf26a40be(9014)
+>> Jan  1 14:04:24 mail kernel: 46: 0x0: 0xf26a00be(9014)
+>> Jan  1 14:04:24 mail kernel: 48: 0x0: 0xf269c0be(9014)
+>> Jan  1 14:04:24 mail kernel: 50: 0x0: 0xf26980be(9014)
+>> Jan  1 14:04:24 mail kernel: sky2 0000:06:00.0: error interrupt 
+>> status=0x8
+>> Jan  1 14:04:24 mail kernel: sky2 Tx ring pending=47...52 report=47 
+>> done=49
+>> Jan  1 14:04:24 mail kernel: 46: 0x0: 0xf26a00be(9014)
+>> Jan  1 14:04:24 mail kernel: 48: 0x0: 0xf269c0be(9014)
+>> Jan  1 14:04:24 mail kernel: 50: 0x0: 0xf26980be(9014)
+>>
+>> Note the sky2 errors (this time not under load).
+>>
+>> It looks like there is something bad going on with the tty driver.
+>>
+>>
+>> On 01/01/2010 12:42 PM, Michael Breuer wrote:
+>>> More results... Seems that this is related to the tty (or maybe vt 
+>>> or maybe console) driver. I had disabled mingetty on tty1 as a 
+>>> workaround to a Fedora/KDE issue. When I reenabled it, I was then 
+>>> able to recreate this problem (sky2) in runlevel 3.
+>>>
+>>> Retesting, it seems that the following conditions must be met in 
+>>> order for the interrupt errors to happen:
+>>>
+>>> 1) mingetty running on tty1 before the start of the test run
+>>> 2) High sustained incoming load - 25MB/sec or more (as reported by 
+>>> nethogs)
+>>> 3) I've only been able to recreate this using samba & a Windows 7 
+>>> backup - but there could be other triggers
+>>>
+>>> As it happens, much of my other data all came down to mingetty 
+>>> starting or not starting on tty1 at specific points of test 
+>>> preparation. At this point I can recreate 100% of the time if I 
+>>> ensure that there is a mingetty running on tty1, regardless of 
+>>> runlevel; and I can not recreate 100% of the time when there is no 
+>>> mingetty running on tty1 at the start of the test. The results do 
+>>> not change if I start or stop mingetty on tty1 during the test. It's 
+>>> possible that X running on tty1 may also trigger the issue, but I 
+>>> haven't tested that. Note that running mingetty on the other tty's 
+>>> does not affect the outcome of the test. The test is also unaffected 
+>>> if I chvt to or away from tty1 before the test. I do not have to be 
+>>> logged in at the console (on any vt) to trigger the issue.
+>>>
+>>> In a nutshell, to recreate: make sure there is a mingetty running on 
+>>> tty1, blast traffic into the system on eth0 (sky2).
+>>>
+>>>
+>>>
+>>>
+>>> On 12/31/2009 1:09 PM, Michael Breuer wrote:
+>>>> Did some more digging today... Haven't nailed it, but there's 
+>>>> something going on with X and tty...
+>>>>
+>>>> Among other things, when I telinit 3 && telinit 5 the tty keeps 
+>>>> switching between 7 and 8 (nothing else running on either tty). It 
+>>>> would appear that somehow the tty deallocation isn't complete when 
+>>>> X restarts. Also, X grabbing a tty seems to be a requisite step in 
+>>>> recreating the sky2 issue.
+>>>>
+>>>> On 12/30/2009 1:10 PM, Stephen Hemminger wrote:
+>>>>> On Wed, 30 Dec 2009 10:40:56 -0500
+>>>>> Michael Breuer<mbreuer@majjas.com>  wrote:
+>>>>>
+>>>>>> Dec 30 10:37:14 mail kernel: sky2 0000:06:00.0: error interrupt
+>>>>>> status=0x40000008
+>>>>>> Dec 30 10:37:14 mail kernel: sky2 Tx ring pending=31...40 
+>>>>>> report=35 done=35
+>>>>>> Dec 30 10:37:14 mail kernel: 30: 0x0: 0xeb50c0ca(9014)
+>>>>>> Dec 30 10:37:14 mail kernel: 32: 0x0: 0xeb5080ca(9014)
+>>>>>> Dec 30 10:37:14 mail kernel: 34: 0x0: 0xeb5040ca(9014)
+>>>>>> Dec 30 10:37:14 mail kernel: 36: 0x0: 0xeb5000ca(9014)
+>>>>>> Dec 30 10:37:14 mail kernel: 38: 0x0: 0xeb4fc0ca(9014)
+>>>>> You must be using 9K MTU.  Do you see the problem with smaller
+>>>>> MTU?
+>>>>>
+>>>>>> Dec 30 10:37:14 mail kernel: sky2 0000:06:00.0: error interrupt
+>>>>>> status=0x40000008
+>>>>>> Dec 30 10:37:14 mail kernel: sky2 Tx ring pending=87...92 
+>>>>>> report=89 done=91
+>>>>>> Dec 30 10:37:14 mail kernel: 86: 0x0: 0xeafd80ca(9014)
+>>>>>> Dec 30 10:37:14 mail kernel: 88: 0x0: 0xeafd40ca(9014)
+>>>>>> Dec 30 10:37:14 mail kernel: 90: 0x0: 0xeafd00ca(9014)
+>>>>>> Dec 30 10:37:15 mail kernel: sky2 0000:06:00.0: error interrupt 
+>>>>>> status=0x8
+>>>>>> Dec 30 10:37:15 mail kernel: sky2 Tx ring pending=39...42 
+>>>>>> report=39 done=41
+>>>>>> Dec 30 10:37:15 mail kernel: 38: 0x0: 0xe5fec0ca(9014)
+>>>>>> Dec 30 10:37:15 mail kernel: 40: 0x0: 0xe5fe80ca(9014)
+>>>>>> Dec 30 10:37:15 mail kernel: sky2 0000:06:00.0: error interrupt
+>>>>>> status=0x40000008
+>>>>>> Dec 30 10:37:15 mail kernel: sky2 Tx ring pending=117...124 
+>>>>>> report=119
+>>>>>> done=119
+>>>>>> Dec 30 10:37:15 mail kernel: 116: 0x0: 0xe5d6c0ca(9014)
+>>>>>> Dec 30 10:37:15 mail kernel: 118: 0x0: 0xe5d680ca(9014)
+>>>>>> Dec 30 10:37:15 mail kernel: 120: 0x0: 0xe5d660ca(5938)
+>>>>>> Dec 30 10:37:15 mail kernel: 122: 0x0: 0xe5d640ca(4213)
+>>>>
+>>>
+>>> -- 
+>>> To unsubscribe from this list: send the line "unsubscribe 
+>>> linux-kernel" in
+>>> the body of a message to majordomo@vger.kernel.org
+>>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>>> Please read the FAQ at  http://www.tux.org/lkml/
+>>
+>> -- 
+>> To unsubscribe from this list: send the line "unsubscribe 
+>> linux-kernel" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>> Please read the FAQ at  http://www.tux.org/lkml/
+>
 
----
-From: Rafael J. Wysocki <rjw@sisk.pl>
-Subject: PCI / PM / e1000e: Add basic runtime PM support (rev. 3)
-
-Use the PCI run-time power management framework to add simplified
-run-time PM support to the e1000e driver.  Namely, make the driver
-suspend the device when the link is off and set it up for generating
-wake-up event after the link has been detected again.
-
-Based on a patch from Matthew Garrett.
-
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- drivers/net/e1000e/netdev.c |  141 +++++++++++++++++++++++++++++++++++---------
- 1 file changed, 115 insertions(+), 26 deletions(-)
-
-Index: linux-2.6/drivers/net/e1000e/netdev.c
-===================================================================
---- linux-2.6.orig/drivers/net/e1000e/netdev.c
-+++ linux-2.6/drivers/net/e1000e/netdev.c
-@@ -44,6 +44,7 @@
- #include <linux/cpu.h>
- #include <linux/smp.h>
- #include <linux/pm_qos_params.h>
-+#include <linux/pm_runtime.h>
- #include <linux/aer.h>
- 
- #include "e1000.h"
-@@ -3093,12 +3094,15 @@ static int e1000_open(struct net_device 
- {
- 	struct e1000_adapter *adapter = netdev_priv(netdev);
- 	struct e1000_hw *hw = &adapter->hw;
-+	struct pci_dev *pdev = adapter->pdev;
- 	int err;
- 
- 	/* disallow open during test */
- 	if (test_bit(__E1000_TESTING, &adapter->state))
- 		return -EBUSY;
- 
-+	pm_runtime_get_sync(&pdev->dev);
-+
- 	netif_carrier_off(netdev);
- 
- 	/* allocate transmit descriptors */
-@@ -3159,6 +3163,10 @@ static int e1000_open(struct net_device 
- 
- 	netif_start_queue(netdev);
- 
-+	pm_runtime_put_noidle(&pdev->dev);
-+	if (!e1000_has_link(adapter))
-+		pm_schedule_suspend(&pdev->dev, 100);
-+
- 	/* fire a link status change interrupt to start the watchdog */
- 	ew32(ICS, E1000_ICS_LSC);
- 
-@@ -3172,6 +3180,7 @@ err_setup_rx:
- 	e1000e_free_tx_resources(adapter);
- err_setup_tx:
- 	e1000e_reset(adapter);
-+	pm_runtime_put_noidle(&pdev->dev);
- 
- 	return err;
- }
-@@ -3190,11 +3199,17 @@ err_setup_tx:
- static int e1000_close(struct net_device *netdev)
- {
- 	struct e1000_adapter *adapter = netdev_priv(netdev);
-+	struct pci_dev *pdev = adapter->pdev;
- 
- 	WARN_ON(test_bit(__E1000_RESETTING, &adapter->state));
--	e1000e_down(adapter);
-+
-+	pm_runtime_get_sync(&pdev->dev);
-+
-+	if (!test_bit(__E1000_DOWN, &adapter->state)) {
-+		e1000e_down(adapter);
-+		e1000_free_irq(adapter);
-+	}
- 	e1000_power_down_phy(adapter);
--	e1000_free_irq(adapter);
- 
- 	e1000e_free_tx_resources(adapter);
- 	e1000e_free_rx_resources(adapter);
-@@ -3216,6 +3231,8 @@ static int e1000_close(struct net_device
- 	if (adapter->flags & FLAG_HAS_AMT)
- 		e1000_release_hw_control(adapter);
- 
-+	pm_runtime_put_noidle(&pdev->dev);
-+
- 	return 0;
- }
- /**
-@@ -3571,6 +3588,10 @@ static void e1000_watchdog_task(struct w
- 	if (link) {
- 		if (!netif_carrier_ok(netdev)) {
- 			bool txb2b = 1;
-+
-+			/* This is to cancel scheduled suspend requests. */
-+			pm_runtime_resume(netdev->dev.parent);
-+
- 			/* update snapshot of PHY registers on LSC */
- 			e1000_phy_read_status(adapter);
- 			mac->ops.get_link_up_info(&adapter->hw,
-@@ -3686,6 +3707,8 @@ static void e1000_watchdog_task(struct w
- 
- 			if (adapter->flags & FLAG_RX_NEEDS_RESTART)
- 				schedule_work(&adapter->reset_task);
-+			else
-+				pm_schedule_suspend(netdev->dev.parent, 100);
- 		}
- 	}
- 
-@@ -4489,13 +4512,15 @@ out:
- 	return retval;
- }
- 
--static int __e1000_shutdown(struct pci_dev *pdev, bool *enable_wake)
-+static int __e1000_shutdown(struct pci_dev *pdev, bool *enable_wake,
-+			    bool runtime)
- {
- 	struct net_device *netdev = pci_get_drvdata(pdev);
- 	struct e1000_adapter *adapter = netdev_priv(netdev);
- 	struct e1000_hw *hw = &adapter->hw;
- 	u32 ctrl, ctrl_ext, rctl, status;
--	u32 wufc = adapter->wol;
-+	/* Runtime suspend should only enable wakeup for link changes */
-+	u32 wufc = runtime ? E1000_WUFC_LNKC : adapter->wol;
- 	int retval = 0;
- 
- 	netif_device_detach(netdev);
-@@ -4653,40 +4678,59 @@ static void e1000e_disable_l1aspm(struct
- }
- 
- #ifdef CONFIG_PM
--static int e1000_suspend(struct pci_dev *pdev, pm_message_t state)
-+static bool e1000e_pm_ready(struct e1000_adapter *adapter)
-+{
-+	return !!adapter->tx_ring->buffer_info;
-+}
-+
-+static int e1000_idle(struct device *dev)
- {
-+	struct pci_dev *pdev = to_pci_dev(dev);
-+	struct net_device *netdev = pci_get_drvdata(pdev);
-+	struct e1000_adapter *adapter = netdev_priv(netdev);
-+
-+	/*  If we're active, prevent the driver core from changing our state */
-+	if (e1000e_pm_ready(adapter))
-+		return -EBUSY;
-+
-+	pm_schedule_suspend(dev, MSEC_PER_SEC);
-+	return 0;
-+}
-+
-+static int e1000_suspend(struct device *dev)
-+{
-+	struct pci_dev *pdev = to_pci_dev(dev);
- 	int retval;
- 	bool wake;
- 
--	retval = __e1000_shutdown(pdev, &wake);
-+	retval = __e1000_shutdown(pdev, &wake, false);
- 	if (!retval)
- 		e1000_complete_shutdown(pdev, true, wake);
- 
- 	return retval;
- }
- 
--static int e1000_resume(struct pci_dev *pdev)
-+static int e1000_runtime_suspend(struct device *dev)
- {
-+	struct pci_dev *pdev = to_pci_dev(dev);
- 	struct net_device *netdev = pci_get_drvdata(pdev);
- 	struct e1000_adapter *adapter = netdev_priv(netdev);
--	struct e1000_hw *hw = &adapter->hw;
--	u32 err;
-+	bool wake;
- 
--	pci_set_power_state(pdev, PCI_D0);
--	pci_restore_state(pdev);
--	e1000e_disable_l1aspm(pdev);
-+	if (e1000e_pm_ready(adapter))
-+		return __e1000_shutdown(pdev, &wake, true);
- 
--	err = pci_enable_device_mem(pdev);
--	if (err) {
--		dev_err(&pdev->dev,
--			"Cannot enable PCI device from suspend\n");
--		return err;
--	}
-+	return 0;
-+}
- 
--	pci_set_master(pdev);
-+static int __e1000_resume(struct pci_dev *pdev)
-+{
-+	struct net_device *netdev = pci_get_drvdata(pdev);
-+	struct e1000_adapter *adapter = netdev_priv(netdev);
-+	struct e1000_hw *hw = &adapter->hw;
-+	u32 err;
- 
--	pci_enable_wake(pdev, PCI_D3hot, 0);
--	pci_enable_wake(pdev, PCI_D3cold, 0);
-+	e1000e_disable_l1aspm(pdev);
- 
- 	e1000e_set_interrupt_capability(adapter);
- 	if (netif_running(netdev)) {
-@@ -4745,13 +4789,30 @@ static int e1000_resume(struct pci_dev *
- 
- 	return 0;
- }
-+
-+static int e1000_resume(struct device *dev)
-+{
-+	return __e1000_resume(to_pci_dev(dev));
-+}
-+
-+static int e1000_runtime_resume(struct device *dev)
-+{
-+	struct pci_dev *pdev = to_pci_dev(dev);
-+	struct net_device *netdev = pci_get_drvdata(pdev);
-+	struct e1000_adapter *adapter = netdev_priv(netdev);
-+
-+	if (e1000e_pm_ready(adapter))
-+		return __e1000_resume(pdev);
-+
-+	return 0;
-+}
- #endif
- 
- static void e1000_shutdown(struct pci_dev *pdev)
- {
- 	bool wake = false;
- 
--	__e1000_shutdown(pdev, &wake);
-+	__e1000_shutdown(pdev, &wake, false);
- 
- 	if (system_state == SYSTEM_POWER_OFF)
- 		e1000_complete_shutdown(pdev, false, wake);
-@@ -5231,6 +5292,11 @@ static int __devinit e1000_probe(struct 
- 
- 	e1000_print_device_info(adapter);
- 
-+	if (pci_dev_run_wake(pdev)) {
-+		pm_runtime_set_active(&pdev->dev);
-+		pm_runtime_enable(&pdev->dev);
-+	}
-+
- 	return 0;
- 
- err_register:
-@@ -5273,12 +5339,16 @@ static void __devexit e1000_remove(struc
- {
- 	struct net_device *netdev = pci_get_drvdata(pdev);
- 	struct e1000_adapter *adapter = netdev_priv(netdev);
-+	bool down = test_bit(__E1000_DOWN, &adapter->state);
-+
-+	pm_runtime_get_sync(&pdev->dev);
- 
- 	/*
- 	 * flush_scheduled work may reschedule our watchdog task, so
- 	 * explicitly disable watchdog tasks from being rescheduled
- 	 */
--	set_bit(__E1000_DOWN, &adapter->state);
-+	if (!down)
-+		set_bit(__E1000_DOWN, &adapter->state);
- 	del_timer_sync(&adapter->watchdog_timer);
- 	del_timer_sync(&adapter->phy_info_timer);
- 
-@@ -5292,8 +5362,17 @@ static void __devexit e1000_remove(struc
- 	if (!(netdev->flags & IFF_UP))
- 		e1000_power_down_phy(adapter);
- 
-+	/* Don't lie to e1000_close() down the road. */
-+	if (!down)
-+		clear_bit(__E1000_DOWN, &adapter->state);
- 	unregister_netdev(netdev);
- 
-+	if (pci_dev_run_wake(pdev)) {
-+		pm_runtime_disable(&pdev->dev);
-+		pm_runtime_set_suspended(&pdev->dev);
-+	}
-+	pm_runtime_put_noidle(&pdev->dev);
-+
- 	/*
- 	 * Release control of h/w to f/w.  If f/w is AMT enabled, this
- 	 * would have already happened in close and is redundant.
-@@ -5393,6 +5472,18 @@ static struct pci_device_id e1000_pci_tb
- };
- MODULE_DEVICE_TABLE(pci, e1000_pci_tbl);
- 
-+static const struct dev_pm_ops e1000_pm_ops = {
-+	.suspend  = e1000_suspend,
-+	.resume   = e1000_resume,
-+	.freeze = e1000_suspend,
-+	.thaw = e1000_resume,
-+	.poweroff = e1000_suspend,
-+	.restore = e1000_resume,
-+	.runtime_suspend = e1000_runtime_suspend,
-+	.runtime_resume = e1000_runtime_resume,
-+	.runtime_idle = e1000_idle,
-+};
-+
- /* PCI Device API Driver */
- static struct pci_driver e1000_driver = {
- 	.name     = e1000e_driver_name,
-@@ -5400,9 +5491,7 @@ static struct pci_driver e1000_driver = 
- 	.probe    = e1000_probe,
- 	.remove   = __devexit_p(e1000_remove),
- #ifdef CONFIG_PM
--	/* Power Management Hooks */
--	.suspend  = e1000_suspend,
--	.resume   = e1000_resume,
-+	.driver.pm = &e1000_pm_ops,
- #endif
- 	.shutdown = e1000_shutdown,
- 	.err_handler = &e1000_err_handler
