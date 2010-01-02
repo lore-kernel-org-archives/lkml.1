@@ -1,59 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752277Ab0ABBmx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752317Ab0ABCZr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752277Ab0ABBmx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jan 2010 20:42:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752191Ab0ABBmw
+	id S1752317Ab0ABCZr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jan 2010 21:25:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752251Ab0ABCZr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jan 2010 20:42:52 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:35890 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752149Ab0ABBmw (ORCPT
+	Fri, 1 Jan 2010 21:25:47 -0500
+Received: from rcsinet12.oracle.com ([148.87.113.124]:17990 "EHLO
+	rcsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752196Ab0ABCZq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jan 2010 20:42:52 -0500
-To: Samuel Thibault <samuel.thibault@ens-lyon.org>
-Cc: Stefani Seibold <stefani@seibold.net>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org
-Subject: Re: [PATCH] proc: revert to show stack information in /proc/{pid}/status
-From: Andi Kleen <andi@firstfloor.org>
-References: <20091231231051.1A1B.A69D9226@jp.fujitsu.com>
-	<1262274494.14143.7.camel@wall-e>
-	<20100101155630.1A1E.A69D9226@jp.fujitsu.com>
-	<1262358616.11460.18.camel@wall-e> <20100101220529.GL4620@const>
-Date: Sat, 02 Jan 2010 02:42:48 +0100
-In-Reply-To: <20100101220529.GL4620@const> (Samuel Thibault's message of "Fri, 1 Jan 2010 23:05:29 +0100")
-Message-ID: <87k4w1704n.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+	Fri, 1 Jan 2010 21:25:46 -0500
+Date: Fri, 1 Jan 2010 18:25:14 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Jeff Layton <jlayton@redhat.com>
+Cc: Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org,
+       linux-nfs@vger.kernel.org
+Subject: [PATCH v2] sunrpc: fix build-time warning
+Message-Id: <20100101182514.cb1f49ef.randy.dunlap@oracle.com>
+In-Reply-To: <20091231205454.0f84f091@tupile.poochiereds.net>
+References: <1262226195-27733-1-git-send-email-jlayton@redhat.com>
+	<20091231091815.a1ea7e51.rdunlap@xenotime.net>
+	<20091231205454.0f84f091@tupile.poochiereds.net>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt356.oracle.com [141.146.40.156]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090204.4B3EAE8D.00EB:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Samuel Thibault <samuel.thibault@ens-lyon.org> writes:
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-> Stefani Seibold, le Fri 01 Jan 2010 16:10:16 +0100, a écrit :
->> But ps is not a performance critical application nor a cat
->> /proc/*/status!
->
-> Errr, maybe not so much as some other operations, but a lot of tools use
-> them, so it's really worth considering it.
+Fix auth_gss printk format warning:
 
-As an historical anecdote one of my first patches to Linux ever made
-exactly the same mistake as Stefani's (adding mmap_sem to a proc file
-read by proc). It was quickly reverted again by Linus when the
-reports of ps not working under swapping poured in.
+net/sunrpc/auth_gss/auth_gss.c:660: warning: format '%ld' expects type 'long int', but argument 3 has type 'ssize_t'
 
-Same should be done with this patch (commit 9ebd4eba761b624a6a6c9189335adeddcb1fa0e0)
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ net/sunrpc/auth_gss/auth_gss.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
--Andi
-
--- 
-ak@linux.intel.com -- Speaking for myself only.
+--- linux-next-20091229.orig/net/sunrpc/auth_gss/auth_gss.c
++++ linux-next-20091229/net/sunrpc/auth_gss/auth_gss.c
+@@ -657,7 +657,7 @@ gss_pipe_downcall(struct file *filp, con
+ 			break;
+ 		default:
+ 			printk(KERN_CRIT "%s: bad return from "
+-				"gss_fill_context: %ld\n", __func__, err);
++				"gss_fill_context: %zd\n", __func__, err);
+ 			BUG();
+ 		}
+ 		goto err_release_msg;
+---
