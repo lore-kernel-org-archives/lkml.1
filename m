@@ -1,51 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752686Ab0ABPJe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752275Ab0ABWfR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752686Ab0ABPJe (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Jan 2010 10:09:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751492Ab0ABPJd
+	id S1752275Ab0ABWfR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Jan 2010 17:35:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751446Ab0ABWfP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Jan 2010 10:09:33 -0500
-Received: from mail-iw0-f171.google.com ([209.85.223.171]:53466 "EHLO
-	mail-iw0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751460Ab0ABPJd (ORCPT
+	Sat, 2 Jan 2010 17:35:15 -0500
+Received: from mail-fx0-f225.google.com ([209.85.220.225]:45400 "EHLO
+	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751022Ab0ABWfN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Jan 2010 10:09:33 -0500
+	Sat, 2 Jan 2010 17:35:13 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
-        b=tzMRbBvTq55CZ7ajGLzfbauVdQQpZoEf3u9nkcsKYm6BI0rN5gDUGt41KgvF+a+QFx
-         XLELL55WQUd9kg87Zck8Ecwca7vCxSbOsqLxPLCQJY7mtj91JM0QxjdnP6bU0zsqjjS1
-         Ot9k/obFDGvzcEwhDCZum8Zob2nAMDWMznTgY=
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=nBNFIGpqus7Teu85Q/ZhGio6e9gQp/WzK0GEEOJuOb7/u9Y5WyMpW85xdzyOFUl0GI
+         k9tUjr59Yqbx8WQAHkpiwSnkEFIYjqOm5K+VKnSN64zrdQjYMEyjedyt4tdwNS0QTWM2
+         OIjSRZKVF9/bxh/C8dmSYQnH963ngsijQXBfg=
+Date: Sat, 2 Jan 2010 23:34:17 +0100
+From: "Carlos R. Mafra" <crmafra2@gmail.com>
+To: linux-btrfs@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Chris Mason <chris.mason@oracle.com>
+Subject: Re: 2.6.33-rc2+ bug in fs/btrfs/ordered-data.c:672
+Message-ID: <20100102223416.GA6090@Pilar>
+References: <20100102103227.GA3678@Pilar.aei.mpg.de>
 MIME-Version: 1.0
-In-Reply-To: <1262443500.6408.3.camel@laptop>
-References: <1262339141-4682-1-git-send-email-kosaki.motohiro@jp.fujitsu.com>
-	 <1262387986.16572.234.camel@laptop>
-	 <2f11576a1001012121o4f09d30n6dba925e74099da1@mail.gmail.com>
-	 <1262429166.32223.32.camel@laptop>
-	 <2f11576a1001020529l729caebawc4364690f1df56cb@mail.gmail.com>
-	 <1262443500.6408.3.camel@laptop>
-Date: Sun, 3 Jan 2010 00:09:32 +0900
-X-Google-Sender-Auth: 6c18b8d51dcdcfaa
-Message-ID: <2f11576a1001020709m106b16fcqa15ee41a1a8e22a@mail.gmail.com>
-Subject: Re: [PATCH] mm, lockdep: annotate reclaim context to zone reclaim too
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100102103227.GA3678@Pilar.aei.mpg.de>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2010/1/2 Peter Zijlstra <peterz@infradead.org>:
-> On Sat, 2010-01-02 at 22:29 +0900, KOSAKI Motohiro wrote:
->
->> When recursive annotation occur?
->
-> Dunno, I told you you'd have to make sure it doesn't.
+On Sa  2.Jan'10 at 11:32:27 +0100, Carlos R. Mafra wrote:
+> I started testing btrfs for my /home a few days ago and yesterday
+> I hit a kernel bug, using 2.6.33-rc2-00187-g08d869a.
+> 
+> I wasn't doing any stress test with it, I was simply watching a
+> DVD with xine while chrome was open in another workspace.
 
-Please see PF_MEMALLOC turning on/off operation points. all
-PF_MEMALLOC turing on point prevent recersive already.
-(because, otherwise we lost PF_MEMALLOC and makes deadlock...)
+Today I hit the bug twice, and it was always with chrome. I've
+seen the other two reports in kerneloops.org involving
+btrfs_ordered_update_i_size() and chrome was there too.
+
+And now I saved the dmesg in the ext3 partition, so now there
+is no need for the photo,
+
+
+[13450.613952] ------------[ cut here ]------------
+[13450.613957] kernel BUG at fs/btrfs/ordered-data.c:672!
+[13450.613960] invalid opcode: 0000 [#1] SMP 
+[13450.613963] last sysfs file: /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq
+[13450.613966] CPU 1 
+[13450.613970] Pid: 3372, comm: chrome Not tainted 2.6.33-rc2-fs-00187-g08d869a #293 VAIO/VGN-FZ240E
+[13450.613973] RIP: 0010:[<ffffffff811d9537>]  [<ffffffff811d9537>] btrfs_ordered_update_i_size+0x237/0x3d0
+[13450.613982] RSP: 0018:ffff880071355da8  EFLAGS: 00010287
+[13450.613984] RAX: ffff88007f0c0728 RBX: 0000000000000000 RCX: ffff880077c0c6a8
+[13450.613986] RDX: 00000000002b5000 RSI: 0000000000000000 RDI: ffff880077c0c6b8
+[13450.613989] RBP: ffff880071355e18 R08: 0000000000000000 R09: 0000000000000000
+[13450.613991] R10: 0000000000000000 R11: 0000000000000000 R12: ffff8800729dd260
+[13450.613993] R13: 00000000002b4b24 R14: 0000000000000000 R15: 00000000002b4b24
+[13450.613996] FS:  00007f2b3db68910(0000) GS:ffff880001b00000(0000) knlGS:0000000000000000
+[13450.613999] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+[13450.614001] CR2: 00007f2b3c2a4000 CR3: 0000000071167000 CR4: 00000000000006e0
+[13450.614003] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+[13450.614005] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+[13450.614008] Process chrome (pid: 3372, threadinfo ffff880071354000, task ffff88007d380640)
+[13450.614010] Stack:
+[13450.614011]  ffff8800729dd0c0 0000000000000000 fffffffffffff000 0000000000000fff
+[13450.614015] <0> ffff8800729dd0f0 ffff88007c7cc000 ffff8800729dd0c0 ffff8800729dd170
+[13450.614019] <0> ffff880071355e18 ffff880071355ee8 ffff8800729dd260 0000000000000000
+[13450.614023] Call Trace:
+[13450.614028]  [<ffffffff811c915d>] btrfs_setattr+0x17d/0x270
+[13450.614033]  [<ffffffff810e5fe4>] notify_change+0x104/0x2e0
+[13450.614037]  [<ffffffff810ce84f>] do_truncate+0x5f/0x90
+[13450.614041]  [<ffffffff810d0002>] ? vfs_write+0x132/0x180
+[13450.614044]  [<ffffffff810cef79>] sys_ftruncate+0xe9/0x130
+[13450.614049]  [<ffffffff81002dab>] system_call_fastpath+0x16/0x1b
+[13450.614050] Code: 0f 1f 40 00 eb 88 66 0f 1f 44 00 00 49 8b 84 24 38 ff ff ff 48 85 c0 74 1b 48 8b 50 98 49 39 d5 72 12 48 03 50 a8 49 39 d5 73 09 <0f> 0b eb fe 0f 1f 44 00 00 49 8b 94 24 30 ff ff ff 48 89 55 b8 
+[13450.614082] RIP  [<ffffffff811d9537>] btrfs_ordered_update_i_size+0x237/0x3d0
+[13450.614087]  RSP <ffff880071355da8>
+[13450.614090] ---[ end trace 74172209f4d15206 ]---
