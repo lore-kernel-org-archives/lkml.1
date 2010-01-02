@@ -1,84 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752275Ab0ABWfR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751934Ab0ABUSp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752275Ab0ABWfR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Jan 2010 17:35:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751446Ab0ABWfP
+	id S1751934Ab0ABUSp (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Jan 2010 15:18:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751599Ab0ABUSo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Jan 2010 17:35:15 -0500
-Received: from mail-fx0-f225.google.com ([209.85.220.225]:45400 "EHLO
+	Sat, 2 Jan 2010 15:18:44 -0500
+Received: from mail-fx0-f225.google.com ([209.85.220.225]:34964 "EHLO
 	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751022Ab0ABWfN (ORCPT
+	with ESMTP id S1751446Ab0ABUSn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Jan 2010 17:35:13 -0500
+	Sat, 2 Jan 2010 15:18:43 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=nBNFIGpqus7Teu85Q/ZhGio6e9gQp/WzK0GEEOJuOb7/u9Y5WyMpW85xdzyOFUl0GI
-         k9tUjr59Yqbx8WQAHkpiwSnkEFIYjqOm5K+VKnSN64zrdQjYMEyjedyt4tdwNS0QTWM2
-         OIjSRZKVF9/bxh/C8dmSYQnH963ngsijQXBfg=
-Date: Sat, 2 Jan 2010 23:34:17 +0100
-From: "Carlos R. Mafra" <crmafra2@gmail.com>
-To: linux-btrfs@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Chris Mason <chris.mason@oracle.com>
-Subject: Re: 2.6.33-rc2+ bug in fs/btrfs/ordered-data.c:672
-Message-ID: <20100102223416.GA6090@Pilar>
-References: <20100102103227.GA3678@Pilar.aei.mpg.de>
+        h=mime-version:date:message-id:subject:from:to:cc:content-type;
+        b=Pa+EgrUpGHqstvm7wwU5+nWuPOa1KLBWkTxIg3MF7jzHWyss26/zau+KP6WCHgpT9H
+         eYV9QZPAq2BRNOGGnbXTJAkaJ3IbBYhMY0S/rqwWoa8RaXhlSRvd2EEd9YFSzR3xmSiE
+         o+L4+rckRyBYu87WOjk1LkGWIvteo08SRgmEk=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100102103227.GA3678@Pilar.aei.mpg.de>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Date: Sun, 3 Jan 2010 00:18:42 +0400
+Message-ID: <1a297b361001021218q609696e7n3e7f5084287ba3eb@mail.gmail.com>
+Subject: staging Patch 04/04: Crystal HD
+From: Manu Abraham <abraham.manu@gmail.com>
+To: Greg KH <greg@kroah.com>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: multipart/mixed; boundary=0016364d1fddce78c7047c343100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sa  2.Jan'10 at 11:32:27 +0100, Carlos R. Mafra wrote:
-> I started testing btrfs for my /home a few days ago and yesterday
-> I hit a kernel bug, using 2.6.33-rc2-00187-g08d869a.
-> 
-> I wasn't doing any stress test with it, I was simply watching a
-> DVD with xine while chrome was open in another workspace.
-
-Today I hit the bug twice, and it was always with chrome. I've
-seen the other two reports in kerneloops.org involving
-btrfs_ordered_update_i_size() and chrome was there too.
-
-And now I saved the dmesg in the ext3 partition, so now there
-is no need for the photo,
+--0016364d1fddce78c7047c343100
+Content-Type: text/plain; charset=ISO-8859-1
 
 
-[13450.613952] ------------[ cut here ]------------
-[13450.613957] kernel BUG at fs/btrfs/ordered-data.c:672!
-[13450.613960] invalid opcode: 0000 [#1] SMP 
-[13450.613963] last sysfs file: /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq
-[13450.613966] CPU 1 
-[13450.613970] Pid: 3372, comm: chrome Not tainted 2.6.33-rc2-fs-00187-g08d869a #293 VAIO/VGN-FZ240E
-[13450.613973] RIP: 0010:[<ffffffff811d9537>]  [<ffffffff811d9537>] btrfs_ordered_update_i_size+0x237/0x3d0
-[13450.613982] RSP: 0018:ffff880071355da8  EFLAGS: 00010287
-[13450.613984] RAX: ffff88007f0c0728 RBX: 0000000000000000 RCX: ffff880077c0c6a8
-[13450.613986] RDX: 00000000002b5000 RSI: 0000000000000000 RDI: ffff880077c0c6b8
-[13450.613989] RBP: ffff880071355e18 R08: 0000000000000000 R09: 0000000000000000
-[13450.613991] R10: 0000000000000000 R11: 0000000000000000 R12: ffff8800729dd260
-[13450.613993] R13: 00000000002b4b24 R14: 0000000000000000 R15: 00000000002b4b24
-[13450.613996] FS:  00007f2b3db68910(0000) GS:ffff880001b00000(0000) knlGS:0000000000000000
-[13450.613999] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-[13450.614001] CR2: 00007f2b3c2a4000 CR3: 0000000071167000 CR4: 00000000000006e0
-[13450.614003] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-[13450.614005] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-[13450.614008] Process chrome (pid: 3372, threadinfo ffff880071354000, task ffff88007d380640)
-[13450.614010] Stack:
-[13450.614011]  ffff8800729dd0c0 0000000000000000 fffffffffffff000 0000000000000fff
-[13450.614015] <0> ffff8800729dd0f0 ffff88007c7cc000 ffff8800729dd0c0 ffff8800729dd170
-[13450.614019] <0> ffff880071355e18 ffff880071355ee8 ffff8800729dd260 0000000000000000
-[13450.614023] Call Trace:
-[13450.614028]  [<ffffffff811c915d>] btrfs_setattr+0x17d/0x270
-[13450.614033]  [<ffffffff810e5fe4>] notify_change+0x104/0x2e0
-[13450.614037]  [<ffffffff810ce84f>] do_truncate+0x5f/0x90
-[13450.614041]  [<ffffffff810d0002>] ? vfs_write+0x132/0x180
-[13450.614044]  [<ffffffff810cef79>] sys_ftruncate+0xe9/0x130
-[13450.614049]  [<ffffffff81002dab>] system_call_fastpath+0x16/0x1b
-[13450.614050] Code: 0f 1f 40 00 eb 88 66 0f 1f 44 00 00 49 8b 84 24 38 ff ff ff 48 85 c0 74 1b 48 8b 50 98 49 39 d5 72 12 48 03 50 a8 49 39 d5 73 09 <0f> 0b eb fe 0f 1f 44 00 00 49 8b 94 24 30 ff ff ff 48 89 55 b8 
-[13450.614082] RIP  [<ffffffff811d9537>] btrfs_ordered_update_i_size+0x237/0x3d0
-[13450.614087]  RSP <ffff880071355da8>
-[13450.614090] ---[ end trace 74172209f4d15206 ]---
+
+--0016364d1fddce78c7047c343100
+Content-Type: text/x-patch; charset=US-ASCII; name="0004--Crystal-HD-Add-TODO.patch"
+Content-Disposition: attachment; filename="0004--Crystal-HD-Add-TODO.patch"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_g3yucbx31
+
+RnJvbSBhNDk1N2Q3ZDI1NWRlYzZkZWM1YjhmYmQ4MTlmZjg0YmQ4YTBjMGVmIE1vbiBTZXAgMTcg
+MDA6MDA6MDAgMjAwMQpGcm9tOiBNYW51IEFicmFoYW0gPGFicmFoYW0ubWFudUBnbWFpbC5jb20+
+CkRhdGU6IFN1biwgMyBKYW4gMjAxMCAwMDowNTozMCArMDQwMApTdWJqZWN0OiBbUEFUQ0hdIFtD
+cnlzdGFsIEhEXSBBZGQgVE9ETwoKU2lnbmVkLW9mZi1ieTogTWFudSBBYnJhaGFtIDxhYnJhaGFt
+Lm1hbnVAZ21haWwuY29tPgotLS0KIGRyaXZlcnMvc3RhZ2luZy9jcnlzdGFsLWhkL1RPRE8gfCAg
+IDE0ICsrKysrKysrKysrKysrCiAxIGZpbGVzIGNoYW5nZWQsIDE0IGluc2VydGlvbnMoKyksIDAg
+ZGVsZXRpb25zKC0pCiBjcmVhdGUgbW9kZSAxMDA2NDQgZHJpdmVycy9zdGFnaW5nL2NyeXN0YWwt
+aGQvVE9ETwoKZGlmZiAtLWdpdCBhL2RyaXZlcnMvc3RhZ2luZy9jcnlzdGFsLWhkL1RPRE8gYi9k
+cml2ZXJzL3N0YWdpbmcvY3J5c3RhbC1oZC9UT0RPCm5ldyBmaWxlIG1vZGUgMTAwNjQ0CmluZGV4
+IDAwMDAwMDAuLmUwYjgxOTEKLS0tIC9kZXYvbnVsbAorKysgYi9kcml2ZXJzL3N0YWdpbmcvY3J5
+c3RhbC1oZC9UT0RPCkBAIC0wLDAgKzEsMTQgQEAKKyAtIFRlc3RpbmcKKyAtIENsZWFudXAgcmV0
+dXJuIGNvZGVzCisgLSBDbGVhbnVwIHR5cGVkZWZzCisgLSBDbGVhbnVwIGFsbCBXSU4qIHJlZmVy
+ZW5jZXMKKyAtIEFsbG9jYXRlIGFuIEFjY2VsZXJhdG9yIGRldmljZSBjbGFzcyBzcGVjaWZpYyBN
+YWpvciBudW1iZXIsCisgICBzaW5jZSB3ZSBkb24ndCBoYXZlIGFueSBvdGhlciBvcGVuIHNvdXJj
+ZWQgYWNjZWxlcmF0b3JzLCBpdCBpcyB0aGUgb25seQorICAgb25lIGluIHRoYXQgY2F0ZWdvcnkg
+Zm9yIG5vdy4KKyAgIEEgc29tZXdoYXQgc2ltaWxhciBkZXZpY2UgaXMgdGhlIERYUjIvMworCitQ
+bGVhc2Ugc2VuZCBwYXRjaGVzIHRvOgorR3JlZyBLcm9haC1IYXJ0bWFuIDxncmVnQGtyb2FoLmNv
+bT4KK05hcmVuIFNhbmthciA8bnNhbmthckBicm9hZGNvbS5jb20+CitQcmFzYWQgQm9saXNldHR5
+IDxwcmFzYWRiQGJyb2FkY29tLmNvbT4KK01hbnUgQWJyYWhhbSA8YWJyYWhhbS5tYW51QGdtYWls
+LmNvbT4KLS0gCjEuNS42Cgo=
+--0016364d1fddce78c7047c343100--
