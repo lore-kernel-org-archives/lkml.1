@@ -1,59 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751212Ab0ABRnS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751821Ab0ABT2Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751212Ab0ABRnS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Jan 2010 12:43:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750938Ab0ABRnS
+	id S1751821Ab0ABT2Y (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Jan 2010 14:28:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751542Ab0ABT2X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Jan 2010 12:43:18 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:36495 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750747Ab0ABRnR (ORCPT
+	Sat, 2 Jan 2010 14:28:23 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:39174 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751330Ab0ABT2W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Jan 2010 12:43:17 -0500
-Date: Sat, 2 Jan 2010 18:43:12 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Christian Kujau <lists@nerdbynature.de>,
-       Alexander Beregalov <a.beregalov@gmail.com>,
-       Chris Mason <chris.mason@oracle.com>, Ingo Molnar <mingo@elte.hu>
-Subject: reiserfs broken in 2.6.32 was Re: [GIT PULL] reiserfs fixes
-Message-ID: <20100102174311.GA30016@basil.fritz.box>
-References: <1262395636-8647-1-git-send-regression-fweisbec@gmail.com> <87bphc7heo.fsf@basil.nowhere.org> <20100102163644.GA5076@nowhere>
+	Sat, 2 Jan 2010 14:28:22 -0500
+Date: Sat, 2 Jan 2010 14:56:09 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Eric Miao <eric.y.miao@gmail.com>, rpurdie@rpsys.net, lenz@cs.wisc.edu,
+       kernel list <linux-kernel@vger.kernel.org>, Dirk@opfer-online.de,
+       arminlitzel@web.de, Cyril Hrubis <metan@ucw.cz>, thommycheck@gmail.com,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+       dbaryshkov@gmail.com, omegamoon@gmail.com, utx@penguin.cz,
+       linux-input@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: 32-rc1 aka 32-rc2: warning at manage.c:361 (set_irq_wake),
+	matrix-keypad related?
+Message-ID: <20100102135608.GA5872@ucw.cz>
+References: <20090930200746.GA1384@ucw.cz> <20091006050649.GH27881@core.coreip.homeip.net> <20091006075816.GA1362@ucw.cz> <20091007043603.GC10204@core.coreip.homeip.net> <f17812d70910070742y5e27f9c3u38e3299b94f33613@mail.gmail.com> <20091007163327.GA12053@core.coreip.homeip.net> <20091007211225.GB17805@elf.ucw.cz> <20091203031709.GE9121@core.coreip.homeip.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20100102163644.GA5076@nowhere>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20091203031709.GE9121@core.coreip.homeip.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I only have reiserfs partitions in my laptop and my testbox,
-> nothing else. And that because I'm now maintaining it de facto.
+Hi!
 
-AFAIK it's widely used in SUSE installations. It was the default
-for a long time.
+> > > We ignore the failure right now in the mainline but that causes stack
+> > > traces on resume as we trying to disable not enabled wakeup GPIOs. That
+> > > was original Pavel's complaint.
+> > 
+> > Yep...
+> > 
+> > I'd say that BUG() simply should not trigger if wakeup can not be
+> > enabled/disabled for particular source...?
+> 
+> Pavel,
+> 
+> Could you please try the patch below and let me know if it fixes the
+> problem for you?
 
-And right now as in 2.6.32 it's in a state of
-"may randomly explode/deadlock". And no clear path out of it. Not good.
+(sorry for long delay).
 
-I am very concerned about destabilizing a widely used file system
-like this. This has the potential to really hurt users.
+With 33-rc1+your patch, warnings are no longer there. 
 
-> - that would require a notifier in schedule(), one notifier
->   per sub-bkl. That's horrible for performances. And for
->   the scheduler. I will be the first to NAK.
+I still have one on irq191, but that's gpio button driver.
 
-I thought the original idea was to find everything that 
-can sleep in reiserfs and simply wrap it with lock dropping?
+But please, hold the patch for few more days. I may have cleaner/nicer
+solution. It seems that zaurus is doing something very stupid in low layers.
 
-That should be roughly equivalent to the old BKL semantics.
-
-Where did it go wrong?
-
--Andi
+Thanks,
+								Pavel
 -- 
-ak@linux.intel.com -- Speaking for myself only.
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
