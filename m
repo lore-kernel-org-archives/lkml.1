@@ -1,108 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751690Ab0ABTSj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752743Ab0ABPL5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751690Ab0ABTSj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Jan 2010 14:18:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751375Ab0ABTSi
+	id S1752743Ab0ABPL5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Jan 2010 10:11:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752609Ab0ABPL4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Jan 2010 14:18:38 -0500
-Received: from casper.infradead.org ([85.118.1.10]:59281 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751370Ab0ABTSh convert rfc822-to-8bit (ORCPT
+	Sat, 2 Jan 2010 10:11:56 -0500
+Received: from smtp-out003.kontent.com ([81.88.40.217]:47502 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751684Ab0ABPLz convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Jan 2010 14:18:37 -0500
-Date: Sat, 2 Jan 2010 11:21:08 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: tglx@linutronix.de
-Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
-Subject: [PATCH v2] timer: Introduce mod_timer_msec()
-Message-ID: <20100102112108.574396fd@infradead.org>
-In-Reply-To: <877hs0724u.fsf@basil.nowhere.org>
-References: <20100102104853.28505e39@infradead.org>
-	<20100102105012.40d678f2@infradead.org>
-	<877hs0724u.fsf@basil.nowhere.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.6; i586-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 2 Jan 2010 10:11:55 -0500
+From: Oliver Neukum <oliver@neukum.org>
+To: =?utf-8?q?Bart=C5=82omiej_Zimo=C5=84?= <uzi18@o2.pl>
+Subject: Re: [suspend/resume] Re: userspace notification from module
+Date: Sat, 2 Jan 2010 16:11:52 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.32-0.1-default; KDE/4.3.1; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org
+References: <686edb2c.6263643a.4b3f4a3b.b60b3@o2.pl> <4B3F5264.7000008@gmail.com> <58607309.1e2f721f.4b3f57c0.807d3@o2.pl>
+In-Reply-To: <58607309.1e2f721f.4b3f57c0.807d3@o2.pl>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+Message-Id: <201001021611.52672.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 00075f95043a8f9bafebad5e6f3ab06c81431768 Mon Sep 17 00:00:00 2001
-From: Arjan van de Ven <arjan@linux.intel.com>
-Date: Sat, 2 Jan 2010 10:37:57 -0800
-Subject: [PATCH] timer: Introduce mod_timer_msec()
+Am Samstag, 2. Januar 2010 15:27:12 schrieb Bartłomiej Zimoń:
+> > Register your pids to the kernel module, e.g. via ioctl, and if the
+> > (intra-kernel) notification will be delivered to your module you just
+> > send a signal to your registered processes via kill_proc_info(). Guess
+> > this is at least better than polling a file or sth similar.
+> > 
+> > I guess netlink could be the "cleaner" solution, but with more overhead?!
+> > 
+> 
+> This looks like more simple and could be good, after all i think about sending this 
+> module here to add to kernel. So if this solution could be ok i will start to code this part.
 
-It is a common paradigm in drivers to want to set/change a timer
-for a relative amount of milliseconds.
+This has all sorts of implications starting with fork() and going to passing
+fds over sockets and so on. It is a very bad idea. Use a standard device
+and all infrastructure for getting SIGIO is in place.
 
-This patch adds a mod_timer_msec() API function to make this easier
-and to remove the awareness of both "jiffies" and the HZ value from
-various drivers that don't care about such implementation detail.
-
-Conversion of various users of the API are done in separate patches
-that will go via the various maintainers separately.
-
-Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
-
-
----
- include/linux/timer.h |    1 +
- kernel/timer.c        |   20 ++++++++++++++++++++
- 2 files changed, 21 insertions(+), 0 deletions(-)
-
-diff --git a/include/linux/timer.h b/include/linux/timer.h
-index a2d1eb6..763f58f 100644
---- a/include/linux/timer.h
-+++ b/include/linux/timer.h
-@@ -162,6 +162,7 @@ static inline int timer_pending(const struct timer_list * timer)
- extern void add_timer_on(struct timer_list *timer, int cpu);
- extern int del_timer(struct timer_list * timer);
- extern int mod_timer(struct timer_list *timer, unsigned long expires);
-+extern int mod_timer_msec(struct timer_list *timer, unsigned long delay_ms);
- extern int mod_timer_pending(struct timer_list *timer, unsigned long expires);
- extern int mod_timer_pinned(struct timer_list *timer, unsigned long expires);
- 
-diff --git a/kernel/timer.c b/kernel/timer.c
-index 15533b7..0efd9fa 100644
---- a/kernel/timer.c
-+++ b/kernel/timer.c
-@@ -749,6 +749,26 @@ int mod_timer(struct timer_list *timer, unsigned long expires)
- EXPORT_SYMBOL(mod_timer);
- 
- /**
-+ * mod_timer_msec - modify a timer's timeout, using relative milliseconds
-+ * @timer: the timer to be modified
-+ * @delay_ms: the desired minimum delay in milliseconds
-+ *
-+ * Changes the timeout of a timer similar to mod_timer().
-+ *
-+ * mod_timer_msec() takes relative milliseconds rather than absolute
-+ * jiffies as argument.
-+ *
-+ * The function returns whether it has modified a pending timer or not.
-+ * (ie. mod_timer_msec() of an inactive timer returns 0, mod_timer_msec() of
-+ * an active timer returns 1.)
-+ */
-+int mod_timer_msec(struct timer_list *timer, unsigned long delay_ms)
-+{
-+	return mod_timer(timer, jiffies + msecs_to_jiffies(delay_ms));
-+}
-+EXPORT_SYMBOL(mod_timer_msec);
-+
-+/**
-  * mod_timer_pinned - modify a timer's timeout
-  * @timer: the timer to be modified
-  * @expires: new timeout in jiffies
--- 
-1.6.2.5
-
-
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+	Regards
+		Oliver
