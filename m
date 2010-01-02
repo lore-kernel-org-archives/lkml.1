@@ -1,81 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751375Ab0ABSY3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751568Ab0ABSqY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751375Ab0ABSY3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Jan 2010 13:24:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751027Ab0ABSY2
+	id S1751568Ab0ABSqY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Jan 2010 13:46:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751202Ab0ABSqX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Jan 2010 13:24:28 -0500
-Received: from mail-fx0-f225.google.com ([209.85.220.225]:56242 "EHLO
-	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750878Ab0ABSY2 (ORCPT
+	Sat, 2 Jan 2010 13:46:23 -0500
+Received: from casper.infradead.org ([85.118.1.10]:43900 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751191Ab0ABSqW convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Jan 2010 13:24:28 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:cc:content-type;
-        b=jgQmZYmAeIejrFkfPYOgSs6GgH3FR/AA/3pjYRpfoujF3ZL/f1c279UT7MLz/CxKMO
-         egPxbUp0L4EH8g74x2dlb7517LJiwLsamEQS6rL/MgQ19TbYrLejotyYEIANVKIjY3oB
-         VEqxnyoXim+hBG7nS9Zz/0Bcn7odko2irAkKU=
-MIME-Version: 1.0
-Date: Sat, 2 Jan 2010 22:24:26 +0400
-Message-ID: <1a297b361001021024y609f033ey54bc384b624fc065@mail.gmail.com>
-Subject: staging Patch 02/03: Crystal HD
-From: Manu Abraham <abraham.manu@gmail.com>
-To: Greg KH <greg@kroah.com>
+	Sat, 2 Jan 2010 13:46:22 -0500
+Date: Sat, 2 Jan 2010 10:48:53 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: tglx@linutronix.de
 Cc: linux-kernel@vger.kernel.org
-Content-Type: multipart/mixed; boundary=0016364d1f352b9677047c3299d5
+Subject: [PATCH] timer: Introduce mod_timer_msec()
+Message-ID: <20100102104853.28505e39@infradead.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.6; i586-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---0016364d1f352b9677047c3299d5
-Content-Type: text/plain; charset=ISO-8859-1
+>From 247f568d09e22fb5041f49b23bf2d5414c1299db Mon Sep 17 00:00:00 2001
+From: Arjan van de Ven <arjan@linux.intel.com>
+Date: Sat, 2 Jan 2010 10:37:57 -0800
+Subject: [PATCH] timer: Introduce mod_timer_msec()
+
+It is a common paradigm in drivers to want to set/change a timer
+for a relative amount of milliseconds.
+
+This patch adds a mod_timer_msec() API function to make this easier
+and to remove the awareness of both "jiffies" and the HZ value from
+various drivers that don't care about such implementation detail.
+
+Conversion of various users of the API are done in separate patches
+that will go via the various maintainers separately.
+
+Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+---
+ include/linux/timer.h |    1 +
+ kernel/timer.c        |   20 ++++++++++++++++++++
+ 2 files changed, 21 insertions(+), 0 deletions(-)
+
+diff --git a/include/linux/timer.h b/include/linux/timer.h
+index a2d1eb6..763f58f 100644
+--- a/include/linux/timer.h
++++ b/include/linux/timer.h
+@@ -162,6 +162,7 @@ static inline int timer_pending(const struct timer_list * timer)
+ extern void add_timer_on(struct timer_list *timer, int cpu);
+ extern int del_timer(struct timer_list * timer);
+ extern int mod_timer(struct timer_list *timer, unsigned long expires);
++extern int mod_timer_msec(struct timer_list *timer, unsigned long delay_ms);
+ extern int mod_timer_pending(struct timer_list *timer, unsigned long expires);
+ extern int mod_timer_pinned(struct timer_list *timer, unsigned long expires);
+ 
+diff --git a/kernel/timer.c b/kernel/timer.c
+index 15533b7..c061cc2 100644
+--- a/kernel/timer.c
++++ b/kernel/timer.c
+@@ -749,6 +749,26 @@ int mod_timer(struct timer_list *timer, unsigned long expires)
+ EXPORT_SYMBOL(mod_timer);
+ 
+ /**
++ * mod_timer_msec - modify a timer's timeout, using relative milliseconds
++ * @timer: the timer to be modified
++ * @delay_ms: the desired minimum delay in milliseconds
++ *
++ * Changes the timeout of a timer similar to mod_timer().
++ *
++ * mod_timer_msec() takes relative milliseconds rather than absolute
++ * jiffies as argument.
++ *
++ * The function returns whether it has modified a pending timer or not.
++ * (ie. mod_timer_msec() of an inactive timer returns 0, mod_timer_msec() of
++ * an active timer returns 1.)
++ */
++int mod_timer_msec(struct timer_list *timer, unsigned long delay_ms)
++{
++	return mod_timer(timer, msecs_to_jiffies(delay_ms));
++}
++EXPORT_SYMBOL(mod_timer_msec);
++
++/**
+  * mod_timer_pinned - modify a timer's timeout
+  * @timer: the timer to be modified
+  * @expires: new timeout in jiffies
+-- 
+1.6.2.5
 
 
 
---0016364d1f352b9677047c3299d5
-Content-Type: text/x-patch; charset=US-ASCII; 
-	name="0002--Crystal-HD-add-driver-to-staging-build.patch"
-Content-Disposition: attachment; 
-	filename="0002--Crystal-HD-add-driver-to-staging-build.patch"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_g3yq88991
-
-RnJvbSAwY2UxNTdjNDU5MmQ0ODdjNzM5ZGVmMTA5YjU4YzIwOWEyN2FkNzJmIE1vbiBTZXAgMTcg
-MDA6MDA6MDAgMjAwMQpGcm9tOiBNYW51IEFicmFoYW0gPGFicmFoYW0ubWFudUBnbWFpbC5jb20+
-CkRhdGU6IFNhdCwgMiBKYW4gMjAxMCAyMjowNDozNyArMDQwMApTdWJqZWN0OiBbUEFUQ0hdIFtD
-cnlzdGFsIEhEXSBhZGQgZHJpdmVyIHRvIHN0YWdpbmcgYnVpbGQKClNpZ25lZC1vZmYtYnk6IE1h
-bnUgQWJyYWhhbSA8YWJyYWhhbS5tYW51QGdtYWlsLmNvbT4KLS0tCiBkcml2ZXJzL3N0YWdpbmcv
-S2NvbmZpZyAgICAgICAgICAgICB8ICAgIDIgKysKIGRyaXZlcnMvc3RhZ2luZy9NYWtlZmlsZSAg
-ICAgICAgICAgIHwgICAgMSArCiBkcml2ZXJzL3N0YWdpbmcvY3J5c3RhbC1oZC9LY29uZmlnICB8
-ICAgIDYgKysrKysrCiBkcml2ZXJzL3N0YWdpbmcvY3J5c3RhbC1oZC9NYWtlZmlsZSB8ICAgIDYg
-KysrKysrCiA0IGZpbGVzIGNoYW5nZWQsIDE1IGluc2VydGlvbnMoKyksIDAgZGVsZXRpb25zKC0p
-CiBjcmVhdGUgbW9kZSAxMDA2NDQgZHJpdmVycy9zdGFnaW5nL2NyeXN0YWwtaGQvS2NvbmZpZwog
-Y3JlYXRlIG1vZGUgMTAwNjQ0IGRyaXZlcnMvc3RhZ2luZy9jcnlzdGFsLWhkL01ha2VmaWxlCgpk
-aWZmIC0tZ2l0IGEvZHJpdmVycy9zdGFnaW5nL0tjb25maWcgYi9kcml2ZXJzL3N0YWdpbmcvS2Nv
-bmZpZwppbmRleCA0ZTg1MTQxLi4xYWZjODExIDEwMDY0NAotLS0gYS9kcml2ZXJzL3N0YWdpbmcv
-S2NvbmZpZworKysgYi9kcml2ZXJzL3N0YWdpbmcvS2NvbmZpZwpAQCAtMTQxLDUgKzE0MSw3IEBA
-IHNvdXJjZSAiZHJpdmVycy9zdGFnaW5nL3NtN3h4L0tjb25maWciCiAKIHNvdXJjZSAiZHJpdmVy
-cy9zdGFnaW5nL2R0MzE1NS9LY29uZmlnIgogCitzb3VyY2UgImRyaXZlcnMvc3RhZ2luZy9jcnlz
-dGFsLWhkL0tjb25maWciCisKIGVuZGlmICMgIVNUQUdJTkdfRVhDTFVERV9CVUlMRAogZW5kaWYg
-IyBTVEFHSU5HCmRpZmYgLS1naXQgYS9kcml2ZXJzL3N0YWdpbmcvTWFrZWZpbGUgYi9kcml2ZXJz
-L3N0YWdpbmcvTWFrZWZpbGUKaW5kZXggMzk0MzI3YS4uOGZjMGEzNiAxMDA2NDQKLS0tIGEvZHJp
-dmVycy9zdGFnaW5nL01ha2VmaWxlCisrKyBiL2RyaXZlcnMvc3RhZ2luZy9NYWtlZmlsZQpAQCAt
-NTEsMyArNTEsNCBAQCBvYmotJChDT05GSUdfUENNQ0lBX1dBVkVMQU4pCSs9IHdhdmVsYW4vCiBv
-YmotJChDT05GSUdfUENNQ0lBX05FVFdBVkUpCSs9IG5ldHdhdmUvCiBvYmotJChDT05GSUdfRkJf
-U003WFgpCQkrPSBzbTd4eC8KIG9iai0kKENPTkZJR19EVDMxNTUpCQkrPSBkdDMxNTUvCitvYmot
-JChDT05GSUdfQ1JZU1RBTF9IRCkJKz0gY3J5c3RhbC1oZC8KZGlmZiAtLWdpdCBhL2RyaXZlcnMv
-c3RhZ2luZy9jcnlzdGFsLWhkL0tjb25maWcgYi9kcml2ZXJzL3N0YWdpbmcvY3J5c3RhbC1oZC9L
-Y29uZmlnCm5ldyBmaWxlIG1vZGUgMTAwNjQ0CmluZGV4IDAwMDAwMDAuLmZmZjMzYWIKLS0tIC9k
-ZXYvbnVsbAorKysgYi9kcml2ZXJzL3N0YWdpbmcvY3J5c3RhbC1oZC9LY29uZmlnCkBAIC0wLDAg
-KzEsNiBAQAorY29uZmlnIENSWVNUQUxfSEQKKwl0cmlzdGF0ZSAiQnJvYWRjb20gQ3J5c3RhbCBI
-RCBzdXBwb3J0IgorCWRlcGVuZHMgb24gUENJCisJZGVmYXVsdCBuCisJLS0taGVscC0tLQorCSAg
-U3VwcG9ydCBmb3IgdGhlIEJyb2FkY29tIENyeXN0YWwgSEQgZGVjb2RlciBjaGlwc2V0CmRpZmYg
-LS1naXQgYS9kcml2ZXJzL3N0YWdpbmcvY3J5c3RhbC1oZC9NYWtlZmlsZSBiL2RyaXZlcnMvc3Rh
-Z2luZy9jcnlzdGFsLWhkL01ha2VmaWxlCm5ldyBmaWxlIG1vZGUgMTAwNjQ0CmluZGV4IDAwMDAw
-MDAuLjQ3NGU3NmUKLS0tIC9kZXYvbnVsbAorKysgYi9kcml2ZXJzL3N0YWdpbmcvY3J5c3RhbC1o
-ZC9NYWtlZmlsZQpAQCAtMCwwICsxLDYgQEAKK29iai0kKENPTkZJR19DUllTVEFMX0hEKQkrPSBj
-cnlzdGFsLWhkLm8KKworY3J5c3RhbC1oZC1vYmpzCQkJOj0gY3J5c3RhbGhkX2NtZHMubwlcCisJ
-CQkJICAgY3J5c3RhbGhkX2h3Lm8JXAorCQkJCSAgIGNyeXN0YWxoZF9sbngubwlcCisJCQkJICAg
-Y3J5c3RhbGhkX21pc2MubwotLSAKMS41LjYKCg==
---0016364d1f352b9677047c3299d5--
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
