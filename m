@@ -1,59 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752317Ab0ABCZr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752315Ab0ABB5j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752317Ab0ABCZr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jan 2010 21:25:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752251Ab0ABCZr
+	id S1752315Ab0ABB5j (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jan 2010 20:57:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752261Ab0ABB5i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jan 2010 21:25:47 -0500
-Received: from rcsinet12.oracle.com ([148.87.113.124]:17990 "EHLO
-	rcsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752196Ab0ABCZq (ORCPT
+	Fri, 1 Jan 2010 20:57:38 -0500
+Received: from fg-out-1718.google.com ([72.14.220.153]:45315 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752214Ab0ABB5h convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jan 2010 21:25:46 -0500
-Date: Fri, 1 Jan 2010 18:25:14 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Jeff Layton <jlayton@redhat.com>
-Cc: Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org,
-       linux-nfs@vger.kernel.org
-Subject: [PATCH v2] sunrpc: fix build-time warning
-Message-Id: <20100101182514.cb1f49ef.randy.dunlap@oracle.com>
-In-Reply-To: <20091231205454.0f84f091@tupile.poochiereds.net>
-References: <1262226195-27733-1-git-send-email-jlayton@redhat.com>
-	<20091231091815.a1ea7e51.rdunlap@xenotime.net>
-	<20091231205454.0f84f091@tupile.poochiereds.net>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt356.oracle.com [141.146.40.156]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090204.4B3EAE8D.00EB:SCFMA4539814,ss=1,fgs=0
+	Fri, 1 Jan 2010 20:57:37 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=HBdyfZoJ9LNHcYB086dKcNCtLGhRF80HghFT3LvMmtHXIjXHLEe5Qynb15KZyjJh9m
+         5h6uxn55Uq0cT6CF7WdsBFQfJzILjmkDDVG1a3Y3TSYaJDr7Lp8UHNXHO/XMg1JAzVGc
+         59zSdBmjzCoZTaDuleEkhRt1Th/iG+ulv6NVc=
+MIME-Version: 1.0
+In-Reply-To: <200912302253.53285.rjw@sisk.pl>
+References: <LptzGUUXbTK.A.MSF.ymhOLB@chimera>
+	 <NJVdobuNFNK.A.1VG.EnhOLB@chimera> <20091230091818.GW4489@kernel.dk>
+	 <200912302253.53285.rjw@sisk.pl>
+Date: Fri, 1 Jan 2010 20:57:35 -0500
+Message-ID: <ea6602021001011757y21c6b859ocdbea233070fb31c@mail.gmail.com>
+Subject: Re: [Bug #14940] cfq-iosched: tiobench regression
+From: Vikram Dhillon <dhillonv10@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Jens Axboe <jens.axboe@oracle.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Corrado Zoccolo <czoccolo@gmail.com>,
+       Gui Jianfeng <guijianfeng@cn.fujitsu.com>,
+       Shaohua Li <shaohua.li@intel.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+On Wed, Dec 30, 2009 at 4:53 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> On Wednesday 30 December 2009, Jens Axboe wrote:
+>> On Tue, Dec 29 2009, Rafael J. Wysocki wrote:
+>> > This message has been generated automatically as a part of a report
+>> > of recent regressions.
+>> >
+>> > The following bug entry is on the current list of known regressions
+>> > from 2.6.32.  Please verify if it still should be listed and let me know
+>> > (either way).
+>> >
+>> >
+>> > Bug-Entry   : http://bugzilla.kernel.org/show_bug.cgi?id=14940
+>> > Subject             : cfq-iosched: tiobench regression
+>> > Submitter   : Shaohua Li <shaohua.li@intel.com>
+>> > Date                : 2009-12-24 0:55 (6 days old)
+>> > References  : http://marc.info/?l=linux-kernel&m=126161612401994&w=4
+>>
+>> I don't think this should be labelled as a regression. It was already
+>> known that we'd have less throughput for the many clients cases, it was
+>> a trade off that was made to improve latencies.
+>
+> OK, I've closed it as "documented".
+>
+> Rafael
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
 
-Fix auth_gss printk format warning:
+Thanks for this update, I guess we I can make like a separate category
+of documented regressions because this could be helpful to other
+distributions as they update to the newer kernels :D
 
-net/sunrpc/auth_gss/auth_gss.c:660: warning: format '%ld' expects type 'long int', but argument 3 has type 'ssize_t'
+-- 
+Regards,
+Vikram Dhillon
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- net/sunrpc/auth_gss/auth_gss.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
---- linux-next-20091229.orig/net/sunrpc/auth_gss/auth_gss.c
-+++ linux-next-20091229/net/sunrpc/auth_gss/auth_gss.c
-@@ -657,7 +657,7 @@ gss_pipe_downcall(struct file *filp, con
- 			break;
- 		default:
- 			printk(KERN_CRIT "%s: bad return from "
--				"gss_fill_context: %ld\n", __func__, err);
-+				"gss_fill_context: %zd\n", __func__, err);
- 			BUG();
- 		}
- 		goto err_release_msg;
----
+~~~
+There are lots of Linux users who don't care how the kernel works, but
+only want to use it. That is a tribute to how good Linux is.
+-- Linus Torvalds
