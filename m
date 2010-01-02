@@ -1,37 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752847Ab0ABRBw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752629Ab0ABN3r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752847Ab0ABRBw (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Jan 2010 12:01:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752752Ab0ABRBv
+	id S1752629Ab0ABN3r (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Jan 2010 08:29:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752583Ab0ABN3o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Jan 2010 12:01:51 -0500
-Received: from mail2.ecunet.org ([72.250.175.188]:42151 "EHLO mail2.ecunet.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750938Ab0ABRBv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Jan 2010 12:01:51 -0500
-Date: Sat, 2 Jan 2010 12:01:13 -0500
-Message-Id: <201001021701.o02H1Dvq032426@ecunet-web-1.ecunet.org>
-From: jasmine_awa1@ecunet.org
-Subject: Hello Happy new year
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (ecunet.org [192.168.0.90]); Sat, 02 Jan 2010 12:01:15 -0500 (EST)
-To: unlisted-recipients:; (no To-header on input)
+	Sat, 2 Jan 2010 08:29:44 -0500
+Received: from mail-iw0-f171.google.com ([209.85.223.171]:36489 "EHLO
+	mail-iw0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752570Ab0ABN3m convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Jan 2010 08:29:42 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=O95eXhIDcoCHkm4PSbJBgHqXHcTkxkXRGn2+US0GIUHGENhwjdiCAleTnuOodfOQ/C
+         a2BbkKeygouYAZgHLbjCT59E4QD/LVJDdLZVcAsYLz3x9v2dHnTVABWQXCGFutHMkUfE
+         knuQXJHxTgHew6IZQUG4YqE9BAQTsEoYT3TJg=
+MIME-Version: 1.0
+In-Reply-To: <1262429166.32223.32.camel@laptop>
+References: <1262339141-4682-1-git-send-email-kosaki.motohiro@jp.fujitsu.com>
+	 <1262387986.16572.234.camel@laptop>
+	 <2f11576a1001012121o4f09d30n6dba925e74099da1@mail.gmail.com>
+	 <1262429166.32223.32.camel@laptop>
+Date: Sat, 2 Jan 2010 22:29:41 +0900
+X-Google-Sender-Auth: b4606c0c315618a7
+Message-ID: <2f11576a1001020529l729caebawc4364690f1df56cb@mail.gmail.com>
+Subject: Re: [PATCH] mm, lockdep: annotate reclaim context to zone reclaim too
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Hello dear,
-Happy new year, My name is Miss Jasmine in search of a nice and caring man who understands love as trust and faith rather seeing it as a way of fun but a matured man with good sense of humor. i found your email address while surfing the net and i derive interest on you so reply me, so we can know each other, i believe we can start from here,
+2010/1/2 Peter Zijlstra <peterz@infradead.org>:
+> On Sat, 2010-01-02 at 14:21 +0900, KOSAKI Motohiro wrote:
+>> 2010/1/2 Peter Zijlstra <peterz@infradead.org>:
+>> > On Fri, 2010-01-01 at 18:45 +0900, KOSAKI Motohiro wrote:
+>> >> Commit cf40bd16fd (lockdep: annotate reclaim context) introduced reclaim
+>> >> context annotation. But it didn't annotate zone reclaim. This patch do it.
+>> >
+>> > And yet you didn't CC anyone involved in that patch, nor explain why you
+>> > think it necessary, massive FAIL.
+>> >
+>> > The lockdep annotations cover all of kswapd() and direct reclaim through
+>> > __alloc_pages_direct_reclaim(). So why would you need an explicit
+>> > annotation in __zone_reclaim()?
+>>
+>> Thanks CCing. The point is zone-reclaim doesn't use
+>> __alloc_pages_direct_reclaim.
+>> current call graph is
+>>
+>> __alloc_pages_nodemask
+>>     get_page_from_freelist
+>>         zone_reclaim()
+>>     __alloc_pages_slowpath
+>>         __alloc_pages_direct_reclaim
+>>             try_to_free_pages
+>>
+>> Actually, if zone_reclaim_mode=1, VM never call
+>> __alloc_pages_direct_reclaim in usual VM pressure.
+>> Thus I think zone-reclaim should be annotated explicitly too.
+>> I know almost user don't use zone reclaim mode. but explicit
+>> annotation doesn't have any demerit, I think.
+>
+> Just be aware that the annotation isn't recursive, I'd have to trace all
+> calls to __zone_reclaim, but if kswapd were ever to call it you'd just
+> wrecked things by getting lockdep_clear_current_reclaim_state() called.
+>
+> So just make sure you don't shorten the existing notations by adding it
+> here. Other than that it seems ok.
 
-waiting your urgent reply so i can send pictures for further introductions
+Umm, probably I haven't catch your mention. currently kswapd never
+call __zone_reclaim() because
+kswapd has PF_MEMALLOC and PF_MEMALLOC prevent to call __zone_reclaim
+(see zone_reclaim()).
 
-kisses 
-Jasmine
-
-&#1605;&#1585;&#1581;&#1576;&#1575; &#1605;&#1585;&#1581;&#1576;&#1575; &#1593;&#1586;&#1610;&#1586;&#1578;&#1610; &#1548;
-&#1587;&#1606;&#1577; &#1580;&#1583;&#1610;&#1583;&#1577; &#1587;&#1593;&#1610;&#1583;&#1577; &#1548; &#1575;&#1587;&#1605;&#1610; &#1575;&#1604;&#1570;&#1606;&#1587;&#1577; &#1610;&#1575;&#1587;&#1605;&#1610;&#1606; &#1601;&#1610; &#1575;&#1604;&#1576;&#1581;&#1579; &#1593;&#1606; &#1585;&#1580;&#1604; &#1604;&#1591;&#1610;&#1601; &#1608;&#1575;&#1604;&#1575;&#1607;&#1578;&#1605;&#1575;&#1605; &#1575;&#1604;&#1584;&#1610; &#1610;&#1601;&#1607;&#1605; &#1575;&#1604;&#1581;&#1576; &#1608;&#1575;&#1604;&#1579;&#1602;&#1577; &#1608;&#1575;&#1604;&#1575;&#1610;&#1605;&#1575;&#1606; &#1604;&#1575; &#1610;&#1606;&#1592;&#1585; &#1575;&#1604;&#1610;&#1607;&#1575; &#1593;&#1604;&#1609; &#1571;&#1606;&#1607;&#1575; &#1608;&#1587;&#1610;&#1604;&#1577; &#1604;&#1604;&#1605;&#1578;&#1593;&#1577; &#1608;&#1604;&#1603;&#1606; &#1606;&#1590;&#1580;&#1578; &#1605;&#1593; &#1585;&#1580;&#1604; &#1610;&#1605;&#1604;&#1603; &#1585;&#1608;&#1581; &#1575;&#1604;&#1583;&#1593;&#1575;&#1576;&#1577!
- ;. &#1604;&#1602;&#1583; &#1608;&#1580;&#1583;&#1578; &#1593;&#1606;&#1608;&#1575;&#1606; &#1576;&#1585;&#1610;&#1583;&#1603; &#1575;&#1604;&#1575;&#1604;&#1603;&#1578;&#1585;&#1608;&#1606;&#1610; &#1571;&#1579;&#1606;&#1575;&#1569; &#1578;&#1589;&#1601;&#1581; &#1588;&#1576;&#1603;&#1577; &#1575;&#1604;&#1575;&#1606;&#1578;&#1585;&#1606;&#1578; &#1608;&#1571;&#1606;&#1575; &#1580;&#1606;&#1610; &#1575;&#1604;&#1601;&#1575;&#1574;&#1583;&#1577; &#1593;&#1604;&#1609; &#1575;&#1604;&#1585;&#1583; &#1581;&#1578;&#1609; &#1603;&#1606;&#1578; &#1604;&#1610; &#1548; &#1581;&#1578;&#1609; &#1606;&#1578;&#1605;&#1603;&#1606; &#1605;&#1606; &#1605;&#1593;&#1585;&#1601;&#1577; &#1576;&#1593;&#1590;&#1607;&#1605;&#1575; &#1575;&#1604;&#1576;&#1593;&#1590; &#1548; &#1608;&#1571;&#1593;&#1578;&#1602;&#1583; &#1571;&#1606;&#1606;&#1575; &#1610;&#1605;&#1603;&#1606; &#1571;&#1606; &#1606;&#1576;&#1583;&#1571; &#1605;&#1606; &#1607;&#1606;&#1575; &#1548;
-
-&#1601;&#1610; &#1575;&#1606;&#1578;&#1592;&#1575;&#1585; &#1585;&#1583;&#1603;&#1605; &#1575;&#1604;&#1593;&#1575;&#1580;&#1604; &#1581;&#1578;&#1609; &#1571;&#1578;&#1605;&#1603;&#1606; &#1605;&#1606; &#1573;&#1585;&#1587;&#1575;&#1604; &#1589;&#1608;&#1585; &#1604;&#1573;&#1583;&#1582;&#1575;&#1604; &#1605;&#1586;&#1610;&#1583; &#1605;&#1606;
-
-&#1602;&#1576;&#1604;&#1575;&#1578;
-&#1575;&#1604;&#1610;&#1575;&#1587;&#1605;&#1610;&#1606;
+When recursive annotation occur?
