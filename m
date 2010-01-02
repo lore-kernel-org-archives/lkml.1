@@ -1,68 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751330Ab0ABSRJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751736Ab0ABUM7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751330Ab0ABSRJ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Jan 2010 13:17:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750878Ab0ABSRH
+	id S1751736Ab0ABUM7 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Jan 2010 15:12:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751399Ab0ABUM7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Jan 2010 13:17:07 -0500
-Received: from mail-fx0-f225.google.com ([209.85.220.225]:55341 "EHLO
+	Sat, 2 Jan 2010 15:12:59 -0500
+Received: from mail-fx0-f225.google.com ([209.85.220.225]:38967 "EHLO
 	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750747Ab0ABSRH convert rfc822-to-8bit (ORCPT
+	with ESMTP id S1751370Ab0ABUM6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Jan 2010 13:17:07 -0500
+	Sat, 2 Jan 2010 15:12:58 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=mP/EuoetmryZXeBN90nDfbvPVYiOzqt1RvHar07M+4SVAJfRnOTnAfLhLnbMkOmvYE
-         Pvv1cmsOCCltTdsNfr41TPZVbS00FtqIUZfrwEFGzbZkNlr/jE+fr6jnJQWfJatHaO8U
-         lhY2qS/O5ozKRl7C3Vo3PYNKupHz86tsyDDpM=
+        h=mime-version:date:message-id:subject:from:to:cc:content-type;
+        b=dyoWASkd96zAhd8WGA/Gg3N03i5Vd7H5tAf6aTDs8bZ5YDDpYK6/OjFIOF4EqLrKrq
+         9hN0Tnao2XKWW3p1RZpRsqrS0I9ytGBdpP/JfUmqNqdxpQmDpKrXF6WtpfTdqubroeLR
+         JYznP7gyJKJe/OFafRxqea7o1KZvIK75bNDS4=
 MIME-Version: 1.0
-In-Reply-To: <20100102163449.GB5172@kroah.com>
-References: <523138909@web.de> <20091231131852.GB32492@centrinvest.ru>
-	 <20100101001931.GA1290@kroah.com>
-	 <1a297b361001020805y6b00af83g81cf8492aa73bc3b@mail.gmail.com>
-	 <20100102163449.GB5172@kroah.com>
-Date: Sat, 2 Jan 2010 22:17:04 +0400
-Message-ID: <1a297b361001021017y746e4acdsfcf307b0f363e21d@mail.gmail.com>
-Subject: Re: [patch staging] BCM70010 (crystalhd) Linux Driver
+Date: Sun, 3 Jan 2010 00:12:56 +0400
+Message-ID: <1a297b361001021212p19ca1509nbcfe7ca7d6e653b4@mail.gmail.com>
+Subject: staging Patch 02/04: Crystal HD
 From: Manu Abraham <abraham.manu@gmail.com>
 To: Greg KH <greg@kroah.com>
-Cc: Peter Paul <abnominales@web.de>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Cc: linux-kernel@vger.kernel.org
+Content-Type: multipart/mixed; boundary=0016364d1fdd35f6b6047c341dcf
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Greg,
+--0016364d1fdd35f6b6047c341dcf
+Content-Type: text/plain; charset=ISO-8859-1
 
-On Sat, Jan 2, 2010 at 8:34 PM, Greg KH <greg@kroah.com> wrote:
-> On Sat, Jan 02, 2010 at 08:05:38PM +0400, Manu Abraham wrote:
->> Hi Greg,
->>
->> > I'm glad to do so if someone wants to help work on it there and shephard
->> > it into the main kernel tree.
->>
->> Please find the initial round of cleaned up patches for staging,
->> applied against linux-next.
->
-> Did you really author this driver?  If so, that's fine, just checking.
-> If not, please put the correct authorship "From:" in the patch.
 
-I am not the author of the driver. I just picked it up and cleaned it
-up for Coding style changes for it to be included.
 
-> Also, please break up patches to be sent one-per-email so they can be
-> properly applied, and also only have them do one thing (your 4th patch
-> fixed up coding style issues and added the driver to the build.)
+--0016364d1fdd35f6b6047c341dcf
+Content-Type: text/x-patch; charset=US-ASCII; 
+	name="0002--Crystal-HD-add-driver-to-staging-build.patch"
+Content-Disposition: attachment; 
+	filename="0002--Crystal-HD-add-driver-to-staging-build.patch"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_g3yu4vvv1
 
-Okay, I will resend them.
-
-> Also, can you add a TODO file to the driver directory stating what is
-> needed to be done, and who to contact about it?
-
-I will test the device over the coming week and add in a TODO after that.
-
-Thanks,
-Manu
+RnJvbSAwY2UxNTdjNDU5MmQ0ODdjNzM5ZGVmMTA5YjU4YzIwOWEyN2FkNzJmIE1vbiBTZXAgMTcg
+MDA6MDA6MDAgMjAwMQpGcm9tOiBNYW51IEFicmFoYW0gPG1hbnVAbWFudS0wNC5ueHAtZGV2PgpE
+YXRlOiBTYXQsIDIgSmFuIDIwMTAgMjI6MDQ6MzcgKzA0MDAKU3ViamVjdDogW1BBVENIXSBbQ3J5
+c3RhbCBIRF0gYWRkIGRyaXZlciB0byBzdGFnaW5nIGJ1aWxkCgpTaWduZWQtb2ZmLWJ5OiBNYW51
+IEFicmFoYW0gPGFicmFoYW0ubWFudUBnbWFpbC5jb20+Ci0tLQogZHJpdmVycy9zdGFnaW5nL0tj
+b25maWcgICAgICAgICAgICAgfCAgICAyICsrCiBkcml2ZXJzL3N0YWdpbmcvTWFrZWZpbGUgICAg
+ICAgICAgICB8ICAgIDEgKwogZHJpdmVycy9zdGFnaW5nL2NyeXN0YWwtaGQvS2NvbmZpZyAgfCAg
+ICA2ICsrKysrKwogZHJpdmVycy9zdGFnaW5nL2NyeXN0YWwtaGQvTWFrZWZpbGUgfCAgICA2ICsr
+KysrKwogNCBmaWxlcyBjaGFuZ2VkLCAxNSBpbnNlcnRpb25zKCspLCAwIGRlbGV0aW9ucygtKQog
+Y3JlYXRlIG1vZGUgMTAwNjQ0IGRyaXZlcnMvc3RhZ2luZy9jcnlzdGFsLWhkL0tjb25maWcKIGNy
+ZWF0ZSBtb2RlIDEwMDY0NCBkcml2ZXJzL3N0YWdpbmcvY3J5c3RhbC1oZC9NYWtlZmlsZQoKZGlm
+ZiAtLWdpdCBhL2RyaXZlcnMvc3RhZ2luZy9LY29uZmlnIGIvZHJpdmVycy9zdGFnaW5nL0tjb25m
+aWcKaW5kZXggNGU4NTE0MS4uMWFmYzgxMSAxMDA2NDQKLS0tIGEvZHJpdmVycy9zdGFnaW5nL0tj
+b25maWcKKysrIGIvZHJpdmVycy9zdGFnaW5nL0tjb25maWcKQEAgLTE0MSw1ICsxNDEsNyBAQCBz
+b3VyY2UgImRyaXZlcnMvc3RhZ2luZy9zbTd4eC9LY29uZmlnIgogCiBzb3VyY2UgImRyaXZlcnMv
+c3RhZ2luZy9kdDMxNTUvS2NvbmZpZyIKIAorc291cmNlICJkcml2ZXJzL3N0YWdpbmcvY3J5c3Rh
+bC1oZC9LY29uZmlnIgorCiBlbmRpZiAjICFTVEFHSU5HX0VYQ0xVREVfQlVJTEQKIGVuZGlmICMg
+U1RBR0lORwpkaWZmIC0tZ2l0IGEvZHJpdmVycy9zdGFnaW5nL01ha2VmaWxlIGIvZHJpdmVycy9z
+dGFnaW5nL01ha2VmaWxlCmluZGV4IDM5NDMyN2EuLjhmYzBhMzYgMTAwNjQ0Ci0tLSBhL2RyaXZl
+cnMvc3RhZ2luZy9NYWtlZmlsZQorKysgYi9kcml2ZXJzL3N0YWdpbmcvTWFrZWZpbGUKQEAgLTUx
+LDMgKzUxLDQgQEAgb2JqLSQoQ09ORklHX1BDTUNJQV9XQVZFTEFOKQkrPSB3YXZlbGFuLwogb2Jq
+LSQoQ09ORklHX1BDTUNJQV9ORVRXQVZFKQkrPSBuZXR3YXZlLwogb2JqLSQoQ09ORklHX0ZCX1NN
+N1hYKQkJKz0gc203eHgvCiBvYmotJChDT05GSUdfRFQzMTU1KQkJKz0gZHQzMTU1Lworb2JqLSQo
+Q09ORklHX0NSWVNUQUxfSEQpCSs9IGNyeXN0YWwtaGQvCmRpZmYgLS1naXQgYS9kcml2ZXJzL3N0
+YWdpbmcvY3J5c3RhbC1oZC9LY29uZmlnIGIvZHJpdmVycy9zdGFnaW5nL2NyeXN0YWwtaGQvS2Nv
+bmZpZwpuZXcgZmlsZSBtb2RlIDEwMDY0NAppbmRleCAwMDAwMDAwLi5mZmYzM2FiCi0tLSAvZGV2
+L251bGwKKysrIGIvZHJpdmVycy9zdGFnaW5nL2NyeXN0YWwtaGQvS2NvbmZpZwpAQCAtMCwwICsx
+LDYgQEAKK2NvbmZpZyBDUllTVEFMX0hECisJdHJpc3RhdGUgIkJyb2FkY29tIENyeXN0YWwgSEQg
+c3VwcG9ydCIKKwlkZXBlbmRzIG9uIFBDSQorCWRlZmF1bHQgbgorCS0tLWhlbHAtLS0KKwkgIFN1
+cHBvcnQgZm9yIHRoZSBCcm9hZGNvbSBDcnlzdGFsIEhEIGRlY29kZXIgY2hpcHNldApkaWZmIC0t
+Z2l0IGEvZHJpdmVycy9zdGFnaW5nL2NyeXN0YWwtaGQvTWFrZWZpbGUgYi9kcml2ZXJzL3N0YWdp
+bmcvY3J5c3RhbC1oZC9NYWtlZmlsZQpuZXcgZmlsZSBtb2RlIDEwMDY0NAppbmRleCAwMDAwMDAw
+Li40NzRlNzZlCi0tLSAvZGV2L251bGwKKysrIGIvZHJpdmVycy9zdGFnaW5nL2NyeXN0YWwtaGQv
+TWFrZWZpbGUKQEAgLTAsMCArMSw2IEBACitvYmotJChDT05GSUdfQ1JZU1RBTF9IRCkJKz0gY3J5
+c3RhbC1oZC5vCisKK2NyeXN0YWwtaGQtb2JqcwkJCTo9IGNyeXN0YWxoZF9jbWRzLm8JXAorCQkJ
+CSAgIGNyeXN0YWxoZF9ody5vCVwKKwkJCQkgICBjcnlzdGFsaGRfbG54Lm8JXAorCQkJCSAgIGNy
+eXN0YWxoZF9taXNjLm8KLS0gCjEuNS42Cgo=
+--0016364d1fdd35f6b6047c341dcf--
