@@ -1,190 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752695Ab0ABOFe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752730Ab0ABPEA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752695Ab0ABOFe (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Jan 2010 09:05:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752517Ab0ABOFd
+	id S1752730Ab0ABPEA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Jan 2010 10:04:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752609Ab0ABPD7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Jan 2010 09:05:33 -0500
-Received: from www84.your-server.de ([213.133.104.84]:40839 "EHLO
-	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752477Ab0ABOFc (ORCPT
+	Sat, 2 Jan 2010 10:03:59 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:35031 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751684Ab0ABPD6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Jan 2010 09:05:32 -0500
-Subject: [PATCH] partial revert to show stack information in 
- /proc/<pid>/status
-From: Stefani Seibold <stefani@seibold.net>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Samuel Thibault <samuel.thibault@ens-lyon.org>,
-       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-In-Reply-To: <2f11576a1001012153qec2ea0eo7a2762386ed22273@mail.gmail.com>
-References: <20091231231051.1A1B.A69D9226@jp.fujitsu.com>
-	 <1262274494.14143.7.camel@wall-e>
-	 <20100101155630.1A1E.A69D9226@jp.fujitsu.com>
-	 <1262358616.11460.18.camel@wall-e> <20100101220529.GL4620@const>
-	 <1262384490.16706.4.camel@wall-e>
-	 <2f11576a1001012153qec2ea0eo7a2762386ed22273@mail.gmail.com>
-Content-Type: text/plain; charset="ISO-8859-15"
-Date: Sat, 02 Jan 2010 15:05:09 +0100
-Message-ID: <1262441109.9108.20.camel@wall-e>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 
-Content-Transfer-Encoding: 7bit
-X-Authenticated-Sender: stefani@seibold.net
+	Sat, 2 Jan 2010 10:03:58 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:cc:content-type;
+        b=Dazk7/LBnlqboz689kSKXixJ1Bbjiyni5uO427ZWzDlaL7BNAfy7YNlgDcBHkFa68g
+         u0M5ytzgaAnIDhN+s+66VnwEtcC9Pd9Fp6kHpqSohTE9AXLA/63lCqGwZxyd+6BLROPb
+         piRNOXI+aa6wLFUXs7bkxfoLzZCWqRWAG3Yco=
+MIME-Version: 1.0
+Date: Sat, 2 Jan 2010 15:03:56 +0000
+Message-ID: <9b2b86521001020703v23152d0cy3ba2c08df88c0a79@mail.gmail.com>
+Subject: s2disk hang update
+From: Alan Jenkins <sourcejedi.lkml@googlemail.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: hugh.dickins@tiscali.co.uk, Pavel Machek <pavel@ucw.cz>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-As announce here is the patch to partial revert the show stack
-information patch due a not accepted performance regression. It will be
-now show only the current stack usage, not the high water mark.
+Hi,
 
-The path is only partial reverted because i need the other parts to do
-it in an other way.
+I've been suffering from s2disk hangs again.  This time, the hangs
+were always before the hibernation image was written out.
 
-There are now two possibilities solutions:
+They're still frustratingly random.  I just started trying to work out
+whether doubling PAGES_FOR_IO makes them go away, but they went away
+on their own again.
 
-- create a new /proc/<pid>/stackinfo entry, which provides the reverted
-information and maybe others like the sigaltstack.
-- create a user space tool which use /proc/<pid>/pagemap
+I did manage to capture a backtrace with debug info though.  Here it
+is for 2.6.33-rc2.  (It has also happened on rc1).  I was able to get
+the line numbers (using gdb, e.g.  "info line
+*stop_machine_create+0x27"), having built the kernel with debug info.
 
-In both cases the information of task->stack_start and the KSTK_ESP is
-needed.
+[top of trace lost due to screen height]
+? sync_page	(filemap.c:183)
+? wait_on_page_bit	(filemap.c:506)
+? wake_bit_function	(wait.c:174)
+? shrink_page_list	(vmscan.c:696)
+? __delayacct_blkio_end	(delayacct.c:94)
+? finish_wait	(list.h:142)
+? congestion_wait	(backing-dev.c:761)
+? shrink_inactive_list	(vmscan.c:1193)
+? scsi_request_fn	(spinlock.h:306)
+? blk_run_queue	(blk-core.c:434)
+? shrink_zone	(vmscan.c:1484)
+? do_try_to_free_pages	(vmscan.c:1684)
+? try_to_free_pages	(vmscan.c:1848)
+? isolate_pages_global	(vmscan.c:980)
+? __alloc_pages_nodemask	(page_alloc.c:1702)
+? __get_free_pages	(page_alloc.c:1990)
+? copy_process	(fork.c:237)
+? do_fork	(fork.c:1443)
+? rb_erase
+? __switch_to
+? kthread
+? kernel_thread
+? kthread
+? kernel_thread_helper
+? kthreadd
+? kthreadd
+? kernel_thread_helper
 
-It will be also needed for an enhancement of the oom handler, where i
-free unused stack pages (the pages before the stack pointer) under high
-memory pressure. This is currently under work.
-
-Andrew please apply this patch to 2.6.34-rc* tree.
-
-Greetings,
-Stefani
-
-Signed-off-by: Stefani Seibold <stefani@seibold.net>
----
- Documentation/filesystems/proc.txt |    2 
- fs/proc/array.c                    |   87 ++-----------------------------------
- 2 files changed, 8 insertions(+), 81 deletions(-)
-
-diff -u -N -r -p linux-2.6.33-rc2.orig/fs/proc/array.c linux-2.6.33-rc2.new/fs/proc/array.c
---- linux-2.6.33-rc2.orig/fs/proc/array.c	2009-12-27 23:37:04.817427024 +0100
-+++ linux-2.6.33-rc2.new/fs/proc/array.c	2010-01-02 14:36:53.794188418 +0100
-@@ -327,93 +327,20 @@ static inline void task_context_switch_c
- 			p->nivcsw);
- }
- 
--#ifdef CONFIG_MMU
--
--struct stack_stats {
--	struct vm_area_struct *vma;
--	unsigned long	startpage;
--	unsigned long	usage;
--};
--
--static int stack_usage_pte_range(pmd_t *pmd, unsigned long addr,
--				unsigned long end, struct mm_walk *walk)
-+static inline void task_show_stack_usage(struct seq_file *m,
-+						struct task_struct *task)
- {
--	struct stack_stats *ss = walk->private;
--	struct vm_area_struct *vma = ss->vma;
--	pte_t *pte, ptent;
--	spinlock_t *ptl;
--	int ret = 0;
--
--	pte = pte_offset_map_lock(vma->vm_mm, pmd, addr, &ptl);
--	for (; addr != end; pte++, addr += PAGE_SIZE) {
--		ptent = *pte;
-+	unsigned long		usage;
- 
-+	if (task->mm) {
- #ifdef CONFIG_STACK_GROWSUP
--		if (pte_present(ptent) || is_swap_pte(ptent))
--			ss->usage = addr - ss->startpage + PAGE_SIZE;
-+		usage = KSTK_ESP(task) - task->stack_start;
- #else
--		if (pte_present(ptent) || is_swap_pte(ptent)) {
--			ss->usage = ss->startpage - addr + PAGE_SIZE;
--			pte++;
--			ret = 1;
--			break;
--		}
-+		usage = task->stack_start - KSTK_ESP(task);
- #endif
-+		seq_printf(m, "Stack usage:\t%lu kB\n", (usage + 1023) >> 10);
- 	}
--	pte_unmap_unlock(pte - 1, ptl);
--	cond_resched();
--	return ret;
--}
--
--static inline unsigned long get_stack_usage_in_bytes(struct vm_area_struct *vma,
--				struct task_struct *task)
--{
--	struct stack_stats ss;
--	struct mm_walk stack_walk = {
--		.pmd_entry = stack_usage_pte_range,
--		.mm = vma->vm_mm,
--		.private = &ss,
--	};
--
--	if (!vma->vm_mm || is_vm_hugetlb_page(vma))
--		return 0;
--
--	ss.vma = vma;
--	ss.startpage = task->stack_start & PAGE_MASK;
--	ss.usage = 0;
--
--#ifdef CONFIG_STACK_GROWSUP
--	walk_page_range(KSTK_ESP(task) & PAGE_MASK, vma->vm_end,
--		&stack_walk);
--#else
--	walk_page_range(vma->vm_start, (KSTK_ESP(task) & PAGE_MASK) + PAGE_SIZE,
--		&stack_walk);
--#endif
--	return ss.usage;
--}
--
--static inline void task_show_stack_usage(struct seq_file *m,
--						struct task_struct *task)
--{
--	struct vm_area_struct	*vma;
--	struct mm_struct	*mm = get_task_mm(task);
--
--	if (mm) {
--		down_read(&mm->mmap_sem);
--		vma = find_vma(mm, task->stack_start);
--		if (vma)
--			seq_printf(m, "Stack usage:\t%lu kB\n",
--				get_stack_usage_in_bytes(vma, task) >> 10);
--
--		up_read(&mm->mmap_sem);
--		mmput(mm);
--	}
--}
--#else
--static void task_show_stack_usage(struct seq_file *m, struct task_struct *task)
--{
- }
--#endif		/* CONFIG_MMU */
- 
- static void task_cpus_allowed(struct seq_file *m, struct task_struct *task)
- {
-diff -u -N -r -p linux-2.6.33-rc2.orig/Documentation/filesystems/proc.txt linux-2.6.33-rc2.new/Documentation/filesystems/proc.txt
---- linux-2.6.33-rc2.orig/Documentation/filesystems/proc.txt	2009-12-27 23:37:01.098310709 +0100
-+++ linux-2.6.33-rc2.new/Documentation/filesystems/proc.txt	2010-01-02 14:30:39.059150340 +0100
-@@ -231,7 +231,7 @@ Table 1-2: Contents of the statm files (
-  Mems_allowed_list           Same as previous, but in "list format"
-  voluntary_ctxt_switches     number of voluntary context switches
-  nonvoluntary_ctxt_switches  number of non voluntary context switches
-- Stack usage:                stack usage high water mark (round up to page size)
-+ Stack usage:                stack usage in kB
- ..............................................................................
- 
- Table 1-3: Contents of the statm files (as of 2.6.8-rc3)
+INFO: task s2disk:2174 blocked for more than 120 seconds
+...
+Call Trace:
+? __switch_to
+? schedule_timeout
+? check_preempt_wakeup
+? wait_for_common
+? default_wake_function
+? kthread_create:133
+? worker_thread
+? schedule
+? create_workqueue_thread
+? worker_thread
+? __create_workqueue_key (workqueue.c:1006)
+? stop_machine_create (stop_machine.c:121)
+? disable_nonboot_cpus (cpu.c:370)
+? hibernation_snapshot
+? snapshot_ioctl
+...
+? sys_ioctl
 
 
+Thanks for everything
+Alan
