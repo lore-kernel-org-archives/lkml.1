@@ -1,138 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752177Ab0AAXTB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752039Ab0ABUi1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752177Ab0AAXTB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jan 2010 18:19:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751740Ab0AAXS6
+	id S1752039Ab0ABUi1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Jan 2010 15:38:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751894Ab0ABUi0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jan 2010 18:18:58 -0500
-Received: from smtp110.prem.mail.sp1.yahoo.com ([98.136.44.55]:34847 "HELO
-	smtp110.prem.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751360Ab0AAXS5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jan 2010 18:18:57 -0500
-X-Yahoo-SMTP: OIJXglSswBDfgLtXluJ6wiAYv6_cnw--
-X-YMail-OSG: 4P5IkxkVM1nezXd_XwDE_eiezgugkzP6q.C82Ic6EXqUD22jfqxiPl6D5.wd9YV3PCQoNfOHNIzgbD5GRvvTKcYEv.tY_ZmHwBOfjK.gtrRO4nLbY13_TbQGhVJ00eAj7n2nvXIE2sXNzaYyiinFBHnqcT1eCZPuUoju4fbf_LXCZ8bA3XCx0ALKZ8tgvBmxNDL6PcA66QlCOlx7xb.dnG2rbDGViDByZc.17HK3thztYcybtNVKmvQza08LP8Lfob1sDjbRsJkoIybmhUk-
-X-Yahoo-Newman-Property: ymail-3
-Message-ID: <4B3E82D9.7050708@schaufler-ca.com>
-Date: Fri, 01 Jan 2010 15:18:49 -0800
-From: Casey Schaufler <casey@schaufler-ca.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Sat, 2 Jan 2010 15:38:26 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:49330 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751212Ab0ABUi0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Jan 2010 15:38:26 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alan Jenkins <sourcejedi.lkml@googlemail.com>
+Subject: Re: s2disk hang update
+Date: Sat, 2 Jan 2010 21:38:42 +0100
+User-Agent: KMail/1.12.3 (Linux/2.6.33-rc2-tst; KDE/4.3.3; x86_64; ; )
+Cc: Mel Gorman <mel@csn.ul.ie>, hugh.dickins@tiscali.co.uk,
+       Pavel Machek <pavel@ucw.cz>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+References: <9b2b86521001020703v23152d0cy3ba2c08df88c0a79@mail.gmail.com>
+In-Reply-To: <9b2b86521001020703v23152d0cy3ba2c08df88c0a79@mail.gmail.com>
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Andrew G. Morgan" <morgan@kernel.org>,
-       "Serge E. Hallyn" <serue@us.ibm.com>, Bryan Donlan <bdonlan@gmail.com>,
-       Benny Amorsen <benny+usenet@amorsen.dk>,
-       Michael Stone <michael@laptop.org>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, linux-security-module@vger.kernel.org,
-       Andi Kleen <andi@firstfloor.org>, David Lang <david@lang.hm>,
-       Oliver Hartkopp <socketcan@hartkopp.net>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Valdis Kletnieks <Valdis.Kletnieks@vt.edu>,
-       Evgeniy Polyakov <zbr@ioremap.net>,
-       "C. Scott Ananian" <cscott@cscott.net>,
-       James Morris <jmorris@namei.org>, Bernie Innocenti <bernie@codewiz.org>,
-       Mark Seaborn <mrs@mythic-beasts.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       =?ISO-8859-1?Q?Am=E9rico_Wang?= <xiyou.wangcong@gmail.com>,
-       Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
-       Samir Bellabes <sam@synack.fr>, Pavel Machek <pavel@ucw.cz>,
-       Al Viro <viro@ZenIV.linux.org.uk>,
-       Casey Schaufler <casey@schaufler-ca.com>
-Subject: Re: [RFC][PATCH v3] Unprivileged: Disable raising of privileges
-References: <551280e50912300652r1007dee0j8de750bf33af9b3c@mail.gmail.com>	<m1fx6suswz.fsf@fess.ebiederm.org>	<20091230201712.GA23999@us.ibm.com>	<m1hbr8tb8q.fsf_-_@fess.ebiederm.org>	<20091230212931.233003b9@lxorguk.ukuu.org.uk>	<m1skasrvnq.fsf@fess.ebiederm.org>	<20091230230042.5d2e78ac@lxorguk.ukuu.org.uk>	<3e8340490912301844p4fddaf57ke58ceeba9582e0fa@mail.gmail.com>	<20091231173334.5e3d7557@lxorguk.ukuu.org.uk>	<20091231175257.GA7210@us.ibm.com>	<551280e50912311020x2bdc5b1o699a601f67b91662@mail.gmail.com>	<m1aawzm1tc.fsf@fess.ebiederm.org>	<20100101144300.023f47a5@lxorguk.ukuu.org.uk>	<m1zl4x4wq8.fsf@fess.ebiederm.org>	<4B3E6A8B.7060705@schaufler-ca.com> <20100101223919.00b60938@lxorguk.ukuu.org.uk>
-In-Reply-To: <20100101223919.00b60938@lxorguk.ukuu.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <201001022138.42575.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
->> Sure. Not that it would be hard to do so. And have a careful look
->> at the recent discussions on checkpoint/restart.
->>     
->
-> Indeed the LSM "no removal of restrictions" is simply a policy decision
-> that came about early on - no reason to assume it is a right policy
-> decision if it can be shown otherwise.
->
->   
->> Application developers want systems that work the way the man pages
->> say they work. They do not want additional or conditional restrictions.
->>     
->
-> I disagree somewhat. They want them to work they way they did when they
-> tested it and the way they believe it works. Most of them never read the
-> manual or the standards documents. Take a look at the whining when stat()
-> size data stopped happening by chance to reflect bytes queued in a pipe.
->   
+On Saturday 02 January 2010, Alan Jenkins wrote:
+> Hi,
 
-Yeah, the good ones do at least try to consider both the documented
-and traditional behaviors.
+Hi,
 
->   
->> How many commercial applications start their installation instructions
->> with "disable SELinux"? (Hint: lots)
->>     
->
-> And I am sure it time the sequence is going to go "Why did your business
-> web site get taken out for four weeks" / "We disabled SELinux as the app
-> said" / "Sue the app vendor"
->   
+> I've been suffering from s2disk hangs again.  This time, the hangs
+> were always before the hibernation image was written out.
+> 
+> They're still frustratingly random.  I just started trying to work out
+> whether doubling PAGES_FOR_IO makes them go away, but they went away
+> on their own again.
+> 
+> I did manage to capture a backtrace with debug info though.  Here it
+> is for 2.6.33-rc2.  (It has also happened on rc1).  I was able to get
+> the line numbers (using gdb, e.g.  "info line
+> *stop_machine_create+0x27"), having built the kernel with debug info.
+> 
+> [top of trace lost due to screen height]
+> ? sync_page	(filemap.c:183)
+> ? wait_on_page_bit	(filemap.c:506)
+> ? wake_bit_function	(wait.c:174)
+> ? shrink_page_list	(vmscan.c:696)
+> ? __delayacct_blkio_end	(delayacct.c:94)
+> ? finish_wait	(list.h:142)
+> ? congestion_wait	(backing-dev.c:761)
+> ? shrink_inactive_list	(vmscan.c:1193)
+> ? scsi_request_fn	(spinlock.h:306)
+> ? blk_run_queue	(blk-core.c:434)
+> ? shrink_zone	(vmscan.c:1484)
+> ? do_try_to_free_pages	(vmscan.c:1684)
+> ? try_to_free_pages	(vmscan.c:1848)
+> ? isolate_pages_global	(vmscan.c:980)
+> ? __alloc_pages_nodemask	(page_alloc.c:1702)
+> ? __get_free_pages	(page_alloc.c:1990)
+> ? copy_process	(fork.c:237)
+> ? do_fork	(fork.c:1443)
+> ? rb_erase
+> ? __switch_to
+> ? kthread
+> ? kernel_thread
+> ? kthread
+> ? kernel_thread_helper
+> ? kthreadd
+> ? kthreadd
+> ? kernel_thread_helper
+> 
+> INFO: task s2disk:2174 blocked for more than 120 seconds
 
-You have to demonstrate that SELinux would be prevented the outage.
-Not so easy.
+This looks like we have run out of memory while creating a new kernel thread
+and we have blocked on I/O while trying to free some space (quite obviously,
+because the I/O doesn't work at this point).
 
-> If you tell someone to disable the safety systems on a crane you get
-> prosecuted.
->   
+I think it should help if you increase PAGES_FOR_IO, then.
 
-If you survive. The difference is the obvious physical harm.
-
->>> I am sick and fed up with the conversations that go:
->>> - I want to do X.
->>> - X has been implemented.
->>> - Sorry I can't use X as implemented because you have to be root to
->>>   use X.
->>>   
->>>       
->> Exasperated sigh. Privileged operations are privileged for a reason,
->> not always a good reason mind you, but a reason nonetheless. If
->> your application developers want to do things that require privilege
->> you need to teach them how to write privileged programs safely. We've
->> been working on exotic variations of system controls for decades
->> and in the end your programmers have to write decent code because
->> we haven't yet come up with a way to make all the things that people
->> want their programs to do safe.
->>     
->
-> A useful question here would be to ask what it means to containerise
-> security. At the moment you can do this with virtual machines and while
-> its a nasty managability/security trade off the choice is there for the
-> most part and you can point at things like the amazon cloud as working
-> examples. We don't really have the notion of what setuidness means within
-> a container or how you can create a container which has its own internal
-> setuid, security model, LSM and 'superuser' but can't mess anything else
-> up, only for a virtual machine.
->   
-
-I've said it many times. Separation is easy, sharing is hard. Isolated
-machines, dedicated machines, virtual machines, containers, Mandatory
-Access Control, and Discretionary Access Control and all means for
-separation. Each has mechanisms to allow controlled sharing. The setuid
-mechanism is primarily a DAC mechanism to allow Fred to give Barney
-access to resources that Fred has access to that Barney does not.
-Overloading the user ID with the root privilege model offered advantages
-in the days of computers with 64k of RAM, and we have that legacy to
-deal with. This tends to obfuscate the value of setuid for DAC.
-
-
-> [I'll note Hurd tried to explore this area in part because Hurd was
->  designed around a model that history proved bogus - a big computer being
->  equitably shared with all the power possible but without messing up other
->  users]
->
-> Alan
->   
-
+Rafael
