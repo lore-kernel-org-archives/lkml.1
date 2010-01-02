@@ -1,81 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752438Ab0ABDSM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752360Ab0ABCnN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752438Ab0ABDSM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jan 2010 22:18:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752342Ab0ABDSL
+	id S1752360Ab0ABCnN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Jan 2010 21:43:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752303Ab0ABCnM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jan 2010 22:18:11 -0500
-Received: from mail-fx0-f225.google.com ([209.85.220.225]:58131 "EHLO
-	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752311Ab0ABDSK convert rfc822-to-8bit (ORCPT
+	Fri, 1 Jan 2010 21:43:12 -0500
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:38525 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752264Ab0ABCnL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jan 2010 22:18:10 -0500
+	Fri, 1 Jan 2010 21:43:11 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:from:date
-         :x-google-sender-auth:message-id:subject:to:cc:content-type
-         :content-transfer-encoding;
-        b=WYIKcA9lPTrKo7rZeXUEK47NOmpTrWvnoj6b5c6fPh4Fuc/Yhaf7DwCJ8rsyJJZw3/
-         jCn43JjR1ItGCn0K/VTQEkcTW/QzR+RR1e6QBC6kxZJd0zfUjNFgd7j38AonEkvtIG6l
-         TCbFsWe8PeoIUECKHzkLlejRkJR+OcDhnJsUE=
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=qHUp3sQK4w60CbpKVIKPFkhiX9sfD5QQ3vXufdZuq9srk4NuRtbZkIolGru9H4QxW/
+         k1BZVOWGC50T4urAD/COtZav2Qt3NVjrKo4Ba5vl/CJbEedKm7StWfFDumZqgP3ulLrF
+         n+h84c2mZMmsKdzQva7sYaw8Pg3+t4lg494As=
+Date: Fri, 1 Jan 2010 18:43:05 -0800
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Roel Kluin <roel.kluin@gmail.com>
+Cc: linux-input@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Input: &&/|| confusion in gf2k_connect()?
+Message-ID: <20100102024305.GA5788@core.coreip.homeip.net>
+References: <4B3C96DF.8060903@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <200912302239.28792.rjw@sisk.pl>
-References: <LptzGUUXbTK.A.MSF.ymhOLB@chimera> <NJVdobuNFNK.A.Zg.inhOLB@chimera> 
-	<20091230111745.GC4489@kernel.dk> <200912302239.28792.rjw@sisk.pl>
-From: Andrew Lutomirski <luto@mit.edu>
-Date: Fri, 1 Jan 2010 22:17:48 -0500
-X-Google-Sender-Auth: bd1d134e96db14aa
-Message-ID: <cb0375e11001011917y6920d45dse0b507287e8538c@mail.gmail.com>
-Subject: Re: [Bug #14887] suspend doesn't work on X200s
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Jens Axboe <jens.axboe@oracle.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B3C96DF.8060903@gmail.com>
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I suspect it was fixed by this patch:
+On Thu, Dec 31, 2009 at 01:19:43PM +0100, Roel Kluin wrote:
+> This always evaluates to true.
+> 
+> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
 
-http://lkml.org/lkml/2009/12/20/88
+Applied to 'for-linus', thank you Roel.
 
-but I can't test because the machine in question died right after I
-built it a new kernel.  sigh.
-
-I'll re-post once I get the laptop working again if there's still a problem.
-
---Andy
-
-On Wed, Dec 30, 2009 at 4:39 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Wednesday 30 December 2009, Jens Axboe wrote:
->> On Tue, Dec 29 2009, Rafael J. Wysocki wrote:
->> > This message has been generated automatically as a part of a report
->> > of recent regressions.
->> >
->> > The following bug entry is on the current list of known regressions
->> > from 2.6.32.  Please verify if it still should be listed and let me know
->> > (either way).
->> >
->> >
->> > Bug-Entry   : http://bugzilla.kernel.org/show_bug.cgi?id=14887
->> > Subject             : suspend doesn't work on X200s
->> > Submitter   : Andrew Lutomirski <luto@mit.edu>
->> > Date                : 2009-12-22 0:45 (8 days old)
->> > References  : http://marc.info/?l=linux-kernel&m=126144274102396&w=4
->>
->> Works fine for me on an x200s. The only issue I seem to have is that
->> sometimes it suspends immediately upon resume again, presumably the lid
->> close event is re-triggered (or something to that extent). Apart from
->> that, 2.6.32 and current -git works fine for me.
->
-> Thanks for the info.
->
-> Perhaps the bug that Andrew saw has been fixed since then.
->
-> I'm changing the stauts of the bug to "resolved".  Andrew, please reopen if
-> you're still seeing the problem with the current Linus' tree.
->
-> Rafael
->
+-- 
+Dmitry
