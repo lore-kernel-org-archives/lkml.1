@@ -1,93 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752126Ab0ABWDw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752196Ab0ABVZh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752126Ab0ABWDw (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Jan 2010 17:03:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751657Ab0ABWDw
+	id S1752196Ab0ABVZh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Jan 2010 16:25:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751475Ab0ABVZg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Jan 2010 17:03:52 -0500
-Received: from mail-yx0-f187.google.com ([209.85.210.187]:56191 "EHLO
-	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751475Ab0ABWDv convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Jan 2010 17:03:51 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=UICsxihRc4FK8/82Tg9btMrWbEZn5/1CUSXGMXrxcOSErOJJ5FAUoVbfl/h8egGt94
-         u7oidrW6S6TLy22ra3CsIjzkNmWR8z5RFh2Xqdi26pgrnCnP2bFM5Oacu4Ju2Ampy34a
-         CuskTMQ8uRv8a+r7ngZLzAvru56DJ7Ojfe2Fc=
-MIME-Version: 1.0
-In-Reply-To: <1a297b361001021017y746e4acdsfcf307b0f363e21d@mail.gmail.com>
-References: <523138909@web.de> <20091231131852.GB32492@centrinvest.ru>
-	 <20100101001931.GA1290@kroah.com>
-	 <1a297b361001020805y6b00af83g81cf8492aa73bc3b@mail.gmail.com>
-	 <20100102163449.GB5172@kroah.com>
-	 <1a297b361001021017y746e4acdsfcf307b0f363e21d@mail.gmail.com>
-Date: Sat, 2 Jan 2010 17:03:50 -0500
-Message-ID: <9e4733911001021403n7ba076d0na423ae50e2983171@mail.gmail.com>
-Subject: Re: [patch staging] BCM70010 (crystalhd) Linux Driver
-From: Jon Smirl <jonsmirl@gmail.com>
-To: Manu Abraham <abraham.manu@gmail.com>
-Cc: Greg KH <greg@kroah.com>, Peter Paul <abnominales@web.de>,
+	Sat, 2 Jan 2010 16:25:36 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:37315 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751657Ab0ABVZf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Jan 2010 16:25:35 -0500
+Date: Sat, 2 Jan 2010 22:25:30 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Wayne Thomas <waynethomas69@gmail.com>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-input@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+Subject: Re: [PATCH] HID: driver for BTC "Emprex 3009URF III Vista MCE Remote"
+  quirky remote
+In-Reply-To: <3711715e1001020152s626739daw6cdf2d7742a0d959@mail.gmail.com>
+Message-ID: <alpine.LNX.2.00.1001022221320.2277@pobox.suse.cz>
+References: <3711715e0912310013u25e921cbqe6abb7c1621109e@mail.gmail.com>  <20100102025312.GC5788@core.coreip.homeip.net> <3711715e1001020152s626739daw6cdf2d7742a0d959@mail.gmail.com>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
 Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jan 2, 2010 at 1:17 PM, Manu Abraham <abraham.manu@gmail.com> wrote:
-> Hi Greg,
->
-> On Sat, Jan 2, 2010 at 8:34 PM, Greg KH <greg@kroah.com> wrote:
->> On Sat, Jan 02, 2010 at 08:05:38PM +0400, Manu Abraham wrote:
->>> Hi Greg,
->>>
->>> > I'm glad to do so if someone wants to help work on it there and shephard
->>> > it into the main kernel tree.
->>>
->>> Please find the initial round of cleaned up patches for staging,
->>> applied against linux-next.
->>
->> Did you really author this driver?  If so, that's fine, just checking.
->> If not, please put the correct authorship "From:" in the patch.
->
-> I am not the author of the driver. I just picked it up and cleaned it
-> up for Coding style changes for it to be included.
+On Sat, 2 Jan 2010, Wayne Thomas wrote:
 
-I'm not against this submission, but would it be better to wait until
-Monday when the Broadcom authors are back as see if they want to
-submit their own driver? That way changes would end up back in their
-internal VCS.
+> >> The Behavior Tech. Computer Corp. (BTC) remote branded as "Emprex 3009URF III
+> >> Vista Remote Controller" uses non-standard mappings for all of its 'special
+> >> purpose' keys (0xffbc usage page).  Applies cleanly to 2.6.30 and 2.6.32
+> >> (other versions not tested).
+> >> scripts/scriptpatch.pl reports 13 styling errors in hid-btc.c
+> >> ("break;" should be on trailing lines)
+> >> but have not changed them to maintain styling consistency with existing drivers.
+> >
+> > I believe that this kind of mapping adjustment can be done via UDEV/HAL
+> > key remapping facilities, without need for the kernel patch.
+> 
+> I'll look into what you have suggested.  The issue is identical to
+> that of the TopSeed remote, which is why I used this method.  If this
+> is the case I assume that the topseed driver (and any others) should
+> also be removed?
 
-I'd like to see a real datasheet for this chip, the public one is
-nothing but a marketing blurb.
+Hi Wayne,
 
+unfortunately you have a point here.
 
->
->> Also, please break up patches to be sent one-per-email so they can be
->> properly applied, and also only have them do one thing (your 4th patch
->> fixed up coding style issues and added the driver to the build.)
->
-> Okay, I will resend them.
->
->> Also, can you add a TODO file to the driver directory stating what is
->> needed to be done, and who to contact about it?
->
-> I will test the device over the coming week and add in a TODO after that.
->
-> Thanks,
-> Manu
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+Moving all the drivers which don't do anything else than establish simple 
+HID->input mappings (such as your driver, or the TopSpeed one), into 
+userspace (udev, please note that HAL is now deprecated), has been on my 
+TODO list for quite a long time.
 
+But there has unfortunately always been something more important, so I 
+have been quite sluggish with this.
 
+If you'd be submitting your changes for BTC to udev, it would be cool if 
+you could do the same for other drivers we now have in kernel, so that 
+they could be removed one day.
+Otherwise I'll do it hopefully soon, I will push it in my TODO a little 
+bit higher as a new-year's resolution :)
+
+Thanks,
 
 -- 
-Jon Smirl
-jonsmirl@gmail.com
+Jiri Kosina
+SUSE Labs, Novell Inc.
