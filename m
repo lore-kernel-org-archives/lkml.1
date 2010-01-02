@@ -1,178 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752346Ab0ABV5L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752679Ab0ABNwS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752346Ab0ABV5L (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Jan 2010 16:57:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751685Ab0ABV5J
+	id S1752679Ab0ABNwS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Jan 2010 08:52:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752392Ab0ABNwR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Jan 2010 16:57:09 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:49478 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751757Ab0ABV5I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Jan 2010 16:57:08 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: [PATCH] PCI: Clean up build for CONFIG_PCI_QUIRKS unset
-Date: Sat, 2 Jan 2010 22:57:24 +0100
-User-Agent: KMail/1.12.3 (Linux/2.6.33-rc2-tst; KDE/4.3.3; x86_64; ; )
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Sat, 2 Jan 2010 08:52:17 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:34059 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752227Ab0ABNwQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Jan 2010 08:52:16 -0500
+Date: Sat, 2 Jan 2010 13:55:25 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: daw-news@taverner.cs.berkeley.edu (David Wagner)
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH v3] Unprivileged: Disable raising of privileges
+Message-ID: <20100102135525.08fe85eb@lxorguk.ukuu.org.uk>
+In-Reply-To: <hhmoos$vnu$1@taverner.cs.berkeley.edu>
+References: <m1iqbpwjtp.fsf@fess.ebiederm.org>
+	<20091231170641.6dd46c6e@lxorguk.ukuu.org.uk>
+	<hhioif$j9t$3@taverner.cs.berkeley.edu>
+	<20100101144629.54fe6cb6@lxorguk.ukuu.org.uk>
+	<hhmoos$vnu$1@taverner.cs.berkeley.edu>
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.18.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <201001022257.24701.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+> >Can be - but its historically been an endless source of bugs and flaws
+> >because the code being run after you take the rights away is being run in
+> >an environment it didn't expect and wasn't tested in.
+> 
+> Are you just *shrugging* at the goals underlying these efforts?
+> The goals of enabling privilege separation and sandboxing seem like
+> highly laudable goals to me.  I don't understand why anyone would
+> be opposed to efforts to achieve those goals.
 
-Currently, drivers/pci/quirks.c is built unconditionally, but if
-CONFIG_PCI_QUIRKS is unset, the only things actually built in this
-file are definitions of global variables and empty functions (due to
-the #ifdef CONFIG_PCI_QUIRKS embracing all of the code inside the
-file).  This is not particularly nice and if someone overlooks
-the #ifdef CONFIG_PCI_QUIRKS, build errors are introduced.
+I am just pointing out the dangers of continuing to blindly pursue that
+model without thinking about the bigger picture. Something Unix security
+has taught people is that the model of removing rights isn't the right
+one if applied simplistically.
 
-To clean that up, move the definitions of the global variables in
-quirks.c that are always built to pci.c, move the definitions of
-the empty functions (compiled when CONFIG_PCI_QUIRKS is unset) to
-headers (additionally make these functions static inline) and modify
-drivers/pci/Makefile so that quirks.c is only built if
-CONFIG_PCI_QUIRKS is set.
+A good example is how fd 0/1/2 is handled these days. The kernel or C
+library in the Linux case puts a setuid process into a sensible context
+rather than just saying "oh you removed the access to this fd, thats
+cool"
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
+If you are going to add more and more "take away the right to" type
+features it's more and more important that an application can be run in
+the context it expects. That is running a setuid application should
+throw off various random restrictions automatically so that it gets the
+expected context, without cpu limit surprises, memory restrictions etc.
 
-I thought it might be useful to do something like this.
+That in turn reads on the rest of your policy because you have to think
+very hard what kind of escape hatch you might be creating.
+ 
+> Privilege-separation is a powerful software architecture technique.
+> It's been used in openssh, qmail, vsftpd, and other highly regarded
+> security-critical applications.  (When a software designer uses privilege
+> separation, he *intends* for his code to be run in a low-privilege
+> environment.  That's not a source of bugs.)
 
-Please let me know what you think.
+Internally yes - its when stuff gets run from the outside it gets harder.
 
-Rafael
+> How many examples have there been?  I can think of one of any significance
+> (sendmail).  In any case, I would classify these flaws as inherently
+> relatively low-severity, because they can only be exploited by local
+> users.
 
----
- drivers/pci/Makefile |    4 +++-
- drivers/pci/pci.c    |    7 ++++++-
- drivers/pci/pci.h    |    7 +++++++
- drivers/pci/quirks.c |   14 ++------------
- include/linux/pci.h  |    6 +++++-
- 5 files changed, 23 insertions(+), 15 deletions(-)
+The number of file handle based attacks has been quite large if not very
+public. There have been lots of quota based attacks, some CPU limit based
+attacks, hangup bases attacks and more. Classics like SGI passwd for
+example.
 
-Index: linux-2.6/drivers/pci/Makefile
-===================================================================
---- linux-2.6.orig/drivers/pci/Makefile
-+++ linux-2.6/drivers/pci/Makefile
-@@ -2,12 +2,14 @@
- # Makefile for the PCI bus specific drivers.
- #
- 
--obj-y		+= access.o bus.o probe.o remove.o pci.o quirks.o \
-+obj-y		+= access.o bus.o probe.o remove.o pci.o \
- 			pci-driver.o search.o pci-sysfs.o rom.o setup-res.o \
- 			irq.o
- obj-$(CONFIG_PROC_FS) += proc.o
- obj-$(CONFIG_SYSFS) += slot.o
- 
-+obj-$(CONFIG_PCI_QUIRKS) += quirks.o
-+
- obj-$(CONFIG_PCI_LEGACY) += legacy.o
- CFLAGS_legacy.o += -Wno-deprecated-declarations
- 
-Index: linux-2.6/drivers/pci/pci.c
-===================================================================
---- linux-2.6.orig/drivers/pci/pci.c
-+++ linux-2.6/drivers/pci/pci.c
-@@ -19,7 +19,6 @@
- #include <linux/pci-aspm.h>
- #include <linux/pm_wakeup.h>
- #include <linux/interrupt.h>
--#include <asm/dma.h>	/* isa_dma_bridge_buggy */
- #include <linux/device.h>
- #include <linux/pm_runtime.h>
- #include <asm/setup.h>
-@@ -30,6 +29,12 @@ const char *pci_power_names[] = {
- };
- EXPORT_SYMBOL_GPL(pci_power_names);
- 
-+int isa_dma_bridge_buggy;
-+EXPORT_SYMBOL(isa_dma_bridge_buggy);
-+
-+int pci_pci_problems;
-+EXPORT_SYMBOL(pci_pci_problems);
-+
- unsigned int pci_pm_d3_delay;
- 
- static void pci_dev_d3_sleep(struct pci_dev *dev)
-Index: linux-2.6/drivers/pci/quirks.c
-===================================================================
---- linux-2.6.orig/drivers/pci/quirks.c
-+++ linux-2.6/drivers/pci/quirks.c
-@@ -25,14 +25,9 @@
- #include <linux/dmi.h>
- #include <linux/pci-aspm.h>
- #include <linux/ioport.h>
-+#include <asm/dma.h>	/* isa_dma_bridge_buggy */
- #include "pci.h"
- 
--int isa_dma_bridge_buggy;
--EXPORT_SYMBOL(isa_dma_bridge_buggy);
--int pci_pci_problems;
--EXPORT_SYMBOL(pci_pci_problems);
--
--#ifdef CONFIG_PCI_QUIRKS
- /*
-  * This quirk function disables memory decoding and releases memory resources
-  * of the device specified by kernel's boot parameter 'pci=resource_alignment='.
-@@ -2595,6 +2590,7 @@ void pci_fixup_device(enum pci_fixup_pas
- 	}
- 	pci_do_fixups(dev, start, end);
- }
-+EXPORT_SYMBOL(pci_fixup_device);
- 
- static int __init pci_apply_final_quirks(void)
- {
-@@ -2706,9 +2702,3 @@ int pci_dev_specific_reset(struct pci_de
- 
- 	return -ENOTTY;
- }
--
--#else
--void pci_fixup_device(enum pci_fixup_pass pass, struct pci_dev *dev) {}
--int pci_dev_specific_reset(struct pci_dev *dev, int probe) { return -ENOTTY; }
--#endif
--EXPORT_SYMBOL(pci_fixup_device);
-Index: linux-2.6/include/linux/pci.h
-===================================================================
---- linux-2.6.orig/include/linux/pci.h
-+++ linux-2.6/include/linux/pci.h
-@@ -1246,8 +1246,12 @@ enum pci_fixup_pass {
- 	DECLARE_PCI_FIXUP_SECTION(.pci_fixup_suspend,			\
- 			suspend##vendor##device##hook, vendor, device, hook)
- 
--
-+#ifdef CONFIG_PCI_QUIRKS
- void pci_fixup_device(enum pci_fixup_pass pass, struct pci_dev *dev);
-+#else
-+static inline void pci_fixup_device(enum pci_fixup_pass pass,
-+				    struct pci_dev *dev) {}
-+#endif
- 
- void __iomem *pcim_iomap(struct pci_dev *pdev, int bar, unsigned long maxlen);
- void pcim_iounmap(struct pci_dev *pdev, void __iomem *addr);
-Index: linux-2.6/drivers/pci/pci.h
-===================================================================
---- linux-2.6.orig/drivers/pci/pci.h
-+++ linux-2.6/drivers/pci/pci.h
-@@ -328,6 +328,13 @@ struct pci_dev_reset_methods {
- 	int (*reset)(struct pci_dev *dev, int probe);
- };
- 
-+#ifdef CONFIG_PCI_QUIRKS
- extern int pci_dev_specific_reset(struct pci_dev *dev, int probe);
-+#else
-+static inline int pci_dev_specific_reset(struct pci_dev *dev, int probe)
-+{
-+	return -ENOTTY;
-+}
-+#endif
- 
- #endif /* DRIVERS_PCI_H */
+If you are really bored take a look how many setuid apps directly or
+indirectly call a memory allocator (usually indirectly via C lib
+functions) and don't check the result. Now play with the memory limits
+
+> Perhaps I'm reading you wrong, but I seem to sense an attitude where you
+> consider privilege separation and sandboxing to be relatively unimportant,
+> and where you consider the risk of local attacks on setuid programs to
+> be unavoidable and of paramount importance.  I'm surprised to get this
+> impression, because that seems narrow and counter-productive to me.
+
+I care about both. Working on building a mass market OS doesn't give you
+the privilege of saying "Oh but persohnally I don't give a **** about
+XYZ"
+
+Alan
