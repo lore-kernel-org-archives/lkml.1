@@ -1,58 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751475Ab0ABS0h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751375Ab0ABSY3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751475Ab0ABS0h (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Jan 2010 13:26:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751202Ab0ABS0h
+	id S1751375Ab0ABSY3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Jan 2010 13:24:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751027Ab0ABSY2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Jan 2010 13:26:37 -0500
-Received: from rekin23.go2.pl ([193.17.41.16]:35886 "EHLO rekin23.go2.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751064Ab0ABS0g convert rfc822-to-8bit (ORCPT
+	Sat, 2 Jan 2010 13:24:28 -0500
+Received: from mail-fx0-f225.google.com ([209.85.220.225]:56242 "EHLO
+	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750878Ab0ABSY2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Jan 2010 13:26:36 -0500
-Subject: =?UTF-8?Q?Re:_[suspend/resume]_Re:_userspace_notification_from_module?=
-From: =?UTF-8?Q?Bart=C5=82omiej_Zimo=C5=84?= <uzi18@o2.pl>
-To: =?UTF-8?Q?Andy_Walls?= <awalls@radix.net>,
-       =?UTF-8?Q?Daniel_Borkmann?= <danborkmann@googlemail.com>
+	Sat, 2 Jan 2010 13:24:28 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:cc:content-type;
+        b=jgQmZYmAeIejrFkfPYOgSs6GgH3FR/AA/3pjYRpfoujF3ZL/f1c279UT7MLz/CxKMO
+         egPxbUp0L4EH8g74x2dlb7517LJiwLsamEQS6rL/MgQ19TbYrLejotyYEIANVKIjY3oB
+         VEqxnyoXim+hBG7nS9Zz/0Bcn7odko2irAkKU=
+MIME-Version: 1.0
+Date: Sat, 2 Jan 2010 22:24:26 +0400
+Message-ID: <1a297b361001021024y609f033ey54bc384b624fc065@mail.gmail.com>
+Subject: staging Patch 02/03: Crystal HD
+From: Manu Abraham <abraham.manu@gmail.com>
+To: Greg KH <greg@kroah.com>
 Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <6f52f5b81001020756i73fbb137if1af8ac8b306f6ba@mail.gmail.com>
-References: <686edb2c.6263643a.4b3f4a3b.b60b3@o2.pl> <6f52f5b81001020715i79d2ea1j33443fa50fbb593c@mail.gmail.com>
-	 <1262446824.3058.11.camel@palomino.walls.org> <6f52f5b81001020756i73fbb137if1af8ac8b306f6ba@mail.gmail.com>
-Mime-Version: 1.0
-Message-ID: <ddef1cf.2c9460e3.4b3f8fd5.c10cd@o2.pl>
-Date: Sat, 02 Jan 2010 19:26:29 +0100
-X-Originator: 83.10.186.148
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: multipart/mixed; boundary=0016364d1f352b9677047c3299d5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dnia 2 stycznia 2010 16:56 	Daniel Borkmann <danborkmann@googlemail.com> napisał(a):
-> Hi Andy,
-> 
-> 2010/1/2 Andy Walls <awalls@radix.net>:
-> > Why not:
-> >
-> > a. write a module that implements a device node that supports poll(),
-> > and
-> >
-> > b. have a user space process select() on the fd for read or exception
-> > notification
-> >
-> > ?
-> 
-> This is, of course, another possible solution that is more "cleaner"
-> than the one with the signals.
-> Then, your userspace program would have another thread polling for the
-> device node. Question is which timeout would be appropriate to be "CPU
-> friendly" and to keep notification latency short?
-> 
+--0016364d1f352b9677047c3299d5
+Content-Type: text/plain; charset=ISO-8859-1
 
-Just need as fast as possible solution and on the other hand acceptable for kernel sources.
-Usually programs needs just to disconnect something or set one flag.
-Even if program will have no time for this it could be enough just to send this precious info.
 
-Best regards.
-Barłomiej Zimoń
-PLD Linux, Kadu Team
+
+--0016364d1f352b9677047c3299d5
+Content-Type: text/x-patch; charset=US-ASCII; 
+	name="0002--Crystal-HD-add-driver-to-staging-build.patch"
+Content-Disposition: attachment; 
+	filename="0002--Crystal-HD-add-driver-to-staging-build.patch"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_g3yq88991
+
+RnJvbSAwY2UxNTdjNDU5MmQ0ODdjNzM5ZGVmMTA5YjU4YzIwOWEyN2FkNzJmIE1vbiBTZXAgMTcg
+MDA6MDA6MDAgMjAwMQpGcm9tOiBNYW51IEFicmFoYW0gPGFicmFoYW0ubWFudUBnbWFpbC5jb20+
+CkRhdGU6IFNhdCwgMiBKYW4gMjAxMCAyMjowNDozNyArMDQwMApTdWJqZWN0OiBbUEFUQ0hdIFtD
+cnlzdGFsIEhEXSBhZGQgZHJpdmVyIHRvIHN0YWdpbmcgYnVpbGQKClNpZ25lZC1vZmYtYnk6IE1h
+bnUgQWJyYWhhbSA8YWJyYWhhbS5tYW51QGdtYWlsLmNvbT4KLS0tCiBkcml2ZXJzL3N0YWdpbmcv
+S2NvbmZpZyAgICAgICAgICAgICB8ICAgIDIgKysKIGRyaXZlcnMvc3RhZ2luZy9NYWtlZmlsZSAg
+ICAgICAgICAgIHwgICAgMSArCiBkcml2ZXJzL3N0YWdpbmcvY3J5c3RhbC1oZC9LY29uZmlnICB8
+ICAgIDYgKysrKysrCiBkcml2ZXJzL3N0YWdpbmcvY3J5c3RhbC1oZC9NYWtlZmlsZSB8ICAgIDYg
+KysrKysrCiA0IGZpbGVzIGNoYW5nZWQsIDE1IGluc2VydGlvbnMoKyksIDAgZGVsZXRpb25zKC0p
+CiBjcmVhdGUgbW9kZSAxMDA2NDQgZHJpdmVycy9zdGFnaW5nL2NyeXN0YWwtaGQvS2NvbmZpZwog
+Y3JlYXRlIG1vZGUgMTAwNjQ0IGRyaXZlcnMvc3RhZ2luZy9jcnlzdGFsLWhkL01ha2VmaWxlCgpk
+aWZmIC0tZ2l0IGEvZHJpdmVycy9zdGFnaW5nL0tjb25maWcgYi9kcml2ZXJzL3N0YWdpbmcvS2Nv
+bmZpZwppbmRleCA0ZTg1MTQxLi4xYWZjODExIDEwMDY0NAotLS0gYS9kcml2ZXJzL3N0YWdpbmcv
+S2NvbmZpZworKysgYi9kcml2ZXJzL3N0YWdpbmcvS2NvbmZpZwpAQCAtMTQxLDUgKzE0MSw3IEBA
+IHNvdXJjZSAiZHJpdmVycy9zdGFnaW5nL3NtN3h4L0tjb25maWciCiAKIHNvdXJjZSAiZHJpdmVy
+cy9zdGFnaW5nL2R0MzE1NS9LY29uZmlnIgogCitzb3VyY2UgImRyaXZlcnMvc3RhZ2luZy9jcnlz
+dGFsLWhkL0tjb25maWciCisKIGVuZGlmICMgIVNUQUdJTkdfRVhDTFVERV9CVUlMRAogZW5kaWYg
+IyBTVEFHSU5HCmRpZmYgLS1naXQgYS9kcml2ZXJzL3N0YWdpbmcvTWFrZWZpbGUgYi9kcml2ZXJz
+L3N0YWdpbmcvTWFrZWZpbGUKaW5kZXggMzk0MzI3YS4uOGZjMGEzNiAxMDA2NDQKLS0tIGEvZHJp
+dmVycy9zdGFnaW5nL01ha2VmaWxlCisrKyBiL2RyaXZlcnMvc3RhZ2luZy9NYWtlZmlsZQpAQCAt
+NTEsMyArNTEsNCBAQCBvYmotJChDT05GSUdfUENNQ0lBX1dBVkVMQU4pCSs9IHdhdmVsYW4vCiBv
+YmotJChDT05GSUdfUENNQ0lBX05FVFdBVkUpCSs9IG5ldHdhdmUvCiBvYmotJChDT05GSUdfRkJf
+U003WFgpCQkrPSBzbTd4eC8KIG9iai0kKENPTkZJR19EVDMxNTUpCQkrPSBkdDMxNTUvCitvYmot
+JChDT05GSUdfQ1JZU1RBTF9IRCkJKz0gY3J5c3RhbC1oZC8KZGlmZiAtLWdpdCBhL2RyaXZlcnMv
+c3RhZ2luZy9jcnlzdGFsLWhkL0tjb25maWcgYi9kcml2ZXJzL3N0YWdpbmcvY3J5c3RhbC1oZC9L
+Y29uZmlnCm5ldyBmaWxlIG1vZGUgMTAwNjQ0CmluZGV4IDAwMDAwMDAuLmZmZjMzYWIKLS0tIC9k
+ZXYvbnVsbAorKysgYi9kcml2ZXJzL3N0YWdpbmcvY3J5c3RhbC1oZC9LY29uZmlnCkBAIC0wLDAg
+KzEsNiBAQAorY29uZmlnIENSWVNUQUxfSEQKKwl0cmlzdGF0ZSAiQnJvYWRjb20gQ3J5c3RhbCBI
+RCBzdXBwb3J0IgorCWRlcGVuZHMgb24gUENJCisJZGVmYXVsdCBuCisJLS0taGVscC0tLQorCSAg
+U3VwcG9ydCBmb3IgdGhlIEJyb2FkY29tIENyeXN0YWwgSEQgZGVjb2RlciBjaGlwc2V0CmRpZmYg
+LS1naXQgYS9kcml2ZXJzL3N0YWdpbmcvY3J5c3RhbC1oZC9NYWtlZmlsZSBiL2RyaXZlcnMvc3Rh
+Z2luZy9jcnlzdGFsLWhkL01ha2VmaWxlCm5ldyBmaWxlIG1vZGUgMTAwNjQ0CmluZGV4IDAwMDAw
+MDAuLjQ3NGU3NmUKLS0tIC9kZXYvbnVsbAorKysgYi9kcml2ZXJzL3N0YWdpbmcvY3J5c3RhbC1o
+ZC9NYWtlZmlsZQpAQCAtMCwwICsxLDYgQEAKK29iai0kKENPTkZJR19DUllTVEFMX0hEKQkrPSBj
+cnlzdGFsLWhkLm8KKworY3J5c3RhbC1oZC1vYmpzCQkJOj0gY3J5c3RhbGhkX2NtZHMubwlcCisJ
+CQkJICAgY3J5c3RhbGhkX2h3Lm8JXAorCQkJCSAgIGNyeXN0YWxoZF9sbngubwlcCisJCQkJICAg
+Y3J5c3RhbGhkX21pc2MubwotLSAKMS41LjYKCg==
+--0016364d1f352b9677047c3299d5--
