@@ -1,86 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751897Ab0ABXEO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752570Ab0ABGX0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751897Ab0ABXEO (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Jan 2010 18:04:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751212Ab0ABXEN
+	id S1752570Ab0ABGX0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Jan 2010 01:23:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752476Ab0ABGXZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Jan 2010 18:04:13 -0500
-Received: from mail-yx0-f187.google.com ([209.85.210.187]:55453 "EHLO
-	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750878Ab0ABXEM (ORCPT
+	Sat, 2 Jan 2010 01:23:25 -0500
+Received: from taverner.CS.Berkeley.EDU ([128.32.153.193]:50910 "EHLO
+	taverner.cs.berkeley.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751757Ab0ABGXY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Jan 2010 18:04:12 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=mx+grVxXp5VKHnlKcAYykdmNpYZCWN50F5U1BmowTCK/yZu6s3iJ1pWeo2ppeFuo/l
-         Sf4L1fBY2reKXaBlRiA59AUYg12qq/3FfSHvpK5ZkB+TtiTdE9D2lMNYwd8XNMSgJJAT
-         /e5Xi5j4eXeeHbr1F022sd7LLp0z7IsuAp708=
-Message-ID: <4B3FD0E8.1010507@gmail.com>
-Date: Sat, 02 Jan 2010 17:04:08 -0600
-From: Robert Hancock <hancockrwd@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
-MIME-Version: 1.0
-To: Ben Nizette <bn@niasdigital.com>
-CC: Pierre Ossman <pierre@ossman.eu>, Hein_Tibosch <hein_tibosch@yahoo.es>,
-       Sascha Hauer <s.hauer@pengutronix.de>,
-       Adrian Hunter <adrian.hunter@nokia.com>, linux-mmc@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Matt Fleming <matt@console-pimps.org>
-Subject: Re: [PATCH v3] mmc: Make ID freq configurable
-References: <1246492196.2980.17.camel@linux-51e8.site> <20090702135849.21370282@hskinnemoen-d830> <1246537056.2980.60.camel@linux-51e8.site> <4B3E570C.2060602@yahoo.es> <63809451-ED1D-487A-AE63-F72B23D136D8@niasdigital.com> <4B3F019F.6010306@yahoo.es> <49985427-DCB9-40E1-815B-43C812B41DE3@niasdigital.com> <20100102130809.121b7e10@mjolnir.ossman.eu> <AD8E15FA-A476-4275-A750-5EB587A93CEC@niasdigital.com>
-In-Reply-To: <AD8E15FA-A476-4275-A750-5EB587A93CEC@niasdigital.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Sat, 2 Jan 2010 01:23:24 -0500
+To: linux-kernel@vger.kernel.org
+Path: not-for-mail
+From: daw@cs.berkeley.edu (David Wagner)
+Newsgroups: isaac.lists.linux-kernel
+Subject: Re: [RFC][PATCH v3] Unprivileged: Disable raising of privileges
+Date: Sat, 2 Jan 2010 06:23:24 +0000 (UTC)
+Organization: University of California, Berkeley
+Message-ID: <hhmoos$vnu$1@taverner.cs.berkeley.edu>
+References: <m1iqbpwjtp.fsf@fess.ebiederm.org> <20091231170641.6dd46c6e@lxorguk.ukuu.org.uk> <hhioif$j9t$3@taverner.cs.berkeley.edu> <20100101144629.54fe6cb6@lxorguk.ukuu.org.uk>
+Reply-To: daw-news@taverner.cs.berkeley.edu (David Wagner)
+NNTP-Posting-Host: taverner.cs.berkeley.edu
+X-Trace: taverner.cs.berkeley.edu 1262413404 32510 128.32.153.193 (2 Jan 2010 06:23:24 GMT)
+X-Complaints-To: news@taverner.cs.berkeley.edu
+NNTP-Posting-Date: Sat, 2 Jan 2010 06:23:24 +0000 (UTC)
+X-Newsreader: trn 4.0-test76 (Apr 2, 2001)
+Originator: daw@taverner.cs.berkeley.edu (David Wagner)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/02/2010 04:23 PM, Ben Nizette wrote:
+Alan Cox  wrote:
+>daw@cs.berkeley.edu (David Wagner) wrote:
+>> You lost me there.  The ability of a specific piece of code to voluntarily
+>> relinquish privileges can be a big benefit to security. 
 >
-> On 02/01/2010, at 11:08 PM, Pierre Ossman wrote:
->
->> On Sat, 2 Jan 2010 20:07:01 +1100
->> Ben Nizette<bn@niasdigital.com>  wrote:
->>
->>>
->>> Pierre, thoughts?  All my cards were borderline spec but Hein's got a mainstream, common card which seems to completely ignore the spec.  Can we just take the few-hundred-uS hit and allow initialization down at the bottom end, say 100kHz?
->>>
->>
->> Broken cards seem to be all over the spectrum, so I wouldn't be
->> suprised if you find ones that break if you go too low as well.
->
-> Yea good point, though given there might not even be a One Freq to Rule Them All, how about:
->
-> ---8<---
->
-> From: Ben Nizette<bn@niasdigital.com>
-> Subject: [PATCH v3] mmc: Make ID freq configurable
->
-> While the SD spec specifies a range of frequencies for the ID phase from 100-400kHz, not all cards play by the rules.  This patch adds a Kconfig option to allow the user to tweak this to their card/host config, though the default of 250kHz should be fine for all spec-abiding cards and most others besides.
->
-> Signed-off-by: Ben Nizette<bn@niasdigital.com>
->
-> ---
-> diff --git a/drivers/mmc/core/Kconfig b/drivers/mmc/core/Kconfig
-> index ab37a6d..a8e5003 100644
-> --- a/drivers/mmc/core/Kconfig
-> +++ b/drivers/mmc/core/Kconfig
-> @@ -14,3 +14,15 @@ config MMC_UNSAFE_RESUME
->            This option is usually just for embedded systems which use
->            a MMC/SD card for rootfs. Most people should say N here.
->
-> +config MMC_ID_FREQ
-> +       int "SD/MMC Card initialisation frequency (Hz)"
-> +       default 250000
-> +       help
-> +         The SD card specification allows for initialisation
-> +         frequencies from 100-400kHz however some broken cards are
-> +         known not to work across this whole range.
-> +
-> +         If you're having problems with a particular card not being
-> +         detected, you may try adjusting this frequency up or down
-> +         but for widest compatibility just leave it default.
+>Can be - but its historically been an endless source of bugs and flaws
+>because the code being run after you take the rights away is being run in
+>an environment it didn't expect and wasn't tested in.
 
-Don't know that a kconfig option is best for this, it'd suck to have to 
-recompile the kernel to change it. Module option might be better..
+Are you just *shrugging* at the goals underlying these efforts?
+The goals of enabling privilege separation and sandboxing seem like
+highly laudable goals to me.  I don't understand why anyone would
+be opposed to efforts to achieve those goals.
+
+Privilege-separation is a powerful software architecture technique.
+It's been used in openssh, qmail, vsftpd, and other highly regarded
+security-critical applications.  (When a software designer uses privilege
+separation, he *intends* for his code to be run in a low-privilege
+environment.  That's not a source of bugs.)
+
+Sandboxing is a powerful security tool.  It's been used for many
+purposes.  (When we invent a sandboxing tool, the whole purpose is
+to run the sandboxed code to run in a low-privilege environment.)
+
+There is indeed one undesired source of bugs sometimes introduced by
+privilege-separation and sandboxing tools, and that is an increased
+potential for attacks against setuid programs by local users.  But calling
+this "an endless source of bugs and flaws" seems over the top to me.
+How many examples have there been?  I can think of one of any significance
+(sendmail).  In any case, I would classify these flaws as inherently
+relatively low-severity, because they can only be exploited by local
+users.
+
+I'm far more concerned about attacks by remote attackers.  I don't
+let untrusted people have accounts on my system.  So I really am not
+that concerned about ways that a local user might try to attack
+setuid root programs.  But I am quite concerned about remote exploits.
+And privilege separation and sandboxing are two of the best techniques
+we have available to defend against remote exploits.
+
+To do that, application developers need better mechanisms to enable
+them to voluntarily and irrevocably relinquish privilege.  That seems
+like a worthwhile goal, and something that ought to be attainable without
+introducing much risk of opening up new ways of attacking setuid programs.
+(Indeed, there have been a number of proposals for how to achieve that
+here on linux-kernel in the past few days.)  So why are you pushing back
+against that goal?  Why are you so critical even of reasonable attempts
+to provide a way to achieve the benefits without enabling those kinds
+of attacks on setuid programs?  What am I missing?
+
+Perhaps I'm reading you wrong, but I seem to sense an attitude where you
+consider privilege separation and sandboxing to be relatively unimportant,
+and where you consider the risk of local attacks on setuid programs to
+be unavoidable and of paramount importance.  I'm surprised to get this
+impression, because that seems narrow and counter-productive to me.
