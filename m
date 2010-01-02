@@ -1,64 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751815Ab0ABTdt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752467Ab0ABVAp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751815Ab0ABTdt (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Jan 2010 14:33:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751446Ab0ABTdt
+	id S1752467Ab0ABVAp (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Jan 2010 16:00:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752369Ab0ABVAp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Jan 2010 14:33:49 -0500
-Received: from casper.infradead.org ([85.118.1.10]:36097 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751212Ab0ABTds (ORCPT
+	Sat, 2 Jan 2010 16:00:45 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:49384 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752344Ab0ABVAo convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Jan 2010 14:33:48 -0500
-Date: Sat, 2 Jan 2010 11:36:15 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: tglx@linutronix.de, Andi Kleen <andi@firstfloor.org>,
+	Sat, 2 Jan 2010 16:00:44 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: =?utf-8?q?Bart=C5=82omiej_Zimo=C5=84?= <uzi18@o2.pl>
+Subject: Re: [suspend/resume] Re: userspace notification from module
+Date: Sat, 2 Jan 2010 22:01:04 +0100
+User-Agent: KMail/1.12.3 (Linux/2.6.33-rc2-tst; KDE/4.3.3; x86_64; ; )
+Cc: Andy Walls <awalls@radix.net>,
+       Daniel Borkmann <danborkmann@googlemail.com>,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2] timer: Introduce mod_timer_msec()
-Message-ID: <20100102113615.10610cc5@infradead.org>
-In-Reply-To: <20100102193013.GA2232@core.coreip.homeip.net>
-References: <20100102104853.28505e39@infradead.org>
-	<20100102105012.40d678f2@infradead.org>
-	<877hs0724u.fsf@basil.nowhere.org>
-	<20100102112108.574396fd@infradead.org>
-	<20100102193013.GA2232@core.coreip.homeip.net>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.6; i586-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+References: <686edb2c.6263643a.4b3f4a3b.b60b3@o2.pl> <6f52f5b81001020756i73fbb137if1af8ac8b306f6ba@mail.gmail.com> <ddef1cf.2c9460e3.4b3f8fd5.c10cd@o2.pl>
+In-Reply-To: <ddef1cf.2c9460e3.4b3f8fd5.c10cd@o2.pl>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Message-Id: <201001022201.04281.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2 Jan 2010 11:30:13 -0800
-Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
-
- timer returns 1.)
-> > + */
-> > +int mod_timer_msec(struct timer_list *timer, unsigned long delay_ms) 
-> >+{
-> > +	return mod_timer(timer, jiffies + msecs_to_jiffies(delay_ms)); 
-> > +}
-> > +EXPORT_SYMBOL(mod_timer_msec);
+On Saturday 02 January 2010, Bartłomiej Zimoń wrote:
+> Dnia 2 stycznia 2010 16:56 	Daniel Borkmann <danborkmann@googlemail.com> napisał(a):
+> > Hi Andy,
+> > 
+> > 2010/1/2 Andy Walls <awalls@radix.net>:
+> > > Why not:
+> > >
+> > > a. write a module that implements a device node that supports poll(),
+> > > and
+> > >
+> > > b. have a user space process select() on the fd for read or exception
+> > > notification
+> > >
+> > > ?
+> > 
+> > This is, of course, another possible solution that is more "cleaner"
+> > than the one with the signals.
+> > Then, your userspace program would have another thread polling for the
+> > device node. Question is which timeout would be appropriate to be "CPU
+> > friendly" and to keep notification latency short?
+> > 
 > 
-> I wonder why isn't this an inline function? Seems tiny enough...
+> Just need as fast as possible solution and on the other hand acceptable for kernel sources.
+> Usually programs needs just to disconnect something or set one flag.
+> Even if program will have no time for this it could be enough just to send this precious info.
 
-the next step I want to do is to add some more smarts here, around rounding/grouping etc;
-it'll take some more infrastructure work in the timer system first, but if I'd
-made this inline now I'd just have to uninline it a bit later...
+Perhaps I don't understand correctly what you're trying to achieve, but at the
+moment suspend is always started from user space, this way or another, and on
+the majority (all?) of the modern distros pm-utils is involved in that.
+So, why don't you provide a pm-utils hook for your process (like, for example,
+NetworkManager)?
 
-> Other than that -  I'll gladly take input conversion patches.
-
-great!
-
-
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
-
+Rafael
