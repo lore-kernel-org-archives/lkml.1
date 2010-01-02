@@ -1,67 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751135Ab0ABFVi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751897Ab0ABXEO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751135Ab0ABFVi (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Jan 2010 00:21:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750878Ab0ABFVh
+	id S1751897Ab0ABXEO (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Jan 2010 18:04:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751212Ab0ABXEN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Jan 2010 00:21:37 -0500
-Received: from mail-iw0-f171.google.com ([209.85.223.171]:32890 "EHLO
-	mail-iw0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750739Ab0ABFVh (ORCPT
+	Sat, 2 Jan 2010 18:04:13 -0500
+Received: from mail-yx0-f187.google.com ([209.85.210.187]:55453 "EHLO
+	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750878Ab0ABXEM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Jan 2010 00:21:37 -0500
+	Sat, 2 Jan 2010 18:04:12 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
-        b=wWIE71OzG7qaXAE6kTXl8qx9diLDbFEM5G6Lu/p/S27GC50zAUj5H0Eng6PC/+gDyZ
-         88lVuOagsKefMQq2WFiX3bpVGo4fxjbuxOMvPV54z7Hvmvwj7dfyIwkRocXTMSPjkD7C
-         TpYuZiEztvFhFGarFjYi7eB/G6jFiV09XGTy0=
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=mx+grVxXp5VKHnlKcAYykdmNpYZCWN50F5U1BmowTCK/yZu6s3iJ1pWeo2ppeFuo/l
+         Sf4L1fBY2reKXaBlRiA59AUYg12qq/3FfSHvpK5ZkB+TtiTdE9D2lMNYwd8XNMSgJJAT
+         /e5Xi5j4eXeeHbr1F022sd7LLp0z7IsuAp708=
+Message-ID: <4B3FD0E8.1010507@gmail.com>
+Date: Sat, 02 Jan 2010 17:04:08 -0600
+From: Robert Hancock <hancockrwd@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
 MIME-Version: 1.0
-In-Reply-To: <1262387986.16572.234.camel@laptop>
-References: <1262339141-4682-1-git-send-email-kosaki.motohiro@jp.fujitsu.com>
-	 <1262387986.16572.234.camel@laptop>
-Date: Sat, 2 Jan 2010 14:21:36 +0900
-X-Google-Sender-Auth: 7a88f2f72946f9a9
-Message-ID: <2f11576a1001012121o4f09d30n6dba925e74099da1@mail.gmail.com>
-Subject: Re: [PATCH] mm, lockdep: annotate reclaim context to zone reclaim too
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Ben Nizette <bn@niasdigital.com>
+CC: Pierre Ossman <pierre@ossman.eu>, Hein_Tibosch <hein_tibosch@yahoo.es>,
+       Sascha Hauer <s.hauer@pengutronix.de>,
+       Adrian Hunter <adrian.hunter@nokia.com>, linux-mmc@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Matt Fleming <matt@console-pimps.org>
+Subject: Re: [PATCH v3] mmc: Make ID freq configurable
+References: <1246492196.2980.17.camel@linux-51e8.site> <20090702135849.21370282@hskinnemoen-d830> <1246537056.2980.60.camel@linux-51e8.site> <4B3E570C.2060602@yahoo.es> <63809451-ED1D-487A-AE63-F72B23D136D8@niasdigital.com> <4B3F019F.6010306@yahoo.es> <49985427-DCB9-40E1-815B-43C812B41DE3@niasdigital.com> <20100102130809.121b7e10@mjolnir.ossman.eu> <AD8E15FA-A476-4275-A750-5EB587A93CEC@niasdigital.com>
+In-Reply-To: <AD8E15FA-A476-4275-A750-5EB587A93CEC@niasdigital.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2010/1/2 Peter Zijlstra <peterz@infradead.org>:
-> On Fri, 2010-01-01 at 18:45 +0900, KOSAKI Motohiro wrote:
->> Commit cf40bd16fd (lockdep: annotate reclaim context) introduced reclaim
->> context annotation. But it didn't annotate zone reclaim. This patch do it.
+On 01/02/2010 04:23 PM, Ben Nizette wrote:
 >
-> And yet you didn't CC anyone involved in that patch, nor explain why you
-> think it necessary, massive FAIL.
+> On 02/01/2010, at 11:08 PM, Pierre Ossman wrote:
 >
-> The lockdep annotations cover all of kswapd() and direct reclaim through
-> __alloc_pages_direct_reclaim(). So why would you need an explicit
-> annotation in __zone_reclaim()?
+>> On Sat, 2 Jan 2010 20:07:01 +1100
+>> Ben Nizette<bn@niasdigital.com>  wrote:
+>>
+>>>
+>>> Pierre, thoughts?  All my cards were borderline spec but Hein's got a mainstream, common card which seems to completely ignore the spec.  Can we just take the few-hundred-uS hit and allow initialization down at the bottom end, say 100kHz?
+>>>
+>>
+>> Broken cards seem to be all over the spectrum, so I wouldn't be
+>> suprised if you find ones that break if you go too low as well.
+>
+> Yea good point, though given there might not even be a One Freq to Rule Them All, how about:
+>
+> ---8<---
+>
+> From: Ben Nizette<bn@niasdigital.com>
+> Subject: [PATCH v3] mmc: Make ID freq configurable
+>
+> While the SD spec specifies a range of frequencies for the ID phase from 100-400kHz, not all cards play by the rules.  This patch adds a Kconfig option to allow the user to tweak this to their card/host config, though the default of 250kHz should be fine for all spec-abiding cards and most others besides.
+>
+> Signed-off-by: Ben Nizette<bn@niasdigital.com>
+>
+> ---
+> diff --git a/drivers/mmc/core/Kconfig b/drivers/mmc/core/Kconfig
+> index ab37a6d..a8e5003 100644
+> --- a/drivers/mmc/core/Kconfig
+> +++ b/drivers/mmc/core/Kconfig
+> @@ -14,3 +14,15 @@ config MMC_UNSAFE_RESUME
+>            This option is usually just for embedded systems which use
+>            a MMC/SD card for rootfs. Most people should say N here.
+>
+> +config MMC_ID_FREQ
+> +       int "SD/MMC Card initialisation frequency (Hz)"
+> +       default 250000
+> +       help
+> +         The SD card specification allows for initialisation
+> +         frequencies from 100-400kHz however some broken cards are
+> +         known not to work across this whole range.
+> +
+> +         If you're having problems with a particular card not being
+> +         detected, you may try adjusting this frequency up or down
+> +         but for widest compatibility just leave it default.
 
-Thanks CCing. The point is zone-reclaim doesn't use
-__alloc_pages_direct_reclaim.
-current call graph is
-
-__alloc_pages_nodemask
-    get_page_from_freelist
-        zone_reclaim()
-    __alloc_pages_slowpath
-        __alloc_pages_direct_reclaim
-            try_to_free_pages
-
-Actually, if zone_reclaim_mode=1, VM never call
-__alloc_pages_direct_reclaim in usual VM pressure.
-Thus I think zone-reclaim should be annotated explicitly too.
-I know almost user don't use zone reclaim mode. but explicit
-annotation doesn't have any demerit, I think.
-
-Am I missing anything?
+Don't know that a kconfig option is best for this, it'd suck to have to 
+recompile the kernel to change it. Module option might be better..
