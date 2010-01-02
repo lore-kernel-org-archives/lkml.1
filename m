@@ -1,37 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752709Ab0ABObT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752666Ab0ABOpk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752709Ab0ABObT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Jan 2010 09:31:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752570Ab0ABObT
+	id S1752666Ab0ABOpk (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Jan 2010 09:45:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751540Ab0ABOpj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Jan 2010 09:31:19 -0500
-Received: from mailout1.go2.pl ([193.17.41.11]:38110 "EHLO mailout1.go2.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752121Ab0ABObS convert rfc822-to-8bit (ORCPT
+	Sat, 2 Jan 2010 09:45:39 -0500
+Received: from casper.infradead.org ([85.118.1.10]:37269 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751492Ab0ABOpj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Jan 2010 09:31:18 -0500
-Subject: =?UTF-8?Q?[suspend/resume]_Re:_userspace_notification_from_module_?=
-From: =?UTF-8?Q?Bart=C5=82omiej_Zimo=C5=84?= <uzi18@o2.pl>
-To: linux-kernel@vger.kernel.org
-In-Reply-To: <4B3F5264.7000008@gmail.com>
-References: <686edb2c.6263643a.4b3f4a3b.b60b3@o2.pl> <4B3F5264.7000008@gmail.com>
-Mime-Version: 1.0
-Message-ID: <7d0b7c65.41700a71.4b3f58b4.b227b@o2.pl>
-Date: Sat, 02 Jan 2010 15:31:16 +0100
-X-Originator: 83.12.131.34
+	Sat, 2 Jan 2010 09:45:39 -0500
+Subject: Re: [PATCH] mm, lockdep: annotate reclaim context to zone reclaim
+ too
+From: Peter Zijlstra <peterz@infradead.org>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <2f11576a1001020529l729caebawc4364690f1df56cb@mail.gmail.com>
+References: <1262339141-4682-1-git-send-email-kosaki.motohiro@jp.fujitsu.com>
+	 <1262387986.16572.234.camel@laptop>
+	 <2f11576a1001012121o4f09d30n6dba925e74099da1@mail.gmail.com>
+	 <1262429166.32223.32.camel@laptop>
+	 <2f11576a1001020529l729caebawc4364690f1df56cb@mail.gmail.com>
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
+Date: Sat, 02 Jan 2010 15:45:00 +0100
+Message-ID: <1262443500.6408.3.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dnia 2 stycznia 2010 15:04 	Daniel Borkmann <danborkmann@googlemail.com> napisał(a):
-> 
-> I guess netlink could be the "cleaner" solution, but with more overhead?!
-> 
+On Sat, 2010-01-02 at 22:29 +0900, KOSAKI Motohiro wrote:
 
-Could be, but remember we have small amount of time from pm notify to freeze processes.
+> When recursive annotation occur?
 
-Best Regards
-Bartłomiej Zimoń
-PLD Linux, Kadu Team
+Dunno, I told you you'd have to make sure it doesn't.
+
