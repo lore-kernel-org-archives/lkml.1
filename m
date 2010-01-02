@@ -1,88 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752609Ab0ABOEf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752786Ab0ABPly@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752609Ab0ABOEf (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Jan 2010 09:04:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752477Ab0ABOEf
+	id S1752786Ab0ABPly (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Jan 2010 10:41:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752666Ab0ABPlx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Jan 2010 09:04:35 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:58234 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752092Ab0ABOEe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Jan 2010 09:04:34 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type;
-        b=Q0jsTVJxpbW8FYIC89gCyaFmvAsLP/1Dgef5FCc7vfKvekxzLK2U14r1E1lTAkIayd
-         4y6WQwH4n8PnZbN5y0oXAwVLAt58PJkzVikL7lYsVwhXqNgoN32b487FIF1CEzsrG8JD
-         1l8CgvQXYX4FrXnQKTp6/fKAFR8nB4jc+ArOo=
-Message-ID: <4B3F5264.7000008@gmail.com>
-Date: Sat, 02 Jan 2010 15:04:20 +0100
-From: Daniel Borkmann <danborkmann@googlemail.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090706)
-MIME-Version: 1.0
-To: =?UTF-8?B?QmFydMWCb21pZWogWmltb8WE?= <uzi18@o2.pl>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: userspace notification from module
+	Sat, 2 Jan 2010 10:41:53 -0500
+Received: from mail1.radix.net ([207.192.128.31]:48506 "EHLO mail1.radix.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752629Ab0ABPlx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Jan 2010 10:41:53 -0500
+Subject: Re: [suspend/resume] Re: userspace notification from module
+From: Andy Walls <awalls@radix.net>
+To: Daniel Borkmann <danborkmann@googlemail.com>
+Cc: =?UTF-8?Q?Bart=C5=82omiej_Zimo=C5=84?= <uzi18@o2.pl>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <6f52f5b81001020715i79d2ea1j33443fa50fbb593c@mail.gmail.com>
 References: <686edb2c.6263643a.4b3f4a3b.b60b3@o2.pl>
-In-Reply-To: <686edb2c.6263643a.4b3f4a3b.b60b3@o2.pl>
-X-Enigmail-Version: 0.96.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigD35EA0892E837536AD04B19E"
+	 <4B3F5264.7000008@gmail.com> <58607309.1e2f721f.4b3f57c0.807d3@o2.pl>
+	 <6f52f5b81001020713j5435cfadr1143806a9026adc2@mail.gmail.com>
+	 <6f52f5b81001020715i79d2ea1j33443fa50fbb593c@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sat, 02 Jan 2010 10:40:24 -0500
+Message-Id: <1262446824.3058.11.camel@palomino.walls.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigD35EA0892E837536AD04B19E
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-
-Hi Bart=C5=82omiej,
-
-Bart=C5=82omiej Zimo=C5=84 wrote:
-> Dnia 2 stycznia 2010 13:36 	Daniel Borkmann <llug.dan@googlemail.com> n=
-apisa=C5=82(a):
-> I will explain more what i'm going to do.
-> The idea is simple. Kernel before suspend/resume sends notification to =
-
-> registered kernel objects. So i have written small module to register
-> there and want now pass these data to /dev/file. It is 1byte so not a b=
-ig deal.
->=20
-> I'm searching now for notification about new byte in buffer, as it is a=
-lmost=20
-> clear for async: http://www.xml.com/ldd/chapter/book/ch05.html#t4
-> but for sync still haven't find.
-
-This sounds very interesting... a "hack" could be the following:
-
-Register your pids to the kernel module, e.g. via ioctl, and if the
-(intra-kernel) notification will be delivered to your module you just
-send a signal to your registered processes via kill_proc_info(). Guess
-this is at least better than polling a file or sth similar.
-
-I guess netlink could be the "cleaner" solution, but with more overhead?!=
+On Sat, 2010-01-02 at 16:15 +0100, Daniel Borkmann wrote:
+> Hi Bartłomiej,
+> 
+> 2010/1/2 Bartłomiej Zimoń <uzi18@o2.pl>
+> >
+> > This looks like more simple and could be good, after all i think about sending this
+> > module here to add to kernel. So if this solution could be ok i will start to code this part.
+> >
+> > Question is now what signal to choose to not terminate process and to be compatible
+> > with rest of Linux kernel?
+> 
+> Have a look at linux/signal.h. There's a section for non-POSIX
+> signals. May be you
+> could add a SIGSUS or sth similar into that list with a free signal
+> number to stay
+> compatible with the rest of the numbers.
+> 
+> Cool thing is that you now will have a kind of "observer" principle:
+> Don't call us, we call you ;)
 
 
-Cheers,
-Daniel
+Why not:
+
+a. write a module that implements a device node that supports poll(),
+and
+
+b. have a user space process select() on the fd for read or exception
+notification
+
+?
+
+Regards,
+Andy
+
+> Cheers,
+> Daniel Borkmann
 
 
---------------enigD35EA0892E837536AD04B19E
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
-
-iEYEARECAAYFAks/UmQACgkQ5AxJm1m3CC/KlgCgkmOfUgofUQQXSnrCB6atJL7e
-4IQAnimDjQZLf++CzmGsfCn8jcakpqGq
-=Fhfa
------END PGP SIGNATURE-----
-
---------------enigD35EA0892E837536AD04B19E--
