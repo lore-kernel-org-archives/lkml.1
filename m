@@ -1,102 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751568Ab0ABSqY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751135Ab0ABFVi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751568Ab0ABSqY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Jan 2010 13:46:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751202Ab0ABSqX
+	id S1751135Ab0ABFVi (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Jan 2010 00:21:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750878Ab0ABFVh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Jan 2010 13:46:23 -0500
-Received: from casper.infradead.org ([85.118.1.10]:43900 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751191Ab0ABSqW convert rfc822-to-8bit (ORCPT
+	Sat, 2 Jan 2010 00:21:37 -0500
+Received: from mail-iw0-f171.google.com ([209.85.223.171]:32890 "EHLO
+	mail-iw0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750739Ab0ABFVh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Jan 2010 13:46:22 -0500
-Date: Sat, 2 Jan 2010 10:48:53 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: tglx@linutronix.de
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] timer: Introduce mod_timer_msec()
-Message-ID: <20100102104853.28505e39@infradead.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.6; i586-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sat, 2 Jan 2010 00:21:37 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
+        b=wWIE71OzG7qaXAE6kTXl8qx9diLDbFEM5G6Lu/p/S27GC50zAUj5H0Eng6PC/+gDyZ
+         88lVuOagsKefMQq2WFiX3bpVGo4fxjbuxOMvPV54z7Hvmvwj7dfyIwkRocXTMSPjkD7C
+         TpYuZiEztvFhFGarFjYi7eB/G6jFiV09XGTy0=
+MIME-Version: 1.0
+In-Reply-To: <1262387986.16572.234.camel@laptop>
+References: <1262339141-4682-1-git-send-email-kosaki.motohiro@jp.fujitsu.com>
+	 <1262387986.16572.234.camel@laptop>
+Date: Sat, 2 Jan 2010 14:21:36 +0900
+X-Google-Sender-Auth: 7a88f2f72946f9a9
+Message-ID: <2f11576a1001012121o4f09d30n6dba925e74099da1@mail.gmail.com>
+Subject: Re: [PATCH] mm, lockdep: annotate reclaim context to zone reclaim too
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 247f568d09e22fb5041f49b23bf2d5414c1299db Mon Sep 17 00:00:00 2001
-From: Arjan van de Ven <arjan@linux.intel.com>
-Date: Sat, 2 Jan 2010 10:37:57 -0800
-Subject: [PATCH] timer: Introduce mod_timer_msec()
+2010/1/2 Peter Zijlstra <peterz@infradead.org>:
+> On Fri, 2010-01-01 at 18:45 +0900, KOSAKI Motohiro wrote:
+>> Commit cf40bd16fd (lockdep: annotate reclaim context) introduced reclaim
+>> context annotation. But it didn't annotate zone reclaim. This patch do it.
+>
+> And yet you didn't CC anyone involved in that patch, nor explain why you
+> think it necessary, massive FAIL.
+>
+> The lockdep annotations cover all of kswapd() and direct reclaim through
+> __alloc_pages_direct_reclaim(). So why would you need an explicit
+> annotation in __zone_reclaim()?
 
-It is a common paradigm in drivers to want to set/change a timer
-for a relative amount of milliseconds.
+Thanks CCing. The point is zone-reclaim doesn't use
+__alloc_pages_direct_reclaim.
+current call graph is
 
-This patch adds a mod_timer_msec() API function to make this easier
-and to remove the awareness of both "jiffies" and the HZ value from
-various drivers that don't care about such implementation detail.
+__alloc_pages_nodemask
+    get_page_from_freelist
+        zone_reclaim()
+    __alloc_pages_slowpath
+        __alloc_pages_direct_reclaim
+            try_to_free_pages
 
-Conversion of various users of the API are done in separate patches
-that will go via the various maintainers separately.
+Actually, if zone_reclaim_mode=1, VM never call
+__alloc_pages_direct_reclaim in usual VM pressure.
+Thus I think zone-reclaim should be annotated explicitly too.
+I know almost user don't use zone reclaim mode. but explicit
+annotation doesn't have any demerit, I think.
 
-Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
----
- include/linux/timer.h |    1 +
- kernel/timer.c        |   20 ++++++++++++++++++++
- 2 files changed, 21 insertions(+), 0 deletions(-)
-
-diff --git a/include/linux/timer.h b/include/linux/timer.h
-index a2d1eb6..763f58f 100644
---- a/include/linux/timer.h
-+++ b/include/linux/timer.h
-@@ -162,6 +162,7 @@ static inline int timer_pending(const struct timer_list * timer)
- extern void add_timer_on(struct timer_list *timer, int cpu);
- extern int del_timer(struct timer_list * timer);
- extern int mod_timer(struct timer_list *timer, unsigned long expires);
-+extern int mod_timer_msec(struct timer_list *timer, unsigned long delay_ms);
- extern int mod_timer_pending(struct timer_list *timer, unsigned long expires);
- extern int mod_timer_pinned(struct timer_list *timer, unsigned long expires);
- 
-diff --git a/kernel/timer.c b/kernel/timer.c
-index 15533b7..c061cc2 100644
---- a/kernel/timer.c
-+++ b/kernel/timer.c
-@@ -749,6 +749,26 @@ int mod_timer(struct timer_list *timer, unsigned long expires)
- EXPORT_SYMBOL(mod_timer);
- 
- /**
-+ * mod_timer_msec - modify a timer's timeout, using relative milliseconds
-+ * @timer: the timer to be modified
-+ * @delay_ms: the desired minimum delay in milliseconds
-+ *
-+ * Changes the timeout of a timer similar to mod_timer().
-+ *
-+ * mod_timer_msec() takes relative milliseconds rather than absolute
-+ * jiffies as argument.
-+ *
-+ * The function returns whether it has modified a pending timer or not.
-+ * (ie. mod_timer_msec() of an inactive timer returns 0, mod_timer_msec() of
-+ * an active timer returns 1.)
-+ */
-+int mod_timer_msec(struct timer_list *timer, unsigned long delay_ms)
-+{
-+	return mod_timer(timer, msecs_to_jiffies(delay_ms));
-+}
-+EXPORT_SYMBOL(mod_timer_msec);
-+
-+/**
-  * mod_timer_pinned - modify a timer's timeout
-  * @timer: the timer to be modified
-  * @expires: new timeout in jiffies
--- 
-1.6.2.5
-
-
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Am I missing anything?
