@@ -1,94 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752517Ab0ABEhl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752686Ab0ABPJe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752517Ab0ABEhl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jan 2010 23:37:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752483Ab0ABEhI
+	id S1752686Ab0ABPJe (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Jan 2010 10:09:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751492Ab0ABPJd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jan 2010 23:37:08 -0500
-Received: from rcsinet11.oracle.com ([148.87.113.123]:46872 "EHLO
-	rcsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752475Ab0ABEhF (ORCPT
+	Sat, 2 Jan 2010 10:09:33 -0500
+Received: from mail-iw0-f171.google.com ([209.85.223.171]:53466 "EHLO
+	mail-iw0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751460Ab0ABPJd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jan 2010 23:37:05 -0500
-Date: Fri, 1 Jan 2010 20:35:54 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: lkml <linux-kernel@vger.kernel.org>,
-       torvalds <torvalds@linux-foundation.org>
-Cc: H Hartley Sweeten <hsweeten@visionengravers.com>,
-       David Woodhouse <dwmw2@infradead.org>
-Subject: [PATCH 3/4] DocBook/mtdnand: fix ioremap return type
-Message-Id: <20100101203554.e2dd3ce6.randy.dunlap@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt357.oracle.com [141.146.40.157]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090209.4B3ECD5C.007E:SCFMA4539814,ss=1,fgs=0
+	Sat, 2 Jan 2010 10:09:33 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
+        b=tzMRbBvTq55CZ7ajGLzfbauVdQQpZoEf3u9nkcsKYm6BI0rN5gDUGt41KgvF+a+QFx
+         XLELL55WQUd9kg87Zck8Ecwca7vCxSbOsqLxPLCQJY7mtj91JM0QxjdnP6bU0zsqjjS1
+         Ot9k/obFDGvzcEwhDCZum8Zob2nAMDWMznTgY=
+MIME-Version: 1.0
+In-Reply-To: <1262443500.6408.3.camel@laptop>
+References: <1262339141-4682-1-git-send-email-kosaki.motohiro@jp.fujitsu.com>
+	 <1262387986.16572.234.camel@laptop>
+	 <2f11576a1001012121o4f09d30n6dba925e74099da1@mail.gmail.com>
+	 <1262429166.32223.32.camel@laptop>
+	 <2f11576a1001020529l729caebawc4364690f1df56cb@mail.gmail.com>
+	 <1262443500.6408.3.camel@laptop>
+Date: Sun, 3 Jan 2010 00:09:32 +0900
+X-Google-Sender-Auth: 6c18b8d51dcdcfaa
+Message-ID: <2f11576a1001020709m106b16fcqa15ee41a1a8e22a@mail.gmail.com>
+Subject: Re: [PATCH] mm, lockdep: annotate reclaim context to zone reclaim too
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: H Hartley Sweeten <hsweeten@visionengravers.com>
-Subject: DocBook: fix ioremap return type
+2010/1/2 Peter Zijlstra <peterz@infradead.org>:
+> On Sat, 2010-01-02 at 22:29 +0900, KOSAKI Motohiro wrote:
+>
+>> When recursive annotation occur?
+>
+> Dunno, I told you you'd have to make sure it doesn't.
 
-ioremap() returns a void __iomem * not an unsigned long.  Update the
-Documentation file to reflect this.
-
-Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: David Woodhouse <dwmw2@infradead.org>
----
- Documentation/DocBook/mtdnand.tmpl |   12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
-
---- linux-2.6.33-rc2-git4.orig/Documentation/DocBook/mtdnand.tmpl
-+++ linux-2.6.33-rc2-git4/Documentation/DocBook/mtdnand.tmpl
-@@ -174,7 +174,7 @@
- 		</para>
- 		<programlisting>
- static struct mtd_info *board_mtd;
--static unsigned long baseaddr;
-+static void __iomem *baseaddr;
- 		</programlisting>
- 		<para>
- 			Static example
-@@ -182,7 +182,7 @@ static unsigned long baseaddr;
- 		<programlisting>
- static struct mtd_info board_mtd;
- static struct nand_chip board_chip;
--static unsigned long baseaddr;
-+static void __iomem *baseaddr;
- 		</programlisting>
- 	</sect1>
- 	<sect1 id="Partition_defines">
-@@ -283,8 +283,8 @@ int __init board_init (void)
- 	}
- 
- 	/* map physical address */
--	baseaddr = (unsigned long)ioremap(CHIP_PHYSICAL_ADDRESS, 1024);
--	if(!baseaddr){
-+	baseaddr = ioremap(CHIP_PHYSICAL_ADDRESS, 1024);
-+	if (!baseaddr) {
- 		printk("Ioremap to access NAND chip failed\n");
- 		err = -EIO;
- 		goto out_mtd;
-@@ -316,7 +316,7 @@ int __init board_init (void)
- 	goto out;
- 
- out_ior:
--	iounmap((void *)baseaddr);
-+	iounmap(baseaddr);
- out_mtd:
- 	kfree (board_mtd);
- out:
-@@ -341,7 +341,7 @@ static void __exit board_cleanup (void)
- 	nand_release (board_mtd);
- 
- 	/* unmap physical address */
--	iounmap((void *)baseaddr);
-+	iounmap(baseaddr);
- 	
- 	/* Free the MTD device structure */
- 	kfree (board_mtd);
+Please see PF_MEMALLOC turning on/off operation points. all
+PF_MEMALLOC turing on point prevent recersive already.
+(because, otherwise we lost PF_MEMALLOC and makes deadlock...)
