@@ -1,75 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751912Ab0AASRc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752227Ab0ACA6A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751912Ab0AASRc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Jan 2010 13:17:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751696Ab0AASRc
+	id S1752227Ab0ACA6A (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Jan 2010 19:58:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751994Ab0ACA57
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Jan 2010 13:17:32 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:38801 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751660Ab0AASRb (ORCPT
+	Sat, 2 Jan 2010 19:57:59 -0500
+Received: from lon1-post-3.mail.demon.net ([195.173.77.150]:39768 "EHLO
+	lon1-post-3.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752000Ab0ACA57 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Jan 2010 13:17:31 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:message-id:content-type:content-transfer-encoding;
-        b=Ang10AfKJrsHR7IZ6P+3Ls2gsOOamCMT4c/nYGSqIuI/HjR+k01kU+84AfVuh+Qs98
-         nMpnpM/DDGIX0CEkieh54An82+p12mp+yt8M63nqP8U0GpsE4H+ogCXkcIgAlCb+WC7O
-         se/6lLJhWbcLrs8mhyQmKv/7j0oQsXm+TpI6U=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: "Robert P. J. Day" <rpjday@crashcourse.ca>
-Subject: Re: [PATCH] HVSI: Fix apparently backwards args to time_before() in hvsi.c
-Date: Fri, 1 Jan 2010 19:15:47 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.32-0.1-desktop; KDE/4.3.1; x86_64; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Joe Perches <joe@perches.com>, linuxppc-dev@ozlabs.org,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-References: <alpine.LFD.2.00.1001011226020.24958@localhost>
-In-Reply-To: <alpine.LFD.2.00.1001011226020.24958@localhost>
+	Sat, 2 Jan 2010 19:57:59 -0500
+Message-ID: <4B3FEB1B.7040106@lougher.demon.co.uk>
+Date: Sun, 03 Jan 2010 00:55:55 +0000
+From: Phillip Lougher <phillip@lougher.demon.co.uk>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Message-Id: <201001011915.47849.bzolnier@gmail.com>
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: Randy Dunlap <randy.dunlap@oracle.com>
+CC: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, Michal Marek <mmarek@suse.cz>,
+       akpm <akpm@linux-foundation.org>
+Subject: Re: [PATCH -next] libs: force lzma_wrapper to be retained
+References: <20100101120737.94d4acc4.sfr@canb.auug.org.au> <20100101183344.398f2538.randy.dunlap@oracle.com>
+In-Reply-To: <20100101183344.398f2538.randy.dunlap@oracle.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 01 January 2010 06:28:03 pm Robert P. J. Day wrote:
+Randy Dunlap wrote:
+> From: Randy Dunlap <randy.dunlap@oracle.com>
 > 
-> Signed-off-by: Robert P. J. Day <rpjday@crashcourse.ca>
+> When CONFIG_SQUASHFS=m and CONFIG_DECOMPRESS_LZMA=m, decompress_lzma
+> is built but then discarded from the library because no built-in code
+> uses it, so change it from a lib- to an obj- to force it to be kept
+> in the library.
 > 
-> ---
+> ERROR: "unlzma" [fs/squashfs/squashfs.ko] undefined!
 > 
->   no appropriate subsystem maintainer listed in MAINTAINERS.
 
-drivers/char/Makefile:
-obj-$(CONFIG_HVC_CONSOLE)       += hvc_vio.o hvsi.o
+Thanks for fixing this, I should have spotted it in my various
+config tests but didn't.  I could add this to my squashfs-next patches
+to stop the linux-next tree breakage, however, should it go into
+Michal's kbuild -next tree instead?
 
-so it should belong to:
+This patch raises a small additional issue, why is DECOMPRESS_LZMA
+(and DECOMPRESS_GZIP/DECOMPRESS_BZIP2) and defined as tristate?
+None of the above compressors can be built as modules.
 
-HYPERVISOR VIRTUAL CONSOLE DRIVER
-L:      linuxppc-dev@ozlabs.org
-S:      Odd Fixes
-F:      drivers/char/hvc_*
+Regards
 
-[ Though maybe Ben would be willing to pick this one up directly
-  as hvsi is PPC specific thingy and patch is obviously correct. ]
-
-> diff --git a/drivers/char/hvsi.c b/drivers/char/hvsi.c
-> index 793b236..71c0fcd 100644
-> --- a/drivers/char/hvsi.c
-> +++ b/drivers/char/hvsi.c
-> @@ -711,7 +711,7 @@ static void hvsi_drain_input(struct hvsi_struct *hp)
->  	uint8_t buf[HVSI_MAX_READ] __ALIGNED__;
->  	unsigned long end_jiffies = jiffies + HVSI_TIMEOUT;
-> 
-> -	while (time_before(end_jiffies, jiffies))
-> +	while (time_before(jiffies, end_jiffies))
->  		if (0 == hvsi_read(hp, buf, HVSI_MAX_READ))
->  			break;
->  }
-
---
-Bartlomiej Zolnierkiewicz
+Phillip
