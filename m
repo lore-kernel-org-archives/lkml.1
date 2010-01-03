@@ -1,56 +1,45 @@
-Return-Path: <linux-kernel-owner@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754008Ab0BAE4U (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 Jan 2010 23:56:20 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:59524 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753166Ab0BAE4T (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 Jan 2010 23:56:19 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.4.0
-Message-ID: <4B665EC9.6000608@jp.fujitsu.com>
-Date: Mon, 01 Feb 2010 13:55:37 +0900
-From: Kei Tokunaga <tokunaga.keiich@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	id S1752178Ab0ACIe4 (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Sun, 3 Jan 2010 03:34:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751776Ab0ACIey
+	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Sun, 3 Jan 2010 03:34:54 -0500
+Received: from cs09.vkontakte.ru ([93.186.224.9]:48662 "EHLO vkontakte.ru"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751759Ab0ACIex (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Jan 2010 03:34:53 -0500
+Date: Sun, 3 Jan 2010 11:34:50 +0300
+To: linux-kernel <linux-kernel@vger.kernel.org>
+From: VK <admin@vkontakte.ru>
+Reply-to: "Pavel Durov, inContact.ru Admin" <admin@vkontakte.ru>
+Subject: =?UTF-8?Q?=D0=90=D0=BD=D1=82=D0=BE=D0=BD_StiXy_=D0=9A=D0=BE=D0=B7=D0=BB?=
+ =?UTF-8?Q?=D0=BE=D0=B2_has_added_you_as_a_friend_on_the_website_VK.com?=
+Message-ID: <e7623a71d3161ba9ebdd89659b89b3f1@localhost.localdomain>
+X-Priority: 3
+X-Mailer: PHPMailer [version 1.73]
 MIME-Version: 1.0
-To: linux-scsi@vger.kernel.org, James Bottomley <James.Bottomley@suse.de>,
-       Ingo Molnar <mingo@redhat.com>, Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Martin Peterson <martin.petersen@oracle.com>,
-       Christoph Hellwig <hch@infradead.org>, Joe Perches <joe@perches.com>
-CC: Tomohiro Kusumi <kusumi.tomohiro@jp.fujitsu.com>,
-       lkml <linux-kernel@vger.kernel.org>, Li Zefan <lizf@cn.fujitsu.com>,
-       Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>,
-       Kei Tokunaga <tokunaga.keiich@jp.fujitsu.com>
-Subject: [PATCH 0/2 v2] scsi: ftrace based scsi tracing feature
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+linux-kernel,
 
-This is v2 patch series of SCSI trace.
+Антон StiXy Козлов has added you as a friend on the website VK.com
 
-Changelog from v1:
+You can log in and view your friends` pages using your email and automatically created password: J6ZZNfPV
 
- - fixed variable length command handling (DIF_TYPE2 case only)
- - moved scsi trace functions from kernel/trace/scsitrace.c to
-   drivers/scsi/scsi_trace.c
+VK.com is a website that helps dozens of millions of people find their old friends, share photos and events and always stay in touch.
 
-Here are the links to the discussions on v1:
+To log in, please follow this link:
+http://vkontakte.ru/login.php?regemail=linux-kernel@vger.kernel.org#J6ZZNfPV
 
-  [PATCH 0/2] scsi: ftrace based scsi tracing feature
-    http://marc.info/?l=linux-scsi&m=126396981308416&w=2
-  [PATCH 1/2] scsi: add __print_hex() to ftrace
-    http://marc.info/?l=linux-scsi&m=126396984308451&w=2
-  [PATCH 2/2] scsi: add scsi trace core function and put trace points
-    http://marc.info/?l=linux-scsi&m=126396987608486&w=2
+You can change your password in Settings.
 
-This patchset applies to 2.6.33-rc6.
+Attention: If you ignore this invitation, your registration will not be activated.
 
-Thanks,
-Kei
+Good luck!Best regards,
+VK Administration
 
 
