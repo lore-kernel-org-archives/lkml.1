@@ -1,76 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752091Ab0ACXp1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752250Ab0ACXrI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752091Ab0ACXp1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Jan 2010 18:45:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751556Ab0ACXp0
+	id S1752250Ab0ACXrI (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Jan 2010 18:47:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751837Ab0ACXrG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Jan 2010 18:45:26 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:51068 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751038Ab0ACXpZ convert rfc822-to-8bit (ORCPT
+	Sun, 3 Jan 2010 18:47:06 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:54255 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751038Ab0ACXrD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Jan 2010 18:45:25 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: =?utf-8?q?Bart=C5=82omiej_Zimo=C5=84?= <uzi18@o2.pl>
-Subject: Re: [suspend/resume] Re: userspace notification from module
-Date: Mon, 4 Jan 2010 00:45:39 +0100
-User-Agent: KMail/1.12.3 (Linux/2.6.33-rc2-tst; KDE/4.3.3; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org, awalls@radix.net, danborkmann@googlemail.com,
-       linux-pm@lists.linux-foundation.org, stern@rowland.harvard.edu
-References: <686edb2c.6263643a.4b3f4a3b.b60b3@o2.pl> <201001040030.01256.rjw@sisk.pl> <54ac764e.502c1a33.4b4129c3.9dc1b@o2.pl>
-In-Reply-To: <54ac764e.502c1a33.4b4129c3.9dc1b@o2.pl>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Message-Id: <201001040045.39517.rjw@sisk.pl>
+	Sun, 3 Jan 2010 18:47:03 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Mon, 4 Jan 2010 08:43:47 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Cc: Minchan Kim <minchan.kim@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>
+Subject: Re: [PATCH 2/3 -mmotm-2009-12-10-17-19] Count zero page as file_rss
+Message-Id: <20100104084347.c36d9855.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <alpine.LSU.2.00.0912301619500.3369@sister.anvils>
+References: <ceeec51bdc2be64416e05ca16da52a126b598e17.1258773030.git.minchan.kim@gmail.com>
+	<ae2928fe7bb3d94a7ca18d3b3274fdfeb009803a.1258773030.git.minchan.kim@gmail.com>
+	<4B38876F.6010204@gmail.com>
+	<alpine.LSU.2.00.0912301619500.3369@sister.anvils>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 04 January 2010, Bartłomiej Zimoń wrote:
-> Dnia 4 stycznia 2010 0:30 "Rafael J. Wysocki" <rjw@sisk.pl> napisał(a):
-> 
-> > On Sunday 03 January 2010, Bartłomiej Zimoń wrote:
-> > > Dnia 3 stycznia 2010 22:29 "Rafael J. Wysocki" <rjw@sisk.pl> napisał(a):
-> > ...
+On Wed, 30 Dec 2009 16:49:52 +0000 (GMT)
+Hugh Dickins <hugh.dickins@tiscali.co.uk> wrote:
+
 > > > 
-> > > It could be even UIO module but there are no pm events reachable there?
+> > > Kame reported following as
+> > > "Before starting zero-page works, I checked "questions" in lkml and
+> > > found some reports that some applications start to go OOM after zero-page
+> > > removal.
 > > > 
-> > > If it is not clean, we must extend pm-utils or write something new
-> > > (with backends dbus, ipc, scripts, ...)
-> > > But You see? We still have no information from kernel about events 
-> > > (especialy resume) or maybe i dont see this ;/
-> > 
-> > They are available to the process that tells the kernel to suspend.
-> > 
-> > Namely, to tell the kernel to suspend to RAM, the process (call it a power
-> > manager) needs to (for example) fprintf() "mem" to /sys/power/state.  As soon
-> > as this happens, the kernel will start to freeze processes (except for the
-> > power manager itself), so the power manager knows that everything should be
-> > ready for the suspend before it writes to /sys/power/state.  It doesn't need
-> > the kernel to tell it when the suspend is going to start, because it _knows_
-> > that in advance.
-> > 
-> > Now, the fprintf() used to trigger the suspend will not return until the resume
-> > is complete.  So, again, when the fprintf() returns, the power manager will know
-> > that the resume has just finished (more precisely, the kernel side of it has
-> > just finished).
-> > 
-> > There simply is no need for any special communication between the kernel and
-> > the power manager.
-> > 
+> > > For me, I know one of my customer's application depends on behavior of
+> > > zero page (on RHEL5). So, I tried to add again it before RHEL6 because
+> > > I think removal of zero-page corrupts compatibility."
+> > > 
+> > > So how about adding zero page as file_rss again for compatibility?
 > 
-> Thx Rafael - now it clear to me.
-> And what do You think about sending extra signals to processes?
+> I think not.
+> 
+> KAMEZAWA-san can correct me (when he returns in the New Year) if I'm
+> wrong, but I don't think his customer's OOMs had anything to do with
+> whether the ZERO_PAGE was counted in file_rss or not: the OOMs came
+> from the fact that many pages were being used up where just the one
+> ZERO_PAGE had been good before.  Wouldn't he have complained if the
+> zero_pfn patches hadn't solved that problem?
+> 
+> You are right that I completely overlooked the issue of whether to
+> include the ZERO_PAGE in rss counts (now being a !vm_normal_page,
+> it was just natural to leave it out); and I overlooked the fact that
+> it used to be counted into file_rss in the old days (being !PageAnon).
+> 
+> So I'm certainly at fault for that, and thank you for bringing the
+> issue to attention; but once considered, I can't actually see a good
+> reason why we should add code to count ZERO_PAGEs into file_rss now.
+> And if this patch falls, then 1/3 and 3/3 would fall also.
+> 
+> And the patch below would be incomplete anyway, wouldn't it?
+> There would need to be a matching change to zap_pte_range(),
+> but I don't see that.
+> 
+> We really don't want to be adding more and more ZERO_PAGE/zero_pfn
+> tests around the place if we can avoid them: KOSAKI-san has a strong
+> argument for adding such a test in kernel/futex.c, but I don't the
+> argument here.
+> 
 
-I don't see a problem with this in principle, although I don't think signals
-are very suitable for this particular purpose, because you need two-way
-communication between the power manager and the processes it's going to
-notify (because it has to wait for the processes to finish their preparations
-and to tell it that they are ready).
+I agree that ZERO_PAGE shouldn't be counted as rss. Now, I feel that old
+counting method(in old zero-page implementation) was bad.
 
-For this purpose it's better to have a file descriptor you can block on (like a
-socket or a pipe) while the other side is doing it's job.
+Minchan-san, I'm sorry for noise.
 
-Rafael
+Thanks,
+-Kame
+
+
+
