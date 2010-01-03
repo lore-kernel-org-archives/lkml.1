@@ -1,59 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753127Ab0ACVuB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753121Ab0ACWLw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753127Ab0ACVuB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Jan 2010 16:50:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753036Ab0ACVt7
+	id S1753121Ab0ACWLw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Jan 2010 17:11:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753058Ab0ACWLu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Jan 2010 16:49:59 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:50877 "EHLO ogre.sisk.pl"
+	Sun, 3 Jan 2010 17:11:50 -0500
+Received: from bar.sig21.net ([80.81.252.164]:39853 "EHLO bar.sig21.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752945Ab0ACVt6 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Jan 2010 16:49:58 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: =?utf-8?q?Bart=C5=82omiej_Zimo=C5=84?= <uzi18@o2.pl>
-Subject: Re: [suspend/resume] Re: userspace notification from module
-Date: Sun, 3 Jan 2010 22:50:36 +0100
-User-Agent: KMail/1.12.3 (Linux/2.6.33-rc2-tst; KDE/4.3.3; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org, Andy Walls <awalls@radix.net>,
-       Daniel Borkmann <danborkmann@googlemail.com>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Alan Stern <stern@rowland.harvard.edu>
-References: <686edb2c.6263643a.4b3f4a3b.b60b3@o2.pl> <201001030029.22449.rjw@sisk.pl> <ff72e3e.3b5092ec.4b40d1ec.54407@o2.pl>
-In-Reply-To: <ff72e3e.3b5092ec.4b40d1ec.54407@o2.pl>
+	id S1752938Ab0ACWLu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Jan 2010 17:11:50 -0500
+Date: Sun, 3 Jan 2010 23:11:42 +0100
+From: Johannes Stezenbach <js@sig21.net>
+To: Hans Werner <HWerner4@gmx.de>
+Cc: Tejun Heo <tj@kernel.org>, linux-kernel@vger.kernel.org, trenn@suse.de,
+       mmalygin@ked.de, hancockrwd@gmail.com, greg@kroah.com
+Subject: Re: Samsung N130 ATA exception after 5min uptime -- Phoenix
+ FailSafe issue?
+Message-ID: <20100103221142.GA16783@sig21.net>
+References: <20091230120428.5780@gmx.net>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Message-Id: <201001032250.36235.rjw@sisk.pl>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091230120428.5780@gmx.net>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-Spam-21-Score: -3.6 (---)
+X-Spam-21-Report: No, score=-3.6 required=5.0 tests=ALL_TRUSTED=-1.8,AWL=0.777,BAYES_00=-2.599 autolearn=no
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 03 January 2010, Bartłomiej Zimoń wrote:
-> Dnia 3 stycznia 2010 0:29 	"Rafael J. Wysocki" <rjw@sisk.pl> napisał(a):
-> > > - could be even used partialy by pm-utils
-> > > - it is perfect just to notify about event
-> > 
-> > OK, but why exactly do _you_ need that to happen?
-> > 
-> > There's one important drawback of making the kernel generate the notification.
-> > Namely, even if your userspace task is notified by the kernel of a PM event,
-> > that doesn't mean it'll have the time to act upon that, because the kernel will
-> > attempt to freeze it right after the notification has been sent.  This means
-> > you'd need a way to make the kernel wait for your user space process to finish
-> > it's job before continuing the suspend/hibernate process.  Otherwise it's not
-> > going to be very useful.
-> > 
+On Wed, Dec 30, 2009 at 01:04:28PM +0100, Hans Werner wrote:
 > 
-> So if it is bad idea, we could create more advenced implementation.
-> i.e. IPC or callbacks for this kind of events.
+> testing in the Arch Linux Forums has shown that if one applies
+> a patch which you posted to the linux-ide ML on 2008-11-21
+> then the problem is no longer seen. Instead the kernel log shows
+> that a spurious IRQ was cleared.
 > 
-> There is vision in my mind to have alternative to pm-utils, 
-> but even more powerfull and easy to implement in program.
-> I could try to implement something like that.
+> [PATCH #upstraem-fixes] ata_piix: detect and clear spurious IRQs
+> http://marc.info/?l=linux-ide&m=122724081603679&w=2
+> http://bbs.archlinux.org/viewtopic.php?id=86454
+> 
+> What's the current status of this patch? Is it safe to use?
+> What does it tell us about the Samsung N130/140?
 
-I guess there's no other way to show people what you're up to, so please go
-ahead and let me know if you need help.
+FWIW, I just tested a current git kernel (v2.6.33-rc2-268-g45d28b0)
+with Tejun's patch applied on my N130.  The ATA exception and hang is
+indeed gone, just "ata1: clearing spurious IRQ" is logged.
 
-Rafael
+I've see Tejun's comment in
+http://bugzilla.kernel.org/show_bug.cgi?id=14314
+and I would like to add that the ATA irq is not shared.
+
+ 14:      43885          0   IO-APIC-edge      ata_piix
+ 15:          0          0   IO-APIC-edge      ata_piix
+
+
+Thanks,
+Johannes
