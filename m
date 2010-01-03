@@ -1,44 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752797Ab0ACUit@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752907Ab0ACU6l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752797Ab0ACUit (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Jan 2010 15:38:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752587Ab0ACUis
+	id S1752907Ab0ACU6l (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Jan 2010 15:58:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752299Ab0ACU6j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Jan 2010 15:38:48 -0500
-Received: from percival.namespace.at ([77.244.242.130]:51592 "EHLO
-	percival.namespace.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752313Ab0ACUis (ORCPT
+	Sun, 3 Jan 2010 15:58:39 -0500
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:54056 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752189Ab0ACU6j (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Jan 2010 15:38:48 -0500
-X-Greylist: delayed 897 seconds by postgrey-1.27 at vger.kernel.org; Sun, 03 Jan 2010 15:38:47 EST
-Date: Sun, 3 Jan 2010 21:23:45 +0100
-From: Christian Hofstaedtler <ch@zeha.at>
-To: linux-kernel@vger.kernel.org
-Cc: jpiszcz@lucidpixels.com, bruce.w.allan@intel.com
-Subject: RE: Linux* is not supported on the Intel(R) Desktop Board DP55KG -
-	Kernel still hangs upon reboot.
-Message-ID: <20100103202345.GA20015@percival.namespace.at>
+	Sun, 3 Jan 2010 15:58:39 -0500
+Date: Sun, 3 Jan 2010 20:58:36 +0000
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Dan Carpenter <error27@gmail.com>, Samuel Ortiz <sameo@linux.intel.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch] off by one bug
+Message-ID: <20100103205836.GA7765@sirena.org.uk>
+References: <20100103120817.GA19360@bicker>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20100103120817.GA19360@bicker>
+X-Cookie: Your domestic life may be harmonious.
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: broonie@sirena.org.uk
+X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Sun, Jan 03, 2010 at 02:08:17PM +0200, Dan Carpenter wrote:
+> If irq == WM8350_NUM_IRQ that would put us past the end of the array.
+> 
+> Signed-off-by: Dan Carpenter <error27@gmail.com>
 
-In regard to the DP55KG board having reboot [1] and HPET [2] issues,
-have you seen any fixes (from Intel?) for these problems?
+Acked-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
 
-I now own such a board and see the same stuff on a distro-patched
-2.6.31.6.
-
-Thanks,
-  Christian
-
-[1] http://thread.gmane.org/gmane.linux.kernel/903161/
-[2] http://thread.gmane.org/gmane.linux.kernel/913374
-
--- 
-christian hofstaedtler
+but please take a look at the advice in Documentation/SubmittingPatches
+about picking a title for your patch, with the one you've got it's not
+even clear which subsystem you're talking about never mind which driver.
