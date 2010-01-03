@@ -1,27 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752895Ab0ACXyZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752925Ab0ACX7w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752895Ab0ACXyZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Jan 2010 18:54:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752592Ab0ACXyV
+	id S1752925Ab0ACX7w (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Jan 2010 18:59:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752837Ab0ACX7u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Jan 2010 18:54:21 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:54570 "EHLO
+	Sun, 3 Jan 2010 18:59:50 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:54747 "EHLO
 	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751556Ab0ACXyU (ORCPT
+	with ESMTP id S1752646Ab0ACX7u (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Jan 2010 18:54:20 -0500
+	Sun, 3 Jan 2010 18:59:50 -0500
 X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Mon, 4 Jan 2010 08:51:08 +0900
+Date: Mon, 4 Jan 2010 08:56:32 +0900
 From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: balbir@linux.vnet.ibm.com
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+To: "Kirill A. Shutemov" <kirill@shutemov.name>
+Cc: containers@lists.linux-foundation.org, linux-mm@kvack.org,
+       Paul Menage <menage@google.com>, Li Zefan <lizf@cn.fujitsu.com>,
        Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>
-Subject: Re: [RFC] Shared page accounting for memory cgroup
-Message-Id: <20100104085108.eaa9c867.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20091229182743.GB12533@balbir.in.ibm.com>
-References: <20091229182743.GB12533@balbir.in.ibm.com>
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Pavel Emelyanov <xemul@openvz.org>, Dan Malek <dan@embeddedalley.com>,
+       Vladislav Buzov <vbuzov@embeddedalley.com>,
+       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
+       Alexander Shishkin <virtuoso@slind.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v5 3/4] memcg: rework usage of stats by soft limit
+Message-Id: <20100104085632.1ac97a5a.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <03152dd4f660cff87b16bb581718b1c53d4775aa.1262186098.git.kirill@shutemov.name>
+References: <cover.1262186097.git.kirill@shutemov.name>
+	<9411cbdd545e1232c916bfef03a60cf95510016d.1262186098.git.kirill@shutemov.name>
+	<34fedc324199dd64149889ed6eac5d8f9441a9db.1262186098.git.kirill@shutemov.name>
+	<03152dd4f660cff87b16bb581718b1c53d4775aa.1262186098.git.kirill@shutemov.name>
 Organization: FUJITSU Co. LTD.
 X-Mailer: Sylpheed 2.7.1 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
@@ -31,132 +38,85 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 29 Dec 2009 23:57:43 +0530
-Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+On Wed, 30 Dec 2009 17:57:58 +0200
+"Kirill A. Shutemov" <kirill@shutemov.name> wrote:
 
-> Hi, Everyone,
+> Instead of incrementing counter on each page in/out and comparing it
+> with constant, we set counter to constant, decrement counter on each
+> page in/out and compare it with zero. We want to make comparing as fast
+> as possible. On many RISC systems (probably not only RISC) comparing
+> with zero is more effective than comparing with a constant, since not
+> every constant can be immediate operand for compare instruction.
 > 
-> I've been working on heuristics for shared page accounting for the
-> memory cgroup. I've tested the patches by creating multiple cgroups
-> and running programs that share memory and observed the output.
+> Also, I've renamed MEM_CGROUP_STAT_EVENTS to MEM_CGROUP_STAT_SOFTLIMIT,
+> since really it's not a generic counter.
 > 
-> Comments?
+> Signed-off-by: Kirill A. Shutemov <kirill@shutemov.name>
+> 
+Acked-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-Hmm? Why we have to do this in the kernel ?
-
-Thanks,
--Kame
-
-> 
-> 
-> Add shared accounting to memcg
-> 
-> From: Balbir Singh <balbir@linux.vnet.ibm.com>
-> 
-> Currently there is no accurate way of estimating how many pages are
-> shared in a memory cgroup. The accurate way of accounting shared memory
-> is to
-> 
-> 1. Either follow every page rmap and track number of users
-> 2. Iterate through the pages and use _mapcount
-> 
-> We take an intermediate approach (suggested by Kamezawa), we sum up
-> the file and anon rss of the mm's belonging to the cgroup and then
-> subtract the values of anon rss and file mapped. This should give
-> us a good estimate of the pages being shared.
-> 
-> The shared statistic is called memory.shared_usage_in_bytes and
-> does not support hierarchical information, just the information
-> for the current cgroup.
-> 
-> Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
 > ---
 > 
->  Documentation/cgroups/memory.txt |    6 +++++
->  mm/memcontrol.c                  |   43 ++++++++++++++++++++++++++++++++++++++
->  2 files changed, 49 insertions(+), 0 deletions(-)
+> KAMEZAWA-san, I've changed the patch a bit. Can I reuse your Acked-by?
 > 
+> ---
+>  mm/memcontrol.c |   18 ++++++++++--------
+>  1 files changed, 10 insertions(+), 8 deletions(-)
 > 
-> diff --git a/Documentation/cgroups/memory.txt b/Documentation/cgroups/memory.txt
-> index b871f25..c2c70c9 100644
-> --- a/Documentation/cgroups/memory.txt
-> +++ b/Documentation/cgroups/memory.txt
-> @@ -341,6 +341,12 @@ Note:
->    - a cgroup which uses hierarchy and it has child cgroup.
->    - a cgroup which uses hierarchy and not the root of hierarchy.
->  
-> +5.4 shared_usage_in_bytes
-> +  This data lists the number of shared bytes. The data provided
-> +  provides an approximation based on the anon and file rss counts
-> +  of all the mm's belonging to the cgroup. The sum above is subtracted
-> +  from the count of rss and file mapped count maintained within the
-> +  memory cgroup statistics (see section 5.2).
->  
->  6. Hierarchy support
->  
 > diff --git a/mm/memcontrol.c b/mm/memcontrol.c
-> index 488b644..8e296be 100644
+> index 1d71cb4..c36d4f3 100644
 > --- a/mm/memcontrol.c
 > +++ b/mm/memcontrol.c
-> @@ -3052,6 +3052,45 @@ static int mem_cgroup_swappiness_write(struct cgroup *cgrp, struct cftype *cft,
->  	return 0;
->  }
+> @@ -69,8 +69,9 @@ enum mem_cgroup_stat_index {
+>  	MEM_CGROUP_STAT_FILE_MAPPED,  /* # of pages charged as file rss */
+>  	MEM_CGROUP_STAT_PGPGIN_COUNT,	/* # of pages paged in */
+>  	MEM_CGROUP_STAT_PGPGOUT_COUNT,	/* # of pages paged out */
+> -	MEM_CGROUP_STAT_EVENTS,	/* sum of pagein + pageout for internal use */
+>  	MEM_CGROUP_STAT_SWAPOUT, /* # of pages, swapped out */
+> +	MEM_CGROUP_STAT_SOFTLIMIT, /* decrements on each page in/out.
+> +					used by soft limit implementation */
 >  
-> +static u64 mem_cgroup_shared_read(struct cgroup *cgrp, struct cftype *cft)
-> +{
-> +	struct mem_cgroup *memcg = mem_cgroup_from_cont(cgrp);
-> +	struct cgroup_iter it;
-> +	struct task_struct *tsk;
-> +	u64 total_rss = 0, shared;
-> +	struct mm_struct *mm;
-> +	s64 val;
-> +
-> +	cgroup_iter_start(cgrp, &it);
-> +	val = mem_cgroup_read_stat(&memcg->stat, MEM_CGROUP_STAT_RSS);
-> +	val += mem_cgroup_read_stat(&memcg->stat, MEM_CGROUP_STAT_FILE_MAPPED);
-> +	while ((tsk = cgroup_iter_next(cgrp, &it))) {
-> +		if (!thread_group_leader(tsk))
-> +			continue;
-> +		mm = tsk->mm;
-> +		/*
-> +		 * We can't use get_task_mm(), since mmput() its counterpart
-> +		 * can sleep. We know that mm can't become invalid since
-> +		 * we hold the css_set_lock (see cgroup_iter_start()).
-> +		 */
-> +		if (tsk->flags & PF_KTHREAD || !mm)
-> +			continue;
-> +		total_rss += get_mm_counter(mm, file_rss) +
-> +				get_mm_counter(mm, anon_rss);
-> +	}
-> +	cgroup_iter_end(cgrp, &it);
-> +
-> +	/*
-> +	 * We need to tolerate negative values due to the difference in
-> +	 * time of calculating total_rss and val, but the shared value
-> +	 * converges to the correct value quite soon depending on the changing
-> +	 * memory usage of the workload running in the memory cgroup.
-> +	 */
-> +	shared = total_rss - val;
-> +	shared = max_t(s64, 0, shared);
-> +	shared <<= PAGE_SHIFT;
-> +	return shared;
-> +}
->  
->  static struct cftype mem_cgroup_files[] = {
->  	{
-> @@ -3101,6 +3140,10 @@ static struct cftype mem_cgroup_files[] = {
->  		.read_u64 = mem_cgroup_swappiness_read,
->  		.write_u64 = mem_cgroup_swappiness_write,
->  	},
-> +	{
-> +		.name = "shared_usage_in_bytes",
-> +		.read_u64 = mem_cgroup_shared_read,
-> +	},
+>  	MEM_CGROUP_STAT_NSTATS,
+>  };
+> @@ -84,10 +85,10 @@ struct mem_cgroup_stat {
 >  };
 >  
->  #ifdef CONFIG_CGROUP_MEM_RES_CTLR_SWAP
-> 
+>  static inline void
+> -__mem_cgroup_stat_reset_safe(struct mem_cgroup_stat_cpu *stat,
+> -				enum mem_cgroup_stat_index idx)
+> +__mem_cgroup_stat_set_safe(struct mem_cgroup_stat_cpu *stat,
+> +				enum mem_cgroup_stat_index idx, s64 val)
+>  {
+> -	stat->count[idx] = 0;
+> +	stat->count[idx] = val;
+>  }
+>  
+>  static inline s64
+> @@ -380,9 +381,10 @@ static bool mem_cgroup_soft_limit_check(struct mem_cgroup *mem)
+>  
+>  	cpu = get_cpu();
+>  	cpustat = &mem->stat.cpustat[cpu];
+> -	val = __mem_cgroup_stat_read_local(cpustat, MEM_CGROUP_STAT_EVENTS);
+> -	if (unlikely(val > SOFTLIMIT_EVENTS_THRESH)) {
+> -		__mem_cgroup_stat_reset_safe(cpustat, MEM_CGROUP_STAT_EVENTS);
+> +	val = __mem_cgroup_stat_read_local(cpustat, MEM_CGROUP_STAT_SOFTLIMIT);
+> +	if (unlikely(val < 0)) {
+> +		__mem_cgroup_stat_set_safe(cpustat, MEM_CGROUP_STAT_SOFTLIMIT,
+> +				SOFTLIMIT_EVENTS_THRESH);
+>  		ret = true;
+>  	}
+>  	put_cpu();
+> @@ -515,7 +517,7 @@ static void mem_cgroup_charge_statistics(struct mem_cgroup *mem,
+>  	else
+>  		__mem_cgroup_stat_add_safe(cpustat,
+>  				MEM_CGROUP_STAT_PGPGOUT_COUNT, 1);
+> -	__mem_cgroup_stat_add_safe(cpustat, MEM_CGROUP_STAT_EVENTS, 1);
+> +	__mem_cgroup_stat_add_safe(cpustat, MEM_CGROUP_STAT_SOFTLIMIT, -1);
+>  	put_cpu();
+>  }
+>  
 > -- 
-> 	Balbir
+> 1.6.5.7
+> 
 > 
 
