@@ -1,75 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753036Ab0ACRSs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753005Ab0ACRUt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753036Ab0ACRSs (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Jan 2010 12:18:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752927Ab0ACRSr
+	id S1753005Ab0ACRUt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Jan 2010 12:20:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752833Ab0ACRUr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Jan 2010 12:18:47 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:55650 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752941Ab0ACRSq (ORCPT
+	Sun, 3 Jan 2010 12:20:47 -0500
+Received: from rekin23.go2.pl ([193.17.41.16]:59169 "EHLO rekin23.go2.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752809Ab0ACRUr convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Jan 2010 12:18:46 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type;
-        b=GY12ynTmXlY2rZO+lUmsBUmE0pCMofK0IUZtLuIeSQQ7FWUzbXEmCHNdW4RWak+9C5
-         d8anxJsf1zhUo7wN0moQt+/xeUePCS318o2A6a/gkNLMXaihk7D1pCBpyEDT0bjuz31S
-         umCN2fyKVswhmkitpc6TFi+I+y8Bz598IXRl8=
-MIME-Version: 1.0
-In-Reply-To: <20100103171013.GC21156@n2100.arm.linux.org.uk>
-References: <daef60381001030705r93b3fbfkc50e7b9bbc62b334@mail.gmail.com> 
-	<20100103160313.GA21156@n2100.arm.linux.org.uk> <daef60381001030830u176c0cfavbb31358a2b42ed60@mail.gmail.com> 
-	<20100103164414.GB21156@n2100.arm.linux.org.uk> <daef60381001030855o3a39c3fdr879e2634fb85c491@mail.gmail.com> 
-	<20100103171013.GC21156@n2100.arm.linux.org.uk>
-From: Hui Zhu <teawater@gmail.com>
-Date: Mon, 4 Jan 2010 01:18:25 +0800
-Message-ID: <daef60381001030918r26658a26l52133d43d4342a16@mail.gmail.com>
-Subject: Re: [PATCH] stack2core: show stack message and convert it to core 
-	file when kernel die
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: saeed bishara <saeed.bishara@gmail.com>,
-       Catalin Marinas <catalin.marinas@arm.com>,
-       Nicolas Pitre <nico@fluxnic.net>, Ralf Baechle <ralf@linux-mips.org>,
-       David Daney <ddaney@caviumnetworks.com>,
-       Tomaso Paoletti <tpaoletti@caviumnetworks.com>,
-       Chris Dearman <chris@mips.com>,
-       Paul Gortmaker <Paul.Gortmaker@windriver.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Alexey Dobriyan <adobriyan@gmail.com>, Brian Gerst <brgerst@gmail.com>,
-       Tejun Heo <tj@kernel.org>, Rusty Russell <rusty@rustcorp.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-       linux-mips@linux-mips.org, Coly Li <coly.li@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1
+	Sun, 3 Jan 2010 12:20:47 -0500
+Subject: =?UTF-8?Q?Re:_[suspend/resume]_Re:_userspace_notification_from_module?=
+From: =?UTF-8?Q?Bart=C5=82omiej_Zimo=C5=84?= <uzi18@o2.pl>
+To: linux-kernel@vger.kernel.org
+Cc: =?UTF-8?Q?Andy_Walls?= <awalls@radix.net>,
+       =?UTF-8?Q?Daniel_Borkmann?= <danborkmann@googlemail.com>,
+       linux-kernel@vger.kernel.org,
+       =?UTF-8?Q?pm_list?= <linux-pm@lists.linux-foundation.org>,
+       =?UTF-8?Q?Alan_Stern?= <stern@rowland.harvard.edu>
+In-Reply-To: <201001030029.22449.rjw@sisk.pl>
+References: <686edb2c.6263643a.4b3f4a3b.b60b3@o2.pl> <201001022201.04281.rjw@sisk.pl> <7cf4f51f.5fc2a5cd.4b3fc3ad.c849c@o2.pl> <201001030029.22449.rjw@sisk.pl>
+Mime-Version: 1.0
+Message-ID: <ff72e3e.3b5092ec.4b40d1ec.54407@o2.pl>
+Date: Sun, 03 Jan 2010 18:20:44 +0100
+X-Originator: 83.10.137.12
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sorry I make a mistake, I sent the mail before I complete it.  Maybe
-some hotkey or something.
+Dnia 3 stycznia 2010 0:29 	"Rafael J. Wysocki" <rjw@sisk.pl> napisał(a):
+> > - could be even used partialy by pm-utils
+> > - it is perfect just to notify about event
+> 
+> OK, but why exactly do _you_ need that to happen?
+> 
+> There's one important drawback of making the kernel generate the notification.
+> Namely, even if your userspace task is notified by the kernel of a PM event,
+> that doesn't mean it'll have the time to act upon that, because the kernel will
+> attempt to freeze it right after the notification has been sent.  This means
+> you'd need a way to make the kernel wait for your user space process to finish
+> it's job before continuing the suspend/hibernate process.  Otherwise it's not
+> going to be very useful.
+> 
 
-The s2c can get the message from the current panic message is better.
-I am not get them for now, maybe it need open some options or
-something.
+So if it is bad idea, we could create more advenced implementation.
+i.e. IPC or callbacks for this kind of events.
 
-Thanks,
-Hui
+There is vision in my mind to have alternative to pm-utils, 
+but even more powerfull and easy to implement in program.
+I could try to implement something like that.
 
-On Mon, Jan 4, 2010 at 01:10, Russell King - ARM Linux
-<linux@arm.linux.org.uk> wrote:
-> On Mon, Jan 04, 2010 at 12:55:04AM +0800, Hui Zhu wrote:
->> I didn't give the user raw oopses.
->> I give him core file. When the kernel die, do we can get a core file now?
->
-> I think there's a communication issue here... clearly you're not
-> understanding what I've been trying to tell you.
->
-> I don't think I can help you any further.
->
+Rafael i'm open for Your suggestions.
+
+Best regards.
+Bartłomiej Zimoń
+PLD Linux, Kadu Team, FreeRunner user
+http://kadu-im.blogspot.com/
+
