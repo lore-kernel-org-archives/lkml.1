@@ -1,56 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752847Ab0ACN17@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752869Ab0ACNfO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752847Ab0ACN17 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Jan 2010 08:27:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752570Ab0ACN16
+	id S1752869Ab0ACNfO (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Jan 2010 08:35:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752819Ab0ACNfM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Jan 2010 08:27:58 -0500
-Received: from mail-pz0-f171.google.com ([209.85.222.171]:65237 "EHLO
-	mail-pz0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751784Ab0ACN15 (ORCPT
+	Sun, 3 Jan 2010 08:35:12 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:61659 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752629Ab0ACNfK convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Jan 2010 08:27:57 -0500
+	Sun, 3 Jan 2010 08:35:10 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:cc:content-type;
-        b=vzYb0nI+bBzrZ4AsmsBu5JeZcgXToo9D6F1Y0ytKVnzXB8VTCkYWNxiULvoX7W331Q
-         5QNUcxb7zhnmcrgVf6mPcRCA6am6yG3B6cUXwYuAKPzZ/LbtW9U6am9HHzkoX7DFYtg4
-         orWueapkG0YSlwUloHUiMnDb1u5gWfkx/mmLE=
+        d=googlemail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=rTBNI8jD+Y3x2KNkPWOYwPjkx0u4sBkdlrbWbR8/PD2Vc+bQ0LBZogGsn8gX6EswEK
+         5qgbgs7ML/4i/r/PcYhk8oFws2E3tYfD420IZkNrqZ2ZtoQ4XA6dTkrsHWG17h10RJBL
+         2762FRrem1S3eeJiL5iDpwFnfKu3Ua3XzCqaU=
 MIME-Version: 1.0
-Date: Sun, 3 Jan 2010 19:27:56 +0600
-Message-ID: <b9df5fa11001030527h71b66dbcgd4ef29c04545cdaf@mail.gmail.com>
-Subject: [PATCH] acpi: Fix unused variable warning in sbs.c
-From: Rakib Mullick <rakib.mullick@gmail.com>
+In-Reply-To: <2d0a357f0912170628k4c9861b5j851fd6ce1f67c750@mail.gmail.com>
+References: <2d0a357f0912170628k4c9861b5j851fd6ce1f67c750@mail.gmail.com>
+Date: Sun, 3 Jan 2010 14:35:05 +0100
+Message-ID: <2d0a357f1001030535x34dd5ad8u938afbb68df7253@mail.gmail.com>
+Subject: Re: linux-next: Tree for December 17
+From: Sedat Dilek <sedat.dilek@googlemail.com>
 To: LKML <linux-kernel@vger.kernel.org>
-Cc: Len Brown <lenb@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
-       Alexey Starikovskiy <astarikovskiy@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1
+Cc: sfr@canb.auug.org.au
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- Fix unused variabled warning.
+<http://linux.f-seidel.de/linux-next/pmwiki/> is online, again.
 
-When CONFIG_ACPI_SYSFS_POWER=n and CONFIG_ACPI_PROCFS_POWER=n, then
-we're warned by the following warning:
+- Sedat -
 
-drivers/acpi/sbs.c: In function `acpi_battery_remove':
-drivers/acpi/sbs.c:825: warning: unused variable `battery'
-
-
-Signed-off-by: Rakib Mullick <rakib.mullick@gmail.com>
----
-
---- linus/drivers/acpi/sbs.c	2009-12-28 12:37:29.000000000 +0600
-+++ rakib/drivers/acpi/sbs.c	2010-01-03 11:29:07.000000000 +0600
-@@ -822,7 +822,10 @@ static int acpi_battery_add(struct acpi_
-
- static void acpi_battery_remove(struct acpi_sbs *sbs, int id)
- {
-+#if defined(CONFIG_ACPI_SYSFS_POWER) || defined(CONFIG_ACPI_PROCFS_POWER)
- 	struct acpi_battery *battery = &sbs->battery[id];
-+#endif
-+
- #ifdef CONFIG_ACPI_SYSFS_POWER
- 	if (battery->bat.dev) {
- 		if (battery->have_sysfs_alarm)
+On Thu, Dec 17, 2009 at 3:28 PM, Sedat Dilek <sedat.dilek@googlemail.com> wrote:
+>>There is a wiki covering stuff to do with linux-next at
+>>http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
+>
+> Just wanna let you know:
+> Wiki is not reachable and domain is back to DENIC
+> (registration/administration of German Internet domains).
+>
+> - Sedat -
+>
