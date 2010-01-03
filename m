@@ -1,70 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752299Ab0ACTNw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752383Ab0ACTzz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752299Ab0ACTNw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Jan 2010 14:13:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751716Ab0ACTNw
+	id S1752383Ab0ACTzz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Jan 2010 14:55:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752116Ab0ACTzy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Jan 2010 14:13:52 -0500
-Received: from mail-fx0-f225.google.com ([209.85.220.225]:40387 "EHLO
-	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751691Ab0ACTNv (ORCPT
+	Sun, 3 Jan 2010 14:55:54 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:57996 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751594Ab0ACTzx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Jan 2010 14:13:51 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:content-type:date:message-id:mime-version:x-mailer
-         :content-transfer-encoding;
-        b=Fiqp6t2RI7HK5jUFze4S60Y/kZVZR2ve4MjECn058t2dL5Zb9liGGBoXWaJkQfm17W
-         NxDb7l7p7+e1dtWjQJ/cGEhSV94Ez+z/4XMtyKiRthtYO9fwp18J3fSoRdTY0V/IW15/
-         mywEG2pwZjZs7mbSqBcEiJ5e80z0QD0pV9E/U=
-Subject: [block subsystem] Need help to prevent races on unexpected device
- removal
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sun, 03 Jan 2010 21:13:47 +0200
-Message-ID: <1262546027.4555.17.camel@maxim-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Sun, 3 Jan 2010 14:55:53 -0500
+Date: Sun, 3 Jan 2010 20:55:45 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: pm list <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linux PCI <linux-pci@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       Oliver Neukum <oliver@neukum.org>, Shaohua Li <shaohua.li@intel.com>,
+       Bjorn Helgaas <bjorn.helgaas@hp.com>,
+       Francois Romieu <romieu@fr.zoreil.com>, Len Brown <lenb@kernel.org>
+Subject: Re: [RFC][PATCH 12/12] PM / r8169: Add simplified run-time PM
+ support
+Message-ID: <20100103195544.GC11928@elf.ucw.cz>
+References: <200911160047.46299.rjw@sisk.pl>
+ <200912272048.37332.rjw@sisk.pl>
+ <20091227200147.GJ11737@elf.ucw.cz>
+ <201001022149.05553.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <201001022149.05553.rjw@sisk.pl>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-During development of hotplug support for mtd translation layer I seems
-to be unable to figure a way to prevent following race:
 
-First of all, a block device is registered. I attach a private structure
-to that device to save all internal information.
+> > On notebooks, you can often use
+> > 
+> > pavel@amd:/data/l/linux-msm/arch/arm/mach-msm$ cat
+> > /proc/acpi/battery/BAT0/state 
+> > present:                 yes
+> > capacity state:          ok
+> > charging state:          charged
+> > present rate:            0 mW
+> > remaining capacity:      71830 mWh
+> > present voltage:         16277 mV
+> > 
+> > ...present rate is often usable-enough.
+> 
+> Using /proc/acpi/battery/BAT1/state I measured the energy drawn in 10 minutes
+> both with the network adapter in D0 and D3hot.  The results were that with the
+> network adapter in D0 the box drew 2476 mWh, while with the network adapter in
+> D3hot it drew 2361 mWh.  The difference is 115 mWh, or about 5% on this
+> particular box.
+> 
+> This means about 0.1 Wh in 10 minutes, so we can save about 0.6 Wh per hour.
 
-Then out of the blue (when user pulls off the card) I receive a request
-to remove the device.
-
-In the function that handles such removal, I do:
-
-del_gendisk(...
-blk_start_queue
-
-stop thread that processes the requests
-
-blk_cleanup_queue(old->rq);
-
-
-The problem is that I don't know where/when to free the private
-structure.
-
-I though about adding a field to the structure, with name 'invalid', so
-that release will not attempt to go futher, but free the structure, but
-what happens if release is never called?
-In other words this will work as long as there is a user of the block
-device.
-
-I thought then that I can detect that condition and free the structure
-in the removal function itself, but then I get a race with ->open
-running in same time, and mutex will not prevent it, I will have to
-release it somwhen, and then ->open will access a freed structure....
-
-
-Best regards,
-Maxim Levitsky
-
+Which means it saves 0.6W :-). Measuring power in Wh/h is
+"interesting". Ok, that's consistent with my experiments, ethernet
+transciever was around 1W... Thanks.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
