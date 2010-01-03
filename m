@@ -1,55 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752865Ab0ACQzS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752984Ab0ACQ5N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752865Ab0ACQzS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Jan 2010 11:55:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752809Ab0ACQzO
+	id S1752984Ab0ACQ5N (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Jan 2010 11:57:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752956Ab0ACQ5L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Jan 2010 11:55:14 -0500
-Received: from netrider.rowland.org ([192.131.102.5]:36040 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750949Ab0ACQzN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Jan 2010 11:55:13 -0500
-Date: Sun, 3 Jan 2010 11:55:10 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Boaz Harrosh <bharrosh@panasas.com>
-cc: James Bottomley <James.Bottomley@suse.de>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       open-osd <osd-dev@open-osd.org>, Benny Halevy <bhalevy@panasas.com>,
-       Stable Tree <stable@kernel.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [osd-dev] [PATCH] scsi_lib: Bug in completion of bidi commands
-In-Reply-To: <4B406D62.8060500@panasas.com>
-Message-ID: <Pine.LNX.4.44L0.1001031149380.29885-100000@netrider.rowland.org>
+	Sun, 3 Jan 2010 11:57:11 -0500
+Received: from isilmar.linta.de ([213.133.102.198]:39673 "EHLO linta.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751805Ab0ACQ5J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Jan 2010 11:57:09 -0500
+Date: Sun, 3 Jan 2010 17:30:52 +0100
+From: Dominik Brodowski <linux@dominikbrodowski.net>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
+       linux-arch@vger.kernel.org, torvalds@linux-foundation.org,
+       Bjorn Helgaas <bjorn.helgaas@hp.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: [PATCH 1/2] resource: align functions now return start of
+ resource
+Message-ID: <20100103163052.GA5282@comet.dominikbrodowski.net>
+Mail-Followup-To: Dominik Brodowski <linux@dominikbrodowski.net>,
+	Yinghai Lu <yinghai@kernel.org>, linux-kernel@vger.kernel.org,
+	linux-pci@vger.kernel.org, linux-arch@vger.kernel.org,
+	torvalds@linux-foundation.org, Bjorn Helgaas <bjorn.helgaas@hp.com>,
+	Jesse Barnes <jbarnes@virtuousgeek.org>
+References: <20100101163811.GA8124@comet.dominikbrodowski.net>
+ <1262364050-8540-1-git-send-email-linux@dominikbrodowski.net>
+ <86802c441001011412u1543c1afk6337cd6d3ea0f257@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <86802c441001011412u1543c1afk6337cd6d3ea0f257@mail.gmail.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 3 Jan 2010, Boaz Harrosh wrote:
+Hey,
 
-> > What patch of mine are you referring to?  So far James has rejected all
-> > the patches I have submitted recently.  I'm going to try again in the 
-> > near future...
-> > 
+On Fri, Jan 01, 2010 at 02:12:09PM -0800, Yinghai Lu wrote:
+> > -                       res->start = start;
+> > -               }
+> > -       }
+> > +       if ((res->flags & IORESOURCE_IO) && (start & 0x300))
+> > +               start = (start + 0x3ff) & ~0x3ff;
+> > +
+> > +       return start
 > 
-> OK, that's my answer, I didn't know.
-> 
-> Would you want that I attempt that collapsing of scsi_end_request() into scsi_io_completion
-> and the cleanup that implies? (that's the patch I meant.)
+> missed ; here?
 
-Okay, I don't mind if you would like to rewrite that patch.  The 
-version I wrote didn't just move code from one subroutine to another; 
-it also made a few semantic changes (the retry counter and the "error" 
-argument to blk_end_request()).  You'll probably want to break it 
-up into a few patches, where the first simply moves the code around and 
-the later ones do more significant things.
+Indeed -- thanks for the hint.
 
-As I recall, the most recent version of that patch is here:
-
-	http://marc.info/?l=linux-scsi&m=123991011815404&w=2
-
-Alan Stern
-
+Best,
+	Dominik
