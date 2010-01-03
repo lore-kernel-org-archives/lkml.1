@@ -1,63 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753160Ab0ACXVn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753191Ab0ACX3w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753160Ab0ACXVn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Jan 2010 18:21:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753127Ab0ACXVl
+	id S1753191Ab0ACX3w (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Jan 2010 18:29:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753141Ab0ACX3v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Jan 2010 18:21:41 -0500
-Received: from hera.kernel.org ([140.211.167.34]:37658 "EHLO hera.kernel.org"
+	Sun, 3 Jan 2010 18:29:51 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:51036 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753121Ab0ACXVk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Jan 2010 18:21:40 -0500
-Message-ID: <4B412745.9070307@kernel.org>
-Date: Mon, 04 Jan 2010 08:24:53 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
+	id S1753131Ab0ACX3v convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Jan 2010 18:29:51 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: =?utf-8?q?Bart=C5=82omiej_Zimo=C5=84?= <uzi18@o2.pl>
+Subject: Re: [suspend/resume] Re: userspace notification from module
+Date: Mon, 4 Jan 2010 00:30:01 +0100
+User-Agent: KMail/1.12.3 (Linux/2.6.33-rc2-tst; KDE/4.3.3; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org, Andy Walls <awalls@radix.net>,
+       Daniel Borkmann <danborkmann@googlemail.com>,
+       linux-pm@lists.linux-foundation.org,
+       Alan Stern <stern@rowland.harvard.edu>
+References: <686edb2c.6263643a.4b3f4a3b.b60b3@o2.pl> <201001032229.53221.rjw@sisk.pl> <24fb84fa.38887c91.4b411ffd.e7f1f@o2.pl>
+In-Reply-To: <24fb84fa.38887c91.4b411ffd.e7f1f@o2.pl>
 MIME-Version: 1.0
-To: Arjan van de Ven <arjan@infradead.org>
-CC: Hui Zhu <teawater@gmail.com>, Russell King <linux@arm.linux.org.uk>,
-       saeed bishara <saeed.bishara@gmail.com>,
-       Catalin Marinas <catalin.marinas@arm.com>,
-       Nicolas Pitre <nico@fluxnic.net>, Ralf Baechle <ralf@linux-mips.org>,
-       David Daney <ddaney@caviumnetworks.com>,
-       Tomaso Paoletti <tpaoletti@caviumnetworks.com>,
-       Chris Dearman <chris@mips.com>,
-       Paul Gortmaker <Paul.Gortmaker@windriver.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Alexey Dobriyan <adobriyan@gmail.com>, Brian Gerst <brgerst@gmail.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-       linux-mips@linux-mips.org, Coly Li <coly.li@suse.de>
-Subject: Re: [PATCH] stack2core: show stack message and convert it to core
- file 	when kernel die
-References: <daef60381001030705r93b3fbfkc50e7b9bbc62b334@mail.gmail.com>	<4B411F14.1040302@kernel.org>	<20100103150134.5bdab023@infradead.org>	<4B412341.2010002@kernel.org> <20100103151406.20228c3a@infradead.org>
-In-Reply-To: <20100103151406.20228c3a@infradead.org>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Message-Id: <201001040030.01256.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/04/2010 08:14 AM, Arjan van de Ven wrote:
->> Whichever one works but s2c wouldn't require symbol decoding.  Maybe
->> we can simply add an option to tell it to just parse the oops and
->> output it in machine friendly format.  Oh, also, the patch does add
->> new information the module load addresses.  We should be able to add
->> those to the oops message in a compact form.
+On Sunday 03 January 2010, Bartłomiej Zimoń wrote:
+> Dnia 3 stycznia 2010 22:29 "Rafael J. Wysocki" <rjw@sisk.pl> napisał(a):
+...
 > 
-> actually one does not need those; you know the start address of the
-> function already from the current oops output, and since you know the
-> address of the function within the module as well, you know the start
-> address of the module.
+> It could be even UIO module but there are no pm events reachable there?
+> 
+> If it is not clean, we must extend pm-utils or write something new
+> (with backends dbus, ipc, scripts, ...)
+> But You see? We still have no information from kernel about events 
+> (especialy resume) or maybe i dont see this ;/
 
-Right.  Thanks for the explanation.
+They are available to the process that tells the kernel to suspend.
 
--- 
-tejun
+Namely, to tell the kernel to suspend to RAM, the process (call it a power
+manager) needs to (for example) fprintf() "mem" to /sys/power/state.  As soon
+as this happens, the kernel will start to freeze processes (except for the
+power manager itself), so the power manager knows that everything should be
+ready for the suspend before it writes to /sys/power/state.  It doesn't need
+the kernel to tell it when the suspend is going to start, because it _knows_
+that in advance.
+
+Now, the fprintf() used to trigger the suspend will not return until the resume
+is complete.  So, again, when the fprintf() returns, the power manager will know
+that the resume has just finished (more precisely, the kernel side of it has
+just finished).
+
+There simply is no need for any special communication between the kernel and
+the power manager.
+
+Rafael
