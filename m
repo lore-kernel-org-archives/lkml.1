@@ -1,62 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752837Ab0ACLg0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752825Ab0ACLxE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752837Ab0ACLg0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Jan 2010 06:36:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752809Ab0ACLgY
+	id S1752825Ab0ACLxE (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Jan 2010 06:53:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752629Ab0ACLxD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Jan 2010 06:36:24 -0500
-Received: from fg-out-1718.google.com ([72.14.220.159]:13048 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752790Ab0ACLgX convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Jan 2010 06:36:23 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=kJuQVxe4EYnDOCjxqrYLfDFFyHC8heyC1BsUoFEIsY8u3i8142ZCjkUHrTTAsy/wpb
-         sNQevcdJIbiYygX91IXkff7c9R9VcerHjpInKUF4aZPgWuj3mQkI6v/0kFHSiSe3owVZ
-         63GxORljMD14UWSrs6NeEbGVvHOedpwi66BTc=
-MIME-Version: 1.0
-In-Reply-To: <NJVdobuNFNK.A.pdF.3mhOLB@chimera>
-References: <LptzGUUXbTK.A.MSF.ymhOLB@chimera>
-	 <NJVdobuNFNK.A.pdF.3mhOLB@chimera>
-Date: Sun, 3 Jan 2010 13:36:20 +0200
-X-Google-Sender-Auth: 4221a6b1cf5794c5
-Message-ID: <84144f021001030336y30444880vb6b9c251eb8a049a@mail.gmail.com>
-Subject: Re: [Bug #14951] lockdep possible recursive lock in slab 
-	parent->list->rlock
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Andi Kleen <andi@firstfloor.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Sun, 3 Jan 2010 06:53:03 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:42844 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752388Ab0ACLxA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Jan 2010 06:53:00 -0500
+Date: Sun, 3 Jan 2010 06:51:05 -0500
+From: Jeff Layton <jlayton@redhat.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org,
+       linux-nfs@vger.kernel.org
+Subject: Re: [PATCH v2] sunrpc: fix build-time warning
+Message-ID: <20100103065105.54bba3e8@tlielax.poochiereds.net>
+In-Reply-To: <20100101182514.cb1f49ef.randy.dunlap@oracle.com>
+References: <1262226195-27733-1-git-send-email-jlayton@redhat.com>
+	<20091231091815.a1ea7e51.rdunlap@xenotime.net>
+	<20091231205454.0f84f091@tupile.poochiereds.net>
+	<20100101182514.cb1f49ef.randy.dunlap@oracle.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Rafael,
+On Fri, 1 Jan 2010 18:25:14 -0800
+Randy Dunlap <randy.dunlap@oracle.com> wrote:
 
-On Tue, Dec 29, 2009 at 5:10 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> This message has been generated automatically as a part of a report
-> of recent regressions.
->
-> The following bug entry is on the current list of known regressions
-> from 2.6.32.  Please verify if it still should be listed and let me know
-> (either way).
->
->
-> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=14951
-> Subject         : lockdep possible recursive lock in slab parent->list->rlock
-> Submitter       : Andi Kleen <andi@firstfloor.org>
-> Date            : 2009-12-27 12:06 (3 days old)
-> References      : http://marc.info/?l=linux-kernel&m=126191560531463&w=4
-> Handled-By      : Pekka Enberg <penberg@cs.helsinki.fi>
-> Patch           : http://patchwork.kernel.org/patch/69829/
+> From: Randy Dunlap <randy.dunlap@oracle.com>
+> 
+> Fix auth_gss printk format warning:
+> 
+> net/sunrpc/auth_gss/auth_gss.c:660: warning: format '%ld' expects type 'long int', but argument 3 has type 'ssize_t'
+> 
+> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
 
-This bug is fixed by the following commit in Linus' tree:
+Acked-by: Jeff Layton <jlayton@redhat.com>
 
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=00afa758067ac1c947149ef766adcdfe30c44d7d
+> ---
+>  net/sunrpc/auth_gss/auth_gss.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> --- linux-next-20091229.orig/net/sunrpc/auth_gss/auth_gss.c
+> +++ linux-next-20091229/net/sunrpc/auth_gss/auth_gss.c
+> @@ -657,7 +657,7 @@ gss_pipe_downcall(struct file *filp, con
+>  			break;
+>  		default:
+>  			printk(KERN_CRIT "%s: bad return from "
+> -				"gss_fill_context: %ld\n", __func__, err);
+> +				"gss_fill_context: %zd\n", __func__, err);
+>  			BUG();
+>  		}
+>  		goto err_release_msg;
+> ---
+
+
+-- 
+Jeff Layton <jlayton@redhat.com>
