@@ -1,43 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752031Ab0ACDj7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751934Ab0ACE7s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752031Ab0ACDj7 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 2 Jan 2010 22:39:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751492Ab0ACDj6
+	id S1751934Ab0ACE7s (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 2 Jan 2010 23:59:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751599Ab0ACE7r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 2 Jan 2010 22:39:58 -0500
-Received: from snt0-omc3-s1.snt0.hotmail.com ([65.55.90.140]:47057 "EHLO
-	snt0-omc3-s1.snt0.hotmail.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751466Ab0ACDj6 convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 2 Jan 2010 22:39:58 -0500
-Message-ID: <SNT125-W37E6746BFCB2970518F659C3750@phx.gbl>
-X-Originating-IP: [96.253.143.208]
-From: Yuhong Bao <yuhongbao_386@hotmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: <linux-kernel@vger.kernel.org>, <mingo@redhat.com>,
-       <kees.cook@canonical.com>
-Subject: RE: Ubuntu 32-bit, 32-bit PAE, 64-bit Kernel Benchmarks
-Date: Sat, 2 Jan 2010 19:39:57 -0800
-Importance: Normal
-In-Reply-To: <alpine.LFD.2.00.0912311019580.11961@localhost.localdomain>
-References: <SNT125-W41CEF6892DBE0B1FD99B4AC3780@phx.gbl>,<alpine.LFD.2.00.0912311019580.11961@localhost.localdomain>
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+	Sat, 2 Jan 2010 23:59:47 -0500
+Received: from hera.kernel.org ([140.211.167.34]:42130 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751311Ab0ACE7r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 2 Jan 2010 23:59:47 -0500
+Message-ID: <4B4024A5.1020704@kernel.org>
+Date: Sun, 03 Jan 2010 14:01:25 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
 MIME-Version: 1.0
-X-OriginalArrivalTime: 03 Jan 2010 03:39:57.0647 (UTC) FILETIME=[6BAA9DF0:01CA8C26]
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Borislav Petkov <petkovbb@googlemail.com>,
+       David Airlie <airlied@linux.ie>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Greg KH <greg@kroah.com>, Al Viro <viro@ZenIV.linux.org.uk>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: Re: drm_vm.c:drm_mmap: possible circular locking dependency detected
+References: <alpine.LFD.2.00.0912241350510.11961@localhost.localdomain>	<20091226094504.GA6214@liondog.tnic>	<20091228092712.AA8C.A69D9226@jp.fujitsu.com>	<alpine.LFD.2.00.0912301259220.11961@localhost.localdomain>	<m11victac1.fsf@fess.ebiederm.org>	<alpine.LFD.2.00.0912301348320.11961@localhost.localdomain>	<m1fx6rtu31.fsf@fess.ebiederm.org>	<alpine.LFD.2.00.0912311043330.11961@localhost.localdomain>	<m11vi9c0td.fsf@fess.ebiederm.org> <4B3EB687.7000005@kernel.org>	<m17hs0xjmn.fsf@fess.ebiederm.org> <4B3FE586.7020109@kernel.org> <m1ws00uel9.fsf@fess.ebiederm.org>
+In-Reply-To: <m1ws00uel9.fsf@fess.ebiederm.org>
+X-Enigmail-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello,
 
-BTW, what do you think about the recent movement by distros toward installing PAE enabled kernels by default so that the NX bit can be enabled?
+On 01/03/2010 11:06 AM, Eric W. Biederman wrote:
+> Removed driver hardware isn't something sysfs can really guard
+> against, although it can help to make the window of vulnerability
+> smaller.
 
-When MS enabled the NX bit in XP SP2, they had the advantage of being able to select the kernel in the bootloader (which was NTLDR) that was already being used for the /PAE switch in boot.ini. So when they added support for the NX bit, they were able to detect NX capablities in the bootloader and automatically select the PAE kernel. They still limited the physical address space to 4 GB in the non-enterprise/datacenter versions of Windows which before did not support more than 4 GB of RAM due to driver issues with things like DMA. Coincidentally around this time (which was around mid to late 2004), Linux 32-bit did it too with patches released to LKML around June 2004, and 2.6.8 incorporating the patch in August 2004, around the time XP SP2 was being released. But since Linux did not have that advantage, even after the distros moved to kernel 2.6.8, they still installed and used a non-PAE kernel by default, resulting in the NX bit not being used. Now, after 5 (!) years of this situation, last year Fedora and Ubuntu added that logic to their installer. Now they detect NX and automatically install a PAE kernel.
+It can't protect against removal itself per-se but it does give the
+driver a boundary which it can depend on while implementing hot
+unplugging.  Hardwares which support hot unplugging can cope with
+surprise removal and has mechanisms to detect and handle them but
+software part still is tricky and driver needs to have a boundary
+after which it can declare a device gone.
 
-And yes there are CPUs with PAE and NX that has no 64-bit support. Intel was mostly to blame, with the most recent being the Atom N200 series that was very commonly used in netbooks (they only recently was succeeded with the Pine Trail Atoms being all 64-bit capable). Also was very common was the original Core Duo/Solo, as well as the late 533 MHz FSB Pentium Ms (the original one did not even support PAE at all!).  Also, there was the 5x0J Prescott Pentium 4 CPUs, which was common for a period too. But it wasn't only Intel, the first AMD Semprons from 2004 to late 2005 was another CPU that lacked the 64-bit but had the NX bit. And there was the Transmeta (which Linus used to work at, but left by the time it was released) Efficeon, which was the last CPUs released by Transmeta and lasted only a short time, and the VIA C7 CPUs (VIA eventually released a Nano which was 64-bit capable).
+> Protecting driver internal data structures if we can does
+> seem reasonable.
 
-Yuhong Bao
- 		 	   		  
-_________________________________________________________________
-Your E-mail and More On-the-Go. Get Windows Live Hotmail Free.
-http://clk.atdmt.com/GBL/go/171222985/direct/01/
+Also the case of driver detaching (and another driver attaching).
+
+> The case I was thinking of in particular is when someone does:
+> "rmmod driver" I think device_del protects from the code going away
+> today.
+
+Nope, that's protected by reference counting via fops and/or other
+stuff.
+
+>> If such separation is necessary, we can implement the split interface
+>> while leaving kobject_del() as is feature-wise and convert the
+>> offending ones to use the split interface but I think it would be
+>> better to simply fix the offending ones if there aren't too many and
+>> they're easily fixable.  Let's see how many lockdep warnings turn up.
+> 
+> - We have the network stack.
+>   I have hacked around that (when I thought it was a singleton)
+>   by introducing the idiom:
+> 
+> 	if (!rtnl_trylock())
+> 		return restart_sysscall();
+> 
+>   But that isn't sustainable, as there is already one new entry that
+>   just does rntl_lock unconditionally.
+> 
+>   Maybe we can move the device_del out from under the rtnl_lock, but I
+>   have my doubts.  Certainly the proc and sysctl bits (which have the
+>   same issue look more difficult.
+> 
+> - We almost have an issue in ext4.
+>   Device_del is certainly called under lock_kernel() and lock_super().
+> 
+> - We have what a cpu_hotplug.lock issue with
+>   /sys/devices/system/cpu/cpuN/microcode/reload, a variant of the problem
+>   that triggered this discussion and it looks very non-trivial to solve.
+> 
+> So I'm not certain what to say except that we have longstanding problems.
+
+It's interesting that the above cases arn't common drivers.  AFAICS,
+the problem cases would usually be cases like above where the user is
+a rather complex software entity or drivers which implement some form
+of self detaching via sysfs.  For the former group, I agree that
+splitting deleting and draining (or simply skipping the draining part
+or active reference counting both of which basically achieve the same
+thing) would be an easy way out as it would be generally easy to leave
+the data structures dangling till the references go away.
+
+How about simply introducing an interface to mark sysfs nodes which
+don't require active reference counting and using them on those nodes?
+
+Thanks.
+
+-- 
+tejun
