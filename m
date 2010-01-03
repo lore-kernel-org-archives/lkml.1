@@ -1,76 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753172Ab0ACXAf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753167Ab0ACXIM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753172Ab0ACXAf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Jan 2010 18:00:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753159Ab0ACXAd
+	id S1753167Ab0ACXIM (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Jan 2010 18:08:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753135Ab0ACXIJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Jan 2010 18:00:33 -0500
-Received: from casper.infradead.org ([85.118.1.10]:59757 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753115Ab0ACXAa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Jan 2010 18:00:30 -0500
-Date: Sun, 3 Jan 2010 15:03:00 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Justin Piszcz <jpiszcz@lucidpixels.com>
-Cc: Christian Hofstaedtler <ch@zeha.at>, linux-kernel@vger.kernel.org,
-       bruce.w.allan@intel.com
-Subject: Re: Linux* is not supported on the Intel(R) Desktop Board DP55KG -
- Kernel still hangs upon reboot.
-Message-ID: <20100103150300.170dedee@infradead.org>
-In-Reply-To: <alpine.DEB.2.00.1001031637230.17894@p34.internal.lan>
-References: <20100103202345.GA20015@percival.namespace.at>
-	<alpine.DEB.2.00.1001031637230.17894@p34.internal.lan>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.6; i586-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 3 Jan 2010 18:08:09 -0500
+Received: from hera.kernel.org ([140.211.167.34]:32860 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753086Ab0ACXIG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Jan 2010 18:08:06 -0500
+Message-ID: <4B412341.2010002@kernel.org>
+Date: Mon, 04 Jan 2010 08:07:45 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
+MIME-Version: 1.0
+To: Arjan van de Ven <arjan@infradead.org>
+CC: Hui Zhu <teawater@gmail.com>, Russell King <linux@arm.linux.org.uk>,
+       saeed bishara <saeed.bishara@gmail.com>,
+       Catalin Marinas <catalin.marinas@arm.com>,
+       Nicolas Pitre <nico@fluxnic.net>, Ralf Baechle <ralf@linux-mips.org>,
+       David Daney <ddaney@caviumnetworks.com>,
+       Tomaso Paoletti <tpaoletti@caviumnetworks.com>,
+       Chris Dearman <chris@mips.com>,
+       Paul Gortmaker <Paul.Gortmaker@windriver.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Alexey Dobriyan <adobriyan@gmail.com>, Brian Gerst <brgerst@gmail.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+       linux-mips@linux-mips.org, Coly Li <coly.li@suse.de>
+Subject: Re: [PATCH] stack2core: show stack message and convert it to core
+ file 	when kernel die
+References: <daef60381001030705r93b3fbfkc50e7b9bbc62b334@mail.gmail.com>	<4B411F14.1040302@kernel.org> <20100103150134.5bdab023@infradead.org>
+In-Reply-To: <20100103150134.5bdab023@infradead.org>
+X-Enigmail-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 3 Jan 2010 16:40:38 -0500 (EST)
-Justin Piszcz <jpiszcz@lucidpixels.com> wrote:
+On 01/04/2010 08:01 AM, Arjan van de Ven wrote:
+> On Mon, 04 Jan 2010 07:49:56 +0900
+> Tejun Heo <tj@kernel.org> wrote:
+>>
+>> If implementing parsing of oops message in C is too awkward
+>> (unsurprising at all), maybe implementing a converter in perl or
+>> python is the easiest way so that it takes the oops message and puts
+>> out well formatted input for the s2c program?
+> 
+> you mean like scripts/markup_oops.pl ?
 
-> 
-> 
-> On Sun, 3 Jan 2010, Christian Hofstaedtler wrote:
-> 
-> > Hi,
-> >
-> > In regard to the DP55KG board having reboot [1] and HPET [2] issues,
-> > have you seen any fixes (from Intel?) for these problems?
-> >
-> > I now own such a board and see the same stuff on a distro-patched
-> > 2.6.31.6.
-> >
-> > Thanks,
-> >  Christian
-> >
-> > [1] http://thread.gmane.org/gmane.linux.kernel/903161/
-> > [2] http://thread.gmane.org/gmane.linux.kernel/913374
-> >
-> > -- 
-> > christian hofstaedtler
-> >
-> 
-> Hello Christian,
-> 
-> The work around for the reboot [1] issue is append this to your
-> kernel boot options in lilo/grub:
-> 
-> reboot=a
+Whichever one works but s2c wouldn't require symbol decoding.  Maybe
+we can simply add an option to tell it to just parse the oops and
+output it in machine friendly format.  Oh, also, the patch does add
+new information the module load addresses.  We should be able to add
+those to the oops message in a compact form.
 
-btw this can be automated... just needs a DMI quirk.
-someone needs to get dmidecode output and add it to the existing
-table of reboot= quirks...
-
-
+Thanks.
 
 -- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+tejun
