@@ -1,49 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752883Ab0ACM1m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752847Ab0ACN17@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752883Ab0ACM1m (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Jan 2010 07:27:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752829Ab0ACM1k
+	id S1752847Ab0ACN17 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Jan 2010 08:27:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752570Ab0ACN16
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Jan 2010 07:27:40 -0500
-Received: from mail2.asahi-net.or.jp ([202.224.39.198]:60800 "EHLO
-	mail2.asahi-net.or.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752825Ab0ACM1j (ORCPT
+	Sun, 3 Jan 2010 08:27:58 -0500
+Received: from mail-pz0-f171.google.com ([209.85.222.171]:65237 "EHLO
+	mail-pz0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751784Ab0ACN15 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Jan 2010 07:27:39 -0500
-X-Greylist: delayed 1343 seconds by postgrey-1.27 at vger.kernel.org; Sun, 03 Jan 2010 07:27:39 EST
-Date: Sun, 3 Jan 2010 21:04:35 +0900
-From: Kazuhisa Ichikawa <ki@epsilou.com>
-To: linux-mm@kvack.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] mm/page_alloc: fix the range check for backward merging
-Message-ID: <20100103120435.GA3576@epsilou.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.2i
+	Sun, 3 Jan 2010 08:27:57 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:cc:content-type;
+        b=vzYb0nI+bBzrZ4AsmsBu5JeZcgXToo9D6F1Y0ytKVnzXB8VTCkYWNxiULvoX7W331Q
+         5QNUcxb7zhnmcrgVf6mPcRCA6am6yG3B6cUXwYuAKPzZ/LbtW9U6am9HHzkoX7DFYtg4
+         orWueapkG0YSlwUloHUiMnDb1u5gWfkx/mmLE=
+MIME-Version: 1.0
+Date: Sun, 3 Jan 2010 19:27:56 +0600
+Message-ID: <b9df5fa11001030527h71b66dbcgd4ef29c04545cdaf@mail.gmail.com>
+Subject: [PATCH] acpi: Fix unused variable warning in sbs.c
+From: Rakib Mullick <rakib.mullick@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Len Brown <lenb@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
+       Alexey Starikovskiy <astarikovskiy@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Kazuhisa Ichikawa <ki@epsilou.com>
+ Fix unused variabled warning.
 
-The current check for 'backward merging' within add_active_range()
-does not seem correct.  start_pfn must be compared against
-early_node_map[i].start_pfn (and NOT against .end_pfn) to find out
-whether the new region is backward-mergeable with the existing range.
+When CONFIG_ACPI_SYSFS_POWER=n and CONFIG_ACPI_PROCFS_POWER=n, then
+we're warned by the following warning:
 
-Signed-off-by: Kazuhisa Ichikawa <ki@epsilou.com>
+drivers/acpi/sbs.c: In function `acpi_battery_remove':
+drivers/acpi/sbs.c:825: warning: unused variable `battery'
+
+
+Signed-off-by: Rakib Mullick <rakib.mullick@gmail.com>
 ---
- (This patch applies to linux-2.6.33-rc2)
 
---- a/mm/page_alloc.c	2009-12-25 06:09:41.000000000 +0900
-+++ b/mm/page_alloc.c	2010-01-03 19:20:36.000000000 +0900
-@@ -3998,7 +3998,7 @@ void __init add_active_range(unsigned in
- 		}
- 
- 		/* Merge backward if suitable */
--		if (start_pfn < early_node_map[i].end_pfn &&
-+		if (start_pfn < early_node_map[i].start_pfn &&
- 				end_pfn >= early_node_map[i].start_pfn) {
- 			early_node_map[i].start_pfn = start_pfn;
- 			return;
+--- linus/drivers/acpi/sbs.c	2009-12-28 12:37:29.000000000 +0600
++++ rakib/drivers/acpi/sbs.c	2010-01-03 11:29:07.000000000 +0600
+@@ -822,7 +822,10 @@ static int acpi_battery_add(struct acpi_
+
+ static void acpi_battery_remove(struct acpi_sbs *sbs, int id)
+ {
++#if defined(CONFIG_ACPI_SYSFS_POWER) || defined(CONFIG_ACPI_PROCFS_POWER)
+ 	struct acpi_battery *battery = &sbs->battery[id];
++#endif
++
+ #ifdef CONFIG_ACPI_SYSFS_POWER
+ 	if (battery->bat.dev) {
+ 		if (battery->have_sysfs_alarm)
