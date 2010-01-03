@@ -1,69 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752250Ab0ACIBa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751854Ab0ACIbJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752250Ab0ACIBa (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Jan 2010 03:01:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751596Ab0ACIB3
+	id S1751854Ab0ACIbJ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Jan 2010 03:31:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751438Ab0ACIbG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Jan 2010 03:01:29 -0500
-Received: from smtp-vbr4.xs4all.nl ([194.109.24.24]:1945 "EHLO
-	smtp-vbr4.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751583Ab0ACIB2 (ORCPT
+	Sun, 3 Jan 2010 03:31:06 -0500
+Received: from rekin23.go2.pl ([193.17.41.16]:41179 "EHLO rekin23.go2.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751014Ab0ACIbF convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Jan 2010 03:01:28 -0500
-Message-ID: <4B404E89.4060103@yahoo.es>
-Date: Sun, 03 Jan 2010 16:00:09 +0800
-From: Hein_Tibosch <hein_tibosch@yahoo.es>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
-MIME-Version: 1.0
-To: Pierre Ossman <pierre@ossman.eu>
-CC: Ben Nizette <bn@niasdigital.com>, Sascha Hauer <s.hauer@pengutronix.de>,
-       Adrian Hunter <adrian.hunter@nokia.com>, linux-mmc@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Matt Fleming <matt@console-pimps.org>
-Subject: Re: [PATCH v3] mmc: Make ID freq configurable
-References: <1246492196.2980.17.camel@linux-51e8.site>	<20090702135849.21370282@hskinnemoen-d830>	<1246537056.2980.60.camel@linux-51e8.site>	<4B3E570C.2060602@yahoo.es>	<63809451-ED1D-487A-AE63-F72B23D136D8@niasdigital.com>	<4B3F019F.6010306@yahoo.es>	<49985427-DCB9-40E1-815B-43C812B41DE3@niasdigital.com>	<20100102130809.121b7e10@mjolnir.ossman.eu>	<AD8E15FA-A476-4275-A750-5EB587A93CEC@niasdigital.com> <20100103003804.66021fe9@mjolnir.ossman.eu>
-In-Reply-To: <20100103003804.66021fe9@mjolnir.ossman.eu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Sun, 3 Jan 2010 03:31:05 -0500
+Subject: =?UTF-8?Q?Re:_[suspend/resume]_Re:_userspace_notification_from_module?=
+From: =?UTF-8?Q?Bart=C5=82omiej_Zimo=C5=84?= <uzi18@o2.pl>
+To: linux-kernel@vger.kernel.org
+Mime-Version: 1.0
+Message-ID: <1f57f1eb.184e5693.4b4055c5.e0fe0@o2.pl>
+Date: Sun, 03 Jan 2010 09:31:01 +0100
+X-Originator: 83.12.131.34
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pierre Ossman wrote:
-> On Sun, 3 Jan 2010 09:23:30 +1100
-> Ben Nizette <bn@niasdigital.com> wrote:
->
->   
->>> Broken cards seem to be all over the spectrum, so I wouldn't be
->>> suprised if you find ones that break if you go too low as well.
->>>       
->> Yea good point, though given there might not even be a One Freq to Rule Them All, how about:
->>
->> ---8<---
->>
->> From: Ben Nizette <bn@niasdigital.com>
->> Subject: [PATCH v3] mmc: Make ID freq configurable
->>
->> While the SD spec specifies a range of frequencies for the ID phase from 100-400kHz, not all cards play by the rules.  This patch adds a Kconfig option to allow the user to tweak this to their card/host config, though the default of 250kHz should be fine for all spec-abiding cards and most others besides.
->>
->> Signed-off-by: Ben Nizette <bn@niasdigital.com>
->>
->>     
->
-> This is not a good solution. We all use the same pool of cards so we
-> should all be using the same init sequence. If there isn't a single
-> frequency where all cards will work, then we'll have to make something
-> more advanced where the kernel will try the init several times with
-> different clocking.
->   
-As I'm lucky to have main-stream cards that break the rule (on
-avr32/AP7) I'll dive deeper into it and see if I can make it "automatic"
-so that initialization will work for any of cards. Indeed using a kind
-of 'bisect approach' approach.
-... although I must say that before Sascha Hauer's patch, we never had
-problems with any of the cards, using the controller's minimum freq of
-137 Khz.
+Dnia 3 stycznia 2010 0:29 "Rafael J. Wysocki" <rjw@sisk.pl> napisał(a):
+> > Thanks for Your answare.
+> > Some points of my idea:
+> > - don't think everyone want to use pm-utils (didn't say it is bad)
+> 
+> That certainly is true, but I think these people won't have a problem setting
+> up their suspend scripts to trigger the notification anyway. :-)
+> 
 
-Hein
+But it means almoust always create dbus interface and send message by script.
+For what? only to know if system going resume or suspend?
 
+> Point is, suspend hooks are used anyway by almost everyone (due to graphics,
+> networking, faulty drivers), so I think you could just use this mechanism, be it
+> pm-utils or something else.
+> 
+> To put it in a different way, you apparently want the kernel to notify the user
+> space of an event originating from the user space and my question is why not
+> to set up the user space to generate the notification without relying on the
+> kernel to do that.
 
+Because now kernel know better what is going on.
+
+> 
+> > - this code is standard for all implementation of suspend/hibernate/resume
+> 
+> I guess you mean the existing kernel-side suspend/hibernate code.
+> 
+> Sure, it is, but your module is going to export the kernel's internal interface
+> outside the kernel, turning it into a real API and that is a _big_ _deal_.  The
+> reason why it is a big deal is that while we often change the kernel's internal
+> interfaces, we don't change APIs.  Once created, an API (I mean a real
+> userland-kernel interface) is very difficult to change, because that most often
+> leads to regressions which are quite nasty from the user's point of view.
+> 
+> So, basically, you want us to declare that the kernel's internal
+> suspend/hibernate notification mechanism won't change in the future, which is
+> not something I'm going to do at this point.  Moreover, it hasn't been designed
+> as an API and I don't think it's really suitable for this purpose.
+
+Abosulutly no!
+It's so primitive module and even with different api it could be easy to adept.
+Next if it can't be in kernel source tree for someone could be very usefull.
+
+This module could only sends bool/ioctl - system resumed.
+
+> 
+> At least, that requires some more discussion, so please tell us why you need
+> the kernel to notify the user space about suspend/hibernation.  IOW, what's the
+> final purpose of this?  [Added some CCs.]
+
+Yes, it is only first step.
+Have created different point of view, not all linux boxes are desktops/laptops.
+What about embedeed solutions?
+Why app must implement all other to know about resume/suspend?
+Why not open file and know this easily?
+
+> 
+> > - it is small
+> > - it have less overhead, dont need dbus and all rest services.
+> 
+> That could have been a good argument if those services had not been used
+> already, but that's not the case.
+
+Yes it is.
+For every other case it was pm-utils created.
+
+> 
+> > - could be even used partialy by pm-utils
+> > - it is perfect just to notify about event
+> 
+> OK, but why exactly do _you_ need that to happen?
+> 
+> There's one important drawback of making the kernel generate the notification.
+> Namely, even if your userspace task is notified by the kernel of a PM event,
+> that doesn't mean it'll have the time to act upon that, because the kernel will
+> attempt to freeze it right after the notification has been sent.  This means
+> you'd need a way to make the kernel wait for your user space process to finish
+> it's job before continuing the suspend/hibernate process.  Otherwise it's not
+> going to be very useful.
+> 
+
+First of all i want to start discussion about this topic and looks like started :)
+
+So what was in my mind? There are lots of small devices today with linux.
+Lots of them has got unstandardized suspend/resume detection.
+It could be too much info exposed from kernel by this module/propose i understand
+for program info about pm_post_resume event could be anought.
+
+We have now 3types of suspend implementation and 1 kernel API inside.
+App typicaly need just 2-3 event types - suspending, resumming, idle.
+I dont want to slow down kernel suspend, block or something, just perform 
+some actions in apps - typicaly try to reconnect.
+It could be new kernel standard to easy adept some actions.
+
+Why not pm-utils connect to such module and gather data?
+Then It could work as hal service.
+But hook on kernel like /sbin/init but for suspend and resume, looks like other solution.
+IOW sending event to kernel to perform action and launch userspace once 
+more just before pm-event chain ... check return_val, sounds like other 
+solution/ other kind of module.
+
+What about this discusion:
+http://lists.freedesktop.org/archives/devkit-devel/2009-December/000617.html
+
+I will perform some tests to know what amount of time is usualy needed to disconnect
+nicely client or something.
+
+Next what about fuse filesystems, there are some network based.
+
+Best regards.
+Bartłomiej Zimoń
+PLD Linux, Kadu Team, FreeRunner user
+http://kadu-im.blogspot.com/
 
