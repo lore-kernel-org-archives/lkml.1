@@ -1,172 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753593Ab0ADVb1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753617Ab0ADVeu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753593Ab0ADVb1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 16:31:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753365Ab0ADVbZ
+	id S1753617Ab0ADVeu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 16:34:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753346Ab0ADVeu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 16:31:25 -0500
-Received: from smtp-out.google.com ([216.239.44.51]:32233 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752045Ab0ADVbZ (ORCPT
+	Mon, 4 Jan 2010 16:34:50 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:41869 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753157Ab0ADVer (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 16:31:25 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:message-id:user-agent:
-	mime-version:content-type:x-system-of-record;
-	b=ZFBkvc1QlPHVUVcg8giXM7Nre8WfHNfUAZKz7OZXw8j7Dqw+4h+4r8q5GVUEBwrHA
-	ce/H2V9DNwpdp7tH5aSGA==
-Date: Mon, 4 Jan 2010 13:31:14 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Michal Marek <mmarek@suse.cz>
-cc: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: [patch] kbuild: improve version string logic
-Message-ID: <alpine.DEB.2.00.1001041330230.26148@chino.kir.corp.google.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Mon, 4 Jan 2010 16:34:47 -0500
+Message-ID: <4B425EB5.5080504@zytor.com>
+Date: Mon, 04 Jan 2010 13:33:41 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+To: Yinghai Lu <yinghai@kernel.org>
+CC: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Jesse Brandeburg <jesse.brandeburg@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       NetDEV list <netdev@vger.kernel.org>,
+       Jesse Brandeburg <jesse.brandeburg@intel.com>,
+       Suresh Siddha <suresh.b.siddha@intel.com>
+Subject: Re: Subject: [PATCH 1/2] x86: get back 15 vectors
+References: <4B347AEE.6030705@kernel.org> <20091228094707.GH24690@elte.hu>	<4B398ECD.1080506@kernel.org>	<4807377b1001031906s6b1ee576jc021da2642bb4147@mail.gmail.com>	<4B415E73.1050801@kernel.org> <4B419113.1090204@kernel.org>	<m1aawtlu6y.fsf@fess.ebiederm.org> <4B423B08.3010005@zytor.com>	<m1my0thelq.fsf@fess.ebiederm.org> <4B424305.7050803@kernel.org>	<4B4245FC.7070902@zytor.com> <4B424A5C.7080309@kernel.org> <m1y6kdbpad.fsf@fess.ebiederm.org> <4B425085.5040103@kernel.org> <4B42595E.9010404@zytor.com> <4B425BB7.90501@kernel.org>
+In-Reply-To: <4B425BB7.90501@kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The LOCALVERSION= string passed to "make" will now always be appended to
-the kernel version after CONFIG_LOCALVERSION, if it exists, regardless of
-whether CONFIG_LOCALVERSION_AUTO is set or not.  This allows users to
-uniquely identify their kernel builds with a string.
+On 01/04/2010 01:20 PM, Yinghai Lu wrote:
+> --- linux-2.6.orig/arch/x86/include/asm/irq_vectors.h
+> +++ linux-2.6/arch/x86/include/asm/irq_vectors.h
+> @@ -30,8 +30,17 @@
+>  /*
+>   * IDT vectors usable for external interrupt sources start
+>   * at 0x20:
+> + * hpa said we can start from 0x1f.
+> + *   0x1f is documented as reserved.  However, the ability for the APIC
+> + *   to generate vectors starting at 0x10 is documented, as is the
+> + *   ability for the CPU to receive any vector number as an interrupt.
+> + *   0x1f is used for IRQ_MOVE_CLEANUP_VECTOR since that vector needs
+> + *   an entire privilege level (16 vectors) all by itself at a higher
+> + *   priority than any actual device vector.  Thus, by placing it in the
+> + *   otherwise-unusable 0x10 privilege level, we avoid wasting a full
+> + *   16-vector block.
+>   */
+> -#define FIRST_EXTERNAL_VECTOR		0x20
+> +#define FIRST_EXTERNAL_VECTOR		0x1f
+>  
+>  #ifdef CONFIG_X86_32
+>  # define SYSCALL_VECTOR			0x80
+> @@ -41,15 +50,19 @@
+>  #endif
+>  
+>  /*
+> - * Reserve the lowest usable priority level 0x20 - 0x2f for triggering
+> + * Reserve the lowest usable priority level 0x10 - 0x1f for triggering
+>   * cleanup after irq migration.
+> + * this overlaps with the reserved range for cpu exceptions so this
+> + * will need to be changed to 0x20 - 0x2f if the last cpu exception is
+> + * ever allocated.
+>   */
+> +
+>  #define IRQ_MOVE_CLEANUP_VECTOR		FIRST_EXTERNAL_VECTOR
+>  
+>  /*
+> - * Vectors 0x30-0x3f are used for ISA interrupts.
+> + * Vectors 0x20-0x2f are used for ISA interrupts.
+>   */
+> -#define IRQ0_VECTOR			(FIRST_EXTERNAL_VECTOR + 0x10)
+> +#define IRQ0_VECTOR			(FIRST_EXTERNAL_VECTOR + 1)
+>  
+>  #define IRQ1_VECTOR			(IRQ0_VECTOR +  1)
+>  #define IRQ2_VECTOR			(IRQ0_VECTOR +  2)
+> @@ -68,6 +81,13 @@
+>  #define IRQ15_VECTOR			(IRQ0_VECTOR + 15)
+>  
 
-scripts/setlocalversion will now always be called to determine whether
-the repository is beyond a tagged (release) commit.  When at a tagged
-commit, this script will now suppress all output.
+I'm not sure that making IRQ_MOVE_CLEANUP_VECTOR and IRQ0_VECTOR offsets
+from FIRST_EXTERNAL_VECTOR makes sense from a readability perspective.
+These are now magic numbers, and making them offsets is only confusing,
+as it implies we could do it differently.
 
-If CONFIG_LOCALVERSION_AUTO is enabled, the unique SCM tag reported by 
-setlocalversion (or .scmversion) is appended to the kernel version, if it 
-exists.  When CONFIG_LOCALVERSION_AUTO is not enabled, a `+' is appended
-to the kernel version to represent that the kernel has been revised since
-the last release unless "make LOCALVERSION=" was used to uniquely identify
-the build.
+If nothing else, the actual logic for IRQ0_VECTOR should be:
 
-The end result is this:
+#define IRQ0_VECTOR		((FIRST_EXTERNAL_VECTOR + 16) & ~15)
 
- - when LOCALVERSION= is passed to "make", it is appended to the kernel
-   version,
+... since that is what we actually want -- we round up to the next
+16-vector boundary.  Both +16 and +1 misrepresent the logic.
 
- - when CONFIG_LOCALVERSION_AUTO is enabled, a unique SCM identifier is
-   appended if the respository has been revised beyond a tagged commit,
-   and
+>  /*
+> + * First APIC vector available to drivers: (vectors 0x30-0xee) we
+> + * start at 0x31 to spread out vectors evenly between priority
+> + * levels. (0x80 is the syscall vector)
+> + */
+> +#define FIRST_DEVICE_VECTOR		(IRQ15_VECTOR + 2)
+> +
 
- - when CONFIG_LOCALVERSION_AUTO is disabled, a `+' is appended if the 
-   repository has been revised beyond a tagged commit and LOCALVERSION=
-   was not passed to "make".
+We really should fix that so we can do +1 here instead of +2; that
+presumably means fixing the logic so we do something smarter than just
+jump over 0x80.
 
-Examples:
-
-With CONFIG_LOCALVERSION_AUTO: "make" results in
-v2.6.32-rc4-00149-ga3ccf63.  If there are uncommited changes to the
-respository, it results in v2.6.32-rc4-00149-ga3ccf63-dirty.  If
-"make LOCALVERSION=kbuild" were used, it results in
-v2.6.32-rc4-kbuild-00149-ga3ccf63-dirty.
-
-Without CONFIG_LOCALVERSION_AUTO, "make" results in v2.6.32-rc4+
-unless the repository is at the Linux v2.6.32-rc4 commit (in which
-case the version would be v2.6.32-rc4).  If "make LOCALVERSION=kbuild"
-were used, it results in v2.6.32-rc4-kbuild.
-
-Also renames variables such as localver-auto and _localver-auto to more 
-accurately describe what they represent: localver-extra and
-scm-identifier, respectively.
-
-Acked-by: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: David Rientjes <rientjes@google.com>
----
- Makefile                |   43 +++++++++++++++++++++++++++----------------
- scripts/setlocalversion |    3 ++-
- 2 files changed, 29 insertions(+), 17 deletions(-)
-
-diff --git a/Makefile b/Makefile
---- a/Makefile
-+++ b/Makefile
-@@ -898,14 +898,19 @@ $(vmlinux-dirs): prepare scripts
- #	  $(localver)
- #	    localversion*		(files without backups, containing '~')
- #	    $(CONFIG_LOCALVERSION)	(from kernel config setting)
--#	  $(localver-auto)		(only if CONFIG_LOCALVERSION_AUTO is set)
--#	    ./scripts/setlocalversion	(SCM tag, if one exists)
--#	    $(LOCALVERSION)		(from make command line if provided)
-+#	    $(LOCALVERSION)		(from make command line, if provided)
-+#	  $(localver-extra)
-+#	    $(scm-identifier)		(unique SCM tag, if one exists)
-+#	      ./scripts/setlocalversion	(only with CONFIG_LOCALVERSION_AUTO)
-+#	      .scmversion		(only with CONFIG_LOCALVERSION_AUTO)
-+#	    +				(only without CONFIG_LOCALVERSION_AUTO
-+#					 and without LOCALVERSION= and 
-+#					 repository is at non-tagged commit)
- #
--#  Note how the final $(localver-auto) string is included *only* if the
--# kernel config option CONFIG_LOCALVERSION_AUTO is selected.  Also, at the
--# moment, only git is supported but other SCMs can edit the script
--# scripts/setlocalversion and add the appropriate checks as needed.
-+# For kernels without CONFIG_LOCALVERSION_AUTO compiled from an SCM that has
-+# been revised beyond a tagged commit, `+' is appended to the version string
-+# when not overridden by using "make LOCALVERSION=".  This indicates that the
-+# kernel is not a vanilla release version and has been modified.
- 
- pattern = ".*/localversion[^~]*"
- string  = $(shell cat /dev/null \
-@@ -914,26 +919,32 @@ string  = $(shell cat /dev/null \
- localver = $(subst $(space),, $(string) \
- 			      $(patsubst "%",%,$(CONFIG_LOCALVERSION)))
- 
--# If CONFIG_LOCALVERSION_AUTO is set scripts/setlocalversion is called
--# and if the SCM is know a tag from the SCM is appended.
--# The appended tag is determined by the SCM used.
-+# scripts/setlocalversion is called to create a unique identifier if the source
-+# is managed by a known SCM and the repository has been revised since the last
-+# tagged (release) commit.  The format of the identifier is determined by the
-+# SCM's implementation.
- #
- # .scmversion is used when generating rpm packages so we do not loose
- # the version information from the SCM when we do the build of the kernel
- # from the copied source
--ifdef CONFIG_LOCALVERSION_AUTO
--
- ifeq ($(wildcard .scmversion),)
--        _localver-auto = $(shell $(CONFIG_SHELL) \
-+        scm-identifier = $(shell $(CONFIG_SHELL) \
-                          $(srctree)/scripts/setlocalversion $(srctree))
- else
--        _localver-auto = $(shell cat .scmversion 2> /dev/null)
-+        scm-identifier = $(shell cat .scmversion 2> /dev/null)
- endif
- 
--	localver-auto  = $(LOCALVERSION)$(_localver-auto)
-+ifdef CONFIG_LOCALVERSION_AUTO
-+	localver-extra = $(scm-identifier)
-+else
-+	ifneq ($scm-identifier,)
-+		ifeq ($(LOCALVERSION),)
-+			localver-extra = +
-+		endif
-+	endif
- endif
- 
--localver-full = $(localver)$(localver-auto)
-+localver-full = $(localver)$(LOCALVERSION)$(localver-extra)
- 
- # Store (new) KERNELRELASE string in include/config/kernel.release
- kernelrelease = $(KERNELVERSION)$(localver-full)
-diff --git a/scripts/setlocalversion b/scripts/setlocalversion
---- a/scripts/setlocalversion
-+++ b/scripts/setlocalversion
-@@ -26,7 +26,8 @@ if head=`git rev-parse --verify --short HEAD 2>/dev/null`; then
- 		# If we are past a tagged commit (like "v2.6.30-rc5-302-g72357d5"),
- 		# we pretty print it.
- 		if atag="`git describe 2>/dev/null`"; then
--			echo "$atag" | awk -F- '{printf("-%05d-%s", $(NF-1),$(NF))}'
-+			echo "$atag" | awk -F- 'int($(NF-1)) > 0	\
-+					{printf("-%05d-%s", $(NF-1),$(NF))}'
- 
- 		# If we don't have a tag at all we print -g{commitish}.
- 		else
+	-hpa
