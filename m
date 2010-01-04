@@ -1,159 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753429Ab0ADOzq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753426Ab0ADO6Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753429Ab0ADOzq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 09:55:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752122Ab0ADOzo
+	id S1753426Ab0ADO6Y (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 09:58:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752193Ab0ADO6X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 09:55:44 -0500
-Received: from lucidpixels.com ([75.144.35.66]:38580 "EHLO lucidpixels.com"
+	Mon, 4 Jan 2010 09:58:23 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:37599 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751146Ab0ADOzn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 09:55:43 -0500
-Date: Mon, 4 Jan 2010 09:55:42 -0500 (EST)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-To: Gabriel C <nix.or.die@googlemail.com>
-cc: Gabriel C <crazy@frugalware.org>, Maxim Levitsky <maximlevitsky@gmail.com>,
-       Dan Williams <dan.j.williams@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "lm-sensors@lm-sensors.org" <lm-sensors@lm-sensors.org>,
-       Andriy Gapon <avg@icyb.net.ua>
-Subject: Re: [lm-sensors] Status/support for Linux HECI from Intel? (for 
- temp/voltage monitoring)
-In-Reply-To: <1820d69d1001040643h5e2f383bo7e077cbc2d2af554@mail.gmail.com>
-Message-ID: <alpine.DEB.2.00.1001040954150.29475@p34.internal.lan>
-References: <alpine.DEB.1.10.0812300700410.11356@p34.internal.lan>  <4964DB3E.6080908@intel.com>  <alpine.DEB.1.10.0901071142200.29147@p34.internal.lan>  <1231356111.6648.2.camel@maxim-laptop> <49937CDF.10307@frugalware.org>  <alpine.DEB.1.10.0902121236120.19381@p34.internal.lan>
-  <1820d69d1001040551k26cfd925q4ada6b226740ac30@mail.gmail.com>  <alpine.DEB.2.00.1001040851490.29475@p34.internal.lan>  <1820d69d1001040609j6c0b169w38694c33af3fa686@mail.gmail.com>  <alpine.DEB.2.00.1001040921000.29475@p34.internal.lan>
- <1820d69d1001040643h5e2f383bo7e077cbc2d2af554@mail.gmail.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	id S1752122Ab0ADO6W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jan 2010 09:58:22 -0500
+From: Jeff Moyer <jmoyer@redhat.com>
+To: Shaohua Li <shaohua.li@intel.com>
+Cc: Corrado Zoccolo <czoccolo@gmail.com>,
+       "linux-kernel\@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "jens.axboe\@oracle.com" <jens.axboe@oracle.com>,
+       "Zhang\, Yanmin" <yanmin.zhang@intel.com>
+Subject: Re: [PATCH]cfq-iosched: don't take requests with long distence as close
+References: <20091224005506.GA7879@sli10-desk.sh.intel.com>
+	<4e5e476b0912250216n2b4aceacyf22a0e73425efd3a@mail.gmail.com>
+	<20091228020348.GB28115@sli10-desk.sh.intel.com>
+	<4e5e476b0912280036r6e55587dj66952fcd6ff4d08b@mail.gmail.com>
+	<20091228084659.GA31389@sli10-desk.sh.intel.com>
+	<4e5e476b0912280111s6a977251m3416341b4bd2c272@mail.gmail.com>
+	<20091228092844.GA9710@sli10-desk.sh.intel.com>
+X-PGP-KeyID: 1F78E1B4
+X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
+X-PCLoadLetter: What the f**k does that mean?
+Date: Mon, 04 Jan 2010 09:58:16 -0500
+In-Reply-To: <20091228092844.GA9710@sli10-desk.sh.intel.com> (Shaohua Li's
+	message of "Mon, 28 Dec 2009 17:28:44 +0800")
+Message-ID: <x49my0tc3xz.fsf@segfault.boston.devel.redhat.com>
+User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/23.1 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-1463747160-1383000122-1262616942=:29475"
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Shaohua Li <shaohua.li@intel.com> writes:
+> seek_mean could be very big sometimes, using it as close criteria is meaningless
+> as this doen't improve any performance. So if it's big, let's fallback to
+> default value.
 
----1463747160-1383000122-1262616942=:29475
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+I think the real problem is that we lost a check for a seeky queue.  The
+close cooperator code initially was written to help interleaved
+sequential I/Os.  Given that, I'm not a big fan of the proposed patch.
+I'd rather see an extra check for CFQQ_SEEKY added to the close
+cooperator code paths and leave cfq_rq_close alone.
 
+Cheers,
+Jeff
 
-
-On Mon, 4 Jan 2010, Gabriel C wrote:
-
-> 2010/1/4 Justin Piszcz <jpiszcz@lucidpixels.com>:
 >
-> Anyway It seems like ICH8* has some different output .. can't tell yet
-> without docs =3D)
+> Signed-off-by: Shaohua Li<shaohua.li@intel.com>
 >
-> Please open heci-qst-linux.c and find :
->
->
-> const char * const temp_names[THERM_SENSOR_COUNT] =3D {
-> ...
->
-> Change to look like this :
->
->
-> const char * const temp_names[THERM_SENSOR_COUNT] =3D {
-> =A0 =A0 =A0 =A0"CPU =A0Temp",
-> =A0 =A0 =A0 =A0"MB1 =A0Temp",
-> =A0 =A0 =A0 =A0 NULL,
-> =A0 =A0 =A0 =A0"MB2 =A0Temp",
-> =A0 =A0 =A0 =A0"ICH =A0Temp",
-> =A0 =A0 =A0 =A0"MCH =A0Temp",
-> =A0 =A0 =A0 =A0NULL,
-> =A0 =A0 =A0 =A0NULL,
-> =A0 =A0 =A0 =A0NULL,
-> =A0 =A0 =A0 =A0NULL,
-> =A0 =A0 =A0 =A0NULL,
-> =A0 =A0 =A0 =A0NULL,
-> };
-
-Done:
-
-# ./heci-qst-linux=20
-CPU Temp:       34.37   =B0C
-MB1 Temp:       37.75   =B0C
-MB2 Temp:       34.89   =B0C
-ICH Temp:       65.59   =B0C
-MCH Temp:       46.25   =B0C
-CPU  Fan:       840     RPM
-INL  Fan:       1398    RPM
-OUTL Fan:       839     RPM
-AUX  Fan:       2607    RPM
-+12  Volts:     12.040  V
-+5   Volts:     4.954   V
-+3.3 Volts:     3.247   V
-MCH  Vccp:      1.258   V
-CPU1 Vccp:      1.165   V
-
-> Also can you post a lspci -nn please :)
-# lspci -nn
-00:00.0 Host bridge [0600]: Intel Corporation 82P965/G965 Memory Controller=
- Hub [8086:29a0] (rev 02)
-00:01.0 PCI bridge [0604]: Intel Corporation 82P965/G965 PCI Express Root P=
-ort [8086:29a1] (rev 02)
-00:02.0 VGA compatible controller [0300]: Intel Corporation 82G965 Integrat=
-ed Graphics Controller [8086:29a2] (rev 02)
-00:03.0 Communication controller [0780]: Intel Corporation 82P965/G965 HECI=
- Controller [8086:29a4] (rev 02)
-00:19.0 Ethernet controller [0200]: Intel Corporation 82566DC Gigabit Netwo=
-rk Connection [8086:104b] (rev 02)
-00:1a.0 USB Controller [0c03]: Intel Corporation 82801H (ICH8 Family) USB U=
-HCI Controller #4 [8086:2834] (rev 02)
-00:1a.1 USB Controller [0c03]: Intel Corporation 82801H (ICH8 Family) USB U=
-HCI Controller #5 [8086:2835] (rev 02)
-00:1a.7 USB Controller [0c03]: Intel Corporation 82801H (ICH8 Family) USB2 =
-EHCI Controller #2 [8086:283a] (rev 02)
-00:1b.0 Audio device [0403]: Intel Corporation 82801H (ICH8 Family) HD Audi=
-o Controller [8086:284b] (rev 02)
-00:1c.0 PCI bridge [0604]: Intel Corporation 82801H (ICH8 Family) PCI Expre=
-ss Port 1 [8086:283f] (rev 02)
-00:1c.1 PCI bridge [0604]: Intel Corporation 82801H (ICH8 Family) PCI Expre=
-ss Port 2 [8086:2841] (rev 02)
-00:1c.2 PCI bridge [0604]: Intel Corporation 82801H (ICH8 Family) PCI Expre=
-ss Port 3 [8086:2843] (rev 02)
-00:1c.3 PCI bridge [0604]: Intel Corporation 82801H (ICH8 Family) PCI Expre=
-ss Port 4 [8086:2845] (rev 02)
-00:1c.4 PCI bridge [0604]: Intel Corporation 82801H (ICH8 Family) PCI Expre=
-ss Port 5 [8086:2847] (rev 02)
-00:1d.0 USB Controller [0c03]: Intel Corporation 82801H (ICH8 Family) USB U=
-HCI Controller #1 [8086:2830] (rev 02)
-00:1d.1 USB Controller [0c03]: Intel Corporation 82801H (ICH8 Family) USB U=
-HCI Controller #2 [8086:2831] (rev 02)
-00:1d.2 USB Controller [0c03]: Intel Corporation 82801H (ICH8 Family) USB U=
-HCI Controller #3 [8086:2832] (rev 02)
-00:1d.7 USB Controller [0c03]: Intel Corporation 82801H (ICH8 Family) USB2 =
-EHCI Controller #1 [8086:2836] (rev 02)
-00:1e.0 PCI bridge [0604]: Intel Corporation 82801 PCI Bridge [8086:244e] (=
-rev f2)
-00:1f.0 ISA bridge [0601]: Intel Corporation 82801HH (ICH8DH) LPC Interface=
- Controller [8086:2812] (rev 02)
-00:1f.2 SATA controller [0106]: Intel Corporation 82801HR/HO/HH (ICH8R/DO/D=
-H) 6 port SATA AHCI Controller [8086:2821] (rev 02)
-00:1f.3 SMBus [0c05]: Intel Corporation 82801H (ICH8 Family) SMBus Controll=
-er [8086:283e] (rev 02)
-01:00.0 SCSI storage controller [0100]: Marvell Technology Group Ltd. 88SX7=
-042 PCI-e 4-port SATA-II [11ab:7042] (rev 02)
-03:00.0 IDE interface [0101]: Marvell Technology Group Ltd. 88SE6101 single=
--port PATA133 interface [11ab:6101] (rev b1)
-04:00.0 RAID bus controller [0104]: Silicon Image, Inc. SiI 3132 Serial ATA=
- Raid II Controller [1095:3132] (rev 01)
-05:00.0 RAID bus controller [0104]: Silicon Image, Inc. SiI 3132 Serial ATA=
- Raid II Controller [1095:3132] (rev 01)
-06:00.0 RAID bus controller [0104]: Silicon Image, Inc. SiI 3132 Serial ATA=
- Raid II Controller [1095:3132] (rev 01)
-07:00.0 Ethernet controller [0200]: Intel Corporation 82540EM Gigabit Ether=
-net Controller [8086:100e] (rev 02)
-07:01.0 Ethernet controller [0200]: Intel Corporation 82541GI Gigabit Ether=
-net Controller [8086:1076]
-07:02.0 Mass storage controller [0180]: Promise Technology, Inc. PDC40718 (=
-SATA 300 TX4) [105a:3d17] (rev 02)
-07:03.0 FireWire (IEEE 1394) [0c00]: Texas Instruments TSB43AB22/A IEEE-139=
-4a-2000 Controller (PHY/Link) [104c:8023]
-
-Justin.
-
----1463747160-1383000122-1262616942=:29475--
+> diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+> index e2f8046..e80bd47 100644
+> --- a/block/cfq-iosched.c
+> +++ b/block/cfq-iosched.c
+> @@ -1675,13 +1675,17 @@ static inline sector_t cfq_dist_from_last(struct cfq_data *cfqd,
+>  #define CFQQ_SEEKY(cfqq)	((cfqq)->seek_mean > CFQQ_SEEK_THR)
+>  
+>  static inline int cfq_rq_close(struct cfq_data *cfqd, struct cfq_queue *cfqq,
+> -			       struct request *rq)
+> +			       struct request *rq, bool for_preempt)
+>  {
+>  	sector_t sdist = cfqq->seek_mean;
+>  
+>  	if (!sample_valid(cfqq->seek_samples))
+>  		sdist = CFQQ_SEEK_THR;
+>  
+> +	/* if seek_mean is big, using it as close criteria is meaningless */
+> +	if (sdist > CFQQ_SEEK_THR && !for_preempt)
+> +		sdist = CFQQ_SEEK_THR;
+> +
+>  	return cfq_dist_from_last(cfqd, rq) <= sdist;
+>  }
+>  
+> @@ -1709,7 +1713,7 @@ static struct cfq_queue *cfqq_close(struct cfq_data *cfqd,
+>  	 * will contain the closest sector.
+>  	 */
+>  	__cfqq = rb_entry(parent, struct cfq_queue, p_node);
+> -	if (cfq_rq_close(cfqd, cur_cfqq, __cfqq->next_rq))
+> +	if (cfq_rq_close(cfqd, cur_cfqq, __cfqq->next_rq, false))
+>  		return __cfqq;
+>  
+>  	if (blk_rq_pos(__cfqq->next_rq) < sector)
+> @@ -1720,7 +1724,7 @@ static struct cfq_queue *cfqq_close(struct cfq_data *cfqd,
+>  		return NULL;
+>  
+>  	__cfqq = rb_entry(node, struct cfq_queue, p_node);
+> -	if (cfq_rq_close(cfqd, cur_cfqq, __cfqq->next_rq))
+> +	if (cfq_rq_close(cfqd, cur_cfqq, __cfqq->next_rq, false))
+>  		return __cfqq;
+>  
+>  	return NULL;
+> @@ -3143,7 +3147,7 @@ cfq_should_preempt(struct cfq_data *cfqd, struct cfq_queue *new_cfqq,
+>  	 * if this request is as-good as one we would expect from the
+>  	 * current cfqq, let it preempt
+>  	 */
+> -	if (cfq_rq_close(cfqd, cfqq, rq))
+> +	if (cfq_rq_close(cfqd, cfqq, rq, true))
+>  		return true;
+>  
+>  	return false;
