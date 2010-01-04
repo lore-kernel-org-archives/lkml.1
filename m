@@ -1,46 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754032Ab0ADW0V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753435Ab0ADWa1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754032Ab0ADW0V (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 17:26:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753999Ab0ADW0U
+	id S1753435Ab0ADWa1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 17:30:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752751Ab0ADWaZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 17:26:20 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:52152 "EHLO mx2.suse.de"
+	Mon, 4 Jan 2010 17:30:25 -0500
+Received: from kroah.org ([198.145.64.141]:33245 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753157Ab0ADW0T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 17:26:19 -0500
-Date: Mon, 4 Jan 2010 23:26:14 +0100
-From: Jan Kara <jack@suse.cz>
-To: tytso@mit.edu
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-       "Yin, Kangkai" <kangkai.yin@intel.com>,
-       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Jan Kara <jack@suse.cz>
-Subject: Re: [PATCH] jbd: jbd-debug and jbd2-debug should be writable.
-Message-ID: <20100104222614.GB3252@quack.suse.cz>
-References: <20091204031735.GN19635@kai-debian>
- <20091204094932.GC4272@skywalker.linux.vnet.ibm.com>
- <20091225204859.GG32757@thunk.org>
+	id S1751086Ab0ADWaY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jan 2010 17:30:24 -0500
+Date: Mon, 4 Jan 2010 14:28:19 -0800
+From: Greg KH <greg@kroah.com>
+To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Cc: stable <stable@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       David Rientjes <rientjes@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>
+Subject: Re: [stable] [BUGFIX][PATCH v2 -stable] memcg: avoid oom-killing
+ innocent task in case of use_hierarchy
+Message-ID: <20100104222818.GA20708@kroah.com>
+References: <20091124145759.194cfc9f.nishimura@mxp.nes.nec.co.jp>
+ <20091124162854.fb31e81e.nishimura@mxp.nes.nec.co.jp>
+ <20091125090050.e366dca5.kamezawa.hiroyu@jp.fujitsu.com>
+ <20091125143218.96156a5f.nishimura@mxp.nes.nec.co.jp>
+ <20091217094724.15ec3b27.nishimura@mxp.nes.nec.co.jp>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20091225204859.GG32757@thunk.org>
+In-Reply-To: <20091217094724.15ec3b27.nishimura@mxp.nes.nec.co.jp>
 User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri 25-12-09 15:48:59, tytso@mit.edu wrote:
-> The ext4 portion has been added to the ext4 patch queue.
+On Thu, Dec 17, 2009 at 09:47:24AM +0900, Daisuke Nishimura wrote:
+> Stable team.
 > 
-> Jan, you want to add this to the ext3 tree?
-  Thanks for the notification. Actually, I've already sent the original
-patch to Linus and that was for both jbd and jbd2. The patch was so trivial
-I thought it's not worth splitting it up. I'm sorry if it caused any
-trouble to you.
+> Cay you pick this up for 2.6.32.y(and 2.6.31.y if it will be released) ?
+> 
+> This is a for-stable version of a bugfix patch that corresponds to the
+> upstream commmit d31f56dbf8bafaacb0c617f9a6f137498d5c7aed.
 
-									Honza
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+I've applied it to the .32-stable tree, but it does not apply to .31.
+Care to provide a version of the patch for that kernel if you want it
+applied there?
+
+thanks,
+
+greg k-h
