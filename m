@@ -1,53 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753941Ab0ADXEo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753984Ab0ADXEy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753941Ab0ADXEo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 18:04:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753638Ab0ADXEn
+	id S1753984Ab0ADXEy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 18:04:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753855Ab0ADXEn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Mon, 4 Jan 2010 18:04:43 -0500
-Received: from hera.kernel.org ([140.211.167.34]:57544 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753051Ab0ADXEm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 18:04:42 -0500
-Message-ID: <4B427547.5070109@kernel.org>
-Date: Tue, 05 Jan 2010 08:09:59 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
+Received: from terminus.zytor.com ([198.137.202.10]:48696 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753286Ab0ADXEn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jan 2010 18:04:43 -0500
+Message-ID: <4B4273D4.2080709@zytor.com>
+Date: Mon, 04 Jan 2010 15:03:48 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
 MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Borislav Petkov <petkovbb@googlemail.com>,
-       David Airlie <airlied@linux.ie>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Greg KH <greg@kroah.com>, Al Viro <viro@ZenIV.linux.org.uk>
-Subject: Re: drm_vm.c:drm_mmap: possible circular locking dependency detected
-References: <m11victac1.fsf@fess.ebiederm.org>	<alpine.LFD.2.00.0912301348320.11961@localhost.localdomain>	<m1fx6rtu31.fsf@fess.ebiederm.org>	<alpine.LFD.2.00.0912311043330.11961@localhost.localdomain>	<m11vi9c0td.fsf@fess.ebiederm.org> <4B3EB687.7000005@kernel.org>	<m17hs0xjmn.fsf@fess.ebiederm.org> <4B3FE586.7020109@kernel.org>	<20100103074745.GA2314@core.coreip.homeip.net>	<m1tyv3sbg4.fsf@fess.ebiederm.org>	<20100104185755.GB2597@core.coreip.homeip.net> <m14on1fygh.fsf@fess.ebiederm.org>
-In-Reply-To: <m14on1fygh.fsf@fess.ebiederm.org>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+To: Yinghai Lu <yinghai@kernel.org>
+CC: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Jesse Brandeburg <jesse.brandeburg@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       NetDEV list <netdev@vger.kernel.org>,
+       Jesse Brandeburg <jesse.brandeburg@intel.com>,
+       Suresh Siddha <suresh.b.siddha@intel.com>
+Subject: Re: Subject: [PATCH 1/2] x86: get back 15 vectors
+References: <4B347AEE.6030705@kernel.org> <20091228094707.GH24690@elte.hu>	<4B398ECD.1080506@kernel.org>	<4807377b1001031906s6b1ee576jc021da2642bb4147@mail.gmail.com>	<4B415E73.1050801@kernel.org> <4B419113.1090204@kernel.org>	<m1aawtlu6y.fsf@fess.ebiederm.org> <4B423B08.3010005@zytor.com>	<m1my0thelq.fsf@fess.ebiederm.org> <4B424305.7050803@kernel.org>	<4B4245FC.7070902@zytor.com> <4B424A5C.7080309@kernel.org> <m1y6kdbpad.fsf@fess.ebiederm.org> <4B425085.5040103@kernel.org> <4B42595E.9010404@zytor.com> <4B425BB7.90501@kernel.org> <4B425EB5.5080504@zytor.com> <4B426550.6000209@kernel.org>
+In-Reply-To: <4B426550.6000209@kernel.org>
+Content-Type: multipart/mixed;
+ boundary="------------070704020001030904050005"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+This is a multi-part message in MIME format.
+--------------070704020001030904050005
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-On 01/05/2010 04:43 AM, Eric W. Biederman wrote:
->>> So it is unlikely but possible to deadlock by accessing a serio
->>> attribute of a serio device that is being removed.
+On 01/04/2010 02:01 PM, Yinghai Lu wrote:
 >>
->> Hmm, I guess I was too quick dismissing lockdep complaints here. Now
->> that sysfs remove waits deadlock indeed is possible. Actually the locks
->> on serio->drv_mutex in attributes were added to make sure we don't
->> access device that was unbound from the driver through stale sysfs
->> attributes.
+>>>  /*
+>>> + * First APIC vector available to drivers: (vectors 0x30-0xee) we
+>>> + * start at 0x31 to spread out vectors evenly between priority
+>>> + * levels. (0x80 is the syscall vector)
+>>> + */
+>>> +#define FIRST_DEVICE_VECTOR		(IRQ15_VECTOR + 2)
+>>> +
+>>
+>> We really should fix that so we can do +1 here instead of +2; that
+>> presumably means fixing the logic so we do something smarter than just
+>> jump over 0x80.
 > 
-> Cool.  So we have solved the problem generically but we have left over
-> layer specific solutions.  That seems like a good problem to have.
+> we already use used_vectors to skip 0x80. so we could change that to +1?
+> 
 
-This is way too cool.  Only if we can have more moments like this.  :-)
+Yes, but the problem is that we *skip* 0x80, which leads to suboptimal
+allocation on systems with only a handful of vectors.
 
+The easy solution to accomplishing what we want without wasting vector
+0x30 is obviously to start allocation at 0x31, but not by artificially
+limiting the vector space; see the attached patch.
+
+For what it's worth, this code(__assign_irq_vector() in
+arch/x86/kernel/apic/io_apic.c) has me somewhat confused about the use
+of the constant 8:
+
+		vector += 8;
+
+The only justification that I can immediately think of is to try to
+assign exactly two sources to each priority level (since early APICs
+started losing interrupts with more than two sources per priority level.)
+
+This is ancient code -- predates not just the git but the bk history --
+and as such I would assume that that is the motivation.
+
+	-hpa
+
+--------------070704020001030904050005
+Content-Type: text/x-patch;
+ name="0001-x86-irq-Don-t-waste-a-vector-to-improve-vector-sprea.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+ filename*0="0001-x86-irq-Don-t-waste-a-vector-to-improve-vector-sprea.pa";
+ filename*1="tch"
+
+>From 6e586d7d1da44360b16d2c0ac2bea623c1fcfa6e Mon Sep 17 00:00:00 2001
+From: H. Peter Anvin <hpa@zytor.com>
+Date: Mon, 4 Jan 2010 15:00:57 -0800
+Subject: [PATCH] x86, irq: Don't waste a vector to improve vector spread
+
+We want to use a vector-assignment sequence that avoids stumbling onto
+0x80 earlier in the sequence, in order to improve the spread of
+vectors across priority levels on machines with a small number of
+interrupt sources.  Right now, this is done by simply making the first
+vector (0x31 or 0x41) completely unusable.  This is unnecessary; all
+we need is to start assignment at a +1 offset, we don't actually need
+to prohibit the usage of this vector once we have wrapped around.
+
+Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+---
+ arch/x86/include/asm/irq_vectors.h |    9 +++++----
+ arch/x86/kernel/apic/io_apic.c     |    3 ++-
+ 2 files changed, 7 insertions(+), 5 deletions(-)
+
+diff --git a/arch/x86/include/asm/irq_vectors.h b/arch/x86/include/asm/irq_vectors.h
+index 4611f08..718dcdd 100644
+--- a/arch/x86/include/asm/irq_vectors.h
++++ b/arch/x86/include/asm/irq_vectors.h
+@@ -121,11 +121,12 @@
+ #define MCE_SELF_VECTOR			0xeb
+ 
+ /*
+- * First APIC vector available to drivers: (vectors 0x30-0xee) we
+- * start at 0x31(0x41) to spread out vectors evenly between priority
+- * levels. (0x80 is the syscall vector)
++ * First APIC vector available to drivers: (vectors 0x30-0xee).  We
++ * start allocating at 0x31(0x41) to spread out vectors evenly between
++ * priority levels. (0x80 is the syscall vector)
+  */
+-#define FIRST_DEVICE_VECTOR		(IRQ15_VECTOR + 2)
++#define FIRST_DEVICE_VECTOR		(IRQ15_VECTOR + 1)
++#define VECTOR_OFFSET_START		1
+ 
+ #define NR_VECTORS			 256
+ 
+diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
+index de00c46..e289148 100644
+--- a/arch/x86/kernel/apic/io_apic.c
++++ b/arch/x86/kernel/apic/io_apic.c
+@@ -1162,7 +1162,8 @@ __assign_irq_vector(int irq, struct irq_cfg *cfg, const struct cpumask *mask)
+ 	 * Also, we've got to be careful not to trash gate
+ 	 * 0x80, because int 0x80 is hm, kind of importantish. ;)
+ 	 */
+-	static int current_vector = FIRST_DEVICE_VECTOR, current_offset = 0;
++	static int current_vector = FIRST_DEVICE_VECTOR + VECTOR_OFFSET_START;
++	static int current_offset = VECTOR_OFFSET_START % 8;
+ 	unsigned int old_vector;
+ 	int cpu, err;
+ 	cpumask_var_t tmp_mask;
 -- 
-tejun
+1.6.5.2
+
+
+--------------070704020001030904050005--
