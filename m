@@ -1,141 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753504Ab0ADPwe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753532Ab0ADP4J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753504Ab0ADPwe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 10:52:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753420Ab0ADPwc
+	id S1753532Ab0ADP4J (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 10:56:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753463Ab0ADP4G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 10:52:32 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:8837 "EHLO mx1.redhat.com"
+	Mon, 4 Jan 2010 10:56:06 -0500
+Received: from e8.ny.us.ibm.com ([32.97.182.138]:60216 "EHLO e8.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753374Ab0ADPwb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 10:52:31 -0500
-Date: Mon, 4 Jan 2010 16:52:25 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: caiqian@redhat.com, Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: Jan Kratochvil <jkratoch@redhat.com>, Roland McGrath <roland@redhat.com>,
-       linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
-       utrace-devel@redhat.com
-Subject: s390 && user_enable_single_step() (Was: odd utrace testing results
-	on s390x)
-Message-ID: <20100104155225.GA16650@redhat.com>
-References: <1503844142.2061111261478093776.JavaMail.root@zmail06.collab.prod.int.phx2.redhat.com> <1257887498.2061171261478252049.JavaMail.root@zmail06.collab.prod.int.phx2.redhat.com>
+	id S1753441Ab0ADP4E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jan 2010 10:56:04 -0500
+Date: Mon, 4 Jan 2010 07:55:59 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "minchan.kim@gmail.com" <minchan.kim@gmail.com>,
+       cl@linux-foundation.org, "hugh.dickins" <hugh.dickins@tiscali.co.uk>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [RFC PATCH] asynchronous page fault.
+Message-ID: <20100104155559.GA6748@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20091225105140.263180e8.kamezawa.hiroyu@jp.fujitsu.com> <1261915391.15854.31.camel@laptop> <20091228093606.9f2e666c.kamezawa.hiroyu@jp.fujitsu.com> <1261989047.7135.3.camel@laptop> <27db4d47e5a95e7a85942c0278892467.squirrel@webmail-b.css.fujitsu.com> <1261996258.7135.67.camel@laptop> <1261996841.7135.69.camel@laptop> <1262448844.6408.93.camel@laptop> <20100104030234.GF32568@linux.vnet.ibm.com> <1262591604.4375.4075.camel@twins>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1257887498.2061171261478252049.JavaMail.root@zmail06.collab.prod.int.phx2.redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <1262591604.4375.4075.camel@twins>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Mon, Jan 04, 2010 at 08:53:23AM +0100, Peter Zijlstra wrote:
+> On Sun, 2010-01-03 at 19:02 -0800, Paul E. McKenney wrote:
+> > It would not be all that hard for me to make a call_srcu(), but...
+> > 
+> > 1.      How are you avoiding OOM by SRCU callback?  (I am sure you
+> >         have this worked out, but I do have to ask!)
+> 
+> Well, I was thinking srcu to have this force quiescent state in
+> call_srcu() much like you did for the preemptible rcu.
 
-We have some strange problems with utrace on s390, and so far this _looks_
-like a s390 problem.
+Ah, so the idea would be that you register a function with the srcu_struct
+that is invoked when some readers are stuck for too long in their SRCU
+read-side critical sections?  Presumably you also supply a time value for
+"too long" as well.  Hmmm...  What do you do, cancel the corresponding
+I/O or something?
 
-Looks like, on any CPU user_enable_single_step() does not "work" until at
-least one thread with per_info.single_step = 1 does the context switch.
+This would not be hard once I get SRCU folded into the treercu
+infrastructure.  However, at the moment, SRCU has no way of tracking
+which tasks are holding things up.  So not 2.6.34 material, but definitely
+doable longer term.
 
-This doesn't matter with the old ptrace implementation, but with utrace
-the tracee itself does user_enable_single_step(current) and returns to
-user-mode. Until it does at least one context switch the single-stepping
-doesn't work, after that everything works fine till the next reboot.
+> Alternatively we could actively throttle the call_srcu() call when we've
+> got too much pending work.
 
-To rule out the possible problems with ptrace or utrace, I did the trivial
-patch:
+This could be done with the existing SRCU implementation.  This could be
+a call to a function you registered.  In theory, it would be possible
+to make call_srcu() refuse to enqueue a callback when there were too
+many, but that really badly violates the spirit of the call_rcu() family
+of functions.
 
---- K/kernel/sys.c~	2009-12-29 10:45:25.787198223 -0500
-+++ K/kernel/sys.c	2010-01-03 13:04:00.485591316 -0500
-@@ -1444,6 +1444,17 @@ SYSCALL_DEFINE5(prctl, int, option, unsi
- 
- 	error = 0;
- 	switch (option) {
-+		case 666:
-+			user_enable_single_step(current);
-+			break;
-+
-+		case 777:
-+			/* same as 666, but force the context switch
-+			 * after user_enable_single_step() */
-+			user_enable_single_step(current);
-+			schedule_timeout_interruptible(HZ/10);
-+			break;
-+
- 		case PR_SET_PDEATHSIG:
- 			if (!valid_signal(arg2)) {
- 				error = -EINVAL;
---- K/arch/s390/kernel/traps.c~	2009-12-22 10:41:52.909174198 -0500
-+++ K/arch/s390/kernel/traps.c	2009-12-30 10:31:12.985266686 -0500
-@@ -378,11 +378,14 @@ static inline void __user *get_check_add
- 
- void __kprobes do_single_step(struct pt_regs *regs)
- {
-+	printk("SS enter\n");
-+
- 	if (notify_die(DIE_SSTEP, "sstep", regs, 0, 0,
- 					SIGTRAP) == NOTIFY_STOP){
-+		printk(KERN_INFO "SS cancelled ???\n");
- 		return;
- 	}
--	if (tracehook_consider_fatal_signal(current, SIGTRAP))
-+//	if (tracehook_consider_fatal_signal(current, SIGTRAP))
- 		force_sig(SIGTRAP, current);
- }
- 
--------------------------------------------------------------------------------
+> > 2.      How many srcu_struct data structures are you envisioning?
+> >         One globally?  One per process?  One per struct vma?
+> >         (Not necessary to know this for call_srcu(), but will be needed
+> >         as I work out how to make SRCU scale with large numbers of CPUs.)
+> 
+> For this patch in particular, one global one, covering all vmas.
 
-The change in do_single_step() just removes "is it traced" check
-and adds a couple of printk's.
+Whew!!!  ;-)
 
+Then it would still be feasible for the CPU-hotplug code to scan all
+SRCU structures, if need be.  (The reason that SRCU gets away without
+worrying about CPU hotplug now is that it doesn't keep track of which
+tasks are in read-side critical sections.)
 
-With this patch I assume that the task which does prctl(666) should
-be killed by SIGTRAP, but this doesn't happen:
+> One reason to keep the vma RCU domain separate from other RCU objects is
+> that these VMA thingies can have rather long quiescent periods due to
+> this sleep stuff. So mixing that in with other RCU users which have much
+> better defined periods will just degrade everything bringing that OOM
+> scenario much closer.
 
-	# taskset -c 0 perl -le 'syscall 172,666 and die $!'
-	# taskset -c 0 perl -le 'syscall 172,666 and die $!'
-	# taskset -c 0 perl -le 'syscall 172,666 and die $!'
+Fair enough!
 
-	(syscall 172,666 == prctl(666))
-
-the task exits normally, there is nothing in dmesg.
-
-However,
-
-	# taskset -c 0 perl -le 'syscall 172,777 and die $!'
-	Trace/breakpoint trap
-
-Now prctl(777)->user_enable_single_step() does work, the task is
-killed by do_single_step()->force_sig(SIGTRAP).
-
-Now prctl(666) works too on CPU 0
-
-	# taskset -c 0 perl -le 'syscall 172,666 and die $!'
-	Trace/breakpoint trap
-	# taskset -c 0 perl -le 'syscall 172,666 and die $!'
-	Trace/breakpoint trap
-	# taskset -c 0 perl -le 'syscall 172,666 and die $!'
-	Trace/breakpoint trap
-
-
-
-And please note "# taskset -c 0", we can repeat the same on another
-CPU:
-
-	# taskset -c 1 perl -le 'syscall 172,666 and die $!'
-	# taskset -c 1 perl -le 'syscall 172,666 and die $!'
-
-doesn't work, but
-
-	# taskset -c 1 perl -le 'syscall 172,777 and die $!'
-	Trace/breakpoint trap
-
-magically "fixes" user_enable_single_step(), now we can use prctl(666)
-on CPU 1.
-
-
-The kernel is 2.6.32.2 plus ca633fd006486ed2c2d3b542283067aab61e6dc8,
-could you help?
-
-Oleg.
-
+							Thanx, Paul
