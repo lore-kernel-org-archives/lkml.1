@@ -1,69 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754180Ab0ADXQQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754018Ab0ADXSl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754180Ab0ADXQQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 18:16:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754162Ab0ADXQL
+	id S1754018Ab0ADXSl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 18:18:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753867Ab0ADXSk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 18:16:11 -0500
-Received: from kroah.org ([198.145.64.141]:45242 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754103Ab0ADXQJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 18:16:09 -0500
-Date: Mon, 4 Jan 2010 15:08:20 -0800
-From: Greg KH <greg@kroah.com>
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Peter Zijlstra <peterz@infradead.org>,
-       stable@kernel.org, Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Greg KH <gregkh@suse.de>
-Subject: Re: [stable] [Bug #14630] sched_rt_periodic_timer vs cpu hotplug
-Message-ID: <20100104230820.GH20708@kroah.com>
-References: <oBElxfTZdhL.A.bx.-vhOLB@chimera>
- <1262104619.7135.161.camel@laptop>
- <20091230081800.GA4304@osiris.boeblingen.de.ibm.com>
- <200912302229.46223.rjw@sisk.pl>
- <20091231095937.GA7098@osiris.boeblingen.de.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091231095937.GA7098@osiris.boeblingen.de.ibm.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Mon, 4 Jan 2010 18:18:40 -0500
+Received: from outbound-mail-141.bluehost.com ([67.222.38.31]:35385 "HELO
+	outbound-mail-141.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753643Ab0ADXSj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jan 2010 18:18:39 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=KRHFHp5wfebjqk5R2gf21a149wMeDDkS4yfoUKAwLd62NFnDJhyJdAmCzfGcnTf8ukeBkpfrRUEg4neNECdNwT466oTvhE149cBq3+qQ+389kRLOVBxsxUt/qy3SS8GK;
+Date: Mon, 4 Jan 2010 15:18:35 -0800
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Dan Carpenter <error27@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Eric Anholt <eric@anholt.net>, Dave Airlie <airlied@linux.ie>,
+       linux-kernel@vger.kernel.org, dri-devel@lists.sf.net
+Subject: Re: drm: gem_object_free without struct_mutex
+Message-ID: <20100104151835.2dbd3b91@jbarnes-piketon>
+In-Reply-To: <20100102144607.GA10094@bicker>
+References: <alpine.LSU.2.00.0912301934070.25797@sister.anvils>
+	<200912302317.48530.rjw@sisk.pl>
+	<20100102144607.GA10094@bicker>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 31, 2009 at 10:59:37AM +0100, Heiko Carstens wrote:
-> On Wed, Dec 30, 2009 at 10:29:46PM +0100, Rafael J. Wysocki wrote:
-> > On Wednesday 30 December 2009, Heiko Carstens wrote:
-> > > On Tue, Dec 29, 2009 at 05:36:59PM +0100, Peter Zijlstra wrote:
-> > > > On Tue, 2009-12-29 at 16:28 +0100, Rafael J. Wysocki wrote:
-> > > > > This message has been generated automatically as a part of a report
-> > > > > of regressions introduced between 2.6.31 and 2.6.32.
-> > > > > 
-> > > > > The following bug entry is on the current list of known regressions
-> > > > > introduced between 2.6.31 and 2.6.32.  Please verify if it still should
-> > > > > be listed and let me know (either way).
-> > > > > 
-> > > > > 
-> > > > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14630
-> > > > > Subject		: sched_rt_periodic_timer vs cpu hotplug
-> > > > > Submitter	: Heiko Carstens <heiko.carstens@de.ibm.com>
-> > > > > Date		: 2009-11-11 10:18 (49 days old)
-> > > > > References	: http://marc.info/?l=linux-kernel&m=125793470309588&w=4
-> > > > > Handled-By	: Peter Zijlstra <peterz@infradead.org>
-> > > > > Patch		: http://patchwork.kernel.org/patch/60250/
-> > > > 
-> > > > git branch -a --contains 047106ad
-> > > > 
-> > > > seems to suggest that this made it to Linus' tree.
-> > > 
-> > > Any chance to get this into -stable? Since it seems it got only merged
-> > > after 2.6.32.
+On Sat, 2 Jan 2010 16:46:07 +0200
+Dan Carpenter <error27@gmail.com> wrote:
+
+> On Wed, Dec 30, 2009 at 11:17:48PM +0100, Rafael J. Wysocki wrote:
+> > [CC to Jesse.]
 > > 
-> > Can you please send a notification to stable@kernel.org (CC to Greg KH perhaps)?
+> > On Wednesday 30 December 2009, Hugh Dickins wrote:
+> > > I've changed BUG_ON to WARN_ON in drm_gem.c (patch at bottom) to
+> > > get this dmesg when I resume after suspend, instead of crashing.
+> > > 
+> > > Perhaps it's a patch that should go in, perhaps not, but obviously
+> > > the real problem lies elsewhere.  Happens with 2.6.33-rc1 and
+> > > -rc2.
+> > > 
+> > > No surprise if I'm stupidly misconfigured to get the "pin power
+> > > context" error in the first place (.config on demand), but I
+> > > don't deserve to BUG!
+> > > 
 > 
-> Sure, here we go ;)
+> The problem is dev_priv->mm.suspended which was set in i915_suspend().
+> 
+> In i915_resume()
+> 
+>    107          i915_restore_state(dev);
+> 
+> The i915_restore_state() fails because i915_gem_object_bind_to_gtt()
+> does this:
+> 
+>         if (dev_priv->mm.suspended)
+>                 return -EBUSY;
+> 
+>    108  
+>    109          intel_opregion_init(dev, 1);
+>    110  
+>    111          /* KMS EnterVT equivalent */
+>    112          if (drm_core_check_feature(dev, DRIVER_MODESET)) {
+>    113                  mutex_lock(&dev->struct_mutex);
+>    114                  dev_priv->mm.suspended = 0;
+> 
+> We do set the dev_priv->mm.suspended here but it's too late.
+> 
+> Not sure the fix though...
 
-Now queued up, thanks for letting me know.
+I think this one should be fixed by Chris's recent patchset.  Should
+land in Eric's tree soon.
 
-greg k-h
+-- 
+Jesse Barnes, Intel Open Source Technology Center
