@@ -1,60 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753419Ab0ADPbA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753457Ab0ADPdm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753419Ab0ADPbA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 10:31:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752909Ab0ADPbA
+	id S1753457Ab0ADPdm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 10:33:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753409Ab0ADPdi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 10:31:00 -0500
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:40460 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751977Ab0ADPa7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 10:30:59 -0500
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Liam Girdwood <lrg@slimlogic.co.uk>
-Cc: linux-kernel@vger.kernel.org,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>, stable@kernel.org
-Subject: [PATCH 2.6.33] regulator: Specify REGULATOR_CHANGE_STATUS for WM835x LED constraints
-Date: Mon,  4 Jan 2010 15:30:54 +0000
-Message-Id: <1262619054-26795-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-X-Mailer: git-send-email 1.6.5.7
+	Mon, 4 Jan 2010 10:33:38 -0500
+Received: from kroah.org ([198.145.64.141]:43063 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752219Ab0ADPdi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jan 2010 10:33:38 -0500
+Date: Mon, 4 Jan 2010 07:31:15 -0800
+From: Greg KH <greg@kroah.com>
+To: "Serge E. Hallyn" <serge@hallyn.com>
+Cc: linux-kernel@vger.kernel.org, devel@driverdev.osuosl.org,
+       Ashwin Ganti <ashwin.ganti@gmail.com>
+Subject: Re: Staging tree status for the .33 kernel merge
+Message-ID: <20100104153115.GB9435@kroah.com>
+References: <20091223005447.GA28941@kroah.com> <20100104065755.GA26627@hallyn.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100104065755.GA26627@hallyn.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The WM8350 LED driver needs to be able to enable and disable the
-regulators it is using. Previously the core wasn't properly enforcing
-status change constraints so the driver was able to function but this
-has always been intended to be required.
+On Mon, Jan 04, 2010 at 12:57:55AM -0600, Serge E. Hallyn wrote:
+> Quoting Greg KH (greg@kroah.com):
+> ...
+> > This means, unless someone steps up and starts doing real work (not
+> > trivial spelling fixes) on the following drivers, they will be removed
+> > in the future kernel releases.
+> > 
+> >  - arlan, netwave, strip, wavelan - wireless drivers mentioned above
+> >    that are on the way out.  Slated for removal in 2.6.35
+> >  - hv - Microsoft Hyper V drivers.  The developers again seem to have
+> >    disappeared, this is getting old. Slated for removal in 2.6.35
+> >  - p9auth - this will be removed in .34 unless someone steps up.
+> 
+> I think I've decided to try to push it.  I'm working with some patches
+> at git://git.kernel.org/pub/scm/linux/kernel/git/sergeh/linux-cr.git
+> (branch p9auth.jan3.4 is latest).  I'll send patches as I feel they
+> are ready - so far they pass testcases, but are too new for me to
+> feel I should push them today.
 
-Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: stable@kernel.org
----
- drivers/regulator/wm8350-regulator.c |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
+Ok, send them on to me when you feel they are good enough.
 
-diff --git a/drivers/regulator/wm8350-regulator.c b/drivers/regulator/wm8350-regulator.c
-index 1bbff09..e7b89e7 100644
---- a/drivers/regulator/wm8350-regulator.c
-+++ b/drivers/regulator/wm8350-regulator.c
-@@ -1504,7 +1504,8 @@ int wm8350_register_led(struct wm8350 *wm8350, int lednum, int dcdc, int isink,
- 	led->isink_init.consumer_supplies = &led->isink_consumer;
- 	led->isink_init.constraints.min_uA = 0;
- 	led->isink_init.constraints.max_uA = pdata->max_uA;
--	led->isink_init.constraints.valid_ops_mask = REGULATOR_CHANGE_CURRENT;
-+	led->isink_init.constraints.valid_ops_mask
-+		= REGULATOR_CHANGE_CURRENT | REGULATOR_CHANGE_STATUS;
- 	led->isink_init.constraints.valid_modes_mask = REGULATOR_MODE_NORMAL;
- 	ret = wm8350_register_regulator(wm8350, isink, &led->isink_init);
- 	if (ret != 0) {
-@@ -1517,6 +1518,7 @@ int wm8350_register_led(struct wm8350 *wm8350, int lednum, int dcdc, int isink,
- 	led->dcdc_init.num_consumer_supplies = 1;
- 	led->dcdc_init.consumer_supplies = &led->dcdc_consumer;
- 	led->dcdc_init.constraints.valid_modes_mask = REGULATOR_MODE_NORMAL;
-+	led->dcdc_init.constraints.valid_ops_mask =  REGULATOR_CHANGE_STATUS;
- 	ret = wm8350_register_regulator(wm8350, dcdc, &led->dcdc_init);
- 	if (ret != 0) {
- 		platform_device_put(pdev);
--- 
-1.6.5.7
+thanks,
 
+greg k-h
