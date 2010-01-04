@@ -1,80 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752865Ab0ADDGP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753224Ab0ADDHk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752865Ab0ADDGP (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Jan 2010 22:06:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752116Ab0ADDGN
+	id S1753224Ab0ADDHk (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Jan 2010 22:07:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753145Ab0ADDHc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Jan 2010 22:06:13 -0500
-Received: from mail-yx0-f188.google.com ([209.85.210.188]:49020 "EHLO
-	mail-yx0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752072Ab0ADDGM convert rfc822-to-8bit (ORCPT
+	Sun, 3 Jan 2010 22:07:32 -0500
+Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:65084 "EHLO
+	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752994Ab0ADDHU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Jan 2010 22:06:12 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=mSbXu4oBioHqWysenclItqIjKPLaf7OgJBsh9FHusAM9fCVfsQsZUQuMqpoAavSLsD
-         oe7kpD77A3Ia2AZYoNKydcTxBLPw9I2sZX9KLBuY7VvkXuwKKUfHWcrD6liIfMV1LxSW
-         IDpfsB2I2tGecCo2wfDHIG0+RMAX2hy6cCJgw=
-MIME-Version: 1.0
-In-Reply-To: <4B398ECD.1080506@kernel.org>
-References: <4B347AEE.6030705@kernel.org> <20091228094707.GH24690@elte.hu>
-	 <4B398ECD.1080506@kernel.org>
-Date: Sun, 3 Jan 2010 19:06:11 -0800
-Message-ID: <4807377b1001031906s6b1ee576jc021da2642bb4147@mail.gmail.com>
-Subject: Re: [PATCH -v2] x86: increase NR_IRQS and nr_irqs
-From: Jesse Brandeburg <jesse.brandeburg@gmail.com>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+	Sun, 3 Jan 2010 22:07:20 -0500
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-type: TEXT/PLAIN
+Date: Sun, 03 Jan 2010 19:04:51 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+Subject: [PATCH 13/29] x86: dynamic increase early_res array size
+In-reply-to: <1262574307-17040-1-git-send-email-yinghai@kernel.org>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        "H. Peter Anvin" <hpa@zytor.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       NetDEV list <netdev@vger.kernel.org>,
-       Jesse Brandeburg <jesse.brandeburg@intel.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Christoph Lameter <cl@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
+       Yinghai Lu <yinghai@kernel.org>
+Message-id: <1262574307-17040-14-git-send-email-yinghai@kernel.org>
+X-Mailer: git-send-email 1.6.4.2
+References: <1262574307-17040-1-git-send-email-yinghai@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 28, 2009 at 9:08 PM, Yinghai Lu <yinghai@kernel.org> wrote:
-> have a system with lots of igb and ixgbe, when iov/vf are enabled for
-> them, we hit the limit of 3064.
->
-> when system have 20 pcie installed, and one card have 2 functions, and one
-> function need 64 msi-x,
->  may need 20 * 2 * 64 = 2560 for msi-x
-> but if iov and vf are enabled
->  may need 20 * 2 * 64 * 3 = 7680 for msi-x
-> assume system with 5 ioapic, nr_irqs_gsi will be 120.
-> NR_CPUS = 512, and nr_cpu_ids = 128
-> will have NR_IRQS = 256 + 512 * 64 = 33024
-> will have nr_irqs = 120 + 8 * 128 + 120 * 64 = 8824
->
-> when SPARSE_IRQ is not set, there is no increase with data
-> when NR_CPUS=128, and SPARSE_IRQ is set
->   text            data     bss            dec           hex    filename
-> 21837444        4216564 12480736        38534744        24bfe58 vmlinux.before
-> 21837442        4216580 12480736        38534758        24bfe66 vmlinux.after
-> when NR_CPUS=4096, and SPARSE_IRQ is set
->   text            data     bss            dec           hex    filename
-> 21878619        5610244 13415392        40904255        270263f vmlinux.before
-> 21878617        5610244 13415392        40904253        270263d vmlinux.after
->
-> -v2: update comments to address Ingo's concern
->
-> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+use early_res_count to track the num, and use find_e820 to get new buffer.
+and copy from old to new one.
 
-I'm not sure this is the best plan, but may be okay for now.  What
-happens when all of your slots have 6 port 82599 ixgbe adapters in
-them?  They are being made[1], as well as quad port 82576 igb
-adapters, however I'm not fully sure of the SRIOV support of the
-bridges being used on those adapters.
+also clear early_res to prevent later invalid using
 
-Is it on the table to (re-)design this subsystem to be a little more
-dynamic?  There are probably examples in ppc64 or ia64 directories.
-Every time you suggest a limit I can find a case where it won't be
-enough.
+-v2 _check_and_double_early_res should take new start
 
-[1] http://www.hotlavasystems.com/products_10gbe.html
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+---
+ arch/x86/kernel/e820.c |   53 ++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 53 insertions(+), 0 deletions(-)
+
+diff --git a/arch/x86/kernel/e820.c b/arch/x86/kernel/e820.c
+index 291f6d2..949d688 100644
+--- a/arch/x86/kernel/e820.c
++++ b/arch/x86/kernel/e820.c
+@@ -908,6 +908,48 @@ void __init reserve_early_overlap_ok(u64 start, u64 end, char *name)
+ 	__reserve_early(start, end, name, 1);
+ }
+ 
++static void __init __check_and_double_early_res(u64 start)
++{
++	u64 end, size, mem;
++	struct early_res *new;
++
++	/* do we have enough slots left ? */
++	if ((max_early_res - early_res_count) > max(max_early_res/8, 2))
++		return;
++
++	/* double it */
++	end = max_pfn_mapped << PAGE_SHIFT;
++	size = sizeof(struct early_res) * max_early_res * 2;
++	mem = find_e820_area(start, end, size, sizeof(struct early_res));
++
++	if (mem == -1ULL)
++		panic("can not find more space for early_res array");
++
++	new = __va(mem);
++	/* save the first one for own */
++	new[0].start = mem;
++	new[0].end = mem + size;
++	new[0].overlap_ok = 0;
++	/* copy old to new */
++	if (early_res == early_res_x) {
++		memcpy(&new[1], &early_res[0],
++			 sizeof(struct early_res) * max_early_res);
++		memset(&new[max_early_res+1], 0,
++			 sizeof(struct early_res) * (max_early_res - 1));
++		early_res_count++;
++	} else {
++		memcpy(&new[1], &early_res[1],
++			 sizeof(struct early_res) * (max_early_res - 1));
++		memset(&new[max_early_res], 0,
++			 sizeof(struct early_res) * max_early_res);
++	}
++	memset(&early_res[0], 0, sizeof(struct early_res) * max_early_res);
++	early_res = new;
++	max_early_res *= 2;
++	printk(KERN_DEBUG "early_res array is doubled to %d at [%llx - %llx]\n",
++		max_early_res, mem, mem + size - 1);
++}
++
+ /*
+  * Most early reservations come here.
+  *
+@@ -921,6 +963,8 @@ void __init reserve_early(u64 start, u64 end, char *name)
+ 	if (start >= end)
+ 		return;
+ 
++	__check_and_double_early_res(end);
++
+ 	drop_overlaps_that_are_ok(start, end);
+ 	__reserve_early(start, end, name, 0);
+ }
+@@ -949,6 +993,10 @@ void __init early_res_to_bootmem(u64 start, u64 end)
+ 	for (i = 0; i < max_early_res && early_res[i].end; i++)
+ 		count++;
+ 
++	/* need to skip first one ?*/
++	if (early_res != early_res_x)
++		idx = 1;
++
+ 	printk(KERN_INFO "(%d/%d early reservations) ==> bootmem [%010llx - %010llx]\n",
+ 			 count - idx, max_early_res, start, end);
+ 	for (i = idx; i < count; i++) {
+@@ -966,6 +1014,11 @@ void __init early_res_to_bootmem(u64 start, u64 end)
+ 		reserve_bootmem_generic(final_start, final_end - final_start,
+ 				BOOTMEM_DEFAULT);
+ 	}
++	/* clear them */
++	memset(&early_res[0], 0, sizeof(struct early_res) * max_early_res);
++	early_res = NULL;
++	max_early_res = 0;
++	early_res_count = 0;
+ }
+ 
+ /* Check for already reserved areas */
+-- 
+1.6.4.2
+
