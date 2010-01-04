@@ -1,67 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753643Ab0ADVvT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753365Ab0ADVyS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753643Ab0ADVvT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 16:51:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752965Ab0ADVvR
+	id S1753365Ab0ADVyS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 16:54:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753633Ab0ADVyQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 16:51:17 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:40418 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752801Ab0ADVvQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 16:51:16 -0500
-Message-ID: <4B42629A.2010401@zytor.com>
-Date: Mon, 04 Jan 2010 13:50:18 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
-MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Yinghai Lu <yinghai@kernel.org>,
-       Jesse Brandeburg <jesse.brandeburg@gmail.com>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       NetDEV list <netdev@vger.kernel.org>,
-       Jesse Brandeburg <jesse.brandeburg@intel.com>
-Subject: Re: [PATCH 2/2] x86: get more exact nr_irqs
-References: <4B347AEE.6030705@kernel.org> <20091228094707.GH24690@elte.hu>	<4B398ECD.1080506@kernel.org>	<4807377b1001031906s6b1ee576jc021da2642bb4147@mail.gmail.com>	<4B415E73.1050801@kernel.org> <4B41918D.3000605@kernel.org>	<m1fx6lizc3.fsf@fess.ebiederm.org>	<86802c441001041103s5abd6d3ai4e6ccbfc68323f3c@mail.gmail.com>	<m1bph9he9m.fsf@fess.ebiederm.org> <4B4241E2.1020008@zytor.com> <m1skald4az.fsf@fess.ebiederm.org>
-In-Reply-To: <m1skald4az.fsf@fess.ebiederm.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 4 Jan 2010 16:54:16 -0500
+Received: from outbound.icp-qv1-irony-out3.iinet.net.au ([203.59.1.148]:29584
+	"EHLO outbound.icp-qv1-irony-out3.iinet.net.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753563Ab0ADVyP convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jan 2010 16:54:15 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AgIBAILyQUt8qNTn/2dsb2JhbAAI1UWEMAQ
+X-IronPort-AV: E=Sophos;i="4.47,500,1257091200"; 
+   d="scan'208";a="540545836"
+Subject: Re: [PATCH 1/1] atmel uaba : Adding invert vbus_pin
+Mime-Version: 1.0 (Apple Message framework v1077)
+Content-Type: text/plain; charset=us-ascii
+From: Ben Nizette <bn@niasdigital.com>
+In-Reply-To: <B5E0EDE940845B429B7ECCE186529F2C0641D177FD@dware2702>
+Date: Tue, 5 Jan 2010 08:54:11 +1100
+Cc: "kernel@avr32linux.org" <kernel@avr32linux.org>,
+       "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Transfer-Encoding: 8BIT
+Message-Id: <0FB63DBE-F99F-405F-BE58-4FAAE83C8298@niasdigital.com>
+References: <B5E0EDE940845B429B7ECCE186529F2C0641D177FD@dware2702>
+To: Eirik Aanonsen <EAA@wprmedical.com>
+X-Mailer: Apple Mail (2.1077)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/04/2010 12:05 PM, Eric W. Biederman wrote:
->>
->> rbtree doesn't make much sense for something that is addressed by index,
->> and doesn't need to answer questions of the form "give me the highest
->> member <= X".  A hash table or radix tree makes sense, depending on the
->> expected sparseness of the index.
-> 
-> Not counting irqs for msi's I think we are looking 36% to 25% fill.  Maybe
-> a little lower.  The sparseness is much higher if we count the number of
-> irqs that we might/use allocate as we do today.
-> 
-> Short of driver hotplug msis should be allocated densely, unless we start
-> reserving all possible 4K msi-x vectors.
-> 
-> For each ioapic we allocate 16 gsis, and only maybe four of them are
-> connected to actual pci slots.
-> 
-> This is essentially a slow path operation, so as long as we are not
-> too expensive we can use any data structure we want.  In kernel hash
-> tables don't grow well so I don't think a hash table is a good choice,
-> and a hash table is essentially what we have now.
-> 
-> The truth is we don't know how many irqs we will have until msi
-> supporting drivers claim all of theirs.
-> 
-> I think a radix-tree would likely be the least intrusive choice as it
-> does not imply any changes to the data structure indexed.
-> 
 
-Yes, for that kind of densities radix tree is a good choice.
+On 05/01/2010, at 12:01 AM, Eirik Aanonsen wrote:
 
-	-hpa
+> Adding vbus_pin_inverted so that the usb detect pin can be active high or low.
+> This because depending on HW implementation it is better to have active low.
+> Also replaced the pio_get_value(udc->vbus_pin); with a call to vbus_is_present(udc);
+> 
+> Signed-off-by: Eirik Aanonsen <eaa@wprmedical.com>
+> ---
+> drivers/usb/gadget/atmel_usba_udc.c |   16 +++++++++++++---
+> drivers/usb/gadget/atmel_usba_udc.h |    1 +
+> include/linux/usb/atmel_usba_udc.h  |    1 +
+> 3 files changed, 15 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/usb/gadget/atmel_usba_udc.c b/drivers/usb/gadget/atmel_usba_udc.c
+> index 4e970cf..1c469d4 100644
+> --- a/drivers/usb/gadget/atmel_usba_udc.c
+> +++ b/drivers/usb/gadget/atmel_usba_udc.c
+> @@ -320,8 +320,17 @@ static inline void usba_cleanup_debugfs(struct usba_udc *udc)
+> static int vbus_is_present(struct usba_udc *udc)
+> {
+> 	if (gpio_is_valid(udc->vbus_pin))
+> -		return gpio_get_value(udc->vbus_pin);
+> -
+> +	{	
+> +		if(udc->vbus_pin_inverted)
+> +		{
+> +			if( gpio_get_value(udc->vbus_pin) == 1)
+> +				return 0;
+> +			else
+> +				return 1;
+> +		}
+> +		else
+> +			return gpio_get_value(udc->vbus_pin);
+> +	}
+
+return gpio_get_value(udc->vbus_pin) ^ udc->vbus_pin_inverted
+
+	--Ben.
 
