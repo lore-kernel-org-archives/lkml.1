@@ -1,88 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753987Ab0ADX2y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754152Ab0ADXeG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753987Ab0ADX2y (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 18:28:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753421Ab0ADX2v
+	id S1754152Ab0ADXeG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 18:34:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753709Ab0ADXeA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 18:28:51 -0500
-Received: from wolverine02.qualcomm.com ([199.106.114.251]:48347 "EHLO
-	wolverine02.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753157Ab0ADX2v (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 18:28:51 -0500
-X-IronPort-AV: E=McAfee;i="5400,1158,5851"; a="31360004"
-Message-ID: <4B4279A1.4090706@codeaurora.org>
-Date: Mon, 04 Jan 2010 15:28:33 -0800
-From: Abhijeet Dharmapurikar <adharmap@codeaurora.org>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
+	Mon, 4 Jan 2010 18:34:00 -0500
+Received: from hera.kernel.org ([140.211.167.34]:58502 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753756Ab0ADXd6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jan 2010 18:33:58 -0500
+Message-ID: <4B427A8C.1040902@kernel.org>
+Date: Mon, 04 Jan 2010 15:32:28 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: Andrew Morton <akpm@linux-foundation.org>
-Subject: RFC non barrier versions of dma_map functions 
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Jesse Brandeburg <jesse.brandeburg@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       NetDEV list <netdev@vger.kernel.org>,
+       Jesse Brandeburg <jesse.brandeburg@intel.com>,
+       Suresh Siddha <suresh.b.siddha@intel.com>
+Subject: Re: Subject: [PATCH 1/2] x86: get back 15 vectors
+References: <4B347AEE.6030705@kernel.org> <20091228094707.GH24690@elte.hu>	<4B398ECD.1080506@kernel.org>	<4807377b1001031906s6b1ee576jc021da2642bb4147@mail.gmail.com>	<4B415E73.1050801@kernel.org> <4B419113.1090204@kernel.org>	<m1aawtlu6y.fsf@fess.ebiederm.org> <4B423B08.3010005@zytor.com>	<m1my0thelq.fsf@fess.ebiederm.org> <4B424305.7050803@kernel.org>	<4B4245FC.7070902@zytor.com> <4B424A5C.7080309@kernel.org> <m1y6kdbpad.fsf@fess.ebiederm.org> <4B425085.5040103@kernel.org> <4B42595E.9010404@zytor.com> <4B425BB7.90501@kernel.org> <4B425EB5.5080504@zytor.com> <4B426550.6000209@kernel.org> <4B4273D4.2080709@zytor.com>
+In-Reply-To: <4B4273D4.2080709@zytor.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello  All,
+On 01/04/2010 03:03 PM, H. Peter Anvin wrote:
+> On 01/04/2010 02:01 PM, Yinghai Lu wrote:
+>>>
+>>>>  /*
+>>>> + * First APIC vector available to drivers: (vectors 0x30-0xee) we
+>>>> + * start at 0x31 to spread out vectors evenly between priority
+>>>> + * levels. (0x80 is the syscall vector)
+>>>> + */
+>>>> +#define FIRST_DEVICE_VECTOR		(IRQ15_VECTOR + 2)
+>>>> +
+>>>
+>>> We really should fix that so we can do +1 here instead of +2; that
+>>> presumably means fixing the logic so we do something smarter than just
+>>> jump over 0x80.
+>>
+>> we already use used_vectors to skip 0x80. so we could change that to +1?
+>>
+> 
+> Yes, but the problem is that we *skip* 0x80, which leads to suboptimal
+> allocation on systems with only a handful of vectors.
+> 
+> The easy solution to accomplishing what we want without wasting vector
+> 0x30 is obviously to start allocation at 0x31, but not by artificially
+> limiting the vector space; see the attached patch.
+> 
+> For what it's worth, this code(__assign_irq_vector() in
+> arch/x86/kernel/apic/io_apic.c) has me somewhat confused about the use
+> of the constant 8:
+> 
+> 		vector += 8;
+> 
+> The only justification that I can immediately think of is to try to
+> assign exactly two sources to each priority level (since early APICs
+> started losing interrupts with more than two sources per priority level.)
+> 
+> This is ancient code -- predates not just the git but the bk history --
+> and as such I would assume that that is the motivation.
 
-   This is a request for extending the DMA api for efficient handling of 
-multiple buffers or scatter gather mapping/unmapping operations.
+yes the patch get back 0x30, 0x38, 0x40, 0x48 etc back.
 
-   I am based on an ARMv7 device and we have a situation where we need 
-to dma map multiple cached buffers for a single dma transaction.
-
-   The current DMA api suggests the use of dma_map_single/ 
-dma_unmap_single for cache consistency. On ARMv7 it performs the 
-necessary cache-operations and calls data sync barrier instruction 
-(DSB). In our case we would be executing multiple DSB instructions
-before starting the dma operation - we need memory to be consistent
-only after we map the last buffer.
-
-   I am thinking we could define "no barrier" version's of all the 
-mapping/unmapping functions and then a barrier function that results
-in DSB before the dma is started.
-
-   Here are numbers from a test ran on my board.
-
-It kmallocs N buffers of size 'size', dirties their cache by writing
-to them and calls dma_map_single that calls the arch specific clean
-operations with and without DSB. In "without DSB" case a dsb is executed
-after the last buffer is mapped. The time is in microseconds
-
-size    N    map_single    map_single w/o DSB    delta
-128    16    8             5                     60%
-512    16    9             6                     50%
-512    32    15            8                     88%
-512    48    20            11                    82%
-512    64    27            14                    93%
-64     4     4             3                     33%
-64     8     4             3                     33%
-64     16    7             4                     75%
-64     32    12            4                     200%
-64     48    17            6                     183%
-64     64    21            7                     200%
-1024   16    9             7                     29%
-
-These buffer sizes and N are very close to real world sizes the
-framebuffer driver handles. Cases where N is large happen the most
-often.
-
-Clearly,we could benefit from the nobarrier versions of the cache
-operations and we could use them in scatter gather mappings as well.
-
-Since this kind of API change will affect all the platforms, I was 
-directed by the arm-linux community to take this up on the linux kernel 
-mailing list.
-
-For architectures that don't need a barrier for the completions of
-cache operations we can simply call the existing
-dma_map_signle/dma_unmap_single.
-
-Requesting alternative ideas or code design to get the desired 
-nonbarrier versions of the mapping functions.
-
-Thanks,
-Abhijeet Dharmapurikar
-
+YH
