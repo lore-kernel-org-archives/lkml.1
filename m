@@ -1,50 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753290Ab0ADMzi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753333Ab0ADM5k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753290Ab0ADMzi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 07:55:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752755Ab0ADMzh
+	id S1753333Ab0ADM5k (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 07:57:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753184Ab0ADM5j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 07:55:37 -0500
-Received: from mail.windriver.com ([147.11.1.11]:58550 "EHLO
-	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752457Ab0ADMzg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 07:55:36 -0500
-Message-ID: <4B41E542.40703@windriver.com>
-Date: Mon, 04 Jan 2010 06:55:30 -0600
-From: Jason Wessel <jason.wessel@windriver.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-CC: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: linux-next: kgdb tree build failure
-References: <20100104164209.a5ac8d6a.sfr@canb.auug.org.au> <20100104164452.2803d62e.sfr@canb.auug.org.au>
-In-Reply-To: <20100104164452.2803d62e.sfr@canb.auug.org.au>
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 4 Jan 2010 07:57:39 -0500
+Received: from mail.gmx.net ([213.165.64.20]:37458 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1753172Ab0ADM5i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jan 2010 07:57:38 -0500
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1+S7FA1VFWS8Fl1w5vjdTJPyjAhBA6fEQ0zPTFWVq
+	g7gFLUGA4j8SlW
+Subject: Re: volano ~30% regression with 2.6.33-rc1 & -rc2
+From: Mike Galbraith <efault@gmx.de>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Lin Ming <ming.m.lin@intel.com>, Peter Zijlstra <peterz@infradead.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+In-Reply-To: <20100104044024.5390ff1c@infradead.org>
+References: <1262592958.22471.104.camel@minggr.sh.intel.com>
+	 <20100104044024.5390ff1c@infradead.org>
+Content-Type: text/plain
+Date: Mon, 04 Jan 2010 13:57:34 +0100
+Message-Id: <1262609854.9734.56.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 04 Jan 2010 12:55:31.0392 (UTC) FILETIME=[328A3400:01CA8D3D]
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.57
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen Rothwell wrote:
-> Hi Jason,
->
-> On Mon, 4 Jan 2010 16:42:09 +1100 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
->   
->> Today's linux-next build (arm realview_defconfig) failed like this:
->>     
->                                 ^^^^^^^^^
-> Most of the other arm builds failed the same way ...
->
->   
+On Mon, 2010-01-04 at 04:40 -0800, Arjan van de Ven wrote:
+> On Mon, 04 Jan 2010 16:15:58 +0800
+> Lin Ming <ming.m.lin@intel.com> wrote:
+> 
+> > Mike & Peter,
+> > 
+> > Compared with 2.6.32, volano has ~30% regression with 2.6.33-rc1 &
+> > -rc2. Testing machine: Tigerton Xeon, 16cpus(4P/4Core), 16G memory
+> 
+> did this show up only on this cpu?
+> (since this is a multi-core-without-shared-cache cpu, it could be that
+> we get the topology wrong and think cores share cache where they don't)
 
-That patch could have been dropped from the series, but I did repair the
-problem.  I also added a 3 more config tests (sparc, arm and ppc) to my
-pre-submission test list.
+My fault for using PREFER_SIBLING I guess.  However, I do wonder why in
+the heck we set that at the CPU domain level.  Siblings lie northward.
 
-kgdb-next is updated and I can only hope the light is at the end of the
-tunnel for the config testing. :-)
+	-Mike
 
-Thanks,
-Jason.
