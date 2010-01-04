@@ -1,115 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753646Ab0ADQW0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753623Ab0ADQ11@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753646Ab0ADQW0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 11:22:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753637Ab0ADQWZ
+	id S1753623Ab0ADQ11 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 11:27:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753290Ab0ADQ1Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 11:22:25 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:40708 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753598Ab0ADQWX convert rfc822-to-8bit (ORCPT
+	Mon, 4 Jan 2010 11:27:25 -0500
+Received: from mail-fx0-f225.google.com ([209.85.220.225]:59645 "EHLO
+	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752914Ab0ADQ1Y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 11:22:23 -0500
+	Mon, 4 Jan 2010 11:27:24 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=a6VeVxNTgl4oP/1J5GZN5BT7V27B3f/Gpum4lVLQvaEg/Vt4cxqWfgw5b7CHbBivjG
-         i49xWNGon7AThh+/rD2lOy0mNVHw9j4z21Lv7PKxTdZgqiL8hD9K18U76sKZ2nV47jHW
-         N+6flmy1CAnpBzPk791fbnBDz72uKQ4b7hOGE=
+        h=mime-version:date:message-id:subject:from:to:cc:content-type;
+        b=eMHeuFnTCHrwUmmCqF3NfFeVuRKCGtlw2hjgcMx3hvrU8DnpzC0ZDROnLdEFugalel
+         fSYAnuAHw+lVBZ8UG/wNxisIwresJY5UyI+dHqQUIUlmRVacNmXIkMfspCAiKFBb1Us3
+         1+watxC1oRdpY3MVRFJnC/PJ6X5TunCh8dzIA=
 MIME-Version: 1.0
-In-Reply-To: <20100103151406.20228c3a@infradead.org>
-References: <daef60381001030705r93b3fbfkc50e7b9bbc62b334@mail.gmail.com> 
-	<4B411F14.1040302@kernel.org> <20100103150134.5bdab023@infradead.org> 
-	<4B412341.2010002@kernel.org> <20100103151406.20228c3a@infradead.org>
-From: Hui Zhu <teawater@gmail.com>
-Date: Tue, 5 Jan 2010 00:22:02 +0800
-Message-ID: <daef60381001040822q188d7374te5a177c5f9877ac2@mail.gmail.com>
-Subject: Re: [PATCH] stack2core: show stack message and convert it to core 
-	file when kernel die
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Tejun Heo <tj@kernel.org>, Russell King <linux@arm.linux.org.uk>,
-       saeed bishara <saeed.bishara@gmail.com>,
-       Catalin Marinas <catalin.marinas@arm.com>,
-       Nicolas Pitre <nico@fluxnic.net>, Ralf Baechle <ralf@linux-mips.org>,
-       David Daney <ddaney@caviumnetworks.com>,
-       Tomaso Paoletti <tpaoletti@caviumnetworks.com>,
-       Chris Dearman <chris@mips.com>,
-       Paul Gortmaker <Paul.Gortmaker@windriver.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Alexey Dobriyan <adobriyan@gmail.com>, Brian Gerst <brgerst@gmail.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-       linux-mips@linux-mips.org, Coly Li <coly.li@suse.de>
+Date: Mon, 4 Jan 2010 17:27:21 +0100
+Message-ID: <c4e36d111001040827v850c94ev7166ac02f52e9a38@mail.gmail.com>
+Subject: i915 drm fails to resume with modeset = 0
+From: Zdenek Kabelac <zdenek.kabelac@gmail.com>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, airlied@redhat.com,
+       ajax@redhat.com, luto@mit.edu
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks for your mail.
+Hi
 
-I am not sure s2c is not a duplicating work with with others or not.
+Resume seems to fail when i915 modeset is 0.  Machine produces following oops:
 
-The main work of it is give user a coredump when kernel die like a
-user level program die.
-The user can very easy use it with gdb.
-Now, it support x86/x8664/mips/arm.  It's very easy to extend.  To
-support a new arch is not a very hard work. (I use half a day make it
-support mips and mips64 include the test work.)
+[drm:intel_init_clock_gating] *ERROR* failed to pin power context: -16
+------------[ cut here ]------------
+kernel BUG at drivers/gpu/drm/drm_gem.c:438!
+invalid opcode: 0000 [#1] PREEMPT SMP
+last sysfs file: /sys/power/state
+CPU 0
+Pid: 2621, comm: pm-suspend Not tainted 2.6.33-rc2-00270-gc31ac8b #49
+6464CTO/6464CTO
+RIP: 0010:[<ffffffffa031482a>]  [<ffffffffa031482a>]
+drm_gem_object_free+0x5a/0x60 [drm]
+RSP: 0000:ffff880139cddca8  EFLAGS: 00010246
+RAX: 0000000000000001 RBX: ffff880139f5f000 RCX: 0000000000000000
+RDX: 0000000000000001 RSI: ffffffffa03147d0 RDI: ffff880137e1a780
+RBP: ffff880139cddcb8 R08: 0000000000000001 R09: 0000000000000001
+R10: 0000000000000000 R11: 0000000000000000 R12: ffff880137e1a780
+R13: 0000000000000000 R14: 0000000000000000 R15: ffff88013a13c870
+FS:  00007fdcfaf78700(0000) GS:ffff88002be00000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+CR2: 00007fd607b1b440 CR3: 0000000139e6b000 CR4: 00000000000006f0
+DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+Process pm-suspend (pid: 2621, threadinfo ffff880139cdc000, task
+ffff88013bd64640)
+Stack:
+ ffff880137e1a780 ffffffffa03147d0 ffff880139cddcd8 ffffffff81245a07
+<0> ffff880137e1a780 ffff88013976c000 ffff880139cddce8 ffffffffa03779ea
+<0> ffff880139cddd08 ffffffffa0379bdf ffff88013976c000 ffff880139f5f000
+Call Trace:
+ [<ffffffffa03147d0>] ? drm_gem_object_free+0x0/0x60 [drm]
+ [<ffffffff81245a07>] kref_put+0x37/0x70
+ [<ffffffffa03779ea>] drm_gem_object_unreference+0x1a/0x20 [i915]
+ [<ffffffffa0379bdf>] intel_init_clock_gating+0x32f/0x350 [i915]
+ [<ffffffffa03675b2>] i915_restore_state+0x202/0x350 [i915]
+ [<ffffffffa035c097>] i915_resume+0x77/0x100 [i915]
+ [<ffffffffa031b410>] ? drm_class_resume+0x0/0x50 [drm]
+ [<ffffffffa031b45b>] drm_class_resume+0x4b/0x50 [drm]
+ [<ffffffff812fd094>] legacy_resume+0x34/0x80
+ [<ffffffff812fda19>] dpm_resume_end+0x409/0x430
+ [<ffffffff81092ae4>] suspend_devices_and_enter+0x124/0x1a0
+ [<ffffffff81092c3a>] enter_state+0xda/0xf0
+ [<ffffffff810922f9>] state_store+0x99/0x100
+ [<ffffffff81244237>] kobj_attr_store+0x17/0x20
+ [<ffffffff81185fb6>] sysfs_write_file+0xe6/0x170
+ [<ffffffff811222d8>] vfs_write+0xb8/0x1a0
+ [<ffffffff81122d31>] sys_write+0x51/0x90
+ [<ffffffff8100309b>] system_call_fastpath+0x16/0x1b
+Code: d0 49 8b 7c 24 10 e8 16 f6 e0 e0 f0 ff 8b e0 0a 00 00 41 8b 44
+24 60 f0 29 83 e4 0a 00 00 4c 89 e7 e8 cb 57 e0 e0 5b 41 5c c9 c3 <0f>
+0b eb fe 66 90 55 48 89 e5 48 83 ec 10 48 89 1c 24 4c 89 64
+RIP  [<ffffffffa031482a>] drm_gem_object_free+0x5a/0x60 [drm]
+ RSP <ffff880139cddca8>
+---[ end trace e7a3fdc0abc1c39d ]---
 
-And the s2c convert program can run on every environment.  I try it in
-x86, x8664, mipsn32 . It didn't depend on any special lib.  User can
-compile it with "gcc s2c.c" to get it.  And run it in a small board
-that didn't have some script support.
 
-markup_oops.pl sames still not support cross compile environment.  It
-get module message with modinfo,right?  And use some objdump and so
-on.
-So even if it support cross compile environment, user use it will need
-set which objdump he want use.  Which mod dir  he want use.  Right?
+Hardware is  T61, 4GB, GMA950, 64bit kernel
 
-For the s2c, user just "s2c < message >core" It did everything with itself.
-After that, gdb vmlinux core.
+I think the problem is visible on kernels 2.6.32,  33-rcX
 
-Best regards,
-Hui
-
-On Mon, Jan 4, 2010 at 07:14, Arjan van de Ven <arjan@infradead.org> wrote:
-> On Mon, 04 Jan 2010 08:07:45 +0900
-> Tejun Heo <tj@kernel.org> wrote:
->
->> On 01/04/2010 08:01 AM, Arjan van de Ven wrote:
->> > On Mon, 04 Jan 2010 07:49:56 +0900
->> > Tejun Heo <tj@kernel.org> wrote:
->> >>
->> >> If implementing parsing of oops message in C is too awkward
->> >> (unsurprising at all), maybe implementing a converter in perl or
->> >> python is the easiest way so that it takes the oops message and
->> >> puts out well formatted input for the s2c program?
->> >
->> > you mean like scripts/markup_oops.pl ?
->>
->> Whichever one works but s2c wouldn't require symbol decoding.  Maybe
->> we can simply add an option to tell it to just parse the oops and
->> output it in machine friendly format.  Oh, also, the patch does add
->> new information the module load addresses.  We should be able to add
->> those to the oops message in a compact form.
->
-> actually one does not need those; you know the start address of the
-> function already from the current oops output, and since you know the
-> address of the function within the module as well, you know the start
-> address of the module.
->
->
-> --
-> Arjan van de Ven        Intel Open Source Technology Centre
-> For development, discussion and tips for power savings,
-> visit http://www.lesswatts.org
->
+Zdenek
