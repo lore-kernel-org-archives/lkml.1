@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754057Ab0ADUuh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753980Ab0ADUtj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754057Ab0ADUuh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 15:50:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753987Ab0ADUtk
+	id S1753980Ab0ADUtj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 15:49:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753966Ab0ADUtf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 15:49:40 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:46429 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753972Ab0ADUth (ORCPT
+	Mon, 4 Jan 2010 15:49:35 -0500
+Received: from casper.infradead.org ([85.118.1.10]:33617 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753956Ab0ADUtd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 15:49:37 -0500
-Message-Id: <20100104182813.390611101@chello.nl>
+	Mon, 4 Jan 2010 15:49:33 -0500
+Message-Id: <20100104182813.815259559@chello.nl>
 References: <20100104182429.833180340@chello.nl>
 User-Agent: quilt/0.46-1
-Date: Mon, 04 Jan 2010 19:24:32 +0100
+Date: Mon, 04 Jan 2010 19:24:36 +0100
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
        Peter Zijlstra <peterz@infradead.org>,
@@ -24,74 +24,114 @@ To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
        cl@linux-foundation.org, "hugh.dickins" <hugh.dickins@tiscali.co.uk>,
        Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>,
        Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [RFC][PATCH 3/8] mm: Add vma sequence count
-Content-Disposition: inline; filename=mm-foo-5.patch
+Subject: [RFC][PATCH 7/8] mm,x86: speculative pagefault support
+Content-Disposition: inline; filename=mm-foo-9.patch
 Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In order to detect VMA range changes, add a sequence count.
+Implement the x86 architecture support for speculative pagefaults.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- include/linux/mm_types.h |    2 ++
- mm/mmap.c                |   10 ++++++++++
- 2 files changed, 12 insertions(+)
+ arch/x86/mm/fault.c |   31 +++++++++++--------------------
+ arch/x86/mm/gup.c   |   10 ++++++++++
+ 2 files changed, 21 insertions(+), 20 deletions(-)
 
-Index: linux-2.6/include/linux/mm_types.h
+Index: linux-2.6/arch/x86/mm/fault.c
 ===================================================================
---- linux-2.6.orig/include/linux/mm_types.h
-+++ linux-2.6/include/linux/mm_types.h
-@@ -12,6 +12,7 @@
- #include <linux/completion.h>
- #include <linux/cpumask.h>
- #include <linux/page-debug-flags.h>
-+#include <linux/seqlock.h>
- #include <asm/page.h>
- #include <asm/mmu.h>
- 
-@@ -186,6 +187,7 @@ struct vm_area_struct {
- #ifdef CONFIG_NUMA
- 	struct mempolicy *vm_policy;	/* NUMA policy for the VMA */
- #endif
-+	seqcount_t vm_sequence;
- };
- 
- struct core_thread {
-Index: linux-2.6/mm/mmap.c
-===================================================================
---- linux-2.6.orig/mm/mmap.c
-+++ linux-2.6/mm/mmap.c
-@@ -512,6 +512,10 @@ void vma_adjust(struct vm_area_struct *v
- 	long adjust_next = 0;
- 	int remove_next = 0;
- 
-+	write_seqcount_begin(&vma->vm_sequence);
-+	if (next)
-+		write_seqcount_begin(&next->vm_sequence);
-+
- 	if (next && !insert) {
- 		if (end >= next->vm_end) {
- 			/*
-@@ -647,11 +651,17 @@ again:			remove_next = 1 + (end > next->
- 		 * up the code too much to do both in one go.
- 		 */
- 		if (remove_next == 2) {
-+			write_seqcount_end(&next->vm_sequence);
- 			next = vma->vm_next;
-+			write_seqcount_begin(&next->vm_sequence);
- 			goto again;
- 		}
- 	}
- 
-+	if (next)
-+		write_seqcount_end(&next->vm_sequence);
-+	write_seqcount_end(&vma->vm_sequence);
-+
- 	validate_mm(mm);
+--- linux-2.6.orig/arch/x86/mm/fault.c
++++ linux-2.6/arch/x86/mm/fault.c
+@@ -777,30 +777,13 @@ bad_area_access_error(struct pt_regs *re
+ 	__bad_area(regs, error_code, address, SEGV_ACCERR);
  }
  
+-/* TODO: fixup for "mm-invoke-oom-killer-from-page-fault.patch" */
+-static void
+-out_of_memory(struct pt_regs *regs, unsigned long error_code,
+-	      unsigned long address)
+-{
+-	/*
+-	 * We ran out of memory, call the OOM killer, and return the userspace
+-	 * (which will retry the fault, or kill us if we got oom-killed):
+-	 */
+-	up_read(&current->mm->mmap_sem);
+-
+-	pagefault_out_of_memory();
+-}
+-
+ static void
+ do_sigbus(struct pt_regs *regs, unsigned long error_code, unsigned long address,
+ 	  unsigned int fault)
+ {
+ 	struct task_struct *tsk = current;
+-	struct mm_struct *mm = tsk->mm;
+ 	int code = BUS_ADRERR;
+ 
+-	up_read(&mm->mmap_sem);
+-
+ 	/* Kernel mode? Handle exceptions or die: */
+ 	if (!(error_code & PF_USER))
+ 		no_context(regs, error_code, address);
+@@ -829,7 +812,7 @@ mm_fault_error(struct pt_regs *regs, uns
+ 	       unsigned long address, unsigned int fault)
+ {
+ 	if (fault & VM_FAULT_OOM) {
+-		out_of_memory(regs, error_code, address);
++		pagefault_out_of_memory();
+ 	} else {
+ 		if (fault & (VM_FAULT_SIGBUS|VM_FAULT_HWPOISON))
+ 			do_sigbus(regs, error_code, address, fault);
+@@ -1040,6 +1023,14 @@ do_page_fault(struct pt_regs *regs, unsi
+ 		return;
+ 	}
+ 
++	if (error_code & PF_USER) {
++		fault = handle_speculative_fault(mm, address,
++				error_code & PF_WRITE ? FAULT_FLAG_WRITE : 0);
++
++		if (!(fault & VM_FAULT_RETRY))
++			goto done;
++	}
++
+ 	/*
+ 	 * When running in the kernel we expect faults to occur only to
+ 	 * addresses in user space.  All other faults represent errors in
+@@ -1119,6 +1110,8 @@ good_area:
+ 	 */
+ 	fault = handle_mm_fault(mm, vma, address, write ? FAULT_FLAG_WRITE : 0);
+ 
++	up_read(&mm->mmap_sem);
++done:
+ 	if (unlikely(fault & VM_FAULT_ERROR)) {
+ 		mm_fault_error(regs, error_code, address, fault);
+ 		return;
+@@ -1135,6 +1128,4 @@ good_area:
+ 	}
+ 
+ 	check_v8086_mode(regs, address, tsk);
+-
+-	up_read(&mm->mmap_sem);
+ }
+Index: linux-2.6/arch/x86/mm/gup.c
+===================================================================
+--- linux-2.6.orig/arch/x86/mm/gup.c
++++ linux-2.6/arch/x86/mm/gup.c
+@@ -373,3 +373,13 @@ slow_irqon:
+ 		return ret;
+ 	}
+ }
++
++void pin_page_tables(void)
++{
++	local_irq_disable();
++}
++
++void unpin_page_tables(void)
++{
++	local_irq_enable();
++}
 
 -- 
 
