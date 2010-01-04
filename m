@@ -1,50 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753303Ab0ADDKj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753275Ab0ADDJr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753303Ab0ADDKj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Jan 2010 22:10:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752944Ab0ADDKf
+	id S1753275Ab0ADDJr (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Jan 2010 22:09:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753225Ab0ADDJm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Jan 2010 22:10:35 -0500
-Received: from THUNK.ORG ([69.25.196.29]:57900 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753172Ab0ADDKY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Jan 2010 22:10:24 -0500
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [GIT PULL] ext4 fixes for v2.6.33
-From: "Theodore Ts'o" <tytso@mit.edu>
-Phone: (781) 391-3464
-Message-Id: <E1NRbdv-0006oG-Hg@closure.thunk.org>
-Date: Sun, 03 Jan 2010 20:21:59 -0500
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@thunk.org
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+	Sun, 3 Jan 2010 22:09:42 -0500
+Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:56497 "EHLO
+	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753153Ab0ADDHb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Jan 2010 22:07:31 -0500
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-type: TEXT/PLAIN
+Date: Sun, 03 Jan 2010 19:05:03 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+Subject: [PATCH 25/29] early_res: enhance check_and_double_early_res
+In-reply-to: <1262574307-17040-1-git-send-email-yinghai@kernel.org>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Christoph Lameter <cl@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
+       Yinghai Lu <yinghai@kernel.org>
+Message-id: <1262574307-17040-26-git-send-email-yinghai@kernel.org>
+X-Mailer: git-send-email 1.6.4.2
+References: <1262574307-17040-1-git-send-email-yinghai@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+to make it always try to start from low at first.
 
-Please pull from:
+so make it more safe for early_memtest to reserve bad range.
+aka put new early_res to range that is already tested.
 
-        git://git.kernel.org/pub/scm/linux/kernel/git/tytso/ext4.git for_linus
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+---
+ arch/x86/kernel/early_res.c |   27 ++++++++++++++++++++-------
+ 1 files changed, 20 insertions(+), 7 deletions(-)
 
-to grab a bug fix for v2.6.33.  This fixes a stupid typo and some
-undesirable side effects of commit 0637c6f (which at least prevented
-people from BUG'ing, but it would be great to get these fixes in before
--rc3).
+diff --git a/arch/x86/kernel/early_res.c b/arch/x86/kernel/early_res.c
+index d0a70cc..52804e9 100644
+--- a/arch/x86/kernel/early_res.c
++++ b/arch/x86/kernel/early_res.c
+@@ -180,9 +180,9 @@ void __init reserve_early_overlap_ok(u64 start, u64 end, char *name)
+ 	__reserve_early(start, end, name, 1);
+ }
+ 
+-static void __init __check_and_double_early_res(u64 start)
++static void __init __check_and_double_early_res(u64 ex_start, u64 ex_end)
+ {
+-	u64 end, size, mem;
++	u64 start, end, size, mem;
+ 	struct early_res *new;
+ 
+ 	/* do we have enough slots left ? */
+@@ -190,10 +190,23 @@ static void __init __check_and_double_early_res(u64 start)
+ 		return;
+ 
+ 	/* double it */
+-	end = max_pfn_mapped << PAGE_SHIFT;
++	mem = -1ULL;
+ 	size = sizeof(struct early_res) * max_early_res * 2;
+-	mem = find_e820_area(start, end, size, sizeof(struct early_res));
+-
++	if (early_res == early_res_x)
++		start = 0;
++	else
++		start = early_res[0].end;
++	end = ex_start;
++	if (start + size < end)
++		mem = find_e820_area(start, end, size,
++					 sizeof(struct early_res));
++	if (mem == -1ULL) {
++		start = ex_end;
++		end = max_pfn_mapped << PAGE_SHIFT;
++		if (start + size < end)
++			mem = find_e820_area(start, end, size,
++						 sizeof(struct early_res));
++	}
+ 	if (mem == -1ULL)
+ 		panic("can not find more space for early_res array");
+ 
+@@ -235,7 +248,7 @@ void __init reserve_early(u64 start, u64 end, char *name)
+ 	if (start >= end)
+ 		return;
+ 
+-	__check_and_double_early_res(end);
++	__check_and_double_early_res(start, end);
+ 
+ 	drop_overlaps_that_are_ok(start, end);
+ 	__reserve_early(start, end, name, 0);
+@@ -248,7 +261,7 @@ void __init reserve_early_without_check(u64 start, u64 end, char *name)
+ 	if (start >= end)
+ 		return;
+ 
+-	__check_and_double_early_res(end);
++	__check_and_double_early_res(start, end);
+ 
+ 	r = &early_res[early_res_count];
+ 
+-- 
+1.6.4.2
 
-Thanks!!
-
-                                                        - Ted
-
-Theodore Ts'o (2):
-      ext4: Fix accounting of reserved metadata blocks
-      ext4: Calculate metadata requirements more accurately
-
- fs/ext4/ext4.h         |    2 +
- fs/ext4/ext4_extents.h |    3 +-
- fs/ext4/extents.c      |   49 ++++++++++++++++++++++-----------
- fs/ext4/inode.c        |   70 +++++++++++++++++++++++++++--------------------
- fs/ext4/super.c        |    1 +
- 5 files changed, 77 insertions(+), 48 deletions(-)
