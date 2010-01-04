@@ -1,147 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753502Ab0ADOoB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753513Ab0ADOoq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753502Ab0ADOoB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 09:44:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753482Ab0ADOn7
+	id S1753513Ab0ADOoq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 09:44:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753484Ab0ADOoo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 09:43:59 -0500
-Received: from mail-fx0-f225.google.com ([209.85.220.225]:34664 "EHLO
-	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753472Ab0ADOn6 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 09:43:58 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=bebT+VZ6fCfARp1GCwU8dWFAHmxczaslicEhPWoP58n/JZEu2VNZkwOvnbtqe8OR5o
-         PSUQrhjK0n/cRBMKce7qbgK3bCt6/eOx/rPTiaB+XYlVQWSOlulQntN9djC8Id0U651L
-         i/1SwjbYIXJ6jyaLpgASr2WjRX0RkW1pUZPEI=
+	Mon, 4 Jan 2010 09:44:44 -0500
+Received: from cantor.suse.de ([195.135.220.2]:46308 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753482Ab0ADOon (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jan 2010 09:44:43 -0500
+Message-ID: <4B41FED9.1060601@suse.cz>
+Date: Mon, 04 Jan 2010 15:44:41 +0100
+From: Michal Marek <mmarek@suse.cz>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.2 Thunderbird/3.0
 MIME-Version: 1.0
-In-Reply-To: <alpine.DEB.2.00.1001040921000.29475@p34.internal.lan>
-References: <alpine.DEB.1.10.0812300700410.11356@p34.internal.lan>
-	 <4964DB3E.6080908@intel.com>
-	 <alpine.DEB.1.10.0901071142200.29147@p34.internal.lan>
-	 <1231356111.6648.2.camel@maxim-laptop> <49937CDF.10307@frugalware.org>
-	 <alpine.DEB.1.10.0902121236120.19381@p34.internal.lan>
-	 <1820d69d1001040551k26cfd925q4ada6b226740ac30@mail.gmail.com>
-	 <alpine.DEB.2.00.1001040851490.29475@p34.internal.lan>
-	 <1820d69d1001040609j6c0b169w38694c33af3fa686@mail.gmail.com>
-	 <alpine.DEB.2.00.1001040921000.29475@p34.internal.lan>
-Date: Mon, 4 Jan 2010 15:43:55 +0100
-Message-ID: <1820d69d1001040643h5e2f383bo7e077cbc2d2af554@mail.gmail.com>
-Subject: Re: [lm-sensors] Status/support for Linux HECI from Intel? (for 
-	temp/voltage monitoring)
-From: Gabriel C <nix.or.die@googlemail.com>
-To: Justin Piszcz <jpiszcz@lucidpixels.com>
-Cc: Gabriel C <crazy@frugalware.org>, Maxim Levitsky <maximlevitsky@gmail.com>,
-       Dan Williams <dan.j.williams@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "lm-sensors@lm-sensors.org" <lm-sensors@lm-sensors.org>,
-       Andriy Gapon <avg@icyb.net.ua>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Roland Dreier <rdreier@cisco.com>, Sergei Trofimovich <slyich@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Sergei Trofimovich <slyfox@inbox.ru>
+Subject: Re: [PATCH] Kbuild: set LC_MESSAGES=C (as LC_CTYPE=C is)
+References: <1261761235-9431-1-git-send-email-slyfox@inbox.ru>	<4B354C70.1060109@zytor.com> <adar5qizg6w.fsf@roland-alpha.cisco.com> <4B366C69.9010700@zytor.com>
+In-Reply-To: <4B366C69.9010700@zytor.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2010/1/4 Justin Piszcz <jpiszcz@lucidpixels.com>:
->
->
-> On Mon, 4 Jan 2010, Gabriel C wrote:
->
->>>>
->>>> Today I'm out from hospital so I've decided to quick hack this tool
->>>> and make it work on Linux.
->>>>
->>>> Here the output from my DQ45CB mobo:
->>>>
->>>> crazy@thor:~/INTEL/QST/Li$ sudo ./heci-qst
->>>> CPU  Temp:      56.00   °C
->>>> MB   Temp:      31.14   °C
->>>> ICH  Temp:      67.37   °C
->>>> MCH  Temp:      66.00   °C
->>>> CPU  Fan:       1080    RPM
->>>> INL  Fan:       1202    RPM
->>>> OUTL Fan:       288     RPM
->>>> +12  Volts:     11.965  V
->>>> +5   Volts:     5.021   V
->>>> +3.3 Volts:     3.316   V
->>>> MCH  Vccp:      1.122   V
->>>> CPU1 Vccp:      1.125   V
->>>>
->>>> Justin I know is not based on released SDK of Intel but maybe you
->>>> still want to do some tests ?:)
->
-> DMI Info:
->
-> Handle 0x0004, DMI type 0, 24 bytes
-> BIOS Information
->        Vendor: Intel Corp.
->        Version: MQ96510J.86A.1754.2008.1117.0002
->
-> Handle 0x0006, DMI type 2, 20 bytes
-> Base Board Information
->        Manufacturer: Intel Corporation
->        Product Name: DG965WH
->        Version: AAD41692-304
->
-> Cool, first time I have ever seen this =)
->
-> # ./heci-qst-linux CPU  Temp:      36.55   °C
-> MB   Temp:      38.75   °C
-> MCH  Temp:      33.89   °C
-> 04:     64.90   °C
-> 05:     46.25   °C
-> CPU  Fan:       836     RPM
-> INL  Fan:       1362    RPM
-> OUTL Fan:       836     RPM
-> AUX  Fan:       2600    RPM
-> +12  Volts:     12.029  V
-> +5   Volts:     4.949   V
-> +3.3 Volts:     3.247   V
-> MCH  Vccp:      1.260   V
-> CPU1 Vccp:      1.180   V
->
-> It appears to work.
->
-> Thanks,
+On 26.12.2009 21:04, H. Peter Anvin wrote:
+> On 12/25/2009 05:17 PM, Roland Dreier wrote:
+>>
+>>  > The whole reason with only setting some LC_* to C was to be able to
+>>  > leave LC_MESSAGES intact, but it seems it breaks on too many real-life
+>>  > systems.
+>>
+>>  > As such, I suggest we should set LC_ALL=C and get rid of the rest of it:
+>>
+>> Seems unfortunate to lose localized error messages.  (Although in my
+>> en_US.UTF-8 case, all I get is non-ASCII quote characters)
+>>
+>> This all started because of the awk invocation in arch/x86/lib.  Maybe
+>> the best idea would be to confine the locale monkeying to that one
+>> place?
+>>
+> 
+> It is also possible that setting only LC_COLLATE will solve the most
+> fundamental problem, which is the one of character ranges.  LC_COLLATE
+> probably will interfere less with LC_MESSAGES than the setting of LC_CTYPE.
 
-NP :)
+We need LC_COLLATE=C so that [a-z] really means lowercase ASCII letters
+and nothing else (most importantly not uppercase letters) in awk, sed
+and the shell. If we stay with LC_CTYPE=$userdefined, the meaning of
+[[:classes:]] becomes indeterministic and so does the mapping of
+lowercase and uppercase characters:
 
-Anyway It seems like ICH8* has some different output .. can't tell yet
-without docs =)
+$ echo iI | LC_CTYPE=tr_TR.UTF-8 awk '{ print $0 " " toupper($0) " "
+tolower($0) }'
+iI Ä°I iÄ±
 
-Please open heci-qst-linux.c and find :
+Character classes are probably not a big issue (modulo the fact that
+mawk doesn't seem to support them), because the input is ascii text
+anyway. Regarding the tolower()/toupper() functions, I found one
+potential troublemaker:
 
+$ git grep -E 'to(lower|upper)' | grep -v '\.[ch]:'
+arch/sh/tools/gen-mach-types:            tolower(mach[i]), mach[i]);
 
-const char * const temp_names[THERM_SENSOR_COUNT] = {
-...
+Maybe this awk script should be run with LC_ALL=C, people mostly care
+about (localized) messages from gcc, not from awk.
 
-Change to look like this :
-
-
-const char * const temp_names[THERM_SENSOR_COUNT] = {
-       "CPU  Temp",
-       "MB1  Temp",
-        NULL,
-       "MB2  Temp",
-       "ICH  Temp",
-       "MCH  Temp",
-       NULL,
-       NULL,
-       NULL,
-       NULL,
-       NULL,
-       NULL,
-};
-
-
-Also can you post a lspci -nn please :)
-
->
-> Justin.
->
-
-
-Gabriel
+Michal
