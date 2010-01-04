@@ -1,82 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754250Ab0ADXo0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754229Ab0ADXoW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754250Ab0ADXo0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 18:44:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754059Ab0ADXoS
+	id S1754229Ab0ADXoW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 18:44:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754218Ab0ADXoT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 18:44:18 -0500
-Received: from mail01d.mail.t-online.hu ([84.2.42.6]:58794 "EHLO
-	mail01d.mail.t-online.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754209Ab0ADXoI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 18:44:08 -0500
-Message-ID: <4B427D43.2080809@freemail.hu>
-Date: Tue, 05 Jan 2010 00:44:03 +0100
-From: =?UTF-8?B?TsOpbWV0aCBNw6FydG9u?= <nm127@freemail.hu>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; hu-HU; rv:1.8.1.21) Gecko/20090402 SeaMonkey/1.1.16
+	Mon, 4 Jan 2010 18:44:19 -0500
+Received: from hera.kernel.org ([140.211.167.34]:42036 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754184Ab0ADXoR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jan 2010 18:44:17 -0500
+Message-ID: <4B427CEC.9070208@kernel.org>
+Date: Mon, 04 Jan 2010 15:42:36 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
 MIME-Version: 1.0
-To: Clemens Ladisch <clemens@ladisch.de>, lm-sensors@lm-sensors.org
-CC: Julia Lawall <julia@diku.dk>, cocci@diku.dk,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 3/5] k10temp: make PCI device ids constant
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-DCC-mail.t-online.hu-Metrics: mail01d.mail.t-online.hu 32721; Body=5 Fuz1=5
-	Fuz2=5
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Jesse Brandeburg <jesse.brandeburg@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       NetDEV list <netdev@vger.kernel.org>,
+       Jesse Brandeburg <jesse.brandeburg@intel.com>,
+       Suresh Siddha <suresh.b.siddha@intel.com>
+Subject: Re: Subject: [PATCH 1/2] x86: get back 15 vectors
+References: <4B347AEE.6030705@kernel.org> <20091228094707.GH24690@elte.hu>	<4B398ECD.1080506@kernel.org>	<4807377b1001031906s6b1ee576jc021da2642bb4147@mail.gmail.com>	<4B415E73.1050801@kernel.org> <4B419113.1090204@kernel.org>	<m1aawtlu6y.fsf@fess.ebiederm.org> <4B423B08.3010005@zytor.com>	<m1my0thelq.fsf@fess.ebiederm.org> <4B424305.7050803@kernel.org>	<4B4245FC.7070902@zytor.com> <4B424A5C.7080309@kernel.org> <m1y6kdbpad.fsf@fess.ebiederm.org> <4B425085.5040103@kernel.org> <4B42595E.9010404@zytor.com> <4B425BB7.90501@kernel.org> <4B425EB5.5080504@zytor.com> <4B426550.6000209@kernel.org> <4B4273D4.2080709@zytor.com> <4B427A8C.1040902@kernel.org> <4B427BF0.1040001@zytor.com>
+In-Reply-To: <4B427BF0.1040001@zytor.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Márton Németh <nm127@freemail.hu>
+On 01/04/2010 03:38 PM, H. Peter Anvin wrote:
+> On 01/04/2010 03:32 PM, Yinghai Lu wrote:
+>>
+>> yes the patch get back 0x30, 0x38, 0x40, 0x48 etc back.
+>>
+> 
+> I would have expected the old code to still have had 0x38, 0x40, 0x48,
+> ... available, just missing the first one?
+> 
 
-The id_table field of the struct pci_driver is constant in <linux/pci.h>
-so it is worth to make pci_device_id also constant.
+you are right. other via offset=7 to be used.
 
-The semantic match that finds this kind of pattern is as follows:
-(http://coccinelle.lip6.fr/)
-
-// <smpl>
-@r@
-identifier I1, I2, x;
-@@
-	struct I1 {
-	  ...
-	  const struct I2 *x;
-	  ...
-	};
-@s@
-identifier r.I1, y;
-identifier r.x, E;
-@@
-	struct I1 y = {
-	  .x = E,
-	};
-@c@
-identifier r.I2;
-identifier s.E;
-@@
-	const struct I2 E[] = ... ;
-@depends on !c@
-identifier r.I2;
-identifier s.E;
-@@
-+	const
-	struct I2 E[] = ...;
-// </smpl>
-
-Signed-off-by: Márton Németh <nm127@freemail.hu>
-Cc: Julia Lawall <julia@diku.dk>
-Cc: cocci@diku.dk
----
-diff -u -p a/drivers/hwmon/k10temp.c b/drivers/hwmon/k10temp.c
---- a/drivers/hwmon/k10temp.c 2009-12-27 12:20:18.000000000 +0100
-+++ b/drivers/hwmon/k10temp.c 2010-01-03 20:55:44.000000000 +0100
-@@ -169,7 +169,7 @@ static void __devexit k10temp_remove(str
- 	dev_set_drvdata(&pdev->dev, NULL);
- }
-
--static struct pci_device_id k10temp_id_table[] = {
-+static const struct pci_device_id k10temp_id_table[] = {
- 	{ PCI_VDEVICE(AMD, PCI_DEVICE_ID_AMD_10H_NB_MISC) },
- 	{ PCI_VDEVICE(AMD, PCI_DEVICE_ID_AMD_11H_NB_MISC) },
- 	{}
+YH
