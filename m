@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751691Ab0ADDJ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753131Ab0ADDH1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751691Ab0ADDJ2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Jan 2010 22:09:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752991Ab0ADDHc
+	id S1753131Ab0ADDH1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Jan 2010 22:07:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752834Ab0ADDHY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Jan 2010 22:07:32 -0500
-Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:56452 "EHLO
-	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753038Ab0ADDHW (ORCPT
+	Sun, 3 Jan 2010 22:07:24 -0500
+Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:65066 "EHLO
+	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752882Ab0ADDHQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Jan 2010 22:07:22 -0500
+	Sun, 3 Jan 2010 22:07:16 -0500
 MIME-version: 1.0
 Content-transfer-encoding: 7BIT
 Content-type: TEXT/PLAIN
-Date: Sun, 03 Jan 2010 19:04:53 -0800
+Date: Sun, 03 Jan 2010 19:04:46 -0800
 From: Yinghai Lu <yinghai@kernel.org>
-Subject: [PATCH 15/29] x86: make early_node_mem get mem > 4g if possible
+Subject: [PATCH 08/29] x86/pci: use u64 instead of size_t in amd_bus.c
 In-reply-to: <1262574307-17040-1-git-send-email-yinghai@kernel.org>
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        "H. Peter Anvin" <hpa@zytor.com>,
@@ -24,121 +24,89 @@ To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        Christoph Lameter <cl@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
        Yinghai Lu <yinghai@kernel.org>
-Message-id: <1262574307-17040-16-git-send-email-yinghai@kernel.org>
+Message-id: <1262574307-17040-9-git-send-email-yinghai@kernel.org>
 X-Mailer: git-send-email 1.6.4.2
 References: <1262574307-17040-1-git-send-email-yinghai@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-so we could put pgdata for the node high, and later sparse
-vmmap will get the section nr that need.
+prepare to enable it for 32bit
 
-with this patch will make <4g ram will not use sparse vmmap
-
-before this patch, will get, before swiotlb try get bootmem
-[    0.000000] nid=1 start=0 end=2080000 aligned=1
-[    0.000000]   free [10 - 96]
-[    0.000000]   free [b12 - 1000]
-[    0.000000]   free [359f - 38a3]
-[    0.000000]   free [38b5 - 3a00]
-[    0.000000]   free [41e01 - 42000]
-[    0.000000]   free [73dde - 73e00]
-[    0.000000]   free [73fdd - 74000]
-[    0.000000]   free [741dd - 74200]
-[    0.000000]   free [743dd - 74400]
-[    0.000000]   free [745dd - 74600]
-[    0.000000]   free [747dd - 74800]
-[    0.000000]   free [749dd - 74a00]
-[    0.000000]   free [74bdd - 74c00]
-[    0.000000]   free [74ddd - 74e00]
-[    0.000000]   free [74fdd - 75000]
-[    0.000000]   free [751dd - 75200]
-[    0.000000]   free [753dd - 75400]
-[    0.000000]   free [755dd - 75600]
-[    0.000000]   free [757dd - 75800]
-[    0.000000]   free [759dd - 75a00]
-[    0.000000]   free [75bdd - 7bf5f]
-[    0.000000]   free [7f730 - 7f750]
-[    0.000000]   free [100000 - 2080000]
-[    0.000000]   total free 1f87170
-[   93.301474] Placing 64MB software IO TLB between ffff880075bdd000 - ffff880079bdd000
-[   93.311814] software IO TLB at phys 0x75bdd000 - 0x79bdd000
-
-with this patch will get: before swiotlb try get bootmem
-[    0.000000] nid=1 start=0 end=2080000 aligned=1
-[    0.000000]   free [a - 96]
-[    0.000000]   free [702 - 1000]
-[    0.000000]   free [359f - 3600]
-[    0.000000]   free [37de - 3800]
-[    0.000000]   free [39dd - 3a00]
-[    0.000000]   free [3bdd - 3c00]
-[    0.000000]   free [3ddd - 3e00]
-[    0.000000]   free [3fdd - 4000]
-[    0.000000]   free [41dd - 4200]
-[    0.000000]   free [43dd - 4400]
-[    0.000000]   free [45dd - 4600]
-[    0.000000]   free [47dd - 4800]
-[    0.000000]   free [49dd - 4a00]
-[    0.000000]   free [4bdd - 4c00]
-[    0.000000]   free [4ddd - 4e00]
-[    0.000000]   free [4fdd - 5000]
-[    0.000000]   free [51dd - 5200]
-[    0.000000]   free [53dd - 5400]
-[    0.000000]   free [55dd - 7bf5f]
-[    0.000000]   free [7f730 - 7f750]
-[    0.000000]   free [100428 - 100600]
-[    0.000000]   free [13ea01 - 13ec00]
-[    0.000000]   free [170800 - 2080000]
-[    0.000000]   total free 1f87170
-
-[   92.689485] PCI-DMA: Using software bounce buffering for IO (SWIOTLB)
-[   92.699799] Placing 64MB software IO TLB between ffff8800055dd000 - ffff8800095dd000
-[   92.710916] software IO TLB at phys 0x55dd000 - 0x95dd000
-
-so will get enough space below 4G, aka pfn 0x100000
+-v2: remove not needed cast
 
 Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 ---
- arch/x86/mm/numa_64.c |   23 ++++++++++++++++++-----
- 1 files changed, 18 insertions(+), 5 deletions(-)
+ arch/x86/pci/amd_bus.c |   16 ++++++++--------
+ 1 files changed, 8 insertions(+), 8 deletions(-)
 
-diff --git a/arch/x86/mm/numa_64.c b/arch/x86/mm/numa_64.c
-index 3232148..02f13cb 100644
---- a/arch/x86/mm/numa_64.c
-+++ b/arch/x86/mm/numa_64.c
-@@ -163,14 +163,27 @@ static void * __init early_node_mem(int nodeid, unsigned long start,
- 				    unsigned long end, unsigned long size,
- 				    unsigned long align)
- {
--	unsigned long mem = find_e820_area(start, end, size, align);
-+	unsigned long mem;
+diff --git a/arch/x86/pci/amd_bus.c b/arch/x86/pci/amd_bus.c
+index e467071..e8bb553 100644
+--- a/arch/x86/pci/amd_bus.c
++++ b/arch/x86/pci/amd_bus.c
+@@ -82,8 +82,8 @@ static int __init early_fill_mp_bus_info(void)
+ 	struct pci_root_info *info;
+ 	u32 reg;
+ 	struct resource *res;
+-	size_t start;
+-	size_t end;
++	u64 start;
++	u64 end;
+ 	struct range range[RANGE_NUM];
+ 	u64 val;
+ 	u32 address;
+@@ -173,7 +173,7 @@ static int __init early_fill_mp_bus_info(void)
  
-+	/*
-+	 * put it on high as possible
-+	 * something will go with NODE_DATA
-+	 */
-+	if (start < (MAX_DMA_PFN<<PAGE_SHIFT))
-+		start = MAX_DMA_PFN<<PAGE_SHIFT;
-+	if (start < (MAX_DMA32_PFN<<PAGE_SHIFT) &&
-+	    end > (MAX_DMA32_PFN<<PAGE_SHIFT))
-+		start = MAX_DMA32_PFN<<PAGE_SHIFT;
-+	mem = find_e820_area(start, end, size, align);
- 	if (mem != -1L)
- 		return __va(mem);
+ 		info = &pci_root_info[j];
+ 		printk(KERN_DEBUG "node %d link %d: io port [%llx, %llx]\n",
+-		       node, link, (u64)start, (u64)end);
++		       node, link, start, end);
  
--
--	start = __pa(MAX_DMA_ADDRESS);
--	end = max_low_pfn_mapped << PAGE_SHIFT;
-+	/* extend the search scope */
-+	end = max_pfn_mapped << PAGE_SHIFT;
-+	if (end > (MAX_DMA32_PFN<<PAGE_SHIFT))
-+		start = MAX_DMA32_PFN<<PAGE_SHIFT;
-+	else
-+		start = MAX_DMA_PFN<<PAGE_SHIFT;
- 	mem = find_e820_area(start, end, size, align);
- 	if (mem != -1L)
- 		return __va(mem);
+ 		/* kernel only handle 16 bit only */
+ 		if (end > 0xffff)
+@@ -207,7 +207,7 @@ static int __init early_fill_mp_bus_info(void)
+ 	address = MSR_K8_TOP_MEM1;
+ 	rdmsrl(address, val);
+ 	end = (val & 0xffffff800000ULL);
+-	printk(KERN_INFO "TOM: %016lx aka %ldM\n", end, end>>20);
++	printk(KERN_INFO "TOM: %016llx aka %lldM\n", end, end>>20);
+ 	if (end < (1ULL<<32))
+ 		subtract_range(range, RANGE_NUM, 0, end - 1);
+ 
+@@ -246,7 +246,7 @@ static int __init early_fill_mp_bus_info(void)
+ 		info = &pci_root_info[j];
+ 
+ 		printk(KERN_DEBUG "node %d link %d: mmio [%llx, %llx]",
+-		       node, link, (u64)start, (u64)end);
++		       node, link, start, end);
+ 		/*
+ 		 * some sick allocation would have range overlap with fam10h
+ 		 * mmconf range, so need to update start and end.
+@@ -272,13 +272,13 @@ static int __init early_fill_mp_bus_info(void)
+ 				endx = fam10h_mmconf_start - 1;
+ 				update_res(info, start, endx, IORESOURCE_MEM, 0);
+ 				subtract_range(range, RANGE_NUM, start, endx);
+-				printk(KERN_CONT " ==> [%llx, %llx]", (u64)start, endx);
++				printk(KERN_CONT " ==> [%llx, %llx]", start, endx);
+ 				start = fam10h_mmconf_end + 1;
+ 				changed = 1;
+ 			}
+ 			if (changed) {
+ 				if (start <= end) {
+-					printk(KERN_CONT " %s [%llx, %llx]", endx?"and":"==>", (u64)start, (u64)end);
++					printk(KERN_CONT " %s [%llx, %llx]", endx?"and":"==>", start, end);
+ 				} else {
+ 					printk(KERN_CONT "%s\n", endx?"":" ==> none");
+ 					continue;
+@@ -301,7 +301,7 @@ static int __init early_fill_mp_bus_info(void)
+ 		address = MSR_K8_TOP_MEM2;
+ 		rdmsrl(address, val);
+ 		end = (val & 0xffffff800000ULL);
+-		printk(KERN_INFO "TOM2: %016lx aka %ldM\n", end, end>>20);
++		printk(KERN_INFO "TOM2: %016llx aka %lldM\n", end, end>>20);
+ 		subtract_range(range, RANGE_NUM, 1ULL<<32, end - 1);
+ 	}
+ 
 -- 
 1.6.4.2
 
