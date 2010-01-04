@@ -1,64 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752116Ab0ADCCi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752347Ab0ADCM0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752116Ab0ADCCi (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Jan 2010 21:02:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751556Ab0ADCCh
+	id S1752347Ab0ADCM0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Jan 2010 21:12:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751784Ab0ADCMZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Jan 2010 21:02:37 -0500
-Received: from [121.136.51.252] ([121.136.51.252]:47227 "EHLO ben-laptop"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751359Ab0ADCCg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Jan 2010 21:02:36 -0500
-X-Greylist: delayed 2104 seconds by postgrey-1.27 at vger.kernel.org; Sun, 03 Jan 2010 21:02:36 EST
-Date: Mon, 4 Jan 2010 10:27:13 +0900
-From: Ben Dooks <ben-linux@fluff.org>
-To: linux-arm-kernel@lists.arm.linux.org.uk, linux-samsung-soc@vger.kernel.org,
-       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: request pull: bjdooks' samsung fixes
-Message-ID: <20100104012713.GA29175@ben-laptop.fluff.org>
+	Sun, 3 Jan 2010 21:12:25 -0500
+Received: from g4t0015.houston.hp.com ([15.201.24.18]:10605 "EHLO
+	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751658Ab0ADCMY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Jan 2010 21:12:24 -0500
+From: Paul Moore <paul.moore@hp.com>
+Organization: Hewlett-Packard
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: A basic question about the security_* hooks
+Date: Sun, 3 Jan 2010 21:12:17 -0500
+User-Agent: KMail/1.12.4 (Linux/2.6.31-gentoo-r2; KDE/4.3.4; i686; ; )
+Cc: Casey Schaufler <casey@schaufler-ca.com>,
+       Michael Stone <michael@laptop.org>, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org, Andi Kleen <andi@firstfloor.org>,
+       David Lang <david@lang.hm>, Oliver Hartkopp <socketcan@hartkopp.net>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Valdis Kletnieks <Valdis.Kletnieks@vt.edu>,
+       Bryan Donlan <bdonlan@gmail.com>, Evgeniy Polyakov <zbr@ioremap.net>,
+       "C. Scott Ananian" <cscott@cscott.net>,
+       James Morris <jmorris@namei.org>, Bernie Innocenti <bernie@codewiz.org>,
+       Mark Seaborn <mrs@mythic-beasts.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       =?iso-8859-1?q?Am=E9rico_Wang?= <xiyou.wangcong@gmail.com>
+References: <20091224022902.GA24234@heat> <4B32F304.4040609@schaufler-ca.com> <m1hbrgildc.fsf@fess.ebiederm.org>
+In-Reply-To: <m1hbrgildc.fsf@fess.ebiederm.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201001032112.17975.paul.moore@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fixes for a couple of problems with the current ARM Samsung builds:
+On Thursday 24 December 2009 07:53:35 am Eric W. Biederman wrote:
+> Casey Schaufler <casey@schaufler-ca.com> writes:
+> > I'm behind you 100%. Use the LSM. Your module is exactly why we have
+> > the blessed thing. Once we get a collection of otherwise unrelated
+> > LSMs the need for a stacker will be sufficiently evident that we'll
+> > be able to get one done properly.
+> 
+> My immediate impression is that the big limitation today is the
+> sharing of the void * security data members of strucutres.
+> 
+> Otherwise multiple security modules could be as simple as.
+> list_for_each(mod)
+>         if (mod->op(...) != 0)
+> 		return -EPERM.
+> 
+> It isn't hard to multiplex a single data field into several with a
+> nice little abstraction.
 
-- touchscreen driver missing header files
-- osiris and bast printing errors on non-existant custom fit nand devices
+Just another quick point that I didn't see covered yet in this thread ... 
+while many of the kernel entities have void pointers to track the security 
+blobs, there are several places where a single u32/int or character string is 
+used to represent the security label of an entity (look at the per-packet 
+labeling for an example).  While it would be relatively easy to multiple 
+multiple security blobs on top of a void pointer, multiplexing multiple 
+security labels/tokens on top of a string/int is a little more difficult.
 
-This is a slimed-down version of the previous pull request that seems to
-have been ignored.
-
-The following changes since commit 45d28b097280a78893ce25a5d0db41e6a2717853:
-  Linus Torvalds (1):
-        Merge branch 'reiserfs/kill-bkl' of git://git.kernel.org/.../frederic/random-tracing
-
-are available in the git repository at:
-
-  git://git.fluff.org/bjdooks/linux.git for-linus/samsung
-
-Arnaud Patard (2):
-      ARM: S3C24XX: touchscreen device definition
-      ARM: S3C24XX: touchscreen device definition
-
-Ben Dooks (5):
-      ARM: mach-osiris: add NAND_SCAN_SILENT_NODEV to optional devices
-      ARM: mach-bast: add NAND_SCAN_SILENT_NODEV to optional devices
-      ARM: S3C: Fix NAND device registration by s3c_nand_set_platdata().
-      ARM: Merge next-simtec
-      ARM: Merge s3c24xx-updates2
-
- arch/arm/mach-s3c2410/include/mach/ts.h |   21 +++++++++++++++++++++
- arch/arm/mach-s3c2410/mach-bast.c       |    3 +++
- arch/arm/mach-s3c2410/mach-h1940.c      |    8 ++++++++
- arch/arm/mach-s3c2440/mach-osiris.c     |    2 ++
- arch/arm/plat-s3c/dev-nand.c            |    4 +++-
- arch/arm/plat-s3c/include/plat/devs.h   |    1 +
- arch/arm/plat-s3c24xx/devs.c            |   18 ++++++++++++++++++
- arch/arm/plat-s3c24xx/s3c244x.c         |    1 +
- 8 files changed, 57 insertions(+), 1 deletions(-)
- create mode 100644 arch/arm/mach-s3c2410/include/mach/ts.h
-
+-- 
+paul moore
+linux @ hp
