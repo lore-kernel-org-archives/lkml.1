@@ -1,49 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752960Ab0ADAvv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752919Ab0ADAzz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752960Ab0ADAvv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Jan 2010 19:51:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752925Ab0ADAvt
+	id S1752919Ab0ADAzz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Jan 2010 19:55:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752858Ab0ADAzx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Jan 2010 19:51:49 -0500
-Received: from hera.kernel.org ([140.211.167.34]:38454 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752909Ab0ADAvq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Jan 2010 19:51:46 -0500
-Message-ID: <4B413CB8.1050808@kernel.org>
-Date: Mon, 04 Jan 2010 09:56:24 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
-MIME-Version: 1.0
-To: Johannes Stezenbach <js@sig21.net>
-CC: Hans Werner <HWerner4@gmx.de>, linux-kernel@vger.kernel.org, trenn@suse.de,
-       mmalygin@ked.de, hancockrwd@gmail.com, greg@kroah.com
-Subject: Re: Samsung N130 ATA exception after 5min uptime -- Phoenix FailSafe
- issue?
-References: <20091230120428.5780@gmx.net> <20100103221142.GA16783@sig21.net> <4B41216F.4070906@kernel.org> <20100104004147.GA19558@sig21.net>
-In-Reply-To: <20100104004147.GA19558@sig21.net>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sun, 3 Jan 2010 19:55:53 -0500
+Received: from taverner.CS.Berkeley.EDU ([128.32.153.193]:33591 "EHLO
+	taverner.cs.berkeley.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752833Ab0ADAzw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Jan 2010 19:55:52 -0500
+To: linux-kernel@vger.kernel.org
+Path: not-for-mail
+From: daw@cs.berkeley.edu (David Wagner)
+Newsgroups: isaac.lists.linux-kernel
+Subject: Re: [RFC][PATCH v3] Unprivileged: Disable raising of privileges
+Date: Mon, 4 Jan 2010 00:55:52 +0000 (UTC)
+Organization: University of California, Berkeley
+Message-ID: <hhreao$r8k$1@taverner.cs.berkeley.edu>
+References: <m1iqbpwjtp.fsf@fess.ebiederm.org> <20100101144629.54fe6cb6@lxorguk.ukuu.org.uk> <hhmoos$vnu$1@taverner.cs.berkeley.edu> <20100102135525.08fe85eb@lxorguk.ukuu.org.uk>
+Reply-To: daw-news@taverner.cs.berkeley.edu (David Wagner)
+NNTP-Posting-Host: taverner.cs.berkeley.edu
+X-Trace: taverner.cs.berkeley.edu 1262566552 27924 128.32.153.193 (4 Jan 2010 00:55:52 GMT)
+X-Complaints-To: news@taverner.cs.berkeley.edu
+NNTP-Posting-Date: Mon, 4 Jan 2010 00:55:52 +0000 (UTC)
+X-Newsreader: trn 4.0-test76 (Apr 2, 2001)
+Originator: daw@taverner.cs.berkeley.edu (David Wagner)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Alan Cox  wrote:
+> I am just pointing out the dangers of continuing to blindly pursue that
+> model without thinking about the bigger picture.
 
-On 01/04/2010 09:41 AM, Johannes Stezenbach wrote:
-> I've updated bug#14314.  It is certainly a BIOS issue, but the
-> "spurious IRQ" check deals way better with it than the previous
-> 30sec hang waiting for timeout.  IMHO the patch should be merged
-> into mainline asap.  Or do you think it has any downside?
-
-The danger is that when the hardware is actually malfunctioning and
-causing IRQ storm, the driver will tell the IRQ subsystem that the
-IRQs aren't spurious.  This will bypass the IRQ storm detection logic
-and lead to complete system lockup under such conditions.  Small
-modification to the patch should remove that problem.  I'll post an
-updated patch soon.
-
-Thanks.
-
--- 
-tejun
+But people have been thinking about the bigger picture.
+Indeed, that's the motivation for the patch proposed here.
+I don't know why you think people have ignored the bigger picture.
