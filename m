@@ -1,96 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752144Ab0ADAip@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752358Ab0ADAjP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752144Ab0ADAip (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Jan 2010 19:38:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751514Ab0ADAin
+	id S1752358Ab0ADAjP (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Jan 2010 19:39:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751701Ab0ADAjN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Jan 2010 19:38:43 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:43233 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751594Ab0ADAim (ORCPT
+	Sun, 3 Jan 2010 19:39:13 -0500
+Received: from 62.1.125.199.dsl.dyn.forthnet.gr ([62.1.125.199]:21187 "EHLO
+	poseidon.vergina.dyndns.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751594Ab0ADAjN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Jan 2010 19:38:42 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Mon, 4 Jan 2010 09:35:28 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: balbir@linux.vnet.ibm.com
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>
-Subject: Re: [RFC] Shared page accounting for memory cgroup
-Message-Id: <20100104093528.04846521.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20100104000752.GC16187@balbir.in.ibm.com>
-References: <20091229182743.GB12533@balbir.in.ibm.com>
-	<20100104085108.eaa9c867.kamezawa.hiroyu@jp.fujitsu.com>
-	<20100104000752.GC16187@balbir.in.ibm.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 3 Jan 2010 19:39:13 -0500
+Message-ID: <4B4138AB.3060602@asyr.hopto.org>
+Date: Mon, 04 Jan 2010 02:39:07 +0200
+From: Thanasis <thanasis@asyr.hopto.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091229 Thunderbird/3.0 ThunderBrowse/3.2.6.8
+MIME-Version: 1.0
+To: Krzysztof Halasa <khc@pm.waw.pl>
+CC: gentoo-user@lists.gentoo.org, Dirk Heinrichs <dirk.heinrichs@online.de>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [gentoo-user] RAM installed vs reported
+References: <4B3B3043.20400@asyr.hopto.org>	<200912301208.54359.dirk.heinrichs@online.de>	<4B3B38F2.6090006@asyr.hopto.org>	<m3fx6r8a0l.fsf@intrepid.localdomain>	<4B3CF04E.8070603@asyr.hopto.org>	<m3vdfmosha.fsf@intrepid.localdomain>	<4B406CDF.7010301@asyr.hopto.org> <m3aawulr8t.fsf@intrepid.localdomain>
+In-Reply-To: <m3aawulr8t.fsf@intrepid.localdomain>
+Content-Type: text/plain; charset=ISO-8859-7
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 4 Jan 2010 05:37:52 +0530
-Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-
-> * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2010-01-04 08:51:08]:
-> 
-> > On Tue, 29 Dec 2009 23:57:43 +0530
-> > Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> > 
-> > > Hi, Everyone,
-> > > 
-> > > I've been working on heuristics for shared page accounting for the
-> > > memory cgroup. I've tested the patches by creating multiple cgroups
-> > > and running programs that share memory and observed the output.
-> > > 
-> > > Comments?
-> > 
-> > Hmm? Why we have to do this in the kernel ?
-> >
-> 
-> For several reasons that I can think of
-> 
-> 1. With task migration changes coming in, getting consistent data free of races
-> is going to be hard.
-
-Hmm, Let's see real-worlds's "ps" or "top" command. Even when there are no guarantee
-of error range of data, it's still useful.
-
-> 2. The cost of doing it in the kernel is not high, it does not impact
-> the memcg runtime, it is a request-response sort of cost.
+on 01/04/2010 01:10 AM Krzysztof Halasa wrote the following:
+> Thanasis <thanasis@asyr.hopto.org> writes:
 >
-> 3. The cost in user space is going to be high and the implementation
-> cumbersome to get right.
->  
-I don't like moving a cost in the userland to the kernel. Considering 
-real-time kernel or full-preemptive kernel, this very long read_lock() in the
-kernel is not good, IMHO. (I think css_set_lock should be mutex/rw-sem...)
-cgroup_iter_xxx can block cgroup_post_fork() and this may cause critical
-system delay of milli-seconds.
-
-BTW, if you really want to calculate somthing in atomic, I think following
-interface may be welcomed for freezing.
-
-  cgroup.lock
-  # echo 1 > /...../cgroup.lock 
-    All task move, mkdir, rmdir to this cgroup will be blocked by mutex.
-    (But fork/exit will not be blocked.)
-
-  # echo 0 > /...../cgroup.lock
-    Unlock.
-
-  # cat /...../cgroup.lock
-    show lock status and lock history (for debug).
-
-Maybe good for some kinds of middleware.
-But this may be difficult if we have to consider hierarchy.
-
-Thanks,
--Kame
-
-
-
+>   
+>> Hmm..., but are EMBEDDED options suitable for a netbook like the A110L ?
+>>     
+> This "EMBEDDED" just means "don't touch these unless you really know
+> what you're doing".
+>
+> BTW I remember using VMSPLIT 2 GB : 2 GB on server-class machines,
+> before they were upgraded to x86-64.
+>   
+Do you mean that I should try it? Is there any gain over using
+CONFIG_HIGHMEM4G ?
