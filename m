@@ -1,145 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753246Ab0ADIbi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753288Ab0ADIcN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753246Ab0ADIbi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 03:31:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753130Ab0ADIbh
+	id S1753288Ab0ADIcN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 03:32:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753171Ab0ADIcL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 03:31:37 -0500
-Received: from mga09.intel.com ([134.134.136.24]:15442 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752881Ab0ADIbh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 03:31:37 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,497,1257148800"; 
-   d="scan'208";a="481019986"
-Subject: volano ~30% regression with 2.6.33-rc1 & -rc2
-From: Lin Ming <ming.m.lin@intel.com>
-To: Mike Galbraith <efault@gmx.de>, Peter Zijlstra <peterz@infradead.org>
-Cc: lkml <linux-kernel@vger.kernel.org>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-Content-Type: text/plain
-Date: Mon, 04 Jan 2010 16:15:58 +0800
-Message-Id: <1262592958.22471.104.camel@minggr.sh.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 (2.24.1-2.fc10) 
-Content-Transfer-Encoding: 7bit
+	Mon, 4 Jan 2010 03:32:11 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:43966 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752923Ab0ADIcK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jan 2010 03:32:10 -0500
+Date: Mon, 4 Jan 2010 09:31:08 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: pm list <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linux PCI <linux-pci@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       Oliver Neukum <oliver@neukum.org>, Shaohua Li <shaohua.li@intel.com>,
+       Bjorn Helgaas <bjorn.helgaas@hp.com>,
+       Francois Romieu <romieu@fr.zoreil.com>, Len Brown <lenb@kernel.org>
+Subject: Re: [RFC][PATCH 12/12] PM / r8169: Add simplified run-time PM
+	support
+Message-ID: <20100104083108.GD1372@ucw.cz>
+References: <200911160047.46299.rjw@sisk.pl> <201001022149.05553.rjw@sisk.pl> <20100103195544.GC11928@elf.ucw.cz> <201001032201.14087.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <201001032201.14087.rjw@sisk.pl>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mike & Peter,
 
-Compared with 2.6.32, volano has ~30% regression with 2.6.33-rc1 & -rc2.
-Testing machine: Tigerton Xeon, 16cpus(4P/4Core), 16G memory
+> > > Using /proc/acpi/battery/BAT1/state I measured the energy drawn in 10 minutes
+> > > both with the network adapter in D0 and D3hot.  The results were that with the
+> > > network adapter in D0 the box drew 2476 mWh, while with the network adapter in
+> > > D3hot it drew 2361 mWh.  The difference is 115 mWh, or about 5% on this
+> > > particular box.
+> > > 
+> > > This means about 0.1 Wh in 10 minutes, so we can save about 0.6 Wh per hour.
+> > 
+> > Which means it saves 0.6W :-). Measuring power in Wh/h is "interesting".
+> 
+> You can't save power, you can only save energy.  Wh is just an energy unit.
 
-Bisect to below commit,
+Of course we can save power, you just did :-).
 
-commit a1f84a3ab8e002159498814eaa7e48c33752b04b
-Author: Mike Galbraith <efault@gmx.de>
-Date:   Tue Oct 27 15:35:38 2009 +0100
-
-    sched: Check for an idle shared cache in select_task_rq_fair()
-
-    When waking affine, check for an idle shared cache, and if
-    found, wake to that CPU/sibling instead of the waker's CPU.
-
-    This improves pgsql+oltp ramp up by roughly 8%. Possibly more
-    for other loads, depending on overlap. The trade-off is a
-    roughly 1% peak downturn if tasks are truly synchronous.
-
-    Signed-off-by: Mike Galbraith <efault@gmx.de>
-    Cc: Arjan van de Ven <arjan@infradead.org>
-    Cc: Peter Zijlstra <peterz@infradead.org>
-    Cc: <stable@kernel.org>
-    LKML-Reference: <1256654138.17752.7.camel@marge.simson.net>
-    Signed-off-by: Ingo Molnar <mingo@elte.hu>
+(And in some cases -- data centers, limited cooling -- you are limited
+by power, not energy. You are right that on notebooks, energy is more
+important.)
 
 
-This commit can't be reverted due to conflict, so I reverted below 4
-commits related to idle-shared-cache in 2.6.33-rc2, and then the
-performance was restored to 2.6.32.
+									Pavel
 
-fe3bcfe (sched: More generic WAKE_AFFINE vs select_idle_sibling())
-a50bde5 (sched: Cleanup select_task_rq_fair())
-fd21073 (sched: Fix affinity logic in select_task_rq_fair())
-a1f84a3 (sched: Check for an idle shared cache in select_task_rq_fair())
-
-This regression seems caused by cache misses of access to per cpu data.
-(see below perf top cache-misses data for detail)
-
-select_idle_sibling(...)
-{
-        ....
-        for_each_cpu_and(i, sched_domain_span(sd), &p->cpus_allowed) {
-                if (!cpu_rq(i)->cfs.nr_running) {
-                        target = i;
-                        break;
-                }
-        }
-	....
-}
-
-The performance can be restored to 2.6.32 as well if SD_PREFER_SIBLING
-is not set, so select_idle_sibling will not be called.
-
-perf top data as follow,
-
-2.6.33-rc1 cache-misses data (note 11.8% select_task_rq_fair)
-------------------------------------------------------------------------------------
-   PerfTop:   12262 irqs/sec  kernel:90.6% [1000Hz cache-misses],  (all, 16 CPUs)
-------------------------------------------------------------------------------------
-
-             samples  pcnt function                      DSO
-             _______ _____ _____________________________ ________________
-
-            18272.00 11.8% select_task_rq_fair           [kernel.kallsyms]       
-            15499.00 10.0% schedule                      [kernel.kallsyms]       
-             9447.00  6.1% update_curr                   [kernel.kallsyms]       
-             9255.00  6.0% _raw_spin_lock                [kernel.kallsyms]       
-             5161.00  3.3% tcp_sendmsg                   [kernel.kallsyms] 
-
-2.6.32 cache-misses data
---------------------------------------------------------------------------------------
-   PerfTop:   11749 irqs/sec  kernel:88.2% [1000Hz cache-misses],  (all, 16 CPUs)
---------------------------------------------------------------------------------------
-
-             samples  pcnt function                      DSO
-             _______ _____ _____________________________ _________________
-            11974.00 11.5% schedule                      [kernel.kallsyms]                                                                        
-             6656.00  6.4% _spin_lock                    [kernel.kallsyms]                                                                        
-             5852.00  5.6% update_curr                   [kernel.kallsyms]                                                                        
-             3140.00  3.0% enqueue_entity                [kernel.kallsyms]                                                                        
-             2846.00  2.7% tcp_sendmsg                   [kernel.kallsyms] 
-    
-2.6.33-rc1 cycles data (note 6.5% select_task_rq_fair)        
--------------------------------------------------------------------------------
-   PerfTop:   11106 irqs/sec  kernel:99.7% [1000Hz cycles],  (all, 16 CPUs)
--------------------------------------------------------------------------------
-
-             samples  pcnt function                  DSO
-             _______ _____ _________________________ _________________
-
-            11658.00 10.0% schedule                  [kernel.kallsyms]
-            10870.00  9.4% _raw_spin_lock            [kernel.kallsyms]
-             7576.00  6.5% select_task_rq_fair       [kernel.kallsyms]
-             3696.00  3.2% tcp_sendmsg               [kernel.kallsyms]
-             3000.00  2.6% update_curr               [kernel.kallsyms]
-
-2.6.32 cycles data
-------------------------------------------------------------------------------------
-   PerfTop:   10462 irqs/sec  kernel:99.8% [1000Hz cycles],  (all, 16 CPUs)
-------------------------------------------------------------------------------------
-
-             samples  pcnt function                  DSO
-             _______ _____ _________________________ _________________
-
-            13364.00  9.9% schedule                  [kernel.kallsyms]
-            13140.00  9.8% _spin_lock                [kernel.kallsyms]
-             4903.00  3.6% tcp_sendmsg               [kernel.kallsyms]
-             4017.00  3.0% update_curr               [kernel.kallsyms]
-             3395.00  2.5% _spin_lock_bh             [kernel.kallsyms]
-
-
-Lin Ming
-
-
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
