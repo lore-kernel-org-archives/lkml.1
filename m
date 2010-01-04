@@ -1,133 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751146Ab0ADFFz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751487Ab0ADFOl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751146Ab0ADFFz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 00:05:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750742Ab0ADFFy
+	id S1751487Ab0ADFOl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 00:14:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750824Ab0ADFOk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 00:05:54 -0500
-Received: from mga03.intel.com ([143.182.124.21]:50159 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750738Ab0ADFFx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 00:05:53 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
-   d="scan'208";a="228821708"
-Date: Mon, 4 Jan 2010 12:50:20 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Quentin Barnes <qbarnes+nfs@yahoo-inc.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       Nick Piggin <npiggin@suse.de>, Steven Whitehouse <swhiteho@redhat.com>,
-       Andi Kleen <andi@firstfloor.org>, David Howells <dhowells@redhat.com>,
-       Al Viro <viro@zeniv.linux.org.uk>, Jonathan Corbet <corbet@lwn.net>,
-       Christoph Hellwig <hch@infradead.org>
-Subject: [RFC][PATCH v3] readahead: introduce O_RANDOM for POSIX_FADV_RANDOM
-Message-ID: <20100104045020.GA21021@localhost>
-References: <20091225000717.GA26949@yahoo-inc.com> <87aax18xms.fsf@basil.nowhere.org> <20091230051540.GA16308@localhost> <20091230052402.GB26364@localhost> <873a2s8hmp.fsf@basil.nowhere.org>
+	Mon, 4 Jan 2010 00:14:40 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:38807 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750729Ab0ADFOj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jan 2010 00:14:39 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.4.0
+Message-ID: <4B417972.7000200@np.css.fujitsu.com>
+Date: Mon, 04 Jan 2010 14:15:30 +0900
+From: Jin Dongming <jin.dongming@np.css.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <873a2s8hmp.fsf@basil.nowhere.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: David John <davidjon@xenontk.org>
+CC: jbarnes@virtuousgeek.org, rusty@rustcorp.com.au, andreas.herrmann3@amd.com,
+       rjw@sisk.pl, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2] Check the node argument passed to cpumask_of_node
+References: <201001012255.28094.rjw@sisk.pl> <1262412947-3890-1-BlackWidow-davidjon@xenontk.org>
+In-Reply-To: <1262412947-3890-1-BlackWidow-davidjon@xenontk.org>
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This fixes inefficient page-by-page reads on POSIX_FADV_RANDOM.
+Hi, David
 
-POSIX_FADV_RANDOM used to set ra_pages=0, which leads to poor
-performance: a 16K read will be carried out in 4 _sync_ 1-page reads.
+This problem also happened when the CONFIG_DEBUG_PER_CPU_MAPS was used,
+so how about modifying the code for it working well?
 
-In other places, ra_pages==0 means
-- it's ramfs/tmpfs/hugetlbfs/sysfs/configfs
-- some IO error happened
-where multi-page read IO won't help or should be avoided.
+Best Regards,
+Jin Dongming
 
-POSIX_FADV_RANDOM actually want a different semantics: to disable the
-*heuristic* readahead algorithm, and to use a dumb one which faithfully
-submit read IO for whatever application requests.
+David John wrote:
+> Commit e0cd516 "PCI: derive nearby CPUs from device's instead of bus' NUMA information"
+> causes an null pointer dereference when reading from the sysfs attributes local_cpu*
+> on Intel machines with no ACPI NUMA proximity info, since dev->numa_node gets set to -1
+> for all PCI devices, which then gets passed to cpumask_of_node.
+> 
+> Ensure that the node value is valid.
+> 
+> Signed-off-by: David John <davidjon@xenontk.org>
+> 
+> diff --git a/arch/x86/include/asm/topology.h b/arch/x86/include/asm/topology.h
+> index c5087d7..1141a6e 100644
+> --- a/arch/x86/include/asm/topology.h
+> +++ b/arch/x86/include/asm/topology.h
+> @@ -99,7 +99,8 @@ extern const struct cpumask *cpumask_of_node(int node);
+>  /* Returns a pointer to the cpumask of CPUs on Node 'node'. */
+>  static inline const struct cpumask *cpumask_of_node(int node)
+>  {
+> -	return node_to_cpumask_map[node];
+> +	return (node < 0 || node >= nr_node_ids) ? cpu_online_mask :
+> +						   node_to_cpumask_map[node];
+>  }
+>  #endif
+>  
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+> 
 
-So introduce a flag O_RANDOM for POSIX_FADV_RANDOM.
-It will be visible to fcntl(F_GETFL).
 
-Note that the random hint is not likely to help random reads performance
-noticeably. And it may be too permissive on huge request size (its IO
-size is not limited by read_ahead_kb).
-
-In Quentin's report (http://lkml.org/lkml/2009/12/24/145), the overall
-(NFS read) performance of the application increased by 313%!
-
-v3: use O_RANDOM to indicate both read/write access pattern as in
-    posix_fadvise(), although it only takes effect for read() now
-    (proposed by Quentin)
-v2: use O_RANDOM_READ to avoid race conditions (pointed out by Andi)
-
-CC: Nick Piggin <npiggin@suse.de>
-CC: Andi Kleen <andi@firstfloor.org>
-CC: Steven Whitehouse <swhiteho@redhat.com>
-CC: David Howells <dhowells@redhat.com>
-CC: Al Viro <viro@zeniv.linux.org.uk>
-CC: Jonathan Corbet <corbet@lwn.net>
-CC: Christoph Hellwig <hch@infradead.org>
-Tested-by: Quentin Barnes <qbarnes+nfs@yahoo-inc.com>
-Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
----
- include/asm-generic/fcntl.h |    4 ++++
- mm/fadvise.c                |   10 +++++++++-
- mm/readahead.c              |    6 ++++++
- 3 files changed, 19 insertions(+), 1 deletion(-)
-
---- linux.orig/include/asm-generic/fcntl.h	2010-01-04 12:39:29.000000000 +0800
-+++ linux/include/asm-generic/fcntl.h	2010-01-04 12:40:11.000000000 +0800
-@@ -80,6 +80,10 @@
- #define O_NDELAY	O_NONBLOCK
- #endif
- 
-+#ifndef O_RANDOM
-+#define O_RANDOM	010000000	/* random access pattern hint */
-+#endif
-+
- #define F_DUPFD		0	/* dup */
- #define F_GETFD		1	/* get close_on_exec */
- #define F_SETFD		2	/* set/clear close_on_exec */
---- linux.orig/mm/fadvise.c	2010-01-04 12:39:29.000000000 +0800
-+++ linux/mm/fadvise.c	2010-01-04 12:39:30.000000000 +0800
-@@ -77,12 +77,20 @@ SYSCALL_DEFINE(fadvise64_64)(int fd, lof
- 	switch (advice) {
- 	case POSIX_FADV_NORMAL:
- 		file->f_ra.ra_pages = bdi->ra_pages;
-+		spin_lock(&file->f_lock);
-+		file->f_flags &= ~O_RANDOM;
-+		spin_unlock(&file->f_lock);
- 		break;
- 	case POSIX_FADV_RANDOM:
--		file->f_ra.ra_pages = 0;
-+		spin_lock(&file->f_lock);
-+		file->f_flags |= O_RANDOM;
-+		spin_unlock(&file->f_lock);
- 		break;
- 	case POSIX_FADV_SEQUENTIAL:
- 		file->f_ra.ra_pages = bdi->ra_pages * 2;
-+		spin_lock(&file->f_lock);
-+		file->f_flags &= ~O_RANDOM;
-+		spin_unlock(&file->f_lock);
- 		break;
- 	case POSIX_FADV_WILLNEED:
- 		if (!mapping->a_ops->readpage) {
---- linux.orig/mm/readahead.c	2010-01-04 12:39:29.000000000 +0800
-+++ linux/mm/readahead.c	2010-01-04 12:39:30.000000000 +0800
-@@ -501,6 +501,12 @@ void page_cache_sync_readahead(struct ad
- 	if (!ra->ra_pages)
- 		return;
- 
-+	/* be dumb */
-+	if (filp->f_flags & O_RANDOM) {
-+		force_page_cache_readahead(mapping, filp, offset, req_size);
-+		return;
-+	}
-+
- 	/* do read-ahead */
- 	ondemand_readahead(mapping, ra, filp, false, offset, req_size);
- }
