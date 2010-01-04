@@ -1,83 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753302Ab0ADFrv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753285Ab0ADFwh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753302Ab0ADFrv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 00:47:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752173Ab0ADFrt
+	id S1753285Ab0ADFwh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 00:52:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753250Ab0ADFwc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 00:47:49 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:62108 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753304Ab0ADFrp (ORCPT
+	Mon, 4 Jan 2010 00:52:32 -0500
+Received: from mail-gx0-f211.google.com ([209.85.217.211]:48881 "EHLO
+	mail-gx0-f211.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753224Ab0ADFwb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 00:47:45 -0500
+	Mon, 4 Jan 2010 00:52:31 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mail-followup-to:references
-         :mime-version:content-type:content-disposition:in-reply-to
-         :user-agent;
-        b=vSgDeyRKNV7uKGkbJNdw+jyjTgdMe43x8kL++Hz2JBhRj1Tu7RKBVkNPxfyR8jlXof
-         O3KcAF5i3qOgcI/9Bhyf+tfBNNW+dPt3LohwuwJe4yeOYovvQSbuQH8S7SqFtEh1xS+F
-         dNtEdjhG7QQUMes2XpRaT811kgpqo5zwv1klU=
-Date: Mon, 4 Jan 2010 06:47:40 +0100
-From: Borislav Petkov <petkovbb@googlemail.com>
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=tbq5k+i1R+1XEuGr37gdTl17cg1oxkKtSYEZ5m1ejVMWhEKp7qzL5HIVpmQipNi0+V
+         FDGbRsMceDtuK82dcNk4gkLlOmD1mbj1JaK2c8WEZPNOB421gBU9K1XfzUAwIIn08XN1
+         n9yS4VTxtF8xcID1ed5YUEvvICfF2gQTKe5c4=
+Message-ID: <4B41821B.3050705@gmail.com>
+Date: Sun, 03 Jan 2010 23:52:27 -0600
+From: Robert Hancock <hancockrwd@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
+MIME-Version: 1.0
 To: Jonathan Woithe <jwoithe@physics.adelaide.edu.au>
-Cc: Tejun Heo <tj@kernel.org>, Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+CC: Tejun Heo <tj@kernel.org>, petkovbb@gmail.com,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
        linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
 Subject: Re: 2.9.29.2: ide-tape: panic when probing device at boot
-Message-ID: <20100104054740.GA10094@liondog.tnic>
-Mail-Followup-To: Borislav Petkov <petkovbb@googlemail.com>,
-	Jonathan Woithe <jwoithe@physics.adelaide.edu.au>,
-	Tejun Heo <tj@kernel.org>,
-	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-	linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-References: <4A062702.8020404@kernel.org>
- <201001040115.o041FCEA025051@turbo.physics.adelaide.edu.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
+References: <4A062702.8020404@kernel.org> <201001040115.o041FCEA025051@turbo.physics.adelaide.edu.au>
 In-Reply-To: <201001040115.o041FCEA025051@turbo.physics.adelaide.edu.au>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 04, 2010 at 11:45:12AM +1030, Jonathan Woithe wrote:
+On 01/03/2010 07:15 PM, Jonathan Woithe wrote:
+>>>> Should I just push commit 1e75540ec5202cae63cd238c86bd880e3d496546
+>>>> ("ide-tape: remove back-to-back REQUEST_SENSE detection") to Linus
+>>>> or there is more needed to bring ide-tape to the world of living?
+>>>
+>>> ... and I'm afraid we'll have to do some serious bugfixing since this
+>>> driver is behaving really funny :). Stay tuned, I'm on it.
+>>
+>> Cool.
+>
 > Has there been any movement on this in recent months?  I gave 2.6.30 a whirl
 > on the machine when that was released but it still gave major problems with
 > the ide-tape driver.  Is 2.6.32 likely to be improved?  If so I'll make
 > arrangements to test that version.
+>
+> Presently I'm stuck with 2.6.24.x on this system since ide-tape holds
+> together enough on this version to work.  I really want to upgrade to a more
+> recent kernel but obviously I can't until ide-tape is functional again.
 
-Yes, please do test 2.6.32 to see whether it fixes your problem. If you still
-get that oops, please apply the following patch and send me the _whole_ dmesg
-output of the machine.
-
-Thanks.
-
---
-diff --git a/drivers/ide/ide-tape.c b/drivers/ide/ide-tape.c
-index 6a0e625..e4c3ffd 100644
---- a/drivers/ide/ide-tape.c
-+++ b/drivers/ide/ide-tape.c
-@@ -49,7 +49,7 @@
- #include <linux/mtio.h>
- 
- /* define to see debug info */
--#undef IDETAPE_DEBUG_LOG
-+#define IDETAPE_DEBUG_LOG
- 
- #ifdef IDETAPE_DEBUG_LOG
- #define ide_debug_log(lvl, fmt, args...) __ide_debug_log(lvl, fmt, ## args)
-@@ -1737,6 +1737,8 @@ static void idetape_setup(ide_drive_t *drive, idetape_tape_t *tape, int minor)
- 	int buffer_size;
- 	u16 *ctl = (u16 *)&tape->caps[12];
- 
-+	drive->debug_mask = 0xffffffff;
-+
- 	ide_debug_log(IDE_DBG_FUNC, "minor: %d", minor);
- 
- 	drive->pc_callback = ide_tape_callback;
-
-
--- 
-Regards/Gruss,
-    Boris.
+You could also try using libata instead of IDE drivers and see if they 
+work any better for you..
