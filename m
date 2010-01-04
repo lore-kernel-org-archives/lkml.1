@@ -1,123 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752866Ab0ADAuk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752888Ab0ADAvo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752866Ab0ADAuk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Jan 2010 19:50:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752072Ab0ADAuj
+	id S1752888Ab0ADAvo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Jan 2010 19:51:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752005Ab0ADAvl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Jan 2010 19:50:39 -0500
-Received: from e28smtp05.in.ibm.com ([122.248.162.5]:40760 "EHLO
-	e28smtp05.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751941Ab0ADAuj (ORCPT
+	Sun, 3 Jan 2010 19:51:41 -0500
+Received: from rekin23.go2.pl ([193.17.41.16]:45406 "EHLO rekin23.go2.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751490Ab0ADAvl convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Jan 2010 19:50:39 -0500
-Date: Mon, 4 Jan 2010 06:20:31 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>
-Subject: Re: [RFC] Shared page accounting for memory cgroup
-Message-ID: <20100104005030.GG16187@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <20091229182743.GB12533@balbir.in.ibm.com>
- <20100104085108.eaa9c867.kamezawa.hiroyu@jp.fujitsu.com>
- <20100104000752.GC16187@balbir.in.ibm.com>
- <20100104093528.04846521.kamezawa.hiroyu@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20100104093528.04846521.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Mutt/1.5.20 (2009-08-17)
+	Sun, 3 Jan 2010 19:51:41 -0500
+Subject: =?UTF-8?Q?Re:_[suspend/resume]_Re:_userspace_notification_from_module?=
+From: =?UTF-8?Q?Bart=C5=82omiej_Zimo=C5=84?= <uzi18@o2.pl>
+To: linux-kernel@vger.kernel.org
+Cc: rjw@sisk.pl, awalls@radix.net, danborkmann@googlemail.com,
+       linux-pm@lists.linux-foundation.org, stern@rowland.harvard.edu
+In-Reply-To: <201001040045.39517.rjw@sisk.pl>
+References: <686edb2c.6263643a.4b3f4a3b.b60b3@o2.pl> <201001040030.01256.rjw@sisk.pl> <54ac764e.502c1a33.4b4129c3.9dc1b@o2.pl> <201001040045.39517.rjw@sisk.pl>
+Mime-Version: 1.0
+Message-ID: <a522f3c.3bab16d1.4b413b9c.ec43@o2.pl>
+Date: Mon, 04 Jan 2010 01:51:40 +0100
+X-Originator: 83.12.131.34
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2010-01-04 09:35:28]:
-
-> On Mon, 4 Jan 2010 05:37:52 +0530
-> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+Dnia 4 stycznia 2010 0:45 "Rafael J. Wysocki" <rjw@sisk.pl> napisał(a):
+> On Monday 04 January 2010, Bartłomiej Zimoń wrote:
+> > Thx Rafael - now it clear to me.
+> > And what do You think about sending extra signals to processes?
 > 
-> > * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2010-01-04 08:51:08]:
-> > 
-> > > On Tue, 29 Dec 2009 23:57:43 +0530
-> > > Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> > > 
-> > > > Hi, Everyone,
-> > > > 
-> > > > I've been working on heuristics for shared page accounting for the
-> > > > memory cgroup. I've tested the patches by creating multiple cgroups
-> > > > and running programs that share memory and observed the output.
-> > > > 
-> > > > Comments?
-> > > 
-> > > Hmm? Why we have to do this in the kernel ?
-> > >
-> > 
-> > For several reasons that I can think of
-> > 
-> > 1. With task migration changes coming in, getting consistent data free of races
-> > is going to be hard.
+> I don't see a problem with this in principle, although I don't think signals
+> are very suitable for this particular purpose, because you need two-way
+> communication between the power manager and the processes it's going to
+> notify (because it has to wait for the processes to finish their preparations
+> and to tell it that they are ready).
 > 
-> Hmm, Let's see real-worlds's "ps" or "top" command. Even when there are no guarantee
-> of error range of data, it's still useful.
-
-Yes, my concern is this
-
-1. I iterate through tasks and calculate RSS
-2. I look at memory.usage_in_bytes
-
-If the time in user space between 1 and 2 is large I get very wrong
-results, specifically if the workload is changing its memory usage
-drastically.. no?
-
-> 
-> > 2. The cost of doing it in the kernel is not high, it does not impact
-> > the memcg runtime, it is a request-response sort of cost.
-> >
-> > 3. The cost in user space is going to be high and the implementation
-> > cumbersome to get right.
-> >  
-> I don't like moving a cost in the userland to the kernel.
-
-Me neither, but I don't think it is a fixed overhead.
-
- Considering 
-> real-time kernel or full-preemptive kernel, this very long read_lock() in the
-> kernel is not good, IMHO. (I think css_set_lock should be mutex/rw-sem...)
-
-I agree, we should discuss converting the lock to a mutex or a
-semaphore, but there might be a good reason for keeping it as a
-spin_lock.
-
-> cgroup_iter_xxx can block cgroup_post_fork() and this may cause critical
-> system delay of milli-seconds.
+> For this purpose it's better to have a file descriptor you can block on (like a
+> socket or a pipe) while the other side is doing it's job.
 > 
 
-Agreed, but then that can happen, even while attaching a task, seeing
-cgroup tasks file (list of tasks).
+So let's create one in power/user.c or use /sys/power/state for this :)
 
-> BTW, if you really want to calculate somthing in atomic, I think following
-> interface may be welcomed for freezing.
-> 
->   cgroup.lock
->   # echo 1 > /...../cgroup.lock 
->     All task move, mkdir, rmdir to this cgroup will be blocked by mutex.
->     (But fork/exit will not be blocked.)
-> 
->   # echo 0 > /...../cgroup.lock
->     Unlock.
-> 
->   # cat /...../cgroup.lock
->     show lock status and lock history (for debug).
-> 
-> Maybe good for some kinds of middleware.
-> But this may be difficult if we have to consider hierarchy.
->
+Best regards.
+Bartłomiej Zimoń
+PLD Linux, Kadu Team, FreeRunner user
+http://kadu-im.blogspot.com/
 
-I don't like the idea of providing an interface that can control
-kernel locks from user space, user space can tangle up and get it
-wrong. 
-
--- 
-	Balbir
