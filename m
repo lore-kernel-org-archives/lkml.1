@@ -1,157 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753831Ab0ADUHr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753865Ab0ADUIi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753831Ab0ADUHr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 15:07:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752823Ab0ADUHp
+	id S1753865Ab0ADUIi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 15:08:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752581Ab0ADUIf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 15:07:45 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:55485 "EHLO mx1.redhat.com"
+	Mon, 4 Jan 2010 15:08:35 -0500
+Received: from hera.kernel.org ([140.211.167.34]:53105 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752776Ab0ADUHo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 15:07:44 -0500
-Message-ID: <4B424A7E.2060608@redhat.com>
-Date: Mon, 04 Jan 2010 15:07:26 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
+	id S1752801Ab0ADUIe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jan 2010 15:08:34 -0500
+Message-ID: <4B424A5C.7080309@kernel.org>
+Date: Mon, 04 Jan 2010 12:06:52 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
 MIME-Version: 1.0
-To: Arnaldo Carvalho de Melo <acme@infradead.org>
-CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       =?UTF-8?B?RnLDqWTDqXJpYyBXZWlzYmVja2Vy?= <fweisbec@gmail.com>,
-       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH 4/4] perf session: Keep pointers to the vmlinux maps
-References: <1262629169-22797-1-git-send-email-acme@infradead.org> <1262629169-22797-4-git-send-email-acme@infradead.org>
-In-Reply-To: <1262629169-22797-4-git-send-email-acme@infradead.org>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Jesse Brandeburg <jesse.brandeburg@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       NetDEV list <netdev@vger.kernel.org>,
+       Jesse Brandeburg <jesse.brandeburg@intel.com>,
+       Suresh Siddha <suresh.b.siddha@intel.com>
+Subject: Re: Subject: [PATCH 1/2] x86: get back 15 vectors
+References: <4B347AEE.6030705@kernel.org> <20091228094707.GH24690@elte.hu>	<4B398ECD.1080506@kernel.org>	<4807377b1001031906s6b1ee576jc021da2642bb4147@mail.gmail.com>	<4B415E73.1050801@kernel.org> <4B419113.1090204@kernel.org>	<m1aawtlu6y.fsf@fess.ebiederm.org> <4B423B08.3010005@zytor.com> <m1my0thelq.fsf@fess.ebiederm.org> <4B424305.7050803@kernel.org> <4B4245FC.7070902@zytor.com>
+In-Reply-To: <4B4245FC.7070902@zytor.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arnaldo Carvalho de Melo wrote:
-> From: Arnaldo Carvalho de Melo <acme@redhat.com>
+On 01/04/2010 11:48 AM, H. Peter Anvin wrote:
+> [Adding Suresh to the Cc: list]
 > 
-> So that tools such as 'perf probe' don't have to lookup '[kernel.kallsyms]' but
-> instead access them directly after perf_session__create_kernel_maps or
-> map_groups__create_kernel_maps.
-
-
-Looks good for me:-) Thanks.
-
-Acked-by: Masami Hiramatsu <mhiramat@redhat.com>
-
+> On 01/04/2010 11:35 AM, Yinghai Lu wrote:
+>>
+>> so we can use [0x10, 0x1f]
+>>
+>> sth like this?
+>>
 > 
-> Cc: Masami Hiramatsu <mhiramat@redhat.com>
-> Cc: Frédéric Weisbecker <fweisbec@gmail.com>
-> Cc: Mike Galbraith <efault@gmx.de>
-> Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
-> ---
->  tools/perf/builtin-probe.c |    4 +---
->  tools/perf/util/session.h  |    1 +
->  tools/perf/util/symbol.c   |   29 +++++++++++++----------------
->  3 files changed, 15 insertions(+), 19 deletions(-)
+> No!!!
 > 
-> diff --git a/tools/perf/builtin-probe.c b/tools/perf/builtin-probe.c
-> index c1e6774..ffdd3fe 100644
-> --- a/tools/perf/builtin-probe.c
-> +++ b/tools/perf/builtin-probe.c
-> @@ -235,9 +235,7 @@ int cmd_probe(int argc, const char **argv, const char *prefix __used)
->  	session.psession = perf_session__new(NULL, O_WRONLY, false);
->  	if (session.psession == NULL)
->  		die("Failed to init perf_session.");
-> -	session.kmap = map_groups__find_by_name(&session.psession->kmaps,
-> -						MAP__FUNCTION,
-> -						"[kernel.kallsyms]");
-> +	session.kmap = session.psession->vmlinux_maps[MAP__FUNCTION];
->  	if (!session.kmap)
->  		die("Could not find kernel map.\n");
->  
-> diff --git a/tools/perf/util/session.h b/tools/perf/util/session.h
-> index 77c5ee2..8db37bb 100644
-> --- a/tools/perf/util/session.h
-> +++ b/tools/perf/util/session.h
-> @@ -18,6 +18,7 @@ struct perf_session {
->  	struct map_groups	kmaps;
->  	struct rb_root		threads;
->  	struct thread		*last_match;
-> +	struct map		*vmlinux_maps[MAP__NR_TYPES];
->  	struct events_stats	events_stats;
->  	unsigned long		event_total[PERF_RECORD_MAX];
->  	unsigned long		unknown_events;
-> diff --git a/tools/perf/util/symbol.c b/tools/perf/util/symbol.c
-> index 5dffcd1..e290429 100644
-> --- a/tools/perf/util/symbol.c
-> +++ b/tools/perf/util/symbol.c
-> @@ -1662,7 +1662,7 @@ size_t dsos__fprintf_buildid(FILE *fp)
->  		__dsos__fprintf_buildid(&dsos__user, fp));
->  }
->  
-> -static struct dso *dsos__create_kernel( const char *vmlinux)
-> +static struct dso *dsos__create_kernel(const char *vmlinux)
->  {
->  	struct dso *kernel = dso__new(vmlinux ?: "[kernel.kallsyms]");
->  
-> @@ -1691,29 +1691,26 @@ out_delete_kernel_dso:
->  	return NULL;
->  }
->  
-> -static int map_groups__create_kernel_maps(struct map_groups *self, const char *vmlinux)
-> +static int map_groups__create_kernel_maps(struct map_groups *self,
-> +					  struct map *vmlinux_maps[MAP__NR_TYPES],
-> +					  const char *vmlinux)
->  {
-> -	struct map *functions, *variables;
->  	struct dso *kernel = dsos__create_kernel(vmlinux);
-> +	enum map_type type;
->  
->  	if (kernel == NULL)
->  		return -1;
->  
-> -	functions = map__new2(0, kernel, MAP__FUNCTION);
-> -	if (functions == NULL)
-> -		return -1;
-> +	for (type = 0; type < MAP__NR_TYPES; ++type) {
-> +		vmlinux_maps[type] = map__new2(0, kernel, type);
-> +		if (vmlinux_maps[type] == NULL)
-> +			return -1;
->  
-> -	variables = map__new2(0, kernel, MAP__VARIABLE);
-> -	if (variables == NULL) {
-> -		map__delete(functions);
-> -		return -1;
-> +		vmlinux_maps[type]->map_ip =
-> +			vmlinux_maps[type]->unmap_ip = identity__map_ip;
-> +		map_groups__insert(self, vmlinux_maps[type]);
->  	}
->  
-> -	functions->map_ip = functions->unmap_ip =
-> -		variables->map_ip = variables->unmap_ip = identity__map_ip;
-> -	map_groups__insert(self, functions);
-> -	map_groups__insert(self, variables);
-> -
->  	return 0;
->  }
->  
-> @@ -1824,7 +1821,7 @@ out_free_comm_list:
->  
->  int perf_session__create_kernel_maps(struct perf_session *self)
->  {
-> -	if (map_groups__create_kernel_maps(&self->kmaps,
-> +	if (map_groups__create_kernel_maps(&self->kmaps, self->vmlinux_maps,
->  					   symbol_conf.vmlinux_name) < 0)
->  		return -1;
->  
+> [0x10, 0x1f] is reserved for exceptions.  We can probably get away with
+> stealing *one* vector... presumably at the end (0x1f).  However, we can
+> absolutely not use the whole block: 0x10-0x13 is occupied by exceptions
+> we already have OS support for (#MF, #AC, #MC, and #XM), and it's pretty
+> much guaranteed we'll have more coming.  However, growth is quite slow
+> and since this is a kernel-internal vector (not accessible to user
+> space) it is not creating an API.
+> 
+> In other words, we could change FIRST_EXTERNAL_VECTOR to 0x1f, and use
+> it for IRQ_MOVE_CLEANUP_VECTOR.  Then use 0x20..0x2f for the legacy vectors.
+> 
+Subject: [PATCH 1/2] x86: get back 16 vectors
 
--- 
-Masami Hiramatsu
+-v2: according to hpa that we could start from 0x1f
 
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 
-e-mail: mhiramat@redhat.com
+---
+ arch/x86/include/asm/irq_vectors.h |    9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
 
+Index: linux-2.6/arch/x86/include/asm/irq_vectors.h
+===================================================================
+--- linux-2.6.orig/arch/x86/include/asm/irq_vectors.h
++++ linux-2.6/arch/x86/include/asm/irq_vectors.h
+@@ -30,8 +30,9 @@
+ /*
+  * IDT vectors usable for external interrupt sources start
+  * at 0x20:
++ * hpa said we can start from 0x1f
+  */
+-#define FIRST_EXTERNAL_VECTOR		0x20
++#define FIRST_EXTERNAL_VECTOR		0x1f
+ 
+ #ifdef CONFIG_X86_32
+ # define SYSCALL_VECTOR			0x80
+@@ -41,15 +42,15 @@
+ #endif
+ 
+ /*
+- * Reserve the lowest usable priority level 0x20 - 0x2f for triggering
++ * Reserve the lowest usable priority level 0x1f for triggering
+  * cleanup after irq migration.
+  */
+ #define IRQ_MOVE_CLEANUP_VECTOR		FIRST_EXTERNAL_VECTOR
+ 
+ /*
+- * Vectors 0x30-0x3f are used for ISA interrupts.
++ * Vectors 0x20-0x2f are used for ISA interrupts.
+  */
+-#define IRQ0_VECTOR			(FIRST_EXTERNAL_VECTOR + 0x10)
++#define IRQ0_VECTOR			(FIRST_EXTERNAL_VECTOR + 1)
+ 
+ #define IRQ1_VECTOR			(IRQ0_VECTOR +  1)
+ #define IRQ2_VECTOR			(IRQ0_VECTOR +  2)
