@@ -1,53 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753457Ab0ADQcR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753488Ab0ADQeM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753457Ab0ADQcR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 11:32:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753394Ab0ADQcP
+	id S1753488Ab0ADQeM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 11:34:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753417Ab0ADQeK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 11:32:15 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:32955 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753372Ab0ADQcO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 11:32:14 -0500
-Date: Mon, 4 Jan 2010 17:32:00 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Peter Zijlstra <peterz@infradead.org>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Thiago Farina <tfransosi@gmail.com>
-Subject: Re: linux-next: tip tree build failure
-Message-ID: <20100104163159.GD23652@elte.hu>
-References: <20100104235931.abcf2bc5.sfr@canb.auug.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100104235931.abcf2bc5.sfr@canb.auug.org.au>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: 1.2
-X-ELTE-SpamLevel: s
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=1.2 required=5.9 tests=BAYES_00,FH_DATE_PAST_20XX autolearn=no SpamAssassin version=3.2.5
-	3.2 FH_DATE_PAST_20XX      The date is grossly in the future.
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Mon, 4 Jan 2010 11:34:10 -0500
+Received: from outbound-mail-313.bluehost.com ([67.222.54.6]:35988 "HELO
+	outbound-mail-313.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753240Ab0ADQeJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jan 2010 11:34:09 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=i/1EZpCji7/tvQnq1yBSwFoFJqZBMdMKGmeFQlIybfyC+lp9CBFIczvYb6HBezdXj+Z+o10aygED0i9WSaib9BT0DBynysFKzHBLrZgz9IClm98PNcpaWRGpn2CKB9u+;
+Date: Mon, 4 Jan 2010 08:34:01 -0800
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>
+Subject: Re: [PATCH] PCI: Clean up build for CONFIG_PCI_QUIRKS unset
+Message-ID: <20100104083401.7d282505@jbarnes-piketon>
+In-Reply-To: <201001022257.24701.rjw@sisk.pl>
+References: <201001022257.24701.rjw@sisk.pl>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, 2 Jan 2010 22:57:24 +0100
+"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 
-* Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-
-> Hi all,
+> From: Rafael J. Wysocki <rjw@sisk.pl>
 > 
-> Today's linux-next build (s390x defconfig) failed like this:
+> Currently, drivers/pci/quirks.c is built unconditionally, but if
+> CONFIG_PCI_QUIRKS is unset, the only things actually built in this
+> file are definitions of global variables and empty functions (due to
+> the #ifdef CONFIG_PCI_QUIRKS embracing all of the code inside the
+> file).  This is not particularly nice and if someone overlooks
+> the #ifdef CONFIG_PCI_QUIRKS, build errors are introduced.
 > 
-> kernel/panic.c:134: error: 'CALLER_ADDR0' undeclared (first use in this function)
+> To clean that up, move the definitions of the global variables in
+> quirks.c that are always built to pci.c, move the definitions of
+> the empty functions (compiled when CONFIG_PCI_QUIRKS is unset) to
+> headers (additionally make these functions static inline) and modify
+> drivers/pci/Makefile so that quirks.c is only built if
+> CONFIG_PCI_QUIRKS is set.
 > 
-> Caused by commit eba3fe4416f3cc2ce043fb304b6c35a69dca3bdb ("kernel: Use
-> CALLER_ADDR0 macro").
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> ---
+> 
+> I thought it might be useful to do something like this.
+> 
+> Please let me know what you think.
 
-Thanks - apparently CALLER_ADDR0 isnt generally available. I've reverted this 
-patch for now.
+Thanks Rafael, I actually had a fix for this already from Dexuan, but I
+guess Linus applied yours instead.
 
-	Ingo
+Thanks for the fix.
+
+-- 
+Jesse Barnes, Intel Open Source Technology Center
