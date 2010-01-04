@@ -1,41 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753577Ab0ADXvr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753472Ab0ADXxO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753577Ab0ADXvr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 18:51:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751612Ab0ADXvq
+	id S1753472Ab0ADXxO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 18:53:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752983Ab0ADXxM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 18:51:46 -0500
-Received: from hera.kernel.org ([140.211.167.34]:52787 "EHLO hera.kernel.org"
+	Mon, 4 Jan 2010 18:53:12 -0500
+Received: from khc.piap.pl ([195.187.100.11]:35443 "EHLO khc.piap.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751086Ab0ADXvp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 18:51:45 -0500
-Message-ID: <4B427EA4.3040706@kernel.org>
-Date: Mon, 04 Jan 2010 15:49:56 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
+	id S1752218Ab0ADXxL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jan 2010 18:53:11 -0500
+From: Krzysztof Halasa <khc@pm.waw.pl>
+To: Thanasis <thanasis@asyr.hopto.org>
+Cc: gentoo-user@lists.gentoo.org, Joshua Murphy <poisonbl@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [gentoo-user] RAM installed vs reported
+References: <4B3B3043.20400@asyr.hopto.org>
+	<200912301208.54359.dirk.heinrichs@online.de>
+	<4B3B38F2.6090006@asyr.hopto.org>
+	<m3fx6r8a0l.fsf@intrepid.localdomain>
+	<4B3CF04E.8070603@asyr.hopto.org>
+	<m3vdfmosha.fsf@intrepid.localdomain>
+	<4B406CDF.7010301@asyr.hopto.org>
+	<m3aawulr8t.fsf@intrepid.localdomain>
+	<4B4138AB.3060602@asyr.hopto.org>
+	<c30988c31001040651l8351224l4eb1f1a54610653e@mail.gmail.com>
+	<4B422A86.3070805@asyr.hopto.org> <4B424903.1000808@asyr.hopto.org>
+Date: Tue, 05 Jan 2010 00:53:07 +0100
+In-Reply-To: <4B424903.1000808@asyr.hopto.org> (thanasis@asyr.hopto.org's
+	message of "Mon, 04 Jan 2010 22:01:07 +0200")
+Message-ID: <m3fx6l4ecc.fsf@intrepid.localdomain>
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Jesse Brandeburg <jesse.brandeburg@gmail.com>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       NetDEV list <netdev@vger.kernel.org>,
-       Jesse Brandeburg <jesse.brandeburg@intel.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: Re: Subject: [PATCH 1/2] x86: get back 15 vectors
-References: <4B347AEE.6030705@kernel.org> <20091228094707.GH24690@elte.hu>	<4B398ECD.1080506@kernel.org>	<4807377b1001031906s6b1ee576jc021da2642bb4147@mail.gmail.com>	<4B415E73.1050801@kernel.org> <4B419113.1090204@kernel.org>	<m1aawtlu6y.fsf@fess.ebiederm.org> <4B423B08.3010005@zytor.com>	<m1my0thelq.fsf@fess.ebiederm.org> <4B424305.7050803@kernel.org>	<4B4245FC.7070902@zytor.com> <4B424A5C.7080309@kernel.org> <m1y6kdbpad.fsf@fess.ebiederm.org> <4B425085.5040103@kernel.org> <4B42595E.9010404@zytor.com> <4B425BB7.90501@kernel.org> <4B425EB5.5080504@zytor.com> <4B426550.6000209@kernel.org> <4B4273D4.2080709@zytor.com> <4B427A8C.1040902@kernel.org> <4B427BF0.1040001@zytor.com>
-In-Reply-To: <4B427BF0.1040001@zytor.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-why not start from 0x30, 0x38, 0x40, 0x48 ...
-instead of 0x31, 0x39, 0x41, 0x47...?
+Thanasis <thanasis@asyr.hopto.org> writes:
 
-YH
+> I tried option: 2G/2G user/kernel split (for full 2G low memory), but X
+> would not start. So i reverted back to CONFIG_HIGHMEM4G.
 
-
-
+Binary proprietary module maybe?
+-- 
+Krzysztof Halasa
