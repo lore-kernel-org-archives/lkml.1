@@ -1,25 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753589Ab0ADSTn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753731Ab0ADSTq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753589Ab0ADSTn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 13:19:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753457Ab0ADSTl
+	id S1753731Ab0ADSTq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 13:19:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753642Ab0ADSTo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 13:19:41 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:54435 "EHLO
+	Mon, 4 Jan 2010 13:19:44 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:54439 "EHLO
 	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753094Ab0ADSTk (ORCPT
+	with ESMTP id S1753424Ab0ADSTl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 13:19:40 -0500
+	Mon, 4 Jan 2010 13:19:41 -0500
 From: Arnaldo Carvalho de Melo <acme@infradead.org>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: linux-kernel@vger.kernel.org, Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
        =?utf-8?q?Fr=C3=A9d=C3=A9ric=20Weisbecker?= <fweisbec@gmail.com>,
        Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
        Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 1/4] perf symbols: Generalise the kallsyms parsing routine
-Date: Mon,  4 Jan 2010 16:19:26 -0200
-Message-Id: <1262629169-22797-1-git-send-email-acme@infradead.org>
+Subject: [PATCH 4/4] perf session: Keep pointers to the vmlinux maps
+Date: Mon,  4 Jan 2010 16:19:29 -0200
+Message-Id: <1262629169-22797-4-git-send-email-acme@infradead.org>
 X-Mailer: git-send-email 1.6.2.5
+In-Reply-To: <1262629169-22797-1-git-send-email-acme@infradead.org>
+References: <1262629169-22797-1-git-send-email-acme@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8bit
@@ -31,148 +34,112 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Arnaldo Carvalho de Melo <acme@redhat.com>
 
-Will be used to find an specific symbol by name on 'perf record' to support
-relocation reference symbols to support relocatable kernels.
+So that tools such as 'perf probe' don't have to lookup '[kernel.kallsyms]' but
+instead access them directly after perf_session__create_kernel_maps or
+map_groups__create_kernel_maps.
 
-Still have to conver the perf trace tools to use it instead of their current
-reimplementation.
-
+Cc: Masami Hiramatsu <mhiramat@redhat.com>
 Cc: Frédéric Weisbecker <fweisbec@gmail.com>
 Cc: Mike Galbraith <efault@gmx.de>
 Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
 Cc: Paul Mackerras <paulus@samba.org>
 Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
 ---
- tools/perf/util/symbol.c |   76 +++++++++++++++++++++++++++++----------------
- tools/perf/util/symbol.h |    2 +
- 2 files changed, 51 insertions(+), 27 deletions(-)
+ tools/perf/builtin-probe.c |    4 +---
+ tools/perf/util/session.h  |    1 +
+ tools/perf/util/symbol.c   |   29 +++++++++++++----------------
+ 3 files changed, 15 insertions(+), 19 deletions(-)
 
+diff --git a/tools/perf/builtin-probe.c b/tools/perf/builtin-probe.c
+index c1e6774..ffdd3fe 100644
+--- a/tools/perf/builtin-probe.c
++++ b/tools/perf/builtin-probe.c
+@@ -235,9 +235,7 @@ int cmd_probe(int argc, const char **argv, const char *prefix __used)
+ 	session.psession = perf_session__new(NULL, O_WRONLY, false);
+ 	if (session.psession == NULL)
+ 		die("Failed to init perf_session.");
+-	session.kmap = map_groups__find_by_name(&session.psession->kmaps,
+-						MAP__FUNCTION,
+-						"[kernel.kallsyms]");
++	session.kmap = session.psession->vmlinux_maps[MAP__FUNCTION];
+ 	if (!session.kmap)
+ 		die("Could not find kernel map.\n");
+ 
+diff --git a/tools/perf/util/session.h b/tools/perf/util/session.h
+index 77c5ee2..8db37bb 100644
+--- a/tools/perf/util/session.h
++++ b/tools/perf/util/session.h
+@@ -18,6 +18,7 @@ struct perf_session {
+ 	struct map_groups	kmaps;
+ 	struct rb_root		threads;
+ 	struct thread		*last_match;
++	struct map		*vmlinux_maps[MAP__NR_TYPES];
+ 	struct events_stats	events_stats;
+ 	unsigned long		event_total[PERF_RECORD_MAX];
+ 	unsigned long		unknown_events;
 diff --git a/tools/perf/util/symbol.c b/tools/perf/util/symbol.c
-index 79ca6a0..b9e0da5 100644
+index 5dffcd1..e290429 100644
 --- a/tools/perf/util/symbol.c
 +++ b/tools/perf/util/symbol.c
-@@ -383,16 +383,12 @@ size_t dso__fprintf(struct dso *self, enum map_type type, FILE *fp)
- 	return ret;
+@@ -1662,7 +1662,7 @@ size_t dsos__fprintf_buildid(FILE *fp)
+ 		__dsos__fprintf_buildid(&dsos__user, fp));
  }
  
--/*
-- * Loads the function entries in /proc/kallsyms into kernel_map->dso,
-- * so that we can in the next step set the symbol ->end address and then
-- * call kernel_maps__split_kallsyms.
-- */
--static int dso__load_all_kallsyms(struct dso *self, struct map *map)
-+int kallsyms__parse(void *arg, int (*process_symbol)(void *arg, const char *name,
-+						     char type, u64 start))
+-static struct dso *dsos__create_kernel( const char *vmlinux)
++static struct dso *dsos__create_kernel(const char *vmlinux)
  {
- 	char *line = NULL;
- 	size_t n;
--	struct rb_root *root = &self->symbols[map->type];
-+	int err = 0;
- 	FILE *file = fopen("/proc/kallsyms", "r");
+ 	struct dso *kernel = dso__new(vmlinux ?: "[kernel.kallsyms]");
  
- 	if (file == NULL)
-@@ -400,7 +396,6 @@ static int dso__load_all_kallsyms(struct dso *self, struct map *map)
+@@ -1691,29 +1691,26 @@ out_delete_kernel_dso:
+ 	return NULL;
+ }
  
- 	while (!feof(file)) {
- 		u64 start;
--		struct symbol *sym;
- 		int line_len, len;
- 		char symbol_type;
- 		char *symbol_name;
-@@ -421,35 +416,62 @@ static int dso__load_all_kallsyms(struct dso *self, struct map *map)
- 			continue;
+-static int map_groups__create_kernel_maps(struct map_groups *self, const char *vmlinux)
++static int map_groups__create_kernel_maps(struct map_groups *self,
++					  struct map *vmlinux_maps[MAP__NR_TYPES],
++					  const char *vmlinux)
+ {
+-	struct map *functions, *variables;
+ 	struct dso *kernel = dsos__create_kernel(vmlinux);
++	enum map_type type;
  
- 		symbol_type = toupper(line[len]);
--		if (!symbol_type__is_a(symbol_type, map->type))
--			continue;
--
- 		symbol_name = line + len + 2;
--		/*
--		 * Will fix up the end later, when we have all symbols sorted.
--		 */
--		sym = symbol__new(start, 0, symbol_name);
+ 	if (kernel == NULL)
+ 		return -1;
  
--		if (sym == NULL)
--			goto out_delete_line;
--		/*
--		 * We will pass the symbols to the filter later, in
--		 * map__split_kallsyms, when we have split the maps per module
--		 */
--		symbols__insert(root, sym);
-+		err = process_symbol(arg, symbol_name, symbol_type, start);
-+		if (err)
-+			break;
+-	functions = map__new2(0, kernel, MAP__FUNCTION);
+-	if (functions == NULL)
+-		return -1;
++	for (type = 0; type < MAP__NR_TYPES; ++type) {
++		vmlinux_maps[type] = map__new2(0, kernel, type);
++		if (vmlinux_maps[type] == NULL)
++			return -1;
+ 
+-	variables = map__new2(0, kernel, MAP__VARIABLE);
+-	if (variables == NULL) {
+-		map__delete(functions);
+-		return -1;
++		vmlinux_maps[type]->map_ip =
++			vmlinux_maps[type]->unmap_ip = identity__map_ip;
++		map_groups__insert(self, vmlinux_maps[type]);
  	}
  
- 	free(line);
- 	fclose(file);
-+	return err;
- 
--	return 0;
+-	functions->map_ip = functions->unmap_ip =
+-		variables->map_ip = variables->unmap_ip = identity__map_ip;
+-	map_groups__insert(self, functions);
+-	map_groups__insert(self, variables);
 -
--out_delete_line:
--	free(line);
- out_failure:
- 	return -1;
+ 	return 0;
  }
  
-+struct process_kallsyms_args {
-+	struct map *map;
-+	struct dso *dso;
-+};
-+
-+static int map__process_kallsym_symbol(void *arg, const char *name,
-+				       char type, u64 start)
-+{
-+	struct symbol *sym;
-+	struct process_kallsyms_args *a = arg;
-+	struct rb_root *root = &a->dso->symbols[a->map->type];
-+
-+	if (!symbol_type__is_a(type, a->map->type))
-+		return 0;
-+
-+	/*
-+	 * Will fix up the end later, when we have all symbols sorted.
-+	 */
-+	sym = symbol__new(start, 0, name);
-+
-+	if (sym == NULL)
-+		return -ENOMEM;
-+	/*
-+	 * We will pass the symbols to the filter later, in
-+	 * map__split_kallsyms, when we have split the maps per module
-+	 */
-+	symbols__insert(root, sym);
-+	return 0;
-+}
-+
-+/*
-+ * Loads the function entries in /proc/kallsyms into kernel_map->dso,
-+ * so that we can in the next step set the symbol ->end address and then
-+ * call kernel_maps__split_kallsyms.
-+ */
-+static int dso__load_all_kallsyms(struct dso *self, struct map *map)
-+{
-+	struct process_kallsyms_args args = { .map = map, .dso = self, };
-+	return kallsyms__parse(&args, map__process_kallsym_symbol);
-+}
-+
- /*
-  * Split the symbols into maps, making sure there are no overlaps, i.e. the
-  * kernel range is broken in several maps, named [kernel].N, as we don't have
-diff --git a/tools/perf/util/symbol.h b/tools/perf/util/symbol.h
-index f27e158..21313e8 100644
---- a/tools/perf/util/symbol.h
-+++ b/tools/perf/util/symbol.h
-@@ -135,6 +135,8 @@ int filename__read_build_id(const char *filename, void *bf, size_t size);
- int sysfs__read_build_id(const char *filename, void *bf, size_t size);
- bool dsos__read_build_ids(void);
- int build_id__sprintf(u8 *self, int len, char *bf);
-+int kallsyms__parse(void *arg, int (*process_symbol)(void *arg, const char *name,
-+						     char type, u64 start));
+@@ -1824,7 +1821,7 @@ out_free_comm_list:
  
- int symbol__init(void);
- int perf_session__create_kernel_maps(struct perf_session *self);
+ int perf_session__create_kernel_maps(struct perf_session *self)
+ {
+-	if (map_groups__create_kernel_maps(&self->kmaps,
++	if (map_groups__create_kernel_maps(&self->kmaps, self->vmlinux_maps,
+ 					   symbol_conf.vmlinux_name) < 0)
+ 		return -1;
+ 
 -- 
 1.6.2.5
 
