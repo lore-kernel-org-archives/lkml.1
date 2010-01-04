@@ -1,363 +1,1056 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753336Ab0ADISS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753354Ab0ADIZS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753336Ab0ADISS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 03:18:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753248Ab0ADISS
+	id S1753354Ab0ADIZS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 03:25:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753300Ab0ADIZN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 03:18:18 -0500
-Received: from mga06.intel.com ([134.134.136.21]:16997 "EHLO
-	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753238Ab0ADISR (ORCPT
+	Mon, 4 Jan 2010 03:25:13 -0500
+Received: from mtagate3.de.ibm.com ([195.212.17.163]:42475 "EHLO
+	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753171Ab0ADIZH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 03:18:17 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,497,1257148800"; 
-   d="scan'208";a="481017590"
-Subject: Re: fio mmap randread 64k more than 40% regression with 2.6.33-rc1
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: Corrado Zoccolo <czoccolo@gmail.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>, Shaohua Li <shaohua.li@intel.com>,
-       "jmoyer@redhat.com" <jmoyer@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <4e5e476b1001021052u51a90a91qb2fbb4089498a3ca@mail.gmail.com>
-References: <1262250960.1819.68.camel@localhost>
-	 <4e5e476b0912310234mf9ccaadm771c637a3d107d18@mail.gmail.com>
-	 <1262340730.19773.47.camel@localhost>
-	 <4e5e476b1001010832o24f6a0efudbfc36598bfc7c5e@mail.gmail.com>
-	 <1262435612.19773.80.camel@localhost>
-	 <4e5e476b1001021052u51a90a91qb2fbb4089498a3ca@mail.gmail.com>
-Content-Type: text/plain; charset="ISO-8859-1"
-Date: Mon, 04 Jan 2010 16:18:10 +0800
-Message-Id: <1262593090.29897.14.camel@localhost>
+	Mon, 4 Jan 2010 03:25:07 -0500
+Date: Mon, 4 Jan 2010 09:25:26 +0100
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-s390 <linux-s390@vger.kernel.org>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>
+Subject: [GIT PULL] s390 patches for 2.6.33-rc2
+Message-ID: <20100104092526.7f294fd6@mschwide.boeblingen.de.ibm.com>
+Organization: IBM Corporation
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.18.5; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.0 (2.28.0-2.fc12) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2010-01-02 at 19:52 +0100, Corrado Zoccolo wrote:
-> Hi
-> On Sat, Jan 2, 2010 at 1:33 PM, Zhang, Yanmin
-> <yanmin_zhang@linux.intel.com> wrote:
-> > On Fri, 2010-01-01 at 17:32 +0100, Corrado Zoccolo wrote:
-> >> Hi Yanmin,
-> >> On Fri, Jan 1, 2010 at 11:12 AM, Zhang, Yanmin
-> >> <yanmin_zhang@linux.intel.com> wrote:
-> >> > On Thu, 2009-12-31 at 11:34 +0100, Corrado Zoccolo wrote:
-> >> >> Hi Yanmin,
-> >> >> On Thu, Dec 31, 2009 at 10:16 AM, Zhang, Yanmin
-> >> >> <yanmin_zhang@linux.intel.com> wrote:
-> >> >> > Comparing with kernel 2.6.32, fio mmap randread 64k has more than 40% regression with
-> >> >> > 2.6.33-rc1.
-> >> >>
-> >> > Thanks for your timely reply. Some comments inlined below.
-> >> >
-> >> >> Can you compare the performance also with 2.6.31?
-> >> > We did. We run Linux kernel Performance Tracking project and run many benchmarks when a RC kernel
-> >> > is released.
-> >> >
-> >> > The result of 2.6.31 is quite similar to the one of 2.6.32. But the one of 2.6.30 is about
-> >> > 8% better than the one of 2.6.31.
-> >> >
-> >> >> I think I understand what causes your problem.
-> >> >> 2.6.32, with default settings, handled even random readers as
-> >> >> sequential ones to provide fairness. This has benefits on single disks
-> >> >> and JBODs, but causes harm on raids.
-> >> > I didn't test RAID as that machine with hardware RAID HBA is crashed now. But if we turn on
-> >> > hardware RAID in HBA, mostly we use noop io scheduler.
-> >> I think you should start testing cfq with them, too. From 2.6.33, we
-> >> have some big improvements in this area.
-> > Great! I once compared cfq and noop against non-raid and raid0. One interesting finding
-> > about sequential read testing is when there are fewer processes to read files on the raid0
-> > JBOD, noop on raid0 is pretty good, but when there are lots of processes to do so on a non-raid
-> > JBOD, cfq is pretty better. I planed to investigate it, but too busy in other issues.
-> >
-> >> >
-> >> >> For 2.6.33, we changed the way in which this is handled, restoring the
-> >> >> enable_idle = 0 for seeky queues as it was in 2.6.31:
-> >> >> @@ -2218,13 +2352,10 @@ cfq_update_idle_window(struct cfq_data *cfqd,
-> >> >> struct cfq_queue *cfqq,
-> >> >>        enable_idle = old_idle = cfq_cfqq_idle_window(cfqq);
-> >> >>
-> >> >>        if (!atomic_read(&cic->ioc->nr_tasks) || !cfqd->cfq_slice_idle ||
-> >> >> -           (!cfqd->cfq_latency && cfqd->hw_tag && CFQQ_SEEKY(cfqq)))
-> >> >> +           (sample_valid(cfqq->seek_samples) && CFQQ_SEEKY(cfqq)))
-> >> >>                enable_idle = 0;
-> >> >> (compare with 2.6.31:
-> >> >>         if (!atomic_read(&cic->ioc->nr_tasks) || !cfqd->cfq_slice_idle ||
-> >> >>             (cfqd->hw_tag && CIC_SEEKY(cic)))
-> >> >>                 enable_idle = 0;
-> >> >> excluding the sample_valid check, it should be equivalent for you (I
-> >> >> assume you have NCQ disks))
-> >> >> and we provide fairness for them by servicing all seeky queues
-> >> >> together, and then idling before switching to other ones.
-> >> > As for function cfq_update_idle_window, you is right. But since
-> >> > 2.6.32, CFQ merges many patches and the patches have impact on each other.
-> >> >
-> >> >>
-> >> >> The mmap 64k randreader will have a large seek_mean, resulting in
-> >> >> being marked seeky, but will send 16 * 4k sequential requests one
-> >> >> after the other, so alternating between those seeky queues will cause
-> >> >> harm.
-> >> >>
-> >> >> I'm working on a new way to compute seekiness of queues, that should
-> >> >> fix your issue, correctly identifying those queues as non-seeky (for
-> >> >> me, a queue should be considered seeky only if it submits more than 1
-> >> >> seeky requests for 8 sequential ones).
-> >> >>
-> >> >> >
-> >> >> > The test scenario: 1 JBOD has 12 disks and every disk has 2 partitions. Create
-> >> >> > 8 1-GB files per partition and start 8 processes to do rand read on the 8 files
-> >> >> > per partitions. There are 8*24 processes totally. randread block size is 64K.
-> >> >> >
-> >> >> > We found the regression on 2 machines. One machine has 8GB memory and the other has
-> >> >> > 6GB.
-> >> >> >
-> >> >> > Bisect is very unstable. The related patches are many instead of just one.
-> >> >> >
-> >> >> >
-> >> >> > 1) commit 8e550632cccae34e265cb066691945515eaa7fb5
-> >> >> > Author: Corrado Zoccolo <czoccolo@gmail.com>
-> >> >> > Date:   Thu Nov 26 10:02:58 2009 +0100
-> >> >> >
-> >> >> >    cfq-iosched: fix corner cases in idling logic
-> >> >> >
-> >> >> >
-> >> >> > This patch introduces about less than 20% regression. I just reverted below section
-> >> >> > and this part regression disappear. It shows this regression is stable and not impacted
-> >> >> > by other patches.
-> >> >> >
-> >> >> > @@ -1253,9 +1254,9 @@ static void cfq_arm_slice_timer(struct cfq_data *cfqd)
-> >> >> >                return;
-> >> >> >
-> >> >> >        /*
-> >> >> > -        * still requests with the driver, don't idle
-> >> >> > +        * still active requests from this queue, don't idle
-> >> >> >         */
-> >> >> > -       if (rq_in_driver(cfqd))
-> >> >> > +       if (cfqq->dispatched)
-> >> >> >                return;
-> >> > Although 5 patches are related to the regression, above line is quite
-> >> > independent. Reverting above line could always improve the result for about
-> >> > 20%.
-> >> I've looked at your fio script, and it is quite complex,
-> > As we have about 40 fio sub cases, we have a script to create fio job file from
-> > a specific parameter list. So there are some superfluous parameters.
-> >
-> My point is that there are so many things going on, that is more
-> difficult to analyse the issues.
-> I prefer looking at one problem at a time, so (initially) removing the
-> possibility of queue merging, that Shaohua already investigated, can
-> help in spotting the still not-well-understood problem.
-Sounds reasonable.
+Hi Linus,
 
-> Could you generate the same script, but with each process accessing
-> only one of the files, instead of chosing it at random?
-Ok. New testing starts 8 processes per partition and every process just works
-on one file.
+it's rather quiet right now, only three new patches for s390.
+Please pull from 'for-linus' branch of
 
-> 
-> > Another point is we need stable result.
-> >
-> >> with lot of
-> >> things going on.
-> >> Let's keep this for last.
-> > Ok. But the change like what you do mostly reduces regresion.
-> >
-> >> I've created a smaller test, that already shows some regression:
-> >> [global]
-> >> direct=0
-> >> ioengine=mmap
-> >> size=8G
-> >> bs=64k
-> >> numjobs=1
-> >> loops=5
-> >> runtime=60
-> >> #group_reporting
-> >> invalidate=0
-> >> directory=/media/hd/cfq-tests
-> >>
-> >> [job0]
-> >> startdelay=0
-> >> rw=randread
-> >> filename=testfile1
-> >>
-> >> [job1]
-> >> startdelay=0
-> >> rw=randread
-> >> filename=testfile2
-> >>
-> >> [job2]
-> >> startdelay=0
-> >> rw=randread
-> >> filename=testfile3
-> >>
-> >> [job3]
-> >> startdelay=0
-> >> rw=randread
-> >> filename=testfile4
-> >>
-> >> The attached patches, in particular 0005 (that apply on top of
-> >> for-linus branch of Jen's tree
-> >> git://git.kernel.dk/linux-2.6-block.git) fix the regression on this
-> >> simplified workload.
-> > I didn't download the tree. I tested the 3 attached patches against 2.6.33-rc1. The
-> > result isn't resolved.
-> Can you quantify if there is an improvement, though?
+	git://git390.marist.edu/pub/scm/linux-2.6.git for-linus
 
-Ok. Because of company policy, I could only post percent instead of real number.
+to receive the following updates:
 
-> Please, also include Shahoua's patches.
-> I'd like to see the comparison between (always with low_latency set to 0):
-> plain 2.6.33
-> plain 2.6.33 + shahoua's
-> plain 2.6.33 + shahoua's + my patch
-> plain 2.6.33 + shahoua's + my patch + rq_in_driver vs dispatched patch.
+Jan Glauber (1):
+      [S390] qdio: convert global statistics to per-device stats
 
-1) low_latency=0
-2.6.32 kernel   				0
-2.6.33-rc1					-0.33
-2.6.33-rc1_shaohua				-0.33
-2.6.33-rc1+corrado				0.03
-2.6.33-rc1_corrado+shaohua			0.02
-2.6.33-rc1_corrado+shaohua+rq_in_driver		0.01
+Martin Schwidefsky (1):
+      [S390] Update default configuration.
 
-2) low_latency=1
-2.6.32 kernel					0
-2.6.33-rc1					-0.45
-2.6.33-rc1+corrado				-0.24
-2.6.33-rc1_corrado+shaohua			-0.23
-2.6.33-rc1_corrado+shaohua+rq_in_driver		-0.23
+Robert P. J. Day (1):
+      [S390] Have param.h simply include <asm-generic/param.h>.
 
+ arch/s390/defconfig             |   86 ++++++++++++++++++++---
+ arch/s390/include/asm/param.h   |   28 +-------
+ drivers/s390/cio/Makefile       |    2 +-
+ drivers/s390/cio/qdio.h         |   36 +++++++++-
+ drivers/s390/cio/qdio_debug.c   |  114 +++++++++++++++++++++++++++--
+ drivers/s390/cio/qdio_main.c    |   71 +++++++++----------
+ drivers/s390/cio/qdio_perf.c    |  149 ---------------------------------------
+ drivers/s390/cio/qdio_perf.h    |   62 ----------------
+ drivers/s390/cio/qdio_thinint.c |    8 +--
+ 9 files changed, 254 insertions(+), 302 deletions(-)
+ delete mode 100644 drivers/s390/cio/qdio_perf.c
+ delete mode 100644 drivers/s390/cio/qdio_perf.h
 
-When low_latency=1, we get the biggest number with kernel 2.6.32.
-Comparing with low_latency=0's result, the prior one is about 4% better.
-
-
-> 
-> >>
-> >> >
-> >> >> >
-> >> >> This shouldn't affect you if all queues are marked as idle.
-> >> > Do you mean to use command ionice to mark it as idle class? I didn't try it.
-> >> No. I meant forcing enable_idle = 1, as you were almost doing with
-> >> your patch, when cfq_latency was set.
-> >> With my above patch, this should not be needed any more, since the
-> >> queues should be seen as sequential.
-> >>
-> >> >
-> >> >>  Does just
-> >> >> your patch:
-> >> >> > -           (!cfq_cfqq_deep(cfqq) && sample_valid(cfqq->seek_samples)
-> >> >> > -            && CFQQ_SEEKY(cfqq)))
-> >> >> > +           (!cfqd->cfq_latency && !cfq_cfqq_deep(cfqq) &&
-> >> >> > +               sample_valid(cfqq->seek_samples) && CFQQ_SEEKY(cfqq)))
-> >> >> fix most of the regression without touching arm_slice_timer?
-> >> > No. If to fix the regression completely, I need apply above patch plus
-> >> > a debug patch. The debug patch is to just work around the 3 patches report by
-> >> > Shaohua's tiobench regression report. Without the debug patch, the regression
-> >> > isn't resolved.
-> >>
-> >> Jens already merged one of Shaohua's patches, that may fix the problem
-> >> with queue combining.
-> > I did another testing. Apply my debug patch+ the low_latency patch, but use
-> > Shaohua's 2 patches (improve merge and split), the regression disappears.
-> >
-> >>
-> >> > Below is the debug patch.
-> >> > diff -Nraup linux-2.6.33_rc1/block/cfq-iosched.c linux-2.6.33_rc1_randread64k/block/cfq-iosched.c
-> >> > --- linux-2.6.33_rc1/block/cfq-iosched.c        2009-12-23 14:12:03.000000000 +0800
-> >> > +++ linux-2.6.33_rc1_randread64k/block/cfq-iosched.c    2009-12-30 17:12:28.000000000 +0800
-> >> > @@ -592,6 +592,9 @@ cfq_set_prio_slice(struct cfq_data *cfqd
-> >> >        cfqq->slice_start = jiffies;
-> >> >        cfqq->slice_end = jiffies + slice;
-> >> >        cfqq->allocated_slice = slice;
-> >> > +/*YMZHANG*/
-> >> > +       cfqq->slice_end = cfq_prio_to_slice(cfqd, cfqq) + jiffies;
-> >> > +
-> >> This is disabled, on a vanilla 2.6.33 kernel, by setting low_latency = 0
-> >> >        cfq_log_cfqq(cfqd, cfqq, "set_slice=%lu", cfqq->slice_end - jiffies);
-> >> >  }
-> >> >
-> >> > @@ -1836,7 +1839,8 @@ static void cfq_arm_slice_timer(struct c
-> >> >        /*
-> >> >         * still active requests from this queue, don't idle
-> >> >         */
-> >> > -       if (cfqq->dispatched)
-> >> > +       //if (cfqq->dispatched)
-> >> > +       if (rq_in_driver(cfqd))
-> >> >                return;
-> >> >
-> >> >        /*
-> >> > @@ -1941,6 +1945,9 @@ static void cfq_setup_merge(struct cfq_q
-> >> >                new_cfqq = __cfqq;
-> >> >        }
-> >> >
-> >> > +       /* YMZHANG debug */
-> >> > +       return;
-> >> > +
-> >> This should be partially addressed by Shaohua's patch merged in Jens' tree.
-> >> But note that your 8 processes, can randomly start doing I/O on the
-> >> same file, so merging those queues is sometimes reasonable.
-> > Another reason is I start 8 processes per partition and every disk has 2 partitions,
-> > so there are 16 processes per disk. With another JBOD, I use one partition per disk,
-> > and the regression is only 8%.
-> With half of the processes, time slices are higher, and the disk cache
-> can do a better job when servicing interleaved sequential requests.
-> >
-> > >From this point, can CFQ do not merge request queues which access different partitions?
-> (puzzled: I didn't write this, and can't find a message in the thread
-> with this question.)
-My email client is evolution and sometimes it adds > unexpectedly.
-
-
-> > As you know, it's unusual that a process accesses files across partitions. io scheduler
-> > is at low layer which doesn't know partition.
-> CFQ bases decision on distance between requests, and requests going to
-> different partitions will have much higher distance. So the associated
-> queues will be more likely marked as seeky.
-Right. Thanks for your explanation.
-
-> >
-> >
-> >> The patch to split them quickly was still not merged, though, so you
-> >> will still see some regression due to this. In my simplified job file,
-> >> I removed the randomness to make sure this cannot happen.
-> >>
-> >> >        process_refs = cfqq_process_refs(cfqq);
-> >> >        /*
-> >> >         * If the process for the cfqq has gone away, there is no
-> >> >
-> >> >
-> >> >>
-> >> >> I guess
-> >> >> > 5db5d64277bf390056b1a87d0bb288c8b8553f96.
-> >> >> will still introduce a 10% regression, but this is needed to improve
-> >> >> latency, and you can just disable low_latency to avoid it.
-> >> > You are right. I did a quick testing. If my patch + revert 2 patches and keep
-> >> > 5db5d64, the regression is about 20%.
-> >> >
-> >> > But low_latency=0 doesn't work like what we imagined. If patch + revert 2 patches
-> >> > and keep 5db5d64 while set low_latency=0, the regression is still there. One
-> >> > reason is my patch doesn't work when low_latency=0.
-> >> Right. You can try with my patch, instead, that doesn't depend on
-> >> low_latency, and set it to 0 to remove this performance degradation.
-> >> My results:
-> >> 2.6.32.2:
-> >>    READ: io=146688KB, aggrb=2442KB/s, minb=602KB/s, maxb=639KB/s,
-> >> mint=60019msec, maxt=60067msec
-> >>
-> >> 2.6.33 - jens:
-> >>    READ: io=128512KB, aggrb=2140KB/s, minb=526KB/s, maxb=569KB/s,
-> >> mint=60004msec, maxt=60032msec
-> >>
-> >> 2.6.33 - jens + my patches :
-> >>    READ: io=143232KB, aggrb=2384KB/s, minb=595KB/s, maxb=624KB/s,
-> >> mint=60003msec, maxt=60072msec
-> >>
-> >> 2.6.33 - jens + my patches + low_lat = 0:
-> >>    READ: io=145216KB, aggrb=2416KB/s, minb=596KB/s, maxb=632KB/s,
-> >> mint=60027msec, maxt=60087msec
-
-
+diff --git a/arch/s390/defconfig b/arch/s390/defconfig
+index f4e53c6..b416aa1 100644
+--- a/arch/s390/defconfig
++++ b/arch/s390/defconfig
+@@ -1,7 +1,7 @@
+ #
+ # Automatically generated make config: don't edit
+-# Linux kernel version: 2.6.31
+-# Tue Sep 22 17:43:13 2009
++# Linux kernel version: 2.6.33-rc2
++# Mon Jan  4 09:03:07 2010
+ #
+ CONFIG_SCHED_MC=y
+ CONFIG_MMU=y
+@@ -51,6 +51,7 @@ CONFIG_AUDIT=y
+ #
+ CONFIG_TREE_RCU=y
+ # CONFIG_TREE_PREEMPT_RCU is not set
++# CONFIG_TINY_RCU is not set
+ # CONFIG_RCU_TRACE is not set
+ CONFIG_RCU_FANOUT=64
+ # CONFIG_RCU_FANOUT_EXACT is not set
+@@ -113,7 +114,6 @@ CONFIG_HAVE_PERF_EVENTS=y
+ # CONFIG_PERF_EVENTS is not set
+ # CONFIG_PERF_COUNTERS is not set
+ CONFIG_VM_EVENT_COUNTERS=y
+-# CONFIG_STRIP_ASM_SYMS is not set
+ # CONFIG_COMPAT_BRK is not set
+ CONFIG_SLAB=y
+ # CONFIG_SLUB is not set
+@@ -149,21 +149,78 @@ CONFIG_STOP_MACHINE=y
+ CONFIG_BLOCK=y
+ CONFIG_BLK_DEV_BSG=y
+ # CONFIG_BLK_DEV_INTEGRITY is not set
++# CONFIG_BLK_CGROUP is not set
+ CONFIG_BLOCK_COMPAT=y
+ 
+ #
+ # IO Schedulers
+ #
+ CONFIG_IOSCHED_NOOP=y
+-CONFIG_IOSCHED_AS=y
+ CONFIG_IOSCHED_DEADLINE=y
+ CONFIG_IOSCHED_CFQ=y
+-# CONFIG_DEFAULT_AS is not set
++# CONFIG_CFQ_GROUP_IOSCHED is not set
+ CONFIG_DEFAULT_DEADLINE=y
+ # CONFIG_DEFAULT_CFQ is not set
+ # CONFIG_DEFAULT_NOOP is not set
+ CONFIG_DEFAULT_IOSCHED="deadline"
+ CONFIG_PREEMPT_NOTIFIERS=y
++CONFIG_ARCH_INLINE_SPIN_TRYLOCK=y
++CONFIG_ARCH_INLINE_SPIN_TRYLOCK_BH=y
++CONFIG_ARCH_INLINE_SPIN_LOCK=y
++CONFIG_ARCH_INLINE_SPIN_LOCK_BH=y
++CONFIG_ARCH_INLINE_SPIN_LOCK_IRQ=y
++CONFIG_ARCH_INLINE_SPIN_LOCK_IRQSAVE=y
++CONFIG_ARCH_INLINE_SPIN_UNLOCK=y
++CONFIG_ARCH_INLINE_SPIN_UNLOCK_BH=y
++CONFIG_ARCH_INLINE_SPIN_UNLOCK_IRQ=y
++CONFIG_ARCH_INLINE_SPIN_UNLOCK_IRQRESTORE=y
++CONFIG_ARCH_INLINE_READ_TRYLOCK=y
++CONFIG_ARCH_INLINE_READ_LOCK=y
++CONFIG_ARCH_INLINE_READ_LOCK_BH=y
++CONFIG_ARCH_INLINE_READ_LOCK_IRQ=y
++CONFIG_ARCH_INLINE_READ_LOCK_IRQSAVE=y
++CONFIG_ARCH_INLINE_READ_UNLOCK=y
++CONFIG_ARCH_INLINE_READ_UNLOCK_BH=y
++CONFIG_ARCH_INLINE_READ_UNLOCK_IRQ=y
++CONFIG_ARCH_INLINE_READ_UNLOCK_IRQRESTORE=y
++CONFIG_ARCH_INLINE_WRITE_TRYLOCK=y
++CONFIG_ARCH_INLINE_WRITE_LOCK=y
++CONFIG_ARCH_INLINE_WRITE_LOCK_BH=y
++CONFIG_ARCH_INLINE_WRITE_LOCK_IRQ=y
++CONFIG_ARCH_INLINE_WRITE_LOCK_IRQSAVE=y
++CONFIG_ARCH_INLINE_WRITE_UNLOCK=y
++CONFIG_ARCH_INLINE_WRITE_UNLOCK_BH=y
++CONFIG_ARCH_INLINE_WRITE_UNLOCK_IRQ=y
++CONFIG_ARCH_INLINE_WRITE_UNLOCK_IRQRESTORE=y
++# CONFIG_INLINE_SPIN_TRYLOCK is not set
++# CONFIG_INLINE_SPIN_TRYLOCK_BH is not set
++# CONFIG_INLINE_SPIN_LOCK is not set
++# CONFIG_INLINE_SPIN_LOCK_BH is not set
++# CONFIG_INLINE_SPIN_LOCK_IRQ is not set
++# CONFIG_INLINE_SPIN_LOCK_IRQSAVE is not set
++# CONFIG_INLINE_SPIN_UNLOCK is not set
++# CONFIG_INLINE_SPIN_UNLOCK_BH is not set
++# CONFIG_INLINE_SPIN_UNLOCK_IRQ is not set
++# CONFIG_INLINE_SPIN_UNLOCK_IRQRESTORE is not set
++# CONFIG_INLINE_READ_TRYLOCK is not set
++# CONFIG_INLINE_READ_LOCK is not set
++# CONFIG_INLINE_READ_LOCK_BH is not set
++# CONFIG_INLINE_READ_LOCK_IRQ is not set
++# CONFIG_INLINE_READ_LOCK_IRQSAVE is not set
++# CONFIG_INLINE_READ_UNLOCK is not set
++# CONFIG_INLINE_READ_UNLOCK_BH is not set
++# CONFIG_INLINE_READ_UNLOCK_IRQ is not set
++# CONFIG_INLINE_READ_UNLOCK_IRQRESTORE is not set
++# CONFIG_INLINE_WRITE_TRYLOCK is not set
++# CONFIG_INLINE_WRITE_LOCK is not set
++# CONFIG_INLINE_WRITE_LOCK_BH is not set
++# CONFIG_INLINE_WRITE_LOCK_IRQ is not set
++# CONFIG_INLINE_WRITE_LOCK_IRQSAVE is not set
++# CONFIG_INLINE_WRITE_UNLOCK is not set
++# CONFIG_INLINE_WRITE_UNLOCK_BH is not set
++# CONFIG_INLINE_WRITE_UNLOCK_IRQ is not set
++# CONFIG_INLINE_WRITE_UNLOCK_IRQRESTORE is not set
++# CONFIG_MUTEX_SPIN_ON_OWNER is not set
+ CONFIG_FREEZER=y
+ 
+ #
+@@ -227,14 +284,13 @@ CONFIG_MEMORY_HOTPLUG=y
+ CONFIG_MEMORY_HOTPLUG_SPARSE=y
+ CONFIG_MEMORY_HOTREMOVE=y
+ CONFIG_PAGEFLAGS_EXTENDED=y
+-CONFIG_SPLIT_PTLOCK_CPUS=4
++CONFIG_SPLIT_PTLOCK_CPUS=999999
+ CONFIG_MIGRATION=y
+ CONFIG_PHYS_ADDR_T_64BIT=y
+ CONFIG_ZONE_DMA_FLAG=1
+ CONFIG_BOUNCE=y
+ CONFIG_VIRT_TO_BUS=y
+-CONFIG_HAVE_MLOCK=y
+-CONFIG_HAVE_MLOCKED_PAGE_BIT=y
++# CONFIG_KSM is not set
+ CONFIG_DEFAULT_MMAP_MIN_ADDR=4096
+ 
+ #
+@@ -339,6 +395,7 @@ CONFIG_INET6_XFRM_MODE_TUNNEL=y
+ CONFIG_INET6_XFRM_MODE_BEET=y
+ # CONFIG_INET6_XFRM_MODE_ROUTEOPTIMIZATION is not set
+ CONFIG_IPV6_SIT=y
++# CONFIG_IPV6_SIT_6RD is not set
+ CONFIG_IPV6_NDISC_NODETYPE=y
+ # CONFIG_IPV6_TUNNEL is not set
+ # CONFIG_IPV6_MULTIPLE_TABLES is not set
+@@ -504,6 +561,10 @@ CONFIG_BLK_DEV=y
+ # CONFIG_BLK_DEV_COW_COMMON is not set
+ CONFIG_BLK_DEV_LOOP=m
+ # CONFIG_BLK_DEV_CRYPTOLOOP is not set
++
++#
++# DRBD disabled because PROC_FS, INET or CONNECTOR not selected
++#
+ CONFIG_BLK_DEV_NBD=m
+ # CONFIG_BLK_DEV_OSD is not set
+ CONFIG_BLK_DEV_RAM=y
+@@ -710,7 +771,6 @@ CONFIG_S390_VMUR=m
+ # CONFIG_PPS is not set
+ # CONFIG_POWER_SUPPLY is not set
+ # CONFIG_THERMAL is not set
+-# CONFIG_THERMAL_HWMON is not set
+ # CONFIG_WATCHDOG is not set
+ # CONFIG_REGULATOR is not set
+ # CONFIG_MEMSTICK is not set
+@@ -864,6 +924,7 @@ CONFIG_ENABLE_WARN_DEPRECATED=y
+ CONFIG_ENABLE_MUST_CHECK=y
+ CONFIG_FRAME_WARN=2048
+ CONFIG_MAGIC_SYSRQ=y
++# CONFIG_STRIP_ASM_SYMS is not set
+ # CONFIG_UNUSED_SYMBOLS is not set
+ CONFIG_DEBUG_FS=y
+ # CONFIG_HEADERS_CHECK is not set
+@@ -931,7 +992,6 @@ CONFIG_BRANCH_PROFILE_NONE=y
+ CONFIG_SAMPLES=y
+ # CONFIG_SAMPLE_KOBJECT is not set
+ # CONFIG_SAMPLE_KPROBES is not set
+-# CONFIG_KMEMCHECK is not set
+ 
+ #
+ # Security options
+@@ -939,7 +999,11 @@ CONFIG_SAMPLES=y
+ # CONFIG_KEYS is not set
+ # CONFIG_SECURITY is not set
+ # CONFIG_SECURITYFS is not set
+-# CONFIG_SECURITY_FILE_CAPABILITIES is not set
++# CONFIG_DEFAULT_SECURITY_SELINUX is not set
++# CONFIG_DEFAULT_SECURITY_SMACK is not set
++# CONFIG_DEFAULT_SECURITY_TOMOYO is not set
++CONFIG_DEFAULT_SECURITY_DAC=y
++CONFIG_DEFAULT_SECURITY=""
+ CONFIG_CRYPTO=y
+ 
+ #
+diff --git a/arch/s390/include/asm/param.h b/arch/s390/include/asm/param.h
+index 34aaa46..c616821 100644
+--- a/arch/s390/include/asm/param.h
++++ b/arch/s390/include/asm/param.h
+@@ -1,30 +1,6 @@
+-/*
+- *  include/asm-s390/param.h
+- *
+- *  S390 version
+- *
+- *  Derived from "include/asm-i386/param.h"
+- */
+-
+ #ifndef _ASMS390_PARAM_H
+ #define _ASMS390_PARAM_H
+ 
+-#ifdef __KERNEL__
+-# define HZ		CONFIG_HZ	/* Internal kernel timer frequency */
+-# define USER_HZ	100		/* .. some user interfaces are in "ticks" */
+-# define CLOCKS_PER_SEC	(USER_HZ)	/* like times() */
+-#endif
+-
+-#ifndef HZ
+-#define HZ 100
+-#endif
+-
+-#define EXEC_PAGESIZE	4096
+-
+-#ifndef NOGROUP
+-#define NOGROUP		(-1)
+-#endif
+-
+-#define MAXHOSTNAMELEN	64	/* max length of hostname */
++#include <asm-generic/param.h>
+ 
+-#endif
++#endif /* _ASMS390_PARAM_H */
+diff --git a/drivers/s390/cio/Makefile b/drivers/s390/cio/Makefile
+index d033414..e1b700a 100644
+--- a/drivers/s390/cio/Makefile
++++ b/drivers/s390/cio/Makefile
+@@ -10,5 +10,5 @@ obj-y += ccw_device.o cmf.o
+ obj-$(CONFIG_CHSC_SCH) += chsc_sch.o
+ obj-$(CONFIG_CCWGROUP) += ccwgroup.o
+ 
+-qdio-objs := qdio_main.o qdio_thinint.o qdio_debug.o qdio_perf.o qdio_setup.o
++qdio-objs := qdio_main.o qdio_thinint.o qdio_debug.o qdio_setup.o
+ obj-$(CONFIG_QDIO) += qdio.o
+diff --git a/drivers/s390/cio/qdio.h b/drivers/s390/cio/qdio.h
+index ff7748a..44f2f6a 100644
+--- a/drivers/s390/cio/qdio.h
++++ b/drivers/s390/cio/qdio.h
+@@ -182,6 +182,34 @@ struct scssc_area {
+ 	u32:32;
+ } __attribute__ ((packed));
+ 
++struct qdio_dev_perf_stat {
++	unsigned int adapter_int;
++	unsigned int qdio_int;
++	unsigned int pci_request_int;
++
++	unsigned int tasklet_inbound;
++	unsigned int tasklet_inbound_resched;
++	unsigned int tasklet_inbound_resched2;
++	unsigned int tasklet_outbound;
++
++	unsigned int siga_read;
++	unsigned int siga_write;
++	unsigned int siga_sync;
++
++	unsigned int inbound_call;
++	unsigned int inbound_handler;
++	unsigned int stop_polling;
++	unsigned int inbound_queue_full;
++	unsigned int outbound_call;
++	unsigned int outbound_handler;
++	unsigned int fast_requeue;
++	unsigned int target_full;
++	unsigned int eqbs;
++	unsigned int eqbs_partial;
++	unsigned int sqbs;
++	unsigned int sqbs_partial;
++};
++
+ struct qdio_input_q {
+ 	/* input buffer acknowledgement flag */
+ 	int polling;
+@@ -269,6 +297,7 @@ struct qdio_irq {
+ 	u32 *dsci;		/* address of device state change indicator */
+ 	struct ccw_device *cdev;
+ 	struct dentry *debugfs_dev;
++	struct dentry *debugfs_perf;
+ 
+ 	unsigned long int_parm;
+ 	struct subchannel_id schid;
+@@ -286,9 +315,10 @@ struct qdio_irq {
+ 	struct ciw aqueue;
+ 
+ 	struct qdio_ssqd_desc ssqd_desc;
+-
+ 	void (*orig_handler) (struct ccw_device *, unsigned long, struct irb *);
+ 
++	struct qdio_dev_perf_stat perf_stat;
++	int perf_stat_enabled;
+ 	/*
+ 	 * Warning: Leave these members together at the end so they won't be
+ 	 * cleared in qdio_setup_irq.
+@@ -311,6 +341,10 @@ struct qdio_irq {
+ 	(irq->qib.qfmt == QDIO_IQDIO_QFMT || \
+ 	 css_general_characteristics.aif_osa)
+ 
++#define qperf(qdev,attr)	qdev->perf_stat.attr
++#define qperf_inc(q,attr)	if (q->irq_ptr->perf_stat_enabled) \
++					q->irq_ptr->perf_stat.attr++
++
+ /* the highest iqdio queue is used for multicast */
+ static inline int multicast_outbound(struct qdio_q *q)
+ {
+diff --git a/drivers/s390/cio/qdio_debug.c b/drivers/s390/cio/qdio_debug.c
+index 7676997..f49761f 100644
+--- a/drivers/s390/cio/qdio_debug.c
++++ b/drivers/s390/cio/qdio_debug.c
+@@ -55,13 +55,11 @@ static int qstat_show(struct seq_file *m, void *v)
+ 	if (!q)
+ 		return 0;
+ 
+-	seq_printf(m, "device state indicator: %d\n", *(u32 *)q->irq_ptr->dsci);
+-	seq_printf(m, "nr_used: %d\n", atomic_read(&q->nr_buf_used));
+-	seq_printf(m, "ftc: %d\n", q->first_to_check);
+-	seq_printf(m, "last_move: %d\n", q->last_move);
+-	seq_printf(m, "polling: %d\n", q->u.in.polling);
+-	seq_printf(m, "ack start: %d\n", q->u.in.ack_start);
+-	seq_printf(m, "ack count: %d\n", q->u.in.ack_count);
++	seq_printf(m, "DSCI: %d   nr_used: %d\n",
++		   *(u32 *)q->irq_ptr->dsci, atomic_read(&q->nr_buf_used));
++	seq_printf(m, "ftc: %d  last_move: %d\n", q->first_to_check, q->last_move);
++	seq_printf(m, "polling: %d  ack start: %d  ack count: %d\n",
++		   q->u.in.polling, q->u.in.ack_start, q->u.in.ack_count);
+ 	seq_printf(m, "slsb buffer states:\n");
+ 	seq_printf(m, "|0      |8      |16     |24     |32     |40     |48     |56  63|\n");
+ 
+@@ -110,7 +108,6 @@ static ssize_t qstat_seq_write(struct file *file, const char __user *buf,
+ 
+ 	if (!q)
+ 		return 0;
+-
+ 	if (q->is_input_q)
+ 		xchg(q->irq_ptr->dsci, 1);
+ 	local_bh_disable();
+@@ -134,6 +131,98 @@ static const struct file_operations debugfs_fops = {
+ 	.release = single_release,
+ };
+ 
++static char *qperf_names[] = {
++	"Assumed adapter interrupts",
++	"QDIO interrupts",
++	"Requested PCIs",
++	"Inbound tasklet runs",
++	"Inbound tasklet resched",
++	"Inbound tasklet resched2",
++	"Outbound tasklet runs",
++	"SIGA read",
++	"SIGA write",
++	"SIGA sync",
++	"Inbound calls",
++	"Inbound handler",
++	"Inbound stop_polling",
++	"Inbound queue full",
++	"Outbound calls",
++	"Outbound handler",
++	"Outbound fast_requeue",
++	"Outbound target_full",
++	"QEBSM eqbs",
++	"QEBSM eqbs partial",
++	"QEBSM sqbs",
++	"QEBSM sqbs partial"
++};
++
++static int qperf_show(struct seq_file *m, void *v)
++{
++	struct qdio_irq *irq_ptr = m->private;
++	unsigned int *stat;
++	int i;
++
++	if (!irq_ptr)
++		return 0;
++	if (!irq_ptr->perf_stat_enabled) {
++		seq_printf(m, "disabled\n");
++		return 0;
++	}
++	stat = (unsigned int *)&irq_ptr->perf_stat;
++
++	for (i = 0; i < ARRAY_SIZE(qperf_names); i++)
++		seq_printf(m, "%26s:\t%u\n",
++			   qperf_names[i], *(stat + i));
++	return 0;
++}
++
++static ssize_t qperf_seq_write(struct file *file, const char __user *ubuf,
++			       size_t count, loff_t *off)
++{
++	struct seq_file *seq = file->private_data;
++	struct qdio_irq *irq_ptr = seq->private;
++	unsigned long val;
++	char buf[8];
++	int ret;
++
++	if (!irq_ptr)
++		return 0;
++	if (count >= sizeof(buf))
++		return -EINVAL;
++	if (copy_from_user(&buf, ubuf, count))
++		return -EFAULT;
++	buf[count] = 0;
++
++	ret = strict_strtoul(buf, 10, &val);
++	if (ret < 0)
++		return ret;
++
++	switch (val) {
++	case 0:
++		irq_ptr->perf_stat_enabled = 0;
++		memset(&irq_ptr->perf_stat, 0, sizeof(irq_ptr->perf_stat));
++		break;
++	case 1:
++		irq_ptr->perf_stat_enabled = 1;
++		break;
++	}
++	return count;
++}
++
++static int qperf_seq_open(struct inode *inode, struct file *filp)
++{
++	return single_open(filp, qperf_show,
++			   filp->f_path.dentry->d_inode->i_private);
++}
++
++static struct file_operations debugfs_perf_fops = {
++	.owner	 = THIS_MODULE,
++	.open	 = qperf_seq_open,
++	.read	 = seq_read,
++	.write	 = qperf_seq_write,
++	.llseek  = seq_lseek,
++	.release = single_release,
++};
+ static void setup_debugfs_entry(struct qdio_q *q, struct ccw_device *cdev)
+ {
+ 	char name[QDIO_DEBUGFS_NAME_LEN];
+@@ -156,6 +245,14 @@ void qdio_setup_debug_entries(struct qdio_irq *irq_ptr, struct ccw_device *cdev)
+ 						  debugfs_root);
+ 	if (IS_ERR(irq_ptr->debugfs_dev))
+ 		irq_ptr->debugfs_dev = NULL;
++
++	irq_ptr->debugfs_perf = debugfs_create_file("statistics",
++				S_IFREG | S_IRUGO | S_IWUSR,
++				irq_ptr->debugfs_dev, irq_ptr,
++				&debugfs_perf_fops);
++	if (IS_ERR(irq_ptr->debugfs_perf))
++		irq_ptr->debugfs_perf = NULL;
++
+ 	for_each_input_queue(irq_ptr, q, i)
+ 		setup_debugfs_entry(q, cdev);
+ 	for_each_output_queue(irq_ptr, q, i)
+@@ -171,6 +268,7 @@ void qdio_shutdown_debug_entries(struct qdio_irq *irq_ptr, struct ccw_device *cd
+ 		debugfs_remove(q->debugfs_q);
+ 	for_each_output_queue(irq_ptr, q, i)
+ 		debugfs_remove(q->debugfs_q);
++	debugfs_remove(irq_ptr->debugfs_perf);
+ 	debugfs_remove(irq_ptr->debugfs_dev);
+ }
+ 
+diff --git a/drivers/s390/cio/qdio_main.c b/drivers/s390/cio/qdio_main.c
+index b2275c5..999fe80 100644
+--- a/drivers/s390/cio/qdio_main.c
++++ b/drivers/s390/cio/qdio_main.c
+@@ -22,7 +22,6 @@
+ #include "device.h"
+ #include "qdio.h"
+ #include "qdio_debug.h"
+-#include "qdio_perf.h"
+ 
+ MODULE_AUTHOR("Utz Bacher <utz.bacher@de.ibm.com>,"\
+ 	"Jan Glauber <jang@linux.vnet.ibm.com>");
+@@ -126,7 +125,7 @@ static int qdio_do_eqbs(struct qdio_q *q, unsigned char *state,
+ 	int rc;
+ 
+ 	BUG_ON(!q->irq_ptr->sch_token);
+-	qdio_perf_stat_inc(&perf_stats.debug_eqbs_all);
++	qperf_inc(q, eqbs);
+ 
+ 	if (!q->is_input_q)
+ 		nr += q->irq_ptr->nr_input_qs;
+@@ -139,7 +138,7 @@ again:
+ 	 * buffers later.
+ 	 */
+ 	if ((ccq == 96) && (count != tmp_count)) {
+-		qdio_perf_stat_inc(&perf_stats.debug_eqbs_incomplete);
++		qperf_inc(q, eqbs_partial);
+ 		return (count - tmp_count);
+ 	}
+ 
+@@ -182,7 +181,7 @@ static int qdio_do_sqbs(struct qdio_q *q, unsigned char state, int start,
+ 		return 0;
+ 
+ 	BUG_ON(!q->irq_ptr->sch_token);
+-	qdio_perf_stat_inc(&perf_stats.debug_sqbs_all);
++	qperf_inc(q, sqbs);
+ 
+ 	if (!q->is_input_q)
+ 		nr += q->irq_ptr->nr_input_qs;
+@@ -191,7 +190,7 @@ again:
+ 	rc = qdio_check_ccq(q, ccq);
+ 	if (rc == 1) {
+ 		DBF_DEV_EVENT(DBF_INFO, q->irq_ptr, "SQBS again:%2d", ccq);
+-		qdio_perf_stat_inc(&perf_stats.debug_sqbs_incomplete);
++		qperf_inc(q, sqbs_partial);
+ 		goto again;
+ 	}
+ 	if (rc < 0) {
+@@ -285,7 +284,7 @@ static inline int qdio_siga_sync(struct qdio_q *q, unsigned int output,
+ 		return 0;
+ 
+ 	DBF_DEV_EVENT(DBF_INFO, q->irq_ptr, "siga-s:%1d", q->nr);
+-	qdio_perf_stat_inc(&perf_stats.siga_sync);
++	qperf_inc(q, siga_sync);
+ 
+ 	cc = do_siga_sync(q->irq_ptr->schid, output, input);
+ 	if (cc)
+@@ -350,7 +349,7 @@ static inline int qdio_siga_input(struct qdio_q *q)
+ 	int cc;
+ 
+ 	DBF_DEV_EVENT(DBF_INFO, q->irq_ptr, "siga-r:%1d", q->nr);
+-	qdio_perf_stat_inc(&perf_stats.siga_in);
++	qperf_inc(q, siga_read);
+ 
+ 	cc = do_siga_input(q->irq_ptr->schid, q->mask);
+ 	if (cc)
+@@ -382,7 +381,7 @@ static inline void qdio_stop_polling(struct qdio_q *q)
+ 		return;
+ 
+ 	q->u.in.polling = 0;
+-	qdio_perf_stat_inc(&perf_stats.debug_stop_polling);
++	qperf_inc(q, stop_polling);
+ 
+ 	/* show the card that we are not polling anymore */
+ 	if (is_qebsm(q)) {
+@@ -400,7 +399,7 @@ static void announce_buffer_error(struct qdio_q *q, int count)
+ 	/* special handling for no target buffer empty */
+ 	if ((!q->is_input_q &&
+ 	    (q->sbal[q->first_to_check]->element[15].flags & 0xff) == 0x10)) {
+-		qdio_perf_stat_inc(&perf_stats.outbound_target_full);
++		qperf_inc(q, target_full);
+ 		DBF_DEV_EVENT(DBF_INFO, q->irq_ptr, "OUTFULL FTC:%02x",
+ 			      q->first_to_check);
+ 		return;
+@@ -487,7 +486,7 @@ static int get_inbound_buffer_frontier(struct qdio_q *q)
+ 		inbound_primed(q, count);
+ 		q->first_to_check = add_buf(q->first_to_check, count);
+ 		if (atomic_sub(count, &q->nr_buf_used) == 0)
+-			qdio_perf_stat_inc(&perf_stats.inbound_queue_full);
++			qperf_inc(q, inbound_queue_full);
+ 		break;
+ 	case SLSB_P_INPUT_ERROR:
+ 		announce_buffer_error(q, count);
+@@ -567,9 +566,10 @@ static void qdio_kick_handler(struct qdio_q *q)
+ 	count = sub_buf(end, start);
+ 
+ 	if (q->is_input_q) {
+-		qdio_perf_stat_inc(&perf_stats.inbound_handler);
++		qperf_inc(q, inbound_handler);
+ 		DBF_DEV_EVENT(DBF_INFO, q->irq_ptr, "kih s:%02x c:%02x", start, count);
+ 	} else
++		qperf_inc(q, outbound_handler);
+ 		DBF_DEV_EVENT(DBF_INFO, q->irq_ptr, "koh: s:%02x c:%02x",
+ 			      start, count);
+ 
+@@ -583,24 +583,28 @@ static void qdio_kick_handler(struct qdio_q *q)
+ 
+ static void __qdio_inbound_processing(struct qdio_q *q)
+ {
+-	qdio_perf_stat_inc(&perf_stats.tasklet_inbound);
++	qperf_inc(q, tasklet_inbound);
+ again:
+ 	if (!qdio_inbound_q_moved(q))
+ 		return;
+ 
+ 	qdio_kick_handler(q);
+ 
+-	if (!qdio_inbound_q_done(q))
++	if (!qdio_inbound_q_done(q)) {
+ 		/* means poll time is not yet over */
++		qperf_inc(q, tasklet_inbound_resched);
+ 		goto again;
++	}
+ 
+ 	qdio_stop_polling(q);
+ 	/*
+ 	 * We need to check again to not lose initiative after
+ 	 * resetting the ACK state.
+ 	 */
+-	if (!qdio_inbound_q_done(q))
++	if (!qdio_inbound_q_done(q)) {
++		qperf_inc(q, tasklet_inbound_resched2);
+ 		goto again;
++	}
+ }
+ 
+ void qdio_inbound_processing(unsigned long data)
+@@ -688,7 +692,7 @@ static int qdio_kick_outbound_q(struct qdio_q *q)
+ 		return 0;
+ 
+ 	DBF_DEV_EVENT(DBF_INFO, q->irq_ptr, "siga-w:%1d", q->nr);
+-	qdio_perf_stat_inc(&perf_stats.siga_out);
++	qperf_inc(q, siga_write);
+ 
+ 	cc = qdio_siga_output(q, &busy_bit);
+ 	switch (cc) {
+@@ -711,7 +715,7 @@ static int qdio_kick_outbound_q(struct qdio_q *q)
+ 
+ static void __qdio_outbound_processing(struct qdio_q *q)
+ {
+-	qdio_perf_stat_inc(&perf_stats.tasklet_outbound);
++	qperf_inc(q, tasklet_outbound);
+ 	BUG_ON(atomic_read(&q->nr_buf_used) < 0);
+ 
+ 	if (qdio_outbound_q_moved(q))
+@@ -739,12 +743,9 @@ static void __qdio_outbound_processing(struct qdio_q *q)
+ 	 */
+ 	if (qdio_outbound_q_done(q))
+ 		del_timer(&q->u.out.timer);
+-	else {
+-		if (!timer_pending(&q->u.out.timer)) {
++	else
++		if (!timer_pending(&q->u.out.timer))
+ 			mod_timer(&q->u.out.timer, jiffies + 10 * HZ);
+-			qdio_perf_stat_inc(&perf_stats.debug_tl_out_timer);
+-		}
+-	}
+ 	return;
+ 
+ sched:
+@@ -784,7 +785,7 @@ static inline void qdio_check_outbound_after_thinint(struct qdio_q *q)
+ 
+ static void __tiqdio_inbound_processing(struct qdio_q *q)
+ {
+-	qdio_perf_stat_inc(&perf_stats.thinint_inbound);
++	qperf_inc(q, tasklet_inbound);
+ 	qdio_sync_after_thinint(q);
+ 
+ 	/*
+@@ -799,7 +800,7 @@ static void __tiqdio_inbound_processing(struct qdio_q *q)
+ 	qdio_kick_handler(q);
+ 
+ 	if (!qdio_inbound_q_done(q)) {
+-		qdio_perf_stat_inc(&perf_stats.thinint_inbound_loop);
++		qperf_inc(q, tasklet_inbound_resched);
+ 		if (likely(q->irq_ptr->state != QDIO_IRQ_STATE_STOPPED)) {
+ 			tasklet_schedule(&q->tasklet);
+ 			return;
+@@ -812,7 +813,7 @@ static void __tiqdio_inbound_processing(struct qdio_q *q)
+ 	 * resetting the ACK state.
+ 	 */
+ 	if (!qdio_inbound_q_done(q)) {
+-		qdio_perf_stat_inc(&perf_stats.thinint_inbound_loop2);
++		qperf_inc(q, tasklet_inbound_resched2);
+ 		if (likely(q->irq_ptr->state != QDIO_IRQ_STATE_STOPPED))
+ 			tasklet_schedule(&q->tasklet);
+ 	}
+@@ -851,8 +852,6 @@ static void qdio_int_handler_pci(struct qdio_irq *irq_ptr)
+ 	if (unlikely(irq_ptr->state == QDIO_IRQ_STATE_STOPPED))
+ 		return;
+ 
+-	qdio_perf_stat_inc(&perf_stats.pci_int);
+-
+ 	for_each_input_queue(irq_ptr, q, i)
+ 		tasklet_schedule(&q->tasklet);
+ 
+@@ -923,8 +922,6 @@ void qdio_int_handler(struct ccw_device *cdev, unsigned long intparm,
+ 	struct qdio_irq *irq_ptr = cdev->private->qdio_data;
+ 	int cstat, dstat;
+ 
+-	qdio_perf_stat_inc(&perf_stats.qdio_int);
+-
+ 	if (!intparm || !irq_ptr) {
+ 		DBF_ERROR("qint:%4x", cdev->private->schid.sch_no);
+ 		return;
+@@ -1383,6 +1380,8 @@ static int handle_inbound(struct qdio_q *q, unsigned int callflags,
+ {
+ 	int used, diff;
+ 
++	qperf_inc(q, inbound_call);
++
+ 	if (!q->u.in.polling)
+ 		goto set;
+ 
+@@ -1438,14 +1437,16 @@ static int handle_outbound(struct qdio_q *q, unsigned int callflags,
+ 	unsigned char state;
+ 	int used, rc = 0;
+ 
+-	qdio_perf_stat_inc(&perf_stats.outbound_handler);
++	qperf_inc(q, outbound_call);
+ 
+ 	count = set_buf_states(q, bufnr, SLSB_CU_OUTPUT_PRIMED, count);
+ 	used = atomic_add_return(count, &q->nr_buf_used);
+ 	BUG_ON(used > QDIO_MAX_BUFFERS_PER_Q);
+ 
+-	if (callflags & QDIO_FLAG_PCI_OUT)
++	if (callflags & QDIO_FLAG_PCI_OUT) {
+ 		q->u.out.pci_out_enabled = 1;
++		qperf_inc(q, pci_request_int);
++	}
+ 	else
+ 		q->u.out.pci_out_enabled = 0;
+ 
+@@ -1484,7 +1485,7 @@ static int handle_outbound(struct qdio_q *q, unsigned int callflags,
+ 	if (state != SLSB_CU_OUTPUT_PRIMED)
+ 		rc = qdio_kick_outbound_q(q);
+ 	else
+-		qdio_perf_stat_inc(&perf_stats.fast_requeue);
++		qperf_inc(q, fast_requeue);
+ 
+ out:
+ 	tasklet_schedule(&q->tasklet);
+@@ -1540,16 +1541,11 @@ static int __init init_QDIO(void)
+ 	rc = qdio_debug_init();
+ 	if (rc)
+ 		goto out_ti;
+-	rc = qdio_setup_perf_stats();
+-	if (rc)
+-		goto out_debug;
+ 	rc = tiqdio_register_thinints();
+ 	if (rc)
+-		goto out_perf;
++		goto out_debug;
+ 	return 0;
+ 
+-out_perf:
+-	qdio_remove_perf_stats();
+ out_debug:
+ 	qdio_debug_exit();
+ out_ti:
+@@ -1563,7 +1559,6 @@ static void __exit exit_QDIO(void)
+ {
+ 	tiqdio_unregister_thinints();
+ 	tiqdio_free_memory();
+-	qdio_remove_perf_stats();
+ 	qdio_debug_exit();
+ 	qdio_setup_exit();
+ }
+diff --git a/drivers/s390/cio/qdio_perf.c b/drivers/s390/cio/qdio_perf.c
+deleted file mode 100644
+index 54f7c32..0000000
+--- a/drivers/s390/cio/qdio_perf.c
++++ /dev/null
+@@ -1,149 +0,0 @@
+-/*
+- *  drivers/s390/cio/qdio_perf.c
+- *
+- *  Copyright IBM Corp. 2008
+- *
+- *  Author: Jan Glauber (jang@linux.vnet.ibm.com)
+- */
+-#include <linux/kernel.h>
+-#include <linux/proc_fs.h>
+-#include <linux/seq_file.h>
+-#include <asm/ccwdev.h>
+-
+-#include "cio.h"
+-#include "css.h"
+-#include "device.h"
+-#include "ioasm.h"
+-#include "chsc.h"
+-#include "qdio_debug.h"
+-#include "qdio_perf.h"
+-
+-int qdio_performance_stats;
+-struct qdio_perf_stats perf_stats;
+-
+-#ifdef CONFIG_PROC_FS
+-static struct proc_dir_entry *qdio_perf_pde;
+-#endif
+-
+-/*
+- * procfs functions
+- */
+-static int qdio_perf_proc_show(struct seq_file *m, void *v)
+-{
+-	seq_printf(m, "Number of qdio interrupts\t\t\t: %li\n",
+-		   (long)atomic_long_read(&perf_stats.qdio_int));
+-	seq_printf(m, "Number of PCI interrupts\t\t\t: %li\n",
+-		   (long)atomic_long_read(&perf_stats.pci_int));
+-	seq_printf(m, "Number of adapter interrupts\t\t\t: %li\n",
+-		   (long)atomic_long_read(&perf_stats.thin_int));
+-	seq_printf(m, "\n");
+-	seq_printf(m, "Inbound tasklet runs\t\t\t\t: %li\n",
+-		   (long)atomic_long_read(&perf_stats.tasklet_inbound));
+-	seq_printf(m, "Outbound tasklet runs\t\t\t\t: %li\n",
+-		   (long)atomic_long_read(&perf_stats.tasklet_outbound));
+-	seq_printf(m, "Adapter interrupt tasklet runs/loops\t\t: %li/%li\n",
+-		   (long)atomic_long_read(&perf_stats.tasklet_thinint),
+-		   (long)atomic_long_read(&perf_stats.tasklet_thinint_loop));
+-	seq_printf(m, "Adapter interrupt inbound tasklet runs/loops\t: %li/%li\n",
+-		   (long)atomic_long_read(&perf_stats.thinint_inbound),
+-		   (long)atomic_long_read(&perf_stats.thinint_inbound_loop));
+-	seq_printf(m, "\n");
+-	seq_printf(m, "Number of SIGA In issued\t\t\t: %li\n",
+-		   (long)atomic_long_read(&perf_stats.siga_in));
+-	seq_printf(m, "Number of SIGA Out issued\t\t\t: %li\n",
+-		   (long)atomic_long_read(&perf_stats.siga_out));
+-	seq_printf(m, "Number of SIGA Sync issued\t\t\t: %li\n",
+-		   (long)atomic_long_read(&perf_stats.siga_sync));
+-	seq_printf(m, "\n");
+-	seq_printf(m, "Number of inbound transfers\t\t\t: %li\n",
+-		   (long)atomic_long_read(&perf_stats.inbound_handler));
+-	seq_printf(m, "Number of outbound transfers\t\t\t: %li\n",
+-		   (long)atomic_long_read(&perf_stats.outbound_handler));
+-	seq_printf(m, "\n");
+-	seq_printf(m, "Number of fast requeues (outg. SBAL w/o SIGA)\t: %li\n",
+-		   (long)atomic_long_read(&perf_stats.fast_requeue));
+-	seq_printf(m, "Number of outbound target full condition\t: %li\n",
+-		   (long)atomic_long_read(&perf_stats.outbound_target_full));
+-	seq_printf(m, "Number of inbound queue full condition\t\t: %li\n",
+-		   (long)atomic_long_read(&perf_stats.inbound_queue_full));
+-	seq_printf(m, "Number of outbound tasklet mod_timer calls\t: %li\n",
+-		   (long)atomic_long_read(&perf_stats.debug_tl_out_timer));
+-	seq_printf(m, "Number of stop polling calls\t\t\t: %li\n",
+-		   (long)atomic_long_read(&perf_stats.debug_stop_polling));
+-	seq_printf(m, "AI inbound tasklet loops after stop polling\t: %li\n",
+-		   (long)atomic_long_read(&perf_stats.thinint_inbound_loop2));
+-	seq_printf(m, "QEBSM EQBS total/incomplete\t\t\t: %li/%li\n",
+-		   (long)atomic_long_read(&perf_stats.debug_eqbs_all),
+-		   (long)atomic_long_read(&perf_stats.debug_eqbs_incomplete));
+-	seq_printf(m, "QEBSM SQBS total/incomplete\t\t\t: %li/%li\n",
+-		   (long)atomic_long_read(&perf_stats.debug_sqbs_all),
+-		   (long)atomic_long_read(&perf_stats.debug_sqbs_incomplete));
+-	seq_printf(m, "\n");
+-	return 0;
+-}
+-static int qdio_perf_seq_open(struct inode *inode, struct file *filp)
+-{
+-	return single_open(filp, qdio_perf_proc_show, NULL);
+-}
+-
+-static const struct file_operations qdio_perf_proc_fops = {
+-	.owner	 = THIS_MODULE,
+-	.open	 = qdio_perf_seq_open,
+-	.read	 = seq_read,
+-	.llseek  = seq_lseek,
+-	.release = single_release,
+-};
+-
+-/*
+- * sysfs functions
+- */
+-static ssize_t qdio_perf_stats_show(struct bus_type *bus, char *buf)
+-{
+-	return sprintf(buf, "%i\n", qdio_performance_stats ? 1 : 0);
+-}
+-
+-static ssize_t qdio_perf_stats_store(struct bus_type *bus,
+-			      const char *buf, size_t count)
+-{
+-	unsigned long i;
+-
+-	if (strict_strtoul(buf, 16, &i) != 0)
+-		return -EINVAL;
+-	if ((i != 0) && (i != 1))
+-		return -EINVAL;
+-	if (i == qdio_performance_stats)
+-		return count;
+-
+-	qdio_performance_stats = i;
+-	/* reset performance statistics */
+-	if (i == 0)
+-		memset(&perf_stats, 0, sizeof(struct qdio_perf_stats));
+-	return count;
+-}
+-
+-static BUS_ATTR(qdio_performance_stats, 0644, qdio_perf_stats_show,
+-		qdio_perf_stats_store);
+-
+-int __init qdio_setup_perf_stats(void)
+-{
+-	int rc;
+-
+-	rc = bus_create_file(&ccw_bus_type, &bus_attr_qdio_performance_stats);
+-	if (rc)
+-		return rc;
+-
+-#ifdef CONFIG_PROC_FS
+-	memset(&perf_stats, 0, sizeof(struct qdio_perf_stats));
+-	qdio_perf_pde = proc_create("qdio_perf", S_IFREG | S_IRUGO,
+-				    NULL, &qdio_perf_proc_fops);
+-#endif
+-	return 0;
+-}
+-
+-void qdio_remove_perf_stats(void)
+-{
+-#ifdef CONFIG_PROC_FS
+-	remove_proc_entry("qdio_perf", NULL);
+-#endif
+-	bus_remove_file(&ccw_bus_type, &bus_attr_qdio_performance_stats);
+-}
+diff --git a/drivers/s390/cio/qdio_perf.h b/drivers/s390/cio/qdio_perf.h
+deleted file mode 100644
+index 1245423..0000000
+--- a/drivers/s390/cio/qdio_perf.h
++++ /dev/null
+@@ -1,62 +0,0 @@
+-/*
+- *  drivers/s390/cio/qdio_perf.h
+- *
+- *  Copyright IBM Corp. 2008
+- *
+- *  Author: Jan Glauber (jang@linux.vnet.ibm.com)
+- */
+-#ifndef QDIO_PERF_H
+-#define QDIO_PERF_H
+-
+-#include <linux/types.h>
+-#include <asm/atomic.h>
+-
+-struct qdio_perf_stats {
+-	/* interrupt handler calls */
+-	atomic_long_t qdio_int;
+-	atomic_long_t pci_int;
+-	atomic_long_t thin_int;
+-
+-	/* tasklet runs */
+-	atomic_long_t tasklet_inbound;
+-	atomic_long_t tasklet_outbound;
+-	atomic_long_t tasklet_thinint;
+-	atomic_long_t tasklet_thinint_loop;
+-	atomic_long_t thinint_inbound;
+-	atomic_long_t thinint_inbound_loop;
+-	atomic_long_t thinint_inbound_loop2;
+-
+-	/* signal adapter calls */
+-	atomic_long_t siga_out;
+-	atomic_long_t siga_in;
+-	atomic_long_t siga_sync;
+-
+-	/* misc */
+-	atomic_long_t inbound_handler;
+-	atomic_long_t outbound_handler;
+-	atomic_long_t fast_requeue;
+-	atomic_long_t outbound_target_full;
+-	atomic_long_t inbound_queue_full;
+-
+-	/* for debugging */
+-	atomic_long_t debug_tl_out_timer;
+-	atomic_long_t debug_stop_polling;
+-	atomic_long_t debug_eqbs_all;
+-	atomic_long_t debug_eqbs_incomplete;
+-	atomic_long_t debug_sqbs_all;
+-	atomic_long_t debug_sqbs_incomplete;
+-};
+-
+-extern struct qdio_perf_stats perf_stats;
+-extern int qdio_performance_stats;
+-
+-static inline void qdio_perf_stat_inc(atomic_long_t *count)
+-{
+-	if (qdio_performance_stats)
+-		atomic_long_inc(count);
+-}
+-
+-int qdio_setup_perf_stats(void);
+-void qdio_remove_perf_stats(void);
+-
+-#endif
+diff --git a/drivers/s390/cio/qdio_thinint.c b/drivers/s390/cio/qdio_thinint.c
+index 981a77e..091d904 100644
+--- a/drivers/s390/cio/qdio_thinint.c
++++ b/drivers/s390/cio/qdio_thinint.c
+@@ -1,9 +1,7 @@
+ /*
+  * linux/drivers/s390/cio/thinint_qdio.c
+  *
+- * thin interrupt support for qdio
+- *
+- * Copyright 2000-2008 IBM Corp.
++ * Copyright 2000,2009 IBM Corp.
+  * Author(s): Utz Bacher <utz.bacher@de.ibm.com>
+  *	      Cornelia Huck <cornelia.huck@de.ibm.com>
+  *	      Jan Glauber <jang@linux.vnet.ibm.com>
+@@ -19,7 +17,6 @@
+ #include "ioasm.h"
+ #include "qdio.h"
+ #include "qdio_debug.h"
+-#include "qdio_perf.h"
+ 
+ /*
+  * Restriction: only 63 iqdio subchannels would have its own indicator,
+@@ -132,8 +129,6 @@ static void tiqdio_thinint_handler(void *ind, void *drv_data)
+ {
+ 	struct qdio_q *q;
+ 
+-	qdio_perf_stat_inc(&perf_stats.thin_int);
+-
+ 	/*
+ 	 * SVS only when needed: issue SVS to benefit from iqdio interrupt
+ 	 * avoidance (SVS clears adapter interrupt suppression overwrite)
+@@ -154,6 +149,7 @@ static void tiqdio_thinint_handler(void *ind, void *drv_data)
+ 	list_for_each_entry_rcu(q, &tiq_list, entry)
+ 		/* only process queues from changed sets */
+ 		if (*q->irq_ptr->dsci) {
++			qperf_inc(q, adapter_int);
+ 
+ 			/* only clear it if the indicator is non-shared */
+ 			if (!shared_ind(q->irq_ptr))
