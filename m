@@ -1,65 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753640Ab0ADQvR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753564Ab0ADQzK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753640Ab0ADQvR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 11:51:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753429Ab0ADQvO
+	id S1753564Ab0ADQzK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 11:55:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753145Ab0ADQzH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 11:51:14 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:20931 "EHLO mx1.redhat.com"
+	Mon, 4 Jan 2010 11:55:07 -0500
+Received: from mrout3.yahoo.com ([216.145.54.173]:32809 "EHLO mrout3.yahoo.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753290Ab0ADQvO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 11:51:14 -0500
-From: Jeff Moyer <jmoyer@redhat.com>
-To: Corrado Zoccolo <czoccolo@gmail.com>
-Cc: Vivek Goyal <vgoyal@redhat.com>, Jens Axboe <jens.axboe@oracle.com>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>,
-       Shaohua Li <shaohua.li@intel.com>,
-       Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-Subject: Re: [PATCH] cfq-iosched: non-rot devices do not need read queue  merging
-References: <20091230213439.GQ4489@kernel.dk>
-	<1262211768-10858-1-git-send-email-czoccolo@gmail.com>
-	<20100104144711.GA7968@redhat.com>
-	<4e5e476b1001040836p2c8d7486x807a1a89b61c2458@mail.gmail.com>
-X-PGP-KeyID: 1F78E1B4
-X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
-X-PCLoadLetter: What the f**k does that mean?
-Date: Mon, 04 Jan 2010 11:51:00 -0500
-In-Reply-To: <4e5e476b1001040836p2c8d7486x807a1a89b61c2458@mail.gmail.com>
-	(Corrado Zoccolo's message of "Mon, 4 Jan 2010 17:36:21 +0100")
-Message-ID: <x49wrzxak5n.fsf@segfault.boston.devel.redhat.com>
-User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/23.1 (gnu/linux)
-MIME-Version: 1.0
+	id S1753221Ab0ADQzG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jan 2010 11:55:06 -0500
+DomainKey-Signature: a=rsa-sha1; s=serpent; d=yahoo-inc.com; c=nofws; q=dns;
+	h=received:date:from:to:cc:subject:message-id:references:
+	mime-version:content-type:content-disposition:in-reply-to:user-agent;
+	b=vUCqTK71ucNel0BNpIqvbTZBTFvtUBl4i+i//tNa0msKx2zFOluWzK/RfVW44cMT
+Date: Mon, 4 Jan 2010 10:50:44 -0600
+From: Quentin Barnes <qbarnes@yahoo-inc.com>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+       Wu Fengguang <fengguang.wu@intel.com>, Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       Nick Piggin <npiggin@suse.de>, Steven Whitehouse <swhiteho@redhat.com>,
+       David Howells <dhowells@redhat.com>, Al Viro <viro@zeniv.linux.org.uk>,
+       Jonathan Corbet <corbet@lwn.net>
+Subject: Re: [RFC][PATCH v3] readahead: introduce O_RANDOM for POSIX_FADV_RANDOM
+Message-ID: <20100104165044.GD25663@yahoo-inc.com>
+References: <20091225000717.GA26949@yahoo-inc.com> <87aax18xms.fsf@basil.nowhere.org> <20091230051540.GA16308@localhost> <20091230052402.GB26364@localhost> <873a2s8hmp.fsf@basil.nowhere.org> <20100104045020.GA21021@localhost> <20100104161719.a0bb35ad.sfr@canb.auug.org.au> <20100104073328.GA3422@infradead.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100104073328.GA3422@infradead.org>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Corrado Zoccolo <czoccolo@gmail.com> writes:
+On Sun, Jan 03, 2010 at 11:33:28PM -0800, Christoph Hellwig wrote:
+> On Mon, Jan 04, 2010 at 04:17:19PM +1100, Stephen Rothwell wrote:
+> > > @@ -80,6 +80,10 @@
+> > >  #define O_NDELAY	O_NONBLOCK
+> > >  #endif
+> > >  
+> > > +#ifndef O_RANDOM
+> > > +#define O_RANDOM	010000000	/* random access pattern hint */
+> > > +#endif
+> > 
+> > This value conflicts with O_CLOEXEC on alpha and parisc and O_NOATIME on
+> > sparc.
+> 
+> Also when I tried to use this value for O_RSYNC and tested it I could
+> not actually see it getting propagated by the open code.
+> 
+> Eitherway I don't think an O_ value is a good idea for a simple access
+> pattern hint.
 
-> Hi Vivkek,
->
-> On Mon, Jan 4, 2010 at 3:47 PM, Vivek Goyal <vgoyal@redhat.com> wrote:
->> On Wed, Dec 30, 2009 at 11:22:47PM +0100, Corrado Zoccolo wrote:
->>> Non rotational devices' performances are not affected by
->>> distance of read requests, so there is no point in having
->>> overhead to merge such queues.
->>> This doesn't apply to writes, so this patch changes the
->>> queued[] field, to be indexed by READ/WRITE instead of
->>> SYNC/ASYNC, and only compute proximity for queues with
->>> WRITE requests.
->>>
->>
->> Hi Corrado,
->>
->> What's the reason that reads don't benefit from merging queues and hence
->> merging requests and only writes do on SSD?
->
-> On SSDs, reads are just limited by the maximum transfer rate, and
-> larger (i.e. merged) reads will just take proportionally longer.
+Could you expand on that?
 
-This is simply not true.  You can get more bandwidth from an SSD (I just
-checked numbers for 2 vendors' devices) by issuing larger read requests,
-no matter whether the access pattern is sequential or random.
+I was surprised by Wu's O_RANDOM approach, but after thinking about
+it, I liked it.  I'm used to seeing (on non-UNIX OSes) a parameter
+as part of the open syscall that announces to the OS what the app's
+access strategy through that file descriptor will be for that file.
+An issue with the current fadvise(2) approach is for random access
+files it necessitates two syscalls (open plus fadvise) for what
+could be or should be only one syscall (open).
 
-Cheers,
-Jeff
+My guess on your issue is that open(2) should take only flags that
+are necessary for the open state itself and therefore can't be
+implemented as a separate and later syscall.  I would generally
+agree with that.  There is however already at least two exceptions
+to that principle, the O_SYNC and O_DIRECT flags.  They are access
+states though.  I guess the question is whether to think of the
+O_RANDOM flag as a "hint" or as an "access strategy".
+
+Quentin
