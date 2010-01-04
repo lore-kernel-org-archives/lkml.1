@@ -1,60 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753643Ab0ADTv0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753887Ab0ADTzV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753643Ab0ADTv0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 14:51:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752848Ab0ADTvY
+	id S1753887Ab0ADTzV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 14:55:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753810Ab0ADTzT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 14:51:24 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:39310 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750770Ab0ADTvX (ORCPT
+	Mon, 4 Jan 2010 14:55:19 -0500
+Received: from outbound-mail-128.bluehost.com ([67.222.38.28]:54415 "HELO
+	outbound-mail-128.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752984Ab0ADTzS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 14:51:23 -0500
-Message-ID: <4B42467F.5040008@zytor.com>
-Date: Mon, 04 Jan 2010 11:50:23 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
-MIME-Version: 1.0
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-CC: Yinghai Lu <yinghai@kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Jesse Brandeburg <jesse.brandeburg@gmail.com>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       NetDEV list <netdev@vger.kernel.org>,
-       "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
-Subject: Re: Subject: [PATCH 1/2] x86: get back 15 vectors
-References: <4B347AEE.6030705@kernel.org> <20091228094707.GH24690@elte.hu>	 <4B398ECD.1080506@kernel.org>	 <4807377b1001031906s6b1ee576jc021da2642bb4147@mail.gmail.com>	 <4B415E73.1050801@kernel.org> <4B419113.1090204@kernel.org>	 <m1aawtlu6y.fsf@fess.ebiederm.org> <4B423B08.3010005@zytor.com>	 <m1my0thelq.fsf@fess.ebiederm.org>  <4B424305.7050803@kernel.org> <1262634353.2700.49.camel@sbs-t61.sc.intel.com>
-In-Reply-To: <1262634353.2700.49.camel@sbs-t61.sc.intel.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 4 Jan 2010 14:55:18 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=b6SOqTiMeUT9eL7MhacBOurVfHcGsHYZs51nwAcMezu88ZPf5C678xtnkf6tvO1Ph7ue1Y7U5NH9sAqW6j4WbfGbKYSaTuU6tKs+WPeoDqmsgO8LyAeA6Fxd67SneuHb;
+Date: Mon, 4 Jan 2010 11:55:14 -0800
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
+       Linux PCI <linux-pci@vger.kernel.org>
+Subject: Re: [PATCH] PCI: Clean up build for CONFIG_PCI_QUIRKS unset
+Message-ID: <20100104115514.22f953ec@jbarnes-piketon>
+In-Reply-To: <20100104083401.7d282505@jbarnes-piketon>
+References: <201001022257.24701.rjw@sisk.pl>
+	<20100104083401.7d282505@jbarnes-piketon>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/04/2010 11:45 AM, Suresh Siddha wrote:
-> On Mon, 2010-01-04 at 11:35 -0800, Yinghai Lu wrote:
->> sth like this?
->>
->> Subject: [PATCH 1/2] x86: get back 16 vectors
->>
->> -v2: according to hpa that we could start from 0x10
->>      according to Eric, we should hold 16 vectors for IRQ MOVE
->>
->> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
->>
+On Mon, 4 Jan 2010 08:34:01 -0800
+Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
+
+> On Sat, 2 Jan 2010 22:57:24 +0100
+> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 > 
-> Yinghai we have to change IRQ_MOVE_CLEANUP_VECTOR to 0x1f or so. From
-> the cpu perspective this vector is documented as illegal, so we need to
-> check if this change will work on the cpu's we have today to get some
-> confidence.
+> > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > 
+> > Currently, drivers/pci/quirks.c is built unconditionally, but if
+> > CONFIG_PCI_QUIRKS is unset, the only things actually built in this
+> > file are definitions of global variables and empty functions (due to
+> > the #ifdef CONFIG_PCI_QUIRKS embracing all of the code inside the
+> > file).  This is not particularly nice and if someone overlooks
+> > the #ifdef CONFIG_PCI_QUIRKS, build errors are introduced.
+> > 
+> > To clean that up, move the definitions of the global variables in
+> > quirks.c that are always built to pci.c, move the definitions of
+> > the empty functions (compiled when CONFIG_PCI_QUIRKS is unset) to
+> > headers (additionally make these functions static inline) and modify
+> > drivers/pci/Makefile so that quirks.c is only built if
+> > CONFIG_PCI_QUIRKS is set.
+> > 
+> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> > ---
+> > 
+> > I thought it might be useful to do something like this.
+> > 
+> > Please let me know what you think.
+> 
+> Thanks Rafael, I actually had a fix for this already from Dexuan, but
+> I guess Linus applied yours instead.
+> 
+> Thanks for the fix.
 > 
 
-It's documented as reserved, not illegal.  The ability for the APIC to
-generate vectors starting at 0x10 is documented, as is the ability for
-the CPU to receive any vector number as an interrupt -- in fact, the
-legacy BIOS relies on being able to receive interrupts starting at
-vector 0x08.  It causes problems galore, but only at the software level.
+Oops this is a cleanup of the fix.  Will queue it up.
 
-	-hpa
+Thanks,
+-- 
+Jesse Barnes, Intel Open Source Technology Center
