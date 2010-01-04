@@ -1,54 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753130Ab0ADHYq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753203Ab0ADH0Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753130Ab0ADHYq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 02:24:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752711Ab0ADHYo
+	id S1753203Ab0ADH0Y (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 02:26:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752881Ab0ADH0X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 02:24:44 -0500
-Received: from sh.osrg.net ([192.16.179.4]:37135 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752173Ab0ADHYn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 02:24:43 -0500
-Date: Mon, 4 Jan 2010 16:24:23 +0900
-To: sfr@canb.auug.org.au
-Cc: airlied@linux.ie, linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       fujita.tomonori@lab.ntt.co.jp, akpm@linux-foundation.org
-Subject: Re: linux-next: agp tree build failure
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20100101110327.425e0a0d.sfr@canb.auug.org.au>
-References: <20100101110327.425e0a0d.sfr@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Mon, 4 Jan 2010 02:26:23 -0500
+Received: from daytona.panasas.com ([67.152.220.89]:49054 "EHLO
+	daytona.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752711Ab0ADH0W (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jan 2010 02:26:22 -0500
+Message-ID: <4B41981A.6080204@panasas.com>
+Date: Mon, 04 Jan 2010 09:26:18 +0200
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
+MIME-Version: 1.0
+To: Alan Stern <stern@rowland.harvard.edu>
+CC: James Bottomley <James.Bottomley@suse.de>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       open-osd <osd-dev@open-osd.org>, Benny Halevy <bhalevy@panasas.com>,
+       Stable Tree <stable@kernel.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [osd-dev] [PATCH] scsi_lib: Bug in completion of bidi commands
+References: <Pine.LNX.4.44L0.1001031149380.29885-100000@netrider.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.1001031149380.29885-100000@netrider.rowland.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Message-Id: <20100104162405A.fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Mon, 04 Jan 2010 16:24:24 +0900 (JST)
+X-OriginalArrivalTime: 04 Jan 2010 07:26:21.0058 (UTC) FILETIME=[366C6620:01CA8D0F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 1 Jan 2010 11:03:27 +1100
-Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-
-> Today's linux-next build (x86_64 allmodconfig) failed like this:
+On 01/03/2010 06:55 PM, Alan Stern wrote:
+> On Sun, 3 Jan 2010, Boaz Harrosh wrote:
 > 
-> drivers/char/agp/amd64-agp.c: In function '__exittest':
-> drivers/char/agp/amd64-agp.c:782: error: 'agp_amd64_cleanup' undeclared (first use in this function)
+>>> What patch of mine are you referring to?  So far James has rejected all
+>>> the patches I have submitted recently.  I'm going to try again in the 
+>>> near future...
+>>>
+>>
+>> OK, that's my answer, I didn't know.
+>>
+>> Would you want that I attempt that collapsing of scsi_end_request() into scsi_io_completion
+>> and the cleanup that implies? (that's the patch I meant.)
 > 
-> Caused by commit f405d2c02395a74d3883bd03ded36457aa3697ad ("x86/agp: Fix
-> agp_amd64_init() initialization with CONFIG_GART_IOMMU enabled") from the
-> origin tree interacting with commit
-> e85c5c6542528aba88a5d811652cf0e2d44f7f07 ("drivers/char/agp/amd64-agp.c:
-> squish warning") from the agp tree.
+> Okay, I don't mind if you would like to rewrite that patch.  The 
+> version I wrote didn't just move code from one subroutine to another; 
+> it also made a few semantic changes (the retry counter and the "error" 
+> argument to blk_end_request()).  You'll probably want to break it 
+> up into a few patches, where the first simply moves the code around and 
+> the later ones do more significant things.
+> 
 
-The former patch was already merged to fix:
+Hi Alan, thanks
 
-http://marc.info/?l=linux-kernel&m=126192729110083&w=2
+I'll only do the former and I'll let you continue with the later. .I.E the
+code rearrangement and cleanup. Then perhaps it would be easier for you to
+enhance the code with the retries and error returns. I do not have the setup
+that can test / demonstrate those fixes, I'd rather you did them.
 
-I think that the latter commit in agp tree isn't necessary since with
-the former patch, agp_amd64_cleanup is necessary even with
-CONFIG_GART_IOMMU enabled.
+> As I recall, the most recent version of that patch is here:
+> 
+> 	http://marc.info/?l=linux-scsi&m=123991011815404&w=2
+> 
 
-But the former patch added another bug. I've just posted a fix for
-it. Sorry about that.
+Thanks
 
-http://marc.info/?l=linux-kernel&m=126258945607963&w=2
+> Alan Stern
+> 
+
+Boaz
