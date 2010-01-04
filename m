@@ -1,113 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753518Ab0ADPrt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753504Ab0ADPwe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753518Ab0ADPrt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 10:47:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753094Ab0ADPrr
+	id S1753504Ab0ADPwe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 10:52:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753420Ab0ADPwc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 10:47:47 -0500
-Received: from mail-fx0-f225.google.com ([209.85.220.225]:41908 "EHLO
-	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752524Ab0ADPrq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 10:47:46 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:cc:content-type;
-        b=n3liiHsGbrBx4nNmX7mjZ0UB8JVCy9RSmmILoUAF2J0RhB+kJ2ijaxCNvV6aowAQyC
-         49z73fSwyMbhtP6buOatitjxEPQjNVpXe6eDIEgmebj5XNMLQGHnJUWlWthkwsmb1mkA
-         ECzAlFxs1dyCtBq5famdbH7rwb2h1+cVvnkIY=
+	Mon, 4 Jan 2010 10:52:32 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:8837 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753374Ab0ADPwb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jan 2010 10:52:31 -0500
+Date: Mon, 4 Jan 2010 16:52:25 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: caiqian@redhat.com, Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: Jan Kratochvil <jkratoch@redhat.com>, Roland McGrath <roland@redhat.com>,
+       linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
+       utrace-devel@redhat.com
+Subject: s390 && user_enable_single_step() (Was: odd utrace testing results
+	on s390x)
+Message-ID: <20100104155225.GA16650@redhat.com>
+References: <1503844142.2061111261478093776.JavaMail.root@zmail06.collab.prod.int.phx2.redhat.com> <1257887498.2061171261478252049.JavaMail.root@zmail06.collab.prod.int.phx2.redhat.com>
 MIME-Version: 1.0
-Date: Mon, 4 Jan 2010 16:47:44 +0100
-Message-ID: <c4e36d111001040747n2c9dbd52p1b9147ae186f3597@mail.gmail.com>
-Subject: Oops in uart_resume_port() on resume 2.6.32/33-rc
-From: Zdenek Kabelac <zdenek.kabelac@gmail.com>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: dsaxena@laptop.org, alan@linux.intel.com, gregkh@suse.de
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1257887498.2061171261478252049.JavaMail.root@zmail06.collab.prod.int.phx2.redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+Hi!
 
-I wanted to trace some oops from i915 module via serial console log
-and instead I'm getting this oops from resume:
+We have some strange problems with utrace on s390, and so far this _looks_
+like a s390 problem.
 
-BUG: unable to handle kernel NULL pointer dereference at 0000000000000198
-IP: [<ffffffff812eee55>] uart_resume_port+0x1f5/0x270
-PGD 1396b6067 PUD 13baf4067 PMD 0
-Oops: 0000 [#1] PREEMPT SMP
-last sysfs file: /sys/power/state
-CPU 1
-Pid: 1909, comm: pm-suspend Not tainted 2.6.33-rc2-00269-g04ca05b #48
-6464CTO/6464CTO
-RIP: 0010:[<ffffffff812eee55>]  [<ffffffff812eee55>]
-uart_resume_port+0x1f5/0x270
-RSP: 0000:ffff880139df7c98  EFLAGS: 00010246
-RAX: 0000000000000000 RBX: ffffffff8248db80 RCX: 0000000000000000
-RDX: ffffffff81866c00 RSI: ffffffff8140a713 RDI: ffff880139df7cc0
-RBP: ffff880139df7cf8 R08: 0000000000000000 R09: 0000000000000000
-R10: 2222222222222222 R11: 2222222222222222 R12: ffff880138968000
-R13: ffff880138968150 R14: ffff880139df7c98 R15: ffff88013896dc70
-FS:  00007fc83fe3d700(0000) GS:ffff88002c000000(0000) knlGS:0000000000000000
-CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-CR2: 0000000000000198 CR3: 000000013bf1c000 CR4: 00000000000006e0
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-Process pm-suspend (pid: 1909, threadinfo ffff880139df6000, task
-ffff880138a28000)
-Stack:
- 0000000000000000 0000000000000000 0000000000000000 0000000000000000
-<0> 0000000000000000 ffff880100000000 ffffffff8248db80 ffffffff81866c60
-<0> 0000000000000000 ffffffff8248db80 ffff88013896dc10 ffffffff8163f620
-Call Trace:
- [<ffffffff812f06e6>] serial8250_resume_port+0x86/0xa0
- [<ffffffff812f0758>] serial8250_resume+0x58/0x60
- [<ffffffff812f9974>] platform_legacy_resume+0x24/0x40
- [<ffffffff812f9acd>] platform_pm_resume+0x3d/0x50
- [<ffffffff812fcf63>] pm_op+0xf3/0x1b0
- [<ffffffff812fd779>] dpm_resume_end+0x129/0x430
- [<ffffffff81092ae4>] suspend_devices_and_enter+0x124/0x1a0
- [<ffffffff81092c3a>] enter_state+0xda/0xf0
- [<ffffffff810922f9>] state_store+0x99/0x100
- [<ffffffff81244237>] kobj_attr_store+0x17/0x20
- [<ffffffff81185fb6>] sysfs_write_file+0xe6/0x170
- [<ffffffff811222d8>] vfs_write+0xb8/0x1a0
- [<ffffffff81122d31>] sys_write+0x51/0x90
- [<ffffffff8100309b>] system_call_fastpath+0x16/0x1b
-Code: 84 00 00 00 00 00 31 c0 4c 8d 75 a0 b9 05 00 00 00 4c 89 f7 f3
-48 ab c7 07 00 00 00 00 8b 42 44 89 45 a8 85 c0 75 5f 49 8b 04 24 <48>
-8b 80 98 01 00 00 48 8b 10 48 89 55 a0 48 8b 50 08 48 89 55
-RIP  [<ffffffff812eee55>] uart_resume_port+0x1f5/0x270
- RSP <ffff880139df7c98>
-CR2: 0000000000000198
----[ end trace 95c3962d37751a5e ]---
+Looks like, on any CPU user_enable_single_step() does not "work" until at
+least one thread with per_info.single_step = 1 does the context switch.
+
+This doesn't matter with the old ptrace implementation, but with utrace
+the tracee itself does user_enable_single_step(current) and returns to
+user-mode. Until it does at least one context switch the single-stepping
+doesn't work, after that everything works fine till the next reboot.
+
+To rule out the possible problems with ptrace or utrace, I did the trivial
+patch:
+
+--- K/kernel/sys.c~	2009-12-29 10:45:25.787198223 -0500
++++ K/kernel/sys.c	2010-01-03 13:04:00.485591316 -0500
+@@ -1444,6 +1444,17 @@ SYSCALL_DEFINE5(prctl, int, option, unsi
+ 
+ 	error = 0;
+ 	switch (option) {
++		case 666:
++			user_enable_single_step(current);
++			break;
++
++		case 777:
++			/* same as 666, but force the context switch
++			 * after user_enable_single_step() */
++			user_enable_single_step(current);
++			schedule_timeout_interruptible(HZ/10);
++			break;
++
+ 		case PR_SET_PDEATHSIG:
+ 			if (!valid_signal(arg2)) {
+ 				error = -EINVAL;
+--- K/arch/s390/kernel/traps.c~	2009-12-22 10:41:52.909174198 -0500
++++ K/arch/s390/kernel/traps.c	2009-12-30 10:31:12.985266686 -0500
+@@ -378,11 +378,14 @@ static inline void __user *get_check_add
+ 
+ void __kprobes do_single_step(struct pt_regs *regs)
+ {
++	printk("SS enter\n");
++
+ 	if (notify_die(DIE_SSTEP, "sstep", regs, 0, 0,
+ 					SIGTRAP) == NOTIFY_STOP){
++		printk(KERN_INFO "SS cancelled ???\n");
+ 		return;
+ 	}
+-	if (tracehook_consider_fatal_signal(current, SIGTRAP))
++//	if (tracehook_consider_fatal_signal(current, SIGTRAP))
+ 		force_sig(SIGTRAP, current);
+ }
+ 
+-------------------------------------------------------------------------------
+
+The change in do_single_step() just removes "is it traced" check
+and adds a couple of printk's.
 
 
->From my debugger it looks like this:
+With this patch I assume that the task which does prctl(666) should
+be killed by SIGTRAP, but this doesn't happen:
 
-0000000000003697 <uart_resume_port+0x1e7> mov    0x44(%rdx),%eax
-000000000000369a <uart_resume_port+0x1ea> mov    %eax,-0x58(%rbp)
-		/*
-		 * If that's unset, use the tty termios setting.
-		 */
-		if (termios.c_cflag == 0)
-000000000000369d <uart_resume_port+0x1ed> test   %eax,%eax
-000000000000369f <uart_resume_port+0x1ef> jne    0000000000003700
-<uart_resume_port+0x250>
-			termios = *state->port.tty->termios;
-00000000000036a1 <uart_resume_port+0x1f1> mov    (%r12),%rax
-00000000000036a5 <uart_resume_port+0x1f5> mov    0x198(%rax),%rax
-00000000000036ac <uart_resume_port+0x1fc> mov    (%rax),%rdx
-00000000000036af <uart_resume_port+0x1ff> mov    %rdx,-0x60(%rbp)
-00000000000036b3 <uart_resume_port+0x203> mov    0x8(%rax),%rdx
+	# taskset -c 0 perl -le 'syscall 172,666 and die $!'
+	# taskset -c 0 perl -le 'syscall 172,666 and die $!'
+	# taskset -c 0 perl -le 'syscall 172,666 and die $!'
 
-So I assume it is related to commit:
+	(syscall 172,666 == prctl(666))
 
-ba15ab0e8de0d4439a91342ad52d55ca9e313f3d
+the task exits normally, there is nothing in dmesg.
 
-which adds access through  *state->port.tty->termios  without checking for NULL.
+However,
 
-I'm using T61, 4GB and boot options:  console=ttyS0,115200n8 console=tty
+	# taskset -c 0 perl -le 'syscall 172,777 and die $!'
+	Trace/breakpoint trap
 
-Zdenek
+Now prctl(777)->user_enable_single_step() does work, the task is
+killed by do_single_step()->force_sig(SIGTRAP).
+
+Now prctl(666) works too on CPU 0
+
+	# taskset -c 0 perl -le 'syscall 172,666 and die $!'
+	Trace/breakpoint trap
+	# taskset -c 0 perl -le 'syscall 172,666 and die $!'
+	Trace/breakpoint trap
+	# taskset -c 0 perl -le 'syscall 172,666 and die $!'
+	Trace/breakpoint trap
+
+
+
+And please note "# taskset -c 0", we can repeat the same on another
+CPU:
+
+	# taskset -c 1 perl -le 'syscall 172,666 and die $!'
+	# taskset -c 1 perl -le 'syscall 172,666 and die $!'
+
+doesn't work, but
+
+	# taskset -c 1 perl -le 'syscall 172,777 and die $!'
+	Trace/breakpoint trap
+
+magically "fixes" user_enable_single_step(), now we can use prctl(666)
+on CPU 1.
+
+
+The kernel is 2.6.32.2 plus ca633fd006486ed2c2d3b542283067aab61e6dc8,
+could you help?
+
+Oleg.
+
