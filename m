@@ -1,71 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753663Ab0ADVgY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753095Ab0ADVhb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753663Ab0ADVgY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 16:36:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752755Ab0ADVgW
+	id S1753095Ab0ADVhb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 16:37:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753020Ab0ADVh3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 16:36:22 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:50294 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752414Ab0ADVgV (ORCPT
+	Mon, 4 Jan 2010 16:37:29 -0500
+Received: from gateway-1237.mvista.com ([206.112.117.35]:14730 "HELO
+	imap.sh.mvista.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with SMTP id S1752848Ab0ADVh2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 16:36:21 -0500
-Date: Mon, 4 Jan 2010 13:35:55 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: James Bottomley <James.Bottomley@suse.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Stefani Seibold <stefani@seibold.net>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH] libsrp: fix compile failure
-Message-Id: <20100104133555.d5231884.akpm@linux-foundation.org>
-In-Reply-To: <alpine.LNX.2.00.1001042206340.2277@pobox.suse.cz>
-References: <1262200866.2749.226.camel@mulgrave.site>
-	<alpine.LFD.2.00.0912301132260.11961@localhost.localdomain>
-	<alpine.LRH.2.00.1001041619130.15694@twin.jikos.cz>
-	<1262625721.2724.158.camel@mulgrave.site>
-	<alpine.LNX.2.00.1001042206340.2277@pobox.suse.cz>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 4 Jan 2010 16:37:28 -0500
+Message-ID: <4B425F80.2070409@ru.mvista.com>
+Date: Tue, 05 Jan 2010 00:37:04 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+MIME-Version: 1.0
+To: Eirik Aanonsen <EAA@wprmedical.com>
+Cc: "kernel@avr32linux.org" <kernel@avr32linux.org>,
+       "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/1] atmel uaba : Adding invert vbus_pin
+References: <B5E0EDE940845B429B7ECCE186529F2C0641D177FD@dware2702>
+In-Reply-To: <B5E0EDE940845B429B7ECCE186529F2C0641D177FD@dware2702>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 4 Jan 2010 22:12:26 +0100 (CET)
-Jiri Kosina <jkosina@suse.cz> wrote:
+Hello.
 
-> 
-> [ added Stephen to CC ]
-> 
-> On Mon, 4 Jan 2010, James Bottomley wrote:
-> 
-> > Well, the fact that the compile failure wasn't detected before it went 
-> > upstream should answer that ...
-> > 
-> > But to be more specific: linux-next is our integration tree (and also
-> > the obscure architecture compile tree).  To ensure the best possible
-> > integration, every tree should be built and tested in linux-next at
-> > least once before it goes to Linus.  There were originally technical
-> > reasons why -mm wasn't in ... I just thought they'd been fixed by now.
-> 
-> /me checks ...
-> 
-> Yes, it indeed is that way -- Andew pulls whole linux-next as one of the 
-> patches into -mm series.
-> 
-> To make linux-next really working the way it is intended to work we need 
-> to have -mm part of it, as it is used as a last point for a non-trivial 
-> amount of patches before they enter Linus' tree.
-> 
-> Andrew, why do we have the current setup, and not the other way around?
-> 
+Eirik Aanonsen wrote:
 
-Because I suck.  I haven't yet got around to feeding -mm into
-linux-next.  It's a bit tricky, because -mm is based on linux-next. 
-Probably we'll address this by adding a "linux-next before the mm bits"
-marker to linux-next.
+> Adding vbus_pin_inverted so that the usb detect pin can be active high or low.
+> This because depending on HW implementation it is better to have active low.
+> Also replaced the pio_get_value(udc->vbus_pin); with a call to vbus_is_present(udc);
+>
+> Signed-off-by: Eirik Aanonsen <eaa@wprmedical.com>
+>   
+[...]
+> diff --git a/drivers/usb/gadget/atmel_usba_udc.c b/drivers/usb/gadget/atmel_usba_udc.c
+> index 4e970cf..1c469d4 100644
+> --- a/drivers/usb/gadget/atmel_usba_udc.c
+> +++ b/drivers/usb/gadget/atmel_usba_udc.c
+> @@ -320,8 +320,17 @@ static inline void usba_cleanup_debugfs(struct usba_udc *udc)
+>  static int vbus_is_present(struct usba_udc *udc)
+>  {
+>  	if (gpio_is_valid(udc->vbus_pin))
+> -		return gpio_get_value(udc->vbus_pin);
+> -
+> +	{	
+> +		if(udc->vbus_pin_inverted)
+>   
+
+   Space missing after *if*.
+
+> +		{
+> +			if( gpio_get_value(udc->vbus_pin) == 1)
+>   
+
+   Space missing after *if* and there should be no space after (.
+
+> +				return 0;
+> +			else
+> +				return 1;
+>   
+
+   Why not simply:
+
+			return !gpio_get_value(udc->vbus_pin);
+
+
+> +		}
+> +		else
+>   
+
+   } and *else* should be on the same line.
+   Please run your patches thru scripts/checkpatch.pl before submitting...
+
+WBR, Sergei
+
 
