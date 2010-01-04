@@ -1,58 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753674Ab0ADUWf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753710Ab0ADUes@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753674Ab0ADUWf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 15:22:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753336Ab0ADUWe
+	id S1753710Ab0ADUes (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 15:34:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752601Ab0ADUeq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 15:22:34 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:49977 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753346Ab0ADUWe convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 15:22:34 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:from:reply-to:to:subject:date:user-agent:cc:references
-         :in-reply-to:mime-version:content-type:content-transfer-encoding
-         :message-id;
-        b=Z1YelFN6gdNAMoxe0hRVsmlxuPHYdeVf+E2uWtG0K5OdL5bKSucW7CwPKVX2AWFwcb
-         mmCSkcA/drlNbIaKdCMd5Gz4R3vKy+/nIcJ2N9d61Elc6oVoR8qQrolJsNjEI30kqR2c
-         hOx/R3h5yTxWB+JMdNO68aq7QpM11EF2iA0fo=
-From: Florian Fainelli <florian@openwrt.org>
-Reply-To: Florian Fainelli <florian@openwrt.org>
-To: Christoph Hellwig <hch@infradead.org>
-Subject: Re: [PATCH] VLYNQ: add missing linux/irq.h include
-Date: Mon, 4 Jan 2010 21:22:25 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.32-trunk-686; KDE/4.3.2; i686; ; )
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-References: <201001041838.51265.florian@openwrt.org> <20100104181228.GA28990@infradead.org>
-In-Reply-To: <20100104181228.GA28990@infradead.org>
+	Mon, 4 Jan 2010 15:34:46 -0500
+Received: from hera.kernel.org ([140.211.167.34]:34084 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750880Ab0ADUep (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jan 2010 15:34:45 -0500
+Message-ID: <4B425085.5040103@kernel.org>
+Date: Mon, 04 Jan 2010 12:33:09 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Message-Id: <201001042122.27360.florian@openwrt.org>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: "H. Peter Anvin" <hpa@zytor.com>,
+       Jesse Brandeburg <jesse.brandeburg@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       NetDEV list <netdev@vger.kernel.org>,
+       Jesse Brandeburg <jesse.brandeburg@intel.com>,
+       Suresh Siddha <suresh.b.siddha@intel.com>
+Subject: Re: Subject: [PATCH 1/2] x86: get back 15 vectors
+References: <4B347AEE.6030705@kernel.org> <20091228094707.GH24690@elte.hu>	<4B398ECD.1080506@kernel.org>	<4807377b1001031906s6b1ee576jc021da2642bb4147@mail.gmail.com>	<4B415E73.1050801@kernel.org> <4B419113.1090204@kernel.org>	<m1aawtlu6y.fsf@fess.ebiederm.org> <4B423B08.3010005@zytor.com>	<m1my0thelq.fsf@fess.ebiederm.org> <4B424305.7050803@kernel.org>	<4B4245FC.7070902@zytor.com> <4B424A5C.7080309@kernel.org> <m1y6kdbpad.fsf@fess.ebiederm.org>
+In-Reply-To: <m1y6kdbpad.fsf@fess.ebiederm.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Christoph,
+Subject: [PATCH 1/2] x86: get back 16 vectors
 
-Le lundi 4 janvier 2010 19:12:28, Christoph Hellwig a écrit :
-> On Mon, Jan 04, 2010 at 06:38:51PM +0100, Florian Fainelli wrote:
-> > This patch adds the missing linux/irq.h header
-> > which will trigger compilation errors on non-AR7
-> > platforms (i.e: TI Davinci).
-> 
-> linux/irq.h should not be included by drivers.  It's an internal handler
-> for the generic hardirq code.  All functions for use by drivers are in
-> linux/interrupt.h
+-v2: according to hpa that we could start from 0x1f
+-v3: update comments
 
-vlynq.c references definitions that are in linux/irq.h and not in 
-linux/interrupt.h (like IRQ_TYPE_*), thus the include.
--- 
-Best regards, Florian Fainelli
-Email: florian@openwrt.org
-Web: http://openwrt.org
-IRC: [florian] on irc.freenode.net
--------------------------------
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+
+---
+ arch/x86/include/asm/irq_vectors.h |   30 +++++++++++++++++++-----------
+ 1 file changed, 19 insertions(+), 11 deletions(-)
+
+Index: linux-2.6/arch/x86/include/asm/irq_vectors.h
+===================================================================
+--- linux-2.6.orig/arch/x86/include/asm/irq_vectors.h
++++ linux-2.6/arch/x86/include/asm/irq_vectors.h
+@@ -30,8 +30,12 @@
+ /*
+  * IDT vectors usable for external interrupt sources start
+  * at 0x20:
++ * hpa said we can start from 0x1f.
++ *   0x1f is documented as reserved. The ability for the APIC to
++ *   generate vectors starting at 0x10 is documented, as is the ability for
++ *   the CPU to receive any vector number as an interrupt
+  */
+-#define FIRST_EXTERNAL_VECTOR		0x20
++#define FIRST_EXTERNAL_VECTOR		0x1f
+ 
+ #ifdef CONFIG_X86_32
+ # define SYSCALL_VECTOR			0x80
+@@ -41,15 +45,19 @@
+ #endif
+ 
+ /*
+- * Reserve the lowest usable priority level 0x20 - 0x2f for triggering
++ * Reserve the lowest usable priority level 0x10 - 0x1f for triggering
+  * cleanup after irq migration.
++ * this overlaps with the reserved range for cpu exceptions so this
++ * will need to be changed to 0x20 - 0x2f if the last cpu exception is
++ * ever allocated.
+  */
++
+ #define IRQ_MOVE_CLEANUP_VECTOR		FIRST_EXTERNAL_VECTOR
+ 
+ /*
+- * Vectors 0x30-0x3f are used for ISA interrupts.
++ * Vectors 0x20-0x2f are used for ISA interrupts.
+  */
+-#define IRQ0_VECTOR			(FIRST_EXTERNAL_VECTOR + 0x10)
++#define IRQ0_VECTOR			(FIRST_EXTERNAL_VECTOR + 1)
+ 
+ #define IRQ1_VECTOR			(IRQ0_VECTOR +  1)
+ #define IRQ2_VECTOR			(IRQ0_VECTOR +  2)
+@@ -68,6 +76,13 @@
+ #define IRQ15_VECTOR			(IRQ0_VECTOR + 15)
+ 
+ /*
++ * First APIC vector available to drivers: (vectors 0x30-0xee) we
++ * start at 0x31 to spread out vectors evenly between priority
++ * levels. (0x80 is the syscall vector)
++ */
++#define FIRST_DEVICE_VECTOR		(IRQ15_VECTOR + 2)
++
++/*
+  * Special IRQ vectors used by the SMP architecture, 0xf0-0xff
+  *
+  *  some of the following vectors are 'rare', they are merged
+@@ -120,13 +135,6 @@
+  */
+ #define MCE_SELF_VECTOR			0xeb
+ 
+-/*
+- * First APIC vector available to drivers: (vectors 0x30-0xee) we
+- * start at 0x31(0x41) to spread out vectors evenly between priority
+- * levels. (0x80 is the syscall vector)
+- */
+-#define FIRST_DEVICE_VECTOR		(IRQ15_VECTOR + 2)
+-
+ #define NR_VECTORS			 256
+ 
+ #define FPU_IRQ				  13
