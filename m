@@ -1,48 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752944Ab0ADE2k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752926Ab0ADEnY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752944Ab0ADE2k (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Jan 2010 23:28:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752834Ab0ADE2i
+	id S1752926Ab0ADEnY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Jan 2010 23:43:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752834Ab0ADEnX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Jan 2010 23:28:38 -0500
-Received: from ozlabs.org ([203.10.76.45]:56874 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752072Ab0ADE2i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Jan 2010 23:28:38 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: David John <davidjon@xenontk.org>
-Subject: Re: [PATCH v2] Check the node argument passed to cpumask_of_node
-Date: Mon, 4 Jan 2010 14:58:22 +1030
-User-Agent: KMail/1.12.2 (Linux/2.6.31-16-generic; KDE/4.3.2; i686; ; )
-Cc: jbarnes@virtuousgeek.org, andreas.herrmann3@amd.com, rjw@sisk.pl,
-       linux-kernel@vger.kernel.org
-References: <201001012255.28094.rjw@sisk.pl> <1262412947-3890-1-BlackWidow-davidjon@xenontk.org>
-In-Reply-To: <1262412947-3890-1-BlackWidow-davidjon@xenontk.org>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
+	Sun, 3 Jan 2010 23:43:23 -0500
+Received: from acsinet12.oracle.com ([141.146.126.234]:59551 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752587Ab0ADEnX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Jan 2010 23:43:23 -0500
+Date: Sun, 3 Jan 2010 20:42:30 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Phillip Lougher <phillip@lougher.demon.co.uk>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, Michal Marek <mmarek@suse.cz>,
+       akpm <akpm@linux-foundation.org>
+Subject: Re: [PATCH -next] libs: force lzma_wrapper to be retained
+Message-Id: <20100103204230.a85ae137.randy.dunlap@oracle.com>
+In-Reply-To: <4B3FEB1B.7040106@lougher.demon.co.uk>
+References: <20100101120737.94d4acc4.sfr@canb.auug.org.au>
+	<20100101183344.398f2538.randy.dunlap@oracle.com>
+	<4B3FEB1B.7040106@lougher.demon.co.uk>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <201001041458.24145.rusty@rustcorp.com.au>
+X-Source-IP: acsmt354.oracle.com [141.146.40.154]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090203.4B4171D5.0110:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2 Jan 2010 04:45:47 pm David John wrote:
-> Commit e0cd516 "PCI: derive nearby CPUs from device's instead of bus' NUMA information"
-> causes an null pointer dereference when reading from the sysfs attributes local_cpu*
-> on Intel machines with no ACPI NUMA proximity info, since dev->numa_node gets set to -1
-> for all PCI devices, which then gets passed to cpumask_of_node.
+On Sun, 03 Jan 2010 00:55:55 +0000 Phillip Lougher wrote:
+
+> Randy Dunlap wrote:
+> > From: Randy Dunlap <randy.dunlap@oracle.com>
+> > 
+> > When CONFIG_SQUASHFS=m and CONFIG_DECOMPRESS_LZMA=m, decompress_lzma
+> > is built but then discarded from the library because no built-in code
+> > uses it, so change it from a lib- to an obj- to force it to be kept
+> > in the library.
+> > 
+> > ERROR: "unlzma" [fs/squashfs/squashfs.ko] undefined!
+> > 
 > 
-> Ensure that the node value is valid.
+> Thanks for fixing this, I should have spotted it in my various
+> config tests but didn't.  I could add this to my squashfs-next patches
+> to stop the linux-next tree breakage, however, should it go into
+> Michal's kbuild -next tree instead?
 
-This only works for x86, and only for !CONFIG_DEBUG_PER_CPU_MAPS.
+You can/should go ahead and include this patch, I think.
 
-I suggest fixing the callers introduced in e0cd516 for the moment,
-then if you feel enthused, change the semantics of cpumask_of_node and
-remove the checks from the various callers.
+> This patch raises a small additional issue, why is DECOMPRESS_LZMA
+> (and DECOMPRESS_GZIP/DECOMPRESS_BZIP2) and defined as tristate?
+> None of the above compressors can be built as modules.
 
-(And please only check for -1: it has a special meaning, unlike other
-invalid numbers which indicate a bug).
+No idea.  Sounds like a potential problem.
 
-Thanks,
-Rusty.
+> Regards
+> 
+> Phillip
+
+
+---
+~Randy
