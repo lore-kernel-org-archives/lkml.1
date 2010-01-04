@@ -1,40 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753302Ab0ADJOz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753219Ab0ADJT2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753302Ab0ADJOz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 04:14:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752881Ab0ADJOw
+	id S1753219Ab0ADJT2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 04:19:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752934Ab0ADJT2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 04:14:52 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:55334 "EHLO mx2.suse.de"
+	Mon, 4 Jan 2010 04:19:28 -0500
+Received: from mga03.intel.com ([143.182.124.21]:20105 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753203Ab0ADJOw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 04:14:52 -0500
-Message-ID: <4B41B186.2090401@suse.cz>
-Date: Mon, 04 Jan 2010 10:14:46 +0100
-From: Michal Marek <mmarek@suse.cz>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.2 Thunderbird/3.0
-MIME-Version: 1.0
-To: Ben Dooks <ben@fluff.org>
-Cc: linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org
-Subject: Re: modules.order and modules.builting files created
-References: <20100104045756.GA13621@fluff.org.uk>
-In-Reply-To: <20100104045756.GA13621@fluff.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1752923Ab0ADJT1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jan 2010 04:19:27 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
+   d="scan'208";a="228874916"
+Subject: [RFC PATCH] sched: Pass affine target cpu into wake_affine
+From: Lin Ming <ming.m.lin@intel.com>
+To: Mike Galbraith <efault@gmx.de>, Peter Zijlstra <peterz@infradead.org>
+Cc: lkml <linux-kernel@vger.kernel.org>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+Content-Type: text/plain
+Date: Mon, 04 Jan 2010 17:03:47 +0800
+Message-Id: <1262595827.22471.108.camel@minggr.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 (2.24.1-2.fc10) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4.1.2010 05:57, Ben Dooks wrote:
-> The modules.order and modules.builtin files are ending up clogging
-> up 'git status' enquiries after building a recent kernel. Is there
-> any reason these can't be hidden?
+commit a03ecf08d7bbdd979d81163ea13d194fe21ad339
+Author: Lin Ming <ming.m.lin@intel.com>
+Date:   Mon Jan 4 14:14:50 2010 +0800
 
-There is
+    sched: Pass affine target cpu into wake_affine
+    
+    Since commit a1f84a3(sched: Check for an idle shared cache in select_task_rq_fair()),
+    the affine target maybe adjusted to any idle cpu in cache sharing domains
+    instead of current cpu.
+    But wake_affine still use current cpu to calculate load which is wrong.
+    
+    This patch passes affine cpu into wake_affine.
+    
+    Signed-off-by: Lin Ming <ming.m.lin@intel.com>
+---
+ kernel/sched_fair.c |   29 ++++++++++++++---------------
+ 1 files changed, 14 insertions(+), 15 deletions(-)
 
-*.order
-modules.builtin
+diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
+index 42ac3c9..0a6fa39 100644
+--- a/kernel/sched_fair.c
++++ b/kernel/sched_fair.c
+@@ -1237,11 +1237,11 @@ static inline unsigned long effective_load(struct task_group *tg, int cpu,
+ 
+ #endif
+ 
+-static int wake_affine(struct sched_domain *sd, struct task_struct *p, int sync)
++static int wake_affine(struct sched_domain *sd, struct task_struct *p, int affine_cpu, int sync)
+ {
+ 	struct task_struct *curr = current;
+-	unsigned long this_load, load;
+-	int idx, this_cpu, prev_cpu;
++	unsigned long affine_load, load;
++	int idx, prev_cpu;
+ 	unsigned long tl_per_task;
+ 	unsigned int imbalance;
+ 	struct task_group *tg;
+@@ -1249,10 +1249,9 @@ static int wake_affine(struct sched_domain *sd, struct task_struct *p, int sync)
+ 	int balanced;
+ 
+ 	idx	  = sd->wake_idx;
+-	this_cpu  = smp_processor_id();
+ 	prev_cpu  = task_cpu(p);
+ 	load	  = source_load(prev_cpu, idx);
+-	this_load = target_load(this_cpu, idx);
++	affine_load = target_load(affine_cpu, idx);
+ 
+ 	if (sync) {
+ 	       if (sched_feat(SYNC_LESS) &&
+@@ -1275,7 +1274,7 @@ static int wake_affine(struct sched_domain *sd, struct task_struct *p, int sync)
+ 		tg = task_group(current);
+ 		weight = current->se.load.weight;
+ 
+-		this_load += effective_load(tg, this_cpu, -weight, -weight);
++		affine_load += effective_load(tg, affine_cpu, -weight, -weight);
+ 		load += effective_load(tg, prev_cpu, 0, -weight);
+ 	}
+ 
+@@ -1285,16 +1284,16 @@ static int wake_affine(struct sched_domain *sd, struct task_struct *p, int sync)
+ 	imbalance = 100 + (sd->imbalance_pct - 100) / 2;
+ 
+ 	/*
+-	 * In low-load situations, where prev_cpu is idle and this_cpu is idle
+-	 * due to the sync cause above having dropped this_load to 0, we'll
++	 * In low-load situations, where prev_cpu is idle and affine_cpu is idle
++	 * due to the sync cause above having dropped affine_load to 0, we'll
+ 	 * always have an imbalance, but there's really nothing you can do
+ 	 * about that, so that's good too.
+ 	 *
+ 	 * Otherwise check if either cpus are near enough in load to allow this
+-	 * task to be woken on this_cpu.
++	 * task to be woken on affine_cpu.
+ 	 */
+-	balanced = !this_load ||
+-		100*(this_load + effective_load(tg, this_cpu, weight, weight)) <=
++	balanced = !affine_load ||
++		100*(affine_load + effective_load(tg, affine_cpu, weight, weight)) <=
+ 		imbalance*(load + effective_load(tg, prev_cpu, 0, weight));
+ 
+ 	/*
+@@ -1306,11 +1305,11 @@ static int wake_affine(struct sched_domain *sd, struct task_struct *p, int sync)
+ 		return 1;
+ 
+ 	schedstat_inc(p, se.nr_wakeups_affine_attempts);
+-	tl_per_task = cpu_avg_load_per_task(this_cpu);
++	tl_per_task = cpu_avg_load_per_task(affine_cpu);
+ 
+ 	if (balanced ||
+-	    (this_load <= load &&
+-	     this_load + target_load(prev_cpu, idx) <= tl_per_task)) {
++	    (affine_load <= load &&
++	     affine_load + target_load(prev_cpu, idx) <= tl_per_task)) {
+ 		/*
+ 		 * This domain has SD_WAKE_AFFINE and
+ 		 * p is cache cold in this domain, and
+@@ -1544,7 +1543,7 @@ static int select_task_rq_fair(struct task_struct *p, int sd_flag, int wake_flag
+ 			update_shares(tmp);
+ 	}
+ 
+-	if (affine_sd && wake_affine(affine_sd, p, sync))
++	if (affine_sd && wake_affine(affine_sd, p, cpu, sync))
+ 		return cpu;
+ 
+ 	while (sd) {
 
-in the top-level .gitignore file.
 
-Michal
