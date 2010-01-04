@@ -1,79 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753014Ab0ADBXd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752116Ab0ADCCi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753014Ab0ADBXd (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Jan 2010 20:23:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751719Ab0ADBXa
+	id S1752116Ab0ADCCi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Jan 2010 21:02:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751556Ab0ADCCh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Jan 2010 20:23:30 -0500
-Received: from mail-yw0-f176.google.com ([209.85.211.176]:50850 "EHLO
-	mail-yw0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751027Ab0ADBX3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Jan 2010 20:23:29 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:x-mailer:mime-version
-         :content-type:content-transfer-encoding;
-        b=tWHHivueNnA2rSbLDivRxKI8yRkRCx8t6TXLTZgX0blspK0u7FG9EebPoCYPxvuKsd
-         Ut+6/rttjo7eKBSwA3jarS9s9AyAcvpVxtV4sz4lR+KXO/QA9O30hmgMAwb6xUb6tUUW
-         E2MvRBvJ2WPULJmMNzTvOfofcyr5gINn5mLlE=
-Date: Mon, 4 Jan 2010 10:23:19 +0900
-From: Minchan Kim <minchan.kim@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>, Matt Mackall <mpm@selenic.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       linux-mm <linux-mm@kvack.org>, lkml <linux-kernel@vger.kernel.org>
-Subject: [PATCH v2 -mmotm-2009-12-10-17-19] Fix wrong rss count of smaps
-Message-Id: <20100104102319.b878047d.minchan.kim@barrios-desktop>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 3 Jan 2010 21:02:37 -0500
+Received: from [121.136.51.252] ([121.136.51.252]:47227 "EHLO ben-laptop"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751359Ab0ADCCg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Jan 2010 21:02:36 -0500
+X-Greylist: delayed 2104 seconds by postgrey-1.27 at vger.kernel.org; Sun, 03 Jan 2010 21:02:36 EST
+Date: Mon, 4 Jan 2010 10:27:13 +0900
+From: Ben Dooks <ben-linux@fluff.org>
+To: linux-arm-kernel@lists.arm.linux.org.uk, linux-samsung-soc@vger.kernel.org,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: request pull: bjdooks' samsung fixes
+Message-ID: <20100104012713.GA29175@ben-laptop.fluff.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Fixes for a couple of problems with the current ARM Samsung builds:
 
-Long time ago, We regards zero page as file_rss and
-vm_normal_page didn't return NULL in case of zero page
+- touchscreen driver missing header files
+- osiris and bast printing errors on non-existant custom fit nand devices
 
-But now, we reinstated ZERO_PAGE and vm_normal_page's implementation
-can return NULL in case of zero page.
+This is a slimed-down version of the previous pull request that seems to
+have been ignored.
 
-Then, RSS and PSS can't be matched in smaps_pte_range.
-This patch fixes it.
+The following changes since commit 45d28b097280a78893ce25a5d0db41e6a2717853:
+  Linus Torvalds (1):
+        Merge branch 'reiserfs/kill-bkl' of git://git.kernel.org/.../frederic/random-tracing
 
-Acked-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Acked-by: Matt Mackall <mpm@selenic.com>
-Acked-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Signed-off-by: Minchan Kim <minchan.kim@gmail.com>
----
- fs/proc/task_mmu.c |    3 +--
- 1 files changed, 1 insertions(+), 2 deletions(-)
+are available in the git repository at:
 
-diff --git a/fs/proc/task_mmu.c b/fs/proc/task_mmu.c
-index 47c03f4..f277c4a 100644
---- a/fs/proc/task_mmu.c
-+++ b/fs/proc/task_mmu.c
-@@ -361,12 +361,11 @@ static int smaps_pte_range(pmd_t *pmd, unsigned long addr, unsigned long end,
- 		if (!pte_present(ptent))
- 			continue;
- 
--		mss->resident += PAGE_SIZE;
--
- 		page = vm_normal_page(vma, addr, ptent);
- 		if (!page)
- 			continue;
- 
-+		mss->resident += PAGE_SIZE;
- 		/* Accumulate the size in pages that have been accessed. */
- 		if (pte_young(ptent) || PageReferenced(page))
- 			mss->referenced += PAGE_SIZE;
--- 
-1.5.6.3
+  git://git.fluff.org/bjdooks/linux.git for-linus/samsung
 
+Arnaud Patard (2):
+      ARM: S3C24XX: touchscreen device definition
+      ARM: S3C24XX: touchscreen device definition
 
+Ben Dooks (5):
+      ARM: mach-osiris: add NAND_SCAN_SILENT_NODEV to optional devices
+      ARM: mach-bast: add NAND_SCAN_SILENT_NODEV to optional devices
+      ARM: S3C: Fix NAND device registration by s3c_nand_set_platdata().
+      ARM: Merge next-simtec
+      ARM: Merge s3c24xx-updates2
 
--- 
-Kind regards,
-Minchan Kim
+ arch/arm/mach-s3c2410/include/mach/ts.h |   21 +++++++++++++++++++++
+ arch/arm/mach-s3c2410/mach-bast.c       |    3 +++
+ arch/arm/mach-s3c2410/mach-h1940.c      |    8 ++++++++
+ arch/arm/mach-s3c2440/mach-osiris.c     |    2 ++
+ arch/arm/plat-s3c/dev-nand.c            |    4 +++-
+ arch/arm/plat-s3c/include/plat/devs.h   |    1 +
+ arch/arm/plat-s3c24xx/devs.c            |   18 ++++++++++++++++++
+ arch/arm/plat-s3c24xx/s3c244x.c         |    1 +
+ 8 files changed, 57 insertions(+), 1 deletions(-)
+ create mode 100644 arch/arm/mach-s3c2410/include/mach/ts.h
+
