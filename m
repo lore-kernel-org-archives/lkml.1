@@ -1,77 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754022Ab0ADWhT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754062Ab0ADWhw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754022Ab0ADWhT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 17:37:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753903Ab0ADWhJ
+	id S1754062Ab0ADWhw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 17:37:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753999Ab0ADWhR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 17:37:09 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:39007
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753619Ab0ADWhE (ORCPT
+	Mon, 4 Jan 2010 17:37:17 -0500
+Received: from nlpi129.sbcis.sbc.com ([207.115.36.143]:46175 "EHLO
+	nlpi129.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753794Ab0ADWhH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 17:37:04 -0500
-Date: Mon, 04 Jan 2010 14:37:05 -0800 (PST)
-Message-Id: <20100104.143705.179916049.davem@davemloft.net>
-To: sfr@canb.auug.org.au
-Cc: netdev@vger.kernel.org, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, rakesh@chelsio.com,
-       James.Bottomley@HansenPartnership.com
-Subject: Re: linux-next: manual merge of the net-current tree with the
- scsi-rc-fixes tree
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20100105085613.0a04d952.sfr@canb.auug.org.au>
-References: <20100105085613.0a04d952.sfr@canb.auug.org.au>
-X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Mon, 4 Jan 2010 17:37:07 -0500
+Message-Id: <20100104223557.143622910@quilx.com>
+References: <20100104223439.228028923@quilx.com>
+User-Agent: quilt/0.46-1
+Date: Mon, 04 Jan 2010 16:34:45 -0600
+From: Christoph Lameter <cl@linux-foundation.org>
+To: Tejun Heo <tj@kernel.org>
+Cc: linux-kernel@vger.kernel.org
+CC: Mel Gorman <mel@csn.ul.ie>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: [this_cpu_xx V9 6/7] this_cpu ops: Remove pageset_notifier
+Content-Disposition: inline; filename=percpu_page_alloc_remove_pageset_notifier
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Tue, 5 Jan 2010 08:56:13 +1100
+Remove the pageset notifier since it only marks that a processor
+exists on a specific node. Move that code into the vmstat notifier.
 
-> Today's linux-next merge of the net-current tree got a conflict in
-> drivers/scsi/cxgb3i/cxgb3i_offload.c between commit
-> 44214ab474671e1ab5a860954db413bce52f7e04 ("[SCSI] cxgb3i: Fix a login
-> over vlan issue") from the scsi-rc-fixes tree and commit
-> 52ee264bca378835decb827d18b1d90b709ca4c9 ("cxgb3i: Fix a login over vlan
-> issue") from the net-current tree.
-> 
-> These seem to be different version of the same change.  The version in
-> the net-current tree looks wrong - it contains
-> 
-> if (dev->priv_flags && IFF_802_1Q_VLAN)
-> 
-> but it presumably should be
-> 
-> if (dev->priv_flags & IFF_802_1Q_VLAN)
-> 
-> as in the scsi-rc-fixes version.
+Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
 
-I checked the following into my tree so it should all work out.
+---
+ mm/page_alloc.c |   27 ---------------------------
+ mm/vmstat.c     |    1 +
+ 2 files changed, 1 insertion(+), 27 deletions(-)
 
-commit d3af9dd04f8795dc2761ecfa56632e4d0df0dae2
-Author: David S. Miller <davem@davemloft.net>
-Date:   Mon Jan 4 14:36:40 2010 -0800
-
-    cxgb3i: Fix flags test.
-    
-    As noticed by Stephen Rothwell.
-    
-    Signed-off-by: David S. Miller <davem@davemloft.net>
-
-diff --git a/drivers/scsi/cxgb3i/cxgb3i_offload.c b/drivers/scsi/cxgb3i/cxgb3i_offload.c
-index 4b8a513..7449d46 100644
---- a/drivers/scsi/cxgb3i/cxgb3i_offload.c
-+++ b/drivers/scsi/cxgb3i/cxgb3i_offload.c
-@@ -1442,7 +1442,7 @@ static int is_cxgb3_dev(struct net_device *dev)
- 	struct cxgb3i_sdev_data *cdata;
- 	struct net_device *ndev = dev;
+Index: linux-2.6/mm/vmstat.c
+===================================================================
+--- linux-2.6.orig/mm/vmstat.c	2010-01-04 14:44:26.000000000 -0600
++++ linux-2.6/mm/vmstat.c	2010-01-04 14:44:28.000000000 -0600
+@@ -908,6 +908,7 @@ static int __cpuinit vmstat_cpuup_callba
+ 	case CPU_ONLINE:
+ 	case CPU_ONLINE_FROZEN:
+ 		start_cpu_timer(cpu);
++		node_set_state(cpu_to_node(cpu), N_CPU);
+ 		break;
+ 	case CPU_DOWN_PREPARE:
+ 	case CPU_DOWN_PREPARE_FROZEN:
+Index: linux-2.6/mm/page_alloc.c
+===================================================================
+--- linux-2.6.orig/mm/page_alloc.c	2010-01-04 14:44:26.000000000 -0600
++++ linux-2.6/mm/page_alloc.c	2010-01-04 14:44:28.000000000 -0600
+@@ -3126,27 +3126,6 @@ static void setup_pagelist_highmark(stru
+ 		pcp->batch = PAGE_SHIFT * 8;
+ }
  
--	if (dev->priv_flags && IFF_802_1Q_VLAN)
-+	if (dev->priv_flags & IFF_802_1Q_VLAN)
- 		ndev = vlan_dev_real_dev(dev);
+-
+-static int __cpuinit pageset_cpuup_callback(struct notifier_block *nfb,
+-		unsigned long action,
+-		void *hcpu)
+-{
+-	int cpu = (long)hcpu;
+-
+-	switch (action) {
+-	case CPU_UP_PREPARE:
+-	case CPU_UP_PREPARE_FROZEN:
+-		node_set_state(cpu_to_node(cpu), N_CPU);
+-		break;
+-	default:
+-		break;
+-	}
+-	return ret;
+-}
+-
+-static struct notifier_block __cpuinitdata pageset_notifier =
+-	{ &pageset_cpuup_callback, NULL, 0 };
+-
+ /*
+  * Allocate per cpu pagesets and initialize them.
+  * Before this call only boot pagesets were available.
+@@ -3172,12 +3151,6 @@ void __init setup_per_cpu_pageset(void)
+ 						percpu_pagelist_fraction));
+ 		}
+ 	}
+-	/*
+-	 * The boot cpu is always the first active.
+-	 * The boot node has a processor.
+-	 */
+-	node_set_state(cpu_to_node(smp_processor_id()), N_CPU);
+-	register_cpu_notifier(&pageset_notifier);
+ }
  
- 	write_lock(&cdata_rwlock);
+ static noinline __init_refok
+
+-- 
