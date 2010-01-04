@@ -1,82 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753374Ab0ADDN2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753411Ab0ADDOW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753374Ab0ADDN2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Jan 2010 22:13:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752952Ab0ADDHT
+	id S1753411Ab0ADDOW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Jan 2010 22:14:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753383Ab0ADDOQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Jan 2010 22:07:19 -0500
-Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:65040 "EHLO
-	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752796Ab0ADDHO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Jan 2010 22:07:14 -0500
-MIME-version: 1.0
-Content-transfer-encoding: 7BIT
-Content-type: TEXT/PLAIN
-Date: Sun, 03 Jan 2010 19:04:41 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-Subject: [PATCH 03/29] x86/pci: don't check mmconf again if it is from MSR with
- amd faml0h
-In-reply-to: <1262574307-17040-1-git-send-email-yinghai@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Christoph Lameter <cl@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
-       Yinghai Lu <yinghai@kernel.org>
-Message-id: <1262574307-17040-4-git-send-email-yinghai@kernel.org>
-X-Mailer: git-send-email 1.6.4.2
-References: <1262574307-17040-1-git-send-email-yinghai@kernel.org>
+	Sun, 3 Jan 2010 22:14:16 -0500
+Received: from mga09.intel.com ([134.134.136.24]:43287 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752926Ab0ADDOM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Jan 2010 22:14:12 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.47,496,1257148800"; 
+   d="scan'208";a="480967067"
+Date: Mon, 4 Jan 2010 05:49:05 -0500
+From: "Youquan,Song" <youquan.song@linux.intel.com>
+To: hpa@zytor.com, tglx@linutronix.de, akpm@linux-foundation.org
+Cc: venkatesh.pallipadi@intel.com, suresh.b.siddha@intel.com,
+       kent.liu@intel.com, chaohong.guo@intel.com, youquan.song@intel.com,
+       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH]tickless: Fix tick nohz timer irq0 fail to increaase
+Message-ID: <20100104104905.GA30574@youquan-linux.bj.intel.com>
+References: <20091214130233.GA3898@youquan-linux.bj.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091214130233.GA3898@youquan-linux.bj.intel.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-for AMD Fam10h, it we read mmconf from MSR early, we should just trust it
-because we check it and correct it already.
+Tickless is disabled by nohz=off, which is used in OSVs. But in current kernel,
+if tickless is disabled, the timer irq0 will not increase. Because the timer 
+event handler should be tick_handle_periodic, but actually event handler keep 
+as tick_handle_oneshot_broadcast which is used in tickless. The root cause is
+that it is default to enable high resolution timer which will force to oneshot
+ broadcast mode.
 
-so skip the reject check there.
+This patch add tickless enable check before enable high resolution timer
 
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+On Nehalem-EX:
+
+Before the patch:
+linux-a25n:~ # cat /proc/interrupts | grep timer
+   0:        334          0          0          0          0          0 ....
+ LOC:     192248     193931     193851     184441     193803     193625 ....
+
+After the patch:
+cat /proc/interrupts | grep timer
+   0:     223788          0          0          0          0          0 ....
+ LOC:      13081     238407     238452     229405     238298     235688 ....
+
+Signed-off-by: Youquan, Song <youquan.song@intel.com>
 ---
- arch/x86/pci/mmconfig-shared.c |   10 +++++++++-
- 1 files changed, 9 insertions(+), 1 deletions(-)
 
-diff --git a/arch/x86/pci/mmconfig-shared.c b/arch/x86/pci/mmconfig-shared.c
-index b19d1e5..bcce99b 100644
---- a/arch/x86/pci/mmconfig-shared.c
-+++ b/arch/x86/pci/mmconfig-shared.c
-@@ -168,6 +168,7 @@ static const char __init *pci_mmcfg_intel_945(void)
- 	return "Intel Corporation 945G/GZ/P/PL Express Memory Controller Hub";
- }
- 
-+static int __initdata amd_fam10h_mmconf_found_via_hostbridge;
- static const char __init *pci_mmcfg_amd_fam10h(void)
- {
- 	u32 low, high, address;
-@@ -215,6 +216,8 @@ static const char __init *pci_mmcfg_amd_fam10h(void)
- 			return NULL;
- 		}
- 
-+	amd_fam10h_mmconf_found_via_hostbridge = 1;
-+
- 	return "AMD Family 10h NB";
- }
- 
-@@ -606,7 +609,12 @@ static void __init __pci_mmcfg_init(int early)
- 	if (!known_bridge)
- 		acpi_sfi_table_parse(ACPI_SIG_MCFG, pci_parse_mcfg);
- 
--	pci_mmcfg_reject_broken(early);
-+	/*
-+	 * if it is amd fam10h, and that is read from msr,
-+	 * we don't need check them again.
-+	 */
-+	if (!amd_fam10h_mmconf_found_via_hostbridge)
-+		pci_mmcfg_reject_broken(early);
- 
- 	if (list_empty(&pci_mmcfg_list))
- 		return;
--- 
-1.6.4.2
 
+diff --git a/kernel/time/tick-sched.c b/kernel/time/tick-sched.c
+index f992762..a515bed 100644
+--- a/kernel/time/tick-sched.c
++++ b/kernel/time/tick-sched.c
+@@ -815,7 +815,7 @@ int tick_check_oneshot_change(int allow_nohz)
+ 	if (!timekeeping_valid_for_hres() || !tick_is_oneshot_available())
+ 		return 0;
+ 
+-	if (!allow_nohz)
++	if (!allow_nohz && tick_nohz_enabled)
+ 		return 1;
+ 
+ 	tick_nohz_switch_to_nohz();
