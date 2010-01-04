@@ -1,71 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752923Ab0ADDco@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752908Ab0ADEUV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752923Ab0ADDco (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Jan 2010 22:32:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752586Ab0ADDcn
+	id S1752908Ab0ADEUV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Jan 2010 23:20:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752587Ab0ADEUU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Jan 2010 22:32:43 -0500
-Received: from [121.136.51.252] ([121.136.51.252]:56927 "EHLO ben-laptop"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752505Ab0ADDcm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Jan 2010 22:32:42 -0500
-X-Greylist: delayed 2813 seconds by postgrey-1.27 at vger.kernel.org; Sun, 03 Jan 2010 22:32:42 EST
-Message-ID: <4B41564C.6080802@simtec.co.uk>
-Date: Mon, 04 Jan 2010 11:45:32 +0900
-From: Ben Dooks <ben@simtec.co.uk>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Sun, 3 Jan 2010 23:20:20 -0500
+Received: from mail-pz0-f171.google.com ([209.85.222.171]:61299 "EHLO
+	mail-pz0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751691Ab0ADEUT convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Jan 2010 23:20:19 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=TmUMFNHWHd6ZXsha0IhwaT4Mag6HDHIyZMDmjhm1T7MsLm9xvl1h2PgCKb3FSsA7IH
+         yUnH3vbvtAIgM/qxtf19vZnu7SM3vezTTIBSaiig0Q2MBp3UZ07J+OEuF+KJUejZA9Zx
+         vWwv5YQbeTpcuKIT3cnAqUhGp1tJfzio5zqRc=
 MIME-Version: 1.0
-To: Joe Perches <joe@perches.com>
-CC: Ben Dooks <ben-linux@fluff.org>, LKML <linux-kernel@vger.kernel.org>,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
-Subject: Re: [PATCH] mach-osiris-dvs.c: Convert boolean bit tests to logical
- tests
-References: <1262539781.1932.128.camel@Joe-Laptop.home>
-In-Reply-To: <1262539781.1932.128.camel@Joe-Laptop.home>
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <201001040122.36431.johannes.hirte@fem.tu-ilmenau.de>
+References: <20100102103227.GA3678@Pilar.aei.mpg.de>
+	 <20100102223416.GA6090@Pilar>
+	 <201001040122.36431.johannes.hirte@fem.tu-ilmenau.de>
+Date: Mon, 4 Jan 2010 12:20:18 +0800
+X-Google-Sender-Auth: e11a01b84b5207a9
+Message-ID: <3d0408631001032020n10d82ea4x1ecde375bd46060a@mail.gmail.com>
+Subject: Re: 2.6.33-rc2+ bug in fs/btrfs/ordered-data.c:672
+From: "Yan, Zheng " <yanzheng@21cn.com>
+To: Johannes Hirte <johannes.hirte@fem.tu-ilmenau.de>
+Cc: "Carlos R. Mafra" <crmafra2@gmail.com>, linux-btrfs@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Chris Mason <chris.mason@oracle.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Joe Perches wrote:
-> Bit tests on booleans seem odd, logical tests more appropriate
+On Mon, Jan 4, 2010 at 8:22 AM, Johannes Hirte
+<johannes.hirte@fem.tu-ilmenau.de> wrote:
+> Am Samstag 02 Januar 2010 23:34:17 schrieb Carlos R. Mafra:
+>> On Sa  2.Jan'10 at 11:32:27 +0100, Carlos R. Mafra wrote:
+>> > I started testing btrfs for my /home a few days ago and yesterday
+>> > I hit a kernel bug, using 2.6.33-rc2-00187-g08d869a.
+>> >
+>> > I wasn't doing any stress test with it, I was simply watching a
+>> > DVD with xine while chrome was open in another workspace.
+>>
+>> Today I hit the bug twice, and it was always with chrome. I've
+>> seen the other two reports in kerneloops.org involving
+>> btrfs_ordered_update_i_size() and chrome was there too.
+>>
+>> And now I saved the dmesg in the ext3 partition, so now there
+>> is no need for the photo,
+>>
+>>
+>> [13450.613952] ------------[ cut here ]------------
+>> [13450.613957] kernel BUG at fs/btrfs/ordered-data.c:672!
+>> [13450.613960] invalid opcode: 0000 [#1] SMP
+>> [13450.613963] last sysfs file:
+>>  /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq [13450.613966] CPU 1
+>> [13450.613970] Pid: 3372, comm: chrome Not tainted
+>>  2.6.33-rc2-fs-00187-g08d869a #293 VAIO/VGN-FZ240E [13450.613973] RIP:
+>>  0010:[<ffffffff811d9537>]  [<ffffffff811d9537>]
+>>  btrfs_ordered_update_i_size+0x237/0x3d0 [13450.613982] RSP:
+>>  0018:ffff880071355da8  EFLAGS: 00010287
+>> [13450.613984] RAX: ffff88007f0c0728 RBX: 0000000000000000 RCX:
+>>  ffff880077c0c6a8 [13450.613986] RDX: 00000000002b5000 RSI:
+>>  0000000000000000 RDI: ffff880077c0c6b8 [13450.613989] RBP:
+>>  ffff880071355e18 R08: 0000000000000000 R09: 0000000000000000
+>>  [13450.613991] R10: 0000000000000000 R11: 0000000000000000 R12:
+>>  ffff8800729dd260 [13450.613993] R13: 00000000002b4b24 R14:
+>>  0000000000000000 R15: 00000000002b4b24 [13450.613996] FS:
+>>  00007f2b3db68910(0000) GS:ffff880001b00000(0000) knlGS:0000000000000000
+>>  [13450.613999] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+>> [13450.614001] CR2: 00007f2b3c2a4000 CR3: 0000000071167000 CR4:
+>>  00000000000006e0 [13450.614003] DR0: 0000000000000000 DR1:
+>>  0000000000000000 DR2: 0000000000000000 [13450.614005] DR3:
+>>  0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+>>  [13450.614008] Process chrome (pid: 3372, threadinfo ffff880071354000,
+>>  task ffff88007d380640) [13450.614010] Stack:
+>> [13450.614011]  ffff8800729dd0c0 0000000000000000 fffffffffffff000
+>>  0000000000000fff [13450.614015] <0> ffff8800729dd0f0 ffff88007c7cc000
+>>  ffff8800729dd0c0 ffff8800729dd170 [13450.614019] <0> ffff880071355e18
+>>  ffff880071355ee8 ffff8800729dd260 0000000000000000 [13450.614023] Call
+>>  Trace:
+>> [13450.614028]  [<ffffffff811c915d>] btrfs_setattr+0x17d/0x270
+>> [13450.614033]  [<ffffffff810e5fe4>] notify_change+0x104/0x2e0
+>> [13450.614037]  [<ffffffff810ce84f>] do_truncate+0x5f/0x90
+>> [13450.614041]  [<ffffffff810d0002>] ? vfs_write+0x132/0x180
+>> [13450.614044]  [<ffffffff810cef79>] sys_ftruncate+0xe9/0x130
+>> [13450.614049]  [<ffffffff81002dab>] system_call_fastpath+0x16/0x1b
+>> [13450.614050] Code: 0f 1f 40 00 eb 88 66 0f 1f 44 00 00 49 8b 84 24 38 ff
+>>  ff ff 48 85 c0 74 1b 48 8b 50 98 49 39 d5 72 12 48 03 50 a8 49 39 d5 73 09
+>>  <0f> 0b eb fe 0f 1f 44 00 00 49 8b 94 24 30 ff ff ff 48 89 55 b8
+>>  [13450.614082] RIP  [<ffffffff811d9537>]
+>>  btrfs_ordered_update_i_size+0x237/0x3d0 [13450.614087]  RSP
+>>  <ffff880071355da8>
+>> [13450.614090] ---[ end trace 74172209f4d15206 ]---
+>
+> Sounds like the bug reported here: http://article.gmane.org/gmane.comp.file-
+> systems.btrfs/4332/match=btrfs+fails+randomly. Can you try the patch provided
+> in that thread?
+>
+I have sent a patch for this.
+http://www.mail-archive.com/linux-btrfs@vger.kernel.org/msg03686.html
 
-I think this is ok, don't currently have any hardware on hand to
-test it.
-
-> Signed-off-by: Joe Perches <joe@perches.com>
-
-Ackced-by: Ben Dooks <ben-linux@fluff.org>
-
-> diff --git a/arch/arm/mach-s3c2440/mach-osiris-dvs.c b/arch/arm/mach-s3c2440/mach-osiris-dvs.c
-> index ad2792d..2367606 100644
-> --- a/arch/arm/mach-s3c2440/mach-osiris-dvs.c
-> +++ b/arch/arm/mach-s3c2440/mach-osiris-dvs.c
-> @@ -69,16 +69,14 @@ static int osiris_dvs_notify(struct notifier_block *nb,
->  
->  	switch (val) {
->  	case CPUFREQ_PRECHANGE:
-> -		if (old_dvs & !new_dvs ||
-> -		    cur_dvs & !new_dvs) {
-> +		if ((old_dvs && !new_dvs) || (cur_dvs && !new_dvs)) {
->  			pr_debug("%s: exiting dvs\n", __func__);
->  			cur_dvs = false;
->  			gpio_set_value(OSIRIS_GPIO_DVS, 1);
->  		}
->  		break;
->  	case CPUFREQ_POSTCHANGE:
-> -		if (!old_dvs & new_dvs ||
-> -		    !cur_dvs & new_dvs) {
-> +		if ((!old_dvs && new_dvs) || (!cur_dvs && new_dvs)) {
->  			pr_debug("entering dvs\n");
->  			cur_dvs = true;
->  			gpio_set_value(OSIRIS_GPIO_DVS, 0);
-> 
-> 
-> 
-> _______________________________________________
-> linux-arm-kernel mailing list
-> linux-arm-kernel@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
-
+Regards
+Yan, Zheng
