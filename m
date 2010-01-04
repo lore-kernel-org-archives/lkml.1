@@ -1,126 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754005Ab0ADUO7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753095Ab0ADURF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754005Ab0ADUO7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 15:14:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753877Ab0ADUO5
+	id S1753095Ab0ADURF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 15:17:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752219Ab0ADURA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 15:14:57 -0500
-Received: from out02.mta.xmission.com ([166.70.13.232]:59554 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753463Ab0ADUO4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 15:14:56 -0500
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: "H. Peter Anvin" <hpa@zytor.com>,
-       Jesse Brandeburg <jesse.brandeburg@gmail.com>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "linux-kernel\@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       NetDEV list <netdev@vger.kernel.org>,
-       Jesse Brandeburg <jesse.brandeburg@intel.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: Re: Subject: [PATCH 1/2] x86: get back 15 vectors
-References: <4B347AEE.6030705@kernel.org> <20091228094707.GH24690@elte.hu>
-	<4B398ECD.1080506@kernel.org>
-	<4807377b1001031906s6b1ee576jc021da2642bb4147@mail.gmail.com>
-	<4B415E73.1050801@kernel.org> <4B419113.1090204@kernel.org>
-	<m1aawtlu6y.fsf@fess.ebiederm.org> <4B423B08.3010005@zytor.com>
-	<m1my0thelq.fsf@fess.ebiederm.org> <4B424305.7050803@kernel.org>
-	<4B4245FC.7070902@zytor.com> <4B424A5C.7080309@kernel.org>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Mon, 04 Jan 2010 12:14:50 -0800
-In-Reply-To: <4B424A5C.7080309@kernel.org> (Yinghai Lu's message of "Mon\, 04 Jan 2010 12\:06\:52 -0800")
-Message-ID: <m1y6kdbpad.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Mon, 4 Jan 2010 15:17:00 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:55795 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751551Ab0ADURA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jan 2010 15:17:00 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Andrew Lutomirski <luto@mit.edu>
+Subject: Re: [Bug #14887] suspend doesn't work on X200s
+Date: Mon, 4 Jan 2010 21:17:30 +0100
+User-Agent: KMail/1.12.3 (Linux/2.6.33-rc2-tst; KDE/4.3.3; x86_64; ; )
+Cc: Jens Axboe <jens.axboe@oracle.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+References: <LptzGUUXbTK.A.MSF.ymhOLB@chimera> <200912302239.28792.rjw@sisk.pl> <cb0375e11001011917y6920d45dse0b507287e8538c@mail.gmail.com>
+In-Reply-To: <cb0375e11001011917y6920d45dse0b507287e8538c@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Scanned: No (on in01.mta.xmission.com); SAEximRunCond expanded to false
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201001042117.30740.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yinghai Lu <yinghai@kernel.org> writes:
+On Saturday 02 January 2010, Andrew Lutomirski wrote:
+> I suspect it was fixed by this patch:
+> 
+> http://lkml.org/lkml/2009/12/20/88
+> 
+> but I can't test because the machine in question died right after I
+> built it a new kernel.  sigh.
+> 
+> I'll re-post once I get the laptop working again if there's still a problem.
 
-> On 01/04/2010 11:48 AM, H. Peter Anvin wrote:
->> [Adding Suresh to the Cc: list]
->> 
->> On 01/04/2010 11:35 AM, Yinghai Lu wrote:
->>>
->>> so we can use [0x10, 0x1f]
->>>
->>> sth like this?
->>>
->> 
->> No!!!
->> 
->> [0x10, 0x1f] is reserved for exceptions.  We can probably get away with
->> stealing *one* vector... presumably at the end (0x1f).  However, we can
->> absolutely not use the whole block: 0x10-0x13 is occupied by exceptions
->> we already have OS support for (#MF, #AC, #MC, and #XM), and it's pretty
->> much guaranteed we'll have more coming.  However, growth is quite slow
->> and since this is a kernel-internal vector (not accessible to user
->> space) it is not creating an API.
->> 
->> In other words, we could change FIRST_EXTERNAL_VECTOR to 0x1f, and use
->> it for IRQ_MOVE_CLEANUP_VECTOR.  Then use 0x20..0x2f for the legacy vectors.
->> 
-> Subject: [PATCH 1/2] x86: get back 16 vectors
->
-> -v2: according to hpa that we could start from 0x1f
+OK, assume it's been fixed, so closing.
 
-The code in the patch is ok, but the comments are wrong.
+Please reopen if it's not fixed in fact.
 
->
-> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
->
-> ---
->  arch/x86/include/asm/irq_vectors.h |    9 +++++----
->  1 file changed, 5 insertions(+), 4 deletions(-)
->
-> Index: linux-2.6/arch/x86/include/asm/irq_vectors.h
-> ===================================================================
-> --- linux-2.6.orig/arch/x86/include/asm/irq_vectors.h
-> +++ linux-2.6/arch/x86/include/asm/irq_vectors.h
-> @@ -30,8 +30,9 @@
->  /*
->   * IDT vectors usable for external interrupt sources start
->   * at 0x20:
-> + * hpa said we can start from 0x1f
-
-You need to document the reasons here.
-
->   */
-> -#define FIRST_EXTERNAL_VECTOR		0x20
-> +#define FIRST_EXTERNAL_VECTOR		0x1f
->  
->  #ifdef CONFIG_X86_32
->  # define SYSCALL_VECTOR			0x80
-> @@ -41,15 +42,15 @@
->  #endif
->  
->  /*
-> - * Reserve the lowest usable priority level 0x20 - 0x2f for triggering
-> + * Reserve the lowest usable priority level 0x1f for triggering
-
-Should be:
-+   * Reserve the lowest usable priority level 0x10 - 0x1f for triggering
->   * cleanup after irq migration.
-
-+   * this overlaps with the reserved range for cpu exceptions so this
-+   * will need to be changed to 0x20 - 0x2f if the last cpu exception is
-+   * ever allocated.
->   */
->  #define IRQ_MOVE_CLEANUP_VECTOR		FIRST_EXTERNAL_VECTOR
->  
->  /*
-> - * Vectors 0x30-0x3f are used for ISA interrupts.
-> + * Vectors 0x20-0x2f are used for ISA interrupts.
->   */
-> -#define IRQ0_VECTOR			(FIRST_EXTERNAL_VECTOR + 0x10)
-> +#define IRQ0_VECTOR			(FIRST_EXTERNAL_VECTOR + 1)
->  
->  #define IRQ1_VECTOR			(IRQ0_VECTOR +  1)
->  #define IRQ2_VECTOR			(IRQ0_VECTOR +  2)
+Rafael
