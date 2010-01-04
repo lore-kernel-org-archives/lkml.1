@@ -1,13 +1,13 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754006Ab0ADXKd (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Mon, 4 Jan 2010 18:10:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753903Ab0ADXJW
+	id S1754071Ab0ADXKu (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Mon, 4 Jan 2010 18:10:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754033Ab0ADXJV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 18:09:22 -0500
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:38842 "EHLO e5.ny.us.ibm.com"
+	Mon, 4 Jan 2010 18:09:21 -0500
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:39511 "EHLO e2.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754001Ab0ADXJQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 18:09:16 -0500
+	id S1753938Ab0ADXJP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jan 2010 18:09:15 -0500
 From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org
 Cc: mingo@elte.hu, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
@@ -16,9 +16,9 @@ Cc: mingo@elte.hu, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
         tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
         Valdis.Kletnieks@vt.edu, dhowells@redhat.com,
         "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: [PATCH tip/core/rcu 06/11] rcu: eliminate second argument of rcu_process_dyntick()
-Date: Mon,  4 Jan 2010 15:09:05 -0800
-Message-Id: <12626465503786-git-send-email->
+Subject: [PATCH tip/core/rcu 02/11] rcu: adjust force_quiescent_state() locking, step 2
+Date: Mon,  4 Jan 2010 15:09:01 -0800
+Message-Id: <12626465501994-git-send-email->
 X-Mailer: git-send-email 1.5.2.5
 In-Reply-To: <20100104230850.GA22111@linux.vnet.ibm.com>
 References: <20100104230850.GA22111@linux.vnet.ibm.com>
@@ -28,67 +28,58 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 
-At this point, the second argument to all calls to rcu_process_dyntick()
-is a function of the same field of the structure passed in as the first
-argument, namely, rsp->gpnum-1.  So propagate rsp->gpnum-1 to all uses
-of the second argument within rcu_process_dyntick() and then eliminate
-the second argument.
+This patch releases rnp->lock after the end of force_quiescent_state()'s
+switch statement.  This is a second step towards prohibiting starting
+grace periods while force_quiescent_state() is executing, which will
+reduce the number and complexity of races that force_quiescent_state()
+is involved in.
 
 Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 ---
- kernel/rcutree.c |   11 +++++------
- 1 files changed, 5 insertions(+), 6 deletions(-)
+ kernel/rcutree.c |   13 +++----------
+ 1 files changed, 3 insertions(+), 10 deletions(-)
 
 diff --git a/kernel/rcutree.c b/kernel/rcutree.c
-index 62b6433..c7d0070 100644
+index eae331d..d42ad30 100644
 --- a/kernel/rcutree.c
 +++ b/kernel/rcutree.c
-@@ -1147,7 +1147,7 @@ void rcu_check_callbacks(int cpu, int user)
-  * Returns 1 if the current grace period ends while scanning (possibly
-  * because we made it end).
-  */
--static int rcu_process_dyntick(struct rcu_state *rsp, long lastcomp,
-+static int rcu_process_dyntick(struct rcu_state *rsp,
- 			       int (*f)(struct rcu_data *))
- {
- 	unsigned long bit;
-@@ -1159,7 +1159,7 @@ static int rcu_process_dyntick(struct rcu_state *rsp, long lastcomp,
- 	rcu_for_each_leaf_node(rsp, rnp) {
- 		mask = 0;
- 		spin_lock_irqsave(&rnp->lock, flags);
--		if (rnp->completed != lastcomp) {
-+		if (rnp->completed != rsp->gpnum - 1) {
- 			spin_unlock_irqrestore(&rnp->lock, flags);
- 			return 1;
+@@ -1219,7 +1219,6 @@ static void force_quiescent_state(struct rcu_state *rsp, int relaxed)
+ 	case RCU_GP_IDLE:
+ 	case RCU_GP_INIT:
+ 
+-		spin_unlock(&rnp->lock);
+ 		break; /* grace period idle or initializing, ignore. */
+ 
+ 	case RCU_SAVE_DYNTICK:
+@@ -1246,10 +1245,8 @@ static void force_quiescent_state(struct rcu_state *rsp, int relaxed)
+ 			rsp->completed_fqs = lastcomp;
+ 			forcenow = signaled == RCU_SAVE_COMPLETED;
  		}
-@@ -1173,7 +1173,7 @@ static int rcu_process_dyntick(struct rcu_state *rsp, long lastcomp,
- 			if ((rnp->qsmask & bit) != 0 && f(rsp->rda[cpu]))
- 				mask |= bit;
- 		}
--		if (mask != 0 && rnp->completed == lastcomp) {
-+		if (mask != 0 && rnp->completed == rsp->gpnum - 1) {
+-		if (!forcenow) {
+-			spin_unlock(&rnp->lock);
++		if (!forcenow)
+ 			break;
+-		}
+ 		/* fall into next case. */
  
- 			/* rcu_report_qs_rnp() releases rnp->lock. */
- 			rcu_report_qs_rnp(mask, rsp, rnp, flags);
-@@ -1226,7 +1226,7 @@ static void force_quiescent_state(struct rcu_state *rsp, int relaxed)
- 			break; /* So gcc recognizes the dead code. */
- 
- 		/* Record dyntick-idle state. */
--		gpdone = rcu_process_dyntick(rsp, rsp->gpnum - 1,
-+		gpdone = rcu_process_dyntick(rsp,
- 					     dyntick_save_progress_counter);
- 		spin_lock(&rnp->lock);  /* irqs already disabled */
- 		if (gpdone)
-@@ -1249,8 +1249,7 @@ static void force_quiescent_state(struct rcu_state *rsp, int relaxed)
- 
- 		/* Check dyntick-idle state, send IPI to laggarts. */
- 		spin_unlock(&rnp->lock);  /* irqs remain disabled */
--		gpdone = rcu_process_dyntick(rsp, rsp->gpnum - 1,
--					     rcu_implicit_dynticks_qs);
-+		gpdone = rcu_process_dyntick(rsp, rcu_implicit_dynticks_qs);
+ 	case RCU_FORCE_QS:
+@@ -1262,14 +1259,10 @@ static void force_quiescent_state(struct rcu_state *rsp, int relaxed)
  
  		/* Leave state in case more forcing is required. */
  
+-		break;
+-
+-	default:
+-
+-		spin_unlock(&rnp->lock);
+-		WARN_ON_ONCE(1);
++		spin_lock(&rnp->lock);
+ 		break;
+ 	}
++	spin_unlock(&rnp->lock);
+ unlock_fqs_ret:
+ 	spin_unlock_irqrestore(&rsp->fqslock, flags);
+ }
 -- 
 1.5.2.5
 
