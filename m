@@ -1,69 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753141Ab0ADNoC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753172Ab0ADNpB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753141Ab0ADNoC (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 08:44:02 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753094Ab0ADNn6
+	id S1753172Ab0ADNpB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 08:45:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752158Ab0ADNpA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 08:43:58 -0500
-Received: from mga06.intel.com ([134.134.136.21]:20966 "EHLO
-	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751883Ab0ADNn6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 08:43:58 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,498,1257148800"; 
-   d="scan'208";a="481077003"
-Date: Mon, 4 Jan 2010 14:45:38 +0100
-From: Samuel Ortiz <sameo@linux.intel.com>
-To: Magnus Damm <magnus.damm@gmail.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       SH-Linux <linux-sh@vger.kernel.org>, Ian Molton <ian@mnementh.co.uk>
-Subject: Re: v2.6.33-rc2 build error - missing tmio mmc patches
-Message-ID: <20100104134537.GA5394@sortiz.org>
-References: <aec7e5c30912280011j4e8528e5r34bc1bcfb6a4dd1a@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <aec7e5c30912280011j4e8528e5r34bc1bcfb6a4dd1a@mail.gmail.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Mon, 4 Jan 2010 08:45:00 -0500
+Received: from mail.gmx.net ([213.165.64.20]:38145 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751883Ab0ADNo7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jan 2010 08:44:59 -0500
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX193c7A0TM13Y2VgZLBco6+qH2DjC4xtYYiD/6JPY7
+	iGCIOhbmkqsx85
+Subject: [patch] Re: volano ~30% regression with 2.6.33-rc1 & -rc2
+From: Mike Galbraith <efault@gmx.de>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Arjan van de Ven <arjan@infradead.org>, Lin Ming <ming.m.lin@intel.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+In-Reply-To: <1262611608.6408.126.camel@laptop>
+References: <1262592958.22471.104.camel@minggr.sh.intel.com>
+	 <20100104044024.5390ff1c@infradead.org>
+	 <1262609854.9734.56.camel@marge.simson.net>
+	 <1262610123.6408.120.camel@laptop>
+	 <1262610927.9734.64.camel@marge.simson.net>
+	 <1262611608.6408.126.camel@laptop>
+Content-Type: text/plain
+Date: Mon, 04 Jan 2010 14:44:56 +0100
+Message-Id: <1262612696.15495.15.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.45
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Magnus,
+On Mon, 2010-01-04 at 14:26 +0100, Peter Zijlstra wrote:
+> On Mon, 2010-01-04 at 14:15 +0100, Mike Galbraith wrote:
 
-On Mon, Dec 28, 2009 at 05:11:27PM +0900, Magnus Damm wrote:
-> Hi everyone,
+> > WRT the regression, would you prefer only the sched_fair.c hunk, and
+> > maybe plunking the topology hunk in sched_devel, or both lines in one
+> > patch, since ramp-up gain remains unrealized half of the time on Nehalem
+> > and ilk.
 > 
-> v2.6.33-rc2 does not build in the case of CONFIG_MFD_SH_MOBILE_SDHI=y.
-> Linux-next used to build just fine when I developed the driver, but
-> now it looks like some tmio-mmc patches present in linux-next never
-> made it into -rc.
-> 
->   CC      drivers/mfd/sh_mobile_sdhi.o
-> drivers/mfd/sh_mobile_sdhi.c: In function 'sh_mobile_sdhi_probe':
-> drivers/mfd/sh_mobile_sdhi.c:100: error: 'struct tmio_mmc_data' has no
-> member named 'set_pwr'
-> make[2]: *** [drivers/mfd/sh_mobile_sdhi.o] Error 1
-> 
-> In more detail, the missing patch is here:
-> http://git.mnementh.co.uk/cgi-bin/gitweb.cgi?p=linux-2.6-im.git;a=commitdiff;h=4cd83bd05e6c817a4a72ababd82bf5ae700c021d
-> 
-> What needs to be done to get the patch above included in rc3? Is there
-> anything I can do?
-Ian assumed anything that was in linux-next was being pulled by Linus
-automatically. That's why this code is not there.
-Could you or Ian please submit this patch to linux-kernel and me. If it's all
-fine, I'll carry it with my next .33 fixes.
+> Both bits seem sane I guess, you change SD_SIBLING_INIT(), right?
 
-Cheers,
-Samuel.
+Right.
 
-
-> Thanks,
+> Threads really do share package resources so it makes sense to set it.
 > 
-> / magnus
+> I guess its back to poking at nehalem to see what makes it tick..
 
--- 
-Intel Open Source Technology Centre
-http://oss.intel.com/
+I asked Santa for a quad socket Nehalem and a portable nuclear reactor
+to power it, but the stingy old fart let me down ;-)
+
+sched: fix vmark regression on big machines
+
+SD_PREFER_SIBLING is set at the CPU domain level if power saving isn't enabled,
+leading to many cache misses on large machines as we traverse looking for an
+idle shared cache to wake to.  Change the enabler of select_idle_sibling() to
+SD_SHARE_PKG_RESOURCES, and enable same at the sibling domain level.
+
+Signed-off-by: Mike Galbraith <efault@gmx.de>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Reported-by: Lin Ming <ming.m.lin@intel.com>
+LKML-Reference: <new-submission>
+
+diff --git a/include/linux/topology.h b/include/linux/topology.h
+index 57e6357..5b81156 100644
+--- a/include/linux/topology.h
++++ b/include/linux/topology.h
+@@ -99,7 +99,7 @@ int arch_update_cpu_topology(void);
+ 				| 1*SD_WAKE_AFFINE			\
+ 				| 1*SD_SHARE_CPUPOWER			\
+ 				| 0*SD_POWERSAVINGS_BALANCE		\
+-				| 0*SD_SHARE_PKG_RESOURCES		\
++				| 1*SD_SHARE_PKG_RESOURCES		\
+ 				| 0*SD_SERIALIZE			\
+ 				| 0*SD_PREFER_SIBLING			\
+ 				,					\
+diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
+index 42ac3c9..8fe7ee8 100644
+--- a/kernel/sched_fair.c
++++ b/kernel/sched_fair.c
+@@ -1508,7 +1508,7 @@ static int select_task_rq_fair(struct task_struct *p, int sd_flag, int wake_flag
+ 			 * If there's an idle sibling in this domain, make that
+ 			 * the wake_affine target instead of the current cpu.
+ 			 */
+-			if (tmp->flags & SD_PREFER_SIBLING)
++			if (tmp->flags & SD_SHARE_PKG_RESOURCES)
+ 				target = select_idle_sibling(p, tmp, target);
+ 
+ 			if (target >= 0) {
+
+
