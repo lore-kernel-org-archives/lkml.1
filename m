@@ -1,82 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753424Ab0ADQaC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753457Ab0ADQcR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753424Ab0ADQaC (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 11:30:02 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753394Ab0ADQaA
+	id S1753457Ab0ADQcR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 11:32:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753394Ab0ADQcP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 11:30:00 -0500
-Received: from stinky.trash.net ([213.144.137.162]:37530 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753346Ab0ADQ37 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 11:29:59 -0500
-Message-ID: <4B421785.6090403@trash.net>
-Date: Mon, 04 Jan 2010 17:29:57 +0100
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090701)
+	Mon, 4 Jan 2010 11:32:15 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:32955 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753372Ab0ADQcO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jan 2010 11:32:14 -0500
+Date: Mon, 4 Jan 2010 17:32:00 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Peter Zijlstra <peterz@infradead.org>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Thiago Farina <tfransosi@gmail.com>
+Subject: Re: linux-next: tip tree build failure
+Message-ID: <20100104163159.GD23652@elte.hu>
+References: <20100104235931.abcf2bc5.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-To: Milan Dadok <milan@dadok.name>
-CC: uaca@alumni.uv.es, johann.baudy@gnu-log.net, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH] 1/1 net: packet: Keep 802.1Q VLAN tag in packet on SOCK_DGRAM
- socket - resend
-References: <001801ca8d1d$90c68de0$b253a9a0$@name> <4B41F292.8080908@trash.net> <001b01ca8d52$817d07d0$84771770$@name>
-In-Reply-To: <001b01ca8d52$817d07d0$84771770$@name>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100104235931.abcf2bc5.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: 1.2
+X-ELTE-SpamLevel: s
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=1.2 required=5.9 tests=BAYES_00,FH_DATE_PAST_20XX autolearn=no SpamAssassin version=3.2.5
+	3.2 FH_DATE_PAST_20XX      The date is grossly in the future.
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Milan Dadok wrote:
-> Patrick McHardy wrote:
-> 
->> Milan Dadok wrote:
->>> Keep 802.1Q VLAN tag on non HW vlan accelerated network card received to SOCK_DGRAM socket.
-> 
->> So not including the link layer header for SOCK_DGRAM sockets
->> seems to be the intended behaviour.
-> 
->>From my point of view i have question
-> Is 802.1Q encapsulation (or another type of encapsulation (IPSec?)) part of link level header or part of data packet?
-> 
-> Currently pseudo-header contains for OUTGOING packet on physical card (vlan10@eth1)
-> a) HW accelarated network card  
-> protocol = ethertype IPv4 (0x0800)
-> tci = vlan number = 10
-> and data starts with 4500 0028
-> 
-> b) non HW accelerated network card 
-> protocol = ethertype 802.1Q (0x8100)
-> tci = 0
-> and data starts with 4500 0028
-> vlan tci and real protocol number (ARP,IPV4,IPV6) of data is lost 
 
-As mentioned in the text I quoted, this is apparently what is
-intended for SOCK_DGRAM packet sockets. The accelerated case is
-inconsistent and vlan_tci should be cleared I guess.
+* Stephen Rothwell <sfr@canb.auug.org.au> wrote:
 
-I agree that sll_protocol should reflect the network protocol
-in this case however.
+> Hi all,
+> 
+> Today's linux-next build (s390x defconfig) failed like this:
+> 
+> kernel/panic.c:134: error: 'CALLER_ADDR0' undeclared (first use in this function)
+> 
+> Caused by commit eba3fe4416f3cc2ce043fb304b6c35a69dca3bdb ("kernel: Use
+> CALLER_ADDR0 macro").
 
-> And with more nested vlans it is getting worse
-> for example
-> 
-> vlan1010@vlan10@eth1
-> 
-> a) HW accelarated network card  
-> protocol = ethertype IPv4 (0x8100)
-> tci = 10
-> and data starts with 4500 0028
-> 
-> the 4 bytes of real packet 03f2 0800 is lost too
-> 
-> b) non HW accelarated network card  
-> 4 words of data packet are lost ...
-> 
-> I have no problems with received packets, only outgoing packet have problem.
-> I think that out packet on SOCK_DGRAM sockets MUST BE in same format as in (received) packet on same interface.
-> Can we agree on this?
+Thanks - apparently CALLER_ADDR0 isnt generally available. I've reverted this 
+patch for now.
 
-Yes, agreed.
+	Ingo
