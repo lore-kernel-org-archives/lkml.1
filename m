@@ -1,70 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753372Ab0ADRVb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753454Ab0ADRWS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753372Ab0ADRVb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 12:21:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752414Ab0ADRV3
+	id S1753454Ab0ADRWS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 12:22:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752965Ab0ADRWQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 12:21:29 -0500
-Received: from mk-filter-4-a-1.mail.uk.tiscali.com ([212.74.100.55]:26516 "EHLO
-	mk-filter-4-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751860Ab0ADRV2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 12:21:28 -0500
-X-Trace: 316934983/mk-filter-4.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.28.176/None/hugh.dickins@tiscali.co.uk
-X-SBRS: None
-X-RemoteIP: 79.69.28.176
-X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
-X-SMTP-AUTH: 
-X-Originating-Country: GB/UNITED KINGDOM
-X-MUA: Alpine 2.00 (LSU 1167 2008-08-23)
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AvUAAEuyQUtPRRyw/2dsb2JhbAAI1RmEMAQ
-X-IronPort-AV: E=Sophos;i="4.47,499,1257120000"; 
-   d="scan'208";a="316934983"
-Date: Mon, 4 Jan 2010 17:21:26 +0000 (GMT)
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-X-X-Sender: hugh@sister.anvils
-To: Eric B Munson <ebmunson@us.ibm.com>
-cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
+	Mon, 4 Jan 2010 12:22:16 -0500
+Received: from cantor.suse.de ([195.135.220.2]:51807 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752557Ab0ADRWO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jan 2010 12:22:14 -0500
+Subject: Re: [PATCH] libsrp: fix compile failure
+From: James Bottomley <James.Bottomley@suse.de>
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Stefani Seibold <stefani@seibold.net>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Al Viro <viro@ZenIV.linux.org.uk>, David Howells <dhowells@redhat.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH] mm: move sys_mmap_pgoff from util.c
-In-Reply-To: <20100104123858.GA5045@us.ibm.com>
-Message-ID: <alpine.LSU.2.00.1001041716370.9825@sister.anvils>
-References: <alpine.LSU.2.00.0912302009040.30390@sister.anvils> <20100104123858.GA5045@us.ibm.com>
-User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>
+In-Reply-To: <alpine.LRH.2.00.1001041619130.15694@twin.jikos.cz>
+References: <1262200866.2749.226.camel@mulgrave.site>
+	 <alpine.LFD.2.00.0912301132260.11961@localhost.localdomain>
+	 <alpine.LRH.2.00.1001041619130.15694@twin.jikos.cz>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 04 Jan 2010 11:22:00 -0600
+Message-Id: <1262625721.2724.158.camel@mulgrave.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 4 Jan 2010, Eric B Munson wrote:
-> On Wed, 30 Dec 2009, Hugh Dickins wrote:
+On Mon, 2010-01-04 at 16:21 +0100, Jiri Kosina wrote:
+> On Wed, 30 Dec 2009, Linus Torvalds wrote:
 > 
-> > Move sys_mmap_pgoff() from mm/util.c to mm/mmap.c and mm/nommu.c,
-> > where we'd expect to find such code: especially now that it contains
-> > the MAP_HUGETLB handling.  Revert mm/util.c to how it was in 2.6.32.
+> > > The fix is simple, just add the include, but how did this happen?  This 
+> > > change, introduced at -rc2, hardly looks like a bug fix, and it clearly 
+> > > didn't go through linux-next, which would have picked up this compile 
+> > > failure (it only occurs on ppc because of the ibm virtual scsi target).
 > > 
-> > This patch just ignores MAP_HUGETLB in the nommu case, as in 2.6.32,
-> > whereas 2.6.33-rc2 reported -ENOSYS.  Perhaps validate_mmap_request()
-> > should reject it with -EINVAL?  Add that later if necessary.
-> > 
-> > Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+> > It came through Andrew - and apparently parts of Andrews chain weren't in 
+> > next. Don't know why.
 > 
-> I think that -ENOSYS is the correcet response in the nommu case, but
-> I that can be added in a later patch.
-> 
-> Acked-by: Eric B Munson <ebmunson@us.ibm.com>
+> Uhm ... are they supposed to be? -mm is being built on top of -next, not 
+> vice versa, right?
 
-Thanks.  I had believed -ENOSYS was solely for unsupported system calls,
-so thought it inappropriate here; but we seem to have quite a few places
-which are using it indeed for "Function not implemented", and -EINVAL is
-always so very overloaded that an alternative can be a lot more helpful.
-Okay, I'll send a patch to give -ENOSYS for MAP_HUGETLB on nommu, which
-will be consistent with mmu.
+Well, the fact that the compile failure wasn't detected before it went
+upstream should answer that ...
 
-Hugh
+But to be more specific: linux-next is our integration tree (and also
+the obscure architecture compile tree).  To ensure the best possible
+integration, every tree should be built and tested in linux-next at
+least once before it goes to Linus.  There were originally technical
+reasons why -mm wasn't in ... I just thought they'd been fixed by now.
+
+James
+
+
