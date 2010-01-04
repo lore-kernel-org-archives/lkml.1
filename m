@@ -1,245 +1,511 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753938Ab0ADWiI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754077Ab0ADWiU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753938Ab0ADWiI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 17:38:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753978Ab0ADWhQ
+	id S1754077Ab0ADWiU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 17:38:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753976Ab0ADWhO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 17:37:16 -0500
-Received: from nlpi129.sbcis.sbc.com ([207.115.36.143]:46093 "EHLO
+	Mon, 4 Jan 2010 17:37:14 -0500
+Received: from nlpi129.sbcis.sbc.com ([207.115.36.143]:46099 "EHLO
 	nlpi129.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753286Ab0ADWhE (ORCPT
+	with ESMTP id S1753409Ab0ADWhE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 4 Jan 2010 17:37:04 -0500
-Message-Id: <20100104223554.505463348@quilx.com>
+Message-Id: <20100104223556.613041583@quilx.com>
 References: <20100104223439.228028923@quilx.com>
 User-Agent: quilt/0.46-1
-Date: Mon, 04 Jan 2010 16:34:40 -0600
+Date: Mon, 04 Jan 2010 16:34:44 -0600
 From: Christoph Lameter <cl@linux-foundation.org>
 To: Tejun Heo <tj@kernel.org>
 Cc: linux-kernel@vger.kernel.org
 CC: Mel Gorman <mel@csn.ul.ie>
 Cc: Pekka Enberg <penberg@cs.helsinki.fi>
 Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: [this_cpu_xx V9 1/7] Remove cpu_local_xx macros
-Content-Disposition: inline; filename=percpu_local_t_remove_cpu_alloc
+Subject: [this_cpu_xx V9 5/7] this_cpu_ops: page allocator conversion
+Content-Disposition: inline; filename=percpu_page_allocator
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-These macros have not been used for awhile now.
+Use the per cpu allocator functionality to avoid per cpu arrays in struct zone.
 
+This drastically reduces the size of struct zone for systems with large
+amounts of processors and allows placement of critical variables of struct
+zone in one cacheline even on very large systems.
+
+Another effect is that the pagesets of one processor are placed near one
+another. If multiple pagesets from different zones fit into one cacheline
+then additional cacheline fetches can be avoided on the hot paths when
+allocating memory from multiple zones.
+
+Bootstrap becomes simpler if we use the same scheme for UP, SMP, NUMA. #ifdefs
+are reduced and we can drop the zone_pcp macro.
+
+Hotplug handling is also simplified since cpu alloc can bring up and
+shut down cpu areas for a specific cpu as a whole. So there is no need to
+allocate or free individual pagesets.
+
+V7-V8:
+- Explain chicken egg dilemmna with percpu allocator.
+
+V4-V5:
+- Fix up cases where per_cpu_ptr is called before irq disable
+- Integrate the bootstrap logic that was separate before.
+
+Reviewed-by: Mel Gorman <mel@csn.ul.ie>
 Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
 
 ---
- arch/alpha/include/asm/local.h   |   17 -----------------
- arch/m32r/include/asm/local.h    |   25 -------------------------
- arch/mips/include/asm/local.h    |   25 -------------------------
- arch/powerpc/include/asm/local.h |   25 -------------------------
- arch/x86/include/asm/local.h     |   37 -------------------------------------
- include/asm-generic/local.h      |   19 -------------------
- 6 files changed, 148 deletions(-)
+ include/linux/mm.h     |    4 
+ include/linux/mmzone.h |   12 --
+ mm/page_alloc.c        |  197 ++++++++++++++++++++-----------------------------
+ mm/vmstat.c            |   14 +--
+ 4 files changed, 92 insertions(+), 135 deletions(-)
 
-Index: linux-2.6/arch/alpha/include/asm/local.h
+Index: linux-2.6/include/linux/mm.h
 ===================================================================
---- linux-2.6.orig/arch/alpha/include/asm/local.h	2009-12-16 13:50:11.000000000 -0600
-+++ linux-2.6/arch/alpha/include/asm/local.h	2009-12-18 14:19:17.000000000 -0600
-@@ -98,21 +98,4 @@ static __inline__ long local_sub_return(
- #define __local_add(i,l)	((l)->a.counter+=(i))
- #define __local_sub(i,l)	((l)->a.counter-=(i))
+--- linux-2.6.orig/include/linux/mm.h	2010-01-04 10:28:44.000000000 -0600
++++ linux-2.6/include/linux/mm.h	2010-01-04 14:38:20.000000000 -0600
+@@ -1079,11 +1079,7 @@ extern void si_meminfo(struct sysinfo * 
+ extern void si_meminfo_node(struct sysinfo *val, int nid);
+ extern int after_bootmem;
  
--/* Use these for per-cpu local_t variables: on some archs they are
-- * much more efficient than these naive implementations.  Note they take
-- * a variable, not an address.
-- */
--#define cpu_local_read(l)	local_read(&__get_cpu_var(l))
--#define cpu_local_set(l, i)	local_set(&__get_cpu_var(l), (i))
--
--#define cpu_local_inc(l)	local_inc(&__get_cpu_var(l))
--#define cpu_local_dec(l)	local_dec(&__get_cpu_var(l))
--#define cpu_local_add(i, l)	local_add((i), &__get_cpu_var(l))
--#define cpu_local_sub(i, l)	local_sub((i), &__get_cpu_var(l))
--
--#define __cpu_local_inc(l)	__local_inc(&__get_cpu_var(l))
--#define __cpu_local_dec(l)	__local_dec(&__get_cpu_var(l))
--#define __cpu_local_add(i, l)	__local_add((i), &__get_cpu_var(l))
--#define __cpu_local_sub(i, l)	__local_sub((i), &__get_cpu_var(l))
--
- #endif /* _ALPHA_LOCAL_H */
-Index: linux-2.6/arch/m32r/include/asm/local.h
+-#ifdef CONFIG_NUMA
+ extern void setup_per_cpu_pageset(void);
+-#else
+-static inline void setup_per_cpu_pageset(void) {}
+-#endif
+ 
+ extern void zone_pcp_update(struct zone *zone);
+ 
+Index: linux-2.6/include/linux/mmzone.h
 ===================================================================
---- linux-2.6.orig/arch/m32r/include/asm/local.h	2009-12-16 13:50:11.000000000 -0600
-+++ linux-2.6/arch/m32r/include/asm/local.h	2009-12-18 14:19:17.000000000 -0600
-@@ -338,29 +338,4 @@ static inline void local_set_mask(unsign
-  * a variable, not an address.
-  */
+--- linux-2.6.orig/include/linux/mmzone.h	2010-01-04 10:27:57.000000000 -0600
++++ linux-2.6/include/linux/mmzone.h	2010-01-04 14:38:20.000000000 -0600
+@@ -184,13 +184,7 @@ struct per_cpu_pageset {
+ 	s8 stat_threshold;
+ 	s8 vm_stat_diff[NR_VM_ZONE_STAT_ITEMS];
+ #endif
+-} ____cacheline_aligned_in_smp;
+-
+-#ifdef CONFIG_NUMA
+-#define zone_pcp(__z, __cpu) ((__z)->pageset[(__cpu)])
+-#else
+-#define zone_pcp(__z, __cpu) (&(__z)->pageset[(__cpu)])
+-#endif
++};
  
--/* Need to disable preemption for the cpu local counters otherwise we could
--   still access a variable of a previous CPU in a non local way. */
--#define cpu_local_wrap_v(l)	 	\
--	({ local_t res__;		\
--	   preempt_disable(); 		\
--	   res__ = (l);			\
--	   preempt_enable();		\
--	   res__; })
--#define cpu_local_wrap(l)		\
--	({ preempt_disable();		\
--	   l;				\
--	   preempt_enable(); })		\
--
--#define cpu_local_read(l)    cpu_local_wrap_v(local_read(&__get_cpu_var(l)))
--#define cpu_local_set(l, i)  cpu_local_wrap(local_set(&__get_cpu_var(l), (i)))
--#define cpu_local_inc(l)     cpu_local_wrap(local_inc(&__get_cpu_var(l)))
--#define cpu_local_dec(l)     cpu_local_wrap(local_dec(&__get_cpu_var(l)))
--#define cpu_local_add(i, l)  cpu_local_wrap(local_add((i), &__get_cpu_var(l)))
--#define cpu_local_sub(i, l)  cpu_local_wrap(local_sub((i), &__get_cpu_var(l)))
--
--#define __cpu_local_inc(l)	cpu_local_inc(l)
--#define __cpu_local_dec(l)	cpu_local_dec(l)
--#define __cpu_local_add(i, l)	cpu_local_add((i), (l))
--#define __cpu_local_sub(i, l)	cpu_local_sub((i), (l))
--
- #endif /* __M32R_LOCAL_H */
-Index: linux-2.6/arch/mips/include/asm/local.h
+ #endif /* !__GENERATING_BOUNDS.H */
+ 
+@@ -306,10 +300,8 @@ struct zone {
+ 	 */
+ 	unsigned long		min_unmapped_pages;
+ 	unsigned long		min_slab_pages;
+-	struct per_cpu_pageset	*pageset[NR_CPUS];
+-#else
+-	struct per_cpu_pageset	pageset[NR_CPUS];
+ #endif
++	struct per_cpu_pageset	*pageset;
+ 	/*
+ 	 * free areas of different sizes
+ 	 */
+Index: linux-2.6/mm/page_alloc.c
 ===================================================================
---- linux-2.6.orig/arch/mips/include/asm/local.h	2009-12-16 13:50:11.000000000 -0600
-+++ linux-2.6/arch/mips/include/asm/local.h	2009-12-18 14:19:17.000000000 -0600
-@@ -193,29 +193,4 @@ static __inline__ long local_sub_return(
- #define __local_add(i, l)	((l)->a.counter+=(i))
- #define __local_sub(i, l)	((l)->a.counter-=(i))
+--- linux-2.6.orig/mm/page_alloc.c	2010-01-04 10:28:44.000000000 -0600
++++ linux-2.6/mm/page_alloc.c	2010-01-04 14:38:20.000000000 -0600
+@@ -1008,10 +1008,10 @@ static void drain_pages(unsigned int cpu
+ 		struct per_cpu_pageset *pset;
+ 		struct per_cpu_pages *pcp;
  
--/* Need to disable preemption for the cpu local counters otherwise we could
--   still access a variable of a previous CPU in a non atomic way. */
--#define cpu_local_wrap_v(l)	 	\
--	({ local_t res__;		\
--	   preempt_disable(); 		\
--	   res__ = (l);			\
--	   preempt_enable();		\
--	   res__; })
--#define cpu_local_wrap(l)		\
--	({ preempt_disable();		\
--	   l;				\
--	   preempt_enable(); })		\
--
--#define cpu_local_read(l)    cpu_local_wrap_v(local_read(&__get_cpu_var(l)))
--#define cpu_local_set(l, i)  cpu_local_wrap(local_set(&__get_cpu_var(l), (i)))
--#define cpu_local_inc(l)     cpu_local_wrap(local_inc(&__get_cpu_var(l)))
--#define cpu_local_dec(l)     cpu_local_wrap(local_dec(&__get_cpu_var(l)))
--#define cpu_local_add(i, l)  cpu_local_wrap(local_add((i), &__get_cpu_var(l)))
--#define cpu_local_sub(i, l)  cpu_local_wrap(local_sub((i), &__get_cpu_var(l)))
--
--#define __cpu_local_inc(l)	cpu_local_inc(l)
--#define __cpu_local_dec(l)	cpu_local_dec(l)
--#define __cpu_local_add(i, l)	cpu_local_add((i), (l))
--#define __cpu_local_sub(i, l)	cpu_local_sub((i), (l))
--
- #endif /* _ARCH_MIPS_LOCAL_H */
-Index: linux-2.6/arch/powerpc/include/asm/local.h
-===================================================================
---- linux-2.6.orig/arch/powerpc/include/asm/local.h	2009-12-16 13:50:11.000000000 -0600
-+++ linux-2.6/arch/powerpc/include/asm/local.h	2009-12-18 14:19:17.000000000 -0600
-@@ -172,29 +172,4 @@ static __inline__ long local_dec_if_posi
- #define __local_add(i,l)	((l)->a.counter+=(i))
- #define __local_sub(i,l)	((l)->a.counter-=(i))
+-		pset = zone_pcp(zone, cpu);
++		local_irq_save(flags);
++		pset = per_cpu_ptr(zone->pageset, cpu);
  
--/* Need to disable preemption for the cpu local counters otherwise we could
--   still access a variable of a previous CPU in a non atomic way. */
--#define cpu_local_wrap_v(l)	 	\
--	({ local_t res__;		\
--	   preempt_disable(); 		\
--	   res__ = (l);			\
--	   preempt_enable();		\
--	   res__; })
--#define cpu_local_wrap(l)		\
--	({ preempt_disable();		\
--	   l;				\
--	   preempt_enable(); })		\
--
--#define cpu_local_read(l)    cpu_local_wrap_v(local_read(&__get_cpu_var(l)))
--#define cpu_local_set(l, i)  cpu_local_wrap(local_set(&__get_cpu_var(l), (i)))
--#define cpu_local_inc(l)     cpu_local_wrap(local_inc(&__get_cpu_var(l)))
--#define cpu_local_dec(l)     cpu_local_wrap(local_dec(&__get_cpu_var(l)))
--#define cpu_local_add(i, l)  cpu_local_wrap(local_add((i), &__get_cpu_var(l)))
--#define cpu_local_sub(i, l)  cpu_local_wrap(local_sub((i), &__get_cpu_var(l)))
--
--#define __cpu_local_inc(l)	cpu_local_inc(l)
--#define __cpu_local_dec(l)	cpu_local_dec(l)
--#define __cpu_local_add(i, l)	cpu_local_add((i), (l))
--#define __cpu_local_sub(i, l)	cpu_local_sub((i), (l))
--
- #endif /* _ARCH_POWERPC_LOCAL_H */
-Index: linux-2.6/arch/x86/include/asm/local.h
-===================================================================
---- linux-2.6.orig/arch/x86/include/asm/local.h	2009-12-16 13:50:11.000000000 -0600
-+++ linux-2.6/arch/x86/include/asm/local.h	2009-12-18 14:19:17.000000000 -0600
-@@ -195,41 +195,4 @@ static inline long local_sub_return(long
- #define __local_add(i, l)	local_add((i), (l))
- #define __local_sub(i, l)	local_sub((i), (l))
+ 		pcp = &pset->pcp;
+-		local_irq_save(flags);
+ 		free_pcppages_bulk(zone, pcp->count, pcp);
+ 		pcp->count = 0;
+ 		local_irq_restore(flags);
+@@ -1095,7 +1095,6 @@ static void free_hot_cold_page(struct pa
+ 	arch_free_page(page, 0);
+ 	kernel_map_pages(page, 1, 0);
  
--/* Use these for per-cpu local_t variables: on some archs they are
-- * much more efficient than these naive implementations.  Note they take
-- * a variable, not an address.
+-	pcp = &zone_pcp(zone, get_cpu())->pcp;
+ 	migratetype = get_pageblock_migratetype(page);
+ 	set_page_private(page, migratetype);
+ 	local_irq_save(flags);
+@@ -1118,6 +1117,7 @@ static void free_hot_cold_page(struct pa
+ 		migratetype = MIGRATE_MOVABLE;
+ 	}
+ 
++	pcp = &this_cpu_ptr(zone->pageset)->pcp;
+ 	if (cold)
+ 		list_add_tail(&page->lru, &pcp->lists[migratetype]);
+ 	else
+@@ -1130,7 +1130,6 @@ static void free_hot_cold_page(struct pa
+ 
+ out:
+ 	local_irq_restore(flags);
+-	put_cpu();
+ }
+ 
+ void free_hot_page(struct page *page)
+@@ -1180,17 +1179,15 @@ struct page *buffered_rmqueue(struct zon
+ 	unsigned long flags;
+ 	struct page *page;
+ 	int cold = !!(gfp_flags & __GFP_COLD);
+-	int cpu;
+ 
+ again:
+-	cpu  = get_cpu();
+ 	if (likely(order == 0)) {
+ 		struct per_cpu_pages *pcp;
+ 		struct list_head *list;
+ 
+-		pcp = &zone_pcp(zone, cpu)->pcp;
+-		list = &pcp->lists[migratetype];
+ 		local_irq_save(flags);
++		pcp = &this_cpu_ptr(zone->pageset)->pcp;
++		list = &pcp->lists[migratetype];
+ 		if (list_empty(list)) {
+ 			pcp->count += rmqueue_bulk(zone, 0,
+ 					pcp->batch, list,
+@@ -1231,7 +1228,6 @@ again:
+ 	__count_zone_vm_events(PGALLOC, zone, 1 << order);
+ 	zone_statistics(preferred_zone, zone);
+ 	local_irq_restore(flags);
+-	put_cpu();
+ 
+ 	VM_BUG_ON(bad_range(zone, page));
+ 	if (prep_new_page(page, order, gfp_flags))
+@@ -1240,7 +1236,6 @@ again:
+ 
+ failed:
+ 	local_irq_restore(flags);
+-	put_cpu();
+ 	return NULL;
+ }
+ 
+@@ -2179,7 +2174,7 @@ void show_free_areas(void)
+ 		for_each_online_cpu(cpu) {
+ 			struct per_cpu_pageset *pageset;
+ 
+-			pageset = zone_pcp(zone, cpu);
++			pageset = per_cpu_ptr(zone->pageset, cpu);
+ 
+ 			printk("CPU %4d: hi:%5d, btch:%4d usd:%4d\n",
+ 			       cpu, pageset->pcp.high,
+@@ -2744,10 +2739,29 @@ static void build_zonelist_cache(pg_data
+ 
+ #endif	/* CONFIG_NUMA */
+ 
++/*
++ * Boot pageset table. One per cpu which is going to be used for all
++ * zones and all nodes. The parameters will be set in such a way
++ * that an item put on a list will immediately be handed over to
++ * the buddy list. This is safe since pageset manipulation is done
++ * with interrupts disabled.
++ *
++ * The boot_pagesets must be kept even after bootup is complete for
++ * unused processors and/or zones. They do play a role for bootstrapping
++ * hotplugged processors.
++ *
++ * zoneinfo_show() and maybe other functions do
++ * not check if the processor is online before following the pageset pointer.
++ * Other parts of the kernel may not check if the zone is available.
++ */
++static void setup_pageset(struct per_cpu_pageset *p, unsigned long batch);
++static DEFINE_PER_CPU(struct per_cpu_pageset, boot_pageset);
++
+ /* return values int ....just for stop_machine() */
+ static int __build_all_zonelists(void *dummy)
+ {
+ 	int nid;
++	int cpu;
+ 
+ #ifdef CONFIG_NUMA
+ 	memset(node_load, 0, sizeof(node_load));
+@@ -2758,6 +2772,23 @@ static int __build_all_zonelists(void *d
+ 		build_zonelists(pgdat);
+ 		build_zonelist_cache(pgdat);
+ 	}
++
++	/*
++	 * Initialize the boot_pagesets that are going to be used
++	 * for bootstrapping processors. The real pagesets for
++	 * each zone will be allocated later when the per cpu
++	 * allocator is available.
++	 *
++	 * boot_pagesets are used also for bootstrapping offline
++	 * cpus if the system is already booted because the pagesets
++	 * are needed to initialize allocators on a specific cpu too.
++	 * F.e. the percpu allocator needs the page allocator which
++	 * needs the percpu allocator in order to allocate its pagesets
++	 * (a chicken-egg dilemma).
++	 */
++	for_each_possible_cpu(cpu)
++		setup_pageset(&per_cpu(boot_pageset, cpu), 0);
++
+ 	return 0;
+ }
+ 
+@@ -3096,95 +3127,16 @@ static void setup_pagelist_highmark(stru
+ }
+ 
+ 
+-#ifdef CONFIG_NUMA
+-/*
+- * Boot pageset table. One per cpu which is going to be used for all
+- * zones and all nodes. The parameters will be set in such a way
+- * that an item put on a list will immediately be handed over to
+- * the buddy list. This is safe since pageset manipulation is done
+- * with interrupts disabled.
 - *
-- * X86_64: This could be done better if we moved the per cpu data directly
-- * after GS.
+- * Some NUMA counter updates may also be caught by the boot pagesets.
+- *
+- * The boot_pagesets must be kept even after bootup is complete for
+- * unused processors and/or zones. They do play a role for bootstrapping
+- * hotplugged processors.
+- *
+- * zoneinfo_show() and maybe other functions do
+- * not check if the processor is online before following the pageset pointer.
+- * Other parts of the kernel may not check if the zone is available.
 - */
+-static struct per_cpu_pageset boot_pageset[NR_CPUS];
 -
--/* Need to disable preemption for the cpu local counters otherwise we could
--   still access a variable of a previous CPU in a non atomic way. */
--#define cpu_local_wrap_v(l)		\
--({					\
--	local_t res__;			\
--	preempt_disable(); 		\
--	res__ = (l);			\
--	preempt_enable();		\
--	res__;				\
--})
--#define cpu_local_wrap(l)		\
--({					\
--	preempt_disable();		\
--	(l);				\
--	preempt_enable();		\
--})					\
+-/*
+- * Dynamically allocate memory for the
+- * per cpu pageset array in struct zone.
+- */
+-static int __cpuinit process_zones(int cpu)
+-{
+-	struct zone *zone, *dzone;
+-	int node = cpu_to_node(cpu);
 -
--#define cpu_local_read(l)    cpu_local_wrap_v(local_read(&__get_cpu_var((l))))
--#define cpu_local_set(l, i)  cpu_local_wrap(local_set(&__get_cpu_var((l)), (i)))
--#define cpu_local_inc(l)     cpu_local_wrap(local_inc(&__get_cpu_var((l))))
--#define cpu_local_dec(l)     cpu_local_wrap(local_dec(&__get_cpu_var((l))))
--#define cpu_local_add(i, l)  cpu_local_wrap(local_add((i), &__get_cpu_var((l))))
--#define cpu_local_sub(i, l)  cpu_local_wrap(local_sub((i), &__get_cpu_var((l))))
+-	node_set_state(node, N_CPU);	/* this node has a cpu */
 -
--#define __cpu_local_inc(l)	cpu_local_inc((l))
--#define __cpu_local_dec(l)	cpu_local_dec((l))
--#define __cpu_local_add(i, l)	cpu_local_add((i), (l))
--#define __cpu_local_sub(i, l)	cpu_local_sub((i), (l))
+-	for_each_populated_zone(zone) {
+-		zone_pcp(zone, cpu) = kmalloc_node(sizeof(struct per_cpu_pageset),
+-					 GFP_KERNEL, node);
+-		if (!zone_pcp(zone, cpu))
+-			goto bad;
 -
- #endif /* _ASM_X86_LOCAL_H */
-Index: linux-2.6/include/asm-generic/local.h
-===================================================================
---- linux-2.6.orig/include/asm-generic/local.h	2009-12-16 13:50:11.000000000 -0600
-+++ linux-2.6/include/asm-generic/local.h	2009-12-18 14:19:17.000000000 -0600
-@@ -52,23 +52,4 @@ typedef struct
- #define __local_add(i,l)	local_set((l), local_read(l) + (i))
- #define __local_sub(i,l)	local_set((l), local_read(l) - (i))
+-		setup_pageset(zone_pcp(zone, cpu), zone_batchsize(zone));
+-
+-		if (percpu_pagelist_fraction)
+-			setup_pagelist_highmark(zone_pcp(zone, cpu),
+-			    (zone->present_pages / percpu_pagelist_fraction));
+-	}
+-
+-	return 0;
+-bad:
+-	for_each_zone(dzone) {
+-		if (!populated_zone(dzone))
+-			continue;
+-		if (dzone == zone)
+-			break;
+-		kfree(zone_pcp(dzone, cpu));
+-		zone_pcp(dzone, cpu) = &boot_pageset[cpu];
+-	}
+-	return -ENOMEM;
+-}
+-
+-static inline void free_zone_pagesets(int cpu)
+-{
+-	struct zone *zone;
+-
+-	for_each_zone(zone) {
+-		struct per_cpu_pageset *pset = zone_pcp(zone, cpu);
+-
+-		/* Free per_cpu_pageset if it is slab allocated */
+-		if (pset != &boot_pageset[cpu])
+-			kfree(pset);
+-		zone_pcp(zone, cpu) = &boot_pageset[cpu];
+-	}
+-}
+-
+ static int __cpuinit pageset_cpuup_callback(struct notifier_block *nfb,
+ 		unsigned long action,
+ 		void *hcpu)
+ {
+ 	int cpu = (long)hcpu;
+-	int ret = NOTIFY_OK;
  
--/* Use these for per-cpu local_t variables: on some archs they are
-- * much more efficient than these naive implementations.  Note they take
-- * a variable (eg. mystruct.foo), not an address.
-- */
--#define cpu_local_read(l)	local_read(&__get_cpu_var(l))
--#define cpu_local_set(l, i)	local_set(&__get_cpu_var(l), (i))
--#define cpu_local_inc(l)	local_inc(&__get_cpu_var(l))
--#define cpu_local_dec(l)	local_dec(&__get_cpu_var(l))
--#define cpu_local_add(i, l)	local_add((i), &__get_cpu_var(l))
--#define cpu_local_sub(i, l)	local_sub((i), &__get_cpu_var(l))
+ 	switch (action) {
+ 	case CPU_UP_PREPARE:
+ 	case CPU_UP_PREPARE_FROZEN:
+-		if (process_zones(cpu))
+-			ret = NOTIFY_BAD;
+-		break;
+-	case CPU_UP_CANCELED:
+-	case CPU_UP_CANCELED_FROZEN:
+-	case CPU_DEAD:
+-	case CPU_DEAD_FROZEN:
+-		free_zone_pagesets(cpu);
++		node_set_state(cpu_to_node(cpu), N_CPU);
+ 		break;
+ 	default:
+ 		break;
+@@ -3195,21 +3147,39 @@ static int __cpuinit pageset_cpuup_callb
+ static struct notifier_block __cpuinitdata pageset_notifier =
+ 	{ &pageset_cpuup_callback, NULL, 0 };
+ 
++/*
++ * Allocate per cpu pagesets and initialize them.
++ * Before this call only boot pagesets were available.
++ * Boot pagesets will no longer be used by this processorr
++ * after setup_per_cpu_pageset().
++ */
+ void __init setup_per_cpu_pageset(void)
+ {
+-	int err;
++	struct zone *zone;
++	int cpu;
++
++	for_each_populated_zone(zone) {
++		zone->pageset = alloc_percpu(struct per_cpu_pageset);
+ 
+-	/* Initialize per_cpu_pageset for cpu 0.
+-	 * A cpuup callback will do this for every cpu
+-	 * as it comes online
++		for_each_possible_cpu(cpu) {
++			struct per_cpu_pageset *pcp = per_cpu_ptr(zone->pageset, cpu);
++
++			setup_pageset(pcp, zone_batchsize(zone));
++
++			if (percpu_pagelist_fraction)
++				setup_pagelist_highmark(pcp,
++					(zone->present_pages /
++						percpu_pagelist_fraction));
++		}
++	}
++	/*
++	 * The boot cpu is always the first active.
++	 * The boot node has a processor.
+ 	 */
+-	err = process_zones(smp_processor_id());
+-	BUG_ON(err);
++	node_set_state(cpu_to_node(smp_processor_id()), N_CPU);
+ 	register_cpu_notifier(&pageset_notifier);
+ }
+ 
+-#endif
 -
--/* Non-atomic increments, ie. preemption disabled and won't be touched
-- * in interrupt, etc.  Some archs can optimize this case well.
-- */
--#define __cpu_local_inc(l)	__local_inc(&__get_cpu_var(l))
--#define __cpu_local_dec(l)	__local_dec(&__get_cpu_var(l))
--#define __cpu_local_add(i, l)	__local_add((i), &__get_cpu_var(l))
--#define __cpu_local_sub(i, l)	__local_sub((i), &__get_cpu_var(l))
--
- #endif /* _ASM_GENERIC_LOCAL_H */
+ static noinline __init_refok
+ int zone_wait_table_init(struct zone *zone, unsigned long zone_size_pages)
+ {
+@@ -3263,7 +3233,7 @@ static int __zone_pcp_update(void *data)
+ 		struct per_cpu_pageset *pset;
+ 		struct per_cpu_pages *pcp;
+ 
+-		pset = zone_pcp(zone, cpu);
++		pset = per_cpu_ptr(zone->pageset, cpu);
+ 		pcp = &pset->pcp;
+ 
+ 		local_irq_save(flags);
+@@ -3281,21 +3251,17 @@ void zone_pcp_update(struct zone *zone)
+ 
+ static __meminit void zone_pcp_init(struct zone *zone)
+ {
+-	int cpu;
+-	unsigned long batch = zone_batchsize(zone);
++	/*
++	 * per cpu subsystem is not up at this point. The following code
++	 * relies on the ability of the linker to provide the
++	 * offset of a (static) per cpu variable into the per cpu area.
++	 */
++	zone->pageset = &per_cpu_var(boot_pageset);
+ 
+-	for (cpu = 0; cpu < NR_CPUS; cpu++) {
+-#ifdef CONFIG_NUMA
+-		/* Early boot. Slab allocator not functional yet */
+-		zone_pcp(zone, cpu) = &boot_pageset[cpu];
+-		setup_pageset(&boot_pageset[cpu],0);
+-#else
+-		setup_pageset(zone_pcp(zone,cpu), batch);
+-#endif
+-	}
+ 	if (zone->present_pages)
+-		printk(KERN_DEBUG "  %s zone: %lu pages, LIFO batch:%lu\n",
+-			zone->name, zone->present_pages, batch);
++		printk(KERN_DEBUG "  %s zone: %lu pages, LIFO batch:%u\n",
++			zone->name, zone->present_pages,
++					 zone_batchsize(zone));
+ }
+ 
+ __meminit int init_currently_empty_zone(struct zone *zone,
+@@ -4809,10 +4775,11 @@ int percpu_pagelist_fraction_sysctl_hand
+ 	if (!write || (ret == -EINVAL))
+ 		return ret;
+ 	for_each_populated_zone(zone) {
+-		for_each_online_cpu(cpu) {
++		for_each_possible_cpu(cpu) {
+ 			unsigned long  high;
+ 			high = zone->present_pages / percpu_pagelist_fraction;
+-			setup_pagelist_highmark(zone_pcp(zone, cpu), high);
++			setup_pagelist_highmark(
++				per_cpu_ptr(zone->pageset, cpu), high);
+ 		}
+ 	}
+ 	return 0;
+Index: linux-2.6/mm/vmstat.c
+===================================================================
+--- linux-2.6.orig/mm/vmstat.c	2010-01-04 10:27:57.000000000 -0600
++++ linux-2.6/mm/vmstat.c	2010-01-04 14:38:20.000000000 -0600
+@@ -139,7 +139,8 @@ static void refresh_zone_stat_thresholds
+ 		threshold = calculate_threshold(zone);
+ 
+ 		for_each_online_cpu(cpu)
+-			zone_pcp(zone, cpu)->stat_threshold = threshold;
++			per_cpu_ptr(zone->pageset, cpu)->stat_threshold
++							= threshold;
+ 	}
+ }
+ 
+@@ -149,7 +150,8 @@ static void refresh_zone_stat_thresholds
+ void __mod_zone_page_state(struct zone *zone, enum zone_stat_item item,
+ 				int delta)
+ {
+-	struct per_cpu_pageset *pcp = zone_pcp(zone, smp_processor_id());
++	struct per_cpu_pageset *pcp = this_cpu_ptr(zone->pageset);
++
+ 	s8 *p = pcp->vm_stat_diff + item;
+ 	long x;
+ 
+@@ -202,7 +204,7 @@ EXPORT_SYMBOL(mod_zone_page_state);
+  */
+ void __inc_zone_state(struct zone *zone, enum zone_stat_item item)
+ {
+-	struct per_cpu_pageset *pcp = zone_pcp(zone, smp_processor_id());
++	struct per_cpu_pageset *pcp = this_cpu_ptr(zone->pageset);
+ 	s8 *p = pcp->vm_stat_diff + item;
+ 
+ 	(*p)++;
+@@ -223,7 +225,7 @@ EXPORT_SYMBOL(__inc_zone_page_state);
+ 
+ void __dec_zone_state(struct zone *zone, enum zone_stat_item item)
+ {
+-	struct per_cpu_pageset *pcp = zone_pcp(zone, smp_processor_id());
++	struct per_cpu_pageset *pcp = this_cpu_ptr(zone->pageset);
+ 	s8 *p = pcp->vm_stat_diff + item;
+ 
+ 	(*p)--;
+@@ -300,7 +302,7 @@ void refresh_cpu_vm_stats(int cpu)
+ 	for_each_populated_zone(zone) {
+ 		struct per_cpu_pageset *p;
+ 
+-		p = zone_pcp(zone, cpu);
++		p = per_cpu_ptr(zone->pageset, cpu);
+ 
+ 		for (i = 0; i < NR_VM_ZONE_STAT_ITEMS; i++)
+ 			if (p->vm_stat_diff[i]) {
+@@ -741,7 +743,7 @@ static void zoneinfo_show_print(struct s
+ 	for_each_online_cpu(i) {
+ 		struct per_cpu_pageset *pageset;
+ 
+-		pageset = zone_pcp(zone, i);
++		pageset = per_cpu_ptr(zone->pageset, i);
+ 		seq_printf(m,
+ 			   "\n    cpu: %i"
+ 			   "\n              count: %i"
 
 -- 
