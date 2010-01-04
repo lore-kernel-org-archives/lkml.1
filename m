@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753937Ab0ADUta@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753999Ab0ADUtl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753937Ab0ADUta (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 15:49:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753844Ab0ADUt2
+	id S1753999Ab0ADUtl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 15:49:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753967Ab0ADUti
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 15:49:28 -0500
-Received: from casper.infradead.org ([85.118.1.10]:33594 "EHLO
+	Mon, 4 Jan 2010 15:49:38 -0500
+Received: from casper.infradead.org ([85.118.1.10]:33618 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752914Ab0ADUt0 (ORCPT
+	with ESMTP id S1753958Ab0ADUtd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 15:49:26 -0500
-Message-Id: <20100104182813.180396813@chello.nl>
+	Mon, 4 Jan 2010 15:49:33 -0500
+Message-Id: <20100104182813.753545361@chello.nl>
 References: <20100104182429.833180340@chello.nl>
 User-Agent: quilt/0.46-1
-Date: Mon, 04 Jan 2010 19:24:30 +0100
+Date: Mon, 04 Jan 2010 19:24:35 +0100
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
        Peter Zijlstra <peterz@infradead.org>,
@@ -24,197 +24,112 @@ To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
        cl@linux-foundation.org, "hugh.dickins" <hugh.dickins@tiscali.co.uk>,
        Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>,
        Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [RFC][PATCH 1/8] mm: Remove pte reference from fault path
-Content-Disposition: inline; filename=mm-foo-1.patch
+Subject: [RFC][PATCH 6/8] mm: handle_speculative_fault()
+Content-Disposition: inline; filename=mm-foo-8.patch
 Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Since we want to do speculative faults, where we can race against
-unmap() and similar, we cannot trust pte pointers to remain valid.
-
-Hence remove the relyance on those from the fault path.
+Generic speculative fault handler, tries to service a pagefault
+without holding mmap_sem.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- mm/memory.c |   72 ++++++++++++++++--------------------------------------------
- 1 file changed, 20 insertions(+), 52 deletions(-)
+ include/linux/mm.h |    2 +
+ mm/memory.c        |   59 ++++++++++++++++++++++++++++++++++++++++++++++++++++-
+ 2 files changed, 60 insertions(+), 1 deletion(-)
 
 Index: linux-2.6/mm/memory.c
 ===================================================================
 --- linux-2.6.orig/mm/memory.c
 +++ linux-2.6/mm/memory.c
-@@ -1919,31 +1919,6 @@ int apply_to_page_range(struct mm_struct
- EXPORT_SYMBOL_GPL(apply_to_page_range);
+@@ -1998,7 +1998,7 @@ again:
+ 	if (!*ptep)
+ 		goto out;
  
- /*
-- * handle_pte_fault chooses page fault handler according to an entry
-- * which was read non-atomically.  Before making any commitment, on
-- * those architectures or configurations (e.g. i386 with PAE) which
-- * might give a mix of unmatched parts, do_swap_page and do_file_page
-- * must check under lock before unmapping the pte and proceeding
-- * (but do_wp_page is only called after already making such a check;
-- * and do_anonymous_page and do_no_page can safely check later on).
-- */
--static inline int pte_unmap_same(struct mm_struct *mm, pmd_t *pmd,
--				pte_t *page_table, pte_t orig_pte)
--{
--	int same = 1;
--#if defined(CONFIG_SMP) || defined(CONFIG_PREEMPT)
--	if (sizeof(pte_t) > sizeof(unsigned long)) {
--		spinlock_t *ptl = pte_lockptr(mm, pmd);
--		spin_lock(ptl);
--		same = pte_same(*page_table, orig_pte);
--		spin_unlock(ptl);
--	}
--#endif
--	pte_unmap(page_table);
--	return same;
--}
--
--/*
-  * Do pte_mkwrite, but only if the vma says VM_WRITE.  We do this when
-  * servicing faults for write access.  In the normal case, do always want
-  * pte_mkwrite.  But get_user_pages can cause write faults for mappings
-@@ -2508,19 +2483,16 @@ int vmtruncate_range(struct inode *inode
-  * We return with mmap_sem still held, but pte unmapped and unlocked.
-  */
- static int do_swap_page(struct mm_struct *mm, struct vm_area_struct *vma,
--		unsigned long address, pte_t *page_table, pmd_t *pmd,
-+		unsigned long address, pmd_t *pmd,
- 		unsigned int flags, pte_t orig_pte)
- {
- 	spinlock_t *ptl;
- 	struct page *page;
- 	swp_entry_t entry;
--	pte_t pte;
-+	pte_t *page_table, pte;
- 	struct mem_cgroup *ptr = NULL;
- 	int ret = 0;
- 
--	if (!pte_unmap_same(mm, pmd, page_table, orig_pte))
--		goto out;
--
- 	entry = pte_to_swp_entry(orig_pte);
- 	if (unlikely(non_swap_entry(entry))) {
- 		if (is_migration_entry(entry)) {
-@@ -2650,18 +2622,16 @@ out_release:
-  * We return with mmap_sem still held, but pte unmapped and unlocked.
-  */
- static int do_anonymous_page(struct mm_struct *mm, struct vm_area_struct *vma,
--		unsigned long address, pte_t *page_table, pmd_t *pmd,
--		unsigned int flags)
-+		unsigned long address, pmd_t *pmd, unsigned int flags)
- {
- 	struct page *page;
- 	spinlock_t *ptl;
--	pte_t entry;
-+	pte_t entry, *page_table;
- 
- 	if (!(flags & FAULT_FLAG_WRITE)) {
- 		entry = pte_mkspecial(pfn_pte(my_zero_pfn(address),
- 						vma->vm_page_prot));
--		ptl = pte_lockptr(mm, pmd);
--		spin_lock(ptl);
-+		page_table = pte_offset_map_lock(mm, pmd, address, &ptl);
- 		if (!pte_none(*page_table))
- 			goto unlock;
- 		goto setpte;
-@@ -2900,13 +2870,12 @@ unwritable_page:
- }
- 
- static int do_linear_fault(struct mm_struct *mm, struct vm_area_struct *vma,
--		unsigned long address, pte_t *page_table, pmd_t *pmd,
-+		unsigned long address, pmd_t *pmd,
- 		unsigned int flags, pte_t orig_pte)
- {
- 	pgoff_t pgoff = (((address & PAGE_MASK)
- 			- vma->vm_start) >> PAGE_SHIFT) + vma->vm_pgoff;
- 
--	pte_unmap(page_table);
- 	return __do_fault(mm, vma, address, pmd, pgoff, flags, orig_pte);
- }
- 
-@@ -2920,16 +2889,13 @@ static int do_linear_fault(struct mm_str
-  * We return with mmap_sem still held, but pte unmapped and unlocked.
-  */
- static int do_nonlinear_fault(struct mm_struct *mm, struct vm_area_struct *vma,
--		unsigned long address, pte_t *page_table, pmd_t *pmd,
-+		unsigned long address, pmd_t *pmd,
- 		unsigned int flags, pte_t orig_pte)
- {
- 	pgoff_t pgoff;
- 
- 	flags |= FAULT_FLAG_NONLINEAR;
- 
--	if (!pte_unmap_same(mm, pmd, page_table, orig_pte))
--		return 0;
--
- 	if (unlikely(!(vma->vm_flags & VM_NONLINEAR))) {
- 		/*
- 		 * Page table corrupted: show pte and kill process.
-@@ -2957,31 +2923,29 @@ static int do_nonlinear_fault(struct mm_
-  */
- static inline int handle_pte_fault(struct mm_struct *mm,
- 		struct vm_area_struct *vma, unsigned long address,
--		pte_t *pte, pmd_t *pmd, unsigned int flags)
-+		pte_t entry, pmd_t *pmd, unsigned int flags)
- {
--	pte_t entry;
- 	spinlock_t *ptl;
-+	pte_t *pte;
- 
--	entry = *pte;
- 	if (!pte_present(entry)) {
- 		if (pte_none(entry)) {
- 			if (vma->vm_ops) {
- 				if (likely(vma->vm_ops->fault))
- 					return do_linear_fault(mm, vma, address,
--						pte, pmd, flags, entry);
-+						pmd, flags, entry);
- 			}
- 			return do_anonymous_page(mm, vma, address,
--						 pte, pmd, flags);
-+						 pmd, flags);
- 		}
- 		if (pte_file(entry))
- 			return do_nonlinear_fault(mm, vma, address,
--					pte, pmd, flags, entry);
-+					pmd, flags, entry);
- 		return do_swap_page(mm, vma, address,
--					pte, pmd, flags, entry);
-+					pmd, flags, entry);
- 	}
- 
--	ptl = pte_lockptr(mm, pmd);
--	spin_lock(ptl);
-+	pte = pte_offset_map_lock(mm, pmd, address, &ptl);
- 	if (unlikely(!pte_same(*pte, entry)))
+-	if (vma_is_dead(vma, seq))
++	if (vma && vma_is_dead(vma, seq))
  		goto unlock;
- 	if (flags & FAULT_FLAG_WRITE) {
-@@ -3017,7 +2981,7 @@ int handle_mm_fault(struct mm_struct *mm
- 	pgd_t *pgd;
- 	pud_t *pud;
- 	pmd_t *pmd;
--	pte_t *pte;
+ 
+ 	unpin_page_tables();
+@@ -3112,6 +3112,63 @@ int handle_mm_fault(struct mm_struct *mm
+ 	return handle_pte_fault(mm, vma, address, entry, pmd, flags, 0);
+ }
+ 
++int handle_speculative_fault(struct mm_struct *mm, unsigned long address,
++		unsigned int flags)
++{
++	pmd_t *pmd = NULL;
 +	pte_t *pte, entry;
- 
- 	__set_current_state(TASK_RUNNING);
- 
-@@ -3037,7 +3001,11 @@ int handle_mm_fault(struct mm_struct *mm
- 	if (!pte)
- 		return VM_FAULT_OOM;
- 
--	return handle_pte_fault(mm, vma, address, pte, pmd, flags);
++	spinlock_t *ptl;
++	struct vm_area_struct *vma;
++	unsigned int seq;
++	int ret = VM_FAULT_RETRY;
++	int dead;
++
++	__set_current_state(TASK_RUNNING);
++	flags |= FAULT_FLAG_SPECULATIVE;
++
++	count_vm_event(PGFAULT);
++
++	rcu_read_lock();
++	if (!pte_map_lock(mm, NULL, address, pmd, flags, 0, &pte, &ptl))
++		goto out_unlock;
++
++	vma = find_vma(mm, address);
++
++	if (!vma)
++		goto out_unmap;
++
++	dead = RB_EMPTY_NODE(&vma->vm_rb);
++	seq = vma->vm_sequence.sequence;
++	/*
++	 * Matches both the wmb in write_seqcount_begin/end() and
++	 * the wmb in detach_vmas_to_be_unmapped()/__unlink_vma().
++	 */
++	smp_rmb();
++	if (dead || seq & 1)
++		goto out_unmap;
++
++	if (!(vma->vm_end > address && vma->vm_start <= address))
++		goto out_unmap;
++
++	if (read_seqcount_retry(&vma->vm_sequence, seq))
++		goto out_unmap;
++
 +	entry = *pte;
 +
-+	pte_unmap(pte);
++	pte_unmap_unlock(pte, ptl);
 +
-+	return handle_pte_fault(mm, vma, address, entry, pmd, flags);
- }
- 
++	ret = handle_pte_fault(mm, vma, address, entry, pmd, flags, seq);
++
++out_unlock:
++	rcu_read_unlock();
++	return ret;
++
++out_unmap:
++	pte_unmap_unlock(pte, ptl);
++	goto out_unlock;
++}
++
++
  #ifndef __PAGETABLE_PUD_FOLDED
+ /*
+  * Allocate page upper directory.
+Index: linux-2.6/include/linux/mm.h
+===================================================================
+--- linux-2.6.orig/include/linux/mm.h
++++ linux-2.6/include/linux/mm.h
+@@ -829,6 +829,8 @@ int invalidate_inode_page(struct page *p
+ #ifdef CONFIG_MMU
+ extern int handle_mm_fault(struct mm_struct *mm, struct vm_area_struct *vma,
+ 			unsigned long address, unsigned int flags);
++extern int handle_speculative_fault(struct mm_struct *mm,
++			unsigned long address, unsigned int flags);
+ #else
+ static inline int handle_mm_fault(struct mm_struct *mm,
+ 			struct vm_area_struct *vma, unsigned long address,
 
 -- 
 
