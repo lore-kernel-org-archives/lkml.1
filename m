@@ -1,85 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754074Ab0ADWk6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753709Ab0ADWpq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754074Ab0ADWk6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 17:40:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753961Ab0ADWk4
+	id S1753709Ab0ADWpq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 17:45:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752801Ab0ADWpp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 17:40:56 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:48374 "EHLO mx1.redhat.com"
+	Mon, 4 Jan 2010 17:45:45 -0500
+Received: from ozlabs.org ([203.10.76.45]:53089 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753619Ab0ADWkz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 17:40:55 -0500
-Message-ID: <4B426E75.6060706@redhat.com>
-Date: Mon, 04 Jan 2010 17:40:53 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
+	id S1751883Ab0ADWpo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jan 2010 17:45:44 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Heiko Carstens <heiko.carstens@de.ibm.com>
+Subject: Re: kprobes: get rid of distinct type warning
+Date: Tue, 5 Jan 2010 09:15:41 +1030
+User-Agent: KMail/1.12.2 (Linux/2.6.31-16-generic; KDE/4.3.2; i686; ; )
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+References: <20091221101549.GA3850@osiris.boeblingen.de.ibm.com> <20091230132945.f32f49fd.akpm@linux-foundation.org> <20100104155702.GB5671@osiris.boeblingen.de.ibm.com>
+In-Reply-To: <20100104155702.GB5671@osiris.boeblingen.de.ibm.com>
 MIME-Version: 1.0
-To: Luca Tettamanti <kronos.it@gmail.com>
-CC: linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH/resend] Document awk requirements
-References: <20100104221345.GA7897@nb-core2.darkstar.lan>
-In-Reply-To: <20100104221345.GA7897@nb-core2.darkstar.lan>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <201001050915.41334.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Luca,
-
-As Randy said, gen-insn-attr-x86.awk doesn't need gawk anymore,
-
-> Subject: [tip:x86/urgent] x86: Don't use POSIX character classes in gen-insn-attr-x86.awk
-
-because above patch removes POSIX character classes.
-So I think we don't need to update Documentation/Changes.
-
-Thank you,
-
-
-Luca Tettamanti wrote:
-> Gnu awk is required for generating generating
-> arch/x86/lib/inat-tables.c:
+On Tue, 5 Jan 2010 02:27:02 am Heiko Carstens wrote:
+> On Wed, Dec 30, 2009 at 01:29:45PM -0800, Andrew Morton wrote:
+> > On Mon, 21 Dec 2009 13:02:24 +0100
+> > Heiko Carstens <heiko.carstens@de.ibm.com> wrote:
+> > 
+> > > Of course the patch wouldn't help for CONFIG_PREEMPT and !CONFIG_SMP since
+> > > we would have a comparison of a signed and and unsigned value again *sigh*.
+> > 
+> > We should fix that, shouldn't we?  Rather than working around it at one
+> > caller site.
+> > 
+> > : #if NR_CPUS > 1
+> > : #define num_online_cpus()	cpumask_weight(cpu_online_mask)
+> > : #define num_possible_cpus()	cpumask_weight(cpu_possible_mask)
+> > : #define num_present_cpus()	cpumask_weight(cpu_present_mask)
+> > : #define num_active_cpus()	cpumask_weight(cpu_active_mask)
+> > : #define cpu_online(cpu)		cpumask_test_cpu((cpu), cpu_online_mask)
+> > : #define cpu_possible(cpu)	cpumask_test_cpu((cpu), cpu_possible_mask)
+> > : #define cpu_present(cpu)	cpumask_test_cpu((cpu), cpu_present_mask)
+> > : #define cpu_active(cpu)		cpumask_test_cpu((cpu), cpu_active_mask)
+> > : #else
+> > : #define num_online_cpus()	1
+> > : #define num_possible_cpus()	1
+> > : #define num_present_cpus()	1
+> > : #define num_active_cpus()	1
+> > : #define cpu_online(cpu)		((cpu) == 0)
+> > : #define cpu_possible(cpu)	((cpu) == 0)
+> > : #define cpu_present(cpu)	((cpu) == 0)
+> > : #define cpu_active(cpu)		((cpu) == 0)
+> > : #endif
+> > 
+> > The num_*() "functions" return unsigned on SMP and int on UP.  This is
+> > wrong.
+> > 
+> > The cpu_*() "functions" got lucky and return int in both cases.
+> > 
+> > Personally I think it's neatest if a quantity which can never be
+> > negative is held in an unsigned type.  Than includes anything starting
+> > with "num".  But for expediency's sake we could live with making these
+> > things consistently return "int".
+> > 
+> > Alas, changing those four num_*() "functions" to return int on SMP is a
+> > pretty wide-reaching change and will probably expose warts.
 > 
->  GEN     arch/x86/lib/inat-tables.c
->  Error: Your awk doesn't support charactor-class.
-> 
-> mawk doesn't work anymore.
-> 
-> Signed-off-by: Luca Tettamanti <kronos.it@gmail.com>
-> Acked-by: Masami Hiramatsu <mhiramat@redhat.com>
-> ---
-> Hum, who is in charge of the documentation?
-> Masami can you push it?
-> 
->  Documentation/Changes |    1 +
->  1 file changed, 1 insertion(+)
-> 
-> diff --git a/Documentation/Changes b/Documentation/Changes
-> index f08b313..abec6f2 100644
-> --- a/Documentation/Changes
-> +++ b/Documentation/Changes
-> @@ -50,6 +50,7 @@ o  udev                   081                     # udevinfo -V
->  o  grub                   0.93                    # grub --version
->  o  mcelog		  0.6
->  o  iptables               1.4.1                   # iptables -V
-> +o  Gnu awk                3.1.5                   # awk --version
->  
->  
->  Kernel compilation
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> Looks like there are quite a lot of num_* function usages in the kernel.
+> Some seem to assume they return an int some assume an unsigned int.
+> Don't know if it's worth changing anything here.
+> Maybe Rusty has an opinion.
 
--- 
-Masami Hiramatsu
+If we have to go one way or the other, go with unsigned.
 
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
+What does such a patch look like?
 
-e-mail: mhiramat@redhat.com
-
+Thanks,
+Rusty.
