@@ -1,78 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754089Ab0ADVL7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754126Ab0ADVMg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754089Ab0ADVL7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 16:11:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753988Ab0ADVL5
+	id S1754126Ab0ADVMg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 16:12:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753921Ab0ADVMb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 16:11:57 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:3131 "EHLO mx1.redhat.com"
+	Mon, 4 Jan 2010 16:12:31 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:50131 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753921Ab0ADVLz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 16:11:55 -0500
+	id S1753042Ab0ADVMb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jan 2010 16:12:31 -0500
+Date: Mon, 4 Jan 2010 22:12:26 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+To: James Bottomley <James.Bottomley@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Stefani Seibold <stefani@seibold.net>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [PATCH] libsrp: fix compile failure
+In-Reply-To: <1262625721.2724.158.camel@mulgrave.site>
+Message-ID: <alpine.LNX.2.00.1001042206340.2277@pobox.suse.cz>
+References: <1262200866.2749.226.camel@mulgrave.site>  <alpine.LFD.2.00.0912301132260.11961@localhost.localdomain>  <alpine.LRH.2.00.1001041619130.15694@twin.jikos.cz> <1262625721.2724.158.camel@mulgrave.site>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Oleg Nesterov <oleg@redhat.com>
-X-Fcc: ~/Mail/linus
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>, caiqian@redhat.com,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Jan Kratochvil <jkratoch@redhat.com>, linux-kernel@vger.kernel.org,
-       linux-s390@vger.kernel.org, utrace-devel@redhat.com
-Subject: Re: s390 && user_enable_single_step() (Was: odd utrace testing
-	results on s390x)
-In-Reply-To: Oleg Nesterov's message of  Monday, 4 January 2010 19:14:12 +0100 <20100104181412.GA21146@redhat.com>
-References: <1503844142.2061111261478093776.JavaMail.root@zmail06.collab.prod.int.phx2.redhat.com>
-	<1257887498.2061171261478252049.JavaMail.root@zmail06.collab.prod.int.phx2.redhat.com>
-	<20100104155225.GA16650@redhat.com>
-	<20100104171626.22ea2d9c@mschwide.boeblingen.de.ibm.com>
-	<20100104181412.GA21146@redhat.com>
-X-Shopping-List: (1) Special balls
-   (2) Throwaway approval vapor
-   (3) Diffident rubber carrion
-Message-Id: <20100104211147.4CC94D532@magilla.sf.frob.com>
-Date: Mon,  4 Jan 2010 13:11:47 -0800 (PST)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> This probably means that copy_process()->user_disable_single_step()
-> is not enough to clear the "this task wants single-stepping" copied
-> from parent.
 
-I would suspect s390's TIF_SINGLE_STEP flag here.  That flag means "a
-single-step trap occurred".  This is what causes do_single_step to be
-called before returning to user mode, rather than the machine trap doing it
-directly as is done in the other arch implementations.
+[ added Stephen to CC ]
 
-If I'm right, then "this task wants single-stepping" is not the problem,
-and that really is fully cleared.  In fact, looking at s390's copy_thread
-(arch/s390/kernel/process.c) it clears out all the state that is actually
-touched by user_enable_single_step and user_disable_single_step.  So for
-s390 the new fork.c call is actually superfluous AFAICT.
+On Mon, 4 Jan 2010, James Bottomley wrote:
 
-The problem is that the copied parent state includes the "this task has a
-pending single-step to report" flag.  IMHO it clearly makes sense for
-s390's copy_thread to clear this flag in a new task, which it does not do now.
+> Well, the fact that the compile failure wasn't detected before it went 
+> upstream should answer that ...
+> 
+> But to be more specific: linux-next is our integration tree (and also
+> the obscure architecture compile tree).  To ensure the best possible
+> integration, every tree should be built and tested in linux-next at
+> least once before it goes to Linus.  There were originally technical
+> reasons why -mm wasn't in ... I just thought they'd been fixed by now.
 
-An alternative to that would be just to make its user_disable_single_step
-clear the flag.  That could in theory also have an effect on e.g. the
-(authentic) pending step report of a tracee that was stopped with
-TIF_SINGLE_STEP set when its tracer detached.  This might be considered a
-good thing, but since every other arch posts the SIGTRAP immediately they
-all have the equivalent issue and s390 doesn't need to be any "better" than
-they are before we have a generic resolution to the whole subject of
-tracer-induced signals (which we won't get into now).  I'm not even sure
-from my insufficient reading of the s390 assembly code whether this path is
-even possible, i.e. do_signal called before do_single_step.
+/me checks ...
 
-Martin, I suggest having copy_thread clear TIF_SINGLE_STEP.
-That bit is always task-private state that should not be copied.
+Yes, it indeed is that way -- Andew pulls whole linux-next as one of the 
+patches into -mm series.
 
-Btw, given the complexity of FixPerRegisters (and its new additional cost
-on task==current), you might want to make user_*_single_step bail out if
-per_info.single_step is already set/clear on entry.
+To make linux-next really working the way it is intended to work we need 
+to have -mm part of it, as it is used as a last point for a non-trivial 
+amount of patches before they enter Linus' tree.
 
+Andrew, why do we have the current setup, and not the other way around?
 
 Thanks,
-Roland
+
+-- 
+Jiri Kosina
+SUSE Labs, Novell Inc.
