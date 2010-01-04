@@ -1,198 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752971Ab0ADBGN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752872Ab0ADBQJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752971Ab0ADBGN (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Jan 2010 20:06:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752872Ab0ADBGN
+	id S1752872Ab0ADBQJ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Jan 2010 20:16:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752189Ab0ADBQI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Jan 2010 20:06:13 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:44875 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752861Ab0ADBGM (ORCPT
+	Sun, 3 Jan 2010 20:16:08 -0500
+Received: from adelphi.physics.adelaide.edu.au ([129.127.102.1]:58579 "EHLO
+	adelphi.physics.adelaide.edu.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751784Ab0ADBQH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Jan 2010 20:06:12 -0500
-Date: Mon, 04 Jan 2010 10:06:07 +0900 (JST)
-Message-Id: <20100104.100607.189714443.d.hatayama@jp.fujitsu.com>
-To: linux-mm@kvack.org
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       mhiramat@redhat.com, xiyou.wangcong@gmail.com, andi@firstfloor.org,
-       jdike@addtoit.com, tony.luck@intel.com
-Subject: [RESEND][mmotm][PATCH v2, 0/5] elf coredump: Add extended
- numbering support
-From: Daisuke HATAYAMA <d.hatayama@jp.fujitsu.com>
-X-Mailer: Mew version 5.2 on Emacs 22.2 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Sun, 3 Jan 2010 20:16:07 -0500
+From: Jonathan Woithe <jwoithe@physics.adelaide.edu.au>
+Message-Id: <201001040115.o041FCEA025051@turbo.physics.adelaide.edu.au>
+Subject: Re: 2.9.29.2: ide-tape: panic when probing device at boot
+To: tj@kernel.org (Tejun Heo)
+Date: Mon, 4 Jan 2010 11:45:12 +1030 (CST)
+Cc: petkovbb@gmail.com, bzolnier@gmail.com (Bartlomiej Zolnierkiewicz),
+       jwoithe@physics.adelaide.edu.au (Jonathan Woithe),
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       tj@kernel.org (Tejun Heo)
+In-Reply-To: <4A062702.8020404@kernel.org> from "Tejun Heo" at May 10, 2009 09:59:46 AM
+X-Mailer: ELM [version 2.5 PL6]
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I resend this serise of patches because in the previous post I didn't
-get any reply.
+Hi
 
-The changes from v1 to v2:
- * fix binfmt_elf_fdpic.c and binfmt_aout.c, too
- * move dump_write() and dump_seek() into a header file
- * fix some style issues
- * correct confusing part of the patch descriptions
-===
-Summary
-=======
+> Borislav Petkov wrote:
+> > Hi,
+> > 
+> > On Sat, May 09, 2009 at 05:57:49PM +0200, Bartlomiej Zolnierkiewicz wrote:
+> >> [ cc:ing linux-ide and knowledgeable people ]
+> >>
+> >> Borislav/Tejun:
+> >>
+> >> Is the 2.6.29 problem the same thing that was fixed recently?
+> > 
+> > I'll let Tejun answer that one since I don't get an oops. However, now
+> > that I have an ide-tape hardware here, I do get something DMA-related
+> > failing during boot:
+> > 
+> > [    1.677012] hdb: Seagate STT8000A, ATAPI TAPE drive
+> > 
+> > ..
+> > 
+> > [    1.701097] hdb: host max PIO4 wanted PIO255(auto-tune) selected PIO4
+> > [    1.708289] hdb: bad DMA info in identify block
+> > [    1.712872] hdb: host max PIO4 wanted PIO255(auto-tune) selected PIO4
+> > 
+> > ..
+> > 
+> > [    3.450381] Uniform CD-ROM driver Revision: 3.20
+> > [    5.467347] ide-tape: hdb <-> ht0: Seagate STT8000A rev 5.44
+> > [    5.484852] ide-tape: hdb <-> ht0: 88KBps, 14*26kB buffer, 400ms tDS
+> > 
+> > and more specifically the bad DMA info in identify block thing above. I
+> > haven't looked into it yet but its next on my TODO.
+> 
+> Yeah, I've been seeing that too (before and after my changes).
+> Haven't investigated it yet.  Good that it's on your todo list.  :-)
+> 
+> >> Should I just push commit 1e75540ec5202cae63cd238c86bd880e3d496546
+> >> ("ide-tape: remove back-to-back REQUEST_SENSE detection") to Linus
+> >> or there is more needed to bring ide-tape to the world of living?
+> > 
+> > ... and I'm afraid we'll have to do some serious bugfixing since this
+> > driver is behaving really funny :). Stay tuned, I'm on it.
+> 
+> Cool.
 
-The current ELF dumper can produce broken corefiles if program headers
-exceed 65535. In particular, the program in 64-bit environment often
-demands more than 65535 mmaps. If you google max_map_count, then you
-can find many users facing this problem.
+Has there been any movement on this in recent months?  I gave 2.6.30 a whirl
+on the machine when that was released but it still gave major problems with
+the ide-tape driver.  Is 2.6.32 likely to be improved?  If so I'll make
+arrangements to test that version.
 
-Solaris has already dealt with this issue, and other OSes have also
-adopted the same method as in Solaris. Currently, Sun's document and
-AMD 64 ABI include the description for the extension, where they call
-the extension Extended Numbering. See Reference for further information.
+Presently I'm stuck with 2.6.24.x on this system since ide-tape holds
+together enough on this version to work.  I really want to upgrade to a more
+recent kernel but obviously I can't until ide-tape is functional again.
 
-I believe that linux kernel should adopt the same way as they did, so
-I've written this patch.
-
-I am also preparing for patches of GDB and binutils.
-
-How to fix
-==========
-
-In new dumping process, there are two cases according to weather or
-not the number of program headers is equal to or more than 65535.
-
- - if less than 65535, the produced corefile format is exactly the
-   same as the ordinary one.
-
- - if equal to or more than 65535, then e_phnum field is set to newly
-   introduced constant PN_XNUM(0xffff) and the actual number of
-   program headers is set to sh_info field of the section header at
-   index 0.
-
-Compatibility Concern
-=====================
-
- * As already mentioned in Summary, Sun and AMD64 has already adopted
-   this. See Reference.
-
- * There are four combinations according to whether kernel and
-   userland tools are respectively modified or not. The next table
-   summarizes shortly for each combination.
-
-                  ---------------------------------------------
-                     Original Kernel    |   Modified Kernel   
-                  ---------------------------------------------
-    	            < 65535  | >= 65535 | < 65535  | >= 65535 
-  -------------------------------------------------------------
-   Original Tools |    OK    |  broken  |   OK     | broken (#)
-  -------------------------------------------------------------
-   Modified Tools |    OK    |  broken  |   OK     |    OK
-  -------------------------------------------------------------
-
-  Note that there is no case that `OK' changes to `broken'.
-
-  (#) Although this case remains broken, O-M behaves better than
-  O-O. That is, while in O-O case e_phnum field would be extremely
-  small due to integer overflow, in O-M case it is guaranteed to be at
-  least 65535 by being set to PN_XNUM(0xFFFF), much closer to the
-  actual correct value than the O-O case.
-
-Test Program
-============
-
-Here is a test program mkmmaps.c that is useful to produce the
-corefile with many mmaps. To use this, please take the following
-steps:
-
-$ ulimit -c unlimited
-$ sysctl vm.max_map_count=70000 # default 65530 is too small
-$ sysctl fs.file-max=70000
-$ mkmmaps 65535
-
-Then, the program will abort and a corefile will be generated.
-
-If failed, there are two cases according to the error message
-displayed.
-
- * ``out of memory'' means vm.max_map_count is still smaller
-
- * ``too many open files'' means fs.file-max is still smaller
-
-So, please change it to a larger value, and then retry it.
-
-mkmmaps.c
-==
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/mman.h>
-#include <fcntl.h>
-#include <unistd.h>
-int main(int argc, char **argv)
-{ 
-	int maps_num;
-	if (argc < 2) {
-		fprintf(stderr, "mkmmaps [number of maps to be created]\n");
-		exit(1);
-	}
-	if (sscanf(argv[1], "%d", &maps_num) == EOF) {
-		perror("sscanf");
-		exit(2);
-	}
-	if (maps_num < 0) {
-		fprintf(stderr, "%d is invalid\n", maps_num);
-		exit(3);
-	}
-	for (; maps_num > 0; --maps_num) {
-		if (MAP_FAILED == mmap((void *)NULL, (size_t) 1, PROT_READ,
-					MAP_SHARED | MAP_ANONYMOUS, (int) -1,
-					(off_t) NULL)) {
-			perror("mmap");
-			exit(4);
-		}    
-	}
-	abort();
-	{
-		char buffer[128];
-		sprintf(buffer, "wc -l /proc/%u/maps", getpid());
-		system(buffer);
-	}
-	return 0;
-}
-
-Patches
-=======
-
-Tested on i386, ia64 and um/sys-i386.
-Built on sh4 (which covers fs/binfmt_elf_fdpic.c)
-
-diffstat output:
-
- arch/ia64/ia32/binfmt_elf32.c |    1 +
- arch/ia64/ia32/elfcore32.h    |   18 +++++
- arch/ia64/include/asm/elf.h   |   48 ------------
- arch/ia64/kernel/Makefile     |    2 +
- arch/ia64/kernel/elfcore.c    |   80 +++++++++++++++++++
- arch/um/sys-i386/Makefile     |    2 +
- arch/um/sys-i386/asm/elf.h    |   43 ----------
- arch/um/sys-i386/elfcore.c    |   83 ++++++++++++++++++++
- fs/binfmt_aout.c              |   36 +++------
- fs/binfmt_elf.c               |  141 +++++++++++++++++++++-------------
- fs/binfmt_elf_fdpic.c         |  171 ++++++++++++++++++++++++++--------------
- include/linux/coredump.h      |   41 ++++++++++
- include/linux/elf.h           |   28 +++++++-
- include/linux/elfcore.h       |   17 ++++
- kernel/Makefile               |    2 +
- kernel/elfcore.c              |   28 +++++++
- 16 files changed, 512 insertions(+), 229 deletions(-)
-
-Reference
-=========
-
- - Sun microsystems: Linker and Libraries.
-   Part No: 817-1984-17, September 2008.
-   URL: http://docs.sun.com/app/docs/doc/817-1984
-
- - System V ABI AMD64 Architecture Processor Supplement
-   Draft Version 0.99., May 11, 2009.
-   URL: http://www.x86-64.org/
-
-Signed-off-by: Daisuke HATAYAMA <d.hatayama@jp.fujitsu.com>
+Regards
+  jonathan
