@@ -1,90 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753528Ab0ADQlq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753591Ab0ADQlz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753528Ab0ADQlq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 11:41:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753397Ab0ADQln
+	id S1753591Ab0ADQlz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 11:41:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753557Ab0ADQlw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 11:41:43 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:57999 "EHLO
-	bob.linux.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753333Ab0ADQln (ORCPT
+	Mon, 4 Jan 2010 11:41:52 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:58546 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753543Ab0ADQlt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 11:41:43 -0500
-From: Alan Cox <alan@linux.intel.com>
-Subject: [PATCH] i2o: propogate the BKL down into the ioctl method
-To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-Date: Mon, 04 Jan 2010 16:18:27 +0000
-Message-ID: <20100104161801.16711.65931.stgit@localhost.localdomain>
-User-Agent: StGIT/0.14.3
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+	Mon, 4 Jan 2010 11:41:49 -0500
+Date: Mon, 4 Jan 2010 08:40:49 -0800
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+To: David Miller <davem@davemloft.net>
+Cc: mbreuer@majjas.com, akpm@linux-foundation.org, flyboy@gmail.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH] sky2: make sure ethernet header is in transmit skb
+Message-ID: <20100104084049.4d9cd0e4@nehalam>
+In-Reply-To: <20100103.213258.263977883.davem@davemloft.net>
+References: <20091226140544.5600b3d1@nehalam>
+	<20091226.194418.229766965.davem@davemloft.net>
+	<20091226.201107.35060733.davem@davemloft.net>
+	<20100103.213258.263977883.davem@davemloft.net>
+Organization: Linux Foundation
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nobody seems to want to own I2O patches so sending this one directly.
+On Sun, 03 Jan 2010 21:32:58 -0800 (PST)
+David Miller <davem@davemloft.net> wrote:
 
-Signed-off-by: Alan Cox <alan@linux.intel.com>
----
+> From: David Miller <davem@davemloft.net>
+> Date: Sat, 26 Dec 2009 20:11:07 -0800 (PST)
+> 
+> > From: David Miller <davem@davemloft.net>
+> > Date: Sat, 26 Dec 2009 19:44:18 -0800 (PST)
+> > 
+> >> From: Stephen Hemminger <shemminger@linux-foundation.org>
+> >> Date: Sat, 26 Dec 2009 14:05:44 -0800
+> >> 
+> >>> Other drivers may have same problem, I really think this ought
+> >>> to be done at higher level.
+> >> 
+> >> I tend to agree with you, and I thought we had handled all
+> >> cases.  Let's simply make AF_PACKET linearize the link
+> >> level header before sending things out to the transmit path.
+> >> 
+> >> I can work on this if you want.
+> > 
+> > Actually Stephen, I took a look and I can't see how AF_PACKET
+> > can create this situation.
+> > 
+> > It always copies into the linear area of the SKB it allocates
+> > for sendmsg() processing.  Whether the data comes from sendmsg
+> > data or the mmap() ring buffer.
+> 
+> Stephen can you get a backtrace of the code path which triggers
+> this?  I want to fix it at a higher level too, but I can't
+> do that until I know where it actually happens.
 
- drivers/message/i2o/i2o_config.c |   13 ++++++-------
- 1 files changed, 6 insertions(+), 7 deletions(-)
-
-
-diff --git a/drivers/message/i2o/i2o_config.c b/drivers/message/i2o/i2o_config.c
-index efba702..3d5f40c 100644
---- a/drivers/message/i2o/i2o_config.c
-+++ b/drivers/message/i2o/i2o_config.c
-@@ -40,8 +40,7 @@
- 
- #define SG_TABLESIZE		30
- 
--static int i2o_cfg_ioctl(struct inode *, struct file *, unsigned int,
--			 unsigned long);
-+static long i2o_cfg_ioctl(struct file *, unsigned int, unsigned long);
- 
- static spinlock_t i2o_config_lock;
- 
-@@ -751,7 +750,7 @@ static long i2o_cfg_compat_ioctl(struct file *file, unsigned cmd,
- 	lock_kernel();
- 	switch (cmd) {
- 	case I2OGETIOPS:
--		ret = i2o_cfg_ioctl(NULL, file, cmd, arg);
-+		ret = i2o_cfg_ioctl(file, cmd, arg);
- 		break;
- 	case I2OPASSTHRU32:
- 		ret = i2o_cfg_passthru32(file, cmd, arg);
-@@ -984,11 +983,11 @@ out:
- /*
-  * IOCTL Handler
-  */
--static int i2o_cfg_ioctl(struct inode *inode, struct file *fp, unsigned int cmd,
--			 unsigned long arg)
-+static long i2o_cfg_ioctl(struct file *fp, unsigned int cmd, unsigned long arg)
- {
- 	int ret;
- 
-+	lock_kernel();
- 	switch (cmd) {
- 	case I2OGETIOPS:
- 		ret = i2o_cfg_getiops(arg);
-@@ -1044,7 +1043,7 @@ static int i2o_cfg_ioctl(struct inode *inode, struct file *fp, unsigned int cmd,
- 		osm_debug("unknown ioctl called!\n");
- 		ret = -EINVAL;
- 	}
--
-+	unlock_kernel();
- 	return ret;
- }
- 
-@@ -1118,7 +1117,7 @@ static int cfg_release(struct inode *inode, struct file *file)
- static const struct file_operations config_fops = {
- 	.owner = THIS_MODULE,
- 	.llseek = no_llseek,
--	.ioctl = i2o_cfg_ioctl,
-+	.unlocked_ioctl = i2o_cfg_ioctl,
- #ifdef CONFIG_COMPAT
- 	.compat_ioctl = i2o_cfg_compat_ioctl,
- #endif
-
+Ignore it, the problem is outside the sky2 driver in some other
+place causing corrupt skb's. I never reproduced this (with added BUG_ON
+and WARN_ON), only seen by Michael.
