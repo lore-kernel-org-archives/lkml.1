@@ -1,84 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753559Ab0ADQPZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753579Ab0ADQQb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753559Ab0ADQPZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 11:15:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753445Ab0ADQPY
+	id S1753579Ab0ADQQb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 11:16:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753408Ab0ADQQa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 11:15:24 -0500
-Received: from g6t0186.atlanta.hp.com ([15.193.32.63]:22662 "EHLO
-	g6t0186.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753420Ab0ADQPW convert rfc822-to-8bit (ORCPT
+	Mon, 4 Jan 2010 11:16:30 -0500
+Received: from mtagate1.de.ibm.com ([195.212.17.161]:36448 "EHLO
+	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753409Ab0ADQQ3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 11:15:22 -0500
-From: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>
-To: Julia Lawall <julia@diku.dk>, ISS StorageDev <iss_storagedev@hp.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "kernel-janitors@vger.kernel.org" <kernel-janitors@vger.kernel.org>
-Date: Mon, 4 Jan 2010 16:14:53 +0000
-Subject: RE: [PATCH 1/2] drivers/block: drop unnecesary memset
-Thread-Topic: [PATCH 1/2] drivers/block: drop unnecesary memset
-Thread-Index: AcqAfRvUNHdnf9OtQqyov+Out4/aMQM29Rtg
-Message-ID: <0F5B06BAB751E047AB5C87D1F77A77886995B7E02A@GVW0547EXC.americas.hpqcorp.net>
-References: <Pine.LNX.4.64.0912190829470.30546@ask.diku.dk>
-In-Reply-To: <Pine.LNX.4.64.0912190829470.30546@ask.diku.dk>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-MIME-Version: 1.0
+	Mon, 4 Jan 2010 11:16:29 -0500
+Date: Mon, 4 Jan 2010 17:16:26 +0100
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: caiqian@redhat.com, Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Jan Kratochvil <jkratoch@redhat.com>,
+       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-s390@vger.kernel.org, utrace-devel@redhat.com
+Subject: Re: s390 && user_enable_single_step() (Was: odd utrace testing
+ results	on s390x)
+Message-ID: <20100104171626.22ea2d9c@mschwide.boeblingen.de.ibm.com>
+In-Reply-To: <20100104155225.GA16650@redhat.com>
+References: <1503844142.2061111261478093776.JavaMail.root@zmail06.collab.prod.int.phx2.redhat.com>
+	<1257887498.2061171261478252049.JavaMail.root@zmail06.collab.prod.int.phx2.redhat.com>
+	<20100104155225.GA16650@redhat.com>
+Organization: IBM Corporation
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.18.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 4 Jan 2010 16:52:25 +0100
+Oleg Nesterov <oleg@redhat.com> wrote:
+
+> Hi!
+> 
+> We have some strange problems with utrace on s390, and so far this _looks_
+> like a s390 problem.
+> 
+> Looks like, on any CPU user_enable_single_step() does not "work" until at
+> least one thread with per_info.single_step = 1 does the context switch.
+> 
+> This doesn't matter with the old ptrace implementation, but with utrace
+> the tracee itself does user_enable_single_step(current) and returns to
+> user-mode. Until it does at least one context switch the single-stepping
+> doesn't work, after that everything works fine till the next reboot.
+
+The PER control registers only get reloaded on task switch. Can you test
+if this patch fixes your problem?
+
+--
+Subject: [PATCH] fix loading of PER control registers for utrace.
+
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+
+If the current task enables / disables PER tracing for itself the
+PER control registers need to be loaded in FixPerRegisters.
+
+Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+---
+ arch/s390/kernel/ptrace.c |    3 +++
+ 1 file changed, 3 insertions(+)
+
+--- a/arch/s390/kernel/ptrace.c
++++ b/arch/s390/kernel/ptrace.c
+@@ -98,6 +98,9 @@ FixPerRegisters(struct task_struct *task
+ 		per_info->control_regs.bits.storage_alt_space_ctl = 1;
+ 	else
+ 		per_info->control_regs.bits.storage_alt_space_ctl = 0;
++
++	if (task == current)
++		__ctl_load(per_info->control_regs.words, 9, 11);
+ }
  
+ void user_enable_single_step(struct task_struct *task)
 
-> -----Original Message-----
-> From: Julia Lawall [mailto:julia@diku.dk] 
-> Sent: Saturday, December 19, 2009 1:30 AM
-> To: Miller, Mike (OS Dev); ISS StorageDev; 
-> linux-kernel@vger.kernel.org; kernel-janitors@vger.kernel.org
-> Subject: [PATCH 1/2] drivers/block: drop unnecesary memset
-> 
-> From: Julia Lawall <julia@diku.dk>
-> 
-> memset of 0 is not needed after kzalloc
-> 
-> The semantic patch that makes this change is as follows:
-> (http://coccinelle.lip6.fr/)
-> 
-> // <smpl>
-> @@
-> expression x;
-> statement S;
-> @@
-> 
-> x = kzalloc(...);
-> if (x == NULL) S
-> ... when != x
-> -memset(x,0,...);// </smpl>
-> 
-> Signed-off-by: Julia Lawall <julia@diku.dk>
+-- 
+blue skies,
+   Martin.
 
-Acked-by: Mike Miller <mike.miller@hp.com>
+"Reality continues to ruin my life." - Calvin.
 
-> 
-> ---
->  drivers/block/cciss.c |    1 -
->  1 file changed, 1 deletion(-)
-> 
-> diff -u -p a/drivers/block/cciss.c b/drivers/block/cciss.c
-> --- a/drivers/block/cciss.c
-> +++ b/drivers/block/cciss.c
-> @@ -4379,7 +4379,6 @@ static void cciss_shutdown(struct pci_de
->  		return;
->  	}
->  	/* write all data in the battery backed cache to disk */
-> -	memset(flush_buf, 0, 4);
->  	return_code = sendcmd_withirq(CCISS_CACHE_FLUSH, 
-> h->ctlr, flush_buf,
->  		4, 0, CTLR_LUNID, TYPE_CMD);
->  	kfree(flush_buf);
-> 
