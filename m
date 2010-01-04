@@ -1,112 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753131Ab0ADDH1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753303Ab0ADDKj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753131Ab0ADDH1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Jan 2010 22:07:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752834Ab0ADDHY
+	id S1753303Ab0ADDKj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Jan 2010 22:10:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752944Ab0ADDKf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Jan 2010 22:07:24 -0500
-Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:65066 "EHLO
-	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752882Ab0ADDHQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Jan 2010 22:07:16 -0500
-MIME-version: 1.0
-Content-transfer-encoding: 7BIT
-Content-type: TEXT/PLAIN
-Date: Sun, 03 Jan 2010 19:04:46 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-Subject: [PATCH 08/29] x86/pci: use u64 instead of size_t in amd_bus.c
-In-reply-to: <1262574307-17040-1-git-send-email-yinghai@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Christoph Lameter <cl@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
-       Yinghai Lu <yinghai@kernel.org>
-Message-id: <1262574307-17040-9-git-send-email-yinghai@kernel.org>
-X-Mailer: git-send-email 1.6.4.2
-References: <1262574307-17040-1-git-send-email-yinghai@kernel.org>
+	Sun, 3 Jan 2010 22:10:35 -0500
+Received: from THUNK.ORG ([69.25.196.29]:57900 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753172Ab0ADDKY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Jan 2010 22:10:24 -0500
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [GIT PULL] ext4 fixes for v2.6.33
+From: "Theodore Ts'o" <tytso@mit.edu>
+Phone: (781) 391-3464
+Message-Id: <E1NRbdv-0006oG-Hg@closure.thunk.org>
+Date: Sun, 03 Jan 2010 20:21:59 -0500
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-prepare to enable it for 32bit
+Hi Linus,
 
--v2: remove not needed cast
+Please pull from:
 
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
----
- arch/x86/pci/amd_bus.c |   16 ++++++++--------
- 1 files changed, 8 insertions(+), 8 deletions(-)
+        git://git.kernel.org/pub/scm/linux/kernel/git/tytso/ext4.git for_linus
 
-diff --git a/arch/x86/pci/amd_bus.c b/arch/x86/pci/amd_bus.c
-index e467071..e8bb553 100644
---- a/arch/x86/pci/amd_bus.c
-+++ b/arch/x86/pci/amd_bus.c
-@@ -82,8 +82,8 @@ static int __init early_fill_mp_bus_info(void)
- 	struct pci_root_info *info;
- 	u32 reg;
- 	struct resource *res;
--	size_t start;
--	size_t end;
-+	u64 start;
-+	u64 end;
- 	struct range range[RANGE_NUM];
- 	u64 val;
- 	u32 address;
-@@ -173,7 +173,7 @@ static int __init early_fill_mp_bus_info(void)
- 
- 		info = &pci_root_info[j];
- 		printk(KERN_DEBUG "node %d link %d: io port [%llx, %llx]\n",
--		       node, link, (u64)start, (u64)end);
-+		       node, link, start, end);
- 
- 		/* kernel only handle 16 bit only */
- 		if (end > 0xffff)
-@@ -207,7 +207,7 @@ static int __init early_fill_mp_bus_info(void)
- 	address = MSR_K8_TOP_MEM1;
- 	rdmsrl(address, val);
- 	end = (val & 0xffffff800000ULL);
--	printk(KERN_INFO "TOM: %016lx aka %ldM\n", end, end>>20);
-+	printk(KERN_INFO "TOM: %016llx aka %lldM\n", end, end>>20);
- 	if (end < (1ULL<<32))
- 		subtract_range(range, RANGE_NUM, 0, end - 1);
- 
-@@ -246,7 +246,7 @@ static int __init early_fill_mp_bus_info(void)
- 		info = &pci_root_info[j];
- 
- 		printk(KERN_DEBUG "node %d link %d: mmio [%llx, %llx]",
--		       node, link, (u64)start, (u64)end);
-+		       node, link, start, end);
- 		/*
- 		 * some sick allocation would have range overlap with fam10h
- 		 * mmconf range, so need to update start and end.
-@@ -272,13 +272,13 @@ static int __init early_fill_mp_bus_info(void)
- 				endx = fam10h_mmconf_start - 1;
- 				update_res(info, start, endx, IORESOURCE_MEM, 0);
- 				subtract_range(range, RANGE_NUM, start, endx);
--				printk(KERN_CONT " ==> [%llx, %llx]", (u64)start, endx);
-+				printk(KERN_CONT " ==> [%llx, %llx]", start, endx);
- 				start = fam10h_mmconf_end + 1;
- 				changed = 1;
- 			}
- 			if (changed) {
- 				if (start <= end) {
--					printk(KERN_CONT " %s [%llx, %llx]", endx?"and":"==>", (u64)start, (u64)end);
-+					printk(KERN_CONT " %s [%llx, %llx]", endx?"and":"==>", start, end);
- 				} else {
- 					printk(KERN_CONT "%s\n", endx?"":" ==> none");
- 					continue;
-@@ -301,7 +301,7 @@ static int __init early_fill_mp_bus_info(void)
- 		address = MSR_K8_TOP_MEM2;
- 		rdmsrl(address, val);
- 		end = (val & 0xffffff800000ULL);
--		printk(KERN_INFO "TOM2: %016lx aka %ldM\n", end, end>>20);
-+		printk(KERN_INFO "TOM2: %016llx aka %lldM\n", end, end>>20);
- 		subtract_range(range, RANGE_NUM, 1ULL<<32, end - 1);
- 	}
- 
--- 
-1.6.4.2
+to grab a bug fix for v2.6.33.  This fixes a stupid typo and some
+undesirable side effects of commit 0637c6f (which at least prevented
+people from BUG'ing, but it would be great to get these fixes in before
+-rc3).
 
+Thanks!!
+
+                                                        - Ted
+
+Theodore Ts'o (2):
+      ext4: Fix accounting of reserved metadata blocks
+      ext4: Calculate metadata requirements more accurately
+
+ fs/ext4/ext4.h         |    2 +
+ fs/ext4/ext4_extents.h |    3 +-
+ fs/ext4/extents.c      |   49 ++++++++++++++++++++++-----------
+ fs/ext4/inode.c        |   70 +++++++++++++++++++++++++++--------------------
+ fs/ext4/super.c        |    1 +
+ 5 files changed, 77 insertions(+), 48 deletions(-)
