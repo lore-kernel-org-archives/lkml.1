@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753488Ab0ADQeM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753596Ab0ADQev@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753488Ab0ADQeM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 11:34:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753417Ab0ADQeK
+	id S1753596Ab0ADQev (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 11:34:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753552Ab0ADQes
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 11:34:10 -0500
-Received: from outbound-mail-313.bluehost.com ([67.222.54.6]:35988 "HELO
-	outbound-mail-313.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753240Ab0ADQeJ (ORCPT
+	Mon, 4 Jan 2010 11:34:48 -0500
+Received: from outbound-mail-107.bluehost.com ([69.89.22.7]:33624 "HELO
+	outbound-mail-107.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753540Ab0ADQeo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 11:34:09 -0500
+	Mon, 4 Jan 2010 11:34:44 -0500
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
 	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=i/1EZpCji7/tvQnq1yBSwFoFJqZBMdMKGmeFQlIybfyC+lp9CBFIczvYb6HBezdXj+Z+o10aygED0i9WSaib9BT0DBynysFKzHBLrZgz9IClm98PNcpaWRGpn2CKB9u+;
-Date: Mon, 4 Jan 2010 08:34:01 -0800
+	b=sX1pzVR7i8Jo1T3QSN7DOOV23+u8kgVgbbBKomKirIHDragbWUydzBdDFgPaW12DzzDiLcGqpzuuLtl1vMXvym1cZLLyw/gcVosvUrjRc0ZgV7pg4wVY2iCbhfFMqqM5;
+Date: Mon, 4 Jan 2010 08:34:42 -0800
 From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>
-Subject: Re: [PATCH] PCI: Clean up build for CONFIG_PCI_QUIRKS unset
-Message-ID: <20100104083401.7d282505@jbarnes-piketon>
-In-Reply-To: <201001022257.24701.rjw@sisk.pl>
-References: <201001022257.24701.rjw@sisk.pl>
+To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] pcie, portdrv: style cleanup
+Message-ID: <20100104083442.2f4ba7c5@jbarnes-piketon>
+In-Reply-To: <4B26F68C.4050201@jp.fujitsu.com>
+References: <4B26F68C.4050201@jp.fujitsu.com>
 X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -30,36 +30,26 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2 Jan 2010 22:57:24 +0100
-"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+On Tue, 15 Dec 2009 11:38:04 +0900
+Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com> wrote:
 
-> From: Rafael J. Wysocki <rjw@sisk.pl>
+> No change in logic.
 > 
-> Currently, drivers/pci/quirks.c is built unconditionally, but if
-> CONFIG_PCI_QUIRKS is unset, the only things actually built in this
-> file are definitions of global variables and empty functions (due to
-> the #ifdef CONFIG_PCI_QUIRKS embracing all of the code inside the
-> file).  This is not particularly nice and if someone overlooks
-> the #ifdef CONFIG_PCI_QUIRKS, build errors are introduced.
+> Before:
+>   drivers/pci/pcie/portdrv_core.c:
+>     total: 7 errors, 2 warnings, 508 lines checked
+>   drivers/pci/pcie/portdrv_pci.c:
+>     total: 4 errors, 2 warnings, 300 lines checked
 > 
-> To clean that up, move the definitions of the global variables in
-> quirks.c that are always built to pci.c, move the definitions of
-> the empty functions (compiled when CONFIG_PCI_QUIRKS is unset) to
-> headers (additionally make these functions static inline) and modify
-> drivers/pci/Makefile so that quirks.c is only built if
-> CONFIG_PCI_QUIRKS is set.
+> After:
+>   drivers/pci/pcie/portdrv_core.c:
+>     total: 0 errors, 0 warnings, 506 lines checked
+>   drivers/pci/pcie/portdrv_pci.c:
+>     total: 0 errors, 0 warnings, 299 lines checked
 > 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> ---
-> 
-> I thought it might be useful to do something like this.
-> 
-> Please let me know what you think.
+> Signed-off-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
 
-Thanks Rafael, I actually had a fix for this already from Dexuan, but I
-guess Linus applied yours instead.
-
-Thanks for the fix.
+Applied, thanks.
 
 -- 
 Jesse Barnes, Intel Open Source Technology Center
