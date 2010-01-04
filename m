@@ -1,62 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753767Ab0ADTay@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753847Ab0ADTdn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753767Ab0ADTay (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 14:30:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753541Ab0ADTaw
+	id S1753847Ab0ADTdn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 14:33:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753737Ab0ADTdn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 14:30:52 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:4478 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753513Ab0ADTaw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 14:30:52 -0500
-Date: Mon, 4 Jan 2010 20:30:44 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: caiqian@redhat.com, Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Jan Kratochvil <jkratoch@redhat.com>,
-       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org,
-       linux-s390@vger.kernel.org, utrace-devel@redhat.com
-Subject: Re: s390 && user_enable_single_step() (Was: odd utrace testing
-	results on s390x)
-Message-ID: <20100104193044.GB21146@redhat.com>
-References: <1503844142.2061111261478093776.JavaMail.root@zmail06.collab.prod.int.phx2.redhat.com> <1257887498.2061171261478252049.JavaMail.root@zmail06.collab.prod.int.phx2.redhat.com> <20100104155225.GA16650@redhat.com> <20100104171626.22ea2d9c@mschwide.boeblingen.de.ibm.com> <20100104181412.GA21146@redhat.com>
+	Mon, 4 Jan 2010 14:33:43 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:48794 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753643Ab0ADTdl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jan 2010 14:33:41 -0500
+Message-ID: <4B4241E2.1020008@zytor.com>
+Date: Mon, 04 Jan 2010 11:30:42 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100104181412.GA21146@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Yinghai Lu <yinghai@kernel.org>,
+       Jesse Brandeburg <jesse.brandeburg@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       NetDEV list <netdev@vger.kernel.org>,
+       Jesse Brandeburg <jesse.brandeburg@intel.com>
+Subject: Re: [PATCH 2/2] x86: get more exact nr_irqs
+References: <4B347AEE.6030705@kernel.org> <20091228094707.GH24690@elte.hu>	<4B398ECD.1080506@kernel.org>	<4807377b1001031906s6b1ee576jc021da2642bb4147@mail.gmail.com>	<4B415E73.1050801@kernel.org> <4B41918D.3000605@kernel.org>	<m1fx6lizc3.fsf@fess.ebiederm.org>	<86802c441001041103s5abd6d3ai4e6ccbfc68323f3c@mail.gmail.com> <m1bph9he9m.fsf@fess.ebiederm.org>
+In-Reply-To: <m1bph9he9m.fsf@fess.ebiederm.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/04, Oleg Nesterov wrote:
->
-> IOW. I think this problem is minor and probably can be ignored,
+On 01/04/2010 11:16 AM, Eric W. Biederman wrote:
+> 
+> If we care about memory use efficiency let's replace irq_desc_ptrs
+> with a rbtree or a radix_tree.  Something that moves the memory use
+> penalty onto those machines that have a lot of irqs.
+> 
 
-Or may be not...
+rbtree doesn't make much sense for something that is addressed by index,
+and doesn't need to answer questions of the form "give me the highest
+member <= X".  A hash table or radix tree makes sense, depending on the
+expected sparseness of the index.
 
-Even if the child is not killed by SIGTRAP, it can get a lot of
-unnecessary traps.
-
-To verify, I did another trivial patch (below), and the test
-case from 6580807da14c423f0d0a708108e6df6ebc8bc83d does trigger
-a lot of "false step" printks.
-
-Hmm. And sometimes there is nothing in dmesg, but the test-case
-needs a lot of time to complete. "taskset -c" seems to always
-trigger printk's. Magic.
-
-Oleg.
-
---- arch/s390/kernel/traps.c~	2009-12-22 10:41:52.909174198 -0500
-+++ arch/s390/kernel/traps.c	2010-01-04 13:19:51.038187586 -0500
-@@ -384,6 +384,8 @@ void __kprobes do_single_step(struct pt_
- 	}
- 	if (tracehook_consider_fatal_signal(current, SIGTRAP))
- 		force_sig(SIGTRAP, current);
-+	else
-+		printk("false step\n");
- }
- 
- static void default_trap_handler(struct pt_regs * regs, long interruption_code)
+	-hpa
 
