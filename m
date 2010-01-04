@@ -1,60 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753346Ab0ADM7l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753372Ab0ADNCo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753346Ab0ADM7l (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 07:59:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753051Ab0ADM7k
+	id S1753372Ab0ADNCo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 08:02:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753358Ab0ADNCn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 07:59:40 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:34106 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752755Ab0ADM7j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 07:59:39 -0500
-Date: Mon, 4 Jan 2010 23:59:31 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Thiago Farina <tfransosi@gmail.com>
-Subject: linux-next: tip tree build failure
-Message-Id: <20100104235931.abcf2bc5.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 3.0.0beta4 (GTK+ 2.18.5; i486-pc-linux-gnu)
+	Mon, 4 Jan 2010 08:02:43 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:40317 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753268Ab0ADNCn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jan 2010 08:02:43 -0500
+Subject: Re: volano ~30% regression with 2.6.33-rc1 & -rc2
+From: Peter Zijlstra <peterz@infradead.org>
+To: Mike Galbraith <efault@gmx.de>
+Cc: Arjan van de Ven <arjan@infradead.org>, Lin Ming <ming.m.lin@intel.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+In-Reply-To: <1262609854.9734.56.camel@marge.simson.net>
+References: <1262592958.22471.104.camel@minggr.sh.intel.com>
+	 <20100104044024.5390ff1c@infradead.org>
+	 <1262609854.9734.56.camel@marge.simson.net>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 04 Jan 2010 14:02:03 +0100
+Message-ID: <1262610123.6408.120.camel@laptop>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__4_Jan_2010_23_59_31_+1100_zxbaEksRRp1jxJ+G"
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__4_Jan_2010_23_59_31_+1100_zxbaEksRRp1jxJ+G
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Mon, 2010-01-04 at 13:57 +0100, Mike Galbraith wrote:
+> On Mon, 2010-01-04 at 04:40 -0800, Arjan van de Ven wrote:
+> > On Mon, 04 Jan 2010 16:15:58 +0800
+> > Lin Ming <ming.m.lin@intel.com> wrote:
+> > 
+> > > Mike & Peter,
+> > > 
+> > > Compared with 2.6.32, volano has ~30% regression with 2.6.33-rc1 &
+> > > -rc2. Testing machine: Tigerton Xeon, 16cpus(4P/4Core), 16G memory
+> > 
+> > did this show up only on this cpu?
+> > (since this is a multi-core-without-shared-cache cpu, it could be that
+> > we get the topology wrong and think cores share cache where they don't)
+> 
+> My fault for using PREFER_SIBLING I guess.  However, I do wonder why in
+> the heck we set that at the CPU domain level.  Siblings lie northward.
 
-Hi all,
+Ah, PREFER_SIBLING means prefer sibling domain, not sibling thread. Its
+set at the CPU (really socket) level so make tasks spread over sockets
+first, so that there is no competition for the socket wide resources.
 
-Today's linux-next build (s390x defconfig) failed like this:
+Your change is sane, but we really want a more extensive sched domain
+tree in the near future, reflecting the full machine topology.
 
-kernel/panic.c:134: error: 'CALLER_ADDR0' undeclared (first use in this fun=
-ction)
-
-Caused by commit eba3fe4416f3cc2ce043fb304b6c35a69dca3bdb ("kernel: Use
-CALLER_ADDR0 macro").
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Mon__4_Jan_2010_23_59_31_+1100_zxbaEksRRp1jxJ+G
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAktB5jMACgkQjjKRsyhoI8yqjgCfa1f9WbkZmwQ7i41E6pFHNq1I
-5GoAn3kNgT8mBiy0qq3auaTlVcFruGuZ
-=vOED
------END PGP SIGNATURE-----
-
---Signature=_Mon__4_Jan_2010_23_59_31_+1100_zxbaEksRRp1jxJ+G--
