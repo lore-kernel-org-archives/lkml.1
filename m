@@ -1,76 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753396Ab0ADP2N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753419Ab0ADPbA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753396Ab0ADP2N (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 10:28:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752260Ab0ADP2K
+	id S1753419Ab0ADPbA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 10:31:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752909Ab0ADPbA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 10:28:10 -0500
-Received: from mailgw.kvados.cz ([194.213.53.146]:34848 "EHLO mailgw.kvados.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752601Ab0ADP2I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 10:28:08 -0500
-From: Milan Dadok <milan@dadok.name>
-To: "'Patrick McHardy'" <kaber@trash.net>
-CC: <uaca@alumni.uv.es>, <johann.baudy@gnu-log.net>,
-       <linux-kernel@vger.kernel.org>, <netdev@vger.kernel.org>
-References: <001801ca8d1d$90c68de0$b253a9a0$@name> <4B41F292.8080908@trash.net>
-In-Reply-To: <4B41F292.8080908@trash.net>
-Subject: RE: [PATCH] 1/1 net: packet: Keep 802.1Q VLAN tag in packet on SOCK_DGRAM socket - resend
-Date: Mon, 4 Jan 2010 16:28:03 +0100
-Message-ID: <001b01ca8d52$817d07d0$84771770$@name>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Microsoft Office Outlook 12.0
-Thread-Index: AcqNRSLTRfP2HZX7Sl2ZgQ2XWa3jBQACe+OA
-Content-Language: cs
+	Mon, 4 Jan 2010 10:31:00 -0500
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:40460 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751977Ab0ADPa7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jan 2010 10:30:59 -0500
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Liam Girdwood <lrg@slimlogic.co.uk>
+Cc: linux-kernel@vger.kernel.org,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>, stable@kernel.org
+Subject: [PATCH 2.6.33] regulator: Specify REGULATOR_CHANGE_STATUS for WM835x LED constraints
+Date: Mon,  4 Jan 2010 15:30:54 +0000
+Message-Id: <1262619054-26795-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+X-Mailer: git-send-email 1.6.5.7
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Patrick McHardy wrote:
+The WM8350 LED driver needs to be able to enable and disable the
+regulators it is using. Previously the core wasn't properly enforcing
+status change constraints so the driver was able to function but this
+has always been intended to be required.
 
->Milan Dadok wrote:
->> Keep 802.1Q VLAN tag on non HW vlan accelerated network card received to SOCK_DGRAM socket.
+Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: stable@kernel.org
+---
+ drivers/regulator/wm8350-regulator.c |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
 
->So not including the link layer header for SOCK_DGRAM sockets
->seems to be the intended behaviour.
-
->From my point of view i have question
-Is 802.1Q encapsulation (or another type of encapsulation (IPSec?)) part of link level header or part of data packet?
-
-Currently pseudo-header contains for OUTGOING packet on physical card (vlan10@eth1)
-a) HW accelarated network card  
-protocol = ethertype IPv4 (0x0800)
-tci = vlan number = 10
-and data starts with 4500 0028
-
-b) non HW accelerated network card 
-protocol = ethertype 802.1Q (0x8100)
-tci = 0
-and data starts with 4500 0028
-vlan tci and real protocol number (ARP,IPV4,IPV6) of data is lost 
-
-And with more nested vlans it is getting worse
-for example
-
-vlan1010@vlan10@eth1
-
-a) HW accelarated network card  
-protocol = ethertype IPv4 (0x8100)
-tci = 10
-and data starts with 4500 0028
-
-the 4 bytes of real packet 03f2 0800 is lost too
-
-b) non HW accelarated network card  
-4 words of data packet are lost ...
-
-I have no problems with received packets, only outgoing packet have problem.
-I think that out packet on SOCK_DGRAM sockets MUST BE in same format as in (received) packet on same interface.
-Can we agree on this?
-
-Milan
-
-
+diff --git a/drivers/regulator/wm8350-regulator.c b/drivers/regulator/wm8350-regulator.c
+index 1bbff09..e7b89e7 100644
+--- a/drivers/regulator/wm8350-regulator.c
++++ b/drivers/regulator/wm8350-regulator.c
+@@ -1504,7 +1504,8 @@ int wm8350_register_led(struct wm8350 *wm8350, int lednum, int dcdc, int isink,
+ 	led->isink_init.consumer_supplies = &led->isink_consumer;
+ 	led->isink_init.constraints.min_uA = 0;
+ 	led->isink_init.constraints.max_uA = pdata->max_uA;
+-	led->isink_init.constraints.valid_ops_mask = REGULATOR_CHANGE_CURRENT;
++	led->isink_init.constraints.valid_ops_mask
++		= REGULATOR_CHANGE_CURRENT | REGULATOR_CHANGE_STATUS;
+ 	led->isink_init.constraints.valid_modes_mask = REGULATOR_MODE_NORMAL;
+ 	ret = wm8350_register_regulator(wm8350, isink, &led->isink_init);
+ 	if (ret != 0) {
+@@ -1517,6 +1518,7 @@ int wm8350_register_led(struct wm8350 *wm8350, int lednum, int dcdc, int isink,
+ 	led->dcdc_init.num_consumer_supplies = 1;
+ 	led->dcdc_init.consumer_supplies = &led->dcdc_consumer;
+ 	led->dcdc_init.constraints.valid_modes_mask = REGULATOR_MODE_NORMAL;
++	led->dcdc_init.constraints.valid_ops_mask =  REGULATOR_CHANGE_STATUS;
+ 	ret = wm8350_register_regulator(wm8350, dcdc, &led->dcdc_init);
+ 	if (ret != 0) {
+ 		platform_device_put(pdev);
+-- 
+1.6.5.7
 
