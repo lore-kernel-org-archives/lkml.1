@@ -1,116 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754164Ab0AEBFu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754197Ab0AEBMw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754164Ab0AEBFu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 20:05:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753820Ab0AEBFs
+	id S1754197Ab0AEBMw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 20:12:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754032Ab0AEBMv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 20:05:48 -0500
-Received: from mail.perches.com ([173.55.12.10]:1501 "EHLO mail.perches.com"
+	Mon, 4 Jan 2010 20:12:51 -0500
+Received: from mga03.intel.com ([143.182.124.21]:60582 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753801Ab0AEBFr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 20:05:47 -0500
-Subject: [RFC PATCH] lib/vsprintf.c: Add %pMF to for FDDI bit reversed
- dashed output
-From: Joe Perches <joe@perches.com>
-To: "Maciej W. Rozycki" <macro@linux-mips.org>
-Cc: David Miller <davem@davemloft.net>, hartleys@visionengravers.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-In-Reply-To: <alpine.LFD.2.00.1001042256120.13474@eddie.linux-mips.org>
-References: <BD79186B4FD85F4B8E60E381CAEE19090200F63E@mi8nycmail19.Mi8.com>
-	 <alpine.LFD.2.00.1001041833560.13474@eddie.linux-mips.org>
-	 <20100104.110326.161162074.davem@davemloft.net>
-	 <alpine.LFD.2.00.1001042256120.13474@eddie.linux-mips.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 04 Jan 2010 17:05:45 -0800
-Message-ID: <1262653545.1868.50.camel@Joe-Laptop.home>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	id S1752983Ab0AEBMu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jan 2010 20:12:50 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
+   d="scan'208";a="229176893"
+Date: Mon, 4 Jan 2010 20:16:42 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Minchan Kim <minchan.kim@gmail.com>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Quentin Barnes <qbarnes+nfs@yahoo-inc.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       Nick Piggin <npiggin@suse.de>, Steven Whitehouse <swhiteho@redhat.com>,
+       David Howells <dhowells@redhat.com>, Al Viro <viro@zeniv.linux.org.uk>,
+       Jonathan Corbet <corbet@lwn.net>, Christoph Hellwig <hch@infradead.org>
+Subject: Re: [RFC][PATCH v3] readahead: introduce O_RANDOM for
+	POSIX_FADV_RANDOM
+Message-ID: <20100104121642.GA12266@localhost>
+References: <20091225000717.GA26949@yahoo-inc.com> <87aax18xms.fsf@basil.nowhere.org> <20091230051540.GA16308@localhost> <20091230052402.GB26364@localhost> <873a2s8hmp.fsf@basil.nowhere.org> <20100104045020.GA21021@localhost> <28c262361001032120v284e92b5ub1211f3d1fca6140@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <28c262361001032120v284e92b5ub1211f3d1fca6140@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2010-01-04 at 23:43 +0000, Maciej W. Rozycki wrote:
-> The example below shows an address, and the sequence of bits or symbols 
-> that would be transmitted when the address is used in the Source Address 
-> or Destination Address fields on the MAC header.  The transmission line 
-> shows the address bits in the order transmitted, from left to right.  For 
-> IEEE 802 LANs these correspond to actual bits on the medium.  The FDDI 
-> symbols line shows how the FDDI PHY sends the address bits as encoded 
-> symbols.
+Hi Minchan,
+
+On Mon, Jan 04, 2010 at 01:20:49PM +0800, Minchan Kim wrote:
+> > --- linux.orig/mm/readahead.c   2010-01-04 12:39:29.000000000 +0800
+> > +++ linux/mm/readahead.c        2010-01-04 12:39:30.000000000 +0800
+> > @@ -501,6 +501,12 @@ void page_cache_sync_readahead(struct ad
+> >        if (!ra->ra_pages)
+> >                return;
+> >
+> > +       /* be dumb */
+> > +       if (filp->f_flags & O_RANDOM) {
+> > +               force_page_cache_readahead(mapping, filp, offset, req_size);
+> > +               return;
+> > +       }
+> > +
 > 
->         MSB:            35:7B:12:00:00:01
->         Canonical:      AC-DE-48-00-00-80
->         Transmission:   00110101 01111011 00010010 00000000 00000000 00000001
->         FDDI Symbols:   35 7B 12 00 00 01"
+> Let me have a dumb question. :)
 > 
-> Please note that this address has its group bit clear.
+> How about testing O_RANDOM in front of ra_pages testing?
 > 
->  This notation is also defined in the "FDDI MEDIA ACCESS CONTROL-2 
-> (MAC-2)" (X3T9/92-120) document although that book does not have a need 
-> to use the MSB form and it's skipped.
+> My intention is that although we turn off ra, it would be better to read
+> contiguous block all at once than readpage() callback doing I/O
+> one page at a time.
+> 
+> Is it break some semantics or happen some problem in ondemand readahead?
 
-Here's a possible patch to vsprintf to add %pMF to print
-FDDI bit-reversed dash separated addresses.
+Yes it will have some problem with shrink_readahead_size_eio(), which
+want to disable readahead and use ->readpage() when ra_pages==0.
 
-vsprintf.o increases by 90 bytes.
-Perhaps it's not worth that.
+Do you have specific use case in mind? The file systems that set
+ra_pages=0 seems to don't need readahead, too. 
 
-Signed-off-by: Joe Perches <joe@perches.com>
-
-diff --git a/lib/vsprintf.c b/lib/vsprintf.c
-index d4996cf..96f1987 100644
---- a/lib/vsprintf.c
-+++ b/lib/vsprintf.c
-@@ -25,6 +25,7 @@
- #include <linux/kallsyms.h>
- #include <linux/uaccess.h>
- #include <linux/ioport.h>
-+#include <linux/bitrev.h>
- #include <net/addrconf.h>
- 
- #include <asm/page.h>		/* for PAGE_SIZE */
-@@ -682,10 +683,18 @@ static char *mac_address_string(char *buf, char *end, u8 *addr,
- 	char *p = mac_addr;
- 	int i;
- 
--	for (i = 0; i < 6; i++) {
--		p = pack_hex_byte(p, addr[i]);
--		if (fmt[0] == 'M' && i != 5)
--			*p++ = ':';
-+	if (fmt[1] == 'F') {		/* FDDI canonical format */
-+		for (i = 0; i < 6; i++) {
-+			p = pack_hex_byte(p, bitrev8(addr[i]));
-+			if (fmt[0] == 'M' && i != 5)
-+				*p++ = '-';
-+		}
-+	} else {
-+		for (i = 0; i < 6; i++) {
-+			p = pack_hex_byte(p, addr[i]);
-+			if (fmt[0] == 'M' && i != 5)
-+				*p++ = ':';
-+		}
- 	}
- 	*p = '\0';
- 
-@@ -896,6 +905,10 @@ static char *uuid_string(char *buf, char *end, const u8 *addr,
-  * - 'M' For a 6-byte MAC address, it prints the address in the
-  *       usual colon-separated hex notation
-  * - 'm' For a 6-byte MAC address, it prints the hex address without colons
-+ * - 'MF' For a 6-byte MAC FDDI address, it prints the address
-+ *       with a dash-separated hex notation with bit reversed bytes
-+ * - 'mF' For a 6-byte MAC FDDI address, it prints the address
-+ *       in hex notation without separators with bit reversed bytes
-  * - 'I' [46] for IPv4/IPv6 addresses printed in the usual way
-  *       IPv4 uses dot-separated decimal without leading 0's (1.2.3.4)
-  *       IPv6 uses colon separated network-order 16 bit hex with leading 0's
-@@ -939,6 +952,7 @@ static char *pointer(const char *fmt, char *buf, char *end, void *ptr,
- 		return resource_string(buf, end, ptr, spec, fmt);
- 	case 'M':			/* Colon separated: 00:01:02:03:04:05 */
- 	case 'm':			/* Contiguous: 000102030405 */
-+					/* [mM]F (FDDI, bit reversed) */
- 		return mac_address_string(buf, end, ptr, spec, fmt);
- 	case 'I':			/* Formatted IP supported
- 					 * 4:	1.2.3.4
-
-
+Thanks,
+Fengguang
