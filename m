@@ -1,122 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753678Ab0ADQ4J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752919Ab0ADQ5F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753678Ab0ADQ4J (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 11:56:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752617Ab0ADQ4G
+	id S1752919Ab0ADQ5F (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 11:57:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752122Ab0ADQ47
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 11:56:06 -0500
-Received: from out02.mta.xmission.com ([166.70.13.232]:46614 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751883Ab0ADQ4F (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 11:56:05 -0500
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Jesse Brandeburg <jesse.brandeburg@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       "linux-kernel\@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       NetDEV list <netdev@vger.kernel.org>,
-       Jesse Brandeburg <jesse.brandeburg@intel.com>
-Subject: Re: [PATCH 2/2] x86: get more exact nr_irqs
-References: <4B347AEE.6030705@kernel.org> <20091228094707.GH24690@elte.hu>
-	<4B398ECD.1080506@kernel.org>
-	<4807377b1001031906s6b1ee576jc021da2642bb4147@mail.gmail.com>
-	<4B415E73.1050801@kernel.org> <4B41918D.3000605@kernel.org>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Mon, 04 Jan 2010 08:55:56 -0800
-In-Reply-To: <4B41918D.3000605@kernel.org> (Yinghai Lu's message of "Sun\, 03 Jan 2010 22\:58\:21 -0800")
-Message-ID: <m1fx6lizc3.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Mon, 4 Jan 2010 11:56:59 -0500
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:57921 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751146Ab0ADQ45 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jan 2010 11:56:57 -0500
+Date: Mon, 4 Jan 2010 08:56:52 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "minchan.kim@gmail.com" <minchan.kim@gmail.com>,
+       cl@linux-foundation.org, "hugh.dickins" <hugh.dickins@tiscali.co.uk>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [RFC PATCH] asynchronous page fault.
+Message-ID: <20100104165652.GC6748@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20091228093606.9f2e666c.kamezawa.hiroyu@jp.fujitsu.com> <1261989047.7135.3.camel@laptop> <27db4d47e5a95e7a85942c0278892467.squirrel@webmail-b.css.fujitsu.com> <1261996258.7135.67.camel@laptop> <1261996841.7135.69.camel@laptop> <1262448844.6408.93.camel@laptop> <20100104030234.GF32568@linux.vnet.ibm.com> <1262591604.4375.4075.camel@twins> <20100104155559.GA6748@linux.vnet.ibm.com> <1262620974.6408.169.camel@laptop>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Scanned: No (on in01.mta.xmission.com); SAEximRunCond expanded to false
+Content-Disposition: inline
+In-Reply-To: <1262620974.6408.169.camel@laptop>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yinghai Lu <yinghai@kernel.org> writes:
+On Mon, Jan 04, 2010 at 05:02:54PM +0100, Peter Zijlstra wrote:
+> On Mon, 2010-01-04 at 07:55 -0800, Paul E. McKenney wrote:
+> > > Well, I was thinking srcu to have this force quiescent state in
+> > > call_srcu() much like you did for the preemptible rcu.
+> > 
+> > Ah, so the idea would be that you register a function with the srcu_struct
+> > that is invoked when some readers are stuck for too long in their SRCU
+> > read-side critical sections?  Presumably you also supply a time value for
+> > "too long" as well.  Hmmm...  What do you do, cancel the corresponding
+> > I/O or something? 
+> 
+> Hmm, I was more thinking along the lines of:
+> 
+> say IDX is the current counter idx.
+> 
+> if (pending > thresh) {
+>   flush(!IDX)
 
-> first check with NR_VECTORS - FIRST_EXTERNAL_VECTOR - 0x20
-> aka minus exceptions and system vectors.
->
-> NR_CPUS = 512, and nr_cpu_ids = 128
-> will have NR_IRQS = 256 + 512 * 64 = 33024
->
-> assume we have 20 intel ixgbe 6 port cards (with sriov and ixgbevf)
-> 	20 * 6 * 64 * 3 = 23040
->
-> first will get:
-> 	128 * (256 - 64) = 24576
-> then with nr_irqs_gsi will get
-> 	(120 + 8 * 128 + 120 * 256) = 31864
->
-> so 24576 will be used for nr_irqs.
->
-> 24576 * 8 = 196608 bytes will be used for irq_desc_ptrs[]
->
-> before this patch:
->     have nr_irqs = 120 + 8 * 128 + 120 * 64 = 8824
-> 	and irq_desc_ptrs[] is 70592
->
-> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+This flushes pending I/Os?
 
-I am lost.    arch_probe_nr_irqs appears to be total nonsense.
+>   force_flip_counter();
 
-We have three concepts. 
-- The number of irq sources we can talk about.  ( nr_irqs)
-- The number of irqs we can possibly service.   ((NR_VECTORS - 0x30) *nr_cpu_ids)
-- The number of irqs we actually connected up to cards in the
-  system that we need to do something with.
+If this is internal to SRCU, what it would do is check for CPUs being
+offline or in dyntick-idle state.  Or was your thought that this is
+where I invoke callbacks into your code to do whatever can be done to
+wake up the sleeping readers?
 
-Why do we need to allocate arrays at all?
+> }
+> 
+> Since we explicitly hold a reference on IDX, we can actually wait for !
+> IDX to reach 0 and flush those callbacks.
 
-arch_probe_nr_irqs looks like a pile of magic numbers (even more magic
-with the addition of 0x20), that is always going to be a little bit
-wrong.
+One other thing -- if I merge SRCU into the tree-based infrastructure,
+I should be able to eliminate the need for srcu_read_lock() to return
+the index (and thus for srcu_read_unlock() to take it as an argument).
+So the index would be strictly internal, as it currently is with the
+other flavors of RCU.
 
-We should be able to remove the arrays all together and allocate
-irq_desc dynamically.
+> We then force-flip the counter, so that even if all callbacks (or the
+> majority) were not for !IDX but part of IDX, we'd be able to flush them
+> on the next call_srcu() because that will then hold a ref on the new
+> counter index.
 
+We can certainly defer callbacks to a later grace period.  What we cannot
+do is advance the counter until all readers for the current grace period
+have exited their SRCU read-side critical sections.
 
-> ---
->  arch/x86/kernel/apic/io_apic.c |   11 ++++++++---
->  1 file changed, 8 insertions(+), 3 deletions(-)
->
-> Index: linux-2.6/arch/x86/kernel/apic/io_apic.c
-> ===================================================================
-> --- linux-2.6.orig/arch/x86/kernel/apic/io_apic.c
-> +++ linux-2.6/arch/x86/kernel/apic/io_apic.c
-> @@ -3833,15 +3833,20 @@ int __init arch_probe_nr_irqs(void)
->  {
->  	int nr;
->  
-> -	if (nr_irqs > (NR_VECTORS * nr_cpu_ids))
-> -		nr_irqs = NR_VECTORS * nr_cpu_ids;
-> +	/* 0x20 for ipi etc system vectors */
-> +	nr = NR_VECTORS - FIRST_EXTERNAL_VECTOR - 0x20;
+> Or am I missing something obvious?
 
-If you are going to subtract of the number of ipis please
-put appropriate defines in irq_vectors.h.  A raw 0x20 is
-wrong.
+Or maybe I am.
 
-> +
-> +	nr *= nr_cpu_ids;
-> +
-> +	if (nr < nr_irqs)
-> +		nr_irqs = nr;
->  	nr = nr_irqs_gsi + 8 * nr_cpu_ids;
->  #if defined(CONFIG_PCI_MSI) || defined(CONFIG_HT_IRQ)
->  	/*
->  	 * for MSI and HT dyn irq
->  	 */
-> -	nr += nr_irqs_gsi * 64;
-> +	nr += nr_irqs_gsi * 256;
-
-This part seems like magic voodoo.  Why should their
-be a correlation between the number of gsis and the number
-of msis?
-
-Eric
+							Thanx, Paul
