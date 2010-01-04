@@ -1,64 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753886Ab0ADWCO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753951Ab0ADWC6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753886Ab0ADWCO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 17:02:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752801Ab0ADWCN
+	id S1753951Ab0ADWC6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 17:02:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753020Ab0ADWC5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 17:02:13 -0500
-Received: from wolverine02.qualcomm.com ([199.106.114.251]:38766 "EHLO
-	wolverine02.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752755Ab0ADWCM (ORCPT
+	Mon, 4 Jan 2010 17:02:57 -0500
+Received: from nlpi157.sbcis.sbc.com ([207.115.36.171]:48179 "EHLO
+	nlpi157.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752965Ab0ADWC4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 17:02:12 -0500
-X-IronPort-AV: E=McAfee;i="5400,1158,5851"; a="31333904"
-Subject: Re: [PATCH] pm_qos: Add QoS param, minimum system bus frequency
-From: Daniel Walker <dwalker@codeaurora.org>
-To: mgross@linux.intel.com
-Cc: linux-kernel@vger.kernel.org, davidb@quicinc.com, pchidamb@quicinc.com
-In-Reply-To: <20100104213852.GA5031@linux.intel.com>
-References: <1262308827-24215-1-git-send-email-dwalker@codeaurora.org>
-	 <20100104213852.GA5031@linux.intel.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 04 Jan 2010 14:00:45 -0800
-Message-ID: <1262642445.3097.11.camel@c-dwalke-linux.qualcomm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 4 Jan 2010 17:02:56 -0500
+Date: Mon, 4 Jan 2010 15:59:45 -0600 (CST)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@router.home
+To: Rik van Riel <riel@redhat.com>
+cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "minchan.kim@gmail.com" <minchan.kim@gmail.com>,
+       "hugh.dickins" <hugh.dickins@tiscali.co.uk>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [RFC][PATCH 0/8] Speculative pagefault -v3
+In-Reply-To: <4B42606F.3000906@redhat.com>
+Message-ID: <alpine.DEB.2.00.1001041558350.17041@router.home>
+References: <20100104182429.833180340@chello.nl> <4B42606F.3000906@redhat.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2010-01-04 at 13:38 -0800, mark gross wrote:
-> On Thu, Dec 31, 2009 at 05:20:27PM -0800, Daniel Walker wrote:
-> > From: Praveen Chidambaram <pchidamb@quicinc.com>
-> > 
-> > In some systems, the system bus speed can be varied, usually
-> > based on the current CPU frequency.  However, various device
-> > drivers and/or applications may need a faster system bus for I/O
-> > even though the CPU itself may be idle
-> 
-> What happened to the discussion around multiple platforms needing
-> multiple bus pm_qos_requirements?  
-> 
-> Is system bus freq too generic? (I'm worried about the name space)
-> Is this ok? (I'm asking linux-pm for input here.)
-> On X86 would this be analogous to FSB, Memory, or PCI bus frequencies?
-> What will happen when there are two buses each wanting a PM_QOS
-> parameter?  Is that a likely scenario?
+On Mon, 4 Jan 2010, Rik van Riel wrote:
 
-We can always change the naming in the future, but someone could add a
-PM_QOS_MEMORY_BUS_FREQ or PM_QOS_PERIPHERAL_BUS_FREQ in addition to this
-one.. Since it's all generic code having generic naming seems fine..
+> Fun, but why do we need this?
+>
+> What improvements did you measure?
 
-> Also, on your platform you have a throttling driver controlling the
-> frequency of some bus, that will use this value as a constraint on how
-> far it will throttle.  no?  I would be interested in seeing this driver
-> sometime.  (I just want to make sure no one bastardizes pm_qos into an
-> operating point thing.  I'm not sure I can justify why but I want to
-> avoid that.)
-
-When you say "operating point thing" do you mean you don't want the
-frequency adjusted at runtime? You want it set once then move on?
-
-Daniel
+If it measures up to Kame-sans approach then the possible pagefault rate
+will at least double ...
 
