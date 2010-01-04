@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753555Ab0ADSRx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753661Ab0ADSSC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753555Ab0ADSRx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 13:17:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753051Ab0ADSRv
+	id S1753661Ab0ADSSC (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 13:18:02 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753594Ab0ADSSA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 13:17:51 -0500
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:37059 "EHLO
+	Mon, 4 Jan 2010 13:18:00 -0500
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:37061 "EHLO
 	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751551Ab0ADSRt (ORCPT
+	by vger.kernel.org with ESMTP id S1753575Ab0ADSR7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 13:17:49 -0500
+	Mon, 4 Jan 2010 13:17:59 -0500
 From: Mark Brown <broonie@opensource.wolfsonmicro.com>
 To: Liam Girdwood <lrg@slimlogic.co.uk>
 Cc: linux-kernel@vger.kernel.org,
        Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: [PATCH 1/3] regulator: Add notifier event on regulator disable
-Date: Mon,  4 Jan 2010 18:17:44 +0000
-Message-Id: <1262629066-18398-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+Subject: [PATCH 2/3] regulator: Allow regulators to specify the time taken to ramp on enable
+Date: Mon,  4 Jan 2010 18:17:45 +0000
+Message-Id: <1262629066-18398-2-git-send-email-broonie@opensource.wolfsonmicro.com>
 X-Mailer: git-send-email 1.6.5.7
 In-Reply-To: <20100104181634.GA18258@rakim.wolfsonmicro.main>
 References: <20100104181634.GA18258@rakim.wolfsonmicro.main>
@@ -24,67 +24,124 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The intended use case is for drivers which disable regulators to save
-power but need to do some work to restore the hardware state when
-restarting.  If the supplies are not actually disabled due to board
-limits or sharing with other active devices this notifier allows the
-driver to avoid unneeded reinitialisation, particularly when used with
-runtime PM.
+Regulators may sometimes take longer to enable than the control operation
+used to do so, either because the regulator has ramp rate control used to
+limit inrush current or because the control operation is very fast (GPIO
+being the most common example of this).  In order to ensure that consumers
+do not rely on the regulator before it is enabled provide an enable_time()
+operation and have the core delay for that time before returning to the
+caller.
+
+This is implemented as a function since the ramp rate may be specified in
+voltage per unit time and therefore the time depend on the configuration.
+In future it would be desirable to allow the bulk operations to run the
+delays for multiple enables in parallel but this is not currently supported.
 
 Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
 ---
- drivers/regulator/core.c           |    7 +++++--
- include/linux/regulator/consumer.h |    4 +++-
- 2 files changed, 8 insertions(+), 3 deletions(-)
+ drivers/regulator/core.c         |   41 ++++++++++++++++++++++++++++++++-----
+ include/linux/regulator/driver.h |    6 +++++
+ 2 files changed, 41 insertions(+), 6 deletions(-)
 
 diff --git a/drivers/regulator/core.c b/drivers/regulator/core.c
-index 686ef27..cce76a8 100644
+index cce76a8..5a3509b 100644
 --- a/drivers/regulator/core.c
 +++ b/drivers/regulator/core.c
-@@ -1341,6 +1341,9 @@ static int _regulator_disable(struct regulator_dev *rdev)
- 				       __func__, rdev_get_name(rdev));
- 				return ret;
+@@ -19,6 +19,7 @@
+ #include <linux/err.h>
+ #include <linux/mutex.h>
+ #include <linux/suspend.h>
++#include <linux/delay.h>
+ #include <linux/regulator/consumer.h>
+ #include <linux/regulator/driver.h>
+ #include <linux/regulator/machine.h>
+@@ -1084,6 +1085,13 @@ overflow_err:
+ 	return NULL;
+ }
+ 
++static int _regulator_get_enable_time(struct regulator_dev *rdev)
++{
++	if (!rdev->desc->ops->enable_time)
++		return 0;
++	return rdev->desc->ops->enable_time(rdev);
++}
++
+ /* Internal regulator request function */
+ static struct regulator *_regulator_get(struct device *dev, const char *id,
+ 					int exclusive)
+@@ -1251,7 +1259,7 @@ static int _regulator_can_change_status(struct regulator_dev *rdev)
+ /* locks held by regulator_enable() */
+ static int _regulator_enable(struct regulator_dev *rdev)
+ {
+-	int ret;
++	int ret, delay;
+ 
+ 	/* do we need to enable the supply regulator first */
+ 	if (rdev->supply) {
+@@ -1275,13 +1283,34 @@ static int _regulator_enable(struct regulator_dev *rdev)
+ 			if (!_regulator_can_change_status(rdev))
+ 				return -EPERM;
+ 
+-			if (rdev->desc->ops->enable) {
+-				ret = rdev->desc->ops->enable(rdev);
+-				if (ret < 0)
+-					return ret;
+-			} else {
++			if (!rdev->desc->ops->enable)
+ 				return -EINVAL;
++
++			/* Query before enabling in case configuration
++			 * dependant.  */
++			ret = _regulator_get_enable_time(rdev);
++			if (ret >= 0) {
++				delay = ret;
++			} else {
++				printk(KERN_WARNING
++					"%s: enable_time() failed for %s: %d\n",
++					__func__, rdev_get_name(rdev),
++					ret);
++				delay = 0;
  			}
 +
-+			_notifier_call_chain(rdev, REGULATOR_EVENT_DISABLE,
-+					     NULL);
- 		}
- 
- 		/* decrease our supplies ref count and disable if required */
-@@ -1399,8 +1402,8 @@ static int _regulator_force_disable(struct regulator_dev *rdev)
- 			return ret;
- 		}
- 		/* notify other consumers that power has been forced off */
--		_notifier_call_chain(rdev, REGULATOR_EVENT_FORCE_DISABLE,
--			NULL);
-+		_notifier_call_chain(rdev, REGULATOR_EVENT_FORCE_DISABLE |
-+			REGULATOR_EVENT_DISABLE, NULL);
- 	}
- 
- 	/* decrease our supplies ref count and disable if required */
-diff --git a/include/linux/regulator/consumer.h b/include/linux/regulator/consumer.h
-index 030d922..28c9fd0 100644
---- a/include/linux/regulator/consumer.h
-+++ b/include/linux/regulator/consumer.h
-@@ -89,8 +89,9 @@
-  * REGULATION_OUT Regulator output is out of regulation.
-  * FAIL           Regulator output has failed.
-  * OVER_TEMP      Regulator over temp.
-- * FORCE_DISABLE  Regulator shut down by software.
-+ * FORCE_DISABLE  Regulator forcibly shut down by software.
-  * VOLTAGE_CHANGE Regulator voltage changed.
-+ * DISABLE        Regulator was disabled.
++			/* Allow the regulator to ramp; it would be useful
++			 * to extend this for bulk operations so that the
++			 * regulators can ramp together.  */
++			ret = rdev->desc->ops->enable(rdev);
++			if (ret < 0)
++				return ret;
++
++			if (delay >= 1000)
++				mdelay(delay / 1000);
++			else if (delay)
++				udelay(delay);
++
+ 		} else if (ret < 0) {
+ 			printk(KERN_ERR "%s: is_enabled() failed for %s: %d\n",
+ 			       __func__, rdev_get_name(rdev), ret);
+diff --git a/include/linux/regulator/driver.h b/include/linux/regulator/driver.h
+index 31f2055..592cd7c 100644
+--- a/include/linux/regulator/driver.h
++++ b/include/linux/regulator/driver.h
+@@ -58,6 +58,9 @@ enum regulator_status {
+  * @get_optimum_mode: Get the most efficient operating mode for the regulator
+  *                    when running with the specified parameters.
   *
-  * NOTE: These events can be OR'ed together when passed into handler.
-  */
-@@ -102,6 +103,7 @@
- #define REGULATOR_EVENT_OVER_TEMP		0x10
- #define REGULATOR_EVENT_FORCE_DISABLE		0x20
- #define REGULATOR_EVENT_VOLTAGE_CHANGE		0x40
-+#define REGULATOR_EVENT_DISABLE 		0x80
++ * @enable_time: Time taken for the regulator voltage output voltage to
++ *               stabalise after being enabled, in microseconds.
++ *
+  * @set_suspend_voltage: Set the voltage for the regulator when the system
+  *                       is suspended.
+  * @set_suspend_enable: Mark the regulator as enabled when the system is
+@@ -93,6 +96,9 @@ struct regulator_ops {
+ 	int (*set_mode) (struct regulator_dev *, unsigned int mode);
+ 	unsigned int (*get_mode) (struct regulator_dev *);
  
- struct regulator;
- 
++	/* Time taken to enable the regulator */
++	int (*enable_time) (struct regulator_dev *);
++
+ 	/* report regulator status ... most other accessors report
+ 	 * control inputs, this reports results of combining inputs
+ 	 * from Linux (and other sources) with the actual load.
 -- 
 1.6.5.7
 
