@@ -1,26 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754173Ab0ADXr4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754221Ab0ADXsO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754173Ab0ADXr4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 18:47:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754093Ab0ADXry
+	id S1754221Ab0ADXsO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 18:48:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754093Ab0ADXsL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 18:47:54 -0500
-Received: from outbound-mail-316.bluehost.com ([67.222.54.9]:36330 "HELO
-	outbound-mail-316.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754086Ab0ADXrx (ORCPT
+	Mon, 4 Jan 2010 18:48:11 -0500
+Received: from outbound-mail-110.bluehost.com ([69.89.22.10]:45058 "HELO
+	outbound-mail-110.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754195Ab0ADXsK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 18:47:53 -0500
+	Mon, 4 Jan 2010 18:48:10 -0500
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
 	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=fK3yTOmXcM7EtmNDhHUH3H5hznGA2BwlKoUY3ZTxMw/RJjrCJc4zeWTVbOoxfbhaRkVJdRIIJXMzQjD/X7G5uvaXgRjSPY4UPImXx4dGsiR1zIKqEsZ0HMkF3MkYTl/Q;
-Date: Mon, 4 Jan 2010 15:47:48 -0800
+	b=m6RDlt6WuNbu7RGqCg7+SdgUFReaiLb+0DpkpREouda9SImaJlKdWRLiInP1cD15hOzjknrRfYJ1R4IRPXo5Gz9N1EEDTEo8QFEmmMuWaWBm4eInuqrc/Sz4dHYRAoxX;
+Date: Mon, 4 Jan 2010 15:48:07 -0800
 From: Jesse Barnes <jbarnes@virtuousgeek.org>
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>
-Subject: Re: [PATCH] PCI: Clean up build for CONFIG_PCI_QUIRKS unset
-Message-ID: <20100104154748.2b282be6@jbarnes-piketon>
-In-Reply-To: <201001022257.24701.rjw@sisk.pl>
-References: <201001022257.24701.rjw@sisk.pl>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       "Maciej J. Woloszyk" <mat@esi.com.pl>
+Subject: Re: [PATCH] PCI / PM: Use per-device D3 delays
+Message-ID: <20100104154807.295bee59@jbarnes-piketon>
+In-Reply-To: <200912311215.54412.rjw@sisk.pl>
+References: <200912311215.54412.rjw@sisk.pl>
 X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -30,33 +33,33 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2 Jan 2010 22:57:24 +0100
+On Thu, 31 Dec 2009 12:15:54 +0100
 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 
 > From: Rafael J. Wysocki <rjw@sisk.pl>
 > 
-> Currently, drivers/pci/quirks.c is built unconditionally, but if
-> CONFIG_PCI_QUIRKS is unset, the only things actually built in this
-> file are definitions of global variables and empty functions (due to
-> the #ifdef CONFIG_PCI_QUIRKS embracing all of the code inside the
-> file).  This is not particularly nice and if someone overlooks
-> the #ifdef CONFIG_PCI_QUIRKS, build errors are introduced.
+> It turns out that some PCI devices require extra delays when changing
+> power state from D3 to D0 (and the other way around).  Although this
+> is against the PCI specification, we can handle it quite easily by
+> allowing drivers to define arbitrary D3 delays for devices known to
+> require extra time for switching power states.
 > 
-> To clean that up, move the definitions of the global variables in
-> quirks.c that are always built to pci.c, move the definitions of
-> the empty functions (compiled when CONFIG_PCI_QUIRKS is unset) to
-> headers (additionally make these functions static inline) and modify
-> drivers/pci/Makefile so that quirks.c is only built if
-> CONFIG_PCI_QUIRKS is set.
+> Introduce additional field d3_delay in struct pci_dev and use it to
+> store the value of the device's D0->D3 delay, in miliseconds.  Make
+> the PCI PM core code use the per-device d3_delay unless
+> pci_pm_d3_delay is greater (in which case the latter is used).
+> [This also allows the driver to specify d3_delay shorter than the
+>  10 ms required by the PCI standard if the device is known to be able
+>  to handle that.]
+> 
+> Make the sky2 driver set d3_delay to 150 for devices handled by it.
+> 
+> Fixes http://bugzilla.kernel.org/show_bug.cgi?id=14730 which is a
+> listed regression from 2.6.30.
 > 
 > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> ---
-> 
-> I thought it might be useful to do something like this.
-> 
-> Please let me know what you think.
 
-Applied to my linux-next branch, thanks.
+Applied to my for-linus branch, thanks.
 
 -- 
 Jesse Barnes, Intel Open Source Technology Center
