@@ -1,45 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753744Ab0ADSzL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753809Ab0ADS5Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753744Ab0ADSzL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 13:55:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753520Ab0ADSzJ
+	id S1753809Ab0ADS5Z (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 13:57:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753528Ab0ADS5W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 13:55:09 -0500
-Received: from cs121.vk.com ([93.186.224.121]:49723 "EHLO vk.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753051Ab0ADSzI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 13:55:08 -0500
-Date: Mon, 4 Jan 2010 21:54:56 +0300
-To: Hello <linux-kernel@vger.kernel.org>
-From: VK <noreply@vk.com>
-Reply-to: VK <noreply@vk.com>
-Subject: =?UTF-8?Q?Zabara_=E2=99=A5Armin=5FVan=5FBuuren=E2=99=A5_Timur_has_added_y?=
- =?UTF-8?Q?ou_as_a_friend_on_the_website_VK.com?=
-Message-ID: <4b894c83fe23a865aaf61ef3626d2dd7@localhost.localdomain>
-X-Priority: 3
-X-Mailer: PHPMailer [version 1.73]
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain; charset="UTF-8"
+	Mon, 4 Jan 2010 13:57:22 -0500
+Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:39395 "EHLO
+	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753411Ab0ADS5V (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jan 2010 13:57:21 -0500
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-type: text/plain; CHARSET=US-ASCII; delsp=yes; format=flowed
+Date: Mon, 04 Jan 2010 11:57:16 -0700
+From: Andreas Dilger <adilger@sun.com>
+Subject: Re: [RFC][PATCH v3] readahead: introduce O_RANDOM for POSIX_FADV_RANDOM
+In-reply-to: <20100104165044.GD25663@yahoo-inc.com>
+To: Quentin Barnes <qbarnes@yahoo-inc.com>
+Cc: Christoph Hellwig <hch@infradead.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       Wu Fengguang <fengguang.wu@intel.com>, Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       Nick Piggin <npiggin@suse.de>, Steven Whitehouse <swhiteho@redhat.com>,
+       David Howells <dhowells@redhat.com>, Al Viro <viro@zeniv.linux.org.uk>,
+       Jonathan Corbet <corbet@lwn.net>
+Message-id: <DA85D310-01F9-4043-88C4-4C6EAEE3A62C@sun.com>
+X-Mailer: Apple Mail (2.936)
+References: <20091225000717.GA26949@yahoo-inc.com>
+ <87aax18xms.fsf@basil.nowhere.org> <20091230051540.GA16308@localhost>
+ <20091230052402.GB26364@localhost> <873a2s8hmp.fsf@basil.nowhere.org>
+ <20100104045020.GA21021@localhost>
+ <20100104161719.a0bb35ad.sfr@canb.auug.org.au>
+ <20100104073328.GA3422@infradead.org> <20100104165044.GD25663@yahoo-inc.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On 2010-01-04, at 09:50, Quentin Barnes wrote:
+> On Sun, Jan 03, 2010 at 11:33:28PM -0800, Christoph Hellwig wrote:
+>> On Mon, Jan 04, 2010 at 04:17:19PM +1100, Stephen Rothwell wrote:
+>>>> @@ -80,6 +80,10 @@
+>>>> #define O_NDELAY	O_NONBLOCK
+>>>> #endif
+>>>>
+>>>> +#ifndef O_RANDOM
+>>>> +#define O_RANDOM	010000000	/* random access pattern hint */
+>>>> +#endif
+>>>
+>>> This value conflicts with O_CLOEXEC on alpha and parisc and  
+>>> O_NOATIME on
+>>> sparc.
+>>
+>> Also when I tried to use this value for O_RSYNC and tested it I could
+>> not actually see it getting propagated by the open code.
+>>
+>> Eitherway I don't think an O_ value is a good idea for a simple  
+>> access
+>> pattern hint.
+>
+> I was surprised by Wu's O_RANDOM approach, but after thinking about
+> it, I liked it.  I'm used to seeing (on non-UNIX OSes) a parameter
+> as part of the open syscall that announces to the OS what the app's
+> access strategy through that file descriptor will be for that file.
+> An issue with the current fadvise(2) approach is for random access
+> files it necessitates two syscalls (open plus fadvise) for what
+> could be or should be only one syscall (open).
 
-Zabara ♥Armin_Van_Buuren♥ Timur has added you as a friend on the website VK.com
 
-You can log in and view your friends` pages using your email and automatically created password: mtOJEUfp
+Given that syscall overhead is very minimal, especially since fadvise  
+is only setting some in-memory state and doesn't have to flush cache  
+or anything, I don't see that as a significant reason to consume an O_  
+flag.  Those flags are essentially limited to 32-bit values, or 32-bit  
+applications wouldn't be able to use all of the flags, and we are  
+already into the mid-20's of bits.
 
-VK.com is a website that helps dozens of millions of people find their old friends, share photos and events and always stay in touch.
-
-To log in, please follow this link:
-http://vk.com/login.php?regemail=linux-kernel@vger.kernel.org#mtOJEUfp
-
-You can change your password in Settings.
-
-Attention: If you ignore this invitation, your registration will not be activated.
-
-Good luck!
-
+Cheers, Andreas
+--
+Andreas Dilger
+Sr. Staff Engineer, Lustre Group
+Sun Microsystems of Canada, Inc.
 
