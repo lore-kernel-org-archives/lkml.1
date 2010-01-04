@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754067Ab0ADUvJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754057Ab0ADUuh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754067Ab0ADUvJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 15:51:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753810Ab0ADUt2
+	id S1754057Ab0ADUuh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 15:50:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753987Ab0ADUtk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 15:49:28 -0500
-Received: from casper.infradead.org ([85.118.1.10]:33596 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753016Ab0ADUt0 (ORCPT
+	Mon, 4 Jan 2010 15:49:40 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:46429 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753972Ab0ADUth (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 15:49:26 -0500
-Message-Id: <20100104182813.479668508@chello.nl>
+	Mon, 4 Jan 2010 15:49:37 -0500
+Message-Id: <20100104182813.390611101@chello.nl>
 References: <20100104182429.833180340@chello.nl>
 User-Agent: quilt/0.46-1
-Date: Mon, 04 Jan 2010 19:24:33 +0100
+Date: Mon, 04 Jan 2010 19:24:32 +0100
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
        Peter Zijlstra <peterz@infradead.org>,
@@ -24,76 +24,38 @@ To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
        cl@linux-foundation.org, "hugh.dickins" <hugh.dickins@tiscali.co.uk>,
        Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>,
        Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [RFC][PATCH 4/8] mm: RCU free vmas
-Content-Disposition: inline; filename=mm-foo-3.patch
+Subject: [RFC][PATCH 3/8] mm: Add vma sequence count
+Content-Disposition: inline; filename=mm-foo-5.patch
 Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-TODO:
- - should be SRCU, lack of call_srcu()
-
-In order to allow speculative vma lookups, RCU free the struct
-vm_area_struct.
-
-We use two means of detecting a vma is still valid:
- - firstly, we set RB_CLEAR_NODE once we remove a vma from the tree.
- - secondly, we check the vma sequence number.
-
-These two things combined will guarantee that 1) the vma is still
-present and two, it still covers the same range from when we looked it
-up.
+In order to detect VMA range changes, add a sequence count.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- include/linux/mm.h       |   12 ++++++++++++
  include/linux/mm_types.h |    2 ++
- init/Kconfig             |   34 +++++++++++++++++-----------------
- kernel/sched.c           |    9 ++++++++-
- mm/mmap.c                |   33 +++++++++++++++++++++++++++++++--
- 5 files changed, 70 insertions(+), 20 deletions(-)
+ mm/mmap.c                |   10 ++++++++++
+ 2 files changed, 12 insertions(+)
 
-Index: linux-2.6/include/linux/mm.h
-===================================================================
---- linux-2.6.orig/include/linux/mm.h
-+++ linux-2.6/include/linux/mm.h
-@@ -765,6 +765,18 @@ unsigned long unmap_vmas(struct mmu_gath
- 		unsigned long end_addr, unsigned long *nr_accounted,
- 		struct zap_details *);
- 
-+static inline int vma_is_dead(struct vm_area_struct *vma, unsigned int sequence)
-+{
-+	int ret = RB_EMPTY_NODE(&vma->vm_rb);
-+	unsigned seq = vma->vm_sequence.sequence;
-+	/*
-+	 * Matches both the wmb in write_seqlock_begin/end() and
-+	 * the wmb in detach_vmas_to_be_unmapped()/__unlink_vma().
-+	 */
-+	smp_rmb();
-+	return ret || seq != sequence;
-+}
-+
- /**
-  * mm_walk - callbacks for walk_page_range
-  * @pgd_entry: if set, called for each non-empty PGD (top-level) entry
 Index: linux-2.6/include/linux/mm_types.h
 ===================================================================
 --- linux-2.6.orig/include/linux/mm_types.h
 +++ linux-2.6/include/linux/mm_types.h
-@@ -13,6 +13,7 @@
+@@ -12,6 +12,7 @@
+ #include <linux/completion.h>
  #include <linux/cpumask.h>
  #include <linux/page-debug-flags.h>
- #include <linux/seqlock.h>
-+#include <linux/rcupdate.h>
++#include <linux/seqlock.h>
  #include <asm/page.h>
  #include <asm/mmu.h>
  
-@@ -188,6 +189,7 @@ struct vm_area_struct {
+@@ -186,6 +187,7 @@ struct vm_area_struct {
+ #ifdef CONFIG_NUMA
  	struct mempolicy *vm_policy;	/* NUMA policy for the VMA */
  #endif
- 	seqcount_t vm_sequence;
-+	struct rcu_head vm_rcu_head;
++	seqcount_t vm_sequence;
  };
  
  struct core_thread {
@@ -101,150 +63,35 @@ Index: linux-2.6/mm/mmap.c
 ===================================================================
 --- linux-2.6.orig/mm/mmap.c
 +++ linux-2.6/mm/mmap.c
-@@ -222,6 +222,19 @@ void unlink_file_vma(struct vm_area_stru
- 	}
- }
+@@ -512,6 +512,10 @@ void vma_adjust(struct vm_area_struct *v
+ 	long adjust_next = 0;
+ 	int remove_next = 0;
  
-+static void free_vma_rcu(struct rcu_head *head)
-+{
-+	struct vm_area_struct *vma =
-+		container_of(head, struct vm_area_struct, vm_rcu_head);
++	write_seqcount_begin(&vma->vm_sequence);
++	if (next)
++		write_seqcount_begin(&next->vm_sequence);
 +
-+	kmem_cache_free(vm_area_cachep, vma);
-+}
-+
-+static void free_vma(struct vm_area_struct *vma)
-+{
-+	call_rcu(&vma->vm_rcu_head, free_vma_rcu);
-+}
-+
- /*
-  * Close a vm structure and free it, returning the next.
-  */
-@@ -238,7 +251,7 @@ static struct vm_area_struct *remove_vma
- 			removed_exe_file_vma(vma->vm_mm);
- 	}
- 	mpol_put(vma_policy(vma));
--	kmem_cache_free(vm_area_cachep, vma);
-+	free_vma(vma);
- 	return next;
- }
- 
-@@ -488,6 +501,14 @@ __vma_unlink(struct mm_struct *mm, struc
- {
- 	prev->vm_next = vma->vm_next;
- 	rb_erase(&vma->vm_rb, &mm->mm_rb);
-+	/*
-+	 * Ensure the removal is completely comitted to memory
-+	 * before clearing the node.
-+	 *
-+	 * Matched by vma_is_dead()/handle_speculative_fault().
-+	 */
-+	smp_wmb();
-+	RB_CLEAR_NODE(&vma->vm_rb);
- 	if (mm->mmap_cache == vma)
- 		mm->mmap_cache = prev;
- }
-@@ -644,7 +665,7 @@ again:			remove_next = 1 + (end > next->
+ 	if (next && !insert) {
+ 		if (end >= next->vm_end) {
+ 			/*
+@@ -647,11 +651,17 @@ again:			remove_next = 1 + (end > next->
+ 		 * up the code too much to do both in one go.
+ 		 */
+ 		if (remove_next == 2) {
++			write_seqcount_end(&next->vm_sequence);
+ 			next = vma->vm_next;
++			write_seqcount_begin(&next->vm_sequence);
+ 			goto again;
  		}
- 		mm->map_count--;
- 		mpol_put(vma_policy(next));
--		kmem_cache_free(vm_area_cachep, next);
-+		free_vma(next);
- 		/*
- 		 * In mprotect's case 6 (see comments on vma_merge),
- 		 * we must remove another next too. It would clutter
-@@ -1858,6 +1879,14 @@ detach_vmas_to_be_unmapped(struct mm_str
- 	insertion_point = (prev ? &prev->vm_next : &mm->mmap);
- 	do {
- 		rb_erase(&vma->vm_rb, &mm->mm_rb);
-+		/*
-+		 * Ensure the removal is completely comitted to memory
-+		 * before clearing the node.
-+		 *
-+		 * Matched by vma_is_dead()/handle_speculative_fault().
-+		 */
-+		smp_wmb();
-+		RB_CLEAR_NODE(&vma->vm_rb);
- 		mm->map_count--;
- 		tail_vma = vma;
- 		vma = vma->vm_next;
-Index: linux-2.6/init/Kconfig
-===================================================================
---- linux-2.6.orig/init/Kconfig
-+++ linux-2.6/init/Kconfig
-@@ -314,19 +314,19 @@ menu "RCU Subsystem"
+ 	}
  
- choice
- 	prompt "RCU Implementation"
--	default TREE_RCU
-+	default TREE_PREEMPT_RCU
- 
--config TREE_RCU
--	bool "Tree-based hierarchical RCU"
--	help
--	  This option selects the RCU implementation that is
--	  designed for very large SMP system with hundreds or
--	  thousands of CPUs.  It also scales down nicely to
--	  smaller systems.
-+#config TREE_RCU
-+#	bool "Tree-based hierarchical RCU"
-+#	help
-+#	  This option selects the RCU implementation that is
-+#	  designed for very large SMP system with hundreds or
-+#	  thousands of CPUs.  It also scales down nicely to
-+#	  smaller systems.
- 
- config TREE_PREEMPT_RCU
- 	bool "Preemptable tree-based hierarchical RCU"
--	depends on PREEMPT
-+#	depends on PREEMPT
- 	help
- 	  This option selects the RCU implementation that is
- 	  designed for very large SMP systems with hundreds or
-@@ -334,14 +334,14 @@ config TREE_PREEMPT_RCU
- 	  is also required.  It also scales down nicely to
- 	  smaller systems.
- 
--config TINY_RCU
--	bool "UP-only small-memory-footprint RCU"
--	depends on !SMP
--	help
--	  This option selects the RCU implementation that is
--	  designed for UP systems from which real-time response
--	  is not required.  This option greatly reduces the
--	  memory footprint of RCU.
-+#config TINY_RCU
-+#	bool "UP-only small-memory-footprint RCU"
-+#	depends on !SMP
-+#	help
-+#	  This option selects the RCU implementation that is
-+#	  designed for UP systems from which real-time response
-+#	  is not required.  This option greatly reduces the
-+#	  memory footprint of RCU.
- 
- endchoice
- 
-Index: linux-2.6/kernel/sched.c
-===================================================================
---- linux-2.6.orig/kernel/sched.c
-+++ linux-2.6/kernel/sched.c
-@@ -9689,7 +9689,14 @@ void __init sched_init(void)
- #ifdef CONFIG_DEBUG_SPINLOCK_SLEEP
- static inline int preempt_count_equals(int preempt_offset)
- {
--	int nested = (preempt_count() & ~PREEMPT_ACTIVE) + rcu_preempt_depth();
-+	int nested = (preempt_count() & ~PREEMPT_ACTIVE)
-+		/*
-+		 * remove this for we need preemptible RCU
-+		 * exactly because it needs to sleep..
-+		 *
-+		 + rcu_preempt_depth()
-+		 */
-+		;
- 
- 	return (nested == PREEMPT_INATOMIC_BASE + preempt_offset);
++	if (next)
++		write_seqcount_end(&next->vm_sequence);
++	write_seqcount_end(&vma->vm_sequence);
++
+ 	validate_mm(mm);
  }
+ 
 
 -- 
 
