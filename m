@@ -1,77 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752429Ab0ADMa4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752601Ab0ADMeh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752429Ab0ADMa4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 07:30:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752218Ab0ADMay
+	id S1752601Ab0ADMeh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 07:34:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752338Ab0ADMef
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 07:30:54 -0500
-Received: from mail.gmx.net ([213.165.64.20]:34547 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751860Ab0ADMax (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 07:30:53 -0500
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX19CJMswizpCXFhnUAVDkMpIW8Gtgnxd3cWGkjUVPH
-	9l8KvIyYtc5D/z
-Subject: Re: [RFC][PATCH] sched: avoid huge bonus to sleepers on busy
- machines
-From: Mike Galbraith <efault@gmx.de>
-To: Suresh Jayaraman <sjayaraman@suse.de>
-Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <4B41D8E5.1000908@suse.de>
-References: <1262596842-17392-1-git-send-email-sjayaraman@suse.de>
-	 <1262603675.9734.36.camel@marge.simson.net>  <4B41D8E5.1000908@suse.de>
-Content-Type: text/plain
-Date: Mon, 04 Jan 2010 13:30:50 +0100
-Message-Id: <1262608250.9734.50.camel@marge.simson.net>
+	Mon, 4 Jan 2010 07:34:35 -0500
+Received: from casper.infradead.org ([85.118.1.10]:58127 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752218Ab0ADMee (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jan 2010 07:34:34 -0500
+Date: Mon, 4 Jan 2010 04:36:50 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: "Youquan,Song" <youquan.song@linux.intel.com>
+Cc: hpa@zytor.com, tglx@linutronix.de, akpm@linux-foundation.org,
+       venkatesh.pallipadi@intel.com, suresh.b.siddha@intel.com,
+       kent.liu@intel.com, chaohong.guo@intel.com, youquan.song@intel.com,
+       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH]tickless: Fix tick nohz timer irq0 fail to increaase
+Message-ID: <20100104043650.6acfb056@infradead.org>
+In-Reply-To: <20100104104905.GA30574@youquan-linux.bj.intel.com>
+References: <20091214130233.GA3898@youquan-linux.bj.intel.com>
+	<20100104104905.GA30574@youquan-linux.bj.intel.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.6; i586-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.64
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2010-01-04 at 17:32 +0530, Suresh Jayaraman wrote:
-> On 01/04/2010 04:44 PM, Mike Galbraith wrote:
-> > On Mon, 2010-01-04 at 14:50 +0530, Suresh Jayaraman wrote:
-> >> As I understand the idea of sleeper fairness is to consider sleeping tasks
-> >> similar to the ones on the runqueue and credit the sleepers in a way that it
-> >> would get CPU as if it were running.
-> >>
-> >> Currently, when fair sleepers are enabled, the task that was sleeping seem to
-> >> get a bonus of cfs_rq->min_vruntime - sched_latency (in most cases). While with
-> >> gentle fair sleepers this effect was reduced to half, there still remains a
-> >> chance that on busy machines with more number of tasks, the sleepers might get
-> >> a huge undue bonus.
-> > 
-> > There is no bonus.  Sleepers simply get to keep some of their lag, but
-> > any lag beyond sched_latency is trashed in the interest of reasonable
-> > latency for non-sleepers as the sleeper preempts and tries to catch up.
-> > 
-> 
-> Sorry, perhaps it's not a bonus, but it seems that the credit to
-> sleepers due to their lag (when it was sleeping) doesn't appear to take
-> in to account the number of tasks in the run_queue currently. IOW, the
-> credit to sleepers is same irrespective of the number of current tasks.
-> This might mean sleepers are getting an edge (since this will slow down
-> current tasks) when the number of tasks is more, isn't?
+On Mon, 4 Jan 2010 05:49:05 -0500
+"Youquan,Song" <youquan.song@linux.intel.com> wrote:
 
-As load increases, min_vruntime advances slower, so it's already scaled.
- 
-> Would it be a good idea to make the threshold dependent on number of
-> tasks? This can help us achieve sleeper fairness with respect to the
-> current context and not relevant to when the task went to sleep, I think.
-> 
-> Does this make sense?
+> Tickless is disabled by nohz=off, which is used in OSVs.
 
-In one respect it makes some sense to scale.  As load climbs, the waker
-has to wait longer to get cpu, so sleepers sleep longer.  This leads to
-increased wakeup peremption as load climbs.  However, if you do any kind
-of scaling, you harm light threads, not their hog competition.  Any
-diddling of sleeper fairness would have to be accompanied with a
-preemption model change methinks.
+it is? I doubt anyone wants to normally disable tickless, the power
+cost is just too high....
 
-	-Mike
+> But in
+> current kernel, if tickless is disabled, the timer irq0 will not
+> increase.
 
+why is this a problem? 
+
+> Because the timer event handler should be
+> tick_handle_periodic, but actually event handler keep as
+> tick_handle_oneshot_broadcast which is used in tickless. The root
+> cause is that it is default to enable high resolution timer which
+> will force to oneshot broadcast mode.
+
+using local apic in one shot mode is not a problem, I'd in fact call it
+a feature...
+
+
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
