@@ -1,54 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753309Ab0ADF4x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753330Ab0ADGBw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753309Ab0ADF4x (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 00:56:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753266Ab0ADF4v
+	id S1753330Ab0ADGBw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 01:01:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752403Ab0ADGBv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 00:56:51 -0500
-Received: from mail-yw0-f176.google.com ([209.85.211.176]:52587 "EHLO
-	mail-yw0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753230Ab0ADF4u (ORCPT
+	Mon, 4 Jan 2010 01:01:51 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:43535
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751487Ab0ADGBv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 00:56:50 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=k9eGCZDYs/YxQpQkl9A5u+7b3NaRy50n9TgPyFlIfjePSQkMcMtkvNl0a8q7LKmiKe
-         sv6X6ar1pYZtYD3nsYFy5JqXUIxWZH9YH9MZYgqcHl12C6IFvfgXi6J8FSGPCEcApzCK
-         96gyGhD7WnTNMZYv4MSsp/H5AP6QUdeHGKQho=
-Date: Sun, 3 Jan 2010 23:56:44 -0600
-From: Jonathan Nieder <jrnieder@gmail.com>
-To: Meelis Roos <mroos@linux.ee>
-Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: instant reboot on loading 2.6.33-rc on Celeron 900
-Message-ID: <20100104055644.GA7082@progeny.tock>
-References: <alpine.SOC.1.00.0912291553160.12082@math.ut.ee>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.SOC.1.00.0912291553160.12082@math.ut.ee>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Mon, 4 Jan 2010 01:01:51 -0500
+Date: Sun, 03 Jan 2010 22:01:54 -0800 (PST)
+Message-Id: <20100103.220154.226474085.davem@davemloft.net>
+To: roel.kluin@gmail.com
+Cc: netdev@vger.kernel.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, mcarlson@broadcom.com
+Subject: Re: [PATCH] broadcom: Fix &&/|| confusion in
+ bcm54xx_adjust_rxrefclk()
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <4B3B831A.507@gmail.com>
+References: <4B3B831A.507@gmail.com>
+X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Meelis Roos wrote:
+From: Roel Kluin <roel.kluin@gmail.com>
+Date: Wed, 30 Dec 2009 17:43:06 +0100
 
-> I tried 2.6.33-rc2 today on a Celeron 900 PC (with gcc 4.4.2 (Debian 
-> 4.4.2-7)). Selecting the kernel in grub results in instant reboot. Last 
-> tested kernel was 2.6.32-05594-g3ef884b compiled with gcc 4.3.4 (Debian 
-> 4.3.4-6) and that works.
+> This always evaluates to true.
 > 
-> I can probably bisect itwith gcc 4.4, but meanwhile it's here - maybe 
-> rings a bell to someone. 
-[...]
-> CONFIG_KERNEL_LZMA=y
+> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
 
-I am guessing /bin/sh is dash.  If so, hopefully the patch at
-<http://thread.gmane.org/gmane.linux.kbuild.devel/4313/focus=4319> will
-fix this.  Please do let me know if it does.
-
-Thanks,
-Jonathan
+Applied, thanks Roel.
