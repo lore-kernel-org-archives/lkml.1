@@ -1,82 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754013Ab0ADUvy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754094Ab0ADVAv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754013Ab0ADUvy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 15:51:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753921Ab0ADUvx
+	id S1754094Ab0ADVAv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 16:00:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754084Ab0ADVAt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 15:51:53 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:53057
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753016Ab0ADUvw convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 15:51:52 -0500
-Date: Mon, 04 Jan 2010 12:51:56 -0800 (PST)
-Message-Id: <20100104.125156.67425610.davem@davemloft.net>
-To: eric.dumazet@gmail.com
-Cc: guenter.roeck@ericsson.com, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC] [PATCH] Improve hash function used for full_name_hash()
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <4B42531A.6010903@gmail.com>
-References: <1262635784.8178.253.camel@groeck-laptop>
-	<4B42531A.6010903@gmail.com>
-X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+	Mon, 4 Jan 2010 16:00:49 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:59856 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751883Ab0ADVAs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jan 2010 16:00:48 -0500
+Date: Mon, 4 Jan 2010 22:00:40 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: pm list <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linux PCI <linux-pci@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       Oliver Neukum <oliver@neukum.org>, Shaohua Li <shaohua.li@intel.com>,
+       Bjorn Helgaas <bjorn.helgaas@hp.com>,
+       Francois Romieu <romieu@fr.zoreil.com>, Len Brown <lenb@kernel.org>
+Subject: Re: [RFC][PATCH 12/12] PM / r8169: Add simplified run-time PM
+ support
+Message-ID: <20100104210040.GA20001@elf.ucw.cz>
+References: <200911160047.46299.rjw@sisk.pl>
+ <201001032201.14087.rjw@sisk.pl>
+ <20100104083108.GD1372@ucw.cz>
+ <201001042051.08692.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <201001042051.08692.rjw@sisk.pl>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Eric Dumazet <eric.dumazet@gmail.com>
-Date: Mon, 04 Jan 2010 21:44:10 +0100
+> > > > Which means it saves 0.6W :-). Measuring power in Wh/h is "interesting".
+> > > 
+> > > You can't save power, you can only save energy.  Wh is just an energy unit.
+> > 
+> > Of course we can save power, you just did :-).
+> > 
+> > (And in some cases -- data centers, limited cooling -- you are limited
+> > by power, not energy.
+> 
+> But still energy is what you pay for, isn't it?
 
-> Le 04/01/2010 21:09, Guenter Roeck a écrit :
->> Please comment on this proposed patch. It is similar but more generic than 
->> a previously proposed change to dev_name_hash() which tried to address 
->> the same problem.
->> 
->> The hash function currently used for full_name_hash() produces a large number
->> of collisions if hashed names are similar. This can cause performance problems
->> if a large number of similar names exist in the kernel (e.g., if there is
->> a large number of virtual interfaces).
->> 
->> For example, when hashing "eth0" .. "eth9999" with a hash table size of 256,
->> the resulting minimum hash bucket depth is 0, the maximum depth is 563,
->> and the standard deviation is ~136.
->> 
+Energy is what you pay for, but if you eat too much power, data centre
+overheats and goes down.
 
-Adding linux-kernel to CC: for followups...
+> > You are right that on notebooks, energy is more important.)
+> 
+> You may require less power to run, so if that's what you mean by "saving", then
+> I agree. :-)
 
-> I would be very surprised, since we worked quite a lot on this subject some months ago...
-> 
-> Which tree are you using ?
-> 
-> This is not true since commit 08e9897d512fe7a67e46209543b3815b57a36dc7
-> (netdev: fold name hash properly (v3))
-> Date:   Tue Nov 10 07:20:34 2009 +0000
-> 
-> Here is actual hash distribution for (eth0 -> eth9999) 
-> 
-> 37 37 36 49 43 36 36 44 35 27 36 45 38 42 52 49
-> 51 40 52 43 33 29 41 42 40 47 51 51 47 47 46 41
-> 29 34 41 43 41 46 51 52 46 43 48 36 30 34 46 39
-> 43 49 53 51 42 51 41 33 28 44 42 38 44 54 51 45
-> 46 48 39 29 36 35 33 33 44 43 40 37 45 37 28 23
-> 30 36 30 44 42 43 44 37 40 35 26 28 34 35 34 37
-> 44 43 44 37 41 33 21 27 36 33 33 34 35 39 27 34
-> 37 28 25 32 36 31 40 43 43 45 39 40 33 24 26 34
-> 35 39 38 42 45 41 36 39 36 31 33 43 42 44 49 49
-> 56 42 46 43 36 28 40 44 39 43 50 54 46 43 48 43
-> 30 32 42 42 42 47 53 51 46 44 48 35 30 36 44 37
-> 47 49 49 53 41 49 42 35 29 40 42 43 43 51 52 49
-> 43 47 43 28 32 35 37 34 38 44 44 34 42 43 27 21
-> 29 39 31 40 43 47 40 36 43 34 25 27 36 34 34 36
-> 46 44 42 39 41 32 22 27 35 35 32 35 35 39 27 33
-> 35 31 24 31 38 31 36 41 47 46 35 41 37 23 23 36
-> 
-> This seems good enough.
-> --
-> To unsubscribe from this list: send the line "unsubscribe netdev" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Yes, that's what I meant by saving :-), and yes, they are very
+related.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
