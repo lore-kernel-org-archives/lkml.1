@@ -1,44 +1,220 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753951Ab0ADUrY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753937Ab0ADUta@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753951Ab0ADUrY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 15:47:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753810Ab0ADUrL
+	id S1753937Ab0ADUta (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 15:49:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753844Ab0ADUt2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 15:47:11 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:48344
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752751Ab0ADUrJ (ORCPT
+	Mon, 4 Jan 2010 15:49:28 -0500
+Received: from casper.infradead.org ([85.118.1.10]:33594 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752914Ab0ADUt0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 15:47:09 -0500
-Date: Mon, 04 Jan 2010 12:47:11 -0800 (PST)
-Message-Id: <20100104.124711.50820580.davem@davemloft.net>
-To: shemminger@vyatta.com
-Cc: guenter.roeck@ericsson.com, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC] [PATCH] Improve hash function used for full_name_hash()
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20100104122912.5f9d1ebb@nehalam>
-References: <1262635784.8178.253.camel@groeck-laptop>
-	<20100104122912.5f9d1ebb@nehalam>
-X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Mon, 4 Jan 2010 15:49:26 -0500
+Message-Id: <20100104182813.180396813@chello.nl>
+References: <20100104182429.833180340@chello.nl>
+User-Agent: quilt/0.46-1
+Date: Mon, 04 Jan 2010 19:24:30 +0100
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "minchan.kim@gmail.com" <minchan.kim@gmail.com>,
+       cl@linux-foundation.org, "hugh.dickins" <hugh.dickins@tiscali.co.uk>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [RFC][PATCH 1/8] mm: Remove pte reference from fault path
+Content-Disposition: inline; filename=mm-foo-1.patch
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Stephen Hemminger <shemminger@vyatta.com>
-Date: Mon, 4 Jan 2010 12:29:12 -0800
+Since we want to do speculative faults, where we can race against
+unmap() and similar, we cannot trust pte pointers to remain valid.
 
-> On Mon, 04 Jan 2010 12:09:44 -0800
-> Guenter Roeck <guenter.roeck@ericsson.com> wrote:
-> 
->> For example, when hashing "eth0" .. "eth9999" with a hash table size of 256,
->> the resulting minimum hash bucket depth is 0, the maximum depth is 563,
->> and the standard deviation is ~136.
-> 
-> The problem was a missing call to hash_32() on the result, and is
-> already fixed in current kernel.
+Hence remove the relyance on those from the fault path.
 
-Added linux-kernel CC: to followup...
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+ mm/memory.c |   72 ++++++++++++++++--------------------------------------------
+ 1 file changed, 20 insertions(+), 52 deletions(-)
+
+Index: linux-2.6/mm/memory.c
+===================================================================
+--- linux-2.6.orig/mm/memory.c
++++ linux-2.6/mm/memory.c
+@@ -1919,31 +1919,6 @@ int apply_to_page_range(struct mm_struct
+ EXPORT_SYMBOL_GPL(apply_to_page_range);
+ 
+ /*
+- * handle_pte_fault chooses page fault handler according to an entry
+- * which was read non-atomically.  Before making any commitment, on
+- * those architectures or configurations (e.g. i386 with PAE) which
+- * might give a mix of unmatched parts, do_swap_page and do_file_page
+- * must check under lock before unmapping the pte and proceeding
+- * (but do_wp_page is only called after already making such a check;
+- * and do_anonymous_page and do_no_page can safely check later on).
+- */
+-static inline int pte_unmap_same(struct mm_struct *mm, pmd_t *pmd,
+-				pte_t *page_table, pte_t orig_pte)
+-{
+-	int same = 1;
+-#if defined(CONFIG_SMP) || defined(CONFIG_PREEMPT)
+-	if (sizeof(pte_t) > sizeof(unsigned long)) {
+-		spinlock_t *ptl = pte_lockptr(mm, pmd);
+-		spin_lock(ptl);
+-		same = pte_same(*page_table, orig_pte);
+-		spin_unlock(ptl);
+-	}
+-#endif
+-	pte_unmap(page_table);
+-	return same;
+-}
+-
+-/*
+  * Do pte_mkwrite, but only if the vma says VM_WRITE.  We do this when
+  * servicing faults for write access.  In the normal case, do always want
+  * pte_mkwrite.  But get_user_pages can cause write faults for mappings
+@@ -2508,19 +2483,16 @@ int vmtruncate_range(struct inode *inode
+  * We return with mmap_sem still held, but pte unmapped and unlocked.
+  */
+ static int do_swap_page(struct mm_struct *mm, struct vm_area_struct *vma,
+-		unsigned long address, pte_t *page_table, pmd_t *pmd,
++		unsigned long address, pmd_t *pmd,
+ 		unsigned int flags, pte_t orig_pte)
+ {
+ 	spinlock_t *ptl;
+ 	struct page *page;
+ 	swp_entry_t entry;
+-	pte_t pte;
++	pte_t *page_table, pte;
+ 	struct mem_cgroup *ptr = NULL;
+ 	int ret = 0;
+ 
+-	if (!pte_unmap_same(mm, pmd, page_table, orig_pte))
+-		goto out;
+-
+ 	entry = pte_to_swp_entry(orig_pte);
+ 	if (unlikely(non_swap_entry(entry))) {
+ 		if (is_migration_entry(entry)) {
+@@ -2650,18 +2622,16 @@ out_release:
+  * We return with mmap_sem still held, but pte unmapped and unlocked.
+  */
+ static int do_anonymous_page(struct mm_struct *mm, struct vm_area_struct *vma,
+-		unsigned long address, pte_t *page_table, pmd_t *pmd,
+-		unsigned int flags)
++		unsigned long address, pmd_t *pmd, unsigned int flags)
+ {
+ 	struct page *page;
+ 	spinlock_t *ptl;
+-	pte_t entry;
++	pte_t entry, *page_table;
+ 
+ 	if (!(flags & FAULT_FLAG_WRITE)) {
+ 		entry = pte_mkspecial(pfn_pte(my_zero_pfn(address),
+ 						vma->vm_page_prot));
+-		ptl = pte_lockptr(mm, pmd);
+-		spin_lock(ptl);
++		page_table = pte_offset_map_lock(mm, pmd, address, &ptl);
+ 		if (!pte_none(*page_table))
+ 			goto unlock;
+ 		goto setpte;
+@@ -2900,13 +2870,12 @@ unwritable_page:
+ }
+ 
+ static int do_linear_fault(struct mm_struct *mm, struct vm_area_struct *vma,
+-		unsigned long address, pte_t *page_table, pmd_t *pmd,
++		unsigned long address, pmd_t *pmd,
+ 		unsigned int flags, pte_t orig_pte)
+ {
+ 	pgoff_t pgoff = (((address & PAGE_MASK)
+ 			- vma->vm_start) >> PAGE_SHIFT) + vma->vm_pgoff;
+ 
+-	pte_unmap(page_table);
+ 	return __do_fault(mm, vma, address, pmd, pgoff, flags, orig_pte);
+ }
+ 
+@@ -2920,16 +2889,13 @@ static int do_linear_fault(struct mm_str
+  * We return with mmap_sem still held, but pte unmapped and unlocked.
+  */
+ static int do_nonlinear_fault(struct mm_struct *mm, struct vm_area_struct *vma,
+-		unsigned long address, pte_t *page_table, pmd_t *pmd,
++		unsigned long address, pmd_t *pmd,
+ 		unsigned int flags, pte_t orig_pte)
+ {
+ 	pgoff_t pgoff;
+ 
+ 	flags |= FAULT_FLAG_NONLINEAR;
+ 
+-	if (!pte_unmap_same(mm, pmd, page_table, orig_pte))
+-		return 0;
+-
+ 	if (unlikely(!(vma->vm_flags & VM_NONLINEAR))) {
+ 		/*
+ 		 * Page table corrupted: show pte and kill process.
+@@ -2957,31 +2923,29 @@ static int do_nonlinear_fault(struct mm_
+  */
+ static inline int handle_pte_fault(struct mm_struct *mm,
+ 		struct vm_area_struct *vma, unsigned long address,
+-		pte_t *pte, pmd_t *pmd, unsigned int flags)
++		pte_t entry, pmd_t *pmd, unsigned int flags)
+ {
+-	pte_t entry;
+ 	spinlock_t *ptl;
++	pte_t *pte;
+ 
+-	entry = *pte;
+ 	if (!pte_present(entry)) {
+ 		if (pte_none(entry)) {
+ 			if (vma->vm_ops) {
+ 				if (likely(vma->vm_ops->fault))
+ 					return do_linear_fault(mm, vma, address,
+-						pte, pmd, flags, entry);
++						pmd, flags, entry);
+ 			}
+ 			return do_anonymous_page(mm, vma, address,
+-						 pte, pmd, flags);
++						 pmd, flags);
+ 		}
+ 		if (pte_file(entry))
+ 			return do_nonlinear_fault(mm, vma, address,
+-					pte, pmd, flags, entry);
++					pmd, flags, entry);
+ 		return do_swap_page(mm, vma, address,
+-					pte, pmd, flags, entry);
++					pmd, flags, entry);
+ 	}
+ 
+-	ptl = pte_lockptr(mm, pmd);
+-	spin_lock(ptl);
++	pte = pte_offset_map_lock(mm, pmd, address, &ptl);
+ 	if (unlikely(!pte_same(*pte, entry)))
+ 		goto unlock;
+ 	if (flags & FAULT_FLAG_WRITE) {
+@@ -3017,7 +2981,7 @@ int handle_mm_fault(struct mm_struct *mm
+ 	pgd_t *pgd;
+ 	pud_t *pud;
+ 	pmd_t *pmd;
+-	pte_t *pte;
++	pte_t *pte, entry;
+ 
+ 	__set_current_state(TASK_RUNNING);
+ 
+@@ -3037,7 +3001,11 @@ int handle_mm_fault(struct mm_struct *mm
+ 	if (!pte)
+ 		return VM_FAULT_OOM;
+ 
+-	return handle_pte_fault(mm, vma, address, pte, pmd, flags);
++	entry = *pte;
++
++	pte_unmap(pte);
++
++	return handle_pte_fault(mm, vma, address, entry, pmd, flags);
+ }
+ 
+ #ifndef __PAGETABLE_PUD_FOLDED
+
+-- 
+
