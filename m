@@ -1,76 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753564Ab0ADQzK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753678Ab0ADQ4J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753564Ab0ADQzK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 11:55:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753145Ab0ADQzH
+	id S1753678Ab0ADQ4J (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 11:56:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752617Ab0ADQ4G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 11:55:07 -0500
-Received: from mrout3.yahoo.com ([216.145.54.173]:32809 "EHLO mrout3.yahoo.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753221Ab0ADQzG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 11:55:06 -0500
-DomainKey-Signature: a=rsa-sha1; s=serpent; d=yahoo-inc.com; c=nofws; q=dns;
-	h=received:date:from:to:cc:subject:message-id:references:
-	mime-version:content-type:content-disposition:in-reply-to:user-agent;
-	b=vUCqTK71ucNel0BNpIqvbTZBTFvtUBl4i+i//tNa0msKx2zFOluWzK/RfVW44cMT
-Date: Mon, 4 Jan 2010 10:50:44 -0600
-From: Quentin Barnes <qbarnes@yahoo-inc.com>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-       Wu Fengguang <fengguang.wu@intel.com>, Andi Kleen <andi@firstfloor.org>,
+	Mon, 4 Jan 2010 11:56:06 -0500
+Received: from out02.mta.xmission.com ([166.70.13.232]:46614 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751883Ab0ADQ4F (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jan 2010 11:56:05 -0500
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Jesse Brandeburg <jesse.brandeburg@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       "linux-kernel\@vger.kernel.org" <linux-kernel@vger.kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       Nick Piggin <npiggin@suse.de>, Steven Whitehouse <swhiteho@redhat.com>,
-       David Howells <dhowells@redhat.com>, Al Viro <viro@zeniv.linux.org.uk>,
-       Jonathan Corbet <corbet@lwn.net>
-Subject: Re: [RFC][PATCH v3] readahead: introduce O_RANDOM for POSIX_FADV_RANDOM
-Message-ID: <20100104165044.GD25663@yahoo-inc.com>
-References: <20091225000717.GA26949@yahoo-inc.com> <87aax18xms.fsf@basil.nowhere.org> <20091230051540.GA16308@localhost> <20091230052402.GB26364@localhost> <873a2s8hmp.fsf@basil.nowhere.org> <20100104045020.GA21021@localhost> <20100104161719.a0bb35ad.sfr@canb.auug.org.au> <20100104073328.GA3422@infradead.org>
-Mime-Version: 1.0
+       NetDEV list <netdev@vger.kernel.org>,
+       Jesse Brandeburg <jesse.brandeburg@intel.com>
+Subject: Re: [PATCH 2/2] x86: get more exact nr_irqs
+References: <4B347AEE.6030705@kernel.org> <20091228094707.GH24690@elte.hu>
+	<4B398ECD.1080506@kernel.org>
+	<4807377b1001031906s6b1ee576jc021da2642bb4147@mail.gmail.com>
+	<4B415E73.1050801@kernel.org> <4B41918D.3000605@kernel.org>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Mon, 04 Jan 2010 08:55:56 -0800
+In-Reply-To: <4B41918D.3000605@kernel.org> (Yinghai Lu's message of "Sun\, 03 Jan 2010 22\:58\:21 -0800")
+Message-ID: <m1fx6lizc3.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100104073328.GA3422@infradead.org>
-User-Agent: Mutt/1.4.2.2i
+X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Scanned: No (on in01.mta.xmission.com); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 03, 2010 at 11:33:28PM -0800, Christoph Hellwig wrote:
-> On Mon, Jan 04, 2010 at 04:17:19PM +1100, Stephen Rothwell wrote:
-> > > @@ -80,6 +80,10 @@
-> > >  #define O_NDELAY	O_NONBLOCK
-> > >  #endif
-> > >  
-> > > +#ifndef O_RANDOM
-> > > +#define O_RANDOM	010000000	/* random access pattern hint */
-> > > +#endif
-> > 
-> > This value conflicts with O_CLOEXEC on alpha and parisc and O_NOATIME on
-> > sparc.
-> 
-> Also when I tried to use this value for O_RSYNC and tested it I could
-> not actually see it getting propagated by the open code.
-> 
-> Eitherway I don't think an O_ value is a good idea for a simple access
-> pattern hint.
+Yinghai Lu <yinghai@kernel.org> writes:
 
-Could you expand on that?
+> first check with NR_VECTORS - FIRST_EXTERNAL_VECTOR - 0x20
+> aka minus exceptions and system vectors.
+>
+> NR_CPUS = 512, and nr_cpu_ids = 128
+> will have NR_IRQS = 256 + 512 * 64 = 33024
+>
+> assume we have 20 intel ixgbe 6 port cards (with sriov and ixgbevf)
+> 	20 * 6 * 64 * 3 = 23040
+>
+> first will get:
+> 	128 * (256 - 64) = 24576
+> then with nr_irqs_gsi will get
+> 	(120 + 8 * 128 + 120 * 256) = 31864
+>
+> so 24576 will be used for nr_irqs.
+>
+> 24576 * 8 = 196608 bytes will be used for irq_desc_ptrs[]
+>
+> before this patch:
+>     have nr_irqs = 120 + 8 * 128 + 120 * 64 = 8824
+> 	and irq_desc_ptrs[] is 70592
+>
+> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 
-I was surprised by Wu's O_RANDOM approach, but after thinking about
-it, I liked it.  I'm used to seeing (on non-UNIX OSes) a parameter
-as part of the open syscall that announces to the OS what the app's
-access strategy through that file descriptor will be for that file.
-An issue with the current fadvise(2) approach is for random access
-files it necessitates two syscalls (open plus fadvise) for what
-could be or should be only one syscall (open).
+I am lost.    arch_probe_nr_irqs appears to be total nonsense.
 
-My guess on your issue is that open(2) should take only flags that
-are necessary for the open state itself and therefore can't be
-implemented as a separate and later syscall.  I would generally
-agree with that.  There is however already at least two exceptions
-to that principle, the O_SYNC and O_DIRECT flags.  They are access
-states though.  I guess the question is whether to think of the
-O_RANDOM flag as a "hint" or as an "access strategy".
+We have three concepts. 
+- The number of irq sources we can talk about.  ( nr_irqs)
+- The number of irqs we can possibly service.   ((NR_VECTORS - 0x30) *nr_cpu_ids)
+- The number of irqs we actually connected up to cards in the
+  system that we need to do something with.
 
-Quentin
+Why do we need to allocate arrays at all?
+
+arch_probe_nr_irqs looks like a pile of magic numbers (even more magic
+with the addition of 0x20), that is always going to be a little bit
+wrong.
+
+We should be able to remove the arrays all together and allocate
+irq_desc dynamically.
+
+
+> ---
+>  arch/x86/kernel/apic/io_apic.c |   11 ++++++++---
+>  1 file changed, 8 insertions(+), 3 deletions(-)
+>
+> Index: linux-2.6/arch/x86/kernel/apic/io_apic.c
+> ===================================================================
+> --- linux-2.6.orig/arch/x86/kernel/apic/io_apic.c
+> +++ linux-2.6/arch/x86/kernel/apic/io_apic.c
+> @@ -3833,15 +3833,20 @@ int __init arch_probe_nr_irqs(void)
+>  {
+>  	int nr;
+>  
+> -	if (nr_irqs > (NR_VECTORS * nr_cpu_ids))
+> -		nr_irqs = NR_VECTORS * nr_cpu_ids;
+> +	/* 0x20 for ipi etc system vectors */
+> +	nr = NR_VECTORS - FIRST_EXTERNAL_VECTOR - 0x20;
+
+If you are going to subtract of the number of ipis please
+put appropriate defines in irq_vectors.h.  A raw 0x20 is
+wrong.
+
+> +
+> +	nr *= nr_cpu_ids;
+> +
+> +	if (nr < nr_irqs)
+> +		nr_irqs = nr;
+>  	nr = nr_irqs_gsi + 8 * nr_cpu_ids;
+>  #if defined(CONFIG_PCI_MSI) || defined(CONFIG_HT_IRQ)
+>  	/*
+>  	 * for MSI and HT dyn irq
+>  	 */
+> -	nr += nr_irqs_gsi * 64;
+> +	nr += nr_irqs_gsi * 256;
+
+This part seems like magic voodoo.  Why should their
+be a correlation between the number of gsis and the number
+of msis?
+
+Eric
