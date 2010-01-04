@@ -1,40 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754103Ab0ADXUj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754143Ab0ADXVf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754103Ab0ADXUj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 18:20:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753924Ab0ADXUi
+	id S1754143Ab0ADXVf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 18:21:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753619Ab0ADXVe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 18:20:38 -0500
-Received: from kroah.org ([198.145.64.141]:45263 "EHLO coco.kroah.org"
+	Mon, 4 Jan 2010 18:21:34 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:39957 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753855Ab0ADXUh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 18:20:37 -0500
-Date: Mon, 4 Jan 2010 15:19:49 -0800
-From: Greg KH <greg@kroah.com>
-To: Jarod Wilson <jarod@redhat.com>
-Cc: linux-kernel@vger.kernel.org, Scott Davilla <davilla@4pi.com>,
-       Naren Sankar <nsankar@broadcom.com>,
-       Manu Abraham <abraham.manu@gmail.com>
-Subject: Re: [PATCH v3] staging: add Broadcom Crystal HD driver
-Message-ID: <20100104231949.GA14496@kroah.com>
-References: <20100104230227.GA14314@redhat.com>
+	id S1752776Ab0ADXVe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jan 2010 18:21:34 -0500
+Message-ID: <4B4277B0.1080506@redhat.com>
+Date: Mon, 04 Jan 2010 18:20:16 -0500
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Lightning/1.0pre Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100104230227.GA14314@redhat.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Peter Zijlstra <peterz@infradead.org>
+CC: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "minchan.kim@gmail.com" <minchan.kim@gmail.com>,
+       cl@linux-foundation.org, "hugh.dickins" <hugh.dickins@tiscali.co.uk>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [RFC][PATCH 0/8] Speculative pagefault -v3
+References: <20100104182429.833180340@chello.nl>	 <4B42606F.3000906@redhat.com> <1262641573.6408.434.camel@laptop>
+In-Reply-To: <1262641573.6408.434.camel@laptop>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 04, 2010 at 06:02:27PM -0500, Jarod Wilson wrote:
-> This patch supersedes the earlier ones sent by Manu Abraham to add
-> the Broadcom Crystal HD driver to the staging tree, per discussion
-> with him about it. I've been working with Broadcom's Naren Sankar
-> on this driver for a number of months, and had already talked Naren
-> about submitting this on Broadcom's behalf, didn't expect anyone
-> else to jump on submitting it as quickly as Manu did. ;)
+On 01/04/2010 04:46 PM, Peter Zijlstra wrote:
+> On Mon, 2010-01-04 at 16:41 -0500, Rik van Riel wrote:
+>> On 01/04/2010 01:24 PM, Peter Zijlstra wrote:
+>>> Patch series implementing speculative page faults for x86.
+>>
+>> Fun, but why do we need this?
+>
+> People were once again concerned with mmap_sem contention on threaded
+> apps on large machines. Kame-san posted some patches, but I felt they
+> weren't quite crazy enough ;-)
 
-Looks good, I'll queue it up tomorrow.
+In that case, I assume that somebody else (maybe Kame-san or
+Christoph) will end up posting a benchmark that shows how
+these patches help.
 
-greg k-h
+-- 
+All rights reversed.
