@@ -1,63 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752601Ab0ADMeh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753026Ab0ADMhW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752601Ab0ADMeh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 07:34:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752338Ab0ADMef
+	id S1753026Ab0ADMhW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 07:37:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752524Ab0ADMhU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 07:34:35 -0500
-Received: from casper.infradead.org ([85.118.1.10]:58127 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752218Ab0ADMee (ORCPT
+	Mon, 4 Jan 2010 07:37:20 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:58977 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751212Ab0ADMhT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 07:34:34 -0500
-Date: Mon, 4 Jan 2010 04:36:50 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: "Youquan,Song" <youquan.song@linux.intel.com>
-Cc: hpa@zytor.com, tglx@linutronix.de, akpm@linux-foundation.org,
-       venkatesh.pallipadi@intel.com, suresh.b.siddha@intel.com,
-       kent.liu@intel.com, chaohong.guo@intel.com, youquan.song@intel.com,
-       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH]tickless: Fix tick nohz timer irq0 fail to increaase
-Message-ID: <20100104043650.6acfb056@infradead.org>
-In-Reply-To: <20100104104905.GA30574@youquan-linux.bj.intel.com>
-References: <20091214130233.GA3898@youquan-linux.bj.intel.com>
-	<20100104104905.GA30574@youquan-linux.bj.intel.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.6; i586-redhat-linux-gnu)
+	Mon, 4 Jan 2010 07:37:19 -0500
+Subject: Re: [RFC][PATCH] sched: avoid huge bonus to sleepers on busy
+ machines
+From: Peter Zijlstra <peterz@infradead.org>
+To: Mike Galbraith <efault@gmx.de>
+Cc: Suresh Jayaraman <sjayaraman@suse.de>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <1262608250.9734.50.camel@marge.simson.net>
+References: <1262596842-17392-1-git-send-email-sjayaraman@suse.de>
+	 <1262603675.9734.36.camel@marge.simson.net>  <4B41D8E5.1000908@suse.de>
+	 <1262608250.9734.50.camel@marge.simson.net>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 04 Jan 2010 13:36:37 +0100
+Message-ID: <1262608597.6408.117.camel@laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 4 Jan 2010 05:49:05 -0500
-"Youquan,Song" <youquan.song@linux.intel.com> wrote:
+On Mon, 2010-01-04 at 13:30 +0100, Mike Galbraith wrote:
+> Any diddling of sleeper fairness would have to be accompanied with a
+> preemption model change methinks. 
 
-> Tickless is disabled by nohz=off, which is used in OSVs.
+Just told jays the exact same thing on IRC ;-)
 
-it is? I doubt anyone wants to normally disable tickless, the power
-cost is just too high....
+Also, workloads are interesting, the signal test thing is the easiest to
+test the preemption side, various things like QPID show the down-side
+iirc.
 
-> But in
-> current kernel, if tickless is disabled, the timer irq0 will not
-> increase.
-
-why is this a problem? 
-
-> Because the timer event handler should be
-> tick_handle_periodic, but actually event handler keep as
-> tick_handle_oneshot_broadcast which is used in tickless. The root
-> cause is that it is default to enable high resolution timer which
-> will force to oneshot broadcast mode.
-
-using local apic in one shot mode is not a problem, I'd in fact call it
-a feature...
-
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
