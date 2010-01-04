@@ -1,50 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753765Ab0ADStz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753813Ab0ADSuh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753765Ab0ADStz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 13:49:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753674Ab0ADStv
+	id S1753813Ab0ADSuh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 13:50:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753700Ab0ADSuf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 13:49:51 -0500
-Received: from eddie.linux-mips.org ([78.24.191.182]:34298 "EHLO
-	eddie.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753346Ab0ADStu (ORCPT
+	Mon, 4 Jan 2010 13:50:35 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:62581 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753674Ab0ADSuf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 13:49:50 -0500
-Date: Mon, 4 Jan 2010 18:49:48 +0000 (GMT)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: H Hartley Sweeten <hartleys@visionengravers.com>
-cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       David Miller <davem@davemloft.net>
-Subject: Re: [PATCH] drivers/net/defxx.c: use %pM to show MAC address
-In-Reply-To: <BD79186B4FD85F4B8E60E381CAEE19090200F63E@mi8nycmail19.Mi8.com>
-Message-ID: <alpine.LFD.2.00.1001041833560.13474@eddie.linux-mips.org>
-References: <BD79186B4FD85F4B8E60E381CAEE19090200F63E@mi8nycmail19.Mi8.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Mon, 4 Jan 2010 13:50:35 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=x+C8oXsh99zezF/K4w8KGLa/Ba50B28ACXE6q8sFY6NGCwHALwTuSzVLen6R+6BNcZ
+         pRuT7kxy6cZ8KmWOAZFZPmZ8CR365rNg6XKXHCtY9xenoqKFi0dvdqrZN1RaI1ixOF/k
+         jncBQXkMFEJpgoPtv6erRlrvYHT+XpITmfHBI=
+Date: Mon, 4 Jan 2010 10:50:23 -0800
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Greg KH <gregkh@suse.de>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Need to take dev->sem, do it directly or use wrapper?
+Message-ID: <20100104185023.GA2597@core.coreip.homeip.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 30 Dec 2009, H Hartley Sweeten wrote:
+Greg,
 
-> Use the %pM kernel extension to display the MAC address.
-> 
-> The only difference in the output is that the MAC address is
-> shown in the usual colon-separated hex notation.
-> 
-> Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
-> Cc: David S. Miller <davem@davemloft.net>
+I was looking at restructuring serio a bit and rely more on the
+infrastructure in the drivre core now that it is more flexible. It all
+looks good except for one detail - serio provides "reconnect" method
+which allows user to reinitialize a port whithout tearing down its
+children input devices. To properly serialize with probe(), remove() and
+other bus operations I'd need to take dev->sem semaphore. I(s bus code
+allowed to do this? Can I do it directly or we need to add a wrapper
+(like device_serialize_access(dev, bool))?
 
- Nack.  While I appreciate your effort, the FDDI standard defines opposite 
-bit-ordering for MAC addresses written in the dash-separated and the 
-colon-separated hexadecimal notation, which makes your change invalid, 
-sorry (you'd have to bit-swap them too and that would make addresses 
-counter-intuitive).  Please note that `ifconfig' consistently uses the 
-dash-separated notation for FDDI interfaces too (I haven't checked other 
-tools like those in the "iproute" package; they may be buggy).
+Thanks.
 
- [I'd appreciate to be CCed on patch submissions to code I claim 
-maintenance of too.]
-
-  Maciej
+-- 
+Dmitry
