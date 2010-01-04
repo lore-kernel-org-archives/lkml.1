@@ -1,67 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754094Ab0ADVAv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754104Ab0ADVCd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754094Ab0ADVAv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 16:00:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754084Ab0ADVAt
+	id S1754104Ab0ADVCd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 16:02:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754084Ab0ADVCa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 16:00:49 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:59856 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751883Ab0ADVAs (ORCPT
+	Mon, 4 Jan 2010 16:02:30 -0500
+Received: from smtp-out.google.com ([216.239.44.51]:21540 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754081Ab0ADVC3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 16:00:48 -0500
-Date: Mon, 4 Jan 2010 22:00:40 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linux PCI <linux-pci@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       Oliver Neukum <oliver@neukum.org>, Shaohua Li <shaohua.li@intel.com>,
-       Bjorn Helgaas <bjorn.helgaas@hp.com>,
-       Francois Romieu <romieu@fr.zoreil.com>, Len Brown <lenb@kernel.org>
-Subject: Re: [RFC][PATCH 12/12] PM / r8169: Add simplified run-time PM
- support
-Message-ID: <20100104210040.GA20001@elf.ucw.cz>
-References: <200911160047.46299.rjw@sisk.pl>
- <201001032201.14087.rjw@sisk.pl>
- <20100104083108.GD1372@ucw.cz>
- <201001042051.08692.rjw@sisk.pl>
+	Mon, 4 Jan 2010 16:02:29 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=GiRsjKaZqP8Ak3qDcH2jPiNb9LgRtux1MwK+H04zk1DEmiaUp5H13dPgfjNFSngBS
+	yUTqOVJQZQmBtL5jJjjMw==
+Date: Mon, 4 Jan 2010 13:02:17 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Kazuhisa Ichikawa <ki@epsilou.com>
+cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] mm/page_alloc: fix the range check for backward
+ merging
+In-Reply-To: <20100103120435.GA3576@epsilou.com>
+Message-ID: <alpine.DEB.2.00.1001041302130.20593@chino.kir.corp.google.com>
+References: <20100103120435.GA3576@epsilou.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <201001042051.08692.rjw@sisk.pl>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > > > Which means it saves 0.6W :-). Measuring power in Wh/h is "interesting".
-> > > 
-> > > You can't save power, you can only save energy.  Wh is just an energy unit.
-> > 
-> > Of course we can save power, you just did :-).
-> > 
-> > (And in some cases -- data centers, limited cooling -- you are limited
-> > by power, not energy.
+On Sun, 3 Jan 2010, Kazuhisa Ichikawa wrote:
+
+> From: Kazuhisa Ichikawa <ki@epsilou.com>
 > 
-> But still energy is what you pay for, isn't it?
-
-Energy is what you pay for, but if you eat too much power, data centre
-overheats and goes down.
-
-> > You are right that on notebooks, energy is more important.)
+> The current check for 'backward merging' within add_active_range()
+> does not seem correct.  start_pfn must be compared against
+> early_node_map[i].start_pfn (and NOT against .end_pfn) to find out
+> whether the new region is backward-mergeable with the existing range.
 > 
-> You may require less power to run, so if that's what you mean by "saving", then
-> I agree. :-)
+> Signed-off-by: Kazuhisa Ichikawa <ki@epsilou.com>
+> ---
+>  (This patch applies to linux-2.6.33-rc2)
+> 
+> --- a/mm/page_alloc.c	2009-12-25 06:09:41.000000000 +0900
+> +++ b/mm/page_alloc.c	2010-01-03 19:20:36.000000000 +0900
+> @@ -3998,7 +3998,7 @@ void __init add_active_range(unsigned in
+>  		}
+>  
+>  		/* Merge backward if suitable */
+> -		if (start_pfn < early_node_map[i].end_pfn &&
+> +		if (start_pfn < early_node_map[i].start_pfn &&
+>  				end_pfn >= early_node_map[i].start_pfn) {
+>  			early_node_map[i].start_pfn = start_pfn;
+>  			return;
 
-Yes, that's what I meant by saving :-), and yes, they are very
-related.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Acked-by: David Rientjes <rientjes@google.com>
