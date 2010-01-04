@@ -1,74 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753365Ab0ADVyS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753855Ab0ADVzO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753365Ab0ADVyS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 16:54:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753633Ab0ADVyQ
+	id S1753855Ab0ADVzO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 16:55:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753016Ab0ADVzL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 16:54:16 -0500
-Received: from outbound.icp-qv1-irony-out3.iinet.net.au ([203.59.1.148]:29584
-	"EHLO outbound.icp-qv1-irony-out3.iinet.net.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753563Ab0ADVyP convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 16:54:15 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AgIBAILyQUt8qNTn/2dsb2JhbAAI1UWEMAQ
-X-IronPort-AV: E=Sophos;i="4.47,500,1257091200"; 
-   d="scan'208";a="540545836"
-Subject: Re: [PATCH 1/1] atmel uaba : Adding invert vbus_pin
-Mime-Version: 1.0 (Apple Message framework v1077)
-Content-Type: text/plain; charset=us-ascii
-From: Ben Nizette <bn@niasdigital.com>
-In-Reply-To: <B5E0EDE940845B429B7ECCE186529F2C0641D177FD@dware2702>
-Date: Tue, 5 Jan 2010 08:54:11 +1100
-Cc: "kernel@avr32linux.org" <kernel@avr32linux.org>,
-       "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Content-Transfer-Encoding: 8BIT
-Message-Id: <0FB63DBE-F99F-405F-BE58-4FAAE83C8298@niasdigital.com>
-References: <B5E0EDE940845B429B7ECCE186529F2C0641D177FD@dware2702>
-To: Eirik Aanonsen <EAA@wprmedical.com>
-X-Mailer: Apple Mail (2.1077)
+	Mon, 4 Jan 2010 16:55:11 -0500
+Received: from mail.gmx.net ([213.165.64.20]:41771 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751883Ab0ADVzK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jan 2010 16:55:10 -0500
+X-Authenticated: #1587495
+X-Provags-ID: V01U2FsdGVkX1+ArJE0Fv+A0PMJvBM1EuTNkVlZeevzBPSrEhdFjX
+	zk5JBNgf9OWVXC
+From: "Stefan Lippers-Hollmann" <s.L-H@gmx.de>
+To: linux-kernel@vger.kernel.org
+Subject: Re: patch scsi-mpt2sas-add-missing-initialization-of-scsih_cmds.patch added to 2.6.32-stable tree
+Date: Mon, 4 Jan 2010 22:55:02 +0100
+User-Agent: KMail/1.12.4 (Linux/2.6.32-2.slh.4-sidux-amd64; KDE/4.3.4; x86_64; ; )
+Cc: kashyap.desai@lsi.com, gregkh@suse.de, James.Bottomley@suse.de,
+       stable@kernel.org
+References: <12626340131357@kroah.org>
+In-Reply-To: <12626340131357@kroah.org>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201001042255.07139.s.L-H@gmx.de>
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.48
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi
 
-On 05/01/2010, at 12:01 AM, Eirik Aanonsen wrote:
-
-> Adding vbus_pin_inverted so that the usb detect pin can be active high or low.
-> This because depending on HW implementation it is better to have active low.
-> Also replaced the pio_get_value(udc->vbus_pin); with a call to vbus_is_present(udc);
+On Monday 04 January 2010, gregkh@suse.de wrote:
+> This is a note to let you know that we have just queued up the patch titled
 > 
-> Signed-off-by: Eirik Aanonsen <eaa@wprmedical.com>
-> ---
-> drivers/usb/gadget/atmel_usba_udc.c |   16 +++++++++++++---
-> drivers/usb/gadget/atmel_usba_udc.h |    1 +
-> include/linux/usb/atmel_usba_udc.h  |    1 +
-> 3 files changed, 15 insertions(+), 3 deletions(-)
+>     Subject: SCSI: mpt2sas: add missing initialization of scsih_cmds
 > 
-> diff --git a/drivers/usb/gadget/atmel_usba_udc.c b/drivers/usb/gadget/atmel_usba_udc.c
-> index 4e970cf..1c469d4 100644
-> --- a/drivers/usb/gadget/atmel_usba_udc.c
-> +++ b/drivers/usb/gadget/atmel_usba_udc.c
-> @@ -320,8 +320,17 @@ static inline void usba_cleanup_debugfs(struct usba_udc *udc)
-> static int vbus_is_present(struct usba_udc *udc)
-> {
-> 	if (gpio_is_valid(udc->vbus_pin))
-> -		return gpio_get_value(udc->vbus_pin);
-> -
-> +	{	
-> +		if(udc->vbus_pin_inverted)
-> +		{
-> +			if( gpio_get_value(udc->vbus_pin) == 1)
-> +				return 0;
-> +			else
-> +				return 1;
-> +		}
-> +		else
-> +			return gpio_get_value(udc->vbus_pin);
-> +	}
+> to the 2.6.32-stable tree.  Its filename is
+> 
+>     scsi-mpt2sas-add-missing-initialization-of-scsih_cmds.patch
 
-return gpio_get_value(udc->vbus_pin) ^ udc->vbus_pin_inverted
+Adding this patch to 2.6.32 (and likely 2.6.31 as well) breaks building the
+current stable queue:
 
-	--Ben.
+  LD      drivers/scsi/mpt2sas/built-in.o
+  CC [M]  drivers/scsi/mpt2sas/mpt2sas_base.o
+drivers/scsi/mpt2sas/mpt2sas_base.c: In function 'mpt2sas_base_attach':
+drivers/scsi/mpt2sas/mpt2sas_base.c:3500: error: 'struct MPT2SAS_ADAPTER' has no member named 'scsih_cmds'
+drivers/scsi/mpt2sas/mpt2sas_base.c:3501: error: 'struct MPT2SAS_ADAPTER' has no member named 'scsih_cmds'
+drivers/scsi/mpt2sas/mpt2sas_base.c:3502: error: 'struct MPT2SAS_ADAPTER' has no member named 'scsih_cmds'
+make[6]: *** [drivers/scsi/mpt2sas/mpt2sas_base.o] Error 1
+make[5]: *** [drivers/scsi/mpt2sas] Error 2
 
+> A git repo of this tree can be found at 
+>     http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
+> 
+> 
+> From d685c262083dcd5fd98b7499b22a377a3225229c Mon Sep 17 00:00:00 2001
+> From: Kashyap, Desai <kashyap.desai@lsi.com>
+> Date: Tue, 17 Nov 2009 13:16:37 +0530
+> Subject: SCSI: mpt2sas: add missing initialization of scsih_cmds
+> 
+> From: Kashyap, Desai <kashyap.desai@lsi.com>
+> 
+> commit d685c262083dcd5fd98b7499b22a377a3225229c upstream.
+> 
+> Internal command scsih_cmds init is included in mpt2sas_base_attach.
+> 
+> Signed-off-by: Kashyap Desai <kashyap.desai@lsi.com>
+> Signed-off-by: James Bottomley <James.Bottomley@suse.de>
+> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> 
+> --- a/drivers/scsi/mpt2sas/mpt2sas_base.c
+> +++ b/drivers/scsi/mpt2sas/mpt2sas_base.c
+> @@ -3583,6 +3583,11 @@ mpt2sas_base_attach(struct MPT2SAS_ADAPTER *ioc)
+>  	ioc->transport_cmds.status = MPT2_CMD_NOT_USED;
+>  	mutex_init(&ioc->transport_cmds.mutex);
+>  
+> +	/* scsih internal command bits */
+> +	ioc->scsih_cmds.reply = kzalloc(ioc->reply_sz, GFP_KERNEL);
+> +	ioc->scsih_cmds.status = MPT2_CMD_NOT_USED;
+> +	mutex_init(&ioc->scsih_cmds.mutex);
+> +
+
+As it seems, the scsih struct member of MPT2SAS_ADAPTER was only added to 
+drivers/scsi/mpt2sas/mpt2sas_base.h during the 2.6.33 merge window, so 
+this patch doesn't seem to be necessary for <2.6.33-rcX.
+
+>  	/* task management internal command bits */
+>  	ioc->tm_cmds.reply = kzalloc(ioc->reply_sz, GFP_KERNEL);
+>  	ioc->tm_cmds.status = MPT2_CMD_NOT_USED;
+
+Regards
+	Stefan Lippers-Hollmann
