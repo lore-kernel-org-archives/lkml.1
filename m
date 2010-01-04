@@ -1,79 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753903Ab0ADT5N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753753Ab0ADUFS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753903Ab0ADT5N (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 14:57:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753045Ab0ADT5I
+	id S1753753Ab0ADUFS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 15:05:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752767Ab0ADUFQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 14:57:08 -0500
-Received: from mail-fx0-f225.google.com ([209.85.220.225]:42955 "EHLO
-	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752979Ab0ADT5C (ORCPT
+	Mon, 4 Jan 2010 15:05:16 -0500
+Received: from out02.mta.xmission.com ([166.70.13.232]:60868 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751051Ab0ADUFO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 14:57:02 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:in-reply-to:references:content-type:date:message-id
-         :mime-version:x-mailer:content-transfer-encoding;
-        b=ba1sKVPxkKjbMMuiyaWsr9gg8dVnVEAhUwDXa7G1wUWe/hiRyiB8oiEZC7essrb7tm
-         Z/LSLMZJm5DLz0g6c3gzvwdZ2CvkLJfpehl16LWs5SyeNz0dLLFr2Bs+r0lpCtwo/NoQ
-         h+BK+PVz2OpgLkjbKuUljIM4M8PXatGOl/rxU=
-Subject: Re: [block subsystem] Need help to prevent races on unexpected
- device removal
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-To: linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <1262546027.4555.17.camel@maxim-laptop>
-References: <1262546027.4555.17.camel@maxim-laptop>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 04 Jan 2010 21:56:57 +0200
-Message-ID: <1262635017.10523.1.camel@maxim-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 4 Jan 2010 15:05:14 -0500
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Yinghai Lu <yinghai@kernel.org>,
+       Jesse Brandeburg <jesse.brandeburg@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "linux-kernel\@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       NetDEV list <netdev@vger.kernel.org>,
+       Jesse Brandeburg <jesse.brandeburg@intel.com>
+Subject: Re: [PATCH 2/2] x86: get more exact nr_irqs
+References: <4B347AEE.6030705@kernel.org> <20091228094707.GH24690@elte.hu>
+	<4B398ECD.1080506@kernel.org>
+	<4807377b1001031906s6b1ee576jc021da2642bb4147@mail.gmail.com>
+	<4B415E73.1050801@kernel.org> <4B41918D.3000605@kernel.org>
+	<m1fx6lizc3.fsf@fess.ebiederm.org>
+	<86802c441001041103s5abd6d3ai4e6ccbfc68323f3c@mail.gmail.com>
+	<m1bph9he9m.fsf@fess.ebiederm.org> <4B4241E2.1020008@zytor.com>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Mon, 04 Jan 2010 12:05:08 -0800
+In-Reply-To: <4B4241E2.1020008@zytor.com> (H. Peter Anvin's message of "Mon\, 04 Jan 2010 11\:30\:42 -0800")
+Message-ID: <m1skald4az.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Scanned: No (on in02.mta.xmission.com); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2010-01-03 at 21:13 +0200, Maxim Levitsky wrote: 
-> During development of hotplug support for mtd translation layer I seems
-> to be unable to figure a way to prevent following race:
-> 
-> First of all, a block device is registered. I attach a private structure
-> to that device to save all internal information.
-> 
-> Then out of the blue (when user pulls off the card) I receive a request
-> to remove the device.
-> 
-> In the function that handles such removal, I do:
-> 
-> del_gendisk(...
-> blk_start_queue
-> 
-> stop thread that processes the requests
-> 
-> blk_cleanup_queue(old->rq);
-> 
-> 
-> The problem is that I don't know where/when to free the private
-> structure.
-> 
-> I though about adding a field to the structure, with name 'invalid', so
-> that release will not attempt to go futher, but free the structure, but
-> what happens if release is never called?
-> In other words this will work as long as there is a user of the block
-> device.
-> 
-> I thought then that I can detect that condition and free the structure
-> in the removal function itself, but then I get a race with ->open
-> running in same time, and mutex will not prevent it, I will have to
-> release it somewhen, and then ->open will access a freed structure....
-> 
-> 
-> Best regards,
-> Maxim Levitsky
-> 
+"H. Peter Anvin" <hpa@zytor.com> writes:
 
-Still don't know how to do that properly....
+> On 01/04/2010 11:16 AM, Eric W. Biederman wrote:
+>> 
+>> If we care about memory use efficiency let's replace irq_desc_ptrs
+>> with a rbtree or a radix_tree.  Something that moves the memory use
+>> penalty onto those machines that have a lot of irqs.
+>> 
+>
+> rbtree doesn't make much sense for something that is addressed by index,
+> and doesn't need to answer questions of the form "give me the highest
+> member <= X".  A hash table or radix tree makes sense, depending on the
+> expected sparseness of the index.
 
-Best regards,
-Maxim Levitsky
+Not counting irqs for msi's I think we are looking 36% to 25% fill.  Maybe
+a little lower.  The sparseness is much higher if we count the number of
+irqs that we might/use allocate as we do today.
 
+Short of driver hotplug msis should be allocated densely, unless we start
+reserving all possible 4K msi-x vectors.
+
+For each ioapic we allocate 16 gsis, and only maybe four of them are
+connected to actual pci slots.
+
+This is essentially a slow path operation, so as long as we are not
+too expensive we can use any data structure we want.  In kernel hash
+tables don't grow well so I don't think a hash table is a good choice,
+and a hash table is essentially what we have now.
+
+The truth is we don't know how many irqs we will have until msi
+supporting drivers claim all of theirs.
+
+I think a radix-tree would likely be the least intrusive choice as it
+does not imply any changes to the data structure indexed.
+
+Eric
