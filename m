@@ -1,68 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753598Ab0ADRXz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753651Ab0ADRYI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753598Ab0ADRXz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 12:23:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753575Ab0ADRXy
+	id S1753651Ab0ADRYI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 12:24:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753619Ab0ADRYF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 12:23:54 -0500
-Received: from smtp-out5.blueyonder.co.uk ([195.188.213.8]:60430 "EHLO
-	smtp-out5.blueyonder.co.uk" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753555Ab0ADRXx (ORCPT
+	Mon, 4 Jan 2010 12:24:05 -0500
+Received: from nlpi129.sbcis.sbc.com ([207.115.36.143]:40600 "EHLO
+	nlpi129.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753525Ab0ADRX6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 12:23:53 -0500
-Message-ID: <4B422426.7090901@blueyonder.co.uk>
-Date: Mon, 04 Jan 2010 17:23:50 +0000
-From: Sid Boyce <sboyce@blueyonder.co.uk>
-Reply-To: sboyce@blueyonder.co.uk
-Organization: blueyonder.co.uk
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-GB; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.10 Thunderbird/3.0 ThunderBrowse/3.2.6.8
+	Mon, 4 Jan 2010 12:23:58 -0500
+Date: Mon, 4 Jan 2010 11:22:48 -0600 (CST)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@router.home
+To: Tejun Heo <tj@kernel.org>
+cc: linux-kernel@vger.kernel.org, Mel Gorman <mel@csn.ul.ie>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [this_cpu_xx V8 07/16] Module handling: Use this_cpu_xx to
+ dynamically allocate counters
+In-Reply-To: <4B317B5E.1010500@kernel.org>
+Message-ID: <alpine.DEB.2.00.1001041121570.7191@router.home>
+References: <20091218222617.384355422@quilx.com> <20091218222651.319887863@quilx.com> <4B2F2820.5030904@kernel.org> <alpine.DEB.2.00.0912220956340.12163@router.home> <4B317B5E.1010500@kernel.org>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-To: Len Brown <lenb@kernel.org>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, x86@kernel.org
-Subject: Re: All kernels after 2.6.32-git10  show only 1 CPU ** NOT Fixed
- in 2.6.33-rc2 either **
-References: <4B324B76.9020901@blueyonder.co.uk> <4B33670C.7050503@blueyonder.co.uk> <4B341149.9010106@blueyonder.co.uk> <4B363EEE.8020108@blueyonder.co.uk> <alpine.LFD.2.00.0912261457550.4089@localhost.localdomain> <4B37F16D.1040000@blueyonder.co.uk> <4B37F3F8.5000108@blueyonder.co.uk> <4B38C3AF.1060509@blueyonder.co.uk> <4B393CDF.5040404@blueyonder.co.uk> <alpine.LFD.2.00.0912291512380.14938@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0912291512380.14938@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 29/12/09 20:19, Len Brown wrote:
-> On Mon, 28 Dec 2009, Sid Boyce wrote:
-> 
->> This dmesg is from a freshly built 2.6.32. The following do not appear
->> in later 2.6.32-git or 2.6.33-rc kernels.
->> # grep LAPIC /DMESG_2.6.32_tindog
->> ACPI: LAPIC (acpi_id[0x00] lapic_id[0x00] enabled)
->> ACPI: LAPIC (acpi_id[0x01] lapic_id[0x01] enabled)
->> ACPI: LAPIC (acpi_id[0x02] lapic_id[0x02] disabled)
->> ACPI: LAPIC (acpi_id[0x03] lapic_id[0x03] disabled)
->> ACPI: LAPIC_NMI (acpi_id[0x00] high edge lint[0x1])
->> ACPI: LAPIC_NMI (acpi_id[0x01] high edge lint[0x1])
->> ACPI: LAPIC_NMI (acpi_id[0x02] high edge lint[0x1])
->> ACPI: LAPIC_NMI (acpi_id[0x03] high edge lint[0x1]
-> 
-> Right, your local apic is not found, ie this is missing
-> in the 2.6.33 dmesg:
-> 
-> ACPI: Local APIC address 0xfee00000
-> 
-> Strange, as CONFIG_X86_LOCAL_APIC=y
-> 
-> -Len
-> Len Brown, Intel Open Source Technology Center
-> 
-> 
+On Wed, 23 Dec 2009, Tejun Heo wrote:
 
-2.6.33-rc2-git5 booted and showed both CPU's on first boot, on
-subsequent boots it hung at HDA irq 22 as it did on earlier kernels.
-Regards
-Sid.
--- 
-Sid Boyce ... Hamradio License G3VBV, Licensed Private Pilot
-Emeritus IBM/Amdahl Mainframes and Sun/Fujitsu Servers Tech Support
-Specialist, Cricket Coach
-Microsoft Windows Free Zone - Linux used for all Computing Tasks
+> On 12/23/2009 12:57 AM, Christoph Lameter wrote:
+> > On Mon, 21 Dec 2009, Tejun Heo wrote:
+> >
+> >>
+> >>> Index: linux-2.6/kernel/trace/ring_buffer.c
+> >>> ===================================================================
+> >>> --- linux-2.6.orig/kernel/trace/ring_buffer.c	2009-12-18 13:13:24.000000000 -0600
+> >>> +++ linux-2.6/kernel/trace/ring_buffer.c	2009-12-18 14:15:57.000000000 -0600
+> >>> @@ -12,6 +12,7 @@
+> >>>  #include <linux/hardirq.h>
+> >>>  #include <linux/kmemcheck.h>
+> >>>  #include <linux/module.h>
+> >>> +#include <asm/local.h>
+> >>
+> >> This doesn't belong to this patch, right?  I stripped this part out,
+> >> added Cc: to Rusty and applied 1, 2, 7 and 8 to percpu branch.  I'll
+> >> post the updated patch here. Thanks.
+> >
+> > If you strip this part out then ringbuffer.c will no longer compile
+> > since it relies on the "#include <local.h>" that is removed by this patch
+> > from the module.h file.
+>
+> Oh... alright.  I'll add that comment and drop the offending chunk and
+> recommit.
+
+So we need a separate patch to deal with remval of the #include
+<asm/local.h> from modules.h?
 
