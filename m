@@ -1,55 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753700Ab0ADTDJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753863Ab0ADTDR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753700Ab0ADTDJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 14:03:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753526Ab0ADTDH
+	id S1753863Ab0ADTDR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 14:03:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753645Ab0ADTDJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 14:03:07 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:35539 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753422Ab0ADTDG (ORCPT
+	Mon, 4 Jan 2010 14:03:09 -0500
+Received: from mail-px0-f174.google.com ([209.85.216.174]:41992 "EHLO
+	mail-px0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753409Ab0ADTDG convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 4 Jan 2010 14:03:06 -0500
-Message-ID: <4B423B08.3010005@zytor.com>
-Date: Mon, 04 Jan 2010 11:01:28 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=mB0r23C8mmsWaMBXV04zzU1x/sElXRb0XesksEf46Xx4GjJHVJ2m3Sb9V4dsXRn4E3
+         xUh9gqQivXtw5dnNtvTXC1Yr1Bf+wE490A9d3yFcehpyQyX/xO0fiPVUlQrjsk6mgchn
+         rqPXJxAmWTqmGICCv5ig4GJGjtE7+7LlZqia4=
 MIME-Version: 1.0
+In-Reply-To: <m1fx6lizc3.fsf@fess.ebiederm.org>
+References: <4B347AEE.6030705@kernel.org> <20091228094707.GH24690@elte.hu>
+	 <4B398ECD.1080506@kernel.org>
+	 <4807377b1001031906s6b1ee576jc021da2642bb4147@mail.gmail.com>
+	 <4B415E73.1050801@kernel.org> <4B41918D.3000605@kernel.org>
+	 <m1fx6lizc3.fsf@fess.ebiederm.org>
+Date: Mon, 4 Jan 2010 11:03:02 -0800
+X-Google-Sender-Auth: fc3c67f6be0686f8
+Message-ID: <86802c441001041103s5abd6d3ai4e6ccbfc68323f3c@mail.gmail.com>
+Subject: Re: [PATCH 2/2] x86: get more exact nr_irqs
+From: Yinghai Lu <yinghai@kernel.org>
 To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Yinghai Lu <yinghai@kernel.org>,
-       Jesse Brandeburg <jesse.brandeburg@gmail.com>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+Cc: Jesse Brandeburg <jesse.brandeburg@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>,
        NetDEV list <netdev@vger.kernel.org>,
        Jesse Brandeburg <jesse.brandeburg@intel.com>
-Subject: Re: Subject: [PATCH 1/2] x86: get back 15 vectors
-References: <4B347AEE.6030705@kernel.org> <20091228094707.GH24690@elte.hu>	<4B398ECD.1080506@kernel.org>	<4807377b1001031906s6b1ee576jc021da2642bb4147@mail.gmail.com>	<4B415E73.1050801@kernel.org> <4B419113.1090204@kernel.org> <m1aawtlu6y.fsf@fess.ebiederm.org>
-In-Reply-To: <m1aawtlu6y.fsf@fess.ebiederm.org>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/04/2010 08:18 AM, Eric W. Biederman wrote:
+On Mon, Jan 4, 2010 at 8:55 AM, Eric W. Biederman <ebiederm@xmission.com> wrote:
 > Yinghai Lu <yinghai@kernel.org> writes:
-> 
-> This patch is wrong.
-> 
->> between FIRST_EXTERNAL_VECTOR (0x20) and FIRST_DEVICE_VECTOR (0x41)
+>
+>> first check with NR_VECTORS - FIRST_EXTERNAL_VECTOR - 0x20
+>> aka minus exceptions and system vectors.
 >>
->> for 0x20 and 0x2f, we are safe be used_vectors will prevent it to use used one.
-> 
-> We can not use any of 0x20 - 0x2f for ioapic irqs.  We need the entire
-> priority level to ensure that the irq move cleanup ipi is of a lower
-> priority.
-> 
+>> NR_CPUS = 512, and nr_cpu_ids = 128
+>> will have NR_IRQS = 256 + 512 * 64 = 33024
+>>
+>> assume we have 20 intel ixgbe 6 port cards (with sriov and ixgbevf)
+>>       20 * 6 * 64 * 3 = 23040
+>>
+>> first will get:
+>>       128 * (256 - 64) = 24576
+>> then with nr_irqs_gsi will get
+>>       (120 + 8 * 128 + 120 * 256) = 31864
+>>
+>> so 24576 will be used for nr_irqs.
+>>
+>> 24576 * 8 = 196608 bytes will be used for irq_desc_ptrs[]
+>>
+>> before this patch:
+>>     have nr_irqs = 120 + 8 * 128 + 120 * 64 = 8824
+>>       and irq_desc_ptrs[] is 70592
+>>
+>> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+>
+> I am lost.    arch_probe_nr_irqs appears to be total nonsense.
+>
+> We have three concepts.
+> - The number of irq sources we can talk about.  ( nr_irqs)
+> - The number of irqs we can possibly service.   ((NR_VECTORS - 0x30) *nr_cpu_ids)
+> - The number of irqs we actually connected up to cards in the
+>  system that we need to do something with.
+>
+> Why do we need to allocate arrays at all?
+>
 
-Almost makes one want to abuse 0x1f for that.  Although 0x00..0x1f are
-reserved for exceptions, the APICs range down to 0x10, and well, when
-0x1f ends up actually getting used as an exception vector that we
-support, then we can trivially change that.  In the meantime it would
-actually make use of an otherwise-unusable APIC priority level.
+irq_desc is allocated dynamically.
 
-	-hpa
+but irq_desc_ptrs is pointer array, it need to be allocated after
+nr_irqs is probed.
+
+YH
