@@ -1,13 +1,13 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754118Ab0ADXJz (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Mon, 4 Jan 2010 18:09:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754050Ab0ADXJY
+	id S1754006Ab0ADXKd (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Mon, 4 Jan 2010 18:10:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753903Ab0ADXJW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 18:09:24 -0500
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:39520 "EHLO e2.ny.us.ibm.com"
+	Mon, 4 Jan 2010 18:09:22 -0500
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:38842 "EHLO e5.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754005Ab0ADXJR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 18:09:17 -0500
+	id S1754001Ab0ADXJQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jan 2010 18:09:16 -0500
 From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org
 Cc: mingo@elte.hu, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
@@ -16,9 +16,9 @@ Cc: mingo@elte.hu, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
         tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
         Valdis.Kletnieks@vt.edu, dhowells@redhat.com,
         "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: [PATCH tip/core/rcu 09/11] rcu: remove redundant grace-period check
-Date: Mon,  4 Jan 2010 15:09:08 -0800
-Message-Id: <1262646550562-git-send-email->
+Subject: [PATCH tip/core/rcu 06/11] rcu: eliminate second argument of rcu_process_dyntick()
+Date: Mon,  4 Jan 2010 15:09:05 -0800
+Message-Id: <12626465503786-git-send-email->
 X-Mailer: git-send-email 1.5.2.5
 In-Reply-To: <20100104230850.GA22111@linux.vnet.ibm.com>
 References: <20100104230850.GA22111@linux.vnet.ibm.com>
@@ -28,61 +28,64 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 
-The rcu_process_dyntick() function checks twice for the end of
-the current grace period.  However, it holds the current rcu_node
-structure's ->lock field throughout, and doesn't get to the second call
-to rcu_gp_in_progress() unless there is at least one CPU corresponding
-to this rcu_node structure that has not yet checked in for the current
-grace period, which would prevent the current grace period from ending.
-So the current grace period cannot have ended, and the second check is
-redundant, so remove it.
-
-Also, given that this function is used even with !CONFIG_NO_HZ, its name
-is quite misleading.  Change from rcu_process_dyntick() to force_qs_rnp().
+At this point, the second argument to all calls to rcu_process_dyntick()
+is a function of the same field of the structure passed in as the first
+argument, namely, rsp->gpnum-1.  So propagate rsp->gpnum-1 to all uses
+of the second argument within rcu_process_dyntick() and then eliminate
+the second argument.
 
 Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 ---
- kernel/rcutree.c |    9 ++++-----
- 1 files changed, 4 insertions(+), 5 deletions(-)
+ kernel/rcutree.c |   11 +++++------
+ 1 files changed, 5 insertions(+), 6 deletions(-)
 
 diff --git a/kernel/rcutree.c b/kernel/rcutree.c
-index 6268f37..d920285 100644
+index 62b6433..c7d0070 100644
 --- a/kernel/rcutree.c
 +++ b/kernel/rcutree.c
-@@ -1146,8 +1146,7 @@ void rcu_check_callbacks(int cpu, int user)
-  * have not yet encountered a quiescent state, using the function specified.
-  * The caller must have suppressed start of new grace periods.
+@@ -1147,7 +1147,7 @@ void rcu_check_callbacks(int cpu, int user)
+  * Returns 1 if the current grace period ends while scanning (possibly
+  * because we made it end).
   */
--static void rcu_process_dyntick(struct rcu_state *rsp,
--				int (*f)(struct rcu_data *))
-+static void force_qs_rnp(struct rcu_state *rsp, int (*f)(struct rcu_data *))
+-static int rcu_process_dyntick(struct rcu_state *rsp, long lastcomp,
++static int rcu_process_dyntick(struct rcu_state *rsp,
+ 			       int (*f)(struct rcu_data *))
  {
  	unsigned long bit;
- 	int cpu;
-@@ -1172,7 +1171,7 @@ static void rcu_process_dyntick(struct rcu_state *rsp,
+@@ -1159,7 +1159,7 @@ static int rcu_process_dyntick(struct rcu_state *rsp, long lastcomp,
+ 	rcu_for_each_leaf_node(rsp, rnp) {
+ 		mask = 0;
+ 		spin_lock_irqsave(&rnp->lock, flags);
+-		if (rnp->completed != lastcomp) {
++		if (rnp->completed != rsp->gpnum - 1) {
+ 			spin_unlock_irqrestore(&rnp->lock, flags);
+ 			return 1;
+ 		}
+@@ -1173,7 +1173,7 @@ static int rcu_process_dyntick(struct rcu_state *rsp, long lastcomp,
  			if ((rnp->qsmask & bit) != 0 && f(rsp->rda[cpu]))
  				mask |= bit;
  		}
--		if (mask != 0 && rcu_gp_in_progress(rsp)) {
-+		if (mask != 0) {
+-		if (mask != 0 && rnp->completed == lastcomp) {
++		if (mask != 0 && rnp->completed == rsp->gpnum - 1) {
  
  			/* rcu_report_qs_rnp() releases rnp->lock. */
  			rcu_report_qs_rnp(mask, rsp, rnp, flags);
-@@ -1222,7 +1221,7 @@ static void force_quiescent_state(struct rcu_state *rsp, int relaxed)
+@@ -1226,7 +1226,7 @@ static void force_quiescent_state(struct rcu_state *rsp, int relaxed)
  			break; /* So gcc recognizes the dead code. */
  
  		/* Record dyntick-idle state. */
--		rcu_process_dyntick(rsp, dyntick_save_progress_counter);
-+		force_qs_rnp(rsp, dyntick_save_progress_counter);
+-		gpdone = rcu_process_dyntick(rsp, rsp->gpnum - 1,
++		gpdone = rcu_process_dyntick(rsp,
+ 					     dyntick_save_progress_counter);
  		spin_lock(&rnp->lock);  /* irqs already disabled */
- 		if (rcu_gp_in_progress(rsp))
- 			rsp->signaled = RCU_FORCE_QS;
-@@ -1232,7 +1231,7 @@ static void force_quiescent_state(struct rcu_state *rsp, int relaxed)
+ 		if (gpdone)
+@@ -1249,8 +1249,7 @@ static void force_quiescent_state(struct rcu_state *rsp, int relaxed)
  
  		/* Check dyntick-idle state, send IPI to laggarts. */
  		spin_unlock(&rnp->lock);  /* irqs remain disabled */
--		rcu_process_dyntick(rsp, rcu_implicit_dynticks_qs);
-+		force_qs_rnp(rsp, rcu_implicit_dynticks_qs);
+-		gpdone = rcu_process_dyntick(rsp, rsp->gpnum - 1,
+-					     rcu_implicit_dynticks_qs);
++		gpdone = rcu_process_dyntick(rsp, rcu_implicit_dynticks_qs);
  
  		/* Leave state in case more forcing is required. */
  
