@@ -1,83 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754306Ab0ADXoz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754327Ab0ADXpL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754306Ab0ADXoz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 18:44:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754224Ab0ADXoU
+	id S1754327Ab0ADXpL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 18:45:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754297Ab0ADXoy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 18:44:20 -0500
-Received: from mail02d.mail.t-online.hu ([84.2.42.7]:56075 "EHLO
-	mail02d.mail.t-online.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754220Ab0ADXoS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 18:44:18 -0500
-X-Authuid: nmarci
-Message-ID: <4B427D48.7000100@freemail.hu>
-Date: Tue, 05 Jan 2010 00:44:08 +0100
-From: =?UTF-8?B?TsOpbWV0aCBNw6FydG9u?= <nm127@freemail.hu>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; hu-HU; rv:1.8.1.21) Gecko/20090402 SeaMonkey/1.1.16
+	Mon, 4 Jan 2010 18:44:54 -0500
+Received: from cantor.suse.de ([195.135.220.2]:34829 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754287Ab0ADXov (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jan 2010 18:44:51 -0500
+Date: Mon, 4 Jan 2010 15:44:02 -0800
+From: Greg KH <gregkh@suse.de>
+To: Stefan Lippers-Hollmann <s.L-H@gmx.de>
+Cc: linux-kernel@vger.kernel.org, kashyap.desai@lsi.com,
+       James.Bottomley@suse.de, stable@kernel.org
+Subject: Re: patch
+ scsi-mpt2sas-add-missing-initialization-of-scsih_cmds.patch added to
+ 2.6.32-stable tree
+Message-ID: <20100104234401.GA10770@suse.de>
+References: <12626340131357@kroah.org>
+ <201001042255.07139.s.L-H@gmx.de>
 MIME-Version: 1.0
-To: Aurelien Jarno <aurelien@aurel32.net>, lm-sensors@lm-sensors.org
-CC: Julia Lawall <julia@diku.dk>, cocci@diku.dk,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 4/5] sis5595: make PCI device id constant
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-DCC-mail.t-online.hu-Metrics: mail02d.mail.t-online.hu 32711; Body=5 Fuz1=5
-	Fuz2=9
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <201001042255.07139.s.L-H@gmx.de>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Márton Németh <nm127@freemail.hu>
+On Mon, Jan 04, 2010 at 10:55:02PM +0100, Stefan Lippers-Hollmann wrote:
+> Hi
+> 
+> On Monday 04 January 2010, gregkh@suse.de wrote:
+> > This is a note to let you know that we have just queued up the patch titled
+> > 
+> >     Subject: SCSI: mpt2sas: add missing initialization of scsih_cmds
+> > 
+> > to the 2.6.32-stable tree.  Its filename is
+> > 
+> >     scsi-mpt2sas-add-missing-initialization-of-scsih_cmds.patch
+> 
+> Adding this patch to 2.6.32 (and likely 2.6.31 as well) breaks building the
+> current stable queue:
+> 
+>   LD      drivers/scsi/mpt2sas/built-in.o
+>   CC [M]  drivers/scsi/mpt2sas/mpt2sas_base.o
+> drivers/scsi/mpt2sas/mpt2sas_base.c: In function 'mpt2sas_base_attach':
+> drivers/scsi/mpt2sas/mpt2sas_base.c:3500: error: 'struct MPT2SAS_ADAPTER' has no member named 'scsih_cmds'
+> drivers/scsi/mpt2sas/mpt2sas_base.c:3501: error: 'struct MPT2SAS_ADAPTER' has no member named 'scsih_cmds'
+> drivers/scsi/mpt2sas/mpt2sas_base.c:3502: error: 'struct MPT2SAS_ADAPTER' has no member named 'scsih_cmds'
+> make[6]: *** [drivers/scsi/mpt2sas/mpt2sas_base.o] Error 1
+> make[5]: *** [drivers/scsi/mpt2sas] Error 2
 
-The id_table field of the struct pci_driver is constant in <linux/pci.h>
-so it is worth to make pci_device_id also constant.
+Thanks, your build system seems faster than mine :)
 
-The semantic match that finds this kind of pattern is as follows:
-(http://coccinelle.lip6.fr/)
+I've deleted this patch from both the .31 and .32 queues.
 
-// <smpl>
-@r@
-identifier I1, I2, x;
-@@
-	struct I1 {
-	  ...
-	  const struct I2 *x;
-	  ...
-	};
-@s@
-identifier r.I1, y;
-identifier r.x, E;
-@@
-	struct I1 y = {
-	  .x = E,
-	};
-@c@
-identifier r.I2;
-identifier s.E;
-@@
-	const struct I2 E[] = ... ;
-@depends on !c@
-identifier r.I2;
-identifier s.E;
-@@
-+	const
-	struct I2 E[] = ...;
-// </smpl>
-
-Signed-off-by: Márton Németh <nm127@freemail.hu>
-Cc: Julia Lawall <julia@diku.dk>
-Cc: cocci@diku.dk
----
-diff -u -p a/drivers/hwmon/sis5595.c b/drivers/hwmon/sis5595.c
---- a/drivers/hwmon/sis5595.c 2009-12-03 04:51:21.000000000 +0100
-+++ b/drivers/hwmon/sis5595.c 2010-01-03 20:55:51.000000000 +0100
-@@ -697,7 +697,7 @@ static struct sis5595_data *sis5595_upda
- 	return data;
- }
-
--static struct pci_device_id sis5595_pci_ids[] = {
-+static const struct pci_device_id sis5595_pci_ids[] = {
- 	{ PCI_DEVICE(PCI_VENDOR_ID_SI, PCI_DEVICE_ID_SI_503) },
- 	{ 0, }
- };
+greg k-h
