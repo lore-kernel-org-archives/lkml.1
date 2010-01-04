@@ -1,87 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753365Ab0ADRL1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753487Ab0ADRMU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753365Ab0ADRL1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 12:11:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752581Ab0ADRLY
+	id S1753487Ab0ADRMU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 12:12:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753439Ab0ADRMQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 12:11:24 -0500
-Received: from mailgw.kvados.cz ([194.213.53.146]:35285 "EHLO mailgw.kvados.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752392Ab0ADRLY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 12:11:24 -0500
-From: Milan Dadok <milan@dadok.name>
-To: "'Patrick McHardy'" <kaber@trash.net>
-CC: <uaca@alumni.uv.es>, <johann.baudy@gnu-log.net>,
-       <linux-kernel@vger.kernel.org>, <netdev@vger.kernel.org>
-References: <001801ca8d1d$90c68de0$b253a9a0$@name> <4B41F292.8080908@trash.net> <001b01ca8d52$817d07d0$84771770$@name> <4B421785.6090403@trash.net>
-In-Reply-To: <4B421785.6090403@trash.net>
-Subject: RE: [PATCH] 1/1 net: packet: Keep 802.1Q VLAN tag in packet on SOCK_DGRAM socket - resend
-Date: Mon, 4 Jan 2010 18:11:17 +0100
-Message-ID: <001c01ca8d60$eda21640$c8e642c0$@name>
+	Mon, 4 Jan 2010 12:12:16 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:34119 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753158Ab0ADRMO convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jan 2010 12:12:14 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=O86UxUcrleVFnwz+ctdx6G+55fO5s6Fxra37mw7EIM1U5ztUpHJFCWa4M6rTaoHnAK
+         +3VtyFewRxzJ1lKWN0MVOEgWWFMs+aricqsa11HYd6PhUUZLczLFhrtV7Jre5JvUddfw
+         34hrjNT6EHHvS5jGtFOPXzYP4MfeA3nbSagtE=
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Microsoft Office Outlook 12.0
-Thread-Index: AcqNWyjT3sriCytIS0GDZtVJr4SBwAAADS8g
-Content-Language: cs
+In-Reply-To: <20100104162107.16880.67633.stgit@localhost.localdomain>
+References: <20100104162107.16880.67633.stgit@localhost.localdomain>
+Date: Mon, 4 Jan 2010 18:12:12 +0100
+Message-ID: <520f0cf11001040912y67aab8e0x619baeed4883184f@mail.gmail.com>
+Subject: Re: [PATCH] sonypi: Kill off the BKL in the ioctl
+From: John Kacur <jkacur@gmail.com>
+To: Alan Cox <alan@linux.intel.com>
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->Patrick McHardy wrote:
->> Currently pseudo-header contains for OUTGOING packet on physical card (vlan10@eth1)
->> a) HW accelarated network card  
->> protocol = ethertype IPv4 (0x0800)
->> tci = vlan number = 10
->> and data starts with 4500 0028
->> 
->> b) non HW accelerated network card 
->> protocol = ethertype 802.1Q (0x8100)
->> tci = 0
->> and data starts with 4500 0028
->> vlan tci and real protocol number (ARP,IPV4,IPV6) of data is lost 
->>
->As mentioned in the text I quoted, this is apparently what is
->intended for SOCK_DGRAM packet sockets. The accelerated case is
->inconsistent and vlan_tci should be cleared I guess.
+On Mon, Jan 4, 2010 at 5:21 PM, Alan Cox <alan@linux.intel.com> wrote:
+> And another thats been ignored for several months
 >
->I agree that sll_protocol should reflect the network protocol
->in this case however.
-
-There are probablly two solution SOCK_DGRAM
-A. sll_protocol will have outer network protokol and packet data will have all data after that network protokol field
-	(sll tci will be <>0 only with VLAN acceleration)
-
-B. ssl_protocol will have the most inner network protokol (Ipv4, ARP, Ipv6)
-	and cooked sll will have fields for restore all encapsulation protocols
-	(on eth1 I need to know, if packet is send with vlan 1010 in vlan 10 or as vlan 10 in vlan 1010)
-
->> I have no problems with received packets, only outgoing packet have problem.
->> I think that out packet on SOCK_DGRAM sockets MUST BE in same format as in (received) packet on same interface.
->> Can we agree on this?
+> --
 >
->Yes, agreed.
+> All the internal logic is protected properly by the existing mutex locking
+>
+> Signed-off-by: Alan Cox <alan@linux.intel.com>
+> ---
+>
+>  drivers/char/sonypi.c |    6 +++---
+>  1 files changed, 3 insertions(+), 3 deletions(-)
+>
+>
+> diff --git a/drivers/char/sonypi.c b/drivers/char/sonypi.c
+> index 0798754..6a574bf 100644
+> --- a/drivers/char/sonypi.c
+> +++ b/drivers/char/sonypi.c
+> @@ -955,8 +955,8 @@ static unsigned int sonypi_misc_poll(struct file *file, poll_table *wait)
+>        return 0;
+>  }
+>
+> -static int sonypi_misc_ioctl(struct inode *ip, struct file *fp,
+> -                            unsigned int cmd, unsigned long arg)
+> +static long sonypi_misc_ioctl(struct file *fp,
+> +                                       unsigned int cmd, unsigned long arg)
+>  {
+>        int ret = 0;
+>        void __user *argp = (void __user *)arg;
+> @@ -1074,7 +1074,7 @@ static const struct file_operations sonypi_misc_fops = {
+>        .open           = sonypi_misc_open,
+>        .release        = sonypi_misc_release,
+>        .fasync         = sonypi_misc_fasync,
+> -       .ioctl          = sonypi_misc_ioctl,
+> +       .unlocked_ioctl = sonypi_misc_ioctl,
+>  };
+>
+>  static struct miscdevice sonypi_misc_device = {
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
 
-Now receive path is working as in solution A (if I remember correctly from my tests)
-- packet data with all 802.1Q tags are send throu SOCK_DGRAM in same format as in SOCK_RAW (expect MAC header)
-  (on HW vlan accel first VLAN tag is in tci field of TPACKET_V2)
+I submitted this in October that would also remove the bkl from the
+sonypi_misc_open function too.
+http://lkml.indiana.edu/hypermail/linux/kernel/0910.2/01405.html
 
-Outgoing packet in SOCK_RAW is same as in receive.
-Outgoing packet in SOCK_DGRAM - solution B with invalid sll_protokol
-
-My patch is trying to change behaviour of outgoing packet in SOCK_DGRAM to same format as in received SOCK_DGRAM or SOCK_RAW
-
-PS. There is one BIG question - how can I write kernel filter for filter explicit vlan number,
-which can be used at the same time on HW vlan accelerated card (outer VLAN is in tci) and
-non HW vlan accelerated card (outer VLAN is at the beggining of packet data)
-
-Only solution I found, is to use user level filter and recreate vlan tag from sll tci in userspace before running filter.
-
-Milan
-
-
-
-
-
-
-
+Thanks
