@@ -1,61 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754252Ab0ADXst@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753577Ab0ADXvr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754252Ab0ADXst (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 18:48:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754230Ab0ADXsr
+	id S1753577Ab0ADXvr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 18:51:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751612Ab0ADXvq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 18:48:47 -0500
-Received: from outbound-mail-141.bluehost.com ([67.222.38.31]:51818 "HELO
-	outbound-mail-141.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754224Ab0ADXsq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 18:48:46 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=N3J/dHuvqgQZvUVY/0FFx6Tal+vm8ItVEgailJU9MsmlRhjb7aP+UKbcIxdHOj3Ce1LIha9tFbOu+4mwJYHkzv5gTXxX/Knlq/gPno8YB305Ci1MdO/84sBpXStfvBnE;
-Date: Mon, 4 Jan 2010 15:48:43 -0800
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: linux-next: pci tree build failure
-Message-ID: <20100104154843.294c06ff@jbarnes-piketon>
-In-Reply-To: <20100104231001.GF9882@parisc-linux.org>
-References: <20100105095543.8c446cb7.sfr@canb.auug.org.au>
-	<20100104231001.GF9882@parisc-linux.org>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 4 Jan 2010 18:51:46 -0500
+Received: from hera.kernel.org ([140.211.167.34]:52787 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751086Ab0ADXvp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jan 2010 18:51:45 -0500
+Message-ID: <4B427EA4.3040706@kernel.org>
+Date: Mon, 04 Jan 2010 15:49:56 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
+MIME-Version: 1.0
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Jesse Brandeburg <jesse.brandeburg@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       NetDEV list <netdev@vger.kernel.org>,
+       Jesse Brandeburg <jesse.brandeburg@intel.com>,
+       Suresh Siddha <suresh.b.siddha@intel.com>
+Subject: Re: Subject: [PATCH 1/2] x86: get back 15 vectors
+References: <4B347AEE.6030705@kernel.org> <20091228094707.GH24690@elte.hu>	<4B398ECD.1080506@kernel.org>	<4807377b1001031906s6b1ee576jc021da2642bb4147@mail.gmail.com>	<4B415E73.1050801@kernel.org> <4B419113.1090204@kernel.org>	<m1aawtlu6y.fsf@fess.ebiederm.org> <4B423B08.3010005@zytor.com>	<m1my0thelq.fsf@fess.ebiederm.org> <4B424305.7050803@kernel.org>	<4B4245FC.7070902@zytor.com> <4B424A5C.7080309@kernel.org> <m1y6kdbpad.fsf@fess.ebiederm.org> <4B425085.5040103@kernel.org> <4B42595E.9010404@zytor.com> <4B425BB7.90501@kernel.org> <4B425EB5.5080504@zytor.com> <4B426550.6000209@kernel.org> <4B4273D4.2080709@zytor.com> <4B427A8C.1040902@kernel.org> <4B427BF0.1040001@zytor.com>
+In-Reply-To: <4B427BF0.1040001@zytor.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 4 Jan 2010 16:10:01 -0700
-Matthew Wilcox <matthew@wil.cx> wrote:
+why not start from 0x30, 0x38, 0x40, 0x48 ...
+instead of 0x31, 0x39, 0x41, 0x47...?
 
-> On Tue, Jan 05, 2010 at 09:55:43AM +1100, Stephen Rothwell wrote:
-> > Today's linux-next build (powerpc ppc64_defconfig) failed like this:
-> > 
-> > drivers/pci/hotplug/rpaphp_core.c:433: error: unknown field
-> > 'get_max_bus_speed' specified in initializer
-> > drivers/pci/hotplug/rpaphp_core.c:433: warning: excess elements in
-> > struct initializer drivers/pci/hotplug/rpaphp_core.c:433: warning:
-> > (near initialization for 'rpaphp_hotplug_slot_ops')
-> > 
-> > Caused by commit 7227d60c98ad0e1af49c717a62515d74002dd754 ("PCI:
-> > Make current and maximum bus speeds part of the PCI core").
-> > 
-> > I have used the version of the pci tree from next-20100104 for
-> > today.
-> 
-> Doh, sorry.  I don't have a handy powerpc environment around to test
-> with. Can you try just deleting line 433?  (this should actually be
-> the correct fix).
+YH
 
-I just pushed that into my linux-next tree.
 
-Thanks,
--- 
-Jesse Barnes, Intel Open Source Technology Center
+
