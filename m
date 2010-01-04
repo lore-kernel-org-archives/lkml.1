@@ -1,60 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754327Ab0ADXpL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754173Ab0ADXr4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754327Ab0ADXpL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 18:45:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754297Ab0ADXoy
+	id S1754173Ab0ADXr4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 18:47:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754093Ab0ADXry
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 18:44:54 -0500
-Received: from cantor.suse.de ([195.135.220.2]:34829 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754287Ab0ADXov (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 18:44:51 -0500
-Date: Mon, 4 Jan 2010 15:44:02 -0800
-From: Greg KH <gregkh@suse.de>
-To: Stefan Lippers-Hollmann <s.L-H@gmx.de>
-Cc: linux-kernel@vger.kernel.org, kashyap.desai@lsi.com,
-       James.Bottomley@suse.de, stable@kernel.org
-Subject: Re: patch
- scsi-mpt2sas-add-missing-initialization-of-scsih_cmds.patch added to
- 2.6.32-stable tree
-Message-ID: <20100104234401.GA10770@suse.de>
-References: <12626340131357@kroah.org>
- <201001042255.07139.s.L-H@gmx.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <201001042255.07139.s.L-H@gmx.de>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Mon, 4 Jan 2010 18:47:54 -0500
+Received: from outbound-mail-316.bluehost.com ([67.222.54.9]:36330 "HELO
+	outbound-mail-316.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754086Ab0ADXrx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jan 2010 18:47:53 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=fK3yTOmXcM7EtmNDhHUH3H5hznGA2BwlKoUY3ZTxMw/RJjrCJc4zeWTVbOoxfbhaRkVJdRIIJXMzQjD/X7G5uvaXgRjSPY4UPImXx4dGsiR1zIKqEsZ0HMkF3MkYTl/Q;
+Date: Mon, 4 Jan 2010 15:47:48 -0800
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>
+Subject: Re: [PATCH] PCI: Clean up build for CONFIG_PCI_QUIRKS unset
+Message-ID: <20100104154748.2b282be6@jbarnes-piketon>
+In-Reply-To: <201001022257.24701.rjw@sisk.pl>
+References: <201001022257.24701.rjw@sisk.pl>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 04, 2010 at 10:55:02PM +0100, Stefan Lippers-Hollmann wrote:
-> Hi
-> 
-> On Monday 04 January 2010, gregkh@suse.de wrote:
-> > This is a note to let you know that we have just queued up the patch titled
-> > 
-> >     Subject: SCSI: mpt2sas: add missing initialization of scsih_cmds
-> > 
-> > to the 2.6.32-stable tree.  Its filename is
-> > 
-> >     scsi-mpt2sas-add-missing-initialization-of-scsih_cmds.patch
-> 
-> Adding this patch to 2.6.32 (and likely 2.6.31 as well) breaks building the
-> current stable queue:
-> 
->   LD      drivers/scsi/mpt2sas/built-in.o
->   CC [M]  drivers/scsi/mpt2sas/mpt2sas_base.o
-> drivers/scsi/mpt2sas/mpt2sas_base.c: In function 'mpt2sas_base_attach':
-> drivers/scsi/mpt2sas/mpt2sas_base.c:3500: error: 'struct MPT2SAS_ADAPTER' has no member named 'scsih_cmds'
-> drivers/scsi/mpt2sas/mpt2sas_base.c:3501: error: 'struct MPT2SAS_ADAPTER' has no member named 'scsih_cmds'
-> drivers/scsi/mpt2sas/mpt2sas_base.c:3502: error: 'struct MPT2SAS_ADAPTER' has no member named 'scsih_cmds'
-> make[6]: *** [drivers/scsi/mpt2sas/mpt2sas_base.o] Error 1
-> make[5]: *** [drivers/scsi/mpt2sas] Error 2
+On Sat, 2 Jan 2010 22:57:24 +0100
+"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 
-Thanks, your build system seems faster than mine :)
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+> 
+> Currently, drivers/pci/quirks.c is built unconditionally, but if
+> CONFIG_PCI_QUIRKS is unset, the only things actually built in this
+> file are definitions of global variables and empty functions (due to
+> the #ifdef CONFIG_PCI_QUIRKS embracing all of the code inside the
+> file).  This is not particularly nice and if someone overlooks
+> the #ifdef CONFIG_PCI_QUIRKS, build errors are introduced.
+> 
+> To clean that up, move the definitions of the global variables in
+> quirks.c that are always built to pci.c, move the definitions of
+> the empty functions (compiled when CONFIG_PCI_QUIRKS is unset) to
+> headers (additionally make these functions static inline) and modify
+> drivers/pci/Makefile so that quirks.c is only built if
+> CONFIG_PCI_QUIRKS is set.
+> 
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> ---
+> 
+> I thought it might be useful to do something like this.
+> 
+> Please let me know what you think.
 
-I've deleted this patch from both the .31 and .32 queues.
+Applied to my linux-next branch, thanks.
 
-greg k-h
+-- 
+Jesse Barnes, Intel Open Source Technology Center
