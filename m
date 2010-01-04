@@ -1,53 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753755Ab0ADTY1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753767Ab0ADTay@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753755Ab0ADTY1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 14:24:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753513Ab0ADTYZ
+	id S1753767Ab0ADTay (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 14:30:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753541Ab0ADTaw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 14:24:25 -0500
-Received: from www84.your-server.de ([213.133.104.84]:34532 "EHLO
-	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753437Ab0ADTYY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 14:24:24 -0500
-Subject: Re: [PATCH] libsrp: fix compile failure
-From: Stefani Seibold <stefani@seibold.net>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: James Bottomley <James.Bottomley@suse.de>, Jiri Kosina <jkosina@suse.cz>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>
-In-Reply-To: <20100104173530.48690e39@lxorguk.ukuu.org.uk>
-References: <1262200866.2749.226.camel@mulgrave.site>
-	 <alpine.LFD.2.00.0912301132260.11961@localhost.localdomain>
-	 <alpine.LRH.2.00.1001041619130.15694@twin.jikos.cz>
-	 <1262625721.2724.158.camel@mulgrave.site>
-	 <20100104173530.48690e39@lxorguk.ukuu.org.uk>
-Content-Type: text/plain; charset="ISO-8859-15"
-Date: Mon, 04 Jan 2010 20:24:14 +0100
-Message-ID: <1262633054.4814.21.camel@wall-e>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 
-Content-Transfer-Encoding: 7bit
-X-Authenticated-Sender: stefani@seibold.net
+	Mon, 4 Jan 2010 14:30:52 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:4478 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753513Ab0ADTaw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jan 2010 14:30:52 -0500
+Date: Mon, 4 Jan 2010 20:30:44 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: caiqian@redhat.com, Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Jan Kratochvil <jkratoch@redhat.com>,
+       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-s390@vger.kernel.org, utrace-devel@redhat.com
+Subject: Re: s390 && user_enable_single_step() (Was: odd utrace testing
+	results on s390x)
+Message-ID: <20100104193044.GB21146@redhat.com>
+References: <1503844142.2061111261478093776.JavaMail.root@zmail06.collab.prod.int.phx2.redhat.com> <1257887498.2061171261478252049.JavaMail.root@zmail06.collab.prod.int.phx2.redhat.com> <20100104155225.GA16650@redhat.com> <20100104171626.22ea2d9c@mschwide.boeblingen.de.ibm.com> <20100104181412.GA21146@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100104181412.GA21146@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Montag, den 04.01.2010, 17:35 +0000 schrieb Alan Cox:
-> > least once before it goes to Linus.  There were originally technical
-> > reasons why -mm wasn't in ... I just thought they'd been fixed by now.
-> 
-> No - mm also caused problems with the kfifo merge of a core API change
-> that didn't go via -next.
-> 
-> Alan
+On 01/04, Oleg Nesterov wrote:
+>
+> IOW. I think this problem is minor and probably can be ignored,
 
-I tried my best to port everything to the new kfifo API. But it was not
-possible to check it against every architecture. x86 and x86_64 was
-compile clean. I think the missing #include was not a big thing.
+Or may be not...
 
-Stefani
+Even if the child is not killed by SIGTRAP, it can get a lot of
+unnecessary traps.
 
+To verify, I did another trivial patch (below), and the test
+case from 6580807da14c423f0d0a708108e6df6ebc8bc83d does trigger
+a lot of "false step" printks.
+
+Hmm. And sometimes there is nothing in dmesg, but the test-case
+needs a lot of time to complete. "taskset -c" seems to always
+trigger printk's. Magic.
+
+Oleg.
+
+--- arch/s390/kernel/traps.c~	2009-12-22 10:41:52.909174198 -0500
++++ arch/s390/kernel/traps.c	2010-01-04 13:19:51.038187586 -0500
+@@ -384,6 +384,8 @@ void __kprobes do_single_step(struct pt_
+ 	}
+ 	if (tracehook_consider_fatal_signal(current, SIGTRAP))
+ 		force_sig(SIGTRAP, current);
++	else
++		printk("false step\n");
+ }
+ 
+ static void default_trap_handler(struct pt_regs * regs, long interruption_code)
 
