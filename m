@@ -1,30 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753464Ab0ADQMA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753557Ab0ADQNF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753464Ab0ADQMA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 11:12:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752235Ab0ADQL5
+	id S1753557Ab0ADQNF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 11:13:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752235Ab0ADQNA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 11:11:57 -0500
-Received: from g4t0015.houston.hp.com ([15.201.24.18]:24604 "EHLO
-	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752107Ab0ADQLz convert rfc822-to-8bit (ORCPT
+	Mon, 4 Jan 2010 11:13:00 -0500
+Received: from g4t0014.houston.hp.com ([15.201.24.17]:11582 "EHLO
+	g4t0014.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752107Ab0ADQNA convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 11:11:55 -0500
+	Mon, 4 Jan 2010 11:13:00 -0500
 From: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>
 To: Joe Perches <joe@perches.com>,
        "Stephen M. Cameron" <scameron@beardog.cce.hp.com>
 CC: ISS StorageDev <iss_storagedev@hp.com>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Date: Mon, 4 Jan 2010 16:11:46 +0000
-Subject: RE: [PATCH 1/2] drivers/block/cciss: Convert printk(KERN_<level> to
- pr_<level>(
-Thread-Topic: [PATCH 1/2] drivers/block/cciss: Convert printk(KERN_<level>
- to pr_<level>(
-Thread-Index: AcqBJcI+b0BJxgnJRnC1BTfptIU9sQMMseiw
-Message-ID: <0F5B06BAB751E047AB5C87D1F77A77886995B7E01F@GVW0547EXC.americas.hpqcorp.net>
+Date: Mon, 4 Jan 2010 16:12:30 +0000
+Subject: RE: [PATCH 2/2] drivers/block/cciss: Create and use cciss_debug
+ functions, use pr_info
+Thread-Topic: [PATCH 2/2] drivers/block/cciss: Create and use cciss_debug
+ functions, use pr_info
+Thread-Index: AcqBJcHVFEbrlKK8ThqlnuCiu+5hZQMMuUew
+Message-ID: <0F5B06BAB751E047AB5C87D1F77A77886995B7E023@GVW0547EXC.americas.hpqcorp.net>
 References: <cover.1261279381.git.joe@perches.com>
- <74d1fa188df7f9595339c27f3cbd35ff98d6af0a.1261279381.git.joe@perches.com>
-In-Reply-To: <74d1fa188df7f9595339c27f3cbd35ff98d6af0a.1261279381.git.joe@perches.com>
+ <e18c6d67cbdb4307c3ff002d2e5e43276bf67301.1261279381.git.joe@perches.com>
+In-Reply-To: <e18c6d67cbdb4307c3ff002d2e5e43276bf67301.1261279381.git.joe@perches.com>
 Accept-Language: en-US
 Content-Language: en-US
 X-MS-Has-Attach: 
@@ -44,1377 +44,757 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 > Sent: Saturday, December 19, 2009 9:37 PM
 > To: Stephen M. Cameron; Miller, Mike (OS Dev)
 > Cc: ISS StorageDev; linux-kernel@vger.kernel.org
-> Subject: [PATCH 1/2] drivers/block/cciss: Convert
-> printk(KERN_<level> to pr_<level>(
+> Subject: [PATCH 2/2] drivers/block/cciss: Create and use
+> cciss_debug functions, use pr_info
 >
-> Add #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt Remove
-> leading "cciss: " from fmts Coalesce long format strings Trim
-> format trailing spaces Some strings that were "cciss%d:
-> errmsg" are now "cciss: %d: errmsg"
+> Centralize #ifdef CCISS code blocks by using
+> cciss_debug[_foo] functions
+>
+> cciss_debug for printk
+> cciss_debug_cfg_table for print_cfg_table cciss_debug_bytes
+> for print_bytes cciss_debug_cmd for print_cmd
+>
+> Convert remaining printk without KERN_ levels to pr_info(
 >
 > Signed-off-by: Joe Perches <joe@perches.com>
 
 Acked-by: Mike Miller <mike.miller@hp.com>
 
 > ---
->  drivers/block/cciss.c      |  283
-> ++++++++++++++++++--------------------------
->  drivers/block/cciss_scsi.c |  145 +++++++++--------------
->  2 files changed, 174 insertions(+), 254 deletions(-)
+>  drivers/block/cciss.c      |  143 ++++++++++++++------------------
+>  drivers/block/cciss_scsi.c |  195
+> +++++++++++++++++++-------------------------
+>  2 files changed, 146 insertions(+), 192 deletions(-)
 >
 > diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c
-> index 873e594..14f0e06 100644
+> index 14f0e06..1b9cfa7 100644
 > --- a/drivers/block/cciss.c
 > +++ b/drivers/block/cciss.c
-> @@ -20,6 +20,8 @@
->   *
->   */
+> @@ -61,6 +61,18 @@
+>  #define DRIVER_NAME "HP CISS Driver (v 3.6.20)"
+>  #define DRIVER_VERSION CCISS_DRIVER_VERSION(3, 6, 20)
 >
-> +#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+> +#ifdef CCISS_DEBUG
+> +#define cciss_debug(fmt, ...)                                \
+> +     printk(KERN_DEBUG pr_fmt(fmt), ##__VA_ARGS__) #else
+> +#define cciss_debug(fmt, ...)
+>       \
+> +({                                                           \
+> +     if (0)                                                  \
+> +             printk(KERN_DEBUG pr_fmt(fmt), ##__VA_ARGS__);  \
+> +     0;                                                      \
+> +})
+> +#endif
 > +
->  #include <linux/module.h>
->  #include <linux/interrupt.h>
->  #include <linux/types.h>
-> @@ -1903,7 +1905,7 @@ static void cciss_update_drive_info(int
-> ctlr, int drv_index, int first_time,
->        * (unless it's the first disk (for the controller node).
->        */
->       if (h->drv[drv_index]->raid_level != -1 && drv_index != 0) {
-> -             printk(KERN_WARNING "disk %d has changed.\n",
-> drv_index);
-> +             pr_warning("disk %d has changed.\n", drv_index);
->               spin_lock_irqsave(CCISS_LOCK(h->ctlr), flags);
->               h->drv[drv_index]->busy_configuring = 1;
->               spin_unlock_irqrestore(CCISS_LOCK(h->ctlr),
-> flags); @@ -1956,8 +1958,8 @@ static void
-> cciss_update_drive_info(int ctlr, int drv_index, int first_time,
->               if (cciss_add_disk(h, disk, drv_index) != 0) {
->                       cciss_free_gendisk(h, drv_index);
->                       cciss_free_drive_info(h, drv_index);
-> -                     printk(KERN_WARNING "cciss:%d could not update "
-> -                             "disk %d\n", h->ctlr, drv_index);
-> +                     pr_warning("%d could not update disk %d\n",
-> +                                h->ctlr, drv_index);
->                       --h->num_luns;
->               }
->       }
-> @@ -1967,7 +1969,7 @@ freeret:
->       kfree(drvinfo);
->       return;
->  mem_msg:
-> -     printk(KERN_ERR "cciss: out of memory\n");
-> +     pr_err("out of memory\n");
->       goto freeret;
->  }
+>  /* Embedded module documentation macros - see modules.h */
+> MODULE_AUTHOR("Hewlett-Packard Company");
+> MODULE_DESCRIPTION("Driver for HP Smart Array Controllers");
+> @@ -829,9 +841,7 @@ static CommandList_struct
+> *cmd_alloc(ctlr_info_t *h, int get_from_pool)
+>               } while (test_and_set_bit
+>                        (i & (BITS_PER_LONG - 1),
+>                         h->cmd_pool_bits + (i /
+> BITS_PER_LONG)) != 0); -#ifdef CCISS_DEBUG
+> -             printk(KERN_DEBUG "cciss: using command buffer
+> %d\n", i);
+> -#endif
+> +             cciss_debug("using command buffer %d\n", i);
+>               c = h->cmd_pool + i;
+>               memset(c, 0, sizeof(CommandList_struct));
+>               cmd_dma_handle = h->cmd_pool_dhandle
+> @@ -897,9 +907,7 @@ static int cciss_open(struct block_device
+> *bdev, fmode_t mode)
+>       ctlr_info_t *host = get_host(bdev->bd_disk);
+>       drive_info_struct *drv = get_drv(bdev->bd_disk);
 >
-> @@ -2059,9 +2061,8 @@ static int
-> cciss_add_gendisk(ctlr_info_t *h, unsigned char lunid[],
->               h->gendisk[drv_index] =
->                       alloc_disk(1 << NWD_SHIFT);
->               if (!h->gendisk[drv_index]) {
-> -                     printk(KERN_ERR "cciss%d: could not "
-> -                             "allocate a new disk %d\n",
-> -                             h->ctlr, drv_index);
-> +                     pr_err("%d: could not allocate a new disk %d\n",
-> +                            h->ctlr, drv_index);
->                       goto err_free_drive_info;
->               }
->       }
-> @@ -2112,8 +2113,7 @@ static void
-> cciss_add_controller_node(ctlr_info_t *h)
->       cciss_free_gendisk(h, drv_index);
->       cciss_free_drive_info(h, drv_index);
->  error:
-> -     printk(KERN_WARNING "cciss%d: could not "
-> -             "add disk 0.\n", h->ctlr);
-> +     pr_warning("%d: could not add disk 0.\n", h->ctlr);
->       return;
->  }
+> -#ifdef CCISS_DEBUG
+> -     printk(KERN_DEBUG "cciss_open %s\n", bdev->bd_disk->disk_name);
+> -#endif                               /* CCISS_DEBUG */
+> +     cciss_debug("%s %s\n", __func__, bdev->bd_disk->disk_name);
 >
-> @@ -2162,8 +2162,7 @@ static int
-> rebuild_lun_table(ctlr_info_t *h, int first_time,
->       if (return_code == IO_OK)
->               listlength = be32_to_cpu(*(__be32 *)
-> ld_buff->LUNListLength);
->       else {  /* reading number of logical volumes failed */
-> -             printk(KERN_WARNING "cciss: report logical volume"
-> -                    " command failed\n");
-> +             pr_warning("report logical volume command failed\n");
->               listlength = 0;
->               goto freeret;
->       }
-> @@ -2171,9 +2170,7 @@ static int
-> rebuild_lun_table(ctlr_info_t *h, int first_time,
->       num_luns = listlength / 8;      /* 8 bytes per entry */
->       if (num_luns > CISS_MAX_LUN) {
->               num_luns = CISS_MAX_LUN;
-> -             printk(KERN_WARNING "cciss: more luns configured"
-> -                    " on controller than can be handled by"
-> -                    " this driver.\n");
-> +             pr_warning("more luns configured on controller
-> than can be handled by
-> +this driver.\n");
+>       if (drv->busy_configuring)
+>               return -EBUSY;
+> @@ -938,9 +946,7 @@ static int cciss_release(struct gendisk
+> *disk, fmode_t mode)
+>       ctlr_info_t *host = get_host(disk);
+>       drive_info_struct *drv = get_drv(disk);
+>
+> -#ifdef CCISS_DEBUG
+> -     printk(KERN_DEBUG "cciss_release %s\n", disk->disk_name);
+> -#endif                               /* CCISS_DEBUG */
+> +     cciss_debug("%s %s\n", __func__, disk->disk_name);
+>
+>       drv->usage_count--;
+>       host->usage_count--;
+> @@ -1107,9 +1113,7 @@ static int cciss_ioctl(struct
+> block_device *bdev, fmode_t mode,
+>       int ctlr = host->ctlr;
+>       void __user *argp = (void __user *)arg;
+>
+> -#ifdef CCISS_DEBUG
+> -     printk(KERN_DEBUG "cciss_ioctl: Called with cmd=%x
+> %lx\n", cmd, arg);
+> -#endif                               /* CCISS_DEBUG */
+> +     cciss_debug("%s: Called with cmd=%x %lx\n", __func__, cmd, arg);
+>
+>       switch (cmd) {
+>       case CCISS_GETPCIINFO:
+> @@ -1154,9 +1158,9 @@ static int cciss_ioctl(struct
+> block_device *bdev, fmode_t mode,
+>                       if (copy_from_user
+>                           (&intinfo, argp,
+> sizeof(cciss_coalint_struct)))
+>                               return -EFAULT;
+> -                     if ((intinfo.delay == 0) &&
+> (intinfo.count == 0))
+> -                     {
+> -//                      printk("cciss_ioctl: delay and count
+> cannot be 0\n");
+> +                     if ((intinfo.delay == 0) &&
+> (intinfo.count == 0)) {
+> +                             cciss_debug("%s: delay and
+> count cannot be 0\n",
+> +                                         __func__);
+>                               return -EINVAL;
+>                       }
+>                       spin_lock_irqsave(CCISS_LOCK(ctlr),
+> flags); @@ -1686,9 +1690,7 @@ static void
+> cciss_softirq_done(struct request *rq)
+>               ++sg_index;
 >       }
 >
->       if (num_luns == 0)
-> @@ -2256,7 +2253,7 @@ freeret:
->        */
->       return -1;
->  mem_msg:
-> -     printk(KERN_ERR "cciss: out of memory\n");
-> +     pr_err("out of memory\n");
->       h->busy_configuring = 0;
->       goto freeret;
->  }
-> @@ -2464,8 +2461,7 @@ static int fill_cmd(CommandList_struct
-> *c, __u8 cmd, int ctlr, void *buff,
->                       c->Request.Timeout = 0;
->                       break;
->               default:
-> -                     printk(KERN_WARNING
-> -                            "cciss%d:  Unknown Command
-> 0x%c\n", ctlr, cmd);
-> +                     pr_warning("%d: Unknown Command
-> 0x%c\n", ctlr, cmd);
->                       return IO_ERROR;
->               }
->       } else if (cmd_type == TYPE_MSG) {
-> @@ -2497,13 +2493,11 @@ static int
-> fill_cmd(CommandList_struct *c, __u8 cmd, int ctlr, void *buff,
->                       c->Request.CDB[0] = cmd;
->                       break;
->               default:
-> -                     printk(KERN_WARNING
-> -                            "cciss%d: unknown message type
-> %d\n", ctlr, cmd);
-> +                     pr_warning("%d: unknown message type
-> %d\n", ctlr, cmd);
->                       return IO_ERROR;
->               }
->       } else {
-> -             printk(KERN_WARNING
-> -                    "cciss%d: unknown command type %d\n",
-> ctlr, cmd_type);
-> +             pr_warning("%d: unknown command type %d\n",
-> ctlr, cmd_type);
->               return IO_ERROR;
->       }
->       /* Fill in the scatter gather information */ @@
-> -2531,16 +2525,14 @@ static int
-> check_target_status(ctlr_info_t *h, CommandList_struct *c)
->               default:
->                       if (check_for_unit_attention(h, c))
->                               return IO_NEEDS_RETRY;
-> -                     printk(KERN_WARNING "cciss%d: cmd 0x%02x "
-> -                             "check condition, sense key = 0x%02x\n",
-> -                             h->ctlr, c->Request.CDB[0],
-> -                             c->err_info->SenseInfo[2]);
-> +                     pr_warning("%d: cmd 0x%02x check
-> condition, sense key = 0x%02x\n",
-> +                                h->ctlr, c->Request.CDB[0],
-> +                                c->err_info->SenseInfo[2]);
->               }
->               break;
->       default:
-> -             printk(KERN_WARNING "cciss%d: cmd 0x%02x"
-> -                     "scsi status = 0x%02x\n", h->ctlr,
-> -                     c->Request.CDB[0], c->err_info->ScsiStatus);
-> +             pr_warning("%d: cmd 0x%02xscsi status = 0x%02x\n",
-> +                        h->ctlr, c->Request.CDB[0],
-> c->err_info->ScsiStatus);
->               break;
->       }
->       return IO_ERROR;
-> @@ -2562,44 +2554,42 @@ static int
-> process_sendcmd_error(ctlr_info_t *h, CommandList_struct *c)
->               /* expected for inquiry and report lun commands */
->               break;
->       case CMD_INVALID:
-> -             printk(KERN_WARNING "cciss: cmd 0x%02x is "
-> -                    "reported invalid\n", c->Request.CDB[0]);
-> +             pr_warning("cmd 0x%02x is reported invalid\n",
-> +                        c->Request.CDB[0]);
->               return_status = IO_ERROR;
->               break;
->       case CMD_PROTOCOL_ERR:
-> -             printk(KERN_WARNING "cciss: cmd 0x%02x has "
-> -                    "protocol error \n", c->Request.CDB[0]);
-> +             pr_warning("cmd 0x%02x has protocol error\n",
-> +                        c->Request.CDB[0]);
->               return_status = IO_ERROR;
->               break;
->       case CMD_HARDWARE_ERR:
-> -             printk(KERN_WARNING "cciss: cmd 0x%02x had "
-> -                    " hardware error\n", c->Request.CDB[0]);
-> +             pr_warning("cmd 0x%02x had hardware error\n",
-> +                        c->Request.CDB[0]);
->               return_status = IO_ERROR;
->               break;
->       case CMD_CONNECTION_LOST:
-> -             printk(KERN_WARNING "cciss: cmd 0x%02x had "
-> -                    "connection lost\n", c->Request.CDB[0]);
-> +             pr_warning("cmd 0x%02x had connection lost\n",
-> +                        c->Request.CDB[0]);
->               return_status = IO_ERROR;
->               break;
->       case CMD_ABORTED:
-> -             printk(KERN_WARNING "cciss: cmd 0x%02x was "
-> -                    "aborted\n", c->Request.CDB[0]);
-> +             pr_warning("cmd 0x%02x was aborted\n",
-> c->Request.CDB[0]);
->               return_status = IO_ERROR;
->               break;
->       case CMD_ABORT_FAILED:
-> -             printk(KERN_WARNING "cciss: cmd 0x%02x reports "
-> -                    "abort failed\n", c->Request.CDB[0]);
-> +             pr_warning("cmd 0x%02x reports abort failed\n",
-> +                        c->Request.CDB[0]);
->               return_status = IO_ERROR;
->               break;
->       case CMD_UNSOLICITED_ABORT:
-> -             printk(KERN_WARNING
-> -                    "cciss%d: unsolicited abort 0x%02x\n", h->ctlr,
-> -                     c->Request.CDB[0]);
-> +             pr_warning("%d: unsolicited abort 0x%02x\n",
-> +                        h->ctlr, c->Request.CDB[0]);
->               return_status = IO_NEEDS_RETRY;
->               break;
->       default:
-> -             printk(KERN_WARNING "cciss: cmd 0x%02x returned "
-> -                    "unknown status %x\n", c->Request.CDB[0],
-> +             pr_warning("cmd 0x%02x returned unknown status %x\n",
-> +                        c->Request.CDB[0],
->                      c->err_info->CommandStatus);
->               return_status = IO_ERROR;
->       }
-> @@ -2632,8 +2622,7 @@ resend_cmd2:
+> -#ifdef CCISS_DEBUG
+> -     printk("Done with %p\n", rq);
+> -#endif                               /* CCISS_DEBUG */
+> +     cciss_debug("Done with %p\n", rq);
 >
->       if (return_status == IO_NEEDS_RETRY &&
->               c->retry_count < MAX_CMD_RETRIES) {
-> -             printk(KERN_WARNING "cciss%d: retrying
-> 0x%02x\n", h->ctlr,
-> -                     c->Request.CDB[0]);
-> +             pr_warning("%d: retrying 0x%02x\n", h->ctlr,
-> c->Request.CDB[0]);
->               c->retry_count++;
->               /* erase the old error information */
->               memset(c->err_info, 0,
-> sizeof(ErrorInfo_struct)); @@ -2687,9 +2676,7 @@ static void
-> cciss_geometry_inquiry(int ctlr, int logvol,
->                       sizeof(*inq_buff), 0xC1, scsi3addr, TYPE_CMD);
->       if (return_code == IO_OK) {
->               if (inq_buff->data_byte[8] == 0xFF) {
-> -                     printk(KERN_WARNING
-> -                            "cciss: reading geometry failed, volume "
-> -                            "does not support reading geometry\n");
-> +                     pr_warning("reading geometry failed,
-> volume does not support reading
-> +geometry\n");
->                       drv->heads = 255;
->                       drv->sectors = 32;      // Sectors per track
->                       drv->cylinders = total_size + 1;
-> @@ -2712,7 +2699,7 @@ static void cciss_geometry_inquiry(int
-> ctlr, int logvol,
->                       drv->cylinders = real_size;
->               }
->       } else {                /* Get geometry failed */
-> -             printk(KERN_WARNING "cciss: reading geometry failed\n");
-> +             pr_warning("reading geometry failed\n");
->       }
->  }
->
-> @@ -2726,7 +2713,7 @@ cciss_read_capacity(int ctlr, int
-> logvol, sector_t *total_size,
->
->       buf = kzalloc(sizeof(ReadCapdata_struct), GFP_KERNEL);
->       if (!buf) {
-> -             printk(KERN_WARNING "cciss: out of memory\n");
-> +             pr_warning("out of memory\n");
->               return;
->       }
->
-> @@ -2737,7 +2724,7 @@ cciss_read_capacity(int ctlr, int
-> logvol, sector_t *total_size,
->               *total_size = be32_to_cpu(*(__be32 *) buf->total_size);
->               *block_size = be32_to_cpu(*(__be32 *) buf->block_size);
->       } else {                /* read capacity command failed */
-> -             printk(KERN_WARNING "cciss: read capacity failed\n");
-> +             pr_warning("read capacity failed\n");
->               *total_size = 0;
->               *block_size = BLOCK_SIZE;
->       }
-> @@ -2753,7 +2740,7 @@ static void cciss_read_capacity_16(int
-> ctlr, int logvol,
->
->       buf = kzalloc(sizeof(ReadCapdata_struct_16), GFP_KERNEL);
->       if (!buf) {
-> -             printk(KERN_WARNING "cciss: out of memory\n");
-> +             pr_warning("out of memory\n");
->               return;
->       }
->
-> @@ -2765,12 +2752,12 @@ static void
-> cciss_read_capacity_16(int ctlr, int logvol,
->               *total_size = be64_to_cpu(*(__be64 *) buf->total_size);
->               *block_size = be32_to_cpu(*(__be32 *) buf->block_size);
->       } else {                /* read capacity command failed */
-> -             printk(KERN_WARNING "cciss: read capacity failed\n");
-> +             pr_warning("read capacity failed\n");
->               *total_size = 0;
->               *block_size = BLOCK_SIZE;
->       }
-> -     printk(KERN_INFO "      blocks= %llu block_size= %d\n",
-> -            (unsigned long long)*total_size+1, *block_size);
-> +     pr_info("      blocks= %llu block_size= %d\n",
-> +             (unsigned long long)*total_size+1, *block_size);
->       kfree(buf);
->  }
->
-> @@ -2797,7 +2784,7 @@ static int cciss_revalidate(struct
-> gendisk *disk)
->
->       inq_buff = kmalloc(sizeof(InquiryData_struct), GFP_KERNEL);
->       if (inq_buff == NULL) {
-> -             printk(KERN_WARNING "cciss: out of memory\n");
-> +             pr_warning("out of memory\n");
->               return 1;
->       }
->       if (h->cciss_read == CCISS_READ_10) {
-> @@ -2841,7 +2828,7 @@ static void start_io(ctlr_info_t *h)
->               c = hlist_entry(h->reqQ.first,
-> CommandList_struct, list);
->               /* can't do anything if fifo is full */
->               if ((h->access.fifo_full(h))) {
-> -                     printk(KERN_WARNING "cciss: fifo full\n");
-> +                     pr_warning("fifo full\n");
->                       break;
->               }
->
-> @@ -2908,9 +2895,8 @@ static inline int
-> evaluate_target_status(ctlr_info_t *h,
->
->       if (cmd->err_info->ScsiStatus != SAM_STAT_CHECK_CONDITION) {
->               if (!blk_pc_request(cmd->rq))
-> -                     printk(KERN_WARNING "cciss: cmd %p "
-> -                            "has SCSI Status 0x%x\n",
-> -                            cmd, cmd->err_info->ScsiStatus);
-> +                     pr_warning("cmd %p has SCSI Status 0x%x\n",
-> +                                cmd, cmd->err_info->ScsiStatus);
->               return error_value;
->       }
->
-> @@ -2927,8 +2913,8 @@ static inline int
-> evaluate_target_status(ctlr_info_t *h,
->
->       if (!blk_pc_request(cmd->rq)) { /* Not SG_IO or similar? */
->               if (error_value != 0)
-> -                     printk(KERN_WARNING "cciss: cmd %p has
-> CHECK CONDITION"
-> -                            " sense key = 0x%x\n", cmd, sense_key);
-> +                     pr_warning("cmd %p has CHECK CONDITION
-> sense key = 0x%x\n",
-> +                                cmd, sense_key);
->               return error_value;
->       }
->
-> @@ -2968,85 +2954,72 @@ static inline void
-> complete_command(ctlr_info_t *h, CommandList_struct *cmd,
->               break;
->       case CMD_DATA_UNDERRUN:
->               if (blk_fs_request(cmd->rq)) {
-> -                     printk(KERN_WARNING "cciss: cmd %p has"
-> -                            " completed with data underrun "
-> -                            "reported\n", cmd);
-> +                     pr_warning("cmd %p has completed with
-> data underrun reported\n",
-> +                                cmd);
->                       cmd->rq->resid_len = cmd->err_info->ResidualCnt;
->               }
->               break;
->       case CMD_DATA_OVERRUN:
->               if (blk_fs_request(cmd->rq))
-> -                     printk(KERN_WARNING "cciss: cmd %p has"
-> -                            " completed with data overrun "
-> -                            "reported\n", cmd);
-> +                     pr_warning("cmd %p has"
-> +                            " completed with data overrun
-> reported\n", cmd);
->               break;
->       case CMD_INVALID:
-> -             printk(KERN_WARNING "cciss: cmd %p is "
-> -                    "reported invalid\n", cmd);
-> +             pr_warning("cmd %p is reported invalid\n", cmd);
->               rq->errors = make_status_bytes(SAM_STAT_GOOD,
->                       cmd->err_info->CommandStatus, DRIVER_OK,
->                       blk_pc_request(cmd->rq) ?
-> DID_PASSTHROUGH : DID_ERROR);
->               break;
->       case CMD_PROTOCOL_ERR:
-> -             printk(KERN_WARNING "cciss: cmd %p has "
-> -                    "protocol error \n", cmd);
-> +             pr_warning("cmd %p has protocol error \n", cmd);
->               rq->errors = make_status_bytes(SAM_STAT_GOOD,
->                       cmd->err_info->CommandStatus, DRIVER_OK,
->                       blk_pc_request(cmd->rq) ?
-> DID_PASSTHROUGH : DID_ERROR);
->               break;
->       case CMD_HARDWARE_ERR:
-> -             printk(KERN_WARNING "cciss: cmd %p had "
-> -                    " hardware error\n", cmd);
-> +             pr_warning("cmd %p had  hardware error\n", cmd);
->               rq->errors = make_status_bytes(SAM_STAT_GOOD,
->                       cmd->err_info->CommandStatus, DRIVER_OK,
->                       blk_pc_request(cmd->rq) ?
-> DID_PASSTHROUGH : DID_ERROR);
->               break;
->       case CMD_CONNECTION_LOST:
-> -             printk(KERN_WARNING "cciss: cmd %p had "
-> -                    "connection lost\n", cmd);
-> +             pr_warning("cmd %p had connection lost\n", cmd);
->               rq->errors = make_status_bytes(SAM_STAT_GOOD,
->                       cmd->err_info->CommandStatus, DRIVER_OK,
->                       blk_pc_request(cmd->rq) ?
-> DID_PASSTHROUGH : DID_ERROR);
->               break;
->       case CMD_ABORTED:
-> -             printk(KERN_WARNING "cciss: cmd %p was "
-> -                    "aborted\n", cmd);
-> +             pr_warning("cmd %p was aborted\n", cmd);
->               rq->errors = make_status_bytes(SAM_STAT_GOOD,
->                       cmd->err_info->CommandStatus, DRIVER_OK,
->                       blk_pc_request(cmd->rq) ?
-> DID_PASSTHROUGH : DID_ABORT);
->               break;
->       case CMD_ABORT_FAILED:
-> -             printk(KERN_WARNING "cciss: cmd %p reports "
-> -                    "abort failed\n", cmd);
-> +             pr_warning("cmd %p reports abort failed\n", cmd);
->               rq->errors = make_status_bytes(SAM_STAT_GOOD,
->                       cmd->err_info->CommandStatus, DRIVER_OK,
->                       blk_pc_request(cmd->rq) ?
-> DID_PASSTHROUGH : DID_ERROR);
->               break;
->       case CMD_UNSOLICITED_ABORT:
-> -             printk(KERN_WARNING "cciss%d: unsolicited "
-> -                    "abort %p\n", h->ctlr, cmd);
-> +             pr_warning("%d: unsolicited abort %p\n", h->ctlr, cmd);
->               if (cmd->retry_count < MAX_CMD_RETRIES) {
->                       retry_cmd = 1;
-> -                     printk(KERN_WARNING
-> -                            "cciss%d: retrying %p\n", h->ctlr, cmd);
-> +                     pr_warning("%d: retrying %p\n", h->ctlr, cmd);
->                       cmd->retry_count++;
->               } else
-> -                     printk(KERN_WARNING
-> -                            "cciss%d: %p retried too "
-> -                            "many times\n", h->ctlr, cmd);
-> +                     pr_warning("%d: %p retried too many
-> times\n", h->ctlr, cmd);
->               rq->errors = make_status_bytes(SAM_STAT_GOOD,
->                       cmd->err_info->CommandStatus, DRIVER_OK,
->                       blk_pc_request(cmd->rq) ?
-> DID_PASSTHROUGH : DID_ABORT);
->               break;
->       case CMD_TIMEOUT:
-> -             printk(KERN_WARNING "cciss: cmd %p timedout\n", cmd);
-> +             pr_warning("cmd %p timedout\n", cmd);
->               rq->errors = make_status_bytes(SAM_STAT_GOOD,
->                       cmd->err_info->CommandStatus, DRIVER_OK,
->                       blk_pc_request(cmd->rq) ?
-> DID_PASSTHROUGH : DID_ERROR);
->               break;
->       default:
-> -             printk(KERN_WARNING "cciss: cmd %p returned "
-> -                    "unknown status %x\n", cmd,
-> +             pr_warning("cmd %p returned unknown status %x\n", cmd,
->                      cmd->err_info->CommandStatus);
->               rq->errors = make_status_bytes(SAM_STAT_GOOD,
->                       cmd->err_info->CommandStatus,
-> DRIVER_OK, @@ -3126,7 +3099,7 @@ static void
-> do_cciss_request(struct request_queue *q)
+>       /* set the residual count for pc requests */
+>       if (blk_pc_request(rq))
+> @@ -3098,10 +3100,8 @@ static void do_cciss_request(struct
+> request_queue *q)
+>       c->Request.CDB[0] =
 >           (rq_data_dir(creq) == READ) ? h->cciss_read :
 > h->cciss_write;
 >       start_blk = blk_rq_pos(creq);
->  #ifdef CCISS_DEBUG
-> -     printk(KERN_DEBUG "ciss: sector =%d nr_sectors=%d\n",
-> +     printk(KERN_DEBUG "cciss: sector =%d nr_sectors=%d\n",
->              (int)blk_rq_pos(creq), (int)blk_rq_sectors(creq));
->  #endif                               /* CCISS_DEBUG */
+> -#ifdef CCISS_DEBUG
+> -     printk(KERN_DEBUG "cciss: sector =%d nr_sectors=%d\n",
+> -            (int)blk_rq_pos(creq), (int)blk_rq_sectors(creq));
+> -#endif                               /* CCISS_DEBUG */
+> +     cciss_debug("sector =%d nr_sectors=%u\n",
+> +                 (int)blk_rq_pos(creq), blk_rq_sectors(creq));
 >
-> @@ -3237,7 +3210,7 @@ static void do_cciss_request(struct
+>       sg_init_table(tmp_sg, h->maxsgentries);
+>       seg = blk_rq_map_sg(q, creq, tmp_sg);
+> @@ -3166,11 +3166,8 @@ static void do_cciss_request(struct
 > request_queue *q)
->               c->Request.CDBLen = creq->cmd_len;
->               memcpy(c->Request.CDB, creq->cmd, BLK_MAX_CDB);
->       } else {
-> -             printk(KERN_WARNING "cciss%d: bad request type
-> %d\n", h->ctlr, creq->cmd_type);
-> +             pr_warning("%d: bad request type %d\n",
-> h->ctlr, creq->cmd_type);
->               BUG();
->       }
+>       if (seg > h->maxSG)
+>               h->maxSG = seg;
 >
-> @@ -3294,8 +3267,7 @@ static irqreturn_t do_cciss_intr(int
-> irq, void *dev_id)
->                       if ((a & 0x04)) {
->                               a2 = (a >> 3);
->                               if (a2 >= h->nr_cmds) {
-> -                                     printk(KERN_WARNING
-> -                                            "cciss:
-> controller cciss%d failed, stopping.\n",
-> +                                     pr_warning("controller
-> cciss%d failed, stopping.\n",
->                                              h->ctlr);
->                                       fail_all_cmds(h->ctlr);
->                                       return IRQ_HANDLED;
-> @@ -3466,18 +3438,15 @@ static int
+> -#ifdef CCISS_DEBUG
+> -     printk(KERN_DEBUG "cciss: Submitting %ld sectors in %d
+> segments "
+> -                     "chained[%d]\n",
+> -                     blk_rq_sectors(creq), seg, chained);
+> -#endif                               /* CCISS_DEBUG */
+> +     cciss_debug("Submitting %u sectors in %d segments
+> chained[%d]\n",
+> +                 blk_rq_sectors(creq), seg, chained);
+>
+>       c->Header.SGList = c->Header.SGTotal = seg + chained;
+>       if (seg > h->max_cmd_sgentries)
+> @@ -3484,39 +3481,40 @@ static int
 > check_for_unit_attention(ctlr_info_t *h, CommandList_struct *c)
+>   *   the io functions.
+>   *   This is for debug only.
+>   */
+> -#ifdef CCISS_DEBUG
+> -static void print_cfg_table(CfgTable_struct *tb)
+> +static void cciss_debug_cfg_table(CfgTable_struct *tb)
+>  {
+> +#ifdef CCISS_DEBUG
+>       int i;
+>       char temp_name[17];
 >
->       switch (c->err_info->SenseInfo[12]) {
->       case STATE_CHANGED:
-> -             printk(KERN_WARNING "cciss%d: a state change "
-> -                     "detected, command retried\n", h->ctlr);
-> +             pr_warning("%d: a state change detected,
-> command retried\n",
-> +h->ctlr);
->               return 1;
->       break;
->       case LUN_FAILED:
-> -             printk(KERN_WARNING "cciss%d: LUN failure "
-> -                     "detected, action required\n", h->ctlr);
-> +             pr_warning("%d: LUN failure detected, action
-> required\n", h->ctlr);
->               return 1;
->       break;
->       case REPORT_LUNS_CHANGED:
-> -             printk(KERN_WARNING "cciss%d: report LUN data "
-> -                     "changed\n", h->ctlr);
-> +             pr_warning("%d: report LUN data changed\n", h->ctlr);
->       /*
->        * Here, we could call add_to_scan_list and wake up the
-> scan thread,
->        * except that it's quite likely that we will get more
-> than one @@ -3497,18 +3466,15 @@ static int
-> check_for_unit_attention(ctlr_info_t *h, CommandList_struct *c)
->               return 1;
->       break;
->       case POWER_OR_RESET:
-> -             printk(KERN_WARNING "cciss%d: a power on "
-> -                     "or device reset detected\n", h->ctlr);
-> +             pr_warning("%d: a power on or device reset
-> detected\n", h->ctlr);
->               return 1;
->       break;
->       case UNIT_ATTENTION_CLEARED:
-> -             printk(KERN_WARNING "cciss%d: unit attention "
-> -                 "cleared by another initiator\n", h->ctlr);
-> +             pr_warning("%d: unit attention cleared by
-> another initiator\n",
-> +h->ctlr);
->               return 1;
->       break;
->       default:
-> -             printk(KERN_WARNING "cciss%d: unknown "
-> -                     "unit attention detected\n", h->ctlr);
-> +             pr_warning("%d: unknown unit attention
-> detected\n", h->ctlr);
->                               return 1;
->       }
->  }
-> @@ -3574,8 +3540,7 @@ static int find_PCI_BAR_index(struct
-> pci_dev *pdev, unsigned long pci_bar_addr)
->                               offset += 8;
->                               break;
->                       default:        /* reserved in PCI 2.2 */
-> -                             printk(KERN_WARNING
-> -                                    "Base address is invalid\n");
-> +                             pr_warning("Base address is invalid\n");
->                               return -1;
->                               break;
->                       }
-> @@ -3616,11 +3581,10 @@ static void __devinit
-> cciss_interrupt_mode(ctlr_info_t *c,
->                       return;
->               }
->               if (err > 0) {
-> -                     printk(KERN_WARNING "cciss: only %d
-> MSI-X vectors "
-> -                            "available\n", err);
-> +                     pr_warning("only %d MSI-X vectors
-> available\n", err);
->                       goto default_int_mode;
->               } else {
-> -                     printk(KERN_WARNING "cciss: MSI-X init
-> failed %d\n",
-> +                     pr_warning("MSI-X init failed %d\n",
->                              err);
->                       goto default_int_mode;
->               }
-> @@ -3629,7 +3593,7 @@ static void __devinit
-> cciss_interrupt_mode(ctlr_info_t *c,
->               if (!pci_enable_msi(pdev)) {
->                       c->msi_vector = 1;
->               } else {
-> -                     printk(KERN_WARNING "cciss: MSI init failed\n");
-> +                     pr_warning("MSI init failed\n");
->               }
->       }
->  default_int_mode:
-> @@ -3672,21 +3636,19 @@ static int __devinit
-> cciss_pci_init(ctlr_info_t *c, struct pci_dev *pdev)
->       /* BEFORE trying to enable it */
->       (void)pci_read_config_word(pdev, PCI_COMMAND, &command);
->       if (!(command & 0x02)) {
-> -             printk(KERN_WARNING
-> -                    "cciss: controller appears to be disabled\n");
-> +             pr_warning("controller appears to be disabled\n");
->               return -ENODEV;
->       }
->
->       err = pci_enable_device(pdev);
->       if (err) {
-> -             printk(KERN_ERR "cciss: Unable to Enable PCI device\n");
-> +             pr_err("Unable to Enable PCI device\n");
->               return err;
->       }
->
->       err = pci_request_regions(pdev, "cciss");
->       if (err) {
-> -             printk(KERN_ERR "cciss: Cannot obtain PCI resources, "
-> -                    "aborting\n");
-> +             pr_err("Cannot obtain PCI resources, aborting\n");
->               return err;
->       }
->
-> @@ -3707,7 +3669,7 @@ static int __devinit
-> cciss_pci_init(ctlr_info_t *c, struct pci_dev *pdev)
->                       break;
->       }
->       if (i == DEVICE_COUNT_RESOURCE) {
-> -             printk(KERN_WARNING "cciss: No memory BAR found\n");
-> +             pr_warning("No memory BAR found\n");
->               err = -ENODEV;
->               goto err_out_free_res;
->       }
-> @@ -3731,7 +3693,7 @@ static int __devinit
-> cciss_pci_init(ctlr_info_t *c, struct pci_dev *pdev)
->               schedule_timeout(msecs_to_jiffies(100));
-> /* wait 100ms */
->       }
->       if (scratchpad != CCISS_FIRMWARE_READY) {
-> -             printk(KERN_WARNING "cciss: Board not ready.
-> Timed out.\n");
-> +             pr_warning("Board not ready.  Timed out.\n");
->               err = -ENODEV;
->               goto err_out_free_res;
->       }
-> @@ -3748,7 +3710,7 @@ static int __devinit
-> cciss_pci_init(ctlr_info_t *c, struct pci_dev *pdev)
->               (unsigned long long)cfg_base_addr_index);
+> -     printk("Controller Configuration information\n");
+> -     printk("------------------------------------\n");
+> +     cciss_debug("Controller Configuration information\n");
+> +     cciss_debug("------------------------------------\n");
+>       for (i = 0; i < 4; i++)
+>               temp_name[i] = readb(&(tb->Signature[i]));
+>       temp_name[4] = '\0';
+> -     printk("   Signature = %s\n", temp_name);
+> -     printk("   Spec Number = %d\n", readl(&(tb->SpecValence)));
+> -     printk("   Transport methods supported = 0x%x\n",
+> -            readl(&(tb->TransportSupport)));
+> -     printk("   Transport methods active = 0x%x\n",
+> -            readl(&(tb->TransportActive)));
+> -     printk("   Requested transport Method = 0x%x\n",
+> -            readl(&(tb->HostWrite.TransportRequest)));
+> -     printk("   Coalesce Interrupt Delay = 0x%x\n",
+> -            readl(&(tb->HostWrite.CoalIntDelay)));
+> -     printk("   Coalesce Interrupt Count = 0x%x\n",
+> -            readl(&(tb->HostWrite.CoalIntCount)));
+> -     printk("   Max outstanding commands = 0x%d\n",
+> -            readl(&(tb->CmdsOutMax)));
+> -     printk("   Bus Types = 0x%x\n", readl(&(tb->BusTypes)));
+> +     cciss_debug("   Signature = %s\n", temp_name);
+> +     cciss_debug("   Spec Number = %d\n", readl(&(tb->SpecValence)));
+> +     cciss_debug("   Transport methods supported = 0x%x\n",
+> +                 readl(&(tb->TransportSupport)));
+> +     cciss_debug("   Transport methods active = 0x%x\n",
+> +                 readl(&(tb->TransportActive)));
+> +     cciss_debug("   Requested transport Method = 0x%x\n",
+> +                 readl(&(tb->HostWrite.TransportRequest)));
+> +     cciss_debug("   Coalesce Interrupt Delay = 0x%x\n",
+> +                 readl(&(tb->HostWrite.CoalIntDelay)));
+> +     cciss_debug("   Coalesce Interrupt Count = 0x%x\n",
+> +                 readl(&(tb->HostWrite.CoalIntCount)));
+> +     cciss_debug("   Max outstanding commands = 0x%d\n",
+> +                 readl(&(tb->CmdsOutMax)));
+> +     cciss_debug("   Bus Types = 0x%x\n", readl(&(tb->BusTypes)));
+>       for (i = 0; i < 16; i++)
+>               temp_name[i] = readb(&(tb->ServerName[i]));
+>       temp_name[16] = '\0';
+> -     printk("   Server Name = %s\n", temp_name);
+> -     printk("   Heartbeat Counter = 0x%x\n\n\n",
+> readl(&(tb->HeartBeat)));
+> -}
+> +     cciss_debug("   Server Name = %s\n", temp_name);
+> +     cciss_debug("   Heartbeat Counter = 0x%x\n\n\n",
+> +                 readl(&(tb->HeartBeat)));
 >  #endif                               /* CCISS_DEBUG */
+> +}
+>
+>  static int find_PCI_BAR_index(struct pci_dev *pdev, unsigned
+> long pci_bar_addr)  { @@ -3652,11 +3650,9 @@ static int
+> __devinit cciss_pci_init(ctlr_info_t *c, struct pci_dev *pdev)
+>               return err;
+>       }
+>
+> -#ifdef CCISS_DEBUG
+> -     printk("command = %x\n", command);
+> -     printk("irq = %x\n", pdev->irq);
+> -     printk("board_id = %x\n", board_id);
+> -#endif                               /* CCISS_DEBUG */
+> +     cciss_debug("command = %x\n", command);
+> +     cciss_debug("irq = %x\n", pdev->irq);
+> +     cciss_debug("board_id = %x\n", board_id);
+>
+>  /* If the kernel supports MSI/MSI-X we will try to enable
+> that functionality,
+>   * else we use the IO-APIC interrupt assigned to us by system ROM.
+> @@ -3678,9 +3674,8 @@ static int __devinit
+> cciss_pci_init(ctlr_info_t *c, struct pci_dev *pdev)
+>                                                * already removed
+>                                                */
+>
+> -#ifdef CCISS_DEBUG
+> -     printk("address 0 = %lx\n", c->paddr);
+> -#endif                               /* CCISS_DEBUG */
+> +     cciss_debug("address 0 = %lx\n", c->paddr);
+> +
+>       c->vaddr = remap_pci_mem(c->paddr, 0x250);
+>
+>       /* Wait for the board to become ready.  (PCI hotplug
+> needs this.) @@ -3701,14 +3696,10 @@ static int __devinit
+> cciss_pci_init(ctlr_info_t *c, struct pci_dev *pdev)
+>       /* get the address index number */
+>       cfg_base_addr = readl(c->vaddr + SA5_CTCFG_OFFSET);
+>       cfg_base_addr &= (__u32) 0x0000ffff;
+> -#ifdef CCISS_DEBUG
+> -     printk("cfg base address = %x\n", cfg_base_addr);
+> -#endif                               /* CCISS_DEBUG */
+> +     cciss_debug("cfg base address = %x\n", cfg_base_addr);
+>       cfg_base_addr_index = find_PCI_BAR_index(pdev,
+> cfg_base_addr); -#ifdef CCISS_DEBUG
+> -     printk("cfg base address index = %llx\n",
+> -             (unsigned long long)cfg_base_addr_index);
+> -#endif                               /* CCISS_DEBUG */
+> +     cciss_debug("cfg base address index = %llx\n",
+> +                 (unsigned long long)cfg_base_addr_index);
 >       if (cfg_base_addr_index == -1) {
-> -             printk(KERN_WARNING "cciss: Cannot find
-> cfg_base_addr_index\n");
-> +             pr_warning("Cannot find cfg_base_addr_index\n");
+>               pr_warning("Cannot find cfg_base_addr_index\n");
+>               err = -ENODEV;
+> @@ -3716,17 +3707,13 @@ static int __devinit
+> cciss_pci_init(ctlr_info_t *c, struct pci_dev *pdev)
+>       }
+>
+>       cfg_offset = readl(c->vaddr + SA5_CTMEM_OFFSET);
+> -#ifdef CCISS_DEBUG
+> -     printk("cfg offset = %llx\n", (unsigned long long)cfg_offset);
+> -#endif                               /* CCISS_DEBUG */
+> +     cciss_debug("cfg offset = %llx\n", (unsigned long
+> long)cfg_offset);
+>       c->cfgtable = remap_pci_mem(pci_resource_start(pdev,
+>
+> cfg_base_addr_index) +
+>                                   cfg_offset,
+> sizeof(CfgTable_struct));
+>       c->board_id = board_id;
+>
+> -#ifdef CCISS_DEBUG
+> -     print_cfg_table(c->cfgtable);
+> -#endif                               /* CCISS_DEBUG */
+> +     cciss_debug_cfg_table(c->cfgtable);
+>
+>       /* Some controllers support Zero Memory Raid (ZMR).
+>        * When configured in ZMR mode the number of supported
+> @@ -3761,7 +3748,7 @@ static int __devinit
+> cciss_pci_init(ctlr_info_t *c, struct pci_dev *pdev)
+>           (readb(&c->cfgtable->Signature[1]) != 'I') ||
+>           (readb(&c->cfgtable->Signature[2]) != 'S') ||
+>           (readb(&c->cfgtable->Signature[3]) != 'S')) {
+> -             printk("Does not appear to be a valid CISS
+> config table\n");
+> +             pr_info("Does not appear to be a valid CISS
+> config table\n");
 >               err = -ENODEV;
 >               goto err_out_free_res;
 >       }
-> @@ -3857,8 +3819,7 @@ static int __devinit
+> @@ -3791,9 +3778,7 @@ static int __devinit
 > cciss_pci_init(ctlr_info_t *c, struct pci_dev *pdev)
->  #endif                               /* CCISS_DEBUG */
+>               pci_write_config_dword(pdev,
+> PCI_COMMAND_PARITY, dma_refetch);
+>       }
+>
+> -#ifdef CCISS_DEBUG
+> -     printk("Trying to put board into Simple mode\n");
+> -#endif                               /* CCISS_DEBUG */
+> +     cciss_debug("Trying to put board into Simple mode\n");
+>       c->max_commands = readl(&(c->cfgtable->CmdsOutMax));
+>       /* Update the field, and then ring the doorbell */
+>       writel(CFGTBL_Trans_Simple,
+> &(c->cfgtable->HostWrite.TransportRequest));
+> @@ -3810,13 +3795,9 @@ static int __devinit
+> cciss_pci_init(ctlr_info_t *c, struct pci_dev *pdev)
+>               schedule_timeout(msecs_to_jiffies(1));
+>       }
+>
+> -#ifdef CCISS_DEBUG
+> -     printk(KERN_DEBUG "I counter got to %d %x\n", i,
+> -            readl(c->vaddr + SA5_DOORBELL));
+> -#endif                               /* CCISS_DEBUG */
+> -#ifdef CCISS_DEBUG
+> -     print_cfg_table(c->cfgtable);
+> -#endif                               /* CCISS_DEBUG */
+> +     cciss_debug("I counter got to %d %x\n",
+> +                 i, readl(c->vaddr + SA5_DOORBELL));
+> +     cciss_debug_cfg_table(c->cfgtable);
 >
 >       if (!(readl(&(c->cfgtable->TransportActive)) &
 > CFGTBL_Trans_Simple)) {
-> -             printk(KERN_WARNING "cciss: unable to get board into"
-> -                    " simple mode\n");
-> +             pr_warning("unable to get board into simple mode\n");
->               err = -ENODEV;
->               goto err_out_free_res;
->       }
-> @@ -3891,11 +3852,10 @@ static int alloc_cciss_hba(void)
->                       return i;
->               }
->       }
-> -     printk(KERN_WARNING "cciss: This driver supports a maximum"
-> -            " of %d controllers.\n", MAX_CTLR);
-> +     pr_warning("This driver supports a maximum of %d
-> controllers.\n",
-> +MAX_CTLR);
->       return -1;
->  Enomem:
-> -     printk(KERN_ERR "cciss: out of memory.\n");
-> +     pr_err("out of memory.\n");
->       return -1;
->  }
->
-> @@ -3984,7 +3944,7 @@ static __devinit int
-> cciss_message(struct pci_dev *pdev, unsigned char opcode, u
->       /* we leak the DMA buffer here ... no choice since the
-> controller could
->          still complete the command. */
->       if (i == 10) {
-> -             printk(KERN_ERR "cciss: controller message
-> %02x:%02x timed out\n",
-> +             pr_err("controller message %02x:%02x timed out\n",
->                       opcode, type);
->               return -ETIMEDOUT;
->       }
-> @@ -3992,12 +3952,12 @@ static __devinit int
-> cciss_message(struct pci_dev *pdev, unsigned char opcode, u
->       pci_free_consistent(pdev, cmd_sz, cmd, paddr64);
->
->       if (tag & 2) {
-> -             printk(KERN_ERR "cciss: controller message
-> %02x:%02x failed\n",
-> +             pr_err("controller message %02x:%02x failed\n",
->                       opcode, type);
->               return -EIO;
->       }
->
-> -     printk(KERN_INFO "cciss: controller message %02x:%02x
-> succeeded\n",
-> +     pr_info("controller message %02x:%02x succeeded\n",
->               opcode, type);
->       return 0;
->  }
-> @@ -4018,7 +3978,7 @@ static __devinit int
-> cciss_reset_msi(struct pci_dev *pdev)
->       if (pos) {
->               pci_read_config_word(pdev,
-> msi_control_reg(pos), &control);
->               if (control & PCI_MSI_FLAGS_ENABLE) {
-> -                     printk(KERN_INFO "cciss: resetting MSI\n");
-> +                     pr_info("resetting MSI\n");
->                       pci_write_config_word(pdev,
-> msi_control_reg(pos), control & ~PCI_MSI_FLAGS_ENABLE);
->               }
->       }
-> @@ -4027,7 +3987,7 @@ static __devinit int
-> cciss_reset_msi(struct pci_dev *pdev)
->       if (pos) {
->               pci_read_config_word(pdev,
-> msi_control_reg(pos), &control);
->               if (control & PCI_MSIX_FLAGS_ENABLE) {
-> -                     printk(KERN_INFO "cciss: resetting MSI-X\n");
-> +                     pr_info("resetting MSI-X\n");
->                       pci_write_config_word(pdev,
-> msi_control_reg(pos), control & ~PCI_MSIX_FLAGS_ENABLE);
->               }
->       }
-> @@ -4042,7 +4002,7 @@ static __devinit int
-> cciss_hard_reset_controller(struct pci_dev *pdev)
->       u16 pmcsr, saved_config_space[32];
->       int i, pos;
->
-> -     printk(KERN_INFO "cciss: using PCI PM to reset controller\n");
-> +     pr_info("using PCI PM to reset controller\n");
->
->       /* This is very nearly the same thing as
->
-> @@ -4064,7 +4024,7 @@ static __devinit int
-> cciss_hard_reset_controller(struct pci_dev *pdev)
->
->       pos = pci_find_capability(pdev, PCI_CAP_ID_PM);
->       if (pos == 0) {
-> -             printk(KERN_ERR "cciss_reset_controller: PCI PM
-> not supported\n");
-> +             pr_err("_reset_controller: PCI PM not supported\n");
->               return -ENODEV;
->       }
->
-> @@ -4138,7 +4098,7 @@ static int __devinit
-> cciss_init_one(struct pci_dev *pdev,
->                       schedule_timeout_uninterruptible(HZ);
->               }
->               if (i == 30) {
-> -                     printk(KERN_ERR "cciss: controller
-> seems dead\n");
-> +                     pr_err("controller seems dead\n");
->                       return -EBUSY;
->               }
->       }
-> @@ -4170,7 +4130,7 @@ static int __devinit
-> cciss_init_one(struct pci_dev *pdev,
->       else if (!pci_set_dma_mask(pdev, DMA_BIT_MASK(32)))
->               dac = 0;
->       else {
-> -             printk(KERN_ERR "cciss: no suitable DMA available\n");
-> +             pr_err("no suitable DMA available\n");
->               goto clean1;
->       }
->
-> @@ -4183,9 +4143,8 @@ static int __devinit
-> cciss_init_one(struct pci_dev *pdev,
->               hba[i]->major = COMPAQ_CISS_MAJOR + i;
->       rc = register_blkdev(hba[i]->major, hba[i]->devname);
->       if (rc == -EBUSY || rc == -EINVAL) {
-> -             printk(KERN_ERR
-> -                    "cciss:  Unable to get major number %d for %s "
-> -                    "on hba %d\n", hba[i]->major,
-> hba[i]->devname, i);
-> +             pr_err("Unable to get major number %d for %s on
-> hba %d\n",
-> +                    hba[i]->major, hba[i]->devname, i);
->               goto clean1;
->       } else {
->               if (i >= MAX_CTLR_ORIG)
-> @@ -4196,13 +4155,13 @@ static int __devinit
-> cciss_init_one(struct pci_dev *pdev,
->       hba[i]->access.set_intr_mask(hba[i], CCISS_INTR_OFF);
->       if (request_irq(hba[i]->intr[SIMPLE_MODE_INT], do_cciss_intr,
->                       IRQF_DISABLED | IRQF_SHARED,
-> hba[i]->devname, hba[i])) {
-> -             printk(KERN_ERR "cciss: Unable to get irq %d for %s\n",
-> +             pr_err("Unable to get irq %d for %s\n",
->                      hba[i]->intr[SIMPLE_MODE_INT], hba[i]->devname);
->               goto clean2;
->       }
->
-> -     printk(KERN_INFO "%s: <0x%x> at PCI %s IRQ %d%s using DAC\n",
-> -            hba[i]->devname, pdev->device, pci_name(pdev),
-> +     pr_info("%s: <0x%x> at PCI %s IRQ %d%s using DAC\n",
-> +             hba[i]->devname, pdev->device, pci_name(pdev),
->              hba[i]->intr[SIMPLE_MODE_INT], dac ? "" : " not");
->
->       hba[i]->cmd_pool_bits =
-> @@ -4219,7 +4178,7 @@ static int __devinit
-> cciss_init_one(struct pci_dev *pdev,
->       if ((hba[i]->cmd_pool_bits == NULL)
->           || (hba[i]->cmd_pool == NULL)
->           || (hba[i]->errinfo_pool == NULL)) {
-> -             printk(KERN_ERR "cciss: out of memory");
-> +             pr_err("out of memory");
->               goto clean4;
->       }
->
-> @@ -4232,8 +4191,7 @@ static int __devinit
-> cciss_init_one(struct pci_dev *pdev,
->
-> hba[i]->maxsgentries,
->                                                       GFP_KERNEL);
->               if (hba[i]->scatter_list[k] == NULL) {
-> -                     printk(KERN_ERR "cciss%d: could not allocate "
-> -                             "s/g lists\n", i);
-> +                     pr_err("%d: could not allocate s/g lists\n", i);
->                       goto clean4;
->               }
->       }
-> @@ -4241,8 +4199,7 @@ static int __devinit
-> cciss_init_one(struct pci_dev *pdev,
->                                               hba[i]->nr_cmds,
->                                               GFP_KERNEL);
->       if (!hba[i]->cmd_sg_list) {
-> -             printk(KERN_ERR "cciss%d: Cannot get memory for "
-> -                     "s/g chaining.\n", i);
-> +             pr_err("%d: Cannot get memory for s/g chaining.\n", i);
->               goto clean4;
->       }
->       /* Build up chain blocks for each command */ @@ -4252,8
-> +4209,8 @@ static int __devinit cciss_init_one(struct pci_dev *pdev,
->                                       kmalloc(sizeof(struct
-> Cmd_sg_list),
->                                                       GFP_KERNEL);
->                       if (!hba[i]->cmd_sg_list[j]) {
-> -                             printk(KERN_ERR "cciss%d:
-> Cannot get memory "
-> -                                     "for chain block.\n", i);
-> +                             pr_err("%d: Cannot get memory
-> for chain block.\n",
-> +                                    i);
->                               goto clean4;
->                       }
->                       /* Need a block of chainsized s/g
-> elements. */ @@ -4262,8 +4219,8 @@ static int __devinit
-> cciss_init_one(struct pci_dev *pdev,
->
-> sizeof(SGDescriptor_struct)),
->                                               GFP_KERNEL);
->                       if (!hba[i]->cmd_sg_list[j]->sgchain) {
-> -                             printk(KERN_ERR "cciss%d:
-> Cannot get memory "
-> -                                     "for s/g chains\n", i);
-> +                             pr_err("%d: Cannot get memory
-> for s/g chains\n",
-> +                                    i);
->                               goto clean4;
->                       }
->               }
-> @@ -4295,7 +4252,7 @@ static int __devinit
-> cciss_init_one(struct pci_dev *pdev,
->       /* Get the firmware version */
->       inq_buff = kzalloc(sizeof(InquiryData_struct), GFP_KERNEL);
->       if (inq_buff == NULL) {
-> -             printk(KERN_ERR "cciss: out of memory\n");
-> +             pr_err("out of memory\n");
->               goto clean4;
->       }
->
-> @@ -4307,8 +4264,7 @@ static int __devinit
-> cciss_init_one(struct pci_dev *pdev,
->               hba[i]->firm_ver[2] = inq_buff->data_byte[34];
->               hba[i]->firm_ver[3] = inq_buff->data_byte[35];
->       } else {         /* send command failed */
-> -             printk(KERN_WARNING "cciss: unable to determine
-> firmware"
-> -                     " version of controller\n");
-> +             pr_warning("unable to determine firmware
-> version of controller\n");
->       }
->       kfree(inq_buff);
->
-> @@ -4373,9 +4329,7 @@ static void cciss_shutdown(struct pci_dev *pdev)
->       h = pci_get_drvdata(pdev);
->       flush_buf = kzalloc(4, GFP_KERNEL);
->       if (!flush_buf) {
-> -             printk(KERN_WARNING
-> -                     "cciss:%d cache not flushed, out of memory.\n",
-> -                     h->ctlr);
-> +             pr_warning("%d cache not flushed, out of
-> memory.\n", h->ctlr);
->               return;
->       }
->       /* write all data in the battery backed cache to disk
-> */ @@ -4384,8 +4338,7 @@ static void cciss_shutdown(struct
-> pci_dev *pdev)
->               4, 0, CTLR_LUNID, TYPE_CMD);
->       kfree(flush_buf);
->       if (return_code != IO_OK)
-> -             printk(KERN_WARNING "cciss%d: Error flushing cache\n",
-> -                     h->ctlr);
-> +             pr_warning("%d: Error flushing cache\n", h->ctlr);
->       h->access.set_intr_mask(h, CCISS_INTR_OFF);
->       free_irq(h->intr[2], h);
->  }
-> @@ -4396,15 +4349,14 @@ static void __devexit
-> cciss_remove_one(struct pci_dev *pdev)
->       int i, j;
->
->       if (pci_get_drvdata(pdev) == NULL) {
-> -             printk(KERN_ERR "cciss: Unable to remove device \n");
-> +             pr_err("Unable to remove device \n");
->               return;
->       }
->
->       tmp_ptr = pci_get_drvdata(pdev);
->       i = tmp_ptr->ctlr;
->       if (hba[i] == NULL) {
-> -             printk(KERN_ERR "cciss: device appears to "
-> -                    "already be removed \n");
-> +             pr_err("device appears to already be removed\n");
->               return;
->       }
->
-> @@ -4497,7 +4449,7 @@ static int __init cciss_init(void)
->        */
->       BUILD_BUG_ON(sizeof(CommandList_struct) % 8);
->
-> -     printk(KERN_INFO DRIVER_NAME "\n");
-> +     pr_info(DRIVER_NAME "\n");
->
->       err = bus_register(&cciss_bus_type);
->       if (err)
-> @@ -4533,8 +4485,7 @@ static void __exit cciss_cleanup(void)
->       /* double check that all controller entrys have been removed */
->       for (i = 0; i < MAX_CTLR; i++) {
->               if (hba[i] != NULL) {
-> -                     printk(KERN_WARNING "cciss: had to remove"
-> -                            " controller %d\n", i);
-> +                     pr_warning("had to remove controller %d\n", i);
->                       cciss_remove_one(hba[i]->pdev);
->               }
->       }
-> @@ -4550,7 +4501,7 @@ static void fail_all_cmds(unsigned long ctlr)
->       CommandList_struct *c;
->       unsigned long flags;
->
-> -     printk(KERN_WARNING "cciss%d: controller not
-> responding.\n", h->ctlr);
-> +     pr_warning("%d: controller not responding.\n", h->ctlr);
->       h->alive = 0;           /* the controller apparently died... */
->
->       spin_lock_irqsave(CCISS_LOCK(ctlr), flags); diff --git
-> a/drivers/block/cciss_scsi.c b/drivers/block/cciss_scsi.c
-> index 5d0e46d..bd7d0c5 100644
+>               pr_warning("unable to get board into simple
+> mode\n"); diff --git a/drivers/block/cciss_scsi.c
+> b/drivers/block/cciss_scsi.c index bd7d0c5..54543f1 100644
 > --- a/drivers/block/cciss_scsi.c
 > +++ b/drivers/block/cciss_scsi.c
-> @@ -522,8 +522,8 @@ adjust_cciss_scsi_table(int ctlr, int hostno,
->                       GFP_KERNEL);
+> @@ -185,7 +185,7 @@ scsi_cmd_free(ctlr_info_t *h,
+> CommandList_struct *cmd)
+>       sa = (struct cciss_scsi_adapter_data_t *) h->scsi_ctlr;
+>       stk = &sa->cmd_stack;
+>       if (stk->top >= CMD_STACK_SIZE) {
+> -             printk("cciss: scsi_cmd_free called too many times.\n");
+> +             pr_info("scsi_cmd_free called too many times.\n");
+>               BUG();
+>       }
+>       stk->top++;
+> @@ -209,7 +209,7 @@ scsi_cmd_stack_setup(int ctlr, struct
+> cciss_scsi_adapter_data_t *sa)
+>               pci_alloc_consistent(hba[ctlr]->pdev, size,
+> &stk->cmd_pool_handle);
 >
->       if (!added || !removed) {
-> -             printk(KERN_WARNING "cciss%d: Out of memory in "
-> -                     "adjust_cciss_scsi_table\n", ctlr);
-> +             pr_warning("%d: Out of memory in
-> adjust_cciss_scsi_table\n",
-> +                        ctlr);
->               goto free_and_out;
+>       if (stk->pool == NULL) {
+> -             printk("stk->pool is null\n");
+> +             pr_info("stk->pool is null\n");
+>               return -1;
 >       }
 >
-> @@ -609,8 +609,7 @@ adjust_cciss_scsi_table(int ctlr, int hostno,
->               } else if (found == 1) {
->                       /* should never happen... */
->                       changes++;
-> -                     printk(KERN_WARNING "cciss%d: device "
-> -                             "unexpectedly changed\n", ctlr);
-> +                     pr_warning("%d: device unexpectedly
-> changed\n", ctlr);
->                       /* but if it does happen, we just
-> ignore that device */
->               }
+> @@ -232,10 +232,10 @@ scsi_cmd_stack_free(int ctlr)
+>       sa = (struct cciss_scsi_adapter_data_t *) hba[ctlr]->scsi_ctlr;
+>       stk = &sa->cmd_stack;
+>       if (stk->top != CMD_STACK_SIZE-1) {
+> -             printk( "cciss: %d scsi commands are still
+> outstanding.\n",
+> +             pr_info("%d scsi commands are still outstanding.\n",
+>                       CMD_STACK_SIZE - stk->top);
+>               // BUG();
+> -             printk("WE HAVE A BUG HERE!!! stk=0x%p\n", stk);
+> +             pr_alert("WE HAVE A BUG HERE!!! stk=0x%p\n", stk);
 >       }
-> @@ -634,10 +633,9 @@ adjust_cciss_scsi_table(int ctlr, int hostno,
->                       /* We don't expect to get here. */
->                       /* future cmds to this device will get
-> selection */
->                       /* timeout as if the device was gone. */
-> -                     printk(KERN_WARNING "cciss%d: didn't find "
-> -                             "c%db%dt%dl%d\n for removal.",
-> -                             ctlr, hostno, removed[i].bus,
-> -                             removed[i].target, removed[i].lun);
-> +                     pr_warning("%d: didn't find
-> c%db%dt%dl%d\n for removal.",
-> +                                ctlr, hostno, removed[i].bus,
-> +                                removed[i].target, removed[i].lun);
->               }
->       }
+>       size = sizeof(struct cciss_scsi_cmd_stack_elem_t) *
+> CMD_STACK_SIZE;
 >
-> @@ -648,10 +646,9 @@ adjust_cciss_scsi_table(int ctlr, int hostno,
->                       added[i].target, added[i].lun);
->               if (rc == 0)
->                       continue;
-> -             printk(KERN_WARNING "cciss%d: scsi_add_device "
-> -                     "c%db%dt%dl%d failed, device not added.\n",
-> -                     ctlr, hostno,
-> -                     added[i].bus, added[i].target, added[i].lun);
-> +             pr_warning("%d: scsi_add_device c%db%dt%dl%d
-> failed, device not added.\n",
-> +                        ctlr, hostno,
-> +                        added[i].bus, added[i].target, added[i].lun);
->               /* now we have to remove it from ccissscsi, */
->               /* since it didn't get added to scsi mid layer */
->               fixup_botched_add(ctlr, added[i].scsi3addr); @@
-> -750,10 +747,9 @@ complete_scsi_command( CommandList_struct
-> *cp, int timeout, __u32 tag)
->                               if( ei->ScsiStatus)
->                               {
->  #if 0
-> -                                     printk(KERN_WARNING
-> "cciss: cmd %p "
-> -                                     "has SCSI Status = %x\n",
-> -                                             cp,
-> -                                             ei->ScsiStatus);
-> +                                     pr_warning("cmd %p has
-> SCSI Status = %x\n",
-> +                                                cp,
-> +                                                ei->ScsiStatus);
+> @@ -243,91 +243,64 @@ scsi_cmd_stack_free(int ctlr)
+>       stk->pool = NULL;
+>  }
+>
+> -#if 0
+> -static int xmargin=8;
+> -static int amargin=60;
+> -
+>  static void
+> -print_bytes (unsigned char *c, int len, int hex, int ascii)
+> +cciss_debug_bytes(const void *p, size_t len, bool ascii)
+>  {
+> -
+> -     int i;
+> -     unsigned char *x;
+> -
+> -     if (hex)
+> -     {
+> -             x = c;
+> -             for (i=0;i<len;i++)
+> -             {
+> -                     if ((i % xmargin) == 0 && i>0) printk("\n");
+> -                     if ((i % xmargin) == 0) printk("0x%04x:", i);
+> -                     printk(" %02x", *x);
+> -                     x++;
+> -             }
+> -             printk("\n");
+> -     }
+> -     if (ascii)
+> -     {
+> -             x = c;
+> -             for (i=0;i<len;i++)
+> -             {
+> -                     if ((i % amargin) == 0 && i>0) printk("\n");
+> -                     if ((i % amargin) == 0) printk("0x%04x:", i);
+> -                     if (*x > 26 && *x < 128) printk("%c", *x);
+> -                     else printk(".");
+> -                     x++;
+> -             }
+> -             printk("\n");
+> -     }
+> +#ifdef CCISS_DEBUG
+> +     print_hex_dump(KERN_DEBUG, KBUILD_MODNAME ": ",
+> DUMP_PREFIX_OFFSET,
+> +                    16, 1, p, len, ascii);
+> +#endif
+>  }
+>
+>  static void
+> -print_cmd(CommandList_struct *cp)
+> +cciss_debug_cmd(CommandList_struct *cp)
+>  {
+> -     printk("queue:%d\n", cp->Header.ReplyQueue);
+> -     printk("sglist:%d\n", cp->Header.SGList);
+> -     printk("sgtot:%d\n", cp->Header.SGTotal);
+> -     printk("Tag:0x%08x/0x%08x\n", cp->Header.Tag.upper,
+> -                     cp->Header.Tag.lower);
+> -     printk("LUN:0x%02x%02x%02x%02x%02x%02x%02x%02x\n",
+> -             cp->Header.LUN.LunAddrBytes[0],
+> -             cp->Header.LUN.LunAddrBytes[1],
+> -             cp->Header.LUN.LunAddrBytes[2],
+> -             cp->Header.LUN.LunAddrBytes[3],
+> -             cp->Header.LUN.LunAddrBytes[4],
+> -             cp->Header.LUN.LunAddrBytes[5],
+> -             cp->Header.LUN.LunAddrBytes[6],
+> -             cp->Header.LUN.LunAddrBytes[7]);
+> -     printk("CDBLen:%d\n", cp->Request.CDBLen);
+> -     printk("Type:%d\n",cp->Request.Type.Type);
+> -     printk("Attr:%d\n",cp->Request.Type.Attribute);
+> -     printk(" Dir:%d\n",cp->Request.Type.Direction);
+> -     printk("Timeout:%d\n",cp->Request.Timeout);
+> -     printk( "CDB: %02x %02x %02x %02x %02x %02x %02x %02x"
+> -             " %02x %02x %02x %02x %02x %02x %02x %02x\n",
+> -             cp->Request.CDB[0], cp->Request.CDB[1],
+> -             cp->Request.CDB[2], cp->Request.CDB[3],
+> -             cp->Request.CDB[4], cp->Request.CDB[5],
+> -             cp->Request.CDB[6], cp->Request.CDB[7],
+> -             cp->Request.CDB[8], cp->Request.CDB[9],
+> -             cp->Request.CDB[10], cp->Request.CDB[11],
+> -             cp->Request.CDB[12], cp->Request.CDB[13],
+> -             cp->Request.CDB[14], cp->Request.CDB[15]),
+> -     printk("edesc.Addr: 0x%08x/0%08x, Len  = %d\n",
+> -             cp->ErrDesc.Addr.upper, cp->ErrDesc.Addr.lower,
+> -                     cp->ErrDesc.Len);
+> -     printk("sgs..........Errorinfo:\n");
+> -     printk("scsistatus:%d\n", cp->err_info->ScsiStatus);
+> -     printk("senselen:%d\n", cp->err_info->SenseLen);
+> -     printk("cmd status:%d\n", cp->err_info->CommandStatus);
+> -     printk("resid cnt:%d\n", cp->err_info->ResidualCnt);
+> -     printk("offense size:%d\n",
+> cp->err_info->MoreErrInfo.Invalid_Cmd.offense_size);
+> -     printk("offense byte:%d\n",
+> cp->err_info->MoreErrInfo.Invalid_Cmd.offense_num);
+> -     printk("offense value:%d\n",
+> cp->err_info->MoreErrInfo.Invalid_Cmd.offense_value);
+> -
+> -}
+> -
+> +#ifdef CCISS_DEBUG
+> +     cciss_debug("queue:%d\n", cp->Header.ReplyQueue);
+> +     cciss_debug("sglist:%d\n", cp->Header.SGList);
+> +     cciss_debug("sgtot:%d\n", cp->Header.SGTotal);
+> +     cciss_debug("Tag:0x%08x/0x%08x\n",
+> +                 cp->Header.Tag.upper, cp->Header.Tag.lower);
+> +     cciss_debug("LUN:0x%02x%02x%02x%02x%02x%02x%02x%02x\n",
+> +                 cp->Header.LUN.LunAddrBytes[0],
+> +                 cp->Header.LUN.LunAddrBytes[1],
+> +                 cp->Header.LUN.LunAddrBytes[2],
+> +                 cp->Header.LUN.LunAddrBytes[3],
+> +                 cp->Header.LUN.LunAddrBytes[4],
+> +                 cp->Header.LUN.LunAddrBytes[5],
+> +                 cp->Header.LUN.LunAddrBytes[6],
+> +                 cp->Header.LUN.LunAddrBytes[7]);
+> +     cciss_debug("CDBLen:%d\n", cp->Request.CDBLen);
+> +     cciss_debug("Type:%d\n",cp->Request.Type.Type);
+> +     cciss_debug("Attr:%d\n",cp->Request.Type.Attribute);
+> +     cciss_debug(" Dir:%d\n",cp->Request.Type.Direction);
+> +     cciss_debug("Timeout:%d\n",cp->Request.Timeout);
+> +     cciss_debug("CDB: %02x %02x %02x %02x %02x %02x %02x %02x"
+> +                 " %02x %02x %02x %02x %02x %02x %02x %02x\n",
+> +                 cp->Request.CDB[0], cp->Request.CDB[1],
+> +                 cp->Request.CDB[2], cp->Request.CDB[3],
+> +                 cp->Request.CDB[4], cp->Request.CDB[5],
+> +                 cp->Request.CDB[6], cp->Request.CDB[7],
+> +                 cp->Request.CDB[8], cp->Request.CDB[9],
+> +                 cp->Request.CDB[10], cp->Request.CDB[11],
+> +                 cp->Request.CDB[12], cp->Request.CDB[13],
+> +                 cp->Request.CDB[14], cp->Request.CDB[15]);
+> +     cciss_debug("edesc.Addr: 0x%08x/0%08x, Len  = %d\n",
+> +                 cp->ErrDesc.Addr.upper, cp->ErrDesc.Addr.lower,
+> +                 cp->ErrDesc.Len);
+> +     cciss_debug("sgs..........Errorinfo:\n");
+> +     cciss_debug("scsistatus:%d\n", cp->err_info->ScsiStatus);
+> +     cciss_debug("senselen:%d\n", cp->err_info->SenseLen);
+> +     cciss_debug("cmd status:%d\n", cp->err_info->CommandStatus);
+> +     cciss_debug("resid cnt:%d\n", cp->err_info->ResidualCnt);
+> +     cciss_debug("offense size:%d\n",
+> +                 cp->err_info->MoreErrInfo.Invalid_Cmd.offense_size);
+> +     cciss_debug("offense byte:%d\n",
+> +                 cp->err_info->MoreErrInfo.Invalid_Cmd.offense_num);
+> +     cciss_debug("offense value:%d\n",
+> +
+> cp->err_info->MoreErrInfo.Invalid_Cmd.offense_value);
 >  #endif
->                                       cmd->result |=
-> (ei->ScsiStatus << 1);
->                               }
-> @@ -773,9 +769,8 @@ complete_scsi_command( CommandList_struct
+> +}
+>
+>  static int
+>  find_bus_target_lun(int ctlr, int *bus, int *target, int
+> *lun) @@ -368,8 +341,8 @@ cciss_scsi_add_entry(int ctlr, int hostno,
+>       unsigned char addr1[8], addr2[8];
+>
+>       if (n >= CCISS_MAX_SCSI_DEVS_PER_HBA) {
+> -             printk("cciss%d: Too many devices, "
+> -                     "some will be inaccessible.\n", ctlr);
+> +             pr_info("%d: Too many devices, some will be
+> inaccessible.\n",
+> +                     ctlr);
+>               return -1;
+>       }
+>
+> @@ -425,7 +398,7 @@ cciss_scsi_add_entry(int ctlr, int hostno,
+>          know our hostno and we don't want to print anything first
+>          time anyway (the scsi layer's inquiries will show
+> that info) */
+>       if (hostno != -1)
+> -             printk("cciss%d: %s device c%db%dt%dl%d added.\n",
+> +             pr_info("%d: %s device c%db%dt%dl%d added.\n",
+>                       ctlr, scsi_device_type(sd->devtype), hostno,
+>                       sd->bus, sd->target, sd->lun);
+>       return 0;
+> @@ -448,9 +421,9 @@ cciss_scsi_remove_entry(int ctlr, int
+> hostno, int entry,
+>       for (i=entry;i<ccissscsi[ctlr].ndevices-1;i++)
+>               ccissscsi[ctlr].dev[i] = ccissscsi[ctlr].dev[i+1];
+>       ccissscsi[ctlr].ndevices--;
+> -     printk("cciss%d: %s device c%db%dt%dl%d removed.\n",
+> +     pr_info("%d: %s device c%db%dt%dl%d removed.\n",
+>               ctlr, scsi_device_type(sd.devtype), hostno,
+> -                     sd.bus, sd.target, sd.lun);
+> +             sd.bus, sd.target, sd.lun);
+>  }
+>
+>
+> @@ -555,15 +528,15 @@ adjust_cciss_scsi_table(int ctlr, int hostno,
+>
+>               if (found == 0) { /* device no longer present. */
+>                       changes++;
+> -                     /* printk("cciss%d: %s device
+> c%db%dt%dl%d removed.\n",
+> -                             ctlr,
+> scsi_device_type(csd->devtype), hostno,
+> -                                     csd->bus, csd->target,
+> csd->lun); */
+> +                     /* pr_info("%d: %s device c%db%dt%dl%d
+> removed.\n",
+> +                                ctlr,
+> scsi_device_type(csd->devtype), hostno,
+> +                                csd->bus, csd->target, csd->lun); */
+>                       cciss_scsi_remove_entry(ctlr, hostno, i,
+>                               removed, &nremoved);
+>                       /* remove ^^^, hence i not incremented */
+>               } else if (found == 1) { /* device is different
+> in some way */
+>                       changes++;
+> -                     printk("cciss%d: device c%db%dt%dl%d
+> has changed.\n",
+> +                     pr_info("%d: device c%db%dt%dl%d has
+> changed.\n",
+>                               ctlr, hostno, csd->bus,
+> csd->target, csd->lun);
+>                       cciss_scsi_remove_entry(ctlr, hostno, i,
+>                               removed, &nremoved);
+> @@ -728,7 +701,7 @@ complete_scsi_command( CommandList_struct
 > *cp, int timeout, __u32 tag)
->                       case CMD_DATA_UNDERRUN: /* let mid
-> layer handle it. */
->                       break;
->                       case CMD_DATA_OVERRUN:
-> -                             printk(KERN_WARNING "cciss: cp %p has"
-> -                                     " completed with data overrun "
-> -                                     "reported\n", cp);
-> +                             pr_warning("cp %p has completed
-> with data overrun reported\n",
-> +                                        cp);
+>       /* cmd->result |= (GOOD < 1); */                /*
+> status byte */
+>
+>       cmd->result |= (ei->ScsiStatus);
+> -     /* printk("Scsistatus is 0x%02x\n", ei->ScsiStatus);  */
+> +     /* pr_info("Scsistatus is 0x%02x\n", ei->ScsiStatus);  */
+>
+>       /* copy the sense data whether we need to or not. */
+>
+> @@ -773,8 +746,8 @@ complete_scsi_command( CommandList_struct
+> *cp, int timeout, __u32 tag)
+>                                          cp);
 >                       break;
 >                       case CMD_INVALID: {
->                               /* print_bytes(cp, sizeof(*cp),
-> 1, 0); @@ -789,44 +784,37 @@ complete_scsi_command(
+> -                             /* print_bytes(cp, sizeof(*cp), 1, 0);
+> -                             print_cmd(cp); */
+> +                             cciss_debug_bytes(cp,
+> sizeof(*cp), false);
+> +                             cciss_debug_cmd(cp);
+>       /* We get CMD_INVALID if you address a non-existent
+> tape drive instead
+>       of a selection timeout (no response).  You will see
+> this if you yank
+>       out a tape drive, then try to access it. This is kind
+> of a shame @@ -817,8 +790,8 @@ complete_scsi_command(
 > CommandList_struct *cp, int timeout, __u32 tag)
->                               }
->                       break;
->                       case CMD_PROTOCOL_ERR:
-> -                                printk(KERN_WARNING "cciss:
-> cp %p has "
-> -                                     "protocol error \n", cp);
-> +                                pr_warning("cp %p has protocol
-> + error\n", cp);
->                          break;
->                       case CMD_HARDWARE_ERR:
->                               cmd->result = DID_ERROR << 16;
-> -                                printk(KERN_WARNING "cciss:
-> cp %p had "
-> -                                        " hardware error\n", cp);
-> +                                pr_warning("cp %p had hardware
-> + error\n", cp);
->                          break;
->                       case CMD_CONNECTION_LOST:
->                               cmd->result = DID_ERROR << 16;
-> -                             printk(KERN_WARNING "cciss: cp %p had "
-> -                                     "connection lost\n", cp);
-> +                             pr_warning("cp %p had
-> connection lost\n", cp);
->                       break;
->                       case CMD_ABORTED:
->                               cmd->result = DID_ABORT << 16;
-> -                             printk(KERN_WARNING "cciss: cp %p was "
-> -                                     "aborted\n", cp);
-> +                             pr_warning("cp %p was aborted\n", cp);
->                       break;
->                       case CMD_ABORT_FAILED:
->                               cmd->result = DID_ERROR << 16;
-> -                             printk(KERN_WARNING "cciss: cp
-> %p reports "
-> -                                     "abort failed\n", cp);
-> +                             pr_warning("cp %p reports abort
-> failed\n", cp);
->                       break;
->                       case CMD_UNSOLICITED_ABORT:
->                               cmd->result = DID_ABORT << 16;
-> -                             printk(KERN_WARNING "cciss: cp
-> %p aborted "
-> -                                     "do to an unsolicited
-> abort\n", cp);
-> +                             pr_warning("cp %p aborted do to
-> an unsolicited abort\n",
-> +                                        cp);
->                       break;
->                       case CMD_TIMEOUT:
->                               cmd->result = DID_TIME_OUT << 16;
-> -                             printk(KERN_WARNING "cciss: cp
-> %p timedout\n",
-> -                                     cp);
-> +                             pr_warning("cp %p timedout\n", cp);
->                       break;
->                       default:
->                               cmd->result = DID_ERROR << 16;
-> -                             printk(KERN_WARNING "cciss: cp
-> %p returned "
-> -                                     "unknown status %x\n", cp,
-> -                                             ei->CommandStatus);
-> +                             pr_warning("cp %p returned
-> unknown status %x\n",
-> +                                        cp, ei->CommandStatus);
+>                                          cp, ei->CommandStatus);
 >               }
 >       }
->       // printk("c:%p:c%db%dt%dl%d ", cmd, ctlr->ctlr,
-> cmd->channel, @@ -957,71 +945,54 @@
-> cciss_scsi_interpret_error(CommandList_struct *cp)
->       switch(ei->CommandStatus)
->       {
->               case CMD_TARGET_STATUS:
-> -                     printk(KERN_WARNING "cciss: cmd %p has "
-> -                             "completed with errors\n", cp);
-> -                     printk(KERN_WARNING "cciss: cmd %p "
-> -                             "has SCSI Status = %x\n",
-> -                                     cp,
-> -                                     ei->ScsiStatus);
-> +                     pr_warning("cmd %p has completed with
-> errors\n", cp);
-> +                     pr_warning("cmd %p has SCSI Status = %x\n",
-> +                                cp, ei->ScsiStatus);
->                       if (ei->ScsiStatus == 0)
-> -                             printk(KERN_WARNING
-> -                             "cciss:SCSI status is
-> abnormally zero.  "
-> -                             "(probably indicates selection timeout "
-> -                             "reported incorrectly due to a known "
-> -                             "firmware bug, circa July, 2001.)\n");
-> +                             pr_warning("SCSI status is
-> abnormally zero.  (probably indicates
-> +selection timeout reported incorrectly due to a known firmware bug,
-> +circa July, 2001.)\n");
+> -     // printk("c:%p:c%db%dt%dl%d ", cmd, ctlr->ctlr, cmd->channel,
+> -     //      cmd->target, cmd->lun);
+> +     /* pr_info("c:%p:c%db%dt%dl%d ",
+> +             cmd, ctlr->ctlr, cmd->channel, cmd->target,
+> cmd->lun); */
+>       cmd->scsi_done(cmd);
+>       scsi_cmd_free(ctlr, cp);
+>  }
+> @@ -904,7 +877,7 @@ cciss_scsi_do_simple_cmd(ctlr_info_t *c,
+>       cp->Header.Tag.lower = cp->busaddr;  // Use k. address
+> of cmd as tag
+>       // Fill in the request block...
+>
+> -     /* printk("Using scsi3addr
+> 0x%02x%0x2%0x2%0x2%0x2%0x2%0x2%0x2\n",
+> +     /* pr_info("Using scsi3addr
+> 0x%02x%0x2%0x2%0x2%0x2%0x2%0x2%0x2\n",
+>               scsi3addr[0], scsi3addr[1], scsi3addr[2], scsi3addr[3],
+>               scsi3addr[4], scsi3addr[5], scsi3addr[6],
+> scsi3addr[7]); */
+>
+> @@ -952,7 +925,7 @@ cciss_scsi_interpret_error(CommandList_struct *cp)
+>                               pr_warning("SCSI status is
+> abnormally zero.  (probably indicates selection timeout
+> reported incorrectly due to a known firmware bug, circa July,
+> 2001.)\n");
 >               break;
 >               case CMD_DATA_UNDERRUN: /* let mid layer handle it. */
->                       printk("UNDERRUN\n");
+> -                     printk("UNDERRUN\n");
+> +                     pr_info("UNDERRUN\n");
 >               break;
 >               case CMD_DATA_OVERRUN:
-> -                     printk(KERN_WARNING "cciss: cp %p has"
-> -                             " completed with data overrun "
-> -                             "reported\n", cp);
-> +                     pr_warning("cp %p has completed with
-> data overrun reported\n",
-> +                                cp);
->               break;
->               case CMD_INVALID: {
->                       /* controller unfortunately reports
-> SCSI passthru's */
+>                       pr_warning("cp %p has completed with
+> data overrun reported\n", @@ -963,8 +936,8 @@
+> cciss_scsi_interpret_error(CommandList_struct *cp)
 >                       /* to non-existent targets as invalid
 > commands. */
-> -                     printk(KERN_WARNING "cciss: cp %p is "
-> -                             "reported invalid (probably means "
-> -                             "target device no longer present)\n",
-> -                             cp);
-> +                     pr_warning("cp %p is reported invalid
+>                       pr_warning("cp %p is reported invalid
 > (probably means target device no longer present)\n",
-> +                                cp);
->                       /* print_bytes((unsigned char *) cp,
+>                                  cp);
+> -                     /* print_bytes((unsigned char *) cp,
 > sizeof(*cp), 1, 0);
->                       print_cmd(cp);  */
+> -                     print_cmd(cp);  */
+> +                     cciss_debug_bytes(cp, sizeof(*cp), false);
+> +                     cciss_debug_cmd(cp);
 >                       }
 >               break;
 >               case CMD_PROTOCOL_ERR:
-> -                     printk(KERN_WARNING "cciss: cp %p has "
-> -                             "protocol error \n", cp);
-> +                     pr_warning("cp %p has protocol error\n", cp);
->               break;
->               case CMD_HARDWARE_ERR:
->                       /* cmd->result = DID_ERROR << 16; */
-> -                     printk(KERN_WARNING "cciss: cp %p had "
-> -                             " hardware error\n", cp);
-> +                     pr_warning("cp %p had hardware error\n", cp);
->               break;
->               case CMD_CONNECTION_LOST:
-> -                     printk(KERN_WARNING "cciss: cp %p had "
-> -                             "connection lost\n", cp);
-> +                     pr_warning("cp %p had connection lost\n", cp);
->               break;
->               case CMD_ABORTED:
-> -                     printk(KERN_WARNING "cciss: cp %p was "
-> -                             "aborted\n", cp);
-> +                     pr_warning("cp %p was aborted\n", cp);
->               break;
->               case CMD_ABORT_FAILED:
-> -                     printk(KERN_WARNING "cciss: cp %p reports "
-> -                             "abort failed\n", cp);
-> +                     pr_warning("cp %p reports abort failed\n", cp);
->               break;
->               case CMD_UNSOLICITED_ABORT:
-> -                     printk(KERN_WARNING "cciss: cp %p aborted "
-> -                             "do to an unsolicited abort\n", cp);
-> +                     pr_warning("cp %p aborted do to an
-> unsolicited abort\n",
-> +                                cp);
->               break;
->               case CMD_TIMEOUT:
-> -                     printk(KERN_WARNING "cciss: cp %p timedout\n",
-> -                             cp);
-> +                     pr_warning("cp %p timedout\n", cp);
->               break;
->               default:
-> -                     printk(KERN_WARNING "cciss: cp %p returned "
-> -                             "unknown status %x\n", cp,
-> -                                     ei->CommandStatus);
-> +                     pr_warning("cp %p returned unknown status %x\n",
-> +                                cp, ei->CommandStatus);
->       }
->  }
+> @@ -1012,7 +985,7 @@ cciss_scsi_do_inquiry(ctlr_info_t *c,
+> unsigned char *scsi3addr,
+>       spin_unlock_irqrestore(CCISS_LOCK(c->ctlr), flags);
 >
-> @@ -1188,7 +1159,7 @@ cciss_update_non_disk_devices(int
-> cntl_num, int hostno)
->       currentsd = kzalloc(sizeof(*currentsd) *
->                       (CCISS_MAX_SCSI_DEVS_PER_HBA+1), GFP_KERNEL);
->       if (ld_buff == NULL || inq_buff == NULL || currentsd == NULL) {
-> -             printk(KERN_ERR "cciss: out of memory\n");
-> +             pr_err("out of memory\n");
->               goto out;
->       }
->       this_device = &currentsd[CCISS_MAX_SCSI_DEVS_PER_HBA];
-> @@ -1196,15 +1167,14 @@ cciss_update_non_disk_devices(int
-> cntl_num, int hostno)
->               ch = &ld_buff->LUNListLength[0];
->               num_luns = ((ch[0]<<24) | (ch[1]<<16) |
-> (ch[2]<<8) | ch[3]) / 8;
->               if (num_luns > CISS_MAX_PHYS_LUN) {
-> -                     printk(KERN_WARNING
-> -                             "cciss: Maximum physical LUNs
-> (%d) exceeded.  "
-> -                             "%d LUNs ignored.\n",
-> CISS_MAX_PHYS_LUN,
-> -                             num_luns - CISS_MAX_PHYS_LUN);
-> +                     pr_warning("Maximum physical LUNs (%d)
-> exceeded.  %d LUNs ignored.\n",
-> +                                CISS_MAX_PHYS_LUN,
-> +                                num_luns - CISS_MAX_PHYS_LUN);
->                       num_luns = CISS_MAX_PHYS_LUN;
->               }
->       }
->       else {
-> -             printk(KERN_ERR  "cciss: Report physical LUNs
-> failed.\n");
-> +             pr_err("Report physical LUNs failed.\n");
->               goto out;
+>       if (cp == NULL) {                       /* trouble... */
+> -             printk("cmd_alloc returned NULL!\n");
+> +             pr_info("cmd_alloc returned NULL!\n");
+>               return -1;
 >       }
 >
-> @@ -1260,8 +1230,8 @@ cciss_update_non_disk_devices(int
-> cntl_num, int hostno)
->                 case 0x01: /* sequential access, (tape) */
->                 case 0x08: /* medium changer */
->                       if (ncurrent >= CCISS_MAX_SCSI_DEVS_PER_HBA) {
-> -                             printk(KERN_INFO "cciss%d: %s ignored, "
-> -                                     "too many devices.\n", cntl_num,
-> +                             pr_info("%d: %s ignored, too
-> many devices.\n",
-> +                                     cntl_num,
->
-> scsi_device_type(this_device->devtype));
->                               break;
->                       }
-> @@ -1578,8 +1548,8 @@ static int
-> wait_for_device_to_become_ready(ctlr_info_t *h,
->
->       c = cmd_alloc(h, 1);
->       if (!c) {
-> -             printk(KERN_WARNING "cciss%d: out of memory in "
-> -                     "wait_for_device_to_become_ready.\n", h->ctlr);
-> +             pr_warning("%d: out of memory in
-> wait_for_device_to_become_ready.\n",
-> +                        h->ctlr);
->               return IO_ERROR;
+> @@ -1074,7 +1047,7 @@ cciss_scsi_do_report_phys_luns(ctlr_info_t *c,
+>       cp = scsi_cmd_alloc(c);
+>       spin_unlock_irqrestore(CCISS_LOCK(c->ctlr), flags);
+>       if (cp == NULL) {                       /* trouble... */
+> -             printk("cmd_alloc returned NULL!\n");
+> +             pr_info("cmd_alloc returned NULL!\n");
+>               return -1;
 >       }
 >
-> @@ -1623,16 +1593,15 @@ static int
-> wait_for_device_to_become_ready(ctlr_info_t *h,
->                       }
->               }
->  retry_tur:
-> -             printk(KERN_WARNING "cciss%d: Waiting %d secs "
-> -                     "for device to become ready.\n",
-> -                     h->ctlr, waittime / HZ);
-> +             pr_warning("%d: Waiting %d secs for device to
-> become ready.\n",
-> +                        h->ctlr, waittime / HZ);
->               rc = 1; /* device not ready. */
+> @@ -1392,10 +1365,11 @@ cciss_scsi_queue_command (struct
+> scsi_cmnd *cmd, void (* done)(struct scsi_cmnd
+>               return 0;
+>       }
+>
+> -     /* printk("cciss_queue_command, p=%p, cmd=0x%02x,
+> c%db%dt%dl%d\n",
+> -             cmd, cmd->cmnd[0], ctlr, cmd->channel,
+> cmd->target, cmd->lun);*/
+> -     // printk("q:%p:c%db%dt%dl%d ", cmd, ctlr, cmd->channel,
+> -     //      cmd->target, cmd->lun);
+> +     /* pr_info("%s: p=%p, cmd=0x%02x, c%db%dt%dl%d\n",
+> +             __func__, cmd, cmd->cmnd[0],
+> +             ctlr, cmd->channel, cmd->target, cmd->lun);*/
+> +     /* pr_info("q:%p:c%db%dt%dl%d ",
+> +             cmd, ctlr, cmd->channel, cmd->target, cmd->lun); */
+>
+>       /* Ok, we have a reasonable scsi nexus, so send the cmd
+> down, and
+>             see what the device thinks of it. */ @@ -1404,7
+> +1378,7 @@ cciss_scsi_queue_command (struct scsi_cmnd *cmd,
+> void (* done)(struct scsi_cmnd
+>       cp = scsi_cmd_alloc(*c);
+>       spin_unlock_irqrestore(CCISS_LOCK(ctlr), flags);
+>       if (cp == NULL) {                       /* trouble... */
+> -             printk("scsi_cmd_alloc returned NULL!\n");
+> +             pr_info("scsi_cmd_alloc returned NULL!\n");
+>               /* FIXME: next 3 lines are -> BAD! <- */
+>               cmd->result = DID_NO_CONNECT << 16;
+>               done(cmd);
+> @@ -1454,8 +1428,7 @@ cciss_scsi_queue_command (struct
+> scsi_cmnd *cmd, void (* done)(struct scsi_cmnd
+>               break;
+>
+>         default:
+> -             printk("cciss: unknown data direction: %d\n",
+> -                     cmd->sc_data_direction);
+> +             pr_info("unknown data direction: %d\n",
+> cmd->sc_data_direction);
+>               BUG();
+>               break;
+>       }
+> @@ -1515,7 +1488,7 @@ cciss_engage_scsi(int ctlr)
+>       stk = &sa->cmd_stack;
+>
+>       if (sa->registered) {
+> -             printk("cciss%d: SCSI subsystem already
+> engaged.\n", ctlr);
+> +             pr_info("%d: SCSI subsystem already engaged.\n", ctlr);
+>               spin_unlock_irqrestore(CCISS_LOCK(ctlr), flags);
+>               return -ENXIO;
+>       }
+> @@ -1599,7 +1572,7 @@ retry_tur:
 >       }
 >
 >       if (rc)
->               printk("cciss%d: giving up on device.\n", h->ctlr);
+> -             printk("cciss%d: giving up on device.\n", h->ctlr);
+> +             pr_info("%d: giving up on device.\n", h->ctlr);
 >       else
-> -             printk(KERN_WARNING "cciss%d: device is
-> ready.\n", h->ctlr);
-> +             pr_warning("%d: device is ready.\n", h->ctlr);
+>               pr_warning("%d: device is ready.\n", h->ctlr);
 >
->       cmd_free(h, c, 1);
->       return rc;
-> @@ -1662,7 +1631,7 @@ static int
-> cciss_eh_device_reset_handler(struct scsi_cmnd *scsicmd)
->       if (c == NULL) /* paranoia */
->               return FAILED;
->       ctlr = (*c)->ctlr;
-> -     printk(KERN_WARNING "cciss%d: resetting tape drive or
-> medium changer.\n", ctlr);
-> +     pr_warning("%d: resetting tape drive or medium
-> changer.\n", ctlr);
->       /* find the command that's giving us trouble */
->       cmd_in_trouble = (CommandList_struct *) scsicmd->host_scribble;
->       if (cmd_in_trouble == NULL) /* paranoia */ @@ -1673,7
-> +1642,7 @@ static int cciss_eh_device_reset_handler(struct
-> scsi_cmnd *scsicmd)
->               TYPE_MSG);
->       if (rc == 0 && wait_for_device_to_become_ready(*c,
-> lunaddr) == 0)
->               return SUCCESS;
-> -     printk(KERN_WARNING "cciss%d: resetting device
-> failed.\n", ctlr);
-> +     pr_warning("%d: resetting device failed.\n", ctlr);
->       return FAILED;
->  }
->
-> @@ -1690,7 +1659,7 @@ static int
-> cciss_eh_abort_handler(struct scsi_cmnd *scsicmd)
->       if (c == NULL) /* paranoia */
->               return FAILED;
->       ctlr = (*c)->ctlr;
-> -     printk(KERN_WARNING "cciss%d: aborting tardy SCSI cmd\n", ctlr);
-> +     pr_warning("%d: aborting tardy SCSI cmd\n", ctlr);
->
->       /* find the command to be aborted */
->       cmd_to_abort = (CommandList_struct *) scsicmd->host_scribble;
 > --
 > 1.6.6.rc0.57.gad7a
 >
