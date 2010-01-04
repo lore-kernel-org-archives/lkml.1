@@ -1,87 +1,328 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753549Ab0ADRWb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753435Ab0ADRXk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753549Ab0ADRWb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 12:22:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753484Ab0ADRW1
+	id S1753435Ab0ADRXk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 12:23:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752617Ab0ADRXj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 12:22:27 -0500
-Received: from nlpi129.sbcis.sbc.com ([207.115.36.143]:39359 "EHLO
-	nlpi129.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753240Ab0ADRWZ (ORCPT
+	Mon, 4 Jan 2010 12:23:39 -0500
+Received: from outbound-mail-313.bluehost.com ([67.222.54.6]:58894 "HELO
+	outbound-mail-313.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751551Ab0ADRXi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 12:22:25 -0500
-Date: Mon, 4 Jan 2010 11:21:12 -0600 (CST)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@router.home
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-cc: Tejun Heo <tj@kernel.org>, linux-kernel@vger.kernel.org,
-       Mel Gorman <mel@csn.ul.ie>, Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: Re: [this_cpu_xx V8 11/16] Generic support for this_cpu_cmpxchg
-In-Reply-To: <20091222172436.GB12529@Krystal>
-Message-ID: <alpine.DEB.2.00.1001041116010.7191@router.home>
-References: <20091218222617.384355422@quilx.com> <20091218222653.560936448@quilx.com> <20091219144520.GA9134@Krystal> <alpine.DEB.2.00.0912220950030.12163@router.home> <20091222172436.GB12529@Krystal>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 4 Jan 2010 12:23:38 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=k6vxLTCkYlC1V9qy6/u266oCnoX55CLntn5IMpjSHJWT0K2KpFXJz2gX4oj5xZQeVGu5QD5WF96yfFgHie2dmflJvyd3xJAqRzOMjSMtLiURokpNZ0m6XxQIc6W19GiU;
+Date: Mon, 4 Jan 2010 09:23:35 -0800
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Jason Wessel <jason.wessel@windriver.com>
+Cc: linux-kernel@vger.kernel.org, kgdb-bugreport@lists.sourceforge.net,
+       kdb@oss.sgi.com, mingo@elte.hu
+Subject: Re: [PATCH 33/37] drm: add KGDB/KDB support Add support for KDB
+ entry/exit.
+Message-ID: <20100104092335.7c52f249@jbarnes-piketon>
+In-Reply-To: <1261604584-5796-1-git-send-email-jason.wessel@windriver.com>
+References: <1261603190-5036-33-git-send-email-jason.wessel@windriver.com>
+	<1261604584-5796-1-git-send-email-jason.wessel@windriver.com>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 22 Dec 2009, Mathieu Desnoyers wrote:
+Can you send this one over to Dave Airlie <airlied@linux.ie>?  At KS he
+indicated he'd be happy to just apply it, since other drivers will need
+it too (along with the driver specific code of course).
 
-> > > I am a bit concerned about the "generic" version of this_cpu_cmpxchg.
-> > > Given that what LTTng needs is basically an atomic, nmi-safe version of
-> > > the primitive (on all architectures that have something close to a NMI),
-> > > this means that it could not switch over to your primitives until we add
-> > > the equivalent support we currently have with local_t to all
-> > > architectures. The transition would be faster if we create an
-> > > atomic_cpu_*() variant which would map to local_t operations in the
-> > > initial version.
-> > >
-> > > Or maybe have I missed something in your patchset that address this ?
-> >
-> > NMI safeness is not covered by this_cpu operations.
-> >
-> > We could add nmi_safe_.... ops?
-> >
-> > The atomic_cpu reference make me think that you want full (LOCK)
-> > semantics? Then use the regular atomic ops?
->
-> nmi_safe would probably make sense here.
+Jesse
 
-I am not sure how to implement fallback for nmi_safe operations though
-since there is no way of disabling NMIs.
+On Wed, 23 Dec 2009 15:43:00 -0600
+Jason Wessel <jason.wessel@windriver.com> wrote:
 
-> But given that we have to disable preemption to add precision in terms
-> of trace clock timestamp, I wonder if we would really gain something
-> considerable performance-wise.
+> From: Jesse Barnes <jbarnes@virtuousgeek.org>
+> 
+> ---
+>  drivers/gpu/drm/drm_fb_helper.c      |   83
+> ++++++++++++++++++++++++++++++ drivers/gpu/drm/i915/intel_display.c
+> |   93 ++++++++++++++++++++++++++++++++++
+> include/drm/drm_crtc_helper.h        |    2 +
+> include/drm/drm_fb_helper.h          |    4 ++ 4 files changed, 182
+> insertions(+), 0 deletions(-)
+> 
+> diff --git a/drivers/gpu/drm/drm_fb_helper.c
+> b/drivers/gpu/drm/drm_fb_helper.c index 1b49fa0..80aab3c 100644
+> --- a/drivers/gpu/drm/drm_fb_helper.c
+> +++ b/drivers/gpu/drm/drm_fb_helper.c
+> @@ -29,6 +29,7 @@
+>   */
+>  #include <linux/sysrq.h>
+>  #include <linux/fb.h>
+> +#include <linux/kgdb.h>
+>  #include "drmP.h"
+>  #include "drm_crtc.h"
+>  #include "drm_fb_helper.h"
+> @@ -233,6 +234,84 @@ int drm_fb_helper_parse_command_line(struct
+> drm_device *dev) return 0;
+>  }
+>  
+> +#define to_fb_helper(ops) (container_of((ops), struct drm_fb_helper,
+> kdb_ops)) +
+> +static int drm_fb_kdb_enter(struct dbg_kms_console_ops *ops)
+> +{
+> +	struct drm_fb_helper *helper = to_fb_helper(ops);
+> +	struct drm_crtc_helper_funcs *funcs;
+> +	int i;
+> +
+> +	if (atomic_read(&kgdb_active))
+> +		goto out; /* already in KDB, don't reset mode */
+> +
+> +	if (list_empty(&kernel_fb_helper_list))
+> +		return false;
+> +
+> +	list_for_each_entry(helper, &kernel_fb_helper_list,
+> kernel_fb_list) {
+> +		for (i = 0; i < helper->crtc_count; i++) {
+> +			struct drm_mode_set *mode_set =
+> +				&helper->crtc_info[i].mode_set;
+> +
+> +			if (!mode_set->crtc->enabled)
+> +				continue;
+> +
+> +			funcs =
+> mode_set->crtc->helper_private;
+> +			funcs->mode_set_base_atomic(mode_set->crtc,
+> +						    mode_set->fb,
+> +						    mode_set->x,
+> +						    mode_set->y);
+> +
+> +		}
+> +	}
+> +
+> +out:
+> +	return 0;
+> +}
+> +
+> +/* Find the real fb for a given fb helper CRTC */
+> +static struct drm_framebuffer *drm_mode_config_fb(struct drm_crtc
+> *crtc) +{
+> +	struct drm_device *dev = crtc->dev;
+> +	struct drm_crtc *c;
+> +
+> +	list_for_each_entry(c, &dev->mode_config.crtc_list, head) {
+> +		if (crtc->base.id == c->base.id)
+> +			return c->fb;
+> +	}
+> +
+> +	return NULL;
+> +}
+> +
+> +static int drm_fb_kdb_exit(struct dbg_kms_console_ops *ops)
+> +{
+> +	struct drm_fb_helper *helper = to_fb_helper(ops);
+> +	struct drm_crtc *crtc;
+> +	struct drm_crtc_helper_funcs *funcs;
+> +	struct drm_framebuffer *fb;
+> +	int i;
+> +
+> +	for (i = 0; i < helper->crtc_count; i++) {
+> +		struct drm_mode_set *mode_set =
+> &helper->crtc_info[i].mode_set;
+> +		crtc = mode_set->crtc;
+> +		funcs = crtc->helper_private;
+> +		fb = drm_mode_config_fb(crtc);
+> +
+> +		if (!crtc->enabled)
+> +			continue;
+> +
+> +		if (!fb) {
+> +			DRM_ERROR("no fb to restore??\n");
+> +			continue;
+> +		}
+> +
+> +		funcs->mode_set_base_atomic(mode_set->crtc, fb,
+> crtc->x,
+> +					    crtc->y);
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+>  bool drm_fb_helper_force_kernel_mode(void)
+>  {
+>  	int i = 0;
+> @@ -924,6 +1003,9 @@ int drm_fb_helper_single_fb_probe(struct
+> drm_device *dev, /* Switch back to kernel console on panic */
+>  	/* multi card linked list maybe */
+>  	if (list_empty(&kernel_fb_helper_list)) {
+> +		fb_helper->kdb_ops.activate_console =
+> drm_fb_kdb_enter;
+> +		fb_helper->kdb_ops.restore_console = drm_fb_kdb_exit;
+> +		dbg_kms_console_ops_register(&fb_helper->kdb_ops);
+>  		printk(KERN_INFO "registered panic notifier\n");
+>  		atomic_notifier_chain_register(&panic_notifier_list,
+>  					       &paniced);
+> @@ -938,6 +1020,7 @@ void drm_fb_helper_free(struct drm_fb_helper
+> *helper) {
+>  	list_del(&helper->kernel_fb_list);
+>  	if (list_empty(&kernel_fb_helper_list)) {
+> +		dbg_kms_console_ops_unregister(&helper->kdb_ops);
+>  		printk(KERN_INFO "unregistered panic notifier\n");
+>  		atomic_notifier_chain_unregister(&panic_notifier_list,
+>  						 &paniced);
+> diff --git a/drivers/gpu/drm/i915/intel_display.c
+> b/drivers/gpu/drm/i915/intel_display.c index 52cd9b0..e134a81 100644
+> --- a/drivers/gpu/drm/i915/intel_display.c
+> +++ b/drivers/gpu/drm/i915/intel_display.c
+> @@ -1234,6 +1234,98 @@ intel_pin_and_fence_fb_obj(struct drm_device
+> *dev, struct drm_gem_object *obj) return 0;
+>  }
+>  
+> +/* Assume fb object is pinned & idle & fenced and just update base
+> pointers */ +static int
+> +intel_pipe_set_base_atomic(struct drm_crtc *crtc, struct
+> drm_framebuffer *fb,
+> +			   int x, int y)
+> +{
+> +	struct drm_device *dev = crtc->dev;
+> +	struct drm_i915_private *dev_priv = dev->dev_private;
+> +	struct intel_crtc *intel_crtc = to_intel_crtc(crtc);
+> +	struct intel_framebuffer *intel_fb;
+> +	struct drm_i915_gem_object *obj_priv;
+> +	struct drm_gem_object *obj;
+> +	int plane = intel_crtc->plane;
+> +	unsigned long Start, Offset;
+> +	int dspbase = (plane == 0 ? DSPAADDR : DSPBADDR);
+> +	int dspsurf = (plane == 0 ? DSPASURF : DSPBSURF);
+> +	int dspstride = (plane == 0) ? DSPASTRIDE : DSPBSTRIDE;
+> +	int dsptileoff = (plane == 0 ? DSPATILEOFF : DSPBTILEOFF);
+> +	int dspcntr_reg = (plane == 0) ? DSPACNTR : DSPBCNTR;
+> +	u32 dspcntr;
+> +
+> +	switch (plane) {
+> +	case 0:
+> +	case 1:
+> +		break;
+> +	default:
+> +		DRM_ERROR("Can't update plane %d in SAREA\n", plane);
+> +		return -EINVAL;
+> +	}
+> +
+> +	intel_fb = to_intel_framebuffer(fb);
+> +	obj = intel_fb->obj;
+> +	obj_priv = obj->driver_private;
+> +
+> +	dspcntr = I915_READ(dspcntr_reg);
+> +	/* Mask out pixel format bits in case we change it */
+> +	dspcntr &= ~DISPPLANE_PIXFORMAT_MASK;
+> +	switch (fb->bits_per_pixel) {
+> +	case 8:
+> +		dspcntr |= DISPPLANE_8BPP;
+> +		break;
+> +	case 16:
+> +		if (fb->depth == 15)
+> +			dspcntr |= DISPPLANE_15_16BPP;
+> +		else
+> +			dspcntr |= DISPPLANE_16BPP;
+> +		break;
+> +	case 24:
+> +	case 32:
+> +		dspcntr |= DISPPLANE_32BPP_NO_ALPHA;
+> +		break;
+> +	default:
+> +		DRM_ERROR("Unknown color depth\n");
+> +		return -EINVAL;
+> +	}
+> +	if (IS_I965G(dev)) {
+> +		if (obj_priv->tiling_mode != I915_TILING_NONE)
+> +			dspcntr |= DISPPLANE_TILED;
+> +		else
+> +			dspcntr &= ~DISPPLANE_TILED;
+> +	}
+> +
+> +	if (IS_IRONLAKE(dev))
+> +		/* must disable */
+> +		dspcntr |= DISPPLANE_TRICKLE_FEED_DISABLE;
+> +
+> +	I915_WRITE(dspcntr_reg, dspcntr);
+> +
+> +	Start = obj_priv->gtt_offset;
+> +	Offset = y * fb->pitch + x * (fb->bits_per_pixel / 8);
+> +
+> +	DRM_DEBUG("Writing base %08lX %08lX %d %d\n", Start, Offset,
+> x, y);
+> +	I915_WRITE(dspstride, fb->pitch);
+> +	if (IS_I965G(dev)) {
+> +		I915_WRITE(dspbase, Offset);
+> +		I915_READ(dspbase);
+> +		I915_WRITE(dspsurf, Start);
+> +		I915_READ(dspsurf);
+> +		I915_WRITE(dsptileoff, (y << 16) | x);
+> +	} else {
+> +		I915_WRITE(dspbase, Start + Offset);
+> +		I915_READ(dspbase);
+> +	}
+> +
+> +	if ((IS_I965G(dev) || plane == 0))
+> +		intel_update_fbc(crtc, &crtc->mode);
+> +
+> +	intel_wait_for_vblank(dev);
+> +	intel_increase_pllclock(crtc, true);
+> +
+> +	return 0;
+> +}
+> +
+>  static int
+>  intel_pipe_set_base(struct drm_crtc *crtc, int x, int y,
+>  		    struct drm_framebuffer *old_fb)
+> @@ -4243,6 +4335,7 @@ static const struct drm_crtc_helper_funcs
+> intel_helper_funcs = { .mode_fixup = intel_crtc_mode_fixup,
+>  	.mode_set = intel_crtc_mode_set,
+>  	.mode_set_base = intel_pipe_set_base,
+> +	.mode_set_base_atomic = intel_pipe_set_base_atomic,
+>  	.prepare = intel_crtc_prepare,
+>  	.commit = intel_crtc_commit,
+>  	.load_lut = intel_crtc_load_lut,
+> diff --git a/include/drm/drm_crtc_helper.h
+> b/include/drm/drm_crtc_helper.h index b29e201..4c12319 100644
+> --- a/include/drm/drm_crtc_helper.h
+> +++ b/include/drm/drm_crtc_helper.h
+> @@ -61,6 +61,8 @@ struct drm_crtc_helper_funcs {
+>  	/* Move the crtc on the current fb to the given position
+> *optional* */ int (*mode_set_base)(struct drm_crtc *crtc, int x, int
+> y, struct drm_framebuffer *old_fb);
+> +	int (*mode_set_base_atomic)(struct drm_crtc *crtc,
+> +				    struct drm_framebuffer *fb, int
+> x, int y); 
+>  	/* reload the current crtc LUT */
+>  	void (*load_lut)(struct drm_crtc *crtc);
+> diff --git a/include/drm/drm_fb_helper.h b/include/drm/drm_fb_helper.h
+> index 58c892a..c4f87a5 100644
+> --- a/include/drm/drm_fb_helper.h
+> +++ b/include/drm/drm_fb_helper.h
+> @@ -30,6 +30,8 @@
+>  #ifndef DRM_FB_HELPER_H
+>  #define DRM_FB_HELPER_H
+>  
+> +#include <linux/kgdb.h>
+> +
+>  struct drm_fb_helper_crtc {
+>  	uint32_t crtc_id;
+>  	struct drm_mode_set mode_set;
+> @@ -63,8 +65,10 @@ struct drm_fb_helper_connector {
+>  
+>  struct drm_fb_helper {
+>  	struct drm_framebuffer *fb;
+> +	struct drm_framebuffer *saved_fb;
+>  	struct drm_device *dev;
+>  	struct drm_display_mode *mode;
+> +	struct dbg_kms_console_ops kdb_ops;
+>  	int crtc_count;
+>  	struct drm_fb_helper_crtc *crtc_info;
+>  	struct drm_fb_helper_funcs *funcs;
 
-Not sure what exactly you attempt to do there.
 
-> I also thought about the design change this requires for the per-cpu
-> buffer commit count pointer which would have to become a per-cpu pointer
-> independent of the buffer structure, and I foresee a problem with
-> Steven's irq off tracing which need to perform buffer exchanges while
-> tracing is active. Basically, having only one top-level pointer for the
-> buffer makes it possible to exchange it atomically, but if we have to
-> have two separate pointers (one for per-cpu buffer, one for per-cpu
-> commit count array), then we are stucked.
-
-You just need to keep percpu pointers that are offsets into the percpu
-area. They can be relocated as needed to the processor specific addresses
-using the cpu ops.
-
-> So given that per-cpu ops limits us in terms of data structure layout, I
-> am less and less sure it's the best fit for ring buffers, especially if
-> we don't gain much performance-wise.
-
-I dont understand how exactly the ring buffer logic works and what you are
-trying to do here.
-
-The ringbuffers are per cpu structures right and you do not change cpus
-while performing operations on them? If not then the per cpu ops are not
-useful to you.
-
-If you dont: How can you safely use the local_t operations for the
-ringbuffer logic?
-
+-- 
+Jesse Barnes, Intel Open Source Technology Center
