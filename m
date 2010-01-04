@@ -1,84 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753195Ab0ADDVt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752923Ab0ADDco@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753195Ab0ADDVt (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 3 Jan 2010 22:21:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752878Ab0ADDVp
+	id S1752923Ab0ADDco (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 3 Jan 2010 22:32:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752586Ab0ADDcn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 3 Jan 2010 22:21:45 -0500
-Received: from hera.kernel.org ([140.211.167.34]:35803 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752834Ab0ADDVp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 3 Jan 2010 22:21:45 -0500
-Message-ID: <4B415E73.1050801@kernel.org>
-Date: Sun, 03 Jan 2010 19:20:19 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
+	Sun, 3 Jan 2010 22:32:43 -0500
+Received: from [121.136.51.252] ([121.136.51.252]:56927 "EHLO ben-laptop"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752505Ab0ADDcm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 3 Jan 2010 22:32:42 -0500
+X-Greylist: delayed 2813 seconds by postgrey-1.27 at vger.kernel.org; Sun, 03 Jan 2010 22:32:42 EST
+Message-ID: <4B41564C.6080802@simtec.co.uk>
+Date: Mon, 04 Jan 2010 11:45:32 +0900
+From: Ben Dooks <ben@simtec.co.uk>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-To: Jesse Brandeburg <jesse.brandeburg@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       NetDEV list <netdev@vger.kernel.org>,
-       Jesse Brandeburg <jesse.brandeburg@intel.com>
-Subject: Re: [PATCH -v2] x86: increase NR_IRQS and nr_irqs
-References: <4B347AEE.6030705@kernel.org> <20091228094707.GH24690@elte.hu>	 <4B398ECD.1080506@kernel.org> <4807377b1001031906s6b1ee576jc021da2642bb4147@mail.gmail.com>
-In-Reply-To: <4807377b1001031906s6b1ee576jc021da2642bb4147@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Joe Perches <joe@perches.com>
+CC: Ben Dooks <ben-linux@fluff.org>, LKML <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
+Subject: Re: [PATCH] mach-osiris-dvs.c: Convert boolean bit tests to logical
+ tests
+References: <1262539781.1932.128.camel@Joe-Laptop.home>
+In-Reply-To: <1262539781.1932.128.camel@Joe-Laptop.home>
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/03/2010 07:06 PM, Jesse Brandeburg wrote:
-> On Mon, Dec 28, 2009 at 9:08 PM, Yinghai Lu <yinghai@kernel.org> wrote:
->> have a system with lots of igb and ixgbe, when iov/vf are enabled for
->> them, we hit the limit of 3064.
->>
->> when system have 20 pcie installed, and one card have 2 functions, and one
->> function need 64 msi-x,
->>  may need 20 * 2 * 64 = 2560 for msi-x
->> but if iov and vf are enabled
->>  may need 20 * 2 * 64 * 3 = 7680 for msi-x
->> assume system with 5 ioapic, nr_irqs_gsi will be 120.
->> NR_CPUS = 512, and nr_cpu_ids = 128
->> will have NR_IRQS = 256 + 512 * 64 = 33024
->> will have nr_irqs = 120 + 8 * 128 + 120 * 64 = 8824
->>
->> when SPARSE_IRQ is not set, there is no increase with data
->> when NR_CPUS=128, and SPARSE_IRQ is set
->>   text            data     bss            dec           hex    filename
->> 21837444        4216564 12480736        38534744        24bfe58 vmlinux.before
->> 21837442        4216580 12480736        38534758        24bfe66 vmlinux.after
->> when NR_CPUS=4096, and SPARSE_IRQ is set
->>   text            data     bss            dec           hex    filename
->> 21878619        5610244 13415392        40904255        270263f vmlinux.before
->> 21878617        5610244 13415392        40904253        270263d vmlinux.after
->>
->> -v2: update comments to address Ingo's concern
->>
->> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+Joe Perches wrote:
+> Bit tests on booleans seem odd, logical tests more appropriate
+
+I think this is ok, don't currently have any hardware on hand to
+test it.
+
+> Signed-off-by: Joe Perches <joe@perches.com>
+
+Ackced-by: Ben Dooks <ben-linux@fluff.org>
+
+> diff --git a/arch/arm/mach-s3c2440/mach-osiris-dvs.c b/arch/arm/mach-s3c2440/mach-osiris-dvs.c
+> index ad2792d..2367606 100644
+> --- a/arch/arm/mach-s3c2440/mach-osiris-dvs.c
+> +++ b/arch/arm/mach-s3c2440/mach-osiris-dvs.c
+> @@ -69,16 +69,14 @@ static int osiris_dvs_notify(struct notifier_block *nb,
+>  
+>  	switch (val) {
+>  	case CPUFREQ_PRECHANGE:
+> -		if (old_dvs & !new_dvs ||
+> -		    cur_dvs & !new_dvs) {
+> +		if ((old_dvs && !new_dvs) || (cur_dvs && !new_dvs)) {
+>  			pr_debug("%s: exiting dvs\n", __func__);
+>  			cur_dvs = false;
+>  			gpio_set_value(OSIRIS_GPIO_DVS, 1);
+>  		}
+>  		break;
+>  	case CPUFREQ_POSTCHANGE:
+> -		if (!old_dvs & new_dvs ||
+> -		    !cur_dvs & new_dvs) {
+> +		if ((!old_dvs && new_dvs) || (!cur_dvs && new_dvs)) {
+>  			pr_debug("entering dvs\n");
+>  			cur_dvs = true;
+>  			gpio_set_value(OSIRIS_GPIO_DVS, 0);
 > 
-> I'm not sure this is the best plan, but may be okay for now.  What
-> happens when all of your slots have 6 port 82599 ixgbe adapters in
-> them?  They are being made[1], as well as quad port 82576 igb
-> adapters, however I'm not fully sure of the SRIOV support of the
-> bridges being used on those adapters.
 > 
-> Is it on the table to (re-)design this subsystem to be a little more
-> dynamic?  There are probably examples in ppc64 or ia64 directories.
-> Every time you suggest a limit I can find a case where it won't be
-> enough.
 > 
-> [1] http://www.hotlavasystems.com/products_10gbe.html
+> _______________________________________________
+> linux-arm-kernel mailing list
+> linux-arm-kernel@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
 
-you mean
-20 * 6 * 64 * 3 ?
-
-23040
-
-maybe we can just keep nr_irqs = (256 - 32 - 10) * nr_cpu_ids?
-32: for exception
-10: for IPI etc.
-
-YH
