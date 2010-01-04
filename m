@@ -1,71 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751487Ab0ADFOl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752096Ab0ADFRb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751487Ab0ADFOl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 00:14:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750824Ab0ADFOk
+	id S1752096Ab0ADFRb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 00:17:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750964Ab0ADFR3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 00:14:40 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:38807 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750729Ab0ADFOj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 00:14:39 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.4.0
-Message-ID: <4B417972.7000200@np.css.fujitsu.com>
-Date: Mon, 04 Jan 2010 14:15:30 +0900
-From: Jin Dongming <jin.dongming@np.css.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
-MIME-Version: 1.0
-To: David John <davidjon@xenontk.org>
-CC: jbarnes@virtuousgeek.org, rusty@rustcorp.com.au, andreas.herrmann3@amd.com,
-       rjw@sisk.pl, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2] Check the node argument passed to cpumask_of_node
-References: <201001012255.28094.rjw@sisk.pl> <1262412947-3890-1-BlackWidow-davidjon@xenontk.org>
-In-Reply-To: <1262412947-3890-1-BlackWidow-davidjon@xenontk.org>
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
+	Mon, 4 Jan 2010 00:17:29 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:39676 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750838Ab0ADFR2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jan 2010 00:17:28 -0500
+Date: Mon, 4 Jan 2010 16:17:19 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Quentin Barnes <qbarnes+nfs@yahoo-inc.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       Nick Piggin <npiggin@suse.de>, Steven Whitehouse <swhiteho@redhat.com>,
+       David Howells <dhowells@redhat.com>, Al Viro <viro@zeniv.linux.org.uk>,
+       Jonathan Corbet <corbet@lwn.net>, Christoph Hellwig <hch@infradead.org>
+Subject: Re: [RFC][PATCH v3] readahead: introduce O_RANDOM for
+ POSIX_FADV_RANDOM
+Message-Id: <20100104161719.a0bb35ad.sfr@canb.auug.org.au>
+In-Reply-To: <20100104045020.GA21021@localhost>
+References: <20091225000717.GA26949@yahoo-inc.com>
+	<87aax18xms.fsf@basil.nowhere.org>
+	<20091230051540.GA16308@localhost>
+	<20091230052402.GB26364@localhost>
+	<873a2s8hmp.fsf@basil.nowhere.org>
+	<20100104045020.GA21021@localhost>
+X-Mailer: Sylpheed 3.0.0beta4 (GTK+ 2.18.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Mon__4_Jan_2010_16_17_19_+1100_oQXHM_dh_ML2_Wjk"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, David
+--Signature=_Mon__4_Jan_2010_16_17_19_+1100_oQXHM_dh_ML2_Wjk
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-This problem also happened when the CONFIG_DEBUG_PER_CPU_MAPS was used,
-so how about modifying the code for it working well?
+Hi Wu,
 
-Best Regards,
-Jin Dongming
-
-David John wrote:
-> Commit e0cd516 "PCI: derive nearby CPUs from device's instead of bus' NUMA information"
-> causes an null pointer dereference when reading from the sysfs attributes local_cpu*
-> on Intel machines with no ACPI NUMA proximity info, since dev->numa_node gets set to -1
-> for all PCI devices, which then gets passed to cpumask_of_node.
-> 
-> Ensure that the node value is valid.
-> 
-> Signed-off-by: David John <davidjon@xenontk.org>
-> 
-> diff --git a/arch/x86/include/asm/topology.h b/arch/x86/include/asm/topology.h
-> index c5087d7..1141a6e 100644
-> --- a/arch/x86/include/asm/topology.h
-> +++ b/arch/x86/include/asm/topology.h
-> @@ -99,7 +99,8 @@ extern const struct cpumask *cpumask_of_node(int node);
->  /* Returns a pointer to the cpumask of CPUs on Node 'node'. */
->  static inline const struct cpumask *cpumask_of_node(int node)
->  {
-> -	return node_to_cpumask_map[node];
-> +	return (node < 0 || node >= nr_node_ids) ? cpu_online_mask :
-> +						   node_to_cpumask_map[node];
->  }
+On Mon, 4 Jan 2010 12:50:20 +0800 Wu Fengguang <fengguang.wu@intel.com> wro=
+te:
+>
+> --- linux.orig/include/asm-generic/fcntl.h	2010-01-04 12:39:29.000000000 =
++0800
+> +++ linux/include/asm-generic/fcntl.h	2010-01-04 12:40:11.000000000 +0800
+> @@ -80,6 +80,10 @@
+>  #define O_NDELAY	O_NONBLOCK
 >  #endif
->  
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
-> 
+> =20
+> +#ifndef O_RANDOM
+> +#define O_RANDOM	010000000	/* random access pattern hint */
+> +#endif
 
+This value conflicts with O_CLOEXEC on alpha and parisc and O_NOATIME on
+sparc.
 
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Mon__4_Jan_2010_16_17_19_+1100_oQXHM_dh_ML2_Wjk
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAktBed8ACgkQjjKRsyhoI8wIEQCeNMjDV1v8tte7KqFHMMs7jBRA
+efEAn2xEHcGVeoCws3CkP/C9cLxVpZsi
+=qvHN
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__4_Jan_2010_16_17_19_+1100_oQXHM_dh_ML2_Wjk--
