@@ -1,49 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751685Ab0ADLnO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752033Ab0ADMCy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751685Ab0ADLnO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 06:43:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750778Ab0ADLnL
+	id S1752033Ab0ADMCy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 07:02:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751694Ab0ADMCx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 06:43:11 -0500
-Received: from smtpauth.net4india.com ([202.71.129.41]:39982 "EHLO
-	smtpauth.net4india.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750738Ab0ADLnJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 06:43:09 -0500
-Message-ID: <4B41D42A.9040008@xenontk.org>
-Date: Mon, 04 Jan 2010 17:12:34 +0530
-From: David John <davidjon@xenontk.org>
-Reply-To: davidjon@xenontk.org
-User-Agent: Mozilla/5.0 (X11; X; Linux x86_64; rv:1.9.1.5) Gecko/20091209 Thunderbird/3.0
+	Mon, 4 Jan 2010 07:02:53 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:60464 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751551Ab0ADMCw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jan 2010 07:02:52 -0500
+Message-ID: <4B41D8E5.1000908@suse.de>
+Date: Mon, 04 Jan 2010 17:32:45 +0530
+From: Suresh Jayaraman <sjayaraman@suse.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-12.1 Thunderbird/3.0
 MIME-Version: 1.0
-To: Rusty Russell <rusty@rustcorp.com.au>
-CC: jbarnes@virtuousgeek.org, andreas.herrmann3@amd.com, rjw@sisk.pl,
+To: Mike Galbraith <efault@gmx.de>
+Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2] Check the node argument passed to cpumask_of_node
-References: <201001012255.28094.rjw@sisk.pl> <1262412947-3890-1-BlackWidow-davidjon@xenontk.org> <201001041458.24145.rusty@rustcorp.com.au>
-In-Reply-To: <201001041458.24145.rusty@rustcorp.com.au>
+Subject: Re: [RFC][PATCH] sched: avoid huge bonus to sleepers on busy machines
+References: <1262596842-17392-1-git-send-email-sjayaraman@suse.de> <1262603675.9734.36.camel@marge.simson.net>
+In-Reply-To: <1262603675.9734.36.camel@marge.simson.net>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/04/2010 09:58 AM, Rusty Russell wrote:
-> On Sat, 2 Jan 2010 04:45:47 pm David John wrote:
->> Commit e0cd516 "PCI: derive nearby CPUs from device's instead of bus' NUMA information"
->> causes an null pointer dereference when reading from the sysfs attributes local_cpu*
->> on Intel machines with no ACPI NUMA proximity info, since dev->numa_node gets set to -1
->> for all PCI devices, which then gets passed to cpumask_of_node.
+On 01/04/2010 04:44 PM, Mike Galbraith wrote:
+> On Mon, 2010-01-04 at 14:50 +0530, Suresh Jayaraman wrote:
+>> As I understand the idea of sleeper fairness is to consider sleeping tasks
+>> similar to the ones on the runqueue and credit the sleepers in a way that it
+>> would get CPU as if it were running.
 >>
->> Ensure that the node value is valid.
+>> Currently, when fair sleepers are enabled, the task that was sleeping seem to
+>> get a bonus of cfs_rq->min_vruntime - sched_latency (in most cases). While with
+>> gentle fair sleepers this effect was reduced to half, there still remains a
+>> chance that on busy machines with more number of tasks, the sleepers might get
+>> a huge undue bonus.
 > 
-> This only works for x86, and only for !CONFIG_DEBUG_PER_CPU_MAPS.
+> There is no bonus.  Sleepers simply get to keep some of their lag, but
+> any lag beyond sched_latency is trashed in the interest of reasonable
+> latency for non-sleepers as the sleeper preempts and tries to catch up.
 > 
-> I suggest fixing the callers introduced in e0cd516 for the moment,
-> then if you feel enthused, change the semantics of cpumask_of_node and
-> remove the checks from the various callers.
 
-Okay, I'll do as you suggested.
+Sorry, perhaps it's not a bonus, but it seems that the credit to
+sleepers due to their lag (when it was sleeping) doesn't appear to take
+in to account the number of tasks in the run_queue currently. IOW, the
+credit to sleepers is same irrespective of the number of current tasks.
+This might mean sleepers are getting an edge (since this will slow down
+current tasks) when the number of tasks is more, isn't?
 
-Regards,
-David.
+Would it be a good idea to make the threshold dependent on number of
+tasks? This can help us achieve sleeper fairness with respect to the
+current context and not relevant to when the task went to sleep, I think.
+
+Does this make sense?
+
+Thanks,
+
+-- 
+Suresh Jayaraman
