@@ -1,98 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753855Ab0ADVzO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753896Ab0ADV43@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753855Ab0ADVzO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 16:55:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753016Ab0ADVzL
+	id S1753896Ab0ADV43 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 16:56:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753826Ab0ADV42
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 16:55:11 -0500
-Received: from mail.gmx.net ([213.165.64.20]:41771 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751883Ab0ADVzK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 16:55:10 -0500
-X-Authenticated: #1587495
-X-Provags-ID: V01U2FsdGVkX1+ArJE0Fv+A0PMJvBM1EuTNkVlZeevzBPSrEhdFjX
-	zk5JBNgf9OWVXC
-From: "Stefan Lippers-Hollmann" <s.L-H@gmx.de>
-To: linux-kernel@vger.kernel.org
-Subject: Re: patch scsi-mpt2sas-add-missing-initialization-of-scsih_cmds.patch added to 2.6.32-stable tree
-Date: Mon, 4 Jan 2010 22:55:02 +0100
-User-Agent: KMail/1.12.4 (Linux/2.6.32-2.slh.4-sidux-amd64; KDE/4.3.4; x86_64; ; )
-Cc: kashyap.desai@lsi.com, gregkh@suse.de, James.Bottomley@suse.de,
-       stable@kernel.org
-References: <12626340131357@kroah.org>
-In-Reply-To: <12626340131357@kroah.org>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201001042255.07139.s.L-H@gmx.de>
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.48
+	Mon, 4 Jan 2010 16:56:28 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:35752 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753593Ab0ADV41 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jan 2010 16:56:27 -0500
+Date: Tue, 5 Jan 2010 08:56:13 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: David Miller <davem@davemloft.net>, <netdev@vger.kernel.org>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Rakesh Ranjan <rakesh@chelsio.com>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>
+Subject: linux-next: manual merge of the net-current tree with the
+ scsi-rc-fixes tree
+Message-Id: <20100105085613.0a04d952.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 3.0.0beta4 (GTK+ 2.18.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__5_Jan_2010_08_56_13_+1100_AIzazKV4QIJg_Q7."
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+--Signature=_Tue__5_Jan_2010_08_56_13_+1100_AIzazKV4QIJg_Q7.
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Monday 04 January 2010, gregkh@suse.de wrote:
-> This is a note to let you know that we have just queued up the patch titled
-> 
->     Subject: SCSI: mpt2sas: add missing initialization of scsih_cmds
-> 
-> to the 2.6.32-stable tree.  Its filename is
-> 
->     scsi-mpt2sas-add-missing-initialization-of-scsih_cmds.patch
+Hi all,
 
-Adding this patch to 2.6.32 (and likely 2.6.31 as well) breaks building the
-current stable queue:
+Today's linux-next merge of the net-current tree got a conflict in
+drivers/scsi/cxgb3i/cxgb3i_offload.c between commit
+44214ab474671e1ab5a860954db413bce52f7e04 ("[SCSI] cxgb3i: Fix a login
+over vlan issue") from the scsi-rc-fixes tree and commit
+52ee264bca378835decb827d18b1d90b709ca4c9 ("cxgb3i: Fix a login over vlan
+issue") from the net-current tree.
 
-  LD      drivers/scsi/mpt2sas/built-in.o
-  CC [M]  drivers/scsi/mpt2sas/mpt2sas_base.o
-drivers/scsi/mpt2sas/mpt2sas_base.c: In function 'mpt2sas_base_attach':
-drivers/scsi/mpt2sas/mpt2sas_base.c:3500: error: 'struct MPT2SAS_ADAPTER' has no member named 'scsih_cmds'
-drivers/scsi/mpt2sas/mpt2sas_base.c:3501: error: 'struct MPT2SAS_ADAPTER' has no member named 'scsih_cmds'
-drivers/scsi/mpt2sas/mpt2sas_base.c:3502: error: 'struct MPT2SAS_ADAPTER' has no member named 'scsih_cmds'
-make[6]: *** [drivers/scsi/mpt2sas/mpt2sas_base.o] Error 1
-make[5]: *** [drivers/scsi/mpt2sas] Error 2
+These seem to be different version of the same change.  The version in
+the net-current tree looks wrong - it contains
 
-> A git repo of this tree can be found at 
->     http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
-> 
-> 
-> From d685c262083dcd5fd98b7499b22a377a3225229c Mon Sep 17 00:00:00 2001
-> From: Kashyap, Desai <kashyap.desai@lsi.com>
-> Date: Tue, 17 Nov 2009 13:16:37 +0530
-> Subject: SCSI: mpt2sas: add missing initialization of scsih_cmds
-> 
-> From: Kashyap, Desai <kashyap.desai@lsi.com>
-> 
-> commit d685c262083dcd5fd98b7499b22a377a3225229c upstream.
-> 
-> Internal command scsih_cmds init is included in mpt2sas_base_attach.
-> 
-> Signed-off-by: Kashyap Desai <kashyap.desai@lsi.com>
-> Signed-off-by: James Bottomley <James.Bottomley@suse.de>
-> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-> 
-> --- a/drivers/scsi/mpt2sas/mpt2sas_base.c
-> +++ b/drivers/scsi/mpt2sas/mpt2sas_base.c
-> @@ -3583,6 +3583,11 @@ mpt2sas_base_attach(struct MPT2SAS_ADAPTER *ioc)
->  	ioc->transport_cmds.status = MPT2_CMD_NOT_USED;
->  	mutex_init(&ioc->transport_cmds.mutex);
->  
-> +	/* scsih internal command bits */
-> +	ioc->scsih_cmds.reply = kzalloc(ioc->reply_sz, GFP_KERNEL);
-> +	ioc->scsih_cmds.status = MPT2_CMD_NOT_USED;
-> +	mutex_init(&ioc->scsih_cmds.mutex);
-> +
+if (dev->priv_flags && IFF_802_1Q_VLAN)
 
-As it seems, the scsih struct member of MPT2SAS_ADAPTER was only added to 
-drivers/scsi/mpt2sas/mpt2sas_base.h during the 2.6.33 merge window, so 
-this patch doesn't seem to be necessary for <2.6.33-rcX.
+but it presumably should be
 
->  	/* task management internal command bits */
->  	ioc->tm_cmds.reply = kzalloc(ioc->reply_sz, GFP_KERNEL);
->  	ioc->tm_cmds.status = MPT2_CMD_NOT_USED;
+if (dev->priv_flags & IFF_802_1Q_VLAN)
 
-Regards
-	Stefan Lippers-Hollmann
+as in the scsi-rc-fixes version.
+
+I used the version from the scsi-rc-fixes tree (even though it is dated
+12 days earlier). (There was also a comment format difference.)
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Tue__5_Jan_2010_08_56_13_+1100_AIzazKV4QIJg_Q7.
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAktCY/0ACgkQjjKRsyhoI8zHKwCffmgbQwdLadrWTPJx+WOdjc14
+ldIAnRqbngu7VC1fU6BNlVMsFiYjEY1L
+=EgUd
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__5_Jan_2010_08_56_13_+1100_AIzazKV4QIJg_Q7.--
