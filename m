@@ -1,69 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753925Ab0ADThg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753924Ab0ADTi2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753925Ab0ADThg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 14:37:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753896Ab0ADThb
+	id S1753924Ab0ADTi2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 14:38:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753740Ab0ADTi2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 14:37:31 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:47294 "EHLO mx2.suse.de"
+	Mon, 4 Jan 2010 14:38:28 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:1438 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753871Ab0ADTha (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 14:37:30 -0500
-Subject: Re: [PATCH] libsrp: fix compile failure
-From: James Bottomley <James.Bottomley@suse.de>
-To: Stefani Seibold <stefani@seibold.net>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Jiri Kosina <jkosina@suse.cz>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>
-In-Reply-To: <1262633054.4814.21.camel@wall-e>
-References: <1262200866.2749.226.camel@mulgrave.site>
-	 <alpine.LFD.2.00.0912301132260.11961@localhost.localdomain>
-	 <alpine.LRH.2.00.1001041619130.15694@twin.jikos.cz>
-	 <1262625721.2724.158.camel@mulgrave.site>
-	 <20100104173530.48690e39@lxorguk.ukuu.org.uk>
-	 <1262633054.4814.21.camel@wall-e>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 04 Jan 2010 13:37:17 -0600
-Message-Id: <1262633838.2724.218.camel@mulgrave.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.0 
-Content-Transfer-Encoding: 7bit
+	id S1753587Ab0ADTi1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jan 2010 14:38:27 -0500
+Date: Mon, 4 Jan 2010 20:37:58 +0100 (CET)
+From: John Kacur <jkacur@redhat.com>
+X-X-Sender: jkacur@localhost.localdomain
+To: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
+cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Arnd Bergmann <arndbergmann@googlemail.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: [PATCH: resend] sony_pi: Remove the BKL from open and ioctl 
+Message-ID: <alpine.LFD.2.00.1001042019450.6613@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2010-01-04 at 20:24 +0100, Stefani Seibold wrote:
-> Am Montag, den 04.01.2010, 17:35 +0000 schrieb Alan Cox:
-> > > least once before it goes to Linus.  There were originally technical
-> > > reasons why -mm wasn't in ... I just thought they'd been fixed by now.
-> > 
-> > No - mm also caused problems with the kfifo merge of a core API change
-> > that didn't go via -next.
-> > 
-> > Alan
-> 
-> I tried my best to port everything to the new kfifo API. But it was not
-> possible to check it against every architecture.
+Linus please consider the following patch for 2.6.33
+It was sent to the list in October and folks like Arnd, Thomas and Alan 
+were all cced - it went through a round of discussion too. (and was 
+acked by Arnd) If it is too late for such patches, that's fine too.
+I'll just queue them all up for 2.6.34
 
-That's what linux-next is for:  to make at least this compile checking
-against all of our architectures more of a reality.  It's still missing
-bits, and some of the ports (*cough* parisc *cough*) compile against
-linux-next rather infrequently, but it's far better than nothing.
+Also, I've regenerated the below patch against your current git repo.
 
->  x86 and x86_64 was
-> compile clean. I think the missing #include was not a big thing.
+Thanks.
 
-It's easily fixable, yes ... breaking the build *is* a pretty big thing
-because of the fallout it causes (for ppc: about ~100 instant WTF
-moments followed by grubbing around in git to find the cause).
+>From ac2c28aea6c1d06579c920ab77ed0b97d1b02c89 Mon Sep 17 00:00:00 2001
+From: John Kacur <jkacur@redhat.com>
+Date: Sun, 18 Oct 2009 23:49:49 +0200
+Subject: [PATCH] sony_pi: Remove the BKL from open and ioctl
 
-It's also an indicator of future problems.  Realistically, all API
-changes should go into linux-next both to prevent this sort of thing
-from happening and to see if we have any other pending conflicts that
-may cause problems.
+The BKL is in this function because of the BKL pushdown
+(see commit f8f2c79d594463427f7114cedb1555110d547d89)
 
-James
+It is not needed here because the mutex_lock sonypi_device.lock
+provides the necessary locking.
 
+sonypi_misc_ioctl can be converted to unlocked ioctls since it relies on
+its own locking (the mutex sonypi_device.lock) and not the bkl
+
+Document that llseek is not needed by explictly setting it to no_llseek
+
+LKML-Reference: <alpine.LFD.2.00.0910192019420.3563@localhost.localdomain>
+Signed-off-by: John Kacur <jkacur@redhat.com>
+Acked-by: Arnd Bergmann <arnd@arndb.de>
+---
+ drivers/char/sonypi.c |   11 +++++------
+ 1 files changed, 5 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/char/sonypi.c b/drivers/char/sonypi.c
+index 0798754..bba727c 100644
+--- a/drivers/char/sonypi.c
++++ b/drivers/char/sonypi.c
+@@ -50,7 +50,6 @@
+ #include <linux/err.h>
+ #include <linux/kfifo.h>
+ #include <linux/platform_device.h>
+-#include <linux/smp_lock.h>
+ 
+ #include <asm/uaccess.h>
+ #include <asm/io.h>
+@@ -905,14 +904,13 @@ static int sonypi_misc_release(struct inode *inode, struct file *file)
+ 
+ static int sonypi_misc_open(struct inode *inode, struct file *file)
+ {
+-	lock_kernel();
+ 	mutex_lock(&sonypi_device.lock);
+ 	/* Flush input queue on first open */
+ 	if (!sonypi_device.open_count)
+ 		kfifo_reset(&sonypi_device.fifo);
+ 	sonypi_device.open_count++;
+ 	mutex_unlock(&sonypi_device.lock);
+-	unlock_kernel();
++
+ 	return 0;
+ }
+ 
+@@ -955,10 +953,10 @@ static unsigned int sonypi_misc_poll(struct file *file, poll_table *wait)
+ 	return 0;
+ }
+ 
+-static int sonypi_misc_ioctl(struct inode *ip, struct file *fp,
++static long sonypi_misc_ioctl(struct file *fp,
+ 			     unsigned int cmd, unsigned long arg)
+ {
+-	int ret = 0;
++	long ret = 0;
+ 	void __user *argp = (void __user *)arg;
+ 	u8 val8;
+ 	u16 val16;
+@@ -1074,7 +1072,8 @@ static const struct file_operations sonypi_misc_fops = {
+ 	.open		= sonypi_misc_open,
+ 	.release	= sonypi_misc_release,
+ 	.fasync		= sonypi_misc_fasync,
+-	.ioctl		= sonypi_misc_ioctl,
++	.unlocked_ioctl	= sonypi_misc_ioctl,
++	.llseek		= no_llseek,
+ };
+ 
+ static struct miscdevice sonypi_misc_device = {
+-- 
+1.6.0.6
 
