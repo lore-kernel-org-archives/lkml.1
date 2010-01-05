@@ -1,62 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755351Ab0AETDM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755111Ab0AETFh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755351Ab0AETDM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 14:03:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754562Ab0AETDJ
+	id S1755111Ab0AETFh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 14:05:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754562Ab0AETFg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 14:03:09 -0500
-Received: from e35.co.us.ibm.com ([32.97.110.153]:55241 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754739Ab0AETDG (ORCPT
+	Tue, 5 Jan 2010 14:05:36 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:40842 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754540Ab0AETFf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 14:03:06 -0500
-Subject: Xorg hangs on >= ~2.6.31 with Intel i915 driver
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Zhenyu Wang <zhenyu.z.wang@intel.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       David Woodhouse <David.Woodhouse@intel.com>,
-       David Airlie <airlied@linux.ie>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Eric Anholt <eric@anholt.net>
-Content-Type: text/plain
-Date: Tue, 05 Jan 2010 11:02:48 -0800
-Message-Id: <1262718168.7057.29.camel@nimitz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 5 Jan 2010 14:05:35 -0500
+Date: Tue, 5 Jan 2010 19:04:55 +0000
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-arch@vger.kernel.org,
+       ebiederm@xmission.com, paulmck@linux.vnet.ibm.com,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [2/9] Add a kernel_address() that works for data too
+Message-ID: <20100105190455.GE30868@flint.arm.linux.org.uk>
+Mail-Followup-To: Sam Ravnborg <sam@ravnborg.org>,
+	Andi Kleen <andi@firstfloor.org>, linux-arch@vger.kernel.org,
+	ebiederm@xmission.com, paulmck@linux.vnet.ibm.com,
+	akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+References: <20100105315.789846878@firstfloor.org> <20100105021527.1AB19B17C2@basil.firstfloor.org> <20100105085853.GA28126@merkur.ravnborg.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100105085853.GA28126@merkur.ravnborg.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I've been seeing hangs when X starts up with newer kernels.  I sometimes
-get a cursor on the screen, sometimes not.  I can move the cursor when I
-can see it, but I can't switch to a text console.  Sysrq works.
+On Tue, Jan 05, 2010 at 09:58:53AM +0100, Sam Ravnborg wrote:
+> But you can trust _etext an almost all architectures.
+> It is a bug if it is missing.
+> 
+> So [_text, _etext] is the text section.
+> 
+> The data section may be placed before or after - it depends on the architecture.
+> But again - only some architectures define _sdata.
+> But all? define _edata.
 
-I bisected down to this commit:
+You can not guarantee that the data segment is after the text segment,
+unless you want to outlaw XIP kernels.  XIP kernels have the text
+segment mapped at a completely different address to the data segment.
 
-commit 176616814d700f19914d8509d9f65dec51a6ebf7
-Author: Zhenyu Wang <zhenyu.z.wang@intel.com>
-Date:   Mon Jul 27 12:59:57 2009 +0100
+I'd suggest the only way to identify the data segment in a generic way
+is to have everyone define _sdata, or more preferably _data (to be
+consistent with _text), to be the start of the data segment.
 
-http://git.kernel.org/gitweb.cgi?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=176616814d700f19914d8509d9f65dec51a6ebf7
-
-However, backing that commit out of current mainline
-(v2.6.33-rc2-302-gc5974b8) doesn't seem to do any good.  It didn't back
-out cleanly so I did it by hand and could have easily made a mistake in
-the process.
-
-Doing this:
-
-	http://sr71.net/~dave/linux/xhangs/fix-config.patch
-
-to the config worked around the issue in current mainline, although I'm
-not quite sure why.
-
-Some additional debug information is here:
-
-	http://sr71.net/~dave/linux/xhangs/
-
-including X logs and dmesg from a bunch of boots. 
-
--- Dave
-
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
