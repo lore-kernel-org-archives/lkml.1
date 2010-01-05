@@ -1,145 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753910Ab0AEMaX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754130Ab0AEMhV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753910Ab0AEMaX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 07:30:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751396Ab0AEMaV
+	id S1754130Ab0AEMhV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 07:37:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754030Ab0AEMhU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 07:30:21 -0500
-Received: from poutre.nerim.net ([62.4.16.124]:64934 "EHLO poutre.nerim.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751179Ab0AEMaU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 07:30:20 -0500
-Date: Tue, 5 Jan 2010 13:30:14 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>, lenb@kernel.org
-Cc: djwong@us.ibm.com, Crane Cai <crane.cai@amd.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, linux-i2c@vger.kernel.org,
-       linux-acpi@vger.kernel.org
-Subject: Re: [RESEND PATCH v2 1/2] ACPI: Quirk to make SMBus objects work on
-   IBM machines with broken BIOSes
-Message-ID: <20100105133014.0d584b70@hyperion.delvare>
-In-Reply-To: <20091217150243.0d2749a2@hyperion.delvare>
-References: <20091021173733.GN26149@tux1.beaverton.ibm.com>
-	<20091027183619.16b0b952@hyperion.delvare>
-	<20091204170621.GA10356@tux1.beaverton.ibm.com>
-	<200912041036.36686.bjorn.helgaas@hp.com>
-	<20091204181103.GN10295@tux1.beaverton.ibm.com>
-	<20091217150243.0d2749a2@hyperion.delvare>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 5 Jan 2010 07:37:20 -0500
+Received: from mk-filter-2-a-1.mail.uk.tiscali.com ([212.74.100.53]:27411 "EHLO
+	mk-filter-2-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754022Ab0AEMhT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jan 2010 07:37:19 -0500
+X-Trace: 321166455/mk-filter-2.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.28.176/None/hugh.dickins@tiscali.co.uk
+X-SBRS: None
+X-RemoteIP: 79.69.28.176
+X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
+X-SMTP-AUTH: 
+X-Originating-Country: GB/UNITED KINGDOM
+X-MUA: Alpine 2.00 (LSU 1167 2008-08-23)
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ap4BAL3BQktPRRyw/2dsb2JhbAAI0zmEMAQ
+X-IronPort-AV: E=Sophos;i="4.47,505,1257120000"; 
+   d="scan'208";a="321166455"
+Date: Tue, 5 Jan 2010 12:37:19 +0000 (GMT)
+From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+X-X-Sender: hugh@sister.anvils
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Eric B Munson <ebmunson@us.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Al Viro <viro@ZenIV.linux.org.uk>, David Howells <dhowells@redhat.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: [PATCH] nommu: reject MAP_HUGETLB
+In-Reply-To: <20100104123858.GA5045@us.ibm.com>
+Message-ID: <alpine.LSU.2.00.1001051232530.1055@sister.anvils>
+References: <alpine.LSU.2.00.0912302009040.30390@sister.anvils> <20100104123858.GA5045@us.ibm.com>
+User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 17 Dec 2009 15:02:43 +0100, Jean Delvare wrote:
-> On Fri, 4 Dec 2009 10:11:03 -0800, Darrick J. Wong wrote:
-> > On some old IBM workstations and desktop computers, the BIOS presents in the
-> > DSDT an SMBus object that is missing the HID identifier that the i2c-scmi
-> > driver looks for.  Modify the ACPI device scan code to insert the missing HID
-> > if it finds an IBM system with such an object.  This patch requires Crane Cai's
-> > update to i2c-scmi to work around incorrectly named methods within the SMBus
-> > control object.
-> > 
-> > Affected machines: ThinkCenter M52, IntelliStation Z20/Z30.  Note that the
-> > i2c-i801 driver no longer works on these machines because of ACPI resource
-> > conflicts.
-> > 
-> > Signed-off-by: Darrick J. Wong <djwong@us.ibm.com>
-> > ---
-> > 
-> >  drivers/acpi/scan.c         |   38 ++++++++++++++++++++++++++++++++++++++
-> >  include/acpi/acpi_drivers.h |    2 ++
-> >  2 files changed, 40 insertions(+), 0 deletions(-)
-> > 
-> > 
-> > diff --git a/drivers/acpi/scan.c b/drivers/acpi/scan.c
-> > index 14a7481..5a24429 100644
-> > --- a/drivers/acpi/scan.c
-> > +++ b/drivers/acpi/scan.c
-> > @@ -8,6 +8,7 @@
-> >  #include <linux/acpi.h>
-> >  #include <linux/signal.h>
-> >  #include <linux/kthread.h>
-> > +#include <linux/dmi.h>
-> >  
-> >  #include <acpi/acpi_drivers.h>
-> >  
-> > @@ -1014,6 +1015,41 @@ static void acpi_add_id(struct acpi_device *device, const char *dev_id)
-> >  	list_add_tail(&id->list, &device->pnp.ids);
-> >  }
-> >  
-> > +/*
-> > + * Old IBM workstations have a DSDT bug wherein the SMBus object
-> > + * lacks the SMBUS01 HID and the methods do not have the necessary "_"
-> > + * prefix.  Work around this.
-> > + */
-> > +static int acpi_ibm_smbus_match(struct acpi_device *device)
-> > +{
-> > +	acpi_handle h_dummy;
-> > +	struct acpi_buffer path = {ACPI_ALLOCATE_BUFFER, NULL};
-> > +	int result;
-> > +
-> > +	if (!dmi_name_in_vendors("IBM"))
-> > +		return -ENODEV;
-> > +
-> > +	/* Look for SMBS object */
-> > +	result = acpi_get_name(device->handle, ACPI_SINGLE_NAME, &path);
-> > +	if (result)
-> > +		return result;
-> > +
-> > +	if (strcmp("SMBS", path.pointer)) {
-> > +		result = -ENODEV;
-> > +		goto out;
-> > +	}
-> > +
-> > +	/* Does it have the necessary (but misnamed) methods? */
-> > +	result = -ENODEV;
-> > +	if (ACPI_SUCCESS(acpi_get_handle(device->handle, "SBI", &h_dummy)) &&
-> > +	    ACPI_SUCCESS(acpi_get_handle(device->handle, "SBR", &h_dummy)) &&
-> > +	    ACPI_SUCCESS(acpi_get_handle(device->handle, "SBW", &h_dummy)))
-> > +		result = 0;
-> > +out:
-> > +	kfree(path.pointer);
-> > +	return result;
-> > +}
-> > +
-> >  static void acpi_device_set_id(struct acpi_device *device)
-> >  {
-> >  	acpi_status status;
-> > @@ -1064,6 +1100,8 @@ static void acpi_device_set_id(struct acpi_device *device)
-> >  			acpi_add_id(device, ACPI_BAY_HID);
-> >  		else if (ACPI_SUCCESS(acpi_dock_match(device)))
-> >  			acpi_add_id(device, ACPI_DOCK_HID);
-> > +		else if (!acpi_ibm_smbus_match(device))
-> > +			acpi_add_id(device, ACPI_SMBUS_IBM_HID);
-> >  
-> >  		break;
-> >  	case ACPI_BUS_TYPE_POWER:
-> > diff --git a/include/acpi/acpi_drivers.h b/include/acpi/acpi_drivers.h
-> > index f4906f6..83a2960 100644
-> > --- a/include/acpi/acpi_drivers.h
-> > +++ b/include/acpi/acpi_drivers.h
-> > @@ -65,6 +65,8 @@
-> >  #define ACPI_VIDEO_HID			"LNXVIDEO"
-> >  #define ACPI_BAY_HID			"LNXIOBAY"
-> >  #define ACPI_DOCK_HID			"LNXDOCK"
-> > +/* Quirk for broken IBM BIOSes */
-> > +#define ACPI_SMBUS_IBM_HID		"SMBUSIBM"
-> >  
-> >  /*
-> >   * For fixed hardware buttons, we fabricate acpi_devices with HID
-> 
-> Bjorn, Len, can you please apply this quickly? The i2c-scmi side of the
-> changes is pending for weeks now, but I can't apply it as long as the
-> ACPI parts aren't in.
+We've agreed to restore the rejection of MAP_HUGETLB to nommu.
+Mimic what happens with mmu when hugetlb is not configured in:
+say -ENOSYS, but -EINVAL if MAP_ANONYMOUS was not given too.
 
-Guys, I am sorry to insist but I still can't see this patch upstream
-while (I guess) rc3 is about to be released. Is there anything wrong
-with Darrick's patch? If not, please apply it and push it to Linus
-quickly.
+Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+---
 
-Thanks,
--- 
-Jean Delvare
+ mm/nommu.c |    8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+--- 2.6.33-rc2-git/mm/nommu.c	2009-12-31 08:08:16.000000000 +0000
++++ linux/mm/nommu.c	2010-01-05 12:08:01.000000000 +0000
+@@ -1405,6 +1405,14 @@ SYSCALL_DEFINE6(mmap_pgoff, unsigned lon
+ 	struct file *file = NULL;
+ 	unsigned long retval = -EBADF;
+ 
++	if (unlikely(flags & MAP_HUGETLB)) {
++		if (flags & MAP_ANONYMOUS)
++			retval = -ENOSYS;	/* like hugetlb_file_setup */
++		else
++			retval = -EINVAL;
++		goto out;
++	}
++
+ 	if (!(flags & MAP_ANONYMOUS)) {
+ 		file = fget(fd);
+ 		if (!file)
