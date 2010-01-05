@@ -1,85 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754411Ab0AEC2e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754194Ab0AECcc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754411Ab0AEC2e (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 21:28:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754018Ab0AEC2d
+	id S1754194Ab0AECcc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 21:32:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754158Ab0AECcb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 21:28:33 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:43311 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753832Ab0AEC2b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 21:28:31 -0500
-Date: Tue, 5 Jan 2010 13:28:24 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Christoph Hellwig <hch@infradead.org>, Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Quentin Barnes <qbarnes+nfs@yahoo-inc.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       Nick Piggin <npiggin@suse.de>, Steven Whitehouse <swhiteho@redhat.com>,
-       David Howells <dhowells@redhat.com>, Al Viro <viro@zeniv.linux.org.uk>,
-       Jonathan Corbet <corbet@lwn.net>
-Subject: Re: [RFC][PATCH v4] readahead: introduce O_RANDOM for
- POSIX_FADV_RANDOM
-Message-Id: <20100105132824.e6c0fb7f.sfr@canb.auug.org.au>
-In-Reply-To: <20100105022650.GB29428@localhost>
-References: <20091225000717.GA26949@yahoo-inc.com>
-	<87aax18xms.fsf@basil.nowhere.org>
-	<20091230051540.GA16308@localhost>
-	<20091230052402.GB26364@localhost>
-	<873a2s8hmp.fsf@basil.nowhere.org>
-	<20100104045020.GA21021@localhost>
-	<20100104161719.a0bb35ad.sfr@canb.auug.org.au>
-	<20100104073328.GA3422@infradead.org>
-	<20100104125620.GB12266@localhost>
-	<20100105130322.006c03ee.sfr@canb.auug.org.au>
-	<20100105022650.GB29428@localhost>
-X-Mailer: Sylpheed 3.0.0beta4 (GTK+ 2.18.5; i486-pc-linux-gnu)
+	Mon, 4 Jan 2010 21:32:31 -0500
+Received: from shadbolt.e.decadent.org.uk ([88.96.1.126]:52481 "EHLO
+	shadbolt.e.decadent.org.uk" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753776Ab0AECc3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jan 2010 21:32:29 -0500
+From: Ben Hutchings <ben@decadent.org.uk>
+To: Matthew Burgess <matthew@linuxfromscratch.org>
+Cc: netdev@vger.kernel.org, davem@davemloft.net, linux-kernel@vger.kernel.org
+In-Reply-To: <4B37FCB3.9000800@linuxfromscratch.org>
+References: <4B37FCB3.9000800@linuxfromscratch.org>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-g3mqikQz69KrcvV503Xf"
+Date: Tue, 05 Jan 2010 02:32:23 +0000
+Message-ID: <1262658743.26813.8.camel@localhost>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__5_Jan_2010_13_28_24_+1100_fVcy5Jo_WYOru8Rm"
+X-Mailer: Evolution 2.28.2 
+X-SA-Exim-Connect-IP: 192.168.4.185
+X-SA-Exim-Mail-From: ben@decadent.org.uk
+Subject: Re: Compilation issues using netlink.h
+X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
+X-SA-Exim-Scanned: Yes (on shadbolt.decadent.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__5_Jan_2010_13_28_24_+1100_fVcy5Jo_WYOru8Rm
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
+
+--=-g3mqikQz69KrcvV503Xf
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-Hi Fengguang,
-
-On Tue, 5 Jan 2010 10:26:50 +0800 Wu Fengguang <fengguang.wu@intel.com> wro=
-te:
->
-> Where is it? I cannot grep find one in arch/.
-> There is one defined in include/asm-generic/fcntl.h:
+On Mon, 2009-12-28 at 00:32 +0000, Matthew Burgess wrote:
+> Hi,
 >=20
-> #ifndef O_SYNC
-> #define __O_SYNC        04000000
-> #define O_SYNC          (__O_SYNC|O_DSYNC)
-> #endif
+> The test case below simplifies a failure I see when trying to compile=20
+> strace using kernel headers from Linux-2.6.32.2:
 >=20
-> However it has one less '0' :)
+> #include <linux/netlink.h>
+> struct sockaddr_nl nl;
+> int main() {
+>    return 0;
+> }
+>=20
+> $ gcc -o test test.c
+> In file included from test.c:1:
+> /usr/include/linux/netlink.h:34: error: expected=20
+> specifier-qualifier-list before 'sa_family_t'
+>=20
+> The comment in netlink.h suggests that 'sa_family_t' is expected to be=20
+> found in linux/socket.h, but since commit 9c501935a3 ("net: Support=20
+> inclusion of <linux/socket.h> before <sys/socket.h>") that appears to=20
+> not be true anymore, it's now in sys/socket.h.
 
-Search for 0x800000 ...
+Right.  I'm aware of this and suggested that it should be reverted, but
+David Miller reckons I was right in the first place.
+
+> Sure enough, if I change=20
+> the include in netlink.h to pull in sys/socket.h instead of=20
+> linux/socket.h, that enables the test case (and strace) to compile=20
+> again, but I wasn't sure if it was really the right thing to do.
+
+I don't think it is - that will bring in many more definitions.
+
+There are actually a whole lot of kernel networking headers which
+require sa_family_t when included by user-space code.  Until
+<linux/socket.h> and <sys/socket.h> cooperate to define sa_family_t
+once, you will just have to include <sys/socket.h> before kernel
+networking headers.
+
+Ben.
 
 --=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Ben Hutchings
+The obvious mathematical breakthrough [to break modern encryption] would be
+development of an easy way to factor large prime numbers. - Bill Gates
 
---Signature=_Tue__5_Jan_2010_13_28_24_+1100_fVcy5Jo_WYOru8Rm
-Content-Type: application/pgp-signature
+--=-g3mqikQz69KrcvV503Xf
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.10 (GNU/Linux)
 
-iEYEARECAAYFAktCo8gACgkQjjKRsyhoI8zuUwCeJbrJPfcwKe4it3Z/c8Cx/q8u
-HgUAoJgF2J5iP/57GwXBYdDCG+Q1cTGq
-=68mU
+iQIVAwUAS0Kkree/yOyVhhEJAQIWaw//UdNSAIQLYyg2S7jEhMdeYtIVMGRFs9IZ
+k4PzE6gZVoS3611wfJEiuc41Dput/YF2Np7+gYw8Ng2zHtlc5lAtjGzGLybwmKb8
+SMZgDS+2NIeTKyxxMElx+btulpnMLS5iAFA+DaoG+ZM8YOZh0PWSBQ7YzYKfYwMe
++NYJrFA588+YyB0yOMqe4yEhKBHaBXpMaCI73HUXmPGHDON/DU5vY6Q3/UStGyqC
+yIgzSqnEaioeGa2bZdBmppdk6x9q5xJ3FYLDiZ4/mT0YVAJSEoLV+hVlMoKMAmFc
+pkehza7JRh2cop66TCm/3UvLgby3wXgEskI44F3+HflUzpQ12bFrYC8BHKAIZDVH
+3vGiV7x00wwNPfnTriNsrHsJz+RhHnHTTgwGO/xxkzkA42gCfZUyZVgn/7OTdwUr
+nsjtT+knRRkap+EHEL4Bi7nmjeKYxZfim1PlioCK3w4dyJ3htj2CyhckALoMCv0P
+fVzDZfG4L0OrlTzXofCk1rlQboZQAKawo4ZAip/jETCTFhlTGCzTH3+PmdWNmBTU
+lklei/Tv9doF5Q4RhpNeFLKYK18qjlEthWH2LakQbrepR0Qa26aqfKjqphg6x/Ph
+dJSN3EDgF/JfUZEPlAKLWSae8xFJQhCU1rL9XXg7TtP7v7xZriZApMjxBr/upoV+
+yQYj264DkuE=
+=0yBq
 -----END PGP SIGNATURE-----
 
---Signature=_Tue__5_Jan_2010_13_28_24_+1100_fVcy5Jo_WYOru8Rm--
+--=-g3mqikQz69KrcvV503Xf--
