@@ -1,61 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754634Ab0AEOPi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754657Ab0AEOQB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754634Ab0AEOPi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 09:15:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754631Ab0AEOP2
+	id S1754657Ab0AEOQB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 09:16:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754609Ab0AEOPt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 09:15:28 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:52913 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753978Ab0AEOPZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 09:15:25 -0500
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "minchan.kim@gmail.com" <minchan.kim@gmail.com>,
-       cl@linux-foundation.org, "hugh.dickins" <hugh.dickins@tiscali.co.uk>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [RFC][PATCH 6/8] mm: handle_speculative_fault()
-From: Andi Kleen <andi@firstfloor.org>
-References: <20100104182429.833180340@chello.nl>
-	<20100104182813.753545361@chello.nl>
-	<20100105054536.44bf8002@infradead.org>
-Date: Tue, 05 Jan 2010 15:15:15 +0100
-In-Reply-To: <20100105054536.44bf8002@infradead.org> (Arjan van de Ven's message of "Tue, 5 Jan 2010 05:45:36 -0800")
-Message-ID: <87637gd4ek.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 5 Jan 2010 09:15:49 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:33499 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754587Ab0AEONh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jan 2010 09:13:37 -0500
+From: Gleb Natapov <gleb@redhat.com>
+To: kvm@vger.kernel.org
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, avi@redhat.com,
+       mingo@elte.hu, a.p.zijlstra@chello.nl, tglx@linutronix.de,
+       hpa@zytor.com, riel@redhat.com, cl@linux-foundation.org
+Subject: [PATCH v3 05/12] Export __get_user_pages_fast.
+Date: Tue,  5 Jan 2010 16:12:47 +0200
+Message-Id: <1262700774-1808-6-git-send-email-gleb@redhat.com>
+In-Reply-To: <1262700774-1808-1-git-send-email-gleb@redhat.com>
+References: <1262700774-1808-1-git-send-email-gleb@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arjan van de Ven <arjan@infradead.org> writes:
+KVM will use it to try and find a page without falling back to slow
+gup. That is why get_user_pages_fast() is not enough.
 
-> On Mon, 04 Jan 2010 19:24:35 +0100
-> Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
->
->> Generic speculative fault handler, tries to service a pagefault
->> without holding mmap_sem.
->
->
-> while I appreciate the goal of reducing contention on this lock...
-> wouldn't step one be to remove the page zeroing from under this lock?
-> that's by far (easily by 10x I would guess) the most expensive thing
-> that's done under the lock, and I would expect a first order of
-> contention reduction just by having the zeroing of a page not done
-> under the lock...
+Signed-off-by: Gleb Natapov <gleb@redhat.com>
+---
+ arch/x86/mm/gup.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-The cache line bouncing of the shared cache lines hurts too.
-
-I suspect fixing this all properly will need some deeper changes.
-
--Andi
+diff --git a/arch/x86/mm/gup.c b/arch/x86/mm/gup.c
+index 71da1bc..cea0dfe 100644
+--- a/arch/x86/mm/gup.c
++++ b/arch/x86/mm/gup.c
+@@ -8,6 +8,7 @@
+ #include <linux/mm.h>
+ #include <linux/vmstat.h>
+ #include <linux/highmem.h>
++#include <linux/module.h>
+ 
+ #include <asm/pgtable.h>
+ 
+@@ -274,6 +275,7 @@ int __get_user_pages_fast(unsigned long start, int nr_pages, int write,
+ 
+ 	return nr;
+ }
++EXPORT_SYMBOL_GPL(__get_user_pages_fast);
+ 
+ /**
+  * get_user_pages_fast() - pin user pages in memory
 -- 
-ak@linux.intel.com -- Speaking for myself only.
+1.6.5
+
