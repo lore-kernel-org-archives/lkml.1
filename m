@@ -1,75 +1,165 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752332Ab0AEGAo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753499Ab0AEGDx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752332Ab0AEGAo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 01:00:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751146Ab0AEGAo
+	id S1753499Ab0AEGDx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 01:03:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752068Ab0AEGDw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 01:00:44 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:53144 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750781Ab0AEGAn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 01:00:43 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=GdlPaoE8cVTDiX0i5UD0Aq8KUMeF+Jh/dQb/RNHvYLd4bh+6rYv4yS/rCjksuZMBcN
-         vxRKGEVH+7q8tPHmQCrbZUQIWGyr9xAdZzIHfA9cdNqqU9wa7jubsXBk+Ewp8BmaS6tG
-         1zJiRxai+nHT1TXH9wR7mTVMZ1mfBOry5HlTw=
-MIME-Version: 1.0
-In-Reply-To: <20100105134357.4bfb4951.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20100104182429.833180340@chello.nl>
-	 <20100104182813.753545361@chello.nl>
-	 <20100105092559.1de8b613.kamezawa.hiroyu@jp.fujitsu.com>
-	 <28c262361001042029w4b95f226lf54a3ed6a4291a3b@mail.gmail.com>
-	 <20100105134357.4bfb4951.kamezawa.hiroyu@jp.fujitsu.com>
-Date: Tue, 5 Jan 2010 15:00:42 +0900
-Message-ID: <28c262361001042200k3e5a5ef9v42400120cbd33b61@mail.gmail.com>
-Subject: Re: [RFC][PATCH 6/8] mm: handle_speculative_fault()
-From: Minchan Kim <minchan.kim@gmail.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>, cl@linux-foundation.org,
-       "hugh.dickins" <hugh.dickins@tiscali.co.uk>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8
+	Tue, 5 Jan 2010 01:03:52 -0500
+Received: from e9.ny.us.ibm.com ([32.97.182.139]:34126 "EHLO e9.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750763Ab0AEGDv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jan 2010 01:03:51 -0500
+From: Darren Hart <dvhltc@us.ibm.com>
+To: rostedt@goodmis.org, linux-kernel@vger.kernel.org
+Cc: dvhltc@us.ibm.com
+Subject: [PATCH] trace-view: consolidate the trace-view-store row access
+Date: Mon,  4 Jan 2010 22:03:38 -0800
+Message-Id: <1262671418-26446-1-git-send-email-dvhltc@us.ibm.com>
+X-Mailer: git-send-email 1.6.3.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 5, 2010 at 1:43 PM, KAMEZAWA Hiroyuki
-<kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> On Tue, 5 Jan 2010 13:29:40 +0900
-> Minchan Kim <minchan.kim@gmail.com> wrote:
->
->> Hi, Kame.
->>
->> On Tue, Jan 5, 2010 at 9:25 AM, KAMEZAWA Hiroyuki
->> <kamezawa.hiroyu@jp.fujitsu.com> wrote:
->> > On Mon, 04 Jan 2010 19:24:35 +0100
->> > Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
->> >
->> >> Generic speculative fault handler, tries to service a pagefault
->> >> without holding mmap_sem.
->> >>
->> >> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
->> >
->> >
->> > I'm sorry if I miss something...how does this patch series avoid
->> > that vma is removed while __do_fault()->vma->vm_ops->fault() is called ?
->> > ("vma is removed" means all other things as freeing file struct etc..)
->>
->> Isn't it protected by get_file and iget?
->> Am I miss something?
->>
-> Only kmem_cache_free() part of following code is modified by the patch.
+Rather than provide an accessor function for each field of the row
+record in the trace-view-store, simply return the row record and allow
+the caller to access the fields directly.
 
-That's it I missed. Thanks, Kame. ;-)
+Signed-off-by: Darren Hart <dvhltc@us.ibm.com>
+---
+ kernel-shark.c     |   10 ++++++----
+ trace-view-store.c |   29 ++++-------------------------
+ trace-view-store.h |    4 ----
+ trace-view.c       |    7 +++++--
+ 4 files changed, 15 insertions(+), 35 deletions(-)
+
+diff --git a/kernel-shark.c b/kernel-shark.c
+index fbc5a5f..a55fc8a 100644
+--- a/kernel-shark.c
++++ b/kernel-shark.c
+@@ -137,6 +137,7 @@ static void row_double_clicked(GtkTreeView        *treeview,
+ 			       gpointer            data)
+ {
+ 	struct shark_info *info = data;
++	TraceViewRecord *rec;
+ 	GtkTreeModel *model;
+ 	gchar *spath;
+ 	guint64 time;
+@@ -151,7 +152,8 @@ static void row_double_clicked(GtkTreeView        *treeview,
+ 	row = atoi(spath);
+ 	g_free(spath);
+ 
+-	time = trace_view_store_get_time_from_row(TRACE_VIEW_STORE(model), row);
++	rec = trace_view_store_get_row(TRACE_VIEW_STORE(model), row);
++	time = rec->timestamp;
+ 	trace_graph_select_by_time(info->ginfo, time);
+ }
+ 
+@@ -220,7 +222,7 @@ do_tree_popup(GtkWidget *widget, GdkEventButton *event, gpointer data)
+ 	static GtkWidget *menu_filter_add_task;
+ 	static GtkWidget *menu_filter_clear_tasks;
+ 	struct record *record;
+-	TraceViewStore *store;
++	TraceViewRecord *vrec;
+ 	GtkTreeSelection *selection;
+ 	GtkTreeModel *model;
+ 	GtkTreePath *path;
+@@ -281,8 +283,8 @@ do_tree_popup(GtkWidget *widget, GdkEventButton *event, gpointer data)
+ 		g_free(spath);
+ 
+ 		model = gtk_tree_view_get_model(GTK_TREE_VIEW(info->treeview));
+-		store = TRACE_VIEW_STORE(model);
+-		offset = trace_view_store_get_offset_from_row(store, row);
++		vrec = trace_view_store_get_row(TRACE_VIEW_STORE(model), row);
++		offset = vrec->offset;
+ 
+ 		record = tracecmd_read_at(info->handle, offset, &cpu);
+ 
+diff --git a/trace-view-store.c b/trace-view-store.c
+index 03664c8..be86662 100644
+--- a/trace-view-store.c
++++ b/trace-view-store.c
+@@ -1039,37 +1039,16 @@ gint trace_view_store_get_timestamp_page(TraceViewStore *store, guint64 ts)
+ 	return rec->pos / store->rows_per_page + 1;
+ }
+ 
+-guint64 trace_view_store_get_time_from_row(TraceViewStore *store, gint row)
+-{
+-	g_return_val_if_fail (TRACE_VIEW_IS_LIST (store), 0);
+-
+-	row += store->start_row;
+-
+-	g_return_val_if_fail (row >= 0 && row < store->visible_rows, 0);
+-
+-	return store->rows[row]->timestamp;
+-}
+-
+-guint64 trace_view_store_get_offset_from_row(TraceViewStore *store, gint row)
+-{
+-	g_return_val_if_fail (TRACE_VIEW_IS_LIST (store), 0);
+-
+-	row += store->start_row;
+-
+-	g_return_val_if_fail (row >= 0 && row < store->visible_rows, 0);
+-
+-	return store->rows[row]->offset;
+-}
+-
+ TraceViewRecord *
+ trace_view_store_get_row(TraceViewStore *store, gint row)
+ {
+ 	TraceViewRecord *record;
++	g_return_val_if_fail(TRACE_VIEW_IS_LIST(store), NULL);
+ 
+-	if (row >= store->num_rows || row < 0)
+-		return NULL;
++	row += store->start_row;
++	g_return_val_if_fail(row >= store->start_row && row < store->visible_rows, NULL);
+ 
+-	record = store->rows[store->start_row + row];
++	record = store->rows[row];
+ 	g_assert(record != NULL);
+ 	g_assert((record->pos - store->start_row) == row);
+ 	return record;
+diff --git a/trace-view-store.h b/trace-view-store.h
+index bfa19d9..08caf3f 100644
+--- a/trace-view-store.h
++++ b/trace-view-store.h
+@@ -117,10 +117,6 @@ gint trace_view_store_get_timestamp_page(TraceViewStore *store, guint64 ts);
+ 
+ gint trace_view_store_get_timestamp_visible_row(TraceViewStore *store, guint64 ts);
+ 
+-guint64 trace_view_store_get_time_from_row(TraceViewStore *store, gint row);
+-
+-guint64 trace_view_store_get_offset_from_row(TraceViewStore *store, gint row);
+-
+ void trace_view_store_filter_tasks(TraceViewStore *store, struct filter_task *filter);
+ 
+ TraceViewRecord *trace_view_store_get_row(TraceViewStore *store, gint row);
+diff --git a/trace-view.c b/trace-view.c
+index 3c023e5..899b3b3 100644
+--- a/trace-view.c
++++ b/trace-view.c
+@@ -271,6 +271,7 @@ void trace_view_make_selection_visible(GtkWidget *treeview)
+ void trace_view_update_task_filter(GtkWidget *treeview, struct filter_task *filter)
+ {
+ 	GtkTreeView *tree = GTK_TREE_VIEW(treeview);
++	TraceViewRecord *vrec;
+ 	GtkTreeModel *model;
+ 	guint64 time;
+ 	gint row;
+@@ -281,8 +282,10 @@ void trace_view_update_task_filter(GtkWidget *treeview, struct filter_task *filt
+ 
+ 	/* Keep track of the currently selected row */
+ 	row = trace_view_get_selected_row(treeview);
+-	if (row >= 0)
+-		time = trace_view_store_get_time_from_row(TRACE_VIEW_STORE(model), row);
++	if (row >= 0) {
++		vrec = trace_view_store_get_row(TRACE_VIEW_STORE(model), row);
++		time = vrec->timestamp;
++	}
+ 
+ 	g_object_ref(model);
+ 	gtk_tree_view_set_model(tree, NULL);
 -- 
-Kind regards,
-Minchan Kim
+1.6.3.3
+
