@@ -1,87 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754641Ab0AELsk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754557Ab0AELs2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754641Ab0AELsk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 06:48:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754164Ab0AELsV
+	id S1754557Ab0AELs2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 06:48:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753877Ab0AELsK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 06:48:21 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:36335 "EHLO
+	Tue, 5 Jan 2010 06:48:10 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:36325 "EHLO
 	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754447Ab0AELsJ (ORCPT
+	with ESMTP id S1753967Ab0AELsE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 06:48:09 -0500
+	Tue, 5 Jan 2010 06:48:04 -0500
 From: Andi Kleen <andi@firstfloor.org>
 References: <201001051247.104464547@firstfloor.org>
 In-Reply-To: <201001051247.104464547@firstfloor.org>
 To: linux-kernel@vger.kernel.org, greg@kroah.com
-Subject: [PATCH] [11/12] SYSFS: Add class_attr_string for simple read-only string
-Message-Id: <20100105114808.92E7EB17C2@basil.firstfloor.org>
-Date: Tue,  5 Jan 2010 12:48:08 +0100 (CET)
+Subject: [PATCH] [4/12] SYSFS: Add sysfs_add/remove_files utility functions
+Message-Id: <20100105114801.7F8B5B17C2@basil.firstfloor.org>
+Date: Tue,  5 Jan 2010 12:48:01 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Several drivers just export a static string as class attributes.
-
-Use the new extensible attribute support to define a simple
-CLASS_ATTR_STRING() macro for this.
-
-This will allow to remove code from drivers in followon patches.
+Adding/Removing a whole array of attributes is very common. Add a standard
+utility function to do this with a simple function call, instead of
+requiring drivers to open code this.
 
 Signed-off-by: Andi Kleen <ak@linux.intel.com>
 
 ---
- drivers/base/class.c   |   10 ++++++++++
- include/linux/device.h |   17 +++++++++++++++++
- 2 files changed, 27 insertions(+)
+ fs/sysfs/file.c       |   20 ++++++++++++++++++++
+ include/linux/sysfs.h |   14 ++++++++++++++
+ 2 files changed, 34 insertions(+)
 
-Index: linux-2.6.33-rc2-ak/drivers/base/class.c
+Index: linux-2.6.33-rc2-ak/fs/sysfs/file.c
 ===================================================================
---- linux-2.6.33-rc2-ak.orig/drivers/base/class.c
-+++ linux-2.6.33-rc2-ak/drivers/base/class.c
-@@ -488,6 +488,16 @@ void class_interface_unregister(struct c
- 	class_put(parent);
+--- linux-2.6.33-rc2-ak.orig/fs/sysfs/file.c
++++ linux-2.6.33-rc2-ak/fs/sysfs/file.c
+@@ -542,6 +542,18 @@ int sysfs_create_file(struct kobject * k
+ 
  }
  
-+ssize_t show_class_attr_string(struct class *class, struct class_attribute *attr,
-+                        	char *buf)
++int sysfs_create_files(struct kobject *kobj, const struct attribute **ptr)
 +{
-+	struct class_attribute_string *cs;
-+	cs = container_of(attr, struct class_attribute_string, attr);
-+	return snprintf(buf, PAGE_SIZE, "%s\n", cs->str);
++	int err = 0;
++	int i;
++
++	for (i = 0; ptr[i] && !err; i++)
++		err = sysfs_create_file(kobj, ptr[i]);
++	if (err)
++		while (--i >= 0)
++			sysfs_remove_file(kobj, ptr[i]);
++	return err;
++}
+ 
+ /**
+  * sysfs_add_file_to_group - add an attribute file to a pre-existing group.
+@@ -614,6 +626,12 @@ void sysfs_remove_file(struct kobject *
+ 	sysfs_hash_and_remove(kobj->sd, attr->name);
+ }
+ 
++void sysfs_remove_files(struct kobject * kobj, const struct attribute **ptr)
++{
++	int i;
++	for (i = 0; ptr[i]; i++)
++		sysfs_remove_file(kobj, ptr[i]);
++}
+ 
+ /**
+  * sysfs_remove_file_from_group - remove an attribute file from a group.
+@@ -732,3 +750,5 @@ EXPORT_SYMBOL_GPL(sysfs_schedule_callbac
+ 
+ EXPORT_SYMBOL_GPL(sysfs_create_file);
+ EXPORT_SYMBOL_GPL(sysfs_remove_file);
++EXPORT_SYMBOL_GPL(sysfs_remove_files);
++EXPORT_SYMBOL_GPL(sysfs_create_files);
+Index: linux-2.6.33-rc2-ak/include/linux/sysfs.h
+===================================================================
+--- linux-2.6.33-rc2-ak.orig/include/linux/sysfs.h
++++ linux-2.6.33-rc2-ak/include/linux/sysfs.h
+@@ -94,9 +94,12 @@ int __must_check sysfs_move_dir(struct k
+ 
+ int __must_check sysfs_create_file(struct kobject *kobj,
+ 				   const struct attribute *attr);
++int __must_check sysfs_create_files(struct kobject *kobj,
++				   const struct attribute **attr);
+ int __must_check sysfs_chmod_file(struct kobject *kobj, struct attribute *attr,
+ 				  mode_t mode);
+ void sysfs_remove_file(struct kobject *kobj, const struct attribute *attr);
++void sysfs_remove_files(struct kobject *kobj, const struct attribute **attr);
+ 
+ int __must_check sysfs_create_bin_file(struct kobject *kobj,
+ 				       const struct bin_attribute *attr);
+@@ -164,6 +167,12 @@ static inline int sysfs_create_file(stru
+ 	return 0;
+ }
+ 
++static inline int sysfs_create_files(struct kobject *kobj,
++				    const struct attribute **attr)
++{
++	return 0;
 +}
 +
-+EXPORT_SYMBOL_GPL(show_class_attr_string);
-+
- struct class_compat {
- 	struct kobject *kobj;
- };
-Index: linux-2.6.33-rc2-ak/include/linux/device.h
-===================================================================
---- linux-2.6.33-rc2-ak.orig/include/linux/device.h
-+++ linux-2.6.33-rc2-ak/include/linux/device.h
-@@ -265,6 +265,23 @@ extern int __must_check class_create_fil
- extern void class_remove_file(struct class *class,
- 			      const struct class_attribute *attr);
+ static inline int sysfs_chmod_file(struct kobject *kobj,
+ 				   struct attribute *attr, mode_t mode)
+ {
+@@ -175,6 +184,11 @@ static inline void sysfs_remove_file(str
+ {
+ }
  
-+/* Simple class attribute that is just a static string */
++static inline void sysfs_remove_files(struct kobject *kobj,
++				     const struct attribute **attr)
++{
++}
 +
-+struct class_attribute_string {
-+	struct class_attribute attr;
-+	char *str;
-+};
-+
-+/* Currently read-only only */
-+#define _CLASS_ATTR_STRING(_name, _mode, _str) \
-+	{ __ATTR(_name, _mode, show_class_attr_string, NULL), _str }
-+#define CLASS_ATTR_STRING(_name, _mode, _str) \
-+	struct class_attribute_string class_attr_##_name = \
-+		_CLASS_ATTR_STRING(_name, _mode, _str)
-+
-+extern ssize_t show_class_attr_string(struct class *class, struct class_attribute *attr,
-+                        char *buf);
-+
- struct class_interface {
- 	struct list_head	node;
- 	struct class		*class;
+ static inline int sysfs_create_bin_file(struct kobject *kobj,
+ 					const struct bin_attribute *attr)
+ {
