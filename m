@@ -1,53 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753834Ab0AEI6E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754084Ab0AEJAP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753834Ab0AEI6E (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 03:58:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753480Ab0AEI6D
+	id S1754084Ab0AEJAP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 04:00:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752821Ab0AEJAO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 03:58:03 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:45485 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750716Ab0AEI6A (ORCPT
+	Tue, 5 Jan 2010 04:00:14 -0500
+Received: from pfepb.post.tele.dk ([195.41.46.236]:39018 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751563Ab0AEJAM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 03:58:00 -0500
-Subject: Re: [RFC][PATCH 6/8] mm: handle_speculative_fault()
-From: Peter Zijlstra <peterz@infradead.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "minchan.kim@gmail.com" <minchan.kim@gmail.com>,
-       cl@linux-foundation.org, "hugh.dickins" <hugh.dickins@tiscali.co.uk>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <alpine.LFD.2.00.1001041904250.3630@localhost.localdomain>
-References: <20100104182429.833180340@chello.nl>
-	 <20100104182813.753545361@chello.nl>
-	 <20100105092559.1de8b613.kamezawa.hiroyu@jp.fujitsu.com>
-	 <alpine.LFD.2.00.1001041904250.3630@localhost.localdomain>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 05 Jan 2010 09:57:14 +0100
-Message-ID: <1262681834.2400.31.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 5 Jan 2010 04:00:12 -0500
+Date: Tue, 5 Jan 2010 09:58:53 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: linux-arch@vger.kernel.org, ebiederm@xmission.com,
+       paulmck@linux.vnet.ibm.com, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [2/9] Add a kernel_address() that works for data too
+Message-ID: <20100105085853.GA28126@merkur.ravnborg.org>
+References: <20100105315.789846878@firstfloor.org> <20100105021527.1AB19B17C2@basil.firstfloor.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100105021527.1AB19B17C2@basil.firstfloor.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2010-01-04 at 19:13 -0800, Linus Torvalds wrote:
-> Or put another way: if the vma was a writable mapping, a user may do
+On Tue, Jan 05, 2010 at 03:15:27AM +0100, Andi Kleen wrote:
 > 
->         munmap(mapping, size);
+> Add a variant of kernel_text_address() that includes kernel data.
 > 
-> and the backing file is still active and writable AFTER THE MUNMAP! This 
-> can be a huge problem for something that wants to unmount the volume, for 
-> example, or depends on the whole writability-vs-executability thing. The 
-> user may have unmapped it, and expects the file to be immediately 
-> non-busy, but with the delayed free that isn't the case any more. 
+> Assumes kernel is _text ... _end - init section. True everywhere?
 
-If it were only unmount it would be rather easy to fix by putting that
-RCU synchronization in unmount, unmount does a lot of sync things
-anyway. But I suspect there's more cases where that non-busy matters
-(but I'd need to educate myself on filesystems/vfs to come up with any).
+Tim Abbott has done a great job lately to unify the various
+linker scripts used by the different architectures.
 
+Architectures are supposed to follow the skeleton outlined
+in include/asm-generic/vmlinux.lds.h
+
+But I think the skeleton needs a small update.
+It describes that we mark start of .text with _stext.
+But reality is that we use _text for this.
+
+But you can trust _etext an almost all architectures.
+It is a bug if it is missing.
+
+So [_text, _etext] is the text section.
+
+The data section may be placed before or after - it depends on the architecture.
+But again - only some architectures define _sdata.
+But all? define _edata.
+
+
+	Sam
+
+
+> 
+> Cc: linux-arch@vger.kernel.org
+> Signed-off-by: Andi Kleen <ak@linux.intel.com>
+> 
+> ---
+>  include/linux/kernel.h |    1 +
+>  kernel/extable.c       |   18 ++++++++++++++++++
+>  2 files changed, 19 insertions(+)
+> 
+> Index: linux-2.6.33-rc2-ak/include/linux/kernel.h
+> ===================================================================
+> --- linux-2.6.33-rc2-ak.orig/include/linux/kernel.h
+> +++ linux-2.6.33-rc2-ak/include/linux/kernel.h
+> @@ -205,6 +205,7 @@ extern unsigned long long memparse(const
+>  extern int core_kernel_text(unsigned long addr);
+>  extern int __kernel_text_address(unsigned long addr);
+>  extern int kernel_text_address(unsigned long addr);
+> +extern int kernel_address(unsigned long addr);
+>  extern int func_ptr_is_kernel_text(void *ptr);
+>  
+>  struct pid;
+> Index: linux-2.6.33-rc2-ak/kernel/extable.c
+> ===================================================================
+> --- linux-2.6.33-rc2-ak.orig/kernel/extable.c
+> +++ linux-2.6.33-rc2-ak/kernel/extable.c
+> @@ -72,6 +72,18 @@ int core_kernel_text(unsigned long addr)
+>  	return 0;
+>  }
+>  
+> +static int core_kernel_address(unsigned long addr)
+> +{
+> +	if ((addr >= (unsigned long)_text &&
+> +	     addr <= (unsigned long)_end)) {
+> +		if (addr >= (unsigned long)__init_begin &&
+> +		    addr < (unsigned long)__init_end)
+> +			return system_state == SYSTEM_BOOTING;
+> +		return 1;
+> +	}
+> +	return 0;
+> +}
+> +
+>  int __kernel_text_address(unsigned long addr)
+>  {
+>  	if (core_kernel_text(addr))
+> @@ -98,6 +110,12 @@ int kernel_text_address(unsigned long ad
+>  	return is_module_text_address(addr);
+>  }
+>  
+> +/* text or data in core kernel or module */
+> +int kernel_address(unsigned long addr)
+> +{
+> +	return core_kernel_address(addr) || is_module_address(addr);
+> +}
+> +
+>  /*
+>   * On some architectures (PPC64, IA64) function pointers
+>   * are actually only tokens to some data that then holds the
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-arch" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
