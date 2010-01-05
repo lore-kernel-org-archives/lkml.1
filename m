@@ -1,71 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753636Ab0AEEtM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753754Ab0AEEtO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753636Ab0AEEtM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 23:49:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753280Ab0AEEtK
+	id S1753754Ab0AEEtO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 23:49:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753280Ab0AEEtM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 23:49:10 -0500
-Received: from hera.kernel.org ([140.211.167.34]:43734 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752945Ab0AEEtJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 23:49:09 -0500
-Date: Tue, 5 Jan 2010 04:48:39 GMT
-From: tip-bot for Rusty Russell <rusty@rustcorp.com.au>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       rusty@rustcorp.com.au, tglx@linutronix.de
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       rusty@rustcorp.com.au, tglx@linutronix.de
-In-Reply-To: <201001051248.49700.rusty@rustcorp.com.au>
-References: <201001051248.49700.rusty@rustcorp.com.au>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:x86/urgent] Revert "x86: Side-step lguest problem by only building cmpxchg8b_emu for pre-Pentium"
-Message-ID: <tip-f4b825bde98938f160315d655597bc9731521cae@git.kernel.org>
-Git-Commit-ID: f4b825bde98938f160315d655597bc9731521cae
-X-Mailer: tip-git-log-daemon
+	Mon, 4 Jan 2010 23:49:12 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:55067 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753095Ab0AEEtL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jan 2010 23:49:11 -0500
+Date: Mon, 4 Jan 2010 20:48:23 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Minchan Kim <minchan.kim@gmail.com>
+cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>, cl@linux-foundation.org,
+       "hugh.dickins" <hugh.dickins@tiscali.co.uk>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [RFC][PATCH 6/8] mm: handle_speculative_fault()
+In-Reply-To: <28c262361001042029w4b95f226lf54a3ed6a4291a3b@mail.gmail.com>
+Message-ID: <alpine.LFD.2.00.1001042038110.3630@localhost.localdomain>
+References: <20100104182429.833180340@chello.nl>  <20100104182813.753545361@chello.nl>  <20100105092559.1de8b613.kamezawa.hiroyu@jp.fujitsu.com> <28c262361001042029w4b95f226lf54a3ed6a4291a3b@mail.gmail.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  f4b825bde98938f160315d655597bc9731521cae
-Gitweb:     http://git.kernel.org/tip/f4b825bde98938f160315d655597bc9731521cae
-Author:     Rusty Russell <rusty@rustcorp.com.au>
-AuthorDate: Tue, 5 Jan 2010 12:48:49 +1030
-Committer:  H. Peter Anvin <hpa@zytor.com>
-CommitDate: Mon, 4 Jan 2010 19:35:49 -0800
 
-Revert "x86: Side-step lguest problem by only building cmpxchg8b_emu for pre-Pentium"
 
-This reverts commit ae1b22f6e46c03cede7cea234d0bf2253b4261cf.
+On Tue, 5 Jan 2010, Minchan Kim wrote:
+> 
+> Isn't it protected by get_file and iget?
 
-As Linus said in 982d007a6ee: "There was something really messy about
-cmpxchg8b and clone CPU's, so if you enable it on other CPUs later, do it
-carefully."
+When the vma is mapped, yes.
 
-This breaks lguest for those configs, but we can fix that by emulating
-if we have to.
+> Am I miss something?
 
-Fixes: http://bugzilla.kernel.org/show_bug.cgi?id=14884
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-LKML-Reference: <201001051248.49700.rusty@rustcorp.com.au>
-Cc: stable@kernel.org
-Signed-off-by: H. Peter Anvin <hpa@zytor.com>
----
- arch/x86/Kconfig.cpu |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+remove_vma() will have done a
 
-diff --git a/arch/x86/Kconfig.cpu b/arch/x86/Kconfig.cpu
-index 08e442b..f20ddf8 100644
---- a/arch/x86/Kconfig.cpu
-+++ b/arch/x86/Kconfig.cpu
-@@ -396,7 +396,7 @@ config X86_TSC
- 
- config X86_CMPXCHG64
- 	def_bool y
--	depends on !M386 && !M486
-+	depends on X86_PAE || X86_64 || MCORE2 || MPENTIUM4 || MPENTIUMM || MPENTIUMIII || MPENTIUMII || M686 || MATOM
- 
- # this should be set for all -march=.. options where the compiler
- # generates cmov.
+	fput(vma->vm_file);
+
+and other house-keeping (removing the executable info, doing 
+vm_ops->close() etc). 
+
+And that is _not_ done delayed by RCU, and as outlined in my previous 
+email I think that if the code really _does_ delay it, then munmap() (and 
+exit) need to wait for the RCU callbacks to have been done, because 
+otherwise the file may end up being busy "asynchronously" in ways that 
+break existing semantics.
+
+Just as an example: imagine a script that does "fork()+execve()" on a 
+temporary file, and then after waiting for it all to finish with wait4() 
+does some re-write of the file. It currently works. But what if the 
+open-for-writing gets ETXTBUSY because the file is still marked as being 
+VM_DENYWRITE, and RCU hasn't done all the callbacks?
+
+Or if you do the i_writecount handling synchronously (which is likely fine 
+- it really is just for ETXTBUSY handling, and I don't think speculative 
+page faults matter), what about a shutdown sequence (or whatever) that 
+wants to unmount the filesystem, but the file is still open - as it has to 
+be - because the actual close is delayed by RCU.
+
+So the patch-series as-is is fundamentally buggy - and trying to fix it 
+seems painful.
+
+I'm also not entirely clear on how the race with page table tear-down vs 
+page-fault got handled, but I didn't read the whole patch-series very 
+carefully. I skimmed through it and got rather nervous about it all. It 
+doesn't seem too large, but it _does_ seem rather cavalier about all the 
+object lifetimes.
+
+		Linus
