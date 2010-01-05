@@ -1,75 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754318Ab0AED1V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754417Ab0AED1u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754318Ab0AED1V (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 22:27:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754040Ab0AED1U
+	id S1754417Ab0AED1u (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 22:27:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754030Ab0AED1t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 22:27:20 -0500
-Received: from mga03.intel.com ([143.182.124.21]:32300 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753973Ab0AED1U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 22:27:20 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
-   d="scan'208";a="229212194"
-Date: Tue, 5 Jan 2010 11:27:15 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Christoph Hellwig <hch@infradead.org>, Andi Kleen <andi@firstfloor.org>,
+	Mon, 4 Jan 2010 22:27:49 -0500
+Received: from rcpt-expgw.biglobe.ne.jp ([133.205.19.66]:53072 "EHLO
+	rcpt-expgw.biglobe.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754018Ab0AED1t (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jan 2010 22:27:49 -0500
+X-Biglobe-Sender: <d-nishimura@mtf.biglobe.ne.jp>
+Date: Tue, 5 Jan 2010 12:26:33 +0900
+From: Daisuke Nishimura <d-nishimura@mtf.biglobe.ne.jp>
+To: Greg KH <greg@kroah.com>
+Cc: stable <stable@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       David Rientjes <rientjes@google.com>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Quentin Barnes <qbarnes+nfs@yahoo-inc.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       Nick Piggin <npiggin@suse.de>, Steven Whitehouse <swhiteho@redhat.com>,
-       David Howells <dhowells@redhat.com>, Al Viro <viro@zeniv.linux.org.uk>,
-       Jonathan Corbet <corbet@lwn.net>, Eric Paris <eparis@redhat.com>
-Subject: Re: [RFC][PATCH v5] readahead: introduce O_RANDOM for
-	POSIX_FADV_RANDOM
-Message-ID: <20100105032715.GA1044@localhost>
-References: <20091230052402.GB26364@localhost> <873a2s8hmp.fsf@basil.nowhere.org> <20100104045020.GA21021@localhost> <20100104161719.a0bb35ad.sfr@canb.auug.org.au> <20100104073328.GA3422@infradead.org> <20100104125620.GB12266@localhost> <20100105130322.006c03ee.sfr@canb.auug.org.au> <20100105022650.GB29428@localhost> <20100105132824.e6c0fb7f.sfr@canb.auug.org.au> <20100105031801.GA591@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100105031801.GA591@localhost>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Subject: [stable][BUGFIX][PATCH v3] memcg: avoid oom-killing innocent task
+ in case of use_hierarchy
+Message-Id: <20100105122633.28738255.d-nishimura@mtf.biglobe.ne.jp>
+In-Reply-To: <20100104222818.GA20708@kroah.com>
+References: <20091124145759.194cfc9f.nishimura@mxp.nes.nec.co.jp>
+	<20091124162854.fb31e81e.nishimura@mxp.nes.nec.co.jp>
+	<20091125090050.e366dca5.kamezawa.hiroyu@jp.fujitsu.com>
+	<20091125143218.96156a5f.nishimura@mxp.nes.nec.co.jp>
+	<20091217094724.15ec3b27.nishimura@mxp.nes.nec.co.jp>
+	<20100104222818.GA20708@kroah.com>
+Reply-To: nishimura@mxp.nes.nec.co.jp
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 05, 2010 at 11:18:01AM +0800, Wu Fengguang wrote:
->  
-> +/*
-> + * usage of open(O_RANDOM) is disabled: __dentry_open() will nuke this bit
-> + */
-> +#ifndef O_RANDOM
-> +#define O_RANDOM	0200000000	/* random access pattern hint */
-> +#endif
-> +
+On Mon, 4 Jan 2010 14:28:19 -0800
+Greg KH <greg@kroah.com> wrote:
 
-Tested with this program, output is
+> On Thu, Dec 17, 2009 at 09:47:24AM +0900, Daisuke Nishimura wrote:
+> > Stable team.
+> > 
+> > Cay you pick this up for 2.6.32.y(and 2.6.31.y if it will be released) ?
+> > 
+> > This is a for-stable version of a bugfix patch that corresponds to the
+> > upstream commmit d31f56dbf8bafaacb0c617f9a6f137498d5c7aed.
+> 
+> I've applied it to the .32-stable tree, but it does not apply to .31.
+> Care to provide a version of the patch for that kernel if you want it
+> applied there?
+> 
+hmm, strange. I can apply it onto 2.6.31.9. It might conflict with other patches
+in 2.6.31.y queue ?
+Anyway, I've attached the patch that is rebased on 2.6.31.9. Please tell me if you
+have any problem with it.
 
-        flags=0x9001 O_SYNC=0x1000 O_RANDOM=0
+v3: rebased on 2.6.31.9
+===
+>From 14cd608eef94c851460d3d56e0c676d17ecc64f2 Mon Sep 17 00:00:00 2001
+From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Date: Tue, 5 Jan 2010 12:15:42 +0900
+Subject: [PATCH] memcg: avoid oom-killing innocent task in case of use_hierarchy
 
-My user space O_SYNC is still the old O_DSYNC. But should be OK to
-test the sparc O_SYNC.
+task_in_mem_cgroup(), which is called by select_bad_process() to check whether
+a task can be a candidate for being oom-killed from memcg's limit, checks
+"curr->use_hierarchy"("curr" is the mem_cgroup the task belongs to).
 
-------------------------------------------------------------------------------
-#include <fcntl.h>
-#include <stdio.h>
+But this check return true(it's false positive) when:
 
-#define O_RANDOM       040000000       /* random access pattern hint */
+	<some path>/00		use_hierarchy == 0	<- hitting limit
+	  <some path>/00/aa	use_hierarchy == 1	<- "curr"
 
-int main (void)
-{
-	int fd, flags;
+This leads to killing an innocent task in 00/aa. This patch is a fix for this
+bug. And this patch also fixes the arg for mem_cgroup_print_oom_info(). We
+should print information of mem_cgroup which the task being killed, not current,
+belongs to.
 
-	fd = open("/tmp/fcntl-test",
-		  O_WRONLY | O_CREAT | O_SYNC | O_RANDOM, 0666);
-	flags = fcntl(fd, F_GETFL, 0);
-	printf("flags=%#lx O_SYNC=%#lx O_RANDOM=%#lx\n",
-	       flags, flags & O_SYNC, flags & O_RANDOM);
-}
-------------------------------------------------------------------------------
+Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Acked-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Reviewed-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+---
+ mm/memcontrol.c |    8 +++++++-
+ mm/oom_kill.c   |    2 +-
+ 2 files changed, 8 insertions(+), 2 deletions(-)
 
-Thanks,
-Fengguang
+diff --git a/mm/memcontrol.c b/mm/memcontrol.c
+index fd4529d..566925e 100644
+--- a/mm/memcontrol.c
++++ b/mm/memcontrol.c
+@@ -496,7 +496,13 @@ int task_in_mem_cgroup(struct task_struct *task, const struct mem_cgroup *mem)
+ 	task_unlock(task);
+ 	if (!curr)
+ 		return 0;
+-	if (curr->use_hierarchy)
++	/*
++	 * We should check use_hierarchy of "mem" not "curr". Because checking
++	 * use_hierarchy of "curr" here make this function true if hierarchy is
++	 * enabled in "curr" and "curr" is a child of "mem" in *cgroup*
++	 * hierarchy(even if use_hierarchy is disabled in "mem").
++	 */
++	if (mem->use_hierarchy)
+ 		ret = css_is_ancestor(&curr->css, &mem->css);
+ 	else
+ 		ret = (curr == mem);
+diff --git a/mm/oom_kill.c b/mm/oom_kill.c
+index a7b2460..ed452e9 100644
+--- a/mm/oom_kill.c
++++ b/mm/oom_kill.c
+@@ -400,7 +400,7 @@ static int oom_kill_process(struct task_struct *p, gfp_t gfp_mask, int order,
+ 		cpuset_print_task_mems_allowed(current);
+ 		task_unlock(current);
+ 		dump_stack();
+-		mem_cgroup_print_oom_info(mem, current);
++		mem_cgroup_print_oom_info(mem, p);
+ 		show_mem();
+ 		if (sysctl_oom_dump_tasks)
+ 			dump_tasks(mem);
+-- 
+1.6.3.3
+
