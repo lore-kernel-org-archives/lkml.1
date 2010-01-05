@@ -1,53 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754721Ab0AEORN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754609Ab0AEOTa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754721Ab0AEORN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 09:17:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754551Ab0AEORG
+	id S1754609Ab0AEOTa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 09:19:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754518Ab0AEOT2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 09:17:06 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:62009 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754227Ab0AEONZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 09:13:25 -0500
-From: Gleb Natapov <gleb@redhat.com>
-To: kvm@vger.kernel.org
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, avi@redhat.com,
-       mingo@elte.hu, a.p.zijlstra@chello.nl, tglx@linutronix.de,
-       hpa@zytor.com, riel@redhat.com, cl@linux-foundation.org
-Subject: [PATCH v3 12/12] Send async PF when guest is not in userspace too.
-Date: Tue,  5 Jan 2010 16:12:54 +0200
-Message-Id: <1262700774-1808-13-git-send-email-gleb@redhat.com>
-In-Reply-To: <1262700774-1808-1-git-send-email-gleb@redhat.com>
-References: <1262700774-1808-1-git-send-email-gleb@redhat.com>
+	Tue, 5 Jan 2010 09:19:28 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:58131 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754292Ab0AEOT1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jan 2010 09:19:27 -0500
+To: paulmck@linux.vnet.ibm.com
+Cc: ebiederm@xmission.com, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [1/9] Add rcustring ADT for RCU protected strings v2
+From: Andi Kleen <andi@firstfloor.org>
+References: <20100105315.789846878@firstfloor.org>
+	<20100105021526.17EF2B17C2@basil.firstfloor.org>
+	<20100105053252.GB6836@linux.vnet.ibm.com>
+	<20100105104746.GB1778@basil.fritz.box>
+	<20100105141146.GD6836@linux.vnet.ibm.com>
+Date: Tue, 05 Jan 2010 15:19:24 +0100
+In-Reply-To: <20100105141146.GD6836@linux.vnet.ibm.com> (Paul E. McKenney's message of "Tue, 5 Jan 2010 06:11:46 -0800")
+Message-ID: <871vi4d47n.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+"Paul E. McKenney" <paulmck@linux.vnet.ibm.com> writes:
+>> 
+>> I would consider it disallowed, all the strings have some default value.
+>> Empty string would be ""
+>> 
+>> If we allowed it the caller couldn't easily distingush error from expected NULL.
+>
+> OK, then:
 
-Signed-off-by: Gleb Natapov <gleb@redhat.com>
----
- arch/x86/kvm/mmu.c |    8 +++++++-
- 1 files changed, 7 insertions(+), 1 deletions(-)
+Thanks. I actually changed my mind and added support for NULL strings
+(although I suspect they are not too useful)
 
-diff --git a/arch/x86/kvm/mmu.c b/arch/x86/kvm/mmu.c
-index 9fd29cb..7945abf 100644
---- a/arch/x86/kvm/mmu.c
-+++ b/arch/x86/kvm/mmu.c
-@@ -2204,7 +2204,13 @@ static bool can_do_async_pf(struct kvm_vcpu *vcpu)
- 	if (!vcpu->arch.apf_data || kvm_event_needs_reinjection(vcpu))
- 		return false;
- 
--	return !!kvm_x86_ops->get_cpl(vcpu);
-+	if (vcpu->arch.apf_send_user_only)
-+		return !!kvm_x86_ops->get_cpl(vcpu);
-+
-+	if (!kvm_x86_ops->interrupt_allowed(vcpu))
-+		return false;
-+
-+	return true;
- }
- 
- static int tdp_page_fault(struct kvm_vcpu *vcpu, gva_t gpa, u32 error_code,
+I also found one more minor problem (and there was one conversion
+missing in v2), will do a repost later
+
+-Andi
+
 -- 
-1.6.5
-
+ak@linux.intel.com -- Speaking for myself only.
