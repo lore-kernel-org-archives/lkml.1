@@ -1,62 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754878Ab0AEQAv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754825Ab0AEQAn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754878Ab0AEQAv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 11:00:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754855Ab0AEQAr
+	id S1754825Ab0AEQAn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 11:00:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754572Ab0AEQAm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 11:00:47 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:57638 "EHLO mx1.redhat.com"
+	Tue, 5 Jan 2010 11:00:42 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:28557 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754844Ab0AEQAp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 11:00:45 -0500
-Message-ID: <4B4361EE.2030201@redhat.com>
-Date: Tue, 05 Jan 2010 10:59:42 -0500
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Lightning/1.0pre Thunderbird/3.0
-MIME-Version: 1.0
-To: Jun Koi <junkoi2004@gmail.com>
-CC: Gleb Natapov <gleb@redhat.com>, kvm@vger.kernel.org, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, avi@redhat.com, mingo@elte.hu,
-       a.p.zijlstra@chello.nl, tglx@linutronix.de, hpa@zytor.com,
-       cl@linux-foundation.org
-Subject: Re: [PATCH v3 00/12] KVM: Add host swap event notifications for PV
- 	guest
-References: <1262700774-1808-1-git-send-email-gleb@redhat.com> <fdaac4d51001050705s3f46dd0fi948a3b3ea803fa51@mail.gmail.com>
-In-Reply-To: <fdaac4d51001050705s3f46dd0fi948a3b3ea803fa51@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1754400Ab0AEQAl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jan 2010 11:00:41 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <78aa970c1001020516m3d2255fj38f02629e7d740c8@mail.gmail.com>
+References: <78aa970c1001020516m3d2255fj38f02629e7d740c8@mail.gmail.com>
+To: Kevin Qu <rofail@gmail.com>, Jeff Epler <jepler@unpythonic.net>
+Cc: dhowells@redhat.com, linux-kernel@vger.kernel.org
+Subject: Re: how to get right euid?
+Date: Tue, 05 Jan 2010 16:00:33 +0000
+Message-ID: <17885.1262707233@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/05/2010 10:05 AM, Jun Koi wrote:
-> On Tue, Jan 5, 2010 at 11:12 PM, Gleb Natapov<gleb@redhat.com>  wrote:
->> KVM virtualizes guest memory by means of shadow pages or HW assistance
->> like NPT/EPT. Not all memory used by a guest is mapped into the guest
->> address space or even present in a host memory at any given time.
->> When vcpu tries to access memory page that is not mapped into the guest
->> address space KVM is notified about it. KVM maps the page into the guest
->> address space and resumes vcpu execution. If the page is swapped out
->> from host memory vcpu execution is suspended till the page is not swapped
->> into the memory again. This is inefficient since vcpu can do other work
->> (run other task or serve interrupts) while page gets swapped in.
->>
->> To overcome this inefficiency this patch series implements "asynchronous
->> page fault" for paravirtualized KVM guests. If a page that vcpu is
->> trying to access is swapped out KVM sends an async PF to the vcpu
->> and continues vcpu execution. Requested page is swapped in by another
->> thread in parallel.  When vcpu gets async PF it puts faulted task to
->> sleep until "wake up" interrupt is delivered. When the page is brought
->> to the host memory KVM sends "wake up" interrupt and the guest's task
->> resumes execution.
->>
->
-> Is it true that to make this work, we will need a (PV) kernel driver
-> for each guest OS (Windows, Linux, ...)?
 
-This patch series contains the guest kernel code for Linux,
-as well as the host side code.
+Kevin Qu <rofail@gmail.com> wrote:
 
--- 
-All rights reversed.
+> I wrote a kernel module and it create a "file" in /proc.
+> The "file" permission is set to 644.
+> When check access permission, I use :
+
+Check where?  In file_operations::open(), in file_operations::write() or in
+inode_operations::permission()?
+
+> if( op == 4 || (op ==2 && current->euid == 0) )
+>         return 0;
+> 
+> But it does not work on 2.6.29,
+> so I changed it like below:
+> 
+> if( op & 0x4 || (op & 0x2 && current_euid() == 0) )
+>         return 0;
+
+What is op?  Is "op == N" equivalent to "op & N"?  Should N be a symbolic
+constant (MAY_READ or MAY_WRITE)?
+
+> It works when read from the "file" in /proc,
+> but when write to it with sudo, like:
+> 
+> sudo echo "some thing" > /proc/my_file
+> 
+> It denied. (But it works when I su to superuser and do so.)
+> 
+> So I checked the current_euid(),
+> but it returns 1000 (not 0),Why?
+
+As Jeff said, where you're making the check matters.
+
+In the above sudo command, the open() call is done by the shell, under the
+EUID of whoever is logged in, whereas the write() call is done by the echo
+command as executed by sudo, under the EUID set by sudo.
+
+Note that if you're making the check in write(), the UID that you're checking
+should be the one in struct file::f_cred.
+
+David
