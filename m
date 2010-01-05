@@ -1,68 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754130Ab0AECDS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754203Ab0AECDg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754130Ab0AECDS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 21:03:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753640Ab0AECDR
+	id S1754203Ab0AECDg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 21:03:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753640Ab0AECDf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 21:03:17 -0500
-Received: from relay4-v.mail.gandi.net ([217.70.178.78]:53707 "EHLO
-	relay4-v.mail.gandi.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753484Ab0AECDQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 21:03:16 -0500
-Date: Mon, 4 Jan 2010 18:03:08 -0800
-From: Josh Triplett <josh@joshtriplett.org>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, laijs@cn.fujitsu.com,
-       dipankar@in.ibm.com, akpm@linux-foundation.org,
-       mathieu.desnoyers@polymtl.ca, dvhltc@us.ibm.com, niv@us.ibm.com,
-       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
-       Valdis.Kletnieks@vt.edu, dhowells@redhat.com
-Subject: Re: [PATCH tip/core/rcu 2/3] rcu: add debug check for too many
- rcu_read_unlock()
-Message-ID: <20100105020307.GB11286@feather>
-References: <20100105000337.GA23307@linux.vnet.ibm.com>
- <12626498423064-git-send-email->
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <12626498423064-git-send-email->
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Mon, 4 Jan 2010 21:03:35 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:35740 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753435Ab0AECDe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jan 2010 21:03:34 -0500
+Date: Tue, 5 Jan 2010 13:03:22 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Christoph Hellwig <hch@infradead.org>, Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Quentin Barnes <qbarnes+nfs@yahoo-inc.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       Nick Piggin <npiggin@suse.de>, Steven Whitehouse <swhiteho@redhat.com>,
+       David Howells <dhowells@redhat.com>, Al Viro <viro@zeniv.linux.org.uk>,
+       Jonathan Corbet <corbet@lwn.net>
+Subject: Re: [RFC][PATCH v4] readahead: introduce O_RANDOM for
+ POSIX_FADV_RANDOM
+Message-Id: <20100105130322.006c03ee.sfr@canb.auug.org.au>
+In-Reply-To: <20100104125620.GB12266@localhost>
+References: <20091225000717.GA26949@yahoo-inc.com>
+	<87aax18xms.fsf@basil.nowhere.org>
+	<20091230051540.GA16308@localhost>
+	<20091230052402.GB26364@localhost>
+	<873a2s8hmp.fsf@basil.nowhere.org>
+	<20100104045020.GA21021@localhost>
+	<20100104161719.a0bb35ad.sfr@canb.auug.org.au>
+	<20100104073328.GA3422@infradead.org>
+	<20100104125620.GB12266@localhost>
+X-Mailer: Sylpheed 3.0.0beta4 (GTK+ 2.18.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__5_Jan_2010_13_03_22_+1100_1IZ=G_RNQZAHQZFI"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 04, 2010 at 04:04:01PM -0800, Paul E. McKenney wrote:
-> From: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> 
-> TREE_PREEMPT_RCU maintains an rcu_read_lock_nesting counter in the
-> task structure, which happens to be a signed int.  So this patch adds a
-> check for this counter being negative at the end of __rcu_read_unlock().
-> This check is under CONFIG_PROVE_LOCKING, so can be thought of as being
-> part of lockdep.
-> 
-> Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> ---
->  kernel/rcutree_plugin.h |    3 +++
->  1 files changed, 3 insertions(+), 0 deletions(-)
-> 
-> diff --git a/kernel/rcutree_plugin.h b/kernel/rcutree_plugin.h
-> index f11ebd4..e77cdf3 100644
-> --- a/kernel/rcutree_plugin.h
-> +++ b/kernel/rcutree_plugin.h
-> @@ -304,6 +304,9 @@ void __rcu_read_unlock(void)
->  	if (--ACCESS_ONCE(t->rcu_read_lock_nesting) == 0 &&
->  	    unlikely(ACCESS_ONCE(t->rcu_read_unlock_special)))
->  		rcu_read_unlock_special(t);
-> +#ifdef CONFIG_PROVE_LOCKING
-> +	WARN_ON_ONCE(ACCESS_ONCE(t->rcu_read_lock_nesting) < 0);
-> +#endif /* #ifdef CONFIG_PROVE_LOCKING */
->  }
->  EXPORT_SYMBOL_GPL(__rcu_read_unlock);
+--Signature=_Tue__5_Jan_2010_13_03_22_+1100_1IZ=G_RNQZAHQZFI
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Given that you *already* need to access t->rcu_read_lock_nesting here,
-why not just do the test all the time?  Ideally you could access
-t->rcu_read_lock_nesting once, decrement it, and test for both 0 and
-negative.
+On Mon, 4 Jan 2010 20:56:20 +0800 Wu Fengguang <fengguang.wu@intel.com> wro=
+te:
+>
+> For now I'll use bit 040000000, which happen to equal to
+> FMODE_NONOTIFY and will be masked out by __dentry_open()
+> in the very beginning.
 
-- Josh Triplett
+But also clashes with __O_SYNC on sparc, sorry.  I am not sure how we are
+meant to reasonably choose these values any more ...
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Tue__5_Jan_2010_13_03_22_+1100_1IZ=G_RNQZAHQZFI
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAktCneoACgkQjjKRsyhoI8xVIQCeKIVdZGKo2winQKhHWr/E1W7w
+HfoAn3B4YGCetSpmocW4juILbASNMhcv
+=L1dl
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__5_Jan_2010_13_03_22_+1100_1IZ=G_RNQZAHQZFI--
