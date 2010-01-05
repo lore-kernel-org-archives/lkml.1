@@ -1,137 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754571Ab0AELsa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754641Ab0AELsk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754571Ab0AELsa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 06:48:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754489Ab0AELsK
+	id S1754641Ab0AELsk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 06:48:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754164Ab0AELsV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 06:48:10 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:36330 "EHLO
+	Tue, 5 Jan 2010 06:48:21 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:36335 "EHLO
 	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754164Ab0AELsG (ORCPT
+	with ESMTP id S1754447Ab0AELsJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 06:48:06 -0500
+	Tue, 5 Jan 2010 06:48:09 -0500
 From: Andi Kleen <andi@firstfloor.org>
 References: <201001051247.104464547@firstfloor.org>
 In-Reply-To: <201001051247.104464547@firstfloor.org>
 To: linux-kernel@vger.kernel.org, greg@kroah.com
-Subject: [PATCH] [6/12] SYSDEV: Convert node driver 
-Message-Id: <20100105114803.85222B17C2@basil.firstfloor.org>
-Date: Tue,  5 Jan 2010 12:48:03 +0100 (CET)
+Subject: [PATCH] [11/12] SYSFS: Add class_attr_string for simple read-only string
+Message-Id: <20100105114808.92E7EB17C2@basil.firstfloor.org>
+Date: Tue,  5 Jan 2010 12:48:08 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Use sysdev_class attribute arrays in node driver
+Several drivers just export a static string as class attributes.
 
-Convert the node driver to sysdev_class attribute arrays. This
-greatly cleans up the code and remove a lot of code.
+Use the new extensible attribute support to define a simple
+CLASS_ATTR_STRING() macro for this.
+
+This will allow to remove code from drivers in followon patches.
 
 Signed-off-by: Andi Kleen <ak@linux.intel.com>
 
 ---
- drivers/base/cpu.c |   65 ++++++++++++++++-------------------------------------
- 1 file changed, 20 insertions(+), 45 deletions(-)
+ drivers/base/class.c   |   10 ++++++++++
+ include/linux/device.h |   17 +++++++++++++++++
+ 2 files changed, 27 insertions(+)
 
-Index: linux-2.6.33-rc2-ak/drivers/base/cpu.c
+Index: linux-2.6.33-rc2-ak/drivers/base/class.c
 ===================================================================
---- linux-2.6.33-rc2-ak.orig/drivers/base/cpu.c
-+++ linux-2.6.33-rc2-ak/drivers/base/cpu.c
-@@ -13,8 +13,11 @@
+--- linux-2.6.33-rc2-ak.orig/drivers/base/class.c
++++ linux-2.6.33-rc2-ak/drivers/base/class.c
+@@ -488,6 +488,16 @@ void class_interface_unregister(struct c
+ 	class_put(parent);
+ }
  
- #include "base.h"
- 
-+static struct sysdev_class_attribute *cpu_sysdev_class_attrs[];
++ssize_t show_class_attr_string(struct class *class, struct class_attribute *attr,
++                        	char *buf)
++{
++	struct class_attribute_string *cs;
++	cs = container_of(attr, struct class_attribute_string, attr);
++	return snprintf(buf, PAGE_SIZE, "%s\n", cs->str);
++}
 +
- struct sysdev_class cpu_sysdev_class = {
- 	.name = "cpu",
-+	.attrs = cpu_sysdev_class_attrs,
++EXPORT_SYMBOL_GPL(show_class_attr_string);
++
+ struct class_compat {
+ 	struct kobject *kobj;
  };
- EXPORT_SYMBOL(cpu_sysdev_class);
+Index: linux-2.6.33-rc2-ak/include/linux/device.h
+===================================================================
+--- linux-2.6.33-rc2-ak.orig/include/linux/device.h
++++ linux-2.6.33-rc2-ak/include/linux/device.h
+@@ -265,6 +265,23 @@ extern int __must_check class_create_fil
+ extern void class_remove_file(struct class *class,
+ 			      const struct class_attribute *attr);
  
-@@ -90,20 +93,6 @@ static ssize_t cpu_release_store(struct
- 
- static CLASS_ATTR(probe, S_IWUSR, NULL, cpu_probe_store);
- static CLASS_ATTR(release, S_IWUSR, NULL, cpu_release_store);
--
--int __init cpu_probe_release_init(void)
--{
--	int rc;
--
--	rc = sysfs_create_file(&cpu_sysdev_class.kset.kobj,
--			       &class_attr_probe.attr);
--	if (!rc)
--		rc = sysfs_create_file(&cpu_sysdev_class.kset.kobj,
--				       &class_attr_release.attr);
--
--	return rc;
--}
--device_initcall(cpu_probe_release_init);
- #endif /* CONFIG_ARCH_CPU_PROBE_RELEASE */
- 
- #else /* ... !CONFIG_HOTPLUG_CPU */
-@@ -162,6 +151,7 @@ static ssize_t show_cpus_attr(struct sys
- #define _CPU_ATTR(name, map)						\
- 	{ _SYSDEV_CLASS_ATTR(name, 0444, show_cpus_attr, NULL), map }
- 
-+/* Keep in sync with cpu_sysdev_class_attrs */
- static struct cpu_attr cpu_attrs[] = {
- 	_CPU_ATTR(online, &cpu_online_mask),
- 	_CPU_ATTR(possible, &cpu_possible_mask),
-@@ -212,29 +202,6 @@ static ssize_t print_cpus_offline(struct
- }
- static SYSDEV_CLASS_ATTR(offline, 0444, print_cpus_offline, NULL);
- 
--static struct sysdev_class_attribute *cpu_state_attr[] = {
--	&cpu_attrs[0].attr,
--	&cpu_attrs[1].attr,
--	&cpu_attrs[2].attr,
--	&attr_kernel_max,
--	&attr_offline,
--};
--
--static int cpu_states_init(void)
--{
--	int i;
--	int err = 0;
--
--	for (i = 0;  i < ARRAY_SIZE(cpu_state_attr); i++) {
--		int ret;
--		ret = sysdev_class_create_file(&cpu_sysdev_class,
--						cpu_state_attr[i]);
--		if (!err)
--			err = ret;
--	}
--	return err;
--}
--
- /*
-  * register_cpu - Setup a sysfs device for a CPU.
-  * @cpu - cpu->hotpluggable field set to 1 will generate a control file in
-@@ -280,9 +247,6 @@ int __init cpu_dev_init(void)
- 	int err;
- 
- 	err = sysdev_class_register(&cpu_sysdev_class);
--	if (!err)
--		err = cpu_states_init();
--
- #if defined(CONFIG_SCHED_MC) || defined(CONFIG_SCHED_SMT)
- 	if (!err)
- 		err = sched_create_sysfs_power_savings_entries(&cpu_sysdev_class);
-@@ -290,3 +254,16 @@ int __init cpu_dev_init(void)
- 
- 	return err;
- }
++/* Simple class attribute that is just a static string */
 +
-+static struct sysdev_class_attribute *cpu_sysdev_class_attrs[] = {
-+#ifdef CONFIG_ARCH_CPU_PROBE_RELEASE
-+	&class_attr_probe.attr,
-+	&class_attr_release.attr,
-+#endif
-+	&cpu_attrs[0].attr,
-+	&cpu_attrs[1].attr,
-+	&cpu_attrs[2].attr,
-+	&attr_kernel_max,
-+	&attr_offline,
-+	NULL
++struct class_attribute_string {
++	struct class_attribute attr;
++	char *str;
 +};
++
++/* Currently read-only only */
++#define _CLASS_ATTR_STRING(_name, _mode, _str) \
++	{ __ATTR(_name, _mode, show_class_attr_string, NULL), _str }
++#define CLASS_ATTR_STRING(_name, _mode, _str) \
++	struct class_attribute_string class_attr_##_name = \
++		_CLASS_ATTR_STRING(_name, _mode, _str)
++
++extern ssize_t show_class_attr_string(struct class *class, struct class_attribute *attr,
++                        char *buf);
++
+ struct class_interface {
+ 	struct list_head	node;
+ 	struct class		*class;
