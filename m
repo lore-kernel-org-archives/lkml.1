@@ -1,80 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754508Ab0AEOAM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754377Ab0AEODO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754508Ab0AEOAM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 09:00:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754457Ab0AEN7m
+	id S1754377Ab0AEODO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 09:03:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754022Ab0AEODN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 08:59:42 -0500
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:60542 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754437Ab0AEN7k (ORCPT
+	Tue, 5 Jan 2010 09:03:13 -0500
+Received: from e39.co.us.ibm.com ([32.97.110.160]:46351 "EHLO
+	e39.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752848Ab0AEODG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 08:59:40 -0500
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Samuel Ortiz <sameo@linux.intel.com>
-Cc: linux-kernel@vger.kernel.org,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       Alessandro Zummo <a.zummo@towertech.it>, rtc-linux@googlegroups.com
-Subject: [PATCH 3/4] rtc: Suppress duplicate enable/disable of WM8350 update interrupt
-Date: Tue,  5 Jan 2010 13:59:08 +0000
-Message-Id: <1262699949-3079-3-git-send-email-broonie@opensource.wolfsonmicro.com>
-X-Mailer: git-send-email 1.6.5.7
-In-Reply-To: <1262699949-3079-2-git-send-email-broonie@opensource.wolfsonmicro.com>
-References: <20100105135756.GA2993@rakim.wolfsonmicro.main>
- <1262699949-3079-1-git-send-email-broonie@opensource.wolfsonmicro.com>
- <1262699949-3079-2-git-send-email-broonie@opensource.wolfsonmicro.com>
+	Tue, 5 Jan 2010 09:03:06 -0500
+Subject: [ANNOUNCE] The Linux Test Project has been Released for DECEMBER
+	2009
+From: Subrata Modak <subrata@linux.vnet.ibm.com>
+Reply-To: subrata@linux.vnet.ibm.com
+To: ltp-list <ltp-list@lists.sf.net>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jiri Palecek <jpalecek@web.de>, Garrett Cooper <yanegomi@gmail.com>,
+       Mike Frysinger <vapier@gentoo.org>, Cyril Hrubis <chrubis@suse.cz>,
+       Radoslav Kolev <radoslav.kolev@rnd.bg>, Miao Xie <miaox@cn.fujitsu.com>,
+       Henry Yei <hyei@mvista.com>, Paul Larson <paul.larson@canonical.com>,
+       Tomori Mitani <mitani@ryobi.co.jp>, Caspar Zhang <czhang@redhat.com>,
+       liubo <liubo2009@cn.fujitsu.com>
+Content-Type: text/plain
+Organization: IBM
+Date: Tue, 05 Jan 2010 19:32:41 +0530
+Message-Id: <1262700161.8226.25.camel@subratamodak.linux.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.2) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Unlike the wm8350-custom code genirq nests enable and disable calls
-so we can't just unconditionally mask or unmask the interrupt,
-we need to remember the state we set and only mask or unmask when
-there is a real change.
+Hi,
 
-Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: Alessandro Zummo <a.zummo@towertech.it>
-Cc: rtc-linux@googlegroups.com
----
- drivers/rtc/rtc-wm8350.c       |    7 +++++++
- include/linux/mfd/wm8350/rtc.h |    1 +
- 2 files changed, 8 insertions(+), 0 deletions(-)
+The Linux Test Project test suite has been released for the month of
+DECEMBER 2009. Please see ltp/INSTALL file carefully, as, there has
+been multiple changes for building/installing the test suite after the
+recent changes in Makefile infrastructure.
 
-diff --git a/drivers/rtc/rtc-wm8350.c b/drivers/rtc/rtc-wm8350.c
-index a427491..ef376d7 100644
---- a/drivers/rtc/rtc-wm8350.c
-+++ b/drivers/rtc/rtc-wm8350.c
-@@ -307,11 +307,18 @@ static int wm8350_rtc_update_irq_enable(struct device *dev,
- {
- 	struct wm8350 *wm8350 = dev_get_drvdata(dev);
- 
-+	/* Suppress duplicate changes since genirq nests enable and
-+	 * disable calls. */
-+	if (enabled == wm8350->rtc.update_enabled)
-+		return 0;
-+
- 	if (enabled)
- 		wm8350_unmask_irq(wm8350, WM8350_IRQ_RTC_SEC);
- 	else
- 		wm8350_mask_irq(wm8350, WM8350_IRQ_RTC_SEC);
- 
-+	wm8350->rtc.update_enabled = enabled;
-+
- 	return 0;
- }
- 
-diff --git a/include/linux/mfd/wm8350/rtc.h b/include/linux/mfd/wm8350/rtc.h
-index 24add2b..ebd72ff 100644
---- a/include/linux/mfd/wm8350/rtc.h
-+++ b/include/linux/mfd/wm8350/rtc.h
-@@ -263,6 +263,7 @@ struct wm8350_rtc {
- 	struct platform_device *pdev;
- 	struct rtc_device *rtc;
- 	int alarm_enabled;      /* used over suspend/resume */
-+	int update_enabled;
- };
- 
- #endif
--- 
-1.6.5.7
+The latest version of the test-suite contains 3000+ tests for the Linux
+OS and can be found at:
+http://ltp.sourceforge.net/,
+Latest happenings in LTP can also be found at:
+http://ltp.sourceforge.net/wiki/,
+http://ltp.sourceforge.net/wikiArchives.php, and,
+IRC: irc.freenode.org #ltp.
+
+========================
+DECEMBER 2009 Highlights:
+======================== 
+      * Cleanup and stabilization of new build system for various
+        distros, archs and make versions,
+------------------------------
+
+==============================
+DECEMBER 2009 LTP Contributors:
+============================== 
+     1. Jiri Palecek, 
+     2. Garrett Cooper, 
+     3. Mike Frysinger, 
+     4. Cyril Hrubis, 
+     5. Radoslav Kolev, 
+     6. Miao Xie, 
+     7. Henry Yei, 
+     8. Paul Larson, 
+     9. Tomori Mitani, 
+    10. Caspar Zhang, 
+    11. liubo,
+------------------------------
+
+==============================
+Note(s) from the Maintainer:
+==============================
+Garrett & Mike still continued with their effort to stabilize the new
+build system. Introspecting ourselves at the end of the year, i find LTP
+as a community project is in strong footing. Following are the various
+interesting statistics about LTP during this year 2009:
+
+     1. Over 30 Institutions contributed throughout the year, 
+     2. No. of Patches contributed to LTP increased by 232% compared to
+        last year, 
+     3. 93% more source files were affected due to patching, making
+        those tests better, 
+     4. There is more than 200% increase in the no. of new testcases
+        contributed to LTP, 
+     5. The source code size increased almost 12% over the last year,
+
+This is indeed a great achievement for LTP. And with tremendous hope, i
+would believe that LTP would scale more heights in this year and future,
+and would remain the project for the community; contributed by the
+community.
+
+Our web site also contains other information such as:
+- A Linux test tools matrix
+- Technical papers
+- How To's on Linux testing
+- Code coverage analysis tool.
+
+We would encourage the community to post results to
+ltp-results@lists.sf.net,
+patches, new tests, bugs or comments/questions to ltp-list@lists.sf.net,
+http://sourceforge.net/tracker/?func=add&group_id=3382&atid=103382 (for
+New Bug(s)),
+http://sourceforge.net/tracker/?func=add&group_id=3382&atid=303382 (for
+New Patch(s)),
+http://sourceforge.net/tracker/?func=add&group_id=3382&atid=353382 (for
+New Feature Request(s))
+
+Happy testing, 
+Regards-- 
+Subrata,
+
 
