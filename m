@@ -1,88 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754305Ab0AEIZo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753873Ab0AEI3W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754305Ab0AEIZo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 03:25:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754202Ab0AEIZo
+	id S1753873Ab0AEI3W (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 03:29:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751612Ab0AEI3V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 03:25:44 -0500
-Received: from eu1sys200aog103.obsmtp.com ([207.126.144.115]:59341 "EHLO
-	eu1sys200aog103.obsmtp.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753945Ab0AEIZn (ORCPT
+	Tue, 5 Jan 2010 03:29:21 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:42535 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750996Ab0AEI3U (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 03:25:43 -0500
-X-Greylist: delayed 1363 seconds by postgrey-1.27 at vger.kernel.org; Tue, 05 Jan 2010 03:25:42 EST
-Message-ID: <4B42F226.6010207@st.com>
-Date: Tue, 05 Jan 2010 09:02:46 +0100
-From: Giuseppe CAVALLARO <peppe.cavallaro@st.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: H Hartley Sweeten <hartleys@visionengravers.com>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       David Miller <davem@davemloft.net>
-Subject: Re: [PATCH] drivers/net/stmmac/gmac.c: use %pM to show MAC address
-References: <BD79186B4FD85F4B8E60E381CAEE19090200F674@mi8nycmail19.Mi8.com>
-In-Reply-To: <BD79186B4FD85F4B8E60E381CAEE19090200F674@mi8nycmail19.Mi8.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 5 Jan 2010 03:29:20 -0500
+Subject: Re: [RFC][PATCH 4/8] mm: RCU free vmas
+From: Peter Zijlstra <peterz@infradead.org>
+To: paulmck@linux.vnet.ibm.com
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "minchan.kim@gmail.com" <minchan.kim@gmail.com>,
+       cl@linux-foundation.org, "hugh.dickins" <hugh.dickins@tiscali.co.uk>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <20100105024336.GQ6748@linux.vnet.ibm.com>
+References: <20100104182429.833180340@chello.nl>
+	 <20100104182813.479668508@chello.nl>
+	 <20100105024336.GQ6748@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 05 Jan 2010 09:28:36 +0100
+Message-ID: <1262680116.2400.19.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
-
-Hi Hartley,
-
-H Hartley Sweeten wrote:
-> Use the %pM kernel extension to display the MAC address.
-
-Thanks for this patch.
-As discussed in the mailing list, I'm reworking some patches for the
-stmmac driver (fixing compilation errors and trying to make the code
-more generic).
-I've already modified the gmac.c file now splitted in new two files.
-So I'm wondering if it's worth applying this patch into the new code,
-directly.
-
-Regards,
-Peppe
-
+On Mon, 2010-01-04 at 18:43 -0800, Paul E. McKenney wrote:
+> On Mon, Jan 04, 2010 at 07:24:33PM +0100, Peter Zijlstra wrote:
+> > TODO:
+> >  - should be SRCU, lack of call_srcu()
+> > 
+> > In order to allow speculative vma lookups, RCU free the struct
+> > vm_area_struct.
+> > 
+> > We use two means of detecting a vma is still valid:
+> >  - firstly, we set RB_CLEAR_NODE once we remove a vma from the tree.
+> >  - secondly, we check the vma sequence number.
+> > 
+> > These two things combined will guarantee that 1) the vma is still
+> > present and two, it still covers the same range from when we looked it
+> > up.
 > 
-> Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
-> Cc: David S. Miller <davem@davemloft.net>
-> ---
+> OK, I think I see what you are up to here.  I could get you a very crude
+> throw-away call_srcu() fairly quickly.  I don't yet have a good estimate
+> of how long it will take me to merge SRCU into the treercu infrastructure,
+> but am getting there.
 > 
-> diff --git a/drivers/net/stmmac/gmac.c b/drivers/net/stmmac/gmac.c
-> index 52586ee..7700772 100644
-> --- a/drivers/net/stmmac/gmac.c
-> +++ b/drivers/net/stmmac/gmac.c
-> @@ -481,12 +481,8 @@ static void gmac_set_filter(struct net_device *dev)
->  				gmac_set_umac_addr(ioaddr, uc_ptr->da_addr,
->  						i + 1);
->  
-> -				DBG(KERN_INFO "\t%d "
-> -				"- Unicast addr %02x:%02x:%02x:%02x:%02x:"
-> -				"%02x\n", i + 1,
-> -				uc_ptr->da_addr[0], uc_ptr->da_addr[1],
-> -				uc_ptr->da_addr[2], uc_ptr->da_addr[3],
-> -				uc_ptr->da_addr[4], uc_ptr->da_addr[5]);
-> +				DBG(KERN_INFO "\t%d - Unicast addr %pM\n",
-> +					i + 1, uc_ptr->da_addr);
->  				uc_ptr = uc_ptr->next;
->  		}
->  	} 
-> --
-> To unsubscribe from this list: send the line "unsubscribe netdev" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+> So, which release are you thinking in terms of?
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+I'm not thinking any release yet, its very early and as Linus has
+pointed out, I seem to have forgotten a rather big piece of the
+picture :/
 
-iEYEARECAAYFAktC8iAACgkQ2Xo3j31MSSJ+DACguvgHAeRm2Qy+N6Lw8svt/nna
-Z0sAnRjHHkG+FYtyu0OfjOrRi8eu9SyN
-=srnl
------END PGP SIGNATURE-----
+So I need to try and fix this glaring hole before we can continue.
+
