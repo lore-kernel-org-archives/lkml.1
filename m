@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754111Ab0AEAuL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755142Ab0AEAuQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754111Ab0AEAuL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 19:50:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754523Ab0AEAuB
+	id S1755142Ab0AEAuQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 19:50:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755139Ab0AEAuI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 19:50:01 -0500
-Received: from kroah.org ([198.145.64.141]:34228 "EHLO coco.kroah.org"
+	Mon, 4 Jan 2010 19:50:08 -0500
+Received: from kroah.org ([198.145.64.141]:34218 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753642Ab0AEAfK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 19:35:10 -0500
+	id S1754286Ab0AEAfI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jan 2010 19:35:08 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, stable-review@kernel.org
 Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Dan Williams <dan.j.williams@intel.com>,
+       alan@lxorguk.ukuu.org.uk, Joerg Roedel <joerg.roedel@amd.com>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 36/97] ioat2,3: put channel hardware in known state at init
-Date: Mon,  4 Jan 2010 16:32:49 -0800
-Message-Id: <1262651630-7354-36-git-send-email-gregkh@suse.de>
+Subject: [PATCH 34/97] x86/amd-iommu: Fix initialization failure panic
+Date: Mon,  4 Jan 2010 16:32:47 -0800
+Message-Id: <1262651630-7354-34-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.6
 In-Reply-To: <20100105003133.GA7199@kroah.com>
 References: <20100105003133.GA7199@kroah.com>
@@ -24,326 +24,59 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Dan Williams <dan.j.williams@intel.com>
+From: Joerg Roedel <joerg.roedel@amd.com>
 
-commit a6d52d70677e99bdb89b6921c265d0a58c22e597 upstream.
+commit 0f764806438d5576ac58898332e5dcf30bb8a679 upstream.
 
-Put the ioat2 and ioat3 state machines in the halted state with all
-errors cleared.
+The assumption that acpi_table_parse passes the return value
+of the hanlder function to the caller proved wrong
+recently. The return value of the handler function is
+totally ignored. This makes the initialization code for AMD
+IOMMU buggy in a way that could cause a kernel panic on
+initialization. This patch fixes the issue in the AMD IOMMU
+driver.
 
-The ioat1 init path is not disturbed for stability, there are no
-reported ioat1 initiaization issues.
-
-Reported-by: Roland Dreier <rdreier@cisco.com>
-Tested-by: Roland Dreier <rdreier@cisco.com>
-Acked-by: Simon Horman <horms@verge.net.au>
-Signed-off-by: Dan Williams <dan.j.williams@intel.com>
+Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/dma/ioat/dma.c       |    2 +-
- drivers/dma/ioat/dma.h       |   18 +++++++++++
- drivers/dma/ioat/dma_v2.c    |   69 +++++++++++++++++++++++++++++++----------
- drivers/dma/ioat/dma_v2.h    |    2 +
- drivers/dma/ioat/dma_v3.c    |   54 ++++++++++++++++++++++++--------
- drivers/dma/ioat/registers.h |    1 +
- 6 files changed, 114 insertions(+), 32 deletions(-)
+ arch/x86/kernel/amd_iommu_init.c |   10 ++++++++++
+ 1 files changed, 10 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/dma/ioat/dma.c b/drivers/dma/ioat/dma.c
-index c524d36..dcc4ab7 100644
---- a/drivers/dma/ioat/dma.c
-+++ b/drivers/dma/ioat/dma.c
-@@ -1032,7 +1032,7 @@ int __devinit ioat_probe(struct ioatdma_device *device)
- 	dma->dev = &pdev->dev;
+diff --git a/arch/x86/kernel/amd_iommu_init.c b/arch/x86/kernel/amd_iommu_init.c
+index e0b3130..c8243f0 100644
+--- a/arch/x86/kernel/amd_iommu_init.c
++++ b/arch/x86/kernel/amd_iommu_init.c
+@@ -136,6 +136,11 @@ LIST_HEAD(amd_iommu_list);		/* list of all AMD IOMMUs in the
+ 					   system */
  
- 	if (!dma->chancnt) {
--		dev_err(dev, "zero channels detected\n");
-+		dev_err(dev, "channel enumeration error\n");
- 		goto err_setup_interrupts;
+ /*
++ * Set to true if ACPI table parsing and hardware intialization went properly
++ */
++static bool amd_iommu_initialized;
++
++/*
+  * Pointer to the device table which is shared by all AMD IOMMUs
+  * it is indexed by the PCI device id or the HT unit id and contains
+  * information about the domain the device belongs to as well as the
+@@ -913,6 +918,8 @@ static int __init init_iommu_all(struct acpi_table_header *table)
  	}
+ 	WARN_ON(p != end);
  
-diff --git a/drivers/dma/ioat/dma.h b/drivers/dma/ioat/dma.h
-index 45edde9..bbc3e78 100644
---- a/drivers/dma/ioat/dma.h
-+++ b/drivers/dma/ioat/dma.h
-@@ -60,6 +60,7 @@
-  * @dca: direct cache access context
-  * @intr_quirk: interrupt setup quirk (for ioat_v1 devices)
-  * @enumerate_channels: hw version specific channel enumeration
-+ * @reset_hw: hw version specific channel (re)initialization
-  * @cleanup_tasklet: select between the v2 and v3 cleanup routines
-  * @timer_fn: select between the v2 and v3 timer watchdog routines
-  * @self_test: hardware version specific self test for each supported op type
-@@ -78,6 +79,7 @@ struct ioatdma_device {
- 	struct dca_provider *dca;
- 	void (*intr_quirk)(struct ioatdma_device *device);
- 	int (*enumerate_channels)(struct ioatdma_device *device);
-+	int (*reset_hw)(struct ioat_chan_common *chan);
- 	void (*cleanup_tasklet)(unsigned long data);
- 	void (*timer_fn)(unsigned long data);
- 	int (*self_test)(struct ioatdma_device *device);
-@@ -264,6 +266,22 @@ static inline void ioat_suspend(struct ioat_chan_common *chan)
- 	writeb(IOAT_CHANCMD_SUSPEND, chan->reg_base + IOAT_CHANCMD_OFFSET(ver));
- }
- 
-+static inline void ioat_reset(struct ioat_chan_common *chan)
-+{
-+	u8 ver = chan->device->version;
++	amd_iommu_initialized = true;
 +
-+	writeb(IOAT_CHANCMD_RESET, chan->reg_base + IOAT_CHANCMD_OFFSET(ver));
-+}
-+
-+static inline bool ioat_reset_pending(struct ioat_chan_common *chan)
-+{
-+	u8 ver = chan->device->version;
-+	u8 cmd;
-+
-+	cmd = readb(chan->reg_base + IOAT_CHANCMD_OFFSET(ver));
-+	return (cmd & IOAT_CHANCMD_RESET) == IOAT_CHANCMD_RESET;
-+}
-+
- static inline void ioat_set_chainaddr(struct ioat_dma_chan *ioat, u64 addr)
- {
- 	struct ioat_chan_common *chan = &ioat->base;
-diff --git a/drivers/dma/ioat/dma_v2.c b/drivers/dma/ioat/dma_v2.c
-index 8f1f7f0..5f7a500 100644
---- a/drivers/dma/ioat/dma_v2.c
-+++ b/drivers/dma/ioat/dma_v2.c
-@@ -239,20 +239,50 @@ void __ioat2_restart_chan(struct ioat2_dma_chan *ioat)
- 		__ioat2_start_null_desc(ioat);
- }
- 
--static void ioat2_restart_channel(struct ioat2_dma_chan *ioat)
-+int ioat2_quiesce(struct ioat_chan_common *chan, unsigned long tmo)
- {
--	struct ioat_chan_common *chan = &ioat->base;
--	unsigned long phys_complete;
-+	unsigned long end = jiffies + tmo;
-+	int err = 0;
- 	u32 status;
- 
- 	status = ioat_chansts(chan);
- 	if (is_ioat_active(status) || is_ioat_idle(status))
- 		ioat_suspend(chan);
- 	while (is_ioat_active(status) || is_ioat_idle(status)) {
-+		if (end && time_after(jiffies, end)) {
-+			err = -ETIMEDOUT;
-+			break;
-+		}
- 		status = ioat_chansts(chan);
- 		cpu_relax();
- 	}
- 
-+	return err;
-+}
-+
-+int ioat2_reset_sync(struct ioat_chan_common *chan, unsigned long tmo)
-+{
-+	unsigned long end = jiffies + tmo;
-+	int err = 0;
-+
-+	ioat_reset(chan);
-+	while (ioat_reset_pending(chan)) {
-+		if (end && time_after(jiffies, end)) {
-+			err = -ETIMEDOUT;
-+			break;
-+		}
-+		cpu_relax();
-+	}
-+
-+	return err;
-+}
-+
-+static void ioat2_restart_channel(struct ioat2_dma_chan *ioat)
-+{
-+	struct ioat_chan_common *chan = &ioat->base;
-+	unsigned long phys_complete;
-+
-+	ioat2_quiesce(chan, 0);
- 	if (ioat_cleanup_preamble(chan, &phys_complete))
- 		__cleanup(ioat, phys_complete);
- 
-@@ -318,6 +348,19 @@ void ioat2_timer_event(unsigned long data)
- 	spin_unlock_bh(&chan->cleanup_lock);
- }
- 
-+static int ioat2_reset_hw(struct ioat_chan_common *chan)
-+{
-+	/* throw away whatever the channel was doing and get it initialized */
-+	u32 chanerr;
-+
-+	ioat2_quiesce(chan, msecs_to_jiffies(100));
-+
-+	chanerr = readl(chan->reg_base + IOAT_CHANERR_OFFSET);
-+	writel(chanerr, chan->reg_base + IOAT_CHANERR_OFFSET);
-+
-+	return ioat2_reset_sync(chan, msecs_to_jiffies(200));
-+}
-+
- /**
-  * ioat2_enumerate_channels - find and initialize the device's channels
-  * @device: the device to be enumerated
-@@ -360,6 +403,10 @@ int ioat2_enumerate_channels(struct ioatdma_device *device)
- 				  (unsigned long) ioat);
- 		ioat->xfercap_log = xfercap_log;
- 		spin_lock_init(&ioat->ring_lock);
-+		if (device->reset_hw(&ioat->base)) {
-+			i = 0;
-+			break;
-+		}
- 	}
- 	dma->chancnt = i;
- 	return i;
-@@ -467,7 +514,6 @@ int ioat2_alloc_chan_resources(struct dma_chan *c)
- 	struct ioat2_dma_chan *ioat = to_ioat2_chan(c);
- 	struct ioat_chan_common *chan = &ioat->base;
- 	struct ioat_ring_ent **ring;
--	u32 chanerr;
- 	int order;
- 
- 	/* have we already been set up? */
-@@ -477,12 +523,6 @@ int ioat2_alloc_chan_resources(struct dma_chan *c)
- 	/* Setup register to interrupt and write completion status on error */
- 	writew(IOAT_CHANCTRL_RUN, chan->reg_base + IOAT_CHANCTRL_OFFSET);
- 
--	chanerr = readl(chan->reg_base + IOAT_CHANERR_OFFSET);
--	if (chanerr) {
--		dev_err(to_dev(chan), "CHANERR = %x, clearing\n", chanerr);
--		writel(chanerr, chan->reg_base + IOAT_CHANERR_OFFSET);
--	}
--
- 	/* allocate a completion writeback area */
- 	/* doing 2 32bit writes to mmio since 1 64b write doesn't work */
- 	chan->completion = pci_pool_alloc(chan->device->completion_pool,
-@@ -746,13 +786,7 @@ void ioat2_free_chan_resources(struct dma_chan *c)
- 	tasklet_disable(&chan->cleanup_task);
- 	del_timer_sync(&chan->timer);
- 	device->cleanup_tasklet((unsigned long) ioat);
--
--	/* Delay 100ms after reset to allow internal DMA logic to quiesce
--	 * before removing DMA descriptor resources.
--	 */
--	writeb(IOAT_CHANCMD_RESET,
--	       chan->reg_base + IOAT_CHANCMD_OFFSET(chan->device->version));
--	mdelay(100);
-+	device->reset_hw(chan);
- 
- 	spin_lock_bh(&ioat->ring_lock);
- 	descs = ioat2_ring_space(ioat);
-@@ -839,6 +873,7 @@ int __devinit ioat2_dma_probe(struct ioatdma_device *device, int dca)
- 	int err;
- 
- 	device->enumerate_channels = ioat2_enumerate_channels;
-+	device->reset_hw = ioat2_reset_hw;
- 	device->cleanup_tasklet = ioat2_cleanup_tasklet;
- 	device->timer_fn = ioat2_timer_event;
- 	device->self_test = ioat_dma_self_test;
-diff --git a/drivers/dma/ioat/dma_v2.h b/drivers/dma/ioat/dma_v2.h
-index 1d849ef..3afad8d 100644
---- a/drivers/dma/ioat/dma_v2.h
-+++ b/drivers/dma/ioat/dma_v2.h
-@@ -185,6 +185,8 @@ bool reshape_ring(struct ioat2_dma_chan *ioat, int order);
- void __ioat2_issue_pending(struct ioat2_dma_chan *ioat);
- void ioat2_cleanup_tasklet(unsigned long data);
- void ioat2_timer_event(unsigned long data);
-+int ioat2_quiesce(struct ioat_chan_common *chan, unsigned long tmo);
-+int ioat2_reset_sync(struct ioat_chan_common *chan, unsigned long tmo);
- extern struct kobj_type ioat2_ktype;
- extern struct kmem_cache *ioat2_cache;
- #endif /* IOATDMA_V2_H */
-diff --git a/drivers/dma/ioat/dma_v3.c b/drivers/dma/ioat/dma_v3.c
-index e58ecb2..9908c9e 100644
---- a/drivers/dma/ioat/dma_v3.c
-+++ b/drivers/dma/ioat/dma_v3.c
-@@ -1130,6 +1130,45 @@ static int __devinit ioat3_dma_self_test(struct ioatdma_device *device)
  	return 0;
  }
  
-+static int ioat3_reset_hw(struct ioat_chan_common *chan)
-+{
-+	/* throw away whatever the channel was doing and get it
-+	 * initialized, with ioat3 specific workarounds
-+	 */
-+	struct ioatdma_device *device = chan->device;
-+	struct pci_dev *pdev = device->pdev;
-+	u32 chanerr;
-+	u16 dev_id;
-+	int err;
-+
-+	ioat2_quiesce(chan, msecs_to_jiffies(100));
-+
-+	chanerr = readl(chan->reg_base + IOAT_CHANERR_OFFSET);
-+	writel(chanerr, chan->reg_base + IOAT_CHANERR_OFFSET);
-+
-+	/* -= IOAT ver.3 workarounds =- */
-+	/* Write CHANERRMSK_INT with 3E07h to mask out the errors
-+	 * that can cause stability issues for IOAT ver.3, and clear any
-+	 * pending errors
-+	 */
-+	pci_write_config_dword(pdev, IOAT_PCI_CHANERRMASK_INT_OFFSET, 0x3e07);
-+	err = pci_read_config_dword(pdev, IOAT_PCI_CHANERR_INT_OFFSET, &chanerr);
-+	if (err) {
-+		dev_err(&pdev->dev, "channel error register unreachable\n");
-+		return err;
-+	}
-+	pci_write_config_dword(pdev, IOAT_PCI_CHANERR_INT_OFFSET, chanerr);
-+
-+	/* Clear DMAUNCERRSTS Cfg-Reg Parity Error status bit
-+	 * (workaround for spurious config parity error after restart)
-+	 */
-+	pci_read_config_word(pdev, IOAT_PCI_DEVICE_ID_OFFSET, &dev_id);
-+	if (dev_id == PCI_DEVICE_ID_INTEL_IOAT_TBG0)
-+		pci_write_config_dword(pdev, IOAT_PCI_DMAUNCERRSTS_OFFSET, 0x10);
-+
-+	return ioat2_reset_sync(chan, msecs_to_jiffies(200));
-+}
-+
- int __devinit ioat3_dma_probe(struct ioatdma_device *device, int dca)
- {
- 	struct pci_dev *pdev = device->pdev;
-@@ -1139,10 +1178,10 @@ int __devinit ioat3_dma_probe(struct ioatdma_device *device, int dca)
- 	struct ioat_chan_common *chan;
- 	bool is_raid_device = false;
- 	int err;
--	u16 dev_id;
- 	u32 cap;
+@@ -1263,6 +1270,9 @@ int __init amd_iommu_init(void)
+ 	if (acpi_table_parse("IVRS", init_iommu_all) != 0)
+ 		goto free;
  
- 	device->enumerate_channels = ioat2_enumerate_channels;
-+	device->reset_hw = ioat3_reset_hw;
- 	device->self_test = ioat3_dma_self_test;
- 	dma = &device->common;
- 	dma->device_prep_dma_memcpy = ioat2_dma_prep_memcpy_lock;
-@@ -1218,19 +1257,6 @@ int __devinit ioat3_dma_probe(struct ioatdma_device *device, int dca)
- 	dma->device_prep_dma_xor_val = NULL;
- 	#endif
++	if (!amd_iommu_initialized)
++		goto free;
++
+ 	if (acpi_table_parse("IVRS", init_memory_definitions) != 0)
+ 		goto free;
  
--	/* -= IOAT ver.3 workarounds =- */
--	/* Write CHANERRMSK_INT with 3E07h to mask out the errors
--	 * that can cause stability issues for IOAT ver.3
--	 */
--	pci_write_config_dword(pdev, IOAT_PCI_CHANERRMASK_INT_OFFSET, 0x3e07);
--
--	/* Clear DMAUNCERRSTS Cfg-Reg Parity Error status bit
--	 * (workaround for spurious config parity error after restart)
--	 */
--	pci_read_config_word(pdev, IOAT_PCI_DEVICE_ID_OFFSET, &dev_id);
--	if (dev_id == PCI_DEVICE_ID_INTEL_IOAT_TBG0)
--		pci_write_config_dword(pdev, IOAT_PCI_DMAUNCERRSTS_OFFSET, 0x10);
--
- 	err = ioat_probe(device);
- 	if (err)
- 		return err;
-diff --git a/drivers/dma/ioat/registers.h b/drivers/dma/ioat/registers.h
-index f015ec1..e8ae63b 100644
---- a/drivers/dma/ioat/registers.h
-+++ b/drivers/dma/ioat/registers.h
-@@ -27,6 +27,7 @@
- 
- #define IOAT_PCI_DEVICE_ID_OFFSET		0x02
- #define IOAT_PCI_DMAUNCERRSTS_OFFSET		0x148
-+#define IOAT_PCI_CHANERR_INT_OFFSET		0x180
- #define IOAT_PCI_CHANERRMASK_INT_OFFSET		0x184
- 
- /* MMIO Device Registers */
 -- 
 1.6.6
 
