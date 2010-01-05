@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754448Ab0AEIFH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754492Ab0AEIGg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754448Ab0AEIFH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 03:05:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754194Ab0AEIFF
+	id S1754492Ab0AEIGg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 03:06:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754420Ab0AEIGf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 03:05:05 -0500
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:40855 "EHLO e3.ny.us.ibm.com"
+	Tue, 5 Jan 2010 03:06:35 -0500
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:45463 "EHLO e4.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754111Ab0AEIFE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 03:05:04 -0500
-Date: Tue, 5 Jan 2010 13:34:43 +0530
+	id S1754251Ab0AEIGf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jan 2010 03:06:35 -0500
+Date: Tue, 5 Jan 2010 13:36:13 +0530
 From: Bharata B Rao <bharata@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org
 Cc: Dhaval Giani <dhaval@linux.vnet.ibm.com>,
@@ -23,8 +23,8 @@ Cc: Dhaval Giani <dhaval@linux.vnet.ibm.com>,
        Herbert Poetzl <herbert@13thfloor.at>, Avi Kivity <avi@redhat.com>,
        Chris Friesen <cfriesen@nortel.com>, Paul Menage <menage@google.com>,
        Mike Waychison <mikew@google.com>
-Subject: [RFC v5 PATCH 8/8] sched: Hard limits documentation
-Message-ID: <20100105080443.GM27899@in.ibm.com>
+Subject: Re: [RFC v5 PATCH 0/8] CFS Hard limits - v5
+Message-ID: <20100105080613.GN27899@in.ibm.com>
 Reply-To: bharata@linux.vnet.ibm.com
 References: <20100105075703.GE27899@in.ibm.com>
 MIME-Version: 1.0
@@ -36,69 +36,16 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-sched: Hard limits documentation
+On Tue, Jan 05, 2010 at 01:27:03PM +0530, Bharata B Rao wrote:
+> Hi,
+> 
+> This is the v5 post of CFS hard limits. In this patchset, I have
+> pulled out bandwidth and runtime handling code from RT into sched.c
+> so that the same code can be used by CFS hard limits.
+> 
+> Also I have addressed the review comments given by Peter Zijlstra for v4.
 
-From: Bharata B Rao <bharata@linux.vnet.ibm.com>
+And forgot to mention that this set applies on 2.6.33-rc2.
 
-Documentation for hard limits feature.
-
-Signed-off-by: Bharata B Rao <bharata@linux.vnet.ibm.com>
----
- Documentation/scheduler/sched-cfs-hard-limits.txt |   48 +++++++++++++++++++++
- 1 files changed, 48 insertions(+), 0 deletions(-)
- create mode 100644 Documentation/scheduler/sched-cfs-hard-limits.txt
-
-diff --git a/Documentation/scheduler/sched-cfs-hard-limits.txt b/Documentation/scheduler/sched-cfs-hard-limits.txt
-new file mode 100644
-index 0000000..d6387af
---- /dev/null
-+++ b/Documentation/scheduler/sched-cfs-hard-limits.txt
-@@ -0,0 +1,48 @@
-+CPU HARD LIMITS FOR CFS GROUPS
-+==============================
-+
-+1. Overview
-+2. Interface
-+3. Examples
-+
-+1. Overview
-+-----------
-+
-+CFS is a proportional share scheduler which tries to divide the CPU time
-+proportionately between tasks or groups of tasks (task group/cgroup) depending
-+on the priority/weight of the task or shares assigned to groups of tasks.
-+In CFS, a task/task group can get more than its share of CPU if there are
-+enough idle CPU cycles available in the system, due to the work conserving
-+nature of the scheduler. However in certain scenarios (like pay-per-use),
-+it is desirable not to provide extra time to a group even in the presence
-+of idle CPU cycles. This is where hard limiting can be of use.
-+
-+Hard limits for task groups can be set by specifying how much CPU runtime a
-+group can consume within a given period. If the group consumes more CPU time
-+than the runtime in a given period, it gets throttled. None of the tasks of
-+the throttled group gets to run until the runtime of the group gets refreshed
-+at the beginning of the next period.
-+
-+2. Interface
-+------------
-+
-+Hard limit feature adds 2 cgroup files for CFS group scheduler:
-+
-+cfs_runtime_us: Hard limit for the group in microseconds.
-+
-+cfs_period_us: Time period in microseconds within which hard limits is
-+enforced.
-+
-+A group gets created with default values for runtime (infinite runtime which
-+means hard limits disabled) and period (0.5s). Each group can set its own
-+values for runtime and period independent of other groups in the system.
-+
-+3. Examples
-+-----------
-+
-+# mount -t cgroup -ocpu none /cgroups/
-+# cd /cgroups
-+# mkdir 1
-+# cd 1/
-+# echo 250000 > cfs_runtime_us /* set a 250ms runtime or limit */
-+# echo 500000 > cfs_period_us /* set a 500ms period */
+Regards,
+Bharata.
