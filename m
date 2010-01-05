@@ -1,195 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754689Ab0AEOOw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754588Ab0AEONj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754689Ab0AEOOw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 09:14:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754453Ab0AEOOq
+	id S1754588Ab0AEONj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 09:13:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754539Ab0AEONb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 09:14:46 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:43893 "EHLO mx1.redhat.com"
+	Tue, 5 Jan 2010 09:13:31 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:32010 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754620Ab0AEONk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 09:13:40 -0500
+	id S1754550Ab0AEON3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jan 2010 09:13:29 -0500
 From: Gleb Natapov <gleb@redhat.com>
 To: kvm@vger.kernel.org
 Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, avi@redhat.com,
        mingo@elte.hu, a.p.zijlstra@chello.nl, tglx@linutronix.de,
        hpa@zytor.com, riel@redhat.com, cl@linux-foundation.org
-Subject: [PATCH v3 06/12] Add get_user_pages() variant that fails if major fault is required.
-Date: Tue,  5 Jan 2010 16:12:48 +0200
-Message-Id: <1262700774-1808-7-git-send-email-gleb@redhat.com>
+Subject: [PATCH v3 07/12] Maintain memslot version number
+Date: Tue,  5 Jan 2010 16:12:49 +0200
+Message-Id: <1262700774-1808-8-git-send-email-gleb@redhat.com>
 In-Reply-To: <1262700774-1808-1-git-send-email-gleb@redhat.com>
 References: <1262700774-1808-1-git-send-email-gleb@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch add get_user_pages() variant that only succeeds if getting
-a reference to a page doesn't require major fault.
+Code that depends on particular memslot layout can track changes and
+adjust to new layout.
 
-Reviewed-by: Rik van Riel <riel@redhat.com>
 Signed-off-by: Gleb Natapov <gleb@redhat.com>
 ---
- fs/ncpfs/mmap.c    |    2 ++
- include/linux/mm.h |    5 +++++
- mm/filemap.c       |    3 +++
- mm/memory.c        |   31 ++++++++++++++++++++++++++++---
- mm/shmem.c         |    8 +++++++-
- 5 files changed, 45 insertions(+), 4 deletions(-)
+ include/linux/kvm_host.h |    1 +
+ virt/kvm/kvm_main.c      |    1 +
+ 2 files changed, 2 insertions(+), 0 deletions(-)
 
-diff --git a/fs/ncpfs/mmap.c b/fs/ncpfs/mmap.c
-index 15458de..338527e 100644
---- a/fs/ncpfs/mmap.c
-+++ b/fs/ncpfs/mmap.c
-@@ -39,6 +39,8 @@ static int ncp_file_mmap_fault(struct vm_area_struct *area,
- 	int bufsize;
- 	int pos; /* XXX: loff_t ? */
+diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
+index 600baf0..3f5ebc2 100644
+--- a/include/linux/kvm_host.h
++++ b/include/linux/kvm_host.h
+@@ -163,6 +163,7 @@ struct kvm {
+ 	spinlock_t requests_lock;
+ 	struct mutex slots_lock;
+ 	struct mm_struct *mm; /* userspace tied to this vm */
++	u32 memslot_version;
+ 	struct kvm_memslots *memslots;
+ 	struct srcu_struct srcu;
+ #ifdef CONFIG_KVM_APIC_ARCHITECTURE
+diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+index a5077df..df3325c 100644
+--- a/virt/kvm/kvm_main.c
++++ b/virt/kvm/kvm_main.c
+@@ -737,6 +737,7 @@ skip_lpage:
+ 	slots->memslots[mem->slot] = new;
+ 	old_memslots = kvm->memslots;
+ 	rcu_assign_pointer(kvm->memslots, slots);
++	kvm->memslot_version++;
+ 	synchronize_srcu_expedited(&kvm->srcu);
  
-+	if (vmf->flags & FAULT_FLAG_MINOR)
-+		return VM_FAULT_MAJOR | VM_FAULT_ERROR;
- 	/*
- 	 * ncpfs has nothing against high pages as long
- 	 * as recvmsg and memset works on it
-diff --git a/include/linux/mm.h b/include/linux/mm.h
-index 2265f28..32e9c6e 100644
---- a/include/linux/mm.h
-+++ b/include/linux/mm.h
-@@ -136,6 +136,7 @@ extern pgprot_t protection_map[16];
- #define FAULT_FLAG_WRITE	0x01	/* Fault was a write access */
- #define FAULT_FLAG_NONLINEAR	0x02	/* Fault was via a nonlinear mapping */
- #define FAULT_FLAG_MKWRITE	0x04	/* Fault was mkwrite of existing pte */
-+#define FAULT_FLAG_MINOR	0x08	/* Do only minor fault */
- 
- /*
-  * This interface is used by x86 PAT code to identify a pfn mapping that is
-@@ -836,6 +837,9 @@ extern int access_process_vm(struct task_struct *tsk, unsigned long addr, void *
- int get_user_pages(struct task_struct *tsk, struct mm_struct *mm,
- 			unsigned long start, int nr_pages, int write, int force,
- 			struct page **pages, struct vm_area_struct **vmas);
-+int get_user_pages_noio(struct task_struct *tsk, struct mm_struct *mm,
-+			unsigned long start, int nr_pages, int write, int force,
-+			struct page **pages, struct vm_area_struct **vmas);
- int get_user_pages_fast(unsigned long start, int nr_pages, int write,
- 			struct page **pages);
- struct page *get_dump_page(unsigned long addr);
-@@ -1257,6 +1261,7 @@ struct page *follow_page(struct vm_area_struct *, unsigned long address,
- #define FOLL_GET	0x04	/* do get_page on page */
- #define FOLL_DUMP	0x08	/* give error on hole if it would be zero */
- #define FOLL_FORCE	0x10	/* get_user_pages read/write w/o permission */
-+#define FOLL_MINOR	0x20	/* do only minor page faults */
- 
- typedef int (*pte_fn_t)(pte_t *pte, pgtable_t token, unsigned long addr,
- 			void *data);
-diff --git a/mm/filemap.c b/mm/filemap.c
-index 96ac6b0..25768ad 100644
---- a/mm/filemap.c
-+++ b/mm/filemap.c
-@@ -1509,6 +1509,9 @@ int filemap_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
- 			goto no_cached_page;
- 		}
- 	} else {
-+		if (vmf->flags & FAULT_FLAG_MINOR)
-+			return VM_FAULT_MAJOR | VM_FAULT_ERROR;
-+
- 		/* No page in the page cache at all */
- 		do_sync_mmap_readahead(vma, ra, file, offset);
- 		count_vm_event(PGMAJFAULT);
-diff --git a/mm/memory.c b/mm/memory.c
-index 09e4b1b..89e0074 100644
---- a/mm/memory.c
-+++ b/mm/memory.c
-@@ -1336,10 +1336,13 @@ int __get_user_pages(struct task_struct *tsk, struct mm_struct *mm,
- 			cond_resched();
- 			while (!(page = follow_page(vma, start, foll_flags))) {
- 				int ret;
-+				unsigned int fault_fl =
-+					((foll_flags & FOLL_WRITE) ?
-+					FAULT_FLAG_WRITE : 0) |
-+					((foll_flags & FOLL_MINOR) ?
-+					FAULT_FLAG_MINOR : 0);
- 
--				ret = handle_mm_fault(mm, vma, start,
--					(foll_flags & FOLL_WRITE) ?
--					FAULT_FLAG_WRITE : 0);
-+				ret = handle_mm_fault(mm, vma, start, fault_fl);
- 
- 				if (ret & VM_FAULT_ERROR) {
- 					if (ret & VM_FAULT_OOM)
-@@ -1347,6 +1350,8 @@ int __get_user_pages(struct task_struct *tsk, struct mm_struct *mm,
- 					if (ret &
- 					    (VM_FAULT_HWPOISON|VM_FAULT_SIGBUS))
- 						return i ? i : -EFAULT;
-+					else if (ret & VM_FAULT_MAJOR)
-+						return i ? i : -EFAULT;
- 					BUG();
- 				}
- 				if (ret & VM_FAULT_MAJOR)
-@@ -1457,6 +1462,23 @@ int get_user_pages(struct task_struct *tsk, struct mm_struct *mm,
- }
- EXPORT_SYMBOL(get_user_pages);
- 
-+int get_user_pages_noio(struct task_struct *tsk, struct mm_struct *mm,
-+		unsigned long start, int nr_pages, int write, int force,
-+		struct page **pages, struct vm_area_struct **vmas)
-+{
-+	int flags = FOLL_TOUCH | FOLL_MINOR;
-+
-+	if (pages)
-+		flags |= FOLL_GET;
-+	if (write)
-+		flags |= FOLL_WRITE;
-+	if (force)
-+		flags |= FOLL_FORCE;
-+
-+	return __get_user_pages(tsk, mm, start, nr_pages, flags, pages, vmas);
-+}
-+EXPORT_SYMBOL(get_user_pages_noio);
-+
- /**
-  * get_dump_page() - pin user page in memory while writing it to core dump
-  * @addr: user address
-@@ -2536,6 +2558,9 @@ static int do_swap_page(struct mm_struct *mm, struct vm_area_struct *vma,
- 	delayacct_set_flag(DELAYACCT_PF_SWAPIN);
- 	page = lookup_swap_cache(entry);
- 	if (!page) {
-+		if (flags & FAULT_FLAG_MINOR)
-+			return VM_FAULT_MAJOR | VM_FAULT_ERROR;
-+
- 		grab_swap_token(mm); /* Contend for token _before_ read-in */
- 		page = swapin_readahead(entry,
- 					GFP_HIGHUSER_MOVABLE, vma, address);
-diff --git a/mm/shmem.c b/mm/shmem.c
-index eef4ebe..ab3a255 100644
---- a/mm/shmem.c
-+++ b/mm/shmem.c
-@@ -1225,6 +1225,7 @@ static int shmem_getpage(struct inode *inode, unsigned long idx,
- 	swp_entry_t swap;
- 	gfp_t gfp;
- 	int error;
-+	int flags = type ? *type : 0;
- 
- 	if (idx >= SHMEM_MAX_INDEX)
- 		return -EFBIG;
-@@ -1273,6 +1274,11 @@ repeat:
- 		swappage = lookup_swap_cache(swap);
- 		if (!swappage) {
- 			shmem_swp_unmap(entry);
-+			if (flags & FAULT_FLAG_MINOR) {
-+				spin_unlock(&info->lock);
-+				*type = VM_FAULT_MAJOR | VM_FAULT_ERROR;
-+				goto failed;
-+			}
- 			/* here we actually do the io */
- 			if (type && !(*type & VM_FAULT_MAJOR)) {
- 				__count_vm_event(PGMAJFAULT);
-@@ -1481,7 +1487,7 @@ static int shmem_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
- {
- 	struct inode *inode = vma->vm_file->f_path.dentry->d_inode;
- 	int error;
--	int ret;
-+	int ret = (int)vmf->flags;
- 
- 	if (((loff_t)vmf->pgoff << PAGE_CACHE_SHIFT) >= i_size_read(inode))
- 		return VM_FAULT_SIGBUS;
+ 	kvm_arch_commit_memory_region(kvm, mem, old, user_alloc);
 -- 
 1.6.5
 
