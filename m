@@ -1,462 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753452Ab0AEMVQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752117Ab0AEMYi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753452Ab0AEMVQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 07:21:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750758Ab0AEMVP
+	id S1752117Ab0AEMYi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 07:24:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751177Ab0AEMYh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 07:21:15 -0500
-Received: from bld-mail18.adl2.internode.on.net ([150.101.137.103]:35572 "EHLO
-	mail.internode.on.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750734Ab0AEMVP (ORCPT
+	Tue, 5 Jan 2010 07:24:37 -0500
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:36968 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751119Ab0AEMYg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 07:21:15 -0500
-Date: Tue, 5 Jan 2010 23:21:01 +1100
-From: Dave Chinner <david@fromorbit.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: xfs@oss.sgi.com, Artem Bityutskiy <dedekind@infradead.org>,
-       Dave Airlie <airlied@redhat.com>, linux-kernel@vger.kernel.org,
-       Adrian Hunter <adrian.hunter@nokia.com>
-Subject: [PATCH V3] sort: Introduce generic list_sort function
-Message-ID: <20100105122101.GR13802@discord.disaster>
-References: <1262649295-28427-1-git-send-email-david__25057.2445955642$1262651404$gmane$org@fromorbit.com> <87eim4dbzw.fsf@basil.nowhere.org>
+	Tue, 5 Jan 2010 07:24:36 -0500
+Date: Tue, 5 Jan 2010 13:24:22 +0100
+From: Sascha Hauer <s.hauer@pengutronix.de>
+To: Hein_Tibosch <hein_tibosch@yahoo.es>
+Cc: Pierre Ossman <pierre@ossman.eu>, Ben Nizette <bn@niasdigital.com>,
+       Adrian Hunter <adrian.hunter@nokia.com>, linux-mmc@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Matt Fleming <matt@console-pimps.org>
+Subject: Re: [PATCH v3] mmc: Make ID freq configurable
+Message-ID: <20100105122422.GI6923@pengutronix.de>
+References: <20090702135849.21370282@hskinnemoen-d830> <1246537056.2980.60.camel@linux-51e8.site> <4B3E570C.2060602@yahoo.es> <63809451-ED1D-487A-AE63-F72B23D136D8@niasdigital.com> <4B3F019F.6010306@yahoo.es> <49985427-DCB9-40E1-815B-43C812B41DE3@niasdigital.com> <20100102130809.121b7e10@mjolnir.ossman.eu> <AD8E15FA-A476-4275-A750-5EB587A93CEC@niasdigital.com> <20100103003804.66021fe9@mjolnir.ossman.eu> <4B425889.8010703@yahoo.es>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <87eim4dbzw.fsf@basil.nowhere.org>
+In-Reply-To: <4B425889.8010703@yahoo.es>
+X-Sent-From: Pengutronix Entwicklungszentrum Nord - Hildesheim
+X-URL: http://www.pengutronix.de/
+X-IRC: #ptxdist @freenode
+X-Accept-Language: de,en
+X-Accept-Content-Type: text/plain
+X-Impressum: Pengutronix - Linux Solutions for Science and Industry
+	Handelsregister:  Amtsgericht Hildesheim, HRA 2686 Peiner Strasse
+	6-8, 31137 Hildesheim, Germany Phone: +49-5121-206917-0 |  Fax:
+	+49-5121-206917-5555 Inhaber: Dipl.-Ing. Robert Schwebel
+X-Message-Flag: See Message Headers for Impressum
+X-Uptime: 13:19:06 up 85 days,  1:08, 50 users,  load average: 0.12, 0.09,
+	0.05
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: sha@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 05, 2010 at 12:31:15PM +0100, Andi Kleen wrote:
-> Dave Chinner <david@fromorbit.com> writes:
-> > +
-> > +/**
-> > + * list_sort - sort a list.
-> > + * @priv: private data, passed to @cmp
-> > + * @head: the list to sort
-> > + * @cmp: the elements comparison function
-> > + *
-> > + * This function has been implemented by Mark J Roberts <mjr@znex.org>. It
-> > + * implements "merge sort" which has O(nlog(n)) complexity. The list is sorted
-> > + * in ascending order.
-> > + *
-> > + * The comparison function @cmp is supposed to return a negative value if @a is
-> > + * than @b, and a positive value if @a is greater than @b. If @a and @b are
-> > + * equivalent, then it does not matter what this function returns.
-> > + */
-> > +void list_sort(void *priv, struct list_head *head,
-> > +	       int (*cmp)(void *priv, struct list_head *a,
-> > +			  struct list_head *b))
-> 
-> No EXPORT_SYMBOL? 
+On Tue, Jan 05, 2010 at 05:07:21AM +0800, Hein_Tibosch wrote:
+> On 3-1-2010 07:38, Pierre Ossman wrote:
+>>
+>> <cut>
+>> We all use the same pool of cards so we
+>> should all be using the same init sequence. If there isn't a single
+>> frequency where all cards will work, then we'll have to make something
+>> more advanced where the kernel will try the init several times with
+>> different clocking.
+>
+> On 4-1-2010 20:15, Sascha Hauer wrote:
+>> The problem was that in some setups the mxcmmc driver allows frequencies
+>> as low as a few Hz and the card initialization took ages. Increasing the
+>> frequency to 400kHz seemed sensible since it's the value the spec
+>> describes. 50kHz should be fine as well.
+>>
+>
+> I tried out several main-stream sd-cards and with the Atmel (AP7) controller
+> they all initialize with F between 138 (=f_min) and 280 Khz.
+>
+> Below a patch which tries mmc-initialization using several frequencies
+> from an array 400, 300, 200 and 100. When it comes to 200 Khz, it works.
+> The two failed attempts lasted about 10 ms together.
+>
+> It looks like a hell-of-a-patch but that's because the indentation changes.
+>
+> Note that the new mmc_host member f_init will be used later in power_restore
+> and resume. As power_up always comes first, it should have a descend value
+> by then.
+>
+> But I still wonder, why not just keep using Sascha's patch, changing 400000
+> to 50000? Has anyone ever had problems with mmc-init on 50 Khz?
 
-Bah, who uses modules? :P
+I already wrote it to Hein in private, once again for the rest:
 
-Fixed. Updated patch below.
+The original reason to increase the minimum frequency was that the
+Freescale i.MX MMC core allows minimum frequencies of just a few Hz.
+With this the card initialisation took ages, so we increased the minimum
+frequency. 400kHz seemed like a good value since all cards should
+support this, but I'm also fine with any other value between 50kHz and
+400kHz.
 
-> Also it would seem cleaner to have it in a own file.
+Sascha
 
-That might make sense if we had a large number of generic sort
-functions and it was difficult to tell the code apart, but we've
-only got 2 right now....
 
-Cheers,
-
-Dave.
 -- 
-Dave Chinner
-david@fromorbit.com
-
-sort: Introduce generic list_sort function
-
-There are two copies of list_sort() in the tree already, one in the DRM code,
-another in ubifs. Now XFS needs this as well. Create a generic list_sort()
-function from the ubifs version and convert existing users to it so we
-don't end up with yet another copy in the tree.
-
-Signed-off-by: Dave Chinner <david@fromorbit.com>
-Acked-by: Dave Airlie <airlied@redhat.com>
-Acked-by: Artem Bityutskiy <dedekind@infradead.org>
----
-V3: Export list_sort()
-V2: fix a typo
-
- drivers/gpu/drm/drm_modes.c |   90 ++-------------------------------------
- fs/ubifs/gc.c               |   95 -----------------------------------------
- include/linux/sort.h        |    5 ++
- lib/sort.c                  |   98 +++++++++++++++++++++++++++++++++++++++++++
- 4 files changed, 107 insertions(+), 181 deletions(-)
-
-diff --git a/drivers/gpu/drm/drm_modes.c b/drivers/gpu/drm/drm_modes.c
-index 51f6772..3846ed4 100644
---- a/drivers/gpu/drm/drm_modes.c
-+++ b/drivers/gpu/drm/drm_modes.c
-@@ -1,9 +1,4 @@
- /*
-- * The list_sort function is (presumably) licensed under the GPL (see the
-- * top level "COPYING" file for details).
-- *
-- * The remainder of this file is:
-- *
-  * Copyright © 1997-2003 by The XFree86 Project, Inc.
-  * Copyright © 2007 Dave Airlie
-  * Copyright © 2007-2008 Intel Corporation
-@@ -36,6 +31,7 @@
-  */
- 
- #include <linux/list.h>
-+#include <linux/sort.h>
- #include "drmP.h"
- #include "drm.h"
- #include "drm_crtc.h"
-@@ -829,6 +825,7 @@ EXPORT_SYMBOL(drm_mode_prune_invalid);
- 
- /**
-  * drm_mode_compare - compare modes for favorability
-+ * @priv: unused
-  * @lh_a: list_head for first mode
-  * @lh_b: list_head for second mode
-  *
-@@ -842,7 +839,7 @@ EXPORT_SYMBOL(drm_mode_prune_invalid);
-  * Negative if @lh_a is better than @lh_b, zero if they're equivalent, or
-  * positive if @lh_b is better than @lh_a.
-  */
--static int drm_mode_compare(struct list_head *lh_a, struct list_head *lh_b)
-+static int drm_mode_compare(void *priv, struct list_head *lh_a, struct list_head *lh_b)
- {
- 	struct drm_display_mode *a = list_entry(lh_a, struct drm_display_mode, head);
- 	struct drm_display_mode *b = list_entry(lh_b, struct drm_display_mode, head);
-@@ -859,85 +856,6 @@ static int drm_mode_compare(struct list_head *lh_a, struct list_head *lh_b)
- 	return diff;
- }
- 
--/* FIXME: what we don't have a list sort function? */
--/* list sort from Mark J Roberts (mjr@znex.org) */
--void list_sort(struct list_head *head,
--	       int (*cmp)(struct list_head *a, struct list_head *b))
--{
--	struct list_head *p, *q, *e, *list, *tail, *oldhead;
--	int insize, nmerges, psize, qsize, i;
--
--	list = head->next;
--	list_del(head);
--	insize = 1;
--	for (;;) {
--		p = oldhead = list;
--		list = tail = NULL;
--		nmerges = 0;
--
--		while (p) {
--			nmerges++;
--			q = p;
--			psize = 0;
--			for (i = 0; i < insize; i++) {
--				psize++;
--				q = q->next == oldhead ? NULL : q->next;
--				if (!q)
--					break;
--			}
--
--			qsize = insize;
--			while (psize > 0 || (qsize > 0 && q)) {
--				if (!psize) {
--					e = q;
--					q = q->next;
--					qsize--;
--					if (q == oldhead)
--						q = NULL;
--				} else if (!qsize || !q) {
--					e = p;
--					p = p->next;
--					psize--;
--					if (p == oldhead)
--						p = NULL;
--				} else if (cmp(p, q) <= 0) {
--					e = p;
--					p = p->next;
--					psize--;
--					if (p == oldhead)
--						p = NULL;
--				} else {
--					e = q;
--					q = q->next;
--					qsize--;
--					if (q == oldhead)
--						q = NULL;
--				}
--				if (tail)
--					tail->next = e;
--				else
--					list = e;
--				e->prev = tail;
--				tail = e;
--			}
--			p = q;
--		}
--
--		tail->next = list;
--		list->prev = tail;
--
--		if (nmerges <= 1)
--			break;
--
--		insize *= 2;
--	}
--
--	head->next = list;
--	head->prev = list->prev;
--	list->prev->next = head;
--	list->prev = head;
--}
--
- /**
-  * drm_mode_sort - sort mode list
-  * @mode_list: list to sort
-@@ -949,7 +867,7 @@ void list_sort(struct list_head *head,
-  */
- void drm_mode_sort(struct list_head *mode_list)
- {
--	list_sort(mode_list, drm_mode_compare);
-+	list_sort(NULL, mode_list, drm_mode_compare);
- }
- EXPORT_SYMBOL(drm_mode_sort);
- 
-diff --git a/fs/ubifs/gc.c b/fs/ubifs/gc.c
-index 618c270..4976e07 100644
---- a/fs/ubifs/gc.c
-+++ b/fs/ubifs/gc.c
-@@ -108,101 +108,6 @@ static int switch_gc_head(struct ubifs_info *c)
- }
- 
- /**
-- * list_sort - sort a list.
-- * @priv: private data, passed to @cmp
-- * @head: the list to sort
-- * @cmp: the elements comparison function
-- *
-- * This function has been implemented by Mark J Roberts <mjr@znex.org>. It
-- * implements "merge sort" which has O(nlog(n)) complexity. The list is sorted
-- * in ascending order.
-- *
-- * The comparison function @cmp is supposed to return a negative value if @a is
-- * than @b, and a positive value if @a is greater than @b. If @a and @b are
-- * equivalent, then it does not matter what this function returns.
-- */
--static void list_sort(void *priv, struct list_head *head,
--		      int (*cmp)(void *priv, struct list_head *a,
--				 struct list_head *b))
--{
--	struct list_head *p, *q, *e, *list, *tail, *oldhead;
--	int insize, nmerges, psize, qsize, i;
--
--	if (list_empty(head))
--		return;
--
--	list = head->next;
--	list_del(head);
--	insize = 1;
--	for (;;) {
--		p = oldhead = list;
--		list = tail = NULL;
--		nmerges = 0;
--
--		while (p) {
--			nmerges++;
--			q = p;
--			psize = 0;
--			for (i = 0; i < insize; i++) {
--				psize++;
--				q = q->next == oldhead ? NULL : q->next;
--				if (!q)
--					break;
--			}
--
--			qsize = insize;
--			while (psize > 0 || (qsize > 0 && q)) {
--				if (!psize) {
--					e = q;
--					q = q->next;
--					qsize--;
--					if (q == oldhead)
--						q = NULL;
--				} else if (!qsize || !q) {
--					e = p;
--					p = p->next;
--					psize--;
--					if (p == oldhead)
--						p = NULL;
--				} else if (cmp(priv, p, q) <= 0) {
--					e = p;
--					p = p->next;
--					psize--;
--					if (p == oldhead)
--						p = NULL;
--				} else {
--					e = q;
--					q = q->next;
--					qsize--;
--					if (q == oldhead)
--						q = NULL;
--				}
--				if (tail)
--					tail->next = e;
--				else
--					list = e;
--				e->prev = tail;
--				tail = e;
--			}
--			p = q;
--		}
--
--		tail->next = list;
--		list->prev = tail;
--
--		if (nmerges <= 1)
--			break;
--
--		insize *= 2;
--	}
--
--	head->next = list;
--	head->prev = list->prev;
--	list->prev->next = head;
--	list->prev = head;
--}
--
--/**
-  * data_nodes_cmp - compare 2 data nodes.
-  * @priv: UBIFS file-system description object
-  * @a: first data node
-diff --git a/include/linux/sort.h b/include/linux/sort.h
-index d534da2..99a2ed5 100644
---- a/include/linux/sort.h
-+++ b/include/linux/sort.h
-@@ -3,8 +3,13 @@
- 
- #include <linux/types.h>
- 
-+struct list_head;
-+
- void sort(void *base, size_t num, size_t size,
- 	  int (*cmp)(const void *, const void *),
- 	  void (*swap)(void *, void *, int));
- 
-+void list_sort(void *priv, struct list_head *head,
-+	       int (*cmp)(void *priv, struct list_head *a,
-+			  struct list_head *b));
- #endif
-diff --git a/lib/sort.c b/lib/sort.c
-index 926d004..a9ce544 100644
---- a/lib/sort.c
-+++ b/lib/sort.c
-@@ -8,6 +8,7 @@
- #include <linux/module.h>
- #include <linux/sort.h>
- #include <linux/slab.h>
-+#include <linux/list.h>
- 
- static void u32_swap(void *a, void *b, int size)
- {
-@@ -121,3 +122,100 @@ static int sort_test(void)
- 
- module_init(sort_test);
- #endif
-+
-+/**
-+ * list_sort - sort a list.
-+ * @priv: private data, passed to @cmp
-+ * @head: the list to sort
-+ * @cmp: the elements comparison function
-+ *
-+ * This function has been implemented by Mark J Roberts <mjr@znex.org>. It
-+ * implements "merge sort" which has O(nlog(n)) complexity. The list is sorted
-+ * in ascending order.
-+ *
-+ * The comparison function @cmp is supposed to return a negative value if @a is
-+ * less than @b, and a positive value if @a is greater than @b. If @a and @b
-+ * are equivalent, then it does not matter what this function returns.
-+ */
-+void list_sort(void *priv, struct list_head *head,
-+	       int (*cmp)(void *priv, struct list_head *a,
-+			  struct list_head *b))
-+{
-+	struct list_head *p, *q, *e, *list, *tail, *oldhead;
-+	int insize, nmerges, psize, qsize, i;
-+
-+	if (list_empty(head))
-+		return;
-+
-+	list = head->next;
-+	list_del(head);
-+	insize = 1;
-+	for (;;) {
-+		p = oldhead = list;
-+		list = tail = NULL;
-+		nmerges = 0;
-+
-+		while (p) {
-+			nmerges++;
-+			q = p;
-+			psize = 0;
-+			for (i = 0; i < insize; i++) {
-+				psize++;
-+				q = q->next == oldhead ? NULL : q->next;
-+				if (!q)
-+					break;
-+			}
-+
-+			qsize = insize;
-+			while (psize > 0 || (qsize > 0 && q)) {
-+				if (!psize) {
-+					e = q;
-+					q = q->next;
-+					qsize--;
-+					if (q == oldhead)
-+						q = NULL;
-+				} else if (!qsize || !q) {
-+					e = p;
-+					p = p->next;
-+					psize--;
-+					if (p == oldhead)
-+						p = NULL;
-+				} else if (cmp(priv, p, q) <= 0) {
-+					e = p;
-+					p = p->next;
-+					psize--;
-+					if (p == oldhead)
-+						p = NULL;
-+				} else {
-+					e = q;
-+					q = q->next;
-+					qsize--;
-+					if (q == oldhead)
-+						q = NULL;
-+				}
-+				if (tail)
-+					tail->next = e;
-+				else
-+					list = e;
-+				e->prev = tail;
-+				tail = e;
-+			}
-+			p = q;
-+		}
-+
-+		tail->next = list;
-+		list->prev = tail;
-+
-+		if (nmerges <= 1)
-+			break;
-+
-+		insize *= 2;
-+	}
-+
-+	head->next = list;
-+	head->prev = list->prev;
-+	list->prev->next = head;
-+	list->prev = head;
-+}
-+
-+EXPORT_SYMBOL(list_sort);
+Pengutronix e.K.                           |                             |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
