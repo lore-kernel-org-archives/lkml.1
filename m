@@ -1,89 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754767Ab0AEP7c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754878Ab0AEQAv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754767Ab0AEP7c (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 10:59:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754572Ab0AEP7a
+	id S1754878Ab0AEQAv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 11:00:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754855Ab0AEQAr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 10:59:30 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:41178 "EHLO mx1.redhat.com"
+	Tue, 5 Jan 2010 11:00:47 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:57638 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754400Ab0AEP7a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 10:59:30 -0500
-Date: Tue, 5 Jan 2010 16:59:13 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: Roland McGrath <roland@redhat.com>, caiqian@redhat.com,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Jan Kratochvil <jkratoch@redhat.com>, linux-kernel@vger.kernel.org,
-       linux-s390@vger.kernel.org, utrace-devel@redhat.com
-Subject: Re: s390 && user_enable_single_step() (Was: odd utrace testing
-	results on s390x)
-Message-ID: <20100105155913.GA10652@redhat.com>
-References: <1503844142.2061111261478093776.JavaMail.root@zmail06.collab.prod.int.phx2.redhat.com> <1257887498.2061171261478252049.JavaMail.root@zmail06.collab.prod.int.phx2.redhat.com> <20100104155225.GA16650@redhat.com> <20100104171626.22ea2d9c@mschwide.boeblingen.de.ibm.com> <20100104181412.GA21146@redhat.com> <20100104211147.4CC94D532@magilla.sf.frob.com> <20100105105030.66bb8a0a@mschwide.boeblingen.de.ibm.com> <20100105153633.GA9376@redhat.com> <20100105164610.388effd3@mschwide.boeblingen.de.ibm.com>
+	id S1754844Ab0AEQAp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jan 2010 11:00:45 -0500
+Message-ID: <4B4361EE.2030201@redhat.com>
+Date: Tue, 05 Jan 2010 10:59:42 -0500
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Lightning/1.0pre Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100105164610.388effd3@mschwide.boeblingen.de.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Jun Koi <junkoi2004@gmail.com>
+CC: Gleb Natapov <gleb@redhat.com>, kvm@vger.kernel.org, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, avi@redhat.com, mingo@elte.hu,
+       a.p.zijlstra@chello.nl, tglx@linutronix.de, hpa@zytor.com,
+       cl@linux-foundation.org
+Subject: Re: [PATCH v3 00/12] KVM: Add host swap event notifications for PV
+ 	guest
+References: <1262700774-1808-1-git-send-email-gleb@redhat.com> <fdaac4d51001050705s3f46dd0fi948a3b3ea803fa51@mail.gmail.com>
+In-Reply-To: <fdaac4d51001050705s3f46dd0fi948a3b3ea803fa51@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/05, Martin Schwidefsky wrote:
+On 01/05/2010 10:05 AM, Jun Koi wrote:
+> On Tue, Jan 5, 2010 at 11:12 PM, Gleb Natapov<gleb@redhat.com>  wrote:
+>> KVM virtualizes guest memory by means of shadow pages or HW assistance
+>> like NPT/EPT. Not all memory used by a guest is mapped into the guest
+>> address space or even present in a host memory at any given time.
+>> When vcpu tries to access memory page that is not mapped into the guest
+>> address space KVM is notified about it. KVM maps the page into the guest
+>> address space and resumes vcpu execution. If the page is swapped out
+>> from host memory vcpu execution is suspended till the page is not swapped
+>> into the memory again. This is inefficient since vcpu can do other work
+>> (run other task or serve interrupts) while page gets swapped in.
+>>
+>> To overcome this inefficiency this patch series implements "asynchronous
+>> page fault" for paravirtualized KVM guests. If a page that vcpu is
+>> trying to access is swapped out KVM sends an async PF to the vcpu
+>> and continues vcpu execution. Requested page is swapped in by another
+>> thread in parallel.  When vcpu gets async PF it puts faulted task to
+>> sleep until "wake up" interrupt is delivered. When the page is brought
+>> to the host memory KVM sends "wake up" interrupt and the guest's task
+>> resumes execution.
+>>
 >
-> On Tue, 5 Jan 2010 16:36:33 +0100
-> Oleg Nesterov <oleg@redhat.com> wrote:
->
-> > For example, why do_signal() sets TIF_SINGLE_STEP? Why can't we do
-> > 
-> > 	--- a/arch/s390/kernel/signal.c
-> > 	+++ b/arch/s390/kernel/signal.c
-> > 	@@ -500,18 +500,10 @@ void do_signal(struct pt_regs *regs)
-> > 					clear_thread_flag(TIF_RESTORE_SIGMASK);
-> > 	 
-> > 				/*
-> > 	-			 * If we would have taken a single-step trap
-> > 	-			 * for a normal instruction, act like we took
-> > 	-			 * one for the handler setup.
-> > 	-			 */
-> > 	-			if (current->thread.per_info.single_step)
-> > 	-				set_thread_flag(TIF_SINGLE_STEP);
-> > 	-
-> > 	-			/*
-> > 				 * Let tracing know that we've done the handler setup.
-> > 				 */
-> > 				tracehook_signal_handler(signr, &info, &ka, regs,
-> > 	-					 test_thread_flag(TIF_SINGLE_STEP));
-> > 	+					current->thread.per_info.single_step);
-> > 			}
-> > 			return;
-> > 		}
-> > 
-> > ?
->
-> The reason why we set the TIF_SINGLE_STEP bit in do_signal is that we
-> want to be able to stop the debugged program before the first
-> instruction of the signal handler has been executed. The PER single
-> step causes a trap after an instruction has been executed. That first
-> instruction can do bad things to the arguments of the signal handler..
+> Is it true that to make this work, we will need a (PV) kernel driver
+> for each guest OS (Windows, Linux, ...)?
 
-Yes, but afaics all we need is to pass the correct "int stepping" arg
-to tracehook_signal_handler(). If it is true, the tracee does
-ptrace_notify() before it returns to user-mode.
+This patch series contains the guest kernel code for Linux,
+as well as the host side code.
 
-> > dmesg shows 799 lines of
-> >
-> > 	XXX: 2389 0
-> >
-> >
-> > The kernel is 2.6.32.2 + utrace, but CONFIG_UTRACE is not set.
->
-> With or without my bug fix ?
-
-With, but please see another email.
-
-
-I'll add clear_bit(TIF_SINGLE_STEP) into do_fork() path and re-test.
-
-Oleg.
-
+-- 
+All rights reversed.
