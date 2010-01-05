@@ -1,96 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754512Ab0AECPi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754540Ab0AECPv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754512Ab0AECPi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 21:15:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754411Ab0AECPf
+	id S1754540Ab0AECPv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 21:15:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754522Ab0AECPr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 21:15:35 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:43073 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754373Ab0AECPd (ORCPT
+	Mon, 4 Jan 2010 21:15:47 -0500
+Received: from mail-yw0-f176.google.com ([209.85.211.176]:38614 "EHLO
+	mail-yw0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754518Ab0AECPp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 21:15:33 -0500
-From: Andi Kleen <andi@firstfloor.org>
-References: <20100105315.789846878@firstfloor.org>
-In-Reply-To: <20100105315.789846878@firstfloor.org>
-To: ebiederm@xmission.com, paulmck@linux.vnet.ibm.com,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] [7/9] SYSCTL: Convert poweroff_command to proc_rcu_string
-Message-Id: <20100105021532.3BE00B17C2@basil.firstfloor.org>
-Date: Tue,  5 Jan 2010 03:15:32 +0100 (CET)
+	Mon, 4 Jan 2010 21:15:45 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=cK00K6E/0KkDWzrVWk1M9mh+Gv1PfYrsDhX1uhaZvIDS1XVH0oCg5RoGfV1wytCSNl
+         p/o+YQcLh7QUx2hvuvYvv++8JsINbIJ91pvHrEpb/CPEPj8tqK2HD/QrweFxOQrzVBjS
+         koU5GhAH/vgv8g2ZL2UmKNfeRh6rUDBCu0A58=
+Message-ID: <4B42A0CC.2090907@gmail.com>
+Date: Mon, 04 Jan 2010 20:15:40 -0600
+From: Robert Hancock <hancockrwd@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
+MIME-Version: 1.0
+To: Len Brown <lenb@kernel.org>
+CC: "H. Peter Anvin" <hpa@zytor.com>, Christian Hofstaedtler <ch@zeha.at>,
+       x86@kernel.org, Arjan van de Ven <arjan@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       bruce.w.allan@intel.com, Thomas Gleixner <tglx@linutronix.de>,
+       Justin Piszcz <jpiszcz@lucidpixels.com>, linux-acpi@vger.kernel.org,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Andrey Borzenkov <arvidjaar@mail.ru>
+Subject: Re: [PATCH] Add DMI quirk for Intel DP55KG mainboard
+References: <20100104162114.GA30113@percival.namespace.at> <alpine.LFD.2.00.1001041209300.4012@localhost.localdomain> <4B4225B3.8070705@zytor.com> <alpine.LFD.2.00.1001041632330.4012@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.1001041632330.4012@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 01/04/2010 04:03 PM, Len Brown wrote:
+>>> I believe that Venki is sending a patch to make all recent
+>>> motherboards use acpi reset by default; and I'd rather
+>>> see that kind of patch than this one.
+>>>
+>>> I've had the patch below patch in acpi-test, and thus linus-next,
+>>> and -mm since Nov 2008 to change the default for
+>>> all systems w/ no issues.
+>>>
+>>
+>> Maybe I'm misremembering, but didn't we have to pull this patch after it
+>> hit mainstream the last time?
+>
+>
+> c7ffa6c26277b403920e2255d10df849bd613380
+> "x86: default to reboot via ACPI"
+>
+> set ACPI as the default in 2.6.28-rc1
+>
+> 8d00450d296dedec9ada38d43b83e79cca6fd5a3
+> Revert "x86: default to reboot via ACPI"
+>
+> pulled it in v2.6.28-rc4
+>
+> The original patch was justified by VMX support,
+> and the revert was in response to Andrey Borzenkov's
+> DMI patch to usee BIOS reset on his Toshiba Porgege 4000:
+>
+> http://lkml.org/lkml/2008/10/31/242
+>
+> The Toshiba Portege 4000 shipped in early 2002.
+>
+> The patch to restore ACPI reset to default has been in Linux-next
+> (with occasional drops) since the day it was dropped from 2.6.28-rc4.
+>
+> As we have an existence proof, I have no doubt that using
+> ACPI reset by default will un-earth some regressions.  However,
+> my guess is that the DMI list of old machines that will fail
+> with ACPI reset will be smaller than by the DMI list of
+> brand-new machines that will fail without ACPI reset.
+>
+> We couuld use a DMI year cut-off as we do with
+> ACPI itself CONFIG_ACPI_BLACKLIST_YEAR, though that
+> doesn't work on systems that don't have DMI...
+> If I were to propose a year, I'd say 2006 and newer,
+> since XP was "Windows 2006".
 
-Avoids races with lockless sysctl.
+Think you mean 2001, Vista was 2006..
 
-Also saves ~220 bytes in the data segment for default kernels.
-
-Signed-off-by: Andi Kleen <ak@linux.intel.com>
-
----
- include/linux/reboot.h |    2 +-
- kernel/sys.c           |    8 ++++++--
- kernel/sysctl.c        |    2 +-
- 3 files changed, 8 insertions(+), 4 deletions(-)
-
-Index: linux-2.6.33-rc2-ak/kernel/sys.c
-===================================================================
---- linux-2.6.33-rc2-ak.orig/kernel/sys.c
-+++ linux-2.6.33-rc2-ak/kernel/sys.c
-@@ -1597,7 +1597,7 @@ SYSCALL_DEFINE3(getcpu, unsigned __user
- 	return err ? -EFAULT : 0;
- }
- 
--char poweroff_cmd[POWEROFF_CMD_PATH_LEN] = "/sbin/poweroff";
-+char *poweroff_cmd = "/sbin/poweroff";
- 
- static void argv_cleanup(char **argv, char **envp)
- {
-@@ -1614,7 +1614,7 @@ static void argv_cleanup(char **argv, ch
- int orderly_poweroff(bool force)
- {
- 	int argc;
--	char **argv = argv_split(GFP_ATOMIC, poweroff_cmd, &argc);
-+	char **argv;
- 	static char *envp[] = {
- 		"HOME=/",
- 		"PATH=/sbin:/bin:/usr/sbin:/usr/bin",
-@@ -1623,6 +1623,10 @@ int orderly_poweroff(bool force)
- 	int ret = -ENOMEM;
- 	struct subprocess_info *info;
- 
-+	/* RCU protection for poweroff_cmd */
-+	rcu_read_lock();
-+	argv = argv_split(GFP_ATOMIC, rcu_dereference(poweroff_cmd), &argc);
-+	rcu_read_unlock();
- 	if (argv == NULL) {
- 		printk(KERN_WARNING "%s failed to allocate memory for \"%s\"\n",
- 		       __func__, poweroff_cmd);
-Index: linux-2.6.33-rc2-ak/include/linux/reboot.h
-===================================================================
---- linux-2.6.33-rc2-ak.orig/include/linux/reboot.h
-+++ linux-2.6.33-rc2-ak/include/linux/reboot.h
-@@ -67,7 +67,7 @@ extern void kernel_power_off(void);
- void ctrl_alt_del(void);
- 
- #define POWEROFF_CMD_PATH_LEN	256
--extern char poweroff_cmd[POWEROFF_CMD_PATH_LEN];
-+extern char *poweroff_cmd;
- 
- extern int orderly_poweroff(bool force);
- 
-Index: linux-2.6.33-rc2-ak/kernel/sysctl.c
-===================================================================
---- linux-2.6.33-rc2-ak.orig/kernel/sysctl.c
-+++ linux-2.6.33-rc2-ak/kernel/sysctl.c
-@@ -871,7 +871,7 @@ static struct ctl_table kern_table[] = {
- 		.data		= &poweroff_cmd,
- 		.maxlen		= POWEROFF_CMD_PATH_LEN,
- 		.mode		= 0644,
--		.proc_handler	= proc_dostring,
-+		.proc_handler	= proc_rcu_string,
- 	},
- #ifdef CONFIG_KEYS
- 	{
+I'm assuming that Windows is using ACPI reset these days, so presumably 
+that's what we should be doing by default, and blacklisting machines 
+where that doesn't work, rather than the reverse..
