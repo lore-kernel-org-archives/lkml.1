@@ -1,22 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755158Ab0AEAu4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932100Ab0AEAvA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755158Ab0AEAu4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 19:50:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754701Ab0AEAuw
+	id S932100Ab0AEAvA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 19:51:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752923Ab0AEAux
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 19:50:52 -0500
-Received: from kroah.org ([198.145.64.141]:34217 "EHLO coco.kroah.org"
+	Mon, 4 Jan 2010 19:50:53 -0500
+Received: from kroah.org ([198.145.64.141]:34201 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754283Ab0AEAfI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 19:35:08 -0500
+	id S1754282Ab0AEAfG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jan 2010 19:35:06 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, stable-review@kernel.org
 Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Jeff Layton <jlayton@redhat.com>,
-       Steve French <sfrench@us.ibm.com>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 33/97] cifs: NULL out tcon, pSesInfo, and srvTcp pointers when chasing DFS referrals
-Date: Mon,  4 Jan 2010 16:32:46 -0800
-Message-Id: <1262651630-7354-33-git-send-email-gregkh@suse.de>
+       alan@lxorguk.ukuu.org.uk, Ingo Molnar <mingo@elte.hu>,
+       Shaun Ruffell <sruffell@digium.com>,
+       Joerg Roedel <joerg.roedel@amd.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 32/97] dma-debug: Fix bug causing build warning
+Date: Mon,  4 Jan 2010 16:32:45 -0800
+Message-Id: <1262651630-7354-32-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.6
 In-Reply-To: <20100105003133.GA7199@kroah.com>
 References: <20100105003133.GA7199@kroah.com>
@@ -24,73 +26,51 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jeff Layton <jlayton@redhat.com>
+From: Ingo Molnar <mingo@elte.hu>
 
-commit a2934c7b363ddcc001964f2444649f909e583bef upstream.
+commit a8fe9ea200ea21421ea750423d1d4d4f7ce037cf upstream.
 
-The scenario is this:
+Stephen Rothwell reported the following build warning:
 
-The kernel gets EREMOTE and starts chasing a DFS referral at mount time.
-The tcon reference is put, which puts the session reference too, but
-neither pointer is zeroed out.
+ lib/dma-debug.c: In function 'dma_debug_device_change':
+ lib/dma-debug.c:680: warning: 'return' with no value, in function returning non-void
 
-The mount gets retried (goto try_mount_again) with new mount info.
-Session setup fails fails and rc ends up being non-zero. The code then
-falls through to the end and tries to put the previously freed tcon
-pointer again.  Oops at: cifs_put_smb_ses+0x14/0xd0
+Introduced by commit f797d9881b62c2ddb1d2e7bd80d87141949c84aa
+("dma-debug: Do not add notifier when dma debugging is disabled").
 
-Fix this by moving the initialization of the rc variable and the tcon,
-pSesInfo and srvTcp pointers below the try_mount_again label. Also, add
-a FreeXid() before the goto to prevent xid "leaks".
+Return 0 [notify-done] when disabled. (this is standard bus notifier behavior.)
 
-Signed-off-by: Jeff Layton <jlayton@redhat.com>
-Reported-by: Gustavo Carvalho Homem <gustavo@angulosolido.pt>
-Signed-off-by: Steve French <sfrench@us.ibm.com>
+Signed-off-by: Shaun Ruffell <sruffell@digium.com>
+Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
+LKML-Reference: <20091231125624.GA14666@liondog.tnic>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- fs/cifs/connect.c |   13 +++++++++----
- 1 files changed, 9 insertions(+), 4 deletions(-)
+ lib/dma-debug.c |    5 ++---
+ 1 files changed, 2 insertions(+), 3 deletions(-)
 
-diff --git a/fs/cifs/connect.c b/fs/cifs/connect.c
-index 63ea83f..3bbcaa7 100644
---- a/fs/cifs/connect.c
-+++ b/fs/cifs/connect.c
-@@ -2287,12 +2287,12 @@ int
- cifs_mount(struct super_block *sb, struct cifs_sb_info *cifs_sb,
- 		char *mount_data_global, const char *devname)
+diff --git a/lib/dma-debug.c b/lib/dma-debug.c
+index dcd43e3..5a77c7c 100644
+--- a/lib/dma-debug.c
++++ b/lib/dma-debug.c
+@@ -670,14 +670,13 @@ static int device_dma_allocations(struct device *dev)
+ 	return count;
+ }
+ 
+-static int dma_debug_device_change(struct notifier_block *nb,
+-				    unsigned long action, void *data)
++static int dma_debug_device_change(struct notifier_block *nb, unsigned long action, void *data)
  {
--	int rc = 0;
-+	int rc;
- 	int xid;
- 	struct smb_vol *volume_info;
--	struct cifsSesInfo *pSesInfo = NULL;
--	struct cifsTconInfo *tcon = NULL;
--	struct TCP_Server_Info *srvTcp = NULL;
-+	struct cifsSesInfo *pSesInfo;
-+	struct cifsTconInfo *tcon;
-+	struct TCP_Server_Info *srvTcp;
- 	char   *full_path;
- 	char *mount_data = mount_data_global;
- #ifdef CONFIG_CIFS_DFS_UPCALL
-@@ -2301,6 +2301,10 @@ cifs_mount(struct super_block *sb, struct cifs_sb_info *cifs_sb,
- 	int referral_walks_count = 0;
- try_mount_again:
- #endif
-+	rc = 0;
-+	tcon = NULL;
-+	pSesInfo = NULL;
-+	srvTcp = NULL;
- 	full_path = NULL;
+ 	struct device *dev = data;
+ 	int count;
  
- 	xid = GetXid();
-@@ -2597,6 +2601,7 @@ remote_path_check:
+ 	if (global_disable)
+-		return;
++		return 0;
  
- 			cleanup_volume_info(&volume_info);
- 			referral_walks_count++;
-+			FreeXid(xid);
- 			goto try_mount_again;
- 		}
- #else /* No DFS support, return error on mount */
+ 	switch (action) {
+ 	case BUS_NOTIFY_UNBOUND_DRIVER:
 -- 
 1.6.6
 
