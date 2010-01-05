@@ -1,50 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754953Ab0AEP4a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754767Ab0AEP7c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754953Ab0AEP4a (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 10:56:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754711Ab0AEP43
+	id S1754767Ab0AEP7c (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 10:59:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754572Ab0AEP7a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 10:56:29 -0500
-Received: from zrtps0kp.nortel.com ([47.140.192.56]:62458 "EHLO
-	zrtps0kp.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754681Ab0AEP42 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 10:56:28 -0500
-Message-ID: <4B43602F.1050202@nortel.com>
-Date: Tue, 05 Jan 2010 09:52:15 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-2.7.b4.fc11 Thunderbird/3.0b4
+	Tue, 5 Jan 2010 10:59:30 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:41178 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754400Ab0AEP7a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jan 2010 10:59:30 -0500
+Date: Tue, 5 Jan 2010 16:59:13 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: Roland McGrath <roland@redhat.com>, caiqian@redhat.com,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Jan Kratochvil <jkratoch@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-s390@vger.kernel.org, utrace-devel@redhat.com
+Subject: Re: s390 && user_enable_single_step() (Was: odd utrace testing
+	results on s390x)
+Message-ID: <20100105155913.GA10652@redhat.com>
+References: <1503844142.2061111261478093776.JavaMail.root@zmail06.collab.prod.int.phx2.redhat.com> <1257887498.2061171261478252049.JavaMail.root@zmail06.collab.prod.int.phx2.redhat.com> <20100104155225.GA16650@redhat.com> <20100104171626.22ea2d9c@mschwide.boeblingen.de.ibm.com> <20100104181412.GA21146@redhat.com> <20100104211147.4CC94D532@magilla.sf.frob.com> <20100105105030.66bb8a0a@mschwide.boeblingen.de.ibm.com> <20100105153633.GA9376@redhat.com> <20100105164610.388effd3@mschwide.boeblingen.de.ibm.com>
 MIME-Version: 1.0
-To: Nobin Mathew <nobin.mathew@gmail.com>
-CC: Shivdas Gujare <shivdas.tech@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: init_task belongs to "process 0" or "process 1"?
-References: <cf70f0211001040007s5be9f1aas7bb52928c8d50e7c@mail.gmail.com> <8d6898731001042332m6b5b97b0n5515ae166f62aad2@mail.gmail.com>
-In-Reply-To: <8d6898731001042332m6b5b97b0n5515ae166f62aad2@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 05 Jan 2010 15:56:21.0703 (UTC) FILETIME=[A03E0570:01CA8E1F]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100105164610.388effd3@mschwide.boeblingen.de.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/05/2010 01:32 AM, Nobin Mathew wrote:
-> init_task is the head of doubly linked list which holds all
-> task_structs in the system. init_task is again the task_struct for
-> process 0/swapper/idle task. This process is created manually (I meant
-> to say not by copy_process() calls). Manually means they are static
-> structures defined in the code (see INIT_TASK, init_mm, init_fs etc).
-> There will be multiple idle task if there is more than 1 cpu core.
-> Idle task is the one which is scheduled if there is no other task
-> ready for scheduling.
-> 
-> Init task is process 1 which is initially a kernel thread created from
-> process 0 using copy_process(), then it does an execv() (/sbin/init )
-> or similar one to create the normal process init.
-> 
-> Name given to process 0 is swapper.
-> .comm           = "swapper"
+On 01/05, Martin Schwidefsky wrote:
+>
+> On Tue, 5 Jan 2010 16:36:33 +0100
+> Oleg Nesterov <oleg@redhat.com> wrote:
+>
+> > For example, why do_signal() sets TIF_SINGLE_STEP? Why can't we do
+> > 
+> > 	--- a/arch/s390/kernel/signal.c
+> > 	+++ b/arch/s390/kernel/signal.c
+> > 	@@ -500,18 +500,10 @@ void do_signal(struct pt_regs *regs)
+> > 					clear_thread_flag(TIF_RESTORE_SIGMASK);
+> > 	 
+> > 				/*
+> > 	-			 * If we would have taken a single-step trap
+> > 	-			 * for a normal instruction, act like we took
+> > 	-			 * one for the handler setup.
+> > 	-			 */
+> > 	-			if (current->thread.per_info.single_step)
+> > 	-				set_thread_flag(TIF_SINGLE_STEP);
+> > 	-
+> > 	-			/*
+> > 				 * Let tracing know that we've done the handler setup.
+> > 				 */
+> > 				tracehook_signal_handler(signr, &info, &ka, regs,
+> > 	-					 test_thread_flag(TIF_SINGLE_STEP));
+> > 	+					current->thread.per_info.single_step);
+> > 			}
+> > 			return;
+> > 		}
+> > 
+> > ?
+>
+> The reason why we set the TIF_SINGLE_STEP bit in do_signal is that we
+> want to be able to stop the debugged program before the first
+> instruction of the signal handler has been executed. The PER single
+> step causes a trap after an instruction has been executed. That first
+> instruction can do bad things to the arguments of the signal handler..
 
-Oddly enough, this name makes no sense anymore.  Why don't we call
-process 0 "idle"?
+Yes, but afaics all we need is to pass the correct "int stepping" arg
+to tracehook_signal_handler(). If it is true, the tracee does
+ptrace_notify() before it returns to user-mode.
 
-Chris
+> > dmesg shows 799 lines of
+> >
+> > 	XXX: 2389 0
+> >
+> >
+> > The kernel is 2.6.32.2 + utrace, but CONFIG_UTRACE is not set.
+>
+> With or without my bug fix ?
+
+With, but please see another email.
+
+
+I'll add clear_bit(TIF_SINGLE_STEP) into do_fork() path and re-test.
+
+Oleg.
+
