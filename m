@@ -1,22 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754664Ab0AEAme@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754793Ab0AEAmC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754664Ab0AEAme (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 19:42:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754434Ab0AEAm2
+	id S1754793Ab0AEAmC (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 19:42:02 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754634Ab0AEAlv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 19:42:28 -0500
-Received: from kroah.org ([198.145.64.141]:42385 "EHLO coco.kroah.org"
+	Mon, 4 Jan 2010 19:41:51 -0500
+Received: from kroah.org ([198.145.64.141]:42390 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754451Ab0AEAf4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 19:35:56 -0500
+	id S1754474Ab0AEAf5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jan 2010 19:35:57 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, stable-review@kernel.org
 Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Zhao Yakui <yakui.zhao@intel.com>,
-       Dave Airlie <airlied@redhat.com>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 73/97] drm: disable all the possible outputs/crtcs before entering KMS mode
-Date: Mon,  4 Jan 2010 16:33:26 -0800
-Message-Id: <1262651630-7354-73-git-send-email-gregkh@suse.de>
+       alan@lxorguk.ukuu.org.uk, Stefan Weinhuber <wein@de.ibm.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Stephen Powell <zlinuxman@wowway.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 74/97] S390: dasd: support DIAG access for read-only devices
+Date: Mon,  4 Jan 2010 16:33:27 -0800
+Message-Id: <1262651630-7354-74-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.6
 In-Reply-To: <20100105003133.GA7199@kroah.com>
 References: <20100105003133.GA7199@kroah.com>
@@ -24,48 +26,74 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Zhao Yakui <yakui.zhao@intel.com>
+From: Stefan Weinhuber <wein@de.ibm.com>
 
-commit b16d9acbdb97452d1418420e069acf7381ef10bb upstream.
+commit 22825ab7693fd29769518a0d25ba43c01a50092a upstream.
 
-Sometimes we will use a crtc for integerated LVDS, which is different with
-that assigned by BIOS. If we want to get flicker-free transitions,
-then we could read out the current state for it and set our current state
-accordingly.
+When a DASD device is used with the DIAG discipline, the DIAG
+initialization will indicate success or error with a respective
+return code. So far we have interpreted a return code of 4 as error,
+but it actually means that the initialization was successful, but
+the device is read-only. To allow read-only devices to be used with
+DIAG we need to accept a return code of 4 as success.
 
-But it is true that if we aren't reading current state out, we do need
-to turn everything off before modesetting.  Otherwise the clocks can get very
-angry and we get things worse than a flicker at boot.
-In fact we also do the similar thing in UMS mode. We will disable all the
-possible outputs/crtcs for the first modesetting.
+Re-initialization of the DIAG access is also part of the DIAG error
+recovery. If we find that the access mode of a device has been
+changed from writable to read-only while the device was in use,
+we print an error message.
 
-So we disable all the possible outputs/crtcs before entering the KMS mode.
-Before we configure connector/encoder/crtc, the function of
-drm_helper_disable_unused_function can disable all the possible outputs/crtcs.
-
-Signed-off-by: Zhao Yakui <yakui.zhao@intel.com>
-Reviewed-by: Eric Anholt <eric@anholt.net>
-Reviewed-by: Rafal Milecki <zajec5@gmail.com>
-Signed-off-by: Dave Airlie <airlied@redhat.com>
+Signed-off-by: Stefan Weinhuber <wein@de.ibm.com>
+Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: Stephen Powell <zlinuxman@wowway.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/gpu/drm/drm_crtc_helper.c |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
+ drivers/s390/block/dasd_diag.c |   19 ++++++++++++++++---
+ 1 files changed, 16 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/gpu/drm/drm_crtc_helper.c b/drivers/gpu/drm/drm_crtc_helper.c
-index bbfd110..afed886 100644
---- a/drivers/gpu/drm/drm_crtc_helper.c
-+++ b/drivers/gpu/drm/drm_crtc_helper.c
-@@ -1020,6 +1020,9 @@ bool drm_helper_initial_config(struct drm_device *dev)
- {
- 	int count = 0;
+diff --git a/drivers/s390/block/dasd_diag.c b/drivers/s390/block/dasd_diag.c
+index 4e49b4a..8174ec9 100644
+--- a/drivers/s390/block/dasd_diag.c
++++ b/drivers/s390/block/dasd_diag.c
+@@ -145,6 +145,15 @@ dasd_diag_erp(struct dasd_device *device)
  
-+	/* disable all the possible outputs/crtcs before entering KMS mode */
-+	drm_helper_disable_unused_functions(dev);
-+
- 	drm_fb_helper_parse_command_line(dev);
- 
- 	count = drm_helper_probe_connector_modes(dev,
+ 	mdsk_term_io(device);
+ 	rc = mdsk_init_io(device, device->block->bp_block, 0, NULL);
++	if (rc == 4) {
++		if (!(device->features & DASD_FEATURE_READONLY)) {
++			dev_warn(&device->cdev->dev,
++				 "The access mode of a DIAG device changed"
++				 " to read-only");
++			device->features |= DASD_FEATURE_READONLY;
++		}
++		rc = 0;
++	}
+ 	if (rc)
+ 		dev_warn(&device->cdev->dev, "DIAG ERP failed with "
+ 			    "rc=%d\n", rc);
+@@ -433,16 +442,20 @@ dasd_diag_check_device(struct dasd_device *device)
+ 	for (sb = 512; sb < bsize; sb = sb << 1)
+ 		block->s2b_shift++;
+ 	rc = mdsk_init_io(device, block->bp_block, 0, NULL);
+-	if (rc) {
++	if (rc && (rc != 4)) {
+ 		dev_warn(&device->cdev->dev, "DIAG initialization "
+ 			"failed with rc=%d\n", rc);
+ 		rc = -EIO;
+ 	} else {
++		if (rc == 4)
++			device->features |= DASD_FEATURE_READONLY;
+ 		dev_info(&device->cdev->dev,
+-			 "New DASD with %ld byte/block, total size %ld KB\n",
++			 "New DASD with %ld byte/block, total size %ld KB%s\n",
+ 			 (unsigned long) block->bp_block,
+ 			 (unsigned long) (block->blocks <<
+-					  block->s2b_shift) >> 1);
++					  block->s2b_shift) >> 1,
++			 (rc == 4) ? ", read-only device" : "");
++		rc = 0;
+ 	}
+ out_label:
+ 	free_page((long) label);
 -- 
 1.6.6
 
