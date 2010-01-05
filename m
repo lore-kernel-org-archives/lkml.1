@@ -1,98 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755185Ab0AERI5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755240Ab0AERJZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755185Ab0AERI5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 12:08:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755084Ab0AERI4
+	id S1755240Ab0AERJZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 12:09:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755223Ab0AERJV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 12:08:56 -0500
-Received: from relay1-v.mail.gandi.net ([217.70.178.75]:56803 "EHLO
-	relay1-v.mail.gandi.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755062Ab0AERIx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 12:08:53 -0500
-Date: Tue, 5 Jan 2010 09:08:48 -0800
-From: Josh Triplett <josh@joshtriplett.org>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, laijs@cn.fujitsu.com,
-       dipankar@in.ibm.com, akpm@linux-foundation.org,
-       mathieu.desnoyers@polymtl.ca, dvhltc@us.ibm.com, niv@us.ibm.com,
-       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
-       Valdis.Kletnieks@vt.edu, dhowells@redhat.com
-Subject: Re: [PATCH tip/core/rcu 2/3] rcu: add debug check for too many
-	rcu_read_unlock()
-Message-ID: <20100105170848.GB20682@cloud>
-References: <20100105000337.GA23307@linux.vnet.ibm.com> <20100105020307.GB11286@feather> <20100105021919.GN6748@linux.vnet.ibm.com> <20100105022814.GA11554@feather> <20100105162137.GC6714@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100105162137.GC6714@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 5 Jan 2010 12:09:21 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:39795 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755084Ab0AERJU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jan 2010 12:09:20 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <1261541567.3508.73.camel@localhost.localdomain>
+References: <1261541567.3508.73.camel@localhost.localdomain> <1261540762.3508.61.camel@localhost.localdomain> <1261540826.3508.62.camel@localhost.localdomain> <1261540902.3508.63.camel@localhost.localdomain> <1261540988.3508.64.camel@localhost.localdomain> <1261541054.3508.65.camel@localhost.localdomain> <1261541130.3508.66.camel@localhost.localdomain> <1261541188.3508.67.camel@localhost.localdomain> <1261541286.3508.69.camel@localhost.localdomain> <1261541342.3508.70.camel@localhost.localdomain> <1261541415.3508.71.camel@localhost.localdomain> <1261541491.3508.72.camel@localhost.localdomain> 
+To: john stultz <johnstul@us.ibm.com>
+Cc: dhowells@redhat.com, lkml <linux-kernel@vger.kernel.org>,
+       Koichi Yasutake <yasutake.koichi@jp.panasonic.com>,
+       linux-am33-list@redhat.com
+Subject: Re: [RFC][PATCH 11/14] Convert mn10300 to read/update_persistent_clock
+Date: Tue, 05 Jan 2010 17:08:56 +0000
+Message-ID: <7145.1262711336@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 05, 2010 at 08:21:37AM -0800, Paul E. McKenney wrote:
-> On Mon, Jan 04, 2010 at 06:28:15PM -0800, Josh Triplett wrote:
-> > On Mon, Jan 04, 2010 at 06:19:19PM -0800, Paul E. McKenney wrote:
-> > > On Mon, Jan 04, 2010 at 06:03:08PM -0800, Josh Triplett wrote:
-> > > > On Mon, Jan 04, 2010 at 04:04:01PM -0800, Paul E. McKenney wrote:
-> > > > > From: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> > > > > 
-> > > > > TREE_PREEMPT_RCU maintains an rcu_read_lock_nesting counter in the
-> > > > > task structure, which happens to be a signed int.  So this patch adds a
-> > > > > check for this counter being negative at the end of __rcu_read_unlock().
-> > > > > This check is under CONFIG_PROVE_LOCKING, so can be thought of as being
-> > > > > part of lockdep.
-> > > > > 
-> > > > > Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> > > > > ---
-> > > > >  kernel/rcutree_plugin.h |    3 +++
-> > > > >  1 files changed, 3 insertions(+), 0 deletions(-)
-> > > > > 
-> > > > > diff --git a/kernel/rcutree_plugin.h b/kernel/rcutree_plugin.h
-> > > > > index f11ebd4..e77cdf3 100644
-> > > > > --- a/kernel/rcutree_plugin.h
-> > > > > +++ b/kernel/rcutree_plugin.h
-> > > > > @@ -304,6 +304,9 @@ void __rcu_read_unlock(void)
-> > > > >  	if (--ACCESS_ONCE(t->rcu_read_lock_nesting) == 0 &&
-> > > > >  	    unlikely(ACCESS_ONCE(t->rcu_read_unlock_special)))
-> > > > >  		rcu_read_unlock_special(t);
-> > > > > +#ifdef CONFIG_PROVE_LOCKING
-> > > > > +	WARN_ON_ONCE(ACCESS_ONCE(t->rcu_read_lock_nesting) < 0);
-> > > > > +#endif /* #ifdef CONFIG_PROVE_LOCKING */
-> > > > >  }
-> > > > >  EXPORT_SYMBOL_GPL(__rcu_read_unlock);
-> > > > 
-> > > > Given that you *already* need to access t->rcu_read_lock_nesting here,
-> > > > why not just do the test all the time?  Ideally you could access
-> > > > t->rcu_read_lock_nesting once, decrement it, and test for both 0 and
-> > > > negative.
-> > > 
-> > > Because I was paranoid about the extra branch.  Perhaps needlessly
-> > > paranoid, but this is rcu_read_unlock() we are talking about here.  ;-)
-> > > 
-> > > You seem to be suggesting making the first test be "<=", then
-> > > sorting things out later, but given that both the equals-zero and the
-> > > greater-than-zero cases are quite common, I couldn't figure out how to
-> > > avoid the extra test and branch in the common case.  Hence the #ifdef.
-> > 
-> > No, I think you could simply read the predecremented value into a local
-> > variable, test it once with == 0, then have the WARN_ON_ONCE, and hope
-> > that the compiler figures out it can just test the register once and
-> > then do multiple jumps on the same flags.
-> > 
-> > You could try it and see what code it generates.
+john stultz <johnstul@us.ibm.com> wrote:
+
+> This patch converts the mn10300 architecture to use the generic
+> read_persistent_clock and update_persistent_clock interfaces, reducing
+> the amount of arch specific code we have to maintain, and allowing for
+> further cleanups in the future.
 > 
-> I agree that a smart compiler could share condition-code state, but
-> there still will be the extra branch.  (Keep in mind that this is a
-> .h file, so #ifdef is permitted -- though I might nevertheless make
-> a one-line function/macro.)
+> I have not built or tested this patch, so help from arch maintainers
+> would be appreciated.
+> 
+> Signed-off-by: John Stultz <johnstul@us.ibm.com>
 
-Hmmm.  Seems like one untaken branch, with unlikely() even, should prove
-sufficiently cheap.  But, as you said, this is rcu_read_unlock() we are
-talking about here.  ;)
+arch/mn10300/kernel/rtc.c: In function `update_persistent_clock':
+arch/mn10300/kernel/rtc.c:113: error: implicit declaration of function 'set_rtc_mms'
+arch/mn10300/kernel/rtc.c: At top level:
+arch/mn10300/kernel/rtc.c:24: warning: unused variable `last_rtc_update'
+arch/mn10300/kernel/rtc.c:24: warning: 'last_rtc_update' defined but not used
+arch/mn10300/kernel/rtc.c:51: warning: 'set_rtc_mmss' defined but not used
 
-Fair enough; might as well hide it under CONFIG_PROVE_LOCKING, or
-perhaps some RCU-specific debugging-related CONFIG symbol.
+set_rtc_mms should be set_rtc_mmss in update_persistent_clock().  In fact,
+set_rtc_mmss() should probably just be rolled into update_persistent_clock().
 
-- Josh Triplett
+Furthermore, last_rtc_update and its comment should be deleted.
+
+Apart from that, it seems to work.
+
+David
