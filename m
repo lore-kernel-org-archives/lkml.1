@@ -1,85 +1,462 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754413Ab0AEMLK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753452Ab0AEMVQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754413Ab0AEMLK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 07:11:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754154Ab0AEMLI
+	id S1753452Ab0AEMVQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 07:21:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750758Ab0AEMVP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 07:11:08 -0500
-Received: from ey-out-2122.google.com ([74.125.78.27]:10221 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753848Ab0AEMLD (ORCPT
+	Tue, 5 Jan 2010 07:21:15 -0500
+Received: from bld-mail18.adl2.internode.on.net ([150.101.137.103]:35572 "EHLO
+	mail.internode.on.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750734Ab0AEMVP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 07:11:03 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=VrGD+9vBXkWkwe/dDzw7p38xN4J9jCMAkIwTC44yn6K1CfsP75+2R0FBBLpu7hduhU
-         j5kJNFxsOfnIU7yEZj9mjEmmDYKQ3S84w+D4uu3LDxK89IdCeMx+K+wSfdLZFU1HzDnY
-         PIs4IuhYCvYQRaJXjBSPnxoQDfvDbihDZO7/4=
-Date: Tue, 5 Jan 2010 13:10:59 +0100
-From: Johan Hovold <jhovold@gmail.com>
-To: Stefani Seibold <stefani@seibold.net>
-Cc: Johan Hovold <jhovold@gmail.com>, Pete Zaitcev <zaitcev@redhat.com>,
-       Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
-Subject: Re: USB: serial: kfifo_len locking
-Message-ID: <20100105121059.GC10442@localhost>
-References: <20100104174352.GA26606@localhost>
- <1262632804.4814.17.camel@wall-e>
- <20100105004344.082bb69f@redhat.com>
- <20100105110418.GA10442@localhost>
- <1262689759.21020.2.camel@wall-e>
- <20100105111401.GB10442@localhost>
- <1262690734.22009.3.camel@wall-e>
- <20100105113525.GA19371@localhost>
- <1262692881.23577.15.camel@wall-e>
+	Tue, 5 Jan 2010 07:21:15 -0500
+Date: Tue, 5 Jan 2010 23:21:01 +1100
+From: Dave Chinner <david@fromorbit.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: xfs@oss.sgi.com, Artem Bityutskiy <dedekind@infradead.org>,
+       Dave Airlie <airlied@redhat.com>, linux-kernel@vger.kernel.org,
+       Adrian Hunter <adrian.hunter@nokia.com>
+Subject: [PATCH V3] sort: Introduce generic list_sort function
+Message-ID: <20100105122101.GR13802@discord.disaster>
+References: <1262649295-28427-1-git-send-email-david__25057.2445955642$1262651404$gmane$org@fromorbit.com> <87eim4dbzw.fsf@basil.nowhere.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <1262692881.23577.15.camel@wall-e>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <87eim4dbzw.fsf@basil.nowhere.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > Here's the change. The fifo used to be protected by a lock, but is no
-> > longer.
->  
-> I posted yesterday a patch to this thread. It would be great if you read
-> and check this patch before complaining again!!!!
+On Tue, Jan 05, 2010 at 12:31:15PM +0100, Andi Kleen wrote:
+> Dave Chinner <david@fromorbit.com> writes:
+> > +
+> > +/**
+> > + * list_sort - sort a list.
+> > + * @priv: private data, passed to @cmp
+> > + * @head: the list to sort
+> > + * @cmp: the elements comparison function
+> > + *
+> > + * This function has been implemented by Mark J Roberts <mjr@znex.org>. It
+> > + * implements "merge sort" which has O(nlog(n)) complexity. The list is sorted
+> > + * in ascending order.
+> > + *
+> > + * The comparison function @cmp is supposed to return a negative value if @a is
+> > + * than @b, and a positive value if @a is greater than @b. If @a and @b are
+> > + * equivalent, then it does not matter what this function returns.
+> > + */
+> > +void list_sort(void *priv, struct list_head *head,
+> > +	       int (*cmp)(void *priv, struct list_head *a,
+> > +			  struct list_head *b))
 > 
-> > Never say you did.
-> 
-> Sorry, i had no real idea what is your problem, if this is not what you
-> want. As i mentioned i posted to you yesterday a fix for the possible
-> kfifo_len() bug, but i didn't get a response if this is fixing your
-> problem. Again the patch:
-> 
-> diff -u -N -r  -p linux-2.6.33-rc2.orig/drivers/usb/serial/generic.c linux-2.6.33-rc2.new/drivers/usb/serial/generic.c
-> --- linux-2.6.33-rc2.orig/drivers/usb/serial/generic.c	2009-12-27 23:37:03.566060210 +0100
-> +++ linux-2.6.33-rc2.new/drivers/usb/serial/generic.c	2010-01-04 20:15:38.023351711 +0100
-> @@ -386,12 +386,12 @@ int usb_serial_generic_chars_in_buffer(s
->  
->  	dbg("%s - port %d", __func__, port->number);
->  
-> -	if (serial->type->max_in_flight_urbs) {
-> -		spin_lock_irqsave(&port->lock, flags);
-> +	spin_lock_irqsave(&port->lock, flags);
-> +	if (serial->type->max_in_flight_urbs)
->  		chars = port->tx_bytes_flight;
-> -		spin_unlock_irqrestore(&port->lock, flags);
-> -	} else if (serial->num_bulk_out)
-> +	else if (serial->num_bulk_out)
->  		chars = kfifo_len(&port->write_fifo);
-> +	spin_unlock_irqrestore(&port->lock, flags);
->  
->  	dbg("%s - returns %d", __func__, chars);
->  	return chars;
-> 
-> This patch should solve the possible race (if there is one). With this
-> patch all kfifo_... access are locked by the port->lock spinlock. If
-> this is what you want i will posted it as a bug fix to andrew.
+> No EXPORT_SYMBOL? 
 
-Yes, please do.
+Bah, who uses modules? :P
 
+Fixed. Updated patch below.
+
+> Also it would seem cleaner to have it in a own file.
+
+That might make sense if we had a large number of generic sort
+functions and it was difficult to tell the code apart, but we've
+only got 2 right now....
+
+Cheers,
+
+Dave.
+-- 
+Dave Chinner
+david@fromorbit.com
+
+sort: Introduce generic list_sort function
+
+There are two copies of list_sort() in the tree already, one in the DRM code,
+another in ubifs. Now XFS needs this as well. Create a generic list_sort()
+function from the ubifs version and convert existing users to it so we
+don't end up with yet another copy in the tree.
+
+Signed-off-by: Dave Chinner <david@fromorbit.com>
+Acked-by: Dave Airlie <airlied@redhat.com>
+Acked-by: Artem Bityutskiy <dedekind@infradead.org>
+---
+V3: Export list_sort()
+V2: fix a typo
+
+ drivers/gpu/drm/drm_modes.c |   90 ++-------------------------------------
+ fs/ubifs/gc.c               |   95 -----------------------------------------
+ include/linux/sort.h        |    5 ++
+ lib/sort.c                  |   98 +++++++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 107 insertions(+), 181 deletions(-)
+
+diff --git a/drivers/gpu/drm/drm_modes.c b/drivers/gpu/drm/drm_modes.c
+index 51f6772..3846ed4 100644
+--- a/drivers/gpu/drm/drm_modes.c
++++ b/drivers/gpu/drm/drm_modes.c
+@@ -1,9 +1,4 @@
+ /*
+- * The list_sort function is (presumably) licensed under the GPL (see the
+- * top level "COPYING" file for details).
+- *
+- * The remainder of this file is:
+- *
+  * Copyright © 1997-2003 by The XFree86 Project, Inc.
+  * Copyright © 2007 Dave Airlie
+  * Copyright © 2007-2008 Intel Corporation
+@@ -36,6 +31,7 @@
+  */
+ 
+ #include <linux/list.h>
++#include <linux/sort.h>
+ #include "drmP.h"
+ #include "drm.h"
+ #include "drm_crtc.h"
+@@ -829,6 +825,7 @@ EXPORT_SYMBOL(drm_mode_prune_invalid);
+ 
+ /**
+  * drm_mode_compare - compare modes for favorability
++ * @priv: unused
+  * @lh_a: list_head for first mode
+  * @lh_b: list_head for second mode
+  *
+@@ -842,7 +839,7 @@ EXPORT_SYMBOL(drm_mode_prune_invalid);
+  * Negative if @lh_a is better than @lh_b, zero if they're equivalent, or
+  * positive if @lh_b is better than @lh_a.
+  */
+-static int drm_mode_compare(struct list_head *lh_a, struct list_head *lh_b)
++static int drm_mode_compare(void *priv, struct list_head *lh_a, struct list_head *lh_b)
+ {
+ 	struct drm_display_mode *a = list_entry(lh_a, struct drm_display_mode, head);
+ 	struct drm_display_mode *b = list_entry(lh_b, struct drm_display_mode, head);
+@@ -859,85 +856,6 @@ static int drm_mode_compare(struct list_head *lh_a, struct list_head *lh_b)
+ 	return diff;
+ }
+ 
+-/* FIXME: what we don't have a list sort function? */
+-/* list sort from Mark J Roberts (mjr@znex.org) */
+-void list_sort(struct list_head *head,
+-	       int (*cmp)(struct list_head *a, struct list_head *b))
+-{
+-	struct list_head *p, *q, *e, *list, *tail, *oldhead;
+-	int insize, nmerges, psize, qsize, i;
+-
+-	list = head->next;
+-	list_del(head);
+-	insize = 1;
+-	for (;;) {
+-		p = oldhead = list;
+-		list = tail = NULL;
+-		nmerges = 0;
+-
+-		while (p) {
+-			nmerges++;
+-			q = p;
+-			psize = 0;
+-			for (i = 0; i < insize; i++) {
+-				psize++;
+-				q = q->next == oldhead ? NULL : q->next;
+-				if (!q)
+-					break;
+-			}
+-
+-			qsize = insize;
+-			while (psize > 0 || (qsize > 0 && q)) {
+-				if (!psize) {
+-					e = q;
+-					q = q->next;
+-					qsize--;
+-					if (q == oldhead)
+-						q = NULL;
+-				} else if (!qsize || !q) {
+-					e = p;
+-					p = p->next;
+-					psize--;
+-					if (p == oldhead)
+-						p = NULL;
+-				} else if (cmp(p, q) <= 0) {
+-					e = p;
+-					p = p->next;
+-					psize--;
+-					if (p == oldhead)
+-						p = NULL;
+-				} else {
+-					e = q;
+-					q = q->next;
+-					qsize--;
+-					if (q == oldhead)
+-						q = NULL;
+-				}
+-				if (tail)
+-					tail->next = e;
+-				else
+-					list = e;
+-				e->prev = tail;
+-				tail = e;
+-			}
+-			p = q;
+-		}
+-
+-		tail->next = list;
+-		list->prev = tail;
+-
+-		if (nmerges <= 1)
+-			break;
+-
+-		insize *= 2;
+-	}
+-
+-	head->next = list;
+-	head->prev = list->prev;
+-	list->prev->next = head;
+-	list->prev = head;
+-}
+-
+ /**
+  * drm_mode_sort - sort mode list
+  * @mode_list: list to sort
+@@ -949,7 +867,7 @@ void list_sort(struct list_head *head,
+  */
+ void drm_mode_sort(struct list_head *mode_list)
+ {
+-	list_sort(mode_list, drm_mode_compare);
++	list_sort(NULL, mode_list, drm_mode_compare);
+ }
+ EXPORT_SYMBOL(drm_mode_sort);
+ 
+diff --git a/fs/ubifs/gc.c b/fs/ubifs/gc.c
+index 618c270..4976e07 100644
+--- a/fs/ubifs/gc.c
++++ b/fs/ubifs/gc.c
+@@ -108,101 +108,6 @@ static int switch_gc_head(struct ubifs_info *c)
+ }
+ 
+ /**
+- * list_sort - sort a list.
+- * @priv: private data, passed to @cmp
+- * @head: the list to sort
+- * @cmp: the elements comparison function
+- *
+- * This function has been implemented by Mark J Roberts <mjr@znex.org>. It
+- * implements "merge sort" which has O(nlog(n)) complexity. The list is sorted
+- * in ascending order.
+- *
+- * The comparison function @cmp is supposed to return a negative value if @a is
+- * than @b, and a positive value if @a is greater than @b. If @a and @b are
+- * equivalent, then it does not matter what this function returns.
+- */
+-static void list_sort(void *priv, struct list_head *head,
+-		      int (*cmp)(void *priv, struct list_head *a,
+-				 struct list_head *b))
+-{
+-	struct list_head *p, *q, *e, *list, *tail, *oldhead;
+-	int insize, nmerges, psize, qsize, i;
+-
+-	if (list_empty(head))
+-		return;
+-
+-	list = head->next;
+-	list_del(head);
+-	insize = 1;
+-	for (;;) {
+-		p = oldhead = list;
+-		list = tail = NULL;
+-		nmerges = 0;
+-
+-		while (p) {
+-			nmerges++;
+-			q = p;
+-			psize = 0;
+-			for (i = 0; i < insize; i++) {
+-				psize++;
+-				q = q->next == oldhead ? NULL : q->next;
+-				if (!q)
+-					break;
+-			}
+-
+-			qsize = insize;
+-			while (psize > 0 || (qsize > 0 && q)) {
+-				if (!psize) {
+-					e = q;
+-					q = q->next;
+-					qsize--;
+-					if (q == oldhead)
+-						q = NULL;
+-				} else if (!qsize || !q) {
+-					e = p;
+-					p = p->next;
+-					psize--;
+-					if (p == oldhead)
+-						p = NULL;
+-				} else if (cmp(priv, p, q) <= 0) {
+-					e = p;
+-					p = p->next;
+-					psize--;
+-					if (p == oldhead)
+-						p = NULL;
+-				} else {
+-					e = q;
+-					q = q->next;
+-					qsize--;
+-					if (q == oldhead)
+-						q = NULL;
+-				}
+-				if (tail)
+-					tail->next = e;
+-				else
+-					list = e;
+-				e->prev = tail;
+-				tail = e;
+-			}
+-			p = q;
+-		}
+-
+-		tail->next = list;
+-		list->prev = tail;
+-
+-		if (nmerges <= 1)
+-			break;
+-
+-		insize *= 2;
+-	}
+-
+-	head->next = list;
+-	head->prev = list->prev;
+-	list->prev->next = head;
+-	list->prev = head;
+-}
+-
+-/**
+  * data_nodes_cmp - compare 2 data nodes.
+  * @priv: UBIFS file-system description object
+  * @a: first data node
+diff --git a/include/linux/sort.h b/include/linux/sort.h
+index d534da2..99a2ed5 100644
+--- a/include/linux/sort.h
++++ b/include/linux/sort.h
+@@ -3,8 +3,13 @@
+ 
+ #include <linux/types.h>
+ 
++struct list_head;
++
+ void sort(void *base, size_t num, size_t size,
+ 	  int (*cmp)(const void *, const void *),
+ 	  void (*swap)(void *, void *, int));
+ 
++void list_sort(void *priv, struct list_head *head,
++	       int (*cmp)(void *priv, struct list_head *a,
++			  struct list_head *b));
+ #endif
+diff --git a/lib/sort.c b/lib/sort.c
+index 926d004..a9ce544 100644
+--- a/lib/sort.c
++++ b/lib/sort.c
+@@ -8,6 +8,7 @@
+ #include <linux/module.h>
+ #include <linux/sort.h>
+ #include <linux/slab.h>
++#include <linux/list.h>
+ 
+ static void u32_swap(void *a, void *b, int size)
+ {
+@@ -121,3 +122,100 @@ static int sort_test(void)
+ 
+ module_init(sort_test);
+ #endif
++
++/**
++ * list_sort - sort a list.
++ * @priv: private data, passed to @cmp
++ * @head: the list to sort
++ * @cmp: the elements comparison function
++ *
++ * This function has been implemented by Mark J Roberts <mjr@znex.org>. It
++ * implements "merge sort" which has O(nlog(n)) complexity. The list is sorted
++ * in ascending order.
++ *
++ * The comparison function @cmp is supposed to return a negative value if @a is
++ * less than @b, and a positive value if @a is greater than @b. If @a and @b
++ * are equivalent, then it does not matter what this function returns.
++ */
++void list_sort(void *priv, struct list_head *head,
++	       int (*cmp)(void *priv, struct list_head *a,
++			  struct list_head *b))
++{
++	struct list_head *p, *q, *e, *list, *tail, *oldhead;
++	int insize, nmerges, psize, qsize, i;
++
++	if (list_empty(head))
++		return;
++
++	list = head->next;
++	list_del(head);
++	insize = 1;
++	for (;;) {
++		p = oldhead = list;
++		list = tail = NULL;
++		nmerges = 0;
++
++		while (p) {
++			nmerges++;
++			q = p;
++			psize = 0;
++			for (i = 0; i < insize; i++) {
++				psize++;
++				q = q->next == oldhead ? NULL : q->next;
++				if (!q)
++					break;
++			}
++
++			qsize = insize;
++			while (psize > 0 || (qsize > 0 && q)) {
++				if (!psize) {
++					e = q;
++					q = q->next;
++					qsize--;
++					if (q == oldhead)
++						q = NULL;
++				} else if (!qsize || !q) {
++					e = p;
++					p = p->next;
++					psize--;
++					if (p == oldhead)
++						p = NULL;
++				} else if (cmp(priv, p, q) <= 0) {
++					e = p;
++					p = p->next;
++					psize--;
++					if (p == oldhead)
++						p = NULL;
++				} else {
++					e = q;
++					q = q->next;
++					qsize--;
++					if (q == oldhead)
++						q = NULL;
++				}
++				if (tail)
++					tail->next = e;
++				else
++					list = e;
++				e->prev = tail;
++				tail = e;
++			}
++			p = q;
++		}
++
++		tail->next = list;
++		list->prev = tail;
++
++		if (nmerges <= 1)
++			break;
++
++		insize *= 2;
++	}
++
++	head->next = list;
++	head->prev = list->prev;
++	list->prev->next = head;
++	list->prev = head;
++}
++
++EXPORT_SYMBOL(list_sort);
