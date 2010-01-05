@@ -1,22 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754508Ab0AEAkU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754744Ab0AEAkb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754508Ab0AEAkU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 19:40:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754540Ab0AEAkP
+	id S1754744Ab0AEAkb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 19:40:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754597Ab0AEAkU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 19:40:15 -0500
-Received: from kroah.org ([198.145.64.141]:42444 "EHLO coco.kroah.org"
+	Mon, 4 Jan 2010 19:40:20 -0500
+Received: from kroah.org ([198.145.64.141]:42421 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754515Ab0AEAgF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 19:36:05 -0500
+	id S1754508Ab0AEAgB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jan 2010 19:36:01 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, stable-review@kernel.org
 Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Dmitry Monakhov <dmonakhov@openvz.org>,
-       Jan Kara <jack@suse.cz>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 82/97] ext4: Convert to generic reserved quota's space management.
-Date: Mon,  4 Jan 2010 16:33:35 -0800
-Message-Id: <1262651630-7354-82-git-send-email-gregkh@suse.de>
+       alan@lxorguk.ukuu.org.uk, Andrey Borzenkov <arvidjaar@mail.ru>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 78/97] orinoco: fix GFP_KERNEL in orinoco_set_key with interrupts disabled
+Date: Mon,  4 Jan 2010 16:33:31 -0800
+Message-Id: <1262651630-7354-78-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.6
 In-Reply-To: <20100105003133.GA7199@kroah.com>
 References: <20100105003133.GA7199@kroah.com>
@@ -24,106 +25,86 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Dmitry Monakhov <dmonakhov@openvz.org>
+From: Andrey Borzenkov <arvidjaar@mail.ru>
 
-commit a9e7f4472075fb6937c545af3f6329e9946bbe66 upstream.
+commit 5b0691508aa99d309101a49b4b084dc16b3d7019 upstream.
 
-This patch also fixes write vs chown race condition.
+orinoco_set_key is called from two places both with interrupts disabled
+(under orinoco_lock). Use GFP_ATOMIC instead of GFP_KERNEL. Fixes following
+warning:
 
-Acked-by: "Theodore Ts'o" <tytso@mit.edu>
-Signed-off-by: Dmitry Monakhov <dmonakhov@openvz.org>
-Signed-off-by: Jan Kara <jack@suse.cz>
+[   77.254109] WARNING: at /home/bor/src/linux-git/kernel/lockdep.c:2465 lockdep_trace_alloc+0x9a/0xa0()
+[   77.254109] Hardware name: PORTEGE 4000
+[   77.254109] Modules linked in: af_packet irnet ppp_generic slhc ircomm_tty ircomm binfmt_misc dm_mirror dm_region_hash dm_log dm_round_robin dm_multipath dm_mod loop nvram toshiba cryptomgr aead pcompress crypto_blkcipher michael_mic crypto_hash crypto_algapi orinoco_cs orinoco cfg80211 smsc_ircc2 pcmcia irda toshiba_acpi yenta_socket video i2c_ali1535 backlight rsrc_nonstatic ali_agp pcmcia_core psmouse output crc_ccitt i2c_core alim1535_wdt rfkill sg evdev ohci_hcd agpgart usbcore pata_ali libata reiserfs [last unloaded: scsi_wait_scan]
+[   77.254109] Pid: 2296, comm: wpa_supplicant Not tainted 2.6.32-1avb #1
+[   77.254109] Call Trace:
+[   77.254109]  [<c011f0ad>] warn_slowpath_common+0x6d/0xa0
+[   77.254109]  [<c014206a>] ? lockdep_trace_alloc+0x9a/0xa0
+[   77.254109]  [<c014206a>] ? lockdep_trace_alloc+0x9a/0xa0
+[   77.254109]  [<c011f0f5>] warn_slowpath_null+0x15/0x20
+[   77.254109]  [<c014206a>] lockdep_trace_alloc+0x9a/0xa0
+[   77.254109]  [<c018d296>] __kmalloc+0x36/0x130
+[   77.254109]  [<dffcb6a8>] ? orinoco_set_key+0x48/0x1c0 [orinoco]
+[   77.254109]  [<dffcb6a8>] orinoco_set_key+0x48/0x1c0 [orinoco]
+[   77.254109]  [<dffcb9fc>] orinoco_ioctl_set_encodeext+0x1dc/0x2d0 [orinoco]
+[   77.254109]  [<c035b117>] ioctl_standard_call+0x207/0x3b0
+[   77.254109]  [<dffcb820>] ? orinoco_ioctl_set_encodeext+0x0/0x2d0 [orinoco]
+[   77.254109]  [<c0307f1f>] ? rtnl_lock+0xf/0x20
+[   77.254109]  [<c0307f1f>] ? rtnl_lock+0xf/0x20
+[   77.254109]  [<c02fb115>] ? __dev_get_by_name+0x85/0xb0
+[   77.254109]  [<c035b616>] wext_handle_ioctl+0x176/0x200
+[   77.254109]  [<dffcb820>] ? orinoco_ioctl_set_encodeext+0x0/0x2d0 [orinoco]
+[   77.254109]  [<c030020f>] dev_ioctl+0x6af/0x730
+[   77.254109]  [<c02eec65>] ? move_addr_to_kernel+0x55/0x60
+[   77.254109]  [<c02eed59>] ? sys_sendto+0xe9/0x130
+[   77.254109]  [<c02ed77e>] sock_ioctl+0x7e/0x250
+[   77.254109]  [<c02ed700>] ? sock_ioctl+0x0/0x250
+[   77.254109]  [<c019cf4c>] vfs_ioctl+0x1c/0x70
+[   77.254109]  [<c019d1fa>] do_vfs_ioctl+0x6a/0x590
+[   77.254109]  [<c0178e50>] ? might_fault+0x90/0xa0
+[   77.254109]  [<c0178e0a>] ? might_fault+0x4a/0xa0
+[   77.254109]  [<c02ef90e>] ? sys_socketcall+0x17e/0x280
+[   77.254109]  [<c019d759>] sys_ioctl+0x39/0x60
+[   77.254109]  [<c0102e3b>] sysenter_do_call+0x12/0x32
+[   77.254109] ---[ end trace 95ef563548d21efd ]---
+
+Signed-off-by: Andrey Borzenkov <arvidjaar@mail.ru>
+Signed-off-by: John W. Linville <linville@tuxdriver.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- fs/ext4/ext4.h  |    6 +++++-
- fs/ext4/inode.c |   16 +++++++---------
- fs/ext4/super.c |    5 +++++
- 3 files changed, 17 insertions(+), 10 deletions(-)
+ drivers/net/wireless/orinoco/wext.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/fs/ext4/ext4.h b/fs/ext4/ext4.h
-index bd2a9dd..d0a2afb 100644
---- a/fs/ext4/ext4.h
-+++ b/fs/ext4/ext4.h
-@@ -698,6 +698,10 @@ struct ext4_inode_info {
- 	__u16 i_extra_isize;
+diff --git a/drivers/net/wireless/orinoco/wext.c b/drivers/net/wireless/orinoco/wext.c
+index 7698fdd..31ca241 100644
+--- a/drivers/net/wireless/orinoco/wext.c
++++ b/drivers/net/wireless/orinoco/wext.c
+@@ -23,7 +23,7 @@
+ #define MAX_RID_LEN 1024
  
- 	spinlock_t i_block_reservation_lock;
-+#ifdef CONFIG_QUOTA
-+	/* quota space reservation, managed internally by quota code */
-+	qsize_t i_reserved_quota;
-+#endif
+ /* Helper routine to record keys
+- * Do not call from interrupt context */
++ * It is called under orinoco_lock so it may not sleep */
+ static int orinoco_set_key(struct orinoco_private *priv, int index,
+ 			   enum orinoco_alg alg, const u8 *key, int key_len,
+ 			   const u8 *seq, int seq_len)
+@@ -32,14 +32,14 @@ static int orinoco_set_key(struct orinoco_private *priv, int index,
+ 	kzfree(priv->keys[index].seq);
  
- 	/* completed async DIOs that might need unwritten extents handling */
- 	struct list_head i_aio_dio_complete_list;
-@@ -1432,7 +1436,7 @@ extern int ext4_chunk_trans_blocks(struct inode *, int nrblocks);
- extern int ext4_block_truncate_page(handle_t *handle,
- 		struct address_space *mapping, loff_t from);
- extern int ext4_page_mkwrite(struct vm_area_struct *vma, struct vm_fault *vmf);
--extern qsize_t ext4_get_reserved_space(struct inode *inode);
-+extern qsize_t *ext4_get_reserved_space(struct inode *inode);
- extern int flush_aio_dio_completed_IO(struct inode *inode);
- /* ioctl.c */
- extern long ext4_ioctl(struct file *, unsigned int, unsigned long);
-diff --git a/fs/ext4/inode.c b/fs/ext4/inode.c
-index 1dae9a4..374d38c 100644
---- a/fs/ext4/inode.c
-+++ b/fs/ext4/inode.c
-@@ -1045,17 +1045,12 @@ out:
- 	return err;
- }
+ 	if (key_len) {
+-		priv->keys[index].key = kzalloc(key_len, GFP_KERNEL);
++		priv->keys[index].key = kzalloc(key_len, GFP_ATOMIC);
+ 		if (!priv->keys[index].key)
+ 			goto nomem;
+ 	} else
+ 		priv->keys[index].key = NULL;
  
--qsize_t ext4_get_reserved_space(struct inode *inode)
-+#ifdef CONFIG_QUOTA
-+qsize_t *ext4_get_reserved_space(struct inode *inode)
- {
--	unsigned long long total;
--
--	spin_lock(&EXT4_I(inode)->i_block_reservation_lock);
--	total = EXT4_I(inode)->i_reserved_data_blocks +
--		EXT4_I(inode)->i_reserved_meta_blocks;
--	spin_unlock(&EXT4_I(inode)->i_block_reservation_lock);
--
--	return (total << inode->i_blkbits);
-+	return &EXT4_I(inode)->i_reserved_quota;
- }
-+#endif
- /*
-  * Calculate the number of metadata blocks need to reserve
-  * to allocate @blocks for non extent file based file
-@@ -4850,6 +4845,9 @@ struct inode *ext4_iget(struct super_block *sb, unsigned long ino)
- 			((__u64)le16_to_cpu(raw_inode->i_file_acl_high)) << 32;
- 	inode->i_size = ext4_isize(raw_inode);
- 	ei->i_disksize = inode->i_size;
-+#ifdef CONFIG_QUOTA
-+	ei->i_reserved_quota = 0;
-+#endif
- 	inode->i_generation = le32_to_cpu(raw_inode->i_generation);
- 	ei->i_block_group = iloc.block_group;
- 	ei->i_last_alloc_group = ~0;
-diff --git a/fs/ext4/super.c b/fs/ext4/super.c
-index 9ae5217..92943f2 100644
---- a/fs/ext4/super.c
-+++ b/fs/ext4/super.c
-@@ -704,6 +704,9 @@ static struct inode *ext4_alloc_inode(struct super_block *sb)
- 	ei->i_allocated_meta_blocks = 0;
- 	ei->i_delalloc_reserved_flag = 0;
- 	spin_lock_init(&(ei->i_block_reservation_lock));
-+#ifdef CONFIG_QUOTA
-+	ei->i_reserved_quota = 0;
-+#endif
- 	INIT_LIST_HEAD(&ei->i_aio_dio_complete_list);
- 	ei->cur_aio_dio = NULL;
- 	ei->i_sync_tid = 0;
-@@ -1001,7 +1004,9 @@ static const struct dquot_operations ext4_quota_operations = {
- 	.reserve_space	= dquot_reserve_space,
- 	.claim_space	= dquot_claim_space,
- 	.release_rsv	= dquot_release_reserved_space,
-+#ifdef CONFIG_QUOTA
- 	.get_reserved_space = ext4_get_reserved_space,
-+#endif
- 	.alloc_inode	= dquot_alloc_inode,
- 	.free_space	= dquot_free_space,
- 	.free_inode	= dquot_free_inode,
+ 	if (seq_len) {
+-		priv->keys[index].seq = kzalloc(seq_len, GFP_KERNEL);
++		priv->keys[index].seq = kzalloc(seq_len, GFP_ATOMIC);
+ 		if (!priv->keys[index].seq)
+ 			goto free_key;
+ 	} else
 -- 
 1.6.6
 
