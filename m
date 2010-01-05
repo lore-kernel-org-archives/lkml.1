@@ -1,311 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932191Ab0AEVFX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932177Ab0AEVQP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932191Ab0AEVFX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 16:05:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754857Ab0AEVFW
+	id S932177Ab0AEVQP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 16:16:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755299Ab0AEVQP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 16:05:22 -0500
-Received: from [206.15.93.42] ([206.15.93.42]:4163 "EHLO
-	visionfs1.visionengravers.com" rhost-flags-FAIL-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751086Ab0AEVFV (ORCPT
+	Tue, 5 Jan 2010 16:16:15 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:62770 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755289Ab0AEVQN convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 16:05:21 -0500
-From: H Hartley Sweeten <hartleys@visionengravers.com>
-To: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH] ep93xx_eth.c general cleanup
-Date: Tue, 5 Jan 2010 14:05:31 -0700
-Cc: netdev@vger.kernel.org, Lennert Buytenhek <buytenh@wantstofly.org>,
-       davem@davemloft.net
+	Tue, 5 Jan 2010 16:16:13 -0500
+From: Jeff Moyer <jmoyer@redhat.com>
+To: Shaohua Li <shaohua.li@intel.com>
+Cc: Corrado Zoccolo <czoccolo@gmail.com>,
+       "linux-kernel\@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "jens.axboe\@oracle.com" <jens.axboe@oracle.com>,
+       "Zhang\, Yanmin" <yanmin.zhang@intel.com>
+Subject: Re: [PATCH]cfq-iosched: don't take requests with long distence as close
+References: <20091224005506.GA7879@sli10-desk.sh.intel.com>
+	<4e5e476b0912250216n2b4aceacyf22a0e73425efd3a@mail.gmail.com>
+	<20091228020348.GB28115@sli10-desk.sh.intel.com>
+	<4e5e476b0912280036r6e55587dj66952fcd6ff4d08b@mail.gmail.com>
+	<20091228084659.GA31389@sli10-desk.sh.intel.com>
+	<4e5e476b0912280111s6a977251m3416341b4bd2c272@mail.gmail.com>
+	<20091228092844.GA9710@sli10-desk.sh.intel.com>
+X-PGP-KeyID: 1F78E1B4
+X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
+X-PCLoadLetter: What the f**k does that mean?
+Date: Tue, 05 Jan 2010 16:16:02 -0500
+In-Reply-To: <20091228092844.GA9710@sli10-desk.sh.intel.com> (Shaohua Li's
+	message of "Mon, 28 Dec 2009 17:28:44 +0800")
+Message-ID: <x493a2k8d7x.fsf@segfault.boston.devel.redhat.com>
+User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/23.1 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <201001051405.31782.hartleys@visionengravers.com>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-General cleanup of the ep93xx_eth driver.
+Shaohua Li <shaohua.li@intel.com> writes:
 
-1) Use pr_fmt() to prefix the module name and __func__ to the error 
-   messages.
-2) <linux/io.h> instead of <asm/io.h>
-3) <mach/hardware.h> instead of <mach/ep93xx-regs.h> and <mach/platform.h>
-4) Move the ep93xx_mdio_read (and ep93xx_mdio_write) function to eliminate
-   the function prototype.
-5) Change all the printk(<level> messages to pr_<level> and remove the 
-   __func__ argument.
-6) Use platform_get_{resource/irq} to get the platform resources and add
-   an error check.
-7) Use resource_size() for request_mem_region() and ioremap().
-8) Use %pM to print the MAC address at the end of the probe.
-9) Use dev->dev_addr not data->dev_addr for the MAC argument because a
-   random address could be used if the platform does not supply one.
+> On Mon, Dec 28, 2009 at 05:11:25PM +0800, Corrado Zoccolo wrote:
+>> Hi Shaohua,
+>> On Mon, Dec 28, 2009 at 9:46 AM, Shaohua Li <shaohua.li@intel.com> wrote:
+>> > On Mon, Dec 28, 2009 at 04:36:39PM +0800, Corrado Zoccolo wrote:
+>> >> Hi Shaohua,
+>> >> On Mon, Dec 28, 2009 at 3:03 AM, Shaohua Li <shaohua.li@intel.com> wrote:
+>> >> > On Fri, Dec 25, 2009 at 06:16:27PM +0800, Corrado Zoccolo wrote:
+>> >> >> Hi Shaohua,
+>> >> >> On Thu, Dec 24, 2009 at 1:55 AM, Shaohua Li <shaohua.li@intel.com> wrote:
+>> >> >> > df5fe3e8e13883f58dc97489076bbcc150789a21
+>> >> >> > b3b6d0408c953524f979468562e7e210d8634150
+>> >> >> > The coop merge is too aggressive. For example, if two tasks are reading two
+>> >> >> > files where the two files have some adjecent blocks, cfq will immediately
+>> >> >> > merge them. cfq_rq_close() also has trouble, sometimes the seek_mean is very
+>> >> >> > big. I did a test to make cfq_rq_close() always checks the distence according
+>> >> >> > to CIC_SEEK_THR, but still saw a lot of wrong merge. (BTW, why we take a long
+>> >> >> > distence far away request as close. Taking them close doesn't improve any thoughtput
+>> >> >> > to me. Maybe we should always use CIC_SEEK_THR as close criteria).
+>> >> >> Yes, when deciding if two queues are going to be merged, we should use
+>> >> >> the constant CIC_SEEK_THR.
+>> >> >
+>> >> > seek_mean could be very big sometimes, using it as close criteria is meanless
+>> >> > as this doen't improve any performance. So if it's big, let's fallback to
+>> >> > default value.
+>> >>
+>> >> meanless -> meaningless (also in the comment within code)
+>> > oops
+>> >
+>> >> > Signed-off-by: Shaohua Li<shaohua.li@intel.com>
+>> >> >
+>> >> > diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+>> >> > index e2f8046..8025605 100644
+>> >> > --- a/block/cfq-iosched.c
+>> >> > +++ b/block/cfq-iosched.c
+>> >> > @@ -1682,6 +1682,10 @@ static inline int cfq_rq_close(struct cfq_data *cfqd, struct cfq_queue *cfqq,
+>> >> >        if (!sample_valid(cfqq->seek_samples))
+>> >> >                sdist = CFQQ_SEEK_THR;
+>> >> >
+>> >> > +       /* if seek_mean is big, using it as close criteria is meanless */
+>> >> > +       if (sdist > CFQQ_SEEK_THR)
+>> >> > +               sdist = CFQQ_SEEK_THR;
+>> >> > +
+>> >> >        return cfq_dist_from_last(cfqd, rq) <= sdist;
+>> >> >  }
+>> >> >
+>> >> >
+>> >> This changes also the cfq_should_preempt behaviour, where a large
+>> >> seek_mean could be meaningful, so I think it is better to add a
+>> >> boolean parameter to cfq_rq_close, to distinguish whether we are
+>> >> preempting or looking for queue merges, and make the new code
+>> >> conditional on merging.
+>> > can you explain why it's meaningful for cfq_should_preempt()? Unless sdist is
+>> > very big, for example > 10*seek_mean, the preempt seems not meaningless.
+>> 
+>> Disk access time is a complex function, but for rotational disks it is
+>> 'sort of' increasing with the amplitude of the seek. So, if you have a
+>> new request that is within the mean seek distance (even if it is
+>> larger than our constant), it is good to chose this request instead of
+>> waiting for an other one from the active queue (this behaviour is the
+>> same exhibited by AS, so we need a good reason to change).
+> I have no good reason, but just thought it's a little strange.
+> If other ioscheds take the same way, let's stick.
+>
+>  
+> seek_mean could be very big sometimes, using it as close criteria is meaningless
+> as this doen't improve any performance. So if it's big, let's fallback to
+> default value.
 
-The message at the end of the probe is left as a printk since it displays
-cleaner without the function name that would be displayed with pr_info().
+Sorry, I don't follow how you came to these conclusions.
 
-Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
-Acked-by: Lennert Buytenhek <kernel@wantstofly.org>
-Cc: David S. Miller <davem@davemloft.net>
+cfq_close_cooperator checks whether cur_cfqq is seeky:
 
----
+        if (CFQQ_SEEKY(cur_cfqq))
+                return NULL;
 
-Repost due to merge issue.
+So, by the time we get to the call to cfqq_close, we know that the
+passed-in cfqq has a seek_mean within the CFQQ_SEEK_THR.
 
-diff --git a/drivers/net/arm/ep93xx_eth.c b/drivers/net/arm/ep93xx_eth.c
-index b25467a..bf72d57 100644
---- a/drivers/net/arm/ep93xx_eth.c
-+++ b/drivers/net/arm/ep93xx_eth.c
-@@ -9,6 +9,8 @@
-  * (at your option) any later version.
-  */
- 
-+#define pr_fmt(fmt) KBUILD_MODNAME ":%s: " fmt, __func__
-+
- #include <linux/dma-mapping.h>
- #include <linux/module.h>
- #include <linux/kernel.h>
-@@ -20,9 +22,9 @@
- #include <linux/moduleparam.h>
- #include <linux/platform_device.h>
- #include <linux/delay.h>
--#include <mach/ep93xx-regs.h>
--#include <mach/platform.h>
--#include <asm/io.h>
-+#include <linux/io.h>
-+
-+#include <mach/hardware.h>
- 
- #define DRV_MODULE_NAME		"ep93xx-eth"
- #define DRV_MODULE_VERSION	"0.1"
-@@ -185,7 +187,47 @@ struct ep93xx_priv
- #define wrw(ep, off, val)	__raw_writew((val), (ep)->base_addr + (off))
- #define wrl(ep, off, val)	__raw_writel((val), (ep)->base_addr + (off))
- 
--static int ep93xx_mdio_read(struct net_device *dev, int phy_id, int reg);
-+static int ep93xx_mdio_read(struct net_device *dev, int phy_id, int reg)
-+{
-+	struct ep93xx_priv *ep = netdev_priv(dev);
-+	int data;
-+	int i;
-+
-+	wrl(ep, REG_MIICMD, REG_MIICMD_READ | (phy_id << 5) | reg);
-+
-+	for (i = 0; i < 10; i++) {
-+		if ((rdl(ep, REG_MIISTS) & REG_MIISTS_BUSY) == 0)
-+			break;
-+		msleep(1);
-+	}
-+
-+	if (i == 10) {
-+		pr_info("mdio read timed out\n");
-+		data = 0xffff;
-+	} else {
-+		data = rdl(ep, REG_MIIDATA);
-+	}
-+
-+	return data;
-+}
-+
-+static void ep93xx_mdio_write(struct net_device *dev, int phy_id, int reg, int data)
-+{
-+	struct ep93xx_priv *ep = netdev_priv(dev);
-+	int i;
-+
-+	wrl(ep, REG_MIIDATA, data);
-+	wrl(ep, REG_MIICMD, REG_MIICMD_WRITE | (phy_id << 5) | reg);
-+
-+	for (i = 0; i < 10; i++) {
-+		if ((rdl(ep, REG_MIISTS) & REG_MIISTS_BUSY) == 0)
-+			break;
-+		msleep(1);
-+	}
-+
-+	if (i == 10)
-+		pr_info("mdio write timed out\n");
-+}
- 
- static struct net_device_stats *ep93xx_get_stats(struct net_device *dev)
- {
-@@ -217,14 +259,11 @@ static int ep93xx_rx(struct net_device *dev, int processed, int budget)
- 		rstat->rstat1 = 0;
- 
- 		if (!(rstat0 & RSTAT0_EOF))
--			printk(KERN_CRIT "ep93xx_rx: not end-of-frame "
--					 " %.8x %.8x\n", rstat0, rstat1);
-+			pr_crit("not end-of-frame %.8x %.8x\n", rstat0, rstat1);
- 		if (!(rstat0 & RSTAT0_EOB))
--			printk(KERN_CRIT "ep93xx_rx: not end-of-buffer "
--					 " %.8x %.8x\n", rstat0, rstat1);
-+			pr_crit("not end-of-buffer %.8x %.8x\n", rstat0, rstat1);
- 		if ((rstat1 & RSTAT1_BUFFER_INDEX) >> 16 != entry)
--			printk(KERN_CRIT "ep93xx_rx: entry mismatch "
--					 " %.8x %.8x\n", rstat0, rstat1);
-+			pr_crit("entry mismatch %.8x %.8x\n", rstat0, rstat1);
- 
- 		if (!(rstat0 & RSTAT0_RWE)) {
- 			ep->stats.rx_errors++;
-@@ -241,8 +280,7 @@ static int ep93xx_rx(struct net_device *dev, int processed, int budget)
- 
- 		length = rstat1 & RSTAT1_FRAME_LENGTH;
- 		if (length > MAX_PKT_SIZE) {
--			printk(KERN_NOTICE "ep93xx_rx: invalid length "
--					 " %.8x %.8x\n", rstat0, rstat1);
-+			pr_notice("invalid length %.8x %.8x\n", rstat0, rstat1);
- 			goto err;
- 		}
- 
-@@ -371,11 +409,9 @@ static void ep93xx_tx_complete(struct net_device *dev)
- 		tstat->tstat0 = 0;
- 
- 		if (tstat0 & TSTAT0_FA)
--			printk(KERN_CRIT "ep93xx_tx_complete: frame aborted "
--					 " %.8x\n", tstat0);
-+			pr_crit("frame aborted %.8x\n", tstat0);
- 		if ((tstat0 & TSTAT0_BUFFER_INDEX) != entry)
--			printk(KERN_CRIT "ep93xx_tx_complete: entry mismatch "
--					 " %.8x\n", tstat0);
-+			pr_crit("entry mismatch %.8x\n", tstat0);
- 
- 		if (tstat0 & TSTAT0_TXWE) {
- 			int length = ep->descs->tdesc[entry].tdesc1 & 0xfff;
-@@ -536,7 +572,7 @@ static int ep93xx_start_hw(struct net_device *dev)
- 	}
- 
- 	if (i == 10) {
--		printk(KERN_CRIT DRV_MODULE_NAME ": hw failed to reset\n");
-+		pr_crit("hw failed to reset\n");
- 		return 1;
- 	}
- 
-@@ -581,7 +617,7 @@ static int ep93xx_start_hw(struct net_device *dev)
- 	}
- 
- 	if (i == 10) {
--		printk(KERN_CRIT DRV_MODULE_NAME ": hw failed to start\n");
-+		pr_crit("hw failed to start\n");
- 		return 1;
- 	}
- 
-@@ -617,7 +653,7 @@ static void ep93xx_stop_hw(struct net_device *dev)
- 	}
- 
- 	if (i == 10)
--		printk(KERN_CRIT DRV_MODULE_NAME ": hw failed to reset\n");
-+		pr_crit("hw failed to reset\n");
- }
- 
- static int ep93xx_open(struct net_device *dev)
-@@ -681,48 +717,6 @@ static int ep93xx_ioctl(struct net_device *dev, struct ifreq *ifr, int cmd)
- 	return generic_mii_ioctl(&ep->mii, data, cmd, NULL);
- }
- 
--static int ep93xx_mdio_read(struct net_device *dev, int phy_id, int reg)
--{
--	struct ep93xx_priv *ep = netdev_priv(dev);
--	int data;
--	int i;
--
--	wrl(ep, REG_MIICMD, REG_MIICMD_READ | (phy_id << 5) | reg);
--
--	for (i = 0; i < 10; i++) {
--		if ((rdl(ep, REG_MIISTS) & REG_MIISTS_BUSY) == 0)
--			break;
--		msleep(1);
--	}
--
--	if (i == 10) {
--		printk(KERN_INFO DRV_MODULE_NAME ": mdio read timed out\n");
--		data = 0xffff;
--	} else {
--		data = rdl(ep, REG_MIIDATA);
--	}
--
--	return data;
--}
--
--static void ep93xx_mdio_write(struct net_device *dev, int phy_id, int reg, int data)
--{
--	struct ep93xx_priv *ep = netdev_priv(dev);
--	int i;
--
--	wrl(ep, REG_MIIDATA, data);
--	wrl(ep, REG_MIICMD, REG_MIICMD_WRITE | (phy_id << 5) | reg);
--
--	for (i = 0; i < 10; i++) {
--		if ((rdl(ep, REG_MIISTS) & REG_MIISTS_BUSY) == 0)
--			break;
--		msleep(1);
--	}
--
--	if (i == 10)
--		printk(KERN_INFO DRV_MODULE_NAME ": mdio write timed out\n");
--}
--
- static void ep93xx_get_drvinfo(struct net_device *dev, struct ethtool_drvinfo *info)
- {
- 	strcpy(info->driver, DRV_MODULE_NAME);
-@@ -825,12 +819,19 @@ static int ep93xx_eth_probe(struct platform_device *pdev)
- 	struct ep93xx_eth_data *data;
- 	struct net_device *dev;
- 	struct ep93xx_priv *ep;
-+	struct resource *mem;
-+	int irq;
- 	int err;
- 
- 	if (pdev == NULL)
- 		return -ENODEV;
- 	data = pdev->dev.platform_data;
- 
-+	mem = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+	irq = platform_get_irq(pdev, 0);
-+	if (!mem || irq < 0)
-+		return -ENXIO;
-+
- 	dev = ep93xx_dev_alloc(data);
- 	if (dev == NULL) {
- 		err = -ENOMEM;
-@@ -842,23 +843,21 @@ static int ep93xx_eth_probe(struct platform_device *pdev)
- 
- 	platform_set_drvdata(pdev, dev);
- 
--	ep->res = request_mem_region(pdev->resource[0].start,
--			pdev->resource[0].end - pdev->resource[0].start + 1,
--			dev_name(&pdev->dev));
-+	ep->res = request_mem_region(mem->start, resource_size(mem),
-+				     dev_name(&pdev->dev));
- 	if (ep->res == NULL) {
- 		dev_err(&pdev->dev, "Could not reserve memory region\n");
- 		err = -ENOMEM;
- 		goto err_out;
- 	}
- 
--	ep->base_addr = ioremap(pdev->resource[0].start,
--			pdev->resource[0].end - pdev->resource[0].start);
-+	ep->base_addr = ioremap(mem->start, resource_size(mem));
- 	if (ep->base_addr == NULL) {
- 		dev_err(&pdev->dev, "Failed to ioremap ethernet registers\n");
- 		err = -EIO;
- 		goto err_out;
- 	}
--	ep->irq = pdev->resource[1].start;
-+	ep->irq = irq;
- 
- 	ep->mii.phy_id = data->phy_id;
- 	ep->mii.phy_id_mask = 0x1f;
-@@ -877,11 +876,8 @@ static int ep93xx_eth_probe(struct platform_device *pdev)
- 		goto err_out;
- 	}
- 
--	printk(KERN_INFO "%s: ep93xx on-chip ethernet, IRQ %d, "
--			 "%.2x:%.2x:%.2x:%.2x:%.2x:%.2x.\n", dev->name,
--			ep->irq, data->dev_addr[0], data->dev_addr[1],
--			data->dev_addr[2], data->dev_addr[3],
--			data->dev_addr[4], data->dev_addr[5]);
-+	printk(KERN_INFO "%s: ep93xx on-chip ethernet, IRQ %d, %pM\n",
-+			dev->name, ep->irq, dev->dev_addr);
- 
- 	return 0;
- 
+cfqq_close then calls cfq_rq_close with the non-seeky cfqq and the next
+request of the queue it is checking:
+
+        if (cfq_rq_close(cfqd, cur_cfqq, __cfqq->next_rq))
+
+So, it seems to me that the checks you added are superfluous.  How did
+you test this to ensure that your patch improved performance?  Your
+statement about testing above seems to indicate that you did not see any
+performance improvement.
+
+For now, I'm leaning towards asking Jens to revert this.  It may still
+be worth making sure that we don't merge a seeky queue with a non-seeky
+queue.  I have a patch for that if folks are interested.
+
+Cheers,
+Jeff
