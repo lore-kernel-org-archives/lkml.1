@@ -1,82 +1,262 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754545Ab0AECgK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754254Ab0AECnj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754545Ab0AECgK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 21:36:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754224Ab0AECgI
+	id S1754254Ab0AECnj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 21:43:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754018Ab0AECni
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 21:36:08 -0500
-Received: from mms3.broadcom.com ([216.31.210.19]:4705 "EHLO MMS3.broadcom.com"
+	Mon, 4 Jan 2010 21:43:38 -0500
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:57870 "EHLO e6.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754189Ab0AECgH convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 21:36:07 -0500
-X-Server-Uuid: B55A25B1-5D7D-41F8-BC53-C57E7AD3C201
-From: "Naren (Narendra) Sankar" <nsankar@broadcom.com>
-To: "Robert Hancock" <hancockrwd@gmail.com>, "Jarod Wilson" <jarod@redhat.com>
-cc: "Greg KH" <greg@kroah.com>,
+	id S1753435Ab0AECni (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jan 2010 21:43:38 -0500
+Date: Mon, 4 Jan 2010 18:43:36 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Scott Davilla" <davilla@4pi.com>,
-       "Manu Abraham" <abraham.manu@gmail.com>
-Date: Mon, 4 Jan 2010 18:36:01 -0800
-Subject: RE: [PATCH v3] staging: add Broadcom Crystal HD driver
-Thread-Topic: [PATCH v3] staging: add Broadcom Crystal HD driver
-Thread-Index: AcqNrdk2wJ92LIm6Q/m/tW5n1DWp9gAAbmYQ
-Message-ID: <80A6ED01A151614884EE6C5D6AF0F2E90460D23460@SJEXCHCCR01.corp.ad.broadcom.com>
-References: <20100104230227.GA14314@redhat.com>
- <20100104231949.GA14496@kroah.com> <4B427AF5.2030805@redhat.com>
- <4B42A23B.4080704@gmail.com>
-In-Reply-To: <4B42A23B.4080704@gmail.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "minchan.kim@gmail.com" <minchan.kim@gmail.com>,
+       cl@linux-foundation.org, "hugh.dickins" <hugh.dickins@tiscali.co.uk>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [RFC][PATCH 4/8] mm: RCU free vmas
+Message-ID: <20100105024336.GQ6748@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20100104182429.833180340@chello.nl> <20100104182813.479668508@chello.nl>
 MIME-Version: 1.0
-X-WSS-ID: 675C7A193J860217007-01-01
-Content-Type: text/plain;
- charset=us-ascii
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100104182813.479668508@chello.nl>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The register bits come straight from the HW RTL. So this way there are no errors or typos. It would be easier for maintenance from our side since this is generated automagically. And when we add new HW, again it is a script that spews this out.
+On Mon, Jan 04, 2010 at 07:24:33PM +0100, Peter Zijlstra wrote:
+> TODO:
+>  - should be SRCU, lack of call_srcu()
+> 
+> In order to allow speculative vma lookups, RCU free the struct
+> vm_area_struct.
+> 
+> We use two means of detecting a vma is still valid:
+>  - firstly, we set RB_CLEAR_NODE once we remove a vma from the tree.
+>  - secondly, we check the vma sequence number.
+> 
+> These two things combined will guarantee that 1) the vma is still
+> present and two, it still covers the same range from when we looked it
+> up.
 
-Not absolutely necessary, but worried that cleanups may cause more problems than fix. 
+OK, I think I see what you are up to here.  I could get you a very crude
+throw-away call_srcu() fairly quickly.  I don't yet have a good estimate
+of how long it will take me to merge SRCU into the treercu infrastructure,
+but am getting there.
 
+So, which release are you thinking in terms of?
 
-Naren Sankar (+1 408 218 6327)
-Architect/PLM
-Media PC, Broadband Communications Group
-Broadcom Corp.
+							Thanx, Paul
 
------Original Message-----
-From: Robert Hancock [mailto:hancockrwd@gmail.com] 
-Sent: Monday, January 04, 2010 6:22 PM
-To: Jarod Wilson
-Cc: Greg KH; linux-kernel@vger.kernel.org; Scott Davilla; Naren (Narendra) Sankar; Manu Abraham
-Subject: Re: [PATCH v3] staging: add Broadcom Crystal HD driver
-
-On 01/04/2010 05:34 PM, Jarod Wilson wrote:
-> On 1/4/10 6:19 PM, Greg KH wrote:
->> On Mon, Jan 04, 2010 at 06:02:27PM -0500, Jarod Wilson wrote:
->>> This patch supersedes the earlier ones sent by Manu Abraham to add
->>> the Broadcom Crystal HD driver to the staging tree, per discussion
->>> with him about it. I've been working with Broadcom's Naren Sankar
->>> on this driver for a number of months, and had already talked Naren
->>> about submitting this on Broadcom's behalf, didn't expect anyone
->>> else to jump on submitting it as quickly as Manu did. ;)
->>
->> Looks good, I'll queue it up tomorrow.
->
-> Nb: it looks like the thing is so massive (~935k), its not showing up on
-> lkml (at least, not in a timely fashion), so for the interested:
->
-> <http://people.redhat.com/jwilson/misc/broadcom-crystalhd-decoder-driver-staging.patch>
->
-> Thanks much!
-
-Literally the majority of the code is #defines for what looks like 
-register bits, etc - is all that really necessary?
-
-
+> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> ---
+>  include/linux/mm.h       |   12 ++++++++++++
+>  include/linux/mm_types.h |    2 ++
+>  init/Kconfig             |   34 +++++++++++++++++-----------------
+>  kernel/sched.c           |    9 ++++++++-
+>  mm/mmap.c                |   33 +++++++++++++++++++++++++++++++--
+>  5 files changed, 70 insertions(+), 20 deletions(-)
+> 
+> Index: linux-2.6/include/linux/mm.h
+> ===================================================================
+> --- linux-2.6.orig/include/linux/mm.h
+> +++ linux-2.6/include/linux/mm.h
+> @@ -765,6 +765,18 @@ unsigned long unmap_vmas(struct mmu_gath
+>  		unsigned long end_addr, unsigned long *nr_accounted,
+>  		struct zap_details *);
+> 
+> +static inline int vma_is_dead(struct vm_area_struct *vma, unsigned int sequence)
+> +{
+> +	int ret = RB_EMPTY_NODE(&vma->vm_rb);
+> +	unsigned seq = vma->vm_sequence.sequence;
+> +	/*
+> +	 * Matches both the wmb in write_seqlock_begin/end() and
+> +	 * the wmb in detach_vmas_to_be_unmapped()/__unlink_vma().
+> +	 */
+> +	smp_rmb();
+> +	return ret || seq != sequence;
+> +}
+> +
+>  /**
+>   * mm_walk - callbacks for walk_page_range
+>   * @pgd_entry: if set, called for each non-empty PGD (top-level) entry
+> Index: linux-2.6/include/linux/mm_types.h
+> ===================================================================
+> --- linux-2.6.orig/include/linux/mm_types.h
+> +++ linux-2.6/include/linux/mm_types.h
+> @@ -13,6 +13,7 @@
+>  #include <linux/cpumask.h>
+>  #include <linux/page-debug-flags.h>
+>  #include <linux/seqlock.h>
+> +#include <linux/rcupdate.h>
+>  #include <asm/page.h>
+>  #include <asm/mmu.h>
+> 
+> @@ -188,6 +189,7 @@ struct vm_area_struct {
+>  	struct mempolicy *vm_policy;	/* NUMA policy for the VMA */
+>  #endif
+>  	seqcount_t vm_sequence;
+> +	struct rcu_head vm_rcu_head;
+>  };
+> 
+>  struct core_thread {
+> Index: linux-2.6/mm/mmap.c
+> ===================================================================
+> --- linux-2.6.orig/mm/mmap.c
+> +++ linux-2.6/mm/mmap.c
+> @@ -222,6 +222,19 @@ void unlink_file_vma(struct vm_area_stru
+>  	}
+>  }
+> 
+> +static void free_vma_rcu(struct rcu_head *head)
+> +{
+> +	struct vm_area_struct *vma =
+> +		container_of(head, struct vm_area_struct, vm_rcu_head);
+> +
+> +	kmem_cache_free(vm_area_cachep, vma);
+> +}
+> +
+> +static void free_vma(struct vm_area_struct *vma)
+> +{
+> +	call_rcu(&vma->vm_rcu_head, free_vma_rcu);
+> +}
+> +
+>  /*
+>   * Close a vm structure and free it, returning the next.
+>   */
+> @@ -238,7 +251,7 @@ static struct vm_area_struct *remove_vma
+>  			removed_exe_file_vma(vma->vm_mm);
+>  	}
+>  	mpol_put(vma_policy(vma));
+> -	kmem_cache_free(vm_area_cachep, vma);
+> +	free_vma(vma);
+>  	return next;
+>  }
+> 
+> @@ -488,6 +501,14 @@ __vma_unlink(struct mm_struct *mm, struc
+>  {
+>  	prev->vm_next = vma->vm_next;
+>  	rb_erase(&vma->vm_rb, &mm->mm_rb);
+> +	/*
+> +	 * Ensure the removal is completely comitted to memory
+> +	 * before clearing the node.
+> +	 *
+> +	 * Matched by vma_is_dead()/handle_speculative_fault().
+> +	 */
+> +	smp_wmb();
+> +	RB_CLEAR_NODE(&vma->vm_rb);
+>  	if (mm->mmap_cache == vma)
+>  		mm->mmap_cache = prev;
+>  }
+> @@ -644,7 +665,7 @@ again:			remove_next = 1 + (end > next->
+>  		}
+>  		mm->map_count--;
+>  		mpol_put(vma_policy(next));
+> -		kmem_cache_free(vm_area_cachep, next);
+> +		free_vma(next);
+>  		/*
+>  		 * In mprotect's case 6 (see comments on vma_merge),
+>  		 * we must remove another next too. It would clutter
+> @@ -1858,6 +1879,14 @@ detach_vmas_to_be_unmapped(struct mm_str
+>  	insertion_point = (prev ? &prev->vm_next : &mm->mmap);
+>  	do {
+>  		rb_erase(&vma->vm_rb, &mm->mm_rb);
+> +		/*
+> +		 * Ensure the removal is completely comitted to memory
+> +		 * before clearing the node.
+> +		 *
+> +		 * Matched by vma_is_dead()/handle_speculative_fault().
+> +		 */
+> +		smp_wmb();
+> +		RB_CLEAR_NODE(&vma->vm_rb);
+>  		mm->map_count--;
+>  		tail_vma = vma;
+>  		vma = vma->vm_next;
+> Index: linux-2.6/init/Kconfig
+> ===================================================================
+> --- linux-2.6.orig/init/Kconfig
+> +++ linux-2.6/init/Kconfig
+> @@ -314,19 +314,19 @@ menu "RCU Subsystem"
+> 
+>  choice
+>  	prompt "RCU Implementation"
+> -	default TREE_RCU
+> +	default TREE_PREEMPT_RCU
+> 
+> -config TREE_RCU
+> -	bool "Tree-based hierarchical RCU"
+> -	help
+> -	  This option selects the RCU implementation that is
+> -	  designed for very large SMP system with hundreds or
+> -	  thousands of CPUs.  It also scales down nicely to
+> -	  smaller systems.
+> +#config TREE_RCU
+> +#	bool "Tree-based hierarchical RCU"
+> +#	help
+> +#	  This option selects the RCU implementation that is
+> +#	  designed for very large SMP system with hundreds or
+> +#	  thousands of CPUs.  It also scales down nicely to
+> +#	  smaller systems.
+> 
+>  config TREE_PREEMPT_RCU
+>  	bool "Preemptable tree-based hierarchical RCU"
+> -	depends on PREEMPT
+> +#	depends on PREEMPT
+>  	help
+>  	  This option selects the RCU implementation that is
+>  	  designed for very large SMP systems with hundreds or
+> @@ -334,14 +334,14 @@ config TREE_PREEMPT_RCU
+>  	  is also required.  It also scales down nicely to
+>  	  smaller systems.
+> 
+> -config TINY_RCU
+> -	bool "UP-only small-memory-footprint RCU"
+> -	depends on !SMP
+> -	help
+> -	  This option selects the RCU implementation that is
+> -	  designed for UP systems from which real-time response
+> -	  is not required.  This option greatly reduces the
+> -	  memory footprint of RCU.
+> +#config TINY_RCU
+> +#	bool "UP-only small-memory-footprint RCU"
+> +#	depends on !SMP
+> +#	help
+> +#	  This option selects the RCU implementation that is
+> +#	  designed for UP systems from which real-time response
+> +#	  is not required.  This option greatly reduces the
+> +#	  memory footprint of RCU.
+> 
+>  endchoice
+> 
+> Index: linux-2.6/kernel/sched.c
+> ===================================================================
+> --- linux-2.6.orig/kernel/sched.c
+> +++ linux-2.6/kernel/sched.c
+> @@ -9689,7 +9689,14 @@ void __init sched_init(void)
+>  #ifdef CONFIG_DEBUG_SPINLOCK_SLEEP
+>  static inline int preempt_count_equals(int preempt_offset)
+>  {
+> -	int nested = (preempt_count() & ~PREEMPT_ACTIVE) + rcu_preempt_depth();
+> +	int nested = (preempt_count() & ~PREEMPT_ACTIVE)
+> +		/*
+> +		 * remove this for we need preemptible RCU
+> +		 * exactly because it needs to sleep..
+> +		 *
+> +		 + rcu_preempt_depth()
+> +		 */
+> +		;
+> 
+>  	return (nested == PREEMPT_INATOMIC_BASE + preempt_offset);
+>  }
+> 
+> -- 
+> 
