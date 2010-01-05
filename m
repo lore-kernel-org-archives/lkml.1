@@ -1,146 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754520Ab0AEDDs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754117Ab0AEDO3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754520Ab0AEDDs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 22:03:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753909Ab0AEDDr
+	id S1754117Ab0AEDO3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 22:14:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753577Ab0AEDO2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 22:03:47 -0500
-Received: from mga11.intel.com ([192.55.52.93]:2196 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753879Ab0AEDDq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 22:03:46 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,501,1257148800"; 
-   d="scan'208";a="761320612"
-Subject: Re: [RFC PATCH] sched: Pass affine target cpu into wake_affine
-From: Lin Ming <ming.m.lin@intel.com>
-To: Mike Galbraith <efault@gmx.de>
-Cc: Peter Zijlstra <peterz@infradead.org>, lkml <linux-kernel@vger.kernel.org>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-In-Reply-To: <1262595827.22471.108.camel@minggr.sh.intel.com>
-References: <1262595827.22471.108.camel@minggr.sh.intel.com>
-Content-Type: text/plain
-Date: Tue, 05 Jan 2010 10:48:06 +0800
-Message-Id: <1262659686.22471.121.camel@minggr.sh.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 (2.24.1-2.fc10) 
-Content-Transfer-Encoding: 7bit
+	Mon, 4 Jan 2010 22:14:28 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:37493 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751086Ab0AEDO1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jan 2010 22:14:27 -0500
+Date: Mon, 4 Jan 2010 19:13:35 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "minchan.kim@gmail.com" <minchan.kim@gmail.com>,
+       cl@linux-foundation.org, "hugh.dickins" <hugh.dickins@tiscali.co.uk>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [RFC][PATCH 6/8] mm: handle_speculative_fault()
+In-Reply-To: <20100105092559.1de8b613.kamezawa.hiroyu@jp.fujitsu.com>
+Message-ID: <alpine.LFD.2.00.1001041904250.3630@localhost.localdomain>
+References: <20100104182429.833180340@chello.nl> <20100104182813.753545361@chello.nl> <20100105092559.1de8b613.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2010-01-04 at 17:03 +0800, Lin Ming wrote:
-> commit a03ecf08d7bbdd979d81163ea13d194fe21ad339
-> Author: Lin Ming <ming.m.lin@intel.com>
-> Date:   Mon Jan 4 14:14:50 2010 +0800
+
+
+On Tue, 5 Jan 2010, KAMEZAWA Hiroyuki wrote:
 > 
->     sched: Pass affine target cpu into wake_affine
->     
->     Since commit a1f84a3(sched: Check for an idle shared cache in select_task_rq_fair()),
->     the affine target maybe adjusted to any idle cpu in cache sharing domains
->     instead of current cpu.
->     But wake_affine still use current cpu to calculate load which is wrong.
->     
->     This patch passes affine cpu into wake_affine.
->     
->     Signed-off-by: Lin Ming <ming.m.lin@intel.com>
+> I'm sorry if I miss something...how does this patch series avoid
+> that vma is removed while __do_fault()->vma->vm_ops->fault() is called ?
+> ("vma is removed" means all other things as freeing file struct etc..)
 
-Mike,
+I don't think you're missing anything. 
 
-Any comment of this patch?
+Protecting the vma isn't enough. You need to protect the whole FS stack 
+with rcu. Probably by moving _all_ of "free_vma()" into the RCU path 
+(which means that the whole file/inode gets de-allocated at that later RCU 
+point, rather than synchronously). Not just the actual kfree.
 
-Thanks,
-Lin Ming
+However, it's worth noting that that actually has some very subtle and 
+major consequences. If you have a temporary file that was removed, where 
+the mmap() was the last user that kind of delayed freeing would also delay 
+the final fput of that file that actually deletes it. 
 
-> ---
->  kernel/sched_fair.c |   29 ++++++++++++++---------------
->  1 files changed, 14 insertions(+), 15 deletions(-)
-> 
-> diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
-> index 42ac3c9..0a6fa39 100644
-> --- a/kernel/sched_fair.c
-> +++ b/kernel/sched_fair.c
-> @@ -1237,11 +1237,11 @@ static inline unsigned long effective_load(struct task_group *tg, int cpu,
->  
->  #endif
->  
-> -static int wake_affine(struct sched_domain *sd, struct task_struct *p, int sync)
-> +static int wake_affine(struct sched_domain *sd, struct task_struct *p, int affine_cpu, int sync)
->  {
->  	struct task_struct *curr = current;
-> -	unsigned long this_load, load;
-> -	int idx, this_cpu, prev_cpu;
-> +	unsigned long affine_load, load;
-> +	int idx, prev_cpu;
->  	unsigned long tl_per_task;
->  	unsigned int imbalance;
->  	struct task_group *tg;
-> @@ -1249,10 +1249,9 @@ static int wake_affine(struct sched_domain *sd, struct task_struct *p, int sync)
->  	int balanced;
->  
->  	idx	  = sd->wake_idx;
-> -	this_cpu  = smp_processor_id();
->  	prev_cpu  = task_cpu(p);
->  	load	  = source_load(prev_cpu, idx);
-> -	this_load = target_load(this_cpu, idx);
-> +	affine_load = target_load(affine_cpu, idx);
->  
->  	if (sync) {
->  	       if (sched_feat(SYNC_LESS) &&
-> @@ -1275,7 +1274,7 @@ static int wake_affine(struct sched_domain *sd, struct task_struct *p, int sync)
->  		tg = task_group(current);
->  		weight = current->se.load.weight;
->  
-> -		this_load += effective_load(tg, this_cpu, -weight, -weight);
-> +		affine_load += effective_load(tg, affine_cpu, -weight, -weight);
->  		load += effective_load(tg, prev_cpu, 0, -weight);
->  	}
->  
-> @@ -1285,16 +1284,16 @@ static int wake_affine(struct sched_domain *sd, struct task_struct *p, int sync)
->  	imbalance = 100 + (sd->imbalance_pct - 100) / 2;
->  
->  	/*
-> -	 * In low-load situations, where prev_cpu is idle and this_cpu is idle
-> -	 * due to the sync cause above having dropped this_load to 0, we'll
-> +	 * In low-load situations, where prev_cpu is idle and affine_cpu is idle
-> +	 * due to the sync cause above having dropped affine_load to 0, we'll
->  	 * always have an imbalance, but there's really nothing you can do
->  	 * about that, so that's good too.
->  	 *
->  	 * Otherwise check if either cpus are near enough in load to allow this
-> -	 * task to be woken on this_cpu.
-> +	 * task to be woken on affine_cpu.
->  	 */
-> -	balanced = !this_load ||
-> -		100*(this_load + effective_load(tg, this_cpu, weight, weight)) <=
-> +	balanced = !affine_load ||
-> +		100*(affine_load + effective_load(tg, affine_cpu, weight, weight)) <=
->  		imbalance*(load + effective_load(tg, prev_cpu, 0, weight));
->  
->  	/*
-> @@ -1306,11 +1305,11 @@ static int wake_affine(struct sched_domain *sd, struct task_struct *p, int sync)
->  		return 1;
->  
->  	schedstat_inc(p, se.nr_wakeups_affine_attempts);
-> -	tl_per_task = cpu_avg_load_per_task(this_cpu);
-> +	tl_per_task = cpu_avg_load_per_task(affine_cpu);
->  
->  	if (balanced ||
-> -	    (this_load <= load &&
-> -	     this_load + target_load(prev_cpu, idx) <= tl_per_task)) {
-> +	    (affine_load <= load &&
-> +	     affine_load + target_load(prev_cpu, idx) <= tl_per_task)) {
->  		/*
->  		 * This domain has SD_WAKE_AFFINE and
->  		 * p is cache cold in this domain, and
-> @@ -1544,7 +1543,7 @@ static int select_task_rq_fair(struct task_struct *p, int sd_flag, int wake_flag
->  			update_shares(tmp);
->  	}
->  
-> -	if (affine_sd && wake_affine(affine_sd, p, sync))
-> +	if (affine_sd && wake_affine(affine_sd, p, cpu, sync))
->  		return cpu;
->  
->  	while (sd) {
-> 
+Or put another way: if the vma was a writable mapping, a user may do
 
+	munmap(mapping, size);
+
+and the backing file is still active and writable AFTER THE MUNMAP! This 
+can be a huge problem for something that wants to unmount the volume, for 
+example, or depends on the whole writability-vs-executability thing. The 
+user may have unmapped it, and expects the file to be immediately 
+non-busy, but with the delayed free that isn't the case any more.
+
+In other words, now you may well need to make munmap() wait for the RCU 
+grace period, so that the user who did the unmap really is synchronous wrt 
+the file accesses. We've had things like that before, and they have been 
+_huge_ performance problems (ie it may take just a timer tick or two, but 
+then people do tens of thousands of munmaps, and now that takes many 
+seconds just due to RCU grace period waiting.
+
+I would say that this whole series is _very_ far from being mergeable. 
+Peter seems to have been thinking about the details, while missing all the 
+subtle big picture effects that seem to actually change semantics.
+
+		Linus
