@@ -1,13 +1,13 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754348Ab0AECEY (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Mon, 4 Jan 2010 21:04:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754030Ab0AECEV
+	id S1754295Ab0AECEU (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Mon, 4 Jan 2010 21:04:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754211Ab0AECER
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 21:04:21 -0500
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:34965 "EHLO e4.ny.us.ibm.com"
+	Mon, 4 Jan 2010 21:04:17 -0500
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:34957 "EHLO e4.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754032Ab0AECEP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 21:04:15 -0500
+	id S1754194Ab0AECEO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jan 2010 21:04:14 -0500
 From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org
 Cc: mingo@elte.hu, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
@@ -16,9 +16,9 @@ Cc: mingo@elte.hu, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
         tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
         Valdis.Kletnieks@vt.edu, dhowells@redhat.com,
         "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: [PATCH tip/core/rcu 7/8] radix-tree: disable RCU lockdep checking in radix tree
-Date: Mon,  4 Jan 2010 18:04:10 -0800
-Message-Id: <12626570512382-git-send-email->
+Subject: [PATCH tip/core/rcu 3/8] rcu: disable lockdep checking in RCU list-traversal primitives
+Date: Mon,  4 Jan 2010 18:04:06 -0800
+Message-Id: <12626570513455-git-send-email->
 X-Mailer: git-send-email 1.5.2.5
 In-Reply-To: <20100105020345.GA32114@linux.vnet.ibm.com>
 References: <20100105020345.GA32114@linux.vnet.ibm.com>
@@ -28,128 +28,86 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 
-Because the radix tree is used with many different locking designs, we
-cannot do any effective checking without changing the radix-tree APIs.
-It might make sense to do this later, but only if the RCU lockdep checking
-proves itself sufficiently valuable.
+The theory is that use of bare rcu_dereference() is more prone to error
+than use of the RCU list-traversal primitives.  Therefore, disable lockdep
+RCU read-side critical-section checking in these primitives for the time
+being.  Once all of the rcu_dereference() uses have been dealt with, it
+may be time to re-enable lockdep checking for the RCU list-traversal
+primitives.
 
 Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 ---
- lib/radix-tree.c |   24 ++++++++++++------------
- 1 files changed, 12 insertions(+), 12 deletions(-)
+ include/linux/rculist.h       |   14 +++++++-------
+ include/linux/rculist_nulls.h |    4 ++--
+ 2 files changed, 9 insertions(+), 9 deletions(-)
 
-diff --git a/lib/radix-tree.c b/lib/radix-tree.c
-index 23abbd9..46724e2 100644
---- a/lib/radix-tree.c
-+++ b/lib/radix-tree.c
-@@ -361,7 +361,7 @@ static void *radix_tree_lookup_element(struct radix_tree_root *root,
- 	unsigned int height, shift;
- 	struct radix_tree_node *node, **slot;
+diff --git a/include/linux/rculist.h b/include/linux/rculist.h
+index 5710f43..0d4b617 100644
+--- a/include/linux/rculist.h
++++ b/include/linux/rculist.h
+@@ -208,7 +208,7 @@ static inline void list_splice_init_rcu(struct list_head *list,
+  * primitives such as list_add_rcu() as long as it's guarded by rcu_read_lock().
+  */
+ #define list_entry_rcu(ptr, type, member) \
+-	container_of(rcu_dereference(ptr), type, member)
++	container_of(rcu_dereference_raw(ptr), type, member)
  
--	node = rcu_dereference(root->rnode);
-+	node = rcu_dereference_raw(root->rnode);
- 	if (node == NULL)
- 		return NULL;
+ /**
+  * list_first_entry_rcu - get the first element from a list
+@@ -225,9 +225,9 @@ static inline void list_splice_init_rcu(struct list_head *list,
+ 	list_entry_rcu((ptr)->next, type, member)
  
-@@ -381,7 +381,7 @@ static void *radix_tree_lookup_element(struct radix_tree_root *root,
- 	do {
- 		slot = (struct radix_tree_node **)
- 			(node->slots + ((index>>shift) & RADIX_TREE_MAP_MASK));
--		node = rcu_dereference(*slot);
-+		node = rcu_dereference_raw(*slot);
- 		if (node == NULL)
- 			return NULL;
+ #define __list_for_each_rcu(pos, head) \
+-	for (pos = rcu_dereference((head)->next); \
++	for (pos = rcu_dereference_raw((head)->next); \
+ 		pos != (head); \
+-		pos = rcu_dereference(pos->next))
++		pos = rcu_dereference_raw(pos->next))
  
-@@ -566,7 +566,7 @@ int radix_tree_tag_get(struct radix_tree_root *root,
- 	if (!root_tag_get(root, tag))
- 		return 0;
+ /**
+  * list_for_each_entry_rcu	-	iterate over rcu list of given type
+@@ -257,9 +257,9 @@ static inline void list_splice_init_rcu(struct list_head *list,
+  * as long as the traversal is guarded by rcu_read_lock().
+  */
+ #define list_for_each_continue_rcu(pos, head) \
+-	for ((pos) = rcu_dereference((pos)->next); \
++	for ((pos) = rcu_dereference_raw((pos)->next); \
+ 		prefetch((pos)->next), (pos) != (head); \
+-		(pos) = rcu_dereference((pos)->next))
++		(pos) = rcu_dereference_raw((pos)->next))
  
--	node = rcu_dereference(root->rnode);
-+	node = rcu_dereference_raw(root->rnode);
- 	if (node == NULL)
- 		return 0;
+ /**
+  * hlist_del_rcu - deletes entry from hash list without re-initialization
+@@ -404,10 +404,10 @@ static inline void hlist_add_after_rcu(struct hlist_node *prev,
+  * as long as the traversal is guarded by rcu_read_lock().
+  */
+ #define hlist_for_each_entry_rcu(tpos, pos, head, member)		 \
+-	for (pos = rcu_dereference((head)->first);			 \
++	for (pos = rcu_dereference_raw((head)->first);			 \
+ 		pos && ({ prefetch(pos->next); 1; }) &&			 \
+ 		({ tpos = hlist_entry(pos, typeof(*tpos), member); 1; }); \
+-		pos = rcu_dereference(pos->next))
++		pos = rcu_dereference_raw(pos->next))
  
-@@ -600,7 +600,7 @@ int radix_tree_tag_get(struct radix_tree_root *root,
- 			BUG_ON(ret && saw_unset_tag);
- 			return !!ret;
- 		}
--		node = rcu_dereference(node->slots[offset]);
-+		node = rcu_dereference_raw(node->slots[offset]);
- 		shift -= RADIX_TREE_MAP_SHIFT;
- 		height--;
- 	}
-@@ -710,7 +710,7 @@ __lookup(struct radix_tree_node *slot, void ***results, unsigned long index,
- 		}
+ #endif	/* __KERNEL__ */
+ #endif
+diff --git a/include/linux/rculist_nulls.h b/include/linux/rculist_nulls.h
+index 589a409..b70ffe5 100644
+--- a/include/linux/rculist_nulls.h
++++ b/include/linux/rculist_nulls.h
+@@ -101,10 +101,10 @@ static inline void hlist_nulls_add_head_rcu(struct hlist_nulls_node *n,
+  *
+  */
+ #define hlist_nulls_for_each_entry_rcu(tpos, pos, head, member) \
+-	for (pos = rcu_dereference((head)->first);			 \
++	for (pos = rcu_dereference_raw((head)->first);			 \
+ 		(!is_a_nulls(pos)) &&			\
+ 		({ tpos = hlist_nulls_entry(pos, typeof(*tpos), member); 1; }); \
+-		pos = rcu_dereference(pos->next))
++		pos = rcu_dereference_raw(pos->next))
  
- 		shift -= RADIX_TREE_MAP_SHIFT;
--		slot = rcu_dereference(slot->slots[i]);
-+		slot = rcu_dereference_raw(slot->slots[i]);
- 		if (slot == NULL)
- 			goto out;
- 	}
-@@ -757,7 +757,7 @@ radix_tree_gang_lookup(struct radix_tree_root *root, void **results,
- 	unsigned long cur_index = first_index;
- 	unsigned int ret;
- 
--	node = rcu_dereference(root->rnode);
-+	node = rcu_dereference_raw(root->rnode);
- 	if (!node)
- 		return 0;
- 
-@@ -786,7 +786,7 @@ radix_tree_gang_lookup(struct radix_tree_root *root, void **results,
- 			slot = *(((void ***)results)[ret + i]);
- 			if (!slot)
- 				continue;
--			results[ret + nr_found] = rcu_dereference(slot);
-+			results[ret + nr_found] = rcu_dereference_raw(slot);
- 			nr_found++;
- 		}
- 		ret += nr_found;
-@@ -825,7 +825,7 @@ radix_tree_gang_lookup_slot(struct radix_tree_root *root, void ***results,
- 	unsigned long cur_index = first_index;
- 	unsigned int ret;
- 
--	node = rcu_dereference(root->rnode);
-+	node = rcu_dereference_raw(root->rnode);
- 	if (!node)
- 		return 0;
- 
-@@ -914,7 +914,7 @@ __lookup_tag(struct radix_tree_node *slot, void ***results, unsigned long index,
- 			}
- 		}
- 		shift -= RADIX_TREE_MAP_SHIFT;
--		slot = rcu_dereference(slot->slots[i]);
-+		slot = rcu_dereference_raw(slot->slots[i]);
- 		if (slot == NULL)
- 			break;
- 	}
-@@ -950,7 +950,7 @@ radix_tree_gang_lookup_tag(struct radix_tree_root *root, void **results,
- 	if (!root_tag_get(root, tag))
- 		return 0;
- 
--	node = rcu_dereference(root->rnode);
-+	node = rcu_dereference_raw(root->rnode);
- 	if (!node)
- 		return 0;
- 
-@@ -979,7 +979,7 @@ radix_tree_gang_lookup_tag(struct radix_tree_root *root, void **results,
- 			slot = *(((void ***)results)[ret + i]);
- 			if (!slot)
- 				continue;
--			results[ret + nr_found] = rcu_dereference(slot);
-+			results[ret + nr_found] = rcu_dereference_raw(slot);
- 			nr_found++;
- 		}
- 		ret += nr_found;
-@@ -1019,7 +1019,7 @@ radix_tree_gang_lookup_tag_slot(struct radix_tree_root *root, void ***results,
- 	if (!root_tag_get(root, tag))
- 		return 0;
- 
--	node = rcu_dereference(root->rnode);
-+	node = rcu_dereference_raw(root->rnode);
- 	if (!node)
- 		return 0;
- 
+ #endif
+ #endif
 -- 
 1.5.2.5
 
