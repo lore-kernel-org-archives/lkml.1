@@ -1,56 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754504Ab0AECSz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754614Ab0AECTY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754504Ab0AECSz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 21:18:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754256Ab0AECSy
+	id S1754614Ab0AECTY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 21:19:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754431Ab0AECTX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 21:18:54 -0500
-Received: from ozlabs.org ([203.10.76.45]:51140 "EHLO ozlabs.org"
+	Mon, 4 Jan 2010 21:19:23 -0500
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:60564 "EHLO e3.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754191Ab0AECSy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 21:18:54 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: [PATCH] Revert "x86: Side-step lguest problem by only building cmpxchg8b_emu for pre-Pentium"
-Date: Tue, 5 Jan 2010 12:48:49 +1030
-User-Agent: KMail/1.12.2 (Linux/2.6.31-16-generic; KDE/4.3.2; i686; ; )
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, "H. Anvin" <hpa@zytor.com>,
-       linux-kernel@vger.kernel.org
+	id S1754256Ab0AECTV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jan 2010 21:19:21 -0500
+Date: Mon, 4 Jan 2010 18:19:19 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Josh Triplett <josh@joshtriplett.org>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, laijs@cn.fujitsu.com,
+       dipankar@in.ibm.com, akpm@linux-foundation.org,
+       mathieu.desnoyers@polymtl.ca, dvhltc@us.ibm.com, niv@us.ibm.com,
+       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
+       Valdis.Kletnieks@vt.edu, dhowells@redhat.com
+Subject: Re: [PATCH tip/core/rcu 2/3] rcu: add debug check for too many
+	rcu_read_unlock()
+Message-ID: <20100105021919.GN6748@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20100105000337.GA23307@linux.vnet.ibm.com> <20100105020307.GB11286@feather>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201001051248.49700.rusty@rustcorp.com.au>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100105020307.GB11286@feather>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This reverts commit ae1b22f6e46c03cede7cea234d0bf2253b4261cf.
-    
-As Linus said in 982d007a6ee: "There was something really messy about
-cmpxchg8b and clone CPU's, so if you enable it on other CPUs later, do it
-carefully."
-    
-This breaks lguest for those configs, but we can fix that by emulating
-if we have to.
-    
-Fixes: http://bugzilla.kernel.org/show_bug.cgi?id=14884
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-Cc: stable@kernel.org
----
- arch/x86/Kconfig.cpu |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+On Mon, Jan 04, 2010 at 06:03:08PM -0800, Josh Triplett wrote:
+> On Mon, Jan 04, 2010 at 04:04:01PM -0800, Paul E. McKenney wrote:
+> > From: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> > 
+> > TREE_PREEMPT_RCU maintains an rcu_read_lock_nesting counter in the
+> > task structure, which happens to be a signed int.  So this patch adds a
+> > check for this counter being negative at the end of __rcu_read_unlock().
+> > This check is under CONFIG_PROVE_LOCKING, so can be thought of as being
+> > part of lockdep.
+> > 
+> > Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> > ---
+> >  kernel/rcutree_plugin.h |    3 +++
+> >  1 files changed, 3 insertions(+), 0 deletions(-)
+> > 
+> > diff --git a/kernel/rcutree_plugin.h b/kernel/rcutree_plugin.h
+> > index f11ebd4..e77cdf3 100644
+> > --- a/kernel/rcutree_plugin.h
+> > +++ b/kernel/rcutree_plugin.h
+> > @@ -304,6 +304,9 @@ void __rcu_read_unlock(void)
+> >  	if (--ACCESS_ONCE(t->rcu_read_lock_nesting) == 0 &&
+> >  	    unlikely(ACCESS_ONCE(t->rcu_read_unlock_special)))
+> >  		rcu_read_unlock_special(t);
+> > +#ifdef CONFIG_PROVE_LOCKING
+> > +	WARN_ON_ONCE(ACCESS_ONCE(t->rcu_read_lock_nesting) < 0);
+> > +#endif /* #ifdef CONFIG_PROVE_LOCKING */
+> >  }
+> >  EXPORT_SYMBOL_GPL(__rcu_read_unlock);
+> 
+> Given that you *already* need to access t->rcu_read_lock_nesting here,
+> why not just do the test all the time?  Ideally you could access
+> t->rcu_read_lock_nesting once, decrement it, and test for both 0 and
+> negative.
 
-diff --git a/arch/x86/Kconfig.cpu b/arch/x86/Kconfig.cpu
-index 08e442b..f20ddf8 100644
---- a/arch/x86/Kconfig.cpu
-+++ b/arch/x86/Kconfig.cpu
-@@ -396,7 +396,7 @@ config X86_TSC
- 
- config X86_CMPXCHG64
- 	def_bool y
--	depends on !M386 && !M486
-+	depends on X86_PAE || X86_64 || MCORE2 || MPENTIUM4 || MPENTIUMM || MPENTIUMIII || MPENTIUMII || M686 || MATOM
- 
- # this should be set for all -march=.. options where the compiler
- # generates cmov.
+Because I was paranoid about the extra branch.  Perhaps needlessly
+paranoid, but this is rcu_read_unlock() we are talking about here.  ;-)
+
+You seem to be suggesting making the first test be "<=", then
+sorting things out later, but given that both the equals-zero and the
+greater-than-zero cases are quite common, I couldn't figure out how to
+avoid the extra test and branch in the common case.  Hence the #ifdef.
+
+							Thanx, Paul
