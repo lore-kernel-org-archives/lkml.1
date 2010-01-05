@@ -1,139 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755360Ab0AETCW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755351Ab0AETDM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755360Ab0AETCW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 14:02:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755351Ab0AETCR
+	id S1755351Ab0AETDM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 14:03:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754562Ab0AETDJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 14:02:17 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:57653 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754200Ab0AETCP convert rfc822-to-8bit (ORCPT
+	Tue, 5 Jan 2010 14:03:09 -0500
+Received: from e35.co.us.ibm.com ([32.97.110.153]:55241 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754739Ab0AETDG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 14:02:15 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=rI6iHAr7JaAyMOF/KvNJjGa7Gw6Dc7fYBZU+RAbm02SvIL53HEuxRktAiN8C91Lpda
-         hctzxRN+chH8VQ/N6v0qgak4ZsAwVwY43+Mt3+3Giu4UqpdsZ0rm6IJliKE/w9VhDOps
-         dkJV+hoMxfpmReB+9a2remXOTY2syvEUopPIc=
-MIME-Version: 1.0
-In-Reply-To: <20100105110256.D2DF133C4B0@tippex.mynet.homeunix.org>
-References: <20100105110256.D2DF133C4B0@tippex.mynet.homeunix.org>
-Date: Tue, 5 Jan 2010 11:02:14 -0800
-X-Google-Sender-Auth: 346cbdbf5165eba0
-Message-ID: <86802c441001051102j547f10bga2b40fbaee9cf623@mail.gmail.com>
-Subject: Re: Memory probing fails after 2.6.30 (bisected)
-From: Yinghai Lu <yinghai@kernel.org>
-To: Anders Eriksson <aeriksson@fastmail.fm>
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Tue, 5 Jan 2010 14:03:06 -0500
+Subject: Xorg hangs on >= ~2.6.31 with Intel i915 driver
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Zhenyu Wang <zhenyu.z.wang@intel.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       David Woodhouse <David.Woodhouse@intel.com>,
+       David Airlie <airlied@linux.ie>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Eric Anholt <eric@anholt.net>
+Content-Type: text/plain
+Date: Tue, 05 Jan 2010 11:02:48 -0800
+Message-Id: <1262718168.7057.29.camel@nimitz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 5, 2010 at 3:02 AM, Anders Eriksson <aeriksson@fastmail.fm> wrote:
->
-> Hi,
->
-> Upgrading my laptop's kernel, I discovered that it reboots immediately after
-> boot on .31 and later kernels. Grub loads it, but I cannot get one line of
-> text out of it before it reboots, even using boot_delay.
->
-> Bisecting I came up with the following:
->
-> git bisect start
-> # good: [07a2039b8eb0af4ff464efd3dfd95de5c02648c6] Linux 2.6.30
-> git bisect good 07a2039b8eb0af4ff464efd3dfd95de5c02648c6
-> # bad: [74fca6a42863ffacaf7ba6f1936a9f228950f657] Linux 2.6.31
-> git bisect bad 74fca6a42863ffacaf7ba6f1936a9f228950f657
-> # bad: [925d74ae717c9a12d3618eb4b36b9fb632e2cef3] V4L/DVB (11736): videobuf: modify return value of VIDIOC_REQBUFS ioctl
-> git bisect bad 925d74ae717c9a12d3618eb4b36b9fb632e2cef3
-> # bad: [e349792a385ed47390d156155b1a1e19af1bf163] Merge branch 'for-linus' of git://git.kernel.org/pub/scm/linux/kernel/git/tiwai/sound-2.6
-> git bisect bad e349792a385ed47390d156155b1a1e19af1bf163
-> # bad: [c9059598ea8981d02356eead3188bf7fa4d717b8] Merge branch 'for-2.6.31' of git://git.kernel.dk/linux-2.6-block
-> git bisect bad c9059598ea8981d02356eead3188bf7fa4d717b8
-> # bad: [59c288ffb6dfb55bdd6bfe6826ab6203ff791930] Merge branches 'frv' and 'mn10300'
-> git bisect bad 59c288ffb6dfb55bdd6bfe6826ab6203ff791930
-> # bad: [3f6280ddf25fa656d0e17960588e52bee48a7547] Merge branch 'iommu-for-linus' of git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip
-> git bisect bad 3f6280ddf25fa656d0e17960588e52bee48a7547
-> # good: [c44e3ed539e4fc17d6bcb5eaecb894a94de4cc5f] Merge branch 'x86-cpu-for-linus' of git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip
-> git bisect good c44e3ed539e4fc17d6bcb5eaecb894a94de4cc5f
-> # bad: [be15f9d63b97da0065187696962331de6cd9de9e] Merge branch 'x86-xen-for-linus' of git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip
-> git bisect bad be15f9d63b97da0065187696962331de6cd9de9e
-> # bad: [9b29e8228a5c2a169436a1a90a60b1f88cb35cd1] Merge branch 'x86-urgent-for-linus' of git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip
-> git bisect bad 9b29e8228a5c2a169436a1a90a60b1f88cb35cd1
-> # bad: [35d5a9a61490bf39d2e48d7f499c8c801a39ebe9] x86: fix system without memory on node0 ---> Got a BIOS-88 map
-> git bisect bad 35d5a9a61490bf39d2e48d7f499c8c801a39ebe9
-> # bad: [45fbe3ee01b8e463b28c2751b5dcc0cbdc142d90] x86, e820, pci: reserve extra free space near end of RAM ---> Got a BIOS-88 map
-> git bisect bad 45fbe3ee01b8e463b28c2751b5dcc0cbdc142d90
-> # bad: [2b72394e4089643f11669d9610907a1442fe044a] x86: move max_pfn_mapped and max_low_pfn_mapped to setup.c ---> Got a BIOS-88 map
-> git bisect bad 2b72394e4089643f11669d9610907a1442fe044a
-> # good: [6424fb38667fffbbb1b90be0ffd9a0c540db6a4b] x86: remove (null) in /sys kernel_page_tables
-> git bisect good 6424fb38667fffbbb1b90be0ffd9a0c540db6a4b
-> # bad: [89388913f2c88a2cd15d24abab571b17a2596127] x86: unify noexec handling --> Got a BIOS-88 map
-> git bisect bad 89388913f2c88a2cd15d24abab571b17a2596127
-> # bad: [8ecee4620e76aae418bfa0e8cc830e92cb559bbb] Merge branch 'linus' into x86/mm ---> Got a BIOS-88 map
-> git bisect bad 8ecee4620e76aae418bfa0e8cc830e92cb559bbb
->
->
-> I've annotated some bad kernels, where I _do_ get it to start, but it only
-> finds a BIOS-88 map (and hence only 16MB ram, and userspace triggers OOMK).
->
-> I found your name in the commit bisect fingered, hence I turn to you for help.
->
-> Here's a dmesg from the last known good kernel :
->
-> Linux version 2.6.29-01001-g6424fb3 (root@korven) (gcc version 4.3.2 (Gentoo 4.3.2-r3 p1.6, pie-10.1.5) ) #22 SMP Tue Jan 5 11:12:56 CET 2010
-> KERNEL supported cpus:
->  Intel GenuineIntel
->  AMD AuthenticAMD
->  NSC Geode by NSC
->  Cyrix CyrixInstead
->  Centaur CentaurHauls
->  Transmeta GenuineTMx86
->  Transmeta TransmetaCPU
->  UMC UMC UMC UMC
-> BIOS-provided physical RAM map:
->  BIOS-e820: 0000000000000000 - 000000000009ae20 (usable)
->  BIOS-e820: 000000000009ae20 - 00000000000a0000 (reserved)
->  BIOS-e820: 00000000000e0000 - 0000000000100000 (reserved)
->  BIOS-e820: 0000000000100000 - 000000007f7d0000 (usable)
->  BIOS-e820: 000000007f7d0000 - 000000007f7e5600 (reserved)
->  BIOS-e820: 000000007f7e5600 - 000000007f7f8000 (ACPI NVS)
->  BIOS-e820: 000000007f7f8000 - 000000007f800000 (reserved)
->  BIOS-e820: 00000000fec00000 - 00000000fec01000 (reserved)
->  BIOS-e820: 00000000fed20000 - 00000000fed9b000 (reserved)
->  BIOS-e820: 00000000feda0000 - 00000000fedc0000 (reserved)
->  BIOS-e820: 00000000fee00000 - 00000000fee01000 (reserved)
->  BIOS-e820: 00000000ffb00000 - 00000000ffc00000 (reserved)
->  BIOS-e820: 00000000fff00000 - 0000000100000000 (reserved)
-> DMI 2.4 present.
-> last_pfn = 0x7f7d0 max_arch_pfn = 0x100000
-> MTRR default type: uncachable
-> MTRR fixed ranges enabled:
->  00000-9FFFF write-back
->  A0000-BFFFF uncachable
->  C0000-CFFFF write-protect
->  D0000-EFFFF uncachable
->  F0000-FFFFF write-protect
-> MTRR variable ranges enabled:
->  0 base 000000000 mask F80000000 write-back
->  1 base F7F800000 mask FFF800000 uncachable
->  2 base 0FEDA0000 mask FFFFE0000 uncachable
->  3 disabled
->  4 disabled
->  5 disabled
->  6 disabled
->  7 disabled
+I've been seeing hangs when X starts up with newer kernels.  I sometimes
+get a cursor on the screen, sometimes not.  I can move the cursor when I
+can see it, but I can't switch to a text console.  Sysrq works.
 
-whole boot log with debug with boot command line?
+I bisected down to this commit:
 
->
-> I can produce a pic of the dmesg for the fingered commit of needed.
+commit 176616814d700f19914d8509d9f65dec51a6ebf7
+Author: Zhenyu Wang <zhenyu.z.wang@intel.com>
+Date:   Mon Jul 27 12:59:57 2009 +0100
 
-boot that with earlyprintk=vga please.
+http://git.kernel.org/gitweb.cgi?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=176616814d700f19914d8509d9f65dec51a6ebf7
 
-YH
+However, backing that commit out of current mainline
+(v2.6.33-rc2-302-gc5974b8) doesn't seem to do any good.  It didn't back
+out cleanly so I did it by hand and could have easily made a mistake in
+the process.
+
+Doing this:
+
+	http://sr71.net/~dave/linux/xhangs/fix-config.patch
+
+to the config worked around the issue in current mainline, although I'm
+not quite sure why.
+
+Some additional debug information is here:
+
+	http://sr71.net/~dave/linux/xhangs/
+
+including X logs and dmesg from a bunch of boots. 
+
+-- Dave
+
