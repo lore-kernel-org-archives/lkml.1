@@ -1,40 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754751Ab0AERZj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754952Ab0AER1W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754751Ab0AERZj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 12:25:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753978Ab0AERZi
+	id S1754952Ab0AER1W (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 12:27:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754594Ab0AER1V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 12:25:38 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:42924 "EHLO
+	Tue, 5 Jan 2010 12:27:21 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:42940 "EHLO
 	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754214Ab0AERZi (ORCPT
+	with ESMTP id S1754247Ab0AER1U (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 12:25:38 -0500
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Minchan Kim <minchan.kim@gmail.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>, cl@linux-foundation.org,
-       "hugh.dickins" <hugh.dickins@tiscali.co.uk>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [RFC][PATCH 6/8] mm: handle_speculative_fault()
+	Tue, 5 Jan 2010 12:27:20 -0500
+To: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: Arjan van de Ven <arjan@infradead.org>, Arnd Bergmann <arnd@arndb.de>,
+       Ingo Molnar <mingo@elte.hu>, David Miller <davem@davemloft.net>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] sparc: copy_from_user() should not return -EFAULT
 From: Andi Kleen <andi@firstfloor.org>
-References: <20100104182429.833180340@chello.nl>
-	<20100104182813.753545361@chello.nl>
-	<20100105092559.1de8b613.kamezawa.hiroyu@jp.fujitsu.com>
-	<28c262361001042029w4b95f226lf54a3ed6a4291a3b@mail.gmail.com>
-	<20100105134357.4bfb4951.kamezawa.hiroyu@jp.fujitsu.com>
-	<alpine.LFD.2.00.1001042052210.3630@localhost.localdomain>
-	<20100105143046.73938ea2.kamezawa.hiroyu@jp.fujitsu.com>
-	<20100105163939.a3f146fb.kamezawa.hiroyu@jp.fujitsu.com>
-	<alpine.LFD.2.00.1001050707520.3630@localhost.localdomain>
-	<alpine.LFD.2.00.1001050810380.3630@localhost.localdomain>
-Date: Tue, 05 Jan 2010 18:25:32 +0100
-In-Reply-To: <alpine.LFD.2.00.1001050810380.3630@localhost.localdomain> (Linus Torvalds's message of "Tue, 5 Jan 2010 08:14:51 -0800 (PST)")
-Message-ID: <87wrzwbh0z.fsf@basil.nowhere.org>
+References: <20100104154345.GA5671@osiris.boeblingen.de.ibm.com>
+	<20100104174308.0790757c@infradead.org>
+	<20100105094857.GB5480@osiris.boeblingen.de.ibm.com>
+	<201001051347.21309.arnd@arndb.de>
+	<20100105131911.GC5480@osiris.boeblingen.de.ibm.com>
+	<20100105053117.6a7c3377@infradead.org>
+	<20100105152215.GD5480@osiris.boeblingen.de.ibm.com>
+Date: Tue, 05 Jan 2010 18:27:18 +0100
+In-Reply-To: <20100105152215.GD5480@osiris.boeblingen.de.ibm.com> (Heiko Carstens's message of "Tue, 5 Jan 2010 16:22:15 +0100")
+Message-ID: <87skakbgy1.fsf@basil.nowhere.org>
 User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -42,19 +33,20 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds <torvalds@linux-foundation.org> writes:
+Heiko Carstens <heiko.carstens@de.ibm.com> writes:
+
+> Subject: [PATCH] sparc: copy_from_user() should not return -EFAULT
 >
-> etc, because the x86-64 code has obviously never seen the optimized 
-> call-paths, and they need the asm wrappers for full semantics.
+> From: Heiko Carstens <heiko.carstens@de.ibm.com>
+>
+> Callers of copy_from_user() expect it to return the number of bytes
+> it could not copy. In no case it is supposed to return -EFAULT.
+>
+> In case of a detected buffer overflow just return the requested
+> length. In addition one could think of a memset that would clear
+> the size of the target object.
 
-iirc Andrea ran benchmarks at some point and it didn't make too much 
-difference on the systems back then (K8 era). Given K8 has fast atomics.
-
-> Oh well. Somebody who is bored might look at trying to make the wrapper 
-> code in arch/x86/lib/semaphore_32.S work on x86-64 too. It should make the 
-> successful rwsem cases much faster.
-
-Maybe, maybe not.
+Ouch! I would expect this is likely exploitable, e.g. in mount
 
 -Andi
 
