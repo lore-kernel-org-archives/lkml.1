@@ -1,93 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755394Ab0AEUFy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932105Ab0AEUGf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755394Ab0AEUFy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 15:05:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755005Ab0AEUFx
+	id S932105Ab0AEUGf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 15:06:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755526Ab0AEUGa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 15:05:53 -0500
-Received: from kroah.org ([198.145.64.141]:60465 "EHLO coco.kroah.org"
+	Tue, 5 Jan 2010 15:06:30 -0500
+Received: from kroah.org ([198.145.64.141]:50061 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754759Ab0AEUFx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 15:05:53 -0500
-Date: Tue, 5 Jan 2010 12:03:16 -0800
+	id S1755525Ab0AEUG1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jan 2010 15:06:27 -0500
+X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jan  5 12:03:03 2010
+Message-Id: <20100105200303.273164182@mini.kroah.org>
+User-Agent: quilt/0.48-1
+Date: Tue, 05 Jan 2010 12:02:29 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, stable-review@kernel.org
-Subject: [00/39] 2.6.31.10 stable review
-Message-ID: <20100105200316.GA29726@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-06-14)
+       torvalds@linux-foundation.org, stable-review@kernel.org,
+       Greg KH <greg@kroah.com>
+Cc: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
+       linux-mm <linux-mm@kvack.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       David Rientjes <rientjes@google.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>
+Subject: [33/39] memcg: avoid oom-killing innocent task in case of use_hierarchy
+In-Reply-To: <20100105195007.GA23952@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is the start of the stable review cycle for the 2.6.31.10 release.
-There are 39 patches in this series, all will be posted as a response to
-this one.  If anyone has any issues with these being applied, please let
-us know.  If anyone is a maintainer of the proper subsystem, and wants
-to add a Signed-off-by: line to the patch, please respond with it.
+2.6.31-stable review patch.  If anyone has any objections, please let us know.
 
-Responses should be made by Thursday, Jan 7, 00:00:00 UTC.
-Anything received after that time might be too late.
-
-The whole patch series can be found in one patch at:
-      kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.31.10-rc1.gz
-and the diffstat can be found below.
-
-thanks,
-
-greg k-h
+------------------
 
 
- Makefile                                       |    2 +-
- arch/x86/include/asm/processor.h               |    2 +-
- arch/x86/kernel/ptrace.c                       |   16 +-
- drivers/ata/pata_cmd64x.c                      |    2 +-
- drivers/ata/pata_hpt3x2n.c                     |   64 ++++----
- drivers/dma/at_hdmac.c                         |    4 +-
- drivers/hwmon/fschmd.c                         |    2 +-
- drivers/hwmon/sht15.c                          |    6 +-
- drivers/i2c/chips/tsl2550.c                    |    3 +
- drivers/input/keyboard/atkbd.c                 |    9 +
- drivers/md/md.c                                |    8 +-
- drivers/media/video/ov511.c                    |    2 +-
- drivers/net/e100.c                             |   19 ++-
- drivers/net/usb/rtl8150.c                      |    2 +-
- drivers/net/wireless/hostap/hostap_main.c      |    3 +-
- drivers/net/wireless/iwmc3200wifi/iwm.h        |    2 +-
- drivers/net/wireless/libertas/wext.c           |    2 -
- drivers/net/wireless/rt2x00/rt61pci.c          |    5 +
- drivers/platform/x86/acerhdf.c                 |    7 +-
- drivers/s390/block/dasd_diag.c                 |   19 ++-
- drivers/scsi/scsi_transport_fc.c               |   17 ++-
- drivers/usb/misc/appledisplay.c                |    4 +-
- drivers/usb/misc/emi62.c                       |    2 +-
- drivers/usb/musb/musb_gadget_ep0.c             |   14 +-
- drivers/usb/serial/option.c                    |    5 +
- fs/cifs/connect.c                              |   13 +-
- fs/ext4/ext4.h                                 |    6 +-
- fs/ext4/inode.c                                |   36 ++--
- fs/ext4/mballoc.c                              |    6 -
- fs/ext4/super.c                                |    5 +
- fs/namei.c                                     |    1 +
- fs/quota/dquot.c                               |  213 +++++++++++++-----------
- fs/stat.c                                      |   10 +-
- fs/udf/super.c                                 |   32 +++-
- fs/xfs/xfs_log_recover.c                       |    4 +-
- include/linux/fs.h                             |    1 +
- include/linux/quota.h                          |    5 +-
- include/net/ipv6.h                             |    7 +
- include/net/netfilter/ipv6/nf_conntrack_ipv6.h |    2 +-
- kernel/time/clockevents.c                      |   18 ++-
- mm/memcontrol.c                                |    8 +-
- mm/oom_kill.c                                  |    2 +-
- net/ipv6/netfilter/nf_conntrack_l3proto_ipv6.c |   13 ++-
- net/ipv6/netfilter/nf_conntrack_reasm.c        |    7 +-
- net/ipv6/reassembly.c                          |    5 +-
- sound/mips/sgio2audio.c                        |    2 +-
- sound/pcmcia/pdaudiocf/pdaudiocf_pcm.c         |    2 +-
- sound/soc/codecs/wm9712.c                      |    3 +-
- sound/usb/usbaudio.c                           |    2 +-
- 49 files changed, 396 insertions(+), 228 deletions(-)
+From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+
+commit d31f56dbf8bafaacb0c617f9a6f137498d5c7aed upstream
+
+task_in_mem_cgroup(), which is called by select_bad_process() to check whether
+a task can be a candidate for being oom-killed from memcg's limit, checks
+"curr->use_hierarchy"("curr" is the mem_cgroup the task belongs to).
+
+But this check return true(it's false positive) when:
+
+	<some path>/00		use_hierarchy == 0	<- hitting limit
+	  <some path>/00/aa	use_hierarchy == 1	<- "curr"
+
+This leads to killing an innocent task in 00/aa. This patch is a fix for this
+bug. And this patch also fixes the arg for mem_cgroup_print_oom_info(). We
+should print information of mem_cgroup which the task being killed, not current,
+belongs to.
+
+Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Acked-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Reviewed-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ mm/memcontrol.c |    8 +++++++-
+ mm/oom_kill.c   |    2 +-
+ 2 files changed, 8 insertions(+), 2 deletions(-)
+
+--- a/mm/memcontrol.c
++++ b/mm/memcontrol.c
+@@ -496,7 +496,13 @@ int task_in_mem_cgroup(struct task_struc
+ 	task_unlock(task);
+ 	if (!curr)
+ 		return 0;
+-	if (curr->use_hierarchy)
++	/*
++	 * We should check use_hierarchy of "mem" not "curr". Because checking
++	 * use_hierarchy of "curr" here make this function true if hierarchy is
++	 * enabled in "curr" and "curr" is a child of "mem" in *cgroup*
++	 * hierarchy(even if use_hierarchy is disabled in "mem").
++	 */
++	if (mem->use_hierarchy)
+ 		ret = css_is_ancestor(&curr->css, &mem->css);
+ 	else
+ 		ret = (curr == mem);
+--- a/mm/oom_kill.c
++++ b/mm/oom_kill.c
+@@ -400,7 +400,7 @@ static int oom_kill_process(struct task_
+ 		cpuset_print_task_mems_allowed(current);
+ 		task_unlock(current);
+ 		dump_stack();
+-		mem_cgroup_print_oom_info(mem, current);
++		mem_cgroup_print_oom_info(mem, p);
+ 		show_mem();
+ 		if (sysctl_oom_dump_tasks)
+ 			dump_tasks(mem);
+
+
