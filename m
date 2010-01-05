@@ -1,23 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754539Ab0AEAgK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754577Ab0AEAg1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754539Ab0AEAgK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 19:36:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754505Ab0AEAgB
+	id S1754577Ab0AEAg1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 19:36:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754563Ab0AEAgV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 19:36:01 -0500
-Received: from kroah.org ([198.145.64.141]:42402 "EHLO coco.kroah.org"
+	Mon, 4 Jan 2010 19:36:21 -0500
+Received: from kroah.org ([198.145.64.141]:42487 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754497Ab0AEAf7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 19:35:59 -0500
+	id S1754552Ab0AEAgP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jan 2010 19:36:15 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, stable-review@kernel.org
 Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Paolo Bonzini <pbonzini@redhat.com>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
+       alan@lxorguk.ukuu.org.uk, Borislav Petkov <borislav.petkov@amd.com>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Mauro Carvalho Chehab <mchehab@redhat.com>,
+       Aristeu Rozanski <aris@redhat.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Doug Thompson <dougthompson@xmission.com>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 76/97] xen: improvement to wait_for_devices()
-Date: Mon,  4 Jan 2010 16:33:29 -0800
-Message-Id: <1262651630-7354-76-git-send-email-gregkh@suse.de>
+Subject: [PATCH 88/97] x86, msr: Add support for non-contiguous cpumasks
+Date: Mon,  4 Jan 2010 16:33:41 -0800
+Message-Id: <1262651630-7354-88-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.6
 In-Reply-To: <20100105003133.GA7199@kroah.com>
 References: <20100105003133.GA7199@kroah.com>
@@ -25,44 +29,244 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Paolo Bonzini <pbonzini@redhat.com>
+From: Borislav Petkov <borislav.petkov@amd.com>
 
-commit f8dc33088febc63286b7a60e6b678de8e064de8e upstream.
+commit 505422517d3f126bb939439e9d15dece94e11d2c upstream.
 
-When printing a warning about a timed-out device, print the
-current state of both ends of the device connection (i.e., backend as
-well as frontend).  This backports half of changeset 146 from the
-Xenbits tree.
+The current rd/wrmsr_on_cpus helpers assume that the supplied
+cpumasks are contiguous. However, there are machines out there
+like some K8 multinode Opterons which have a non-contiguous core
+enumeration on each node (e.g. cores 0,2 on node 0 instead of 0,1), see
+http://www.gossamer-threads.com/lists/linux/kernel/1160268.
 
-Cc: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Signed-off-by: Paolo Bonzini <pbonzini@redhat.com>
-Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+This patch fixes out-of-bounds writes (see URL above) by adding per-CPU
+msr structs which are used on the respective cores.
+
+Additionally, two helpers, msrs_{alloc,free}, are provided for use by
+the callers of the MSR accessors.
+
+Cc: H. Peter Anvin <hpa@zytor.com>
+Cc: Mauro Carvalho Chehab <mchehab@redhat.com>
+Cc: Aristeu Rozanski <aris@redhat.com>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Doug Thompson <dougthompson@xmission.com>
+Signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
+LKML-Reference: <20091211171440.GD31998@aftab>
+Signed-off-by: H. Peter Anvin <hpa@zytor.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/xen/xenbus/xenbus_probe.c |    9 ++++++---
- 1 files changed, 6 insertions(+), 3 deletions(-)
+ arch/x86/include/asm/msr.h |    3 ++
+ arch/x86/lib/msr.c         |   26 +++++++++++++++++++++---
+ drivers/edac/amd64_edac.c  |   46 ++++++++++++++++---------------------------
+ 3 files changed, 42 insertions(+), 33 deletions(-)
 
-diff --git a/drivers/xen/xenbus/xenbus_probe.c b/drivers/xen/xenbus/xenbus_probe.c
-index 19bce3e..9246a8c 100644
---- a/drivers/xen/xenbus/xenbus_probe.c
-+++ b/drivers/xen/xenbus/xenbus_probe.c
-@@ -885,10 +885,13 @@ static int print_device_status(struct device *dev, void *data)
- 		/* Information only: is this too noisy? */
- 		printk(KERN_INFO "XENBUS: Device with no driver: %s\n",
- 		       xendev->nodename);
--	} else if (xendev->state != XenbusStateConnected) {
-+	} else if (xendev->state < XenbusStateConnected) {
-+		enum xenbus_state rstate = XenbusStateUnknown;
-+		if (xendev->otherend)
-+			rstate = xenbus_read_driver_state(xendev->otherend);
- 		printk(KERN_WARNING "XENBUS: Timeout connecting "
--		       "to device: %s (state %d)\n",
--		       xendev->nodename, xendev->state);
-+		       "to device: %s (local state %d, remote state %d)\n",
-+		       xendev->nodename, xendev->state, rstate);
+diff --git a/arch/x86/include/asm/msr.h b/arch/x86/include/asm/msr.h
+index 9a00219..bb30776 100644
+--- a/arch/x86/include/asm/msr.h
++++ b/arch/x86/include/asm/msr.h
+@@ -244,6 +244,9 @@ do {                                                            \
+ 
+ #define write_rdtscp_aux(val) wrmsr(0xc0000103, (val), 0)
+ 
++struct msr *msrs_alloc(void);
++void msrs_free(struct msr *msrs);
++
+ #ifdef CONFIG_SMP
+ int rdmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 *l, u32 *h);
+ int wrmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 l, u32 h);
+diff --git a/arch/x86/lib/msr.c b/arch/x86/lib/msr.c
+index 41628b1..8728341 100644
+--- a/arch/x86/lib/msr.c
++++ b/arch/x86/lib/msr.c
+@@ -7,7 +7,6 @@ struct msr_info {
+ 	u32 msr_no;
+ 	struct msr reg;
+ 	struct msr *msrs;
+-	int off;
+ 	int err;
+ };
+ 
+@@ -18,7 +17,7 @@ static void __rdmsr_on_cpu(void *info)
+ 	int this_cpu = raw_smp_processor_id();
+ 
+ 	if (rv->msrs)
+-		reg = &rv->msrs[this_cpu - rv->off];
++		reg = per_cpu_ptr(rv->msrs, this_cpu);
+ 	else
+ 		reg = &rv->reg;
+ 
+@@ -32,7 +31,7 @@ static void __wrmsr_on_cpu(void *info)
+ 	int this_cpu = raw_smp_processor_id();
+ 
+ 	if (rv->msrs)
+-		reg = &rv->msrs[this_cpu - rv->off];
++		reg = per_cpu_ptr(rv->msrs, this_cpu);
+ 	else
+ 		reg = &rv->reg;
+ 
+@@ -80,7 +79,6 @@ static void __rwmsr_on_cpus(const struct cpumask *mask, u32 msr_no,
+ 
+ 	memset(&rv, 0, sizeof(rv));
+ 
+-	rv.off    = cpumask_first(mask);
+ 	rv.msrs	  = msrs;
+ 	rv.msr_no = msr_no;
+ 
+@@ -120,6 +118,26 @@ void wrmsr_on_cpus(const struct cpumask *mask, u32 msr_no, struct msr *msrs)
+ }
+ EXPORT_SYMBOL(wrmsr_on_cpus);
+ 
++struct msr *msrs_alloc(void)
++{
++	struct msr *msrs = NULL;
++
++	msrs = alloc_percpu(struct msr);
++	if (!msrs) {
++		pr_warning("%s: error allocating msrs\n", __func__);
++		return NULL;
++	}
++
++	return msrs;
++}
++EXPORT_SYMBOL(msrs_alloc);
++
++void msrs_free(struct msr *msrs)
++{
++	free_percpu(msrs);
++}
++EXPORT_SYMBOL(msrs_free);
++
+ /* These "safe" variants are slower and should be used when the target MSR
+    may not actually exist. */
+ static void __rdmsr_safe_on_cpu(void *info)
+diff --git a/drivers/edac/amd64_edac.c b/drivers/edac/amd64_edac.c
+index 6ee408f..d271509 100644
+--- a/drivers/edac/amd64_edac.c
++++ b/drivers/edac/amd64_edac.c
+@@ -13,6 +13,8 @@ module_param(report_gart_errors, int, 0644);
+ static int ecc_enable_override;
+ module_param(ecc_enable_override, int, 0644);
+ 
++static struct msr *msrs;
++
+ /* Lookup table for all possible MC control instances */
+ struct amd64_pvt;
+ static struct mem_ctl_info *mci_lookup[EDAC_MAX_NUMNODES];
+@@ -2632,8 +2634,7 @@ static void get_cpus_on_this_dct_cpumask(struct cpumask *mask, int nid)
+ static bool amd64_nb_mce_bank_enabled_on_node(int nid)
+ {
+ 	cpumask_var_t mask;
+-	struct msr *msrs;
+-	int cpu, nbe, idx = 0;
++	int cpu, nbe;
+ 	bool ret = false;
+ 
+ 	if (!zalloc_cpumask_var(&mask, GFP_KERNEL)) {
+@@ -2644,32 +2645,22 @@ static bool amd64_nb_mce_bank_enabled_on_node(int nid)
+ 
+ 	get_cpus_on_this_dct_cpumask(mask, nid);
+ 
+-	msrs = kzalloc(sizeof(struct msr) * cpumask_weight(mask), GFP_KERNEL);
+-	if (!msrs) {
+-		amd64_printk(KERN_WARNING, "%s: error allocating msrs\n",
+-			      __func__);
+-		free_cpumask_var(mask);
+-		 return false;
+-	}
+-
+ 	rdmsr_on_cpus(mask, MSR_IA32_MCG_CTL, msrs);
+ 
+ 	for_each_cpu(cpu, mask) {
+-		nbe = msrs[idx].l & K8_MSR_MCGCTL_NBE;
++		struct msr *reg = per_cpu_ptr(msrs, cpu);
++		nbe = reg->l & K8_MSR_MCGCTL_NBE;
+ 
+ 		debugf0("core: %u, MCG_CTL: 0x%llx, NB MSR is %s\n",
+-			cpu, msrs[idx].q,
++			cpu, reg->q,
+ 			(nbe ? "enabled" : "disabled"));
+ 
+ 		if (!nbe)
+ 			goto out;
+-
+-		idx++;
  	}
+ 	ret = true;
+ 
+ out:
+-	kfree(msrs);
+ 	free_cpumask_var(mask);
+ 	return ret;
+ }
+@@ -2677,8 +2668,7 @@ out:
+ static int amd64_toggle_ecc_err_reporting(struct amd64_pvt *pvt, bool on)
+ {
+ 	cpumask_var_t cmask;
+-	struct msr *msrs = NULL;
+-	int cpu, idx = 0;
++	int cpu;
+ 
+ 	if (!zalloc_cpumask_var(&cmask, GFP_KERNEL)) {
+ 		amd64_printk(KERN_WARNING, "%s: error allocating mask\n",
+@@ -2688,34 +2678,27 @@ static int amd64_toggle_ecc_err_reporting(struct amd64_pvt *pvt, bool on)
+ 
+ 	get_cpus_on_this_dct_cpumask(cmask, pvt->mc_node_id);
+ 
+-	msrs = kzalloc(sizeof(struct msr) * cpumask_weight(cmask), GFP_KERNEL);
+-	if (!msrs) {
+-		amd64_printk(KERN_WARNING, "%s: error allocating msrs\n",
+-			     __func__);
+-		return -ENOMEM;
+-	}
+-
+ 	rdmsr_on_cpus(cmask, MSR_IA32_MCG_CTL, msrs);
+ 
+ 	for_each_cpu(cpu, cmask) {
+ 
++		struct msr *reg = per_cpu_ptr(msrs, cpu);
++
+ 		if (on) {
+-			if (msrs[idx].l & K8_MSR_MCGCTL_NBE)
++			if (reg->l & K8_MSR_MCGCTL_NBE)
+ 				pvt->flags.ecc_report = 1;
+ 
+-			msrs[idx].l |= K8_MSR_MCGCTL_NBE;
++			reg->l |= K8_MSR_MCGCTL_NBE;
+ 		} else {
+ 			/*
+ 			 * Turn off ECC reporting only when it was off before
+ 			 */
+ 			if (!pvt->flags.ecc_report)
+-				msrs[idx].l &= ~K8_MSR_MCGCTL_NBE;
++				reg->l &= ~K8_MSR_MCGCTL_NBE;
+ 		}
+-		idx++;
+ 	}
+ 	wrmsr_on_cpus(cmask, MSR_IA32_MCG_CTL, msrs);
+ 
+-	kfree(msrs);
+ 	free_cpumask_var(cmask);
  
  	return 0;
+@@ -3193,6 +3176,8 @@ static int __init amd64_edac_init(void)
+ 	if (cache_k8_northbridges() < 0)
+ 		return err;
+ 
++	msrs = msrs_alloc();
++
+ 	err = pci_register_driver(&amd64_pci_driver);
+ 	if (err)
+ 		return err;
+@@ -3228,6 +3213,9 @@ static void __exit amd64_edac_exit(void)
+ 		edac_pci_release_generic_ctl(amd64_ctl_pci);
+ 
+ 	pci_unregister_driver(&amd64_pci_driver);
++
++	msrs_free(msrs);
++	msrs = NULL;
+ }
+ 
+ module_init(amd64_edac_init);
 -- 
 1.6.6
 
