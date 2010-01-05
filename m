@@ -1,243 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932137Ab0AEUpN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755808Ab0AEUrM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932137Ab0AEUpN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 15:45:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755541Ab0AEUpK
+	id S1755808Ab0AEUrM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 15:47:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755541Ab0AEUrK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 15:45:10 -0500
-Received: from [206.15.93.42] ([206.15.93.42]:21187 "EHLO
-	visionfs1.visionengravers.com" rhost-flags-FAIL-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1755504Ab0AEUpJ (ORCPT
+	Tue, 5 Jan 2010 15:47:10 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:51192 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754817Ab0AEUrI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 15:45:09 -0500
-From: H Hartley Sweeten <hartleys@visionengravers.com>
-To: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH] fs/dcache.c: CodingStyle cleanup
-Date: Tue, 5 Jan 2010 13:45:18 -0700
-Cc: linux-fsdevel@vger.kernel.org
+	Tue, 5 Jan 2010 15:47:08 -0500
+Date: Tue, 5 Jan 2010 12:46:12 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Peter Zijlstra <peterz@infradead.org>
+cc: Christoph Lameter <cl@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Minchan Kim <minchan.kim@gmail.com>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "hugh.dickins" <hugh.dickins@tiscali.co.uk>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [RFC][PATCH 6/8] mm: handle_speculative_fault()
+In-Reply-To: <1262723356.4049.11.camel@laptop>
+Message-ID: <alpine.LFD.2.00.1001051241190.3630@localhost.localdomain>
+References: <20100104182429.833180340@chello.nl>  <20100104182813.753545361@chello.nl>  <20100105092559.1de8b613.kamezawa.hiroyu@jp.fujitsu.com>  <28c262361001042029w4b95f226lf54a3ed6a4291a3b@mail.gmail.com>  <20100105134357.4bfb4951.kamezawa.hiroyu@jp.fujitsu.com>
+  <alpine.LFD.2.00.1001042052210.3630@localhost.localdomain>  <20100105143046.73938ea2.kamezawa.hiroyu@jp.fujitsu.com>  <20100105163939.a3f146fb.kamezawa.hiroyu@jp.fujitsu.com>  <alpine.LFD.2.00.1001050707520.3630@localhost.localdomain> 
+ <alpine.LFD.2.00.1001050810380.3630@localhost.localdomain>  <87wrzwbh0z.fsf@basil.nowhere.org>  <alpine.LFD.2.00.1001050950500.3630@localhost.localdomain>  <alpine.DEB.2.00.1001051211000.2246@router.home>  <alpine.LFD.2.00.1001051019280.3630@localhost.localdomain>
+ <1262723356.4049.11.camel@laptop>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <201001051345.18553.hartleys@visionengravers.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Cleanup EXPORT* macros according to Documantation/CodingStyle.
 
-Move EXPORT* macros to the line immediately after the closing
-function brace.
 
-Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
+On Tue, 5 Jan 2010, Peter Zijlstra wrote:
+>
+> On Tue, 2010-01-05 at 10:25 -0800, Linus Torvalds wrote:
+> > The readers are all hitting the 
+> > lock (and you can try to solve the O(n*2) issue with back-off, but quite 
+> > frankly, anybody who does that has basically already lost 
+> 
+> /me sneaks in a reference to local spinning spinlocks just to have them
+> mentioned.
 
----
+Were you in on the discussion with (I think) Andy Glew about that? I don't 
+think he ever came up with an actual workable solution, but he tried. He 
+worked for Intel at the time (maybe still does), and was looking at 
+architectural improvements. I think you need a "compare-and-exchange-2- 
+separate-words" instruction to make it work (not "cmpxchg8/16b" - 
+literally two _different_ words).
 
-diff --git a/fs/dcache.c b/fs/dcache.c
-index 953173a..4365998 100644
---- a/fs/dcache.c
-+++ b/fs/dcache.c
-@@ -257,6 +257,7 @@ kill_it:
- 	if (dentry)
- 		goto repeat;
- }
-+EXPORT_SYMBOL(dput);
- 
- /**
-  * d_invalidate - invalidate a dentry
-@@ -314,6 +315,7 @@ int d_invalidate(struct dentry * dentry)
- 	spin_unlock(&dcache_lock);
- 	return 0;
- }
-+EXPORT_SYMBOL(d_invalidate);
- 
- /* This should be called _only_ with dcache_lock held */
- 
-@@ -328,6 +330,7 @@ struct dentry * dget_locked(struct dentry *dentry)
- {
- 	return __dget_locked(dentry);
- }
-+EXPORT_SYMBOL(dget_locked);
- 
- /**
-  * d_find_alias - grab a hashed alias of inode
-@@ -384,6 +387,7 @@ struct dentry * d_find_alias(struct inode *inode)
- 	}
- 	return de;
- }
-+EXPORT_SYMBOL(d_find_alias);
- 
- /*
-  *	Try to kill dentries associated with this inode.
-@@ -408,6 +412,7 @@ restart:
- 	}
- 	spin_unlock(&dcache_lock);
- }
-+EXPORT_SYMBOL(d_prune_aliases);
- 
- /*
-  * Throw away a dentry - free the inode, dput the parent.  This requires that
-@@ -610,6 +615,7 @@ void shrink_dcache_sb(struct super_block * sb)
- {
- 	__shrink_dcache_sb(sb, NULL, 0);
- }
-+EXPORT_SYMBOL(shrink_dcache_sb);
- 
- /*
-  * destroy a single subtree of dentries for unmount
-@@ -792,6 +798,7 @@ positive:
- 	spin_unlock(&dcache_lock);
- 	return 1;
- }
-+EXPORT_SYMBOL(have_submounts);
- 
- /*
-  * Search the dentry child list for the specified parent,
-@@ -876,6 +883,7 @@ void shrink_dcache_parent(struct dentry * parent)
- 	while ((found = select_parent(parent)) != 0)
- 		__shrink_dcache_sb(sb, &found, 0);
- }
-+EXPORT_SYMBOL(shrink_dcache_parent);
- 
- /*
-  * Scan `nr' dentries and return the number which remain.
-@@ -968,6 +976,7 @@ struct dentry *d_alloc(struct dentry * parent, const struct qstr *name)
- 
- 	return dentry;
- }
-+EXPORT_SYMBOL(d_alloc);
- 
- struct dentry *d_alloc_name(struct dentry *parent, const char *name)
- {
-@@ -1012,6 +1021,7 @@ void d_instantiate(struct dentry *entry, struct inode * inode)
- 	spin_unlock(&dcache_lock);
- 	security_d_instantiate(entry, inode);
- }
-+EXPORT_SYMBOL(d_instantiate);
- 
- /**
-  * d_instantiate_unique - instantiate a non-aliased dentry
-@@ -1108,6 +1118,7 @@ struct dentry * d_alloc_root(struct inode * root_inode)
- 	}
- 	return res;
- }
-+EXPORT_SYMBOL(d_alloc_root);
- 
- static inline struct hlist_head *d_hash(struct dentry *parent,
- 					unsigned long hash)
-@@ -1225,6 +1236,7 @@ struct dentry *d_splice_alias(struct inode *inode, struct dentry *dentry)
- 		d_add(dentry, inode);
- 	return new;
- }
-+EXPORT_SYMBOL(d_splice_alias);
- 
- /**
-  * d_add_ci - lookup or allocate new dentry with case-exact name
-@@ -1314,6 +1326,7 @@ err_out:
- 	iput(inode);
- 	return ERR_PTR(error);
- }
-+EXPORT_SYMBOL(d_add_ci);
- 
- /**
-  * d_lookup - search for a dentry
-@@ -1357,6 +1370,7 @@ struct dentry * d_lookup(struct dentry * parent, struct qstr * name)
- 	} while (read_seqretry(&rename_lock, seq));
- 	return dentry;
- }
-+EXPORT_SYMBOL(d_lookup);
- 
- struct dentry * __d_lookup(struct dentry * parent, struct qstr * name)
- {
-@@ -1483,6 +1497,7 @@ int d_validate(struct dentry *dentry, struct dentry *dparent)
- out:
- 	return 0;
- }
-+EXPORT_SYMBOL(d_validate);
- 
- /*
-  * When a file is deleted, we have two options:
-@@ -1528,6 +1543,7 @@ void d_delete(struct dentry * dentry)
- 
- 	fsnotify_nameremove(dentry, isdir);
- }
-+EXPORT_SYMBOL(d_delete);
- 
- static void __d_rehash(struct dentry * entry, struct hlist_head *list)
- {
-@@ -1556,6 +1572,7 @@ void d_rehash(struct dentry * entry)
- 	spin_unlock(&entry->d_lock);
- 	spin_unlock(&dcache_lock);
- }
-+EXPORT_SYMBOL(d_rehash);
- 
- /*
-  * When switching names, the actual string doesn't strictly have to
-@@ -1702,6 +1719,7 @@ void d_move(struct dentry * dentry, struct dentry * target)
- 	d_move_locked(dentry, target);
- 	spin_unlock(&dcache_lock);
- }
-+EXPORT_SYMBOL(d_move);
- 
- /**
-  * d_ancestor - search for an ancestor
-@@ -1868,6 +1886,7 @@ shouldnt_be_hashed:
- 	spin_unlock(&dcache_lock);
- 	BUG();
- }
-+EXPORT_SYMBOL_GPL(d_materialise_unique);
- 
- static int prepend(char **buffer, int *buflen, const char *str, int namelen)
- {
-@@ -2005,6 +2024,7 @@ char *d_path(const struct path *path, char *buf, int buflen)
- 	path_put(&root);
- 	return res;
- }
-+EXPORT_SYMBOL(d_path);
- 
- /*
-  * Helper function for dentry_operations.d_dname() members
-@@ -2228,6 +2248,7 @@ ino_t find_inode_number(struct dentry *dir, struct qstr *name)
- 	}
- 	return ino;
- }
-+EXPORT_SYMBOL(find_inode_number);
- 
- static __initdata unsigned long dhash_entries;
- static int __init set_dhash_entries(char *str)
-@@ -2297,6 +2318,7 @@ static void __init dcache_init(void)
- 
- /* SLAB cache for __getname() consumers */
- struct kmem_cache *names_cachep __read_mostly;
-+EXPORT_SYMBOL(names_cachep);
- 
- EXPORT_SYMBOL(d_genocide);
- 
-@@ -2326,26 +2348,3 @@ void __init vfs_caches_init(unsigned long mempages)
- 	bdev_cache_init();
- 	chrdev_init();
- }
--
--EXPORT_SYMBOL(d_alloc);
--EXPORT_SYMBOL(d_alloc_root);
--EXPORT_SYMBOL(d_delete);
--EXPORT_SYMBOL(d_find_alias);
--EXPORT_SYMBOL(d_instantiate);
--EXPORT_SYMBOL(d_invalidate);
--EXPORT_SYMBOL(d_lookup);
--EXPORT_SYMBOL(d_move);
--EXPORT_SYMBOL_GPL(d_materialise_unique);
--EXPORT_SYMBOL(d_path);
--EXPORT_SYMBOL(d_prune_aliases);
--EXPORT_SYMBOL(d_rehash);
--EXPORT_SYMBOL(d_splice_alias);
--EXPORT_SYMBOL(d_add_ci);
--EXPORT_SYMBOL(d_validate);
--EXPORT_SYMBOL(dget_locked);
--EXPORT_SYMBOL(dput);
--EXPORT_SYMBOL(find_inode_number);
--EXPORT_SYMBOL(have_submounts);
--EXPORT_SYMBOL(names_cachep);
--EXPORT_SYMBOL(shrink_dcache_parent);
--EXPORT_SYMBOL(shrink_dcache_sb);
+I think m68k can do it. Even then it's a lot more expensive than a regular 
+lock for any reasonable common case.
+
+		Linus
