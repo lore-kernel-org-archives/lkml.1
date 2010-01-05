@@ -1,104 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754194Ab0AECcc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754545Ab0AECgK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754194Ab0AECcc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 21:32:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754158Ab0AECcb
+	id S1754545Ab0AECgK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 21:36:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754224Ab0AECgI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 21:32:31 -0500
-Received: from shadbolt.e.decadent.org.uk ([88.96.1.126]:52481 "EHLO
-	shadbolt.e.decadent.org.uk" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753776Ab0AECc3 (ORCPT
+	Mon, 4 Jan 2010 21:36:08 -0500
+Received: from mms3.broadcom.com ([216.31.210.19]:4705 "EHLO MMS3.broadcom.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754189Ab0AECgH convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 21:32:29 -0500
-From: Ben Hutchings <ben@decadent.org.uk>
-To: Matthew Burgess <matthew@linuxfromscratch.org>
-Cc: netdev@vger.kernel.org, davem@davemloft.net, linux-kernel@vger.kernel.org
-In-Reply-To: <4B37FCB3.9000800@linuxfromscratch.org>
-References: <4B37FCB3.9000800@linuxfromscratch.org>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-g3mqikQz69KrcvV503Xf"
-Date: Tue, 05 Jan 2010 02:32:23 +0000
-Message-ID: <1262658743.26813.8.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 
-X-SA-Exim-Connect-IP: 192.168.4.185
-X-SA-Exim-Mail-From: ben@decadent.org.uk
-Subject: Re: Compilation issues using netlink.h
-X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
-X-SA-Exim-Scanned: Yes (on shadbolt.decadent.org.uk)
+	Mon, 4 Jan 2010 21:36:07 -0500
+X-Server-Uuid: B55A25B1-5D7D-41F8-BC53-C57E7AD3C201
+From: "Naren (Narendra) Sankar" <nsankar@broadcom.com>
+To: "Robert Hancock" <hancockrwd@gmail.com>, "Jarod Wilson" <jarod@redhat.com>
+cc: "Greg KH" <greg@kroah.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Scott Davilla" <davilla@4pi.com>,
+       "Manu Abraham" <abraham.manu@gmail.com>
+Date: Mon, 4 Jan 2010 18:36:01 -0800
+Subject: RE: [PATCH v3] staging: add Broadcom Crystal HD driver
+Thread-Topic: [PATCH v3] staging: add Broadcom Crystal HD driver
+Thread-Index: AcqNrdk2wJ92LIm6Q/m/tW5n1DWp9gAAbmYQ
+Message-ID: <80A6ED01A151614884EE6C5D6AF0F2E90460D23460@SJEXCHCCR01.corp.ad.broadcom.com>
+References: <20100104230227.GA14314@redhat.com>
+ <20100104231949.GA14496@kroah.com> <4B427AF5.2030805@redhat.com>
+ <4B42A23B.4080704@gmail.com>
+In-Reply-To: <4B42A23B.4080704@gmail.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+MIME-Version: 1.0
+X-WSS-ID: 675C7A193J860217007-01-01
+Content-Type: text/plain;
+ charset=us-ascii
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+The register bits come straight from the HW RTL. So this way there are no errors or typos. It would be easier for maintenance from our side since this is generated automagically. And when we add new HW, again it is a script that spews this out.
 
---=-g3mqikQz69KrcvV503Xf
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Not absolutely necessary, but worried that cleanups may cause more problems than fix. 
 
-On Mon, 2009-12-28 at 00:32 +0000, Matthew Burgess wrote:
-> Hi,
->=20
-> The test case below simplifies a failure I see when trying to compile=20
-> strace using kernel headers from Linux-2.6.32.2:
->=20
-> #include <linux/netlink.h>
-> struct sockaddr_nl nl;
-> int main() {
->    return 0;
-> }
->=20
-> $ gcc -o test test.c
-> In file included from test.c:1:
-> /usr/include/linux/netlink.h:34: error: expected=20
-> specifier-qualifier-list before 'sa_family_t'
->=20
-> The comment in netlink.h suggests that 'sa_family_t' is expected to be=20
-> found in linux/socket.h, but since commit 9c501935a3 ("net: Support=20
-> inclusion of <linux/socket.h> before <sys/socket.h>") that appears to=20
-> not be true anymore, it's now in sys/socket.h.
 
-Right.  I'm aware of this and suggested that it should be reverted, but
-David Miller reckons I was right in the first place.
+Naren Sankar (+1 408 218 6327)
+Architect/PLM
+Media PC, Broadband Communications Group
+Broadcom Corp.
 
-> Sure enough, if I change=20
-> the include in netlink.h to pull in sys/socket.h instead of=20
-> linux/socket.h, that enables the test case (and strace) to compile=20
-> again, but I wasn't sure if it was really the right thing to do.
+-----Original Message-----
+From: Robert Hancock [mailto:hancockrwd@gmail.com] 
+Sent: Monday, January 04, 2010 6:22 PM
+To: Jarod Wilson
+Cc: Greg KH; linux-kernel@vger.kernel.org; Scott Davilla; Naren (Narendra) Sankar; Manu Abraham
+Subject: Re: [PATCH v3] staging: add Broadcom Crystal HD driver
 
-I don't think it is - that will bring in many more definitions.
+On 01/04/2010 05:34 PM, Jarod Wilson wrote:
+> On 1/4/10 6:19 PM, Greg KH wrote:
+>> On Mon, Jan 04, 2010 at 06:02:27PM -0500, Jarod Wilson wrote:
+>>> This patch supersedes the earlier ones sent by Manu Abraham to add
+>>> the Broadcom Crystal HD driver to the staging tree, per discussion
+>>> with him about it. I've been working with Broadcom's Naren Sankar
+>>> on this driver for a number of months, and had already talked Naren
+>>> about submitting this on Broadcom's behalf, didn't expect anyone
+>>> else to jump on submitting it as quickly as Manu did. ;)
+>>
+>> Looks good, I'll queue it up tomorrow.
+>
+> Nb: it looks like the thing is so massive (~935k), its not showing up on
+> lkml (at least, not in a timely fashion), so for the interested:
+>
+> <http://people.redhat.com/jwilson/misc/broadcom-crystalhd-decoder-driver-staging.patch>
+>
+> Thanks much!
 
-There are actually a whole lot of kernel networking headers which
-require sa_family_t when included by user-space code.  Until
-<linux/socket.h> and <sys/socket.h> cooperate to define sa_family_t
-once, you will just have to include <sys/socket.h> before kernel
-networking headers.
+Literally the majority of the code is #defines for what looks like 
+register bits, etc - is all that really necessary?
 
-Ben.
 
---=20
-Ben Hutchings
-The obvious mathematical breakthrough [to break modern encryption] would be
-development of an easy way to factor large prime numbers. - Bill Gates
-
---=-g3mqikQz69KrcvV503Xf
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iQIVAwUAS0Kkree/yOyVhhEJAQIWaw//UdNSAIQLYyg2S7jEhMdeYtIVMGRFs9IZ
-k4PzE6gZVoS3611wfJEiuc41Dput/YF2Np7+gYw8Ng2zHtlc5lAtjGzGLybwmKb8
-SMZgDS+2NIeTKyxxMElx+btulpnMLS5iAFA+DaoG+ZM8YOZh0PWSBQ7YzYKfYwMe
-+NYJrFA588+YyB0yOMqe4yEhKBHaBXpMaCI73HUXmPGHDON/DU5vY6Q3/UStGyqC
-yIgzSqnEaioeGa2bZdBmppdk6x9q5xJ3FYLDiZ4/mT0YVAJSEoLV+hVlMoKMAmFc
-pkehza7JRh2cop66TCm/3UvLgby3wXgEskI44F3+HflUzpQ12bFrYC8BHKAIZDVH
-3vGiV7x00wwNPfnTriNsrHsJz+RhHnHTTgwGO/xxkzkA42gCfZUyZVgn/7OTdwUr
-nsjtT+knRRkap+EHEL4Bi7nmjeKYxZfim1PlioCK3w4dyJ3htj2CyhckALoMCv0P
-fVzDZfG4L0OrlTzXofCk1rlQboZQAKawo4ZAip/jETCTFhlTGCzTH3+PmdWNmBTU
-lklei/Tv9doF5Q4RhpNeFLKYK18qjlEthWH2LakQbrepR0Qa26aqfKjqphg6x/Ph
-dJSN3EDgF/JfUZEPlAKLWSae8xFJQhCU1rL9XXg7TtP7v7xZriZApMjxBr/upoV+
-yQYj264DkuE=
-=0yBq
------END PGP SIGNATURE-----
-
---=-g3mqikQz69KrcvV503Xf--
