@@ -1,52 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755173Ab0AEQsB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932081Ab0AEQzV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755173Ab0AEQsB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 11:48:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755162Ab0AEQr7
+	id S932081Ab0AEQzV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 11:55:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754929Ab0AEQzS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 11:47:59 -0500
-Received: from [206.15.93.42] ([206.15.93.42]:8207 "EHLO
-	visionfs1.visionengravers.com" rhost-flags-FAIL-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1755163Ab0AEQr6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 11:47:58 -0500
-From: H Hartley Sweeten <hartleys@visionengravers.com>
-To: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH] drivers/media/video/tveeprom.c: use %pM to show MAC address
-Date: Tue, 5 Jan 2010 09:47:36 -0700
-Cc: linux-media@vger.kernel.org, davem@davemloft.net
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Tue, 5 Jan 2010 11:55:18 -0500
+Received: from poutre.nerim.net ([62.4.16.124]:50219 "EHLO poutre.nerim.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754672Ab0AEQzQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jan 2010 11:55:16 -0500
+Date: Tue, 5 Jan 2010 17:55:11 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Roel Kluin <roel.kluin@gmail.com>
+Cc: "Ben Dooks (embedded platforms)" <ben-linux@fluff.org>,
+       linux-i2c@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] i2c: test off by one in {piix4,vt596}_transaction()
+Message-ID: <20100105175511.39dc6c42@hyperion.delvare>
+In-Reply-To: <4B3773F2.3010703@gmail.com>
+References: <4B3773F2.3010703@gmail.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <201001050947.36961.hartleys@visionengravers.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use the %pM kernel extension to display the MAC address.
+On Sun, 27 Dec 2009 15:49:22 +0100, Roel Kluin wrote:
+> With `while (timeout++ < MAX_TIMEOUT)' timeout reaches MAX_TIMEOUT + 1 after the loop
+> This is probably unlikely to produce a problem.
+> 
+> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+> ---
+>  drivers/i2c/busses/i2c-piix4.c  |    2 +-
+>  drivers/i2c/busses/i2c-viapro.c |    2 +-
+>  2 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/i2c/busses/i2c-piix4.c b/drivers/i2c/busses/i2c-piix4.c
+> index 1e245e9..d8e0df0 100644
+> --- a/drivers/i2c/busses/i2c-piix4.c
+> +++ b/drivers/i2c/busses/i2c-piix4.c
+> @@ -329,7 +329,7 @@ static int piix4_transaction(void)
+>  		msleep(1);
+>  
+>  	/* If the SMBus is still busy, we give up */
+> -	if (timeout >= MAX_TIMEOUT) {
+> +	if (timeout > MAX_TIMEOUT) {
+>  		dev_err(&piix4_adapter.dev, "SMBus Timeout!\n");
+>  		result = -ETIMEDOUT;
+>  	}
+> diff --git a/drivers/i2c/busses/i2c-viapro.c b/drivers/i2c/busses/i2c-viapro.c
+> index e4b1543..8a2e0d5 100644
+> --- a/drivers/i2c/busses/i2c-viapro.c
+> +++ b/drivers/i2c/busses/i2c-viapro.c
+> @@ -168,7 +168,7 @@ static int vt596_transaction(u8 size)
+>  	} while ((temp & 0x01) && (timeout++ < MAX_TIMEOUT));
+>  
+>  	/* If the SMBus is still busy, we give up */
+> -	if (timeout >= MAX_TIMEOUT) {
+> +	if (timeout > MAX_TIMEOUT) {
+>  		result = -ETIMEDOUT;
+>  		dev_err(&vt596_adapter.dev, "SMBus timeout!\n");
+>  	}
 
-Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
-Cc: David S. Miller <davem@davemloft.net>
+That's right... but I'd rather change the loops to use "++timeout" and
+leave the conditions as is (or maybe change it to "=="). I think it's
+easier to read that way. Would that be OK with you?
 
----
-
-Repost due to merge issues.
-
-diff --git a/drivers/media/video/tveeprom.c b/drivers/media/video/tveeprom.c
-index d533ea5..0a87749 100644
---- a/drivers/media/video/tveeprom.c
-+++ b/drivers/media/video/tveeprom.c
-@@ -680,10 +680,7 @@ void tveeprom_hauppauge_analog(struct i2c_client *c, struct tveeprom *tvee,
- 	tveeprom_info("Hauppauge model %d, rev %s, serial# %d\n",
- 		tvee->model, tvee->rev_str, tvee->serial_number);
- 	if (tvee->has_MAC_address == 1)
--		tveeprom_info("MAC address is %02X-%02X-%02X-%02X-%02X-%02X\n",
--			tvee->MAC_address[0], tvee->MAC_address[1],
--			tvee->MAC_address[2], tvee->MAC_address[3],
--			tvee->MAC_address[4], tvee->MAC_address[5]);
-+		tveeprom_info("MAC address is %pM\n", tvee->MAC_address);
- 	tveeprom_info("tuner model is %s (idx %d, type %d)\n",
- 		t_name1, tuner1, tvee->tuner_type);
- 	tveeprom_info("TV standards%s%s%s%s%s%s%s%s (eeprom 0x%02x)\n",
+-- 
+Jean Delvare
