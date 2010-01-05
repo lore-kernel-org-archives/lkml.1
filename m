@@ -1,95 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750868Ab0AEFF3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750967Ab0AEFLN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750868Ab0AEFF3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 00:05:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750763Ab0AEFF2
+	id S1750967Ab0AEFLN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 00:11:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750773Ab0AEFLM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 00:05:28 -0500
-Received: from na3sys009aog103.obsmtp.com ([74.125.149.71]:56423 "HELO
-	na3sys009aog103.obsmtp.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750716Ab0AEFF2 convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 00:05:28 -0500
-X-Greylist: delayed 1319 seconds by postgrey-1.27 at vger.kernel.org; Tue, 05 Jan 2010 00:05:27 EST
-From: "Desai, Kashyap" <Kashyap.Desai@lsi.com>
-To: Greg KH <gregkh@suse.de>, Stefan Lippers-Hollmann <s.L-H@gmx.de>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "James.Bottomley@suse.de" <James.Bottomley@suse.de>,
-       "stable@kernel.org" <stable@kernel.org>
-Date: Tue, 5 Jan 2010 10:13:18 +0530
-Subject: RE: patch
- scsi-mpt2sas-add-missing-initialization-of-scsih_cmds.patch added to
- 2.6.32-stable tree
-Thread-Topic: patch
- scsi-mpt2sas-add-missing-initialization-of-scsih_cmds.patch added to
- 2.6.32-stable tree
-Thread-Index: AcqNl+9t3ClWjyKzRpKr9TDB8HERzAAKKwcA
-Message-ID: <0D1E8821739E724A86F4D16902CE275C1C93D49BBE@inbmail01.lsi.com>
-References: <12626340131357@kroah.org> <201001042255.07139.s.L-H@gmx.de>
- <20100104234401.GA10770@suse.de>
-In-Reply-To: <20100104234401.GA10770@suse.de>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Tue, 5 Jan 2010 00:11:12 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:34226 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750734Ab0AEFLL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jan 2010 00:11:11 -0500
+Date: Mon, 4 Jan 2010 21:10:29 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+cc: Minchan Kim <minchan.kim@gmail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>, cl@linux-foundation.org,
+       "hugh.dickins" <hugh.dickins@tiscali.co.uk>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [RFC][PATCH 6/8] mm: handle_speculative_fault()
+In-Reply-To: <20100105134357.4bfb4951.kamezawa.hiroyu@jp.fujitsu.com>
+Message-ID: <alpine.LFD.2.00.1001042052210.3630@localhost.localdomain>
+References: <20100104182429.833180340@chello.nl> <20100104182813.753545361@chello.nl> <20100105092559.1de8b613.kamezawa.hiroyu@jp.fujitsu.com> <28c262361001042029w4b95f226lf54a3ed6a4291a3b@mail.gmail.com>
+ <20100105134357.4bfb4951.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg and Stefan,
 
-This patch is counter part of 
-http://git.kernel.org/?p=linux/kernel/git/jejb/scsi-misc-2.6.git;a=commit;h=744090d38b47ed8ead8f68b6f0c65866c0b9b17a
 
-.31 And .32 does not required this patch to be added, since it does not have commit 744090d38b47ed8ead8f68b6f0c65866c0b9b17a.
+On Tue, 5 Jan 2010, KAMEZAWA Hiroyuki wrote:
+> 
+> Then, my patch dropped speculative trial of page fault and did synchronous
+> job here. I'm still considering how to insert some barrier to delay calling
+> remove_vma() until all page fault goes. One idea was reference count but
+> it was said not-enough crazy.
 
-Thanks,
-Kashyap
+What lock would you use to protect the vma lookup (in order to then 
+increase the refcount)? A sequence lock with RCU lookup of the vma?
 
-> -----Original Message-----
-> From: Greg KH [mailto:gregkh@suse.de]
-> Sent: Tuesday, January 05, 2010 5:14 AM
-> To: Stefan Lippers-Hollmann
-> Cc: linux-kernel@vger.kernel.org; Desai, Kashyap; James.Bottomley@suse.de;
-> stable@kernel.org
-> Subject: Re: patch scsi-mpt2sas-add-missing-initialization-of-
-> scsih_cmds.patch added to 2.6.32-stable tree
-> 
-> On Mon, Jan 04, 2010 at 10:55:02PM +0100, Stefan Lippers-Hollmann wrote:
-> > Hi
-> >
-> > On Monday 04 January 2010, gregkh@suse.de wrote:
-> > > This is a note to let you know that we have just queued up the patch
-> titled
-> > >
-> > >     Subject: SCSI: mpt2sas: add missing initialization of scsih_cmds
-> > >
-> > > to the 2.6.32-stable tree.  Its filename is
-> > >
-> > >     scsi-mpt2sas-add-missing-initialization-of-scsih_cmds.patch
-> >
-> > Adding this patch to 2.6.32 (and likely 2.6.31 as well) breaks building
-> the
-> > current stable queue:
-> >
-> >   LD      drivers/scsi/mpt2sas/built-in.o
-> >   CC [M]  drivers/scsi/mpt2sas/mpt2sas_base.o
-> > drivers/scsi/mpt2sas/mpt2sas_base.c: In function 'mpt2sas_base_attach':
-> > drivers/scsi/mpt2sas/mpt2sas_base.c:3500: error: 'struct
-> MPT2SAS_ADAPTER' has no member named 'scsih_cmds'
-> > drivers/scsi/mpt2sas/mpt2sas_base.c:3501: error: 'struct
-> MPT2SAS_ADAPTER' has no member named 'scsih_cmds'
-> > drivers/scsi/mpt2sas/mpt2sas_base.c:3502: error: 'struct
-> MPT2SAS_ADAPTER' has no member named 'scsih_cmds'
-> > make[6]: *** [drivers/scsi/mpt2sas/mpt2sas_base.o] Error 1
-> > make[5]: *** [drivers/scsi/mpt2sas] Error 2
-> 
-> Thanks, your build system seems faster than mine :)
-> 
-> I've deleted this patch from both the .31 and .32 queues.
-> 
-> greg k-h
+Sounds doable. But it also sounds way more expensive than the current VM 
+fault handling, which is pretty close to optimal for single-threaded 
+cases.. That RCU lookup might be cheap, but just the refcount is generally 
+going to be as expensive as a lock.
+
+Are there some particular mappings that people care about more than 
+others? If we limit the speculative lookup purely to anonymous memory, 
+that might simplify the problem space?
+
+[ From past experiences, I suspect DB people would be upset and really 
+  want it for the general file mapping case.. But maybe the main usage 
+  scenario is something else this time? ]
+
+			Linus
