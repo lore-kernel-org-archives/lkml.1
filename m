@@ -1,24 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755637Ab0AEUOA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755481Ab0AEUN4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755637Ab0AEUOA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 15:14:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755456Ab0AEUNx
+	id S1755481Ab0AEUN4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 15:13:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755496Ab0AEUNv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 15:13:53 -0500
-Received: from kroah.org ([198.145.64.141]:49978 "EHLO coco.kroah.org"
+	Tue, 5 Jan 2010 15:13:51 -0500
+Received: from kroah.org ([198.145.64.141]:49979 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755452Ab0AEUGL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1755456Ab0AEUGL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 5 Jan 2010 15:06:11 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jan  5 12:03:00 2010
-Message-Id: <20100105200300.254917940@mini.kroah.org>
+Message-Id: <20100105200300.684152179@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 05 Jan 2010 12:02:06 -0800
+Date: Tue, 05 Jan 2010 12:02:09 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, akpm@linux-foundation.org,
        torvalds@linux-foundation.org, stable-review@kernel.org
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Jeff Garzik <jgarzik@redhat.com>
-Subject: [10/39] pata_cmd64x: fix overclocking of UDMA0-2 modes
+Cc: Clemens Ladisch <clemens@ladisch.de>, Takashi Iwai <tiwai@suse.de>
+Subject: [13/39] sound: sgio2audio/pdaudiocf/usb-audio: initialize PCM buffer
 In-Reply-To: <20100105195007.GA23952@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -28,38 +27,57 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+From: Clemens Ladisch <clemens@ladisch.de>
 
-commit 509426bd46ad0903dca409803e0ee3d30f99f1e8 upstream.
+commit 3e85fd614c7b6bb7f33bb04a0dcb5a3bfca4c0fe upstream.
 
-adev->dma_mode stores the transfer mode value not UDMA mode number
-so the condition in cmd64x_set_dmamode() is always true and the higher
-UDMA clock is always selected.  This can potentially result in data
-corruption when UDMA33 device is used, when 40-wire cable is used or
-when the error recovery code decides to lower the device speed down.
+When allocating the PCM buffer, use vmalloc_user() instead of vmalloc().
+Otherwise, it would be possible for applications to play the previous
+contents of the kernel memory to the speakers, or to read it directly if
+the buffer is exported to userspace.
 
-The issue was introduced in the commit 6a40da0 ("libata cmd64x: whack
-into a shape that looks like the documentation") which goes back to
-kernel 2.6.20.
-
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
+Signed-off-by: Clemens Ladisch <clemens@ladisch.de>
+Signed-off-by: Takashi Iwai <tiwai@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/ata/pata_cmd64x.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ sound/mips/sgio2audio.c                |    2 +-
+ sound/pcmcia/pdaudiocf/pdaudiocf_pcm.c |    2 +-
+ sound/usb/usbaudio.c                   |    2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
 
---- a/drivers/ata/pata_cmd64x.c
-+++ b/drivers/ata/pata_cmd64x.c
-@@ -219,7 +219,7 @@ static void cmd64x_set_dmamode(struct at
- 		regU |= udma_data[adev->dma_mode - XFER_UDMA_0] << shift;
- 		/* Merge the control bits */
- 		regU |= 1 << adev->devno; /* UDMA on */
--		if (adev->dma_mode > 2)	/* 15nS timing */
-+		if (adev->dma_mode > XFER_UDMA_2) /* 15nS timing */
- 			regU |= 4 << adev->devno;
- 	} else {
- 		regU &= ~ (1 << adev->devno);	/* UDMA off */
+--- a/sound/mips/sgio2audio.c
++++ b/sound/mips/sgio2audio.c
+@@ -609,7 +609,7 @@ static int snd_sgio2audio_pcm_hw_params(
+ 	/* alloc virtual 'dma' area */
+ 	if (runtime->dma_area)
+ 		vfree(runtime->dma_area);
+-	runtime->dma_area = vmalloc(size);
++	runtime->dma_area = vmalloc_user(size);
+ 	if (runtime->dma_area == NULL)
+ 		return -ENOMEM;
+ 	runtime->dma_bytes = size;
+--- a/sound/pcmcia/pdaudiocf/pdaudiocf_pcm.c
++++ b/sound/pcmcia/pdaudiocf/pdaudiocf_pcm.c
+@@ -51,7 +51,7 @@ static int snd_pcm_alloc_vmalloc_buffer(
+ 			return 0; /* already enough large */
+ 		vfree(runtime->dma_area);
+ 	}
+-	runtime->dma_area = vmalloc_32(size);
++	runtime->dma_area = vmalloc_32_user(size);
+ 	if (! runtime->dma_area)
+ 		return -ENOMEM;
+ 	runtime->dma_bytes = size;
+--- a/sound/usb/usbaudio.c
++++ b/sound/usb/usbaudio.c
+@@ -752,7 +752,7 @@ static int snd_pcm_alloc_vmalloc_buffer(
+ 			return 0; /* already large enough */
+ 		vfree(runtime->dma_area);
+ 	}
+-	runtime->dma_area = vmalloc(size);
++	runtime->dma_area = vmalloc_user(size);
+ 	if (!runtime->dma_area)
+ 		return -ENOMEM;
+ 	runtime->dma_bytes = size;
 
 
