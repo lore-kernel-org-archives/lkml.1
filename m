@@ -1,23 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754790Ab0AEAxl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754270Ab0AEAyW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754790Ab0AEAxl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 19:53:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754959Ab0AEAxK
+	id S1754270Ab0AEAyW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 19:54:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754411Ab0AEAyP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 19:53:10 -0500
-Received: from kroah.org ([198.145.64.141]:34151 "EHLO coco.kroah.org"
+	Mon, 4 Jan 2010 19:54:15 -0500
+Received: from kroah.org ([198.145.64.141]:34139 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754243Ab0AEAe4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 19:34:56 -0500
+	id S1754162Ab0AEAew (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jan 2010 19:34:52 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, stable-review@kernel.org
 Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Sergei Shtylyov <sshtylyov@ru.mvista.com>,
-       Felipe Balbi <felipe.balbi@nokia.com>,
+       alan@lxorguk.ukuu.org.uk,
+       Eric Millbrandt <emillbrandt@dekaresearch.com>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 23/97] USB: musb: gadget_ep0: avoid SetupEnd interrupt
-Date: Mon,  4 Jan 2010 16:32:36 -0800
-Message-Id: <1262651630-7354-23-git-send-email-gregkh@suse.de>
+Subject: [PATCH 18/97] ASoC: Do not write to invalid registers on the wm9712.
+Date: Mon,  4 Jan 2010 16:32:31 -0800
+Message-Id: <1262651630-7354-18-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.6
 In-Reply-To: <20100105003133.GA7199@kroah.com>
 References: <20100105003133.GA7199@kroah.com>
@@ -25,60 +26,38 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+From: Eric Millbrandt <emillbrandt@dekaresearch.com>
 
-commit 17be5c5f5ef99c94374e07f71effa78e93a20eda upstream.
+commit 48e3cbb3f67a27d9c2db075f3d0f700246c40caa upstream.
 
-Gadget stalling a zero-length SETUP request results in this error message:
+This patch fixes a bug where "virtual" registers were being written to the ac97
+bus.  This was causing unrelated registers to become corrupted (headphone 0x04,
+touchscreen 0x78, etc).
 
-SetupEnd came in a wrong ep0stage idle
+This patch duplicates protection that was included in the wm9713 driver.
 
-In order to avoid it, always set the CSR0.DataEnd bit after detecting a zero-
-length request.  Add the missing '\n' to the error message itself as well...
-
-Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Acked-by: Anand Gadiyar <gadiyar@ti.com>
-Signed-off-by: Felipe Balbi <felipe.balbi@nokia.com>
+Signed-off-by: Eric Millbrandt <emillbrandt@dekaresearch.com>
+Acked-by: Liam Girdwood <lrg@slimlogic.co.uk>
+Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/usb/musb/musb_gadget_ep0.c |   14 ++++++++++----
- 1 files changed, 10 insertions(+), 4 deletions(-)
+ sound/soc/codecs/wm9712.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/usb/musb/musb_gadget_ep0.c b/drivers/usb/musb/musb_gadget_ep0.c
-index 1c44b97..067e5a9 100644
---- a/drivers/usb/musb/musb_gadget_ep0.c
-+++ b/drivers/usb/musb/musb_gadget_ep0.c
-@@ -647,7 +647,7 @@ irqreturn_t musb_g_ep0_irq(struct musb *musb)
- 			musb->ep0_state = MUSB_EP0_STAGE_STATUSIN;
- 			break;
- 		default:
--			ERR("SetupEnd came in a wrong ep0stage %s",
-+			ERR("SetupEnd came in a wrong ep0stage %s\n",
- 			    decode_ep0stage(musb->ep0_state));
- 		}
- 		csr = musb_readw(regs, MUSB_CSR0);
-@@ -770,12 +770,18 @@ setup:
- 				handled = service_zero_data_request(
- 						musb, &setup);
+diff --git a/sound/soc/codecs/wm9712.c b/sound/soc/codecs/wm9712.c
+index 1fd4e88..e9123f5 100644
+--- a/sound/soc/codecs/wm9712.c
++++ b/sound/soc/codecs/wm9712.c
+@@ -464,7 +464,8 @@ static int ac97_write(struct snd_soc_codec *codec, unsigned int reg,
+ {
+ 	u16 *cache = codec->reg_cache;
  
-+				/*
-+				 * We're expecting no data in any case, so
-+				 * always set the DATAEND bit -- doing this
-+				 * here helps avoid SetupEnd interrupt coming
-+				 * in the idle stage when we're stalling...
-+				 */
-+				musb->ackpend |= MUSB_CSR0_P_DATAEND;
-+
- 				/* status stage might be immediate */
--				if (handled > 0) {
--					musb->ackpend |= MUSB_CSR0_P_DATAEND;
-+				if (handled > 0)
- 					musb->ep0_state =
- 						MUSB_EP0_STAGE_STATUSIN;
--				}
- 				break;
- 
- 			/* sequence #1 (IN to host), includes GET_STATUS
+-	soc_ac97_ops.write(codec->ac97, reg, val);
++	if (reg < 0x7c)
++		soc_ac97_ops.write(codec->ac97, reg, val);
+ 	reg = reg >> 1;
+ 	if (reg < (ARRAY_SIZE(wm9712_reg)))
+ 		cache[reg] = val;
 -- 
 1.6.6
 
