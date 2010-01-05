@@ -1,104 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755283Ab0AES2A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755013Ab0AES2S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755283Ab0AES2A (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 13:28:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755233Ab0AES16
+	id S1755013Ab0AES2S (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 13:28:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753702Ab0AES2P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 13:27:58 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:43243 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755271Ab0AES14 (ORCPT
+	Tue, 5 Jan 2010 13:28:15 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:41655 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752848Ab0AES2L (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 13:27:56 -0500
-From: Wolfram Sang <w.sang@pengutronix.de>
-To: linux-kernel@vger.kernel.org
-Cc: Steven Rostedt <rostedt@goodmis.org>, Wolfram Sang <w.sang@pengutronix.de>
-Date: Tue,  5 Jan 2010 19:27:52 +0100
-Message-Id: <1262716072-14414-3-git-send-email-w.sang@pengutronix.de>
-X-Mailer: git-send-email 1.6.3.3
-In-Reply-To: <1262716072-14414-2-git-send-email-w.sang@pengutronix.de>
-References: <1262716072-14414-1-git-send-email-w.sang@pengutronix.de>
- <1262716072-14414-2-git-send-email-w.sang@pengutronix.de>
-X-SA-Exim-Connect-IP: 92.198.50.58
-X-SA-Exim-Mail-From: w.sang@pengutronix.de
-Subject: [PATCH 2/2] tracing/recordmount.pl: use apropriate perl-constructs
-X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
-X-SA-Exim-Scanned: Yes (on metis.ext.pengutronix.de)
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+	Tue, 5 Jan 2010 13:28:11 -0500
+Date: Tue, 5 Jan 2010 10:25:43 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Christoph Lameter <cl@linux-foundation.org>
+cc: Andi Kleen <andi@firstfloor.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Minchan Kim <minchan.kim@gmail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "hugh.dickins" <hugh.dickins@tiscali.co.uk>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [RFC][PATCH 6/8] mm: handle_speculative_fault()
+In-Reply-To: <alpine.DEB.2.00.1001051211000.2246@router.home>
+Message-ID: <alpine.LFD.2.00.1001051019280.3630@localhost.localdomain>
+References: <20100104182429.833180340@chello.nl> <20100104182813.753545361@chello.nl> <20100105092559.1de8b613.kamezawa.hiroyu@jp.fujitsu.com> <28c262361001042029w4b95f226lf54a3ed6a4291a3b@mail.gmail.com> <20100105134357.4bfb4951.kamezawa.hiroyu@jp.fujitsu.com>
+ <alpine.LFD.2.00.1001042052210.3630@localhost.localdomain> <20100105143046.73938ea2.kamezawa.hiroyu@jp.fujitsu.com> <20100105163939.a3f146fb.kamezawa.hiroyu@jp.fujitsu.com> <alpine.LFD.2.00.1001050707520.3630@localhost.localdomain>
+ <alpine.LFD.2.00.1001050810380.3630@localhost.localdomain> <87wrzwbh0z.fsf@basil.nowhere.org> <alpine.LFD.2.00.1001050950500.3630@localhost.localdomain> <alpine.DEB.2.00.1001051211000.2246@router.home>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
----
- scripts/recordmcount.pl |   33 ++++++++++++---------------------
- 1 files changed, 12 insertions(+), 21 deletions(-)
 
-diff --git a/scripts/recordmcount.pl b/scripts/recordmcount.pl
-index 5de12c7..59b73b9 100755
---- a/scripts/recordmcount.pl
-+++ b/scripts/recordmcount.pl
-@@ -136,13 +136,13 @@ my %text_sections = (
-      ".text.unlikely" => 1,
- );
- 
--$objdump = "objdump" if ((length $objdump) == 0);
--$objcopy = "objcopy" if ((length $objcopy) == 0);
--$cc = "gcc" if ((length $cc) == 0);
--$ld = "ld" if ((length $ld) == 0);
--$nm = "nm" if ((length $nm) == 0);
--$rm = "rm" if ((length $rm) == 0);
--$mv = "mv" if ((length $mv) == 0);
-+$objdump ||= 'objdump';
-+$objcopy ||= 'objcopy';
-+$cc ||= 'gcc';
-+$ld ||= 'ld';
-+$nm ||= 'nm';
-+$rm ||= 'rm';
-+$mv ||= 'mv';
- 
- #print STDERR "running: $P '$arch' '$objdump' '$objcopy' '$cc' '$ld' " .
- #    "'$nm' '$rm' '$mv' '$inputfile'\n";
-@@ -163,9 +163,8 @@ my $section_type;	# Section header plus possible alignment command
- my $can_use_local = 0; 	# If we can use local function references
- 
- # Shut up recordmcount if user has older objcopy
--my $quiet_recordmcount = ".tmp_quiet_recordmcount";
--my $print_warning = 1;
--$print_warning = 0 if ( -f $quiet_recordmcount);
-+my $quiet_recordmcount = '.tmp_quiet_recordmcount';
-+my $print_warning = (! -f $quiet_recordmcount);
- 
- ##
- # check_objcopy - whether objcopy supports --globalize-symbols
-@@ -194,12 +193,8 @@ sub check_objcopy
-     }
- }
- 
--if ($arch eq "x86") {
--    if ($bits == 64) {
--	$arch = "x86_64";
--    } else {
--	$arch = "i386";
--    }
-+if ($arch eq 'x86') {
-+    $arch = ($bits == 64) ? 'x86_64' : 'i386';
- }
- 
- #
-@@ -476,11 +471,7 @@ while (<IN>) {
- 	$read_headers = 0;
- 
- 	# Only record text sections that we know are safe
--	if (defined($text_sections{$1})) {
--	    $read_function = 1;
--	} else {
--	    $read_function = 0;
--	}
-+	$read_function = defined($text_sections{$1});
- 	# print out any recorded offsets
- 	update_funcs();
- 
--- 
-1.6.3.3
 
+On Tue, 5 Jan 2010, Christoph Lameter wrote:
+> 
+> If the critical section protected by the spinlock is small then the
+> delay will keep the cacheline exclusive until we hit the unlock. This
+> is the case here as far as I can tell.
+
+I hope somebody can time it. Because I think the idle reads on all the 
+(unsuccessful) spinlocks will kill it.
+
+Think of it this way: under heavy contention, you'll see a lot of people 
+waiting for the spinlocks and one of them succeeds at writing it, reading 
+the line. So you get an O(n^2) bus traffic access pattern. In contrast, 
+with an xadd, you get O(n) behavior - everybody does _one_ acquire-for- 
+write bus access.
+
+Remember: the critical section is small, but since you're contending on 
+the spinlock, that doesn't much _help_. The readers are all hitting the 
+lock (and you can try to solve the O(n*2) issue with back-off, but quite 
+frankly, anybody who does that has basically already lost - I'm personally 
+convinced you should never do lock backoff, and instead look at what you 
+did wrong at a higher level instead).
+
+				Linus
