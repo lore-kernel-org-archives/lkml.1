@@ -1,86 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754414Ab0AECzo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754577Ab0AEC4W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754414Ab0AECzo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 21:55:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754084Ab0AECzn
+	id S1754577Ab0AEC4W (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 21:56:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754209Ab0AEC4V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 21:55:43 -0500
-Received: from slow3-v.mail.gandi.net ([217.70.178.89]:35718 "EHLO
-	slow3-v.mail.gandi.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754013Ab0AECzn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 21:55:43 -0500
-Date: Mon, 4 Jan 2010 18:28:15 -0800
-From: Josh Triplett <josh@joshtriplett.org>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, laijs@cn.fujitsu.com,
-       dipankar@in.ibm.com, akpm@linux-foundation.org,
-       mathieu.desnoyers@polymtl.ca, dvhltc@us.ibm.com, niv@us.ibm.com,
-       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
-       Valdis.Kletnieks@vt.edu, dhowells@redhat.com
-Subject: Re: [PATCH tip/core/rcu 2/3] rcu: add debug check for too many
- rcu_read_unlock()
-Message-ID: <20100105022814.GA11554@feather>
-References: <20100105000337.GA23307@linux.vnet.ibm.com>
- <20100105020307.GB11286@feather>
- <20100105021919.GN6748@linux.vnet.ibm.com>
+	Mon, 4 Jan 2010 21:56:21 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:8686 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753481Ab0AEC4U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jan 2010 21:56:20 -0500
+Message-ID: <4B42AA40.3060406@redhat.com>
+Date: Tue, 05 Jan 2010 10:56:00 +0800
+From: Xiaotian Feng <dfeng@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Lightning/1.0pre Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100105021919.GN6748@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Marc Dionne <marc.c.dionne@gmail.com>
+CC: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: BUG during shutdown - bisected to commit e2912009
+References: <6041d2001001011627o5c494df4v37c0c466df3d444c@mail.gmail.com>	 <1262392920.32223.10.camel@laptop> <6041d2001001041043ka810288l64ae9d6d8105b284@mail.gmail.com>
+In-Reply-To: <6041d2001001041043ka810288l64ae9d6d8105b284@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 04, 2010 at 06:19:19PM -0800, Paul E. McKenney wrote:
-> On Mon, Jan 04, 2010 at 06:03:08PM -0800, Josh Triplett wrote:
-> > On Mon, Jan 04, 2010 at 04:04:01PM -0800, Paul E. McKenney wrote:
-> > > From: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> > > 
-> > > TREE_PREEMPT_RCU maintains an rcu_read_lock_nesting counter in the
-> > > task structure, which happens to be a signed int.  So this patch adds a
-> > > check for this counter being negative at the end of __rcu_read_unlock().
-> > > This check is under CONFIG_PROVE_LOCKING, so can be thought of as being
-> > > part of lockdep.
-> > > 
-> > > Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> > > ---
-> > >  kernel/rcutree_plugin.h |    3 +++
-> > >  1 files changed, 3 insertions(+), 0 deletions(-)
-> > > 
-> > > diff --git a/kernel/rcutree_plugin.h b/kernel/rcutree_plugin.h
-> > > index f11ebd4..e77cdf3 100644
-> > > --- a/kernel/rcutree_plugin.h
-> > > +++ b/kernel/rcutree_plugin.h
-> > > @@ -304,6 +304,9 @@ void __rcu_read_unlock(void)
-> > >  	if (--ACCESS_ONCE(t->rcu_read_lock_nesting) == 0 &&
-> > >  	    unlikely(ACCESS_ONCE(t->rcu_read_unlock_special)))
-> > >  		rcu_read_unlock_special(t);
-> > > +#ifdef CONFIG_PROVE_LOCKING
-> > > +	WARN_ON_ONCE(ACCESS_ONCE(t->rcu_read_lock_nesting) < 0);
-> > > +#endif /* #ifdef CONFIG_PROVE_LOCKING */
-> > >  }
-> > >  EXPORT_SYMBOL_GPL(__rcu_read_unlock);
-> > 
-> > Given that you *already* need to access t->rcu_read_lock_nesting here,
-> > why not just do the test all the time?  Ideally you could access
-> > t->rcu_read_lock_nesting once, decrement it, and test for both 0 and
-> > negative.
-> 
-> Because I was paranoid about the extra branch.  Perhaps needlessly
-> paranoid, but this is rcu_read_unlock() we are talking about here.  ;-)
-> 
-> You seem to be suggesting making the first test be "<=", then
-> sorting things out later, but given that both the equals-zero and the
-> greater-than-zero cases are quite common, I couldn't figure out how to
-> avoid the extra test and branch in the common case.  Hence the #ifdef.
+On 01/05/2010 02:43 AM, Marc Dionne wrote:
+> On Fri, Jan 1, 2010 at 7:42 PM, Peter Zijlstra<peterz@infradead.org>  wrote:
+>> On Fri, 2010-01-01 at 19:27 -0500, Marc Dionne wrote:
+>>> I'm getting a BUG with current kernels from
+>>> kernel/time/clockevents.c:263 when halting the system - a restart
+>>> behaves normally.  I don't have a good camera handy at the moment to
+>>> capture the call stack on screen, but the call sequence is:
+>>>
+>>> clockevents_notify
+>>> hrtimer_cpu_notify
+>>> notifier_call_chain
+>>> raw_notifier_call_chain
+>>> _cpu_down
+>>> disable_nonboot_cpus
+>>> kernel_power_off
+>>> sys_reboot
+>>>
+>>> I bisected it down to commit e2912009: sched: Ensure set_task_cpu() is
+>>> never called on blocked tasks.  There were a few commits tested along
+>>> the way where I got a freeze (with the power still on) instead of a
+>>> BUG. Reverting that commit from the current kernel doesn't look
+>>> trivial, but the commit immediately preceding this one does halt fine.
+>>
+>> We somehow seem to trip up the below patch, which doesn't really make
+>> sense, as I can't find how task placement would affect the below error.
+>>
+>> It seems to purely test against the hot-unplugged cpu, not a cpu the
+>> task is running on.
+>>
+>> ---
+>> commit bb6eddf7676e1c1f3e637aa93c5224488d99036f
+>> Author: Thomas Gleixner<tglx@linutronix.de>
+>> Date:   Thu Dec 10 15:35:10 2009 +0100
+>
+> Probably predictable but worth testing, reverting that patch does
+> allow my system to shutdown cleanly.
+That BUG_ON was removed by reverting that patch, so you can shutdown 
+cleanly.
 
-No, I think you could simply read the predecremented value into a local
-variable, test it once with == 0, then have the WARN_ON_ONCE, and hope
-that the compiler figures out it can just test the register once and
-then do multiple jumps on the same flags.
+Could you please attach you kernel config file? I'm a little confused 
+about how do you revert e2912009, manually? I can't see any connections 
+between e2912009 and bb6eddf7, could you please show me your timer list 
+(cat /proc/timer_list)
+>
+> Marc
+>
 
-You could try it and see what code it generates.
-
-- Josh Triplett
