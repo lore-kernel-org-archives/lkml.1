@@ -1,66 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755188Ab0AERF4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755185Ab0AERI5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755188Ab0AERF4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 12:05:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755219Ab0AERFp
+	id S1755185Ab0AERI5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 12:08:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755084Ab0AERI4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 12:05:45 -0500
-Received: from [206.15.93.42] ([206.15.93.42]:9423 "EHLO
-	visionfs1.visionengravers.com" rhost-flags-FAIL-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754903Ab0AERDZ (ORCPT
+	Tue, 5 Jan 2010 12:08:56 -0500
+Received: from relay1-v.mail.gandi.net ([217.70.178.75]:56803 "EHLO
+	relay1-v.mail.gandi.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755062Ab0AERIx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 12:03:25 -0500
-X-Greylist: delayed 1075 seconds by postgrey-1.27 at vger.kernel.org; Tue, 05 Jan 2010 12:03:20 EST
-From: H Hartley Sweeten <hartleys@visionengravers.com>
-To: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH] drivers/net/ixgbe/ixgbe_common.c: use %pM to show MAC address
-Date: Tue, 5 Jan 2010 09:56:52 -0700
-Cc: netdev@vger.kernel.org, davem@davemloft.net
+	Tue, 5 Jan 2010 12:08:53 -0500
+Date: Tue, 5 Jan 2010 09:08:48 -0800
+From: Josh Triplett <josh@joshtriplett.org>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, laijs@cn.fujitsu.com,
+       dipankar@in.ibm.com, akpm@linux-foundation.org,
+       mathieu.desnoyers@polymtl.ca, dvhltc@us.ibm.com, niv@us.ibm.com,
+       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
+       Valdis.Kletnieks@vt.edu, dhowells@redhat.com
+Subject: Re: [PATCH tip/core/rcu 2/3] rcu: add debug check for too many
+	rcu_read_unlock()
+Message-ID: <20100105170848.GB20682@cloud>
+References: <20100105000337.GA23307@linux.vnet.ibm.com> <20100105020307.GB11286@feather> <20100105021919.GN6748@linux.vnet.ibm.com> <20100105022814.GA11554@feather> <20100105162137.GC6714@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <201001050956.53199.hartleys@visionengravers.com>
+In-Reply-To: <20100105162137.GC6714@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use the %pM kernel extension to display the MAC address.
+On Tue, Jan 05, 2010 at 08:21:37AM -0800, Paul E. McKenney wrote:
+> On Mon, Jan 04, 2010 at 06:28:15PM -0800, Josh Triplett wrote:
+> > On Mon, Jan 04, 2010 at 06:19:19PM -0800, Paul E. McKenney wrote:
+> > > On Mon, Jan 04, 2010 at 06:03:08PM -0800, Josh Triplett wrote:
+> > > > On Mon, Jan 04, 2010 at 04:04:01PM -0800, Paul E. McKenney wrote:
+> > > > > From: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> > > > > 
+> > > > > TREE_PREEMPT_RCU maintains an rcu_read_lock_nesting counter in the
+> > > > > task structure, which happens to be a signed int.  So this patch adds a
+> > > > > check for this counter being negative at the end of __rcu_read_unlock().
+> > > > > This check is under CONFIG_PROVE_LOCKING, so can be thought of as being
+> > > > > part of lockdep.
+> > > > > 
+> > > > > Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> > > > > ---
+> > > > >  kernel/rcutree_plugin.h |    3 +++
+> > > > >  1 files changed, 3 insertions(+), 0 deletions(-)
+> > > > > 
+> > > > > diff --git a/kernel/rcutree_plugin.h b/kernel/rcutree_plugin.h
+> > > > > index f11ebd4..e77cdf3 100644
+> > > > > --- a/kernel/rcutree_plugin.h
+> > > > > +++ b/kernel/rcutree_plugin.h
+> > > > > @@ -304,6 +304,9 @@ void __rcu_read_unlock(void)
+> > > > >  	if (--ACCESS_ONCE(t->rcu_read_lock_nesting) == 0 &&
+> > > > >  	    unlikely(ACCESS_ONCE(t->rcu_read_unlock_special)))
+> > > > >  		rcu_read_unlock_special(t);
+> > > > > +#ifdef CONFIG_PROVE_LOCKING
+> > > > > +	WARN_ON_ONCE(ACCESS_ONCE(t->rcu_read_lock_nesting) < 0);
+> > > > > +#endif /* #ifdef CONFIG_PROVE_LOCKING */
+> > > > >  }
+> > > > >  EXPORT_SYMBOL_GPL(__rcu_read_unlock);
+> > > > 
+> > > > Given that you *already* need to access t->rcu_read_lock_nesting here,
+> > > > why not just do the test all the time?  Ideally you could access
+> > > > t->rcu_read_lock_nesting once, decrement it, and test for both 0 and
+> > > > negative.
+> > > 
+> > > Because I was paranoid about the extra branch.  Perhaps needlessly
+> > > paranoid, but this is rcu_read_unlock() we are talking about here.  ;-)
+> > > 
+> > > You seem to be suggesting making the first test be "<=", then
+> > > sorting things out later, but given that both the equals-zero and the
+> > > greater-than-zero cases are quite common, I couldn't figure out how to
+> > > avoid the extra test and branch in the common case.  Hence the #ifdef.
+> > 
+> > No, I think you could simply read the predecremented value into a local
+> > variable, test it once with == 0, then have the WARN_ON_ONCE, and hope
+> > that the compiler figures out it can just test the register once and
+> > then do multiple jumps on the same flags.
+> > 
+> > You could try it and see what code it generates.
+> 
+> I agree that a smart compiler could share condition-code state, but
+> there still will be the extra branch.  (Keep in mind that this is a
+> .h file, so #ifdef is permitted -- though I might nevertheless make
+> a one-line function/macro.)
 
-The only difference in the output is that the MAC address is
-shown in the usual colon-separated hex notation.
+Hmmm.  Seems like one untaken branch, with unlikely() even, should prove
+sufficiently cheap.  But, as you said, this is rcu_read_unlock() we are
+talking about here.  ;)
 
-Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
-Cc: David S. Miller <davem@davemloft.net>
+Fair enough; might as well hide it under CONFIG_PROVE_LOCKING, or
+perhaps some RCU-specific debugging-related CONFIG symbol.
 
----
-
-Repost due to merge issues.
-
-diff --git a/drivers/net/ixgbe/ixgbe_common.c b/drivers/net/ixgbe/ixgbe_common.c
-index 688b8ca..1cedb9a 100644
---- a/drivers/net/ixgbe/ixgbe_common.c
-+++ b/drivers/net/ixgbe/ixgbe_common.c
-@@ -1278,19 +1278,11 @@ s32 ixgbe_init_rx_addrs_generic(struct ixgbe_hw *hw)
- 		/* Get the MAC address from the RAR0 for later reference */
- 		hw->mac.ops.get_mac_addr(hw, hw->mac.addr);
- 
--		hw_dbg(hw, " Keeping Current RAR0 Addr =%.2X %.2X %.2X ",
--		       hw->mac.addr[0], hw->mac.addr[1],
--		       hw->mac.addr[2]);
--		hw_dbg(hw, "%.2X %.2X %.2X\n", hw->mac.addr[3],
--		       hw->mac.addr[4], hw->mac.addr[5]);
-+		hw_dbg(hw, " Keeping Current RAR0 Addr =%pM\n", hw->mac.addr);
- 	} else {
- 		/* Setup the receive address. */
- 		hw_dbg(hw, "Overriding MAC Address in RAR[0]\n");
--		hw_dbg(hw, " New MAC Addr =%.2X %.2X %.2X ",
--		       hw->mac.addr[0], hw->mac.addr[1],
--		       hw->mac.addr[2]);
--		hw_dbg(hw, "%.2X %.2X %.2X\n", hw->mac.addr[3],
--		       hw->mac.addr[4], hw->mac.addr[5]);
-+		hw_dbg(hw, " New MAC Addr =%pM\n", hw->mac.addr);
- 
- 		hw->mac.ops.set_rar(hw, 0, hw->mac.addr, 0, IXGBE_RAH_AV);
- 	}
+- Josh Triplett
