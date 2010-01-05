@@ -1,50 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754987Ab0AEVsl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755013Ab0AEVtl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754987Ab0AEVsl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 16:48:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754847Ab0AEVsk
+	id S1755013Ab0AEVtl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 16:49:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754782Ab0AEVtk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 16:48:40 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:16237 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751618Ab0AEVsk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 16:48:40 -0500
-Date: Tue, 5 Jan 2010 23:45:24 +0200
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: David Miller <davem@davemloft.net>
-Cc: cfriesen@nortel.com, eric.dumazet@gmail.com, nhorman@tuxdriver.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH] net: packet: option to only pass skb protocol
-Message-ID: <20100105214524.GA31301@redhat.com>
-References: <20100105185732.GA30346@redhat.com> <4B43AEF6.6050701@nortel.com> <20100105.134218.258781374.davem@davemloft.net>
+	Tue, 5 Jan 2010 16:49:40 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:60388 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753504Ab0AEVtk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jan 2010 16:49:40 -0500
+Message-ID: <4B43B2D7.6000208@zytor.com>
+Date: Tue, 05 Jan 2010 13:44:55 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100105.134218.258781374.davem@davemloft.net>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+To: Arnd Bergmann <arnd@arndb.de>
+CC: Arjan van de Ven <arjan@infradead.org>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       David Miller <davem@davemloft.net>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: strict copy_from_user checks issues?
+References: <20100104154345.GA5671@osiris.boeblingen.de.ibm.com> <201001051445.26149.arnd@arndb.de> <20100105055224.39f9efff@infradead.org> <201001051620.38943.arnd@arndb.de>
+In-Reply-To: <201001051620.38943.arnd@arndb.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 05, 2010 at 01:42:18PM -0800, David Miller wrote:
-> From: "Chris Friesen" <cfriesen@nortel.com>
-> Date: Tue, 05 Jan 2010 15:28:22 -0600
+On 01/05/2010 07:20 AM, Arnd Bergmann wrote:
 > 
-> > On 01/05/2010 12:57 PM, Michael S. Tsirkin wrote:
-> >> When sending packets with a packet socket it is often necessary to set
-> >> protocol in msg_name: otherwise the protocol field in the skb will not
-> >> be set correctly.
-> > 
-> > What about automatically detecting the protocol from the data being sent
-> > to avoid the necessity of specifying it in the first place?
+> You mean like this?
 > 
-> This limits packet socket usage to only protocols the kernel is aware
-> of, defeating part of the usefulness of the packet socket facility.
+> It adds some complexity and about 200 bytes of object code,
+> I'm not sure it's worth it.
+> 
 
-We could do this if the protocol is ETH_P_ALL -  skbs end up with this
-protocol currently when sendmsg does not have msgname and when socket is
-set up to listen for all packets.  It's not a valid protocol value, is
-it?
+What's much worse is that it adds churn to an otherwise-tested code path.
 
--- 
-MST
+We almost need a copy_from/to_user_audited() to override the warning.
+Not that errors can't creap back in...
+
+> --
+> [UNTESTED PATCH] tun: avoid copy_from_user size warning
+> 
+> For 32 bit compat code, the tun driver only copies the
+> fields it needs using a short length, which copy_from_user
+> now warns about. Moving the copy operation outside of the
+> main ioctl function lets us avoid the warning.
+> 
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+
+	-hpa
+
