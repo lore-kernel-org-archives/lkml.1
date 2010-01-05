@@ -1,96 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754379Ab0AEPOK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754808Ab0AEPO4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754379Ab0AEPOK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 10:14:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754450Ab0AEPOJ
+	id S1754808Ab0AEPO4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 10:14:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754730Ab0AEPOy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 10:14:09 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:47132 "EHLO mx1.redhat.com"
+	Tue, 5 Jan 2010 10:14:54 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:23776 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754214Ab0AEPOA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 10:14:00 -0500
-Date: Tue, 5 Jan 2010 10:13:53 -0500
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Jeff Moyer <jmoyer@redhat.com>
-Cc: Corrado Zoccolo <czoccolo@gmail.com>, Jens Axboe <jens.axboe@oracle.com>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>,
-       Shaohua Li <shaohua.li@intel.com>,
-       Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-Subject: Re: [PATCH] cfq-iosched: non-rot devices do not need read queue
-	merging
-Message-ID: <20100105151353.GA4631@redhat.com>
-References: <20091230213439.GQ4489@kernel.dk> <1262211768-10858-1-git-send-email-czoccolo@gmail.com> <20100104144711.GA7968@redhat.com> <4e5e476b1001040836p2c8d7486x807a1a89b61c2458@mail.gmail.com> <x49wrzxak5n.fsf@segfault.boston.devel.redhat.com> <4e5e476b1001041037x6aa63be6ncfa523a7df78bb0d@mail.gmail.com> <20100104185100.GF7968@redhat.com> <x49fx6ladzk.fsf@segfault.boston.devel.redhat.com> <4e5e476b1001041237v71952c8ewaaef3778353f7521@mail.gmail.com> <x49zl4s8uoj.fsf@segfault.boston.devel.redhat.com>
+	id S1754683Ab0AEPOx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jan 2010 10:14:53 -0500
+Date: Tue, 5 Jan 2010 10:14:13 -0500
+From: Jason Baron <jbaron@redhat.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Jiri Olsa <jolsa@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCH] dynamic debug - adding ring buffer storage support
+Message-ID: <20100105151413.GA2662@redhat.com>
+References: <1261481526-17630-1-git-send-email-jolsa@redhat.com> <20091222153955.GD3308@redhat.com> <20091222161353.GB20225@jolsa.lab.eng.brq.redhat.com> <20091228092402.GD24690@elte.hu> <20091230225011.GJ6322@nowhere> <1262223857.28171.9.camel@gandalf.stny.rr.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <x49zl4s8uoj.fsf@segfault.boston.devel.redhat.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <1262223857.28171.9.camel@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 05, 2010 at 09:58:52AM -0500, Jeff Moyer wrote:
-> Corrado Zoccolo <czoccolo@gmail.com> writes:
+On Wed, Dec 30, 2009 at 08:44:17PM -0500, Steven Rostedt wrote:
 > 
-> > On Mon, Jan 4, 2010 at 8:04 PM, Jeff Moyer <jmoyer@redhat.com> wrote:
-> >> Vivek Goyal <vgoyal@redhat.com> writes:
-> >>>> >>> Hi Corrado,
-> >>>> >>>
-> >>>> >>> What's the reason that reads don't benefit from merging queues and hence
-> >>>> >>> merging requests and only writes do on SSD?
-> >>>> >>
-> >>>> >> On SSDs, reads are just limited by the maximum transfer rate, and
-> >>>> >> larger (i.e. merged) reads will just take proportionally longer.
-> >>>> >
-> >>>> > This is simply not true.  You can get more bandwidth from an SSD (I just
-> >>>> > checked numbers for 2 vendors' devices) by issuing larger read requests,
-> >>>> > no matter whether the access pattern is sequential or random.
-> >>>> I know, but the performance increase given the size is sublinear, and
-> >>>> the situation here is slightly different.
-> >>>> In order for the requests to be merged, they have to be submitted concurrently.
-> >>>> So you have to compare 2 concurrent requests of size x with one
-> >>>> request of size 2*x (with some CPU overhead).
-> >>>> Moreover, you always pay the CPU overhead, even if you can't do the
-> >>>> merging, and you must be very lucky to keep merging, because it means
-> >>>> the two processes are working in lockstep; it is not sufficient that
-> >>>> the requests are just nearby, as for rotational disks.
-> >>>>
-> >>>
-> >>> For jeff, at least "dump" utility threads were kind of working in lockstep
-> >>> for writes and he gained significantly by merging these queues together.
-> >>
-> >> Actually, it was for reads.
-> >>
-> >>> So the argument is that CPU overhead saving in this case is more substantial
-> >>> as compared to gains made by lockstep read threads. I think we shall have to
-> >>> have some numbers to justify that.
-> >>
-> >> Agreed.  Corrado, I know you don't have the hardware, so I'll give this
-> >> a run through the read-test2 program and see if it regresses at all.
-> > Great.
+> > That said, I sometimes dream about one event per printk.
+> > 
+> > Having, say:
+> > 
+> > /debug/tracing/events/printk/
+> >          |
+> >          ---- kernel/
+> >          |      |
+> >          |      ------- time/
+> >          |      |        |
+> >          |      |        ---- clocksource.c
+> >          |      |                 |
+> >          |      |                 --- clocksource_unstable:218/
+> >          |      |                 |            |
+> >          |      |                 |            ---- format
+> >          |      |                 |            |
+> >          |      |                 |            ---- filter
+> >          |      |                 |            |
+> >          |      |                 |            ---- enable
+> >          |      |                 --- [...]
+> >          |      ------- [...]
+> >          |
+> >          ---- drivers/
+> >          |       |
+> >          |       ---- [...]
+> >          |
+> >          ---- [...]
+> > 
+> > 
+> > That would give a total control over every printk, trace_printk, etc...
+> > 
+> > Too bad that would bloat the memory.
+> > Well, that could be wrapped in a single, wildly implemented (understand:
+> > not using TRACE_EVENT macro) trace event, something able to walk through
+> > every calls of printk, trace_printk, early_printk, etc... and imitate
+> > a per printk event granularity.
+> > 
+> > But still it needs to be useful...
 > 
-> I ran the test program 50 times, and here are the results:
 > 
-> ==> vanilla <==
-> Mean: 163.22728
-> Population Std. Dev.: 0.55401
+> I think we can do the above without bloating memory. Yes we would not
+> need the TRACE_EVENT macro for this. The TRACE_EVENT macro is just for
+> generic tracing, but we could easily come up with something specific for
+> the printk's that will not bloat the kernel as much.
 > 
-> ==> patched <==
-> Mean: 162.91558
-> Population Std. Dev.: 1.08612
+> When I get some time, I may try to play with this idea.
 > 
-> This looks acceptable to me.
+> -- Steve
+> 
 
-Thanks Jeff, one thing comes to mind. Now with recent changes, we drive deeper
-depths on SSD with NCQ and there are not many pending cfqq on service tree
-until and unless number of parallel threads exceed NCQ depth (32). If
-that's the case, then I think we might not be seeing lot of queue merging
-happening in this test case until and unless dump utility is creating more
-than 32 threads.
+I agree with this direction...in terms of the implementation I was
+thinking it could be very similar to the tracepoint optimization i've
+been working on. Where we basically end up with just a 'nop' in place of
+the printk and then when we enable it we patch the 'nop' with a jump to
+the proper printk location...
 
-If time permits, it might also be interesting to run the same test with queue
-depth 1 and see if SSDs without NCQ will suffer or not.
-
-Thanks
-Vivek
+-Jason
