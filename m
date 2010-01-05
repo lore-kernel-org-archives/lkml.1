@@ -1,79 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755479Ab0AEV1K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932194Ab0AEV1V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755479Ab0AEV1K (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 16:27:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755325Ab0AEV1I
+	id S932194Ab0AEV1V (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 16:27:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755464Ab0AEV1J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 16:27:08 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:34769 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755148Ab0AEV1H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jan 2010 16:27:09 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:43984 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754979Ab0AEV1H (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 5 Jan 2010 16:27:07 -0500
-Date: Tue, 5 Jan 2010 13:21:22 -0800
-From: Greg KH <gregkh@suse.de>
-To: Gertjan van Wingerde <gwingerde@gmail.com>
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, stable-review@kernel.org,
-       Ivo van Doorn <IvDoorn@gmail.com>,
-       "John W. Linville" <linville@tuxdriver.com>
-Subject: Re: [08/10] rt2x00: Disable powersaving for rt61pci and rt2800pci.
-Message-ID: <20100105212122.GA32235@suse.de>
-References: <20100105194915.239350321@mini.kroah.org>
- <4B43A7EF.8040702@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B43A7EF.8040702@gmail.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
+         :mime-version:content-type:content-transfer-encoding;
+        b=ClEIzl7rQNfZObRXFKr/vrNddZcXtPmdW9ZnBuBC6X1HVSNczoleHK/d3Qcmn45DUB
+         USt2e326hUx129cJ+nq3YR946CaVNSYxxTGvc/67g6L2h2EX/fymdnCbYJH7Thtqf0+6
+         pja4IxRXKe02IUYIYFdmeoWcjKijfo0XSAjrQ=
+Date: Tue, 5 Jan 2010 22:26:57 +0100
+From: Stefan Seyfried <stefan.seyfried@googlemail.com>
+To: Anders Eriksson <aeriksson@fastmail.fm>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       =?UTF-8?B?QmFydMWCb21pZWogWmltb8WE?= <uzi18@o2.pl>,
+       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       danborkmann@googlemail.com, awalls@radix.net
+Subject: Re: [linux-pm] [suspend/resume] Re: userspace notification from
+ module
+Message-ID: <20100105222657.27218c4c@strolchi.home.s3e.de>
+In-Reply-To: <20100105090706.751D233C4B0@tippex.mynet.homeunix.org>
+References: <686edb2c.6263643a.4b3f4a3b.b60b3@o2.pl>
+	<201001040045.39517.rjw@sisk.pl>
+	<a522f3c.3bab16d1.4b413b9c.ec43@o2.pl>
+	<201001042043.27037.rjw@sisk.pl>
+	<20100105090706.751D233C4B0@tippex.mynet.homeunix.org>
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.19.2; i586-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 05, 2010 at 09:58:23PM +0100, Gertjan van Wingerde wrote:
-> On 01/05/10 20:47, Greg KH wrote:
-> > 2.6.27-stable review patch.  If anyone has any objections, please let us know.
-> > 
-> > ------------------
-> > From: Gertjan van Wingerde <gwingerde@gmail.com>
-> > 
-> > commit 93b6bd26b74efe46b4579592560f9f1cb7b61994 upstream.
-> > 
-> > We've had many reports of rt61pci failures with powersaving enabled.
-> > Therefore, as a stop-gap measure, disable powersaving of the rt61pci
-> > until we have found a proper solution.
-> > Also disable powersaving on rt2800pci as it most probably will show
-> > the same problem.
-> > 
-> > Signed-off-by: Gertjan van Wingerde <gwingerde@gmail.com>
-> > Acked-by: Ivo van Doorn <IvDoorn@gmail.com>
-> > Signed-off-by: John W. Linville <linville@tuxdriver.com>
-> > Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-> > 
-> > ---
-> >  drivers/net/wireless/rt2x00/rt61pci.c |    5 +++++
-> >  1 file changed, 5 insertions(+)
-> > 
-> > --- a/drivers/net/wireless/rt2x00/rt61pci.c
-> > +++ b/drivers/net/wireless/rt2x00/rt61pci.c
-> > @@ -2281,6 +2281,11 @@ static void rt61pci_probe_hw_mode(struct
-> >  	unsigned int i;
-> >  
-> >  	/*
-> > +	 * Disable powersaving as default.
-> > +	 */
-> > +	rt2x00dev->hw->wiphy->flags &= ~WIPHY_FLAG_PS_ON_BY_DEFAULT;
-> > +
-> > +	/*
-> >  	 * Initialize all hw fields.
-> >  	 */
-> >  	rt2x00dev->hw->flags =
-> > 
-> > 
-> > 
+On Tue, 05 Jan 2010 10:07:06 +0100
+Anders Eriksson <aeriksson@fastmail.fm> wrote:
+
 > 
-> This one isn't applicable for .27. Powersaving wasn't implemented on .27 yet, so
-> this patch is unnecessary, and won't compile on .27.
+> rjw@sisk.pl said:
+> >> > I don't see a problem with this in principle, although I don't think signals
+> >> > are very suitable for this particular purpose, because you need two-way
+> >> > communication between the power manager and the processes it's going to
+> >> > notify (because it has to wait for the processes to finish their preparations
+> >> > and to tell it that they are ready). 
+> 
+> Wouldn't there need to be dependecy tracking for the userspace processes? A 
+> process couldn't signal "done" until it know there's no more work to do, which 
+> requires all other processes to finish up first.
 
-Thanks, I've now dropped it.
+No. 99% of the processes don't care about suspend. They don't need
+notifications or anything.
+The few that do care, register themselves with the power manager. They
+get notified before suspend and the power manager might wait until they
+tell him that they are ready.
+A special case are processes that only want to inhibit suspend - the CD
+burning application case - they just tell the power manager "I am
+important and you must not suspend now". They do this even if there is
+no suspend notification, and once they are done with the critical part
+of their work, they remove their "inhibit flag".
 
-greg k-h
+This all works pretty well already, and is really not very complicated.
+-- 
+Stefan Seyfried
+
+"Any ideas, John?"
+"Well, surrounding them's out."
