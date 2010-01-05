@@ -1,284 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755171Ab0AEV7o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755239Ab0AEV7y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755171Ab0AEV7o (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 16:59:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754612Ab0AEV7o
+	id S1755239Ab0AEV7y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 16:59:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755188Ab0AEV7v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 16:59:44 -0500
-Received: from [206.15.93.42] ([206.15.93.42]:1387 "EHLO
-	visionfs1.visionengravers.com" rhost-flags-FAIL-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751617Ab0AEV7n (ORCPT
+	Tue, 5 Jan 2010 16:59:51 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:43346 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755185Ab0AEV7u (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 16:59:43 -0500
-From: H Hartley Sweeten <hartleys@visionengravers.com>
-To: Linux Kernel <linux-kernel@vger.kernel.org>,
-       "linux-mtd" <linux-mtd@lists.infradead.org>,
-       ARM Kernel <linux-arm-kernel@lists.infradead.org>
-Subject: [PATCH 1/2] Update ep93xx/ts72xx to use generic platform nand driver
-Date: Tue, 5 Jan 2010 14:59:56 -0700
-Cc: dwmw2@infradead.org, mcrapet@gmail.com, joff@embeddedarm.com
+	Tue, 5 Jan 2010 16:59:50 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type;
+        b=XEH+O+LgdFdwixZIxdWvpWqlON5iemJTmbGEA0ux1XXtP/C3XOLPhfpXtDxVTwOTc4
+         +2CGsbfgVJNMWm5JbbUy3qIe5+A8qsMIagtzvx5N649OHjy8U/hkJDV64SZ2kPntcqo4
+         Evac9wHy2zg8LADNL5q268ofMHIRclrh1eiF8=
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <201001051459.56538.hartleys@visionengravers.com>
+In-Reply-To: <20100105211522.57A3E33C5F5@tippex.mynet.homeunix.org>
+References: <20100105110256.D2DF133C4B0@tippex.mynet.homeunix.org> 
+	<86802c441001051102j547f10bga2b40fbaee9cf623@mail.gmail.com> 
+	<20100105211522.57A3E33C5F5@tippex.mynet.homeunix.org>
+From: Bryan Donlan <bdonlan@gmail.com>
+Date: Tue, 5 Jan 2010 16:59:27 -0500
+Message-ID: <3e8340491001051359m799df6bai86ec42dfff96f0f0@mail.gmail.com>
+Subject: Re: Memory probing fails after 2.6.30 (bisected)
+To: Anders Eriksson <aeriksson@fastmail.fm>
+Cc: Yinghai Lu <yinghai@kernel.org>, mingo@elte.hu,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Update the ts72xx platform's nand driver support.
+On Tue, Jan 5, 2010 at 4:15 PM, Anders Eriksson <aeriksson@fastmail.fm> wrote:
+>
+> yinghai@kernel.org said:
+>> whole boot log with debug with boot command line?
+>>
+>> > I can produce a pic of the dmesg for the fingered commit of needed.
+>> boot that with earlyprintk=vga please.
+>
+> I managed to pull this one from the failing boot.
+> Does it help?
+>
+> Linux version 2.6.30-rc2-00450-g8ecee46 (root@korven) (gcc version 4.3.2 (Gentoo 4.3.2-r3 p1.6, pie-10.1.5) ) #21 SMP Tue Jan 5 10:45:52 CET 2010
+[...]
+> EXT3-fs: mounted filesystem with writeback data mode.
+> VFS: Mounted root (ext3 filesystem) readonly on device 8:5.
+> Freeing unused kernel memory: 324k freed
+> EXT3 FS on sda5, internal journal
 
-This changes the ts72xx platform from using a custom nand driver
-(ts7250.c) to the generic platform nand driver (plat_nand.c).
-
-Tested on TS-7250 with 32MB NAND.
-
-Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
-Tested-by: Matthieu Crapet <mcrapet@gmail.com>
-Cc: David Woodhouse <dwmw2@infradead.org>
-Cc: Jesse Off <joff@embeddedARM.com>
-
----
-
-diff --git a/arch/arm/mach-ep93xx/ts72xx.c b/arch/arm/mach-ep93xx/ts72xx.c
-index 259f782..47a86f0 100644
---- a/arch/arm/mach-ep93xx/ts72xx.c
-+++ b/arch/arm/mach-ep93xx/ts72xx.c
-@@ -10,12 +10,16 @@
-  * your option) any later version.
-  */
- 
-+#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-+
- #include <linux/kernel.h>
- #include <linux/init.h>
- #include <linux/platform_device.h>
- #include <linux/io.h>
- #include <linux/m48t86.h>
- #include <linux/mtd/physmap.h>
-+#include <linux/mtd/nand.h>
-+#include <linux/mtd/partitions.h>
- 
- #include <mach/hardware.h>
- #include <mach/ts72xx.h>
-@@ -54,92 +58,162 @@ static struct map_desc ts72xx_io_desc[] __initdata = {
- 	}
- };
- 
--static struct map_desc ts72xx_nand_io_desc[] __initdata = {
--	{
--		.virtual	= TS72XX_NAND_DATA_VIRT_BASE,
--		.pfn		= __phys_to_pfn(TS72XX_NAND1_DATA_PHYS_BASE),
--		.length		= TS72XX_NAND_DATA_SIZE,
--		.type		= MT_DEVICE,
--	}, {
--		.virtual	= TS72XX_NAND_CONTROL_VIRT_BASE,
--		.pfn		= __phys_to_pfn(TS72XX_NAND1_CONTROL_PHYS_BASE),
--		.length		= TS72XX_NAND_CONTROL_SIZE,
--		.type		= MT_DEVICE,
--	}, {
--		.virtual	= TS72XX_NAND_BUSY_VIRT_BASE,
--		.pfn		= __phys_to_pfn(TS72XX_NAND1_BUSY_PHYS_BASE),
--		.length		= TS72XX_NAND_BUSY_SIZE,
--		.type		= MT_DEVICE,
-+static void __init ts72xx_map_io(void)
-+{
-+	ep93xx_map_io();
-+	iotable_init(ts72xx_io_desc, ARRAY_SIZE(ts72xx_io_desc));
-+}
-+
-+
-+/*************************************************************************
-+ * NAND flash
-+ *************************************************************************/
-+#define TS72XX_NAND_CONTROL_ADDR_LINE	22	/* 0xN0400000 */
-+#define TS72XX_NAND_BUSY_ADDR_LINE	23	/* 0xN0800000 */
-+
-+static void ts72xx_nand_hwcontrol(struct mtd_info *mtd,
-+				  int cmd, unsigned int ctrl)
-+{
-+	struct nand_chip *chip = mtd->priv;
-+
-+	if (ctrl & NAND_CTRL_CHANGE) {
-+		void __iomem *addr = chip->IO_ADDR_R;
-+		unsigned char bits;
-+
-+		addr += (1 << TS72XX_NAND_CONTROL_ADDR_LINE);
-+
-+		bits = __raw_readb(addr) & ~0x07;
-+		bits |= (ctrl & NAND_NCE) << 2;	/* bit 0 -> bit 2 */
-+		bits |= (ctrl & NAND_CLE);	/* bit 1 -> bit 1 */
-+		bits |= (ctrl & NAND_ALE) >> 2;	/* bit 2 -> bit 0 */
-+
-+		__raw_writeb(bits, addr);
- 	}
--};
- 
--static struct map_desc ts72xx_alternate_nand_io_desc[] __initdata = {
-+	if (cmd != NAND_CMD_NONE)
-+		__raw_writeb(cmd, chip->IO_ADDR_W);
-+}
-+
-+static int ts72xx_nand_device_ready(struct mtd_info *mtd)
-+{
-+	struct nand_chip *chip = mtd->priv;
-+	void __iomem *addr = chip->IO_ADDR_R;
-+
-+	addr += (1 << TS72XX_NAND_BUSY_ADDR_LINE);
-+
-+	return !!(__raw_readb(addr) & 0x20);
-+}
-+
-+static const char *ts72xx_nand_part_probes[] = { "cmdlinepart", NULL };
-+
-+#define TS72XX_BOOTROM_PART_SIZE	(SZ_16K)
-+#define TS72XX_REDBOOT_PART_SIZE	(SZ_2M + SZ_1M)
-+
-+static struct mtd_partition ts72xx_nand_parts[] = {
- 	{
--		.virtual	= TS72XX_NAND_DATA_VIRT_BASE,
--		.pfn		= __phys_to_pfn(TS72XX_NAND2_DATA_PHYS_BASE),
--		.length		= TS72XX_NAND_DATA_SIZE,
--		.type		= MT_DEVICE,
-+		.name		= "TS-BOOTROM",
-+		.offset		= 0,
-+		.size		= TS72XX_BOOTROM_PART_SIZE,
-+		.mask_flags	= MTD_WRITEABLE,	/* force read-only */
- 	}, {
--		.virtual	= TS72XX_NAND_CONTROL_VIRT_BASE,
--		.pfn		= __phys_to_pfn(TS72XX_NAND2_CONTROL_PHYS_BASE),
--		.length		= TS72XX_NAND_CONTROL_SIZE,
--		.type		= MT_DEVICE,
-+		.name		= "Linux",
-+		.offset		= MTDPART_OFS_APPEND,
-+		.size		= 0,			/* filled in later */
- 	}, {
--		.virtual	= TS72XX_NAND_BUSY_VIRT_BASE,
--		.pfn		= __phys_to_pfn(TS72XX_NAND2_BUSY_PHYS_BASE),
--		.length		= TS72XX_NAND_BUSY_SIZE,
--		.type		= MT_DEVICE,
--	}
-+		.name		= "RedBoot",
-+		.offset		= MTDPART_OFS_APPEND,
-+		.size		= MTDPART_SIZ_FULL,
-+		.mask_flags	= MTD_WRITEABLE,	/* force read-only */
-+	},
- };
- 
--static void __init ts72xx_map_io(void)
-+static void ts72xx_nand_set_parts(uint64_t size,
-+				  struct platform_nand_chip *chip)
- {
--	ep93xx_map_io();
--	iotable_init(ts72xx_io_desc, ARRAY_SIZE(ts72xx_io_desc));
-+	/* Factory TS-72xx boards only come with 32MiB or 128MiB NAND options */
-+	if (size == SZ_32M || size == SZ_128M) {
-+		/* Set the "Linux" partition size */
-+		ts72xx_nand_parts[1].size = size - TS72XX_REDBOOT_PART_SIZE;
- 
--	/*
--	 * The TS-7200 has NOR flash, the other models have NAND flash.
--	 */
--	if (!board_is_ts7200()) {
--		if (is_ts9420_installed()) {
--			iotable_init(ts72xx_alternate_nand_io_desc,
--				ARRAY_SIZE(ts72xx_alternate_nand_io_desc));
--		} else {
--			iotable_init(ts72xx_nand_io_desc,
--				ARRAY_SIZE(ts72xx_nand_io_desc));
--		}
-+		chip->partitions = ts72xx_nand_parts;
-+		chip->nr_partitions = ARRAY_SIZE(ts72xx_nand_parts);
-+	} else {
-+		pr_warning("Unknown nand disk size:%lluMiB\n", size >> 20);
- 	}
- }
- 
-+static struct platform_nand_data ts72xx_nand_data = {
-+	.chip = {
-+		.nr_chips	= 1,
-+		.chip_offset	= 0,
-+		.chip_delay	= 15,
-+		.part_probe_types = ts72xx_nand_part_probes,
-+		.set_parts	= ts72xx_nand_set_parts,
-+	},
-+	.ctrl = {
-+		.cmd_ctrl	= ts72xx_nand_hwcontrol,
-+		.dev_ready	= ts72xx_nand_device_ready,
-+	},
-+};
-+
-+static struct resource ts72xx_nand_resource[] = {
-+	{
-+		.start		= 0,			/* filled in later */
-+		.end		= 0,			/* filled in later */
-+		.flags		= IORESOURCE_MEM,
-+	},
-+};
-+
-+static struct platform_device ts72xx_nand_flash = {
-+	.name			= "gen_nand",
-+	.id			= -1,
-+	.dev.platform_data	= &ts72xx_nand_data,
-+	.resource		= ts72xx_nand_resource,
-+	.num_resources		= ARRAY_SIZE(ts72xx_nand_resource),
-+};
-+
-+
- /*************************************************************************
-  * NOR flash (TS-7200 only)
-  *************************************************************************/
--static struct physmap_flash_data ts72xx_flash_data = {
-+static struct physmap_flash_data ts72xx_nor_data = {
- 	.width		= 2,
- };
- 
--static struct resource ts72xx_flash_resource = {
-+static struct resource ts72xx_nor_resource = {
- 	.start		= EP93XX_CS6_PHYS_BASE,
- 	.end		= EP93XX_CS6_PHYS_BASE + SZ_16M - 1,
- 	.flags		= IORESOURCE_MEM,
- };
- 
--static struct platform_device ts72xx_flash = {
--	.name		= "physmap-flash",
--	.id		= 0,
--	.dev		= {
--		.platform_data	= &ts72xx_flash_data,
--	},
--	.num_resources	= 1,
--	.resource	= &ts72xx_flash_resource,
-+static struct platform_device ts72xx_nor_flash = {
-+	.name			= "physmap-flash",
-+	.id			= 0,
-+	.dev.platform_data	= &ts72xx_nor_data,
-+	.resource		= &ts72xx_nor_resource,
-+	.num_resources		= 1,
- };
- 
- static void __init ts72xx_register_flash(void)
- {
--	if (board_is_ts7200())
--		platform_device_register(&ts72xx_flash);
-+	if (board_is_ts7200()) {
-+		platform_device_register(&ts72xx_nor_flash);
-+	} else {
-+		resource_size_t start;
-+
-+		if (is_ts9420_installed())
-+			start = EP93XX_CS7_PHYS_BASE;
-+		else
-+			start = EP93XX_CS6_PHYS_BASE;
-+
-+		ts72xx_nand_resource[0].start = start;
-+		ts72xx_nand_resource[0].end = start + SZ_16M - 1;
-+
-+		platform_device_register(&ts72xx_nand_flash);
-+	}
- }
- 
-+
- static unsigned char ts72xx_rtc_readbyte(unsigned long addr)
- {
- 	__raw_writeb(addr, TS72XX_RTC_INDEX_VIRT_BASE);
+Looks like the boot succeeded, at least long enough to mount the root
+fs. Assuming you're not using bootsplash or something, you should have
+seen something. Are you sure this is the log from the failed boot? If
+it didn't make it to userspace, it won't leave anything in kern.log.
