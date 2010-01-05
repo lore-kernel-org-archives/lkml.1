@@ -1,51 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754492Ab0AEIGg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754506Ab0AEISx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754492Ab0AEIGg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 03:06:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754420Ab0AEIGf
+	id S1754506Ab0AEISx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 03:18:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754487Ab0AEISw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 03:06:35 -0500
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:45463 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754251Ab0AEIGf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 03:06:35 -0500
-Date: Tue, 5 Jan 2010 13:36:13 +0530
-From: Bharata B Rao <bharata@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Gautham R Shenoy <ego@in.ibm.com>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>,
-       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Pavel Emelyanov <xemul@openvz.org>,
-       Herbert Poetzl <herbert@13thfloor.at>, Avi Kivity <avi@redhat.com>,
-       Chris Friesen <cfriesen@nortel.com>, Paul Menage <menage@google.com>,
-       Mike Waychison <mikew@google.com>
-Subject: Re: [RFC v5 PATCH 0/8] CFS Hard limits - v5
-Message-ID: <20100105080613.GN27899@in.ibm.com>
-Reply-To: bharata@linux.vnet.ibm.com
-References: <20100105075703.GE27899@in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100105075703.GE27899@in.ibm.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Tue, 5 Jan 2010 03:18:52 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:58547 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754421Ab0AEISv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jan 2010 03:18:51 -0500
+Subject: Re: [RFC][PATCH 6/8] mm: handle_speculative_fault()
+From: Peter Zijlstra <peterz@infradead.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "minchan.kim@gmail.com" <minchan.kim@gmail.com>,
+       cl@linux-foundation.org, "hugh.dickins" <hugh.dickins@tiscali.co.uk>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <alpine.LFD.2.00.1001041904250.3630@localhost.localdomain>
+References: <20100104182429.833180340@chello.nl>
+	 <20100104182813.753545361@chello.nl>
+	 <20100105092559.1de8b613.kamezawa.hiroyu@jp.fujitsu.com>
+	 <alpine.LFD.2.00.1001041904250.3630@localhost.localdomain>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 05 Jan 2010 09:17:57 +0100
+Message-ID: <1262679477.2400.13.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 05, 2010 at 01:27:03PM +0530, Bharata B Rao wrote:
-> Hi,
-> 
-> This is the v5 post of CFS hard limits. In this patchset, I have
-> pulled out bandwidth and runtime handling code from RT into sched.c
-> so that the same code can be used by CFS hard limits.
-> 
-> Also I have addressed the review comments given by Peter Zijlstra for v4.
+On Mon, 2010-01-04 at 19:13 -0800, Linus Torvalds wrote:
 
-And forgot to mention that this set applies on 2.6.33-rc2.
+> I would say that this whole series is _very_ far from being mergeable. 
 
-Regards,
-Bharata.
+Never said anything else ;-)
+
+> Peter seems to have been thinking about the details, while missing all the 
+> subtle big picture effects that seem to actually change semantics.
+
+Yes, I seem to have missed a rather significant side of the whole
+issue..  back to the drawing room for me then.
+
