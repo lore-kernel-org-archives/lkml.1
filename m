@@ -1,56 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754657Ab0AEOQB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754709Ab0AEOQS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754657Ab0AEOQB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 09:16:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754609Ab0AEOPt
+	id S1754709Ab0AEOQS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 09:16:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754573Ab0AEONg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 09:15:49 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:33499 "EHLO mx1.redhat.com"
+	Tue, 5 Jan 2010 09:13:36 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:45127 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754587Ab0AEONh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 09:13:37 -0500
+	id S1754556Ab0AEONb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jan 2010 09:13:31 -0500
 From: Gleb Natapov <gleb@redhat.com>
 To: kvm@vger.kernel.org
 Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, avi@redhat.com,
        mingo@elte.hu, a.p.zijlstra@chello.nl, tglx@linutronix.de,
        hpa@zytor.com, riel@redhat.com, cl@linux-foundation.org
-Subject: [PATCH v3 05/12] Export __get_user_pages_fast.
-Date: Tue,  5 Jan 2010 16:12:47 +0200
-Message-Id: <1262700774-1808-6-git-send-email-gleb@redhat.com>
+Subject: [PATCH v3 01/12] Move kvm_smp_prepare_boot_cpu() from kvmclock.c to kvm.c.
+Date: Tue,  5 Jan 2010 16:12:43 +0200
+Message-Id: <1262700774-1808-2-git-send-email-gleb@redhat.com>
 In-Reply-To: <1262700774-1808-1-git-send-email-gleb@redhat.com>
 References: <1262700774-1808-1-git-send-email-gleb@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KVM will use it to try and find a page without falling back to slow
-gup. That is why get_user_pages_fast() is not enough.
+Async PF also needs to hook into smp_prepare_boot_cpu so move the hook
+into generic code.
 
 Signed-off-by: Gleb Natapov <gleb@redhat.com>
 ---
- arch/x86/mm/gup.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+ arch/x86/include/asm/kvm_para.h |    1 +
+ arch/x86/kernel/kvm.c           |   11 +++++++++++
+ arch/x86/kernel/kvmclock.c      |   13 +------------
+ 3 files changed, 13 insertions(+), 12 deletions(-)
 
-diff --git a/arch/x86/mm/gup.c b/arch/x86/mm/gup.c
-index 71da1bc..cea0dfe 100644
---- a/arch/x86/mm/gup.c
-+++ b/arch/x86/mm/gup.c
-@@ -8,6 +8,7 @@
- #include <linux/mm.h>
- #include <linux/vmstat.h>
- #include <linux/highmem.h>
-+#include <linux/module.h>
+diff --git a/arch/x86/include/asm/kvm_para.h b/arch/x86/include/asm/kvm_para.h
+index c584076..5f580f2 100644
+--- a/arch/x86/include/asm/kvm_para.h
++++ b/arch/x86/include/asm/kvm_para.h
+@@ -51,6 +51,7 @@ struct kvm_mmu_op_release_pt {
+ #include <asm/processor.h>
  
- #include <asm/pgtable.h>
+ extern void kvmclock_init(void);
++extern int kvm_register_clock(char *txt);
  
-@@ -274,6 +275,7 @@ int __get_user_pages_fast(unsigned long start, int nr_pages, int write,
  
- 	return nr;
+ /* This instruction is vmcall.  On non-VT architectures, it will generate a
+diff --git a/arch/x86/kernel/kvm.c b/arch/x86/kernel/kvm.c
+index 63b0ec8..e6db179 100644
+--- a/arch/x86/kernel/kvm.c
++++ b/arch/x86/kernel/kvm.c
+@@ -231,10 +231,21 @@ static void __init paravirt_ops_setup(void)
+ #endif
  }
-+EXPORT_SYMBOL_GPL(__get_user_pages_fast);
  
- /**
-  * get_user_pages_fast() - pin user pages in memory
++#ifdef CONFIG_SMP
++static void __init kvm_smp_prepare_boot_cpu(void)
++{
++	WARN_ON(kvm_register_clock("primary cpu clock"));
++	native_smp_prepare_boot_cpu();
++}
++#endif
++
+ void __init kvm_guest_init(void)
+ {
+ 	if (!kvm_para_available())
+ 		return;
+ 
+ 	paravirt_ops_setup();
++#ifdef CONFIG_SMP
++	smp_ops.smp_prepare_boot_cpu = kvm_smp_prepare_boot_cpu;
++#endif
+ }
+diff --git a/arch/x86/kernel/kvmclock.c b/arch/x86/kernel/kvmclock.c
+index feaeb0d..6ab9622 100644
+--- a/arch/x86/kernel/kvmclock.c
++++ b/arch/x86/kernel/kvmclock.c
+@@ -122,7 +122,7 @@ static struct clocksource kvm_clock = {
+ 	.flags = CLOCK_SOURCE_IS_CONTINUOUS,
+ };
+ 
+-static int kvm_register_clock(char *txt)
++int kvm_register_clock(char *txt)
+ {
+ 	int cpu = smp_processor_id();
+ 	int low, high;
+@@ -146,14 +146,6 @@ static void __cpuinit kvm_setup_secondary_clock(void)
+ }
+ #endif
+ 
+-#ifdef CONFIG_SMP
+-static void __init kvm_smp_prepare_boot_cpu(void)
+-{
+-	WARN_ON(kvm_register_clock("primary cpu clock"));
+-	native_smp_prepare_boot_cpu();
+-}
+-#endif
+-
+ /*
+  * After the clock is registered, the host will keep writing to the
+  * registered memory location. If the guest happens to shutdown, this memory
+@@ -192,9 +184,6 @@ void __init kvmclock_init(void)
+ 		x86_cpuinit.setup_percpu_clockev =
+ 			kvm_setup_secondary_clock;
+ #endif
+-#ifdef CONFIG_SMP
+-		smp_ops.smp_prepare_boot_cpu = kvm_smp_prepare_boot_cpu;
+-#endif
+ 		machine_ops.shutdown  = kvm_shutdown;
+ #ifdef CONFIG_KEXEC
+ 		machine_ops.crash_shutdown  = kvm_crash_shutdown;
 -- 
 1.6.5
 
