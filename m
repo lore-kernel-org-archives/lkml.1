@@ -1,76 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754203Ab0AECDg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754228Ab0AECDv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754203Ab0AECDg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 21:03:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753640Ab0AECDf
+	id S1754228Ab0AECDv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 21:03:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752983Ab0AECDt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 21:03:35 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:35740 "EHLO smtps.tip.net.au"
+	Mon, 4 Jan 2010 21:03:49 -0500
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:60637 "EHLO e5.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753435Ab0AECDe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 21:03:34 -0500
-Date: Tue, 5 Jan 2010 13:03:22 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Christoph Hellwig <hch@infradead.org>, Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Quentin Barnes <qbarnes+nfs@yahoo-inc.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       Nick Piggin <npiggin@suse.de>, Steven Whitehouse <swhiteho@redhat.com>,
-       David Howells <dhowells@redhat.com>, Al Viro <viro@zeniv.linux.org.uk>,
-       Jonathan Corbet <corbet@lwn.net>
-Subject: Re: [RFC][PATCH v4] readahead: introduce O_RANDOM for
- POSIX_FADV_RANDOM
-Message-Id: <20100105130322.006c03ee.sfr@canb.auug.org.au>
-In-Reply-To: <20100104125620.GB12266@localhost>
-References: <20091225000717.GA26949@yahoo-inc.com>
-	<87aax18xms.fsf@basil.nowhere.org>
-	<20091230051540.GA16308@localhost>
-	<20091230052402.GB26364@localhost>
-	<873a2s8hmp.fsf@basil.nowhere.org>
-	<20100104045020.GA21021@localhost>
-	<20100104161719.a0bb35ad.sfr@canb.auug.org.au>
-	<20100104073328.GA3422@infradead.org>
-	<20100104125620.GB12266@localhost>
-X-Mailer: Sylpheed 3.0.0beta4 (GTK+ 2.18.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__5_Jan_2010_13_03_22_+1100_1IZ=G_RNQZAHQZFI"
+	id S1754030Ab0AECDr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jan 2010 21:03:47 -0500
+Date: Mon, 4 Jan 2010 18:03:45 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: mingo@elte.hu, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
+       akpm@linux-foundation.org, mathieu.desnoyers@polymtl.ca,
+       josh@joshtriplett.org, dvhltc@us.ibm.com, niv@us.ibm.com,
+       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
+       Valdis.Kletnieks@vt.edu, dhowells@redhat.com
+Subject: [PATCH tip/core/rcu 0/8] rcu: add lockdep-based diagnostics to
+	rcu_dereference()
+Message-ID: <20100105020345.GA32114@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__5_Jan_2010_13_03_22_+1100_1IZ=G_RNQZAHQZFI
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hello!
 
-On Mon, 4 Jan 2010 20:56:20 +0800 Wu Fengguang <fengguang.wu@intel.com> wro=
-te:
->
-> For now I'll use bit 040000000, which happen to equal to
-> FMODE_NONOTIFY and will be masked out by __dentry_open()
-> in the very beginning.
+This patch series adds lockdep-based checking to the rcu_dereference()
+primitive in order to flag misuses of RCU.  The first three patches
+put the RCU infrastructure in place, while the last five use this
+infrastructure in the net, sched, vfs, radix-tree, and idr subsystems.
+There are very likely additional changes required.
 
-But also clashes with __O_SYNC on sparc, sorry.  I am not sure how we are
-meant to reasonably choose these values any more ...
+							Thanx, Paul
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
 
---Signature=_Tue__5_Jan_2010_13_03_22_+1100_1IZ=G_RNQZAHQZFI
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAktCneoACgkQjjKRsyhoI8xVIQCeKIVdZGKo2winQKhHWr/E1W7w
-HfoAn3B4YGCetSpmocW4juILbASNMhcv
-=L1dl
------END PGP SIGNATURE-----
-
---Signature=_Tue__5_Jan_2010_13_03_22_+1100_1IZ=G_RNQZAHQZFI--
+ b/fs/file.c                     |    2 
+ b/include/linux/cgroup.h        |    2 
+ b/include/linux/cred.h          |    2 
+ b/include/linux/fdtable.h       |    8 +-
+ b/include/linux/rculist.h       |   14 ++--
+ b/include/linux/rculist_nulls.h |    5 -
+ b/include/linux/rcupdate.h      |  124 ++++++++++++++++++++++++++++++++++++----
+ b/include/linux/srcu.h          |   87 +++++++++++++++++++++++++++-
+ b/init/main.c                   |    2 
+ b/kernel/exit.c                 |   14 +++-
+ b/kernel/fork.c                 |    1 
+ b/kernel/notifier.c             |    6 -
+ b/kernel/pid.c                  |    2 
+ b/kernel/rcupdate.c             |   10 +++
+ b/kernel/rcutorture.c           |   12 +++
+ b/kernel/sched.c                |    7 --
+ b/kernel/srcu.c                 |   50 ++++++++++------
+ b/lib/debug_locks.c             |    2 
+ b/lib/idr.c                     |    9 +-
+ b/lib/radix-tree.c              |   25 +++-----
+ b/net/core/dev.c                |    2 
+ b/net/core/filter.c             |    6 -
+ b/net/core/sock.c               |    2 
+ b/net/decnet/dn_route.c         |   14 ++--
+ b/net/ipv4/route.c              |   14 ++--
+ b/net/packet/af_packet.c        |    3 
+ include/linux/rcupdate.h        |   45 ++++++++++----
+ include/linux/srcu.h            |    9 ++
+ 28 files changed, 369 insertions(+), 110 deletions(-)
