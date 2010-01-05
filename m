@@ -1,105 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753640Ab0AEJ0Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753945Ab0AEJ2U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753640Ab0AEJ0Q (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 04:26:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752284Ab0AEJ0O
+	id S1753945Ab0AEJ2U (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 04:28:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753535Ab0AEJ2T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 04:26:14 -0500
-Received: from mtagate4.de.ibm.com ([195.212.17.164]:60693 "EHLO
-	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752837Ab0AEJ0L (ORCPT
+	Tue, 5 Jan 2010 04:28:19 -0500
+Received: from ch-smtp03.sth.basefarm.net ([80.76.149.214]:54572 "EHLO
+	ch-smtp03.sth.basefarm.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750888Ab0AEJ2S (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 04:26:11 -0500
-Date: Tue, 5 Jan 2010 10:26:06 +0100
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: caiqian@redhat.com, Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Jan Kratochvil <jkratoch@redhat.com>,
-       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org,
-       linux-s390@vger.kernel.org, utrace-devel@redhat.com
-Subject: Re: s390 && user_enable_single_step() (Was: odd utrace testing
- results on s390x)
-Message-ID: <20100105102606.4f223990@mschwide.boeblingen.de.ibm.com>
-In-Reply-To: <20100104181412.GA21146@redhat.com>
-References: <1503844142.2061111261478093776.JavaMail.root@zmail06.collab.prod.int.phx2.redhat.com>
-	<1257887498.2061171261478252049.JavaMail.root@zmail06.collab.prod.int.phx2.redhat.com>
-	<20100104155225.GA16650@redhat.com>
-	<20100104171626.22ea2d9c@mschwide.boeblingen.de.ibm.com>
-	<20100104181412.GA21146@redhat.com>
-Organization: IBM Corporation
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.18.5; i486-pc-linux-gnu)
+	Tue, 5 Jan 2010 04:28:18 -0500
+X-Greylist: delayed 1219 seconds by postgrey-1.27 at vger.kernel.org; Tue, 05 Jan 2010 04:28:18 EST
+X-Mailer: exmh version 2.7.2 04/02/2003 (gentoo 2.7.2) with nmh-1.3-dev
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: =?utf-8?q?Bart=C5=82omiej_Zimo=C5=84?= <uzi18@o2.pl>, awalls@radix.net,
+       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       danborkmann@googlemail.com
+Subject: Re: [linux-pm] [suspend/resume] Re: userspace notification from module
+In-reply-to: <201001042043.27037.rjw@sisk.pl>
+References: <686edb2c.6263643a.4b3f4a3b.b60b3@o2.pl> <201001040045.39517.rjw@sisk.pl> <a522f3c.3bab16d1.4b413b9c.ec43@o2.pl> <201001042043.27037.rjw@sisk.pl>
+Comments: In-reply-to "Rafael J. Wysocki" <rjw@sisk.pl>
+   message dated "Mon, 04 Jan 2010 20:43:26 +0100."
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Date: Tue, 05 Jan 2010 10:07:06 +0100
+From: Anders Eriksson <aeriksson@fastmail.fm>
+Message-Id: <20100105090706.751D233C4B0@tippex.mynet.homeunix.org>
+X-Originating-IP: 83.252.238.172
+X-Scan-Result: No virus found in message 1NS5P5-0004ov-CQ.
+X-Scan-Signature: ch-smtp03.sth.basefarm.net 1NS5P5-0004ov-CQ 0d2593ad340d6526a409b8cb1fe92688
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 4 Jan 2010 19:14:12 +0100
-Oleg Nesterov <oleg@redhat.com> wrote:
 
-> On 01/04, Martin Schwidefsky wrote:
-> > Subject: [PATCH] fix loading of PER control registers for utrace.
-> >
-> > From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-> >
-> > If the current task enables / disables PER tracing for itself the
-> > PER control registers need to be loaded in FixPerRegisters.
-> >
-> > Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
-> > ---
-> >  arch/s390/kernel/ptrace.c |    3 +++
-> >  1 file changed, 3 insertions(+)
-> >
-> > --- a/arch/s390/kernel/ptrace.c
-> > +++ b/arch/s390/kernel/ptrace.c
-> > @@ -98,6 +98,9 @@ FixPerRegisters(struct task_struct *task
-> >  		per_info->control_regs.bits.storage_alt_space_ctl = 1;
-> >  	else
-> >  		per_info->control_regs.bits.storage_alt_space_ctl = 0;
-> > +
-> > +	if (task == current)
-> > +		__ctl_load(per_info->control_regs.words, 9, 11);
-> >  }
-> 
-> Yes it does fix the problem! Thanks a lot Martin.
+rjw@sisk.pl said:
+>> > I don't see a problem with this in principle, although I don't think signals
+>> > are very suitable for this particular purpose, because you need two-way
+>> > communication between the power manager and the processes it's going to
+>> > notify (because it has to wait for the processes to finish their preparations
+>> > and to tell it that they are ready). 
 
-Ok, I will add that patch to the git390 queue.
-
-> However. Could you please look at 6580807da14c423f0d0a708108e6df6ebc8bc83d ?
-> I am worried, perhaps this commit is not enough for s390. OK, do_single_step()
-> tracehook_consider_fatal_signal(), this means the forked thread will not
-> be killed by SIGTRAP if it is not auto-attached, but still this may be
-> wrong.
-> 
-> IOW. I think this problem is minor and probably can be ignored, but if
-> I remove tracehook_consider_fatal_signal() check from do_single_step(),
-> 
-> --- a/arch/s390/kernel/traps.c
-> +++ b/arch/s390/kernel/traps.c
-> @@ -382,8 +382,7 @@ void __kprobes do_single_step(struct pt_
->  					SIGTRAP) == NOTIFY_STOP){
->  		return;
->  	}
-> -	if (tracehook_consider_fatal_signal(current, SIGTRAP))
-> -		force_sig(SIGTRAP, current);
-> +	force_sig(SIGTRAP, current);
->  }
-> 
->  static void default_trap_handler(struct pt_regs * regs, long interruption_code)
-> -------------------------------------------------------------------
-> 
-> then the test-case from 6580807da14c423f0d0a708108e6df6ebc8bc83d
-> fails. This probably means that copy_process()->user_disable_single_step()
-> is not enough to clear the "this task wants single-stepping" copied
-> from parent.
-
-user_disable_single_step() does not remove the TIF_SINGLE_STEP bit from the
-forked task. Perhaps we should just clear the bit in the function.
-
--- 
-blue skies,
-   Martin.
-
-"Reality continues to ruin my life." - Calvin.
+Wouldn't there need to be dependecy tracking for the userspace processes? A 
+process couldn't signal "done" until it know there's no more work to do, which 
+requires all other processes to finish up first.
 
