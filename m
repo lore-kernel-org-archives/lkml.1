@@ -1,76 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755101Ab0AEVzm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755071Ab0AEV6K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755101Ab0AEVzm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 16:55:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754803Ab0AEVzm
+	id S1755071Ab0AEV6K (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 16:58:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754152Ab0AEV6I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 16:55:42 -0500
-Received: from us-mx4.synaptics.com ([12.178.49.178]:56421 "EHLO
-	us-mx4.synaptics.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754686Ab0AEVzl convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 16:55:41 -0500
-X-PGP-Universal: processed;
-	by securemail.synaptics.com on Tue, 05 Jan 2010 13:00:41 -0800
-From: William Manson <WManson@synaptics.com>
-To: "'Dmitry Torokhov'" <dmitry.torokhov@gmail.com>
-CC: Christopher Heiny <Cheiny@synaptics.com>,
-       Allie Xiong <axiong@synaptics.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Date: Tue, 5 Jan 2010 13:57:37 -0800
-Subject: RE: [RFC] [PATCH 1/1] input/touchscreen: Synaptics Touchscreen
- Driver
-Thread-Topic: [RFC] [PATCH 1/1] input/touchscreen: Synaptics Touchscreen
- Driver
-Thread-Index: AcqMxKMgrX3+QeBSTBOtVApMys2DTQBjJILQ
-Message-ID: <7B4B50AC280A5E45A42CD2D364A3CE2F2733F75A3E@USW-EX2K7-1.synaptics-inc.local>
-In-Reply-To: <20100103223025.GA4496@core.coreip.homeip.net>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Tue, 5 Jan 2010 16:58:08 -0500
+Received: from smtp1.it.da.ut.ee ([193.40.5.66]:53214 "EHLO smtp1.it.da.ut.ee"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754037Ab0AEV6H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jan 2010 16:58:07 -0500
+Date: Tue, 5 Jan 2010 23:58:01 +0200 (EET)
+From: Meelis Roos <mroos@linux.ee>
+To: Jonathan Nieder <jrnieder@gmail.com>
+cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: instant reboot on loading 2.6.33-rc on Celeron 900
+In-Reply-To: <20100104055644.GA7082@progeny.tock>
+Message-ID: <alpine.SOC.1.00.1001052301070.11177@math.ut.ee>
+References: <alpine.SOC.1.00.0912291553160.12082@math.ut.ee> <20100104055644.GA7082@progeny.tock>
+User-Agent: Alpine 1.00 (SOC 882 2007-12-20)
 MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Dmitry -
+> I am guessing /bin/sh is dash.  If so, hopefully the patch at
+> <http://thread.gmane.org/gmane.linux.kbuild.devel/4313/focus=4319> will
+> fix this.  Please do let me know if it does.
 
-Yes - we are planning on extending support for our new touchpads. As far as I know there is a Linux PS/2 driver in the works but I don't work with that group so I don't know anything about timeframes. I also don't know if it will be made open source or as a proprietary binary - or both. But we are definitely planning on supporting our PS/2 touchpads on Linux.
+Yes, it is dash.
 
-I will check into the Interfacing Guide and get back to you. The latest is on our web site (http://www.synaptics.com/developers/manuals) but it doesn't have info about multitouch in it. If there is a newer one I'll let you know.
+2.6.33-rc2-00302-gc5974b8 without the patch fails to boot.
 
-Regards,
+2.6.33-rc2-00302-gc5974b8 with this patch boots fine.
 
-William
+So this patch solves it for me - thanks!
 
-
------Original Message-----
-From: Dmitry Torokhov [mailto:dmitry.torokhov@gmail.com]
-Sent: Sunday, January 03, 2010 2:30 PM
-To: William Manson
-Cc: Christopher Heiny; Allie Xiong; linux-kernel
-Subject: Re: [RFC] [PATCH 1/1] input/touchscreen: Synaptics Touchscreen Driver
-
-Hi William,
-
-On Sun, Jan 03, 2010 at 11:48:55AM -0800, William Manson wrote:
-> Hi Dmitry -
->
-> Thanks for the feedback - we really appreciate it. We are currently
-> looking into the issues and the mailer-line wrap issue. We'll be
-> re-sending a patch as soon as we get these issue resolved as soon as
-> possible.
-
-Could I also ask if you have any plans on extending support for the
-newer models of your touchpads (especially multi-touch ones) in the PS/2
-version of the driver? Or maybe there is updated version of the
-Interfacing Guide that you could share with the community?
-
-Thank you in advance,
-
-Dmitry
-
+-- 
+Meelis Roos (mroos@linux.ee)
