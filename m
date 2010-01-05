@@ -1,293 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754818Ab0AEPQa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754730Ab0AEPQy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754818Ab0AEPQa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 10:16:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754730Ab0AEPQ3
+	id S1754730Ab0AEPQy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 10:16:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753568Ab0AEPQw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 10:16:29 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:56275 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754639Ab0AEPQ2 (ORCPT
+	Tue, 5 Jan 2010 10:16:52 -0500
+Received: from nlpi157.sbcis.sbc.com ([207.115.36.171]:33110 "EHLO
+	nlpi157.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754820Ab0AEPQt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 10:16:28 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type;
-        b=fIm3iLWaDyaicaqwsK9I1syjcYERfoPfWBuFjECbrGQNjioEpzT5HAXia+B5yZhGw3
-         yPCEhrRHw96EeYBSL+ccOXPfA+RDHelLhYDbQCTwhJQlzmv3Trm/JSvmatoHY66P59Fu
-         J5di9Jir0fwuQ2kOuePXZJAyo/3exC84c/8J0=
+	Tue, 5 Jan 2010 10:16:49 -0500
+Date: Tue, 5 Jan 2010 09:14:21 -0600 (CST)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@router.home
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Minchan Kim <minchan.kim@gmail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "hugh.dickins" <hugh.dickins@tiscali.co.uk>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [RFC][PATCH 6/8] mm: handle_speculative_fault()
+In-Reply-To: <20100105143046.73938ea2.kamezawa.hiroyu@jp.fujitsu.com>
+Message-ID: <alpine.DEB.2.00.1001050907100.1074@router.home>
+References: <20100104182429.833180340@chello.nl> <20100104182813.753545361@chello.nl> <20100105092559.1de8b613.kamezawa.hiroyu@jp.fujitsu.com> <28c262361001042029w4b95f226lf54a3ed6a4291a3b@mail.gmail.com> <20100105134357.4bfb4951.kamezawa.hiroyu@jp.fujitsu.com>
+ <alpine.LFD.2.00.1001042052210.3630@localhost.localdomain> <20100105143046.73938ea2.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Date: Tue, 5 Jan 2010 18:16:26 +0300
-Message-ID: <53cc795f1001050716j47f4ec56q5c719a884f413ad@mail.gmail.com>
-Subject: Panic is at tcp_xmit_retransmit_queue
-From: sbs <gexlie@gmail.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We are hiting kernel panics on servers with nVidia MCP55 NICs;
-it appears usualy under a high network trafic ( around 1000Mbit/s) but
-it is not a rule it
-has happened even on low trafic.
+On Tue, 5 Jan 2010, KAMEZAWA Hiroyuki wrote:
 
-Servers are used as nginx http proxy.
-On 2 equal servers this panic happens aprox 2 times a day depending on
-network load. Machine completly freezes till the netconsole reboots.
+> I'd like to hear use cases of really heavy users, too. Christoph ?
 
-Kernel: 2.6.31.6 #2 SMP Sun Nov 29 04:30:07 JST 2009
+A typical use case is a highly parallel memory intensive process
+(simulations f.e.). Those are configured with the number of hardware
+threads supported in mind to max out the performance of the underlying
+hardware. On startup they start N threads and then each thread begins
+initializing its memory (to get proper locality it has to be done this
+way, you also want concurrency during this expensive operation).
 
-Panic output:
-
-
-
-Dec 29 22:33:51 linuxtest [1188725.037019] BUG: unable to handle kernel
-Dec 29 22:33:51 linuxtest NULL pointer dereference
-Dec 29 22:33:51 linuxtest at (null)
-Dec 29 22:33:51 linuxtest [1188725.037042] IP:
-Dec 29 22:33:51 linuxtest [<c060164a>] tcp_xmit_retransmit_queue+0x1b2/0x1dc
-Dec 29 22:33:51 linuxtest [1188725.037064] *pdpt = 00000000229c2001
-Dec 29 22:33:51 linuxtest *pde = 0000000000000000
-Dec 29 22:33:51 linuxtest
-Dec 29 22:33:51 linuxtest [1188725.037080] Thread overran stack, or
-stack corrupted
-Dec 29 22:33:51 linuxtest [1188725.037091] Oops: 0000 [#1]
-Dec 29 22:33:51 linuxtest SMP
-Dec 29 22:33:51 linuxtest
-Dec 29 22:33:51 linuxtest [1188725.037104] last sysfs file:
-/sys/devices/pci0000:00/0000:00:0f.0/0000:07:00.0/0000:08:01.0/0000:09:00.0/class
-Dec 29 22:33:51 linuxtest [1188725.037124]
-Dec 29 22:33:51 linuxtest [1188725.037131] Pid: 0, comm: swapper Not
-tainted (2.6.31.6-v03 #2) H8DMU
-Dec 29 22:33:51 linuxtest [1188725.037145] EIP: 0060:[<c060164a>]
-EFLAGS: 00010246 CPU: 0
-Dec 29 22:33:51 linuxtest [1188725.037158] EIP is at
-tcp_xmit_retransmit_queue+0x1b2/0x1dc
-Dec 29 22:33:51 linuxtest [1188725.037170] EAX: c540513c EBX: c54050c0
-ECX: 0e377f15 EDX: c540513c
-Dec 29 22:33:51 linuxtest [1188725.037183] ESI: 00000000 EDI: 00000000
-EBP: c0805d28 ESP: c0805d0c
-Dec 29 22:33:51 linuxtest [1188725.037196]  DS: 007b ES: 007b FS: 00d8
-GS: 0000 SS: 0068
-Dec 29 22:33:51 linuxtest [1188725.037208] Process swapper (pid: 0,
-ti=c0804000 task=c080b5a0 task.ti=c0804000)
-Dec 29 22:33:51 linuxtest [1188725.037285] Stack:
-Dec 29 22:33:51 linuxtest [1188725.037368]  00000202
-Dec 29 22:33:51 linuxtest 00000000
-Dec 29 22:33:51 linuxtest c540513c
-Dec 29 22:33:51 linuxtest 0e377f14
-Dec 29 22:33:51 linuxtest 00000000
-Dec 29 22:33:51 linuxtest c54050c0
-Dec 29 22:33:51 linuxtest 0000050e
-Dec 29 22:33:51 linuxtest c0805da8
-Dec 29 22:33:51 linuxtest
-Dec 29 22:33:51 linuxtest [1188725.037472] <0>
-Dec 29 22:33:51 linuxtest c05fe931
-Dec 29 22:33:51 linuxtest 00000001
-Dec 29 22:33:51 linuxtest 00000001
-Dec 29 22:33:51 linuxtest 00000006
-Dec 29 22:33:51 linuxtest 00000005
-Dec 29 22:33:51 linuxtest 00000001
-Dec 29 22:33:51 linuxtest 00000001
-Dec 29 22:33:51 linuxtest 00000006
-Dec 29 22:33:51 linuxtest
-Dec 29 22:33:51 linuxtest [1188725.037629] <0>
-Dec 29 22:33:51 linuxtest 01000246
-Dec 29 22:33:51 linuxtest 00000005
-Dec 29 22:33:51 linuxtest 11b57b53
-Dec 29 22:33:51 linuxtest c5405168
-Dec 29 22:33:51 linuxtest c061df41
-Dec 29 22:33:51 linuxtest 00000006
-Dec 29 22:33:51 linuxtest 00000000
-Dec 29 22:33:51 linuxtest 00000000
-Dec 29 22:33:51 linuxtest
-Dec 29 22:33:51 linuxtest [1188725.037887] Call Trace:
-Dec 29 22:33:51 linuxtest [1188725.037975]  [<c05fe931>] ? tcp_ack+0x1591/0x1778
-Dec 29 22:33:51 linuxtest [1188725.038073]  [<c061df41>] ?
-ipt_do_table+0x2f8/0x310
-Dec 29 22:33:51 linuxtest [1188725.038148]  [<c05ff493>] ?
-tcp_rcv_state_process+0x4db/0x7fc
-Dec 29 22:33:51 linuxtest [1188725.038246]  [<c0604e3d>] ?
-tcp_v4_do_rcv+0x263/0x29d
-Dec 29 22:33:51 linuxtest [1188725.038321]  [<c023381a>] ?
-local_bh_enable+0xb/0xd
-Dec 29 22:33:51 linuxtest [1188725.038419]  [<c05d4571>] ? sk_filter+0x5e/0x69
-Dec 29 22:33:51 linuxtest [1188725.038510]  [<c06059b4>] ?
-tcp_v4_rcv+0x371/0x502
-Dec 29 22:33:51 linuxtest [1188725.038607]  [<c05ee78c>] ?
-ip_local_deliver_finish+0x0/0x171
-Dec 29 22:33:51 linuxtest [1188725.038684]  [<c05ee88a>] ?
-ip_local_deliver_finish+0xfe/0x171
-Dec 29 22:33:51 linuxtest [1188725.038784]  [<c05ee95e>] ?
-ip_local_deliver+0x61/0x66
-Dec 29 22:33:51 linuxtest [1188725.038876]  [<c05ee531>] ?
-ip_rcv_finish+0x289/0x2b1
-Dec 29 22:33:51 linuxtest [1188725.038961]  [<c05ee75c>] ? ip_rcv+0x203/0x233
-Dec 29 22:33:51 linuxtest [1188725.039052]  [<c05ca149>] ?
-netif_receive_skb+0x335/0x350
-Dec 29 22:33:51 linuxtest [1188725.039151]  [<c05ca1c6>] ?
-process_backlog+0x62/0x88
-Dec 29 22:33:51 linuxtest [1188725.039242]  [<c05ca6c5>] ?
-net_rx_action+0x8e/0x16b
-Dec 29 22:33:51 linuxtest [1188725.039333]  [<c02335bb>] ?
-__do_softirq+0xa7/0x148
-Dec 29 22:33:51 linuxtest [1188725.039423]  [<c0233682>] ? do_softirq+0x26/0x2b
-Dec 29 22:33:51 linuxtest [1188725.039520]  [<c0233764>] ? irq_exit+0x29/0x5c
-Dec 29 22:33:51 linuxtest [1188725.039610]  [<c0204365>] ? do_IRQ+0x81/0x95
-Dec 29 22:33:51 linuxtest [1188725.039706]  [<c0202ec9>] ?
-common_interrupt+0x29/0x30
-Dec 29 22:33:51 linuxtest [1188725.039797]  [<c0208b74>] ?
-default_idle+0x3e/0x5b
-Dec 29 22:33:51 linuxtest [1188725.039895]  [<c02479c9>] ?
-clockevents_notify+0x60/0x65
-Dec 29 22:33:51 linuxtest [1188725.039986]  [<c0208c49>] ? c1e_idle+0xb8/0xd2
-Dec 29 22:33:51 linuxtest [1188725.040058]  [<c0201bba>] ? cpu_idle+0x45/0x5f
-Dec 29 22:33:51 linuxtest [1188725.040131]  [<c0643560>] ? rest_init+0x58/0x5a
-Dec 29 22:33:51 linuxtest [1188725.040212]  [<c084f7f9>] ?
-start_kernel+0x2f0/0x2f5
-Dec 29 22:33:51 linuxtest [1188725.040285]  [<c084f070>] ?
-i386_start_kernel+0x70/0x77
-Dec 29 22:33:51 linuxtest [1188725.040381] Code:
-Dec 29 22:33:51 linuxtest ec
-Dec 29 22:33:51 linuxtest bd
-Dec 29 22:33:51 linuxtest 84
-Dec 29 22:33:51 linuxtest c0
-Dec 29 22:33:51 linuxtest ff
-Dec 29 22:33:51 linuxtest 04
-Dec 29 22:33:51 linuxtest 88
-Dec 29 22:33:51 linuxtest 8b
-Dec 29 22:33:51 linuxtest 55
-Dec 29 22:33:51 linuxtest ec
-Dec 29 22:33:51 linuxtest 8b
-Dec 29 22:33:51 linuxtest 02
-Dec 29 22:33:51 linuxtest 39
-Dec 29 22:33:51 linuxtest d0
-Dec 29 22:33:51 linuxtest ba
-Dec 29 22:33:51 linuxtest 00
-Dec 29 22:33:51 linuxtest 00
-Dec 29 22:33:51 linuxtest 00
-Dec 29 22:33:51 linuxtest 00
-Dec 29 22:33:51 linuxtest 0f
-Dec 29 22:33:51 linuxtest 44
-Dec 29 22:33:51 linuxtest c2
-Dec 29 22:33:51 linuxtest 39
-Dec 29 22:33:51 linuxtest c6
-Dec 29 22:33:51 linuxtest 75
-Dec 29 22:33:51 linuxtest 0f
-Dec 29 22:33:51 linuxtest 8b
-Dec 29 22:33:51 linuxtest 8b
-Dec 29 22:33:51 linuxtest 18
-Dec 29 22:33:51 linuxtest 02
-Dec 29 22:33:51 linuxtest 00
-Dec 29 22:33:51 linuxtest 00
-Dec 29 22:33:51 linuxtest b2
-Dec 29 22:33:51 linuxtest 01
-Dec 29 22:33:51 linuxtest 89
-Dec 29 22:33:51 linuxtest d8
-Dec 29 22:33:51 linuxtest e8
-Dec 29 22:33:51 linuxtest ee
-Dec 29 22:33:51 linuxtest fd
-Dec 29 22:33:51 linuxtest ff
-Dec 29 22:33:51 linuxtest ff
-Dec 29 22:33:51 linuxtest 8b
-Dec 29 22:33:51 linuxtest 36
-Dec 29 13:33:50 linuxtest unparseable log message: "<8b> "
-Dec 29 22:33:51 linuxtest 06
-Dec 29 22:33:51 linuxtest 0f
-Dec 29 22:33:51 linuxtest 18
-Dec 29 22:33:51 linuxtest 00
-Dec 29 22:33:51 linuxtest 90
-Dec 29 22:33:51 linuxtest 3b
-Dec 29 22:33:51 linuxtest 75
-Dec 29 22:33:51 linuxtest ec
-Dec 29 22:33:51 linuxtest 0f
-Dec 29 22:33:51 linuxtest 85
-Dec 29 22:33:51 linuxtest a9
-Dec 29 22:33:51 linuxtest fe
-Dec 29 22:33:51 linuxtest ff
-Dec 29 22:33:51 linuxtest ff
-Dec 29 22:33:51 linuxtest eb
-Dec 29 22:33:51 linuxtest 11
-Dec 29 22:33:51 linuxtest 85
-Dec 29 22:33:51 linuxtest ff
-Dec 29 22:33:51 linuxtest 0f
-Dec 29 22:33:51 linuxtest 84
-Dec 29 22:33:51 linuxtest
-Dec 29 22:33:51 linuxtest [1188725.040771] EIP: [<c060164a>]
-Dec 29 22:33:51 linuxtest tcp_xmit_retransmit_queue+0x1b2/0x1dc
-Dec 29 22:33:51 linuxtest SS:ESP 0068:c0805d0c
-Dec 29 22:33:51 linuxtest [1188725.040929] CR2: 0000000000000000
-Dec 29 22:33:51 linuxtest [1188725.041346] ---[ end trace 1b9e8ae01c5d5485 ]---
-Dec 29 22:33:51 linuxtest [1188725.042940] Kernel panic - not syncing:
-Fatal exception in interrupt
-Dec 29 22:33:51 linuxtest [1188725.043076] Pid: 0, comm: swapper
-Tainted: G      D    2.6.31.6-v03 #2
-Dec 29 22:33:51 linuxtest [1188725.043188] Call Trace:
-Dec 29 22:33:51 linuxtest [1188725.043318]  [<c066812b>] ? printk+0xf/0x11
-Dec 29 22:33:51 linuxtest [1188725.043441]  [<c066807f>] panic+0x39/0xd6
-Dec 29 22:33:51 linuxtest [1188725.043558]  [<c0205811>] oops_end+0x8b/0x9a
-Dec 29 22:33:51 linuxtest [1188725.043683]  [<c021c974>] no_context+0x13c/0x146
-Dec 29 22:33:51 linuxtest [1188725.043814]  [<c021ca91>]
-__bad_area_nosemaphore+0x113/0x11b
-Dec 29 22:33:51 linuxtest [1188725.043943]  [<c0553967>] ?
-nv_start_xmit_optimized+0x3d4/0x401
-Dec 29 22:33:51 linuxtest [1188725.044073]  [<c02253b2>] ?
-__enqueue_entity+0x8d/0x95
-Dec 29 22:33:51 linuxtest [1188725.044182]  [<c021caa6>]
-bad_area_nosemaphore+0xd/0x10
-Dec 29 22:33:51 linuxtest [1188725.044319]  [<c021cce3>]
-do_page_fault+0x108/0x265
-Dec 29 22:33:51 linuxtest [1188725.044444]  [<c0223993>] ?
-enqueue_task+0x72/0x7f
-Dec 29 22:33:51 linuxtest [1188725.044562]  [<c021cbdb>] ?
-do_page_fault+0x0/0x265
-Dec 29 22:33:51 linuxtest [1188725.044686]  [<c0669b86>] error_code+0x66/0x6c
-Dec 29 22:33:51 linuxtest [1188725.044817]  [<c021cbdb>] ?
-do_page_fault+0x0/0x265
-Dec 29 22:33:51 linuxtest [1188725.044944]  [<c060164a>] ?
-tcp_xmit_retransmit_queue+0x1b2/0x1dc
-Dec 29 22:33:51 linuxtest [1188725.045077]  [<c05fe931>] tcp_ack+0x1591/0x1778
-Dec 29 22:33:51 linuxtest [1188725.045201]  [<c061df41>] ?
-ipt_do_table+0x2f8/0x310
-Dec 29 22:33:51 linuxtest [1188725.045332]  [<c05ff493>]
-tcp_rcv_state_process+0x4db/0x7fc
-Dec 29 22:33:51 linuxtest [1188725.045442]  [<c0604e3d>]
-tcp_v4_do_rcv+0x263/0x29d
-Dec 29 22:33:51 linuxtest [1188725.045567]  [<c023381a>] ?
-local_bh_enable+0xb/0xd
-Dec 29 22:33:51 linuxtest [1188725.045694]  [<c05d4571>] ? sk_filter+0x5e/0x69
-Dec 29 22:33:51 linuxtest [1188725.045802]  [<c06059b4>] tcp_v4_rcv+0x371/0x502
-Dec 29 22:33:51 linuxtest [1188725.045911]  [<c05ee78c>] ?
-ip_local_deliver_finish+0x0/0x171
-Dec 29 22:33:51 linuxtest [1188725.046045]  [<c05ee88a>]
-ip_local_deliver_finish+0xfe/0x171
-Dec 29 22:33:51 linuxtest [1188725.046155]  [<c05ee95e>]
-ip_local_deliver+0x61/0x66
-Dec 29 22:33:51 linuxtest [1188725.046301]  [<c05ee531>]
-ip_rcv_finish+0x289/0x2b1
-Dec 29 22:33:51 linuxtest [1188725.046429]  [<c05ee75c>] ip_rcv+0x203/0x233
-Dec 29 22:33:51 linuxtest [1188725.046555]  [<c05ca149>]
-netif_receive_skb+0x335/0x350
-Dec 29 22:33:51 linuxtest [1188725.046664]  [<c05ca1c6>]
-process_backlog+0x62/0x88
-Dec 29 22:33:51 linuxtest [1188725.046809]  [<c05ca6c5>]
-net_rx_action+0x8e/0x16b
-Dec 29 22:33:51 linuxtest [1188725.046917]  [<c02335bb>] __do_softirq+0xa7/0x148
-Dec 29 22:33:51 linuxtest [1188725.047041]  [<c0233682>] do_softirq+0x26/0x2b
-Dec 29 22:33:51 linuxtest [1188725.047162]  [<c0233764>] irq_exit+0x29/0x5c
-Dec 29 22:33:51 linuxtest [1188725.047285]  [<c0204365>] do_IRQ+0x81/0x95
-Dec 29 22:33:51 linuxtest [1188725.047409]  [<c0202ec9>]
-common_interrupt+0x29/0x30
-Dec 29 22:33:51 linuxtest [1188725.047536]  [<c0208b74>] ?
-default_idle+0x3e/0x5b
-Dec 29 22:33:51 linuxtest [1188725.047664]  [<c02479c9>] ?
-clockevents_notify+0x60/0x65
-Dec 29 22:33:51 linuxtest [1188725.047790]  [<c0208c49>] c1e_idle+0xb8/0xd2
-Dec 29 22:33:51 linuxtest [1188725.047913]  [<c0201bba>] cpu_idle+0x45/0x5f
-Dec 29 22:33:51 linuxtest [1188725.048030]  [<c0643560>] rest_init+0x58/0x5a
-Dec 29 22:33:51 linuxtest [1188725.048153]  [<c084f7f9>]
-start_kernel+0x2f0/0x2f5
-Dec 29 22:33:51 linuxtest [1188725.048271]  [<c084f070>]
-i386_start_kernel+0x70/0x77
-Dec 29 22:33:51 linuxtest [1188725.048404] Rebooting in 10 seconds..
+The larger the number of threads the more contention on the
+cachelines containing mmap_sem and the other cacheline containing the rss
+counters. In extreme cases we had to wait 30mins to an hour in order for
+the cacheline bouncing to complete (startup of a big HPC app on
+IA64 with 1k threads).
