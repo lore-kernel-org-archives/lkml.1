@@ -1,46 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753636Ab0AEM0z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753910Ab0AEMaX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753636Ab0AEM0z (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 07:26:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751563Ab0AEM0y
+	id S1753910Ab0AEMaX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 07:30:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751396Ab0AEMaV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 07:26:54 -0500
-Received: from cs18.vkontakte.ru ([93.186.224.18]:47234 "EHLO vkontakte.ru"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751480Ab0AEM0x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 07:26:53 -0500
-Date: Tue, 5 Jan 2010 15:26:45 +0300
-To: linux-kernel <linux-kernel@vger.kernel.org>
-From: VK <admin@vkontakte.ru>
-Reply-to: "Pavel Durov, inContact.ru Admin" <admin@vkontakte.ru>
-Subject: =?UTF-8?Q?=D0=90=D0=BD=D1=82=D0=BE=D0=BD_StiXy_=D0=9A=D0=BE=D0=B7=D0=BB?=
- =?UTF-8?Q?=D0=BE=D0=B2_has_added_you_as_a_friend_on_the_website_VK.com?=
-Message-ID: <3dd93904dc862a57c7161e501bfe9e99@localhost.localdomain>
-X-Priority: 3
-X-Mailer: PHPMailer [version 1.73]
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain; charset="UTF-8"
+	Tue, 5 Jan 2010 07:30:21 -0500
+Received: from poutre.nerim.net ([62.4.16.124]:64934 "EHLO poutre.nerim.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751179Ab0AEMaU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jan 2010 07:30:20 -0500
+Date: Tue, 5 Jan 2010 13:30:14 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>, lenb@kernel.org
+Cc: djwong@us.ibm.com, Crane Cai <crane.cai@amd.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, linux-i2c@vger.kernel.org,
+       linux-acpi@vger.kernel.org
+Subject: Re: [RESEND PATCH v2 1/2] ACPI: Quirk to make SMBus objects work on
+   IBM machines with broken BIOSes
+Message-ID: <20100105133014.0d584b70@hyperion.delvare>
+In-Reply-To: <20091217150243.0d2749a2@hyperion.delvare>
+References: <20091021173733.GN26149@tux1.beaverton.ibm.com>
+	<20091027183619.16b0b952@hyperion.delvare>
+	<20091204170621.GA10356@tux1.beaverton.ibm.com>
+	<200912041036.36686.bjorn.helgaas@hp.com>
+	<20091204181103.GN10295@tux1.beaverton.ibm.com>
+	<20091217150243.0d2749a2@hyperion.delvare>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-linux-kernel,
+On Thu, 17 Dec 2009 15:02:43 +0100, Jean Delvare wrote:
+> On Fri, 4 Dec 2009 10:11:03 -0800, Darrick J. Wong wrote:
+> > On some old IBM workstations and desktop computers, the BIOS presents in the
+> > DSDT an SMBus object that is missing the HID identifier that the i2c-scmi
+> > driver looks for.  Modify the ACPI device scan code to insert the missing HID
+> > if it finds an IBM system with such an object.  This patch requires Crane Cai's
+> > update to i2c-scmi to work around incorrectly named methods within the SMBus
+> > control object.
+> > 
+> > Affected machines: ThinkCenter M52, IntelliStation Z20/Z30.  Note that the
+> > i2c-i801 driver no longer works on these machines because of ACPI resource
+> > conflicts.
+> > 
+> > Signed-off-by: Darrick J. Wong <djwong@us.ibm.com>
+> > ---
+> > 
+> >  drivers/acpi/scan.c         |   38 ++++++++++++++++++++++++++++++++++++++
+> >  include/acpi/acpi_drivers.h |    2 ++
+> >  2 files changed, 40 insertions(+), 0 deletions(-)
+> > 
+> > 
+> > diff --git a/drivers/acpi/scan.c b/drivers/acpi/scan.c
+> > index 14a7481..5a24429 100644
+> > --- a/drivers/acpi/scan.c
+> > +++ b/drivers/acpi/scan.c
+> > @@ -8,6 +8,7 @@
+> >  #include <linux/acpi.h>
+> >  #include <linux/signal.h>
+> >  #include <linux/kthread.h>
+> > +#include <linux/dmi.h>
+> >  
+> >  #include <acpi/acpi_drivers.h>
+> >  
+> > @@ -1014,6 +1015,41 @@ static void acpi_add_id(struct acpi_device *device, const char *dev_id)
+> >  	list_add_tail(&id->list, &device->pnp.ids);
+> >  }
+> >  
+> > +/*
+> > + * Old IBM workstations have a DSDT bug wherein the SMBus object
+> > + * lacks the SMBUS01 HID and the methods do not have the necessary "_"
+> > + * prefix.  Work around this.
+> > + */
+> > +static int acpi_ibm_smbus_match(struct acpi_device *device)
+> > +{
+> > +	acpi_handle h_dummy;
+> > +	struct acpi_buffer path = {ACPI_ALLOCATE_BUFFER, NULL};
+> > +	int result;
+> > +
+> > +	if (!dmi_name_in_vendors("IBM"))
+> > +		return -ENODEV;
+> > +
+> > +	/* Look for SMBS object */
+> > +	result = acpi_get_name(device->handle, ACPI_SINGLE_NAME, &path);
+> > +	if (result)
+> > +		return result;
+> > +
+> > +	if (strcmp("SMBS", path.pointer)) {
+> > +		result = -ENODEV;
+> > +		goto out;
+> > +	}
+> > +
+> > +	/* Does it have the necessary (but misnamed) methods? */
+> > +	result = -ENODEV;
+> > +	if (ACPI_SUCCESS(acpi_get_handle(device->handle, "SBI", &h_dummy)) &&
+> > +	    ACPI_SUCCESS(acpi_get_handle(device->handle, "SBR", &h_dummy)) &&
+> > +	    ACPI_SUCCESS(acpi_get_handle(device->handle, "SBW", &h_dummy)))
+> > +		result = 0;
+> > +out:
+> > +	kfree(path.pointer);
+> > +	return result;
+> > +}
+> > +
+> >  static void acpi_device_set_id(struct acpi_device *device)
+> >  {
+> >  	acpi_status status;
+> > @@ -1064,6 +1100,8 @@ static void acpi_device_set_id(struct acpi_device *device)
+> >  			acpi_add_id(device, ACPI_BAY_HID);
+> >  		else if (ACPI_SUCCESS(acpi_dock_match(device)))
+> >  			acpi_add_id(device, ACPI_DOCK_HID);
+> > +		else if (!acpi_ibm_smbus_match(device))
+> > +			acpi_add_id(device, ACPI_SMBUS_IBM_HID);
+> >  
+> >  		break;
+> >  	case ACPI_BUS_TYPE_POWER:
+> > diff --git a/include/acpi/acpi_drivers.h b/include/acpi/acpi_drivers.h
+> > index f4906f6..83a2960 100644
+> > --- a/include/acpi/acpi_drivers.h
+> > +++ b/include/acpi/acpi_drivers.h
+> > @@ -65,6 +65,8 @@
+> >  #define ACPI_VIDEO_HID			"LNXVIDEO"
+> >  #define ACPI_BAY_HID			"LNXIOBAY"
+> >  #define ACPI_DOCK_HID			"LNXDOCK"
+> > +/* Quirk for broken IBM BIOSes */
+> > +#define ACPI_SMBUS_IBM_HID		"SMBUSIBM"
+> >  
+> >  /*
+> >   * For fixed hardware buttons, we fabricate acpi_devices with HID
+> 
+> Bjorn, Len, can you please apply this quickly? The i2c-scmi side of the
+> changes is pending for weeks now, but I can't apply it as long as the
+> ACPI parts aren't in.
 
-Антон StiXy Козлов has added you as a friend on the website VK.com
+Guys, I am sorry to insist but I still can't see this patch upstream
+while (I guess) rc3 is about to be released. Is there anything wrong
+with Darrick's patch? If not, please apply it and push it to Linus
+quickly.
 
-You can log in and view your friends` pages using your email and automatically created password: z2oig6Yw
-
-VK.com is a website that helps dozens of millions of people find their old friends, share photos and events and always stay in touch.
-
-To log in, please follow this link:
-http://vkontakte.ru/login.php?regemail=linux-kernel@vger.kernel.org#z2oig6Yw
-
-You can change your password in Settings.
-
-Attention: If you ignore this invitation, your registration will not be activated.
-
-Good luck!Best regards,
-VK Administration
-
-
+Thanks,
+-- 
+Jean Delvare
