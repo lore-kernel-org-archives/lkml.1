@@ -1,131 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754228Ab0AELDy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754390Ab0AELE3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754228Ab0AELDy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 06:03:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752898Ab0AELDx
+	id S1754390Ab0AELE3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 06:04:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754405Ab0AELEY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 06:03:53 -0500
-Received: from ch-smtp02.sth.basefarm.net ([80.76.149.213]:54272 "EHLO
-	ch-smtp02.sth.basefarm.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751191Ab0AELDw (ORCPT
+	Tue, 5 Jan 2010 06:04:24 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:49503 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754357Ab0AELEX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 06:03:52 -0500
-X-Mailer: exmh version 2.7.2 04/02/2003 (gentoo 2.7.2) with nmh-1.3-dev
-To: mingo@elte.hu
-cc: linux-kernel@vger.kernel.org
-Subject: Memory probing fails after 2.6.30 (bisected)
-Mime-Version: 1.0
+	Tue, 5 Jan 2010 06:04:23 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=sjWzAijtsnZ5VQdV26JbrnDrl6yTQIKvGQW76fjk3k5fGoHQywTkd3W2hGyI36IOAD
+         cUzNECMX5M0GTp85aGYx99PZGGPa6ObY5Equ4Nt4jSe1hMIRxyWXD1060Oydg7ZGuO0J
+         /mE6pbjepKL36G6FC0B9Xp5qtL95tte7bRIeo=
+Date: Tue, 5 Jan 2010 12:04:18 +0100
+From: Johan Hovold <jhovold@gmail.com>
+To: Pete Zaitcev <zaitcev@redhat.com>, Greg KH <greg@kroah.com>
+Cc: Stefani Seibold <stefani@seibold.net>, Johan Hovold <jhovold@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-usb@vger.kernel.org
+Subject: Re: USB: serial: kfifo_len locking
+Message-ID: <20100105110418.GA10442@localhost>
+References: <20100104174352.GA26606@localhost>
+ <1262632804.4814.17.camel@wall-e>
+ <20100105004344.082bb69f@redhat.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Date: Tue, 05 Jan 2010 12:02:56 +0100
-From: Anders Eriksson <aeriksson@fastmail.fm>
-Message-Id: <20100105110256.D2DF133C4B0@tippex.mynet.homeunix.org>
-X-Originating-IP: 83.252.238.172
-X-Scan-Result: No virus found in message 1NS7Bu-00048b-6Y.
-X-Scan-Signature: ch-smtp02.sth.basefarm.net 1NS7Bu-00048b-6Y 8ed59687eaaa7255e8a0f0ba44384bb0
+Content-Disposition: inline
+In-Reply-To: <20100105004344.082bb69f@redhat.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> This actually was a side effect of the "byte lost on close" patch
+> that I submitted, it should be in Greg's tree. The relevant part goes
+> like this:
+> diff --git a/drivers/usb/serial/generic.c b/drivers/usb/serial/generic.c
+> index f1ea3a3..3372faa 100644
+> --- a/drivers/usb/serial/generic.c
+> +++ b/drivers/usb/serial/generic.c
+> @@ -386,12 +386,15 @@ int usb_serial_generic_chars_in_buffer(struct tty_struct *tty)
+>  
+>  	dbg("%s - port %d", __func__, port->number);
+>  
+> +	spin_lock_irqsave(&port->lock, flags);
+>  	if (serial->type->max_in_flight_urbs) {
+> -		spin_lock_irqsave(&port->lock, flags);
+>  		chars = port->tx_bytes_flight;
+> -		spin_unlock_irqrestore(&port->lock, flags);
+> -	} else if (serial->num_bulk_out)
+> -		chars = kfifo_len(&port->write_fifo);
+> +	} else if (serial->num_bulk_out) {
+> +		/* This overcounts badly, but is good enough for drain wait. */
+> +		chars = __kfifo_len(port->write_fifo);
+> +		chars += port->write_urb_busy * port->bulk_out_size;
+> +	}
+> +	spin_unlock_irqrestore(&port->lock, flags);
+>  
+>  	dbg("%s - returns %d", __func__, chars);
+>  	return chars;
 
-Hi,
+That is indeed what you submitted on Dec 7, but this is what is in
+Greg's tree:
 
-Upgrading my laptop's kernel, I discovered that it reboots immediately after 
-boot on .31 and later kernels. Grub loads it, but I cannot get one line of 
-text out of it before it reboots, even using boot_delay.
+http://git.kernel.org/?p=linux/kernel/git/gregkh/patches.git;a=blob;f=usb/usb-serial-mct_usb232-add-drain-on-close.patch;h=c464f1a82e93df0dd41762a8cb33b0b22e90cdd7;hb=1ea72e7c40b239c6b6f88a4993196be66fc3d892
 
-Bisecting I came up with the following:
-
-git bisect start
-# good: [07a2039b8eb0af4ff464efd3dfd95de5c02648c6] Linux 2.6.30
-git bisect good 07a2039b8eb0af4ff464efd3dfd95de5c02648c6
-# bad: [74fca6a42863ffacaf7ba6f1936a9f228950f657] Linux 2.6.31
-git bisect bad 74fca6a42863ffacaf7ba6f1936a9f228950f657
-# bad: [925d74ae717c9a12d3618eb4b36b9fb632e2cef3] V4L/DVB (11736): videobuf: modify return value of VIDIOC_REQBUFS ioctl
-git bisect bad 925d74ae717c9a12d3618eb4b36b9fb632e2cef3
-# bad: [e349792a385ed47390d156155b1a1e19af1bf163] Merge branch 'for-linus' of git://git.kernel.org/pub/scm/linux/kernel/git/tiwai/sound-2.6
-git bisect bad e349792a385ed47390d156155b1a1e19af1bf163
-# bad: [c9059598ea8981d02356eead3188bf7fa4d717b8] Merge branch 'for-2.6.31' of git://git.kernel.dk/linux-2.6-block
-git bisect bad c9059598ea8981d02356eead3188bf7fa4d717b8
-# bad: [59c288ffb6dfb55bdd6bfe6826ab6203ff791930] Merge branches 'frv' and 'mn10300'
-git bisect bad 59c288ffb6dfb55bdd6bfe6826ab6203ff791930
-# bad: [3f6280ddf25fa656d0e17960588e52bee48a7547] Merge branch 'iommu-for-linus' of git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip
-git bisect bad 3f6280ddf25fa656d0e17960588e52bee48a7547
-# good: [c44e3ed539e4fc17d6bcb5eaecb894a94de4cc5f] Merge branch 'x86-cpu-for-linus' of git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip
-git bisect good c44e3ed539e4fc17d6bcb5eaecb894a94de4cc5f
-# bad: [be15f9d63b97da0065187696962331de6cd9de9e] Merge branch 'x86-xen-for-linus' of git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip
-git bisect bad be15f9d63b97da0065187696962331de6cd9de9e
-# bad: [9b29e8228a5c2a169436a1a90a60b1f88cb35cd1] Merge branch 'x86-urgent-for-linus' of git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip
-git bisect bad 9b29e8228a5c2a169436a1a90a60b1f88cb35cd1
-# bad: [35d5a9a61490bf39d2e48d7f499c8c801a39ebe9] x86: fix system without memory on node0 ---> Got a BIOS-88 map
-git bisect bad 35d5a9a61490bf39d2e48d7f499c8c801a39ebe9
-# bad: [45fbe3ee01b8e463b28c2751b5dcc0cbdc142d90] x86, e820, pci: reserve extra free space near end of RAM ---> Got a BIOS-88 map
-git bisect bad 45fbe3ee01b8e463b28c2751b5dcc0cbdc142d90
-# bad: [2b72394e4089643f11669d9610907a1442fe044a] x86: move max_pfn_mapped and max_low_pfn_mapped to setup.c ---> Got a BIOS-88 map
-git bisect bad 2b72394e4089643f11669d9610907a1442fe044a
-# good: [6424fb38667fffbbb1b90be0ffd9a0c540db6a4b] x86: remove (null) in /sys kernel_page_tables
-git bisect good 6424fb38667fffbbb1b90be0ffd9a0c540db6a4b
-# bad: [89388913f2c88a2cd15d24abab571b17a2596127] x86: unify noexec handling --> Got a BIOS-88 map
-git bisect bad 89388913f2c88a2cd15d24abab571b17a2596127
-# bad: [8ecee4620e76aae418bfa0e8cc830e92cb559bbb] Merge branch 'linus' into x86/mm ---> Got a BIOS-88 map
-git bisect bad 8ecee4620e76aae418bfa0e8cc830e92cb559bbb
+38 --- a/drivers/usb/serial/generic.c
+39 +++ b/drivers/usb/serial/generic.c
+40 @@ -369,8 +369,11 @@ int usb_serial_generic_write_room(struct
+41                         room = port->bulk_out_size *
+42                                 (serial->type->max_in_flight_urbs -
+43                                  port->urbs_in_flight);
+44 -       } else if (serial->num_bulk_out)
+45 +       } else if (serial->num_bulk_out) {
+46 +               /* This overcounts badly, but is good enough for drain wait. */
+47                 room = kfifo_avail(&port->write_fifo);
+48 +               room += port->write_urb_busy * port->bulk_out_size;
+49 +       }
+50         spin_unlock_irqrestore(&port->lock, flags);
+51  
+52         dbg("%s - returns %d", __func__, room);
 
 
-I've annotated some bad kernels, where I _do_ get it to start, but it only 
-finds a BIOS-88 map (and hence only 16MB ram, and userspace triggers OOMK).
+Which does not make any sense at all. Bad merge? What do you say Greg?
 
-I found your name in the commit bisect fingered, hence I turn to you for help. 
-
-Here's a dmesg from the last known good kernel :
-
-Linux version 2.6.29-01001-g6424fb3 (root@korven) (gcc version 4.3.2 (Gentoo 4.3.2-r3 p1.6, pie-10.1.5) ) #22 SMP Tue Jan 5 11:12:56 CET 2010
-KERNEL supported cpus:
-  Intel GenuineIntel
-  AMD AuthenticAMD
-  NSC Geode by NSC
-  Cyrix CyrixInstead
-  Centaur CentaurHauls
-  Transmeta GenuineTMx86
-  Transmeta TransmetaCPU
-  UMC UMC UMC UMC
-BIOS-provided physical RAM map:
- BIOS-e820: 0000000000000000 - 000000000009ae20 (usable)
- BIOS-e820: 000000000009ae20 - 00000000000a0000 (reserved)
- BIOS-e820: 00000000000e0000 - 0000000000100000 (reserved)
- BIOS-e820: 0000000000100000 - 000000007f7d0000 (usable)
- BIOS-e820: 000000007f7d0000 - 000000007f7e5600 (reserved)
- BIOS-e820: 000000007f7e5600 - 000000007f7f8000 (ACPI NVS)
- BIOS-e820: 000000007f7f8000 - 000000007f800000 (reserved)
- BIOS-e820: 00000000fec00000 - 00000000fec01000 (reserved)
- BIOS-e820: 00000000fed20000 - 00000000fed9b000 (reserved)
- BIOS-e820: 00000000feda0000 - 00000000fedc0000 (reserved)
- BIOS-e820: 00000000fee00000 - 00000000fee01000 (reserved)
- BIOS-e820: 00000000ffb00000 - 00000000ffc00000 (reserved)
- BIOS-e820: 00000000fff00000 - 0000000100000000 (reserved)
-DMI 2.4 present.
-last_pfn = 0x7f7d0 max_arch_pfn = 0x100000
-MTRR default type: uncachable
-MTRR fixed ranges enabled:
-  00000-9FFFF write-back
-  A0000-BFFFF uncachable
-  C0000-CFFFF write-protect
-  D0000-EFFFF uncachable
-  F0000-FFFFF write-protect
-MTRR variable ranges enabled:
-  0 base 000000000 mask F80000000 write-back
-  1 base F7F800000 mask FFF800000 uncachable
-  2 base 0FEDA0000 mask FFFFE0000 uncachable
-  3 disabled
-  4 disabled
-  5 disabled
-  6 disabled
-  7 disabled
-
-I can produce a pic of the dmesg for the fingered commit of needed.
-
-As the fingered commit was a merge one, I'm uncertain how to proceed.
-
-Ideas?
-
---Anders
-
+/Johan
 
