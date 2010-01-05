@@ -1,24 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754793Ab0AEAmC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754774Ab0AEAli@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754793Ab0AEAmC (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 19:42:02 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754634Ab0AEAlv
+	id S1754774Ab0AEAli (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 19:41:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754766Ab0AEAlc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 19:41:51 -0500
-Received: from kroah.org ([198.145.64.141]:42390 "EHLO coco.kroah.org"
+	Mon, 4 Jan 2010 19:41:32 -0500
+Received: from kroah.org ([198.145.64.141]:42399 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754474Ab0AEAf5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 19:35:57 -0500
+	id S1754489Ab0AEAf6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jan 2010 19:35:58 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, stable-review@kernel.org
 Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Stefan Weinhuber <wein@de.ibm.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Stephen Powell <zlinuxman@wowway.com>,
+       alan@lxorguk.ukuu.org.uk, Paolo Bonzini <pbonzini@redhat.com>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 74/97] S390: dasd: support DIAG access for read-only devices
-Date: Mon,  4 Jan 2010 16:33:27 -0800
-Message-Id: <1262651630-7354-74-git-send-email-gregkh@suse.de>
+Subject: [PATCH 75/97] xen: fix is_disconnected_device/exists_disconnected_device
+Date: Mon,  4 Jan 2010 16:33:28 -0800
+Message-Id: <1262651630-7354-75-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.6
 In-Reply-To: <20100105003133.GA7199@kroah.com>
 References: <20100105003133.GA7199@kroah.com>
@@ -26,74 +25,70 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Stefan Weinhuber <wein@de.ibm.com>
+From: Paolo Bonzini <pbonzini@redhat.com>
 
-commit 22825ab7693fd29769518a0d25ba43c01a50092a upstream.
+commit c6e1971139be1342902873181f3b80a979bfb33b upstream.
 
-When a DASD device is used with the DIAG discipline, the DIAG
-initialization will indicate success or error with a respective
-return code. So far we have interpreted a return code of 4 as error,
-but it actually means that the initialization was successful, but
-the device is read-only. To allow read-only devices to be used with
-DIAG we need to accept a return code of 4 as success.
+The logic of is_disconnected_device/exists_disconnected_device is wrong
+in that they are used to test whether a device is trying to connect (i.e.
+connecting).  For this reason the patch fixes them to not consider a
+Closing or Closed device to be connecting.  At the same time the patch
+also renames the functions according to what they really do; you could
+say a closed device is "disconnected" (the old name), but not "connecting"
+(the new name).
 
-Re-initialization of the DIAG access is also part of the DIAG error
-recovery. If we find that the access mode of a device has been
-changed from writable to read-only while the device was in use,
-we print an error message.
+This patch is a backport of changeset 909 from the Xenbits tree.
 
-Signed-off-by: Stefan Weinhuber <wein@de.ibm.com>
-Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: Stephen Powell <zlinuxman@wowway.com>
+Cc: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Signed-off-by: Paolo Bonzini <pbonzini@redhat.com>
+Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/s390/block/dasd_diag.c |   19 ++++++++++++++++---
- 1 files changed, 16 insertions(+), 3 deletions(-)
+ drivers/xen/xenbus/xenbus_probe.c |   13 +++++++------
+ 1 files changed, 7 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/s390/block/dasd_diag.c b/drivers/s390/block/dasd_diag.c
-index 4e49b4a..8174ec9 100644
---- a/drivers/s390/block/dasd_diag.c
-+++ b/drivers/s390/block/dasd_diag.c
-@@ -145,6 +145,15 @@ dasd_diag_erp(struct dasd_device *device)
+diff --git a/drivers/xen/xenbus/xenbus_probe.c b/drivers/xen/xenbus/xenbus_probe.c
+index 3800da7..19bce3e 100644
+--- a/drivers/xen/xenbus/xenbus_probe.c
++++ b/drivers/xen/xenbus/xenbus_probe.c
+@@ -843,7 +843,7 @@ postcore_initcall(xenbus_probe_init);
  
- 	mdsk_term_io(device);
- 	rc = mdsk_init_io(device, device->block->bp_block, 0, NULL);
-+	if (rc == 4) {
-+		if (!(device->features & DASD_FEATURE_READONLY)) {
-+			dev_warn(&device->cdev->dev,
-+				 "The access mode of a DIAG device changed"
-+				 " to read-only");
-+			device->features |= DASD_FEATURE_READONLY;
-+		}
-+		rc = 0;
-+	}
- 	if (rc)
- 		dev_warn(&device->cdev->dev, "DIAG ERP failed with "
- 			    "rc=%d\n", rc);
-@@ -433,16 +442,20 @@ dasd_diag_check_device(struct dasd_device *device)
- 	for (sb = 512; sb < bsize; sb = sb << 1)
- 		block->s2b_shift++;
- 	rc = mdsk_init_io(device, block->bp_block, 0, NULL);
--	if (rc) {
-+	if (rc && (rc != 4)) {
- 		dev_warn(&device->cdev->dev, "DIAG initialization "
- 			"failed with rc=%d\n", rc);
- 		rc = -EIO;
- 	} else {
-+		if (rc == 4)
-+			device->features |= DASD_FEATURE_READONLY;
- 		dev_info(&device->cdev->dev,
--			 "New DASD with %ld byte/block, total size %ld KB\n",
-+			 "New DASD with %ld byte/block, total size %ld KB%s\n",
- 			 (unsigned long) block->bp_block,
- 			 (unsigned long) (block->blocks <<
--					  block->s2b_shift) >> 1);
-+					  block->s2b_shift) >> 1,
-+			 (rc == 4) ? ", read-only device" : "");
-+		rc = 0;
- 	}
- out_label:
- 	free_page((long) label);
+ MODULE_LICENSE("GPL");
+ 
+-static int is_disconnected_device(struct device *dev, void *data)
++static int is_device_connecting(struct device *dev, void *data)
+ {
+ 	struct xenbus_device *xendev = to_xenbus_device(dev);
+ 	struct device_driver *drv = data;
+@@ -861,14 +861,15 @@ static int is_disconnected_device(struct device *dev, void *data)
+ 		return 0;
+ 
+ 	xendrv = to_xenbus_driver(dev->driver);
+-	return (xendev->state != XenbusStateConnected ||
+-		(xendrv->is_ready && !xendrv->is_ready(xendev)));
++	return (xendev->state < XenbusStateConnected ||
++		(xendev->state == XenbusStateConnected &&
++		 xendrv->is_ready && !xendrv->is_ready(xendev)));
+ }
+ 
+-static int exists_disconnected_device(struct device_driver *drv)
++static int exists_connecting_device(struct device_driver *drv)
+ {
+ 	return bus_for_each_dev(&xenbus_frontend.bus, NULL, drv,
+-				is_disconnected_device);
++				is_device_connecting);
+ }
+ 
+ static int print_device_status(struct device *dev, void *data)
+@@ -918,7 +919,7 @@ static void wait_for_devices(struct xenbus_driver *xendrv)
+ 	if (!ready_to_wait_for_devices || !xen_domain())
+ 		return;
+ 
+-	while (exists_disconnected_device(drv)) {
++	while (exists_connecting_device(drv)) {
+ 		if (time_after(jiffies, timeout))
+ 			break;
+ 		schedule_timeout_interruptible(HZ/10);
 -- 
 1.6.6
 
