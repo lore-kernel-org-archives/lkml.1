@@ -1,65 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755359Ab0AETWN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755378Ab0AETYH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755359Ab0AETWN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 14:22:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755363Ab0AETWK
+	id S1755378Ab0AETYH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 14:24:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755214Ab0AETYB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 14:22:10 -0500
-Received: from kroah.org ([198.145.64.141]:55822 "EHLO coco.kroah.org"
+	Tue, 5 Jan 2010 14:24:01 -0500
+Received: from e8.ny.us.ibm.com ([32.97.182.138]:51628 "EHLO e8.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754863Ab0AETWI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 14:22:08 -0500
-From: Greg Kroah-Hartman <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org, stable-review@kernel.org
-Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Gertjan van Wingerde <gwingerde@gmail.com>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 099/101] rt2x00: Disable powersaving for rt61pci and rt2800pci.
-Date: Tue,  5 Jan 2010 11:21:27 -0800
-Message-Id: <1262719290-310-2-git-send-email-gregkh@suse.de>
-X-Mailer: git-send-email 1.6.6
-In-Reply-To: <1262719290-310-1-git-send-email-gregkh@suse.de>
-References: <20100105192014.GA23628@kroah.com>
- <1262719290-310-1-git-send-email-gregkh@suse.de>
+	id S1751191Ab0AETYA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jan 2010 14:24:00 -0500
+Date: Tue, 5 Jan 2010 11:23:55 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Christoph Lameter <cl@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Minchan Kim <minchan.kim@gmail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Peter Zijlstra <peterz@infradead.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "hugh.dickins" <hugh.dickins@tiscali.co.uk>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [RFC][PATCH 6/8] mm: handle_speculative_fault()
+Message-ID: <20100105192355.GK6714@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20100105143046.73938ea2.kamezawa.hiroyu@jp.fujitsu.com> <20100105163939.a3f146fb.kamezawa.hiroyu@jp.fujitsu.com> <alpine.LFD.2.00.1001050707520.3630@localhost.localdomain> <alpine.LFD.2.00.1001050810380.3630@localhost.localdomain> <87wrzwbh0z.fsf@basil.nowhere.org> <alpine.LFD.2.00.1001050950500.3630@localhost.localdomain> <alpine.DEB.2.00.1001051211000.2246@router.home> <alpine.LFD.2.00.1001051019280.3630@localhost.localdomain> <20100105185542.GH6714@linux.vnet.ibm.com> <alpine.LFD.2.00.1001051059480.3630@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.1001051059480.3630@localhost.localdomain>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Gertjan van Wingerde <gwingerde@gmail.com>
+On Tue, Jan 05, 2010 at 11:08:46AM -0800, Linus Torvalds wrote:
+> 
+> 
+> On Tue, 5 Jan 2010, Paul E. McKenney wrote:
+> > 
+> > But on many systems, it does take some time for the idle reads to make
+> > their way to the CPU that just acquired the lock.
+> 
+> Yes. But the point is that there is lots of them.
+> 
+> So think of it this way: every time _one_ CPU acquires a lock (and 
+> then releases it), _all_ CPU's will read the new value. Imagine the 
+> cross-socket traffic.
 
-commit 93b6bd26b74efe46b4579592560f9f1cb7b61994 upstream.
+Yep, been there, and with five-microsecond cross-"socket" latencies.
+Of course, the CPU clock frequencies were a bit slower back then.
 
-We've had many reports of rt61pci failures with powersaving enabled.
-Therefore, as a stop-gap measure, disable powersaving of the rt61pci
-until we have found a proper solution.
-Also disable powersaving on rt2800pci as it most probably will show
-the same problem.
+> In contrast, doing just a single xadd (which replaces the whole 
+> "spin_lock+non-atomics+spin_unlock"), every times _once_ CPU cquires a 
+> lock, that's it. The other CPU's arent' all waiting in line for the lock 
+> to be released, and reading the cacheline to see if it's their turn.
+> 
+> Sure, after they got the lock they'll all eventually end up reading from 
+> that cacheline that contains 'struct mm_struct', but that's something we 
+> could even think about trying to minimize by putting the mmap_sem as far 
+> away from the other fields as possible.
+> 
+> Now, it's very possible that if you have a broadcast model of cache 
+> coherency, none of this much matters and you end up with almost all the 
+> same bus traffic anyway. But I do think it could matter a lot.
 
-Signed-off-by: Gertjan van Wingerde <gwingerde@gmail.com>
-Acked-by: Ivo van Doorn <IvDoorn@gmail.com>
-Signed-off-by: John W. Linville <linville@tuxdriver.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
----
- drivers/net/wireless/rt2x00/rt61pci.c |    5 +++++
- 1 files changed, 5 insertions(+), 0 deletions(-)
+I have seen systems that work both ways.  If the CPU has enough time
+between getting the cache line in unlocked state to lock it, do the
+modification, and release the lock before the first in the flurry of
+reads arrives, then performance will be just fine.  Each reader will
+see the cache line with an unlocked lock and life will be good.
 
-diff --git a/drivers/net/wireless/rt2x00/rt61pci.c b/drivers/net/wireless/rt2x00/rt61pci.c
-index b20e3ea..1894e7e 100644
---- a/drivers/net/wireless/rt2x00/rt61pci.c
-+++ b/drivers/net/wireless/rt2x00/rt61pci.c
-@@ -2538,6 +2538,11 @@ static int rt61pci_probe_hw_mode(struct rt2x00_dev *rt2x00dev)
- 	unsigned int i;
- 
- 	/*
-+	 * Disable powersaving as default.
-+	 */
-+	rt2x00dev->hw->wiphy->flags &= ~WIPHY_FLAG_PS_ON_BY_DEFAULT;
-+
-+	/*
- 	 * Initialize all hw fields.
- 	 */
- 	rt2x00dev->hw->flags =
--- 
-1.6.6
+On the other hand, as you say, if the first in the flurry of reads arrives
+before the CPU has managed to make its way through the critical section,
+then your n^2 nightmare comes true.
 
+If the critical section operates only on the cache line containing the
+lock, and if the critical section has only a handful of instructions,
+I bet you win on almost all platforms.  But, like you, I would still
+prefer the xadd (or xchg or whatever) to the lock, where feasible.
+But you cannot expect all systems to see a major performance boost from
+switching from locks to xadds.  Often, all you get is sounder sleep.
+Which is valuable in its own right.  ;-)
+
+							Thanx, Paul
