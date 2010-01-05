@@ -1,24 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755526Ab0AEUMm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755453Ab0AEUGL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755526Ab0AEUMm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 15:12:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755518Ab0AEUMA
+	id S1755453Ab0AEUGL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 15:06:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755424Ab0AEUF6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 15:12:00 -0500
-Received: from kroah.org ([198.145.64.141]:49954 "EHLO coco.kroah.org"
+	Tue, 5 Jan 2010 15:05:58 -0500
+Received: from kroah.org ([198.145.64.141]:49927 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755464Ab0AEUGM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 15:06:12 -0500
-X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jan  5 12:03:01 2010
-Message-Id: <20100105200301.324921035@mini.kroah.org>
+	id S1755416Ab0AEUF5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jan 2010 15:05:57 -0500
+X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jan  5 12:02:59 2010
+Message-Id: <20100105200259.042133835@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 05 Jan 2010 12:02:14 -0800
+Date: Tue, 05 Jan 2010 12:01:58 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, akpm@linux-foundation.org,
        torvalds@linux-foundation.org, stable-review@kernel.org
-Cc: Suresh Siddha <suresh.b.siddha@intel.com>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: [18/39] x86, cpuid: Add "volatile" to asm in native_cpuid()
+Cc: Eric Millbrandt <emillbrandt@dekaresearch.com>,
+       Liam Girdwood <lrg@slimlogic.co.uk>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: [02/39] ASoC: Do not write to invalid registers on the wm9712.
 In-Reply-To: <20100105195007.GA23952@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -28,48 +29,36 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Suresh Siddha <suresh.b.siddha@intel.com>
+From: Eric Millbrandt <emillbrandt@dekaresearch.com>
 
-commit 45a94d7cd45ed991914011919e7d40eb6d2546d1 upstream.
+commit 48e3cbb3f67a27d9c2db075f3d0f700246c40caa upstream.
 
-xsave_cntxt_init() does something like:
+This patch fixes a bug where "virtual" registers were being written to the ac97
+bus.  This was causing unrelated registers to become corrupted (headphone 0x04,
+touchscreen 0x78, etc).
 
-	cpuid(0xd, ..);	// find out what features FP/SSE/.. etc are supported
+This patch duplicates protection that was included in the wm9713 driver.
 
-	xsetbv();	// enable the features known to OS
-
-	cpuid(0xd, ..);	// find out the size of the context for features enabled
-
-Depending on what features get enabled in xsetbv(), value of the
-cpuid.eax=0xd.ecx=0.ebx changes correspondingly (representing the
-size of the context that is enabled).
-
-As we don't have volatile keyword for native_cpuid(), gcc 4.1.2
-optimizes away the second cpuid and the kernel continues to use
-the cpuid information obtained before xsetbv(), ultimately leading to kernel
-crash on processors supporting more state than the legacy FP/SSE.
-
-Add "volatile" for native_cpuid().
-
-Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
-LKML-Reference: <1261009542.2745.55.camel@sbs-t61.sc.intel.com>
-Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+Signed-off-by: Eric Millbrandt <emillbrandt@dekaresearch.com>
+Acked-by: Liam Girdwood <lrg@slimlogic.co.uk>
+Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/x86/include/asm/processor.h |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ sound/soc/codecs/wm9712.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
---- a/arch/x86/include/asm/processor.h
-+++ b/arch/x86/include/asm/processor.h
-@@ -179,7 +179,7 @@ static inline void native_cpuid(unsigned
- 				unsigned int *ecx, unsigned int *edx)
+--- a/sound/soc/codecs/wm9712.c
++++ b/sound/soc/codecs/wm9712.c
+@@ -464,7 +464,8 @@ static int ac97_write(struct snd_soc_cod
  {
- 	/* ecx is often an input as well as an output. */
--	asm("cpuid"
-+	asm volatile("cpuid"
- 	    : "=a" (*eax),
- 	      "=b" (*ebx),
- 	      "=c" (*ecx),
+ 	u16 *cache = codec->reg_cache;
+ 
+-	soc_ac97_ops.write(codec->ac97, reg, val);
++	if (reg < 0x7c)
++		soc_ac97_ops.write(codec->ac97, reg, val);
+ 	reg = reg >> 1;
+ 	if (reg < (ARRAY_SIZE(wm9712_reg)))
+ 		cache[reg] = val;
 
 
