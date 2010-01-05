@@ -1,79 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754100Ab0AEGnm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753980Ab0AEG5L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754100Ab0AEGnm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 01:43:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753758Ab0AEGnm
+	id S1753980Ab0AEG5L (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 01:57:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750763Ab0AEG5K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 01:43:42 -0500
-Received: from mail.gmx.net ([213.165.64.20]:33071 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1750781Ab0AEGnl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 01:43:41 -0500
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX18xjMsHdhQxqH5A0u5PHQETBG5R02Q2ZfoODj8WNe
-	EBzXtrRunbq6n1
-Subject: Re: [RFC PATCH] sched: Pass affine target cpu into wake_affine
-From: Mike Galbraith <efault@gmx.de>
-To: Lin Ming <ming.m.lin@intel.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, lkml <linux-kernel@vger.kernel.org>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-In-Reply-To: <1262663058.5748.32.camel@marge.simson.net>
-References: <1262595827.22471.108.camel@minggr.sh.intel.com>
-	 <1262659686.22471.121.camel@minggr.sh.intel.com>
-	 <1262663058.5748.32.camel@marge.simson.net>
-Content-Type: text/plain
-Date: Tue, 05 Jan 2010 07:43:37 +0100
-Message-Id: <1262673817.9534.37.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.59
+	Tue, 5 Jan 2010 01:57:10 -0500
+Received: from out02.mta.xmission.com ([166.70.13.232]:58819 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750696Ab0AEG5J (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jan 2010 01:57:09 -0500
+To: Andi Kleen <andi@firstfloor.org>
+Cc: paulmck@linux.vnet.ibm.com, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [4/9] SYSCTL: Use RCU strings for core_pattern sysctl
+References: <20100105315.789846878@firstfloor.org>
+	<20100105021529.205EFB17C2@basil.firstfloor.org>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Mon, 04 Jan 2010 22:56:59 -0800
+In-Reply-To: <20100105021529.205EFB17C2@basil.firstfloor.org> (Andi Kleen's message of "Tue\,  5 Jan 2010 03\:15\:29 +0100 \(CET\)")
+Message-ID: <m1zl4t82f8.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Scanned: No (on in02.mta.xmission.com); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2010-01-05 at 04:44 +0100, Mike Galbraith wrote:
-> On Tue, 2010-01-05 at 10:48 +0800, Lin Ming wrote:
-> > On Mon, 2010-01-04 at 17:03 +0800, Lin Ming wrote:
-> > > commit a03ecf08d7bbdd979d81163ea13d194fe21ad339
-> > > Author: Lin Ming <ming.m.lin@intel.com>
-> > > Date:   Mon Jan 4 14:14:50 2010 +0800
-> > > 
-> > >     sched: Pass affine target cpu into wake_affine
-> > >     
-> > >     Since commit a1f84a3(sched: Check for an idle shared cache in select_task_rq_fair()),
-> > >     the affine target maybe adjusted to any idle cpu in cache sharing domains
-> > >     instead of current cpu.
-> > >     But wake_affine still use current cpu to calculate load which is wrong.
-> > >     
-> > >     This patch passes affine cpu into wake_affine.
-> > >     
-> > >     Signed-off-by: Lin Ming <ming.m.lin@intel.com>
-> > 
-> > Mike,
-> > 
-> > Any comment of this patch?
-> 
-> The patch definitely looks like the right thing to do, but when I tried
-> this, it didn't work out well.  Since I can't seem to recall precise
-> details, I'll let my box either remind me or give it's ack.
+Andi Kleen <andi@firstfloor.org> writes:
 
-Unfortunately, box reminded me.  mysql+oltp peak throughput with
-nr_clients == nr_cpus
+> Also saves ~220 bytes in the data segment for default kernels.
+>
+> As a bonus this removes one use of the BKL.
+>
+> Signed-off-by: Andi Kleen <ak@linux.intel.com>
+>
+> ---
+>  fs/exec.c       |   11 +++++------
+>  kernel/sysctl.c |    6 +++---
+>  2 files changed, 8 insertions(+), 9 deletions(-)
+>
+> Index: linux-2.6.33-rc2-ak/fs/exec.c
+> ===================================================================
+> --- linux-2.6.33-rc2-ak.orig/fs/exec.c
+> +++ linux-2.6.33-rc2-ak/fs/exec.c
+> @@ -62,7 +62,7 @@
+>  #include "internal.h"
+>  
+>  int core_uses_pid;
+> -char core_pattern[CORENAME_MAX_SIZE] = "core";
+> +char *core_pattern = "core";
+>  unsigned int core_pipe_limit;
+>  int suid_dumpable = 0;
+>  
+> @@ -1421,7 +1421,7 @@ EXPORT_SYMBOL(set_binfmt);
+>  static int format_corename(char *corename, long signr)
+>  {
+>  	const struct cred *cred = current_cred();
+> -	const char *pat_ptr = core_pattern;
+> +	const char *pat_ptr = rcu_dereference(core_pattern);
 
-tip   37012.34
-tip+  33025.83
-          .892
+rcu_dereference should aways be between rcu_read_lock()
+and rcu_read_unlock();
 
-We really only want to check for shared cache on ramp-up and/or longish
-intermission.  Once there's enough work to go around, interleaving is a
-big problem for these synchronous tasks.  Doing the silly thing gets us
-the ramp-up gain without too much pain, though there is definitely pain
-for very fast switchers.
-
-Looking always costs you a cache miss, not looking costs you throughput
-on ramp/intermission.  Damned if you do, damned if you don't.
-
-	-Mike
-
+>  	int ispipe = (*pat_ptr == '|');
+>  	char *out_ptr = corename;
+>  	char *const out_end = corename + CORENAME_MAX_SIZE;
+> @@ -1825,12 +1825,11 @@ void do_coredump(long signr, int exit_co
+>  	clear_thread_flag(TIF_SIGPENDING);
+>  
+>  	/*
+> -	 * lock_kernel() because format_corename() is controlled by sysctl, which
+> -	 * uses lock_kernel()
+> +	 * Protect corename by RCU vs proc_rcu_string()
+>  	 */
+> - 	lock_kernel();
+> +	rcu_read_lock();
+>  	ispipe = format_corename(corename, signr);
+> -	unlock_kernel();
+> +	rcu_read_unlock();
+>  
+>  	if ((!ispipe) && (cprm.limit < binfmt->min_coredump))
+>  		goto fail_unlock;
+> Index: linux-2.6.33-rc2-ak/kernel/sysctl.c
+> ===================================================================
+> --- linux-2.6.33-rc2-ak.orig/kernel/sysctl.c
+> +++ linux-2.6.33-rc2-ak/kernel/sysctl.c
+> @@ -75,7 +75,7 @@ extern int sysctl_oom_dump_tasks;
+>  extern int max_threads;
+>  extern int core_uses_pid;
+>  extern int suid_dumpable;
+> -extern char core_pattern[];
+> +extern char *core_pattern;
+>  extern unsigned int core_pipe_limit;
+>  extern int pid_max;
+>  extern int min_free_kbytes;
+> @@ -399,10 +399,10 @@ static struct ctl_table kern_table[] = {
+>  	},
+>  	{
+>  		.procname	= "core_pattern",
+> -		.data		= core_pattern,
+> +		.data		= &core_pattern,
+>  		.maxlen		= CORENAME_MAX_SIZE,
+>  		.mode		= 0644,
+> -		.proc_handler	= proc_dostring,
+> +		.proc_handler	= proc_rcu_string,
+>  	},
+>  	{
+>  		.procname	= "core_pipe_limit",
