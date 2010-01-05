@@ -1,90 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755024Ab0AEQVz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755049Ab0AEQYy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755024Ab0AEQVz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 11:21:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754126Ab0AEQVy
+	id S1755049Ab0AEQYy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 11:24:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754969Ab0AEQYx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 11:21:54 -0500
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:37795 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754907Ab0AEQVx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 11:21:53 -0500
-Date: Tue, 5 Jan 2010 08:21:37 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Josh Triplett <josh@joshtriplett.org>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, laijs@cn.fujitsu.com,
-       dipankar@in.ibm.com, akpm@linux-foundation.org,
-       mathieu.desnoyers@polymtl.ca, dvhltc@us.ibm.com, niv@us.ibm.com,
-       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
-       Valdis.Kletnieks@vt.edu, dhowells@redhat.com
-Subject: Re: [PATCH tip/core/rcu 2/3] rcu: add debug check for too many
-	rcu_read_unlock()
-Message-ID: <20100105162137.GC6714@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20100105000337.GA23307@linux.vnet.ibm.com> <20100105020307.GB11286@feather> <20100105021919.GN6748@linux.vnet.ibm.com> <20100105022814.GA11554@feather>
+	Tue, 5 Jan 2010 11:24:53 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:42743 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754924Ab0AEQYw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jan 2010 11:24:52 -0500
+Date: Tue, 5 Jan 2010 17:24:51 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Greg KH <greg@kroah.com>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [5/12] SYSFS: Add attribute array to sysdev classes
+Message-ID: <20100105162451.GF1778@basil.fritz.box>
+References: <201001051247.104464547@firstfloor.org> <20100105114802.8240CB17C2@basil.firstfloor.org> <20100105145433.GF11732@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20100105022814.GA11554@feather>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <20100105145433.GF11732@kroah.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 04, 2010 at 06:28:15PM -0800, Josh Triplett wrote:
-> On Mon, Jan 04, 2010 at 06:19:19PM -0800, Paul E. McKenney wrote:
-> > On Mon, Jan 04, 2010 at 06:03:08PM -0800, Josh Triplett wrote:
-> > > On Mon, Jan 04, 2010 at 04:04:01PM -0800, Paul E. McKenney wrote:
-> > > > From: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> > > > 
-> > > > TREE_PREEMPT_RCU maintains an rcu_read_lock_nesting counter in the
-> > > > task structure, which happens to be a signed int.  So this patch adds a
-> > > > check for this counter being negative at the end of __rcu_read_unlock().
-> > > > This check is under CONFIG_PROVE_LOCKING, so can be thought of as being
-> > > > part of lockdep.
-> > > > 
-> > > > Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> > > > ---
-> > > >  kernel/rcutree_plugin.h |    3 +++
-> > > >  1 files changed, 3 insertions(+), 0 deletions(-)
-> > > > 
-> > > > diff --git a/kernel/rcutree_plugin.h b/kernel/rcutree_plugin.h
-> > > > index f11ebd4..e77cdf3 100644
-> > > > --- a/kernel/rcutree_plugin.h
-> > > > +++ b/kernel/rcutree_plugin.h
-> > > > @@ -304,6 +304,9 @@ void __rcu_read_unlock(void)
-> > > >  	if (--ACCESS_ONCE(t->rcu_read_lock_nesting) == 0 &&
-> > > >  	    unlikely(ACCESS_ONCE(t->rcu_read_unlock_special)))
-> > > >  		rcu_read_unlock_special(t);
-> > > > +#ifdef CONFIG_PROVE_LOCKING
-> > > > +	WARN_ON_ONCE(ACCESS_ONCE(t->rcu_read_lock_nesting) < 0);
-> > > > +#endif /* #ifdef CONFIG_PROVE_LOCKING */
-> > > >  }
-> > > >  EXPORT_SYMBOL_GPL(__rcu_read_unlock);
-> > > 
-> > > Given that you *already* need to access t->rcu_read_lock_nesting here,
-> > > why not just do the test all the time?  Ideally you could access
-> > > t->rcu_read_lock_nesting once, decrement it, and test for both 0 and
-> > > negative.
+On Tue, Jan 05, 2010 at 06:54:33AM -0800, Greg KH wrote:
+> On Tue, Jan 05, 2010 at 12:48:02PM +0100, Andi Kleen wrote:
 > > 
-> > Because I was paranoid about the extra branch.  Perhaps needlessly
-> > paranoid, but this is rcu_read_unlock() we are talking about here.  ;-)
+> > Add a attribute array that is automatically registered and unregistered
+> > to struct sysdev_class. This is similar to what struct class has.
 > > 
-> > You seem to be suggesting making the first test be "<=", then
-> > sorting things out later, but given that both the equals-zero and the
-> > greater-than-zero cases are quite common, I couldn't figure out how to
-> > avoid the extra test and branch in the common case.  Hence the #ifdef.
+> > A lot of drivers add list of attributes, so it's better to do 
+> > this easily in the common sysdev layer.
+> > 
+> > This adds a new field to struct sysdev_class. I audited the 
+> > whole tree and there are no dynamically allocated sysdev classes,
+> > so this is fully compatible. 
 > 
-> No, I think you could simply read the predecremented value into a local
-> variable, test it once with == 0, then have the WARN_ON_ONCE, and hope
-> that the compiler figures out it can just test the register once and
-> then do multiple jumps on the same flags.
-> 
-> You could try it and see what code it generates.
+> I agree, this should be done, but can you use an attribute group
+> instead, like the driver core does?  That way you don't need the new
+> function that you created that duplicates that logic :)
 
-I agree that a smart compiler could share condition-code state, but
-there still will be the extra branch.  (Keep in mind that this is a
-.h file, so #ifdef is permitted -- though I might nevertheless make
-a one-line function/macro.)
+Actually the attributes use own loops for this too.
 
-						Thanx, Paul
+In theory could add a group in the middle, but it would greatly complicate
+the driver interface for little gain.
+
+In theory the low loops could be shared between the group code
+and sysfs_create_files(), but I'm not sure it's really worth
+it because it's just a few lines of code (which are currently
+duplicated in multiple places anyways, so it's a net-win)
+
+You still want me to attempt that?
+
+-Andi
+
+-- 
+ak@linux.intel.com -- Speaking for myself only.
