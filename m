@@ -1,123 +1,280 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755206Ab0AEWEr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932155Ab0AEWFs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755206Ab0AEWEr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 17:04:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754923Ab0AEWEq
+	id S932155Ab0AEWFs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 17:05:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755265Ab0AEWFo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 17:04:46 -0500
-Received: from adelphi.physics.adelaide.edu.au ([129.127.102.1]:55534 "EHLO
-	adelphi.physics.adelaide.edu.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754885Ab0AEWEp (ORCPT
+	Tue, 5 Jan 2010 17:05:44 -0500
+Received: from nlpi129.sbcis.sbc.com ([207.115.36.143]:40234 "EHLO
+	nlpi129.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755212Ab0AEWFn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 17:04:45 -0500
-From: Jonathan Woithe <jwoithe@physics.adelaide.edu.au>
-Message-Id: <201001052203.o05M3rdL023913@turbo.physics.adelaide.edu.au>
-Subject: Re: [PATCH] fujitsu-laptop: driver [un]registration fixes
-To: dmitry.torokhov@gmail.com (Dmitry Torokhov)
-Date: Wed, 6 Jan 2010 08:33:53 +1030 (CST)
-Cc: lenb@kernel.org, bzolnier@gmail.com (Bartlomiej Zolnierkiewicz),
-       jwoithe@physics.adelaide.edu.au (Jonathan Woithe),
-       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20100105191439.GB2854@core.coreip.homeip.net> from "Dmitry Torokhov" at Jan 05, 2010 11:14:39 AM
-X-Mailer: ELM [version 2.5 PL6]
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Tue, 5 Jan 2010 17:05:43 -0500
+Message-Id: <20100105220437.940473705@quilx.com>
+References: <20100105220417.400092933@quilx.com>
+User-Agent: quilt/0.46-1
+Date: Tue, 05 Jan 2010 16:04:18 -0600
+From: Christoph Lameter <cl@linux-foundation.org>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Tejun Heo <tj@kernel.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [RFC local_t removal V1 1/4] Add add_local() and add_local_return()
+Content-Disposition: inline; filename=remove_local_t_add_local
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+We already have cmpxchg_local that can work on an arbitrary type. The cmpxchg
+is only safe from concurrent access on the local cpu.
 
-> On Tue, Jan 05, 2010 at 05:46:46PM +0100, Bartlomiej Zolnierkiewicz wrote:
-> :
-> > > > So what's the correct way to deal with that in this case?  Something like
-> > > > 
-> > > > -end:
-> > > > +err_unregister_input_dev:
-> > > > +	input_unregister_device(input);
-> > > > +	goto err_stop;
-> > > >  err_free_input_dev:
-> > > >  	input_free_device(input);
-> > > >  err_stop:
-> > > > 
-> > > > (with a short comment to explain the goto) would circumvent the problem but
-> > > > it looks ugly (at least to my eyes - I've never really liked "goto"s :-) ).
-> > > 
-> > > Just do "input = NULL;" after calling  input_unregister_device() -
-> > > input_free_device() is like kfree() and will happily ignore passed NULL 
-> > > pointers.
-> > > 
-> > > Or rearrange the code to register device last, when everything is ready.
-> > 
-> > I don't see it fixed in Linus' tree or linux-next yet so here is a patch:
-> > (thanks for noticing the issue and sorry for the delayed reply).
+Add another operation that in the similar fasion allow "local" safe adds to
+a variable.
 
-Yeah, sorry about that.  I was going to do up a patch but got caught up on
-other things over the past two weeks.  It got close to the top of my TODO
-list yesterday, but it seems you beat me to it. :-)  Thanks.
+Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
 
-Acked-by: Jonathan Woithe <jwoithe@physics.adelaide.edu.au>
-
-Len: please apply.
-
-Regards
-  jonathan
-
-
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [PATCH] fujitsu-laptop: fix input_free_device() usage
-
-input_free_device() must not be used after calling input_unregister_device()
-since unregister likely drops the last reference to the device and it will
-get freed by input core.
-
-Fix all input_unregister_device()+input_free_device() occurences accordingly.
-
-Noticed-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Acked-by: Jonathan Woithe <jwoithe@physics.adelaide.edu.au>
 ---
-against current Linus' tree
+ arch/alpha/include/asm/add-local.h      |    2 +
+ arch/arm/include/asm/add-local.h        |    2 +
+ arch/avr32/include/asm/add-local.h      |    2 +
+ arch/blackfin/include/asm/add-local.h   |    2 +
+ arch/cris/include/asm/add-local.h       |    2 +
+ arch/frv/include/asm/add-local.h        |    2 +
+ arch/h8300/include/asm/add-local.h      |    2 +
+ arch/ia64/include/asm/add-local.h       |    2 +
+ arch/m32r/include/asm/add-local.h       |    2 +
+ arch/m68k/include/asm/add-local.h       |    2 +
+ arch/microblaze/include/asm/add-local.h |    2 +
+ arch/mips/include/asm/add-local.h       |    2 +
+ arch/mn10300/include/asm/add-local.h    |    2 +
+ arch/parisc/include/asm/add-local.h     |    2 +
+ arch/powerpc/include/asm/add-local.h    |    2 +
+ arch/s390/include/asm/add-local.h       |    2 +
+ arch/score/include/asm/add-local.h      |    2 +
+ arch/sh/include/asm/add-local.h         |    2 +
+ arch/sparc/include/asm/add-local.h      |    2 +
+ arch/um/include/asm/add-local.h         |    2 +
+ arch/x86/include/asm/add-local.h        |    2 +
+ arch/xtensa/include/asm/add-local.h     |    2 +
+ include/asm-generic/add-local-generic.h |   40 ++++++++++++++++++++++++++++++++
+ include/asm-generic/add-local.h         |   13 ++++++++++
+ 24 files changed, 97 insertions(+)
 
- drivers/platform/x86/fujitsu-laptop.c |    6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
-
-Index: b/drivers/platform/x86/fujitsu-laptop.c
+Index: linux-2.6/include/asm-generic/add-local.h
 ===================================================================
---- a/drivers/platform/x86/fujitsu-laptop.c
-+++ b/drivers/platform/x86/fujitsu-laptop.c
-@@ -724,6 +724,7 @@ static int acpi_fujitsu_add(struct acpi_
- 
- err_unregister_input_dev:
- 	input_unregister_device(input);
-+	input = NULL;
- err_free_input_dev:
- 	input_free_device(input);
- err_stop:
-@@ -737,8 +738,6 @@ static int acpi_fujitsu_remove(struct ac
- 
- 	input_unregister_device(input);
- 
--	input_free_device(input);
--
- 	fujitsu->acpi_handle = NULL;
- 
- 	return 0;
-@@ -929,6 +928,7 @@ static int acpi_fujitsu_hotkey_add(struc
- 
- err_unregister_input_dev:
- 	input_unregister_device(input);
-+	input = NULL;
- err_free_input_dev:
- 	input_free_device(input);
- err_free_fifo:
-@@ -952,8 +952,6 @@ static int acpi_fujitsu_hotkey_remove(st
- 
- 	input_unregister_device(input);
- 
--	input_free_device(input);
--
- 	kfifo_free(&fujitsu_hotkey->fifo);
- 
- 	fujitsu_hotkey->acpi_handle = NULL;
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6/include/asm-generic/add-local.h	2010-01-05 15:36:02.000000000 -0600
+@@ -0,0 +1,13 @@
++#ifndef __ASM_GENERIC_ADD_LOCAL_H
++#define __ASM_GENERIC_ADD_LOCAL_H
++
++#include <asm-generic/add-local-generic.h>
++
++#define add_return_local(ptr, v)				  	\
++	((__typeof__(*(ptr)))__add_return_local_generic((ptr), 		\
++			(unsigned long)(v), sizeof(*(ptr))))
++
++#define add_local(ptr, v) (void)__add_return_local_generic((ptr),	\
++			(unsigned long)(v), sizeof(*(ptr)))
++
++#endif
+Index: linux-2.6/arch/alpha/include/asm/add-local.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6/arch/alpha/include/asm/add-local.h	2010-01-05 15:36:02.000000000 -0600
+@@ -0,0 +1,2 @@
++#include <asm-generic/add-local.h>
++
+Index: linux-2.6/arch/arm/include/asm/add-local.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6/arch/arm/include/asm/add-local.h	2010-01-05 15:36:02.000000000 -0600
+@@ -0,0 +1,2 @@
++#include <asm-generic/add-local.h>
++
+Index: linux-2.6/arch/avr32/include/asm/add-local.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6/arch/avr32/include/asm/add-local.h	2010-01-05 15:36:02.000000000 -0600
+@@ -0,0 +1,2 @@
++#include <asm-generic/add-local.h>
++
+Index: linux-2.6/arch/blackfin/include/asm/add-local.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6/arch/blackfin/include/asm/add-local.h	2010-01-05 15:36:02.000000000 -0600
+@@ -0,0 +1,2 @@
++#include <asm-generic/add-local.h>
++
+Index: linux-2.6/arch/cris/include/asm/add-local.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6/arch/cris/include/asm/add-local.h	2010-01-05 15:36:02.000000000 -0600
+@@ -0,0 +1,2 @@
++#include <asm-generic/add-local.h>
++
+Index: linux-2.6/arch/frv/include/asm/add-local.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6/arch/frv/include/asm/add-local.h	2010-01-05 15:36:02.000000000 -0600
+@@ -0,0 +1,2 @@
++#include <asm-generic/add-local.h>
++
+Index: linux-2.6/arch/h8300/include/asm/add-local.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6/arch/h8300/include/asm/add-local.h	2010-01-05 15:36:02.000000000 -0600
+@@ -0,0 +1,2 @@
++#include <asm-generic/add-local.h>
++
+Index: linux-2.6/arch/ia64/include/asm/add-local.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6/arch/ia64/include/asm/add-local.h	2010-01-05 15:36:02.000000000 -0600
+@@ -0,0 +1,2 @@
++#include <asm-generic/add-local.h>
++
+Index: linux-2.6/arch/m32r/include/asm/add-local.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6/arch/m32r/include/asm/add-local.h	2010-01-05 15:36:02.000000000 -0600
+@@ -0,0 +1,2 @@
++#include <asm-generic/add-local.h>
++
+Index: linux-2.6/arch/m68k/include/asm/add-local.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6/arch/m68k/include/asm/add-local.h	2010-01-05 15:36:02.000000000 -0600
+@@ -0,0 +1,2 @@
++#include <asm-generic/add-local.h>
++
+Index: linux-2.6/arch/microblaze/include/asm/add-local.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6/arch/microblaze/include/asm/add-local.h	2010-01-05 15:36:02.000000000 -0600
+@@ -0,0 +1,2 @@
++#include <asm-generic/add-local.h>
++
+Index: linux-2.6/arch/mips/include/asm/add-local.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6/arch/mips/include/asm/add-local.h	2010-01-05 15:36:02.000000000 -0600
+@@ -0,0 +1,2 @@
++#include <asm-generic/add-local.h>
++
+Index: linux-2.6/arch/mn10300/include/asm/add-local.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6/arch/mn10300/include/asm/add-local.h	2010-01-05 15:36:02.000000000 -0600
+@@ -0,0 +1,2 @@
++#include <asm-generic/add-local.h>
++
+Index: linux-2.6/arch/parisc/include/asm/add-local.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6/arch/parisc/include/asm/add-local.h	2010-01-05 15:36:02.000000000 -0600
+@@ -0,0 +1,2 @@
++#include <asm-generic/add-local.h>
++
+Index: linux-2.6/arch/powerpc/include/asm/add-local.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6/arch/powerpc/include/asm/add-local.h	2010-01-05 15:36:02.000000000 -0600
+@@ -0,0 +1,2 @@
++#include <asm-generic/add-local.h>
++
+Index: linux-2.6/arch/s390/include/asm/add-local.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6/arch/s390/include/asm/add-local.h	2010-01-05 15:36:02.000000000 -0600
+@@ -0,0 +1,2 @@
++#include <asm-generic/add-local.h>
++
+Index: linux-2.6/arch/score/include/asm/add-local.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6/arch/score/include/asm/add-local.h	2010-01-05 15:36:02.000000000 -0600
+@@ -0,0 +1,2 @@
++#include <asm-generic/add-local.h>
++
+Index: linux-2.6/arch/sh/include/asm/add-local.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6/arch/sh/include/asm/add-local.h	2010-01-05 15:36:02.000000000 -0600
+@@ -0,0 +1,2 @@
++#include <asm-generic/add-local.h>
++
+Index: linux-2.6/arch/sparc/include/asm/add-local.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6/arch/sparc/include/asm/add-local.h	2010-01-05 15:36:02.000000000 -0600
+@@ -0,0 +1,2 @@
++#include <asm-generic/add-local.h>
++
+Index: linux-2.6/arch/um/include/asm/add-local.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6/arch/um/include/asm/add-local.h	2010-01-05 15:36:02.000000000 -0600
+@@ -0,0 +1,2 @@
++#include <asm-generic/add-local.h>
++
+Index: linux-2.6/arch/x86/include/asm/add-local.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6/arch/x86/include/asm/add-local.h	2010-01-05 15:36:02.000000000 -0600
+@@ -0,0 +1,2 @@
++#include <asm-generic/add-local.h>
++
+Index: linux-2.6/arch/xtensa/include/asm/add-local.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6/arch/xtensa/include/asm/add-local.h	2010-01-05 15:36:02.000000000 -0600
+@@ -0,0 +1,2 @@
++#include <asm-generic/add-local.h>
++
+Index: linux-2.6/include/asm-generic/add-local-generic.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6/include/asm-generic/add-local-generic.h	2010-01-05 15:36:02.000000000 -0600
+@@ -0,0 +1,40 @@
++#ifndef __ASM_GENERIC_ADD_LOCAL_GENERIC_H
++#define __ASM_GENERIC_ADD_LOCAL_GENERIC_H
++
++#include <linux/types.h>
++
++extern unsigned long wrong_size_add_local(volatile void *ptr);
++
++/*
++ * Generic version of __add_return_local (disables interrupts). Takes an
++ * unsigned long parameter, supporting various types of architectures.
++ */
++static inline unsigned long __add_return_local_generic(volatile void *ptr,
++		unsigned long value, int size)
++{
++	unsigned long flags, r;
++
++	/*
++	 * Sanity checking, compile-time.
++	 */
++	if (size == 8 && sizeof(unsigned long) != 8)
++		wrong_size_add_local(ptr);
++
++	local_irq_save(flags);
++	switch (size) {
++	case 1: r = (*((u8 *)ptr) += value);
++		break;
++	case 2: r = (*((u16 *)ptr) += value);
++		break;
++	case 4: r = (*((u32 *)ptr) += value);
++		break;
++	case 8: r = (*((u64 *)ptr) += value);
++		break;
++	default:
++		wrong_size_add_local(ptr);
++	}
++	local_irq_restore(flags);
++	return r;
++}
++
++#endif
+
+-- 
