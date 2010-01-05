@@ -1,67 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755033Ab0AETJS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754798Ab0AETNL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755033Ab0AETJS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 14:09:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754766Ab0AETJR
+	id S1754798Ab0AETNL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 14:13:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753363Ab0AETNJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 14:09:17 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:43740 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754728Ab0AETJR (ORCPT
+	Tue, 5 Jan 2010 14:13:09 -0500
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:52586 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750789Ab0AETNH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 14:09:17 -0500
-Date: Tue, 5 Jan 2010 11:08:46 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-cc: Christoph Lameter <cl@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Minchan Kim <minchan.kim@gmail.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Peter Zijlstra <peterz@infradead.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "hugh.dickins" <hugh.dickins@tiscali.co.uk>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [RFC][PATCH 6/8] mm: handle_speculative_fault()
-In-Reply-To: <20100105185542.GH6714@linux.vnet.ibm.com>
-Message-ID: <alpine.LFD.2.00.1001051059480.3630@localhost.localdomain>
-References: <20100105134357.4bfb4951.kamezawa.hiroyu@jp.fujitsu.com> <alpine.LFD.2.00.1001042052210.3630@localhost.localdomain> <20100105143046.73938ea2.kamezawa.hiroyu@jp.fujitsu.com> <20100105163939.a3f146fb.kamezawa.hiroyu@jp.fujitsu.com>
- <alpine.LFD.2.00.1001050707520.3630@localhost.localdomain> <alpine.LFD.2.00.1001050810380.3630@localhost.localdomain> <87wrzwbh0z.fsf@basil.nowhere.org> <alpine.LFD.2.00.1001050950500.3630@localhost.localdomain> <alpine.DEB.2.00.1001051211000.2246@router.home>
- <alpine.LFD.2.00.1001051019280.3630@localhost.localdomain> <20100105185542.GH6714@linux.vnet.ibm.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Tue, 5 Jan 2010 14:13:07 -0500
+Date: Tue, 5 Jan 2010 20:13:06 +0100
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] tracing/recordmount.pl: use apropriate
+	perl-constructs
+Message-ID: <20100105191306.GA4848@pengutronix.de>
+References: <1262716072-14414-1-git-send-email-w.sang@pengutronix.de> <1262716072-14414-2-git-send-email-w.sang@pengutronix.de> <1262716072-14414-3-git-send-email-w.sang@pengutronix.de> <1262716675.28171.1612.camel@gandalf.stny.rr.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="G4iJoqBmSsgzjUCe"
+Content-Disposition: inline
+In-Reply-To: <1262716675.28171.1612.camel@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: wsa@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+--G4iJoqBmSsgzjUCe
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Tue, 5 Jan 2010, Paul E. McKenney wrote:
-> 
-> But on many systems, it does take some time for the idle reads to make
-> their way to the CPU that just acquired the lock.
+> > -$objdump =3D "objdump" if ((length $objdump) =3D=3D 0);
+> > -$objcopy =3D "objcopy" if ((length $objcopy) =3D=3D 0);
+> > -$cc =3D "gcc" if ((length $cc) =3D=3D 0);
+> > -$ld =3D "ld" if ((length $ld) =3D=3D 0);
+> > -$nm =3D "nm" if ((length $nm) =3D=3D 0);
+> > -$rm =3D "rm" if ((length $rm) =3D=3D 0);
+> > -$mv =3D "mv" if ((length $mv) =3D=3D 0);
+> > +$objdump ||=3D 'objdump';
+> > +$objcopy ||=3D 'objcopy';
+> > +$cc ||=3D 'gcc';
+> > +$ld ||=3D 'ld';
+> > +$nm ||=3D 'nm';
+> > +$rm ||=3D 'rm';
+> > +$mv ||=3D 'mv';
+>=20
+> I purposely did not do it this way (I need to add a comment about this),
+> because most kernel developers are not perl programmers, and I wanted
+> this to be as easy as possible for a non-perl programmer to understand.
+>=20
+> Even as a perl programmer it still looks funny to me with the:
+>=20
+>=20
+>   $x ||=3D 'x';
+>=20
 
-Yes. But the point is that there is lots of them.
+Yes, okay, it's an idiom one needs to know. While your point "be C-compatib=
+le"
+makes also sense to me (comment would be nice indeed), this should do it, t=
+oo?
 
-So think of it this way: every time _one_ CPU acquires a lock (and 
-then releases it), _all_ CPU's will read the new value. Imagine the 
-cross-socket traffic.
+	$cc =3D "gcc" if ($cc =3D=3D '');
 
-In contrast, doing just a single xadd (which replaces the whole 
-"spin_lock+non-atomics+spin_unlock"), every times _once_ CPU cquires a 
-lock, that's it. The other CPU's arent' all waiting in line for the lock 
-to be released, and reading the cacheline to see if it's their turn.
+> >  # Shut up recordmcount if user has older objcopy
+> > -my $quiet_recordmcount =3D ".tmp_quiet_recordmcount";
+> > -my $print_warning =3D 1;
+> > -$print_warning =3D 0 if ( -f $quiet_recordmcount);
+> > +my $quiet_recordmcount =3D '.tmp_quiet_recordmcount';
+> > +my $print_warning =3D (! -f $quiet_recordmcount);
+>=20
+> Again, this is just using perl obfuscation for most C programmers to
+> understand.
 
-Sure, after they got the lock they'll all eventually end up reading from 
-that cacheline that contains 'struct mm_struct', but that's something we 
-could even think about trying to minimize by putting the mmap_sem as far 
-away from the other fields as possible.
+Okay, mileages... :)
 
-Now, it's very possible that if you have a broadcast model of cache 
-coherency, none of this much matters and you end up with almost all the 
-same bus traffic anyway. But I do think it could matter a lot.
+> I fine with this change too.
 
-		Linus
+Shall I resend or will you just pick up the interesting parts?
+
+Regards,
+
+   Wolfram
+
+--=20
+Pengutronix e.K.                           | Wolfram Sang                |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+
+--G4iJoqBmSsgzjUCe
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAktDj0IACgkQD27XaX1/VRsdDQCguexkwiyRTw9Pj4V3Wgy3C9YW
+2qcAoIh+J9zn+GgIDM1vCoJo9reo+0eq
+=/Bhs
+-----END PGP SIGNATURE-----
+
+--G4iJoqBmSsgzjUCe--
