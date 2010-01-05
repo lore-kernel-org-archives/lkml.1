@@ -1,181 +1,228 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754313Ab0AEBNI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754200Ab0AEBPL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754313Ab0AEBNI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 20:13:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754212Ab0AEBM7
+	id S1754200Ab0AEBPL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 20:15:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754027Ab0AEBPG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 20:12:59 -0500
-Received: from mga03.intel.com ([143.182.124.21]:60582 "EHLO mga03.intel.com"
+	Mon, 4 Jan 2010 20:15:06 -0500
+Received: from hera.kernel.org ([140.211.167.34]:36883 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754189Ab0AEBMw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 20:12:52 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
-   d="scan'208";a="229176907"
-Date: Mon, 4 Jan 2010 20:56:20 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Quentin Barnes <qbarnes+nfs@yahoo-inc.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       Nick Piggin <npiggin@suse.de>, Steven Whitehouse <swhiteho@redhat.com>,
-       David Howells <dhowells@redhat.com>, Al Viro <viro@zeniv.linux.org.uk>,
-       Jonathan Corbet <corbet@lwn.net>
-Subject: [RFC][PATCH v4] readahead: introduce O_RANDOM for POSIX_FADV_RANDOM
-Message-ID: <20100104125620.GB12266@localhost>
-References: <20091225000717.GA26949@yahoo-inc.com> <87aax18xms.fsf@basil.nowhere.org> <20091230051540.GA16308@localhost> <20091230052402.GB26364@localhost> <873a2s8hmp.fsf@basil.nowhere.org> <20100104045020.GA21021@localhost> <20100104161719.a0bb35ad.sfr@canb.auug.org.au> <20100104073328.GA3422@infradead.org>
+	id S1753832Ab0AEBPE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jan 2010 20:15:04 -0500
+Message-ID: <4B4293A3.10106@kernel.org>
+Date: Tue, 05 Jan 2010 10:19:31 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100104073328.GA3422@infradead.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Christoph Lameter <cl@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, Mel Gorman <mel@csn.ul.ie>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: Re: [this_cpu_xx V9 4/7] Generic inc / dec percpu instructions
+References: <20100104223439.228028923@quilx.com> <20100104223556.090044300@quilx.com>
+In-Reply-To: <20100104223556.090044300@quilx.com>
+X-Enigmail-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 04, 2010 at 03:33:28PM +0800, Christoph Hellwig wrote:
-> On Mon, Jan 04, 2010 at 04:17:19PM +1100, Stephen Rothwell wrote:
-> > > @@ -80,6 +80,10 @@
-> > >  #define O_NDELAY	O_NONBLOCK
-> > >  #endif
-> > >  
-> > > +#ifndef O_RANDOM
-> > > +#define O_RANDOM	010000000	/* random access pattern hint */
-> > > +#endif
-> > 
-> > This value conflicts with O_CLOEXEC on alpha and parisc and O_NOATIME on
-> > sparc.
-
-Ah thanks!
-
-For now I'll use bit 040000000, which happen to equal to
-FMODE_NONOTIFY and will be masked out by __dentry_open()
-in the very beginning.
-
-So there's no way to call open(O_RANDOM).
-
-> Also when I tried to use this value for O_RSYNC and tested it I could
-> not actually see it getting propagated by the open code.
+On 01/05/2010 07:34 AM, Christoph Lameter wrote:
+> Optimize code generated for percpu access by checking for increment and
+> decrements.
 > 
-> Eitherway I don't think an O_ value is a good idea for a simple access
-> pattern hint.
+> Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
+> 
+> ---
+>  arch/x86/include/asm/percpu.h |  100 ++++++++++++++++++++++++++++++++++++------
+>  1 file changed, 86 insertions(+), 14 deletions(-)
+> 
+> Index: linux-2.6/arch/x86/include/asm/percpu.h
+> ===================================================================
+> --- linux-2.6.orig/arch/x86/include/asm/percpu.h	2010-01-04 15:33:02.000000000 -0600
+> +++ linux-2.6/arch/x86/include/asm/percpu.h	2010-01-04 16:11:29.000000000 -0600
+> @@ -104,6 +104,78 @@ do {							\
+>  	}						\
+>  } while (0)
+>  
+> +/*
+> + * Generate a percpu add to memory instruction and optimize code
+> + * if a one is added or subtracted.
+> + */
+> +#define percpu_add_op(var, val)				\
+> +do {							\
+> +	typedef typeof(var) pto_T__;			\
+> +	if (0) {					\
+> +		pto_T__ pto_tmp__;			\
+> +		pto_tmp__ = (val);			\
+> +	}						\
+> +	switch (sizeof(var)) {				\
+> +	case 1:						\
+> +		if (__builtin_constant_p(val) == 1)	\
 
-Hmm, I don't really care adding open(O_RANDOM) support.
+According to gcc doc, __builtin_constant_p() returns 1 on constant and
+0 if not.  It doesn't return the original expression.  I'll commit the
+following updated version after testing.
 
-O_RANDOM is used in the code mainly because the file_ra_state fields
-are racy, so the f_lock protected file->f_flags is convenient for
-saving the random hint bit.
+Thanks.
 
-If necessary, we can further mask out O_RANDOM for fcntl(F_GETFL).
+From: Christoph Lameter <cl@linux-foundation.org>
 
-Thanks,
-Fengguang
+Optimize code generated for percpu access by checking for increment and
+decrements.
+
+tj: fix incorrect usage of __builtin_constant_p() and restructure
+    percpu_add_op() macro.
+
+Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
+Signed-off-by: Tejun Heo <tj@kernel.org>
 ---
-readahead: introduce O_RANDOM for POSIX_FADV_RANDOM
+ arch/x86/include/asm/percpu.h |   86 +++++++++++++++++++++++++++++++++++-------
+ 1 file changed, 72 insertions(+), 14 deletions(-)
 
-This fixes inefficient page-by-page reads on POSIX_FADV_RANDOM.
-
-POSIX_FADV_RANDOM used to set ra_pages=0, which leads to poor
-performance: a 16K read will be carried out in 4 _sync_ 1-page reads.
-
-In other places, ra_pages==0 means
-- it's ramfs/tmpfs/hugetlbfs/sysfs/configfs
-- some IO error happened
-where multi-page read IO won't help or should be avoided.
-
-POSIX_FADV_RANDOM actually want a different semantics: to disable the
-*heuristic* readahead algorithm, and to use a dumb one which faithfully
-submit read IO for whatever application requests.
-
-So introduce a flag O_RANDOM for POSIX_FADV_RANDOM.  It will be
-visible to fcntl(F_GETFL), but open(O_RANDOM) is disabled for now.
-
-Note that the random hint is not likely to help random reads performance
-noticeably. And it may be too permissive on huge request size (its IO
-size is not limited by read_ahead_kb).
-
-In Quentin's report (http://lkml.org/lkml/2009/12/24/145), the overall
-(NFS read) performance of the application increased by 313%!
-
-v4: resolve bit conflicts with sparc and parisc;
-    use bit 040000000(=FMODE_NONOTIFY), which will be masked out by
-    __dentry_open(), so that open(O_RANDOM) is disabled
-    (Stephen Rothwell and Christoph Hellwig)
-v3: use O_RANDOM to indicate both read/write access pattern as in
-    posix_fadvise(), although it only takes effect for read() now
-    (proposed by Quentin)
-v2: use O_RANDOM_READ to avoid race conditions (pointed out by Andi)
-
-CC: Nick Piggin <npiggin@suse.de>
-CC: Andi Kleen <andi@firstfloor.org>
-CC: Steven Whitehouse <swhiteho@redhat.com>
-CC: David Howells <dhowells@redhat.com>
-CC: Al Viro <viro@zeniv.linux.org.uk>
-CC: Jonathan Corbet <corbet@lwn.net>
-CC: Christoph Hellwig <hch@infradead.org>
-Tested-by: Quentin Barnes <qbarnes+nfs@yahoo-inc.com>
-Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
----
- include/asm-generic/fcntl.h |    8 ++++++++
- mm/fadvise.c                |   10 +++++++++-
- mm/readahead.c              |    6 ++++++
- 3 files changed, 23 insertions(+), 1 deletion(-)
-
---- linux.orig/include/asm-generic/fcntl.h	2010-01-04 12:39:29.000000000 +0800
-+++ linux/include/asm-generic/fcntl.h	2010-01-04 20:50:41.000000000 +0800
-@@ -80,6 +80,14 @@
- #define O_NDELAY	O_NONBLOCK
- #endif
+Index: percpu/arch/x86/include/asm/percpu.h
+===================================================================
+--- percpu.orig/arch/x86/include/asm/percpu.h
++++ percpu/arch/x86/include/asm/percpu.h
+@@ -103,6 +103,64 @@ do {							\
+ 	}						\
+ } while (0)
  
 +/*
-+ * don't support open(O_RANDOM) for now:
-+ * __dentry_open() will nuke this bit implicitly
++ * Generate a percpu add to memory instruction and optimize code
++ * if a one is added or subtracted.
 + */
-+#ifndef O_RANDOM
-+#define O_RANDOM	040000000	/* random access pattern hint */
-+#endif
++#define percpu_add_op(var, val)						\
++do {									\
++	typedef typeof(var) pao_T__;					\
++	const int pao_ID__ = (__builtin_constant_p(val) &&		\
++			      ((val) == 1 || (val) == -1)) ? (val) : 0;	\
++	if (0) {							\
++		pao_T__ pao_tmp__;					\
++		pao_tmp__ = (val);					\
++	}								\
++	switch (sizeof(var)) {						\
++	case 1:								\
++		if (pao_ID__ == 1)					\
++			asm("incb "__percpu_arg(0) : "+m" (var));	\
++		else if (pao_ID__ == -1)				\
++			asm("decb "__percpu_arg(0) : "+m" (var));	\
++		else							\
++			asm("addb %1, "__percpu_arg(0)			\
++			    : "+m" (var)				\
++			    : "qi" ((pao_T__)(val)));			\
++		break;							\
++	case 2:								\
++		if (pao_ID__ == 1)					\
++			asm("incw "__percpu_arg(0) : "+m" (var));	\
++		else if (pao_ID__ == -1)				\
++			asm("decw "__percpu_arg(0) : "+m" (var));	\
++		else							\
++			asm("addw %1, "__percpu_arg(0)			\
++			    : "+m" (var)				\
++			    : "ri" ((pao_T__)(val)));			\
++		break;							\
++	case 4:								\
++		if (pao_ID__ == 1)					\
++			asm("incl "__percpu_arg(0) : "+m" (var));	\
++		else if (pao_ID__ == -1)				\
++			asm("decl "__percpu_arg(0) : "+m" (var));	\
++		else							\
++			asm("addl %1, "__percpu_arg(0)			\
++			    : "+m" (var)				\
++			    : "ri" ((pao_T__)(val)));			\
++		break;							\
++	case 8:								\
++		if (pao_ID__ == 1)					\
++			asm("incq "__percpu_arg(0) : "+m" (var));	\
++		else if (pao_ID__ == -1)				\
++			asm("decq "__percpu_arg(0) : "+m" (var));	\
++		else							\
++			asm("addq %1, "__percpu_arg(0)			\
++			    : "+m" (var)				\
++			    : "re" ((pao_T__)(val)));			\
++		break;							\
++	default: __bad_percpu_size();					\
++	}								\
++} while (0)
 +
- #define F_DUPFD		0	/* dup */
- #define F_GETFD		1	/* get close_on_exec */
- #define F_SETFD		2	/* set/clear close_on_exec */
---- linux.orig/mm/fadvise.c	2010-01-04 12:39:29.000000000 +0800
-+++ linux/mm/fadvise.c	2010-01-04 12:39:30.000000000 +0800
-@@ -77,12 +77,20 @@ SYSCALL_DEFINE(fadvise64_64)(int fd, lof
- 	switch (advice) {
- 	case POSIX_FADV_NORMAL:
- 		file->f_ra.ra_pages = bdi->ra_pages;
-+		spin_lock(&file->f_lock);
-+		file->f_flags &= ~O_RANDOM;
-+		spin_unlock(&file->f_lock);
- 		break;
- 	case POSIX_FADV_RANDOM:
--		file->f_ra.ra_pages = 0;
-+		spin_lock(&file->f_lock);
-+		file->f_flags |= O_RANDOM;
-+		spin_unlock(&file->f_lock);
- 		break;
- 	case POSIX_FADV_SEQUENTIAL:
- 		file->f_ra.ra_pages = bdi->ra_pages * 2;
-+		spin_lock(&file->f_lock);
-+		file->f_flags &= ~O_RANDOM;
-+		spin_unlock(&file->f_lock);
- 		break;
- 	case POSIX_FADV_WILLNEED:
- 		if (!mapping->a_ops->readpage) {
---- linux.orig/mm/readahead.c	2010-01-04 12:39:29.000000000 +0800
-+++ linux/mm/readahead.c	2010-01-04 12:39:30.000000000 +0800
-@@ -501,6 +501,12 @@ void page_cache_sync_readahead(struct ad
- 	if (!ra->ra_pages)
- 		return;
+ #define percpu_from_op(op, var, constraint)		\
+ ({							\
+ 	typeof(var) pfo_ret__;				\
+@@ -144,8 +202,8 @@ do {							\
+ #define percpu_read(var)		percpu_from_op("mov", var, "m" (var))
+ #define percpu_read_stable(var)		percpu_from_op("mov", var, "p" (&(var)))
+ #define percpu_write(var, val)		percpu_to_op("mov", var, val)
+-#define percpu_add(var, val)		percpu_to_op("add", var, val)
+-#define percpu_sub(var, val)		percpu_to_op("sub", var, val)
++#define percpu_add(var, val)		percpu_add_op(var, val)
++#define percpu_sub(var, val)		percpu_add_op(var, -(val))
+ #define percpu_and(var, val)		percpu_to_op("and", var, val)
+ #define percpu_or(var, val)		percpu_to_op("or", var, val)
+ #define percpu_xor(var, val)		percpu_to_op("xor", var, val)
+@@ -157,9 +215,9 @@ do {							\
+ #define __this_cpu_write_1(pcp, val)	percpu_to_op("mov", (pcp), val)
+ #define __this_cpu_write_2(pcp, val)	percpu_to_op("mov", (pcp), val)
+ #define __this_cpu_write_4(pcp, val)	percpu_to_op("mov", (pcp), val)
+-#define __this_cpu_add_1(pcp, val)	percpu_to_op("add", (pcp), val)
+-#define __this_cpu_add_2(pcp, val)	percpu_to_op("add", (pcp), val)
+-#define __this_cpu_add_4(pcp, val)	percpu_to_op("add", (pcp), val)
++#define __this_cpu_add_1(pcp, val)	percpu_add_op((pcp), val)
++#define __this_cpu_add_2(pcp, val)	percpu_add_op((pcp), val)
++#define __this_cpu_add_4(pcp, val)	percpu_add_op((pcp), val)
+ #define __this_cpu_and_1(pcp, val)	percpu_to_op("and", (pcp), val)
+ #define __this_cpu_and_2(pcp, val)	percpu_to_op("and", (pcp), val)
+ #define __this_cpu_and_4(pcp, val)	percpu_to_op("and", (pcp), val)
+@@ -176,9 +234,9 @@ do {							\
+ #define this_cpu_write_1(pcp, val)	percpu_to_op("mov", (pcp), val)
+ #define this_cpu_write_2(pcp, val)	percpu_to_op("mov", (pcp), val)
+ #define this_cpu_write_4(pcp, val)	percpu_to_op("mov", (pcp), val)
+-#define this_cpu_add_1(pcp, val)	percpu_to_op("add", (pcp), val)
+-#define this_cpu_add_2(pcp, val)	percpu_to_op("add", (pcp), val)
+-#define this_cpu_add_4(pcp, val)	percpu_to_op("add", (pcp), val)
++#define this_cpu_add_1(pcp, val)	percpu_add_op((pcp), val)
++#define this_cpu_add_2(pcp, val)	percpu_add_op((pcp), val)
++#define this_cpu_add_4(pcp, val)	percpu_add_op((pcp), val)
+ #define this_cpu_and_1(pcp, val)	percpu_to_op("and", (pcp), val)
+ #define this_cpu_and_2(pcp, val)	percpu_to_op("and", (pcp), val)
+ #define this_cpu_and_4(pcp, val)	percpu_to_op("and", (pcp), val)
+@@ -189,9 +247,9 @@ do {							\
+ #define this_cpu_xor_2(pcp, val)	percpu_to_op("xor", (pcp), val)
+ #define this_cpu_xor_4(pcp, val)	percpu_to_op("xor", (pcp), val)
  
-+	/* be dumb */
-+	if (filp->f_flags & O_RANDOM) {
-+		force_page_cache_readahead(mapping, filp, offset, req_size);
-+		return;
-+	}
-+
- 	/* do read-ahead */
- 	ondemand_readahead(mapping, ra, filp, false, offset, req_size);
- }
+-#define irqsafe_cpu_add_1(pcp, val)	percpu_to_op("add", (pcp), val)
+-#define irqsafe_cpu_add_2(pcp, val)	percpu_to_op("add", (pcp), val)
+-#define irqsafe_cpu_add_4(pcp, val)	percpu_to_op("add", (pcp), val)
++#define irqsafe_cpu_add_1(pcp, val)	percpu_add_op((pcp), val)
++#define irqsafe_cpu_add_2(pcp, val)	percpu_add_op((pcp), val)
++#define irqsafe_cpu_add_4(pcp, val)	percpu_add_op((pcp), val)
+ #define irqsafe_cpu_and_1(pcp, val)	percpu_to_op("and", (pcp), val)
+ #define irqsafe_cpu_and_2(pcp, val)	percpu_to_op("and", (pcp), val)
+ #define irqsafe_cpu_and_4(pcp, val)	percpu_to_op("and", (pcp), val)
+@@ -209,19 +267,19 @@ do {							\
+ #ifdef CONFIG_X86_64
+ #define __this_cpu_read_8(pcp)		percpu_from_op("mov", (pcp), "m"(pcp))
+ #define __this_cpu_write_8(pcp, val)	percpu_to_op("mov", (pcp), val)
+-#define __this_cpu_add_8(pcp, val)	percpu_to_op("add", (pcp), val)
++#define __this_cpu_add_8(pcp, val)	percpu_add_op((pcp), val)
+ #define __this_cpu_and_8(pcp, val)	percpu_to_op("and", (pcp), val)
+ #define __this_cpu_or_8(pcp, val)	percpu_to_op("or", (pcp), val)
+ #define __this_cpu_xor_8(pcp, val)	percpu_to_op("xor", (pcp), val)
+ 
+ #define this_cpu_read_8(pcp)		percpu_from_op("mov", (pcp), "m"(pcp))
+ #define this_cpu_write_8(pcp, val)	percpu_to_op("mov", (pcp), val)
+-#define this_cpu_add_8(pcp, val)	percpu_to_op("add", (pcp), val)
++#define this_cpu_add_8(pcp, val)	percpu_add_op((pcp), val)
+ #define this_cpu_and_8(pcp, val)	percpu_to_op("and", (pcp), val)
+ #define this_cpu_or_8(pcp, val)		percpu_to_op("or", (pcp), val)
+ #define this_cpu_xor_8(pcp, val)	percpu_to_op("xor", (pcp), val)
+ 
+-#define irqsafe_cpu_add_8(pcp, val)	percpu_to_op("add", (pcp), val)
++#define irqsafe_cpu_add_8(pcp, val)	percpu_add_op((pcp), val)
+ #define irqsafe_cpu_and_8(pcp, val)	percpu_to_op("and", (pcp), val)
+ #define irqsafe_cpu_or_8(pcp, val)	percpu_to_op("or", (pcp), val)
+ #define irqsafe_cpu_xor_8(pcp, val)	percpu_to_op("xor", (pcp), val)
+
+-- 
+tejun
