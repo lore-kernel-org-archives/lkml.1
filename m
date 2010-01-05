@@ -1,97 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754445Ab0AECpk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754414Ab0AECzo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754445Ab0AECpk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 21:45:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754165Ab0AECpj
+	id S1754414Ab0AECzo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 21:55:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754084Ab0AECzn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 21:45:39 -0500
-Received: from mga14.intel.com ([143.182.124.37]:9650 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754054Ab0AECpi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 21:45:38 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
-   d="scan'208";a="229202080"
-Date: Tue, 5 Jan 2010 10:45:33 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Christoph Hellwig <hch@infradead.org>, Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Quentin Barnes <qbarnes+nfs@yahoo-inc.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       Nick Piggin <npiggin@suse.de>, Steven Whitehouse <swhiteho@redhat.com>,
-       David Howells <dhowells@redhat.com>, Al Viro <viro@zeniv.linux.org.uk>,
-       Jonathan Corbet <corbet@lwn.net>, Eric Paris <eparis@redhat.com>
-Subject: Re: [RFC][PATCH v4] readahead: introduce O_RANDOM for
-	POSIX_FADV_RANDOM
-Message-ID: <20100105024533.GA30714@localhost>
-References: <20091230051540.GA16308@localhost> <20091230052402.GB26364@localhost> <873a2s8hmp.fsf@basil.nowhere.org> <20100104045020.GA21021@localhost> <20100104161719.a0bb35ad.sfr@canb.auug.org.au> <20100104073328.GA3422@infradead.org> <20100104125620.GB12266@localhost> <20100105130322.006c03ee.sfr@canb.auug.org.au> <20100105022650.GB29428@localhost> <20100105132824.e6c0fb7f.sfr@canb.auug.org.au>
+	Mon, 4 Jan 2010 21:55:43 -0500
+Received: from slow3-v.mail.gandi.net ([217.70.178.89]:35718 "EHLO
+	slow3-v.mail.gandi.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754013Ab0AECzn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jan 2010 21:55:43 -0500
+Date: Mon, 4 Jan 2010 18:28:15 -0800
+From: Josh Triplett <josh@joshtriplett.org>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, laijs@cn.fujitsu.com,
+       dipankar@in.ibm.com, akpm@linux-foundation.org,
+       mathieu.desnoyers@polymtl.ca, dvhltc@us.ibm.com, niv@us.ibm.com,
+       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
+       Valdis.Kletnieks@vt.edu, dhowells@redhat.com
+Subject: Re: [PATCH tip/core/rcu 2/3] rcu: add debug check for too many
+ rcu_read_unlock()
+Message-ID: <20100105022814.GA11554@feather>
+References: <20100105000337.GA23307@linux.vnet.ibm.com>
+ <20100105020307.GB11286@feather>
+ <20100105021919.GN6748@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20100105132824.e6c0fb7f.sfr@canb.auug.org.au>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20100105021919.GN6748@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 05, 2010 at 10:28:24AM +0800, Stephen Rothwell wrote:
-> Hi Fengguang,
-> 
-> On Tue, 5 Jan 2010 10:26:50 +0800 Wu Fengguang <fengguang.wu@intel.com> wrote:
-> >
-> > Where is it? I cannot grep find one in arch/.
-> > There is one defined in include/asm-generic/fcntl.h:
+On Mon, Jan 04, 2010 at 06:19:19PM -0800, Paul E. McKenney wrote:
+> On Mon, Jan 04, 2010 at 06:03:08PM -0800, Josh Triplett wrote:
+> > On Mon, Jan 04, 2010 at 04:04:01PM -0800, Paul E. McKenney wrote:
+> > > From: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> > > 
+> > > TREE_PREEMPT_RCU maintains an rcu_read_lock_nesting counter in the
+> > > task structure, which happens to be a signed int.  So this patch adds a
+> > > check for this counter being negative at the end of __rcu_read_unlock().
+> > > This check is under CONFIG_PROVE_LOCKING, so can be thought of as being
+> > > part of lockdep.
+> > > 
+> > > Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> > > ---
+> > >  kernel/rcutree_plugin.h |    3 +++
+> > >  1 files changed, 3 insertions(+), 0 deletions(-)
+> > > 
+> > > diff --git a/kernel/rcutree_plugin.h b/kernel/rcutree_plugin.h
+> > > index f11ebd4..e77cdf3 100644
+> > > --- a/kernel/rcutree_plugin.h
+> > > +++ b/kernel/rcutree_plugin.h
+> > > @@ -304,6 +304,9 @@ void __rcu_read_unlock(void)
+> > >  	if (--ACCESS_ONCE(t->rcu_read_lock_nesting) == 0 &&
+> > >  	    unlikely(ACCESS_ONCE(t->rcu_read_unlock_special)))
+> > >  		rcu_read_unlock_special(t);
+> > > +#ifdef CONFIG_PROVE_LOCKING
+> > > +	WARN_ON_ONCE(ACCESS_ONCE(t->rcu_read_lock_nesting) < 0);
+> > > +#endif /* #ifdef CONFIG_PROVE_LOCKING */
+> > >  }
+> > >  EXPORT_SYMBOL_GPL(__rcu_read_unlock);
 > > 
-> > #ifndef O_SYNC
-> > #define __O_SYNC        04000000
-> > #define O_SYNC          (__O_SYNC|O_DSYNC)
-> > #endif
-> > 
-> > However it has one less '0' :)
+> > Given that you *already* need to access t->rcu_read_lock_nesting here,
+> > why not just do the test all the time?  Ideally you could access
+> > t->rcu_read_lock_nesting once, decrement it, and test for both 0 and
+> > negative.
 > 
-> Search for 0x800000 ...
+> Because I was paranoid about the extra branch.  Perhaps needlessly
+> paranoid, but this is rcu_read_unlock() we are talking about here.  ;-)
+> 
+> You seem to be suggesting making the first test be "<=", then
+> sorting things out later, but given that both the equals-zero and the
+> greater-than-zero cases are quite common, I couldn't figure out how to
+> avoid the extra test and branch in the common case.  Hence the #ifdef.
 
-Thanks, I got it..
+No, I think you could simply read the predecremented value into a local
+variable, test it once with == 0, then have the WARN_ON_ONCE, and hope
+that the compiler figures out it can just test the register once and
+then do multiple jumps on the same flags.
 
-Does that mean __O_SYNC would be _accidentally_ masked out in
-__dentry_open() by the newly introduced fanotify bit?
+You could try it and see what code it generates.
 
-        f->f_flags = (flags & ~(FMODE_EXEC | FMODE_NONOTIFY));
-
-The above line is added in commit f67cee7b50b004357be383,
-and can be fixed by the below patch.
-
-Eric, what do you think?
-
-Thanks,
-Fengguang
----
-
- include/asm-generic/fcntl.h |    2 +-
- include/linux/fs.h          |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
-
---- linux.orig/include/asm-generic/fcntl.h	2010-01-05 10:42:36.000000000 +0800
-+++ linux/include/asm-generic/fcntl.h	2010-01-05 10:42:57.000000000 +0800
-@@ -5,7 +5,7 @@
- 
- /*
-  * FMODE_EXEC is 0x20
-- * FMODE_NONOTIFY is 0x800000
-+ * FMODE_NONOTIFY is 0x1000000
-  * These cannot be used by userspace O_* until internal and external open
-  * flags are split.
-  * -Eric Paris
---- linux.orig/include/linux/fs.h	2010-01-05 10:40:33.000000000 +0800
-+++ linux/include/linux/fs.h	2010-01-05 10:42:07.000000000 +0800
-@@ -88,7 +88,7 @@ struct inodes_stat_t {
- #define FMODE_NOCMTIME		((__force fmode_t)2048)
- 
- /* File was opened by fanotify and shouldn't generate fanotify events */
--#define FMODE_NONOTIFY		((__force fmode_t)8388608)
-+#define FMODE_NONOTIFY		((__force fmode_t)0x1000000)
- 
- /*
-  * The below are the various read and write types that we support. Some of
+- Josh Triplett
