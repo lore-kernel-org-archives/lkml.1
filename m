@@ -1,23 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754980Ab0AEWmV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755432Ab0AEWmo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754980Ab0AEWmV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 17:42:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754601Ab0AEWmU
+	id S1755432Ab0AEWmo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 17:42:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755396Ab0AEWmk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 17:42:20 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:31252 "EHLO mx1.redhat.com"
+	Tue, 5 Jan 2010 17:42:40 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:22335 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754505Ab0AEWmU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 17:42:20 -0500
+	id S1755349Ab0AEWmb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jan 2010 17:42:31 -0500
 From: Masami Hiramatsu <mhiramat@redhat.com>
-Subject: [PATCH -tip 0/8] perf-probe updates
+Subject: [PATCH -tip 6/8] perf tools: Support tracepoint glob matching
 To: Ingo Molnar <mingo@elte.hu>, lkml <linux-kernel@vger.kernel.org>
 Cc: Frederic Weisbecker <fweisbec@gmail.com>,
        Arnaldo Carvalho de Melo <acme@redhat.com>,
        systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>
-Date: Tue, 05 Jan 2010 17:46:35 -0500
-Message-ID: <20100105224634.19431.3259.stgit@dhcp-100-2-132.bos.redhat.com>
+       DLE <dle-develop@lists.sourceforge.net>,
+       Masami Hiramatsu <mhiramat@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Paul Mackerras <paulus@samba.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Peter Zijlstra <peterz@infradead.org>, Mike Galbraith <efault@gmx.de>
+Date: Tue, 05 Jan 2010 17:47:17 -0500
+Message-ID: <20100105224717.19431.68972.stgit@dhcp-100-2-132.bos.redhat.com>
+In-Reply-To: <20100105224634.19431.3259.stgit@dhcp-100-2-132.bos.redhat.com>
+References: <20100105224634.19431.3259.stgit@dhcp-100-2-132.bos.redhat.com>
 User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -26,70 +33,62 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo,
+Support glob wildcard when selecting tracepoint events by -e option.
+Without this patch, perf-tools supports 'GROUP:*:record' syntax for
+selecting all tracepoints under GROUP group. With this patch, user
+can choose tracepoints more flexible by using partial wildcard,
+e.g. 'block:*bio*:record'.
 
-Here are several bugfixes and updates of perf-probe and
-kprobe-tracer.
-This updates includes --line option support which you are
-waiting for :-).
-
-For kprobe-tracer, I decided to drop $argN support, because
-the ABI for each function strongly depends on not only the
-architecture but also the API of the function and gcc options.
-Anyway, we already have perf-probe which allows us to find
-register/memory assignment of each arguments.
-
-
-Here are updated todo list.
-
-Long-term TODOs (future features):
-  - Support lazy string matching(glob?) for selecting probing
-    line
-  - Support sys_perf_counter_open (for non-root users)
-  - Support tracing static variables (non global)
-  - Support variable types from debuginfo (e.g. char, int, ...)
-  - Support fields of data structures (var->field)
-  - Support array (var[N])
-  - Support dynamic array-indexing (var[var2])
-  - Support string/dynamic arrays (*var, var[N..M])
-  - Support force type-casting ((type)var)
-  - Support the type of return value
-
-Miscs:
-  - Better support for probes on modules
-  - Move onto libdw/libdwfl
-  - Storing file name/line number information in the
-    kernel for listing events
-  
-
-Thank you,
-
+Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Mike Galbraith <efault@gmx.de>
 ---
 
-Masami Hiramatsu (8):
-      perf probe: Support --line option to show probable source-code lines
-      perf tools: Enhance glob string matching
-      perf tools: Support tracepoint glob matching
-      perf probe: Show probe list in pager
-      [CLEANUP] perf probe: Remove newline from die()
-      x86/ptrace: Remove unused regs_get_argument_nth API
-      tracing/kprobe: Drop function argument access syntax
-      tracing/kprobe: Update example output in documentation
+ tools/perf/util/parse-events.c |   11 ++++++++---
+ 1 files changed, 8 insertions(+), 3 deletions(-)
 
+diff --git a/tools/perf/util/parse-events.c b/tools/perf/util/parse-events.c
+index 609d5a9..05d0c5c 100644
+--- a/tools/perf/util/parse-events.c
++++ b/tools/perf/util/parse-events.c
+@@ -450,7 +450,8 @@ parse_single_tracepoint_event(char *sys_name,
+ /* sys + ':' + event + ':' + flags*/
+ #define MAX_EVOPT_LEN	(MAX_EVENT_LENGTH * 2 + 2 + 128)
+ static enum event_result
+-parse_subsystem_tracepoint_event(char *sys_name, char *flags)
++parse_multiple_tracepoint_event(char *sys_name, const char *evt_exp,
++				char *flags)
+ {
+ 	char evt_path[MAXPATHLEN];
+ 	struct dirent *evt_ent;
+@@ -474,6 +475,9 @@ parse_subsystem_tracepoint_event(char *sys_name, char *flags)
+ 		    || !strcmp(evt_ent->d_name, "filter"))
+ 			continue;
+ 
++		if (!strglobmatch(evt_ent->d_name, evt_exp))
++			continue;
++
+ 		len = snprintf(event_opt, MAX_EVOPT_LEN, "%s:%s%s%s", sys_name,
+ 			       evt_ent->d_name, flags ? ":" : "",
+ 			       flags ?: "");
+@@ -522,9 +526,10 @@ static enum event_result parse_tracepoint_event(const char **strp,
+ 	if (evt_length >= MAX_EVENT_LENGTH)
+ 		return EVT_FAILED;
+ 
+-	if (!strcmp(evt_name, "*")) {
++	if (strpbrk(evt_name, "*?")) {
+ 		*strp = evt_name + evt_length;
+-		return parse_subsystem_tracepoint_event(sys_name, flags);
++		return parse_multiple_tracepoint_event(sys_name, evt_name,
++						       flags);
+ 	} else
+ 		return parse_single_tracepoint_event(sys_name, evt_name,
+ 						     evt_length, flags,
 
- Documentation/trace/kprobetrace.txt     |   48 ++++---
- arch/x86/include/asm/ptrace.h           |    4 -
- arch/x86/kernel/ptrace.c                |   24 ----
- kernel/trace/trace_kprobe.c             |   18 ---
- tools/perf/Documentation/perf-probe.txt |   20 +++
- tools/perf/builtin-probe.c              |   80 ++++++++++--
- tools/perf/util/parse-events.c          |   11 +-
- tools/perf/util/probe-event.c           |  103 ++++++++++++++++
- tools/perf/util/probe-event.h           |    2 
- tools/perf/util/probe-finder.c          |  203 +++++++++++++++++++++++++++++--
- tools/perf/util/probe-finder.h          |   31 +++++
- tools/perf/util/string.c                |   65 +++++++++-
- 12 files changed, 507 insertions(+), 102 deletions(-)
 
 -- 
 Masami Hiramatsu
@@ -97,4 +96,5 @@ Masami Hiramatsu
 Software Engineer
 Hitachi Computer Products (America), Inc.
 Software Solutions Division
+
 e-mail: mhiramat@redhat.com
