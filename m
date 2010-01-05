@@ -1,89 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932161Ab0AEWJB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932173Ab0AEWMX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932161Ab0AEWJB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 17:09:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932099Ab0AEWI7
+	id S932173Ab0AEWMX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 17:12:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932102Ab0AEWMW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 17:08:59 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:22047 "EHLO mx1.redhat.com"
+	Tue, 5 Jan 2010 17:12:22 -0500
+Received: from mailout1.go2.pl ([193.17.41.11]:43144 "EHLO mailout1.go2.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932088Ab0AEWI7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 17:08:59 -0500
-Date: Wed, 6 Jan 2010 00:05:53 +0200
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: David Miller <davem@davemloft.net>
-Cc: cfriesen@nortel.com, eric.dumazet@gmail.com, nhorman@tuxdriver.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH] net: packet: option to only pass skb protocol
-Message-ID: <20100105220553.GE30921@redhat.com>
-References: <20100105185732.GA30346@redhat.com> <4B43AEF6.6050701@nortel.com> <20100105.134218.258781374.davem@davemloft.net> <20100105214524.GA31301@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100105214524.GA31301@redhat.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	id S932099Ab0AEWMV convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jan 2010 17:12:21 -0500
+Subject: =?UTF-8?Q?Re:_[linux-pm]_[suspend/resume]_Re:_userspace_notification?=
+	=?UTF-8?Q?_from_module?=
+From: =?UTF-8?Q?Bart=C5=82omiej_Zimo=C5=84?= <uzi18@o2.pl>
+To: linux-kernel@vger.kernel.org
+Cc: uzi18@o2.pl, rjw@sisk.pl,
+       =?UTF-8?Q?Anders_Eriksson?= <aeriksson@fastmail.fm>,
+       linux-pm@lists.linux-foundation.org, awalls@radix.net,
+       danborkmann@googlemail.com
+In-Reply-To: <201001052223.21964.rjw@sisk.pl>
+References: <686edb2c.6263643a.4b3f4a3b.b60b3@o2.pl> <20100105090706.751D233C4B0@tippex.mynet.homeunix.org> <7e89c5d.77f82021.4b43a8d7.127e1@o2.pl> <201001052223.21964.rjw@sisk.pl>
+Mime-Version: 1.0
+Message-ID: <16a1b165.2fdc37c6.4b43b943.c6733@o2.pl>
+Date: Tue, 05 Jan 2010 23:12:19 +0100
+X-Originator: 83.12.131.34
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 05, 2010 at 11:45:24PM +0200, Michael S. Tsirkin wrote:
-> On Tue, Jan 05, 2010 at 01:42:18PM -0800, David Miller wrote:
-> > From: "Chris Friesen" <cfriesen@nortel.com>
-> > Date: Tue, 05 Jan 2010 15:28:22 -0600
-> > 
-> > > On 01/05/2010 12:57 PM, Michael S. Tsirkin wrote:
-> > >> When sending packets with a packet socket it is often necessary to set
-> > >> protocol in msg_name: otherwise the protocol field in the skb will not
-> > >> be set correctly.
+Dnia 5 stycznia 2010 22:23 	"Rafael J. Wysocki" <rjw@sisk.pl> napisał(a):
+> On Tuesday 05 January 2010, Bartłomiej Zimoń wrote:
+> > Dnia 5 stycznia 2010 10:07 	Anders Eriksson <aeriksson@fastmail.fm> napisał(a):
 > > > 
-> > > What about automatically detecting the protocol from the data being sent
-> > > to avoid the necessity of specifying it in the first place?
+> > > rjw@sisk.pl said:
+> > > >> > I don't see a problem with this in principle, although I don't think signals
+> > > >> > are very suitable for this particular purpose, because you need two-way
+> > > >> > communication between the power manager and the processes it's going to
+> > > >> > notify (because it has to wait for the processes to finish their preparations
+> > > >> > and to tell it that they are ready). 
+> > > 
+> > > Wouldn't there need to be dependecy tracking for the userspace processes? A 
+> > > process couldn't signal "done" until it know there's no more work to do, which 
+> > > requires all other processes to finish up first.
+> > > 
 > > 
-> > This limits packet socket usage to only protocols the kernel is aware
-> > of, defeating part of the usefulness of the packet socket facility.
+> > Not all processes will need pm notification.
+> > 
+> > Just in case, could this "power manager" be provided as userspace
+> > driver for kernel (for example compiled as UIO)?
 > 
-> We could do this if the protocol is ETH_P_ALL -  skbs end up with this
-> protocol currently when sendmsg does not have msgname and when socket is
-> set up to listen for all packets.  It's not a valid protocol value, is
-> it?
+> I don't really understand why you want to do that in the kernel.  Is there
+> any particular reason why this cannot be done in the user space?
+> 
 
-Something like this (if we want to support this for all device types,
-we would probably need to add get_proto callback to net_device_ops),
-and call it instead of eth_hdr(skb)->h_proto.
+Problem is with notification from pm-utils. Dbus for session is only 
+user session waid and it is almost imposible to send something 
+from systembus or it needs lots of magic.
 
-diff --git a/net/packet/af_packet.c b/net/packet/af_packet.c
-index a81dae8..a23d4b2 100644
---- a/net/packet/af_packet.c
-+++ b/net/packet/af_packet.c
-@@ -845,7 +845,6 @@ static int tpacket_fill_skb(struct packet_sock *po, struct sk_buff *skb,
- 
- 	ph.raw = frame;
- 
--	skb->protocol = proto;
- 	skb->dev = dev;
- 	skb->priority = po->sk.sk_priority;
- 	skb->mark = po->sk.sk_mark;
-@@ -924,6 +923,11 @@ static int tpacket_fill_skb(struct packet_sock *po, struct sk_buff *skb,
- 		len = ((to_write > len_max) ? len_max : to_write);
- 	}
- 
-+	if (proto == htons(ETH_P_ALL) && dev->type == ARPHRD_ETHER)
-+		skb->protocol = eth_hdr(skb)->h_proto;
-+	else
-+		skb->protocol = proto;
-+
- 	return tp_len;
- }
- 
-@@ -1113,7 +1117,10 @@ static int packet_snd(struct socket *sock,
- 	if (err)
- 		goto out_free;
- 
--	skb->protocol = proto;
-+	if (proto == htons(ETH_P_ALL) && dev->type == ARPHRD_ETHER)
-+		skb->protocol = eth_hdr(skb)->h_proto;
-+	else
-+		skb->protocol = proto;
- 	skb->dev = dev;
- 	skb->priority = sk->sk_priority;
- 	skb->mark = sk->sk_mark;
+Even if i'll use pm-utils, must provide way to notify my app.
+Looks like no standard way here, that's bad, every app has it's own?
+
+I think this way - if kernel is processes manager and if it sends
+"some unknown" signal to every process before kernel suspend so why
+not send sepcific and known signal instread.
+
+But now we have DeviceKit-power/upower whatever but it doesn't provide
+this feature or something simmilar to relay on.
+
+Best regards.
+Bartłomiej Zimoń
+PLD Linux, Kadu Team, FreeRunner user
+http://kadu-im.blogspot.com/
+
