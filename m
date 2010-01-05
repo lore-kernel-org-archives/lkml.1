@@ -1,77 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754847Ab0AERDA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932073Ab0AERDU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754847Ab0AERDA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 12:03:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754713Ab0AERC7
+	id S932073Ab0AERDU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 12:03:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754903Ab0AERDR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 12:02:59 -0500
-Received: from e31.co.us.ibm.com ([32.97.110.149]:53991 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754672Ab0AERC6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 12:02:58 -0500
-From: Darren Hart <dvhltc@us.ibm.com>
-To: rostedt@goodmis.org, linux-kernel@vger.kernel.org
-Cc: dvhltc@us.ibm.com
-Subject: 
-Date: Tue,  5 Jan 2010 09:02:31 -0800
-Message-Id: <1262710951-6614-1-git-send-email-dvhltc@us.ibm.com>
-X-Mailer: git-send-email 1.6.3.3
+	Tue, 5 Jan 2010 12:03:17 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:35275 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754734Ab0AERDQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jan 2010 12:03:16 -0500
+Date: Tue, 5 Jan 2010 18:03:01 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: Roland McGrath <roland@redhat.com>, caiqian@redhat.com,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Jan Kratochvil <jkratoch@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-s390@vger.kernel.org, utrace-devel@redhat.com
+Subject: Re: s390 && user_enable_single_step() (Was: odd utrace testing
+	results on s390x)
+Message-ID: <20100105170301.GA13641@redhat.com>
+References: <1503844142.2061111261478093776.JavaMail.root@zmail06.collab.prod.int.phx2.redhat.com> <1257887498.2061171261478252049.JavaMail.root@zmail06.collab.prod.int.phx2.redhat.com> <20100104155225.GA16650@redhat.com> <20100104171626.22ea2d9c@mschwide.boeblingen.de.ibm.com> <20100104181412.GA21146@redhat.com> <20100104211147.4CC94D532@magilla.sf.frob.com> <20100105105030.66bb8a0a@mschwide.boeblingen.de.ibm.com> <20100105153633.GA9376@redhat.com> <20100105164610.388effd3@mschwide.boeblingen.de.ibm.com> <20100105155913.GA10652@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100105155913.GA10652@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/dvhart/trace-cmd.git for-rostedt/trace-view
+On 01/05, Oleg Nesterov wrote:
+>
+> I'll add clear_bit(TIF_SINGLE_STEP) into do_fork() path and re-test.
 
+Hmm. This patch
 
->From cacc655df9360e74a02561312da0bb78fdbae38c Mon Sep 17 00:00:00 2001
-From: Darren Hart <dvhltc@us.ibm.com>
-Date: Tue, 5 Jan 2010 08:53:12 -0800
-Subject: [PATCH] trace-view: cleanup python make targets
+	--- kernel/fork.c~	2009-12-22 10:41:53.188084961 -0500
+	+++ kernel/fork.c	2010-01-05 11:42:58.370636323 -0500
+	@@ -1206,6 +1206,8 @@ static struct task_struct *copy_process(
+		 * of CLONE_PTRACE.
+		 */
+		clear_tsk_thread_flag(p, TIF_SYSCALL_TRACE);
+	+	clear_tsk_thread_flag(p, TIF_SINGLE_STEP);
+	+	user_disable_single_step(p);
+	 #ifdef TIF_SYSCALL_EMU
+		clear_tsk_thread_flag(p, TIF_SYSCALL_EMU);
+	 #endif
 
-Signed-off-by: Darren Hart <dvhltc@us.ibm.com>
----
- Makefile |   21 ++++++++++++---------
- 1 files changed, 12 insertions(+), 9 deletions(-)
+doesn't help, I still see the same XXX's in dmesg...
 
-diff --git a/Makefile b/Makefile
-index 3d17256..4826dd1 100644
---- a/Makefile
-+++ b/Makefile
-@@ -129,21 +129,24 @@ plugin_mac80211.so: plugin_mac80211.o
- 	$(CC) -shared -nostartfiles -o $@ $<
- 
- 
--.PHONY: python
--python:	$(TCMD_LIB_OBJS)
-+PYTHON_INCLUDES = `python-config --includes`
-+PYGTK_CFLAGS = `pkg-config --cflags pygtk-2.0`
-+
-+ctracecmd.so: $(TCMD_LIB_OBJS)
- 	swig -Wall -python -noproxy ctracecmd.i
--	#swig -Wall -python ctracecmd.i
--	gcc -fpic -c  `python-config --includes` ctracecmd_wrap.c
-+	gcc -fpic -c $(PYTHON_INCLUDES)  ctracecmd_wrap.c
- 	$(CC) --shared $^ ctracecmd_wrap.o -o ctracecmd.so
--	#$(CC) --shared $^ ctracecmd_wrap.o -o _ctracecmd.so
- 
--.PHONY: python-gui
--python-gui: $(TRACE_VIEW_OBJS)
-+ctracecmdgui.so: $(TRACE_VIEW_OBJS) $(LIB_FILE)
- 	swig -Wall -python -noproxy ctracecmdgui.i
--	# FIXME: where do we get the pygtk include from?
--	gcc -fpic -c  `python-config --includes` $(CFLAGS) $(INCLUDES) -I/usr/include/pygtk-2.0/ ctracecmdgui_wrap.c
-+	gcc -fpic -c  $(CFLAGS) $(INCLUDES) $(PYTHON_INCLUDES) $(PYGTK_CFLAGS) ctracecmdgui_wrap.c
- 	$(CC) --shared $^ $(LIBS) $(CONFIG_LIBS) ctracecmdgui_wrap.o -o ctracecmdgui.so
- 
-+.PHONY: python
-+python: ctracecmd.so
-+
-+.PHONY: python-gui
-+python-gui: ctracecmd.so ctracecmdgui.so 
- 
- .PHONY: force
- force:
--- 
-1.6.3.3
+Oleg.
 
