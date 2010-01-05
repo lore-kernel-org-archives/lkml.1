@@ -1,65 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932111Ab0AETFp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932121Ab0AETF7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932111Ab0AETFp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 14:05:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932083Ab0AETFn
+	id S932121Ab0AETF7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 14:05:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754769Ab0AETF4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 14:05:43 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:58862 "EHLO mx2.suse.de"
+	Tue, 5 Jan 2010 14:05:56 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:58869 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932096Ab0AETFl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 14:05:41 -0500
-Date: Tue, 5 Jan 2010 10:56:27 -0800
+	id S932098Ab0AETFo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jan 2010 14:05:44 -0500
+Date: Tue, 5 Jan 2010 10:56:55 -0800
 From: Greg KH <gregkh@suse.de>
-To: "Luis R. Rodriguez" <mcgrof@gmail.com>
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, stable-review@kernel.org,
-       alan@lxorguk.ukuu.org.uk
-Subject: Re: [Stable-review] [00/97] 2.6.32.3 stable review
-Message-ID: <20100105185627.GA15630@suse.de>
+To: Jan Kara <jack@suse.cz>
+Cc: "Theodore Ts'o" <tytso@mit.edu>, linux-kernel@vger.kernel.org,
+       stable@kernel.org, stable-review@kernel.org,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, Dmitry Monakhov <dmonakhov@openvz.org>
+Subject: Re: [PATCH 83/97] ext4: Fix potential quota deadlock
+Message-ID: <20100105185655.GB15630@suse.de>
 References: <20100105003133.GA7199@kroah.com>
- <43e72e891001041655r261dd087yfcd50883c618185b@mail.gmail.com>
+ <1262651630-7354-83-git-send-email-gregkh@suse.de>
+ <20100105004741.GD3252@quack.suse.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <43e72e891001041655r261dd087yfcd50883c618185b@mail.gmail.com>
+In-Reply-To: <20100105004741.GD3252@quack.suse.cz>
 User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 04, 2010 at 04:55:42PM -0800, Luis R. Rodriguez wrote:
-> On Mon, Jan 4, 2010 at 4:31 PM, Greg KH <gregkh@suse.de> wrote:
-> > This is the start of the stable review cycle for the 2.6.32.3 release.
-> > There are 97 patches in this series, all will be posted as a response to
-> > this one.  If anyone has any issues with these being applied, please let
-> > us know.  If anyone is a maintainer of the proper subsystem, and wants
-> > to add a Signed-off-by: line to the patch, please respond with it.
-> >
-> > Responses should be made by Thursday, Jan 7, 00:00:00 UTC.
-> > Anything received after that time might be too late.
-> >
-> > The whole patch series can be found in one patch at:
-> >        kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.32.3-rc1.gz
-> > and the diffstat can be found below.
-> >
-> >
-> > thanks,
-> 
-> Wireless stuff looks good, except I'd prefer if we'd get the EEPROM
-> fix for ath5k merged in there as well but I realize a respective
-> upstream sha1sum is not yet available, but say we get it before
-> Friday, is it OK to queue it in? The patch in question is:
-> 
-> http://marc.info/?l=linux-wireless&m=126261964315049&w=2
+On Tue, Jan 05, 2010 at 01:47:42AM +0100, Jan Kara wrote:
+> On Mon 04-01-10 16:33:36, Greg Kroah-Hartman wrote:
+> > From: Dmitry Monakhov <dmonakhov@openvz.org>
+> > 
+> > commit d21cd8f163ac44b15c465aab7306db931c606908 upstream.
+>   Ted has found a serious bug in this patch over Christmas and fixed it.
+> Ted, do you prefer to just discard this patch or will you add your fixes?
 
-No, how about we wait for the next .32-stable release, as we need to
-have the patches in Linus's tree first.
+Do you have the git commit id of the patch that fixes it?
 
-It's not like .32 isn't going to have a lot of releases over its
-lifespan, it is going to be around for a long time :)
-
-Patience,
+thanks,
 
 greg k-h
