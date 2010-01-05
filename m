@@ -1,23 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754714Ab0AEAjI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754508Ab0AEAkU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754714Ab0AEAjI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 19:39:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754410Ab0AEAi4
+	id S1754508Ab0AEAkU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 19:40:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754540Ab0AEAkP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 19:38:56 -0500
-Received: from kroah.org ([198.145.64.141]:42473 "EHLO coco.kroah.org"
+	Mon, 4 Jan 2010 19:40:15 -0500
+Received: from kroah.org ([198.145.64.141]:42444 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754536Ab0AEAgK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 19:36:10 -0500
+	id S1754515Ab0AEAgF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jan 2010 19:36:05 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, stable-review@kernel.org
 Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Rusty Russell <rusty@rustcorp.com.au>,
-       Borislav Petkov <borislav.petkov@amd.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 86/97] cpumask: use modern cpumask style in drivers/edac/amd64_edac.c
-Date: Mon,  4 Jan 2010 16:33:39 -0800
-Message-Id: <1262651630-7354-86-git-send-email-gregkh@suse.de>
+       alan@lxorguk.ukuu.org.uk, Dmitry Monakhov <dmonakhov@openvz.org>,
+       Jan Kara <jack@suse.cz>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 82/97] ext4: Convert to generic reserved quota's space management.
+Date: Mon,  4 Jan 2010 16:33:35 -0800
+Message-Id: <1262651630-7354-82-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.6
 In-Reply-To: <20100105003133.GA7199@kroah.com>
 References: <20100105003133.GA7199@kroah.com>
@@ -25,96 +24,106 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Rusty Russell <rusty@rustcorp.com.au>
+From: Dmitry Monakhov <dmonakhov@openvz.org>
 
-commit ba578cb34a71fb08fff14ac0796b934a8c9991e1 upstream.
+commit a9e7f4472075fb6937c545af3f6329e9946bbe66 upstream.
 
-cpumask_t -> struct cpumask, and don't put one on the stack.  (Note: this
-is actually on the stack unless CONFIG_CPUMASK_OFFSTACK=y).
+This patch also fixes write vs chown race condition.
 
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-Signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
+Acked-by: "Theodore Ts'o" <tytso@mit.edu>
+Signed-off-by: Dmitry Monakhov <dmonakhov@openvz.org>
+Signed-off-by: Jan Kara <jack@suse.cz>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/edac/amd64_edac.c |   24 +++++++++++++++---------
- 1 files changed, 15 insertions(+), 9 deletions(-)
+ fs/ext4/ext4.h  |    6 +++++-
+ fs/ext4/inode.c |   16 +++++++---------
+ fs/ext4/super.c |    5 +++++
+ 3 files changed, 17 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/edac/amd64_edac.c b/drivers/edac/amd64_edac.c
-index a38831c..56deaee 100644
---- a/drivers/edac/amd64_edac.c
-+++ b/drivers/edac/amd64_edac.c
-@@ -2625,7 +2625,7 @@ static int amd64_init_csrows(struct mem_ctl_info *mci)
- static void amd64_enable_ecc_error_reporting(struct mem_ctl_info *mci)
- {
- 	struct amd64_pvt *pvt = mci->pvt_info;
--	const cpumask_t *cpumask = cpumask_of_node(pvt->mc_node_id);
-+	const struct cpumask *cpumask = cpumask_of_node(pvt->mc_node_id);
- 	int cpu, idx = 0, err = 0;
- 	struct msr msrs[cpumask_weight(cpumask)];
- 	u32 value;
-@@ -2701,7 +2701,7 @@ static void amd64_enable_ecc_error_reporting(struct mem_ctl_info *mci)
+diff --git a/fs/ext4/ext4.h b/fs/ext4/ext4.h
+index bd2a9dd..d0a2afb 100644
+--- a/fs/ext4/ext4.h
++++ b/fs/ext4/ext4.h
+@@ -698,6 +698,10 @@ struct ext4_inode_info {
+ 	__u16 i_extra_isize;
  
- static void amd64_restore_ecc_error_reporting(struct amd64_pvt *pvt)
- {
--	const cpumask_t *cpumask = cpumask_of_node(pvt->mc_node_id);
-+	const struct cpumask *cpumask = cpumask_of_node(pvt->mc_node_id);
- 	int cpu, idx = 0, err = 0;
- 	struct msr msrs[cpumask_weight(cpumask)];
- 	u32 value;
-@@ -2734,7 +2734,7 @@ static void amd64_restore_ecc_error_reporting(struct amd64_pvt *pvt)
+ 	spinlock_t i_block_reservation_lock;
++#ifdef CONFIG_QUOTA
++	/* quota space reservation, managed internally by quota code */
++	qsize_t i_reserved_quota;
++#endif
+ 
+ 	/* completed async DIOs that might need unwritten extents handling */
+ 	struct list_head i_aio_dio_complete_list;
+@@ -1432,7 +1436,7 @@ extern int ext4_chunk_trans_blocks(struct inode *, int nrblocks);
+ extern int ext4_block_truncate_page(handle_t *handle,
+ 		struct address_space *mapping, loff_t from);
+ extern int ext4_page_mkwrite(struct vm_area_struct *vma, struct vm_fault *vmf);
+-extern qsize_t ext4_get_reserved_space(struct inode *inode);
++extern qsize_t *ext4_get_reserved_space(struct inode *inode);
+ extern int flush_aio_dio_completed_IO(struct inode *inode);
+ /* ioctl.c */
+ extern long ext4_ioctl(struct file *, unsigned int, unsigned long);
+diff --git a/fs/ext4/inode.c b/fs/ext4/inode.c
+index 1dae9a4..374d38c 100644
+--- a/fs/ext4/inode.c
++++ b/fs/ext4/inode.c
+@@ -1045,17 +1045,12 @@ out:
+ 	return err;
  }
  
- /* get all cores on this DCT */
--static void get_cpus_on_this_dct_cpumask(cpumask_t *mask, int nid)
-+static void get_cpus_on_this_dct_cpumask(struct cpumask *mask, int nid)
+-qsize_t ext4_get_reserved_space(struct inode *inode)
++#ifdef CONFIG_QUOTA
++qsize_t *ext4_get_reserved_space(struct inode *inode)
  {
- 	int cpu;
- 
-@@ -2746,25 +2746,30 @@ static void get_cpus_on_this_dct_cpumask(cpumask_t *mask, int nid)
- /* check MCG_CTL on all the cpus on this node */
- static bool amd64_nb_mce_bank_enabled_on_node(int nid)
- {
--	cpumask_t mask;
-+	cpumask_var_t mask;
- 	struct msr *msrs;
- 	int cpu, nbe, idx = 0;
- 	bool ret = false;
- 
--	cpumask_clear(&mask);
-+	if (!zalloc_cpumask_var(&mask, GFP_KERNEL)) {
-+		amd64_printk(KERN_WARNING, "%s: error allocating mask\n",
-+			     __func__);
-+		return false;
-+	}
- 
--	get_cpus_on_this_dct_cpumask(&mask, nid);
-+	get_cpus_on_this_dct_cpumask(mask, nid);
- 
--	msrs = kzalloc(sizeof(struct msr) * cpumask_weight(&mask), GFP_KERNEL);
-+	msrs = kzalloc(sizeof(struct msr) * cpumask_weight(mask), GFP_KERNEL);
- 	if (!msrs) {
- 		amd64_printk(KERN_WARNING, "%s: error allocating msrs\n",
- 			      __func__);
-+		free_cpumask_var(mask);
- 		 return false;
- 	}
- 
--	rdmsr_on_cpus(&mask, MSR_IA32_MCG_CTL, msrs);
-+	rdmsr_on_cpus(mask, MSR_IA32_MCG_CTL, msrs);
- 
--	for_each_cpu(cpu, &mask) {
-+	for_each_cpu(cpu, mask) {
- 		nbe = msrs[idx].l & K8_MSR_MCGCTL_NBE;
- 
- 		debugf0("core: %u, MCG_CTL: 0x%llx, NB MSR is %s\n",
-@@ -2780,6 +2785,7 @@ static bool amd64_nb_mce_bank_enabled_on_node(int nid)
- 
- out:
- 	kfree(msrs);
-+	free_cpumask_var(mask);
- 	return ret;
+-	unsigned long long total;
+-
+-	spin_lock(&EXT4_I(inode)->i_block_reservation_lock);
+-	total = EXT4_I(inode)->i_reserved_data_blocks +
+-		EXT4_I(inode)->i_reserved_meta_blocks;
+-	spin_unlock(&EXT4_I(inode)->i_block_reservation_lock);
+-
+-	return (total << inode->i_blkbits);
++	return &EXT4_I(inode)->i_reserved_quota;
  }
- 
++#endif
+ /*
+  * Calculate the number of metadata blocks need to reserve
+  * to allocate @blocks for non extent file based file
+@@ -4850,6 +4845,9 @@ struct inode *ext4_iget(struct super_block *sb, unsigned long ino)
+ 			((__u64)le16_to_cpu(raw_inode->i_file_acl_high)) << 32;
+ 	inode->i_size = ext4_isize(raw_inode);
+ 	ei->i_disksize = inode->i_size;
++#ifdef CONFIG_QUOTA
++	ei->i_reserved_quota = 0;
++#endif
+ 	inode->i_generation = le32_to_cpu(raw_inode->i_generation);
+ 	ei->i_block_group = iloc.block_group;
+ 	ei->i_last_alloc_group = ~0;
+diff --git a/fs/ext4/super.c b/fs/ext4/super.c
+index 9ae5217..92943f2 100644
+--- a/fs/ext4/super.c
++++ b/fs/ext4/super.c
+@@ -704,6 +704,9 @@ static struct inode *ext4_alloc_inode(struct super_block *sb)
+ 	ei->i_allocated_meta_blocks = 0;
+ 	ei->i_delalloc_reserved_flag = 0;
+ 	spin_lock_init(&(ei->i_block_reservation_lock));
++#ifdef CONFIG_QUOTA
++	ei->i_reserved_quota = 0;
++#endif
+ 	INIT_LIST_HEAD(&ei->i_aio_dio_complete_list);
+ 	ei->cur_aio_dio = NULL;
+ 	ei->i_sync_tid = 0;
+@@ -1001,7 +1004,9 @@ static const struct dquot_operations ext4_quota_operations = {
+ 	.reserve_space	= dquot_reserve_space,
+ 	.claim_space	= dquot_claim_space,
+ 	.release_rsv	= dquot_release_reserved_space,
++#ifdef CONFIG_QUOTA
+ 	.get_reserved_space = ext4_get_reserved_space,
++#endif
+ 	.alloc_inode	= dquot_alloc_inode,
+ 	.free_space	= dquot_free_space,
+ 	.free_inode	= dquot_free_inode,
 -- 
 1.6.6
 
