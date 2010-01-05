@@ -1,76 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754614Ab0AECTY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754472Ab0AECVw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754614Ab0AECTY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 21:19:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754431Ab0AECTX
+	id S1754472Ab0AECVw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 21:21:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754256Ab0AECVv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 21:19:23 -0500
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:60564 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754256Ab0AECTV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 21:19:21 -0500
-Date: Mon, 4 Jan 2010 18:19:19 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Josh Triplett <josh@joshtriplett.org>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, laijs@cn.fujitsu.com,
-       dipankar@in.ibm.com, akpm@linux-foundation.org,
-       mathieu.desnoyers@polymtl.ca, dvhltc@us.ibm.com, niv@us.ibm.com,
-       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
-       Valdis.Kletnieks@vt.edu, dhowells@redhat.com
-Subject: Re: [PATCH tip/core/rcu 2/3] rcu: add debug check for too many
-	rcu_read_unlock()
-Message-ID: <20100105021919.GN6748@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20100105000337.GA23307@linux.vnet.ibm.com> <20100105020307.GB11286@feather>
+	Mon, 4 Jan 2010 21:21:51 -0500
+Received: from mail-yw0-f176.google.com ([209.85.211.176]:59290 "EHLO
+	mail-yw0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754190Ab0AECVu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jan 2010 21:21:50 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=gSVo2sRWYlKZ9tb1xEL7qiGxrWSzjhv+5sYbUB75sWmi7OgOjexM+8C47fS9QODoLh
+         0ucJCSwyi2Kl20yJcEmNCBJ48RUKli8wPrTJw5+hVJpuK0pgmvwHAVFfRMirhnq7UamJ
+         CWaLylGb6PQSxVCcFoBIaBgCEG7PxAXObR5HE=
+Message-ID: <4B42A23B.4080704@gmail.com>
+Date: Mon, 04 Jan 2010 20:21:47 -0600
+From: Robert Hancock <hancockrwd@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100105020307.GB11286@feather>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+To: Jarod Wilson <jarod@redhat.com>
+CC: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
+       Scott Davilla <davilla@4pi.com>, Naren Sankar <nsankar@broadcom.com>,
+       Manu Abraham <abraham.manu@gmail.com>
+Subject: Re: [PATCH v3] staging: add Broadcom Crystal HD driver
+References: <20100104230227.GA14314@redhat.com> <20100104231949.GA14496@kroah.com> <4B427AF5.2030805@redhat.com>
+In-Reply-To: <4B427AF5.2030805@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 04, 2010 at 06:03:08PM -0800, Josh Triplett wrote:
-> On Mon, Jan 04, 2010 at 04:04:01PM -0800, Paul E. McKenney wrote:
-> > From: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> > 
-> > TREE_PREEMPT_RCU maintains an rcu_read_lock_nesting counter in the
-> > task structure, which happens to be a signed int.  So this patch adds a
-> > check for this counter being negative at the end of __rcu_read_unlock().
-> > This check is under CONFIG_PROVE_LOCKING, so can be thought of as being
-> > part of lockdep.
-> > 
-> > Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> > ---
-> >  kernel/rcutree_plugin.h |    3 +++
-> >  1 files changed, 3 insertions(+), 0 deletions(-)
-> > 
-> > diff --git a/kernel/rcutree_plugin.h b/kernel/rcutree_plugin.h
-> > index f11ebd4..e77cdf3 100644
-> > --- a/kernel/rcutree_plugin.h
-> > +++ b/kernel/rcutree_plugin.h
-> > @@ -304,6 +304,9 @@ void __rcu_read_unlock(void)
-> >  	if (--ACCESS_ONCE(t->rcu_read_lock_nesting) == 0 &&
-> >  	    unlikely(ACCESS_ONCE(t->rcu_read_unlock_special)))
-> >  		rcu_read_unlock_special(t);
-> > +#ifdef CONFIG_PROVE_LOCKING
-> > +	WARN_ON_ONCE(ACCESS_ONCE(t->rcu_read_lock_nesting) < 0);
-> > +#endif /* #ifdef CONFIG_PROVE_LOCKING */
-> >  }
-> >  EXPORT_SYMBOL_GPL(__rcu_read_unlock);
-> 
-> Given that you *already* need to access t->rcu_read_lock_nesting here,
-> why not just do the test all the time?  Ideally you could access
-> t->rcu_read_lock_nesting once, decrement it, and test for both 0 and
-> negative.
+On 01/04/2010 05:34 PM, Jarod Wilson wrote:
+> On 1/4/10 6:19 PM, Greg KH wrote:
+>> On Mon, Jan 04, 2010 at 06:02:27PM -0500, Jarod Wilson wrote:
+>>> This patch supersedes the earlier ones sent by Manu Abraham to add
+>>> the Broadcom Crystal HD driver to the staging tree, per discussion
+>>> with him about it. I've been working with Broadcom's Naren Sankar
+>>> on this driver for a number of months, and had already talked Naren
+>>> about submitting this on Broadcom's behalf, didn't expect anyone
+>>> else to jump on submitting it as quickly as Manu did. ;)
+>>
+>> Looks good, I'll queue it up tomorrow.
+>
+> Nb: it looks like the thing is so massive (~935k), its not showing up on
+> lkml (at least, not in a timely fashion), so for the interested:
+>
+> <http://people.redhat.com/jwilson/misc/broadcom-crystalhd-decoder-driver-staging.patch>
+>
+> Thanks much!
 
-Because I was paranoid about the extra branch.  Perhaps needlessly
-paranoid, but this is rcu_read_unlock() we are talking about here.  ;-)
-
-You seem to be suggesting making the first test be "<=", then
-sorting things out later, but given that both the equals-zero and the
-greater-than-zero cases are quite common, I couldn't figure out how to
-avoid the extra test and branch in the common case.  Hence the #ifdef.
-
-							Thanx, Paul
+Literally the majority of the code is #defines for what looks like 
+register bits, etc - is all that really necessary?
