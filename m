@@ -1,76 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753990Ab0AEJQf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753640Ab0AEJ0Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753990Ab0AEJQf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 04:16:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753674Ab0AEJQd
+	id S1753640Ab0AEJ0Q (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 04:26:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752284Ab0AEJ0O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 04:16:33 -0500
-Received: from kirsty.vergenet.net ([202.4.237.240]:54638 "EHLO
-	kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753683Ab0AEJQb (ORCPT
+	Tue, 5 Jan 2010 04:26:14 -0500
+Received: from mtagate4.de.ibm.com ([195.212.17.164]:60693 "EHLO
+	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752837Ab0AEJ0L (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 04:16:31 -0500
-Date: Tue, 5 Jan 2010 20:16:28 +1100
-From: Simon Horman <horms@verge.net.au>
-To: Paul Mundt <lethal@linux-sh.org>
-Cc: Venkappa Mala <Venkappa.Mala@lntinfotech.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "rmk+lkml@arm.linux.org.uk" <rmk+lkml@arm.linux.org.uk>,
-       linux-kernel@vger.kernel.org,
-       Kexec Mailing List <kexec@lists.infradead.org>
-Subject: Re: Linux kernel crash dumps for ARM
-Message-ID: <20100105091625.GA19871@verge.net.au>
-References: <EB1A7C66AD0C92419BFFC785A947865A09EA8C9129@BLRINMSMBX01.bglrodc.lntinfotech.com>
- <m17hrx9lgo.fsf@fess.ebiederm.org>
- <20100105084850.GA27860@linux-sh.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100105084850.GA27860@linux-sh.org>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Tue, 5 Jan 2010 04:26:11 -0500
+Date: Tue, 5 Jan 2010 10:26:06 +0100
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: caiqian@redhat.com, Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Jan Kratochvil <jkratoch@redhat.com>,
+       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-s390@vger.kernel.org, utrace-devel@redhat.com
+Subject: Re: s390 && user_enable_single_step() (Was: odd utrace testing
+ results on s390x)
+Message-ID: <20100105102606.4f223990@mschwide.boeblingen.de.ibm.com>
+In-Reply-To: <20100104181412.GA21146@redhat.com>
+References: <1503844142.2061111261478093776.JavaMail.root@zmail06.collab.prod.int.phx2.redhat.com>
+	<1257887498.2061171261478252049.JavaMail.root@zmail06.collab.prod.int.phx2.redhat.com>
+	<20100104155225.GA16650@redhat.com>
+	<20100104171626.22ea2d9c@mschwide.boeblingen.de.ibm.com>
+	<20100104181412.GA21146@redhat.com>
+Organization: IBM Corporation
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.18.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 05, 2010 at 05:48:51PM +0900, Paul Mundt wrote:
-> On Mon, Jan 04, 2010 at 09:20:23PM -0800, Eric W. Biederman wrote:
-> > Venkappa Mala <Venkappa.Mala@lntinfotech.com> writes:
-> > >
-> > > 2) As per kexec supports, kexec-tool is required and this allows you to load directly
-> > >    to a new kernel from the currently running one
-> > >
-> > >     As from my side, i am not able to find arm implementation support in kexec-tools/crash sources.
-> > >
-> > >    - is kexce-tool supported for ARM or not?
-> > >
-> It would be rather counterintuitive for the kernel to support kexec and
-> the necessary userspace components not to.
-> 
-> The MAINTAINERS file says:
-> 
-> KEXEC
-> M:      Eric Biederman <ebiederm@xmission.com>
-> W:      http://ftp.kernel.org/pub/linux/kernel/people/horms/kexec-tools/
-> L:      kexec@lists.infradead.org
-> S:      Maintained
-> F:      include/linux/kexec.h
-> F:      kernel/kexec.c
-> 
-> While the above URL redirects to gitweb, resulting in:
-> 
-> http://git.kernel.org/?p=linux/kernel/git/horms/kexec-tools.git;a=summary
-> 
-> A peripheral grep of the kexec-tools source results in:
-> 
-> $ git grep kdump | grep arm
-> kexec/arch/arm/kexec-arm.c:     return 0; /* kdump is not supported on this platform (yet) */
-> 
-> So one could infer that kexec is supported on ARM whilst kdump is not.
-> Adding crashdump support requires both some kernel and kexec-tools glue,
-> but is fairly straightforward, just look at the other ports.
+On Mon, 4 Jan 2010 19:14:12 +0100
+Oleg Nesterov <oleg@redhat.com> wrote:
 
-To add to this, my understanding is that kexec support varies across
-different ARM platforms - that is to say, it works on some and fails on
-others. While this seems to be slowly improving, I'm also aware of any list
-of what is supported and what isn't.
+> On 01/04, Martin Schwidefsky wrote:
+> > Subject: [PATCH] fix loading of PER control registers for utrace.
+> >
+> > From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+> >
+> > If the current task enables / disables PER tracing for itself the
+> > PER control registers need to be loaded in FixPerRegisters.
+> >
+> > Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+> > ---
+> >  arch/s390/kernel/ptrace.c |    3 +++
+> >  1 file changed, 3 insertions(+)
+> >
+> > --- a/arch/s390/kernel/ptrace.c
+> > +++ b/arch/s390/kernel/ptrace.c
+> > @@ -98,6 +98,9 @@ FixPerRegisters(struct task_struct *task
+> >  		per_info->control_regs.bits.storage_alt_space_ctl = 1;
+> >  	else
+> >  		per_info->control_regs.bits.storage_alt_space_ctl = 0;
+> > +
+> > +	if (task == current)
+> > +		__ctl_load(per_info->control_regs.words, 9, 11);
+> >  }
+> 
+> Yes it does fix the problem! Thanks a lot Martin.
+
+Ok, I will add that patch to the git390 queue.
+
+> However. Could you please look at 6580807da14c423f0d0a708108e6df6ebc8bc83d ?
+> I am worried, perhaps this commit is not enough for s390. OK, do_single_step()
+> tracehook_consider_fatal_signal(), this means the forked thread will not
+> be killed by SIGTRAP if it is not auto-attached, but still this may be
+> wrong.
+> 
+> IOW. I think this problem is minor and probably can be ignored, but if
+> I remove tracehook_consider_fatal_signal() check from do_single_step(),
+> 
+> --- a/arch/s390/kernel/traps.c
+> +++ b/arch/s390/kernel/traps.c
+> @@ -382,8 +382,7 @@ void __kprobes do_single_step(struct pt_
+>  					SIGTRAP) == NOTIFY_STOP){
+>  		return;
+>  	}
+> -	if (tracehook_consider_fatal_signal(current, SIGTRAP))
+> -		force_sig(SIGTRAP, current);
+> +	force_sig(SIGTRAP, current);
+>  }
+> 
+>  static void default_trap_handler(struct pt_regs * regs, long interruption_code)
+> -------------------------------------------------------------------
+> 
+> then the test-case from 6580807da14c423f0d0a708108e6df6ebc8bc83d
+> fails. This probably means that copy_process()->user_disable_single_step()
+> is not enough to clear the "this task wants single-stepping" copied
+> from parent.
+
+user_disable_single_step() does not remove the TIF_SINGLE_STEP bit from the
+forked task. Perhaps we should just clear the bit in the function.
+
+-- 
+blue skies,
+   Martin.
+
+"Reality continues to ruin my life." - Calvin.
 
