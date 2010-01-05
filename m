@@ -1,22 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754248Ab0AEAfA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755028Ab0AEAwb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754248Ab0AEAfA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 19:35:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754205Ab0AEAeu
+	id S1755028Ab0AEAwb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 19:52:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754982Ab0AEAw0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 19:34:50 -0500
-Received: from kroah.org ([198.145.64.141]:34127 "EHLO coco.kroah.org"
+	Mon, 4 Jan 2010 19:52:26 -0500
+Received: from kroah.org ([198.145.64.141]:34154 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754198Ab0AEAes (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 19:34:48 -0500
+	id S1754260Ab0AEAe7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jan 2010 19:34:59 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, stable-review@kernel.org
 Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Stefan Bader <stefan.bader@canonical.com>,
-       Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 14/97] acerhdf: limit modalias matching to supported
-Date: Mon,  4 Jan 2010 16:32:27 -0800
-Message-Id: <1262651630-7354-14-git-send-email-gregkh@suse.de>
+       alan@lxorguk.ukuu.org.uk, Alan Stern <stern@rowland.harvard.edu>,
+       Inaky Perez-Gonzalez <inaky@linux.intel.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 26/97] USB: fix bugs in usb_(de)authorize_device
+Date: Mon,  4 Jan 2010 16:32:39 -0800
+Message-Id: <1262651630-7354-26-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.6
 In-Reply-To: <20100105003133.GA7199@kroah.com>
 References: <20100105003133.GA7199@kroah.com>
@@ -24,46 +25,133 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Stefan Bader <stefan.bader@canonical.com>
+From: Alan Stern <stern@rowland.harvard.edu>
 
-commit bdc731bc5fcd1794e9ac8ac80c389d302381c123 upstream.
+commit da307123c621b01cce147a4be313d8a754674f63 upstream.
 
-BugLink: https://bugs.launchpad.net/ubuntu/+bug/435958
+This patch (as1315) fixes some bugs in the USB core authorization
+code:
 
-The module alias currently matches any Acer computer but when loaded the
-BIOS checks will only succeed on Aspire One models.  This causes a invalid
-BIOS warning for all other models (seen on Aspire 4810T).  This is not
-fatal but worries users that see this message.  Limiting the moule alias
-to models starting with AOA or DOA for Packard Bell.
+	usb_deauthorize_device() should deallocate the device strings
+	instead of leaking them, and it should invoke
+	usb_destroy_configuration() (which does proper reference
+	counting) instead of freeing the config information directly.
 
-Signed-off-by: Stefan Bader <stefan.bader@canonical.com>
-Acked-by: Borislav Petkov <petkovbb@gmail.com>
-Acked-by: Peter Feuerer <peter@piie.net>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Len Brown <len.brown@intel.com>
+	usb_authorize_device() shouldn't change the device strings
+	until it knows that the authorization will succeed, and it should
+	autosuspend the device at the end (having autoresumed the
+	device at the start).
+
+	Because the device strings can be changed, the sysfs routines
+	to display the strings must protect the string pointers by
+	locking the device.
+
+Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+CC: Inaky Perez-Gonzalez <inaky@linux.intel.com>
+Acked-by: David Vrabel <david.vrabel@csr.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/platform/x86/acerhdf.c |    7 ++++---
- 1 files changed, 4 insertions(+), 3 deletions(-)
+ drivers/usb/core/hub.c   |   32 ++++++++++++++++++++------------
+ drivers/usb/core/sysfs.c |    6 +++++-
+ 2 files changed, 25 insertions(+), 13 deletions(-)
 
-diff --git a/drivers/platform/x86/acerhdf.c b/drivers/platform/x86/acerhdf.c
-index d8b4229..4d922e4 100644
---- a/drivers/platform/x86/acerhdf.c
-+++ b/drivers/platform/x86/acerhdf.c
-@@ -640,9 +640,10 @@ static void __exit acerhdf_exit(void)
- MODULE_LICENSE("GPL");
- MODULE_AUTHOR("Peter Feuerer");
- MODULE_DESCRIPTION("Aspire One temperature and fan driver");
--MODULE_ALIAS("dmi:*:*Acer*:*:");
--MODULE_ALIAS("dmi:*:*Gateway*:*:");
--MODULE_ALIAS("dmi:*:*Packard Bell*:*:");
-+MODULE_ALIAS("dmi:*:*Acer*:pnAOA*:");
-+MODULE_ALIAS("dmi:*:*Gateway*:pnAOA*:");
-+MODULE_ALIAS("dmi:*:*Packard Bell*:pnAOA*:");
-+MODULE_ALIAS("dmi:*:*Packard Bell*:pnDOA*:");
+diff --git a/drivers/usb/core/hub.c b/drivers/usb/core/hub.c
+index 276fc68..8b0c235 100644
+--- a/drivers/usb/core/hub.c
++++ b/drivers/usb/core/hub.c
+@@ -1803,21 +1803,23 @@ fail:
+  */
+ int usb_deauthorize_device(struct usb_device *usb_dev)
+ {
+-	unsigned cnt;
+ 	usb_lock_device(usb_dev);
+ 	if (usb_dev->authorized == 0)
+ 		goto out_unauthorized;
++
+ 	usb_dev->authorized = 0;
+ 	usb_set_configuration(usb_dev, -1);
++
++	kfree(usb_dev->product);
+ 	usb_dev->product = kstrdup("n/a (unauthorized)", GFP_KERNEL);
++	kfree(usb_dev->manufacturer);
+ 	usb_dev->manufacturer = kstrdup("n/a (unauthorized)", GFP_KERNEL);
++	kfree(usb_dev->serial);
+ 	usb_dev->serial = kstrdup("n/a (unauthorized)", GFP_KERNEL);
+-	kfree(usb_dev->config);
+-	usb_dev->config = NULL;
+-	for (cnt = 0; cnt < usb_dev->descriptor.bNumConfigurations; cnt++)
+-		kfree(usb_dev->rawdescriptors[cnt]);
++
++	usb_destroy_configuration(usb_dev);
+ 	usb_dev->descriptor.bNumConfigurations = 0;
+-	kfree(usb_dev->rawdescriptors);
++
+ out_unauthorized:
+ 	usb_unlock_device(usb_dev);
+ 	return 0;
+@@ -1827,15 +1829,11 @@ out_unauthorized:
+ int usb_authorize_device(struct usb_device *usb_dev)
+ {
+ 	int result = 0, c;
++
+ 	usb_lock_device(usb_dev);
+ 	if (usb_dev->authorized == 1)
+ 		goto out_authorized;
+-	kfree(usb_dev->product);
+-	usb_dev->product = NULL;
+-	kfree(usb_dev->manufacturer);
+-	usb_dev->manufacturer = NULL;
+-	kfree(usb_dev->serial);
+-	usb_dev->serial = NULL;
++
+ 	result = usb_autoresume_device(usb_dev);
+ 	if (result < 0) {
+ 		dev_err(&usb_dev->dev,
+@@ -1848,6 +1846,14 @@ int usb_authorize_device(struct usb_device *usb_dev)
+ 			"authorization: %d\n", result);
+ 		goto error_device_descriptor;
+ 	}
++
++	kfree(usb_dev->product);
++	usb_dev->product = NULL;
++	kfree(usb_dev->manufacturer);
++	usb_dev->manufacturer = NULL;
++	kfree(usb_dev->serial);
++	usb_dev->serial = NULL;
++
+ 	usb_dev->authorized = 1;
+ 	result = usb_enumerate_device(usb_dev);
+ 	if (result < 0)
+@@ -1866,8 +1872,10 @@ int usb_authorize_device(struct usb_device *usb_dev)
+ 		}
+ 	}
+ 	dev_info(&usb_dev->dev, "authorized to connect\n");
++
+ error_enumerate:
+ error_device_descriptor:
++	usb_autosuspend_device(usb_dev);
+ error_autoresume:
+ out_authorized:
+ 	usb_unlock_device(usb_dev);	// complements locktree
+diff --git a/drivers/usb/core/sysfs.c b/drivers/usb/core/sysfs.c
+index 7ec3041..8752e55 100644
+--- a/drivers/usb/core/sysfs.c
++++ b/drivers/usb/core/sysfs.c
+@@ -82,9 +82,13 @@ static ssize_t  show_##name(struct device *dev,				\
+ 		struct device_attribute *attr, char *buf)		\
+ {									\
+ 	struct usb_device *udev;					\
++	int retval;							\
+ 									\
+ 	udev = to_usb_device(dev);					\
+-	return sprintf(buf, "%s\n", udev->name);			\
++	usb_lock_device(udev);						\
++	retval = sprintf(buf, "%s\n", udev->name);			\
++	usb_unlock_device(udev);					\
++	return retval;							\
+ }									\
+ static DEVICE_ATTR(name, S_IRUGO, show_##name, NULL);
  
- module_init(acerhdf_init);
- module_exit(acerhdf_exit);
 -- 
 1.6.6
 
