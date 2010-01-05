@@ -1,83 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755142Ab0AER4T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755193Ab0AER47@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755142Ab0AER4T (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 12:56:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755036Ab0AER4S
+	id S1755193Ab0AER47 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 12:56:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753907Ab0AER46
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 12:56:18 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:42698 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754318Ab0AER4S (ORCPT
+	Tue, 5 Jan 2010 12:56:58 -0500
+Received: from moutng.kundenserver.de ([212.227.126.186]:52314 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754871Ab0AER46 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 12:56:18 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type;
-        b=aGSlu99PMapVv+MCmyjzpllfbHg702gjwcCylVSBlB+Xg/wEMOHm37DwLCuT0pshls
-         d4r2ef/cO78mWT2WXicl6pEsXAPM7DXW3m84ycLWr/rVjphXw5FgOvlSXsKSu5w03uoI
-         Lq4ely52jc7QbJK7PT64t3Q+Llarc3djmhTDc=
+	Tue, 5 Jan 2010 12:56:58 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: Heiko Carstens <heiko.carstens@de.ibm.com>
+Subject: Re: [PATCH] sparc: copy_from_user() should not return -EFAULT
+Date: Tue, 5 Jan 2010 18:55:58 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; x86_64; ; )
+Cc: Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       David Miller <davem@davemloft.net>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Chris Zankel <chris@zankel.net>
+References: <20100104154345.GA5671@osiris.boeblingen.de.ibm.com> <20100105053117.6a7c3377@infradead.org> <20100105152215.GD5480@osiris.boeblingen.de.ibm.com>
+In-Reply-To: <20100105152215.GD5480@osiris.boeblingen.de.ibm.com>
 MIME-Version: 1.0
-Date: Tue, 5 Jan 2010 17:56:15 +0000
-Message-ID: <f6be8a431001050956v481017e9i119bca6db20ba1be@mail.gmail.com>
-Subject: ata error EH in SWNCQ mode, with nVidia MCP55 sata controller and 
-	SAMSUNG HD103UJ
-From: Marco Bisetto <marco.bisetto@gmail.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201001051855.59100.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX180tgqEEN+mo050VKs7nn4XCY0av0ECrarYD1u
+ rSeJBq3HOgtUt3XlOmRMrWU6MBDaqoRzTOKJswQ5XiXu23nzss
+ bEpCgvGDHjDklXNLPCISQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Tuesday 05 January 2010, Heiko Carstens wrote:
+> Subject: [PATCH] sparc: copy_from_user() should not return -EFAULT
+> 
+> From: Heiko Carstens <heiko.carstens@de.ibm.com>
+> 
+> Callers of copy_from_user() expect it to return the number of bytes
+> it could not copy. In no case it is supposed to return -EFAULT.
+> 
+> In case of a detected buffer overflow just return the requested
+> length. In addition one could think of a memset that would clear
+> the size of the target object.
+> 
+> Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
 
-A problem with a "IDE interface: nVidia Corporation MCP55 SATA Controller
-(rev a3)" and two SAMSUNG HD103UJ sata hard disk drives. Disabling write
-cache on a disk gives error:
+The xtensa clear_user function seems to have a similar issue,
+it should return size on failure, not -EFAULT.
 
-kernel: [   45.584445] ata1: EH in SWNCQ mode,QC:qc_active 0x1 sactive 0x1
-kernel: [   45.584445] ata1: SWNCQ:qc_active 0x1 defer_bits 0x0
-last_issue_tag 0x0
-kernel: [   45.584445]   dhfis 0x1 dmafis 0x1 sdbfis 0x0
-kernel: [   45.584445] ata1: ATA_REG 0x40 ERR_REG 0x0
-kernel: [   45.584445] ata1: tag : dhfis dmafis sdbfis sacitve
-kernel: [   45.584445] ata1: tag 0x0: 1 1 0 1
-kernel: [   45.584445] ata1.00: exception Emask 0x0 SAct 0x1 SErr 0x0
-action 0x6 frozen
-kernel: [   45.584445] ata1.00: cmd
-61/08:00:3f:f4:e8/00:00:02:00:00/40 tag 0 ncq 4096 out
-kernel: [   45.584445]          res
-40/00:00:00:00:00/00:00:00:00:00/40 Emask 0x4 (timeout)
-kernel: [   45.584445] ata1.00: status: { DRDY }
-kernel: [   45.584445] ata1: hard resetting link
-
-The error appears four times for each disk at startup, only when a disk has
-write cache disabled. For example, disabling write cache in two disks:
-
- 45.595788] ata1: EH in SWNCQ mode,QC:qc_active 0x1 sactive 0x1
- 45.595800] ata4: EH in SWNCQ mode,QC:qc_active 0x1 sactive 0x1
- 76.491877] ata4: EH in SWNCQ mode,QC:qc_active 0x1 sactive 0x1
- 76.511331] ata1: EH in SWNCQ mode,QC:qc_active 0x1 sactive 0x1
-107.391075] ata4: EH in SWNCQ mode,QC:qc_active 0x1 sactive 0x1
-107.423701] ata1: EH in SWNCQ mode,QC:qc_active 0x1 sactive 0x1
-138.287465] ata4: EH in SWNCQ mode,QC:qc_active 0x1 sactive 0x1
-138.332093] ata1: EH in SWNCQ mode,QC:qc_active 0x1 sactive 0x1
-
-Disabling write cache on disk attached to ata4 and enabling it on disk
-attached to ata1:
-
- 45.583489] ata4: EH in SWNCQ mode,QC:qc_active 0x1 sactive 0x1
- 76.479940] ata4: EH in SWNCQ mode,QC:qc_active 0x1 sactive 0x1
-107.375643] ata4: EH in SWNCQ mode,QC:qc_active 0x1 sactive 0x1
-138.272023] ata4: EH in SWNCQ mode,QC:qc_active 0x1 sactive 0x1
-
-Enabling write cache on both disks = no errors.
-
-I don't think the problem can be associated with bad cables or power
-supply, as it happens in each channel, it is the same for each disk and
-happens at the same time.
-
-Anybody has ideas on what can it be and if there is a solution?
-
-Thanks.
-
-Marco
+	Arnd
