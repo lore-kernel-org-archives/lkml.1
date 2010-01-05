@@ -1,23 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755640Ab0AEUJ4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755630Ab0AEUJq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755640Ab0AEUJ4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 15:09:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755500Ab0AEUGW
+	id S1755630Ab0AEUJq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 15:09:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755439Ab0AEUJh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 15:06:22 -0500
-Received: from kroah.org ([198.145.64.141]:50032 "EHLO coco.kroah.org"
+	Tue, 5 Jan 2010 15:09:37 -0500
+Received: from kroah.org ([198.145.64.141]:50042 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755485Ab0AEUGT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 15:06:19 -0500
+	id S1755505Ab0AEUGW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jan 2010 15:06:22 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jan  5 12:03:02 2010
-Message-Id: <20100105200302.217724949@mini.kroah.org>
+Message-Id: <20100105200302.623292838@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 05 Jan 2010 12:02:21 -0800
+Date: Tue, 05 Jan 2010 12:02:24 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, akpm@linux-foundation.org,
        torvalds@linux-foundation.org, stable-review@kernel.org
-Cc: Patrick McHardy <kaber@trash.net>
-Subject: [25/39] ipv6: reassembly: use seperate reassembly queues for conntrack and local delivery
+Cc: Dan Carpenter <error27@gmail.com>,
+       Douglas Schilling Landgraf <dougsland@redhat.com>,
+       Mauro Carvalho Chehab <mchehab@redhat.com>,
+       Brandon Philips <brandon@ifup.org>
+Subject: [28/39] V4L/DVB (13596): ov511.c typo: lock => unlock
 In-Reply-To: <20100105195007.GA23952@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -27,158 +30,33 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Patrick McHardy <kaber@trash.net>
+From: Dan Carpenter <error27@gmail.com>
 
-commit 0b5ccb2ee250136dd7385b1c7da28417d0d4d32d upstream.
+commit 50e9d31183ed61c787b870cb3ee8f6c3db8c8a1e upstream.
 
-Currently the same reassembly queue might be used for packets reassembled
-by conntrack in different positions in the stack (PREROUTING/LOCAL_OUT),
-as well as local delivery. This can cause "packet jumps" when the fragment
-completing a reassembled packet is queued from a different position in the
-stack than the previous ones.
+This was found with a static checker and has not been tested, but it seems
+pretty clear that the mutex_lock() was supposed to be mutex_unlock()
 
-Add a "user" identifier to the reassembly queue key to seperate the queues
-of each caller, similar to what we do for IPv4.
-
-Signed-off-by: Patrick McHardy <kaber@trash.net>
+Signed-off-by: Dan Carpenter <error27@gmail.com>
+Signed-off-by: Douglas Schilling Landgraf <dougsland@redhat.com>
+Signed-off-by: Mauro Carvalho Chehab <mchehab@redhat.com>
+Cc: Brandon Philips <brandon@ifup.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- include/net/ipv6.h                             |    7 +++++++
- include/net/netfilter/ipv6/nf_conntrack_ipv6.h |    2 +-
- net/ipv6/netfilter/nf_conntrack_l3proto_ipv6.c |   13 +++++++++++--
- net/ipv6/netfilter/nf_conntrack_reasm.c        |    7 ++++---
- net/ipv6/reassembly.c                          |    5 ++++-
- 5 files changed, 27 insertions(+), 7 deletions(-)
+ drivers/media/video/ov511.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/include/net/ipv6.h
-+++ b/include/net/ipv6.h
-@@ -354,8 +354,15 @@ static inline int ipv6_prefix_equal(cons
+--- a/drivers/media/video/ov511.c
++++ b/drivers/media/video/ov511.c
+@@ -5878,7 +5878,7 @@ ov51x_probe(struct usb_interface *intf, 
+ 		goto error;
+ 	}
  
- struct inet_frag_queue;
+-	mutex_lock(&ov->lock);
++	mutex_unlock(&ov->lock);
  
-+enum ip6_defrag_users {
-+	IP6_DEFRAG_LOCAL_DELIVER,
-+	IP6_DEFRAG_CONNTRACK_IN,
-+	IP6_DEFRAG_CONNTRACK_OUT,
-+};
-+
- struct ip6_create_arg {
- 	__be32 id;
-+	u32 user;
- 	struct in6_addr *src;
- 	struct in6_addr *dst;
- };
---- a/include/net/netfilter/ipv6/nf_conntrack_ipv6.h
-+++ b/include/net/netfilter/ipv6/nf_conntrack_ipv6.h
-@@ -9,7 +9,7 @@ extern struct nf_conntrack_l4proto nf_co
- 
- extern int nf_ct_frag6_init(void);
- extern void nf_ct_frag6_cleanup(void);
--extern struct sk_buff *nf_ct_frag6_gather(struct sk_buff *skb);
-+extern struct sk_buff *nf_ct_frag6_gather(struct sk_buff *skb, u32 user);
- extern void nf_ct_frag6_output(unsigned int hooknum, struct sk_buff *skb,
- 			       struct net_device *in,
- 			       struct net_device *out,
---- a/net/ipv6/netfilter/nf_conntrack_l3proto_ipv6.c
-+++ b/net/ipv6/netfilter/nf_conntrack_l3proto_ipv6.c
-@@ -183,6 +183,16 @@ out:
- 	return nf_conntrack_confirm(skb);
- }
- 
-+static enum ip6_defrag_users nf_ct6_defrag_user(unsigned int hooknum,
-+						struct sk_buff *skb)
-+{
-+	if (hooknum == NF_INET_PRE_ROUTING)
-+		return IP6_DEFRAG_CONNTRACK_IN;
-+	else
-+		return IP6_DEFRAG_CONNTRACK_OUT;
-+
-+}
-+
- static unsigned int ipv6_defrag(unsigned int hooknum,
- 				struct sk_buff *skb,
- 				const struct net_device *in,
-@@ -195,8 +205,7 @@ static unsigned int ipv6_defrag(unsigned
- 	if (skb->nfct)
- 		return NF_ACCEPT;
- 
--	reasm = nf_ct_frag6_gather(skb);
--
-+	reasm = nf_ct_frag6_gather(skb, nf_ct6_defrag_user(hooknum, skb));
- 	/* queued */
- 	if (reasm == NULL)
- 		return NF_STOLEN;
---- a/net/ipv6/netfilter/nf_conntrack_reasm.c
-+++ b/net/ipv6/netfilter/nf_conntrack_reasm.c
-@@ -170,13 +170,14 @@ out:
- /* Creation primitives. */
- 
- static __inline__ struct nf_ct_frag6_queue *
--fq_find(__be32 id, struct in6_addr *src, struct in6_addr *dst)
-+fq_find(__be32 id, u32 user, struct in6_addr *src, struct in6_addr *dst)
- {
- 	struct inet_frag_queue *q;
- 	struct ip6_create_arg arg;
- 	unsigned int hash;
- 
- 	arg.id = id;
-+	arg.user = user;
- 	arg.src = src;
- 	arg.dst = dst;
- 
-@@ -561,7 +562,7 @@ find_prev_fhdr(struct sk_buff *skb, u8 *
  	return 0;
- }
- 
--struct sk_buff *nf_ct_frag6_gather(struct sk_buff *skb)
-+struct sk_buff *nf_ct_frag6_gather(struct sk_buff *skb, u32 user)
- {
- 	struct sk_buff *clone;
- 	struct net_device *dev = skb->dev;
-@@ -607,7 +608,7 @@ struct sk_buff *nf_ct_frag6_gather(struc
- 	if (atomic_read(&nf_init_frags.mem) > nf_init_frags.high_thresh)
- 		nf_ct_frag6_evictor();
- 
--	fq = fq_find(fhdr->identification, &hdr->saddr, &hdr->daddr);
-+	fq = fq_find(fhdr->identification, user, &hdr->saddr, &hdr->daddr);
- 	if (fq == NULL) {
- 		pr_debug("Can't find and can't create new queue\n");
- 		goto ret_orig;
---- a/net/ipv6/reassembly.c
-+++ b/net/ipv6/reassembly.c
-@@ -72,6 +72,7 @@ struct frag_queue
- 	struct inet_frag_queue	q;
- 
- 	__be32			id;		/* fragment id		*/
-+	u32			user;
- 	struct in6_addr		saddr;
- 	struct in6_addr		daddr;
- 
-@@ -141,7 +142,7 @@ int ip6_frag_match(struct inet_frag_queu
- 	struct ip6_create_arg *arg = a;
- 
- 	fq = container_of(q, struct frag_queue, q);
--	return (fq->id == arg->id &&
-+	return (fq->id == arg->id && fq->user == arg->user &&
- 			ipv6_addr_equal(&fq->saddr, arg->src) &&
- 			ipv6_addr_equal(&fq->daddr, arg->dst));
- }
-@@ -163,6 +164,7 @@ void ip6_frag_init(struct inet_frag_queu
- 	struct ip6_create_arg *arg = a;
- 
- 	fq->id = arg->id;
-+	fq->user = arg->user;
- 	ipv6_addr_copy(&fq->saddr, arg->src);
- 	ipv6_addr_copy(&fq->daddr, arg->dst);
- }
-@@ -244,6 +246,7 @@ fq_find(struct net *net, __be32 id, stru
- 	unsigned int hash;
- 
- 	arg.id = id;
-+	arg.user = IP6_DEFRAG_LOCAL_DELIVER;
- 	arg.src = src;
- 	arg.dst = dst;
  
 
 
