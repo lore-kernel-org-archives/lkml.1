@@ -1,138 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755324Ab0AETCJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755360Ab0AETCW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755324Ab0AETCJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 14:02:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754736Ab0AETCE
+	id S1755360Ab0AETCW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 14:02:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755351Ab0AETCR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 14:02:04 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:38936 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754732Ab0AETAv (ORCPT
+	Tue, 5 Jan 2010 14:02:17 -0500
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:57653 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754200Ab0AETCP convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 14:00:51 -0500
+	Tue, 5 Jan 2010 14:02:15 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:message-id:content-type:content-transfer-encoding;
-        b=X/+zrYdoFodQvOW2T/YxDGzVigEUOyJkXPQvfxLtEfUInS0FTl8jNjVWq2S1X9IEyF
-         WemzHHss+2yqqHEE0zQDBjon3oR4obeLOsnMGTBC4T5kTkiRoAMijuVvwwvz1qA3fAXk
-         tv+ZRJwklsH9AsLztojSIVXV8K/n9A0AMqnvA=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Jiri Kosina <jkosina@suse.cz>
-Subject: Re: [PATCH 2/2] ide: add __init/__exit macros to drivers/ide/scc_pata.c
-Date: Tue, 5 Jan 2010 19:39:07 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.31.8-0.1-desktop; KDE/4.3.1; x86_64; ; )
-Cc: Peter Huewe <peterhuewe@gmx.de>, kernel-janitors@vger.kernel.org,
-       "David S. Miller" <davem@davemloft.net>,
-       Sergei Shtylyov <sshtylyov@ru.mvista.com>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <1261470564-23754-1-git-send-email-peterhuewe@gmx.de> <1261470564-23754-2-git-send-email-peterhuewe@gmx.de> <alpine.LNX.2.00.1001051124150.2277@pobox.suse.cz>
-In-Reply-To: <alpine.LNX.2.00.1001051124150.2277@pobox.suse.cz>
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=rI6iHAr7JaAyMOF/KvNJjGa7Gw6Dc7fYBZU+RAbm02SvIL53HEuxRktAiN8C91Lpda
+         hctzxRN+chH8VQ/N6v0qgak4ZsAwVwY43+Mt3+3Giu4UqpdsZ0rm6IJliKE/w9VhDOps
+         dkJV+hoMxfpmReB+9a2remXOTY2syvEUopPIc=
 MIME-Version: 1.0
-Message-Id: <201001051939.07756.bzolnier@gmail.com>
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20100105110256.D2DF133C4B0@tippex.mynet.homeunix.org>
+References: <20100105110256.D2DF133C4B0@tippex.mynet.homeunix.org>
+Date: Tue, 5 Jan 2010 11:02:14 -0800
+X-Google-Sender-Auth: 346cbdbf5165eba0
+Message-ID: <86802c441001051102j547f10bga2b40fbaee9cf623@mail.gmail.com>
+Subject: Re: Memory probing fails after 2.6.30 (bisected)
+From: Yinghai Lu <yinghai@kernel.org>
+To: Anders Eriksson <aeriksson@fastmail.fm>
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 05 January 2010 11:25:13 am Jiri Kosina wrote:
-> On Tue, 22 Dec 2009, peterhuewe@gmx.de wrote:
-> 
-> > From: Peter Huewe <peterhuewe@gmx.de>
-> > 
-> > Trivial patch which adds the __init/__exit macros to the module_init/
-> > module_exit functions of
-> > 
-> > drivers/ide/scc_pata.c
-> > 
-> > Please have a look at the small patch and either pull it through
-> > your tree, or please ack' it so Jiri can pull it through the trivial
-> > tree.
-> > 
-> > Patch against linux-next-tree, 22. Dez 08:38:18 CET 2009
-> > but also present in linus tree.
-> > 
-> > Signed-off-by: Peter Huewe <peterhuewe@gmx.de>
-> > ---
-> >  drivers/ide/scc_pata.c |    4 ++--
-> >  1 files changed, 2 insertions(+), 2 deletions(-)
-> > 
-> > diff --git a/drivers/ide/scc_pata.c b/drivers/ide/scc_pata.c
-> > index 1104bb3..58c9c91 100644
-> > --- a/drivers/ide/scc_pata.c
-> > +++ b/drivers/ide/scc_pata.c
-> > @@ -872,14 +872,14 @@ static struct pci_driver scc_pci_driver = {
-> >  	.remove = __devexit_p(scc_remove),
-> >  };
-> >  
-> > -static int scc_ide_init(void)
-> > +static int __init scc_ide_init(void)
-> >  {
-> >  	return ide_pci_register_driver(&scc_pci_driver);
-> >  }
-> >  
-> >  module_init(scc_ide_init);
-> >  /* -- No exit code?
-> > -static void scc_ide_exit(void)
-> > +static void __exit scc_ide_exit(void)
-> >  {
-> >  	ide_pci_unregister_driver(&scc_pci_driver);
-> >  }
-> 
-> This code is commented out anyway. So we should either nuke it out 
-> completely if it is not needed, or uncomment and fix.
-> 
-> Bartlomiej, David?
+On Tue, Jan 5, 2010 at 3:02 AM, Anders Eriksson <aeriksson@fastmail.fm> wrote:
+>
+> Hi,
+>
+> Upgrading my laptop's kernel, I discovered that it reboots immediately after
+> boot on .31 and later kernels. Grub loads it, but I cannot get one line of
+> text out of it before it reboots, even using boot_delay.
+>
+> Bisecting I came up with the following:
+>
+> git bisect start
+> # good: [07a2039b8eb0af4ff464efd3dfd95de5c02648c6] Linux 2.6.30
+> git bisect good 07a2039b8eb0af4ff464efd3dfd95de5c02648c6
+> # bad: [74fca6a42863ffacaf7ba6f1936a9f228950f657] Linux 2.6.31
+> git bisect bad 74fca6a42863ffacaf7ba6f1936a9f228950f657
+> # bad: [925d74ae717c9a12d3618eb4b36b9fb632e2cef3] V4L/DVB (11736): videobuf: modify return value of VIDIOC_REQBUFS ioctl
+> git bisect bad 925d74ae717c9a12d3618eb4b36b9fb632e2cef3
+> # bad: [e349792a385ed47390d156155b1a1e19af1bf163] Merge branch 'for-linus' of git://git.kernel.org/pub/scm/linux/kernel/git/tiwai/sound-2.6
+> git bisect bad e349792a385ed47390d156155b1a1e19af1bf163
+> # bad: [c9059598ea8981d02356eead3188bf7fa4d717b8] Merge branch 'for-2.6.31' of git://git.kernel.dk/linux-2.6-block
+> git bisect bad c9059598ea8981d02356eead3188bf7fa4d717b8
+> # bad: [59c288ffb6dfb55bdd6bfe6826ab6203ff791930] Merge branches 'frv' and 'mn10300'
+> git bisect bad 59c288ffb6dfb55bdd6bfe6826ab6203ff791930
+> # bad: [3f6280ddf25fa656d0e17960588e52bee48a7547] Merge branch 'iommu-for-linus' of git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip
+> git bisect bad 3f6280ddf25fa656d0e17960588e52bee48a7547
+> # good: [c44e3ed539e4fc17d6bcb5eaecb894a94de4cc5f] Merge branch 'x86-cpu-for-linus' of git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip
+> git bisect good c44e3ed539e4fc17d6bcb5eaecb894a94de4cc5f
+> # bad: [be15f9d63b97da0065187696962331de6cd9de9e] Merge branch 'x86-xen-for-linus' of git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip
+> git bisect bad be15f9d63b97da0065187696962331de6cd9de9e
+> # bad: [9b29e8228a5c2a169436a1a90a60b1f88cb35cd1] Merge branch 'x86-urgent-for-linus' of git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip
+> git bisect bad 9b29e8228a5c2a169436a1a90a60b1f88cb35cd1
+> # bad: [35d5a9a61490bf39d2e48d7f499c8c801a39ebe9] x86: fix system without memory on node0 ---> Got a BIOS-88 map
+> git bisect bad 35d5a9a61490bf39d2e48d7f499c8c801a39ebe9
+> # bad: [45fbe3ee01b8e463b28c2751b5dcc0cbdc142d90] x86, e820, pci: reserve extra free space near end of RAM ---> Got a BIOS-88 map
+> git bisect bad 45fbe3ee01b8e463b28c2751b5dcc0cbdc142d90
+> # bad: [2b72394e4089643f11669d9610907a1442fe044a] x86: move max_pfn_mapped and max_low_pfn_mapped to setup.c ---> Got a BIOS-88 map
+> git bisect bad 2b72394e4089643f11669d9610907a1442fe044a
+> # good: [6424fb38667fffbbb1b90be0ffd9a0c540db6a4b] x86: remove (null) in /sys kernel_page_tables
+> git bisect good 6424fb38667fffbbb1b90be0ffd9a0c540db6a4b
+> # bad: [89388913f2c88a2cd15d24abab571b17a2596127] x86: unify noexec handling --> Got a BIOS-88 map
+> git bisect bad 89388913f2c88a2cd15d24abab571b17a2596127
+> # bad: [8ecee4620e76aae418bfa0e8cc830e92cb559bbb] Merge branch 'linus' into x86/mm ---> Got a BIOS-88 map
+> git bisect bad 8ecee4620e76aae418bfa0e8cc830e92cb559bbb
+>
+>
+> I've annotated some bad kernels, where I _do_ get it to start, but it only
+> finds a BIOS-88 map (and hence only 16MB ram, and userspace triggers OOMK).
+>
+> I found your name in the commit bisect fingered, hence I turn to you for help.
+>
+> Here's a dmesg from the last known good kernel :
+>
+> Linux version 2.6.29-01001-g6424fb3 (root@korven) (gcc version 4.3.2 (Gentoo 4.3.2-r3 p1.6, pie-10.1.5) ) #22 SMP Tue Jan 5 11:12:56 CET 2010
+> KERNEL supported cpus:
+>  Intel GenuineIntel
+>  AMD AuthenticAMD
+>  NSC Geode by NSC
+>  Cyrix CyrixInstead
+>  Centaur CentaurHauls
+>  Transmeta GenuineTMx86
+>  Transmeta TransmetaCPU
+>  UMC UMC UMC UMC
+> BIOS-provided physical RAM map:
+>  BIOS-e820: 0000000000000000 - 000000000009ae20 (usable)
+>  BIOS-e820: 000000000009ae20 - 00000000000a0000 (reserved)
+>  BIOS-e820: 00000000000e0000 - 0000000000100000 (reserved)
+>  BIOS-e820: 0000000000100000 - 000000007f7d0000 (usable)
+>  BIOS-e820: 000000007f7d0000 - 000000007f7e5600 (reserved)
+>  BIOS-e820: 000000007f7e5600 - 000000007f7f8000 (ACPI NVS)
+>  BIOS-e820: 000000007f7f8000 - 000000007f800000 (reserved)
+>  BIOS-e820: 00000000fec00000 - 00000000fec01000 (reserved)
+>  BIOS-e820: 00000000fed20000 - 00000000fed9b000 (reserved)
+>  BIOS-e820: 00000000feda0000 - 00000000fedc0000 (reserved)
+>  BIOS-e820: 00000000fee00000 - 00000000fee01000 (reserved)
+>  BIOS-e820: 00000000ffb00000 - 00000000ffc00000 (reserved)
+>  BIOS-e820: 00000000fff00000 - 0000000100000000 (reserved)
+> DMI 2.4 present.
+> last_pfn = 0x7f7d0 max_arch_pfn = 0x100000
+> MTRR default type: uncachable
+> MTRR fixed ranges enabled:
+>  00000-9FFFF write-back
+>  A0000-BFFFF uncachable
+>  C0000-CFFFF write-protect
+>  D0000-EFFFF uncachable
+>  F0000-FFFFF write-protect
+> MTRR variable ranges enabled:
+>  0 base 000000000 mask F80000000 write-back
+>  1 base F7F800000 mask FFF800000 uncachable
+>  2 base 0FEDA0000 mask FFFFE0000 uncachable
+>  3 disabled
+>  4 disabled
+>  5 disabled
+>  6 disabled
+>  7 disabled
 
-We can fix it nowadays, though I worry that by fixing it we may be 'creating
-competition' for 'officially blessed yet unmaintained' PATA stack... 8-)
+whole boot log with debug with boot command line?
 
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [PATCH] scc_pata: fix module unloading
+>
+> I can produce a pic of the dmesg for the fingered commit of needed.
 
-scc_pata host driver predated module unloading support for IDE host
-drivers so even though it supports PCI hot-unplug and implements
-PCI device ->remove method it doesn't allow module removal.  Fix it.
+boot that with earlyprintk=vga please.
 
-Add missing __init/__exit tags to module_init/module_exit functions
-while at it (from Peter Huewe).
-
-Noticed-by: Jiri Kosina <jkosina@suse.cz>
-Cc: Peter Huewe <peterhuewe@gmx.de>
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
----
- drivers/ide/scc_pata.c |   12 +++++-------
- 1 file changed, 5 insertions(+), 7 deletions(-)
-
-Index: b/drivers/ide/scc_pata.c
-===================================================================
---- a/drivers/ide/scc_pata.c
-+++ b/drivers/ide/scc_pata.c
-@@ -872,20 +872,18 @@ static struct pci_driver scc_pci_driver
- 	.remove = __devexit_p(scc_remove),
- };
- 
--static int scc_ide_init(void)
-+static int __init scc_ide_init(void)
- {
- 	return ide_pci_register_driver(&scc_pci_driver);
- }
- 
--module_init(scc_ide_init);
--/* -- No exit code?
--static void scc_ide_exit(void)
-+static void __exit scc_ide_exit(void)
- {
--	ide_pci_unregister_driver(&scc_pci_driver);
-+	pci_unregister_driver(&scc_pci_driver);
- }
--module_exit(scc_ide_exit);
-- */
- 
-+module_init(scc_ide_init);
-+module_exit(scc_ide_exit);
- 
- MODULE_DESCRIPTION("PCI driver module for Toshiba SCC IDE");
- MODULE_LICENSE("GPL");
+YH
