@@ -1,16 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754466Ab0AEIEO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754448Ab0AEIFH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754466Ab0AEIEO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 03:04:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754237Ab0AEIEN
+	id S1754448Ab0AEIFH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 03:05:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754194Ab0AEIFF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 03:04:13 -0500
-Received: from e36.co.us.ibm.com ([32.97.110.154]:59722 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754194Ab0AEIEM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 03:04:12 -0500
-Date: Tue, 5 Jan 2010 13:33:46 +0530
+	Tue, 5 Jan 2010 03:05:05 -0500
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:40855 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754111Ab0AEIFE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jan 2010 03:05:04 -0500
+Date: Tue, 5 Jan 2010 13:34:43 +0530
 From: Bharata B Rao <bharata@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org
 Cc: Dhaval Giani <dhaval@linux.vnet.ibm.com>,
@@ -24,8 +23,8 @@ Cc: Dhaval Giani <dhaval@linux.vnet.ibm.com>,
        Herbert Poetzl <herbert@13thfloor.at>, Avi Kivity <avi@redhat.com>,
        Chris Friesen <cfriesen@nortel.com>, Paul Menage <menage@google.com>,
        Mike Waychison <mikew@google.com>
-Subject: [RFC v5 PATCH 7/8] sched: CFS runtime borrowing
-Message-ID: <20100105080346.GL27899@in.ibm.com>
+Subject: [RFC v5 PATCH 8/8] sched: Hard limits documentation
+Message-ID: <20100105080443.GM27899@in.ibm.com>
 Reply-To: bharata@linux.vnet.ibm.com
 References: <20100105075703.GE27899@in.ibm.com>
 MIME-Version: 1.0
@@ -37,150 +36,69 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-sched: CFS runtime borrowing
+sched: Hard limits documentation
 
 From: Bharata B Rao <bharata@linux.vnet.ibm.com>
 
-Before throttling a group, try to borrow runtime from groups that have excess.
+Documentation for hard limits feature.
 
-To start with, a group will get equal runtime on every cpu. If the group doesn't
-have tasks on all cpus, it might get throttled on some cpus while it still has
-runtime left on other cpus where it doesn't have any tasks to consume that
-runtime. Hence there is a chance to borrow runtimes from such cpus/cfs_rqs to
-cpus/cfs_rqs where it is required.
-
-CHECK: RT seems to be handling runtime initialization/reclaim during hotplug
-from multiple places (migration_call, update_runtime). Need to check if CFS
-also needs to do the same.
-
-Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
 Signed-off-by: Bharata B Rao <bharata@linux.vnet.ibm.com>
 ---
- kernel/sched.c      |   13 +++++++++++++
- kernel/sched_fair.c |   42 ++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 55 insertions(+), 0 deletions(-)
+ Documentation/scheduler/sched-cfs-hard-limits.txt |   48 +++++++++++++++++++++
+ 1 files changed, 48 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/scheduler/sched-cfs-hard-limits.txt
 
-diff --git a/kernel/sched.c b/kernel/sched.c
-index c4ab583..c9922ec 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -1960,6 +1960,8 @@ void __disable_runtime(struct rq *rq, struct sched_bandwidth *sched_b,
- 
- 		if (rt)
- 			iter = &(sched_rt_period_rt_rq(sched_b, i)->rq_bandwidth);
-+		else
-+			iter = &(sched_cfs_period_cfs_rq(sched_b, i)->rq_bandwidth);
- 		/*
- 		 * Can't reclaim from ourselves or disabled runqueues.
- 		 */
-@@ -1999,12 +2001,16 @@ balanced:
- }
- 
- void disable_runtime_rt(struct rq *rq);
-+void disable_runtime_cfs(struct rq *rq);
- static void disable_runtime(struct rq *rq)
- {
- 	unsigned long flags;
- 
- 	raw_spin_lock_irqsave(&rq->lock, flags);
- 	disable_runtime_rt(rq);
-+#if defined(CONFIG_FAIR_GROUP_SCHED) && defined(CONFIG_CFS_HARD_LIMITS)
-+	disable_runtime_cfs(rq);
-+#endif
- 	raw_spin_unlock_irqrestore(&rq->lock, flags);
- }
- 
-@@ -2021,12 +2027,16 @@ void __enable_runtime(struct sched_bandwidth *sched_b,
- }
- 
- void enable_runtime_rt(struct rq *rq);
-+void enable_runtime_cfs(struct rq *rq);
- static void enable_runtime(struct rq *rq)
- {
- 	unsigned long flags;
- 
- 	raw_spin_lock_irqsave(&rq->lock, flags);
- 	enable_runtime_rt(rq);
-+#if defined(config_fair_group_sched) && defined(config_cfs_hard_limits)
-+	enable_runtime_cfs(rq);
-+#endif
- 	raw_spin_unlock_irqrestore(&rq->lock, flags);
- }
- 
-@@ -2050,6 +2060,9 @@ static void do_balance_runtime(struct rq_bandwidth *rq_b,
- 
- 		if (rt)
- 			iter = &(sched_rt_period_rt_rq(sched_b, i)->rq_bandwidth);
-+		else
-+			iter = &(sched_cfs_period_cfs_rq(sched_b, i)->rq_bandwidth);
+diff --git a/Documentation/scheduler/sched-cfs-hard-limits.txt b/Documentation/scheduler/sched-cfs-hard-limits.txt
+new file mode 100644
+index 0000000..d6387af
+--- /dev/null
++++ b/Documentation/scheduler/sched-cfs-hard-limits.txt
+@@ -0,0 +1,48 @@
++CPU HARD LIMITS FOR CFS GROUPS
++==============================
 +
- 		if (iter == rq_b)
- 			continue;
- 
-diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
-index 16ed209..dcd093b 100644
---- a/kernel/sched_fair.c
-+++ b/kernel/sched_fair.c
-@@ -241,6 +241,41 @@ static inline int cfs_rq_throttled(struct cfs_rq *cfs_rq)
- 	return cfs_rq->rq_bandwidth.throttled;
- }
- 
-+#ifdef CONFIG_SMP
-+/*
-+ * Ensure this RQ takes back all the runtime it lend to its neighbours.
-+ */
-+void disable_runtime_cfs(struct rq *rq)
-+{
-+	struct cfs_rq *cfs_rq;
++1. Overview
++2. Interface
++3. Examples
 +
-+	if (unlikely(!scheduler_running))
-+		return;
++1. Overview
++-----------
 +
-+	for_each_leaf_cfs_rq(rq, cfs_rq) {
-+		struct sched_bandwidth *sched_b = sched_cfs_bandwidth(cfs_rq);
-+		__disable_runtime(rq, sched_b, &cfs_rq->rq_bandwidth, 0);
-+	}
-+}
++CFS is a proportional share scheduler which tries to divide the CPU time
++proportionately between tasks or groups of tasks (task group/cgroup) depending
++on the priority/weight of the task or shares assigned to groups of tasks.
++In CFS, a task/task group can get more than its share of CPU if there are
++enough idle CPU cycles available in the system, due to the work conserving
++nature of the scheduler. However in certain scenarios (like pay-per-use),
++it is desirable not to provide extra time to a group even in the presence
++of idle CPU cycles. This is where hard limiting can be of use.
 +
-+void enable_runtime_cfs(struct rq *rq)
-+{
-+	struct cfs_rq *cfs_rq;
++Hard limits for task groups can be set by specifying how much CPU runtime a
++group can consume within a given period. If the group consumes more CPU time
++than the runtime in a given period, it gets throttled. None of the tasks of
++the throttled group gets to run until the runtime of the group gets refreshed
++at the beginning of the next period.
 +
-+	if (unlikely(!scheduler_running))
-+		return;
++2. Interface
++------------
 +
-+	/*
-+	 * Reset each runqueue's bandwidth settings
-+	 */
-+	for_each_leaf_cfs_rq(rq, cfs_rq) {
-+		struct sched_bandwidth *sched_b = sched_cfs_bandwidth(cfs_rq);
-+		__enable_runtime(sched_b, &cfs_rq->rq_bandwidth);
-+	}
-+}
++Hard limit feature adds 2 cgroup files for CFS group scheduler:
 +
-+#endif /* CONFIG_SMP */
++cfs_runtime_us: Hard limit for the group in microseconds.
 +
- /*
-  * Check if group entity exceeded its runtime. If so, mark the cfs_rq as
-  * throttled mark the current task for reschedling.
-@@ -260,6 +295,10 @@ static void sched_cfs_runtime_exceeded(struct sched_entity *se,
- 	if (cfs_rq_throttled(cfs_rq))
- 		return;
- 
-+	if (cfs_rq->rq_bandwidth.time > cfs_rq->rq_bandwidth.runtime)
-+		balance_runtime(&cfs_rq->rq_bandwidth,
-+					sched_cfs_bandwidth(cfs_rq), 0);
++cfs_period_us: Time period in microseconds within which hard limits is
++enforced.
 +
- 	if (cfs_rq->rq_bandwidth.time > cfs_rq->rq_bandwidth.runtime) {
- 		cfs_rq->rq_bandwidth.throttled = 1;
- 		update_stats_throttle_start(cfs_rq, se);
-@@ -313,6 +352,9 @@ static int do_sched_cfs_period_timer(struct sched_bandwidth *cfs_b, int overrun)
- 			u64 runtime;
- 
- 			raw_spin_lock(&cfs_rq->rq_bandwidth.runtime_lock);
-+			if (cfs_rq_throttled(cfs_rq))
-+				balance_runtime(&cfs_rq->rq_bandwidth,
-+					sched_cfs_bandwidth(cfs_rq), 0);
- 			runtime = cfs_rq->rq_bandwidth.runtime;
- 			cfs_rq->rq_bandwidth.time -= min(cfs_rq->rq_bandwidth.time, overrun*runtime);
- 			if (cfs_rq_throttled(cfs_rq) &&
++A group gets created with default values for runtime (infinite runtime which
++means hard limits disabled) and period (0.5s). Each group can set its own
++values for runtime and period independent of other groups in the system.
++
++3. Examples
++-----------
++
++# mount -t cgroup -ocpu none /cgroups/
++# cd /cgroups
++# mkdir 1
++# cd 1/
++# echo 250000 > cfs_runtime_us /* set a 250ms runtime or limit */
++# echo 500000 > cfs_period_us /* set a 500ms period */
