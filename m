@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932112Ab0AEAwg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754242Ab0AEAxM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932112Ab0AEAwg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 19:52:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754241Ab0AEAe5
+	id S1754242Ab0AEAxM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 19:53:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754940Ab0AEAw2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 19:34:57 -0500
-Received: from kroah.org ([198.145.64.141]:34145 "EHLO coco.kroah.org"
+	Mon, 4 Jan 2010 19:52:28 -0500
+Received: from kroah.org ([198.145.64.141]:34170 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754233Ab0AEAex (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 19:34:53 -0500
+	id S1754233Ab0AEAe7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jan 2010 19:34:59 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, stable-review@kernel.org
 Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Dave Airlie <airlied@linux.ie>,
-       Dave Airlie <airlied@redhat.com>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 19/97] drm/radeon: fix build on 64-bit with some compilers.
-Date: Mon,  4 Jan 2010 16:32:32 -0800
-Message-Id: <1262651630-7354-19-git-send-email-gregkh@suse.de>
+       alan@lxorguk.ukuu.org.uk, Alan Stern <stern@rowland.harvard.edu>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 25/97] USB: rename usb_configure_device
+Date: Mon,  4 Jan 2010 16:32:38 -0800
+Message-Id: <1262651630-7354-25-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.6
 In-Reply-To: <20100105003133.GA7199@kroah.com>
 References: <20100105003133.GA7199@kroah.com>
@@ -24,34 +24,112 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Dave Airlie <airlied@linux.ie>
+From: Alan Stern <stern@rowland.harvard.edu>
 
-commit 794f3141a194a4f4c28c1d417b071a901f78d9bb upstream.
+commit 8d8558d10806b7e805cb80df867ebb0a453d4765 upstream.
 
-drivers/gpu/drm/radeon/radeon_test.c:45: undefined reference to `__udivdi3'
+This patch (as1314) renames usb_configure_device() and
+usb_configure_device_otg() in the hub driver.  Neither name is
+appropriate because these routines enumerate devices, they don't
+configure them.  That's handled by usb_choose_configuration() and
+usb_set_configuration().
 
-Reported-by: Mr. James W. Laferriere <babydr@baby-dragons.com>
-Signed-off-by: Dave Airlie <airlied@redhat.com>
+Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/gpu/drm/radeon/radeon_test.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/usb/core/hub.c |   26 +++++++++++++-------------
+ 1 files changed, 13 insertions(+), 13 deletions(-)
 
-diff --git a/drivers/gpu/drm/radeon/radeon_test.c b/drivers/gpu/drm/radeon/radeon_test.c
-index f8a465d..c8942ca 100644
---- a/drivers/gpu/drm/radeon/radeon_test.c
-+++ b/drivers/gpu/drm/radeon/radeon_test.c
-@@ -42,8 +42,8 @@ void radeon_test_moves(struct radeon_device *rdev)
- 	/* Number of tests =
- 	 * (Total GTT - IB pool - writeback page - ring buffer) / test size
- 	 */
--	n = (rdev->mc.gtt_size - RADEON_IB_POOL_SIZE*64*1024 - RADEON_GPU_PAGE_SIZE -
--	     rdev->cp.ring_size) / size;
-+	n = ((u32)(rdev->mc.gtt_size - RADEON_IB_POOL_SIZE*64*1024 - RADEON_GPU_PAGE_SIZE -
-+	     rdev->cp.ring_size)) / size;
+diff --git a/drivers/usb/core/hub.c b/drivers/usb/core/hub.c
+index 0f857e6..276fc68 100644
+--- a/drivers/usb/core/hub.c
++++ b/drivers/usb/core/hub.c
+@@ -1612,12 +1612,12 @@ static inline void announce_device(struct usb_device *udev) { }
+ #endif
  
- 	gtt_obj = kzalloc(n * sizeof(*gtt_obj), GFP_KERNEL);
- 	if (!gtt_obj) {
+ /**
+- * usb_configure_device_otg - FIXME (usbcore-internal)
++ * usb_enumerate_device_otg - FIXME (usbcore-internal)
+  * @udev: newly addressed device (in ADDRESS state)
+  *
+- * Do configuration for On-The-Go devices
++ * Finish enumeration for On-The-Go devices
+  */
+-static int usb_configure_device_otg(struct usb_device *udev)
++static int usb_enumerate_device_otg(struct usb_device *udev)
+ {
+ 	int err = 0;
+ 
+@@ -1688,7 +1688,7 @@ fail:
+ 
+ 
+ /**
+- * usb_configure_device - Detect and probe device intfs/otg (usbcore-internal)
++ * usb_enumerate_device - Read device configs/intfs/otg (usbcore-internal)
+  * @udev: newly addressed device (in ADDRESS state)
+  *
+  * This is only called by usb_new_device() and usb_authorize_device()
+@@ -1699,7 +1699,7 @@ fail:
+  * the string descriptors, as they will be errored out by the device
+  * until it has been authorized.
+  */
+-static int usb_configure_device(struct usb_device *udev)
++static int usb_enumerate_device(struct usb_device *udev)
+ {
+ 	int err;
+ 
+@@ -1723,7 +1723,7 @@ static int usb_configure_device(struct usb_device *udev)
+ 						      udev->descriptor.iManufacturer);
+ 		udev->serial = usb_cache_string(udev, udev->descriptor.iSerialNumber);
+ 	}
+-	err = usb_configure_device_otg(udev);
++	err = usb_enumerate_device_otg(udev);
+ fail:
+ 	return err;
+ }
+@@ -1733,8 +1733,8 @@ fail:
+  * usb_new_device - perform initial device setup (usbcore-internal)
+  * @udev: newly addressed device (in ADDRESS state)
+  *
+- * This is called with devices which have been enumerated, but not yet
+- * configured.  The device descriptor is available, but not descriptors
++ * This is called with devices which have been detected but not fully
++ * enumerated.  The device descriptor is available, but not descriptors
+  * for any device configuration.  The caller must have locked either
+  * the parent hub (if udev is a normal device) or else the
+  * usb_bus_list_lock (if udev is a root hub).  The parent's pointer to
+@@ -1757,8 +1757,8 @@ int usb_new_device(struct usb_device *udev)
+ 	if (udev->parent)
+ 		usb_autoresume_device(udev->parent);
+ 
+-	usb_detect_quirks(udev);		/* Determine quirks */
+-	err = usb_configure_device(udev);	/* detect & probe dev/intfs */
++	usb_detect_quirks(udev);
++	err = usb_enumerate_device(udev);	/* Read descriptors */
+ 	if (err < 0)
+ 		goto fail;
+ 	dev_dbg(&udev->dev, "udev %d, busnum %d, minor = %d\n",
+@@ -1849,9 +1849,9 @@ int usb_authorize_device(struct usb_device *usb_dev)
+ 		goto error_device_descriptor;
+ 	}
+ 	usb_dev->authorized = 1;
+-	result = usb_configure_device(usb_dev);
++	result = usb_enumerate_device(usb_dev);
+ 	if (result < 0)
+-		goto error_configure;
++		goto error_enumerate;
+ 	/* Choose and set the configuration.  This registers the interfaces
+ 	 * with the driver core and lets interface drivers bind to them.
+ 	 */
+@@ -1866,7 +1866,7 @@ int usb_authorize_device(struct usb_device *usb_dev)
+ 		}
+ 	}
+ 	dev_info(&usb_dev->dev, "authorized to connect\n");
+-error_configure:
++error_enumerate:
+ error_device_descriptor:
+ error_autoresume:
+ out_authorized:
 -- 
 1.6.6
 
