@@ -1,21 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754887Ab0AEAoo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754913Ab0AEApK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754887Ab0AEAoo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 19:44:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754420Ab0AEAoR
+	id S1754913Ab0AEApK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 19:45:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752261Ab0AEAo4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 19:44:17 -0500
-Received: from kroah.org ([198.145.64.141]:34462 "EHLO coco.kroah.org"
+	Mon, 4 Jan 2010 19:44:56 -0500
+Received: from kroah.org ([198.145.64.141]:34405 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754398Ab0AEAfp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 19:35:45 -0500
+	id S1754383Ab0AEAfh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jan 2010 19:35:37 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, stable-review@kernel.org
 Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 63/97] x86/ptrace: make genregs[32]_get/set more robust
-Date: Mon,  4 Jan 2010 16:33:16 -0800
-Message-Id: <1262651630-7354-63-git-send-email-gregkh@suse.de>
+       alan@lxorguk.ukuu.org.uk, Johannes Berg <johannes@sipsolutions.net>,
+       Reinette Chatre <reinette.chatre@intel.com>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 55/97] iwlwifi: fix EEPROM/OTP reading endian annotations and a bug
+Date: Mon,  4 Jan 2010 16:33:08 -0800
+Message-Id: <1262651630-7354-55-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.6
 In-Reply-To: <20100105003133.GA7199@kroah.com>
 References: <20100105003133.GA7199@kroah.com>
@@ -23,95 +26,168 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Linus Torvalds <torvalds@linux-foundation.org>
+From: Johannes Berg <johannes@sipsolutions.net>
 
-commit 04a1e62c2cec820501f93526ad1e46073b802dc4 upstream.
+commit af6b8ee38833b39f70946f767740565ceb126961 upstream.
 
-The loop condition is fragile: we compare an unsigned value to zero, and
-then decrement it by something larger than one in the loop.  All the
-callers should be passing in appropriately aligned buffer lengths, but
-it's better to just not rely on it, and have some appropriate defensive
-loop limits.
+The construct "le16_to_cpu((__force __le16)(r >> 16))" has
+always bothered me when looking through the iwlwifi code,
+it shouldn't be necessary to __force anything, and before
+this code, "r" was obtained with an ioread32, which swaps
+each of the two u16 values in it properly when swapping the
+entire u32 value. I've had arguments about this code with
+people before, but always conceded they were right because
+removing it only made things not work at all on big endian
+platforms.
 
-Acked-by: Roland McGrath <roland@redhat.com>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+However, analysing a failure of the OTP reading code, I now
+finally figured out what is going on, and why my intuition
+about that code being wrong was right all along.
+
+It turns out that the 'priv->eeprom' u8 array really wants
+to have the data in it in little endian. So the force code
+above and all really converts *to* little endian, not from
+it. Cf., for instance, the function iwl_eeprom_query16() --
+it reads two u8 values and combines them into a u16, in a
+little-endian way. And considering it more, it makes sense
+to have the eeprom array as on the device, after all not
+all values really are 16-bit values, the MAC address for
+instance is not.
+
+Now, what this really means is that all the annotations are
+completely wrong. The eeprom reading code should fill the
+priv->eeprom array as a __le16 array, with __le16 values.
+
+This also means that iwl_read_otp_word() should really have
+a __le16 pointer as the data argument, since it should be
+filling that in a format suitable for priv->eeprom.
+
+Propagating these changes throughout, iwl_find_otp_image()
+is found to be, now obviously visible, defective -- it uses
+the data returned by iwl_read_otp_word() directly as if it
+was CPU endianness. Fixing that, which is this hunk of the
+patch:
+
+-               next_link_addr = link_value * sizeof(u16);
++               next_link_addr = le16_to_cpu(link_value) * sizeof(u16);
+
+is the only real change of this patch. Everything else is
+just fixing the sparse annotations.
+
+Also, the bug only shows up on big endian platforms with a
+1000 series card. 5000 and previous series do not use OTP,
+and 6000 series has shadow RAM support which means we don't
+ever use the defective code on any cards but 1000.
+
+Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+Signed-off-by: Reinette Chatre <reinette.chatre@intel.com>
+Signed-off-by: John W. Linville <linville@tuxdriver.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- arch/x86/kernel/ptrace.c |   16 ++++++++--------
- 1 files changed, 8 insertions(+), 8 deletions(-)
+ drivers/net/wireless/iwlwifi/iwl-dev.h    |    2 +-
+ drivers/net/wireless/iwlwifi/iwl-eeprom.c |   20 +++++++++++---------
+ 2 files changed, 12 insertions(+), 10 deletions(-)
 
-diff --git a/arch/x86/kernel/ptrace.c b/arch/x86/kernel/ptrace.c
-index 7b058a2..c06acdd 100644
---- a/arch/x86/kernel/ptrace.c
-+++ b/arch/x86/kernel/ptrace.c
-@@ -408,14 +408,14 @@ static int genregs_get(struct task_struct *target,
+diff --git a/drivers/net/wireless/iwlwifi/iwl-dev.h b/drivers/net/wireless/iwlwifi/iwl-dev.h
+index 028d505..c2d9b7a 100644
+--- a/drivers/net/wireless/iwlwifi/iwl-dev.h
++++ b/drivers/net/wireless/iwlwifi/iwl-dev.h
+@@ -1149,7 +1149,7 @@ struct iwl_priv {
+ 	u32 last_beacon_time;
+ 	u64 last_tsf;
+ 
+-	/* eeprom */
++	/* eeprom -- this is in the card's little endian byte order */
+ 	u8 *eeprom;
+ 	int    nvm_device_type;
+ 	struct iwl_eeprom_calib_info *calib_info;
+diff --git a/drivers/net/wireless/iwlwifi/iwl-eeprom.c b/drivers/net/wireless/iwlwifi/iwl-eeprom.c
+index e14c995..622b636 100644
+--- a/drivers/net/wireless/iwlwifi/iwl-eeprom.c
++++ b/drivers/net/wireless/iwlwifi/iwl-eeprom.c
+@@ -337,7 +337,7 @@ static int iwl_init_otp_access(struct iwl_priv *priv)
+ 	return ret;
+ }
+ 
+-static int iwl_read_otp_word(struct iwl_priv *priv, u16 addr, u16 *eeprom_data)
++static int iwl_read_otp_word(struct iwl_priv *priv, u16 addr, __le16 *eeprom_data)
  {
- 	if (kbuf) {
- 		unsigned long *k = kbuf;
--		while (count > 0) {
-+		while (count >= sizeof(*k)) {
- 			*k++ = getreg(target, pos);
- 			count -= sizeof(*k);
- 			pos += sizeof(*k);
- 		}
- 	} else {
- 		unsigned long __user *u = ubuf;
--		while (count > 0) {
-+		while (count >= sizeof(*u)) {
- 			if (__put_user(getreg(target, pos), u++))
- 				return -EFAULT;
- 			count -= sizeof(*u);
-@@ -434,14 +434,14 @@ static int genregs_set(struct task_struct *target,
  	int ret = 0;
- 	if (kbuf) {
- 		const unsigned long *k = kbuf;
--		while (count > 0 && !ret) {
-+		while (count >= sizeof(*k) && !ret) {
- 			ret = putreg(target, pos, *k++);
- 			count -= sizeof(*k);
- 			pos += sizeof(*k);
- 		}
- 	} else {
- 		const unsigned long  __user *u = ubuf;
--		while (count > 0 && !ret) {
-+		while (count >= sizeof(*u) && !ret) {
- 			unsigned long word;
- 			ret = __get_user(word, u++);
- 			if (ret)
-@@ -1219,14 +1219,14 @@ static int genregs32_get(struct task_struct *target,
+ 	u32 r;
+@@ -370,7 +370,7 @@ static int iwl_read_otp_word(struct iwl_priv *priv, u16 addr, u16 *eeprom_data)
+ 				CSR_OTP_GP_REG_ECC_CORR_STATUS_MSK);
+ 		IWL_ERR(priv, "Correctable OTP ECC error, continue read\n");
+ 	}
+-	*eeprom_data = le16_to_cpu((__force __le16)(r >> 16));
++	*eeprom_data = cpu_to_le16(r >> 16);
+ 	return 0;
+ }
+ 
+@@ -379,7 +379,8 @@ static int iwl_read_otp_word(struct iwl_priv *priv, u16 addr, u16 *eeprom_data)
+  */
+ static bool iwl_is_otp_empty(struct iwl_priv *priv)
  {
- 	if (kbuf) {
- 		compat_ulong_t *k = kbuf;
--		while (count > 0) {
-+		while (count >= sizeof(*k)) {
- 			getreg32(target, pos, k++);
- 			count -= sizeof(*k);
- 			pos += sizeof(*k);
+-	u16 next_link_addr = 0, link_value;
++	u16 next_link_addr = 0;
++	__le16 link_value;
+ 	bool is_empty = false;
+ 
+ 	/* locate the beginning of OTP link list */
+@@ -409,7 +410,8 @@ static bool iwl_is_otp_empty(struct iwl_priv *priv)
+ static int iwl_find_otp_image(struct iwl_priv *priv,
+ 					u16 *validblockaddr)
+ {
+-	u16 next_link_addr = 0, link_value = 0, valid_addr;
++	u16 next_link_addr = 0, valid_addr;
++	__le16 link_value = 0;
+ 	int usedblocks = 0;
+ 
+ 	/* set addressing mode to absolute to traverse the link list */
+@@ -429,7 +431,7 @@ static int iwl_find_otp_image(struct iwl_priv *priv,
+ 		 * check for more block on the link list
+ 		 */
+ 		valid_addr = next_link_addr;
+-		next_link_addr = link_value * sizeof(u16);
++		next_link_addr = le16_to_cpu(link_value) * sizeof(u16);
+ 		IWL_DEBUG_INFO(priv, "OTP blocks %d addr 0x%x\n",
+ 			       usedblocks, next_link_addr);
+ 		if (iwl_read_otp_word(priv, next_link_addr, &link_value))
+@@ -463,7 +465,7 @@ static int iwl_find_otp_image(struct iwl_priv *priv,
+  */
+ int iwl_eeprom_init(struct iwl_priv *priv)
+ {
+-	u16 *e;
++	__le16 *e;
+ 	u32 gp = iwl_read32(priv, CSR_EEPROM_GP);
+ 	int sz;
+ 	int ret;
+@@ -482,7 +484,7 @@ int iwl_eeprom_init(struct iwl_priv *priv)
+ 		ret = -ENOMEM;
+ 		goto alloc_err;
+ 	}
+-	e = (u16 *)priv->eeprom;
++	e = (__le16 *)priv->eeprom;
+ 
+ 	ret = priv->cfg->ops->lib->eeprom_ops.verify_signature(priv);
+ 	if (ret < 0) {
+@@ -521,7 +523,7 @@ int iwl_eeprom_init(struct iwl_priv *priv)
  		}
- 	} else {
- 		compat_ulong_t __user *u = ubuf;
--		while (count > 0) {
-+		while (count >= sizeof(*u)) {
- 			compat_ulong_t word;
- 			getreg32(target, pos, &word);
- 			if (__put_user(word, u++))
-@@ -1247,14 +1247,14 @@ static int genregs32_set(struct task_struct *target,
- 	int ret = 0;
- 	if (kbuf) {
- 		const compat_ulong_t *k = kbuf;
--		while (count > 0 && !ret) {
-+		while (count >= sizeof(*k) && !ret) {
- 			ret = putreg32(target, pos, *k++);
- 			count -= sizeof(*k);
- 			pos += sizeof(*k);
- 		}
- 	} else {
- 		const compat_ulong_t __user *u = ubuf;
--		while (count > 0 && !ret) {
-+		while (count >= sizeof(*u) && !ret) {
- 			compat_ulong_t word;
- 			ret = __get_user(word, u++);
+ 		for (addr = validblockaddr; addr < validblockaddr + sz;
+ 		     addr += sizeof(u16)) {
+-			u16 eeprom_data;
++			__le16 eeprom_data;
+ 
+ 			ret = iwl_read_otp_word(priv, addr, &eeprom_data);
  			if (ret)
+@@ -545,7 +547,7 @@ int iwl_eeprom_init(struct iwl_priv *priv)
+ 				goto done;
+ 			}
+ 			r = _iwl_read_direct32(priv, CSR_EEPROM_REG);
+-			e[addr / 2] = le16_to_cpu((__force __le16)(r >> 16));
++			e[addr / 2] = cpu_to_le16(r >> 16);
+ 		}
+ 	}
+ 	ret = 0;
 -- 
 1.6.6
 
