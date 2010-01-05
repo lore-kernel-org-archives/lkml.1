@@ -1,79 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755486Ab0AEXA2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755560Ab0AEXAs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755486Ab0AEXA2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 18:00:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755322Ab0AEXAW
+	id S1755560Ab0AEXAs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 18:00:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755521Ab0AEXAq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 18:00:22 -0500
-Received: from g6t0185.atlanta.hp.com ([15.193.32.62]:25015 "EHLO
-	g6t0185.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755171Ab0AEXAR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 18:00:17 -0500
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Alex Brooks <a.brooks@marathon-robotics.com>
-Subject: Re: BAR 0: can't allocate resource
-Date: Tue, 5 Jan 2010 16:00:13 -0700
-User-Agent: KMail/1.9.10
-Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <201001052018.02607.a.brooks@marathon-robotics.com> <201001051033.19486.bjorn.helgaas@hp.com> <201001060919.48453.a.brooks@marathon-robotics.com>
-In-Reply-To: <201001060919.48453.a.brooks@marathon-robotics.com>
+	Tue, 5 Jan 2010 18:00:46 -0500
+Received: from fieldses.org ([174.143.236.118]:40695 "EHLO fieldses.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755507Ab0AEXAo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jan 2010 18:00:44 -0500
+Date: Tue, 5 Jan 2010 18:01:31 -0500
+From: "J. Bruce Fields" <bfields@fieldses.org>
+To: Xiaotian Feng <dfeng@redhat.com>
+Cc: linux-nfs@vger.kernel.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Neil Brown <neilb@suse.de>,
+       Trond Myklebust <Trond.Myklebust@netapp.com>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: Re: [PATCH] sunrpc: fix peername failed on closed listener
+Message-ID: <20100105230131.GA22850@fieldses.org>
+References: <1262227956-21470-1-git-send-email-dfeng@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <201001051600.14982.bjorn.helgaas@hp.com>
+In-Reply-To: <1262227956-21470-1-git-send-email-dfeng@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 05 January 2010 03:19:47 pm Alex Brooks wrote:
-> > > I have a problem getting a couple of PCI cards to play nicely together.
-> > > ...
-> > >
-> > > And (for both kernels) the output of lspci has the following line:
-> > >   01:04.0 Unclassified device [0080]: Device 0002:0080
-> >
-> > When you have only the 8-port serial card installed, it appears at
-> > 01:04.0.  When you have both cards installed, we don't see a new device,
-> > and whatever is at 01:04.0 no longer looks like the octal UART.
+On Thu, Dec 31, 2009 at 10:52:36AM +0800, Xiaotian Feng wrote:
+> There're some warnings of "nfsd: peername failed (err 107)!"
+> socket error -107 means Transport endpoint is not connected.
+> This warning message was outputed by svc_tcp_accept() [net/sunrpc/svcsock.c],
+> when kernel_getpeername returns -107. This means socket might be CLOSED.
 > 
-> I'm pretty sure that it is the octal UART, but it isn't being recognised 
-> properly.
-
-I'm sure it *is* the UART, but we're getting the wrong data back from
-it, so we can't use it.  The Mini PCI adapter must be interfering with
-the UART board somehow.  Since you said the Mini PCI slot on the adapter
-is empty, and the jumpers are programmed correctly, I suspect the adapter
-is broken.  Maybe a connector problem?  Do you have another one that
-behaves the same way?
-
-If you put a Mini PCI card in the slot and try this in a system without
-the UART card, does the Mini PCI card work correctly?  The jumpers on
-the adapter should determine the PCI bus number where the Mini PCI device
-appears.
-
-> To test this theory, I tried with (a) no cards at all, and (b)  
-> just the MiniPCI adapter (no serial card) -- nothing else appears at 01:04.0 
-> (output of lspci attached).
-
-The PC/104+ to Mini PCI adapter looks like it's completely passive.  It
-should be invisible to the OS, so it won't appear in lspci.  For both
-cases, the lspci output you attached is exactly what I would expect.
-
-I don't see any indication that this is a software problem (I know nothing
-about PC/104, so let me know if you disagree, and why).
-
-> > If so, both of those web pages mention jumpers that set the card's
-> > PCI device ("slot") number.  My guess is that both of your cards
-> > are set to the same number.
+> And svc_tcp_accept was called by svc_recv() [net/sunrpc/svc_xprt.c]
 > 
-> I'd already looked for this, I'm certain I have the jumpers right (I tried 
-> intentionally setting them incorrectly, the failure mode is different).
+>         if (test_bit(XPT_LISTENER, &xprt->xpt_flags)) {
+>         <snip>
+>                 newxpt = xprt->xpt_ops->xpo_accept(xprt);
+>         <snip>
+> 
+> So this might happen when xprt->xpt_flags has both XPT_LISTENER and XPT_CLOSE.
+> 
+> Let's take a look at commit b0401d72, this commit has moved the close
+> processing after do recvfrom method, but this commit also introduces this
+> warnings, if the xpt_flags has both XPT_LISTENER and XPT_CLOSED, we should
+> close it, not accpet then close.
 
-How did you set them, and what was the failure?  If the adapter is really
-passive and the Mini PCI slot is empty, it seems strange that the adapter
-jumper setting would make any difference at all.
+The logic here seems unnecessarily complicated now, but as a minimal
+fix, this seems fine.
 
-Bjorn
+Is the *only* justification for this to silence this warning, or is
+there some more serious problem I'm missing?
+
+--b.
+
+> 
+> Signed-off-by: Xiaotian Feng <dfeng@redhat.com>
+> Cc: J. Bruce Fields <bfields@fieldses.org>
+> Cc: Neil Brown <neilb@suse.de>
+> Cc: Trond Myklebust <Trond.Myklebust@netapp.com>
+> Cc: David S. Miller <davem@davemloft.net>
+> ---
+> diff --git a/net/sunrpc/svc_xprt.c b/net/sunrpc/svc_xprt.c
+> index 1c924ee..187f0f4 100644
+> --- a/net/sunrpc/svc_xprt.c
+> +++ b/net/sunrpc/svc_xprt.c
+> @@ -699,7 +699,8 @@ int svc_recv(struct svc_rqst *rqstp, long timeout)
+>  	spin_unlock_bh(&pool->sp_lock);
+>  
+>  	len = 0;
+> -	if (test_bit(XPT_LISTENER, &xprt->xpt_flags)) {
+> +	if (test_bit(XPT_LISTENER, &xprt->xpt_flags) &&
+> +	    !test_bit(XPT_CLOSE, &xprt->xpt_flags)) {
+>  		struct svc_xprt *newxpt;
+>  		newxpt = xprt->xpt_ops->xpo_accept(xprt);
+>  		if (newxpt) {
