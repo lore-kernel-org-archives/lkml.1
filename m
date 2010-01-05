@@ -1,79 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755298Ab0AESyQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754286Ab0AESzA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755298Ab0AESyQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 13:54:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752617Ab0AESyP
+	id S1754286Ab0AESzA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 13:55:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752117Ab0AESy7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 13:54:15 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:46325 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754576Ab0AESyO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 13:54:14 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=sNARWH71zgSROFBRsWAVGffn6j6gBnDPXb2dZe/TtPxW9ToClXtSr9kHlQI1INZUI
-	yluHf6Q468jzTiyeVoWFw==
-Date: Tue, 5 Jan 2010 10:53:55 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: H Hartley Sweeten <hartleys@visionengravers.com>
-cc: Linux Kernel <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org,
-       bfields@fieldses.org
-Subject: Re: [PATCH] nodemask.h: change any_online_node() to a static
- inline
-In-Reply-To: <201001051117.39423.hartleys@visionengravers.com>
-Message-ID: <alpine.DEB.2.00.1001051052100.26131@chino.kir.corp.google.com>
-References: <201001051117.39423.hartleys@visionengravers.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Tue, 5 Jan 2010 13:54:59 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:30180 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751977Ab0AESy6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jan 2010 13:54:58 -0500
+Date: Tue, 5 Jan 2010 19:53:30 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Paul Menage <menage@google.com>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, bblum@google.com, ebiederm@xmission.com,
+       lizf@cn.fujitsu.com, matthltc@us.ibm.com,
+       containers@lists.linux-foundation.org
+Subject: Re: [RFC] [PATCH 1/2] cgroups: read-write lock CLONE_THREAD
+	forking per threadgroup
+Message-ID: <20100105185330.GA17545@redhat.com>
+References: <200908202114.n7KLEN5H026646@imap1.linux-foundation.org> <20090821102611.GA2611@redhat.com> <20090821104528.GA3487@redhat.com> <6599ad830908211637w6c9fd3a7tbe41bc106ada03d7@mail.gmail.com> <20090822130952.GA4240@redhat.com> <20100103190613.GA13423@andrew.cmu.edu> <20100103190752.GB13423@andrew.cmu.edu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100103190752.GB13423@andrew.cmu.edu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 5 Jan 2010, H Hartley Sweeten wrote:
+On 01/03, Ben Blum wrote:
+>
+> Adds functionality to read/write lock CLONE_THREAD fork()ing per-threadgroup
 
-> diff --git a/include/linux/nodemask.h b/include/linux/nodemask.h
-> index 454997c..1f66e02 100644
-> --- a/include/linux/nodemask.h
-> +++ b/include/linux/nodemask.h
-> @@ -467,15 +467,6 @@ static inline int num_node_state(enum node_states state)
->  #define node_online_map 	node_states[N_ONLINE]
->  #define node_possible_map 	node_states[N_POSSIBLE]
->  
-> -#define any_online_node(mask)			\
-> -({						\
-> -	int node;				\
-> -	for_each_node_mask(node, (mask))	\
-> -		if (node_online(node))		\
-> -			break;			\
-> -	node;					\
-> -})
-> -
->  #define num_online_nodes()	num_node_state(N_ONLINE)
->  #define num_possible_nodes()	num_node_state(N_POSSIBLE)
->  #define node_online(node)	node_state((node), N_ONLINE)
-> @@ -484,6 +475,17 @@ static inline int num_node_state(enum node_states state)
->  #define for_each_node(node)	   for_each_node_state(node, N_POSSIBLE)
->  #define for_each_online_node(node) for_each_node_state(node, N_ONLINE)
->  
-> +static inline int any_online_node(nodemask_t mask)
+I didn't actually read this series, but at first glance it still has
+problems...
+
+> +struct sighand_struct *threadgroup_fork_lock(struct task_struct *tsk)
+
+static?
+
 > +{
-> +	int node;
+> +	struct sighand_struct *sighand;
+> +	struct task_struct *p;
 > +
-> +	for_each_node_mask(node, mask) {
-> +		if (node_online(node))
-> +			break;
-> +	}
-> +	return node;
-> +}
+> +	/* tasklist lock protects sighand_struct's disappearance in exit(). */
+> +	read_lock(&tasklist_lock);
 > +
->  /*
->   * For nodemask scrach area.
->   * NODEMASK_ALLOC(type, name) allocates an object with a specified type and
+> +	/* make sure the threadgroup's state is sane before we proceed */
+> +	if (unlikely(!thread_group_leader(tsk))) {
+> +		/* a race with de_thread() stripped us of our leadership */
+> +		read_unlock(&tasklist_lock);
+> +		return ERR_PTR(-EAGAIN);
 
-Could you simply remove any_online_node() and replace its callers with 
-first_node(node_online_map) instead?
+I don't understand how this can close the race with de_thread().
+
+Suppose this tsk is the new leader, after de_thread() changed ->group_leader
+and dropped tasklist_lock.
+
+threadgroup_fork_lock() bumps sighand->count
+
+de_thread() continues, notices oldsighand->count != 1 and switches
+to the new ->sighand.
+
+After that tsk can spawn other threads, but cgroup_fork() will use
+newsighand->threadgroup_fork_lock while cgroup_attach_proc() relies
+on oldsighand->threadgroup_fork_lock.
+
+> +	/* now try to find a sighand */
+> +	if (likely(tsk->sighand)) {
+> +		sighand = tsk->sighand;
+> +	} else {
+> +		sighand = ERR_PTR(-ESRCH);
+> +		/*
+> +		 * tsk is exiting; try to find another thread in the group
+> +		 * whose sighand pointer is still alive.
+> +		 */
+> +		list_for_each_entry_rcu(p, &tsk->thread_group, thread_group) {
+> +			if (p->sighand) {
+> +				sighand = tsk->sighand;
+
+can't understand this "else {}" code... We hold tasklist, if the group
+leader is dead (->sighand == NULL), then the whole thread group is
+dead.
+
+Even if we had another thread with ->sighand != NULL, what is the point
+of "if (unlikely(!thread_group_leader(tsk)))" check then?
+
+Oleg.
+
