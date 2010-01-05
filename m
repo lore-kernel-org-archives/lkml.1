@@ -1,64 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755013Ab0AES2S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755246Ab0AESbJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755013Ab0AES2S (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 13:28:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753702Ab0AES2P
+	id S1755246Ab0AESbJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 13:31:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754745Ab0AESbG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 13:28:15 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:41655 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752848Ab0AES2L (ORCPT
+	Tue, 5 Jan 2010 13:31:06 -0500
+Received: from moutng.kundenserver.de ([212.227.17.8]:62859 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754744Ab0AESbB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 13:28:11 -0500
-Date: Tue, 5 Jan 2010 10:25:43 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Christoph Lameter <cl@linux-foundation.org>
-cc: Andi Kleen <andi@firstfloor.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Minchan Kim <minchan.kim@gmail.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "hugh.dickins" <hugh.dickins@tiscali.co.uk>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [RFC][PATCH 6/8] mm: handle_speculative_fault()
-In-Reply-To: <alpine.DEB.2.00.1001051211000.2246@router.home>
-Message-ID: <alpine.LFD.2.00.1001051019280.3630@localhost.localdomain>
-References: <20100104182429.833180340@chello.nl> <20100104182813.753545361@chello.nl> <20100105092559.1de8b613.kamezawa.hiroyu@jp.fujitsu.com> <28c262361001042029w4b95f226lf54a3ed6a4291a3b@mail.gmail.com> <20100105134357.4bfb4951.kamezawa.hiroyu@jp.fujitsu.com>
- <alpine.LFD.2.00.1001042052210.3630@localhost.localdomain> <20100105143046.73938ea2.kamezawa.hiroyu@jp.fujitsu.com> <20100105163939.a3f146fb.kamezawa.hiroyu@jp.fujitsu.com> <alpine.LFD.2.00.1001050707520.3630@localhost.localdomain>
- <alpine.LFD.2.00.1001050810380.3630@localhost.localdomain> <87wrzwbh0z.fsf@basil.nowhere.org> <alpine.LFD.2.00.1001050950500.3630@localhost.localdomain> <alpine.DEB.2.00.1001051211000.2246@router.home>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Tue, 5 Jan 2010 13:31:01 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: David Howells <dhowells@redhat.com>
+Subject: Re: [PATCH] BUG(): CONFIG_BUG=n version of BUG() should be unreachable()
+Date: Tue, 5 Jan 2010 19:30:23 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; x86_64; ; )
+Cc: Sam Ravnborg <sam@ravnborg.org>,
+       Alexander Beregalov <a.beregalov@gmail.com>,
+       linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
+       David Daney <ddaney@caviumnetworks.com>
+References: <20091226184722.GA25275@merkur.ravnborg.org> <1261531032-15225-1-git-send-email-a.beregalov@gmail.com> <9664.1262714298@redhat.com>
+In-Reply-To: <9664.1262714298@redhat.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201001051930.23532.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1/yvVV+9YxhsdaTBPMJe7AYB04sYSJVP+hP7jm
+ JMR/r5hqJxX6/ICwjedx0IfMcqTU9wHxtMiuE+lkOfa8nMYgA/
+ ojMU4qBPRK9kbRpFq/xwA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 5 Jan 2010, Christoph Lameter wrote:
+On Tuesday 05 January 2010, David Howells wrote:
+> Sam Ravnborg <sam@ravnborg.org> wrote:
 > 
-> If the critical section protected by the spinlock is small then the
-> delay will keep the cacheline exclusive until we hit the unlock. This
-> is the case here as far as I can tell.
+> > +#define BUG() do {                                                   \
+> > +             for (;;)                                                \
+> > +                     /* endless loop*/;                              \
+> > +             unreachable();                                          \
+> > +} while(0)
+> 
+> Can you not do:
+> 
+>         #define BUG() do {                                              \
+>                         unreachable();                                  \
+>         } while(1)
+> 
+> instead?  If the compiler is interpreting unreachable() to really mean that
+> what comes after will not be reached, then the condition/loop at the end of
+> the block should be optimised away.
 
-I hope somebody can time it. Because I think the idle reads on all the 
-(unsuccessful) spinlocks will kill it.
+Forcing the loop here is really wrong because it needlessly
+causes extra code to be emitted. We don't really want controlled
+error handling here (that is the definition of CONFIG_BUG=n),
+so this is only about shutting up the compiler warning.
 
-Think of it this way: under heavy contention, you'll see a lot of people 
-waiting for the spinlocks and one of them succeeds at writing it, reading 
-the line. So you get an O(n^2) bus traffic access pattern. In contrast, 
-with an xadd, you get O(n) behavior - everybody does _one_ acquire-for- 
-write bus access.
+I guess the best would be something like
+#if defined (__GNUC__) && (__GNUC_MAJOR__ == 4) && (__GNUC_MINOR__ >= 5)
+#define BUG() __builtin_unreachable()
+#else
+#define BUG() do { } while (0) /* this may cause a warning */
+#endif
 
-Remember: the critical section is small, but since you're contending on 
-the spinlock, that doesn't much _help_. The readers are all hitting the 
-lock (and you can try to solve the O(n*2) issue with back-off, but quite 
-frankly, anybody who does that has basically already lost - I'm personally 
-convinced you should never do lock backoff, and instead look at what you 
-did wrong at a higher level instead).
+I still haven't found out how many warnings we are talking about
+here, maybe we can just silence them by adding individual
+unreachable() statements after BUG();
 
-				Linus
+	Arnd
