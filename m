@@ -1,121 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755214Ab0AEXEg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755536Ab0AEXEm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755214Ab0AEXEg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 18:04:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753639Ab0AEXEf
+	id S1755536Ab0AEXEm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 18:04:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755394Ab0AEXEk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 18:04:35 -0500
-Received: from tomts40.bellnexxia.net ([209.226.175.97]:43957 "EHLO
-	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753286Ab0AEXEe (ORCPT
+	Tue, 5 Jan 2010 18:04:40 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:34529 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755418Ab0AEXEj convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 18:04:34 -0500
-Date: Tue, 5 Jan 2010 17:59:30 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: Tejun Heo <tj@kernel.org>, linux-kernel@vger.kernel.org
-Subject: Re: [RFC local_t removal V1 3/4] Optimized add_local()
-Message-ID: <20100105225930.GD32584@Krystal>
-References: <20100105220417.400092933@quilx.com> <20100105220439.030792114@quilx.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20100105220439.030792114@quilx.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.27.31-grsec (i686)
-X-Uptime: 17:57:32 up 20 days,  7:16,  5 users,  load average: 0.02, 0.10,
-	0.18
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 5 Jan 2010 18:04:39 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: =?utf-8?q?Bart=C5=82omiej_Zimo=C5=84?= <uzi18@o2.pl>
+Subject: Re: [linux-pm] [suspend/resume] Re: userspace notification from module
+Date: Wed, 6 Jan 2010 00:05:17 +0100
+User-Agent: KMail/1.12.3 (Linux/2.6.33-rc2-tst; KDE/4.3.3; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org, Anders Eriksson <aeriksson@fastmail.fm>,
+       Stefan Seyfried <stefan.seyfried@googlemail.com>,
+       linux-pm@lists.linux-foundation.org, danborkmann@googlemail.com,
+       awalls@radix.net
+References: <686edb2c.6263643a.4b3f4a3b.b60b3@o2.pl> <20100105222657.27218c4c@strolchi.home.s3e.de> <11f818a7.4b53f68a.4b43bb9b.b3a7f@o2.pl>
+In-Reply-To: <11f818a7.4b53f68a.4b43bb9b.b3a7f@o2.pl>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Message-Id: <201001060005.17246.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Christoph Lameter (cl@linux-foundation.org) wrote:
-> Use XADD to implement add_local().
-
-xadd should only be used to implement add_local_return, not add_local.
-
-add_local can be implemented with the "add" instruction, which is
-significantly faster if my memory serves me correctly.
-
-Thanks,
-
-Mathieu
-
+On Tuesday 05 January 2010, Bartłomiej Zimoń wrote:
+> Dnia 5 stycznia 2010 22:26 	Stefan Seyfried <stefan.seyfried@googlemail.com> napisał(a):
+> > On Tue, 05 Jan 2010 10:07:06 +0100
+> > Anders Eriksson <aeriksson@fastmail.fm> wrote:
+> > 
+> > > 
+> > > rjw@sisk.pl said:
+> > > >> > I don't see a problem with this in principle, although I don't think signals
+> > > >> > are very suitable for this particular purpose, because you need two-way
+> > > >> > communication between the power manager and the processes it's going to
+> > > >> > notify (because it has to wait for the processes to finish their preparations
+> > > >> > and to tell it that they are ready). 
+> > > 
+> > > Wouldn't there need to be dependecy tracking for the userspace processes? A 
+> > > process couldn't signal "done" until it know there's no more work to do, which 
+> > > requires all other processes to finish up first.
+> > 
+> > No. 99% of the processes don't care about suspend. They don't need
+> > notifications or anything.
+> > The few that do care, register themselves with the power manager. They
+> > get notified before suspend and the power manager might wait until they
+> > tell him that they are ready.
+> > A special case are processes that only want to inhibit suspend - the CD
+> > burning application case - they just tell the power manager "I am
+> > important and you must not suspend now". They do this even if there is
+> > no suspend notification, and once they are done with the critical part
+> > of their work, they remove their "inhibit flag".
+> > 
+> > This all works pretty well already, and is really not very complicated.
 > 
-> Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
-> 
-> ---
->  arch/x86/include/asm/add-local.h |   56 ++++++++++++++++++++++++++++++++++++++-
->  1 file changed, 55 insertions(+), 1 deletion(-)
-> 
-> Index: linux-2.6/arch/x86/include/asm/add-local.h
-> ===================================================================
-> --- linux-2.6.orig/arch/x86/include/asm/add-local.h	2010-01-05 15:29:11.000000000 -0600
-> +++ linux-2.6/arch/x86/include/asm/add-local.h	2010-01-05 15:33:59.000000000 -0600
-> @@ -1,2 +1,56 @@
-> -#include <asm-generic/add-local.h>
-> +#ifndef __ASM_X86_ADD_LOCAL_H
-> +#define __ASM_X86_ADD_LOCAL_H
-> +
-> +#include <linux/types.h>
-> +#include <asm-generic/add-local-generic.h>
-> +
-> +static inline unsigned long __add_return_local(volatile void *ptr,
-> +		unsigned long value, int size)
-> +{
-> +	unsigned long r;
-> +
-> +#ifdef CONFIG_M386
-> +	if (unlikely(boot_cpu_data.x86 <= 3))
-> +                return __add_return_local_generic(ptr, value, size);
-> +#endif
-> +
-> +	/*
-> +	 * Sanity checking, compile-time.
-> +	 */
-> +	if (size == 8 && sizeof(unsigned long) != 8)
-> +		wrong_size_add_local(ptr);
-> +
-> +	r = value;
-> +	switch (size) {
-> +	case 1:
-> +		asm volatile("xaddb %0, %1;": "+r" (r), "+m" (*((u8 *)ptr)):
-> +			 : "memory");
-> +		break;
-> +	case 2:
-> +		asm volatile("xaddw %0, %1;": "+r" (r), "+m" (*((u16 *)ptr)):
-> +			 : "memory");
-> +		break;
-> +	case 4:
-> +		asm volatile("xaddl %0, %1;": "+r" (r), "+m" (*((u32 *)ptr)):
-> +			 : "memory");
-> +		break;
-> +	case 8:
-> +		asm volatile("xaddq %0, %1;": "+r" (r), "+m" (*((u64 *)ptr)):
-> +			 : "memory");
-> +		break;
-> +	default:
-> +		wrong_size_add_local(ptr);
-> +	}
-> +	return r + value;
-> +}
-> +
-> +#define add_return_local(ptr, v)				  	\
-> +	((__typeof__(*(ptr)))__add_return_local((ptr), (unsigned long)(v), \
-> +			sizeof(*(ptr))))
-> +
-> +#define add_local(ptr, v) (void)__add_return_local((ptr), (unsigned long)(v), \
-> +			sizeof(*(ptr)))
-> +
-> +
-> +#endif
->  
-> 
-> -- 
+> So pm could be very simple, and i think we don't need more.
+> I want ask You how usualy such user (not root) process notification is done,
+> You are talking about pm-utils right?
 
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Well, I think you have some specific issue with pm-utils, but you're not
+telling us what it is.  So, why exactly is pm-utils not suitable for your
+needs?
+
+Rafael
