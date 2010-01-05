@@ -1,74 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754971Ab0AEPvA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754953Ab0AEP4a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754971Ab0AEPvA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 10:51:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754945Ab0AEPu7
+	id S1754953Ab0AEP4a (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 10:56:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754711Ab0AEP43
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 10:50:59 -0500
-Received: from mtagate7.de.ibm.com ([195.212.17.167]:33031 "EHLO
-	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754917Ab0AEPu6 (ORCPT
+	Tue, 5 Jan 2010 10:56:29 -0500
+Received: from zrtps0kp.nortel.com ([47.140.192.56]:62458 "EHLO
+	zrtps0kp.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754681Ab0AEP42 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 10:50:58 -0500
-Date: Tue, 5 Jan 2010 16:50:53 +0100
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: Roland McGrath <roland@redhat.com>, caiqian@redhat.com,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Jan Kratochvil <jkratoch@redhat.com>, linux-kernel@vger.kernel.org,
-       linux-s390@vger.kernel.org, utrace-devel@redhat.com
-Subject: Re: s390 && user_enable_single_step() (Was: odd utrace testing
- results on s390x)
-Message-ID: <20100105165053.3e75e438@mschwide.boeblingen.de.ibm.com>
-In-Reply-To: <20100105154725.GB9376@redhat.com>
-References: <1503844142.2061111261478093776.JavaMail.root@zmail06.collab.prod.int.phx2.redhat.com>
-	<1257887498.2061171261478252049.JavaMail.root@zmail06.collab.prod.int.phx2.redhat.com>
-	<20100104155225.GA16650@redhat.com>
-	<20100104171626.22ea2d9c@mschwide.boeblingen.de.ibm.com>
-	<20100104181412.GA21146@redhat.com>
-	<20100104211147.4CC94D532@magilla.sf.frob.com>
-	<20100105105030.66bb8a0a@mschwide.boeblingen.de.ibm.com>
-	<20100105153633.GA9376@redhat.com>
-	<20100105154725.GB9376@redhat.com>
-Organization: IBM Corporation
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.18.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 5 Jan 2010 10:56:28 -0500
+Message-ID: <4B43602F.1050202@nortel.com>
+Date: Tue, 05 Jan 2010 09:52:15 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-2.7.b4.fc11 Thunderbird/3.0b4
+MIME-Version: 1.0
+To: Nobin Mathew <nobin.mathew@gmail.com>
+CC: Shivdas Gujare <shivdas.tech@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: init_task belongs to "process 0" or "process 1"?
+References: <cf70f0211001040007s5be9f1aas7bb52928c8d50e7c@mail.gmail.com> <8d6898731001042332m6b5b97b0n5515ae166f62aad2@mail.gmail.com>
+In-Reply-To: <8d6898731001042332m6b5b97b0n5515ae166f62aad2@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 05 Jan 2010 15:56:21.0703 (UTC) FILETIME=[A03E0570:01CA8E1F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 5 Jan 2010 16:47:25 +0100
-Oleg Nesterov <oleg@redhat.com> wrote:
-
-> On 01/05, Oleg Nesterov wrote:
-> >
-> > Anyway. I modified the debugging patch a bit:
-> >
-> > --- K/arch/s390/kernel/traps.c~	2009-12-22 10:41:52.909174198 -0500
-> > +++ K/arch/s390/kernel/traps.c	2010-01-05 09:49:19.541792379 -0500
-> > @@ -384,6 +384,8 @@ void __kprobes do_single_step(struct pt_
-> >  	}
-> >  	if (tracehook_consider_fatal_signal(current, SIGTRAP))
-> >  		force_sig(SIGTRAP, current);
-> > +	else
-> > +		printk("XXX: %d %d\n", current->pid, test_thread_flag(TIF_SINGLE_STEP));
-> >  }
-> >
-> >  static void default_trap_handler(struct pt_regs * regs, long interruption_code)
-> > -------------------------------------------------------------------------------
+On 01/05/2010 01:32 AM, Nobin Mathew wrote:
+> init_task is the head of doubly linked list which holds all
+> task_structs in the system. init_task is again the task_struct for
+> process 0/swapper/idle task. This process is created manually (I meant
+> to say not by copy_process() calls). Manually means they are static
+> structures defined in the code (see INIT_TASK, init_mm, init_fs etc).
+> There will be multiple idle task if there is more than 1 cpu core.
+> Idle task is the one which is scheduled if there is no other task
+> ready for scheduling.
 > 
-> Ah, please ignore. I guess TIF_SINGLE_STEP was already cleared by the caller
-> in entry.S
+> Init task is process 1 which is initially a kernel thread created from
+> process 0 using copy_process(), then it does an execv() (/sbin/init )
+> or similar one to create the normal process init.
+> 
+> Name given to process 0 is swapper.
+> .comm           = "swapper"
 
-Yes, TIF_SINGLE_STEP is checked in entry.S and cleared before do_signal
-is called. That is the "ni" instruction at sysc_singlestep and
-sysc_sigpending.
+Oddly enough, this name makes no sense anymore.  Why don't we call
+process 0 "idle"?
 
--- 
-blue skies,
-   Martin.
-
-"Reality continues to ruin my life." - Calvin.
-
+Chris
