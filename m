@@ -1,165 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753499Ab0AEGDx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752697Ab0AEGF5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753499Ab0AEGDx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 01:03:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752068Ab0AEGDw
+	id S1752697Ab0AEGF5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 01:05:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750789Ab0AEGF4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 01:03:52 -0500
-Received: from e9.ny.us.ibm.com ([32.97.182.139]:34126 "EHLO e9.ny.us.ibm.com"
+	Tue, 5 Jan 2010 01:05:56 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:52388 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750763Ab0AEGDv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 01:03:51 -0500
-From: Darren Hart <dvhltc@us.ibm.com>
-To: rostedt@goodmis.org, linux-kernel@vger.kernel.org
-Cc: dvhltc@us.ibm.com
-Subject: [PATCH] trace-view: consolidate the trace-view-store row access
-Date: Mon,  4 Jan 2010 22:03:38 -0800
-Message-Id: <1262671418-26446-1-git-send-email-dvhltc@us.ibm.com>
-X-Mailer: git-send-email 1.6.3.3
+	id S1750784Ab0AEGF4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jan 2010 01:05:56 -0500
+Date: Tue, 5 Jan 2010 07:05:37 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Jiri Olsa <jolsa@redhat.com>, Jason Baron <jbaron@redhat.com>,
+       rostedt@goodmis.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCH] dynamic debug - adding ring buffer storage support
+Message-ID: <20100105060537.GA17310@elte.hu>
+References: <1261481526-17630-1-git-send-email-jolsa@redhat.com>
+ <20091222153955.GD3308@redhat.com>
+ <20091222161353.GB20225@jolsa.lab.eng.brq.redhat.com>
+ <20091228092402.GD24690@elte.hu>
+ <20091230225011.GJ6322@nowhere>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091230225011.GJ6322@nowhere>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: 1.2
+X-ELTE-SpamLevel: s
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=1.2 required=5.9 tests=BAYES_00,FH_DATE_PAST_20XX autolearn=no SpamAssassin version=3.2.5
+	3.2 FH_DATE_PAST_20XX      The date is grossly in the future.
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rather than provide an accessor function for each field of the row
-record in the trace-view-store, simply return the row record and allow
-the caller to access the fields directly.
 
-Signed-off-by: Darren Hart <dvhltc@us.ibm.com>
----
- kernel-shark.c     |   10 ++++++----
- trace-view-store.c |   29 ++++-------------------------
- trace-view-store.h |    4 ----
- trace-view.c       |    7 +++++--
- 4 files changed, 15 insertions(+), 35 deletions(-)
+* Frederic Weisbecker <fweisbec@gmail.com> wrote:
 
-diff --git a/kernel-shark.c b/kernel-shark.c
-index fbc5a5f..a55fc8a 100644
---- a/kernel-shark.c
-+++ b/kernel-shark.c
-@@ -137,6 +137,7 @@ static void row_double_clicked(GtkTreeView        *treeview,
- 			       gpointer            data)
- {
- 	struct shark_info *info = data;
-+	TraceViewRecord *rec;
- 	GtkTreeModel *model;
- 	gchar *spath;
- 	guint64 time;
-@@ -151,7 +152,8 @@ static void row_double_clicked(GtkTreeView        *treeview,
- 	row = atoi(spath);
- 	g_free(spath);
- 
--	time = trace_view_store_get_time_from_row(TRACE_VIEW_STORE(model), row);
-+	rec = trace_view_store_get_row(TRACE_VIEW_STORE(model), row);
-+	time = rec->timestamp;
- 	trace_graph_select_by_time(info->ginfo, time);
- }
- 
-@@ -220,7 +222,7 @@ do_tree_popup(GtkWidget *widget, GdkEventButton *event, gpointer data)
- 	static GtkWidget *menu_filter_add_task;
- 	static GtkWidget *menu_filter_clear_tasks;
- 	struct record *record;
--	TraceViewStore *store;
-+	TraceViewRecord *vrec;
- 	GtkTreeSelection *selection;
- 	GtkTreeModel *model;
- 	GtkTreePath *path;
-@@ -281,8 +283,8 @@ do_tree_popup(GtkWidget *widget, GdkEventButton *event, gpointer data)
- 		g_free(spath);
- 
- 		model = gtk_tree_view_get_model(GTK_TREE_VIEW(info->treeview));
--		store = TRACE_VIEW_STORE(model);
--		offset = trace_view_store_get_offset_from_row(store, row);
-+		vrec = trace_view_store_get_row(TRACE_VIEW_STORE(model), row);
-+		offset = vrec->offset;
- 
- 		record = tracecmd_read_at(info->handle, offset, &cpu);
- 
-diff --git a/trace-view-store.c b/trace-view-store.c
-index 03664c8..be86662 100644
---- a/trace-view-store.c
-+++ b/trace-view-store.c
-@@ -1039,37 +1039,16 @@ gint trace_view_store_get_timestamp_page(TraceViewStore *store, guint64 ts)
- 	return rec->pos / store->rows_per_page + 1;
- }
- 
--guint64 trace_view_store_get_time_from_row(TraceViewStore *store, gint row)
--{
--	g_return_val_if_fail (TRACE_VIEW_IS_LIST (store), 0);
--
--	row += store->start_row;
--
--	g_return_val_if_fail (row >= 0 && row < store->visible_rows, 0);
--
--	return store->rows[row]->timestamp;
--}
--
--guint64 trace_view_store_get_offset_from_row(TraceViewStore *store, gint row)
--{
--	g_return_val_if_fail (TRACE_VIEW_IS_LIST (store), 0);
--
--	row += store->start_row;
--
--	g_return_val_if_fail (row >= 0 && row < store->visible_rows, 0);
--
--	return store->rows[row]->offset;
--}
--
- TraceViewRecord *
- trace_view_store_get_row(TraceViewStore *store, gint row)
- {
- 	TraceViewRecord *record;
-+	g_return_val_if_fail(TRACE_VIEW_IS_LIST(store), NULL);
- 
--	if (row >= store->num_rows || row < 0)
--		return NULL;
-+	row += store->start_row;
-+	g_return_val_if_fail(row >= store->start_row && row < store->visible_rows, NULL);
- 
--	record = store->rows[store->start_row + row];
-+	record = store->rows[row];
- 	g_assert(record != NULL);
- 	g_assert((record->pos - store->start_row) == row);
- 	return record;
-diff --git a/trace-view-store.h b/trace-view-store.h
-index bfa19d9..08caf3f 100644
---- a/trace-view-store.h
-+++ b/trace-view-store.h
-@@ -117,10 +117,6 @@ gint trace_view_store_get_timestamp_page(TraceViewStore *store, guint64 ts);
- 
- gint trace_view_store_get_timestamp_visible_row(TraceViewStore *store, guint64 ts);
- 
--guint64 trace_view_store_get_time_from_row(TraceViewStore *store, gint row);
--
--guint64 trace_view_store_get_offset_from_row(TraceViewStore *store, gint row);
--
- void trace_view_store_filter_tasks(TraceViewStore *store, struct filter_task *filter);
- 
- TraceViewRecord *trace_view_store_get_row(TraceViewStore *store, gint row);
-diff --git a/trace-view.c b/trace-view.c
-index 3c023e5..899b3b3 100644
---- a/trace-view.c
-+++ b/trace-view.c
-@@ -271,6 +271,7 @@ void trace_view_make_selection_visible(GtkWidget *treeview)
- void trace_view_update_task_filter(GtkWidget *treeview, struct filter_task *filter)
- {
- 	GtkTreeView *tree = GTK_TREE_VIEW(treeview);
-+	TraceViewRecord *vrec;
- 	GtkTreeModel *model;
- 	guint64 time;
- 	gint row;
-@@ -281,8 +282,10 @@ void trace_view_update_task_filter(GtkWidget *treeview, struct filter_task *filt
- 
- 	/* Keep track of the currently selected row */
- 	row = trace_view_get_selected_row(treeview);
--	if (row >= 0)
--		time = trace_view_store_get_time_from_row(TRACE_VIEW_STORE(model), row);
-+	if (row >= 0) {
-+		vrec = trace_view_store_get_row(TRACE_VIEW_STORE(model), row);
-+		time = vrec->timestamp;
-+	}
- 
- 	g_object_ref(model);
- 	gtk_tree_view_set_model(tree, NULL);
--- 
-1.6.3.3
+> On Mon, Dec 28, 2009 at 10:24:02AM +0100, Ingo Molnar wrote:
+> > > that way you need to enable tracing as well... but thats ok I guess :)
+> > > 
+> > > I was investigating trace events for this, but did not find a way
+> > > to put variable length argument inside... and I overlooked the
+> > > trace_printk, I'll look on it and see how it fits, thanks
+> > > 
+> > > also having separate ring buffer makes the 'trace'/'trace_pipe' code
+> > > really simple (suprissingly) compared to ftrace, and I thought
+> > > on this place it could last for some time.. ;)
+> > 
+> > I think what we want is a unified channel of events, of which printk (and 
+> > dynamic-printk) is one form. I.e. we should add printk events and 
+> > dynamic-printk events as well, which would show up in /debug/tracing/events/ 
+> > in a standard ftrace event form and would be accessible to tooling that way.
+> > 
+> > For printk a single event would be enough i suspect (we dont want a separate 
+> > event for every printk), and for dynamic-printk we want to map the existing 
+> > dyn-printk topologies into /debug/tracing/events, to preserve the distinctions 
+> > and controls available there.
+> > 
+> > This way in the long run we'd have one unified facility.
+> > 
+> > 	Ingo
+> 
+> 
+> That said, I sometimes dream about one event per printk.
 
+Yeah - but it's only really useful if we could properly encode/extract the 
+record format as well.
+
+The one person's printk would become another person's programmable tracepoint.
+
+> Too bad that would bloat the memory.
+
+Should be optional of course, and then developers/distros pick instrumentation 
+landscape winners/losers. To most people memory overhead is not a big issue, 
+if the result is sufficiently useful.
+
+	Ingo
