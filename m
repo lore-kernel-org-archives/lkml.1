@@ -1,66 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753551Ab0AEIs6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753916Ab0AEItK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753551Ab0AEIs6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 03:48:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750907Ab0AEIs5
+	id S1753916Ab0AEItK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 03:49:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753694Ab0AEItI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 03:48:57 -0500
-Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:41736 "EHLO
-	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750806Ab0AEIs4 (ORCPT
+	Tue, 5 Jan 2010 03:49:08 -0500
+Received: from smtp1.entryit.no ([212.4.42.179]:35532 "EHLO smtp1.entryit.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753640Ab0AEItH convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 03:48:56 -0500
-Date: Tue, 5 Jan 2010 17:48:51 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Venkappa Mala <Venkappa.Mala@lntinfotech.com>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       "rmk+lkml@arm.linux.org.uk" <rmk+lkml@arm.linux.org.uk>,
-       linux-kernel@vger.kernel.org,
-       Kexec Mailing List <kexec@lists.infradead.org>
-Subject: Re: Linux kernel crash dumps for ARM
-Message-ID: <20100105084850.GA27860@linux-sh.org>
-References: <EB1A7C66AD0C92419BFFC785A947865A09EA8C9129@BLRINMSMBX01.bglrodc.lntinfotech.com> <m17hrx9lgo.fsf@fess.ebiederm.org>
+	Tue, 5 Jan 2010 03:49:07 -0500
+From: Eirik Aanonsen <EAA@wprmedical.com>
+To: "kernel@avr32linux.org" <kernel@avr32linux.org>,
+       "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Date: Tue, 5 Jan 2010 09:47:57 +0100
+Subject: [PATCH 1/1] atmel uaba : Adding invert vbus_pin
+Thread-Topic: [PATCH 1/1] atmel uaba : Adding invert vbus_pin
+Thread-Index: AcqN48dOrjX+1T2DTKONu97r3uR6wQ==
+Message-ID: <B5E0EDE940845B429B7ECCE186529F2C0641D17873@dware2702>
+Accept-Language: nb-NO
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: nb-NO
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m17hrx9lgo.fsf@fess.ebiederm.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 04, 2010 at 09:20:23PM -0800, Eric W. Biederman wrote:
-> Venkappa Mala <Venkappa.Mala@lntinfotech.com> writes:
-> >
-> > 2) As per kexec supports, kexec-tool is required and this allows you to load directly
-> >    to a new kernel from the currently running one
-> >
-> >     As from my side, i am not able to find arm implementation support in kexec-tools/crash sources.
-> >
-> >    - is kexce-tool supported for ARM or not?
-> >
-It would be rather counterintuitive for the kernel to support kexec and
-the necessary userspace components not to.
+Thanks to Ben Nizette [bn@niasdigital.com] and Sergei Shtylyov [sshtylyov@ru.mvista.com] for good feedback
 
-The MAINTAINERS file says:
+Adding vbus_pin_inverted so that the usb detect pin can be active high or low.
+This because depending on HW implementation it is better to have active low.
+Also replaced the pio_get_value(udc->vbus_pin); with a call to vbus_is_present(udc);
 
-KEXEC
-M:      Eric Biederman <ebiederm@xmission.com>
-W:      http://ftp.kernel.org/pub/linux/kernel/people/horms/kexec-tools/
-L:      kexec@lists.infradead.org
-S:      Maintained
-F:      include/linux/kexec.h
-F:      kernel/kexec.c
+Signed-off-by: Eirik Aanonsen <eaa@wprmedical.com>
+---
+ drivers/usb/gadget/atmel_usba_udc.c |    6 +++---
+ drivers/usb/gadget/atmel_usba_udc.h |    1 +
+ include/linux/usb/atmel_usba_udc.h  |    1 +
+ 3 files changed, 5 insertions(+), 3 deletions(-)
 
-While the above URL redirects to gitweb, resulting in:
-
-http://git.kernel.org/?p=linux/kernel/git/horms/kexec-tools.git;a=summary
-
-A peripheral grep of the kexec-tools source results in:
-
-$ git grep kdump | grep arm
-kexec/arch/arm/kexec-arm.c:     return 0; /* kdump is not supported on this platform (yet) */
-
-So one could infer that kexec is supported on ARM whilst kdump is not. Adding
-crashdump support requires both some kernel and kexec-tools glue, but is fairly
-straightforward, just look at the other ports.
+diff --git a/drivers/usb/gadget/atmel_usba_udc.c b/drivers/usb/gadget/atmel_usba_udc.c
+index 4e970cf..e1282fc 100644
+--- a/drivers/usb/gadget/atmel_usba_udc.c
++++ b/drivers/usb/gadget/atmel_usba_udc.c
+@@ -320,8 +320,7 @@ static inline void usba_cleanup_debugfs(struct usba_udc *udc)
+ static int vbus_is_present(struct usba_udc *udc)
+ {
+ 	if (gpio_is_valid(udc->vbus_pin))
+-		return gpio_get_value(udc->vbus_pin);
+-
++		return gpio_get_value(udc->vbus_pin) ^ udc->vbus_pin_inverted;
+ 	/* No Vbus detection: Assume always present */
+ 	return 1;
+ }
+@@ -1763,7 +1762,7 @@ static irqreturn_t usba_vbus_irq(int irq, void *devid)
+ 	if (!udc->driver)
+ 		goto out;
+ 
+-	vbus = gpio_get_value(udc->vbus_pin);
++	vbus = vbus_is_present(udc);
+ 	if (vbus != udc->vbus_prev) {
+ 		if (vbus) {
+ 			toggle_bias(1);
+@@ -2000,6 +1999,7 @@ static int __init usba_udc_probe(struct platform_device *pdev)
+ 	if (gpio_is_valid(pdata->vbus_pin)) {
+ 		if (!gpio_request(pdata->vbus_pin, "atmel_usba_udc")) {
+ 			udc->vbus_pin = pdata->vbus_pin;
++			udc->vbus_pin_inverted = pdata->vbus_pin_inverted;
+ 
+ 			ret = request_irq(gpio_to_irq(udc->vbus_pin),
+ 					usba_vbus_irq, 0,
+diff --git a/drivers/usb/gadget/atmel_usba_udc.h b/drivers/usb/gadget/atmel_usba_udc.h
+index f7baea3..88a2e07 100644
+--- a/drivers/usb/gadget/atmel_usba_udc.h
++++ b/drivers/usb/gadget/atmel_usba_udc.h
+@@ -323,6 +323,7 @@ struct usba_udc {
+ 	struct platform_device *pdev;
+ 	int irq;
+ 	int vbus_pin;
++	int vbus_pin_inverted;
+ 	struct clk *pclk;
+ 	struct clk *hclk;
+ 
+diff --git a/include/linux/usb/atmel_usba_udc.h b/include/linux/usb/atmel_usba_udc.h
+index 6311fa2..643c4c5 100644
+--- a/include/linux/usb/atmel_usba_udc.h
++++ b/include/linux/usb/atmel_usba_udc.h
+@@ -15,6 +15,7 @@ struct usba_ep_data {
+ 
+ struct usba_platform_data {
+ 	int			vbus_pin;
++	unsigned char vbus_pin_inverted;
+ 	int			num_ep;
+ 	struct usba_ep_data	ep[0];
+ };
+-- 
+1.5.4.3
