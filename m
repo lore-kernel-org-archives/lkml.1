@@ -1,86 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754631Ab0AECRh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754504Ab0AECSz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754631Ab0AECRh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 21:17:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754256Ab0AECPc
+	id S1754504Ab0AECSz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 21:18:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754256Ab0AECSy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 21:15:32 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:43062 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754057Ab0AECPa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 21:15:30 -0500
-From: Andi Kleen <andi@firstfloor.org>
-References: <20100105315.789846878@firstfloor.org>
-In-Reply-To: <20100105315.789846878@firstfloor.org>
-To: linux-arch@vger.kernel.org, ebiederm@xmission.com,
-       paulmck@linux.vnet.ibm.com, akpm@linux-foundation.org,
+	Mon, 4 Jan 2010 21:18:54 -0500
+Received: from ozlabs.org ([203.10.76.45]:51140 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754191Ab0AECSy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jan 2010 21:18:54 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: [PATCH] Revert "x86: Side-step lguest problem by only building cmpxchg8b_emu for pre-Pentium"
+Date: Tue, 5 Jan 2010 12:48:49 +1030
+User-Agent: KMail/1.12.2 (Linux/2.6.31-16-generic; KDE/4.3.2; i686; ; )
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, "H. Anvin" <hpa@zytor.com>,
        linux-kernel@vger.kernel.org
-Subject: [PATCH] [2/9] Add a kernel_address() that works for data too
-Message-Id: <20100105021527.1AB19B17C2@basil.firstfloor.org>
-Date: Tue,  5 Jan 2010 03:15:27 +0100 (CET)
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201001051248.49700.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-Add a variant of kernel_text_address() that includes kernel data.
-
-Assumes kernel is _text ... _end - init section. True everywhere?
-
-Cc: linux-arch@vger.kernel.org
-Signed-off-by: Andi Kleen <ak@linux.intel.com>
-
+This reverts commit ae1b22f6e46c03cede7cea234d0bf2253b4261cf.
+    
+As Linus said in 982d007a6ee: "There was something really messy about
+cmpxchg8b and clone CPU's, so if you enable it on other CPUs later, do it
+carefully."
+    
+This breaks lguest for those configs, but we can fix that by emulating
+if we have to.
+    
+Fixes: http://bugzilla.kernel.org/show_bug.cgi?id=14884
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+Cc: stable@kernel.org
 ---
- include/linux/kernel.h |    1 +
- kernel/extable.c       |   18 ++++++++++++++++++
- 2 files changed, 19 insertions(+)
+ arch/x86/Kconfig.cpu |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Index: linux-2.6.33-rc2-ak/include/linux/kernel.h
-===================================================================
---- linux-2.6.33-rc2-ak.orig/include/linux/kernel.h
-+++ linux-2.6.33-rc2-ak/include/linux/kernel.h
-@@ -205,6 +205,7 @@ extern unsigned long long memparse(const
- extern int core_kernel_text(unsigned long addr);
- extern int __kernel_text_address(unsigned long addr);
- extern int kernel_text_address(unsigned long addr);
-+extern int kernel_address(unsigned long addr);
- extern int func_ptr_is_kernel_text(void *ptr);
+diff --git a/arch/x86/Kconfig.cpu b/arch/x86/Kconfig.cpu
+index 08e442b..f20ddf8 100644
+--- a/arch/x86/Kconfig.cpu
++++ b/arch/x86/Kconfig.cpu
+@@ -396,7 +396,7 @@ config X86_TSC
  
- struct pid;
-Index: linux-2.6.33-rc2-ak/kernel/extable.c
-===================================================================
---- linux-2.6.33-rc2-ak.orig/kernel/extable.c
-+++ linux-2.6.33-rc2-ak/kernel/extable.c
-@@ -72,6 +72,18 @@ int core_kernel_text(unsigned long addr)
- 	return 0;
- }
+ config X86_CMPXCHG64
+ 	def_bool y
+-	depends on !M386 && !M486
++	depends on X86_PAE || X86_64 || MCORE2 || MPENTIUM4 || MPENTIUMM || MPENTIUMIII || MPENTIUMII || M686 || MATOM
  
-+static int core_kernel_address(unsigned long addr)
-+{
-+	if ((addr >= (unsigned long)_text &&
-+	     addr <= (unsigned long)_end)) {
-+		if (addr >= (unsigned long)__init_begin &&
-+		    addr < (unsigned long)__init_end)
-+			return system_state == SYSTEM_BOOTING;
-+		return 1;
-+	}
-+	return 0;
-+}
-+
- int __kernel_text_address(unsigned long addr)
- {
- 	if (core_kernel_text(addr))
-@@ -98,6 +110,12 @@ int kernel_text_address(unsigned long ad
- 	return is_module_text_address(addr);
- }
- 
-+/* text or data in core kernel or module */
-+int kernel_address(unsigned long addr)
-+{
-+	return core_kernel_address(addr) || is_module_address(addr);
-+}
-+
- /*
-  * On some architectures (PPC64, IA64) function pointers
-  * are actually only tokens to some data that then holds the
+ # this should be set for all -march=.. options where the compiler
+ # generates cmov.
