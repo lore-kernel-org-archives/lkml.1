@@ -1,23 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754172Ab0AEAem@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754081Ab0AEAzp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754172Ab0AEAem (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 19:34:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753094Ab0AEAeh
+	id S1754081Ab0AEAzp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 19:55:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754179Ab0AEAep
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 19:34:37 -0500
-Received: from kroah.org ([198.145.64.141]:34064 "EHLO coco.kroah.org"
+	Mon, 4 Jan 2010 19:34:45 -0500
+Received: from kroah.org ([198.145.64.141]:34111 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754054Ab0AEAeg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 19:34:36 -0500
+	id S1754160Ab0AEAen (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jan 2010 19:34:43 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, stable-review@kernel.org
 Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Michael Reed <mdr@sgi.com>,
-       James Bottomley <James.Bottomley@suse.de>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 02/97] SCSI: qla2xxx: dpc thread can execute before scsi host has been added
-Date: Mon,  4 Jan 2010 16:32:15 -0800
-Message-Id: <1262651630-7354-2-git-send-email-gregkh@suse.de>
+       alan@lxorguk.ukuu.org.uk, Sergei Shtylyov <sshtylyov@ru.mvista.com>,
+       Jeff Garzik <jgarzik@redhat.com>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 09/97] pata_hpt3x2n: fix clock turnaround
+Date: Mon,  4 Jan 2010 16:32:22 -0800
+Message-Id: <1262651630-7354-9-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.6
 In-Reply-To: <20100105003133.GA7199@kroah.com>
 References: <20100105003133.GA7199@kroah.com>
@@ -25,124 +24,172 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Michael Reed <mdr@sgi.com>
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 
-commit 1486400f7edd009d49550da968d5744e246dc7f8 upstream.
+commit 256ace9bbd4cdb6d48d5f55d55d42fa20527fad1 upstream.
 
-Fix crash in qla2x00_fdmi_register() due to the dpc
-thread executing before the scsi host has been fully
-added.
+The clock turnaround code still doesn't work for several reasons:
 
-Unable to handle kernel NULL pointer dereference (address 00000000000001d0)
-qla2xxx_7_dpc[4140]: Oops 8813272891392 [1]
+- 'USE_DPLL' flag in 'ap->host->private_data' is never initialized
+  or updated, so the driver can only set the chip to the DPLL clock
+  mode, not the PCI mode;
 
-Call Trace:
- [<a000000100016910>] show_stack+0x50/0xa0
-                                sp=e00000b07c59f930 bsp=e00000b07c591400
- [<a000000100017180>] show_regs+0x820/0x860
-                                sp=e00000b07c59fb00 bsp=e00000b07c5913a0
- [<a00000010003bd60>] die+0x1a0/0x2e0
-                                sp=e00000b07c59fb00 bsp=e00000b07c591360
- [<a0000001000681a0>] ia64_do_page_fault+0x8c0/0x9e0
-                                sp=e00000b07c59fb00 bsp=e00000b07c591310
- [<a00000010000c8e0>] ia64_native_leave_kernel+0x0/0x270
-                                sp=e00000b07c59fb90 bsp=e00000b07c591310
- [<a000000207197350>] qla2x00_fdmi_register+0x850/0xbe0 [qla2xxx]
-                                sp=e00000b07c59fd60 bsp=e00000b07c591290
- [<a000000207171570>] qla2x00_configure_loop+0x1930/0x34c0 [qla2xxx]
-                                sp=e00000b07c59fd60 bsp=e00000b07c591128
- [<a0000002071732b0>] qla2x00_loop_resync+0x1b0/0x2e0 [qla2xxx]
-                                sp=e00000b07c59fdf0 bsp=e00000b07c5910c0
- [<a000000207166d40>] qla2x00_do_dpc+0x9a0/0xce0 [qla2xxx]
-                                sp=e00000b07c59fdf0 bsp=e00000b07c590fa0
- [<a0000001000d5bb0>] kthread+0x110/0x140
-                                sp=e00000b07c59fe00 bsp=e00000b07c590f68
- [<a000000100014a30>] kernel_thread_helper+0xd0/0x100
-                                sp=e00000b07c59fe30 bsp=e00000b07c590f40
- [<a00000010000a4c0>] start_kernel_thread+0x20/0x40
-                                sp=e00000b07c59fe30 bsp=e00000b07c590f40
+- the driver doesn't serialize access to the channels depending on
+  the current clock mode like the vendor drivers, so the clock
+  turnaround is only executed "optionally", not always as it should be;
 
-crash> dis a000000207197350
-0xa000000207197350 <qla2x00_fdmi_register+2128>:        [MMI]       ld1 r45=[r14];;
-crash> scsi_qla_host.host 0xe00000b058c73ff8
-  host = 0xe00000b058c73be0,
-crash> Scsi_Host.shost_data 0xe00000b058c73be0
-  shost_data = 0x0,  <<<<<<<<<<<
+- the wrong ports are written to when hpt3x2n_set_clock() is called
+  for the secondary channel;
 
-The fc_transport fc_* workqueue threads have yet to be created.
+- hpt3x2n_set_clock() can inadvertently enable the disabled channels
+  when resetting the channel state machines.
 
-crash> ps | grep _7
-   3891      2   2  e00000b075c80000  IN   0.0       0      0  [scsi_eh_7]
-   4140      2   3  e00000b07c590000  RU   0.0       0      0  [qla2xxx_7_dpc]
-
-The thread creating adding the Scsi_Host is blocked due to other
-activity in sysfs.
-
-crash> bt 3762
-PID: 3762   TASK: e00000b071e70000  CPU: 3   COMMAND: "modprobe"
- #0 [BSP:e00000b071e71548] schedule at a000000100727e00
- #1 [BSP:e00000b071e714c8] __mutex_lock_slowpath at a0000001007295a0
- #2 [BSP:e00000b071e714a8] mutex_lock at a000000100729830
- #3 [BSP:e00000b071e71478] sysfs_addrm_start at a0000001002584f0
- #4 [BSP:e00000b071e71440] create_dir at a000000100259350
- #5 [BSP:e00000b071e71410] sysfs_create_subdir at a000000100259510
- #6 [BSP:e00000b071e713b0] internal_create_group at a00000010025c880
- #7 [BSP:e00000b071e71388] sysfs_create_group at a00000010025cc50
- #8 [BSP:e00000b071e71368] dpm_sysfs_add at a000000100425050
- #9 [BSP:e00000b071e71310] device_add at a000000100417d90
-#10 [BSP:e00000b071e712d8] scsi_add_host at a00000010045a380
-#11 [BSP:e00000b071e71268] qla2x00_probe_one at a0000002071be950
-#12 [BSP:e00000b071e71248] local_pci_probe at a00000010032e490
-#13 [BSP:e00000b071e71218] pci_device_probe at a00000010032ecd0
-#14 [BSP:e00000b071e711d8] driver_probe_device at a00000010041d480
-#15 [BSP:e00000b071e711a8] __driver_attach at a00000010041d6e0
-#16 [BSP:e00000b071e71170] bus_for_each_dev at a00000010041c240
-#17 [BSP:e00000b071e71150] driver_attach at a00000010041d0a0
-#18 [BSP:e00000b071e71108] bus_add_driver at a00000010041b080
-#19 [BSP:e00000b071e710c0] driver_register at a00000010041dea0
-#20 [BSP:e00000b071e71088] __pci_register_driver at a00000010032f610
-#21 [BSP:e00000b071e71058] (unknown) at a000000207200270
-#22 [BSP:e00000b071e71018] do_one_initcall at a00000010000a9c0
-#23 [BSP:e00000b071e70f98] sys_init_module at a0000001000fef00
-#24 [BSP:e00000b071e70f98] ia64_ret_from_syscall at a00000010000c740
-
-So, it appears that qla2xxx dpc thread is moving forward before the
-scsi host has been completely added.
-
-This patch moves the setting of the init_done (and online) flag to
-after the call to scsi_add_host() to hold off the dpc thread.
-
-Found via large lun count testing using 2.6.31.
-
-Signed-off-by: Michael Reed <mdr@sgi.com>
-Acked-by: Giridhar Malavali <giridhar.malavali@qlogic.com>
-Signed-off-by: James Bottomley <James.Bottomley@suse.de>
+Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/scsi/qla2xxx/qla_os.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+ drivers/ata/pata_hpt3x2n.c |   64 ++++++++++++++++++++++++--------------------
+ 1 files changed, 35 insertions(+), 29 deletions(-)
 
-diff --git a/drivers/scsi/qla2xxx/qla_os.c b/drivers/scsi/qla2xxx/qla_os.c
-index b79fca7..06bbe0d 100644
---- a/drivers/scsi/qla2xxx/qla_os.c
-+++ b/drivers/scsi/qla2xxx/qla_os.c
-@@ -2016,13 +2016,13 @@ skip_dpc:
- 	DEBUG2(printk("DEBUG: detect hba %ld at address = %p\n",
- 	    base_vha->host_no, ha));
+diff --git a/drivers/ata/pata_hpt3x2n.c b/drivers/ata/pata_hpt3x2n.c
+index 21c5bd6..d16e87e 100644
+--- a/drivers/ata/pata_hpt3x2n.c
++++ b/drivers/ata/pata_hpt3x2n.c
+@@ -8,7 +8,7 @@
+  * Copyright (C) 1999-2003		Andre Hedrick <andre@linux-ide.org>
+  * Portions Copyright (C) 2001	        Sun Microsystems, Inc.
+  * Portions Copyright (C) 2003		Red Hat Inc
+- * Portions Copyright (C) 2005-2007	MontaVista Software, Inc.
++ * Portions Copyright (C) 2005-2009	MontaVista Software, Inc.
+  *
+  *
+  * TODO
+@@ -25,7 +25,7 @@
+ #include <linux/libata.h>
  
--	base_vha->flags.init_done = 1;
--	base_vha->flags.online = 1;
+ #define DRV_NAME	"pata_hpt3x2n"
+-#define DRV_VERSION	"0.3.7"
++#define DRV_VERSION	"0.3.8"
+ 
+ enum {
+ 	HPT_PCI_FAST	=	(1 << 31),
+@@ -262,7 +262,7 @@ static void hpt3x2n_bmdma_stop(struct ata_queued_cmd *qc)
+ 
+ static void hpt3x2n_set_clock(struct ata_port *ap, int source)
+ {
+-	void __iomem *bmdma = ap->ioaddr.bmdma_addr;
++	void __iomem *bmdma = ap->ioaddr.bmdma_addr - ap->port_no * 8;
+ 
+ 	/* Tristate the bus */
+ 	iowrite8(0x80, bmdma+0x73);
+@@ -272,9 +272,9 @@ static void hpt3x2n_set_clock(struct ata_port *ap, int source)
+ 	iowrite8(source, bmdma+0x7B);
+ 	iowrite8(0xC0, bmdma+0x79);
+ 
+-	/* Reset state machines */
+-	iowrite8(0x37, bmdma+0x70);
+-	iowrite8(0x37, bmdma+0x74);
++	/* Reset state machines, avoid enabling the disabled channels */
++	iowrite8(ioread8(bmdma+0x70) | 0x32, bmdma+0x70);
++	iowrite8(ioread8(bmdma+0x74) | 0x32, bmdma+0x74);
+ 
+ 	/* Complete reset */
+ 	iowrite8(0x00, bmdma+0x79);
+@@ -284,21 +284,10 @@ static void hpt3x2n_set_clock(struct ata_port *ap, int source)
+ 	iowrite8(0x00, bmdma+0x77);
+ }
+ 
+-/* Check if our partner interface is busy */
 -
- 	ret = scsi_add_host(host, &pdev->dev);
- 	if (ret)
- 		goto probe_failed;
- 
-+	base_vha->flags.init_done = 1;
-+	base_vha->flags.online = 1;
+-static int hpt3x2n_pair_idle(struct ata_port *ap)
+-{
+-	struct ata_host *host = ap->host;
+-	struct ata_port *pair = host->ports[ap->port_no ^ 1];
+-
+-	if (pair->hsm_task_state == HSM_ST_IDLE)
+-		return 1;
+-	return 0;
+-}
+-
+ static int hpt3x2n_use_dpll(struct ata_port *ap, int writing)
+ {
+ 	long flags = (long)ap->host->private_data;
 +
- 	ha->isp_ops->enable_intrs(ha);
+ 	/* See if we should use the DPLL */
+ 	if (writing)
+ 		return USE_DPLL;	/* Needed for write */
+@@ -307,20 +296,35 @@ static int hpt3x2n_use_dpll(struct ata_port *ap, int writing)
+ 	return 0;
+ }
  
- 	scsi_scan_host(host);
++static int hpt3x2n_qc_defer(struct ata_queued_cmd *qc)
++{
++	struct ata_port *ap = qc->ap;
++	struct ata_port *alt = ap->host->ports[ap->port_no ^ 1];
++	int rc, flags = (long)ap->host->private_data;
++	int dpll = hpt3x2n_use_dpll(ap, qc->tf.flags & ATA_TFLAG_WRITE);
++
++	/* First apply the usual rules */
++	rc = ata_std_qc_defer(qc);
++	if (rc != 0)
++		return rc;
++
++	if ((flags & USE_DPLL) != dpll && alt->qc_active)
++		return ATA_DEFER_PORT;
++	return 0;
++}
++
+ static unsigned int hpt3x2n_qc_issue(struct ata_queued_cmd *qc)
+ {
+-	struct ata_taskfile *tf = &qc->tf;
+ 	struct ata_port *ap = qc->ap;
+ 	int flags = (long)ap->host->private_data;
++	int dpll = hpt3x2n_use_dpll(ap, qc->tf.flags & ATA_TFLAG_WRITE);
+ 
+-	if (hpt3x2n_pair_idle(ap)) {
+-		int dpll = hpt3x2n_use_dpll(ap, (tf->flags & ATA_TFLAG_WRITE));
+-		if ((flags & USE_DPLL) != dpll) {
+-			if (dpll == 1)
+-				hpt3x2n_set_clock(ap, 0x21);
+-			else
+-				hpt3x2n_set_clock(ap, 0x23);
+-		}
++	if ((flags & USE_DPLL) != dpll) {
++		flags &= ~USE_DPLL;
++		flags |= dpll;
++		ap->host->private_data = (void *)(long)flags;
++
++		hpt3x2n_set_clock(ap, dpll ? 0x21 : 0x23);
+ 	}
+ 	return ata_sff_qc_issue(qc);
+ }
+@@ -337,6 +341,8 @@ static struct ata_port_operations hpt3x2n_port_ops = {
+ 	.inherits	= &ata_bmdma_port_ops,
+ 
+ 	.bmdma_stop	= hpt3x2n_bmdma_stop,
++
++	.qc_defer	= hpt3x2n_qc_defer,
+ 	.qc_issue	= hpt3x2n_qc_issue,
+ 
+ 	.cable_detect	= hpt3x2n_cable_detect,
+@@ -454,7 +460,7 @@ static int hpt3x2n_init_one(struct pci_dev *dev, const struct pci_device_id *id)
+ 	unsigned int f_low, f_high;
+ 	int adjust;
+ 	unsigned long iobase = pci_resource_start(dev, 4);
+-	void *hpriv = NULL;
++	void *hpriv = (void *)USE_DPLL;
+ 	int rc;
+ 
+ 	rc = pcim_enable_device(dev);
+@@ -542,7 +548,7 @@ static int hpt3x2n_init_one(struct pci_dev *dev, const struct pci_device_id *id)
+ 	/* Set our private data up. We only need a few flags so we use
+ 	   it directly */
+ 	if (pci_mhz > 60) {
+-		hpriv = (void *)PCI66;
++		hpriv = (void *)(PCI66 | USE_DPLL);
+ 		/*
+ 		 * On  HPT371N, if ATA clock is 66 MHz we must set bit 2 in
+ 		 * the MISC. register to stretch the UltraDMA Tss timing.
 -- 
 1.6.6
 
