@@ -1,51 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755502Ab0AEVcb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755541Ab0AEVck@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755502Ab0AEVcb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 16:32:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755353Ab0AEVca
+	id S1755541Ab0AEVck (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 16:32:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755512Ab0AEVcf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 16:32:30 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:34207 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755325Ab0AEVca (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 16:32:30 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Andreas Friedrich <andreas.friedrich@ts.fujitsu.com>
-Subject: Re: [Bug #14902] Boot ends not on tty1
-Date: Tue, 5 Jan 2010 22:32:58 +0100
-User-Agent: KMail/1.12.3 (Linux/2.6.33-rc2-tst; KDE/4.3.3; x86_64; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Wolfgang Erig <Wolfgang.Erig@ts.fujitsu.com>
-References: <oBElxfTZdhL.A.bx.-vhOLB@chimera> <srmJ8vMxKPH.A.WjB.MwhOLB@chimera> <20100105085743.GA13491@upset.ux.pdb.fsc.net>
-In-Reply-To: <20100105085743.GA13491@upset.ux.pdb.fsc.net>
+	Tue, 5 Jan 2010 16:32:35 -0500
+Received: from zcars04e.nortel.com ([47.129.242.56]:52927 "EHLO
+	zcars04e.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755353Ab0AEVcc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jan 2010 16:32:32 -0500
+Message-ID: <4B43AEF6.6050701@nortel.com>
+Date: Tue, 05 Jan 2010 15:28:22 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-2.7.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: "Michael S. Tsirkin" <mst@redhat.com>
+CC: "David S. Miller" <davem@davemloft.net>,
+       Eric Dumazet <eric.dumazet@gmail.com>,
+       Neil Horman <nhorman@tuxdriver.com>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH] net: packet: option to only pass skb protocol
+References: <20100105185732.GA30346@redhat.com>
+In-Reply-To: <20100105185732.GA30346@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <201001052232.58559.rjw@sisk.pl>
+X-OriginalArrivalTime: 05 Jan 2010 21:32:28.0047 (UTC) FILETIME=[9451E9F0:01CA8E4E]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 05 January 2010, Andreas Friedrich wrote:
-> Hi Rafael,
-> 
-> On Di, Dez 29, 2009 at 04:28:54 +0100, Rafael J. Wysocki wrote:
-> > This message has been generated automatically as a part of a report
-> > of regressions introduced between 2.6.31 and 2.6.32.
-> > 
-> > The following bug entry is on the current list of known regressions
-> > introduced between 2.6.31 and 2.6.32.  Please verify if it still should
-> > be listed and let me know (either way).
-> 
-> the problem was gone after the latest Debian lenny and etch upgrades
-> (one of libexpat1, libltdl3, libpq4/5 does the fix). I think that the 
-> kernel change which came with e11c675ede0d42a405ae595528bf0b29ce1ae56f
-> is now supported in Debian, so it is no longer a kernel issue.
-> 
-> Please remove the error from the regression list.
+On 01/05/2010 12:57 PM, Michael S. Tsirkin wrote:
+> When sending packets with a packet socket it is often necessary to set
+> protocol in msg_name: otherwise the protocol field in the skb will not
+> be set correctly.
 
-Thanks, closing.
+What about automatically detecting the protocol from the data being sent
+to avoid the necessity of specifying it in the first place?
 
-Rafael
+Chris
