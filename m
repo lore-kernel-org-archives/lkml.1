@@ -1,107 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755410Ab0AET3r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932096Ab0AETcu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755410Ab0AET3r (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 14:29:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754733Ab0AET3p
+	id S932096Ab0AETcu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 14:32:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755308Ab0AETcu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 14:29:45 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:41085 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754675Ab0AET3p (ORCPT
+	Tue, 5 Jan 2010 14:32:50 -0500
+Received: from mga05.intel.com ([192.55.52.89]:31743 "EHLO
+	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755183Ab0AETct (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 14:29:45 -0500
-Date: Tue, 5 Jan 2010 11:28:57 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Christoph Lameter <cl@linux-foundation.org>
-cc: Andi Kleen <andi@firstfloor.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Minchan Kim <minchan.kim@gmail.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "hugh.dickins" <hugh.dickins@tiscali.co.uk>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [RFC][PATCH 6/8] mm: handle_speculative_fault()
-In-Reply-To: <alpine.DEB.2.00.1001051301060.5119@router.home>
-Message-ID: <alpine.LFD.2.00.1001051120430.3630@localhost.localdomain>
-References: <20100104182429.833180340@chello.nl> <20100104182813.753545361@chello.nl> <20100105092559.1de8b613.kamezawa.hiroyu@jp.fujitsu.com> <28c262361001042029w4b95f226lf54a3ed6a4291a3b@mail.gmail.com> <20100105134357.4bfb4951.kamezawa.hiroyu@jp.fujitsu.com>
- <alpine.LFD.2.00.1001042052210.3630@localhost.localdomain> <20100105143046.73938ea2.kamezawa.hiroyu@jp.fujitsu.com> <20100105163939.a3f146fb.kamezawa.hiroyu@jp.fujitsu.com> <alpine.LFD.2.00.1001050707520.3630@localhost.localdomain>
- <alpine.LFD.2.00.1001050810380.3630@localhost.localdomain> <87wrzwbh0z.fsf@basil.nowhere.org> <alpine.LFD.2.00.1001050950500.3630@localhost.localdomain> <alpine.DEB.2.00.1001051211000.2246@router.home> <alpine.LFD.2.00.1001051019280.3630@localhost.localdomain>
- <alpine.DEB.2.00.1001051235200.2246@router.home> <alpine.LFD.2.00.1001051052150.3630@localhost.localdomain> <alpine.DEB.2.00.1001051301060.5119@router.home>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Tue, 5 Jan 2010 14:32:49 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.47,505,1257148800"; 
+   d="scan'208";a="528693766"
+Date: Tue, 5 Jan 2010 20:34:19 +0100
+From: Samuel Ortiz <sameo@linux.intel.com>
+To: Tony Lindgren <tony@atomide.com>
+Cc: Felipe Balbi <felipe.balbi@nokia.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-omap@vger.kernel.org
+Subject: Re: mfd: twl4030-irq: irq_desc->lock converted to raw_spinlock_t
+Message-ID: <20100105193418.GK4274@sortiz.org>
+References: <1261998172-29760-1-git-send-email-felipe.balbi@nokia.com>
+ <1261998172-29760-5-git-send-email-felipe.balbi@nokia.com>
+ <20091228200145.GN3512@atomide.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20091228200145.GN3512@atomide.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Tony,
 
-
-On Tue, 5 Jan 2010, Christoph Lameter wrote:
+On Mon, Dec 28, 2009 at 12:01:45PM -0800, Tony Lindgren wrote:
+> * Felipe Balbi <felipe.balbi@nokia.com> [091228 03:04]:
+> > commit 239007b8440abff689632f50cdf0f2b9e895b534 converted
+> > the spinlock_t to raw_spinlock_t. Unfortunately twl4030-irq
+> > was left aside on the conversion.
+> > 
+> > Cc: Tony Lindgren <tony@atomide.com>
+> > Cc: linux-omap@vger.kernel.org
+> > Acked-by: Thomas Gleixner <tglx@linutronix.de>
+> > Signed-off-by: Felipe Balbi <felipe.balbi@nokia.com>
+> > 
+> > ---
+> > 
+> > resending because it wasn't applied before
 > 
-> The wait state is the processor being stopped due to not being able to
-> access the cacheline. Not the processor spinning in the xadd loop. That
-> only occurs if the critical section is longer than the timeout.
+> This should go via Samuel as it's MFD related.
+Linus applied it to his tree directly.
 
-You don't know what you're talking about, do you?
+Cheers,
+Samuel.
 
-Just go and read the source code.
 
-The process is spinning currently in the spin_lock loop. Here, I'll quote 
-it to you:
+> Acked-by: Tony Lindgren <tony@atomide.com>
+> 
+>  
+> > 
+> >  drivers/mfd/twl4030-irq.c |    4 ++--
+> >  1 files changed, 2 insertions(+), 2 deletions(-)
+> > 
+> > diff --git a/drivers/mfd/twl4030-irq.c b/drivers/mfd/twl4030-irq.c
+> > index 20d29ba..9df9a5a 100644
+> > --- a/drivers/mfd/twl4030-irq.c
+> > +++ b/drivers/mfd/twl4030-irq.c
+> > @@ -568,12 +568,12 @@ static void twl4030_sih_do_edge(struct work_struct *work)
+> >  
+> >  		bytes[byte] &= ~(0x03 << off);
+> >  
+> > -		spin_lock_irq(&d->lock);
+> > +		raw_spin_lock_irq(&d->lock);
+> >  		if (d->status & IRQ_TYPE_EDGE_RISING)
+> >  			bytes[byte] |= BIT(off + 1);
+> >  		if (d->status & IRQ_TYPE_EDGE_FALLING)
+> >  			bytes[byte] |= BIT(off + 0);
+> > -		spin_unlock_irq(&d->lock);
+> > +		raw_spin_unlock_irq(&d->lock);
+> >  
+> >  		edge_change &= ~BIT(i);
+> >  	}
 
-                LOCK_PREFIX "xaddw %w0, %1\n"
-                "1:\t"
-                "cmpb %h0, %b0\n\t"
-                "je 2f\n\t"
-                "rep ; nop\n\t"
-                "movb %1, %b0\n\t"
-                /* don't need lfence here, because loads are in-order */
-                "jmp 1b\n"
-
-note the loop that spins - reading the thing over and over - waiting for 
-_that_ CPU to be the owner of the xadd ticket?
-
-That's the one you have now, only because x86-64 uses the STUPID FALLBACK 
-CODE for the rwsemaphores!
-
-In contrast, look at what the non-stupid rwsemaphore code does (which 
-triggers on x86-32):
-
-                     LOCK_PREFIX "  incl      (%%eax)\n\t"
-                     /* adds 0x00000001, returns the old value */
-                     "  jns        1f\n"
-                     "  call call_rwsem_down_read_failed\n"
-
-(that's a "down_read()", which happens to be the op we care most about. 
-See? That's a single locked "inc" (it avoids the xadd on the read side 
-because of how we've biased things). In particular, notice how this means 
-that we do NOT have fifty million CPU's all trying to read the same 
-location while one writes to it successfully.
-
-Spot the difference?
-
-Here's putting it another way. Which of these schenarios do you think 
-should result in less cross-node traffic:
-
- - multiple CPU's that - one by one - get the cacheline for exclusive 
-   access.
-
- - multiple CPU's that - one by one - get the cacheline for exclusive 
-   access, while other CPU's are all trying to read the same cacheline at 
-   the same time, over and over again, in a loop.
-
-See the shared part? See the difference? If you look at just a single lock 
-acquire, it boils down to these two scenarios
-
- - one CPU gets the cacheline exclusively
-
- - one CPU gets the cacheline exclusively while <n> other CPU's are all 
-   trying to read the old and the new value.
-
-It really is that simple.
-
-		Linus
+-- 
+Intel Open Source Technology Centre
+http://oss.intel.com/
