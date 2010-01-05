@@ -1,22 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754750Ab0AEAkv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754432Ab0AEAlT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754750Ab0AEAkv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 19:40:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754581Ab0AEAkT
+	id S1754432Ab0AEAlT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 19:41:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754755Ab0AEAlL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 19:40:19 -0500
-Received: from kroah.org ([198.145.64.141]:42424 "EHLO coco.kroah.org"
+	Mon, 4 Jan 2010 19:41:11 -0500
+Received: from kroah.org ([198.145.64.141]:42410 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754510Ab0AEAgC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 19:36:02 -0500
+	id S1754432Ab0AEAgA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jan 2010 19:36:00 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, stable-review@kernel.org
 Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Jan Kara <jack@suse.cz>,
+       alan@lxorguk.ukuu.org.uk, Paolo Bonzini <pbonzini@redhat.com>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 79/97] udf: Try harder when looking for VAT inode
-Date: Mon,  4 Jan 2010 16:33:32 -0800
-Message-Id: <1262651630-7354-79-git-send-email-gregkh@suse.de>
+Subject: [PATCH 77/97] xen: wait up to 5 minutes for device connetion
+Date: Mon,  4 Jan 2010 16:33:30 -0800
+Message-Id: <1262651630-7354-77-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.6
 In-Reply-To: <20100105003133.GA7199@kroah.com>
 References: <20100105003133.GA7199@kroah.com>
@@ -24,80 +25,69 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jan Kara <jack@suse.cz>
+From: Paolo Bonzini <pbonzini@redhat.com>
 
-commit e971b0b9e0dd50d9ceecb67a6a6ab80a80906033 upstream.
+commit ae7888012969355a548372e99b066d9e31153b62 upstream.
 
-Some disks do not contain VAT inode in the last recorded block as required
-by the standard but a few blocks earlier (or the number of recorded blocks
-is wrong). So look for the VAT inode a bit before the end of the media.
+Increases the device timeout from 10s to 5 minutes, giving the user a
+visual indication during that time in case there are problems.  The patch
+is a backport of changesets 144 and 150 in the Xenbits tree.
 
-Signed-off-by: Jan Kara <jack@suse.cz>
+Cc: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Signed-off-by: Paolo Bonzini <pbonzini@redhat.com>
+Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- fs/udf/super.c |   32 ++++++++++++++++++++++++--------
- 1 files changed, 24 insertions(+), 8 deletions(-)
+ drivers/xen/xenbus/xenbus_probe.c |   20 ++++++++++++++++----
+ 1 files changed, 16 insertions(+), 4 deletions(-)
 
-diff --git a/fs/udf/super.c b/fs/udf/super.c
-index 9d1b8c2..1e4543c 100644
---- a/fs/udf/super.c
-+++ b/fs/udf/super.c
-@@ -1078,21 +1078,39 @@ static int udf_fill_partdesc_info(struct super_block *sb,
- 	return 0;
- }
+diff --git a/drivers/xen/xenbus/xenbus_probe.c b/drivers/xen/xenbus/xenbus_probe.c
+index 9246a8c..649fcdf 100644
+--- a/drivers/xen/xenbus/xenbus_probe.c
++++ b/drivers/xen/xenbus/xenbus_probe.c
+@@ -901,7 +901,7 @@ static int print_device_status(struct device *dev, void *data)
+ static int ready_to_wait_for_devices;
  
--static int udf_load_vat(struct super_block *sb, int p_index, int type1_index)
-+static void udf_find_vat_block(struct super_block *sb, int p_index,
-+			       int type1_index, sector_t start_block)
+ /*
+- * On a 10 second timeout, wait for all devices currently configured.  We need
++ * On a 5-minute timeout, wait for all devices currently configured.  We need
+  * to do this to guarantee that the filesystems and / or network devices
+  * needed for boot are available, before we can allow the boot to proceed.
+  *
+@@ -916,18 +916,30 @@ static int ready_to_wait_for_devices;
+  */
+ static void wait_for_devices(struct xenbus_driver *xendrv)
  {
- 	struct udf_sb_info *sbi = UDF_SB(sb);
- 	struct udf_part_map *map = &sbi->s_partmaps[p_index];
-+	sector_t vat_block;
- 	struct kernel_lb_addr ino;
-+
-+	/*
-+	 * VAT file entry is in the last recorded block. Some broken disks have
-+	 * it a few blocks before so try a bit harder...
-+	 */
-+	ino.partitionReferenceNum = type1_index;
-+	for (vat_block = start_block;
-+	     vat_block >= map->s_partition_root &&
-+	     vat_block >= start_block - 3 &&
-+	     !sbi->s_vat_inode; vat_block--) {
-+		ino.logicalBlockNum = vat_block - map->s_partition_root;
-+		sbi->s_vat_inode = udf_iget(sb, &ino);
-+	}
-+}
-+
-+static int udf_load_vat(struct super_block *sb, int p_index, int type1_index)
-+{
-+	struct udf_sb_info *sbi = UDF_SB(sb);
-+	struct udf_part_map *map = &sbi->s_partmaps[p_index];
- 	struct buffer_head *bh = NULL;
- 	struct udf_inode_info *vati;
- 	uint32_t pos;
- 	struct virtualAllocationTable20 *vat20;
- 	sector_t blocks = sb->s_bdev->bd_inode->i_size >> sb->s_blocksize_bits;
+-	unsigned long timeout = jiffies + 10*HZ;
++	unsigned long start = jiffies;
+ 	struct device_driver *drv = xendrv ? &xendrv->driver : NULL;
++	unsigned int seconds_waited = 0;
  
--	/* VAT file entry is in the last recorded block */
--	ino.partitionReferenceNum = type1_index;
--	ino.logicalBlockNum = sbi->s_last_block - map->s_partition_root;
--	sbi->s_vat_inode = udf_iget(sb, &ino);
-+	udf_find_vat_block(sb, p_index, type1_index, sbi->s_last_block);
- 	if (!sbi->s_vat_inode &&
- 	    sbi->s_last_block != blocks - 1) {
- 		printk(KERN_NOTICE "UDF-fs: Failed to read VAT inode from the"
-@@ -1100,9 +1118,7 @@ static int udf_load_vat(struct super_block *sb, int p_index, int type1_index)
- 		       "block of the device (%lu).\n",
- 		       (unsigned long)sbi->s_last_block,
- 		       (unsigned long)blocks - 1);
--		ino.partitionReferenceNum = type1_index;
--		ino.logicalBlockNum = blocks - 1 - map->s_partition_root;
--		sbi->s_vat_inode = udf_iget(sb, &ino);
-+		udf_find_vat_block(sb, p_index, type1_index, blocks - 1);
+ 	if (!ready_to_wait_for_devices || !xen_domain())
+ 		return;
+ 
+ 	while (exists_connecting_device(drv)) {
+-		if (time_after(jiffies, timeout))
+-			break;
++		if (time_after(jiffies, start + (seconds_waited+5)*HZ)) {
++			if (!seconds_waited)
++				printk(KERN_WARNING "XENBUS: Waiting for "
++				       "devices to initialise: ");
++			seconds_waited += 5;
++			printk("%us...", 300 - seconds_waited);
++			if (seconds_waited == 300)
++				break;
++		}
++
+ 		schedule_timeout_interruptible(HZ/10);
  	}
- 	if (!sbi->s_vat_inode)
- 		return 1;
+ 
++	if (seconds_waited)
++		printk("\n");
++
+ 	bus_for_each_dev(&xenbus_frontend.bus, NULL, drv,
+ 			 print_device_status);
+ }
 -- 
 1.6.6
 
