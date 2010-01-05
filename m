@@ -1,79 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932161Ab0AEU70@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932207Ab0AEVBA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932161Ab0AEU70 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 15:59:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754839Ab0AEU7Z
+	id S932207Ab0AEVBA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 16:01:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754929Ab0AEVA7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 15:59:25 -0500
-Received: from cpsmtpm-eml103.kpnxchange.com ([195.121.3.7]:53853 "EHLO
-	CPSMTPM-EML103.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752395Ab0AEU7Y (ORCPT
+	Tue, 5 Jan 2010 16:00:59 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:57979 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754505Ab0AEVA6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 15:59:24 -0500
-Message-ID: <4B43A82B.6010103@gmail.com>
-Date: Tue, 05 Jan 2010 21:59:23 +0100
-From: Gertjan van Wingerde <gwingerde@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091210 Lightning/1.0pre Shredder/3.0
+	Tue, 5 Jan 2010 16:00:58 -0500
+Date: Tue, 5 Jan 2010 13:00:18 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Peter Zijlstra <peterz@infradead.org>
+cc: Christoph Lameter <cl@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Minchan Kim <minchan.kim@gmail.com>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "hugh.dickins" <hugh.dickins@tiscali.co.uk>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [RFC][PATCH 6/8] mm: handle_speculative_fault()
+In-Reply-To: <alpine.LFD.2.00.1001051241190.3630@localhost.localdomain>
+Message-ID: <alpine.LFD.2.00.1001051251090.3630@localhost.localdomain>
+References: <20100104182429.833180340@chello.nl>  <20100104182813.753545361@chello.nl>  <20100105092559.1de8b613.kamezawa.hiroyu@jp.fujitsu.com>  <28c262361001042029w4b95f226lf54a3ed6a4291a3b@mail.gmail.com>  <20100105134357.4bfb4951.kamezawa.hiroyu@jp.fujitsu.com>
+  <alpine.LFD.2.00.1001042052210.3630@localhost.localdomain>  <20100105143046.73938ea2.kamezawa.hiroyu@jp.fujitsu.com>  <20100105163939.a3f146fb.kamezawa.hiroyu@jp.fujitsu.com>  <alpine.LFD.2.00.1001050707520.3630@localhost.localdomain> 
+ <alpine.LFD.2.00.1001050810380.3630@localhost.localdomain>  <87wrzwbh0z.fsf@basil.nowhere.org>  <alpine.LFD.2.00.1001050950500.3630@localhost.localdomain>  <alpine.DEB.2.00.1001051211000.2246@router.home>  <alpine.LFD.2.00.1001051019280.3630@localhost.localdomain>
+ <1262723356.4049.11.camel@laptop> <alpine.LFD.2.00.1001051241190.3630@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-To: Greg KH <gregkh@suse.de>
-CC: linux-kernel@vger.kernel.org, stable@kernel.org, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, stable-review@kernel.org,
-       Ivo van Doorn <IvDoorn@gmail.com>,
-       "John W. Linville" <linville@tuxdriver.com>
-Subject: Re: [32/39] rt2x00: Disable powersaving for rt61pci and rt2800pci.
-References: <20100105200303.142938701@mini.kroah.org>
-In-Reply-To: <20100105200303.142938701@mini.kroah.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 05 Jan 2010 20:59:24.0144 (UTC) FILETIME=[F5D25700:01CA8E49]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/05/10 21:02, Greg KH wrote:
-> 2.6.31-stable review patch.  If anyone has any objections, please let us know.
-> 
-> ------------------
-> 
-> From: Gertjan van Wingerde <gwingerde@gmail.com>
-> 
-> commit 93b6bd26b74efe46b4579592560f9f1cb7b61994 upstream.
-> 
-> We've had many reports of rt61pci failures with powersaving enabled.
-> Therefore, as a stop-gap measure, disable powersaving of the rt61pci
-> until we have found a proper solution.
-> Also disable powersaving on rt2800pci as it most probably will show
-> the same problem.
-> 
-> Signed-off-by: Gertjan van Wingerde <gwingerde@gmail.com>
-> Acked-by: Ivo van Doorn <IvDoorn@gmail.com>
-> Signed-off-by: John W. Linville <linville@tuxdriver.com>
-> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-> 
-> ---
->  drivers/net/wireless/rt2x00/rt61pci.c |    5 +++++
->  1 file changed, 5 insertions(+)
-> 
-> --- a/drivers/net/wireless/rt2x00/rt61pci.c
-> +++ b/drivers/net/wireless/rt2x00/rt61pci.c
-> @@ -2546,6 +2546,11 @@ static int rt61pci_probe_hw_mode(struct 
->  	unsigned int i;
->  
->  	/*
-> +	 * Disable powersaving as default.
-> +	 */
-> +	rt2x00dev->hw->wiphy->flags &= ~WIPHY_FLAG_PS_ON_BY_DEFAULT;
-> +
-> +	/*
->  	 * Initialize all hw fields.
->  	 */
->  	rt2x00dev->hw->flags =
-> 
-> 
-> 
 
-Same as for .32-stable. An updated patch (as sent by John Linville) is
-needed to compile correctly.
 
----
-Gertjan.
+On Tue, 5 Jan 2010, Linus Torvalds wrote:
+>
+> I think you need a "compare-and-exchange-2-separate-words" instruction 
+> to make it work (not "cmpxchg8/16b" - literally two _different_ words).
+
+Btw, I might be misremembering - Andy was looking at various lockless 
+algorithms too. Maybe the problem was the non-local space requirement. 
+There were several spin-lock variants that would be improved if we could 
+pass a cookie from the 'lock' to the 'unlock'.
+
+In fact, even the ticket locks would be improved by that, since we could 
+then possibly do the unlock as a plain 'store' rather than an 'add', and 
+keep the nex-owner cookie in a register over the lock rather than unlock 
+by just incrementing it in the nasty lock cacheline.
+
+		Linus
