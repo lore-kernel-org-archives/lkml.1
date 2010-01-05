@@ -1,60 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755644Ab0AEUxp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932157Ab0AEUyY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755644Ab0AEUxp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 15:53:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755426Ab0AEUxo
+	id S932157Ab0AEUyY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 15:54:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755484Ab0AEUyX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 15:53:44 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:32726 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755264Ab0AEUxn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 15:53:43 -0500
-Date: Tue, 5 Jan 2010 22:50:40 +0200
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Eric Dumazet <eric.dumazet@gmail.com>
-Cc: "David S. Miller" <davem@davemloft.net>,
-       Neil Horman <nhorman@tuxdriver.com>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH] net: packet: option to only pass skb protocol
-Message-ID: <20100105205040.GA30921@redhat.com>
-References: <20100105185732.GA30346@redhat.com> <4B439299.1090205@gmail.com>
+	Tue, 5 Jan 2010 15:54:23 -0500
+Received: from cpsmtpm-eml103.kpnxchange.com ([195.121.3.7]:51166 "EHLO
+	CPSMTPM-EML103.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755474Ab0AEUyW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jan 2010 15:54:22 -0500
+Message-ID: <4B43A6FD.3050407@gmail.com>
+Date: Tue, 05 Jan 2010 21:54:21 +0100
+From: Gertjan van Wingerde <gwingerde@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091210 Lightning/1.0pre Shredder/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <4B439299.1090205@gmail.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+To: Greg Kroah-Hartman <gregkh@suse.de>
+CC: linux-kernel@vger.kernel.org, stable@kernel.org, stable-review@kernel.org,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, "John W. Linville" <linville@tuxdriver.com>
+Subject: Re: [PATCH 099/101] rt2x00: Disable powersaving for rt61pci and rt2800pci.
+References: <20100105192014.GA23628@kroah.com> <1262719290-310-1-git-send-email-gregkh@suse.de> <1262719290-310-2-git-send-email-gregkh@suse.de>
+In-Reply-To: <1262719290-310-2-git-send-email-gregkh@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 05 Jan 2010 20:54:21.0724 (UTC) FILETIME=[4190B5C0:01CA8E49]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 05, 2010 at 08:27:21PM +0100, Eric Dumazet wrote:
-> Le 05/01/2010 19:57, Michael S. Tsirkin a écrit :
-> > When sending packets with a packet socket it is often necessary to set
-> > protocol in msg_name: otherwise the protocol field in the skb will not
-> > be set correctly.  However, currently doing this also requires
-> > supplying the interface index.
-> > 
-> > The following patch makes it possible to avoid supplying the interface
-> > index by interpreting index 0 as "use device this socket is bound to".
-> > 
+On 01/05/10 20:21, Greg Kroah-Hartman wrote:
+> From: Gertjan van Wingerde <gwingerde@gmail.com>
 > 
-> Patch is correct, but I dont understand why zero initialization by caller
-> is any better then supplying ifindex (known when socket was bound to device ?)
+> commit 93b6bd26b74efe46b4579592560f9f1cb7b61994 upstream.
 > 
-> To avoid one syscall at socket setup (to get ifindex from dev name),
-> you prefer to add a test/branch at each send() syscall...
+> We've had many reports of rt61pci failures with powersaving enabled.
+> Therefore, as a stop-gap measure, disable powersaving of the rt61pci
+> until we have found a proper solution.
+> Also disable powersaving on rt2800pci as it most probably will show
+> the same problem.
 > 
-> Am I missing something ?
+> Signed-off-by: Gertjan van Wingerde <gwingerde@gmail.com>
+> Acked-by: Ivo van Doorn <IvDoorn@gmail.com>
+> Signed-off-by: John W. Linville <linville@tuxdriver.com>
+> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> ---
+>  drivers/net/wireless/rt2x00/rt61pci.c |    5 +++++
+>  1 files changed, 5 insertions(+), 0 deletions(-)
+> 
+> diff --git a/drivers/net/wireless/rt2x00/rt61pci.c b/drivers/net/wireless/rt2x00/rt61pci.c
+> index b20e3ea..1894e7e 100644
+> --- a/drivers/net/wireless/rt2x00/rt61pci.c
+> +++ b/drivers/net/wireless/rt2x00/rt61pci.c
+> @@ -2538,6 +2538,11 @@ static int rt61pci_probe_hw_mode(struct rt2x00_dev *rt2x00dev)
+>  	unsigned int i;
+>  
+>  	/*
+> +	 * Disable powersaving as default.
+> +	 */
+> +	rt2x00dev->hw->wiphy->flags &= ~WIPHY_FLAG_PS_ON_BY_DEFAULT;
+> +
+> +	/*
+>  	 * Initialize all hw fields.
+>  	 */
+>  	rt2x00dev->hw->flags =
 
-binding socket to device might be done by a separate process
-from the one doing sendmsg, and IMO the device socket is bound
-to might change at any time.
+This looks like the wrong version of the patch. John Linville sent you an updated one
+that is applicable for .32 (and .31).
 
-So the sending process would need to get socket name before
-each sendmsg.
+This patch won't compile on .32 and before.
 
-Makes sense?
-
--- 
-MST
+---
+Gertjan.
