@@ -1,87 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755378Ab0AETYH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932108Ab0AETYV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755378Ab0AETYH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 14:24:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755214Ab0AETYB
+	id S932108Ab0AETYV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 14:24:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755370Ab0AETYT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 14:24:01 -0500
-Received: from e8.ny.us.ibm.com ([32.97.182.138]:51628 "EHLO e8.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751191Ab0AETYA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 14:24:00 -0500
-Date: Tue, 5 Jan 2010 11:23:55 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Christoph Lameter <cl@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Minchan Kim <minchan.kim@gmail.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Peter Zijlstra <peterz@infradead.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "hugh.dickins" <hugh.dickins@tiscali.co.uk>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [RFC][PATCH 6/8] mm: handle_speculative_fault()
-Message-ID: <20100105192355.GK6714@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20100105143046.73938ea2.kamezawa.hiroyu@jp.fujitsu.com> <20100105163939.a3f146fb.kamezawa.hiroyu@jp.fujitsu.com> <alpine.LFD.2.00.1001050707520.3630@localhost.localdomain> <alpine.LFD.2.00.1001050810380.3630@localhost.localdomain> <87wrzwbh0z.fsf@basil.nowhere.org> <alpine.LFD.2.00.1001050950500.3630@localhost.localdomain> <alpine.DEB.2.00.1001051211000.2246@router.home> <alpine.LFD.2.00.1001051019280.3630@localhost.localdomain> <20100105185542.GH6714@linux.vnet.ibm.com> <alpine.LFD.2.00.1001051059480.3630@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.1001051059480.3630@localhost.localdomain>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	Tue, 5 Jan 2010 14:24:19 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:43001 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755389Ab0AETYR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jan 2010 14:24:17 -0500
+X-Authority-Analysis: v=1.0 c=1 a=lN5U_OXkO8kA:10 a=7U3hwN5JcxgA:10 a=qm_4pMOoXpPK0yWy5g8A:9 a=IMwPLCvjyQSrRdqAdfCbPnRhuGMA:4 a=v7YQ8PUSAOOxQ4ax:21 a=-0C7IE-D2e8qUr9i:21
+X-Cloudmark-Score: 0
+X-Originating-IP: 74.67.89.75
+Subject: Re: [PATCH 2/2] tracing/recordmount.pl: use apropriate
+ perl-constructs
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Wolfram Sang <w.sang@pengutronix.de>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20100105191306.GA4848@pengutronix.de>
+References: <1262716072-14414-1-git-send-email-w.sang@pengutronix.de>
+	 <1262716072-14414-2-git-send-email-w.sang@pengutronix.de>
+	 <1262716072-14414-3-git-send-email-w.sang@pengutronix.de>
+	 <1262716675.28171.1612.camel@gandalf.stny.rr.com>
+	 <20100105191306.GA4848@pengutronix.de>
+Content-Type: text/plain; charset="ISO-8859-15"
+Organization: Kihon Technologies Inc.
+Date: Tue, 05 Jan 2010 14:24:15 -0500
+Message-ID: <1262719455.28171.1663.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 05, 2010 at 11:08:46AM -0800, Linus Torvalds wrote:
-> 
-> 
-> On Tue, 5 Jan 2010, Paul E. McKenney wrote:
+On Tue, 2010-01-05 at 20:13 +0100, Wolfram Sang wrote:
+> > > -$objdump = "objdump" if ((length $objdump) == 0);
+> > > -$objcopy = "objcopy" if ((length $objcopy) == 0);
+> > > -$cc = "gcc" if ((length $cc) == 0);
+> > > -$ld = "ld" if ((length $ld) == 0);
+> > > -$nm = "nm" if ((length $nm) == 0);
+> > > -$rm = "rm" if ((length $rm) == 0);
+> > > -$mv = "mv" if ((length $mv) == 0);
+> > > +$objdump ||= 'objdump';
+> > > +$objcopy ||= 'objcopy';
+> > > +$cc ||= 'gcc';
+> > > +$ld ||= 'ld';
+> > > +$nm ||= 'nm';
+> > > +$rm ||= 'rm';
+> > > +$mv ||= 'mv';
 > > 
-> > But on many systems, it does take some time for the idle reads to make
-> > their way to the CPU that just acquired the lock.
+> > I purposely did not do it this way (I need to add a comment about this),
+> > because most kernel developers are not perl programmers, and I wanted
+> > this to be as easy as possible for a non-perl programmer to understand.
+> > 
+> > Even as a perl programmer it still looks funny to me with the:
+> > 
+> > 
+> >   $x ||= 'x';
+> > 
 > 
-> Yes. But the point is that there is lots of them.
+> Yes, okay, it's an idiom one needs to know. While your point "be C-compatible"
+> makes also sense to me (comment would be nice indeed), this should do it, too?
 > 
-> So think of it this way: every time _one_ CPU acquires a lock (and 
-> then releases it), _all_ CPU's will read the new value. Imagine the 
-> cross-socket traffic.
+> 	$cc = "gcc" if ($cc == '');
 
-Yep, been there, and with five-microsecond cross-"socket" latencies.
-Of course, the CPU clock frequencies were a bit slower back then.
+Yeah that looks better. You can also add a comment that says that this
+code is trying to be C programmer friendly, and avoids the "$x ||= 'x'"
+construct. Since this is the second or third time I had to deny that
+change ;-)
 
-> In contrast, doing just a single xadd (which replaces the whole 
-> "spin_lock+non-atomics+spin_unlock"), every times _once_ CPU cquires a 
-> lock, that's it. The other CPU's arent' all waiting in line for the lock 
-> to be released, and reading the cacheline to see if it's their turn.
 > 
-> Sure, after they got the lock they'll all eventually end up reading from 
-> that cacheline that contains 'struct mm_struct', but that's something we 
-> could even think about trying to minimize by putting the mmap_sem as far 
-> away from the other fields as possible.
+> > >  # Shut up recordmcount if user has older objcopy
+> > > -my $quiet_recordmcount = ".tmp_quiet_recordmcount";
+> > > -my $print_warning = 1;
+> > > -$print_warning = 0 if ( -f $quiet_recordmcount);
+> > > +my $quiet_recordmcount = '.tmp_quiet_recordmcount';
+> > > +my $print_warning = (! -f $quiet_recordmcount);
+> > 
+> > Again, this is just using perl obfuscation for most C programmers to
+> > understand.
 > 
-> Now, it's very possible that if you have a broadcast model of cache 
-> coherency, none of this much matters and you end up with almost all the 
-> same bus traffic anyway. But I do think it could matter a lot.
+> Okay, mileages... :)
+> 
+> > I fine with this change too.
+> 
+> Shall I resend or will you just pick up the interesting parts?
 
-I have seen systems that work both ways.  If the CPU has enough time
-between getting the cache line in unlocked state to lock it, do the
-modification, and release the lock before the first in the flurry of
-reads arrives, then performance will be just fine.  Each reader will
-see the cache line with an unlocked lock and life will be good.
+Yes please resend!
 
-On the other hand, as you say, if the first in the flurry of reads arrives
-before the CPU has managed to make its way through the critical section,
-then your n^2 nightmare comes true.
+Thanks,
 
-If the critical section operates only on the cache line containing the
-lock, and if the critical section has only a handful of instructions,
-I bet you win on almost all platforms.  But, like you, I would still
-prefer the xadd (or xchg or whatever) to the lock, where feasible.
-But you cannot expect all systems to see a major performance boost from
-switching from locks to xadds.  Often, all you get is sounder sleep.
-Which is valuable in its own right.  ;-)
 
-							Thanx, Paul
+-- Steve
+
+
