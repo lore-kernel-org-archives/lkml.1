@@ -1,25 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932081Ab0AEQzV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754770Ab0AERBk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932081Ab0AEQzV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 11:55:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754929Ab0AEQzS
+	id S1754770Ab0AERBk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 12:01:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754214Ab0AERBi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 11:55:18 -0500
-Received: from poutre.nerim.net ([62.4.16.124]:50219 "EHLO poutre.nerim.net"
+	Tue, 5 Jan 2010 12:01:38 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:53527 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754672Ab0AEQzQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 11:55:16 -0500
-Date: Tue, 5 Jan 2010 17:55:11 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Roel Kluin <roel.kluin@gmail.com>
-Cc: "Ben Dooks (embedded platforms)" <ben-linux@fluff.org>,
-       linux-i2c@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] i2c: test off by one in {piix4,vt596}_transaction()
-Message-ID: <20100105175511.39dc6c42@hyperion.delvare>
-In-Reply-To: <4B3773F2.3010703@gmail.com>
-References: <4B3773F2.3010703@gmail.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
+	id S1753945Ab0AERBh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jan 2010 12:01:37 -0500
+Date: Tue, 5 Jan 2010 10:00:45 -0700
+From: Pete Zaitcev <zaitcev@redhat.com>
+To: Stefani Seibold <stefani@seibold.net>
+Cc: Johan Hovold <jhovold@gmail.com>, Greg KH <greg@kroah.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-usb@vger.kernel.org
+Subject: Re: USB: serial: kfifo_len locking
+Message-ID: <20100105100045.71afd561@redhat.com>
+In-Reply-To: <1262689759.21020.2.camel@wall-e>
+References: <20100104174352.GA26606@localhost>
+	<1262632804.4814.17.camel@wall-e>
+	<20100105004344.082bb69f@redhat.com>
+	<20100105110418.GA10442@localhost>
+	<1262689759.21020.2.camel@wall-e>
+Organization: Red Hat, Inc.
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -27,46 +31,32 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 27 Dec 2009 15:49:22 +0100, Roel Kluin wrote:
-> With `while (timeout++ < MAX_TIMEOUT)' timeout reaches MAX_TIMEOUT + 1 after the loop
-> This is probably unlikely to produce a problem.
-> 
-> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
-> ---
->  drivers/i2c/busses/i2c-piix4.c  |    2 +-
->  drivers/i2c/busses/i2c-viapro.c |    2 +-
->  2 files changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/i2c/busses/i2c-piix4.c b/drivers/i2c/busses/i2c-piix4.c
-> index 1e245e9..d8e0df0 100644
-> --- a/drivers/i2c/busses/i2c-piix4.c
-> +++ b/drivers/i2c/busses/i2c-piix4.c
-> @@ -329,7 +329,7 @@ static int piix4_transaction(void)
->  		msleep(1);
->  
->  	/* If the SMBus is still busy, we give up */
-> -	if (timeout >= MAX_TIMEOUT) {
-> +	if (timeout > MAX_TIMEOUT) {
->  		dev_err(&piix4_adapter.dev, "SMBus Timeout!\n");
->  		result = -ETIMEDOUT;
->  	}
-> diff --git a/drivers/i2c/busses/i2c-viapro.c b/drivers/i2c/busses/i2c-viapro.c
-> index e4b1543..8a2e0d5 100644
-> --- a/drivers/i2c/busses/i2c-viapro.c
-> +++ b/drivers/i2c/busses/i2c-viapro.c
-> @@ -168,7 +168,7 @@ static int vt596_transaction(u8 size)
->  	} while ((temp & 0x01) && (timeout++ < MAX_TIMEOUT));
->  
->  	/* If the SMBus is still busy, we give up */
-> -	if (timeout >= MAX_TIMEOUT) {
-> +	if (timeout > MAX_TIMEOUT) {
->  		result = -ETIMEDOUT;
->  		dev_err(&vt596_adapter.dev, "SMBus timeout!\n");
->  	}
+On Tue, 05 Jan 2010 12:09:19 +0100
+Stefani Seibold <stefani@seibold.net> wrote:
 
-That's right... but I'd rather change the loops to use "++timeout" and
-leave the conditions as is (or maybe change it to "=="). I think it's
-easier to read that way. Would that be OK with you?
+> > 39 +++ b/drivers/usb/serial/generic.c
+> > 40 @@ -369,8 +369,11 @@ int usb_serial_generic_write_room(struct
+> > 41                         room = port->bulk_out_size *
+> > 42                                 (serial->type->max_in_flight_urbs -
+> > 43                                  port->urbs_in_flight);
+> > 44 -       } else if (serial->num_bulk_out)
+> > 45 +       } else if (serial->num_bulk_out) {
+> > 46 +               /* This overcounts badly, but is good enough for drain wait. */
+> > 47                 room = kfifo_avail(&port->write_fifo);
+> > 48 +               room += port->write_urb_busy * port->bulk_out_size;
+> > 49 +       }
+> > 50         spin_unlock_irqrestore(&port->lock, flags);
 
--- 
-Jean Delvare
+> > Which does not make any sense at all. Bad merge? What do you say Greg?
+> 
+> I don't know where is your problem? This are two different functions
+> usb_serial_generic_write_room() and usb_serial_generic_chars_in_buffer()
+
+Looks like a bad merge indeed. The fix that accounts for the write
+urb has to apply to chars_in_buffer, so that we can wait until until
+it goes to zero.
+
+Please feel free to fix up the kfifo API, I'll pick up the pieces
+regarding the lost bytes on close after you're done.
+
+-- Pete
