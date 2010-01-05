@@ -1,23 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932197Ab0AETx2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932205Ab0AETxk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932197Ab0AETx2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 14:53:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932172Ab0AETxL
+	id S932205Ab0AETxk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 14:53:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932170Ab0AETxJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 14:53:11 -0500
-Received: from kroah.org ([198.145.64.141]:46034 "EHLO coco.kroah.org"
+	Tue, 5 Jan 2010 14:53:09 -0500
+Received: from kroah.org ([198.145.64.141]:46039 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932160Ab0AETw6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 14:52:58 -0500
+	id S932161Ab0AETw7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jan 2010 14:52:59 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jan  5 11:49:15 2010
-Message-Id: <20100105194915.108147616@mini.kroah.org>
+Message-Id: <20100105194915.239350321@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 05 Jan 2010 11:47:58 -0800
+Date: Tue, 05 Jan 2010 11:47:59 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, akpm@linux-foundation.org,
        torvalds@linux-foundation.org, stable-review@kernel.org
-Cc: Roland McGrath <roland@redhat.com>
-Subject: [07/10] x86/ptrace: make genregs[32]_get/set more robust
+Cc: Gertjan van Wingerde <gwingerde@gmail.com>,
+       Ivo van Doorn <IvDoorn@gmail.com>,
+       "John W. Linville" <linville@tuxdriver.com>
+Subject: [08/10] rt2x00: Disable powersaving for rt61pci and rt2800pci.
 In-Reply-To: <20100105195007.GA23952@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -26,93 +28,38 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Linus Torvalds <torvalds@linux-foundation.org>
+From: Gertjan van Wingerde <gwingerde@gmail.com>
 
-commit 04a1e62c2cec820501f93526ad1e46073b802dc4 upstream.
+commit 93b6bd26b74efe46b4579592560f9f1cb7b61994 upstream.
 
-The loop condition is fragile: we compare an unsigned value to zero, and
-then decrement it by something larger than one in the loop.  All the
-callers should be passing in appropriately aligned buffer lengths, but
-it's better to just not rely on it, and have some appropriate defensive
-loop limits.
+We've had many reports of rt61pci failures with powersaving enabled.
+Therefore, as a stop-gap measure, disable powersaving of the rt61pci
+until we have found a proper solution.
+Also disable powersaving on rt2800pci as it most probably will show
+the same problem.
 
-Acked-by: Roland McGrath <roland@redhat.com>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Gertjan van Wingerde <gwingerde@gmail.com>
+Acked-by: Ivo van Doorn <IvDoorn@gmail.com>
+Signed-off-by: John W. Linville <linville@tuxdriver.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/x86/kernel/ptrace.c |   16 ++++++++--------
- 1 file changed, 8 insertions(+), 8 deletions(-)
+ drivers/net/wireless/rt2x00/rt61pci.c |    5 +++++
+ 1 file changed, 5 insertions(+)
 
---- a/arch/x86/kernel/ptrace.c
-+++ b/arch/x86/kernel/ptrace.c
-@@ -416,14 +416,14 @@ static int genregs_get(struct task_struc
- {
- 	if (kbuf) {
- 		unsigned long *k = kbuf;
--		while (count > 0) {
-+		while (count >= sizeof(*k)) {
- 			*k++ = getreg(target, pos);
- 			count -= sizeof(*k);
- 			pos += sizeof(*k);
- 		}
- 	} else {
- 		unsigned long __user *u = ubuf;
--		while (count > 0) {
-+		while (count >= sizeof(*u)) {
- 			if (__put_user(getreg(target, pos), u++))
- 				return -EFAULT;
- 			count -= sizeof(*u);
-@@ -442,14 +442,14 @@ static int genregs_set(struct task_struc
- 	int ret = 0;
- 	if (kbuf) {
- 		const unsigned long *k = kbuf;
--		while (count > 0 && !ret) {
-+		while (count >= sizeof(*k) && !ret) {
- 			ret = putreg(target, pos, *k++);
- 			count -= sizeof(*k);
- 			pos += sizeof(*k);
- 		}
- 	} else {
- 		const unsigned long  __user *u = ubuf;
--		while (count > 0 && !ret) {
-+		while (count >= sizeof(*u) && !ret) {
- 			unsigned long word;
- 			ret = __get_user(word, u++);
- 			if (ret)
-@@ -1159,14 +1159,14 @@ static int genregs32_get(struct task_str
- {
- 	if (kbuf) {
- 		compat_ulong_t *k = kbuf;
--		while (count > 0) {
-+		while (count >= sizeof(*k)) {
- 			getreg32(target, pos, k++);
- 			count -= sizeof(*k);
- 			pos += sizeof(*k);
- 		}
- 	} else {
- 		compat_ulong_t __user *u = ubuf;
--		while (count > 0) {
-+		while (count >= sizeof(*u)) {
- 			compat_ulong_t word;
- 			getreg32(target, pos, &word);
- 			if (__put_user(word, u++))
-@@ -1187,14 +1187,14 @@ static int genregs32_set(struct task_str
- 	int ret = 0;
- 	if (kbuf) {
- 		const compat_ulong_t *k = kbuf;
--		while (count > 0 && !ret) {
-+		while (count >= sizeof(*k) && !ret) {
- 			ret = putreg32(target, pos, *k++);
- 			count -= sizeof(*k);
- 			pos += sizeof(*k);
- 		}
- 	} else {
- 		const compat_ulong_t __user *u = ubuf;
--		while (count > 0 && !ret) {
-+		while (count >= sizeof(*u) && !ret) {
- 			compat_ulong_t word;
- 			ret = __get_user(word, u++);
- 			if (ret)
+--- a/drivers/net/wireless/rt2x00/rt61pci.c
++++ b/drivers/net/wireless/rt2x00/rt61pci.c
+@@ -2281,6 +2281,11 @@ static void rt61pci_probe_hw_mode(struct
+ 	unsigned int i;
+ 
+ 	/*
++	 * Disable powersaving as default.
++	 */
++	rt2x00dev->hw->wiphy->flags &= ~WIPHY_FLAG_PS_ON_BY_DEFAULT;
++
++	/*
+ 	 * Initialize all hw fields.
+ 	 */
+ 	rt2x00dev->hw->flags =
 
 
