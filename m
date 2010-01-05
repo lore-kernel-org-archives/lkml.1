@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755582Ab0AEUNl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755637Ab0AEUOA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755582Ab0AEUNl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 15:13:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755501Ab0AEUMj
+	id S1755637Ab0AEUOA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 15:14:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755456Ab0AEUNx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 15:12:39 -0500
-Received: from kroah.org ([198.145.64.141]:49947 "EHLO coco.kroah.org"
+	Tue, 5 Jan 2010 15:13:53 -0500
+Received: from kroah.org ([198.145.64.141]:49978 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755461Ab0AEUGL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1755452Ab0AEUGL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 5 Jan 2010 15:06:11 -0500
-X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jan  5 12:03:01 2010
-Message-Id: <20100105200301.058773322@mini.kroah.org>
+X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jan  5 12:03:00 2010
+Message-Id: <20100105200300.254917940@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 05 Jan 2010 12:02:12 -0800
+Date: Tue, 05 Jan 2010 12:02:06 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, akpm@linux-foundation.org,
        torvalds@linux-foundation.org, stable-review@kernel.org
-Cc: Sergei Shtylyov <sshtylyov@ru.mvista.com>, Anand Gadiyar <gadiyar@ti.com>,
-       Felipe Balbi <felipe.balbi@nokia.com>
-Subject: [16/39] USB: musb: gadget_ep0: avoid SetupEnd interrupt
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Jeff Garzik <jgarzik@redhat.com>
+Subject: [10/39] pata_cmd64x: fix overclocking of UDMA0-2 modes
 In-Reply-To: <20100105195007.GA23952@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -28,58 +28,38 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 
-commit 17be5c5f5ef99c94374e07f71effa78e93a20eda upstream.
+commit 509426bd46ad0903dca409803e0ee3d30f99f1e8 upstream.
 
-Gadget stalling a zero-length SETUP request results in this error message:
+adev->dma_mode stores the transfer mode value not UDMA mode number
+so the condition in cmd64x_set_dmamode() is always true and the higher
+UDMA clock is always selected.  This can potentially result in data
+corruption when UDMA33 device is used, when 40-wire cable is used or
+when the error recovery code decides to lower the device speed down.
 
-SetupEnd came in a wrong ep0stage idle
+The issue was introduced in the commit 6a40da0 ("libata cmd64x: whack
+into a shape that looks like the documentation") which goes back to
+kernel 2.6.20.
 
-In order to avoid it, always set the CSR0.DataEnd bit after detecting a zero-
-length request.  Add the missing '\n' to the error message itself as well...
-
-Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Acked-by: Anand Gadiyar <gadiyar@ti.com>
-Signed-off-by: Felipe Balbi <felipe.balbi@nokia.com>
+Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/usb/musb/musb_gadget_ep0.c |   14 ++++++++++----
- 1 file changed, 10 insertions(+), 4 deletions(-)
+ drivers/ata/pata_cmd64x.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/drivers/usb/musb/musb_gadget_ep0.c
-+++ b/drivers/usb/musb/musb_gadget_ep0.c
-@@ -646,7 +646,7 @@ irqreturn_t musb_g_ep0_irq(struct musb *
- 			musb->ep0_state = MUSB_EP0_STAGE_STATUSIN;
- 			break;
- 		default:
--			ERR("SetupEnd came in a wrong ep0stage %s",
-+			ERR("SetupEnd came in a wrong ep0stage %s\n",
- 			    decode_ep0stage(musb->ep0_state));
- 		}
- 		csr = musb_readw(regs, MUSB_CSR0);
-@@ -769,12 +769,18 @@ setup:
- 				handled = service_zero_data_request(
- 						musb, &setup);
- 
-+				/*
-+				 * We're expecting no data in any case, so
-+				 * always set the DATAEND bit -- doing this
-+				 * here helps avoid SetupEnd interrupt coming
-+				 * in the idle stage when we're stalling...
-+				 */
-+				musb->ackpend |= MUSB_CSR0_P_DATAEND;
-+
- 				/* status stage might be immediate */
--				if (handled > 0) {
--					musb->ackpend |= MUSB_CSR0_P_DATAEND;
-+				if (handled > 0)
- 					musb->ep0_state =
- 						MUSB_EP0_STAGE_STATUSIN;
--				}
- 				break;
- 
- 			/* sequence #1 (IN to host), includes GET_STATUS
+--- a/drivers/ata/pata_cmd64x.c
++++ b/drivers/ata/pata_cmd64x.c
+@@ -219,7 +219,7 @@ static void cmd64x_set_dmamode(struct at
+ 		regU |= udma_data[adev->dma_mode - XFER_UDMA_0] << shift;
+ 		/* Merge the control bits */
+ 		regU |= 1 << adev->devno; /* UDMA on */
+-		if (adev->dma_mode > 2)	/* 15nS timing */
++		if (adev->dma_mode > XFER_UDMA_2) /* 15nS timing */
+ 			regU |= 4 << adev->devno;
+ 	} else {
+ 		regU &= ~ (1 << adev->devno);	/* UDMA off */
 
 
