@@ -1,140 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754891Ab0AEPgr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754905Ab0AEPk7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754891Ab0AEPgr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 10:36:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754862Ab0AEPgq
+	id S1754905Ab0AEPk7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 10:40:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754877Ab0AEPk6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 10:36:46 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:47948 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754296Ab0AEPgp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 10:36:45 -0500
-Date: Tue, 5 Jan 2010 16:36:33 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: Roland McGrath <roland@redhat.com>, caiqian@redhat.com,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Jan Kratochvil <jkratoch@redhat.com>, linux-kernel@vger.kernel.org,
-       linux-s390@vger.kernel.org, utrace-devel@redhat.com
-Subject: Re: s390 && user_enable_single_step() (Was: odd utrace testing
-	results on s390x)
-Message-ID: <20100105153633.GA9376@redhat.com>
-References: <1503844142.2061111261478093776.JavaMail.root@zmail06.collab.prod.int.phx2.redhat.com> <1257887498.2061171261478252049.JavaMail.root@zmail06.collab.prod.int.phx2.redhat.com> <20100104155225.GA16650@redhat.com> <20100104171626.22ea2d9c@mschwide.boeblingen.de.ibm.com> <20100104181412.GA21146@redhat.com> <20100104211147.4CC94D532@magilla.sf.frob.com> <20100105105030.66bb8a0a@mschwide.boeblingen.de.ibm.com>
+	Tue, 5 Jan 2010 10:40:58 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:60067 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754862Ab0AEPk5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jan 2010 10:40:57 -0500
+Date: Tue, 5 Jan 2010 15:40:47 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "minchan.kim@gmail.com" <minchan.kim@gmail.com>,
+       cl@linux-foundation.org, "hugh.dickins" <hugh.dickins@tiscali.co.uk>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [RFC][PATCH 6/8] mm: handle_speculative_fault()
+Message-ID: <20100105154047.GA18217@ZenIV.linux.org.uk>
+References: <20100104182429.833180340@chello.nl> <20100104182813.753545361@chello.nl> <20100105092559.1de8b613.kamezawa.hiroyu@jp.fujitsu.com> <alpine.LFD.2.00.1001041904250.3630@localhost.localdomain> <1262681834.2400.31.camel@laptop> <alpine.LFD.2.00.1001050727400.3630@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20100105105030.66bb8a0a@mschwide.boeblingen.de.ibm.com>
+In-Reply-To: <alpine.LFD.2.00.1001050727400.3630@localhost.localdomain>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/05, Martin Schwidefsky wrote:
->
-> On Mon,  4 Jan 2010 13:11:47 -0800 (PST)
-> Roland McGrath <roland@redhat.com> wrote:
->
-> > > This probably means that copy_process()->user_disable_single_step()
-> > > is not enough to clear the "this task wants single-stepping" copied
-> > > from parent.
-> >
-> > I would suspect s390's TIF_SINGLE_STEP flag here.  That flag means "a
-> > single-step trap occurred".  This is what causes do_single_step to be
-> > called before returning to user mode, rather than the machine trap doing it
-> > directly as is done in the other arch implementations.
->
-> Just my thinking as well.
+On Tue, Jan 05, 2010 at 07:34:02AM -0800, Linus Torvalds wrote:
 
-Oh, I am not sure. But I don't understand TIF_SINGLE_STEP on s390,
-absolutely.
+> The only other effects of delaying closing a file I can see are
+> 
+>  - the ETXTBUSY thing, but we don't need to delay _that_ part, so this may 
+>    be a non-issue.
+> 
+>  - the actual freeing of the data on disk (ie people may expect that the 
+>    last close really frees up the space on the filesystem). However, this 
+>    is _such_ a subtle semantic thing that maybe nobody cares.
 
-For example, why do_signal() sets TIF_SINGLE_STEP? Why can't we do
-
-	--- a/arch/s390/kernel/signal.c
-	+++ b/arch/s390/kernel/signal.c
-	@@ -500,18 +500,10 @@ void do_signal(struct pt_regs *regs)
-					clear_thread_flag(TIF_RESTORE_SIGMASK);
-	 
-				/*
-	-			 * If we would have taken a single-step trap
-	-			 * for a normal instruction, act like we took
-	-			 * one for the handler setup.
-	-			 */
-	-			if (current->thread.per_info.single_step)
-	-				set_thread_flag(TIF_SINGLE_STEP);
-	-
-	-			/*
-				 * Let tracing know that we've done the handler setup.
-				 */
-				tracehook_signal_handler(signr, &info, &ka, regs,
-	-					 test_thread_flag(TIF_SINGLE_STEP));
-	+					current->thread.per_info.single_step);
-			}
-			return;
-		}
-
-?
-
-Apart from arch/s390/signal.c, TIF_SINGLE_STEP is used by entry.S
-but I don't understand this asm at all.
-
-Anyway. I modified the debugging patch a bit:
-
---- K/arch/s390/kernel/traps.c~	2009-12-22 10:41:52.909174198 -0500
-+++ K/arch/s390/kernel/traps.c	2010-01-05 09:49:19.541792379 -0500
-@@ -384,6 +384,8 @@ void __kprobes do_single_step(struct pt_
- 	}
- 	if (tracehook_consider_fatal_signal(current, SIGTRAP))
- 		force_sig(SIGTRAP, current);
-+	else
-+		printk("XXX: %d %d\n", current->pid, test_thread_flag(TIF_SINGLE_STEP));
- }
- 
- static void default_trap_handler(struct pt_regs * regs, long interruption_code)
--------------------------------------------------------------------------------
-
-Now, when I run this test-case
-
-	#include <stdio.h>
-	#include <unistd.h>
-	#include <signal.h>
-	#include <sys/ptrace.h>
-	#include <sys/wait.h>
-	#include <assert.h>
-
-	int main(void)
-	{
-		int pid, status;
-
-		if (!(pid = fork())) {
-			assert(ptrace(PTRACE_TRACEME) == 0);
-			kill(getpid(), SIGSTOP);
-
-			if (!fork())
-				return 43;
-
-			wait(&status);
-			return WEXITSTATUS(status);
-		}
-
-
-		for (;;) {
-			assert(pid == wait(&status));
-			if (WIFEXITED(status))
-				break;
-			assert(ptrace(PTRACE_SINGLESTEP, pid, 0,0) == 0);
-		}
-
-		assert(WEXITSTATUS(status) == 43);
-		return 0;
-	}
-
-dmesg shows 799 lines of
-
-	XXX: 2389 0
-
-
-The kernel is 2.6.32.2 + utrace, but CONFIG_UTRACE is not set.
-
-Oleg.
-
+- a bunch of fs operations done from RCU callbacks.  Including severely
+blocking ones.  As in "for minutes" in the most severe cases, and with
+large numbers of objects involved.  Can get very unpleasant...
