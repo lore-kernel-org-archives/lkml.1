@@ -1,13 +1,13 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754403Ab0AECFC (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Mon, 4 Jan 2010 21:05:02 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754274Ab0AECET
-	(ORCPT <rfc822;linux-kernel-outgoing>);
+	id S1754269Ab0AECET (ORCPT <rfc822;list-kernel77@spinics.net>);
 	Mon, 4 Jan 2010 21:04:19 -0500
-Received: from e9.ny.us.ibm.com ([32.97.182.139]:40282 "EHLO e9.ny.us.ibm.com"
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754224Ab0AECEQ
+	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Mon, 4 Jan 2010 21:04:16 -0500
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:54287 "EHLO e6.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754233Ab0AECEP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 21:04:15 -0500
+	id S1754030Ab0AECEO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jan 2010 21:04:14 -0500
 From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org
 Cc: mingo@elte.hu, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
@@ -16,9 +16,9 @@ Cc: mingo@elte.hu, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
         tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
         Valdis.Kletnieks@vt.edu, dhowells@redhat.com,
         "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: [PATCH tip/core/rcu 4/8] net: add checking to rcu_dereference() primitives
-Date: Mon,  4 Jan 2010 18:04:07 -0800
-Message-Id: <12626570512265-git-send-email->
+Subject: [PATCH tip/core/rcu 1/8] rcu: introduce lockdep-based checking to RCU read-side primitives
+Date: Mon,  4 Jan 2010 18:04:04 -0800
+Message-Id: <12626570513892-git-send-email->
 X-Mailer: git-send-email 1.5.2.5
 In-Reply-To: <20100105020345.GA32114@linux.vnet.ibm.com>
 References: <20100105020345.GA32114@linux.vnet.ibm.com>
@@ -26,191 +26,488 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+Inspection is proving insufficient to catch all RCU misuses, which is
+understandable given that rcu_dereference() might be protected by any
+of four different flavors of RCU (RCU, RCU-bh, RCU-sched, and SRCU), but
+might instead be protected by any of a number of locking primitives.  It
+is therefore time to enlist lockdep.
 
-Update rcu_dereference() primitives to use new lockdep-based checking.
+This set of patches is inspired by earlier work by Peter Zijlstra and
+Thomas Gleixner, and is set up as follows:
+
+o	Set up separate lockdep classes for RCU, RCU-bh, and RCU-sched.
+
+o	Set up separate lockdep classes for each instance of SRCU.
+
+o	Create primitives that check for being in an RCU read-side
+	critical section.  These return exact answers if lockdep is
+	fully enabled, but if unsure, report being in an RCU read-side
+	critical section.  (We want to avoid false positives!)
+	The primitives are:
+
+	For RCU: rcu_read_lock_held(void)
+
+	For RCU-bh: rcu_read_lock_bh_held(void)
+
+	For RCU-sched: rcu_read_lock_sched_held(void)
+
+	For SRCU: srcu_read_lock_held(struct srcu_struct *sp)
+
+o	Add rcu_dereference_check(), which takes a second argument
+	in which one places a boolean expression based on the above
+	primitives and/or lockdep_is_held().
+
+The existing rcu_dereference() primitive does no checking, at least for
+the moment.
 
 Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 ---
- net/core/dev.c         |    2 +-
- net/core/filter.c      |    6 +++---
- net/core/sock.c        |    2 +-
- net/decnet/dn_route.c  |   14 +++++++-------
- net/ipv4/route.c       |   14 +++++++-------
- net/packet/af_packet.c |    2 +-
- 6 files changed, 20 insertions(+), 20 deletions(-)
+ include/linux/rcupdate.h |  124 ++++++++++++++++++++++++++++++++++++++++++----
+ include/linux/srcu.h     |   87 +++++++++++++++++++++++++++++++-
+ kernel/rcupdate.c        |   10 ++++
+ kernel/rcutorture.c      |   12 ++++-
+ kernel/srcu.c            |   50 ++++++++++++------
+ lib/debug_locks.c        |    1 +
+ 6 files changed, 253 insertions(+), 31 deletions(-)
 
-diff --git a/net/core/dev.c b/net/core/dev.c
-index b8f74cf..14ba21e 100644
---- a/net/core/dev.c
-+++ b/net/core/dev.c
-@@ -1904,7 +1904,7 @@ gso:
- 	rcu_read_lock_bh();
+diff --git a/include/linux/rcupdate.h b/include/linux/rcupdate.h
+index 24440f4..aa6c738 100644
+--- a/include/linux/rcupdate.h
++++ b/include/linux/rcupdate.h
+@@ -78,14 +78,118 @@ extern void rcu_init(void);
+ } while (0)
  
- 	txq = dev_pick_tx(dev, skb);
--	q = rcu_dereference(txq->qdisc);
-+	q = rcu_dereference_bh(txq->qdisc);
+ #ifdef CONFIG_DEBUG_LOCK_ALLOC
++
+ extern struct lockdep_map rcu_lock_map;
+-# define rcu_read_acquire()	\
+-			lock_acquire(&rcu_lock_map, 0, 0, 2, 1, NULL, _THIS_IP_)
++# define rcu_read_acquire() \
++		lock_acquire(&rcu_lock_map, 0, 0, 2, 1, NULL, _THIS_IP_)
+ # define rcu_read_release()	lock_release(&rcu_lock_map, 1, _THIS_IP_)
+-#else
+-# define rcu_read_acquire()	do { } while (0)
+-# define rcu_read_release()	do { } while (0)
+-#endif
++
++extern struct lockdep_map rcu_bh_lock_map;
++# define rcu_read_acquire_bh() \
++		lock_acquire(&rcu_bh_lock_map, 0, 0, 2, 1, NULL, _THIS_IP_)
++# define rcu_read_release_bh()	lock_release(&rcu_bh_lock_map, 1, _THIS_IP_)
++
++extern struct lockdep_map rcu_sched_lock_map;
++# define rcu_read_acquire_sched() \
++		lock_acquire(&rcu_sched_lock_map, 0, 0, 2, 1, NULL, _THIS_IP_)
++# define rcu_read_release_sched() \
++		lock_release(&rcu_sched_lock_map, 1, _THIS_IP_)
++
++/**
++ * rcu_read_lock_held - might we be in RCU read-side critical section?
++ *
++ * If CONFIG_PROVE_LOCKING is selected and enabled, returns nonzero iff in
++ * an RCU read-side critical section.  In absence of CONFIG_PROVE_LOCKING,
++ * this assumes we are in an RCU read-side critical section unless it can
++ * prove otherwise.
++ */
++static inline int rcu_read_lock_held(void)
++{
++	if (debug_locks)
++		return lock_is_held(&rcu_lock_map);
++	return 1;
++}
++
++/**
++ * rcu_read_lock_bh_held - might we be in RCU-bh read-side critical section?
++ *
++ * If CONFIG_PROVE_LOCKING is selected and enabled, returns nonzero iff in
++ * an RCU-bh read-side critical section.  In absence of CONFIG_PROVE_LOCKING,
++ * this assumes we are in an RCU-bh read-side critical section unless it can
++ * prove otherwise.
++ */
++static inline int rcu_read_lock_bh_held(void)
++{
++	if (debug_locks)
++		return lock_is_held(&rcu_bh_lock_map);
++	return 1;
++}
++
++/**
++ * rcu_read_lock_sched_held - might we be in RCU-sched read-side critical section?
++ *
++ * If CONFIG_PROVE_LOCKING is selected and enabled, returns nonzero iff in an
++ * RCU-sched read-side critical section.  In absence of CONFIG_PROVE_LOCKING,
++ * this assumes we are in an RCU-sched read-side critical section unless it
++ * can prove otherwise.  Note that disabling of preemption (including
++ * disabling irqs) counts as an RCU-sched read-side critical section.
++ */
++static inline int rcu_read_lock_sched_held(void)
++{
++	int lockdep_opinion = 0;
++
++	if (debug_locks)
++		lockdep_opinion = lock_is_held(&rcu_sched_lock_map);
++	return lockdep_opinion || preempt_count() != 0;
++}
++
++/**
++ * rcu_dereference_check - rcu_dereference with debug checking
++ *
++ * Do an rcu_dereference(), but check that the context is correct.
++ * For example, rcu_dereference_check(gp, rcu_read_lock_held()) to
++ * ensure that the rcu_dereference_check() executes within an RCU
++ * read-side critical section.  It is also possible to check for
++ * locks being held, for example, by using lockdep_is_held().
++ */
++#define rcu_dereference_check(p, c) \
++	({ \
++		if (debug_locks) \
++			WARN_ON_ONCE(!(c)); \
++		rcu_dereference(p); \
++	})
++
++#else /* #ifdef CONFIG_DEBUG_LOCK_ALLOC */
++
++# define rcu_read_acquire()		do { } while (0)
++# define rcu_read_release()		do { } while (0)
++# define rcu_read_acquire_bh()		do { } while (0)
++# define rcu_read_release_bh()		do { } while (0)
++# define rcu_read_acquire_sched()	do { } while (0)
++# define rcu_read_release_sched()	do { } while (0)
++
++static inline int rcu_read_lock_held(void)
++{
++	return 1;
++}
++
++static inline int rcu_read_lock_bh_held(void)
++{
++	return 1;
++}
++
++static inline int rcu_read_lock_sched_held(void)
++{
++	return preempt_count() != 0;
++}
++
++#define rcu_dereference_check(p, c) \
++	({ \
++		(void)(c); \
++		rcu_dereference(p); \
++	})
++
++#endif /* #else #ifdef CONFIG_DEBUG_LOCK_ALLOC */
  
- #ifdef CONFIG_NET_CLS_ACT
- 	skb->tc_verd = SET_TC_AT(skb->tc_verd, AT_EGRESS);
-diff --git a/net/core/filter.c b/net/core/filter.c
-index d1d779c..e3e9812 100644
---- a/net/core/filter.c
-+++ b/net/core/filter.c
-@@ -86,7 +86,7 @@ int sk_filter(struct sock *sk, struct sk_buff *skb)
- 		return err;
- 
- 	rcu_read_lock_bh();
--	filter = rcu_dereference(sk->sk_filter);
-+	filter = rcu_dereference_bh(sk->sk_filter);
- 	if (filter) {
- 		unsigned int pkt_len = sk_run_filter(skb, filter->insns,
- 				filter->len);
-@@ -515,7 +515,7 @@ int sk_attach_filter(struct sock_fprog *fprog, struct sock *sk)
- 	}
- 
- 	rcu_read_lock_bh();
--	old_fp = rcu_dereference(sk->sk_filter);
-+	old_fp = rcu_dereference_bh(sk->sk_filter);
- 	rcu_assign_pointer(sk->sk_filter, fp);
- 	rcu_read_unlock_bh();
- 
-@@ -530,7 +530,7 @@ int sk_detach_filter(struct sock *sk)
- 	struct sk_filter *filter;
- 
- 	rcu_read_lock_bh();
--	filter = rcu_dereference(sk->sk_filter);
-+	filter = rcu_dereference_bh(sk->sk_filter);
- 	if (filter) {
- 		rcu_assign_pointer(sk->sk_filter, NULL);
- 		sk_filter_delayed_uncharge(sk, filter);
-diff --git a/net/core/sock.c b/net/core/sock.c
-index 7626b6a..dfdb63d 100644
---- a/net/core/sock.c
-+++ b/net/core/sock.c
-@@ -1049,7 +1049,7 @@ static void __sk_free(struct sock *sk)
- 	if (sk->sk_destruct)
- 		sk->sk_destruct(sk);
- 
--	filter = rcu_dereference(sk->sk_filter);
-+	filter = rcu_dereference_bh(sk->sk_filter);
- 	if (filter) {
- 		sk_filter_uncharge(sk, filter);
- 		rcu_assign_pointer(sk->sk_filter, NULL);
-diff --git a/net/decnet/dn_route.c b/net/decnet/dn_route.c
-index 57662ca..1406265 100644
---- a/net/decnet/dn_route.c
-+++ b/net/decnet/dn_route.c
-@@ -1155,8 +1155,8 @@ static int __dn_route_output_key(struct dst_entry **pprt, const struct flowi *fl
- 
- 	if (!(flags & MSG_TRYHARD)) {
- 		rcu_read_lock_bh();
--		for(rt = rcu_dereference(dn_rt_hash_table[hash].chain); rt;
--			rt = rcu_dereference(rt->u.dst.dn_next)) {
-+		for(rt = rcu_dereference_bh(dn_rt_hash_table[hash].chain); rt;
-+			rt = rcu_dereference_bh(rt->u.dst.dn_next)) {
- 			if ((flp->fld_dst == rt->fl.fld_dst) &&
- 			    (flp->fld_src == rt->fl.fld_src) &&
- 			    (flp->mark == rt->fl.mark) &&
-@@ -1618,9 +1618,9 @@ int dn_cache_dump(struct sk_buff *skb, struct netlink_callback *cb)
- 		if (h > s_h)
- 			s_idx = 0;
- 		rcu_read_lock_bh();
--		for(rt = rcu_dereference(dn_rt_hash_table[h].chain), idx = 0;
-+		for(rt = rcu_dereference_bh(dn_rt_hash_table[h].chain), idx = 0;
- 			rt;
--			rt = rcu_dereference(rt->u.dst.dn_next), idx++) {
-+			rt = rcu_dereference_bh(rt->u.dst.dn_next), idx++) {
- 			if (idx < s_idx)
- 				continue;
- 			skb_dst_set(skb, dst_clone(&rt->u.dst));
-@@ -1654,12 +1654,12 @@ static struct dn_route *dn_rt_cache_get_first(struct seq_file *seq)
- 
- 	for(s->bucket = dn_rt_hash_mask; s->bucket >= 0; --s->bucket) {
- 		rcu_read_lock_bh();
--		rt = dn_rt_hash_table[s->bucket].chain;
-+		rt = rcu_read_lock_bh(dn_rt_hash_table[s->bucket].chain);
- 		if (rt)
- 			break;
- 		rcu_read_unlock_bh();
- 	}
--	return rcu_dereference(rt);
-+	return rt;
+ /**
+  * rcu_read_lock - mark the beginning of an RCU read-side critical section.
+@@ -160,7 +264,7 @@ static inline void rcu_read_lock_bh(void)
+ {
+ 	__rcu_read_lock_bh();
+ 	__acquire(RCU_BH);
+-	rcu_read_acquire();
++	rcu_read_acquire_bh();
  }
  
- static struct dn_route *dn_rt_cache_get_next(struct seq_file *seq, struct dn_route *rt)
-@@ -1674,7 +1674,7 @@ static struct dn_route *dn_rt_cache_get_next(struct seq_file *seq, struct dn_rou
- 		rcu_read_lock_bh();
- 		rt = dn_rt_hash_table[s->bucket].chain;
- 	}
--	return rcu_dereference(rt);
-+	return rcu_dereference_bh(rt);
+ /*
+@@ -170,7 +274,7 @@ static inline void rcu_read_lock_bh(void)
+  */
+ static inline void rcu_read_unlock_bh(void)
+ {
+-	rcu_read_release();
++	rcu_read_release_bh();
+ 	__release(RCU_BH);
+ 	__rcu_read_unlock_bh();
+ }
+@@ -188,7 +292,7 @@ static inline void rcu_read_lock_sched(void)
+ {
+ 	preempt_disable();
+ 	__acquire(RCU_SCHED);
+-	rcu_read_acquire();
++	rcu_read_acquire_sched();
  }
  
- static void *dn_rt_cache_seq_start(struct seq_file *seq, loff_t *pos)
-diff --git a/net/ipv4/route.c b/net/ipv4/route.c
-index bb41992..3fea2d7 100644
---- a/net/ipv4/route.c
-+++ b/net/ipv4/route.c
-@@ -287,12 +287,12 @@ static struct rtable *rt_cache_get_first(struct seq_file *seq)
- 		if (!rt_hash_table[st->bucket].chain)
- 			continue;
- 		rcu_read_lock_bh();
--		r = rcu_dereference(rt_hash_table[st->bucket].chain);
-+		r = rcu_dereference_bh(rt_hash_table[st->bucket].chain);
- 		while (r) {
- 			if (dev_net(r->u.dst.dev) == seq_file_net(seq) &&
- 			    r->rt_genid == st->genid)
- 				return r;
--			r = rcu_dereference(r->u.dst.rt_next);
-+			r = rcu_dereference_bh(r->u.dst.rt_next);
+ /* Used by lockdep and tracing: cannot be traced, cannot call lockdep. */
+@@ -205,7 +309,7 @@ static inline notrace void rcu_read_lock_sched_notrace(void)
+  */
+ static inline void rcu_read_unlock_sched(void)
+ {
+-	rcu_read_release();
++	rcu_read_release_sched();
+ 	__release(RCU_SCHED);
+ 	preempt_enable();
+ }
+diff --git a/include/linux/srcu.h b/include/linux/srcu.h
+index 4765d97..adbe167 100644
+--- a/include/linux/srcu.h
++++ b/include/linux/srcu.h
+@@ -35,6 +35,9 @@ struct srcu_struct {
+ 	int completed;
+ 	struct srcu_struct_array *per_cpu_ref;
+ 	struct mutex mutex;
++#ifdef CONFIG_DEBUG_LOCK_ALLOC
++	struct lockdep_map dep_map;
++#endif /* #ifdef CONFIG_DEBUG_LOCK_ALLOC */
+ };
+ 
+ #ifndef CONFIG_PREEMPT
+@@ -43,12 +46,92 @@ struct srcu_struct {
+ #define srcu_barrier()
+ #endif /* #else #ifndef CONFIG_PREEMPT */
+ 
++#ifdef CONFIG_DEBUG_LOCK_ALLOC
++
++int __init_srcu_struct(struct srcu_struct *sp, const char *name,
++		       struct lock_class_key *key);
++
++#define init_srcu_struct(sp) \
++({ \
++	static struct lock_class_key __srcu_key; \
++	\
++	__init_srcu_struct((sp), #sp, &__srcu_key); \
++})
++
++# define srcu_read_acquire(sp) \
++		lock_acquire(&(sp)->dep_map, 0, 0, 2, 1, NULL, _THIS_IP_)
++# define srcu_read_release(sp) \
++		lock_release(&(sp)->dep_map, 1, _THIS_IP_)
++
++#else /* #ifdef CONFIG_DEBUG_LOCK_ALLOC */
++
+ int init_srcu_struct(struct srcu_struct *sp);
++
++# define srcu_read_acquire(sp)  do { } while (0)
++# define srcu_read_release(sp)  do { } while (0)
++
++#endif /* #else #ifdef CONFIG_DEBUG_LOCK_ALLOC */
++
+ void cleanup_srcu_struct(struct srcu_struct *sp);
+-int srcu_read_lock(struct srcu_struct *sp) __acquires(sp);
+-void srcu_read_unlock(struct srcu_struct *sp, int idx) __releases(sp);
++int __srcu_read_lock(struct srcu_struct *sp) __acquires(sp);
++void __srcu_read_unlock(struct srcu_struct *sp, int idx) __releases(sp);
+ void synchronize_srcu(struct srcu_struct *sp);
+ void synchronize_srcu_expedited(struct srcu_struct *sp);
+ long srcu_batches_completed(struct srcu_struct *sp);
+ 
++#ifdef CONFIG_DEBUG_LOCK_ALLOC
++
++/**
++ * srcu_read_lock_held - might we be in SRCU read-side critical section?
++ *
++ * If CONFIG_PROVE_LOCKING is selected and enabled, returns nonzero iff in
++ * an SRCU read-side critical section.  In absence of CONFIG_PROVE_LOCKING,
++ * this assumes we are in an SRCU read-side critical section unless it can
++ * prove otherwise.
++ */
++static inline int srcu_read_lock_held(struct srcu_struct *sp)
++{
++	if (debug_locks)
++		return lock_is_held(&sp->dep_map);
++	return 1;
++}
++
++#else /* #ifdef CONFIG_DEBUG_LOCK_ALLOC */
++
++static inline int srcu_read_lock_held(struct srcu_struct *sp)
++{
++	return 1;
++}
++
++#endif /* #else #ifdef CONFIG_DEBUG_LOCK_ALLOC */
++
++/**
++ * srcu_read_lock - register a new reader for an SRCU-protected structure.
++ * @sp: srcu_struct in which to register the new reader.
++ *
++ * Enter an SRCU read-side critical section.  Note that SRCU read-side
++ * critical sections may be nested.
++ */
++static inline int srcu_read_lock(struct srcu_struct *sp) __acquires(sp)
++{
++	int retval = __srcu_read_lock(sp);
++
++	srcu_read_acquire(sp);
++	return retval;
++}
++
++/**
++ * srcu_read_unlock - unregister a old reader from an SRCU-protected structure.
++ * @sp: srcu_struct in which to unregister the old reader.
++ * @idx: return value from corresponding srcu_read_lock().
++ *
++ * Exit an SRCU read-side critical section.
++ */
++static inline void srcu_read_unlock(struct srcu_struct *sp, int idx)
++	__releases(sp)
++{
++	srcu_read_release(sp);
++	__srcu_read_unlock(sp, idx);
++}
++
+ #endif
+diff --git a/kernel/rcupdate.c b/kernel/rcupdate.c
+index 9b7fd47..033cb55 100644
+--- a/kernel/rcupdate.c
++++ b/kernel/rcupdate.c
+@@ -50,6 +50,16 @@ static struct lock_class_key rcu_lock_key;
+ struct lockdep_map rcu_lock_map =
+ 	STATIC_LOCKDEP_MAP_INIT("rcu_read_lock", &rcu_lock_key);
+ EXPORT_SYMBOL_GPL(rcu_lock_map);
++
++static struct lock_class_key rcu_bh_lock_key;
++struct lockdep_map rcu_bh_lock_map =
++	STATIC_LOCKDEP_MAP_INIT("rcu_read_lock_bh", &rcu_bh_lock_key);
++EXPORT_SYMBOL_GPL(rcu_bh_lock_map);
++
++static struct lock_class_key rcu_sched_lock_key;
++struct lockdep_map rcu_sched_lock_map =
++	STATIC_LOCKDEP_MAP_INIT("rcu_read_lock_sched", &rcu_sched_lock_key);
++EXPORT_SYMBOL_GPL(rcu_sched_lock_map);
+ #endif
+ 
+ /*
+diff --git a/kernel/rcutorture.c b/kernel/rcutorture.c
+index b4096d3..de3b0bb 100644
+--- a/kernel/rcutorture.c
++++ b/kernel/rcutorture.c
+@@ -796,7 +796,11 @@ static void rcu_torture_timer(unsigned long unused)
+ 
+ 	idx = cur_ops->readlock();
+ 	completed = cur_ops->completed();
+-	p = rcu_dereference(rcu_torture_current);
++	p = rcu_dereference_check(rcu_torture_current,
++				  rcu_read_lock_held() ||
++				  rcu_read_lock_bh_held() ||
++				  rcu_read_lock_sched_held() ||
++				  srcu_read_lock_held(&srcu_ctl));
+ 	if (p == NULL) {
+ 		/* Leave because rcu_torture_writer is not yet underway */
+ 		cur_ops->readunlock(idx);
+@@ -853,7 +857,11 @@ rcu_torture_reader(void *arg)
  		}
- 		rcu_read_unlock_bh();
- 	}
-@@ -314,7 +314,7 @@ static struct rtable *__rt_cache_get_next(struct seq_file *seq,
- 		rcu_read_lock_bh();
- 		r = rt_hash_table[st->bucket].chain;
- 	}
--	return rcu_dereference(r);
-+	return rcu_dereference_bh(r);
+ 		idx = cur_ops->readlock();
+ 		completed = cur_ops->completed();
+-		p = rcu_dereference(rcu_torture_current);
++		p = rcu_dereference_check(rcu_torture_current,
++					  rcu_read_lock_held() ||
++					  rcu_read_lock_bh_held() ||
++					  rcu_read_lock_sched_held() ||
++					  srcu_read_lock_held(&srcu_ctl));
+ 		if (p == NULL) {
+ 			/* Wait for rcu_torture_writer to get underway */
+ 			cur_ops->readunlock(idx);
+diff --git a/kernel/srcu.c b/kernel/srcu.c
+index 818d7d9..af29b1c 100644
+--- a/kernel/srcu.c
++++ b/kernel/srcu.c
+@@ -34,6 +34,30 @@
+ #include <linux/smp.h>
+ #include <linux/srcu.h>
+ 
++static int init_srcu_struct_fields(struct srcu_struct *sp)
++{
++	sp->completed = 0;
++	mutex_init(&sp->mutex);
++	sp->per_cpu_ref = alloc_percpu(struct srcu_struct_array);
++	return (sp->per_cpu_ref ? 0 : -ENOMEM);
++}
++
++#ifdef CONFIG_DEBUG_LOCK_ALLOC
++
++int __init_srcu_struct(struct srcu_struct *sp, const char *name,
++		       struct lock_class_key *key)
++{
++#ifdef CONFIG_DEBUG_LOCK_ALLOC
++	/* Don't re-initialize a lock while it is held. */
++	debug_check_no_locks_freed((void *)sp, sizeof(*sp));
++	lockdep_init_map(&sp->dep_map, name, key, 0);
++#endif /* #ifdef CONFIG_DEBUG_LOCK_ALLOC */
++	return (init_srcu_struct_fields(sp));
++}
++EXPORT_SYMBOL_GPL(__init_srcu_struct);
++
++#else /* #ifdef CONFIG_DEBUG_LOCK_ALLOC */
++
+ /**
+  * init_srcu_struct - initialize a sleep-RCU structure
+  * @sp: structure to initialize.
+@@ -44,13 +68,12 @@
+  */
+ int init_srcu_struct(struct srcu_struct *sp)
+ {
+-	sp->completed = 0;
+-	mutex_init(&sp->mutex);
+-	sp->per_cpu_ref = alloc_percpu(struct srcu_struct_array);
+-	return (sp->per_cpu_ref ? 0 : -ENOMEM);
++	return (init_srcu_struct_fields(sp));
  }
+ EXPORT_SYMBOL_GPL(init_srcu_struct);
  
- static struct rtable *rt_cache_get_next(struct seq_file *seq,
-@@ -2685,8 +2685,8 @@ int __ip_route_output_key(struct net *net, struct rtable **rp,
- 	hash = rt_hash(flp->fl4_dst, flp->fl4_src, flp->oif, rt_genid(net));
++#endif /* #else #ifdef CONFIG_DEBUG_LOCK_ALLOC */
++
+ /*
+  * srcu_readers_active_idx -- returns approximate number of readers
+  *	active on the specified rank of per-CPU counters.
+@@ -100,15 +123,12 @@ void cleanup_srcu_struct(struct srcu_struct *sp)
+ }
+ EXPORT_SYMBOL_GPL(cleanup_srcu_struct);
  
- 	rcu_read_lock_bh();
--	for (rth = rcu_dereference(rt_hash_table[hash].chain); rth;
--		rth = rcu_dereference(rth->u.dst.rt_next)) {
-+	for (rth = rcu_dereference_bh(rt_hash_table[hash].chain); rth;
-+		rth = rcu_dereference_bh(rth->u.dst.rt_next)) {
- 		if (rth->fl.fl4_dst == flp->fl4_dst &&
- 		    rth->fl.fl4_src == flp->fl4_src &&
- 		    rth->fl.iif == 0 &&
-@@ -3004,8 +3004,8 @@ int ip_rt_dump(struct sk_buff *skb,  struct netlink_callback *cb)
- 		if (!rt_hash_table[h].chain)
- 			continue;
- 		rcu_read_lock_bh();
--		for (rt = rcu_dereference(rt_hash_table[h].chain), idx = 0; rt;
--		     rt = rcu_dereference(rt->u.dst.rt_next), idx++) {
-+		for (rt = rcu_dereference_bh(rt_hash_table[h].chain), idx = 0; rt;
-+		     rt = rcu_dereference_bh(rt->u.dst.rt_next), idx++) {
- 			if (!net_eq(dev_net(rt->u.dst.dev), net) || idx < s_idx)
- 				continue;
- 			if (rt_is_expired(rt))
-diff --git a/net/packet/af_packet.c b/net/packet/af_packet.c
-index d7ecca0..da5741f 100644
---- a/net/packet/af_packet.c
-+++ b/net/packet/af_packet.c
-@@ -515,7 +515,7 @@ static inline unsigned int run_filter(struct sk_buff *skb, struct sock *sk,
- 	struct sk_filter *filter;
+-/**
+- * srcu_read_lock - register a new reader for an SRCU-protected structure.
+- * @sp: srcu_struct in which to register the new reader.
+- *
++/*
+  * Counts the new reader in the appropriate per-CPU element of the
+  * srcu_struct.  Must be called from process context.
+  * Returns an index that must be passed to the matching srcu_read_unlock().
+  */
+-int srcu_read_lock(struct srcu_struct *sp)
++int __srcu_read_lock(struct srcu_struct *sp)
+ {
+ 	int idx;
  
- 	rcu_read_lock_bh();
--	filter = rcu_dereference(sk->sk_filter);
-+	filter = rcu_dereference_bh(sk->sk_filter);
- 	if (filter != NULL)
- 		res = sk_run_filter(skb, filter->insns, filter->len);
- 	rcu_read_unlock_bh();
+@@ -120,26 +140,22 @@ int srcu_read_lock(struct srcu_struct *sp)
+ 	preempt_enable();
+ 	return idx;
+ }
+-EXPORT_SYMBOL_GPL(srcu_read_lock);
++EXPORT_SYMBOL_GPL(__srcu_read_lock);
+ 
+-/**
+- * srcu_read_unlock - unregister a old reader from an SRCU-protected structure.
+- * @sp: srcu_struct in which to unregister the old reader.
+- * @idx: return value from corresponding srcu_read_lock().
+- *
++/*
+  * Removes the count for the old reader from the appropriate per-CPU
+  * element of the srcu_struct.  Note that this may well be a different
+  * CPU than that which was incremented by the corresponding srcu_read_lock().
+  * Must be called from process context.
+  */
+-void srcu_read_unlock(struct srcu_struct *sp, int idx)
++void __srcu_read_unlock(struct srcu_struct *sp, int idx)
+ {
+ 	preempt_disable();
+ 	srcu_barrier();  /* ensure compiler won't misorder critical section. */
+ 	per_cpu_ptr(sp->per_cpu_ref, smp_processor_id())->c[idx]--;
+ 	preempt_enable();
+ }
+-EXPORT_SYMBOL_GPL(srcu_read_unlock);
++EXPORT_SYMBOL_GPL(__srcu_read_unlock);
+ 
+ /*
+  * Helper function for synchronize_srcu() and synchronize_srcu_expedited().
+diff --git a/lib/debug_locks.c b/lib/debug_locks.c
+index bc3b117..5bf0020 100644
+--- a/lib/debug_locks.c
++++ b/lib/debug_locks.c
+@@ -23,6 +23,7 @@
+  * shut up after that.
+  */
+ int debug_locks = 1;
++EXPORT_SYMBOL_GPL(debug_locks);
+ 
+ /*
+  * The locking-testsuite uses <debug_locks_silent> to get a
 -- 
 1.5.2.5
 
