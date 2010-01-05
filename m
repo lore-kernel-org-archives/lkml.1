@@ -1,35 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932157Ab0AEUyY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755511Ab0AEU6Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932157Ab0AEUyY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 15:54:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755484Ab0AEUyX
+	id S1755511Ab0AEU6Z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 15:58:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755427Ab0AEU6Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 15:54:23 -0500
-Received: from cpsmtpm-eml103.kpnxchange.com ([195.121.3.7]:51166 "EHLO
+	Tue, 5 Jan 2010 15:58:25 -0500
+Received: from cpsmtpm-eml103.kpnxchange.com ([195.121.3.7]:53329 "EHLO
 	CPSMTPM-EML103.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755474Ab0AEUyW (ORCPT
+	by vger.kernel.org with ESMTP id S1755365Ab0AEU6Y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 15:54:22 -0500
-Message-ID: <4B43A6FD.3050407@gmail.com>
-Date: Tue, 05 Jan 2010 21:54:21 +0100
+	Tue, 5 Jan 2010 15:58:24 -0500
+Message-ID: <4B43A7EF.8040702@gmail.com>
+Date: Tue, 05 Jan 2010 21:58:23 +0100
 From: Gertjan van Wingerde <gwingerde@gmail.com>
 User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091210 Lightning/1.0pre Shredder/3.0
 MIME-Version: 1.0
-To: Greg Kroah-Hartman <gregkh@suse.de>
-CC: linux-kernel@vger.kernel.org, stable@kernel.org, stable-review@kernel.org,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, "John W. Linville" <linville@tuxdriver.com>
-Subject: Re: [PATCH 099/101] rt2x00: Disable powersaving for rt61pci and rt2800pci.
-References: <20100105192014.GA23628@kroah.com> <1262719290-310-1-git-send-email-gregkh@suse.de> <1262719290-310-2-git-send-email-gregkh@suse.de>
-In-Reply-To: <1262719290-310-2-git-send-email-gregkh@suse.de>
+To: Greg KH <gregkh@suse.de>
+CC: linux-kernel@vger.kernel.org, stable@kernel.org, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org, stable-review@kernel.org,
+       Ivo van Doorn <IvDoorn@gmail.com>,
+       "John W. Linville" <linville@tuxdriver.com>
+Subject: Re: [08/10] rt2x00: Disable powersaving for rt61pci and rt2800pci.
+References: <20100105194915.239350321@mini.kroah.org>
+In-Reply-To: <20100105194915.239350321@mini.kroah.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 05 Jan 2010 20:54:21.0724 (UTC) FILETIME=[4190B5C0:01CA8E49]
+X-OriginalArrivalTime: 05 Jan 2010 20:58:23.0766 (UTC) FILETIME=[D1D56360:01CA8E49]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/05/10 20:21, Greg Kroah-Hartman wrote:
+On 01/05/10 20:47, Greg KH wrote:
+> 2.6.27-stable review patch.  If anyone has any objections, please let us know.
+> 
+> ------------------
 > From: Gertjan van Wingerde <gwingerde@gmail.com>
 > 
 > commit 93b6bd26b74efe46b4579592560f9f1cb7b61994 upstream.
@@ -44,15 +48,14 @@ On 01/05/10 20:21, Greg Kroah-Hartman wrote:
 > Acked-by: Ivo van Doorn <IvDoorn@gmail.com>
 > Signed-off-by: John W. Linville <linville@tuxdriver.com>
 > Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> 
 > ---
 >  drivers/net/wireless/rt2x00/rt61pci.c |    5 +++++
->  1 files changed, 5 insertions(+), 0 deletions(-)
+>  1 file changed, 5 insertions(+)
 > 
-> diff --git a/drivers/net/wireless/rt2x00/rt61pci.c b/drivers/net/wireless/rt2x00/rt61pci.c
-> index b20e3ea..1894e7e 100644
 > --- a/drivers/net/wireless/rt2x00/rt61pci.c
 > +++ b/drivers/net/wireless/rt2x00/rt61pci.c
-> @@ -2538,6 +2538,11 @@ static int rt61pci_probe_hw_mode(struct rt2x00_dev *rt2x00dev)
+> @@ -2281,6 +2281,11 @@ static void rt61pci_probe_hw_mode(struct
 >  	unsigned int i;
 >  
 >  	/*
@@ -64,11 +67,12 @@ On 01/05/10 20:21, Greg Kroah-Hartman wrote:
 >  	 * Initialize all hw fields.
 >  	 */
 >  	rt2x00dev->hw->flags =
+> 
+> 
+> 
 
-This looks like the wrong version of the patch. John Linville sent you an updated one
-that is applicable for .32 (and .31).
-
-This patch won't compile on .32 and before.
+This one isn't applicable for .27. Powersaving wasn't implemented on .27 yet, so
+this patch is unnecessary, and won't compile on .27.
 
 ---
 Gertjan.
