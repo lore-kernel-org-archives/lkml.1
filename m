@@ -1,100 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752923Ab0AEBqO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754146Ab0AECBQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752923Ab0AEBqO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 20:46:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752965Ab0AEBqM
+	id S1754146Ab0AECBQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 21:01:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753810Ab0AECBP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 20:46:12 -0500
-Received: from mail-vw0-f192.google.com ([209.85.212.192]:47192 "EHLO
-	mail-vw0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751883Ab0AEBqL convert rfc822-to-8bit (ORCPT
+	Mon, 4 Jan 2010 21:01:15 -0500
+Received: from web80004.mail.sp1.yahoo.com ([69.147.92.102]:32068 "HELO
+	web80004.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753642Ab0AECBO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 20:46:11 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=KB6NlncE30MHoVr3viIlCxxOihv3d+5HFvzAL/XIt5SQNUls8pMafLSplCHJJGgbw+
-         1Ug4C3xM44ddMmG/4JiHfOegCXuDCfILUP1SVXkWpyHCweLELiHya4b4PuNvqFr1Byad
-         P1Yz9gtiCh10zgtEuHcKt0OM9vp9gA/MhJwH4=
+	Mon, 4 Jan 2010 21:01:14 -0500
+X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Mon, 04 Jan 2010 21:01:14 EST
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=sbcglobal.net;
+  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Reply-To:Subject:To:MIME-Version:Content-Type;
+  b=WtweU/f8PYbyPM5ktIl9ArFDIfGKYh4IRCRakSjlUkmyHJxN1yH/FfLW7evglBMi2lLbUdJy9yVgOcK58O6hOf/mezkU8WGx4fk2osRUM996KIX699XiPF3EP1kINqGi6rjKarUTyhLft1uD6p3JX/zRg7kk8j04qmytYg5MRYQ=;
+Message-ID: <542189.9289.qm@web80004.mail.sp1.yahoo.com>
+X-YMail-OSG: YMf_pZsVM1nBAEoMqWDLWocJz2wN8WXEIVEmix0jLsxzWjQBguWlMum8HPOlCeisPIy0zZQjZs8nPUOdSf9asVWZRPseiEkITJbVDslqrbtF_4BAR1jM54tYB_cuwHulsUr.cUcD.7hlMZmDmmoFEiGFMEKBxD7BxBmkP.VsJFvy7gNzAcnzcZ1qhs.jyo18jGVXJOxpw52ILqkH_L9R.BtocrTPKsoStEhLVLKyNSt7e83wm8rAaOkhjk9g_UUO03Iwik4jFFM1ccaagOKH6ev59uCE3lvCR334A6pKKvoDvyOJI9A_WJvZWY_udXo9a7tvArcOxn2VRmAT.QuyKM7jelH327Leu75t43r0lqi1GAdyZYH2Zm5rtX6A4_pscWUNTrDZn3NTgqCycGsMNnX4P6CmowUoRGSBXh5WculstU9SnRk1S1zYictxmcHLHTJovu9uVlEdd8DAgM4BehuNsWaqC.H7A5sHU8XeSX3FqqYUNLZFhCzFUNd5orIJd9wB7N9KuCy8I7rSgx76.NcpXjFq09BfAHTDqaeD7RJzdEnXBurmwoukVxIwKiTbQPoZtwKutEoAD_P3fXwcblu_wymfoyIyE22wTt3Upldy2A5xqvHaQIEMHGDfxSKfT2fzFnNWp0JBjZ_yx3w_pCqLi2Rc087rwa4n9o5Lk2u_ugexKzuWap2YuWASe1Wfj15ulFx6_tIxGdkHrt2S5Z4z1dnFjLuzey7gXeijAk11GVx1RRalcbFn.nHdDEijcziw0dVJx_Qr8jwq_n.65iJHRPmBIb5JJJiR.Q_nIzKh_oC41D1PN0x9UEX.6tMD_BI4VyEMA.JGr5xhjU3QbYQVgtQoB.p352e0eIeE_lNNZDn3x3NWW8QL6HnEVkT_T3khDfBRYUJvFSOuQkjh7j.ywszAtaovqlP__TPlcP9D_y2F1xINHvNz.ppDOh.K91y80vTaO1Hbulf4bxQSV_hmy_twAFkStYwJsFGXEVMnRaUkCD7DK8esyjgDxoB6FuTALiqQQMr3haNFp7JwZ5imfT7rVOhEVv4-
+X-Mailer: YahooMailClassic/9.0.20 YahooMailWebService/0.8.100.260964
+Date: Mon, 4 Jan 2010 17:54:34 -0800 (PST)
+From: New Year Promo <kingbee56@sbcglobal.net>
+Reply-To: telecomgroup@9.cn
+Subject: Your email ID has been awarded 1,000,000,00 GBP. in our British telecom Promo
+To: undisclosed recipients:;
 MIME-Version: 1.0
-In-Reply-To: <20100104121642.GA12266@localhost>
-References: <20091225000717.GA26949@yahoo-inc.com>
-	 <87aax18xms.fsf@basil.nowhere.org> <20091230051540.GA16308@localhost>
-	 <20091230052402.GB26364@localhost> <873a2s8hmp.fsf@basil.nowhere.org>
-	 <20100104045020.GA21021@localhost>
-	 <28c262361001032120v284e92b5ub1211f3d1fca6140@mail.gmail.com>
-	 <20100104121642.GA12266@localhost>
-Date: Tue, 5 Jan 2010 10:46:09 +0900
-Message-ID: <28c262361001041746j1270e2d2i79a932efca861dc5@mail.gmail.com>
-Subject: Re: [RFC][PATCH v3] readahead: introduce O_RANDOM for 
-	POSIX_FADV_RANDOM
-From: Minchan Kim <minchan.kim@gmail.com>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Quentin Barnes <qbarnes+nfs@yahoo-inc.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       Nick Piggin <npiggin@suse.de>, Steven Whitehouse <swhiteho@redhat.com>,
-       David Howells <dhowells@redhat.com>, Al Viro <viro@zeniv.linux.org.uk>,
-       Jonathan Corbet <corbet@lwn.net>, Christoph Hellwig <hch@infradead.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 4, 2010 at 9:16 PM, Wu Fengguang <fengguang.wu@intel.com> wrote:
-> Hi Minchan,
->
-> On Mon, Jan 04, 2010 at 01:20:49PM +0800, Minchan Kim wrote:
->> > --- linux.orig/mm/readahead.c   2010-01-04 12:39:29.000000000 +0800
->> > +++ linux/mm/readahead.c        2010-01-04 12:39:30.000000000 +0800
->> > @@ -501,6 +501,12 @@ void page_cache_sync_readahead(struct ad
->> >        if (!ra->ra_pages)
->> >                return;
->> >
->> > +       /* be dumb */
->> > +       if (filp->f_flags & O_RANDOM) {
->> > +               force_page_cache_readahead(mapping, filp, offset, req_size);
->> > +               return;
->> > +       }
->> > +
->>
->> Let me have a dumb question. :)
->>
->> How about testing O_RANDOM in front of ra_pages testing?
->>
->> My intention is that although we turn off ra, it would be better to read
->> contiguous block all at once than readpage() callback doing I/O
->> one page at a time.
->>
->> Is it break some semantics or happen some problem in ondemand readahead?
->
-> Yes it will have some problem with shrink_readahead_size_eio(), which
-> want to disable readahead and use ->readpage() when ra_pages==0.
->
-> Do you have specific use case in mind? The file systems that set
-> ra_pages=0 seems to don't need readahead, too.
 
-Never mind. It's just out of curiosity. :)
-
-I thought although user disable readahead, we could enhance file I/O
-with one readpages not multiple readpage if we know the user want to
-read big contiguous blocks.
-
-But I though it break current readahead off semantics. right?
-
-Thanks for reply about my dumb question, Wu. :)
-
->
-> Thanks,
-> Fengguang
->
-
-
-
--- 
-Kind regards,
-Minchan Kim
+Names..
+Occupation..
+Address..
+Tel..
+Country..
