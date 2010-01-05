@@ -1,103 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753916Ab0AEItK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753452Ab0AEI5s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753916Ab0AEItK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 03:49:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753694Ab0AEItI
+	id S1753452Ab0AEI5s (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 03:57:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751201Ab0AEI5s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 03:49:08 -0500
-Received: from smtp1.entryit.no ([212.4.42.179]:35532 "EHLO smtp1.entryit.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753640Ab0AEItH convert rfc822-to-8bit (ORCPT
+	Tue, 5 Jan 2010 03:57:48 -0500
+Received: from dgate10.ts.fujitsu.com ([80.70.172.49]:35157 "EHLO
+	dgate10.ts.fujitsu.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751977Ab0AEI5r (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 03:49:07 -0500
-From: Eirik Aanonsen <EAA@wprmedical.com>
-To: "kernel@avr32linux.org" <kernel@avr32linux.org>,
-       "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Date: Tue, 5 Jan 2010 09:47:57 +0100
-Subject: [PATCH 1/1] atmel uaba : Adding invert vbus_pin
-Thread-Topic: [PATCH 1/1] atmel uaba : Adding invert vbus_pin
-Thread-Index: AcqN48dOrjX+1T2DTKONu97r3uR6wQ==
-Message-ID: <B5E0EDE940845B429B7ECCE186529F2C0641D17873@dware2702>
-Accept-Language: nb-NO
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: nb-NO
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-MIME-Version: 1.0
+	Tue, 5 Jan 2010 03:57:47 -0500
+DomainKey-Signature: s=s1536a; d=ts.fujitsu.com; c=nofws; q=dns;
+  h=X-SBRSScore:X-IronPort-AV:Received:X-IronPort-AV:
+   Received:Received:Date:From:To:Cc:Subject:Message-ID:
+   References:Mime-Version:Content-Type:Content-Disposition:
+   In-Reply-To;
+  b=MSRGlrrDUeIKb3G6xdAByYzXeZAWZHExZxLT2FCVH2R0sWjkS3r7XUgM
+   lyMiEk0kaFbKirp68QjN6o/UwpypBMyw14e0HplMnz8WKQsjUdR7H/jrx
+   xp9DJP2kinAmsF+bFCRIioa2SKmw/ABAJARZ2CaY5r4OdBvpmE6DUNTEk
+   wEhq8f6Hqch1MgIZXK7Hu5npIaZfdHn+ekvU/O12Ztznfa+I/yq1cvoup
+   d27gbxTrsBCcui2A+Y2/NTNiuY5BL;
+X-SBRSScore: None
+X-IronPort-AV: E=Sophos;i="4.47,504,1257116400"; 
+   d="scan'208";a="14670876"
+X-IronPort-AV: E=Sophos;i="4.47,504,1257116400"; 
+   d="scan'208";a="84153510"
+Date: Tue, 5 Jan 2010 09:57:43 +0100
+From: Andreas Friedrich <andreas.friedrich@ts.fujitsu.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Wolfgang Erig <Wolfgang.Erig@ts.fujitsu.com>
+Subject: Re: [Bug #14902] Boot ends not on tty1
+Message-ID: <20100105085743.GA13491@upset.ux.pdb.fsc.net>
+References: <oBElxfTZdhL.A.bx.-vhOLB@chimera> <srmJ8vMxKPH.A.WjB.MwhOLB@chimera>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <srmJ8vMxKPH.A.WjB.MwhOLB@chimera>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks to Ben Nizette [bn@niasdigital.com] and Sergei Shtylyov [sshtylyov@ru.mvista.com] for good feedback
+Hi Rafael,
 
-Adding vbus_pin_inverted so that the usb detect pin can be active high or low.
-This because depending on HW implementation it is better to have active low.
-Also replaced the pio_get_value(udc->vbus_pin); with a call to vbus_is_present(udc);
+On Di, Dez 29, 2009 at 04:28:54 +0100, Rafael J. Wysocki wrote:
+> This message has been generated automatically as a part of a report
+> of regressions introduced between 2.6.31 and 2.6.32.
+> 
+> The following bug entry is on the current list of known regressions
+> introduced between 2.6.31 and 2.6.32.  Please verify if it still should
+> be listed and let me know (either way).
 
-Signed-off-by: Eirik Aanonsen <eaa@wprmedical.com>
----
- drivers/usb/gadget/atmel_usba_udc.c |    6 +++---
- drivers/usb/gadget/atmel_usba_udc.h |    1 +
- include/linux/usb/atmel_usba_udc.h  |    1 +
- 3 files changed, 5 insertions(+), 3 deletions(-)
+the problem was gone after the latest Debian lenny and etch upgrades
+(one of libexpat1, libltdl3, libpq4/5 does the fix). I think that the 
+kernel change which came with e11c675ede0d42a405ae595528bf0b29ce1ae56f
+is now supported in Debian, so it is no longer a kernel issue.
 
-diff --git a/drivers/usb/gadget/atmel_usba_udc.c b/drivers/usb/gadget/atmel_usba_udc.c
-index 4e970cf..e1282fc 100644
---- a/drivers/usb/gadget/atmel_usba_udc.c
-+++ b/drivers/usb/gadget/atmel_usba_udc.c
-@@ -320,8 +320,7 @@ static inline void usba_cleanup_debugfs(struct usba_udc *udc)
- static int vbus_is_present(struct usba_udc *udc)
- {
- 	if (gpio_is_valid(udc->vbus_pin))
--		return gpio_get_value(udc->vbus_pin);
--
-+		return gpio_get_value(udc->vbus_pin) ^ udc->vbus_pin_inverted;
- 	/* No Vbus detection: Assume always present */
- 	return 1;
- }
-@@ -1763,7 +1762,7 @@ static irqreturn_t usba_vbus_irq(int irq, void *devid)
- 	if (!udc->driver)
- 		goto out;
- 
--	vbus = gpio_get_value(udc->vbus_pin);
-+	vbus = vbus_is_present(udc);
- 	if (vbus != udc->vbus_prev) {
- 		if (vbus) {
- 			toggle_bias(1);
-@@ -2000,6 +1999,7 @@ static int __init usba_udc_probe(struct platform_device *pdev)
- 	if (gpio_is_valid(pdata->vbus_pin)) {
- 		if (!gpio_request(pdata->vbus_pin, "atmel_usba_udc")) {
- 			udc->vbus_pin = pdata->vbus_pin;
-+			udc->vbus_pin_inverted = pdata->vbus_pin_inverted;
- 
- 			ret = request_irq(gpio_to_irq(udc->vbus_pin),
- 					usba_vbus_irq, 0,
-diff --git a/drivers/usb/gadget/atmel_usba_udc.h b/drivers/usb/gadget/atmel_usba_udc.h
-index f7baea3..88a2e07 100644
---- a/drivers/usb/gadget/atmel_usba_udc.h
-+++ b/drivers/usb/gadget/atmel_usba_udc.h
-@@ -323,6 +323,7 @@ struct usba_udc {
- 	struct platform_device *pdev;
- 	int irq;
- 	int vbus_pin;
-+	int vbus_pin_inverted;
- 	struct clk *pclk;
- 	struct clk *hclk;
- 
-diff --git a/include/linux/usb/atmel_usba_udc.h b/include/linux/usb/atmel_usba_udc.h
-index 6311fa2..643c4c5 100644
---- a/include/linux/usb/atmel_usba_udc.h
-+++ b/include/linux/usb/atmel_usba_udc.h
-@@ -15,6 +15,7 @@ struct usba_ep_data {
- 
- struct usba_platform_data {
- 	int			vbus_pin;
-+	unsigned char vbus_pin_inverted;
- 	int			num_ep;
- 	struct usba_ep_data	ep[0];
- };
--- 
-1.5.4.3
+Please remove the error from the regression list.
+
+Thanks,
+Andreas
+
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14902
+> Subject		: Boot ends not on tty1
+> Submitter	: Andreas Friedrich <andreas.friedrich@ts.fujitsu.com>
+> Date		: 2009-12-15 8:05 (15 days old)
+> References	: http://marc.info/?l=linux-kernel&m=126086495304263&w=4
