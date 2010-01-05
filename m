@@ -1,71 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755246Ab0AESbJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755266Ab0AESfp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755246Ab0AESbJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 13:31:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754745Ab0AESbG
+	id S1755266Ab0AESfp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 13:35:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755110Ab0AESfo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 13:31:06 -0500
-Received: from moutng.kundenserver.de ([212.227.17.8]:62859 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754744Ab0AESbB (ORCPT
+	Tue, 5 Jan 2010 13:35:44 -0500
+Received: from casper.infradead.org ([85.118.1.10]:38912 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754447Ab0AESfn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 13:31:01 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: David Howells <dhowells@redhat.com>
-Subject: Re: [PATCH] BUG(): CONFIG_BUG=n version of BUG() should be unreachable()
-Date: Tue, 5 Jan 2010 19:30:23 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; x86_64; ; )
-Cc: Sam Ravnborg <sam@ravnborg.org>,
-       Alexander Beregalov <a.beregalov@gmail.com>,
-       linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
-       David Daney <ddaney@caviumnetworks.com>
-References: <20091226184722.GA25275@merkur.ravnborg.org> <1261531032-15225-1-git-send-email-a.beregalov@gmail.com> <9664.1262714298@redhat.com>
-In-Reply-To: <9664.1262714298@redhat.com>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
+	Tue, 5 Jan 2010 13:35:43 -0500
+Subject: RE: [PATCH] drivers/mtd/nand/gpio.c: use resource_size()
+From: David Woodhouse <dwmw2@infradead.org>
+To: H Hartley Sweeten <hartleys@visionengravers.com>
+Cc: kernel list <linux-kernel@vger.kernel.org>, linux-mtd@lists.infradead.org
+In-Reply-To: <BD79186B4FD85F4B8E60E381CAEE190902089250@mi8nycmail19.Mi8.com>
+References: <BD79186B4FD85F4B8E60E381CAEE19090200EA54@mi8nycmail19.Mi8.com>
+	 <1262292881.3181.5632.camel@macbook.infradead.org>
+	 <BD79186B4FD85F4B8E60E381CAEE190902089250@mi8nycmail19.Mi8.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 05 Jan 2010 18:35:25 +0000
+Message-ID: <1262716525.3181.7222.camel@macbook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.2 (2.28.2-1.fc12) 
 Content-Transfer-Encoding: 7bit
-Message-Id: <201001051930.23532.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1/yvVV+9YxhsdaTBPMJe7AYB04sYSJVP+hP7jm
- JMR/r5hqJxX6/ICwjedx0IfMcqTU9wHxtMiuE+lkOfa8nMYgA/
- ojMU4qBPRK9kbRpFq/xwA==
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 05 January 2010, David Howells wrote:
-> Sam Ravnborg <sam@ravnborg.org> wrote:
+On Tue, 2010-01-05 at 11:09 -0500, H Hartley Sweeten wrote:
+> On Thursday, December 31, 2009 1:55 PM, David Woodhouse wrote:
+> > On Mon, 2009-12-14 at 16:30 -0500, H Hartley Sweeten wrote:
+> >> 
+> >> -       release_mem_region(res0->start, res0->end - res0->start + 1);
+> >> +       release_mem_region(res0->start, resouce_size(res0)); 
+> >
+> > That's not going to compile. I fixed it up.
 > 
-> > +#define BUG() do {                                                   \
-> > +             for (;;)                                                \
-> > +                     /* endless loop*/;                              \
-> > +             unreachable();                                          \
-> > +} while(0)
+> Oops.. Sorry about that. Thanks for fixing.
 > 
-> Can you not do:
+> > Every patch in this batch failed to apply cleanly with git-am, too --
+> > there was something odd about the whitespace at the end of each one.
 > 
->         #define BUG() do {                                              \
->                         unreachable();                                  \
->         } while(1)
+> I had the same issue with some patches I sent to David Miller.  I think
+> it's finally resolved.  My mailer was screwing with the last line in the
+> message.  Sorry about that.
 > 
-> instead?  If the compiler is interpreting unreachable() to really mean that
-> what comes after will not be reached, then the condition/loop at the end of
-> the block should be optimised away.
+> Do you need me to resubmit the series?
 
-Forcing the loop here is really wrong because it needlessly
-causes extra code to be emitted. We don't really want controlled
-error handling here (that is the definition of CONFIG_BUG=n),
-so this is only about shutting up the compiler warning.
+No, I have them. Thanks.
 
-I guess the best would be something like
-#if defined (__GNUC__) && (__GNUC_MAJOR__ == 4) && (__GNUC_MINOR__ >= 5)
-#define BUG() __builtin_unreachable()
-#else
-#define BUG() do { } while (0) /* this may cause a warning */
-#endif
+-- 
+David Woodhouse                            Open Source Technology Centre
+David.Woodhouse@intel.com                              Intel Corporation
 
-I still haven't found out how many warnings we are talking about
-here, maybe we can just silence them by adding individual
-unreachable() statements after BUG();
-
-	Arnd
