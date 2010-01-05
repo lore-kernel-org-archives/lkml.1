@@ -1,61 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755345Ab0AETBw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932102Ab0AETBc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755345Ab0AETBw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 14:01:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751872Ab0AETBt
+	id S932102Ab0AETBc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 14:01:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755215Ab0AETB3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 14:01:49 -0500
-Received: from mga07.intel.com ([143.182.124.22]:61488 "EHLO
-	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755165Ab0AETBq (ORCPT
+	Tue, 5 Jan 2010 14:01:29 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:40831 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754721Ab0AETB1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 14:01:46 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
-   d="scan'208";a="229487904"
-Date: Tue, 5 Jan 2010 20:03:25 +0100
-From: Samuel Ortiz <sameo@linux.intel.com>
-To: H Hartley Sweeten <hartleys@visionengravers.com>
-Cc: kernel list <linux-kernel@vger.kernel.org>, ian@mnementh.co.uk
-Subject: Re: [PATCH] tc6393xb.c: use resource_size()
-Message-ID: <20100105190325.GI4274@sortiz.org>
-References: <BD79186B4FD85F4B8E60E381CAEE190901FB110D@mi8nycmail19.Mi8.com>
+	Tue, 5 Jan 2010 14:01:27 -0500
+Date: Tue, 5 Jan 2010 19:00:47 +0000
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Simon Horman <horms@verge.net.au>
+Cc: Paul Mundt <lethal@linux-sh.org>,
+       Venkappa Mala <Venkappa.Mala@lntinfotech.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       linux-kernel@vger.kernel.org,
+       Kexec Mailing List <kexec@lists.infradead.org>
+Subject: Re: Linux kernel crash dumps for ARM
+Message-ID: <20100105190047.GD30868@flint.arm.linux.org.uk>
+References: <EB1A7C66AD0C92419BFFC785A947865A09EA8C9129@BLRINMSMBX01.bglrodc.lntinfotech.com> <m17hrx9lgo.fsf@fess.ebiederm.org> <20100105084850.GA27860@linux-sh.org> <20100105091625.GA19871@verge.net.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <BD79186B4FD85F4B8E60E381CAEE190901FB110D@mi8nycmail19.Mi8.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <20100105091625.GA19871@verge.net.au>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Hartley,
+On Tue, Jan 05, 2010 at 08:16:28PM +1100, Simon Horman wrote:
+> To add to this, my understanding is that kexec support varies across
+> different ARM platforms - that is to say, it works on some and fails on
+> others. While this seems to be slowly improving, I'm also aware of any list
+> of what is supported and what isn't.
 
-On Fri, Dec 11, 2009 at 07:11:13PM -0500, H Hartley Sweeten wrote:
-> Use resource_size() for ioremap.
-Patch applied too, many thanks.
-
-
-> Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
-> Cc: Ian Molton <ian@mnementh.co.uk>
-> Cc: Samuel Ortiz <sameo@linux.intel.com>
-> 
-> ---
-> 
-> diff --git a/drivers/mfd/tc6393xb.c b/drivers/mfd/tc6393xb.c
-> index 1429a73..50b1610 100644
-> --- a/drivers/mfd/tc6393xb.c
-> +++ b/drivers/mfd/tc6393xb.c
-> @@ -610,7 +610,7 @@ static int __devinit tc6393xb_probe(struct platform_device *dev)
->  	if (ret)
->  		goto err_request_scr;
->  
-> -	tc6393xb->scr = ioremap(rscr->start, rscr->end - rscr->start + 1);
-> +	tc6393xb->scr = ioremap(rscr->start, resource_size(rscr));
->  	if (!tc6393xb->scr) {
->  		ret = -ENOMEM;
->  		goto err_ioremap; 
+I'm unaware of that; the only area of weakness with kexec that I'm
+aware of is when the ARMv7 processor support didn't implement the
+necessary code to bring the caches/mmu/tlbs into a safe state for
+software-reboot, which is also what's required by kexec.
 
 -- 
-Intel Open Source Technology Centre
-http://oss.intel.com/
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
