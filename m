@@ -1,46 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754935Ab0AEPul@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754996Ab0AEPvQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754935Ab0AEPul (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 10:50:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754867Ab0AEPuk
+	id S1754996Ab0AEPvQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 10:51:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754987Ab0AEPvM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 10:50:40 -0500
-Received: from cantor.suse.de ([195.135.220.2]:60325 "EHLO mx1.suse.de"
+	Tue, 5 Jan 2010 10:51:12 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:51410 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752837Ab0AEPuj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 10:50:39 -0500
-Date: Tue, 5 Jan 2010 16:50:38 +0100
-From: Michal Marek <mmarek@suse.cz>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Jonathan Nieder <jrnieder@gmail.com>, linux-kbuild@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [GIT PULL] kbuild fix for 2.6.33
-Message-ID: <20100105155038.GA20834@sepie.suse.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	id S1754980Ab0AEPvH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jan 2010 10:51:07 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <1262602095-17591-1-git-send-email-jslaby@suse.cz>
+References: <1262602095-17591-1-git-send-email-jslaby@suse.cz> <4B41C750.9080305@gmail.com>
+To: Jiri Slaby <jslaby@suse.cz>
+Cc: dhowells@redhat.com, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, jirislaby@gmail.com,
+       nhorman@tuxdriver.com, mingo@elte.hu,
+       Stephen Smalley <sds@tycho.nsa.gov>, Eric Paris <eparis@parisplace.org>
+Subject: Re: [PATCH 1/3] SECURITY: selinux, fix update_rlimit_cpu parameter
+Date: Tue, 05 Jan 2010 15:50:36 +0000
+Message-ID: <17729.1262706636@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+Jiri Slaby <jslaby@suse.cz> wrote:
 
-please pull this to fix build with /bin/sh -> dash (as used in Ubuntu).
+> From: Jiri Slaby <jirislaby@gmail.com>
+> 
+> Don't pass current RLIMIT_RTTIME to update_rlimit_cpu() in
+> selinux_bprm_committing_creds, since update_rlimit_cpu expects
+> RLIMIT_CPU limit.
+> 
+> Use proper rlim[RLIMIT_CPU].rlim_cur instead to fix that.
+> 
+> Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+> Acked-by: James Morris <jmorris@namei.org>
+> Cc: Stephen Smalley <sds@tycho.nsa.gov>
+> Cc: Eric Paris <eparis@parisplace.org>
 
-Thanks!
-Michal
-
-The following changes since commit 45d28b097280a78893ce25a5d0db41e6a2717853:
-  Linus Torvalds (1):
-        Merge branch 'reiserfs/kill-bkl' of git://git.kernel.org/.../frederic/random-tracing
-
-are available in the git repository at:
-
-  git://repo.or.cz/linux-kbuild.git for-33
-
-Jonathan Nieder (1):
-      kbuild: really fix bzImage build with non-bash sh
-
- scripts/Makefile.lib |    9 +++++++--
- 1 files changed, 7 insertions(+), 2 deletions(-)
+Acked-by: David Howells <dhowells@redhat.com>
