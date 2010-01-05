@@ -1,37 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754146Ab0AECBQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754130Ab0AECDS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754146Ab0AECBQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 21:01:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753810Ab0AECBP
+	id S1754130Ab0AECDS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 21:03:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753640Ab0AECDR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 21:01:15 -0500
-Received: from web80004.mail.sp1.yahoo.com ([69.147.92.102]:32068 "HELO
-	web80004.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753642Ab0AECBO (ORCPT
+	Mon, 4 Jan 2010 21:03:17 -0500
+Received: from relay4-v.mail.gandi.net ([217.70.178.78]:53707 "EHLO
+	relay4-v.mail.gandi.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753484Ab0AECDQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 21:01:14 -0500
-X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Mon, 04 Jan 2010 21:01:14 EST
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=sbcglobal.net;
-  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Reply-To:Subject:To:MIME-Version:Content-Type;
-  b=WtweU/f8PYbyPM5ktIl9ArFDIfGKYh4IRCRakSjlUkmyHJxN1yH/FfLW7evglBMi2lLbUdJy9yVgOcK58O6hOf/mezkU8WGx4fk2osRUM996KIX699XiPF3EP1kINqGi6rjKarUTyhLft1uD6p3JX/zRg7kk8j04qmytYg5MRYQ=;
-Message-ID: <542189.9289.qm@web80004.mail.sp1.yahoo.com>
-X-YMail-OSG: YMf_pZsVM1nBAEoMqWDLWocJz2wN8WXEIVEmix0jLsxzWjQBguWlMum8HPOlCeisPIy0zZQjZs8nPUOdSf9asVWZRPseiEkITJbVDslqrbtF_4BAR1jM54tYB_cuwHulsUr.cUcD.7hlMZmDmmoFEiGFMEKBxD7BxBmkP.VsJFvy7gNzAcnzcZ1qhs.jyo18jGVXJOxpw52ILqkH_L9R.BtocrTPKsoStEhLVLKyNSt7e83wm8rAaOkhjk9g_UUO03Iwik4jFFM1ccaagOKH6ev59uCE3lvCR334A6pKKvoDvyOJI9A_WJvZWY_udXo9a7tvArcOxn2VRmAT.QuyKM7jelH327Leu75t43r0lqi1GAdyZYH2Zm5rtX6A4_pscWUNTrDZn3NTgqCycGsMNnX4P6CmowUoRGSBXh5WculstU9SnRk1S1zYictxmcHLHTJovu9uVlEdd8DAgM4BehuNsWaqC.H7A5sHU8XeSX3FqqYUNLZFhCzFUNd5orIJd9wB7N9KuCy8I7rSgx76.NcpXjFq09BfAHTDqaeD7RJzdEnXBurmwoukVxIwKiTbQPoZtwKutEoAD_P3fXwcblu_wymfoyIyE22wTt3Upldy2A5xqvHaQIEMHGDfxSKfT2fzFnNWp0JBjZ_yx3w_pCqLi2Rc087rwa4n9o5Lk2u_ugexKzuWap2YuWASe1Wfj15ulFx6_tIxGdkHrt2S5Z4z1dnFjLuzey7gXeijAk11GVx1RRalcbFn.nHdDEijcziw0dVJx_Qr8jwq_n.65iJHRPmBIb5JJJiR.Q_nIzKh_oC41D1PN0x9UEX.6tMD_BI4VyEMA.JGr5xhjU3QbYQVgtQoB.p352e0eIeE_lNNZDn3x3NWW8QL6HnEVkT_T3khDfBRYUJvFSOuQkjh7j.ywszAtaovqlP__TPlcP9D_y2F1xINHvNz.ppDOh.K91y80vTaO1Hbulf4bxQSV_hmy_twAFkStYwJsFGXEVMnRaUkCD7DK8esyjgDxoB6FuTALiqQQMr3haNFp7JwZ5imfT7rVOhEVv4-
-X-Mailer: YahooMailClassic/9.0.20 YahooMailWebService/0.8.100.260964
-Date: Mon, 4 Jan 2010 17:54:34 -0800 (PST)
-From: New Year Promo <kingbee56@sbcglobal.net>
-Reply-To: telecomgroup@9.cn
-Subject: Your email ID has been awarded 1,000,000,00 GBP. in our British telecom Promo
-To: undisclosed recipients:;
+	Mon, 4 Jan 2010 21:03:16 -0500
+Date: Mon, 4 Jan 2010 18:03:08 -0800
+From: Josh Triplett <josh@joshtriplett.org>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, laijs@cn.fujitsu.com,
+       dipankar@in.ibm.com, akpm@linux-foundation.org,
+       mathieu.desnoyers@polymtl.ca, dvhltc@us.ibm.com, niv@us.ibm.com,
+       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
+       Valdis.Kletnieks@vt.edu, dhowells@redhat.com
+Subject: Re: [PATCH tip/core/rcu 2/3] rcu: add debug check for too many
+ rcu_read_unlock()
+Message-ID: <20100105020307.GB11286@feather>
+References: <20100105000337.GA23307@linux.vnet.ibm.com>
+ <12626498423064-git-send-email->
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <12626498423064-git-send-email->
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Jan 04, 2010 at 04:04:01PM -0800, Paul E. McKenney wrote:
+> From: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> 
+> TREE_PREEMPT_RCU maintains an rcu_read_lock_nesting counter in the
+> task structure, which happens to be a signed int.  So this patch adds a
+> check for this counter being negative at the end of __rcu_read_unlock().
+> This check is under CONFIG_PROVE_LOCKING, so can be thought of as being
+> part of lockdep.
+> 
+> Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> ---
+>  kernel/rcutree_plugin.h |    3 +++
+>  1 files changed, 3 insertions(+), 0 deletions(-)
+> 
+> diff --git a/kernel/rcutree_plugin.h b/kernel/rcutree_plugin.h
+> index f11ebd4..e77cdf3 100644
+> --- a/kernel/rcutree_plugin.h
+> +++ b/kernel/rcutree_plugin.h
+> @@ -304,6 +304,9 @@ void __rcu_read_unlock(void)
+>  	if (--ACCESS_ONCE(t->rcu_read_lock_nesting) == 0 &&
+>  	    unlikely(ACCESS_ONCE(t->rcu_read_unlock_special)))
+>  		rcu_read_unlock_special(t);
+> +#ifdef CONFIG_PROVE_LOCKING
+> +	WARN_ON_ONCE(ACCESS_ONCE(t->rcu_read_lock_nesting) < 0);
+> +#endif /* #ifdef CONFIG_PROVE_LOCKING */
+>  }
+>  EXPORT_SYMBOL_GPL(__rcu_read_unlock);
 
-Names..
-Occupation..
-Address..
-Tel..
-Country..
+Given that you *already* need to access t->rcu_read_lock_nesting here,
+why not just do the test all the time?  Ideally you could access
+t->rcu_read_lock_nesting once, decrement it, and test for both 0 and
+negative.
+
+- Josh Triplett
