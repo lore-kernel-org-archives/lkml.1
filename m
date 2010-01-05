@@ -1,48 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755384Ab0AET1s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755404Ab0AET2u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755384Ab0AET1s (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 14:27:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755019Ab0AET1r
+	id S1755404Ab0AET2u (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 14:28:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754675Ab0AET2t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 14:27:47 -0500
-Received: from gw1.cosmosbay.com ([212.99.114.194]:32788 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754224Ab0AET1r (ORCPT
+	Tue, 5 Jan 2010 14:28:49 -0500
+Received: from mail-yx0-f188.google.com ([209.85.210.188]:44942 "EHLO
+	mail-yx0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751119Ab0AET2t (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 14:27:47 -0500
-Message-ID: <4B439299.1090205@gmail.com>
-Date: Tue, 05 Jan 2010 20:27:21 +0100
-From: Eric Dumazet <eric.dumazet@gmail.com>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; fr; rv:1.9.1.5) Gecko/20091204 Thunderbird/3.0
+	Tue, 5 Jan 2010 14:28:49 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type;
+        b=je3QZTsV4ESmaexObmvG19Bq6yMsDc3i0DoN6j7JMo0OahGdokRDrllU4jg10BZb63
+         cllD4l1qKk7CmVQtYLUC0tr2ZR8fsXrx1JZILDXgedLhZHbGMSyW6or+XK7l8zPs2m1o
+         IWgLoJgs2E6S3IpAegyYgKueQU4FfkPBJJVKE=
 MIME-Version: 1.0
-To: "Michael S. Tsirkin" <mst@redhat.com>
-CC: "David S. Miller" <davem@davemloft.net>,
-       Neil Horman <nhorman@tuxdriver.com>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH] net: packet: option to only pass skb protocol
-References: <20100105185732.GA30346@redhat.com>
-In-Reply-To: <20100105185732.GA30346@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Tue, 05 Jan 2010 20:27:22 +0100 (CET)
+In-Reply-To: <8bd0f97a0909291944q53a060buc7bcbb30c1240da7@mail.gmail.com>
+References: <1254133004-24877-1-git-send-email-21cnbao@gmail.com> 
+	<8bd0f97a0909291944q53a060buc7bcbb30c1240da7@mail.gmail.com>
+From: Mike Frysinger <vapier.adi@gmail.com>
+Date: Tue, 5 Jan 2010 14:28:27 -0500
+Message-ID: <8bd0f97a1001051128s272f9881q4f1418eba08f1478@mail.gmail.com>
+Subject: Re: [PATCH] Fix half-Y2K38 problem in timecompare_update while 
+	calculating offset
+To: Barry Song <21cnbao@gmail.com>
+Cc: akpm@linux-foundation.org, davem@davemloft.net, patrick.ohly@intel.com,
+       uclinux-dist-devel@blackfin.uclinux.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Le 05/01/2010 19:57, Michael S. Tsirkin a écrit :
-> When sending packets with a packet socket it is often necessary to set
-> protocol in msg_name: otherwise the protocol field in the skb will not
-> be set correctly.  However, currently doing this also requires
-> supplying the interface index.
-> 
-> The following patch makes it possible to avoid supplying the interface
-> index by interpreting index 0 as "use device this socket is bound to".
-> 
+On Tue, Sep 29, 2009 at 21:44, Mike Frysinger wrote:
+> On Mon, Sep 28, 2009 at 06:16, Barry Song wrote:
+>> ktime will overflow from 03:14:07 UTC on Tuesday, 19 January 2038,
+>> ktime_add() in timecompare_update() will overflow a half earlier.
+>> As a result, wrong offset will be gotten, then cause some strange
+>> problems.
+>
+> Barry: you forgot to include your s-o-b tag ...
 
-Patch is correct, but I dont understand why zero initialization by caller
-is any better then supplying ifindex (known when socket was bound to device ?)
-
-To avoid one syscall at socket setup (to get ifindex from dev name),
-you prefer to add a test/branch at each send() syscall...
-
-Am I missing something ?
+you still need to post your s-o-b if we want this to go any further
+-mike
