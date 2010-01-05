@@ -1,21 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754655Ab0AEAhf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754614Ab0AEAgx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754655Ab0AEAhf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 19:37:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754633Ab0AEAha
+	id S1754614Ab0AEAgx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 19:36:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754575Ab0AEAg0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 19:37:30 -0500
-Received: from kroah.org ([198.145.64.141]:42563 "EHLO coco.kroah.org"
+	Mon, 4 Jan 2010 19:36:26 -0500
+Received: from kroah.org ([198.145.64.141]:42516 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754567Ab0AEAgY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 19:36:24 -0500
+	id S1754559Ab0AEAgT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jan 2010 19:36:19 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, stable-review@kernel.org
 Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 97/97] Linux 2.6.32.3-rc1
-Date: Mon,  4 Jan 2010 16:33:50 -0800
-Message-Id: <1262651630-7354-97-git-send-email-gregkh@suse.de>
+       alan@lxorguk.ukuu.org.uk, Borislav Petkov <borislav.petkov@amd.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 92/97] amd64_edac: fix forcing module load/unload
+Date: Mon,  4 Jan 2010 16:33:45 -0800
+Message-Id: <1262651630-7354-92-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.6
 In-Reply-To: <20100105003133.GA7199@kroah.com>
 References: <20100105003133.GA7199@kroah.com>
@@ -23,23 +24,33 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
----
- Makefile |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+From: Borislav Petkov <borislav.petkov@amd.com>
 
-diff --git a/Makefile b/Makefile
-index 23803ce..f870e02 100644
---- a/Makefile
-+++ b/Makefile
-@@ -1,7 +1,7 @@
- VERSION = 2
- PATCHLEVEL = 6
- SUBLEVEL = 32
--EXTRAVERSION = .2
-+EXTRAVERSION = .3-rc1
- NAME = Man-Eating Seals of Antiquity
+commit 43f5e68733cfe8bed3c30b5c14c4993dffb29766 upstream.
+
+Clear the override flag after force-loading the module.
+
+Signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+---
+ drivers/edac/amd64_edac.c |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/edac/amd64_edac.c b/drivers/edac/amd64_edac.c
+index 22910c6..a0bcfba 100644
+--- a/drivers/edac/amd64_edac.c
++++ b/drivers/edac/amd64_edac.c
+@@ -2836,9 +2836,8 @@ static int amd64_check_ecc_enabled(struct amd64_pvt *pvt)
+ 			amd64_printk(KERN_WARNING, "%s", ecc_warning);
+ 			return -ENODEV;
+ 		}
+-	} else
+-		/* CLEAR the override, since BIOS controlled it */
+ 		ecc_enable_override = 0;
++	}
  
- # *DOCUMENTATION*
+ 	return 0;
+ }
 -- 
 1.6.6
 
