@@ -1,136 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754334Ab0AEK7J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754228Ab0AELDy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754334Ab0AEK7J (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 05:59:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752898Ab0AEK7I
+	id S1754228Ab0AELDy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 06:03:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752898Ab0AELDx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 05:59:08 -0500
-Received: from mk-filter-4-a-1.mail.uk.tiscali.com ([212.74.100.55]:44444 "EHLO
-	mk-filter-4-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752697Ab0AEK7B (ORCPT
+	Tue, 5 Jan 2010 06:03:53 -0500
+Received: from ch-smtp02.sth.basefarm.net ([80.76.149.213]:54272 "EHLO
+	ch-smtp02.sth.basefarm.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751191Ab0AELDw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 05:59:01 -0500
-X-Trace: 317435107/mk-filter-4.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.28.176/None/hugh.dickins@tiscali.co.uk
-X-SBRS: None
-X-RemoteIP: 79.69.28.176
-X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
-X-SMTP-AUTH: 
-X-Originating-Country: GB/UNITED KINGDOM
-X-MUA: Alpine 2.00 (LSU 1167 2008-08-23)
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ap4BALuqQktPRRyw/2dsb2JhbAAI0yWEMAQ
-X-IronPort-AV: E=Sophos;i="4.47,505,1257120000"; 
-   d="scan'208";a="317435107"
-Date: Tue, 5 Jan 2010 10:58:58 +0000 (GMT)
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-X-X-Sender: hugh@sister.anvils
-To: Nitin Gupta <ngupta@vflare.org>
-cc: Pekka Enberg <penberg@cs.helsinki.fi>, Al Viro <viro@ZenIV.linux.org.uk>,
-       Christoph Hellwig <hch@infradead.org>,
-       Jens Axboe <jens.axboe@oracle.com>, Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/2] [mmotm] ramzswap: use slot free callback to eliminate
- stale data
-In-Reply-To: <1262661514-4148-2-git-send-email-ngupta@vflare.org>
-Message-ID: <alpine.LSU.2.00.1001051058070.26135@sister.anvils>
-References: <1262661514-4148-1-git-send-email-ngupta@vflare.org> <1262661514-4148-2-git-send-email-ngupta@vflare.org>
-User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 5 Jan 2010 06:03:52 -0500
+X-Mailer: exmh version 2.7.2 04/02/2003 (gentoo 2.7.2) with nmh-1.3-dev
+To: mingo@elte.hu
+cc: linux-kernel@vger.kernel.org
+Subject: Memory probing fails after 2.6.30 (bisected)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Date: Tue, 05 Jan 2010 12:02:56 +0100
+From: Anders Eriksson <aeriksson@fastmail.fm>
+Message-Id: <20100105110256.D2DF133C4B0@tippex.mynet.homeunix.org>
+X-Originating-IP: 83.252.238.172
+X-Scan-Result: No virus found in message 1NS7Bu-00048b-6Y.
+X-Scan-Signature: ch-smtp02.sth.basefarm.net 1NS7Bu-00048b-6Y 8ed59687eaaa7255e8a0f0ba44384bb0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 5 Jan 2010, Nitin Gupta wrote:
 
-> ramzswap driver creates RAM backed block devices which are
-> used as swap disks. Pages swapped to these disks are compressed
-> and stored in memory itself. However, when a swap page becomes
-> stale i.e. it is no longer referenced by any process (say, when
-> owning process exits), the driver does not get any notification
-> about this. So, it has to keep such pages in memory until kernel
-> swaps to the same swap slot again thereby overwriting previous
-> (stale) page.
-> 
-> Often, a large number of such stale pages accumulate which defeats
-> the whole purpose of in-memory compressed swapping and it begins
-> to have a negative impact on system performance.
-> 
-> To overcome this problem, we now register a callback function
-> which is called as soon as a swap slot is freed which allows
-> us to free corresponding memory, eliminating any stale data
-> in (compressed) memory.
-> 
-> Signed-off-by: Nitin Gupta <ngupta@vflare.org>
+Hi,
 
-Acked-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Upgrading my laptop's kernel, I discovered that it reboots immediately after 
+boot on .31 and later kernels. Grub loads it, but I cannot get one line of 
+text out of it before it reboots, even using boot_delay.
 
-> ---
->  drivers/staging/ramzswap/ramzswap_drv.c   |   15 ++++++++++++++-
->  drivers/staging/ramzswap/ramzswap_drv.h   |    1 +
->  drivers/staging/ramzswap/ramzswap_ioctl.h |    1 +
->  3 files changed, 16 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/staging/ramzswap/ramzswap_drv.c b/drivers/staging/ramzswap/ramzswap_drv.c
-> index b839f05..bada4ae 100644
-> --- a/drivers/staging/ramzswap/ramzswap_drv.c
-> +++ b/drivers/staging/ramzswap/ramzswap_drv.c
-> @@ -276,6 +276,7 @@ void ramzswap_ioctl_get_stats(struct ramzswap *rzs,
->  	s->failed_reads = rs->failed_reads;
->  	s->failed_writes = rs->failed_writes;
->  	s->invalid_io = rs->invalid_io;
-> +	s->notify_free = rs->notify_free;
->  	s->pages_zero = rs->pages_zero;
->  
->  	s->good_compress_pct = good_compress_perc;
-> @@ -1310,9 +1311,21 @@ out:
->  	return ret;
->  }
->  
-> +void ramzswap_slot_free_notify(struct block_device *bdev, unsigned long index)
-> +{
-> +	struct ramzswap *rzs;
-> +
-> +	rzs = bdev->bd_disk->private_data;
-> +	ramzswap_free_page(rzs, index);
-> +	stat_inc(rzs->stats.notify_free);
-> +
-> +	return;
-> +}
-> +
->  static struct block_device_operations ramzswap_devops = {
->  	.ioctl = ramzswap_ioctl,
-> -	.owner = THIS_MODULE,
-> +	.swap_slot_free_notify = ramzswap_slot_free_notify,
-> +	.owner = THIS_MODULE
->  };
->  
->  static void create_device(struct ramzswap *rzs, int device_id)
-> diff --git a/drivers/staging/ramzswap/ramzswap_drv.h b/drivers/staging/ramzswap/ramzswap_drv.h
-> index a6ea240..adc841a 100644
-> --- a/drivers/staging/ramzswap/ramzswap_drv.h
-> +++ b/drivers/staging/ramzswap/ramzswap_drv.h
-> @@ -124,6 +124,7 @@ struct ramzswap_stats {
->  	u64 failed_reads;	/* can happen when memory is too low */
->  	u64 failed_writes;	/* should NEVER! happen */
->  	u64 invalid_io;		/* non-swap I/O requests */
-> +	u64 notify_free;	/* no. of swap slot free notifications */
->  	u32 pages_zero;		/* no. of zero filled pages */
->  	u32 pages_stored;	/* no. of pages currently stored */
->  	u32 good_compress;	/* % of pages with compression ratio<=50% */
-> diff --git a/drivers/staging/ramzswap/ramzswap_ioctl.h b/drivers/staging/ramzswap/ramzswap_ioctl.h
-> index c713a09..ec50416 100644
-> --- a/drivers/staging/ramzswap/ramzswap_ioctl.h
-> +++ b/drivers/staging/ramzswap/ramzswap_ioctl.h
-> @@ -27,6 +27,7 @@ struct ramzswap_ioctl_stats {
->  	u64 failed_reads;	/* can happen when memory is too low */
->  	u64 failed_writes;	/* should NEVER! happen */
->  	u64 invalid_io;		/* non-swap I/O requests */
-> +	u64 notify_free;	/* no. of swap slot free notifications */
->  	u32 pages_zero;		/* no. of zero filled pages */
->  	u32 good_compress_pct;	/* no. of pages with compression ratio<=50% */
->  	u32 pages_expand_pct;	/* no. of incompressible pages */
-> -- 
-> 1.6.2.5
+Bisecting I came up with the following:
+
+git bisect start
+# good: [07a2039b8eb0af4ff464efd3dfd95de5c02648c6] Linux 2.6.30
+git bisect good 07a2039b8eb0af4ff464efd3dfd95de5c02648c6
+# bad: [74fca6a42863ffacaf7ba6f1936a9f228950f657] Linux 2.6.31
+git bisect bad 74fca6a42863ffacaf7ba6f1936a9f228950f657
+# bad: [925d74ae717c9a12d3618eb4b36b9fb632e2cef3] V4L/DVB (11736): videobuf: modify return value of VIDIOC_REQBUFS ioctl
+git bisect bad 925d74ae717c9a12d3618eb4b36b9fb632e2cef3
+# bad: [e349792a385ed47390d156155b1a1e19af1bf163] Merge branch 'for-linus' of git://git.kernel.org/pub/scm/linux/kernel/git/tiwai/sound-2.6
+git bisect bad e349792a385ed47390d156155b1a1e19af1bf163
+# bad: [c9059598ea8981d02356eead3188bf7fa4d717b8] Merge branch 'for-2.6.31' of git://git.kernel.dk/linux-2.6-block
+git bisect bad c9059598ea8981d02356eead3188bf7fa4d717b8
+# bad: [59c288ffb6dfb55bdd6bfe6826ab6203ff791930] Merge branches 'frv' and 'mn10300'
+git bisect bad 59c288ffb6dfb55bdd6bfe6826ab6203ff791930
+# bad: [3f6280ddf25fa656d0e17960588e52bee48a7547] Merge branch 'iommu-for-linus' of git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip
+git bisect bad 3f6280ddf25fa656d0e17960588e52bee48a7547
+# good: [c44e3ed539e4fc17d6bcb5eaecb894a94de4cc5f] Merge branch 'x86-cpu-for-linus' of git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip
+git bisect good c44e3ed539e4fc17d6bcb5eaecb894a94de4cc5f
+# bad: [be15f9d63b97da0065187696962331de6cd9de9e] Merge branch 'x86-xen-for-linus' of git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip
+git bisect bad be15f9d63b97da0065187696962331de6cd9de9e
+# bad: [9b29e8228a5c2a169436a1a90a60b1f88cb35cd1] Merge branch 'x86-urgent-for-linus' of git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip
+git bisect bad 9b29e8228a5c2a169436a1a90a60b1f88cb35cd1
+# bad: [35d5a9a61490bf39d2e48d7f499c8c801a39ebe9] x86: fix system without memory on node0 ---> Got a BIOS-88 map
+git bisect bad 35d5a9a61490bf39d2e48d7f499c8c801a39ebe9
+# bad: [45fbe3ee01b8e463b28c2751b5dcc0cbdc142d90] x86, e820, pci: reserve extra free space near end of RAM ---> Got a BIOS-88 map
+git bisect bad 45fbe3ee01b8e463b28c2751b5dcc0cbdc142d90
+# bad: [2b72394e4089643f11669d9610907a1442fe044a] x86: move max_pfn_mapped and max_low_pfn_mapped to setup.c ---> Got a BIOS-88 map
+git bisect bad 2b72394e4089643f11669d9610907a1442fe044a
+# good: [6424fb38667fffbbb1b90be0ffd9a0c540db6a4b] x86: remove (null) in /sys kernel_page_tables
+git bisect good 6424fb38667fffbbb1b90be0ffd9a0c540db6a4b
+# bad: [89388913f2c88a2cd15d24abab571b17a2596127] x86: unify noexec handling --> Got a BIOS-88 map
+git bisect bad 89388913f2c88a2cd15d24abab571b17a2596127
+# bad: [8ecee4620e76aae418bfa0e8cc830e92cb559bbb] Merge branch 'linus' into x86/mm ---> Got a BIOS-88 map
+git bisect bad 8ecee4620e76aae418bfa0e8cc830e92cb559bbb
+
+
+I've annotated some bad kernels, where I _do_ get it to start, but it only 
+finds a BIOS-88 map (and hence only 16MB ram, and userspace triggers OOMK).
+
+I found your name in the commit bisect fingered, hence I turn to you for help. 
+
+Here's a dmesg from the last known good kernel :
+
+Linux version 2.6.29-01001-g6424fb3 (root@korven) (gcc version 4.3.2 (Gentoo 4.3.2-r3 p1.6, pie-10.1.5) ) #22 SMP Tue Jan 5 11:12:56 CET 2010
+KERNEL supported cpus:
+  Intel GenuineIntel
+  AMD AuthenticAMD
+  NSC Geode by NSC
+  Cyrix CyrixInstead
+  Centaur CentaurHauls
+  Transmeta GenuineTMx86
+  Transmeta TransmetaCPU
+  UMC UMC UMC UMC
+BIOS-provided physical RAM map:
+ BIOS-e820: 0000000000000000 - 000000000009ae20 (usable)
+ BIOS-e820: 000000000009ae20 - 00000000000a0000 (reserved)
+ BIOS-e820: 00000000000e0000 - 0000000000100000 (reserved)
+ BIOS-e820: 0000000000100000 - 000000007f7d0000 (usable)
+ BIOS-e820: 000000007f7d0000 - 000000007f7e5600 (reserved)
+ BIOS-e820: 000000007f7e5600 - 000000007f7f8000 (ACPI NVS)
+ BIOS-e820: 000000007f7f8000 - 000000007f800000 (reserved)
+ BIOS-e820: 00000000fec00000 - 00000000fec01000 (reserved)
+ BIOS-e820: 00000000fed20000 - 00000000fed9b000 (reserved)
+ BIOS-e820: 00000000feda0000 - 00000000fedc0000 (reserved)
+ BIOS-e820: 00000000fee00000 - 00000000fee01000 (reserved)
+ BIOS-e820: 00000000ffb00000 - 00000000ffc00000 (reserved)
+ BIOS-e820: 00000000fff00000 - 0000000100000000 (reserved)
+DMI 2.4 present.
+last_pfn = 0x7f7d0 max_arch_pfn = 0x100000
+MTRR default type: uncachable
+MTRR fixed ranges enabled:
+  00000-9FFFF write-back
+  A0000-BFFFF uncachable
+  C0000-CFFFF write-protect
+  D0000-EFFFF uncachable
+  F0000-FFFFF write-protect
+MTRR variable ranges enabled:
+  0 base 000000000 mask F80000000 write-back
+  1 base F7F800000 mask FFF800000 uncachable
+  2 base 0FEDA0000 mask FFFFE0000 uncachable
+  3 disabled
+  4 disabled
+  5 disabled
+  6 disabled
+  7 disabled
+
+I can produce a pic of the dmesg for the fingered commit of needed.
+
+As the fingered commit was a merge one, I'm uncertain how to proceed.
+
+Ideas?
+
+--Anders
+
+
