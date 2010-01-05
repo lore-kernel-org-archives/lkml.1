@@ -1,59 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755650Ab0AEUd4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755385Ab0AEUiC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755650Ab0AEUd4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 15:33:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755374Ab0AEUdz
+	id S1755385Ab0AEUiC (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 15:38:02 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754769Ab0AEUiA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 15:33:55 -0500
-Received: from mail.fem.tu-ilmenau.de ([141.24.101.79]:48120 "EHLO
-	mail.fem.tu-ilmenau.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754612Ab0AEUdy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 15:33:54 -0500
-From: Johannes Hirte <johannes.hirte@fem.tu-ilmenau.de>
-To: Chris Mason <chris.mason@oracle.com>
-Subject: [PATCH] check for NULL pointer dereference in btrfs_set_acl
-Date: Tue, 5 Jan 2010 21:33:47 +0100
-User-Agent: KMail/1.13.0 (Linux/2.6.33-rc2-00302-gc5974b8-dirty; KDE/4.3.85; x86_64; ; )
-MIME-Version: 1.0
-Cc: linux-btrfs@vger.kernel.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201001052133.48355.johannes.hirte@fem.tu-ilmenau.de>
+	Tue, 5 Jan 2010 15:38:00 -0500
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:33631 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753660Ab0AEUh7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jan 2010 15:37:59 -0500
+From: serue@us.ibm.com
+To: greg@kroah.com
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>, rsc@swtch.com,
+       Ashwin Ganti <ashwin.ganti@gmail.com>, ericvh@gmail.com,
+       devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
+Subject: [RFC PATCH 4/6] p9auth: add CAP_GRANT_ID to authorize use of /dev/caphash
+Date: Tue,  5 Jan 2010 14:37:28 -0600
+Message-Id: <1262723850-9870-4-git-send-email-serue@us.ibm.com>
+X-Mailer: git-send-email 1.6.3.3
+In-Reply-To: <1262723850-9870-1-git-send-email-serue@us.ibm.com>
+References: <1262723850-9870-1-git-send-email-serue@us.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Check for for NULL pointer in btrfs_set_acl and omit calling 
-posix_acl_equiv_mode in this case to avoid NULL pointer dereference there. 
+From: Serge E. Hallyn <serue@us.ibm.com>
 
-Signed-off-by: Johannes Hirte <johannes.hirte@fem.tu-ilmenau.de>
+Granting userid capabilities to another task is a dangerous
+privilege.  Don't just let file permissions authorize it.
+Define CAP_GRANT_ID as a new capability needed to write to
+/dev/caphash.
 
-diff --git a/fs/btrfs/acl.c b/fs/btrfs/acl.c
-index 2e9e699..3a3a96d 100644
---- a/fs/btrfs/acl.c
-+++ b/fs/btrfs/acl.c
-@@ -111,13 +111,15 @@ static int btrfs_set_acl(struct btrfs_trans_handle 
-*trans,
+For one thing this lets us start a factotum server early on
+in init, then have init drop CAP_GRANT_ID from its bounding
+set so the rest of the system cannot regain it.
 
-        switch (type) {
-        case ACL_TYPE_ACCESS:
--               mode = inode->i_mode;
--               ret = posix_acl_equiv_mode(acl, &mode);
--               if (ret < 0)
--                       return ret;
--               ret = 0;
--               inode->i_mode = mode;
-                name = POSIX_ACL_XATTR_ACCESS;
-+               if (acl) {
-+                       mode = inode->i_mode;
-+                       ret = posix_acl_equiv_mode(acl, &mode);
-+                       if (ret < 0)
-+                               return ret;
-+                       ret = 0;
-+                       inode->i_mode = mode;
-+               }
-                break;
-        case ACL_TYPE_DEFAULT:
-                if (!S_ISDIR(inode->i_mode))
+Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
+Cc: Greg KH <greg@kroah.com>
+cc: rsc@swtch.com
+Cc: Ashwin Ganti <ashwin.ganti@gmail.com>
+Cc: ericvh@gmail.com
+Cc: devel@linuxdriverproject.org
+Cc: linux-kernel@vger.kernel.org
+---
+ drivers/staging/p9auth/p9auth.c |    4 ++++
+ include/linux/capability.h      |    6 +++++-
+ 2 files changed, 9 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/staging/p9auth/p9auth.c b/drivers/staging/p9auth/p9auth.c
+index 8f70daa..fb27459 100644
+--- a/drivers/staging/p9auth/p9auth.c
++++ b/drivers/staging/p9auth/p9auth.c
+@@ -201,6 +201,10 @@ static ssize_t cap_write(struct file *filp, const char __user *buf,
+ 			retval = -EINVAL;
+ 			goto out;
+ 		}
++		if (!capable(CAP_GRANT_ID)) {
++			retval = -EPERM;
++			goto out;
++		}
+ 		printk(KERN_INFO "Capability being written to /dev/caphash : \n");
+ 		hexdump(user_buf, count);
+ 		memcpy(node_ptr->data, user_buf, count);
+diff --git a/include/linux/capability.h b/include/linux/capability.h
+index 39e5ff5..ba2cbfe 100644
+--- a/include/linux/capability.h
++++ b/include/linux/capability.h
+@@ -355,7 +355,11 @@ struct cpu_vfs_cap_data {
+ 
+ #define CAP_MAC_ADMIN        33
+ 
+-#define CAP_LAST_CAP         CAP_MAC_ADMIN
++/* Allow granting setuid capabilities through p9auth /dev/caphash */
++
++#define CAP_GRANT_ID         34
++
++#define CAP_LAST_CAP         CAP_GRANT_ID
+ 
+ #define cap_valid(x) ((x) >= 0 && (x) <= CAP_LAST_CAP)
+ 
+-- 
+1.6.1
+
