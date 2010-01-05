@@ -1,59 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754820Ab0AERoP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755079Ab0AERuU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754820Ab0AERoP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 12:44:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754706Ab0AERoO
+	id S1755079Ab0AERuU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 12:50:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754915Ab0AERuS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 12:44:14 -0500
-Received: from g6t0185.atlanta.hp.com ([15.193.32.62]:48839 "EHLO
-	g6t0185.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753702Ab0AERoO (ORCPT
+	Tue, 5 Jan 2010 12:50:18 -0500
+Received: from nlpi157.sbcis.sbc.com ([207.115.36.171]:52023 "EHLO
+	nlpi157.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754881Ab0AERuQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 12:44:14 -0500
-X-Greylist: delayed 632 seconds by postgrey-1.27 at vger.kernel.org; Tue, 05 Jan 2010 12:44:13 EST
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Alex Brooks <a.brooks@marathon-robotics.com>, linux-pci@vger.kernel.org
-Subject: Re: BAR 0: can't allocate resource
-Date: Tue, 5 Jan 2010 10:33:18 -0700
-User-Agent: KMail/1.9.10
-Cc: linux-kernel@vger.kernel.org
-References: <201001052018.02607.a.brooks@marathon-robotics.com>
-In-Reply-To: <201001052018.02607.a.brooks@marathon-robotics.com>
+	Tue, 5 Jan 2010 12:50:16 -0500
+Date: Tue, 5 Jan 2010 11:47:49 -0600 (CST)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@router.home
+To: Andi Kleen <andi@firstfloor.org>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Minchan Kim <minchan.kim@gmail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "hugh.dickins" <hugh.dickins@tiscali.co.uk>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [RFC][PATCH 6/8] mm: handle_speculative_fault()
+In-Reply-To: <87wrzwbh0z.fsf@basil.nowhere.org>
+Message-ID: <alpine.DEB.2.00.1001051145070.2246@router.home>
+References: <20100104182429.833180340@chello.nl> <20100104182813.753545361@chello.nl> <20100105092559.1de8b613.kamezawa.hiroyu@jp.fujitsu.com> <28c262361001042029w4b95f226lf54a3ed6a4291a3b@mail.gmail.com> <20100105134357.4bfb4951.kamezawa.hiroyu@jp.fujitsu.com>
+ <alpine.LFD.2.00.1001042052210.3630@localhost.localdomain> <20100105143046.73938ea2.kamezawa.hiroyu@jp.fujitsu.com> <20100105163939.a3f146fb.kamezawa.hiroyu@jp.fujitsu.com> <alpine.LFD.2.00.1001050707520.3630@localhost.localdomain>
+ <alpine.LFD.2.00.1001050810380.3630@localhost.localdomain> <87wrzwbh0z.fsf@basil.nowhere.org>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <201001051033.19486.bjorn.helgaas@hp.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I added linux-pci because this appears PCI-related.
+On Tue, 5 Jan 2010, Andi Kleen wrote:
 
-On Tuesday 05 January 2010 02:18:02 am Alex Brooks wrote:
-> I have a problem getting a couple of PCI cards to play nicely together. ...
+> > Oh well. Somebody who is bored might look at trying to make the wrapper
+> > code in arch/x86/lib/semaphore_32.S work on x86-64 too. It should make the
+> > successful rwsem cases much faster.
+>
+> Maybe, maybe not.
 
-> And (for both kernels) the output of lspci has the following line:
->   01:04.0 Unclassified device [0080]: Device 0002:0080
+What we saw in the past was that the cost of acquiring exclusive
+access to the contended cachelines containing mmap_sem and rss counters
+was most important.
 
-When you have only the 8-port serial card installed, it appears at
-01:04.0.  When you have both cards installed, we don't see a new device,
-and whatever is at 01:04.0 no longer looks like the octal UART.
-
-> Hardware Details:
->  - My motherboard is a DigitalLogic MSM945.  It has a PC104 bus.
->  - I have two PC104 cards:
->    i)  8-port serial card (DiamondSystems Emerald-MM-8Plus)
->    ii) PC/104+ to MiniPCI Adapter (ConnectTech) (no MiniPCI cards installed).
-
-Do you have these two cards?
-
-  http://www.diamondsystems.com/products/emeraldmm8plus,
-  http://www.connecttech.com/sub/Products/PC104plus_MiniPCI.asp
-
-If so, both of those web pages mention jumpers that set the card's
-PCI device ("slot") number.  My guess is that both of your cards
-are set to the same number.
-
-Bjorn
