@@ -1,120 +1,173 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755386Ab0AETWO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932109Ab0AETWc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755386Ab0AETWO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 14:22:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755367Ab0AETWL
+	id S932109Ab0AETWc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 14:22:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754363Ab0AETW0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 14:22:11 -0500
-Received: from kroah.org ([198.145.64.141]:55814 "EHLO coco.kroah.org"
+	Tue, 5 Jan 2010 14:22:26 -0500
+Received: from kroah.org ([198.145.64.141]:55837 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755214Ab0AETWI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 14:22:08 -0500
-From: Greg Kroah-Hartman <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org, stable-review@kernel.org
-Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 098/101] ksm: fix mlockfreed to munlocked
-Date: Tue,  5 Jan 2010 11:21:26 -0800
-Message-Id: <1262719290-310-1-git-send-email-gregkh@suse.de>
-X-Mailer: git-send-email 1.6.6
-In-Reply-To: <20100105192014.GA23628@kroah.com>
-References: <20100105192014.GA23628@kroah.com>
+	id S1752117Ab0AETWX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jan 2010 14:22:23 -0500
+Date: Tue, 5 Jan 2010 11:20:14 -0800
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org, stable-review@kernel.org,
+       alan@lxorguk.ukuu.org.uk
+Subject: Re: [00/97] 2.6.32.3 stable review
+Message-ID: <20100105192014.GA23628@kroah.com>
+References: <20100105003133.GA7199@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100105003133.GA7199@kroah.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+On Mon, Jan 04, 2010 at 04:31:34PM -0800, Greg KH wrote:
+> This is the start of the stable review cycle for the 2.6.32.3 release.
+> There are 97 patches in this series, all will be posted as a response to
+> this one.  If anyone has any issues with these being applied, please let
+> us know.  If anyone is a maintainer of the proper subsystem, and wants
+> to add a Signed-off-by: line to the patch, please respond with it.
+> 
+> Responses should be made by Thursday, Jan 7, 00:00:00 UTC.
+> Anything received after that time might be too late.
+> 
+> The whole patch series can be found in one patch at:
+> 	kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.32.3-rc1.gz
+> and the diffstat can be found below.
 
-2.6.33-rc1 commit 73848b4684e84a84cfd1555af78d41158f31e16b, adjusted
-to include 31e855ea7173bdb0520f9684580423a9560f66e0's movement of
-the unlock_page(oldpage), but omit other intervening cleanups.
+I've added 3 more patches that fell through the cracks, and now there is
+a 2.6.32.3-rc2 patch at:
 
-When KSM merges an mlocked page, it has been forgetting to munlock it:
-that's been left to free_page_mlock(), which reports it in /proc/vmstat
-as unevictable_pgs_mlockfreed instead of unevictable_pgs_munlocked,
-which indicates that such pages _might_ be left unevictable for long
-after they should be evictable.  Call munlock_vma_page() to fix that.
+	kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.32.3-rc2.gz
 
-Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
----
- mm/internal.h |    3 ++-
- mm/ksm.c      |   14 +++++++-------
- mm/mlock.c    |    4 ++--
- 3 files changed, 11 insertions(+), 10 deletions(-)
+The diffstat is below, and I'll follow up with the added patches.
 
-diff --git a/mm/internal.h b/mm/internal.h
-index 22ec8d2..17bc0df 100644
---- a/mm/internal.h
-+++ b/mm/internal.h
-@@ -107,9 +107,10 @@ static inline int is_mlocked_vma(struct vm_area_struct *vma, struct page *page)
- }
- 
- /*
-- * must be called with vma's mmap_sem held for read, and page locked.
-+ * must be called with vma's mmap_sem held for read or write, and page locked.
-  */
- extern void mlock_vma_page(struct page *page);
-+extern void munlock_vma_page(struct page *page);
- 
- /*
-  * Clear the page's PageMlocked().  This can be useful in a situation where
-diff --git a/mm/ksm.c b/mm/ksm.c
-index 5575f86..e9501f8 100644
---- a/mm/ksm.c
-+++ b/mm/ksm.c
-@@ -34,6 +34,7 @@
- #include <linux/ksm.h>
- 
- #include <asm/tlbflush.h>
-+#include "internal.h"
- 
- /*
-  * A few notes about the KSM scanning process,
-@@ -767,15 +768,14 @@ static int try_to_merge_one_page(struct vm_area_struct *vma,
- 	 * ptes are necessarily already write-protected.  But in either
- 	 * case, we need to lock and check page_count is not raised.
- 	 */
--	if (write_protect_page(vma, oldpage, &orig_pte)) {
--		unlock_page(oldpage);
--		goto out_putpage;
--	}
--	unlock_page(oldpage);
--
--	if (pages_identical(oldpage, newpage))
-+	if (write_protect_page(vma, oldpage, &orig_pte) == 0 &&
-+	    pages_identical(oldpage, newpage))
- 		err = replace_page(vma, oldpage, newpage, orig_pte);
- 
-+	if ((vma->vm_flags & VM_LOCKED) && !err)
-+		munlock_vma_page(oldpage);
-+
-+	unlock_page(oldpage);
- out_putpage:
- 	put_page(oldpage);
- 	put_page(newpage);
-diff --git a/mm/mlock.c b/mm/mlock.c
-index bd6f0e4..2e05c97 100644
---- a/mm/mlock.c
-+++ b/mm/mlock.c
-@@ -99,14 +99,14 @@ void mlock_vma_page(struct page *page)
-  * not get another chance to clear PageMlocked.  If we successfully
-  * isolate the page and try_to_munlock() detects other VM_LOCKED vmas
-  * mapping the page, it will restore the PageMlocked state, unless the page
-- * is mapped in a non-linear vma.  So, we go ahead and SetPageMlocked(),
-+ * is mapped in a non-linear vma.  So, we go ahead and ClearPageMlocked(),
-  * perhaps redundantly.
-  * If we lose the isolation race, and the page is mapped by other VM_LOCKED
-  * vmas, we'll detect this in vmscan--via try_to_munlock() or try_to_unmap()
-  * either of which will restore the PageMlocked state by calling
-  * mlock_vma_page() above, if it can grab the vma's mmap sem.
-  */
--static void munlock_vma_page(struct page *page)
-+void munlock_vma_page(struct page *page)
- {
- 	BUG_ON(!PageLocked(page));
- 
--- 
-1.6.6
+thanks,
 
+greg k-h
+
+
+ Documentation/filesystems/ext4.txt             |    2 +-
+ Makefile                                       |    2 +-
+ arch/powerpc/kernel/align.c                    |   63 +++++--
+ arch/x86/include/asm/msr.h                     |   19 ++-
+ arch/x86/include/asm/processor.h               |    2 +-
+ arch/x86/include/asm/uv/uv_hub.h               |   86 +++++----
+ arch/x86/kernel/amd_iommu_init.c               |   10 +
+ arch/x86/kernel/apic/x2apic_uv_x.c             |   12 +-
+ arch/x86/kernel/ptrace.c                       |   16 +-
+ arch/x86/kvm/lapic.c                           |    1 +
+ arch/x86/kvm/paging_tmpl.h                     |   18 --
+ arch/x86/lib/Makefile                          |    4 +-
+ arch/x86/lib/msr-smp.c                         |  204 +++++++++++++++++++++
+ arch/x86/lib/msr.c                             |  227 ++----------------------
+ drivers/acpi/button.c                          |    7 +
+ drivers/acpi/ec.c                              |   10 +-
+ drivers/ata/pata_cmd64x.c                      |    2 +-
+ drivers/ata/pata_hpt3x2n.c                     |   64 ++++---
+ drivers/bluetooth/btusb.c                      |    1 +
+ drivers/dma/at_hdmac.c                         |    4 +-
+ drivers/dma/ioat/dma.c                         |    2 +-
+ drivers/dma/ioat/dma.h                         |   18 ++
+ drivers/dma/ioat/dma_v2.c                      |   69 ++++++--
+ drivers/dma/ioat/dma_v2.h                      |    2 +
+ drivers/dma/ioat/dma_v3.c                      |   60 +++++--
+ drivers/dma/ioat/registers.h                   |    1 +
+ drivers/edac/amd64_edac.c                      |  221 +++++++++++++----------
+ drivers/edac/amd64_edac.h                      |    9 +-
+ drivers/gpu/drm/drm_crtc_helper.c              |    3 +
+ drivers/gpu/drm/radeon/atombios_crtc.c         |    6 +-
+ drivers/gpu/drm/radeon/radeon_test.c           |    4 +-
+ drivers/hwmon/sht15.c                          |    6 +-
+ drivers/lguest/segments.c                      |    4 +-
+ drivers/md/md.c                                |    8 +-
+ drivers/media/video/ov511.c                    |    2 +-
+ drivers/net/e100.c                             |    2 +-
+ drivers/net/usb/rtl8150.c                      |    2 +-
+ drivers/net/wireless/ath/ath5k/base.c          |    7 +-
+ drivers/net/wireless/ath/ath9k/hw.h            |    2 +-
+ drivers/net/wireless/ath/ath9k/mac.c           |    2 +-
+ drivers/net/wireless/ath/ath9k/mac.h           |    3 +
+ drivers/net/wireless/ath/ath9k/main.c          |   14 ++
+ drivers/net/wireless/ath/ath9k/reg.h           |    4 +-
+ drivers/net/wireless/ath/ath9k/xmit.c          |    6 +-
+ drivers/net/wireless/b43/rfkill.c              |   10 +-
+ drivers/net/wireless/iwlwifi/iwl-3945.c        |    2 +
+ drivers/net/wireless/iwlwifi/iwl-4965.c        |    2 +-
+ drivers/net/wireless/iwlwifi/iwl-5000-hw.h     |   14 +-
+ drivers/net/wireless/iwlwifi/iwl-5000.c        |    7 +-
+ drivers/net/wireless/iwlwifi/iwl-dev.h         |    2 +-
+ drivers/net/wireless/iwlwifi/iwl-eeprom.c      |   23 ++-
+ drivers/net/wireless/iwlwifi/iwl-eeprom.h      |    4 +-
+ drivers/net/wireless/iwlwifi/iwl3945-base.c    |   11 +-
+ drivers/net/wireless/iwmc3200wifi/iwm.h        |    2 +-
+ drivers/net/wireless/libertas/wext.c           |    2 -
+ drivers/net/wireless/orinoco/wext.c            |    6 +-
+ drivers/net/wireless/rt2x00/rt61pci.c          |    5 +
+ drivers/platform/x86/acerhdf.c                 |    7 +-
+ drivers/s390/block/dasd_diag.c                 |   19 ++-
+ drivers/scsi/ipr.c                             |    1 +
+ drivers/scsi/qla2xxx/qla_os.c                  |    6 +-
+ drivers/scsi/scsi_transport_fc.c               |   17 ++-
+ drivers/scsi/st.c                              |   23 ++--
+ drivers/scsi/st.h                              |    1 +
+ drivers/usb/core/hub.c                         |   58 ++++---
+ drivers/usb/core/sysfs.c                       |    6 +-
+ drivers/usb/misc/appledisplay.c                |    4 +-
+ drivers/usb/misc/emi62.c                       |    2 +-
+ drivers/usb/musb/musb_gadget_ep0.c             |   14 +-
+ drivers/usb/serial/option.c                    |    5 +
+ drivers/xen/xenbus/xenbus_probe.c              |   42 +++--
+ fs/cifs/connect.c                              |   13 +-
+ fs/ext4/ext4.h                                 |    6 +-
+ fs/ext4/inode.c                                |   36 ++--
+ fs/ext4/mballoc.c                              |    6 -
+ fs/ext4/super.c                                |    5 +
+ fs/namei.c                                     |    1 +
+ fs/quota/dquot.c                               |  213 +++++++++++++----------
+ fs/stat.c                                      |   10 +-
+ fs/udf/super.c                                 |   32 +++-
+ include/linux/cpumask.h                        |    2 +
+ include/linux/fs.h                             |    1 +
+ include/linux/quota.h                          |    5 +-
+ include/linux/security.h                       |    7 +
+ include/net/ip.h                               |    1 +
+ include/net/ipv6.h                             |    8 +
+ include/net/netfilter/ipv6/nf_conntrack_ipv6.h |    2 +-
+ kernel/cpu.c                                   |   18 ++-
+ kernel/cpuset.c                                |   16 +-
+ kernel/sched.c                                 |   40 +++--
+ kernel/sched_fair.c                            |    3 +
+ kernel/sysctl.c                                |    5 +-
+ kernel/time/clockevents.c                      |   18 ++-
+ lib/dma-debug.c                                |    8 +-
+ mm/Kconfig                                     |    1 +
+ mm/internal.h                                  |    3 +-
+ mm/ksm.c                                       |   14 +-
+ mm/memcontrol.c                                |    8 +-
+ mm/mlock.c                                     |    4 +-
+ mm/oom_kill.c                                  |    2 +-
+ mm/vmscan.c                                    |   18 ++-
+ net/ipv4/netfilter/nf_defrag_ipv4.c            |   21 ++-
+ net/ipv6/netfilter/nf_conntrack_l3proto_ipv6.c |   19 ++-
+ net/ipv6/netfilter/nf_conntrack_reasm.c        |    7 +-
+ net/ipv6/reassembly.c                          |    5 +-
+ net/mac80211/ibss.c                            |    4 +
+ net/mac80211/mlme.c                            |    8 +
+ net/mac80211/tx.c                              |    1 +
+ net/mac80211/util.c                            |   12 ++
+ net/wireless/mlme.c                            |   13 ++-
+ security/Makefile                              |    3 +-
+ security/keys/keyctl.c                         |   10 +
+ sound/mips/sgio2audio.c                        |    2 +-
+ sound/pci/hda/patch_realtek.c                  |    6 +
+ sound/pcmcia/pdaudiocf/pdaudiocf_pcm.c         |    2 +-
+ sound/soc/codecs/wm8974.c                      |    2 +-
+ sound/soc/codecs/wm9712.c                      |    3 +-
+ sound/usb/usbaudio.c                           |    2 +-
+ 118 files changed, 1320 insertions(+), 812 deletions(-)
