@@ -1,200 +1,372 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754237Ab0AEN7P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754496Ab0AEN7q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754237Ab0AEN7P (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 08:59:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751977Ab0AEN7P
+	id S1754496Ab0AEN7q (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 08:59:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754447Ab0AEN7n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 08:59:15 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:47634 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753269Ab0AEN7O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 08:59:14 -0500
-Message-ID: <4B4345AF.9040600@suse.cz>
-Date: Tue, 05 Jan 2010 14:59:11 +0100
-From: Michal Marek <mmarek@suse.cz>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.2 Thunderbird/3.0
-MIME-Version: 1.0
-To: David Rientjes <rientjes@google.com>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [patch] kbuild: improve version string logic
-References: <alpine.DEB.2.00.1001041330230.26148@chino.kir.corp.google.com>
-In-Reply-To: <alpine.DEB.2.00.1001041330230.26148@chino.kir.corp.google.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 5 Jan 2010 08:59:43 -0500
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:60545 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754444Ab0AEN7l (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jan 2010 08:59:41 -0500
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Samuel Ortiz <sameo@linux.intel.com>
+Cc: linux-kernel@vger.kernel.org,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: [PATCH 4/4] mfd: Convert WM8350 to genirq
+Date: Tue,  5 Jan 2010 13:59:09 +0000
+Message-Id: <1262699949-3079-4-git-send-email-broonie@opensource.wolfsonmicro.com>
+X-Mailer: git-send-email 1.6.5.7
+In-Reply-To: <1262699949-3079-3-git-send-email-broonie@opensource.wolfsonmicro.com>
+References: <20100105135756.GA2993@rakim.wolfsonmicro.main>
+ <1262699949-3079-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+ <1262699949-3079-2-git-send-email-broonie@opensource.wolfsonmicro.com>
+ <1262699949-3079-3-git-send-email-broonie@opensource.wolfsonmicro.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4.1.2010 22:31, David Rientjes wrote:
-> The LOCALVERSION= string passed to "make" will now always be appended to
-> the kernel version after CONFIG_LOCALVERSION, if it exists, regardless of
-> whether CONFIG_LOCALVERSION_AUTO is set or not.  This allows users to
-> uniquely identify their kernel builds with a string.
-> 
-> scripts/setlocalversion will now always be called to determine whether
-> the repository is beyond a tagged (release) commit.  When at a tagged
-> commit, this script will now suppress all output.
-> 
-> If CONFIG_LOCALVERSION_AUTO is enabled, the unique SCM tag reported by 
-> setlocalversion (or .scmversion) is appended to the kernel version, if it 
-> exists.  When CONFIG_LOCALVERSION_AUTO is not enabled, a `+' is appended
-> to the kernel version to represent that the kernel has been revised since
-> the last release unless "make LOCALVERSION=" was used to uniquely identify
-> the build.
-> 
-> The end result is this:
-> 
->  - when LOCALVERSION= is passed to "make", it is appended to the kernel
->    version,
-> 
->  - when CONFIG_LOCALVERSION_AUTO is enabled, a unique SCM identifier is
->    appended if the respository has been revised beyond a tagged commit,
->    and
-> 
->  - when CONFIG_LOCALVERSION_AUTO is disabled, a `+' is appended if the 
->    repository has been revised beyond a tagged commit and LOCALVERSION=
->    was not passed to "make".
+This gives us use of the diagnostic facilities genirq provides and
+will allow implementation of interrupt support for the WM8350 GPIOs.
+Stub functions are provided to ease the transition of the individual
+drivers, probably after additional work to pass the IRQ numbers via
+the struct devices.
 
-I've read the thread from last October where this was discussed
-(http://thread.gmane.org/gmane.linux.kernel/897768/focus=898233). I'm
-not entirely sure if all people will be happy about the plus sign that
-can't be turned off, but from the thread I got the impression that the
-plus sign is wanted, so let's add this to linux-next now, so that people
-doing automated builds can adjust their scripts if needed. Just in case:
-Stephen, won't this break your linux-next scripts in any way? The final
-build won't change, because of the next-YYYYMMDD tag, but the builds in
-between will have the '+' appended to their version.
+Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+---
+ drivers/mfd/wm8350-irq.c        |  155 ++++++++++++++++++++++-----------------
+ include/linux/mfd/wm8350/core.h |   44 ++++++++---
+ 2 files changed, 118 insertions(+), 81 deletions(-)
 
+diff --git a/drivers/mfd/wm8350-irq.c b/drivers/mfd/wm8350-irq.c
+index 655836b..f56c9ad 100644
+--- a/drivers/mfd/wm8350-irq.c
++++ b/drivers/mfd/wm8350-irq.c
+@@ -18,7 +18,7 @@
+ #include <linux/bug.h>
+ #include <linux/device.h>
+ #include <linux/interrupt.h>
+-#include <linux/workqueue.h>
++#include <linux/irq.h>
+ 
+ #include <linux/mfd/wm8350/core.h>
+ #include <linux/mfd/wm8350/audio.h>
+@@ -29,8 +29,6 @@
+ #include <linux/mfd/wm8350/supply.h>
+ #include <linux/mfd/wm8350/wdt.h>
+ 
+-#define WM8350_NUM_IRQ_REGS 7
+-
+ #define WM8350_INT_OFFSET_1                     0
+ #define WM8350_INT_OFFSET_2                     1
+ #define WM8350_POWER_UP_INT_OFFSET              2
+@@ -366,19 +364,10 @@ static struct wm8350_irq_data wm8350_irqs[] = {
+ 	},
+ };
+ 
+-static void wm8350_irq_call_handler(struct wm8350 *wm8350, int irq)
++static inline struct wm8350_irq_data *irq_to_wm8350_irq(struct wm8350 *wm8350,
++							int irq)
+ {
+-	mutex_lock(&wm8350->irq_mutex);
+-
+-	if (wm8350->irq[irq].handler)
+-		wm8350->irq[irq].handler(irq, wm8350->irq[irq].data);
+-	else {
+-		dev_err(wm8350->dev, "irq %d nobody cared. now masked.\n",
+-			irq);
+-		wm8350_mask_irq(wm8350, irq);
+-	}
+-
+-	mutex_unlock(&wm8350->irq_mutex);
++	return &wm8350_irqs[irq - wm8350->irq_base];
+ }
+ 
+ /*
+@@ -386,7 +375,9 @@ static void wm8350_irq_call_handler(struct wm8350 *wm8350, int irq)
+  * interrupts are clear on read the IRQ line will be reasserted and
+  * the physical IRQ will be handled again if another interrupt is
+  * asserted while we run - in the normal course of events this is a
+- * rare occurrence so we save I2C/SPI reads.
++ * rare occurrence so we save I2C/SPI reads.  We're also assuming that
++ * it's rare to get lots of interrupts firing simultaneously so try to
++ * minimise I/O.
+  */
+ static irqreturn_t wm8350_irq(int irq, void *irq_data)
+ {
+@@ -397,7 +388,6 @@ static irqreturn_t wm8350_irq(int irq, void *irq_data)
+ 	struct wm8350_irq_data *data;
+ 	int i;
+ 
+-	/* TODO: Use block reads to improve performance? */
+ 	level_one = wm8350_reg_read(wm8350, WM8350_SYSTEM_INTERRUPTS)
+ 		& ~wm8350_reg_read(wm8350, WM8350_SYSTEM_INTERRUPTS_MASK);
+ 
+@@ -416,93 +406,101 @@ static irqreturn_t wm8350_irq(int irq, void *irq_data)
+ 			sub_reg[data->reg] =
+ 				wm8350_reg_read(wm8350, WM8350_INT_STATUS_1 +
+ 						data->reg);
+-			sub_reg[data->reg] &=
+-				~wm8350_reg_read(wm8350,
+-						 WM8350_INT_STATUS_1_MASK +
+-						 data->reg);
++			sub_reg[data->reg] &= ~wm8350->irq_masks[data->reg];
+ 			read_done[data->reg] = 1;
+ 		}
+ 
+ 		if (sub_reg[data->reg] & data->mask)
+-			wm8350_irq_call_handler(wm8350, i);
++			handle_nested_irq(wm8350->irq_base + i);
+ 	}
+ 
+ 	return IRQ_HANDLED;
+ }
+ 
+-int wm8350_register_irq(struct wm8350 *wm8350, int irq,
+-			irq_handler_t handler, unsigned long flags,
+-			const char *name, void *data)
++static void wm8350_irq_lock(unsigned int irq)
+ {
+-	if (irq < 0 || irq >= WM8350_NUM_IRQ || !handler)
+-		return -EINVAL;
+-
+-	if (wm8350->irq[irq].handler)
+-		return -EBUSY;
+-
+-	mutex_lock(&wm8350->irq_mutex);
+-	wm8350->irq[irq].handler = handler;
+-	wm8350->irq[irq].data = data;
+-	mutex_unlock(&wm8350->irq_mutex);
+-
+-	wm8350_unmask_irq(wm8350, irq);
++	struct wm8350 *wm8350 = get_irq_chip_data(irq);
+ 
+-	return 0;
++	mutex_lock(&wm8350->irq_lock);
+ }
+-EXPORT_SYMBOL_GPL(wm8350_register_irq);
+ 
+-int wm8350_free_irq(struct wm8350 *wm8350, int irq, void *data)
++static void wm8350_irq_sync_unlock(unsigned int irq)
+ {
+-	if (irq < 0 || irq >= WM8350_NUM_IRQ)
+-		return -EINVAL;
++	struct wm8350 *wm8350 = get_irq_chip_data(irq);
++	int i;
+ 
+-	wm8350_mask_irq(wm8350, irq);
++	for (i = 0; i < ARRAY_SIZE(wm8350->irq_masks); i++) {
++		/* If there's been a change in the mask write it back
++		 * to the hardware. */
++		if (wm8350->irq_masks[i] !=
++		    wm8350->reg_cache[WM8350_INT_STATUS_1_MASK + i])
++			WARN_ON(wm8350_reg_write(wm8350,
++					 WM8350_INT_STATUS_1_MASK + i,
++						 wm8350->irq_masks[i]));
++	}
+ 
+-	mutex_lock(&wm8350->irq_mutex);
+-	wm8350->irq[irq].handler = NULL;
+-	mutex_unlock(&wm8350->irq_mutex);
+-	return 0;
++	mutex_unlock(&wm8350->irq_lock);
+ }
+-EXPORT_SYMBOL_GPL(wm8350_free_irq);
+ 
+-int wm8350_mask_irq(struct wm8350 *wm8350, int irq)
++static void wm8350_irq_enable(unsigned int irq)
+ {
+-	return wm8350_set_bits(wm8350, WM8350_INT_STATUS_1_MASK +
+-			       wm8350_irqs[irq].reg,
+-			       wm8350_irqs[irq].mask);
++	struct wm8350 *wm8350 = get_irq_chip_data(irq);
++	struct wm8350_irq_data *irq_data = irq_to_wm8350_irq(wm8350, irq);
++
++	wm8350->irq_masks[irq_data->reg] &= ~irq_data->mask;
+ }
+-EXPORT_SYMBOL_GPL(wm8350_mask_irq);
+ 
+-int wm8350_unmask_irq(struct wm8350 *wm8350, int irq)
++static void wm8350_irq_disable(unsigned int irq)
+ {
+-	return wm8350_clear_bits(wm8350, WM8350_INT_STATUS_1_MASK +
+-				 wm8350_irqs[irq].reg,
+-				 wm8350_irqs[irq].mask);
++	struct wm8350 *wm8350 = get_irq_chip_data(irq);
++	struct wm8350_irq_data *irq_data = irq_to_wm8350_irq(wm8350, irq);
++
++	wm8350->irq_masks[irq_data->reg] |= irq_data->mask;
+ }
+-EXPORT_SYMBOL_GPL(wm8350_unmask_irq);
++
++static struct irq_chip wm8350_irq_chip = {
++	.name = "wm8350",
++	.bus_lock = wm8350_irq_lock,
++	.bus_sync_unlock = wm8350_irq_sync_unlock,
++	.disable = wm8350_irq_disable,
++	.enable = wm8350_irq_enable,
++};
+ 
+ int wm8350_irq_init(struct wm8350 *wm8350, int irq,
+ 		    struct wm8350_platform_data *pdata)
+ {
+-	int ret;
++	int ret, cur_irq, i;
+ 	int flags = IRQF_ONESHOT;
+ 
+ 	if (!irq) {
+-		dev_err(wm8350->dev, "No IRQ configured\n");
+-		return -EINVAL;
++		dev_warn(wm8350->dev, "No interrupt support, no core IRQ\n");
++		return 0;
++	}
++
++	if (!pdata || !pdata->irq_base) {
++		dev_warn(wm8350->dev, "No interrupt support, no IRQ base\n");
++		return 0;
+ 	}
+ 
++	/* Mask top level interrupts */
+ 	wm8350_reg_write(wm8350, WM8350_SYSTEM_INTERRUPTS_MASK, 0xFFFF);
+-	wm8350_reg_write(wm8350, WM8350_INT_STATUS_1_MASK, 0xFFFF);
+-	wm8350_reg_write(wm8350, WM8350_INT_STATUS_2_MASK, 0xFFFF);
+-	wm8350_reg_write(wm8350, WM8350_UNDER_VOLTAGE_INT_STATUS_MASK, 0xFFFF);
+-	wm8350_reg_write(wm8350, WM8350_GPIO_INT_STATUS_MASK, 0xFFFF);
+-	wm8350_reg_write(wm8350, WM8350_COMPARATOR_INT_STATUS_MASK, 0xFFFF);
+ 
+-	mutex_init(&wm8350->irq_mutex);
++	/* Mask all individual interrupts by default and cache the
++	 * masks.  We read the masks back since there are unwritable
++	 * bits in the mask registers. */
++	for (i = 0; i < ARRAY_SIZE(wm8350->irq_masks); i++) {
++		wm8350_reg_write(wm8350, WM8350_INT_STATUS_1_MASK + i,
++				 0xFFFF);
++		wm8350->irq_masks[i] =
++			wm8350_reg_read(wm8350,
++					WM8350_INT_STATUS_1_MASK + i);
++	}
++
++	mutex_init(&wm8350->irq_lock);
+ 	wm8350->chip_irq = irq;
++	wm8350->irq_base = pdata->irq_base;
+ 
+-	if (pdata && pdata->irq_high) {
++	if (pdata->irq_high) {
+ 		flags |= IRQF_TRIGGER_HIGH;
+ 
+ 		wm8350_set_bits(wm8350, WM8350_SYSTEM_CONTROL_1,
+@@ -514,11 +512,32 @@ int wm8350_irq_init(struct wm8350 *wm8350, int irq,
+ 				  WM8350_IRQ_POL);
+ 	}
+ 
++	/* Register with genirq */
++	for (cur_irq = wm8350->irq_base;
++	     cur_irq < ARRAY_SIZE(wm8350_irqs) + wm8350->irq_base;
++	     cur_irq++) {
++		set_irq_chip_data(cur_irq, wm8350);
++		set_irq_chip_and_handler(cur_irq, &wm8350_irq_chip,
++					 handle_edge_irq);
++		set_irq_nested_thread(cur_irq, 1);
++
++		/* ARM needs us to explicitly flag the IRQ as valid
++		 * and will set them noprobe when we do so. */
++#ifdef CONFIG_ARM
++		set_irq_flags(cur_irq, IRQF_VALID);
++#else
++		set_irq_noprobe(cur_irq);
++#endif
++	}
++
+ 	ret = request_threaded_irq(irq, NULL, wm8350_irq, flags,
+ 				   "wm8350", wm8350);
+ 	if (ret != 0)
+ 		dev_err(wm8350->dev, "Failed to request IRQ: %d\n", ret);
+ 
++	/* Allow interrupts to fire */
++	wm8350_reg_write(wm8350, WM8350_SYSTEM_INTERRUPTS_MASK, 0);
++
+ 	return ret;
+ }
+ 
+diff --git a/include/linux/mfd/wm8350/core.h b/include/linux/mfd/wm8350/core.h
+index cfccb4a..fae08aa 100644
+--- a/include/linux/mfd/wm8350/core.h
++++ b/include/linux/mfd/wm8350/core.h
+@@ -579,6 +579,8 @@
+ 
+ #define WM8350_NUM_IRQ				63
+ 
++#define WM8350_NUM_IRQ_REGS 7
++
+ struct wm8350_reg_access {
+ 	u16 readable;		/* Mask of readable bits */
+ 	u16 writable;		/* Mask of writable bits */
+@@ -600,11 +602,6 @@ extern const u16 wm8352_mode3_defaults[];
+ 
+ struct wm8350;
+ 
+-struct wm8350_irq {
+-	irq_handler_t handler;
+-	void *data;
+-};
+-
+ struct wm8350_hwmon {
+ 	struct platform_device *pdev;
+ 	struct device *classdev;
+@@ -626,9 +623,10 @@ struct wm8350 {
+ 	struct mutex auxadc_mutex;
+ 
+ 	/* Interrupt handling */
+-	struct mutex irq_mutex; /* IRQ table mutex */
+-	struct wm8350_irq irq[WM8350_NUM_IRQ];
++	struct mutex irq_lock;
+ 	int chip_irq;
++	int irq_base;
++	u16 irq_masks[WM8350_NUM_IRQ_REGS];
+ 
+ 	/* Client devices */
+ 	struct wm8350_codec codec;
+@@ -679,13 +677,33 @@ int wm8350_block_write(struct wm8350 *wm8350, int reg, int size, u16 *src);
+ /*
+  * WM8350 internal interrupts
+  */
+-int wm8350_register_irq(struct wm8350 *wm8350, int irq,
+-			irq_handler_t handler, unsigned long flags,
+-			const char *name, void *data);
+-int wm8350_free_irq(struct wm8350 *wm8350, int irq, void *data);
++static inline int wm8350_register_irq(struct wm8350 *wm8350, int irq,
++				      irq_handler_t handler,
++				      unsigned long flags,
++				      const char *name, void *data)
++{
++	if (!wm8350->irq_base)
++		return -ENODEV;
++
++	return request_threaded_irq(irq + wm8350->irq_base, NULL,
++				    handler, flags, name, data);
++}
++
++static inline void wm8350_free_irq(struct wm8350 *wm8350, int irq, void *data)
++{
++	free_irq(irq + wm8350->irq_base, data);
++}
++
++static inline void wm8350_mask_irq(struct wm8350 *wm8350, int irq)
++{
++	disable_irq(irq + wm8350->irq_base);
++}
++
++static inline void wm8350_unmask_irq(struct wm8350 *wm8350, int irq)
++{
++	enable_irq(irq + wm8350->irq_base);
++}
+ 
+-int wm8350_mask_irq(struct wm8350 *wm8350, int irq);
+-int wm8350_unmask_irq(struct wm8350 *wm8350, int irq);
+ int wm8350_irq_init(struct wm8350 *wm8350, int irq,
+ 		    struct wm8350_platform_data *pdata);
+ int wm8350_irq_exit(struct wm8350 *wm8350);
+-- 
+1.6.5.7
 
-Two small comments are below.
-
-> Examples:
-> 
-> With CONFIG_LOCALVERSION_AUTO: "make" results in
-> v2.6.32-rc4-00149-ga3ccf63.  If there are uncommited changes to the
-> respository, it results in v2.6.32-rc4-00149-ga3ccf63-dirty.  If
-> "make LOCALVERSION=kbuild" were used, it results in
-> v2.6.32-rc4-kbuild-00149-ga3ccf63-dirty.
-> 
-> Without CONFIG_LOCALVERSION_AUTO, "make" results in v2.6.32-rc4+
-> unless the repository is at the Linux v2.6.32-rc4 commit (in which
-> case the version would be v2.6.32-rc4).  If "make LOCALVERSION=kbuild"
-> were used, it results in v2.6.32-rc4-kbuild.
-> 
-> Also renames variables such as localver-auto and _localver-auto to more 
-> accurately describe what they represent: localver-extra and
-> scm-identifier, respectively.
-> 
-> Acked-by: Ingo Molnar <mingo@elte.hu>
-> Signed-off-by: David Rientjes <rientjes@google.com>
-> ---
->  Makefile                |   43 +++++++++++++++++++++++++++----------------
->  scripts/setlocalversion |    3 ++-
->  2 files changed, 29 insertions(+), 17 deletions(-)
-> 
-> diff --git a/Makefile b/Makefile
-> --- a/Makefile
-> +++ b/Makefile
-> @@ -898,14 +898,19 @@ $(vmlinux-dirs): prepare scripts
->  #	  $(localver)
->  #	    localversion*		(files without backups, containing '~')
->  #	    $(CONFIG_LOCALVERSION)	(from kernel config setting)
-> -#	  $(localver-auto)		(only if CONFIG_LOCALVERSION_AUTO is set)
-> -#	    ./scripts/setlocalversion	(SCM tag, if one exists)
-> -#	    $(LOCALVERSION)		(from make command line if provided)
-> +#	    $(LOCALVERSION)		(from make command line, if provided)
-
-$(LOCALVERSION) is no longer part of $(localver), it should be indented
-at the same level.
-
-
-> +#	  $(localver-extra)
-> +#	    $(scm-identifier)		(unique SCM tag, if one exists)
-> +#	      ./scripts/setlocalversion	(only with CONFIG_LOCALVERSION_AUTO)
-> +#	      .scmversion		(only with CONFIG_LOCALVERSION_AUTO)
-> +#	    +				(only without CONFIG_LOCALVERSION_AUTO
-> +#					 and without LOCALVERSION= and 
-> +#					 repository is at non-tagged commit)
->  #
-> -#  Note how the final $(localver-auto) string is included *only* if the
-> -# kernel config option CONFIG_LOCALVERSION_AUTO is selected.  Also, at the
-> -# moment, only git is supported but other SCMs can edit the script
-> -# scripts/setlocalversion and add the appropriate checks as needed.
-> +# For kernels without CONFIG_LOCALVERSION_AUTO compiled from an SCM that has
-> +# been revised beyond a tagged commit, `+' is appended to the version string
-> +# when not overridden by using "make LOCALVERSION=".  This indicates that the
-> +# kernel is not a vanilla release version and has been modified.
->  
->  pattern = ".*/localversion[^~]*"
->  string  = $(shell cat /dev/null \
-> @@ -914,26 +919,32 @@ string  = $(shell cat /dev/null \
->  localver = $(subst $(space),, $(string) \
->  			      $(patsubst "%",%,$(CONFIG_LOCALVERSION)))
->  
-> -# If CONFIG_LOCALVERSION_AUTO is set scripts/setlocalversion is called
-> -# and if the SCM is know a tag from the SCM is appended.
-> -# The appended tag is determined by the SCM used.
-> +# scripts/setlocalversion is called to create a unique identifier if the source
-> +# is managed by a known SCM and the repository has been revised since the last
-> +# tagged (release) commit.  The format of the identifier is determined by the
-> +# SCM's implementation.
->  #
->  # .scmversion is used when generating rpm packages so we do not loose
->  # the version information from the SCM when we do the build of the kernel
->  # from the copied source
-> -ifdef CONFIG_LOCALVERSION_AUTO
-> -
->  ifeq ($(wildcard .scmversion),)
-> -        _localver-auto = $(shell $(CONFIG_SHELL) \
-> +        scm-identifier = $(shell $(CONFIG_SHELL) \
->                           $(srctree)/scripts/setlocalversion $(srctree))
->  else
-> -        _localver-auto = $(shell cat .scmversion 2> /dev/null)
-> +        scm-identifier = $(shell cat .scmversion 2> /dev/null)
->  endif
->  
-> -	localver-auto  = $(LOCALVERSION)$(_localver-auto)
-> +ifdef CONFIG_LOCALVERSION_AUTO
-> +	localver-extra = $(scm-identifier)
-> +else
-> +	ifneq ($scm-identifier,)
-> +		ifeq ($(LOCALVERSION),)
-> +			localver-extra = +
-> +		endif
-> +	endif
->  endif
->  
-> -localver-full = $(localver)$(localver-auto)
-> +localver-full = $(localver)$(LOCALVERSION)$(localver-extra)
->  
->  # Store (new) KERNELRELASE string in include/config/kernel.release
->  kernelrelease = $(KERNELVERSION)$(localver-full)
-> diff --git a/scripts/setlocalversion b/scripts/setlocalversion
-> --- a/scripts/setlocalversion
-> +++ b/scripts/setlocalversion
-> @@ -26,7 +26,8 @@ if head=`git rev-parse --verify --short HEAD 2>/dev/null`; then
->  		# If we are past a tagged commit (like "v2.6.30-rc5-302-g72357d5"),
->  		# we pretty print it.
->  		if atag="`git describe 2>/dev/null`"; then
-> -			echo "$atag" | awk -F- '{printf("-%05d-%s", $(NF-1),$(NF))}'
-> +			echo "$atag" | awk -F- 'int($(NF-1)) > 0	\
-> +					{printf("-%05d-%s", $(NF-1),$(NF))}'
->
->  		# If we don't have a tag at all we print -g{commitish}.
->  		else
-
-Why is this needed? There is
-
-	# If we are at a tagged commit (like "v2.6.30-rc6"), we ignore it,
-	# because this version is defined in the top level Makefile.
-	if [ -z "`git describe --exact-match 2>/dev/null`" ]; then
-
-a few lines above and even without your patch ./scripts/setlocalversion
-returns nothing when HEAD is tagged. Do you have an old git version that
-doesn't undestand --exact-match? In that case, the if around this should
-be removed.
-
-thanks,
-Michal
