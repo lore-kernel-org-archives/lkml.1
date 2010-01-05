@@ -1,56 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755111Ab0AETFh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932111Ab0AETFp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755111Ab0AETFh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 14:05:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754562Ab0AETFg
+	id S932111Ab0AETFp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 14:05:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932083Ab0AETFn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 14:05:36 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:40842 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754540Ab0AETFf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 14:05:35 -0500
-Date: Tue, 5 Jan 2010 19:04:55 +0000
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Andi Kleen <andi@firstfloor.org>, linux-arch@vger.kernel.org,
-       ebiederm@xmission.com, paulmck@linux.vnet.ibm.com,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [2/9] Add a kernel_address() that works for data too
-Message-ID: <20100105190455.GE30868@flint.arm.linux.org.uk>
-Mail-Followup-To: Sam Ravnborg <sam@ravnborg.org>,
-	Andi Kleen <andi@firstfloor.org>, linux-arch@vger.kernel.org,
-	ebiederm@xmission.com, paulmck@linux.vnet.ibm.com,
-	akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-References: <20100105315.789846878@firstfloor.org> <20100105021527.1AB19B17C2@basil.firstfloor.org> <20100105085853.GA28126@merkur.ravnborg.org>
+	Tue, 5 Jan 2010 14:05:43 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:58862 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932096Ab0AETFl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jan 2010 14:05:41 -0500
+Date: Tue, 5 Jan 2010 10:56:27 -0800
+From: Greg KH <gregkh@suse.de>
+To: "Luis R. Rodriguez" <mcgrof@gmail.com>
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org, stable-review@kernel.org,
+       alan@lxorguk.ukuu.org.uk
+Subject: Re: [Stable-review] [00/97] 2.6.32.3 stable review
+Message-ID: <20100105185627.GA15630@suse.de>
+References: <20100105003133.GA7199@kroah.com>
+ <43e72e891001041655r261dd087yfcd50883c618185b@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20100105085853.GA28126@merkur.ravnborg.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <43e72e891001041655r261dd087yfcd50883c618185b@mail.gmail.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 05, 2010 at 09:58:53AM +0100, Sam Ravnborg wrote:
-> But you can trust _etext an almost all architectures.
-> It is a bug if it is missing.
+On Mon, Jan 04, 2010 at 04:55:42PM -0800, Luis R. Rodriguez wrote:
+> On Mon, Jan 4, 2010 at 4:31 PM, Greg KH <gregkh@suse.de> wrote:
+> > This is the start of the stable review cycle for the 2.6.32.3 release.
+> > There are 97 patches in this series, all will be posted as a response to
+> > this one.  If anyone has any issues with these being applied, please let
+> > us know.  If anyone is a maintainer of the proper subsystem, and wants
+> > to add a Signed-off-by: line to the patch, please respond with it.
+> >
+> > Responses should be made by Thursday, Jan 7, 00:00:00 UTC.
+> > Anything received after that time might be too late.
+> >
+> > The whole patch series can be found in one patch at:
+> >        kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.32.3-rc1.gz
+> > and the diffstat can be found below.
+> >
+> >
+> > thanks,
 > 
-> So [_text, _etext] is the text section.
+> Wireless stuff looks good, except I'd prefer if we'd get the EEPROM
+> fix for ath5k merged in there as well but I realize a respective
+> upstream sha1sum is not yet available, but say we get it before
+> Friday, is it OK to queue it in? The patch in question is:
 > 
-> The data section may be placed before or after - it depends on the architecture.
-> But again - only some architectures define _sdata.
-> But all? define _edata.
+> http://marc.info/?l=linux-wireless&m=126261964315049&w=2
 
-You can not guarantee that the data segment is after the text segment,
-unless you want to outlaw XIP kernels.  XIP kernels have the text
-segment mapped at a completely different address to the data segment.
+No, how about we wait for the next .32-stable release, as we need to
+have the patches in Linus's tree first.
 
-I'd suggest the only way to identify the data segment in a generic way
-is to have everyone define _sdata, or more preferably _data (to be
-consistent with _text), to be the start of the data segment.
+It's not like .32 isn't going to have a lot of releases over its
+lifespan, it is going to be around for a long time :)
 
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+Patience,
+
+greg k-h
