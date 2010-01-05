@@ -1,44 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753963Ab0AEAAo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753973Ab0AEADp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753963Ab0AEAAo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 19:00:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753365Ab0AEAAm
+	id S1753973Ab0AEADp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 19:03:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753481Ab0AEADm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 19:00:42 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:45662 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751883Ab0AEAAl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 19:00:41 -0500
-Message-ID: <4B4280F3.7090203@zytor.com>
-Date: Mon, 04 Jan 2010 15:59:47 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
+	Mon, 4 Jan 2010 19:03:42 -0500
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:39569 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753464Ab0AEADl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jan 2010 19:03:41 -0500
+Date: Mon, 4 Jan 2010 16:03:37 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: mingo@elte.hu, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
+       akpm@linux-foundation.org, mathieu.desnoyers@polymtl.ca,
+       josh@joshtriplett.org, dvhltc@us.ibm.com, niv@us.ibm.com,
+       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
+       Valdis.Kletnieks@vt.edu, dhowells@redhat.com
+Subject: [PATCH tip/core/rcu 0/3] rcu: improve diagnostics and
+	documentation of source files
+Message-ID: <20100105000337.GA23307@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
 MIME-Version: 1.0
-To: Yinghai Lu <yinghai@kernel.org>
-CC: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Jesse Brandeburg <jesse.brandeburg@gmail.com>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       NetDEV list <netdev@vger.kernel.org>,
-       Jesse Brandeburg <jesse.brandeburg@intel.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: Re: Subject: [PATCH 1/2] x86: get back 15 vectors
-References: <4B347AEE.6030705@kernel.org> <20091228094707.GH24690@elte.hu>	<4B398ECD.1080506@kernel.org>	<4807377b1001031906s6b1ee576jc021da2642bb4147@mail.gmail.com>	<4B415E73.1050801@kernel.org> <4B419113.1090204@kernel.org>	<m1aawtlu6y.fsf@fess.ebiederm.org> <4B423B08.3010005@zytor.com>	<m1my0thelq.fsf@fess.ebiederm.org> <4B424305.7050803@kernel.org>	<4B4245FC.7070902@zytor.com> <4B424A5C.7080309@kernel.org> <m1y6kdbpad.fsf@fess.ebiederm.org> <4B425085.5040103@kernel.org> <4B42595E.9010404@zytor.com> <4B425BB7.90501@kernel.org> <4B425EB5.5080504@zytor.com> <4B426550.6000209@kernel.org> <4B4273D4.2080709@zytor.com> <4B427A8C.1040902@kernel.org> <4B427BF0.1040001@zytor.com> <4B427EA4.3040706@kernel.org>
-In-Reply-To: <4B427EA4.3040706@kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/04/2010 03:49 PM, Yinghai Lu wrote:
-> why not start from 0x30, 0x38, 0x40, 0x48 ...
-> instead of 0x31, 0x39, 0x41, 0x47...?
-> 
-> YH
+Hello!
 
-The whole point is to defer the skip over 0x80.
+This patch set corrects the file specifiers for the RCU sources in the
+MAINTAINERS file and also makes a couple of minor improvements to RCU's
+diagnostics.
 
-	-hpa
+							Thanx, Paul
+
+
+ MAINTAINERS             |   14 +++++++-------
+ kernel/rcutree.c        |   10 ++++++++--
+ kernel/rcutree_plugin.h |    4 +++-
+ 3 files changed, 18 insertions(+), 10 deletions(-)
