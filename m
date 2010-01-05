@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755517Ab0AEUKj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755699Ab0AEUKu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755517Ab0AEUKj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 15:10:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755494Ab0AEUGV
+	id S1755699Ab0AEUKu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 15:10:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755682Ab0AEUKi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 15:06:21 -0500
-Received: from kroah.org ([198.145.64.141]:50020 "EHLO coco.kroah.org"
+	Tue, 5 Jan 2010 15:10:38 -0500
+Received: from kroah.org ([198.145.64.141]:50015 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755488Ab0AEUGS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 15:06:18 -0500
+	id S1755489Ab0AEUGR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jan 2010 15:06:17 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jan  5 12:03:02 2010
-Message-Id: <20100105200302.092124910@mini.kroah.org>
+Message-Id: <20100105200301.965145355@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 05 Jan 2010 12:02:20 -0800
+Date: Tue, 05 Jan 2010 12:02:19 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, akpm@linux-foundation.org,
        torvalds@linux-foundation.org, stable-review@kernel.org
-Cc: Michele Jr De Candia <michele.decandia@valueteam.com>,
-       Jean Delvare <khali@linux-fr.org>
-Subject: [24/39] i2c/tsl2550: Fix lux value in extended mode
+Cc: Christoph Walser <walser@tik.ee.ethz.ch>,
+       Jonathan Cameron <jic23@cam.ac.uk>, Jean Delvare <khali@linux-fr.org>
+Subject: [23/39] hwmon: (sht15) Off-by-one error in array index + incorrect constants
 In-Reply-To: <20100105195007.GA23952@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -28,41 +28,46 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Michele Jr De Candia <michele.decandia@valueteam.com>
+From: Jonathan Cameron <jic23@cam.ac.uk>
 
-commit 5f5bfb09d81c9a1d26238ae6668e584c14ae3daf upstream.
+commit 4235f684b66d6f00d2cd8849c884cf8f8b57ecad upstream.
 
-According to the TAOS Application Note 'Controlling a Backlight with
-the TSL2550 Ambient Light Sensor' (page 14), the actual lux value in
-extended mode should be obtained multiplying the calculated lux value
-by 5.
+Fix an off-by-one error in array index + incorrect constants.
 
-Signed-off-by: Michele Jr De Candia <michele.decandia@valueteam.com>
+Signed-off-by: Christoph Walser <walser@tik.ee.ethz.ch>
+Signed-off-by: Jonathan Cameron <jic23@cam.ac.uk>
 Signed-off-by: Jean Delvare <khali@linux-fr.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/i2c/chips/tsl2550.c |    3 +++
- 1 file changed, 3 insertions(+)
+ drivers/hwmon/sht15.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
---- a/drivers/i2c/chips/tsl2550.c
-+++ b/drivers/i2c/chips/tsl2550.c
-@@ -277,6 +277,7 @@ static DEVICE_ATTR(operating_mode, S_IWU
+--- a/drivers/hwmon/sht15.c
++++ b/drivers/hwmon/sht15.c
+@@ -304,7 +304,7 @@ static inline int sht15_calc_temp(struct
+ 	int d1 = 0;
+ 	int i;
  
- static ssize_t __tsl2550_show_lux(struct i2c_client *client, char *buf)
- {
-+	struct tsl2550_data *data = i2c_get_clientdata(client);
- 	u8 ch0, ch1;
- 	int ret;
+-	for (i = 1; i < ARRAY_SIZE(temppoints) - 1; i++)
++	for (i = 1; i < ARRAY_SIZE(temppoints); i++)
+ 		/* Find pointer to interpolate */
+ 		if (data->supply_uV > temppoints[i - 1].vdd) {
+ 			d1 = (data->supply_uV/1000 - temppoints[i - 1].vdd)
+@@ -331,12 +331,12 @@ static inline int sht15_calc_humid(struc
  
-@@ -296,6 +297,8 @@ static ssize_t __tsl2550_show_lux(struct
- 	ret = tsl2550_calculate_lux(ch0, ch1);
- 	if (ret < 0)
- 		return ret;
-+	if (data->operating_mode == 1)
-+		ret *= 5;
+ 	const int c1 = -4;
+ 	const int c2 = 40500; /* x 10 ^ -6 */
+-	const int c3 = 2800; /* x10 ^ -9 */
++	const int c3 = -2800; /* x10 ^ -9 */
  
- 	return sprintf(buf, "%d\n", ret);
+ 	RHlinear = c1*1000
+ 		+ c2 * data->val_humid/1000
+ 		+ (data->val_humid * data->val_humid * c3)/1000000;
+-	return (temp - 25000) * (10000 + 800 * data->val_humid)
++	return (temp - 25000) * (10000 + 80 * data->val_humid)
+ 		/ 1000000 + RHlinear;
  }
+ 
 
 
