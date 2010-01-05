@@ -1,62 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755808Ab0AEUrM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755821Ab0AEUrk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755808Ab0AEUrM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 15:47:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755541Ab0AEUrK
+	id S1755821Ab0AEUrk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 15:47:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755571Ab0AEUrj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 15:47:10 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:51192 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754817Ab0AEUrI (ORCPT
+	Tue, 5 Jan 2010 15:47:39 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:44175
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755519Ab0AEUri (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 15:47:08 -0500
-Date: Tue, 5 Jan 2010 12:46:12 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Peter Zijlstra <peterz@infradead.org>
-cc: Christoph Lameter <cl@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Minchan Kim <minchan.kim@gmail.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "hugh.dickins" <hugh.dickins@tiscali.co.uk>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [RFC][PATCH 6/8] mm: handle_speculative_fault()
-In-Reply-To: <1262723356.4049.11.camel@laptop>
-Message-ID: <alpine.LFD.2.00.1001051241190.3630@localhost.localdomain>
-References: <20100104182429.833180340@chello.nl>  <20100104182813.753545361@chello.nl>  <20100105092559.1de8b613.kamezawa.hiroyu@jp.fujitsu.com>  <28c262361001042029w4b95f226lf54a3ed6a4291a3b@mail.gmail.com>  <20100105134357.4bfb4951.kamezawa.hiroyu@jp.fujitsu.com>
-  <alpine.LFD.2.00.1001042052210.3630@localhost.localdomain>  <20100105143046.73938ea2.kamezawa.hiroyu@jp.fujitsu.com>  <20100105163939.a3f146fb.kamezawa.hiroyu@jp.fujitsu.com>  <alpine.LFD.2.00.1001050707520.3630@localhost.localdomain> 
- <alpine.LFD.2.00.1001050810380.3630@localhost.localdomain>  <87wrzwbh0z.fsf@basil.nowhere.org>  <alpine.LFD.2.00.1001050950500.3630@localhost.localdomain>  <alpine.DEB.2.00.1001051211000.2246@router.home>  <alpine.LFD.2.00.1001051019280.3630@localhost.localdomain>
- <1262723356.4049.11.camel@laptop>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 5 Jan 2010 15:47:38 -0500
+Date: Tue, 05 Jan 2010 12:47:42 -0800 (PST)
+Message-Id: <20100105.124742.244214607.davem@davemloft.net>
+To: andi@firstfloor.org
+Cc: heiko.carstens@de.ibm.com, arjan@infradead.org, arnd@arndb.de,
+       mingo@elte.hu, akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] sparc: copy_from_user() should not return -EFAULT
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <87skakbgy1.fsf@basil.nowhere.org>
+References: <20100105053117.6a7c3377@infradead.org>
+	<20100105152215.GD5480@osiris.boeblingen.de.ibm.com>
+	<87skakbgy1.fsf@basil.nowhere.org>
+X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Andi Kleen <andi@firstfloor.org>
+Date: Tue, 05 Jan 2010 18:27:18 +0100
 
-
-On Tue, 5 Jan 2010, Peter Zijlstra wrote:
->
-> On Tue, 2010-01-05 at 10:25 -0800, Linus Torvalds wrote:
-> > The readers are all hitting the 
-> > lock (and you can try to solve the O(n*2) issue with back-off, but quite 
-> > frankly, anybody who does that has basically already lost 
+> Heiko Carstens <heiko.carstens@de.ibm.com> writes:
 > 
-> /me sneaks in a reference to local spinning spinlocks just to have them
-> mentioned.
+>> Subject: [PATCH] sparc: copy_from_user() should not return -EFAULT
+>>
+>> From: Heiko Carstens <heiko.carstens@de.ibm.com>
+>>
+>> Callers of copy_from_user() expect it to return the number of bytes
+>> it could not copy. In no case it is supposed to return -EFAULT.
+>>
+>> In case of a detected buffer overflow just return the requested
+>> length. In addition one could think of a memset that would clear
+>> the size of the target object.
+> 
+> Ouch! I would expect this is likely exploitable, e.g. in mount
 
-Were you in on the discussion with (I think) Andy Glew about that? I don't 
-think he ever came up with an actual workable solution, but he tried. He 
-worked for Intel at the time (maybe still does), and was looking at 
-architectural improvements. I think you need a "compare-and-exchange-2- 
-separate-words" instruction to make it work (not "cmpxchg8/16b" - 
-literally two _different_ words).
-
-I think m68k can do it. Even then it's a lot more expensive than a regular 
-lock for any reasonable common case.
-
-		Linus
+You can rest easy as the problem only exists in 2.6.33-rcX, it got
+introduced when I ported over the compile time length validation bits
+from x86.
