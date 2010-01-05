@@ -1,302 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752386Ab0AEJtE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753186Ab0AEJuh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752386Ab0AEJtE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 04:49:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751486Ab0AEJtB
+	id S1753186Ab0AEJuh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 04:50:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751486Ab0AEJug
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 04:49:01 -0500
-Received: from mtagate2.uk.ibm.com ([194.196.100.162]:45633 "EHLO
-	mtagate2.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750964Ab0AEJtA (ORCPT
+	Tue, 5 Jan 2010 04:50:36 -0500
+Received: from mtagate1.de.ibm.com ([195.212.17.161]:39857 "EHLO
+	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751212Ab0AEJuf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 04:49:00 -0500
-Date: Tue, 5 Jan 2010 10:48:57 +0100
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Ingo Molnar <mingo@elte.hu>, David Miller <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: strict copy_from_user checks issues?
-Message-ID: <20100105094857.GB5480@osiris.boeblingen.de.ibm.com>
-References: <20100104154345.GA5671@osiris.boeblingen.de.ibm.com>
- <20100104174308.0790757c@infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100104174308.0790757c@infradead.org>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Tue, 5 Jan 2010 04:50:35 -0500
+Date: Tue, 5 Jan 2010 10:50:30 +0100
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: Roland McGrath <roland@redhat.com>
+Cc: Oleg Nesterov <oleg@redhat.com>, caiqian@redhat.com,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Jan Kratochvil <jkratoch@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-s390@vger.kernel.org, utrace-devel@redhat.com
+Subject: Re: s390 && user_enable_single_step() (Was: odd utrace testing
+ results on s390x)
+Message-ID: <20100105105030.66bb8a0a@mschwide.boeblingen.de.ibm.com>
+In-Reply-To: <20100104211147.4CC94D532@magilla.sf.frob.com>
+References: <1503844142.2061111261478093776.JavaMail.root@zmail06.collab.prod.int.phx2.redhat.com>
+	<1257887498.2061171261478252049.JavaMail.root@zmail06.collab.prod.int.phx2.redhat.com>
+	<20100104155225.GA16650@redhat.com>
+	<20100104171626.22ea2d9c@mschwide.boeblingen.de.ibm.com>
+	<20100104181412.GA21146@redhat.com>
+	<20100104211147.4CC94D532@magilla.sf.frob.com>
+Organization: IBM Corporation
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.18.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 04, 2010 at 05:43:08PM -0800, Arjan van de Ven wrote:
-> On Mon, 4 Jan 2010 16:43:45 +0100
-> Heiko Carstens <heiko.carstens@de.ibm.com> wrote:
-> > x86 and sparc return -EFAULT in copy_from_user instead of the number
-> > of not copied bytes as it should in case of a detected buffer
-> > overflow. That might have unwanted side effects. I would guess that
-> > is a bug.
+On Mon,  4 Jan 2010 13:11:47 -0800 (PST)
+Roland McGrath <roland@redhat.com> wrote:
+
+> > This probably means that copy_process()->user_disable_single_step()
+> > is not enough to clear the "this task wants single-stepping" copied
+> > from parent.
 > 
-> killing the bad guy in case of a real buffer overflow is appropriate..
-> this should never trigger for legitimate users.
+> I would suspect s390's TIF_SINGLE_STEP flag here.  That flag means "a
+> single-step trap occurred".  This is what causes do_single_step to be
+> called before returning to user mode, rather than the machine trap doing it
+> directly as is done in the other arch implementations.
 
-The point I tried to make is that no caller of copy_from_user can assume
-that it would ever return -EFAULT. And if any caller does so it is broken.
-But then again it probably doesn't matter in this case as long as something
-!= 0 is returned.
+Just my thinking as well.
 
-> > Warnings cannot be switched off anymore as it was the case in your
-> > first version. However gcc seems to report quite a few false
-> > positives so it would be good if it could be turned off again.
+> If I'm right, then "this task wants single-stepping" is not the problem,
+> and that really is fully cleared.  In fact, looking at s390's copy_thread
+> (arch/s390/kernel/process.c) it clears out all the state that is actually
+> touched by user_enable_single_step and user_disable_single_step.  So for
+> s390 the new fork.c call is actually superfluous AFAICT.
+
+        /* Don't copy debug registers */
+        memset(&p->thread.per_info, 0, sizeof(p->thread.per_info));
+
+Yep, the call from fork.c is indeed superfluous.
+
+> The problem is that the copied parent state includes the "this task has a
+> pending single-step to report" flag.  IMHO it clearly makes sense for
+> s390's copy_thread to clear this flag in a new task, which it does not do now.
 > 
-> hmm I thought most got fixed.. I'd be surprised if this part is
-> architecture specific.....
-> I rather fix the few cases left than disable the warning to be honest.
-> It's not many, at least not on x86.
+> An alternative to that would be just to make its user_disable_single_step
+> clear the flag.  That could in theory also have an effect on e.g. the
+> (authentic) pending step report of a tracee that was stopped with
+> TIF_SINGLE_STEP set when its tracer detached.  This might be considered a
+> good thing, but since every other arch posts the SIGTRAP immediately they
+> all have the equivalent issue and s390 doesn't need to be any "better" than
+> they are before we have a generic resolution to the whole subject of
+> tracer-induced signals (which we won't get into now).  I'm not even sure
+> from my insufficient reading of the s390 assembly code whether this path is
+> even possible, i.e. do_signal called before do_single_step.
 
-An allyesconfig triggers 52 warnings on s390 (see below). I just checked
-a few but all of them looked like false positives.
+do_signal is called before do_single_step. The order of checks of the
+TIF_ bits is 1) machine checks, 2) need resched, 3) signal pending, 4)
+notify resume, 5) restarting system call, 6) single step.
+But why is that important ? If the TIF_SINGLE_STEP bit is set the order
+of do_signal vs. do_single_step does not seem to be important to me.
+There will be a SIGTRAP if TIF_SINGLE_STEP is set, no ?
 
-This is the patch I currently have for s390. Only differences to x86 and
-sparc are the return code handling and that an allyesconfig will trigger
-warnings instead of compile breakages.
+But I agree, it is probably better to make all arches look the same in
+regard to that pending step report. 
 
----
- arch/s390/Kconfig.debug         |   25 +++++++++++++++++++++++++
- arch/s390/include/asm/uaccess.h |   14 ++++++++++++++
- arch/s390/lib/Makefile          |    2 +-
- arch/s390/lib/usercopy.c        |    8 ++++++++
- 4 files changed, 48 insertions(+), 1 deletion(-)
+> Martin, I suggest having copy_thread clear TIF_SINGLE_STEP.
+> That bit is always task-private state that should not be copied.
 
---- a/arch/s390/include/asm/uaccess.h
-+++ b/arch/s390/include/asm/uaccess.h
-@@ -265,6 +265,14 @@ __copy_from_user(void *to, const void __
- 		return uaccess.copy_from_user(n, from, to);
- }
+Then let us do this.
  
-+extern void copy_from_user_overflow(void)
-+#ifdef CONFIG_DEBUG_STRICT_USER_COPY_CHECKS
-+__compiletime_warning("copy_from_user() buffer size is not provably correct")
-+#else
-+__compiletime_error("copy_from_user() buffer size is not provably correct")
-+#endif
-+;
-+
- /**
-  * copy_from_user: - Copy a block of data from user space.
-  * @to:   Destination address, in kernel space.
-@@ -284,7 +292,13 @@ __copy_from_user(void *to, const void __
- static inline unsigned long __must_check
- copy_from_user(void *to, const void __user *from, unsigned long n)
- {
-+	unsigned int sz = __compiletime_object_size(to);
-+
- 	might_fault();
-+	if (unlikely(sz != -1 && sz < n)) {
-+		copy_from_user_overflow();
-+		return n;
-+	}
- 	if (access_ok(VERIFY_READ, from, n))
- 		n = __copy_from_user(to, from, n);
- 	else
---- a/arch/s390/Kconfig.debug
-+++ b/arch/s390/Kconfig.debug
-@@ -6,4 +6,29 @@ config TRACE_IRQFLAGS_SUPPORT
- 
- source "lib/Kconfig.debug"
- 
-+choice
-+	prompt "Strict copy size checks"
-+	depends on DEBUG_KERNEL && !TRACE_BRANCH_PROFILING
-+
-+config DEBUG_STRICT_USER_COPY_CHECKS
-+	bool "Enabled - compile time warnings"
-+	---help---
-+	  Enabling this option adds a certain set of sanity checks for user
-+	  copy operations.
-+
-+	  The copy_from_user() etc checks are there to help test if there
-+	  are sufficient security checks on the length argument of
-+	  the copy operation, by having gcc prove that the argument is
-+	  within bounds.
-+	  If gcc cannot prove that security checks are sufficient runtime
-+	  checks will be added.
-+
-+config DEBUG_STRICT_USER_COPY_CHECKS_WARN
-+	bool "Enabled - compile time errors"
-+	---help---
-+	  Enabling this option turns a certain set of sanity checks for user
-+	  copy operations into compile time warnings.
-+
-+endchoice
-+
- endmenu
---- a/arch/s390/lib/Makefile
-+++ b/arch/s390/lib/Makefile
-@@ -2,7 +2,7 @@
- # Makefile for s390-specific library files..
- #
- 
--lib-y += delay.o string.o uaccess_std.o uaccess_pt.o
-+lib-y += delay.o string.o uaccess_std.o uaccess_pt.o usercopy.o
- obj-$(CONFIG_32BIT) += div64.o qrnnd.o ucmpdi2.o
- lib-$(CONFIG_64BIT) += uaccess_mvcos.o
- lib-$(CONFIG_SMP) += spinlock.o
---- /dev/null
-+++ b/arch/s390/lib/usercopy.c
-@@ -0,0 +1,8 @@
-+#include <linux/module.h>
-+#include <linux/bug.h>
-+
-+void copy_from_user_overflow(void)
-+{
-+	WARN(1, "Buffer overflow detected!\n");
-+}
-+EXPORT_SYMBOL(copy_from_user_overflow);
+> Btw, given the complexity of FixPerRegisters (and its new additional cost
+> on task==current), you might want to make user_*_single_step bail out if
+> per_info.single_step is already set/clear on entry.
 
+The LCTLG of multiple control registers is rather expensive. Does it
+happen often that user_*_single_step is called without need? For gdb is
+doesn't matter, the cost to switch between tracer and tracee is already
+large, the cycles added to FixPerRegisters won't matter much. For
+utrace things might be different.
 
-Warnings generated with an allyesconfig build:
+-- 
+blue skies,
+   Martin.
 
-In file included from /home2/heicarst/cfu/arch/s390/include/asm/mmu_context.h:13,
-                 from /home2/heicarst/cfu/arch/s390/include/asm/elf.h:133,
-                 from include/linux/elf.h:7,
-                 from include/linux/module.h:14,
-                 from fs/debugfs/file.c:16:
-In function 'copy_from_user',
-    inlined from 'write_file_bool' at fs/debugfs/file.c:415:
-/home2/heicarst/cfu/arch/s390/include/asm/uaccess.h:299: warning: call to 'copy_from_user_overflow' declared with attribute warning: copy_from_user() buffer size is not provably correct
-In file included from /home2/heicarst/cfu/arch/s390/include/asm/mmu_context.h:13,
-                 from /home2/heicarst/cfu/arch/s390/include/asm/elf.h:133,
-                 from include/linux/elf.h:7,
-                 from include/linux/module.h:14,
-                 from kernel/kprobes.c:39:
-In function 'copy_from_user',
-    inlined from 'write_enabled_file_bool' at kernel/kprobes.c:1527:
-/home2/heicarst/cfu/arch/s390/include/asm/uaccess.h:299: warning: call to 'copy_from_user_overflow' declared with attribute warning: copy_from_user() buffer size is not provably correct
-In file included from /home2/heicarst/cfu/arch/s390/include/asm/mmu_context.h:13,
-                 from /home2/heicarst/cfu/arch/s390/include/asm/elf.h:133,
-                 from include/linux/elf.h:7,
-                 from include/linux/module.h:14,
-                 from drivers/s390/crypto/zcrypt_api.c:30:
-In function 'copy_from_user',
-    inlined from 'zcrypt_rsa_crt' at drivers/s390/crypto/zcrypt_api.c:401:
-/home2/heicarst/cfu/arch/s390/include/asm/uaccess.h:299: warning: call to 'copy_from_user_overflow' declared with attribute warning: copy_from_user() buffer size is not provably correct
-In file included from /home2/heicarst/cfu/arch/s390/include/asm/mmu_context.h:13,
-                 from /home2/heicarst/cfu/arch/s390/include/asm/elf.h:133,
-                 from include/linux/elf.h:7,
-                 from include/linux/module.h:14,
-                 from include/linux/sysdev.h:25,
-                 from include/linux/cpu.h:22,
-                 from kernel/perf_event.c:14:
-In function 'copy_from_user',
-    inlined from 'perf_copy_attr' at kernel/perf_event.c:4563,
-    inlined from 'SYSC_perf_event_open' at kernel/perf_event.c:4668,
-    inlined from 'SyS_perf_event_open' at kernel/perf_event.c:4653:
-/home2/heicarst/cfu/arch/s390/include/asm/uaccess.h:299: warning: call to 'copy_from_user_overflow' declared with attribute warning: copy_from_user() buffer size is not provably correct
-In file included from /home2/heicarst/cfu/arch/s390/include/asm/mmu_context.h:13,
-                 from /home2/heicarst/cfu/arch/s390/include/asm/elf.h:133,
-                 from include/linux/elf.h:7,
-                 from include/linux/module.h:14,
-                 from drivers/net/tun.c:42:
-In function 'copy_from_user',
-    inlined from '__tun_chr_ioctl' at drivers/net/tun.c:1124:
-/home2/heicarst/cfu/arch/s390/include/asm/uaccess.h:299: warning: call to 'copy_from_user_overflow' declared with attribute warning: copy_from_user() buffer size is not provably correct
-In file included from /home2/heicarst/cfu/arch/s390/include/asm/mmu_context.h:13,
-                 from /home2/heicarst/cfu/arch/s390/include/asm/elf.h:133,
-                 from include/linux/elf.h:7,
-                 from include/linux/module.h:14,
-                 from net/can/raw.c:44:
-In function 'copy_from_user',
-    inlined from 'raw_setsockopt' at net/can/raw.c:447:
-/home2/heicarst/cfu/arch/s390/include/asm/uaccess.h:299: warning: call to 'copy_from_user_overflow' declared with attribute warning: copy_from_user() buffer size is not provably correct
-In file included from /home2/heicarst/cfu/arch/s390/include/asm/mmu_context.h:13,
-                 from /home2/heicarst/cfu/arch/s390/include/asm/elf.h:133,
-                 from include/linux/elf.h:7,
-                 from include/linux/module.h:14,
-                 from net/core/pktgen.c:120:
-In function 'copy_from_user',
-    inlined from 'pktgen_if_write' at net/core/pktgen.c:866:
-/home2/heicarst/cfu/arch/s390/include/asm/uaccess.h:299: warning: call to 'copy_from_user_overflow' declared with attribute warning: copy_from_user() buffer size is not provably correct
-In function 'copy_from_user',
-    inlined from 'pktgen_if_write' at net/core/pktgen.c:1084:
-/home2/heicarst/cfu/arch/s390/include/asm/uaccess.h:299: warning: call to 'copy_from_user_overflow' declared with attribute warning: copy_from_user() buffer size is not provably correct
-In function 'copy_from_user',
-    inlined from 'pktgen_if_write' at net/core/pktgen.c:1185:
-/home2/heicarst/cfu/arch/s390/include/asm/uaccess.h:299: warning: call to 'copy_from_user_overflow' declared with attribute warning: copy_from_user() buffer size is not provably correct
-In function 'copy_from_user',
-    inlined from 'pktgen_if_write' at net/core/pktgen.c:1207:
-/home2/heicarst/cfu/arch/s390/include/asm/uaccess.h:299: warning: call to 'copy_from_user_overflow' declared with attribute warning: copy_from_user() buffer size is not provably correct
-In function 'copy_from_user',
-    inlined from 'pktgen_if_write' at net/core/pktgen.c:1231:
-/home2/heicarst/cfu/arch/s390/include/asm/uaccess.h:299: warning: call to 'copy_from_user_overflow' declared with attribute warning: copy_from_user() buffer size is not provably correct
-In function 'copy_from_user',
-    inlined from 'pktgen_if_write' at net/core/pktgen.c:1254:
-/home2/heicarst/cfu/arch/s390/include/asm/uaccess.h:299: warning: call to 'copy_from_user_overflow' declared with attribute warning: copy_from_user() buffer size is not provably correct
-In function 'copy_from_user',
-    inlined from 'pktgen_if_write' at net/core/pktgen.c:1277:
-/home2/heicarst/cfu/arch/s390/include/asm/uaccess.h:299: warning: call to 'copy_from_user_overflow' declared with attribute warning: copy_from_user() buffer size is not provably correct
-In function 'copy_from_user',
-    inlined from 'pktgen_if_write' at net/core/pktgen.c:1298:
-/home2/heicarst/cfu/arch/s390/include/asm/uaccess.h:299: warning: call to 'copy_from_user_overflow' declared with attribute warning: copy_from_user() buffer size is not provably correct
-In function 'copy_from_user',
-    inlined from 'pktgen_if_write' at net/core/pktgen.c:1319:
-/home2/heicarst/cfu/arch/s390/include/asm/uaccess.h:299: warning: call to 'copy_from_user_overflow' declared with attribute warning: copy_from_user() buffer size is not provably correct
-In function 'copy_from_user',
-    inlined from 'pktgen_if_write' at net/core/pktgen.c:1340:
-/home2/heicarst/cfu/arch/s390/include/asm/uaccess.h:299: warning: call to 'copy_from_user_overflow' declared with attribute warning: copy_from_user() buffer size is not provably correct
-In function 'copy_from_user',
-    inlined from 'pktgen_if_write' at net/core/pktgen.c:1367:
-/home2/heicarst/cfu/arch/s390/include/asm/uaccess.h:299: warning: call to 'copy_from_user_overflow' declared with attribute warning: copy_from_user() buffer size is not provably correct
-In function 'copy_from_user',
-    inlined from 'pktgen_if_write' at net/core/pktgen.c:1409:
-/home2/heicarst/cfu/arch/s390/include/asm/uaccess.h:299: warning: call to 'copy_from_user_overflow' declared with attribute warning: copy_from_user() buffer size is not provably correct
-In function 'copy_from_user',
-    inlined from 'pktgen_thread_write' at net/core/pktgen.c:1739:
-/home2/heicarst/cfu/arch/s390/include/asm/uaccess.h:299: warning: call to 'copy_from_user_overflow' declared with attribute warning: copy_from_user() buffer size is not provably correct
-In function 'copy_from_user',
-    inlined from 'pktgen_thread_write' at net/core/pktgen.c:1770:
-/home2/heicarst/cfu/arch/s390/include/asm/uaccess.h:299: warning: call to 'copy_from_user_overflow' declared with attribute warning: copy_from_user() buffer size is not provably correct
-In file included from /home2/heicarst/cfu/arch/s390/include/asm/mmu_context.h:13,
-                 from /home2/heicarst/cfu/arch/s390/include/asm/elf.h:133,
-                 from include/linux/elf.h:7,
-                 from include/linux/module.h:14,
-                 from drivers/scsi/sg.c:31:
-In function 'copy_from_user',
-    inlined from 'sg_proc_write_dressz' at drivers/scsi/sg.c:2381:
-/home2/heicarst/cfu/arch/s390/include/asm/uaccess.h:299: warning: call to 'copy_from_user_overflow' declared with attribute warning: copy_from_user() buffer size is not provably correct
-In function 'copy_from_user',
-    inlined from 'sg_proc_write_adio' at drivers/scsi/sg.c:2358:
-/home2/heicarst/cfu/arch/s390/include/asm/uaccess.h:299: warning: call to 'copy_from_user_overflow' declared with attribute warning: copy_from_user() buffer size is not provably correct
-In file included from /home2/heicarst/cfu/arch/s390/include/asm/mmu_context.h:13,
-                 from /home2/heicarst/cfu/arch/s390/include/asm/elf.h:133,
-                 from include/linux/elf.h:7,
-                 from include/linux/module.h:14,
-                 from include/linux/textsearch.h:7,
-                 from include/linux/skbuff.h:27,
-                 from include/linux/if_ether.h:124,
-                 from include/linux/netdevice.h:29,
-                 from net/packet/af_packet.c:58:
-In function 'copy_from_user',
-    inlined from 'packet_getsockopt' at net/packet/af_packet.c:1880:
-/home2/heicarst/cfu/arch/s390/include/asm/uaccess.h:299: warning: call to 'copy_from_user_overflow' declared with attribute warning: copy_from_user() buffer size is not provably correct
-In file included from /home2/heicarst/cfu/arch/s390/include/asm/mmu_context.h:13,
-                 from /home2/heicarst/cfu/arch/s390/include/asm/elf.h:133,
-                 from include/linux/elf.h:7,
-                 from include/linux/module.h:14,
-                 from net/netfilter/ipvs/ip_vs_ctl.c:24:
-In function 'copy_from_user',
-    inlined from 'do_ip_vs_get_ctl' at net/netfilter/ipvs/ip_vs_ctl.c:2365:
-/home2/heicarst/cfu/arch/s390/include/asm/uaccess.h:299: warning: call to 'copy_from_user_overflow' declared with attribute warning: copy_from_user() buffer size is not provably correct
-In function 'copy_from_user',
-    inlined from 'do_ip_vs_set_ctl' at net/netfilter/ipvs/ip_vs_ctl.c:2086:
-/home2/heicarst/cfu/arch/s390/include/asm/uaccess.h:299: warning: call to 'copy_from_user_overflow' declared with attribute warning: copy_from_user() buffer size is not provably correct
-In file included from /home2/heicarst/cfu/arch/s390/include/asm/mmu_context.h:13,
-                 from /home2/heicarst/cfu/arch/s390/include/asm/elf.h:133,
-                 from include/linux/elf.h:7,
-                 from include/linux/module.h:14,
-                 from include/linux/textsearch.h:7,
-                 from include/linux/skbuff.h:27,
-                 from include/linux/icmpv6.h:82,
-                 from net/compat.c:18:
-In function 'copy_from_user',
-    inlined from 'compat_sys_socketcall' at net/compat.c:785:
-/home2/heicarst/cfu/arch/s390/include/asm/uaccess.h:299: warning: call to 'copy_from_user_overflow' declared with attribute warning: copy_from_user() buffer size is not provably correct
+"Reality continues to ruin my life." - Calvin.
+
