@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754675Ab0AEAxx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754237Ab0AEAyO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754675Ab0AEAxx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 19:53:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754756Ab0AEAxi
+	id S1754237Ab0AEAyO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 19:54:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754227Ab0AEAez
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 19:53:38 -0500
-Received: from kroah.org ([198.145.64.141]:34151 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754238Ab0AEAez (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 4 Jan 2010 19:34:55 -0500
+Received: from kroah.org ([198.145.64.141]:34133 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754054Ab0AEAeu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jan 2010 19:34:50 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, stable-review@kernel.org
 Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Donny Kurnia <donnykurnia@gmail.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 21/97] USB: option: support hi speed for modem Haier CE100
-Date: Mon,  4 Jan 2010 16:32:34 -0800
-Message-Id: <1262651630-7354-21-git-send-email-gregkh@suse.de>
+       alan@lxorguk.ukuu.org.uk, Zhao Yakui <yakui.zhao@intel.com>,
+       Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 16/97] ACPI: Use the return result of ACPI lid notifier chain correctly
+Date: Mon,  4 Jan 2010 16:32:29 -0800
+Message-Id: <1262651630-7354-16-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.6
 In-Reply-To: <20100105003133.GA7199@kroah.com>
 References: <20100105003133.GA7199@kroah.com>
@@ -24,49 +24,45 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Donny Kurnia <donnykurnia@gmail.com>
+From: Zhao Yakui <yakui.zhao@intel.com>
 
-commit c983202bd03eb82394ef1dce5906702fcbc7bb80 upstream.
+commit 13c199c0d0cf78b27592991129fb8cbcfc5164de upstream.
 
-I made this patch for usbserial driver to add the support for EVDO modem
-Haier CE100. The bugs report for this is here:
-https://bugs.launchpad.net/ubuntu/+source/linux/+bug/490068
+On some laptops it will return NOTIFY_OK(non-zero) when calling the ACPI LID
+notifier. Then it is used as the result of ACPI LID resume function, which
+will complain the following warning message in course of suspend/resume:
 
-This patch based on these post:
-http://blankblondtank.wordpress.com/2009/09/04/mengoptimalkan-koneksi-modem-haier-ce-100-cdma-di-linux/
-http://tantos.web.id/blogs/how-to-internet-connection-using-cdma-evdo-modem-and-karmic-koala-ubuntu-9-10
+     >PM: Device PNP0C0D:00 failed to resume: error 1
 
-I hope this patch can help other that have the Haier C100 modem, mostly in my country, Indonesia.
+This patch is to eliminate the above warning message.
 
-Signed-off-by: Donny Kurnia <donnykurnia@gmail.com>
+http://bugzilla.kernel.org/show_bug.cgi?id=14782
+
+Signed-off-by: Zhao Yakui <yakui.zhao@intel.com>
+Signed-off-by: Len Brown <len.brown@intel.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/usb/serial/option.c |    5 +++++
- 1 files changed, 5 insertions(+), 0 deletions(-)
+ drivers/acpi/button.c |    7 +++++++
+ 1 files changed, 7 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/usb/serial/option.c b/drivers/usb/serial/option.c
-index dffc8a1..be3dff1 100644
---- a/drivers/usb/serial/option.c
-+++ b/drivers/usb/serial/option.c
-@@ -340,6 +340,10 @@ static int  option_resume(struct usb_serial *serial);
- #define FOUR_G_SYSTEMS_VENDOR_ID		0x1c9e
- #define FOUR_G_SYSTEMS_PRODUCT_W14		0x9603
+diff --git a/drivers/acpi/button.c b/drivers/acpi/button.c
+index 0c9c6a9..8a95e83 100644
+--- a/drivers/acpi/button.c
++++ b/drivers/acpi/button.c
+@@ -282,6 +282,13 @@ static int acpi_lid_send_state(struct acpi_device *device)
+ 	if (ret == NOTIFY_DONE)
+ 		ret = blocking_notifier_call_chain(&acpi_lid_notifier, state,
+ 						   device);
++	if (ret == NOTIFY_DONE || ret == NOTIFY_OK) {
++		/*
++		 * It is also regarded as success if the notifier_chain
++		 * returns NOTIFY_OK or NOTIFY_DONE.
++		 */
++		ret = 0;
++	}
+ 	return ret;
+ }
  
-+/* Haier products */
-+#define HAIER_VENDOR_ID				0x201e
-+#define HAIER_PRODUCT_CE100			0x2009
-+
- static struct usb_device_id option_ids[] = {
- 	{ USB_DEVICE(OPTION_VENDOR_ID, OPTION_PRODUCT_COLT) },
- 	{ USB_DEVICE(OPTION_VENDOR_ID, OPTION_PRODUCT_RICOLA) },
-@@ -641,6 +645,7 @@ static struct usb_device_id option_ids[] = {
- 	{ USB_DEVICE(AIRPLUS_VENDOR_ID, AIRPLUS_PRODUCT_MCD650) },
- 	{ USB_DEVICE(TLAYTECH_VENDOR_ID, TLAYTECH_PRODUCT_TEU800) },
- 	{ USB_DEVICE(FOUR_G_SYSTEMS_VENDOR_ID, FOUR_G_SYSTEMS_PRODUCT_W14) },
-+	{ USB_DEVICE(HAIER_VENDOR_ID, HAIER_PRODUCT_CE100) },
- 	{ } /* Terminating entry */
- };
- MODULE_DEVICE_TABLE(usb, option_ids);
 -- 
 1.6.6
 
