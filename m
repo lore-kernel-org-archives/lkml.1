@@ -1,66 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755744Ab0AEUP6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932128Ab0AEUQa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755744Ab0AEUP6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 15:15:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755412Ab0AEUPb
+	id S932128Ab0AEUQa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 15:16:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755774Ab0AEUQT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 15:15:31 -0500
-Received: from kroah.org ([198.145.64.141]:49941 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755416Ab0AEUGA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 15:06:00 -0500
-X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jan  5 12:02:59 2010
-Message-Id: <20100105200259.553250690@mini.kroah.org>
-User-Agent: quilt/0.48-1
-Date: Tue, 05 Jan 2010 12:02:01 -0800
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, stable-review@kernel.org
-Cc: Nicolas Ferre <nicolas.ferre@atmel.com>,
-       Dan Williams <dan.j.williams@intel.com>
-Subject: [05/39] dma: at_hdmac: correct incompatible type for argument 1 of spin_lock_bh
-In-Reply-To: <20100105195007.GA23952@kroah.com>
+	Tue, 5 Jan 2010 15:16:19 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:54314 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755772Ab0AEUQQ convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jan 2010 15:16:16 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=VO6SNZdAlDJVyev0g/o0qm3jcnCaZ5bNtTuijmO6o6Yau13FUbNXQjRJoMx39dr1XR
+         EL2VIMSywDDReJnXQQxs/TWl25j6IWZK4c403zEuLVJUt7aE8TCsfDvxm/NvSvTzC1eF
+         Kzd56vYSpd8ibRG+3ppVRX714DJZrnsK18Fj0=
+MIME-Version: 1.0
+In-Reply-To: <4B439A18.3030408@zytor.com>
+References: <a44ae5cd1001051155s7204a182wefafbfc2bb2409e4@mail.gmail.com>
+	 <4B439A18.3030408@zytor.com>
+Date: Tue, 5 Jan 2010 15:16:15 -0500
+Message-ID: <a44ae5cd1001051216g5f999caftc3b8b30a3e4b6af2@mail.gmail.com>
+Subject: Re: 2.6.33-rc2-git6 -- Boot fails with "Destination address too 
+	large." with recent kernels when compressed with bz2 or lzma (gzip works).
+From: Miles Lane <miles.lane@gmail.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.31-stable review patch.  If anyone has any objections, please let us know.
+On Tue, Jan 5, 2010 at 2:59 PM, H. Peter Anvin <hpa@zytor.com> wrote:
+> On 01/05/2010 11:55 AM, Miles Lane wrote:
+>> Hello,
+>>
+>> I can get a gzipped kernel to boot (I am running Ubuntu in a WUBI
+>> FUSE-mounted EXT3 file system that is stored in a 16GB file on my
+>> Windows NTFS partition).  But, when I try to compress the kernel with
+>> lzma or bz2, the boot fails with "Destination address too large."
+>>
+>
+> Known bug (it happens when your sh isn't bash on the compile host, and
+> possibly some other tools).  It's being addressed.
+>
+>        -hpa
+>
 
-------------------
+Yes, Ubuntu 10.04 (lucid) is using dash (/bin/sh -> dash)
 
-From: Nicolas Ferre <nicolas.ferre@atmel.com>
+dash                  0.5.5.1-2ubuntu3      POSIX-compliant shell
+"The Debian Almquist Shell (dash) is a lightweight POSIX-compliant
+shell derived from ash."
 
-commit 4297a462f455e38f08976df7b16c849614a287da upstream.
+BTW, why is it that only changing the compression algorithm forces a
+complete rebuild?  It seems like only the existing kernel should need
+recompression.
 
-Correct a typo error in locking calls.
+GNU bash, version 4.1.0(1)-release (i486-pc-linux-gnu)
 
-Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
-Signed-off-by: Dan Williams <dan.j.williams@intel.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+Linux ubuntu 2.6.32-9-generic #13-Ubuntu SMP Thu Dec 17 17:02:51 UTC
+2009 i686 GNU/Linux
 
----
- drivers/dma/at_hdmac.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
---- a/drivers/dma/at_hdmac.c
-+++ b/drivers/dma/at_hdmac.c
-@@ -813,7 +813,7 @@ atc_is_tx_complete(struct dma_chan *chan
- 	dev_vdbg(chan2dev(chan), "is_tx_complete: %d (d%d, u%d)\n",
- 			cookie, done ? *done : 0, used ? *used : 0);
- 
--	spin_lock_bh(atchan->lock);
-+	spin_lock_bh(&atchan->lock);
- 
- 	last_complete = atchan->completed_cookie;
- 	last_used = chan->cookie;
-@@ -828,7 +828,7 @@ atc_is_tx_complete(struct dma_chan *chan
- 		ret = dma_async_is_complete(cookie, last_complete, last_used);
- 	}
- 
--	spin_unlock_bh(atchan->lock);
-+	spin_unlock_bh(&atchan->lock);
- 
- 	if (done)
- 		*done = last_complete;
-
-
+Gnu C                  4.4.3
+Gnu make               3.81
+binutils               2.20
+util-linux             2.16
+mount                  support
+module-init-tools      3.11.1
+e2fsprogs              1.41.9
+reiserfsprogs          3.6.21
+pcmciautils            014
+PPP                    2.4.5
+Linux C Library        2.10.2
+Dynamic linker (ldd)   2.10.2
+Procps                 3.2.8
+Net-tools              1.60
+Kbd                    1.15
+Sh-utils               7.4
+wireless-tools         29
+Modules Loaded         aes_i586 aes_generic binfmt_misc ppdev
+snd_hda_codec_realtek snd_hda_intel snd_hda_codec snd_hwdep
+snd_pcm_oss snd_mixer_oss fbcon tileblit font bitblit softcursor
+vga16fb vgastate snd_pcm snd_seq_dummy snd_seq_oss snd_seq_midi
+snd_rawmidi arc4 snd_seq_midi_event snd_seq snd_timer snd_seq_device
+i915 ath9k drm_kms_helper mac80211 ath snd drm i2c_algo_bit cfg80211
+intel_agp joydev psmouse serio_raw soundcore led_class agpgart
+snd_page_alloc video output lp parport atl1e hid_logitech ff_memless
+usbhid
