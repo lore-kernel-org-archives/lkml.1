@@ -1,97 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754117Ab0AEG6b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753967Ab0AEHCo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754117Ab0AEG6b (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 01:58:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753674Ab0AEG6a
+	id S1753967Ab0AEHCo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 02:02:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751963Ab0AEHCn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 01:58:30 -0500
-Received: from mail-yw0-f113.google.com ([209.85.211.113]:54791 "EHLO
-	mail-yw0-f113.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750910Ab0AEG6a convert rfc822-to-8bit (ORCPT
+	Tue, 5 Jan 2010 02:02:43 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:34568 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750734Ab0AEHCm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 01:58:30 -0500
+	Tue, 5 Jan 2010 02:02:42 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:reply-to:in-reply-to:references:date:message-id
-         :subject:from:to:cc:content-type:content-transfer-encoding;
-        b=Rc+iNsf/9GtuSYxPE9oF4YUaBInrXTBCC0FqHJQI1fj6vFaHBYWOFskNn774I2MzmF
-         nmAViSZtpuuGSS1R+1zH1uOi5kJ2nHbRxCFB7BxyC18nJDm4KcE3B5Kml8pGKZ/+XHTj
-         iTLtdi1qlc6XjZKyRygZwWvrRzXkMoWXnyN7Q=
-MIME-Version: 1.0
-Reply-To: jarod@wilsonet.com
-In-Reply-To: <80A6ED01A151614884EE6C5D6AF0F2E90460D23460@SJEXCHCCR01.corp.ad.broadcom.com>
-References: <20100104230227.GA14314@redhat.com>
-	 <20100104231949.GA14496@kroah.com> <4B427AF5.2030805@redhat.com>
-	 <4B42A23B.4080704@gmail.com>
-	 <80A6ED01A151614884EE6C5D6AF0F2E90460D23460@SJEXCHCCR01.corp.ad.broadcom.com>
-Date: Tue, 5 Jan 2010 01:58:29 -0500
-Message-ID: <7cdf10991001042258g58f8fea3i8fe0d61048bd4504@mail.gmail.com>
-Subject: Re: [PATCH v3] staging: add Broadcom Crystal HD driver
-From: Jarod Wilson <jarodwilson@gmail.com>
-To: "Naren (Narendra) Sankar" <nsankar@broadcom.com>
-Cc: Robert Hancock <hancockrwd@gmail.com>, Jarod Wilson <jarod@redhat.com>,
-       Greg KH <greg@kroah.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Scott Davilla <davilla@4pi.com>, Manu Abraham <abraham.manu@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=WMHEE/olqIsfqKEkKfE2iyGIMz4YpwG13/Jnq9yXfUQ9NDmmLxyCatFs4SxAQ+cbJH
+         zOXZN070o7t6C44+6hmAKPEeWhBfEplSBtj2fq/vd/fp8W7ZxHD/kphdD3jNTqDyuld2
+         C/VEB1Sm/3L3VrMoql1cqE/ro64/UifeJkPvc=
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Christian Kujau <lists@nerdbynature.de>,
+       Alexander Beregalov <a.beregalov@gmail.com>,
+       Chris Mason <chris.mason@oracle.com>, Ingo Molnar <mingo@elte.hu>
+Subject: [PATCH 1/3] reiserfs: Fix recursive lock on lchown
+Date: Tue,  5 Jan 2010 08:02:36 +0100
+Message-Id: <1262674958-23312-1-git-send-regression-fweisbec@gmail.com>
+X-Mailer: git-send-email 1.6.2.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 4, 2010 at 9:36 PM, Naren (Narendra) Sankar
-<nsankar@broadcom.com> wrote:
-> The register bits come straight from the HW RTL. So this way there are no errors or typos. It would be easier for maintenance from our side since this is generated automagically. And when we add new HW, again it is a script that spews this out.
->
-> Not absolutely necessary, but worried that cleanups may cause more problems than fix.
+On chown, reiserfs will call reiserfs_setattr() to change the owner
+of the given inode, but it may also recursively call
+reiserfs_setattr() to propagate the owner change to the private xattr
+files for this inode.
 
-I think the automation is worth it to a point, but this header does
-seem to be a wee bit excessive. I doubt if we're even using 1% of the
-~12k defines in that one header, so we're bloating the code by a huge
-amount for relatively little benefit. Its probably worth maintaining
-the full register header *somewhere* (in with the userspace lib
-somewhere?), but maybe we just do a trimmed down version for the
-kernel module that contains only the bits we actually need.
+Hence, the reiserfs lock may be acquired twice which is not wanted
+as reiserfs_setattr() calls journal_begin() that is going to try to
+relax the lock in order to safely acquire the journal mutex.
 
-> -----Original Message-----
-> From: Robert Hancock [mailto:hancockrwd@gmail.com]
-> Sent: Monday, January 04, 2010 6:22 PM
-> To: Jarod Wilson
-> Cc: Greg KH; linux-kernel@vger.kernel.org; Scott Davilla; Naren (Narendra) Sankar; Manu Abraham
-> Subject: Re: [PATCH v3] staging: add Broadcom Crystal HD driver
->
-> On 01/04/2010 05:34 PM, Jarod Wilson wrote:
->> On 1/4/10 6:19 PM, Greg KH wrote:
->>> On Mon, Jan 04, 2010 at 06:02:27PM -0500, Jarod Wilson wrote:
->>>> This patch supersedes the earlier ones sent by Manu Abraham to add
->>>> the Broadcom Crystal HD driver to the staging tree, per discussion
->>>> with him about it. I've been working with Broadcom's Naren Sankar
->>>> on this driver for a number of months, and had already talked Naren
->>>> about submitting this on Broadcom's behalf, didn't expect anyone
->>>> else to jump on submitting it as quickly as Manu did. ;)
->>>
->>> Looks good, I'll queue it up tomorrow.
->>
->> Nb: it looks like the thing is so massive (~935k), its not showing up on
->> lkml (at least, not in a timely fashion), so for the interested:
->>
->> <http://people.redhat.com/jwilson/misc/broadcom-crystalhd-decoder-driver-staging.patch>
->>
->> Thanks much!
->
-> Literally the majority of the code is #defines for what looks like
-> register bits, etc - is all that really necessary?
->
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+Using reiserfs_write_lock_once() from reiserfs_setattr() solves
+the problem.
 
+This fixes the following warning, that precedes a lockdep report.
 
+WARNING: at fs/reiserfs/lock.c:95 reiserfs_lock_check_recursive+0x3f/0x50()
+Hardware name: MS-7418
+Unwanted recursive reiserfs lock!
+Pid: 4189, comm: fsstress Not tainted 2.6.33-rc2-tip-atom+ #195
+Call Trace:
+ [<c1178bff>] ? reiserfs_lock_check_recursive+0x3f/0x50
+ [<c1178bff>] ? reiserfs_lock_check_recursive+0x3f/0x50
+ [<c103f7ac>] warn_slowpath_common+0x6c/0xc0
+ [<c1178bff>] ? reiserfs_lock_check_recursive+0x3f/0x50
+ [<c103f84b>] warn_slowpath_fmt+0x2b/0x30
+ [<c1178bff>] reiserfs_lock_check_recursive+0x3f/0x50
+ [<c1172ae3>] do_journal_begin_r+0x83/0x350
+ [<c1172f2d>] journal_begin+0x7d/0x140
+ [<c106509a>] ? in_group_p+0x2a/0x30
+ [<c10fda71>] ? inode_change_ok+0x91/0x140
+ [<c115007d>] reiserfs_setattr+0x15d/0x2e0
+ [<c10f9bf3>] ? dput+0xe3/0x140
+ [<c1465adc>] ? _raw_spin_unlock+0x2c/0x50
+ [<c117831d>] chown_one_xattr+0xd/0x10
+ [<c11780a3>] reiserfs_for_each_xattr+0x113/0x2c0
+ [<c1178310>] ? chown_one_xattr+0x0/0x10
+ [<c14641e9>] ? mutex_lock_nested+0x2a9/0x350
+ [<c117826f>] reiserfs_chown_xattrs+0x1f/0x60
+ [<c106509a>] ? in_group_p+0x2a/0x30
+ [<c10fda71>] ? inode_change_ok+0x91/0x140
+ [<c1150046>] reiserfs_setattr+0x126/0x2e0
+ [<c1177c20>] ? reiserfs_getxattr+0x0/0x90
+ [<c11b0d57>] ? cap_inode_need_killpriv+0x37/0x50
+ [<c10fde01>] notify_change+0x151/0x330
+ [<c10e659f>] chown_common+0x6f/0x90
+ [<c10e67bd>] sys_lchown+0x6d/0x80
+ [<c1002ccc>] sysenter_do_call+0x12/0x32
+---[ end trace 7c2b77224c1442fc ]---
 
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Christian Kujau <lists@nerdbynature.de>
+Cc: Alexander Beregalov <a.beregalov@gmail.com>
+Cc: Chris Mason <chris.mason@oracle.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+---
+ fs/reiserfs/inode.c |    8 +++++---
+ 1 files changed, 5 insertions(+), 3 deletions(-)
+
+diff --git a/fs/reiserfs/inode.c b/fs/reiserfs/inode.c
+index bd615df..47dbfb1 100644
+--- a/fs/reiserfs/inode.c
++++ b/fs/reiserfs/inode.c
+@@ -3052,13 +3052,14 @@ static ssize_t reiserfs_direct_IO(int rw, struct kiocb *iocb,
+ int reiserfs_setattr(struct dentry *dentry, struct iattr *attr)
+ {
+ 	struct inode *inode = dentry->d_inode;
+-	int error;
+ 	unsigned int ia_valid;
++	int depth;
++	int error;
+ 
+ 	/* must be turned off for recursive notify_change calls */
+ 	ia_valid = attr->ia_valid &= ~(ATTR_KILL_SUID|ATTR_KILL_SGID);
+ 
+-	reiserfs_write_lock(inode->i_sb);
++	depth = reiserfs_write_lock_once(inode->i_sb);
+ 	if (attr->ia_valid & ATTR_SIZE) {
+ 		/* version 2 items will be caught by the s_maxbytes check
+ 		 ** done for us in vmtruncate
+@@ -3149,7 +3150,8 @@ int reiserfs_setattr(struct dentry *dentry, struct iattr *attr)
+ 	}
+ 
+       out:
+-	reiserfs_write_unlock(inode->i_sb);
++	reiserfs_write_unlock_once(inode->i_sb, depth);
++
+ 	return error;
+ }
+ 
 -- 
-Jarod Wilson
-jarodwilson@gmail.com
+1.6.2.3
+
