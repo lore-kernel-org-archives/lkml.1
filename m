@@ -1,102 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753709Ab0AEWQQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754964Ab0AEWRm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753709Ab0AEWQQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 17:16:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754601Ab0AEWQO
+	id S1754964Ab0AEWRm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 17:17:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754477Ab0AEWRl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 17:16:14 -0500
-Received: from hera.kernel.org ([140.211.167.34]:53652 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754588Ab0AEWQO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 17:16:14 -0500
-Date: Tue, 5 Jan 2010 22:15:43 GMT
-From: tip-bot for Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       arjan@linux.intel.com, heiko.carstens@de.ibm.com, tglx@linutronix.de
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       arjan@linux.intel.com, heiko.carstens@de.ibm.com, tglx@linutronix.de
-In-Reply-To: <20100105131911.GC5480@osiris.boeblingen.de.ibm.com>
-References: <20100105131911.GC5480@osiris.boeblingen.de.ibm.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:x86/urgent] x86: copy_from_user() should not return -EFAULT
-Message-ID: <tip-409d02ef6d74f5e91f5ea4c587b2ee1375f106fc@git.kernel.org>
-Git-Commit-ID: 409d02ef6d74f5e91f5ea4c587b2ee1375f106fc
-X-Mailer: tip-git-log-daemon
+	Tue, 5 Jan 2010 17:17:41 -0500
+Received: from zrtps0kp.nortel.com ([47.140.192.56]:47793 "EHLO
+	zrtps0kp.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754152Ab0AEWRk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jan 2010 17:17:40 -0500
+Message-ID: <4B43B989.4010004@nortel.com>
+Date: Tue, 05 Jan 2010 16:13:29 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-2.7.b4.fc11 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
+To: David Miller <davem@davemloft.net>
+CC: mst@redhat.com, eric.dumazet@gmail.com, nhorman@tuxdriver.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH] net: packet: option to only pass skb protocol
+References: <20100105185732.GA30346@redhat.com>	<4B43AEF6.6050701@nortel.com> <20100105.134218.258781374.davem@davemloft.net>
+In-Reply-To: <20100105.134218.258781374.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 05 Jan 2010 22:17:35.0577 (UTC) FILETIME=[E2223490:01CA8E54]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  409d02ef6d74f5e91f5ea4c587b2ee1375f106fc
-Gitweb:     http://git.kernel.org/tip/409d02ef6d74f5e91f5ea4c587b2ee1375f106fc
-Author:     Heiko Carstens <heiko.carstens@de.ibm.com>
-AuthorDate: Tue, 5 Jan 2010 14:19:11 +0100
-Committer:  H. Peter Anvin <hpa@zytor.com>
-CommitDate: Tue, 5 Jan 2010 13:45:06 -0800
+On 01/05/2010 03:42 PM, David Miller wrote:
+> From: "Chris Friesen" <cfriesen@nortel.com>
+> Date: Tue, 05 Jan 2010 15:28:22 -0600
+> 
+>> On 01/05/2010 12:57 PM, Michael S. Tsirkin wrote:
+>>> When sending packets with a packet socket it is often necessary to set
+>>> protocol in msg_name: otherwise the protocol field in the skb will not
+>>> be set correctly.
+>>
+>> What about automatically detecting the protocol from the data being sent
+>> to avoid the necessity of specifying it in the first place?
+> 
+> This limits packet socket usage to only protocols the kernel is aware
+> of, defeating part of the usefulness of the packet socket facility.
 
-x86: copy_from_user() should not return -EFAULT
+I don't follow.
 
-Callers of copy_from_user() expect it to return the number of bytes
-it could not copy. In no case it is supposed to return -EFAULT.
+If SOCK_RAW packets are being sent, the protocol number is embedded in
+the packet data and the kernel should be able to extract it regardless
+of whether the kernel actually supports it or not.  I see that Michael
+just posted a patch for this.
 
-In case of a detected buffer overflow just return the requested
-length. In addition one could think of a memset that would clear
-the size of the target object.
+If SOCK_DGRAM packets are being sent, then I agree that the app needs to
+pass it down at send time or at bind() time to support protocols of
+which the kernel is not aware.
 
-[ hpa: code is not in .32 so not needed for -stable ]
+While looking at the code I noticed that while the protocol number is
+validated at socket creation time it does not appear to be validated for
+calls to bind() for packet sockets.  Is this intentional?
 
-Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
-Acked-by: Arjan van de Ven <arjan@linux.intel.com>
-LKML-Reference: <20100105131911.GC5480@osiris.boeblingen.de.ibm.com>
-Signed-off-by: H. Peter Anvin <hpa@zytor.com>
----
- arch/x86/include/asm/uaccess_32.h |    5 ++---
- arch/x86/include/asm/uaccess_64.h |    5 ++---
- 2 files changed, 4 insertions(+), 6 deletions(-)
+As a further question, does it actually make sense to check the protocol
+number at packet socket creation?  It seems like we should be able to
+allow a packet socket to specify arbitrary protocol numbers since the
+kernel doesn't really need to do anything with them.
 
-diff --git a/arch/x86/include/asm/uaccess_32.h b/arch/x86/include/asm/uaccess_32.h
-index 0c9825e..088d09f 100644
---- a/arch/x86/include/asm/uaccess_32.h
-+++ b/arch/x86/include/asm/uaccess_32.h
-@@ -205,14 +205,13 @@ static inline unsigned long __must_check copy_from_user(void *to,
- 					  unsigned long n)
- {
- 	int sz = __compiletime_object_size(to);
--	int ret = -EFAULT;
- 
- 	if (likely(sz == -1 || sz >= n))
--		ret = _copy_from_user(to, from, n);
-+		n = _copy_from_user(to, from, n);
- 	else
- 		copy_from_user_overflow();
- 
--	return ret;
-+	return n;
- }
- 
- long __must_check strncpy_from_user(char *dst, const char __user *src,
-diff --git a/arch/x86/include/asm/uaccess_64.h b/arch/x86/include/asm/uaccess_64.h
-index 46324c6..535e421 100644
---- a/arch/x86/include/asm/uaccess_64.h
-+++ b/arch/x86/include/asm/uaccess_64.h
-@@ -30,16 +30,15 @@ static inline unsigned long __must_check copy_from_user(void *to,
- 					  unsigned long n)
- {
- 	int sz = __compiletime_object_size(to);
--	int ret = -EFAULT;
- 
- 	might_fault();
- 	if (likely(sz == -1 || sz >= n))
--		ret = _copy_from_user(to, from, n);
-+		n = _copy_from_user(to, from, n);
- #ifdef CONFIG_DEBUG_VM
- 	else
- 		WARN(1, "Buffer overflow detected!\n");
- #endif
--	return ret;
-+	return n;
- }
- 
- static __always_inline __must_check
+Chris
