@@ -1,79 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753483Ab0AEJQV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753990Ab0AEJQf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753483Ab0AEJQV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 04:16:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752755Ab0AEJQU
+	id S1753990Ab0AEJQf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 04:16:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753674Ab0AEJQd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 04:16:20 -0500
-Received: from hera.kernel.org ([140.211.167.34]:49122 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751722Ab0AEJQR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 04:16:17 -0500
-Message-ID: <4B430457.5020906@kernel.org>
-Date: Tue, 05 Jan 2010 18:20:23 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
+	Tue, 5 Jan 2010 04:16:33 -0500
+Received: from kirsty.vergenet.net ([202.4.237.240]:54638 "EHLO
+	kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753683Ab0AEJQb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jan 2010 04:16:31 -0500
+Date: Tue, 5 Jan 2010 20:16:28 +1100
+From: Simon Horman <horms@verge.net.au>
+To: Paul Mundt <lethal@linux-sh.org>
+Cc: Venkappa Mala <Venkappa.Mala@lntinfotech.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "rmk+lkml@arm.linux.org.uk" <rmk+lkml@arm.linux.org.uk>,
+       linux-kernel@vger.kernel.org,
+       Kexec Mailing List <kexec@lists.infradead.org>
+Subject: Re: Linux kernel crash dumps for ARM
+Message-ID: <20100105091625.GA19871@verge.net.au>
+References: <EB1A7C66AD0C92419BFFC785A947865A09EA8C9129@BLRINMSMBX01.bglrodc.lntinfotech.com>
+ <m17hrx9lgo.fsf@fess.ebiederm.org>
+ <20100105084850.GA27860@linux-sh.org>
 MIME-Version: 1.0
-To: Hui Zhu <teawater@gmail.com>
-CC: Arjan van de Ven <arjan@infradead.org>,
-       Russell King <linux@arm.linux.org.uk>,
-       saeed bishara <saeed.bishara@gmail.com>,
-       Catalin Marinas <catalin.marinas@arm.com>,
-       Nicolas Pitre <nico@fluxnic.net>, Ralf Baechle <ralf@linux-mips.org>,
-       David Daney <ddaney@caviumnetworks.com>,
-       Tomaso Paoletti <tpaoletti@caviumnetworks.com>,
-       Chris Dearman <chris@mips.com>,
-       Paul Gortmaker <Paul.Gortmaker@windriver.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Alexey Dobriyan <adobriyan@gmail.com>, Brian Gerst <brgerst@gmail.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-       linux-mips@linux-mips.org, Coly Li <coly.li@suse.de>
-Subject: Re: [PATCH] stack2core: show stack message and convert it to core
- 	file when kernel die
-References: <daef60381001030705r93b3fbfkc50e7b9bbc62b334@mail.gmail.com> 	<4B411F14.1040302@kernel.org> <20100103150134.5bdab023@infradead.org> 	<4B412341.2010002@kernel.org> <20100103151406.20228c3a@infradead.org> 	<daef60381001040822q188d7374te5a177c5f9877ac2@mail.gmail.com> 	<4B4273D6.2010306@kernel.org> <daef60381001050104u5d4adf11k16bec2406501fbd2@mail.gmail.com>
-In-Reply-To: <daef60381001050104u5d4adf11k16bec2406501fbd2@mail.gmail.com>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100105084850.GA27860@linux-sh.org>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-
-On 01/05/2010 06:04 PM, Hui Zhu wrote:
-> I agree with read the current stack message is better.
+On Tue, Jan 05, 2010 at 05:48:51PM +0900, Paul Mundt wrote:
+> On Mon, Jan 04, 2010 at 09:20:23PM -0800, Eric W. Biederman wrote:
+> > Venkappa Mala <Venkappa.Mala@lntinfotech.com> writes:
+> > >
+> > > 2) As per kexec supports, kexec-tool is required and this allows you to load directly
+> > >    to a new kernel from the currently running one
+> > >
+> > >     As from my side, i am not able to find arm implementation support in kexec-tools/crash sources.
+> > >
+> > >    - is kexce-tool supported for ARM or not?
+> > >
+> It would be rather counterintuitive for the kernel to support kexec and
+> the necessary userspace components not to.
 > 
-> About the extending, I have some question with it:
-> 1.  markup_oops.pl have itself idea, it try use dmesg| markup_oops.pl
-> show what happen to usr.  This is different with s2c.
-> I am not sure people like it have other function with it.  Too much
-> part of this file need to be change.  It need rewrite, just the oops
-> message parse part can be keep.
+> The MAINTAINERS file says:
+> 
+> KEXEC
+> M:      Eric Biederman <ebiederm@xmission.com>
+> W:      http://ftp.kernel.org/pub/linux/kernel/people/horms/kexec-tools/
+> L:      kexec@lists.infradead.org
+> S:      Maintained
+> F:      include/linux/kexec.h
+> F:      kernel/kexec.c
+> 
+> While the above URL redirects to gitweb, resulting in:
+> 
+> http://git.kernel.org/?p=linux/kernel/git/horms/kexec-tools.git;a=summary
+> 
+> A peripheral grep of the kexec-tools source results in:
+> 
+> $ git grep kdump | grep arm
+> kexec/arch/arm/kexec-arm.c:     return 0; /* kdump is not supported on this platform (yet) */
+> 
+> So one could infer that kexec is supported on ARM whilst kdump is not.
+> Adding crashdump support requires both some kernel and kexec-tools glue,
+> but is fairly straightforward, just look at the other ports.
 
-Yeah, I think you'll need to refactor it and share only the parsing
-frontend.  Just adding a switch (-m or whatever) which puts it into
-machine-friendly translator mode should do the trick.
+To add to this, my understanding is that kexec support varies across
+different ARM platforms - that is to say, it works on some and fails on
+others. While this seems to be slowly improving, I'm also aware of any list
+of what is supported and what isn't.
 
-> 2.  I use perl to work in a long time before, I know it good at parse
-> the text, but I am not sure it good at handle struct like:
-
-You don't need to handle the data structure at all.  Just make it
-parse the dmesg and output machine-friendly formatted output which can
-be processed by s2c.  ie. just make it do the reformatting.
-
-> Even if what happen, I will keep a c s2c with myself.  :)
-
-That will be sad.  I really want it too.  :-)
-
-Thanks.
-
--- 
-tejun
