@@ -1,114 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753980Ab0AEG5L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754117Ab0AEG6b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753980Ab0AEG5L (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 01:57:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750763Ab0AEG5K
+	id S1754117Ab0AEG6b (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 01:58:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753674Ab0AEG6a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 01:57:10 -0500
-Received: from out02.mta.xmission.com ([166.70.13.232]:58819 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750696Ab0AEG5J (ORCPT
+	Tue, 5 Jan 2010 01:58:30 -0500
+Received: from mail-yw0-f113.google.com ([209.85.211.113]:54791 "EHLO
+	mail-yw0-f113.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750910Ab0AEG6a convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 01:57:09 -0500
-To: Andi Kleen <andi@firstfloor.org>
-Cc: paulmck@linux.vnet.ibm.com, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [4/9] SYSCTL: Use RCU strings for core_pattern sysctl
-References: <20100105315.789846878@firstfloor.org>
-	<20100105021529.205EFB17C2@basil.firstfloor.org>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Mon, 04 Jan 2010 22:56:59 -0800
-In-Reply-To: <20100105021529.205EFB17C2@basil.firstfloor.org> (Andi Kleen's message of "Tue\,  5 Jan 2010 03\:15\:29 +0100 \(CET\)")
-Message-ID: <m1zl4t82f8.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Tue, 5 Jan 2010 01:58:30 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:reply-to:in-reply-to:references:date:message-id
+         :subject:from:to:cc:content-type:content-transfer-encoding;
+        b=Rc+iNsf/9GtuSYxPE9oF4YUaBInrXTBCC0FqHJQI1fj6vFaHBYWOFskNn774I2MzmF
+         nmAViSZtpuuGSS1R+1zH1uOi5kJ2nHbRxCFB7BxyC18nJDm4KcE3B5Kml8pGKZ/+XHTj
+         iTLtdi1qlc6XjZKyRygZwWvrRzXkMoWXnyN7Q=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Scanned: No (on in02.mta.xmission.com); SAEximRunCond expanded to false
+Reply-To: jarod@wilsonet.com
+In-Reply-To: <80A6ED01A151614884EE6C5D6AF0F2E90460D23460@SJEXCHCCR01.corp.ad.broadcom.com>
+References: <20100104230227.GA14314@redhat.com>
+	 <20100104231949.GA14496@kroah.com> <4B427AF5.2030805@redhat.com>
+	 <4B42A23B.4080704@gmail.com>
+	 <80A6ED01A151614884EE6C5D6AF0F2E90460D23460@SJEXCHCCR01.corp.ad.broadcom.com>
+Date: Tue, 5 Jan 2010 01:58:29 -0500
+Message-ID: <7cdf10991001042258g58f8fea3i8fe0d61048bd4504@mail.gmail.com>
+Subject: Re: [PATCH v3] staging: add Broadcom Crystal HD driver
+From: Jarod Wilson <jarodwilson@gmail.com>
+To: "Naren (Narendra) Sankar" <nsankar@broadcom.com>
+Cc: Robert Hancock <hancockrwd@gmail.com>, Jarod Wilson <jarod@redhat.com>,
+       Greg KH <greg@kroah.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Scott Davilla <davilla@4pi.com>, Manu Abraham <abraham.manu@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen <andi@firstfloor.org> writes:
+On Mon, Jan 4, 2010 at 9:36 PM, Naren (Narendra) Sankar
+<nsankar@broadcom.com> wrote:
+> The register bits come straight from the HW RTL. So this way there are no errors or typos. It would be easier for maintenance from our side since this is generated automagically. And when we add new HW, again it is a script that spews this out.
+>
+> Not absolutely necessary, but worried that cleanups may cause more problems than fix.
 
-> Also saves ~220 bytes in the data segment for default kernels.
->
-> As a bonus this removes one use of the BKL.
->
-> Signed-off-by: Andi Kleen <ak@linux.intel.com>
->
-> ---
->  fs/exec.c       |   11 +++++------
->  kernel/sysctl.c |    6 +++---
->  2 files changed, 8 insertions(+), 9 deletions(-)
->
-> Index: linux-2.6.33-rc2-ak/fs/exec.c
-> ===================================================================
-> --- linux-2.6.33-rc2-ak.orig/fs/exec.c
-> +++ linux-2.6.33-rc2-ak/fs/exec.c
-> @@ -62,7 +62,7 @@
->  #include "internal.h"
->  
->  int core_uses_pid;
-> -char core_pattern[CORENAME_MAX_SIZE] = "core";
-> +char *core_pattern = "core";
->  unsigned int core_pipe_limit;
->  int suid_dumpable = 0;
->  
-> @@ -1421,7 +1421,7 @@ EXPORT_SYMBOL(set_binfmt);
->  static int format_corename(char *corename, long signr)
->  {
->  	const struct cred *cred = current_cred();
-> -	const char *pat_ptr = core_pattern;
-> +	const char *pat_ptr = rcu_dereference(core_pattern);
+I think the automation is worth it to a point, but this header does
+seem to be a wee bit excessive. I doubt if we're even using 1% of the
+~12k defines in that one header, so we're bloating the code by a huge
+amount for relatively little benefit. Its probably worth maintaining
+the full register header *somewhere* (in with the userspace lib
+somewhere?), but maybe we just do a trimmed down version for the
+kernel module that contains only the bits we actually need.
 
-rcu_dereference should aways be between rcu_read_lock()
-and rcu_read_unlock();
+> -----Original Message-----
+> From: Robert Hancock [mailto:hancockrwd@gmail.com]
+> Sent: Monday, January 04, 2010 6:22 PM
+> To: Jarod Wilson
+> Cc: Greg KH; linux-kernel@vger.kernel.org; Scott Davilla; Naren (Narendra) Sankar; Manu Abraham
+> Subject: Re: [PATCH v3] staging: add Broadcom Crystal HD driver
+>
+> On 01/04/2010 05:34 PM, Jarod Wilson wrote:
+>> On 1/4/10 6:19 PM, Greg KH wrote:
+>>> On Mon, Jan 04, 2010 at 06:02:27PM -0500, Jarod Wilson wrote:
+>>>> This patch supersedes the earlier ones sent by Manu Abraham to add
+>>>> the Broadcom Crystal HD driver to the staging tree, per discussion
+>>>> with him about it. I've been working with Broadcom's Naren Sankar
+>>>> on this driver for a number of months, and had already talked Naren
+>>>> about submitting this on Broadcom's behalf, didn't expect anyone
+>>>> else to jump on submitting it as quickly as Manu did. ;)
+>>>
+>>> Looks good, I'll queue it up tomorrow.
+>>
+>> Nb: it looks like the thing is so massive (~935k), its not showing up on
+>> lkml (at least, not in a timely fashion), so for the interested:
+>>
+>> <http://people.redhat.com/jwilson/misc/broadcom-crystalhd-decoder-driver-staging.patch>
+>>
+>> Thanks much!
+>
+> Literally the majority of the code is #defines for what looks like
+> register bits, etc - is all that really necessary?
+>
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
 
->  	int ispipe = (*pat_ptr == '|');
->  	char *out_ptr = corename;
->  	char *const out_end = corename + CORENAME_MAX_SIZE;
-> @@ -1825,12 +1825,11 @@ void do_coredump(long signr, int exit_co
->  	clear_thread_flag(TIF_SIGPENDING);
->  
->  	/*
-> -	 * lock_kernel() because format_corename() is controlled by sysctl, which
-> -	 * uses lock_kernel()
-> +	 * Protect corename by RCU vs proc_rcu_string()
->  	 */
-> - 	lock_kernel();
-> +	rcu_read_lock();
->  	ispipe = format_corename(corename, signr);
-> -	unlock_kernel();
-> +	rcu_read_unlock();
->  
->  	if ((!ispipe) && (cprm.limit < binfmt->min_coredump))
->  		goto fail_unlock;
-> Index: linux-2.6.33-rc2-ak/kernel/sysctl.c
-> ===================================================================
-> --- linux-2.6.33-rc2-ak.orig/kernel/sysctl.c
-> +++ linux-2.6.33-rc2-ak/kernel/sysctl.c
-> @@ -75,7 +75,7 @@ extern int sysctl_oom_dump_tasks;
->  extern int max_threads;
->  extern int core_uses_pid;
->  extern int suid_dumpable;
-> -extern char core_pattern[];
-> +extern char *core_pattern;
->  extern unsigned int core_pipe_limit;
->  extern int pid_max;
->  extern int min_free_kbytes;
-> @@ -399,10 +399,10 @@ static struct ctl_table kern_table[] = {
->  	},
->  	{
->  		.procname	= "core_pattern",
-> -		.data		= core_pattern,
-> +		.data		= &core_pattern,
->  		.maxlen		= CORENAME_MAX_SIZE,
->  		.mode		= 0644,
-> -		.proc_handler	= proc_dostring,
-> +		.proc_handler	= proc_rcu_string,
->  	},
->  	{
->  		.procname	= "core_pipe_limit",
+
+
+-- 
+Jarod Wilson
+jarodwilson@gmail.com
