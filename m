@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754200Ab0AEUNY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755582Ab0AEUNl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754200Ab0AEUNY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 15:13:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755511Ab0AEUMm
+	id S1755582Ab0AEUNl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 15:13:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755501Ab0AEUMj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 15:12:42 -0500
-Received: from kroah.org ([198.145.64.141]:49977 "EHLO coco.kroah.org"
+	Tue, 5 Jan 2010 15:12:39 -0500
+Received: from kroah.org ([198.145.64.141]:49947 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755451Ab0AEUGL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1755461Ab0AEUGL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 5 Jan 2010 15:06:11 -0500
-X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jan  5 12:03:00 2010
-Message-Id: <20100105200300.393598900@mini.kroah.org>
+X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jan  5 12:03:01 2010
+Message-Id: <20100105200301.058773322@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 05 Jan 2010 12:02:07 -0800
+Date: Tue, 05 Jan 2010 12:02:12 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, akpm@linux-foundation.org,
        torvalds@linux-foundation.org, stable-review@kernel.org
-Cc: Sergei Shtylyov <sshtylyov@ru.mvista.com>,
-       Jeff Garzik <jgarzik@redhat.com>
-Subject: [11/39] pata_hpt3x2n: fix clock turnaround
+Cc: Sergei Shtylyov <sshtylyov@ru.mvista.com>, Anand Gadiyar <gadiyar@ti.com>,
+       Felipe Balbi <felipe.balbi@nokia.com>
+Subject: [16/39] USB: musb: gadget_ep0: avoid SetupEnd interrupt
 In-Reply-To: <20100105195007.GA23952@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,168 +30,56 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 
-commit 256ace9bbd4cdb6d48d5f55d55d42fa20527fad1 upstream.
+commit 17be5c5f5ef99c94374e07f71effa78e93a20eda upstream.
 
-The clock turnaround code still doesn't work for several reasons:
+Gadget stalling a zero-length SETUP request results in this error message:
 
-- 'USE_DPLL' flag in 'ap->host->private_data' is never initialized
-  or updated, so the driver can only set the chip to the DPLL clock
-  mode, not the PCI mode;
+SetupEnd came in a wrong ep0stage idle
 
-- the driver doesn't serialize access to the channels depending on
-  the current clock mode like the vendor drivers, so the clock
-  turnaround is only executed "optionally", not always as it should be;
-
-- the wrong ports are written to when hpt3x2n_set_clock() is called
-  for the secondary channel;
-
-- hpt3x2n_set_clock() can inadvertently enable the disabled channels
-  when resetting the channel state machines.
+In order to avoid it, always set the CSR0.DataEnd bit after detecting a zero-
+length request.  Add the missing '\n' to the error message itself as well...
 
 Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
+Acked-by: Anand Gadiyar <gadiyar@ti.com>
+Signed-off-by: Felipe Balbi <felipe.balbi@nokia.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/ata/pata_hpt3x2n.c |   64 ++++++++++++++++++++++++---------------------
- 1 file changed, 35 insertions(+), 29 deletions(-)
+ drivers/usb/musb/musb_gadget_ep0.c |   14 ++++++++++----
+ 1 file changed, 10 insertions(+), 4 deletions(-)
 
---- a/drivers/ata/pata_hpt3x2n.c
-+++ b/drivers/ata/pata_hpt3x2n.c
-@@ -8,7 +8,7 @@
-  * Copyright (C) 1999-2003		Andre Hedrick <andre@linux-ide.org>
-  * Portions Copyright (C) 2001	        Sun Microsystems, Inc.
-  * Portions Copyright (C) 2003		Red Hat Inc
-- * Portions Copyright (C) 2005-2007	MontaVista Software, Inc.
-+ * Portions Copyright (C) 2005-2009	MontaVista Software, Inc.
-  *
-  *
-  * TODO
-@@ -25,7 +25,7 @@
- #include <linux/libata.h>
+--- a/drivers/usb/musb/musb_gadget_ep0.c
++++ b/drivers/usb/musb/musb_gadget_ep0.c
+@@ -646,7 +646,7 @@ irqreturn_t musb_g_ep0_irq(struct musb *
+ 			musb->ep0_state = MUSB_EP0_STAGE_STATUSIN;
+ 			break;
+ 		default:
+-			ERR("SetupEnd came in a wrong ep0stage %s",
++			ERR("SetupEnd came in a wrong ep0stage %s\n",
+ 			    decode_ep0stage(musb->ep0_state));
+ 		}
+ 		csr = musb_readw(regs, MUSB_CSR0);
+@@ -769,12 +769,18 @@ setup:
+ 				handled = service_zero_data_request(
+ 						musb, &setup);
  
- #define DRV_NAME	"pata_hpt3x2n"
--#define DRV_VERSION	"0.3.7"
-+#define DRV_VERSION	"0.3.8"
- 
- enum {
- 	HPT_PCI_FAST	=	(1 << 31),
-@@ -262,7 +262,7 @@ static void hpt3x2n_bmdma_stop(struct at
- 
- static void hpt3x2n_set_clock(struct ata_port *ap, int source)
- {
--	void __iomem *bmdma = ap->ioaddr.bmdma_addr;
-+	void __iomem *bmdma = ap->ioaddr.bmdma_addr - ap->port_no * 8;
- 
- 	/* Tristate the bus */
- 	iowrite8(0x80, bmdma+0x73);
-@@ -272,9 +272,9 @@ static void hpt3x2n_set_clock(struct ata
- 	iowrite8(source, bmdma+0x7B);
- 	iowrite8(0xC0, bmdma+0x79);
- 
--	/* Reset state machines */
--	iowrite8(0x37, bmdma+0x70);
--	iowrite8(0x37, bmdma+0x74);
-+	/* Reset state machines, avoid enabling the disabled channels */
-+	iowrite8(ioread8(bmdma+0x70) | 0x32, bmdma+0x70);
-+	iowrite8(ioread8(bmdma+0x74) | 0x32, bmdma+0x74);
- 
- 	/* Complete reset */
- 	iowrite8(0x00, bmdma+0x79);
-@@ -284,21 +284,10 @@ static void hpt3x2n_set_clock(struct ata
- 	iowrite8(0x00, bmdma+0x77);
- }
- 
--/* Check if our partner interface is busy */
--
--static int hpt3x2n_pair_idle(struct ata_port *ap)
--{
--	struct ata_host *host = ap->host;
--	struct ata_port *pair = host->ports[ap->port_no ^ 1];
--
--	if (pair->hsm_task_state == HSM_ST_IDLE)
--		return 1;
--	return 0;
--}
--
- static int hpt3x2n_use_dpll(struct ata_port *ap, int writing)
- {
- 	long flags = (long)ap->host->private_data;
++				/*
++				 * We're expecting no data in any case, so
++				 * always set the DATAEND bit -- doing this
++				 * here helps avoid SetupEnd interrupt coming
++				 * in the idle stage when we're stalling...
++				 */
++				musb->ackpend |= MUSB_CSR0_P_DATAEND;
 +
- 	/* See if we should use the DPLL */
- 	if (writing)
- 		return USE_DPLL;	/* Needed for write */
-@@ -307,20 +296,35 @@ static int hpt3x2n_use_dpll(struct ata_p
- 	return 0;
- }
+ 				/* status stage might be immediate */
+-				if (handled > 0) {
+-					musb->ackpend |= MUSB_CSR0_P_DATAEND;
++				if (handled > 0)
+ 					musb->ep0_state =
+ 						MUSB_EP0_STAGE_STATUSIN;
+-				}
+ 				break;
  
-+static int hpt3x2n_qc_defer(struct ata_queued_cmd *qc)
-+{
-+	struct ata_port *ap = qc->ap;
-+	struct ata_port *alt = ap->host->ports[ap->port_no ^ 1];
-+	int rc, flags = (long)ap->host->private_data;
-+	int dpll = hpt3x2n_use_dpll(ap, qc->tf.flags & ATA_TFLAG_WRITE);
-+
-+	/* First apply the usual rules */
-+	rc = ata_std_qc_defer(qc);
-+	if (rc != 0)
-+		return rc;
-+
-+	if ((flags & USE_DPLL) != dpll && alt->qc_active)
-+		return ATA_DEFER_PORT;
-+	return 0;
-+}
-+
- static unsigned int hpt3x2n_qc_issue(struct ata_queued_cmd *qc)
- {
--	struct ata_taskfile *tf = &qc->tf;
- 	struct ata_port *ap = qc->ap;
- 	int flags = (long)ap->host->private_data;
-+	int dpll = hpt3x2n_use_dpll(ap, qc->tf.flags & ATA_TFLAG_WRITE);
- 
--	if (hpt3x2n_pair_idle(ap)) {
--		int dpll = hpt3x2n_use_dpll(ap, (tf->flags & ATA_TFLAG_WRITE));
--		if ((flags & USE_DPLL) != dpll) {
--			if (dpll == 1)
--				hpt3x2n_set_clock(ap, 0x21);
--			else
--				hpt3x2n_set_clock(ap, 0x23);
--		}
-+	if ((flags & USE_DPLL) != dpll) {
-+		flags &= ~USE_DPLL;
-+		flags |= dpll;
-+		ap->host->private_data = (void *)(long)flags;
-+
-+		hpt3x2n_set_clock(ap, dpll ? 0x21 : 0x23);
- 	}
- 	return ata_sff_qc_issue(qc);
- }
-@@ -337,6 +341,8 @@ static struct ata_port_operations hpt3x2
- 	.inherits	= &ata_bmdma_port_ops,
- 
- 	.bmdma_stop	= hpt3x2n_bmdma_stop,
-+
-+	.qc_defer	= hpt3x2n_qc_defer,
- 	.qc_issue	= hpt3x2n_qc_issue,
- 
- 	.cable_detect	= hpt3x2n_cable_detect,
-@@ -454,7 +460,7 @@ static int hpt3x2n_init_one(struct pci_d
- 	unsigned int f_low, f_high;
- 	int adjust;
- 	unsigned long iobase = pci_resource_start(dev, 4);
--	void *hpriv = NULL;
-+	void *hpriv = (void *)USE_DPLL;
- 	int rc;
- 
- 	rc = pcim_enable_device(dev);
-@@ -542,7 +548,7 @@ static int hpt3x2n_init_one(struct pci_d
- 	/* Set our private data up. We only need a few flags so we use
- 	   it directly */
- 	if (pci_mhz > 60) {
--		hpriv = (void *)PCI66;
-+		hpriv = (void *)(PCI66 | USE_DPLL);
- 		/*
- 		 * On  HPT371N, if ATA clock is 66 MHz we must set bit 2 in
- 		 * the MISC. register to stretch the UltraDMA Tss timing.
+ 			/* sequence #1 (IN to host), includes GET_STATUS
 
 
