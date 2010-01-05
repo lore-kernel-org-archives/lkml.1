@@ -1,28 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755432Ab0AEWmo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755157Ab0AEWm0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755432Ab0AEWmo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 17:42:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755396Ab0AEWmk
+	id S1755157Ab0AEWm0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 17:42:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755066Ab0AEWmX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 17:42:40 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:22335 "EHLO mx1.redhat.com"
+	Tue, 5 Jan 2010 17:42:23 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:33585 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755349Ab0AEWmb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 17:42:31 -0500
+	id S1754601Ab0AEWmW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jan 2010 17:42:22 -0500
 From: Masami Hiramatsu <mhiramat@redhat.com>
-Subject: [PATCH -tip 6/8] perf tools: Support tracepoint glob matching
+Subject: [PATCH -tip 1/8] tracing/kprobe: Update example output in
+	documentation
 To: Ingo Molnar <mingo@elte.hu>, lkml <linux-kernel@vger.kernel.org>
 Cc: Frederic Weisbecker <fweisbec@gmail.com>,
        Arnaldo Carvalho de Melo <acme@redhat.com>,
        systemtap <systemtap@sources.redhat.com>,
        DLE <dle-develop@lists.sourceforge.net>,
        Masami Hiramatsu <mhiramat@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Paul Mackerras <paulus@samba.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Peter Zijlstra <peterz@infradead.org>, Mike Galbraith <efault@gmx.de>
-Date: Tue, 05 Jan 2010 17:47:17 -0500
-Message-ID: <20100105224717.19431.68972.stgit@dhcp-100-2-132.bos.redhat.com>
+       Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Date: Tue, 05 Jan 2010 17:46:41 -0500
+Message-ID: <20100105224641.19431.34967.stgit@dhcp-100-2-132.bos.redhat.com>
 In-Reply-To: <20100105224634.19431.3259.stgit@dhcp-100-2-132.bos.redhat.com>
 References: <20100105224634.19431.3259.stgit@dhcp-100-2-132.bos.redhat.com>
 User-Agent: StGIT/0.14.3
@@ -33,61 +32,63 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Support glob wildcard when selecting tracepoint events by -e option.
-Without this patch, perf-tools supports 'GROUP:*:record' syntax for
-selecting all tracepoints under GROUP group. With this patch, user
-can choose tracepoints more flexible by using partial wildcard,
-e.g. 'block:*bio*:record'.
+Update example output in documentation accroding to current
+implementation.
 
 Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
 Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Steven Rostedt <rostedt@goodmis.org>
 Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Mike Galbraith <efault@gmx.de>
 ---
 
- tools/perf/util/parse-events.c |   11 ++++++++---
- 1 files changed, 8 insertions(+), 3 deletions(-)
+ Documentation/trace/kprobetrace.txt |   33 +++++++++++++++++----------------
+ 1 files changed, 17 insertions(+), 16 deletions(-)
 
-diff --git a/tools/perf/util/parse-events.c b/tools/perf/util/parse-events.c
-index 609d5a9..05d0c5c 100644
---- a/tools/perf/util/parse-events.c
-+++ b/tools/perf/util/parse-events.c
-@@ -450,7 +450,8 @@ parse_single_tracepoint_event(char *sys_name,
- /* sys + ':' + event + ':' + flags*/
- #define MAX_EVOPT_LEN	(MAX_EVENT_LENGTH * 2 + 2 + 128)
- static enum event_result
--parse_subsystem_tracepoint_event(char *sys_name, char *flags)
-+parse_multiple_tracepoint_event(char *sys_name, const char *evt_exp,
-+				char *flags)
- {
- 	char evt_path[MAXPATHLEN];
- 	struct dirent *evt_ent;
-@@ -474,6 +475,9 @@ parse_subsystem_tracepoint_event(char *sys_name, char *flags)
- 		    || !strcmp(evt_ent->d_name, "filter"))
- 			continue;
+diff --git a/Documentation/trace/kprobetrace.txt b/Documentation/trace/kprobetrace.txt
+index 47aabee..c3eff6f 100644
+--- a/Documentation/trace/kprobetrace.txt
++++ b/Documentation/trace/kprobetrace.txt
+@@ -97,23 +97,24 @@ recording return value as "myretprobe" event.
  
-+		if (!strglobmatch(evt_ent->d_name, evt_exp))
-+			continue;
+   cat /sys/kernel/debug/tracing/events/kprobes/myprobe/format
+ name: myprobe
+-ID: 75
++ID: 780
+ format:
+-	field:unsigned short common_type;	offset:0;	size:2;
+-	field:unsigned char common_flags;	offset:2;	size:1;
+-	field:unsigned char common_preempt_count;	offset:3;	size:1;
+-	field:int common_pid;	offset:4;	size:4;
+-	field:int common_tgid;	offset:8;	size:4;
+-
+-	field: unsigned long ip;	offset:16;tsize:8;
+-	field: int nargs;	offset:24;tsize:4;
+-	field: unsigned long dfd;	offset:32;tsize:8;
+-	field: unsigned long filename;	offset:40;tsize:8;
+-	field: unsigned long flags;	offset:48;tsize:8;
+-	field: unsigned long mode;	offset:56;tsize:8;
+-
+-print fmt: "(%lx) dfd=%lx filename=%lx flags=%lx mode=%lx", REC->ip, REC->dfd, REC->filename, REC->flags, REC->mode
+-
++        field:unsigned short common_type;       offset:0;       size:2; signed:0;
++        field:unsigned char common_flags;       offset:2;       size:1; signed:0;
++        field:unsigned char common_preempt_count;       offset:3; size:1;signed:0;
++        field:int common_pid;   offset:4;       size:4; signed:1;
++        field:int common_lock_depth;    offset:8;       size:4; signed:1;
 +
- 		len = snprintf(event_opt, MAX_EVOPT_LEN, "%s:%s%s%s", sys_name,
- 			       evt_ent->d_name, flags ? ":" : "",
- 			       flags ?: "");
-@@ -522,9 +526,10 @@ static enum event_result parse_tracepoint_event(const char **strp,
- 	if (evt_length >= MAX_EVENT_LENGTH)
- 		return EVT_FAILED;
++        field:unsigned long __probe_ip; offset:12;      size:4; signed:0;
++        field:int __probe_nargs;        offset:16;      size:4; signed:1;
++        field:unsigned long dfd;        offset:20;      size:4; signed:0;
++        field:unsigned long filename;   offset:24;      size:4; signed:0;
++        field:unsigned long flags;      offset:28;      size:4; signed:0;
++        field:unsigned long mode;       offset:32;      size:4; signed:0;
++
++
++print fmt: "(%lx) dfd=%lx filename=%lx flags=%lx mode=%lx", REC->__probe_ip,
++REC->dfd, REC->filename, REC->flags, REC->mode
  
--	if (!strcmp(evt_name, "*")) {
-+	if (strpbrk(evt_name, "*?")) {
- 		*strp = evt_name + evt_length;
--		return parse_subsystem_tracepoint_event(sys_name, flags);
-+		return parse_multiple_tracepoint_event(sys_name, evt_name,
-+						       flags);
- 	} else
- 		return parse_single_tracepoint_event(sys_name, evt_name,
- 						     evt_length, flags,
+  You can see that the event has 4 arguments as in the expressions you specified.
+ 
 
 
 -- 
