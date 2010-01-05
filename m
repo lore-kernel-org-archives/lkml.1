@@ -1,78 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754433Ab0AEWa4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754568Ab0AEWfa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754433Ab0AEWa4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 17:30:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750756Ab0AEWaz
+	id S1754568Ab0AEWfa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 17:35:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754316Ab0AEWfa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 17:30:55 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:35655 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752631Ab0AEWay (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 17:30:54 -0500
-Date: Wed, 6 Jan 2010 00:27:48 +0200
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Chris Friesen <cfriesen@nortel.com>
-Cc: David Miller <davem@davemloft.net>, eric.dumazet@gmail.com,
-       nhorman@tuxdriver.com, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH] net: packet: option to only pass skb protocol
-Message-ID: <20100105222748.GG30921@redhat.com>
-References: <20100105185732.GA30346@redhat.com> <4B43AEF6.6050701@nortel.com> <20100105.134218.258781374.davem@davemloft.net> <4B43B989.4010004@nortel.com>
+	Tue, 5 Jan 2010 17:35:30 -0500
+Received: from nlpi129.sbcis.sbc.com ([207.115.36.143]:46722 "EHLO
+	nlpi129.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754304Ab0AEWf3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jan 2010 17:35:29 -0500
+Date: Tue, 5 Jan 2010 16:34:45 -0600 (CST)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@router.home
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+cc: Tejun Heo <tj@kernel.org>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC local_t removal V1 0/4] Remove local_t
+In-Reply-To: <20100105222351.GA29675@Krystal>
+Message-ID: <alpine.DEB.2.00.1001051629550.9108@router.home>
+References: <20100105220417.400092933@quilx.com> <20100105222351.GA29675@Krystal>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B43B989.4010004@nortel.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 05, 2010 at 04:13:29PM -0600, Chris Friesen wrote:
-> On 01/05/2010 03:42 PM, David Miller wrote:
-> > From: "Chris Friesen" <cfriesen@nortel.com>
-> > Date: Tue, 05 Jan 2010 15:28:22 -0600
-> > 
-> >> On 01/05/2010 12:57 PM, Michael S. Tsirkin wrote:
-> >>> When sending packets with a packet socket it is often necessary to set
-> >>> protocol in msg_name: otherwise the protocol field in the skb will not
-> >>> be set correctly.
-> >>
-> >> What about automatically detecting the protocol from the data being sent
-> >> to avoid the necessity of specifying it in the first place?
-> > 
-> > This limits packet socket usage to only protocols the kernel is aware
-> > of, defeating part of the usefulness of the packet socket facility.
-> 
-> I don't follow.
-> 
-> If SOCK_RAW packets are being sent, the protocol number is embedded in
-> the packet data and the kernel should be able to extract it regardless
-> of whether the kernel actually supports it or not.  I see that Michael
-> just posted a patch for this.
-> 
-> If SOCK_DGRAM packets are being sent, then I agree that the app needs to
-> pass it down at send time or at bind() time to support protocols of
-> which the kernel is not aware.
-> 
-> While looking at the code I noticed that while the protocol number is
-> validated at socket creation time it does not appear to be validated for
-> calls to bind() for packet sockets.  Is this intentional?
-> 
-> As a further question, does it actually make sense to check the protocol
-> number at packet socket creation?  It seems like we should be able to
-> allow a packet socket to specify arbitrary protocol numbers since the
-> kernel doesn't really need to do anything with them.
-> 
-> Chris
+On Tue, 5 Jan 2010, Mathieu Desnoyers wrote:
 
-I wouldn't say kernel doesn't really need to do anything with them.
+> Yes, removing the local_t type could make sense. However, local_t maps
+> to a volatile long, not just "long". Secondly, I am concerned about the
+> fact that the patch you propose:
 
-In fact I think currently protocol number affects whether other packet
-sockets see the packet in question.  There may be other cases, e.g. if
-the device in question is a bridge, the packet gets reinjected in host
-stack, so using a silly value for protocol field might interfere with
-GRO etc.
+Volatile is discouraged as far as I can tell.
+
+> - does not create the primitives I use in lttng
+> - only deals with x8
+
+As I said its an RFC. This provides all the functionality you need
+through. The rest is sugar coating.
+
+> In lttng (which is out of tree, but widely used), I need the equivalent
+> of:
+>
+> local_read
+> local_set
+> local_add
+> local_cmpxchg
+> local_add_return
+> local_inc
+
+Please read the patch! This is all provided. add_local_return in the RFC
+provides what is needed to replace local_add, local_inc. We can add these
+explicitly.
+
+local_cmpxchg replacement is already in there in the form of
+cmpxchg_local().
+
+> The approach of just doing the x86 implementation and leaving all the
+> other architectures "for later" with a slow/non atomic generic fallback
+> is, imho, a no-go, given that some people (myself, actually) already
+> took the time to go through all the kernel architectures to create the
+> optimized local.h headers. Basically, you are destroying all that work,
+> asking for it to be done all over again.
+
+AS I said this is an RFC. I can easily generate all these things from the
+existing local.hs for the architectures.
+
+> I therefore argue that we should keep local.h as-is as long as the
+> replacement lacks the wide architecture support and primitive variety
+> found in local.h.
+
+Cool down and please review the patch.
 
 
--- 
-MST
