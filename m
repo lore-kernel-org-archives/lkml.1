@@ -1,47 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754172Ab0AEIab@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751119Ab0AEIf4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754172Ab0AEIab (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 03:30:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754009Ab0AEIab
+	id S1751119Ab0AEIf4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 03:35:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750806Ab0AEIfz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 03:30:31 -0500
-Received: from smtprelay01.ispgateway.de ([80.67.31.24]:52582 "EHLO
-	smtprelay01.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751612Ab0AEIaa (ORCPT
+	Tue, 5 Jan 2010 03:35:55 -0500
+Received: from casper.infradead.org ([85.118.1.10]:35746 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750797Ab0AEIfz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 03:30:30 -0500
-Message-ID: <4B42F8AF.3020304@bwalle.de>
-Date: Tue, 05 Jan 2010 09:30:39 +0100
-From: Bernhard Walle <bernhard@bwalle.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; de; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
-MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Venkappa Mala <Venkappa.Mala@lntinfotech.com>,
-       "rmk+lkml@arm.linux.org.uk" <rmk+lkml@arm.linux.org.uk>,
-       Kexec Mailing List <kexec@lists.infradead.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Linux kernel crash dumps for ARM
-References: <EB1A7C66AD0C92419BFFC785A947865A09EA8C9129@BLRINMSMBX01.bglrodc.lntinfotech.com> <m17hrx9lgo.fsf@fess.ebiederm.org>
-In-Reply-To: <m17hrx9lgo.fsf@fess.ebiederm.org>
-X-Enigmail-Version: 1.0
-OpenPGP: id=DDAF6454
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Df-Sender: 1227806
+	Tue, 5 Jan 2010 03:35:55 -0500
+Subject: Re: [RFC][PATCH 6/8] mm: handle_speculative_fault()
+From: Peter Zijlstra <peterz@infradead.org>
+To: Minchan Kim <minchan.kim@gmail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>, cl@linux-foundation.org,
+       "hugh.dickins" <hugh.dickins@tiscali.co.uk>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <28c262361001042209k7241dd38l3d51d230e7b68a5@mail.gmail.com>
+References: <20100104182429.833180340@chello.nl>
+	 <20100104182813.753545361@chello.nl>
+	 <20100105092559.1de8b613.kamezawa.hiroyu@jp.fujitsu.com>
+	 <28c262361001042029w4b95f226lf54a3ed6a4291a3b@mail.gmail.com>
+	 <alpine.LFD.2.00.1001042038110.3630@localhost.localdomain>
+	 <28c262361001042209k7241dd38l3d51d230e7b68a5@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 05 Jan 2010 09:35:21 +0100
+Message-ID: <1262680521.2400.25.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am 05.01.2010 06:20, schrieb Eric W. Biederman:
->>
->> 3) In lkcd, netdump,diskdump, mini kernel dump and kdump/kexec tools,
->>
->>    - which is the best choice for ARM or are there any best crash
-dump tool for ARM?
+On Tue, 2010-01-05 at 15:09 +0900, Minchan Kim wrote:
 
-LKCD is more or less dead (in favour of kdump) on any plattform. It
-doesn't work with recent kernels.
+> Couldn't we synchronize rcu in that cases(munmap, exit and so on)?
+> It can delay munap and exit but it would be better than handling them by more
+> complicated things, I think. And both cases aren't often cases so we
+> can achieve advantage than disadvantage?
+
+Sadly there are programs that mmap()/munmap() at a staggering rate
+(clamav comes to mind), so munmap() performance is important too.
 
 
-Regards,
-Bernhard
+
