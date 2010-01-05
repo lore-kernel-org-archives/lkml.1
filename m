@@ -1,80 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753754Ab0AEEtO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753702Ab0AEEv6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753754Ab0AEEtO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 23:49:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753280Ab0AEEtM
+	id S1753702Ab0AEEv6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 23:51:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752923Ab0AEEv5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 23:49:12 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:55067 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753095Ab0AEEtL (ORCPT
+	Mon, 4 Jan 2010 23:51:57 -0500
+Received: from mail192.messagelabs.com ([216.82.241.243]:12915 "EHLO
+	mail192.messagelabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751612Ab0AEEv4 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 23:49:11 -0500
-Date: Mon, 4 Jan 2010 20:48:23 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Minchan Kim <minchan.kim@gmail.com>
-cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>, cl@linux-foundation.org,
-       "hugh.dickins" <hugh.dickins@tiscali.co.uk>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [RFC][PATCH 6/8] mm: handle_speculative_fault()
-In-Reply-To: <28c262361001042029w4b95f226lf54a3ed6a4291a3b@mail.gmail.com>
-Message-ID: <alpine.LFD.2.00.1001042038110.3630@localhost.localdomain>
-References: <20100104182429.833180340@chello.nl>  <20100104182813.753545361@chello.nl>  <20100105092559.1de8b613.kamezawa.hiroyu@jp.fujitsu.com> <28c262361001042029w4b95f226lf54a3ed6a4291a3b@mail.gmail.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Mon, 4 Jan 2010 23:51:56 -0500
+X-VirusChecked: Checked
+X-Env-Sender: Venkappa.Mala@lntinfotech.com
+X-Msg-Ref: server-9.tower-192.messagelabs.com!1262667111!24435156!1
+X-StarScan-Version: 6.2.4; banners=lntinfotech.com,-,-
+X-Originating-IP: [203.101.96.8]
+From: Venkappa Mala <Venkappa.Mala@lntinfotech.com>
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Date: Tue, 5 Jan 2010 10:21:11 +0530
+Subject: Linux kernel crash dumps for ARM
+Thread-Topic: Linux kernel crash dumps for ARM
+Thread-Index: AQHKjcJ4PAPamaQdJEySpaX6qzPElZGGaeIN
+Message-ID: <EB1A7C66AD0C92419BFFC785A947865A09EA8C912A@BLRINMSMBX01.bglrodc.lntinfotech.com>
+References: <EB1A7C66AD0C92419BFFC785A947865A09EA8C9129@BLRINMSMBX01.bglrodc.lntinfotech.com>
+In-Reply-To: <EB1A7C66AD0C92419BFFC785A947865A09EA8C9129@BLRINMSMBX01.bglrodc.lntinfotech.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
+
+With respect to "Linux kernel crash dumps for ARM", i have some doubts which are described as below.
+
+If the machine has crashed so badly that you cannot enter commands or
+the disk is not available then you have three options :-
+
+(1) Hand copy the text from the screen
+
+(2) capture crash logs using Minicom.
+
+(3) save the crash data to a floppy disk or video rom or a swap partition or reserved memory.
+
+In the above three options, 1 & 2 are known and works as well.
+
+Regarding 3 option,
+----------------------------
+i would like to support for ARM11.
+
+As far as i know, the supported linux kernel crash dumps are
+"lkcd, netdump,diskdump, mini kernel dump and kdump/kexec".
+These are supported for x86 and PowerPC architectures with some constrains.
+
+i have some queries with respect to ARM supports, these are
+
+1.) kexec is supported in latest kernels
+        example: 2.6.29 kernel
+        File: arch/arm/kernel/machine_kexec.c
+
+    - is this working well or is there any constraints?
+
+2) As per kexec supports, kexec-tool is required and this allows you to load directly
+   to a new kernel from the currently running one
+
+    As from my side, i am not able to find arm implementation support in kexec-tools/crash sources.
+
+   - is kexce-tool supported for ARM or not?
+
+3) In lkcd, netdump,diskdump, mini kernel dump and kdump/kexec tools,
+
+   - which is the best choice for ARM or are there any best crash dump tool for ARM?
+
+Please clarify my queries.
+
+Best Regards,
+Venkappa
 
 
-On Tue, 5 Jan 2010, Minchan Kim wrote:
-> 
-> Isn't it protected by get_file and iget?
+This Email may contain confidential or privileged information for the intended recipient (s) If you are not the intended recipient, please do not use or disseminate the information, notify the sender and delete it from your system.
 
-When the vma is mapped, yes.
-
-> Am I miss something?
-
-remove_vma() will have done a
-
-	fput(vma->vm_file);
-
-and other house-keeping (removing the executable info, doing 
-vm_ops->close() etc). 
-
-And that is _not_ done delayed by RCU, and as outlined in my previous 
-email I think that if the code really _does_ delay it, then munmap() (and 
-exit) need to wait for the RCU callbacks to have been done, because 
-otherwise the file may end up being busy "asynchronously" in ways that 
-break existing semantics.
-
-Just as an example: imagine a script that does "fork()+execve()" on a 
-temporary file, and then after waiting for it all to finish with wait4() 
-does some re-write of the file. It currently works. But what if the 
-open-for-writing gets ETXTBUSY because the file is still marked as being 
-VM_DENYWRITE, and RCU hasn't done all the callbacks?
-
-Or if you do the i_writecount handling synchronously (which is likely fine 
-- it really is just for ETXTBUSY handling, and I don't think speculative 
-page faults matter), what about a shutdown sequence (or whatever) that 
-wants to unmount the filesystem, but the file is still open - as it has to 
-be - because the actual close is delayed by RCU.
-
-So the patch-series as-is is fundamentally buggy - and trying to fix it 
-seems painful.
-
-I'm also not entirely clear on how the race with page table tear-down vs 
-page-fault got handled, but I didn't read the whole patch-series very 
-carefully. I skimmed through it and got rather nervous about it all. It 
-doesn't seem too large, but it _does_ seem rather cavalier about all the 
-object lifetimes.
-
-		Linus
+______________________________________________________________________
