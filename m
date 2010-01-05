@@ -1,96 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932144Ab0AEV0m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755479Ab0AEV1K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932144Ab0AEV0m (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 16:26:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754979Ab0AEV0l
+	id S1755479Ab0AEV1K (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 16:27:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755325Ab0AEV1I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 16:26:41 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:34153 "EHLO ogre.sisk.pl"
+	Tue, 5 Jan 2010 16:27:08 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:34769 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754505Ab0AEV0k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 16:26:40 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: [PATCH 2/12] PCI / PM: Propagate wake-up enable for PCIe devices too
-Date: Tue, 5 Jan 2010 22:27:18 +0100
-User-Agent: KMail/1.12.3 (Linux/2.6.33-rc2-tst; KDE/4.3.3; x86_64; ; )
-Cc: Matthew Garrett <mjg@redhat.com>, Len Brown <lenb@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Linux PCI <linux-pci@vger.kernel.org>,
-       Oliver Neukum <oliver@neukum.org>, Bjorn Helgaas <bjorn.helgaas@hp.com>,
-       Shaohua Li <shaohua.li@intel.com>,
-       Francois Romieu <romieu@fr.zoreil.com>
-References: <200912272057.10443.rjw@sisk.pl> <200912272100.33117.rjw@sisk.pl> <20100104154038.76a9eedf@jbarnes-piketon>
-In-Reply-To: <20100104154038.76a9eedf@jbarnes-piketon>
+	id S1755148Ab0AEV1H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jan 2010 16:27:07 -0500
+Date: Tue, 5 Jan 2010 13:21:22 -0800
+From: Greg KH <gregkh@suse.de>
+To: Gertjan van Wingerde <gwingerde@gmail.com>
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org, stable-review@kernel.org,
+       Ivo van Doorn <IvDoorn@gmail.com>,
+       "John W. Linville" <linville@tuxdriver.com>
+Subject: Re: [08/10] rt2x00: Disable powersaving for rt61pci and rt2800pci.
+Message-ID: <20100105212122.GA32235@suse.de>
+References: <20100105194915.239350321@mini.kroah.org>
+ <4B43A7EF.8040702@gmail.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201001052227.18130.rjw@sisk.pl>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B43A7EF.8040702@gmail.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 05 January 2010, Jesse Barnes wrote:
-> On Sun, 27 Dec 2009 21:00:33 +0100
-> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> 
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
+On Tue, Jan 05, 2010 at 09:58:23PM +0100, Gertjan van Wingerde wrote:
+> On 01/05/10 20:47, Greg KH wrote:
+> > 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 > > 
-> > Having read the PM part of the PCIe 2.0 specification more carefully
-> > I think that it was a mistake to restrict the wake-up enable
-> > propagation to non-PCIe devices, because if we do not request
-> > control of the root ports' PME registers via OSC, PCIe PME is
-> > supposed to be handled by the platform, just like the non-PCIe PME.
-> > Even if we do that, the wake-up propagation is done to allow the
-> > devices to wake up the system from sleep states which involves the
-> > platform anyway, so it won't hurt.
+> > ------------------
+> > From: Gertjan van Wingerde <gwingerde@gmail.com>
 > > 
-> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> > commit 93b6bd26b74efe46b4579592560f9f1cb7b61994 upstream.
+> > 
+> > We've had many reports of rt61pci failures with powersaving enabled.
+> > Therefore, as a stop-gap measure, disable powersaving of the rt61pci
+> > until we have found a proper solution.
+> > Also disable powersaving on rt2800pci as it most probably will show
+> > the same problem.
+> > 
+> > Signed-off-by: Gertjan van Wingerde <gwingerde@gmail.com>
+> > Acked-by: Ivo van Doorn <IvDoorn@gmail.com>
+> > Signed-off-by: John W. Linville <linville@tuxdriver.com>
+> > Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> > 
 > > ---
-> >  drivers/pci/pci-acpi.c |   10 ++--------
-> >  1 file changed, 2 insertions(+), 8 deletions(-)
+> >  drivers/net/wireless/rt2x00/rt61pci.c |    5 +++++
+> >  1 file changed, 5 insertions(+)
 > > 
-> > Index: linux-2.6/drivers/pci/pci-acpi.c
-> > ===================================================================
-> > --- linux-2.6.orig/drivers/pci/pci-acpi.c
-> > +++ linux-2.6/drivers/pci/pci-acpi.c
-> > @@ -112,11 +112,7 @@ static bool acpi_pci_can_wakeup(struct p
-> >  static void acpi_pci_propagate_wakeup_enable(struct pci_bus *bus,
-> > bool enable) {
-> >  	while (bus->parent) {
-> > -		struct pci_dev *bridge = bus->self;
-> > -		int ret;
-> > -
-> > -		ret = acpi_pm_device_sleep_wake(&bridge->dev,
-> > enable);
-> > -		if (!ret || pci_is_pcie(bridge))
-> > +		if (!acpi_pm_device_sleep_wake(&bus->self->dev,
-> > enable)) return;
-> >  		bus = bus->parent;
-> >  	}
-> > @@ -131,9 +127,7 @@ static int acpi_pci_sleep_wake(struct pc
-> >  	if (acpi_pci_can_wakeup(dev))
-> >  		return acpi_pm_device_sleep_wake(&dev->dev, enable);
+> > --- a/drivers/net/wireless/rt2x00/rt61pci.c
+> > +++ b/drivers/net/wireless/rt2x00/rt61pci.c
+> > @@ -2281,6 +2281,11 @@ static void rt61pci_probe_hw_mode(struct
+> >  	unsigned int i;
 > >  
-> > -	if (!pci_is_pcie(dev))
-> > -		acpi_pci_propagate_wakeup_enable(dev->bus, enable);
-> > -
-> > +	acpi_pci_propagate_wakeup_enable(dev->bus, enable);
-> >  	return 0;
-> >  }
+> >  	/*
+> > +	 * Disable powersaving as default.
+> > +	 */
+> > +	rt2x00dev->hw->wiphy->flags &= ~WIPHY_FLAG_PS_ON_BY_DEFAULT;
+> > +
+> > +	/*
+> >  	 * Initialize all hw fields.
+> >  	 */
+> >  	rt2x00dev->hw->flags =
+> > 
+> > 
+> > 
 > 
-> Seems ok to try it out, but as usual with this sort of thing, the real
-> question is, "What does Windows do?", since wakeup enable ACPI support
-> for PCIe devices is likely broken unless Windows uses it.
+> This one isn't applicable for .27. Powersaving wasn't implemented on .27 yet, so
+> this patch is unnecessary, and won't compile on .27.
 
-Well, that's in the Linus' tree already, so I guess we're going to learn. ;-)
+Thanks, I've now dropped it.
 
-Seriously, I think that Windows actually uses ACPI wake-up support for PCIe
-devices.  On my Toshiba Portege R500 the BIOS doesn't even allow us to use
-the native PCIe PME mechanism directly, so the patch is correct IMO.
-
-Rafael
+greg k-h
