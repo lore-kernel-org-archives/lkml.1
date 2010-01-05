@@ -1,119 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755026Ab0AEXRj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754897Ab0AEXV7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755026Ab0AEXRj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 18:17:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754400Ab0AEXRi
+	id S1754897Ab0AEXV7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 18:21:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754648Ab0AEXV6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 18:17:38 -0500
-Received: from mta3.srv.hcvlny.cv.net ([167.206.4.198]:57485 "EHLO
-	mta3.srv.hcvlny.cv.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751642Ab0AEXRh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 18:17:37 -0500
-Date: Tue, 05 Jan 2010 18:16:58 -0500
-From: Michael Breuer <mbreuer@majjas.com>
-Subject: Re: [PATCH] af_packet: Don't use skb after dev_queue_xmit()
-In-reply-to: <20100105230746.GA6612@del.dom.local>
-To: Jarek Poplawski <jarkao2@gmail.com>
-Cc: David Miller <davem@davemloft.net>, shemminger@linux-foundation.org,
-       akpm@linux-foundation.org, flyboy@gmail.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Message-id: <4B43C86A.1090004@majjas.com>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7BIT
-References: <20100105230746.GA6612@del.dom.local>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.5)
- Gecko/20091204 Lightning/1.0b2pre Thunderbird/3.0
+	Tue, 5 Jan 2010 18:21:58 -0500
+Received: from kroah.org ([198.145.64.141]:43550 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754413Ab0AEXV5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jan 2010 18:21:57 -0500
+Date: Tue, 5 Jan 2010 15:20:18 -0800
+From: Greg KH <greg@kroah.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [4/12] SYSFS: Add sysfs_add/remove_files utility
+ functions
+Message-ID: <20100105232018.GA815@kroah.com>
+References: <201001051247.104464547@firstfloor.org>
+ <20100105114801.7F8B5B17C2@basil.firstfloor.org>
+ <20100105145309.GD11732@kroah.com>
+ <20100105162106.GE1778@basil.fritz.box>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100105162106.GE1778@basil.fritz.box>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 1/5/2010 6:07 PM, Jarek Poplawski wrote:
-> David Miller wrote, On 12/27/2009 05:11 AM:
->
->    
->> From: David Miller<davem@davemloft.net>
->> Date: Sat, 26 Dec 2009 19:44:18 -0800 (PST)
->>
->>      
->>> From: Stephen Hemminger<shemminger@linux-foundation.org>
->>> Date: Sat, 26 Dec 2009 14:05:44 -0800
->>>
->>>        
->>>> Other drivers may have same problem, I really think this ought
->>>> to be done at higher level.
->>>>          
->>> I tend to agree with you, and I thought we had handled all
->>> cases.  Let's simply make AF_PACKET linearize the link
->>> level header before sending things out to the transmit path.
->>>
->>> I can work on this if you want.
->>>        
->> Actually Stephen, I took a look and I can't see how AF_PACKET
->> can create this situation.
->>
->> It always copies into the linear area of the SKB it allocates
->> for sendmsg() processing.  Whether the data comes from sendmsg
->> data or the mmap() ring buffer.
->>      
-> Actually, I think there is a bug in this place, but of course this
-> might be unconnected. Anyway, Michael, could you try this patch?
-> BTW, did you try with CONFIG_PACKET_MMAP disabled?
->    
-I did not try with CONFIG_PACKET_MMAP disabled.
+On Tue, Jan 05, 2010 at 05:21:06PM +0100, Andi Kleen wrote:
+> On Tue, Jan 05, 2010 at 06:53:09AM -0800, Greg KH wrote:
+> > On Tue, Jan 05, 2010 at 12:48:01PM +0100, Andi Kleen wrote:
+> > > 
+> > > Adding/Removing a whole array of attributes is very common. Add a standard
+> > > utility function to do this with a simple function call, instead of
+> > > requiring drivers to open code this.
+> > 
+> > Hm, that is what the sysfs_create_group(), sysfs_update_group(), and
+> > sysfs_remove_group() functions are for.  We don't need to add any new
+> > functions that do the same thing, right?
+> 
+> Hmm, originally I didn't use them because they created a sub-directory,
+> but I see now that's optional.
+> 
+> Still the input format is completely different and doesn't fit into
+> the ->attrs list that are used elsewhere (e.g. for the sysdev_classes)
+> So using groups would need a lot of restructuring.
 
-Please let me know which permutations of the following would be most 
-valuable to test:
-Davids patch in/out
-The attached patch in/out
-CONFIG_PACKET_MMAP on/off
+Argh, you are right.
 
-I'm thinking your patch in, david's out, with and without 
-CONFIG_PACKET_MMAP.
-> Thanks,
-> Jarek P.
-> ----------------->
->
-> Changing an skb after dev_queue_xmit() is illegal. And since it's
-> inconsistent to treat specially net_xmit_errno() non-zero return,
-> while ignoring other dev_queue_xmit() errors, there is no reason
-> to break the loop in tpacket_snd() in this case.
->
-> With debugging by: Stephen Hemminger<shemminger@linux-foundation.org>
->
-> Reported-by: Michael Breuer<mbreuer@majjas.com>
-> Signed-off-by: Jarek Poplawski<jarkao2@gmail.com>
-> ---
->
->   net/packet/af_packet.c |    8 +++-----
->   1 files changed, 3 insertions(+), 5 deletions(-)
->
-> diff --git a/net/packet/af_packet.c b/net/packet/af_packet.c
-> index e0516a2..984a1fa 100644
-> --- a/net/packet/af_packet.c
-> +++ b/net/packet/af_packet.c
-> @@ -1021,8 +1021,9 @@ static int tpacket_snd(struct packet_sock *po, struct msghdr *msg)
->
->   		status = TP_STATUS_SEND_REQUEST;
->   		err = dev_queue_xmit(skb);
-> -		if (unlikely(err>  0&&  (err = net_xmit_errno(err)) != 0))
-> -			goto out_xmit;
-> +		if (unlikely(err>  0))
-> +			err = net_xmit_errno(err);
-> +
->   		packet_increment_head(&po->tx_ring);
->   		len_sum += tp_len;
->   	} while (likely((ph != NULL) ||
-> @@ -1033,9 +1034,6 @@ static int tpacket_snd(struct packet_sock *po, struct msghdr *msg)
->   	err = len_sum;
->   	goto out_put;
->
-> -out_xmit:
-> -	skb->destructor = sock_wfree;
-> -	atomic_dec(&po->tx_ring.pending);
->   out_status:
->   	__packet_set_status(po, ph, status);
->   	kfree_skb(skb);
->    
+Damm I hate the sysdev code, I need to dig up my "make drivers bind to
+multiple devices" tree and get it up to date so we can just delete the
+things completly and move to a "real" struct device instead.
 
+> Also similar code as I have is already in a lot of places, which
+> over time will be converted. So it's definitely less code than
+> before.
+
+Ok, good point, I'll queue this up, and hopefully be able to delete it
+all in 6-8 months again :)
+
+thanks,
+
+greg k-h
