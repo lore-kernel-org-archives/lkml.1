@@ -1,55 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755253Ab0AERUx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754751Ab0AERZj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755253Ab0AERUx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 12:20:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755175Ab0AERUw
+	id S1754751Ab0AERZj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 12:25:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753978Ab0AERZi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 12:20:52 -0500
-Received: from mail176c2.megamailservers.com ([69.49.111.76]:35204 "EHLO
-	mail176c2.megamailservers.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755236Ab0AERUv (ORCPT
+	Tue, 5 Jan 2010 12:25:38 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:42924 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754214Ab0AERZi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 12:20:51 -0500
-X-Greylist: delayed 2145 seconds by postgrey-1.27 at vger.kernel.org; Tue, 05 Jan 2010 12:20:51 EST
-X-Authenticated-User: kristoffer.gaisler.com
-Message-ID: <4B436BC9.5020102@gaisler.com>
-Date: Tue, 05 Jan 2010 17:41:45 +0100
-From: Kristoffer Glembo <kristoffer@gaisler.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.4) Gecko/20070601 SeaMonkey/1.1.2
+	Tue, 5 Jan 2010 12:25:38 -0500
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Minchan Kim <minchan.kim@gmail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>, cl@linux-foundation.org,
+       "hugh.dickins" <hugh.dickins@tiscali.co.uk>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [RFC][PATCH 6/8] mm: handle_speculative_fault()
+From: Andi Kleen <andi@firstfloor.org>
+References: <20100104182429.833180340@chello.nl>
+	<20100104182813.753545361@chello.nl>
+	<20100105092559.1de8b613.kamezawa.hiroyu@jp.fujitsu.com>
+	<28c262361001042029w4b95f226lf54a3ed6a4291a3b@mail.gmail.com>
+	<20100105134357.4bfb4951.kamezawa.hiroyu@jp.fujitsu.com>
+	<alpine.LFD.2.00.1001042052210.3630@localhost.localdomain>
+	<20100105143046.73938ea2.kamezawa.hiroyu@jp.fujitsu.com>
+	<20100105163939.a3f146fb.kamezawa.hiroyu@jp.fujitsu.com>
+	<alpine.LFD.2.00.1001050707520.3630@localhost.localdomain>
+	<alpine.LFD.2.00.1001050810380.3630@localhost.localdomain>
+Date: Tue, 05 Jan 2010 18:25:32 +0100
+In-Reply-To: <alpine.LFD.2.00.1001050810380.3630@localhost.localdomain> (Linus Torvalds's message of "Tue, 5 Jan 2010 08:14:51 -0800 (PST)")
+Message-ID: <87wrzwbh0z.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
 MIME-Version: 1.0
-To: john stultz <johnstul@us.ibm.com>
-CC: lkml <linux-kernel@vger.kernel.org>,
-       "David S. Miller" <davem@davemloft.net>, sparclinux@vger.kernel.org
-Subject: Re: [RFC][PATCH 14/14] Convert sparc to read/update_persistent_clock
-References: <1261540762.3508.61.camel@localhost.localdomain>	 <1261540826.3508.62.camel@localhost.localdomain>	 <1261540902.3508.63.camel@localhost.localdomain>	 <1261540988.3508.64.camel@localhost.localdomain>	 <1261541054.3508.65.camel@localhost.localdomain>	 <1261541130.3508.66.camel@localhost.localdomain>	 <1261541188.3508.67.camel@localhost.localdomain>	 <1261541286.3508.69.camel@localhost.localdomain>	 <1261541342.3508.70.camel@localhost.localdomain>	 <1261541415.3508.71.camel@localhost.localdomain>	 <1261541491.3508.72.camel@localhost.localdomain>	 <1261541567.3508.73.camel@localhost.localdomain>	 <1261541643.3508.74.camel@localhost.localdomain>	 <1261541703.3508.75.camel@localhost.localdomain> <1261541771.3508.76.camel@localhost.localdomain>
-In-Reply-To: <1261541771.3508.76.camel@localhost.localdomain>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-john stultz wrote:
-> This patch converts the sparc architecture to use the generic
-> read_persistent_clock and update_persistent_clock interfaces, reducing
-> the amount of arch specific code we have to maintain, and allowing for
-> further cleanups in the future.
+Linus Torvalds <torvalds@linux-foundation.org> writes:
 >
-> I have not built or tested this patch, so help from arch maintainers
-> would be appreciated.
->
->   
-> Signed-off-by: John Stultz <johnstul@us.ibm.com>
->   
+> etc, because the x86-64 code has obviously never seen the optimized 
+> call-paths, and they need the asm wrappers for full semantics.
 
-The sparc32 patch does not build because you forgot to remove the
-last_rtc_update variable declaration:
+iirc Andrea ran benchmarks at some point and it didn't make too much 
+difference on the systems back then (K8 era). Given K8 has fast atomics.
 
-arch/sparc/kernel/time_32.c: In function 'timer_interrupt':
-arch/sparc/kernel/time_32.c:94: warning: unused variable 'last_rtc_update'
+> Oh well. Somebody who is bored might look at trying to make the wrapper 
+> code in arch/x86/lib/semaphore_32.S work on x86-64 too. It should make the 
+> successful rwsem cases much faster.
 
-Best regards,
-Kristoffer Glembo
+Maybe, maybe not.
 
+-Andi
+
+-- 
+ak@linux.intel.com -- Speaking for myself only.
