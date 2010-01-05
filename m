@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755469Ab0AEUGO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755737Ab0AEULg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755469Ab0AEUGO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 15:06:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755412Ab0AEUF6
+	id S1755737Ab0AEULg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 15:11:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755516Ab0AEULa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 15:05:58 -0500
-Received: from kroah.org ([198.145.64.141]:49919 "EHLO coco.kroah.org"
+	Tue, 5 Jan 2010 15:11:30 -0500
+Received: from kroah.org ([198.145.64.141]:49993 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754109Ab0AEUF4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 15:05:56 -0500
-X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jan  5 12:02:59 2010
-Message-Id: <20100105200258.872417351@mini.kroah.org>
+	id S1755477Ab0AEUGO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jan 2010 15:06:14 -0500
+X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jan  5 12:03:01 2010
+Message-Id: <20100105200301.581029574@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 05 Jan 2010 12:01:57 -0800
+Date: Tue, 05 Jan 2010 12:02:16 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, akpm@linux-foundation.org,
        torvalds@linux-foundation.org, stable-review@kernel.org
-Cc: Stefan Bader <stefan.bader@canonical.com>,
-       Borislav Petkov <petkovbb@gmail.com>, Peter Feuerer <peter@piie.net>,
-       Len Brown <len.brown@intel.com>
-Subject: [01/39] acerhdf: limit modalias matching to supported
+Cc: Roger Oksanen <roger.oksanen@cs.helsinki.fi>,
+       Jesse Brandeburg <jesse.brandeburg@intel.com>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: [20/39] e100: Fix broken cbs accounting due to missing memset.
 In-Reply-To: <20100105195007.GA23952@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -29,44 +29,46 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Stefan Bader <stefan.bader@canonical.com>
+From: Roger Oksanen <roger.oksanen@cs.helsinki.fi>
 
-commit bdc731bc5fcd1794e9ac8ac80c389d302381c123 upstream.
+commit 70abc8cb90e679d8519721e2761d8366a18212a6 upstream.
 
-BugLink: https://bugs.launchpad.net/ubuntu/+bug/435958
+Alan Stern noticed that e100 caused slab corruption.
+commit 98468efddb101f8a29af974101c17ba513b07be1 changed
+the allocation of cbs to use dma pools that don't return zeroed memory,
+especially the cb->status field used to track which cb to clean, causing
+(the visible) double freeing of skbs and a wrong free cbs count.
 
-The module alias currently matches any Acer computer but when loaded the
-BIOS checks will only succeed on Aspire One models.  This causes a invalid
-BIOS warning for all other models (seen on Aspire 4810T).  This is not
-fatal but worries users that see this message.  Limiting the moule alias
-to models starting with AOA or DOA for Packard Bell.
+Now the cbs are explicitly zeroed at allocation time.
 
-Signed-off-by: Stefan Bader <stefan.bader@canonical.com>
-Acked-by: Borislav Petkov <petkovbb@gmail.com>
-Acked-by: Peter Feuerer <peter@piie.net>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Len Brown <len.brown@intel.com>
+Reported-by: Alan Stern <stern@rowland.harvard.edu>
+Tested-by: Alan Stern <stern@rowland.harvard.edu>
+Signed-off-by: Roger Oksanen <roger.oksanen@cs.helsinki.fi>
+Acked-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/platform/x86/acerhdf.c |    7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
+ drivers/net/e100.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/drivers/platform/x86/acerhdf.c
-+++ b/drivers/platform/x86/acerhdf.c
-@@ -633,9 +633,10 @@ static void __exit acerhdf_exit(void)
- MODULE_LICENSE("GPL");
- MODULE_AUTHOR("Peter Feuerer");
- MODULE_DESCRIPTION("Aspire One temperature and fan driver");
--MODULE_ALIAS("dmi:*:*Acer*:*:");
--MODULE_ALIAS("dmi:*:*Gateway*:*:");
--MODULE_ALIAS("dmi:*:*Packard Bell*:*:");
-+MODULE_ALIAS("dmi:*:*Acer*:pnAOA*:");
-+MODULE_ALIAS("dmi:*:*Gateway*:pnAOA*:");
-+MODULE_ALIAS("dmi:*:*Packard Bell*:pnAOA*:");
-+MODULE_ALIAS("dmi:*:*Packard Bell*:pnDOA*:");
+--- a/drivers/net/e100.c
++++ b/drivers/net/e100.c
+@@ -1803,6 +1803,7 @@ static int e100_alloc_cbs(struct nic *ni
+ 				  &nic->cbs_dma_addr);
+ 	if (!nic->cbs)
+ 		return -ENOMEM;
++	memset(nic->cbs, 0, count * sizeof(struct cb));
  
- module_init(acerhdf_init);
- module_exit(acerhdf_exit);
+ 	for (cb = nic->cbs, i = 0; i < count; cb++, i++) {
+ 		cb->next = (i + 1 < count) ? cb + 1 : nic->cbs;
+@@ -1811,7 +1812,6 @@ static int e100_alloc_cbs(struct nic *ni
+ 		cb->dma_addr = nic->cbs_dma_addr + i * sizeof(struct cb);
+ 		cb->link = cpu_to_le32(nic->cbs_dma_addr +
+ 			((i+1) % count) * sizeof(struct cb));
+-		cb->skb = NULL;
+ 	}
+ 
+ 	nic->cb_to_use = nic->cb_to_send = nic->cb_to_clean = nic->cbs;
 
 
