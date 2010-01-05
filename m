@@ -1,23 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755011Ab0AEAwl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932112Ab0AEAwg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755011Ab0AEAwl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 19:52:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754974Ab0AEAw3
+	id S932112Ab0AEAwg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 19:52:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754241Ab0AEAe5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 19:52:29 -0500
-Received: from kroah.org ([198.145.64.141]:34165 "EHLO coco.kroah.org"
+	Mon, 4 Jan 2010 19:34:57 -0500
+Received: from kroah.org ([198.145.64.141]:34145 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754249Ab0AEAe6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 19:34:58 -0500
+	id S1754233Ab0AEAex (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jan 2010 19:34:53 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, stable-review@kernel.org
 Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Oliver Neukum <oliver@neukum.org>,
-       Marcel Holtmann <marcel@holtmann.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 24/97] Bluetooth: Prevent ill-timed autosuspend in USB driver
-Date: Mon,  4 Jan 2010 16:32:37 -0800
-Message-Id: <1262651630-7354-24-git-send-email-gregkh@suse.de>
+       alan@lxorguk.ukuu.org.uk, Dave Airlie <airlied@linux.ie>,
+       Dave Airlie <airlied@redhat.com>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 19/97] drm/radeon: fix build on 64-bit with some compilers.
+Date: Mon,  4 Jan 2010 16:32:32 -0800
+Message-Id: <1262651630-7354-19-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.6
 In-Reply-To: <20100105003133.GA7199@kroah.com>
 References: <20100105003133.GA7199@kroah.com>
@@ -25,32 +24,34 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Oliver Neukum <oliver@neukum.org>
+From: Dave Airlie <airlied@linux.ie>
 
-commit 652fd781a52ad6e24b908cd8b83d12699754f253 upstream.
+commit 794f3141a194a4f4c28c1d417b071a901f78d9bb upstream.
 
-The device must be marked busy as it receives data.
+drivers/gpu/drm/radeon/radeon_test.c:45: undefined reference to `__udivdi3'
 
-Signed-off-by: Oliver Neukum <oliver@neukum.org>
-Tested-by: Matthew Garrett <mjg@redhat.com>
-Signed-off-by: Marcel Holtmann <marcel@holtmann.org>
+Reported-by: Mr. James W. Laferriere <babydr@baby-dragons.com>
+Signed-off-by: Dave Airlie <airlied@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/bluetooth/btusb.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+ drivers/gpu/drm/radeon/radeon_test.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/bluetooth/btusb.c b/drivers/bluetooth/btusb.c
-index 44bc8bb..1be7631 100644
---- a/drivers/bluetooth/btusb.c
-+++ b/drivers/bluetooth/btusb.c
-@@ -307,6 +307,7 @@ static void btusb_bulk_complete(struct urb *urb)
- 		return;
+diff --git a/drivers/gpu/drm/radeon/radeon_test.c b/drivers/gpu/drm/radeon/radeon_test.c
+index f8a465d..c8942ca 100644
+--- a/drivers/gpu/drm/radeon/radeon_test.c
++++ b/drivers/gpu/drm/radeon/radeon_test.c
+@@ -42,8 +42,8 @@ void radeon_test_moves(struct radeon_device *rdev)
+ 	/* Number of tests =
+ 	 * (Total GTT - IB pool - writeback page - ring buffer) / test size
+ 	 */
+-	n = (rdev->mc.gtt_size - RADEON_IB_POOL_SIZE*64*1024 - RADEON_GPU_PAGE_SIZE -
+-	     rdev->cp.ring_size) / size;
++	n = ((u32)(rdev->mc.gtt_size - RADEON_IB_POOL_SIZE*64*1024 - RADEON_GPU_PAGE_SIZE -
++	     rdev->cp.ring_size)) / size;
  
- 	usb_anchor_urb(urb, &data->bulk_anchor);
-+	usb_mark_last_busy(data->udev);
- 
- 	err = usb_submit_urb(urb, GFP_ATOMIC);
- 	if (err < 0) {
+ 	gtt_obj = kzalloc(n * sizeof(*gtt_obj), GFP_KERNEL);
+ 	if (!gtt_obj) {
 -- 
 1.6.6
 
