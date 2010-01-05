@@ -1,62 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755464Ab0AEVaJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932209Ab0AEVbZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755464Ab0AEVaJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 16:30:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755081Ab0AEVaH
+	id S932209Ab0AEVbZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 16:31:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932095Ab0AEVbY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 16:30:07 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:34188 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754969Ab0AEVaE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 16:30:04 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Daniel Kahn Gillmor <dkg@fifthhorseman.net>
-Subject: Re: [Bug #14893] Tasks stuck on I/O on armel with 2.6.32-rc8
-Date: Tue, 5 Jan 2010 22:30:42 +0100
-User-Agent: KMail/1.12.3 (Linux/2.6.33-rc2-tst; KDE/4.3.3; x86_64; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-References: <oBElxfTZdhL.A.bx.-vhOLB@chimera> <srmJ8vMxKPH.A.LFC.UwhOLB@chimera> <4B42972B.6030801@fifthhorseman.net>
-In-Reply-To: <4B42972B.6030801@fifthhorseman.net>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-2"
+	Tue, 5 Jan 2010 16:31:24 -0500
+Received: from wolverine01.qualcomm.com ([199.106.114.254]:19731 "EHLO
+	wolverine01.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932094Ab0AEVbX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jan 2010 16:31:23 -0500
+X-IronPort-AV: E=McAfee;i="5400,1158,5852"; a="31444757"
+Subject: Re: tree with htc dream support
+From: Daniel Walker <dwalker@codeaurora.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Brian Swetland <swetland@google.com>, Arve Hj?nnev?g <arve@android.com>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+       Iliyan Malchev <malchev@google.com>, linux-kernel@codeaurora.org,
+       Greg KH <greg@kroah.com>
+In-Reply-To: <20100102105546.GD9742@elf.ucw.cz>
+References: <a55d774e0912271220p1d102b1dr398e0524c9386702@mail.gmail.com>
+	 <20091227203704.GK11737@elf.ucw.cz> <20091227211322.GB29174@elf.ucw.cz>
+	 <a55d774e0912271646m1b82687cy427083e64e91e323@mail.gmail.com>
+	 <20091227101824.GB1478@ucw.cz>
+	 <a55d774e0912281224y7360dfdbu8a251743026bdd28@mail.gmail.com>
+	 <20091228204848.GB1637@ucw.cz> <1262049913.17445.27.camel@desktop>
+	 <20100101151818.GI3944@atrey.karlin.mff.cuni.cz>
+	 <1262362128.2159.4.camel@m0nster>  <20100102105546.GD9742@elf.ucw.cz>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 05 Jan 2010 13:31:12 -0800
+Message-ID: <1262727072.19310.16.camel@c-dwalke-linux.qualcomm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
-Message-Id: <201001052230.42567.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 05 January 2010, Daniel Kahn Gillmor wrote:
-> Hi Rafael--
-> 
-> On 12/29/2009 10:28 AM, Rafael J. Wysocki wrote:
-> > This message has been generated automatically as a part of a report
-> > of regressions introduced between 2.6.31 and 2.6.32.
+On Sat, 2010-01-02 at 11:55 +0100, Pavel Machek wrote:
+> On Fri 2010-01-01 08:08:48, Daniel Walker wrote:
+> > On Fri, 2010-01-01 at 16:18 +0100, Pavel Machek wrote:
 > > 
-> > The following bug entry is on the current list of known regressions
-> > introduced between 2.6.31 and 2.6.32.  Please verify if it still should
-> > be listed and let me know (either way).
+> > > > I have it in my tree already .. My tree has some duplication over
+> > > > staging, for instance the rpc code is mostly in my tree, as is the smd
+> > > > code.
+> > > 
+> > > Do you expect you can just merge those for 2.6.34? That would be
+> > > great.
 > > 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14893
-> > Subject		: Tasks stuck on I/O on armel with 2.6.32-rc8
-> > Submitter	: Daniel Kahn Gillmor <dkg@fifthhorseman.net>
-> > Date		: 2009-11-24 23:05 (36 days old)
-> > References	: http://marc.info/?l=linux-kernel&m=125910438530554&w=4
+> > I will try ..
 > 
-> The machine in question has been up continuously (though not under heavy
-> load) since it was rebooted after the reported failure.  it has even
-> withstood additional mpd index updates, all running the same kernel it
-> crashed with before.
+> Good.
 > 
-> So i can't say that the problem is resolved, but i haven't replicated it
-> either.  Wish i had more interesting details to report.
+> How can I check out that tree? I tried pulling from
+> git://codeaurora.org/quic/kernel/dwalker/linux-msm.git , but those
+> changes do not seem to be there. (I tried default, master and for-next
+> branches).
 
-I'm going to close it as "unreprodicible", then.  Please reopen if you're able
-to reproduce it after all.
+Should be there now .. It's not history stable, or particularly useful
+right now .. You can see what's in it tho ..
 
-> Thanks for doing followup/triage like this.
+Daniel
 
-Well, you're welcome. :-)
-
-Rafael
