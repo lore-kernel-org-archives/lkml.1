@@ -1,127 +1,275 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754417Ab0AED1u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754273Ab0AEDim@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754417Ab0AED1u (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 22:27:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754030Ab0AED1t
+	id S1754273Ab0AEDim (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 22:38:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753463Ab0AEDil
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 22:27:49 -0500
-Received: from rcpt-expgw.biglobe.ne.jp ([133.205.19.66]:53072 "EHLO
-	rcpt-expgw.biglobe.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754018Ab0AED1t (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 22:27:49 -0500
-X-Biglobe-Sender: <d-nishimura@mtf.biglobe.ne.jp>
-Date: Tue, 5 Jan 2010 12:26:33 +0900
-From: Daisuke Nishimura <d-nishimura@mtf.biglobe.ne.jp>
-To: Greg KH <greg@kroah.com>
-Cc: stable <stable@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       David Rientjes <rientjes@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Subject: [stable][BUGFIX][PATCH v3] memcg: avoid oom-killing innocent task
- in case of use_hierarchy
-Message-Id: <20100105122633.28738255.d-nishimura@mtf.biglobe.ne.jp>
-In-Reply-To: <20100104222818.GA20708@kroah.com>
-References: <20091124145759.194cfc9f.nishimura@mxp.nes.nec.co.jp>
-	<20091124162854.fb31e81e.nishimura@mxp.nes.nec.co.jp>
-	<20091125090050.e366dca5.kamezawa.hiroyu@jp.fujitsu.com>
-	<20091125143218.96156a5f.nishimura@mxp.nes.nec.co.jp>
-	<20091217094724.15ec3b27.nishimura@mxp.nes.nec.co.jp>
-	<20100104222818.GA20708@kroah.com>
-Reply-To: nishimura@mxp.nes.nec.co.jp
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
+	Mon, 4 Jan 2010 22:38:41 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:37159 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753280Ab0AEDik (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jan 2010 22:38:40 -0500
+Date: Tue, 5 Jan 2010 14:38:34 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-next@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: linux-next: Tree for January 5
+Message-Id: <20100105143834.3bc875c3.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 3.0.0beta4 (GTK+ 2.18.5; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__5_Jan_2010_14_38_34_+1100_chyMrnGWIe5WaIyw"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 4 Jan 2010 14:28:19 -0800
-Greg KH <greg@kroah.com> wrote:
+--Signature=_Tue__5_Jan_2010_14_38_34_+1100_chyMrnGWIe5WaIyw
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> On Thu, Dec 17, 2009 at 09:47:24AM +0900, Daisuke Nishimura wrote:
-> > Stable team.
-> > 
-> > Cay you pick this up for 2.6.32.y(and 2.6.31.y if it will be released) ?
-> > 
-> > This is a for-stable version of a bugfix patch that corresponds to the
-> > upstream commmit d31f56dbf8bafaacb0c617f9a6f137498d5c7aed.
-> 
-> I've applied it to the .32-stable tree, but it does not apply to .31.
-> Care to provide a version of the patch for that kernel if you want it
-> applied there?
-> 
-hmm, strange. I can apply it onto 2.6.31.9. It might conflict with other patches
-in 2.6.31.y queue ?
-Anyway, I've attached the patch that is rebased on 2.6.31.9. Please tell me if you
-have any problem with it.
+Hi all,
 
-v3: rebased on 2.6.31.9
-===
->From 14cd608eef94c851460d3d56e0c676d17ecc64f2 Mon Sep 17 00:00:00 2001
-From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Date: Tue, 5 Jan 2010 12:15:42 +0900
-Subject: [PATCH] memcg: avoid oom-killing innocent task in case of use_hierarchy
+Changes since 20100104:
 
-task_in_mem_cgroup(), which is called by select_bad_process() to check whether
-a task can be a candidate for being oom-killed from memcg's limit, checks
-"curr->use_hierarchy"("curr" is the mem_cgroup the task belongs to).
+The net-current tree gained a conflict against the scsi-rc-fixes tree.
 
-But this check return true(it's false positive) when:
+The pci tree gained a build failure so I used the version from
+next-20100114.
 
-	<some path>/00		use_hierarchy == 0	<- hitting limit
-	  <some path>/00/aa	use_hierarchy == 1	<- "curr"
+The agp tree still has a build failure for which I reverted a commit.
 
-This leads to killing an innocent task in 00/aa. This patch is a fix for this
-bug. And this patch also fixes the arg for mem_cgroup_print_oom_info(). We
-should print information of mem_cgroup which the task being killed, not current,
-belongs to.
+The kgdb tree build failures reported overnight have (hopefully) been fixed.
 
-Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Acked-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Reviewed-by: Balbir Singh <balbir@linux.vnet.ibm.com>
----
- mm/memcontrol.c |    8 +++++++-
- mm/oom_kill.c   |    2 +-
- 2 files changed, 8 insertions(+), 2 deletions(-)
+The tip tree build failure reported overnight has been fixed.
 
-diff --git a/mm/memcontrol.c b/mm/memcontrol.c
-index fd4529d..566925e 100644
---- a/mm/memcontrol.c
-+++ b/mm/memcontrol.c
-@@ -496,7 +496,13 @@ int task_in_mem_cgroup(struct task_struct *task, const struct mem_cgroup *mem)
- 	task_unlock(task);
- 	if (!curr)
- 		return 0;
--	if (curr->use_hierarchy)
-+	/*
-+	 * We should check use_hierarchy of "mem" not "curr". Because checking
-+	 * use_hierarchy of "curr" here make this function true if hierarchy is
-+	 * enabled in "curr" and "curr" is a child of "mem" in *cgroup*
-+	 * hierarchy(even if use_hierarchy is disabled in "mem").
-+	 */
-+	if (mem->use_hierarchy)
- 		ret = css_is_ancestor(&curr->css, &mem->css);
- 	else
- 		ret = (curr == mem);
-diff --git a/mm/oom_kill.c b/mm/oom_kill.c
-index a7b2460..ed452e9 100644
---- a/mm/oom_kill.c
-+++ b/mm/oom_kill.c
-@@ -400,7 +400,7 @@ static int oom_kill_process(struct task_struct *p, gfp_t gfp_mask, int order,
- 		cpuset_print_task_mems_allowed(current);
- 		task_unlock(current);
- 		dump_stack();
--		mem_cgroup_print_oom_info(mem, current);
-+		mem_cgroup_print_oom_info(mem, p);
- 		show_mem();
- 		if (sysctl_oom_dump_tasks)
- 			dump_tasks(mem);
--- 
-1.6.3.3
+----------------------------------------------------------------------------
 
+I have created today's linux-next tree at
+git://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
+(patches at http://www.kernel.org/pub/linux/kernel/v2.6/next/ ).  If you
+are tracking the linux-next tree using git, you should not use "git pull"
+to do so as that will try to merge the new linux-next release with the
+old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
+(see below).
+
+You can see which trees have been included by looking in the Next/Trees
+file in the source.  There are also quilt-import.log and merge.log files
+in the Next directory.  Between each merge, the tree was built with
+a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
+final fixups (if any), it is also built with powerpc allnoconfig (32 and
+64 bit), ppc44x_defconfig and allyesconfig (minus
+CONFIG_PROFILE_ALL_BRANCHES - this fails its final link) and i386, sparc
+and sparc64 defconfig. These builds also have
+CONFIG_ENABLE_WARN_DEPRECATED, CONFIG_ENABLE_MUST_CHECK and
+CONFIG_DEBUG_INFO disabled when necessary.
+
+Below is a summary of the state of the merge.
+
+We are up to 155 trees (counting Linus' and 22 trees of patches pending
+for Linus' tree), more are welcome (even if they are currently empty).
+Thanks to those who have contributed, and to those who haven't, please do.
+
+Status of my local build tests will be at
+http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
+advice about cross compilers/configs that work, we are always open to add
+more builds.
+
+Thanks to Jan Dittmer for adding the linux-next tree to his build tests
+at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
+Dunlap for doing many randconfig builds.
+
+There is a wiki covering stuff to do with linux-next at
+http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+$ git checkout master
+$ git reset --hard stable
+Merging origin/master
+Merging fixes/fixes
+Merging arm-current/master
+Merging m68k-current/for-linus
+Merging powerpc-merge/merge
+Merging sparc-current/master
+Merging scsi-rc-fixes/master
+Merging net-current/master
+CONFLICT (content): Merge conflict in drivers/scsi/cxgb3i/cxgb3i_offload.c
+Merging sound-current/for-linus
+Merging pci-current/for-linus
+Merging wireless-current/master
+Merging kbuild-current/for-linus
+Merging quilt/driver-core.current
+Merging quilt/tty.current
+Merging quilt/usb.current
+Merging quilt/staging.current
+Merging cpufreq-current/fixes
+Merging input-current/for-linus
+Merging md-current/for-linus
+Merging audit-current/for-linus
+Merging crypto-current/master
+Merging ide-curent/master
+Merging dwmw2/master
+Merging arm/devel
+Merging davinci/davinci-next
+Merging msm/for-next
+Merging omap/for-next
+Merging pxa/for-next
+Merging samsung/next-samsung
+Merging avr32/avr32-arch
+Merging blackfin/for-linus
+Merging cris/for-next
+Merging ia64/test
+Merging m68k/for-next
+Merging m68knommu/for-next
+Merging microblaze/next
+Merging mips/mips-for-linux-next
+Merging parisc/next
+Merging powerpc/next
+Merging 4xx/next
+Merging 52xx-and-virtex/next
+Merging galak/next
+Merging s390/features
+Merging sh/master
+Merging sparc/master
+Merging xtensa/master
+Merging ceph/for-next
+Merging cifs/master
+Merging configfs/linux-next
+Merging ecryptfs/next
+Merging ext3/for_next
+Merging ext4/next
+Merging fatfs/master
+Merging fuse/for-next
+Merging gfs2/master
+Merging jfs/next
+Merging logfs/master
+Merging nfs/linux-next
+Merging nfsd/nfsd-next
+Merging nilfs2/for-next
+Merging ocfs2/linux-next
+Merging squashfs/master
+Merging udf/for_next
+Merging v9fs/for-next
+CONFLICT (add/add): Merge conflict in fs/9p/cache.c
+Merging ubifs/linux-next
+Merging xfs/master
+CONFLICT (add/add): Merge conflict in fs/xfs/linux-2.6/xfs_trace.h
+CONFLICT (content): Merge conflict in include/linux/fs.h
+Merging reiserfs-bkl/reiserfs/kill-bkl
+Merging vfs/for-next
+Merging pci/linux-next
+$ git reset --hard HEAD^
+Merging refs/next/20100104/pci
+Merging hid/for-next
+Merging quilt/i2c
+Merging bjdooks-i2c/next-i2c
+Merging quilt/jdelvare-hwmon
+Merging quilt/kernel-doc
+Merging v4l-dvb/master
+Merging kbuild/for-next
+Merging kconfig/for-next
+Merging ide/master
+Merging libata/NEXT
+Merging infiniband/for-next
+Merging acpi/test
+Merging ieee1394/for-next
+Merging ubi/linux-next
+Merging kvm/linux-next
+Merging dlm/next
+Merging scsi/master
+Merging async_tx/next
+Merging net/master
+Merging wireless/master
+Merging mtd/master
+Merging crypto/master
+Merging sound/for-next
+Merging cpufreq/next
+Merging quilt/rr
+Merging mmc/next
+Merging tmio-mmc/linux-next
+Merging input/next
+Merging lsm/for-next
+Merging block/for-next
+Merging quilt/device-mapper
+Merging embedded/master
+Merging firmware/master
+Merging pcmcia/master
+Merging battery/master
+Merging leds/for-mm
+Merging backlight/for-mm
+Merging kgdb/kgdb-next
+Merging slab/for-next
+Merging uclinux/for-next
+Merging md/for-next
+Merging mfd/for-next
+Merging hdlc/hdlc-next
+Merging drm/drm-next
+Merging voltage/for-next
+Merging security-testing/next
+Merging lblnet/master
+Merging agp/agp-next
+[master b8775fd] Revert "drivers/char/agp/amd64-agp.c: squish warning"
+Merging uwb/for-upstream
+Merging watchdog/master
+Merging bdev/master
+Merging dwmw2-iommu/master
+Merging cputime/cputime
+Merging osd/linux-next
+Merging jc_docs/docs-next
+Merging nommu/master
+Merging trivial/for-next
+Merging audit/for-next
+Merging quilt/aoe
+Merging suspend/linux-next
+Merging bluetooth/master
+Merging fsnotify/for-next
+Merging irda/for-next
+CONFLICT (content): Merge conflict in drivers/net/irda/irda-usb.c
+Merging hwlat/for-linus
+CONFLICT (content): Merge conflict in MAINTAINERS
+CONFLICT (content): Merge conflict in drivers/misc/Makefile
+Merging drbd/for-jens
+Merging catalin/for-next
+Merging alacrity/linux-next
+CONFLICT (content): Merge conflict in lib/Kconfig
+Merging i7core_edac/linux_next
+Merging devicetree/next-devicetree
+Merging spi/next-spi
+Merging limits/writable_limits
+CONFLICT (content): Merge conflict in arch/x86/ia32/ia32entry.S
+CONFLICT (content): Merge conflict in arch/x86/include/asm/unistd_32.h
+CONFLICT (content): Merge conflict in arch/x86/include/asm/unistd_64.h
+CONFLICT (content): Merge conflict in arch/x86/kernel/syscall_table_32.S
+Merging omap_dss2/for-next
+Merging tip/auto-latest
+Merging edac-amd/for-next
+Merging oprofile/for-next
+Merging percpu/for-next
+Applying: slab: update for percpu API change
+Merging workqueues/for-next
+Merging sfi/sfi-test
+Merging asm-generic/next
+Merging hwpoison/hwpoison
+Merging sysctl/master
+Merging quilt/driver-core
+Merging quilt/tty
+Merging quilt/usb
+Merging quilt/staging
+Merging scsi-post-merge/master
+
+--Signature=_Tue__5_Jan_2010_14_38_34_+1100_chyMrnGWIe5WaIyw
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAktCtDoACgkQjjKRsyhoI8ywIACgocvzAnxBFJ3htVSzUQ59Mia6
+2ikAnA1iM2T8HbNe43Lo/hsd5LhHPKCY
+=2tUn
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__5_Jan_2010_14_38_34_+1100_chyMrnGWIe5WaIyw--
