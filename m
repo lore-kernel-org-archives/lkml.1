@@ -1,116 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754584Ab0AECRN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754631Ab0AECRh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754584Ab0AECRN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 21:17:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754475Ab0AECRC
+	id S1754631Ab0AECRh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 4 Jan 2010 21:17:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754256Ab0AECPc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 21:17:02 -0500
-Received: from mga14.intel.com ([143.182.124.37]:6139 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754605Ab0AECQ5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 21:16:57 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
-   d="scan'208";a="229195214"
-Date: Tue, 5 Jan 2010 10:16:53 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Minchan Kim <minchan.kim@gmail.com>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Quentin Barnes <qbarnes+nfs@yahoo-inc.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       Nick Piggin <npiggin@suse.de>, Steven Whitehouse <swhiteho@redhat.com>,
-       David Howells <dhowells@redhat.com>, Al Viro <viro@zeniv.linux.org.uk>,
-       Jonathan Corbet <corbet@lwn.net>, Christoph Hellwig <hch@infradead.org>
-Subject: Re: [RFC][PATCH v3] readahead: introduce O_RANDOM for
-	POSIX_FADV_RANDOM
-Message-ID: <20100105021652.GA29428@localhost>
-References: <20091225000717.GA26949@yahoo-inc.com> <87aax18xms.fsf@basil.nowhere.org> <20091230051540.GA16308@localhost> <20091230052402.GB26364@localhost> <873a2s8hmp.fsf@basil.nowhere.org> <20100104045020.GA21021@localhost> <28c262361001032120v284e92b5ub1211f3d1fca6140@mail.gmail.com> <20100104121642.GA12266@localhost> <28c262361001041746j1270e2d2i79a932efca861dc5@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <28c262361001041746j1270e2d2i79a932efca861dc5@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 4 Jan 2010 21:15:32 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:43062 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754057Ab0AECPa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 4 Jan 2010 21:15:30 -0500
+From: Andi Kleen <andi@firstfloor.org>
+References: <20100105315.789846878@firstfloor.org>
+In-Reply-To: <20100105315.789846878@firstfloor.org>
+To: linux-arch@vger.kernel.org, ebiederm@xmission.com,
+       paulmck@linux.vnet.ibm.com, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] [2/9] Add a kernel_address() that works for data too
+Message-Id: <20100105021527.1AB19B17C2@basil.firstfloor.org>
+Date: Tue,  5 Jan 2010 03:15:27 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 05, 2010 at 09:46:09AM +0800, Minchan Kim wrote:
-> On Mon, Jan 4, 2010 at 9:16 PM, Wu Fengguang <fengguang.wu@intel.com> wrote:
-> > Hi Minchan,
-> >
-> > On Mon, Jan 04, 2010 at 01:20:49PM +0800, Minchan Kim wrote:
-> >> > --- linux.orig/mm/readahead.c   2010-01-04 12:39:29.000000000 +0800
-> >> > +++ linux/mm/readahead.c        2010-01-04 12:39:30.000000000 +0800
-> >> > @@ -501,6 +501,12 @@ void page_cache_sync_readahead(struct ad
-> >> >        if (!ra->ra_pages)
-> >> >                return;
-> >> >
-> >> > +       /* be dumb */
-> >> > +       if (filp->f_flags & O_RANDOM) {
-> >> > +               force_page_cache_readahead(mapping, filp, offset, req_size);
-> >> > +               return;
-> >> > +       }
-> >> > +
-> >>
-> >> Let me have a dumb question. :)
-> >>
-> >> How about testing O_RANDOM in front of ra_pages testing?
-> >>
-> >> My intention is that although we turn off ra, it would be better to read
-> >> contiguous block all at once than readpage() callback doing I/O
-> >> one page at a time.
-> >>
-> >> Is it break some semantics or happen some problem in ondemand readahead?
-> >
-> > Yes it will have some problem with shrink_readahead_size_eio(), which
-> > want to disable readahead and use ->readpage() when ra_pages==0.
-> >
-> > Do you have specific use case in mind? The file systems that set
-> > ra_pages=0 seems to don't need readahead, too.
-> 
-> Never mind. It's just out of curiosity. :)
-> 
-> I thought although user disable readahead, we could enhance file I/O
-> with one readpages not multiple readpage if we know the user want to
-> read big contiguous blocks.
 
-Yes, not-break-large-read-into-pages would be good for HD/SSD drives
-when readahead is disabled.
+Add a variant of kernel_text_address() that includes kernel data.
 
-Currently, ->ra_pages is somehow overloaded in its ==0 case. As you
-said, it's in fact possible to disable readahead while still limiting
-read IO size to a non-zero ->ra_pages.
+Assumes kernel is _text ... _end - init section. True everywhere?
 
-> But I though it break current readahead off semantics. right?
+Cc: linux-arch@vger.kernel.org
+Signed-off-by: Andi Kleen <ak@linux.intel.com>
 
-It can be done by applying the ->ra_pages limit to O_RANDOM. This also
-makes O_RANDOM safer to use:
+---
+ include/linux/kernel.h |    1 +
+ kernel/extable.c       |   18 ++++++++++++++++++
+ 2 files changed, 19 insertions(+)
 
-@@ -497,6 +497,13 @@ void page_cache_sync_readahead(struct ad
-                               struct file_ra_state *ra, struct file *filp,
-                               pgoff_t offset, unsigned long req_size)
+Index: linux-2.6.33-rc2-ak/include/linux/kernel.h
+===================================================================
+--- linux-2.6.33-rc2-ak.orig/include/linux/kernel.h
++++ linux-2.6.33-rc2-ak/include/linux/kernel.h
+@@ -205,6 +205,7 @@ extern unsigned long long memparse(const
+ extern int core_kernel_text(unsigned long addr);
+ extern int __kernel_text_address(unsigned long addr);
+ extern int kernel_text_address(unsigned long addr);
++extern int kernel_address(unsigned long addr);
+ extern int func_ptr_is_kernel_text(void *ptr);
+ 
+ struct pid;
+Index: linux-2.6.33-rc2-ak/kernel/extable.c
+===================================================================
+--- linux-2.6.33-rc2-ak.orig/kernel/extable.c
++++ linux-2.6.33-rc2-ak/kernel/extable.c
+@@ -72,6 +72,18 @@ int core_kernel_text(unsigned long addr)
+ 	return 0;
+ }
+ 
++static int core_kernel_address(unsigned long addr)
++{
++	if ((addr >= (unsigned long)_text &&
++	     addr <= (unsigned long)_end)) {
++		if (addr >= (unsigned long)__init_begin &&
++		    addr < (unsigned long)__init_end)
++			return system_state == SYSTEM_BOOTING;
++		return 1;
++	}
++	return 0;
++}
++
+ int __kernel_text_address(unsigned long addr)
  {
-+       /* be dumb */
-+       if (filp->f_flags & O_RANDOM) {
-+               req_size = clamp_t(unsigned long, req_size, 1, ra->ra_pages);
-+               force_page_cache_readahead(mapping, filp, offset, req_size);
-+               return;
-+       }
-+      
-        /* no read-ahead */
-        if (!ra->ra_pages)
-                return;
-
-To make real change, we need an interface for the user to disable
-whole-partition readahead by setting O_RANDOM instead of ra_pages=0.
-That would be a hard sell..
-
-> Thanks for reply about my dumb question, Wu. :)
-
-You are welcome :)
-
-Thanks,
-Fengguang
+ 	if (core_kernel_text(addr))
+@@ -98,6 +110,12 @@ int kernel_text_address(unsigned long ad
+ 	return is_module_text_address(addr);
+ }
+ 
++/* text or data in core kernel or module */
++int kernel_address(unsigned long addr)
++{
++	return core_kernel_address(addr) || is_module_address(addr);
++}
++
+ /*
+  * On some architectures (PPC64, IA64) function pointers
+  * are actually only tokens to some data that then holds the
