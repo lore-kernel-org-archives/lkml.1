@@ -1,55 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754754Ab0AEQfx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754433Ab0AEQgF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754754Ab0AEQfx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 11:35:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754126Ab0AEQfw
+	id S1754433Ab0AEQgF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 11:36:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932068Ab0AEQf6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 11:35:52 -0500
-Received: from THUNK.ORG ([69.25.196.29]:47519 "EHLO thunker.thunk.org"
+	Tue, 5 Jan 2010 11:35:58 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:61446 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751741Ab0AEQfv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 11:35:51 -0500
-Date: Tue, 5 Jan 2010 11:35:36 -0500
-From: tytso@mit.edu
-To: Jan Kara <jack@suse.cz>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-       "Yin, Kangkai" <kangkai.yin@intel.com>,
-       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] jbd: jbd-debug and jbd2-debug should be writable.
-Message-ID: <20100105163536.GC5457@thunk.org>
-Mail-Followup-To: tytso@mit.edu, Jan Kara <jack@suse.cz>,
-	"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-	"Yin, Kangkai" <kangkai.yin@intel.com>,
-	"linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
-	linux-kernel@vger.kernel.org,
-	Andrew Morton <akpm@linux-foundation.org>
-References: <20091204031735.GN19635@kai-debian>
- <20091204094932.GC4272@skywalker.linux.vnet.ibm.com>
- <20091225204859.GG32757@thunk.org>
- <20100104222614.GB3252@quack.suse.cz>
+	id S1754126Ab0AEQf4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jan 2010 11:35:56 -0500
+Message-ID: <4B436A6A.8020003@redhat.com>
+Date: Tue, 05 Jan 2010 11:35:54 -0500
+From: Peter Jones <pjones@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20090922 Fedora/3.0-3.9.b4.fc12 Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100104222614.GB3252@quack.suse.cz>
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@thunk.org
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+To: H Hartley Sweeten <hartleys@visionengravers.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] drivers/firmware/iscsi_ibft.c: use %pM to show MAC address
+References: <BD79186B4FD85F4B8E60E381CAEE19090200F669@mi8nycmail19.Mi8.com> <4B420C06.3080402@redhat.com> <BD79186B4FD85F4B8E60E381CAEE190902089268@mi8nycmail19.Mi8.com>
+In-Reply-To: <BD79186B4FD85F4B8E60E381CAEE190902089268@mi8nycmail19.Mi8.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 04, 2010 at 11:26:14PM +0100, Jan Kara wrote:
-> On Fri 25-12-09 15:48:59, tytso@mit.edu wrote:
-> > The ext4 portion has been added to the ext4 patch queue.
-> > 
-> > Jan, you want to add this to the ext3 tree?
->   Thanks for the notification. Actually, I've already sent the original
-> patch to Linus and that was for both jbd and jbd2. The patch was so trivial
-> I thought it's not worth splitting it up. I'm sorry if it caused any
-> trouble to you.
+On 01/05/2010 11:33 AM, H Hartley Sweeten wrote:
+> On Monday, January 04, 2010 8:41 AM, Peter Jones wrote:
+>> On 12/30/2009 02:49 PM, H Hartley Sweeten wrote:
+>>> Use the %pM kernel extension to display the MAC address.
+>>>
+>>> Also, remove the 'mac' variable and use nic->mac directly.
+>>>
+>>> Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
+>>> Cc: Peter Jones <pjones@redhat.com>
+>>
+>> Looks good to me.
+>>
+>> Acked-by: Peter Jones <pjones@redhat.com>
+> 
+> Hello Peter,
+> 
+> Will you be merging this?
+> 
+> I sent a number of similar patches to the netdev list.  David Miller
+> had merge issues with them due to a whitespace problem at the end of
+> the patches.  I have figure out the issue and am reposting the patch
+> series now.  If you have not merged this I will fix this one also and
+> send it to him with the others.
 
-No worries, I hadn't realized it had already been sent up to Linus.
+You sending it to him for merge is fine by me.
 
-   	      	     	      	     - Ted
+-- 
+        Peter
+
+All parts should go together without forcing. You must remember that
+the parts you are  reassembling were disassembled by you.  Therefore,
+if you can't get them together again, there must be a reason. By all
+means, do not use a hammer.
+		-- IBM maintenance manual, 1925
