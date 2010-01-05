@@ -1,29 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753702Ab0AEEv6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750868Ab0AEFF3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753702Ab0AEEv6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 4 Jan 2010 23:51:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752923Ab0AEEv5
+	id S1750868Ab0AEFF3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 00:05:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750763Ab0AEFF2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 23:51:57 -0500
-Received: from mail192.messagelabs.com ([216.82.241.243]:12915 "EHLO
-	mail192.messagelabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751612Ab0AEEv4 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 23:51:56 -0500
-X-VirusChecked: Checked
-X-Env-Sender: Venkappa.Mala@lntinfotech.com
-X-Msg-Ref: server-9.tower-192.messagelabs.com!1262667111!24435156!1
-X-StarScan-Version: 6.2.4; banners=lntinfotech.com,-,-
-X-Originating-IP: [203.101.96.8]
-From: Venkappa Mala <Venkappa.Mala@lntinfotech.com>
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Date: Tue, 5 Jan 2010 10:21:11 +0530
-Subject: Linux kernel crash dumps for ARM
-Thread-Topic: Linux kernel crash dumps for ARM
-Thread-Index: AQHKjcJ4PAPamaQdJEySpaX6qzPElZGGaeIN
-Message-ID: <EB1A7C66AD0C92419BFFC785A947865A09EA8C912A@BLRINMSMBX01.bglrodc.lntinfotech.com>
-References: <EB1A7C66AD0C92419BFFC785A947865A09EA8C9129@BLRINMSMBX01.bglrodc.lntinfotech.com>
-In-Reply-To: <EB1A7C66AD0C92419BFFC785A947865A09EA8C9129@BLRINMSMBX01.bglrodc.lntinfotech.com>
+	Tue, 5 Jan 2010 00:05:28 -0500
+Received: from na3sys009aog103.obsmtp.com ([74.125.149.71]:56423 "HELO
+	na3sys009aog103.obsmtp.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750716Ab0AEFF2 convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jan 2010 00:05:28 -0500
+X-Greylist: delayed 1319 seconds by postgrey-1.27 at vger.kernel.org; Tue, 05 Jan 2010 00:05:27 EST
+From: "Desai, Kashyap" <Kashyap.Desai@lsi.com>
+To: Greg KH <gregkh@suse.de>, Stefan Lippers-Hollmann <s.L-H@gmx.de>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "James.Bottomley@suse.de" <James.Bottomley@suse.de>,
+       "stable@kernel.org" <stable@kernel.org>
+Date: Tue, 5 Jan 2010 10:13:18 +0530
+Subject: RE: patch
+ scsi-mpt2sas-add-missing-initialization-of-scsih_cmds.patch added to
+ 2.6.32-stable tree
+Thread-Topic: patch
+ scsi-mpt2sas-add-missing-initialization-of-scsih_cmds.patch added to
+ 2.6.32-stable tree
+Thread-Index: AcqNl+9t3ClWjyKzRpKr9TDB8HERzAAKKwcA
+Message-ID: <0D1E8821739E724A86F4D16902CE275C1C93D49BBE@inbmail01.lsi.com>
+References: <12626340131357@kroah.org> <201001042255.07139.s.L-H@gmx.de>
+ <20100104234401.GA10770@suse.de>
+In-Reply-To: <20100104234401.GA10770@suse.de>
 Accept-Language: en-US
 Content-Language: en-US
 X-MS-Has-Attach: 
@@ -36,54 +40,56 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Greg and Stefan,
 
-With respect to "Linux kernel crash dumps for ARM", i have some doubts which are described as below.
+This patch is counter part of 
+http://git.kernel.org/?p=linux/kernel/git/jejb/scsi-misc-2.6.git;a=commit;h=744090d38b47ed8ead8f68b6f0c65866c0b9b17a
 
-If the machine has crashed so badly that you cannot enter commands or
-the disk is not available then you have three options :-
+.31 And .32 does not required this patch to be added, since it does not have commit 744090d38b47ed8ead8f68b6f0c65866c0b9b17a.
 
-(1) Hand copy the text from the screen
+Thanks,
+Kashyap
 
-(2) capture crash logs using Minicom.
-
-(3) save the crash data to a floppy disk or video rom or a swap partition or reserved memory.
-
-In the above three options, 1 & 2 are known and works as well.
-
-Regarding 3 option,
-----------------------------
-i would like to support for ARM11.
-
-As far as i know, the supported linux kernel crash dumps are
-"lkcd, netdump,diskdump, mini kernel dump and kdump/kexec".
-These are supported for x86 and PowerPC architectures with some constrains.
-
-i have some queries with respect to ARM supports, these are
-
-1.) kexec is supported in latest kernels
-        example: 2.6.29 kernel
-        File: arch/arm/kernel/machine_kexec.c
-
-    - is this working well or is there any constraints?
-
-2) As per kexec supports, kexec-tool is required and this allows you to load directly
-   to a new kernel from the currently running one
-
-    As from my side, i am not able to find arm implementation support in kexec-tools/crash sources.
-
-   - is kexce-tool supported for ARM or not?
-
-3) In lkcd, netdump,diskdump, mini kernel dump and kdump/kexec tools,
-
-   - which is the best choice for ARM or are there any best crash dump tool for ARM?
-
-Please clarify my queries.
-
-Best Regards,
-Venkappa
-
-
-This Email may contain confidential or privileged information for the intended recipient (s) If you are not the intended recipient, please do not use or disseminate the information, notify the sender and delete it from your system.
-
-______________________________________________________________________
+> -----Original Message-----
+> From: Greg KH [mailto:gregkh@suse.de]
+> Sent: Tuesday, January 05, 2010 5:14 AM
+> To: Stefan Lippers-Hollmann
+> Cc: linux-kernel@vger.kernel.org; Desai, Kashyap; James.Bottomley@suse.de;
+> stable@kernel.org
+> Subject: Re: patch scsi-mpt2sas-add-missing-initialization-of-
+> scsih_cmds.patch added to 2.6.32-stable tree
+> 
+> On Mon, Jan 04, 2010 at 10:55:02PM +0100, Stefan Lippers-Hollmann wrote:
+> > Hi
+> >
+> > On Monday 04 January 2010, gregkh@suse.de wrote:
+> > > This is a note to let you know that we have just queued up the patch
+> titled
+> > >
+> > >     Subject: SCSI: mpt2sas: add missing initialization of scsih_cmds
+> > >
+> > > to the 2.6.32-stable tree.  Its filename is
+> > >
+> > >     scsi-mpt2sas-add-missing-initialization-of-scsih_cmds.patch
+> >
+> > Adding this patch to 2.6.32 (and likely 2.6.31 as well) breaks building
+> the
+> > current stable queue:
+> >
+> >   LD      drivers/scsi/mpt2sas/built-in.o
+> >   CC [M]  drivers/scsi/mpt2sas/mpt2sas_base.o
+> > drivers/scsi/mpt2sas/mpt2sas_base.c: In function 'mpt2sas_base_attach':
+> > drivers/scsi/mpt2sas/mpt2sas_base.c:3500: error: 'struct
+> MPT2SAS_ADAPTER' has no member named 'scsih_cmds'
+> > drivers/scsi/mpt2sas/mpt2sas_base.c:3501: error: 'struct
+> MPT2SAS_ADAPTER' has no member named 'scsih_cmds'
+> > drivers/scsi/mpt2sas/mpt2sas_base.c:3502: error: 'struct
+> MPT2SAS_ADAPTER' has no member named 'scsih_cmds'
+> > make[6]: *** [drivers/scsi/mpt2sas/mpt2sas_base.o] Error 1
+> > make[5]: *** [drivers/scsi/mpt2sas] Error 2
+> 
+> Thanks, your build system seems faster than mine :)
+> 
+> I've deleted this patch from both the .31 and .32 queues.
+> 
+> greg k-h
