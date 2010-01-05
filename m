@@ -1,47 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755404Ab0AET2u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755410Ab0AET3r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755404Ab0AET2u (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 14:28:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754675Ab0AET2t
+	id S1755410Ab0AET3r (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 14:29:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754733Ab0AET3p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 14:28:49 -0500
-Received: from mail-yx0-f188.google.com ([209.85.210.188]:44942 "EHLO
-	mail-yx0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751119Ab0AET2t (ORCPT
+	Tue, 5 Jan 2010 14:29:45 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:41085 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754675Ab0AET3p (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 14:28:49 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type;
-        b=je3QZTsV4ESmaexObmvG19Bq6yMsDc3i0DoN6j7JMo0OahGdokRDrllU4jg10BZb63
-         cllD4l1qKk7CmVQtYLUC0tr2ZR8fsXrx1JZILDXgedLhZHbGMSyW6or+XK7l8zPs2m1o
-         IWgLoJgs2E6S3IpAegyYgKueQU4FfkPBJJVKE=
+	Tue, 5 Jan 2010 14:29:45 -0500
+Date: Tue, 5 Jan 2010 11:28:57 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Christoph Lameter <cl@linux-foundation.org>
+cc: Andi Kleen <andi@firstfloor.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Minchan Kim <minchan.kim@gmail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "hugh.dickins" <hugh.dickins@tiscali.co.uk>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [RFC][PATCH 6/8] mm: handle_speculative_fault()
+In-Reply-To: <alpine.DEB.2.00.1001051301060.5119@router.home>
+Message-ID: <alpine.LFD.2.00.1001051120430.3630@localhost.localdomain>
+References: <20100104182429.833180340@chello.nl> <20100104182813.753545361@chello.nl> <20100105092559.1de8b613.kamezawa.hiroyu@jp.fujitsu.com> <28c262361001042029w4b95f226lf54a3ed6a4291a3b@mail.gmail.com> <20100105134357.4bfb4951.kamezawa.hiroyu@jp.fujitsu.com>
+ <alpine.LFD.2.00.1001042052210.3630@localhost.localdomain> <20100105143046.73938ea2.kamezawa.hiroyu@jp.fujitsu.com> <20100105163939.a3f146fb.kamezawa.hiroyu@jp.fujitsu.com> <alpine.LFD.2.00.1001050707520.3630@localhost.localdomain>
+ <alpine.LFD.2.00.1001050810380.3630@localhost.localdomain> <87wrzwbh0z.fsf@basil.nowhere.org> <alpine.LFD.2.00.1001050950500.3630@localhost.localdomain> <alpine.DEB.2.00.1001051211000.2246@router.home> <alpine.LFD.2.00.1001051019280.3630@localhost.localdomain>
+ <alpine.DEB.2.00.1001051235200.2246@router.home> <alpine.LFD.2.00.1001051052150.3630@localhost.localdomain> <alpine.DEB.2.00.1001051301060.5119@router.home>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-In-Reply-To: <8bd0f97a0909291944q53a060buc7bcbb30c1240da7@mail.gmail.com>
-References: <1254133004-24877-1-git-send-email-21cnbao@gmail.com> 
-	<8bd0f97a0909291944q53a060buc7bcbb30c1240da7@mail.gmail.com>
-From: Mike Frysinger <vapier.adi@gmail.com>
-Date: Tue, 5 Jan 2010 14:28:27 -0500
-Message-ID: <8bd0f97a1001051128s272f9881q4f1418eba08f1478@mail.gmail.com>
-Subject: Re: [PATCH] Fix half-Y2K38 problem in timecompare_update while 
-	calculating offset
-To: Barry Song <21cnbao@gmail.com>
-Cc: akpm@linux-foundation.org, davem@davemloft.net, patrick.ohly@intel.com,
-       uclinux-dist-devel@blackfin.uclinux.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 29, 2009 at 21:44, Mike Frysinger wrote:
-> On Mon, Sep 28, 2009 at 06:16, Barry Song wrote:
->> ktime will overflow from 03:14:07 UTC on Tuesday, 19 January 2038,
->> ktime_add() in timecompare_update() will overflow a half earlier.
->> As a result, wrong offset will be gotten, then cause some strange
->> problems.
->
-> Barry: you forgot to include your s-o-b tag ...
 
-you still need to post your s-o-b if we want this to go any further
--mike
+
+On Tue, 5 Jan 2010, Christoph Lameter wrote:
+> 
+> The wait state is the processor being stopped due to not being able to
+> access the cacheline. Not the processor spinning in the xadd loop. That
+> only occurs if the critical section is longer than the timeout.
+
+You don't know what you're talking about, do you?
+
+Just go and read the source code.
+
+The process is spinning currently in the spin_lock loop. Here, I'll quote 
+it to you:
+
+                LOCK_PREFIX "xaddw %w0, %1\n"
+                "1:\t"
+                "cmpb %h0, %b0\n\t"
+                "je 2f\n\t"
+                "rep ; nop\n\t"
+                "movb %1, %b0\n\t"
+                /* don't need lfence here, because loads are in-order */
+                "jmp 1b\n"
+
+note the loop that spins - reading the thing over and over - waiting for 
+_that_ CPU to be the owner of the xadd ticket?
+
+That's the one you have now, only because x86-64 uses the STUPID FALLBACK 
+CODE for the rwsemaphores!
+
+In contrast, look at what the non-stupid rwsemaphore code does (which 
+triggers on x86-32):
+
+                     LOCK_PREFIX "  incl      (%%eax)\n\t"
+                     /* adds 0x00000001, returns the old value */
+                     "  jns        1f\n"
+                     "  call call_rwsem_down_read_failed\n"
+
+(that's a "down_read()", which happens to be the op we care most about. 
+See? That's a single locked "inc" (it avoids the xadd on the read side 
+because of how we've biased things). In particular, notice how this means 
+that we do NOT have fifty million CPU's all trying to read the same 
+location while one writes to it successfully.
+
+Spot the difference?
+
+Here's putting it another way. Which of these schenarios do you think 
+should result in less cross-node traffic:
+
+ - multiple CPU's that - one by one - get the cacheline for exclusive 
+   access.
+
+ - multiple CPU's that - one by one - get the cacheline for exclusive 
+   access, while other CPU's are all trying to read the same cacheline at 
+   the same time, over and over again, in a loop.
+
+See the shared part? See the difference? If you look at just a single lock 
+acquire, it boils down to these two scenarios
+
+ - one CPU gets the cacheline exclusively
+
+ - one CPU gets the cacheline exclusively while <n> other CPU's are all 
+   trying to read the old and the new value.
+
+It really is that simple.
+
+		Linus
