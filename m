@@ -1,47 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755317Ab0AETSx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932099Ab0AETV0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755317Ab0AETSx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 14:18:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754657Ab0AETSw
+	id S932099Ab0AETV0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 14:21:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754863Ab0AETVZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 14:18:52 -0500
-Received: from mga11.intel.com ([192.55.52.93]:56529 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754370Ab0AETSw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 14:18:52 -0500
+	Tue, 5 Jan 2010 14:21:25 -0500
+Received: from mga07.intel.com ([143.182.124.22]:26642 "EHLO
+	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932076Ab0AETVY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jan 2010 14:21:24 -0500
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,505,1257148800"; 
-   d="scan'208";a="528689968"
-Subject: Re: Xorg hangs on >= ~2.6.31 with Intel i915 driver
-From: David Woodhouse <david.woodhouse@intel.com>
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-Cc: "Wang, Zhenyu Z" <zhenyu.z.wang@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       David Airlie <airlied@linux.ie>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Eric Anholt <eric@anholt.net>
-In-Reply-To: <1262718168.7057.29.camel@nimitz>
-References: <1262718168.7057.29.camel@nimitz>
-Content-Type: text/plain; charset="UTF-8"
-Organization: Intel Corporation. Pipers Way, Swindon, Wiltshire, SN3 1RJ,
- UK.
-Date: Tue, 05 Jan 2010 19:18:37 +0000
-Message-ID: <1262719117.3181.7223.camel@macbook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 (2.28.2-1.fc12) 
-Content-Transfer-Encoding: 7bit
+X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
+   d="scan'208";a="229497585"
+Date: Tue, 5 Jan 2010 20:23:02 +0100
+From: Samuel Ortiz <sameo@linux.intel.com>
+To: Roel Kluin <roel.kluin@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, amit.kucheria@verdurent.com
+Subject: Re: [PATCH] mfd: Fix test of unsigned in
+ twl4030_configure_resource()
+Message-ID: <20100105192227.GJ4274@sortiz.org>
+References: <4B28E3A4.1010601@gmail.com>
+ <4B28E42F.9000209@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B28E42F.9000209@gmail.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2010-01-05 at 19:02 +0000, Dave Hansen wrote:
-> I've been seeing hangs when X starts up with newer kernels.  I sometimes
-> get a cursor on the screen, sometimes not.  I can move the cursor when I
-> can see it, but I can't switch to a text console.  Sysrq works.
+Hi Roel,
 
-http://bugzilla.kernel.org/show_bug.cgi?id=14627 ?
+On Wed, Dec 16, 2009 at 02:44:15PM +0100, Roel Kluin wrote:
+> devgroup is unsigned so the test did not work.
+This one was fixed with commit 56baa667973e53d6d38af2ad3731d558566d818b.
+
+Cheers,
+Samuel.
+
+
+> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+> ---
+> Found using coccinelle: http://coccinelle.lip6.fr/
+> 
+> see
+> vi arch/arm/mach-omap2/board-rx51-peripherals.c +512
+> 
+> Oops, missed some in previous patch.
+> 
+> Roel
+> 
+> diff --git a/drivers/mfd/twl4030-power.c b/drivers/mfd/twl4030-power.c
+> index d423e0c..cc984a5 100644
+> --- a/drivers/mfd/twl4030-power.c
+> +++ b/drivers/mfd/twl4030-power.c
+> @@ -335,7 +335,7 @@ static int __init twl4030_configure_resource(struct twl4030_resconfig *rconfig)
+>  		return err;
+>  	}
+>  
+> -	if (rconfig->devgroup >= 0) {
+> +	if (rconfig->devgroup != -1) {
+>  		grp &= ~DEVGROUP_MASK;
+>  		grp |= rconfig->devgroup << DEVGROUP_SHIFT;
+>  		err = twl4030_i2c_write_u8(TWL4030_MODULE_PM_RECEIVER,
+> @@ -355,12 +355,12 @@ static int __init twl4030_configure_resource(struct twl4030_resconfig *rconfig)
+>  		return err;
+>  	}
+>  
+> -	if (rconfig->type >= 0) {
+> +	if (rconfig->type != -1) {
+>  		type &= ~TYPE_MASK;
+>  		type |= rconfig->type << TYPE_SHIFT;
+>  	}
+>  
+> -	if (rconfig->type2 >= 0) {
+> +	if (rconfig->type2 != -1) {
+>  		type &= ~TYPE2_MASK;
+>  		type |= rconfig->type2 << TYPE2_SHIFT;
+>  	}
 
 -- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
-
+Intel Open Source Technology Centre
+http://oss.intel.com/
