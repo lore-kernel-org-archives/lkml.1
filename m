@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755638Ab0AEUPe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755377Ab0AEUPp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755638Ab0AEUPe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 15:15:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754109Ab0AEUP1
+	id S1755377Ab0AEUPp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 15:15:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755607Ab0AEUPc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 15:15:27 -0500
-Received: from kroah.org ([198.145.64.141]:49944 "EHLO coco.kroah.org"
+	Tue, 5 Jan 2010 15:15:32 -0500
+Received: from kroah.org ([198.145.64.141]:49939 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755434Ab0AEUGE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 15:06:04 -0500
+	id S1755428Ab0AEUF7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jan 2010 15:05:59 -0500
 X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jan  5 12:02:59 2010
-Message-Id: <20100105200259.732400414@mini.kroah.org>
+Message-Id: <20100105200259.383241783@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 05 Jan 2010 12:02:02 -0800
+Date: Tue, 05 Jan 2010 12:02:00 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, akpm@linux-foundation.org,
        torvalds@linux-foundation.org, stable-review@kernel.org
-Cc: Julia Lawall <julia@diku.dk>, "David S. Miller" <davem@davemloft.net>
-Subject: [06/39] drivers/net/usb: Correct code taking the size of a pointer
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Subject: [04/39] clockevents: Prevent clockevent_devices list corruption on cpu hotplug
 In-Reply-To: <20100105195007.GA23952@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -27,45 +27,67 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Julia Lawall <julia@diku.dk>
+From: Thomas Gleixner <tglx@linutronix.de>
 
-commit 6057912d7baad31be9819518674ffad349a065b1 upstream.
+commit bb6eddf7676e1c1f3e637aa93c5224488d99036f upstream.
 
-sizeof(dev->dev_addr) is the size of a pointer.  A few lines above, the
-size of this field is obtained using netdev->addr_len for a call to memcpy,
-so do the same here.
+Xiaotian Feng triggered a list corruption in the clock events list on
+CPU hotplug and debugged the root cause.
 
-A simplified version of the semantic patch that finds this problem is as
-follows: (http://coccinelle.lip6.fr/)
+If a CPU registers more than one per cpu clock event device, then only
+the active clock event device is removed on CPU_DEAD. The unused
+devices are kept in the clock events device list.
 
-// <smpl>
-@@
-expression *x;
-expression f;
-type T;
-@@
+On CPU up the clock event devices are registered again, which means
+that we list_add an already enqueued list_head. That results in list
+corruption.
 
-*f(...,(T)x,...)
-// </smpl>
+Resolve this by removing all devices which are associated to the dead
+CPU on CPU_DEAD.
 
-Signed-off-by: Julia Lawall <julia@diku.dk>
-Signed-off-by: David S. Miller <davem@davemloft.net>
+Reported-by: Xiaotian Feng <dfeng@redhat.com>
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Tested-by: Xiaotian Feng <dfeng@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/usb/rtl8150.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ kernel/time/clockevents.c |   18 +++++++++++++++---
+ 1 file changed, 15 insertions(+), 3 deletions(-)
 
---- a/drivers/net/usb/rtl8150.c
-+++ b/drivers/net/usb/rtl8150.c
-@@ -324,7 +324,7 @@ static int rtl8150_set_mac_address(struc
- 		dbg("%02X:", netdev->dev_addr[i]);
- 	dbg("%02X\n", netdev->dev_addr[i]);
- 	/* Set the IDR registers. */
--	set_registers(dev, IDR, sizeof(netdev->dev_addr), netdev->dev_addr);
-+	set_registers(dev, IDR, netdev->addr_len, netdev->dev_addr);
- #ifdef EEPROM_WRITE
- 	{
- 	u8 cr;
+--- a/kernel/time/clockevents.c
++++ b/kernel/time/clockevents.c
+@@ -237,8 +237,9 @@ void clockevents_exchange_device(struct 
+  */
+ void clockevents_notify(unsigned long reason, void *arg)
+ {
+-	struct list_head *node, *tmp;
++	struct clock_event_device *dev, *tmp;
+ 	unsigned long flags;
++	int cpu;
+ 
+ 	spin_lock_irqsave(&clockevents_lock, flags);
+ 	clockevents_do_notify(reason, arg);
+@@ -249,8 +250,19 @@ void clockevents_notify(unsigned long re
+ 		 * Unregister the clock event devices which were
+ 		 * released from the users in the notify chain.
+ 		 */
+-		list_for_each_safe(node, tmp, &clockevents_released)
+-			list_del(node);
++		list_for_each_entry_safe(dev, tmp, &clockevents_released, list)
++			list_del(&dev->list);
++		/*
++		 * Now check whether the CPU has left unused per cpu devices
++		 */
++		cpu = *((int *)arg);
++		list_for_each_entry_safe(dev, tmp, &clockevent_devices, list) {
++			if (cpumask_test_cpu(cpu, dev->cpumask) &&
++			    cpumask_weight(dev->cpumask) == 1) {
++				BUG_ON(dev->mode != CLOCK_EVT_MODE_UNUSED);
++				list_del(&dev->list);
++			}
++		}
+ 		break;
+ 	default:
+ 		break;
 
 
