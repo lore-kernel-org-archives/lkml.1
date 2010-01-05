@@ -1,491 +1,195 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754664Ab0AEONz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754689Ab0AEOOw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754664Ab0AEONz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 09:13:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754652Ab0AEONv
+	id S1754689Ab0AEOOw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 09:14:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754453Ab0AEOOq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 09:13:51 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:16409 "EHLO mx1.redhat.com"
+	Tue, 5 Jan 2010 09:14:46 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:43893 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754653Ab0AEONt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 09:13:49 -0500
+	id S1754620Ab0AEONk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jan 2010 09:13:40 -0500
 From: Gleb Natapov <gleb@redhat.com>
 To: kvm@vger.kernel.org
 Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, avi@redhat.com,
        mingo@elte.hu, a.p.zijlstra@chello.nl, tglx@linutronix.de,
        hpa@zytor.com, riel@redhat.com, cl@linux-foundation.org
-Subject: [PATCH v3 04/12] Add "handle page fault" PV helper.
-Date: Tue,  5 Jan 2010 16:12:46 +0200
-Message-Id: <1262700774-1808-5-git-send-email-gleb@redhat.com>
+Subject: [PATCH v3 06/12] Add get_user_pages() variant that fails if major fault is required.
+Date: Tue,  5 Jan 2010 16:12:48 +0200
+Message-Id: <1262700774-1808-7-git-send-email-gleb@redhat.com>
 In-Reply-To: <1262700774-1808-1-git-send-email-gleb@redhat.com>
 References: <1262700774-1808-1-git-send-email-gleb@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Allow paravirtualized guest to do special handling for some page faults.
+This patch add get_user_pages() variant that only succeeds if getting
+a reference to a page doesn't require major fault.
 
-The patch adds one 'if' to do_page_fault() function. The call is patched
-out when running on physical HW. I ran kernbech on the kernel with and
-without that additional 'if' and result were rawly the same:
-
-With 'if':                            Without 'if':
-Average Half load -j 8 Run (std deviation):
-Elapsed Time 338.122 (0.869207)       Elapsed Time 336.404 (1.69196)
-User Time 2025.49 (4.11097)           User Time 2028.17 (1.34199)
-System Time 218.098 (0.826632)        System Time 219.022 (0.978581)
-Percent CPU 663 (2.12132)             Percent CPU 667.4 (3.20936)
-Context Switches 140903 (2655.99)     Context Switches 138476 (3408.49)
-Sleeps 836103 (1594.93)               Sleeps 836048 (2597.78)
-
-Average Optimal load -j 16 Run (std deviation):
-Elapsed Time 255.32 (1.28328)         Elapsed Time 255.144 (1.09674)
-User Time 2342.93 (334.625)           User Time 2343.7 (332.612)
-System Time 248.722 (32.2921)         System Time 250.06 (32.7329)
-Percent CPU 906.9 (257.13)            Percent CPU 909.6 (255.326)
-Context Switches 294395 (161817)      Context Switches 293186 (163124)
-Sleeps 890162 (57019.2)               Sleeps 890534 (57494.5)
-
-Average Custom load -j 32 Run (std deviation):
-Elapsed Time 236.318 (1.56739)        Elapsed Time 236.018 (1.32215)
-User Time 2528.19 (381.49)            User Time 2530.75 (382.228)
-System Time 264.739 (34.9425)         System Time 266.082 (35.1991)
-Percent CPU 1055.2 (299.438)          Percent CPU 1058.6 (299.153)
-Context Switches 445730 (256736)      Context Switches 446093 (259253)
-Sleeps 939835 (85894.1)               Sleeps 939638 (85396.9)
-
-This is how the 'if' affects generated assembly:
-
-With 'if':                     Without 'if':
-do_page_fault:                 do_page_fault:
- push   %rbp                    push   %rbp
- mov    %rsp,%rbp               mov    %rsp,%rbp
- push   %r15                    push   %r15
- push   %r14                    push   %r14
- push   %r13                    push   %r13
- push   %r12                    push   %r12
- push   %rbx                    push   %rbx
- sub    $0x28,%rsp              sub    $0x18,%rsp
- callq  ffffffff81002a80        callq  ffffffff81002a80
- mov    %rdi,%r14               mov    %gs:0xb540,%r15
- mov    %rsi,%r13               mov    0x270(%r15),%rax
- callq  *0xffffffff816ab308     mov    %rdi,%r14
- test   %eax,%eax               mov    %rsi,%r13
- jne    ffffffff813f10cb
- mov    %gs:0xb540,%r15
- mov    0x270(%r15),%rax
-
-And this is how the code looks like at runtime after patching:
-
-Running on kvm:                   Running on phys HW:
-do_page_fault:                    do_page_fault:
- push   %rbp                       push   %rbp
- mov    %rsp,%rbp                  mov    %rsp,%rbp
- push   %r15                       push   %r15
- push   %r14                       push   %r14
- push   %r13                       push   %r13
- push   %r12                       push   %r12
- push   %rbx                       push   %rbx
- sub    $0x28,%rsp                 sub    $0x28,%rsp
- callq  0xffffffff81002a80         callq  0xffffffff81002a80
- mov    %rdi,%r14                  mov    %rdi,%r14
- mov    %rsi,%r13                  mov    %rsi,%r13
- callq  0xffffffff8102417e         xor    %rax,%rax
- xchg   %ax,%ax                    nopl   0x0(%rax)
- test   %eax,%eax                  test   %eax,%eax
- jne    0xffffffff813f10cb         jne    0xffffffff813f10cb
- mov    %gs:0xb540,%r15            mov    %gs:0xb540,%r15
-
+Reviewed-by: Rik van Riel <riel@redhat.com>
 Signed-off-by: Gleb Natapov <gleb@redhat.com>
 ---
- arch/x86/include/asm/kvm_para.h       |    3 +
- arch/x86/include/asm/paravirt.h       |   11 ++-
- arch/x86/include/asm/paravirt_types.h |    4 +
- arch/x86/kernel/kvm.c                 |  162 +++++++++++++++++++++++++++++++++
- arch/x86/kernel/paravirt.c            |    8 ++
- arch/x86/kernel/paravirt_patch_32.c   |    8 ++
- arch/x86/kernel/paravirt_patch_64.c   |    7 ++
- arch/x86/mm/fault.c                   |    3 +
- 8 files changed, 204 insertions(+), 2 deletions(-)
+ fs/ncpfs/mmap.c    |    2 ++
+ include/linux/mm.h |    5 +++++
+ mm/filemap.c       |    3 +++
+ mm/memory.c        |   31 ++++++++++++++++++++++++++++---
+ mm/shmem.c         |    8 +++++++-
+ 5 files changed, 45 insertions(+), 4 deletions(-)
 
-diff --git a/arch/x86/include/asm/kvm_para.h b/arch/x86/include/asm/kvm_para.h
-index 56ca41b..98edaa9 100644
---- a/arch/x86/include/asm/kvm_para.h
-+++ b/arch/x86/include/asm/kvm_para.h
-@@ -51,6 +51,9 @@ struct kvm_mmu_op_release_pt {
- 	__u64 pt_phys;
- };
+diff --git a/fs/ncpfs/mmap.c b/fs/ncpfs/mmap.c
+index 15458de..338527e 100644
+--- a/fs/ncpfs/mmap.c
++++ b/fs/ncpfs/mmap.c
+@@ -39,6 +39,8 @@ static int ncp_file_mmap_fault(struct vm_area_struct *area,
+ 	int bufsize;
+ 	int pos; /* XXX: loff_t ? */
  
-+#define KVM_PV_REASON_PAGE_NOT_PRESENT 1
-+#define KVM_PV_REASON_PAGE_READY 2
++	if (vmf->flags & FAULT_FLAG_MINOR)
++		return VM_FAULT_MAJOR | VM_FAULT_ERROR;
+ 	/*
+ 	 * ncpfs has nothing against high pages as long
+ 	 * as recvmsg and memset works on it
+diff --git a/include/linux/mm.h b/include/linux/mm.h
+index 2265f28..32e9c6e 100644
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -136,6 +136,7 @@ extern pgprot_t protection_map[16];
+ #define FAULT_FLAG_WRITE	0x01	/* Fault was a write access */
+ #define FAULT_FLAG_NONLINEAR	0x02	/* Fault was via a nonlinear mapping */
+ #define FAULT_FLAG_MKWRITE	0x04	/* Fault was mkwrite of existing pte */
++#define FAULT_FLAG_MINOR	0x08	/* Do only minor fault */
+ 
+ /*
+  * This interface is used by x86 PAT code to identify a pfn mapping that is
+@@ -836,6 +837,9 @@ extern int access_process_vm(struct task_struct *tsk, unsigned long addr, void *
+ int get_user_pages(struct task_struct *tsk, struct mm_struct *mm,
+ 			unsigned long start, int nr_pages, int write, int force,
+ 			struct page **pages, struct vm_area_struct **vmas);
++int get_user_pages_noio(struct task_struct *tsk, struct mm_struct *mm,
++			unsigned long start, int nr_pages, int write, int force,
++			struct page **pages, struct vm_area_struct **vmas);
+ int get_user_pages_fast(unsigned long start, int nr_pages, int write,
+ 			struct page **pages);
+ struct page *get_dump_page(unsigned long addr);
+@@ -1257,6 +1261,7 @@ struct page *follow_page(struct vm_area_struct *, unsigned long address,
+ #define FOLL_GET	0x04	/* do get_page on page */
+ #define FOLL_DUMP	0x08	/* give error on hole if it would be zero */
+ #define FOLL_FORCE	0x10	/* get_user_pages read/write w/o permission */
++#define FOLL_MINOR	0x20	/* do only minor page faults */
+ 
+ typedef int (*pte_fn_t)(pte_t *pte, pgtable_t token, unsigned long addr,
+ 			void *data);
+diff --git a/mm/filemap.c b/mm/filemap.c
+index 96ac6b0..25768ad 100644
+--- a/mm/filemap.c
++++ b/mm/filemap.c
+@@ -1509,6 +1509,9 @@ int filemap_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
+ 			goto no_cached_page;
+ 		}
+ 	} else {
++		if (vmf->flags & FAULT_FLAG_MINOR)
++			return VM_FAULT_MAJOR | VM_FAULT_ERROR;
 +
- struct kvm_vcpu_pv_apf_data {
- 	__u32 reason;
- 	__u32 enabled;
-diff --git a/arch/x86/include/asm/paravirt.h b/arch/x86/include/asm/paravirt.h
-index dd59a85..0c3e95b 100644
---- a/arch/x86/include/asm/paravirt.h
-+++ b/arch/x86/include/asm/paravirt.h
-@@ -6,6 +6,7 @@
- #ifdef CONFIG_PARAVIRT
- #include <asm/pgtable_types.h>
- #include <asm/asm.h>
-+#include <asm/ptrace.h>
+ 		/* No page in the page cache at all */
+ 		do_sync_mmap_readahead(vma, ra, file, offset);
+ 		count_vm_event(PGMAJFAULT);
+diff --git a/mm/memory.c b/mm/memory.c
+index 09e4b1b..89e0074 100644
+--- a/mm/memory.c
++++ b/mm/memory.c
+@@ -1336,10 +1336,13 @@ int __get_user_pages(struct task_struct *tsk, struct mm_struct *mm,
+ 			cond_resched();
+ 			while (!(page = follow_page(vma, start, foll_flags))) {
+ 				int ret;
++				unsigned int fault_fl =
++					((foll_flags & FOLL_WRITE) ?
++					FAULT_FLAG_WRITE : 0) |
++					((foll_flags & FOLL_MINOR) ?
++					FAULT_FLAG_MINOR : 0);
  
- #include <asm/paravirt_types.h>
+-				ret = handle_mm_fault(mm, vma, start,
+-					(foll_flags & FOLL_WRITE) ?
+-					FAULT_FLAG_WRITE : 0);
++				ret = handle_mm_fault(mm, vma, start, fault_fl);
  
-@@ -699,15 +700,21 @@ static inline void pmd_clear(pmd_t *pmdp)
+ 				if (ret & VM_FAULT_ERROR) {
+ 					if (ret & VM_FAULT_OOM)
+@@ -1347,6 +1350,8 @@ int __get_user_pages(struct task_struct *tsk, struct mm_struct *mm,
+ 					if (ret &
+ 					    (VM_FAULT_HWPOISON|VM_FAULT_SIGBUS))
+ 						return i ? i : -EFAULT;
++					else if (ret & VM_FAULT_MAJOR)
++						return i ? i : -EFAULT;
+ 					BUG();
+ 				}
+ 				if (ret & VM_FAULT_MAJOR)
+@@ -1457,6 +1462,23 @@ int get_user_pages(struct task_struct *tsk, struct mm_struct *mm,
  }
- #endif	/* CONFIG_X86_PAE */
+ EXPORT_SYMBOL(get_user_pages);
  
-+static inline void arch_end_context_switch(struct task_struct *next)
++int get_user_pages_noio(struct task_struct *tsk, struct mm_struct *mm,
++		unsigned long start, int nr_pages, int write, int force,
++		struct page **pages, struct vm_area_struct **vmas)
 +{
-+	PVOP_VCALL1(pv_cpu_ops.end_context_switch, next);
++	int flags = FOLL_TOUCH | FOLL_MINOR;
++
++	if (pages)
++		flags |= FOLL_GET;
++	if (write)
++		flags |= FOLL_WRITE;
++	if (force)
++		flags |= FOLL_FORCE;
++
++	return __get_user_pages(tsk, mm, start, nr_pages, flags, pages, vmas);
 +}
++EXPORT_SYMBOL(get_user_pages_noio);
 +
- #define  __HAVE_ARCH_START_CONTEXT_SWITCH
- static inline void arch_start_context_switch(struct task_struct *prev)
+ /**
+  * get_dump_page() - pin user page in memory while writing it to core dump
+  * @addr: user address
+@@ -2536,6 +2558,9 @@ static int do_swap_page(struct mm_struct *mm, struct vm_area_struct *vma,
+ 	delayacct_set_flag(DELAYACCT_PF_SWAPIN);
+ 	page = lookup_swap_cache(entry);
+ 	if (!page) {
++		if (flags & FAULT_FLAG_MINOR)
++			return VM_FAULT_MAJOR | VM_FAULT_ERROR;
++
+ 		grab_swap_token(mm); /* Contend for token _before_ read-in */
+ 		page = swapin_readahead(entry,
+ 					GFP_HIGHUSER_MOVABLE, vma, address);
+diff --git a/mm/shmem.c b/mm/shmem.c
+index eef4ebe..ab3a255 100644
+--- a/mm/shmem.c
++++ b/mm/shmem.c
+@@ -1225,6 +1225,7 @@ static int shmem_getpage(struct inode *inode, unsigned long idx,
+ 	swp_entry_t swap;
+ 	gfp_t gfp;
+ 	int error;
++	int flags = type ? *type : 0;
+ 
+ 	if (idx >= SHMEM_MAX_INDEX)
+ 		return -EFBIG;
+@@ -1273,6 +1274,11 @@ repeat:
+ 		swappage = lookup_swap_cache(swap);
+ 		if (!swappage) {
+ 			shmem_swp_unmap(entry);
++			if (flags & FAULT_FLAG_MINOR) {
++				spin_unlock(&info->lock);
++				*type = VM_FAULT_MAJOR | VM_FAULT_ERROR;
++				goto failed;
++			}
+ 			/* here we actually do the io */
+ 			if (type && !(*type & VM_FAULT_MAJOR)) {
+ 				__count_vm_event(PGMAJFAULT);
+@@ -1481,7 +1487,7 @@ static int shmem_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
  {
- 	PVOP_VCALL1(pv_cpu_ops.start_context_switch, prev);
- }
+ 	struct inode *inode = vma->vm_file->f_path.dentry->d_inode;
+ 	int error;
+-	int ret;
++	int ret = (int)vmf->flags;
  
--static inline void arch_end_context_switch(struct task_struct *next)
-+static inline int handle_page_fault(struct pt_regs *regs,
-+				    unsigned long error_code)
- {
--	PVOP_VCALL1(pv_cpu_ops.end_context_switch, next);
-+	return PVOP_CALL2(int, pv_cpu_ops.handle_pf, regs, error_code);
- }
- 
- #define  __HAVE_ARCH_ENTER_LAZY_MMU_MODE
-diff --git a/arch/x86/include/asm/paravirt_types.h b/arch/x86/include/asm/paravirt_types.h
-index b1e70d5..1aec9b5 100644
---- a/arch/x86/include/asm/paravirt_types.h
-+++ b/arch/x86/include/asm/paravirt_types.h
-@@ -186,6 +186,7 @@ struct pv_cpu_ops {
- 
- 	void (*start_context_switch)(struct task_struct *prev);
- 	void (*end_context_switch)(struct task_struct *next);
-+	int (*handle_pf)(struct pt_regs *regs, unsigned long error_code);
- };
- 
- struct pv_irq_ops {
-@@ -385,6 +386,7 @@ extern struct pv_lock_ops pv_lock_ops;
- unsigned paravirt_patch_nop(void);
- unsigned paravirt_patch_ident_32(void *insnbuf, unsigned len);
- unsigned paravirt_patch_ident_64(void *insnbuf, unsigned len);
-+unsigned paravirt_patch_ret_0(void *insnbuf, unsigned len);
- unsigned paravirt_patch_ignore(unsigned len);
- unsigned paravirt_patch_call(void *insnbuf,
- 			     const void *target, u16 tgt_clobbers,
-@@ -676,8 +678,10 @@ void paravirt_leave_lazy_mmu(void);
- void _paravirt_nop(void);
- u32 _paravirt_ident_32(u32);
- u64 _paravirt_ident_64(u64);
-+unsigned long _paravirt_ret_0(void);
- 
- #define paravirt_nop	((void *)_paravirt_nop)
-+#define paravirt_ret_0  ((void *)_paravirt_ret_0)
- 
- /* These all sit in the .parainstructions section to tell us what to patch. */
- struct paravirt_patch_site {
-diff --git a/arch/x86/kernel/kvm.c b/arch/x86/kernel/kvm.c
-index 001222c..2245f35 100644
---- a/arch/x86/kernel/kvm.c
-+++ b/arch/x86/kernel/kvm.c
-@@ -29,6 +29,8 @@
- #include <linux/hardirq.h>
- #include <linux/notifier.h>
- #include <linux/reboot.h>
-+#include <linux/hash.h>
-+#include <linux/sched.h>
- #include <asm/timer.h>
- #include <asm/cpu.h>
- 
-@@ -54,6 +56,159 @@ static void kvm_io_delay(void)
- {
- }
- 
-+#define KVM_TASK_SLEEP_HASHBITS 8
-+#define KVM_TASK_SLEEP_HASHSIZE (1<<KVM_TASK_SLEEP_HASHBITS)
-+
-+struct kvm_task_sleep_node {
-+	struct hlist_node link;
-+	wait_queue_head_t wq;
-+	u32 token;
-+	int cpu;
-+};
-+
-+static struct kvm_task_sleep_head {
-+	spinlock_t lock;
-+	struct hlist_head list;
-+} async_pf_sleepers[KVM_TASK_SLEEP_HASHSIZE];
-+
-+static struct kvm_task_sleep_node *_find_apf_task(struct kvm_task_sleep_head *b,
-+						  u64 token)
-+{
-+	struct hlist_node *p;
-+
-+	hlist_for_each(p, &b->list) {
-+		struct kvm_task_sleep_node *n =
-+			hlist_entry(p, typeof(*n), link);
-+		if (n->token == token)
-+			return n;
-+	}
-+
-+	return NULL;
-+}
-+
-+static void apf_task_wait(struct task_struct *tsk, u32 token)
-+{
-+	u32 key = hash_32(token, KVM_TASK_SLEEP_HASHBITS);
-+	struct kvm_task_sleep_head *b = &async_pf_sleepers[key];
-+	struct kvm_task_sleep_node n, *e;
-+	DEFINE_WAIT(wait);
-+
-+	spin_lock(&b->lock);
-+	e = _find_apf_task(b, token);
-+	if (e) {
-+		/* dummy entry exist -> wake up was delivered ahead of PF */
-+		hlist_del(&e->link);
-+		kfree(e);
-+		spin_unlock(&b->lock);
-+		return;
-+	}
-+
-+	n.token = token;
-+	n.cpu = smp_processor_id();
-+	init_waitqueue_head(&n.wq);
-+	hlist_add_head(&n.link, &b->list);
-+	spin_unlock(&b->lock);
-+
-+	for (;;) {
-+		prepare_to_wait(&n.wq, &wait, TASK_UNINTERRUPTIBLE);
-+		if (hlist_unhashed(&n.link))
-+			break;
-+		schedule();
-+	}
-+	finish_wait(&n.wq, &wait);
-+
-+	return;
-+}
-+
-+static void apf_task_wake_one(struct kvm_task_sleep_node *n)
-+{
-+	hlist_del_init(&n->link);
-+	if (waitqueue_active(&n->wq))
-+		wake_up(&n->wq);
-+}
-+
-+static void apf_task_wake(u32 token)
-+{
-+	u32 key = hash_32(token, KVM_TASK_SLEEP_HASHBITS);
-+	struct kvm_task_sleep_head *b = &async_pf_sleepers[key];
-+	struct kvm_task_sleep_node *n;
-+
-+again:
-+	spin_lock(&b->lock);
-+	n = _find_apf_task(b, token);
-+	if (!n) {
-+		/*
-+		 * async PF was not yet handled.
-+		 * Add dummy entry for the token.
-+		 */
-+		n = kmalloc(sizeof(*n), GFP_ATOMIC);
-+		if (!n) {
-+			/*
-+			 * Allocation failed! Busy wait while other vcpu
-+			 * handles async PF.
-+			 */
-+			spin_unlock(&b->lock);
-+			cpu_relax();
-+			goto again;
-+		}
-+		n->token = token;
-+		n->cpu = smp_processor_id();
-+		init_waitqueue_head(&n->wq);
-+		hlist_add_head(&n->link, &b->list);
-+	} else
-+		apf_task_wake_one(n);
-+	spin_unlock(&b->lock);
-+	return;
-+}
-+
-+static void apf_task_wake_all(void)
-+{
-+	int i;
-+
-+	for (i = 0; i < KVM_TASK_SLEEP_HASHSIZE; i++) {
-+		struct hlist_node *p, *next;
-+		struct kvm_task_sleep_head *b = &async_pf_sleepers[i];
-+		spin_lock(&b->lock);
-+		hlist_for_each_safe(p, next, &b->list) {
-+			struct kvm_task_sleep_node *n =
-+				hlist_entry(p, typeof(*n), link);
-+			if (n->cpu == smp_processor_id())
-+				apf_task_wake_one(n);
-+		}
-+		spin_unlock(&b->lock);
-+	}
-+}
-+
-+int kvm_handle_pf(struct pt_regs *regs, unsigned long error_code)
-+{
-+	u32 reason, token;
-+
-+	if (!__get_cpu_var(apf_reason).enabled)
-+		return 0;
-+
-+	reason = __get_cpu_var(apf_reason).reason;
-+	__get_cpu_var(apf_reason).reason = 0;
-+
-+	token = (u32)read_cr2();
-+
-+	switch (reason) {
-+	default:
-+		return 0;
-+	case KVM_PV_REASON_PAGE_NOT_PRESENT:
-+		/* page is swapped out by the host. */
-+		apf_task_wait(current, token);
-+		break;
-+	case KVM_PV_REASON_PAGE_READY:
-+		if (unlikely(token == ~0))
-+			apf_task_wake_all();
-+		else
-+			apf_task_wake(token);
-+		break;
-+	}
-+
-+	return 1;
-+}
-+
- static void kvm_mmu_op(void *buffer, unsigned len)
- {
- 	int r;
-@@ -207,6 +362,9 @@ static void __init paravirt_ops_setup(void)
- 	if (kvm_para_has_feature(KVM_FEATURE_NOP_IO_DELAY))
- 		pv_cpu_ops.io_delay = kvm_io_delay;
- 
-+	if (kvm_para_has_feature(KVM_FEATURE_ASYNC_PF))
-+		pv_cpu_ops.handle_pf = kvm_handle_pf;
-+
- 	if (kvm_para_has_feature(KVM_FEATURE_MMU_OP)) {
- 		pv_mmu_ops.set_pte = kvm_set_pte;
- 		pv_mmu_ops.set_pte_at = kvm_set_pte_at;
-@@ -270,11 +428,15 @@ static void __init kvm_smp_prepare_boot_cpu(void)
- 
- void __init kvm_guest_init(void)
- {
-+	int i;
-+
- 	if (!kvm_para_available())
- 		return;
- 
- 	paravirt_ops_setup();
- 	register_reboot_notifier(&kvm_pv_reboot_nb);
-+	for (i = 0; i < KVM_TASK_SLEEP_HASHSIZE; i++)
-+		spin_lock_init(&async_pf_sleepers[i].lock);
- #ifdef CONFIG_SMP
- 	smp_ops.smp_prepare_boot_cpu = kvm_smp_prepare_boot_cpu;
- #else
-diff --git a/arch/x86/kernel/paravirt.c b/arch/x86/kernel/paravirt.c
-index 1b1739d..7d8f37b 100644
---- a/arch/x86/kernel/paravirt.c
-+++ b/arch/x86/kernel/paravirt.c
-@@ -54,6 +54,11 @@ u64 _paravirt_ident_64(u64 x)
- 	return x;
- }
- 
-+unsigned long _paravirt_ret_0(void)
-+{
-+	return 0;
-+}
-+
- void __init default_banner(void)
- {
- 	printk(KERN_INFO "Booting paravirtualized kernel on %s\n",
-@@ -154,6 +159,8 @@ unsigned paravirt_patch_default(u8 type, u16 clobbers, void *insnbuf,
- 		ret = paravirt_patch_ident_32(insnbuf, len);
- 	else if (opfunc == _paravirt_ident_64)
- 		ret = paravirt_patch_ident_64(insnbuf, len);
-+	else if (opfunc == _paravirt_ret_0)
-+		ret = paravirt_patch_ret_0(insnbuf, len);
- 
- 	else if (type == PARAVIRT_PATCH(pv_cpu_ops.iret) ||
- 		 type == PARAVIRT_PATCH(pv_cpu_ops.irq_enable_sysexit) ||
-@@ -380,6 +387,7 @@ struct pv_cpu_ops pv_cpu_ops = {
- 
- 	.start_context_switch = paravirt_nop,
- 	.end_context_switch = paravirt_nop,
-+	.handle_pf = paravirt_ret_0,
- };
- 
- struct pv_apic_ops pv_apic_ops = {
-diff --git a/arch/x86/kernel/paravirt_patch_32.c b/arch/x86/kernel/paravirt_patch_32.c
-index d9f32e6..de006b1 100644
---- a/arch/x86/kernel/paravirt_patch_32.c
-+++ b/arch/x86/kernel/paravirt_patch_32.c
-@@ -12,6 +12,8 @@ DEF_NATIVE(pv_mmu_ops, read_cr3, "mov %cr3, %eax");
- DEF_NATIVE(pv_cpu_ops, clts, "clts");
- DEF_NATIVE(pv_cpu_ops, read_tsc, "rdtsc");
- 
-+DEF_NATIVE(, mov0, "xor %eax, %eax");
-+
- unsigned paravirt_patch_ident_32(void *insnbuf, unsigned len)
- {
- 	/* arg in %eax, return in %eax */
-@@ -24,6 +26,12 @@ unsigned paravirt_patch_ident_64(void *insnbuf, unsigned len)
- 	return 0;
- }
- 
-+unsigned paravirt_patch_ret_0(void *insnbuf, unsigned len)
-+{
-+	return paravirt_patch_insns(insnbuf, len,
-+				    start__mov0, end__mov0);
-+}
-+
- unsigned native_patch(u8 type, u16 clobbers, void *ibuf,
- 		      unsigned long addr, unsigned len)
- {
-diff --git a/arch/x86/kernel/paravirt_patch_64.c b/arch/x86/kernel/paravirt_patch_64.c
-index 3f08f34..d685e7d 100644
---- a/arch/x86/kernel/paravirt_patch_64.c
-+++ b/arch/x86/kernel/paravirt_patch_64.c
-@@ -21,6 +21,7 @@ DEF_NATIVE(pv_cpu_ops, swapgs, "swapgs");
- 
- DEF_NATIVE(, mov32, "mov %edi, %eax");
- DEF_NATIVE(, mov64, "mov %rdi, %rax");
-+DEF_NATIVE(, mov0, "xor %rax, %rax");
- 
- unsigned paravirt_patch_ident_32(void *insnbuf, unsigned len)
- {
-@@ -34,6 +35,12 @@ unsigned paravirt_patch_ident_64(void *insnbuf, unsigned len)
- 				    start__mov64, end__mov64);
- }
- 
-+unsigned paravirt_patch_ret_0(void *insnbuf, unsigned len)
-+{
-+	return paravirt_patch_insns(insnbuf, len,
-+				    start__mov0, end__mov0);
-+}
-+
- unsigned native_patch(u8 type, u16 clobbers, void *ibuf,
- 		      unsigned long addr, unsigned len)
- {
-diff --git a/arch/x86/mm/fault.c b/arch/x86/mm/fault.c
-index f627779..7abc3ee 100644
---- a/arch/x86/mm/fault.c
-+++ b/arch/x86/mm/fault.c
-@@ -953,6 +953,9 @@ do_page_fault(struct pt_regs *regs, unsigned long error_code)
- 	int write;
- 	int fault;
- 
-+	if (handle_page_fault(regs, error_code))
-+		return;
-+
- 	tsk = current;
- 	mm = tsk->mm;
- 
+ 	if (((loff_t)vmf->pgoff << PAGE_CACHE_SHIFT) >= i_size_read(inode))
+ 		return VM_FAULT_SIGBUS;
 -- 
 1.6.5
 
