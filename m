@@ -1,50 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754782Ab0AESFI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753709Ab0AESOI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754782Ab0AESFI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 13:05:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754570Ab0AESFH
+	id S1753709Ab0AESOI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 13:14:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751234Ab0AESOH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 13:05:07 -0500
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:40208 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754379Ab0AESFG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 13:05:06 -0500
-Message-ID: <4B437F4A.6030808@us.ibm.com>
-Date: Tue, 05 Jan 2010 10:04:58 -0800
-From: Darren Hart <dvhltc@us.ibm.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-CC: Peter Zijlstra <peterz@infradead.org>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+	Tue, 5 Jan 2010 13:14:07 -0500
+Received: from nlpi129.sbcis.sbc.com ([207.115.36.143]:51452 "EHLO
+	nlpi129.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751096Ab0AESOG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jan 2010 13:14:06 -0500
+Date: Tue, 5 Jan 2010 12:13:05 -0600 (CST)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@router.home
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Andi Kleen <andi@firstfloor.org>,
        KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Nick Piggin <npiggin@suse.de>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Ulrich Drepper <drepper@gmail.com>
-Subject: Re: [PATCH] futex: Fix ZERO_PAGE cause infinite loop
-References: <20091224182630.3DCB.A69D9226@jp.fujitsu.com> <1261647565.4937.177.camel@laptop> <20091225083305.AA78.A69D9226@jp.fujitsu.com>
-In-Reply-To: <20091225083305.AA78.A69D9226@jp.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+       Minchan Kim <minchan.kim@gmail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "hugh.dickins" <hugh.dickins@tiscali.co.uk>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [RFC][PATCH 6/8] mm: handle_speculative_fault()
+In-Reply-To: <alpine.LFD.2.00.1001050950500.3630@localhost.localdomain>
+Message-ID: <alpine.DEB.2.00.1001051211000.2246@router.home>
+References: <20100104182429.833180340@chello.nl> <20100104182813.753545361@chello.nl> <20100105092559.1de8b613.kamezawa.hiroyu@jp.fujitsu.com> <28c262361001042029w4b95f226lf54a3ed6a4291a3b@mail.gmail.com> <20100105134357.4bfb4951.kamezawa.hiroyu@jp.fujitsu.com>
+ <alpine.LFD.2.00.1001042052210.3630@localhost.localdomain> <20100105143046.73938ea2.kamezawa.hiroyu@jp.fujitsu.com> <20100105163939.a3f146fb.kamezawa.hiroyu@jp.fujitsu.com> <alpine.LFD.2.00.1001050707520.3630@localhost.localdomain>
+ <alpine.LFD.2.00.1001050810380.3630@localhost.localdomain> <87wrzwbh0z.fsf@basil.nowhere.org> <alpine.LFD.2.00.1001050950500.3630@localhost.localdomain>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KOSAKI Motohiro wrote:
+On Tue, 5 Jan 2010, Linus Torvalds wrote:
 
-> I don't know any library except glibc use futex directly, or not. 
-> but we don't have any reason to assume futex is used only glibc.
-> (plus, glibc might change its implementation in future release, perhaps)
+> So a spinlock is as cheap as an atomic when there is no contention (which
+> is the common single-thread case - the real cost of both lock and atomic
+> is simply the fact that CPU serialization is expensive), but when there is
+> actual lock contention, I bet the atomic xadd is going to be shown to be
+> superior.
+>
+> Remember: we commonly claim that 'spin_unlock' is basically free on x86 -
+> and that's true, but it is _only_ true for the uncontended state.
 
-I only know of 3 off-hand. The checkpoint restart guys have test suites 
-that use the futex syscalls. The futextest test suite obviously does. 
-There is also the userspace RCU library that Mathieu Desnoyers has been 
-workingon. None of these make use off the zero page as far as I know. 
-However, once we sort this out, I shall have to add such a test to 
-futextest, perhaps something similar to the test in this thread.
+Its also free if the MESI algorithm has been tuned in such a way that the
+exclusive cacheline that was just acquired is not immediately released
+after a single access.
 
--- 
-Darren Hart
-IBM Linux Technology Center
-Real-Time Linux Team
+If the critical section protected by the spinlock is small then the
+delay will keep the cacheline exclusive until we hit the unlock. This
+is the case here as far as I can tell.
+
+
