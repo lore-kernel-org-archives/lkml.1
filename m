@@ -1,94 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754057Ab0AELse@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754545Ab0AELs0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754057Ab0AELse (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 06:48:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754503Ab0AELsM
+	id S1754545Ab0AELs0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 06:48:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754450Ab0AELsJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 06:48:12 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:36331 "EHLO
+	Tue, 5 Jan 2010 06:48:09 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:36323 "EHLO
 	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754238Ab0AELsG (ORCPT
+	with ESMTP id S1753877Ab0AELsD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 06:48:06 -0500
+	Tue, 5 Jan 2010 06:48:03 -0500
 From: Andi Kleen <andi@firstfloor.org>
 References: <201001051247.104464547@firstfloor.org>
 In-Reply-To: <201001051247.104464547@firstfloor.org>
 To: linux-kernel@vger.kernel.org, greg@kroah.com
-Subject: [PATCH] [7/12] SYSDEV: Use sysdev_class attribute arrays in node driver
-Message-Id: <20100105114804.87EAAB17C2@basil.firstfloor.org>
-Date: Tue,  5 Jan 2010 12:48:04 +0100 (CET)
+Subject: [PATCH] [3/12] SYSDEV: Convert cpu driver sysdev class attributes 
+Message-Id: <20100105114800.7CE01B17C2@basil.firstfloor.org>
+Date: Tue,  5 Jan 2010 12:48:00 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Convert the node driver to sysdev_class attribute arrays. This
-greatly cleans up the code and remove a lot of code.
+Using the new attribute argument convert the cpu driver class attributes
+to carry the node state. Then use a shared function to do what 
+a lot of individual functions did before.
 
-Saves ~150 bytes of code on x86-64.
+This eliminates an ugly macro.
 
 Signed-off-by: Andi Kleen <ak@linux.intel.com>
 
 ---
- drivers/base/node.c |   31 ++++++++++++++++---------------
- 1 file changed, 16 insertions(+), 15 deletions(-)
+ drivers/base/cpu.c |   39 ++++++++++++++++++++++-----------------
+ 1 file changed, 22 insertions(+), 17 deletions(-)
 
-Index: linux-2.6.33-rc2-ak/drivers/base/node.c
+Index: linux-2.6.33-rc2-ak/drivers/base/cpu.c
 ===================================================================
---- linux-2.6.33-rc2-ak.orig/drivers/base/node.c
-+++ linux-2.6.33-rc2-ak/drivers/base/node.c
-@@ -16,8 +16,11 @@
- #include <linux/device.h>
- #include <linux/swap.h>
- 
-+static struct sysdev_class_attribute *node_state_attrs[];
+--- linux-2.6.33-rc2-ak.orig/drivers/base/cpu.c
++++ linux-2.6.33-rc2-ak/drivers/base/cpu.c
+@@ -141,27 +141,32 @@ static SYSDEV_ATTR(crash_notes, 0400, sh
+ /*
+  * Print cpu online, possible, present, and system maps
+  */
+-static ssize_t print_cpus_map(char *buf, const struct cpumask *map)
 +
- static struct sysdev_class node_class = {
- 	.name = "node",
-+	.attrs = node_state_attrs,
- };
++struct cpu_attr {
++	struct sysdev_class_attribute attr;
++	const struct cpumask *const * const map;
++};
++
++static ssize_t show_cpus_attr(struct sysdev_class *class,
++			      struct sysdev_class_attribute *attr,
++			      char *buf)
+ {
+-	int n = cpulist_scnprintf(buf, PAGE_SIZE-2, map);
++	struct cpu_attr *ca = container_of(attr, struct cpu_attr, attr);
++	int n = cpulist_scnprintf(buf, PAGE_SIZE-2, *(ca->map));
  
+ 	buf[n++] = '\n';
+ 	buf[n] = '\0';
+ 	return n;
+ }
  
-@@ -569,29 +572,27 @@ static struct node_attr node_state_attr[
- #endif
- };
- 
--static int node_states_init(void)
--{
--	int i;
--	int err = 0;
+-#define	print_cpus_func(type) \
+-static ssize_t print_cpus_##type(struct sysdev_class *class, 		\
+-	 		struct sysdev_class_attribute *attr, char *buf)	\
+-{									\
+-	return print_cpus_map(buf, cpu_##type##_mask);			\
+-}									\
+-static struct sysdev_class_attribute attr_##type##_map = 		\
+-	_SYSDEV_CLASS_ATTR(type, 0444, print_cpus_##type, NULL)
 -
--	BUILD_BUG_ON(ARRAY_SIZE(node_state_attr) != NR_NODE_STATES);
--	for (i = 0;  i < NR_NODE_STATES; i++) {
--		int ret;
--		ret = sysdev_class_create_file(&node_class, &node_state_attr[i].attr);
--		if (!err)
--			err = ret;
--	}
--	return err;
--}
-+static struct sysdev_class_attribute *node_state_attrs[] = {
-+	&node_state_attr[0].attr,
-+	&node_state_attr[1].attr,
-+	&node_state_attr[2].attr,
-+	&node_state_attr[3].attr,
-+#ifdef CONFIG_HIGHMEM
-+	&node_state_attr[4].attr,
-+#endif
-+	NULL
+-print_cpus_func(online);
+-print_cpus_func(possible);
+-print_cpus_func(present);
++#define _CPU_ATTR(name, map)						\
++	{ _SYSDEV_CLASS_ATTR(name, 0444, show_cpus_attr, NULL), map }
++
++static struct cpu_attr cpu_attrs[] = {
++	_CPU_ATTR(online, &cpu_online_mask),
++	_CPU_ATTR(possible, &cpu_possible_mask),
++	_CPU_ATTR(present, &cpu_present_mask),
 +};
  
- #define NODE_CALLBACK_PRI	2	/* lower than SLAB */
- static int __init register_node_type(void)
- {
- 	int ret;
+ /*
+  * Print values for NR_CPUS and offlined cpus
+@@ -208,9 +213,9 @@ static ssize_t print_cpus_offline(struct
+ static SYSDEV_CLASS_ATTR(offline, 0444, print_cpus_offline, NULL);
  
-+ 	BUILD_BUG_ON(ARRAY_SIZE(node_state_attr) != NR_NODE_STATES);
-+ 	BUILD_BUG_ON(ARRAY_SIZE(node_state_attrs)-1 != NR_NODE_STATES);
-+
- 	ret = sysdev_class_register(&node_class);
- 	if (!ret) {
--		ret = node_states_init();
- 		hotplug_memory_notifier(node_memory_callback,
- 					NODE_CALLBACK_PRI);
- 	}
+ static struct sysdev_class_attribute *cpu_state_attr[] = {
+-	&attr_online_map,
+-	&attr_possible_map,
+-	&attr_present_map,
++	&cpu_attrs[0].attr,
++	&cpu_attrs[1].attr,
++	&cpu_attrs[2].attr,
+ 	&attr_kernel_max,
+ 	&attr_offline,
+ };
