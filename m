@@ -1,100 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755508Ab0AEVjr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754874Ab0AEVkg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755508Ab0AEVjr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 16:39:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754866Ab0AEVjp
+	id S1754874Ab0AEVkg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 16:40:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754232Ab0AEVkf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 16:39:45 -0500
-Received: from server109d.appriver.com ([72.32.253.88]:4734 "EHLO
-	server109.appriver.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754977Ab0AEVjp convert rfc822-to-8bit (ORCPT
+	Tue, 5 Jan 2010 16:40:35 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:34910
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753504Ab0AEVke (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 16:39:45 -0500
-X-Policy: GLOBAL - intcomgrp.com
-X-Primary: jkosin@intcomgrp.com
-X-Note: This Email was scanned by AppRiver SecureTide
-X-ALLOW: JKosin@intcomgrp.com ALLOWED
-X-Virus-Scan: V-
-X-Note: Spam Tests Failed: 
-X-Country-Path: UNITED STATES->UNITED STATES
-X-Note-Sending-IP: 216.54.13.100
-X-Note-Reverse-DNS: mail.intcomgrp.com
-X-Note-WHTLIST: JKosin@intcomgrp.com
-X-Note: User Rule Hits: 
-X-Note: Global Rule Hits: G113 G114 G115 G116 G120 G121 G132 G219 
-X-Note: Encrypt Rule Hits: 
-X-Note: Mail Class: ALLOWEDSENDER
-X-Note: Headers Injected
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-x-cr-hashedpuzzle: Bd84 GRhT G/70 IWej IpfW I/PH JiIa JsFx J34K J+py MUJ0 MhRh P1OQ TjSQ UAa1 Wk1B;2;bABpAG4AdQB4AC0AawBlAHIAbgBlAGwAQAB2AGcAZQByAC4AawBlAHIAbgBlAGwALgBvAHIAZwA7AHIAbwBtAGEAbgBAAGkAbQBzAHkAcwB0AGUAbQBzAC4AcgB1AA==;Sosha1_v1;7;{D8A3EB3E-C971-43FF-8A1C-B43DF1D22C78};agBrAG8AcwBpAG4AQABpAG4AdABjAG8AbQBnAHIAcAAuAGMAbwBtAA==;Tue, 05 Jan 2010 21:41:16 GMT;UABhAGMAawBlAHQAIAByAGUAdAByAHkAIABvAHAAdABpAG0AaQB6AGEAdABpAG8AbgAgAGkAbgAgAGQAcgBpAHYAZQByAHMALwBuAGUAdAAvAGEAcgBtAC8AYQB0ADkAMQBfAGUAaAB0AGUAcgAuAGMA
-x-cr-puzzleid: {D8A3EB3E-C971-43FF-8A1C-B43DF1D22C78}
-Content-class: urn:content-classes:message
-Subject: Packet retry optimization in drivers/net/arm/at91_ehter.c
-Date: Tue, 5 Jan 2010 16:41:16 -0500
-Message-ID: <3DBBD805E3BA064A87F551C0E8BD3674028971F2@MAILSRV.intcomgrp.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Packet retry optimization in drivers/net/arm/at91_ehter.c
-Thread-Index: AcqOQ/FREFZQ27bzScS2K5dp/kvyoQ==
-From: "James Kosin" <JKosin@intcomgrp.com>
-To: <linux-kernel@vger.kernel.org>
-Cc: <roman@imsystems.ru>
+	Tue, 5 Jan 2010 16:40:34 -0500
+Date: Tue, 05 Jan 2010 13:40:38 -0800 (PST)
+Message-Id: <20100105.134038.21223965.davem@davemloft.net>
+To: mst@redhat.com
+Cc: eric.dumazet@gmail.com, nhorman@tuxdriver.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH] net: packet: option to only pass skb protocol
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20100105205040.GA30921@redhat.com>
+References: <20100105185732.GA30346@redhat.com>
+	<4B439299.1090205@gmail.com>
+	<20100105205040.GA30921@redhat.com>
+X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: "Michael S. Tsirkin" <mst@redhat.com>
+Date: Tue, 5 Jan 2010 22:50:40 +0200
 
-Since, a AT91_EMAC_TUND only happens when the transmitter is unable to transfer the frame in time for a frame to be sent.  It makes sense to RETRY the packet in this condition in the ISR.
-Or would this overcomplicate a simple task?
-                ... see below ...
+> binding socket to device might be done by a separate process
+> from the one doing sendmsg, and IMO the device socket is bound
+> to might change at any time.
+> 
+> So the sending process would need to get socket name before
+> each sendmsg.
+> 
+> Makes sense?
 
-James
+Not really, when it's at the expense of everyone else.
 
----- Attached code snippet ----
+If you can pass the FD around, you can pass around auxiliary
+information as well.
 
-/*
- * MAC interrupt handler
- */
-static irqreturn_t at91ether_interrupt(int irq, void *dev_id)
-{
-...
+Make sense? :-)
 
-                if (intstatus & AT91_EMAC_TCOM) {       /* Transmit complete */
-                                /* The TCOM bit is set even if the transmission failed. */
-                                if (intstatus & (AT91_EMAC_TUND | AT91_EMAC_RTRY))
-                                                dev->stats.tx_errors += 1;
-
-                                if (lp->skb) {
-                                                dev_kfree_skb_irq(lp->skb);
-                                                lp->skb = NULL;
-                                                dma_unmap_single(NULL, lp->skb_physaddr, lp->skb_length, DMA_TO_DEVICE);
-                                }
-                                netif_wake_queue(dev);
-                }
-...
-
----- Alternate approach ----
-
-                                /* The TCOM bit is set even if the transmission failed. */
-                                if (intstatus & (AT91_EMAC_TUND)) {
-                                                /* Set address of the data in the Transmit Address register */
-                                                at91_emac_write(AT91_EMAC_TAR, lp->skb_physaddr);
-                                                /* Set length of the packet in the Transmit Control register */
-                                                at91_emac_write(AT91_EMAC_TCR, skb->len);
-                                }
-                                else if (intstatus & (AT91_EMAC_RTRY))
-                                                dev->stats.tx_errors += 1;
-
-...
-I do know there needs to be a bit more code then to handle the successful case below this; but, this is enough to understand what I am talking about.  The UNDERRUN error should happen infrequently and in ideal circumstances not happen at all.
- 
- 
- 
-
-----
-James Kosin
 
