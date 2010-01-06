@@ -1,62 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755540Ab0AFRAq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932372Ab0AFRA7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755540Ab0AFRAq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 12:00:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932216Ab0AFRAp
+	id S932372Ab0AFRA7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 12:00:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932367Ab0AFRA5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 12:00:45 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:40043 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932358Ab0AFRAo (ORCPT
+	Wed, 6 Jan 2010 12:00:57 -0500
+Received: from mail-fx0-f225.google.com ([209.85.220.225]:60349 "EHLO
+	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932361Ab0AFRA4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 12:00:44 -0500
+	Wed, 6 Jan 2010 12:00:56 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=Rca8YcYq59uz6RbnqSnrY6UI2hEViBFxLVyi43vCNOHHMlY5+o/G/ovVG+bz+776qr
-         prybsx4SUdknCNIux6PgMt+DIocmd/DwVn4BxtYQPeimlsvhsbSyr7//B9oZZuRDDse3
-         h3rXdVd7Yrow2tx8OH1ZIzgC/EG5I4fhkuumQ=
+        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
+        b=e7h/zEfG5X6vQ4Vh5n1ppad7dhMWJC9dBNVqUBR0WtST8sqqrT+ZB0X9Qfkdy2dzgN
+         gTtPPimtdJ0qVCHg5jiGk6CkOlG7eVgu083IHwgPBKh7Jca9TjK6AAzHxyp+a6mF5Bi2
+         b8jsRff4jncS32dACDtHsV0JD4pTlU3DUeODk=
 From: Johan Hovold <jhovold@gmail.com>
 To: Dave Airlie <airlied@redhat.com>
 Cc: James Simmons <jsimmons@infradead.org>, dri-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: [bisected] drm/ksm: fbdev blanking regression in 2.6.33
-Date: Wed,  6 Jan 2010 18:00:25 +0100
-Message-Id: <1262797226-9593-1-git-send-email-jhovold@gmail.com>
+       linux-kernel@vger.kernel.org, Johan Hovold <jhovold@gmail.com>
+Subject: [PATCH] drm/kms: fix fbdev blanking regression
+Date: Wed,  6 Jan 2010 18:00:26 +0100
+Message-Id: <1262797226-9593-2-git-send-email-jhovold@gmail.com>
 X-Mailer: git-send-email 1.6.6
+In-Reply-To: <1262797226-9593-1-git-send-email-jhovold@gmail.com>
+References: <1262797226-9593-1-git-send-email-jhovold@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Commit 731b5a15a3b1474a41c2ca29b4c32b0f21bc852e (drm/kms: properly
+handle fbdev blanking) breaks console blanking on my laptop (GM45
+chipset). Instead of blanking the screen, it is dimmed and then the
+backlight starts "glowing" in the lower edges of the screen. The glowing
+then slowly spreads upwards. Does not look healthy at all...
 
-Console blanking broke on my laptop with GM45 chipset with 2.6.33. Instead of
-blanking, the screen was dimmed and the backlight started glowing in the lower
-edges of the screen. The glowing then slowly spread upwards. Did not look
-healthy at all.
+This patch reverts to the old behaviour of going directly to
+DPMS_STANDBY.
 
-Easily reproduced by issuing "setterm -blank force".
-
-I bisected it down to 731b5a15a3b1474a41c2ca29b4c32b0f21bc852e (drm/kms:
-properly handle fbdev blanking). Which instead of going directly to
-DPMS_STANDBY now calls the encoder dpms helper with DRM_MODE_DPMS_ON and the
-crtc dpms helper with DRM_MODE_DPMS_OFF. I've verified that is this combination
-that triggers the bug. 
-
-If I don't call crtc_funcs->dpms(crtc, DRM_MODE_DPMS_OFF) on FB_BLANK_NORMAL
-but still encoder_funcs->dpms(encoder, DRM_MODE_DPMS_ON), the bug is not
-triggered, but the screen is not cleared either.
-
-For now, I simply reverted to the old behaviour of going directly to
-DPMS_STANDBY (see follow-up patch).  
-
-Thanks,
-Johan
-
-
-Johan Hovold (1):
-  drm/kms: fix fbdev blanking regression
-
+Signed-off-by: Johan Hovold <jhovold@gmail.com>
+---
  drivers/gpu/drm/drm_fb_helper.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/gpu/drm/drm_fb_helper.c b/drivers/gpu/drm/drm_fb_helper.c
+index 1b49fa0..9008583 100644
+--- a/drivers/gpu/drm/drm_fb_helper.c
++++ b/drivers/gpu/drm/drm_fb_helper.c
+@@ -389,7 +389,7 @@ int drm_fb_helper_blank(int blank, struct fb_info *info)
+ 		break;
+ 	/* Display: Off; HSync: On, VSync: On */
+ 	case FB_BLANK_NORMAL:
+-		drm_fb_helper_off(info, DRM_MODE_DPMS_ON);
++		drm_fb_helper_off(info, DRM_MODE_DPMS_STANDBY);
+ 		break;
+ 	/* Display: Off; HSync: Off, VSync: On */
+ 	case FB_BLANK_HSYNC_SUSPEND:
+-- 
+1.6.6
 
