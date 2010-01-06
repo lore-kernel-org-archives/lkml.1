@@ -1,84 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755493Ab0AFIyr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755442Ab0AFJHn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755493Ab0AFIyr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 03:54:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754824Ab0AFIyq
+	id S1755442Ab0AFJHn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 04:07:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753188Ab0AFJHm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 03:54:46 -0500
-Received: from mga06.intel.com ([134.134.136.21]:1269 "EHLO
-	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754779Ab0AFIyp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 03:54:45 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,228,1262592000"; 
-   d="scan'208";a="481676108"
-Date: Wed, 6 Jan 2010 09:56:21 +0100
-From: Samuel Ortiz <sameo@linux.intel.com>
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 5/4] mfd: Don't allow WM8350 to be built modular
-Message-ID: <20100106085620.GA5500@sortiz.org>
-References: <1262699949-3079-4-git-send-email-broonie@opensource.wolfsonmicro.com>
- <1262724047-4042-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+	Wed, 6 Jan 2010 04:07:42 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:23167 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752987Ab0AFJHk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jan 2010 04:07:40 -0500
+Message-ID: <4B4452D4.6090708@redhat.com>
+Date: Wed, 06 Jan 2010 17:07:32 +0800
+From: Xiaotian Feng <dfeng@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Lightning/1.0pre Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1262724047-4042-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: "J. Bruce Fields" <bfields@fieldses.org>
+CC: linux-nfs@vger.kernel.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Neil Brown <neilb@suse.de>,
+       Trond Myklebust <Trond.Myklebust@netapp.com>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: Re: [PATCH] sunrpc: fix peername failed on closed listener
+References: <1262227956-21470-1-git-send-email-dfeng@redhat.com> <20100105230131.GA22850@fieldses.org>
+In-Reply-To: <20100105230131.GA22850@fieldses.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Mark,
+On 01/06/2010 07:01 AM, J. Bruce Fields wrote:
+> On Thu, Dec 31, 2009 at 10:52:36AM +0800, Xiaotian Feng wrote:
+>> There're some warnings of "nfsd: peername failed (err 107)!"
+>> socket error -107 means Transport endpoint is not connected.
+>> This warning message was outputed by svc_tcp_accept() [net/sunrpc/svcsock.c],
+>> when kernel_getpeername returns -107. This means socket might be CLOSED.
+>>
+>> And svc_tcp_accept was called by svc_recv() [net/sunrpc/svc_xprt.c]
+>>
+>>          if (test_bit(XPT_LISTENER,&xprt->xpt_flags)) {
+>>          <snip>
+>>                  newxpt = xprt->xpt_ops->xpo_accept(xprt);
+>>          <snip>
+>>
+>> So this might happen when xprt->xpt_flags has both XPT_LISTENER and XPT_CLOSE.
+>>
+>> Let's take a look at commit b0401d72, this commit has moved the close
+>> processing after do recvfrom method, but this commit also introduces this
+>> warnings, if the xpt_flags has both XPT_LISTENER and XPT_CLOSED, we should
+>> close it, not accpet then close.
+>
+> The logic here seems unnecessarily complicated now, but as a minimal
+> fix, this seems fine.
+>
+> Is the *only* justification for this to silence this warning, or is
+> there some more serious problem I'm missing?
 
-On Tue, Jan 05, 2010 at 08:40:47PM +0000, Mark Brown wrote:
-> The genirq implementation does not allow modules to implement irq_chips
-> so the conversion of WM8350 to genirq means we can no longer allow the
-> driver to be built as a module.
-> 
-> Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
-> ---
-> 
-> Sorry, I thought I'd sent a patch for this earlier but I appear to be
-> imagining things.
-No problem, patch applied.
+If a xprt->xpt_flags has XPT_CLOSE & XPT_LISTENER, kernel will accept it 
+first,
+and svc_xprt_received(xptr) no mater xpo_accept is suceed or failed, 
+then svc_delete_xprt(xprt).
 
-Cheers,
-Samuel.
+I'm not sure what will happened between the svc_xprt_received and 
+svc_delete_xprt, there isn't any
+lock to protect it.
 
->  drivers/mfd/Kconfig |    6 +++---
->  1 files changed, 3 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
-> index 8782978..1414cec 100644
-> --- a/drivers/mfd/Kconfig
-> +++ b/drivers/mfd/Kconfig
-> @@ -205,7 +205,7 @@ config MFD_WM831X
->  	  functionality of the device.
->  
->  config MFD_WM8350
-> -	tristate
-> +	bool
->  
->  config MFD_WM8350_CONFIG_MODE_0
->  	bool
-> @@ -256,9 +256,9 @@ config MFD_WM8352_CONFIG_MODE_3
->  	depends on MFD_WM8350
->  
->  config MFD_WM8350_I2C
-> -	tristate "Support Wolfson Microelectronics WM8350 with I2C"
-> +	bool "Support Wolfson Microelectronics WM8350 with I2C"
->  	select MFD_WM8350
-> -	depends on I2C
-> +	depends on I2C=y
->  	help
->  	  The WM8350 is an integrated audio and power management
->  	  subsystem with watchdog and RTC functionality for embedded
-> -- 
-> 1.6.5.7
-> 
+>
+> --b.
+>
+>>
+>> Signed-off-by: Xiaotian Feng<dfeng@redhat.com>
+>> Cc: J. Bruce Fields<bfields@fieldses.org>
+>> Cc: Neil Brown<neilb@suse.de>
+>> Cc: Trond Myklebust<Trond.Myklebust@netapp.com>
+>> Cc: David S. Miller<davem@davemloft.net>
+>> ---
+>> diff --git a/net/sunrpc/svc_xprt.c b/net/sunrpc/svc_xprt.c
+>> index 1c924ee..187f0f4 100644
+>> --- a/net/sunrpc/svc_xprt.c
+>> +++ b/net/sunrpc/svc_xprt.c
+>> @@ -699,7 +699,8 @@ int svc_recv(struct svc_rqst *rqstp, long timeout)
+>>   	spin_unlock_bh(&pool->sp_lock);
+>>
+>>   	len = 0;
+>> -	if (test_bit(XPT_LISTENER,&xprt->xpt_flags)) {
+>> +	if (test_bit(XPT_LISTENER,&xprt->xpt_flags)&&
+>> +	    !test_bit(XPT_CLOSE,&xprt->xpt_flags)) {
+>>   		struct svc_xprt *newxpt;
+>>   		newxpt = xprt->xpt_ops->xpo_accept(xprt);
+>>   		if (newxpt) {
+>
 
--- 
-Intel Open Source Technology Centre
-http://oss.intel.com/
