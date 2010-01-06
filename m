@@ -1,142 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755631Ab0AFJQ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755663Ab0AFJYG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755631Ab0AFJQ1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 04:16:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755540Ab0AFJQ0
+	id S1755663Ab0AFJYG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 04:24:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755584Ab0AFJYF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 04:16:26 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:25156 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755516Ab0AFJQY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 04:16:24 -0500
-Date: Wed, 6 Jan 2010 11:12:57 +0200
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: David Miller <davem@davemloft.net>
-Cc: cfriesen@nortel.com, eric.dumazet@gmail.com, nhorman@tuxdriver.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH] net: packet: option to only pass skb protocol
-Message-ID: <20100106091257.GB599@redhat.com>
-References: <4B43AEF6.6050701@nortel.com> <20100105.134218.258781374.davem@davemloft.net> <4B43B989.4010004@nortel.com> <20100105.155150.232916389.davem@davemloft.net>
+	Wed, 6 Jan 2010 04:24:05 -0500
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:60888 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755551Ab0AFJYC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jan 2010 04:24:02 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:from:date:message-id:subject:to:content-type;
+        b=SANhoCZbmGd5zuMIwQBs5SF5ITGdB3KSW+GPVzIHTH7O3oDeMfZF4LcBDtxUepAIUr
+         qelEcHTMIXgEvbz4DCCwZogWvA2B4461mTVHOw9GqIsazGKzmdzK5v1ejJwy5wTRMWAx
+         JCofI+RnJdHvj/CVAH5y+JzgJDeuHN+e8+M4E=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100105.155150.232916389.davem@davemloft.net>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+From: Hui Zhu <teawater@gmail.com>
+Date: Wed, 6 Jan 2010 17:23:41 +0800
+Message-ID: <daef60381001060123vbb09aecy7943d72fcb8278a@mail.gmail.com>
+Subject: [PATCH] Fix markup_oops.pl get error in x86
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       Sam Ravnborg <sam@ravnborg.org>,
+       =?ISO-8859-1?Q?Ozan_=C7aglayan?= <ozan@pardus.org.tr>,
+       Matthew Wilcox <willy@linux.intel.com>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 05, 2010 at 03:51:50PM -0800, David Miller wrote:
-> From: "Chris Friesen" <cfriesen@nortel.com>
-> Date: Tue, 05 Jan 2010 16:13:29 -0600
-> 
-> > If SOCK_RAW packets are being sent, the protocol number is embedded in
-> > the packet data
-> 
-> Where exactly is that protocol value?  Not every link level protocol
-> is ethernet.
-> 
-> We support FDDI, HIPPI, wireless, VLAN, PPP, and a host of others.
-> 
-> So you can't know for sure unless you assume ethernet, which you
-> can't do.
+Hello,
 
-You are right.  This is TX though so the socket is bound to a specific
-device, and devices know which link protocol they use.  So we could add a
-get_protocol operation to each device type, and call it if the protocol
-passed is ETH_P_ALL to get the real one.
-
-Like this: except I only added this for ethernet, and I would have to
-add this for the rest of device types. But I would like to hear what
-others think about this before I do the rest of the work for the rest of
-device types.
-
-Does the below look sane?
-
-diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
-index a3fccc8..99d7801 100644
---- a/include/linux/netdevice.h
-+++ b/include/linux/netdevice.h
-@@ -319,6 +319,7 @@ struct header_ops {
- 	void	(*cache_update)(struct hh_cache *hh,
- 				const struct net_device *dev,
- 				const unsigned char *haddr);
-+	__be16	(*get_protocol)(struct sk_buff *skb, struct net_device *dev)
- };
- 
- /* These flag bits are private to the generic network queueing
-diff --git a/net/ethernet/eth.c b/net/ethernet/eth.c
-index 205a1c1..3e7761d 100644
---- a/net/ethernet/eth.c
-+++ b/net/ethernet/eth.c
-@@ -231,6 +231,17 @@ int eth_header_parse(const struct sk_buff *skb, unsigned char *haddr)
- EXPORT_SYMBOL(eth_header_parse);
- 
- /**
-+ * eth_get_protocol - extract protocol value from packet
-+ * @skb: packet to extract protocol from
-+ * @dev: source device
-+ */
-+__be16 eth_get_protocol(const struct sk_buff *skb, struct net_device *dev)
-+{
-+	const struct ethhdr *eth = eth_hdr(skb);
-+	return eth->h_proto
-+}
-+
-+/**
-  * eth_header_cache - fill cache entry from neighbour
-  * @neigh: source neighbour
-  * @hh: destination cache entry
-@@ -324,6 +335,7 @@ EXPORT_SYMBOL(eth_validate_addr);
- const struct header_ops eth_header_ops ____cacheline_aligned = {
- 	.create		= eth_header,
- 	.parse		= eth_header_parse,
-+	.get_protocol   = eth_get_protocol,
- 	.rebuild	= eth_rebuild_header,
- 	.cache		= eth_header_cache,
- 	.cache_update	= eth_header_cache_update,
-diff --git a/net/packet/af_packet.c b/net/packet/af_packet.c
-index a81dae8..492e580 100644
---- a/net/packet/af_packet.c
-+++ b/net/packet/af_packet.c
-@@ -845,7 +845,6 @@ static int tpacket_fill_skb(struct packet_sock *po, struct sk_buff *skb,
- 
- 	ph.raw = frame;
- 
--	skb->protocol = proto;
- 	skb->dev = dev;
- 	skb->priority = po->sk.sk_priority;
- 	skb->mark = po->sk.sk_mark;
-@@ -924,6 +923,14 @@ static int tpacket_fill_skb(struct packet_sock *po, struct sk_buff *skb,
- 		len = ((to_write > len_max) ? len_max : to_write);
+When I try to use markup_oops.pl in x86, I always get:
+cat 1 | perl markup_oops.pl ./vmlinux
+objdump: --start-address: bad number: NaN
+No matching code found
+This is because in line:
+	if ($line =~ /EIP is at ([a-zA-Z0-9\_]+)\+0x([0-9a-f]+)\/[a-f0-9]/) {
+ 		$function = $1;
+ 		$func_offset = $2;
  	}
- 
-+	if (proto == htons(ETH_P_ALL) && dev->header_ops->get_protocol) {
-+		skb->protocol = dev->header_ops->get_protocol(dev, skb);
-+		if (unlikely(skb->protocol == htons(ETH_P_ALL)))
-+			return -EINVAL;
-+	} else {
-+		skb->protocol = proto;
-+	}
-+
- 	return tp_len;
- }
- 
-@@ -1113,7 +1120,13 @@ static int packet_snd(struct socket *sock,
- 	if (err)
- 		goto out_free;
- 
--	skb->protocol = proto;
-+	if (proto == htons(ETH_P_ALL) && dev->header_ops->get_protocol) {
-+		skb->protocol = dev->header_ops->get_protocol(dev, skb);
-+		if (unlikely(skb->protocol == htons(ETH_P_ALL)))
-+			return -EINVAL;
-+	} else {
-+		skb->protocol = proto;
-+	}
- 	skb->dev = dev;
- 	skb->priority = sk->sk_priority;
- 	skb->mark = sk->sk_mark;
+$func_offset will get a number like "0x2"
+But in follow code:
+my $decodestart = Math::BigInt->from_hex("0x$target") -
+Math::BigInt->from_hex("0x$func_offset");
+It add other ox to ox2.
+Then this value will be set to NaN.
 
--- 
-MST
+So I make a small patch to fix it.
+
+Best regards,
+Hui
+
+---
+ scripts/markup_oops.pl |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/scripts/markup_oops.pl
++++ b/scripts/markup_oops.pl
+@@ -154,7 +154,7 @@ while (<STDIN>) {
+ 	if ($line =~ /RIP: 0010:\[\<([a-z0-9]+)\>\]/) {
+ 		$target = $1;
+ 	}
+-	if ($line =~ /EIP is at ([a-zA-Z0-9\_]+)\+(0x[0-9a-f]+)\/0x[a-f0-9]/) {
++	if ($line =~ /EIP is at ([a-zA-Z0-9\_]+)\+0x([0-9a-f]+)\/[a-f0-9]/) {
+ 		$function = $1;
+ 		$func_offset = $2;
+ 	}
