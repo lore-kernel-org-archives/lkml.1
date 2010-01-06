@@ -1,62 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756061Ab0AFSGu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932521Ab0AFSHr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756061Ab0AFSGu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 13:06:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756053Ab0AFSGt
+	id S932521Ab0AFSHr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 13:07:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932500Ab0AFSHo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 13:06:49 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:45043 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756033Ab0AFSGs convert rfc822-to-8bit (ORCPT
+	Wed, 6 Jan 2010 13:07:44 -0500
+Received: from Chamillionaire.breakpoint.cc ([85.10.199.196]:60104 "EHLO
+	Chamillionaire.breakpoint.cc" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932488Ab0AFSHn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 13:06:48 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=TmDeL4rtu4HcpzEtaVzwGKOoPUv/habD57P3uzP1rFRg/zFI7ftgENXZqIRPO72885
-         K9Fy/lyXLE+EdF3jM5WeT82U+wx1qmIJC6xHDWWcJAWAuGY6NuA8sVxYMj5d6fnQwVfA
-         EgcP3l6Ci4L10ph6PpnbSIUStLSzibkjI+WEI=
+	Wed, 6 Jan 2010 13:07:43 -0500
+Date: Wed, 6 Jan 2010 19:07:36 +0100
+From: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: Roel Kluin <roel.kluin@gmail.com>, "David S. Miller" <davem@davemloft.net>,
+       linux-crypto@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Sergey Mironov <ierton@gmail.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: Re: [PATCH] geode: PTR_ERR return of wrong pointer in
+ fallback_init_cip()
+Message-ID: <20100106180736.GA9625@Chamillionaire.breakpoint.cc>
+References: <4B1D02F7.2020505@gmail.com>
+ <20091207134012.GA21388@Chamillionaire.breakpoint.cc>
+ <4B1D0DC9.5000908@gmail.com>
+ <20091211150349.GA736@gondor.apana.org.au>
 MIME-Version: 1.0
-In-Reply-To: <20100106185913.39003329@neptune.home>
-References: <a44ae5cd1001060916s4db1d94fsb7e012ab80ce6add@mail.gmail.com>
-	 <20100106185913.39003329@neptune.home>
-Date: Wed, 6 Jan 2010 13:06:46 -0500
-Message-ID: <a44ae5cd1001061006i63579096me4d598b06cc358f9@mail.gmail.com>
-Subject: Re: 2.6.33-rc3 -- Intel 945GME (inteldrmfb) -- Two Tux images 
-	displayed are side by side (should only show one).
-From: Miles Lane <miles.lane@gmail.com>
-To: =?ISO-8859-1?Q?Bruno_Pr=E9mont?= <bonbons@linux-vserver.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, David Airlie <airlied@linux.ie>,
-       Sylvain Meyer <sylvain.meyer@worldonline.fr>,
-       linux-fbdev@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20091211150349.GA736@gondor.apana.org.au>
+X-Key-Id: FE3F4706
+X-Key-Fingerprint: FFDA BBBB 3563 1B27 75C9  925B 98D5 5C1C FE3F 4706
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 6, 2010 at 12:59 PM, Bruno Prémont
-<bonbons@linux-vserver.org> wrote:
-> On Wed, 06 January 2010 Miles Lane <miles.lane@gmail.com> wrote:
->> For a long time I have gotten two pictures of Tux showing up when I
->> include the Tux display option in my custom kernel builds.  I don't
->> know how many kernel revisions ago it was when I started noticing
->> this.  It seems like it might have been early in the 2.6 series
->> kernels.
->
-> Unless your system has exactly one CPU without hyperthreading and with
-> exactly one core this is the correct bahavior, one tux per logical CPU.
->
-> If you just want a single tux you can run your kernel on a system with
-> only one logical CPU, boot it with maxcpus=1 or rebuild it with
-> CONFIG_SMP=n... though in those case you will not be able to benefit
-> from all of your CPU's resources..
->
-> Bruno
+* Herbert Xu | 2009-12-11 23:03:49 [+0800]:
 
-Oh!  Well, that explains it.  That is truly weird functionality.  Is
-Tux a de facto
-CPU presence indicator?  It doesn't make any sense to me, if so.
+>On Mon, Dec 07, 2009 at 03:14:33PM +0100, Roel Kluin wrote:
+>> Return the PTR_ERR of the correct pointer.
+>> 
+>> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+>
+>Patch applied.  Thank you.
 
-         Miles
+Martin picked an earlier version of this patch [0] which is allready in
+Linus' tree as b59cdcb33 ("[S390] crypto: use more descriptive function
+names for init/exit routines.") and I don't see this in the cryptodev or
+crypto tree.
+Herbert, do you want me to rebase this patch on top of Linus' tree or
+do you have allready plans for this?
+
+[0] http://www.mail-archive.com/linux-crypto@vger.kernel.org/msg03919.html
+
+Sebastian
