@@ -1,58 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932856Ab0AFVXP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756173Ab0AFV2O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932856Ab0AFVXP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 16:23:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755963Ab0AFVXO
+	id S1756173Ab0AFV2O (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 16:28:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755963Ab0AFV2O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 16:23:14 -0500
-Received: from sj-iport-1.cisco.com ([171.71.176.70]:5452 "EHLO
-	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755945Ab0AFVXO (ORCPT
+	Wed, 6 Jan 2010 16:28:14 -0500
+Received: from mail-yw0-f176.google.com ([209.85.211.176]:52835 "EHLO
+	mail-yw0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755100Ab0AFV2J (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 16:23:14 -0500
-Authentication-Results: sj-iport-1.cisco.com; dkim=neutral (message not signed) header.i=none
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApoEAA+OREurR7Hu/2dsb2JhbAC/a5NkhDAE
-X-IronPort-AV: E=Sophos;i="4.49,231,1262563200"; 
-   d="scan'208";a="285573350"
-From: Roland Dreier <rdreier@cisco.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Bart Van Assche <bart.vanassche@gmail.com>,
-       David Dillow <dave@thedillows.org>
-Subject: Re: [PATCH] log2.h: Macro-ize is_power_of_2() for use in BUILD_BUG_ON
-References: <ada3a2jugqu.fsf@roland-alpha.cisco.com>
-	<20100106123306.ac85e557.akpm@linux-foundation.org>
-X-Message-Flag: Warning: May contain useful information
-Date: Wed, 06 Jan 2010 13:23:13 -0800
-In-Reply-To: <20100106123306.ac85e557.akpm@linux-foundation.org> (Andrew
-	Morton's message of "Wed, 6 Jan 2010 12:33:06 -0800")
-Message-ID: <ada8wcbszb2.fsf@roland-alpha.cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
+	Wed, 6 Jan 2010 16:28:09 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type;
+        b=NZ9ZavWsCF0GEsDdimr0xAogrY373skcCJfYncpPbwlwamXctWmrQiI2YFIyBN8q7n
+         kNkWOSgv+Oc6QDLvUML2QHgTIKtOIB70bhaHn5Xl/ROznOBiBzRBoUocCZLf+HhYaFmP
+         76rXxobEqixy0ncIj/CAISBY2JAMsB43obhb8=
+Message-ID: <4B450065.4010108@gmail.com>
+Date: Wed, 06 Jan 2010 16:28:05 -0500
+From: William Allen Simpson <william.allen.simpson@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 06 Jan 2010 21:23:13.0546 (UTC) FILETIME=[743986A0:01CA8F16]
+To: Linux Kernel Developers <linux-kernel@vger.kernel.org>
+CC: Linux Kernel Network Developers <netdev@vger.kernel.org>,
+       Michael Chan <mchan@broadcom.com>
+Subject: Re: [PATCH 1/2] net: tcp_header_len_th and tcp_option_len_th
+References: <4B44FE3C.6060809@gmail.com>
+In-Reply-To: <4B44FE3C.6060809@gmail.com>
+Content-Type: multipart/mixed;
+ boundary="------------020303000900040805090502"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is a multi-part message in MIME format.
+--------------020303000900040805090502
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
- > We've had recurring struggles with various versions of gcc screwing up
- > constructs of this form and trying to emit the non-constant code when
- > the arg was clearly a compile-time constant.  One episode which comes
- > to mind was when we made changes to kmalloc().
- > 
- > Of course, that might not bite us in this case - it would need a lot of
- > coverage testing to find out.
+Redefine two TCP header functions to accept TCP header pointer.
+When subtracting, return signed int to allow error checking.
 
-Actually, after thinking about this a bit more I don't think this is
-much of a risk in this case.  The bad case is where gcc gets the wrong
-answer for __builtin_constant_p(), and in that case, we're left with the
-status quo ante, ie a call to the original inline function implementation.
+These functions will be used in subsequent patches that implement
+additional features.
 
-This will break a call to BUILD_BUG_ON() but that's visible at compile
-time.  It's hard to think of a silent failure case that actually hurts
-anything -- the macro and inline implementation are identical, except
-that the macro implementation will work when gcc really needs a compile
-time constant.
+Signed-off-by: William.Allen.Simpson@gmail.com
+---
+  include/linux/tcp.h |   12 ++++++++++++
+  1 files changed, 12 insertions(+), 0 deletions(-)
 
- - R.
+
+--------------020303000900040805090502
+Content-Type: text/plain; x-mac-type="54455854"; x-mac-creator="0";
+ name="len_th+1v3.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="len_th+1v3.patch"
+
+diff --git a/include/linux/tcp.h b/include/linux/tcp.h
+index 7fee8a4..d0133cf 100644
+--- a/include/linux/tcp.h
++++ b/include/linux/tcp.h
+@@ -223,6 +223,18 @@ static inline unsigned int tcp_optlen(const struct sk_buff *skb)
+ 	return (tcp_hdr(skb)->doff - 5) * 4;
+ }
+ 
++/* Length of fixed header plus standard options. */
++static inline unsigned int tcp_header_len_th(const struct tcphdr *th)
++{
++	return th->doff * 4;
++}
++
++/* Length of standard options only.  This could be negative. */
++static inline int tcp_option_len_th(const struct tcphdr *th)
++{
++	return (int)(th->doff * 4) - sizeof(*th);
++}
++
+ /* This defines a selective acknowledgement block. */
+ struct tcp_sack_block_wire {
+ 	__be32	start_seq;
+-- 
+1.6.3.3
+
+
+--------------020303000900040805090502--
