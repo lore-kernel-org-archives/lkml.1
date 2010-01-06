@@ -1,96 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756302Ab0AFVDB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932835Ab0AFVI0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756302Ab0AFVDB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 16:03:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755997Ab0AFVC7
+	id S932835Ab0AFVI0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 16:08:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932343Ab0AFVIY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 16:02:59 -0500
-Received: from vms173009pub.verizon.net ([206.46.173.9]:20769 "EHLO
-	vms173009pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755430Ab0AFVC6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 16:02:58 -0500
-From: Gene Heskett <gene.heskett@verizon.net>
-Organization: Organization? Not detectable
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Linux 2.6.33-rc3, rc2 regression at boot
-Date: Wed, 06 Jan 2010 16:02:44 -0500
-User-Agent: KMail/1.12.3 (Linux/2.6.33-rc3; KDE/4.3.3; i686; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <alpine.LFD.2.00.1001051838410.3630@localhost.localdomain>
- <201001052355.29640.gene.heskett@verizon.net>
-In-reply-to: <201001052355.29640.gene.heskett@verizon.net>
-MIME-version: 1.0
-Content-type: Text/Plain; charset=iso-8859-15
-Content-transfer-encoding: 7bit
-Message-id: <201001061602.44133.gene.heskett@verizon.net>
+	Wed, 6 Jan 2010 16:08:24 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:60473 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932276Ab0AFVIV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jan 2010 16:08:21 -0500
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Oleg Nesterov <oleg@redhat.com>
+X-Fcc: ~/Mail/linus
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>, caiqian@redhat.com,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Jan Kratochvil <jkratoch@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-s390@vger.kernel.org, utrace-devel@redhat.com
+Subject: Re: s390 && user_enable_single_step() (Was: odd utrace testing
+	results on s390x)
+In-Reply-To: Oleg Nesterov's message of  Tuesday, 5 January 2010 16:36:33 +0100 <20100105153633.GA9376@redhat.com>
+References: <1503844142.2061111261478093776.JavaMail.root@zmail06.collab.prod.int.phx2.redhat.com>
+	<1257887498.2061171261478252049.JavaMail.root@zmail06.collab.prod.int.phx2.redhat.com>
+	<20100104155225.GA16650@redhat.com>
+	<20100104171626.22ea2d9c@mschwide.boeblingen.de.ibm.com>
+	<20100104181412.GA21146@redhat.com>
+	<20100104211147.4CC94D532@magilla.sf.frob.com>
+	<20100105105030.66bb8a0a@mschwide.boeblingen.de.ibm.com>
+	<20100105153633.GA9376@redhat.com>
+X-Shopping-List: (1) Ethical revulsion
+   (2) Catalytic preserves horsie
+   (3) Sentimental quixotic ignitions
+   (4) Lackadaisical onion benedictions
+Message-Id: <20100106210812.E03A1134D@magilla.sf.frob.com>
+Date: Wed,  6 Jan 2010 13:08:12 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 05 January 2010, Gene Heskett wrote:
+> Oh, I am not sure. But I don't understand TIF_SINGLE_STEP on s390,
+> absolutely.
+> 
+> For example, why do_signal() sets TIF_SINGLE_STEP? Why can't we do
 
-Ping?
+I think we could.  That would be more consistent with other machines.  On
+s390, once we set TIF_SINGLE_STEP, we are going to post a SIGTRAP
+eventually before going to user mode.  But then tracehook_signal_handler()
+also gets stepping=1 and the expected meaning of this is that the arch code
+is not itself simulating a single-step for the handler setup.  So the
+tracehook (i.e. ptrace/utrace) code does what it does for "need a fake
+single-step".  
 
->On Tuesday 05 January 2010, Linus Torvalds wrote:
->>It's been quiet due to the holidays, so -rc3 is reasonably small despite
->>being a few days over the normal one-week mark. And most of the changes
->>are pretty trivial, although both ext4 and reiserfs had some trouble in
->>-rc2, hopefully all fixed now.
->>
->>The bulk of the patches are some SH defconfig updates (40%), but ignoring
->>those we have the normal "half drivers, half everything else" pattern. On
->>the driver front, the perhaps most notable change is not so much a code
->>change, but the small change of marking the "new" firewire stack as being
->>the recommended one.
->>
->>Wireless drivers, regular network drivers, filesystems, input layer..
->>
->>And here's to hoping one reason it's been quiet is that it's actually been
->>fairly stable. Give it a try,
->>
->>		Linus
->
->[...]
->
->I didn't see anything here, but on looking at the ChangeLog for rc1, I see
-> a lot of stuff fiddling with firmware.  On my phenom x4, I get this very
-> early in the boot:
->[    0.558368] Unpacking initramfs...
->[    0.648644] Freeing initrd memory: 3431k freed
->[    0.651635] platform microcode: firmware: requesting
-> amd-ucode/microcode_amd.bin [   60.646738] microcode: failed to load file
-> amd-ucode/microcode_amd.bin [   60.646858] microcode: CPU0:
-> patch_level=0x1000065
->[   60.646977] microcode: CPU1: patch_level=0x1000065
->[   60.647099] microcode: CPU2: patch_level=0x1000065
->[   60.647218] microcode: CPU3: patch_level=0x1000065
->
->Note the time, it kills quite close to a whole minute there, which at first
->would appear to be because there is not yet a mounted /lib filesystem to
-> suck it from.  I didn't build an rc1, but rc2 also suffers from this.
-> 2.6.32.2 does not do this although its firmware request takes place at the
-> same point. So it doesn't look like it is the lack of a mounted filesystem
-> after all.
->
->FWIW, because it was a hot reboot, the patch_level reported is the correct
->level.
->
->I am also seeing some complaints about my Audigy2 sound card, but what I
-> saw during the boot, never made it to the messages log.  Something about
-> guessing at the proper config, but I did hear kde sign on when x started.
->
->Thanks Linus.
->
-Update, I edited the .config by hand and added the full path in
-CONFIG_EXTRA_FIRMWARE_DIR="/lib/firmware/"
-which was just 'firmware', and rebuilt.  No difference.  I still get the 60 
-second hang.  FWIW, this particular setting isn't visible in a make xconfig.
+In ptrace (including utrace-based ptrace), this winds up with sending a
+SIGTRAP.  So when we finally do get out of do_signal and TIF_SINGLE_STEP
+causes a second SIGTRAP, it's already pending and the second one makes no
+difference.
 
--- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
+But for the general case of utrace, we'll have the UTRACE_SIGNAL_HANDLER
+report, followed by a SIGTRAP that appears to be an authentic single-step
+trap, but takes place on the same instruction.  If the resumption after the
+UTRACE_SIGNAL_HANDLER report didn't use stepping, then this is an entirely
+unexpected extra SIGTRAP.  If we do continue stepping, then we are
+expecting the SIGTRAP, but this gets us a spurious and errnoeous report
+that looks like the instruction right before the handler's entry point in
+memory was just executed.
 
-Far duller than a serpent's tooth it is to spend a quiet youth.
+[Martin:]
+> The reason why we set the TIF_SINGLE_STEP bit in do_signal is that we
+> want to be able to stop the debugged program before the first
+> instruction of the signal handler has been executed. The PER single
+> step causes a trap after an instruction has been executed. That first
+> instruction can do bad things to the arguments of the signal handler..
+
+That's what tracehook_signal_handler is for.  You're both doing it yourself
+in the arch code (by setting TIF_SINGLE_STEP), and then telling the generic
+code to do it (by passing stepping=1 to tracehook_signal_handler).
+
+
+Thanks,
+Roland
