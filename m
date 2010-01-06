@@ -1,118 +1,249 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755605Ab0AFB3W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755325Ab0AFBhu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755605Ab0AFB3W (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 20:29:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755181Ab0AFB2v
+	id S1755325Ab0AFBhu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 20:37:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755170Ab0AFBht
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 20:28:51 -0500
-Received: from isepic.quincunx.at ([173.45.232.79]:40847 "EHLO
-	isepic.quincunx.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754962Ab0AFB2t (ORCPT
+	Tue, 5 Jan 2010 20:37:49 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:59492 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754871Ab0AFBhs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 20:28:49 -0500
-From: Christian Schuerer <csw@xray.at>
-To: Jiri Kosina <jkosina@suse.cz>
-Subject: [PATCH] linux-2.6.31.9 - Re: Device IDs for new Apple Wireless Keyboard
-Date: Wed, 6 Jan 2010 02:16:48 +0100
-User-Agent: KMail/1.13.0 (Linux/2.6.31-17-generic; KDE/4.3.85; x86_64; ; )
-Cc: Jiri Slaby <jirislaby@gmail.com>, linux-input@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-References: <4B38AFDE.8000203@gmail.com> <alpine.LNX.2.00.1001041155560.2277@pobox.suse.cz>
-In-Reply-To: <alpine.LNX.2.00.1001041155560.2277@pobox.suse.cz>
+	Tue, 5 Jan 2010 20:37:48 -0500
+Date: Tue, 5 Jan 2010 17:37:08 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+cc: Minchan Kim <minchan.kim@gmail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>, cl@linux-foundation.org,
+       "hugh.dickins" <hugh.dickins@tiscali.co.uk>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [RFC][PATCH 6/8] mm: handle_speculative_fault()
+In-Reply-To: <20100106092212.c8766aa8.kamezawa.hiroyu@jp.fujitsu.com>
+Message-ID: <alpine.LFD.2.00.1001051718100.3630@localhost.localdomain>
+References: <20100104182429.833180340@chello.nl> <20100104182813.753545361@chello.nl> <20100105092559.1de8b613.kamezawa.hiroyu@jp.fujitsu.com> <28c262361001042029w4b95f226lf54a3ed6a4291a3b@mail.gmail.com> <20100105134357.4bfb4951.kamezawa.hiroyu@jp.fujitsu.com>
+ <alpine.LFD.2.00.1001042052210.3630@localhost.localdomain> <20100105143046.73938ea2.kamezawa.hiroyu@jp.fujitsu.com> <20100105163939.a3f146fb.kamezawa.hiroyu@jp.fujitsu.com> <alpine.LFD.2.00.1001050707520.3630@localhost.localdomain>
+ <20100106092212.c8766aa8.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201001060216.49052.csw@xray.at>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 04 January 2010 11:57:33 Jiri Kosina wrote:
-> On Mon, 28 Dec 2009, Jiri Slaby wrote:
-> > Hi, I added some proper CCs. For me they look good. Care to add
-> > signed-off-by line? Thanks.
-> thanks for the patch. Could you please make the following two updates to
-> it, and send it to me, so that I could merge it? Thanks.
-> 
-> - add a proper Signed-off-by: line, as described in
->   Documentation/SubmittingPatches
-> - keep the list of Apple IDs ordered by the product number
 
-Jiri,
 
-thank you for your feedback. Here is the patch for linux-2.6.31.9:
+On Wed, 6 Jan 2010, KAMEZAWA Hiroyuki wrote:
+>
+> I think this is the 1st reason but haven't rewrote rwsem itself and tested,
+> sorry.
 
-Changes:
+Here's a totally untested patch! It may or may not work. It builds for me, 
+but that may be some cosmic accident. I _think_ I got the callee-clobbered 
+register set right, but somebody should check the comment in the new 
+rwsem_64.S, and double-check that the code actually matches what I tried 
+to do.
 
-Added device IDs for the new model of the Apple Wireless Keyboard (November 
-2009).
+I had to change the inline asm to get the register sizes right too, so for 
+all I know this screws up x86-32 too.
 
-Signed-off-by: Christian Schuerer-Waldheim <csw@xray.at>
+In other words: UNTESTED! It may molest your pets and drink all your beer. 
+You have been warned.
 
-diff -uprN -X linux-2.6.31.9-vanilla/Documentation/dontdiff linux-2.6.31.9-
-vanilla/drivers/hid/hid-apple.c linux-2.6.31.9-apple/drivers/hid/hid-apple.c
---- linux-2.6.31.9-vanilla/drivers/hid/hid-apple.c	2009-12-18 
-22:47:01.000000000 +0100
-+++ linux-2.6.31.9-apple/drivers/hid/hid-apple.c	2010-01-06 01:39:33.000000000 
-+0100
-@@ -431,6 +431,13 @@ static const struct hid_device_id apple_
- 		.driver_data = APPLE_HAS_FN | APPLE_ISO_KEYBOARD },
- 	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, 
-USB_DEVICE_ID_APPLE_WELLSPRING3_JIS),
- 		.driver_data = APPLE_HAS_FN | APPLE_RDESC_JIS },
-+	{ HID_BLUETOOTH_DEVICE(USB_VENDOR_ID_APPLE, 
-USB_DEVICE_ID_APPLE_ALU_WIRELESS_2009_ANSI),
-+		.driver_data = APPLE_NUMLOCK_EMULATION | APPLE_HAS_FN },
-+	{ HID_BLUETOOTH_DEVICE(USB_VENDOR_ID_APPLE, 
-USB_DEVICE_ID_APPLE_ALU_WIRELESS_2009_ISO),
-+		.driver_data = APPLE_NUMLOCK_EMULATION | APPLE_HAS_FN |
-+			APPLE_ISO_KEYBOARD },
-+	{ HID_BLUETOOTH_DEVICE(USB_VENDOR_ID_APPLE, 
-USB_DEVICE_ID_APPLE_ALU_WIRELESS_2009_JIS),
-+		.driver_data = APPLE_NUMLOCK_EMULATION | APPLE_HAS_FN },
- 	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, 
-USB_DEVICE_ID_APPLE_FOUNTAIN_TP_ONLY),
- 		.driver_data = APPLE_NUMLOCK_EMULATION | APPLE_HAS_FN },
- 	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, 
-USB_DEVICE_ID_APPLE_GEYSER1_TP_ONLY),
-diff -uprN -X linux-2.6.31.9-vanilla/Documentation/dontdiff linux-2.6.31.9-
-vanilla/drivers/hid/hid-core.c linux-2.6.31.9-apple/drivers/hid/hid-core.c
---- linux-2.6.31.9-vanilla/drivers/hid/hid-core.c	2009-12-18 
-22:47:01.000000000 +0100
-+++ linux-2.6.31.9-apple/drivers/hid/hid-core.c	2010-01-06 01:40:39.000000000 
-+0100
-@@ -1259,6 +1259,9 @@ static const struct hid_device_id hid_bl
- 	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, 
-USB_DEVICE_ID_APPLE_WELLSPRING3_ANSI) },
- 	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_WELLSPRING3_ISO) 
-},
- 	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_WELLSPRING3_JIS) 
-},
-+	{ HID_BLUETOOTH_DEVICE(USB_VENDOR_ID_APPLE, 
-USB_DEVICE_ID_APPLE_ALU_WIRELESS_2009_ANSI) },
-+	{ HID_BLUETOOTH_DEVICE(USB_VENDOR_ID_APPLE, 
-USB_DEVICE_ID_APPLE_ALU_WIRELESS_2009_ISO) },
-+	{ HID_BLUETOOTH_DEVICE(USB_VENDOR_ID_APPLE, 
-USB_DEVICE_ID_APPLE_ALU_WIRELESS_2009_JIS) },
- 	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, 
-USB_DEVICE_ID_APPLE_FOUNTAIN_TP_ONLY) },
- 	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_GEYSER1_TP_ONLY) 
-},
- 	{ HID_USB_DEVICE(USB_VENDOR_ID_BELKIN, USB_DEVICE_ID_FLIP_KVM) },
-diff -uprN -X linux-2.6.31.9-vanilla/Documentation/dontdiff linux-2.6.31.9-
-vanilla/drivers/hid/hid-ids.h linux-2.6.31.9-apple/drivers/hid/hid-ids.h
---- linux-2.6.31.9-vanilla/drivers/hid/hid-ids.h	2009-12-18 
-22:47:01.000000000 +0100
-+++ linux-2.6.31.9-apple/drivers/hid/hid-ids.h	2010-01-06 01:41:51.000000000 
-+0100
-@@ -88,6 +88,9 @@
- #define USB_DEVICE_ID_APPLE_WELLSPRING3_ANSI	0x0236
- #define USB_DEVICE_ID_APPLE_WELLSPRING3_ISO	0x0237
- #define USB_DEVICE_ID_APPLE_WELLSPRING3_JIS	0x0238
-+#define USB_DEVICE_ID_APPLE_ALU_WIRELESS_2009_ANSI  0x0239
-+#define USB_DEVICE_ID_APPLE_ALU_WIRELESS_2009_ISO   0x023a
-+#define USB_DEVICE_ID_APPLE_ALU_WIRELESS_2009_JIS   0x023b
- #define USB_DEVICE_ID_APPLE_FOUNTAIN_TP_ONLY	0x030a
- #define USB_DEVICE_ID_APPLE_GEYSER1_TP_ONLY	0x030b
- #define USB_DEVICE_ID_APPLE_ATV_IRCONTROL	0x8241
+(Is a 16-bit rwsem count even enough for x86-64? Possibly not. That's a 
+separate issue entirely, though).
+
+		Linus
+
+---
+ arch/x86/Kconfig.cpu         |    2 +-
+ arch/x86/include/asm/rwsem.h |   18 +++++-----
+ arch/x86/lib/Makefile        |    1 +
+ arch/x86/lib/rwsem_64.S      |   81 ++++++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 92 insertions(+), 10 deletions(-)
+
+diff --git a/arch/x86/Kconfig.cpu b/arch/x86/Kconfig.cpu
+index f20ddf8..a198293 100644
+--- a/arch/x86/Kconfig.cpu
++++ b/arch/x86/Kconfig.cpu
+@@ -319,7 +319,7 @@ config X86_L1_CACHE_SHIFT
+ 
+ config X86_XADD
+ 	def_bool y
+-	depends on X86_32 && !M386
++	depends on X86_64 || !M386
+ 
+ config X86_PPRO_FENCE
+ 	bool "PentiumPro memory ordering errata workaround"
+diff --git a/arch/x86/include/asm/rwsem.h b/arch/x86/include/asm/rwsem.h
+index ca7517d..625baca 100644
+--- a/arch/x86/include/asm/rwsem.h
++++ b/arch/x86/include/asm/rwsem.h
+@@ -65,7 +65,7 @@ extern asmregparm struct rw_semaphore *
+ #define RWSEM_ACTIVE_WRITE_BIAS		(RWSEM_WAITING_BIAS + RWSEM_ACTIVE_BIAS)
+ 
+ struct rw_semaphore {
+-	signed long		count;
++	__s32			count;
+ 	spinlock_t		wait_lock;
+ 	struct list_head	wait_list;
+ #ifdef CONFIG_DEBUG_LOCK_ALLOC
+@@ -105,7 +105,7 @@ do {								\
+ static inline void __down_read(struct rw_semaphore *sem)
+ {
+ 	asm volatile("# beginning down_read\n\t"
+-		     LOCK_PREFIX "  incl      (%%eax)\n\t"
++		     LOCK_PREFIX "  incl      (%1)\n\t"
+ 		     /* adds 0x00000001, returns the old value */
+ 		     "  jns        1f\n"
+ 		     "  call call_rwsem_down_read_failed\n"
+@@ -147,7 +147,7 @@ static inline void __down_write_nested(struct rw_semaphore *sem, int subclass)
+ 
+ 	tmp = RWSEM_ACTIVE_WRITE_BIAS;
+ 	asm volatile("# beginning down_write\n\t"
+-		     LOCK_PREFIX "  xadd      %%edx,(%%eax)\n\t"
++		     LOCK_PREFIX "  xaddl     %%edx,(%2)\n\t"
+ 		     /* subtract 0x0000ffff, returns the old value */
+ 		     "  testl     %%edx,%%edx\n\t"
+ 		     /* was the count 0 before? */
+@@ -170,9 +170,9 @@ static inline void __down_write(struct rw_semaphore *sem)
+  */
+ static inline int __down_write_trylock(struct rw_semaphore *sem)
+ {
+-	signed long ret = cmpxchg(&sem->count,
+-				  RWSEM_UNLOCKED_VALUE,
+-				  RWSEM_ACTIVE_WRITE_BIAS);
++	__s32 ret = cmpxchg(&sem->count,
++			    RWSEM_UNLOCKED_VALUE,
++			    RWSEM_ACTIVE_WRITE_BIAS);
+ 	if (ret == RWSEM_UNLOCKED_VALUE)
+ 		return 1;
+ 	return 0;
+@@ -185,7 +185,7 @@ static inline void __up_read(struct rw_semaphore *sem)
+ {
+ 	__s32 tmp = -RWSEM_ACTIVE_READ_BIAS;
+ 	asm volatile("# beginning __up_read\n\t"
+-		     LOCK_PREFIX "  xadd      %%edx,(%%eax)\n\t"
++		     LOCK_PREFIX "  xaddl     %%edx,(%2)\n\t"
+ 		     /* subtracts 1, returns the old value */
+ 		     "  jns        1f\n\t"
+ 		     "  call call_rwsem_wake\n"
+@@ -203,7 +203,7 @@ static inline void __up_write(struct rw_semaphore *sem)
+ {
+ 	asm volatile("# beginning __up_write\n\t"
+ 		     "  movl      %2,%%edx\n\t"
+-		     LOCK_PREFIX "  xaddl     %%edx,(%%eax)\n\t"
++		     LOCK_PREFIX "  xaddl     %%edx,(%1)\n\t"
+ 		     /* tries to transition
+ 			0xffff0001 -> 0x00000000 */
+ 		     "  jz       1f\n"
+@@ -221,7 +221,7 @@ static inline void __up_write(struct rw_semaphore *sem)
+ static inline void __downgrade_write(struct rw_semaphore *sem)
+ {
+ 	asm volatile("# beginning __downgrade_write\n\t"
+-		     LOCK_PREFIX "  addl      %2,(%%eax)\n\t"
++		     LOCK_PREFIX "  addl      %2,(%1)\n\t"
+ 		     /* transitions 0xZZZZ0001 -> 0xYYYY0001 */
+ 		     "  jns       1f\n\t"
+ 		     "  call call_rwsem_downgrade_wake\n"
+diff --git a/arch/x86/lib/Makefile b/arch/x86/lib/Makefile
+index cffd754..c802451 100644
+--- a/arch/x86/lib/Makefile
++++ b/arch/x86/lib/Makefile
+@@ -39,4 +39,5 @@ else
+         lib-y += thunk_64.o clear_page_64.o copy_page_64.o
+         lib-y += memmove_64.o memset_64.o
+         lib-y += copy_user_64.o rwlock_64.o copy_user_nocache_64.o
++	lib-$(CONFIG_RWSEM_XCHGADD_ALGORITHM) += rwsem_64.o
+ endif
+diff --git a/arch/x86/lib/rwsem_64.S b/arch/x86/lib/rwsem_64.S
+new file mode 100644
+index 0000000..15acecf
+--- /dev/null
++++ b/arch/x86/lib/rwsem_64.S
+@@ -0,0 +1,81 @@
++/*
++ * x86-64 rwsem wrappers
++ *
++ * This interfaces the inline asm code to the slow-path
++ * C routines. We need to save the call-clobbered regs
++ * that the asm does not mark as clobbered, and move the
++ * argument from %rax to %rdi.
++ *
++ * NOTE! We don't need to save %rax, because the functions
++ * will always return the semaphore pointer in %rax (which
++ * is also the input argument to these helpers)
++ *
++ * The following can clobber %rdx because the asm clobbers it:
++ *   call_rwsem_down_write_failed
++ *   call_rwsem_wake
++ * but %rdi, %rsi, %rcx, %r8-r11 always need saving.
++ */
++
++#include <linux/linkage.h>
++#include <asm/rwlock.h>
++#include <asm/alternative-asm.h>
++#include <asm/frame.h>
++#include <asm/dwarf2.h>
++
++#define save_common_regs \
++	pushq %rdi; \
++	pushq %rsi; \
++	pushq %rcx; \
++	pushq %r8; \
++	pushq %r9; \
++	pushq %r10; \
++	pushq %r11
++
++#define restore_common_regs \
++	popq %r11; \
++	popq %r10; \
++	popq %r9; \
++	popq %r8; \
++	popq %rcx; \
++	popq %rsi; \
++	popq %rdi
++
++/* Fix up special calling conventions */
++ENTRY(call_rwsem_down_read_failed)
++	save_common_regs
++	pushq %rdx
++	movq %rax,%rdi
++	call rwsem_down_read_failed
++	popq %rdx
++	restore_common_regs
++	ret
++	ENDPROC(call_rwsem_down_read_failed)
++
++ENTRY(call_rwsem_down_write_failed)
++	save_common_regs
++	movq %rax,%rdi
++	call rwsem_down_write_failed
++	restore_common_regs
++	ret
++	ENDPROC(call_rwsem_down_write_failed)
++
++ENTRY(call_rwsem_wake)
++	decw %dx    /* do nothing if still outstanding active readers */
++	jnz 1f
++	save_common_regs
++	movq %rax,%rdi
++	call rwsem_wake
++	restore_common_regs
++1:	ret
++	ENDPROC(call_rwsem_wake)
++
++/* Fix up special calling conventions */
++ENTRY(call_rwsem_downgrade_wake)
++	save_common_regs
++	pushq %rdx
++	movq %rax,%rdi
++	call rwsem_downgrade_wake
++	popq %rdx
++	restore_common_regs
++	ret
++	ENDPROC(call_rwsem_downgrade_wake)
