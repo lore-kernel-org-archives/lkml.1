@@ -1,129 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932869Ab0AFVdG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756192Ab0AFVh2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932869Ab0AFVdG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 16:33:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756130Ab0AFVdB
+	id S1756192Ab0AFVh2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 16:37:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932685Ab0AFVh0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 16:33:01 -0500
-Received: from mta2.srv.hcvlny.cv.net ([167.206.4.197]:41719 "EHLO
-	mta2.srv.hcvlny.cv.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756025Ab0AFVdB (ORCPT
+	Wed, 6 Jan 2010 16:37:26 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:36640 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755555Ab0AFVh0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 16:33:01 -0500
-Date: Wed, 06 Jan 2010 16:32:15 -0500
-From: Michael Breuer <mbreuer@majjas.com>
-Subject: Re: [PATCH] af_packet: Don't use skb after dev_queue_xmit()
-In-reply-to: <20100106210941.GC3354@del.dom.local>
-To: Jarek Poplawski <jarkao2@gmail.com>
-Cc: David Miller <davem@davemloft.net>, shemminger@linux-foundation.org,
-       akpm@linux-foundation.org, flyboy@gmail.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Message-id: <4B45015F.4090506@majjas.com>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7BIT
-References: <20100105230746.GA6612@del.dom.local> <4B43F72C.9090004@majjas.com>
- <20100106072208.GA6711@ff.dom.local> <4B44E952.5000804@majjas.com>
- <20100106202212.GB3354@del.dom.local> <4B44F381.3000206@majjas.com>
- <20100106210941.GC3354@del.dom.local>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.5)
- Gecko/20091204 Lightning/1.0b2pre Thunderbird/3.0
+	Wed, 6 Jan 2010 16:37:26 -0500
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: Andrea Arcangeli <aarcange@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Adam Litke <agl@us.ibm.com>, Avi Kivity <avi@redhat.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH 4/7] Memory compaction core
+From: Andi Kleen <andi@firstfloor.org>
+References: <1262795169-9095-1-git-send-email-mel@csn.ul.ie>
+	<1262795169-9095-5-git-send-email-mel@csn.ul.ie>
+Date: Wed, 06 Jan 2010 22:37:22 +0100
+In-Reply-To: <1262795169-9095-5-git-send-email-mel@csn.ul.ie> (Mel Gorman's message of "Wed,  6 Jan 2010 16:26:06 +0000")
+Message-ID: <87iqbeykx9.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 1/6/2010 4:09 PM, Jarek Poplawski wrote:
-> On Wed, Jan 06, 2010 at 03:33:05PM -0500, Michael Breuer wrote:
->    
->> On 1/6/2010 3:22 PM, Jarek Poplawski wrote:
->>      
->>> On Wed, Jan 06, 2010 at 02:49:38PM -0500, Michael Breuer wrote:
->>>        
->>>> On 1/6/2010 2:22 AM, Jarek Poplawski wrote:
->>>>          
->>>>> On Tue, Jan 05, 2010 at 09:36:28PM -0500, Michael Breuer wrote:
->>>>>            
->>>>>> On 1/5/2010 6:07 PM, Jarek Poplawski wrote:
->>>>>>              
->>>>>>> ----------------->
->>>>>>>
->>>>>>> Changing an skb after dev_queue_xmit() is illegal. And since it's
->>>>>>> inconsistent to treat specially net_xmit_errno() non-zero return,
->>>>>>> while ignoring other dev_queue_xmit() errors, there is no reason
->>>>>>> to break the loop in tpacket_snd() in this case.
->>>>>>>
->>>>>>> With debugging by: Stephen Hemminger<shemminger@linux-foundation.org>
->>>>>>>
->>>>>>> Reported-by: Michael Breuer<mbreuer@majjas.com>
->>>>>>> Signed-off-by: Jarek Poplawski<jarkao2@gmail.com>
->>>>>>> ---
->>>>>>>
->>>>>>>    net/packet/af_packet.c |    8 +++-----
->>>>>>>    1 files changed, 3 insertions(+), 5 deletions(-)
->>>>>>>
->>>>>>> diff --git a/net/packet/af_packet.c b/net/packet/af_packet.c
->>>>>>> index e0516a2..984a1fa 100644
->>>>>>> --- a/net/packet/af_packet.c
->>>>>>> +++ b/net/packet/af_packet.c
->>>>>>> @@ -1021,8 +1021,9 @@ static int tpacket_snd(struct packet_sock *po, struct msghdr *msg)
->>>>>>>
->>>>>>>    		status = TP_STATUS_SEND_REQUEST;
->>>>>>>    		err = dev_queue_xmit(skb);
->>>>>>> -		if (unlikely(err>     0&&     (err = net_xmit_errno(err)) != 0))
->>>>>>> -			goto out_xmit;
->>>>>>> +		if (unlikely(err>     0))
->>>>>>> +			err = net_xmit_errno(err);
->>>>>>> +
->>>>>>>    		packet_increment_head(&po->tx_ring);
->>>>>>>    		len_sum += tp_len;
->>>>>>>    	} while (likely((ph != NULL) ||
->>>>>>> @@ -1033,9 +1034,6 @@ static int tpacket_snd(struct packet_sock *po, struct msghdr *msg)
->>>>>>>    	err = len_sum;
->>>>>>>    	goto out_put;
->>>>>>>
->>>>>>> -out_xmit:
->>>>>>> -	skb->destructor = sock_wfree;
->>>>>>> -	atomic_dec(&po->tx_ring.pending);
->>>>>>>    out_status:
->>>>>>>    	__packet_set_status(po, ph, status);
->>>>>>>    	kfree_skb(skb);
->>>>>>> --
->>>>>>>                
-> ...
->    
->>>> This patch at first behaved similarly to the previous one - seemed
->>>> to be running a bit better... until the adapter went down :(
->>>>          
->>> I'm not sure: do you mean this patch above vs previous one by Stephen,
->>> or did you manage to try my "alernative #2" patch already?
->>>
->>> BTW, I forgot to mention, and maybe it doesn't matter here, but it
->>> would be better to (always) use my sky2 patch from Berck Nash's
->>> thread.
->>>
->>> Jarek P.
->>>        
->> This was using "alternative #2" patch. I didn't get the hang with
->> alternative #1. Your sky2 patch from Berck Nash's thread was
->> included in both cases; Stephen's was not.
->>      
-> OK, so I guess "alternative #1" (above) seems safer to recommend for
-> now (as I assumed earlier).
->
-> On the other hand, we really don't know if it's only because it's
-> because it's nicer for your hardware (or still some other bug around),
-> so as before: let David choose ;-)
->
-> BTW, I think you could still use Stephen's patch too (there might be
-> still something more like this). There was also mentioned this network
-> manager again. I might be wrong, but IMHO there could be some
-> interaction even if it doesn't use this device; so could/did you try
-> to disable it entirely?
->
-> Thanks for testing!
-> Jarek P.
->
->
->    
-Just reran without the network manager - no change. Going to rerun with 
-Stephen's new patch, alternative #1, and the patch from Berck Nash's thread.
+Mel Gorman <mel@csn.ul.ie> writes:
+
+
+Haven't reviewed the full thing, but one thing I noticed below:
+
+> +
+> +	/*
+> +	 * Isolate free pages until enough are available to migrate the
+> +	 * pages on cc->migratepages. We stop searching if the migrate
+> +	 * and free page scanners meet or enough free pages are isolated.
+> +	 */
+> +	spin_lock_irq(&zone->lock);
+
+Won't that cause very long lock hold times on large zones?
+Presumably you need some kind of lock break heuristic.
+
+-Andi
+
+-- 
+ak@linux.intel.com -- Speaking for myself only.
