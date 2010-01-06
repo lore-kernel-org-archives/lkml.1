@@ -1,45 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756087Ab0AFSKZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932519Ab0AFSMF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756087Ab0AFSKZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 13:10:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756059Ab0AFSKW
+	id S932519Ab0AFSMF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 13:12:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932318Ab0AFSMB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 13:10:22 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:37089 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756045Ab0AFSKT (ORCPT
+	Wed, 6 Jan 2010 13:12:01 -0500
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:47945 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932316Ab0AFSMB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 13:10:19 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=CB5rqpVHHbOk1gC8JjRYxg8XWFxjzdM9Uj/CHS5Rc/6x4bmNZI0ToFkvNfqxL4bFGC
-         6K7ezvS38mW91Q3uCthXcg4AY6DeeHP1mvh34eRogVwPrJQ/MYGXXY9h05gOpLxjiJcL
-         K3b7OovqZtSMIDM5OcVYBu4Gk+6XZix8/Rt0g=
+	Wed, 6 Jan 2010 13:12:01 -0500
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+       davinci-linux-open-source@linux.davincidsp.com
+Subject: [GIT PULL] davinci platform fixes for 2.6.33-rc4
+From: Kevin Hilman <khilman@deeprootsystems.com>
+Organization: Deep Root Systems, LLC
+Date: Wed, 06 Jan 2010 10:11:58 -0800
+Message-ID: <87k4vvf6hd.fsf@deeprootsystems.com>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-In-Reply-To: <1262801263.4049.53.camel@laptop>
-References: <a44ae5cd1001060916s4db1d94fsb7e012ab80ce6add@mail.gmail.com>
-	 <1262801263.4049.53.camel@laptop>
-Date: Wed, 6 Jan 2010 13:10:17 -0500
-Message-ID: <a44ae5cd1001061010u2d31f24fx2dca6e7953687db@mail.gmail.com>
-Subject: Re: 2.6.33-rc3 -- Intel 945GME (inteldrmfb) -- Two Tux images 
-	displayed are side by side (should only show one).
-From: Miles Lane <miles.lane@gmail.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, David Airlie <airlied@linux.ie>,
-       Sylvain Meyer <sylvain.meyer@worldonline.fr>,
-       linux-fbdev@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 6, 2010 at 1:07 PM, Peter Zijlstra <peterz@infradead.org> wrote:
-> On Wed, 2010-01-06 at 12:16 -0500, Miles Lane wrote:
->> For a long time I have gotten two pictures of Tux showing up when I
->> include the Tux display option in my custom kernel builds.
->
-> Doesn't it show one for each cpu in the system?
+Linus,
 
-Apparently so.  And, why this should be true is beyond me.
+Please pull the fixes for the ARM/DaVinci platform for 2.6.33-rc4.
+
+Thanks,
+
+Kevin
+
+
+The following changes since commit 74d2e4f8d79ae0c4b6ec027958d5b18058662eea:
+  Linus Torvalds (1):
+        Linux 2.6.33-rc3
+
+are available in the git repository at:
+
+  ssh://master.kernel.org/pub/scm/linux/kernel/git/khilman/linux-davinci.git davinci-fixes
+
+or
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/khilman/linux-davinci.git davinci-fixes
+
+Miguel Aguilar (1):
+      DaVinci: DM365: Add the device_enable for the DaVinci Keyscan
+
+Sekhar Nori (3):
+      davinci: cp_intc: provide set_wake function
+      davinci: da8xx/omap-l1: mark RTC as a wakeup source
+      davinci: enable ARCH_HAS_HOLES_MEMORYMODEL for DaVinci
+
+Vaibhav Hiremath (1):
+      Davinci VPFE Capture: Take i2c adapter id through platform data
+
+ arch/arm/Kconfig                         |    1 +
+ arch/arm/mach-davinci/board-dm355-evm.c  |    1 +
+ arch/arm/mach-davinci/board-dm365-evm.c  |   11 ++++++-----
+ arch/arm/mach-davinci/board-dm644x-evm.c |    1 +
+ arch/arm/mach-davinci/cp_intc.c          |   11 +++++++++++
+ arch/arm/mach-davinci/devices-da8xx.c    |    9 ++++++++-
+ arch/arm/mach-davinci/dm365.c            |    1 -
+ 7 files changed, 28 insertions(+), 7 deletions(-)
