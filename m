@@ -1,80 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755839Ab0AFKnN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755848Ab0AFKps@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755839Ab0AFKnN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 05:43:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755689Ab0AFKnM
+	id S1755848Ab0AFKps (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 05:45:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755714Ab0AFKps
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 05:43:12 -0500
-Received: from cantor.suse.de ([195.135.220.2]:60448 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755598Ab0AFKnK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 05:43:10 -0500
-Date: Wed, 6 Jan 2010 11:43:11 +0100
-From: Jan Kara <jack@suse.cz>
-To: tytso@mit.edu
-Cc: Greg KH <gregkh@suse.de>, Jan Kara <jack@suse.cz>,
-       linux-kernel@vger.kernel.org, stable@kernel.org,
-       stable-review@kernel.org, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Dmitry Monakhov <dmonakhov@openvz.org>
-Subject: Re: [PATCH 83/97] ext4: Fix potential quota deadlock
-Message-ID: <20100106104310.GB3166@quack.suse.cz>
-References: <20100105003133.GA7199@kroah.com>
- <1262651630-7354-83-git-send-email-gregkh@suse.de>
- <20100105004741.GD3252@quack.suse.cz>
- <20100105185655.GB15630@suse.de>
- <20100105213927.GA3252@quack.suse.cz>
- <20100105231627.GA713@suse.de>
- <20100106052018.GA29440@thunk.org>
+	Wed, 6 Jan 2010 05:45:48 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:62006 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1755676Ab0AFKpr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jan 2010 05:45:47 -0500
+Message-ID: <4B446972.9050901@cn.fujitsu.com>
+Date: Wed, 06 Jan 2010 18:44:02 +0800
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100106052018.GA29440@thunk.org>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: tracing: confusing output of function_graph when notrace function
+ calls traceable function
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 06-01-10 00:20:18, tytso@mit.edu wrote:
-> On Tue, Jan 05, 2010 at 03:16:27PM -0800, Greg KH wrote:
-> > On Tue, Jan 05, 2010 at 10:39:27PM +0100, Jan Kara wrote:
-> > > On Tue 05-01-10 10:56:55, Greg KH wrote:
-> > > > On Tue, Jan 05, 2010 at 01:47:42AM +0100, Jan Kara wrote:
-> > > > > On Mon 04-01-10 16:33:36, Greg Kroah-Hartman wrote:
-> > > > > > From: Dmitry Monakhov <dmonakhov@openvz.org>
-> > > > > > 
-> > > > > > commit d21cd8f163ac44b15c465aab7306db931c606908 upstream.
-> > > > >   Ted has found a serious bug in this patch over Christmas and fixed it.
-> > > > > Ted, do you prefer to just discard this patch or will you add your fixes?
-> > > > Do you have the git commit id of the patch that fixes it?
-> > >   Commits fixing the behavior are:
-> > > 0637c6f4135f592f094207c7c21e7c0fc5557834
-> > > ee5f4d9cdf32fd99172d11665c592a288c2b1ff4
-> > > 9d0be50230b333005635967f7ecd4897dbfd181b
-> > 
-> > Hm, should I add these as well, or back out all of the ext4 quota
-> > patches from .32 and .31?
-> 
-> I don't think you need to back out all of the ext4 quota patches; Jan
-> has looked at the more carefully than I (since they went in via the
-> quota tree instead of the ext4 tree) but as far as I know the d21cd8f1
-> is a standalone fix and the other patches shouldn't break if you just
-> drop patch #83.  Adding the above mentioned patches is definitely
-> necessary if you include Patch #83, though, since otherwise people
-> mounting uncoverted ext3 filesystems using ext4 will get the BUG in
-> fs/ext4/inode.c:1063 regression.
-  Yes, patch #83 is a standalone.
+cat <debugfs_dir>/tracing/trace
+you can get these at the end of the outputs:
 
-> As far as whether it would be better to drop patch #83 or to include
-> these three commits, it's a bit of a toss up.  If you want to play it
-> safe, I'd say let's drop it for now and wait for week or so, so we can
-> make sure the people who are testing -rc3 are happy, and for the next
-> stable release we can pick it up plus the additional commits listed
-> above.
-  OK, reverting #83 for now and include it with other fixes later is
-probably the best solution.
+ 1)               |        nameidata_to_filp() {
+ 1)               |          __dentry_open() {
+ 1)               |            file_move() {
+ 1)   0.834 us    |              _raw_spin_lock();
+ 1)   0.926 us    |              _raw_spin_unlock();
+ 1)   4.768 us    |            }
 
-								Honza
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+!!!! file_move() is really called by __dentry_open()
+
+ 1)               |            kmem_cache_alloc_notrace() {
+ 1)   5.879 us    |              memset();
+ 1) + 12.390 us   |            }
+ 1)   1.025 us    |            mutex_lock();
+ 1)               |            kmem_cache_alloc_notrace() {
+ 1)   0.929 us    |              memset();
+ 1)   3.329 us    |            }
+ 1)   1.195 us    |            memcpy();
+ 1)   1.026 us    |            __mutex_init();
+
+!!!! the above are actually called by __tracing_open() which called by __dentry_open()
+(But at the first I was confused, I wondered why __dentry_open() calls them.)
+
+ 1)               |            kmem_cache_alloc_notrace() {
+ 1)   0.978 us    |              memset();
+ 1)   2.745 us    |            }
+ 1)               |            __alloc_percpu() {
+ 1)               |              pcpu_alloc() {
+ 1)   1.053 us    |                mutex_lock();
+ 1)   1.282 us    |                _raw_spin_lock_irqsave();
+ 1)               |                pcpu_size_to_slot() {
+ 1)   0.819 us    |                  __pcpu_size_to_slot();
+ 1)   5.455 us    |                }
+ 1)   1.135 us    |                pcpu_need_to_extend();
+ 1)               |                pcpu_alloc_area() {
+ 1)               |                  pcpu_chunk_slot() {
+ 1)               |                    pcpu_size_to_slot() {
+ 1)   0.813 us    |                      __pcpu_size_to_slot();
+ 1)   2.535 us    |                    }
+ 1)   8.349 us    |                  }
+ 1)   1.160 us    |                  memmove();
+ 1)               |                  pcpu_chunk_relocate() {
+ 1)               |                    pcpu_chunk_slot() {
+ 1)               |                      pcpu_size_to_slot() {
+ 1)   0.803 us    |                        __pcpu_size_to_slot();
+ 1)   2.478 us    |                      }
+ 1)   4.129 us    |                    }
+ 1)   8.583 us    |                  }
+ 1) + 29.665 us   |                }
+ 1)   1.038 us    |                _raw_spin_unlock_irqrestore();
+ 1)   1.178 us    |                pcpu_next_pop();
+ 1)   1.087 us    |                pcpu_chunk_addr();
+ 1)   0.975 us    |                memset();
+ 1)   0.821 us    |                pcpu_chunk_addr();
+ 1)   0.943 us    |                memset();
+ 1)   0.896 us    |                mutex_unlock();
+ 1) + 75.625 us   |              }
+ 1) + 77.453 us   |            }
+
+!!!! the above are actually called by graph_trace_open() which called by __tracing_open()
+
+== real graph ==:
+
+father_fun()
+  child_fun()
+  notrace_child_fun()
+    grandchild_fun1()
+    grandchild_fun2()
+
+===function_graph shows===>
+
+father_fun()
+  child_fun()
+  grandchild_fun1()
+  grandchild_fun2()
+
+When the notrace function calls traceable function, function_graph will
+get wrong depth of functions, and show wrong graph.
+
+Is there any method to fix it?
+
+Lai
