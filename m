@@ -1,45 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754407Ab0AFATI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754975Ab0AFATg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754407Ab0AFATI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 19:19:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753457Ab0AFATG
+	id S1754975Ab0AFATg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 19:19:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754277Ab0AFATf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 19:19:06 -0500
-Received: from qw-out-2122.google.com ([74.125.92.27]:60249 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750996Ab0AFATE convert rfc822-to-8bit (ORCPT
+	Tue, 5 Jan 2010 19:19:35 -0500
+Received: from exprod6ob113.obsmtp.com ([64.18.1.30]:40286 "HELO psmtp.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1752434Ab0AFATe convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 19:19:04 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=HTy7kZOwRTc9htnh4PewlpDR5KYCO0/8OoKv5kKl3B/SOFezcEf5S9OLbGG2zTetVh
-         6BAPiJutqJQJ0edDCFJC8Z5Q+WOVWhlmwKrY2B+XTIoRHa3xgOGAlO0LMe4yKJKMZJ0P
-         E2XpMp6qVcOfklHMXORQSweUJkoyXfbtR8AtU=
+	Tue, 5 Jan 2010 19:19:34 -0500
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-In-Reply-To: <20100105145931.a2c46c25.akpm@linux-foundation.org>
-References: <1262015683-1711-1-git-send-email-Martin.Jansa@gmail.com> 
-	<20100105145931.a2c46c25.akpm@linux-foundation.org>
-From: Eric Miao <eric.y.miao@gmail.com>
-Date: Wed, 6 Jan 2010 08:18:43 +0800
-Message-ID: <f17812d71001051618s1110b7d7l6377c1d0090fdbb9@mail.gmail.com>
-Subject: Re: [PATCH] pxafb: fix regression from d2a34c13e7ccec5d06eafd60e6f80ea531b34668
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Martin Jansa <martin.jansa@gmail.com>, linux-kernel@vger.kernel.org,
-       Julia Lawall <julia@diku.dk>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Subject: RE: [PATCH] nodemask.h: change any_online_node() to a static inline
+Date: Tue, 5 Jan 2010 19:19:31 -0500
+Message-ID: <BD79186B4FD85F4B8E60E381CAEE19090208932F@mi8nycmail19.Mi8.com>
+In-Reply-To: <alpine.DEB.2.00.1001051052100.26131@chino.kir.corp.google.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] nodemask.h: change any_online_node() to a static inline
+Thread-Index: AcqOOHdQDYMaGtjJSLGZRe8TYOYe8QALAspQ
+References: <201001051117.39423.hartleys@visionengravers.com> <alpine.DEB.2.00.1001051052100.26131@chino.kir.corp.google.com>
+From: "H Hartley Sweeten" <hartleys@visionengravers.com>
+To: "David Rientjes" <rientjes@google.com>
+Cc: "Linux Kernel" <linux-kernel@vger.kernel.org>, <akpm@linux-foundation.org>,
+       <bfields@fieldses.org>
+X-OriginalArrivalTime: 06 Jan 2010 00:19:30.0260 (UTC) FILETIME=[EA064140:01CA8E65]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tuesday, January 05, 2010 11:54 AM, David Rientjes wrote:
+> On Tue, 5 Jan 2010, H Hartley Sweeten wrote:
 >
-> That patch fixes the build, but it also eliminates the test for
-> fbi==NULL.  The changelog doesn't explain that change and I wonder if
-> it was intentional and correct?
+>> diff --git a/include/linux/nodemask.h b/include/linux/nodemask.h
+>> index 454997c..1f66e02 100644
+>> --- a/include/linux/nodemask.h
+>> +++ b/include/linux/nodemask.h
+>> @@ -467,15 +467,6 @@ static inline int num_node_state(enum node_states state)
+>>  #define node_online_map 	node_states[N_ONLINE]
+>>  #define node_possible_map 	node_states[N_POSSIBLE]
+>>  
+>> -#define any_online_node(mask)			\
+>> -({						\
+>> -	int node;				\
+>> -	for_each_node_mask(node, (mask))	\
+>> -		if (node_online(node))		\
+>> -			break;			\
+>> -	node;					\
+>> -})
+>> -
+>>  #define num_online_nodes()	num_node_state(N_ONLINE)
+>>  #define num_possible_nodes()	num_node_state(N_POSSIBLE)
+>>  #define node_online(node)	node_state((node), N_ONLINE)
+>> @@ -484,6 +475,17 @@ static inline int num_node_state(enum node_states state)
+>>  #define for_each_node(node)	   for_each_node_state(node, N_POSSIBLE)
+>>  #define for_each_online_node(node) for_each_node_state(node, N_ONLINE)
+>>  
+>> +static inline int any_online_node(nodemask_t mask)
+>> +{
+>> +	int node;
+>> +
+>> +	for_each_node_mask(node, mask) {
+>> +		if (node_online(node))
+>> +			break;
+>> +	}
+>> +	return node;
+>> +}
+>> +
+>>  /*
+>>   * For nodemask scrach area.
+>>   * NODEMASK_ALLOC(type, name) allocates an object with a specified type and
 >
->
+> Could you simply remove any_online_node() and replace its callers with 
+> first_node(node_online_map) instead?
 
-fbi has been well tested in pxafb_probe() and then passed to pxafb_smart_init()
-and to pxafb_smart_update(), it's just unnecessary to test it again and again.
+No idea ;-)
+
+My main intention with this patch was to quite some sparse noise in
+net/sunrpc/svc.c.  This seemed the cleanest way to do it.
+
+It looks like any_online_node is, currently, only called by:
+
+arch/powerpc/mm/numa.c
+  3 places, twice setting a local int variable called 'nid' and once just
+  returning the 'node' from the macro.  All three call the marco as:
+
+	... any_online_node(NODE_MASK_ALL);
+
+net/sunrpc/svc.c
+  1 place, setting a local unsigned int variable called 'node'.  Calls the
+  macro as:
+
+	... any_online_node(node_online_map);
+
+I really don't know if the macro could be replaced by first_node(node_online_map).
+
+Regards,
+Hartley
