@@ -1,65 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932307Ab0AFQyV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932287Ab0AFQ4v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932307Ab0AFQyV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 11:54:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932216Ab0AFQyU
+	id S932287Ab0AFQ4v (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 11:56:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932182Ab0AFQ4u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 11:54:20 -0500
-Received: from smtp.mujha-vel.cz ([81.30.225.246]:48995 "EHLO
-	smtp.mujha-vel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932199Ab0AFQyU (ORCPT
+	Wed, 6 Jan 2010 11:56:50 -0500
+Received: from www84.your-server.de ([213.133.104.84]:48063 "EHLO
+	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932139Ab0AFQ4t (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 11:54:20 -0500
-From: Jiri Slaby <jslaby@suse.cz>
-To: davem@davemloft.net
-Cc: linux-kernel@vger.kernel.org, jirislaby@gmail.com,
-       Jay Cliburn <jcliburn@gmail.com>, Chris Snook <chris.snook@gmail.com>,
-       Jie Yang <jie.yang@atheros.com>, atl1-devel@lists.sourceforge.net,
-       netdev@vger.kernel.org
-Subject: [PATCH 1/1] NET: atlx, fix memory leak
-Date: Wed,  6 Jan 2010 17:54:16 +0100
-Message-Id: <1262796856-21919-1-git-send-email-jslaby@suse.cz>
-X-Mailer: git-send-email 1.6.5.7
+	Wed, 6 Jan 2010 11:56:49 -0500
+Subject: [PATCH] checkpatch.pl: remove the punch card limit
+From: Stefani Seibold <stefani@seibold.net>
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, apw@canonical.com,
+       jschopp@austin.ibm.com, davej@redhat.com
+Content-Type: text/plain; charset="ISO-8859-15"
+Date: Wed, 06 Jan 2010 17:56:24 +0100
+Message-ID: <1262796984.1011.17.camel@wall-e>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.2 
+Content-Transfer-Encoding: 7bit
+X-Authenticated-Sender: stefani@seibold.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stanse found a memory leak in atl2_get_eeprom. eeprom_buff is not
-freed/assigned on all paths. Fix that.
+The time of 80 characters punch card and terminals are over, so i would
+be a good thing to set the line length limit to 120. Every display today
+should be able handle this. And it think it make formated source code
+more readable.
 
-Signed-off-by: Jiri Slaby <jslaby@suse.cz>
-Cc: Jay Cliburn <jcliburn@gmail.com>
-Cc: Chris Snook <chris.snook@gmail.com>
-Cc: Jie Yang <jie.yang@atheros.com>
-Cc: atl1-devel@lists.sourceforge.net
-Cc: "David S. Miller" <davem@davemloft.net>
-Cc: netdev@vger.kernel.org
+For everybody who want know: The 80 column limit of a terminal comes
+from the punch cards, which stored exact 80 characters.
+  
+Signed-off-by: Stefani Seibold <stefani@seibold.net>
 ---
- drivers/net/atlx/atl2.c |    7 +++++--
- 1 files changed, 5 insertions(+), 2 deletions(-)
+ checkpatch.pl |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/net/atlx/atl2.c b/drivers/net/atlx/atl2.c
-index c0451d7..ec52529 100644
---- a/drivers/net/atlx/atl2.c
-+++ b/drivers/net/atlx/atl2.c
-@@ -1959,12 +1959,15 @@ static int atl2_get_eeprom(struct net_device *netdev,
- 		return -ENOMEM;
+--- linux-2.6.33-rc2.orig/scripts/checkpatch.pl	2009-12-03 04:51:21.000000000 +0100
++++ linux-2.6.33-rc2.new/scripts/checkpatch.pl	2010-01-06 17:46:40.057565661 +0100
+@@ -1374,13 +1374,13 @@ sub process {
+ # check we are in a valid source file if not then ignore this hunk
+ 		next if ($realfile !~ /\.(h|c|s|S|pl|sh)$/);
  
- 	for (i = first_dword; i < last_dword; i++) {
--		if (!atl2_read_eeprom(hw, i*4, &(eeprom_buff[i-first_dword])))
--			return -EIO;
-+		if (!atl2_read_eeprom(hw, i*4, &(eeprom_buff[i-first_dword]))) {
-+			ret_val = -EIO;
-+			goto free;
-+		}
- 	}
+-#80 column limit
++#120 column limit
+ 		if ($line =~ /^\+/ && $prevrawline !~ /\/\*\*/ &&
+ 		    $rawline !~ /^.\s*\*\s*\@$Ident\s/ &&
+ 		    $line !~ /^\+\s*printk\s*\(\s*(?:KERN_\S+\s*)?"[X\t]*"\s*(?:,|\)\s*;)\s*$/ &&
+-		    $length > 80)
++		    $length > 120)
+ 		{
+-			WARN("line over 80 characters\n" . $herecurr);
++			WARN("line over 120 characters\n" . $herecurr);
+ 		}
  
- 	memcpy(bytes, (u8 *)eeprom_buff + (eeprom->offset & 3),
- 		eeprom->len);
-+free:
- 	kfree(eeprom_buff);
- 
- 	return ret_val;
--- 
-1.6.5.7
+ # check for adding lines without a newline.
+
+
+
 
