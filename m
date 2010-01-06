@@ -1,59 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754549Ab0AFC3U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754594Ab0AFCe0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754549Ab0AFC3U (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 21:29:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753945Ab0AFC3T
+	id S1754594Ab0AFCe0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 21:34:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754041Ab0AFCeV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 21:29:19 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:48642 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753436Ab0AFC3R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 21:29:17 -0500
-Date: Wed, 6 Jan 2010 13:29:09 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: "John W. Linville" <linville@tuxdriver.com>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Zhu Yi <yi.zhu@intel.com>, David Miller <davem@davemloft.net>
-Subject: linux-next: manual merge of the wireless tree with Linus' tree
-Message-Id: <20100106132909.1faca672.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 3.0.0beta4 (GTK+ 2.18.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__6_Jan_2010_13_29_09_+1100_v2m8jnFjHMxhLUzu"
+	Tue, 5 Jan 2010 21:34:21 -0500
+Received: from kirsty.vergenet.net ([202.4.237.240]:37220 "EHLO
+	kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753087Ab0AFCeT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jan 2010 21:34:19 -0500
+Date: Wed, 6 Jan 2010 13:34:16 +1100
+From: Simon Horman <horms@verge.net.au>
+To: Joe Perches <joe@perches.com>
+Cc: linux-kernel@vger.kernel.org, Wensong Zhang <wensong@linux-vs.org>,
+       Julian Anastasov <ja@ssi.bg>, Patrick McHardy <kaber@trash.net>,
+       "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org,
+       lvs-devel@vger.kernel.org, netfilter-devel@vger.kernel.org,
+       netfilter@vger.kernel.org, coreteam@netfilter.org
+Subject: Re: [PATCH 6/8] net/netfilter/ipvs/ip_vs_ftp.c: Use standardized
+ format in sprintf
+Message-ID: <20100106023416.GB18557@verge.net.au>
+References: <cover.1262726222.git.joe@perches.com>
+ <da25f48ee7959e83a18e3705c223c8619e508bf4.1262726222.git.joe@perches.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <da25f48ee7959e83a18e3705c223c8619e508bf4.1262726222.git.joe@perches.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__6_Jan_2010_13_29_09_+1100_v2m8jnFjHMxhLUzu
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Tue, Jan 05, 2010 at 05:20:18PM -0800, Joe Perches wrote:
+> Use the same format string as net/ipv4/netfilter/nf_nat_ftp.c
+> to encode an ipv4 address and port.
+> 
+> Both uses should be a single common function.
+> 
+> Signed-off-by: Joe Perches <joe@perches.com>
 
-Hi John,
+Acked-by: Simon Horman <horms@verge.net.au>
 
-Today's linux-next merge of the wireless tree got a conflict in
-drivers/net/wireless/iwlwifi/iwl-core.h between commit
-46e75f66677f5094bb51e91f9473128c4e907c7d ("net: fix for utsrelease.h
-moving to generated") from Linus' tree and commit
-61b91c1ea31d0d3ae5f848f7f7eab53dd691f8d0 ("iwlwifi: remove
-linux/utsrelease.h dependency") from the wireless tree.
-
-The latter clearly removes the need for the former, so I used that.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Wed__6_Jan_2010_13_29_09_+1100_v2m8jnFjHMxhLUzu
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAktD9XUACgkQjjKRsyhoI8xD8QCgv++MTZQzgyGjKkPdyj8+/lDC
-eOIAoIyd2wiQcLDzgxmbl25tt25eTBrU
-=O1gh
------END PGP SIGNATURE-----
-
---Signature=_Wed__6_Jan_2010_13_29_09_+1100_v2m8jnFjHMxhLUzu--
+> ---
+>  net/netfilter/ipvs/ip_vs_ftp.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/net/netfilter/ipvs/ip_vs_ftp.c b/net/netfilter/ipvs/ip_vs_ftp.c
+> index 33e2c79..73f38ea 100644
+> --- a/net/netfilter/ipvs/ip_vs_ftp.c
+> +++ b/net/netfilter/ipvs/ip_vs_ftp.c
+> @@ -208,7 +208,7 @@ static int ip_vs_ftp_out(struct ip_vs_app *app, struct ip_vs_conn *cp,
+>  		 */
+>  		from.ip = n_cp->vaddr.ip;
+>  		port = n_cp->vport;
+> -		sprintf(buf, "%d,%d,%d,%d,%d,%d", NIPQUAD(from.ip),
+> +		sprintf(buf, "%u,%u,%u,%u,%u,%u", NIPQUAD(from.ip),
+>  			(ntohs(port)>>8)&255, ntohs(port)&255);
+>  		buf_len = strlen(buf);
+>  
+> -- 
+> 1.6.6.rc0.57.gad7a
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe lvs-devel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
