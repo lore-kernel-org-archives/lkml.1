@@ -1,159 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932712Ab0AFUAp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932697Ab0AFUIk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932712Ab0AFUAp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 15:00:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932694Ab0AFUAl
+	id S932697Ab0AFUIk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 15:08:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932457Ab0AFUIj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 15:00:41 -0500
-Received: from intermatrixgroup.ru ([195.178.208.66]:39406 "EHLO
-	tservice.net.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932689Ab0AFUAi (ORCPT
+	Wed, 6 Jan 2010 15:08:39 -0500
+Received: from mail-yw0-f176.google.com ([209.85.211.176]:37742 "EHLO
+	mail-yw0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932413Ab0AFUIi convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 15:00:38 -0500
-Date: Wed, 6 Jan 2010 23:00:37 +0300
-From: Evgeniy Polyakov <zbr@ioremap.net>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Alexander Beregalov <a.beregalov@gmail.com>
-Subject: Re: [Bug #14894] pohmelfs: NULL pointer dereference
-Message-ID: <20100106200037.GA17641@ioremap.net>
-References: <oBElxfTZdhL.A.bx.-vhOLB@chimera> <srmJ8vMxKPH.A.iAC.TwhOLB@chimera> <20091229163512.GA4958@ioremap.net> <200912292237.54182.rjw@sisk.pl> <20091230091433.GU4489@kernel.dk>
+	Wed, 6 Jan 2010 15:08:38 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=VTw5jMhMyGvtqN66OwBjx2Mo6kbGb/AIY5ye7WI2TMH23Muw0YxDb+bjQXYPhSZ5Du
+         JjMJ1eznEob55HIZN7QsV6GeCbI7OVx7FRe9lXJZ1eDn12Wvyh6eSMWxU3CfH3A//ayr
+         cYVWhVFEH7so9RMJI+45rQ3jl1beMTMVS4OhA=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091230091433.GU4489@kernel.dk>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <4B44E7E3.10305@windriver.com>
+References: <1261603190-5036-1-git-send-email-jason.wessel@windriver.com> 
+	<1261603190-5036-6-git-send-email-jason.wessel@windriver.com> 
+	<1261603190-5036-7-git-send-email-jason.wessel@windriver.com> 
+	<1261603190-5036-8-git-send-email-jason.wessel@windriver.com> 
+	<1261603190-5036-9-git-send-email-jason.wessel@windriver.com> 
+	<1261603190-5036-10-git-send-email-jason.wessel@windriver.com> 
+	<8bd0f97a0912261312x4b7c7df6s14ac0137b702044e@mail.gmail.com> 
+	<0F1B54C89D5F954D8535DB252AF412FA0553E3A0@chinexm1.ad.analog.com> 
+	<4e5ebad50912301845p35b1ea98l2f91c2a209ee863a@mail.gmail.com> 
+	<4B44E7E3.10305@windriver.com>
+From: Mike Frysinger <vapier.adi@gmail.com>
+Date: Wed, 6 Jan 2010 15:08:18 -0500
+Message-ID: <8bd0f97a1001061208x8876e79y507d98e505071067@mail.gmail.com>
+Subject: Re: [Kgdb-bugreport] [PATCH 09/37] kgdb,blackfin: Add in 
+	kgdb_arch_set_pc for blackfin
+To: Jason Wessel <jason.wessel@windriver.com>
+Cc: Sonic Zhang <sonic.adi@gmail.com>, "Zhang, Sonic" <Sonic.Zhang@analog.com>,
+       kgdb-bugreport@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       mingo@elte.hu
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jens.
+On Wed, Jan 6, 2010 at 14:43, Jason Wessel wrote:
+> I pulled in this patch, and made the changes the Mike talked about with
+> respect to cleaning up the arch specific kgdb.c for blackfin.  See the
+> attached patch.
+>
+> Your patch and the one here will go into kgdb-next and onto linux-next.
 
-Thanks a lot for your patch, it looks good, but I'm not able to check it
-right now - its new year holidays here, that's also why reply is too late :)
-I will try it in a week and report back.
+the Blackfin versions tail into the common probe_kernel_{read,write}
+funcs, so your patch causes an infinite recursion in the common case.
+as i hinted earlier, i'd like to see mm/access.c to have something
+like:
+-long probe_kernel_read(void *dst, void *src, size_t size)
++long __probe_kernel_read(void *dst, void *src, size_t size)
+...
++long __weak probe_kernel_read(void *dst, void *src, size_t size)
+    __attribute__((alias("__probe_kernel_read")));
+that way the arch-specific probe_kernel_read can still fall back to
+the common __probe_kernel_read function.  same goes for the write
+function.
 
-On Wed, Dec 30, 2009 at 10:14:34AM +0100, Jens Axboe (jens.axboe@oracle.com) wrote:
-> On Tue, Dec 29 2009, Rafael J. Wysocki wrote:
-> > On Tuesday 29 December 2009, Evgeniy Polyakov wrote:
-> > > On Tue, Dec 29, 2009 at 04:28:52PM +0100, Rafael J. Wysocki (rjw@sisk.pl) wrote:
-> > > > This message has been generated automatically as a part of a report
-> > > > of regressions introduced between 2.6.31 and 2.6.32.
-> > > > 
-> > > > The following bug entry is on the current list of known regressions
-> > > > introduced between 2.6.31 and 2.6.32.  Please verify if it still should
-> > > > be listed and let me know (either way).
-> > > > 
-> > > > 
-> > > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14894
-> > > > Subject		: pohmelfs: NULL pointer dereference
-> > > > Submitter	: Alexander Beregalov <a.beregalov@gmail.com>
-> > > > Date		: 2009-12-02 1:11 (28 days old)
-> > > > References	: http://marc.info/?l=linux-kernel&m=125971633107940&w=4
-> > > > Handled-By	: Evgeniy Polyakov <zbr@ioremap.net>
-> > > 
-> > > Yes, I saw this regression and there is a patch to handle this, but it
-> > > kind of disables sync at all. Jens Axboe, who introduced per-bdi
-> > > writeback patches, did not yet reply.
-> > 
-> > Well, Jens, what's your opinion about that?
-> 
-> Since pohmelfs isn't tied to a single block device, it needs to setup a
-> backing dev like nfs/btrfs/etc do. Here's a completely untested patch.
-> 
-> diff --git a/drivers/staging/pohmelfs/inode.c b/drivers/staging/pohmelfs/inode.c
-> index f69b778..cd25811 100644
-> --- a/drivers/staging/pohmelfs/inode.c
-> +++ b/drivers/staging/pohmelfs/inode.c
-> @@ -36,6 +36,7 @@
->  #define POHMELFS_MAGIC_NUM	0x504f482e
->  
->  static struct kmem_cache *pohmelfs_inode_cache;
-> +static atomic_t psb_bdi_num = ATOMIC_INIT(0);
->  
->  /*
->   * Removes inode from all trees, drops local name cache and removes all queued
-> @@ -1331,6 +1332,8 @@ static void pohmelfs_put_super(struct super_block *sb)
->  	pohmelfs_crypto_exit(psb);
->  	pohmelfs_state_exit(psb);
->  
-> +	bdi_destroy(&psb->bdi);
-> +
->  	kfree(psb);
->  	sb->s_fs_info = NULL;
->  }
-> @@ -1815,11 +1818,22 @@ static int pohmelfs_fill_super(struct super_block *sb, void *data, int silent)
->  	if (!psb)
->  		goto err_out_exit;
->  
-> +	err = bdi_init(&psb->bdi);
-> +	if (err)
-> +		goto err_out_free_sb;
-> +
-> +	err = bdi_register(&psb->bdi, NULL, "pfs-%d", atomic_inc_return(&psb_bdi_num));
-> +	if (err) {
-> +		bdi_destroy(&psb->bdi);
-> +		goto err_out_free_sb;
-> +	}
-> +
->  	sb->s_fs_info = psb;
->  	sb->s_op = &pohmelfs_sb_ops;
->  	sb->s_magic = POHMELFS_MAGIC_NUM;
->  	sb->s_maxbytes = MAX_LFS_FILESIZE;
->  	sb->s_blocksize = PAGE_SIZE;
-> +	sb->s_bdi = &psb->bdi;
->  
->  	psb->sb = sb;
->  
-> @@ -1863,11 +1877,11 @@ static int pohmelfs_fill_super(struct super_block *sb, void *data, int silent)
->  
->  	err = pohmelfs_parse_options((char *) data, psb, 0);
->  	if (err)
-> -		goto err_out_free_sb;
-> +		goto err_out_free_bdi;
->  
->  	err = pohmelfs_copy_crypto(psb);
->  	if (err)
-> -		goto err_out_free_sb;
-> +		goto err_out_free_bdi;
->  
->  	err = pohmelfs_state_init(psb);
->  	if (err)
-> @@ -1916,6 +1930,8 @@ err_out_state_exit:
->  err_out_free_strings:
->  	kfree(psb->cipher_string);
->  	kfree(psb->hash_string);
-> +err_out_free_bdi:
-> +	bdi_destroy(&psb->bdi);
->  err_out_free_sb:
->  	kfree(psb);
->  err_out_exit:
-> diff --git a/drivers/staging/pohmelfs/netfs.h b/drivers/staging/pohmelfs/netfs.h
-> index 623a07d..01cba00 100644
-> --- a/drivers/staging/pohmelfs/netfs.h
-> +++ b/drivers/staging/pohmelfs/netfs.h
-> @@ -18,6 +18,7 @@
->  
->  #include <linux/types.h>
->  #include <linux/connector.h>
-> +#include <linux/backing-dev.h>
->  
->  #define POHMELFS_CN_IDX			5
->  #define POHMELFS_CN_VAL			0
-> @@ -624,6 +625,8 @@ struct pohmelfs_sb {
->  
->  	struct super_block	*sb;
->  
-> +	struct backing_dev_info	bdi;
-> +
->  	/*
->  	 * Algorithm strings.
->  	 */
-> 
-> -- 
-> Jens Axboe
+also, i see you added "notrace" to the Blackfin probe_kernel_write ...
+was that intentional ?  if so, this should probably go into
+include/linux/uaccess.h instead
 
--- 
-	Evgeniy Polyakov
+otherwise, this looks pretty good.  thanks for doing the footwork ! :)
+-mike
