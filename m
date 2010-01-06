@@ -1,79 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932586Ab0AFSj4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932609Ab0AFSkS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932586Ab0AFSj4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 13:39:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932254Ab0AFSj4
+	id S932609Ab0AFSkS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 13:40:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932271Ab0AFSkQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 13:39:56 -0500
-Received: from mga10.intel.com ([192.55.52.92]:41312 "EHLO
-	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932230Ab0AFSjz (ORCPT
+	Wed, 6 Jan 2010 13:40:16 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:46874 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932602Ab0AFSkO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 13:39:55 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,230,1262592000"; 
-   d="scan'208";a="761894993"
-Date: Wed, 6 Jan 2010 10:39:48 -0800
-From: mark gross <mgross@linux.intel.com>
-To: Daniel Walker <dwalker@codeaurora.org>
-Cc: linux-kernel@vger.kernel.org, davidb@quicinc.com, pchidamb@quicinc.com
-Subject: Re: [PATCH] pm_qos: Add QoS param, minimum system bus frequency
-Message-ID: <20100106183948.GA21316@linux.intel.com>
-Reply-To: mgross@linux.intel.com
-References: <1262308827-24215-1-git-send-email-dwalker@codeaurora.org>
- <20100104213852.GA5031@linux.intel.com>
- <1262642445.3097.11.camel@c-dwalke-linux.qualcomm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1262642445.3097.11.camel@c-dwalke-linux.qualcomm.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Wed, 6 Jan 2010 13:40:14 -0500
+X-Authority-Analysis: v=1.0 c=1 a=mahBh0N2zCAA:10 a=7U3hwN5JcxgA:10 a=20KFwNOVAAAA:8 a=meVymXHHAAAA:8 a=pGLkceISAAAA:8 a=ARn-LFdWU5p5GJSKDg0A:9 a=g65HEgVbpi3XwqBkGOnP9APKujcA:4 a=jEp0ucaQiEUA:10 a=jeBq3FmKZ4MA:10 a=MSl-tDqOz04A:10
+X-Cloudmark-Score: 0
+X-Originating-IP: 74.67.89.75
+Subject: Re: [PATCH -tip 1/8] tracing/kprobe: Update example output in
+ documentation
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>, lkml <linux-kernel@vger.kernel.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>
+In-Reply-To: <20100105224641.19431.34967.stgit@dhcp-100-2-132.bos.redhat.com>
+References: <20100105224634.19431.3259.stgit@dhcp-100-2-132.bos.redhat.com>
+	 <20100105224641.19431.34967.stgit@dhcp-100-2-132.bos.redhat.com>
+Content-Type: text/plain; charset="ISO-8859-15"
+Organization: Kihon Technologies Inc.
+Date: Wed, 06 Jan 2010 13:40:11 -0500
+Message-ID: <1262803211.28171.3075.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 04, 2010 at 02:00:45PM -0800, Daniel Walker wrote:
-> On Mon, 2010-01-04 at 13:38 -0800, mark gross wrote:
-> > On Thu, Dec 31, 2009 at 05:20:27PM -0800, Daniel Walker wrote:
-> > > From: Praveen Chidambaram <pchidamb@quicinc.com>
-> > > 
-> > > In some systems, the system bus speed can be varied, usually
-> > > based on the current CPU frequency.  However, various device
-> > > drivers and/or applications may need a faster system bus for I/O
-> > > even though the CPU itself may be idle
-> > 
-> > What happened to the discussion around multiple platforms needing
-> > multiple bus pm_qos_requirements?  
-> > 
-> > Is system bus freq too generic? (I'm worried about the name space)
-> > Is this ok? (I'm asking linux-pm for input here.)
-> > On X86 would this be analogous to FSB, Memory, or PCI bus frequencies?
-> > What will happen when there are two buses each wanting a PM_QOS
-> > parameter?  Is that a likely scenario?
+On Tue, 2010-01-05 at 17:46 -0500, Masami Hiramatsu wrote:
+> Update example output in documentation accroding to current
+> implementation.
 > 
-> We can always change the naming in the future, but someone could add a
-> PM_QOS_MEMORY_BUS_FREQ or PM_QOS_PERIPHERAL_BUS_FREQ in addition to this
-> one.. Since it's all generic code having generic naming seems fine..
+> Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+> Cc: Ingo Molnar <mingo@elte.hu>
+> Cc: Steven Rostedt <rostedt@goodmis.org>
+
+Acked-by: Steven Rostedt <rostedt@goodmis.org>
+
+-- Steve
+
+> Cc: Frederic Weisbecker <fweisbec@gmail.com>
+> ---
 > 
-> > Also, on your platform you have a throttling driver controlling the
-> > frequency of some bus, that will use this value as a constraint on how
-> > far it will throttle.  no?  I would be interested in seeing this driver
-> > sometime.  (I just want to make sure no one bastardizes pm_qos into an
-> > operating point thing.  I'm not sure I can justify why but I want to
-> > avoid that.)
+>  Documentation/trace/kprobetrace.txt |   33 +++++++++++++++++----------------
+>  1 files changed, 17 insertions(+), 16 deletions(-)
 > 
-> When you say "operating point thing" do you mean you don't want the
-> frequency adjusted at runtime? You want it set once then move on?
->
-no, I mean that I want the parameter to be used to constrain throttling
-done by drivers and not define the settings used by the drivers. 
+> diff --git a/Documentation/trace/kprobetrace.txt b/Documentation/trace/kprobetrace.txt
+> index 47aabee..c3eff6f 100644
+> --- a/Documentation/trace/kprobetrace.txt
+> +++ b/Documentation/trace/kprobetrace.txt
+> @@ -97,23 +97,24 @@ recording return value as "myretprobe" event.
+>  
+>    cat /sys/kernel/debug/tracing/events/kprobes/myprobe/format
+>  name: myprobe
+> -ID: 75
+> +ID: 780
+>  format:
+> -	field:unsigned short common_type;	offset:0;	size:2;
+> -	field:unsigned char common_flags;	offset:2;	size:1;
+> -	field:unsigned char common_preempt_count;	offset:3;	size:1;
+> -	field:int common_pid;	offset:4;	size:4;
+> -	field:int common_tgid;	offset:8;	size:4;
+> -
+> -	field: unsigned long ip;	offset:16;tsize:8;
+> -	field: int nargs;	offset:24;tsize:4;
+> -	field: unsigned long dfd;	offset:32;tsize:8;
+> -	field: unsigned long filename;	offset:40;tsize:8;
+> -	field: unsigned long flags;	offset:48;tsize:8;
+> -	field: unsigned long mode;	offset:56;tsize:8;
+> -
+> -print fmt: "(%lx) dfd=%lx filename=%lx flags=%lx mode=%lx", REC->ip, REC->dfd, REC->filename, REC->flags, REC->mode
+> -
+> +        field:unsigned short common_type;       offset:0;       size:2; signed:0;
+> +        field:unsigned char common_flags;       offset:2;       size:1; signed:0;
+> +        field:unsigned char common_preempt_count;       offset:3; size:1;signed:0;
+> +        field:int common_pid;   offset:4;       size:4; signed:1;
+> +        field:int common_lock_depth;    offset:8;       size:4; signed:1;
+> +
+> +        field:unsigned long __probe_ip; offset:12;      size:4; signed:0;
+> +        field:int __probe_nargs;        offset:16;      size:4; signed:1;
+> +        field:unsigned long dfd;        offset:20;      size:4; signed:0;
+> +        field:unsigned long filename;   offset:24;      size:4; signed:0;
+> +        field:unsigned long flags;      offset:28;      size:4; signed:0;
+> +        field:unsigned long mode;       offset:32;      size:4; signed:0;
+> +
+> +
+> +print fmt: "(%lx) dfd=%lx filename=%lx flags=%lx mode=%lx", REC->__probe_ip,
+> +REC->dfd, REC->filename, REC->flags, REC->mode
+>  
+>   You can see that the event has 4 arguments as in the expressions you specified.
+>  
+> 
+> 
 
-I worry that the parameter could be used as "the setting" to use by the
-driver thus pulling the PM throttling logic from the driver and putting
-it in user mode as a back door operating point interface.
 
-Its a subtle distinction but its one of the things I worry about.  Also,
-I'm not sure I can fight off good arguments for me to lighten up on this
-point, but I'll try if it comes to that. ;)
-
---mgross 
