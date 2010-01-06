@@ -1,92 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755442Ab0AFJHn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755604Ab0AFJLf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755442Ab0AFJHn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 04:07:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753188Ab0AFJHm
+	id S1755604Ab0AFJLf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 04:11:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751656Ab0AFJLe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 04:07:42 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:23167 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752987Ab0AFJHk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 04:07:40 -0500
-Message-ID: <4B4452D4.6090708@redhat.com>
-Date: Wed, 06 Jan 2010 17:07:32 +0800
-From: Xiaotian Feng <dfeng@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Lightning/1.0pre Thunderbird/3.0
+	Wed, 6 Jan 2010 04:11:34 -0500
+Received: from smtp-vbr9.xs4all.nl ([194.109.24.29]:4346 "EHLO
+	smtp-vbr9.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753520Ab0AFJLd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jan 2010 04:11:33 -0500
+X-Greylist: delayed 523 seconds by postgrey-1.27 at vger.kernel.org; Wed, 06 Jan 2010 04:11:32 EST
+Message-ID: <4B44514F.7080307@yahoo.es>
+Date: Wed, 06 Jan 2010 17:01:03 +0800
+From: Hein_Tibosch <hein_tibosch@yahoo.es>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-To: "J. Bruce Fields" <bfields@fieldses.org>
-CC: linux-nfs@vger.kernel.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Neil Brown <neilb@suse.de>,
-       Trond Myklebust <Trond.Myklebust@netapp.com>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: Re: [PATCH] sunrpc: fix peername failed on closed listener
-References: <1262227956-21470-1-git-send-email-dfeng@redhat.com> <20100105230131.GA22850@fieldses.org>
-In-Reply-To: <20100105230131.GA22850@fieldses.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Pavel Machek <pavel@ucw.cz>
+CC: Ben Nizette <bn@niasdigital.com>, Pierre Ossman <pierre@ossman.eu>,
+       Adrian Hunter <adrian.hunter@nokia.com>, linux-mmc@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Matt Fleming <matt@console-pimps.org>,
+       Sascha Hauer <s.hauer@pengutronix.de>
+Subject: Re: [PATCH v2] mmc: lower init clock frequency to 300kHz
+References: <2A48D9AC-90D7-405F-A64C-0703F5FEC175@niasdigital.com> <20100106070141.GC1382@ucw.cz>
+In-Reply-To: <20100106070141.GC1382@ucw.cz>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/06/2010 07:01 AM, J. Bruce Fields wrote:
-> On Thu, Dec 31, 2009 at 10:52:36AM +0800, Xiaotian Feng wrote:
->> There're some warnings of "nfsd: peername failed (err 107)!"
->> socket error -107 means Transport endpoint is not connected.
->> This warning message was outputed by svc_tcp_accept() [net/sunrpc/svcsock.c],
->> when kernel_getpeername returns -107. This means socket might be CLOSED.
->>
->> And svc_tcp_accept was called by svc_recv() [net/sunrpc/svc_xprt.c]
->>
->>          if (test_bit(XPT_LISTENER,&xprt->xpt_flags)) {
->>          <snip>
->>                  newxpt = xprt->xpt_ops->xpo_accept(xprt);
->>          <snip>
->>
->> So this might happen when xprt->xpt_flags has both XPT_LISTENER and XPT_CLOSE.
->>
->> Let's take a look at commit b0401d72, this commit has moved the close
->> processing after do recvfrom method, but this commit also introduces this
->> warnings, if the xpt_flags has both XPT_LISTENER and XPT_CLOSED, we should
->> close it, not accpet then close.
+On 6-1-2010 15:01, Pavel Machek wrote:
+> Machine with minimum clock of 1MHz is clearly broken, yet you issue
+> "soft" warning.
 >
-> The logic here seems unnecessarily complicated now, but as a minimal
-> fix, this seems fine.
+> What about:
 >
-> Is the *only* justification for this to silence this warning, or is
-> there some more serious problem I'm missing?
+>      if (f_min > 400k)
+>      	print existing warning
+>      else if (f_min > 300k)
+>         print warning 'if your card does not work, its broken,  but
+> 	      	           	your host is unhelpful'
+>      clock = f_min
+>      if (clock < 3o0)
+>      	 clock = 300
+>
+> ?
+>   
+Later in this thread I mentioned that initialization at 300 Khz is
+too fast for some platforms/cards (avr32 AP7000/main-stream cards).
+They will report CRC-errors so the above won't work.
 
-If a xprt->xpt_flags has XPT_CLOSE & XPT_LISTENER, kernel will accept it 
-first,
-and svc_xprt_received(xptr) no mater xpo_accept is suceed or failed, 
-then svc_delete_xprt(xprt).
+I have looked at the time it will take to exchange the initial data (about
+85 bytes), using different busses and frequencies:
+	
+        Intface:  8-bits  4-bits  SPI
+Bus-freq:
+400000 (Hz)       0.213   0.425    1.700 (ms)
+300000            0.283   0.567    2.267
+200000            0.425   0.850    3.400
+100000            0.850   1.700    6.800
+50000             1.700   3.400   13.600
+100               850     1700    6800
 
-I'm not sure what will happened between the svc_xprt_received and 
-svc_delete_xprt, there isn't any
-lock to protect it.
+These are netto times, without the msleep's for power-up and without
+overhead.
 
->
-> --b.
->
->>
->> Signed-off-by: Xiaotian Feng<dfeng@redhat.com>
->> Cc: J. Bruce Fields<bfields@fieldses.org>
->> Cc: Neil Brown<neilb@suse.de>
->> Cc: Trond Myklebust<Trond.Myklebust@netapp.com>
->> Cc: David S. Miller<davem@davemloft.net>
->> ---
->> diff --git a/net/sunrpc/svc_xprt.c b/net/sunrpc/svc_xprt.c
->> index 1c924ee..187f0f4 100644
->> --- a/net/sunrpc/svc_xprt.c
->> +++ b/net/sunrpc/svc_xprt.c
->> @@ -699,7 +699,8 @@ int svc_recv(struct svc_rqst *rqstp, long timeout)
->>   	spin_unlock_bh(&pool->sp_lock);
->>
->>   	len = 0;
->> -	if (test_bit(XPT_LISTENER,&xprt->xpt_flags)) {
->> +	if (test_bit(XPT_LISTENER,&xprt->xpt_flags)&&
->> +	    !test_bit(XPT_CLOSE,&xprt->xpt_flags)) {
->>   		struct svc_xprt *newxpt;
->>   		newxpt = xprt->xpt_ops->xpo_accept(xprt);
->>   		if (newxpt) {
->
+Looking at this table, I would use a fixed bottom of 100 Khz:
+
+	if (f_min > 400k)
+		print existing warning
+	clock = max (100k, host->f_min);
+
+Regards, Hein
+
+
+
+
+
+
 
