@@ -1,52 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933038Ab0AFXKh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756050Ab0AFXLf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933038Ab0AFXKh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 18:10:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932940Ab0AFXKg
+	id S1756050Ab0AFXLf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 18:11:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754615Ab0AFXLb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 18:10:36 -0500
-Received: from mail-out1.uio.no ([129.240.10.57]:36511 "EHLO mail-out1.uio.no"
+	Wed, 6 Jan 2010 18:11:31 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:41022 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932372Ab0AFXKf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 18:10:35 -0500
-Subject: Re: [PATCH v2] sunrpc: fix build-time warning
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Jeff Layton <jlayton@redhat.com>, Stephen Rothwell <sfr@canb.auug.org.au>,
-       linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org
-In-Reply-To: <20100101182514.cb1f49ef.randy.dunlap@oracle.com>
-References: <1262226195-27733-1-git-send-email-jlayton@redhat.com>
-	 <20091231091815.a1ea7e51.rdunlap@xenotime.net>
-	 <20091231205454.0f84f091@tupile.poochiereds.net>
-	 <20100101182514.cb1f49ef.randy.dunlap@oracle.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 06 Jan 2010 18:10:20 -0500
-Message-ID: <1262819420.4251.171.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 (2.28.2-1.fc12) 
+	id S1750767Ab0AFXLa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jan 2010 18:11:30 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: [PATCH 9/12] ACPI / PM: Introduce acpi_pm_wakeup_power()
+Date: Thu, 7 Jan 2010 00:11:49 +0100
+User-Agent: KMail/1.12.3 (Linux/2.6.33-rc3-rjw; KDE/4.3.3; x86_64; ; )
+Cc: Matthew Garrett <mjg@redhat.com>, Len Brown <lenb@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Linux PCI <linux-pci@vger.kernel.org>,
+       Oliver Neukum <oliver@neukum.org>, Bjorn Helgaas <bjorn.helgaas@hp.com>,
+       Shaohua Li <shaohua.li@intel.com>,
+       Francois Romieu <romieu@fr.zoreil.com>
+References: <200912272057.10443.rjw@sisk.pl> <200912272106.26569.rjw@sisk.pl> <20100106140035.6f622acf@jbarnes-piketon>
+In-Reply-To: <20100106140035.6f622acf@jbarnes-piketon>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-UiO-Ratelimit-Test: rcpts/h 5 msgs/h 1 sum rcpts/h 10 sum msgs/h 1 total rcpts 2172 max rcpts/h 27 ratelimit 0
-X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
-X-UiO-Scanned: 8C895FF39F8FE5C3C00D69D8CA0E7772DFDBD9E4
-X-UiO-SPAM-Test: remote_host: 68.40.206.115 spam_score: -49 maxlevel 80 minaction 2 bait 0 mail/h: 1 total 77 max/h 7 blacklist 0 greylist 0 ratelimit 0
+Message-Id: <201001070011.49755.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2010-01-01 at 18:25 -0800, Randy Dunlap wrote: 
-> From: Randy Dunlap <randy.dunlap@oracle.com>
+On Wednesday 06 January 2010, Jesse Barnes wrote:
+> On Sun, 27 Dec 2009 21:06:26 +0100
+> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> >  /**
+> > + * acpi_pm_wakeup_power - Enable/disable device wake-up power.
+> > + * @dev: ACPI device to handle.
+> > + * @enable: Whether to enable or disable the wake-up power of the
+> > device.
+> > + */
+> > +int acpi_pm_wakeup_power(struct acpi_device *dev, bool enable)
+> > +{
 > 
-> Fix auth_gss printk format warning:
+> I know we've got these all over now, but functions that just take a
+> bool are generally hard to read when you just look at the call site.
+> If it was called "acpi_pm_set_wakeup_power" and then took an on/off
+> enum it would be really easy to see, from the callsite, what was going
+> on.
 > 
-> net/sunrpc/auth_gss/auth_gss.c:660: warning: format '%ld' expects type 'long int', but argument 3 has type 'ssize_t'
-> 
-> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+> It's a fairly minor complaint, but it's something that's always bugged
+> me about the PCI PM code in particular.
 
-Thanks Randy!
+Well, in this particular case acpi_pm_wakeup_power() uses a bool, because
+acpi_pm_device_sleep_wake() (which is a caller of it) does.  IMO it won't
+be logical to use something else just here.
 
-Sorry for the delay. This patch has been applied today, and should
-therefore appear in the linux-next tree tomorrow...
+Also, as you noticed above, this follows a convention used not only in the
+PCI PM, but generally in the core PM code.  Although we could change this
+convention, I'm not really sure that would be worth the effort.
 
-Cheers
-  Trond
-
+Rafael
