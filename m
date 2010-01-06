@@ -1,71 +1,158 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933177Ab0AFXzV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933181Ab0AFXzv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933177Ab0AFXzV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 18:55:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933144Ab0AFXzQ
+	id S933181Ab0AFXzv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 18:55:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933132Ab0AFXzu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 18:55:16 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:47763 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933171Ab0AFXzM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 18:55:12 -0500
-Date: Thu, 7 Jan 2010 00:55:11 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jikos@twin.jikos.cz
-To: Gene Heskett <gene.heskett@verizon.net>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.33-rc3, rc2 regression at boot
-In-Reply-To: <201001061602.44133.gene.heskett@verizon.net>
-Message-ID: <alpine.LRH.2.00.1001070053390.15694@twin.jikos.cz>
-References: <alpine.LFD.2.00.1001051838410.3630@localhost.localdomain> <201001052355.29640.gene.heskett@verizon.net> <201001061602.44133.gene.heskett@verizon.net>
-User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 6 Jan 2010 18:55:50 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:59405 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933074Ab0AFXzs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jan 2010 18:55:48 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Thu, 7 Jan 2010 08:51:46 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: H Hartley Sweeten <hartleys@visionengravers.com>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
+       devicetree-discuss@lists.ozlabs.org, linux-nfs@vger.kernel.org,
+       netdev@vger.kernel.org, akpm@linux-foundation.org, rientjes@google.com,
+       mel@csn.ul.ie, lee.schermerhorn@hp.com, benh@kernel.crashing.org,
+       paulus@samba.org, dave@linux.vnet.ibm.com, miltonm@bga.com,
+       nfont@austin.ibm.com, geoffrey.levand@am.sony.com,
+       grant.likely@secretlab.ca, bfields@fieldses.org, neilb@suse.de,
+       Trond.Myklebust@netapp.com, davem@davemloft.net, bhalevy@panasas.com,
+       chuck.lever@oracle.com, Ricardo.Labiaga@netapp.com
+Subject: Re: [PATCH] nodmask.h: remove macro any_online_node
+Message-Id: <20100107085146.59cc9888.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <201001061624.59118.hartleys@visionengravers.com>
+References: <201001061624.59118.hartleys@visionengravers.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 6 Jan 2010, Gene Heskett wrote:
+On Wed, 6 Jan 2010 16:24:58 -0700
+H Hartley Sweeten <hartleys@visionengravers.com> wrote:
 
-> >[    0.558368] Unpacking initramfs...
-> >[    0.648644] Freeing initrd memory: 3431k freed
-> >[    0.651635] platform microcode: firmware: requesting
-> > amd-ucode/microcode_amd.bin [   60.646738] microcode: failed to load file
-> > amd-ucode/microcode_amd.bin [   60.646858] microcode: CPU0:
-> > patch_level=0x1000065
-> >[   60.646977] microcode: CPU1: patch_level=0x1000065
-> >[   60.647099] microcode: CPU2: patch_level=0x1000065
-> >[   60.647218] microcode: CPU3: patch_level=0x1000065
-> >
-> >Note the time, it kills quite close to a whole minute there, which at first
-> >would appear to be because there is not yet a mounted /lib filesystem to
-> > suck it from.  I didn't build an rc1, but rc2 also suffers from this.
-> > 2.6.32.2 does not do this although its firmware request takes place at the
-> > same point. So it doesn't look like it is the lack of a mounted filesystem
-> > after all.
-> >
-> >FWIW, because it was a hot reboot, the patch_level reported is the correct
-> >level.
-> >
-> >I am also seeing some complaints about my Audigy2 sound card, but what I
-> > saw during the boot, never made it to the messages log.  Something about
-> > guessing at the proper config, but I did hear kde sign on when x started.
-> >
-> >Thanks Linus.
-> >
-> Update, I edited the .config by hand and added the full path in
-> CONFIG_EXTRA_FIRMWARE_DIR="/lib/firmware/"
-> which was just 'firmware', and rebuilt.  No difference.  I still get the 60 
-> second hang.  FWIW, this particular setting isn't visible in a make xconfig.
+> nodmask.h: remove macro any_online_node
+> 
+> The macro any_online_node is prone to producing sparse warnings
+> due to the local symbol 'node'. Since all the in-tree users are really
+> requesting the first online node (the mask argument is either
+> NODE_MASK_ALL or node_online_map) just use the first_online_node
+> macro and remove the any_online_node macro since there are no users.
+> 
 
-As this is already at the stage when userspace exists and init has been 
-started, it might well be delay of some userspace stuff, not directly 
-kernel.
+Reviewed-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Thank you.
+BTW, it's better to add diffstat to this kind of changes.
 
-Does alt-sysrq-t at the time it is stuck give any clue?
+Regards,
+-Kame
 
--- 
-Jiri Kosina
-SUSE Labs, Novell Inc.
-
+> Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
+> Cc: Andrew Morton <akpm@linux-foundation.org>
+> Cc: David Rientjes <rientjes@google.com>
+> Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> Cc: Mel Gorman <mel@csn.ul.ie>
+> Cc: Lee Schermerhorn <lee.schermerhorn@hp.com>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: Dave Hansen <dave@linux.vnet.ibm.com>
+> Cc: Milton Miller <miltonm@bga.com>
+> Cc: Nathan Fontenot <nfont@austin.ibm.com>
+> Cc: Geoff Levand <geoffrey.levand@am.sony.com>
+> Cc: Grant Likely <grant.likely@secretlab.ca>
+> Cc: J. Bruce Fields <bfields@fieldses.org>
+> Cc: Neil Brown <neilb@suse.de>
+> Cc: Trond Myklebust <Trond.Myklebust@netapp.com>
+> Cc: David S. Miller <davem@davemloft.net>
+> Cc: Benny Halevy <bhalevy@panasas.com>
+> Cc: Chuck Lever <chuck.lever@oracle.com>
+> Cc: Ricardo Labiaga <Ricardo.Labiaga@netapp.com>
+> 
+> ---
+> 
+> diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+> index b037d95..64c0022 100644
+> --- a/arch/powerpc/mm/numa.c
+> +++ b/arch/powerpc/mm/numa.c
+> @@ -451,7 +451,7 @@ static int __cpuinit numa_setup_cpu(unsigned long lcpu)
+>  	nid = of_node_to_nid_single(cpu);
+>  
+>  	if (nid < 0 || !node_online(nid))
+> -		nid = any_online_node(NODE_MASK_ALL);
+> +		nid = first_online_node;
+>  out:
+>  	map_cpu_to_node(lcpu, nid);
+>  
+> @@ -1114,7 +1114,7 @@ int hot_add_scn_to_nid(unsigned long scn_addr)
+>  	int nid, found = 0;
+>  
+>  	if (!numa_enabled || (min_common_depth < 0))
+> -		return any_online_node(NODE_MASK_ALL);
+> +		return first_online_node;
+>  
+>  	memory = of_find_node_by_path("/ibm,dynamic-reconfiguration-memory");
+>  	if (memory) {
+> @@ -1125,7 +1125,7 @@ int hot_add_scn_to_nid(unsigned long scn_addr)
+>  	}
+>  
+>  	if (nid < 0 || !node_online(nid))
+> -		nid = any_online_node(NODE_MASK_ALL);
+> +		nid = first_online_node;
+>  
+>  	if (NODE_DATA(nid)->node_spanned_pages)
+>  		return nid;
+> diff --git a/include/linux/nodemask.h b/include/linux/nodemask.h
+> index 454997c..c4fa64b 100644
+> --- a/include/linux/nodemask.h
+> +++ b/include/linux/nodemask.h
+> @@ -69,8 +69,6 @@
+>   * int node_online(node)		Is some node online?
+>   * int node_possible(node)		Is some node possible?
+>   *
+> - * int any_online_node(mask)		First online node in mask
+> - *
+>   * node_set_online(node)		set bit 'node' in node_online_map
+>   * node_set_offline(node)		clear bit 'node' in node_online_map
+>   *
+> @@ -467,15 +465,6 @@ static inline int num_node_state(enum node_states state)
+>  #define node_online_map 	node_states[N_ONLINE]
+>  #define node_possible_map 	node_states[N_POSSIBLE]
+>  
+> -#define any_online_node(mask)			\
+> -({						\
+> -	int node;				\
+> -	for_each_node_mask(node, (mask))	\
+> -		if (node_online(node))		\
+> -			break;			\
+> -	node;					\
+> -})
+> -
+>  #define num_online_nodes()	num_node_state(N_ONLINE)
+>  #define num_possible_nodes()	num_node_state(N_POSSIBLE)
+>  #define node_online(node)	node_state((node), N_ONLINE)
+> diff --git a/net/sunrpc/svc.c b/net/sunrpc/svc.c
+> index 538ca43..832c1fe 100644
+> --- a/net/sunrpc/svc.c
+> +++ b/net/sunrpc/svc.c
+> @@ -133,7 +133,7 @@ svc_pool_map_choose_mode(void)
+>  		return SVC_POOL_PERNODE;
+>  	}
+>  
+> -	node = any_online_node(node_online_map);
+> +	node = first_online_node;
+>  	if (nr_cpus_node(node) > 2) {
+>  		/*
+>  		 * Non-trivial SMP, or CONFIG_NUMA on
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
