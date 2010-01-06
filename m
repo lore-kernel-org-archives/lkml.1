@@ -1,69 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755477Ab0AFHUf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755535Ab0AFHVr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755477Ab0AFHUf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 02:20:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752997Ab0AFHUe
+	id S1755535Ab0AFHVr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 02:21:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754672Ab0AFHVq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 02:20:34 -0500
-Received: from mga02.intel.com ([134.134.136.20]:49480 "EHLO mga02.intel.com"
+	Wed, 6 Jan 2010 02:21:46 -0500
+Received: from mga09.intel.com ([134.134.136.24]:4459 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751164Ab0AFHUd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 02:20:33 -0500
+	id S1753324Ab0AFHVp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jan 2010 02:21:45 -0500
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.49,227,1262592000"; 
-   d="scan'208";a="481659348"
-Date: Wed, 6 Jan 2010 15:20:29 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Eric Dumazet <eric.dumazet@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       Al Viro <viro@zeniv.linux.org.uk>,
-       Christoph Hellwig <hch@infradead.org>, Eric Paris <eparis@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>
-Subject: Re: [PATCH] fs: O_* bit numbers uniqueness check
-Message-ID: <20100106072029.GA25169@localhost>
-References: <20100106065526.GB11368@localhost> <4B443695.5090301@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <4B443695.5090301@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+   d="scan'208";a="584700350"
+Subject: Re: [PATCH 5/5] ACPI, APEI, Document for APEI
+From: Huang Ying <ying.huang@intel.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: "lenb@kernel.org" <lenb@kernel.org>,
+       "ak@linux.intel.com" <ak@linux.intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
+In-Reply-To: <20100106071609.GA1648@ucw.cz>
+References: <1261980744-4450-1-git-send-email-ying.huang@intel.com>
+	 <1261980744-4450-2-git-send-email-ying.huang@intel.com>
+	 <1261980744-4450-3-git-send-email-ying.huang@intel.com>
+	 <1261980744-4450-4-git-send-email-ying.huang@intel.com>
+	 <1261980744-4450-5-git-send-email-ying.huang@intel.com>
+	 <1261980744-4450-6-git-send-email-ying.huang@intel.com>
+	 <20100106071431.GB1494@ucw.cz>  <20100106071609.GA1648@ucw.cz>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 06 Jan 2010 15:21:43 +0800
+Message-ID: <1262762503.17852.9.camel@yhuang-dev.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 06, 2010 at 03:07:01PM +0800, Eric Dumazet wrote:
-> Le 06/01/2010 07:55, Wu Fengguang a écrit :
-> > The O_* bit numbers are defined in 20+ arch/*, and hence can silently
-> > overlap. Add a boot time check to ensure the uniqueness as suggested
-> > by David Miller.
-> > 
-> > CC: David Miller <davem@davemloft.net>
-> > CC: Stephen Rothwell <sfr@canb.auug.org.au>
-> > CC: Al Viro <viro@zeniv.linux.org.uk>
-> > CC: Christoph Hellwig <hch@infradead.org>
-> > CC: Eric Paris <eparis@redhat.com>
-> > Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
-> > ---
-> >  {
-> > +	/* please add new bits here to ensure allocation uniqueness */
-> > +	BUG_ON(20 != hweight32(
-> > +		O_RDONLY	| O_WRONLY	| O_RDWR	|
-> > +		O_CREAT		| O_EXCL	| O_NOCTTY	|
-> > +		O_TRUNC		| O_APPEND	| O_NONBLOCK	|
-> > +		O_SYNC		| FASYNC	| O_DIRECT	|
-> > +		O_LARGEFILE	| O_DIRECTORY	| O_NOFOLLOW	|
-> > +		O_NOATIME	| O_CLOEXEC	| O_RANDOM	|
-> > +		FMODE_EXEC	| FMODE_NONOTIFY));
-> > +
+On Wed, 2010-01-06 at 15:16 +0800, Pavel Machek wrote:
+> > > +The user interface of EINJ is in debug file system, under the
+> > > +directory apei/einj. The following files are provided.
+> > > +
+> > > +- available_error_type
+> > > +  Read this file will return the error injection capability of the
+> > > +  platform, that is, which error types are supported. The error type
+> > > +  definition is as follow, the left field is the error type value, the
+> > > +  right field is error description.
+> > > +
+> > > +    0x00000001	Processor Correctable
+> > > +    0x00000002	Processor Uncorrectable non-fatal
+> > > +    0x00000004	Processor Uncorrectable fatal
+> > > +    0x00000008  Memory Correctable
+> > > +    0x00000010  Memory Uncorrectable non-fatal
+> > > +    0x00000020  Memory Uncorrectable fatal
+> > > +    0x00000040	PCI Express Correctable
+> > > +    0x00000080	PCI Express Uncorrectable fatal
+> > > +    0x00000100	PCI Express Uncorrectable non-fatal
+> > > +    0x00000200	Platform Correctable
+> > > +    0x00000400	Platform Uncorrectable non-fatal
+> > > +    0x00000800	Platform Uncorrectable fatal
+> > > +
+> > > +  The format of file contents are as above, except there are only the
+> > > +  available error type lines.
 > 
-> I cannot test it, but given O_RDONLY is 0, are you sure 20 bits are actually set ?
+> Strange interface. Why not simply pass single integer -- the bit mask?
+> Bit meanings are not going to change, anyway.
 
-Yes, I tested it. The tricky one is O_SYNC, which actually has two bits..
+I have used bit mask in previous versions. But I think this version has
+better readability.
 
-Thanks,
-Fengguang
+Best Regards,
+Huang Ying
+
 
