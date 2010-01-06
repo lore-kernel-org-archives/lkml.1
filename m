@@ -1,48 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755744Ab0AFKjL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755839Ab0AFKnN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755744Ab0AFKjL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 05:39:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755643Ab0AFKjJ
+	id S1755839Ab0AFKnN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 05:43:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755689Ab0AFKnM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 05:39:09 -0500
-Received: from cantor.suse.de ([195.135.220.2]:60366 "EHLO mx1.suse.de"
+	Wed, 6 Jan 2010 05:43:12 -0500
+Received: from cantor.suse.de ([195.135.220.2]:60448 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755584Ab0AFKjI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 05:39:08 -0500
-Message-ID: <4B44684B.1060401@suse.cz>
-Date: Wed, 06 Jan 2010 11:39:07 +0100
-From: Michal Marek <mmarek@suse.cz>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.2 Thunderbird/3.0
+	id S1755598Ab0AFKnK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jan 2010 05:43:10 -0500
+Date: Wed, 6 Jan 2010 11:43:11 +0100
+From: Jan Kara <jack@suse.cz>
+To: tytso@mit.edu
+Cc: Greg KH <gregkh@suse.de>, Jan Kara <jack@suse.cz>,
+       linux-kernel@vger.kernel.org, stable@kernel.org,
+       stable-review@kernel.org, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Dmitry Monakhov <dmonakhov@openvz.org>
+Subject: Re: [PATCH 83/97] ext4: Fix potential quota deadlock
+Message-ID: <20100106104310.GB3166@quack.suse.cz>
+References: <20100105003133.GA7199@kroah.com>
+ <1262651630-7354-83-git-send-email-gregkh@suse.de>
+ <20100105004741.GD3252@quack.suse.cz>
+ <20100105185655.GB15630@suse.de>
+ <20100105213927.GA3252@quack.suse.cz>
+ <20100105231627.GA713@suse.de>
+ <20100106052018.GA29440@thunk.org>
 MIME-Version: 1.0
-To: Eric Miao <eric.y.miao@gmail.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] kbuild: include only necessary in scripts/Makefile.modbuiltin
-References: <f17812d71001052226y604995a0m4c7887d29fd73f90@mail.gmail.com> 	<4B445D3E.8080600@suse.cz> <f17812d71001060231l5c0ca1bha50e395790d0fc0b@mail.gmail.com>
-In-Reply-To: <f17812d71001060231l5c0ca1bha50e395790d0fc0b@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100106052018.GA29440@thunk.org>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 6.1.2010 11:31, Eric Miao wrote:
-> On Wed, Jan 6, 2010 at 5:51 PM, Michal Marek <mmarek@suse.cz> wrote:
->> On 6.1.2010 07:26, Eric Miao wrote:
->>> scripts/Makefile.modbuiltin assumes either Kbuild or Makefile exists in
->>> every sub-directory, which is not true.
->>
->> It assumes what there is a kbuild file in each directory listed in
->> subdir-[ym] or obj-[ym]. For which directory is this not true? Did you
->> see an actual build failure? The same include is used in
->> scripts/Makefile.build, where it has been working fine for ages...
->>
+On Wed 06-01-10 00:20:18, tytso@mit.edu wrote:
+> On Tue, Jan 05, 2010 at 03:16:27PM -0800, Greg KH wrote:
+> > On Tue, Jan 05, 2010 at 10:39:27PM +0100, Jan Kara wrote:
+> > > On Tue 05-01-10 10:56:55, Greg KH wrote:
+> > > > On Tue, Jan 05, 2010 at 01:47:42AM +0100, Jan Kara wrote:
+> > > > > On Mon 04-01-10 16:33:36, Greg Kroah-Hartman wrote:
+> > > > > > From: Dmitry Monakhov <dmonakhov@openvz.org>
+> > > > > > 
+> > > > > > commit d21cd8f163ac44b15c465aab7306db931c606908 upstream.
+> > > > >   Ted has found a serious bug in this patch over Christmas and fixed it.
+> > > > > Ted, do you prefer to just discard this patch or will you add your fixes?
+> > > > Do you have the git commit id of the patch that fixes it?
+> > >   Commits fixing the behavior are:
+> > > 0637c6f4135f592f094207c7c21e7c0fc5557834
+> > > ee5f4d9cdf32fd99172d11665c592a288c2b1ff4
+> > > 9d0be50230b333005635967f7ecd4897dbfd181b
+> > 
+> > Hm, should I add these as well, or back out all of the ext4 quota
+> > patches from .32 and .31?
 > 
-> Well, it's in my tree outside mainline, I have to make this change
-> to get it build. And'm wondering if that's a correct assumption.
+> I don't think you need to back out all of the ext4 quota patches; Jan
+> has looked at the more carefully than I (since they went in via the
+> quota tree instead of the ext4 tree) but as far as I know the d21cd8f1
+> is a standalone fix and the other patches shouldn't break if you just
+> drop patch #83.  Adding the above mentioned patches is definitely
+> necessary if you include Patch #83, though, since otherwise people
+> mounting uncoverted ext3 filesystems using ext4 will get the BUG in
+> fs/ext4/inode.c:1063 regression.
+  Yes, patch #83 is a standalone.
 
-And scripts/Makefile.build does not fail? Strange. Can you point me at
-the tree so that I can have a look? I assume it's some branch of
-git://git.kernel.org/pub/scm/linux/kernel/git/ycmiao/pxa-linux-2.6.git.
+> As far as whether it would be better to drop patch #83 or to include
+> these three commits, it's a bit of a toss up.  If you want to play it
+> safe, I'd say let's drop it for now and wait for week or so, so we can
+> make sure the people who are testing -rc3 are happy, and for the next
+> stable release we can pick it up plus the additional commits listed
+> above.
+  OK, reverting #83 for now and include it with other fixes later is
+probably the best solution.
 
-Thanks,
-Michal
+								Honza
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
