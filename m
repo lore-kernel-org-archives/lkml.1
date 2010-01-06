@@ -1,51 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755978Ab0AFQqc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754622Ab0AFQsA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755978Ab0AFQqc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 11:46:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755914Ab0AFQqb
+	id S1754622Ab0AFQsA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 11:48:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755277Ab0AFQr7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 11:46:31 -0500
-Received: from www84.your-server.de ([213.133.104.84]:57320 "EHLO
-	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755836Ab0AFQqb (ORCPT
+	Wed, 6 Jan 2010 11:47:59 -0500
+Received: from smtp.mujha-vel.cz ([81.30.225.246]:51369 "EHLO
+	smtp.mujha-vel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754496Ab0AFQr6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 11:46:31 -0500
-Subject: [PATCH] checkpatch.pl: add union and struct to the exceptions list
-From: Stefani Seibold <stefani@seibold.net>
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, apw@canonical.com,
-       jschopp@austin.ibm.com, davej@redhat.com
-Content-Type: text/plain; charset="ISO-8859-15"
-Date: Wed, 06 Jan 2010 17:46:00 +0100
-Message-ID: <1262796360.1011.9.camel@wall-e>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 
-Content-Transfer-Encoding: 7bit
-X-Authenticated-Sender: stefani@seibold.net
+	Wed, 6 Jan 2010 11:47:58 -0500
+From: Jiri Slaby <jslaby@suse.cz>
+To: jbarnes@virtuousgeek.org
+Cc: linux-kernel@vger.kernel.org, jirislaby@gmail.com,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       linux-media@vger.kernel.org
+Subject: [PATCH 1/2] media: video/tuner-core, fix memory leak
+Date: Wed,  6 Jan 2010 17:47:55 +0100
+Message-Id: <1262796476-17737-1-git-send-email-jslaby@suse.cz>
+X-Mailer: git-send-email 1.6.5.7
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch add the struct and union keywords to the exceptions list of
-the checkpatch.pl script, to prevent error message "Macros with multiple
-statements should be enclosed in a do - while loop". Otherwise it is not
-possible to build a struct or union with a macro. 
+Stanse found a memory leak in tuner_probe. t is not
+freed/assigned on all paths. Fix that.
 
-Signed-off-by: Stefani Seibold <stefani@seibold.net>
+Signed-off-by: Jiri Slaby <jslaby@suse.cz>
+Cc: Mauro Carvalho Chehab <mchehab@infradead.org>
+Cc: linux-media@vger.kernel.org
 ---
- checkpatch.pl |    2 ++
- 1 file changed, 2 insertions(+)
+ drivers/media/video/tuner-core.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
---- linux-2.6.33-rc2.orig/scripts/checkpatch.pl	2009-12-03 04:51:21.000000000 +0100
-+++ linux-2.6.33-rc2.new/scripts/checkpatch.pl	2010-01-06 17:35:29.747634447 +0100
-@@ -2348,6 +2348,8 @@ sub process {
- 				DECLARE_PER_CPU|
- 				DEFINE_PER_CPU|
- 				__typeof__\(|
-+				union|
-+				struct|
- 				\.$Ident\s*=\s*|
- 				^\"|\"$
- 			}x;
-
+diff --git a/drivers/media/video/tuner-core.c b/drivers/media/video/tuner-core.c
+index 5b3eaa1..c4dab6c 100644
+--- a/drivers/media/video/tuner-core.c
++++ b/drivers/media/video/tuner-core.c
+@@ -1078,6 +1078,7 @@ static int tuner_probe(struct i2c_client *client,
+ 
+ 				goto register_client;
+ 			}
++			kfree(t);
+ 			return -ENODEV;
+ 		case 0x42:
+ 		case 0x43:
+-- 
+1.6.5.7
 
