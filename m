@@ -1,59 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755893Ab0AFTOb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756103Ab0AFTOg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755893Ab0AFTOb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 14:14:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754858Ab0AFTO2
+	id S1756103Ab0AFTOg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 14:14:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755936Ab0AFTOd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 14:14:28 -0500
-Received: from mail-fx0-f225.google.com ([209.85.220.225]:62436 "EHLO
-	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752188Ab0AFTO1 (ORCPT
+	Wed, 6 Jan 2010 14:14:33 -0500
+Received: from moutng.kundenserver.de ([212.227.126.187]:62773 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755777Ab0AFTOb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 14:14:27 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=ZSVUXqlRKg5/eS3NY/oUihOz135K5Uq8HuBNX90XFV20rVa4Yypf3IoOEBPvKc8s7U
-         PHSEjQ+F3kNfHKMGpsJqT6yr/4yqfZrCPegKEBHoWRs+9KHEBt1uM53xhDkBK90xVv18
-         v3KxEJHFRDLlTZ5BHo/C3MQm/Rcyb7r8BAxRo=
-Message-ID: <4B44E10D.7090802@gmail.com>
-Date: Wed, 06 Jan 2010 20:14:21 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-16.1 Thunderbird/3.0
+	Wed, 6 Jan 2010 14:14:31 -0500
+Date: Wed, 6 Jan 2010 11:14:25 -0800 (PST)
+From: Christian Kujau <lists@nerdbynature.de>
+To: Jean Delvare <khali@linux-fr.org>
+cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, linuxppc-dev@ozlabs.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: i2c_powermac: Kernel access of bad area
+In-Reply-To: <20100106173745.57207520@hyperion.delvare>
+Message-ID: <alpine.DEB.2.01.1001061107350.3483@bogon.housecafe.de>
+References: <alpine.DEB.2.01.0912281934170.3483@bogon.housecafe.de> <1262079255.2173.216.camel@pasglop> <20100106173745.57207520@hyperion.delvare>
+User-Agent: Alpine 2.01 (DEB 1266 2009-07-14)
 MIME-Version: 1.0
-To: Gertjan van Wingerde <gwingerde@gmail.com>
-CC: linville@tuxdriver.com, linux-wireless@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] NET: wireless, fix memory leak
-References: <1262795743-15009-1-git-send-email-jslaby@suse.cz> <1262795743-15009-2-git-send-email-jslaby@suse.cz> <4B44DF84.80206@gmail.com>
-In-Reply-To: <4B44DF84.80206@gmail.com>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Provags-ID: V01U2FsdGVkX19mnq2zAzVe9SZZUsH78X35ivxS+EiVbyng1kk
+ bbSsgAV+eMaC5FWW+ag9DcC0aGoQaLxjtr49SAX4KVwYXL1Ply
+ dr/GPXKKj+ua4e2LbUqVw==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/06/2010 08:07 PM, Gertjan van Wingerde wrote:
-> On 01/06/10 17:35, Jiri Slaby wrote:
->> @@ -717,6 +717,9 @@ int cfg80211_wext_siwscan(struct net_device *dev,
->>   out:
->>  	cfg80211_unlock_rdev(rdev);
->>  	return err;
->> +out_free:
->> +	kfree(creq);
->> +	goto out;
->>  }
->>  EXPORT_SYMBOL_GPL(cfg80211_wext_siwscan);
->>  
-> 
-> This last part looks a bit strange. Why don't you put out_free label before out label,
+On Wed, 6 Jan 2010 at 17:37, Jean Delvare wrote:
+> Christian, did you happen to try removing the i2c-powermac driver
+> before?
 
-Because `out' is a part of non-error flow, where the creq should not be
-freed.
+Well, I definitely removed the driver before, but I'm not sure if I ever 
+read the /sys files after doing this :-\
 
-thanks,
+> I am curious if this is a recent problem, possibly caused by
+> changes to the i2c stack, or if older kernels already had this problem
+> and nobody ever noticed. I suspect the latter.
+
+Fair question, but I really could't tell. I realize a bisection would be 
+helpful, but I don't think I'll have to time to do this on this machine 
+(it's a PowerBook G4, but kernel still compilation usually takes ~30min) 
+and I'm not sure that I care _that_ much about this particular issue. 
+I just wanted to report this one, for the sake of the archives, as noone 
+else seems to be bothered by it anyway...
+
+> I think that sysfs files creation should be moved to the end of
+> probe_thermostat() and sysfs files removal should be moved to the
+> beginning of remove_thermostat(). Something like the totally untested
+> patch below (no ppc machine at hand):
+
+OK, thanks Jean - I'll give it a try later today and let you know.
+
+
+Thanks again,
+Christian.
+
 -- 
-js
+BOFH excuse #398:
+
+Data for intranet got routed through the extranet and landed on the internet.
