@@ -1,106 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932170Ab0AFKBW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755773Ab0AFKFi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932170Ab0AFKBW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 05:01:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932117Ab0AFKBH
+	id S1755773Ab0AFKFi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 05:05:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755725Ab0AFKFi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 05:01:07 -0500
-Received: from comal.ext.ti.com ([198.47.26.152]:53658 "EHLO comal.ext.ti.com"
+	Wed, 6 Jan 2010 05:05:38 -0500
+Received: from cantor.suse.de ([195.135.220.2]:59307 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932102Ab0AFKBG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 05:01:06 -0500
-From: Chaithrika U S <chaithrika@ti.com>
+	id S1755666Ab0AFKFh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jan 2010 05:05:37 -0500
+From: Nikanth Karthikesan <knikanth@suse.de>
+Organization: suse.de
 To: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org, davinci-linux-open-source@linux.davincidsp.com,
-       khilman@deeprootsystems.com, Chaithrika U S <chaithrika@ti.com>
-Subject: [PATCH v2 1/2] davinci: MMC: Add a function to control reset state of the controller
-Date: Wed,  6 Jan 2010 15:04:48 +0530
-Message-Id: <1262770489-9486-1-git-send-email-chaithrika@ti.com>
-X-Mailer: git-send-email 1.5.6
+Subject: make firmware_install pollutes $(objtree) with files owned by root
+Date: Wed, 6 Jan 2010 15:36:25 +0530
+User-Agent: KMail/1.12.2 (Linux/2.6.31.8-0.1-default; KDE/4.3.1; x86_64; ; )
+Cc: David Woodhouse <David.Woodhouse@intel.com>, Michal Marek <mmarek@suse.cz>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201001061536.25576.knikanth@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add a helper function which will aid in changing the reset
-status of the controller.
+Hi
 
-Signed-off-by: Chaithrika U S <chaithrika@ti.com>
-Signed-off-by: Kevin Hilman <khilman@deeprootsystems.com>
----
-Applies to Linus' kernel tree
+`make firmware_install` has to be run as root, so that the firmware could be 
+installed in /lib/firmware. But it doesn't simply install firmware from the 
+object directory. It first copies/converts files from source directory to the 
+object directory, which then gets installed.
 
- drivers/mmc/host/davinci_mmc.c |   37 ++++++++++++++++---------------------
- 1 files changed, 16 insertions(+), 21 deletions(-)
+This leads to the situation where `make clean` cannot be run as normal user as 
+he cannot remove files belonging to root. It would be a common expectaion to 
+be able to delete the source/object tree as user.
 
-diff --git a/drivers/mmc/host/davinci_mmc.c b/drivers/mmc/host/davinci_mmc.c
-index dd45e7c..25645bf 100644
---- a/drivers/mmc/host/davinci_mmc.c
-+++ b/drivers/mmc/host/davinci_mmc.c
-@@ -884,19 +884,26 @@ static void mmc_davinci_cmd_done(struct mmc_davinci_host *host,
- 	}
- }
- 
--static void
--davinci_abort_data(struct mmc_davinci_host *host, struct mmc_data *data)
-+static inline void mmc_davinci_reset_ctrl(struct mmc_davinci_host *host,
-+								int val)
- {
- 	u32 temp;
- 
--	/* reset command and data state machines */
- 	temp = readl(host->base + DAVINCI_MMCCTL);
--	writel(temp | MMCCTL_CMDRST | MMCCTL_DATRST,
--		host->base + DAVINCI_MMCCTL);
-+	if (val)	/* reset */
-+		temp |= MMCCTL_CMDRST | MMCCTL_DATRST;
-+	else		/* enable */
-+		temp &= ~(MMCCTL_CMDRST | MMCCTL_DATRST);
- 
--	temp &= ~(MMCCTL_CMDRST | MMCCTL_DATRST);
--	udelay(10);
- 	writel(temp, host->base + DAVINCI_MMCCTL);
-+	udelay(10);
-+}
-+
-+static void
-+davinci_abort_data(struct mmc_davinci_host *host, struct mmc_data *data)
-+{
-+	mmc_davinci_reset_ctrl(host, 1);
-+	mmc_davinci_reset_ctrl(host, 0);
- }
- 
- static irqreturn_t mmc_davinci_irq(int irq, void *dev_id)
-@@ -1100,15 +1107,8 @@ static inline void mmc_davinci_cpufreq_deregister(struct mmc_davinci_host *host)
- #endif
- static void __init init_mmcsd_host(struct mmc_davinci_host *host)
- {
--	/* DAT line portion is diabled and in reset state */
--	writel(readl(host->base + DAVINCI_MMCCTL) | MMCCTL_DATRST,
--		host->base + DAVINCI_MMCCTL);
--
--	/* CMD line portion is diabled and in reset state */
--	writel(readl(host->base + DAVINCI_MMCCTL) | MMCCTL_CMDRST,
--		host->base + DAVINCI_MMCCTL);
- 
--	udelay(10);
-+	mmc_davinci_reset_ctrl(host, 1);
- 
- 	writel(0, host->base + DAVINCI_MMCCLK);
- 	writel(MMCCLK_CLKEN, host->base + DAVINCI_MMCCLK);
-@@ -1116,12 +1116,7 @@ static void __init init_mmcsd_host(struct mmc_davinci_host *host)
- 	writel(0x1FFF, host->base + DAVINCI_MMCTOR);
- 	writel(0xFFFF, host->base + DAVINCI_MMCTOD);
- 
--	writel(readl(host->base + DAVINCI_MMCCTL) & ~MMCCTL_DATRST,
--		host->base + DAVINCI_MMCCTL);
--	writel(readl(host->base + DAVINCI_MMCCTL) & ~MMCCTL_CMDRST,
--		host->base + DAVINCI_MMCCTL);
--
--	udelay(10);
-+	mmc_davinci_reset_ctrl(host, 0);
- }
- 
- static int __init davinci_mmcsd_probe(struct platform_device *pdev)
--- 
-1.5.6
+We should introduce another make target, `make firmware` to convert/copy files 
+from src dir to obj dir. Or this intermediate step should be avoided. Or 
+atleast `make firmware_install` should delete the files it created in the 
+object tree.
 
+Thanks
+Nikanth
