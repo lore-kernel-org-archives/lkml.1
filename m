@@ -1,110 +1,191 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932751Ab0AFUdR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932768Ab0AFUdq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932751Ab0AFUdR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 15:33:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932571Ab0AFUdQ
+	id S932768Ab0AFUdq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 15:33:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932585Ab0AFUdp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 15:33:16 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:42499 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932463Ab0AFUdP (ORCPT
+	Wed, 6 Jan 2010 15:33:45 -0500
+Received: from mta5.srv.hcvlny.cv.net ([167.206.4.200]:65495 "EHLO
+	mta5.srv.hcvlny.cv.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932580Ab0AFUdn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 15:33:15 -0500
-Date: Wed, 6 Jan 2010 12:33:06 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Roland Dreier <rdreier@cisco.com>
-Cc: linux-kernel@vger.kernel.org, Bart Van Assche <bart.vanassche@gmail.com>,
-       David Dillow <dave@thedillows.org>
-Subject: Re: [PATCH] log2.h: Macro-ize is_power_of_2() for use in
- BUILD_BUG_ON
-Message-Id: <20100106123306.ac85e557.akpm@linux-foundation.org>
-In-Reply-To: <ada3a2jugqu.fsf@roland-alpha.cisco.com>
-References: <ada3a2jugqu.fsf@roland-alpha.cisco.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 6 Jan 2010 15:33:43 -0500
+Date: Wed, 06 Jan 2010 15:33:05 -0500
+From: Michael Breuer <mbreuer@majjas.com>
+Subject: Re: [PATCH] af_packet: Don't use skb after dev_queue_xmit()
+In-reply-to: <20100106202212.GB3354@del.dom.local>
+To: Jarek Poplawski <jarkao2@gmail.com>
+Cc: David Miller <davem@davemloft.net>, shemminger@linux-foundation.org,
+       akpm@linux-foundation.org, flyboy@gmail.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Message-id: <4B44F381.3000206@majjas.com>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7BIT
+References: <20100105230746.GA6612@del.dom.local> <4B43F72C.9090004@majjas.com>
+ <20100106072208.GA6711@ff.dom.local> <4B44E952.5000804@majjas.com>
+ <20100106202212.GB3354@del.dom.local>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.5)
+ Gecko/20091204 Lightning/1.0b2pre Thunderbird/3.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 06 Jan 2010 12:21:13 -0800
-Roland Dreier <rdreier@cisco.com> wrote:
-
-> When code relies on a constant being a power of 2:
-> 
-> 	#define FOO	512	/* must be a power of 2 */
-> 
-> it would be nice to be able to do:
-> 
-> 	BUILD_BUG_ON(!is_power_of_2(FOO));
-> 
-> However applying an inline function does not result in a compile-time
-> constant that can be used with BUILD_BUG_ON(), so trying that gives
-> results in:
-> 
-> 	error: bit-field '<anonymous>' width not an integer constant
-> 
-> We can fix this by changing is_power_of_2() to a macro; we leave the
-> inline function for the non-constant case, to avoid evaluating the
-> parameter more than once.  (gcc does not accept a multi-statement
-> expression like "({ unsigned long __n = n; ... })" as a compile-time
-> constant so that solution doesn't work)
-> 
-> Signed-off-by: Roland Dreier <rolandd@cisco.com>
-> ---
-> This is somewhat of an RFC -- I'm a bit undecided whether it's really
-> worth making this change.  It's prompted by
-> http://www.mail-archive.com/linux-rdma@vger.kernel.org/msg01941.html and
-> http://www.mail-archive.com/linux-rdma@vger.kernel.org/msg01950.html
-> which do ugly things to work around is_power_of_2 not being usable in
-> BUILD_BUG_ON().
-> 
-> On the other hand maybe just
-> 
-> /* FOO must be a power of 2 */
-> #define FOO_SHIFT 9
-> #define FOO (1 << FOO_SHIFT)
-> 
-> is good enough.
-> 
->  include/linux/log2.h |    9 ++++++++-
->  1 files changed, 8 insertions(+), 1 deletions(-)
-> 
-> diff --git a/include/linux/log2.h b/include/linux/log2.h
-> index 25b8086..248f69c 100644
-> --- a/include/linux/log2.h
-> +++ b/include/linux/log2.h
-> @@ -49,11 +49,18 @@ int __ilog2_u64(u64 n)
->   */
->  
->  static inline __attribute__((const))
-> -bool is_power_of_2(unsigned long n)
-> +bool __is_power_of_2(unsigned long n)
->  {
->  	return (n != 0 && ((n & (n - 1)) == 0));
->  }
->  
-> +#define is_power_of_2(n)					\
-> +(								\
-> +	__builtin_constant_p(n) ?				\
-> +		(((n) != 0) && (((n) & ((n) - 1)) == 0)) :	\
-> +		__is_power_of_2(n)				\
-> +)
-> +
-
-We've had recurring struggles with various versions of gcc screwing up
-constructs of this form and trying to emit the non-constant code when
-the arg was clearly a compile-time constant.  One episode which comes
-to mind was when we made changes to kmalloc().
-
-Of course, that might not bite us in this case - it would need a lot of
-coverage testing to find out.
-
-
-Perhaps we can avoid worrying about that via
-
-#define BUILD_BUG_ON_NOT_POWER_OF_2(n)	\
-	BUILD_BUG_ON((n != 0 && ((n & (n - 1)) == 0)))
-
-?
+On 1/6/2010 3:22 PM, Jarek Poplawski wrote:
+> On Wed, Jan 06, 2010 at 02:49:38PM -0500, Michael Breuer wrote:
+>    
+>> On 1/6/2010 2:22 AM, Jarek Poplawski wrote:
+>>      
+>>> On Tue, Jan 05, 2010 at 09:36:28PM -0500, Michael Breuer wrote:
+>>>        
+>>>> On 1/5/2010 6:07 PM, Jarek Poplawski wrote:
+>>>>          
+>>>>> David Miller wrote, On 12/27/2009 05:11 AM:
+>>>>>
+>>>>>
+>>>>>            
+>>>>>> From: David Miller<davem@davemloft.net>
+>>>>>> Date: Sat, 26 Dec 2009 19:44:18 -0800 (PST)
+>>>>>>
+>>>>>>
+>>>>>>              
+>>>>>>> From: Stephen Hemminger<shemminger@linux-foundation.org>
+>>>>>>> Date: Sat, 26 Dec 2009 14:05:44 -0800
+>>>>>>>
+>>>>>>>
+>>>>>>>                
+>>>>>>>> Other drivers may have same problem, I really think this ought
+>>>>>>>> to be done at higher level.
+>>>>>>>>
+>>>>>>>>                  
+>>>>>>> I tend to agree with you, and I thought we had handled all
+>>>>>>> cases.  Let's simply make AF_PACKET linearize the link
+>>>>>>> level header before sending things out to the transmit path.
+>>>>>>>
+>>>>>>> I can work on this if you want.
+>>>>>>>
+>>>>>>>                
+>>>>>> Actually Stephen, I took a look and I can't see how AF_PACKET
+>>>>>> can create this situation.
+>>>>>>
+>>>>>> It always copies into the linear area of the SKB it allocates
+>>>>>> for sendmsg() processing.  Whether the data comes from sendmsg
+>>>>>> data or the mmap() ring buffer.
+>>>>>>
+>>>>>>              
+>>>>> Actually, I think there is a bug in this place, but of course this
+>>>>> might be unconnected. Anyway, Michael, could you try this patch?
+>>>>> BTW, did you try with CONFIG_PACKET_MMAP disabled?
+>>>>>
+>>>>> Thanks,
+>>>>> Jarek P.
+>>>>> ----------------->
+>>>>>
+>>>>> Changing an skb after dev_queue_xmit() is illegal. And since it's
+>>>>> inconsistent to treat specially net_xmit_errno() non-zero return,
+>>>>> while ignoring other dev_queue_xmit() errors, there is no reason
+>>>>> to break the loop in tpacket_snd() in this case.
+>>>>>
+>>>>> With debugging by: Stephen Hemminger<shemminger@linux-foundation.org>
+>>>>>
+>>>>> Reported-by: Michael Breuer<mbreuer@majjas.com>
+>>>>> Signed-off-by: Jarek Poplawski<jarkao2@gmail.com>
+>>>>> ---
+>>>>>
+>>>>>    net/packet/af_packet.c |    8 +++-----
+>>>>>    1 files changed, 3 insertions(+), 5 deletions(-)
+>>>>>
+>>>>> diff --git a/net/packet/af_packet.c b/net/packet/af_packet.c
+>>>>> index e0516a2..984a1fa 100644
+>>>>> --- a/net/packet/af_packet.c
+>>>>> +++ b/net/packet/af_packet.c
+>>>>> @@ -1021,8 +1021,9 @@ static int tpacket_snd(struct packet_sock *po, struct msghdr *msg)
+>>>>>
+>>>>>    		status = TP_STATUS_SEND_REQUEST;
+>>>>>    		err = dev_queue_xmit(skb);
+>>>>> -		if (unlikely(err>    0&&    (err = net_xmit_errno(err)) != 0))
+>>>>> -			goto out_xmit;
+>>>>> +		if (unlikely(err>    0))
+>>>>> +			err = net_xmit_errno(err);
+>>>>> +
+>>>>>    		packet_increment_head(&po->tx_ring);
+>>>>>    		len_sum += tp_len;
+>>>>>    	} while (likely((ph != NULL) ||
+>>>>> @@ -1033,9 +1034,6 @@ static int tpacket_snd(struct packet_sock *po, struct msghdr *msg)
+>>>>>    	err = len_sum;
+>>>>>    	goto out_put;
+>>>>>
+>>>>> -out_xmit:
+>>>>> -	skb->destructor = sock_wfree;
+>>>>> -	atomic_dec(&po->tx_ring.pending);
+>>>>>    out_status:
+>>>>>    	__packet_set_status(po, ph, status);
+>>>>>    	kfree_skb(skb);
+>>>>> --
+>>>>> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>>>>> the body of a message to majordomo@vger.kernel.org
+>>>>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>>>>> Please read the FAQ at  http://www.tux.org/lkml/
+>>>>>
+>>>>>            
+>>>> This patch solves the original reported oops - as did Steven's patch of
+>>>> 12/26: [PATCH] sky2: make sure ethernet header is in transmit skb (I ran
+>>>> without Steven's patch and with this patch).
+>>>>
+>>>> Oddly, with this patch vs. Steven's - I'm getting software interrupt
+>>>> errors sporadically while not under load - with Steven's I get the
+>>>> frequently while under load (as per nethogs). For example:
+>>>> Jan  5 21:29:00 mail kernel: sky2 0000:06:00.0: error interrupt
+>>>> status=0x40000008
+>>>> Jan  5 21:29:00 mail kernel: sky2 software interrupt status 0x40000008
+>>>> Jan  5 21:29:00 mail kernel: sky2 Tx ring pending=124...125 report=125
+>>>> done=125
+>>>> Jan  5 21:29:00 mail kernel: 124: 0xb38de0be(5374)
+>>>> Jan  5 21:29:00 mail kernel: sky2 0000:06:00.0: error interrupt status=0x8
+>>>> Jan  5 21:29:00 mail kernel: sky2 software interrupt status 0x8
+>>>> Jan  5 21:29:00 mail kernel: sky2 Tx ring pending=126...127 report=126
+>>>> done=127
+>>>> Jan  5 21:29:00 mail kernel: 126: 0xb38d80be(9014)
+>>>>
+>>>> I also believe (can't prove yet) that my load test is slower with this
+>>>> patch vs. the sky2 patch.
+>>>>
+>>>> Is it possible that this patch is causing the transmission to
+>>>> momentarily halt such that the overall utilization appears low at the
+>>>> time I see the interrupt errors, vs. the other patch which perhaps
+>>>> doesn't interrupt the traffic flow quite so much?
+>>>>          
+>>> Yes, without this patch xmit could be stopped earlier on some kind of
+>>> errors, with retransmit of the last message possible. On the other
+>>> hand, other dev_queue_xmit() (negative) errors, are ignored. So this
+>>> place could be still improved by adding proper err handling (or
+>>> removing getting err return from dev_queue_xmit() at all).
+>>>
+>>> Anyway, I think this patch should be a safe proposal for stable. If
+>>> so, David, please add Michael's "Tested-by".
+>>>
+>>>        
+>>>> I haven't run yet with CONFIG_PACKET_MMAP disabled.
+>>>>
+>>>>          
+>>> This should behave similarly as MMAP with this patch or maybe even
+>>> better in case of errors.
+>>>
+>>> Thanks,
+>>> Jarek P.
+>>>        
+>> This patch at first behaved similarly to the previous one - seemed
+>> to be running a bit better... until the adapter went down :(
+>>      
+> I'm not sure: do you mean this patch above vs previous one by Stephen,
+> or did you manage to try my "alernative #2" patch already?
+>
+> BTW, I forgot to mention, and maybe it doesn't matter here, but it
+> would be better to (always) use my sky2 patch from Berck Nash's
+> thread.
+>
+> Jarek P.
+>    
+This was using "alternative #2" patch. I didn't get the hang with 
+alternative #1. Your sky2 patch from Berck Nash's thread was included in 
+both cases; Stephen's was not.
