@@ -1,106 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932609Ab0AFSkS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932614Ab0AFSmX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932609Ab0AFSkS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 13:40:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932271Ab0AFSkQ
+	id S932614Ab0AFSmX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 13:42:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932483Ab0AFSmU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 13:40:16 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:46874 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932602Ab0AFSkO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 13:40:14 -0500
-X-Authority-Analysis: v=1.0 c=1 a=mahBh0N2zCAA:10 a=7U3hwN5JcxgA:10 a=20KFwNOVAAAA:8 a=meVymXHHAAAA:8 a=pGLkceISAAAA:8 a=ARn-LFdWU5p5GJSKDg0A:9 a=g65HEgVbpi3XwqBkGOnP9APKujcA:4 a=jEp0ucaQiEUA:10 a=jeBq3FmKZ4MA:10 a=MSl-tDqOz04A:10
-X-Cloudmark-Score: 0
-X-Originating-IP: 74.67.89.75
-Subject: Re: [PATCH -tip 1/8] tracing/kprobe: Update example output in
- documentation
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>, lkml <linux-kernel@vger.kernel.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>
-In-Reply-To: <20100105224641.19431.34967.stgit@dhcp-100-2-132.bos.redhat.com>
-References: <20100105224634.19431.3259.stgit@dhcp-100-2-132.bos.redhat.com>
-	 <20100105224641.19431.34967.stgit@dhcp-100-2-132.bos.redhat.com>
-Content-Type: text/plain; charset="ISO-8859-15"
-Organization: Kihon Technologies Inc.
-Date: Wed, 06 Jan 2010 13:40:11 -0500
-Message-ID: <1262803211.28171.3075.camel@gandalf.stny.rr.com>
+	Wed, 6 Jan 2010 13:42:20 -0500
+Received: from cantor.suse.de ([195.135.220.2]:46325 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932390Ab0AFSmU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jan 2010 13:42:20 -0500
+Subject: Re: [GIT PATCH] SCSI bug fixes for 2.6.33-rc3
+From: James Bottomley <James.Bottomley@suse.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <alpine.LFD.2.00.1001060907560.3630@localhost.localdomain>
+References: <1262797332.2946.147.camel@mulgrave.site>
+	 <alpine.LFD.2.00.1001060907560.3630@localhost.localdomain>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 06 Jan 2010 13:42:13 -0500
+Message-Id: <1262803333.2946.249.camel@mulgrave.site>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+X-Mailer: Evolution 2.28.0 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2010-01-05 at 17:46 -0500, Masami Hiramatsu wrote:
-> Update example output in documentation accroding to current
-> implementation.
+On Wed, 2010-01-06 at 09:08 -0800, Linus Torvalds wrote:
 > 
-> Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-> Cc: Ingo Molnar <mingo@elte.hu>
-> Cc: Steven Rostedt <rostedt@goodmis.org>
+> On Wed, 6 Jan 2010, James Bottomley wrote:
+> > 
+> > The patch is available at:
+> > 
+> > master.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-misc-2.6.git
+> 
+> No it's not. That has a commit from Dec 10th as the top commit.
+> 
+> Forgot to push?
 
-Acked-by: Steven Rostedt <rostedt@goodmis.org>
+No, sorry, asleep at the wheel, that's my merge window repo.  The
+correct URL for the bug fixes repo is
 
--- Steve
+master.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-rc-fixes-2.6.git
 
-> Cc: Frederic Weisbecker <fweisbec@gmail.com>
-> ---
-> 
->  Documentation/trace/kprobetrace.txt |   33 +++++++++++++++++----------------
->  1 files changed, 17 insertions(+), 16 deletions(-)
-> 
-> diff --git a/Documentation/trace/kprobetrace.txt b/Documentation/trace/kprobetrace.txt
-> index 47aabee..c3eff6f 100644
-> --- a/Documentation/trace/kprobetrace.txt
-> +++ b/Documentation/trace/kprobetrace.txt
-> @@ -97,23 +97,24 @@ recording return value as "myretprobe" event.
->  
->    cat /sys/kernel/debug/tracing/events/kprobes/myprobe/format
->  name: myprobe
-> -ID: 75
-> +ID: 780
->  format:
-> -	field:unsigned short common_type;	offset:0;	size:2;
-> -	field:unsigned char common_flags;	offset:2;	size:1;
-> -	field:unsigned char common_preempt_count;	offset:3;	size:1;
-> -	field:int common_pid;	offset:4;	size:4;
-> -	field:int common_tgid;	offset:8;	size:4;
-> -
-> -	field: unsigned long ip;	offset:16;tsize:8;
-> -	field: int nargs;	offset:24;tsize:4;
-> -	field: unsigned long dfd;	offset:32;tsize:8;
-> -	field: unsigned long filename;	offset:40;tsize:8;
-> -	field: unsigned long flags;	offset:48;tsize:8;
-> -	field: unsigned long mode;	offset:56;tsize:8;
-> -
-> -print fmt: "(%lx) dfd=%lx filename=%lx flags=%lx mode=%lx", REC->ip, REC->dfd, REC->filename, REC->flags, REC->mode
-> -
-> +        field:unsigned short common_type;       offset:0;       size:2; signed:0;
-> +        field:unsigned char common_flags;       offset:2;       size:1; signed:0;
-> +        field:unsigned char common_preempt_count;       offset:3; size:1;signed:0;
-> +        field:int common_pid;   offset:4;       size:4; signed:1;
-> +        field:int common_lock_depth;    offset:8;       size:4; signed:1;
-> +
-> +        field:unsigned long __probe_ip; offset:12;      size:4; signed:0;
-> +        field:int __probe_nargs;        offset:16;      size:4; signed:1;
-> +        field:unsigned long dfd;        offset:20;      size:4; signed:0;
-> +        field:unsigned long filename;   offset:24;      size:4; signed:0;
-> +        field:unsigned long flags;      offset:28;      size:4; signed:0;
-> +        field:unsigned long mode;       offset:32;      size:4; signed:0;
-> +
-> +
-> +print fmt: "(%lx) dfd=%lx filename=%lx flags=%lx mode=%lx", REC->__probe_ip,
-> +REC->dfd, REC->filename, REC->flags, REC->mode
->  
->   You can see that the event has 4 arguments as in the expressions you specified.
->  
-> 
-> 
+James
 
 
