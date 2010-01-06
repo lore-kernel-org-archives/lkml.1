@@ -1,134 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755785Ab0AFJvc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755824Ab0AFJvr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755785Ab0AFJvc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 04:51:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755765Ab0AFJva
+	id S1755824Ab0AFJvr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 04:51:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755813Ab0AFJvo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 04:51:30 -0500
-Received: from devils.ext.ti.com ([198.47.26.153]:57575 "EHLO
+	Wed, 6 Jan 2010 04:51:44 -0500
+Received: from devils.ext.ti.com ([198.47.26.153]:57565 "EHLO
 	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755736Ab0AFJvY (ORCPT
+	with ESMTP id S1755733Ab0AFJvX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 04:51:24 -0500
+	Wed, 6 Jan 2010 04:51:23 -0500
 From: Chaithrika U S <chaithrika@ti.com>
 To: linux-i2c@vger.kernel.org
 Cc: ben-linux@fluff.org, linux-kernel@vger.kernel.org,
        davinci-linux-open-source@linux.davincidsp.com,
        Chaithrika U S <chaithrika@ti.com>,
        Kevin Hilman <khilman@deeprootsystems.com>
-Subject: [PATCH v2 2/4] i2c: davinci: Add helper functions
-Date: Wed,  6 Jan 2010 14:54:58 +0530
-Message-Id: <1262769900-2710-3-git-send-email-chaithrika@ti.com>
+Subject: [PATCH v3 3/4] i2c: davinci: Add suspend/resume support
+Date: Wed,  6 Jan 2010 14:54:59 +0530
+Message-Id: <1262769900-2710-4-git-send-email-chaithrika@ti.com>
 X-Mailer: git-send-email 1.5.6
-In-Reply-To: <1262769900-2710-2-git-send-email-chaithrika@ti.com>
+In-Reply-To: <1262769900-2710-3-git-send-email-chaithrika@ti.com>
 References: <1262769900-2710-1-git-send-email-chaithrika@ti.com>
  <1262769900-2710-2-git-send-email-chaithrika@ti.com>
+ <1262769900-2710-3-git-send-email-chaithrika@ti.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add i2c reset control and clock divider calculation functions
-which will be useful for power management features.
+Add suspend and resume callbacks to DaVinci I2C driver.
+This has been tested on DA850/OMAP-L138 EVM. The SoC specific
+suspend-to-RAM support patch series [1] is needed to test this feature.
+
+[1] http://linux.davincidsp.com/pipermail/davinci-linux-open-source/
+2009-November/016958.html
 
 Signed-off-by: Chaithrika U S <chaithrika@ti.com>
 Signed-off-by: Kevin Hilman <khilman@deeprootsystems.com>
 ---
- drivers/i2c/busses/i2c-davinci.c |   56 +++++++++++++++++++++++++-------------
- 1 files changed, 37 insertions(+), 19 deletions(-)
+ drivers/i2c/busses/i2c-davinci.c |   36 ++++++++++++++++++++++++++++++++++++
+ 1 files changed, 36 insertions(+), 0 deletions(-)
 
 diff --git a/drivers/i2c/busses/i2c-davinci.c b/drivers/i2c/busses/i2c-davinci.c
-index 44a3cb3..81c1049 100644
+index 81c1049..d2a4844 100644
 --- a/drivers/i2c/busses/i2c-davinci.c
 +++ b/drivers/i2c/busses/i2c-davinci.c
-@@ -124,12 +124,21 @@ static inline u16 davinci_i2c_read_reg(struct davinci_i2c_dev *i2c_dev, int reg)
- 	return __raw_readw(i2c_dev->base + reg);
+@@ -622,6 +622,41 @@ static int davinci_i2c_remove(struct platform_device *pdev)
+ 	return 0;
  }
  
--/*
-- * This functions configures I2C and brings I2C out of reset.
-- * This function is called during I2C init function. This function
-- * also gets called if I2C encounters any errors.
-- */
--static int i2c_davinci_init(struct davinci_i2c_dev *dev)
-+static inline void davinci_i2c_reset_ctrl(struct davinci_i2c_dev *i2c_dev,
-+								int val)
++#ifdef CONFIG_PM
++static int davinci_i2c_suspend(struct device *dev)
 +{
-+	u16 w;
-+
-+	w = davinci_i2c_read_reg(i2c_dev, DAVINCI_I2C_MDR_REG);
-+	if (!val)	/* put I2C into reset */
-+		w &= ~DAVINCI_I2C_MDR_IRS;
-+	else		/* take I2C out of reset */
-+		w |= DAVINCI_I2C_MDR_IRS;
-+
-+	davinci_i2c_write_reg(i2c_dev, DAVINCI_I2C_MDR_REG, w);
-+}
-+
-+static void i2c_davinci_calc_clk_dividers(struct davinci_i2c_dev *dev)
- {
- 	struct davinci_i2c_platform_data *pdata = dev->dev->platform_data;
- 	u16 psc;
-@@ -138,15 +147,6 @@ static int i2c_davinci_init(struct davinci_i2c_dev *dev)
- 	u32 clkh;
- 	u32 clkl;
- 	u32 input_clock = clk_get_rate(dev->clk);
--	u16 w;
--
--	if (!pdata)
--		pdata = &davinci_i2c_platform_data_default;
--
--	/* put I2C into reset */
--	w = davinci_i2c_read_reg(dev, DAVINCI_I2C_MDR_REG);
--	w &= ~DAVINCI_I2C_MDR_IRS;
--	davinci_i2c_write_reg(dev, DAVINCI_I2C_MDR_REG, w);
- 
- 	/* NOTE: I2C Clock divider programming info
- 	 * As per I2C specs the following formulas provide prescaler
-@@ -178,12 +178,32 @@ static int i2c_davinci_init(struct davinci_i2c_dev *dev)
- 	davinci_i2c_write_reg(dev, DAVINCI_I2C_CLKH_REG, clkh);
- 	davinci_i2c_write_reg(dev, DAVINCI_I2C_CLKL_REG, clkl);
- 
-+	dev_dbg(dev->dev, "input_clock = %d, CLK = %d\n", input_clock, clk);
-+}
-+
-+/*
-+ * This function configures I2C and brings I2C out of reset.
-+ * This function is called during I2C init function. This function
-+ * also gets called if I2C encounters any errors.
-+ */
-+static int i2c_davinci_init(struct davinci_i2c_dev *dev)
-+{
-+	struct davinci_i2c_platform_data *pdata = dev->dev->platform_data;
-+
-+	if (!pdata)
-+		pdata = &davinci_i2c_platform_data_default;
++	struct platform_device *pdev = to_platform_device(dev);
++	struct davinci_i2c_dev *i2c_dev = platform_get_drvdata(pdev);
 +
 +	/* put I2C into reset */
-+	davinci_i2c_reset_ctrl(dev, 0);
++	davinci_i2c_reset_ctrl(i2c_dev, 0);
++	clk_disable(i2c_dev->clk);
 +
-+	/* compute clock dividers */
-+	i2c_davinci_calc_clk_dividers(dev);
++	return 0;
++}
 +
- 	/* Respond at reserved "SMBus Host" slave address" (and zero);
- 	 * we seem to have no option to not respond...
- 	 */
- 	davinci_i2c_write_reg(dev, DAVINCI_I2C_OAR_REG, 0x08);
++static int davinci_i2c_resume(struct device *dev)
++{
++	struct platform_device *pdev = to_platform_device(dev);
++	struct davinci_i2c_dev *i2c_dev = platform_get_drvdata(pdev);
++
++	clk_enable(i2c_dev->clk);
++	/* take I2C out of reset */
++	davinci_i2c_reset_ctrl(i2c_dev, 1);
++
++	return 0;
++}
++
++static struct dev_pm_ops davinci_i2c_pm = {
++	.suspend        = davinci_i2c_suspend,
++	.resume         = davinci_i2c_resume,
++};
++
++#define davinci_i2c_pm_ops (&davinci_i2c_pm)
++#else
++#define davinci_i2c_pm_ops NULL
++#endif
++
+ /* work with hotplug and coldplug */
+ MODULE_ALIAS("platform:i2c_davinci");
  
--	dev_dbg(dev->dev, "input_clock = %d, CLK = %d\n", input_clock, clk);
- 	dev_dbg(dev->dev, "PSC  = %d\n",
- 		davinci_i2c_read_reg(dev, DAVINCI_I2C_PSC_REG));
- 	dev_dbg(dev->dev, "CLKL = %d\n",
-@@ -194,9 +214,7 @@ static int i2c_davinci_init(struct davinci_i2c_dev *dev)
- 		pdata->bus_freq, pdata->bus_delay);
+@@ -631,6 +666,7 @@ static struct platform_driver davinci_i2c_driver = {
+ 	.driver		= {
+ 		.name	= "i2c_davinci",
+ 		.owner	= THIS_MODULE,
++		.pm	= davinci_i2c_pm_ops,
+ 	},
+ };
  
- 	/* Take the I2C module out of reset: */
--	w = davinci_i2c_read_reg(dev, DAVINCI_I2C_MDR_REG);
--	w |= DAVINCI_I2C_MDR_IRS;
--	davinci_i2c_write_reg(dev, DAVINCI_I2C_MDR_REG, w);
-+	davinci_i2c_reset_ctrl(dev, 1);
- 
- 	/* Enable interrupts */
- 	davinci_i2c_write_reg(dev, DAVINCI_I2C_IMR_REG, I2C_DAVINCI_INTR_ALL);
 -- 
 1.5.6
 
