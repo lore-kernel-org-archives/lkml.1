@@ -1,24 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932266Ab0AFPZy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932259Ab0AFP0Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932266Ab0AFPZy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 10:25:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932244Ab0AFPZm
+	id S932259Ab0AFP0Q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 10:26:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932241Ab0AFPZl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 10:25:42 -0500
-Received: from smtp.mujha-vel.cz ([81.30.225.246]:40238 "EHLO
+	Wed, 6 Jan 2010 10:25:41 -0500
+Received: from smtp.mujha-vel.cz ([81.30.225.246]:40245 "EHLO
 	smtp.mujha-vel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755053Ab0AFPZA (ORCPT
+	with ESMTP id S1755068Ab0AFPZA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 6 Jan 2010 10:25:00 -0500
 From: Jiri Slaby <jslaby@suse.cz>
 To: jirislaby@gmail.com
-Cc: linux-kernel@vger.kernel.org, Ralph Campbell <infinipath@qlogic.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Sean Hefty <sean.hefty@intel.com>,
-       Hal Rosenstock <hal.rosenstock@gmail.com>, linux-rdma@vger.kernel.org
-Subject: [PATCH] infiniband: use helpers for rlimits
-Date: Wed,  6 Jan 2010 16:24:38 +0100
-Message-Id: <1262791479-26594-10-git-send-email-jslaby@suse.cz>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] ipc: use helpers for rlimits
+Date: Wed,  6 Jan 2010 16:24:39 +0100
+Message-Id: <1262791479-26594-11-git-send-email-jslaby@suse.cz>
 X-Mailer: git-send-email 1.6.5.7
 In-Reply-To: <1262791479-26594-1-git-send-email-jslaby@suse.cz>
 References: <1262791479-26594-1-git-send-email-jslaby@suse.cz>
@@ -35,41 +32,39 @@ I.e. either use rlimit helpers added in
 or ACCESS_ONCE if not applicable.
 
 Signed-off-by: Jiri Slaby <jslaby@suse.cz>
-Acked-by: Roland Dreier <rolandd@cisco.com>
-Cc: Ralph Campbell <infinipath@qlogic.com>
 Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Sean Hefty <sean.hefty@intel.com>
-Cc: Hal Rosenstock <hal.rosenstock@gmail.com>
-Cc: linux-rdma@vger.kernel.org
 ---
- drivers/infiniband/core/umem.c                 |    2 +-
- drivers/infiniband/hw/ipath/ipath_user_pages.c |    3 +--
+ ipc/mqueue.c                                   |    2 +-
+ ipc/shm.c                                      |    3 +--
  2 files changed, 2 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/infiniband/core/umem.c b/drivers/infiniband/core/umem.c
-index 6f7c096..4f906f0 100644
---- a/drivers/infiniband/core/umem.c
-+++ b/drivers/infiniband/core/umem.c
-@@ -136,7 +136,7 @@ struct ib_umem *ib_umem_get(struct ib_ucontext *context, unsigned long addr,
- 	down_write(&current->mm->mmap_sem);
+diff --git a/ipc/mqueue.c b/ipc/mqueue.c
+index c79bd57..6c97934 100644
+--- a/ipc/mqueue.c
++++ b/ipc/mqueue.c
+@@ -152,7 +152,7 @@ static struct inode *mqueue_get_inode(struct super_block *sb,
+ 			spin_lock(&mq_lock);
+ 			if (u->mq_bytes + mq_bytes < u->mq_bytes ||
+ 		 	    u->mq_bytes + mq_bytes >
+-			    p->signal->rlim[RLIMIT_MSGQUEUE].rlim_cur) {
++			    task_rlimit(p, RLIMIT_MSGQUEUE)) {
+ 				spin_unlock(&mq_lock);
+ 				goto out_inode;
+ 			}
+diff --git a/ipc/shm.c b/ipc/shm.c
+index 92fe923..784438d 100644
+--- a/ipc/shm.c
++++ b/ipc/shm.c
+@@ -761,8 +761,7 @@ SYSCALL_DEFINE3(shmctl, int, shmid, int, cmd, struct shmid_ds __user *, buf)
+ 			if (euid != shp->shm_perm.uid &&
+ 			    euid != shp->shm_perm.cuid)
+ 				goto out_unlock;
+-			if (cmd == SHM_LOCK &&
+-			    !current->signal->rlim[RLIMIT_MEMLOCK].rlim_cur)
++			if (cmd == SHM_LOCK && !rlimit(RLIMIT_MEMLOCK))
+ 				goto out_unlock;
+ 		}
  
- 	locked     = npages + current->mm->locked_vm;
--	lock_limit = current->signal->rlim[RLIMIT_MEMLOCK].rlim_cur >> PAGE_SHIFT;
-+	lock_limit = rlimit(RLIMIT_MEMLOCK) >> PAGE_SHIFT;
- 
- 	if ((locked > lock_limit) && !capable(CAP_IPC_LOCK)) {
- 		ret = -ENOMEM;
-diff --git a/drivers/infiniband/hw/ipath/ipath_user_pages.c b/drivers/infiniband/hw/ipath/ipath_user_pages.c
-index 82878e3..eb7d59a 100644
---- a/drivers/infiniband/hw/ipath/ipath_user_pages.c
-+++ b/drivers/infiniband/hw/ipath/ipath_user_pages.c
-@@ -59,8 +59,7 @@ static int __get_user_pages(unsigned long start_page, size_t num_pages,
- 	size_t got;
- 	int ret;
- 
--	lock_limit = current->signal->rlim[RLIMIT_MEMLOCK].rlim_cur >>
--		PAGE_SHIFT;
-+	lock_limit = rlimit(RLIMIT_MEMLOCK) >> PAGE_SHIFT;
- 
- 	if (num_pages > lock_limit) {
- 		ret = -ENOMEM;
+-- 
+1.6.5.7
+
