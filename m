@@ -1,21 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755359Ab0AFBU0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755588Ab0AFBWW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755359Ab0AFBU0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 20:20:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755003Ab0AFBUY
+	id S1755588Ab0AFBWW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 20:22:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755256Ab0AFBWM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 20:20:24 -0500
-Received: from mail.perches.com ([173.55.12.10]:1518 "EHLO mail.perches.com"
+	Tue, 5 Jan 2010 20:22:12 -0500
+Received: from mail.perches.com ([173.55.12.10]:1531 "EHLO mail.perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751201Ab0AFBUY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 20:20:24 -0500
+	id S1755322Ab0AFBUZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jan 2010 20:20:25 -0500
 From: Joe Perches <joe@perches.com>
 To: linux-kernel@vger.kernel.org
-Cc: "James E.J. Bottomley" <James.Bottomley@suse.de>,
-       linux-scsi@vger.kernel.org
-Subject: [PATCH 1/8] drivers/scsi: Remove uses of NIPQUAD, use %pI4
-Date: Tue,  5 Jan 2010 17:20:13 -0800
-Message-Id: <60710fff0b8c934d8fc78c5f5cda6409ba20ee92.1262726222.git.joe@perches.com>
+Cc: "J. Bruce Fields" <bfields@fieldses.org>, Neil Brown <neilb@suse.de>,
+       Trond Myklebust <Trond.Myklebust@netapp.com>,
+       "David S. Miller" <davem@davemloft.net>, linux-nfs@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: [PATCH 4/8] net/sunrpc: Remove uses of NIPQUAD, use %pI4
+Date: Tue,  5 Jan 2010 17:20:16 -0800
+Message-Id: <b39f7936e8b262c3367ab708bf1e039db53509d3.1262726222.git.joe@perches.com>
 X-Mailer: git-send-email 1.6.6.rc0.57.gad7a
 In-Reply-To: <cover.1262726222.git.joe@perches.com>
 References: <cover.1262726222.git.joe@perches.com>
@@ -25,68 +27,43 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Joe Perches <joe@perches.com>
 ---
- drivers/scsi/bnx2i/bnx2i_iscsi.c     |    4 ++--
- drivers/scsi/cxgb3i/cxgb3i_iscsi.c   |    5 ++---
- drivers/scsi/cxgb3i/cxgb3i_offload.c |    7 ++++---
- 3 files changed, 8 insertions(+), 8 deletions(-)
+ net/sunrpc/xprtrdma/transport.c |    3 +--
+ net/sunrpc/xprtsock.c           |    5 ++---
+ 2 files changed, 3 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/scsi/bnx2i/bnx2i_iscsi.c b/drivers/scsi/bnx2i/bnx2i_iscsi.c
-index 33b2294..51709cb 100644
---- a/drivers/scsi/bnx2i/bnx2i_iscsi.c
-+++ b/drivers/scsi/bnx2i/bnx2i_iscsi.c
-@@ -1426,8 +1426,8 @@ static int bnx2i_conn_get_param(struct iscsi_cls_conn *cls_conn,
+diff --git a/net/sunrpc/xprtrdma/transport.c b/net/sunrpc/xprtrdma/transport.c
+index 7018eef..83d339f 100644
+--- a/net/sunrpc/xprtrdma/transport.c
++++ b/net/sunrpc/xprtrdma/transport.c
+@@ -165,8 +165,7 @@ xprt_rdma_format_addresses(struct rpc_xprt *xprt)
+ 
+ 	xprt->address_strings[RPC_DISPLAY_PROTO] = "rdma";
+ 
+-	(void)snprintf(buf, sizeof(buf), "%02x%02x%02x%02x",
+-				NIPQUAD(sin->sin_addr.s_addr));
++	(void)snprintf(buf, sizeof(buf), "%08x", ntohl(sin->sin_addr.s_addr));
+ 	xprt->address_strings[RPC_DISPLAY_HEX_ADDR] = kstrdup(buf, GFP_KERNEL);
+ 
+ 	(void)snprintf(buf, sizeof(buf), "%4hx", rpc_get_port(sap));
+diff --git a/net/sunrpc/xprtsock.c b/net/sunrpc/xprtsock.c
+index 3d739e5..86234bc 100644
+--- a/net/sunrpc/xprtsock.c
++++ b/net/sunrpc/xprtsock.c
+@@ -297,12 +297,11 @@ static void xs_format_common_peer_addresses(struct rpc_xprt *xprt)
+ 	switch (sap->sa_family) {
+ 	case AF_INET:
+ 		sin = xs_addr_in(xprt);
+-		(void)snprintf(buf, sizeof(buf), "%02x%02x%02x%02x",
+-					NIPQUAD(sin->sin_addr.s_addr));
++		snprintf(buf, sizeof(buf), "%08x", ntohl(sin->sin_addr.s_addr));
  		break;
- 	case ISCSI_PARAM_CONN_ADDRESS:
- 		if (bnx2i_conn->ep)
--			len = sprintf(buf, NIPQUAD_FMT "\n",
--				      NIPQUAD(bnx2i_conn->ep->cm_sk->dst_ip));
-+			len = sprintf(buf, "%pI4\n",
-+				      &bnx2i_conn->ep->cm_sk->dst_ip);
+ 	case AF_INET6:
+ 		sin6 = xs_addr_in6(xprt);
+-		(void)snprintf(buf, sizeof(buf), "%pi6", &sin6->sin6_addr);
++		snprintf(buf, sizeof(buf), "%pi6", &sin6->sin6_addr);
  		break;
  	default:
- 		return iscsi_conn_get_param(cls_conn, param, buf);
-diff --git a/drivers/scsi/cxgb3i/cxgb3i_iscsi.c b/drivers/scsi/cxgb3i/cxgb3i_iscsi.c
-index 969c831..1fd89b2 100644
---- a/drivers/scsi/cxgb3i/cxgb3i_iscsi.c
-+++ b/drivers/scsi/cxgb3i/cxgb3i_iscsi.c
-@@ -591,8 +591,7 @@ static int cxgb3i_conn_bind(struct iscsi_cls_session *cls_session,
- 	cxgb3i_conn_max_recv_dlength(conn);
- 
- 	spin_lock_bh(&conn->session->lock);
--	sprintf(conn->portal_address, NIPQUAD_FMT,
--		NIPQUAD(c3cn->daddr.sin_addr.s_addr));
-+	sprintf(conn->portal_address, "%pI4", &c3cn->daddr.sin_addr.s_addr);
- 	conn->portal_port = ntohs(c3cn->daddr.sin_port);
- 	spin_unlock_bh(&conn->session->lock);
- 
-@@ -753,7 +752,7 @@ static int cxgb3i_host_get_param(struct Scsi_Host *shost,
- 		__be32 addr;
- 
- 		addr = cxgb3i_get_private_ipv4addr(hba->ndev);
--		len = sprintf(buf, NIPQUAD_FMT, NIPQUAD(addr));
-+		len = sprintf(buf, "%pI4", &addr);
- 		break;
- 	}
- 	default:
-diff --git a/drivers/scsi/cxgb3i/cxgb3i_offload.c b/drivers/scsi/cxgb3i/cxgb3i_offload.c
-index 26ffdcd..edef61c 100644
---- a/drivers/scsi/cxgb3i/cxgb3i_offload.c
-+++ b/drivers/scsi/cxgb3i/cxgb3i_offload.c
-@@ -1643,10 +1643,11 @@ int cxgb3i_c3cn_connect(struct net_device *dev, struct s3_conn *c3cn,
- 	} else
- 		c3cn->saddr.sin_addr.s_addr = sipv4;
- 
--	c3cn_conn_debug("c3cn 0x%p, %u.%u.%u.%u,%u-%u.%u.%u.%u,%u SYN_SENT.\n",
--			c3cn, NIPQUAD(c3cn->saddr.sin_addr.s_addr),
-+	c3cn_conn_debug("c3cn 0x%p, %pI4,%u-%pI4,%u SYN_SENT.\n",
-+			c3cn,
-+			&c3cn->saddr.sin_addr.s_addr,
- 			ntohs(c3cn->saddr.sin_port),
--			NIPQUAD(c3cn->daddr.sin_addr.s_addr),
-+			&c3cn->daddr.sin_addr.s_addr,
- 			ntohs(c3cn->daddr.sin_port));
- 
- 	c3cn_set_state(c3cn, C3CN_STATE_CONNECTING);
+ 		BUG();
 -- 
 1.6.6.rc0.57.gad7a
 
