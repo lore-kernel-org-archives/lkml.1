@@ -1,52 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932796Ab0AFVPq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932849Ab0AFVQK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932796Ab0AFVPq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 16:15:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932388Ab0AFVPo
+	id S932849Ab0AFVQK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 16:16:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932676Ab0AFVQI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 16:15:44 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:58731 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932343Ab0AFVPo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 16:15:44 -0500
+	Wed, 6 Jan 2010 16:16:08 -0500
+Received: from sj-iport-1.cisco.com ([171.71.176.70]:42720 "EHLO
+	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932388Ab0AFVQG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jan 2010 16:16:06 -0500
+Authentication-Results: sj-iport-1.cisco.com; dkim=neutral (message not signed) header.i=none
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEAOKMREurR7Hu/2dsb2JhbADABZNghDAE
+X-IronPort-AV: E=Sophos;i="4.49,231,1262563200"; 
+   d="scan'208";a="285571071"
+From: Roland Dreier <rdreier@cisco.com>
+To: "Robert P. J. Day" <rpjday@crashcourse.ca>
+Cc: linux-rdma@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] INFINIBAND:  Correct CONFIG_IPv6 to CONFIG_IPV6.
+References: <alpine.LFD.2.00.0912281644290.3429@localhost>
+X-Message-Flag: Warning: May contain useful information
+Date: Wed, 06 Jan 2010 13:16:05 -0800
+In-Reply-To: <alpine.LFD.2.00.0912281644290.3429@localhost> (Robert
+	P. J. Day's message of "Mon, 28 Dec 2009 16:48:08 -0500 (EST)")
+Message-ID: <adad41nszmy.fsf@roland-alpha.cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-X-Fcc: ~/Mail/linus
-Cc: Oleg Nesterov <oleg@redhat.com>, caiqian@redhat.com,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Jan Kratochvil <jkratoch@redhat.com>, linux-kernel@vger.kernel.org,
-       linux-s390@vger.kernel.org, utrace-devel@redhat.com
-Subject: Re: s390 && user_enable_single_step() (Was: odd utrace testing
- results on s390x)
-In-Reply-To: Martin Schwidefsky's message of  Tuesday, 5 January 2010 10:26:06 +0100 <20100105102606.4f223990@mschwide.boeblingen.de.ibm.com>
-References: <1503844142.2061111261478093776.JavaMail.root@zmail06.collab.prod.int.phx2.redhat.com>
-	<1257887498.2061171261478252049.JavaMail.root@zmail06.collab.prod.int.phx2.redhat.com>
-	<20100104155225.GA16650@redhat.com>
-	<20100104171626.22ea2d9c@mschwide.boeblingen.de.ibm.com>
-	<20100104181412.GA21146@redhat.com>
-	<20100105102606.4f223990@mschwide.boeblingen.de.ibm.com>
-X-Zippy-Says: I need "RONDO".
-Message-Id: <20100106211536.0F6AC134D@magilla.sf.frob.com>
-Date: Wed,  6 Jan 2010 13:15:36 -0800 (PST)
+X-OriginalArrivalTime: 06 Jan 2010 21:16:05.0536 (UTC) FILETIME=[751C6200:01CA8F15]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > then the test-case from 6580807da14c423f0d0a708108e6df6ebc8bc83d
-> > fails. This probably means that copy_process()->user_disable_single_step()
-> > is not enough to clear the "this task wants single-stepping" copied
-> > from parent.
-> 
-> user_disable_single_step() does not remove the TIF_SINGLE_STEP bit from the
-> forked task. Perhaps we should just clear the bit in the function.
+Thanks, applied.
 
-If that were to fix this test case, I think it would be incidental rather
-than meaning the right thing.  The "this task wants single-stepping" state
-should not have anything to do with TIF_SINGLE_STEP.  It means "this task
-recently had single-stepping", which is a separate moving part.
+I think I added this error in the first place as part of the
 
-Thanks,
-Roland
+    [ Fix up cma_check_linklocal() for !IPV6 case.  - Roland ]
+
+"work" I did on the original commit d14714df.
+
+ - R.
