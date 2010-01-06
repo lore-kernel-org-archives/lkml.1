@@ -1,224 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755850Ab0AFM52@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932194Ab0AFNIR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755850Ab0AFM52 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 07:57:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755835Ab0AFM51
+	id S932194Ab0AFNIR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 08:08:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754819Ab0AFNIQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 07:57:27 -0500
-Received: from isepic.quincunx.at ([173.45.232.79]:38222 "EHLO
-	isepic.quincunx.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755785Ab0AFM50 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 07:57:26 -0500
-From: Christian Schuerer <csw@xray.at>
-To: Jiri Kosina <jkosina@suse.cz>
-Subject: [PATCH] linux-2.6.31.9, linux-2.6.32.2, linux-2.6.33-rc2 -- Re: Device IDs for new Apple Wireless Keyboard
-Date: Wed, 6 Jan 2010 13:57:22 +0100
-User-Agent: KMail/1.13.0 (Linux/2.6.31-17-generic; KDE/4.3.85; x86_64; ; )
-Cc: Jiri Slaby <jirislaby@gmail.com>, linux-input@vger.kernel.org,
+	Wed, 6 Jan 2010 08:08:16 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:64381 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754204Ab0AFNIP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jan 2010 08:08:15 -0500
+Date: Wed, 6 Jan 2010 14:08:06 +0100
+From: Jiri Olsa <jolsa@redhat.com>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
        LKML <linux-kernel@vger.kernel.org>
-References: <4B38AFDE.8000203@gmail.com> <201001060216.47958.csw@xray.at> <alpine.LNX.2.00.1001061113060.2277@pobox.suse.cz>
-In-Reply-To: <alpine.LNX.2.00.1001061113060.2277@pobox.suse.cz>
+Subject: Re: tracing: confusing output of function_graph when notrace
+ function calls traceable function
+Message-ID: <20100106130806.GA7682@jolsa.lab.eng.brq.redhat.com>
+References: <4B446972.9050901@cn.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_yiIRLq5rT3O1x54"
-Message-Id: <201001061357.22447.csw@xray.at>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B446972.9050901@cn.fujitsu.com>
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Boundary-00=_yiIRLq5rT3O1x54
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+On Wed, Jan 06, 2010 at 06:44:02PM +0800, Lai Jiangshan wrote:
+> cat <debugfs_dir>/tracing/trace
+> you can get these at the end of the outputs:
+> 
+>  1)               |        nameidata_to_filp() {
+>  1)               |          __dentry_open() {
+>  1)               |            file_move() {
+>  1)   0.834 us    |              _raw_spin_lock();
+>  1)   0.926 us    |              _raw_spin_unlock();
+>  1)   4.768 us    |            }
+> 
+> !!!! file_move() is really called by __dentry_open()
+> 
+>  1)               |            kmem_cache_alloc_notrace() {
+>  1)   5.879 us    |              memset();
+>  1) + 12.390 us   |            }
+>  1)   1.025 us    |            mutex_lock();
+>  1)               |            kmem_cache_alloc_notrace() {
+>  1)   0.929 us    |              memset();
+>  1)   3.329 us    |            }
+>  1)   1.195 us    |            memcpy();
+>  1)   1.026 us    |            __mutex_init();
+> 
+> !!!! the above are actually called by __tracing_open() which called by __dentry_open()
+> (But at the first I was confused, I wondered why __dentry_open() calls them.)
+> 
+>  1)               |            kmem_cache_alloc_notrace() {
+>  1)   0.978 us    |              memset();
+>  1)   2.745 us    |            }
+>  1)               |            __alloc_percpu() {
+>  1)               |              pcpu_alloc() {
+>  1)   1.053 us    |                mutex_lock();
+>  1)   1.282 us    |                _raw_spin_lock_irqsave();
+>  1)               |                pcpu_size_to_slot() {
+>  1)   0.819 us    |                  __pcpu_size_to_slot();
+>  1)   5.455 us    |                }
+>  1)   1.135 us    |                pcpu_need_to_extend();
+>  1)               |                pcpu_alloc_area() {
+>  1)               |                  pcpu_chunk_slot() {
+>  1)               |                    pcpu_size_to_slot() {
+>  1)   0.813 us    |                      __pcpu_size_to_slot();
+>  1)   2.535 us    |                    }
+>  1)   8.349 us    |                  }
+>  1)   1.160 us    |                  memmove();
+>  1)               |                  pcpu_chunk_relocate() {
+>  1)               |                    pcpu_chunk_slot() {
+>  1)               |                      pcpu_size_to_slot() {
+>  1)   0.803 us    |                        __pcpu_size_to_slot();
+>  1)   2.478 us    |                      }
+>  1)   4.129 us    |                    }
+>  1)   8.583 us    |                  }
+>  1) + 29.665 us   |                }
+>  1)   1.038 us    |                _raw_spin_unlock_irqrestore();
+>  1)   1.178 us    |                pcpu_next_pop();
+>  1)   1.087 us    |                pcpu_chunk_addr();
+>  1)   0.975 us    |                memset();
+>  1)   0.821 us    |                pcpu_chunk_addr();
+>  1)   0.943 us    |                memset();
+>  1)   0.896 us    |                mutex_unlock();
+>  1) + 75.625 us   |              }
+>  1) + 77.453 us   |            }
+> 
+> !!!! the above are actually called by graph_trace_open() which called by __tracing_open()
+> 
+> == real graph ==:
+> 
+> father_fun()
+>   child_fun()
+>   notrace_child_fun()
+>     grandchild_fun1()
+>     grandchild_fun2()
+> 
+> ===function_graph shows===>
+> 
+> father_fun()
+>   child_fun()
+>   grandchild_fun1()
+>   grandchild_fun2()
+> 
+> When the notrace function calls traceable function, function_graph will
+> get wrong depth of functions, and show wrong graph.
+> 
+> Is there any method to fix it?
+I dont think so..
 
-Hello Jiri,
+AFAIK the depth computation is based on the traced functions, and there's
+no other 'depth related' input apart from them.
 
-On Wednesday 06 January 2010 11:14:38 Jiri Kosina wrote:
-> On Wed, 6 Jan 2010, Christian Schuerer wrote:
-> > here is the patch for linux-2.6.33-rc2:
-> > Thanks. Unfortunately, it's wordwrapped, so it can't be easily applied.
-> Could you please fix up your e-mail client so that it doesn't mangle long
-> lines, or eventually send is as an attachment?
-
-I'm sorry, I have attached all three patches as text files.
-
-> > Added device IDs for the new model of the Apple Wireless Keyboard
-> > (November 2009).
-> These are solely Bluetooth device, and there is no USB variant, right?
-
-As far as I know of only a new variant of the wireless (bluetooth) keyboard 
-has been released in November 2009.
-
-Greetings,
-Christian
-
---Boundary-00=_yiIRLq5rT3O1x54
-Content-Type: text/plain;
-  charset="UTF-8";
-  name="patch-2.6.31.9"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename="patch-2.6.31.9"
-
-Added device IDs for the new model of the Apple Wireless Keyboard (November 2009).
-
-Signed-off-by: Christian Schuerer-Waldheim <csw@xray.at>
-
-diff -uprN -X linux-2.6.31.9-vanilla/Documentation/dontdiff linux-2.6.31.9-vanilla/drivers/hid/hid-apple.c linux-2.6.31.9-apple/drivers/hid/hid-apple.c
---- linux-2.6.31.9-vanilla/drivers/hid/hid-apple.c	2009-12-18 22:47:01.000000000 +0100
-+++ linux-2.6.31.9-apple/drivers/hid/hid-apple.c	2010-01-06 01:39:33.000000000 +0100
-@@ -431,6 +431,13 @@ static const struct hid_device_id apple_
- 		.driver_data = APPLE_HAS_FN | APPLE_ISO_KEYBOARD },
- 	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_WELLSPRING3_JIS),
- 		.driver_data = APPLE_HAS_FN | APPLE_RDESC_JIS },
-+	{ HID_BLUETOOTH_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_ALU_WIRELESS_2009_ANSI),
-+		.driver_data = APPLE_NUMLOCK_EMULATION | APPLE_HAS_FN },
-+	{ HID_BLUETOOTH_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_ALU_WIRELESS_2009_ISO),
-+		.driver_data = APPLE_NUMLOCK_EMULATION | APPLE_HAS_FN |
-+			APPLE_ISO_KEYBOARD },
-+	{ HID_BLUETOOTH_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_ALU_WIRELESS_2009_JIS),
-+		.driver_data = APPLE_NUMLOCK_EMULATION | APPLE_HAS_FN },
- 	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_FOUNTAIN_TP_ONLY),
- 		.driver_data = APPLE_NUMLOCK_EMULATION | APPLE_HAS_FN },
- 	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_GEYSER1_TP_ONLY),
-diff -uprN -X linux-2.6.31.9-vanilla/Documentation/dontdiff linux-2.6.31.9-vanilla/drivers/hid/hid-core.c linux-2.6.31.9-apple/drivers/hid/hid-core.c
---- linux-2.6.31.9-vanilla/drivers/hid/hid-core.c	2009-12-18 22:47:01.000000000 +0100
-+++ linux-2.6.31.9-apple/drivers/hid/hid-core.c	2010-01-06 01:40:39.000000000 +0100
-@@ -1259,6 +1259,9 @@ static const struct hid_device_id hid_bl
- 	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_WELLSPRING3_ANSI) },
- 	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_WELLSPRING3_ISO) },
- 	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_WELLSPRING3_JIS) },
-+	{ HID_BLUETOOTH_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_ALU_WIRELESS_2009_ANSI) },
-+	{ HID_BLUETOOTH_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_ALU_WIRELESS_2009_ISO) },
-+	{ HID_BLUETOOTH_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_ALU_WIRELESS_2009_JIS) },
- 	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_FOUNTAIN_TP_ONLY) },
- 	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_GEYSER1_TP_ONLY) },
- 	{ HID_USB_DEVICE(USB_VENDOR_ID_BELKIN, USB_DEVICE_ID_FLIP_KVM) },
-diff -uprN -X linux-2.6.31.9-vanilla/Documentation/dontdiff linux-2.6.31.9-vanilla/drivers/hid/hid-ids.h linux-2.6.31.9-apple/drivers/hid/hid-ids.h
---- linux-2.6.31.9-vanilla/drivers/hid/hid-ids.h	2009-12-18 22:47:01.000000000 +0100
-+++ linux-2.6.31.9-apple/drivers/hid/hid-ids.h	2010-01-06 01:41:51.000000000 +0100
-@@ -88,6 +88,9 @@
- #define USB_DEVICE_ID_APPLE_WELLSPRING3_ANSI	0x0236
- #define USB_DEVICE_ID_APPLE_WELLSPRING3_ISO	0x0237
- #define USB_DEVICE_ID_APPLE_WELLSPRING3_JIS	0x0238
-+#define USB_DEVICE_ID_APPLE_ALU_WIRELESS_2009_ANSI  0x0239
-+#define USB_DEVICE_ID_APPLE_ALU_WIRELESS_2009_ISO   0x023a
-+#define USB_DEVICE_ID_APPLE_ALU_WIRELESS_2009_JIS   0x023b
- #define USB_DEVICE_ID_APPLE_FOUNTAIN_TP_ONLY	0x030a
- #define USB_DEVICE_ID_APPLE_GEYSER1_TP_ONLY	0x030b
- #define USB_DEVICE_ID_APPLE_ATV_IRCONTROL	0x8241
-
---Boundary-00=_yiIRLq5rT3O1x54
-Content-Type: text/plain;
-  charset="UTF-8";
-  name="patch-2.6.32.2"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename="patch-2.6.32.2"
-
-Added device IDs for the new model of the Apple Wireless Keyboard (November 2009).
-
-Signed-off-by: Christian Schuerer-Waldheim <csw@xray.at>
-
-diff -uprN -X linux-2.6.32.2-vanilla/Documentation/dontdiff linux-2.6.32.2-vanilla/drivers/hid/hid-apple.c linux-2.6.32.2-apple/drivers/hid/hid-apple.c
---- linux-2.6.32.2-vanilla/drivers/hid/hid-apple.c	2009-12-18 23:27:07.000000000 +0100
-+++ linux-2.6.32.2-apple/drivers/hid/hid-apple.c	2010-01-06 01:39:31.000000000 +0100
-@@ -431,6 +431,13 @@ static const struct hid_device_id apple_
- 		.driver_data = APPLE_HAS_FN | APPLE_ISO_KEYBOARD },
- 	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_WELLSPRING3_JIS),
- 		.driver_data = APPLE_HAS_FN | APPLE_RDESC_JIS },
-+	{ HID_BLUETOOTH_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_ALU_WIRELESS_2009_ANSI),
-+		.driver_data = APPLE_NUMLOCK_EMULATION | APPLE_HAS_FN },
-+	{ HID_BLUETOOTH_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_ALU_WIRELESS_2009_ISO),
-+		.driver_data = APPLE_NUMLOCK_EMULATION | APPLE_HAS_FN |
-+			APPLE_ISO_KEYBOARD },
-+	{ HID_BLUETOOTH_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_ALU_WIRELESS_2009_JIS),
-+		.driver_data = APPLE_NUMLOCK_EMULATION | APPLE_HAS_FN },
- 	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_FOUNTAIN_TP_ONLY),
- 		.driver_data = APPLE_NUMLOCK_EMULATION | APPLE_HAS_FN },
- 	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_GEYSER1_TP_ONLY),
-diff -uprN -X linux-2.6.32.2-vanilla/Documentation/dontdiff linux-2.6.32.2-vanilla/drivers/hid/hid-core.c linux-2.6.32.2-apple/drivers/hid/hid-core.c
---- linux-2.6.32.2-vanilla/drivers/hid/hid-core.c	2009-12-18 23:27:07.000000000 +0100
-+++ linux-2.6.32.2-apple/drivers/hid/hid-core.c	2010-01-06 01:41:01.000000000 +0100
-@@ -1287,6 +1287,9 @@ static const struct hid_device_id hid_bl
- 	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_WELLSPRING3_ANSI) },
- 	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_WELLSPRING3_ISO) },
- 	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_WELLSPRING3_JIS) },
-+	{ HID_BLUETOOTH_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_ALU_WIRELESS_2009_ANSI) },
-+	{ HID_BLUETOOTH_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_ALU_WIRELESS_2009_ISO) },
-+	{ HID_BLUETOOTH_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_ALU_WIRELESS_2009_JIS) },
- 	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_FOUNTAIN_TP_ONLY) },
- 	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_GEYSER1_TP_ONLY) },
- 	{ HID_USB_DEVICE(USB_VENDOR_ID_BELKIN, USB_DEVICE_ID_FLIP_KVM) },
-diff -uprN -X linux-2.6.32.2-vanilla/Documentation/dontdiff linux-2.6.32.2-vanilla/drivers/hid/hid-ids.h linux-2.6.32.2-apple/drivers/hid/hid-ids.h
---- linux-2.6.32.2-vanilla/drivers/hid/hid-ids.h	2009-12-18 23:27:07.000000000 +0100
-+++ linux-2.6.32.2-apple/drivers/hid/hid-ids.h	2010-01-06 01:42:02.000000000 +0100
-@@ -88,6 +88,9 @@
- #define USB_DEVICE_ID_APPLE_WELLSPRING3_ANSI	0x0236
- #define USB_DEVICE_ID_APPLE_WELLSPRING3_ISO	0x0237
- #define USB_DEVICE_ID_APPLE_WELLSPRING3_JIS	0x0238
-+#define USB_DEVICE_ID_APPLE_ALU_WIRELESS_2009_ANSI  0x0239
-+#define USB_DEVICE_ID_APPLE_ALU_WIRELESS_2009_ISO   0x023a
-+#define USB_DEVICE_ID_APPLE_ALU_WIRELESS_2009_JIS   0x023b
- #define USB_DEVICE_ID_APPLE_FOUNTAIN_TP_ONLY	0x030a
- #define USB_DEVICE_ID_APPLE_GEYSER1_TP_ONLY	0x030b
- #define USB_DEVICE_ID_APPLE_ATV_IRCONTROL	0x8241
-
---Boundary-00=_yiIRLq5rT3O1x54
-Content-Type: text/plain;
-  charset="UTF-8";
-  name="patch-2.6.33-rc2"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename="patch-2.6.33-rc2"
-
-Added device IDs for the new model of the Apple Wireless Keyboard (November 2009).
-
-Signed-off-by: Christian Schuerer-Waldheim <csw@xray.at>
-
-diff -uprN -X linux-2.6.33-rc2-vanilla/Documentation/dontdiff linux-2.6.33-rc2-vanilla/drivers/hid/hid-apple.c linux-2.6.33-rc2-apple/drivers/hid/hid-apple.c
---- linux-2.6.33-rc2-vanilla/drivers/hid/hid-apple.c	2009-12-24 22:09:41.000000000 +0100
-+++ linux-2.6.33-rc2-apple/drivers/hid/hid-apple.c	2010-01-06 01:39:29.000000000 +0100
-@@ -431,6 +431,13 @@ static const struct hid_device_id apple_
- 		.driver_data = APPLE_HAS_FN | APPLE_ISO_KEYBOARD },
- 	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_WELLSPRING3_JIS),
- 		.driver_data = APPLE_HAS_FN | APPLE_RDESC_JIS },
-+	{ HID_BLUETOOTH_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_ALU_WIRELESS_2009_ANSI),
-+		.driver_data = APPLE_NUMLOCK_EMULATION | APPLE_HAS_FN },
-+	{ HID_BLUETOOTH_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_ALU_WIRELESS_2009_ISO),
-+		.driver_data = APPLE_NUMLOCK_EMULATION | APPLE_HAS_FN |
-+			APPLE_ISO_KEYBOARD },
-+	{ HID_BLUETOOTH_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_ALU_WIRELESS_2009_JIS),
-+		.driver_data = APPLE_NUMLOCK_EMULATION | APPLE_HAS_FN },
- 	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_FOUNTAIN_TP_ONLY),
- 		.driver_data = APPLE_NUMLOCK_EMULATION | APPLE_HAS_FN },
- 	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_GEYSER1_TP_ONLY),
-diff -uprN -X linux-2.6.33-rc2-vanilla/Documentation/dontdiff linux-2.6.33-rc2-vanilla/drivers/hid/hid-core.c linux-2.6.33-rc2-apple/drivers/hid/hid-core.c
---- linux-2.6.33-rc2-vanilla/drivers/hid/hid-core.c	2009-12-24 22:09:41.000000000 +0100
-+++ linux-2.6.33-rc2-apple/drivers/hid/hid-core.c	2010-01-06 01:41:21.000000000 +0100
-@@ -1285,6 +1285,9 @@ static const struct hid_device_id hid_bl
- 	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_WELLSPRING3_ANSI) },
- 	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_WELLSPRING3_ISO) },
- 	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_WELLSPRING3_JIS) },
-+	{ HID_BLUETOOTH_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_ALU_WIRELESS_2009_ANSI) },
-+	{ HID_BLUETOOTH_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_ALU_WIRELESS_2009_ISO) },
-+	{ HID_BLUETOOTH_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_ALU_WIRELESS_2009_JIS) },
- 	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_FOUNTAIN_TP_ONLY) },
- 	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_GEYSER1_TP_ONLY) },
- 	{ HID_USB_DEVICE(USB_VENDOR_ID_BELKIN, USB_DEVICE_ID_FLIP_KVM) },
-diff -uprN -X linux-2.6.33-rc2-vanilla/Documentation/dontdiff linux-2.6.33-rc2-vanilla/drivers/hid/hid-ids.h linux-2.6.33-rc2-apple/drivers/hid/hid-ids.h
---- linux-2.6.33-rc2-vanilla/drivers/hid/hid-ids.h	2009-12-24 22:09:41.000000000 +0100
-+++ linux-2.6.33-rc2-apple/drivers/hid/hid-ids.h	2010-01-06 01:42:30.000000000 +0100
-@@ -88,6 +88,9 @@
- #define USB_DEVICE_ID_APPLE_WELLSPRING3_ANSI	0x0236
- #define USB_DEVICE_ID_APPLE_WELLSPRING3_ISO	0x0237
- #define USB_DEVICE_ID_APPLE_WELLSPRING3_JIS	0x0238
-+#define USB_DEVICE_ID_APPLE_ALU_WIRELESS_2009_ANSI  0x0239
-+#define USB_DEVICE_ID_APPLE_ALU_WIRELESS_2009_ISO   0x023a
-+#define USB_DEVICE_ID_APPLE_ALU_WIRELESS_2009_JIS   0x023b
- #define USB_DEVICE_ID_APPLE_FOUNTAIN_TP_ONLY	0x030a
- #define USB_DEVICE_ID_APPLE_GEYSER1_TP_ONLY	0x030b
- #define USB_DEVICE_ID_APPLE_ATV_IRCONTROL	0x8241
-
---Boundary-00=_yiIRLq5rT3O1x54--
+jirka
+> 
+> Lai
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
