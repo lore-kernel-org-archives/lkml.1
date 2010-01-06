@@ -1,50 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932614Ab0AFSmX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932606Ab0AFSpt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932614Ab0AFSmX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 13:42:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932483Ab0AFSmU
+	id S932606Ab0AFSpt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 13:45:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932494Ab0AFSps
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 13:42:20 -0500
-Received: from cantor.suse.de ([195.135.220.2]:46325 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932390Ab0AFSmU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 13:42:20 -0500
-Subject: Re: [GIT PATCH] SCSI bug fixes for 2.6.33-rc3
-From: James Bottomley <James.Bottomley@suse.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <alpine.LFD.2.00.1001060907560.3630@localhost.localdomain>
-References: <1262797332.2946.147.camel@mulgrave.site>
-	 <alpine.LFD.2.00.1001060907560.3630@localhost.localdomain>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 06 Jan 2010 13:42:13 -0500
-Message-Id: <1262803333.2946.249.camel@mulgrave.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.0 
-Content-Transfer-Encoding: 7bit
+	Wed, 6 Jan 2010 13:45:48 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:58337 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932483Ab0AFSps (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jan 2010 13:45:48 -0500
+Date: Wed, 6 Jan 2010 10:45:20 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: David Howells <dhowells@redhat.com>
+cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       uclinux-dev@uclinux.org, Daisuke HATAYAMA <d.hatayama@jp.fujitsu.com>,
+       Paul Mundt <lethal@linux-sh.org>
+Subject: Re: [PATCH 4/4] elf_fdpic_core_dump(): fix build break in
+ 2.6.33-rc1
+In-Reply-To: <20100106172333.25862.40963.stgit@warthog.procyon.org.uk>
+Message-ID: <alpine.LFD.2.00.1001061044000.3630@localhost.localdomain>
+References: <20100106172317.25862.64950.stgit@warthog.procyon.org.uk> <20100106172333.25862.40963.stgit@warthog.procyon.org.uk>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2010-01-06 at 09:08 -0800, Linus Torvalds wrote:
+
+
+On Wed, 6 Jan 2010, David Howells wrote:
+>
+> From: Daisuke HATAYAMA <d.hatayama@jp.fujitsu.com>
 > 
-> On Wed, 6 Jan 2010, James Bottomley wrote:
-> > 
-> > The patch is available at:
-> > 
-> > master.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-misc-2.6.git
-> 
-> No it's not. That has a commit from Dec 10th as the top commit.
-> 
-> Forgot to push?
+> Commit f6151dfea21496d43dbaba32cfcd9c9f404769bc causes ELF-FDPIC to break
+> during building, so this patch fixes it together with a correction for the
+> printk format.
 
-No, sorry, asleep at the wheel, that's my merge window repo.  The
-correct URL for the bug fixes repo is
+The comment doesn't match the patch. There's no build breakage fix (the 
+actual fix was already merged, and your patch reflects that), there's only 
+a printk format "fix" that is actually a de-provement because it splits 
+the string across multiple lines.
 
-master.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-rc-fixes-2.6.git
+So a strong NAK to this patch.
 
-James
-
-
+		Linus
