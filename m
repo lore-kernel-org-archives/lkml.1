@@ -1,61 +1,160 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932271Ab0AFQUs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932296Ab0AFQ0S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932271Ab0AFQUs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 11:20:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932237Ab0AFQUs
+	id S932296Ab0AFQ0S (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 11:26:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932244Ab0AFQ0N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 11:20:48 -0500
-Received: from mail2.shareable.org ([80.68.89.115]:33092 "EHLO
-	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932227Ab0AFQUr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 11:20:47 -0500
-Date: Wed, 6 Jan 2010 16:20:04 +0000
-From: Jamie Lokier <jamie@shareable.org>
-To: Roland Dreier <rdreier@cisco.com>
-Cc: Wu Fengguang <fengguang.wu@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       Al Viro <viro@zeniv.linux.org.uk>,
-       Christoph Hellwig <hch@infradead.org>, Eric Paris <eparis@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>, linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH] fs: O_* bit numbers uniqueness check
-Message-ID: <20100106162004.GA11773@shareable.org>
-References: <20100106065526.GB11368@localhost> <adahbqzvhgn.fsf@roland-alpha.cisco.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <adahbqzvhgn.fsf@roland-alpha.cisco.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 6 Jan 2010 11:26:13 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:55707 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932182Ab0AFQ0M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jan 2010 11:26:12 -0500
+From: Mel Gorman <mel@csn.ul.ie>
+To: Andrea Arcangeli <aarcange@redhat.com>
+Cc: Christoph Lameter <cl@linux-foundation.org>, Adam Litke <agl@us.ibm.com>,
+       Avi Kivity <avi@redhat.com>, Mel Gorman <mel@csn.ul.ie>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: [PATCH 2/7] Export unusable free space index via /proc/pagetypeinfo
+Date: Wed,  6 Jan 2010 16:26:04 +0000
+Message-Id: <1262795169-9095-3-git-send-email-mel@csn.ul.ie>
+X-Mailer: git-send-email 1.6.5
+In-Reply-To: <1262795169-9095-1-git-send-email-mel@csn.ul.ie>
+References: <1262795169-9095-1-git-send-email-mel@csn.ul.ie>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roland Dreier wrote:
-> 
->  > +	/* please add new bits here to ensure allocation uniqueness */
->  > +	BUG_ON(20 != hweight32(
->  > +		O_RDONLY	| O_WRONLY	| O_RDWR	|
-> 
-> I wonder if there's a way to make this BUILD_BUG_ON(), so the problem is
-> caught at compile time (a change like adding an O_ flag is often compile
-> tested only for obscure archs).  One could create a compile-time
-> macro-ized version of hweight32() and use that, I guess, although I'm
-> not sure it's worth the ugliness.
+Unusuable free space index is a measure of external fragmentation that
+takes the allocation size into account. For the most part, the huge page
+size will be the size of interest but not necessarily so it is exported
+on a per-order and per-zone basis via /proc/pagetypeinfo.
 
-Not ugly at all:
+The index is normally calculated as a value between 0 and 1 which is
+obviously unsuitable within the kernel. Instead, the first three decimal
+places are used as a value between 0 and 1000 for an integer approximation.
 
-#define hweight32(x) __builtin_popcount(x)
+Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+---
+ mm/vmstat.c |   99 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 99 insertions(+), 0 deletions(-)
 
-Checked GCC 3.4.3 / 4.1 / 4.4: It expands as a compile-time constant
-if the argument is a compile-time constant, so can be used in
-BUILD_BUG_ON() and even for array sizes etc.
+diff --git a/mm/vmstat.c b/mm/vmstat.c
+index 6051fba..e1ea2d5 100644
+--- a/mm/vmstat.c
++++ b/mm/vmstat.c
+@@ -451,6 +451,104 @@ static int frag_show(struct seq_file *m, void *arg)
+ 	return 0;
+ }
+ 
++
++struct config_page_info {
++	unsigned long free_pages;
++	unsigned long free_blocks_total;
++	unsigned long free_blocks_suitable;
++};
++
++/*
++ * Calculate the number of free pages in a zone, how many contiguous
++ * pages are free and how many are large enough to satisfy an allocation of
++ * the target size. Note that this function makes to attempt to estimate
++ * how many suitable free blocks there *might* be if MOVABLE pages were
++ * migrated. Calculating that is possible, but expensive and can be
++ * figured out from userspace
++ */
++static void fill_contig_page_info(struct zone *zone,
++				unsigned int suitable_order,
++				struct config_page_info *info)
++{
++	unsigned int order;
++
++	info->free_pages = 0;
++	info->free_blocks_total = 0;
++	info->free_blocks_suitable = 0;
++
++	for (order = 0; order < MAX_ORDER; order++) {
++		unsigned long blocks;
++
++		/* Count number of free blocks */
++		blocks = zone->free_area[order].nr_free;
++		info->free_blocks_total += blocks;
++
++		/* Count free base pages */
++		info->free_pages += blocks << order;
++
++		/* Count the suitable free blocks */
++		if (order >= suitable_order)
++			info->free_blocks_suitable += blocks <<
++						(order - suitable_order);
++	}
++}
++
++/*
++ * Return an index indicating how much of the available free memory is
++ * unusable for an allocation of the requested size.
++ */
++int unusable_free_index(struct zone *zone,
++				unsigned int order,
++				struct config_page_info *info)
++{
++	/* No free memory is interpreted as all free memory is unusable */
++	if (info->free_pages == 0)
++		return 100;
++
++	/*
++	 * Index should be a value between 0 and 1. Return a value to 3
++	 * decimal places.
++	 *
++	 * 0 => no fragmentation
++	 * 1 => high fragmentation
++	 */
++	return ((info->free_pages - (info->free_blocks_suitable << order)) * 1000) / info->free_pages;
++
++}
++
++static void pagetypeinfo_showunusable_print(struct seq_file *m,
++					pg_data_t *pgdat, struct zone *zone)
++{
++	unsigned int order;
++
++	/* Alloc on stack as interrupts are disabled for zone walk */
++	struct config_page_info info;
++
++	seq_printf(m, "Node %4d, zone %8s %19s",
++				pgdat->node_id,
++				zone->name, " ");
++	for (order = 0; order < MAX_ORDER; ++order) {
++		fill_contig_page_info(zone, order, &info);
++		seq_printf(m, "%6d ", unusable_free_index(zone, order, &info));
++	}
++
++	seq_putc(m, '\n');
++}
++
++/*
++ * Display unusable free space index
++ * XXX: Could be a lot more efficient, but it's not a critical path
++ */
++static int pagetypeinfo_showunusable(struct seq_file *m, void *arg)
++{
++	pg_data_t *pgdat = (pg_data_t *)arg;
++
++	seq_printf(m, "\nUnusable free space index at order\n");
++	walk_zones_in_node(m, pgdat, pagetypeinfo_showunusable_print);
++
++	return 0;
++}
++
+ static void pagetypeinfo_showfree_print(struct seq_file *m,
+ 					pg_data_t *pgdat, struct zone *zone)
+ {
+@@ -558,6 +656,7 @@ static int pagetypeinfo_show(struct seq_file *m, void *arg)
+ 	seq_printf(m, "Pages per block:  %lu\n", pageblock_nr_pages);
+ 	seq_putc(m, '\n');
+ 	pagetypeinfo_showfree(m, pgdat);
++	pagetypeinfo_showunusable(m, pgdat);
+ 	pagetypeinfo_showblockcount(m, pgdat);
+ 
+ 	return 0;
+-- 
+1.6.5
 
-If GCC's __builtin_popcount() isn't good enough for non-constant
-values, the macro would be more involved:
-
-#define hweight32(x) (__builtin_constant_p(x) ? __builtin_popcount(x) \
-                      : hweight32_nonconstant(x))
-
--- Jamie
