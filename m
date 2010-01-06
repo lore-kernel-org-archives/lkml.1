@@ -1,249 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755325Ab0AFBhu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755559Ab0AFCRs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755325Ab0AFBhu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 20:37:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755170Ab0AFBht
+	id S1755559Ab0AFCRs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 21:17:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755508Ab0AFCRr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 20:37:49 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:59492 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754871Ab0AFBhs (ORCPT
+	Tue, 5 Jan 2010 21:17:47 -0500
+Received: from pc-249.acfr.usyd.edu.au ([129.78.210.249]:33633 "EHLO
+	rosaceae.acfr.usyd.edu.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755325Ab0AFCRq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 20:37:48 -0500
-Date: Tue, 5 Jan 2010 17:37:08 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-cc: Minchan Kim <minchan.kim@gmail.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>, cl@linux-foundation.org,
-       "hugh.dickins" <hugh.dickins@tiscali.co.uk>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [RFC][PATCH 6/8] mm: handle_speculative_fault()
-In-Reply-To: <20100106092212.c8766aa8.kamezawa.hiroyu@jp.fujitsu.com>
-Message-ID: <alpine.LFD.2.00.1001051718100.3630@localhost.localdomain>
-References: <20100104182429.833180340@chello.nl> <20100104182813.753545361@chello.nl> <20100105092559.1de8b613.kamezawa.hiroyu@jp.fujitsu.com> <28c262361001042029w4b95f226lf54a3ed6a4291a3b@mail.gmail.com> <20100105134357.4bfb4951.kamezawa.hiroyu@jp.fujitsu.com>
- <alpine.LFD.2.00.1001042052210.3630@localhost.localdomain> <20100105143046.73938ea2.kamezawa.hiroyu@jp.fujitsu.com> <20100105163939.a3f146fb.kamezawa.hiroyu@jp.fujitsu.com> <alpine.LFD.2.00.1001050707520.3630@localhost.localdomain>
- <20100106092212.c8766aa8.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Tue, 5 Jan 2010 21:17:46 -0500
+From: Alex Brooks <a.brooks@marathon-robotics.com>
+Organization: Marathon Robotics
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Subject: Re: BAR 0: can't allocate resource
+Date: Wed, 6 Jan 2010 13:16:21 +1100
+User-Agent: KMail/1.9.9
+Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <201001061305.31635.a.brooks@marathon-robotics.com>
+In-Reply-To: <201001061305.31635.a.brooks@marathon-robotics.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <201001061316.21744.a.brooks@marathon-robotics.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Wed, 6 Jan 2010, KAMEZAWA Hiroyuki wrote:
+> > > > I have a problem getting a couple of PCI cards to play nicely
+> > > > together. ...
+> > > >
+> > > > And (for both kernels) the output of lspci has the following line:
+> > > > 01:04.0 Unclassified device [0080]: Device 0002:0080
+> > >
+> > > When you have only the 8-port serial card installed, it appears at
+> > > 01:04.0. When you have both cards installed, we don't see a new device,
+> > > and whatever is at 01:04.0 no longer looks like the octal UART.
+> >
+> > I'm pretty sure that it is the octal UART, but it isn't being recognised
+> > properly.
 >
-> I think this is the 1st reason but haven't rewrote rwsem itself and tested,
-> sorry.
+> I'm sure it *is* the UART, but we're getting the wrong data back from
+> it, so we can't use it. The Mini PCI adapter must be interfering with
+> the UART board somehow. Since you said the Mini PCI slot on the adapter
+> is empty, and the jumpers are programmed correctly, I suspect the adapter
+> is broken. Maybe a connector problem? Do you have another one that
+> behaves the same way?
 
-Here's a totally untested patch! It may or may not work. It builds for me, 
-but that may be some cosmic accident. I _think_ I got the callee-clobbered 
-register set right, but somebody should check the comment in the new 
-rwsem_64.S, and double-check that the code actually matches what I tried 
-to do.
+Unfortunately I don't have space PC104 cards.  But I do have a spare PC104 
+motherboard (not the same brand/model), and on this I can verify that both 
+cards work correctly.
 
-I had to change the inline asm to get the register sizes right too, so for 
-all I know this screws up x86-32 too.
+> If you put a Mini PCI card in the slot and try this in a system without
+> the UART card, does the Mini PCI card work correctly? The jumpers on
+> the adapter should determine the PCI bus number where the Mini PCI device
+> appears.
 
-In other words: UNTESTED! It may molest your pets and drink all your beer. 
-You have been warned.
+Yes, a MiniPCI card in the slot works regardless of what other PCI cards are 
+on the bus.  I'm trying to debug this without a MiniPCI card to remove extra 
+variables.
 
-(Is a 16-bit rwsem count even enough for x86-64? Possibly not. That's a 
-separate issue entirely, though).
+> > To test this theory, I tried with (a) no cards at all, and (b)
+> > just the MiniPCI adapter (no serial card) -- nothing else appears at
+> > 01:04.0 (output of lspci attached).
+>
+> The PC/104+ to Mini PCI adapter looks like it's completely passive. It
+> should be invisible to the OS, so it won't appear in lspci. For both
+> cases, the lspci output you attached is exactly what I would expect.
+>
+> I don't see any indication that this is a software problem (I know nothing
+> about PC/104, so let me know if you disagree, and why).
 
-		Linus
+I don't have a smoking gun that points at software, it was just my guess based 
+on:
+ a) all the pieces of hardware work in certain combinations
+ b) there's a nasty-looking error message in dmesg
 
----
- arch/x86/Kconfig.cpu         |    2 +-
- arch/x86/include/asm/rwsem.h |   18 +++++-----
- arch/x86/lib/Makefile        |    1 +
- arch/x86/lib/rwsem_64.S      |   81 ++++++++++++++++++++++++++++++++++++++++++
- 4 files changed, 92 insertions(+), 10 deletions(-)
+> > > If so, both of those web pages mention jumpers that set the card's
+> > > PCI device ("slot") number. My guess is that both of your cards
+> > > are set to the same number.
+> >
+> > I'd already looked for this, I'm certain I have the jumpers right (I
+> > tried intentionally setting them incorrectly, the failure mode is
+> > different).
+>
+> How did you set them, and what was the failure? If the adapter is really
+> passive and the Mini PCI slot is empty, it seems strange that the adapter
+> jumper setting would make any difference at all.
 
-diff --git a/arch/x86/Kconfig.cpu b/arch/x86/Kconfig.cpu
-index f20ddf8..a198293 100644
---- a/arch/x86/Kconfig.cpu
-+++ b/arch/x86/Kconfig.cpu
-@@ -319,7 +319,7 @@ config X86_L1_CACHE_SHIFT
- 
- config X86_XADD
- 	def_bool y
--	depends on X86_32 && !M386
-+	depends on X86_64 || !M386
- 
- config X86_PPRO_FENCE
- 	bool "PentiumPro memory ordering errata workaround"
-diff --git a/arch/x86/include/asm/rwsem.h b/arch/x86/include/asm/rwsem.h
-index ca7517d..625baca 100644
---- a/arch/x86/include/asm/rwsem.h
-+++ b/arch/x86/include/asm/rwsem.h
-@@ -65,7 +65,7 @@ extern asmregparm struct rw_semaphore *
- #define RWSEM_ACTIVE_WRITE_BIAS		(RWSEM_WAITING_BIAS + RWSEM_ACTIVE_BIAS)
- 
- struct rw_semaphore {
--	signed long		count;
-+	__s32			count;
- 	spinlock_t		wait_lock;
- 	struct list_head	wait_list;
- #ifdef CONFIG_DEBUG_LOCK_ALLOC
-@@ -105,7 +105,7 @@ do {								\
- static inline void __down_read(struct rw_semaphore *sem)
- {
- 	asm volatile("# beginning down_read\n\t"
--		     LOCK_PREFIX "  incl      (%%eax)\n\t"
-+		     LOCK_PREFIX "  incl      (%1)\n\t"
- 		     /* adds 0x00000001, returns the old value */
- 		     "  jns        1f\n"
- 		     "  call call_rwsem_down_read_failed\n"
-@@ -147,7 +147,7 @@ static inline void __down_write_nested(struct rw_semaphore *sem, int subclass)
- 
- 	tmp = RWSEM_ACTIVE_WRITE_BIAS;
- 	asm volatile("# beginning down_write\n\t"
--		     LOCK_PREFIX "  xadd      %%edx,(%%eax)\n\t"
-+		     LOCK_PREFIX "  xaddl     %%edx,(%2)\n\t"
- 		     /* subtract 0x0000ffff, returns the old value */
- 		     "  testl     %%edx,%%edx\n\t"
- 		     /* was the count 0 before? */
-@@ -170,9 +170,9 @@ static inline void __down_write(struct rw_semaphore *sem)
-  */
- static inline int __down_write_trylock(struct rw_semaphore *sem)
- {
--	signed long ret = cmpxchg(&sem->count,
--				  RWSEM_UNLOCKED_VALUE,
--				  RWSEM_ACTIVE_WRITE_BIAS);
-+	__s32 ret = cmpxchg(&sem->count,
-+			    RWSEM_UNLOCKED_VALUE,
-+			    RWSEM_ACTIVE_WRITE_BIAS);
- 	if (ret == RWSEM_UNLOCKED_VALUE)
- 		return 1;
- 	return 0;
-@@ -185,7 +185,7 @@ static inline void __up_read(struct rw_semaphore *sem)
- {
- 	__s32 tmp = -RWSEM_ACTIVE_READ_BIAS;
- 	asm volatile("# beginning __up_read\n\t"
--		     LOCK_PREFIX "  xadd      %%edx,(%%eax)\n\t"
-+		     LOCK_PREFIX "  xaddl     %%edx,(%2)\n\t"
- 		     /* subtracts 1, returns the old value */
- 		     "  jns        1f\n\t"
- 		     "  call call_rwsem_wake\n"
-@@ -203,7 +203,7 @@ static inline void __up_write(struct rw_semaphore *sem)
- {
- 	asm volatile("# beginning __up_write\n\t"
- 		     "  movl      %2,%%edx\n\t"
--		     LOCK_PREFIX "  xaddl     %%edx,(%%eax)\n\t"
-+		     LOCK_PREFIX "  xaddl     %%edx,(%1)\n\t"
- 		     /* tries to transition
- 			0xffff0001 -> 0x00000000 */
- 		     "  jz       1f\n"
-@@ -221,7 +221,7 @@ static inline void __up_write(struct rw_semaphore *sem)
- static inline void __downgrade_write(struct rw_semaphore *sem)
- {
- 	asm volatile("# beginning __downgrade_write\n\t"
--		     LOCK_PREFIX "  addl      %2,(%%eax)\n\t"
-+		     LOCK_PREFIX "  addl      %2,(%1)\n\t"
- 		     /* transitions 0xZZZZ0001 -> 0xYYYY0001 */
- 		     "  jns       1f\n\t"
- 		     "  call call_rwsem_downgrade_wake\n"
-diff --git a/arch/x86/lib/Makefile b/arch/x86/lib/Makefile
-index cffd754..c802451 100644
---- a/arch/x86/lib/Makefile
-+++ b/arch/x86/lib/Makefile
-@@ -39,4 +39,5 @@ else
-         lib-y += thunk_64.o clear_page_64.o copy_page_64.o
-         lib-y += memmove_64.o memset_64.o
-         lib-y += copy_user_64.o rwlock_64.o copy_user_nocache_64.o
-+	lib-$(CONFIG_RWSEM_XCHGADD_ALGORITHM) += rwsem_64.o
- endif
-diff --git a/arch/x86/lib/rwsem_64.S b/arch/x86/lib/rwsem_64.S
-new file mode 100644
-index 0000000..15acecf
---- /dev/null
-+++ b/arch/x86/lib/rwsem_64.S
-@@ -0,0 +1,81 @@
-+/*
-+ * x86-64 rwsem wrappers
-+ *
-+ * This interfaces the inline asm code to the slow-path
-+ * C routines. We need to save the call-clobbered regs
-+ * that the asm does not mark as clobbered, and move the
-+ * argument from %rax to %rdi.
-+ *
-+ * NOTE! We don't need to save %rax, because the functions
-+ * will always return the semaphore pointer in %rax (which
-+ * is also the input argument to these helpers)
-+ *
-+ * The following can clobber %rdx because the asm clobbers it:
-+ *   call_rwsem_down_write_failed
-+ *   call_rwsem_wake
-+ * but %rdi, %rsi, %rcx, %r8-r11 always need saving.
-+ */
-+
-+#include <linux/linkage.h>
-+#include <asm/rwlock.h>
-+#include <asm/alternative-asm.h>
-+#include <asm/frame.h>
-+#include <asm/dwarf2.h>
-+
-+#define save_common_regs \
-+	pushq %rdi; \
-+	pushq %rsi; \
-+	pushq %rcx; \
-+	pushq %r8; \
-+	pushq %r9; \
-+	pushq %r10; \
-+	pushq %r11
-+
-+#define restore_common_regs \
-+	popq %r11; \
-+	popq %r10; \
-+	popq %r9; \
-+	popq %r8; \
-+	popq %rcx; \
-+	popq %rsi; \
-+	popq %rdi
-+
-+/* Fix up special calling conventions */
-+ENTRY(call_rwsem_down_read_failed)
-+	save_common_regs
-+	pushq %rdx
-+	movq %rax,%rdi
-+	call rwsem_down_read_failed
-+	popq %rdx
-+	restore_common_regs
-+	ret
-+	ENDPROC(call_rwsem_down_read_failed)
-+
-+ENTRY(call_rwsem_down_write_failed)
-+	save_common_regs
-+	movq %rax,%rdi
-+	call rwsem_down_write_failed
-+	restore_common_regs
-+	ret
-+	ENDPROC(call_rwsem_down_write_failed)
-+
-+ENTRY(call_rwsem_wake)
-+	decw %dx    /* do nothing if still outstanding active readers */
-+	jnz 1f
-+	save_common_regs
-+	movq %rax,%rdi
-+	call rwsem_wake
-+	restore_common_regs
-+1:	ret
-+	ENDPROC(call_rwsem_wake)
-+
-+/* Fix up special calling conventions */
-+ENTRY(call_rwsem_downgrade_wake)
-+	save_common_regs
-+	pushq %rdx
-+	movq %rax,%rdi
-+	call rwsem_downgrade_wake
-+	popq %rdx
-+	restore_common_regs
-+	ret
-+	ENDPROC(call_rwsem_downgrade_wake)
+I tried a few different incorrect settings, at least one of them was with both 
+cards on the same ID.  The computer failed to boot (i.e. didn't get to the 
+linux kernel at all).
+
+
+Alex
+
+-- 
+------------------------------
+Dr Alex Brooks
+
+Marathon Robotics Pty Ltd
+National Innovation Centre
+4 Cornwallis Street
+Eveleigh, NSW 2015
+Sydney, Australia
+Ph: +61 2 9209 4021
+Web: www.marathon-robotics.com
+------------------------------
