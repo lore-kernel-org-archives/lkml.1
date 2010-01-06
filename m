@@ -1,62 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933024Ab0AFXKE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933038Ab0AFXKh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933024Ab0AFXKE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 18:10:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932940Ab0AFXKD
+	id S933038Ab0AFXKh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 18:10:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932940Ab0AFXKg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 18:10:03 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:34865 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932926Ab0AFXKB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 18:10:01 -0500
-Date: Wed, 6 Jan 2010 15:09:28 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Roland Dreier <rdreier@cisco.com>
-Cc: linux-kernel@vger.kernel.org, Bart Van Assche <bart.vanassche@gmail.com>,
-       David Dillow <dave@thedillows.org>
-Subject: Re: [PATCH] Add BUILD_BUG_ON_NOT_POWER_OF_2()
-Message-Id: <20100106150928.68819f8c.akpm@linux-foundation.org>
-In-Reply-To: <adaeim2supb.fsf_-_@roland-alpha.cisco.com>
-References: <ada3a2jugqu.fsf@roland-alpha.cisco.com>
-	<20100106123306.ac85e557.akpm@linux-foundation.org>
-	<aday6kbt14a.fsf@roland-alpha.cisco.com>
-	<20100106134232.0025e818.akpm@linux-foundation.org>
-	<adaeim2supb.fsf_-_@roland-alpha.cisco.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+	Wed, 6 Jan 2010 18:10:36 -0500
+Received: from mail-out1.uio.no ([129.240.10.57]:36511 "EHLO mail-out1.uio.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932372Ab0AFXKf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jan 2010 18:10:35 -0500
+Subject: Re: [PATCH v2] sunrpc: fix build-time warning
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Jeff Layton <jlayton@redhat.com>, Stephen Rothwell <sfr@canb.auug.org.au>,
+       linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org
+In-Reply-To: <20100101182514.cb1f49ef.randy.dunlap@oracle.com>
+References: <1262226195-27733-1-git-send-email-jlayton@redhat.com>
+	 <20091231091815.a1ea7e51.rdunlap@xenotime.net>
+	 <20091231205454.0f84f091@tupile.poochiereds.net>
+	 <20100101182514.cb1f49ef.randy.dunlap@oracle.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 06 Jan 2010 18:10:20 -0500
+Message-ID: <1262819420.4251.171.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.28.2 (2.28.2-1.fc12) 
 Content-Transfer-Encoding: 7bit
+X-UiO-Ratelimit-Test: rcpts/h 5 msgs/h 1 sum rcpts/h 10 sum msgs/h 1 total rcpts 2172 max rcpts/h 27 ratelimit 0
+X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
+X-UiO-Scanned: 8C895FF39F8FE5C3C00D69D8CA0E7772DFDBD9E4
+X-UiO-SPAM-Test: remote_host: 68.40.206.115 spam_score: -49 maxlevel 80 minaction 2 bait 0 mail/h: 1 total 77 max/h 7 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 06 Jan 2010 15:02:40 -0800
-Roland Dreier <rdreier@cisco.com> wrote:
-
-> Fair enough... here's your suggestion of BUILD_BUG_ON_NOT_POWER_OF_2().
-> <linux/kernel.h> does seem to be going the way of a gazillion very
-> specific helper macros, so I guess this fits right in.
+On Fri, 2010-01-01 at 18:25 -0800, Randy Dunlap wrote: 
+> From: Randy Dunlap <randy.dunlap@oracle.com>
 > 
->  include/linux/kernel.h |    4 ++++
->  1 files changed, 4 insertions(+), 0 deletions(-)
+> Fix auth_gss printk format warning:
 > 
-> diff --git a/include/linux/kernel.h b/include/linux/kernel.h
-> index 3fc9f5a..a1b6652 100644
-> --- a/include/linux/kernel.h
-> +++ b/include/linux/kernel.h
-> @@ -734,6 +734,10 @@ struct sysinfo {
->  /* Force a compilation error if condition is constant and true */
->  #define MAYBE_BUILD_BUG_ON(cond) ((void)sizeof(char[1 - 2 * !!(cond)]))
->  
-> +/* Force a compilation error if expression is not a power of 2 */
-> +#define BUILD_BUG_ON_NOT_POWER_OF_2(n)			\
-> +	BUILD_BUG_ON(((n) != 0 && (((n) & ((n) - 1)) == 0)))
-> +
->  /* Force a compilation error if condition is true, but also produce a
->     result (of value 0 and type size_t), so the expression can be used
->     e.g. in a structure initializer (or where-ever else comma expressions
+> net/sunrpc/auth_gss/auth_gss.c:660: warning: format '%ld' expects type 'long int', but argument 3 has type 'ssize_t'
+> 
+> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
 
-ok..  I'll give it a week or so for better ideas to turn up then I'll
-send this Linuswards so that ongoing work can use it.
+Thanks Randy!
+
+Sorry for the delay. This patch has been applied today, and should
+therefore appear in the linux-next tree tomorrow...
+
+Cheers
+  Trond
 
