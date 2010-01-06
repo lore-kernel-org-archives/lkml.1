@@ -1,45 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932480Ab0AFRfl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932489Ab0AFRgd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932480Ab0AFRfl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 12:35:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932407Ab0AFRfi
+	id S932489Ab0AFRgd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 12:36:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932408Ab0AFRgb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 12:35:38 -0500
-Received: from verein.lst.de ([213.95.11.210]:35808 "EHLO verein.lst.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932329Ab0AFRfh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 12:35:37 -0500
-Date: Wed, 6 Jan 2010 18:34:38 +0100
-From: Christoph Hellwig <hch@lst.de>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Christoph Hellwig <hch@lst.de>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       linux@arm.linux.org.uk, dhowells@redhat.com, ysato@users.sourceforge.jp,
-       tony.luck@intel.com, geert@linux-m68k.org, zippel@linux-m68k.org,
-       gerg@uclinux.org, schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com,
-       jdike@addtoit.com, tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com,
-       viro@zeniv.linux.org.uk
-Subject: Re: [PATCH 1/3] generic sys_old_select
-Message-ID: <20100106173438.GA17660@lst.de>
-References: <20100106172112.GA17163@lst.de> <20100106173258.GJ9882@parisc-linux.org>
-Mime-Version: 1.0
+	Wed, 6 Jan 2010 12:36:31 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:58991 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932407Ab0AFRga (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jan 2010 12:36:30 -0500
+Date: Wed, 6 Jan 2010 12:36:29 -0500
+From: Christoph Hellwig <hch@infradead.org>
+To: Dave Chinner <david@fromorbit.com>
+Cc: Christian Kujau <lists@nerdbynature.de>,
+       LKML <linux-kernel@vger.kernel.org>, xfs@oss.sgi.com
+Subject: Re: lockdep: inconsistent lock state
+Message-ID: <20100106173628.GA14148@infradead.org>
+References: <alpine.DEB.2.01.0912261255380.3483@bogon.housecafe.de> <20091227212700.GA7613@discord.disaster>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20100106173258.GJ9882@parisc-linux.org>
-User-Agent: Mutt/1.3.28i
-X-Spam-Score: -0.001 () BAYES_44
+In-Reply-To: <20091227212700.GA7613@discord.disaster>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 06, 2010 at 10:32:59AM -0700, Matthew Wilcox wrote:
-> On Wed, Jan 06, 2010 at 06:21:12PM +0100, Christoph Hellwig wrote:
-> > Add a generic implementation of the old select syscall, which expects it's
-> > argument in a memory block and switch all architectures over to use it.
-> 
-> Don't we want an ifdef around compat_sys_old_select() like the one
-> around sys_old_select()?
+On Mon, Dec 28, 2009 at 08:27:00AM +1100, Dave Chinner wrote:
+> This is the usual false positive that is detected - XFS takes locks in
+> reclaim that it also takes in non-reclaim paths. The reclaim path
+> from kswapd inverts lock ordering and so we get this report. This
+> case has never been a deadlock case because an inode in reclaim
+> cannot be referenced by any other path, so once again it is a
+> false positive....
 
-Because nothing in compat.c does it.  If we want to bother saving those
-few bites we should do it for more functions, and in a consistant way.
-
+This should be gone in 2.6.33-rc as we now tell lockdep about resetting
+the dependency graph for the iolock once entering the inode reclaim path.
