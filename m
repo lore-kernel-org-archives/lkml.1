@@ -1,52 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932344Ab0AFQ55@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755540Ab0AFRAq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932344Ab0AFQ55 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 11:57:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932226Ab0AFQ5z
+	id S1755540Ab0AFRAq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 12:00:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932216Ab0AFRAp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 11:57:55 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:44315 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932182Ab0AFQ5x (ORCPT
+	Wed, 6 Jan 2010 12:00:45 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:40043 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932358Ab0AFRAo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 11:57:53 -0500
-X-Authority-Analysis: v=1.0 c=1 a=-aGSfi4y-wgA:10 a=7U3hwN5JcxgA:10 a=omOdbC7AAAAA:8 a=7OutjQuFeX-gZ07qmogA:9 a=7PGmRxFFTDJWCg-z4u8A:7 a=FKfQVxHgzDj4_gBCsQgTYDTevmsA:4
-X-Cloudmark-Score: 0
-X-Originating-IP: 74.67.89.75
-Subject: Re: [PATCH] trace_syscalls: cleanup for syscalls_metadata
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <4B448499.6080609@cn.fujitsu.com>
-References: <4B448499.6080609@cn.fujitsu.com>
-Content-Type: text/plain; charset="ISO-8859-15"
-Organization: Kihon Technologies Inc.
-Date: Wed, 06 Jan 2010 11:57:50 -0500
-Message-ID: <1262797070.28171.2972.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 6 Jan 2010 12:00:44 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=Rca8YcYq59uz6RbnqSnrY6UI2hEViBFxLVyi43vCNOHHMlY5+o/G/ovVG+bz+776qr
+         prybsx4SUdknCNIux6PgMt+DIocmd/DwVn4BxtYQPeimlsvhsbSyr7//B9oZZuRDDse3
+         h3rXdVd7Yrow2tx8OH1ZIzgC/EG5I4fhkuumQ=
+From: Johan Hovold <jhovold@gmail.com>
+To: Dave Airlie <airlied@redhat.com>
+Cc: James Simmons <jsimmons@infradead.org>, dri-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: [bisected] drm/ksm: fbdev blanking regression in 2.6.33
+Date: Wed,  6 Jan 2010 18:00:25 +0100
+Message-Id: <1262797226-9593-1-git-send-email-jhovold@gmail.com>
+X-Mailer: git-send-email 1.6.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2010-01-06 at 20:39 +0800, Lai Jiangshan wrote:
-> NR_syscalls is compile-time constant.
+Hi,
 
-The question is, is that always true on all archs, and will that always
-be true?
+Console blanking broke on my laptop with GM45 chipset with 2.6.33. Instead of
+blanking, the screen was dimmed and the backlight started glowing in the lower
+edges of the screen. The glowing then slowly spread upwards. Did not look
+healthy at all.
 
-Unless we can guarantee somewhere that NR_syscalls must be constant on
-all archs, we can't make this change. If it is guaranteed, then sure,
-this patch is fine.
+Easily reproduced by issuing "setterm -blank force".
 
-> so we allocates memory for syscalls_metadata at compile-time.
-> 
-> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+I bisected it down to 731b5a15a3b1474a41c2ca29b4c32b0f21bc852e (drm/kms:
+properly handle fbdev blanking). Which instead of going directly to
+DPMS_STANDBY now calls the encoder dpms helper with DRM_MODE_DPMS_ON and the
+crtc dpms helper with DRM_MODE_DPMS_OFF. I've verified that is this combination
+that triggers the bug. 
 
--- Steve
+If I don't call crtc_funcs->dpms(crtc, DRM_MODE_DPMS_OFF) on FB_BLANK_NORMAL
+but still encoder_funcs->dpms(encoder, DRM_MODE_DPMS_ON), the bug is not
+triggered, but the screen is not cleared either.
 
+For now, I simply reverted to the old behaviour of going directly to
+DPMS_STANDBY (see follow-up patch).  
+
+Thanks,
+Johan
+
+
+Johan Hovold (1):
+  drm/kms: fix fbdev blanking regression
+
+ drivers/gpu/drm/drm_fb_helper.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
