@@ -1,82 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932586Ab0AFXSN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933054Ab0AFXUv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932586Ab0AFXSN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 18:18:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933049Ab0AFXR6
+	id S933054Ab0AFXUv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 18:20:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932665Ab0AFXUt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 18:17:58 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:56858 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932521Ab0AFXPe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 18:15:34 -0500
-X-Authority-Analysis: v=1.0 c=1 a=GAnzq1PaWlIA:10 a=meVymXHHAAAA:8 a=TJfVt-zLeefMa5q-PlMA:9 a=psFa9bVKmAqwu7Hsm0IA:7 a=AktdL0hiOyoRo_AXBmSReCHPs1sA:4 a=XNN-oNMjSfgA:10 a=jeBq3FmKZ4MA:10
-X-Cloudmark-Score: 0
-X-Originating-IP: 74.67.89.75
-Message-Id: <20100106231533.554505577@goodmis.org>
-User-Agent: quilt/0.48-1
-Date: Wed, 06 Jan 2010 18:13:58 -0500
-From: Steven Rostedt <rostedt@goodmis.org>
-To: linux-kernel@vger.kernel.org
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Wolfram Sang <w.sang@pengutronix.de>
-Subject: [PATCH 09/11] tracing: optimize recordmcount.pl for offsets-handling
-References: <20100106231349.107649729@goodmis.org>
-Content-Disposition: inline; filename=0009-tracing-optimize-recordmcount.pl-for-offsets-handlin.patch
+	Wed, 6 Jan 2010 18:20:49 -0500
+Received: from ozlabs.org ([203.10.76.45]:33030 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932656Ab0AFXUs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jan 2010 18:20:48 -0500
+Date: Thu, 7 Jan 2010 10:20:24 +1100
+From: Anton Blanchard <anton@samba.org>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 6/6] x86: cpumask_of_node() should handle -1 as a node
+Message-ID: <20100106232024.GB12742@kryten>
+References: <20100106045509.245662398@samba.org>
+ <20100106045509.245662398@samba.org>
+ <20100106045525.476396870@samba.org>
+ <201001061706.26845.rusty@rustcorp.com.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <201001061706.26845.rusty@rustcorp.com.au>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Wolfram Sang <w.sang@pengutronix.de>
 
-- move check for open file in front of the writing loop
-- use perl-constructs to access the array
-
-Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
-LKML-Reference: <1262716072-14414-2-git-send-email-w.sang@pengutronix.de>
-Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
----
- scripts/recordmcount.pl |   18 +++++++++---------
- 1 files changed, 9 insertions(+), 9 deletions(-)
-
-diff --git a/scripts/recordmcount.pl b/scripts/recordmcount.pl
-index 92f09fe..5de12c7 100755
---- a/scripts/recordmcount.pl
-+++ b/scripts/recordmcount.pl
-@@ -432,14 +432,14 @@ sub update_funcs
+Hi Rusty,
  
-     # Loop through all the mcount caller offsets and print a reference
-     # to the caller based from the ref_func.
--    for (my $i=0; $i <= $#offsets; $i++) {
--	if (!$opened) {
--	    open(FILE, ">$mcount_s") || die "can't create $mcount_s\n";
--	    $opened = 1;
--	    print FILE "\t.section $mcount_section,\"a\",$section_type\n";
--	    print FILE "\t.align $alignment\n" if (defined($alignment));
--	}
--	printf FILE "\t%s %s + %d\n", $type, $ref_func, $offsets[$i] - $offset;
-+    if (!$opened) {
-+	open(FILE, ">$mcount_s") || die "can't create $mcount_s\n";
-+	$opened = 1;
-+	print FILE "\t.section $mcount_section,\"a\",$section_type\n";
-+	print FILE "\t.align $alignment\n" if (defined($alignment));
-+    }
-+    foreach my $cur_offset (@offsets) {
-+	printf FILE "\t%s %s + %d\n", $type, $ref_func, $cur_offset - $offset;
-     }
- }
- 
-@@ -514,7 +514,7 @@ while (<IN>) {
-     }
-     # is this a call site to mcount? If so, record it to print later
-     if ($text_found && /$mcount_regex/) {
--	$offsets[$#offsets + 1] = hex $1;
-+	push(@offsets, hex $1);
-     }
- }
- 
--- 
-1.6.5
+> If you grep for the callers, you'll see those which do this (now-obsolete)
+> check.  One more patch :)
 
+Good point. I was hoping to have a chance at a -stable backport, so I'll
+do this cleanup in a follow up patch.
 
+Anton
