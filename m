@@ -1,109 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755608Ab0AFJhd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755706Ab0AFJk2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755608Ab0AFJhd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 04:37:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754877Ab0AFJhc
+	id S1755706Ab0AFJk2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 04:40:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755477Ab0AFJk1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 04:37:32 -0500
-Received: from mail-fx0-f225.google.com ([209.85.220.225]:64696 "EHLO
-	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753324Ab0AFJhb (ORCPT
+	Wed, 6 Jan 2010 04:40:27 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:47818 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755049Ab0AFJk0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 04:37:31 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type;
-        b=H5RiB3ErNO6n2bcceOoPUBojRo678vx9L/mO+lxbeQ1qkLYgHFZ2ZTsQYM2Hmbfe+C
-         fZYYpgsGKuxSATJGCTzVZk/nj40KpJt+xtmQGygIZt+8M3lln1uDseyzqHDEJnoojQaq
-         JSfxAee5L6Fm4d+7y/VdWCvw8aXyf4oFhXioY=
+	Wed, 6 Jan 2010 04:40:26 -0500
+Date: Wed, 6 Jan 2010 01:39:17 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+cc: Minchan Kim <minchan.kim@gmail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>, cl@linux-foundation.org,
+       "hugh.dickins" <hugh.dickins@tiscali.co.uk>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [RFC][PATCH 6/8] mm: handle_speculative_fault()
+In-Reply-To: <20100106160614.ff756f82.kamezawa.hiroyu@jp.fujitsu.com>
+Message-ID: <alpine.LFD.2.00.1001060119010.3630@localhost.localdomain>
+References: <20100104182429.833180340@chello.nl> <20100104182813.753545361@chello.nl> <20100105092559.1de8b613.kamezawa.hiroyu@jp.fujitsu.com> <28c262361001042029w4b95f226lf54a3ed6a4291a3b@mail.gmail.com> <20100105134357.4bfb4951.kamezawa.hiroyu@jp.fujitsu.com>
+ <alpine.LFD.2.00.1001042052210.3630@localhost.localdomain> <20100105143046.73938ea2.kamezawa.hiroyu@jp.fujitsu.com> <20100105163939.a3f146fb.kamezawa.hiroyu@jp.fujitsu.com> <alpine.LFD.2.00.1001050707520.3630@localhost.localdomain>
+ <20100106092212.c8766aa8.kamezawa.hiroyu@jp.fujitsu.com> <alpine.LFD.2.00.1001051718100.3630@localhost.localdomain> <20100106115233.5621bd5e.kamezawa.hiroyu@jp.fujitsu.com> <alpine.LFD.2.00.1001051917000.3630@localhost.localdomain>
+ <20100106125625.b02c1b3a.kamezawa.hiroyu@jp.fujitsu.com> <alpine.LFD.2.00.1001052007090.3630@localhost.localdomain> <20100106160614.ff756f82.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Date: Wed, 6 Jan 2010 10:37:29 +0100
-Message-ID: <64bb37e1001060137h597322e8s4305b7cc1c91527e@mail.gmail.com>
-Subject: New MSI support in sata_sil24 still broken in 2.6.33-rc3
-From: Torsten Kaiser <just.for.lkml@googlemail.com>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Vivek Mahajan <vivek.mahajan@freescale.com>,
-       Jeff Garzik <jgarzik@pobox.com>, linux-ide@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-After activating the MSI support by adding sata_sil24.msi=1 to the
-kernel command line, the first write to a drive attached to the SiI
-3132 controller results in the following errors:
 
-[  138.950074] ata2.00: exception Emask 0x0 SAct 0xf SErr 0x0 action 0x6 frozen
-[  138.961023] ata2.00: failed command: WRITE FPDMA QUEUED
-[  138.970034] ata2.00: cmd 61/00:00:a5:95:4a/04:00:01:00:00/40 tag 0
-ncq 524288 out
-[  138.970037]          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask
-0x4 (timeout)
-[  138.992467] ata2.00: status: { DRDY }
-[  138.999864] ata2.00: failed command: WRITE FPDMA QUEUED
-[  139.008830] ata2.00: cmd 61/00:08:a5:91:4a/04:00:01:00:00/40 tag 1
-ncq 524288 out
-[  139.008833]          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask
-0x4 (timeout)
-[  139.031370] ata2.00: status: { DRDY }
-[  139.038906] ata2.00: failed command: WRITE FPDMA QUEUED
-[  139.048055] ata2.00: cmd 61/00:10:a5:8d:4a/04:00:01:00:00/40 tag 2
-ncq 524288 out
-[  139.048058]          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask
-0x4 (timeout)
-[  139.070828] ata2.00: status: { DRDY }
-[  139.078383] ata2.00: failed command: WRITE FPDMA QUEUED
-[  139.087506] ata2.00: cmd 61/00:18:a5:99:4a/04:00:01:00:00/40 tag 3
-ncq 524288 out
-[  139.087509]          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask
-0x4 (timeout)
-[  139.110281] ata2.00: status: { DRDY }
-[  139.117877] ata2: hard resetting link
-[  141.310057] ata2: SATA link up 3.0 Gbps (SStatus 123 SControl 0)
-[  146.310037] ata2.00: qc timeout (cmd 0xec)
-[  146.318032] ata2.00: failed to IDENTIFY (I/O error, err_mask=0x5)
-[  146.328027] ata2.00: revalidation failed (errno=-5)
-[  146.336815] ata2: hard resetting link
-[  148.530055] ata2: SATA link up 3.0 Gbps (SStatus 123 SControl 0)
-[  158.530035] ata2.00: qc timeout (cmd 0xec)
-[  158.538066] ata2.00: failed to IDENTIFY (I/O error, err_mask=0x5)
-[  158.548122] ata2.00: revalidation failed (errno=-5)
-[  158.556955] ata2: limiting SATA link speed to 1.5 Gbps
-[  158.566052] ata2: hard resetting link
-[  160.760071] ata2: SATA link up 1.5 Gbps (SStatus 113 SControl 10)
-[  190.760046] ata2.00: qc timeout (cmd 0xec)
-[  190.768137] ata2.00: failed to IDENTIFY (I/O error, err_mask=0x5)
-[  190.778219] ata2.00: revalidation failed (errno=-5)
-[  190.787085] ata2.00: disabled
-[  190.794002] ata2.00: device reported invalid CHS sector 0
-[  190.803368] ata2.00: device reported invalid CHS sector 0
-[  190.812704] ata2.00: device reported invalid CHS sector 0
-[  190.821965] ata2.00: device reported invalid CHS sector 0
-[  190.831231] ata2: hard resetting link
-[  193.030050] ata2: SATA link up 1.5 Gbps (SStatus 113 SControl 10)
-[  193.030073] ata2: EH complete
-[  193.030112] sd 1:0:0:0: [sdb] Unhandled error code
-[  193.030120] sd 1:0:0:0: [sdb] Result: hostbyte=DID_BAD_TARGET
-driverbyte=DRIVER_OK
-[  193.030127] sd 1:0:0:0: [sdb] CDB: Write(10): 2a 00 01 4a 99 a5 00 04 00 00
-[  193.030141] end_request: I/O error, dev sdb, sector 21666213
-[  193.039854] sd 1:0:0:0: [sdb] Unhandled error code
-[  193.039857] sd 1:0:0:0: [sdb] Result: hostbyte=DID_BAD_TARGET
-driverbyte=DRIVER_OK
-[  193.039862] sd 1:0:0:0: [sdb] CDB: Write(10): 2a 00 01 4a 8d a5 00 04 00 00
-[  193.039874] end_request: I/O error, dev sdb, sector 21663141
-[  193.040083] sd 1:0:0:0: [sdb] Unhandled error code
 
-This repeats for a large number of times, then the XFS filesystem gets
-shut down.
+On Wed, 6 Jan 2010, KAMEZAWA Hiroyuki wrote:
+>
+>      9.08%  multi-fault-all  [kernel]                  [k] down_read_trylock
 
-More information about my system are in my first report:
-http://lkml.org/lkml/2009/12/19/82
+Btw, the "trylock" implementation of rwsemaphores doesn't look very good 
+on x86, even after teaching x64-64 to use the xadd versions of rwsems.
 
-lspci -vv for both the normal, working and the broken MSI case are in
-my second try to report this:
-http://lkml.org/lkml/2009/12/25/12
+The reason? It sadly does a "load/inc/cmpxchg" sequence to do an "add if 
+there are no writers", and that may be the obvious model, but it sucks 
+from a cache access standpoint.
 
-Please ask, if you need more information.
+Why? Because it starts the sequence with a plain read. So if it doesn't 
+have the cacheline, it will likely get it first in non-exclusive mode, and 
+then the cmpxchg a few instructions later will need to turn it into an 
+exclusive ownership.
 
-Torsten
+So now that trylock may well end up doing two bus accesses rather than 
+one.
+
+It's possible that an OoO x86 CPU might notice the "read followed by 
+r-m-w" pattern and just turn it into an exclusive cache fetch immediately, 
+but I don't think they are quite that smart. But who knows? 
+
+Anyway, for the above reason it might actually be better to _avoid_ the 
+load entirely, and just make __down_read_trylock() assume the rwsem starts 
+out unlocked - replace the initial memory load with just loading a 
+constant.
+
+That way, it will do the cmpxchg first, and if it wasn't unlocked and had 
+other readers active, it will end up doing an extra cmpxchg, but still 
+hopefully avoid the extra bus cycles.
+
+So it might be worth testing this trivial patch on top of my other one.
+
+UNTESTED. But the patch is small and simple, so maybe it works anyway. It 
+would be interesting to hear if it makes any difference. Better? Worse? Or 
+is it a "There's no difference at all, Linus. You're on drugs with that 
+whole initial bus cycle thing"
+
+		Linus
+
+---
+ arch/x86/include/asm/rwsem.h |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
+
+diff --git a/arch/x86/include/asm/rwsem.h b/arch/x86/include/asm/rwsem.h
+index 625baca..275c0a1 100644
+--- a/arch/x86/include/asm/rwsem.h
++++ b/arch/x86/include/asm/rwsem.h
+@@ -123,7 +123,6 @@ static inline int __down_read_trylock(struct rw_semaphore *sem)
+ {
+ 	__s32 result, tmp;
+ 	asm volatile("# beginning __down_read_trylock\n\t"
+-		     "  movl      %0,%1\n\t"
+ 		     "1:\n\t"
+ 		     "  movl	     %1,%2\n\t"
+ 		     "  addl      %3,%2\n\t"
+@@ -133,7 +132,7 @@ static inline int __down_read_trylock(struct rw_semaphore *sem)
+ 		     "2:\n\t"
+ 		     "# ending __down_read_trylock\n\t"
+ 		     : "+m" (sem->count), "=&a" (result), "=&r" (tmp)
+-		     : "i" (RWSEM_ACTIVE_READ_BIAS)
++		     : "i" (RWSEM_ACTIVE_READ_BIAS), "1" (RWSEM_UNLOCKED_VALUE)
+ 		     : "memory", "cc");
+ 	return result >= 0 ? 1 : 0;
+ }
