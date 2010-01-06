@@ -1,151 +1,179 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755265Ab0AFBQq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755276Ab0AFBTn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755265Ab0AFBQq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 20:16:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752036Ab0AFBQp
+	id S1755276Ab0AFBTn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 20:19:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755021Ab0AFBTm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 20:16:45 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:44589 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751096Ab0AFBQn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 20:16:43 -0500
-Date: Tue, 5 Jan 2010 17:15:50 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Helge Deller <deller@gmx.de>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       ben@decadent.org.uk, tbm@cyrius.com, Kalle Valo <kalle.valo@iki.fi>,
-       linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
-       linux-omap@vger.kernel.org, rusty@rustcorp.com.au, roland@redhat.com,
-       dave@hiauly1.hia.nrc.ca, Parisc List <linux-parisc@vger.kernel.org>
-Subject: Re: regression: crash from 'ls /sys/modules/wl1251_spi/notes'
-Message-Id: <20100105171550.8aef9b15.akpm@linux-foundation.org>
-In-Reply-To: <4B3D145C.2080106@gmx.de>
-References: <87k4w4wux9.fsf@purkki.valot.fi>
-	<1262188157.2749.21.camel@mulgrave.site>
-	<4B3D145C.2080106@gmx.de>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 5 Jan 2010 20:19:42 -0500
+Received: from mga02.intel.com ([134.134.136.20]:31365 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751799Ab0AFBTl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jan 2010 20:19:41 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,225,1262592000"; 
+   d="scan'208";a="584628608"
+From: "Li, Shaohua" <shaohua.li@intel.com>
+To: Jeff Moyer <jmoyer@redhat.com>
+CC: Corrado Zoccolo <czoccolo@gmail.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
+       "Zhang, Yanmin" <yanmin.zhang@intel.com>
+Date: Wed, 6 Jan 2010 09:19:26 +0800
+Subject: RE: [PATCH]cfq-iosched: don't take requests with long distence as
+ close
+Thread-Topic: [PATCH]cfq-iosched: don't take requests with long distence as
+ close
+Thread-Index: AcqOTFF1rgzOp7AGT0malMzhwo5QAAAIMSRg
+Message-ID: <C8EDE645B81E5141A8C6B2F73FD92651138B596F12@shzsmsx501.ccr.corp.intel.com>
+References: <20091224005506.GA7879@sli10-desk.sh.intel.com>
+	<4e5e476b0912250216n2b4aceacyf22a0e73425efd3a@mail.gmail.com>
+	<20091228020348.GB28115@sli10-desk.sh.intel.com>
+	<4e5e476b0912280036r6e55587dj66952fcd6ff4d08b@mail.gmail.com>
+	<20091228084659.GA31389@sli10-desk.sh.intel.com>
+	<4e5e476b0912280111s6a977251m3416341b4bd2c272@mail.gmail.com>
+	<20091228092844.GA9710@sli10-desk.sh.intel.com>
+ <x493a2k8d7x.fsf@segfault.boston.devel.redhat.com>
+In-Reply-To: <x493a2k8d7x.fsf@segfault.boston.devel.redhat.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-
-On Thu, 31 Dec 2009 22:15:08 +0100
-Helge Deller <deller@gmx.de> wrote:
-
-> On 12/30/2009 04:49 PM, James Bottomley wrote:
-> > A better, and more comprehensive patch would be to try not to count the
-> > empty text sections when we're building the notes section (and actually
-> > anywhere else in the file).  This patch actually relies on the fact that
-> > if sh_size is zero for the text section it should be for the
-> > corresponding notes section.  If that doesn't work, we'd actually have
-> > to do the matching in the construction piece.
-> >
-> > Can you try it to see if it works for you?  If it doesn't, I'll try
-> > matching notes to text.  It works fine on parisc, but as we don't have a
-> > notes section, that's not saying much ...
-> >
-> > Thanks,
-> >
-> > James
-> 
-> 
-> Ben Hutchings already sent a similar patch.
-> See: http://patchwork.kernel.org/patch/68925/
-> 
-> IMHO James patch below seems better since it
-> checks if a section will be allocated at a few more
-> places...
-> 
-
-Ben's patch (which is below) is currently in linux-next, via a Rusty
-tree.  It is marked for -stable backporting.
-
-If James's patch is preferable then there's an opportunity to do the
-swap if we move promptly.
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id o061KQ16012287
 
 
 
+>-----Original Message-----
+>From: Jeff Moyer [mailto:jmoyer@redhat.com]
+>Sent: Wednesday, January 06, 2010 5:16 AM
+>To: Li, Shaohua
+>Cc: Corrado Zoccolo; linux-kernel@vger.kernel.org; jens.axboe@oracle.com;
+>Zhang, Yanmin
+>Subject: Re: [PATCH]cfq-iosched: don't take requests with long distence as
+>close
+>
+>Shaohua Li <shaohua.li@intel.com> writes:
+>
+>> On Mon, Dec 28, 2009 at 05:11:25PM +0800, Corrado Zoccolo wrote:
+>>> Hi Shaohua,
+>>> On Mon, Dec 28, 2009 at 9:46 AM, Shaohua Li <shaohua.li@intel.com>
+>wrote:
+>>> > On Mon, Dec 28, 2009 at 04:36:39PM +0800, Corrado Zoccolo wrote:
+>>> >> Hi Shaohua,
+>>> >> On Mon, Dec 28, 2009 at 3:03 AM, Shaohua Li <shaohua.li@intel.com>
+>wrote:
+>>> >> > On Fri, Dec 25, 2009 at 06:16:27PM +0800, Corrado Zoccolo wrote:
+>>> >> >> Hi Shaohua,
+>>> >> >> On Thu, Dec 24, 2009 at 1:55 AM, Shaohua Li <shaohua.li@intel.com>
+>wrote:
+>>> >> >> > df5fe3e8e13883f58dc97489076bbcc150789a21
+>>> >> >> > b3b6d0408c953524f979468562e7e210d8634150
+>>> >> >> > The coop merge is too aggressive. For example, if two tasks are
+>reading two
+>>> >> >> > files where the two files have some adjecent blocks, cfq will
+>immediately
+>>> >> >> > merge them. cfq_rq_close() also has trouble, sometimes the
+>seek_mean is very
+>>> >> >> > big. I did a test to make cfq_rq_close() always checks the
+>distence according
+>>> >> >> > to CIC_SEEK_THR, but still saw a lot of wrong merge. (BTW, why
+>we take a long
+>>> >> >> > distence far away request as close. Taking them close doesn't
+>improve any thoughtput
+>>> >> >> > to me. Maybe we should always use CIC_SEEK_THR as close
+>criteria).
+>>> >> >> Yes, when deciding if two queues are going to be merged, we
+>should use
+>>> >> >> the constant CIC_SEEK_THR.
+>>> >> >
+>>> >> > seek_mean could be very big sometimes, using it as close criteria
+>is meanless
+>>> >> > as this doen't improve any performance. So if it's big, let's
+>fallback to
+>>> >> > default value.
+>>> >>
+>>> >> meanless -> meaningless (also in the comment within code)
+>>> > oops
+>>> >
+>>> >> > Signed-off-by: Shaohua Li<shaohua.li@intel.com>
+>>> >> >
+>>> >> > diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+>>> >> > index e2f8046..8025605 100644
+>>> >> > --- a/block/cfq-iosched.c
+>>> >> > +++ b/block/cfq-iosched.c
+>>> >> > @@ -1682,6 +1682,10 @@ static inline int cfq_rq_close(struct
+>cfq_data *cfqd, struct cfq_queue *cfqq,
+>>> >> > Â  Â  Â  Â if (!sample_valid(cfqq->seek_samples))
+>>> >> > Â  Â  Â  Â  Â  Â  Â  Â sdist = CFQQ_SEEK_THR;
+>>> >> >
+>>> >> > + Â  Â  Â  /* if seek_mean is big, using it as close criteria is
+>meanless */
+>>> >> > + Â  Â  Â  if (sdist > CFQQ_SEEK_THR)
+>>> >> > + Â  Â  Â  Â  Â  Â  Â  sdist = CFQQ_SEEK_THR;
+>>> >> > +
+>>> >> > Â  Â  Â  Â return cfq_dist_from_last(cfqd, rq) <= sdist;
+>>> >> > Â }
+>>> >> >
+>>> >> >
+>>> >> This changes also the cfq_should_preempt behaviour, where a large
+>>> >> seek_mean could be meaningful, so I think it is better to add a
+>>> >> boolean parameter to cfq_rq_close, to distinguish whether we are
+>>> >> preempting or looking for queue merges, and make the new code
+>>> >> conditional on merging.
+>>> > can you explain why it's meaningful for cfq_should_preempt()? Unless
+>sdist is
+>>> > very big, for example > 10*seek_mean, the preempt seems not
+>meaningless.
+>>>
+>>> Disk access time is a complex function, but for rotational disks it is
+>>> 'sort of' increasing with the amplitude of the seek. So, if you have a
+>>> new request that is within the mean seek distance (even if it is
+>>> larger than our constant), it is good to chose this request instead of
+>>> waiting for an other one from the active queue (this behaviour is the
+>>> same exhibited by AS, so we need a good reason to change).
+>> I have no good reason, but just thought it's a little strange.
+>> If other ioscheds take the same way, let's stick.
+>>
+>>
+>> seek_mean could be very big sometimes, using it as close criteria is
+>meaningless
+>> as this doen't improve any performance. So if it's big, let's fallback
+>to
+>> default value.
+>
+>Sorry, I don't follow how you came to these conclusions.
+>
+>cfq_close_cooperator checks whether cur_cfqq is seeky:
+>
+>        if (CFQQ_SEEKY(cur_cfqq))
+>                return NULL;
+>
+>So, by the time we get to the call to cfqq_close, we know that the
+>passed-in cfqq has a seek_mean within the CFQQ_SEEK_THR.
+>
+>cfqq_close then calls cfq_rq_close with the non-seeky cfqq and the next
+>request of the queue it is checking:
+>
+>        if (cfq_rq_close(cfqd, cur_cfqq, __cfqq->next_rq))
+>
+>So, it seems to me that the checks you added are superfluous.  How did
+>you test this to ensure that your patch improved performance?  Your
+>statement about testing above seems to indicate that you did not see any
+>performance improvement.
+>
+>For now, I'm leaning towards asking Jens to revert this.  It may still
+>be worth making sure that we don't merge a seeky queue with a non-seeky
+>queue.  I have a patch for that if folks are interested.
+Ha, yes, you are right. I did see some improvement on tiobench test,
+but maybe it's from another patch (the split patch) or I checked an old
+code. So please revert the patch.
 
-commit 9e9b48a89ed43c73d7355ff999b8e87b0628e1cd
-Author:     Ben Hutchings <ben@decadent.org.uk>
-AuthorDate: Sat Dec 19 14:43:01 2009 +0000
-Commit:     Stephen Rothwell <sfr@canb.auug.org.au>
-CommitDate: Tue Jan 5 08:44:50 2010 +1100
-
-    modules: Skip empty sections when exporting section notes
-    
-    Commit 35dead4 "modules: don't export section names of empty sections
-    via sysfs" changed the set of sections that have attributes, but did
-    not change the iteration over these attributes in add_notes_attrs().
-    This can lead to add_notes_attrs() creating attributes with the wrong
-    names or with null name pointers.
-    
-    Introduce a sect_empty() function and use it in both add_sect_attrs()
-    and add_notes_attrs().
-    
-    Reported-by: Martin Michlmayr <tbm@cyrius.com>
-    Signed-off-by: Ben Hutchings <ben@decadent.org.uk>
-    Tested-by: Martin Michlmayr <tbm@cyrius.com>
-    Cc: stable@kernel.org
-    Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-
-diff --git a/kernel/module.c b/kernel/module.c
-index e96b8ed..f82386b 100644
---- a/kernel/module.c
-+++ b/kernel/module.c
-@@ -1010,6 +1010,12 @@ static const struct kernel_symbol *resolve_symbol(Elf_Shdr *sechdrs,
-  * J. Corbet <corbet@lwn.net>
-  */
- #if defined(CONFIG_KALLSYMS) && defined(CONFIG_SYSFS)
-+
-+static inline bool sect_empty(const Elf_Shdr *sect)
-+{
-+	return !(sect->sh_flags & SHF_ALLOC) || sect->sh_size == 0;
-+}
-+
- struct module_sect_attr
- {
- 	struct module_attribute mattr;
-@@ -1051,8 +1057,7 @@ static void add_sect_attrs(struct module *mod, unsigned int nsect,
- 
- 	/* Count loaded sections and allocate structures */
- 	for (i = 0; i < nsect; i++)
--		if (sechdrs[i].sh_flags & SHF_ALLOC
--		    && sechdrs[i].sh_size)
-+		if (!sect_empty(&sechdrs[i]))
- 			nloaded++;
- 	size[0] = ALIGN(sizeof(*sect_attrs)
- 			+ nloaded * sizeof(sect_attrs->attrs[0]),
-@@ -1070,9 +1075,7 @@ static void add_sect_attrs(struct module *mod, unsigned int nsect,
- 	sattr = &sect_attrs->attrs[0];
- 	gattr = &sect_attrs->grp.attrs[0];
- 	for (i = 0; i < nsect; i++) {
--		if (! (sechdrs[i].sh_flags & SHF_ALLOC))
--			continue;
--		if (!sechdrs[i].sh_size)
-+		if (sect_empty(&sechdrs[i]))
- 			continue;
- 		sattr->address = sechdrs[i].sh_addr;
- 		sattr->name = kstrdup(secstrings + sechdrs[i].sh_name,
-@@ -1156,7 +1159,7 @@ static void add_notes_attrs(struct module *mod, unsigned int nsect,
- 	/* Count notes sections and allocate structures.  */
- 	notes = 0;
- 	for (i = 0; i < nsect; i++)
--		if ((sechdrs[i].sh_flags & SHF_ALLOC) &&
-+		if (!sect_empty(&sechdrs[i]) &&
- 		    (sechdrs[i].sh_type == SHT_NOTE))
- 			++notes;
- 
-@@ -1172,7 +1175,7 @@ static void add_notes_attrs(struct module *mod, unsigned int nsect,
- 	notes_attrs->notes = notes;
- 	nattr = &notes_attrs->attrs[0];
- 	for (loaded = i = 0; i < nsect; ++i) {
--		if (!(sechdrs[i].sh_flags & SHF_ALLOC))
-+		if (sect_empty(&sechdrs[i]))
- 			continue;
- 		if (sechdrs[i].sh_type == SHT_NOTE) {
- 			nattr->attr.name = mod->sect_attrs->attrs[loaded].name;
-
+Thanks,
+Shaohua
+ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
