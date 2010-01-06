@@ -1,64 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932287Ab0AFQ4v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932327Ab0AFQ5Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932287Ab0AFQ4v (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 11:56:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932182Ab0AFQ4u
+	id S932327Ab0AFQ5Q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 11:57:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932226Ab0AFQ5O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 11:56:50 -0500
-Received: from www84.your-server.de ([213.133.104.84]:48063 "EHLO
-	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932139Ab0AFQ4t (ORCPT
+	Wed, 6 Jan 2010 11:57:14 -0500
+Received: from mx2.netapp.com ([216.240.18.37]:55246 "EHLO mx2.netapp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932306Ab0AFQ5M convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 11:56:49 -0500
-Subject: [PATCH] checkpatch.pl: remove the punch card limit
-From: Stefani Seibold <stefani@seibold.net>
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, apw@canonical.com,
-       jschopp@austin.ibm.com, davej@redhat.com
-Content-Type: text/plain; charset="ISO-8859-15"
-Date: Wed, 06 Jan 2010 17:56:24 +0100
-Message-ID: <1262796984.1011.17.camel@wall-e>
+	Wed, 6 Jan 2010 11:57:12 -0500
+X-IronPort-AV: E=Sophos;i="4.49,230,1262592000"; 
+   d="scan'208";a="298022884"
+Subject: Re: [PATCH] improve the performance of large sequential write NFS
+ workloads
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Jan Kara <jack@suse.cz>, Steve Rago <sar@nec-labs.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       "linux-nfs@vger.kernel.org" <linux-nfs@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "jens.axboe" <jens.axboe@oracle.com>,
+       Peter Staubach <staubach@redhat.com>,
+       Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>
+In-Reply-To: <20100106030346.GA15962@localhost>
+References: <20091222015907.GA6223@localhost>
+	 <1261578107.2606.11.camel@localhost> <20091223180551.GD3159@quack.suse.cz>
+	 <1261595574.6775.2.camel@localhost> <20091224025228.GA12477@localhost>
+	 <1261656281.3596.1.camel@localhost> <20091225055617.GA8595@localhost>
+	 <1262190168.7332.6.camel@localhost> <20091231050441.GB19627@localhost>
+	 <1262286828.8151.113.camel@localhost>  <20100106030346.GA15962@localhost>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
+Organization: NetApp
+Date: Wed, 06 Jan 2010 11:56:02 -0500
+Message-ID: <1262796962.4251.91.camel@localhost>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 
-Content-Transfer-Encoding: 7bit
-X-Authenticated-Sender: stefani@seibold.net
+X-Mailer: Evolution 2.28.2 (2.28.2-1.fc12) 
+X-OriginalArrivalTime: 06 Jan 2010 16:56:51.0247 (UTC) FILETIME=[3E083BF0:01CA8EF1]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The time of 80 characters punch card and terminals are over, so i would
-be a good thing to set the line length limit to 120. Every display today
-should be able handle this. And it think it make formated source code
-more readable.
+On Wed, 2010-01-06 at 11:03 +0800, Wu Fengguang wrote: 
+> Trond,
+> 
+> On Fri, Jan 01, 2010 at 03:13:48AM +0800, Trond Myklebust wrote:
+> > The above change improves on the existing code, but doesn't solve the
+> > problem that write_inode() isn't a good match for COMMIT. We need to
+> > wait for all the unstable WRITE rpc calls to return before we can know
+> > whether or not a COMMIT is needed (some commercial servers never require
+> > commit, even if the client requested an unstable write). That was the
+> > other reason for the change.
+> 
+> Ah good to know that reason. However we cannot wait for ongoing WRITEs
+> for unlimited time or pages, otherwise nr_unstable goes up and squeeze 
+> nr_dirty and nr_writeback to zero, and stall the cp process for a long
+> time, as demonstrated by the trace (more reasoning in previous email).
 
-For everybody who want know: The 80 column limit of a terminal comes
-from the punch cards, which stored exact 80 characters.
-  
-Signed-off-by: Stefani Seibold <stefani@seibold.net>
+OK. I think we need a mechanism to allow balance_dirty_pages() to
+communicate to the filesystem that it really is holding too many
+unstable pages. Currently, all we do is say that 'your total is too
+big', and then let the filesystem figure out what it needs to do.
+
+So how about if we modify your heuristic to do something like this? It
+applies on top of the previous patch.
+
+Cheers
+  Trond
+--------------------------------------------------------------------------------------------------------- 
+VM/NFS: The VM must tell the filesystem when to free reclaimable pages
+
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
+
+balance_dirty_pages() should really tell the filesystem whether or not it
+has an excess of actual dirty pages, or whether it would be more useful to
+start freeing up the reclaimable pages.
+
+Assume that if the number of dirty pages associated with this backing-dev
+is less than 1/2 the number of reclaimable pages, then we should
+concentrate on freeing up the latter.
+
+Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
 ---
- checkpatch.pl |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
 
---- linux-2.6.33-rc2.orig/scripts/checkpatch.pl	2009-12-03 04:51:21.000000000 +0100
-+++ linux-2.6.33-rc2.new/scripts/checkpatch.pl	2010-01-06 17:46:40.057565661 +0100
-@@ -1374,13 +1374,13 @@ sub process {
- # check we are in a valid source file if not then ignore this hunk
- 		next if ($realfile !~ /\.(h|c|s|S|pl|sh)$/);
+ fs/nfs/write.c              |    9 +++++++--
+ include/linux/backing-dev.h |    6 ++++++
+ mm/page-writeback.c         |    7 +++++--
+ 3 files changed, 18 insertions(+), 4 deletions(-)
+
+
+diff --git a/fs/nfs/write.c b/fs/nfs/write.c
+index 910be28..36113e6 100644
+--- a/fs/nfs/write.c
++++ b/fs/nfs/write.c
+@@ -1420,8 +1420,10 @@ int nfs_commit_unstable_pages(struct address_space *mapping,
+ 	if (wbc->sync_mode != WB_SYNC_ALL &&
+ 	    radix_tree_tagged(&NFS_I(inode)->nfs_page_tree,
+ 		    NFS_PAGE_TAG_LOCKED)) {
+-		mark_inode_unstable_pages(inode);
+-		return 0;
++		if (wbc->bdi == NULL)
++			goto out_nocommit;
++		if (wbc->bdi->dirty_exceeded != BDI_RECLAIMABLE_EXCEEDED)
++			goto out_nocommit;
+ 	}
+ 	if (wbc->nonblocking)
+ 		flags = 0;
+@@ -1429,6 +1431,9 @@ int nfs_commit_unstable_pages(struct address_space *mapping,
+ 	if (ret > 0)
+ 		ret = 0;
+ 	return ret;
++out_nocommit:
++	mark_inode_unstable_pages(inode);
++	return 0;
+ }
  
--#80 column limit
-+#120 column limit
- 		if ($line =~ /^\+/ && $prevrawline !~ /\/\*\*/ &&
- 		    $rawline !~ /^.\s*\*\s*\@$Ident\s/ &&
- 		    $line !~ /^\+\s*printk\s*\(\s*(?:KERN_\S+\s*)?"[X\t]*"\s*(?:,|\)\s*;)\s*$/ &&
--		    $length > 80)
-+		    $length > 120)
- 		{
--			WARN("line over 80 characters\n" . $herecurr);
-+			WARN("line over 120 characters\n" . $herecurr);
- 		}
+ #else
+diff --git a/include/linux/backing-dev.h b/include/linux/backing-dev.h
+index fcbc26a..cd1645e 100644
+--- a/include/linux/backing-dev.h
++++ b/include/linux/backing-dev.h
+@@ -94,6 +94,12 @@ struct backing_dev_info {
+ #endif
+ };
  
- # check for adding lines without a newline.
-
-
-
++enum bdi_dirty_exceeded_state {
++	BDI_NO_DIRTY_EXCESS = 0,
++	BDI_DIRTY_EXCEEDED,
++	BDI_RECLAIMABLE_EXCEEDED,
++};
++
+ int bdi_init(struct backing_dev_info *bdi);
+ void bdi_destroy(struct backing_dev_info *bdi);
+ 
+diff --git a/mm/page-writeback.c b/mm/page-writeback.c
+index 0b19943..0133c8f 100644
+--- a/mm/page-writeback.c
++++ b/mm/page-writeback.c
+@@ -524,8 +524,11 @@ static void balance_dirty_pages(struct address_space *mapping,
+ 				(background_thresh + dirty_thresh) / 2)
+ 			break;
+ 
+-		if (!bdi->dirty_exceeded)
+-			bdi->dirty_exceeded = 1;
++		if (bdi_nr_writeback > bdi_nr_reclaimable / 2) {
++			if (bdi->dirty_exceeded != BDI_DIRTY_EXCEEDED)
++				bdi->dirty_exceeded = BDI_DIRTY_EXCEEDED;
++		} else if (bdi->dirty_exceeded != BDI_RECLAIMABLE_EXCEEDED)
++				bdi->dirty_exceeded = BDI_RECLAIMABLE_EXCEEDED;
+ 
+ 		/* Note: nr_reclaimable denotes nr_dirty + nr_unstable.
+ 		 * Unstable writes are a feature of certain networked
 
