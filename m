@@ -1,84 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755053Ab0AFAnw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755003Ab0AFAum@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755053Ab0AFAnw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 19:43:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754407Ab0AFAnv
+	id S1755003Ab0AFAum (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 19:50:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754247Ab0AFAuk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 19:43:51 -0500
-Received: from us-mx4.synaptics.com ([12.178.49.178]:24631 "EHLO
-	us-mx4.synaptics.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751154Ab0AFAnv convert rfc822-to-8bit (ORCPT
+	Tue, 5 Jan 2010 19:50:40 -0500
+Received: from mail-yw0-f176.google.com ([209.85.211.176]:57890 "EHLO
+	mail-yw0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754186Ab0AFAuj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 19:43:51 -0500
-X-PGP-Universal: processed;
-	by securemail.synaptics.com on Tue, 05 Jan 2010 15:48:50 -0800
-From: William Manson <WManson@synaptics.com>
-To: "'Dmitry Torokhov'" <dmitry.torokhov@gmail.com>
-CC: Christopher Heiny <Cheiny@synaptics.com>,
-       Allie Xiong <axiong@synaptics.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Date: Tue, 5 Jan 2010 16:45:48 -0800
-Subject: RE: [RFC] [PATCH 1/1] input/touchscreen: Synaptics Touchscreen
- Driver
-Thread-Topic: [RFC] [PATCH 1/1] input/touchscreen: Synaptics Touchscreen
- Driver
-Thread-Index: AcqOWHdf4CwthlM3QzG1CDdQ1mm49gAED5uQ
-Message-ID: <7B4B50AC280A5E45A42CD2D364A3CE2F2733F75A41@USW-EX2K7-1.synaptics-inc.local>
-In-Reply-To: <20100105224051.GA7869@core.coreip.homeip.net>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Tue, 5 Jan 2010 19:50:39 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=GrjVc4bGCsqndUbjQO91A1N3lVpreIj9V4nl+iLK3/71NMlQbK3caw4eRqCEwrThcM
+         G9Awy5wlkYRS8t/9OGqKq3VlBTh1sLLAHIol6MoLmH/3sT00Z3aDdefL/m8b15yb+lum
+         GXQ+4aNcR1yxKbvPh9x61CMtICQ4cLFRIfZHo=
+Message-ID: <4B43DE5C.2040106@gmail.com>
+Date: Tue, 05 Jan 2010 18:50:36 -0600
+From: Robert Hancock <hancockrwd@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
 MIME-Version: 1.0
+To: Marco Bisetto <marco.bisetto@gmail.com>
+CC: linux-kernel@vger.kernel.org, ide <linux-ide@vger.kernel.org>
+Subject: Re: ata error EH in SWNCQ mode, with nVidia MCP55 sata controller
+ and    SAMSUNG HD103UJ
+References: <f6be8a431001050956v481017e9i119bca6db20ba1be@mail.gmail.com>
+In-Reply-To: <f6be8a431001050956v481017e9i119bca6db20ba1be@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Dmitry -
-
-I'll see if I can get someone in contact with you. I agree with you that patches to extend the existing driver would be preferable. It would probably be someone who is not working on the proprietary binary driver that would have to do the patches as the IP requires that we keep them separated. I wouldn't mind doing that myself as I'm already working on the open source driver for RMI4 over I2C and I have done a few minor things with the current open source kernel PS/2 driver - not patches but changes for minor issues that were for specific customers mostly in the area of configuration. Also, I'm not "tainted" by the proprietary driver - in fact I've never seen the code. I'll discuss with my boss if that's possible.
-
-Regards,
-William
-
-
------Original Message-----
-From: Dmitry Torokhov [mailto:dmitry.torokhov@gmail.com]
-Sent: Tuesday, January 05, 2010 2:41 PM
-To: William Manson
-Cc: Christopher Heiny; Allie Xiong; linux-kernel
-Subject: Re: [RFC] [PATCH 1/1] input/touchscreen: Synaptics Touchscreen Driver
-
-On Tue, Jan 05, 2010 at 01:57:37PM -0800, William Manson wrote:
-> Hi Dmitry -
+On 01/05/2010 11:56 AM, Marco Bisetto wrote:
+> Hi,
 >
-> Yes - we are planning on extending support for our new touchpads. As
-> far as I know there is a Linux PS/2 driver in the works but I don't
-> work with that group so I don't know anything about timeframes.
-
-Is there a way to get in touch with that group? As you may know we have
-a pretty stable and reliable version of a driver for your older PS/2
-products (thanks to Synaptics releasing very detailed interfacing guide)
-which is integrated in both kernel and Xorg, and which is used by most
-distributions. Users also expect "synaptics" to just work with their
-touchpads. I would rather see patches extending the exsting driver
-instead of completely new piece of software.
-
-> I also
-> don't know if it will be made open source or as a proprietary binary -
-> or both. But we are definitely planning on supporting our PS/2
-> touchpads on Linux.
+> A problem with a "IDE interface: nVidia Corporation MCP55 SATA Controller
+> (rev a3)" and two SAMSUNG HD103UJ sata hard disk drives. Disabling write
+> cache on a disk gives error:
 >
-> I will check into the Interfacing Guide and get back to you. The
-> latest is on our web site
-> (http://www.synaptics.com/developers/manuals) but it doesn't have info
-> about multitouch in it. If there is a newer one I'll let you know.
+> kernel: [   45.584445] ata1: EH in SWNCQ mode,QC:qc_active 0x1 sactive 0x1
+> kernel: [   45.584445] ata1: SWNCQ:qc_active 0x1 defer_bits 0x0
+> last_issue_tag 0x0
+> kernel: [   45.584445]   dhfis 0x1 dmafis 0x1 sdbfis 0x0
+> kernel: [   45.584445] ata1: ATA_REG 0x40 ERR_REG 0x0
+> kernel: [   45.584445] ata1: tag : dhfis dmafis sdbfis sacitve
+> kernel: [   45.584445] ata1: tag 0x0: 1 1 0 1
+> kernel: [   45.584445] ata1.00: exception Emask 0x0 SAct 0x1 SErr 0x0
+> action 0x6 frozen
+> kernel: [   45.584445] ata1.00: cmd
+> 61/08:00:3f:f4:e8/00:00:02:00:00/40 tag 0 ncq 4096 out
+> kernel: [   45.584445]          res
+> 40/00:00:00:00:00/00:00:00:00:00/40 Emask 0x4 (timeout)
+> kernel: [   45.584445] ata1.00: status: { DRDY }
+> kernel: [   45.584445] ata1: hard resetting link
 >
+> The error appears four times for each disk at startup, only when a disk has
+> write cache disabled. For example, disabling write cache in two disks:
+>
+>   45.595788] ata1: EH in SWNCQ mode,QC:qc_active 0x1 sactive 0x1
+>   45.595800] ata4: EH in SWNCQ mode,QC:qc_active 0x1 sactive 0x1
+>   76.491877] ata4: EH in SWNCQ mode,QC:qc_active 0x1 sactive 0x1
+>   76.511331] ata1: EH in SWNCQ mode,QC:qc_active 0x1 sactive 0x1
+> 107.391075] ata4: EH in SWNCQ mode,QC:qc_active 0x1 sactive 0x1
+> 107.423701] ata1: EH in SWNCQ mode,QC:qc_active 0x1 sactive 0x1
+> 138.287465] ata4: EH in SWNCQ mode,QC:qc_active 0x1 sactive 0x1
+> 138.332093] ata1: EH in SWNCQ mode,QC:qc_active 0x1 sactive 0x1
+>
+> Disabling write cache on disk attached to ata4 and enabling it on disk
+> attached to ata1:
+>
+>   45.583489] ata4: EH in SWNCQ mode,QC:qc_active 0x1 sactive 0x1
+>   76.479940] ata4: EH in SWNCQ mode,QC:qc_active 0x1 sactive 0x1
+> 107.375643] ata4: EH in SWNCQ mode,QC:qc_active 0x1 sactive 0x1
+> 138.272023] ata4: EH in SWNCQ mode,QC:qc_active 0x1 sactive 0x1
+>
+> Enabling write cache on both disks = no errors.
+>
+> I don't think the problem can be associated with bad cables or power
+> supply, as it happens in each channel, it is the same for each disk and
+> happens at the same time.
+>
+> Anybody has ideas on what can it be and if there is a solution?
 
-Thank you, much appreciated.
+ From what I can see, that debug output from sata_nv means that the 
+drive hasn't reported it's completed the command (no SDB FIS) after the 
+timeout (usually 30 seconds). That's an awfully long time. It could be 
+that those drives have issues with NCQ and disabled write cache where 
+some of the commands in the queue can be starved for overly long periods..
 
---
-Dmitry
+CCing linux-ide.
