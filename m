@@ -1,48 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933071Ab0AFXXa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933077Ab0AFXYl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933071Ab0AFXXa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 18:23:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932979Ab0AFXX2
+	id S933077Ab0AFXYl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 18:24:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932967Ab0AFXYk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 18:23:28 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:46907 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932665Ab0AFXX2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 18:23:28 -0500
-Date: Thu, 7 Jan 2010 00:23:26 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Stefan Weil <weil@mail.berlios.de>, Greg Kroah-Hartman <gregkh@suse.de>,
-       linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-arm-kernel@lists.infradead.org, linuxppc-dev@ozlabs.org,
-       linux-mtd@lists.infradead.org
-Subject: Re: [PATCH] Fix spelling in comments and documentation
-In-Reply-To: <20100106151144.e58bdd4a.akpm@linux-foundation.org>
-Message-ID: <alpine.LNX.2.00.1001070022491.2277@pobox.suse.cz>
-References: <1262819032-16644-1-git-send-email-weil@mail.berlios.de> <20100106151144.e58bdd4a.akpm@linux-foundation.org>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+	Wed, 6 Jan 2010 18:24:40 -0500
+Received: from [206.15.93.42] ([206.15.93.42]:2664 "EHLO
+	visionfs1.visionengravers.com" rhost-flags-FAIL-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S932952Ab0AFXYi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jan 2010 18:24:38 -0500
+From: H Hartley Sweeten <hartleys@visionengravers.com>
+To: Linux Kernel <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
+       devicetree-discuss@lists.ozlabs.org, linux-nfs@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: [PATCH] nodmask.h: remove macro any_online_node
+Date: Wed, 6 Jan 2010 16:24:58 -0700
+Cc: akpm@linux-foundation.org, rientjes@google.com,
+       kamezawa.hiroyu@jp.fujitsu.com, mel@csn.ul.ie, lee.schermerhorn@hp.com,
+       benh@kernel.crashing.org, paulus@samba.org, dave@linux.vnet.ibm.com,
+       miltonm@bga.com, nfont@austin.ibm.com, geoffrey.levand@am.sony.com,
+       grant.likely@secretlab.ca, bfields@fieldses.org, neilb@suse.de,
+       Trond.Myklebust@netapp.com, davem@davemloft.net, bhalevy@panasas.com,
+       chuck.lever@oracle.com, Ricardo.Labiaga@netapp.com
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <201001061624.59118.hartleys@visionengravers.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 6 Jan 2010, Andrew Morton wrote:
+nodmask.h: remove macro any_online_node
 
-> > Replace platfrom -> platform.
-> > 
-> > This is a frequent spelling bug.
-> 
-> I have a "no spelling fixes unless they're in documentation or printks"
-> policy ;)
-> 
-> trivial@kernel.org would be a suitable recipient for this patch.
+The macro any_online_node is prone to producing sparse warnings
+due to the local symbol 'node'. Since all the in-tree users are really
+requesting the first online node (the mask argument is either
+NODE_MASK_ALL or node_online_map) just use the first_online_node
+macro and remove the any_online_node macro since there are no users.
 
-Yup, I am usually applying all the comment typo fixes, as it makes the 
-source more grepping-friendly.
+Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: David Rientjes <rientjes@google.com>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Mel Gorman <mel@csn.ul.ie>
+Cc: Lee Schermerhorn <lee.schermerhorn@hp.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Dave Hansen <dave@linux.vnet.ibm.com>
+Cc: Milton Miller <miltonm@bga.com>
+Cc: Nathan Fontenot <nfont@austin.ibm.com>
+Cc: Geoff Levand <geoffrey.levand@am.sony.com>
+Cc: Grant Likely <grant.likely@secretlab.ca>
+Cc: J. Bruce Fields <bfields@fieldses.org>
+Cc: Neil Brown <neilb@suse.de>
+Cc: Trond Myklebust <Trond.Myklebust@netapp.com>
+Cc: David S. Miller <davem@davemloft.net>
+Cc: Benny Halevy <bhalevy@panasas.com>
+Cc: Chuck Lever <chuck.lever@oracle.com>
+Cc: Ricardo Labiaga <Ricardo.Labiaga@netapp.com>
 
-Applied, thanks Stefan.
+---
 
--- 
-Jiri Kosina
-SUSE Labs, Novell Inc.
+diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+index b037d95..64c0022 100644
+--- a/arch/powerpc/mm/numa.c
++++ b/arch/powerpc/mm/numa.c
+@@ -451,7 +451,7 @@ static int __cpuinit numa_setup_cpu(unsigned long lcpu)
+ 	nid = of_node_to_nid_single(cpu);
+ 
+ 	if (nid < 0 || !node_online(nid))
+-		nid = any_online_node(NODE_MASK_ALL);
++		nid = first_online_node;
+ out:
+ 	map_cpu_to_node(lcpu, nid);
+ 
+@@ -1114,7 +1114,7 @@ int hot_add_scn_to_nid(unsigned long scn_addr)
+ 	int nid, found = 0;
+ 
+ 	if (!numa_enabled || (min_common_depth < 0))
+-		return any_online_node(NODE_MASK_ALL);
++		return first_online_node;
+ 
+ 	memory = of_find_node_by_path("/ibm,dynamic-reconfiguration-memory");
+ 	if (memory) {
+@@ -1125,7 +1125,7 @@ int hot_add_scn_to_nid(unsigned long scn_addr)
+ 	}
+ 
+ 	if (nid < 0 || !node_online(nid))
+-		nid = any_online_node(NODE_MASK_ALL);
++		nid = first_online_node;
+ 
+ 	if (NODE_DATA(nid)->node_spanned_pages)
+ 		return nid;
+diff --git a/include/linux/nodemask.h b/include/linux/nodemask.h
+index 454997c..c4fa64b 100644
+--- a/include/linux/nodemask.h
++++ b/include/linux/nodemask.h
+@@ -69,8 +69,6 @@
+  * int node_online(node)		Is some node online?
+  * int node_possible(node)		Is some node possible?
+  *
+- * int any_online_node(mask)		First online node in mask
+- *
+  * node_set_online(node)		set bit 'node' in node_online_map
+  * node_set_offline(node)		clear bit 'node' in node_online_map
+  *
+@@ -467,15 +465,6 @@ static inline int num_node_state(enum node_states state)
+ #define node_online_map 	node_states[N_ONLINE]
+ #define node_possible_map 	node_states[N_POSSIBLE]
+ 
+-#define any_online_node(mask)			\
+-({						\
+-	int node;				\
+-	for_each_node_mask(node, (mask))	\
+-		if (node_online(node))		\
+-			break;			\
+-	node;					\
+-})
+-
+ #define num_online_nodes()	num_node_state(N_ONLINE)
+ #define num_possible_nodes()	num_node_state(N_POSSIBLE)
+ #define node_online(node)	node_state((node), N_ONLINE)
+diff --git a/net/sunrpc/svc.c b/net/sunrpc/svc.c
+index 538ca43..832c1fe 100644
+--- a/net/sunrpc/svc.c
++++ b/net/sunrpc/svc.c
+@@ -133,7 +133,7 @@ svc_pool_map_choose_mode(void)
+ 		return SVC_POOL_PERNODE;
+ 	}
+ 
+-	node = any_online_node(node_online_map);
++	node = first_online_node;
+ 	if (nr_cpus_node(node) > 2) {
+ 		/*
+ 		 * Non-trivial SMP, or CONFIG_NUMA on
