@@ -1,117 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755394Ab0AVXNW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754501Ab0AVXTW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755394Ab0AVXNW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 18:13:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755035Ab0AVXNV
+	id S1754501Ab0AVXTW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 18:19:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753712Ab0AVXTU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 18:13:21 -0500
-Received: from fmmailgate01.web.de ([217.72.192.221]:35424 "EHLO
+	Fri, 22 Jan 2010 18:19:20 -0500
+Received: from fmmailgate01.web.de ([217.72.192.221]:37865 "EHLO
 	fmmailgate01.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753680Ab0AVXNU (ORCPT
+	with ESMTP id S1753382Ab0AVXTT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 18:13:20 -0500
-Message-Id: <cover.1264201406.git.jan.kiszka@web.de>
+	Fri, 22 Jan 2010 18:19:19 -0500
+Message-Id: <f253cc313439ec42486f6b66371b1801e4933567.1264201406.git.jan.kiszka@web.de>
+In-Reply-To: <cover.1264201406.git.jan.kiszka@web.de>
+References: <cover.1264201406.git.jan.kiszka@web.de>
 From: Jan Kiszka <jan.kiszka@web.de>
 To: David Miller <davem@davemloft.net>, Karsten Keil <isdn@linux-pingi.de>
 Cc: linux-kernel@vger.kernel.org, i4ldeveloper@listserv.isdn4linux.de,
        isdn4linux@listserv.isdn4linux.de, netdev@vger.kernel.org
-Date: Sat, 23 Jan 2010 00:03:26 +0100
-Subject: [PATCH 00/31] CAPI: Major rework, tons of bug fixes
-X-Provags-ID: V01U2FsdGVkX1+xXqFWzBmGxD9S6qW3tzvl+XstF7CJ2/Xs08nA
-	CnkyXCo7g2mfQPldvTP56o9aY3dcakDknXuX5IaFu1MtM8aLYv
-	SU7ZwIof8=
+Date: Wed, 6 Jan 2010 15:03:51 +0100
+Subject: [PATCH 04/31] CAPI: Pin capifs instead of mounting it
+X-Provags-ID: V01U2FsdGVkX1+vRXOXsGGjJwS3LE34ONmaKGeZTfp3cADhLcaY
+	Qph7uOnLCBhsbE9Fr6ntbrFBb0lQwR7AG7An9wUgXl9HMxwbU8
+	PAB34zX2s=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-First of all sorry if I'm breaking the correct flow of ISDN patches, but
-I'm under the impression that things currently get merged directly via
-Dave, right?
+Auto-mounting the capifs during module init prevents unloading its
+module. Instead, pin the filesystem as long as some NCCI node exists.
 
-This series can also be pulled from
+Signed-off-by: Jan Kiszka <jan.kiszka@web.de>
+---
+ drivers/isdn/capi/capifs.c |   27 ++++++++++++++++++---------
+ 1 files changed, 18 insertions(+), 9 deletions(-)
 
-	git://git.kiszka.org/linux-2.6.git capi
+diff --git a/drivers/isdn/capi/capifs.c b/drivers/isdn/capi/capifs.c
+index 6ae0edf..51c01ef 100644
+--- a/drivers/isdn/capi/capifs.c
++++ b/drivers/isdn/capi/capifs.c
+@@ -32,6 +32,7 @@ static char *revision = "$Revision: 1.1.2.3 $";
+ #define CAPIFS_SUPER_MAGIC (('C'<<8)|'N')
+ 
+ static struct vfsmount *capifs_mnt;
++static int capifs_mnt_count;
+ 
+ static struct {
+ 	int setuid;
+@@ -140,7 +141,7 @@ static struct file_system_type capifs_fs_type = {
+ 	.kill_sb	= kill_anon_super,
+ };
+ 
+-struct dentry *capifs_new_ncci(unsigned int number, dev_t device)
++static struct dentry *new_ncci(unsigned int number, dev_t device)
+ {
+ 	struct super_block *s = capifs_mnt->mnt_sb;
+ 	struct dentry *root = s->s_root;
+@@ -187,6 +188,20 @@ unlock_out:
+ 	return dentry;
+ }
+ 
++struct dentry *capifs_new_ncci(unsigned int number, dev_t device)
++{
++	struct dentry *dentry;
++
++	if (simple_pin_fs(&capifs_fs_type, &capifs_mnt, &capifs_mnt_count) < 0)
++		return NULL;
++
++	dentry = new_ncci(number, device);
++	if (!dentry)
++		simple_release_fs(&capifs_mnt, &capifs_mnt_count);
++
++	return dentry;
++}
++
+ void capifs_free_ncci(struct dentry *dentry)
+ {
+ 	struct dentry *root = capifs_mnt->mnt_sb->s_root;
+@@ -206,6 +221,8 @@ void capifs_free_ncci(struct dentry *dentry)
+ 	dput(dentry);
+ 
+ 	mutex_unlock(&root->d_inode->i_mutex);
++
++	simple_release_fs(&capifs_mnt, &capifs_mnt_count);
+ }
+ 
+ static int __init capifs_init(void)
+@@ -222,13 +239,6 @@ static int __init capifs_init(void)
+ 		strcpy(rev, "1.0");
+ 
+ 	err = register_filesystem(&capifs_fs_type);
+-	if (!err) {
+-		capifs_mnt = kern_mount(&capifs_fs_type);
+-		if (IS_ERR(capifs_mnt)) {
+-			err = PTR_ERR(capifs_mnt);
+-			unregister_filesystem(&capifs_fs_type);
+-		}
+-	}
+ 	if (!err)
+ 		printk(KERN_NOTICE "capifs: Rev %sn", rev);
+ 	return err;
+@@ -237,7 +247,6 @@ static int __init capifs_init(void)
+ static void __exit capifs_exit(void)
+ {
+ 	unregister_filesystem(&capifs_fs_type);
+-	mntput(capifs_mnt);
+ }
+ 
+ EXPORT_SYMBOL(capifs_new_ncci);
+-- 
+1.6.0.2
 
-As one of the (presumably) few remaining users of an AVM FRITZ!Card DSL
-v2.0, I originally just wanted to finally get that broken proprietary
-driver into a more reliable state. But I actually ended up fixing also
-wide parts of the in-kernel CAPI stack - a job that turned out to be
-almost as "interesting" as hacking on that driver.
-
-The major issue of the CAPI stack were incomplete or broken locking
-schemes. That caused sporadic crashes, specifically during
-setup/shutdown phases of connections, devices, or whatever dynamic
-objects. But it also affected some code that was executed during normal
-operation. I think I fixed most of those issue, at least all I found via
-code inspection, lockdep runs, and testing. This series in production
-use on my home gateway for two weeks now (under CONFIG_PREEMPT - the
-original stack and driver code only worked acceptably under
-CONFIG_PREEMPT_NONE). I also applied some cleanups, and polished the old
-capifs a bit.
-
-So the series concludes with removing the experimental tag from the CAPI
-middleware, primarily the kernel's CAPI-speaking gate to user space
-(eg. for use with Asterisk). There also patch to officially claim the
-char major number 191 that CAPI (and likely only CAPI) used in the past
-decade.
-
-Note that, although I touched some small parts of it, I did _not_ fix
-any locking issue of the capidrv, the interface to the legacy ISDN
-stack. It is _surely_ broken in similar ways. But while it may also be
-fixable, I rather decided that I'm going to invest a bit time in a
-replacement of the last local user, isdnlog.
-
-Looking forward to feedback,
-Jan
-
-
-PS: If anyone is interested in the fcdsl2 FRITZ!Card driver rework, you
-can find the current version at
-
-	git://git.kiszka.org/fcdsl2.git
-
-Jan Kiszka (31):
-  CAPI: Fix leaks in capifs_new_ncci
-  CAPI: Sanitize capifs API
-  CAPI: Eliminate capifs_root variable
-  CAPI: Pin capifs instead of mounting it
-  CAPI: Reduce chattiness during module loading/removal
-  CAPI: Call a controller 'controller', not 'card'
-  CAPI: Convert capi drivers rwlock into mutex
-  CAPI: Rework capi_ctr_ready/down
-  CAPI: Rework controller state notifier
-  CAPI: Rework locking of controller data structures
-  CAPI: Rework application locking
-  CAPI: Reduce #ifdef mess around CONFIG_ISDN_CAPI_MIDDLEWARE
-  CAPI: Convert capidev_list_lock into a mutex
-  CAPI: Clean up capi_open/release
-  CAPI: Rework locking of capidev members
-  CAPI: Use non-atomic allocation during NCCI setup
-  CAPI: Fix racy capi_read
-  CAPI: Switch NCCI list to standard doubly linked list
-  CAPI: Fix locking around glueing capiminor and capidev
-  CAPI: Drop atomic ttyopencount
-  CAPI: Remove useless checks for tty->driver_data or hung up state
-  CAPI: Rework tty locking in RX and TX path of capiminor
-  CAPI: Rename datahandle_queue -> ackqueue_entry
-  CAPI: Use atomics for capiminor's datahandle and msgid
-  CAPI: Drop capiminor's unused inbytes counter
-  CAPI: Fix locking around capiminor's output queue
-  CAPI: Clean up capiminor_*_ack
-  CAPI: Drop handle_minor_send return value
-  CAPI: Drop special controller lookup from capi20_put_message
-  CAPI: Remove experimental tag from middleware feature
-  CAPI: Officially claim char major 191
-
- Documentation/devices.txt      |    7 +-
- drivers/isdn/capi/Kconfig      |    3 +-
- drivers/isdn/capi/capi.c       |  937 ++++++++++++++++++----------------------
- drivers/isdn/capi/capidrv.c    |   48 +--
- drivers/isdn/capi/capifs.c     |  126 +++---
- drivers/isdn/capi/capifs.h     |   21 +-
- drivers/isdn/capi/kcapi.c      |  797 ++++++++++++++++++----------------
- drivers/isdn/capi/kcapi.h      |   12 +-
- drivers/isdn/capi/kcapi_proc.c |   41 +-
- include/linux/isdn/capilli.h   |    2 +-
- include/linux/kernelcapi.h     |   17 +-
- 11 files changed, 1005 insertions(+), 1006 deletions(-)
