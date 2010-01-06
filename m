@@ -1,124 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932797Ab0AFVJ5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932828Ab0AFVMM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932797Ab0AFVJ5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 16:09:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932276Ab0AFVJ4
+	id S932828Ab0AFVMM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 16:12:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932421Ab0AFVMK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 16:09:56 -0500
-Received: from mail-fx0-f225.google.com ([209.85.220.225]:62293 "EHLO
-	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932299Ab0AFVJy (ORCPT
+	Wed, 6 Jan 2010 16:12:10 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:48078 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932401Ab0AFVMF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 16:09:54 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=LU3LP6BeNp7pplqHlCzJWJPhys+f9qFfHmNhRYIGhYge2XydA6d5jS4DEox5h1OYbo
-         OzWxZdLdPTNeWCPLc6oNsoUDZxry2wbuNfa4LCDmI3kqCM0F86c9NoqDrWWv5IrAGy8m
-         I5lxBKU2dP7KwLlXMub+/qS6C3QHLe+mMVFn0=
-Date: Wed, 6 Jan 2010 22:09:41 +0100
-From: Jarek Poplawski <jarkao2@gmail.com>
+	Wed, 6 Jan 2010 16:12:05 -0500
+Date: Wed, 6 Jan 2010 13:10:44 -0800
+From: Stephen Hemminger <shemminger@linux-foundation.org>
 To: Michael Breuer <mbreuer@majjas.com>
-Cc: David Miller <davem@davemloft.net>, shemminger@linux-foundation.org,
+Cc: Jarek Poplawski <jarkao2@gmail.com>, David Miller <davem@davemloft.net>,
        akpm@linux-foundation.org, flyboy@gmail.com,
        linux-kernel@vger.kernel.org, netdev@vger.kernel.org
 Subject: Re: [PATCH] af_packet: Don't use skb after dev_queue_xmit()
-Message-ID: <20100106210941.GC3354@del.dom.local>
+Message-ID: <20100106131044.25b4e500@nehalam>
+In-Reply-To: <4B44E952.5000804@majjas.com>
 References: <20100105230746.GA6612@del.dom.local>
- <4B43F72C.9090004@majjas.com>
- <20100106072208.GA6711@ff.dom.local>
- <4B44E952.5000804@majjas.com>
- <20100106202212.GB3354@del.dom.local>
- <4B44F381.3000206@majjas.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B44F381.3000206@majjas.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	<4B43F72C.9090004@majjas.com>
+	<20100106072208.GA6711@ff.dom.local>
+	<4B44E952.5000804@majjas.com>
+Organization: Linux Foundation
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 06, 2010 at 03:33:05PM -0500, Michael Breuer wrote:
-> On 1/6/2010 3:22 PM, Jarek Poplawski wrote:
-> >On Wed, Jan 06, 2010 at 02:49:38PM -0500, Michael Breuer wrote:
-> >>On 1/6/2010 2:22 AM, Jarek Poplawski wrote:
-> >>>On Tue, Jan 05, 2010 at 09:36:28PM -0500, Michael Breuer wrote:
-> >>>>On 1/5/2010 6:07 PM, Jarek Poplawski wrote:
-> >>>>>----------------->
-> >>>>>
-> >>>>>Changing an skb after dev_queue_xmit() is illegal. And since it's
-> >>>>>inconsistent to treat specially net_xmit_errno() non-zero return,
-> >>>>>while ignoring other dev_queue_xmit() errors, there is no reason
-> >>>>>to break the loop in tpacket_snd() in this case.
-> >>>>>
-> >>>>>With debugging by: Stephen Hemminger<shemminger@linux-foundation.org>
-> >>>>>
-> >>>>>Reported-by: Michael Breuer<mbreuer@majjas.com>
-> >>>>>Signed-off-by: Jarek Poplawski<jarkao2@gmail.com>
-> >>>>>---
-> >>>>>
-> >>>>>   net/packet/af_packet.c |    8 +++-----
-> >>>>>   1 files changed, 3 insertions(+), 5 deletions(-)
-> >>>>>
-> >>>>>diff --git a/net/packet/af_packet.c b/net/packet/af_packet.c
-> >>>>>index e0516a2..984a1fa 100644
-> >>>>>--- a/net/packet/af_packet.c
-> >>>>>+++ b/net/packet/af_packet.c
-> >>>>>@@ -1021,8 +1021,9 @@ static int tpacket_snd(struct packet_sock *po, struct msghdr *msg)
-> >>>>>
-> >>>>>   		status = TP_STATUS_SEND_REQUEST;
-> >>>>>   		err = dev_queue_xmit(skb);
-> >>>>>-		if (unlikely(err>    0&&    (err = net_xmit_errno(err)) != 0))
-> >>>>>-			goto out_xmit;
-> >>>>>+		if (unlikely(err>    0))
-> >>>>>+			err = net_xmit_errno(err);
-> >>>>>+
-> >>>>>   		packet_increment_head(&po->tx_ring);
-> >>>>>   		len_sum += tp_len;
-> >>>>>   	} while (likely((ph != NULL) ||
-> >>>>>@@ -1033,9 +1034,6 @@ static int tpacket_snd(struct packet_sock *po, struct msghdr *msg)
-> >>>>>   	err = len_sum;
-> >>>>>   	goto out_put;
-> >>>>>
-> >>>>>-out_xmit:
-> >>>>>-	skb->destructor = sock_wfree;
-> >>>>>-	atomic_dec(&po->tx_ring.pending);
-> >>>>>   out_status:
-> >>>>>   	__packet_set_status(po, ph, status);
-> >>>>>   	kfree_skb(skb);
-> >>>>>--
-...
-> >>This patch at first behaved similarly to the previous one - seemed
-> >>to be running a bit better... until the adapter went down :(
-> >I'm not sure: do you mean this patch above vs previous one by Stephen,
-> >or did you manage to try my "alernative #2" patch already?
-> >
-> >BTW, I forgot to mention, and maybe it doesn't matter here, but it
-> >would be better to (always) use my sky2 patch from Berck Nash's
-> >thread.
-> >
-> >Jarek P.
-> This was using "alternative #2" patch. I didn't get the hang with
-> alternative #1. Your sky2 patch from Berck Nash's thread was
-> included in both cases; Stephen's was not.
+On Wed, 06 Jan 2010 14:49:38 -0500
+Michael Breuer <mbreuer@majjas.com> wrote:
 
-OK, so I guess "alternative #1" (above) seems safer to recommend for
-now (as I assumed earlier).
+> This patch at first behaved similarly to the previous one - seemed to be 
+> running a bit better... until the adapter went down :(
+> 
+> This is the syslog output at the time the network failed:
+> Jan  6 14:11:01 mail kernel: sky2 0000:06:00.0: error interrupt 
+> status=0x40000008
+> Jan  6 14:11:01 mail kernel: sky2 software interrupt status 0x40000008
 
-On the other hand, we really don't know if it's only because it's
-because it's nicer for your hardware (or still some other bug around),
-so as before: let David choose ;-)
+Could you go back to baseline sky2 driver.  The display code might be buggy.
+These bits indicate an error in the MAC. The interrupt source enabled
+is Transmit FIFO underrun.
 
-BTW, I think you could still use Stephen's patch too (there might be
-still something more like this). There was also mentioned this network
-manager again. I might be wrong, but IMHO there could be some
-interaction even if it doesn't use this device; so could/did you try
-to disable it entirely?
+Looking at how vendor driver handles this.
+It looks like the Yukon EC_U chip doesn't really do Jumbo frames correctly.
+Maybe not enough internal buffering to ensure that the whole packet
+is in the chip.  Of course, none of this is in the chip manual.
 
-Thanks for testing!
-Jarek P.
-
+Does this help
+--------------
+--- a/drivers/net/sky2.c	2010-01-06 12:48:43.012318966 -0800
++++ b/drivers/net/sky2.c	2010-01-06 13:05:31.273987255 -0800
+@@ -792,33 +792,21 @@ static void sky2_set_tx_stfwd(struct sky
+ {
+ 	struct net_device *dev = hw->dev[port];
  
+-	if ( (hw->chip_id == CHIP_ID_YUKON_EX &&
+-	      hw->chip_rev != CHIP_REV_YU_EX_A0) ||
+-	     hw->chip_id >= CHIP_ID_YUKON_FE_P) {
+-		/* Yukon-Extreme B0 and further Extreme devices */
+-		/* enable Store & Forward mode for TX */
+-
+-		if (dev->mtu <= ETH_DATA_LEN)
+-			sky2_write32(hw, SK_REG(port, TX_GMF_CTRL_T),
+-				     TX_JUMBO_DIS | TX_STFW_ENA);
+-
+-		else
+-			sky2_write32(hw, SK_REG(port, TX_GMF_CTRL_T),
+-				     TX_JUMBO_ENA| TX_STFW_ENA);
+-	} else {
+-		if (dev->mtu <= ETH_DATA_LEN)
+-			sky2_write32(hw, SK_REG(port, TX_GMF_CTRL_T), TX_STFW_ENA);
+-		else {
+-			/* set Tx GMAC FIFO Almost Empty Threshold */
+-			sky2_write32(hw, SK_REG(port, TX_GMF_AE_THR),
+-				     (ECU_JUMBO_WM << 16) | ECU_AE_THR);
+-
+-			sky2_write32(hw, SK_REG(port, TX_GMF_CTRL_T), TX_STFW_DIS);
+-
+-			/* Can't do offload because of lack of store/forward */
+-			dev->features &= ~(NETIF_F_TSO | NETIF_F_SG | NETIF_F_ALL_CSUM);
+-		}
+-	}
++       if ( (hw->chip_id == CHIP_ID_YUKON_EX && hw->chip_rev != CHIP_REV_YU_EX_A0) ||
++	    hw->chip_id >= CHIP_ID_YUKON_FE_P) {
++	       /* Yukon-Extreme B0 and further Extreme devices */
++	       /* enable Store & Forward mode for TX */
++	       sky2_write32(hw, SK_REG(port, TX_GMF_CTRL_T), TX_STFW_ENA);
++       } else if (dev->mtu > ETH_DATA_LEN) {
++	       /* set Tx GMAC FIFO Almost Empty Threshold */
++	       sky2_write32(hw, SK_REG(port, TX_GMF_AE_THR),
++			    (ECU_JUMBO_WM << 16) | ECU_AE_THR);
++	       /* disable Store & Forward mode for TX */
++	       sky2_write32(hw, SK_REG(port, TX_GMF_CTRL_T), TX_STFW_DIS);
++       } else {
++	       /* enable Store & Forward mode for TX */
++	       sky2_write32(hw, SK_REG(port, TX_GMF_CTRL_T), TX_STFW_ENA);
++       }
+ }
+ 
+ static void sky2_mac_init(struct sky2_hw *hw, unsigned port)
+@@ -2185,11 +2173,16 @@ static int sky2_change_mtu(struct net_de
+ 	if (new_mtu < ETH_ZLEN || new_mtu > ETH_JUMBO_MTU)
+ 		return -EINVAL;
+ 
++	/* MTU > 1500 on yukon FE and FE+ not allowed */
+ 	if (new_mtu > ETH_DATA_LEN &&
+ 	    (hw->chip_id == CHIP_ID_YUKON_FE ||
+ 	     hw->chip_id == CHIP_ID_YUKON_FE_P))
+ 		return -EINVAL;
+ 
++	/* TSO on Yukon Ultra and MTU > 1500 not supported */
++	if (new_mtu > ETH_DATA_LEN && hw->chip_id == CHIP_ID_YUKON_EC_U)
++		dev->features &= ~NETIF_F_TSO;
++
+ 	if (!netif_running(dev)) {
+ 		dev->mtu = new_mtu;
+ 		return 0;
+@@ -2233,6 +2226,15 @@ static int sky2_change_mtu(struct net_de
+ 	if (err)
+ 		dev_close(dev);
+ 	else {
++		/* WA for dev. #4.209 */
++		if (hw->chip_id == CHIP_ID_YUKON_EC_U &&
++		    hw->chip_rev == CHIP_REV_YU_EC_U_A1) {
++			/* enable/disable Store & Forward mode for TX */
++			sky2_write32(hw, SK_REG(port, TX_GMF_CTRL_T),
++				     sky2->speed != SPEED_1000
++				     ? TX_STFW_ENA : TX_STFW_DIS);
++		}
++
+ 		gma_write16(hw, port, GM_GP_CTRL, ctl);
+ 
+ 		netif_wake_queue(dev);
+--- a/drivers/net/sky2.h	2010-01-06 12:48:48.632247424 -0800
++++ b/drivers/net/sky2.h	2010-01-06 12:59:57.322078964 -0800
+@@ -1901,8 +1901,8 @@ enum {
+ 	TX_VLAN_TAG_ON	= 1<<25,/* enable  VLAN tagging */
+ 	TX_VLAN_TAG_OFF	= 1<<24,/* disable VLAN tagging */
+ 
+-	TX_JUMBO_ENA	= 1<<23,/* PCI Jumbo Mode enable (Yukon-EC Ultra) */
+-	TX_JUMBO_DIS	= 1<<22,/* PCI Jumbo Mode enable (Yukon-EC Ultra) */
++	TX_PCI_JUM_ENA	= 1<<23,/* Enable  PCI Jumbo Mode (Yukon-EC Ultra) */
++	TX_PCI_JUM_DIS	= 1<<22,/* Disable PCI Jumbo Mode (Yukon-EC Ultra) */
+ 
+ 	GMF_WSP_TST_ON	= 1<<18,/* Write Shadow Pointer Test On */
+ 	GMF_WSP_TST_OFF	= 1<<17,/* Write Shadow Pointer Test Off */
 
