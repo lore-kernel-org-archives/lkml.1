@@ -1,81 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756153Ab0AFTen@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932654Ab0AFThW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756153Ab0AFTen (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 14:34:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755960Ab0AFTel
+	id S932654Ab0AFThW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 14:37:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932453Ab0AFThV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 14:34:41 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:40203 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755516Ab0AFTel (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 14:34:41 -0500
-Message-ID: <4B44E5C8.2050006@suse.cz>
-Date: Wed, 06 Jan 2010 20:34:32 +0100
-From: Michal Marek <mmarek@suse.cz>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Wed, 6 Jan 2010 14:37:21 -0500
+Received: from cavan.codon.org.uk ([93.93.128.6]:47260 "EHLO
+	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932343Ab0AFThT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jan 2010 14:37:19 -0500
+Date: Wed, 6 Jan 2010 19:36:08 +0000
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Len Brown <lenb@kernel.org>
+Cc: Arjan van de Ven <arjan@infradead.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       Christian Hofstaedtler <ch@zeha.at>, x86@kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       bruce.w.allan@intel.com, Thomas Gleixner <tglx@linutronix.de>,
+       Justin Piszcz <jpiszcz@lucidpixels.com>, linux-acpi@vger.kernel.org,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Subject: Re: [PATCH] Add DMI quirk for Intel DP55KG mainboard
+Message-ID: <20100106193608.GA21447@srcf.ucam.org>
+References: <20100104162114.GA30113@percival.namespace.at> <alpine.LFD.2.00.1001041209300.4012@localhost.localdomain> <4B4225B3.8070705@zytor.com> <20100104174558.158cd512@infradead.org> <20100106143640.GB13984@srcf.ucam.org> <alpine.LFD.2.00.1001061321260.4086@localhost.localdomain>
 MIME-Version: 1.0
-To: John Kacur <jkacur@redhat.com>
-Cc: linux-kernel@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>,
-       linux-kbuild@vger.kernel.org
-Subject: Re: [PATCH] Don't mkdir -p include/config in the sourcetree when
- using O=outputdir option
-References: <alpine.LFD.2.00.1001061705140.3744@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.1001061705140.3744@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.1001061321260.4086@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@cavan.codon.org.uk
+X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-John Kacur napsal(a):
-> The following is an example of how the Makefile currently can fail.
-> [jkacur@tycho rt.linux.git]$ make mrproper
-> [jkacur@tycho rt.linux.git]$ mkdir /bld/2.6.33-rc3
-> [jkacur@tycho rt.linux.git]$ cp /bld/config /bld/2.6.33-rc3/.config
-> [jkacur@tycho rt.linux.git]$ make O=/bld/2.6.33-rc3/ oldconfig
->   HOSTCC  scripts/basic/fixdep
->   HOSTCC  scripts/basic/docproc
->   HOSTCC  scripts/basic/hash
->   GEN     /bld/2.6.33-rc3/Makefile
->   HOSTCC  scripts/kconfig/conf.o
->   HOSTCC  scripts/kconfig/kxgettext.o
->   HOSTCC  scripts/kconfig/zconf.tab.o
->   HOSTLD  scripts/kconfig/conf
-> scripts/kconfig/conf -o arch/x86/Kconfig
-> [jkacur@tycho rt.linux.git]$ make O=/bld/2.6.33-rc3/
->   GEN     /bld/2.6.33-rc3/Makefile
-> scripts/kconfig/conf -s arch/x86/Kconfig
->   Using /home/jkacur/rt.linux.git as source for kernel
->   /home/jkacur/rt.linux.git is not clean, please run 'make mrproper'
->   in the '/home/jkacur/rt.linux.git' directory.
-> make[1]: *** [prepare3] Error 1
-> make: *** [sub-make] Error 2
-> [jkacur@tycho rt.linux.git]$ ls -ld include/config/
-> drwxrwxr-x 2 jkacur jkacur 6 2010-01-06 15:58 include/config/
-> 
-> Signed-off-by: John Kacur <jkacur@redhat.com>
-> ---
->  Makefile |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/Makefile b/Makefile
-> index 1231094..7d8d722 100644
-> --- a/Makefile
-> +++ b/Makefile
-> @@ -458,7 +458,7 @@ config: scripts_basic outputmakefile FORCE
->  	$(Q)$(MAKE) $(build)=scripts/kconfig $@
->  
->  %config: scripts_basic outputmakefile FORCE
-> -	$(Q)mkdir -p include/linux include/config
-> +	$(Q)mkdir -p $(objtree)/include/linux include/config
->  	$(Q)$(MAKE) $(build)=scripts/kconfig $@
+On Wed, Jan 06, 2010 at 02:26:44PM -0500, Len Brown wrote:
 
-Can you double-check that this patch really fixes your issue and that
-without this patch it fails again? Because 1) I can't reproduce this
-behaviour and I also don't see how it could f, 2) your problem is a
-include/config file somehow created in the source tree, but you patch
-the creation of include/linux. And if there really needs to be a fix,
-the same should be applied to the identical block above.
+> But...
+> using _OSI is not "a similar method to Windows".
+> The BIOS does not need to invoke _OSI to determine if
+> it should expose a properly functioning ACPI reset or not.
+> Windows XP simply demanded it, and the box failed WHQL
+> if it did not work.
 
-thanks,
-Michal
+http://download.microsoft.com/download/7/E/7/7E7662CF-CBEA-470B-A97E-CE7CE0D98DC2/WinACPI_OSI.docx 
+was what I was referring to:
+
+"By using the _OSI method, ASL writers can easily determine the version 
+of the ACPI interfaces that the host operating system supports. This 
+versioning method provides a solution for creating firmware that can 
+support future operating systems and enable the operating system to 
+change behavior based on the requested interface levels."
+
+We know that this is used for deciding whether or not to block system IO 
+accesses, but it wouldn't surprise me if it's also used to determine 
+other functionality like whether or not the ACPI interface is used for 
+rebooting.
+
+> Further, there is no _guarantee_ that a BIOS will invoke _OSI
+> at all, let alone a _rule_ for what _OSI() strings the BIOS
+> will choose to query to trigger its Windows specific
+> compatibility hooks -- even if common practice is for
+> a desktop BIOS to evaluate _OSI strings in sequence
+> up throught he most recent version of Windows it
+> knows about...
+
+It's effectively guaranteed if the system is validated with Windows.
+
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
