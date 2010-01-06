@@ -1,63 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754570Ab0AFGL7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753430Ab0AFG0X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754570Ab0AFGL7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 01:11:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752482Ab0AFGKn
+	id S1753430Ab0AFG0X (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 01:26:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752367Ab0AFG0X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 01:10:43 -0500
-Received: from ozlabs.org ([203.10.76.45]:32917 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752500Ab0AFGKl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 01:10:41 -0500
-Message-Id: <20100106045524.959942683@samba.org>
-References: <20100106045509.245662398@samba.org>
-User-Agent: quilt/0.46-1
-Date: Wed, 06 Jan 2010 15:55:11 +1100
-From: Anton Blanchard <anton@samba.org>
-To: Richard Henderson <rth@twiddle.net>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-Cc: linux-alpha@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [patch 2/6] alpha: cpumask_of_node() should handle -1 as a node
+	Wed, 6 Jan 2010 01:26:23 -0500
+Received: from mail-qy0-f194.google.com ([209.85.221.194]:63828 "EHLO
+	mail-qy0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751562Ab0AFG0W (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jan 2010 01:26:22 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:from:date:message-id:subject:to:cc:content-type;
+        b=IzO/XrmV/j/Lu0hEMoSEXPjlZXJp2LXfNyEv9Cn2gGtnIiRbn5MGbKyBLXGBAuZ6uJ
+         Rr634+Qexl2rIm0dZ9jyEKXSHboqzlZaC6BX6g2NB9pANpl+5nWF+og0tZy3JQqbzDxq
+         fb+oZGBPE7TRE/k1b5eATbfucvy1pZUNRu4XE=
+MIME-Version: 1.0
+From: Eric Miao <eric.y.miao@gmail.com>
+Date: Wed, 6 Jan 2010 14:26:01 +0800
+Message-ID: <f17812d71001052226y604995a0m4c7887d29fd73f90@mail.gmail.com>
+Subject: [PATCH] kbuild: include only necessary in scripts/Makefile.modbuiltin
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Cc: Michal Marek <mmarek@suse.cz>
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-pcibus_to_node can return -1 if we cannot determine which node a pci bus
-is on. If passed -1, cpumask_of_node will negatively index the lookup array
-and pull in random data:
+commit aa7c411671269a75ed7adc0452851bf2cffd839e
+Author: Eric Miao <eric.y.miao@gmail.com>
+Date:   Wed Jan 6 13:58:22 2010 +0800
 
-# cat /sys/devices/pci0000:00/0000:00:01.0/local_cpus
-00000000,00000003,00000000,00000000
-# cat /sys/devices/pci0000:00/0000:00:01.0/local_cpulist
-64-65
+    kbuild: include only necessary in scripts/Makefile.modbuiltin
 
-Change cpumask_of_node to check for -1 and return cpu_all_mask in this
-case:
+    scripts/Makefile.modbuiltin assumes either Kbuild or Makefile exists in
+    every sub-directory, which is not true. Only include them when they are
+    existing.
 
-# cat /sys/devices/pci0000:00/0000:00:01.0/local_cpus
-ffffffff,ffffffff,ffffffff,ffffffff
-# cat /sys/devices/pci0000:00/0000:00:01.0/local_cpulist
-0-127
+    Signed-off-by: Eric Miao <eric.y.miao@gmail.com>
 
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
+diff --git a/scripts/Makefile.modbuiltin b/scripts/Makefile.modbuiltin
+index 102a276..9148a70 100644
+--- a/scripts/Makefile.modbuiltin
++++ b/scripts/Makefile.modbuiltin
+@@ -17,7 +17,7 @@ include scripts/Kbuild.include
+ # The filename Kbuild has precedence over Makefile
+ kbuild-dir := $(if $(filter /%,$(src)),$(src),$(srctree)/$(src))
+ kbuild-file := $(if $(wildcard
+$(kbuild-dir)/Kbuild),$(kbuild-dir)/Kbuild,$(kbuild-dir)/Makefile)
+-include $(kbuild-file)
++-include $(kbuild-file)
 
-Index: linux-cpumask/arch/alpha/include/asm/topology.h
-===================================================================
---- linux-cpumask.orig/arch/alpha/include/asm/topology.h	2010-01-06 15:20:22.952583839 +1100
-+++ linux-cpumask/arch/alpha/include/asm/topology.h	2010-01-06 15:20:46.610083557 +1100
-@@ -28,6 +28,9 @@ static const struct cpumask *cpumask_of_
- {
- 	int cpu;
- 
-+	if (node == -1)
-+		return cpu_all_mask;
-+
- 	cpumask_clear(&node_to_cpumask_map[node]);
- 
- 	for_each_online_cpu(cpu) {
-
--- 
-
+ include scripts/Makefile.lib
+ __subdir-Y     := $(patsubst %/,%,$(filter %/, $(obj-Y)))
