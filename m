@@ -1,42 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751369Ab0AFFOk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751656Ab0AFFUb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751369Ab0AFFOk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 00:14:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751164Ab0AFFOk
+	id S1751656Ab0AFFUb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 00:20:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751193Ab0AFFUa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 00:14:40 -0500
-Received: from claw.goop.org ([74.207.240.146]:45557 "EHLO claw.goop.org"
+	Wed, 6 Jan 2010 00:20:30 -0500
+Received: from THUNK.ORG ([69.25.196.29]:40366 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750750Ab0AFFOj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 00:14:39 -0500
-Message-ID: <4B441C30.7020108@goop.org>
-Date: Wed, 06 Jan 2010 16:14:24 +1100
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
+	id S1751189Ab0AFFU3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jan 2010 00:20:29 -0500
+Date: Wed, 6 Jan 2010 00:20:18 -0500
+From: tytso@mit.edu
+To: Greg KH <gregkh@suse.de>
+Cc: Jan Kara <jack@suse.cz>, linux-kernel@vger.kernel.org, stable@kernel.org,
+       stable-review@kernel.org, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Dmitry Monakhov <dmonakhov@openvz.org>
+Subject: Re: [PATCH 83/97] ext4: Fix potential quota deadlock
+Message-ID: <20100106052018.GA29440@thunk.org>
+Mail-Followup-To: tytso@mit.edu, Greg KH <gregkh@suse.de>,
+	Jan Kara <jack@suse.cz>, linux-kernel@vger.kernel.org,
+	stable@kernel.org, stable-review@kernel.org,
+	torvalds@linux-foundation.org, akpm@linux-foundation.org,
+	alan@lxorguk.ukuu.org.uk, Dmitry Monakhov <dmonakhov@openvz.org>
+References: <20100105003133.GA7199@kroah.com>
+ <1262651630-7354-83-git-send-email-gregkh@suse.de>
+ <20100105004741.GD3252@quack.suse.cz>
+ <20100105185655.GB15630@suse.de>
+ <20100105213927.GA3252@quack.suse.cz>
+ <20100105231627.GA713@suse.de>
 MIME-Version: 1.0
-To: Christian Kujau <lists@nerdbynature.de>
-CC: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.33-rc2: Xen/Guest switching to user mode with no user page
- tables
-References: <alpine.DEB.2.01.1001051649100.3483@bogon.housecafe.de> <4B4405B5.9040205@goop.org> <alpine.DEB.2.01.1001051942440.3483@bogon.housecafe.de>
-In-Reply-To: <alpine.DEB.2.01.1001051942440.3483@bogon.housecafe.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100105231627.GA713@suse.de>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/06/2010 02:48 PM, Christian Kujau wrote:
->>> The Dom0 is running a 2.6.24-24-xen Ubuntu kernel amd I'm kinda reluctant
->>> to upgrade, as I don't have a serial console to this MacMini, if things go
->>>        
-> Just out of curiosity: will this be an issue in the near future? I'm
-> trying to follow kernel development in my DomU, but can't upgrade Dom0 for
-> quite a while, so kernel versions (DomU vs Dom0) will diverge more and
-> more.
->    
+On Tue, Jan 05, 2010 at 03:16:27PM -0800, Greg KH wrote:
+> On Tue, Jan 05, 2010 at 10:39:27PM +0100, Jan Kara wrote:
+> > On Tue 05-01-10 10:56:55, Greg KH wrote:
+> > > On Tue, Jan 05, 2010 at 01:47:42AM +0100, Jan Kara wrote:
+> > > > On Mon 04-01-10 16:33:36, Greg Kroah-Hartman wrote:
+> > > > > From: Dmitry Monakhov <dmonakhov@openvz.org>
+> > > > > 
+> > > > > commit d21cd8f163ac44b15c465aab7306db931c606908 upstream.
+> > > >   Ted has found a serious bug in this patch over Christmas and fixed it.
+> > > > Ted, do you prefer to just discard this patch or will you add your fixes?
+> > > Do you have the git commit id of the patch that fixes it?
+> >   Commits fixing the behavior are:
+> > 0637c6f4135f592f094207c7c21e7c0fc5557834
+> > ee5f4d9cdf32fd99172d11665c592a288c2b1ff4
+> > 9d0be50230b333005635967f7ecd4897dbfd181b
+> 
+> Hm, should I add these as well, or back out all of the ext4 quota
+> patches from .32 and .31?
 
-No.  New domU on old dom0 or vice-versa should work indefinitely.  If 
-not, report it as a bug.
+I don't think you need to back out all of the ext4 quota patches; Jan
+has looked at the more carefully than I (since they went in via the
+quota tree instead of the ext4 tree) but as far as I know the d21cd8f1
+is a standalone fix and the other patches shouldn't break if you just
+drop patch #83.  Adding the above mentioned patches is definitely
+necessary if you include Patch #83, though, since otherwise people
+mounting uncoverted ext3 filesystems using ext4 will get the BUG in
+fs/ext4/inode.c:1063 regression.
 
-     J
+As far as whether it would be better to drop patch #83 or to include
+these three commits, it's a bit of a toss up.  If you want to play it
+safe, I'd say let's drop it for now and wait for week or so, so we can
+make sure the people who are testing -rc3 are happy, and for the next
+stable release we can pick it up plus the additional commits listed
+above.
+
+Regards,
+
+						- Ted
