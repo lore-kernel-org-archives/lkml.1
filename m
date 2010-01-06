@@ -1,87 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754009Ab0AFHOp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755337Ab0AFHP0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754009Ab0AFHOp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 02:14:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751679Ab0AFHOn
+	id S1755337Ab0AFHP0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 02:15:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752997Ab0AFHPZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 02:14:43 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:58567 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751207Ab0AFHOn (ORCPT
+	Wed, 6 Jan 2010 02:15:25 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:56028 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753324Ab0AFHPY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 02:14:43 -0500
-Date: Wed, 6 Jan 2010 08:14:31 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Huang Ying <ying.huang@intel.com>
-Cc: lenb@kernel.org, ak@linux.intel.com, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org
-Subject: Re: [PATCH 5/5] ACPI, APEI, Document for APEI
-Message-ID: <20100106071431.GB1494@ucw.cz>
-References: <1261980744-4450-1-git-send-email-ying.huang@intel.com> <1261980744-4450-2-git-send-email-ying.huang@intel.com> <1261980744-4450-3-git-send-email-ying.huang@intel.com> <1261980744-4450-4-git-send-email-ying.huang@intel.com> <1261980744-4450-5-git-send-email-ying.huang@intel.com> <1261980744-4450-6-git-send-email-ying.huang@intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1261980744-4450-6-git-send-email-ying.huang@intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 6 Jan 2010 02:15:24 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Wed, 6 Jan 2010 16:12:11 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: balbir@linux.vnet.ibm.com
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>
+Subject: Re: [RFC] Shared page accounting for memory cgroup
+Message-Id: <20100106161211.5a7b600f.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20100106070150.GL3059@balbir.in.ibm.com>
+References: <20091229182743.GB12533@balbir.in.ibm.com>
+	<20100104085108.eaa9c867.kamezawa.hiroyu@jp.fujitsu.com>
+	<20100104000752.GC16187@balbir.in.ibm.com>
+	<20100104093528.04846521.kamezawa.hiroyu@jp.fujitsu.com>
+	<20100104005030.GG16187@balbir.in.ibm.com>
+	<20100106130258.a918e047.kamezawa.hiroyu@jp.fujitsu.com>
+	<20100106070150.GL3059@balbir.in.ibm.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 2009-12-28 14:12:24, Huang Ying wrote:
-> Add document for APEI, including kernel parameters and EINJ debug file
-> sytem interface.
+On Wed, 6 Jan 2010 12:31:50 +0530
+Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> > No. If it takes long time, locking fork()/exit() for such long time is the bigger
+> > issue.
+> > I recommend you to add memacct subsystem to sum up RSS of all processes's RSS counting
+> > under a cgroup.  Althoght it may add huge costs in page fault path but implementation
+> > will be very simple and will not hurt realtime ops.
+> > There will be no terrible race, I guess.
+> >
 > 
-> Signed-off-by: Huang Ying <ying.huang@intel.com>
-> ---
->  Documentation/acpi/apei/einj.txt    |   49 +++++++++++++++++++++++++++++++++++
->  Documentation/kernel-parameters.txt |    5 +++
->  2 files changed, 54 insertions(+), 0 deletions(-)
->  create mode 100644 Documentation/acpi/apei/einj.txt
+> But others hold that lock as well, simple thing like listing tasks and
+> moving tasks, etc. I expect the usage of shared to be in the same
+> range.
 > 
-> diff --git a/Documentation/acpi/apei/einj.txt b/Documentation/acpi/apei/einj.txt
-> new file mode 100644
-> index 0000000..438ef33
-> --- /dev/null
-> +++ b/Documentation/acpi/apei/einj.txt
-> @@ -0,0 +1,49 @@
-> +			APEI Error INJection
-> +			~~~~~~~~~~~~~~~~~~~~
-> +
-> +EINJ provides a hardware error injection mechanism, it is very useful
-> +for debugging and testing of other APEI and RAS features.
-> +
-> +To use EINJ, make the following is enabled in your kernel
-> +configuration:
-> +
-> +CONFIG_DEBUG_FS
-> +CONFIG_ACPI_APEI
-> +CONFIG_ACPI_APEI_EINJ
-> +
-> +The user interface of EINJ is in debug file system, under the
-> +directory apei/einj. The following files are provided.
-> +
-> +- available_error_type
-> +  Read this file will return the error injection capability of the
-> +  platform, that is, which error types are supported. The error type
-> +  definition is as follow, the left field is the error type value, the
-> +  right field is error description.
-> +
-> +    0x00000001	Processor Correctable
-> +    0x00000002	Processor Uncorrectable non-fatal
-> +    0x00000004	Processor Uncorrectable fatal
-> +    0x00000008  Memory Correctable
-> +    0x00000010  Memory Uncorrectable non-fatal
-> +    0x00000020  Memory Uncorrectable fatal
-> +    0x00000040	PCI Express Correctable
-> +    0x00000080	PCI Express Uncorrectable fatal
-> +    0x00000100	PCI Express Uncorrectable non-fatal
-> +    0x00000200	Platform Correctable
-> +    0x00000400	Platform Uncorrectable non-fatal
-> +    0x00000800	Platform Uncorrectable fatal
-> +
-> +  The format of file contents are as above, except there are only the
-> +  available error type lines.
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+And piles up costs ? I think cgroup guys should pay attention to fork/exit
+costs more. Now, it gets slower and slower.
+In that point, I never like migrate-at-task-move work in cpuset and memcg.
+
+My 1st objection to this patch is this "shared" doesn't mean "shared between
+cgroup" but means "shared between processes".
+I think it's of no use and no help to users.
+
+And implementation is 2nd thing.
+
+
+Thanks,
+-Kame
+
