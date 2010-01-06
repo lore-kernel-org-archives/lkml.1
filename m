@@ -1,21 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755536Ab0AFBUu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932161Ab0AFBVM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755536Ab0AFBUu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 20:20:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755407Ab0AFBUq
+	id S932161Ab0AFBVM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 20:21:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932137Ab0AFBUs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 20:20:46 -0500
+	Tue, 5 Jan 2010 20:20:48 -0500
 Received: from mail.perches.com ([173.55.12.10]:1535 "EHLO mail.perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755256Ab0AFBU1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 20:20:27 -0500
+	id S1755386Ab0AFBU0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jan 2010 20:20:26 -0500
 From: Joe Perches <joe@perches.com>
 To: linux-kernel@vger.kernel.org
-Cc: Mark Fasheh <mfasheh@suse.com>, Joel Becker <joel.becker@oracle.com>,
-       ocfs2-devel@oss.oracle.com
-Subject: [PATCH 7/8] fs/ocfs2/cluster/tcp.c: Remove use of NIPQUAD, use %pI4
-Date: Tue,  5 Jan 2010 17:20:19 -0800
-Message-Id: <ec11c9ed70064e4f1137da23e51171a3620943f6.1262726222.git.joe@perches.com>
+Cc: Patrick McHardy <kaber@trash.net>, "David S. Miller" <davem@davemloft.net>,
+       Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>,
+       "Pekka Savola (ipv6)" <pekkas@netcore.fi>,
+       James Morris <jmorris@namei.org>,
+       Hideaki YOSHIFUJI <yoshfuji@linux-ipv6.org>,
+       netfilter-devel@vger.kernel.org, netfilter@vger.kernel.org,
+       coreteam@netfilter.org, netdev@vger.kernel.org
+Subject: [PATCH 5/8] net/ipv4/netfilter/nf_nat_ftp.c: Convert NIPQUAD to %pI4
+Date: Tue,  5 Jan 2010 17:20:17 -0800
+Message-Id: <bccf36219f3ea5a9b7565734bc87095bc986dbe0.1262726222.git.joe@perches.com>
 X-Mailer: git-send-email 1.6.6.rc0.57.gad7a
 In-Reply-To: <cover.1262726222.git.joe@perches.com>
 References: <cover.1262726222.git.joe@perches.com>
@@ -25,25 +30,22 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Joe Perches <joe@perches.com>
 ---
- fs/ocfs2/cluster/tcp.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ net/ipv4/netfilter/nf_nat_ftp.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/fs/ocfs2/cluster/tcp.c b/fs/ocfs2/cluster/tcp.c
-index 334f231..7a9620e 100644
---- a/fs/ocfs2/cluster/tcp.c
-+++ b/fs/ocfs2/cluster/tcp.c
-@@ -72,9 +72,9 @@
+diff --git a/net/ipv4/netfilter/nf_nat_ftp.c b/net/ipv4/netfilter/nf_nat_ftp.c
+index a1d5d58..d1c5afc 100644
+--- a/net/ipv4/netfilter/nf_nat_ftp.c
++++ b/net/ipv4/netfilter/nf_nat_ftp.c
+@@ -59,7 +59,7 @@ mangle_eprt_packet(struct sk_buff *skb,
+ {
+ 	char buffer[sizeof("|1|255.255.255.255|65535|")];
  
- #include "tcp_internal.h"
+-	sprintf(buffer, "|1|%u.%u.%u.%u|%u|", NIPQUAD(newip), port);
++	sprintf(buffer, "|1|%pI4|%u|", &newip, port);
  
--#define SC_NODEF_FMT "node %s (num %u) at %u.%u.%u.%u:%u"
-+#define SC_NODEF_FMT "node %s (num %u) at %pI4:%u"
- #define SC_NODEF_ARGS(sc) sc->sc_node->nd_name, sc->sc_node->nd_num,	\
--			  NIPQUAD(sc->sc_node->nd_ipv4_address),	\
-+			  &sc->sc_node->nd_ipv4_address,		\
- 			  ntohs(sc->sc_node->nd_ipv4_port)
+ 	pr_debug("calling nf_nat_mangle_tcp_packet\n");
  
- /*
 -- 
 1.6.6.rc0.57.gad7a
 
