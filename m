@@ -1,88 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756173Ab0AFV2O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756215Ab0AFVc2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756173Ab0AFV2O (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 16:28:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755963Ab0AFV2O
+	id S1756215Ab0AFVc2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 16:32:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756025Ab0AFVc1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 16:28:14 -0500
-Received: from mail-yw0-f176.google.com ([209.85.211.176]:52835 "EHLO
-	mail-yw0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755100Ab0AFV2J (ORCPT
+	Wed, 6 Jan 2010 16:32:27 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:37325 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932759Ab0AFVcX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 16:28:09 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type;
-        b=NZ9ZavWsCF0GEsDdimr0xAogrY373skcCJfYncpPbwlwamXctWmrQiI2YFIyBN8q7n
-         kNkWOSgv+Oc6QDLvUML2QHgTIKtOIB70bhaHn5Xl/ROznOBiBzRBoUocCZLf+HhYaFmP
-         76rXxobEqixy0ncIj/CAISBY2JAMsB43obhb8=
-Message-ID: <4B450065.4010108@gmail.com>
-Date: Wed, 06 Jan 2010 16:28:05 -0500
-From: William Allen Simpson <william.allen.simpson@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+	Wed, 6 Jan 2010 16:32:23 -0500
+Message-ID: <4B45001E.7000404@zytor.com>
+Date: Wed, 06 Jan 2010 13:26:54 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
 MIME-Version: 1.0
-To: Linux Kernel Developers <linux-kernel@vger.kernel.org>
-CC: Linux Kernel Network Developers <netdev@vger.kernel.org>,
-       Michael Chan <mchan@broadcom.com>
-Subject: Re: [PATCH 1/2] net: tcp_header_len_th and tcp_option_len_th
-References: <4B44FE3C.6060809@gmail.com>
-In-Reply-To: <4B44FE3C.6060809@gmail.com>
-Content-Type: multipart/mixed;
- boundary="------------020303000900040805090502"
+To: Len Brown <lenb@kernel.org>
+CC: Matthew Garrett <mjg59@srcf.ucam.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Christian Hofstaedtler <ch@zeha.at>, x86@kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       bruce.w.allan@intel.com, Thomas Gleixner <tglx@linutronix.de>,
+       Justin Piszcz <jpiszcz@lucidpixels.com>, linux-acpi@vger.kernel.org,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Subject: Re: [PATCH] Add DMI quirk for Intel DP55KG mainboard
+References: <20100104162114.GA30113@percival.namespace.at> <alpine.LFD.2.00.1001041209300.4012@localhost.localdomain> <4B4225B3.8070705@zytor.com> <20100104174558.158cd512@infradead.org> <20100106143640.GB13984@srcf.ucam.org> <alpine.LFD.2.00.1001061321260.4086@localhost.localdomain> <20100106193608.GA21447@srcf.ucam.org> <alpine.LFD.2.00.1001061504110.4086@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.1001061504110.4086@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------020303000900040805090502
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+On 01/06/2010 12:22 PM, Len Brown wrote:
+>>
+>> It's effectively guaranteed if the system is validated with Windows.
+> 
+> today's common industry practice != future guarantee
+> 
+> We can't rely on blind use of _OSI to mean "new enough", since
+> it was supported back in W2K era.  That means we have to parse
+> the OSI strings.  But what happens when a BIOS writer decides to
+> evaluate _OSI("Windows Future") without evaluating any of the
+> old strings we know about?  We would disable ACPI reset on such
+> a future box?
+> 
 
-Redefine two TCP header functions to accept TCP header pointer.
-When subtracting, return signed int to allow error checking.
+What about using _OSI() with a *blacklist*, i.e. treat _OSI("Unknown
+String") as "new enough", whereas _OSI("Windows 2000") is ignored?
 
-These functions will be used in subsequent patches that implement
-additional features.
+	-hpa
 
-Signed-off-by: William.Allen.Simpson@gmail.com
----
-  include/linux/tcp.h |   12 ++++++++++++
-  1 files changed, 12 insertions(+), 0 deletions(-)
-
-
---------------020303000900040805090502
-Content-Type: text/plain; x-mac-type="54455854"; x-mac-creator="0";
- name="len_th+1v3.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="len_th+1v3.patch"
-
-diff --git a/include/linux/tcp.h b/include/linux/tcp.h
-index 7fee8a4..d0133cf 100644
---- a/include/linux/tcp.h
-+++ b/include/linux/tcp.h
-@@ -223,6 +223,18 @@ static inline unsigned int tcp_optlen(const struct sk_buff *skb)
- 	return (tcp_hdr(skb)->doff - 5) * 4;
- }
- 
-+/* Length of fixed header plus standard options. */
-+static inline unsigned int tcp_header_len_th(const struct tcphdr *th)
-+{
-+	return th->doff * 4;
-+}
-+
-+/* Length of standard options only.  This could be negative. */
-+static inline int tcp_option_len_th(const struct tcphdr *th)
-+{
-+	return (int)(th->doff * 4) - sizeof(*th);
-+}
-+
- /* This defines a selective acknowledgement block. */
- struct tcp_sack_block_wire {
- 	__be32	start_seq;
--- 
-1.6.3.3
-
-
---------------020303000900040805090502--
