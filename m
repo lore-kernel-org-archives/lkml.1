@@ -1,71 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932654Ab0AFThW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932667Ab0AFTj2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932654Ab0AFThW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 14:37:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932453Ab0AFThV
+	id S932667Ab0AFTj2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 14:39:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932538Ab0AFTj1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 14:37:21 -0500
-Received: from cavan.codon.org.uk ([93.93.128.6]:47260 "EHLO
-	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932343Ab0AFThT (ORCPT
+	Wed, 6 Jan 2010 14:39:27 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:40332 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932455Ab0AFTj1 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 14:37:19 -0500
-Date: Wed, 6 Jan 2010 19:36:08 +0000
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Len Brown <lenb@kernel.org>
-Cc: Arjan van de Ven <arjan@infradead.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Christian Hofstaedtler <ch@zeha.at>, x86@kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       bruce.w.allan@intel.com, Thomas Gleixner <tglx@linutronix.de>,
-       Justin Piszcz <jpiszcz@lucidpixels.com>, linux-acpi@vger.kernel.org,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Subject: Re: [PATCH] Add DMI quirk for Intel DP55KG mainboard
-Message-ID: <20100106193608.GA21447@srcf.ucam.org>
-References: <20100104162114.GA30113@percival.namespace.at> <alpine.LFD.2.00.1001041209300.4012@localhost.localdomain> <4B4225B3.8070705@zytor.com> <20100104174558.158cd512@infradead.org> <20100106143640.GB13984@srcf.ucam.org> <alpine.LFD.2.00.1001061321260.4086@localhost.localdomain>
+	Wed, 6 Jan 2010 14:39:27 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=CxHAhnrP3lj0MV4ipZHhwo60hBUsX8l3lV9kiX/r77m1RPwdPrz+JQiWn58Pfdz1ND
+         OqHQrKLrh4AlJKnaNatmZBvZ0nJWdZom/yHi7i6QQTwpGoseu7ieVtCIzlPAHp9iqO3y
+         a4vigWggYQAAzqLv9s9b8lH126zCdPpL6C91g=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.1001061321260.4086@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@cavan.codon.org.uk
-X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
+In-Reply-To: <20100106130400.7f30ae55@torg>
+References: <20100106130400.7f30ae55@torg>
+Date: Wed, 6 Jan 2010 20:39:25 +0100
+X-Google-Sender-Auth: c32cbfd512b10210
+Message-ID: <520f0cf11001061139j2af13403qfcbf567647bdfaa8@mail.gmail.com>
+Subject: Re: [RFC] [rt-tests] change to cyclictest behavior
+From: John Kacur <jkacur@redhat.com>
+To: Clark Williams <williams@redhat.com>
+Cc: RT <linux-rt-users@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 06, 2010 at 02:26:44PM -0500, Len Brown wrote:
+On Wed, Jan 6, 2010 at 8:04 PM, Clark Williams <williams@redhat.com> wrote:
+> RT-ers,
+>
+> I have a problem with the way cyclictest sets up measurement threads,
+> but before I went and changed things I thought I would ask if people
+> cherished this particular behavior.
+>
+> Currently, when cyclictest is run with multiple threads (i.e. -t
+> option) it distributes both the sample interval and the realtime
+> priority by adding the 'distance' parameter to the interval and
+> decrementing the priority by one. This means if you have a distance of
+> 500us (default), a specified RT priority of 95 and start four threads,
+> they will be started with the following parameters:
+>
+> $ cyclictest -t4 -p95
+>
+> Will give you:
+>
+> thread          priority        sample interval
+> 0               95              500
+> 1               94              1000
+> 2               93              1500
+> 3               92              2000
+>
+> What I'd like to do is modify this logic so that when '-a' (affinity) is
+> specified, the priority and sample interval will not be altered. I
+> don't think there's any point in distributing the priority's and
+> sample intervals when the measurement threads are pinned to their own
+> CPU.
+>
+> So:
+>
+> $ cyclictest -t4 -p95 -a
+>
+> Would have each thread at SCHED_FIFO 95 and a sample interval of 500us.
+>
+> Note that this behavior also occurs when the histogram (-h) option is
+> specified).
+>
+> Thoughts?
+>
 
-> But...
-> using _OSI is not "a similar method to Windows".
-> The BIOS does not need to invoke _OSI to determine if
-> it should expose a properly functioning ACPI reset or not.
-> Windows XP simply demanded it, and the box failed WHQL
-> if it did not work.
+Seems reasonable to me. Maybe it would also be nice to have a flag to
+get the old behaviour back even with -a?
 
-http://download.microsoft.com/download/7/E/7/7E7662CF-CBEA-470B-A97E-CE7CE0D98DC2/WinACPI_OSI.docx 
-was what I was referring to:
-
-"By using the _OSI method, ASL writers can easily determine the version 
-of the ACPI interfaces that the host operating system supports. This 
-versioning method provides a solution for creating firmware that can 
-support future operating systems and enable the operating system to 
-change behavior based on the requested interface levels."
-
-We know that this is used for deciding whether or not to block system IO 
-accesses, but it wouldn't surprise me if it's also used to determine 
-other functionality like whether or not the ACPI interface is used for 
-rebooting.
-
-> Further, there is no _guarantee_ that a BIOS will invoke _OSI
-> at all, let alone a _rule_ for what _OSI() strings the BIOS
-> will choose to query to trigger its Windows specific
-> compatibility hooks -- even if common practice is for
-> a desktop BIOS to evaluate _OSI strings in sequence
-> up throught he most recent version of Windows it
-> knows about...
-
-It's effectively guaranteed if the system is validated with Windows.
-
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+John
