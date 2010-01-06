@@ -1,49 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932216Ab0AFNrB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932227Ab0AFOL5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932216Ab0AFNrB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 08:47:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932144Ab0AFNrA
+	id S932227Ab0AFOL5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 09:11:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755844Ab0AFOL4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 08:47:00 -0500
-Received: from cantor.suse.de ([195.135.220.2]:36728 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932119Ab0AFNq7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 08:46:59 -0500
-Date: Wed, 6 Jan 2010 14:46:58 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Christian Schuerer <csw@xray.at>
-Cc: Jiri Slaby <jirislaby@gmail.com>, linux-input@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] linux-2.6.31.9, linux-2.6.32.2, linux-2.6.33-rc2 -- Re:
- Device IDs for new Apple Wireless Keyboard
-In-Reply-To: <201001061357.22447.csw@xray.at>
-Message-ID: <alpine.LNX.2.00.1001061446450.2277@pobox.suse.cz>
-References: <4B38AFDE.8000203@gmail.com> <201001060216.47958.csw@xray.at> <alpine.LNX.2.00.1001061113060.2277@pobox.suse.cz> <201001061357.22447.csw@xray.at>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+	Wed, 6 Jan 2010 09:11:56 -0500
+Received: from mail-iw0-f194.google.com ([209.85.223.194]:61388 "EHLO
+	mail-iw0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750756Ab0AFOLz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jan 2010 09:11:55 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type;
+        b=sOkUX844PzUNGQjeNYGp1wGdn/DapkHtax0XH/USpKrV63jpPZzzxDgKU8ZHYQZA0c
+         IrD8um0LRlr3H8uf6y22TiVS81eRm7r4TNHhfh3a1kZBqfhAh6oN+oTydabtcm+unn8i
+         pZcQqBFmA6hNV7pwNxyv4KFi1RjP5IaS9bzy8=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Wed, 6 Jan 2010 22:11:54 +0800
+Message-ID: <b3657a101001060611k57407d6aj94f5931a2f0a5f33@mail.gmail.com>
+Subject: [PATCH]btrfs: Remove a extra condition
+From: liu weni <qingshenlwy@gmail.com>
+To: linux-btrfs@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
+       zheng.yan@oracle.com, chris.mason@oracle.com,
+       Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>,
+       strongzgy <strongzgy@gmail.com>, Liu Hui <onlyflyer@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 6 Jan 2010, Christian Schuerer wrote:
+This patch remove a extra condition.
+In this place, the outer is if (!cur || !uptodate)
+and then, there are 2 ways: !cur or ! uptodate.
+The "else if (!uptodate)" is not necessary.
+I think "else" is better.
 
-> > > here is the patch for linux-2.6.33-rc2:
-> > > Thanks. Unfortunately, it's wordwrapped, so it can't be easily applied.
-> > Could you please fix up your e-mail client so that it doesn't mangle long
-> > lines, or eventually send is as an attachment?
-> 
-> I'm sorry, I have attached all three patches as text files.
-> 
-> > > Added device IDs for the new model of the Apple Wireless Keyboard
-> > > (November 2009).
-> > These are solely Bluetooth device, and there is no USB variant, right?
-> 
-> As far as I know of only a new variant of the wireless (bluetooth) keyboard 
-> has been released in November 2009.
+---
+Signed-off-by: Liuwenyi <qingshenlwy@gmail.com>
 
-Applied to my tree, thanks Christian.
+---
+diff --git a/fs/btrfs/ctree.c b/fs/btrfs/ctree.c
+index c4bc570..654f702 100644
+--- a/fs/btrfs/ctree.c
++++ b/fs/btrfs/ctree.c
+@@ -679,7 +679,7 @@ int btrfs_realloc_node(struct btrfs_trans_handle *trans,
+ 			if (!cur) {
+ 				cur = read_tree_block(root, blocknr,
+ 							 blocksize, gen);
+-			} else if (!uptodate) {
++			} else {
+ 				btrfs_read_buffer(cur, gen);
+ 			}
+ 		}
+---
 
--- 
-Jiri Kosina
-SUSE Labs, Novell Inc.
+Best Regards,
+Liuwenyi
+20100107
