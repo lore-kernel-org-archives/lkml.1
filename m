@@ -1,64 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932657Ab0AFTId@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755309Ab0AFTLj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932657Ab0AFTId (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 14:08:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755934Ab0AFTIc
+	id S1755309Ab0AFTLj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 14:11:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754698Ab0AFTLi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 14:08:32 -0500
-Received: from casper.infradead.org ([85.118.1.10]:39068 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755430Ab0AFTIb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 14:08:31 -0500
-Subject: Re: [PATCH] improve the performance of large sequential write NFS
- workloads
-From: Peter Zijlstra <peterz@infradead.org>
-To: Trond Myklebust <Trond.Myklebust@netapp.com>
-Cc: Wu Fengguang <fengguang.wu@intel.com>, Jan Kara <jack@suse.cz>,
-       Steve Rago <sar@nec-labs.com>,
-       "linux-nfs@vger.kernel.org" <linux-nfs@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "jens.axboe" <jens.axboe@oracle.com>,
-       Peter Staubach <staubach@redhat.com>,
-       Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>
-In-Reply-To: <1262803927.4251.133.camel@localhost>
-References: <20091222015907.GA6223@localhost>
-	 <1261578107.2606.11.camel@localhost> <20091223180551.GD3159@quack.suse.cz>
-	 <1261595574.6775.2.camel@localhost> <20091224025228.GA12477@localhost>
-	 <1261656281.3596.1.camel@localhost> <20091225055617.GA8595@localhost>
-	 <1262190168.7332.6.camel@localhost> <20091231050441.GB19627@localhost>
-	 <1262286828.8151.113.camel@localhost>  <20100106030346.GA15962@localhost>
-	 <1262796962.4251.91.camel@localhost>  <1262802387.4251.117.camel@localhost>
-	 <1262803040.4049.62.camel@laptop>  <1262803927.4251.133.camel@localhost>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 06 Jan 2010 20:07:56 +0100
-Message-ID: <1262804876.4049.66.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 6 Jan 2010 14:11:38 -0500
+Received: from mga09.intel.com ([134.134.136.24]:58877 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754565Ab0AFTLh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jan 2010 14:11:37 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,230,1262592000"; 
+   d="scan'208";a="481826743"
+Date: Wed, 6 Jan 2010 11:11:32 -0800
+From: mark gross <mgross@linux.intel.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: 640E9920 <640e9920@gmail.com>, linux-pm@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [linux-pm] [RFC] PM_QOS api update to use handles 1/5
+Message-ID: <20100106191132.GD21316@linux.intel.com>
+Reply-To: mgross@linux.intel.com
+References: <20091130010953.GA4732@mgross-laptop>
+ <20100104083127.GA1450@ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100104083127.GA1450@ucw.cz>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2010-01-06 at 13:52 -0500, Trond Myklebust wrote:
-> On Wed, 2010-01-06 at 19:37 +0100, Peter Zijlstra wrote: 
-> > On Wed, 2010-01-06 at 13:26 -0500, Trond Myklebust wrote:
-> > > OK. It looks as if the only key to finding out how many unstable writes
-> > > we have is to use global_page_state(NR_UNSTABLE_NFS), so we can't
-> > > specifically target our own backing-dev. 
+On Mon, Jan 04, 2010 at 09:31:27AM +0100, Pavel Machek wrote:
+> On Sun 2009-11-29 17:09:53, 640E9920 wrote:
+> > I'm using this crazy email address because I have problems getting to
+> > linux.intel.com from home, and my work at intel has changed a bit.
 > > 
-> > Would be a simple matter of splitting BDI_UNSTABLE out from
-> > BDI_RECLAIMABLE, no?
+> > This is the first in a 5 part series that attempts to update PM_QOS to
+> > use handles instead of named strings in its kernel api.  It seams that
+> > some folks are using pm_qos on hot paths and the overhead of the list
+> > walks and string compares is a problem.
 > > 
-> > Something like
+> > Most of the changes came from aili@codeaurora.org, and I spent some time
+> > cleaning up the API.
+> > 
+> > Also, I couldn't resist myself in renaming the API's a bit give the fact
+> > that the signatures changed enough that I had to touch all the pm_qos
+> > users anyway.  I changed *requirement* to *request* in keeping with the
+> > way PM_QOS really only does best effort.  I've felt "requirement" is too
+> > strong a word for the way it works.
 > 
-> OK. How about if we also add in a bdi->capabilities flag to tell that we
-> might have BDI_UNSTABLE? That would allow us to avoid the potentially
-> expensive extra calls to bdi_stat() and bdi_stat_sum() for the non-nfs
-> case?
+> Looks good on quick scan. Moving away from strings is certainly good.
 
-The bdi_stat_sum() in the error limit is basically the only such
-expensive op, but I suspect we might hit that more than enough. So sure
-that sounds like a plan.
+thanks I'll target to get this into linux-next for 2.6.34.
 
+> 
+> > @@ -384,15 +363,14 @@ static ssize_t pm_qos_power_write(struct file *filp, const char __user *buf,
+> >  		size_t count, loff_t *f_pos)
+> >  {
+> >  	s32 value;
+> > -	int pm_qos_class;
+> > +	struct pm_qos_request_list *pm_qos_req;
+> >  
+> > -	pm_qos_class = (long)filp->private_data;
+> >  	if (count != sizeof(s32))
+> >  		return -EINVAL;
+> >  	if (copy_from_user(&value, buf, sizeof(s32)))
+> >  		return -EFAULT;
+> > -	sprintf(name, "process_%d", current->pid);
+> > -	pm_qos_update_requirement(pm_qos_class, name, value);
+> > +	pm_qos_req = (struct pm_qos_request_list *)filp->private_data;
+> > +	pm_qos_update_request(pm_qos_req, value);
+> >  
+> >  	return  sizeof(s32);
+> >  }
+> 
+> Umm.. passing binary numbers like that... is not exactly good
+> interface. Think endianness issues  when writing to it from high-level
+> language.
+> 
+
+yeah.  At the moment I can't recall why I went binary for the ABI, 
+we can revisit this, but its been in the wild for a few years now :(
+
+I guess I can do some tricks to see if its a hex string representation
+of a number and parse that as well as supporting the s32.  i.e. accept
+strings "0x0000000" ... "0xFFFFFFFF" and return -EINVAL for anything
+else.
+
+--mgross
+
+> 									Pavel
+> -- 
+> (english) http://www.livejournal.com/~pavelmachek
+> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+> _______________________________________________
+> linux-pm mailing list
+> linux-pm@lists.linux-foundation.org
+> https://lists.linux-foundation.org/mailman/listinfo/linux-pm
