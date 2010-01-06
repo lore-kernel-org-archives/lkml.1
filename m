@@ -1,53 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755247Ab0AFIUr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755478Ab0AFIcb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755247Ab0AFIUr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 03:20:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754763Ab0AFIUq
+	id S1755478Ab0AFIcb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 03:32:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755337Ab0AFIca
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 03:20:46 -0500
-Received: from fg-out-1718.google.com ([72.14.220.156]:61149 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754607Ab0AFIUp (ORCPT
+	Wed, 6 Jan 2010 03:32:30 -0500
+Received: from ch-smtp01.sth.basefarm.net ([80.76.149.212]:58525 "EHLO
+	ch-smtp01.sth.basefarm.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754857Ab0AFIc3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 03:20:45 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
-        b=eZoLkIL+P92G8++PzE5dLt9ye2RcvspSao5tbO/9SW+4KmQeSCqKMfo0mNUW1zdsjO
-         JKQ4KpwqW51cHWNPoZcQF+tQ2ifdC8m9POMENwNa5DWzTQKezD9UH86agW42SwZW5Yjl
-         qCO7hah47e2V+mRiU1T52DPK4nfqhpIX7hN9E=
-MIME-Version: 1.0
-In-Reply-To: <4B443AE3.2080800@linux.intel.com>
-References: <4B443AE3.2080800@linux.intel.com>
-Date: Wed, 6 Jan 2010 10:20:42 +0200
-X-Google-Sender-Auth: a49e5b87007d89ee
-Message-ID: <84144f021001060020v57535d5bwc65b482eca669bc5@mail.gmail.com>
-Subject: Re: [PATCH v3] slab: initialize unused alien cache entry as NULL at 
-	alloc_alien_cache().
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Haicheng Li <haicheng.li@linux.intel.com>
-Cc: Christoph Lameter <cl@linux-foundation.org>, linux-mm@kvack.org,
-       Matt Mackall <mpm@selenic.com>, Andi Kleen <andi@firstfloor.org>,
-       Eric Dumazet <eric.dumazet@gmail.com>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 6 Jan 2010 03:32:29 -0500
+X-Mailer: exmh version 2.7.2 04/02/2003 (gentoo 2.7.2) with nmh-1.3-dev
+To: Robert Hancock <hancockrwd@gmail.com>
+cc: Anders Eriksson <aeriksson@fastmail.fm>, mingo@elte.hu,
+       linux-kernel@vger.kernel.org
+Subject: Re: Memory probing fails after 2.6.30 (bisected)
+In-reply-to: <4B43DF97.7080208@gmail.com>
+References: <20100105110256.D2DF133C4B0@tippex.mynet.homeunix.org> <4B43DF97.7080208@gmail.com>
+Comments: In-reply-to Robert Hancock <hancockrwd@gmail.com>
+   message dated "Tue, 05 Jan 2010 18:55:51 -0600."
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Date: Wed, 06 Jan 2010 09:32:14 +0100
+From: Anders Eriksson <aeriksson@fastmail.fm>
+Message-Id: <20100106083214.DAAA933C5F5@tippex.mynet.homeunix.org>
+X-Originating-IP: 83.252.238.172
+X-Scan-Result: No virus found in message 1NSRJa-00033J-5L.
+X-Scan-Signature: ch-smtp01.sth.basefarm.net 1NSRJa-00033J-5L a5ac8fa16fd867ab2211d925e95d31be
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 6, 2010 at 9:25 AM, Haicheng Li <haicheng.li@linux.intel.com> wrote:
-> Comparing with existing code, it's a simpler way to use kzalloc_node()
-> to ensure that each unused alien cache entry is NULL.
->
-> CC: Pekka Enberg <penberg@cs.helsinki.fi>
-> CC: Eric Dumazet <eric.dumazet@gmail.com>
-> Acked-by: Andi Kleen <ak@linux.intel.com>
-> Acked-by: Christoph Lameter <cl@linux-foundation.org>
-> Reviewed-by: Matt Mackall <mpm@selenic.com>
-> Signed-off-by: Haicheng Li <haicheng.li@linux.intel.com>
 
-I can find a trace of Andi acking the previous version of this patch
-but I don't see an ACK from Christoph nor a revieved-by from Matt. Was
-I not CC'd on those emails or what's going on here?
+hancockrwd@gmail.com said:
+> Think you missed posting which was the actual bad commit it reported?
 
-                        Pekka
+The last one in the list:
+8ecee4620e76aae418bfa0e8cc830e92cb559bbb
+
+That's a merge commit. How do i dig futher into that? My git-fu is lacking...
+
