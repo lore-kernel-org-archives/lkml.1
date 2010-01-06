@@ -1,59 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932535Ab0AFSTA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932544Ab0AFSWN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932535Ab0AFSTA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 13:19:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932526Ab0AFSS7
+	id S932544Ab0AFSWN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 13:22:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932530Ab0AFSWM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 13:18:59 -0500
-Received: from casper.infradead.org ([85.118.1.10]:33651 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932470Ab0AFSS7 (ORCPT
+	Wed, 6 Jan 2010 13:22:12 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:48451 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932526Ab0AFSWK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 13:18:59 -0500
-Date: Wed, 6 Jan 2010 18:18:41 +0000 (GMT)
-From: James Simmons <jsimmons@infradead.org>
-To: Johan Hovold <jhovold@gmail.com>
-cc: Dave Airlie <airlied@redhat.com>, dri-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] drm/kms: fix fbdev blanking regression
-In-Reply-To: <20100106180950.GD10442@localhost>
-Message-ID: <alpine.LFD.2.00.1001061814360.5372@casper.infradead.org>
-References: <1262797226-9593-1-git-send-email-jhovold@gmail.com> <1262797226-9593-2-git-send-email-jhovold@gmail.com> <alpine.LFD.2.00.1001061710510.5372@casper.infradead.org> <20100106180950.GD10442@localhost>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Wed, 6 Jan 2010 13:22:10 -0500
+Date: Wed, 6 Jan 2010 18:22:00 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Christoph Hellwig <hch@lst.de>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-arch@vger.kernel.org, linux@arm.linux.org.uk, starvik@axis.com,
+       jesper.nilsson@axis.com, dhowells@redhat.com,
+       ysato@users.sourceforge.jp, takata@linux-m32r.org, geert@linux-m68k.org,
+       zippel@linux-m68k.org, gerg@uclinux.org, ralf@linux-mips.org,
+       benh@kernel.crashing.org, schwidefsky@de.ibm.com,
+       heiko.carstens@de.ibm.com, lethal@linux-sh.org, davem@davemloft.net,
+       jdike@addtoit.com, tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com
+Subject: Re: [PATCH 3/3] generic sys_ipc wrapper
+Message-ID: <20100106182200.GB30528@ZenIV.linux.org.uk>
+References: <20100106172152.GC17163@lst.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100106172152.GC17163@lst.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Jan 06, 2010 at 06:21:52PM +0100, Christoph Hellwig wrote:
 
-> > > Commit 731b5a15a3b1474a41c2ca29b4c32b0f21bc852e (drm/kms: properly
-> > > handle fbdev blanking) breaks console blanking on my laptop (GM45
-> > > chipset). Instead of blanking the screen, it is dimmed and then the
-> > > backlight starts "glowing" in the lower edges of the screen. The glowing
-> > > then slowly spreads upwards. Does not look healthy at all...
-> > > 
-> > > This patch reverts to the old behaviour of going directly to
-> > > DPMS_STANDBY.
-> > 
-> > The current fbdev blank is correct. Normal blanking doesn't power down 
-> > the hsync or the vsync signals. If you look at fbdev drivers you will see 
-> > this type of behavior. If you want a full power down then a FB_BLANK_POWERDOWN 
-> > is needed. As for the blacklight that is a another problem not related to 
-> > this issue. The fbdev layer sends a event to the backlight layer to tell 
-> > it to power down. That powerdown happens for the backlight in all cases 
-> > except FB_BLANK_UNBLANK. How is your backlight setup. Is the backlight 
-> > handled via the DRI driver or acpi?
-> > 
-> 
-> The change itself looks correct but it triggers something that seems to
-> hurt my screen bad. :)
+> Except for that h8300, m68k and m68knommu lack an impplementation of the
+> semtimedop sub call which this patch adds, and various architectures have
+> different strategies for the SHMAT version 1 case which apparently never
+> gets used - at least on i386 it seems superflous as the compat code on
+> x86-64 and ia64 doesn't even bother to implement it.
 
-Yeap. The fix uncovered a bug in your driver. I haven't heard of problems 
-with the other drm drivers.
- 
-> The backlight is handled via the DRI driver I assume. At least
-> i9xx_crtc_dpms is called on powerdown.
+Kill the SHMAT crap; it's _not_ a part of user-visible API (note that it
+checks that we'd come there with KERNEL_DS).
 
-Can you post your dmesg and kernel config.
+It had been a one-time kludge for ibcs2 module.  Blindly copied to
+architectures than never had that shite at all, not that it had survived
+even on i386 past 2.2.x (2.4 analog doesn't use that thing).
 
+Just make it fail with -EINVAL in that case.
