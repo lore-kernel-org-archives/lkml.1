@@ -1,100 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932709Ab0AFUK3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932727Ab0AFURd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932709Ab0AFUK3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 15:10:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932365Ab0AFUKX
+	id S932727Ab0AFURd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 15:17:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932552Ab0AFURc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 15:10:23 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:64454 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932337Ab0AFUKU convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 15:10:20 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=u6jJbT1SND8x4hM15/Snq0ExUQL7N8qG6YQAFh6OvvDd507e1kU8Gd9VByXmLdVL/x
-         KIw+5PGoohgVTSDOxp8fAScgUCouPWPb4YRfi4JyDYRns5j72oo9TUvvKkNYILsQEmX2
-         wb0Ae3XcWfCPNomaL2kSPrm/pI6W9Z6oc6q6E=
+	Wed, 6 Jan 2010 15:17:32 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:9203 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932305Ab0AFURb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jan 2010 15:17:31 -0500
+Date: Wed, 6 Jan 2010 21:17:22 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: Roland McGrath <roland@redhat.com>, caiqian@redhat.com,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Jan Kratochvil <jkratoch@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-s390@vger.kernel.org, utrace-devel@redhat.com
+Subject: Re: s390 && user_enable_single_step() (Was: odd utrace testing
+	results on s390x)
+Message-ID: <20100106201722.GB26204@redhat.com>
+References: <20100104155225.GA16650@redhat.com> <20100104171626.22ea2d9c@mschwide.boeblingen.de.ibm.com> <20100104181412.GA21146@redhat.com> <20100104211147.4CC94D532@magilla.sf.frob.com> <20100105105030.66bb8a0a@mschwide.boeblingen.de.ibm.com> <20100105153633.GA9376@redhat.com> <20100105164610.388effd3@mschwide.boeblingen.de.ibm.com> <20100105155913.GA10652@redhat.com> <20100105170301.GA13641@redhat.com> <20100105195818.GA20358@redhat.com>
 MIME-Version: 1.0
-In-Reply-To: <4B44E5C8.2050006@suse.cz>
-References: <alpine.LFD.2.00.1001061705140.3744@localhost.localdomain>
-	 <4B44E5C8.2050006@suse.cz>
-Date: Wed, 6 Jan 2010 21:10:18 +0100
-Message-ID: <520f0cf11001061210w4d33fca6y98f091c4260577c0@mail.gmail.com>
-Subject: Re: [PATCH] Don't mkdir -p include/config in the sourcetree when 
-	using O=outputdir option
-From: John Kacur <jkacur@gmail.com>
-To: Michal Marek <mmarek@suse.cz>
-Cc: linux-kernel@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>,
-       linux-kbuild@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100105195818.GA20358@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 6, 2010 at 8:34 PM, Michal Marek <mmarek@suse.cz> wrote:
-> John Kacur napsal(a):
->> The following is an example of how the Makefile currently can fail.
->> [jkacur@tycho rt.linux.git]$ make mrproper
->> [jkacur@tycho rt.linux.git]$ mkdir /bld/2.6.33-rc3
->> [jkacur@tycho rt.linux.git]$ cp /bld/config /bld/2.6.33-rc3/.config
->> [jkacur@tycho rt.linux.git]$ make O=/bld/2.6.33-rc3/ oldconfig
->>   HOSTCC  scripts/basic/fixdep
->>   HOSTCC  scripts/basic/docproc
->>   HOSTCC  scripts/basic/hash
->>   GEN     /bld/2.6.33-rc3/Makefile
->>   HOSTCC  scripts/kconfig/conf.o
->>   HOSTCC  scripts/kconfig/kxgettext.o
->>   HOSTCC  scripts/kconfig/zconf.tab.o
->>   HOSTLD  scripts/kconfig/conf
->> scripts/kconfig/conf -o arch/x86/Kconfig
->> [jkacur@tycho rt.linux.git]$ make O=/bld/2.6.33-rc3/
->>   GEN     /bld/2.6.33-rc3/Makefile
->> scripts/kconfig/conf -s arch/x86/Kconfig
->>   Using /home/jkacur/rt.linux.git as source for kernel
->>   /home/jkacur/rt.linux.git is not clean, please run 'make mrproper'
->>   in the '/home/jkacur/rt.linux.git' directory.
->> make[1]: *** [prepare3] Error 1
->> make: *** [sub-make] Error 2
->> [jkacur@tycho rt.linux.git]$ ls -ld include/config/
->> drwxrwxr-x 2 jkacur jkacur 6 2010-01-06 15:58 include/config/
->>
->> Signed-off-by: John Kacur <jkacur@redhat.com>
->> ---
->>  Makefile |    2 +-
->>  1 files changed, 1 insertions(+), 1 deletions(-)
->>
->> diff --git a/Makefile b/Makefile
->> index 1231094..7d8d722 100644
->> --- a/Makefile
->> +++ b/Makefile
->> @@ -458,7 +458,7 @@ config: scripts_basic outputmakefile FORCE
->>       $(Q)$(MAKE) $(build)=scripts/kconfig $@
->>
->>  %config: scripts_basic outputmakefile FORCE
->> -     $(Q)mkdir -p include/linux include/config
->> +     $(Q)mkdir -p $(objtree)/include/linux include/config
->>       $(Q)$(MAKE) $(build)=scripts/kconfig $@
+On 01/05, Oleg Nesterov wrote:
 >
-> Can you double-check that this patch really fixes your issue and that
-> without this patch it fails again? Because 1) I can't reproduce this
-> behaviour and I also don't see how it could f, 2) your problem is a
-> include/config file somehow created in the source tree, but you patch
-> the creation of include/linux. And if there really needs to be a fix,
-> the same should be applied to the identical block above.
+> On 01/05, Oleg Nesterov wrote:
+> >
+> > On 01/05, Oleg Nesterov wrote:
+> > >
+> > > I'll add clear_bit(TIF_SINGLE_STEP) into do_fork() path and re-test.
+> >
+> > Hmm. This patch
+> >
+> > 	--- kernel/fork.c~	2009-12-22 10:41:53.188084961 -0500
+> > 	+++ kernel/fork.c	2010-01-05 11:42:58.370636323 -0500
+> > 	@@ -1206,6 +1206,8 @@ static struct task_struct *copy_process(
+> > 		 * of CLONE_PTRACE.
+> > 		 */
+> > 		clear_tsk_thread_flag(p, TIF_SYSCALL_TRACE);
+> > 	+	clear_tsk_thread_flag(p, TIF_SINGLE_STEP);
+> > 	+	user_disable_single_step(p);
+> > 	 #ifdef TIF_SYSCALL_EMU
+> > 		clear_tsk_thread_flag(p, TIF_SYSCALL_EMU);
+> > 	 #endif
+> >
+> > doesn't help, I still see the same XXX's in dmesg...
 >
-> thanks,
+> Oh, now I am totally confused.
+>
+> I reverted your fix from
+> https://www.redhat.com/archives/utrace-devel/2010-January/msg00006.html
+> and now there is nothing in dmesg.
 
-Hi Michal
+I take this back. I re-tested this all under 2.6.32.2 + utrace, and I
+see nothing in dmesg. I don't know what I did wrong, most probably I
+forgot to do zipl or something like this...
 
-Yes, I doubled checked that the problem exists, and it is quite easy for me to
-reproduce. However, my proposed solution is also broken, please don't
-apply, I'm still investigating.
+I'll try to summarize. Martin's patch
+from https://www.redhat.com/archives/utrace-devel/2010-January/msg00006.html
+fixes the problems with utrace.
 
-I am surprised that you are not able to reproduce the problem though.
-Did you follow the steps I that I outlined?
 
-Thanks, John
+However, with or without CONFIG_UTRACE, 6580807da14c423f0d0a708108e6df6ebc8bc83d
+is needed on s390 too, otherwise the child gets unnecessary traps.
+
+Oleg.
+
