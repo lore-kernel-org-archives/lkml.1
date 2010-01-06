@@ -1,30 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932898Ab0AFVnq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756320Ab0AFVow@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932898Ab0AFVnq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 16:43:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932879Ab0AFVno
+	id S1756320Ab0AFVow (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 16:44:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932745Ab0AFVow
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 16:43:44 -0500
-Received: from mail-fx0-f225.google.com ([209.85.220.225]:50042 "EHLO
+	Wed, 6 Jan 2010 16:44:52 -0500
+Received: from mail-fx0-f225.google.com ([209.85.220.225]:35809 "EHLO
 	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932883Ab0AFVnl (ORCPT
+	with ESMTP id S1755644Ab0AFVov (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 16:43:41 -0500
+	Wed, 6 Jan 2010 16:44:51 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version
-         :x-mailer:content-transfer-encoding;
-        b=EzdlOwONA8HIHUYEomOv/xXd8uCKn6etBzPsAs+Hm2547Ut/QkAAIWwCr7iQYTWOuJ
-         +eA5ExoQQ34U4hSJOqoFnQLniNnothOzlCgROgh+/cO/gbnOv8892gxmvgwdzzDRn0D5
-         IZ2QS4bw61f80cPUyCTZc9zh6FMnold5RafvU=
-Subject: RFC: [PATCH 0/9 Integration of SmartMedia/xD into mtd subsystem
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=sauGaMkOqypCJkQdVSiN3Pt0AWpppOe54E8tDu+8LxVFJ9+cVh/d5esh1LWLky4r8P
+         zFZyrvbmKaFyotmLH1dkgX97OPLE7gFRX6sFZN6ot0h9pB5EM0QXEMlIUmHIEI3JSGHp
+         /D310T+VsPehPSMzJ0MTWvGhvU5CK61Bh8FhM=
+Subject: [PATCH 1/9] MTD: call remove notifiers before removing the device
 From: Maxim Levitsky <maximlevitsky@gmail.com>
 To: linux-kernel <linux-kernel@vger.kernel.org>
 Cc: linux-mtd <linux-mtd@lists.infradead.org>, Alex Dubov <oakad@yahoo.com>,
        joern <joern@logfs.org>
+In-Reply-To: <1262814216.14552.22.camel@maxim-laptop>
+References: <1262814216.14552.22.camel@maxim-laptop>
 Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 06 Jan 2010 23:43:36 +0200
-Message-ID: <1262814216.14552.22.camel@maxim-laptop>
+Date: Wed, 06 Jan 2010 23:44:45 +0200
+Message-ID: <1262814285.14552.23.camel@maxim-laptop>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
@@ -32,62 +34,66 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here is the result of my work of supporting an xD card reader that I
-have on my notebook.
+>From d8cb6b03919de5ab1587cd4340c684f2c468aec7 Mon Sep 17 00:00:00 2001
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+Date: Tue, 5 Jan 2010 22:29:31 +0200
+Subject: [PATCH 1/9] MTD: call remove notifiers before removing the device, so users
+ have chance to free the mtd device
 
-I had to fix few problems in mtd translation layer, add few workarounds.
-This is by no way a final version of the patches, there is still lot of
-cleanup to do.
-The patches weren't tested with checkpatch.pl for example.
+Signed-off-by: Maxim Levitsky <maximlevitsky@gmail.com>
+---
+ drivers/mtd/mtdcore.c |   21 +++++++++++----------
+ 1 files changed, 11 insertions(+), 10 deletions(-)
 
-I can now read and write an xD card, and I have no crashes.
-Still following issues remain:
+diff --git a/drivers/mtd/mtdcore.c b/drivers/mtd/mtdcore.c
+index 467a4f1..738e329 100644
+--- a/drivers/mtd/mtdcore.c
++++ b/drivers/mtd/mtdcore.c
+@@ -341,31 +341,32 @@ int add_mtd_device(struct mtd_info *mtd)
+ int del_mtd_device (struct mtd_info *mtd)
+ {
+ 	int ret;
++	struct mtd_notifier *not;
+ 
+ 	mutex_lock(&mtd_table_mutex);
+ 
+ 	if (mtd_table[mtd->index] != mtd) {
+ 		ret = -ENODEV;
+-	} else if (mtd->usecount) {
++		goto out_error;
++	}
++
++	/* No need to get a refcount on the module containing
++		the notifier, since we hold the mtd_table_mutex */
++	list_for_each_entry(not, &mtd_notifiers, list)
++		not->remove(mtd);
++
++	if (mtd->usecount) {
+ 		printk(KERN_NOTICE "Removing MTD device #%d (%s) with use count %d\n",
+ 		       mtd->index, mtd->name, mtd->usecount);
+ 		ret = -EBUSY;
+ 	} else {
+-		struct mtd_notifier *not;
+-
+ 		device_unregister(&mtd->dev);
+-
+-		/* No need to get a refcount on the module containing
+-		   the notifier, since we hold the mtd_table_mutex */
+-		list_for_each_entry(not, &mtd_notifiers, list)
+-			not->remove(mtd);
+-
+ 		mtd_table[mtd->index] = NULL;
+-
+ 		module_put(THIS_MODULE);
+ 		ret = 0;
+ 	}
+ 
++out_error:
+ 	mutex_unlock(&mtd_table_mutex);
+ 	return ret;
+ }
+-- 
+1.6.3.3
 
-1 - Write speed IS very SLOW, just about 200 Kbytes/s
-In fact a reader in my printer gives me about 330 Kbytes/s, thus
-partially card is to blame.
-Also, hardware doesn't support interrupts to test when card is ready,
-thus writes consume 100% of one cpu.
-
-2 - I rely on mtd driver to have empty oob layout so I can read both oob
-and data using ->read_oob  with MTD_OOB_PLACE.
-I thinking to add new mode to allow to read whole oob + data and check
-ecc, or I will have to do pointless copying of data from 'censored' oob
-to normal structure. (This applies to FTL driver I also include in this
-patchset)
-
-3 - Using the mtd device directly with anything but supplied FTL or
-SSFDC, on 'modern' xD cards just doesn't. These cards implement a fake
-nand command set, thus don't have a real oob.
-It was disappointing for me too.
-I suspect that all 'Type M' cards are of this fake type, but older cards
-are OK.
-
-
-4 - Suspend/resume support works, but relies on all mtd users not to
-suspend in middle of card access, bacause in this case its very
-difficult/impossible to know card state.
-Driver will refuse suspend in that case.
-Access via all block devices is safe.
-
-
-5 - And of course there are bugs, thus I warn you now that this driver
-has high probability to erase data from your card.
-Thus DON'T USE THIS DRIVER IF ANYTHING IMPORTANT IS STORED ON THE CARD.
-
-
-6 - driver only detects PCI ID of my notebook, so it might not load on
-compatable chips with different ID.
-
-
-7 - patches developed against stable 2.6.32, and won't compile against
-latest git due to changes in kfifo api.
-
-
-Feedback is welcome, flames too :-)
-
-
-Best regards,
-Maxim Levitsky
 
 
