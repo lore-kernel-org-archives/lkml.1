@@ -1,48 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755421Ab0AFEl7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755307Ab0AFEzu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755421Ab0AFEl7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 23:41:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755191Ab0AFEl5
+	id S1755307Ab0AFEzu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 23:55:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754707Ab0AFEzt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 23:41:57 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:60439
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754759Ab0AFEl5 (ORCPT
+	Tue, 5 Jan 2010 23:55:49 -0500
+Received: from vms173019pub.verizon.net ([206.46.173.19]:48359 "EHLO
+	vms173019pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754692Ab0AFEzs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 23:41:57 -0500
-Date: Tue, 05 Jan 2010 20:42:01 -0800 (PST)
-Message-Id: <20100105.204201.34378986.davem@davemloft.net>
-To: heiko.carstens@de.ibm.com
-Cc: arjan@infradead.org, arnd@arndb.de, mingo@elte.hu,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] sparc: copy_from_user() should not return -EFAULT
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20100105152215.GD5480@osiris.boeblingen.de.ibm.com>
-References: <20100105131911.GC5480@osiris.boeblingen.de.ibm.com>
-	<20100105053117.6a7c3377@infradead.org>
-	<20100105152215.GD5480@osiris.boeblingen.de.ibm.com>
-X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Tue, 5 Jan 2010 23:55:48 -0500
+From: Gene Heskett <gene.heskett@verizon.net>
+Organization: Organization? Not detectable
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Linux 2.6.33-rc3, rc2 regression at boot
+Date: Tue, 05 Jan 2010 23:55:29 -0500
+User-Agent: KMail/1.12.3 (Linux/2.6.33-rc3; KDE/4.3.3; i686; ; )
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <alpine.LFD.2.00.1001051838410.3630@localhost.localdomain>
+In-reply-to: <alpine.LFD.2.00.1001051838410.3630@localhost.localdomain>
+MIME-version: 1.0
+Content-type: Text/Plain; charset=iso-8859-15
+Content-transfer-encoding: 7bit
+Message-id: <201001052355.29640.gene.heskett@verizon.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-Date: Tue, 5 Jan 2010 16:22:15 +0100
+On Tuesday 05 January 2010, Linus Torvalds wrote:
+>It's been quiet due to the holidays, so -rc3 is reasonably small despite
+>being a few days over the normal one-week mark. And most of the changes
+>are pretty trivial, although both ext4 and reiserfs had some trouble in
+>-rc2, hopefully all fixed now.
+>
+>The bulk of the patches are some SH defconfig updates (40%), but ignoring
+>those we have the normal "half drivers, half everything else" pattern. On
+>the driver front, the perhaps most notable change is not so much a code
+>change, but the small change of marking the "new" firewire stack as being
+>the recommended one.
+>
+>Wireless drivers, regular network drivers, filesystems, input layer..
+>
+>And here's to hoping one reason it's been quiet is that it's actually been
+>fairly stable. Give it a try,
+>
+>		Linus
 
-> Subject: [PATCH] sparc: copy_from_user() should not return -EFAULT
-> 
-> From: Heiko Carstens <heiko.carstens@de.ibm.com>
-> 
-> Callers of copy_from_user() expect it to return the number of bytes
-> it could not copy. In no case it is supposed to return -EFAULT.
-> 
-> In case of a detected buffer overflow just return the requested
-> length. In addition one could think of a memset that would clear
-> the size of the target object.
-> 
-> Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
+[...]
 
-Applied, thanks again for catching this.
+I didn't see anything here, but on looking at the ChangeLog for rc1, I see a 
+lot of stuff fiddling with firmware.  On my phenom x4, I get this very early in 
+the boot:
+[    0.558368] Unpacking initramfs...
+[    0.648644] Freeing initrd memory: 3431k freed
+[    0.651635] platform microcode: firmware: requesting amd-ucode/microcode_amd.bin
+[   60.646738] microcode: failed to load file amd-ucode/microcode_amd.bin
+[   60.646858] microcode: CPU0: patch_level=0x1000065
+[   60.646977] microcode: CPU1: patch_level=0x1000065
+[   60.647099] microcode: CPU2: patch_level=0x1000065
+[   60.647218] microcode: CPU3: patch_level=0x1000065
+
+Note the time, it kills quite close to a whole minute there, which at first 
+would appear to be because there is not yet a mounted /lib filesystem to suck
+it from.  I didn't build an rc1, but rc2 also suffers from this. 2.6.32.2 does
+not do this although its firmware request takes place at the same point.
+So it doesn't look like it is the lack of a mounted filesystem after all.
+
+FWIW, because it was a hot reboot, the patch_level reported is the correct
+level.
+
+I am also seeing some complaints about my Audigy2 sound card, but what I saw
+during the boot, never made it to the messages log.  Something about guessing
+at the proper config, but I did hear kde sign on when x started.
+
+Thanks Linus.
+
+-- 
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+
+Insomnia isn't anything to lose sleep over.
