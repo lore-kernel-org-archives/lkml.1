@@ -1,120 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755404Ab0AVXTa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755592Ab0AVXVI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755404Ab0AVXTa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 18:19:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753382Ab0AVXTW
+	id S1755592Ab0AVXVI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 18:21:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754142Ab0AVXTV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 18:19:22 -0500
-Received: from fmmailgate02.web.de ([217.72.192.227]:44831 "EHLO
-	fmmailgate02.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753438Ab0AVXTT (ORCPT
+	Fri, 22 Jan 2010 18:19:21 -0500
+Received: from fmmailgate03.web.de ([217.72.192.234]:58876 "EHLO
+	fmmailgate03.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753379Ab0AVXTT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 22 Jan 2010 18:19:19 -0500
-Message-Id: <579c7b0a63eea4dc7005ab914c8972d7d16e7115.1264201406.git.jan.kiszka@web.de>
+Message-Id: <af79852df9c14a613e2d60879406909d2a50860f.1264201406.git.jan.kiszka@web.de>
 In-Reply-To: <cover.1264201406.git.jan.kiszka@web.de>
 References: <cover.1264201406.git.jan.kiszka@web.de>
 From: Jan Kiszka <jan.kiszka@web.de>
 To: David Miller <davem@davemloft.net>, Karsten Keil <isdn@linux-pingi.de>
 Cc: linux-kernel@vger.kernel.org, i4ldeveloper@listserv.isdn4linux.de,
        isdn4linux@listserv.isdn4linux.de, netdev@vger.kernel.org
-Date: Wed, 6 Jan 2010 14:49:00 +0100
-Subject: [PATCH 03/31] CAPI: Eliminate capifs_root variable
-X-Provags-ID: V01U2FsdGVkX1/bHCSs13I37VcAX+biEYHoTv16NQdxAuPSWYJH
-	rPB17WeYm4aYYV3jDbR7qMUTjRpM1XcDsPNR2Px2Md2lEcm415
-	qhgI8ucZk=
+Date: Wed, 6 Jan 2010 11:43:20 +0100
+Subject: [PATCH 01/31] CAPI: Fix leaks in capifs_new_ncci
+X-Provags-ID: V01U2FsdGVkX19Rl95Pszytf57nza5pc5RJe+T4+7volh6gYxUq
+	2elRdMipoibXcV4F6CTFWfGzHCZz0Q44fZpB89pS7lNppZXIB0
+	0ORwWybRA=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-capifs_mnt->mnt_sb->s_root already contains what we need.
+When something went wrong during capifs_new_ncci, the looked up dentry
+was not properly released. Neither was the allocated inode. Refactor the
+function to avoid leaks.
 
 Signed-off-by: Jan Kiszka <jan.kiszka@web.de>
 ---
- drivers/isdn/capi/capifs.c |   18 ++++++++++--------
- 1 files changed, 10 insertions(+), 8 deletions(-)
+ drivers/isdn/capi/capifs.c |   25 ++++++++++++++++++-------
+ 1 files changed, 18 insertions(+), 7 deletions(-)
 
 diff --git a/drivers/isdn/capi/capifs.c b/drivers/isdn/capi/capifs.c
-index 91aafad..6ae0edf 100644
+index 9f8f67b..dc68fcb 100644
 --- a/drivers/isdn/capi/capifs.c
 +++ b/drivers/isdn/capi/capifs.c
-@@ -32,7 +32,6 @@ static char *revision = "$Revision: 1.1.2.3 $";
- #define CAPIFS_SUPER_MAGIC (('C'<<8)|'N')
- 
- static struct vfsmount *capifs_mnt;
--static struct dentry *capifs_root;
- 
- static struct {
- 	int setuid;
-@@ -118,7 +117,7 @@ capifs_fill_super(struct super_block *s, void *data, int silent)
- 	inode->i_fop = &simple_dir_operations;
- 	inode->i_nlink = 2;
- 
--	capifs_root = s->s_root = d_alloc_root(inode);
-+	s->s_root = d_alloc_root(inode);
- 	if (s->s_root)
- 		return 0;
- 	
-@@ -143,15 +142,17 @@ static struct file_system_type capifs_fs_type = {
- 
- struct dentry *capifs_new_ncci(unsigned int number, dev_t device)
+@@ -152,22 +152,33 @@ static struct dentry *get_node(int num)
+ void capifs_new_ncci(unsigned int number, dev_t device)
  {
-+	struct super_block *s = capifs_mnt->mnt_sb;
-+	struct dentry *root = s->s_root;
  	struct dentry *dentry;
- 	struct inode *inode;
- 	char name[10];
- 	int namelen;
+-	struct inode *inode = new_inode(capifs_mnt->mnt_sb);
+-	if (!inode)
+-		return;
+-	inode->i_ino = number+2;
++	struct inode *inode;
  
--	mutex_lock(&capifs_root->d_inode->i_mutex);
-+	mutex_lock(&root->d_inode->i_mutex);
+ 	dentry = get_node(number);
++	if (IS_ERR(dentry))
++		goto unlock_out;
++
++	if (dentry->d_inode) {
++		dput(dentry);
++		goto unlock_out;
++	}
++
++	inode = new_inode(capifs_mnt->mnt_sb);
++	if (!inode) {
++		dput(dentry);
++		goto unlock_out;
++	}
  
- 	namelen = sprintf(name, "%d", number);
--	dentry = lookup_one_len(name, capifs_root, namelen);
-+	dentry = lookup_one_len(name, root, namelen);
- 	if (IS_ERR(dentry)) {
- 		dentry = NULL;
- 		goto unlock_out;
-@@ -163,7 +164,7 @@ struct dentry *capifs_new_ncci(unsigned int number, dev_t device)
- 		goto unlock_out;
- 	}
+ 	/* config contents is protected by root's i_mutex */
+ 	inode->i_uid = config.setuid ? config.uid : current_fsuid();
+ 	inode->i_gid = config.setgid ? config.gid : current_fsgid();
+ 	inode->i_mtime = inode->i_atime = inode->i_ctime = CURRENT_TIME;
++	inode->i_ino = number + 2;
+ 	init_special_inode(inode, S_IFCHR|config.mode, device);
+-	//inode->i_op = &capifs_file_inode_operations;
  
--	inode = new_inode(capifs_mnt->mnt_sb);
-+	inode = new_inode(s);
- 	if (!inode) {
- 		dput(dentry);
- 		dentry = NULL;
-@@ -181,19 +182,20 @@ struct dentry *capifs_new_ncci(unsigned int number, dev_t device)
- 	dget(dentry);
- 
- unlock_out:
--	mutex_unlock(&capifs_root->d_inode->i_mutex);
-+	mutex_unlock(&root->d_inode->i_mutex);
- 
- 	return dentry;
+-	if (!IS_ERR(dentry) && !dentry->d_inode)
+-		d_instantiate(dentry, inode);
++	d_instantiate(dentry, inode);
++
++unlock_out:
+ 	mutex_unlock(&capifs_root->d_inode->i_mutex);
  }
  
- void capifs_free_ncci(struct dentry *dentry)
- {
-+	struct dentry *root = capifs_mnt->mnt_sb->s_root;
- 	struct inode *inode;
- 
- 	if (!dentry)
- 		return;
- 
--	mutex_lock(&capifs_root->d_inode->i_mutex);
-+	mutex_lock(&root->d_inode->i_mutex);
- 
- 	inode = dentry->d_inode;
- 	if (inode) {
-@@ -203,7 +205,7 @@ void capifs_free_ncci(struct dentry *dentry)
- 	}
- 	dput(dentry);
- 
--	mutex_unlock(&capifs_root->d_inode->i_mutex);
-+	mutex_unlock(&root->d_inode->i_mutex);
- }
- 
- static int __init capifs_init(void)
 -- 
 1.6.0.2
 
