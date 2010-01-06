@@ -1,61 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756169Ab0AFTk2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756175Ab0AFTmS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756169Ab0AFTk2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 14:40:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756026Ab0AFTk0
+	id S1756175Ab0AFTmS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 14:42:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756034Ab0AFTmS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 14:40:26 -0500
-Received: from fg-out-1718.google.com ([72.14.220.154]:20113 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756014Ab0AFTkZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 14:40:25 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=UX4fEQfBVFqW5tayHLI7kyCTKhPSBzfGoa/2nDjB+vk7Be0LfjLcmNyUf/gQarOr2b
-         8jQT5dhrGRkW4k8QvXFjv1jdRPnLUz1HMN88HulMr9GSRmAmUOD3M+HKb8DgKKZYkqnz
-         paJS2tD8XNXsAU7Ebp7avmNkAcQjl5CiWvv4c=
-Date: Wed, 6 Jan 2010 20:40:17 +0100
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: Stephen Hemminger <shemminger@vyatta.com>
-Cc: Michael Breuer <mbreuer@majjas.com>, David Miller <davem@davemloft.net>,
-       akpm@linux-foundation.org, flyboy@gmail.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH alt.2] af_packet: Don't use skb after dev_queue_xmit()
-Message-ID: <20100106194017.GA3354@del.dom.local>
-References: <20100105230746.GA6612@del.dom.local>
- <4B43F72C.9090004@majjas.com>
- <20100106072208.GA6711@ff.dom.local>
- <20100106091532.GA10201@ff.dom.local>
- <20100106064957.3be271b8@nehalam>
+	Wed, 6 Jan 2010 14:42:18 -0500
+Received: from sabe.cs.wisc.edu ([128.105.6.20]:33296 "EHLO sabe.cs.wisc.edu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755491Ab0AFTmR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jan 2010 14:42:17 -0500
+Message-ID: <4B44E790.9070800@cs.wisc.edu>
+Date: Wed, 06 Jan 2010 13:42:08 -0600
+From: Mike Christie <michaelc@cs.wisc.edu>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100106064957.3be271b8@nehalam>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: open-iscsi@googlegroups.com
+CC: Tao Ma <tao.ma@oracle.com>, linux-kernel@vger.kernel.org
+Subject: Re: iscsi warning in 2.6.33-rc2
+References: <4B3AE891.5010508@oracle.com>
+In-Reply-To: <4B3AE891.5010508@oracle.com>
+Content-Type: multipart/mixed;
+ boundary="------------070003040205030906050904"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 06, 2010 at 06:49:57AM -0800, Stephen Hemminger wrote:
-> On Wed, 6 Jan 2010 09:15:32 +0000
-> Jarek Poplawski <jarkao2@gmail.com> wrote:
-> 
-> > tpacket_snd() can change and kfree an skb after dev_queue_xmit(),
-> > which is illegal.
-> > 
-> > With debugging by: Stephen Hemminger <shemminger@linux-foundation.org>
-> > 
-> > Reported-by: Michael Breuer <mbreuer@majjas.com>
-> > Signed-off-by: Jarek Poplawski <jarkao2@gmail.com>
-> 
-> Good catch.
-> Acked-by: Stephen Hemminger <shemminger@vyatta.com>
+This is a multi-part message in MIME format.
+--------------070003040205030906050904
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-First of all, we're incredibly lucky that such a helpful guy as
-Michael had misfortune to hit so helpfully broken piece of hardware ;-)
+On 12/29/2009 11:43 PM, Tao Ma wrote:
+> Hi all,
+> 	I met with this warning when using iscsi with the 2.6.33-rc2.
+>
+> ------------[ cut here ]------------
+> WARNING: at drivers/scsi/libiscsi_tcp.c:996
 
-Thanks,
-Jarek P.
+....
+
+>
+> The other thing I can confirm is that I didn't meet with such problem in
+> 2.6.32-rc8.
+>
+
+Sorry for the late reply. I am just getting back.
+
+I think this is due to the kfifo changes that got merged recently.
+
+For the iscsi side if there is nothing in the r2tqueue fifo at this time 
+it is fine. It just means that there is nothing to process, so I think 
+that the warn on should just not have been added.
+
+Could you try the attached patch? I have only compile tested it. I am 
+starting up some testing for the patch and the other fifo changes that 
+got merged now.
+
+--------------070003040205030906050904
+Content-Type: text/x-patch;
+ name="iscsi-do-not-warn-on-empty-r2t.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+ filename="iscsi-do-not-warn-on-empty-r2t.patch"
+
+An empty r2tqueue is a valid state. It just means that we have
+processed all that there was to do.
+
+This patch removes the WARN_ON.
+
+Signed-off-by: Mike Christie <michaelc@cs.wisc.edu>
+
+diff --git a/drivers/scsi/libiscsi_tcp.c b/drivers/scsi/libiscsi_tcp.c
+index db6856c..4ad87fd 100644
+--- a/drivers/scsi/libiscsi_tcp.c
++++ b/drivers/scsi/libiscsi_tcp.c
+@@ -992,12 +992,10 @@ static struct iscsi_r2t_info *iscsi_tcp_get_curr_r2t(struct iscsi_task *task)
+ 		if (r2t == NULL) {
+ 			if (kfifo_out(&tcp_task->r2tqueue,
+ 			    (void *)&tcp_task->r2t, sizeof(void *)) !=
+-			    sizeof(void *)) {
+-				WARN_ONCE(1, "unexpected fifo state");
++			    sizeof(void *))
+ 				r2t = NULL;
+-			}
+-
+-			r2t = tcp_task->r2t;
++			else
++				r2t = tcp_task->r2t;
+ 		}
+ 		spin_unlock_bh(&session->lock);
+ 	}
+
+--------------070003040205030906050904--
