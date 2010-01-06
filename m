@@ -1,195 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932366Ab0AFTXW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756137Ab0AFTYL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932366Ab0AFTXW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 14:23:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755972Ab0AFTXV
+	id S1756137Ab0AFTYL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 14:24:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755982Ab0AFTYJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 14:23:21 -0500
-Received: from mail.perches.com ([173.55.12.10]:1592 "EHLO mail.perches.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754862Ab0AFTXU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 14:23:20 -0500
-Subject: [PATCH v2 5/8] net/ipv4/netfilter/nf_nat_ftp.c: Remove (*mangle[])
- array and functions, use %pI4
-From: Joe Perches <joe@perches.com>
-To: linux-kernel@vger.kernel.org
-Cc: Patrick McHardy <kaber@trash.net>, "David S. Miller" <davem@davemloft.net>,
-       Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>,
-       "Pekka Savola (ipv6)" <pekkas@netcore.fi>,
-       James Morris <jmorris@namei.org>,
-       Hideaki YOSHIFUJI <yoshfuji@linux-ipv6.org>,
-       netfilter-devel@vger.kernel.org, netfilter@vger.kernel.org,
-       coreteam@netfilter.org, netdev@vger.kernel.org
-In-Reply-To: <bccf36219f3ea5a9b7565734bc87095bc986dbe0.1262726222.git.joe@perches.com>
-References: <cover.1262726222.git.joe@perches.com>
-	 <bccf36219f3ea5a9b7565734bc87095bc986dbe0.1262726222.git.joe@perches.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 06 Jan 2010 11:23:18 -0800
-Message-ID: <1262805798.1952.105.camel@Joe-Laptop.home>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 6 Jan 2010 14:24:09 -0500
+Received: from mail-yw0-f176.google.com ([209.85.211.176]:43241 "EHLO
+	mail-yw0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755972Ab0AFTYI convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jan 2010 14:24:08 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=N94VmaMI2Dm6PURv5ZOOa1ixFn9HlKG3U1gMJIzQmmo3YJuGREZATU9LdkK4KSEUeu
+         DZ3ZJhGLFMl4zKr+d5dv/ASuqlrbJxfIhL4Xi7MtZPZZHBDptLJMcD5c1Hs7BWM2L408
+         PUYkMiMQEkaWiyZaRWtWHrshYYUc5gdYzjsec=
+MIME-Version: 1.0
+In-Reply-To: <alpine.DEB.2.00.1001051620030.9108@router.home>
+References: <20100105220417.400092933@quilx.com> <20100105220437.940473705@quilx.com> 
+	<8bd0f97a1001051417w288440b4h65b6b01d4ad36a72@mail.gmail.com> 
+	<alpine.DEB.2.00.1001051620030.9108@router.home>
+From: Mike Frysinger <vapier.adi@gmail.com>
+Date: Wed, 6 Jan 2010 14:23:47 -0500
+Message-ID: <8bd0f97a1001061123w15278d0cr4e74c88f22fa6e6e@mail.gmail.com>
+Subject: Re: [RFC local_t removal V1 1/4] Add add_local() and 
+	add_local_return()
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Tejun Heo <tj@kernel.org>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-These functions merely exist to format a buffer and call
-nf_nat_mangle_tcp_packet.
+On Tue, Jan 5, 2010 at 17:29, Christoph Lameter wrote:
+> On Tue, 5 Jan 2010, Mike Frysinger wrote:
+>> On Tue, Jan 5, 2010 at 17:04, Christoph Lameter wrote:
+>> > --- /dev/null   1970-01-01 00:00:00.000000000 +0000
+>> > +++ linux-2.6/include/asm-generic/add-local.h   2010-01-05 15:36:02.000000000 -0600
+>> > @@ -0,0 +1,13 @@
+>> > +#ifndef __ASM_GENERIC_ADD_LOCAL_H
+>> > +#define __ASM_GENERIC_ADD_LOCAL_H
+>>
+>> needs comment header (blurb/copyright/license)
+>
+> A simple small include file? Really?
 
-Format the buffer and perform the call in nf_nat_ftp instead.
+if there's enough content to warrant protection against multiple
+inclusion, then generally yes
 
-Use %pI4 for the IP address.
+>> > --- /dev/null   1970-01-01 00:00:00.000000000 +0000
+>> > +++ linux-2.6/arch/alpha/include/asm/add-local.h        2010-01-05 15:36:02.000000000 -0600
+>> > @@ -0,0 +1,2 @@
+>> > +#include <asm-generic/add-local.h>
+>> > +
+>>
+>> these arch stubs all have an extra new line
+>
+> Thats bad?
 
-Saves ~600 bytes of text
+files shouldnt have trailing new lines
 
-old:
-$ size net/ipv4/netfilter/nf_nat_ftp.o
-   text	   data	    bss	    dec	    hex	filename
-   2187	    160	    408	   2755	    ac3	net/ipv4/netfilter/nf_nat_ftp.o
-new:
-$ size net/ipv4/netfilter/nf_nat_ftp.o
-   text    data     bss     dec     hex filename
-   1532     112     288    1932     78c net/ipv4/netfilter/nf_nat_ftp.o
+>> > +/*
+>> > + * Generic version of __add_return_local (disables interrupts). Takes an
+>> > + * unsigned long parameter, supporting various types of architectures.
+>> > + */
+>> > +static inline unsigned long __add_return_local_generic(volatile void *ptr,
+>> > +               unsigned long value, int size)
+>>
+>> size_t for size ?
+>
+> No. It can be anything.
 
-Signed-off-by: Joe Perches <joe@perches.com>
+you're passing it sizeof() which returns a size_t
 
- net/ipv4/netfilter/nf_nat_ftp.c |  105 +++++++++++++--------------------------
- 1 files changed, 35 insertions(+), 70 deletions(-)
+>> > +extern unsigned long wrong_size_add_local(volatile void *ptr);
+>> > ...
+>> > +       /*
+>> > +        * Sanity checking, compile-time.
+>> > +        */
+>> > +       if (size == 8 && sizeof(unsigned long) != 8)
+>> > +               wrong_size_add_local(ptr);
+>> > ...
+>> > +       default:
+>> > +               wrong_size_add_local(ptr);
+>> > +       }
+>>
+>> should be BUILD_BUG_ON() ?
+>
+> Does not work there.
 
-diff --git a/net/ipv4/netfilter/nf_nat_ftp.c b/net/ipv4/netfilter/nf_nat_ftp.c
-index a1d5d58..86e0e84 100644
---- a/net/ipv4/netfilter/nf_nat_ftp.c
-+++ b/net/ipv4/netfilter/nf_nat_ftp.c
-@@ -27,76 +27,29 @@ MODULE_ALIAS("ip_nat_ftp");
- 
- /* FIXME: Time out? --RR */
- 
--static int
--mangle_rfc959_packet(struct sk_buff *skb,
--		     __be32 newip,
--		     u_int16_t port,
--		     unsigned int matchoff,
--		     unsigned int matchlen,
--		     struct nf_conn *ct,
--		     enum ip_conntrack_info ctinfo)
-+static int nf_nat_ftp_fmt_cmd(enum nf_ct_ftp_type type,
-+			      char *buffer, size_t buflen,
-+			      __be32 addr, u16 port)
- {
--	char buffer[sizeof("nnn,nnn,nnn,nnn,nnn,nnn")];
--
--	sprintf(buffer, "%u,%u,%u,%u,%u,%u",
--		NIPQUAD(newip), port>>8, port&0xFF);
--
--	pr_debug("calling nf_nat_mangle_tcp_packet\n");
--
--	return nf_nat_mangle_tcp_packet(skb, ct, ctinfo, matchoff,
--					matchlen, buffer, strlen(buffer));
--}
--
--/* |1|132.235.1.2|6275| */
--static int
--mangle_eprt_packet(struct sk_buff *skb,
--		   __be32 newip,
--		   u_int16_t port,
--		   unsigned int matchoff,
--		   unsigned int matchlen,
--		   struct nf_conn *ct,
--		   enum ip_conntrack_info ctinfo)
--{
--	char buffer[sizeof("|1|255.255.255.255|65535|")];
--
--	sprintf(buffer, "|1|%u.%u.%u.%u|%u|", NIPQUAD(newip), port);
--
--	pr_debug("calling nf_nat_mangle_tcp_packet\n");
--
--	return nf_nat_mangle_tcp_packet(skb, ct, ctinfo, matchoff,
--					matchlen, buffer, strlen(buffer));
--}
--
--/* |1|132.235.1.2|6275| */
--static int
--mangle_epsv_packet(struct sk_buff *skb,
--		   __be32 newip,
--		   u_int16_t port,
--		   unsigned int matchoff,
--		   unsigned int matchlen,
--		   struct nf_conn *ct,
--		   enum ip_conntrack_info ctinfo)
--{
--	char buffer[sizeof("|||65535|")];
--
--	sprintf(buffer, "|||%u|", port);
--
--	pr_debug("calling nf_nat_mangle_tcp_packet\n");
-+	switch (type) {
-+	case NF_CT_FTP_PORT:
-+	case NF_CT_FTP_PASV:
-+		return snprintf(buffer, buflen, "%u,%u,%u,%u,%u,%u",
-+				((unsigned char *)&addr)[0],
-+				((unsigned char *)&addr)[1],
-+				((unsigned char *)&addr)[2],
-+				((unsigned char *)&addr)[3],
-+				port >> 8,
-+				port & 0xFF);
-+	case NF_CT_FTP_EPRT:
-+		return snprintf(buffer, buflen, "|1|%pI4|%u|", &addr, port);
-+	case NF_CT_FTP_EPSV:
-+		return snprintf(buffer, buflen, "|||%u|", port);
-+	}
- 
--	return nf_nat_mangle_tcp_packet(skb, ct, ctinfo, matchoff,
--					matchlen, buffer, strlen(buffer));
-+	return 0;
- }
- 
--static int (*mangle[])(struct sk_buff *, __be32, u_int16_t,
--		       unsigned int, unsigned int, struct nf_conn *,
--		       enum ip_conntrack_info)
--= {
--	[NF_CT_FTP_PORT] = mangle_rfc959_packet,
--	[NF_CT_FTP_PASV] = mangle_rfc959_packet,
--	[NF_CT_FTP_EPRT] = mangle_eprt_packet,
--	[NF_CT_FTP_EPSV] = mangle_epsv_packet
--};
--
- /* So, this packet has hit the connection tracking matching code.
-    Mangle it, and change the expectation to match the new version. */
- static unsigned int nf_nat_ftp(struct sk_buff *skb,
-@@ -110,6 +63,8 @@ static unsigned int nf_nat_ftp(struct sk_buff *skb,
- 	u_int16_t port;
- 	int dir = CTINFO2DIR(ctinfo);
- 	struct nf_conn *ct = exp->master;
-+	char buffer[sizeof("|1|255.255.255.255|65535|")];
-+	unsigned int buflen;
- 
- 	pr_debug("FTP_NAT: type %i, off %u len %u\n", type, matchoff, matchlen);
- 
-@@ -132,11 +87,21 @@ static unsigned int nf_nat_ftp(struct sk_buff *skb,
- 	if (port == 0)
- 		return NF_DROP;
- 
--	if (!mangle[type](skb, newip, port, matchoff, matchlen, ct, ctinfo)) {
--		nf_ct_unexpect_related(exp);
--		return NF_DROP;
--	}
-+	buflen = nf_nat_ftp_fmt_cmd(type, buffer, sizeof(buffer), newip, port);
-+	if (!buflen)
-+		goto out;
-+
-+	pr_debug("calling nf_nat_mangle_tcp_packet\n");
-+
-+	if (!nf_nat_mangle_tcp_packet(skb, ct, ctinfo, matchoff,
-+				      matchlen, buffer, buflen))
-+		goto out;
-+
- 	return NF_ACCEPT;
-+
-+out:
-+	nf_ct_unexpect_related(exp);
-+	return NF_DROP;
- }
- 
- static void __exit nf_nat_ftp_fini(void)
-
-
+why not ?  BUILD_BUG_ON() should work on any compile-time constant
+which sizeof() is ... unless you plan on letting people call this
+function with arbitrary sizes ?
+-mike
