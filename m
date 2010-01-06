@@ -1,74 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754727Ab0AFDUZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755043Ab0AFDVv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754727Ab0AFDUZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 22:20:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754549Ab0AFDUY
+	id S1755043Ab0AFDVv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 22:21:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754247Ab0AFDVu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 22:20:24 -0500
-Received: from casper.infradead.org ([85.118.1.10]:59460 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753087Ab0AFDUY (ORCPT
+	Tue, 5 Jan 2010 22:21:50 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:55856 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754186Ab0AFDVt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 22:20:24 -0500
-Date: Tue, 5 Jan 2010 19:22:43 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+	Tue, 5 Jan 2010 22:21:49 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Wed, 6 Jan 2010 12:18:36 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: balbir@linux.vnet.ibm.com
+Cc: Andrew Morton <akpm@linux-foundation.org>,
        "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "minchan.kim@gmail.com" <minchan.kim@gmail.com>,
-       "hugh.dickins" <hugh.dickins@tiscali.co.uk>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [RFC][PATCH 6/8] mm: handle_speculative_fault()
-Message-ID: <20100105192243.1d6b2213@infradead.org>
-In-Reply-To: <alpine.DEB.2.00.1001050916300.1074@router.home>
-References: <20100104182429.833180340@chello.nl>
-	<20100104182813.753545361@chello.nl>
-	<20100105054536.44bf8002@infradead.org>
-	<alpine.DEB.2.00.1001050916300.1074@router.home>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.6; i586-redhat-linux-gnu)
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH -mm] Shared Page accounting for memory cgroup (v2)
+Message-Id: <20100106121836.40f3b3c0.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20100106030752.GI3059@balbir.in.ibm.com>
+References: <20100105185226.GG3059@balbir.in.ibm.com>
+	<20100106090708.f3ec9fd8.kamezawa.hiroyu@jp.fujitsu.com>
+	<20100106030752.GI3059@balbir.in.ibm.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 5 Jan 2010 09:17:11 -0600 (CST)
-Christoph Lameter <cl@linux-foundation.org> wrote:
+On Wed, 6 Jan 2010 08:37:52 +0530
+Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 
-> On Tue, 5 Jan 2010, Arjan van de Ven wrote:
+> * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2010-01-06 09:07:08]:
 > 
-> > while I appreciate the goal of reducing contention on this lock...
-> > wouldn't step one be to remove the page zeroing from under this
-> > lock? that's by far (easily by 10x I would guess) the most
-> > expensive thing that's done under the lock, and I would expect a
-> > first order of contention reduction just by having the zeroing of a
-> > page not done under the lock...
+> > On Wed, 6 Jan 2010 00:22:26 +0530
+> > Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> > 
+> > > Hi, All,
+> > > 
+> > > No major changes from v1, except for the use of get_mm_rss().
+> > > Kamezawa-San felt that this can be done in user space and I responded
+> > > to him with my concerns of doing it in user space. The thread
+> > > can be found at http://thread.gmane.org/gmane.linux.kernel.mm/42367.
+> > > 
+> > > If there are no major objections, can I ask for a merge into -mm.
+> > > Andrew, the patches are against mmotm 10 December 2009, if there
+> > > are some merge conflicts, please let me know, I can rebase after
+> > > you release the next mmotm.
+> > > 
+> > 
+> > The problem is that this isn't "shared" uasge but "considered to be shared"
+> > usage. Okay ?
+> >
 > 
-> The main issue is cacheline bouncing. mmap sem is a rw semaphore and
-> only held for read during a fault.
+> Could you give me your definition of "shared". From the mem cgroup
+> perspective, total_rss (which is accumulated) subtracted from the
+> count of pages in the LRU which are RSS and FILE_MAPPED is shared, no?
 
-depends on the workload; on a many-threads-java workload, you also get
-it for write quite a bit (lots of malloc/frees in userspace in addition
-to pagefaults).. at which point you do end up serializing on the
-zeroing.
+You consider only "mapped" pages are shared page. That's wrong.
+And let's think about your "total_rss - RSS+MAPPED"
 
-There's some real life real big workloads that show this pretty badly;
-so far the workaround is to have glibc batch up a lot of the free()s..
-but that's just pushing it a little further out.
+In this typical case,
+	fork()  ---- process(A)
+	-> fork() --- process(B)
+	  -> process(C)
 
+total_rss = rss(A) + rss(B) + rss(C) = 3 * rss(A)
+Then, 
+
+total_rss - RSS_MAPPED = 2 * rss(A).
+
+How we call this number ? Is this "shared usage" ? I think no.
+If you want to do this, scan LRU and count the number of really shared pages.
+It's much better than detecting "shared pages" via process and will have no
+big issue if implemented in proper way.
+
+> I understand that some of the pages that might be shared, show up
+> in our LRU and accounting. These are not treated as shared by
+> our cgroup, but by other cgroups.
+>  
+> > Then I don't want to provide this misleading value as "official report" from
+> > the kernel. And this can be done in userland.
+> >
+> 
+> I explained some of the issues of doing this from user space, would
+> you be OK if I called them "non-private" pages?
 > 
 
+I think I explained there is no issue to do this in user-land.
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Thanks,
+-Kame
+
+
