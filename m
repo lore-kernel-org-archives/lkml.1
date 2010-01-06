@@ -1,68 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754594Ab0AFCe0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754694Ab0AFChT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754594Ab0AFCe0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 21:34:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754041Ab0AFCeV
+	id S1754694Ab0AFChT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 21:37:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753436Ab0AFChO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 21:34:21 -0500
-Received: from kirsty.vergenet.net ([202.4.237.240]:37220 "EHLO
-	kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753087Ab0AFCeT (ORCPT
+	Tue, 5 Jan 2010 21:37:14 -0500
+Received: from mta1.srv.hcvlny.cv.net ([167.206.4.196]:39556 "EHLO
+	mta1.srv.hcvlny.cv.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754041Ab0AFChL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 21:34:19 -0500
-Date: Wed, 6 Jan 2010 13:34:16 +1100
-From: Simon Horman <horms@verge.net.au>
-To: Joe Perches <joe@perches.com>
-Cc: linux-kernel@vger.kernel.org, Wensong Zhang <wensong@linux-vs.org>,
-       Julian Anastasov <ja@ssi.bg>, Patrick McHardy <kaber@trash.net>,
-       "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org,
-       lvs-devel@vger.kernel.org, netfilter-devel@vger.kernel.org,
-       netfilter@vger.kernel.org, coreteam@netfilter.org
-Subject: Re: [PATCH 6/8] net/netfilter/ipvs/ip_vs_ftp.c: Use standardized
- format in sprintf
-Message-ID: <20100106023416.GB18557@verge.net.au>
-References: <cover.1262726222.git.joe@perches.com>
- <da25f48ee7959e83a18e3705c223c8619e508bf4.1262726222.git.joe@perches.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <da25f48ee7959e83a18e3705c223c8619e508bf4.1262726222.git.joe@perches.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Tue, 5 Jan 2010 21:37:11 -0500
+Date: Tue, 05 Jan 2010 21:36:28 -0500
+From: Michael Breuer <mbreuer@majjas.com>
+Subject: Re: [PATCH] af_packet: Don't use skb after dev_queue_xmit()
+In-reply-to: <20100105230746.GA6612@del.dom.local>
+To: Jarek Poplawski <jarkao2@gmail.com>
+Cc: David Miller <davem@davemloft.net>, shemminger@linux-foundation.org,
+       akpm@linux-foundation.org, flyboy@gmail.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Message-id: <4B43F72C.9090004@majjas.com>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7BIT
+References: <20100105230746.GA6612@del.dom.local>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.5)
+ Gecko/20091204 Lightning/1.0b2pre Thunderbird/3.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 05, 2010 at 05:20:18PM -0800, Joe Perches wrote:
-> Use the same format string as net/ipv4/netfilter/nf_nat_ftp.c
-> to encode an ipv4 address and port.
-> 
-> Both uses should be a single common function.
-> 
-> Signed-off-by: Joe Perches <joe@perches.com>
-
-Acked-by: Simon Horman <horms@verge.net.au>
-
+On 1/5/2010 6:07 PM, Jarek Poplawski wrote:
+> David Miller wrote, On 12/27/2009 05:11 AM:
+>
+>    
+>> From: David Miller<davem@davemloft.net>
+>> Date: Sat, 26 Dec 2009 19:44:18 -0800 (PST)
+>>
+>>      
+>>> From: Stephen Hemminger<shemminger@linux-foundation.org>
+>>> Date: Sat, 26 Dec 2009 14:05:44 -0800
+>>>
+>>>        
+>>>> Other drivers may have same problem, I really think this ought
+>>>> to be done at higher level.
+>>>>          
+>>> I tend to agree with you, and I thought we had handled all
+>>> cases.  Let's simply make AF_PACKET linearize the link
+>>> level header before sending things out to the transmit path.
+>>>
+>>> I can work on this if you want.
+>>>        
+>> Actually Stephen, I took a look and I can't see how AF_PACKET
+>> can create this situation.
+>>
+>> It always copies into the linear area of the SKB it allocates
+>> for sendmsg() processing.  Whether the data comes from sendmsg
+>> data or the mmap() ring buffer.
+>>      
+> Actually, I think there is a bug in this place, but of course this
+> might be unconnected. Anyway, Michael, could you try this patch?
+> BTW, did you try with CONFIG_PACKET_MMAP disabled?
+>
+> Thanks,
+> Jarek P.
+> ----------------->
+>
+> Changing an skb after dev_queue_xmit() is illegal. And since it's
+> inconsistent to treat specially net_xmit_errno() non-zero return,
+> while ignoring other dev_queue_xmit() errors, there is no reason
+> to break the loop in tpacket_snd() in this case.
+>
+> With debugging by: Stephen Hemminger<shemminger@linux-foundation.org>
+>
+> Reported-by: Michael Breuer<mbreuer@majjas.com>
+> Signed-off-by: Jarek Poplawski<jarkao2@gmail.com>
 > ---
->  net/netfilter/ipvs/ip_vs_ftp.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/net/netfilter/ipvs/ip_vs_ftp.c b/net/netfilter/ipvs/ip_vs_ftp.c
-> index 33e2c79..73f38ea 100644
-> --- a/net/netfilter/ipvs/ip_vs_ftp.c
-> +++ b/net/netfilter/ipvs/ip_vs_ftp.c
-> @@ -208,7 +208,7 @@ static int ip_vs_ftp_out(struct ip_vs_app *app, struct ip_vs_conn *cp,
->  		 */
->  		from.ip = n_cp->vaddr.ip;
->  		port = n_cp->vport;
-> -		sprintf(buf, "%d,%d,%d,%d,%d,%d", NIPQUAD(from.ip),
-> +		sprintf(buf, "%u,%u,%u,%u,%u,%u", NIPQUAD(from.ip),
->  			(ntohs(port)>>8)&255, ntohs(port)&255);
->  		buf_len = strlen(buf);
->  
-> -- 
-> 1.6.6.rc0.57.gad7a
-> 
+>
+>   net/packet/af_packet.c |    8 +++-----
+>   1 files changed, 3 insertions(+), 5 deletions(-)
+>
+> diff --git a/net/packet/af_packet.c b/net/packet/af_packet.c
+> index e0516a2..984a1fa 100644
+> --- a/net/packet/af_packet.c
+> +++ b/net/packet/af_packet.c
+> @@ -1021,8 +1021,9 @@ static int tpacket_snd(struct packet_sock *po, struct msghdr *msg)
+>
+>   		status = TP_STATUS_SEND_REQUEST;
+>   		err = dev_queue_xmit(skb);
+> -		if (unlikely(err>  0&&  (err = net_xmit_errno(err)) != 0))
+> -			goto out_xmit;
+> +		if (unlikely(err>  0))
+> +			err = net_xmit_errno(err);
+> +
+>   		packet_increment_head(&po->tx_ring);
+>   		len_sum += tp_len;
+>   	} while (likely((ph != NULL) ||
+> @@ -1033,9 +1034,6 @@ static int tpacket_snd(struct packet_sock *po, struct msghdr *msg)
+>   	err = len_sum;
+>   	goto out_put;
+>
+> -out_xmit:
+> -	skb->destructor = sock_wfree;
+> -	atomic_dec(&po->tx_ring.pending);
+>   out_status:
+>   	__packet_set_status(po, ph, status);
+>   	kfree_skb(skb);
 > --
-> To unsubscribe from this list: send the line "unsubscribe lvs-devel" in
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
 > the body of a message to majordomo@vger.kernel.org
 > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>    
+This patch solves the original reported oops - as did Steven's patch of 
+12/26: [PATCH] sky2: make sure ethernet header is in transmit skb (I ran 
+without Steven's patch and with this patch).
+
+Oddly, with this patch vs. Steven's - I'm getting software interrupt 
+errors sporadically while not under load - with Steven's I get the 
+frequently while under load (as per nethogs). For example:
+Jan  5 21:29:00 mail kernel: sky2 0000:06:00.0: error interrupt 
+status=0x40000008
+Jan  5 21:29:00 mail kernel: sky2 software interrupt status 0x40000008
+Jan  5 21:29:00 mail kernel: sky2 Tx ring pending=124...125 report=125 
+done=125
+Jan  5 21:29:00 mail kernel: 124: 0xb38de0be(5374)
+Jan  5 21:29:00 mail kernel: sky2 0000:06:00.0: error interrupt status=0x8
+Jan  5 21:29:00 mail kernel: sky2 software interrupt status 0x8
+Jan  5 21:29:00 mail kernel: sky2 Tx ring pending=126...127 report=126 
+done=127
+Jan  5 21:29:00 mail kernel: 126: 0xb38d80be(9014)
+
+I also believe (can't prove yet) that my load test is slower with this 
+patch vs. the sky2 patch.
+
+Is it possible that this patch is causing the transmission to 
+momentarily halt such that the overall utilization appears low at the 
+time I see the interrupt errors, vs. the other patch which perhaps 
+doesn't interrupt the traffic flow quite so much?
+
+I haven't run yet with CONFIG_PACKET_MMAP disabled.
+
+
