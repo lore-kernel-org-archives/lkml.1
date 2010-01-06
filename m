@@ -1,99 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933020Ab0AFXPt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932644Ab0AFXPi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933020Ab0AFXPt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 18:15:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932656Ab0AFXPj
+	id S932644Ab0AFXPi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 18:15:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932459Ab0AFXPe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 18:15:39 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:60484 "EHLO
+	Wed, 6 Jan 2010 18:15:34 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:56858 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932631Ab0AFXPh (ORCPT
+	with ESMTP id S932418Ab0AFXPd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 18:15:37 -0500
-X-Authority-Analysis: v=1.0 c=1 a=ypJXi30cjqsA:10 a=meVymXHHAAAA:8 a=b7U4aDOeHw7s30zpFDIA:9 a=MvOzKO0E9Lmf5UUdgKF4L-GAthMA:4 a=XNN-oNMjSfgA:10 a=jeBq3FmKZ4MA:10 a=QxREhUQXPSKRjfz4:21 a=vJgT1E4iEQA7hs6R:21
+	Wed, 6 Jan 2010 18:15:33 -0500
+X-Authority-Analysis: v=1.0 c=1 a=fN6dPX1LNq8A:10 a=omOdbC7AAAAA:8 a=meVymXHHAAAA:8 a=qpqNgUFuo_7Ap8NDDqcA:9 a=pvHgA0nkKHTYvWtWUSnrxBNeZ_AA:4 a=jeBq3FmKZ4MA:10
 X-Cloudmark-Score: 0
 X-Originating-IP: 74.67.89.75
-Message-Id: <20100106231533.895223898@goodmis.org>
+Message-Id: <20100106231530.677189845@goodmis.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 06 Jan 2010 18:13:59 -0500
+Date: Wed, 06 Jan 2010 18:13:50 -0500
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Frederic Weisbecker <fweisbec@gmail.com>,
-       Wolfram Sang <w.sang@pengutronix.de>
-Subject: [PATCH 10/11] tracing: Use appropriate perl constructs in recordmcount.pl
+       Lai Jiangshan <laijs@cn.fujitsu.com>
+Subject: [PATCH 01/11] tracing: Have __dynamic_array() define a field
 References: <20100106231349.107649729@goodmis.org>
-Content-Disposition: inline; filename=0010-tracing-Use-appropriate-perl-constructs-in-recordmco.patch
+Content-Disposition: inline; filename=0001-tracing-Have-__dynamic_array-define-a-field.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Wolfram Sang <w.sang@pengutronix.de>
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
 
-Modified recordmcount.pl to use perl constructs that are still
-understandable by C hackers that are not perl programmers.
+This is part of a patch set that removes the show_format method
+in the ftrace event macros.
 
-Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
-LKML-Reference: <1262724082-9517-1-git-send-email-w.sang@pengutronix.de>
+This patch set requires that all fields are added to the
+ftrace_event_call->fields. This patch changes __dynamic_array()
+to call trace_define_field() to include fields that use __dynamic_array().
+
+Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+LKML-Reference: <4B273D36.8090100@cn.fujitsu.com>
 Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 ---
- scripts/recordmcount.pl |   29 +++++++++++------------------
- 1 files changed, 11 insertions(+), 18 deletions(-)
+ kernel/trace/trace_export.c |    7 ++++++-
+ 1 files changed, 6 insertions(+), 1 deletions(-)
 
-diff --git a/scripts/recordmcount.pl b/scripts/recordmcount.pl
-index 5de12c7..545fe71 100755
---- a/scripts/recordmcount.pl
-+++ b/scripts/recordmcount.pl
-@@ -136,13 +136,14 @@ my %text_sections = (
-      ".text.unlikely" => 1,
- );
+diff --git a/kernel/trace/trace_export.c b/kernel/trace/trace_export.c
+index d4fa5dc..9978a4f 100644
+--- a/kernel/trace/trace_export.c
++++ b/kernel/trace/trace_export.c
+@@ -175,7 +175,12 @@ ftrace_format_##name(struct ftrace_event_call *unused,			\
+ 		return ret;
  
--$objdump = "objdump" if ((length $objdump) == 0);
--$objcopy = "objcopy" if ((length $objcopy) == 0);
--$cc = "gcc" if ((length $cc) == 0);
--$ld = "ld" if ((length $ld) == 0);
--$nm = "nm" if ((length $nm) == 0);
--$rm = "rm" if ((length $rm) == 0);
--$mv = "mv" if ((length $mv) == 0);
-+# Note: we are nice to C-programmers here, thus we skip the '||='-idiom.
-+$objdump = 'objdump' if (!$objdump);
-+$objcopy = 'objcopy' if (!$objcopy);
-+$cc = 'gcc' if (!$cc);
-+$ld = 'ld' if (!$ld);
-+$nm = 'nm' if (!$nm);
-+$rm = 'rm' if (!$rm);
-+$mv = 'mv' if (!$mv);
+ #undef __dynamic_array
+-#define __dynamic_array(type, item)
++#define __dynamic_array(type, item)					\
++	ret = trace_define_field(event_call, #type, #item,		\
++				 offsetof(typeof(field), item),		\
++				 0, is_signed_type(type), FILTER_OTHER);\
++	if (ret)							\
++		return ret;
  
- #print STDERR "running: $P '$arch' '$objdump' '$objcopy' '$cc' '$ld' " .
- #    "'$nm' '$rm' '$mv' '$inputfile'\n";
-@@ -194,12 +195,8 @@ sub check_objcopy
-     }
- }
- 
--if ($arch eq "x86") {
--    if ($bits == 64) {
--	$arch = "x86_64";
--    } else {
--	$arch = "i386";
--    }
-+if ($arch eq 'x86') {
-+    $arch = ($bits == 64) ? 'x86_64' : 'i386';
- }
- 
- #
-@@ -476,11 +473,7 @@ while (<IN>) {
- 	$read_headers = 0;
- 
- 	# Only record text sections that we know are safe
--	if (defined($text_sections{$1})) {
--	    $read_function = 1;
--	} else {
--	    $read_function = 0;
--	}
-+	$read_function = defined($text_sections{$1});
- 	# print out any recorded offsets
- 	update_funcs();
- 
+ #undef FTRACE_ENTRY
+ #define FTRACE_ENTRY(name, struct_name, id, tstruct, print)		\
 -- 
 1.6.5
 
