@@ -1,176 +1,158 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754773Ab0AFAKX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754884Ab0AFAMN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754773Ab0AFAKX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 19:10:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754508Ab0AFAKX
+	id S1754884Ab0AFAMN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 19:12:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754572Ab0AFAMM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 19:10:23 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:37489 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751179Ab0AFAKW (ORCPT
+	Tue, 5 Jan 2010 19:12:12 -0500
+Received: from mail-gx0-f217.google.com ([209.85.217.217]:58882 "EHLO
+	mail-gx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753741Ab0AFAML (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 19:10:22 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Wed, 6 Jan 2010 09:07:08 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: balbir@linux.vnet.ibm.com
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH -mm] Shared Page accounting for memory cgroup (v2)
-Message-Id: <20100106090708.f3ec9fd8.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20100105185226.GG3059@balbir.in.ibm.com>
-References: <20100105185226.GG3059@balbir.in.ibm.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 5 Jan 2010 19:12:11 -0500
+X-Greylist: delayed 442 seconds by postgrey-1.27 at vger.kernel.org; Tue, 05 Jan 2010 19:12:11 EST
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Cc: Vipin Bhandari <vipin.bhandari@ti.com>, linux-kernel@vger.kernel.org,
+       davinci-linux-open-source@linux.davincidsp.com,
+       akpm@linux-foundation.org, drzeus-mmc@drzeus.cx
+Subject: Re: [PATCH] davinci: MMC: Adding support for 8bit MMC cards
+References: <1262001865-4373-1-git-send-email-vipin.bhandari@ti.com>
+	<4B3B32B1.4010900@ru.mvista.com>
+From: Kevin Hilman <khilman@deeprootsystems.com>
+Organization: Deep Root Systems, LLC
+Date: Tue, 05 Jan 2010 16:04:39 -0800
+In-Reply-To: <4B3B32B1.4010900@ru.mvista.com> (Sergei Shtylyov's message of "Wed\, 30 Dec 2009 14\:00\:01 +0300")
+Message-ID: <87my0sp088.fsf@deeprootsystems.com>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 6 Jan 2010 00:22:26 +0530
-Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+Sergei Shtylyov <sshtylyov@ru.mvista.com> writes:
 
-> Hi, All,
-> 
-> No major changes from v1, except for the use of get_mm_rss().
-> Kamezawa-San felt that this can be done in user space and I responded
-> to him with my concerns of doing it in user space. The thread
-> can be found at http://thread.gmane.org/gmane.linux.kernel.mm/42367.
-> 
-> If there are no major objections, can I ask for a merge into -mm.
-> Andrew, the patches are against mmotm 10 December 2009, if there
-> are some merge conflicts, please let me know, I can rebase after
-> you release the next mmotm.
-> 
+> Hello.
+>
+> Vipin Bhandari wrote:
+>
+>   [Re-replying to all, as I only replied to Vipin the first time.]
+>
+>> This patch adds the support for 8bit MMC cards. The controller
+>> data width is configurable depending on the wires setting in the
+>> platform data structure.
+>>
+>> MMC 8bit is tested on OMAPL137 and MMC 4bit is tested on OMAPL138 EVM.
+>>
+>> Signed-off-by: Vipin Bhandari <vipin.bhandari@ti.com>
+>>   
+>
+>   This has been done by MV in the internal tree but as you code is
+> significantly differenet from that one, I'm not asking you about the
+> missing MV signoffs...
+>
+>> diff --git a/drivers/mmc/host/davinci_mmc.c
+>> b/drivers/mmc/host/davinci_mmc.c
+>> index dd45e7c..3bd0ba2 100644
+>> --- a/drivers/mmc/host/davinci_mmc.c
+>> +++ b/drivers/mmc/host/davinci_mmc.c
+>> @@ -73,6 +73,7 @@
+>>  /* DAVINCI_MMCCTL definitions */
+>>  #define MMCCTL_DATRST         (1 << 0)
+>>  #define MMCCTL_CMDRST         (1 << 1)
+>> +#define MMCCTL_WIDTH_8_BIT    (1 << 8)
+>>  #define MMCCTL_WIDTH_4_BIT    (1 << 2)
+>>  #define MMCCTL_DATEG_DISABLED (0 << 6)
+>>  #define MMCCTL_DATEG_RISING   (1 << 6)
+>> @@ -791,22 +792,42 @@ static void calculate_clk_divider(struct
+>> mmc_host *mmc, struct mmc_ios *ios)
+>>   static void mmc_davinci_set_ios(struct mmc_host *mmc, struct
+>> mmc_ios *ios)
+>>  {
+>> -    unsigned int mmc_pclk = 0;
+>>      struct mmc_davinci_host *host = mmc_priv(mmc);
+>>  -    mmc_pclk = host->mmc_input_clk;
+>>      dev_dbg(mmc_dev(host->mmc),
+>>          "clock %dHz busmode %d powermode %d Vdd %04x\n",
+>>          ios->clock, ios->bus_mode, ios->power_mode,
+>>          ios->vdd);
+>> -    if (ios->bus_width == MMC_BUS_WIDTH_4) {
+>> -        dev_dbg(mmc_dev(host->mmc), "Enabling 4 bit mode\n");
+>> -        writel(readl(host->base + DAVINCI_MMCCTL) | MMCCTL_WIDTH_4_BIT,
+>> -            host->base + DAVINCI_MMCCTL);
+>> -    } else {
+>> -        dev_dbg(mmc_dev(host->mmc), "Disabling 4 bit mode\n");
+>> -        writel(readl(host->base + DAVINCI_MMCCTL) & ~MMCCTL_WIDTH_4_BIT,
+>> +
+>> +    switch (ios->bus_width) {
+>> +    case MMC_BUS_WIDTH_8:
+>> +        dev_dbg(mmc_dev(host->mmc), "Enabling 8 bit mode\n");
+>> +        writel((readl(host->base + DAVINCI_MMCCTL) &
+>> +            ~MMCCTL_WIDTH_4_BIT) | MMCCTL_WIDTH_8_BIT,
+>>              host->base + DAVINCI_MMCCTL);
+>> +        break;
+>> +    case MMC_BUS_WIDTH_4:
+>> +        dev_dbg(mmc_dev(host->mmc), "Enabling 4 bit mode\n");
+>> +        if (host->version == MMC_CTLR_VERSION_2)
+>> +            writel((readl(host->base + DAVINCI_MMCCTL) &
+>> +                ~MMCCTL_WIDTH_8_BIT) | MMCCTL_WIDTH_4_BIT,
+>> +                host->base + DAVINCI_MMCCTL);
+>> +        else
+>> +            writel(readl(host->base + DAVINCI_MMCCTL) |
+>> +                MMCCTL_WIDTH_4_BIT,
+>> +                host->base + DAVINCI_MMCCTL);
+>>   
+>
+>   I don't think it makes sense to check for host->version just to not
+> clear the bit which is reserved for original DaVinci. There's nothing
+> criminal in clearing a reserved bit, so I'm suggesting that you remove
+> the check.
 
-The problem is that this isn't "shared" uasge but "considered to be shared"
-usage. Okay ?
+There's nothing criminal... yet... until some new version of the
+controller uses that bit for something else.  I think it's always best
+to not touch reserved bits unless there is a good, well tested, reason
+not to, such as performance etc.
 
-Then I don't want to provide this misleading value as "official report" from
-the kernel. And this can be done in userland.
+Kevin
 
-Then, NACK.
 
-Thanks,
--Kame
-
-> 
-> Add shared accounting to memcg
-> 
-> From: Balbir Singh <balbir@linux.vnet.ibm.com>
-> 
-> Currently there is no accurate way of estimating how many pages are
-> shared in a memory cgroup. The accurate way of accounting shared memory
-> is to
-> 
-> 1. Either follow every page rmap and track number of users
-> 2. Iterate through the pages and use _mapcount
-> 
-> We take an intermediate approach (suggested by Kamezawa), we sum up
-> the file and anon rss of the mm's belonging to the cgroup and then
-> subtract the values of anon rss and file mapped. This should give
-> us a good estimate of the pages being shared.
-> 
-> The shared statistic is called memory.shared_usage_in_bytes and
-> does not support hierarchical information, just the information
-> for the current cgroup.
-> 
-> Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
-> ---
-> 
->  Documentation/cgroups/memory.txt |    6 +++++
->  mm/memcontrol.c                  |   42 ++++++++++++++++++++++++++++++++++++++
->  2 files changed, 48 insertions(+), 0 deletions(-)
-> 
-> 
-> diff --git a/Documentation/cgroups/memory.txt b/Documentation/cgroups/memory.txt
-> index b871f25..c2c70c9 100644
-> --- a/Documentation/cgroups/memory.txt
-> +++ b/Documentation/cgroups/memory.txt
-> @@ -341,6 +341,12 @@ Note:
->    - a cgroup which uses hierarchy and it has child cgroup.
->    - a cgroup which uses hierarchy and not the root of hierarchy.
->  
-> +5.4 shared_usage_in_bytes
-> +  This data lists the number of shared bytes. The data provided
-> +  provides an approximation based on the anon and file rss counts
-> +  of all the mm's belonging to the cgroup. The sum above is subtracted
-> +  from the count of rss and file mapped count maintained within the
-> +  memory cgroup statistics (see section 5.2).
->  
->  6. Hierarchy support
->  
-> diff --git a/mm/memcontrol.c b/mm/memcontrol.c
-> index 488b644..e49b47a 100644
-> --- a/mm/memcontrol.c
-> +++ b/mm/memcontrol.c
-> @@ -3052,6 +3052,44 @@ static int mem_cgroup_swappiness_write(struct cgroup *cgrp, struct cftype *cft,
->  	return 0;
->  }
->  
-> +static u64 mem_cgroup_shared_read(struct cgroup *cgrp, struct cftype *cft)
-> +{
-> +	struct mem_cgroup *memcg = mem_cgroup_from_cont(cgrp);
-> +	struct cgroup_iter it;
-> +	struct task_struct *tsk;
-> +	u64 total_rss = 0, shared;
-> +	struct mm_struct *mm;
-> +	s64 val;
-> +
-> +	cgroup_iter_start(cgrp, &it);
-> +	val = mem_cgroup_read_stat(&memcg->stat, MEM_CGROUP_STAT_RSS);
-> +	val += mem_cgroup_read_stat(&memcg->stat, MEM_CGROUP_STAT_FILE_MAPPED);
-> +	while ((tsk = cgroup_iter_next(cgrp, &it))) {
-> +		if (!thread_group_leader(tsk))
-> +			continue;
-> +		mm = tsk->mm;
-> +		/*
-> +		 * We can't use get_task_mm(), since mmput() its counterpart
-> +		 * can sleep. We know that mm can't become invalid since
-> +		 * we hold the css_set_lock (see cgroup_iter_start()).
-> +		 */
-> +		if (tsk->flags & PF_KTHREAD || !mm)
-> +			continue;
-> +		total_rss += get_mm_rss(mm);
-> +	}
-> +	cgroup_iter_end(cgrp, &it);
-> +
-> +	/*
-> +	 * We need to tolerate negative values due to the difference in
-> +	 * time of calculating total_rss and val, but the shared value
-> +	 * converges to the correct value quite soon depending on the changing
-> +	 * memory usage of the workload running in the memory cgroup.
-> +	 */
-> +	shared = total_rss - val;
-> +	shared = max_t(s64, 0, shared);
-> +	shared <<= PAGE_SHIFT;
-> +	return shared;
-> +}
->  
->  static struct cftype mem_cgroup_files[] = {
->  	{
-> @@ -3101,6 +3139,10 @@ static struct cftype mem_cgroup_files[] = {
->  		.read_u64 = mem_cgroup_swappiness_read,
->  		.write_u64 = mem_cgroup_swappiness_write,
->  	},
-> +	{
-> +		.name = "shared_usage_in_bytes",
-> +		.read_u64 = mem_cgroup_shared_read,
-> +	},
->  };
->  
->  #ifdef CONFIG_CGROUP_MEM_RES_CTLR_SWAP
-> 
-> -- 
-> 	Balbir
-> 
+>> +        break;
+>> +    case MMC_BUS_WIDTH_1:
+>> +        dev_dbg(mmc_dev(host->mmc), "Enabling 1 bit mode\n");
+>> +        if (host->version == MMC_CTLR_VERSION_2)
+>> +            writel(readl(host->base + DAVINCI_MMCCTL) &
+>> +                ~(MMCCTL_WIDTH_8_BIT | MMCCTL_WIDTH_4_BIT),
+>> +                host->base + DAVINCI_MMCCTL);
+>> +        else
+>> +            writel(readl(host->base + DAVINCI_MMCCTL) &
+>> +                ~MMCCTL_WIDTH_4_BIT,
+>> +                host->base + DAVINCI_MMCCTL);
+>>   
+>
+>   Same comment here...
+>
+>> +        break;
+>>   
+>
+>   It'll result less code if you read/write the register only once -- 
+> before/after the *switch* statement respectively.
+>
+>>      }
+>>       calculate_clk_divider(mmc, ios);
+>> @@ -1189,10 +1210,14 @@ static int __init davinci_mmcsd_probe(struct
+>> platform_device *pdev)
+>>       /* REVISIT:  someday, support IRQ-driven card detection.  */
+>>      mmc->caps |= MMC_CAP_NEEDS_POLL;
+>> +    mmc->caps |= MMC_CAP_WAIT_WHILE_BUSY;
+>>   
+>
+>    Does this flag have to do with the bus width at all? :-/
+>
+> WBR, Sergei
+>
+>
 > --
-> To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> the body to majordomo@kvack.org.  For more info on Linux MM,
-> see: http://www.linux-mm.org/ .
-> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
-> 
-
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
