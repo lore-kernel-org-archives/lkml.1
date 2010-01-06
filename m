@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932281Ab0AFQ0u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755910Ab0AFQ07@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932281Ab0AFQ0u (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 11:26:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932274Ab0AFQ0O
+	id S1755910Ab0AFQ07 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 11:26:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755836Ab0AFQ0s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 11:26:14 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:55717 "EHLO gir.skynet.ie"
+	Wed, 6 Jan 2010 11:26:48 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:55729 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932235Ab0AFQ0N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 11:26:13 -0500
+	id S932252Ab0AFQ0O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jan 2010 11:26:14 -0500
 From: Mel Gorman <mel@csn.ul.ie>
 To: Andrea Arcangeli <aarcange@redhat.com>
 Cc: Christoph Lameter <cl@linux-foundation.org>, Adam Litke <agl@us.ibm.com>,
        Avi Kivity <avi@redhat.com>, Mel Gorman <mel@csn.ul.ie>,
        linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: [PATCH 3/7] Export fragmentation index via /proc/pagetypeinfo
-Date: Wed,  6 Jan 2010 16:26:05 +0000
-Message-Id: <1262795169-9095-4-git-send-email-mel@csn.ul.ie>
+Subject: [PATCH 5/7] Add /proc trigger for memory compaction
+Date: Wed,  6 Jan 2010 16:26:07 +0000
+Message-Id: <1262795169-9095-6-git-send-email-mel@csn.ul.ie>
 X-Mailer: git-send-email 1.6.5
 In-Reply-To: <1262795169-9095-1-git-send-email-mel@csn.ul.ie>
 References: <1262795169-9095-1-git-send-email-mel@csn.ul.ie>
@@ -24,110 +24,140 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fragmentation index is a value that makes sense when an allocation of a
-given size would fail. the index indicates whether an allocation failure is
-due to a lack of memory (values towards 0) or due to external fragmentation
-(value towards 1).  For the most part, the huge page size will be the size
-of interest but not necessarily so it is exported on a per-order and per-zone
-basis via /proc/pagetypeinfo.
+This patch adds a proc file /proc/sys/vm/compact_node. When a NID is written
+to the file, each zone in that node is compacted. This should be done with
+debugfs but this was what was available to rebase quickly and I suspect
+debugfs either did not exist or was in development during the first
+implementation.
 
-The index is normally calculated as a value between 0 and 1 which is
-obviously unsuitable within the kernel. Instead, the first three decimal
-places are used as a value between 0 and 1000 for an integer approximation.
+If this interface is to exist in the long term, it needs to be thought
+about carefully. For the moment, it's handy to have to test compaction
+under a controlled setting.
 
 Signed-off-by: Mel Gorman <mel@csn.ul.ie>
 ---
- mm/vmstat.c |   63 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 63 insertions(+), 0 deletions(-)
+ include/linux/compaction.h |    5 ++++
+ kernel/sysctl.c            |   11 +++++++++
+ mm/compaction.c            |   52 ++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 68 insertions(+), 0 deletions(-)
 
-diff --git a/mm/vmstat.c b/mm/vmstat.c
-index e1ea2d5..560ee08 100644
---- a/mm/vmstat.c
-+++ b/mm/vmstat.c
-@@ -494,6 +494,35 @@ static void fill_contig_page_info(struct zone *zone,
- }
+diff --git a/include/linux/compaction.h b/include/linux/compaction.h
+index 6201371..5965ef2 100644
+--- a/include/linux/compaction.h
++++ b/include/linux/compaction.h
+@@ -5,4 +5,9 @@
+ #define COMPACT_INCOMPLETE	0
+ #define COMPACT_COMPLETE	1
+ 
++#ifdef CONFIG_MIGRATION
++extern int sysctl_compaction_handler(struct ctl_table *table, int write,
++			void __user *buffer, size_t *length, loff_t *ppos);
++#endif /* CONFIG_MIGRATION */
++
+ #endif /* _LINUX_COMPACTION_H */
+diff --git a/kernel/sysctl.c b/kernel/sysctl.c
+index 8a68b24..6202e95 100644
+--- a/kernel/sysctl.c
++++ b/kernel/sysctl.c
+@@ -50,6 +50,7 @@
+ #include <linux/ftrace.h>
+ #include <linux/slow-work.h>
+ #include <linux/perf_event.h>
++#include <linux/compaction.h>
+ 
+ #include <asm/uaccess.h>
+ #include <asm/processor.h>
+@@ -80,6 +81,7 @@ extern int pid_max;
+ extern int min_free_kbytes;
+ extern int pid_max_min, pid_max_max;
+ extern int sysctl_drop_caches;
++extern int sysctl_compact_node;
+ extern int percpu_pagelist_fraction;
+ extern int compat_log;
+ extern int latencytop_enabled;
+@@ -1109,6 +1111,15 @@ static struct ctl_table vm_table[] = {
+ 		.mode		= 0644,
+ 		.proc_handler	= drop_caches_sysctl_handler,
+ 	},
++#ifdef CONFIG_MIGRATION
++	{
++		.procname	= "compact_node",
++		.data		= &sysctl_compact_node,
++		.maxlen		= sizeof(int),
++		.mode		= 0644,
++		.proc_handler	= sysctl_compaction_handler,
++	},
++#endif /* CONFIG_MIGRATION */
+ 	{
+ 		.procname	= "min_free_kbytes",
+ 		.data		= &min_free_kbytes,
+diff --git a/mm/compaction.c b/mm/compaction.c
+index d36760a..a8bcae2 100644
+--- a/mm/compaction.c
++++ b/mm/compaction.c
+@@ -11,6 +11,7 @@
+ #include <linux/migrate.h>
+ #include <linux/compaction.h>
+ #include <linux/mm_inline.h>
++#include <linux/sysctl.h>
+ #include "internal.h"
  
  /*
-+ * A fragmentation index only makes sense if an allocation of a requested
-+ * size would fail. If that is true, the fragmentation index indicates
-+ * whether external fragmentation or a lack of memory was the problem.
-+ * The value can be used to determine if page reclaim or compaction
-+ * should be used
-+ */
-+int fragmentation_index(struct zone *zone,
-+				unsigned int order,
-+				struct config_page_info *info)
-+{
-+	unsigned long requested = 1UL << order;
-+
-+	if (!info->free_blocks_total)
-+		return 0;
-+
-+	/* Fragmentation index only makes sense when a request would fail */
-+	if (info->free_blocks_suitable)
-+		return -1;
-+
-+	/*
-+	 * Index is between 0 and 1 so return within 3 decimal places
-+	 *
-+	 * 0 => allocation would fail due to lack of memory
-+	 * 1 => allocation would fail due to fragmentation
-+	 */
-+	return 1000 - ( (1000+(info->free_pages * 1000 / requested)) / info->free_blocks_total);
-+}
-+
-+/*
-  * Return an index indicating how much of the available free memory is
-  * unusable for an allocation of the requested size.
-  */
-@@ -516,6 +545,39 @@ int unusable_free_index(struct zone *zone,
- 
+@@ -338,3 +339,54 @@ static int compact_zone(struct zone *zone, struct compact_control *cc)
+ 	return ret;
  }
  
-+static void pagetypeinfo_showfragmentation_print(struct seq_file *m,
-+					pg_data_t *pgdat, struct zone *zone)
++/* Compact all zones within a node */
++int compact_node(int nid)
 +{
-+	unsigned int order;
++	int zoneid;
++	pg_data_t *pgdat;
++	struct zone *zone;
 +
-+	/* Alloc on stack as interrupts are disabled for zone walk */
-+	struct config_page_info info;
++	if (nid < 0 || nid > nr_node_ids || !node_online(nid))
++		return -EINVAL;
++	pgdat = NODE_DATA(nid);
 +
-+	seq_printf(m, "Node %4d, zone %8s %19s",
-+				pgdat->node_id,
-+				zone->name, " ");
-+	for (order = 0; order < MAX_ORDER; ++order) {
-+		fill_contig_page_info(zone, order, &info);
-+		seq_printf(m, "%6d ", fragmentation_index(zone, order, &info));
++	/* Flush pending updates to the LRU lists */
++	lru_add_drain_all();
++
++	printk(KERN_INFO "Compacting memory in node %d\n", nid);
++	for (zoneid = 0; zoneid < MAX_NR_ZONES; zoneid++) {
++		struct compact_control cc;
++
++		zone = &pgdat->node_zones[zoneid];
++		if (!populated_zone(zone))
++			continue;
++
++		cc.nr_freepages = 0;
++		cc.nr_migratepages = 0;
++		cc.zone = zone;
++		INIT_LIST_HEAD(&cc.freepages);
++		INIT_LIST_HEAD(&cc.migratepages);
++
++		compact_zone(zone, &cc);
++
++		VM_BUG_ON(!list_empty(&cc.freepages));
++		VM_BUG_ON(!list_empty(&cc.migratepages));
 +	}
-+
-+	seq_putc(m, '\n');
-+}
-+
-+/*
-+ * Display fragmentation index for orders that allocations would fail for
-+ * XXX: Could be a lot more efficient, but it's not a critical path
-+ */
-+static int pagetypeinfo_showfragmentation(struct seq_file *m, void *arg)
-+{
-+	pg_data_t *pgdat = (pg_data_t *)arg;
-+
-+	seq_printf(m, "\nFragmentation index at order\n");
-+	walk_zones_in_node(m, pgdat, pagetypeinfo_showfragmentation_print);
++	printk(KERN_INFO "Compaction of node %d complete\n", nid);
 +
 +	return 0;
 +}
 +
- static void pagetypeinfo_showunusable_print(struct seq_file *m,
- 					pg_data_t *pgdat, struct zone *zone)
- {
-@@ -657,6 +719,7 @@ static int pagetypeinfo_show(struct seq_file *m, void *arg)
- 	seq_putc(m, '\n');
- 	pagetypeinfo_showfree(m, pgdat);
- 	pagetypeinfo_showunusable(m, pgdat);
-+	pagetypeinfo_showfragmentation(m, pgdat);
- 	pagetypeinfo_showblockcount(m, pgdat);
- 
- 	return 0;
++/* This is global and fierce ugly but it's straight-forward */
++int sysctl_compact_node;
++
++/* This is the entry point for compacting nodes via /proc/sys/vm */
++int sysctl_compaction_handler(struct ctl_table *table, int write,
++			void __user *buffer, size_t *length, loff_t *ppos)
++{
++	proc_dointvec(table, write, buffer, length, ppos);
++	if (write)
++		return compact_node(sysctl_compact_node);
++
++	return 0;
++}
 -- 
 1.6.5
 
