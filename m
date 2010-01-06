@@ -1,191 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932768Ab0AFUdq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932764Ab0AFUgM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932768Ab0AFUdq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 15:33:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932585Ab0AFUdp
+	id S932764Ab0AFUgM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 15:36:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932502Ab0AFUgL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 15:33:45 -0500
-Received: from mta5.srv.hcvlny.cv.net ([167.206.4.200]:65495 "EHLO
-	mta5.srv.hcvlny.cv.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932580Ab0AFUdn (ORCPT
+	Wed, 6 Jan 2010 15:36:11 -0500
+Received: from mail.windriver.com ([147.11.1.11]:55102 "EHLO
+	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932518Ab0AFUgK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 15:33:43 -0500
-Date: Wed, 06 Jan 2010 15:33:05 -0500
-From: Michael Breuer <mbreuer@majjas.com>
-Subject: Re: [PATCH] af_packet: Don't use skb after dev_queue_xmit()
-In-reply-to: <20100106202212.GB3354@del.dom.local>
-To: Jarek Poplawski <jarkao2@gmail.com>
-Cc: David Miller <davem@davemloft.net>, shemminger@linux-foundation.org,
-       akpm@linux-foundation.org, flyboy@gmail.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Message-id: <4B44F381.3000206@majjas.com>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7BIT
-References: <20100105230746.GA6612@del.dom.local> <4B43F72C.9090004@majjas.com>
- <20100106072208.GA6711@ff.dom.local> <4B44E952.5000804@majjas.com>
- <20100106202212.GB3354@del.dom.local>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.5)
- Gecko/20091204 Lightning/1.0b2pre Thunderbird/3.0
+	Wed, 6 Jan 2010 15:36:10 -0500
+Message-ID: <4B44F3EA.7090002@windriver.com>
+Date: Wed, 06 Jan 2010 14:34:50 -0600
+From: Jason Wessel <jason.wessel@windriver.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: Mike Frysinger <vapier.adi@gmail.com>
+CC: Sonic Zhang <sonic.adi@gmail.com>, "Zhang, Sonic" <Sonic.Zhang@analog.com>,
+       kgdb-bugreport@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       mingo@elte.hu
+Subject: Re: [Kgdb-bugreport] [PATCH 09/37] kgdb,blackfin: Add in kgdb_arch_set_pc
+ for blackfin
+References: <1261603190-5036-1-git-send-email-jason.wessel@windriver.com> <1261603190-5036-6-git-send-email-jason.wessel@windriver.com> <1261603190-5036-7-git-send-email-jason.wessel@windriver.com> <1261603190-5036-8-git-send-email-jason.wessel@windriver.com> <1261603190-5036-9-git-send-email-jason.wessel@windriver.com> <1261603190-5036-10-git-send-email-jason.wessel@windriver.com> <8bd0f97a0912261312x4b7c7df6s14ac0137b702044e@mail.gmail.com> <0F1B54C89D5F954D8535DB252AF412FA0553E3A0@chinexm1.ad.analog.com> <4e5ebad50912301845p35b1ea98l2f91c2a209ee863a@mail.gmail.com> <4B44E7E3.10305@windriver.com> <8bd0f97a1001061208x8876e79y507d98e505071067@mail.gmail.com>
+In-Reply-To: <8bd0f97a1001061208x8876e79y507d98e505071067@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 06 Jan 2010 20:34:49.0227 (UTC) FILETIME=[B11D9DB0:01CA8F0F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 1/6/2010 3:22 PM, Jarek Poplawski wrote:
-> On Wed, Jan 06, 2010 at 02:49:38PM -0500, Michael Breuer wrote:
->    
->> On 1/6/2010 2:22 AM, Jarek Poplawski wrote:
->>      
->>> On Tue, Jan 05, 2010 at 09:36:28PM -0500, Michael Breuer wrote:
->>>        
->>>> On 1/5/2010 6:07 PM, Jarek Poplawski wrote:
->>>>          
->>>>> David Miller wrote, On 12/27/2009 05:11 AM:
->>>>>
->>>>>
->>>>>            
->>>>>> From: David Miller<davem@davemloft.net>
->>>>>> Date: Sat, 26 Dec 2009 19:44:18 -0800 (PST)
->>>>>>
->>>>>>
->>>>>>              
->>>>>>> From: Stephen Hemminger<shemminger@linux-foundation.org>
->>>>>>> Date: Sat, 26 Dec 2009 14:05:44 -0800
->>>>>>>
->>>>>>>
->>>>>>>                
->>>>>>>> Other drivers may have same problem, I really think this ought
->>>>>>>> to be done at higher level.
->>>>>>>>
->>>>>>>>                  
->>>>>>> I tend to agree with you, and I thought we had handled all
->>>>>>> cases.  Let's simply make AF_PACKET linearize the link
->>>>>>> level header before sending things out to the transmit path.
->>>>>>>
->>>>>>> I can work on this if you want.
->>>>>>>
->>>>>>>                
->>>>>> Actually Stephen, I took a look and I can't see how AF_PACKET
->>>>>> can create this situation.
->>>>>>
->>>>>> It always copies into the linear area of the SKB it allocates
->>>>>> for sendmsg() processing.  Whether the data comes from sendmsg
->>>>>> data or the mmap() ring buffer.
->>>>>>
->>>>>>              
->>>>> Actually, I think there is a bug in this place, but of course this
->>>>> might be unconnected. Anyway, Michael, could you try this patch?
->>>>> BTW, did you try with CONFIG_PACKET_MMAP disabled?
->>>>>
->>>>> Thanks,
->>>>> Jarek P.
->>>>> ----------------->
->>>>>
->>>>> Changing an skb after dev_queue_xmit() is illegal. And since it's
->>>>> inconsistent to treat specially net_xmit_errno() non-zero return,
->>>>> while ignoring other dev_queue_xmit() errors, there is no reason
->>>>> to break the loop in tpacket_snd() in this case.
->>>>>
->>>>> With debugging by: Stephen Hemminger<shemminger@linux-foundation.org>
->>>>>
->>>>> Reported-by: Michael Breuer<mbreuer@majjas.com>
->>>>> Signed-off-by: Jarek Poplawski<jarkao2@gmail.com>
->>>>> ---
->>>>>
->>>>>    net/packet/af_packet.c |    8 +++-----
->>>>>    1 files changed, 3 insertions(+), 5 deletions(-)
->>>>>
->>>>> diff --git a/net/packet/af_packet.c b/net/packet/af_packet.c
->>>>> index e0516a2..984a1fa 100644
->>>>> --- a/net/packet/af_packet.c
->>>>> +++ b/net/packet/af_packet.c
->>>>> @@ -1021,8 +1021,9 @@ static int tpacket_snd(struct packet_sock *po, struct msghdr *msg)
->>>>>
->>>>>    		status = TP_STATUS_SEND_REQUEST;
->>>>>    		err = dev_queue_xmit(skb);
->>>>> -		if (unlikely(err>    0&&    (err = net_xmit_errno(err)) != 0))
->>>>> -			goto out_xmit;
->>>>> +		if (unlikely(err>    0))
->>>>> +			err = net_xmit_errno(err);
->>>>> +
->>>>>    		packet_increment_head(&po->tx_ring);
->>>>>    		len_sum += tp_len;
->>>>>    	} while (likely((ph != NULL) ||
->>>>> @@ -1033,9 +1034,6 @@ static int tpacket_snd(struct packet_sock *po, struct msghdr *msg)
->>>>>    	err = len_sum;
->>>>>    	goto out_put;
->>>>>
->>>>> -out_xmit:
->>>>> -	skb->destructor = sock_wfree;
->>>>> -	atomic_dec(&po->tx_ring.pending);
->>>>>    out_status:
->>>>>    	__packet_set_status(po, ph, status);
->>>>>    	kfree_skb(skb);
->>>>> --
->>>>> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->>>>> the body of a message to majordomo@vger.kernel.org
->>>>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->>>>> Please read the FAQ at  http://www.tux.org/lkml/
->>>>>
->>>>>            
->>>> This patch solves the original reported oops - as did Steven's patch of
->>>> 12/26: [PATCH] sky2: make sure ethernet header is in transmit skb (I ran
->>>> without Steven's patch and with this patch).
->>>>
->>>> Oddly, with this patch vs. Steven's - I'm getting software interrupt
->>>> errors sporadically while not under load - with Steven's I get the
->>>> frequently while under load (as per nethogs). For example:
->>>> Jan  5 21:29:00 mail kernel: sky2 0000:06:00.0: error interrupt
->>>> status=0x40000008
->>>> Jan  5 21:29:00 mail kernel: sky2 software interrupt status 0x40000008
->>>> Jan  5 21:29:00 mail kernel: sky2 Tx ring pending=124...125 report=125
->>>> done=125
->>>> Jan  5 21:29:00 mail kernel: 124: 0xb38de0be(5374)
->>>> Jan  5 21:29:00 mail kernel: sky2 0000:06:00.0: error interrupt status=0x8
->>>> Jan  5 21:29:00 mail kernel: sky2 software interrupt status 0x8
->>>> Jan  5 21:29:00 mail kernel: sky2 Tx ring pending=126...127 report=126
->>>> done=127
->>>> Jan  5 21:29:00 mail kernel: 126: 0xb38d80be(9014)
->>>>
->>>> I also believe (can't prove yet) that my load test is slower with this
->>>> patch vs. the sky2 patch.
->>>>
->>>> Is it possible that this patch is causing the transmission to
->>>> momentarily halt such that the overall utilization appears low at the
->>>> time I see the interrupt errors, vs. the other patch which perhaps
->>>> doesn't interrupt the traffic flow quite so much?
->>>>          
->>> Yes, without this patch xmit could be stopped earlier on some kind of
->>> errors, with retransmit of the last message possible. On the other
->>> hand, other dev_queue_xmit() (negative) errors, are ignored. So this
->>> place could be still improved by adding proper err handling (or
->>> removing getting err return from dev_queue_xmit() at all).
->>>
->>> Anyway, I think this patch should be a safe proposal for stable. If
->>> so, David, please add Michael's "Tested-by".
->>>
->>>        
->>>> I haven't run yet with CONFIG_PACKET_MMAP disabled.
->>>>
->>>>          
->>> This should behave similarly as MMAP with this patch or maybe even
->>> better in case of errors.
->>>
->>> Thanks,
->>> Jarek P.
->>>        
->> This patch at first behaved similarly to the previous one - seemed
->> to be running a bit better... until the adapter went down :(
->>      
-> I'm not sure: do you mean this patch above vs previous one by Stephen,
-> or did you manage to try my "alernative #2" patch already?
+Mike Frysinger wrote:
+> On Wed, Jan 6, 2010 at 14:43, Jason Wessel wrote:
+>   
+>> I pulled in this patch, and made the changes the Mike talked about with
+>> respect to cleaning up the arch specific kgdb.c for blackfin.  See the
+>> attached patch.
+>>
+>> Your patch and the one here will go into kgdb-next and onto linux-next.
+>>     
 >
-> BTW, I forgot to mention, and maybe it doesn't matter here, but it
-> would be better to (always) use my sky2 patch from Berck Nash's
-> thread.
+> the Blackfin versions tail into the common probe_kernel_{read,write}
+>   
+
+Got it.
+
+> funcs, so your patch causes an infinite recursion in the common case.
+> as i hinted earlier, i'd like to see mm/access.c to have something
+> like:
+> -long probe_kernel_read(void *dst, void *src, size_t size)
+> +long __probe_kernel_read(void *dst, void *src, size_t size)
+> ...
+> +long __weak probe_kernel_read(void *dst, void *src, size_t size)
+>     __attribute__((alias("__probe_kernel_read")));
+> that way the arch-specific probe_kernel_read can still fall back to
+> the common __probe_kernel_read function.  same goes for the write
+> function.
 >
-> Jarek P.
->    
-This was using "alternative #2" patch. I didn't get the hang with 
-alternative #1. Your sky2 patch from Berck Nash's thread was included in 
-both cases; Stephen's was not.
+>   
+
+I don't see a problem with this.  Ingo was the originator of these
+functions, which are mainly used for the kernel debugger.  The s390
+already made one of them a weak function, so that arch specific code
+might have to get looked at as well.
+
+> also, i see you added "notrace" to the Blackfin probe_kernel_write ...
+> was that intentional ?  if so, this should probably go into
+> include/linux/uaccess.h instead
+>   
+
+The notrace was just a cut and paste of the original in mm/maccess.c
+
+Jason.
