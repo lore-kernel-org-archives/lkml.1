@@ -1,56 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753430Ab0AFG0X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752500Ab0AFGdL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753430Ab0AFG0X (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 01:26:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752367Ab0AFG0X
+	id S1752500Ab0AFGdL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 01:33:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751861Ab0AFGdK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 01:26:23 -0500
-Received: from mail-qy0-f194.google.com ([209.85.221.194]:63828 "EHLO
-	mail-qy0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751562Ab0AFG0W (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 01:26:22 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:from:date:message-id:subject:to:cc:content-type;
-        b=IzO/XrmV/j/Lu0hEMoSEXPjlZXJp2LXfNyEv9Cn2gGtnIiRbn5MGbKyBLXGBAuZ6uJ
-         Rr634+Qexl2rIm0dZ9jyEKXSHboqzlZaC6BX6g2NB9pANpl+5nWF+og0tZy3JQqbzDxq
-         fb+oZGBPE7TRE/k1b5eATbfucvy1pZUNRu4XE=
+	Wed, 6 Jan 2010 01:33:10 -0500
+Received: from ozlabs.org ([203.10.76.45]:52635 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750904Ab0AFGdJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jan 2010 01:33:09 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [PATCH] modules: Skip empty sections when exporting section notes
+Date: Wed, 6 Jan 2010 17:03:04 +1030
+User-Agent: KMail/1.12.2 (Linux/2.6.31-16-generic; KDE/4.3.2; i686; ; )
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Martin Michlmayr <tbm@cyrius.com>, Ben Hutchings <ben@decadent.org.uk>
 MIME-Version: 1.0
-From: Eric Miao <eric.y.miao@gmail.com>
-Date: Wed, 6 Jan 2010 14:26:01 +0800
-Message-ID: <f17812d71001052226y604995a0m4c7887d29fd73f90@mail.gmail.com>
-Subject: [PATCH] kbuild: include only necessary in scripts/Makefile.modbuiltin
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Cc: Michal Marek <mmarek@suse.cz>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201001061703.04673.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-commit aa7c411671269a75ed7adc0452851bf2cffd839e
-Author: Eric Miao <eric.y.miao@gmail.com>
-Date:   Wed Jan 6 13:58:22 2010 +0800
+Date: Sat, 19 Dec 2009 14:43:01 +0000
+From: Ben Hutchings <ben@decadent.org.uk>
 
-    kbuild: include only necessary in scripts/Makefile.modbuiltin
+Commit 35dead4 "modules: don't export section names of empty sections
+via sysfs" changed the set of sections that have attributes, but did
+not change the iteration over these attributes in add_notes_attrs().
+This can lead to add_notes_attrs() creating attributes with the wrong
+names or with null name pointers.
 
-    scripts/Makefile.modbuiltin assumes either Kbuild or Makefile exists in
-    every sub-directory, which is not true. Only include them when they are
-    existing.
+Introduce a sect_empty() function and use it in both add_sect_attrs()
+and add_notes_attrs().
 
-    Signed-off-by: Eric Miao <eric.y.miao@gmail.com>
+Reported-by: Martin Michlmayr <tbm@cyrius.com>
+Signed-off-by: Ben Hutchings <ben@decadent.org.uk>
+Tested-by: Martin Michlmayr <tbm@cyrius.com>
+Cc: stable@kernel.org
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+---
+ kernel/module.c |   17 ++++++++++-------
+ 1 file changed, 10 insertions(+), 7 deletions(-)
 
-diff --git a/scripts/Makefile.modbuiltin b/scripts/Makefile.modbuiltin
-index 102a276..9148a70 100644
---- a/scripts/Makefile.modbuiltin
-+++ b/scripts/Makefile.modbuiltin
-@@ -17,7 +17,7 @@ include scripts/Kbuild.include
- # The filename Kbuild has precedence over Makefile
- kbuild-dir := $(if $(filter /%,$(src)),$(src),$(srctree)/$(src))
- kbuild-file := $(if $(wildcard
-$(kbuild-dir)/Kbuild),$(kbuild-dir)/Kbuild,$(kbuild-dir)/Makefile)
--include $(kbuild-file)
-+-include $(kbuild-file)
-
- include scripts/Makefile.lib
- __subdir-Y     := $(patsubst %/,%,$(filter %/, $(obj-Y)))
+diff --git a/kernel/module.c b/kernel/module.c
+index e96b8ed..f82386b 100644
+--- a/kernel/module.c
++++ b/kernel/module.c
+@@ -1010,6 +1010,12 @@ static const struct kernel_symbol *resolve_symbol(Elf_Shdr *sechdrs,
+  * J. Corbet <corbet@lwn.net>
+  */
+ #if defined(CONFIG_KALLSYMS) && defined(CONFIG_SYSFS)
++
++static inline bool sect_empty(const Elf_Shdr *sect)
++{
++	return !(sect->sh_flags & SHF_ALLOC) || sect->sh_size == 0;
++}
++
+ struct module_sect_attr
+ {
+ 	struct module_attribute mattr;
+@@ -1051,8 +1057,7 @@ static void add_sect_attrs(struct module *mod, unsigned int nsect,
+ 
+ 	/* Count loaded sections and allocate structures */
+ 	for (i = 0; i < nsect; i++)
+-		if (sechdrs[i].sh_flags & SHF_ALLOC
+-		    && sechdrs[i].sh_size)
++		if (!sect_empty(&sechdrs[i]))
+ 			nloaded++;
+ 	size[0] = ALIGN(sizeof(*sect_attrs)
+ 			+ nloaded * sizeof(sect_attrs->attrs[0]),
+@@ -1070,9 +1075,7 @@ static void add_sect_attrs(struct module *mod, unsigned int nsect,
+ 	sattr = &sect_attrs->attrs[0];
+ 	gattr = &sect_attrs->grp.attrs[0];
+ 	for (i = 0; i < nsect; i++) {
+-		if (! (sechdrs[i].sh_flags & SHF_ALLOC))
+-			continue;
+-		if (!sechdrs[i].sh_size)
++		if (sect_empty(&sechdrs[i]))
+ 			continue;
+ 		sattr->address = sechdrs[i].sh_addr;
+ 		sattr->name = kstrdup(secstrings + sechdrs[i].sh_name,
+@@ -1156,7 +1159,7 @@ static void add_notes_attrs(struct module *mod, unsigned int nsect,
+ 	/* Count notes sections and allocate structures.  */
+ 	notes = 0;
+ 	for (i = 0; i < nsect; i++)
+-		if ((sechdrs[i].sh_flags & SHF_ALLOC) &&
++		if (!sect_empty(&sechdrs[i]) &&
+ 		    (sechdrs[i].sh_type == SHT_NOTE))
+ 			++notes;
+ 
+@@ -1172,7 +1175,7 @@ static void add_notes_attrs(struct module *mod, unsigned int nsect,
+ 	notes_attrs->notes = notes;
+ 	nattr = &notes_attrs->attrs[0];
+ 	for (loaded = i = 0; i < nsect; ++i) {
+-		if (!(sechdrs[i].sh_flags & SHF_ALLOC))
++		if (sect_empty(&sechdrs[i]))
+ 			continue;
+ 		if (sechdrs[i].sh_type == SHT_NOTE) {
+ 			nattr->attr.name = mod->sect_attrs->attrs[loaded].name;
