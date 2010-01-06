@@ -1,388 +1,418 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933111Ab0AFXsd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933102Ab0AFXtV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933111Ab0AFXsd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 18:48:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756545Ab0AFXsY
+	id S933102Ab0AFXtV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 18:49:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933116Ab0AFXsx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 18:48:24 -0500
-Received: from kroah.org ([198.145.64.141]:34547 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933080Ab0AFXrk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 18:47:40 -0500
-Date: Wed, 6 Jan 2010 15:46:29 -0800
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, stable@kernel.org
-Cc: lwn@lwn.net
-Subject: Linux 2.6.32.3
-Message-ID: <20100106234629.GE1960@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Wed, 6 Jan 2010 18:48:53 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:62462 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933108Ab0AFXr6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jan 2010 18:47:58 -0500
+X-Authority-Analysis: v=1.0 c=1 a=6UnHDKZUNiIA:10 a=7U3hwN5JcxgA:10 a=VwQbUJbxAAAA:8 a=QX54vVqaAAAA:8 a=meVymXHHAAAA:8 a=7gkXJVJtAAAA:8 a=68eEZQRoAAAA:8 a=e5Ur3VOtznb4dtM7F3wA:9 a=S4Q3dKDNk6U196YY2dAA:7 a=yHCJ0aICk_2gaayvNOt6zuQ5X-oA:4 a=xshquSfHhhQA:10 a=jeBq3FmKZ4MA:10 a=JmBWkid0h3cA:10 a=7YLhZ6jOsBkA:10 a=kZLjBh5FkKlQKkAi:21 a=ndGahTbXTkPFkjsm:21
+X-Cloudmark-Score: 0
+X-Originating-IP: 74.67.89.75
+Subject: [GIT PULL] kconfig: simplification of scripts/extract-ikconfig
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Dick Streefland <dick@streefland.net>, Sam Ravnborg <sam@ravnborg.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Content-Type: text/plain; charset="ISO-8859-15"
+Organization: Kihon Technologies Inc.
+Date: Wed, 06 Jan 2010 18:47:56 -0500
+Message-ID: <1262821676.28171.3413.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm announcing the release of the 2.6.32.3 kernel.  All users of the
-2.6.32 kernel series are very strongly encouraged to upgrade.
 
-The updated 2.6.32.y git tree can be found at:
-        git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.32.y.git
-and can be browsed at the normal kernel.org git web browser:
-        http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.32.y.git;a=summary
+Linus,
+
+The following patch has been sitting in linux-next since October.
+
+Because I did not have any other changes to push, I forgot to send this
+during the merge window.  Since it has been in linux-next for such a
+long time, it should not be much of a risk.
+
+Please pull the latest for-linus-1 tree, which can be found at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-kconfig.git
+for-linus-1
+
+
+Dick Streefland (1):
+      kconfig: simplification of scripts/extract-ikconfig
+
+----
+ Documentation/dontdiff   |    1 -
+ scripts/.gitignore       |    1 -
+ scripts/binoffset.c      |  163 ----------------------------------------------
+ scripts/extract-ikconfig |  127 ++++++++++++-----------------------
+ 4 files changed, 44 insertions(+), 248 deletions(-)
+---------------------------
+commit 7b76bfc86757ca5e7b0a62f50003752da77c115b
+Author: Dick Streefland <dick@streefland.net>
+Date:   Tue Oct 6 22:35:40 2009 +0200
+
+    kconfig: simplification of scripts/extract-ikconfig
+    
+    I've rewritten the extract-ikconfig script to extract the kernel
+    configuration from a kernel compiled with CONFIG_IKCONFIG. The main
+    motivation for the rewrite was to remove the dependency on the
+    external C program binoffset.c, which is compiled on the initial run.
+    
+    The binoffset executable is invoked with a relative path, which means
+    that the old script can only be run from the top of the kernel tree,
+    and only when you have write permission in the scripts directory.
+    
+    The new script uses tr/grep/tail/zcat only, and can be invoked from
+    anywhere. The binoffset.c program has been removed. This script
+    requires GNU grep 2.5 (released 2002-03-13) or higher, because the -o
+    option was introduced in that version.
+    
+    Signed-off-by: Dick Streefland <dick@streefland.net>
+    LKML-Reference: <20091006203540.GA14634@streefland.net>
+    Tested-by: Steven Rostedt <rostedt@goodmis.org>
+    Cc: Sam Ravnborg <sam@ravnborg.org>
+    Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+
+diff --git a/Documentation/dontdiff b/Documentation/dontdiff
+index e1efc40..bc01a5a 100644
+--- a/Documentation/dontdiff
++++ b/Documentation/dontdiff
+@@ -68,7 +68,6 @@ autoconf.h*
+ bbootsect
+ bin2c
+ binkernel.spec
+-binoffset
+ bootsect
+ bounds.h
+ bsetup
+diff --git a/scripts/.gitignore b/scripts/.gitignore
+index 52cab46..c5d5db5 100644
+--- a/scripts/.gitignore
++++ b/scripts/.gitignore
+@@ -6,5 +6,4 @@ kallsyms
+ pnmtologo
+ bin2c
+ unifdef
+-binoffset
+ ihex2fw
+diff --git a/scripts/binoffset.c b/scripts/binoffset.c
+deleted file mode 100644
+index 1a2e39b..0000000
+--- a/scripts/binoffset.c
++++ /dev/null
+@@ -1,163 +0,0 @@
+-/***************************************************************************
+- * binoffset.c
+- * (C) 2002 Randy Dunlap <rdunlap@xenotime.net>
+-
+-#   This program is free software; you can redistribute it and/or modify
+-#   it under the terms of the GNU General Public License as published by
+-#   the Free Software Foundation; either version 2 of the License, or
+-#   (at your option) any later version.
+-#
+-#   This program is distributed in the hope that it will be useful,
+-#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+-#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+-#   GNU General Public License for more details.
+-#
+-#   You should have received a copy of the GNU General Public License
+-#   along with this program; if not, write to the Free Software
+-#   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+-
+-# binoffset.c:
+-# - searches a (binary) file for a specified (binary) pattern
+-# - returns the offset of the located pattern or ~0 if not found
+-# - exits with exit status 0 normally or non-0 if pattern is not found
+-#   or any other error occurs.
+-
+-****************************************************************/
+-
+-#include <stdio.h>
+-#include <stdlib.h>
+-#include <string.h>
+-#include <errno.h>
+-#include <unistd.h>
+-#include <fcntl.h>
+-#include <sys/types.h>
+-#include <sys/stat.h>
+-#include <sys/mman.h>
+-
+-#define VERSION		"0.1"
+-#define BUF_SIZE	(16 * 1024)
+-#define PAT_SIZE	100
+-
+-char		*progname;
+-char		*inputname;
+-int		inputfd;
+-unsigned int	bix;			/* buf index */
+-unsigned char	patterns [PAT_SIZE] = {0}; /* byte-sized pattern array */
+-int		pat_len;		/* actual number of pattern bytes */
+-unsigned char	*madr;			/* mmap address */
+-size_t		filesize;
+-int		num_matches = 0;
+-off_t		firstloc = 0;
+-
+-void usage (void)
+-{
+-	fprintf (stderr, "%s ver. %s\n", progname, VERSION);
+-	fprintf (stderr, "usage:  %s filename pattern_bytes\n",
+-			progname);
+-	fprintf (stderr, "        [prints location of pattern_bytes in file]\n");
+-	exit (1);
+-}
+-
+-void get_pattern (int pat_count, char *pats [])
+-{
+-	int ix, err, tmp;
+-
+-#ifdef DEBUG
+-	fprintf (stderr,"get_pattern: count = %d\n", pat_count);
+-	for (ix = 0; ix < pat_count; ix++)
+-		fprintf (stderr, "  pat # %d:  [%s]\n", ix, pats[ix]);
+-#endif
+-
+-	for (ix = 0; ix < pat_count; ix++) {
+-		tmp = 0;
+-		err = sscanf (pats[ix], "%5i", &tmp);
+-		if (err != 1 || tmp > 0xff) {
+-			fprintf (stderr, "pattern or value error in pattern # %d [%s]\n",
+-					ix, pats[ix]);
+-			usage ();
+-		}
+-		patterns [ix] = tmp;
+-	}
+-	pat_len = pat_count;
+-}
+-
+-void search_pattern (void)
+-{
+-	for (bix = 0; bix < filesize; bix++) {
+-		if (madr[bix] == patterns[0]) {
+-			if (memcmp (&madr[bix], patterns, pat_len) == 0) {
+-				if (num_matches == 0)
+-					firstloc = bix;
+-				num_matches++;
+-			}
+-		}
+-	}
+-}
+-
+-#ifdef NOTDEF
+-size_t get_filesize (int fd)
+-{
+-	off_t end_off = lseek (fd, 0, SEEK_END);
+-	lseek (fd, 0, SEEK_SET);
+-	return (size_t) end_off;
+-}
+-#endif
+-
+-size_t get_filesize (int fd)
+-{
+-	int err;
+-	struct stat stat;
+-
+-	err = fstat (fd, &stat);
+-	fprintf (stderr, "filesize: %ld\n", err < 0 ? (long)err : stat.st_size);
+-	if (err < 0)
+-		return err;
+-	return (size_t) stat.st_size;
+-}
+-
+-int main (int argc, char *argv [])
+-{
+-	progname = argv[0];
+-
+-	if (argc < 3)
+-		usage ();
+-
+-	get_pattern (argc - 2, argv + 2);
+-
+-	inputname = argv[1];
+-
+-	inputfd = open (inputname, O_RDONLY);
+-	if (inputfd == -1) {
+-		fprintf (stderr, "%s: cannot open '%s'\n",
+-				progname, inputname);
+-		exit (3);
+-	}
+-
+-	filesize = get_filesize (inputfd);
+-
+-	madr = mmap (0, filesize, PROT_READ, MAP_PRIVATE, inputfd, 0);
+-	if (madr == MAP_FAILED) {
+-		fprintf (stderr, "mmap error = %d\n", errno);
+-		close (inputfd);
+-		exit (4);
+-	}
+-
+-	search_pattern ();
+-
+-	if (munmap (madr, filesize))
+-		fprintf (stderr, "munmap error = %d\n", errno);
+-
+-	if (close (inputfd))
+-		fprintf (stderr, "%s: error %d closing '%s'\n",
+-				progname, errno, inputname);
+-
+-	fprintf (stderr, "number of pattern matches = %d\n", num_matches);
+-	if (num_matches == 0)
+-		firstloc = ~0;
+-	printf ("%ld\n", firstloc);
+-	fprintf (stderr, "%ld\n", firstloc);
+-
+-	exit (num_matches ? 0 : 2);
+-}
+-
+-/* end binoffset.c */
+diff --git a/scripts/extract-ikconfig b/scripts/extract-ikconfig
+index de233ff..37f30d3 100755
+--- a/scripts/extract-ikconfig
++++ b/scripts/extract-ikconfig
+@@ -1,92 +1,53 @@
+ #!/bin/sh
+-# extracts .config info from a [b]zImage file
+-# uses: binoffset (new), dd, zcat, strings, grep
+-# $arg1 is [b]zImage filename
+-
+-binoffset="./scripts/binoffset"
+-test -e $binoffset || cc -o $binoffset ./scripts/binoffset.c || exit 1
+-
+-IKCFG_ST="0x49 0x4b 0x43 0x46 0x47 0x5f 0x53 0x54"
+-IKCFG_ED="0x49 0x4b 0x43 0x46 0x47 0x5f 0x45 0x44"
+-dump_config() {
+-    file="$1"
+-
+-    start=`$binoffset $file $IKCFG_ST 2>/dev/null`
+-    [ "$?" != "0" ] && start="-1"
+-    if [ "$start" -eq "-1" ]; then
+-	return
+-    fi
+-    end=`$binoffset $file $IKCFG_ED 2>/dev/null`
+-    [ "$?" != "0" ] && end="-1"
+-    if [ "$end" -eq "-1" ]; then
+-	return
+-    fi
+-
+-    start=`expr $start + 8`
+-    size=`expr $end - $start`
+-
+-    dd if="$file" ibs=1 skip="$start" count="$size" 2>/dev/null | zcat
+-
+-    clean_up
+-    exit 0
+-}
+-
+-
+-usage()
+-{
+-	echo "  usage: extract-ikconfig [b]zImage_filename"
+-}
+-
+-clean_up()
++# ----------------------------------------------------------------------
++# extract-ikconfig - Extract the .config file from a kernel image
++#
++# This will only work when the kernel was compiled with CONFIG_IKCONFIG.
++#
++# The obscure use of the "tr" filter is to work around older versions of
++# "grep" that report the byte offset of the line instead of the pattern.
++#
++# (c) 2009, Dick Streefland <dick@streefland.net>
++# Licensed under the terms of the GNU General Public License.
++# ----------------------------------------------------------------------
++
++gz1='\037\213\010'
++gz2='01'
++cf1='IKCFG_ST\037\213\010'
++cf2='0123456789'
++
++dump_config()
+ {
+-	if [ "$TMPFILE" != "" ]; then
+-		rm -f $TMPFILE
++	if	pos=`tr "$cf1\n$cf2" "\n$cf2=" < "$1" | grep -abo "^$cf2"`
++	then
++		pos=${pos%%:*}
++		tail -c+$(($pos+8)) "$1" | zcat -q
++		exit 0
+ 	fi
+ }
+ 
+-if [ $# -lt 1 ]
++# Check invocation:
++me=${0##*/}
++img=$1
++if	[ $# -ne 1 -o ! -s "$img" ]
+ then
+-	usage
+-	exit 1
++	echo "Usage: $me <kernel-image>" >&2
++	exit 2
+ fi
+ 
+-TMPFILE=`mktemp -t ikconfig-XXXXXX` || exit 1
+-image="$1"
+-
+-# vmlinux: Attempt to dump the configuration from the file directly
+-dump_config "$image"
+-
+-GZHDR1="0x1f 0x8b 0x08 0x00"
+-GZHDR2="0x1f 0x8b 0x08 0x08"
+-
+-ELFHDR="0x7f 0x45 0x4c 0x46"
+-
+-# vmlinux.gz: Check for a compressed images
+-off=`$binoffset "$image" $GZHDR1 2>/dev/null`
+-[ "$?" != "0" ] && off="-1"
+-if [ "$off" -eq "-1" ]; then
+-	off=`$binoffset "$image" $GZHDR2 2>/dev/null`
+-	[ "$?" != "0" ] && off="-1"
+-fi
+-if [ "$off" -eq "0" ]; then
+-	zcat <"$image" >"$TMPFILE"
+-	dump_config "$TMPFILE"
+-elif [ "$off" -ne "-1" ]; then
+-	(dd ibs="$off" skip=1 count=0 && dd bs=512k) <"$image" 2>/dev/null | \
+-		zcat >"$TMPFILE"
+-	dump_config "$TMPFILE"
+-
+-# check if this is simply an ELF file
+-else
+-	off=`$binoffset "$image" $ELFHDR 2>/dev/null`
+-	[ "$?" != "0" ] && off="-1"
+-	if [ "$off" -eq "0" ]; then
+-		dump_config "$image"
+-	fi
+-fi
+-
+-echo "ERROR: Unable to extract kernel configuration information."
+-echo "       This kernel image may not have the config info."
+-
+-clean_up
++# Initial attempt for uncompressed images or objects:
++dump_config "$img"
++
++# That didn't work, so decompress and try again:
++tmp=/tmp/ikconfig$$
++trap "rm -f $tmp" 0
++for	pos in `tr "$gz1\n$gz2" "\n$gz2=" < "$img" | grep -abo "^$gz2"`
++do
++	pos=${pos%%:*}
++	tail -c+$pos "$img" | zcat 2> /dev/null > $tmp
++	dump_config $tmp
++done
++
++# Bail out:
++echo "$me: Cannot find kernel config." >&2
+ exit 1
 
-thanks,
-
-greg k-h
-
-------------
-
- Documentation/filesystems/ext4.txt             |    2 
- Makefile                                       |    2 
- arch/powerpc/kernel/align.c                    |   63 +++++-
- arch/x86/include/asm/msr.h                     |   19 +-
- arch/x86/include/asm/processor.h               |    2 
- arch/x86/include/asm/uv/uv_hub.h               |   86 +++++----
- arch/x86/kernel/amd_iommu_init.c               |   10 +
- arch/x86/kernel/apic/x2apic_uv_x.c             |   12 -
- arch/x86/kernel/ptrace.c                       |   16 -
- arch/x86/kvm/lapic.c                           |    1 
- arch/x86/kvm/paging_tmpl.h                     |   18 -
- arch/x86/lib/Makefile                          |    4 
- arch/x86/lib/msr-smp.c                         |  204 ++++++++++++++++++++++
- arch/x86/lib/msr.c                             |  227 +------------------------
- drivers/acpi/button.c                          |    7 
- drivers/acpi/ec.c                              |   10 -
- drivers/ata/pata_cmd64x.c                      |    2 
- drivers/ata/pata_hpt3x2n.c                     |   64 +++----
- drivers/bluetooth/btusb.c                      |    1 
- drivers/dma/at_hdmac.c                         |    4 
- drivers/dma/ioat/dma.c                         |    2 
- drivers/dma/ioat/dma.h                         |   18 +
- drivers/dma/ioat/dma_v2.c                      |   69 +++++--
- drivers/dma/ioat/dma_v2.h                      |    2 
- drivers/dma/ioat/dma_v3.c                      |   60 ++++--
- drivers/dma/ioat/registers.h                   |    1 
- drivers/edac/amd64_edac.c                      |  221 +++++++++++++-----------
- drivers/edac/amd64_edac.h                      |    9 
- drivers/gpu/drm/drm_crtc_helper.c              |    3 
- drivers/gpu/drm/radeon/atombios_crtc.c         |    6 
- drivers/gpu/drm/radeon/radeon_test.c           |    4 
- drivers/hwmon/sht15.c                          |    6 
- drivers/lguest/segments.c                      |    4 
- drivers/md/md.c                                |    8 
- drivers/media/video/ov511.c                    |    2 
- drivers/net/e100.c                             |    2 
- drivers/net/usb/rtl8150.c                      |    2 
- drivers/net/wireless/ath/ath5k/base.c          |    7 
- drivers/net/wireless/ath/ath9k/hw.h            |    2 
- drivers/net/wireless/ath/ath9k/mac.c           |    2 
- drivers/net/wireless/ath/ath9k/mac.h           |    3 
- drivers/net/wireless/ath/ath9k/main.c          |   14 +
- drivers/net/wireless/ath/ath9k/reg.h           |    4 
- drivers/net/wireless/ath/ath9k/xmit.c          |    6 
- drivers/net/wireless/b43/rfkill.c              |   10 -
- drivers/net/wireless/iwlwifi/iwl-3945.c        |    2 
- drivers/net/wireless/iwlwifi/iwl-4965.c        |    2 
- drivers/net/wireless/iwlwifi/iwl-5000-hw.h     |   14 -
- drivers/net/wireless/iwlwifi/iwl-5000.c        |    7 
- drivers/net/wireless/iwlwifi/iwl-dev.h         |    2 
- drivers/net/wireless/iwlwifi/iwl-eeprom.c      |   23 +-
- drivers/net/wireless/iwlwifi/iwl-eeprom.h      |    4 
- drivers/net/wireless/iwlwifi/iwl3945-base.c    |   11 -
- drivers/net/wireless/iwmc3200wifi/iwm.h        |    2 
- drivers/net/wireless/libertas/wext.c           |    2 
- drivers/net/wireless/orinoco/wext.c            |    6 
- drivers/net/wireless/rt2x00/rt61pci.c          |    5 
- drivers/platform/x86/acerhdf.c                 |    7 
- drivers/s390/block/dasd_diag.c                 |   19 +-
- drivers/scsi/ipr.c                             |    1 
- drivers/scsi/qla2xxx/qla_os.c                  |    6 
- drivers/scsi/scsi_transport_fc.c               |   17 +
- drivers/scsi/st.c                              |   23 +-
- drivers/scsi/st.h                              |    1 
- drivers/usb/core/hub.c                         |   58 +++---
- drivers/usb/core/sysfs.c                       |    6 
- drivers/usb/misc/appledisplay.c                |    4 
- drivers/usb/misc/emi62.c                       |    2 
- drivers/usb/musb/musb_gadget_ep0.c             |   14 +
- drivers/usb/serial/option.c                    |    5 
- drivers/xen/xenbus/xenbus_probe.c              |   42 +++-
- fs/cifs/connect.c                              |   13 -
- fs/ext4/ext4.h                                 |    6 
- fs/ext4/inode.c                                |   27 +-
- fs/ext4/super.c                                |    5 
- fs/namei.c                                     |    1 
- fs/quota/dquot.c                               |  213 +++++++++++++----------
- fs/stat.c                                      |   10 -
- fs/udf/super.c                                 |   32 ++-
- include/linux/cpumask.h                        |    2 
- include/linux/fs.h                             |    1 
- include/linux/quota.h                          |    5 
- include/linux/security.h                       |    7 
- include/net/ip.h                               |    1 
- include/net/ipv6.h                             |    8 
- include/net/netfilter/ipv6/nf_conntrack_ipv6.h |    2 
- kernel/cpu.c                                   |   18 +
- kernel/cpuset.c                                |   16 -
- kernel/sched.c                                 |   40 ++--
- kernel/sched_fair.c                            |    3 
- kernel/sysctl.c                                |    5 
- kernel/time/clockevents.c                      |   18 +
- lib/dma-debug.c                                |    8 
- mm/Kconfig                                     |    1 
- mm/internal.h                                  |    3 
- mm/ksm.c                                       |   14 -
- mm/memcontrol.c                                |    8 
- mm/mlock.c                                     |    4 
- mm/oom_kill.c                                  |    2 
- mm/vmscan.c                                    |   18 +
- net/ipv4/netfilter/nf_defrag_ipv4.c            |   21 +-
- net/ipv6/netfilter/nf_conntrack_l3proto_ipv6.c |   19 +-
- net/ipv6/netfilter/nf_conntrack_reasm.c        |    7 
- net/ipv6/reassembly.c                          |    5 
- net/mac80211/ibss.c                            |    4 
- net/mac80211/mlme.c                            |    8 
- net/mac80211/tx.c                              |    1 
- net/mac80211/util.c                            |   12 +
- net/wireless/mlme.c                            |   13 +
- security/Makefile                              |    3 
- security/keys/keyctl.c                         |   10 +
- sound/mips/sgio2audio.c                        |    2 
- sound/pci/hda/patch_realtek.c                  |    6 
- sound/pcmcia/pdaudiocf/pdaudiocf_pcm.c         |    2 
- sound/soc/codecs/wm8974.c                      |    2 
- sound/soc/codecs/wm9712.c                      |    3 
- sound/usb/usbaudio.c                           |    2 
- 117 files changed, 1313 insertions(+), 804 deletions(-)
-
-Alan Stern (2):
-      USB: rename usb_configure_device
-      USB: fix bugs in usb_(de)authorize_device
-
-Alexey Starikovskiy (1):
-      ACPI: EC: Fix MSI DMI detection
-
-Amerigo Wang (1):
-      'sysctl_max_map_count' should be non-negative
-
-Andrey Borzenkov (1):
-      orinoco: fix GFP_KERNEL in orinoco_set_key with interrupts disabled
-
-Bartlomiej Zolnierkiewicz (1):
-      pata_cmd64x: fix overclocking of UDMA0-2 modes
-
-Bob Copeland (1):
-      ath5k: fix SWI calibration interrupt storm
-
-Borislav Petkov (7):
-      x86, msr: Unify rdmsr_on_cpus/wrmsr_on_cpus
-      amd64_edac: unify MCGCTL ECC switching
-      x86, msr: Add support for non-contiguous cpumasks
-      x86, msr: msrs_alloc/free for CONFIG_SMP=n
-      amd64_edac: fix driver instance freeing
-      amd64_edac: make driver loading more robust
-      amd64_edac: fix forcing module load/unload
-
-Clemens Ladisch (2):
-      sound: sgio2audio/pdaudiocf/usb-audio: initialize PCM buffer
-      USB: emi62: fix crash when trying to load EMI 6|2 firmware
-
-Daisuke Nishimura (1):
-      memcg: avoid oom-killing innocent task in case of use_hierarchy
-
-Dan Carpenter (1):
-      V4L/DVB (13596): ov511.c typo: lock => unlock
-
-Dan Williams (2):
-      ioat3: fix p-disabled q-continuation
-      ioat2,3: put channel hardware in known state at init
-
-Daniel Mack (1):
-      Libertas: fix buffer overflow in lbs_get_essid()
-
-Dave Airlie (2):
-      drm/radeon: fix build on 64-bit with some compilers.
-      drm/radeon/kms: fix crtc vblank update for r600
-
-David Howells (1):
-      NOMMU: Optimise away the {dac_,}mmap_min_addr tests
-
-Dmitry Monakhov (4):
-      Add unlocked version of inode_add_bytes() function
-      quota: decouple fs reserved space from quota reservation
-      ext4: Convert to generic reserved quota's space management.
-      ext4: fix sleep inside spinlock issue with quota and dealloc (#14739)
-
-Donny Kurnia (1):
-      USB: option: support hi speed for modem Haier CE100
-
-Eric Millbrandt (1):
-      ASoC: Do not write to invalid registers on the wm9712.
-
-FUJITA Tomonori (1):
-      SCSI: st: fix mdata->page_order handling
-
-Fang Wenqi (1):
-      ext4: Update documentation to correct the inode_readahead_blks option name
-
-Felix Fietkau (1):
-      ath9k: fix missed error codes in the tx status check
-
-Geert Uytterhoeven (1):
-      Keys: KEYCTL_SESSION_TO_PARENT needs TIF_NOTIFY_RESUME architecture support
-
-Gertjan van Wingerde (1):
-      rt2x00: Disable powersaving for rt61pci and rt2800pci.
-
-Greg Kroah-Hartman (1):
-      Linux 2.6.32.3
-
-Guennadi Liakhovetski (1):
-      ASoC: wm8974: fix a wrong bit definition
-
-Hugh Dickins (1):
-      ksm: fix mlockfreed to munlocked
-
-Ingo Molnar (1):
-      dma-debug: Fix bug causing build warning
-
-Jan Kara (1):
-      udf: Try harder when looking for VAT inode
-
-Jeff Layton (1):
-      cifs: NULL out tcon, pSesInfo, and srvTcp pointers when chasing DFS referrals
-
-Joerg Roedel (1):
-      x86/amd-iommu: Fix initialization failure panic
-
-Johannes Berg (4):
-      mac80211: fix WMM AP settings application
-      cfg80211: fix race between deauth and assoc response
-      iwlwifi: fix EEPROM/OTP reading endian annotations and a bug
-      iwlwifi: fix more eeprom endian bugs
-
-Jonathan Cameron (1):
-      hwmon: (sht15) Off-by-one error in array index + incorrect constants
-
-Julia Lawall (1):
-      drivers/net/usb: Correct code taking the size of a pointer
-
-Kleber Sacilotto de Souza (1):
-      SCSI: ipr: fix EEH recovery
-
-Larry Finger (1):
-      b43: avoid PPC fault during resume
-
-Linus Torvalds (1):
-      x86/ptrace: make genregs[32]_get/set more robust
-
-Luis R. Rodriguez (4):
-      mac80211: fix propagation of failed hardware reconfigurations
-      ath9k: wake hardware for interface IBSS/AP/Mesh removal
-      ath9k: wake hardware during AMPDU TX actions
-      mac80211: fix race with suspend and dynamic_ps_disable_work
-
-Marcelo Tosatti (2):
-      KVM: MMU: remove prefault from invlpg handler
-      KVM: LAPIC: make sure IRR bitmap is scanned after vm load
-
-Michael Reed (1):
-      SCSI: qla2xxx: dpc thread can execute before scsi host has been added
-
-Mike Christie (1):
-      SCSI: fc class: fix fc_transport_init error handling
-
-Mike Travis (1):
-      x86: SGI UV: Fix writes to led registers on remote uv hubs
-
-Neil Campbell (1):
-      powerpc: Handle VSX alignment faults correctly in little-endian mode
-
-NeilBrown (1):
-      md: Fix unfortunate interaction with evms
-
-Nicolas Ferre (1):
-      dma: at_hdmac: correct incompatible type for argument 1 of 'spin_lock_bh'
-
-Oliver Neukum (1):
-      Bluetooth: Prevent ill-timed autosuspend in USB driver
-
-Paolo Bonzini (3):
-      xen: fix is_disconnected_device/exists_disconnected_device
-      xen: improvement to wait_for_devices()
-      xen: wait up to 5 minutes for device connetion
-
-Patrick McHardy (2):
-      ipv6: reassembly: use seperate reassembly queues for conntrack and local delivery
-      netfilter: fix crashes in bridge netfilter caused by fragment jumps
-
-Peter Zijlstra (4):
-      sched: Fix task_hot() test order
-      sched: Select_task_rq_fair() must honour SD_LOAD_BALANCE
-      sched: Fix balance vs hotplug race
-      sched: Sched_rt_periodic_timer vs cpu hotplug
-
-Reinette Chatre (2):
-      iwl3945: disable power save
-      iwlwifi: fix 40MHz operation setting on cards that do not allow it
-
-Rik van Riel (1):
-      vmscan: do not evict inactive pages when skipping an active list scan
-
-Roger Oksanen (1):
-      e100: Fix broken cbs accounting due to missing memset.
-
-Rusty Russell (2):
-      cpumask: use modern cpumask style in drivers/edac/amd64_edac.c
-      lguest: fix bug in setting guest GDT entry
-
-Serge E. Hallyn (1):
-      generic_permission: MAY_OPEN is not write access
-
-Sergei Shtylyov (2):
-      pata_hpt3x2n: fix clock turnaround
-      USB: musb: gadget_ep0: avoid SetupEnd interrupt
-
-Shaun Ruffell (1):
-      dma-debug: Do not add notifier when dma debugging is disabled.
-
-Stefan Bader (1):
-      acerhdf: limit modalias matching to supported
-
-Stefan Weinhuber (1):
-      S390: dasd: support DIAG access for read-only devices
-
-Sujith (3):
-      mac80211: Fix IBSS merge
-      ath9k: Fix TX queue draining
-      ath9k: fix suspend by waking device prior to stop
-
-Suresh Siddha (1):
-      x86, cpuid: Add "volatile" to asm in native_cpuid()
-
-Takashi Iwai (1):
-      ALSA: hda - Fix missing capsrc_nids for ALC88x
-
-Thomas Gleixner (1):
-      clockevents: Prevent clockevent_devices list corruption on cpu hotplug
-
-Vasanthakumar Thiagarajan (2):
-      ath9k_hw: Fix possible OOB array indexing in gen_timer_index[] on 64-bit
-      ath9k_hw: Fix AR_GPIO_INPUT_EN_VAL_BT_PRIORITY_BB and its shift value in 0x4054
-
-WANG Cong (1):
-      kernel/sysctl.c: fix the incomplete part of sysctl_max_map_count-should-be-non-negative.patch
-
-Zhao Yakui (2):
-      ACPI: Use the return result of ACPI lid notifier chain correctly
-      drm: disable all the possible outputs/crtcs before entering KMS mode
-
-Zhu Yi (2):
-      iwmc3200wifi: fix array out-of-boundary access
-      iwl3945: fix panic in iwl3945 driver
-
-pancho horrillo (1):
-      USB: Fix a bug on appledisplay.c regarding signedness
 
