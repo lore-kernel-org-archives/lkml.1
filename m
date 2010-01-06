@@ -1,202 +1,201 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755454Ab0AFE5N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751034Ab0AFFCt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755454Ab0AFE5N (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 23:57:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755191Ab0AFE5L
+	id S1751034Ab0AFFCt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 00:02:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750795Ab0AFFCs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 23:57:11 -0500
-Received: from mail-yx0-f188.google.com ([209.85.210.188]:49649 "EHLO
-	mail-yx0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755132Ab0AFE5K convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 23:57:10 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=Y9KkGN36aPz9wq39JNZBphGznf8AFB/HFVP0TqUnytAfpY7v0YcIdz/eN1E6fBuhbO
-         tEPNlvT5SZY90/EuGcM7iAQpzBaLFACv5UKXEqHsfWHRTMAoKVk+7wMOcHfvtCR3NvsH
-         r1Fc0GfDLTBy6iAAf/8DkjzEZ4h/dR1pCsAhU=
+	Wed, 6 Jan 2010 00:02:48 -0500
+Received: from e9.ny.us.ibm.com ([32.97.182.139]:56068 "EHLO e9.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750787Ab0AFFCs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jan 2010 00:02:48 -0500
+Date: Wed, 6 Jan 2010 10:32:26 +0530
+From: Bharata B Rao <bharata@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Gautham R Shenoy <ego@in.ibm.com>,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>,
+       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Pavel Emelyanov <xemul@openvz.org>,
+       Herbert Poetzl <herbert@13thfloor.at>, Avi Kivity <avi@redhat.com>,
+       Chris Friesen <cfriesen@nortel.com>, Paul Menage <menage@google.com>,
+       Mike Waychison <mikew@google.com>
+Subject: Re: [RFC v5 PATCH 7/8] sched: CFS runtime borrowing
+Message-ID: <20100106050226.GO27899@in.ibm.com>
+Reply-To: bharata@linux.vnet.ibm.com
+References: <20100105075703.GE27899@in.ibm.com> <20100105080346.GL27899@in.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <20100106002158.GM4274@sortiz.org>
-References: <20100105050914.32264.762.sendpatchset@rxone.opensource.se>
-	 <20100106002158.GM4274@sortiz.org>
-Date: Wed, 6 Jan 2010 13:57:09 +0900
-Message-ID: <aec7e5c31001052057u68deaab2y1d63a2e881ef94a3@mail.gmail.com>
-Subject: Re: [PATCH] MMC: hardware abstraction for CNF area
-From: Magnus Damm <magnus.damm@gmail.com>
-To: Samuel Ortiz <sameo@linux.intel.com>
-Cc: linux-kernel@vger.kernel.org, ian@mnementh.co.uk, linux-sh@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100105080346.GL27899@in.ibm.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Samuel,
+On Tue, Jan 05, 2010 at 01:33:46PM +0530, Bharata B Rao wrote:
+> sched: CFS runtime borrowing
+> 
+>  static void enable_runtime(struct rq *rq)
+>  {
+>  	unsigned long flags;
+>  
+>  	raw_spin_lock_irqsave(&rq->lock, flags);
+>  	enable_runtime_rt(rq);
+> +#if defined(config_fair_group_sched) && defined(config_cfs_hard_limits)
 
-On Wed, Jan 6, 2010 at 9:21 AM, Samuel Ortiz <sameo@linux.intel.com> wrote:
-> On Tue, Jan 05, 2010 at 02:09:14PM +0900, Magnus Damm wrote:
->> From: Ian Molton <ian@mnementh.co.uk>
->>
->> This patch abstracts out the CNF area code from tmio_mmc which
->> is not present in all hardware that can use this driver. This
->> is required so that we can support non-toshiba based hardware.
->>
->> ASIC3 support by Philipp Zabel
->>
->> [ Magnus Damm: extracted patch from git.mnementh.co.uk, tried
->>   to apply on top of current linux-2.6 but got rejects due to
->>   -mm patch 14f1b75b1d31673d7ab6ac6d2f8fe7f23c705229, solved
->>   conflict by hand, regenerated patch and posted to lkml ]
-> Thanks for taking care of that.
+Got the above config options wrong. Resending this patch again with correction.
 
-No worries!
+Regards,
+Bharata.
 
-> I wish I could take this patch straight away, but I have some objections, see
-> below:
->
->> +     .suspend       = asic3_mmc_disable,
->> +     .resume        = asic3_mmc_enable,
-> Why are we moving from enable/disable to resume/suspend ?
-> It makes sense from a naming point of view, but that should be in a separate
-> patch.
+sched: CFS runtime borrowing
 
-I agree.
+From: Bharata B Rao <bharata@linux.vnet.ibm.com>
 
->> +static const struct resource t7l66xb_mmc_resources[];
-> Could we simply move the t7l66xb_mmc_resources[] definition here instead ?
+Before throttling a group, try to borrow runtime from groups that have excess.
 
-Yep, makes sense.
+To start with, a group will get equal runtime on every cpu. If the group doesn't
+have tasks on all cpus, it might get throttled on some cpus while it still has
+runtime left on other cpus where it doesn't have any tasks to consume that
+runtime. Hence there is a chance to borrow runtimes from such cpus/cfs_rqs to
+cpus/cfs_rqs where it is required.
 
->> --- /dev/null
->> +++ work/drivers/mfd/tmio_core.c      2010-01-05 13:27:31.000000000 +0900
->> @@ -0,0 +1,62 @@
->> +/*
->> + * Toshiba TC6393XB SoC support
-> Bogus comment.
+CHECK: RT seems to be handling runtime initialization/reclaim during hotplug
+from multiple places (migration_call, update_runtime). Need to check if CFS
+also needs to do the same.
 
-Yes.
+Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Signed-off-by: Bharata B Rao <bharata@linux.vnet.ibm.com>
+---
+ kernel/sched.c      |   13 +++++++++++++
+ kernel/sched_fair.c |   42 ++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 55 insertions(+), 0 deletions(-)
 
->> + * Copyright(c) 2009 Ian Molton <spyro@f2s.com>
->> + *
->> + * This program is free software; you can redistribute it and/or modify
->> + * it under the terms of the GNU General Public License version 2 as
->> + * published by the Free Software Foundation.
->> + */
->> +
->> +#include <linux/mfd/tmio.h>
->> +
->> +static int shift;
-> That I dont like. Carry the shift as a function argument, because there is no
-> reason to have a static variable here.
-
-Yeah, this part of the code is pretty darn ugly. Will fix.
-
-> In fact, we could even move this code to tmio_mmc.c and export the symbols
-> from there. The tmio_mmc code know the bus shift, doesnt it ?
-
-The purpose of this patch is to make tmio_mmc work with a single I/O
-memory window. So this code was intentionally moved out of tmio_mmc. I
-don't care so much though, my original patch kept support for two
-windows in tmio_mmc but Ian preferred to make the tmio_mmc driver work
-with a single window only. Perhaps Ian has something to say?
-
-I'll just pass the shift as a function argument for now.
-
->> --- 0001/drivers/mmc/host/tmio_mmc.c
->> +++ work/drivers/mmc/host/tmio_mmc.c  2010-01-05 13:28:07.000000000 +0900
->> @@ -46,7 +46,9 @@ static void tmio_mmc_set_clock(struct tm
->>               clk |= 0x100;
->>       }
->>
->> -     sd_config_write8(host, CNF_SD_CLK_MODE, clk >> 22);
->> +     if (host->set_no_clk_div)
->> +             host->set_no_clk_div(host->pdev, (clk>>22) & 1);
->> +
-> You either need a backup path or make the set_no_clk_div() implementation
-> mandatory. IOW, we should at least call tmio_core_mmc_clk_div() if
-> set_no_clk_div() is not defined. Or then if you assume that all tmio drivers
-> must implement those hooks, then return if it's not there. I would prefer the
-> former option though as that would allow me to split this patch into what I
-> see as .33 material (tmio_mmc.[ch], tmio_core.c [that I would rather see moved
-> to tmio_mmc.c], and tmio.h)
-
-The hardware driven by the SuperH SDHI driver lacks support for the
-second memory window, so ->set_no_clk_div() is set to NULL in that
-case. And falling back on tmio_core_mmc_clk_div() will only work on
-hardware with two memory windows, so that idea will break SuperH SDHI.
-It may be a good idea with dummy nop functions to avoid the if case,
-but none of these functions are called in any hot path so from my
-point of view it's ok as is.
-
-I agree that a lot of code in a single patch is far from optimal. Feel
-free to break out the patch in any way you'd like. My original patches
-were broken out, but for some reason this all-in-one approach was
-chosen.
-
-I don't have access to any hardware except SuperH SDHI boards, but I'm
-pretty sure Ian and Phillip has tested this patch on whatever hardware
-they have available. So it may make sense to keep the code as is to
-avoid breakage.
-
->> @@ -475,8 +478,8 @@ static int tmio_mmc_suspend(struct platf
->>       ret = mmc_suspend_host(mmc, state);
->>
->>       /* Tell MFD core it can disable us now.*/
->> -     if (!ret && cell->disable)
->> -             cell->disable(dev);
->> +     if (!ret && cell->suspend)
->> +             cell->suspend(dev);
-> That sort of change doesnt belong to that patch, unless I'm missing something.
-
-I agree.
-
->> +     /* Callbacks for clock / power control */
->> +     void (*set_pwr)(struct platform_device *host, int state);
->> +     void (*set_no_clk_div)(struct platform_device *host, int state);
-> The name is a bit misleading, imo. Wouldn't set_clk_div() be more appropriate?
-
-Yep, will go with ->set_clk_div().
-
->> +#define CNF_CMD     0x04
->> +#define CNF_CTL_BASE   0x10
->> +#define CNF_INT_PIN  0x3d
->> +#define CNF_STOP_CLK_CTL 0x40
->> +#define CNF_GCLK_CTL 0x41
->> +#define CNF_SD_CLK_MODE 0x42
->> +#define CNF_PIN_STATUS 0x44
->> +#define CNF_PWR_CTL_1 0x48
->> +#define CNF_PWR_CTL_2 0x49
->> +#define CNF_PWR_CTL_3 0x4a
->> +#define CNF_CARD_DETECT_MODE 0x4c
->> +#define CNF_SD_SLOT 0x50
->> +#define CNF_EXT_GCLK_CTL_1 0xf0
->> +#define CNF_EXT_GCLK_CTL_2 0xf1
->> +#define CNF_EXT_GCLK_CTL_3 0xf9
->> +#define CNF_SD_LED_EN_1 0xfa
->> +#define CNF_SD_LED_EN_2 0xfe
->> +
->> +#define   SDCREN 0x2   /* Enable access to MMC CTL regs. (flag in COMMAND_REG)*/
->> +
->> +#define sd_config_write8(base, shift, reg, val) \
->> +     tmio_iowrite8((val), (base) + ((reg) << (shift)))
->> +#define sd_config_write16(base, shift, reg, val) \
->> +     tmio_iowrite16((val), (base) + ((reg) << (shift)))
->> +#define sd_config_write32(base, shift, reg, val) \
->> +     do { \
->> +     tmio_iowrite16((val), (base) + ((reg) << (shift))); \
->> +     tmio_iowrite16((val) >> 16, (base) + ((reg + 2) << (shift))); \
->> +     } while (0)
-> By implementing the tmio_core API in tmio_mmc.c, you wouldnt need to redefine
-> those.
-
-Right, but we want to code to be broken out of tmio_mmc so putting it
-back does not make sense.
-
-Thanks a lot for your help. I'll submit a patch on top of this one
-with fixes. Feel free to apply it on top or roll it in.
-
-Cheers,
-
-/ magnus
+diff --git a/kernel/sched.c b/kernel/sched.c
+index c4ab583..857e567 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -1960,6 +1960,8 @@ void __disable_runtime(struct rq *rq, struct sched_bandwidth *sched_b,
+ 
+ 		if (rt)
+ 			iter = &(sched_rt_period_rt_rq(sched_b, i)->rq_bandwidth);
++		else
++			iter = &(sched_cfs_period_cfs_rq(sched_b, i)->rq_bandwidth);
+ 		/*
+ 		 * Can't reclaim from ourselves or disabled runqueues.
+ 		 */
+@@ -1999,12 +2001,16 @@ balanced:
+ }
+ 
+ void disable_runtime_rt(struct rq *rq);
++void disable_runtime_cfs(struct rq *rq);
+ static void disable_runtime(struct rq *rq)
+ {
+ 	unsigned long flags;
+ 
+ 	raw_spin_lock_irqsave(&rq->lock, flags);
+ 	disable_runtime_rt(rq);
++#if defined(CONFIG_FAIR_GROUP_SCHED) && defined(CONFIG_CFS_HARD_LIMITS)
++	disable_runtime_cfs(rq);
++#endif
+ 	raw_spin_unlock_irqrestore(&rq->lock, flags);
+ }
+ 
+@@ -2021,12 +2027,16 @@ void __enable_runtime(struct sched_bandwidth *sched_b,
+ }
+ 
+ void enable_runtime_rt(struct rq *rq);
++void enable_runtime_cfs(struct rq *rq);
+ static void enable_runtime(struct rq *rq)
+ {
+ 	unsigned long flags;
+ 
+ 	raw_spin_lock_irqsave(&rq->lock, flags);
+ 	enable_runtime_rt(rq);
++#if defined(CONFIG_FAIR_GROUP_SCHED) && defined(CONFIG_CFS_HARD_LIMITS)
++	enable_runtime_cfs(rq);
++#endif
+ 	raw_spin_unlock_irqrestore(&rq->lock, flags);
+ }
+ 
+@@ -2050,6 +2060,9 @@ static void do_balance_runtime(struct rq_bandwidth *rq_b,
+ 
+ 		if (rt)
+ 			iter = &(sched_rt_period_rt_rq(sched_b, i)->rq_bandwidth);
++		else
++			iter = &(sched_cfs_period_cfs_rq(sched_b, i)->rq_bandwidth);
++
+ 		if (iter == rq_b)
+ 			continue;
+ 
+diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
+index 16ed209..dcd093b 100644
+--- a/kernel/sched_fair.c
++++ b/kernel/sched_fair.c
+@@ -241,6 +241,41 @@ static inline int cfs_rq_throttled(struct cfs_rq *cfs_rq)
+ 	return cfs_rq->rq_bandwidth.throttled;
+ }
+ 
++#ifdef CONFIG_SMP
++/*
++ * Ensure this RQ takes back all the runtime it lend to its neighbours.
++ */
++void disable_runtime_cfs(struct rq *rq)
++{
++	struct cfs_rq *cfs_rq;
++
++	if (unlikely(!scheduler_running))
++		return;
++
++	for_each_leaf_cfs_rq(rq, cfs_rq) {
++		struct sched_bandwidth *sched_b = sched_cfs_bandwidth(cfs_rq);
++		__disable_runtime(rq, sched_b, &cfs_rq->rq_bandwidth, 0);
++	}
++}
++
++void enable_runtime_cfs(struct rq *rq)
++{
++	struct cfs_rq *cfs_rq;
++
++	if (unlikely(!scheduler_running))
++		return;
++
++	/*
++	 * Reset each runqueue's bandwidth settings
++	 */
++	for_each_leaf_cfs_rq(rq, cfs_rq) {
++		struct sched_bandwidth *sched_b = sched_cfs_bandwidth(cfs_rq);
++		__enable_runtime(sched_b, &cfs_rq->rq_bandwidth);
++	}
++}
++
++#endif /* CONFIG_SMP */
++
+ /*
+  * Check if group entity exceeded its runtime. If so, mark the cfs_rq as
+  * throttled mark the current task for reschedling.
+@@ -260,6 +295,10 @@ static void sched_cfs_runtime_exceeded(struct sched_entity *se,
+ 	if (cfs_rq_throttled(cfs_rq))
+ 		return;
+ 
++	if (cfs_rq->rq_bandwidth.time > cfs_rq->rq_bandwidth.runtime)
++		balance_runtime(&cfs_rq->rq_bandwidth,
++					sched_cfs_bandwidth(cfs_rq), 0);
++
+ 	if (cfs_rq->rq_bandwidth.time > cfs_rq->rq_bandwidth.runtime) {
+ 		cfs_rq->rq_bandwidth.throttled = 1;
+ 		update_stats_throttle_start(cfs_rq, se);
+@@ -313,6 +352,9 @@ static int do_sched_cfs_period_timer(struct sched_bandwidth *cfs_b, int overrun)
+ 			u64 runtime;
+ 
+ 			raw_spin_lock(&cfs_rq->rq_bandwidth.runtime_lock);
++			if (cfs_rq_throttled(cfs_rq))
++				balance_runtime(&cfs_rq->rq_bandwidth,
++					sched_cfs_bandwidth(cfs_rq), 0);
+ 			runtime = cfs_rq->rq_bandwidth.runtime;
+ 			cfs_rq->rq_bandwidth.time -= min(cfs_rq->rq_bandwidth.time, overrun*runtime);
+ 			if (cfs_rq_throttled(cfs_rq) &&
