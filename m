@@ -1,66 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932886Ab0AFVnP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932898Ab0AFVnq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932886Ab0AFVnP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 16:43:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756300Ab0AFVnP
+	id S932898Ab0AFVnq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 16:43:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932879Ab0AFVno
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 16:43:15 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:60728 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756293Ab0AFVnO (ORCPT
+	Wed, 6 Jan 2010 16:43:44 -0500
+Received: from mail-fx0-f225.google.com ([209.85.220.225]:50042 "EHLO
+	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932883Ab0AFVnl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 16:43:14 -0500
-Date: Wed, 6 Jan 2010 13:42:32 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Roland Dreier <rdreier@cisco.com>
-Cc: linux-kernel@vger.kernel.org, Bart Van Assche <bart.vanassche@gmail.com>,
-       David Dillow <dave@thedillows.org>
-Subject: Re: [PATCH] log2.h: Macro-ize is_power_of_2() for use in
- BUILD_BUG_ON
-Message-Id: <20100106134232.0025e818.akpm@linux-foundation.org>
-In-Reply-To: <aday6kbt14a.fsf@roland-alpha.cisco.com>
-References: <ada3a2jugqu.fsf@roland-alpha.cisco.com>
-	<20100106123306.ac85e557.akpm@linux-foundation.org>
-	<aday6kbt14a.fsf@roland-alpha.cisco.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+	Wed, 6 Jan 2010 16:43:41 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version
+         :x-mailer:content-transfer-encoding;
+        b=EzdlOwONA8HIHUYEomOv/xXd8uCKn6etBzPsAs+Hm2547Ut/QkAAIWwCr7iQYTWOuJ
+         +eA5ExoQQ34U4hSJOqoFnQLniNnothOzlCgROgh+/cO/gbnOv8892gxmvgwdzzDRn0D5
+         IZ2QS4bw61f80cPUyCTZc9zh6FMnold5RafvU=
+Subject: RFC: [PATCH 0/9 Integration of SmartMedia/xD into mtd subsystem
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Cc: linux-mtd <linux-mtd@lists.infradead.org>, Alex Dubov <oakad@yahoo.com>,
+       joern <joern@logfs.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 06 Jan 2010 23:43:36 +0200
+Message-ID: <1262814216.14552.22.camel@maxim-laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 06 Jan 2010 12:44:05 -0800
-Roland Dreier <rdreier@cisco.com> wrote:
+Here is the result of my work of supporting an xD card reader that I
+have on my notebook.
 
-> 
->  > Perhaps we can avoid worrying about that via
-> 
->  > #define BUILD_BUG_ON_NOT_POWER_OF_2(n)	\
->  > 	BUILD_BUG_ON((n != 0 && ((n & (n - 1)) == 0)))
-> 
-> Having something so specific to this particular case makes me feel like
-> maybe it's just not worth it.
+I had to fix few problems in mtd translation layer, add few workarounds.
+This is by no way a final version of the patches, there is still lot of
+cleanup to do.
+The patches weren't tested with checkpatch.pl for example.
 
-mm..  I think _something_ is worth it.  The requirement that a constant
-be a power of two is a very common one in the kernel.
+I can now read and write an xD card, and I have no crashes.
+Still following issues remain:
 
-If you feel strongly about it and think the incremental benefit of your
-version is worth the effort of screening out gcc warts then ho hum, go
-for it I guess.
+1 - Write speed IS very SLOW, just about 200 Kbytes/s
+In fact a reader in my printer gives me about 330 Kbytes/s, thus
+partially card is to blame.
+Also, hardware doesn't support interrupts to test when card is ready,
+thus writes consume 100% of one cpu.
 
->  At least in the case I'm looking at, we
-> could just have:
-> 
-> /*
->  * The code relies on FOO being a power of 2.  If you break this,
->  * you're dumb.
->  */
-> #define FOO_SHIFT	6
-> #define FOO		(1 << FOO_SHIFT)
-> 
-> Your thoughts?
+2 - I rely on mtd driver to have empty oob layout so I can read both oob
+and data using ->read_oob  with MTD_OOB_PLACE.
+I thinking to add new mode to allow to read whole oob + data and check
+ecc, or I will have to do pointless copying of data from 'censored' oob
+to normal structure. (This applies to FTL driver I also include in this
+patchset)
 
-Given the probably-hundreds of sites which could utilise this assertion,
-that approach will be a bit of a PITA.
+3 - Using the mtd device directly with anything but supplied FTL or
+SSFDC, on 'modern' xD cards just doesn't. These cards implement a fake
+nand command set, thus don't have a real oob.
+It was disappointing for me too.
+I suspect that all 'Type M' cards are of this fake type, but older cards
+are OK.
+
+
+4 - Suspend/resume support works, but relies on all mtd users not to
+suspend in middle of card access, bacause in this case its very
+difficult/impossible to know card state.
+Driver will refuse suspend in that case.
+Access via all block devices is safe.
+
+
+5 - And of course there are bugs, thus I warn you now that this driver
+has high probability to erase data from your card.
+Thus DON'T USE THIS DRIVER IF ANYTHING IMPORTANT IS STORED ON THE CARD.
+
+
+6 - driver only detects PCI ID of my notebook, so it might not load on
+compatable chips with different ID.
+
+
+7 - patches developed against stable 2.6.32, and won't compile against
+latest git due to changes in kfifo api.
+
+
+Feedback is welcome, flames too :-)
+
+
+Best regards,
+Maxim Levitsky
+
 
