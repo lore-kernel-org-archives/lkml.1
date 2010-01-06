@@ -1,86 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932554Ab0AFWpV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932731Ab0AFWqB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932554Ab0AFWpV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 17:45:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932410Ab0AFWpS
+	id S932731Ab0AFWqB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 17:46:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932625Ab0AFWqA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 17:45:18 -0500
-Received: from mail.free-electrons.com ([88.191.76.200]:60861 "EHLO
-	mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932370Ab0AFWpR (ORCPT
+	Wed, 6 Jan 2010 17:46:00 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:39425 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932459Ab0AFWp7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 17:45:17 -0500
-Date: Wed, 6 Jan 2010 23:45:10 +0100
-From: Albin Tonnerre <albin.tonnerre@free-electrons.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Phillip Lougher <phillip@lougher.demon.co.uk>,
-       linux-embedded@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, phillip.lougher@gmail.com,
-       tim.bird@am.sony.com, Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH V2 6/8] lzma: Make lzma available to non
- initramfs/initrd code
-Message-ID: <20100106224510.GC24551@pc-ran3241.res.insa>
-References: <E1NIuOW-0001ol-RC@dylan.lougher.demon.co.uk>
- <20100106140409.ba0f63d1.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100106140409.ba0f63d1.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Wed, 6 Jan 2010 17:45:59 -0500
+Date: Wed, 6 Jan 2010 14:44:47 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Rick L. Vinyard Jr." <rvinyard@cs.nmsu.edu>
+Cc: linux-kernel@vger.kernel.org, felipe.balbi@nokia.com, krzysztof.h1@wp.pl,
+       linux-usb@vger.kernel.org, oliver@neukum.org,
+       linux-input@vger.kernel.org, jkosina@suse.cz
+Subject: Re: [PATCH] Logitech G13 driver 0.0.2
+Message-Id: <20100106144447.b5ea9b1f.akpm@linux-foundation.org>
+In-Reply-To: <200912142244.nBEMikgN002071@mustang.cs.nmsu.edu>
+References: <200912142244.nBEMikgN002071@mustang.cs.nmsu.edu>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 06 Jan 2010 14:04 -0800, Andrew Morton wrote :
-> On Fri, 11 Dec 2009 01:34:08 +0000
-> Phillip Lougher <phillip@lougher.demon.co.uk> wrote:
-> 
-> > Add a config option DECOMPRESS_LZMA_NEEDED which allows subsystems to
-> > specify they need the unlzma code.  Normally decompress_unlzma.c is
-> > compiled with __init and unlzma is not exported to modules.
-> > 
-> > Move INIT definition into separate header files for bzip2/lzma/inflate
-> > so it can be defined differently for each decompressor.
-> > 
-> 
-> This patch (which is in linux-next) breaks
-> lib-add-support-for-lzo-compressed-kernels.patch, below.  The
-> definition of INIT is no longer available in lib/decompress_unlzo.c, and
-> 
-> lib/decompress_unlzo.c: In function 'unlzo':
-> lib/decompress_unlzo.c:106: error: 'error' undeclared (first use in this function)
-> lib/decompress_unlzo.c:106: error: (Each undeclared identifier is reported only once
-> lib/decompress_unlzo.c:106: error: for each function it appears in.)
-> lib/decompress_unlzo.c:111: error: implicit declaration of function 'error'
-> 
-> 
-> I'm planning on merging 
-> 
-> zlib-optimize-inffast-when-copying-direct-from-output.patch
-> lib-add-support-for-lzo-compressed-kernels.patch
-> arm-add-support-for-lzo-compressed-kernels.patch
-> x86-add-support-for-lzo-compressed-kernels.patch
-> add-lzo-compression-support-for-initramfs-and-old-style-initrd.patch
-> 
-> into 2.6.33.  I don't immediately remember why I decided that - perhaps
-> because the patches did arrive in time for .33, but got stalled because
-> people were screwing around in other trees.
-> 
-> So if I go ahead with that merge, linux-next will need fixing.  And I
-> didn't get down and work what the appropriate fix is, and I don't want
-> to break linux-next in serious ways.
-> 
-> 
-> So what to do?  I guess I could go ahead with the mainline merge, and
-> Stephen drops <whatever that tree was> from linux-next until it has
-> been fixed up?
+On Mon, 14 Dec 2009 15:44:46 -0700
+"Rick L. Vinyard Jr." <rvinyard@cs.nmsu.edu> wrote:
 
-I'd go for that one, although I'm obviously biaised. IMHO the linux-next fix
-should be easy enough not to postpone the above five patches until 2.6.34.
+> his is a driver for the Logitech G13 gamepad, and contains three
+> key parts. In the USB reports the device identifies itself as a
+> HID, and as a result this driver is under the HID framework.
+> 
+> There are two primary sub-components to this driver; an input
+> device and a framebuffer device.
+> 
+> Although identified as a HID, the device does not support standard
+> HID input messages. As a result, a sub-input device is allocated and
+> registered separately in g13_probe(). The raw events are monitored 
+> and key presses/joystick activity is reported through the input device 
+> after referencing an indexed keymap.
+> 
+> Additionally, this device contains a 160x43 monochrome LCD display.
+> A registered framebuffer device manages this display. The design
+> of this portion of the driver was based on the design of the
+> hecubafb driver with deferred framebuffer I/O since there is
+> no real memory to map.
 
-Regards,
--- 
-Albin Tonnerre, Free Electrons
-Kernel, drivers and embedded Linux development,
-consulting, training and support.
-http://free-electrons.com
+I get this from x86_64 allmodconfig:
+
+drivers/hid/hid-g13.o:(.rodata+0x0): multiple definition of `__mod_hid_device_table'
+drivers/hid/hid-lg.o:(.rodata+0x0): first defined here
+/opt/crosstool/gcc-4.0.2-glibc-2.3.6/x86_64-unknown-linux-gnu/bin/x86_64-unknown-linux-gnu-ld: Warning: size of symbol `__mod_hid_device_table' changed from 552 in drivers/hid/hid-lg.o to 48 in drivers/hid/hid-g13.o
+drivers/hid/hid-g13.o: In function `init_module':
+hid-g13.c:(.init.text+0x0): multiple definition of `init_module'
+drivers/hid/hid-lg.o:hid-lg.c:(.init.text+0x0): first defined here
+drivers/hid/hid-g13.o: In function `cleanup_module':
+hid-g13.c:(.exit.text+0x0): multiple definition of `cleanup_module'
+drivers/hid/hid-lg.o:hid-lg.c:(.exit.text+0x0): first defined here
+
+Confused.
