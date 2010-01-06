@@ -1,112 +1,245 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754501Ab0AVXTW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755572Ab0AVXTb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754501Ab0AVXTW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 18:19:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753712Ab0AVXTU
+	id S1755572Ab0AVXTb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 18:19:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755213Ab0AVXT0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 18:19:20 -0500
-Received: from fmmailgate01.web.de ([217.72.192.221]:37865 "EHLO
+	Fri, 22 Jan 2010 18:19:26 -0500
+Received: from fmmailgate01.web.de ([217.72.192.221]:37869 "EHLO
 	fmmailgate01.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753382Ab0AVXTT (ORCPT
+	with ESMTP id S1753412Ab0AVXTT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 22 Jan 2010 18:19:19 -0500
-Message-Id: <f253cc313439ec42486f6b66371b1801e4933567.1264201406.git.jan.kiszka@web.de>
+Message-Id: <40a6a307e28e1a7df7e63cef5243df9cc690010c.1264201406.git.jan.kiszka@web.de>
 In-Reply-To: <cover.1264201406.git.jan.kiszka@web.de>
 References: <cover.1264201406.git.jan.kiszka@web.de>
 From: Jan Kiszka <jan.kiszka@web.de>
 To: David Miller <davem@davemloft.net>, Karsten Keil <isdn@linux-pingi.de>
 Cc: linux-kernel@vger.kernel.org, i4ldeveloper@listserv.isdn4linux.de,
        isdn4linux@listserv.isdn4linux.de, netdev@vger.kernel.org
-Date: Wed, 6 Jan 2010 15:03:51 +0100
-Subject: [PATCH 04/31] CAPI: Pin capifs instead of mounting it
-X-Provags-ID: V01U2FsdGVkX1+vRXOXsGGjJwS3LE34ONmaKGeZTfp3cADhLcaY
-	Qph7uOnLCBhsbE9Fr6ntbrFBb0lQwR7AG7An9wUgXl9HMxwbU8
-	PAB34zX2s=
+Date: Wed, 6 Jan 2010 11:47:28 +0100
+Subject: [PATCH 05/31] CAPI: Reduce chattiness during module loading/removal
+X-Provags-ID: V01U2FsdGVkX19hf0bKrkxkYVo7mJxzLqE4lhbYh2B088pGNeY7
+	fWzXFlw7/Pce1edkADsix7Od70A+GAGNvfc5A3wyJ0Sgdw6F26
+	op4o5qh7I=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Auto-mounting the capifs during module init prevents unloading its
-module. Instead, pin the filesystem as long as some NCCI node exists.
+The CVS revisions dumped by all CAPI modules are meaningless today. And
+that some CAPI module is loaded or removed does not necessarily deserve
+a message. Just keep the message of the central module, capi.ko, drop
+the rest.
 
 Signed-off-by: Jan Kiszka <jan.kiszka@web.de>
 ---
- drivers/isdn/capi/capifs.c |   27 ++++++++++++++++++---------
- 1 files changed, 18 insertions(+), 9 deletions(-)
+ drivers/isdn/capi/capi.c    |   19 +++----------------
+ drivers/isdn/capi/capidrv.c |   26 --------------------------
+ drivers/isdn/capi/capifs.c  |   20 +-------------------
+ drivers/isdn/capi/kcapi.c   |   27 +++++----------------------
+ 4 files changed, 9 insertions(+), 83 deletions(-)
 
+diff --git a/drivers/isdn/capi/capi.c b/drivers/isdn/capi/capi.c
+index 58504ef..c456f61 100644
+--- a/drivers/isdn/capi/capi.c
++++ b/drivers/isdn/capi/capi.c
+@@ -44,8 +44,6 @@
+ 
+ #include "capifs.h"
+ 
+-static char *revision = "$Revision: 1.1.2.7 $";
+-
+ MODULE_DESCRIPTION("CAPI4Linux: Userspace /dev/capi20 interface");
+ MODULE_AUTHOR("Carsten Paeth");
+ MODULE_LICENSE("GPL");
+@@ -1518,21 +1516,11 @@ static void __exit proc_exit(void)
+ /* -------- init function and module interface ---------------------- */
+ 
+ 
+-static char rev[32];
+-
+ static int __init capi_init(void)
+ {
+-	char *p;
+-	char *compileinfo;
++	const char *compileinfo;
+ 	int major_ret;
+ 
+-	if ((p = strchr(revision, ':')) != NULL && p[1]) {
+-		strlcpy(rev, p + 2, sizeof(rev));
+-		if ((p = strchr(rev, '$')) != NULL && p > rev)
+-		   *(p-1) = 0;
+-	} else
+-		strcpy(rev, "1.0");
+-
+ 	major_ret = register_chrdev(capi_major, "capi20", &capi_fops);
+ 	if (major_ret < 0) {
+ 		printk(KERN_ERR "capi20: unable to get major %dn", capi_major);
+@@ -1566,8 +1554,8 @@ static int __init capi_init(void)
+ #else
+         compileinfo = " (no middleware)";
+ #endif
+-	printk(KERN_NOTICE "capi20: Rev %s: started up with major %d%sn",
+-				rev, capi_major, compileinfo);
++	printk(KERN_NOTICE "CAPI 2.0 started up with major %d%sn",
++	       capi_major, compileinfo);
+ 
+ 	return 0;
+ }
+@@ -1583,7 +1571,6 @@ static void __exit capi_exit(void)
+ #ifdef CONFIG_ISDN_CAPI_MIDDLEWARE
+ 	capinc_tty_exit();
+ #endif
+-	printk(KERN_NOTICE "capi: Rev %s: unloadedn", rev);
+ }
+ 
+ module_init(capi_init);
+diff --git a/drivers/isdn/capi/capidrv.c b/drivers/isdn/capi/capidrv.c
+index 66b7d7a..52118a9 100644
+--- a/drivers/isdn/capi/capidrv.c
++++ b/drivers/isdn/capi/capidrv.c
+@@ -34,7 +34,6 @@
+ #include <linux/isdn/capicmd.h>
+ #include "capidrv.h"
+ 
+-static char *revision = "$Revision: 1.1.2.2 $";
+ static int debugmode = 0;
+ 
+ MODULE_DESCRIPTION("CAPI4Linux: Interface to ISDN4Linux");
+@@ -2287,19 +2286,9 @@ static void __exit proc_exit(void)
+ static int __init capidrv_init(void)
+ {
+ 	capi_profile profile;
+-	char rev[32];
+-	char *p;
+ 	u32 ncontr, contr;
+ 	u16 errcode;
+ 
+-	if ((p = strchr(revision, ':')) != NULL && p[1]) {
+-		strncpy(rev, p + 2, sizeof(rev));
+-		rev[sizeof(rev)-1] = 0;
+-		if ((p = strchr(rev, '$')) != NULL && p > rev)
+-		   *(p-1) = 0;
+-	} else
+-		strcpy(rev, "1.0");
+-
+ 	global.ap.rparam.level3cnt = -2;  /* number of bchannels twice */
+ 	global.ap.rparam.datablkcnt = 16;
+ 	global.ap.rparam.datablklen = 2048;
+@@ -2327,29 +2316,14 @@ static int __init capidrv_init(void)
+ 	}
+ 	proc_init();
+ 
+-	printk(KERN_NOTICE "capidrv: Rev %s: loadedn", rev);
+ 	return 0;
+ }
+ 
+ static void __exit capidrv_exit(void)
+ {
+-	char rev[32];
+-	char *p;
+-
+-	if ((p = strchr(revision, ':')) != NULL) {
+-		strncpy(rev, p + 1, sizeof(rev));
+-		rev[sizeof(rev)-1] = 0;
+-		if ((p = strchr(rev, '$')) != NULL)
+-			*p = 0;
+-	} else {
+-		strcpy(rev, " ??? ");
+-	}
+-
+ 	capi20_release(&global.ap);
+ 
+ 	proc_exit();
+-
+-	printk(KERN_NOTICE "capidrv: Rev%s: unloadedn", rev);
+ }
+ 
+ module_init(capidrv_init);
 diff --git a/drivers/isdn/capi/capifs.c b/drivers/isdn/capi/capifs.c
-index 6ae0edf..51c01ef 100644
+index 51c01ef..8596bd1 100644
 --- a/drivers/isdn/capi/capifs.c
 +++ b/drivers/isdn/capi/capifs.c
-@@ -32,6 +32,7 @@ static char *revision = "$Revision: 1.1.2.3 $";
+@@ -25,10 +25,6 @@ MODULE_LICENSE("GPL");
+ 
+ /* ------------------------------------------------------------------ */
+ 
+-static char *revision = "$Revision: 1.1.2.3 $";
+-
+-/* ------------------------------------------------------------------ */
+-
  #define CAPIFS_SUPER_MAGIC (('C'<<8)|'N')
  
  static struct vfsmount *capifs_mnt;
-+static int capifs_mnt_count;
- 
- static struct {
- 	int setuid;
-@@ -140,7 +141,7 @@ static struct file_system_type capifs_fs_type = {
- 	.kill_sb	= kill_anon_super,
- };
- 
--struct dentry *capifs_new_ncci(unsigned int number, dev_t device)
-+static struct dentry *new_ncci(unsigned int number, dev_t device)
- {
- 	struct super_block *s = capifs_mnt->mnt_sb;
- 	struct dentry *root = s->s_root;
-@@ -187,6 +188,20 @@ unlock_out:
- 	return dentry;
- }
- 
-+struct dentry *capifs_new_ncci(unsigned int number, dev_t device)
-+{
-+	struct dentry *dentry;
-+
-+	if (simple_pin_fs(&capifs_fs_type, &capifs_mnt, &capifs_mnt_count) < 0)
-+		return NULL;
-+
-+	dentry = new_ncci(number, device);
-+	if (!dentry)
-+		simple_release_fs(&capifs_mnt, &capifs_mnt_count);
-+
-+	return dentry;
-+}
-+
- void capifs_free_ncci(struct dentry *dentry)
- {
- 	struct dentry *root = capifs_mnt->mnt_sb->s_root;
-@@ -206,6 +221,8 @@ void capifs_free_ncci(struct dentry *dentry)
- 	dput(dentry);
- 
- 	mutex_unlock(&root->d_inode->i_mutex);
-+
-+	simple_release_fs(&capifs_mnt, &capifs_mnt_count);
- }
+@@ -227,21 +223,7 @@ void capifs_free_ncci(struct dentry *dentry)
  
  static int __init capifs_init(void)
-@@ -222,13 +239,6 @@ static int __init capifs_init(void)
- 		strcpy(rev, "1.0");
- 
- 	err = register_filesystem(&capifs_fs_type);
--	if (!err) {
--		capifs_mnt = kern_mount(&capifs_fs_type);
--		if (IS_ERR(capifs_mnt)) {
--			err = PTR_ERR(capifs_mnt);
--			unregister_filesystem(&capifs_fs_type);
--		}
--	}
- 	if (!err)
- 		printk(KERN_NOTICE "capifs: Rev %sn", rev);
- 	return err;
-@@ -237,7 +247,6 @@ static int __init capifs_init(void)
- static void __exit capifs_exit(void)
  {
- 	unregister_filesystem(&capifs_fs_type);
--	mntput(capifs_mnt);
+-	char rev[32];
+-	char *p;
+-	int err;
+-
+-	if ((p = strchr(revision, ':')) != NULL && p[1]) {
+-		strlcpy(rev, p + 2, sizeof(rev));
+-		if ((p = strchr(rev, '$')) != NULL && p > rev)
+-		   *(p-1) = 0;
+-	} else
+-		strcpy(rev, "1.0");
+-
+-	err = register_filesystem(&capifs_fs_type);
+-	if (!err)
+-		printk(KERN_NOTICE "capifs: Rev %sn", rev);
+-	return err;
++	return register_filesystem(&capifs_fs_type);
  }
  
- EXPORT_SYMBOL(capifs_new_ncci);
+ static void __exit capifs_exit(void)
+diff --git a/drivers/isdn/capi/kcapi.c b/drivers/isdn/capi/kcapi.c
+index dc506ab..4a75234 100644
+--- a/drivers/isdn/capi/kcapi.c
++++ b/drivers/isdn/capi/kcapi.c
+@@ -35,10 +35,6 @@
+ #endif
+ #include <linux/mutex.h>
+ 
+-static char *revision = "$Revision: 1.1.2.8 $";
+-
+-/* ------------------------------------------------------------- */
+-
+ static int showcapimsgs = 0;
+ 
+ MODULE_DESCRIPTION("CAPI4Linux: kernel CAPI layer");
+@@ -1171,25 +1167,12 @@ EXPORT_SYMBOL(capi20_set_callback);
+ 
+ static int __init kcapi_init(void)
+ {
+-	char *p;
+-	char rev[32];
+-	int ret;
+-
+-	ret = cdebug_init();
+-	if (ret)
+-		return ret;
+-        kcapi_proc_init();
++	int err;
+ 
+-	if ((p = strchr(revision, ':')) != NULL && p[1]) {
+-		strlcpy(rev, p + 2, sizeof(rev));
+-		if ((p = strchr(rev, '$')) != NULL && p > rev)
+-		   *(p-1) = 0;
+-	} else
+-		strcpy(rev, "1.0");
+-
+-        printk(KERN_NOTICE "CAPI Subsystem Rev %sn", rev);
+-
+-	return 0;
++	err = cdebug_init();
++	if (!err)
++		kcapi_proc_init();
++	return err;
+ }
+ 
+ static void __exit kcapi_exit(void)
 -- 
 1.6.0.2
 
