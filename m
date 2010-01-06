@@ -1,112 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756271Ab0AFUX6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756276Ab0AFUZs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756271Ab0AFUX6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 15:23:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756241Ab0AFUX5
+	id S1756276Ab0AFUZs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 15:25:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932554Ab0AFUZp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 15:23:57 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:42958 "EHLO mx1.redhat.com"
+	Wed, 6 Jan 2010 15:25:45 -0500
+Received: from hera.kernel.org ([140.211.167.34]:53670 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756238Ab0AFUX4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 15:23:56 -0500
-Date: Wed, 6 Jan 2010 21:23:47 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: Roland McGrath <roland@redhat.com>, caiqian@redhat.com,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Jan Kratochvil <jkratoch@redhat.com>, linux-kernel@vger.kernel.org,
-       linux-s390@vger.kernel.org, utrace-devel@redhat.com
-Subject: Re: s390 && user_enable_single_step() (Was: odd utrace testing
-	results on s390x)
-Message-ID: <20100106202347.GC26204@redhat.com>
-References: <1503844142.2061111261478093776.JavaMail.root@zmail06.collab.prod.int.phx2.redhat.com> <1257887498.2061171261478252049.JavaMail.root@zmail06.collab.prod.int.phx2.redhat.com> <20100104155225.GA16650@redhat.com> <20100104171626.22ea2d9c@mschwide.boeblingen.de.ibm.com> <20100104181412.GA21146@redhat.com> <20100104211147.4CC94D532@magilla.sf.frob.com> <20100105105030.66bb8a0a@mschwide.boeblingen.de.ibm.com>
+	id S932518Ab0AFUZo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jan 2010 15:25:44 -0500
+Date: Wed, 6 Jan 2010 20:24:39 GMT
+From: tip-bot for Suresh Siddha <suresh.b.siddha@intel.com>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       garyhade@us.ibm.com, suresh.b.siddha@intel.com, tglx@linutronix.de,
+       ebiederm@xmission.com
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       garyhade@us.ibm.com, suresh.b.siddha@intel.com, tglx@linutronix.de,
+       ebiederm@xmission.com
+In-Reply-To: <1262804191.2732.7.camel@sbs-t61.sc.intel.com>
+References: <1262804191.2732.7.camel@sbs-t61.sc.intel.com>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:x86/urgent] x86, irq: Check move_in_progress before freeing the vector mapping
+Message-ID: <tip-7f41c2e1523f628cc248e34192162aec5728bed7@git.kernel.org>
+Git-Commit-ID: 7f41c2e1523f628cc248e34192162aec5728bed7
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <20100105105030.66bb8a0a@mschwide.boeblingen.de.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/05, Martin Schwidefsky wrote:
+Commit-ID:  7f41c2e1523f628cc248e34192162aec5728bed7
+Gitweb:     http://git.kernel.org/tip/7f41c2e1523f628cc248e34192162aec5728bed7
+Author:     Suresh Siddha <suresh.b.siddha@intel.com>
+AuthorDate: Wed, 6 Jan 2010 10:56:31 -0800
+Committer:  H. Peter Anvin <hpa@zytor.com>
+CommitDate: Wed, 6 Jan 2010 12:08:43 -0800
+
+x86, irq: Check move_in_progress before freeing the vector mapping
+
+With the recent irq migration fixes (post 2.6.32), Gary Hade has noticed
+"No IRQ handler for vector" messages during the 2.6.33-rc1 kernel boot on IBM
+AMD platforms and root caused the issue to this commit:
+
+> commit 23359a88e7eca3c4f402562b102f23014db3c2aa
+> Author: Suresh Siddha <suresh.b.siddha@intel.com>
+> Date:   Mon Oct 26 14:24:33 2009 -0800
 >
-> On Mon,  4 Jan 2010 13:11:47 -0800 (PST)
-> Roland McGrath <roland@redhat.com> wrote:
->
-> > > This probably means that copy_process()->user_disable_single_step()
-> > > is not enough to clear the "this task wants single-stepping" copied
-> > > from parent.
-> >
-> > I would suspect s390's TIF_SINGLE_STEP flag here.  That flag means "a
-> > single-step trap occurred".  This is what causes do_single_step to be
-> > called before returning to user mode, rather than the machine trap doing it
-> > directly as is done in the other arch implementations.
->
-> Just my thinking as well.
->
-> > If I'm right, then "this task wants single-stepping" is not the problem,
-> > and that really is fully cleared.  In fact, looking at s390's copy_thread
-> > (arch/s390/kernel/process.c) it clears out all the state that is actually
-> > touched by user_enable_single_step and user_disable_single_step.  So for
-> > s390 the new fork.c call is actually superfluous AFAICT.
->
->         /* Don't copy debug registers */
->         memset(&p->thread.per_info, 0, sizeof(p->thread.per_info));
->
-> Yep, the call from fork.c is indeed superfluous.
+>    x86: Remove move_cleanup_count from irq_cfg
 
-I can't explain this, but if I remove copy_process()->user_disable_single_step()
-the test-case below triggers "XXX" printk's from do_single_step() with or
-without CONFIG_UTRACE. the patch is
+As part of this patch, we have removed the move_cleanup_count check
+in smp_irq_move_cleanup_interrupt(). With this change, we can run into a
+situation where an irq cleanup interrupt on a cpu can cleanup the vector
+mappings associated with multiple irqs, of which one of the irq's migration
+might be still in progress. As such when that irq hits the old cpu, we get
+the "No IRQ handler" messages.
 
-	--- arch/s390/kernel/traps.c~	2009-12-22 10:41:52.909174198 -0500
-	+++ arch/s390/kernel/traps.c	2010-01-05 11:03:55.006487697 -0500
-	@@ -384,6 +384,9 @@ void __kprobes do_single_step(struct pt_
-		}
-		if (tracehook_consider_fatal_signal(current, SIGTRAP))
-			force_sig(SIGTRAP, current);
-	+	else
-	+		printk("XXX: %s/%d %d\n", current->comm, current->pid,
-	+				test_thread_flag(TIF_SINGLE_STEP));
-	 }
-	 
-	 static void default_trap_handler(struct pt_regs * regs, long interruption_code)
+Fix this by checking for the irq_cfg's move_in_progress and if the move
+is still in progress delay the vector cleanup to another irq cleanup
+interrupt request (which will happen when the irq starts arriving at the
+new cpu destination).
 
-Oleg.
+Reported-and-tested-by: Gary Hade <garyhade@us.ibm.com>
+Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+LKML-Reference: <1262804191.2732.7.camel@sbs-t61.sc.intel.com>
+Cc: Eric W. Biederman <ebiederm@xmission.com>
+Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+---
+ arch/x86/kernel/apic/io_apic.c |    7 +++++++
+ 1 files changed, 7 insertions(+), 0 deletions(-)
 
-#include <stdio.h>
-#include <unistd.h>
-#include <signal.h>
-#include <sys/ptrace.h>
-#include <sys/wait.h>
-#include <assert.h>
-
-int main(void)
-{
-	int pid, status;
-
-	if (!(pid = fork())) {
-		assert(ptrace(PTRACE_TRACEME) == 0);
-		kill(getpid(), SIGSTOP);
-
-		if (!fork())
-			return 43;
-
-		wait(&status);
-		return WEXITSTATUS(status);
-	}
-
-
-	for (;;) {
-		assert(pid == wait(&status));
-		if (WIFEXITED(status))
-			break;
-		assert(ptrace(PTRACE_SINGLESTEP, pid, 0,0) == 0);
-	}
-
-	assert(WEXITSTATUS(status) == 43);
-	return 0;
-}
-
-
+diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
+index de00c46..53243ca 100644
+--- a/arch/x86/kernel/apic/io_apic.c
++++ b/arch/x86/kernel/apic/io_apic.c
+@@ -2434,6 +2434,13 @@ asmlinkage void smp_irq_move_cleanup_interrupt(void)
+ 		cfg = irq_cfg(irq);
+ 		raw_spin_lock(&desc->lock);
+ 
++		/*
++		 * Check if the irq migration is in progress. If so, we
++		 * haven't received the cleanup request yet for this irq.
++		 */
++		if (cfg->move_in_progress)
++			goto unlock;
++
+ 		if (vector == cfg->vector && cpumask_test_cpu(me, cfg->domain))
+ 			goto unlock;
+ 
