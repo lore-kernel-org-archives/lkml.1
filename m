@@ -1,56 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932742Ab0AFUS3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756228Ab0AFUVS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932742Ab0AFUS3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 15:18:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932580Ab0AFUS2
+	id S1756228Ab0AFUVS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 15:21:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756017Ab0AFUVQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 15:18:28 -0500
-Received: from g4t0017.houston.hp.com ([15.201.24.20]:7974 "EHLO
-	g4t0017.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932552Ab0AFUS1 (ORCPT
+	Wed, 6 Jan 2010 15:21:16 -0500
+Received: from sj-iport-5.cisco.com ([171.68.10.87]:52008 "EHLO
+	sj-iport-5.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932563Ab0AFUVP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 15:18:27 -0500
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Alex Brooks <a.brooks@marathon-robotics.com>
-Subject: Re: BAR 0: can't allocate resource
-Date: Wed, 6 Jan 2010 13:19:54 -0700
-User-Agent: KMail/1.12.2 (Linux/2.6.31-16-generic; KDE/4.3.2; x86_64; ; )
-Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <201001061305.31635.a.brooks@marathon-robotics.com> <201001061316.21744.a.brooks@marathon-robotics.com>
-In-Reply-To: <201001061316.21744.a.brooks@marathon-robotics.com>
+	Wed, 6 Jan 2010 15:21:15 -0500
+Authentication-Results: sj-iport-5.cisco.com; dkim=neutral (message not signed) header.i=none
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEAD5/REurRN+J/2dsb2JhbADADZNfhDAE
+X-IronPort-AV: E=Sophos;i="4.49,231,1262563200"; 
+   d="scan'208";a="129342434"
+From: Roland Dreier <rdreier@cisco.com>
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, Bart Van Assche <bart.vanassche@gmail.com>,
+       David Dillow <dave@thedillows.org>
+Subject: [PATCH] log2.h: Macro-ize is_power_of_2() for use in BUILD_BUG_ON
+X-Message-Flag: Warning: May contain useful information
+Date: Wed, 06 Jan 2010 12:21:13 -0800
+Message-ID: <ada3a2jugqu.fsf@roland-alpha.cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201001061319.54436.bjorn.helgaas@hp.com>
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 06 Jan 2010 20:21:13.0739 (UTC) FILETIME=[CB0C05B0:01CA8F0D]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 05 January 2010 07:16:21 pm Alex Brooks wrote:
-> > I don't see any indication that this is a software problem (I know
-> > nothing about PC/104, so let me know if you disagree, and why).
-> 
-> I don't have a smoking gun that points at software, it was just my guess
->  based on:
->  a) all the pieces of hardware work in certain combinations
->  b) there's a nasty-looking error message in dmesg
+When code relies on a constant being a power of 2:
 
-You mentioned two messages.  Here's the first:
-  PCI: BIOS Bug: MCFG area at e0000000 is not reserved in ACPI motherboard resources
-  PCI: Not using MMCONFIG.
+	#define FOO	512	/* must be a power of 2 */
 
-and the second:
-  PCI: Cannot allocate resource region 0 of device 0000:01:04.0
-  PCI: Error while updating region 0000:01:04.0/0 (feb00002 != 00000000)
+it would be nice to be able to do:
 
-The "Error while updating region" message is because we wrote something
-to a BAR, read it back, and they didn't match.  I suppose this could be
-some kind of config space problem related to the fact that we're not
-using MMCONFIG.
+	BUILD_BUG_ON(!is_power_of_2(FOO));
 
-Can you try removing the MCFG reservation check, so we do try to use
-MMCONFIG?  If you do this on a current kernel, we'll also get a little
-more debug output about the subsequent resource allocation failure.
+However applying an inline function does not result in a compile-time
+constant that can be used with BUILD_BUG_ON(), so trying that gives
+results in:
 
-Bjorn
+	error: bit-field '<anonymous>' width not an integer constant
+
+We can fix this by changing is_power_of_2() to a macro; we leave the
+inline function for the non-constant case, to avoid evaluating the
+parameter more than once.  (gcc does not accept a multi-statement
+expression like "({ unsigned long __n = n; ... })" as a compile-time
+constant so that solution doesn't work)
+
+Signed-off-by: Roland Dreier <rolandd@cisco.com>
+---
+This is somewhat of an RFC -- I'm a bit undecided whether it's really
+worth making this change.  It's prompted by
+http://www.mail-archive.com/linux-rdma@vger.kernel.org/msg01941.html and
+http://www.mail-archive.com/linux-rdma@vger.kernel.org/msg01950.html
+which do ugly things to work around is_power_of_2 not being usable in
+BUILD_BUG_ON().
+
+On the other hand maybe just
+
+/* FOO must be a power of 2 */
+#define FOO_SHIFT 9
+#define FOO (1 << FOO_SHIFT)
+
+is good enough.
+
+ include/linux/log2.h |    9 ++++++++-
+ 1 files changed, 8 insertions(+), 1 deletions(-)
+
+diff --git a/include/linux/log2.h b/include/linux/log2.h
+index 25b8086..248f69c 100644
+--- a/include/linux/log2.h
++++ b/include/linux/log2.h
+@@ -49,11 +49,18 @@ int __ilog2_u64(u64 n)
+  */
+ 
+ static inline __attribute__((const))
+-bool is_power_of_2(unsigned long n)
++bool __is_power_of_2(unsigned long n)
+ {
+ 	return (n != 0 && ((n & (n - 1)) == 0));
+ }
+ 
++#define is_power_of_2(n)					\
++(								\
++	__builtin_constant_p(n) ?				\
++		(((n) != 0) && (((n) & ((n) - 1)) == 0)) :	\
++		__is_power_of_2(n)				\
++)
++
+ /*
+  * round up to nearest power of two
+  */
