@@ -1,94 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755616Ab0AFBWZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755068Ab0AFB2w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755616Ab0AFBWZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 20:22:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755563Ab0AFBWR
+	id S1755068Ab0AFB2w (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 20:28:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755162Ab0AFB2u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 20:22:17 -0500
-Received: from mail.perches.com ([173.55.12.10]:1535 "EHLO mail.perches.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755302Ab0AFBUZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 20:20:25 -0500
-From: Joe Perches <joe@perches.com>
-To: linux-kernel@vger.kernel.org
-Cc: Andy Grover <andy.grover@oracle.com>,
-       "David S. Miller" <davem@davemloft.net>, rds-devel@oss.oracle.com,
-       netdev@vger.kernel.org
-Subject: [PATCH 3/8] net/rds: Remove uses of NIPQUAD, use %pI4
-Date: Tue,  5 Jan 2010 17:20:15 -0800
-Message-Id: <b2b11634105aee49050589f5d0e4e9fd09a270d6.1262726222.git.joe@perches.com>
-X-Mailer: git-send-email 1.6.6.rc0.57.gad7a
-In-Reply-To: <cover.1262726222.git.joe@perches.com>
-References: <cover.1262726222.git.joe@perches.com>
+	Tue, 5 Jan 2010 20:28:50 -0500
+Received: from isepic.quincunx.at ([173.45.232.79]:40848 "EHLO
+	isepic.quincunx.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754931Ab0AFB2t (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jan 2010 20:28:49 -0500
+X-Greylist: delayed 607 seconds by postgrey-1.27 at vger.kernel.org; Tue, 05 Jan 2010 20:28:49 EST
+From: Christian Schuerer <csw@xray.at>
+To: Jiri Kosina <jkosina@suse.cz>
+Subject: [PATCH] linux-2.6.33-rc2 - Re: Device IDs for new Apple Wireless Keyboard
+Date: Wed, 6 Jan 2010 02:16:47 +0100
+User-Agent: KMail/1.13.0 (Linux/2.6.31-17-generic; KDE/4.3.85; x86_64; ; )
+Cc: Jiri Slaby <jirislaby@gmail.com>, linux-input@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+References: <4B38AFDE.8000203@gmail.com> <alpine.LNX.2.00.1001041155560.2277@pobox.suse.cz>
+In-Reply-To: <alpine.LNX.2.00.1001041155560.2277@pobox.suse.cz>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201001060216.47958.csw@xray.at>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Joe Perches <joe@perches.com>
----
- net/rds/tcp_connect.c |    7 +++----
- net/rds/tcp_listen.c  |    6 +++---
- net/rds/tcp_send.c    |    4 ++--
- 3 files changed, 8 insertions(+), 9 deletions(-)
+On Monday 04 January 2010 11:57:33 Jiri Kosina wrote:
+> On Mon, 28 Dec 2009, Jiri Slaby wrote:
+> > Hi, I added some proper CCs. For me they look good. Care to add
+> > signed-off-by line? Thanks.
+> thanks for the patch. Could you please make the following two updates to
+> it, and send it to me, so that I could merge it? Thanks.
+> 
+> - add a proper Signed-off-by: line, as described in
+>   Documentation/SubmittingPatches
+> - keep the list of Apple IDs ordered by the product number
 
-diff --git a/net/rds/tcp_connect.c b/net/rds/tcp_connect.c
-index 211522f..0562562 100644
---- a/net/rds/tcp_connect.c
-+++ b/net/rds/tcp_connect.c
-@@ -90,8 +90,8 @@ int rds_tcp_conn_connect(struct rds_connection *conn)
- 
- 	ret = sock->ops->bind(sock, (struct sockaddr *)&src, sizeof(src));
- 	if (ret) {
--		rdsdebug("bind failed with %d at address %u.%u.%u.%u\n",
--		     ret, NIPQUAD(conn->c_laddr));
-+		rdsdebug("bind failed with %d at address %pI4\n",
-+			 ret, &conn->c_laddr);
- 		goto out;
- 	}
- 
-@@ -108,8 +108,7 @@ int rds_tcp_conn_connect(struct rds_connection *conn)
- 				 O_NONBLOCK);
- 	sock = NULL;
- 
--	rdsdebug("connect to address %u.%u.%u.%u returned %d\n",
--		 NIPQUAD(conn->c_faddr), ret);
-+	rdsdebug("connect to address %pI4 returned %d\n", &conn->c_faddr, ret);
- 	if (ret == -EINPROGRESS)
- 		ret = 0;
- 
-diff --git a/net/rds/tcp_listen.c b/net/rds/tcp_listen.c
-index 45474a4..53cb1b5 100644
---- a/net/rds/tcp_listen.c
-+++ b/net/rds/tcp_listen.c
-@@ -66,9 +66,9 @@ static int rds_tcp_accept_one(struct socket *sock)
- 
- 	inet = inet_sk(new_sock->sk);
- 
--	rdsdebug("accepted tcp %u.%u.%u.%u:%u -> %u.%u.%u.%u:%u\n",
--		  NIPQUAD(inet->inet_saddr), ntohs(inet->inet_sport),
--		  NIPQUAD(inet->inet_daddr), ntohs(inet->inet_dport));
-+	rdsdebug("accepted tcp %pI4:%u -> %pI4:%u\n",
-+		 &inet->inet_saddr, ntohs(inet->inet_sport),
-+		 &inet->inet_daddr, ntohs(inet->inet_dport));
- 
- 	conn = rds_conn_create(inet->inet_saddr, inet->inet_daddr,
- 			       &rds_tcp_transport, GFP_KERNEL);
-diff --git a/net/rds/tcp_send.c b/net/rds/tcp_send.c
-index ab545e0..34fdcc0 100644
---- a/net/rds/tcp_send.c
-+++ b/net/rds/tcp_send.c
-@@ -193,9 +193,9 @@ out:
- 			rds_tcp_stats_inc(s_tcp_sndbuf_full);
- 			ret = 0;
- 		} else {
--			printk(KERN_WARNING "RDS/tcp: send to %u.%u.%u.%u "
-+			printk(KERN_WARNING "RDS/tcp: send to %pI4 "
- 			       "returned %d, disconnecting and reconnecting\n",
--			       NIPQUAD(conn->c_faddr), ret);
-+			       &conn->c_faddr, ret);
- 			rds_conn_drop(conn);
- 		}
- 	}
--- 
-1.6.6.rc0.57.gad7a
+Jiri,
 
+here is the patch for linux-2.6.33-rc2:
+
+Changes:
+
+Added device IDs for the new model of the Apple Wireless Keyboard (November 
+2009).
+
+Signed-off-by: Christian Schuerer-Waldheim <csw@xray.at>
+
+diff -uprN -X linux-2.6.33-rc2-vanilla/Documentation/dontdiff linux-2.6.33-
+rc2-vanilla/drivers/hid/hid-apple.c linux-2.6.33-rc2-apple/drivers/hid/hid-
+apple.c
+--- linux-2.6.33-rc2-vanilla/drivers/hid/hid-apple.c	2009-12-24 
+22:09:41.000000000 +0100
++++ linux-2.6.33-rc2-apple/drivers/hid/hid-apple.c	2010-01-06 
+01:39:29.000000000 +0100
+@@ -431,6 +431,13 @@ static const struct hid_device_id apple_
+ 		.driver_data = APPLE_HAS_FN | APPLE_ISO_KEYBOARD },
+ 	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, 
+USB_DEVICE_ID_APPLE_WELLSPRING3_JIS),
+ 		.driver_data = APPLE_HAS_FN | APPLE_RDESC_JIS },
++	{ HID_BLUETOOTH_DEVICE(USB_VENDOR_ID_APPLE, 
+USB_DEVICE_ID_APPLE_ALU_WIRELESS_2009_ANSI),
++		.driver_data = APPLE_NUMLOCK_EMULATION | APPLE_HAS_FN },
++	{ HID_BLUETOOTH_DEVICE(USB_VENDOR_ID_APPLE, 
+USB_DEVICE_ID_APPLE_ALU_WIRELESS_2009_ISO),
++		.driver_data = APPLE_NUMLOCK_EMULATION | APPLE_HAS_FN |
++			APPLE_ISO_KEYBOARD },
++	{ HID_BLUETOOTH_DEVICE(USB_VENDOR_ID_APPLE, 
+USB_DEVICE_ID_APPLE_ALU_WIRELESS_2009_JIS),
++		.driver_data = APPLE_NUMLOCK_EMULATION | APPLE_HAS_FN },
+ 	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, 
+USB_DEVICE_ID_APPLE_FOUNTAIN_TP_ONLY),
+ 		.driver_data = APPLE_NUMLOCK_EMULATION | APPLE_HAS_FN },
+ 	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, 
+USB_DEVICE_ID_APPLE_GEYSER1_TP_ONLY),
+diff -uprN -X linux-2.6.33-rc2-vanilla/Documentation/dontdiff linux-2.6.33-
+rc2-vanilla/drivers/hid/hid-core.c linux-2.6.33-rc2-apple/drivers/hid/hid-
+core.c
+--- linux-2.6.33-rc2-vanilla/drivers/hid/hid-core.c	2009-12-24 
+22:09:41.000000000 +0100
++++ linux-2.6.33-rc2-apple/drivers/hid/hid-core.c	2010-01-06 01:41:21.000000000 
++0100
+@@ -1285,6 +1285,9 @@ static const struct hid_device_id hid_bl
+ 	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, 
+USB_DEVICE_ID_APPLE_WELLSPRING3_ANSI) },
+ 	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_WELLSPRING3_ISO) 
+},
+ 	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_WELLSPRING3_JIS) 
+},
++	{ HID_BLUETOOTH_DEVICE(USB_VENDOR_ID_APPLE, 
+USB_DEVICE_ID_APPLE_ALU_WIRELESS_2009_ANSI) },
++	{ HID_BLUETOOTH_DEVICE(USB_VENDOR_ID_APPLE, 
+USB_DEVICE_ID_APPLE_ALU_WIRELESS_2009_ISO) },
++	{ HID_BLUETOOTH_DEVICE(USB_VENDOR_ID_APPLE, 
+USB_DEVICE_ID_APPLE_ALU_WIRELESS_2009_JIS) },
+ 	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, 
+USB_DEVICE_ID_APPLE_FOUNTAIN_TP_ONLY) },
+ 	{ HID_USB_DEVICE(USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_GEYSER1_TP_ONLY) 
+},
+ 	{ HID_USB_DEVICE(USB_VENDOR_ID_BELKIN, USB_DEVICE_ID_FLIP_KVM) },
+diff -uprN -X linux-2.6.33-rc2-vanilla/Documentation/dontdiff linux-2.6.33-
+rc2-vanilla/drivers/hid/hid-ids.h linux-2.6.33-rc2-apple/drivers/hid/hid-ids.h
+--- linux-2.6.33-rc2-vanilla/drivers/hid/hid-ids.h	2009-12-24 
+22:09:41.000000000 +0100
++++ linux-2.6.33-rc2-apple/drivers/hid/hid-ids.h	2010-01-06 01:42:30.000000000 
++0100
+@@ -88,6 +88,9 @@
+ #define USB_DEVICE_ID_APPLE_WELLSPRING3_ANSI	0x0236
+ #define USB_DEVICE_ID_APPLE_WELLSPRING3_ISO	0x0237
+ #define USB_DEVICE_ID_APPLE_WELLSPRING3_JIS	0x0238
++#define USB_DEVICE_ID_APPLE_ALU_WIRELESS_2009_ANSI  0x0239
++#define USB_DEVICE_ID_APPLE_ALU_WIRELESS_2009_ISO   0x023a
++#define USB_DEVICE_ID_APPLE_ALU_WIRELESS_2009_JIS   0x023b
+ #define USB_DEVICE_ID_APPLE_FOUNTAIN_TP_ONLY	0x030a
+ #define USB_DEVICE_ID_APPLE_GEYSER1_TP_ONLY	0x030b
+ #define USB_DEVICE_ID_APPLE_ATV_IRCONTROL	0x8241
