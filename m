@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754607Ab0AFGLN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752729Ab0AFGKo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754607Ab0AFGLN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 01:11:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753049Ab0AFGKr
+	id S1752729Ab0AFGKo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 01:10:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752509Ab0AFGKm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 01:10:47 -0500
-Received: from ozlabs.org ([203.10.76.45]:32963 "EHLO ozlabs.org"
+	Wed, 6 Jan 2010 01:10:42 -0500
+Received: from ozlabs.org ([203.10.76.45]:32918 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752813Ab0AFGKp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 01:10:45 -0500
-Message-Id: <20100106045525.082530491@samba.org>
+	id S1752482Ab0AFGKl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jan 2010 01:10:41 -0500
+Message-Id: <20100106045525.207405499@samba.org>
 References: <20100106045509.245662398@samba.org>
 User-Agent: quilt/0.46-1
-Date: Wed, 06 Jan 2010 15:55:12 +1100
+Date: Wed, 06 Jan 2010 15:55:13 +1100
 From: Anton Blanchard <anton@samba.org>
-To: Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>
-Cc: linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org,
+To: Ralf Baechle <ralf@linux-mips.org>
+Cc: linux-mips@linux-mips.org, linux-kernel@vger.kernel.org,
        Rusty Russell <rusty@rustcorp.com.au>,
        Andrew Morton <akpm@linux-foundation.org>
-Subject: [patch 3/6] ia64: cpumask_of_node() should handle -1 as a node
+Subject: [patch 4/6] mips: cpumask_of_node() should handle -1 as a node
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -43,21 +43,21 @@ ffffffff,ffffffff,ffffffff,ffffffff
 Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
 
-Index: linux-cpumask/arch/ia64/include/asm/topology.h
+Index: linux-cpumask/arch/mips/include/asm/mach-ip27/topology.h
 ===================================================================
---- linux-cpumask.orig/arch/ia64/include/asm/topology.h	2010-01-06 15:20:22.832584260 +1100
-+++ linux-cpumask/arch/ia64/include/asm/topology.h	2010-01-06 15:26:46.620650121 +1100
-@@ -33,7 +33,9 @@
- /*
-  * Returns a bitmask of CPUs on Node 'node'.
-  */
--#define cpumask_of_node(node) (&node_to_cpu_mask[node])
-+#define cpumask_of_node(node) ((node) == -1 ?				\
-+			       cpu_all_mask :				\
-+			       &node_to_cpu_mask[node])
+--- linux-cpumask.orig/arch/mips/include/asm/mach-ip27/topology.h	2010-01-06 15:20:22.872583883 +1100
++++ linux-cpumask/arch/mips/include/asm/mach-ip27/topology.h	2010-01-06 15:20:47.310083709 +1100
+@@ -24,7 +24,9 @@ extern struct cpuinfo_ip27 sn_cpu_info[N
  
- /*
-  * Returns the number of the node containing Node 'nid'.
+ #define cpu_to_node(cpu)	(sn_cpu_info[(cpu)].p_nodeid)
+ #define parent_node(node)	(node)
+-#define cpumask_of_node(node)	(&hub_data(node)->h_cpus)
++#define cpumask_of_node(node)	((node) == -1 ?				\
++				 cpu_all_mask :				\
++				 &hub_data(node)->h_cpus)
+ struct pci_bus;
+ extern int pcibus_to_node(struct pci_bus *);
+ 
 
 -- 
 
