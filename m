@@ -1,52 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754204Ab0AFGK4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754607Ab0AFGLN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754204Ab0AFGK4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 01:10:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753584Ab0AFGKv
+	id S1754607Ab0AFGLN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 01:11:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753049Ab0AFGKr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 01:10:51 -0500
-Received: from mga14.intel.com ([143.182.124.37]:2848 "EHLO mga14.intel.com"
+	Wed, 6 Jan 2010 01:10:47 -0500
+Received: from ozlabs.org ([203.10.76.45]:32963 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753430Ab0AFGKs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 01:10:48 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
-   d="scan'208";a="229677780"
-Subject: Re: tbench regression with 2.6.33-rc1
-From: Lin Ming <ming.m.lin@intel.com>
-To: Mike Galbraith <efault@gmx.de>
-Cc: "peterz@infradead.org" <peterz@infradead.org>,
-       "mingo@elte.hu" <mingo@elte.hu>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-In-Reply-To: <1262757688.6007.5.camel@marge.simson.net>
-References: <1261739467.10685.18.camel@minggr.sh.intel.com>
-	 <1261902760.6201.33.camel@marge.simson.net>
-	 <1262052582.10685.59.camel@minggr.sh.intel.com>
-	 <1262064292.6412.30.camel@marge.simson.net>
-	 <1262063959.13697.6.camel@minggr.sh.intel.com>
-	 <1262065745.17082.0.camel@marge.simson.net>
-	 <1262757688.6007.5.camel@marge.simson.net>
-Content-Type: text/plain
-Date: Wed, 06 Jan 2010 13:55:07 +0800
-Message-Id: <1262757307.32058.0.camel@minggr.sh.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 (2.24.1-2.fc10) 
-Content-Transfer-Encoding: 7bit
+	id S1752813Ab0AFGKp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jan 2010 01:10:45 -0500
+Message-Id: <20100106045525.082530491@samba.org>
+References: <20100106045509.245662398@samba.org>
+User-Agent: quilt/0.46-1
+Date: Wed, 06 Jan 2010 15:55:12 +1100
+From: Anton Blanchard <anton@samba.org>
+To: Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>
+Cc: linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [patch 3/6] ia64: cpumask_of_node() should handle -1 as a node
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2010-01-06 at 14:01 +0800, Mike Galbraith wrote:
-> Hi,
-> 
-> Have you tried tbench with the vmark regression fix?  If not, mind
-> giving it a shot?
+pcibus_to_node can return -1 if we cannot determine which node a pci bus
+is on. If passed -1, cpumask_of_node will negatively index the lookup array
+and pull in random data:
 
-OK. I'll test soon.
+# cat /sys/devices/pci0000:00/0000:00:01.0/local_cpus
+00000000,00000003,00000000,00000000
+# cat /sys/devices/pci0000:00/0000:00:01.0/local_cpulist
+64-65
 
-> 
-> 	-Mike
-> 
+Change cpumask_of_node to check for -1 and return cpu_all_mask in this
+case:
+
+# cat /sys/devices/pci0000:00/0000:00:01.0/local_cpus
+ffffffff,ffffffff,ffffffff,ffffffff
+# cat /sys/devices/pci0000:00/0000:00:01.0/local_cpulist
+0-127
+
+Signed-off-by: Anton Blanchard <anton@samba.org>
+---
+
+Index: linux-cpumask/arch/ia64/include/asm/topology.h
+===================================================================
+--- linux-cpumask.orig/arch/ia64/include/asm/topology.h	2010-01-06 15:20:22.832584260 +1100
++++ linux-cpumask/arch/ia64/include/asm/topology.h	2010-01-06 15:26:46.620650121 +1100
+@@ -33,7 +33,9 @@
+ /*
+  * Returns a bitmask of CPUs on Node 'node'.
+  */
+-#define cpumask_of_node(node) (&node_to_cpu_mask[node])
++#define cpumask_of_node(node) ((node) == -1 ?				\
++			       cpu_all_mask :				\
++			       &node_to_cpu_mask[node])
+ 
+ /*
+  * Returns the number of the node containing Node 'nid'.
+
+-- 
 
