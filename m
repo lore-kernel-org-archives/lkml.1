@@ -1,56 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932677Ab0AFUA3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932712Ab0AFUAp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932677Ab0AFUA3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 15:00:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932411Ab0AFUA1
+	id S932712Ab0AFUAp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 15:00:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932694Ab0AFUAl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 15:00:27 -0500
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:55329 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932392Ab0AFUA1 (ORCPT
+	Wed, 6 Jan 2010 15:00:41 -0500
+Received: from intermatrixgroup.ru ([195.178.208.66]:39406 "EHLO
+	tservice.net.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932689Ab0AFUAi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 15:00:27 -0500
-Date: Wed, 6 Jan 2010 14:55:03 -0500
-From: "John W. Linville" <linville@tuxdriver.com>
-To: Jiri Slaby <jslaby@suse.cz>
-Cc: linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] net: wireless, fix lock imbalance
-Message-ID: <20100106195503.GB2870@tuxdriver.com>
-References: <1262795743-15009-1-git-send-email-jslaby@suse.cz>
+	Wed, 6 Jan 2010 15:00:38 -0500
+Date: Wed, 6 Jan 2010 23:00:37 +0300
+From: Evgeniy Polyakov <zbr@ioremap.net>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Alexander Beregalov <a.beregalov@gmail.com>
+Subject: Re: [Bug #14894] pohmelfs: NULL pointer dereference
+Message-ID: <20100106200037.GA17641@ioremap.net>
+References: <oBElxfTZdhL.A.bx.-vhOLB@chimera> <srmJ8vMxKPH.A.iAC.TwhOLB@chimera> <20091229163512.GA4958@ioremap.net> <200912292237.54182.rjw@sisk.pl> <20091230091433.GU4489@kernel.dk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1262795743-15009-1-git-send-email-jslaby@suse.cz>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <20091230091433.GU4489@kernel.dk>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 06, 2010 at 05:35:42PM +0100, Jiri Slaby wrote:
-> One fail path in cfg80211_wext_siwscan omits to unlock rdev->mtx.
-> Fix that.
+Hi Jens.
+
+Thanks a lot for your patch, it looks good, but I'm not able to check it
+right now - its new year holidays here, that's also why reply is too late :)
+I will try it in a week and report back.
+
+On Wed, Dec 30, 2009 at 10:14:34AM +0100, Jens Axboe (jens.axboe@oracle.com) wrote:
+> On Tue, Dec 29 2009, Rafael J. Wysocki wrote:
+> > On Tuesday 29 December 2009, Evgeniy Polyakov wrote:
+> > > On Tue, Dec 29, 2009 at 04:28:52PM +0100, Rafael J. Wysocki (rjw@sisk.pl) wrote:
+> > > > This message has been generated automatically as a part of a report
+> > > > of regressions introduced between 2.6.31 and 2.6.32.
+> > > > 
+> > > > The following bug entry is on the current list of known regressions
+> > > > introduced between 2.6.31 and 2.6.32.  Please verify if it still should
+> > > > be listed and let me know (either way).
+> > > > 
+> > > > 
+> > > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14894
+> > > > Subject		: pohmelfs: NULL pointer dereference
+> > > > Submitter	: Alexander Beregalov <a.beregalov@gmail.com>
+> > > > Date		: 2009-12-02 1:11 (28 days old)
+> > > > References	: http://marc.info/?l=linux-kernel&m=125971633107940&w=4
+> > > > Handled-By	: Evgeniy Polyakov <zbr@ioremap.net>
+> > > 
+> > > Yes, I saw this regression and there is a patch to handle this, but it
+> > > kind of disables sync at all. Jens Axboe, who introduced per-bdi
+> > > writeback patches, did not yet reply.
+> > 
+> > Well, Jens, what's your opinion about that?
 > 
-> Trigerrable by "Scan for SSID" with long enough SSID (> 32).
+> Since pohmelfs isn't tied to a single block device, it needs to setup a
+> backing dev like nfs/btrfs/etc do. Here's a completely untested patch.
 > 
-> Signed-off-by: Jiri Slaby <jslaby@suse.cz>
-
-Both this and the next one are already fixed in wireless-2.6...
-
-commit 65486c8b30498dd274eea2c542696f22b63fe5b8
-Author: Johannes Berg <johannes@sipsolutions.net>
-Date:   Wed Dec 23 15:33:35 2009 +0100
-
-    cfg80211: fix error path in cfg80211_wext_siwscan
-    
-    If there's an invalid channel or SSID, the code leaks
-    the scan request. Always free the scan request, unless
-    it was successfully given to the driver.
-    
-    Reported-by: Dan Carpenter <error27@gmail.com>
-    Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
-    Acked-by: Dan Carpenter <error27@gmail.com>
-    Signed-off-by: John W. Linville <linville@tuxdriver.com>
+> diff --git a/drivers/staging/pohmelfs/inode.c b/drivers/staging/pohmelfs/inode.c
+> index f69b778..cd25811 100644
+> --- a/drivers/staging/pohmelfs/inode.c
+> +++ b/drivers/staging/pohmelfs/inode.c
+> @@ -36,6 +36,7 @@
+>  #define POHMELFS_MAGIC_NUM	0x504f482e
+>  
+>  static struct kmem_cache *pohmelfs_inode_cache;
+> +static atomic_t psb_bdi_num = ATOMIC_INIT(0);
+>  
+>  /*
+>   * Removes inode from all trees, drops local name cache and removes all queued
+> @@ -1331,6 +1332,8 @@ static void pohmelfs_put_super(struct super_block *sb)
+>  	pohmelfs_crypto_exit(psb);
+>  	pohmelfs_state_exit(psb);
+>  
+> +	bdi_destroy(&psb->bdi);
+> +
+>  	kfree(psb);
+>  	sb->s_fs_info = NULL;
+>  }
+> @@ -1815,11 +1818,22 @@ static int pohmelfs_fill_super(struct super_block *sb, void *data, int silent)
+>  	if (!psb)
+>  		goto err_out_exit;
+>  
+> +	err = bdi_init(&psb->bdi);
+> +	if (err)
+> +		goto err_out_free_sb;
+> +
+> +	err = bdi_register(&psb->bdi, NULL, "pfs-%d", atomic_inc_return(&psb_bdi_num));
+> +	if (err) {
+> +		bdi_destroy(&psb->bdi);
+> +		goto err_out_free_sb;
+> +	}
+> +
+>  	sb->s_fs_info = psb;
+>  	sb->s_op = &pohmelfs_sb_ops;
+>  	sb->s_magic = POHMELFS_MAGIC_NUM;
+>  	sb->s_maxbytes = MAX_LFS_FILESIZE;
+>  	sb->s_blocksize = PAGE_SIZE;
+> +	sb->s_bdi = &psb->bdi;
+>  
+>  	psb->sb = sb;
+>  
+> @@ -1863,11 +1877,11 @@ static int pohmelfs_fill_super(struct super_block *sb, void *data, int silent)
+>  
+>  	err = pohmelfs_parse_options((char *) data, psb, 0);
+>  	if (err)
+> -		goto err_out_free_sb;
+> +		goto err_out_free_bdi;
+>  
+>  	err = pohmelfs_copy_crypto(psb);
+>  	if (err)
+> -		goto err_out_free_sb;
+> +		goto err_out_free_bdi;
+>  
+>  	err = pohmelfs_state_init(psb);
+>  	if (err)
+> @@ -1916,6 +1930,8 @@ err_out_state_exit:
+>  err_out_free_strings:
+>  	kfree(psb->cipher_string);
+>  	kfree(psb->hash_string);
+> +err_out_free_bdi:
+> +	bdi_destroy(&psb->bdi);
+>  err_out_free_sb:
+>  	kfree(psb);
+>  err_out_exit:
+> diff --git a/drivers/staging/pohmelfs/netfs.h b/drivers/staging/pohmelfs/netfs.h
+> index 623a07d..01cba00 100644
+> --- a/drivers/staging/pohmelfs/netfs.h
+> +++ b/drivers/staging/pohmelfs/netfs.h
+> @@ -18,6 +18,7 @@
+>  
+>  #include <linux/types.h>
+>  #include <linux/connector.h>
+> +#include <linux/backing-dev.h>
+>  
+>  #define POHMELFS_CN_IDX			5
+>  #define POHMELFS_CN_VAL			0
+> @@ -624,6 +625,8 @@ struct pohmelfs_sb {
+>  
+>  	struct super_block	*sb;
+>  
+> +	struct backing_dev_info	bdi;
+> +
+>  	/*
+>  	 * Algorithm strings.
+>  	 */
+> 
+> -- 
+> Jens Axboe
 
 -- 
-John W. Linville		Someday the world will need a hero, and you
-linville@tuxdriver.com			might be all we have.  Be ready.
+	Evgeniy Polyakov
