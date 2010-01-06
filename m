@@ -1,67 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756519Ab0AFXkU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933046Ab0AFXlo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756519Ab0AFXkU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 18:40:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756311Ab0AFXkT
+	id S933046Ab0AFXlo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 18:41:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932826Ab0AFXln
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 18:40:19 -0500
-Received: from ozlabs.org ([203.10.76.45]:42807 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752229Ab0AFXkS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 18:40:18 -0500
-Date: Thu, 7 Jan 2010 10:31:51 +1100
-From: Anton Blanchard <anton@samba.org>
-To: David Rientjes <rientjes@google.com>
-Cc: Rusty Russell <rusty@rustcorp.com.au>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 6/6] x86: cpumask_of_node() should handle -1 as a node
-Message-ID: <20100106233151.GC12742@kryten>
-References: <20100106045509.245662398@samba.org>
- <20100106045509.245662398@samba.org>
- <20100106045525.476396870@samba.org>
- <201001061706.26845.rusty@rustcorp.com.au>
- <alpine.DEB.2.00.1001061454580.11653@chino.kir.corp.google.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.1001061454580.11653@chino.kir.corp.google.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Wed, 6 Jan 2010 18:41:43 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:35742 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932266Ab0AFXll (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jan 2010 18:41:41 -0500
+Date: Wed, 6 Jan 2010 15:41:23 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Cc: Marvin <marvin24@gmx.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>, linux-nfs@vger.kernel.org
+Subject: Re: vfs related crash in 2.6.33-rc2
+Message-Id: <20100106154123.b12547f3.akpm@linux-foundation.org>
+In-Reply-To: <87637omb4b.fsf@devron.myhome.or.jp>
+References: <200912301733.19077.marvin24@gmx.de>
+	<87637oi6v8.fsf@devron.myhome.or.jp>
+	<200912302144.36718.marvin24@gmx.de>
+	<87637omb4b.fsf@devron.myhome.or.jp>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 31 Dec 2009 05:59:32 +0900
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp> wrote:
 
-Hi David,
+> Marvin <marvin24@gmx.de> writes:
+> 
+> >> Marvin <marvin24@gmx.de> writes:
+> >> > Hi,
+> >> >
+> >> > I'm getting a lot of these:
+> >> >
+> >> > kernel: general protection fault: 0000 [#1] SMP
+> >> > kernel: last sysfs file: /sys/devices/pci0000:00/0000:00:18.3/modalias
+> >> > kernel: CPU 0
+> >> > kernel: Pid: 12177, comm: packagekitd Not tainted 2.6.33-rc2 #1
+> >> > ...
+> >> >
+> >> > filesystem is ext4 (in case it matters).
+> >> 
+> >> BTW, are you using nfs client on this machine?
+> >>
+> >
+> > um - yes, now that I think about it... I killed a nfs umount process (because of an 
+> > offline server) shortly before the oopses started to fire.
+> 
+> OK. Probably, this oops would be same with one which happened on my
+> machine recently. That path in patch corrupts dcache hash, so it can be
+> the cause of strange behavior or oops on dcache hash.
+> 
+> If so, the attached patch would fix it.
+> 
+> Thanks.
+> -- 
+> OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+> 
+> 
+> Recent change is missing to update "rehash". With that change, it will
+> become the cause of adding dentry to hash twice.
+> 
+> This explains the reason of Oops (dereference the freed dentry in
+> __d_lookup()) on my machine.
+> 
+> Signed-off-by: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+> ---
+> 
+>  fs/nfs/dir.c |    1 +
+>  1 file changed, 1 insertion(+)
+> 
+> diff -puN fs/nfs/dir.c~nfs-d_rehash-fix fs/nfs/dir.c
+> --- linux-2.6/fs/nfs/dir.c~nfs-d_rehash-fix	2009-12-28 06:18:09.000000000 +0900
+> +++ linux-2.6-hirofumi/fs/nfs/dir.c	2009-12-28 06:18:16.000000000 +0900
+> @@ -1615,6 +1615,7 @@ static int nfs_rename(struct inode *old_
+>  				goto out;
+>  
+>  			new_dentry = dentry;
+> +			rehash = NULL;
+>  			new_inode = NULL;
+>  		}
+>  	}
 
-> Do we really want to do this?  A nid of -1 is undefined, so the result of 
-> cpumask_of_node(-1) should be undefined; there's no formal definition that 
-> a nid of -1 follows the semantics that we use for x86 pci buses, for 
-> example, where it implies no NUMA locality in all cases.
+Guys, what's the status of this fix?  Did Marvin have a chance to test
+it?  Are the NFS developers aware of it?
 
-I don't like the use of -1 as a node, but it's much more widespread than
-x86; including sh, powerpc, sparc and the generic topology code. eg:
+Thanks.
 
-
-#fdef CONFIG_PCI
-extern int pcibus_to_node(struct pci_bus *pbus);
-#else
-static inline int pcibus_to_node(struct pci_bus *pbus)
-{
-        return -1;
-}
-
-
-It would be nice to get rid of this special case but I suspect that's not
-2.6.33 material.
-
-Speaking of invalid node ids, I also noticed the scheduler isn't using
-node iterators:
-
-        for (i = 0; i < nr_node_ids; i++) {
-
-which should be fixed at some stage too since it doesn't allow us to
-allocate the node structures sparsely.
-
-Anton
