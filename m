@@ -1,43 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932398Ab0AFRJ0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932384Ab0AFRLQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932398Ab0AFRJ0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 12:09:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755966Ab0AFRJZ
+	id S932384Ab0AFRLQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 12:11:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932254Ab0AFRLP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 12:09:25 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:45444 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755672Ab0AFRJX (ORCPT
+	Wed, 6 Jan 2010 12:11:15 -0500
+Received: from e33.co.us.ibm.com ([32.97.110.151]:56383 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932164Ab0AFRLO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 12:09:23 -0500
-Date: Wed, 6 Jan 2010 09:08:57 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: James Bottomley <James.Bottomley@suse.de>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [GIT PATCH] SCSI bug fixes for 2.6.33-rc3
-In-Reply-To: <1262797332.2946.147.camel@mulgrave.site>
-Message-ID: <alpine.LFD.2.00.1001060907560.3630@localhost.localdomain>
-References: <1262797332.2946.147.camel@mulgrave.site>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 6 Jan 2010 12:11:14 -0500
+Subject: Re: [PATCH 2/7] Export unusable free space index via
+ /proc/pagetypeinfo
+From: Adam Litke <agl@us.ibm.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: Andrea Arcangeli <aarcange@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Avi Kivity <avi@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+In-Reply-To: <1262795169-9095-3-git-send-email-mel@csn.ul.ie>
+References: <1262795169-9095-1-git-send-email-mel@csn.ul.ie>
+	 <1262795169-9095-3-git-send-email-mel@csn.ul.ie>
+Content-Type: text/plain; charset="UTF-8"
+Organization: IBM
+Date: Wed, 06 Jan 2010 11:10:48 -0600
+Message-ID: <1262797848.3579.8.camel@aglitke>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 2010-01-06 at 16:26 +0000, Mel Gorman wrote:
+> +/*
+> + * Return an index indicating how much of the available free memory is
+> + * unusable for an allocation of the requested size.
+> + */
+> +int unusable_free_index(struct zone *zone,
+> +				unsigned int order,
+> +				struct config_page_info *info)
+> +{
+> +	/* No free memory is interpreted as all free memory is unusable */
+> +	if (info->free_pages == 0)
+> +		return 100;
+
+Should the above be 1000?
 
 
-On Wed, 6 Jan 2010, James Bottomley wrote:
-> 
-> The patch is available at:
-> 
-> master.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-misc-2.6.git
+-- 
+Thanks,
+Adam
 
-No it's not. That has a commit from Dec 10th as the top commit.
-
-Forgot to push?
-
-		Linus
