@@ -1,259 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754130Ab0AFC1O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754549Ab0AFC3U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754130Ab0AFC1O (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 21:27:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751191Ab0AFC1N
+	id S1754549Ab0AFC3U (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 21:29:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753945Ab0AFC3T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 21:27:13 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:43968 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753436Ab0AFC1M (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 21:27:12 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Darren Hart <dvhltc@us.ibm.com>
-Subject: Re: [PATCH v2] futex: remove rw parameter from get_futex_key()
-Cc: kosaki.motohiro@jp.fujitsu.com, Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Peter Zijlstra <peterz@infradead.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Nick Piggin <npiggin@suse.de>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Ulrich Drepper <drepper@gmail.com>,
-       "Hansen, Dave" <haveblue@us.ibm.com>
-In-Reply-To: <4B43A3FB.9050009@us.ibm.com>
-References: <alpine.LSU.2.00.1001051108150.26884@sister.anvils> <4B43A3FB.9050009@us.ibm.com>
-Message-Id: <20100106111830.9E34.A69D9226@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="------_4B43F2F5000000009E35_MULTIPART_MIXED_"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Wed,  6 Jan 2010 11:27:08 +0900 (JST)
+	Tue, 5 Jan 2010 21:29:19 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:48642 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753436Ab0AFC3R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 Jan 2010 21:29:17 -0500
+Date: Wed, 6 Jan 2010 13:29:09 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: "John W. Linville" <linville@tuxdriver.com>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Zhu Yi <yi.zhu@intel.com>, David Miller <davem@davemloft.net>
+Subject: linux-next: manual merge of the wireless tree with Linus' tree
+Message-Id: <20100106132909.1faca672.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 3.0.0beta4 (GTK+ 2.18.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__6_Jan_2010_13_29_09_+1100_v2m8jnFjHMxhLUzu"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---------_4B43F2F5000000009E35_MULTIPART_MIXED_
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
+--Signature=_Wed__6_Jan_2010_13_29_09_+1100_v2m8jnFjHMxhLUzu
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> Hugh Dickins wrote:
-> > On Tue, 5 Jan 2010, KOSAKI Motohiro wrote:
-> 
-> >> From c3e2dfdff84b9b720e646fd6dd3c38fff293c7e6 Mon Sep 17 00:00:00 2001
-> >> From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> >> Date: Tue, 5 Jan 2010 11:33:00 +0900
-> >> Subject: [PATCH] futex: remove rw parameter from get_futex_key()
-> >>
-> >> Currently, futex have two problem.
-> >>
-> >> A) current futex doesn't handle private file mappings properly.
-> >>
-> >> get_futex_key() use PageAnon() to distinguish file and anon. it can
-> >> makes following bad scenario.
-> >>
-> >>   1) thread-A call futex(private-mapping, FUTEX_WAIT). it makes to
-> >>      sleep on file mapping object.
-> >>   2) thread-B write a variable and it makes cow.
-> >>   3) thread-B call futex(private-mapping, FUTEX_WAKE). it wake up
-> >>      sleeped thread on the anonymous page. (but it's nothing)
-> >>
-> 
-> Excellent test case, thank you! Would you consider preparing a patch to 
-> futextest?
-> 
-> http://git.kernel.org/?p=linux/kernel/git/dvhart/futextest.git;a=summary
+Hi John,
 
-Patch attached. you can feel free any modify such file. thanks.
+Today's linux-next merge of the wireless tree got a conflict in
+drivers/net/wireless/iwlwifi/iwl-core.h between commit
+46e75f66677f5094bb51e91f9473128c4e907c7d ("net: fix for utsrelease.h
+moving to generated") from Linus' tree and commit
+61b91c1ea31d0d3ae5f848f7f7eab53dd691f8d0 ("iwlwifi: remove
+linux/utsrelease.h dependency") from the wireless tree.
 
+The latter clearly removes the need for the former, so I used that.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-> I did some experimentation here and found that:
-> 
-> o The test works if the *_PRIVATE op codes are used.
->    This is because the futex keys are generated using only the virtual
->    address of the page, which doesn't change on a COW.
-> o If the waiter writes to the val first, it works.
->    This forces the COW before the waiter generates it's futex key.
+--Signature=_Wed__6_Jan_2010_13_29_09_+1100_v2m8jnFjHMxhLUzu
+Content-Type: application/pgp-signature
 
-True.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
 
-> So the waiter's key is generated based on the page cache page address 
-> for shared futexes when the value hasn't been written to prior to wait.
-> 
-> The only scenario where I could think of wanting this behavior is if 
-> another process were to try and wake the waiter via the same file backed 
-> page. However, as I understand it, the re-use of the same page for 
-> unwritten-to private pages is an optimization and can't be relied upon. 
-> So this scenario is out.  Another would be to use the futex as a very 
-> simple wait queue where the value is never changed. In this case 
-> however, the implementation is racy as the value check is effectively 
-> negated, so this use case is also out.
-> 
-> As such, I see no reason not to always use VERIFY_WRITE and force a COW 
-> prior to generating the futex_key for shared futexes. It is not 
-> necessary for private futexes however as they use only the virtual address.
-> 
-> I am not sure on whether or not it makes sense to avoid the VERIFY_WRITE 
-> on the private futexes. Could be it is just more code for negligible 
-> benefit. Thoughts?
+iEYEARECAAYFAktD9XUACgkQjjKRsyhoI8xD8QCgv++MTZQzgyGjKkPdyj8+/lDC
+eOIAoIyd2wiQcLDzgxmbl25tt25eTBrU
+=O1gh
+-----END PGP SIGNATURE-----
 
-I think it's no problem. because,
-
-as performance view:
-	access_ok() of almost arch (included x86) ignore VERIFY_WRITE.
-	then, this change doesn't cause performance loss of course.
-	(current futex mainly handle ro-mapping problem by fault_in_user_writeable)
-
-as consistency view:
-	This patch have better consistency without FUTEX_PRIVATE_FLAG case.
-
-as usability view:
-	Nobody want to use ro-mappings for private futex. it's obviously meaningless
-	and useless.
-
-
---------_4B43F2F5000000009E35_MULTIPART_MIXED_
-Content-Type: application/octet-stream;
- name="0001-futextest-Add-two-testcase.patch"
-Content-Disposition: attachment;
- filename="0001-futextest-Add-two-testcase.patch"
-Content-Transfer-Encoding: base64
-
-RnJvbSAzNmIwNDE5MDMyNTIwOWFlYTVkMDJhYjFkNWQ1NTcyY2Q2YzgyODBhIE1vbiBTZXAgMTcg
-MDA6MDA6MDAgMjAwMQpGcm9tOiBLT1NBS0kgTW90b2hpcm8gPGtvc2FraS5tb3RvaGlyb0BqcC5m
-dWppdHN1LmNvbT4KRGF0ZTogV2VkLCA2IEphbiAyMDEwIDExOjA3OjA4ICswOTAwClN1YmplY3Q6
-IFtQQVRDSF0gZnV0ZXh0ZXN0OiBBZGQgdHdvIHRlc3RjYXNlCgpSZWNlbnRseSwgd2UgaGF2ZSBk
-aXNjdXNzZWQgemVyby1wYWdlIGFuZCBwcml2YXRlIGZpbGUgbWFwcGluZ3MgYnVnLgp0aHVzIHN1
-Y2ggdGVzdCBjYXNlIHdpbGwgYmUgYWRkZWQuCgpTaWduZWQtb2ZmLWJ5OiBLT1NBS0kgTW90b2hp
-cm8gPGtvc2FraS5tb3RvaGlyb0BqcC5mdWppdHN1LmNvbT4KLS0tCiBmdW5jdGlvbmFsL01ha2Vm
-aWxlICAgICAgICAgICAgICAgICAgICAgICAgIHwgICAgNCArLQogZnVuY3Rpb25hbC9mdXRleF93
-YWl0X3ByaXZhdGVfbWFwcGVkX2ZpbGUuYyB8ICAxMTIgKysrKysrKysrKysrKysrKysrKysrKysr
-KysrCiBmdW5jdGlvbmFsL2Z1dGV4X3dhaXRfdW5pbml0aWFsaXplZF9oZWFwLmMgIHwgICA4NSAr
-KysrKysrKysrKysrKysrKysrKwogZnVuY3Rpb25hbC9ydW4uc2ggICAgICAgICAgICAgICAgICAg
-ICAgICAgICB8ICAgIDcgKysKIDQgZmlsZXMgY2hhbmdlZCwgMjA3IGluc2VydGlvbnMoKyksIDEg
-ZGVsZXRpb25zKC0pCiBjcmVhdGUgbW9kZSAxMDA2NDQgZnVuY3Rpb25hbC9mdXRleF93YWl0X3By
-aXZhdGVfbWFwcGVkX2ZpbGUuYwogY3JlYXRlIG1vZGUgMTAwNjQ0IGZ1bmN0aW9uYWwvZnV0ZXhf
-d2FpdF91bmluaXRpYWxpemVkX2hlYXAuYwoKZGlmZiAtLWdpdCBhL2Z1bmN0aW9uYWwvTWFrZWZp
-bGUgYi9mdW5jdGlvbmFsL01ha2VmaWxlCmluZGV4IDY5MzU2ZmEuLjZlY2I0MmMgMTAwNjQ0Ci0t
-LSBhL2Z1bmN0aW9uYWwvTWFrZWZpbGUKKysrIGIvZnVuY3Rpb25hbC9NYWtlZmlsZQpAQCAtOCw3
-ICs4LDkgQEAgVEFSR0VUUyA6PSBcCiAJZnV0ZXhfd2FpdF93b3VsZGJsb2NrIFwKIAlmdXRleF9y
-ZXF1ZXVlX3BpIFwKIAlmdXRleF9yZXF1ZXVlX3BpX3NpZ25hbF9yZXN0YXJ0IFwKLQlmdXRleF9y
-ZXF1ZXVlX3BpX21pc21hdGNoZWRfb3BzCisJZnV0ZXhfcmVxdWV1ZV9waV9taXNtYXRjaGVkX29w
-cyBcCisJZnV0ZXhfd2FpdF91bmluaXRpYWxpemVkX2hlYXAgXAorCWZ1dGV4X3dhaXRfcHJpdmF0
-ZV9tYXBwZWRfZmlsZQogCiAuUEhPTlk6IGFsbCBjbGVhbgogYWxsOiAkKFRBUkdFVFMpCmRpZmYg
-LS1naXQgYS9mdW5jdGlvbmFsL2Z1dGV4X3dhaXRfcHJpdmF0ZV9tYXBwZWRfZmlsZS5jIGIvZnVu
-Y3Rpb25hbC9mdXRleF93YWl0X3ByaXZhdGVfbWFwcGVkX2ZpbGUuYwpuZXcgZmlsZSBtb2RlIDEw
-MDY0NAppbmRleCAwMDAwMDAwLi5mYjY0NjdhCi0tLSAvZGV2L251bGwKKysrIGIvZnVuY3Rpb25h
-bC9mdXRleF93YWl0X3ByaXZhdGVfbWFwcGVkX2ZpbGUuYwpAQCAtMCwwICsxLDExMiBAQAorLyoq
-KioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioq
-KioqKioqKioqKioqKioqKioqKgorICoKKyAqIENvcHlyaWdodCBGVUpJVFNVIExJTUlURUQgMjAx
-MAorICogQ29weXJpZ2h0IEtPU0FLSSBNb3RvaGlybyA8a29zYWtpLm1vdG9oaXJvQGpwLmZ1aml0
-c3UuY29tPgorICoKKyAqICAgVGhpcyBwcm9ncmFtIGlzIGZyZWUgc29mdHdhcmU7ICB5b3UgY2Fu
-IHJlZGlzdHJpYnV0ZSBpdCBhbmQvb3IgbW9kaWZ5CisgKiAgIGl0IHVuZGVyIHRoZSB0ZXJtcyBv
-ZiB0aGUgR05VIEdlbmVyYWwgUHVibGljIExpY2Vuc2UgYXMgcHVibGlzaGVkIGJ5CisgKiAgIHRo
-ZSBGcmVlIFNvZnR3YXJlIEZvdW5kYXRpb247IGVpdGhlciB2ZXJzaW9uIDIgb2YgdGhlIExpY2Vu
-c2UsIG9yCisgKiAgIChhdCB5b3VyIG9wdGlvbikgYW55IGxhdGVyIHZlcnNpb24uCisgKgorICog
-ICBUaGlzIHByb2dyYW0gaXMgZGlzdHJpYnV0ZWQgaW4gdGhlIGhvcGUgdGhhdCBpdCB3aWxsIGJl
-IHVzZWZ1bCwKKyAqICAgYnV0IFdJVEhPVVQgQU5ZIFdBUlJBTlRZOyAgd2l0aG91dCBldmVuIHRo
-ZSBpbXBsaWVkIHdhcnJhbnR5IG9mCisgKiAgIE1FUkNIQU5UQUJJTElUWSBvciBGSVRORVNTIEZP
-UiBBIFBBUlRJQ1VMQVIgUFVSUE9TRS4gIFNlZQorICogICB0aGUgR05VIEdlbmVyYWwgUHVibGlj
-IExpY2Vuc2UgZm9yIG1vcmUgZGV0YWlscy4KKyAqCisgKiAgIFlvdSBzaG91bGQgaGF2ZSByZWNl
-aXZlZCBhIGNvcHkgb2YgdGhlIEdOVSBHZW5lcmFsIFB1YmxpYyBMaWNlbnNlCisgKiAgIGFsb25n
-IHdpdGggdGhpcyBwcm9ncmFtOyAgaWYgbm90LCB3cml0ZSB0byB0aGUgRnJlZSBTb2Z0d2FyZQor
-ICogICBGb3VuZGF0aW9uLCBJbmMuLCA1OSBUZW1wbGUgUGxhY2UsIFN1aXRlIDMzMCwgQm9zdG9u
-LCBNQSAwMjExMS0xMzA3IFVTQQorICoKKyAqIE5BTUUKKyAqICAgICAgZnV0ZXhfd2FpdF9wcml2
-YXRlX21hcHBlZF9maWxlLmMKKyAqCisgKiBERVNDUklQVElPTgorICoJSW50ZXJuYWxseSwgRnV0
-ZXggaGFzIHR3byBoYW5kbGluZyBtb2RlLCBhbm9uIGFuZCBmaWxlLiBUaGUgcHJpdmF0ZSBmaWxl
-CisgKgltYXBwaW5nIGlzIHNwZWNpYWwuIEF0IGZpcnN0IGl0IGJlaGF2ZSBhcyBmaWxlLCBidXQg
-YWZ0ZXIgd3JpdGUgYW55dGhpbmcKKyAqCWl0IGJlaGF2ZSBhcyBhbm9uLiBUaGlzIHRlc3QgaXMg
-aW50ZW50IHRvIHRlc3Qgc3VjaCBjYXNlLgorICoKKyAqIEFVVEhPUgorICogICAgICBLT1NBS0kg
-TW90b2hpcm8gPGtvc2FraS5tb3RvaGlyb0BqcC5mdWppdHN1LmNvbT4KKyAqCisgKiBISVNUT1JZ
-CisgKiAgICAgIDIwMTAtSmFuLTY6IEluaXRpYWwgdmVyc2lvbiBieSBLT1NBS0kgTW90b2hpcm8g
-PGtvc2FraS5tb3RvaGlyb0BqcC5mdWppdHN1LmNvbT4KKyAqCisgKioqKioqKioqKioqKioqKioq
-KioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioq
-KiovCisKKyNpbmNsdWRlIDxzdGRpby5oPgorI2luY2x1ZGUgPHN0ZGxpYi5oPgorI2luY2x1ZGUg
-PHN5c2NhbGwuaD4KKyNpbmNsdWRlIDx1bmlzdGQuaD4KKyNpbmNsdWRlIDxlcnJuby5oPgorI2lu
-Y2x1ZGUgPGxpbnV4L2Z1dGV4Lmg+CisjaW5jbHVkZSA8cHRocmVhZC5oPgorI2luY2x1ZGUgPGxp
-Ymdlbi5oPgorCisjaW5jbHVkZSAibG9nZ2luZy5oIgorI2luY2x1ZGUgImZ1dGV4dGVzdC5oIgor
-CisjZGVmaW5lIFBBR0VfU1ogNDA5NgorCitjaGFyIHBhZFtQQUdFX1NaXSA9IHsxfTsKK2Z1dGV4
-X3QgdmFsID0gMTsKK2NoYXIgcGFkMltQQUdFX1NaXSA9IHsxfTsKKwordm9pZCogdGhyX2Z1dGV4
-X3dhaXQodm9pZCAqYXJnKQoreworCWludCByZXQ7CisKKwlpbmZvKCJmdXRleCB3YWl0XG4iKTsK
-KwlyZXQgPSBmdXRleF93YWl0KCZ2YWwsIDEsIE5VTEwsIDApOworCWlmIChyZXQgIT0gMCAmJiBl
-cnJubyAhPSBFV09VTERCTE9DSykgeworCQlwZXJyb3IoImZ1dGV4IGVycm9yLlxuIik7CisJCXBy
-aW50X3Jlc3VsdChSRVRfRVJST1IpOworCQlleGl0KFJFVF9FUlJPUik7CisJfQorCWluZm8oImZ1
-dGV4X3dhaXQ6IHJldCA9ICVkLCBlcnJubyA9ICVkXG4iLCByZXQsIGVycm5vKTsKKworCXJldHVy
-biBOVUxMOworfQorCitpbnQgbWFpbihpbnQgYXJnYywgY2hhciAqKmFyZ3YpCit7CisJcHRocmVh
-ZF90IHRocjsKKwlpbnQgcmV0ID0gUkVUX1BBU1M7CisJaW50IHJlczsKKwlpbnQgYzsKKworCXdo
-aWxlICgoYyA9IGdldG9wdChhcmdjLCBhcmd2LCAiYyIpKSAhPSAtMSkgeworCQlzd2l0Y2goYykg
-eworCQljYXNlICdjJzoKKwkJCWxvZ19jb2xvcigxKTsKKwkJCWJyZWFrOworCQlkZWZhdWx0Ogor
-CQkJZXhpdCgxKTsKKwkJfQorCX0KKworCXByaW50ZigiJXM6IFRlc3QgdGhlIGZ1dGV4IHZhbHVl
-IG9mIHByaXZhdGUgZmlsZSBtYXBwaW5ncyBpbiBGVVRFWF9XQUlUXG4iLAorCSAgICAgICBiYXNl
-bmFtZShhcmd2WzBdKSk7CisKKwlyZXQgPSBwdGhyZWFkX2NyZWF0ZSgmdGhyLCBOVUxMLCB0aHJf
-ZnV0ZXhfd2FpdCwgTlVMTCk7CisJaWYgKHJldCA8IDApIHsKKwkJZnByaW50ZihzdGRlcnIsICJw
-dGhyZWFkX2NyZWF0ZSBlcnJvclxuIik7CisJCWdvdG8gZXJyb3I7CisJfQorCisJaW5mbygid2Fp
-dCBhIHdoaWxlIik7CisJc2xlZXAoMyk7CisJdmFsID0gMjsKKwlyZXMgPSBmdXRleF93YWtlKCZ2
-YWwsIDEsIDApOworCWluZm8oImZ1dGV4X3dha2UgJWQiLCByZXMpOworCisJaW5mbygiam9pbiIp
-OworCXB0aHJlYWRfam9pbih0aHIsIE5VTEwpOworCisJcHJpbnRfcmVzdWx0KHJldCk7CisJcmV0
-dXJuIHJldDsKKworZXJyb3I6CisJcmV0ID0gUkVUX0VSUk9SOworCXByaW50X3Jlc3VsdChyZXQp
-OworCXJldHVybiByZXQ7Cit9CmRpZmYgLS1naXQgYS9mdW5jdGlvbmFsL2Z1dGV4X3dhaXRfdW5p
-bml0aWFsaXplZF9oZWFwLmMgYi9mdW5jdGlvbmFsL2Z1dGV4X3dhaXRfdW5pbml0aWFsaXplZF9o
-ZWFwLmMKbmV3IGZpbGUgbW9kZSAxMDA2NDQKaW5kZXggMDAwMDAwMC4uY2Q3ZTVmNgotLS0gL2Rl
-di9udWxsCisrKyBiL2Z1bmN0aW9uYWwvZnV0ZXhfd2FpdF91bmluaXRpYWxpemVkX2hlYXAuYwpA
-QCAtMCwwICsxLDg1IEBACisvKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioq
-KioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqCisgKgorICogQ29weXJpZ2h0
-IEZVSklUU1UgTElNSVRFRCAyMDEwCisgKiBDb3B5cmlnaHQgS09TQUtJIE1vdG9oaXJvIDxrb3Nh
-a2kubW90b2hpcm9AanAuZnVqaXRzdS5jb20+CisgKgorICogICBUaGlzIHByb2dyYW0gaXMgZnJl
-ZSBzb2Z0d2FyZTsgIHlvdSBjYW4gcmVkaXN0cmlidXRlIGl0IGFuZC9vciBtb2RpZnkKKyAqICAg
-aXQgdW5kZXIgdGhlIHRlcm1zIG9mIHRoZSBHTlUgR2VuZXJhbCBQdWJsaWMgTGljZW5zZSBhcyBw
-dWJsaXNoZWQgYnkKKyAqICAgdGhlIEZyZWUgU29mdHdhcmUgRm91bmRhdGlvbjsgZWl0aGVyIHZl
-cnNpb24gMiBvZiB0aGUgTGljZW5zZSwgb3IKKyAqICAgKGF0IHlvdXIgb3B0aW9uKSBhbnkgbGF0
-ZXIgdmVyc2lvbi4KKyAqCisgKiAgIFRoaXMgcHJvZ3JhbSBpcyBkaXN0cmlidXRlZCBpbiB0aGUg
-aG9wZSB0aGF0IGl0IHdpbGwgYmUgdXNlZnVsLAorICogICBidXQgV0lUSE9VVCBBTlkgV0FSUkFO
-VFk7ICB3aXRob3V0IGV2ZW4gdGhlIGltcGxpZWQgd2FycmFudHkgb2YKKyAqICAgTUVSQ0hBTlRB
-QklMSVRZIG9yIEZJVE5FU1MgRk9SIEEgUEFSVElDVUxBUiBQVVJQT1NFLiAgU2VlCisgKiAgIHRo
-ZSBHTlUgR2VuZXJhbCBQdWJsaWMgTGljZW5zZSBmb3IgbW9yZSBkZXRhaWxzLgorICoKKyAqICAg
-WW91IHNob3VsZCBoYXZlIHJlY2VpdmVkIGEgY29weSBvZiB0aGUgR05VIEdlbmVyYWwgUHVibGlj
-IExpY2Vuc2UKKyAqICAgYWxvbmcgd2l0aCB0aGlzIHByb2dyYW07ICBpZiBub3QsIHdyaXRlIHRv
-IHRoZSBGcmVlIFNvZnR3YXJlCisgKiAgIEZvdW5kYXRpb24sIEluYy4sIDU5IFRlbXBsZSBQbGFj
-ZSwgU3VpdGUgMzMwLCBCb3N0b24sIE1BIDAyMTExLTEzMDcgVVNBCisgKgorICogTkFNRQorICog
-ICAgICBmdXRleF93YWl0X3VuaW5pdGlhbGl6ZWRfaGVhcC5jCisgKgorICogREVTQ1JJUFRJT04K
-KyAqICAgICAgV2FpdCBvbiB1bmluaXRpYWxpemVkIGhlYXAuIEl0IHNob2xkIGJlIHplcm8gYW5k
-IEZVVEVYX1dBSVQgc2hvdWxkIHJldHVybgorICogICAgICBpbW1lZGlhdGVseS4gVGhpcyB0ZXN0
-IGlzIGludGVudCB0byB0ZXN0IHplcm8gcGFnZSBoYW5kbGluZyBpbiBmdXRleC4KKyAqCisgKiBB
-VVRIT1IKKyAqICAgICAgS09TQUtJIE1vdG9oaXJvIDxrb3Nha2kubW90b2hpcm9AanAuZnVqaXRz
-dS5jb20+CisgKgorICogSElTVE9SWQorICogICAgICAyMDEwLUphbi02OiBJbml0aWFsIHZlcnNp
-b24gYnkgS09TQUtJIE1vdG9oaXJvIDxrb3Nha2kubW90b2hpcm9AanAuZnVqaXRzdS5jb20+Cisg
-KgorICoqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioq
-KioqKioqKioqKioqKioqKioqKioqKioqLworCisjaW5jbHVkZSA8c3RkaW8uaD4KKyNpbmNsdWRl
-IDxzdGRsaWIuaD4KKyNpbmNsdWRlIDxzeXMvbW1hbi5oPgorI2luY2x1ZGUgPHN5c2NhbGwuaD4K
-KyNpbmNsdWRlIDxzeXMvdHlwZXMuaD4KKyNpbmNsdWRlIDxzeXMvc3RhdC5oPgorI2luY2x1ZGUg
-PHVuaXN0ZC5oPgorI2luY2x1ZGUgPGVycm5vLmg+CisjaW5jbHVkZSA8bGludXgvZnV0ZXguaD4K
-KyNpbmNsdWRlIDxsaWJnZW4uaD4KKworI2luY2x1ZGUgImxvZ2dpbmcuaCIKKyNpbmNsdWRlICJm
-dXRleHRlc3QuaCIKKworaW50IG1haW4oaW50IGFyZ2MsIGNoYXIgKiphcmd2KQoreworCWxvbmcg
-cGFnZV9zaXplOworCWludCByZXM7CisJdm9pZCAqYnVmOworCWludCByZXQgPSBSRVRfUEFTUzsK
-KwlpbnQgYzsKKworCXdoaWxlICgoYyA9IGdldG9wdChhcmdjLCBhcmd2LCAiYyIpKSAhPSAtMSkg
-eworCQlzd2l0Y2goYykgeworCQljYXNlICdjJzoKKwkJCWxvZ19jb2xvcigxKTsKKwkJCWJyZWFr
-OworCQlkZWZhdWx0OgorCQkJZXhpdCgxKTsKKwkJfQorCX0KKworCXBhZ2Vfc2l6ZSA9IHN5c2Nv
-bmYoX1NDX1BBR0VTSVpFKTsKKworCWJ1ZiA9IG1tYXAoTlVMTCwgcGFnZV9zaXplLCBQUk9UX1JF
-QUR8UFJPVF9XUklURSwgTUFQX1BSSVZBVEV8TUFQX0FOT05ZTU9VUywgMCwgMCk7CisJaWYgKGJ1
-ZiA9PSAodm9pZCAqKS0xKSB7CisJCXBlcnJvcigibW1hcCBlcnJvci5cbiIpOworCQlleGl0KDEp
-OworCX0KKworCXByaW50ZigiJXM6IFRlc3QgdGhlIHVuaW5pdGlhbGl6ZWQgZnV0ZXggdmFsdWUg
-aW4gRlVURVhfV0FJVFxuIiwKKwkgICAgICAgYmFzZW5hbWUoYXJndlswXSkpOworCisJcmVzID0g
-ZnV0ZXhfd2FpdChidWYsIDEsIE5VTEwsIDApOworCWlmIChyZXMgIT0gMCAmJiBlcnJubyAhPSBF
-V09VTERCTE9DSykgeworCQlyZXQgPSBSRVRfRkFJTDsKKwl9CisJcHJpbnRfcmVzdWx0KHJldCk7
-CisKKwlyZXR1cm4gcmV0OworfQpkaWZmIC0tZ2l0IGEvZnVuY3Rpb25hbC9ydW4uc2ggYi9mdW5j
-dGlvbmFsL3J1bi5zaAppbmRleCA5NTliMzg5Li40MTFjMjBmIDEwMDc1NQotLS0gYS9mdW5jdGlv
-bmFsL3J1bi5zaAorKysgYi9mdW5jdGlvbmFsL3J1bi5zaApAQCAtMjksNiArMjksOCBAQAogIwog
-IyBISVNUT1JZCiAjICAgICAgMjAwOS1Ob3YtOTogSW5pdGlhbCB2ZXJzaW9uIGJ5IERhcnJlbiBI
-YXJ0IDxkdmhsdGNAdXMuaWJtLmNvbT4KKyMgICAgICAyMDEwLUphbi02OiBBZGQgZnV0ZXhfd2Fp
-dF91bmluaXRpYWxpemVkX2hlYXAgYW5kIGZ1dGV4X3dhaXRfcHJpdmF0ZV9tYXBwZWRfZmlsZSAK
-KyMgICAgICAgICAgICAgICAgICBieSBLT1NBS0kgTW90b2hpcm8gPGtvc2FraS5tb3RvaGlyb0Bq
-cC5mdWppdHN1LmNvbT4KICMKICMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMj
-IyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMKIApAQCAtODMsMyArODUs
-OCBAQCBlY2hvCiAKIGVjaG8KIC4vZnV0ZXhfd2FpdF93b3VsZGJsb2NrICRDT0xPUgorCitlY2hv
-CisuL2Z1dGV4X3dhaXRfdW5pbml0aWFsaXplZF9oZWFwCisuL2Z1dGV4X3dhaXRfcHJpdmF0ZV9t
-YXBwZWRfZmlsZQorCi0tIAoxLjYuNS4yCgo=
---------_4B43F2F5000000009E35_MULTIPART_MIXED_--
-
-
+--Signature=_Wed__6_Jan_2010_13_29_09_+1100_v2m8jnFjHMxhLUzu--
