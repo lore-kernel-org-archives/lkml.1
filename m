@@ -1,40 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755600Ab0AFLrK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755770Ab0AFLuS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755600Ab0AFLrK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 06:47:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755501Ab0AFLrI
+	id S1755770Ab0AFLuS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 06:50:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754722Ab0AFLuR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 06:47:08 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:54161 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754672Ab0AFLrH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 06:47:07 -0500
-Message-ID: <4B447836.9020004@suse.cz>
-Date: Wed, 06 Jan 2010 12:47:02 +0100
-From: Michal Marek <mmarek@suse.cz>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.2 Thunderbird/3.0
+	Wed, 6 Jan 2010 06:50:17 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:62262 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1754132Ab0AFLuQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jan 2010 06:50:16 -0500
+Message-ID: <4B447882.2090806@cn.fujitsu.com>
+Date: Wed, 06 Jan 2010 19:48:18 +0800
+From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-To: Eric Miao <eric.y.miao@gmail.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] kbuild: include only necessary in scripts/Makefile.modbuiltin
-References: <f17812d71001052226y604995a0m4c7887d29fd73f90@mail.gmail.com> 	<4B445D3E.8080600@suse.cz> <f17812d71001060231l5c0ca1bha50e395790d0fc0b@mail.gmail.com> 	<4B44684B.1060401@suse.cz> <f17812d71001060322j4970349ex52f0cfa495ac8628@mail.gmail.com>
-In-Reply-To: <f17812d71001060322j4970349ex52f0cfa495ac8628@mail.gmail.com>
+To: Chris Mason <chris.mason@oracle.com>
+CC: Yan Zheng <zheng.yan@oracle.com>, Julia Lawall <julia@diku.dk>,
+       Josef Bacik <josef@redhat.com>, linux-btrfs@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] btrfs: using btrfs_stack_device_id() get devid
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 6.1.2010 12:22, Eric Miao wrote:
-> And indeed it's strange - while scripts/Makefile.build doesn't fail since
-> there seems to be a script that generates some Makefiles in between
-> the build process, I'll get this figured out to see what is the root
-> cause.
+We can use btrfs_stack_device_id() to get dev_item->devid
 
-Oh. If that turns out to be the cause and the script is going to stay,
-then the right fix would be to change the toplevel Makefile generate the
-modules.builtin files in a separate target after the build, and not in
-parallel. I planed to do this change anyway, to later avoid regenerating
-the modules.builtin files if the config didn't change.
+Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+---
+ fs/btrfs/volumes.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-Michal
+diff --git a/fs/btrfs/volumes.c b/fs/btrfs/volumes.c
+index 198cff2..3b8b2b9 100644
+--- a/fs/btrfs/volumes.c
++++ b/fs/btrfs/volumes.c
+@@ -592,7 +592,7 @@ static int __btrfs_open_devices(struct btrfs_fs_devices *fs_devices,
+ 			goto error_close;
+ 
+ 		disk_super = (struct btrfs_super_block *)bh->b_data;
+-		devid = le64_to_cpu(disk_super->dev_item.devid);
++		devid = btrfs_stack_device_id(&disk_super->dev_item);
+ 		if (devid != device->devid)
+ 			goto error_brelse;
+ 
+@@ -694,7 +694,7 @@ int btrfs_scan_one_device(const char *path, fmode_t flags, void *holder,
+ 		goto error_close;
+ 	}
+ 	disk_super = (struct btrfs_super_block *)bh->b_data;
+-	devid = le64_to_cpu(disk_super->dev_item.devid);
++	devid = btrfs_stack_device_id(&disk_super->dev_item);
+ 	transid = btrfs_super_generation(disk_super);
+ 	if (disk_super->label[0])
+ 		printk(KERN_INFO "device label %s ", disk_super->label);
+@@ -1187,7 +1187,7 @@ int btrfs_rm_device(struct btrfs_root *root, char *device_path)
+ 			goto error_close;
+ 		}
+ 		disk_super = (struct btrfs_super_block *)bh->b_data;
+-		devid = le64_to_cpu(disk_super->dev_item.devid);
++		devid = btrfs_stack_device_id(&disk_super->dev_item);
+ 		dev_uuid = disk_super->dev_item.uuid;
+ 		device = btrfs_find_device(root, devid, dev_uuid,
+ 					   disk_super->fsid);
+-- 
+1.6.1.2
+
