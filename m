@@ -1,99 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755043Ab0AFDVv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755171Ab0AFDYb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755043Ab0AFDVv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 Jan 2010 22:21:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754247Ab0AFDVu
+	id S1755171Ab0AFDYb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 Jan 2010 22:24:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754411Ab0AFDYa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 Jan 2010 22:21:50 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:55856 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754186Ab0AFDVt (ORCPT
+	Tue, 5 Jan 2010 22:24:30 -0500
+Received: from mail-yw0-f176.google.com ([209.85.211.176]:33895 "EHLO
+	mail-yw0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754186Ab0AFDYa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 Jan 2010 22:21:49 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Wed, 6 Jan 2010 12:18:36 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: balbir@linux.vnet.ibm.com
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH -mm] Shared Page accounting for memory cgroup (v2)
-Message-Id: <20100106121836.40f3b3c0.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20100106030752.GI3059@balbir.in.ibm.com>
-References: <20100105185226.GG3059@balbir.in.ibm.com>
-	<20100106090708.f3ec9fd8.kamezawa.hiroyu@jp.fujitsu.com>
-	<20100106030752.GI3059@balbir.in.ibm.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 5 Jan 2010 22:24:30 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type;
+        b=Jmxad08mZDKlmtCjNZp+84rPOFzfh/eWw0whTZUeYMx3GNSVuWqwL7xK3n7puV8dRQ
+         BZ/sWl/VCwWYtWQ0gjzwRHgXTCrhXXTDu4yObLAktnPBfAx/X2x7vpPJn1bAhHzh5AIh
+         o2owR9tPi1jRilp+WV6kTyzGefUnTtV479vQQ=
+MIME-Version: 1.0
+In-Reply-To: <8bd0f97a1001051128s272f9881q4f1418eba08f1478@mail.gmail.com>
+References: <1254133004-24877-1-git-send-email-21cnbao@gmail.com> 
+	<8bd0f97a0909291944q53a060buc7bcbb30c1240da7@mail.gmail.com> 
+	<8bd0f97a1001051128s272f9881q4f1418eba08f1478@mail.gmail.com>
+From: Barry Song <21cnbao@gmail.com>
+Date: Wed, 6 Jan 2010 11:18:37 +0800
+Message-ID: <3c17e3571001051918q7a133a63p64e2b2465dd52a48@mail.gmail.com>
+Subject: Re: [PATCH] Fix half-Y2K38 problem in timecompare_update while 
+	calculating offset
+To: Mike Frysinger <vapier.adi@gmail.com>
+Cc: akpm@linux-foundation.org, davem@davemloft.net, patrick.ohly@intel.com,
+       uclinux-dist-devel@blackfin.uclinux.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 6 Jan 2010 08:37:52 +0530
-Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+It has been merged into mainline:
 
-> * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2010-01-06 09:07:08]:
-> 
-> > On Wed, 6 Jan 2010 00:22:26 +0530
-> > Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> > 
-> > > Hi, All,
-> > > 
-> > > No major changes from v1, except for the use of get_mm_rss().
-> > > Kamezawa-San felt that this can be done in user space and I responded
-> > > to him with my concerns of doing it in user space. The thread
-> > > can be found at http://thread.gmane.org/gmane.linux.kernel.mm/42367.
-> > > 
-> > > If there are no major objections, can I ask for a merge into -mm.
-> > > Andrew, the patches are against mmotm 10 December 2009, if there
-> > > are some merge conflicts, please let me know, I can rebase after
-> > > you release the next mmotm.
-> > > 
-> > 
-> > The problem is that this isn't "shared" uasge but "considered to be shared"
-> > usage. Okay ?
-> >
-> 
-> Could you give me your definition of "shared". From the mem cgroup
-> perspective, total_rss (which is accumulated) subtracted from the
-> count of pages in the LRU which are RSS and FILE_MAPPED is shared, no?
+timecompare: fix half-Y2K38 problem in timecompare_update while
+calculating offset
+author	Barry Song <21cnbao@gmail.com>	
+	Wed, 16 Dec 2009 00:45:34 +0000 (16:45 -0800)
+committer	Linus Torvalds <torvalds@linux-foundation.org>	
+	Wed, 16 Dec 2009 15:19:57 +0000 (07:19 -0800)
+commit	f065f41f48569122b5bcddbd1ba2354f7cc29fdc
+tree	68606305bfb3aba16437017e0596ccae11e6f6db	tree | snapshot
+parent	4365a5676fa3aa1d5ae6c90c22a0044f09ba584e	commit | diff
+timecompare: fix half-Y2K38 problem in timecompare_update while
+calculating offset
 
-You consider only "mapped" pages are shared page. That's wrong.
-And let's think about your "total_rss - RSS+MAPPED"
+ktime will overflow from 03:14:07 UTC on Tuesday, 19 January 2038,
+ktime_add() in timecompare_update() will overflow a half earlier.  As a
+result, wrong offset will be gotten, then cause some strange problems.
 
-In this typical case,
-	fork()  ---- process(A)
-	-> fork() --- process(B)
-	  -> process(C)
-
-total_rss = rss(A) + rss(B) + rss(C) = 3 * rss(A)
-Then, 
-
-total_rss - RSS_MAPPED = 2 * rss(A).
-
-How we call this number ? Is this "shared usage" ? I think no.
-If you want to do this, scan LRU and count the number of really shared pages.
-It's much better than detecting "shared pages" via process and will have no
-big issue if implemented in proper way.
-
-> I understand that some of the pages that might be shared, show up
-> in our LRU and accounting. These are not treated as shared by
-> our cgroup, but by other cgroups.
->  
-> > Then I don't want to provide this misleading value as "official report" from
-> > the kernel. And this can be done in userland.
-> >
-> 
-> I explained some of the issues of doing this from user space, would
-> you be OK if I called them "non-private" pages?
-> 
-
-I think I explained there is no issue to do this in user-land.
-
-Thanks,
--Kame
+Signed-off-by: Barry Song <21cnbao@gmail.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Patrick Ohly <patrick.ohly@intel.com>
+Cc: David S. Miller <davem@davemloft.net>
+Cc: John Stultz <johnstul@us.ibm.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 
 
+On Wed, Jan 6, 2010 at 3:28 AM, Mike Frysinger <vapier.adi@gmail.com> wrote:
+> On Tue, Sep 29, 2009 at 21:44, Mike Frysinger wrote:
+>> On Mon, Sep 28, 2009 at 06:16, Barry Song wrote:
+>>> ktime will overflow from 03:14:07 UTC on Tuesday, 19 January 2038,
+>>> ktime_add() in timecompare_update() will overflow a half earlier.
+>>> As a result, wrong offset will be gotten, then cause some strange
+>>> problems.
+>>
+>> Barry: you forgot to include your s-o-b tag ...
+>
+> you still need to post your s-o-b if we want this to go any further
+> -mike
+>
