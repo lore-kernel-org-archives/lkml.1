@@ -1,45 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932800Ab0AFU4l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932814Ab0AFU4r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932800Ab0AFU4l (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 15:56:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932786Ab0AFU4l
+	id S932814Ab0AFU4r (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 15:56:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932804Ab0AFU4n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 15:56:41 -0500
-Received: from sj-iport-1.cisco.com ([171.71.176.70]:60438 "EHLO
-	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932649Ab0AFU4k (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 15:56:40 -0500
-Authentication-Results: sj-iport-1.cisco.com; dkim=neutral (message not signed) header.i=none
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApoEACeIREurR7Hu/2dsb2JhbADACZNghDAE
-X-IronPort-AV: E=Sophos;i="4.49,231,1262563200"; 
-   d="scan'208";a="285563885"
-From: Roland Dreier <rdreier@cisco.com>
-To: =?utf-8?Q?Bart=C5=82omiej_Zimo=C5=84?= <uzi18@o2.pl>
-Cc: linux-kernel@vger.kernel.org, aeriksson@fastmail.fm, awalls@radix.net,
-       linux-pm@lists.linux-foundation.org, danborkmann@googlemail.com
-Subject: Re: [linux-pm] [suspend/resume] Re: userspace notific ation from module
-References: <686edb2c.6263643a.4b3f4a3b.b60b3@o2.pl>
-	<201001060003.23419.rjw@sisk.pl>
-	<1ab86ec9.7bc73105.4b43cd45.c2747@o2.pl>
-	<20100106143534.A7EEA33C5F5@tippex.mynet.homeunix.org>
-	<5c33d92a.63a2de8c.4b44f47a.8762@o2.pl>
-	<adatyuzt0vg.fsf@roland-alpha.cisco.com>
-X-Message-Flag: Warning: May contain useful information
-Date: Wed, 06 Jan 2010 12:56:39 -0800
-In-Reply-To: <adatyuzt0vg.fsf@roland-alpha.cisco.com> (Roland Dreier's message
-	of "Wed, 06 Jan 2010 12:49:23 -0800")
-Message-ID: <adahbqzt0jc.fsf@roland-alpha.cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
+	Wed, 6 Jan 2010 15:56:43 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:2300 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932802Ab0AFU4m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jan 2010 15:56:42 -0500
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 06 Jan 2010 20:56:39.0499 (UTC) FILETIME=[BE1941B0:01CA8F12]
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Martin Schwidefsky <schwidefsky@de.ibm.com>
+X-Fcc: ~/Mail/linus
+Cc: Oleg Nesterov <oleg@redhat.com>, caiqian@redhat.com,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Jan Kratochvil <jkratoch@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-s390@vger.kernel.org, utrace-devel@redhat.com
+Subject: Re: s390 && user_enable_single_step() (Was: odd utrace testing
+ results on s390x)
+In-Reply-To: Martin Schwidefsky's message of  Tuesday, 5 January 2010 10:50:30 +0100 <20100105105030.66bb8a0a@mschwide.boeblingen.de.ibm.com>
+References: <1503844142.2061111261478093776.JavaMail.root@zmail06.collab.prod.int.phx2.redhat.com>
+	<1257887498.2061171261478252049.JavaMail.root@zmail06.collab.prod.int.phx2.redhat.com>
+	<20100104155225.GA16650@redhat.com>
+	<20100104171626.22ea2d9c@mschwide.boeblingen.de.ibm.com>
+	<20100104181412.GA21146@redhat.com>
+	<20100104211147.4CC94D532@magilla.sf.frob.com>
+	<20100105105030.66bb8a0a@mschwide.boeblingen.de.ibm.com>
+X-Windows: sometimes you fill a vacuum and it still sucks.
+Message-Id: <20100106205633.700CC134D@magilla.sf.frob.com>
+Date: Wed,  6 Jan 2010 12:56:33 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> do_signal is called before do_single_step. The order of checks of the
+> TIF_ bits is 1) machine checks, 2) need resched, 3) signal pending, 4)
+> notify resume, 5) restarting system call, 6) single step.
 
- > thanks, applied.
+I see.  Then the potential issue I raised would exist.
 
-MUA hickup, sorry -- replied to wrong mail.
+> But why is that important ? If the TIF_SINGLE_STEP bit is set the order
+> of do_signal vs. do_single_step does not seem to be important to me.
+> There will be a SIGTRAP if TIF_SINGLE_STEP is set, no ?
+
+Right.  It only becomes relevant if something else clears TIF_SINGLE_STEP,
+which does not happen now.  I was discussing the scenario of having
+user_disable_single_step clear it.  That might happen inside a stop,
+i.e. inside do_signal (get_signal_to_deliver).  So given that order of
+checks, it becomes possible for user_disable_single_step to affect the
+pending-step-should-SIGTRAP situation.
+
+> But I agree, it is probably better to make all arches look the same in
+> regard to that pending step report. 
+
+Right.  That means we should leave the status quo of not clearing
+TIF_SINGLE_STEP in user_disable_single_step.
+
+> > Martin, I suggest having copy_thread clear TIF_SINGLE_STEP.
+> > That bit is always task-private state that should not be copied.
+> 
+> Then let us do this.
+
+Yes, good.
+
+> The LCTLG of multiple control registers is rather expensive. Does it
+> happen often that user_*_single_step is called without need? For gdb is
+> doesn't matter, the cost to switch between tracer and tracee is already
+> large, the cycles added to FixPerRegisters won't matter much. For
+> utrace things might be different.
+
+In old (current) ptrace, user_*_single_step is never called on current.
+In utrace, it's always called on current, so utrace-based ptrace alone
+adds this second reload overhead beyond the same context-switch overhead
+old ptrace has.  Indeed that addition may be neglible.
+
+In other circumstances with utrace, it is very possible to wind up with
+user_disable_single_step being called superfluously when there was no
+stop (and so not necessarily any context switch or other high overhead).
+On other machines, user_disable_single_step is pretty cheap even where
+user_enable_single_step is quite costly.  Given how simple and cheap it
+is to short-circuit the excess work on s390, I think it is worthwhile.
+
+It looks like the context-switch code already checks some magic bits in
+per_info to decide whether to do the costly reload.  So it seems vaguely
+consistent with that to conditionalize FixPerRegisters similarly.  The
+single_step cases are a special case with an easy one-bit check to
+short-circuit, so skipping all of FixPerRegisters seems worthwhile IMHO.
+
+To be really optimization-happy about it, you'd also hack FixPerRegisters
+itself to do the reload on current only if PSW_MASK_PER is or was set (if
+I'm following the code correctly).  Or perhaps it should check PER_EM_MASK
+instead to match what __switch_to does.  (I don't understand the
+distinction between those two tests, if there is one.)  Extra frobbity
+would be to leave the old state too when clearing PSW_MASK_PER, and then
+just have the trap handler lazily ignore a hit when current doesn't have
+it set.  Then in a case where there is no hit before context switch,
+you haven't done anything.  But that is probably both excessive and
+not even a win if the PER use is single-step and so there will really
+very likely be a hit before context switch.
+
+
+Thanks,
+Roland
