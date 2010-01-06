@@ -1,43 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932393Ab0AFRG4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932398Ab0AFRJ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932393Ab0AFRG4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 12:06:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932373Ab0AFRGy
+	id S932398Ab0AFRJ0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 12:09:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755966Ab0AFRJZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 12:06:54 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:27953 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932365Ab0AFRGy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 12:06:54 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <1262797265-26557-1-git-send-email-jslaby@suse.cz>
-References: <1262797265-26557-1-git-send-email-jslaby@suse.cz>
-To: Jiri Slaby <jslaby@suse.cz>
-Cc: dhowells@redhat.com, jmorris@namei.org,
-       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
-       jirislaby@gmail.com, Serge Hallyn <serue@us.ibm.com>
-Subject: Re: [PATCH 1/1] cred: fix memory leak
-Date: Wed, 06 Jan 2010 17:06:43 +0000
-Message-ID: <20320.1262797603@redhat.com>
+	Wed, 6 Jan 2010 12:09:25 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:45444 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755672Ab0AFRJX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jan 2010 12:09:23 -0500
+Date: Wed, 6 Jan 2010 09:08:57 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: James Bottomley <James.Bottomley@suse.de>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT PATCH] SCSI bug fixes for 2.6.33-rc3
+In-Reply-To: <1262797332.2946.147.camel@mulgrave.site>
+Message-ID: <alpine.LFD.2.00.1001060907560.3630@localhost.localdomain>
+References: <1262797332.2946.147.camel@mulgrave.site>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jiri Slaby <jslaby@suse.cz> wrote:
 
-> Stanse found a memory leak in prepare_exec_creds. tgcred is not
-> freed/assigned on all paths. Fix that.
-> 
-> I.e. unifdef tgcred and add kfree(tgcred); as it is initialized to
-> NULL already.
-> 
-> Signed-off-by: Jiri Slaby <jslaby@suse.cz>
-> Cc: David Howells <dhowells@redhat.com>
-> Cc: James Morris <jmorris@namei.org>
-> Cc: Serge Hallyn <serue@us.ibm.com>
 
-Acked-by: David Howells <dhowells@redhat.com>
+On Wed, 6 Jan 2010, James Bottomley wrote:
+> 
+> The patch is available at:
+> 
+> master.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-misc-2.6.git
+
+No it's not. That has a commit from Dec 10th as the top commit.
+
+Forgot to push?
+
+		Linus
