@@ -1,73 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933167Ab0AFXy7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933177Ab0AFXzV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933167Ab0AFXy7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 18:54:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933133Ab0AFXy6
+	id S933177Ab0AFXzV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 18:55:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933144Ab0AFXzQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 18:54:58 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:59349 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933112Ab0AFXy5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 18:54:57 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Message-ID: <4B4522BE.7050902@jp.fujitsu.com>
-Date: Thu, 07 Jan 2010 08:54:38 +0900
-From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Wed, 6 Jan 2010 18:55:16 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:47763 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933171Ab0AFXzM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jan 2010 18:55:12 -0500
+Date: Thu, 7 Jan 2010 00:55:11 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jikos@twin.jikos.cz
+To: Gene Heskett <gene.heskett@verizon.net>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.33-rc3, rc2 regression at boot
+In-Reply-To: <201001061602.44133.gene.heskett@verizon.net>
+Message-ID: <alpine.LRH.2.00.1001070053390.15694@twin.jikos.cz>
+References: <alpine.LFD.2.00.1001051838410.3630@localhost.localdomain> <201001052355.29640.gene.heskett@verizon.net> <201001061602.44133.gene.heskett@verizon.net>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
 MIME-Version: 1.0
-To: Jiri Slaby <jslaby@suse.cz>
-CC: jbarnes@virtuousgeek.org, linux-kernel@vger.kernel.org,
-       jirislaby@gmail.com, linux-pci@vger.kernel.org
-Subject: Re: [PATCH 2/2] PCI: hotplug, fix memory leaks
-References: <1262796476-17737-1-git-send-email-jslaby@suse.cz> <1262796476-17737-2-git-send-email-jslaby@suse.cz>
-In-Reply-To: <1262796476-17737-2-git-send-email-jslaby@suse.cz>
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Good catch.
+On Wed, 6 Jan 2010, Gene Heskett wrote:
 
-Reviewed-by: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+> >[    0.558368] Unpacking initramfs...
+> >[    0.648644] Freeing initrd memory: 3431k freed
+> >[    0.651635] platform microcode: firmware: requesting
+> > amd-ucode/microcode_amd.bin [   60.646738] microcode: failed to load file
+> > amd-ucode/microcode_amd.bin [   60.646858] microcode: CPU0:
+> > patch_level=0x1000065
+> >[   60.646977] microcode: CPU1: patch_level=0x1000065
+> >[   60.647099] microcode: CPU2: patch_level=0x1000065
+> >[   60.647218] microcode: CPU3: patch_level=0x1000065
+> >
+> >Note the time, it kills quite close to a whole minute there, which at first
+> >would appear to be because there is not yet a mounted /lib filesystem to
+> > suck it from.  I didn't build an rc1, but rc2 also suffers from this.
+> > 2.6.32.2 does not do this although its firmware request takes place at the
+> > same point. So it doesn't look like it is the lack of a mounted filesystem
+> > after all.
+> >
+> >FWIW, because it was a hot reboot, the patch_level reported is the correct
+> >level.
+> >
+> >I am also seeing some complaints about my Audigy2 sound card, but what I
+> > saw during the boot, never made it to the messages log.  Something about
+> > guessing at the proper config, but I did hear kde sign on when x started.
+> >
+> >Thanks Linus.
+> >
+> Update, I edited the .config by hand and added the full path in
+> CONFIG_EXTRA_FIRMWARE_DIR="/lib/firmware/"
+> which was just 'firmware', and rebuilt.  No difference.  I still get the 60 
+> second hang.  FWIW, this particular setting isn't visible in a make xconfig.
 
-Jiri Slaby wrote:
-> Stanse found a cut&pasted memory leak in pciehp_queue_pushbutton_work
-> and shpchp_queue_pushbutton_work. info is not freed/assigned on all
-> paths. Fix that.
-> 
-> Signed-off-by: Jiri Slaby <jslaby@suse.cz>
-> Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
-> Cc: linux-pci@vger.kernel.org
-> ---
->  drivers/pci/hotplug/pciehp_ctrl.c |    1 +
->  drivers/pci/hotplug/shpchp_ctrl.c |    1 +
->  2 files changed, 2 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/pci/hotplug/pciehp_ctrl.c b/drivers/pci/hotplug/pciehp_ctrl.c
-> index d6ac1b2..9a7f247 100644
-> --- a/drivers/pci/hotplug/pciehp_ctrl.c
-> +++ b/drivers/pci/hotplug/pciehp_ctrl.c
-> @@ -341,6 +341,7 @@ void pciehp_queue_pushbutton_work(struct work_struct *work)
->  		p_slot->state = POWERON_STATE;
->  		break;
->  	default:
-> +		kfree(info);
->  		goto out;
->  	}
->  	queue_work(pciehp_wq, &info->work);
-> diff --git a/drivers/pci/hotplug/shpchp_ctrl.c b/drivers/pci/hotplug/shpchp_ctrl.c
-> index b8ab279..86f6276 100644
-> --- a/drivers/pci/hotplug/shpchp_ctrl.c
-> +++ b/drivers/pci/hotplug/shpchp_ctrl.c
-> @@ -462,6 +462,7 @@ void shpchp_queue_pushbutton_work(struct work_struct *work)
->  		p_slot->state = POWERON_STATE;
->  		break;
->  	default:
-> +		kfree(info);
->  		goto out;
->  	}
->  	queue_work(shpchp_wq, &info->work);
+As this is already at the stage when userspace exists and init has been 
+started, it might well be delay of some userspace stuff, not directly 
+kernel.
 
+Does alt-sysrq-t at the time it is stuck give any clue?
+
+-- 
+Jiri Kosina
+SUSE Labs, Novell Inc.
 
