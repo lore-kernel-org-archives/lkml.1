@@ -1,43 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932504Ab0AFRoh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932508Ab0AFRpx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932504Ab0AFRoh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 12:44:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932410Ab0AFRoe
+	id S932508Ab0AFRpx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 12:45:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932469Ab0AFRpv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 12:44:34 -0500
-Received: from mail-iw0-f194.google.com ([209.85.223.194]:54591 "EHLO
-	mail-iw0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932486Ab0AFRod (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 12:44:33 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type;
-        b=pkut1bliRmBiom4Qiyjltls8pQ3wx4ToAylwaAVLDUkie/I/bh1/pLtXT5ezVFDp9C
-         4qVi/mVLsMpXxqzBIzqmQZUxgML+QVJRBdOXCTsZps27GkKXs+B+WgryFeOIDQQ0BFjT
-         1Xcf2WW6ZUpHDJ0pJU0Btb79IwBPlWSwAmr9Y=
-MIME-Version: 1.0
-In-Reply-To: <1262795743-15009-1-git-send-email-jslaby@suse.cz>
-References: <1262795743-15009-1-git-send-email-jslaby@suse.cz>
-From: "Luis R. Rodriguez" <mcgrof@gmail.com>
-Date: Wed, 6 Jan 2010 09:44:13 -0800
-Message-ID: <43e72e891001060944k28fdfaa7rb5d2325bc5399e6e@mail.gmail.com>
-Subject: Re: [PATCH 1/2] net: wireless, fix lock imbalance
-To: Jiri Slaby <jslaby@suse.cz>
-Cc: linville@tuxdriver.com, linux-wireless@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+	Wed, 6 Jan 2010 12:45:51 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:21061 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932295Ab0AFRpt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jan 2010 12:45:49 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20100106172112.GA17163@lst.de>
+References: <20100106172112.GA17163@lst.de>
+To: Christoph Hellwig <hch@lst.de>
+Cc: dhowells@redhat.com, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+       linux@arm.linux.org.uk, ysato@users.sourceforge.jp, tony.luck@intel.com,
+       geert@linux-m68k.org, zippel@linux-m68k.org, gerg@uclinux.org,
+       schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com, jdike@addtoit.com,
+       tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com,
+       viro@zeniv.linux.org.uk
+Subject: Re: [PATCH 1/3] generic sys_old_select
+Date: Wed, 06 Jan 2010 17:44:29 +0000
+Message-ID: <31914.1262799869@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 6, 2010 at 8:35 AM, Jiri Slaby <jslaby@suse.cz> wrote:
-> One fail path in cfg80211_wext_siwscan omits to unlock rdev->mtx.
-> Fix that.
->
-> Trigerrable by "Scan for SSID" with long enough SSID (> 32).
+Christoph Hellwig <hch@lst.de> wrote:
 
-Cc stable as well?
+> Add a generic implementation of the old select syscall, which expects it's
+> argument in a memory block and switch all architectures over to use it.
+> 
+> 
+> Signed-off-by: Christoph Hellwig <hch@lst.de>
 
-  Luis
+Acked-by: David Howells <dhowells@redhat.com> [for MN10300]
