@@ -1,66 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933136Ab0AFXvj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933141Ab0AFXwk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933136Ab0AFXvj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 18:51:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933044Ab0AFXvh
+	id S933141Ab0AFXwk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 18:52:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756554Ab0AFXwi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 18:51:37 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:43685 "EHLO smtps.tip.net.au"
+	Wed, 6 Jan 2010 18:52:38 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:47655 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932822Ab0AFXvg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 18:51:36 -0500
-Date: Thu, 7 Jan 2010 10:51:30 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>, Jeff Layton <jlayton@redhat.com>,
-       linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org
-Subject: Re: [PATCH v2] sunrpc: fix build-time warning
-Message-Id: <20100107105130.dfae78e3.sfr@canb.auug.org.au>
-In-Reply-To: <1262819420.4251.171.camel@localhost>
-References: <1262226195-27733-1-git-send-email-jlayton@redhat.com>
-	<20091231091815.a1ea7e51.rdunlap@xenotime.net>
-	<20091231205454.0f84f091@tupile.poochiereds.net>
-	<20100101182514.cb1f49ef.randy.dunlap@oracle.com>
-	<1262819420.4251.171.camel@localhost>
-X-Mailer: Sylpheed 3.0.0beta4 (GTK+ 2.18.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__7_Jan_2010_10_51_30_+1100_RdOm4p3r28qPxABR"
+	id S1756526Ab0AFXwh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jan 2010 18:52:37 -0500
+Date: Thu, 7 Jan 2010 00:52:32 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jikos@twin.jikos.cz
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "Rick L. Vinyard Jr." <rvinyard@cs.nmsu.edu>, linux-kernel@vger.kernel.org,
+       felipe.balbi@nokia.com, krzysztof.h1@wp.pl, linux-usb@vger.kernel.org,
+       Oliver Neukum <oliver@neukum.org>, linux-input@vger.kernel.org
+Subject: Re: [PATCH] Logitech G13 driver 0.0.2
+In-Reply-To: <20100106144447.b5ea9b1f.akpm@linux-foundation.org>
+Message-ID: <alpine.LRH.2.00.1001070051220.15694@twin.jikos.cz>
+References: <200912142244.nBEMikgN002071@mustang.cs.nmsu.edu> <20100106144447.b5ea9b1f.akpm@linux-foundation.org>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__7_Jan_2010_10_51_30_+1100_RdOm4p3r28qPxABR
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Wed, 6 Jan 2010, Andrew Morton wrote:
 
-Hi Trond,
+> > his is a driver for the Logitech G13 gamepad, and contains three
+> > key parts. In the USB reports the device identifies itself as a
+> > HID, and as a result this driver is under the HID framework.
+> > 
+> > There are two primary sub-components to this driver; an input
+> > device and a framebuffer device.
+> > 
+> > Although identified as a HID, the device does not support standard
+> > HID input messages. As a result, a sub-input device is allocated and
+> > registered separately in g13_probe(). The raw events are monitored 
+> > and key presses/joystick activity is reported through the input device 
+> > after referencing an indexed keymap.
+> > 
+> > Additionally, this device contains a 160x43 monochrome LCD display.
+> > A registered framebuffer device manages this display. The design
+> > of this portion of the driver was based on the design of the
+> > hecubafb driver with deferred framebuffer I/O since there is
+> > no real memory to map.
+> 
+> I get this from x86_64 allmodconfig:
+> 
+> drivers/hid/hid-g13.o:(.rodata+0x0): multiple definition of `__mod_hid_device_table'
+> drivers/hid/hid-lg.o:(.rodata+0x0): first defined here
+> /opt/crosstool/gcc-4.0.2-glibc-2.3.6/x86_64-unknown-linux-gnu/bin/x86_64-unknown-linux-gnu-ld: Warning: size of symbol `__mod_hid_device_table' changed from 552 in drivers/hid/hid-lg.o to 48 in drivers/hid/hid-g13.o
+> drivers/hid/hid-g13.o: In function `init_module':
+> hid-g13.c:(.init.text+0x0): multiple definition of `init_module'
+> drivers/hid/hid-lg.o:hid-lg.c:(.init.text+0x0): first defined here
+> drivers/hid/hid-g13.o: In function `cleanup_module':
+> hid-g13.c:(.exit.text+0x0): multiple definition of `cleanup_module'
+> drivers/hid/hid-lg.o:hid-lg.c:(.exit.text+0x0): first defined here
+> 
+> Confused.
 
-On Wed, 06 Jan 2010 18:10:20 -0500 Trond Myklebust <trond.myklebust@fys.uio=
-.no> wrote:
->
-> Sorry for the delay. This patch has been applied today, and should
-> therefore appear in the linux-next tree tomorrow...
+Yes, please just drop the driver from -mm.
 
-Actually today - since I am following the normal Australian practice of
-being slack and starting work late in January :-)
+Rick is already aware of this failure, and there were also some other 
+comments coming out from the patch review. Rick will be submitting new 
+patch, and I am planning to integrate it through my tree once it is ready.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+-- 
+Jiri Kosina
+SUSE Labs, Novell Inc.
 
---Signature=_Thu__7_Jan_2010_10_51_30_+1100_RdOm4p3r28qPxABR
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAktFIgIACgkQjjKRsyhoI8xIIwCfdLXC2Jpw1WYEBFzZeDnJKRht
-A3AAni3fIEMHyw37k9Hhh6RuCub4GgOT
-=AW0I
------END PGP SIGNATURE-----
-
---Signature=_Thu__7_Jan_2010_10_51_30_+1100_RdOm4p3r28qPxABR--
