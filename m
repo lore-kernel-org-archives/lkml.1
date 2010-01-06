@@ -1,90 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756256Ab0AFUWz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756271Ab0AFUX6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756256Ab0AFUWz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 15:22:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756242Ab0AFUWx
+	id S1756271Ab0AFUX6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 15:23:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756241Ab0AFUX5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 15:22:53 -0500
-Received: from vms173007pub.verizon.net ([206.46.173.7]:18157 "EHLO
-	vms173007pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756222Ab0AFUWw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 15:22:52 -0500
-Date: Wed, 06 Jan 2010 15:22:30 -0500 (EST)
-From: Len Brown <lenb@kernel.org>
-X-X-Sender: lenb@localhost.localdomain
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: Arjan van de Ven <arjan@infradead.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Christian Hofstaedtler <ch@zeha.at>, x86@kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       bruce.w.allan@intel.com, Thomas Gleixner <tglx@linutronix.de>,
-       Justin Piszcz <jpiszcz@lucidpixels.com>, linux-acpi@vger.kernel.org,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Subject: Re: [PATCH] Add DMI quirk for Intel DP55KG mainboard
-In-reply-to: <20100106193608.GA21447@srcf.ucam.org>
-Message-id: <alpine.LFD.2.00.1001061504110.4086@localhost.localdomain>
-References: <20100104162114.GA30113@percival.namespace.at>
- <alpine.LFD.2.00.1001041209300.4012@localhost.localdomain>
- <4B4225B3.8070705@zytor.com> <20100104174558.158cd512@infradead.org>
- <20100106143640.GB13984@srcf.ucam.org>
- <alpine.LFD.2.00.1001061321260.4086@localhost.localdomain>
- <20100106193608.GA21447@srcf.ucam.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 6 Jan 2010 15:23:57 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:42958 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756238Ab0AFUX4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jan 2010 15:23:56 -0500
+Date: Wed, 6 Jan 2010 21:23:47 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: Roland McGrath <roland@redhat.com>, caiqian@redhat.com,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Jan Kratochvil <jkratoch@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-s390@vger.kernel.org, utrace-devel@redhat.com
+Subject: Re: s390 && user_enable_single_step() (Was: odd utrace testing
+	results on s390x)
+Message-ID: <20100106202347.GC26204@redhat.com>
+References: <1503844142.2061111261478093776.JavaMail.root@zmail06.collab.prod.int.phx2.redhat.com> <1257887498.2061171261478252049.JavaMail.root@zmail06.collab.prod.int.phx2.redhat.com> <20100104155225.GA16650@redhat.com> <20100104171626.22ea2d9c@mschwide.boeblingen.de.ibm.com> <20100104181412.GA21146@redhat.com> <20100104211147.4CC94D532@magilla.sf.frob.com> <20100105105030.66bb8a0a@mschwide.boeblingen.de.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100105105030.66bb8a0a@mschwide.boeblingen.de.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > using _OSI is not "a similar method to Windows".
-> > The BIOS does not need to invoke _OSI to determine if
-> > it should expose a properly functioning ACPI reset or not.
-> > Windows XP simply demanded it, and the box failed WHQL
-> > if it did not work.
-> 
-> http://download.microsoft.com/download/7/E/7/7E7662CF-CBEA-470B-A97E-CE7CE0D98DC2/WinACPI_OSI.docx 
-> was what I was referring to:
-> 
-> "By using the _OSI method, ASL writers can easily determine the version 
-> of the ACPI interfaces that the host operating system supports. This 
-> versioning method provides a solution for creating firmware that can 
-> support future operating systems and enable the operating system to 
-> change behavior based on the requested interface levels."
-> 
-> We know that this is used for deciding whether or not to block system IO 
-> accesses, but it wouldn't surprise me if it's also used to determine 
-> other functionality like whether or not the ACPI interface is used for 
-> rebooting.
+On 01/05, Martin Schwidefsky wrote:
+>
+> On Mon,  4 Jan 2010 13:11:47 -0800 (PST)
+> Roland McGrath <roland@redhat.com> wrote:
+>
+> > > This probably means that copy_process()->user_disable_single_step()
+> > > is not enough to clear the "this task wants single-stepping" copied
+> > > from parent.
+> >
+> > I would suspect s390's TIF_SINGLE_STEP flag here.  That flag means "a
+> > single-step trap occurred".  This is what causes do_single_step to be
+> > called before returning to user mode, rather than the machine trap doing it
+> > directly as is done in the other arch implementations.
+>
+> Just my thinking as well.
+>
+> > If I'm right, then "this task wants single-stepping" is not the problem,
+> > and that really is fully cleared.  In fact, looking at s390's copy_thread
+> > (arch/s390/kernel/process.c) it clears out all the state that is actually
+> > touched by user_enable_single_step and user_disable_single_step.  So for
+> > s390 the new fork.c call is actually superfluous AFAICT.
+>
+>         /* Don't copy debug registers */
+>         memset(&p->thread.per_info, 0, sizeof(p->thread.per_info));
+>
+> Yep, the call from fork.c is indeed superfluous.
 
-I've looked at _OSI use in over a hundred DSDTs and never
-seen run-time re-configuration of reset support.
+I can't explain this, but if I remove copy_process()->user_disable_single_step()
+the test-case below triggers "XXX" printk's from do_single_step() with or
+without CONFIG_UTRACE. the patch is
 
-I do not think the BIOS has a run-time decision to make here.
-If a box is designed to support Windows XP and newer, it is
-likely that ACPI_RESET is simply valid and XP blindly uses it.
-If reset fails, the box doesn't pass WHQL and the box is fixed.
-If W2K is run on that box, ACPI_RESET is still valid, just that
-W2K chooses to not write to it.
+	--- arch/s390/kernel/traps.c~	2009-12-22 10:41:52.909174198 -0500
+	+++ arch/s390/kernel/traps.c	2010-01-05 11:03:55.006487697 -0500
+	@@ -384,6 +384,9 @@ void __kprobes do_single_step(struct pt_
+		}
+		if (tracehook_consider_fatal_signal(current, SIGTRAP))
+			force_sig(SIGTRAP, current);
+	+	else
+	+		printk("XXX: %s/%d %d\n", current->comm, current->pid,
+	+				test_thread_flag(TIF_SINGLE_STEP));
+	 }
+	 
+	 static void default_trap_handler(struct pt_regs * regs, long interruption_code)
 
-> > Further, there is no _guarantee_ that a BIOS will invoke _OSI
-> > at all, let alone a _rule_ for what _OSI() strings the BIOS
-> > will choose to query to trigger its Windows specific
-> > compatibility hooks -- even if common practice is for
-> > a desktop BIOS to evaluate _OSI strings in sequence
-> > up throught he most recent version of Windows it
-> > knows about...
-> 
-> It's effectively guaranteed if the system is validated with Windows.
+Oleg.
 
-today's common industry practice != future guarantee
+#include <stdio.h>
+#include <unistd.h>
+#include <signal.h>
+#include <sys/ptrace.h>
+#include <sys/wait.h>
+#include <assert.h>
 
-We can't rely on blind use of _OSI to mean "new enough", since
-it was supported back in W2K era.  That means we have to parse
-the OSI strings.  But what happens when a BIOS writer decides to
-evaluate _OSI("Windows Future") without evaluating any of the
-old strings we know about?  We would disable ACPI reset on such
-a future box?
+int main(void)
+{
+	int pid, status;
 
-thanks,
--Len
+	if (!(pid = fork())) {
+		assert(ptrace(PTRACE_TRACEME) == 0);
+		kill(getpid(), SIGSTOP);
+
+		if (!fork())
+			return 43;
+
+		wait(&status);
+		return WEXITSTATUS(status);
+	}
+
+
+	for (;;) {
+		assert(pid == wait(&status));
+		if (WIFEXITED(status))
+			break;
+		assert(ptrace(PTRACE_SINGLESTEP, pid, 0,0) == 0);
+	}
+
+	assert(WEXITSTATUS(status) == 43);
+	return 0;
+}
+
 
