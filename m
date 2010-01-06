@@ -1,39 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932201Ab0AFNqM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932216Ab0AFNrB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932201Ab0AFNqM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 08:46:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932139Ab0AFNqL
+	id S932216Ab0AFNrB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 08:47:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932144Ab0AFNrA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 08:46:11 -0500
-Received: from lider.pardus.org.tr ([193.140.100.216]:50318 "EHLO
-	lider.pardus.org.tr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932098Ab0AFNqK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 08:46:10 -0500
-Message-ID: <4B4493F5.9010308@pardus.org.tr>
-Date: Wed, 06 Jan 2010 15:45:25 +0200
-From: =?UTF-8?B?T3phbiDDh2HEn2xheWFu?= <ozan@pardus.org.tr>
-User-Agent: Thunderbird 2.0.0.23 (X11/20071115)
+	Wed, 6 Jan 2010 08:47:00 -0500
+Received: from cantor.suse.de ([195.135.220.2]:36728 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932119Ab0AFNq7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jan 2010 08:46:59 -0500
+Date: Wed, 6 Jan 2010 14:46:58 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Christian Schuerer <csw@xray.at>
+Cc: Jiri Slaby <jirislaby@gmail.com>, linux-input@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] linux-2.6.31.9, linux-2.6.32.2, linux-2.6.33-rc2 -- Re:
+ Device IDs for new Apple Wireless Keyboard
+In-Reply-To: <201001061357.22447.csw@xray.at>
+Message-ID: <alpine.LNX.2.00.1001061446450.2277@pobox.suse.cz>
+References: <4B38AFDE.8000203@gmail.com> <201001060216.47958.csw@xray.at> <alpine.LNX.2.00.1001061113060.2277@pobox.suse.cz> <201001061357.22447.csw@xray.at>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
 MIME-Version: 1.0
-To: Hui Zhu <teawater@gmail.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       Sam Ravnborg <sam@ravnborg.org>, Matthew Wilcox <willy@linux.intel.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Fix markup_oops.pl get error in x86
-References: <daef60381001060123vbb09aecy7943d72fcb8278a@mail.gmail.com>
-In-Reply-To: <daef60381001060123vbb09aecy7943d72fcb8278a@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hui Zhu wrote On 06-01-2010 11:23:
-> Hello,
+On Wed, 6 Jan 2010, Christian Schuerer wrote:
+
+> > > here is the patch for linux-2.6.33-rc2:
+> > > Thanks. Unfortunately, it's wordwrapped, so it can't be easily applied.
+> > Could you please fix up your e-mail client so that it doesn't mangle long
+> > lines, or eventually send is as an attachment?
 > 
-> When I try to use markup_oops.pl in x86, I always get:
+> I'm sorry, I have attached all three patches as text files.
+> 
+> > > Added device IDs for the new model of the Apple Wireless Keyboard
+> > > (November 2009).
+> > These are solely Bluetooth device, and there is no USB variant, right?
+> 
+> As far as I know of only a new variant of the wireless (bluetooth) keyboard 
+> has been released in November 2009.
 
-I already mentioned that but wasn't able to get attention, and yes the current code doesn't work,
+Applied to my tree, thanks Christian.
 
-http://lkml.indiana.edu/hypermail/linux/kernel/0908.0/02222.html
+-- 
+Jiri Kosina
+SUSE Labs, Novell Inc.
