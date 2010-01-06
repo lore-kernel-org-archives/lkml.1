@@ -1,82 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755604Ab0AFJLf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755621Ab0AFJPm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755604Ab0AFJLf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 04:11:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751656Ab0AFJLe
+	id S1755621Ab0AFJPm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 04:15:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754722Ab0AFJPl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 04:11:34 -0500
-Received: from smtp-vbr9.xs4all.nl ([194.109.24.29]:4346 "EHLO
-	smtp-vbr9.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753520Ab0AFJLd (ORCPT
+	Wed, 6 Jan 2010 04:15:41 -0500
+Received: from mail-fx0-f225.google.com ([209.85.220.225]:35305 "EHLO
+	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754172Ab0AFJPj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 04:11:33 -0500
-X-Greylist: delayed 523 seconds by postgrey-1.27 at vger.kernel.org; Wed, 06 Jan 2010 04:11:32 EST
-Message-ID: <4B44514F.7080307@yahoo.es>
-Date: Wed, 06 Jan 2010 17:01:03 +0800
-From: Hein_Tibosch <hein_tibosch@yahoo.es>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Wed, 6 Jan 2010 04:15:39 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=wu5xSKgbULUQpCdoSrdxxx1SfJlV9naWyI9jOCLElvePq7azmklhxFlzNkCYGhUWLu
+         9wyqjElerFp1+QVM6QU5lFMW25exiEuncVCpcG04LivmlTV+tzfAkld3oMDzGLKsyfHJ
+         viO3ObEIrOiRTSS/LOyKGqniq5NPEIzJflFYs=
+Date: Wed, 6 Jan 2010 09:15:32 +0000
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: Michael Breuer <mbreuer@majjas.com>
+Cc: David Miller <davem@davemloft.net>, shemminger@linux-foundation.org,
+       akpm@linux-foundation.org, flyboy@gmail.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: [PATCH alt.2] af_packet: Don't use skb after dev_queue_xmit()
+Message-ID: <20100106091532.GA10201@ff.dom.local>
+References: <20100105230746.GA6612@del.dom.local> <4B43F72C.9090004@majjas.com> <20100106072208.GA6711@ff.dom.local>
 MIME-Version: 1.0
-To: Pavel Machek <pavel@ucw.cz>
-CC: Ben Nizette <bn@niasdigital.com>, Pierre Ossman <pierre@ossman.eu>,
-       Adrian Hunter <adrian.hunter@nokia.com>, linux-mmc@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Matt Fleming <matt@console-pimps.org>,
-       Sascha Hauer <s.hauer@pengutronix.de>
-Subject: Re: [PATCH v2] mmc: lower init clock frequency to 300kHz
-References: <2A48D9AC-90D7-405F-A64C-0703F5FEC175@niasdigital.com> <20100106070141.GC1382@ucw.cz>
-In-Reply-To: <20100106070141.GC1382@ucw.cz>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100106072208.GA6711@ff.dom.local>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 6-1-2010 15:01, Pavel Machek wrote:
-> Machine with minimum clock of 1MHz is clearly broken, yet you issue
-> "soft" warning.
->
-> What about:
->
->      if (f_min > 400k)
->      	print existing warning
->      else if (f_min > 300k)
->         print warning 'if your card does not work, its broken,  but
-> 	      	           	your host is unhelpful'
->      clock = f_min
->      if (clock < 3o0)
->      	 clock = 300
->
-> ?
->   
-Later in this thread I mentioned that initialization at 300 Khz is
-too fast for some platforms/cards (avr32 AP7000/main-stream cards).
-They will report CRC-errors so the above won't work.
+On Wed, Jan 06, 2010 at 07:22:08AM +0000, Jarek Poplawski wrote:
+> On Tue, Jan 05, 2010 at 09:36:28PM -0500, Michael Breuer wrote:
+> > Is it possible that this patch is causing the transmission to  
+> > momentarily halt such that the overall utilization appears low at the  
+> > time I see the interrupt errors, vs. the other patch which perhaps  
+> > doesn't interrupt the traffic flow quite so much?
+> 
+> Yes, without this patch xmit could be stopped earlier on some kind of
+> errors, with retransmit of the last message possible. On the other
+> hand, other dev_queue_xmit() (negative) errors, are ignored. So this
+> place could be still improved by adding proper err handling (or
+> removing getting err return from dev_queue_xmit() at all).
 
-I have looked at the time it will take to exchange the initial data (about
-85 bytes), using different busses and frequencies:
-	
-        Intface:  8-bits  4-bits  SPI
-Bus-freq:
-400000 (Hz)       0.213   0.425    1.700 (ms)
-300000            0.283   0.567    2.267
-200000            0.425   0.850    3.400
-100000            0.850   1.700    6.800
-50000             1.700   3.400   13.600
-100               850     1700    6800
+On the other hand, returning just this one net_xmit_errno() would be
+consistent with non-MMAP sendmsg, so here is an alternative version
+for testing.
 
-These are netto times, without the msleep's for power-up and without
-overhead.
+Thanks,
+Jarek P.
 
-Looking at this table, I would use a fixed bottom of 100 Khz:
+-----------------> (alternative #2)
 
-	if (f_min > 400k)
-		print existing warning
-	clock = max (100k, host->f_min);
+tpacket_snd() can change and kfree an skb after dev_queue_xmit(),
+which is illegal.
 
-Regards, Hein
+With debugging by: Stephen Hemminger <shemminger@linux-foundation.org>
 
+Reported-by: Michael Breuer <mbreuer@majjas.com>
+Signed-off-by: Jarek Poplawski <jarkao2@gmail.com>
+---
 
+ net/packet/af_packet.c |    8 +++-----
+ 1 files changed, 3 insertions(+), 5 deletions(-)
 
-
-
-
-
+diff --git a/net/packet/af_packet.c b/net/packet/af_packet.c
+index e0516a2..aba2049 100644
+--- a/net/packet/af_packet.c
++++ b/net/packet/af_packet.c
+@@ -1021,9 +1021,10 @@ static int tpacket_snd(struct packet_sock *po, struct msghdr *msg)
+ 
+ 		status = TP_STATUS_SEND_REQUEST;
+ 		err = dev_queue_xmit(skb);
+-		if (unlikely(err > 0 && (err = net_xmit_errno(err)) != 0))
+-			goto out_xmit;
+ 		packet_increment_head(&po->tx_ring);
++		if (unlikely(err > 0 && (err = net_xmit_errno(err)) != 0))
++			goto out_put;
++
+ 		len_sum += tp_len;
+ 	} while (likely((ph != NULL) ||
+ 			((!(msg->msg_flags & MSG_DONTWAIT)) &&
+@@ -1033,9 +1034,6 @@ static int tpacket_snd(struct packet_sock *po, struct msghdr *msg)
+ 	err = len_sum;
+ 	goto out_put;
+ 
+-out_xmit:
+-	skb->destructor = sock_wfree;
+-	atomic_dec(&po->tx_ring.pending);
+ out_status:
+ 	__packet_set_status(po, ph, status);
+ 	kfree_skb(skb);
