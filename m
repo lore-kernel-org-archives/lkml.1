@@ -1,139 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932699Ab0AFTxk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756150Ab0AFTzT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932699Ab0AFTxk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 14:53:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932684Ab0AFTxj
+	id S1756150Ab0AFTzT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 14:55:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755933Ab0AFTzS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 14:53:39 -0500
-Received: from mx2.netapp.com ([216.240.18.37]:6661 "EHLO mx2.netapp.com"
+	Wed, 6 Jan 2010 14:55:18 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:40861 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932299Ab0AFTxi convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 14:53:38 -0500
-X-IronPort-AV: E=Sophos;i="4.49,230,1262592000"; 
-   d="scan'208";a="298127946"
-Subject: Re: [PATCH] improve the performance of large sequential write NFS
- workloads
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Wu Fengguang <fengguang.wu@intel.com>, Jan Kara <jack@suse.cz>,
-       Steve Rago <sar@nec-labs.com>,
-       "linux-nfs@vger.kernel.org" <linux-nfs@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "jens.axboe" <jens.axboe@oracle.com>,
-       Peter Staubach <staubach@redhat.com>,
-       Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>
-In-Reply-To: <1262805667.4251.135.camel@localhost>
-References: <20091222015907.GA6223@localhost>
-	 <1261578107.2606.11.camel@localhost> <20091223180551.GD3159@quack.suse.cz>
-	 <1261595574.6775.2.camel@localhost> <20091224025228.GA12477@localhost>
-	 <1261656281.3596.1.camel@localhost> <20091225055617.GA8595@localhost>
-	 <1262190168.7332.6.camel@localhost> <20091231050441.GB19627@localhost>
-	 <1262286828.8151.113.camel@localhost>  <20100106030346.GA15962@localhost>
-	 <1262796962.4251.91.camel@localhost>  <1262802387.4251.117.camel@localhost>
-	 <1262803040.4049.62.camel@laptop>  <1262803927.4251.133.camel@localhost>
-	 <1262804876.4049.66.camel@laptop>  <1262805667.4251.135.camel@localhost>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
-Organization: NetApp
-Date: Wed, 06 Jan 2010 14:53:14 -0500
-Message-ID: <1262807594.4251.155.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 (2.28.2-1.fc12) 
-X-OriginalArrivalTime: 06 Jan 2010 19:53:21.0095 (UTC) FILETIME=[E612CD70:01CA8F09]
+	id S1755673Ab0AFTzQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jan 2010 14:55:16 -0500
+Date: Wed, 6 Jan 2010 20:55:14 +0100
+From: Jan Kara <jack@suse.cz>
+To: Greg KH <greg@kroah.com>
+Cc: tytso@mit.edu, Greg KH <gregkh@suse.de>, Jan Kara <jack@suse.cz>,
+       linux-kernel@vger.kernel.org, stable@kernel.org,
+       stable-review@kernel.org, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Dmitry Monakhov <dmonakhov@openvz.org>
+Subject: Re: [stable] [PATCH 83/97] ext4: Fix potential quota deadlock
+Message-ID: <20100106195514.GA22781@quack.suse.cz>
+References: <20100105003133.GA7199@kroah.com>
+ <1262651630-7354-83-git-send-email-gregkh@suse.de>
+ <20100105004741.GD3252@quack.suse.cz>
+ <20100105185655.GB15630@suse.de>
+ <20100105213927.GA3252@quack.suse.cz>
+ <20100105231627.GA713@suse.de>
+ <20100106052018.GA29440@thunk.org>
+ <20100106182718.GA27674@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100106182718.GA27674@kroah.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2010-01-06 at 14:21 -0500, Trond Myklebust wrote: 
-> On Wed, 2010-01-06 at 20:07 +0100, Peter Zijlstra wrote: 
-> > On Wed, 2010-01-06 at 13:52 -0500, Trond Myklebust wrote:
-> > > On Wed, 2010-01-06 at 19:37 +0100, Peter Zijlstra wrote: 
-> > > > On Wed, 2010-01-06 at 13:26 -0500, Trond Myklebust wrote:
-> > > > > OK. It looks as if the only key to finding out how many unstable writes
-> > > > > we have is to use global_page_state(NR_UNSTABLE_NFS), so we can't
-> > > > > specifically target our own backing-dev. 
-> > > > 
-> > > > Would be a simple matter of splitting BDI_UNSTABLE out from
-> > > > BDI_RECLAIMABLE, no?
-> > > > 
-> > > > Something like
+On Wed 06-01-10 10:27:18, Greg KH wrote:
+> On Wed, Jan 06, 2010 at 12:20:18AM -0500, tytso@mit.edu wrote:
+> > On Tue, Jan 05, 2010 at 03:16:27PM -0800, Greg KH wrote:
+> > > On Tue, Jan 05, 2010 at 10:39:27PM +0100, Jan Kara wrote:
+> > > > On Tue 05-01-10 10:56:55, Greg KH wrote:
+> > > > > On Tue, Jan 05, 2010 at 01:47:42AM +0100, Jan Kara wrote:
+> > > > > > On Mon 04-01-10 16:33:36, Greg Kroah-Hartman wrote:
+> > > > > > > From: Dmitry Monakhov <dmonakhov@openvz.org>
+> > > > > > > 
+> > > > > > > commit d21cd8f163ac44b15c465aab7306db931c606908 upstream.
+> > > > > >   Ted has found a serious bug in this patch over Christmas and fixed it.
+> > > > > > Ted, do you prefer to just discard this patch or will you add your fixes?
+> > > > > Do you have the git commit id of the patch that fixes it?
+> > > >   Commits fixing the behavior are:
+> > > > 0637c6f4135f592f094207c7c21e7c0fc5557834
+> > > > ee5f4d9cdf32fd99172d11665c592a288c2b1ff4
+> > > > 9d0be50230b333005635967f7ecd4897dbfd181b
 > > > 
-> > > OK. How about if we also add in a bdi->capabilities flag to tell that we
-> > > might have BDI_UNSTABLE? That would allow us to avoid the potentially
-> > > expensive extra calls to bdi_stat() and bdi_stat_sum() for the non-nfs
-> > > case?
+> > > Hm, should I add these as well, or back out all of the ext4 quota
+> > > patches from .32 and .31?
 > > 
-> > The bdi_stat_sum() in the error limit is basically the only such
-> > expensive op, but I suspect we might hit that more than enough. So sure
-> > that sounds like a plan.
+> > I don't think you need to back out all of the ext4 quota patches; Jan
+> > has looked at the more carefully than I (since they went in via the
+> > quota tree instead of the ext4 tree) but as far as I know the d21cd8f1
+> > is a standalone fix and the other patches shouldn't break if you just
+> > drop patch #83.  Adding the above mentioned patches is definitely
+> > necessary if you include Patch #83, though, since otherwise people
+> > mounting uncoverted ext3 filesystems using ext4 will get the BUG in
+> > fs/ext4/inode.c:1063 regression.
 > > 
+> > As far as whether it would be better to drop patch #83 or to include
+> > these three commits, it's a bit of a toss up.  If you want to play it
+> > safe, I'd say let's drop it for now and wait for week or so, so we can
+> > make sure the people who are testing -rc3 are happy, and for the next
+> > stable release we can pick it up plus the additional commits listed
+> > above.
 > 
-> This should apply on top of your patch....
+> Ok, I've dropped this patch from both the .31 and .32 -stable queues,
+> thanks.
+  Thanks!
 
-...and finally, this should convert the previous NFS patch to use the
-per-bdi accounting.
+> Jan, want to resend this patch, along with the needed fixes, for the
+> next round of -stable releases when you get a chance, to
+> stable@kernel.org?
+  OK, will do that if we don't spot new problems with them.
 
-Cheers
-  Trond
-
--------------------------------------------------------------------------------------- 
-VM: Use per-bdi unstable accounting to improve use of wbc->force_commit
-
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
-
-Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
----
-
- mm/page-writeback.c |   13 +++++++------
- 1 files changed, 7 insertions(+), 6 deletions(-)
-
-
-diff --git a/mm/page-writeback.c b/mm/page-writeback.c
-index d90a0db..c537543 100644
---- a/mm/page-writeback.c
-+++ b/mm/page-writeback.c
-@@ -487,7 +487,6 @@ static void balance_dirty_pages(struct address_space *mapping,
- {
- 	long nr_reclaimable, bdi_nr_reclaimable;
- 	long nr_writeback, bdi_nr_writeback;
--	long nr_unstable_nfs;
- 	unsigned long background_thresh;
- 	unsigned long dirty_thresh;
- 	unsigned long bdi_thresh;
-@@ -504,18 +503,20 @@ static void balance_dirty_pages(struct address_space *mapping,
- 			.nr_to_write	= write_chunk,
- 			.range_cyclic	= 1,
- 		};
-+		long bdi_nr_unstable = 0;
- 
- 		get_dirty_limits(&background_thresh, &dirty_thresh,
- 				&bdi_thresh, bdi);
- 
--		nr_unstable_nfs = global_page_state(NR_UNSTABLE_NFS);
- 		nr_reclaimable = global_page_state(NR_FILE_DIRTY) +
--					nr_unstable_nfs;
-+					global_page_state(NR_UNSTABLE_NFS);
- 		nr_writeback = global_page_state(NR_WRITEBACK);
- 
- 		bdi_nr_reclaimable = bdi_stat(bdi, BDI_DIRTY);
--		if (bdi_cap_account_unstable(bdi))
--			bdi_nr_reclaimable += bdi_stat(bdi, BDI_UNSTABLE);
-+		if (bdi_cap_account_unstable(bdi)) {
-+			bdi_nr_unstable = bdi_stat(bdi, BDI_UNSTABLE);
-+			bdi_nr_reclaimable += bdi_nr_unstable;
-+		}
- 		bdi_nr_writeback = bdi_stat(bdi, BDI_WRITEBACK);
- 
- 		if (bdi_nr_reclaimable + bdi_nr_writeback <= bdi_thresh)
-@@ -545,7 +546,7 @@ static void balance_dirty_pages(struct address_space *mapping,
- 		if (bdi_nr_reclaimable > bdi_thresh) {
- 			wbc.force_commit = 0;
- 			/* Force NFS to also free up unstable writes. */
--			if (nr_unstable_nfs > nr_reclaimable / 2)
-+			if (bdi_nr_unstable > bdi_nr_reclaimable / 2)
- 				wbc.force_commit = 1;
- 
- 			writeback_inodes_wbc(&wbc);
-
+									Honza
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
