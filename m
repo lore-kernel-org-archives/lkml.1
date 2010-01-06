@@ -1,178 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756246Ab0AFUWW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756256Ab0AFUWz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756246Ab0AFUWW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 15:22:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756224Ab0AFUWU
+	id S1756256Ab0AFUWz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 15:22:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756242Ab0AFUWx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 15:22:20 -0500
-Received: from mail-fx0-f225.google.com ([209.85.220.225]:49234 "EHLO
-	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756214Ab0AFUWT (ORCPT
+	Wed, 6 Jan 2010 15:22:53 -0500
+Received: from vms173007pub.verizon.net ([206.46.173.7]:18157 "EHLO
+	vms173007pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756222Ab0AFUWw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 15:22:19 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=Pkr3apjTOzTE6LBM3oa5LvDQHkYM1iG1X0tenBX2/G/dFQzKbv4MSze5BJ/ITX0CIi
-         pqYQXmoZHLqFlC4c7wyLouslEIyBbngNZQuZ6RHV8eLqXjaATxGEz2s9svyL8HsJ3fQ1
-         MqsbhBmGT1pP+LoCh17yHv/h5vurg+qjLmJeo=
-Date: Wed, 6 Jan 2010 21:22:12 +0100
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: Michael Breuer <mbreuer@majjas.com>
-Cc: David Miller <davem@davemloft.net>, shemminger@linux-foundation.org,
-       akpm@linux-foundation.org, flyboy@gmail.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH] af_packet: Don't use skb after dev_queue_xmit()
-Message-ID: <20100106202212.GB3354@del.dom.local>
-References: <20100105230746.GA6612@del.dom.local>
- <4B43F72C.9090004@majjas.com>
- <20100106072208.GA6711@ff.dom.local>
- <4B44E952.5000804@majjas.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B44E952.5000804@majjas.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Wed, 6 Jan 2010 15:22:52 -0500
+Date: Wed, 06 Jan 2010 15:22:30 -0500 (EST)
+From: Len Brown <lenb@kernel.org>
+X-X-Sender: lenb@localhost.localdomain
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: Arjan van de Ven <arjan@infradead.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       Christian Hofstaedtler <ch@zeha.at>, x86@kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       bruce.w.allan@intel.com, Thomas Gleixner <tglx@linutronix.de>,
+       Justin Piszcz <jpiszcz@lucidpixels.com>, linux-acpi@vger.kernel.org,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Subject: Re: [PATCH] Add DMI quirk for Intel DP55KG mainboard
+In-reply-to: <20100106193608.GA21447@srcf.ucam.org>
+Message-id: <alpine.LFD.2.00.1001061504110.4086@localhost.localdomain>
+References: <20100104162114.GA30113@percival.namespace.at>
+ <alpine.LFD.2.00.1001041209300.4012@localhost.localdomain>
+ <4B4225B3.8070705@zytor.com> <20100104174558.158cd512@infradead.org>
+ <20100106143640.GB13984@srcf.ucam.org>
+ <alpine.LFD.2.00.1001061321260.4086@localhost.localdomain>
+ <20100106193608.GA21447@srcf.ucam.org>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 06, 2010 at 02:49:38PM -0500, Michael Breuer wrote:
-> On 1/6/2010 2:22 AM, Jarek Poplawski wrote:
-> >On Tue, Jan 05, 2010 at 09:36:28PM -0500, Michael Breuer wrote:
-> >>On 1/5/2010 6:07 PM, Jarek Poplawski wrote:
-> >>>David Miller wrote, On 12/27/2009 05:11 AM:
-> >>>
-> >>>
-> >>>>From: David Miller<davem@davemloft.net>
-> >>>>Date: Sat, 26 Dec 2009 19:44:18 -0800 (PST)
-> >>>>
-> >>>>
-> >>>>>From: Stephen Hemminger<shemminger@linux-foundation.org>
-> >>>>>Date: Sat, 26 Dec 2009 14:05:44 -0800
-> >>>>>
-> >>>>>
-> >>>>>>Other drivers may have same problem, I really think this ought
-> >>>>>>to be done at higher level.
-> >>>>>>
-> >>>>>I tend to agree with you, and I thought we had handled all
-> >>>>>cases.  Let's simply make AF_PACKET linearize the link
-> >>>>>level header before sending things out to the transmit path.
-> >>>>>
-> >>>>>I can work on this if you want.
-> >>>>>
-> >>>>Actually Stephen, I took a look and I can't see how AF_PACKET
-> >>>>can create this situation.
-> >>>>
-> >>>>It always copies into the linear area of the SKB it allocates
-> >>>>for sendmsg() processing.  Whether the data comes from sendmsg
-> >>>>data or the mmap() ring buffer.
-> >>>>
-> >>>Actually, I think there is a bug in this place, but of course this
-> >>>might be unconnected. Anyway, Michael, could you try this patch?
-> >>>BTW, did you try with CONFIG_PACKET_MMAP disabled?
-> >>>
-> >>>Thanks,
-> >>>Jarek P.
-> >>>----------------->
-> >>>
-> >>>Changing an skb after dev_queue_xmit() is illegal. And since it's
-> >>>inconsistent to treat specially net_xmit_errno() non-zero return,
-> >>>while ignoring other dev_queue_xmit() errors, there is no reason
-> >>>to break the loop in tpacket_snd() in this case.
-> >>>
-> >>>With debugging by: Stephen Hemminger<shemminger@linux-foundation.org>
-> >>>
-> >>>Reported-by: Michael Breuer<mbreuer@majjas.com>
-> >>>Signed-off-by: Jarek Poplawski<jarkao2@gmail.com>
-> >>>---
-> >>>
-> >>>   net/packet/af_packet.c |    8 +++-----
-> >>>   1 files changed, 3 insertions(+), 5 deletions(-)
-> >>>
-> >>>diff --git a/net/packet/af_packet.c b/net/packet/af_packet.c
-> >>>index e0516a2..984a1fa 100644
-> >>>--- a/net/packet/af_packet.c
-> >>>+++ b/net/packet/af_packet.c
-> >>>@@ -1021,8 +1021,9 @@ static int tpacket_snd(struct packet_sock *po, struct msghdr *msg)
-> >>>
-> >>>   		status = TP_STATUS_SEND_REQUEST;
-> >>>   		err = dev_queue_xmit(skb);
-> >>>-		if (unlikely(err>   0&&   (err = net_xmit_errno(err)) != 0))
-> >>>-			goto out_xmit;
-> >>>+		if (unlikely(err>   0))
-> >>>+			err = net_xmit_errno(err);
-> >>>+
-> >>>   		packet_increment_head(&po->tx_ring);
-> >>>   		len_sum += tp_len;
-> >>>   	} while (likely((ph != NULL) ||
-> >>>@@ -1033,9 +1034,6 @@ static int tpacket_snd(struct packet_sock *po, struct msghdr *msg)
-> >>>   	err = len_sum;
-> >>>   	goto out_put;
-> >>>
-> >>>-out_xmit:
-> >>>-	skb->destructor = sock_wfree;
-> >>>-	atomic_dec(&po->tx_ring.pending);
-> >>>   out_status:
-> >>>   	__packet_set_status(po, ph, status);
-> >>>   	kfree_skb(skb);
-> >>>--
-> >>>To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> >>>the body of a message to majordomo@vger.kernel.org
-> >>>More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> >>>Please read the FAQ at  http://www.tux.org/lkml/
-> >>>
-> >>This patch solves the original reported oops - as did Steven's patch of
-> >>12/26: [PATCH] sky2: make sure ethernet header is in transmit skb (I ran
-> >>without Steven's patch and with this patch).
-> >>
-> >>Oddly, with this patch vs. Steven's - I'm getting software interrupt
-> >>errors sporadically while not under load - with Steven's I get the
-> >>frequently while under load (as per nethogs). For example:
-> >>Jan  5 21:29:00 mail kernel: sky2 0000:06:00.0: error interrupt
-> >>status=0x40000008
-> >>Jan  5 21:29:00 mail kernel: sky2 software interrupt status 0x40000008
-> >>Jan  5 21:29:00 mail kernel: sky2 Tx ring pending=124...125 report=125
-> >>done=125
-> >>Jan  5 21:29:00 mail kernel: 124: 0xb38de0be(5374)
-> >>Jan  5 21:29:00 mail kernel: sky2 0000:06:00.0: error interrupt status=0x8
-> >>Jan  5 21:29:00 mail kernel: sky2 software interrupt status 0x8
-> >>Jan  5 21:29:00 mail kernel: sky2 Tx ring pending=126...127 report=126
-> >>done=127
-> >>Jan  5 21:29:00 mail kernel: 126: 0xb38d80be(9014)
-> >>
-> >>I also believe (can't prove yet) that my load test is slower with this
-> >>patch vs. the sky2 patch.
-> >>
-> >>Is it possible that this patch is causing the transmission to
-> >>momentarily halt such that the overall utilization appears low at the
-> >>time I see the interrupt errors, vs. the other patch which perhaps
-> >>doesn't interrupt the traffic flow quite so much?
-> >Yes, without this patch xmit could be stopped earlier on some kind of
-> >errors, with retransmit of the last message possible. On the other
-> >hand, other dev_queue_xmit() (negative) errors, are ignored. So this
-> >place could be still improved by adding proper err handling (or
-> >removing getting err return from dev_queue_xmit() at all).
-> >
-> >Anyway, I think this patch should be a safe proposal for stable. If
-> >so, David, please add Michael's "Tested-by".
-> >
-> >>I haven't run yet with CONFIG_PACKET_MMAP disabled.
-> >>
-> >This should behave similarly as MMAP with this patch or maybe even
-> >better in case of errors.
-> >
-> >Thanks,
-> >Jarek P.
-> This patch at first behaved similarly to the previous one - seemed
-> to be running a bit better... until the adapter went down :(
+> > using _OSI is not "a similar method to Windows".
+> > The BIOS does not need to invoke _OSI to determine if
+> > it should expose a properly functioning ACPI reset or not.
+> > Windows XP simply demanded it, and the box failed WHQL
+> > if it did not work.
+> 
+> http://download.microsoft.com/download/7/E/7/7E7662CF-CBEA-470B-A97E-CE7CE0D98DC2/WinACPI_OSI.docx 
+> was what I was referring to:
+> 
+> "By using the _OSI method, ASL writers can easily determine the version 
+> of the ACPI interfaces that the host operating system supports. This 
+> versioning method provides a solution for creating firmware that can 
+> support future operating systems and enable the operating system to 
+> change behavior based on the requested interface levels."
+> 
+> We know that this is used for deciding whether or not to block system IO 
+> accesses, but it wouldn't surprise me if it's also used to determine 
+> other functionality like whether or not the ACPI interface is used for 
+> rebooting.
 
-I'm not sure: do you mean this patch above vs previous one by Stephen,
-or did you manage to try my "alernative #2" patch already?
+I've looked at _OSI use in over a hundred DSDTs and never
+seen run-time re-configuration of reset support.
 
-BTW, I forgot to mention, and maybe it doesn't matter here, but it
-would be better to (always) use my sky2 patch from Berck Nash's
-thread.
+I do not think the BIOS has a run-time decision to make here.
+If a box is designed to support Windows XP and newer, it is
+likely that ACPI_RESET is simply valid and XP blindly uses it.
+If reset fails, the box doesn't pass WHQL and the box is fixed.
+If W2K is run on that box, ACPI_RESET is still valid, just that
+W2K chooses to not write to it.
 
-Jarek P.
+> > Further, there is no _guarantee_ that a BIOS will invoke _OSI
+> > at all, let alone a _rule_ for what _OSI() strings the BIOS
+> > will choose to query to trigger its Windows specific
+> > compatibility hooks -- even if common practice is for
+> > a desktop BIOS to evaluate _OSI strings in sequence
+> > up throught he most recent version of Windows it
+> > knows about...
+> 
+> It's effectively guaranteed if the system is validated with Windows.
+
+today's common industry practice != future guarantee
+
+We can't rely on blind use of _OSI to mean "new enough", since
+it was supported back in W2K era.  That means we have to parse
+the OSI strings.  But what happens when a BIOS writer decides to
+evaluate _OSI("Windows Future") without evaluating any of the
+old strings we know about?  We would disable ACPI reset on such
+a future box?
+
+thanks,
+-Len
+
