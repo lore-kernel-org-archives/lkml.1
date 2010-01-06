@@ -1,53 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756215Ab0AFVc2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932869Ab0AFVdG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756215Ab0AFVc2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 16:32:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756025Ab0AFVc1
+	id S932869Ab0AFVdG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 16:33:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756130Ab0AFVdB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 16:32:27 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:37325 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932759Ab0AFVcX (ORCPT
+	Wed, 6 Jan 2010 16:33:01 -0500
+Received: from mta2.srv.hcvlny.cv.net ([167.206.4.197]:41719 "EHLO
+	mta2.srv.hcvlny.cv.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756025Ab0AFVdB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 16:32:23 -0500
-Message-ID: <4B45001E.7000404@zytor.com>
-Date: Wed, 06 Jan 2010 13:26:54 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
-MIME-Version: 1.0
-To: Len Brown <lenb@kernel.org>
-CC: Matthew Garrett <mjg59@srcf.ucam.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Christian Hofstaedtler <ch@zeha.at>, x86@kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       bruce.w.allan@intel.com, Thomas Gleixner <tglx@linutronix.de>,
-       Justin Piszcz <jpiszcz@lucidpixels.com>, linux-acpi@vger.kernel.org,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Subject: Re: [PATCH] Add DMI quirk for Intel DP55KG mainboard
-References: <20100104162114.GA30113@percival.namespace.at> <alpine.LFD.2.00.1001041209300.4012@localhost.localdomain> <4B4225B3.8070705@zytor.com> <20100104174558.158cd512@infradead.org> <20100106143640.GB13984@srcf.ucam.org> <alpine.LFD.2.00.1001061321260.4086@localhost.localdomain> <20100106193608.GA21447@srcf.ucam.org> <alpine.LFD.2.00.1001061504110.4086@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.1001061504110.4086@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 6 Jan 2010 16:33:01 -0500
+Date: Wed, 06 Jan 2010 16:32:15 -0500
+From: Michael Breuer <mbreuer@majjas.com>
+Subject: Re: [PATCH] af_packet: Don't use skb after dev_queue_xmit()
+In-reply-to: <20100106210941.GC3354@del.dom.local>
+To: Jarek Poplawski <jarkao2@gmail.com>
+Cc: David Miller <davem@davemloft.net>, shemminger@linux-foundation.org,
+       akpm@linux-foundation.org, flyboy@gmail.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Message-id: <4B45015F.4090506@majjas.com>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7BIT
+References: <20100105230746.GA6612@del.dom.local> <4B43F72C.9090004@majjas.com>
+ <20100106072208.GA6711@ff.dom.local> <4B44E952.5000804@majjas.com>
+ <20100106202212.GB3354@del.dom.local> <4B44F381.3000206@majjas.com>
+ <20100106210941.GC3354@del.dom.local>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.5)
+ Gecko/20091204 Lightning/1.0b2pre Thunderbird/3.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/06/2010 12:22 PM, Len Brown wrote:
->>
->> It's effectively guaranteed if the system is validated with Windows.
-> 
-> today's common industry practice != future guarantee
-> 
-> We can't rely on blind use of _OSI to mean "new enough", since
-> it was supported back in W2K era.  That means we have to parse
-> the OSI strings.  But what happens when a BIOS writer decides to
-> evaluate _OSI("Windows Future") without evaluating any of the
-> old strings we know about?  We would disable ACPI reset on such
-> a future box?
-> 
-
-What about using _OSI() with a *blacklist*, i.e. treat _OSI("Unknown
-String") as "new enough", whereas _OSI("Windows 2000") is ignored?
-
-	-hpa
-
+On 1/6/2010 4:09 PM, Jarek Poplawski wrote:
+> On Wed, Jan 06, 2010 at 03:33:05PM -0500, Michael Breuer wrote:
+>    
+>> On 1/6/2010 3:22 PM, Jarek Poplawski wrote:
+>>      
+>>> On Wed, Jan 06, 2010 at 02:49:38PM -0500, Michael Breuer wrote:
+>>>        
+>>>> On 1/6/2010 2:22 AM, Jarek Poplawski wrote:
+>>>>          
+>>>>> On Tue, Jan 05, 2010 at 09:36:28PM -0500, Michael Breuer wrote:
+>>>>>            
+>>>>>> On 1/5/2010 6:07 PM, Jarek Poplawski wrote:
+>>>>>>              
+>>>>>>> ----------------->
+>>>>>>>
+>>>>>>> Changing an skb after dev_queue_xmit() is illegal. And since it's
+>>>>>>> inconsistent to treat specially net_xmit_errno() non-zero return,
+>>>>>>> while ignoring other dev_queue_xmit() errors, there is no reason
+>>>>>>> to break the loop in tpacket_snd() in this case.
+>>>>>>>
+>>>>>>> With debugging by: Stephen Hemminger<shemminger@linux-foundation.org>
+>>>>>>>
+>>>>>>> Reported-by: Michael Breuer<mbreuer@majjas.com>
+>>>>>>> Signed-off-by: Jarek Poplawski<jarkao2@gmail.com>
+>>>>>>> ---
+>>>>>>>
+>>>>>>>    net/packet/af_packet.c |    8 +++-----
+>>>>>>>    1 files changed, 3 insertions(+), 5 deletions(-)
+>>>>>>>
+>>>>>>> diff --git a/net/packet/af_packet.c b/net/packet/af_packet.c
+>>>>>>> index e0516a2..984a1fa 100644
+>>>>>>> --- a/net/packet/af_packet.c
+>>>>>>> +++ b/net/packet/af_packet.c
+>>>>>>> @@ -1021,8 +1021,9 @@ static int tpacket_snd(struct packet_sock *po, struct msghdr *msg)
+>>>>>>>
+>>>>>>>    		status = TP_STATUS_SEND_REQUEST;
+>>>>>>>    		err = dev_queue_xmit(skb);
+>>>>>>> -		if (unlikely(err>     0&&     (err = net_xmit_errno(err)) != 0))
+>>>>>>> -			goto out_xmit;
+>>>>>>> +		if (unlikely(err>     0))
+>>>>>>> +			err = net_xmit_errno(err);
+>>>>>>> +
+>>>>>>>    		packet_increment_head(&po->tx_ring);
+>>>>>>>    		len_sum += tp_len;
+>>>>>>>    	} while (likely((ph != NULL) ||
+>>>>>>> @@ -1033,9 +1034,6 @@ static int tpacket_snd(struct packet_sock *po, struct msghdr *msg)
+>>>>>>>    	err = len_sum;
+>>>>>>>    	goto out_put;
+>>>>>>>
+>>>>>>> -out_xmit:
+>>>>>>> -	skb->destructor = sock_wfree;
+>>>>>>> -	atomic_dec(&po->tx_ring.pending);
+>>>>>>>    out_status:
+>>>>>>>    	__packet_set_status(po, ph, status);
+>>>>>>>    	kfree_skb(skb);
+>>>>>>> --
+>>>>>>>                
+> ...
+>    
+>>>> This patch at first behaved similarly to the previous one - seemed
+>>>> to be running a bit better... until the adapter went down :(
+>>>>          
+>>> I'm not sure: do you mean this patch above vs previous one by Stephen,
+>>> or did you manage to try my "alernative #2" patch already?
+>>>
+>>> BTW, I forgot to mention, and maybe it doesn't matter here, but it
+>>> would be better to (always) use my sky2 patch from Berck Nash's
+>>> thread.
+>>>
+>>> Jarek P.
+>>>        
+>> This was using "alternative #2" patch. I didn't get the hang with
+>> alternative #1. Your sky2 patch from Berck Nash's thread was
+>> included in both cases; Stephen's was not.
+>>      
+> OK, so I guess "alternative #1" (above) seems safer to recommend for
+> now (as I assumed earlier).
+>
+> On the other hand, we really don't know if it's only because it's
+> because it's nicer for your hardware (or still some other bug around),
+> so as before: let David choose ;-)
+>
+> BTW, I think you could still use Stephen's patch too (there might be
+> still something more like this). There was also mentioned this network
+> manager again. I might be wrong, but IMHO there could be some
+> interaction even if it doesn't use this device; so could/did you try
+> to disable it entirely?
+>
+> Thanks for testing!
+> Jarek P.
+>
+>
+>    
+Just reran without the network manager - no change. Going to rerun with 
+Stephen's new patch, alternative #1, and the patch from Berck Nash's thread.
