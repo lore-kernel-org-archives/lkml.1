@@ -1,46 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755434Ab0AFHIe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755447Ab0AFHIl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755434Ab0AFHIe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 02:08:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751679Ab0AFHIa
+	id S1755447Ab0AFHIl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 02:08:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751369Ab0AFHIh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 02:08:30 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:34297 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751998Ab0AFHI3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 02:08:29 -0500
-Date: Wed, 6 Jan 2010 08:08:07 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Huang Ying <ying.huang@intel.com>
-Cc: lenb@kernel.org, ak@linux.intel.com, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org
-Subject: Re: [PATCH 4/5] ACPI, APEI, EINJ support
-Message-ID: <20100106070807.GA1494@ucw.cz>
-References: <1261980744-4450-1-git-send-email-ying.huang@intel.com> <1261980744-4450-2-git-send-email-ying.huang@intel.com> <1261980744-4450-3-git-send-email-ying.huang@intel.com> <1261980744-4450-4-git-send-email-ying.huang@intel.com> <1261980744-4450-5-git-send-email-ying.huang@intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1261980744-4450-5-git-send-email-ying.huang@intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 6 Jan 2010 02:08:37 -0500
+Received: from mga11.intel.com ([192.55.52.93]:7804 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754824Ab0AFHIe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jan 2010 02:08:34 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,225,1262592000"; 
+   d="scan'208";a="528855138"
+Subject: Re: tbench regression with 2.6.33-rc1
+From: Lin Ming <ming.m.lin@intel.com>
+To: Mike Galbraith <efault@gmx.de>
+Cc: "peterz@infradead.org" <peterz@infradead.org>,
+       "mingo@elte.hu" <mingo@elte.hu>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+In-Reply-To: <1262757307.32058.0.camel@minggr.sh.intel.com>
+References: <1261739467.10685.18.camel@minggr.sh.intel.com>
+	 <1261902760.6201.33.camel@marge.simson.net>
+	 <1262052582.10685.59.camel@minggr.sh.intel.com>
+	 <1262064292.6412.30.camel@marge.simson.net>
+	 <1262063959.13697.6.camel@minggr.sh.intel.com>
+	 <1262065745.17082.0.camel@marge.simson.net>
+	 <1262757688.6007.5.camel@marge.simson.net>
+	 <1262757307.32058.0.camel@minggr.sh.intel.com>
+Content-Type: text/plain
+Date: Wed, 06 Jan 2010 14:52:54 +0800
+Message-Id: <1262760774.32058.2.camel@minggr.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 (2.24.1-2.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 2009-12-28 14:12:23, Huang Ying wrote:
-> EINJ provides a hardware error injection mechanism, this is useful for
-> debugging and testing of other APEI and RAS features.
+On Wed, 2010-01-06 at 13:55 +0800, Lin Ming wrote:
+> On Wed, 2010-01-06 at 14:01 +0800, Mike Galbraith wrote:
+> > Hi,
+> > 
+> > Have you tried tbench with the vmark regression fix?  If not, mind
+> > giving it a shot?
+
+I just test the patch with 2.6.33-rc2, but no help.
+Still ~4% regression compared to 2.6.32.
+
+Lin Ming
+
 > 
-> Signed-off-by: Huang Ying <ying.huang@intel.com>
-> ---
->  drivers/acpi/apei/Kconfig  |    7 +
->  drivers/acpi/apei/Makefile |    1 +
->  drivers/acpi/apei/einj.c   |  471 ++++++++++++++++++++++++++++++++++++++++++++
+> OK. I'll test soon.
+> 
+> > 
+> > 	-Mike
+> > 
 
-
-Can we get more meaningfull name? err_inject.c?
-								Pavel
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
