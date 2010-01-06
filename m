@@ -1,89 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932631Ab0AFS5n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932637Ab0AFTEL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932631Ab0AFS5n (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 13:57:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932416Ab0AFS5m
+	id S932637Ab0AFTEL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 14:04:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932620Ab0AFTEK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 13:57:42 -0500
-Received: from mga11.intel.com ([192.55.52.93]:31671 "EHLO mga11.intel.com"
+	Wed, 6 Jan 2010 14:04:10 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:1865 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932243Ab0AFS5l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 13:57:41 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,230,1262592000"; 
-   d="scan'208";a="761899559"
-Subject: [patch] x86, irq: check move_in_progress before freeing the vector
- mapping
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-Reply-To: Suresh Siddha <suresh.b.siddha@intel.com>
-To: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, Gary Hade <garyhade@us.ibm.com>,
-       "ebiederm@xmission.com" <ebiederm@xmission.com>
-Content-Type: text/plain
-Organization: Intel Corp
-Date: Wed, 06 Jan 2010 10:56:31 -0800
-Message-Id: <1262804191.2732.7.camel@sbs-t61.sc.intel.com>
+	id S932494Ab0AFTEJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jan 2010 14:04:09 -0500
+Date: Wed, 6 Jan 2010 13:04:00 -0600
+From: Clark Williams <williams@redhat.com>
+To: RT <linux-rt-users@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: [RFC] [rt-tests] change to cyclictest behavior
+Message-ID: <20100106130400.7f30ae55@torg>
+Organization: Red Hat, Inc
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=PGP-SHA1;
+ boundary="Sig_/SJyudqVlUyknBmoKuo3cu9t"; protocol="application/pgp-signature"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-x86 folks, please queue this fix for 2.6.33.
+--Sig_/SJyudqVlUyknBmoKuo3cu9t
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-thanks,
-suresh
----
+RT-ers,
 
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: [patch] x86, irq: check move_in_progress before freeing the vector mapping
+I have a problem with the way cyclictest sets up measurement threads,
+but before I went and changed things I thought I would ask if people
+cherished this particular behavior.=20
 
-With the recent irq migration fixes (post 2.6.32), Gary Hade has noticed
-"No IRQ handler for vector" messages during the 2.6.33-rc1 kernel boot on IBM
-AMD platforms and root caused the issue to this commit:
+Currently, when cyclictest is run with multiple threads (i.e. -t
+option) it distributes both the sample interval and the realtime
+priority by adding the 'distance' parameter to the interval and
+decrementing the priority by one. This means if you have a distance of
+500us (default), a specified RT priority of 95 and start four threads,
+they will be started with the following parameters:
 
-> commit 23359a88e7eca3c4f402562b102f23014db3c2aa
-> Author: Suresh Siddha <suresh.b.siddha@intel.com>
-> Date:   Mon Oct 26 14:24:33 2009 -0800
->
->    x86: Remove move_cleanup_count from irq_cfg
+$ cyclictest -t4 -p95
 
-As part of this patch, we have removed the move_cleanup_count check
-in smp_irq_move_cleanup_interrupt(). With this change, we can run into a
-situation where an irq cleanup interrupt on a cpu can cleanup the vector
-mappings associated with multiple irqs, of which one of the irq's migration
-might be still in progress. As such when that irq hits the old cpu, we get
-the "No IRQ handler" messages.
+Will give you:
 
-Fix this by checking for the irq_cfg's move_in_progress and if the move
-is still in progress delay the vector cleanup to another irq cleanup
-interrupt request (which will happen when the irq starts arriving at the
-new cpu destination).
+thread		priority	sample interval
+0		95		500
+1		94		1000
+2		93		1500
+3		92		2000
 
-Reported-and-tested-by: Gary Hade <garyhade@us.ibm.com>
-Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: Eric W. Biederman <ebiederm@xmission.com>
----
+What I'd like to do is modify this logic so that when '-a' (affinity) is
+specified, the priority and sample interval will not be altered. I
+don't think there's any point in distributing the priority's and
+sample intervals when the measurement threads are pinned to their own
+CPU.=20
 
-diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
-index de00c46..53243ca 100644
---- a/arch/x86/kernel/apic/io_apic.c
-+++ b/arch/x86/kernel/apic/io_apic.c
-@@ -2434,6 +2434,13 @@ asmlinkage void smp_irq_move_cleanup_interrupt(void)
- 		cfg = irq_cfg(irq);
- 		raw_spin_lock(&desc->lock);
- 
-+		/*
-+		 * Check if the irq migration is in progress. If so, we
-+		 * haven't received the cleanup request yet for this irq.
-+		 */
-+		if (cfg->move_in_progress)
-+			goto unlock;
-+
- 		if (vector == cfg->vector && cpumask_test_cpu(me, cfg->domain))
- 			goto unlock;
- 
+So:
 
+$ cyclictest -t4 -p95 -a
 
+Would have each thread at SCHED_FIFO 95 and a sample interval of 500us.
+
+Note that this behavior also occurs when the histogram (-h) option is
+specified).
+
+Thoughts?
+
+Clark
+
+--Sig_/SJyudqVlUyknBmoKuo3cu9t
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.12 (GNU/Linux)
+
+iEYEARECAAYFAktE3qYACgkQHyuj/+TTEp0WHACfT3omcXL1B3L7zbgH+9fluw+H
+/ZEAoMbgZb2cCe2HwhLnunUiYLbSO3VB
+=FpyC
+-----END PGP SIGNATURE-----
+
+--Sig_/SJyudqVlUyknBmoKuo3cu9t--
