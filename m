@@ -1,37 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755834Ab0AFJwK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932150Ab0AFKBI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755834Ab0AFJwK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 04:52:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755773Ab0AFJwF
+	id S932150Ab0AFKBI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 05:01:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932115Ab0AFKBH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 04:52:05 -0500
-Received: from cantor.suse.de ([195.135.220.2]:59037 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755744Ab0AFJwA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 04:52:00 -0500
-Message-ID: <4B445D3E.8080600@suse.cz>
-Date: Wed, 06 Jan 2010 10:51:58 +0100
-From: Michal Marek <mmarek@suse.cz>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.2 Thunderbird/3.0
-MIME-Version: 1.0
-To: Eric Miao <eric.y.miao@gmail.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] kbuild: include only necessary in scripts/Makefile.modbuiltin
-References: <f17812d71001052226y604995a0m4c7887d29fd73f90@mail.gmail.com>
-In-Reply-To: <f17812d71001052226y604995a0m4c7887d29fd73f90@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Wed, 6 Jan 2010 05:01:07 -0500
+Received: from devils.ext.ti.com ([198.47.26.153]:58730 "EHLO
+	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932097Ab0AFKBF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jan 2010 05:01:05 -0500
+From: Chaithrika U S <chaithrika@ti.com>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, davinci-linux-open-source@linux.davincidsp.com,
+       khilman@deeprootsystems.com, Chaithrika U S <chaithrika@ti.com>
+Subject: [PATCH  v2 2/2] davinci: MMC: updates to suspend/resume implementation
+Date: Wed,  6 Jan 2010 15:04:49 +0530
+Message-Id: <1262770489-9486-2-git-send-email-chaithrika@ti.com>
+X-Mailer: git-send-email 1.5.6
+In-Reply-To: <1262770489-9486-1-git-send-email-chaithrika@ti.com>
+References: <1262770489-9486-1-git-send-email-chaithrika@ti.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 6.1.2010 07:26, Eric Miao wrote:
-> scripts/Makefile.modbuiltin assumes either Kbuild or Makefile exists in
-> every sub-directory, which is not true.
+Improve the suspend and resume callbacks in DaVinci MMC
+host controller driver.
 
-It assumes what there is a kbuild file in each directory listed in
-subdir-[ym] or obj-[ym]. For which directory is this not true? Did you
-see an actual build failure? The same include is used in
-scripts/Makefile.build, where it has been working fine for ages...
+Tested on DA850/OMAP-L138 EVM. This testing requires patches
+which add suspen-to-RAM support to DA850/OMAP-L138 SoC[1].
 
-Michal
+[1]http://linux.davincidsp.com/pipermail/davinci-linux-open-source/
+2009-September/016118.html
+
+Signed-off-by: Chaithrika U S <chaithrika@ti.com>
+---
+Applies to Linus' kernel tree.
+
+ drivers/mmc/host/davinci_mmc.c |   51 +++++++++++++++++++++++++++++++++------
+ 1 files changed, 43 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/mmc/host/davinci_mmc.c b/drivers/mmc/host/davinci_mmc.c
+index 25645bf..d60f648 100644
+--- a/drivers/mmc/host/davinci_mmc.c
++++ b/drivers/mmc/host/davinci_mmc.c
+@@ -170,6 +170,7 @@ struct mmc_davinci_host {
+ #define DAVINCI_MMC_DATADIR_READ	1
+ #define DAVINCI_MMC_DATADIR_WRITE	2
+ 	unsigned char data_dir;
++	unsigned char suspended;
+ 
+ 	/* buffer is used during PIO of one scatterlist segment, and
+ 	 * is updated along with buffer_bytes_left.  bytes_left applies
+@@ -1297,32 +1298,66 @@ static int __exit davinci_mmcsd_remove(struct platform_device *pdev)
+ }
+ 
+ #ifdef CONFIG_PM
+-static int davinci_mmcsd_suspend(struct platform_device *pdev, pm_message_t msg)
++static int davinci_mmcsd_suspend(struct device *dev)
+ {
++	struct platform_device *pdev = to_platform_device(dev);
+ 	struct mmc_davinci_host *host = platform_get_drvdata(pdev);
++	struct pm_message msg = { PM_EVENT_SUSPEND };
++	int ret;
+ 
+-	return mmc_suspend_host(host->mmc, msg);
++	mmc_host_enable(host->mmc);
++	ret = mmc_suspend_host(host->mmc, msg);
++	if (!ret) {
++		writel(0, host->base + DAVINCI_MMCIM);
++		mmc_davinci_reset_ctrl(host, 1);
++		mmc_host_disable(host->mmc);
++		clk_disable(host->clk);
++		host->suspended = 1;
++	} else {
++		host->suspended = 0;
++		mmc_host_disable(host->mmc);
++	}
++
++	return ret;
+ }
+ 
+-static int davinci_mmcsd_resume(struct platform_device *pdev)
++static int davinci_mmcsd_resume(struct device *dev)
+ {
++	struct platform_device *pdev = to_platform_device(dev);
+ 	struct mmc_davinci_host *host = platform_get_drvdata(pdev);
++	int ret;
+ 
+-	return mmc_resume_host(host->mmc);
++	if (!host->suspended)
++		return 0;
++
++	clk_enable(host->clk);
++	mmc_host_enable(host->mmc);
++
++	mmc_davinci_reset_ctrl(host, 0);
++	ret = mmc_resume_host(host->mmc);
++	if (!ret)
++		host->suspended = 0;
++
++	return ret;
+ }
++
++static struct dev_pm_ops davinci_mmcsd_pm = {
++	.suspend        = davinci_mmcsd_suspend,
++	.resume         = davinci_mmcsd_resume,
++};
++
++#define davinci_mmcsd_pm_ops (&davinci_mmcsd_pm)
+ #else
+-#define davinci_mmcsd_suspend	NULL
+-#define davinci_mmcsd_resume	NULL
++#define davinci_mmcsd_pm_ops NULL
+ #endif
+ 
+ static struct platform_driver davinci_mmcsd_driver = {
+ 	.driver		= {
+ 		.name	= "davinci_mmc",
+ 		.owner	= THIS_MODULE,
++		.pm	= davinci_mmcsd_pm_ops,
+ 	},
+ 	.remove		= __exit_p(davinci_mmcsd_remove),
+-	.suspend	= davinci_mmcsd_suspend,
+-	.resume		= davinci_mmcsd_resume,
+ };
+ 
+ static int __init davinci_mmcsd_init(void)
+-- 
+1.5.6
+
