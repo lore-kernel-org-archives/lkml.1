@@ -1,66 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932753Ab0AFUa1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756263Ab0AFUaj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932753Ab0AFUa1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 15:30:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932580Ab0AFUa0
+	id S1756263Ab0AFUaj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 15:30:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756032Ab0AFUag
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 15:30:26 -0500
-Received: from cavan.codon.org.uk ([93.93.128.6]:50221 "EHLO
-	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932554Ab0AFUaZ (ORCPT
+	Wed, 6 Jan 2010 15:30:36 -0500
+Received: from mail-fx0-f225.google.com ([209.85.220.225]:57534 "EHLO
+	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932740Ab0AFUab (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 15:30:25 -0500
-Date: Wed, 6 Jan 2010 20:29:18 +0000
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Len Brown <lenb@kernel.org>
-Cc: Arjan van de Ven <arjan@infradead.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Christian Hofstaedtler <ch@zeha.at>, x86@kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       bruce.w.allan@intel.com, Thomas Gleixner <tglx@linutronix.de>,
-       Justin Piszcz <jpiszcz@lucidpixels.com>, linux-acpi@vger.kernel.org,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Subject: Re: [PATCH] Add DMI quirk for Intel DP55KG mainboard
-Message-ID: <20100106202918.GA22957@srcf.ucam.org>
-References: <20100104162114.GA30113@percival.namespace.at> <alpine.LFD.2.00.1001041209300.4012@localhost.localdomain> <4B4225B3.8070705@zytor.com> <20100104174558.158cd512@infradead.org> <20100106143640.GB13984@srcf.ucam.org> <alpine.LFD.2.00.1001061321260.4086@localhost.localdomain> <20100106193608.GA21447@srcf.ucam.org> <alpine.LFD.2.00.1001061504110.4086@localhost.localdomain>
+	Wed, 6 Jan 2010 15:30:31 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=Ph4a1MIXAvuVX43yYMY7kMdqxQAYWr1sR/70KYdFwI2kEcBAfvGPGHxABcSororLPT
+         c3hut8XPvb3j9ARbqJKyZCkP9x9m08b70oiPi7xgvmqfY4E3A6k3KMMfEQCu72vHEeBG
+         12dviCZd9ms75Sytt82nPJg4g8qxbq8cS2XyI=
+Message-ID: <4B44F2E4.9010900@gmail.com>
+Date: Wed, 06 Jan 2010 21:30:28 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-16.1 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.1001061504110.4086@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@cavan.codon.org.uk
-X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
+To: "John W. Linville" <linville@tuxdriver.com>
+CC: linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] net: wireless, fix lock imbalance
+References: <1262795743-15009-1-git-send-email-jslaby@suse.cz> <20100106195503.GB2870@tuxdriver.com>
+In-Reply-To: <20100106195503.GB2870@tuxdriver.com>
+X-Enigmail-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 06, 2010 at 03:22:30PM -0500, Len Brown wrote:
+On 01/06/2010 08:55 PM, John W. Linville wrote:
+> On Wed, Jan 06, 2010 at 05:35:42PM +0100, Jiri Slaby wrote:
+>> One fail path in cfg80211_wext_siwscan omits to unlock rdev->mtx.
+>> Fix that.
+>>
+>> Trigerrable by "Scan for SSID" with long enough SSID (> 32).
+>>
+>> Signed-off-by: Jiri Slaby <jslaby@suse.cz>
+> 
+> Both this and the next one are already fixed in wireless-2.6...
 
-> I've looked at _OSI use in over a hundred DSDTs and never
-> seen run-time re-configuration of reset support.
-
-The point isn't that the firmware changes its behaviour - the point is 
-that the OS does.
-
-> I do not think the BIOS has a run-time decision to make here.
-> If a box is designed to support Windows XP and newer, it is
-> likely that ACPI_RESET is simply valid and XP blindly uses it.
-> If reset fails, the box doesn't pass WHQL and the box is fixed.
-> If W2K is run on that box, ACPI_RESET is still valid, just that
-> W2K chooses to not write to it.
-
-And if ACPI_RESET is set but untested (because 2000 never used it)?
-
-> We can't rely on blind use of _OSI to mean "new enough", since
-> it was supported back in W2K era.  That means we have to parse
-> the OSI strings.  But what happens when a BIOS writer decides to
-> evaluate _OSI("Windows Future") without evaluating any of the
-> old strings we know about?  We would disable ACPI reset on such
-> a future box?
-
-Potentially, yes. But since such a machine would clearly expect to be 
-treated as "Windows Future", we'd be running it in an untested 
-configuration anyway.
-
+Ok, thanks.
 -- 
-Matthew Garrett | mjg59@srcf.ucam.org
+js
