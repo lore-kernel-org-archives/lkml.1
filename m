@@ -1,58 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756497Ab0AFWrz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932772Ab0AFWv0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756497Ab0AFWrz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 17:47:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756480Ab0AFWry
+	id S932772Ab0AFWv0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 17:51:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932530Ab0AFWvZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 17:47:54 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:40914 "EHLO ogre.sisk.pl"
+	Wed, 6 Jan 2010 17:51:25 -0500
+Received: from toro.web-alm.net ([62.245.132.31]:52291 "EHLO toro.web-alm.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756459Ab0AFWrx convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 17:47:53 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: =?utf-8?q?Bart=C5=82omiej_Zimo=C5=84?= <uzi18@o2.pl>
-Subject: Re: [linux-pm] [suspend/resume] Re: userspace 
- =?utf-8?q?notification=09_from?= module
-Date: Wed, 6 Jan 2010 23:48:13 +0100
-User-Agent: KMail/1.12.3 (Linux/2.6.33-rc3-rjw; KDE/4.3.3; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org, aeriksson@fastmail.fm,
-       stefan.seyfried@googlemail.com, linux-pm@lists.linux-foundation.org,
-       danborkmann@googlemail.com, awalls@radix.net
-References: <1df13dac.5ba05e5c.4b43e1e2.120e@o2.pl>
-In-Reply-To: <1df13dac.5ba05e5c.4b43e1e2.120e@o2.pl>
+	id S932380Ab0AFWvZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jan 2010 17:51:25 -0500
+Message-ID: <4B4513BA.5090001@osadl.org>
+Date: Wed, 06 Jan 2010 23:50:34 +0100
+From: Carsten Emde <Carsten.Emde@osadl.org>
+Organization: Open Source Automation Development Lab (OSADL) eG
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Message-Id: <201001062348.13137.rjw@sisk.pl>
+To: Clark Williams <williams@redhat.com>
+CC: John Kacur <jkacur@redhat.com>, RT <linux-rt-users@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC] [rt-tests] change to cyclictest behavior
+References: <20100106130400.7f30ae55@torg>	<520f0cf11001061139j2af13403qfcbf567647bdfaa8@mail.gmail.com>	<4B4502FD.1000404@osadl.org>	<20100106160434.77efc790@torg>	<4B450D91.7060403@osadl.org> <20100106162759.1d4d5b57@torg>
+In-Reply-To: <20100106162759.1d4d5b57@torg>
+X-Enigmail-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 06 January 2010, Bartłomiej Zimoń wrote:
-> Dnia 6 stycznia 2010 0:05 	"Rafael J. Wysocki" <rjw@sisk.pl> napisał(a):
-> > Well, I think you have some specific issue with pm-utils, but you're not
-> > telling us what it is.  So, why exactly is pm-utils not suitable for your
-> > needs?
-> > 
-> 
-> Rafael to be honest it's more dbus specific. I'm talking about 
-> dbus as it is standard for system<->apps communication.
+Clark,
 
-That was my impression. :-)
+>> [..]
+>> May I ask you to also include the -n option which is almost always
+>> needed? This would then give:
+>> -S      --smp              Standard SMP testing (equals -a -t -n -d0),
+>>                            same priority on all threads.
+> Yeah, you read my mind. How about -m (mlockall) as well?
+Hmm, I think that this one is less obvious. Apparently, there are a
+bunch of different opinions on mlockall(). I once heard, for example,
+the opinion that mlockall() may - under some conditions - introduce a
+performance penalty, but I did not verify that. Many real-time systems
+do not have a "swap" line in /etc/fstab; mlockall() is not needed in
+such systems. In addition, most today's systems have so much RAM that
+swapping became a rather rare event. I hope some other RT-ers who are
+more knowledgeable about memory management and swapping can comment on this.
 
-Well, I don't like dbus too, but ...
+Cyclictest was in use for years, before someone introduced the -m
+option. I never used this option.
 
-> But please understand if we'll create kernel device with simple pm notification
-> It could be hooked by udev and next ... by DeviceKit-power/upower and after that
-> we have real standard. But to have this we must export "power" device - something 
-> like my proof-of-concept module. This could be realy good start.
-
-... that doesn't make me think it should be sneakily replaced with "magic"
-kernel modules or similar stuff.
-
-As I already said many times in this thread before, please look for a solution
-in the user space.
-
-Rafael
+	Carsten.
