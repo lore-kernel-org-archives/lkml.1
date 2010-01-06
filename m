@@ -1,164 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756106Ab0AFVVA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932856Ab0AFVXP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756106Ab0AFVVA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 16:21:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755945Ab0AFVU6
+	id S932856Ab0AFVXP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 16:23:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755963Ab0AFVXO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 16:20:58 -0500
-Received: from mta4.srv.hcvlny.cv.net ([167.206.4.199]:56675 "EHLO
-	mta4.srv.hcvlny.cv.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755100Ab0AFVU5 (ORCPT
+	Wed, 6 Jan 2010 16:23:14 -0500
+Received: from sj-iport-1.cisco.com ([171.71.176.70]:5452 "EHLO
+	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755945Ab0AFVXO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 16:20:57 -0500
-Date: Wed, 06 Jan 2010 16:20:06 -0500
-From: Michael Breuer <mbreuer@majjas.com>
-Subject: Re: [PATCH] af_packet: Don't use skb after dev_queue_xmit()
-In-reply-to: <20100106131044.25b4e500@nehalam>
-To: Stephen Hemminger <shemminger@linux-foundation.org>
-Cc: Jarek Poplawski <jarkao2@gmail.com>, David Miller <davem@davemloft.net>,
-       akpm@linux-foundation.org, flyboy@gmail.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Message-id: <4B44FE86.3090905@majjas.com>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7BIT
-References: <20100105230746.GA6612@del.dom.local> <4B43F72C.9090004@majjas.com>
- <20100106072208.GA6711@ff.dom.local> <4B44E952.5000804@majjas.com>
- <20100106131044.25b4e500@nehalam>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.5)
- Gecko/20091204 Lightning/1.0b2pre Thunderbird/3.0
+	Wed, 6 Jan 2010 16:23:14 -0500
+Authentication-Results: sj-iport-1.cisco.com; dkim=neutral (message not signed) header.i=none
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEAA+OREurR7Hu/2dsb2JhbAC/a5NkhDAE
+X-IronPort-AV: E=Sophos;i="4.49,231,1262563200"; 
+   d="scan'208";a="285573350"
+From: Roland Dreier <rdreier@cisco.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Bart Van Assche <bart.vanassche@gmail.com>,
+       David Dillow <dave@thedillows.org>
+Subject: Re: [PATCH] log2.h: Macro-ize is_power_of_2() for use in BUILD_BUG_ON
+References: <ada3a2jugqu.fsf@roland-alpha.cisco.com>
+	<20100106123306.ac85e557.akpm@linux-foundation.org>
+X-Message-Flag: Warning: May contain useful information
+Date: Wed, 06 Jan 2010 13:23:13 -0800
+In-Reply-To: <20100106123306.ac85e557.akpm@linux-foundation.org> (Andrew
+	Morton's message of "Wed, 6 Jan 2010 12:33:06 -0800")
+Message-ID: <ada8wcbszb2.fsf@roland-alpha.cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 06 Jan 2010 21:23:13.0546 (UTC) FILETIME=[743986A0:01CA8F16]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 1/6/2010 4:10 PM, Stephen Hemminger wrote:
-> On Wed, 06 Jan 2010 14:49:38 -0500
-> Michael Breuer<mbreuer@majjas.com>  wrote:
->
->    
->> This patch at first behaved similarly to the previous one - seemed to be
->> running a bit better... until the adapter went down :(
->>
->> This is the syslog output at the time the network failed:
->> Jan  6 14:11:01 mail kernel: sky2 0000:06:00.0: error interrupt
->> status=0x40000008
->> Jan  6 14:11:01 mail kernel: sky2 software interrupt status 0x40000008
->>      
-> Could you go back to baseline sky2 driver.  The display code might be buggy.
-> These bits indicate an error in the MAC. The interrupt source enabled
-> is Transmit FIFO underrun.
->
-> Looking at how vendor driver handles this.
-> It looks like the Yukon EC_U chip doesn't really do Jumbo frames correctly.
-> Maybe not enough internal buffering to ensure that the whole packet
-> is in the chip.  Of course, none of this is in the chip manual.
->
-> Does this help
-> --------------
-> --- a/drivers/net/sky2.c	2010-01-06 12:48:43.012318966 -0800
-> +++ b/drivers/net/sky2.c	2010-01-06 13:05:31.273987255 -0800
-> @@ -792,33 +792,21 @@ static void sky2_set_tx_stfwd(struct sky
->   {
->   	struct net_device *dev = hw->dev[port];
->
-> -	if ( (hw->chip_id == CHIP_ID_YUKON_EX&&
-> -	      hw->chip_rev != CHIP_REV_YU_EX_A0) ||
-> -	     hw->chip_id>= CHIP_ID_YUKON_FE_P) {
-> -		/* Yukon-Extreme B0 and further Extreme devices */
-> -		/* enable Store&  Forward mode for TX */
-> -
-> -		if (dev->mtu<= ETH_DATA_LEN)
-> -			sky2_write32(hw, SK_REG(port, TX_GMF_CTRL_T),
-> -				     TX_JUMBO_DIS | TX_STFW_ENA);
-> -
-> -		else
-> -			sky2_write32(hw, SK_REG(port, TX_GMF_CTRL_T),
-> -				     TX_JUMBO_ENA| TX_STFW_ENA);
-> -	} else {
-> -		if (dev->mtu<= ETH_DATA_LEN)
-> -			sky2_write32(hw, SK_REG(port, TX_GMF_CTRL_T), TX_STFW_ENA);
-> -		else {
-> -			/* set Tx GMAC FIFO Almost Empty Threshold */
-> -			sky2_write32(hw, SK_REG(port, TX_GMF_AE_THR),
-> -				     (ECU_JUMBO_WM<<  16) | ECU_AE_THR);
-> -
-> -			sky2_write32(hw, SK_REG(port, TX_GMF_CTRL_T), TX_STFW_DIS);
-> -
-> -			/* Can't do offload because of lack of store/forward */
-> -			dev->features&= ~(NETIF_F_TSO | NETIF_F_SG | NETIF_F_ALL_CSUM);
-> -		}
-> -	}
-> +       if ( (hw->chip_id == CHIP_ID_YUKON_EX&&  hw->chip_rev != CHIP_REV_YU_EX_A0) ||
-> +	    hw->chip_id>= CHIP_ID_YUKON_FE_P) {
-> +	       /* Yukon-Extreme B0 and further Extreme devices */
-> +	       /* enable Store&  Forward mode for TX */
-> +	       sky2_write32(hw, SK_REG(port, TX_GMF_CTRL_T), TX_STFW_ENA);
-> +       } else if (dev->mtu>  ETH_DATA_LEN) {
-> +	       /* set Tx GMAC FIFO Almost Empty Threshold */
-> +	       sky2_write32(hw, SK_REG(port, TX_GMF_AE_THR),
-> +			    (ECU_JUMBO_WM<<  16) | ECU_AE_THR);
-> +	       /* disable Store&  Forward mode for TX */
-> +	       sky2_write32(hw, SK_REG(port, TX_GMF_CTRL_T), TX_STFW_DIS);
-> +       } else {
-> +	       /* enable Store&  Forward mode for TX */
-> +	       sky2_write32(hw, SK_REG(port, TX_GMF_CTRL_T), TX_STFW_ENA);
-> +       }
->   }
->
->   static void sky2_mac_init(struct sky2_hw *hw, unsigned port)
-> @@ -2185,11 +2173,16 @@ static int sky2_change_mtu(struct net_de
->   	if (new_mtu<  ETH_ZLEN || new_mtu>  ETH_JUMBO_MTU)
->   		return -EINVAL;
->
-> +	/* MTU>  1500 on yukon FE and FE+ not allowed */
->   	if (new_mtu>  ETH_DATA_LEN&&
->   	(hw->chip_id == CHIP_ID_YUKON_FE ||
->   	     hw->chip_id == CHIP_ID_YUKON_FE_P))
->   		return -EINVAL;
->
-> +	/* TSO on Yukon Ultra and MTU>  1500 not supported */
-> +	if (new_mtu>  ETH_DATA_LEN&&  hw->chip_id == CHIP_ID_YUKON_EC_U)
-> +		dev->features&= ~NETIF_F_TSO;
-> +
->   	if (!netif_running(dev)) {
->   		dev->mtu = new_mtu;
->   		return 0;
-> @@ -2233,6 +2226,15 @@ static int sky2_change_mtu(struct net_de
->   	if (err)
->   		dev_close(dev);
->   	else {
-> +		/* WA for dev. #4.209 */
-> +		if (hw->chip_id == CHIP_ID_YUKON_EC_U&&
-> +		    hw->chip_rev == CHIP_REV_YU_EC_U_A1) {
-> +			/* enable/disable Store&  Forward mode for TX */
-> +			sky2_write32(hw, SK_REG(port, TX_GMF_CTRL_T),
-> +				     sky2->speed != SPEED_1000
-> +				     ? TX_STFW_ENA : TX_STFW_DIS);
-> +		}
-> +
->   		gma_write16(hw, port, GM_GP_CTRL, ctl);
->
->   		netif_wake_queue(dev);
-> --- a/drivers/net/sky2.h	2010-01-06 12:48:48.632247424 -0800
-> +++ b/drivers/net/sky2.h	2010-01-06 12:59:57.322078964 -0800
-> @@ -1901,8 +1901,8 @@ enum {
->   	TX_VLAN_TAG_ON	= 1<<25,/* enable  VLAN tagging */
->   	TX_VLAN_TAG_OFF	= 1<<24,/* disable VLAN tagging */
->
-> -	TX_JUMBO_ENA	= 1<<23,/* PCI Jumbo Mode enable (Yukon-EC Ultra) */
-> -	TX_JUMBO_DIS	= 1<<22,/* PCI Jumbo Mode enable (Yukon-EC Ultra) */
-> +	TX_PCI_JUM_ENA	= 1<<23,/* Enable  PCI Jumbo Mode (Yukon-EC Ultra) */
-> +	TX_PCI_JUM_DIS	= 1<<22,/* Disable PCI Jumbo Mode (Yukon-EC Ultra) */
->
->   	GMF_WSP_TST_ON	= 1<<18,/* Write Shadow Pointer Test On */
->   	GMF_WSP_TST_OFF	= 1<<17,/* Write Shadow Pointer Test Off */
->    
-I'll try this a bit later today. However, early on, I saw the same 
-issues with MTU=1500. Also, maybe I'm missing something, but I can only 
-recreate the issue with a high receive rate. Given the interaction with 
-DHCP, for example, I'm thinking that there is some precondition that is 
-as yet unknown. May be buggy hardware, or perhaps a race condition 
-resulting in a corrupt i/o buffer somewhere. I'm wondering whether 
-there's some useful place to insert some diagnostics on the RX side - at 
-least we can see if there are any consistent events on the RX side 
-preceding the TX error.
+
+ > We've had recurring struggles with various versions of gcc screwing up
+ > constructs of this form and trying to emit the non-constant code when
+ > the arg was clearly a compile-time constant.  One episode which comes
+ > to mind was when we made changes to kmalloc().
+ > 
+ > Of course, that might not bite us in this case - it would need a lot of
+ > coverage testing to find out.
+
+Actually, after thinking about this a bit more I don't think this is
+much of a risk in this case.  The bad case is where gcc gets the wrong
+answer for __builtin_constant_p(), and in that case, we're left with the
+status quo ante, ie a call to the original inline function implementation.
+
+This will break a call to BUILD_BUG_ON() but that's visible at compile
+time.  It's hard to think of a silent failure case that actually hurts
+anything -- the macro and inline implementation are identical, except
+that the macro implementation will work when gcc really needs a compile
+time constant.
+
+ - R.
