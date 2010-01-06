@@ -1,173 +1,195 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756132Ab0AFTWI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932366Ab0AFTXW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756132Ab0AFTWI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 14:22:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756116Ab0AFTWG
+	id S932366Ab0AFTXW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 14:23:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755972Ab0AFTXV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 14:22:06 -0500
-Received: from mx2.netapp.com ([216.240.18.37]:21484 "EHLO mx2.netapp.com"
+	Wed, 6 Jan 2010 14:23:21 -0500
+Received: from mail.perches.com ([173.55.12.10]:1592 "EHLO mail.perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755997Ab0AFTWB convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 14:22:01 -0500
-X-IronPort-AV: E=Sophos;i="4.49,230,1262592000"; 
-   d="scan'208";a="298112553"
-Subject: Re: [PATCH] improve the performance of large sequential write NFS
- workloads
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Wu Fengguang <fengguang.wu@intel.com>, Jan Kara <jack@suse.cz>,
-       Steve Rago <sar@nec-labs.com>,
-       "linux-nfs@vger.kernel.org" <linux-nfs@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "jens.axboe" <jens.axboe@oracle.com>,
-       Peter Staubach <staubach@redhat.com>,
-       Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>
-In-Reply-To: <1262804876.4049.66.camel@laptop>
-References: <20091222015907.GA6223@localhost>
-	 <1261578107.2606.11.camel@localhost> <20091223180551.GD3159@quack.suse.cz>
-	 <1261595574.6775.2.camel@localhost> <20091224025228.GA12477@localhost>
-	 <1261656281.3596.1.camel@localhost> <20091225055617.GA8595@localhost>
-	 <1262190168.7332.6.camel@localhost> <20091231050441.GB19627@localhost>
-	 <1262286828.8151.113.camel@localhost>  <20100106030346.GA15962@localhost>
-	 <1262796962.4251.91.camel@localhost>  <1262802387.4251.117.camel@localhost>
-	 <1262803040.4049.62.camel@laptop>  <1262803927.4251.133.camel@localhost>
-	 <1262804876.4049.66.camel@laptop>
+	id S1754862Ab0AFTXU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jan 2010 14:23:20 -0500
+Subject: [PATCH v2 5/8] net/ipv4/netfilter/nf_nat_ftp.c: Remove (*mangle[])
+ array and functions, use %pI4
+From: Joe Perches <joe@perches.com>
+To: linux-kernel@vger.kernel.org
+Cc: Patrick McHardy <kaber@trash.net>, "David S. Miller" <davem@davemloft.net>,
+       Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>,
+       "Pekka Savola (ipv6)" <pekkas@netcore.fi>,
+       James Morris <jmorris@namei.org>,
+       Hideaki YOSHIFUJI <yoshfuji@linux-ipv6.org>,
+       netfilter-devel@vger.kernel.org, netfilter@vger.kernel.org,
+       coreteam@netfilter.org, netdev@vger.kernel.org
+In-Reply-To: <bccf36219f3ea5a9b7565734bc87095bc986dbe0.1262726222.git.joe@perches.com>
+References: <cover.1262726222.git.joe@perches.com>
+	 <bccf36219f3ea5a9b7565734bc87095bc986dbe0.1262726222.git.joe@perches.com>
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
-Organization: NetApp
-Date: Wed, 06 Jan 2010 14:21:07 -0500
-Message-ID: <1262805667.4251.135.camel@localhost>
+Date: Wed, 06 Jan 2010 11:23:18 -0800
+Message-ID: <1262805798.1952.105.camel@Joe-Laptop.home>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 (2.28.2-1.fc12) 
-X-OriginalArrivalTime: 06 Jan 2010 19:21:38.0512 (UTC) FILETIME=[780BAD00:01CA8F05]
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2010-01-06 at 20:07 +0100, Peter Zijlstra wrote: 
-> On Wed, 2010-01-06 at 13:52 -0500, Trond Myklebust wrote:
-> > On Wed, 2010-01-06 at 19:37 +0100, Peter Zijlstra wrote: 
-> > > On Wed, 2010-01-06 at 13:26 -0500, Trond Myklebust wrote:
-> > > > OK. It looks as if the only key to finding out how many unstable writes
-> > > > we have is to use global_page_state(NR_UNSTABLE_NFS), so we can't
-> > > > specifically target our own backing-dev. 
-> > > 
-> > > Would be a simple matter of splitting BDI_UNSTABLE out from
-> > > BDI_RECLAIMABLE, no?
-> > > 
-> > > Something like
-> > 
-> > OK. How about if we also add in a bdi->capabilities flag to tell that we
-> > might have BDI_UNSTABLE? That would allow us to avoid the potentially
-> > expensive extra calls to bdi_stat() and bdi_stat_sum() for the non-nfs
-> > case?
-> 
-> The bdi_stat_sum() in the error limit is basically the only such
-> expensive op, but I suspect we might hit that more than enough. So sure
-> that sounds like a plan.
-> 
+These functions merely exist to format a buffer and call
+nf_nat_mangle_tcp_packet.
 
-This should apply on top of your patch....
+Format the buffer and perform the call in nf_nat_ftp instead.
 
-Cheers
-  Trond
------------------------------------------------------------------------------------------------- 
-VM: Don't call bdi_stat(BDI_UNSTABLE) on non-nfs backing-devices
+Use %pI4 for the IP address.
 
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
+Saves ~600 bytes of text
 
-Speeds up the accounting in balance_dirty_pages() for non-nfs devices.
+old:
+$ size net/ipv4/netfilter/nf_nat_ftp.o
+   text	   data	    bss	    dec	    hex	filename
+   2187	    160	    408	   2755	    ac3	net/ipv4/netfilter/nf_nat_ftp.o
+new:
+$ size net/ipv4/netfilter/nf_nat_ftp.o
+   text    data     bss     dec     hex filename
+   1532     112     288    1932     78c net/ipv4/netfilter/nf_nat_ftp.o
 
-Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
----
+Signed-off-by: Joe Perches <joe@perches.com>
 
- fs/nfs/client.c             |    1 +
- include/linux/backing-dev.h |    6 ++++++
- mm/page-writeback.c         |   16 +++++++++++-----
- 3 files changed, 18 insertions(+), 5 deletions(-)
+ net/ipv4/netfilter/nf_nat_ftp.c |  105 +++++++++++++--------------------------
+ 1 files changed, 35 insertions(+), 70 deletions(-)
 
-
-diff --git a/fs/nfs/client.c b/fs/nfs/client.c
-index ee77713..d0b060a 100644
---- a/fs/nfs/client.c
-+++ b/fs/nfs/client.c
-@@ -890,6 +890,7 @@ static void nfs_server_set_fsinfo(struct nfs_server *server, struct nfs_fsinfo *
+diff --git a/net/ipv4/netfilter/nf_nat_ftp.c b/net/ipv4/netfilter/nf_nat_ftp.c
+index a1d5d58..86e0e84 100644
+--- a/net/ipv4/netfilter/nf_nat_ftp.c
++++ b/net/ipv4/netfilter/nf_nat_ftp.c
+@@ -27,76 +27,29 @@ MODULE_ALIAS("ip_nat_ftp");
  
- 	server->backing_dev_info.name = "nfs";
- 	server->backing_dev_info.ra_pages = server->rpages * NFS_MAX_READAHEAD;
-+	server->backing_dev_info.capabilities |= BDI_CAP_ACCT_UNSTABLE;
+ /* FIXME: Time out? --RR */
  
- 	if (server->wsize > max_rpc_payload)
- 		server->wsize = max_rpc_payload;
-diff --git a/include/linux/backing-dev.h b/include/linux/backing-dev.h
-index 42c3e2a..8b45166 100644
---- a/include/linux/backing-dev.h
-+++ b/include/linux/backing-dev.h
-@@ -232,6 +232,7 @@ int bdi_set_max_ratio(struct backing_dev_info *bdi, unsigned int max_ratio);
- #define BDI_CAP_EXEC_MAP	0x00000040
- #define BDI_CAP_NO_ACCT_WB	0x00000080
- #define BDI_CAP_SWAP_BACKED	0x00000100
-+#define BDI_CAP_ACCT_UNSTABLE	0x00000200
- 
- #define BDI_CAP_VMFLAGS \
- 	(BDI_CAP_READ_MAP | BDI_CAP_WRITE_MAP | BDI_CAP_EXEC_MAP)
-@@ -311,6 +312,11 @@ static inline bool bdi_cap_flush_forker(struct backing_dev_info *bdi)
- 	return bdi == &default_backing_dev_info;
- }
- 
-+static inline bool bdi_cap_account_unstable(struct backing_dev_info *bdi)
-+{
-+	return bdi->capabilities & BDI_CAP_ACCT_UNSTABLE;
-+}
-+
- static inline bool mapping_cap_writeback_dirty(struct address_space *mapping)
+-static int
+-mangle_rfc959_packet(struct sk_buff *skb,
+-		     __be32 newip,
+-		     u_int16_t port,
+-		     unsigned int matchoff,
+-		     unsigned int matchlen,
+-		     struct nf_conn *ct,
+-		     enum ip_conntrack_info ctinfo)
++static int nf_nat_ftp_fmt_cmd(enum nf_ct_ftp_type type,
++			      char *buffer, size_t buflen,
++			      __be32 addr, u16 port)
  {
- 	return bdi_cap_writeback_dirty(mapping->backing_dev_info);
-diff --git a/mm/page-writeback.c b/mm/page-writeback.c
-index aa26b0f..d90a0db 100644
---- a/mm/page-writeback.c
-+++ b/mm/page-writeback.c
-@@ -273,8 +273,9 @@ static void clip_bdi_dirty_limit(struct backing_dev_info *bdi,
- 		avail_dirty = 0;
+-	char buffer[sizeof("nnn,nnn,nnn,nnn,nnn,nnn")];
+-
+-	sprintf(buffer, "%u,%u,%u,%u,%u,%u",
+-		NIPQUAD(newip), port>>8, port&0xFF);
+-
+-	pr_debug("calling nf_nat_mangle_tcp_packet\n");
+-
+-	return nf_nat_mangle_tcp_packet(skb, ct, ctinfo, matchoff,
+-					matchlen, buffer, strlen(buffer));
+-}
+-
+-/* |1|132.235.1.2|6275| */
+-static int
+-mangle_eprt_packet(struct sk_buff *skb,
+-		   __be32 newip,
+-		   u_int16_t port,
+-		   unsigned int matchoff,
+-		   unsigned int matchlen,
+-		   struct nf_conn *ct,
+-		   enum ip_conntrack_info ctinfo)
+-{
+-	char buffer[sizeof("|1|255.255.255.255|65535|")];
+-
+-	sprintf(buffer, "|1|%u.%u.%u.%u|%u|", NIPQUAD(newip), port);
+-
+-	pr_debug("calling nf_nat_mangle_tcp_packet\n");
+-
+-	return nf_nat_mangle_tcp_packet(skb, ct, ctinfo, matchoff,
+-					matchlen, buffer, strlen(buffer));
+-}
+-
+-/* |1|132.235.1.2|6275| */
+-static int
+-mangle_epsv_packet(struct sk_buff *skb,
+-		   __be32 newip,
+-		   u_int16_t port,
+-		   unsigned int matchoff,
+-		   unsigned int matchlen,
+-		   struct nf_conn *ct,
+-		   enum ip_conntrack_info ctinfo)
+-{
+-	char buffer[sizeof("|||65535|")];
+-
+-	sprintf(buffer, "|||%u|", port);
+-
+-	pr_debug("calling nf_nat_mangle_tcp_packet\n");
++	switch (type) {
++	case NF_CT_FTP_PORT:
++	case NF_CT_FTP_PASV:
++		return snprintf(buffer, buflen, "%u,%u,%u,%u,%u,%u",
++				((unsigned char *)&addr)[0],
++				((unsigned char *)&addr)[1],
++				((unsigned char *)&addr)[2],
++				((unsigned char *)&addr)[3],
++				port >> 8,
++				port & 0xFF);
++	case NF_CT_FTP_EPRT:
++		return snprintf(buffer, buflen, "|1|%pI4|%u|", &addr, port);
++	case NF_CT_FTP_EPSV:
++		return snprintf(buffer, buflen, "|||%u|", port);
++	}
  
- 	avail_dirty += bdi_stat(bdi, BDI_DIRTY) +
--		bdi_stat(bdi, BDI_UNSTABLE) +
- 		bdi_stat(bdi, BDI_WRITEBACK);
-+	if (bdi_cap_account_unstable(bdi))
-+		avail_dirty += bdi_stat(bdi, BDI_UNSTABLE);
- 
- 	*pbdi_dirty = min(*pbdi_dirty, avail_dirty);
+-	return nf_nat_mangle_tcp_packet(skb, ct, ctinfo, matchoff,
+-					matchlen, buffer, strlen(buffer));
++	return 0;
  }
-@@ -512,8 +513,9 @@ static void balance_dirty_pages(struct address_space *mapping,
- 					nr_unstable_nfs;
- 		nr_writeback = global_page_state(NR_WRITEBACK);
  
--		bdi_nr_reclaimable = bdi_stat(bdi, BDI_DIRTY) +
--				     bdi_stat(bdi, BDI_UNSTABLE);
-+		bdi_nr_reclaimable = bdi_stat(bdi, BDI_DIRTY);
-+		if (bdi_cap_account_unstable(bdi))
-+			bdi_nr_reclaimable += bdi_stat(bdi, BDI_UNSTABLE);
- 		bdi_nr_writeback = bdi_stat(bdi, BDI_WRITEBACK);
+-static int (*mangle[])(struct sk_buff *, __be32, u_int16_t,
+-		       unsigned int, unsigned int, struct nf_conn *,
+-		       enum ip_conntrack_info)
+-= {
+-	[NF_CT_FTP_PORT] = mangle_rfc959_packet,
+-	[NF_CT_FTP_PASV] = mangle_rfc959_packet,
+-	[NF_CT_FTP_EPRT] = mangle_eprt_packet,
+-	[NF_CT_FTP_EPSV] = mangle_epsv_packet
+-};
+-
+ /* So, this packet has hit the connection tracking matching code.
+    Mangle it, and change the expectation to match the new version. */
+ static unsigned int nf_nat_ftp(struct sk_buff *skb,
+@@ -110,6 +63,8 @@ static unsigned int nf_nat_ftp(struct sk_buff *skb,
+ 	u_int16_t port;
+ 	int dir = CTINFO2DIR(ctinfo);
+ 	struct nf_conn *ct = exp->master;
++	char buffer[sizeof("|1|255.255.255.255|65535|")];
++	unsigned int buflen;
  
- 		if (bdi_nr_reclaimable + bdi_nr_writeback <= bdi_thresh)
-@@ -563,11 +565,15 @@ static void balance_dirty_pages(struct address_space *mapping,
- 		 * deltas.
- 		 */
- 		if (bdi_thresh < 2*bdi_stat_error(bdi)) {
--			bdi_nr_reclaimable = bdi_stat_sum(bdi, BDI_DIRTY) +
-+			bdi_nr_reclaimable = bdi_stat_sum(bdi, BDI_DIRTY);
-+			if (bdi_cap_account_unstable(bdi))
-+				bdi_nr_reclaimable +=
- 					     bdi_stat_sum(bdi, BDI_UNSTABLE);
- 			bdi_nr_writeback = bdi_stat_sum(bdi, BDI_WRITEBACK);
- 		} else if (bdi_nr_reclaimable) {
--			bdi_nr_reclaimable = bdi_stat(bdi, BDI_DIRTY) +
-+			bdi_nr_reclaimable = bdi_stat(bdi, BDI_DIRTY);
-+			if (bdi_cap_account_unstable(bdi))
-+				bdi_nr_reclaimable +=
- 					     bdi_stat(bdi, BDI_UNSTABLE);
- 			bdi_nr_writeback = bdi_stat(bdi, BDI_WRITEBACK);
- 		}
+ 	pr_debug("FTP_NAT: type %i, off %u len %u\n", type, matchoff, matchlen);
+ 
+@@ -132,11 +87,21 @@ static unsigned int nf_nat_ftp(struct sk_buff *skb,
+ 	if (port == 0)
+ 		return NF_DROP;
+ 
+-	if (!mangle[type](skb, newip, port, matchoff, matchlen, ct, ctinfo)) {
+-		nf_ct_unexpect_related(exp);
+-		return NF_DROP;
+-	}
++	buflen = nf_nat_ftp_fmt_cmd(type, buffer, sizeof(buffer), newip, port);
++	if (!buflen)
++		goto out;
++
++	pr_debug("calling nf_nat_mangle_tcp_packet\n");
++
++	if (!nf_nat_mangle_tcp_packet(skb, ct, ctinfo, matchoff,
++				      matchlen, buffer, buflen))
++		goto out;
++
+ 	return NF_ACCEPT;
++
++out:
++	nf_ct_unexpect_related(exp);
++	return NF_DROP;
+ }
+ 
+ static void __exit nf_nat_ftp_fini(void)
+
 
