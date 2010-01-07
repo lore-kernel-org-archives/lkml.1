@@ -1,77 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753605Ab0AGTBs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753555Ab0AGTD5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753605Ab0AGTBs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 14:01:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753548Ab0AGTBd
+	id S1753555Ab0AGTD5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 14:03:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753339Ab0AGTD5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 14:01:33 -0500
-Received: from mail.windriver.com ([147.11.1.11]:60328 "EHLO
-	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753564Ab0AGTB2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 14:01:28 -0500
-From: Jason Wessel <jason.wessel@windriver.com>
-To: torvalds@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, kgdb-bugreport@lists.sourceforge.net,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jason Wessel <jason.wessel@windriver.com>
-Subject: [PATCH 4/4] kgdb: Fix kernel-doc format error in kgdb.h
-Date: Thu,  7 Jan 2010 12:59:56 -0600
-Message-Id: <1262890796-25053-5-git-send-email-jason.wessel@windriver.com>
-X-Mailer: git-send-email 1.6.3.1.9.g95405b
-In-Reply-To: <1262890796-25053-1-git-send-email-jason.wessel@windriver.com>
-References: <1262890796-25053-1-git-send-email-jason.wessel@windriver.com>
-X-OriginalArrivalTime: 07 Jan 2010 19:00:42.0861 (UTC) FILETIME=[B60849D0:01CA8FCB]
+	Thu, 7 Jan 2010 14:03:57 -0500
+Received: from mail.gmx.net ([213.165.64.20]:33531 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751702Ab0AGTD4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jan 2010 14:03:56 -0500
+X-Authenticated: #12255092
+X-Provags-ID: V01U2FsdGVkX1+pJ2RaQUKp50yeWDk7sfx3Jq1blvIpwT/OPxHT06
+	6IumgxQQ0Et4f9
+From: Peter Huewe <PeterHuewe@gmx.de>
+To: "Greg Kroah-Hartman" <gregkh@suse.de>
+Subject: [PATCH] staging/asus_oled: Add NULL test for kmalloc
+Date: Thu, 7 Jan 2010 20:03:51 +0100
+User-Agent: KMail/1.12.3 (Linux/2.6.27-05415-g69a8594; KDE/4.3.3; x86_64; ; )
+Cc: Andre Haupt <andre@bitwigglers.org>,
+       "Kevin A. Granade" <kevin.granade@gmail.com>,
+       linux-kernel@vger.kernel.org, devel@driverdev.osuosl.org,
+       sjakub@gmail.com
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201001072003.51722.PeterHuewe@gmx.de>
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.55
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+From: Peter Huewe <peterhuewe@gmx.de>
+Date: Thu, 7 Jan 2010 19:57:36 +0100
 
-linux-next-20081022//include/linux/kgdb.h:308): duplicate section name 'Description'
+This patch adds a NULL test to check wether kmalloc was successful or
+not.
 
-and fix typos in that file's kernel-doc comments.
-
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
+Signed-off-by: Peter Huewe <peterhuewe@gmx.de>
 ---
- include/linux/kgdb.h |    7 +++----
- 1 files changed, 3 insertions(+), 4 deletions(-)
+ Patch against Linux-next of Do 7. Jan 19:59:41 CET 2010
 
-diff --git a/include/linux/kgdb.h b/include/linux/kgdb.h
-index 6adcc29..19ec41a 100644
---- a/include/linux/kgdb.h
-+++ b/include/linux/kgdb.h
-@@ -29,8 +29,7 @@ struct pt_regs;
-  *
-  *	On some architectures it is required to skip a breakpoint
-  *	exception when it occurs after a breakpoint has been removed.
-- *	This can be implemented in the architecture specific portion of
-- *	for kgdb.
-+ *	This can be implemented in the architecture specific portion of kgdb.
-  */
- extern int kgdb_skipexception(int exception, struct pt_regs *regs);
+ drivers/staging/asus_oled/asus_oled.c |    5 +++++
+ 1 files changed, 5 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/staging/asus_oled/asus_oled.c b/drivers/staging/asus_oled/asus_oled.c
+index 0c1fb0d..c597fb2 100644
+--- a/drivers/staging/asus_oled/asus_oled.c
++++ b/drivers/staging/asus_oled/asus_oled.c
+@@ -430,6 +430,11 @@ static ssize_t odev_set_picture(struct asus_oled_dev *odev,
  
-@@ -65,7 +64,7 @@ struct uart_port;
- /**
-  *	kgdb_breakpoint - compiled in breakpoint
-  *
-- *	This will be impelmented a static inline per architecture.  This
-+ *	This will be implemented as a static inline per architecture.  This
-  *	function is called by the kgdb core to execute an architecture
-  *	specific trap to cause kgdb to enter the exception processing.
-  *
-@@ -190,7 +189,7 @@ kgdb_arch_handle_exception(int vector, int signo, int err_code,
-  *	@flags: Current IRQ state
-  *
-  *	On SMP systems, we need to get the attention of the other CPUs
-- *	and get them be in a known state.  This should do what is needed
-+ *	and get them into a known state.  This should do what is needed
-  *	to get the other CPUs to call kgdb_wait(). Note that on some arches,
-  *	the NMI approach is not used for rounding up all the CPUs. For example,
-  *	in case of MIPS, smp_call_function() is used to roundup CPUs. In
+ 		kfree(odev->buf);
+ 		odev->buf = kmalloc(odev->buf_size, GFP_KERNEL);
++		if (odev->buf == NULL) {
++			odev->buf_size = 0;
++			printk(ASUS_OLED_ERROR "Out of memory!\n");
++			return -ENOMEM;
++		}
+ 
+ 		memset(odev->buf, 0xff, odev->buf_size);
+ 
 -- 
-1.6.3.1.9.g95405b
+1.6.4.4
 
