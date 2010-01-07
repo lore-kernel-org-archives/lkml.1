@@ -1,59 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751369Ab0AGROO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751861Ab0AGROv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751369Ab0AGROO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 12:14:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751034Ab0AGRON
+	id S1751861Ab0AGROv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 12:14:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751191Ab0AGROu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 12:14:13 -0500
-Received: from rcsinet11.oracle.com ([148.87.113.123]:56484 "EHLO
-	rcsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750944Ab0AGRON (ORCPT
+	Thu, 7 Jan 2010 12:14:50 -0500
+Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:49978 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751179Ab0AGROu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 12:14:13 -0500
-Date: Thu, 7 Jan 2010 09:13:55 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Valdis.Kletnieks@vt.edu
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: mmotm 2010-01-06-14-34 uploaded
-Message-Id: <20100107091355.c5824da6.randy.dunlap@oracle.com>
-In-Reply-To: <12823.1262836907@localhost>
-References: <201001062259.o06MxQrp023236@imap1.linux-foundation.org>
-	<12343.1262836096@localhost>
-	<12823.1262836907@localhost>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 7 Jan 2010 12:14:50 -0500
+X-Greylist: delayed 1687 seconds by postgrey-1.27 at vger.kernel.org; Thu, 07 Jan 2010 12:14:50 EST
+Message-ID: <4B460F98.9000208@s5r6.in-berlin.de>
+Date: Thu, 07 Jan 2010 17:45:12 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.23) Gecko/20090825 SeaMonkey/1.1.18
+MIME-Version: 1.0
+To: "Robert P. J. Day" <rpjday@crashcourse.ca>
+CC: Roland Dreier <rdreier@cisco.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Bart Van Assche <bart.vanassche@gmail.com>,
+       David Dillow <dave@thedillows.org>
+Subject: Re: [PATCH] Add BUILD_BUG_ON_NOT_POWER_OF_2()
+References: <ada3a2jugqu.fsf@roland-alpha.cisco.com> <20100106123306.ac85e557.akpm@linux-foundation.org> <aday6kbt14a.fsf@roland-alpha.cisco.com> <20100106134232.0025e818.akpm@linux-foundation.org> <adaeim2supb.fsf_-_@roland-alpha.cisco.com> <alpine.LFD.2.00.1001070332060.16874@localhost>
+In-Reply-To: <alpine.LFD.2.00.1001070332060.16874@localhost>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt358.oracle.com [141.146.40.158]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090202.4B461658.007B:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 06 Jan 2010 23:01:47 -0500 Valdis.Kletnieks@vt.edu wrote:
-
-> On Wed, 06 Jan 2010 22:48:16 EST, Valdis.Kletnieks@vt.edu said:
+Robert P. J. Day wrote:
+>   my normal pedantry coming to the surface, but can we at least assume
+> that people will use this test to *legitimately* test whether or not
+> something is a power of two, and not that there is a single bit set
+> (in the case of mask bits where all settings must be mutually
+> exclusive)?
 > 
-> > Building with CONFIG_SQUASHFS=m, CONFIG_SQUASHFS_LZMA=y ,
-> > and CONFIG_DECOMPRESS_LZMA=n fails:
+>   there's a lot of this sort of thing throughout the kernel:
 > 
-> > Looks like a missing select/depends for DECOMPRESS_LZMA.  Somebody else can
-> > decide which it should be...
+>     (n) != 0 && (((n) & ((n) - 1))
 > 
-> Digging further:
->   
->   x Symbol: DECOMPRESS_LZMA [=n]                                            x  
->   x   Selected by: RD_LZMA [=n] && BLK_DEV_INITRD [=y] || SQUASHFS_LZMA [=y x  
-> 
-> How the heck did this happen?  Looks like a SELECT *is* there but it's
-> not firing??!?
+> but it's sometimes unclear whether someone is testing for a) power of
+> two, or b) single bit set.  if you're going to introduce that kind of
+> BUILD BUG (which is a good idea), let's try to not immediately abuse
+> it semantically. :-)
 
-I was able to reproduce this error but I have DECOMPRESS_LZMA=m
-instead of =n, so my patch fixes the build error for the =m case.
+It's merely about math, not about semantics.  Plus, its application is
+restricted to build-time checks (of defined constants) anyway.
 
-Please send me your .config file.
-
----
-~Randy
+Hence I would argue that "check at build time whether a defined
+bitmask's Hamming weight is 1; abort build if it isn't" can be
+legitimately and sufficiently readably implemented by means of the new
+BUILD_BUG_ON_NOT_POWER_OF_2().
+-- 
+Stefan Richter
+-=====-==-=- ---= --===
+http://arcgraph.de/sr/
