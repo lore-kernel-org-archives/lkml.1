@@ -1,52 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756059Ab0AGHa2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756248Ab0AGHc5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756059Ab0AGHa2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 02:30:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754654Ab0AGHa1
+	id S1756248Ab0AGHc5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 02:32:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755915Ab0AGHc4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 02:30:27 -0500
-Received: from toro.web-alm.net ([62.245.132.31]:57135 "EHLO toro.web-alm.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754276Ab0AGHa0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 02:30:26 -0500
-Message-ID: <4B458C08.8070209@osadl.org>
-Date: Thu, 07 Jan 2010 08:23:52 +0100
-From: Carsten Emde <Carsten.Emde@osadl.org>
-Organization: Open Source Automation Development Lab (OSADL) eG
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
-MIME-Version: 1.0
-To: Clark Williams <williams@redhat.com>
-CC: John Kacur <jkacur@redhat.com>, RT <linux-rt-users@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC] [rt-tests] change to cyclictest behavior
-References: <20100106130400.7f30ae55@torg>	<520f0cf11001061139j2af13403qfcbf567647bdfaa8@mail.gmail.com>	<4B4502FD.1000404@osadl.org>	<20100106160434.77efc790@torg>	<4B450D91.7060403@osadl.org> <20100106162759.1d4d5b57@torg>
-In-Reply-To: <20100106162759.1d4d5b57@torg>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 7 Jan 2010 02:32:56 -0500
+Received: from www84.your-server.de ([213.133.104.84]:38742 "EHLO
+	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754901Ab0AGHc4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jan 2010 02:32:56 -0500
+Subject: Re: [PATCH] checkpatch.pl: remove the punch card limit
+From: Stefani Seibold <stefani@seibold.net>
+To: Miles Bader <miles@gnu.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, apw@canonical.com,
+       jschopp@austin.ibm.com, davej@redhat.com
+In-Reply-To: <buopr5mobn7.fsf@dhlpc061.dev.necel.com>
+References: <1262796984.1011.17.camel@wall-e>
+	 <buopr5mobn7.fsf@dhlpc061.dev.necel.com>
+Content-Type: text/plain; charset="ISO-8859-15"
+Date: Thu, 07 Jan 2010 08:31:58 +0100
+Message-ID: <1262849518.13621.2.camel@wall-e>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.2 
 Content-Transfer-Encoding: 7bit
+X-Authenticated-Sender: stefani@seibold.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Clark,
+Am Donnerstag, den 07.01.2010, 12:07 +0900 schrieb Miles Bader:
+> Stefani Seibold <stefani@seibold.net> writes:
+> > The time of 80 characters punch card and terminals are over, so i would
+> > be a good thing to set the line length limit to 120. Every display today
+> > should be able handle this. And it think it make formated source code
+> > more readable.
+> 
+> Anyway, I think the vague consensus seems to be that it's OK to go over
+> 80 chars in many cases, but that it may be an indicator that some
+> refactoring is in order....
 
->> -S      --smp              Standard SMP testing (equals -a -t -n -d0),
->>                            same priority on all threads.
-After having done some tests with a quickly hacked cyclictest version, I
-have found an issue with including -d0. Apparently, small numbers make
-life especially difficult for the scheduler; this is why we often used
--d1. Specifying -d0 seems a special case where all threads are in sync.
-Maybe, we may miss some important latency constellations, if we do not
-let the tasks slightly interfere. In any case, I would like to be able
-to specify a distance _in addition_ to -S. This would create a scenario
-where
+That's why i didn't removed the check. 120 character should be good, it
+should be not an indicator for refactoring. Especial with tab width of
+8.
 
-  cyclictest -d1 -S
+Stefani
 
-results in a distance of 0, and
 
-  cyclictest -S -d1
-
-results in a distance of 1. Would this be acceptable?
-
-	Carsten.
