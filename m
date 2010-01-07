@@ -1,205 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932903Ab0AGDGG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932796Ab0AGDHL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932903Ab0AGDGG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 22:06:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932707Ab0AGDF6
+	id S932796Ab0AGDHL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 22:07:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932362Ab0AGDHJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 22:05:58 -0500
-Received: from mail-iw0-f194.google.com ([209.85.223.194]:40504 "EHLO
-	mail-iw0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932356Ab0AGDFv (ORCPT
+	Wed, 6 Jan 2010 22:07:09 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:45371 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932359Ab0AGDHH convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 22:05:51 -0500
+	Wed, 6 Jan 2010 22:07:07 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=kHaIEHy7n4boi/7ecebglnFvPETryD2nnhOv1bv1gP2DaJvn+nHmBCt/k4Bw+PHVpp
-         9wHmBO3x9gmLF1tzCuf/KAWh07Y+ZE8pAPyANOyK0XsaXyhIKKUxrbRBKNe6ZrRQAzdy
-         JWxCjFDL/IgHT1LEE9RTRWwb0gjZZX8Dphy+w=
-Message-ID: <4B454F8B.5040900@gmail.com>
-Date: Wed, 06 Jan 2010 21:05:47 -0600
-From: Robert Hancock <hancockrwd@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=P7ulup+ej/TrQ3WZ+rBlOUrSQ+5frYM14+eYL4zxRvYMEO4fgLi6I7xujAwbw6Envi
+         sQJz0zXjQFPem15zJOqvUKK/8tvjedfvfjpWRSN0k1Jg4/tqTy5y7PNoA1ouc3uwsPtF
+         Pf4LgWEXWYS3/TX0LiHiXQNVH+TuAP8xZBCUg=
 MIME-Version: 1.0
-To: Torsten Kaiser <just.for.lkml@googlemail.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Vivek Mahajan <vivek.mahajan@freescale.com>,
-       Jeff Garzik <jgarzik@pobox.com>, linux-ide@vger.kernel.org,
-       Peer Chen <pchen@nvidia.com>, Yinghai Lu <yinghai@kernel.org>
-Subject: Re: New MSI support in sata_sil24 still broken in 2.6.33-rc3
-References: <64bb37e1001060137h597322e8s4305b7cc1c91527e@mail.gmail.com>	 <4B4531F9.3060108@gmail.com> <64bb37e1001061827i64ead7f9m3dbe1b7b707c79eb@mail.gmail.com>
-In-Reply-To: <64bb37e1001061827i64ead7f9m3dbe1b7b707c79eb@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <4B454C48.2000404@redhat.com>
+References: <6041d2001001011627o5c494df4v37c0c466df3d444c@mail.gmail.com>
+	 <1262392920.32223.10.camel@laptop>
+	 <6041d2001001041043ka810288l64ae9d6d8105b284@mail.gmail.com>
+	 <4B42AA40.3060406@redhat.com>
+	 <6041d2001001041923u7bd512a6w4b5399af17424422@mail.gmail.com>
+	 <4B4311E8.1000001@redhat.com>
+	 <6041d2001001051458j46cdf7abqc4a0a249445ec348@mail.gmail.com>
+	 <4B445B0E.50208@redhat.com>
+	 <6041d2001001061644i59d9cbb6pfcd85177d8391419@mail.gmail.com>
+	 <4B454C48.2000404@redhat.com>
+Date: Wed, 6 Jan 2010 22:07:05 -0500
+Message-ID: <6041d2001001061907r5f5797b9g1b7ee4057f6a82b0@mail.gmail.com>
+Subject: Re: BUG during shutdown - bisected to commit e2912009
+From: Marc Dionne <marc.c.dionne@gmail.com>
+To: Xiaotian Feng <dfeng@redhat.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/06/2010 08:27 PM, Torsten Kaiser wrote:
-> On Thu, Jan 7, 2010 at 1:59 AM, Robert Hancock<hancockrwd@gmail.com>  wrote:
->> On 01/06/2010 03:37 AM, Torsten Kaiser wrote:
+On Wed, Jan 6, 2010 at 9:51 PM, Xiaotian Feng <dfeng@redhat.com> wrote:
+> On 01/07/2010 08:44 AM, Marc Dionne wrote:
+>>
+>> On Wed, Jan 6, 2010 at 4:42 AM, Xiaotian Feng<dfeng@redhat.com>  wrote:
 >>>
->>> After activating the MSI support by adding sata_sil24.msi=1 to the
->>> kernel command line, the first write to a drive attached to the SiI
->>> 3132 controller results in the following errors:
+>>> On 01/06/2010 06:58 AM, Marc Dionne wrote:
+>>>>
+>>>> On Tue, Jan 5, 2010 at 5:18 AM, Xiaotian Feng<dfeng@redhat.com>
+>>>>  wrote:
+>>>>>
+>>>>> This is outputed by sound module, but it will not affect clockevents,
+>>>>> could
+>>>>> you please try following patch and let me know the output before BUG_ON
+>>>>> happens? We can gather more information on the BUG_ON. Thank you.
+>>>>>
+>>>>> diff --git a/kernel/time/clockevents.c b/kernel/time/clockevents.c
+>>>>> index 6f740d9..7c945e8 100644
+>>>>> --- a/kernel/time/clockevents.c
+>>>>> +++ b/kernel/time/clockevents.c
+>>>>> @@ -260,6 +260,9 @@ void clockevents_notify(unsigned long reason, void
+>>>>> *arg)
+>>>>>                list_for_each_entry_safe(dev, tmp,&clockevent_devices,
+>>>>> list)
+>>>>> {
+>>>>>                        if (cpumask_test_cpu(cpu, dev->cpumask)&&
+>>>>>                            cpumask_weight(dev->cpumask) == 1) {
+>>>>> +                               if (dev->mode != CLOCK_EVT_MODE_UNUSED)
+>>>>> +                                       printk("invalid dev %s mode %d
+>>>>> on
+>>>>> cpu %d\n", dev->name,
+>>>>> +                                               dev->mode, cpu);
+>>>>>                                BUG_ON(dev->mode !=
+>>>>> CLOCK_EVT_MODE_UNUSED);
+>>>>>                                list_del(&dev->list);
+>>>>
+>>>> I don't get anything on screen from the printk - is there a trick
+>>>> needed to getting printk output at that stage of shutting down?  I
+>>>> tried inserting an mdelay() before the BUG, which delayed the bug
+>>>> output but still didn't print the invalid dev message.
 >>>
->>> [  138.950074] ata2.00: exception Emask 0x0 SAct 0xf SErr 0x0 action 0x6
->>> frozen
->>> [  138.961023] ata2.00: failed command: WRITE FPDMA QUEUED
->>> [  138.970034] ata2.00: cmd 61/00:00:a5:95:4a/04:00:01:00:00/40 tag 0
->>> ncq 524288 out
->>> [  138.970037]          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask
->>> 0x4 (timeout)
+>>> Did you notice this BUG when you're doing suspend/resume?
+>>>
+>>> Does the BUG still appear if we changed BUG_ON line to BUG_ON(dev->mode
+>>> !=
+>>> CLOCK_EVT_MODE_UNUSED&&  dev->mode != CLOCK_EVT_MODE_SHUTDOWN)?
 >>
->> Looking at the code in sata_sil24 and the SiI3132 datasheet, there's a
->> control bit which doesn't seem to be handled in the driver, global control
->> register bit 30: "MSI Acknowledge (W). Writing a one to this bit
->> acknowledges a Message Signaled Interrupt and permits generation of another
->> MSI. This bit is cleared immediately after the acknowledgement is recognized
->> by the control logic, hence the bit will always be read as a zero. If all
->> interrupt conditions are removed subsequent to an MSI, it is not necessary
->> to assert this Acknowledge; another MSI will be generated when an interrupt
->> condition occurs."
+>> I only see the BUG on halt - reboot works normally and suspend
+>> actually freezes and doesn't suspend, but that's perhaps unrelated.
 >>
->> The way the interrupt handler for this driver works is that we check the
->> global IRQ status register, and then based on what ports indicated an
->> interrupt in that register, we check the individual port command completion
->> registers. The issue would seem to be that if a port got an interrupt
->> condition in between these two operations, we'd miss it, and the MSI logic
->> described above then wouldn't generate any more interrupts since we didn't
->> remove all interrupt conditions.
->>
->> Can you try this patch and see if it helps? (Might be whitespace damaged but
->> hopefully you can apply manually in that case.)
+>> I managed to get your suggested printk to work by adding KERN_CRIT
+>> (otherwise I got no output), and the offending dev is:
+>>  "hpet", mode 3 (CLOCK_EVT_MODE_ONESHOT?), cpu 4.
 >
-> Tried it, but writing still fails:
-> [   53.467694] XFS mounting filesystem sdb2
-> [  141.010058] ata2.00: exception Emask 0x0 SAct 0xf SErr 0x0 action 0x6 frozen
-> [  141.020361] ata2.00: failed command: WRITE FPDMA QUEUED
-> [  141.028718] ata2.00: cmd 61/00:00:5d:cd:48/04:00:01:00:00/40 tag 0
-> ncq 524288 out
-> [  141.028721]          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask
-> 0x4 (timeout)
-> [  141.049895] ata2.00: status: { DRDY }
-> [  141.056715] ata2.00: failed command: WRITE FPDMA QUEUED
-> [  141.065133] ata2.00: cmd 61/00:08:5d:c5:48/04:00:01:00:00/40 tag 1
-> ncq 524288 out
-> [  141.065135]          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask
-> 0x4 (timeout)
-> [  141.086492] ata2.00: status: { DRDY }
-> [  141.093313] ata2.00: failed command: WRITE FPDMA QUEUED
-> [  141.101679] ata2.00: cmd 61/00:10:5d:c9:48/04:00:01:00:00/40 tag 2
-> ncq 524288 out
-> [  141.101682]          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask
-> 0x4 (timeout)
-> [  141.122813] ata2.00: status: { DRDY }
-> [  141.129522] ata2.00: failed command: WRITE FPDMA QUEUED
-> [  141.137769] ata2.00: cmd 61/00:18:5d:d1:48/04:00:01:00:00/40 tag 3
-> ncq 524288 out
-> [  141.137771]          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask
-> 0x4 (timeout)
-> [  141.158660] ata2.00: status: { DRDY }
-> [  141.165313] ata2: hard resetting link
-> [  143.370049] ata2: SATA link up 3.0 Gbps (SStatus 123 SControl 0)
-> [  148.370031] ata2.00: qc timeout (cmd 0xec)
-> [  148.377198] ata2.00: failed to IDENTIFY (I/O error, err_mask=0x4)
-> [  148.386450] ata2.00: revalidation failed (errno=-5)
-> [  148.394504] ata2: hard resetting link
-> [  150.600064] ata2: SATA link up 3.0 Gbps (SStatus 123 SControl 0)
-> [  160.600038] ata2.00: qc timeout (cmd 0xec)
-> [  160.607451] ata2.00: failed to IDENTIFY (I/O error, err_mask=0x4)
-> [  160.616913] ata2.00: revalidation failed (errno=-5)
-> [  160.625181] ata2: limiting SATA link speed to 1.5 Gbps
-> [  160.633746] ata2: hard resetting link
-> [  162.830049] ata2: SATA link up 1.5 Gbps (SStatus 113 SControl 10)
-> ...
+> It looks like kernel is trying to remove broadcast device, could you please
+> try following patch?
 >
-> Please note, that in my first report I also mentioned that I get the
-> same behavior with sata_nv. If I use sata_nv.msi=1 writing to the
-> drives attached to the MCP55 fail. The sata_nv problem is not new,
-> that never worked for me, but I only retried it with 2.6.33-rc1.
-> Other drivers can use MSI successfull (tg3, hda-intel, radeon).
->
->> diff --git a/drivers/ata/sata_sil24.c b/drivers/ata/sata_sil24.c
->> index 1370df6..d3d8dec 100644
->> --- a/drivers/ata/sata_sil24.c
->> +++ b/drivers/ata/sata_sil24.c
->> @@ -102,6 +102,7 @@ enum {
->>         HOST_CTRL_STOP          = (1<<  18), /* latched PCI STOP */
->>         HOST_CTRL_DEVSEL        = (1<<  19), /* latched PCI DEVSEL */
->>         HOST_CTRL_REQ64         = (1<<  20), /* latched PCI REQ64 */
->> +       HOST_CTRL_MSIACK        = (1<<  30), /* MSI acknowledge */
->>         HOST_CTRL_GLOBAL_RST    = (1<<  31), /* global reset */
->>
->>         /*
->> @@ -1168,6 +1169,7 @@ static irqreturn_t sil24_interrupt(int irq, void
->> *dev_instance)
->>                                        ": interrupt from disabled port %d\n",
->> i);
->>                 }
->>
->> +       writel(IRQ_STAT_4PORTS | HOST_CTRL_MSIACK, host_base + HOST_CTRL);
->>         spin_unlock(&host->lock);
->>   out:
->>         return IRQ_RETVAL(handled);
->>
+> diff --git a/kernel/time/clockevents.c b/kernel/time/clockevents.c
+> index 6f740d9..d7395fd 100644
+> --- a/kernel/time/clockevents.c
+> +++ b/kernel/time/clockevents.c
+> @@ -259,7 +259,8 @@ void clockevents_notify(unsigned long reason, void *arg)
+>                cpu = *((int *)arg);
+>                list_for_each_entry_safe(dev, tmp, &clockevent_devices, list)
+> {
+>                        if (cpumask_test_cpu(cpu, dev->cpumask) &&
+> -                           cpumask_weight(dev->cpumask) == 1) {
+> +                           cpumask_weight(dev->cpumask) == 1 &&
+> +                           !tick_is_broadcast_device(dev)) {
+>                                BUG_ON(dev->mode != CLOCK_EVT_MODE_UNUSED);
+>                                list_del(&dev->list);
+>                        }
 
-Hmm, well presumably the problem isn't related to that then. I was 
-looking at your lspci output though:
+That works - no problem shutting down with that patch applied.
 
-00:05.0 IDE interface: nVidia Corporation MCP55 SATA Controller (rev a3) 
-(prog-if 85 [Master SecO PriO])
-	Subsystem: ASUSTeK Computer Inc. Device 81f0
-	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- 
-Stepping- SERR- FastB2B- DisINTx+
-	Status: Cap+ 66MHz+ UDF- FastB2B+ ParErr- DEVSEL=fast >TAbort- <TAbort- 
-<MAbort- >SERR- <PERR- INTx-
-	Latency: 0 (750ns min, 250ns max)
-	Interrupt: pin A routed to IRQ 30
-	Region 0: I/O ports at cc00 [size=8]
-	Region 1: I/O ports at c880 [size=4]
-	Region 2: I/O ports at c800 [size=8]
-	Region 3: I/O ports at c480 [size=4]
-	Region 4: I/O ports at c400 [size=16]
-	Region 5: Memory at efafb000 (32-bit, non-prefetchable) [size=4K]
-	Capabilities: [44] Power Management version 2
-		Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
-		Status: D0 NoSoftRst- PME-Enable- DSel=0 DScale=0 PME-
-	Capabilities: [b0] MSI: Enable+ Count=1/4 Maskable- 64bit+
-		Address: 00000000fee0f00c  Data: 4189
-	Capabilities: [cc] HyperTransport: MSI Mapping Enable- Fixed+
-
-The HT MSI Mapping capability is not enabled on the device. I'm thinking 
-it should be, but I'm not sure. And it's also not enabled on the bus 
-which has the Silicon Image controller:
-
-04:00.0 Mass storage controller: Silicon Image, Inc. SiI 3132 Serial ATA 
-Raid II Controller (rev 01)
-
-on its subordinate bus:
-
-00:0b.0 PCI bridge: nVidia Corporation MCP55 PCI Express bridge (rev a3) 
-(prog-if 00 [Normal decode])
-	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- 
-Stepping- SERR- FastB2B- DisINTx+
-	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- 
-<MAbort- >SERR- <PERR- INTx-
-	Latency: 0, Cache Line Size: 64 bytes
-	Bus: primary=00, secondary=04, subordinate=04, sec-latency=0
-	I/O behind bridge: 0000e000-0000efff
-	Memory behind bridge: efe00000-efefffff
-	Secondary status: 66MHz- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- 
-<MAbort- <SERR- <PERR-
-	BridgeCtl: Parity- SERR+ NoISA- VGA- MAbort- >Reset- FastB2B-
-		PriDiscTmr- SecDiscTmr- DiscTmrStat- DiscTmrSERREn-
-	Capabilities: [40] Subsystem: nVidia Corporation Device 0000
-	Capabilities: [48] Power Management version 2
-		Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0+,D1+,D2+,D3hot+,D3cold+)
-		Status: D0 NoSoftRst- PME-Enable- DSel=0 DScale=0 PME-
-	Capabilities: [50] MSI: Enable+ Count=1/2 Maskable- 64bit+
-		Address: 00000000fee0f00c  Data: 4149
-	Capabilities: [60] HyperTransport: MSI Mapping Enable- Fixed-
-		Mapping Address Base: 00000000fee00000
-
-CCing some people that might have some idea about this..
+Marc
