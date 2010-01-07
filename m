@@ -1,59 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751861Ab0AGROv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752047Ab0AGRQ3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751861Ab0AGROv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 12:14:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751191Ab0AGROu
+	id S1752047Ab0AGRQ3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 12:16:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751207Ab0AGRQ2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 12:14:50 -0500
-Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:49978 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751179Ab0AGROu (ORCPT
+	Thu, 7 Jan 2010 12:16:28 -0500
+Received: from nlpi157.sbcis.sbc.com ([207.115.36.171]:41275 "EHLO
+	nlpi157.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751191Ab0AGRQ1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 12:14:50 -0500
-X-Greylist: delayed 1687 seconds by postgrey-1.27 at vger.kernel.org; Thu, 07 Jan 2010 12:14:50 EST
-Message-ID: <4B460F98.9000208@s5r6.in-berlin.de>
-Date: Thu, 07 Jan 2010 17:45:12 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.23) Gecko/20090825 SeaMonkey/1.1.18
+	Thu, 7 Jan 2010 12:16:27 -0500
+Date: Thu, 7 Jan 2010 11:15:37 -0600 (CST)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@router.home
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+cc: Tejun Heo <tj@kernel.org>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC local_t removal V1 2/4] Replace local_t use in trace
+ subsystem
+In-Reply-To: <20100105225710.GC32584@Krystal>
+Message-ID: <alpine.DEB.2.00.1001071109000.901@router.home>
+References: <20100105220417.400092933@quilx.com> <20100105220438.462143211@quilx.com> <20100105225710.GC32584@Krystal>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-To: "Robert P. J. Day" <rpjday@crashcourse.ca>
-CC: Roland Dreier <rdreier@cisco.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Bart Van Assche <bart.vanassche@gmail.com>,
-       David Dillow <dave@thedillows.org>
-Subject: Re: [PATCH] Add BUILD_BUG_ON_NOT_POWER_OF_2()
-References: <ada3a2jugqu.fsf@roland-alpha.cisco.com> <20100106123306.ac85e557.akpm@linux-foundation.org> <aday6kbt14a.fsf@roland-alpha.cisco.com> <20100106134232.0025e818.akpm@linux-foundation.org> <adaeim2supb.fsf_-_@roland-alpha.cisco.com> <alpine.LFD.2.00.1001070332060.16874@localhost>
-In-Reply-To: <alpine.LFD.2.00.1001070332060.16874@localhost>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert P. J. Day wrote:
->   my normal pedantry coming to the surface, but can we at least assume
-> that people will use this test to *legitimately* test whether or not
-> something is a power of two, and not that there is a single bit set
-> (in the case of mask bits where all settings must be mutually
-> exclusive)?
-> 
->   there's a lot of this sort of thing throughout the kernel:
-> 
->     (n) != 0 && (((n) & ((n) - 1))
-> 
-> but it's sometimes unclear whether someone is testing for a) power of
-> two, or b) single bit set.  if you're going to introduce that kind of
-> BUILD BUG (which is a good idea), let's try to not immediately abuse
-> it semantically. :-)
+On Tue, 5 Jan 2010, Mathieu Desnoyers wrote:
 
-It's merely about math, not about semantics.  Plus, its application is
-restricted to build-time checks (of defined constants) anyway.
+> >  static void rb_init_page(struct buffer_data_page *bpage)
+> >  {
+> > -	local_set(&bpage->commit, 0);
+> > +	bpage->commit = 0;
+>
+> This is incorrect. You are turning a "volatile" write into a
+> non-volatile write, which can be turned into multiple writes by the
+> compiler and therefore expose inconsistent state to interrupt handlers.
 
-Hence I would argue that "check at build time whether a defined
-bitmask's Hamming weight is 1; abort build if it isn't" can be
-legitimately and sufficiently readably implemented by means of the new
-BUILD_BUG_ON_NOT_POWER_OF_2().
--- 
-Stefan Richter
--=====-==-=- ---= --===
-http://arcgraph.de/sr/
+The structure is being setup and therefore not reachable by anyone?
+
+Even if that is not the case: The assignment of a scalar is atomic.
+
+> >  static inline unsigned long rb_page_write(struct buffer_page *bpage)
+> >  {
+> > -	return local_read(&bpage->write) & RB_WRITE_MASK;
+> > +	return bpage->write & RB_WRITE_MASK;
+>
+> Same problem here: missing volatile for read. Same applies thorough the
+> patch.
+
+Reading of a scalar is atomic.
+
+> >  	if (tail >= BUF_PAGE_SIZE) {
+> > -		local_sub(length, &tail_page->write);
+> > +		add_local(&tail_page->write, -length);
+>
+> [...]
+>
+> If we can have inc/dec/sub already, that would be good, rather than
+> going with add -val. This would ensure that we don't do too much
+> ping-pong with the code using these primitives.
+
+ok.
+
+> In the end, the fact that the missing volatile access bug crept up as
+> part of this patch makes me think that keeping local_t was doing a fine
+> encapsulation job. However, if we really want to go down the path of
+> removing this encapsulation, then we should:
+
+I am not sure that there is anything to be won by volatile.
+
+> - make sure that _all_ variable accesses are encapsulated, even
+>   read_local and set_local.
+> - put all this API into a single header per architecture, easy for
+>   people to find and understand, rather than multiple headers sprinkled
+>   all over the place.
+> - document that accessing the variables without the API violates the
+>   consistency guarantees.
+
+Then we better leave things as is. local.h would then become a private
+operations set for ringbuffer operations?
+
+I'd like to see local operations that are generically usable also in
+other subsystems. Locall operations that work generically on scalars
+(pointer, int, long etc) like cmpxchg_local.
+
+The only new operation needed for ringbuffer.c is add_local().
+Sugarcoating with inc/dec/sub can be easily added and add_local can be
+modified to generate inc/dec if it discovers 1 or -1 being passed to it.
+
+
+
