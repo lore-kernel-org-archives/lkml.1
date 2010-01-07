@@ -1,58 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751248Ab0AGRXN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751460Ab0AGRZW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751248Ab0AGRXN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 12:23:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750832Ab0AGRXM
+	id S1751460Ab0AGRZW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 12:25:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751196Ab0AGRZU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 12:23:12 -0500
-Received: from casper.infradead.org ([85.118.1.10]:58321 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750759Ab0AGRXM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 12:23:12 -0500
-Subject: Re: [RFC][PATCH 6/8] mm: handle_speculative_fault()
-From: Peter Zijlstra <peterz@infradead.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Christoph Lameter <cl@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "minchan.kim@gmail.com" <minchan.kim@gmail.com>,
-       "hugh.dickins" <hugh.dickins@tiscali.co.uk>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <alpine.LFD.2.00.1001070814080.7821@localhost.localdomain>
-References: <20100104182429.833180340@chello.nl>
-	 <20100104182813.753545361@chello.nl>
-	 <20100105054536.44bf8002@infradead.org>
-	 <alpine.DEB.2.00.1001050916300.1074@router.home>
-	 <20100105192243.1d6b2213@infradead.org>
-	 <alpine.DEB.2.00.1001071007210.901@router.home>
-	 <alpine.LFD.2.00.1001070814080.7821@localhost.localdomain>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 07 Jan 2010 18:22:40 +0100
-Message-ID: <1262884960.4049.106.camel@laptop>
+	Thu, 7 Jan 2010 12:25:20 -0500
+Received: from dan.rpsys.net ([93.97.175.187]:61829 "EHLO dan.rpsys.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751064Ab0AGRZT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jan 2010 12:25:19 -0500
+Subject: Re: 2.6.33-rc3 regression: leds_alix2: can't allocate I/O for GPIO
+From: Richard Purdie <rpurdie@rpsys.net>
+To: Arnd Hannemann <hannemann@nets.rwth-aachen.de>
+Cc: Daniel Mack <daniel@caiaq.de>,
+       Arnd Hannemann <Arnd.Hannemann@nets.rwth-aachen.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "linux-geode@lists.infradead.org" <linux-geode@lists.infradead.org>
+In-Reply-To: <4B45E905.7040401@nets.rwth-aachen.de>
+References: <4B45B6DD.4060903@nets.rwth-aachen.de>
+	 <1262861484.8493.14.camel@dax.rpnet.com>
+	 <4B45CC4C.4030603@nets.rwth-aachen.de>
+	 <4B45CF73.9090304@nets.rwth-aachen.de>
+	 <20100107124630.GU28375@buzzloop.caiaq.de>
+	 <4B45E905.7040401@nets.rwth-aachen.de>
+Content-Type: text/plain
+Date: Thu, 07 Jan 2010 17:27:21 +0000
+Message-Id: <1262885241.27762.1.camel@dax.rpnet.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2010-01-07 at 08:19 -0800, Linus Torvalds wrote:
+On Thu, 2010-01-07 at 15:00 +0100, Arnd Hannemann wrote:
+> Daniel Mack schrieb:
+> > On Thu, Jan 07, 2010 at 01:11:31PM +0100, Arnd Hannemann wrote:
+> >> Arnd Hannemann schrieb:
+> >> Oh, maybe using cs5535_gpio AND leds_alix2 together was never supposed to work?
+> > 
+> > That is the problem indeed. The problem is that three of these GPIOs are
+> > connected to LEDs, so if both drivers are enabled, they will both alter
+> > the same GPIOs. Hmm, don't know how to handle this. Maybe the LED driver
+> > should use the GPIO interface and that's it?
 > 
-> So now some paths are indeed holding it for writing (or need to wait for 
-> it to become writable). And the fairness of rwsems quite possibly then 
-> impacts throughput a _lot_.. 
+> I'm not sure that this configuration needs to be supported at all,
+> so disallowing that both drivers are configured via Kconfig could be a simple solution.
 
-Right, supposing we can make this speculative fault stuff work, then we
-can basically reduce the mmap_sem usage in fault to:
+Agreed, Kconfig dependencies for this until the code is improved look
+like the best option. Does someone want to send me a patch?
 
-  - allocating new page tables
-  - extending the growable vmas
+Cheers,
 
-And do everything else without holding it, including zeroing and IO.
+Richard
 
-
+-- 
+Richard Purdie
+Intel Open Source Technology Centre
 
