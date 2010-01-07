@@ -1,156 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753296Ab0AGQef@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753272Ab0AGQfL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753296Ab0AGQef (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 11:34:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753284Ab0AGQee
+	id S1753272Ab0AGQfL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 11:35:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752965Ab0AGQfK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 11:34:34 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:43610 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753281Ab0AGQec (ORCPT
+	Thu, 7 Jan 2010 11:35:10 -0500
+Received: from outbound-mail-38.bluehost.com ([69.89.20.192]:36483 "HELO
+	outbound-mail-38.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752952Ab0AGQfJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 11:34:32 -0500
-To: Daniel Walker <dwalker@codeaurora.org>
-Cc: linux-kernel@vger.kernel.org, Mark Gross <mgross@linux.intel.com>
-Subject: Re: [PATCH] pm_qos: Add QoS param, minimum system bus frequency
-References: <1262308827-24215-1-git-send-email-dwalker@codeaurora.org>
-From: Kevin Hilman <khilman@deeprootsystems.com>
-Organization: Deep Root Systems, LLC
-Date: Thu, 07 Jan 2010 08:34:28 -0800
-In-Reply-To: <1262308827-24215-1-git-send-email-dwalker@codeaurora.org> (Daniel Walker's message of "Thu\, 31 Dec 2009 17\:20\:27 -0800")
-Message-ID: <87ocl550x7.fsf@deeprootsystems.com>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 7 Jan 2010 11:35:09 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=KdJHLeUqdkIlwtoYuVd4wzotQAHEf7o4MHTtk0iZVVU2vXLzvJ+4bjYqrjMM3csG3NMbG9S1YmrZEO8ToYJtIOEO91fuPFzhgJSuU0x0/8aanezMFv3XHbZSrdKOjvAa;
+Date: Thu, 7 Jan 2010 08:35:06 -0800
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: davidjon@xenontk.org
+Cc: airlied@gmail.com, linux-kernel@vger.kernel.org, eric@anholt.net,
+       dri-devel@lists.sourceforge.net
+Subject: Re: [PATCH v2] drm: Keep disabled outputs disabled after suspend /
+ resume
+Message-ID: <20100107083506.3049aaf4@jbarnes-piketon>
+In-Reply-To: <4B45931E.3000902@xenontk.org>
+References: <4B3C24BC.3040906@xenontk.org>
+	<1262241046-3740-1-BlackWidow-davidjon@xenontk.org>
+	<4B45931E.3000902@xenontk.org>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Daniel Walker <dwalker@codeaurora.org> writes:
+On Thu, 07 Jan 2010 13:24:06 +0530
+David John <davidjon@xenontk.org> wrote:
 
-> From: Praveen Chidambaram <pchidamb@quicinc.com>
->
-> In some systems, the system bus speed can be varied, usually
-> based on the current CPU frequency.  However, various device
-> drivers and/or applications may need a faster system bus for I/O
-> even though the CPU itself may be idle.
->
-> Signed-off-by: Praveen Chidambaram <pchidamb@quicinc.com>
-> Signed-off-by: David Brown <davidb@quicinc.com>
-> Signed-off-by: Daniel Walker <dwalker@codeaurora.org>
+> On 12/31/2009 12:00 PM, David John wrote:
+> > With the current DRM code, an output that has been powered off
+> > from userspace will automatically power back on when resuming
+> > from suspend. This patch fixes this behaviour.
+> > 
+> > Tested only with the Intel i915 driver on an Intel GM45 Express
+> > chipset.
+> > 
+> > Signed-off-by: David John <davidjon@xenontk.org>
+> 
+> Ping.
+> 
+> Any update on this? Correct? Incorrect? Utter rubbish that I should be
+> ashamed of myself?
 
-I think some type of bus parameter is a good idea and something we
-would use on TI OMAP as well.  However, I also have two concerns with
-this approach.
+Yeah, sorry David, looks good to me.
 
-1) The constraint should be in throughput, not in frequency
-2) It doesn't handle multiple busses (as Mark Gross pointed out)
+Reviewed-by: Jesse Barnes <jbarnes@virtuousgeek.org>
 
-For (1), I don't like the idea of forcing drivers to know about the
-underlying bus frequency.  The same driver could be in use across a
-family of SoCs (or even different SoCs), each having different bus
-frequencies.  For this driver to be portable, the driver should
-express its constraints in terms of throughput, not underlying bus
-frequency.
-
-For (2), I'm not sure what the best way to handle this in PM QoS is.
-Lately, I've been thinking that PM QoS is not the right place for
-this.  My idea (currenly only in my head) is the that busses in the
-LDM (platform_bus, etc.)  should have constraints associated with
-them.  That way, constraints can be set using a 'struct device' and
-the bus they are attatched to will inherit the constraints directly.
-This automatically solves the problem of multiple busses and allows
-the possibility for different bus types to handle the constraints
-differently.
-
-Kevin
-
-
-> ---
->  include/linux/pm_qos_params.h |    3 ++-
->  kernel/pm_qos_params.c        |   32 +++++++++++++++++++++++++-------
->  2 files changed, 27 insertions(+), 8 deletions(-)
->
-> diff --git a/include/linux/pm_qos_params.h b/include/linux/pm_qos_params.h
-> index d74f75e..091c13c 100644
-> --- a/include/linux/pm_qos_params.h
-> +++ b/include/linux/pm_qos_params.h
-> @@ -10,8 +10,9 @@
->  #define PM_QOS_CPU_DMA_LATENCY 1
->  #define PM_QOS_NETWORK_LATENCY 2
->  #define PM_QOS_NETWORK_THROUGHPUT 3
-> +#define PM_QOS_SYSTEM_BUS_FREQ 4
->  
-> -#define PM_QOS_NUM_CLASSES 4
-> +#define PM_QOS_NUM_CLASSES 5
->  #define PM_QOS_DEFAULT_VALUE -1
->  
->  int pm_qos_add_requirement(int qos, char *name, s32 value);
-> diff --git a/kernel/pm_qos_params.c b/kernel/pm_qos_params.c
-> index 3db49b9..8576f40 100644
-> --- a/kernel/pm_qos_params.c
-> +++ b/kernel/pm_qos_params.c
-> @@ -102,12 +102,24 @@ static struct pm_qos_object network_throughput_pm_qos = {
->  	.comparitor = max_compare
->  };
->  
-> +static BLOCKING_NOTIFIER_HEAD(system_bus_freq_notifier);
-> +static struct pm_qos_object system_bus_freq_pm_qos = {
-> +	.requirements =
-> +		{LIST_HEAD_INIT(system_bus_freq_pm_qos.requirements.list)},
-> +	.notifiers = &system_bus_freq_notifier,
-> +	.name = "system_bus_freq",
-> +	.default_value = 0,
-> +	.target_value = ATOMIC_INIT(0),
-> +	.comparitor = max_compare
-> +};
-> +
->  
-> -static struct pm_qos_object *pm_qos_array[] = {
-> -	&null_pm_qos,
-> -	&cpu_dma_pm_qos,
-> -	&network_lat_pm_qos,
-> -	&network_throughput_pm_qos
-> +static struct pm_qos_object *pm_qos_array[PM_QOS_NUM_CLASSES] = {
-> +	[PM_QOS_RESERVED] = &null_pm_qos,
-> +	[PM_QOS_CPU_DMA_LATENCY] = &cpu_dma_pm_qos,
-> +	[PM_QOS_NETWORK_LATENCY] = &network_lat_pm_qos,
-> +	[PM_QOS_NETWORK_THROUGHPUT] = &network_throughput_pm_qos,
-> +	[PM_QOS_SYSTEM_BUS_FREQ] = &system_bus_freq_pm_qos,
->  };
->  
->  static DEFINE_SPINLOCK(pm_qos_lock);
-> @@ -313,7 +325,7 @@ EXPORT_SYMBOL_GPL(pm_qos_remove_requirement);
->   * will register the notifier into a notification chain that gets called
->   * upon changes to the pm_qos_class target value.
->   */
-> - int pm_qos_add_notifier(int pm_qos_class, struct notifier_block *notifier)
-> +int pm_qos_add_notifier(int pm_qos_class, struct notifier_block *notifier)
->  {
->  	int retval;
->  
-> @@ -409,9 +421,15 @@ static int __init pm_qos_power_init(void)
->  		return ret;
->  	}
->  	ret = register_pm_qos_misc(&network_throughput_pm_qos);
-> -	if (ret < 0)
-> +	if (ret < 0) {
->  		printk(KERN_ERR
->  			"pm_qos_param: network_throughput setup failed\n");
-> +		return ret;
-> +	}
-> +	ret = register_pm_qos_misc(&system_bus_freq_pm_qos);
-> +	if (ret < 0)
-> +		printk(KERN_ERR
-> +			"pm_qos_param: system_bus_freq setup failed\n");
->  
->  	return ret;
->  }
-> -- 
-> 1.6.3.3
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+-- 
+Jesse Barnes, Intel Open Source Technology Center
