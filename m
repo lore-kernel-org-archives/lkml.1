@@ -1,54 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753869Ab0AGTgM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753906Ab0AGTgj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753869Ab0AGTgM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 14:36:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752386Ab0AGTgL
+	id S1753906Ab0AGTgj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 14:36:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753897Ab0AGTgg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 14:36:11 -0500
-Received: from er-systems.de ([85.25.136.202]:54118 "EHLO er-systems.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753824Ab0AGTgK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 14:36:10 -0500
-Date: Thu, 7 Jan 2010 20:36:07 +0100 (CET)
-From: Thomas Voegtle <tv@lio96.de>
-To: Greg KH <gregkh@suse.de>
-cc: Jan Kara <jack@suse.cz>, "Theodore Ts'o" <tytso@mit.edu>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, stable@kernel.org, dmonakhov@openvz.org
-Subject: Re: Linux 2.6.31.10
-In-Reply-To: <20100107180449.GA17495@suse.de>
-Message-ID: <alpine.LNX.2.00.1001072033301.26784@er-systems.de>
-References: <20100106234533.GC1960@kroah.com> <alpine.LNX.2.00.1001071522480.5426@er-systems.de> <20100107180449.GA17495@suse.de>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+	Thu, 7 Jan 2010 14:36:36 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:61380 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753896Ab0AGTge (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jan 2010 14:36:34 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type;
+        b=Ui8VjdFpaqxMrd0Chovtlkqy0unmOf/08mJmiT/wGbITWhbWcPj9QFN7sP70S4Qnzt
+         Ml+TQjG3/aUrcwnVIvdj64ezWaS4FbtlWhgqc87zNB721E8gRM7HgzpflId/wEfZfbwQ
+         mkPzXa0uwsscP7P6S+5syiVpncdan3adI/xn4=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-X-Virus-Checker-Version: clamassassin 1.2.4 with clamdscan / ClamAV 0.95.3/10267/Thu Jan  7 03:04:56 2010 signatures .
+Date: Thu, 7 Jan 2010 20:36:31 +0100
+Message-ID: <8db1092f1001071136o20ac7e19nb102c7afde8c21e7@mail.gmail.com>
+Subject: [2.6.33-rc3] [WMI?] [RFKILL?] [WIRELESS?] hang: BUG: Unable to handle 
+	kernel NULL pointer dereference at 00000008
+From: Maciej Rutecki <maciej.rutecki@gmail.com>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       carlos@strangeworlds.co.uk,
+       Linux Wireless List <linux-wireless@vger.kernel.org>,
+       Johannes Berg <johannes@sipsolutions.net>, ilw@linux.intel.com
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 7 Jan 2010, Greg KH wrote:
+Last known good: 2.6.33-rc2
+Affected: 2.6.33-rc3
 
-> On Thu, Jan 07, 2010 at 03:27:21PM +0100, Thomas Voegtle wrote:
->> Hi,
->>
->> On Wed, 6 Jan 2010, Greg KH wrote:
->>> I'm announcing the release of the 2.6.31.10 kernel.  All users of the
->>> 2.6.31 kernel series are very strongly encouraged to upgrade.
->>
->>
->> Something broken here, during using a suse 11.2 installation with quota
->> switched on (this is reproducible )
->
-> Jan, this looks like something in the quota patches you sent.  Any
-> ideas?
->
-> Thomas, is this on an ext3 or ext4 partition, or something else?
+Description:
 
+1. When wireless button enabled system hangs on:
+http://unixy.pl/maciek/download/kernel/2.6.33-rc3/DSC_0038.JPG
 
-The one with quota enabled was an ext3 partition, mounted on /
+2. When disable bluetooth and wireless button, I got a bug:
+http://unixy.pl/maciek/download/kernel/2.6.33-rc3/DSC_0039.JPG
 
+3. When reboot I have message:
+http://unixy.pl/maciek/download/kernel/2.6.33-rc3/DSC_0040.JPG
 
-thanks,
-  Thomas
+Config:
+http://unixy.pl/maciek/download/kernel/2.6.33-rc3/config-2.6.33-rc3
 
+Regards
+
+-- 
+Maciej Rutecki
+http://www.maciek.unixy.pl
