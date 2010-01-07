@@ -1,85 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754040Ab0AGVNV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754051Ab0AGVQ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754040Ab0AGVNV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 16:13:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753616Ab0AGVNU
+	id S1754051Ab0AGVQ0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 16:16:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753994Ab0AGVQZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 16:13:20 -0500
-Received: from mail-fx0-f225.google.com ([209.85.220.225]:42095 "EHLO
-	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753601Ab0AGVNU convert rfc822-to-8bit (ORCPT
+	Thu, 7 Jan 2010 16:16:25 -0500
+Received: from Chamillionaire.breakpoint.cc ([85.10.199.196]:59685 "EHLO
+	Chamillionaire.breakpoint.cc" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753620Ab0AGVQY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 16:13:20 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=Gg+bQCtDUuT4/rY/6PEoWyB24NeQ50NrqQ8T8wEjRyGUclOLgINmEHhrr3MDut/TeD
-         IIVkO6sSj8nQomeNUzwd7vmsXQRImqpAlfAcKEDZx3/m+t62ZBfeKoYdT7ZnCMbyMS6B
-         FiuQZt/ovMwFFEZXwoluQnSdCq6erIzQIcNxo=
+	Thu, 7 Jan 2010 16:16:24 -0500
+Date: Thu, 7 Jan 2010 22:16:18 +0100
+From: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>,
+       Roel Kluin <roel.kluin@gmail.com>,
+       "David S. Miller" <davem@davemloft.net>, linux-crypto@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Sergey Mironov <ierton@gmail.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: [PATCH 1/2] crypto/s390_aes: access .cip instead of .blk in cipher
+ mode
+Message-ID: <20100107211618.GA20258@Chamillionaire.breakpoint.cc>
+References: <4B1D02F7.2020505@gmail.com>
+ <20091207134012.GA21388@Chamillionaire.breakpoint.cc>
+ <4B1D0DC9.5000908@gmail.com>
+ <20091211150349.GA736@gondor.apana.org.au>
+ <20100106180736.GA9625@Chamillionaire.breakpoint.cc>
+ <20100107005028.GA32421@gondor.apana.org.au>
 MIME-Version: 1.0
-In-Reply-To: <alpine.LFD.2.00.1001072037170.13474@eddie.linux-mips.org>
-References: <BD79186B4FD85F4B8E60E381CAEE19090208954A@mi8nycmail19.Mi8.com>
-	 <1262888625.10429.23.camel@Joe-Laptop.home>
-	 <alpine.LFD.2.00.1001072037170.13474@eddie.linux-mips.org>
-Date: Thu, 7 Jan 2010 22:13:18 +0100
-Message-ID: <e2d7436a1001071313r6f5814c9o9d7b2d1c6e162367@mail.gmail.com>
-Subject: Re: [PATCH] lib/vsprintf.c: Add %pMF to format FDDI bit reversed MAC 
-	addresses
-From: =?ISO-8859-2?Q?Micha=B3_Miros=B3aw?= <mirqus@gmail.com>
-To: "Maciej W. Rozycki" <macro@linux-mips.org>
-Cc: Joe Perches <joe@perches.com>,
-       H Hartley Sweeten <hartleys@visionengravers.com>,
-       David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       netdev <netdev@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-2
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20100107005028.GA32421@gondor.apana.org.au>
+X-Key-Id: FE3F4706
+X-Key-Fingerprint: FFDA BBBB 3563 1B27 75C9  925B 98D5 5C1C FE3F 4706
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2010/1/7 Maciej W. Rozycki <macro@linux-mips.org>:
-> On Thu, 7 Jan 2010, Joe Perches wrote:
->> On Mon, 2010-01-04 at 23:43 +0000, Maciej W. Rozycki wrote:
->> > The example below shows an address, and the sequence of bits or symbols
->> > that would be transmitted when the address is used in the Source Address
->> > or Destination Address fields on the MAC header.  The transmission line
->> > shows the address bits in the order transmitted, from left to right.  For
->> > IEEE 802 LANs these correspond to actual bits on the medium.  The FDDI
->> > symbols line shows how the FDDI PHY sends the address bits as encoded
->> > symbols.
->> >
->> >         MSB:            35:7B:12:00:00:01
->> >         Canonical:      AC-DE-48-00-00-80
->> >         Transmission:   00110101 01111011 00010010 00000000 00000000 00000001
->> >         FDDI Symbols:   35 7B 12 00 00 01"
->> >
->> > Please note that this address has its group bit clear.
->> >
->> >  This notation is also defined in the "FDDI MEDIA ACCESS CONTROL-2
->> > (MAC-2)" (X3T9/92-120) document although that book does not have a need
->> > to use the MSB form and it's skipped.
->>
->> Adds 56 bytes to object size
->>
->> New:
->> $ size lib/vsprintf.o
->>    text          data     bss     dec     hex filename
->>    8714             0       2    8716    220c lib/vsprintf.o
->> old:
->> $ size lib/vsprintf.o
->>    text          data     bss     dec     hex filename
->>    8658             0       2    8660    21d4 lib/vsprintf.o
->
->  What's the gain?  I'd be rather conservative when taking everybody's 56
-> bytes for one or two drivers hardly anybody uses.  The format of MAC
-> addresses is unlikely to change, so I'd say the sources can live with
-> one or two places where the strings are formatted manually.  Even if the
-> drivers lose more than these 56 bytes.
+>From aff6860829e06f8f7ba5f4a8160a6612e1a6eca7 Mon Sep 17 00:00:00 2001
+From: Roel Kluin <roel.kluin@gmail.com>
+Date: Thu, 7 Jan 2010 21:55:50 +0100
 
-Maybe this can be Kconfig-selected by the relevant drivers then?
+The fallback code in cipher mode touch the union fallback.blk instead
+of fallback.cip. This is wrong because we use the cipher and not the
+blockcipher. This did not show any side effects yet because both types /
+structs contain the same element right now.
 
-BTW, the gain is of course consistency and code readability.
+[bigeasy@breakpoint: different commit message, split the patch in two and
+                     rebase ]
 
-Best Regards,
-Micha³ Miros³aw
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+Signed-off-by: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
+---
+ arch/s390/crypto/aes_s390.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/arch/s390/crypto/aes_s390.c b/arch/s390/crypto/aes_s390.c
+index 6be4503..58f4673 100644
+--- a/arch/s390/crypto/aes_s390.c
++++ b/arch/s390/crypto/aes_s390.c
+@@ -78,14 +78,14 @@ static int setkey_fallback_cip(struct crypto_tfm *tfm, const u8 *in_key,
+ 	struct s390_aes_ctx *sctx = crypto_tfm_ctx(tfm);
+ 	int ret;
+ 
+-	sctx->fallback.blk->base.crt_flags &= ~CRYPTO_TFM_REQ_MASK;
+-	sctx->fallback.blk->base.crt_flags |= (tfm->crt_flags &
++	sctx->fallback.cip->base.crt_flags &= ~CRYPTO_TFM_REQ_MASK;
++	sctx->fallback.cip->base.crt_flags |= (tfm->crt_flags &
+ 			CRYPTO_TFM_REQ_MASK);
+ 
+ 	ret = crypto_cipher_setkey(sctx->fallback.cip, in_key, key_len);
+ 	if (ret) {
+ 		tfm->crt_flags &= ~CRYPTO_TFM_RES_MASK;
+-		tfm->crt_flags |= (sctx->fallback.blk->base.crt_flags &
++		tfm->crt_flags |= (sctx->fallback.cip->base.crt_flags &
+ 				CRYPTO_TFM_RES_MASK);
+ 	}
+ 	return ret;
+-- 
+1.6.6
+
