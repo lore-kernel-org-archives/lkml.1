@@ -1,92 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932884Ab0AGA7m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932878Ab0AGBBm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932884Ab0AGA7m (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 19:59:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932834Ab0AGA7l
+	id S932878Ab0AGBBm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 20:01:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756469Ab0AGBBg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 19:59:41 -0500
-Received: from mail-yx0-f188.google.com ([209.85.210.188]:48749 "EHLO
-	mail-yx0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932826Ab0AGA7k (ORCPT
+	Wed, 6 Jan 2010 20:01:36 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:39361 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752209Ab0AGBBf convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 19:59:40 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=WFSdTKex13lPQv95nDiic2bggK2LeufsYgw4QocaqEYngqsqGoSpWV+bHGu018qm1X
-         pFZ1uccEDuDAlpjNNtwdYiEZ3dmGGNCVeyUnI22qODOu/mMhruyOy+BMysJp2Fo6E80s
-         Ir0xVXvgQP/2YPSYt5SPHpykxcIIOlIM7cZ+Q=
-Message-ID: <4B4531F9.3060108@gmail.com>
-Date: Wed, 06 Jan 2010 18:59:37 -0600
-From: Robert Hancock <hancockrwd@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
+	Wed, 6 Jan 2010 20:01:35 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=MngZCrPf3mV9lUPk3gd1zzA/YjhnoO8yo/3x/AceIE+OcY3EWV4dEwwCQP/PxCfqB
+	ESwS4I8K+M6C7IpebZgQA==
 MIME-Version: 1.0
-To: Torsten Kaiser <just.for.lkml@googlemail.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Vivek Mahajan <vivek.mahajan@freescale.com>,
-       Jeff Garzik <jgarzik@pobox.com>, linux-ide@vger.kernel.org
-Subject: Re: New MSI support in sata_sil24 still broken in 2.6.33-rc3
-References: <64bb37e1001060137h597322e8s4305b7cc1c91527e@mail.gmail.com>
-In-Reply-To: <64bb37e1001060137h597322e8s4305b7cc1c91527e@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <9411cbdd545e1232c916bfef03a60cf95510016d.1262186098.git.kirill@shutemov.name>
+References: <cover.1262186097.git.kirill@shutemov.name>
+	 <9411cbdd545e1232c916bfef03a60cf95510016d.1262186098.git.kirill@shutemov.name>
+Date: Wed, 6 Jan 2010 17:01:21 -0800
+Message-ID: <6599ad831001061701x72098dacn7a5d916418396e33@mail.gmail.com>
+Subject: Re: [PATCH v5 1/4] cgroup: implement eventfd-based generic API for 
+	notifications
+From: Paul Menage <menage@google.com>
+To: "Kirill A. Shutemov" <kirill@shutemov.name>
+Cc: containers@lists.linux-foundation.org, linux-mm@kvack.org,
+       Li Zefan <lizf@cn.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Pavel Emelyanov <xemul@openvz.org>, Dan Malek <dan@embeddedalley.com>,
+       Vladislav Buzov <vbuzov@embeddedalley.com>,
+       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
+       Alexander Shishkin <virtuoso@slind.org>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/06/2010 03:37 AM, Torsten Kaiser wrote:
-> After activating the MSI support by adding sata_sil24.msi=1 to the
-> kernel command line, the first write to a drive attached to the SiI
-> 3132 controller results in the following errors:
->
-> [  138.950074] ata2.00: exception Emask 0x0 SAct 0xf SErr 0x0 action 0x6 frozen
-> [  138.961023] ata2.00: failed command: WRITE FPDMA QUEUED
-> [  138.970034] ata2.00: cmd 61/00:00:a5:95:4a/04:00:01:00:00/40 tag 0
-> ncq 524288 out
-> [  138.970037]          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask
-> 0x4 (timeout)
+On Wed, Dec 30, 2009 at 7:57 AM, Kirill A. Shutemov
+<kirill@shutemov.name> wrote:
+> This patch introduces write-only file "cgroup.event_control" in every
+> cgroup.
 
-Looking at the code in sata_sil24 and the SiI3132 datasheet, there's a 
-control bit which doesn't seem to be handled in the driver, global 
-control register bit 30: "MSI Acknowledge (W). Writing a one to this bit 
-acknowledges a Message Signaled Interrupt and permits generation of 
-another MSI. This bit is cleared immediately after the acknowledgement 
-is recognized by the control logic, hence the bit will always be read as 
-a zero. If all interrupt conditions are removed subsequent to an MSI, it 
-is not necessary to assert this Acknowledge; another MSI will be 
-generated when an interrupt condition occurs."
+This looks like a nice generic API for doing event notifications - thanks!
 
-The way the interrupt handler for this driver works is that we check the 
-global IRQ status register, and then based on what ports indicated an 
-interrupt in that register, we check the individual port command 
-completion registers. The issue would seem to be that if a port got an 
-interrupt condition in between these two operations, we'd miss it, and 
-the MSI logic described above then wouldn't generate any more interrupts 
-since we didn't remove all interrupt conditions.
+Sorry I hadn't had a chance to review it before now, due to travelling
+and day-job pressures.
 
-Can you try this patch and see if it helps? (Might be whitespace damaged 
-but hopefully you can apply manually in that case.)
 
-diff --git a/drivers/ata/sata_sil24.c b/drivers/ata/sata_sil24.c
-index 1370df6..d3d8dec 100644
---- a/drivers/ata/sata_sil24.c
-+++ b/drivers/ata/sata_sil24.c
-@@ -102,6 +102,7 @@ enum {
-         HOST_CTRL_STOP          = (1 << 18), /* latched PCI STOP */
-         HOST_CTRL_DEVSEL        = (1 << 19), /* latched PCI DEVSEL */
-         HOST_CTRL_REQ64         = (1 << 20), /* latched PCI REQ64 */
-+       HOST_CTRL_MSIACK        = (1 << 30), /* MSI acknowledge */
-         HOST_CTRL_GLOBAL_RST    = (1 << 31), /* global reset */
+> +}
+> +
+> +static int cgroup_event_wake(wait_queue_t *wait, unsigned mode,
+> +               int sync, void *key)
 
-         /*
-@@ -1168,6 +1169,7 @@ static irqreturn_t sil24_interrupt(int irq, void 
-*dev_instance)
-                                        ": interrupt from disabled port 
-%d\n", i);
-                 }
+Maybe some comments here indicating how/when it gets called? (And more
+comments for each function generally?)
 
-+       writel(IRQ_STAT_4PORTS | HOST_CTRL_MSIACK, host_base + HOST_CTRL);
-         spin_unlock(&host->lock);
-   out:
-         return IRQ_RETVAL(handled);
+> +       if (flags & POLLHUP) {
+> +               spin_lock(&cgrp->event_list_lock);
+> +               list_del(&event->list);
+> +               spin_unlock(&cgrp->event_list_lock);
+> +               schedule_work(&event->remove);
+
+Comment saying why we can't do the remove immediately in this context?
+
+> +
+> +fail:
+> +       if (!IS_ERR(cfile))
+> +               fput(cfile);
+
+cfile is either valid or NULL - it never contains an error value.
+
+> +
+> +       if (!IS_ERR(efile))
+> +               fput(efile);
+
+While this is OK currently, it's a bit fragile. efile starts as NULL,
+and IS_ERR(NULL) is false. So if we jump to fail: before trying to do
+the eventfd_fget() then we'll try to fput(NULL), which will oops. This
+works because we don't currently jump to fail: until after
+eventfd_fget(), but someone could add an extra setup step between the
+kzalloc() and the eventfd_fget() which could fail.
+
+Paul
