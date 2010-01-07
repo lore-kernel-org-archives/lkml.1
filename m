@@ -1,60 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753272Ab0AGQfL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753288Ab0AGQh1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753272Ab0AGQfL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 11:35:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752965Ab0AGQfK
+	id S1753288Ab0AGQh1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 11:37:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753086Ab0AGQh0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 11:35:10 -0500
-Received: from outbound-mail-38.bluehost.com ([69.89.20.192]:36483 "HELO
-	outbound-mail-38.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752952Ab0AGQfJ (ORCPT
+	Thu, 7 Jan 2010 11:37:26 -0500
+Received: from nlpi157.sbcis.sbc.com ([207.115.36.171]:36001 "EHLO
+	nlpi157.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752956Ab0AGQhZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 11:35:09 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=KdJHLeUqdkIlwtoYuVd4wzotQAHEf7o4MHTtk0iZVVU2vXLzvJ+4bjYqrjMM3csG3NMbG9S1YmrZEO8ToYJtIOEO91fuPFzhgJSuU0x0/8aanezMFv3XHbZSrdKOjvAa;
-Date: Thu, 7 Jan 2010 08:35:06 -0800
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: davidjon@xenontk.org
-Cc: airlied@gmail.com, linux-kernel@vger.kernel.org, eric@anholt.net,
-       dri-devel@lists.sourceforge.net
-Subject: Re: [PATCH v2] drm: Keep disabled outputs disabled after suspend /
- resume
-Message-ID: <20100107083506.3049aaf4@jbarnes-piketon>
-In-Reply-To: <4B45931E.3000902@xenontk.org>
-References: <4B3C24BC.3040906@xenontk.org>
-	<1262241046-3740-1-BlackWidow-davidjon@xenontk.org>
-	<4B45931E.3000902@xenontk.org>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
+	Thu, 7 Jan 2010 11:37:25 -0500
+Date: Thu, 7 Jan 2010 10:36:52 -0600 (CST)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@router.home
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Arjan van de Ven <arjan@infradead.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "minchan.kim@gmail.com" <minchan.kim@gmail.com>,
+       "hugh.dickins" <hugh.dickins@tiscali.co.uk>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [RFC][PATCH 6/8] mm: handle_speculative_fault()
+In-Reply-To: <alpine.LFD.2.00.1001070814080.7821@localhost.localdomain>
+Message-ID: <alpine.DEB.2.00.1001071025450.901@router.home>
+References: <20100104182429.833180340@chello.nl> <20100104182813.753545361@chello.nl> <20100105054536.44bf8002@infradead.org> <alpine.DEB.2.00.1001050916300.1074@router.home> <20100105192243.1d6b2213@infradead.org> <alpine.DEB.2.00.1001071007210.901@router.home>
+ <alpine.LFD.2.00.1001070814080.7821@localhost.localdomain>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 07 Jan 2010 13:24:06 +0530
-David John <davidjon@xenontk.org> wrote:
+On Thu, 7 Jan 2010, Linus Torvalds wrote:
 
-> On 12/31/2009 12:00 PM, David John wrote:
-> > With the current DRM code, an output that has been powered off
-> > from userspace will automatically power back on when resuming
-> > from suspend. This patch fixes this behaviour.
-> > 
-> > Tested only with the Intel i915 driver on an Intel GM45 Express
-> > chipset.
-> > 
-> > Signed-off-by: David John <davidjon@xenontk.org>
-> 
-> Ping.
-> 
-> Any update on this? Correct? Incorrect? Utter rubbish that I should be
-> ashamed of myself?
+> You're missing what Arjan said - the jav workload does a lot of memory
+> allocations too, causing mmap/munmap.
 
-Yeah, sorry David, looks good to me.
+Well isnt that tunable on the app level? Get bigger chunks of memory in
+order to reduce the frequency of mmap operations? If you want concurrency
+of faults then mmap_sem write locking currently needs to be limited.
 
-Reviewed-by: Jesse Barnes <jbarnes@virtuousgeek.org>
+> So now some paths are indeed holding it for writing (or need to wait for
+> it to become writable). And the fairness of rwsems quite possibly then
+> impacts throughput a _lot_..
 
--- 
-Jesse Barnes, Intel Open Source Technology Center
+Very true. Doing range locking (maybe using the split pte lock
+boundaries, shifting some state from mm_struct into vmas) may be a way to
+avoid hold mmap_sem for write in that case.
+
+> (Side note: I wonder if we should wake up _all_ readers when we wake up
+> any. Right now, we wake up all readers - but only until we hit a writer.
+> Which is the _fair_ thing to do, but it does mean that we can end up in
+> horrible patterns of alternating readers/writers, when it could be much
+> better to just say "release the hounds" and let all pending readers go
+> after a writer has had its turn).
+
+Have a cycle with concurrent readers followed by a cycle of serialized
+writers may be best under heavy load. The writers need to be limited in
+frequency otherwise they will starve the readers.
