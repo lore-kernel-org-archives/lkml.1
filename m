@@ -1,30 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756207Ab0AGJHT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932788Ab0AGJLY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756207Ab0AGJHT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 04:07:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756048Ab0AGJHS
+	id S932788Ab0AGJLY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 04:11:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932731Ab0AGJLV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 04:07:18 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:56055 "EHLO
+	Thu, 7 Jan 2010 04:11:21 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:56228 "EHLO
 	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755997Ab0AGJHQ (ORCPT
+	with ESMTP id S932742Ab0AGJLR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 04:07:16 -0500
+	Thu, 7 Jan 2010 04:11:17 -0500
 X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Thu, 7 Jan 2010 18:04:01 +0900
+Date: Thu, 7 Jan 2010 18:08:00 +0900
 From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: balbir@linux.vnet.ibm.com
-Cc: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>, akpm@linux-foundation.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Kirill A. Shutemov" <kirill@shutemov.name>
-Subject: Re: [PATCH -mmotm] memcg: implement memory thresholds document
- fixes
-Message-Id: <20100107180401.2bca081f.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20100107085256.GU3059@balbir.in.ibm.com>
-References: <201001062259.o06MxQrp023236@imap1.linux-foundation.org>
-	<20100107095714.9edc4201.nishimura@mxp.nes.nec.co.jp>
-	<20100107101805.b26a1f1a.kamezawa.hiroyu@jp.fujitsu.com>
-	<20100107085256.GU3059@balbir.in.ibm.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: balbir@linux.vnet.ibm.com, "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>
+Subject: Re: [RFC] Shared page accounting for memory cgroup
+Message-Id: <20100107180800.7b85ed10.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20100107174814.ad6820db.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20091229182743.GB12533@balbir.in.ibm.com>
+	<20100104085108.eaa9c867.kamezawa.hiroyu@jp.fujitsu.com>
+	<20100104000752.GC16187@balbir.in.ibm.com>
+	<20100104093528.04846521.kamezawa.hiroyu@jp.fujitsu.com>
+	<20100104005030.GG16187@balbir.in.ibm.com>
+	<20100106130258.a918e047.kamezawa.hiroyu@jp.fujitsu.com>
+	<20100106070150.GL3059@balbir.in.ibm.com>
+	<20100106161211.5a7b600f.kamezawa.hiroyu@jp.fujitsu.com>
+	<20100107071554.GO3059@balbir.in.ibm.com>
+	<20100107163610.aaf831e6.kamezawa.hiroyu@jp.fujitsu.com>
+	<20100107083440.GS3059@balbir.in.ibm.com>
+	<20100107174814.ad6820db.kamezawa.hiroyu@jp.fujitsu.com>
 Organization: FUJITSU Co. LTD.
 X-Mailer: Sylpheed 2.7.1 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
@@ -34,74 +42,38 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 7 Jan 2010 14:22:56 +0530
-Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-
-> * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2010-01-07 10:18:05]:
-> 
-> > On Thu, 7 Jan 2010 09:57:14 +0900
-> > Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
-> > 
-> > > Each memcg-implement-memory-thresholds.patch and
-> > > memcg-add-interface-to-move-charge-at-task-migration.patch try to add a new
-> > > section to Documentation/cgroup/memory.txt, so the document has been a bit
-> > > mangled when these patches are merged at the same time.
-> > > 
-> > > This patch fixes it.
+On Thu, 7 Jan 2010 17:48:14 +0900
+KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> > > "How pages are shared" doesn't show good hints. I don't hear such parameter
+> > > is used in production's resource monitoring software.
 > > > 
 > > 
-> > Acked-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> > You mean "How many pages are shared" are not good hints, please see my
+> > justification above. With Virtualization (look at KSM for example),
+> > shared pages are going to be increasingly important part of the
+> > accounting.
 > > 
-> > BTW, I'll prepare total update for memcg (especially around percpu counter).
-> > Do you have something may conflict in plan ?
 > 
-> Kame, could you clarify percpu counter? Is this on for resource
-> counter scalability patches I had?
+> Considering KSM, your cuounting style is tooo bad.
 > 
-No.
+> You should add 
+> 
+>  - MEM_CGROUP_STAT_SHARED_BY_KSM
+>  - MEM_CGROUP_STAT_FOR_TMPFS/SYSV_IPC_SHMEM
+> 
+> counters to memcg rather than scanning. I can help tests.
+> 
+> I have no objections to have above 2 counters. It's informative.
+> 
+> But, memory reclaim can page-out pages even if pages are shared.
+> So, "how heavy memcg is" is an independent problem from above coutners.
+> 
 
-Now. memcg's percpu counter uses following code.
-==
-static inline void
-__mem_cgroup_stat_set_safe(struct mem_cgroup_stat_cpu *stat,
-                                enum mem_cgroup_stat_index idx, s64 val)
-{
-        stat->count[idx] = val;
-}
-static int mem_cgroup_size(void)
-{
-        int cpustat_size = nr_cpu_ids * sizeof(struct mem_cgroup_stat_cpu);
-        return sizeof(struct mem_cgroup) + cpustat_size;
-}
+In other words, above counters can show
+"What role the memcg play in the system" to some extent.
 
-static struct mem_cgroup *mem_cgroup_alloc(void)
-{
-        struct mem_cgroup *mem;
-        int size = mem_cgroup_size();
-
-        if (size < PAGE_SIZE)
-                mem = kmalloc(size, GFP_KERNEL);
-        else
-                mem = vmalloc(size);
-
-==
-
-But this is not NUMA-aware and slow. i.e. BAD.
-
-Now, we have good codes for percpu_alloc(). we should use it.
-
-like this => http://patchwork.kernel.org/patch/58662/
-
-Things will be simplified.
-I need to rewrite all to catch up recent changes _AND_ we have to
-detect why 2 seconds of overhead is added by threshold patches.
-And hopefuly, reduce it. I think softlimit/threshold event counter
-can be rewritten in unified clean way.
+But I don't express it as "heavy" ....."importance or influence of cgroup" ?
 
 Thanks,
 -Kame
-
-
-
-
 
