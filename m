@@ -1,75 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753241Ab0AGSK2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753223Ab0AGSLs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753241Ab0AGSK2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 13:10:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753192Ab0AGSKX
+	id S1753223Ab0AGSLs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 13:11:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753101Ab0AGSLr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 13:10:23 -0500
-Received: from waste.org ([173.11.57.241]:35270 "EHLO waste.org"
+	Thu, 7 Jan 2010 13:11:47 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:21988 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753138Ab0AGSKT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 13:10:19 -0500
-Subject: Re: [PATCH v3] slab: initialize unused alien cache entry as NULL
- at alloc_alien_cache().
-From: Matt Mackall <mpm@selenic.com>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Haicheng Li <haicheng.li@linux.intel.com>,
-       Christoph Lameter <cl@linux-foundation.org>, linux-mm@kvack.org,
-       Andi Kleen <andi@firstfloor.org>, Eric Dumazet <eric.dumazet@gmail.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <4B45CF8E.7000707@cs.helsinki.fi>
-References: <4B443AE3.2080800@linux.intel.com>
-	 <4B45CF8E.7000707@cs.helsinki.fi>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 07 Jan 2010 12:10:11 -0600
-Message-ID: <1262887811.29868.241.camel@calx>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	id S1752127Ab0AGSLq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jan 2010 13:11:46 -0500
+Date: Thu, 7 Jan 2010 19:11:37 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Roland McGrath <roland@redhat.com>
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>, caiqian@redhat.com,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Jan Kratochvil <jkratoch@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-s390@vger.kernel.org, utrace-devel@redhat.com
+Subject: Re: s390 && user_enable_single_step() (Was: odd utrace testing
+	results on s390x)
+Message-ID: <20100107181137.GB13300@redhat.com>
+References: <1503844142.2061111261478093776.JavaMail.root@zmail06.collab.prod.int.phx2.redhat.com> <1257887498.2061171261478252049.JavaMail.root@zmail06.collab.prod.int.phx2.redhat.com> <20100104155225.GA16650@redhat.com> <20100104171626.22ea2d9c@mschwide.boeblingen.de.ibm.com> <20100104181412.GA21146@redhat.com> <20100104211147.4CC94D532@magilla.sf.frob.com> <20100105105030.66bb8a0a@mschwide.boeblingen.de.ibm.com> <20100105153633.GA9376@redhat.com> <20100106210812.E03A1134D@magilla.sf.frob.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100106210812.E03A1134D@magilla.sf.frob.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2010-01-07 at 14:11 +0200, Pekka Enberg wrote:
-> Haicheng Li kirjoitti:
-> > Comparing with existing code, it's a simpler way to use kzalloc_node()
-> > to ensure that each unused alien cache entry is NULL.
-> > 
-> > CC: Pekka Enberg <penberg@cs.helsinki.fi>
-> > CC: Eric Dumazet <eric.dumazet@gmail.com>
-> > ---
-> >  mm/slab.c |    6 ++----
-> >  1 files changed, 2 insertions(+), 4 deletions(-)
-> > 
-> > diff --git a/mm/slab.c b/mm/slab.c
-> > index 7dfa481..5d1a782 100644
-> > --- a/mm/slab.c
-> > +++ b/mm/slab.c
-> > @@ -971,13 +971,11 @@ static struct array_cache **alloc_alien_cache(int 
-> > node, int limit, gfp_t gfp)
-> > 
-> >      if (limit > 1)
-> >          limit = 12;
-> > -    ac_ptr = kmalloc_node(memsize, gfp, node);
-> > +    ac_ptr = kzalloc_node(memsize, gfp, node);
-> >      if (ac_ptr) {
-> >          for_each_node(i) {
-> > -            if (i == node || !node_online(i)) {
-> > -                ac_ptr[i] = NULL;
-> > +            if (i == node || !node_online(i))
-> >                  continue;
-> > -            }
-> >              ac_ptr[i] = alloc_arraycache(node, limit, 0xbaadf00d, gfp);
-> >              if (!ac_ptr[i]) {
-> >                  for (i--; i >= 0; i--)
-> 
-> Christoph? Matt?
+On 01/06, Roland McGrath wrote:
+>
+> > Oh, I am not sure. But I don't understand TIF_SINGLE_STEP on s390,
+> > absolutely.
+> >
+> > For example, why do_signal() sets TIF_SINGLE_STEP? Why can't we do
+>
+> I think we could.  That would be more consistent with other machines.  On
+> s390, once we set TIF_SINGLE_STEP, we are going to post a SIGTRAP
+> eventually before going to user mode.  But then tracehook_signal_handler()
+> also gets stepping=1 and the expected meaning of this is that the arch code
+> is not itself simulating a single-step for the handler setup.  So the
+> tracehook (i.e. ptrace/utrace) code does what it does for "need a fake
+> single-step".
+>
+> In ptrace (including utrace-based ptrace), this winds up with sending a
+> SIGTRAP.  So when we finally do get out of do_signal and TIF_SINGLE_STEP
+> causes a second SIGTRAP, it's already pending and the second one makes no
+> difference.
 
-Looks like a fine cleanup.
+Confused again, perhaps I just misunderstood what you mean...
 
-Acked-by: Matt Mackall <mpm@selenic.com>
+Without utrace, tracehook_signal_handler() doesn't send SIGTRAP, it
+merely does ptrace_notify(SIGTRAP), this means that
 
--- 
-http://selenic.com : development and support for Mercurial and Linux
+> But for the general case of utrace, we'll have the UTRACE_SIGNAL_HANDLER
+> report, followed by a SIGTRAP that appears to be an authentic single-step
+> trap, but takes place on the same instruction.  If the resumption after the
+> UTRACE_SIGNAL_HANDLER report didn't use stepping, then this is an entirely
+> unexpected extra SIGTRAP.
 
+even without utrace we can have unexpected SIGTRAP.
+
+Oleg.
 
