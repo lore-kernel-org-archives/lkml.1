@@ -1,77 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756048Ab0AGHQE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756127Ab0AGHTn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756048Ab0AGHQE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 02:16:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754366Ab0AGHQD
+	id S1756127Ab0AGHTn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 02:19:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756074Ab0AGHTm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 02:16:03 -0500
-Received: from e23smtp04.au.ibm.com ([202.81.31.146]:56032 "EHLO
-	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753332Ab0AGHQB (ORCPT
+	Thu, 7 Jan 2010 02:19:42 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:57406 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754276Ab0AGHTl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 02:16:01 -0500
-Date: Thu, 7 Jan 2010 12:45:54 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>
-Subject: Re: [RFC] Shared page accounting for memory cgroup
-Message-ID: <20100107071554.GO3059@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <20091229182743.GB12533@balbir.in.ibm.com>
- <20100104085108.eaa9c867.kamezawa.hiroyu@jp.fujitsu.com>
- <20100104000752.GC16187@balbir.in.ibm.com>
- <20100104093528.04846521.kamezawa.hiroyu@jp.fujitsu.com>
- <20100104005030.GG16187@balbir.in.ibm.com>
- <20100106130258.a918e047.kamezawa.hiroyu@jp.fujitsu.com>
- <20100106070150.GL3059@balbir.in.ibm.com>
- <20100106161211.5a7b600f.kamezawa.hiroyu@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20100106161211.5a7b600f.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Mutt/1.5.20 (2009-08-17)
+	Thu, 7 Jan 2010 02:19:41 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Thu, 7 Jan 2010 16:16:27 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Ben Blum <bblum@andrew.cmu.edu>, Andrew Morton <akpm@linux-foundation.org>,
+       menage@google.com, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v4 0/4] cgroups: support for module-loadable subsystems
+Message-Id: <20100107161627.34b31e0c.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <4B45824B.9030108@cn.fujitsu.com>
+References: <20091231051050.GA714@andrew.cmu.edu>
+	<20100106160414.bd555474.akpm@linux-foundation.org>
+	<20100107012606.GA25577@andrew.cmu.edu>
+	<20100107120732.97d502bd.kamezawa.hiroyu@jp.fujitsu.com>
+	<4B45824B.9030108@cn.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2010-01-06 16:12:11]:
+On Thu, 07 Jan 2010 14:42:19 +0800
+Li Zefan <lizf@cn.fujitsu.com> wrote:
 
-> On Wed, 6 Jan 2010 12:31:50 +0530
-> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> > > No. If it takes long time, locking fork()/exit() for such long time is the bigger
-> > > issue.
-> > > I recommend you to add memacct subsystem to sum up RSS of all processes's RSS counting
-> > > under a cgroup.  Althoght it may add huge costs in page fault path but implementation
-> > > will be very simple and will not hurt realtime ops.
-> > > There will be no terrible race, I guess.
-> > >
+> KAMEZAWA Hiroyuki wrote:
+> > On Wed, 6 Jan 2010 20:26:06 -0500
+> > Ben Blum <bblum@andrew.cmu.edu> wrote:
 > > 
-> > But others hold that lock as well, simple thing like listing tasks and
-> > moving tasks, etc. I expect the usage of shared to be in the same
-> > range.
+> >> On Wed, Jan 06, 2010 at 04:04:14PM -0800, Andrew Morton wrote:
+> >>> On Thu, 31 Dec 2009 00:10:50 -0500
+> >>> Ben Blum <bblum@andrew.cmu.edu> wrote:
+> >>>
+> >>>> This patch series implements support for building, loading, and
+> >>>> unloading subsystems as modules, both within and outside the kernel
+> >>>> source tree. It provides an interface cgroup_load_subsys() and
+> >>>> cgroup_unload_subsys() which modular subsystems can use to register and
+> >>>> depart during runtime. The net_cls classifier subsystem serves as the
+> >>>> example for a subsystem which can be converted into a module using these
+> >>>> changes.
+> >>> What is the value in this?  What are the usage scenarios?  Why does the
+> >>> benefit of this change exceed the cost/risk/etc of merging it?
+> >> As discussed in the first posting of these patches, this provides the
+> >> ability for arbitrary subsystems to be used with cgroups.. cls_cgroup
+> >> would have already been a module except for a lack of support from
+> >> cgroups, and the change also allows other module-loadable classifiers
+> >> to add subsystems of their own.
+> > 
+> > Hmm, do you have your own module in plan ?
 > > 
 > 
-> And piles up costs ? I think cgroup guys should pay attention to fork/exit
-> costs more. Now, it gets slower and slower.
-> In that point, I never like migrate-at-task-move work in cpuset and memcg.
-> 
-> My 1st objection to this patch is this "shared" doesn't mean "shared between
-> cgroup" but means "shared between processes".
-> I think it's of no use and no help to users.
->
-
-So what in your opinion would help end users? My concern is that as
-we make progress with memcg, we account only for privately used pages
-with no hint/data about the real usage (shared within or with other
-cgroups). How do we decide if one cgroup is really heavy?
- 
-> And implementation is 2nd thing.
+> Maybe the new blkio_cgroup can also be made module-able.
 > 
 
-More details on your concern, please!
+Hmm, I read the patch slightly. I'm not enough expert to review this patch..
 
--- 
-	Balbir
+I requst following as TODO.
+(No objection to the direction/patch.)
+
+ 1. Add documentation about load/unlod module.
+   It seems module unloading will not succuess while subsystem is mounted.
+   Right ?
+
+ 2. Making this to be reasonable value.
+#define CGROUP_SUBSYS_COUNT (BITS_PER_BYTE*sizeof(unsigned long))
+   I can't find why.
+
+ 3. show whehter a subsys is a loadable module or not via /proc/cgroups
+
+ 4. how to test ? load/unload NET_CLS is enough ?
+
+Last one is question.
+
+ 5. Is following path is safe ?
+
+    find_css_set() {
+     ....
+          read_lock(&css_set_lock);
+          get template including pointer
+          read_unlock(&css_set_lock);
+
+          use template to build new css_set.
+
+
+Thanks,
+-Kame
+
+
