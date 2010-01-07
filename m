@@ -1,59 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752725Ab0AGOWm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752781Ab0AGO1n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752725Ab0AGOWm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 09:22:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752266Ab0AGOWl
+	id S1752781Ab0AGO1n (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 09:27:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752216Ab0AGO1n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 09:22:41 -0500
-Received: from moutng.kundenserver.de ([212.227.17.10]:55068 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752235Ab0AGOWk (ORCPT
+	Thu, 7 Jan 2010 09:27:43 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:32970 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750951Ab0AGO1m (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 09:22:40 -0500
-From: Arnd Bergmann <arnd@arndb.de>
+	Thu, 7 Jan 2010 09:27:42 -0500
+X-Authority-Analysis: v=1.0 c=1 a=r_nf4N-T2GkA:10 a=7U3hwN5JcxgA:10 a=NxCurGSypRDGMPjQZM8A:9 a=EFXI3Qub4OP4sP8HFX8A:7 a=aa3d6ZXQn8yc7yoFLHHNtdqhbtQA:4 a=A0X8C_FPr_91ywAm:21 a=6eHwggJ0t_Z9e5q0:21
+X-Cloudmark-Score: 0
+X-Originating-IP: 74.67.89.75
+Subject: Re: [RFC PATCH] introduce sys_membarrier(): process-wide memory
+ barrier
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
 To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: Re: [RFC local_t removal V1 1/4] Add add_local() and add_local_return()
-Date: Thu, 7 Jan 2010 15:22:30 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.31-14-generic; KDE/4.3.2; x86_64; ; )
-Cc: Christoph Lameter <cl@linux-foundation.org>, Tejun Heo <tj@kernel.org>,
-       linux-kernel@vger.kernel.org
-References: <20100105220417.400092933@quilx.com> <201001071445.50416.arnd@arndb.de> <20100107135757.GA6011@Krystal>
-In-Reply-To: <20100107135757.GA6011@Krystal>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+Cc: linux-kernel@vger.kernel.org,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org,
+       josh@joshtriplett.org, tglx@linutronix.de, peterz@infradead.org,
+       Valdis.Kletnieks@vt.edu, dhowells@redhat.com, laijs@cn.fujitsu.com,
+       dipankar@in.ibm.com
+In-Reply-To: <20100107061955.GC25786@Krystal>
+References: <20100107044007.GA22863@Krystal>
+	 <1262842854.28171.3710.camel@gandalf.stny.rr.com>
+	 <20100107061955.GC25786@Krystal>
+Content-Type: text/plain; charset="ISO-8859-15"
+Organization: Kihon Technologies Inc.
+Date: Thu, 07 Jan 2010 09:27:38 -0500
+Message-ID: <1262874458.28171.3728.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
-Message-Id: <201001071522.30632.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1+4f53SQ2iFpsF0vHQsYTIowgx4bFBvpWlVcIQ
- U1kCd8ZE7higeo90MT+2xQkSEWB0nb+lspvcLArg+6Quc6ep87
- 8dR3kZUo0hhcs4x/dJ9rw==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 07 January 2010, Mathieu Desnoyers wrote:
-> * Arnd Bergmann (arnd@arndb.de) wrote:
-> > > > + local_irq_save(flags);
-> > > > + switch (size) {
-> > > > + case 1: r = (*((u8 *)ptr) += value);
-> > > > +         break;
-> > > > + case 2: r = (*((u16 *)ptr) += value);
-> > > > +         break;
-> > > > + case 4: r = (*((u32 *)ptr) += value);
-> > > > +         break;
-> > > > + case 8: r = (*((u64 *)ptr) += value);
-> > > > +         break;
-> > 
-> > But I think here you actually need to add the volatile in order
-> > to make these atomic assignments.
+On Thu, 2010-01-07 at 01:19 -0500, Mathieu Desnoyers wrote:
+
+> I see your point.
+
+Actually you are missing the point ;-)
+
 > 
-> Yes, you are right. If we ever try to access these variables from a
-> remote CPU with a load (but not with any concurrent store operation, as
-> this would be semantically invalid), then the volatile is important.
+> This would probably be good for machines with very large number of cpus
+> and without IPI broadcast support, running processes with only few
+> threads. I really start to think that we should have some way to compare
+> the number of threads belonging to a process and choose between the
+> broadcast IPI and the per-cpu IPI depending if we are over or under an
+> arbitrary threshold.
 
-Just to make sure everyone has the same understanding: We need the volatile
-in the cast in these lines, not the one in the function prototype which
-only serves to avoid warnings but has no impact on the object code when
-we cast the pointer to a non-volatile type for the assignment.
 
-	Arnd
+This has nothing to do with performance. It has to do with a thread
+should not interfere with a thread belonging to another process. We
+really don't care how long the sys_membarrier() takes (it's the slow
+path anyway). We do care that a critical RT task is being interrupted by
+some java thread sending thousands of IPIs.
+
+-- Steve
+
+
