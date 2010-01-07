@@ -1,67 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753383Ab0AGXsN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753504Ab0AGXuq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753383Ab0AGXsN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 18:48:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753171Ab0AGXsM
+	id S1753504Ab0AGXuq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 18:50:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753324Ab0AGXup
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 18:48:12 -0500
-Received: from mga03.intel.com ([143.182.124.21]:26951 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752276Ab0AGXsM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 18:48:12 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
-   d="scan'208";a="230446814"
-Subject: [patch] generic-ipi: fix backtrace in smp_call_function_any()
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-Reply-To: Suresh Siddha <suresh.b.siddha@intel.com>
-To: Rusty Russell <rusty@rustcorp.com.au>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Organization: Intel Corp
-Date: Thu, 07 Jan 2010 15:46:59 -0800
-Message-Id: <1262908019.2779.24.camel@sbs-t61.sc.intel.com>
+	Thu, 7 Jan 2010 18:50:45 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:46538 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753235Ab0AGXup (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jan 2010 18:50:45 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Fri, 8 Jan 2010 08:47:27 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: balbir@linux.vnet.ibm.com
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>
+Subject: Re: [RFC] Shared page accounting for memory cgroup
+Message-Id: <20100108084727.429c40fc.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20100107092736.GW3059@balbir.in.ibm.com>
+References: <20100104093528.04846521.kamezawa.hiroyu@jp.fujitsu.com>
+	<20100104005030.GG16187@balbir.in.ibm.com>
+	<20100106130258.a918e047.kamezawa.hiroyu@jp.fujitsu.com>
+	<20100106070150.GL3059@balbir.in.ibm.com>
+	<20100106161211.5a7b600f.kamezawa.hiroyu@jp.fujitsu.com>
+	<20100107071554.GO3059@balbir.in.ibm.com>
+	<20100107163610.aaf831e6.kamezawa.hiroyu@jp.fujitsu.com>
+	<20100107083440.GS3059@balbir.in.ibm.com>
+	<20100107174814.ad6820db.kamezawa.hiroyu@jp.fujitsu.com>
+	<20100107180800.7b85ed10.kamezawa.hiroyu@jp.fujitsu.com>
+	<20100107092736.GW3059@balbir.in.ibm.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On my westmere box, I see this backtrace with 2.6.33-rc kernels:
+On Thu, 7 Jan 2010 14:57:36 +0530
+Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 
-> cpumask_of_node(3): node > nr_node_ids(1)
-> Pid: 1, comm: swapper Not tainted 2.6.33-rc3-00097-g2c1f189 #223
-> Call Trace:
->  [<ffffffff81028bb3>] cpumask_of_node+0x23/0x58
->  [<ffffffff81061f51>] smp_call_function_any+0x65/0xfa
->  [<ffffffff810160d1>] ? do_drv_read+0x0/0x2f
->  [<ffffffff81015fba>] get_cur_val+0xb0/0x102
->  [<ffffffff81016080>] get_cur_freq_on_cpu+0x74/0xc5
->  [<ffffffff810168a7>] acpi_cpufreq_cpu_init+0x417/0x515
->  [<ffffffff81562ce9>] ? __down_write+0xb/0xd
->  [<ffffffff8148055e>] cpufreq_add_dev+0x278/0x922
+> * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2010-01-07 18:08:00]:
+> 
+> > On Thu, 7 Jan 2010 17:48:14 +0900
+> > KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> > > > > "How pages are shared" doesn't show good hints. I don't hear such parameter
+> > > > > is used in production's resource monitoring software.
+> > > > > 
+> > > > 
+> > > > You mean "How many pages are shared" are not good hints, please see my
+> > > > justification above. With Virtualization (look at KSM for example),
+> > > > shared pages are going to be increasingly important part of the
+> > > > accounting.
+> > > > 
+> > > 
+> > > Considering KSM, your cuounting style is tooo bad.
+> > > 
+> > > You should add 
+> > > 
+> > >  - MEM_CGROUP_STAT_SHARED_BY_KSM
+> > >  - MEM_CGROUP_STAT_FOR_TMPFS/SYSV_IPC_SHMEM
+> > > 
+> 
+> No.. I am just talking about shared memory being important and shared
+> accounting being useful, no counters for KSM in particular (in the
+> memcg context).
+> 
+Think so ? The number of memcg-private pages is in interest in my point of view.
 
-fix it by using the cpu_to_node() and using the node number instead
-of the cpu for cpumask_of_node().
+Anyway, I don't change my opinion as "sum of rss" is not necessary to be calculated
+in the kernel.
+If you want to provide that in memcg, please add it to global VM as /proc/meminfo.
 
-Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
----
+IIUC, KSM/SHMEM has some official method in global VM.
 
-diff --git a/kernel/smp.c b/kernel/smp.c
-index de735a6..f104084 100644
---- a/kernel/smp.c
-+++ b/kernel/smp.c
-@@ -347,7 +347,7 @@ int smp_call_function_any(const struct cpumask *mask,
- 		goto call;
- 
- 	/* Try for same node. */
--	nodemask = cpumask_of_node(cpu);
-+	nodemask = cpumask_of_node(cpu_to_node(cpu));
- 	for (cpu = cpumask_first_and(nodemask, mask); cpu < nr_cpu_ids;
- 	     cpu = cpumask_next_and(cpu, nodemask, mask)) {
- 		if (cpu_online(cpu))
-
+Thanks,
+-Kame
 
