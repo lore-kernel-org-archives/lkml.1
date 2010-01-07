@@ -1,73 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933210Ab0AFX7r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933218Ab0AGACF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933210Ab0AFX7r (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 18:59:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933199Ab0AFX7p
+	id S933218Ab0AGACF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 19:02:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933145Ab0AGACE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 18:59:45 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:47869 "EHLO mx2.suse.de"
+	Wed, 6 Jan 2010 19:02:04 -0500
+Received: from ozlabs.org ([203.10.76.45]:38851 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933134Ab0AFX7o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 18:59:44 -0500
-Date: Thu, 7 Jan 2010 00:59:42 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jikos@twin.jikos.cz
-To: Stefan Weil <weil@mail.berlios.de>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Dave Young <hidave.darkstar@gmail.com>,
-       Matthew Garrett <mjg@redhat.com>,
-       "David S . Miller" <davem@davemloft.net>, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH] Fix spelling in log messages
-In-Reply-To: <1262819137-16775-1-git-send-email-weil@mail.berlios.de>
-Message-ID: <alpine.LRH.2.00.1001070059230.15694@twin.jikos.cz>
-References: <1262819137-16775-1-git-send-email-weil@mail.berlios.de>
-User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
+	id S933109Ab0AGACB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jan 2010 19:02:01 -0500
+Date: Thu, 7 Jan 2010 11:01:06 +1100
+From: Anton Blanchard <anton@samba.org>
+To: David Rientjes <rientjes@google.com>
+Cc: Rusty Russell <rusty@rustcorp.com.au>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 6/6] x86: cpumask_of_node() should handle -1 as a node
+Message-ID: <20100107000106.GD12742@kryten>
+References: <20100106045509.245662398@samba.org>
+ <20100106045509.245662398@samba.org>
+ <20100106045525.476396870@samba.org>
+ <201001061706.26845.rusty@rustcorp.com.au>
+ <alpine.DEB.2.00.1001061454580.11653@chino.kir.corp.google.com>
+ <20100106233151.GC12742@kryten>
+ <alpine.DEB.2.00.1001061545210.19882@chino.kir.corp.google.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.00.1001061545210.19882@chino.kir.corp.google.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 7 Jan 2010, Stefan Weil wrote:
+ 
+Hi David,
 
-> Replace platfrom -> platform.
+> This seems to be the same semantics that NUMA_NO_NODE was defined for, 
+> it's not necessarily a special case.
 > 
-> Signed-off-by: Stefan Weil <weil@mail.berlios.de>
-> ---
->  drivers/input/serio/i8042.c |    2 +-
->  drivers/net/davinci_emac.c  |    2 +-
->  2 files changed, 2 insertions(+), 2 deletions(-)
+> Regardless, the result of cpumask_of_node(NUMA_NO_NODE) should be 
+> undefined as it currently is unless you want to obsolete NUMA_NO_NODE 
+> entirely which is much more work.  In other words, special-casing a nid of 
+> -1 to mean no affinity is inappropriate if NUMA_NO_NODE represents an 
+> invalid nid.
 > 
-> diff --git a/drivers/input/serio/i8042.c b/drivers/input/serio/i8042.c
-> index d84a36e..33f3541 100644
-> --- a/drivers/input/serio/i8042.c
-> +++ b/drivers/input/serio/i8042.c
-> @@ -430,7 +430,7 @@ static bool i8042_filter(unsigned char data, unsigned char str,
->  	}
->  
->  	if (i8042_platform_filter && i8042_platform_filter(data, str, serio)) {
-> -		dbg("Filtered out by platfrom filter\n");
-> +		dbg("Filtered out by platform filter\n");
->  		return true;
->  	}
->  
-> diff --git a/drivers/net/davinci_emac.c b/drivers/net/davinci_emac.c
-> index 107bc5f..4741ade 100644
-> --- a/drivers/net/davinci_emac.c
-> +++ b/drivers/net/davinci_emac.c
-> @@ -2652,7 +2652,7 @@ static int __devinit davinci_emac_probe(struct platform_device *pdev)
->  
->  	pdata = pdev->dev.platform_data;
->  	if (!pdata) {
-> -		printk(KERN_ERR "DaVinci EMAC: No platfrom data\n");
-> +		printk(KERN_ERR "DaVinci EMAC: No platform data\n");
->  		return -ENODEV;
->  	}
+> If x86 pci buses want to use -1 to imply that meaning, that's fine, but it 
+> shouldn't be coded in a generic interface such as cpumask_of_node().  Does 
+> that make sense?
 
-This is now in trivial queue.
+I wasn't using the example to strengthen the case of the -1 behaviour, but to
+highlight that a complete fix would be more work and risk not making it back
+to -stable.
 
--- 
-Jiri Kosina
-SUSE Labs, Novell Inc.
+I'm all for removing the special case as a followon patch.
 
+> > Speaking of invalid node ids, I also noticed the scheduler isn't using
+> > node iterators:
+> > 
+> >         for (i = 0; i < nr_node_ids; i++) {
+> > 
+> > which should be fixed at some stage too since it doesn't allow us to
+> > allocate the node structures sparsely.
+>
+> That loop has nothing to do with the allocation of a node structure, it's 
+> quite plausible that it checks for various states such as node_online(i) 
+> while looping and doing something else interesting for those that are 
+> offline.  Keep in mind that this isn't equivalent to using for_each_node() 
+> since that only iterates over N_POSSIBLE which is architecture specific.
+
+Yeah I understand it isn't the same thing, but the scheduler oopses in
+a number of places with CPUMASK_OFFSTACK and sparse node ids, so things
+that can be switched to node iterators should and node_online() checks
+should be added elsewhere.
+
+Anton
