@@ -1,187 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756259Ab0AGJAp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932669Ab0AGJA6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756259Ab0AGJAp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 04:00:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755821Ab0AGJAo
+	id S932669Ab0AGJA6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 04:00:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756357Ab0AGJA4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 04:00:44 -0500
-Received: from mga11.intel.com ([192.55.52.93]:24237 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755646Ab0AGJAn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 04:00:43 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,231,1262592000"; 
-   d="scan'208";a="762107152"
-Subject: Re: [RFC PATCH] sched: Pass affine target cpu into wake_affine
-From: Lin Ming <ming.m.lin@intel.com>
-To: Mike Galbraith <efault@gmx.de>
-Cc: Peter Zijlstra <peterz@infradead.org>, lkml <linux-kernel@vger.kernel.org>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-In-Reply-To: <1262673817.9534.37.camel@marge.simson.net>
-References: <1262595827.22471.108.camel@minggr.sh.intel.com>
-	 <1262659686.22471.121.camel@minggr.sh.intel.com>
-	 <1262663058.5748.32.camel@marge.simson.net>
-	 <1262673817.9534.37.camel@marge.simson.net>
-Content-Type: text/plain
-Date: Thu, 07 Jan 2010 16:45:03 +0800
-Message-Id: <1262853903.18931.17.camel@minggr.sh.intel.com>
+	Thu, 7 Jan 2010 04:00:56 -0500
+Received: from mtagate3.de.ibm.com ([195.212.17.163]:33225 "EHLO
+	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756336Ab0AGJAz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jan 2010 04:00:55 -0500
+Date: Thu, 7 Jan 2010 10:00:50 +0100
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: Roland McGrath <roland@redhat.com>
+Cc: Oleg Nesterov <oleg@redhat.com>, caiqian@redhat.com,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Jan Kratochvil <jkratoch@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-s390@vger.kernel.org, utrace-devel@redhat.com
+Subject: Re: s390 && user_enable_single_step() (Was: odd utrace testing
+ results on s390x)
+Message-ID: <20100107100050.31724463@mschwide.boeblingen.de.ibm.com>
+In-Reply-To: <20100106205633.700CC134D@magilla.sf.frob.com>
+References: <1503844142.2061111261478093776.JavaMail.root@zmail06.collab.prod.int.phx2.redhat.com>
+	<1257887498.2061171261478252049.JavaMail.root@zmail06.collab.prod.int.phx2.redhat.com>
+	<20100104155225.GA16650@redhat.com>
+	<20100104171626.22ea2d9c@mschwide.boeblingen.de.ibm.com>
+	<20100104181412.GA21146@redhat.com>
+	<20100104211147.4CC94D532@magilla.sf.frob.com>
+	<20100105105030.66bb8a0a@mschwide.boeblingen.de.ibm.com>
+	<20100106205633.700CC134D@magilla.sf.frob.com>
+Organization: IBM Corporation
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.18.5; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 (2.24.1-2.fc10) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2010-01-05 at 14:43 +0800, Mike Galbraith wrote:
-> On Tue, 2010-01-05 at 04:44 +0100, Mike Galbraith wrote:
-> > On Tue, 2010-01-05 at 10:48 +0800, Lin Ming wrote:
-> > > On Mon, 2010-01-04 at 17:03 +0800, Lin Ming wrote:
-> > > > commit a03ecf08d7bbdd979d81163ea13d194fe21ad339
-> > > > Author: Lin Ming <ming.m.lin@intel.com>
-> > > > Date:   Mon Jan 4 14:14:50 2010 +0800
-> > > > 
-> > > >     sched: Pass affine target cpu into wake_affine
-> > > >     
-> > > >     Since commit a1f84a3(sched: Check for an idle shared cache in select_task_rq_fair()),
-> > > >     the affine target maybe adjusted to any idle cpu in cache sharing domains
-> > > >     instead of current cpu.
-> > > >     But wake_affine still use current cpu to calculate load which is wrong.
-> > > >     
-> > > >     This patch passes affine cpu into wake_affine.
-> > > >     
-> > > >     Signed-off-by: Lin Ming <ming.m.lin@intel.com>
-> > > 
-> > > Mike,
-> > > 
-> > > Any comment of this patch?
-> > 
-> > The patch definitely looks like the right thing to do, but when I tried
-> > this, it didn't work out well.  Since I can't seem to recall precise
-> > details, I'll let my box either remind me or give it's ack.
+On Wed,  6 Jan 2010 12:56:33 -0800 (PST)
+Roland McGrath <roland@redhat.com> wrote:
+
+> > do_signal is called before do_single_step. The order of checks of the
+> > TIF_ bits is 1) machine checks, 2) need resched, 3) signal pending, 4)
+> > notify resume, 5) restarting system call, 6) single step.
 > 
-> Unfortunately, box reminded me.  mysql+oltp peak throughput with
-> nr_clients == nr_cpus
+> I see.  Then the potential issue I raised would exist.
+> 
+> > But why is that important ? If the TIF_SINGLE_STEP bit is set the order
+> > of do_signal vs. do_single_step does not seem to be important to me.
+> > There will be a SIGTRAP if TIF_SINGLE_STEP is set, no ?
+> 
+> Right.  It only becomes relevant if something else clears TIF_SINGLE_STEP,
+> which does not happen now.  I was discussing the scenario of having
+> user_disable_single_step clear it.  That might happen inside a stop,
+> i.e. inside do_signal (get_signal_to_deliver).  So given that order of
+> checks, it becomes possible for user_disable_single_step to affect the
+> pending-step-should-SIGTRAP situation.
 
-Did you test with your vmark regression fix patch also applied?
+That was the idea about the TIF_SINGLE_STEP bit. I can be set and later
+unset if we don't want to deliver the SIGTRAP after all.
 
-I tested on below 2 machines with the 2 patches both applied and the
-oltp(sysbench+mysql) data shows good.
-Tigerton x86_64 machine: 16cpus(4P/4Cores), 40G mem
-IA64 machine: 32cpus(4P/4Cores/HT), 16G mem
+> > But I agree, it is probably better to make all arches look the same in
+> > regard to that pending step report. 
+> 
+> Right.  That means we should leave the status quo of not clearing
+> TIF_SINGLE_STEP in user_disable_single_step.
 
-Compared with upstream 2.6.33-rc2, IA64 improves ~15% and Tigerton
-improves ~3%.
+Ok, although it seems a bit strange not to do it. Perhaps I should add a
+comment about it.
 
-The 2 patches are merged as below,
+> > The LCTLG of multiple control registers is rather expensive. Does it
+> > happen often that user_*_single_step is called without need? For gdb is
+> > doesn't matter, the cost to switch between tracer and tracee is already
+> > large, the cycles added to FixPerRegisters won't matter much. For
+> > utrace things might be different.
+> 
+> In old (current) ptrace, user_*_single_step is never called on current.
+> In utrace, it's always called on current, so utrace-based ptrace alone
+> adds this second reload overhead beyond the same context-switch overhead
+> old ptrace has.  Indeed that addition may be neglible.
 
-diff --git a/include/linux/topology.h b/include/linux/topology.h
-index 57e6357..5b81156 100644
---- a/include/linux/topology.h
-+++ b/include/linux/topology.h
-@@ -99,7 +99,7 @@ int arch_update_cpu_topology(void);
- 				| 1*SD_WAKE_AFFINE			\
- 				| 1*SD_SHARE_CPUPOWER			\
- 				| 0*SD_POWERSAVINGS_BALANCE		\
--				| 0*SD_SHARE_PKG_RESOURCES		\
-+				| 1*SD_SHARE_PKG_RESOURCES		\
- 				| 0*SD_SERIALIZE			\
- 				| 0*SD_PREFER_SIBLING			\
- 				,					\
-diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
-index 42ac3c9..cbf4bd2 100644
---- a/kernel/sched_fair.c
-+++ b/kernel/sched_fair.c
-@@ -1237,11 +1237,11 @@ static inline unsigned long effective_load(struct task_group *tg, int cpu,
+So after everthing has been converted to utrace we always will load the
+control registers in FixPerRegisters.
  
- #endif
- 
--static int wake_affine(struct sched_domain *sd, struct task_struct *p, int sync)
-+static int wake_affine(struct sched_domain *sd, struct task_struct *p, int affine_cpu, int sync)
- {
- 	struct task_struct *curr = current;
--	unsigned long this_load, load;
--	int idx, this_cpu, prev_cpu;
-+	unsigned long affine_load, load;
-+	int idx, prev_cpu;
- 	unsigned long tl_per_task;
- 	unsigned int imbalance;
- 	struct task_group *tg;
-@@ -1249,10 +1249,9 @@ static int wake_affine(struct sched_domain *sd, struct task_struct *p, int sync)
- 	int balanced;
- 
- 	idx	  = sd->wake_idx;
--	this_cpu  = smp_processor_id();
- 	prev_cpu  = task_cpu(p);
- 	load	  = source_load(prev_cpu, idx);
--	this_load = target_load(this_cpu, idx);
-+	affine_load = target_load(affine_cpu, idx);
- 
- 	if (sync) {
- 	       if (sched_feat(SYNC_LESS) &&
-@@ -1275,7 +1274,7 @@ static int wake_affine(struct sched_domain *sd, struct task_struct *p, int sync)
- 		tg = task_group(current);
- 		weight = current->se.load.weight;
- 
--		this_load += effective_load(tg, this_cpu, -weight, -weight);
-+		affine_load += effective_load(tg, affine_cpu, -weight, -weight);
- 		load += effective_load(tg, prev_cpu, 0, -weight);
- 	}
- 
-@@ -1285,16 +1284,16 @@ static int wake_affine(struct sched_domain *sd, struct task_struct *p, int sync)
- 	imbalance = 100 + (sd->imbalance_pct - 100) / 2;
- 
- 	/*
--	 * In low-load situations, where prev_cpu is idle and this_cpu is idle
--	 * due to the sync cause above having dropped this_load to 0, we'll
-+	 * In low-load situations, where prev_cpu is idle and affine_cpu is idle
-+	 * due to the sync cause above having dropped affine_load to 0, we'll
- 	 * always have an imbalance, but there's really nothing you can do
- 	 * about that, so that's good too.
- 	 *
- 	 * Otherwise check if either cpus are near enough in load to allow this
--	 * task to be woken on this_cpu.
-+	 * task to be woken on affine_cpu.
- 	 */
--	balanced = !this_load ||
--		100*(this_load + effective_load(tg, this_cpu, weight, weight)) <=
-+	balanced = !affine_load ||
-+		100*(affine_load + effective_load(tg, affine_cpu, weight, weight)) <=
- 		imbalance*(load + effective_load(tg, prev_cpu, 0, weight));
- 
- 	/*
-@@ -1306,11 +1305,11 @@ static int wake_affine(struct sched_domain *sd, struct task_struct *p, int sync)
- 		return 1;
- 
- 	schedstat_inc(p, se.nr_wakeups_affine_attempts);
--	tl_per_task = cpu_avg_load_per_task(this_cpu);
-+	tl_per_task = cpu_avg_load_per_task(affine_cpu);
- 
- 	if (balanced ||
--	    (this_load <= load &&
--	     this_load + target_load(prev_cpu, idx) <= tl_per_task)) {
-+	    (affine_load <= load &&
-+	     affine_load + target_load(prev_cpu, idx) <= tl_per_task)) {
- 		/*
- 		 * This domain has SD_WAKE_AFFINE and
- 		 * p is cache cold in this domain, and
-@@ -1508,7 +1507,7 @@ static int select_task_rq_fair(struct task_struct *p, int sd_flag, int wake_flag
- 			 * If there's an idle sibling in this domain, make that
- 			 * the wake_affine target instead of the current cpu.
- 			 */
--			if (tmp->flags & SD_PREFER_SIBLING)
-+			if (tmp->flags & SD_SHARE_PKG_RESOURCES)
- 				target = select_idle_sibling(p, tmp, target);
- 
- 			if (target >= 0) {
-@@ -1544,7 +1543,7 @@ static int select_task_rq_fair(struct task_struct *p, int sd_flag, int wake_flag
- 			update_shares(tmp);
- 	}
- 
--	if (affine_sd && wake_affine(affine_sd, p, sync))
-+	if (affine_sd && wake_affine(affine_sd, p, cpu, sync))
- 		return cpu;
- 
- 	while (sd) {
+> In other circumstances with utrace, it is very possible to wind up with
+> user_disable_single_step being called superfluously when there was no
+> stop (and so not necessarily any context switch or other high overhead).
+> On other machines, user_disable_single_step is pretty cheap even where
+> user_enable_single_step is quite costly.  Given how simple and cheap it
+> is to short-circuit the excess work on s390, I think it is worthwhile.
 
+We could use the same compare of the control registers as the code in
+__switch_to. See below.
 
+> It looks like the context-switch code already checks some magic bits in
+> per_info to decide whether to do the costly reload.  So it seems vaguely
+> consistent with that to conditionalize FixPerRegisters similarly.  The
+> single_step cases are a special case with an easy one-bit check to
+> short-circuit, so skipping all of FixPerRegisters seems worthwhile IMHO.
+
+What the magic code in __switch_to does is to check if the next process
+wants to use per and do the load of the control registers only if the
+current set of control registers 9 to 11 differ from the set for the
+next process.
+The check if the next process wants to use per is done with a
+test-under-mask (TM) instruction and a mask of 0xe8. This checks for 4
+bits: em_branching, em_instruction_fetch, em_storage_alteration and
+em_store_real_address. If one of the bits is set then the current set
+of control registers is stored, compared with the set for the next
+process and only if they differ is the lctlg done.
+The store of control registers is cheap (n cycles for n registers), the
+load is expensive for specific control registers. For 9 to 11 it costs
+more than 100 cycles.
+
+> To be really optimization-happy about it, you'd also hack FixPerRegisters
+> itself to do the reload on current only if PSW_MASK_PER is or was set (if
+> I'm following the code correctly).  Or perhaps it should check PER_EM_MASK
+> instead to match what __switch_to does.  (I don't understand the
+> distinction between those two tests, if there is one.)  Extra frobbity
+> would be to leave the old state too when clearing PSW_MASK_PER, and then
+> just have the trap handler lazily ignore a hit when current doesn't have
+> it set.  Then in a case where there is no hit before context switch,
+> you haven't done anything.  But that is probably both excessive and
+> not even a win if the PER use is single-step and so there will really
+> very likely be a hit before context switch.
+
+The PSW_MASK_PER is the "global" PER enablement switch, the PER_EM_MASK
+bits enable the different PER events. We check for the PER_EM_MASK bits
+because it is easier to access in __switch_to. The return PSW is stored
+in the pt_regs structure, we would have to get a pointer to it (what
+"regs = task_pt_regs(taks)" does in FixPerRegisters). In
+FixPerRegisters we can as well use the PSW_MASK_PER bit.
+
+-- 
+blue skies,
+   Martin.
+
+"Reality continues to ruin my life." - Calvin.
 
