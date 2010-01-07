@@ -1,82 +1,178 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932990Ab0AGD01@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932380Ab0AGD2Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932990Ab0AGD01 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 22:26:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756714Ab0AGD00
+	id S932380Ab0AGD2Y (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 22:28:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932363Ab0AGD2X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 22:26:26 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:55472 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752409Ab0AGD0Z (ORCPT
+	Wed, 6 Jan 2010 22:28:23 -0500
+Received: from mail-fx0-f225.google.com ([209.85.220.225]:36094 "EHLO
+	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932330Ab0AGD2W convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 22:26:25 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Thu, 7 Jan 2010 12:23:04 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Huang Ying <ying.huang@intel.com>
-Cc: "Wu, Fengguang" <fengguang.wu@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Tejun Heo <tj@kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Nick Piggin <npiggin@suse.de>,
-       Andi Kleen <andi@firstfloor.org>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC][PATCH] vmalloc: simplify vread()/vwrite()
-Message-Id: <20100107122304.b5c1d777.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <1262834141.17852.23.camel@yhuang-dev.sh.intel.com>
-References: <20100107012458.GA9073@localhost>
-	<20100107103825.239ffcf9.kamezawa.hiroyu@jp.fujitsu.com>
-	<20100107025054.GA11252@localhost>
-	<1262834141.17852.23.camel@yhuang-dev.sh.intel.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 6 Jan 2010 22:28:22 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=ZmTQYFT2euMdcsohVESyXb3uhc6HXdbMLKTifwcR3KfQ5bgbstnZ0GvEY+6fM821HV
+         qljZFvjL/pMOIsjlCAxqVf4lfsnXlUOg3dbbWjtBw59bW0yNT76N1O4VOVc4khXut6+D
+         kyEBhMEauAPdG+ivDSY+TP3F1Zq75sSxZAkeY=
+MIME-Version: 1.0
+In-Reply-To: <4B454F8B.5040900@gmail.com>
+References: <64bb37e1001060137h597322e8s4305b7cc1c91527e@mail.gmail.com>
+	 <4B4531F9.3060108@gmail.com>
+	 <64bb37e1001061827i64ead7f9m3dbe1b7b707c79eb@mail.gmail.com>
+	 <4B454F8B.5040900@gmail.com>
+Date: Thu, 7 Jan 2010 04:28:20 +0100
+Message-ID: <64bb37e1001061928k746d090cpe48d2ea7bbd3f774@mail.gmail.com>
+Subject: Re: New MSI support in sata_sil24 still broken in 2.6.33-rc3
+From: Torsten Kaiser <just.for.lkml@googlemail.com>
+To: Robert Hancock <hancockrwd@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Vivek Mahajan <vivek.mahajan@freescale.com>,
+       Jeff Garzik <jgarzik@pobox.com>, linux-ide@vger.kernel.org,
+       Peer Chen <pchen@nvidia.com>, Yinghai Lu <yinghai@kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 07 Jan 2010 11:15:41 +0800
-Huang Ying <ying.huang@intel.com> wrote:
+On Thu, Jan 7, 2010 at 4:05 AM, Robert Hancock <hancockrwd@gmail.com> wrote:
+> Hmm, well presumably the problem isn't related to that then. I was looking
+> at your lspci output though:
+>
+> 00:05.0 IDE interface: nVidia Corporation MCP55 SATA Controller (rev a3)
+> (prog-if 85 [Master SecO PriO])
+>        Subsystem: ASUSTeK Computer Inc. Device 81f0
+>        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
+> Stepping- SERR- FastB2B- DisINTx+
+>        Status: Cap+ 66MHz+ UDF- FastB2B+ ParErr- DEVSEL=fast >TAbort-
+> <TAbort- <MAbort- >SERR- <PERR- INTx-
+>        Latency: 0 (750ns min, 250ns max)
+>        Interrupt: pin A routed to IRQ 30
+>        Region 0: I/O ports at cc00 [size=8]
+>        Region 1: I/O ports at c880 [size=4]
+>        Region 2: I/O ports at c800 [size=8]
+>        Region 3: I/O ports at c480 [size=4]
+>        Region 4: I/O ports at c400 [size=16]
+>        Region 5: Memory at efafb000 (32-bit, non-prefetchable) [size=4K]
+>        Capabilities: [44] Power Management version 2
+>                Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA
+> PME(D0-,D1-,D2-,D3hot-,D3cold-)
+>                Status: D0 NoSoftRst- PME-Enable- DSel=0 DScale=0 PME-
+>        Capabilities: [b0] MSI: Enable+ Count=1/4 Maskable- 64bit+
+>                Address: 00000000fee0f00c  Data: 4189
+>        Capabilities: [cc] HyperTransport: MSI Mapping Enable- Fixed+
+>
+> The HT MSI Mapping capability is not enabled on the device. I'm thinking it
+> should be, but I'm not sure. And it's also not enabled on the bus which has
+> the Silicon Image controller:
+>
+> 04:00.0 Mass storage controller: Silicon Image, Inc. SiI 3132 Serial ATA
+> Raid II Controller (rev 01)
+>
+> on its subordinate bus:
+>
+> 00:0b.0 PCI bridge: nVidia Corporation MCP55 PCI Express bridge (rev a3)
+> (prog-if 00 [Normal decode])
+>        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
+> Stepping- SERR- FastB2B- DisINTx+
+>        Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort-
+> <TAbort- <MAbort- >SERR- <PERR- INTx-
+>        Latency: 0, Cache Line Size: 64 bytes
+>        Bus: primary=00, secondary=04, subordinate=04, sec-latency=0
+>        I/O behind bridge: 0000e000-0000efff
+>        Memory behind bridge: efe00000-efefffff
+>        Secondary status: 66MHz- FastB2B- ParErr- DEVSEL=fast >TAbort-
+> <TAbort- <MAbort- <SERR- <PERR-
+>        BridgeCtl: Parity- SERR+ NoISA- VGA- MAbort- >Reset- FastB2B-
+>                PriDiscTmr- SecDiscTmr- DiscTmrStat- DiscTmrSERREn-
+>        Capabilities: [40] Subsystem: nVidia Corporation Device 0000
+>        Capabilities: [48] Power Management version 2
+>                Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA
+> PME(D0+,D1+,D2+,D3hot+,D3cold+)
+>                Status: D0 NoSoftRst- PME-Enable- DSel=0 DScale=0 PME-
+>        Capabilities: [50] MSI: Enable+ Count=1/2 Maskable- 64bit+
+>                Address: 00000000fee0f00c  Data: 4149
+>        Capabilities: [60] HyperTransport: MSI Mapping Enable- Fixed-
+>                Mapping Address Base: 00000000fee00000
+>
+> CCing some people that might have some idea about this..
 
-> > > 
-> > > > The page_is_ram() check is necessary because kmap_atomic() is not
-> > > > designed to work with non-RAM pages.
-> > > > 
-> > > I think page_is_ram() is not a complete method...on x86, it just check
-> > > e820's memory range. checking VM_IOREMAP is better, I think.
-> > 
-> > (double check) Not complete or not safe?
-> > 
-> > EFI seems to not update e820 table by default.  Ying, do you know why?
-> 
-> In EFI system, E820 table is constructed from EFI memory map in boot
-> loader, so I think you can rely on E820 table.
-> 
-Yes, we can rely on. But concerns here is that we cannot get any
-information of ioremap via e820 map. 
+part of the PCI tree:
+           +-0b.0-[04]----00.0  Silicon Image, Inc. SiI 3132 Serial
+ATA Raid II Controller
+           +-0c.0-[03]----00.0  Broadcom Corporation NetXtreme BCM5754
+Gigabit Ethernet PCI Express
+           +-0d.0-[02]----00.0  Broadcom Corporation NetXtreme BCM5754
+Gigabit Ethernet PCI Express
+           +-0f.0-[01]--+-00.0  ATI Technologies Inc RV370 5B60
+[Radeon X300 (PCIE)]
+           |            \-00.1  ATI Technologies Inc RV370 [Radeon X300SE]
 
-But yes,
-== ioremap()
- 140         for (pfn = phys_addr >> PAGE_SHIFT;
- 141                                 (pfn << PAGE_SHIFT) < (last_addr & PAGE_MASK);
- 142                                 pfn++) {
- 143 
- 144                 int is_ram = page_is_ram(pfn);
- 145 
- 146                 if (is_ram && pfn_valid(pfn) && !PageReserved(pfn_to_page(pfn)))
- 147                         return NULL;
- 148                 WARN_ON_ONCE(is_ram);
- 149         }
-==
-you'll get warned before access if "ram" area is remapped...
+The three devices attached to 0c.0, 0d.0 and 0f.0 work correctly with MSI.
+But each of these PCI Express bridges also has this Mapping disabled:
+        Capabilities: [60] HyperTransport: MSI Mapping Enable- Fixed-
+                Mapping Address Base: 00000000fee00000
 
-But, about this patch, it seems that page_is_ram() is not free from architecture
-dependecy.
+This capability seems only to be enabled at the root:
+00:00.0 RAM memory: nVidia Corporation MCP55 Memory Controller (rev a2)
+        Subsystem: ASUSTeK Computer Inc. Device 81f0
+        Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop-
+ParErr- Stepping- S
+        Status: Cap+ 66MHz+ UDF- FastB2B+ ParErr- DEVSEL=fast >TAbort-
+<TAbort- <MAbort
+        Latency: 0
+        Capabilities: [44] HyperTransport: Slave or Primary Interface
+                Command: BaseUnitID=0 UnitCnt=15 MastHost- DefDir- DUL-
+                Link Control 0: CFlE+ CST- CFE- <LkFail- Init+ EOC-
+TXO- <CRCErr=0 Isoc
+                Link Config 0: MLWI=16bit DwFcIn- MLWO=16bit DwFcOut-
+LWI=16bit DwFcInE
+                Link Control 1: CFlE- CST- CFE- <LkFail+ Init- EOC+
+TXO+ <CRCErr=0 Isoc
+                Link Config 1: MLWI=8bit DwFcIn- MLWO=8bit DwFcOut-
+LWI=8bit DwFcInEn-
+                Revision ID: 1.03
+                Link Frequency 0: 1.0GHz
+                Link Error 0: <Prot- <Ovfl- <EOC- CTLTm-
+                Link Frequency Capability 0: 200MHz+ 300MHz+ 400MHz+
+500MHz+ 600MHz+ 80
+                Feature Capability: IsocFC+ LDTSTOP+ CRCTM- ECTLT- 64bA- UIDRD-
+                Link Frequency 1: 200MHz
+                Link Error 1: <Prot- <Ovfl- <EOC- CTLTm-
+                Link Frequency Capability 1: 200MHz- 300MHz- 400MHz-
+500MHz- 600MHz- 80
+                Error Handling: PFlE+ OFlE+ PFE- OFE- EOCFE- RFE-
+CRCFE- SERRFE- CF- RE
+                Prefetchable memory behind bridge Upper: 00-00
+                Bus Number: 00
+        Capabilities: [dc] HyperTransport: MSI Mapping Enable+ Fixed-
+                Mapping Address Base: 00000000fee00000
+
+>From my dmesg:
+[    1.636318] pci 0000:00:00.0: Found enabled HT MSI Mapping
+[    1.641854] pci 0000:00:00.0: Found enabled HT MSI Mapping
+[    1.647420] pci 0000:00:00.0: Found enabled HT MSI Mapping
+[    1.652946] pci 0000:00:00.0: Found enabled HT MSI Mapping
+[    1.658505] pci 0000:00:00.0: Found enabled HT MSI Mapping
+[    1.664055] pci 0000:00:00.0: Found enabled HT MSI Mapping
+[    1.669597] pci 0000:00:00.0: Found enabled HT MSI Mapping
+[    1.675172] pci 0000:00:00.0: Found enabled HT MSI Mapping
+[    1.680715] pci 0000:00:00.0: Found enabled HT MSI Mapping
+
+I found this output very strange, as it always referred to the same
+pci device, but looking at the code, that might only be a visual nit.
+
+The output is from msi_ht_cap_enabled() in drivers/pci/quirks.c. This
+will be called via nv_ht_enable_msi_mapping(), but always to check the
+'host_bridge', not the devices that __nv_msi_ht_cap_quirk() loops
+over.
+
+But I do not have the knowlegde to to decide, if this is just a
+overeager debug output, or if this should be switched to test each
+device.
 
 
-Thanks,
--Kame
-
+Torsten
