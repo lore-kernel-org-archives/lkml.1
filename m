@@ -1,65 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753033Ab0AGPAh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753043Ab0AGPEh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753033Ab0AGPAh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 10:00:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753020Ab0AGPAf
+	id S1753043Ab0AGPEh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 10:04:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752964Ab0AGPEg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 10:00:35 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:43936 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753013Ab0AGPAc (ORCPT
+	Thu, 7 Jan 2010 10:04:36 -0500
+Received: from mta5.srv.hcvlny.cv.net ([167.206.4.200]:44286 "EHLO
+	mta5.srv.hcvlny.cv.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752432Ab0AGPEg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 10:00:32 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=CDdsOf+T+cC6jZlN5XYziEdTtg8Gz8hoZG7R6ulzt427jQYf5tDim7vMEiEWDgY0Pp
-         ALvRcEa0gWz0RPjbTwuXlIjiu8jPqn83WYq3BgaHSbT58Z4bXiJAIkC5tE7WmElU4osl
-         vm3q4NKzUB9ptkfC5/dokTCRO+CNeJd7ZWBdI=
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Christian Kujau <lists@nerdbynature.de>,
-       Alexander Beregalov <a.beregalov@gmail.com>,
-       Chris Mason <chris.mason@oracle.com>, Ingo Molnar <mingo@elte.hu>
-Subject: [PATCH] reiserfs: Relax reiserfs_xattr_set_handle() while acquiring xattr locks
-Date: Thu,  7 Jan 2010 16:00:28 +0100
-Message-Id: <1262876428-4054-1-git-send-regression-fweisbec@gmail.com>
-X-Mailer: git-send-email 1.6.2.3
+	Thu, 7 Jan 2010 10:04:36 -0500
+Date: Thu, 07 Jan 2010 10:03:51 -0500
+From: Michael Breuer <mbreuer@majjas.com>
+Subject: Re: [PATCH] af_packet: Don't use skb after dev_queue_xmit()
+In-reply-to: <20100107082140.GB7229@ff.dom.local>
+To: Jarek Poplawski <jarkao2@gmail.com>
+Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
+       flyboy@gmail.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Message-id: <4B45F7D7.3060308@majjas.com>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7BIT
+References: <20100106131044.25b4e500@nehalam> <4B451C31.3000309@majjas.com>
+ <4B454A16.3030909@majjas.com> <4B455C62.6030504@majjas.com>
+ <20100106205343.5460d658@nehalam> <4B4571D5.30002@majjas.com>
+ <4B457711.1040008@majjas.com> <4B458B36.6050509@majjas.com>
+ <20100107074756.GB6258@ff.dom.local> <4B459368.2000503@majjas.com>
+ <20100107082140.GB7229@ff.dom.local>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.5)
+ Gecko/20091204 Lightning/1.0b2pre Thunderbird/3.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix remaining xattr locks acquired in reiserfs_xattr_set_handle()
-while we are holding the reiserfs lock to avoid lock inversions.
-
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Christian Kujau <lists@nerdbynature.de>
-Cc: Alexander Beregalov <a.beregalov@gmail.com>
-Cc: Chris Mason <chris.mason@oracle.com>
-Cc: Ingo Molnar <mingo@elte.hu>
----
- fs/reiserfs/xattr.c |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
-
-diff --git a/fs/reiserfs/xattr.c b/fs/reiserfs/xattr.c
-index 35826d2..b91428e 100644
---- a/fs/reiserfs/xattr.c
-+++ b/fs/reiserfs/xattr.c
-@@ -560,8 +560,12 @@ reiserfs_xattr_set_handle(struct reiserfs_transaction_handle *th,
- 			.ia_size = buffer_size,
- 			.ia_valid = ATTR_SIZE | ATTR_CTIME,
- 		};
-+
-+		reiserfs_write_unlock(inode->i_sb);
- 		mutex_lock_nested(&dentry->d_inode->i_mutex, I_MUTEX_XATTR);
- 		down_write(&dentry->d_inode->i_alloc_sem);
-+		reiserfs_write_lock(inode->i_sb);
-+
- 		err = reiserfs_setattr(dentry, &newattrs);
- 		up_write(&dentry->d_inode->i_alloc_sem);
- 		mutex_unlock(&dentry->d_inode->i_mutex);
--- 
-1.6.2.3
-
+On 1/7/2010 3:21 AM, Jarek Poplawski wrote:
+> On Thu, Jan 07, 2010 at 02:55:20AM -0500, Michael Breuer wrote:
+>    
+>> On 1/7/2010 2:47 AM, Jarek Poplawski wrote:
+>>      
+>>> On Thu, Jan 07, 2010 at 02:20:22AM -0500, Michael Breuer wrote:
+>>>
+>>>        
+>>>> ...
+>>>> Reapplied a couple of earlier patches - still can't do jumbo frames, but
+>>>> the rx errors are gone and speed has improved. Too early to assure that
+>>>> it's stable.
+>>>>
+>>>> Patches that seem to fix the rx drops (all from Stephen):
+>>>> 1) Patch change to tx_init
+>>>> 2) Patch to lock netif_device_detach
+>>>> 3) Patch to sky2_tx_complete to add netif_device_present test
+>>>> Also in the mix: Jarek's alternative 2
+>>>>
+>>>>          
+>>> BTW, the main difference between alt. 1 and 2 is error notification:
+>>> alternative 2 doesn't hide some (most) of drops, so, dependending on
+>>> app, there might be more and faster retransmits. (I don't know what
+>>> apps used by you (other than dhcp) can depend so much on this.)
+>>>
+>>>
+>>>        
+>> Unless I misread the code, I think that in some cases e skb is actually
+>> freed if the cfq (among others perhaps) scheduler returns an error on
+>> enqueue (flow control perhaps).  Thus with alternative 1, it is possible
+>> that the skb is acted upon after being freed - this would be consistent
+>> with the DMAR errors I saw.
+>>      
+> I can't see your point: could you give some scenario?
+>
+> Jarek P.
+>    
+With NET_CLS_ACT set, net_dev_enqueue can return an error after freeing 
+the skb. Alternative 1 disregards the error and assumes the skb is still 
+valid. The original code and alternative 2 exit the loop assuming the 
+skb has been freed.
