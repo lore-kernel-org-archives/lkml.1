@@ -1,66 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752532Ab0AGMit@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752599Ab0AGMqh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752532Ab0AGMit (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 07:38:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752404Ab0AGMis
+	id S1752599Ab0AGMqh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 07:46:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752572Ab0AGMqg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 07:38:48 -0500
-Received: from e28smtp06.in.ibm.com ([122.248.162.6]:49866 "EHLO
-	e28smtp06.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752385Ab0AGMis (ORCPT
+	Thu, 7 Jan 2010 07:46:36 -0500
+Received: from buzzloop.caiaq.de ([212.112.241.133]:38167 "EHLO
+	buzzloop.caiaq.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752552Ab0AGMqf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 07:38:48 -0500
-Date: Thu, 7 Jan 2010 18:08:41 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: nishimura@mxp.nes.nec.co.jp
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: How should we handle CONFIG_CGROUP_MEM_RES_CTRL_SWAP (Re: [PATCH
- -mmotm] build fix for memcg-move-charges-of-anonymous-swap.patch)
-Message-ID: <20100107123841.GX3059@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <20100106171058.f1d6f393.randy.dunlap@oracle.com>
- <20100107111319.7d95fe86.nishimura@mxp.nes.nec.co.jp>
- <20100107112150.2e585f1c.kamezawa.hiroyu@jp.fujitsu.com>
- <20100107115901.594330d0.nishimura@mxp.nes.nec.co.jp>
- <20100107120233.f244d4b7.kamezawa.hiroyu@jp.fujitsu.com>
- <20100107130609.31fe83dc.nishimura@mxp.nes.nec.co.jp>
- <20100107133026.6350bd9d.kamezawa.hiroyu@jp.fujitsu.com>
- <20100107141401.6a182085.nishimura@mxp.nes.nec.co.jp>
- <20100107145223.a73e2be9.kamezawa.hiroyu@jp.fujitsu.com>
- <20100107202335.c18b728b.d-nishimura@mtf.biglobe.ne.jp>
+	Thu, 7 Jan 2010 07:46:35 -0500
+Date: Thu, 7 Jan 2010 20:46:30 +0800
+From: Daniel Mack <daniel@caiaq.de>
+To: Arnd Hannemann <hannemann@nets.rwth-aachen.de>
+Cc: Richard Purdie <rpurdie@rpsys.net>,
+       Arnd Hannemann <Arnd.Hannemann@nets.rwth-aachen.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "linux-geode@lists.infradead.org" <linux-geode@lists.infradead.org>
+Subject: Re: 2.6.33-rc3 regression: leds_alix2: can't allocate I/O for GPIO
+Message-ID: <20100107124630.GU28375@buzzloop.caiaq.de>
+References: <4B45B6DD.4060903@nets.rwth-aachen.de>
+ <1262861484.8493.14.camel@dax.rpnet.com>
+ <4B45CC4C.4030603@nets.rwth-aachen.de>
+ <4B45CF73.9090304@nets.rwth-aachen.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20100107202335.c18b728b.d-nishimura@mtf.biglobe.ne.jp>
-User-Agent: Mutt/1.5.20 (2009-08-17)
+In-Reply-To: <4B45CF73.9090304@nets.rwth-aachen.de>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Daisuke Nishimura <d-nishimura@mtf.biglobe.ne.jp> [2010-01-07 20:23:35]:
-
-> (Changed the subject and Cc list)
-> 
-> On Thu, 7 Jan 2010 14:52:23 +0900
-> KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> 
-> > BTW, maybe it's time to
-> >   - remove EXPERIMENTAL from CONFIG_CGROUP_MEM_RES_CTRL_SWAP
-> > and more,
-> >   - remove CONFIG_CGROUP_MEM_RES_CTRL_SWAP
-> >     (to reduce complicated #ifdefs and replace them with CONFIG_SWAP.)
+On Thu, Jan 07, 2010 at 01:11:31PM +0100, Arnd Hannemann wrote:
+> Arnd Hannemann schrieb:
+> > Richard Purdie schrieb:
+> >> On Thu, 2010-01-07 at 11:26 +0100, Arnd Hannemann wrote:
+> >>> with 2.6.33-rc3 the LEDs are not working anymore on my Geode embedded board:
+> >>> If I remember correctly this was working fine with 2.6.32, but certainly with 2.6.31
+> >>>
+> >>> relevant dmesg output of 2.6.33-rc3:
+> >>>
+> >>> [    0.709643] cs5535_gpio: base=0x6100 mask=0xb003c66 major=253
+> >>>
+> >>> [    2.207947] leds_alix2: system is recognized as "PC Engines ALIX.2 v0.99h"
+> >>> [    2.228678] leds_alix2: can't allocate I/O for GPIO
+> >>>
+> >>>
+> >>> For reference dmesg of 2.6.31.3:
+> >>>
+> >>> [    0.611953] cs5535_gpio: base=0x6100 mask=0xb003c66 major=253
+> >>>
+> >>> [    2.379114] leds_alix2: system is recognized as "PC Engines ALIX.2"
+> >>> [    2.399097] Registered led device: alix:1
+> >>> [    2.411404] Registered led device: alix:2
+> >>> [    2.423720] Registered led device: alix:3
+> >> Its likely to be commit 7f131cf3ed96c969d7b092bf629e25c3df50901e. It
+> >> looks like the request_region() call is failing. Daniel, any idea why?
 > > 
-> > It's very stable as far as I test.
+> > Some additional debug information:
 > > 
-> I agree on both.
+> > elara:~# rdmsr 0x5140000C
+> > f00100006100
+> > 
+> > /proc/ioports says:
+> > 6100-61ff : 0000:00:0f.0
+> >   6100-61ff : cs5535_gpio
+> > 
+> > BTW: why is request_region() needed there after all?
 > 
-> Balbir-san, What do you think ?
->
+> Oh, maybe using cs5535_gpio AND leds_alix2 together was never supposed to work?
 
-I agree, the experimental marking can go and CONFIG_SWAP can replace
-the current config option. 
+That is the problem indeed. The problem is that three of these GPIOs are
+connected to LEDs, so if both drivers are enabled, they will both alter
+the same GPIOs. Hmm, don't know how to handle this. Maybe the LED driver
+should use the GPIO interface and that's it?
 
--- 
-	Balbir
+Daniel
