@@ -1,80 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753266Ab0AGSMQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753291Ab0AGSQN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753266Ab0AGSMQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 13:12:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753134Ab0AGSMP
+	id S1753291Ab0AGSQN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 13:16:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753207Ab0AGSQL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 13:12:15 -0500
-Received: from mail-yw0-f176.google.com ([209.85.211.176]:50760 "EHLO
-	mail-yw0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753101Ab0AGSMO convert rfc822-to-8bit (ORCPT
+	Thu, 7 Jan 2010 13:16:11 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:60434 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753199Ab0AGSQJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 13:12:14 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=kELPAtQ99mSF5nMkJ+75Vum3437T9altMrx1QQfNwoKMsm8Es7ZsJRNjt+tbwaEvR/
-         4XG5gi9pAouqopn9UUhF1WjnQICFEq6zP47m63kRkWd7CKK3JILNGPAD+0Ew5KVRYwyS
-         IYHDlyPx28uttKcsDBCrJ0Bv44WdTw9kyjqNc=
+	Thu, 7 Jan 2010 13:16:09 -0500
+Date: Thu, 7 Jan 2010 10:15:31 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Peter Zijlstra <peterz@infradead.org>
+cc: Christoph Lameter <cl@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "minchan.kim@gmail.com" <minchan.kim@gmail.com>,
+       "hugh.dickins" <hugh.dickins@tiscali.co.uk>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [RFC][PATCH 6/8] mm: handle_speculative_fault()
+In-Reply-To: <1262887207.4049.127.camel@laptop>
+Message-ID: <alpine.LFD.2.00.1001071007010.7821@localhost.localdomain>
+References: <20100104182429.833180340@chello.nl>  <20100104182813.753545361@chello.nl>  <20100105054536.44bf8002@infradead.org>  <alpine.DEB.2.00.1001050916300.1074@router.home>  <20100105192243.1d6b2213@infradead.org>  <alpine.DEB.2.00.1001071007210.901@router.home>
+  <alpine.LFD.2.00.1001070814080.7821@localhost.localdomain>  <1262884960.4049.106.camel@laptop>  <alpine.LFD.2.00.1001070934060.7821@localhost.localdomain>  <alpine.LFD.2.00.1001070937180.7821@localhost.localdomain> <1262887207.4049.127.camel@laptop>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-In-Reply-To: <alpine.LNX.2.00.1001071522480.5426@er-systems.de>
-References: <20100106234533.GC1960@kroah.com>
-	 <alpine.LNX.2.00.1001071522480.5426@er-systems.de>
-Date: Fri, 8 Jan 2010 02:12:13 +0800
-Message-ID: <9b5c9bb31001071012ob616b6at3175bb96926342ef@mail.gmail.com>
-Subject: Re: Linux 2.6.31.10
-From: Teck Choon Giam <giamteckchoon@gmail.com>
-To: Thomas Voegtle <tv@lio96.de>
-Cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, stable@kernel.org, dmonakhov@openvz.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Something broken here, during using a suse 11.2 installation with quota
-> switched on (this is reproducible )
->
->
-> ------------[ cut here ]------------
-> kernel BUG at fs/quota/dquot.c:1398!
-> invalid opcode: 0000 [#1]
-> last sysfs file: /sys/devices/pci0000:00/0000:00:1f.5/modalias
->
-> Pid: 3037, comm: rpm Not tainted (2.6.31.10-BIG #1) P3TSSA
-> EIP: 0060:[<c10b871e>] EFLAGS: 00010246 CPU: 0
-> EIP is at inode_reserved_space+0x23/0x3e
-> EAX: c1855c3c EBX: d608ff4c ECX: d462307c EDX: 00000000
-> ESI: 00000001 EDI: d462307c EBP: d608feac ESP: d608fea8
->  DS: 007b ES: 007b FS: 0000 GS: 00e0 SS: 0068
-> Process rpm (pid: 3037, ti=d608f000 task=d710afc0 task.ti=d608f000)
-> Stack:
->  09a0c500 d608fefc c10badb1 d462307c 000000e4 d796e000 00000000 00000000
-> <0> 00000002 d608fee4 00000000 00000000 d44055a0 00000000 00000000 d4405320
-> <0> 00005140 09a0c500 d462307c d608ff4c d462307c d608ff10 c10b87a6 09a0c500
-> Call Trace:
->  [<c10badb1>] ? dquot_transfer+0x106/0x30f
->  [<c10b87a6>] ? vfs_dq_transfer+0x6d/0x9c
->  [<c10956f3>] ? notify_change+0x190/0x295
->  [<c108202a>] ? chown_common+0x65/0x88
->  [<c1604af2>] ? schedule+0x3df/0x40c
->  [<c10821c5>] ? sys_lchown+0x4e/0x7b
->  [<c1002b1b>] ? sysenter_do_call+0x12/0x26
-> Code: 05 e8 5e 85 f7 ff c9 c3 55 89 c1 89 e5 83 ec 04 65 a1 14 00 00 00 89
-> 45 fc 31 c0 8b 81 90 00 00 00 8b 40 24 8b 50 44 85 d2 75 04 <0f> 0b eb fe 89
-> c8 ff d2 8b
-> 55 fc 65 33 15 14 00 00 00 74 05 e8
-> EIP: [<c10b871e>] inode_reserved_space+0x23/0x3e SS:ESP 0068:d608fea8
-> ---[ end trace 575c2988a2722de1 ]---
 
-I got similar issue like above for CentOS 4 and 5.  This also
-happening for linux-2.6.32.3 which I just tested for a system DELL
-PE850 with CentOS 4.  FYI please.
 
-Thanks.
+On Thu, 7 Jan 2010, Peter Zijlstra wrote:
+> 
+> Well, with that sync_vma() thing I posted the other day all the
+> speculative page fault needs is a write to current->fault_vma, the ptl
+> and an O(nr_threads) loop on unmap() for file vmas -- aside from writing
+> the pte itself of course.
 
-Kindest regards,
-Giam Teck Choon
+How do you handle the race of
+
+	fault handler:			munmap
+
+	look up vma without locks
+
+	.. interrupt happens or
+	  something delays things ..
+					remove the vma from the list
+					sync_vma()
+
+	current->fault_vma = vma
+
+etc?
+
+Maybe I'm missing something, but quite frankly, the above looks pretty 
+damn fundamental. Something needs to take a lock. If you get rid of the 
+mmap_sem, you need to replace it with another lock.
+
+There's no sane way to "look up vma and atomically mark it as busy" 
+without locks. You can do it with extra work, ie something like
+
+	look up vma without locks
+	current->fault_vma = vma
+	smp_mb();
+	check that the vma is still on the list
+
+(with he appropriate barriers on the munmap side too, of course) where you 
+avoid the lock by basically turning it into an ordering problem, but it 
+ends up being pretty much as expensive anyway for single threads.
+
+And for lots and lots of threads, you now made that munmap be pretty 
+expensive.
+
+		Linus
