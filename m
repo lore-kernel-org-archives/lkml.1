@@ -1,116 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756718Ab0AGDVi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932941Ab0AGDXX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756718Ab0AGDVi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 22:21:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756708Ab0AGDVh
+	id S932941Ab0AGDXX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 22:23:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756710Ab0AGDXX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 22:21:37 -0500
-Received: from mga11.intel.com ([192.55.52.93]:40348 "EHLO mga11.intel.com"
+	Wed, 6 Jan 2010 22:23:23 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:8555 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756675Ab0AGDVf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 22:21:35 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,233,1262592000"; 
-   d="scan'208";a="529154441"
-Date: Thu, 7 Jan 2010 11:21:31 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Tejun Heo <tj@kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Nick Piggin <npiggin@suse.de>,
-       Andi Kleen <andi@firstfloor.org>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Huang, Ying" <ying.huang@intel.com>
-Subject: Re: [RFC][PATCH] vmalloc: simplify vread()/vwrite()
-Message-ID: <20100107032130.GA12815@localhost>
-References: <20100107012458.GA9073@localhost> <20100107103825.239ffcf9.kamezawa.hiroyu@jp.fujitsu.com> <20100107025054.GA11252@localhost> <20100107115736.ee815579.kamezawa.hiroyu@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100107115736.ee815579.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1756709Ab0AGDXV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jan 2010 22:23:21 -0500
+From: Xiaotian Feng <dfeng@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: Xiaotian Feng <dfeng@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Magnus Damm <damm@igel.co.jp>,
+       H Hartley Sweeten <hsweeten@visionengravers.com>
+Subject: [PATCH] clockevent: don't remove broadcast device when cpu is dead
+Date: Thu,  7 Jan 2010 11:22:44 +0800
+Message-Id: <1262834564-13033-1-git-send-email-dfeng@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 07, 2010 at 10:57:36AM +0800, KAMEZAWA Hiroyuki wrote:
-> On Thu, 7 Jan 2010 10:50:54 +0800
-> Wu Fengguang <fengguang.wu@intel.com> wrote:
->  
-> > > > The changes are:
-> > > > - remove the vmlist walk and rely solely on vmalloc_to_page()
-> > > > - replace the VM_IOREMAP check with (page && page_is_ram(pfn))
-> > > > 
-> > > > The VM_IOREMAP check is introduced in commit d0107eb07320b for per-cpu
-> > > > alloc. Kame, would you double check if this change is OK for that
-> > > > purpose?
-> > > > 
-> > > I think VM_IOREMAP is for avoiding access to device configuration area and
-> > > unexpected breakage in device. Then, VM_IOREMAP are should be skipped by
-> > > the caller. (My patch _just_ moves the avoidance of callers to vread()/vwrite())
-> > 
-> > "device configuration area" is not RAM, so testing of RAM would be
-> > able to skip them?
-> >
-> Sorry, that's an area what I'm not sure. 
+Marc reported BUG during shutdown, after debugging, kernel is trying
+to remove a broadcast device which mode is CLOCK_EVT_MODE_ONESHOT.
 
-I believe the fundamental correctness requirement would be: to avoid
-accessing _PAGE_CACHE_UC/WC pages by building _PAGE_CACHE_WB mapping
-to them(which kmap_atomic do), whether it be physical RAM or device
-address area.
+The root cause for this bug is that in clockevents_notify,
+"cpumask_weight(dev->cpumask) == 1" is always true even if dev is a
+broadcast device. We need to use tick_is_broadcast_device to check
+if it is a broadcast device.
 
-For example, /dev/mem allows access to
-- device areas, with proper _PAGE_CACHE_* via ioremap_cache() 
-- _low_ physical RAM, which it directly reuse the 1:1 kernel mapping
+Reported-by: Marc Dionne <marc.c.dionne@gmail.com>
+Tested-by: Marc Dionne <marc.c.dionne@gmail.com>
+Signed-off-by: Xiaotian Feng <dfeng@redhat.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Magnus Damm <damm@igel.co.jp>
+Cc: H Hartley Sweeten <hsweeten@visionengravers.com>
+---
+ kernel/time/clockevents.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-> But, page_is_ram() implementation other than x86 seems not very safe...
-> (And it seems that it's not defiend in some archs.)
+diff --git a/kernel/time/clockevents.c b/kernel/time/clockevents.c
+index 6f740d9..0223d83 100644
+--- a/kernel/time/clockevents.c
++++ b/kernel/time/clockevents.c
+@@ -259,7 +259,7 @@ void clockevents_notify(unsigned long reason, void *arg)
+ 		cpu = *((int *)arg);
+ 		list_for_each_entry_safe(dev, tmp, &clockevent_devices, list) {
+ 			if (cpumask_test_cpu(cpu, dev->cpumask) &&
+-			    cpumask_weight(dev->cpumask) == 1) {
++			    !tick_is_broadcast_device(dev)) {
+ 				BUG_ON(dev->mode != CLOCK_EVT_MODE_UNUSED);
+ 				list_del(&dev->list);
+ 			}
+-- 
+1.6.5.2
 
-Ah didn't know archs other than x86.  And hotplug won't update e820 as
-well..
-
-> > > 
-> > > > The page_is_ram() check is necessary because kmap_atomic() is not
-> > > > designed to work with non-RAM pages.
-> > > > 
-> > > I think page_is_ram() is not a complete method...on x86, it just check
-> > > e820's memory range. checking VM_IOREMAP is better, I think.
-> > 
-> > (double check) Not complete or not safe?
-> > 
-> I think not-safe because e820 doesn't seem to be updated.
-> 
-> > EFI seems to not update e820 table by default.  Ying, do you know why?
-
-Ying just confirmed that the kernel didn't update e820 with EFI memmap
-because the bootloader will fake one e820 table based on EFI memmap,
-in order to run legacy/unmodified kernel.
-
-> 
-> I hope all this kinds can be fixed by kernel/resource.c in generic way....
-> Now, each archs have its own.
- 
-Agreed.
-
-> > > > Even for a RAM page, we don't own the page, and cannot assume it's a
-> > > > _PAGE_CACHE_WB page. So I wonder whether it's necessary to do another
-> > > > patch to call reserve_memtype() before kmap_atomic() to ensure cache
-> > > > consistency?
-> > > > 
-> > > > TODO: update comments accordingly
-> > > > 
-> > > 
-> > > BTW, f->f_pos problem on 64bit machine still exists and this patch is still
-> > > hard to test. I stopped that because anyone doesn't show any interests.
-> > 
-> > I'm using your patch :)
-> > 
-> > I feel most inconfident on this patch, so submitted it for RFC first.
-> > I'll then submit a full patch series including your f_pos fix.
-> > 
-> Thank you, it's helpful.
-
-Thanks,
-Fengguang
