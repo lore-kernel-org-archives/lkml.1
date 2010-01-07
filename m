@@ -1,63 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932398Ab0AGDFF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932584Ab0AGDFs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932398Ab0AGDFF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 22:05:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932349Ab0AGDFE
+	id S932584Ab0AGDFs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 22:05:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932356Ab0AGDFr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 22:05:04 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:64794 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S932334Ab0AGDFC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 22:05:02 -0500
-Message-ID: <4B454F59.1030503@cn.fujitsu.com>
-Date: Thu, 07 Jan 2010 11:04:57 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
-MIME-Version: 1.0
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-CC: Randy Dunlap <randy.dunlap@oracle.com>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, "menage@google.com" <menage@google.com>,
-       kirill@shutemov.name
-Subject: Re: mmotm 2010-01-06-14-34 uploaded (kernel/cgroup)
-References: <201001062259.o06MxQrp023236@imap1.linux-foundation.org>	<20100106170849.d0d95c9b.randy.dunlap@oracle.com>	<20100107113154.a1fa0103.kamezawa.hiroyu@jp.fujitsu.com>	<4B4549CB.8000809@cn.fujitsu.com> <20100107114728.58166ce4.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20100107114728.58166ce4.kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 6 Jan 2010 22:05:47 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:39924 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932349Ab0AGDFr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jan 2010 22:05:47 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Thu, 7 Jan 2010 12:02:33 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: mmotm 2010-01-06-14-34 uploaded (mm/memcontrol)
+Message-Id: <20100107120233.f244d4b7.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20100107115901.594330d0.nishimura@mxp.nes.nec.co.jp>
+References: <201001062259.o06MxQrp023236@imap1.linux-foundation.org>
+	<20100106171058.f1d6f393.randy.dunlap@oracle.com>
+	<20100107111319.7d95fe86.nishimura@mxp.nes.nec.co.jp>
+	<20100107112150.2e585f1c.kamezawa.hiroyu@jp.fujitsu.com>
+	<20100107115901.594330d0.nishimura@mxp.nes.nec.co.jp>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>>> It contains the following patches against 2.6.33-rc3:
->>>> kernel/cgroup.c: In function 'cgroup_write_event_control':
->>>> kernel/cgroup.c:2949: error: implicit declaration of function 'eventfd_fget'
->>>> kernel/cgroup.c:2949: warning: assignment makes pointer from integer without a cast
->>>> kernel/cgroup.c:2955: error: implicit declaration of function 'eventfd_ctx_fileget'
->>>> kernel/cgroup.c:2955: warning: assignment makes pointer from integer without a cast
->>>> make[2]: *** [kernel/cgroup.o] Error 1
->>>>
->>> Hmm, how about this rather than adding #ifdefs..
->>> Paul, Li, how do you think ?
->> I think make CONFIG_CGROUPS select EVENTFD would be better.
->>
-> Hm, as far as I know, SELECT is not recommended. But yes, it seems side-effect
-> of select is small here. But I avoid it as much as possible, usually.
+On Thu, 7 Jan 2010 11:59:01 +0900
+Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
+
+> Thank you for your fix.
 > 
-> Moreover, in this case,
->   - EVENTFD is a feature which is enabled by default.
->   - cgroup is "Say N if unsure" config.
+> On Thu, 7 Jan 2010 11:21:50 +0900, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> > On Thu, 7 Jan 2010 11:13:19 +0900
+> > Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
+> > 
+> > > Thank you for your report.
+> >  
+> > > > config attached.
+> > > > 
+> > > I'm sorry I missed the !CONFIG_SWAP or !CONFIG_CGROUP_MEM_RES_CTLR_SWAP case.
+> > > 
+> > > I'll prepare fixes.
+> > > 
+> > Nishimura-san, could you double check this ?
+> > 
+> It seems that this cannot fix the !CONFIG_SWAP case in my environment.
 > 
-> In this case, "depends on" is good.
+> > Andrew, this is a fix onto Nishimura-san's memcg move account patch series.
+> > Maybe this -> patches/memcg-move-charges-of-anonymous-swap.patch
+> > 
+> I think both memcg-move-charges-of-anonymous-swap.patch and
+> memcg-improve-performance-in-moving-swap-charge.patch need to be fixed.
 > 
+> > mm/memcontrol.c: In function 'is_target_pte_for_mc':
+> > mm/memcontrol.c:3985: error: implicit declaration of function 'mem_cgroup_count_swap_user'
+> This derives from a bug of memcg-move-charges-of-anonymous-swap.patch,
+> 
+> and
+> 
+> > mm/memcontrol.c: In function 'mem_cgroup_move_charge_pte_range':
+> > mm/memcontrol.c:4220: error: too many arguments to function 'mem_cgroup_move_swap_account'
+> > mm/memcontrol.c:4220: error: too many arguments to function 'mem_cgroup_move_swap_account'
+> > mm/memcontrol.c:4220: error: too many arguments to function 'mem_cgroup_move_swap_account'
+> this derives from that of memcg-improve-performance-in-moving-swap-charge.patch.
+> 
+> 
+> I'm now testing my patch in some configs, and will post later.
+> 
+Okay, plz.
 
-I thought we use "depends on" if it's obvious by the config name
-that a config depends on another config, and use "select" otherwise.
+Thanks,
+-Kame
 
-Referring to Documentation/Kbuild/kconfig-language.txt:
 
-        select should be used with care.
-        ...
-        In general use select only for non-visible symbols
-        (no prompts anywhere) and for symbols with no dependencies.
-
-It does suggest "depends on" is better. :)
 
