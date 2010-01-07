@@ -1,31 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756741Ab0AGEwx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932831Ab0AGEyp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756741Ab0AGEwx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 23:52:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752510Ab0AGEww
+	id S932831Ab0AGEyp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 23:54:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755919Ab0AGEyo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 23:52:52 -0500
-Received: from ozlabs.org ([203.10.76.45]:42556 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751193Ab0AGEww (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 23:52:52 -0500
-Date: Thu, 7 Jan 2010 15:52:48 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org
-Subject: Counting FP multiplies on Core 2
-Message-ID: <20100107045248.GB30718@drongo>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Wed, 6 Jan 2010 23:54:44 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:56360 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752518Ab0AGEyn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jan 2010 23:54:43 -0500
+Date: Wed, 6 Jan 2010 20:53:43 -0800
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+To: Michael Breuer <mbreuer@majjas.com>
+Cc: Jarek Poplawski <jarkao2@gmail.com>, David Miller <davem@davemloft.net>,
+       akpm@linux-foundation.org, flyboy@gmail.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH] af_packet: Don't use skb after dev_queue_xmit()
+Message-ID: <20100106205343.5460d658@nehalam>
+In-Reply-To: <4B455C62.6030504@majjas.com>
+References: <20100105230746.GA6612@del.dom.local>
+	<4B43F72C.9090004@majjas.com>
+	<20100106072208.GA6711@ff.dom.local>
+	<4B44E952.5000804@majjas.com>
+	<20100106131044.25b4e500@nehalam>
+	<4B451C31.3000309@majjas.com>
+	<4B454A16.3030909@majjas.com>
+	<4B455C62.6030504@majjas.com>
+Organization: Linux Foundation
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The Intel manual tells me that event num 12H, umask 00H on Core 2
-counts multiply operations executed, but says "Use IA32_PMC1 only".
-Is there a way in the raw event code to specify a particular PMC, or
-does the code just know that that event can only be counted on PMC1?
+On Wed, 06 Jan 2010 23:00:34 -0500
+Michael Breuer <mbreuer@majjas.com> wrote:
 
-Paul.
+> Changing MTU to 9000, everything basically breaks - Can't use X11 (local 
+> or remote - get X11 screen after gdm login locally, but then goes back 
+> to greeter; remote gets no greeter); ssh sessions hang; etc. This time I 
+> was able to reset the MTU back to 1500 without a reboot - but I did have 
+> to ifconfig eth0 down and then up. Looking at the sk98lin code, it looks 
+> to me like they do a bit more work with existing buffers before 
+> completing the MTU switch. Note that even doing this, X11 did not work 
+> (it did with the old mtu change code). Tried changing to mtu 4500 - same 
+> effect as 9000... but when I switched back to 1500, ksoftirqd started 
+> spinning using 100% of one core.
+
+The problem is that patch was enabling scatter-gather and checksum offload
+that won't work on EC_U hardware with 9K MTU.  At least, it never worked
+for me when I tested it. So because of that it really doesn't change anything
+for the better on that chip version.
+
+What version chip is on that motherboard?  Mine is:
+ Yukon-2 EC Ultra chip revision 3
+which corresponds to B0 step.
+
+Another possibility is the PHY register which controls number of ticks
+of buffering.  The default is zero, which gives the most buffering (good),
+but the firmware could be reprogramming it (bad).  In general, the driver
+doesn't fiddle with bits that are already set correctly, because sometimes
+vendors need to tweak PCI timing in firmware/BIOS.  It seems the firmware on this
+chip is just a bunch of register setups done on power on.
