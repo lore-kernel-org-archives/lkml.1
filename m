@@ -1,76 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752403Ab0AGNic@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752434Ab0AGNly@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752403Ab0AGNic (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 08:38:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752118Ab0AGNib
+	id S1752434Ab0AGNly (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 08:41:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752222Ab0AGNlx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 08:38:31 -0500
-Received: from ey-out-2122.google.com ([74.125.78.26]:57540 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752056Ab0AGNia (ORCPT
+	Thu, 7 Jan 2010 08:41:53 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:46696 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751456Ab0AGNlw convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 08:38:30 -0500
+	Thu, 7 Jan 2010 08:41:52 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=wBKUqIUyOpADXL3zDNSYbuMdhz3A1rij1JCyOKYcqxlC8JlQebD3oGYPVtfOLVTE4o
-         jK7o+fhBPrbZT113PHB+0eW4hD5z5RLCxqiBJy1J55zCwTRUIBixUPhZLrnKv0NsiKJ1
-         czLywOSrwCDGTDL3DQk6tprOU2shW3syUt24w=
+         :cc:content-type:content-transfer-encoding;
+        b=u5NU6L0CVvdCb7lKduZJC5fQDyuonp0BRsAp1fF+U9VbAAbWCkP5w9ZRGbHlTOug7O
+         l3LDRZnE31dIaiqXY7hr1raonLeNrTFtL67EGtGE1jeDn0sRnzXWu5PsxoZav5uGZmyX
+         z1T3xiS6L5Hla5rxA0JDQ+pEDXJAyEQr08F8s=
 MIME-Version: 1.0
-In-Reply-To: <E1NSq2i-0000wY-00.kirill_nnov-mail-ru@foot.mail.ru>
-References: <4e5e476b1001051348y4637986epb9b56958c738061a@mail.gmail.com>
-	 <E1NSq2i-0000wY-00.kirill_nnov-mail-ru@foot.mail.ru>
-Date: Thu, 7 Jan 2010 14:38:29 +0100
-Message-ID: <4e5e476b1001070538y35143cc8me7443f3eb0d377@mail.gmail.com>
-Subject: Re: [PATCH] cfq-iosched: non-rot devices do not need read queue 
-	merging
+In-Reply-To: <58965d8a1001050807l31ddf8d1l55ebcfbadbfc206d@mail.gmail.com>
+References: <58965d8a1001050807l31ddf8d1l55ebcfbadbfc206d@mail.gmail.com>
+Date: Thu, 7 Jan 2010 14:41:51 +0100
+Message-ID: <4e5e476b1001070541y30cae741ofe16ab82670b2633@mail.gmail.com>
+Subject: Re: Multi-file USB mass-storage copy from PC to Nokia N900 slow when 
+	using CFQ
 From: Corrado Zoccolo <czoccolo@gmail.com>
-To: Kirill Afonshin <kirill_nnov@mail.ru>
-Cc: Jeff Moyer <jmoyer@redhat.com>, Vivek Goyal <vgoyal@redhat.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>,
-       Shaohua Li <shaohua.li@intel.com>,
-       Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+To: Paul Hartman <paul.hartman+linux@gmail.com>
+Cc: linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Kirill,
-NCQ is actually measured, so it is reliable.
-Rotational can be wrong, but you can write to it (e.g. at machine
-startup) to obtain better handling of your disks.
-I am also a fan of auto-tuning, and trying to achieve it in cfq, but
-it is kind of complex, since there are many factors, and some of them
-aren't modeled by cfq currently.
-An example is that, on cheap SSDs or flash cards, small writes are far
-slower than anything else (they can take up to 0.5s), while a read
-will usually take less than 1ms. Currently, CFQ has no way to handle
-this extreme situation, since it uses just one idle value (8ms) for
-all transitions.
+On Tue, Jan 5, 2010 at 5:07 PM, Paul Hartman
+<paul.hartman+linux@gmail.com> wrote:
+> Hi,
+>
+> Copying more than one file from my PC (kernel 2.6.32) to my Nokia N900
+> over USB mass storage mode is very slow when CFQ is the i/o scheduler.
+> The target uses vfat filesystem.
+>
+> I am using iotop to monitor the I/O in general, plus I performed the
+> following test. file1 and file2 are each 700M and both housed on a
+> ramdrive for this test. They were deleted from the destination between
+> runs.
+>
+> # one file at a time with sync in-between, fast speeds:
+> $ sync; time sh -c "cp file1 /mnt/usb; sync; cp file2 /mnt/usb; sync"
+>
+> real    1m25.697s
+> user    0m0.005s
+> sys     0m2.509s
+>
+> # copy two files in a row, then sync, speed is bad:
+> $ sync; time sh -c "cp file1 file2 /mnt/usb; sync"
+>
+> real    6m51.439s
+> user    0m0.007s
+> sys     0m2.615s
+>
+>
+> Using all I/O schedulers, the speed of the first test was the same. So
+> it's only related to writing more than 1 file to the N900. The timing
+> results for the second test ended up as such:
+>
+> cfq: 6m51.439s
+> noop: 3m0.733s
+> anticipatory: 1m44.348s
+> deadline: 1m36.804s
+>
+>
+> Also, in 2.6.31 the speed was four times slower, so the removal of old
+> pdflush code may have made a difference in this case. Copying 1
+> gigabyte takes about 1 minute at optimal speed, about 5 minutes using
+> CFQ in kernel 2.6.32, and took about 20 minutes using CFQ in kernel
+> 2.6.31.
+>
+> I thought you may be interested in case there's room to improve the
+> scheduler.  If you want any other info let me know!
+
+Can you try setting:
+/sys/block/**your_device** /queue/iosched/fifo_expire_sync
+to a large number, e.g. 5000 ?
+CFQ operates pretty much like deadline w.r.t. normal writes, but uses
+a much shorter interval to switch between two streams of writes, to
+reduce latency of data hitting disk, and this could cause low
+performance on flash devices, where writes that do not cover whole
+blocks are painfully slow.
 
 Corrado
+>
+> Thanks
+> Paul
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
 
-On 1/7/10, Kirill Afonshin <kirill_nnov@mail.ru> wrote:
-> I think we should not rely on NCQ/non-NCQ or blk_queue_nonrot() because it
-> may be incorrect:
-> try this:
->
-> find /sys/ -name rotational 2>/dev/null
-> find /sys/ -name rotational 2>/dev/null|xargs cat
->
-> all devices are reported as rotational for me including ram, loop and usb
-> flash drive. Physical block size and optimal io size has invalid values for
-> all my usb flash drives.
->
-> I think it would be better to do a short performance test before mount. It
-> will provide all necessary information for io scheduler. We doesn't need
-> information about NCQ and rotational. We need to predict how much time
-> specific io operation will take in current context.
->
-> PS: I'm not native speaker.
->
-> Best regards,
-> Kirill Afonshin
->
+
+
+-- 
+__________________________________________________________________________
+
+dott. Corrado Zoccolo                          mailto:czoccolo@gmail.com
+PhD - Department of Computer Science - University of Pisa, Italy
+--------------------------------------------------------------------------
+The self-confidence of a warrior is not the self-confidence of the average
+man. The average man seeks certainty in the eyes of the onlooker and calls
+that self-confidence. The warrior seeks impeccability in his own eyes and
+calls that humbleness.
+                               Tales of Power - C. Castaneda
