@@ -1,45 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753405Ab0AGScR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753411Ab0AGSfx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753405Ab0AGScR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 13:32:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753165Ab0AGScQ
+	id S1753411Ab0AGSfx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 13:35:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752113Ab0AGSfw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 13:32:16 -0500
-Received: from wavehammer.waldi.eu.org ([82.139.201.20]:41725 "EHLO
-	wavehammer.waldi.eu.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750964Ab0AGScP (ORCPT
+	Thu, 7 Jan 2010 13:35:52 -0500
+Received: from mail-fx0-f225.google.com ([209.85.220.225]:57360 "EHLO
+	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751084Ab0AGSfv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 13:32:15 -0500
-X-Greylist: delayed 379 seconds by postgrey-1.27 at vger.kernel.org; Thu, 07 Jan 2010 13:32:14 EST
-Date: Thu, 7 Jan 2010 19:25:53 +0100
-From: Bastian Blank <bastian@waldi.eu.org>
-To: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Ping Cheng <pingc@wacom.com>
-Subject: [PATCH 0/7] Input: wacom - Setup features via driver info
-Message-ID: <20100107182553.GA11236@wavehammer.waldi.eu.org>
-Mail-Followup-To: Bastian Blank <bastian@waldi.eu.org>,
-	linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-	Ping Cheng <pingc@wacom.com>
+	Thu, 7 Jan 2010 13:35:51 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=TxIRaixmlCBEuAT67CMWfvmGBKdxPcuM0C1fZC9vjxjeGTq6WQ2583adITKRHR0Nv1
+         wv0xJF51tGRduUSZRWWlugya7Ikr/Dg8+4SwcwTj6HYmM9+xBpYPeyyI+8cS59VI84Fj
+         1sW6vDGK8YcG1HGLnwj4jcTq37hkcLajtyux4=
+Date: Thu, 7 Jan 2010 19:35:45 +0100
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: Michael Breuer <mbreuer@majjas.com>
+Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
+       flyboy@gmail.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH] af_packet: Don't use skb after dev_queue_xmit()
+Message-ID: <20100107183545.GA3208@del.dom.local>
+References: <4B455C62.6030504@majjas.com>
+ <20100106205343.5460d658@nehalam>
+ <4B4571D5.30002@majjas.com>
+ <4B457711.1040008@majjas.com>
+ <4B458B36.6050509@majjas.com>
+ <20100107074756.GB6258@ff.dom.local>
+ <4B459368.2000503@majjas.com>
+ <4B45F841.8030407@majjas.com>
+ <20100107180114.GB3088@del.dom.local>
+ <4B4625BD.3070202@majjas.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <4B4625BD.3070202@majjas.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patchset moves the feature info into the driver info of the usb
-device ids.  The wacom driver always needs this info to setup the
-device.
+On Thu, Jan 07, 2010 at 01:19:41PM -0500, Michael Breuer wrote:
+> On 1/7/2010 1:01 PM, Jarek Poplawski wrote:
+> >On Thu, Jan 07, 2010 at 10:05:37AM -0500, Michael Breuer wrote:
+> >>Bad news - crashed about an hour after I wrote this email - under
+> >>load - same crash as before. Network watchdog... lots of attempts to
+> >>reset the adapter... then hw watchdog rebooted the system.
+> >It's a pity. Anyway, I'd be still interested in CONFIG_PACKET_MMAP off
+> >if you find time.
+> >
+> >Jarek P.
+> Ok - any particular patch set to try with? I'm going to start with a
+> clean tree using the latest 2.6.32 from git (tried 2.6.33-rc3, but
+> can't get a usable console... will look at that later.)
 
-Currently the driver uses two synchronized arrays with the standard ids
-and the features.  It calculates the index into the features array by
-hand and does not check for overflow.  With the ability to add new ids
-to the driver, I can instruct the driver to access non-existant features
-entries and produce crashes in the uevent core.
+My "Berck E. Nash" and Stephen's "pskb_may_pull" sky2 patches. (BTW,
+could you remind if it worked any better with 2.6.31 or earlier?)
 
-Bastian
-
--- 
-I'm a soldier, not a diplomat.  I can only tell the truth.
-		-- Kirk, "Errand of Mercy", stardate 3198.9
+Jarek P.
