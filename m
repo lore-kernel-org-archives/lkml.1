@@ -1,2531 +1,567 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752925Ab0AGOxZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752936Ab0AGO7Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752925Ab0AGOxZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 09:53:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751896Ab0AGOxX
+	id S1752936Ab0AGO7Z (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 09:59:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752477Ab0AGO7Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 09:53:23 -0500
-Received: from cantor.suse.de ([195.135.220.2]:51251 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752871Ab0AGOxT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 09:53:19 -0500
-From: Michal Marek <mmarek@suse.cz>
-To: Nir Tzachar <nir.tzachar@gmail.com>
-Cc: linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "nir.tzachar@gmail.com" <nir.tzachar@gmail.com>
-Subject: [PATCH 1/2] kconfig: new configuration interface (nconfig)
-Date: Thu,  7 Jan 2010 15:52:47 +0100
-Message-Id: <1262875968-1078-2-git-send-email-mmarek@suse.cz>
-X-Mailer: git-send-email 1.6.5.3
-In-Reply-To: <1262875968-1078-1-git-send-email-mmarek@suse.cz>
-References: <1262875968-1078-1-git-send-email-mmarek@suse.cz>
+	Thu, 7 Jan 2010 09:59:24 -0500
+Received: from daytona.panasas.com ([67.152.220.89]:18614 "EHLO
+	daytona.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752430Ab0AGO7W (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jan 2010 09:59:22 -0500
+Message-ID: <4B45F6C5.2040101@panasas.com>
+Date: Thu, 07 Jan 2010 16:59:17 +0200
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
+MIME-Version: 1.0
+To: James Bottomley <James.Bottomley@suse.de>
+CC: Peter Korsgaard <jacmet@sunsite.dk>, james.smart@emulex.com,
+       linux-scsi@vger.kernel.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH,RESEND] scsi: use __uX types for headers exported to user
+ space
+References: <1262874005-25089-1-git-send-email-jacmet@sunsite.dk> <1262875229.3025.4.camel@mulgrave.site>
+In-Reply-To: <1262875229.3025.4.camel@mulgrave.site>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 07 Jan 2010 14:59:20.0557 (UTC) FILETIME=[FDE811D0:01CA8FA9]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: nir.tzachar@gmail.com <nir.tzachar@gmail.com>
+On 01/07/2010 04:40 PM, James Bottomley wrote:
+> On Thu, 2010-01-07 at 15:20 +0100, Peter Korsgaard wrote:
+>> Commit 9e4f5e29 (FC Pass Thru support) exported a number of header files
+>> in include/scsi to user space, but didn't change the uX types to the
+>> userspace-compatible __uX types. Without that you'll get compile errors
+>> when including them - E.G.:
+>>
+>> /tmp/include/scsi/scsi.h:145: error: expected specifier-qualifier-list
+>> before ‘u8’
+>>
+>> Signed-off-by: Peter Korsgaard <jacmet@sunsite.dk>
+>> ---
+>>  No feedback since 27/11, resending.
+> 
+> OK, so to summarise the list discussion, the current status is that the
+> SCSI exports are irrelevant because glibc currently ignores the
+> include/scsi namespace provided by the kernel.  So, we have three
+> options:
+> 
+>      1. Bring our exports up to the point where they can replace glibc's
+>         include/scsi/scsi.h and the rest.  This requires a line by line
+>         analysis of what's in glibc and an update to our include to
+>         provide or remove as necessary.  After this is done we can try
+>         to persuade the glibc people to turn over the include/scsi
+>         namespace to us.
+>      2. Kill the kbuild exports and make everyone go via the glibc tree
+>         (current state).
+>      3. Move the kernel include/scsi to a more conventional namespace
+>         (like inside include/linux) so glibc will pick it up.
+> 
+> So far we've had people supporting all three.  I'm inclined to say that
+> I'd favour 1, but the first patch trying to do any of them would be the
+> best starting ground for a discussion.
+> 
+> James
+> 
 
-This patch was inspired by the kernel projects page, where an ncurses
-replacement for menuconfig was mentioned (by Sam Ravnborg).
+Below is a diff of make headers_check on current scsi.h
+(After my patch, see other mail in thread)
+And /usr/include/scsi.h from a Fedora12 system.
+Clearly this is an old version of a Linux header.
 
-Building on menuconfig, this patch implements a more modern look
-interface using ncurses and ncurses' satellite libraries (menu, panel,
-form). The implementation does not depend on lxdialog, which is
-currently distributed with the kernel.
+Except one minor name conflict I do not see any problems at all
+It is all additions (+) to that old version.
 
-Signed-off-by: Nir Tzachar <nir.tzachar@gmail.com>
-Signed-off-by: Michal Marek <mmarek@suse.cz>
+The single existing issue is:
+-#define ABORT               0x06
++#define ABORT_TASK_SET      0x06
+
+Which is correct surly "#define ABORT" is a disastrous name space
+pollution.
+
+Boaz
 ---
- scripts/kconfig/Makefile            |   16 +-
- scripts/kconfig/lkc.h               |    2 +-
- scripts/kconfig/lkc_proto.h         |    3 +-
- scripts/kconfig/mconf.c             |   13 -
- scripts/kconfig/menu.c              |   16 +-
- scripts/kconfig/nconf.c             | 1568 +++++++++++++++++++++++++++++++++++
- scripts/kconfig/nconf.gui.c         |  617 ++++++++++++++
- scripts/kconfig/nconf.h             |   95 +++
- scripts/kconfig/zconf.tab.c_shipped |    2 +-
- scripts/kconfig/zconf.y             |    2 +-
- 10 files changed, 2314 insertions(+), 20 deletions(-)
- create mode 100644 scripts/kconfig/nconf.c
- create mode 100644 scripts/kconfig/nconf.gui.c
- create mode 100644 scripts/kconfig/nconf.h
-
-diff --git a/scripts/kconfig/Makefile b/scripts/kconfig/Makefile
-index 999e8a7..75bdf5a 100644
---- a/scripts/kconfig/Makefile
-+++ b/scripts/kconfig/Makefile
-@@ -23,6 +23,9 @@ menuconfig: $(obj)/mconf
- config: $(obj)/conf
- 	$< $(Kconfig)
- 
-+nconfig: $(obj)/nconf
-+	$< $(Kconfig)
-+
- oldconfig: $(obj)/conf
- 	$< -o $(Kconfig)
- 
-@@ -110,6 +113,7 @@ endif
- # Help text used by make help
- help:
- 	@echo  '  config	  - Update current config utilising a line-oriented program'
-+	@echo  '  nconfig         - Update current config utilising a ncurses menu based program'
- 	@echo  '  menuconfig	  - Update current config utilising a menu based program'
- 	@echo  '  xconfig	  - Update current config utilising a QT based front-end'
- 	@echo  '  gconfig	  - Update current config utilising a GTK based front-end'
-@@ -137,6 +141,8 @@ HOST_EXTRACFLAGS += -DLOCALE
- # ===========================================================================
- # Shared Makefile for the various kconfig executables:
- # conf:	  Used for defconfig, oldconfig and related targets
-+# nconf:  Used for the nconfig target.
-+#         Utilizes ncurses
- # mconf:  Used for the menuconfig target
- #         Utilizes the lxdialog package
- # qconf:  Used for the xconfig target
-@@ -149,11 +155,16 @@ lxdialog := lxdialog/checklist.o lxdialog/util.o lxdialog/inputbox.o
- lxdialog += lxdialog/textbox.o lxdialog/yesno.o lxdialog/menubox.o
- 
- conf-objs	:= conf.o  zconf.tab.o
--mconf-objs	:= mconf.o zconf.tab.o $(lxdialog)
-+mconf-objs     := mconf.o zconf.tab.o $(lxdialog)
-+nconf-objs     := nconf.o zconf.tab.o nconf.gui.o
- kxgettext-objs	:= kxgettext.o zconf.tab.o
- 
- hostprogs-y := conf qconf gconf kxgettext
- 
-+ifeq ($(MAKECMDGOALS),nconfig)
-+	hostprogs-y += nconf
-+endif
-+
- ifeq ($(MAKECMDGOALS),menuconfig)
- 	hostprogs-y += mconf
- endif
-@@ -177,7 +188,7 @@ endif
- 
- clean-files	:= lkc_defs.h qconf.moc .tmp_qtcheck \
- 		   .tmp_gtkcheck zconf.tab.c lex.zconf.c zconf.hash.c gconf.glade.h
--clean-files     += mconf qconf gconf
-+clean-files     += mconf qconf gconf nconf
- clean-files     += config.pot linux.pot
- 
- # Check that we have the required ncurses stuff installed for lxdialog (menuconfig)
-@@ -202,6 +213,7 @@ HOSTLOADLIBES_gconf	= `pkg-config --libs gtk+-2.0 gmodule-2.0 libglade-2.0`
- HOSTCFLAGS_gconf.o	= `pkg-config --cflags gtk+-2.0 gmodule-2.0 libglade-2.0` \
-                           -D LKC_DIRECT_LINK
- 
-+HOSTLOADLIBES_nconf	= -lmenu -lpanel -lncurses
- $(obj)/qconf.o: $(obj)/.tmp_qtcheck
- 
- ifeq ($(qconf-target),1)
-diff --git a/scripts/kconfig/lkc.h b/scripts/kconfig/lkc.h
-index e59dd0c..ce6549c 100644
---- a/scripts/kconfig/lkc.h
-+++ b/scripts/kconfig/lkc.h
-@@ -84,7 +84,7 @@ void conf_set_all_new_symbols(enum conf_def_mode mode);
- void kconfig_load(void);
- 
- /* menu.c */
--void menu_init(void);
-+void _menu_init(void);
- void menu_warn(struct menu *menu, const char *fmt, ...);
- struct menu *menu_add_menu(void);
- void menu_end_menu(void);
-diff --git a/scripts/kconfig/lkc_proto.h b/scripts/kconfig/lkc_proto.h
-index ffeb532..41e652a 100644
---- a/scripts/kconfig/lkc_proto.h
-+++ b/scripts/kconfig/lkc_proto.h
-@@ -17,7 +17,8 @@ P(menu_get_root_menu,struct menu *,(struct menu *menu));
- P(menu_get_parent_menu,struct menu *,(struct menu *menu));
- P(menu_has_help,bool,(struct menu *menu));
- P(menu_get_help,const char *,(struct menu *menu));
--P(get_symbol_str,void,(struct gstr *r, struct symbol *sym));
-+P(get_symbol_str, void, (struct gstr *r, struct symbol *sym));
-+P(get_relations_str, struct gstr, (struct symbol **sym_arr));
- P(menu_get_ext_help,void,(struct menu *menu, struct gstr *help));
- 
- /* symbol.c */
-diff --git a/scripts/kconfig/mconf.c b/scripts/kconfig/mconf.c
-index ac1e9da..a4a7519 100644
---- a/scripts/kconfig/mconf.c
-+++ b/scripts/kconfig/mconf.c
-@@ -282,19 +282,6 @@ static void show_textbox(const char *title, const char *text, int r, int c);
- static void show_helptext(const char *title, const char *text);
- static void show_help(struct menu *menu);
- 
--static struct gstr get_relations_str(struct symbol **sym_arr)
--{
--	struct symbol *sym;
--	struct gstr res = str_new();
--	int i;
+diff -Nurp -Nurp /usr/include/scsi/scsi.h .build_x86_64/usr/include/scsi/scsi.h
+--- /usr/include/scsi/scsi.h	2010-01-04 15:50:26.000000000 +0200
++++ .build_x86_64/usr/include/scsi/scsi.h	2010-01-07 16:47:45.943919303 +0200
+@@ -1,30 +1,14 @@
+-/* Copyright (C) 1998, 1999 Free Software Foundation, Inc.
+-   This file is part of the GNU C Library.
 -
--	for (i = 0; sym_arr && (sym = sym_arr[i]); i++)
--		get_symbol_str(&res, sym);
--	if (!i)
--		str_append(&res, _("No matches found.\n"));
--	return res;
--}
+-   The GNU C Library is free software; you can redistribute it and/or
+-   modify it under the terms of the GNU Lesser General Public
+-   License as published by the Free Software Foundation; either
+-   version 2.1 of the License, or (at your option) any later version.
 -
- static char filename[PATH_MAX+1];
- static void set_config_filename(const char *config_filename)
- {
-diff --git a/scripts/kconfig/menu.c b/scripts/kconfig/menu.c
-index 059a246..21bfb3d 100644
---- a/scripts/kconfig/menu.c
-+++ b/scripts/kconfig/menu.c
-@@ -38,7 +38,7 @@ static void prop_warn(struct property *prop, const char *fmt, ...)
- 	va_end(ap);
- }
+-   The GNU C Library is distributed in the hope that it will be useful,
+-   but WITHOUT ANY WARRANTY; without even the implied warranty of
+-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+-   Lesser General Public License for more details.
+-
+-   You should have received a copy of the GNU Lesser General Public
+-   License along with the GNU C Library; if not, write to the Free
+-   Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+-   02111-1307 USA.  */
+-
+ /*
+  * This header file contains public constants and structures used by
+  * the scsi code for linux.
++ *
++ * For documentation on the OPCODES, MESSAGES, and SENSE values,
++ * please consult the SCSI standard.
+  */
+-
+ #ifndef _SCSI_SCSI_H
+-#define _SCSI_SCSI_H	1
++#define _SCSI_SCSI_H
  
--void menu_init(void)
-+void _menu_init(void)
- {
- 	current_entry = current_menu = &rootmenu;
- 	last_entry_ptr = &rootmenu.list;
-@@ -515,6 +515,20 @@ void get_symbol_str(struct gstr *r, struct symbol *sym)
- 	str_append(r, "\n\n");
- }
+-#include <features.h>
++#include <linux/types.h>
  
-+struct gstr get_relations_str(struct symbol **sym_arr)
-+{
-+	struct symbol *sym;
-+	struct gstr res = str_new();
-+	int i;
+ /*
+  *      SCSI opcodes
+@@ -36,6 +20,7 @@
+ #define FORMAT_UNIT           0x04
+ #define READ_BLOCK_LIMITS     0x05
+ #define REASSIGN_BLOCKS       0x07
++#define INITIALIZE_ELEMENT_STATUS 0x07
+ #define READ_6                0x08
+ #define WRITE_6               0x0a
+ #define SEEK_6                0x0b
+@@ -60,6 +45,7 @@
+ #define READ_10               0x28
+ #define WRITE_10              0x2a
+ #define SEEK_10               0x2b
++#define POSITION_TO_ELEMENT   0x2b
+ #define WRITE_VERIFY          0x2e
+ #define VERIFY                0x2f
+ #define SEARCH_HIGH           0x30
+@@ -81,16 +67,23 @@
+ #define WRITE_LONG            0x3f
+ #define CHANGE_DEFINITION     0x40
+ #define WRITE_SAME            0x41
++#define UNMAP		      0x42
+ #define READ_TOC              0x43
+ #define LOG_SELECT            0x4c
+ #define LOG_SENSE             0x4d
++#define XDWRITEREAD_10        0x53
+ #define MODE_SELECT_10        0x55
+ #define RESERVE_10            0x56
+ #define RELEASE_10            0x57
+ #define MODE_SENSE_10         0x5a
+ #define PERSISTENT_RESERVE_IN 0x5e
+ #define PERSISTENT_RESERVE_OUT 0x5f
++#define VARIABLE_LENGTH_CMD   0x7f
++#define REPORT_LUNS           0xa0
++#define MAINTENANCE_IN        0xa3
++#define MAINTENANCE_OUT       0xa4
+ #define MOVE_MEDIUM           0xa5
++#define EXCHANGE_MEDIUM       0xa6
+ #define READ_12               0xa8
+ #define WRITE_12              0xaa
+ #define WRITE_VERIFY_12       0xae
+@@ -100,9 +93,93 @@
+ #define READ_ELEMENT_STATUS   0xb8
+ #define SEND_VOLUME_TAG       0xb6
+ #define WRITE_LONG_2          0xea
++#define READ_16               0x88
++#define WRITE_16              0x8a
++#define VERIFY_16	      0x8f
++#define WRITE_SAME_16	      0x93
++#define SERVICE_ACTION_IN     0x9e
++/* values for service action in */
++#define	SAI_READ_CAPACITY_16  0x10
++#define SAI_GET_LBA_STATUS    0x12
++/* values for maintenance in */
++#define MI_REPORT_TARGET_PGS  0x0a
++/* values for maintenance out */
++#define MO_SET_TARGET_PGS     0x0a
++/* values for variable length command */
++#define READ_32		      0x09
++#define WRITE_32	      0x0b
++#define WRITE_SAME_32	      0x0d
 +
-+	for (i = 0; sym_arr && (sym = sym_arr[i]); i++)
-+		get_symbol_str(&res, sym);
-+	if (!i)
-+		str_append(&res, _("No matches found.\n"));
-+	return res;
-+}
++/* Values for T10/04-262r7 */
++#define	ATA_16		      0x85	/* 16-byte pass-thru */
++#define	ATA_12		      0xa1	/* 12-byte pass-thru */
 +
-+
- void menu_get_ext_help(struct menu *menu, struct gstr *help)
- {
- 	struct symbol *sym = menu->sym;
-diff --git a/scripts/kconfig/nconf.c b/scripts/kconfig/nconf.c
-new file mode 100644
-index 0000000..8c56150
---- /dev/null
-+++ b/scripts/kconfig/nconf.c
-@@ -0,0 +1,1568 @@
 +/*
-+ * Copyright (C) 2008 Nir Tzachar <nir.tzachar@gmail.com?
-+ * Released under the terms of the GNU GPL v2.0.
-+ *
-+ * Derived from menuconfig.
-+ *
++ *	SCSI command lengths
 + */
-+#define LKC_DIRECT_LINK
-+#include "lkc.h"
-+#include "nconf.h"
 +
-+static const char nconf_readme[] = N_(
-+"Overview\n"
-+"--------\n"
-+"Some kernel features may be built directly into the kernel.\n"
-+"Some may be made into loadable runtime modules.  Some features\n"
-+"may be completely removed altogether.  There are also certain\n"
-+"kernel parameters which are not really features, but must be\n"
-+"entered in as decimal or hexadecimal numbers or possibly text.\n"
-+"\n"
-+"Menu items beginning with following braces represent features that\n"
-+"  [ ] can be built in or removed\n"
-+"  < > can be built in, modularized or removed\n"
-+"  { } can be built in or modularized (selected by other feature)\n"
-+"  - - are selected by other feature,\n"
-+"  XXX cannot be selected. use Symbol Info to find out why,\n"
-+"while *, M or whitespace inside braces means to build in, build as\n"
-+"a module or to exclude the feature respectively.\n"
-+"\n"
-+"To change any of these features, highlight it with the cursor\n"
-+"keys and press <Y> to build it in, <M> to make it a module or\n"
-+"<N> to removed it.  You may also press the <Space Bar> to cycle\n"
-+"through the available options (ie. Y->N->M->Y).\n"
-+"\n"
-+"Some additional keyboard hints:\n"
-+"\n"
-+"Menus\n"
-+"----------\n"
-+"o  Use the Up/Down arrow keys (cursor keys) to highlight the item\n"
-+"   you wish to change use <Enter> or <Space>. Goto submenu by \n"
-+"   pressing <Enter> of <right-arrow>. Use <Esc> or <left-arrow> to go back.\n"
-+"   Submenus are designated by \"--->\".\n"
-+"\n"
-+"   Shortcut: Press the option's highlighted letter (hotkey).\n"
-+"             Pressing a hotkey more than once will sequence\n"
-+"             through all visible items which use that hotkey.\n"
-+"\n"
-+"   You may also use the <PAGE UP> and <PAGE DOWN> keys to scroll\n"
-+"   unseen options into view.\n"
-+"\n"
-+"o  To exit a menu use the just press <ESC> <F5> <F8> or <left-arrow>.\n"
-+"\n"
-+"o  To get help with an item, press <F1>\n"
-+"   Shortcut: Press <h> or <?>.\n"
-+"\n"
-+"\n"
-+"Radiolists  (Choice lists)\n"
-+"-----------\n"
-+"o  Use the cursor keys to select the option you wish to set and press\n"
-+"   <S> or the <SPACE BAR>.\n"
-+"\n"
-+"   Shortcut: Press the first letter of the option you wish to set then\n"
-+"             press <S> or <SPACE BAR>.\n"
-+"\n"
-+"o  To see available help for the item, press <F1>\n"
-+"   Shortcut: Press <H> or <?>.\n"
-+"\n"
-+"\n"
-+"Data Entry\n"
-+"-----------\n"
-+"o  Enter the requested information and press <ENTER>\n"
-+"   If you are entering hexadecimal values, it is not necessary to\n"
-+"   add the '0x' prefix to the entry.\n"
-+"\n"
-+"o  For help, press <F1>.\n"
-+"\n"
-+"\n"
-+"Text Box    (Help Window)\n"
-+"--------\n"
-+"o  Use the cursor keys to scroll up/down/left/right.  The VI editor\n"
-+"   keys h,j,k,l function here as do <SPACE BAR> for those\n"
-+"   who are familiar with less and lynx.\n"
-+"\n"
-+"o  Press <Enter>, <F1>, <F5>, <F7> or <Esc> to exit.\n"
-+"\n"
-+"\n"
-+"Alternate Configuration Files\n"
-+"-----------------------------\n"
-+"nconfig supports the use of alternate configuration files for\n"
-+"those who, for various reasons, find it necessary to switch\n"
-+"between different kernel configurations.\n"
-+"\n"
-+"At the end of the main menu you will find two options.  One is\n"
-+"for saving the current configuration to a file of your choosing.\n"
-+"The other option is for loading a previously saved alternate\n"
-+"configuration.\n"
-+"\n"
-+"Even if you don't use alternate configuration files, but you\n"
-+"find during a nconfig session that you have completely messed\n"
-+"up your settings, you may use the \"Load Alternate...\" option to\n"
-+"restore your previously saved settings from \".config\" without\n"
-+"restarting nconfig.\n"
-+"\n"
-+"Other information\n"
-+"-----------------\n"
-+"If you use nconfig in an XTERM window make sure you have your\n"
-+"$TERM variable set to point to a xterm definition which supports color.\n"
-+"Otherwise, nconfig will look rather bad.  nconfig will not\n"
-+"display correctly in a RXVT window because rxvt displays only one\n"
-+"intensity of color, bright.\n"
-+"\n"
-+"nconfig will display larger menus on screens or xterms which are\n"
-+"set to display more than the standard 25 row by 80 column geometry.\n"
-+"In order for this to work, the \"stty size\" command must be able to\n"
-+"display the screen's current row and column geometry.  I STRONGLY\n"
-+"RECOMMEND that you make sure you do NOT have the shell variables\n"
-+"LINES and COLUMNS exported into your environment.  Some distributions\n"
-+"export those variables via /etc/profile.  Some ncurses programs can\n"
-+"become confused when those variables (LINES & COLUMNS) don't reflect\n"
-+"the true screen size.\n"
-+"\n"
-+"Optional personality available\n"
-+"------------------------------\n"
-+"If you prefer to have all of the kernel options listed in a single\n"
-+"menu, rather than the default multimenu hierarchy, run the nconfig\n"
-+"with NCONFIG_MODE environment variable set to single_menu. Example:\n"
-+"\n"
-+"make NCONFIG_MODE=single_menu nconfig\n"
-+"\n"
-+"<Enter> will then unroll the appropriate category, or enfold it if it\n"
-+"is already unrolled.\n"
-+"\n"
-+"Note that this mode can eventually be a little more CPU expensive\n"
-+"(especially with a larger number of unrolled categories) than the\n"
-+"default mode.\n"
-+"\n"),
-+menu_no_f_instructions[] = N_(
-+" You do not have function keys support. Please follow the\n"
-+" following instructions:\n"
-+" Arrow keys navigate the menu.\n"
-+" <Enter> or <right-arrow> selects submenus --->.\n"
-+" Capital Letters are hotkeys.\n"
-+" Pressing <Y> includes, <N> excludes, <M> modularizes features.\n"
-+" Pressing SpaceBar toggles between the above options\n"
-+" Press <Esc> or <left-arrow> to go back one menu, \n"
-+" <?> or <h> for Help, </> for Search.\n"
-+" <1> is interchangable with <F1>, <2> with <F2>, etc.\n"
-+" Legend: [*] built-in  [ ] excluded  <M> module  < > module capable.\n"
-+" <Esc> always leaves the current window\n"),
-+menu_instructions[] = N_(
-+" Arrow keys navigate the menu.\n"
-+" <Enter> or <right-arrow> selects submenus --->.\n"
-+" Capital Letters are hotkeys.\n"
-+" Pressing <Y> includes, <N> excludes, <M> modularizes features.\n"
-+" Pressing SpaceBar toggles between the above options\n"
-+" Press <Esc>, <F3> or <left-arrow> to go back one menu, \n"
-+" <?>, <F1> or <h> for Help, </> for Search.\n"
-+" <1> is interchangable with <F1>, <2> with <F2>, etc.\n"
-+" Legend: [*] built-in  [ ] excluded  <M> module  < > module capable.\n"
-+" <Esc> always leaves the current window\n"),
-+radiolist_instructions[] = N_(
-+" Use the arrow keys to navigate this window or\n"
-+" press the hotkey of the item you wish to select\n"
-+" followed by the <SPACE BAR>.\n"
-+" Press <?>, <F1> or <h> for additional information about this option.\n"),
-+inputbox_instructions_int[] = N_(
-+"Please enter a decimal value.\n"
-+"Fractions will not be accepted.\n"
-+"Press <RETURN> to accept, <ESC> to cancel."),
-+inputbox_instructions_hex[] = N_(
-+"Please enter a hexadecimal value.\n"
-+"Press <RETURN> to accept, <ESC> to cancel."),
-+inputbox_instructions_string[] = N_(
-+"Please enter a string value.\n"
-+"Press <RETURN> to accept, <ESC> to cancel."),
-+setmod_text[] = N_(
-+"This feature depends on another which\n"
-+"has been configured as a module.\n"
-+"As a result, this feature will be built as a module."),
-+nohelp_text[] = N_(
-+"There is no help available for this kernel option.\n"),
-+load_config_text[] = N_(
-+"Enter the name of the configuration file you wish to load.\n"
-+"Accept the name shown to restore the configuration you\n"
-+"last retrieved.  Leave blank to abort."),
-+load_config_help[] = N_(
-+"\n"
-+"For various reasons, one may wish to keep several different kernel\n"
-+"configurations available on a single machine.\n"
-+"\n"
-+"If you have saved a previous configuration in a file other than the\n"
-+"kernel's default, entering the name of the file here will allow you\n"
-+"to modify that configuration.\n"
-+"\n"
-+"If you are uncertain, then you have probably never used alternate\n"
-+"configuration files.  You should therefor leave this blank to abort.\n"),
-+save_config_text[] = N_(
-+"Enter a filename to which this configuration should be saved\n"
-+"as an alternate.  Leave blank to abort."),
-+save_config_help[] = N_(
-+"\n"
-+"For various reasons, one may wish to keep different kernel\n"
-+"configurations available on a single machine.\n"
-+"\n"
-+"Entering a file name here will allow you to later retrieve, modify\n"
-+"and use the current configuration as an alternate to whatever\n"
-+"configuration options you have selected at that time.\n"
-+"\n"
-+"If you are uncertain what all this means then you should probably\n"
-+"leave this blank.\n"),
-+search_help[] = N_(
-+"\n"
-+"Search for CONFIG_ symbols and display their relations.\n"
-+"Regular expressions are allowed.\n"
-+"Example: search for \"^FOO\"\n"
-+"Result:\n"
-+"-----------------------------------------------------------------\n"
-+"Symbol: FOO [ = m]\n"
-+"Prompt: Foo bus is used to drive the bar HW\n"
-+"Defined at drivers/pci/Kconfig:47\n"
-+"Depends on: X86_LOCAL_APIC && X86_IO_APIC || IA64\n"
-+"Location:\n"
-+"  -> Bus options (PCI, PCMCIA, EISA, MCA, ISA)\n"
-+"    -> PCI support (PCI [ = y])\n"
-+"      -> PCI access mode (<choice> [ = y])\n"
-+"Selects: LIBCRC32\n"
-+"Selected by: BAR\n"
-+"-----------------------------------------------------------------\n"
-+"o The line 'Prompt:' shows the text used in the menu structure for\n"
-+"  this CONFIG_ symbol\n"
-+"o The 'Defined at' line tell at what file / line number the symbol\n"
-+"  is defined\n"
-+"o The 'Depends on:' line tell what symbols needs to be defined for\n"
-+"  this symbol to be visible in the menu (selectable)\n"
-+"o The 'Location:' lines tell where in the menu structure this symbol\n"
-+"  is located\n"
-+"    A location followed by a [ = y] indicate that this is a selectable\n"
-+"    menu item - and current value is displayed inside brackets.\n"
-+"o The 'Selects:' line tell what symbol will be automatically\n"
-+"  selected if this symbol is selected (y or m)\n"
-+"o The 'Selected by' line tell what symbol has selected this symbol\n"
-+"\n"
-+"Only relevant lines are shown.\n"
-+"\n\n"
-+"Search examples:\n"
-+"Examples: USB   = > find all CONFIG_ symbols containing USB\n"
-+"          ^USB => find all CONFIG_ symbols starting with USB\n"
-+"          USB$ => find all CONFIG_ symbols ending with USB\n"
-+"\n");
++#define SCSI_MAX_VARLEN_CDB_SIZE 260
 +
-+struct mitem {
-+	char str[256];
-+	char tag;
-+	void *usrptr;
-+	int is_hot;
-+	int is_visible;
++/* defined in T10 SCSI Primary Commands-2 (SPC2) */
++struct scsi_varlen_cdb_hdr {
++	__u8 opcode;        /* opcode always == VARIABLE_LENGTH_CMD */
++	__u8 control;
++	__u8 misc[5];
++	__u8 additional_cdb_length;         /* total cdb length - 8 */
++	__be16 service_action;
++	/* service specific data follows */
 +};
 +
-+#define MAX_MENU_ITEMS 4096
-+static int show_all_items;
-+static int indent;
-+static struct menu *current_menu;
-+static int child_count;
-+static int single_menu_mode;
-+/* the window in which all information appears */
-+static WINDOW *main_window;
-+/* the largest size of the menu window */
-+static int mwin_max_lines;
-+static int mwin_max_cols;
-+/* the window in which we show option buttons */
-+static MENU *curses_menu;
-+static ITEM *curses_menu_items[MAX_MENU_ITEMS];
-+static struct mitem k_menu_items[MAX_MENU_ITEMS];
-+static int items_num;
-+static int global_exit;
-+/* the currently selected button */
-+const char *current_instructions = menu_instructions;
-+/* this array is used to implement hot keys. it is updated in item_make and
-+ * resetted in clean_items. It would be better to use a hash, but lets keep it
-+ * simple... */
-+#define MAX_SAME_KEY MAX_MENU_ITEMS
-+struct {
-+	int count;
-+	int ptrs[MAX_MENU_ITEMS];
-+} hotkeys[1<<(sizeof(char)*8)];
-+
-+static void conf(struct menu *menu);
-+static void conf_choice(struct menu *menu);
-+static void conf_string(struct menu *menu);
-+static void conf_load(void);
-+static void conf_save(void);
-+static void show_help(struct menu *menu);
-+static int do_exit(void);
-+static void setup_windows(void);
-+
-+typedef void (*function_key_handler_t)(int *key, struct menu *menu);
-+static void handle_f1(int *key, struct menu *current_item);
-+static void handle_f2(int *key, struct menu *current_item);
-+static void handle_f3(int *key, struct menu *current_item);
-+static void handle_f4(int *key, struct menu *current_item);
-+static void handle_f5(int *key, struct menu *current_item);
-+static void handle_f6(int *key, struct menu *current_item);
-+static void handle_f7(int *key, struct menu *current_item);
-+static void handle_f8(int *key, struct menu *current_item);
-+
-+struct function_keys {
-+	const char *key_str;
-+	const char *func;
-+	function_key key;
-+	function_key_handler_t handler;
-+};
-+
-+static const int function_keys_num = 8;
-+struct function_keys function_keys[] = {
-+	{
-+		.key_str = "F1",
-+		.func = "Help",
-+		.key = F_HELP,
-+		.handler = handle_f1,
-+	},
-+	{
-+		.key_str = "F2",
-+		.func = "Symbol Info",
-+		.key = F_SYMBOL,
-+		.handler = handle_f2,
-+	},
-+	{
-+		.key_str = "F3",
-+		.func = "Instructions",
-+		.key = F_INSTS,
-+		.handler = handle_f3,
-+	},
-+	{
-+		.key_str = "F4",
-+		.func = "Config",
-+		.key = F_CONF,
-+		.handler = handle_f4,
-+	},
-+	{
-+		.key_str = "F5",
-+		.func = "Back",
-+		.key = F_BACK,
-+		.handler = handle_f5,
-+	},
-+	{
-+		.key_str = "F6",
-+		.func = "Save",
-+		.key = F_SAVE,
-+		.handler = handle_f6,
-+	},
-+	{
-+		.key_str = "F7",
-+		.func = "Load",
-+		.key = F_LOAD,
-+		.handler = handle_f7,
-+	},
-+	{
-+		.key_str = "F8",
-+		.func = "Exit",
-+		.key = F_EXIT,
-+		.handler = handle_f8,
-+	},
-+};
-+
-+static void print_function_line(void)
++static __inline__ unsigned
++scsi_varlen_cdb_length(const void *hdr)
 +{
-+	int i;
-+	int offset = 1;
-+	const int skip = 1;
-+
-+	for (i = 0; i < function_keys_num; i++) {
-+		wattrset(main_window, attributes[FUNCTION_HIGHLIGHT]);
-+		mvwprintw(main_window, LINES-3, offset,
-+				"%s",
-+				function_keys[i].key_str);
-+		wattrset(main_window, attributes[FUNCTION_TEXT]);
-+		offset += strlen(function_keys[i].key_str);
-+		mvwprintw(main_window, LINES-3,
-+				offset, "%s",
-+				function_keys[i].func);
-+		offset += strlen(function_keys[i].func) + skip;
-+	}
-+	wattrset(main_window, attributes[NORMAL]);
++	return ((struct scsi_varlen_cdb_hdr *)hdr)->additional_cdb_length + 8;
 +}
 +
-+/* help */
-+static void handle_f1(int *key, struct menu *current_item)
++/*
++ *  SCSI Architecture Model (SAM) Status codes. Taken from SAM-3 draft
++ *  T10/1561-D Revision 4 Draft dated 7th November 2002.
++ */
++#define SAM_STAT_GOOD            0x00
++#define SAM_STAT_CHECK_CONDITION 0x02
++#define SAM_STAT_CONDITION_MET   0x04
++#define SAM_STAT_BUSY            0x08
++#define SAM_STAT_INTERMEDIATE    0x10
++#define SAM_STAT_INTERMEDIATE_CONDITION_MET 0x14
++#define SAM_STAT_RESERVATION_CONFLICT 0x18
++#define SAM_STAT_COMMAND_TERMINATED 0x22	/* obsolete in SAM-3 */
++#define SAM_STAT_TASK_SET_FULL   0x28
++#define SAM_STAT_ACA_ACTIVE      0x30
++#define SAM_STAT_TASK_ABORTED    0x40
++
++/** scsi_status_is_good - check the status return.
++ *
++ * @status: the status passed up from the driver (including host and
++ *          driver components)
++ *
++ * This returns true for known good conditions that may be treated as
++ * command completed normally
++ */
++static __inline__ int scsi_status_is_good(int status)
 +{
-+	show_scroll_win(main_window,
-+			_("README"), _(nconf_readme));
-+	return;
-+}
-+
-+/* symbole help */
-+static void handle_f2(int *key, struct menu *current_item)
-+{
-+	show_help(current_item);
-+	return;
-+}
-+
-+/* instructions */
-+static void handle_f3(int *key, struct menu *current_item)
-+{
-+	show_scroll_win(main_window,
-+			_("Instructions"),
-+			_(current_instructions));
-+	return;
-+}
-+
-+/* config */
-+static void handle_f4(int *key, struct menu *current_item)
-+{
-+	int res = btn_dialog(main_window,
-+			_("Show all symbols?"),
-+			2,
-+			"   <Show All>   ",
-+			"<Don't show all>");
-+	if (res == 0)
-+		show_all_items = 1;
-+	else if (res == 1)
-+		show_all_items = 0;
-+
-+	return;
-+}
-+
-+/* back */
-+static void handle_f5(int *key, struct menu *current_item)
-+{
-+	*key = KEY_LEFT;
-+	return;
-+}
-+
-+/* save */
-+static void handle_f6(int *key, struct menu *current_item)
-+{
-+	conf_save();
-+	return;
-+}
-+
-+/* load */
-+static void handle_f7(int *key, struct menu *current_item)
-+{
-+	conf_load();
-+	return;
-+}
-+
-+/* exit */
-+static void handle_f8(int *key, struct menu *current_item)
-+{
-+	do_exit();
-+	return;
-+}
-+
-+/* return != 0 to indicate the key was handles */
-+int process_special_keys(int *key, struct menu *menu)
-+{
-+	int i;
-+
-+	if (*key == KEY_RESIZE) {
-+		setup_windows();
-+		return 1;
-+	}
-+
-+	for (i = 0; i < function_keys_num; i++) {
-+		if (*key == KEY_F(function_keys[i].key) ||
-+		    *key == '0' + function_keys[i].key){
-+			function_keys[i].handler(key, menu);
-+			return 1;
-+		}
-+	}
-+
-+	return 0;
-+}
-+
-+static void clean_items(void)
-+{
-+	int i;
-+	for (i = 0; curses_menu_items[i]; i++)
-+		free_item(curses_menu_items[i]);
-+	bzero(curses_menu_items, sizeof(curses_menu_items));
-+	bzero(k_menu_items, sizeof(k_menu_items));
-+	bzero(hotkeys, sizeof(hotkeys));
-+	items_num = 0;
-+}
-+
-+/* return the index of the next hot item, or -1 if no such item exists */
-+int get_next_hot(int c)
-+{
-+	static int hot_index;
-+	static int hot_char;
-+
-+	if (c < 0 || c > 255 || hotkeys[c].count <= 0)
-+		return -1;
-+
-+	if (hot_char == c) {
-+		hot_index = (hot_index+1)%hotkeys[c].count;
-+		return hotkeys[c].ptrs[hot_index];
-+	} else {
-+		hot_char = c;
-+		hot_index = 0;
-+		return hotkeys[c].ptrs[0];
-+	}
-+}
-+
-+/* can the char c be a hot key? no, if c is a common shortcut used elsewhere */
-+int canbhot(char c)
-+{
-+	c = tolower(c);
-+	return isalnum(c) && c != 'y' && c != 'm' && c != 'h' &&
-+		c != 'n' && c != '?';
-+}
-+
-+/* check if str already contains a hot key. */
-+int is_hot(int index)
-+{
-+	return k_menu_items[index].is_hot;
-+}
-+
-+/* find the first possible hot key, and mark it.
-+ * index is the index of the item in the menu
-+ * return 0 on success*/
-+int make_hot(char *dest, int len, const char *org, int index)
-+{
-+	int position = -1;
-+	int i;
-+	int tmp;
-+	int c;
-+	int org_len = strlen(org);
-+
-+	if (org == NULL || is_hot(index))
-+		return 1;
-+
-+	/* make sure not to make hot keys out of markers.
-+	 * find where to start looking for a hot key
-+	 */
-+	i = 0;
-+	/* skip white space */
-+	while (i < org_len && org[i] == ' ')
-+		i++;
-+	if (i == org_len)
-+		return -1;
-+	/* if encountering '(' or '<' or '[', find the match and look from there
-+	 **/
-+	if (org[i] == '[' || org[i] == '<' || org[i] == '(') {
-+		i++;
-+		for (; i < org_len; i++)
-+			if (org[i] == ']' || org[i] == '>' || org[i] == ')')
-+				break;
-+	}
-+	if (i == org_len)
-+		return -1;
-+	for (; i < org_len; i++) {
-+		if (canbhot(org[i]) && org[i-1] != '<' && org[i-1] != '(') {
-+			position = i;
-+			break;
-+		}
-+	}
-+	if (position == -1)
-+		return 1;
-+
-+	/* ok, char at org[position] should be a hot key to this item */
-+	c = tolower(org[position]);
-+	tmp = hotkeys[c].count;
-+	hotkeys[c].ptrs[tmp] = index;
-+	hotkeys[c].count++;
 +	/*
-+	   snprintf(dest, len, "%.*s(%c)%s", position, org, org[position],
-+	   &org[position+1]);
-+	   */
-+	/* make org[position] uppercase, and all leading letter small case */
-+	strncpy(dest, org, len);
-+	for (i = 0; i < position; i++)
-+		dest[i] = tolower(dest[i]);
-+	dest[position] = toupper(dest[position]);
-+	k_menu_items[index].is_hot = 1;
-+	return 0;
-+}
-+
-+/* Make a new item. Add a hotkey mark in the first possible letter.
-+ * As ncurses does not allow any attributes inside menue item, we mark the
-+ * hot key as the first capitalized letter in the string */
-+void item_make(struct menu *menu, char tag, const char *fmt, ...)
-+{
-+	va_list ap;
-+	char tmp_str[256];
-+
-+	if (items_num > MAX_MENU_ITEMS-1)
-+		return;
-+
-+	bzero(&k_menu_items[items_num], sizeof(k_menu_items[0]));
-+	k_menu_items[items_num].tag = tag;
-+	k_menu_items[items_num].usrptr = menu;
-+	if (menu != NULL)
-+		k_menu_items[items_num].is_visible =
-+			menu_is_visible(menu);
-+	else
-+		k_menu_items[items_num].is_visible = 1;
-+
-+	va_start(ap, fmt);
-+	vsnprintf(tmp_str, sizeof(tmp_str), fmt, ap);
-+	if (!k_menu_items[items_num].is_visible)
-+		memcpy(tmp_str, "XXX", 3);
-+	va_end(ap);
-+	if (make_hot(
-+		k_menu_items[items_num].str,
-+		sizeof(k_menu_items[items_num].str), tmp_str, items_num) != 0)
-+		strncpy(k_menu_items[items_num].str,
-+			tmp_str,
-+			sizeof(k_menu_items[items_num].str));
-+
-+	curses_menu_items[items_num] = new_item(
-+			k_menu_items[items_num].str,
-+			k_menu_items[items_num].str);
-+	set_item_userptr(curses_menu_items[items_num],
-+			&k_menu_items[items_num]);
-+	/*
-+	if (!k_menu_items[items_num].is_visible)
-+		item_opts_off(curses_menu_items[items_num], O_SELECTABLE);
-+	*/
-+
-+	items_num++;
-+	curses_menu_items[items_num] = NULL;
-+}
-+
-+/* very hackish. adds a string to the last item added */
-+void item_add_str(const char *fmt, ...)
-+{
-+	va_list ap;
-+	int index = items_num-1;
-+	char new_str[256];
-+	char tmp_str[256];
-+
-+	if (index < 0)
-+		return;
-+
-+	va_start(ap, fmt);
-+	vsnprintf(new_str, sizeof(new_str), fmt, ap);
-+	va_end(ap);
-+	snprintf(tmp_str, sizeof(tmp_str), "%s%s",
-+			k_menu_items[index].str, new_str);
-+	if (make_hot(k_menu_items[index].str,
-+			sizeof(k_menu_items[index].str), tmp_str, index) != 0)
-+		strncpy(k_menu_items[index].str,
-+			tmp_str,
-+			sizeof(k_menu_items[index].str));
-+
-+	free_item(curses_menu_items[index]);
-+	curses_menu_items[index] = new_item(
-+			k_menu_items[index].str,
-+			k_menu_items[index].str);
-+	set_item_userptr(curses_menu_items[index],
-+			&k_menu_items[index]);
-+}
-+
-+/* get the tag of the currently selected item */
-+char item_tag(void)
-+{
-+	ITEM *cur;
-+	struct mitem *mcur;
-+
-+	cur = current_item(curses_menu);
-+	if (cur == NULL)
-+		return 0;
-+	mcur = (struct mitem *) item_userptr(cur);
-+	return mcur->tag;
-+}
-+
-+int curses_item_index(void)
-+{
-+	return  item_index(current_item(curses_menu));
-+}
-+
-+void *item_data(void)
-+{
-+	ITEM *cur;
-+	struct mitem *mcur;
-+
-+	cur = current_item(curses_menu);
-+	mcur = (struct mitem *) item_userptr(cur);
-+	return mcur->usrptr;
-+
-+}
-+
-+int item_is_tag(char tag)
-+{
-+	return item_tag() == tag;
-+}
-+
-+static char filename[PATH_MAX+1];
-+static char menu_backtitle[PATH_MAX+128];
-+const char *set_config_filename(const char *config_filename)
-+{
-+	int size;
-+	struct symbol *sym;
-+
-+	sym = sym_lookup("KERNELVERSION", 0);
-+	sym_calc_value(sym);
-+	size = snprintf(menu_backtitle, sizeof(menu_backtitle),
-+			_("%s - Linux Kernel v%s Configuration"),
-+			config_filename, sym_get_string_value(sym));
-+	if (size >= sizeof(menu_backtitle))
-+		menu_backtitle[sizeof(menu_backtitle)-1] = '\0';
-+
-+	size = snprintf(filename, sizeof(filename), "%s", config_filename);
-+	if (size >= sizeof(filename))
-+		filename[sizeof(filename)-1] = '\0';
-+	return menu_backtitle;
-+}
-+
-+/* command = 0 is supress, 1 is restore */
-+static void supress_stdout(int command)
-+{
-+	static FILE *org_stdout;
-+	static FILE *org_stderr;
-+
-+	if (command == 0) {
-+		org_stdout = stdout;
-+		org_stderr = stderr;
-+		stdout = fopen("/dev/null", "a");
-+		stderr = fopen("/dev/null", "a");
-+	} else {
-+		fclose(stdout);
-+		fclose(stderr);
-+		stdout = org_stdout;
-+		stderr = org_stderr;
-+	}
-+}
-+
-+/* return = 0 means we are successful.
-+ * -1 means go on doing what you were doing
-+ */
-+static int do_exit(void)
-+{
-+	int res;
-+	if (!conf_get_changed()) {
-+		global_exit = 1;
-+		return 0;
-+	}
-+	res = btn_dialog(main_window,
-+			_("Do you wish to save your "
-+				"new kernel configuration?\n"
-+				"<ESC> to cancel and resume nconfig."),
-+			2,
-+			"   <save>   ",
-+			"<don't save>");
-+	if (res == KEY_EXIT) {
-+		global_exit = 0;
-+		return -1;
-+	}
-+
-+	/* if we got here, the user really wants to exit */
-+	switch (res) {
-+	case 0:
-+		supress_stdout(0);
-+		res = conf_write(filename);
-+		supress_stdout(1);
-+		if (res)
-+			btn_dialog(
-+				main_window,
-+				_("Error during writing of the kernel "
-+				  "configuration.\n"
-+				  "Your kernel configuration "
-+				  "changes were NOT saved."),
-+				  1,
-+				  "<OK>");
-+		else {
-+			char buf[1024];
-+			snprintf(buf, 1024,
-+				_("Configuration written to %s\n"
-+				  "End of Linux kernel configuration.\n"
-+				  "Execute 'make' to build the kernel or try"
-+				  " 'make help'."), filename);
-+			btn_dialog(
-+				main_window,
-+				buf,
-+				1,
-+				"<OK>");
-+		}
-+		break;
-+	default:
-+		btn_dialog(
-+			main_window,
-+			_("Your kernel configuration changes were NOT saved."),
-+			1,
-+			"<OK>");
-+		break;
-+	}
-+	global_exit = 1;
-+	return 0;
-+}
-+
-+
-+static void search_conf(void)
-+{
-+	struct symbol **sym_arr;
-+	struct gstr res;
-+	char dialog_input_result[100];
-+	char *dialog_input;
-+	int dres;
-+again:
-+	dres = dialog_inputbox(main_window,
-+			_("Search Configuration Parameter"),
-+			_("Enter CONFIG_ (sub)string to search for "
-+				"(with or without \"CONFIG\")"),
-+			"", dialog_input_result, 99);
-+	switch (dres) {
-+	case 0:
-+		break;
-+	case 1:
-+		show_scroll_win(main_window,
-+				_("Search Configuration"), search_help);
-+		goto again;
-+	default:
-+		return;
-+	}
-+
-+	/* strip CONFIG_ if necessary */
-+	dialog_input = dialog_input_result;
-+	if (strncasecmp(dialog_input_result, "CONFIG_", 7) == 0)
-+		dialog_input += 7;
-+
-+	sym_arr = sym_re_search(dialog_input);
-+	res = get_relations_str(sym_arr);
-+	free(sym_arr);
-+	show_scroll_win(main_window,
-+			_("Search Results"), str_get(&res));
-+	str_free(&res);
-+}
-+
-+
-+static void build_conf(struct menu *menu)
-+{
-+	struct symbol *sym;
-+	struct property *prop;
-+	struct menu *child;
-+	int type, tmp, doint = 2;
-+	tristate val;
-+	char ch;
-+
-+	if (!menu || (!show_all_items && !menu_is_visible(menu)))
-+		return;
-+
-+	sym = menu->sym;
-+	prop = menu->prompt;
-+	if (!sym) {
-+		if (prop && menu != current_menu) {
-+			const char *prompt = menu_get_prompt(menu);
-+			enum prop_type ptype;
-+			ptype = menu->prompt ? menu->prompt->type : P_UNKNOWN;
-+			switch (ptype) {
-+			case P_MENU:
-+				child_count++;
-+				prompt = _(prompt);
-+				if (single_menu_mode) {
-+					item_make(menu, 'm',
-+						"%s%*c%s",
-+						menu->data ? "-->" : "++>",
-+						indent + 1, ' ', prompt);
-+				} else
-+					item_make(menu, 'm',
-+						"   %*c%s  --->",
-+						indent + 1,
-+						' ', prompt);
-+
-+				if (single_menu_mode && menu->data)
-+					goto conf_childs;
-+				return;
-+			case P_COMMENT:
-+				if (prompt) {
-+					child_count++;
-+					item_make(menu, ':',
-+						"   %*c*** %s ***",
-+						indent + 1, ' ',
-+						_(prompt));
-+				}
-+				break;
-+			default:
-+				if (prompt) {
-+					child_count++;
-+					item_make(menu, ':', "---%*c%s",
-+						indent + 1, ' ',
-+						_(prompt));
-+				}
-+			}
-+		} else
-+			doint = 0;
-+		goto conf_childs;
-+	}
-+
-+	type = sym_get_type(sym);
-+	if (sym_is_choice(sym)) {
-+		struct symbol *def_sym = sym_get_choice_value(sym);
-+		struct menu *def_menu = NULL;
-+
-+		child_count++;
-+		for (child = menu->list; child; child = child->next) {
-+			if (menu_is_visible(child) && child->sym == def_sym)
-+				def_menu = child;
-+		}
-+
-+		val = sym_get_tristate_value(sym);
-+		if (sym_is_changable(sym)) {
-+			switch (type) {
-+			case S_BOOLEAN:
-+				item_make(menu, 't', "[%c]",
-+						val == no ? ' ' : '*');
-+				break;
-+			case S_TRISTATE:
-+				switch (val) {
-+				case yes:
-+					ch = '*';
-+					break;
-+				case mod:
-+					ch = 'M';
-+					break;
-+				default:
-+					ch = ' ';
-+					break;
-+				}
-+				item_make(menu, 't', "<%c>", ch);
-+				break;
-+			}
-+		} else {
-+			item_make(menu, def_menu ? 't' : ':', "   ");
-+		}
-+
-+		item_add_str("%*c%s", indent + 1,
-+				' ', _(menu_get_prompt(menu)));
-+		if (val == yes) {
-+			if (def_menu) {
-+				item_add_str(" (%s)",
-+					_(menu_get_prompt(def_menu)));
-+				item_add_str("  --->");
-+				if (def_menu->list) {
-+					indent += 2;
-+					build_conf(def_menu);
-+					indent -= 2;
-+				}
-+			}
-+			return;
-+		}
-+	} else {
-+		if (menu == current_menu) {
-+			item_make(menu, ':',
-+				"---%*c%s", indent + 1,
-+				' ', _(menu_get_prompt(menu)));
-+			goto conf_childs;
-+		}
-+		child_count++;
-+		val = sym_get_tristate_value(sym);
-+		if (sym_is_choice_value(sym) && val == yes) {
-+			item_make(menu, ':', "   ");
-+		} else {
-+			switch (type) {
-+			case S_BOOLEAN:
-+				if (sym_is_changable(sym))
-+					item_make(menu, 't', "[%c]",
-+						val == no ? ' ' : '*');
-+				else
-+					item_make(menu, 't', "-%c-",
-+						val == no ? ' ' : '*');
-+				break;
-+			case S_TRISTATE:
-+				switch (val) {
-+				case yes:
-+					ch = '*';
-+					break;
-+				case mod:
-+					ch = 'M';
-+					break;
-+				default:
-+					ch = ' ';
-+					break;
-+				}
-+				if (sym_is_changable(sym)) {
-+					if (sym->rev_dep.tri == mod)
-+						item_make(menu,
-+							't', "{%c}", ch);
-+					else
-+						item_make(menu,
-+							't', "<%c>", ch);
-+				} else
-+					item_make(menu, 't', "-%c-", ch);
-+				break;
-+			default:
-+				tmp = 2 + strlen(sym_get_string_value(sym));
-+				item_make(menu, 's', "(%s)",
-+						sym_get_string_value(sym));
-+				tmp = indent - tmp + 4;
-+				if (tmp < 0)
-+					tmp = 0;
-+				item_add_str("%*c%s%s", tmp, ' ',
-+						_(menu_get_prompt(menu)),
-+						(sym_has_value(sym) ||
-+						 !sym_is_changable(sym)) ? "" :
-+						_(" (NEW)"));
-+				goto conf_childs;
-+			}
-+		}
-+		item_add_str("%*c%s%s", indent + 1, ' ',
-+				_(menu_get_prompt(menu)),
-+				(sym_has_value(sym) || !sym_is_changable(sym)) ?
-+				"" : _(" (NEW)"));
-+		if (menu->prompt && menu->prompt->type == P_MENU) {
-+			item_add_str("  --->");
-+			return;
-+		}
-+	}
-+
-+conf_childs:
-+	indent += doint;
-+	for (child = menu->list; child; child = child->next)
-+		build_conf(child);
-+	indent -= doint;
-+}
-+
-+static void reset_menu(void)
-+{
-+	unpost_menu(curses_menu);
-+	clean_items();
-+}
-+
-+/* adjust the menu to show this item.
-+ * prefer not to scroll the menu if possible*/
-+static void center_item(int selected_index, int *last_top_row)
-+{
-+	int toprow;
-+	int maxy, maxx;
-+
-+	scale_menu(curses_menu, &maxy, &maxx);
-+	set_top_row(curses_menu, *last_top_row);
-+	toprow = top_row(curses_menu);
-+	if (selected_index >= toprow && selected_index < toprow+maxy) {
-+		/* we can only move the selected item. no need to scroll */
-+		set_current_item(curses_menu,
-+				curses_menu_items[selected_index]);
-+	} else {
-+		toprow = max(selected_index-maxy/2, 0);
-+		if (toprow >= item_count(curses_menu)-maxy)
-+			toprow = item_count(curses_menu)-mwin_max_lines;
-+		set_top_row(curses_menu, toprow);
-+		set_current_item(curses_menu,
-+				curses_menu_items[selected_index]);
-+	}
-+	*last_top_row = toprow;
-+	post_menu(curses_menu);
-+	refresh_all_windows(main_window);
-+}
-+
-+/* this function assumes reset_menu has been called before */
-+static void show_menu(const char *prompt, const char *instructions,
-+		int selected_index, int *last_top_row)
-+{
-+	int maxx, maxy;
-+	WINDOW *menu_window;
-+
-+	current_instructions = instructions;
-+
-+	clear();
-+	wattrset(main_window, attributes[NORMAL]);
-+	print_in_middle(stdscr, 1, 0, COLS,
-+			menu_backtitle,
-+			attributes[MAIN_HEADING]);
-+
-+	wattrset(main_window, attributes[MAIN_MENU_BOX]);
-+	box(main_window, 0, 0);
-+	wattrset(main_window, attributes[MAIN_MENU_HEADING]);
-+	mvwprintw(main_window, 0, 3, " %s ", prompt);
-+	wattrset(main_window, attributes[NORMAL]);
-+
-+	set_menu_items(curses_menu, curses_menu_items);
-+
-+	/* position the menu at the middle of the screen */
-+	scale_menu(curses_menu, &maxy, &maxx);
-+	maxx = min(maxx, mwin_max_cols);
-+	maxy = mwin_max_lines-1;
-+	menu_window = derwin(main_window,
-+			maxy,
-+			maxx,
-+			2,
-+			(mwin_max_cols-maxx)/2);
-+	keypad(menu_window, TRUE);
-+	set_menu_win(curses_menu, menu_window);
-+	set_menu_sub(curses_menu, menu_window);
-+
-+	/* must reassert this after changing items, otherwise returns to a
-+	 * default of 16
++	 * FIXME: bit0 is listed as reserved in SCSI-2, but is
++	 * significant in SCSI-3.  For now, we follow the SCSI-2
++	 * behaviour and ignore reserved bits.
 +	 */
-+	set_menu_format(curses_menu, maxy, 1);
-+	center_item(selected_index, last_top_row);
-+	set_menu_format(curses_menu, maxy, 1);
-+
-+	print_function_line();
-+
-+	/* Post the menu */
-+	post_menu(curses_menu);
-+	refresh_all_windows(main_window);
++	status &= 0xfe;
++	return ((status == SAM_STAT_GOOD) ||
++		(status == SAM_STAT_INTERMEDIATE) ||
++		(status == SAM_STAT_INTERMEDIATE_CONDITION_MET) ||
++		/* FIXME: this is obsolete in SAM-3 */
++		(status == SAM_STAT_COMMAND_TERMINATED));
 +}
-+
-+
-+static void conf(struct menu *menu)
-+{
-+	char pattern[256];
-+	struct menu *submenu = 0;
-+	const char *prompt = menu_get_prompt(menu);
-+	struct symbol *sym;
-+	struct menu *active_menu = NULL;
-+	int res;
-+	int current_index = 0;
-+	int last_top_row = 0;
-+
-+	bzero(pattern, sizeof(pattern));
-+
-+	while (!global_exit) {
-+		reset_menu();
-+		current_menu = menu;
-+		build_conf(menu);
-+		if (!child_count)
-+			break;
-+
-+		show_menu(prompt ? _(prompt) : _("Main Menu"),
-+				_(menu_instructions),
-+				current_index, &last_top_row);
-+		keypad((menu_win(curses_menu)), TRUE);
-+		while (!global_exit && (res = wgetch(menu_win(curses_menu)))) {
-+			if (process_special_keys(&res,
-+						(struct menu *) item_data()))
-+				break;
-+			switch (res) {
-+			case KEY_DOWN:
-+				menu_driver(curses_menu, REQ_DOWN_ITEM);
-+				break;
-+			case KEY_UP:
-+				menu_driver(curses_menu, REQ_UP_ITEM);
-+				break;
-+			case KEY_NPAGE:
-+				menu_driver(curses_menu, REQ_SCR_DPAGE);
-+				break;
-+			case KEY_PPAGE:
-+				menu_driver(curses_menu, REQ_SCR_UPAGE);
-+				break;
-+			case KEY_HOME:
-+				menu_driver(curses_menu, REQ_FIRST_ITEM);
-+				break;
-+			case KEY_END:
-+				menu_driver(curses_menu, REQ_LAST_ITEM);
-+				break;
-+			case 'h':
-+			case '?':
-+				show_help((struct menu *) item_data());
-+				break;
-+			}
-+			if (res == 10 || res == 27 ||
-+				res == 32 || res == 'n' || res == 'y' ||
-+				res == KEY_LEFT || res == KEY_RIGHT ||
-+				res == 'm' || res == '/')
-+				break;
-+			else if (canbhot(res)) {
-+				/* check for hot keys: */
-+				int tmp = get_next_hot(res);
-+				if (tmp != -1)
-+					center_item(tmp, &last_top_row);
-+			}
-+			refresh_all_windows(main_window);
-+		}
-+
-+		refresh_all_windows(main_window);
-+		/* if ESC  or left*/
-+		if (res == 27 || (menu != &rootmenu && res == KEY_LEFT))
-+			break;
-+
-+		/* remember location in the menu */
-+		last_top_row = top_row(curses_menu);
-+		current_index = curses_item_index();
-+
-+		if (!item_tag())
-+			continue;
-+
-+		submenu = (struct menu *) item_data();
-+		active_menu = (struct menu *)item_data();
-+		if (!submenu || !menu_is_visible(submenu))
-+			continue;
-+		if (submenu)
-+			sym = submenu->sym;
-+		else
-+			sym = NULL;
-+
-+		switch (res) {
-+		case ' ':
-+			if (item_is_tag('t'))
-+				sym_toggle_tristate_value(sym);
-+			else if (item_is_tag('m'))
-+				conf(submenu);
-+			break;
-+		case KEY_RIGHT:
-+		case 10: /* ENTER WAS PRESSED */
-+			switch (item_tag()) {
-+			case 'm':
-+				if (single_menu_mode)
-+					submenu->data =
-+						(void *) (long) !submenu->data;
-+				else
-+					conf(submenu);
-+				break;
-+			case 't':
-+				if (sym_is_choice(sym) &&
-+				    sym_get_tristate_value(sym) == yes)
-+					conf_choice(submenu);
-+				else if (submenu->prompt &&
-+					 submenu->prompt->type == P_MENU)
-+					conf(submenu);
-+				else if (res == 10)
-+					sym_toggle_tristate_value(sym);
-+				break;
-+			case 's':
-+				conf_string(submenu);
-+				break;
-+			}
-+			break;
-+		case 'y':
-+			if (item_is_tag('t')) {
-+				if (sym_set_tristate_value(sym, yes))
-+					break;
-+				if (sym_set_tristate_value(sym, mod))
-+					btn_dialog(main_window, setmod_text, 0);
-+			}
-+			break;
-+		case 'n':
-+			if (item_is_tag('t'))
-+				sym_set_tristate_value(sym, no);
-+			break;
-+		case 'm':
-+			if (item_is_tag('t'))
-+				sym_set_tristate_value(sym, mod);
-+			break;
-+		case '/':
-+			search_conf();
-+			break;
-+		}
-+	}
-+}
-+
-+static void show_help(struct menu *menu)
-+{
-+	struct gstr help = str_new();
-+
-+	if (menu && menu->sym && menu_has_help(menu)) {
-+		if (menu->sym->name) {
-+			str_printf(&help, "CONFIG_%s:\n\n", menu->sym->name);
-+			str_append(&help, _(menu_get_help(menu)));
-+			str_append(&help, "\n");
-+			get_symbol_str(&help, menu->sym);
-+		}
-+	} else {
-+		str_append(&help, nohelp_text);
-+	}
-+	show_scroll_win(main_window, _(menu_get_prompt(menu)), str_get(&help));
-+	str_free(&help);
-+}
-+
-+static void conf_choice(struct menu *menu)
-+{
-+	const char *prompt = _(menu_get_prompt(menu));
-+	struct menu *child = 0;
-+	struct symbol *active;
-+	int selected_index = 0;
-+	int last_top_row = 0;
-+	int res, i = 0;
-+
-+	active = sym_get_choice_value(menu->sym);
-+	/* this is mostly duplicated from the conf() function. */
-+	while (!global_exit) {
-+		reset_menu();
-+
-+		for (i = 0, child = menu->list; child; child = child->next) {
-+			if (!show_all_items && !menu_is_visible(child))
-+				continue;
-+
-+			if (child->sym == sym_get_choice_value(menu->sym))
-+				item_make(child, ':', "<X> %s",
-+						_(menu_get_prompt(child)));
-+			else
-+				item_make(child, ':', "    %s",
-+						_(menu_get_prompt(child)));
-+			if (child->sym == active){
-+				last_top_row = top_row(curses_menu);
-+				selected_index = i;
-+			}
-+			i++;
-+		}
-+		show_menu(prompt ? _(prompt) : _("Choice Menu"),
-+				_(radiolist_instructions),
-+				selected_index,
-+				&last_top_row);
-+		while (!global_exit && (res = wgetch(menu_win(curses_menu)))) {
-+			if (process_special_keys(
-+						&res,
-+						(struct menu *) item_data()))
-+				break;
-+			switch (res) {
-+			case KEY_DOWN:
-+				menu_driver(curses_menu, REQ_DOWN_ITEM);
-+				break;
-+			case KEY_UP:
-+				menu_driver(curses_menu, REQ_UP_ITEM);
-+				break;
-+			case KEY_NPAGE:
-+				menu_driver(curses_menu, REQ_SCR_DPAGE);
-+				break;
-+			case KEY_PPAGE:
-+				menu_driver(curses_menu, REQ_SCR_UPAGE);
-+				break;
-+			case KEY_HOME:
-+				menu_driver(curses_menu, REQ_FIRST_ITEM);
-+				break;
-+			case KEY_END:
-+				menu_driver(curses_menu, REQ_LAST_ITEM);
-+				break;
-+			case 'h':
-+			case '?':
-+				show_help((struct menu *) item_data());
-+				break;
-+			}
-+			if (res == 10 || res == 27 || res == ' ' ||
-+				res == KEY_LEFT)
-+				break;
-+			else if (canbhot(res)) {
-+				/* check for hot keys: */
-+				int tmp = get_next_hot(res);
-+				if (tmp != -1)
-+					center_item(tmp, &last_top_row);
-+			}
-+			refresh_all_windows(main_window);
-+		}
-+		/* if ESC or left */
-+		if (res == 27 || res == KEY_LEFT)
-+			break;
-+
-+		child = item_data();
-+		if (!child || !menu_is_visible(child))
-+			continue;
-+		switch (res) {
-+		case ' ':
-+		case  10:
-+		case KEY_RIGHT:
-+			sym_set_tristate_value(child->sym, yes);
-+			return;
-+		case 'h':
-+		case '?':
-+			show_help(child);
-+			active = child->sym;
-+			break;
-+		case KEY_EXIT:
-+			return;
-+		}
-+	}
-+}
-+
-+static void conf_string(struct menu *menu)
-+{
-+	const char *prompt = menu_get_prompt(menu);
-+	char dialog_input_result[256];
-+
-+	while (1) {
-+		int res;
-+		const char *heading;
-+
-+		switch (sym_get_type(menu->sym)) {
-+		case S_INT:
-+			heading = _(inputbox_instructions_int);
-+			break;
-+		case S_HEX:
-+			heading = _(inputbox_instructions_hex);
-+			break;
-+		case S_STRING:
-+			heading = _(inputbox_instructions_string);
-+			break;
-+		default:
-+			heading = _("Internal nconf error!");
-+		}
-+		res = dialog_inputbox(main_window,
-+				prompt ? _(prompt) : _("Main Menu"),
-+				heading,
-+				sym_get_string_value(menu->sym),
-+				dialog_input_result,
-+				sizeof(dialog_input_result));
-+		switch (res) {
-+		case 0:
-+			if (sym_set_string_value(menu->sym,
-+						dialog_input_result))
-+				return;
-+			btn_dialog(main_window,
-+				_("You have made an invalid entry."), 0);
-+			break;
-+		case 1:
-+			show_help(menu);
-+			break;
-+		case KEY_EXIT:
-+			return;
-+		}
-+	}
-+}
-+
-+static void conf_load(void)
-+{
-+	char dialog_input_result[256];
-+	while (1) {
-+		int res;
-+		res = dialog_inputbox(main_window,
-+				NULL, load_config_text,
-+				filename,
-+				dialog_input_result,
-+				sizeof(dialog_input_result));
-+		switch (res) {
-+		case 0:
-+			if (!dialog_input_result[0])
-+				return;
-+			if (!conf_read(dialog_input_result)) {
-+				set_config_filename(dialog_input_result);
-+				sym_set_change_count(1);
-+				return;
-+			}
-+			btn_dialog(main_window, _("File does not exist!"), 0);
-+			break;
-+		case 1:
-+			show_scroll_win(main_window,
-+					_("Load Alternate Configuration"),
-+					load_config_help);
-+			break;
-+		case KEY_EXIT:
-+			return;
-+		}
-+	}
-+}
-+
-+static void conf_save(void)
-+{
-+	char dialog_input_result[256];
-+	while (1) {
-+		int res;
-+		res = dialog_inputbox(main_window,
-+				NULL, save_config_text,
-+				filename,
-+				dialog_input_result,
-+				sizeof(dialog_input_result));
-+		switch (res) {
-+		case 0:
-+			if (!dialog_input_result[0])
-+				return;
-+			supress_stdout(0);
-+			res = conf_write(dialog_input_result);
-+			supress_stdout(1);
-+			if (!res) {
-+				char buf[1024];
-+				sprintf(buf, "%s %s",
-+					_("configuration file saved to: "),
-+					dialog_input_result);
-+				btn_dialog(main_window,
-+					   buf, 1, "<OK>");
-+				set_config_filename(dialog_input_result);
-+				return;
-+			}
-+			btn_dialog(main_window, _("Can't create file! "
-+				"Probably a nonexistent directory."),
-+				1, "<OK>");
-+			break;
-+		case 1:
-+			show_scroll_win(main_window,
-+				_("Save Alternate Configuration"),
-+				save_config_help);
-+			break;
-+		case KEY_EXIT:
-+			return;
-+		}
-+	}
-+}
-+
-+void setup_windows(void)
-+{
-+	if (main_window != NULL)
-+		delwin(main_window);
-+
-+	/* set up the menu and menu window */
-+	main_window = newwin(LINES-2, COLS-2, 2, 1);
-+	keypad(main_window, TRUE);
-+	mwin_max_lines = LINES-6;
-+	mwin_max_cols = COLS-6;
-+
-+	/* panels order is from bottom to top */
-+	new_panel(main_window);
-+}
-+
-+int main(int ac, char **av)
-+{
-+	char *mode;
-+
-+	setlocale(LC_ALL, "");
-+	bindtextdomain(PACKAGE, LOCALEDIR);
-+	textdomain(PACKAGE);
-+
-+	conf_parse(av[1]);
-+	conf_read(NULL);
-+
-+	mode = getenv("NCONFIG_MODE");
-+	if (mode) {
-+		if (!strcasecmp(mode, "single_menu"))
-+			single_menu_mode = 1;
-+	}
-+
-+	/* Initialize curses */
-+	initscr();
-+	/* set color theme */
-+	set_colors();
-+
-+	cbreak();
-+	noecho();
-+	keypad(stdscr, TRUE);
-+	curs_set(0);
-+
-+	if (COLS < 75 || LINES < 20) {
-+		endwin();
-+		printf("Your terminal should have at "
-+			"least 20 lines and 75 columns\n");
-+		return 1;
-+	}
-+
-+	notimeout(stdscr, FALSE);
-+	ESCDELAY = 1;
-+
-+	/* set btns menu */
-+	curses_menu = new_menu(curses_menu_items);
-+	menu_opts_off(curses_menu, O_SHOWDESC);
-+	menu_opts_off(curses_menu, O_SHOWMATCH);
-+	menu_opts_on(curses_menu, O_ONEVALUE);
-+	menu_opts_on(curses_menu, O_NONCYCLIC);
-+	set_menu_mark(curses_menu, " ");
-+	set_menu_fore(curses_menu, attributes[MAIN_MENU_FORE]);
-+	set_menu_back(curses_menu, attributes[MAIN_MENU_BACK]);
-+	set_menu_grey(curses_menu, attributes[MAIN_MENU_GREY]);
-+
-+	set_config_filename(conf_get_configname());
-+	setup_windows();
-+
-+	/* check for KEY_FUNC(1) */
-+	if (has_key(KEY_F(1)) == FALSE) {
-+		show_scroll_win(main_window,
-+				_("Instructions"),
-+				_(menu_no_f_instructions));
-+	}
-+
-+
-+
-+	/* do the work */
-+	while (!global_exit) {
-+		conf(&rootmenu);
-+		if (!global_exit && do_exit() == 0)
-+			break;
-+	}
-+	/* ok, we are done */
-+	unpost_menu(curses_menu);
-+	free_menu(curses_menu);
-+	delwin(main_window);
-+	clear();
-+	refresh();
-+	endwin();
-+	return 0;
-+}
-+
-diff --git a/scripts/kconfig/nconf.gui.c b/scripts/kconfig/nconf.gui.c
-new file mode 100644
-index 0000000..879ade6
---- /dev/null
-+++ b/scripts/kconfig/nconf.gui.c
-@@ -0,0 +1,617 @@
-+/*
-+ * Copyright (C) 2008 Nir Tzachar <nir.tzachar@gmail.com?
-+ * Released under the terms of the GNU GPL v2.0.
-+ *
-+ * Derived from menuconfig.
-+ *
-+ */
-+#include "nconf.h"
-+
-+/* a list of all the different widgets we use */
-+attributes_t attributes[ATTR_MAX+1] = {0};
-+
-+/* available colors:
-+   COLOR_BLACK   0
-+   COLOR_RED     1
-+   COLOR_GREEN   2
-+   COLOR_YELLOW  3
-+   COLOR_BLUE    4
-+   COLOR_MAGENTA 5
-+   COLOR_CYAN    6
-+   COLOR_WHITE   7
-+   */
-+void set_normal_colors(void)
-+{
-+	init_pair(NORMAL, -1, -1);
-+	init_pair(MAIN_HEADING, COLOR_MAGENTA, -1);
-+
-+	/* FORE is for the selected item */
-+	init_pair(MAIN_MENU_FORE, -1, -1);
-+	/* BACK for all the rest */
-+	init_pair(MAIN_MENU_BACK, -1, -1);
-+	init_pair(MAIN_MENU_GREY, -1, -1);
-+	init_pair(MAIN_MENU_HEADING, COLOR_GREEN, -1);
-+	init_pair(MAIN_MENU_BOX, COLOR_YELLOW, -1);
-+
-+	init_pair(SCROLLWIN_TEXT, -1, -1);
-+	init_pair(SCROLLWIN_HEADING, COLOR_GREEN, -1);
-+	init_pair(SCROLLWIN_BOX, COLOR_YELLOW, -1);
-+
-+	init_pair(DIALOG_TEXT, -1, -1);
-+	init_pair(DIALOG_BOX, COLOR_YELLOW, -1);
-+	init_pair(DIALOG_MENU_BACK, COLOR_YELLOW, -1);
-+	init_pair(DIALOG_MENU_FORE, COLOR_RED, -1);
-+
-+	init_pair(INPUT_BOX, COLOR_YELLOW, -1);
-+	init_pair(INPUT_HEADING, COLOR_GREEN, -1);
-+	init_pair(INPUT_TEXT, -1, -1);
-+	init_pair(INPUT_FIELD, -1, -1);
-+
-+	init_pair(FUNCTION_HIGHLIGHT, -1, -1);
-+	init_pair(FUNCTION_TEXT, COLOR_BLUE, -1);
-+}
-+
-+/* available attributes:
-+   A_NORMAL        Normal display (no highlight)
-+   A_STANDOUT      Best highlighting mode of the terminal.
-+   A_UNDERLINE     Underlining
-+   A_REVERSE       Reverse video
-+   A_BLINK         Blinking
-+   A_DIM           Half bright
-+   A_BOLD          Extra bright or bold
-+   A_PROTECT       Protected mode
-+   A_INVIS         Invisible or blank mode
-+   A_ALTCHARSET    Alternate character set
-+   A_CHARTEXT      Bit-mask to extract a character
-+   COLOR_PAIR(n)   Color-pair number n
-+   */
-+void normal_color_theme(void)
-+{
-+	/* automatically add color... */
-+#define mkattr(name, attr) do { \
-+attributes[name] = attr | COLOR_PAIR(name); } while (0)
-+	mkattr(NORMAL, NORMAL);
-+	mkattr(MAIN_HEADING, A_BOLD | A_UNDERLINE);
-+
-+	mkattr(MAIN_MENU_FORE, A_REVERSE);
-+	mkattr(MAIN_MENU_BACK, A_NORMAL);
-+	mkattr(MAIN_MENU_GREY, A_NORMAL);
-+	mkattr(MAIN_MENU_HEADING, A_BOLD);
-+	mkattr(MAIN_MENU_BOX, A_NORMAL);
-+
-+	mkattr(SCROLLWIN_TEXT, A_NORMAL);
-+	mkattr(SCROLLWIN_HEADING, A_BOLD);
-+	mkattr(SCROLLWIN_BOX, A_BOLD);
-+
-+	mkattr(DIALOG_TEXT, A_BOLD);
-+	mkattr(DIALOG_BOX, A_BOLD);
-+	mkattr(DIALOG_MENU_FORE, A_STANDOUT);
-+	mkattr(DIALOG_MENU_BACK, A_NORMAL);
-+
-+	mkattr(INPUT_BOX, A_NORMAL);
-+	mkattr(INPUT_HEADING, A_BOLD);
-+	mkattr(INPUT_TEXT, A_NORMAL);
-+	mkattr(INPUT_FIELD, A_UNDERLINE);
-+
-+	mkattr(FUNCTION_HIGHLIGHT, A_BOLD);
-+	mkattr(FUNCTION_TEXT, A_REVERSE);
-+}
-+
-+void no_colors_theme(void)
-+{
-+	/* automatically add highlight, no color */
-+#define mkattrn(name, attr) { attributes[name] = attr; }
-+
-+	mkattrn(NORMAL, NORMAL);
-+	mkattrn(MAIN_HEADING, A_BOLD | A_UNDERLINE);
-+
-+	mkattrn(MAIN_MENU_FORE, A_STANDOUT);
-+	mkattrn(MAIN_MENU_BACK, A_NORMAL);
-+	mkattrn(MAIN_MENU_GREY, A_NORMAL);
-+	mkattrn(MAIN_MENU_HEADING, A_BOLD);
-+	mkattrn(MAIN_MENU_BOX, A_NORMAL);
-+
-+	mkattrn(SCROLLWIN_TEXT, A_NORMAL);
-+	mkattrn(SCROLLWIN_HEADING, A_BOLD);
-+	mkattrn(SCROLLWIN_BOX, A_BOLD);
-+
-+	mkattrn(DIALOG_TEXT, A_NORMAL);
-+	mkattrn(DIALOG_BOX, A_BOLD);
-+	mkattrn(DIALOG_MENU_FORE, A_STANDOUT);
-+	mkattrn(DIALOG_MENU_BACK, A_NORMAL);
-+
-+	mkattrn(INPUT_BOX, A_BOLD);
-+	mkattrn(INPUT_HEADING, A_BOLD);
-+	mkattrn(INPUT_TEXT, A_NORMAL);
-+	mkattrn(INPUT_FIELD, A_UNDERLINE);
-+
-+	mkattrn(FUNCTION_HIGHLIGHT, A_BOLD);
-+	mkattrn(FUNCTION_TEXT, A_REVERSE);
-+}
-+
-+void set_colors()
-+{
-+	start_color();
-+	use_default_colors();
-+	set_normal_colors();
-+	if (has_colors()) {
-+		normal_color_theme();
-+	} else {
-+		/* give deafults */
-+		no_colors_theme();
-+	}
-+}
-+
-+
-+/* this changes the windows attributes !!! */
-+void print_in_middle(WINDOW *win,
-+		int starty,
-+		int startx,
-+		int width,
-+		const char *string,
-+		chtype color)
-+{      int length, x, y;
-+	float temp;
-+
-+
-+	if (win == NULL)
-+		win = stdscr;
-+	getyx(win, y, x);
-+	if (startx != 0)
-+		x = startx;
-+	if (starty != 0)
-+		y = starty;
-+	if (width == 0)
-+		width = 80;
-+
-+	length = strlen(string);
-+	temp = (width - length) / 2;
-+	x = startx + (int)temp;
-+	wattrset(win, color);
-+	mvwprintw(win, y, x, "%s", string);
-+	refresh();
-+}
-+
-+int get_line_no(const char *text)
-+{
-+	int i;
-+	int total = 1;
-+
-+	if (!text)
-+		return 0;
-+
-+	for (i = 0; text[i] != '\0'; i++)
-+		if (text[i] == '\n')
-+			total++;
-+	return total;
-+}
-+
-+const char *get_line(const char *text, int line_no)
-+{
-+	int i;
-+	int lines = 0;
-+
-+	if (!text)
-+		return 0;
-+
-+	for (i = 0; text[i] != '\0' && lines < line_no; i++)
-+		if (text[i] == '\n')
-+			lines++;
-+	return text+i;
-+}
-+
-+int get_line_length(const char *line)
-+{
-+	int res = 0;
-+	while (*line != '\0' && *line != '\n') {
-+		line++;
-+		res++;
-+	}
-+	return res;
-+}
-+
-+/* print all lines to the window. */
-+void fill_window(WINDOW *win, const char *text)
-+{
-+	int x, y;
-+	int total_lines = get_line_no(text);
-+	int i;
-+
-+	getmaxyx(win, y, x);
-+	/* do not go over end of line */
-+	total_lines = min(total_lines, y);
-+	for (i = 0; i < total_lines; i++) {
-+		char tmp[x+10];
-+		const char *line = get_line(text, i);
-+		int len = get_line_length(line);
-+		strncpy(tmp, line, min(len, x));
-+		tmp[len] = '\0';
-+		mvwprintw(win, i, 0, tmp);
-+	}
-+}
-+
-+/* get the message, and buttons.
-+ * each button must be a char*
-+ * return the selected button
-+ *
-+ * this dialog is used for 2 different things:
-+ * 1) show a text box, no buttons.
-+ * 2) show a dialog, with horizontal buttons
-+ */
-+int btn_dialog(WINDOW *main_window, const char *msg, int btn_num, ...)
-+{
-+	va_list ap;
-+	char *btn;
-+	int btns_width = 0;
-+	int msg_lines = 0;
-+	int msg_width = 0;
-+	int total_width;
-+	int win_rows = 0;
-+	WINDOW *win;
-+	WINDOW *msg_win;
-+	WINDOW *menu_win;
-+	MENU *menu;
-+	ITEM *btns[btn_num+1];
-+	int i, x, y;
-+	int res = -1;
-+
-+
-+	va_start(ap, btn_num);
-+	for (i = 0; i < btn_num; i++) {
-+		btn = va_arg(ap, char *);
-+		btns[i] = new_item(btn, "");
-+		btns_width += strlen(btn)+1;
-+	}
-+	va_end(ap);
-+	btns[btn_num] = NULL;
-+
-+	/* find the widest line of msg: */
-+	msg_lines = get_line_no(msg);
-+	for (i = 0; i < msg_lines; i++) {
-+		const char *line = get_line(msg, i);
-+		int len = get_line_length(line);
-+		if (msg_width < len)
-+			msg_width = len;
-+	}
-+
-+	total_width = max(msg_width, btns_width);
-+	/* place dialog in middle of screen */
-+	y = (LINES-(msg_lines+4))/2;
-+	x = (COLS-(total_width+4))/2;
-+
-+
-+	/* create the windows */
-+	if (btn_num > 0)
-+		win_rows = msg_lines+4;
-+	else
-+		win_rows = msg_lines+2;
-+
-+	win = newwin(win_rows, total_width+4, y, x);
-+	keypad(win, TRUE);
-+	menu_win = derwin(win, 1, btns_width, win_rows-2,
-+			1+(total_width+2-btns_width)/2);
-+	menu = new_menu(btns);
-+	msg_win = derwin(win, win_rows-2, msg_width, 1,
-+			1+(total_width+2-msg_width)/2);
-+
-+	set_menu_fore(menu, attributes[DIALOG_MENU_FORE]);
-+	set_menu_back(menu, attributes[DIALOG_MENU_BACK]);
-+
-+	wattrset(win, attributes[DIALOG_BOX]);
-+	box(win, 0, 0);
-+
-+	/* print message */
-+	wattrset(msg_win, attributes[DIALOG_TEXT]);
-+	fill_window(msg_win, msg);
-+
-+	set_menu_win(menu, win);
-+	set_menu_sub(menu, menu_win);
-+	set_menu_format(menu, 1, btn_num);
-+	menu_opts_off(menu, O_SHOWDESC);
-+	menu_opts_off(menu, O_SHOWMATCH);
-+	menu_opts_on(menu, O_ONEVALUE);
-+	menu_opts_on(menu, O_NONCYCLIC);
-+	set_menu_mark(menu, "");
-+	post_menu(menu);
-+
-+
-+	touchwin(win);
-+	refresh_all_windows(main_window);
-+	while ((res = wgetch(win))) {
-+		switch (res) {
-+		case KEY_LEFT:
-+			menu_driver(menu, REQ_LEFT_ITEM);
-+			break;
-+		case KEY_RIGHT:
-+			menu_driver(menu, REQ_RIGHT_ITEM);
-+			break;
-+		case 10: /* ENTER */
-+		case 27: /* ESCAPE */
-+		case ' ':
-+		case KEY_F(F_BACK):
-+		case KEY_F(F_EXIT):
-+			break;
-+		}
-+		touchwin(win);
-+		refresh_all_windows(main_window);
-+
-+		if (res == 10 || res == ' ') {
-+			res = item_index(current_item(menu));
-+			break;
-+		} else if (res == 27 || res == KEY_F(F_BACK) ||
-+				res == KEY_F(F_EXIT)) {
-+			res = KEY_EXIT;
-+			break;
-+		}
-+	}
-+
-+	unpost_menu(menu);
-+	free_menu(menu);
-+	for (i = 0; i < btn_num; i++)
-+		free_item(btns[i]);
-+
-+	delwin(win);
-+	return res;
-+}
-+
-+int dialog_inputbox(WINDOW *main_window,
-+		const char *title, const char *prompt,
-+		const char *init, char *result, int result_len)
-+{
-+	int prompt_lines = 0;
-+	int prompt_width = 0;
-+	WINDOW *win;
-+	WINDOW *prompt_win;
-+	WINDOW *form_win;
-+	PANEL *panel;
-+	int i, x, y;
-+	int res = -1;
-+	int cursor_position = strlen(init);
-+
-+
-+	/* find the widest line of msg: */
-+	prompt_lines = get_line_no(prompt);
-+	for (i = 0; i < prompt_lines; i++) {
-+		const char *line = get_line(prompt, i);
-+		int len = get_line_length(line);
-+		prompt_width = max(prompt_width, len);
-+	}
-+
-+	if (title)
-+		prompt_width = max(prompt_width, strlen(title));
-+
-+	/* place dialog in middle of screen */
-+	y = (LINES-(prompt_lines+4))/2;
-+	x = (COLS-(prompt_width+4))/2;
-+
-+	strncpy(result, init, result_len);
-+
-+	/* create the windows */
-+	win = newwin(prompt_lines+6, prompt_width+7, y, x);
-+	prompt_win = derwin(win, prompt_lines+1, prompt_width, 2, 2);
-+	form_win = derwin(win, 1, prompt_width, prompt_lines+3, 2);
-+	keypad(form_win, TRUE);
-+
-+	wattrset(form_win, attributes[INPUT_FIELD]);
-+
-+	wattrset(win, attributes[INPUT_BOX]);
-+	box(win, 0, 0);
-+	wattrset(win, attributes[INPUT_HEADING]);
-+	if (title)
-+		mvwprintw(win, 0, 3, "%s", title);
-+
-+	/* print message */
-+	wattrset(prompt_win, attributes[INPUT_TEXT]);
-+	fill_window(prompt_win, prompt);
-+
-+	mvwprintw(form_win, 0, 0, "%*s", prompt_width, " ");
-+	mvwprintw(form_win, 0, 0, "%s", result);
-+
-+	/* create panels */
-+	panel = new_panel(win);
-+
-+	/* show the cursor */
-+	curs_set(1);
-+
-+	touchwin(win);
-+	refresh_all_windows(main_window);
-+	while ((res = wgetch(form_win))) {
-+		int len = strlen(result);
-+		switch (res) {
-+		case 10: /* ENTER */
-+		case 27: /* ESCAPE */
-+		case KEY_F(F_HELP):
-+		case KEY_F(F_EXIT):
-+		case KEY_F(F_BACK):
-+			break;
-+		case 127:
-+		case KEY_BACKSPACE:
-+			if (cursor_position > 0) {
-+				memmove(&result[cursor_position-1],
-+						&result[cursor_position],
-+						len-cursor_position+1);
-+				cursor_position--;
-+			}
-+			break;
-+		case KEY_DC:
-+			if (cursor_position >= 0 && cursor_position < len) {
-+				memmove(&result[cursor_position],
-+						&result[cursor_position+1],
-+						len-cursor_position+1);
-+			}
-+			break;
-+		case KEY_UP:
-+		case KEY_RIGHT:
-+			if (cursor_position < len &&
-+			    cursor_position < min(result_len, prompt_width))
-+				cursor_position++;
-+			break;
-+		case KEY_DOWN:
-+		case KEY_LEFT:
-+			if (cursor_position > 0)
-+				cursor_position--;
-+			break;
-+		default:
-+			if ((isgraph(res) || isspace(res)) &&
-+					len-2 < result_len) {
-+				/* insert the char at the proper position */
-+				memmove(&result[cursor_position+1],
-+						&result[cursor_position],
-+						len+1);
-+				result[cursor_position] = res;
-+				cursor_position++;
-+			} else {
-+				mvprintw(0, 0, "unknow key: %d\n", res);
-+			}
-+			break;
-+		}
-+		wmove(form_win, 0, 0);
-+		wclrtoeol(form_win);
-+		mvwprintw(form_win, 0, 0, "%*s", prompt_width, " ");
-+		mvwprintw(form_win, 0, 0, "%s", result);
-+		wmove(form_win, 0, cursor_position);
-+		touchwin(win);
-+		refresh_all_windows(main_window);
-+
-+		if (res == 10) {
-+			res = 0;
-+			break;
-+		} else if (res == 27 || res == KEY_F(F_BACK) ||
-+				res == KEY_F(F_EXIT)) {
-+			res = KEY_EXIT;
-+			break;
-+		} else if (res == KEY_F(F_HELP)) {
-+			res = 1;
-+			break;
-+		}
-+	}
-+
-+	/* hide the cursor */
-+	curs_set(0);
-+	del_panel(panel);
-+	delwin(prompt_win);
-+	delwin(form_win);
-+	delwin(win);
-+	return res;
-+}
-+
-+/* refresh all windows in the correct order */
-+void refresh_all_windows(WINDOW *main_window)
-+{
-+	update_panels();
-+	touchwin(main_window);
-+	refresh();
-+}
-+
-+/* layman's scrollable window... */
-+void show_scroll_win(WINDOW *main_window,
-+		const char *title,
-+		const char *text)
-+{
-+	int res;
-+	int total_lines = get_line_no(text);
-+	int x, y;
-+	int start_x = 0, start_y = 0;
-+	int text_lines = 0, text_cols = 0;
-+	int total_cols = 0;
-+	int win_cols = 0;
-+	int win_lines = 0;
-+	int i = 0;
-+	WINDOW *win;
-+	WINDOW *pad;
-+	PANEL *panel;
-+
-+	/* find the widest line of msg: */
-+	total_lines = get_line_no(text);
-+	for (i = 0; i < total_lines; i++) {
-+		const char *line = get_line(text, i);
-+		int len = get_line_length(line);
-+		total_cols = max(total_cols, len+2);
-+	}
-+
-+	/* create the pad */
-+	pad = newpad(total_lines+10, total_cols+10);
-+	wattrset(pad, attributes[SCROLLWIN_TEXT]);
-+	fill_window(pad, text);
-+
-+	win_lines = min(total_lines+4, LINES-2);
-+	win_cols = min(total_cols+2, COLS-2);
-+	text_lines = max(win_lines-4, 0);
-+	text_cols = max(win_cols-2, 0);
-+
-+	/* place window in middle of screen */
-+	y = (LINES-win_lines)/2;
-+	x = (COLS-win_cols)/2;
-+
-+	win = newwin(win_lines, win_cols, y, x);
-+	keypad(win, TRUE);
-+	/* show the help in the help window, and show the help panel */
-+	wattrset(win, attributes[SCROLLWIN_BOX]);
-+	box(win, 0, 0);
-+	wattrset(win, attributes[SCROLLWIN_HEADING]);
-+	mvwprintw(win, 0, 3, " %s ", title);
-+	panel = new_panel(win);
-+
-+	/* handle scrolling */
-+	do {
-+
-+		copywin(pad, win, start_y, start_x, 2, 2, text_lines,
-+				text_cols, 0);
-+		print_in_middle(win,
-+				text_lines+2,
-+				0,
-+				text_cols,
-+				"<OK>",
-+				attributes[DIALOG_MENU_FORE]);
-+		wrefresh(win);
-+
-+		res = wgetch(win);
-+		switch (res) {
-+		case KEY_NPAGE:
-+		case ' ':
-+			start_y += text_lines-2;
-+			break;
-+		case KEY_PPAGE:
-+			start_y -= text_lines+2;
-+			break;
-+		case KEY_HOME:
-+			start_y = 0;
-+			break;
-+		case KEY_END:
-+			start_y = total_lines-text_lines;
-+			break;
-+		case KEY_DOWN:
-+		case 'j':
-+			start_y++;
-+			break;
-+		case KEY_UP:
-+		case 'k':
-+			start_y--;
-+			break;
-+		case KEY_LEFT:
-+		case 'h':
-+			start_x--;
-+			break;
-+		case KEY_RIGHT:
-+		case 'l':
-+			start_x++;
-+			break;
-+		}
-+		if (res == 10 || res == 27 || res == 'q'
-+		    || res == KEY_F(F_BACK) || res == KEY_F(F_EXIT)) {
-+			break;
-+		}
-+		if (start_y < 0)
-+			start_y = 0;
-+		if (start_y >= total_lines-text_lines)
-+			start_y = total_lines-text_lines;
-+		if (start_x < 0)
-+			start_x = 0;
-+		if (start_x >= total_cols-text_cols)
-+			start_x = total_cols-text_cols;
-+	} while (res);
-+
-+	del_panel(panel);
-+	delwin(win);
-+	refresh_all_windows(main_window);
-+}
-diff --git a/scripts/kconfig/nconf.h b/scripts/kconfig/nconf.h
-new file mode 100644
-index 0000000..fb42966
---- /dev/null
-+++ b/scripts/kconfig/nconf.h
-@@ -0,0 +1,95 @@
-+/*
-+ * Copyright (C) 2008 Nir Tzachar <nir.tzachar@gmail.com?
-+ * Released under the terms of the GNU GPL v2.0.
-+ *
-+ * Derived from menuconfig.
-+ *
-+ */
-+
-+#include <ctype.h>
-+#include <errno.h>
-+#include <fcntl.h>
-+#include <limits.h>
-+#include <stdarg.h>
-+#include <stdlib.h>
-+#include <string.h>
-+#include <unistd.h>
-+#include <locale.h>
-+#include <curses.h>
-+#include <menu.h>
-+#include <panel.h>
-+#include <form.h>
-+
-+#include <stdio.h>
-+#include <time.h>
-+#include <sys/time.h>
-+
-+#include "ncurses.h"
-+
-+#define max(a, b) ({\
-+		typeof(a) _a = a;\
-+		typeof(b) _b = b;\
-+		_a > _b ? _a : _b; })
-+
-+#define min(a, b) ({\
-+		typeof(a) _a = a;\
-+		typeof(b) _b = b;\
-+		_a < _b ? _a : _b; })
-+
-+typedef enum {
-+	NORMAL = 1,
-+	MAIN_HEADING,
-+	MAIN_MENU_BOX,
-+	MAIN_MENU_FORE,
-+	MAIN_MENU_BACK,
-+	MAIN_MENU_GREY,
-+	MAIN_MENU_HEADING,
-+	SCROLLWIN_TEXT,
-+	SCROLLWIN_HEADING,
-+	SCROLLWIN_BOX,
-+	DIALOG_TEXT,
-+	DIALOG_MENU_FORE,
-+	DIALOG_MENU_BACK,
-+	DIALOG_BOX,
-+	INPUT_BOX,
-+	INPUT_HEADING,
-+	INPUT_TEXT,
-+	INPUT_FIELD,
-+	FUNCTION_TEXT,
-+	FUNCTION_HIGHLIGHT,
-+	ATTR_MAX
-+} attributes_t;
-+extern attributes_t attributes[];
-+
-+typedef enum {
-+	F_HELP = 1,
-+	F_SYMBOL = 2,
-+	F_INSTS = 3,
-+	F_CONF = 4,
-+	F_BACK = 5,
-+	F_SAVE = 6,
-+	F_LOAD = 7,
-+	F_EXIT = 8
-+} function_key;
-+
-+void set_colors(void);
-+
-+/* this changes the windows attributes !!! */
-+void print_in_middle(WINDOW *win,
-+		int starty,
-+		int startx,
-+		int width,
-+		const char *string,
-+		chtype color);
-+int get_line_length(const char *line);
-+int get_line_no(const char *text);
-+const char *get_line(const char *text, int line_no);
-+void fill_window(WINDOW *win, const char *text);
-+int btn_dialog(WINDOW *main_window, const char *msg, int btn_num, ...);
-+int dialog_inputbox(WINDOW *main_window,
-+		const char *title, const char *prompt,
-+		const char *init, char *result, int result_len);
-+void refresh_all_windows(WINDOW *main_window);
-+void show_scroll_win(WINDOW *main_window,
-+		const char *title,
-+		const char *text);
-diff --git a/scripts/kconfig/zconf.tab.c_shipped b/scripts/kconfig/zconf.tab.c_shipped
-index 6e9dcd5..8a0867a 100644
---- a/scripts/kconfig/zconf.tab.c_shipped
-+++ b/scripts/kconfig/zconf.tab.c_shipped
-@@ -2220,7 +2220,7 @@ void conf_parse(const char *name)
- 	zconf_initscan(name);
  
- 	sym_init();
--	menu_init();
-+	_menu_init();
- 	modules_sym = sym_lookup(NULL, 0);
- 	modules_sym->type = S_BOOLEAN;
- 	modules_sym->flags |= SYMBOL_AUTO;
-diff --git a/scripts/kconfig/zconf.y b/scripts/kconfig/zconf.y
-index 8c43491..361b543 100644
---- a/scripts/kconfig/zconf.y
-+++ b/scripts/kconfig/zconf.y
-@@ -475,7 +475,7 @@ void conf_parse(const char *name)
- 	zconf_initscan(name);
+ /*
+- *  Status codes
++ *  Status codes. These are deprecated as they are shifted 1 bit right
++ *  from those found in the SCSI standards. This causes confusion for
++ *  applications that are ported to several OSes. Prefer SAM Status codes
++ *  above.
+  */
  
- 	sym_init();
--	menu_init();
-+	_menu_init();
- 	modules_sym = sym_lookup(NULL, 0);
- 	modules_sym->type = S_BOOLEAN;
- 	modules_sym->flags |= SYMBOL_AUTO;
--- 
-1.6.5.3
-
+ #define GOOD                 0x00
+@@ -114,8 +191,10 @@
+ #define RESERVATION_CONFLICT 0x0c
+ #define COMMAND_TERMINATED   0x11
+ #define QUEUE_FULL           0x14
++#define ACA_ACTIVE           0x18
++#define TASK_ABORTED         0x20
+ 
+-#define STATUS_MASK          0x3e
++#define STATUS_MASK          0xfe
+ 
+ /*
+  *  SENSE KEYS
+@@ -138,43 +217,79 @@
+ 
+ /*
+  *  DEVICE TYPES
++ *  Please keep them in 0x%02x format for $MODALIAS to work
+  */
+ 
+ #define TYPE_DISK           0x00
+ #define TYPE_TAPE           0x01
++#define TYPE_PRINTER        0x02
+ #define TYPE_PROCESSOR      0x03    /* HP scanners use this */
+ #define TYPE_WORM           0x04    /* Treated as ROM by our system */
+ #define TYPE_ROM            0x05
+ #define TYPE_SCANNER        0x06
+-#define TYPE_MOD            0x07    /* Magneto-optical disk -
++#define TYPE_MOD            0x07    /* Magneto-optical disk - 
+ 				     * - treated as TYPE_DISK */
+ #define TYPE_MEDIUM_CHANGER 0x08
+-#define TYPE_ENCLOSURE	    0x0d    /* Enclosure Services Device */
++#define TYPE_COMM           0x09    /* Communications device */
++#define TYPE_RAID           0x0c
++#define TYPE_ENCLOSURE      0x0d    /* Enclosure Services Device */
++#define TYPE_RBC	    0x0e
++#define TYPE_OSD            0x11
+ #define TYPE_NO_LUN         0x7f
+ 
++/* SCSI protocols; these are taken from SPC-3 section 7.5 */
++enum scsi_protocol {
++	SCSI_PROTOCOL_FCP = 0,	/* Fibre Channel */
++	SCSI_PROTOCOL_SPI = 1,	/* parallel SCSI */
++	SCSI_PROTOCOL_SSA = 2,	/* Serial Storage Architecture - Obsolete */
++	SCSI_PROTOCOL_SBP = 3,	/* firewire */
++	SCSI_PROTOCOL_SRP = 4,	/* Infiniband RDMA */
++	SCSI_PROTOCOL_ISCSI = 5,
++	SCSI_PROTOCOL_SAS = 6,
++	SCSI_PROTOCOL_ADT = 7,	/* Media Changers */
++	SCSI_PROTOCOL_ATA = 8,
++	SCSI_PROTOCOL_UNSPEC = 0xf, /* No specific protocol */
++};
++
+ /*
+  * standard mode-select header prepended to all mode-select commands
+- *
+- * moved here from cdrom.h -- kraxel
+  */
+ 
+-struct ccs_modesel_head
+-  {
+-    unsigned char _r1;			/* reserved.  */
+-    unsigned char medium;		/* device-specific medium type.  */
+-    unsigned char _r2;			/* reserved.  */
+-    unsigned char block_desc_length;	/* block descriptor length.  */
+-    unsigned char density;		/* device-specific density code.  */
+-    unsigned char number_blocks_hi;	/* number of blocks in this block
+-					   desc.  */
+-    unsigned char number_blocks_med;
+-    unsigned char number_blocks_lo;
+-    unsigned char _r3;
+-    unsigned char block_length_hi;	/* block length for blocks in this
+-					   desc.  */
+-    unsigned char block_length_med;
+-    unsigned char block_length_lo;
+-  };
++struct ccs_modesel_head {
++	__u8 _r1;			/* reserved */
++	__u8 medium;		/* device-specific medium type */
++	__u8 _r2;			/* reserved */
++	__u8 block_desc_length;	/* block descriptor length */
++	__u8 density;		/* device-specific density code */
++	__u8 number_blocks_hi;	/* number of blocks in this block desc */
++	__u8 number_blocks_med;
++	__u8 number_blocks_lo;
++	__u8 _r3;
++	__u8 block_length_hi;	/* block length for blocks in this desc */
++	__u8 block_length_med;
++	__u8 block_length_lo;
++};
++
++/*
++ * ScsiLun: 8 byte LUN.
++ */
++struct scsi_lun {
++	__u8 scsi_lun[8];
++};
++
++/*
++ * The Well Known LUNS (SAM-3) in our int representation of a LUN
++ */
++#define SCSI_W_LUN_BASE 0xc100
++#define SCSI_W_LUN_REPORT_LUNS (SCSI_W_LUN_BASE + 1)
++#define SCSI_W_LUN_ACCESS_CONTROL (SCSI_W_LUN_BASE + 2)
++#define SCSI_W_LUN_TARGET_LOG_PAGE (SCSI_W_LUN_BASE + 3)
++
++static __inline__ int scsi_is_wlun(unsigned int lun)
++{
++	return (lun & 0xff00) == SCSI_W_LUN_BASE;
++}
++
+ 
+ /*
+  *  MESSAGE CODES
+@@ -186,41 +301,179 @@ struct ccs_modesel_head
+ #define     EXTENDED_SDTR                   0x01
+ #define     EXTENDED_EXTENDED_IDENTIFY      0x02    /* SCSI-I only */
+ #define     EXTENDED_WDTR                   0x03
++#define     EXTENDED_PPR                    0x04
++#define     EXTENDED_MODIFY_BIDI_DATA_PTR   0x05
+ #define SAVE_POINTERS       0x02
+ #define RESTORE_POINTERS    0x03
+ #define DISCONNECT          0x04
+ #define INITIATOR_ERROR     0x05
+-#define ABORT               0x06
++#define ABORT_TASK_SET      0x06
+ #define MESSAGE_REJECT      0x07
+ #define NOP                 0x08
+ #define MSG_PARITY_ERROR    0x09
+ #define LINKED_CMD_COMPLETE 0x0a
+ #define LINKED_FLG_CMD_COMPLETE 0x0b
+-#define BUS_DEVICE_RESET    0x0c
+-
++#define TARGET_RESET        0x0c
++#define ABORT_TASK          0x0d
++#define CLEAR_TASK_SET      0x0e
+ #define INITIATE_RECOVERY   0x0f            /* SCSI-II only */
+ #define RELEASE_RECOVERY    0x10            /* SCSI-II only */
+-
++#define CLEAR_ACA           0x16
++#define LOGICAL_UNIT_RESET  0x17
+ #define SIMPLE_QUEUE_TAG    0x20
+ #define HEAD_OF_QUEUE_TAG   0x21
+ #define ORDERED_QUEUE_TAG   0x22
++#define IGNORE_WIDE_RESIDUE 0x23
++#define ACA                 0x24
++#define QAS_REQUEST         0x55
++
++/* Old SCSI2 names, don't use in new code */
++#define BUS_DEVICE_RESET    TARGET_RESET
++#define ABORT               ABORT_TASK_SET
++
++/*
++ * Host byte codes
++ */
++
++#define DID_OK          0x00	/* NO error                                */
++#define DID_NO_CONNECT  0x01	/* Couldn't connect before timeout period  */
++#define DID_BUS_BUSY    0x02	/* BUS stayed busy through time out period */
++#define DID_TIME_OUT    0x03	/* TIMED OUT for other reason              */
++#define DID_BAD_TARGET  0x04	/* BAD target.                             */
++#define DID_ABORT       0x05	/* Told to abort for some other reason     */
++#define DID_PARITY      0x06	/* Parity error                            */
++#define DID_ERROR       0x07	/* Internal error                          */
++#define DID_RESET       0x08	/* Reset by somebody.                      */
++#define DID_BAD_INTR    0x09	/* Got an interrupt we weren't expecting.  */
++#define DID_PASSTHROUGH 0x0a	/* Force command past mid-layer            */
++#define DID_SOFT_ERROR  0x0b	/* The low level driver just wish a retry  */
++#define DID_IMM_RETRY   0x0c	/* Retry without decrementing retry count  */
++#define DID_REQUEUE	0x0d	/* Requeue command (no immediate retry) also
++				 * without decrementing the retry count	   */
++#define DID_TRANSPORT_DISRUPTED 0x0e /* Transport error disrupted execution
++				      * and the driver blocked the port to
++				      * recover the link. Transport class will
++				      * retry or fail IO */
++#define DID_TRANSPORT_FAILFAST	0x0f /* Transport class fastfailed the io */
++#define DRIVER_OK       0x00	/* Driver status                           */
++
++/*
++ *  These indicate the error that occurred, and what is available.
++ */
++
++#define DRIVER_BUSY         0x01
++#define DRIVER_SOFT         0x02
++#define DRIVER_MEDIA        0x03
++#define DRIVER_ERROR        0x04
++
++#define DRIVER_INVALID      0x05
++#define DRIVER_TIMEOUT      0x06
++#define DRIVER_HARD         0x07
++#define DRIVER_SENSE	    0x08
++
++/*
++ * Internal return values.
++ */
++
++#define NEEDS_RETRY     0x2001
++#define SUCCESS         0x2002
++#define FAILED          0x2003
++#define QUEUED          0x2004
++#define SOFT_ERROR      0x2005
++#define ADD_TO_MLQUEUE  0x2006
++#define TIMEOUT_ERROR   0x2007
++#define SCSI_RETURN_NOT_HANDLED   0x2008
++
++/*
++ * Midlevel queue return values.
++ */
++#define SCSI_MLQUEUE_HOST_BUSY   0x1055
++#define SCSI_MLQUEUE_DEVICE_BUSY 0x1056
++#define SCSI_MLQUEUE_EH_RETRY    0x1057
++#define SCSI_MLQUEUE_TARGET_BUSY 0x1058
++
++/*
++ *  Use these to separate status msg and our bytes
++ *
++ *  These are set by:
++ *
++ *      status byte = set from target device
++ *      msg_byte    = return status from host adapter itself.
++ *      host_byte   = set by low-level driver to indicate status.
++ *      driver_byte = set by mid-level.
++ */
++#define status_byte(result) (((result) >> 1) & 0x7f)
++#define msg_byte(result)    (((result) >> 8) & 0xff)
++#define host_byte(result)   (((result) >> 16) & 0xff)
++#define driver_byte(result) (((result) >> 24) & 0xff)
++
++#define sense_class(sense)  (((sense) >> 4) & 0x7)
++#define sense_error(sense)  ((sense) & 0xf)
++#define sense_valid(sense)  ((sense) & 0x80);
++
++/*
++ * default timeouts
++*/
++#define FORMAT_UNIT_TIMEOUT		(2 * 60 * 60 * HZ)
++#define START_STOP_TIMEOUT		(60 * HZ)
++#define MOVE_MEDIUM_TIMEOUT		(5 * 60 * HZ)
++#define READ_ELEMENT_STATUS_TIMEOUT	(5 * 60 * HZ)
++#define READ_DEFECT_DATA_TIMEOUT	(60 * HZ )
++
++
++#define IDENTIFY_BASE       0x80
++#define IDENTIFY(can_disconnect, lun)   (IDENTIFY_BASE |\
++		     ((can_disconnect) ?  0x40 : 0) |\
++		     ((lun) & 0x07))
++
++/*
++ *  struct scsi_device::scsi_level values. For SCSI devices other than those
++ *  prior to SCSI-2 (i.e. over 12 years old) this value is (resp[2] + 1)
++ *  where "resp" is a byte array of the response to an INQUIRY. The scsi_level
++ *  variable is visible to the user via sysfs.
++ */
++
++#define SCSI_UNKNOWN    0
++#define SCSI_1          1
++#define SCSI_1_CCS      2
++#define SCSI_2          3
++#define SCSI_3          4        /* SPC */
++#define SCSI_SPC_2      5
++#define SCSI_SPC_3      6
++
++/*
++ * INQ PERIPHERAL QUALIFIERS
++ */
++#define SCSI_INQ_PQ_CON         0x00
++#define SCSI_INQ_PQ_NOT_CON     0x01
++#define SCSI_INQ_PQ_NOT_CAP     0x03
++
+ 
+ /*
+  * Here are some scsi specific ioctl commands which are sometimes useful.
++ *
++ * Note that include/linux/cdrom.h also defines IOCTL 0x5300 - 0x5395
+  */
+-/* These are a few other constants only used by scsi devices.  */
+ 
+-#define SCSI_IOCTL_GET_IDLUN 0x5382
++/* Used to obtain PUN and LUN info.  Conflicts with CDROMAUDIOBUFSIZ */
++#define SCSI_IOCTL_GET_IDLUN		0x5382
++
++/* 0x5383 and 0x5384 were used for SCSI_IOCTL_TAGGED_{ENABLE,DISABLE} */
++
++/* Used to obtain the host number of a device. */
++#define SCSI_IOCTL_PROBE_HOST		0x5385
+ 
+-/* Used to turn on and off tagged queuing for scsi devices.  */
++/* Used to obtain the bus number for a device */
++#define SCSI_IOCTL_GET_BUS_NUMBER	0x5386
+ 
+-#define SCSI_IOCTL_TAGGED_ENABLE 0x5383
+-#define SCSI_IOCTL_TAGGED_DISABLE 0x5384
++/* Used to obtain the PCI location of a device */
++#define SCSI_IOCTL_GET_PCI		0x5387
+ 
+-/* Used to obtain the host number of a device.  */
+-#define SCSI_IOCTL_PROBE_HOST 0x5385
++/* Pull a u32 out of a SCSI message (using BE SCSI conventions) */
++static __inline__ __u32 scsi_to_u32(__u8 *ptr)
++{
++	return (ptr[0]<<24) + (ptr[1]<<16) + (ptr[2]<<8) + ptr[3];
++}
+ 
+-/* Used to get the bus number for a device.  */
+-#define SCSI_IOCTL_GET_BUS_NUMBER 0x5386
+ 
+-#endif /* scsi/scsi.h */
++#endif /* _SCSI_SCSI_H */
