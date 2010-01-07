@@ -1,62 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753915Ab0AGTmN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753945Ab0AGTui@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753915Ab0AGTmN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 14:42:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753867Ab0AGTmM
+	id S1753945Ab0AGTui (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 14:50:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753937Ab0AGTui
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 14:42:12 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:54042 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753296Ab0AGTmL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 14:42:11 -0500
-Date: Thu, 7 Jan 2010 11:41:31 -0800
-From: Greg KH <gregkh@suse.de>
-To: Thomas Voegtle <tv@lio96.de>
-Cc: Jan Kara <jack@suse.cz>, "Theodore Ts'o" <tytso@mit.edu>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, stable@kernel.org, dmonakhov@openvz.org
-Subject: Re: Linux 2.6.31.10
-Message-ID: <20100107194131.GA22983@suse.de>
-References: <20100106234533.GC1960@kroah.com>
- <alpine.LNX.2.00.1001071522480.5426@er-systems.de>
- <20100107180449.GA17495@suse.de>
- <alpine.LNX.2.00.1001072033301.26784@er-systems.de>
+	Thu, 7 Jan 2010 14:50:38 -0500
+Received: from na3sys009aog101.obsmtp.com ([74.125.149.67]:55866 "EHLO
+	na3sys009aog101.obsmtp.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753738Ab0AGTuh convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jan 2010 14:50:37 -0500
+X-Greylist: delayed 1154 seconds by postgrey-1.27 at vger.kernel.org; Thu, 07 Jan 2010 14:50:37 EST
+From: "Moore, Eric" <Eric.Moore@lsi.com>
+To: Roel Kluin <roel.kluin@gmail.com>,
+       "James E.J. Bottomley" <James.Bottomley@suse.de>,
+       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Desai, Kashyap" <Kashyap.Desai@lsi.com>
+Date: Thu, 7 Jan 2010 12:31:02 -0700
+Subject: RE: [PATCH] mpt2sas: Fix &&/|| confusion in
+ _scsih_sas_device_status_change_event()
+Thread-Topic: [PATCH] mpt2sas: Fix &&/|| confusion in
+ _scsih_sas_device_status_change_event()
+Thread-Index: AcqJcPlGGyfLLrp5TteTFnHNmMNwxwGXefcw
+Message-ID: <4565AEA676113A449269C2F3A549520F04463B74@cosmail03.lsi.com>
+References: <4B3B86CC.5010205@gmail.com>
+In-Reply-To: <4B3B86CC.5010205@gmail.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LNX.2.00.1001072033301.26784@er-systems.de>
-User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 07, 2010 at 08:36:07PM +0100, Thomas Voegtle wrote:
-> On Thu, 7 Jan 2010, Greg KH wrote:
-> 
-> > On Thu, Jan 07, 2010 at 03:27:21PM +0100, Thomas Voegtle wrote:
-> >> Hi,
-> >>
-> >> On Wed, 6 Jan 2010, Greg KH wrote:
-> >>> I'm announcing the release of the 2.6.31.10 kernel.  All users of the
-> >>> 2.6.31 kernel series are very strongly encouraged to upgrade.
-> >>
-> >>
-> >> Something broken here, during using a suse 11.2 installation with quota
-> >> switched on (this is reproducible )
-> >
-> > Jan, this looks like something in the quota patches you sent.  Any
-> > ideas?
-> >
-> > Thomas, is this on an ext3 or ext4 partition, or something else?
-> 
-> 
-> The one with quota enabled was an ext3 partition, mounted on /
+nack
 
-Thanks.
+The code beyond this check is intended for either INTERNAL_DEVICE_RESET or CMP_DEVICE_RESET.   If the reason code is something else, we will want to return.  There are 10 other types of reason codes besides these two. This proposed patch means we return only when the reason code is either INTERNAL_DEVICE_RESET or CMP_INTERNAL_RESET. 
 
-Could you run 'git bisect' between the two kernel versions to try to
-track the problem down to the single patch?
+Eric Moore
 
-thanks,
+-----Original Message-----
+From: linux-scsi-owner@vger.kernel.org [mailto:linux-scsi-owner@vger.kernel.org] On Behalf Of Roel Kluin
+Sent: Wednesday, December 30, 2009 9:59 AM
+To: James E.J. Bottomley; linux-scsi@vger.kernel.org; Andrew Morton; LKML; Desai, Kashyap
+Subject: [PATCH] mpt2sas: Fix &&/|| confusion in _scsih_sas_device_status_change_event()
 
-greg k-h
+This never evaluates to true.
+
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+ drivers/scsi/mpt2sas/mpt2sas_scsih.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/scsi/mpt2sas/mpt2sas_scsih.c b/drivers/scsi/mpt2sas/mpt2sas_scsih.c
+index efabea1..82c5474 100644
+--- a/drivers/scsi/mpt2sas/mpt2sas_scsih.c
++++ b/drivers/scsi/mpt2sas/mpt2sas_scsih.c
+@@ -4363,7 +4363,7 @@ _scsih_sas_device_status_change_event(struct MPT2SAS_ADAPTER *ioc,
+ #endif
+ 
+ 	if (!(event_data->ReasonCode ==
+-	    MPI2_EVENT_SAS_DEV_STAT_RC_INTERNAL_DEVICE_RESET &&
++	    MPI2_EVENT_SAS_DEV_STAT_RC_INTERNAL_DEVICE_RESET ||
+ 	   event_data->ReasonCode ==
+ 	    MPI2_EVENT_SAS_DEV_STAT_RC_CMP_INTERNAL_DEV_RESET))
+ 		return;
+--
+To unsubscribe from this list: send the line "unsubscribe linux-scsi" in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
