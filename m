@@ -1,66 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753223Ab0AGSLs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753266Ab0AGSMQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753223Ab0AGSLs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 13:11:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753101Ab0AGSLr
+	id S1753266Ab0AGSMQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 13:12:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753134Ab0AGSMP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 13:11:47 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:21988 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752127Ab0AGSLq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 13:11:46 -0500
-Date: Thu, 7 Jan 2010 19:11:37 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Roland McGrath <roland@redhat.com>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>, caiqian@redhat.com,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Jan Kratochvil <jkratoch@redhat.com>, linux-kernel@vger.kernel.org,
-       linux-s390@vger.kernel.org, utrace-devel@redhat.com
-Subject: Re: s390 && user_enable_single_step() (Was: odd utrace testing
-	results on s390x)
-Message-ID: <20100107181137.GB13300@redhat.com>
-References: <1503844142.2061111261478093776.JavaMail.root@zmail06.collab.prod.int.phx2.redhat.com> <1257887498.2061171261478252049.JavaMail.root@zmail06.collab.prod.int.phx2.redhat.com> <20100104155225.GA16650@redhat.com> <20100104171626.22ea2d9c@mschwide.boeblingen.de.ibm.com> <20100104181412.GA21146@redhat.com> <20100104211147.4CC94D532@magilla.sf.frob.com> <20100105105030.66bb8a0a@mschwide.boeblingen.de.ibm.com> <20100105153633.GA9376@redhat.com> <20100106210812.E03A1134D@magilla.sf.frob.com>
+	Thu, 7 Jan 2010 13:12:15 -0500
+Received: from mail-yw0-f176.google.com ([209.85.211.176]:50760 "EHLO
+	mail-yw0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753101Ab0AGSMO convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jan 2010 13:12:14 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=kELPAtQ99mSF5nMkJ+75Vum3437T9altMrx1QQfNwoKMsm8Es7ZsJRNjt+tbwaEvR/
+         4XG5gi9pAouqopn9UUhF1WjnQICFEq6zP47m63kRkWd7CKK3JILNGPAD+0Ew5KVRYwyS
+         IYHDlyPx28uttKcsDBCrJ0Bv44WdTw9kyjqNc=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100106210812.E03A1134D@magilla.sf.frob.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <alpine.LNX.2.00.1001071522480.5426@er-systems.de>
+References: <20100106234533.GC1960@kroah.com>
+	 <alpine.LNX.2.00.1001071522480.5426@er-systems.de>
+Date: Fri, 8 Jan 2010 02:12:13 +0800
+Message-ID: <9b5c9bb31001071012ob616b6at3175bb96926342ef@mail.gmail.com>
+Subject: Re: Linux 2.6.31.10
+From: Teck Choon Giam <giamteckchoon@gmail.com>
+To: Thomas Voegtle <tv@lio96.de>
+Cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org, stable@kernel.org, dmonakhov@openvz.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/06, Roland McGrath wrote:
+> Something broken here, during using a suse 11.2 installation with quota
+> switched on (this is reproducible )
 >
-> > Oh, I am not sure. But I don't understand TIF_SINGLE_STEP on s390,
-> > absolutely.
-> >
-> > For example, why do_signal() sets TIF_SINGLE_STEP? Why can't we do
 >
-> I think we could.  That would be more consistent with other machines.  On
-> s390, once we set TIF_SINGLE_STEP, we are going to post a SIGTRAP
-> eventually before going to user mode.  But then tracehook_signal_handler()
-> also gets stepping=1 and the expected meaning of this is that the arch code
-> is not itself simulating a single-step for the handler setup.  So the
-> tracehook (i.e. ptrace/utrace) code does what it does for "need a fake
-> single-step".
+> ------------[ cut here ]------------
+> kernel BUG at fs/quota/dquot.c:1398!
+> invalid opcode: 0000 [#1]
+> last sysfs file: /sys/devices/pci0000:00/0000:00:1f.5/modalias
 >
-> In ptrace (including utrace-based ptrace), this winds up with sending a
-> SIGTRAP.  So when we finally do get out of do_signal and TIF_SINGLE_STEP
-> causes a second SIGTRAP, it's already pending and the second one makes no
-> difference.
+> Pid: 3037, comm: rpm Not tainted (2.6.31.10-BIG #1) P3TSSA
+> EIP: 0060:[<c10b871e>] EFLAGS: 00010246 CPU: 0
+> EIP is at inode_reserved_space+0x23/0x3e
+> EAX: c1855c3c EBX: d608ff4c ECX: d462307c EDX: 00000000
+> ESI: 00000001 EDI: d462307c EBP: d608feac ESP: d608fea8
+>  DS: 007b ES: 007b FS: 0000 GS: 00e0 SS: 0068
+> Process rpm (pid: 3037, ti=d608f000 task=d710afc0 task.ti=d608f000)
+> Stack:
+>  09a0c500 d608fefc c10badb1 d462307c 000000e4 d796e000 00000000 00000000
+> <0> 00000002 d608fee4 00000000 00000000 d44055a0 00000000 00000000 d4405320
+> <0> 00005140 09a0c500 d462307c d608ff4c d462307c d608ff10 c10b87a6 09a0c500
+> Call Trace:
+>  [<c10badb1>] ? dquot_transfer+0x106/0x30f
+>  [<c10b87a6>] ? vfs_dq_transfer+0x6d/0x9c
+>  [<c10956f3>] ? notify_change+0x190/0x295
+>  [<c108202a>] ? chown_common+0x65/0x88
+>  [<c1604af2>] ? schedule+0x3df/0x40c
+>  [<c10821c5>] ? sys_lchown+0x4e/0x7b
+>  [<c1002b1b>] ? sysenter_do_call+0x12/0x26
+> Code: 05 e8 5e 85 f7 ff c9 c3 55 89 c1 89 e5 83 ec 04 65 a1 14 00 00 00 89
+> 45 fc 31 c0 8b 81 90 00 00 00 8b 40 24 8b 50 44 85 d2 75 04 <0f> 0b eb fe 89
+> c8 ff d2 8b
+> 55 fc 65 33 15 14 00 00 00 74 05 e8
+> EIP: [<c10b871e>] inode_reserved_space+0x23/0x3e SS:ESP 0068:d608fea8
+> ---[ end trace 575c2988a2722de1 ]---
 
-Confused again, perhaps I just misunderstood what you mean...
+I got similar issue like above for CentOS 4 and 5.  This also
+happening for linux-2.6.32.3 which I just tested for a system DELL
+PE850 with CentOS 4.  FYI please.
 
-Without utrace, tracehook_signal_handler() doesn't send SIGTRAP, it
-merely does ptrace_notify(SIGTRAP), this means that
+Thanks.
 
-> But for the general case of utrace, we'll have the UTRACE_SIGNAL_HANDLER
-> report, followed by a SIGTRAP that appears to be an authentic single-step
-> trap, but takes place on the same instruction.  If the resumption after the
-> UTRACE_SIGNAL_HANDLER report didn't use stepping, then this is an entirely
-> unexpected extra SIGTRAP.
-
-even without utrace we can have unexpected SIGTRAP.
-
-Oleg.
-
+Kindest regards,
+Giam Teck Choon
