@@ -1,77 +1,189 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932434Ab0AGFzq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932480Ab0AGFzL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932434Ab0AGFzq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 00:55:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752161Ab0AGFzo
+	id S932480Ab0AGFzL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 00:55:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752161Ab0AGFzJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 00:55:44 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:46766 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751144Ab0AGFzk (ORCPT
+	Thu, 7 Jan 2010 00:55:09 -0500
+Received: from mta2.srv.hcvlny.cv.net ([167.206.4.197]:48441 "EHLO
+	mta2.srv.hcvlny.cv.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750811Ab0AGFzG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 00:55:40 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Thu, 7 Jan 2010 14:52:23 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH -mmotm] build fix for
- memcg-move-charges-of-anonymous-swap.patch
-Message-Id: <20100107145223.a73e2be9.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20100107141401.6a182085.nishimura@mxp.nes.nec.co.jp>
-References: <201001062259.o06MxQrp023236@imap1.linux-foundation.org>
-	<20100106171058.f1d6f393.randy.dunlap@oracle.com>
-	<20100107111319.7d95fe86.nishimura@mxp.nes.nec.co.jp>
-	<20100107112150.2e585f1c.kamezawa.hiroyu@jp.fujitsu.com>
-	<20100107115901.594330d0.nishimura@mxp.nes.nec.co.jp>
-	<20100107120233.f244d4b7.kamezawa.hiroyu@jp.fujitsu.com>
-	<20100107130609.31fe83dc.nishimura@mxp.nes.nec.co.jp>
-	<20100107133026.6350bd9d.kamezawa.hiroyu@jp.fujitsu.com>
-	<20100107141401.6a182085.nishimura@mxp.nes.nec.co.jp>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 7 Jan 2010 00:55:06 -0500
+Date: Thu, 07 Jan 2010 00:54:25 -0500
+From: Michael Breuer <mbreuer@majjas.com>
+Subject: Re: [PATCH] af_packet: Don't use skb after dev_queue_xmit()
+In-reply-to: <4B4571D5.30002@majjas.com>
+To: Stephen Hemminger <shemminger@linux-foundation.org>
+Cc: Jarek Poplawski <jarkao2@gmail.com>, David Miller <davem@davemloft.net>,
+       akpm@linux-foundation.org, flyboy@gmail.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Message-id: <4B457711.1040008@majjas.com>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7BIT
+References: <20100105230746.GA6612@del.dom.local> <4B43F72C.9090004@majjas.com>
+ <20100106072208.GA6711@ff.dom.local> <4B44E952.5000804@majjas.com>
+ <20100106131044.25b4e500@nehalam> <4B451C31.3000309@majjas.com>
+ <4B454A16.3030909@majjas.com> <4B455C62.6030504@majjas.com>
+ <20100106205343.5460d658@nehalam> <4B4571D5.30002@majjas.com>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.5)
+ Gecko/20091204 Lightning/1.0b2pre Thunderbird/3.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 7 Jan 2010 14:14:01 +0900
-Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
+On 1/7/2010 12:32 AM, Michael Breuer wrote:
+> On 1/6/2010 11:53 PM, Stephen Hemminger wrote:
+>> On Wed, 06 Jan 2010 23:00:34 -0500
+>> Michael Breuer<mbreuer@majjas.com>  wrote:
+>>
+>>> Changing MTU to 9000, everything basically breaks - Can't use X11 
+>>> (local
+>>> or remote - get X11 screen after gdm login locally, but then goes back
+>>> to greeter; remote gets no greeter); ssh sessions hang; etc. This 
+>>> time I
+>>> was able to reset the MTU back to 1500 without a reboot - but I did 
+>>> have
+>>> to ifconfig eth0 down and then up. Looking at the sk98lin code, it 
+>>> looks
+>>> to me like they do a bit more work with existing buffers before
+>>> completing the MTU switch. Note that even doing this, X11 did not work
+>>> (it did with the old mtu change code). Tried changing to mtu 4500 - 
+>>> same
+>>> effect as 9000... but when I switched back to 1500, ksoftirqd started
+>>> spinning using 100% of one core.
+>> The problem is that patch was enabling scatter-gather and checksum 
+>> offload
+>> that won't work on EC_U hardware with 9K MTU.  At least, it never worked
+>> for me when I tested it. So because of that it really doesn't change 
+>> anything
+>> for the better on that chip version.
+>>
+>> What version chip is on that motherboard?  Mine is:
+>>   Yukon-2 EC Ultra chip revision 3
+>> which corresponds to B0 step.
+>>
+>> Another possibility is the PHY register which controls number of ticks
+>> of buffering.  The default is zero, which gives the most buffering 
+>> (good),
+>> but the firmware could be reprogramming it (bad).  In general, the 
+>> driver
+>> doesn't fiddle with bits that are already set correctly, because 
+>> sometimes
+>> vendors need to tweak PCI timing in firmware/BIOS.  It seems the 
+>> firmware on this
+>> chip is just a bunch of register setups done on power on.
+> Also - I'm seeing a huge number of dropped packets  (RX) 
+> 200-300/second. Probably why this is so slow.
+>
+> Current ifconfig:
+> eth0      Link encap:Ethernet  HWaddr 00:26:18:00:1C:3B
+>           inet addr:10.0.0.1  Bcast:10.0.0.255  Mask:255.255.255.0
+>           inet6 addr: fe80::226:18ff:fe00:1c3b/64 Scope:Link
+>           UP BROADCAST RUNNING ALLMULTI MULTICAST  MTU:1500  Metric:1
+>           RX packets:26647536 errors:0 dropped:517884 overruns:0 frame:0
+>           TX packets:12112780 errors:0 dropped:0 overruns:0 carrier:0
+>           collisions:0 txqueuelen:1000
+>           RX bytes:38960063319 (36.2 GiB)  TX bytes:1889879762 (1.7 GiB)
+>           Interrupt:18
+>
+>
+>
 
-> Anyway, I'm sorry that the first patch was wrong...
-> This is the correct one.
-> 
-> ===
-> From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-> 
-> build fix in !CONFIG_SWAP case.
-> 
->   CC      mm/memcontrol.o
-> mm/memcontrol.c: In function 'is_target_pte_for_mc':
-> mm/memcontrol.c:3648: error: implicit declaration of function 'mem_cgroup_count_swap_user'
-> make[1]: *** [mm/memcontrol.o] Error 1
-> make: *** [mm] Error 2
-> 
-> Reported-by: Randy Dunlap <randy.dunlap@oracle.com>
-> Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-
-Thank you.
-
-Acked-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-
-BTW, maybe it's time to
-  - remove EXPERIMENTAL from CONFIG_CGROUP_MEM_RES_CTRL_SWAP
-and more,
-  - remove CONFIG_CGROUP_MEM_RES_CTRL_SWAP
-    (to reduce complicated #ifdefs and replace them with CONFIG_SWAP.)
-
-It's very stable as far as I test.
-
-Thanks,
--Kame
-
+Never mind... spoke too soon. Crashed again. Just took longer:
+Jan  7 00:37:39 mail kernel: DRHD: handling fault status reg 2
+Jan  7 00:37:39 mail kernel: DMAR:[DMA Read] Request device [06:00.0] 
+fault addr fff1401fe000
+Jan  7 00:37:39 mail kernel: DMAR:[fault reason 06] PTE Read access is 
+not set
+Jan  7 00:37:39 mail kernel: sky2 0000:06:00.0: error interrupt 
+status=0x80000000
+Jan  7 00:37:39 mail kernel: sky2 0000:06:00.0: PCI hardware error (0x2010)
+Jan  7 00:37:40 mail smbd[4729]: [2010/01/07 00:37:40,  0] 
+lib/util_sock.c:539(read_fd_with_timeout)
+Jan  7 00:37:40 mail smbd[4729]: [2010/01/07 00:37:40,  0] 
+lib/util_sock.c:1491(get_peer_addr_internal)
+Jan  7 00:37:40 mail smbd[4729]:   getpeername failed. Error was 
+Transport endpoint is not connected
+Jan  7 00:37:40 mail smbd[4729]:   read_fd_with_timeout: client 0.0.0.0 
+read error = Connection timed out.
+Jan  7 00:37:40 mail dhcpd: DHCPREQUEST for 10.0.0.32 from 
+00:26:bb:aa:15:10 (mbitouch) via eth0
+Jan  7 00:37:40 mail dhcpd: DHCPACK on 10.0.0.32 to 00:26:bb:aa:15:10 
+(mbitouch) via eth0
+Jan  7 00:37:41 mail dhcpd: DHCPREQUEST for 10.0.0.32 from 
+00:26:bb:aa:15:10 (mbitouch) via eth0
+Jan  7 00:37:41 mail dhcpd: DHCPACK on 10.0.0.32 to 00:26:bb:aa:15:10 
+(mbitouch) via eth0
+Jan  7 00:37:44 mail dhcpd: DHCPREQUEST for 10.0.0.32 from 
+00:26:bb:aa:15:10 (mbitouch) via eth0
+Jan  7 00:37:44 mail dhcpd: DHCPACK on 10.0.0.32 to 00:26:bb:aa:15:10 
+(mbitouch) via eth0
+Jan  7 00:37:47 mail kernel: ------------[ cut here ]------------
+Jan  7 00:37:47 mail kernel: WARNING: at net/sched/sch_generic.c:261 
+dev_watchdog+0xf3/0x164()
+Jan  7 00:37:47 mail kernel: Hardware name: System Product Name
+Jan  7 00:37:47 mail kernel: NETDEV WATCHDOG: eth0 (sky2): transmit 
+queue 0 timed out
+Jan  7 00:37:47 mail kernel: Modules linked in: ip6table_filter 
+ip6table_mangle ip6_tables ipt_MASQUERADE iptable_nat nf_nat 
+iptable_mangle iptable_raw bridge stp appletalk psnap llc nfsd lockd 
+nfs_acl auth_rpcgss exportfs hwmon_vid coretemp sunrpc acpi_cpufreq sit 
+tunnel4 ipt_LOG nf_conntrack_netbios_ns nf_conntrack_ftp xt_DSCP xt_dscp 
+xt_MARK nf_conntrack_ipv6 xt_multiport ipv6 dm_multipath kvm_intel kvm 
+snd_hda_codec_analog snd_hda_intel snd_hda_codec snd_ens1371 gameport 
+snd_rawmidi gspca_spca505 gspca_main pcspkr snd_ac97_codec snd_hwdep 
+i2c_i801 snd_seq firewire_ohci videodev v4l1_compat snd_seq_device 
+v4l2_compat_ioctl32 ac97_bus firewire_core crc_itu_t iTCO_wdt snd_pcm 
+iTCO_vendor_support wmi snd_timer snd sky2 asus_atk0110 hwmon soundcore 
+snd_page_alloc fbcon tileblit font bitblit softcursor raid456 
+async_raid6_recov async_pq raid6_pq async_xor xor async_memcpy async_tx 
+raid1 ata_generic pata_acpi pata_marvell nouveau ttm drm_kms_helper drm 
+agpgart fb i2c_algo_bit cfbcopyarea i2c_core cfbimgblt cfbfil
+Jan  7 00:37:47 mail kernel: lrect [last unloaded: microcode]
+Jan  7 00:37:47 mail kernel: Pid: 0, comm: swapper Tainted: G        W  
+2.6.32-00840-gec8257c-dirty #44
+Jan  7 00:37:47 mail kernel: Call Trace:
+Jan  7 00:37:47 mail kernel: <IRQ>  [<ffffffff8105365a>] 
+warn_slowpath_common+0x7c/0x94
+Jan  7 00:37:47 mail kernel: [<ffffffff810536c9>] 
+warn_slowpath_fmt+0x41/0x43
+Jan  7 00:37:47 mail kernel: [<ffffffff813e12bf>] ? netif_tx_lock+0x44/0x6c
+Jan  7 00:37:47 mail kernel: [<ffffffff813e1427>] dev_watchdog+0xf3/0x164
+Jan  7 00:37:47 mail kernel: [<ffffffff8105f320>] ? cascade+0x6a/0x84
+Jan  7 00:37:47 mail kernel: [<ffffffff8106316b>] 
+run_timer_softirq+0x1c8/0x270
+Jan  7 00:37:47 mail kernel: [<ffffffff8105ae3b>] __do_softirq+0xf8/0x1cd
+Jan  7 00:37:47 mail kernel: [<ffffffff8107ef33>] ? 
+tick_program_event+0x2a/0x2c
+Jan  7 00:37:47 mail kernel: [<ffffffff81012e1c>] call_softirq+0x1c/0x30
+Jan  7 00:37:47 mail kernel: [<ffffffff810143a3>] do_softirq+0x4b/0xa6
+Jan  7 00:37:47 mail kernel: [<ffffffff8105aa1b>] irq_exit+0x4a/0x8c
+Jan  7 00:37:47 mail kernel: [<ffffffff8146dd32>] 
+smp_apic_timer_interrupt+0x86/0x94
+Jan  7 00:37:47 mail kernel: [<ffffffff810127e3>] 
+apic_timer_interrupt+0x13/0x20
+Jan  7 00:37:47 mail kernel: <EOI>  [<ffffffff812c4c7a>] ? 
+acpi_idle_enter_bm+0x256/0x28a
+Jan  7 00:37:47 mail kernel: [<ffffffff812c4c73>] ? 
+acpi_idle_enter_bm+0x24f/0x28a
+Jan  7 00:37:47 mail kernel: [<ffffffff813a43b8>] ? 
+cpuidle_idle_call+0x9e/0xfa
+Jan  7 00:37:47 mail kernel: [<ffffffff81010c90>] ? cpu_idle+0xb4/0xf6
+Jan  7 00:37:47 mail kernel: [<ffffffff81463312>] ? 
+start_secondary+0x201/0x242
+Jan  7 00:37:47 mail kernel: ---[ end trace 57f7151f6a5def07 ]---
+Jan  7 00:37:47 mail kernel: sky2 eth0: tx timeout
+Jan  7 00:37:47 mail kernel: sky2 eth0: transmit ring 79 .. 39 report=79 
+done=79
+Jan  7 00:37:47 mail kernel: sky2 eth0: disabling interface
+Jan  7 00:37:47 mail kernel: sky2 eth0: enabling interface
+Jan  7 00:37:51 mail kernel: sky2 eth0: Link is up at 1000 Mbps, full 
+duplex, flow control both
+JJan  7 00:38:07 mail kernel: sky2 eth0: tx timeout
+Jan  7 00:38:07 mail kernel: sky2 eth0: transmit ring 3 .. 90 report=3 
+done=3
+Jan  7 00:38:07 mail kernel: sky2 eth0: disabling interface
+Jan  7 00:38:07 mail kernel: sky2 eth0: enabling interface
+and so on.
