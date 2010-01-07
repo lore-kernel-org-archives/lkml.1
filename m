@@ -1,83 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933025Ab0AGDsa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932834Ab0AGDyT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933025Ab0AGDsa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 22:48:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932362Ab0AGDsa
+	id S932834Ab0AGDyT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 22:54:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756602Ab0AGDyT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 22:48:30 -0500
-Received: from lennier.cc.vt.edu ([198.82.162.213]:55736 "EHLO
-	lennier.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932351Ab0AGDs3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 22:48:29 -0500
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: mmotm 2010-01-06-14-34 uploaded
-In-Reply-To: Your message of "Wed, 06 Jan 2010 14:34:36 PST."
-             <201001062259.o06MxQrp023236@imap1.linux-foundation.org>
-From: Valdis.Kletnieks@vt.edu
-References: <201001062259.o06MxQrp023236@imap1.linux-foundation.org>
+	Wed, 6 Jan 2010 22:54:19 -0500
+Received: from waste.org ([173.11.57.241]:46176 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756594Ab0AGDyS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jan 2010 22:54:18 -0500
+Subject: Re: [PATCH] netpoll: allow execution of multiple rx_hooks per
+ interface
+From: Matt Mackall <mpm@selenic.com>
+To: Daniel Borkmann <danborkmann@googlemail.com>
+Cc: linux-kernel@vger.kernel.org, Jeff Moyer <jmoyer@redhat.com>,
+       netdev@vger.kernel.org, netdev@oss.sgi.com,
+       David Miller <davem@davemloft.net>
+In-Reply-To: <4B44F895.9080205@gmail.com>
+References: <4B44F895.9080205@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 06 Jan 2010 21:54:05 -0600
+Message-ID: <1262836445.29868.227.camel@calx>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1262836096_3937P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
-Date: Wed, 06 Jan 2010 22:48:16 -0500
-Message-ID: <12343.1262836096@localhost>
-X-Mirapoint-Received-SPF: 128.173.34.103 localhost Valdis.Kletnieks@vt.edu 2 pass
-X-Mirapoint-IP-Reputation: reputation=neutral-1,
-	source=Fixed,
-	refid=n/a,
-	actions=MAILHURDLE SPF TAG
-X-Junkmail-Info: (79) FH_DATE_PAST_20XX,HELO_LOCALHOST
-X-Junkmail-SD-Raw: score=unknown,
-	refid=str=0001.0A020206.4B455980.0160,ss=1,fgs=0,
-	ip=0.0.0.0,
-	so=2009-09-22 00:05:22,
-	dmn=2009-09-10 00:05:08,
-	mode=multiengine
-X-Junkmail-IWF: false
-X-Junkmail-Status: score=45/50, host=steiner.cc.vt.edu
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1262836096_3937P
-Content-Type: text/plain; charset=us-ascii
-
-On Wed, 06 Jan 2010 14:34:36 PST, akpm@linux-foundation.org said:
-> The mm-of-the-moment snapshot 2010-01-06-14-34 has been uploaded to
+On Wed, 2010-01-06 at 21:54 +0100, Daniel Borkmann wrote:
+> Hi,
 > 
->    http://userweb.kernel.org/~akpm/mmotm/
+> this patch allows the registration and _execution_ of multiple netpoll
+> rx_hooks per interface. Currently, it is possible to register multiple
+> netpoll structures to one interface, _but_ only one single rx_hook (from
+> the netpoll struct that has been registered last) can be executed, which
+> was an oversight in the implementation [1].
+> So, this patch fixes it. I've sucessfully tested it within 2.6.32.2 with
+> the registration of multiple rx_hook clients for several times. I'd
+> appreciate comments / feedback.
 
-Building with CONFIG_SQUASHFS=m, CONFIG_SQUASHFS_LZMA=y ,
-and CONFIG_DECOMPRESS_LZMA=n fails:
+(grumbles about cc:)
 
-Kernel: arch/x86/boot/bzImage is ready  (#1)
-  Building modules, stage 2.
-  MODPOST 219 modules
-ERROR: "unlzma" [fs/squashfs/squashfs.ko] undefined!
-make[1]: *** [__modpost] Error 1
-make: *** [modules] Error 2
-
-Looks like a missing select/depends for DECOMPRESS_LZMA.  Somebody else can
-decide which it should be...
+Please inline patches so they can be reviewed easily in reply.
 
 
+-       struct netpoll *np = npi->rx_np;
++       struct netpoll **np = &npi->rx_np;
+ 
+-       if (!np)
++       if (!(*np))
 
+This makes everything horrible. Can you avoid the double indirection?
+Using a list head might be a good answer.
 
---==_Exmh_1262836096_3937P
-Content-Type: application/pgp-signature
+-- 
+http://selenic.com : development and support for Mercurial and Linux
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFLRVmAcC3lWbTT17ARAhNEAKDx67XObt4WlzZAuPmgSuxeGW8NlwCfRQ1b
-cFds2M/La/91xChRaLcRfqY=
-=i12v
------END PGP SIGNATURE-----
-
---==_Exmh_1262836096_3937P--
 
