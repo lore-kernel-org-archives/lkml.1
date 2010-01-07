@@ -1,44 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754169Ab0AGVx1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754196Ab0AGVy1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754169Ab0AGVx1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 16:53:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754132Ab0AGVx0
+	id S1754196Ab0AGVy1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 16:54:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754138Ab0AGVy0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 16:53:26 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52837 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752873Ab0AGVxZ (ORCPT
+	Thu, 7 Jan 2010 16:54:26 -0500
+Received: from mx2.netapp.com ([216.240.18.37]:34801 "EHLO mx2.netapp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754056Ab0AGVyZ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 16:53:25 -0500
-Date: Thu, 7 Jan 2010 13:52:46 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Stefani Seibold <stefani@seibold.net>,
-       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: [PATCH] proc: revert to show stack information in
- /proc/{pid}/status
-Message-Id: <20100107135246.0849d609.akpm@linux-foundation.org>
-In-Reply-To: <20091231231051.1A1B.A69D9226@jp.fujitsu.com>
-References: <20091231231051.1A1B.A69D9226@jp.fujitsu.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+	Thu, 7 Jan 2010 16:54:25 -0500
+X-IronPort-AV: E=Sophos;i="4.49,237,1262592000"; 
+   d="scan'208";a="298825413"
+Subject: Re: [GIT PULL] Please pull NFS client bugfixes....
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: linux-kernel@vger.kernel.org, torvalds@osdl.org
+In-Reply-To: <87zl4pmxzp.fsf@basil.nowhere.org>
+References: <1262896174.2659.3.camel@localhost>
+	 <87zl4pmxzp.fsf@basil.nowhere.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
+Organization: NetApp
+Date: Thu, 07 Jan 2010 16:53:18 -0500
+Message-ID: <1262901198.2659.38.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.28.2 (2.28.2-1.fc12) 
+X-OriginalArrivalTime: 07 Jan 2010 21:54:08.0285 (UTC) FILETIME=[F025FCD0:01CA8FE3]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 31 Dec 2009 23:12:22 +0900 (JST)
-KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+On Thu, 2010-01-07 at 22:00 +0100, Andi Kleen wrote: 
+> > Hi Linus,
+> >
+> > Please pull from the "bugfixes" branch of the repository at
+> >
+> >    git pull git://git.linux-nfs.org/projects/trondmy/nfs-2.6.git bugfixes
+> >
+> > This will update the following files through the appended changesets.
+> 
+> How about the mmap lock order inversion patch?
+> 
+> That problem is still there and hits immediately after mounting root 
+> with a lockdep warning on any lockdep enabled NFS root kernel.
 
-> Thus, this patch revert it.
+I'd like to see this fixed, but I do not want to jump onto a solution
+that changes the behaviour of mmap() w.r.t. revalidation. The current
+behaviour dates back at least to 2.3.x if not before.
 
-OK, thanks, I applied the full revert.
+That's why I'm working slowly on this.
 
-We can look at a new and less costly implementation of this feature for
-2.6.34 if desired.  In which case, all we have done is to delay the feature
-by one release, which is not a big deal.
-
+Cheers
+  Trond
