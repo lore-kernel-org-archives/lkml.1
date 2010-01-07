@@ -1,73 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752280Ab0AGX1y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752823Ab0AGX3N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752280Ab0AGX1y (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 18:27:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751442Ab0AGX1x
+	id S1752823Ab0AGX3N (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 18:29:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752188Ab0AGX3L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 18:27:53 -0500
-Received: from [206.15.93.42] ([206.15.93.42]:15148 "EHLO
-	visionfs1.visionengravers.com" rhost-flags-FAIL-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1750759Ab0AGX1w (ORCPT
+	Thu, 7 Jan 2010 18:29:11 -0500
+Received: from mga09.intel.com ([134.134.136.24]:22613 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751926Ab0AGX3J convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 18:27:52 -0500
-From: H Hartley Sweeten <hartleys@visionengravers.com>
-To: Linux Kernel <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
-Subject: [PATCH] drivers/net/skfp/skfddi.c: use %pMF to show MAC address
-Date: Thu, 7 Jan 2010 16:27:46 -0700
-Cc: davem@davemloft.net
+	Thu, 7 Jan 2010 18:29:09 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,238,1262592000"; 
+   d="scan'208";a="585318822"
+From: "Zhang, Xiantao" <xiantao.zhang@intel.com>
+To: Roel Kluin <roel.kluin@gmail.com>,
+       "kvm-ia64@vger.kernel.org" <kvm-ia64@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Date: Fri, 8 Jan 2010 07:28:57 +0800
+Subject: RE: [PATCH] KVM: dereference of NULL pointer in set_pal_result()
+Thread-Topic: [PATCH] KVM: dereference of NULL pointer in set_pal_result()
+Thread-Index: AcqP5eiZhj8AasvRSY6i5TPbAlfqAgAChVog
+Message-ID: <EB8593BCECAB3D40A8248BE0B6400A38315E5831@shzsmsx502.ccr.corp.intel.com>
+References: <4B465C2D.8030303@gmail.com>
+In-Reply-To: <4B465C2D.8030303@gmail.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <201001071627.46569.hartleys@visionengravers.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use the %pMF kernel extension to display the MAC address.
+For the check "(p && p->exit_reason == EXIT_REASON_PAL_CALL", if p is NULL, the reference about "p->exit_reason == EXIT_REASON_PAL_CALL" won't be checked any more, so no issue here. 
+Xiantao
 
-The address will still be displayed in the FDDI Canonical format.
 
-Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
-Cc: David S. Miller <davem@davemloft.net>
+Roel Kluin wrote:
+> Do not dereference a NULL pointer
+> 
+> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+> ---
+>  arch/ia64/kvm/kvm_fw.c |    6 ++++--
+>  1 files changed, 4 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/ia64/kvm/kvm_fw.c b/arch/ia64/kvm/kvm_fw.c
+> index e4b8231..d28494f 100644
+> --- a/arch/ia64/kvm/kvm_fw.c
+> +++ b/arch/ia64/kvm/kvm_fw.c
+> @@ -75,9 +75,11 @@ static void set_pal_result(struct kvm_vcpu *vcpu,
+>  	struct exit_ctl_data *p;
+> 
+>  	p = kvm_get_exit_data(vcpu);
+> -	if (p && p->exit_reason == EXIT_REASON_PAL_CALL) {
+> +	if (!p)
+> +		return;
+> +	if (p->exit_reason == EXIT_REASON_PAL_CALL) {
+>  		p->u.pal_data.ret = result;
+> -		return ;
+> +		return;
+>  	}
+>  	INIT_PAL_STATUS_UNIMPLEMENTED(p->u.pal_data.ret);
+>  }
 
----
-
-diff --git a/drivers/net/skfp/skfddi.c b/drivers/net/skfp/skfddi.c
-index db216a7..1f9698c 100644
---- a/drivers/net/skfp/skfddi.c
-+++ b/drivers/net/skfp/skfddi.c
-@@ -435,13 +435,7 @@ static  int skfp_driver_init(struct net_device *dev)
- 		goto fail;
- 	}
- 	read_address(smc, NULL);
--	pr_debug(KERN_INFO "HW-Addr: %02x %02x %02x %02x %02x %02x\n",
--	       smc->hw.fddi_canon_addr.a[0],
--	       smc->hw.fddi_canon_addr.a[1],
--	       smc->hw.fddi_canon_addr.a[2],
--	       smc->hw.fddi_canon_addr.a[3],
--	       smc->hw.fddi_canon_addr.a[4],
--	       smc->hw.fddi_canon_addr.a[5]);
-+	pr_debug(KERN_INFO "HW-Addr: %pMF\n", smc->hw.fddi_canon_addr.a);
- 	memcpy(dev->dev_addr, smc->hw.fddi_canon_addr.a, 6);
- 
- 	smt_reset_defaults(smc, 0);
-@@ -890,15 +884,8 @@ static void skfp_ctl_set_multicast_list_wo_lock(struct net_device *dev)
- 							  (struct fddi_addr *)dmi->dmi_addr, 
- 							  1);
- 
--					pr_debug(KERN_INFO "ENABLE MC ADDRESS:");
--					pr_debug(" %02x %02x %02x ",
--					       dmi->dmi_addr[0],
--					       dmi->dmi_addr[1],
--					       dmi->dmi_addr[2]);
--					pr_debug("%02x %02x %02x\n",
--					       dmi->dmi_addr[3],
--					       dmi->dmi_addr[4],
--					       dmi->dmi_addr[5]);
-+					pr_debug(KERN_INFO "ENABLE MC ADDRESS: %pMF\n",
-+						dmi->dmi_addr);
- 					dmi = dmi->next;
- 				}	// for
- 
