@@ -1,73 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753326Ab0AGSQo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753334Ab0AGSSK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753326Ab0AGSQo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 13:16:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753303Ab0AGSQn
+	id S1753334Ab0AGSSK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 13:18:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753272Ab0AGSSJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 13:16:43 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:62140 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753111Ab0AGSQm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 13:16:42 -0500
-Date: Thu, 7 Jan 2010 19:16:32 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: Roland McGrath <roland@redhat.com>, caiqian@redhat.com,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Jan Kratochvil <jkratoch@redhat.com>, linux-kernel@vger.kernel.org,
-       linux-s390@vger.kernel.org, utrace-devel@redhat.com
-Subject: Re: s390 && user_enable_single_step() (Was: odd utrace testing
-	results on s390x)
-Message-ID: <20100107181632.GC13300@redhat.com>
-References: <1503844142.2061111261478093776.JavaMail.root@zmail06.collab.prod.int.phx2.redhat.com> <1257887498.2061171261478252049.JavaMail.root@zmail06.collab.prod.int.phx2.redhat.com> <20100104155225.GA16650@redhat.com> <20100104171626.22ea2d9c@mschwide.boeblingen.de.ibm.com> <20100104181412.GA21146@redhat.com> <20100104211147.4CC94D532@magilla.sf.frob.com> <20100105105030.66bb8a0a@mschwide.boeblingen.de.ibm.com> <20100105153633.GA9376@redhat.com> <20100106210812.E03A1134D@magilla.sf.frob.com> <20100107101619.0877cf67@mschwide.boeblingen.de.ibm.com>
+	Thu, 7 Jan 2010 13:18:09 -0500
+Received: from mail-fx0-f225.google.com ([209.85.220.225]:56097 "EHLO
+	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753273Ab0AGSSH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jan 2010 13:18:07 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=HBINKsbRgdHS6fgNsZoE2jG7JZM9SZ2DhEhmfTcMQj76JLLuSqX02nOKavgPN2hdzf
+         lPj4KcYBSb9pEZq1PUY6iV0CCc1iCgXiGxwXsh14WU9eHLf8DSyA+ePgcNkYD17FDRs6
+         +zgUUKHALvVJDcVWJZRqcfbEK2JclGSpjyAbw=
+Date: Thu, 7 Jan 2010 19:17:59 +0100
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: Michael Breuer <mbreuer@majjas.com>
+Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
+       flyboy@gmail.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH] af_packet: Don't use skb after dev_queue_xmit()
+Message-ID: <20100107181759.GC3088@del.dom.local>
+References: <4B455C62.6030504@majjas.com>
+ <20100106205343.5460d658@nehalam>
+ <4B4571D5.30002@majjas.com>
+ <4B457711.1040008@majjas.com>
+ <4B458B36.6050509@majjas.com>
+ <20100107074756.GB6258@ff.dom.local>
+ <4B459368.2000503@majjas.com>
+ <20100107082140.GB7229@ff.dom.local>
+ <4B45F7D7.3060308@majjas.com>
+ <20100107175610.GA3088@del.dom.local>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20100107101619.0877cf67@mschwide.boeblingen.de.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20100107175610.GA3088@del.dom.local>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/07, Martin Schwidefsky wrote:
->
-> On Wed,  6 Jan 2010 13:08:12 -0800 (PST)
-> Roland McGrath <roland@redhat.com> wrote:
->
-> > That's what tracehook_signal_handler is for.  You're both doing it yourself
-> > in the arch code (by setting TIF_SINGLE_STEP), and then telling the generic
-> > code to do it (by passing stepping=1 to tracehook_signal_handler).
->
-> Ok, so with the full utrace the semantics of tracehook_signal_handler
-> is more than just causing a SIGTRAP. It is an indication for a signal
-> AND a SIGTRAP if single-stepping is active. To make both cases work we
-> should stop setting TIF_SINGLE_STEP in do_signal and pass
-> current->thread.per_info.single_step to tracehook_signal_handler
-> instead of test_thread_flag(TIF_SINGLE_STEP).
+On Thu, Jan 07, 2010 at 06:56:10PM +0100, Jarek Poplawski wrote:
+> [...] (try to grep in net\). [...]
 
-Can't understand why do we need TIF_SINGLE_STEP at all.
+Did I say "net\"?!
 
-Just pass current->thread.per_info.single_step to
-tracehook_signal_handler() ?
-
-Oleg.
-
---- a/arch/s390/kernel/signal.c
-+++ b/arch/s390/kernel/signal.c
-@@ -504,14 +504,8 @@ void do_signal(struct pt_regs *regs)
- 			 * for a normal instruction, act like we took
- 			 * one for the handler setup.
- 			 */
--			if (current->thread.per_info.single_step)
--				set_thread_flag(TIF_SINGLE_STEP);
--
--			/*
--			 * Let tracing know that we've done the handler setup.
--			 */
- 			tracehook_signal_handler(signr, &info, &ka, regs,
--					 test_thread_flag(TIF_SINGLE_STEP));
-+					 current->thread.per_info.single_step);
- 		}
- 		return;
- 	}
-
+Extremely sorry! ;-)
+Jarek P.
