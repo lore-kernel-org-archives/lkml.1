@@ -1,86 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753798Ab0AGTUa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753808Ab0AGTUp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753798Ab0AGTUa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 14:20:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753778Ab0AGTU2
+	id S1753808Ab0AGTUp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 14:20:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753783Ab0AGTUo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 14:20:28 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:47671 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752435Ab0AGTU1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 14:20:27 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=ULUl7sHkEyuNv0HQHrcLuvNMuMGyYThJUFyEINPS+1CNUwsvsLehfU0xnGe1Dj9dUP
-         X6jymv317Niwk/Cn6SsADP7D+0TeXsn5B4vT7H+rQpvccoh0ZibGDi8p8GJF1PVsdKBP
-         MolhPUa6ihzZJ3VpH0lnXmnydxhw+9yf49CHc=
-Date: Thu, 7 Jan 2010 22:20:18 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Christian Kujau <lists@nerdbynature.de>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, LKML <linux-kernel@vger.kernel.org>,
-       brgerst@gmail.com, hpa@zytor.com
-Subject: Re: 2.6.33-rc2: Xen/Guest switching to user mode with no user page
-	tables
-Message-ID: <20100107192018.GB5460@lenovo>
-References: <alpine.DEB.2.01.1001051649100.3483@bogon.housecafe.de> <4B4405B5.9040205@goop.org> <alpine.DEB.2.01.1001060240010.3483@bogon.housecafe.de> <20100106112133.GA5815@lenovo> <alpine.DEB.2.01.1001060434330.3483@bogon.housecafe.de> <alpine.DEB.2.01.1001071101030.3483@bogon.housecafe.de>
+	Thu, 7 Jan 2010 14:20:44 -0500
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:51244 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753789Ab0AGTUn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jan 2010 14:20:43 -0500
+Date: Thu, 7 Jan 2010 11:20:35 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "minchan.kim@gmail.com" <minchan.kim@gmail.com>,
+       "hugh.dickins" <hugh.dickins@tiscali.co.uk>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [RFC][PATCH 6/8] mm: handle_speculative_fault()
+Message-ID: <20100107192035.GO6764@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20100104182813.753545361@chello.nl> <20100105054536.44bf8002@infradead.org> <alpine.DEB.2.00.1001050916300.1074@router.home> <20100105192243.1d6b2213@infradead.org> <alpine.DEB.2.00.1001071007210.901@router.home> <alpine.LFD.2.00.1001070814080.7821@localhost.localdomain> <1262884960.4049.106.camel@laptop> <alpine.LFD.2.00.1001070934060.7821@localhost.localdomain> <alpine.LFD.2.00.1001070937180.7821@localhost.localdomain> <alpine.LFD.2.00.1001071031440.7821@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.01.1001071101030.3483@bogon.housecafe.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <alpine.LFD.2.00.1001071031440.7821@localhost.localdomain>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 07, 2010 at 11:06:15AM -0800, Christian Kujau wrote:
-> On Wed, 6 Jan 2010 at 04:43, Christian Kujau wrote:
-> > # git bisect good
-> > 3bd95dfb182969dc6d2a317c150e0df7107608d3 is the first bad commit
-> > commit 3bd95dfb182969dc6d2a317c150e0df7107608d3
-> > Author: Brian Gerst <brgerst@gmail.com>
-> > Date:   Wed Dec 9 12:34:40 2009 -0500
+On Thu, Jan 07, 2010 at 10:44:13AM -0800, Linus Torvalds wrote:
+> 
+> 
+> On Thu, 7 Jan 2010, Linus Torvalds wrote:
 > > 
-> >     x86, 64-bit: Move kernel_thread to C
-> >     
-> >     Prepare for merging with 32-bit.
-> >     
-> >     Signed-off-by: Brian Gerst <brgerst@gmail.com>
-> >     LKML-Reference: <1260380084-3707-2-git-send-email-brgerst@gmail.com>
-> >     Signed-off-by: H. Peter Anvin <hpa@zytor.com>
-> > 
-> > :040000 040000 30b5dd4d6888694ca2967893ef3e662461fe9978 
-> > 0bb5fb33914aac10aaf0344fb8cff596378be52a M      arch
-> > 
+> > For example: there's no real reason why we take mmap_sem for writing when 
+> > extending an existing vma. And while 'brk()' is a very oldfashioned way of 
+> > doing memory management, it's still quite common. So rather than looking 
+> > at subtle lockless algorithms, why not look at doing the common cases of 
+> > an extending brk? Make that one take the mmap_sem for _reading_, and then 
+> > do the extending of the brk area with a simple cmpxchg or something?
 > 
-> ping?
+> I didn't use cmpxchg, because we actually want to update both 
+> 'current->brk' _and_ the vma->vm_end atomically, so here's a totally 
+> untested patch that uses the page_table_lock spinlock for it instead (it 
+> could be a new spinlock, not worth it).
 > 
+> It's also totally untested and might be horribly broken. But you get the 
+> idea.
 > 
-> I'd like to revert all of Brians commits from Dec 9 12:34:4[0-4] -0500, 
-> one by one, but: 
-> 
-> 3bd95dfb182969dc6d2a317c150e0df7107608d3 - when reverted, it won't compile
-> fa4b8f84383ae197e643a46c36bf58ab8dffc95c - but now I cannot revert all the
-> e840227c141116171c89ab1abb5cc9fee6fdb488   others, git won't let me.
-> f443ff4201dd25cd4dec183f9919ecba90c8edc2
-> df59e7bf439918f523ac29e996ec1eebbed60440
-> 
-> I'm pretty much offline for a week now, I just hope this won't get 
-> forgotten before 2.6.33 is released.
-> 
-> Thanks,
-> Christian.
-> -- 
-> BOFH excuse #191:
-> 
-> Just type 'mv * /dev/null'.
+> We could probably do things like this in regular mmap() too for the 
+> "extend a mmap" case. brk() is just especially simple.
 
-Hi Christian,
+One question on the final test...
 
-for the first "guilty" commit -- it seems to be innocent, at least
-from the way how kernel_thread is converted into "C". Need time for
-more detailed review :/
+> 		Linus
+> 
+> ---
+>  mm/mmap.c |   89 ++++++++++++++++++++++++++++++++++++++++++++++++++++++-------
+>  1 files changed, 79 insertions(+), 10 deletions(-)
+> 
+> diff --git a/mm/mmap.c b/mm/mmap.c
+> index ee22989..3d07e5f 100644
 
-	-- Cyrill
+[ . . . ]
+
+> +	if (!vma)
+> +		goto slow_case;
+> +
+> +	spin_lock(&mm->page_table_lock);
+> +	if (vma->vm_end == cur_brk) {
+> +		vma->vm_end = brk;
+> +		mm->brk = brk;
+> +		cur_brk = brk;
+> +	}
+> +	spin_unlock(&mm->page_table_lock);
+> +
+> +	if (cur_brk != brk)
+
+Can this be "if (cur_brk < brk)"?  Seems like it should, given the
+earlier tests, but I don't claim to understand the VM code.
+
+							Thanx, Paul
+
+> +		goto slow_case;
+> +
+> +out:
+> +	up_read(&mm->mmap_sem);
+> +	return cur_brk;
+> +
+> +slow_case:
+> +	up_read(&mm->mmap_sem);
+> +	return slow_brk(brk);
+> +}
+> +
+>  #ifdef DEBUG_MM_RB
+>  static int browse_rb(struct rb_root *root)
+>  {
