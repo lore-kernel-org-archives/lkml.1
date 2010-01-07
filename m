@@ -1,91 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753396Ab0AGSjx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753437Ab0AGSkY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753396Ab0AGSjx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 13:39:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752022Ab0AGSjw
+	id S1753437Ab0AGSkY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 13:40:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751612Ab0AGSkW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 13:39:52 -0500
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:44183 "EHLO e4.ny.us.ibm.com"
+	Thu, 7 Jan 2010 13:40:22 -0500
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:40944 "EHLO e6.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751681Ab0AGSjw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 13:39:52 -0500
-Date: Thu, 7 Jan 2010 10:39:46 -0800
+	id S1751460Ab0AGSkV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jan 2010 13:40:21 -0500
+Date: Thu, 7 Jan 2010 10:40:16 -0800
 From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Oleg Nesterov <oleg@redhat.com>
+To: Steven Rostedt <rostedt@goodmis.org>
 Cc: Peter Zijlstra <peterz@infradead.org>,
+       Josh Triplett <josh@joshtriplett.org>,
        Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
        linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       akpm@linux-foundation.org, josh@joshtriplett.org, tglx@linutronix.de,
-       rostedt@goodmis.org, Valdis.Kletnieks@vt.edu, dhowells@redhat.com,
-       laijs@cn.fujitsu.com, dipankar@in.ibm.com
+       akpm@linux-foundation.org, tglx@linutronix.de, Valdis.Kletnieks@vt.edu,
+       dhowells@redhat.com, laijs@cn.fujitsu.com, dipankar@in.ibm.com
 Subject: Re: [RFC PATCH] introduce sys_membarrier(): process-wide memory
 	barrier
-Message-ID: <20100107183946.GL6764@linux.vnet.ibm.com>
+Message-ID: <20100107184016.GM6764@linux.vnet.ibm.com>
 Reply-To: paulmck@linux.vnet.ibm.com
-References: <20100107044007.GA22863@Krystal> <1262852862.4049.78.camel@laptop> <20100107183010.GA14980@redhat.com>
+References: <1262842854.28171.3710.camel@gandalf.stny.rr.com> <20100107061955.GC25786@Krystal> <20100107063558.GC12939@feather> <1262853855.4049.86.camel@laptop> <20100107165249.GE6764@linux.vnet.ibm.com> <1262884716.4049.103.camel@laptop> <20100107173118.GG6764@linux.vnet.ibm.com> <1262886277.28171.3734.camel@gandalf.stny.rr.com> <20100107175637.GI6764@linux.vnet.ibm.com> <1262887447.28171.3736.camel@gandalf.stny.rr.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20100107183010.GA14980@redhat.com>
+In-Reply-To: <1262887447.28171.3736.camel@gandalf.stny.rr.com>
 User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 07, 2010 at 07:30:10PM +0100, Oleg Nesterov wrote:
-> On 01/07, Peter Zijlstra wrote:
-> >
-> > On Wed, 2010-01-06 at 23:40 -0500, Mathieu Desnoyers wrote:
-> >
-> > http://marc.info/?t=126283939400002
-> >
-> > > Index: linux-2.6-lttng/kernel/sched.c
-> > > ===================================================================
-> > > --- linux-2.6-lttng.orig/kernel/sched.c	2010-01-06 22:11:32.000000000 -0500
-> > > +++ linux-2.6-lttng/kernel/sched.c	2010-01-06 23:20:42.000000000 -0500
-> > > @@ -10822,6 +10822,36 @@ struct cgroup_subsys cpuacct_subsys = {
-> > >  };
-> > >  #endif	/* CONFIG_CGROUP_CPUACCT */
-> > >
-> > > +/*
-> > > + * Execute a memory barrier on all CPUs on SMP systems.
-> > > + * Do not rely on implicit barriers in smp_call_function(), just in case they
-> > > + * are ever relaxed in the future.
-> > > + */
-> > > +static void membarrier_ipi(void *unused)
-> > > +{
-> > > +	smp_mb();
-> > > +}
-> > > +
-> >
-> > Also, there was some talk a while ago about IPIs implying memory
-> > barriers. Which I of course forgot all details about,.. at least sending
-> > one implies a wmb and receiving one an rmb, but it could be stronger,
-> > Oleg?
+On Thu, Jan 07, 2010 at 01:04:07PM -0500, Steven Rostedt wrote:
+> On Thu, 2010-01-07 at 09:56 -0800, Paul E. McKenney wrote:
+> > On Thu, Jan 07, 2010 at 12:44:37PM -0500, Steven Rostedt wrote:
+> > > On Thu, 2010-01-07 at 09:31 -0800, Paul E. McKenney wrote:
+> > > 
+> > > > Something like the following for sys_membarrier(), then?
+> > > > 
+> > > >   smp_mb();
+> > > >   for_each_cpu(cpu, current->mm->cpu_vm_mask) {
+> > > >      if (cpu_curr(cpu)->mm == current->mm)
+> > > >         smp_call_function_single(cpu, func, NULL, 1);
+> > > >   }
+> > > > 
+> > > > Then the code changing ->mm on the other CPU also needs to have a
+> > > > full smp_mb() somewhere after the change to ->mm, but before starting
+> > > > user-space execution.  Which it might well just due to overhead, but
+> > > > we need to make sure that someone doesn't optimize us out of existence.
+> > > 
+> > > To change the mm requires things like flushing the TLB. I'd be surprised
+> > > if the change of the mm does not already do a smp_mb() somewhere.
+> > 
+> > Agreed, but "somewhere" does not fill me with warm fuzzies.  ;-)
 > 
-> IIRC, it was decided that IPIs must imply mb(), but I am not sure
-> this is true on any arch/
-> 
-> 
-> 
-> However, even if IPI didn't imply mb(), I don't understand why it
-> is needed... After the quick reading of the original changelog in
-> http://marc.info/?l=linux-kernel&m=126283923115068
-> 
-> 	Thread A                    Thread B
-> 	prev mem accesses           prev mem accesses
-> 	sys_membarrier()            barrier()
-> 	follow mem accesses         follow mem accesses
-> 
-> sys_membarrier() should "insert" mb() on behalf of B "instead"
-> of barrier(), right? But, if we send IPI, B enters kernel mode
-> and returns to user-mode. Should this imply mb() in any case?
+> Another question would be, does flushing the TLB imply a mb()?
 
-Hello, Oleg,
-
-The issue is with some suggested optimizations that would avoid sending
-the IPI to CPUs that are not running threads in the same process as the
-thread executing the sys_membarrier().  Some forms of these optimizations
-sample ->mm without locking, and the question is whether this is safe.
+I do not believe that it is guaranteed to on all architectures.
 
 							Thanx, Paul
