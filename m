@@ -1,59 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752993Ab0AGQcl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753268Ab0AGQdt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752993Ab0AGQcl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 11:32:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751096Ab0AGQck
+	id S1753268Ab0AGQdt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 11:33:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752953Ab0AGQds
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 11:32:40 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:38388 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750783Ab0AGQcj (ORCPT
+	Thu, 7 Jan 2010 11:33:48 -0500
+Received: from mail-yx0-f188.google.com ([209.85.210.188]:46488 "EHLO
+	mail-yx0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752925Ab0AGQdr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 11:32:39 -0500
-Date: Thu, 7 Jan 2010 08:31:55 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Christoph Lameter <cl@linux-foundation.org>
-cc: Arjan van de Ven <arjan@infradead.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "minchan.kim@gmail.com" <minchan.kim@gmail.com>,
-       "hugh.dickins" <hugh.dickins@tiscali.co.uk>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [RFC][PATCH 6/8] mm: handle_speculative_fault()
-In-Reply-To: <alpine.LFD.2.00.1001070814080.7821@localhost.localdomain>
-Message-ID: <alpine.LFD.2.00.1001070826410.7821@localhost.localdomain>
-References: <20100104182429.833180340@chello.nl> <20100104182813.753545361@chello.nl> <20100105054536.44bf8002@infradead.org> <alpine.DEB.2.00.1001050916300.1074@router.home> <20100105192243.1d6b2213@infradead.org> <alpine.DEB.2.00.1001071007210.901@router.home>
- <alpine.LFD.2.00.1001070814080.7821@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Thu, 7 Jan 2010 11:33:47 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=KfdxjICekzxuKWTykCLObQIdecVMOXk2SuS/ixaUPEvuQcW582ufk9yKtPLZyRb3X7
+         2jihYtyEp2/YciB+7FIxF6bNk/6bao6HkmTHyJq8XPtLABQAEwD0VL0EPX0BGz/eQNAI
+         PyAltC+qrNqNSJ+lSDOaMi96qMBTCG2wWg+MQ=
+Message-ID: <4B460D07.2000301@gmail.com>
+Date: Thu, 07 Jan 2010 08:34:15 -0800
+From: "Justin P. Mattock" <justinmattock@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091114 Lightning/1.0pre Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Andi Kleen <andi@firstfloor.org>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [bisected] sys_paccept: disable paccept() causes my macbook	pro
+ to  have an annoying whining sound
+References: <dd18b0c31001062216m316163f4t992c000eca0f76d@mail.gmail.com> <873a2ixmwy.fsf@basil.nowhere.org> <4B460132.3010706@gmail.com> <20100107160246.GB16076@basil.fritz.box>
+In-Reply-To: <20100107160246.GB16076@basil.fritz.box>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 01/07/10 08:02, Andi Kleen wrote:
+>> As for the power management
+>> I didn't think so.. sounds more
+>> like vibration of a solder joint/capacitor
+>
+> Typically those are caused by power management -- cpu going in/out
+> sleep states.
+>
+> You can check by e.g. limiting your CPU to C1 with
+> processor.max_cstate=1
+>
+> -Andi
 
+alright.
+one thing that I want to try also
+is doing a git reset --hard
+to the commit that the bisect showed me
+just to see if this is the trouble spot
+(if not, then I'll go ahead with another
+bisect).
 
-On Thu, 7 Jan 2010, Linus Torvalds wrote:
-> 
-> (Side note: I wonder if we should wake up _all_ readers when we wake up 
-> any. Right now, we wake up all readers - but only until we hit a writer. 
-> Which is the _fair_ thing to do, but it does mean that we can end up in 
-> horrible patterns of alternating readers/writers, when it could be much 
-> better to just say "release the hounds" and let all pending readers go 
-> after a writer has had its turn).
-
-Btw, this would still be "mostly fair" in the sense that you couldn't 
-starve writers. Any writer on the list is still guaranteed to be woken up 
-next, because now it will be at the front of the queue.
-
-So it would be starvation-proof - new readers that come in _after_ we've 
-woken up all the old ones would not get to pass the writers. It might be 
-interesting to test, if somebody has a problematic threaded workload with 
-lots of page faults and allocations mixxed.
-
-			Linus
+Justin P. Mattock
