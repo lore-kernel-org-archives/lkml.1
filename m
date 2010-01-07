@@ -1,101 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932919Ab0AGJQd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932938Ab0AGJRg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932919Ab0AGJQd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 04:16:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932873Ab0AGJQ3
+	id S932938Ab0AGJRg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 04:17:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932884Ab0AGJR1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 04:16:29 -0500
-Received: from mtagate3.de.ibm.com ([195.212.17.163]:43162 "EHLO
-	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932874Ab0AGJQX (ORCPT
+	Thu, 7 Jan 2010 04:17:27 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:34603
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756358Ab0AGJRZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 04:16:23 -0500
-Date: Thu, 7 Jan 2010 10:16:19 +0100
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: Roland McGrath <roland@redhat.com>
-Cc: Oleg Nesterov <oleg@redhat.com>, caiqian@redhat.com,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Jan Kratochvil <jkratoch@redhat.com>, linux-kernel@vger.kernel.org,
-       linux-s390@vger.kernel.org, utrace-devel@redhat.com
-Subject: Re: s390 && user_enable_single_step() (Was: odd utrace testing
- results on s390x)
-Message-ID: <20100107101619.0877cf67@mschwide.boeblingen.de.ibm.com>
-In-Reply-To: <20100106210812.E03A1134D@magilla.sf.frob.com>
-References: <1503844142.2061111261478093776.JavaMail.root@zmail06.collab.prod.int.phx2.redhat.com>
-	<1257887498.2061171261478252049.JavaMail.root@zmail06.collab.prod.int.phx2.redhat.com>
-	<20100104155225.GA16650@redhat.com>
-	<20100104171626.22ea2d9c@mschwide.boeblingen.de.ibm.com>
-	<20100104181412.GA21146@redhat.com>
-	<20100104211147.4CC94D532@magilla.sf.frob.com>
-	<20100105105030.66bb8a0a@mschwide.boeblingen.de.ibm.com>
-	<20100105153633.GA9376@redhat.com>
-	<20100106210812.E03A1134D@magilla.sf.frob.com>
-Organization: IBM Corporation
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.18.5; i486-pc-linux-gnu)
+	Thu, 7 Jan 2010 04:17:25 -0500
+Date: Thu, 07 Jan 2010 01:17:33 -0800 (PST)
+Message-Id: <20100107.011733.67419175.davem@davemloft.net>
+To: hartleys@visionengravers.com
+Cc: linux-kernel@vger.kernel.org, swise@opengridcomputing.com
+Subject: Re: [PATCH] drivers/infiniband/hw/cxgb3/iwch_cm.c: use %pM to show
+ MAC address
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <201001050943.16904.hartleys@visionengravers.com>
+References: <201001050943.16904.hartleys@visionengravers.com>
+X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed,  6 Jan 2010 13:08:12 -0800 (PST)
-Roland McGrath <roland@redhat.com> wrote:
+From: H Hartley Sweeten <hartleys@visionengravers.com>
+Date: Tue, 5 Jan 2010 09:43:16 -0700
 
-> > Oh, I am not sure. But I don't understand TIF_SINGLE_STEP on s390,
-> > absolutely.
-> > 
-> > For example, why do_signal() sets TIF_SINGLE_STEP? Why can't we do
+> Use the %pM kernel extension to display the MAC address.
 > 
-> I think we could.  That would be more consistent with other machines.  On
-> s390, once we set TIF_SINGLE_STEP, we are going to post a SIGTRAP
-> eventually before going to user mode.  But then tracehook_signal_handler()
-> also gets stepping=1 and the expected meaning of this is that the arch code
-> is not itself simulating a single-step for the handler setup.  So the
-> tracehook (i.e. ptrace/utrace) code does what it does for "need a fake
-> single-step".  
-
-Hmm, command for tracehook_signal_handler say this for stepping:
-@stepping:           nonzero if debugger single-step or block-step in
-use
-
-> In ptrace (including utrace-based ptrace), this winds up with sending a
-> SIGTRAP.  So when we finally do get out of do_signal and TIF_SINGLE_STEP
-> causes a second SIGTRAP, it's already pending and the second one makes no
-> difference.
-
-So we have been lucky so far.
- 
-> But for the general case of utrace, we'll have the UTRACE_SIGNAL_HANDLER
-> report, followed by a SIGTRAP that appears to be an authentic single-step
-> trap, but takes place on the same instruction.  If the resumption after the
-> UTRACE_SIGNAL_HANDLER report didn't use stepping, then this is an entirely
-> unexpected extra SIGTRAP.  If we do continue stepping, then we are
-> expecting the SIGTRAP, but this gets us a spurious and errnoeous report
-> that looks like the instruction right before the handler's entry point in
-> memory was just executed.
->
-> [Martin:]
-> > The reason why we set the TIF_SINGLE_STEP bit in do_signal is that we
-> > want to be able to stop the debugged program before the first
-> > instruction of the signal handler has been executed. The PER single
-> > step causes a trap after an instruction has been executed. That first
-> > instruction can do bad things to the arguments of the signal handler..
+> The only difference in the output is that the MAC address is
+> shown in the usual colon-separated hex notation.
 > 
-> That's what tracehook_signal_handler is for.  You're both doing it yourself
-> in the arch code (by setting TIF_SINGLE_STEP), and then telling the generic
-> code to do it (by passing stepping=1 to tracehook_signal_handler).
+> Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
+> Acked-by: Steve Wise <swise@opengridcomputing.com>
 
-Ok, so with the full utrace the semantics of tracehook_signal_handler
-is more than just causing a SIGTRAP. It is an indication for a signal
-AND a SIGTRAP if single-stepping is active. To make both cases work we
-should stop setting TIF_SINGLE_STEP in do_signal and pass
-current->thread.per_info.single_step to tracehook_signal_handler
-instead of test_thread_flag(TIF_SINGLE_STEP).
-
--- 
-blue skies,
-   Martin.
-
-"Reality continues to ruin my life." - Calvin.
-
+Applied.
