@@ -1,101 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753993Ab0AGVHt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754036Ab0AGVLf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753993Ab0AGVHt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 16:07:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752229Ab0AGVHs
+	id S1754036Ab0AGVLf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 16:11:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753971Ab0AGVLf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 16:07:48 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:56289 "EHLO mx2.suse.de"
+	Thu, 7 Jan 2010 16:11:35 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:47306 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751799Ab0AGVHr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 16:07:47 -0500
-Date: Thu, 7 Jan 2010 22:07:44 +0100
-From: Michal Marek <mmarek@suse.cz>
-To: Dominik Brodowski <linux@dominikbrodowski.net>
-Cc: Randy Dunlap <rdunlap@xenotime.net>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-kbuild@vger.kernel.org,
-       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Valdis.Kletnieks@vt.edu
-Subject: Re: linux-next: Tree for January 7 (pcmcia)
-Message-ID: <20100107210744.GA10320@sepie.suse.cz>
-References: <20100107172134.af71c742.sfr@canb.auug.org.au>
- <20100107101006.e59989a8.rdunlap@xenotime.net>
- <20100107205728.GA19115@isilmar.linta.de>
+	id S1753950Ab0AGVLe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jan 2010 16:11:34 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: [PATCH 9/12] ACPI / PM: Introduce acpi_pm_wakeup_power()
+Date: Thu, 7 Jan 2010 22:11:50 +0100
+User-Agent: KMail/1.12.3 (Linux/2.6.33-rc3-rjw; KDE/4.3.3; x86_64; ; )
+Cc: Matthew Garrett <mjg@redhat.com>, Len Brown <lenb@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Linux PCI <linux-pci@vger.kernel.org>,
+       Oliver Neukum <oliver@neukum.org>, Bjorn Helgaas <bjorn.helgaas@hp.com>,
+       Shaohua Li <shaohua.li@intel.com>,
+       Francois Romieu <romieu@fr.zoreil.com>
+References: <200912272057.10443.rjw@sisk.pl> <20100106140035.6f622acf@jbarnes-piketon> <201001070011.49755.rjw@sisk.pl>
+In-Reply-To: <201001070011.49755.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100107205728.GA19115@isilmar.linta.de>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201001072211.50224.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 07, 2010 at 09:57:28PM +0100, Dominik Brodowski wrote:
-> Hey,
+On Thursday 07 January 2010, Rafael J. Wysocki wrote:
+> On Wednesday 06 January 2010, Jesse Barnes wrote:
+> > On Sun, 27 Dec 2009 21:06:26 +0100
+> > "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> > >  /**
+> > > + * acpi_pm_wakeup_power - Enable/disable device wake-up power.
+> > > + * @dev: ACPI device to handle.
+> > > + * @enable: Whether to enable or disable the wake-up power of the
+> > > device.
+> > > + */
+> > > +int acpi_pm_wakeup_power(struct acpi_device *dev, bool enable)
+> > > +{
+> > 
+> > I know we've got these all over now, but functions that just take a
+> > bool are generally hard to read when you just look at the call site.
+> > If it was called "acpi_pm_set_wakeup_power" and then took an on/off
+> > enum it would be really easy to see, from the callsite, what was going
+> > on.
+> > 
+> > It's a fairly minor complaint, but it's something that's always bugged
+> > me about the PCI PM code in particular.
 > 
-> On Thu, Jan 07, 2010 at 10:10:06AM -0800, Randy Dunlap wrote:
-> > > Hi all,
-> > > 
-> > > Changes since 20100106:
-> > 
-> > 
-> > drivers/built-in.o: In function `yenta_probe':
-> > yenta_socket.c:(.devinit.text+0x1e582): undefined reference to `pccard_nonstatic_ops'
-> > 
-> > CONFIG_PCCARD=y
-> > CONFIG_PCMCIA=m
-> > CONFIG_PCCARD_NONSTATIC=m
-> > CONFIG_YENTA=y
-> > 
-> > so yenta code (built-in) tries to reference data that lives in a
-> > loadable module.
+> Well, in this particular case acpi_pm_wakeup_power() uses a bool, because
+> acpi_pm_device_sleep_wake() (which is a caller of it) does.  IMO it won't
+> be logical to use something else just here.
 > 
-> Uh, that was I. If kconfig can't be fixed easily, I'll revert the change
+> Also, as you noticed above, this follows a convention used not only in the
+> PCI PM, but generally in the core PM code.  Although we could change this
+> convention, I'm not really sure that would be worth the effort.
 
-Hi Randy, Dominik,
+That said, it looks like we can drop this (ie. [9/12]) patch altogether if the
+next one is changed slightly.
 
-Please try this one-liner. The problem is that 'if X' and 'if X!=n' are not
-the same in ternary logic.
+I'll post the modified [10/12] shortly.
 
-Michal
-
->From e7b12e70272484da2161c0b6c459f2eff2a989a8 Mon Sep 17 00:00:00 2001
-From: Michal Marek <mmarek@suse.cz>
-Date: Thu, 7 Jan 2010 21:03:11 +0100
-Subject: [PATCH] pcmcia: fix yenta dependency on PCCARD_NONSTATIC
-
-With CONFIG_PCMCIA=m and CONFIG_YENTA=y, we get
-
-drivers/built-in.o: In function `yenta_probe':
-yenta_socket.c:(.devinit.text+0x1e582): undefined reference to
-`pccard_nonstatic_ops'
-
-This is because
-
-select PCCARD_NONSTATIC if PCMCIA
-
-sets PCCARD_NONSTATIC = min(YENTA, PCMCIA). Change it to 'if PCMCIA!=n'
-to remove the upper limit.
-
-Reported-by: Randy Dunlap <rdunlap@xenotime.net>
-Signed-off-by: Michal Marek <mmarek@suse.cz>
----
- drivers/pcmcia/Kconfig |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/pcmcia/Kconfig b/drivers/pcmcia/Kconfig
-index 5cea8ba..e196a19 100644
---- a/drivers/pcmcia/Kconfig
-+++ b/drivers/pcmcia/Kconfig
-@@ -84,7 +84,7 @@ config YENTA
- 	tristate "CardBus yenta-compatible bridge support"
- 	depends on PCI
- 	select CARDBUS if !EMBEDDED
--	select PCCARD_NONSTATIC if PCMCIA
-+	select PCCARD_NONSTATIC if PCMCIA != n
- 	---help---
- 	  This option enables support for CardBus host bridges.  Virtually
- 	  all modern PCMCIA bridges are CardBus compatible.  A "bridge" is
--- 
-1.6.5.3
-
+Rafael
