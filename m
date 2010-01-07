@@ -1,64 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756702Ab0AGDQW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756705Ab0AGDUq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756702Ab0AGDQW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 22:16:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756331Ab0AGDQV
+	id S1756705Ab0AGDUq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 22:20:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756106Ab0AGDUp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 22:16:21 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:48260 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755919Ab0AGDQU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 22:16:20 -0500
-Date: Thu, 7 Jan 2010 14:16:13 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Samuel Ortiz <sameo@linux.intel.com>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Ian Molton <ian@mnementh.co.uk>
-Subject: linux-next: manual merge of the mfd tree with the tmio-mmc tree
-Message-Id: <20100107141613.62ca1bbd.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 3.0.0beta4 (GTK+ 2.18.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__7_Jan_2010_14_16_13_+1100_nYEjKsL=LyAhk1Dq"
+	Wed, 6 Jan 2010 22:20:45 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:37933 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752251Ab0AGDUo convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jan 2010 22:20:44 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=t6r7ipDULGdJ+Q0WAiSCkqOC8qrCD6EB11UqJ+Bt8aEGqzURQ7Hc0Dfpptj92L1EbX
+         VNUd9StaLWTJ3OBRMf7Kr4GZssphhonyba8yuceZLAX8+YFVj0rP5aZmb4mWRbEXLfPF
+         NWck1JAcFirmHOX8sbi996E4qhmjJbaEMDtKs=
+MIME-Version: 1.0
+In-Reply-To: <6041d2001001061907r5f5797b9g1b7ee4057f6a82b0@mail.gmail.com>
+References: <6041d2001001011627o5c494df4v37c0c466df3d444c@mail.gmail.com>
+	 <6041d2001001041043ka810288l64ae9d6d8105b284@mail.gmail.com>
+	 <4B42AA40.3060406@redhat.com>
+	 <6041d2001001041923u7bd512a6w4b5399af17424422@mail.gmail.com>
+	 <4B4311E8.1000001@redhat.com>
+	 <6041d2001001051458j46cdf7abqc4a0a249445ec348@mail.gmail.com>
+	 <4B445B0E.50208@redhat.com>
+	 <6041d2001001061644i59d9cbb6pfcd85177d8391419@mail.gmail.com>
+	 <4B454C48.2000404@redhat.com>
+	 <6041d2001001061907r5f5797b9g1b7ee4057f6a82b0@mail.gmail.com>
+Date: Wed, 6 Jan 2010 22:20:42 -0500
+Message-ID: <6041d2001001061920k5ff1fa5bx8e9541a0afd537@mail.gmail.com>
+Subject: Re: BUG during shutdown - bisected to commit e2912009
+From: Marc Dionne <marc.c.dionne@gmail.com>
+To: Xiaotian Feng <dfeng@redhat.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__7_Jan_2010_14_16_13_+1100_nYEjKsL=LyAhk1Dq
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Wed, Jan 6, 2010 at 10:07 PM, Marc Dionne <marc.c.dionne@gmail.com> wrote:
+> On Wed, Jan 6, 2010 at 9:51 PM, Xiaotian Feng <dfeng@redhat.com> wrote:
+>> On 01/07/2010 08:44 AM, Marc Dionne wrote:
+>>>
+>>> On Wed, Jan 6, 2010 at 4:42 AM, Xiaotian Feng<dfeng@redhat.com>  wrote:
+>>>>
+>>>> On 01/06/2010 06:58 AM, Marc Dionne wrote:
+>>>>>
+>>>>> On Tue, Jan 5, 2010 at 5:18 AM, Xiaotian Feng<dfeng@redhat.com>
+>>>>>  wrote:
+>>>>>>
+>>>>>> This is outputed by sound module, but it will not affect clockevents,
+>>>>>> could
+>>>>>> you please try following patch and let me know the output before BUG_ON
+>>>>>> happens? We can gather more information on the BUG_ON. Thank you.
+>>>>>>
+>>>>>> diff --git a/kernel/time/clockevents.c b/kernel/time/clockevents.c
+>>>>>> index 6f740d9..7c945e8 100644
+>>>>>> --- a/kernel/time/clockevents.c
+>>>>>> +++ b/kernel/time/clockevents.c
+>>>>>> @@ -260,6 +260,9 @@ void clockevents_notify(unsigned long reason, void
+>>>>>> *arg)
+>>>>>>                list_for_each_entry_safe(dev, tmp,&clockevent_devices,
+>>>>>> list)
+>>>>>> {
+>>>>>>                        if (cpumask_test_cpu(cpu, dev->cpumask)&&
+>>>>>>                            cpumask_weight(dev->cpumask) == 1) {
+>>>>>> +                               if (dev->mode != CLOCK_EVT_MODE_UNUSED)
+>>>>>> +                                       printk("invalid dev %s mode %d
+>>>>>> on
+>>>>>> cpu %d\n", dev->name,
+>>>>>> +                                               dev->mode, cpu);
+>>>>>>                                BUG_ON(dev->mode !=
+>>>>>> CLOCK_EVT_MODE_UNUSED);
+>>>>>>                                list_del(&dev->list);
+>>>>>
+>>>>> I don't get anything on screen from the printk - is there a trick
+>>>>> needed to getting printk output at that stage of shutting down?  I
+>>>>> tried inserting an mdelay() before the BUG, which delayed the bug
+>>>>> output but still didn't print the invalid dev message.
+>>>>
+>>>> Did you notice this BUG when you're doing suspend/resume?
+>>>>
+>>>> Does the BUG still appear if we changed BUG_ON line to BUG_ON(dev->mode
+>>>> !=
+>>>> CLOCK_EVT_MODE_UNUSED&&  dev->mode != CLOCK_EVT_MODE_SHUTDOWN)?
+>>>
+>>> I only see the BUG on halt - reboot works normally and suspend
+>>> actually freezes and doesn't suspend, but that's perhaps unrelated.
+>>>
+>>> I managed to get your suggested printk to work by adding KERN_CRIT
+>>> (otherwise I got no output), and the offending dev is:
+>>>  "hpet", mode 3 (CLOCK_EVT_MODE_ONESHOT?), cpu 4.
+>>
+>> It looks like kernel is trying to remove broadcast device, could you please
+>> try following patch?
+>>
+>> diff --git a/kernel/time/clockevents.c b/kernel/time/clockevents.c
+>> index 6f740d9..d7395fd 100644
+>> --- a/kernel/time/clockevents.c
+>> +++ b/kernel/time/clockevents.c
+>> @@ -259,7 +259,8 @@ void clockevents_notify(unsigned long reason, void *arg)
+>>                cpu = *((int *)arg);
+>>                list_for_each_entry_safe(dev, tmp, &clockevent_devices, list)
+>> {
+>>                        if (cpumask_test_cpu(cpu, dev->cpumask) &&
+>> -                           cpumask_weight(dev->cpumask) == 1) {
+>> +                           cpumask_weight(dev->cpumask) == 1 &&
+>> +                           !tick_is_broadcast_device(dev)) {
+>>                                BUG_ON(dev->mode != CLOCK_EVT_MODE_UNUSED);
+>>                                list_del(&dev->list);
+>>                        }
+>
+> That works - no problem shutting down with that patch applied.
 
-Hi Samuel,
+And after doing a bit more testing, it turns out that applying this
+patch also makes suspend/resume work normally again, so it looks like
+the hang on suspend was also related to this.
 
-Today's linux-next merge of the mfd tree got conflicts in
-drivers/mfd/asic3.c, drivers/mfd/t7l66xb.c, drivers/mfd/tc6387xb.c,
-drivers/mfd/tc6393xb.c, drivers/mfd/tmio_core.c,
-drivers/mmc/host/tmio_mmc.c, drivers/mmc/host/tmio_mmc.h and
-include/linux/mfd/tmio.h between commit
-4cd83bd05e6c817a4a72ababd82bf5ae700c021d ("MMC: hardware abstraction for
-CNF area") from the tmio-mmc tree and commit
-b3df6513659704ece28da3b80cc36c2a8de315ce ("mfd: tmio_mmc hardware
-abstraction for CNF area") from the mfd tree.
-
-These are very similar patches, I used the version from the mfd tree as
-that appears to be a later version.  Can you and Ian please sort this out
-between you.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Thu__7_Jan_2010_14_16_13_+1100_nYEjKsL=LyAhk1Dq
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAktFUf0ACgkQjjKRsyhoI8ynXACgly1yyExk+Zumo4xtix1ouADG
-q9gAoLJqWj2nAgPIJYjes46nHJLgRWxw
-=8l7M
------END PGP SIGNATURE-----
-
---Signature=_Thu__7_Jan_2010_14_16_13_+1100_nYEjKsL=LyAhk1Dq--
+Thanks,
+Marc
