@@ -1,120 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756699Ab0AGDD4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932398Ab0AGDFF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756699Ab0AGDD4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 22:03:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756682Ab0AGDDz
+	id S932398Ab0AGDFF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 22:05:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932349Ab0AGDFE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 22:03:55 -0500
-Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:49937 "EHLO
-	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756643Ab0AGDDz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 22:03:55 -0500
-Date: Thu, 7 Jan 2010 11:59:01 +0900
-From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+	Wed, 6 Jan 2010 22:05:04 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:64794 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S932334Ab0AGDFC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jan 2010 22:05:02 -0500
+Message-ID: <4B454F59.1030503@cn.fujitsu.com>
+Date: Thu, 07 Jan 2010 11:04:57 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+MIME-Version: 1.0
 To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: nishimura@mxp.nes.nec.co.jp, Randy Dunlap <randy.dunlap@oracle.com>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: mmotm 2010-01-06-14-34 uploaded (mm/memcontrol)
-Message-Id: <20100107115901.594330d0.nishimura@mxp.nes.nec.co.jp>
-In-Reply-To: <20100107112150.2e585f1c.kamezawa.hiroyu@jp.fujitsu.com>
-References: <201001062259.o06MxQrp023236@imap1.linux-foundation.org>
-	<20100106171058.f1d6f393.randy.dunlap@oracle.com>
-	<20100107111319.7d95fe86.nishimura@mxp.nes.nec.co.jp>
-	<20100107112150.2e585f1c.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: NEC Soft, Ltd.
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+CC: Randy Dunlap <randy.dunlap@oracle.com>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, "menage@google.com" <menage@google.com>,
+       kirill@shutemov.name
+Subject: Re: mmotm 2010-01-06-14-34 uploaded (kernel/cgroup)
+References: <201001062259.o06MxQrp023236@imap1.linux-foundation.org>	<20100106170849.d0d95c9b.randy.dunlap@oracle.com>	<20100107113154.a1fa0103.kamezawa.hiroyu@jp.fujitsu.com>	<4B4549CB.8000809@cn.fujitsu.com> <20100107114728.58166ce4.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20100107114728.58166ce4.kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thank you for your fix.
-
-On Thu, 7 Jan 2010 11:21:50 +0900, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> On Thu, 7 Jan 2010 11:13:19 +0900
-> Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
+>>>>> It contains the following patches against 2.6.33-rc3:
+>>>> kernel/cgroup.c: In function 'cgroup_write_event_control':
+>>>> kernel/cgroup.c:2949: error: implicit declaration of function 'eventfd_fget'
+>>>> kernel/cgroup.c:2949: warning: assignment makes pointer from integer without a cast
+>>>> kernel/cgroup.c:2955: error: implicit declaration of function 'eventfd_ctx_fileget'
+>>>> kernel/cgroup.c:2955: warning: assignment makes pointer from integer without a cast
+>>>> make[2]: *** [kernel/cgroup.o] Error 1
+>>>>
+>>> Hmm, how about this rather than adding #ifdefs..
+>>> Paul, Li, how do you think ?
+>> I think make CONFIG_CGROUPS select EVENTFD would be better.
+>>
+> Hm, as far as I know, SELECT is not recommended. But yes, it seems side-effect
+> of select is small here. But I avoid it as much as possible, usually.
 > 
-> > Thank you for your report.
->  
-> > > config attached.
-> > > 
-> > I'm sorry I missed the !CONFIG_SWAP or !CONFIG_CGROUP_MEM_RES_CTLR_SWAP case.
-> > 
-> > I'll prepare fixes.
-> > 
-> Nishimura-san, could you double check this ?
+> Moreover, in this case,
+>   - EVENTFD is a feature which is enabled by default.
+>   - cgroup is "Say N if unsure" config.
 > 
-It seems that this cannot fix the !CONFIG_SWAP case in my environment.
-
-> Andrew, this is a fix onto Nishimura-san's memcg move account patch series.
-> Maybe this -> patches/memcg-move-charges-of-anonymous-swap.patch
+> In this case, "depends on" is good.
 > 
-I think both memcg-move-charges-of-anonymous-swap.patch and
-memcg-improve-performance-in-moving-swap-charge.patch need to be fixed.
 
-> mm/memcontrol.c: In function 'is_target_pte_for_mc':
-> mm/memcontrol.c:3985: error: implicit declaration of function 'mem_cgroup_count_swap_user'
-This derives from a bug of memcg-move-charges-of-anonymous-swap.patch,
+I thought we use "depends on" if it's obvious by the config name
+that a config depends on another config, and use "select" otherwise.
 
-and
+Referring to Documentation/Kbuild/kconfig-language.txt:
 
-> mm/memcontrol.c: In function 'mem_cgroup_move_charge_pte_range':
-> mm/memcontrol.c:4220: error: too many arguments to function 'mem_cgroup_move_swap_account'
-> mm/memcontrol.c:4220: error: too many arguments to function 'mem_cgroup_move_swap_account'
-> mm/memcontrol.c:4220: error: too many arguments to function 'mem_cgroup_move_swap_account'
-this derives from that of memcg-improve-performance-in-moving-swap-charge.patch.
+        select should be used with care.
+        ...
+        In general use select only for non-visible symbols
+        (no prompts anywhere) and for symbols with no dependencies.
 
+It does suggest "depends on" is better. :)
 
-I'm now testing my patch in some configs, and will post later.
-
-
-Thanks,
-Daisuke Nishimura.
-
-> Thanks,
-> -Kame
-> ==
-> 
-> Build fix to following build error when CONFIG_CGROUP_MEM_RES_CTLR_SWAP is off.
-> 
-> mm/memcontrol.c: In function 'is_target_pte_for_mc':
-> mm/memcontrol.c:3985: error: implicit declaration of function 'mem_cgroup_count_swap_user'
-> mm/memcontrol.c: In function 'mem_cgroup_move_charge_pte_range':
-> mm/memcontrol.c:4220: error: too many arguments to function 'mem_cgroup_move_swap_account'
-> mm/memcontrol.c:4220: error: too many arguments to function 'mem_cgroup_move_swap_account'
-> mm/memcontrol.c:4220: error: too many arguments to function 'mem_cgroup_move_swap_account'
-> 
-> CC: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-> Reported-by: Randy Dunlap <randy.dunlap@oracle.com>
-> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> ---
->  mm/memcontrol.c |    4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> Index: ref-mmotm/mm/memcontrol.c
-> ===================================================================
-> --- ref-mmotm.orig/mm/memcontrol.c
-> +++ ref-mmotm/mm/memcontrol.c
-> @@ -2369,7 +2369,7 @@ static int mem_cgroup_move_swap_account(
->  }
->  #else
->  static inline int mem_cgroup_move_swap_account(swp_entry_t entry,
-> -				struct mem_cgroup *from, struct mem_cgroup *to)
-> +		struct mem_cgroup *from, struct mem_cgroup *to, bool need_fixup)
->  {
->  	return -EINVAL;
->  }
-> @@ -3976,7 +3976,7 @@ static int is_target_pte_for_mc(struct v
->  
->  	if (!pte_present(ptent)) {
->  		/* TODO: handle swap of shmes/tmpfs */
-> -		if (pte_none(ptent) || pte_file(ptent))
-> +		if (pte_none(ptent) || pte_file(ptent) || !do_swap_account)
->  			return 0;
->  		else if (is_swap_pte(ptent)) {
->  			ent = pte_to_swp_entry(ptent);
-> 
