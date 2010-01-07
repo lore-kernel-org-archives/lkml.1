@@ -1,55 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756614Ab0AGCWu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756622Ab0AGCZc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756614Ab0AGCWu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 21:22:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756578Ab0AGCWt
+	id S1756622Ab0AGCZc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 21:25:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752280Ab0AGCZb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 21:22:49 -0500
-Received: from mail-fx0-f225.google.com ([209.85.220.225]:33487 "EHLO
-	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756553Ab0AGCWr (ORCPT
+	Wed, 6 Jan 2010 21:25:31 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:52976 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756609Ab0AGCZa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 21:22:47 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=C/pNgLAvFvl7l8ghNzkfVe+p7uZ1rVfaRoU5zdXGXZbUYvTz87RZUPhuUNvaSxz79X
-         PFHrRBuT7sRlo6/HufAGN3CfESQT+vFkVaW/yIPyk53UKjZne8i4a9jTZYdajY+bTpNB
-         pEc2oe8PsCzowv9CetqwKDno4KhAIC+0cV0H4=
-From: Alexander Beregalov <a.beregalov@gmail.com>
-To: mmarek@suse.cz
-Cc: linux-kernel@vger.kernel.org, Alexander Beregalov <a.beregalov@gmail.com>
-Subject: [PATCH] genksyms: close ref_file after use
-Date: Thu,  7 Jan 2010 05:22:41 +0300
-Message-Id: <1262830961-29911-1-git-send-email-a.beregalov@gmail.com>
-X-Mailer: git-send-email 1.6.6
+	Wed, 6 Jan 2010 21:25:30 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Thu, 7 Jan 2010 11:21:50 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: mmotm 2010-01-06-14-34 uploaded (mm/memcontrol)
+Message-Id: <20100107112150.2e585f1c.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20100107111319.7d95fe86.nishimura@mxp.nes.nec.co.jp>
+References: <201001062259.o06MxQrp023236@imap1.linux-foundation.org>
+	<20100106171058.f1d6f393.randy.dunlap@oracle.com>
+	<20100107111319.7d95fe86.nishimura@mxp.nes.nec.co.jp>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It is the last place when the file is read, so close it.
+On Thu, 7 Jan 2010 11:13:19 +0900
+Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
 
-Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
+> Thank you for your report.
+ 
+> > config attached.
+> > 
+> I'm sorry I missed the !CONFIG_SWAP or !CONFIG_CGROUP_MEM_RES_CTLR_SWAP case.
+> 
+> I'll prepare fixes.
+> 
+Nishimura-san, could you double check this ?
+
+Andrew, this is a fix onto Nishimura-san's memcg move account patch series.
+Maybe this -> patches/memcg-move-charges-of-anonymous-swap.patch
+
+Thanks,
+-Kame
+==
+
+Build fix to following build error when CONFIG_CGROUP_MEM_RES_CTLR_SWAP is off.
+
+mm/memcontrol.c: In function 'is_target_pte_for_mc':
+mm/memcontrol.c:3985: error: implicit declaration of function 'mem_cgroup_count_swap_user'
+mm/memcontrol.c: In function 'mem_cgroup_move_charge_pte_range':
+mm/memcontrol.c:4220: error: too many arguments to function 'mem_cgroup_move_swap_account'
+mm/memcontrol.c:4220: error: too many arguments to function 'mem_cgroup_move_swap_account'
+mm/memcontrol.c:4220: error: too many arguments to function 'mem_cgroup_move_swap_account'
+
+CC: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Reported-by: Randy Dunlap <randy.dunlap@oracle.com>
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 ---
- scripts/genksyms/genksyms.c |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
+ mm/memcontrol.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/scripts/genksyms/genksyms.c b/scripts/genksyms/genksyms.c
-index af6b836..f99115e 100644
---- a/scripts/genksyms/genksyms.c
-+++ b/scripts/genksyms/genksyms.c
-@@ -758,8 +758,10 @@ int main(int argc, char **argv)
- 		/* setlinebuf(debugfile); */
- 	}
+Index: ref-mmotm/mm/memcontrol.c
+===================================================================
+--- ref-mmotm.orig/mm/memcontrol.c
++++ ref-mmotm/mm/memcontrol.c
+@@ -2369,7 +2369,7 @@ static int mem_cgroup_move_swap_account(
+ }
+ #else
+ static inline int mem_cgroup_move_swap_account(swp_entry_t entry,
+-				struct mem_cgroup *from, struct mem_cgroup *to)
++		struct mem_cgroup *from, struct mem_cgroup *to, bool need_fixup)
+ {
+ 	return -EINVAL;
+ }
+@@ -3976,7 +3976,7 @@ static int is_target_pte_for_mc(struct v
  
--	if (flag_reference)
-+	if (flag_reference) {
- 		read_reference(ref_file);
-+		fclose(ref_file);
-+	}
- 
- 	yyparse();
- 
--- 
-1.6.6
+ 	if (!pte_present(ptent)) {
+ 		/* TODO: handle swap of shmes/tmpfs */
+-		if (pte_none(ptent) || pte_file(ptent))
++		if (pte_none(ptent) || pte_file(ptent) || !do_swap_account)
+ 			return 0;
+ 		else if (is_swap_pte(ptent)) {
+ 			ent = pte_to_swp_entry(ptent);
 
