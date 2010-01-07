@@ -1,63 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756006Ab0AGIO6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932546Ab0AGITf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756006Ab0AGIO6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 03:14:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752935Ab0AGIO5
+	id S932546Ab0AGITf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 03:19:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932422Ab0AGITe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 03:14:57 -0500
-Received: from RELAY-01.ANDREW.CMU.EDU ([128.2.10.212]:51510 "EHLO
-	relay.andrew.cmu.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752822Ab0AGIO5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 03:14:57 -0500
-Date: Thu, 7 Jan 2010 03:14:32 -0500
-From: Ben Blum <bblum@andrew.cmu.edu>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>, menage@google.com,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v4 0/4] cgroups: support for module-loadable subsystems
-Message-ID: <20100107081432.GC16656@andrew.cmu.edu>
-References: <20091231051050.GA714@andrew.cmu.edu> <20100106160414.bd555474.akpm@linux-foundation.org> <20100107012606.GA25577@andrew.cmu.edu> <20100107120732.97d502bd.kamezawa.hiroyu@jp.fujitsu.com> <4B45824B.9030108@cn.fujitsu.com>
+	Thu, 7 Jan 2010 03:19:34 -0500
+Received: from compulab.co.il ([67.18.134.219]:58643 "EHLO compulab.co.il"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932393Ab0AGITd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jan 2010 03:19:33 -0500
+Message-ID: <4B459910.7040106@compulab.co.il>
+Date: Thu, 07 Jan 2010 10:19:28 +0200
+From: Mike Rapoport <mike@compulab.co.il>
+User-Agent: Thunderbird 2.0.0.23 (X11/20100106)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B45824B.9030108@cn.fujitsu.com>
-User-Agent: Mutt/1.5.12-2006-07-14
+To: Stefan Weil <weil@mail.berlios.de>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Anton Vorontsov <cbouatmailru@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] da9030_battery: Fix spelling in comment
+References: <1262818823-16532-1-git-send-email-weil@mail.berlios.de>
+In-Reply-To: <1262818823-16532-1-git-send-email-weil@mail.berlios.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-ACL-Warn: {
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - compulab.site5.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - compulab.co.il
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 07, 2010 at 02:42:19PM +0800, Li Zefan wrote:
-> KAMEZAWA Hiroyuki wrote:
-> > On Wed, 6 Jan 2010 20:26:06 -0500
-> > Ben Blum <bblum@andrew.cmu.edu> wrote:
-> > 
-> >> On Wed, Jan 06, 2010 at 04:04:14PM -0800, Andrew Morton wrote:
-> >>> On Thu, 31 Dec 2009 00:10:50 -0500
-> >>> Ben Blum <bblum@andrew.cmu.edu> wrote:
-> >>>
-> >>>> This patch series implements support for building, loading, and
-> >>>> unloading subsystems as modules, both within and outside the kernel
-> >>>> source tree. It provides an interface cgroup_load_subsys() and
-> >>>> cgroup_unload_subsys() which modular subsystems can use to register and
-> >>>> depart during runtime. The net_cls classifier subsystem serves as the
-> >>>> example for a subsystem which can be converted into a module using these
-> >>>> changes.
-> >>> What is the value in this?  What are the usage scenarios?  Why does the
-> >>> benefit of this change exceed the cost/risk/etc of merging it?
-> >> As discussed in the first posting of these patches, this provides the
-> >> ability for arbitrary subsystems to be used with cgroups.. cls_cgroup
-> >> would have already been a module except for a lack of support from
-> >> cgroups, and the change also allows other module-loadable classifiers
-> >> to add subsystems of their own.
-> > 
-> > Hmm, do you have your own module in plan ?
-> > 
+Stefan Weil wrote:
+> platfrom -> platform
+> monotor -> monitor
 > 
-> Maybe the new blkio_cgroup can also be made module-able.
+> Signed-off-by: Stefan Weil <weil@mail.berlios.de>
+> ---
+>  drivers/power/da9030_battery.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
 
-certainly looks promising. one thing I note while looking over it is
-that it wants .use_id = 1, and the load_subsys interface neglects to
-make a call to init_idr. adding calls to cgroup_init_idr has a few
-possible complications... what use does blkio have for use_id?
+Acked-by: Mike Rapoport <mike@compulab.co.il>
+
+> diff --git a/drivers/power/da9030_battery.c b/drivers/power/da9030_battery.c
+> index 3364198..a2e71f7 100644
+> --- a/drivers/power/da9030_battery.c
+> +++ b/drivers/power/da9030_battery.c
+> @@ -509,7 +509,7 @@ static int da9030_battery_probe(struct platform_device *pdev)
+>  
+>  	charger->master = pdev->dev.parent;
+>  
+> -	/* 10 seconds between monotor runs unless platfrom defines other
+> +	/* 10 seconds between monitor runs unless platform defines other
+>  	   interval */
+>  	charger->interval = msecs_to_jiffies(
+>  		(pdata->batmon_interval ? : 10) * 1000);
+
