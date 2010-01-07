@@ -1,62 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753778Ab0AGTZQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753784Ab0AGTa3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753778Ab0AGTZQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 14:25:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753602Ab0AGTZP
+	id S1753784Ab0AGTa3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 14:30:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753628Ab0AGTa2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 14:25:15 -0500
-Received: from nlpi129.sbcis.sbc.com ([207.115.36.143]:56012 "EHLO
-	nlpi129.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752113Ab0AGTZN (ORCPT
+	Thu, 7 Jan 2010 14:30:28 -0500
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:41050 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753362Ab0AGTa1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 14:25:13 -0500
-Date: Thu, 7 Jan 2010 13:24:33 -0600 (CST)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@router.home
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Peter Zijlstra <peterz@infradead.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "minchan.kim@gmail.com" <minchan.kim@gmail.com>,
-       "hugh.dickins" <hugh.dickins@tiscali.co.uk>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [RFC][PATCH 6/8] mm: handle_speculative_fault()
-In-Reply-To: <alpine.LFD.2.00.1001071031440.7821@localhost.localdomain>
-Message-ID: <alpine.DEB.2.00.1001071308320.2981@router.home>
-References: <20100104182429.833180340@chello.nl>  <20100104182813.753545361@chello.nl>  <20100105054536.44bf8002@infradead.org>  <alpine.DEB.2.00.1001050916300.1074@router.home>  <20100105192243.1d6b2213@infradead.org>  <alpine.DEB.2.00.1001071007210.901@router.home>
-  <alpine.LFD.2.00.1001070814080.7821@localhost.localdomain> <1262884960.4049.106.camel@laptop> <alpine.LFD.2.00.1001070934060.7821@localhost.localdomain> <alpine.LFD.2.00.1001070937180.7821@localhost.localdomain>
- <alpine.LFD.2.00.1001071031440.7821@localhost.localdomain>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Thu, 7 Jan 2010 14:30:27 -0500
+Authentication-Results: sj-iport-6.cisco.com; dkim=neutral (message not signed) header.i=none
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEAMrERUurR7Hu/2dsb2JhbADAf5QOhDAE
+X-IronPort-AV: E=Sophos;i="4.49,236,1262563200"; 
+   d="scan'208";a="463223834"
+From: Roland Dreier <rdreier@cisco.com>
+To: torvalds@linux-foundation.org, akpm@linux-foundation.org
+Cc: linux-rdma@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [GIT PULL] please pull infiniband.git
+X-Message-Flag: Warning: May contain useful information
+Date: Thu, 07 Jan 2010 11:30:25 -0800
+Message-ID: <adafx6hr9v2.fsf@roland-alpha.cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 07 Jan 2010 19:30:25.0979 (UTC) FILETIME=[DCDA80B0:01CA8FCF]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 7 Jan 2010, Linus Torvalds wrote:
+Linus, please pull from
 
-> +	if (brk < cur_brk)
-> +		goto slow_case;
-> +	if (brk == cur_brk)
-> +		goto out;
-> +
-> +	vma = ok_to_extend_brk(mm, cur_brk, brk);
-> +	if (!vma)
-> +		goto slow_case;
-> +
-> +	spin_lock(&mm->page_table_lock);
+    master.kernel.org:/pub/scm/linux/kernel/git/roland/infiniband.git for-linus
 
+This tree is also available from kernel.org mirrors at:
 
-page_table_lock used to serialize multiple fast brks?
+    git://git.kernel.org/pub/scm/linux/kernel/git/roland/infiniband.git for-linus
 
-CONFIG_SPLIT_PTLOCK implies that code will not use this lock in fault
-handling. So no serialization with faults.
+This will get a few very small fixes that have trickled in over the
+holidays.
 
-Also the current code assumes vm_end and so on to be stable if mmap_sem is
-held. F.e. find_vma() from do_fault is now running while vm_end may be changing
-under it.
+Eli Cohen (1):
+      mlx4_core: Fix cleanup in __mlx4_init_one() error path
 
+Jack Morgenstein (1):
+      IB/mlx4: Initialize SRQ scatter entries when creating an SRQ
 
+Or Gerlitz (1):
+      IB/mlx4: Fix queue overflow check in post_recv
+
+Robert P. J. Day (1):
+      IB/addr: Correct CONFIG_IPv6 to CONFIG_IPV6
+
+Roland Dreier (1):
+      Merge branches 'misc' and 'mlx4' into for-next
+
+ drivers/infiniband/core/cma.c    |    2 +-
+ drivers/infiniband/hw/mlx4/qp.c  |    2 +-
+ drivers/infiniband/hw/mlx4/srq.c |    6 ++++++
+ drivers/net/mlx4/main.c          |    2 +-
+ 4 files changed, 9 insertions(+), 3 deletions(-)
