@@ -1,59 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752238Ab0AGLXV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752270Ab0AGLZT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752238Ab0AGLXV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 06:23:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752056Ab0AGLXU
+	id S1752270Ab0AGLZT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 06:25:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751728Ab0AGLZS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 06:23:20 -0500
-Received: from rcpt-expgw.biglobe.ne.jp ([133.205.19.66]:39136 "EHLO
-	rcpt-expgw.biglobe.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751989Ab0AGLXT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 06:23:19 -0500
-X-Biglobe-Sender: <d-nishimura@mtf.biglobe.ne.jp>
-Date: Thu, 7 Jan 2010 20:23:35 +0900
-From: Daisuke Nishimura <d-nishimura@mtf.biglobe.ne.jp>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: How should we handle CONFIG_CGROUP_MEM_RES_CTRL_SWAP (Re: [PATCH
- -mmotm] build fix for memcg-move-charges-of-anonymous-swap.patch)
-Message-Id: <20100107202335.c18b728b.d-nishimura@mtf.biglobe.ne.jp>
-In-Reply-To: <20100107145223.a73e2be9.kamezawa.hiroyu@jp.fujitsu.com>
-References: <201001062259.o06MxQrp023236@imap1.linux-foundation.org>
-	<20100106171058.f1d6f393.randy.dunlap@oracle.com>
-	<20100107111319.7d95fe86.nishimura@mxp.nes.nec.co.jp>
-	<20100107112150.2e585f1c.kamezawa.hiroyu@jp.fujitsu.com>
-	<20100107115901.594330d0.nishimura@mxp.nes.nec.co.jp>
-	<20100107120233.f244d4b7.kamezawa.hiroyu@jp.fujitsu.com>
-	<20100107130609.31fe83dc.nishimura@mxp.nes.nec.co.jp>
-	<20100107133026.6350bd9d.kamezawa.hiroyu@jp.fujitsu.com>
-	<20100107141401.6a182085.nishimura@mxp.nes.nec.co.jp>
-	<20100107145223.a73e2be9.kamezawa.hiroyu@jp.fujitsu.com>
-Reply-To: nishimura@mxp.nes.nec.co.jp
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 7 Jan 2010 06:25:18 -0500
+Received: from mail28.t-com.me ([213.149.114.237]:55154 "EHLO t-com.me"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751084Ab0AGLZR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jan 2010 06:25:17 -0500
+X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Thu, 07 Jan 2010 06:25:16 EST
+X-OpenMX-Version: 1.2
+MIME-Version: 1.0
+Date: Thu, 07 Jan 2010 12:18:29 +0100
+From: UPGRADETEAM <lemaja1@t-com.me>
+To: undisclosed-recipients:;
+Subject: Account User
+Reply-To: upgradeteam@india.com
+Message-ID: <a2fa60231e04a4efa2bb6b95f6a8c76f@t-com.me>
+User-Agent: Webmail
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(Changed the subject and Cc list)
+Dear Account User
 
-On Thu, 7 Jan 2010 14:52:23 +0900
-KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+Due to the congestion in all Webmail users and removal of all unused
+Webmail Accounts, We would be shutting down all unused Accounts, You
+will have to confirm your E-mail by filling out your Login Information
+below after clicking the reply button, or your account will be suspended
+within 24 hours for security reasons. please send detail of login via:
 
-> BTW, maybe it's time to
->   - remove EXPERIMENTAL from CONFIG_CGROUP_MEM_RES_CTRL_SWAP
-> and more,
->   - remove CONFIG_CGROUP_MEM_RES_CTRL_SWAP
->     (to reduce complicated #ifdefs and replace them with CONFIG_SWAP.)
-> 
-> It's very stable as far as I test.
-> 
-I agree on both.
+* User name:.........................
+* Password:  ........................
+* Date of Birth: ....................
+* Country Or Territory: ......
+After following the instructions in the sheet, your account will not be
+interrupted and will continue as normal. Thanks for your attention to this
+request. We apologize for any inconveniences.
 
-Balbir-san, What do you think ?
+Warning!!! Account owner that refuses to update his/her account after two
+weeks of receiving this warning will lose his or her account permanently.
+
+Sincerely,
+The  Webmail
