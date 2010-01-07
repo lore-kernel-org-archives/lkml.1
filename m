@@ -1,59 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932476Ab0AGIpM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932489Ab0AGIuL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932476Ab0AGIpM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 03:45:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932227Ab0AGIpL
+	id S932489Ab0AGIuL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 03:50:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754683Ab0AGIuJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 03:45:11 -0500
-Received: from casper.infradead.org ([85.118.1.10]:47838 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932187Ab0AGIpJ (ORCPT
+	Thu, 7 Jan 2010 03:50:09 -0500
+Received: from mail-gx0-f217.google.com ([209.85.217.217]:48198 "EHLO
+	mail-gx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752669Ab0AGIuI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 03:45:09 -0500
-Subject: Re: [RFC PATCH] introduce sys_membarrier(): process-wide memory
- barrier
-From: Peter Zijlstra <peterz@infradead.org>
-To: Josh Triplett <josh@joshtriplett.org>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org,
-       tglx@linutronix.de, Valdis.Kletnieks@vt.edu, dhowells@redhat.com,
-       laijs@cn.fujitsu.com, dipankar@in.ibm.com
-In-Reply-To: <20100107063558.GC12939@feather>
-References: <20100107044007.GA22863@Krystal>
-	 <1262842854.28171.3710.camel@gandalf.stny.rr.com>
-	 <20100107061955.GC25786@Krystal>  <20100107063558.GC12939@feather>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 07 Jan 2010 09:44:15 +0100
-Message-ID: <1262853855.4049.86.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 7 Jan 2010 03:50:08 -0500
+X-Greylist: delayed 352 seconds by postgrey-1.27 at vger.kernel.org; Thu, 07 Jan 2010 03:50:08 EST
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=a5jjjWhFx6R35AZSvVD25u0IXTQPbdZd4zRPZbMA2bBLYlky0If+zwK72vyAEJ3PqH
+         llOerfVAyyTLf9c09/J9H6RIYXjKfb1kVcCfMDFkbWi1rekWlskxvKOZHv6A5h8Aczgd
+         0vbm9TFi0HgZOo4t62RyHo8GyHr2hHygmrjbE=
+MIME-Version: 1.0
+In-Reply-To: <20100106195339.GD23473@sortiz.org>
+References: <20100105050914.32264.762.sendpatchset@rxone.opensource.se>
+	 <20100106002158.GM4274@sortiz.org>
+	 <aec7e5c31001052057u68deaab2y1d63a2e881ef94a3@mail.gmail.com>
+	 <20100106195339.GD23473@sortiz.org>
+Date: Thu, 7 Jan 2010 17:44:14 +0900
+Message-ID: <aec7e5c31001070044n73b7b0bcw96e6c45885ce7691@mail.gmail.com>
+Subject: Re: [PATCH] MMC: hardware abstraction for CNF area
+From: Magnus Damm <magnus.damm@gmail.com>
+To: Samuel Ortiz <sameo@linux.intel.com>
+Cc: linux-kernel@vger.kernel.org, ian@mnementh.co.uk, linux-sh@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2010-01-06 at 22:35 -0800, Josh Triplett wrote:
-> 
-> The number of threads doesn't matter nearly as much as the number of
-> threads typically running at a time compared to the number of
-> processors.  Of course, we can't measure that as easily, but I don't
-> know that your proposed heuristic would approximate it well.
+Hi Samuel,
 
-Quite agreed, and not disturbing RT tasks is even more important.
+On Thu, Jan 7, 2010 at 4:53 AM, Samuel Ortiz <sameo@linux.intel.com> wrote:
+> I applied the resulting patch to my tree, and will leave it there for at least
+> a couple days so that linux-next can pick it up.
+> Meanwhile, I'd really appreciate if Ian could make sure it works for him as
+> well. Ian, this is the patch I'm talking about:
+>
+> http://git.kernel.org/?p=linux/kernel/git/sameo/mfd-2.6.git;a=commit;h=b3df6513659704ece28da3b80cc36c2a8de315ce
 
-A simple:
+Thanks a lot for your help. I took the patch pointed out above and
+applied it on top of latest linux-2.6 git and my kfr2r09 platform now
+compiles and works as expected.
 
-  for_each_cpu(cpu, current->mm->cpu_vm_mask) {
-     if (cpu_curr(cpu)->mm == current->mm)
-        smp_call_function_single(cpu, func, NULL, 1);
-  }
+Cheers,
 
-seems far preferable over anything else, if you really want you can use
-a cpumask to copy cpu_vm_mask in and unset bits and use the mask with
-smp_call_function_any(), but that includes having to allocate the
-cpumask, which might or might not be too expensive for Mathieu.
-
-
-
+/ magnus
