@@ -1,78 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753090Ab0AGPIG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753106Ab0AGPK2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753090Ab0AGPIG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 10:08:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752953Ab0AGPIE
+	id S1753106Ab0AGPK2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 10:10:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753026Ab0AGPK1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 10:08:04 -0500
-Received: from tomts16-srv.bellnexxia.net ([209.226.175.4]:40777 "EHLO
-	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752696Ab0AGPIA (ORCPT
+	Thu, 7 Jan 2010 10:10:27 -0500
+Received: from tomts5-srv.bellnexxia.net ([209.226.175.25]:45576 "EHLO
+	tomts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752918Ab0AGPK1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 10:08:00 -0500
-Date: Thu, 7 Jan 2010 10:07:58 -0500
+	Thu, 7 Jan 2010 10:10:27 -0500
+Date: Thu, 7 Jan 2010 10:10:25 -0500
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Josh Triplett <josh@joshtriplett.org>,
-       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org,
        "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
        Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org,
-       tglx@linutronix.de, Valdis.Kletnieks@vt.edu, dhowells@redhat.com,
-       laijs@cn.fujitsu.com, dipankar@in.ibm.com
+       josh@joshtriplett.org, tglx@linutronix.de, peterz@infradead.org,
+       Valdis.Kletnieks@vt.edu, dhowells@redhat.com, laijs@cn.fujitsu.com,
+       dipankar@in.ibm.com
 Subject: Re: [RFC PATCH] introduce sys_membarrier(): process-wide memory
 	barrier
-Message-ID: <20100107150758.GA14259@Krystal>
-References: <20100107044007.GA22863@Krystal> <1262842854.28171.3710.camel@gandalf.stny.rr.com> <20100107061955.GC25786@Krystal> <20100107063558.GC12939@feather> <1262853855.4049.86.camel@laptop>
+Message-ID: <20100107151025.GB14259@Krystal>
+References: <20100107044007.GA22863@Krystal> <1262842854.28171.3710.camel@gandalf.stny.rr.com> <20100107061955.GC25786@Krystal> <1262874458.28171.3728.camel@gandalf.stny.rr.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1262853855.4049.86.camel@laptop>
+In-Reply-To: <1262874458.28171.3728.camel@gandalf.stny.rr.com>
 X-Editor: vi
 X-Info: http://krystal.dyndns.org:8080
 X-Operating-System: Linux/2.6.27.31-grsec (i686)
-X-Uptime: 10:05:43 up 21 days, 23:24,  6 users,  load average: 0.33, 0.24,
-	0.14
+X-Uptime: 10:08:15 up 21 days, 23:26,  6 users,  load average: 0.16, 0.20,
+	0.13
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Peter Zijlstra (peterz@infradead.org) wrote:
-> On Wed, 2010-01-06 at 22:35 -0800, Josh Triplett wrote:
+* Steven Rostedt (rostedt@goodmis.org) wrote:
+> On Thu, 2010-01-07 at 01:19 -0500, Mathieu Desnoyers wrote:
+> 
+> > I see your point.
+> 
+> Actually you are missing the point ;-)
+> 
 > > 
-> > The number of threads doesn't matter nearly as much as the number of
-> > threads typically running at a time compared to the number of
-> > processors.  Of course, we can't measure that as easily, but I don't
-> > know that your proposed heuristic would approximate it well.
+> > This would probably be good for machines with very large number of cpus
+> > and without IPI broadcast support, running processes with only few
+> > threads. I really start to think that we should have some way to compare
+> > the number of threads belonging to a process and choose between the
+> > broadcast IPI and the per-cpu IPI depending if we are over or under an
+> > arbitrary threshold.
 > 
-> Quite agreed, and not disturbing RT tasks is even more important.
 > 
-> A simple:
-> 
->   for_each_cpu(cpu, current->mm->cpu_vm_mask) {
->      if (cpu_curr(cpu)->mm == current->mm)
->         smp_call_function_single(cpu, func, NULL, 1);
->   }
-> 
-> seems far preferable over anything else, if you really want you can use
-> a cpumask to copy cpu_vm_mask in and unset bits and use the mask with
-> smp_call_function_any(), but that includes having to allocate the
-> cpumask, which might or might not be too expensive for Mathieu.
-> 
+> This has nothing to do with performance. It has to do with a thread
+> should not interfere with a thread belonging to another process. We
+> really don't care how long the sys_membarrier() takes (it's the slow
+> path anyway). We do care that a critical RT task is being interrupted by
+> some java thread sending thousands of IPIs.
 
-I like this ! :)
-
-Following some testing, I think I'll go with your scheme, with 2
-smp_call_function_single (one function call for the local thread, one
-IPI). If we need more than that, then we allocate a cpumask and call
-smp_call_function_many() for the other cpus. I provide benchmarks in my
-reply to Josh justifying this choice.
+Yes, PeterZ scheme seems (and yours) seems to address this problem by
+only impacting the CPUs running threads belonging to the current
+process. I'll go with this instead of the broadcast IPI, which, as you,
+Josh and Peter clearly pointed out, is a no-go in terms of real-time.
 
 Thanks,
 
 Mathieu
 
+> 
+> -- Steve
+> 
+> 
 
 -- 
 Mathieu Desnoyers
