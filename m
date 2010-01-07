@@ -1,77 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756234Ab0AVX0U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756164Ab0AVXZX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756234Ab0AVX0U (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 18:26:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756113Ab0AVX0M
+	id S1756164Ab0AVXZX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 18:25:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755472Ab0AVXYN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 18:26:12 -0500
-Received: from fmmailgate03.web.de ([217.72.192.234]:33266 "EHLO
-	fmmailgate03.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756177Ab0AVX0H (ORCPT
+	Fri, 22 Jan 2010 18:24:13 -0500
+Received: from fmmailgate01.web.de ([217.72.192.221]:39700 "EHLO
+	fmmailgate01.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754965Ab0AVXYE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 18:26:07 -0500
-Message-Id: <c4afddbc4700ff0df16dc832c59f191e42684e76.1264201408.git.jan.kiszka@web.de>
+	Fri, 22 Jan 2010 18:24:04 -0500
+Message-Id: <3f7722dc7070826b749e757676846f2dccfe4f14.1264201407.git.jan.kiszka@web.de>
 In-Reply-To: <cover.1264201406.git.jan.kiszka@web.de>
 References: <cover.1264201406.git.jan.kiszka@web.de>
 From: Jan Kiszka <jan.kiszka@web.de>
 To: David Miller <davem@davemloft.net>, Karsten Keil <isdn@linux-pingi.de>
 Cc: linux-kernel@vger.kernel.org, i4ldeveloper@listserv.isdn4linux.de,
        isdn4linux@listserv.isdn4linux.de, netdev@vger.kernel.org
-Date: Fri, 8 Jan 2010 12:57:25 +0100
-Subject: [PATCH 25/31] CAPI: Drop capiminor's unused inbytes counter
-X-Provags-ID: V01U2FsdGVkX181feyfLEaH3qli+fqDJaFhvYXU34KEddHuoBfU
-	kls17kfHtvY6Xq1TG6sn4zP7ogajlgrhIIvZkXk9IgpWj4ckTy
-	jE/ZRa24A=
+Date: Thu, 7 Jan 2010 21:52:22 +0100
+Subject: [PATCH 18/31] CAPI: Switch NCCI list to standard doubly linked list
+X-Provags-ID: V01U2FsdGVkX1/uRyCnJkArl3/G1EaBhsccfZBiNhvcIzD+mhaS
+	a0yScW8lTXuO9b3Y+O7h/8M3ibVZOl2VszO/mxUgD5zFfGHcvS
+	Lu10hVzi0=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The inbytes counter was only updated but never read.
+Replace open-coded NCCI list management with standard mechanisms.
 
 Signed-off-by: Jan Kiszka <jan.kiszka@web.de>
 ---
- drivers/isdn/capi/capi.c |   10 +++-------
- 1 files changed, 3 insertions(+), 7 deletions(-)
+ drivers/isdn/capi/capi.c |   47 ++++++++++++++++++---------------------------
+ 1 files changed, 19 insertions(+), 28 deletions(-)
 
 diff --git a/drivers/isdn/capi/capi.c b/drivers/isdn/capi/capi.c
-index 6ab496c..40468ac 100644
+index 90a20fa..249ff13 100644
 --- a/drivers/isdn/capi/capi.c
 +++ b/drivers/isdn/capi/capi.c
-@@ -100,7 +100,6 @@ struct capiminor {
- 	struct sk_buff    *ttyskb;
+@@ -121,7 +121,7 @@ struct capiminor {
+ static DEFINE_SPINLOCK(workaround_lock);
  
- 	struct sk_buff_head inqueue;
--	int                 inbytes;
- 	struct sk_buff_head outqueue;
- 	int                 outbytes;
+ struct capincci {
+-	struct capincci *next;
++	struct list_head list;
+ 	u32		 ncci;
+ 	struct capidev	*cdev;
+ #ifdef CONFIG_ISDN_CAPI_MIDDLEWARE
+@@ -138,7 +138,7 @@ struct capidev {
+ 	struct sk_buff_head recvqueue;
+ 	wait_queue_head_t recvwait;
  
-@@ -481,15 +480,12 @@ keep:
- static void handle_minor_recv(struct capiminor *mp)
+-	struct capincci *nccis;
++	struct list_head nccis;
+ 
+ 	struct mutex lock;
+ };
+@@ -355,7 +355,7 @@ static inline unsigned int capincci_minor_opencount(struct capincci *np)
+ 
+ static struct capincci *capincci_alloc(struct capidev *cdev, u32 ncci)
  {
- 	struct sk_buff *skb;
--	while ((skb = skb_dequeue(&mp->inqueue)) != NULL) {
--		unsigned int len = skb->len;
--		mp->inbytes -= len;
+-	struct capincci *np, **pp;
++	struct capincci *np;
+ 
+ 	np = kzalloc(sizeof(*np), GFP_KERNEL);
+ 	if (!np)
+@@ -365,39 +365,31 @@ static struct capincci *capincci_alloc(struct capidev *cdev, u32 ncci)
+ 
+ 	capincci_alloc_minor(cdev, np);
+ 
+-	for (pp=&cdev->nccis; *pp; pp = &(*pp)->next)
+-		;
+-	*pp = np;
+-        return np;
++	list_add_tail(&np->list, &cdev->nccis);
 +
-+	while ((skb = skb_dequeue(&mp->inqueue)) != NULL)
- 		if (handle_recv_skb(mp, skb) < 0) {
- 			skb_queue_head(&mp->inqueue, skb);
--			mp->inbytes += len;
- 			return;
++	return np;
+ }
+ 
+ static void capincci_free(struct capidev *cdev, u32 ncci)
+ {
+-	struct capincci *np, **pp;
++	struct capincci *np, *tmp;
+ 
+-	pp=&cdev->nccis;
+-	while (*pp) {
+-		np = *pp;
++	list_for_each_entry_safe(np, tmp, &cdev->nccis, list)
+ 		if (ncci == 0xffffffff || np->ncci == ncci) {
+-			*pp = (*pp)->next;
+ 			capincci_free_minor(np);
++			list_del(&np->list);
+ 			kfree(np);
+-			if (*pp == NULL) return;
+-		} else {
+-			pp = &(*pp)->next;
  		}
 -	}
  }
  
- static int handle_minor_send(struct capiminor *mp)
-@@ -611,7 +607,7 @@ static void capi_recv_message(struct capi20_appl *ap, struct sk_buff *skb)
- 				datahandle, skb->len-CAPIMSG_LEN(skb->data));
- #endif
- 		skb_queue_tail(&mp->inqueue, skb);
--		mp->inbytes += skb->len;
-+
- 		handle_minor_recv(mp);
+ static struct capincci *capincci_find(struct capidev *cdev, u32 ncci)
+ {
+-	struct capincci *p;
++	struct capincci *np;
  
- 	} else if (CAPIMSG_SUBCOMMAND(skb->data) == CAPI_CONF) {
+-	for (p=cdev->nccis; p ; p = p->next) {
+-		if (p->ncci == ncci)
+-			break;
+-	}
+-	return p;
++	list_for_each_entry(np, &cdev->nccis, list)
++		if (np->ncci == ncci)
++			return np;
++	return NULL;
+ }
+ 
+ #ifdef CONFIG_ISDN_CAPI_MIDDLEWARE
+@@ -954,6 +946,7 @@ static int capi_open(struct inode *inode, struct file *file)
+ 	mutex_init(&cdev->lock);
+ 	skb_queue_head_init(&cdev->recvqueue);
+ 	init_waitqueue_head(&cdev->recvwait);
++	INIT_LIST_HEAD(&cdev->nccis);
+ 	file->private_data = cdev;
+ 
+ 	mutex_lock(&capidev_list_lock);
+@@ -1429,16 +1422,14 @@ endloop:
+ static int proc_capincci_read_proc(char *page, char **start, off_t off,
+                                        int count, int *eof, void *data)
+ {
+-        struct capidev *cdev;
+-        struct capincci *np;
+-	struct list_head *l;
++	struct capidev *cdev;
++	struct capincci *np;
+ 	int len = 0;
+ 
+ 	mutex_lock(&capidev_list_lock);
+-	list_for_each(l, &capidev_list) {
+-		cdev = list_entry(l, struct capidev, list);
++	list_for_each_entry(cdev, &capidev_list, list) {
+ 		mutex_lock(&cdev->lock);
+-		for (np=cdev->nccis; np; np = np->next) {
++		list_for_each_entry(np, &cdev->nccis, list) {
+ 			len += sprintf(page+len, "%d 0x%xn",
+ 				       cdev->ap.applid,
+ 				       np->ncci);
 -- 
 1.6.0.2
 
