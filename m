@@ -1,55 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753959Ab0AGWqk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753869Ab0AGWwO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753959Ab0AGWqk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 17:46:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753912Ab0AGWq2
+	id S1753869Ab0AGWwO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 17:52:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753711Ab0AGWwN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 17:46:28 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:52226 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753808Ab0AGWqZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 17:46:25 -0500
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 7 Jan 2010 17:52:13 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:45579 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753473Ab0AGWwN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jan 2010 17:52:13 -0500
+Date: Thu, 7 Jan 2010 14:51:26 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Rakib Mullick <rakib.mullick@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Len Brown <lenb@kernel.org>,
+       Alexey Starikovskiy <astarikovskiy@suse.de>
+Subject: Re: [PATCH] acpi: Fix unused variable warning in sbs.c
+Message-Id: <20100107145126.22271109.akpm@linux-foundation.org>
+In-Reply-To: <b9df5fa11001030527h71b66dbcgd4ef29c04545cdaf@mail.gmail.com>
+References: <b9df5fa11001030527h71b66dbcgd4ef29c04545cdaf@mail.gmail.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Oleg Nesterov <oleg@redhat.com>
-X-Fcc: ~/Mail/linus
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>, caiqian@redhat.com,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Jan Kratochvil <jkratoch@redhat.com>, linux-kernel@vger.kernel.org,
-       linux-s390@vger.kernel.org, utrace-devel@redhat.com
-Subject: Re: s390 && user_enable_single_step() (Was: odd utrace testing
-	results on s390x)
-In-Reply-To: Oleg Nesterov's message of  Thursday, 7 January 2010 18:54:46 +0100 <20100107175446.GA13300@redhat.com>
-References: <20100104211147.4CC94D532@magilla.sf.frob.com>
-	<20100105105030.66bb8a0a@mschwide.boeblingen.de.ibm.com>
-	<20100105153633.GA9376@redhat.com>
-	<20100105164610.388effd3@mschwide.boeblingen.de.ibm.com>
-	<20100105155913.GA10652@redhat.com>
-	<20100105170301.GA13641@redhat.com>
-	<20100105195818.GA20358@redhat.com>
-	<20100106201722.GB26204@redhat.com>
-	<20100106211329.DB4F5134D@magilla.sf.frob.com>
-	<20100107101855.13248dc2@mschwide.boeblingen.de.ibm.com>
-	<20100107175446.GA13300@redhat.com>
-X-Antipastobozoticataclysm: When George Bush projectile vomits antipasto on the Japanese.
-Message-Id: <20100107214821.94FF97300@magilla.sf.frob.com>
-Date: Thu,  7 Jan 2010 13:48:21 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I am confused as well. Yes, I thought about regs->psw.mask change too,
-> but I don't understand why it helps..
-[...]
-> But. Acoording to the testing I did (unless I did something wrong
-> again) this patch doesn't make any difference in this particular
-> case. 6580807da14c423f0d0a708108e6df6ebc8bc83d does.
+On Sun, 3 Jan 2010 19:27:56 +0600
+Rakib Mullick <rakib.mullick@gmail.com> wrote:
 
-Those results are quite mysterious to me.  
-I think we'll have to get Martin to sort it out definitively.
+>  Fix unused variabled warning.
+> 
+> When CONFIG_ACPI_SYSFS_POWER=n and CONFIG_ACPI_PROCFS_POWER=n, then
+> we're warned by the following warning:
+> 
+> drivers/acpi/sbs.c: In function `acpi_battery_remove':
+> drivers/acpi/sbs.c:825: warning: unused variable `battery'
+> 
+> 
+> Signed-off-by: Rakib Mullick <rakib.mullick@gmail.com>
+> ---
+> 
+> --- linus/drivers/acpi/sbs.c	2009-12-28 12:37:29.000000000 +0600
+> +++ rakib/drivers/acpi/sbs.c	2010-01-03 11:29:07.000000000 +0600
+> @@ -822,7 +822,10 @@ static int acpi_battery_add(struct acpi_
+> 
+>  static void acpi_battery_remove(struct acpi_sbs *sbs, int id)
+>  {
+> +#if defined(CONFIG_ACPI_SYSFS_POWER) || defined(CONFIG_ACPI_PROCFS_POWER)
+>  	struct acpi_battery *battery = &sbs->battery[id];
+> +#endif
+> +
+>  #ifdef CONFIG_ACPI_SYSFS_POWER
+>  	if (battery->bat.dev) {
+>  		if (battery->have_sysfs_alarm)
 
+Rather an unpleasant patch to a rather unpleasant function :( Oh well,
+it's better than a warning.
 
-Thanks,
-Roland
+I wonder if it can be fixed in Kconfig.  Is there any sane use of
+this code when CONFIG_ACPI_SYSFS_POWER=n && CONFIG_ACPI_PROCFS_POWER=n?
