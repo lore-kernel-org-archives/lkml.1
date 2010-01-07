@@ -1,140 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932457Ab0AGIes@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932380Ab0AGIgw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932457Ab0AGIes (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 03:34:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932677Ab0AGIer
+	id S932380Ab0AGIgw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 03:36:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754858Ab0AGIgv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 03:34:47 -0500
-Received: from e23smtp08.au.ibm.com ([202.81.31.141]:32947 "EHLO
-	e23smtp08.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932583Ab0AGIeq (ORCPT
+	Thu, 7 Jan 2010 03:36:51 -0500
+Received: from astoria.ccjclearline.com ([64.235.106.9]:57481 "EHLO
+	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752243Ab0AGIgv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 03:34:46 -0500
-Date: Thu, 7 Jan 2010 14:04:40 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>
-Subject: Re: [RFC] Shared page accounting for memory cgroup
-Message-ID: <20100107083440.GS3059@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <20091229182743.GB12533@balbir.in.ibm.com>
- <20100104085108.eaa9c867.kamezawa.hiroyu@jp.fujitsu.com>
- <20100104000752.GC16187@balbir.in.ibm.com>
- <20100104093528.04846521.kamezawa.hiroyu@jp.fujitsu.com>
- <20100104005030.GG16187@balbir.in.ibm.com>
- <20100106130258.a918e047.kamezawa.hiroyu@jp.fujitsu.com>
- <20100106070150.GL3059@balbir.in.ibm.com>
- <20100106161211.5a7b600f.kamezawa.hiroyu@jp.fujitsu.com>
- <20100107071554.GO3059@balbir.in.ibm.com>
- <20100107163610.aaf831e6.kamezawa.hiroyu@jp.fujitsu.com>
+	Thu, 7 Jan 2010 03:36:51 -0500
+Date: Thu, 7 Jan 2010 03:36:09 -0500 (EST)
+From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+X-X-Sender: rpjday@localhost
+To: Roland Dreier <rdreier@cisco.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Bart Van Assche <bart.vanassche@gmail.com>,
+       David Dillow <dave@thedillows.org>
+Subject: Re: [PATCH] Add BUILD_BUG_ON_NOT_POWER_OF_2()
+In-Reply-To: <adaeim2supb.fsf_-_@roland-alpha.cisco.com>
+Message-ID: <alpine.LFD.2.00.1001070332060.16874@localhost>
+References: <ada3a2jugqu.fsf@roland-alpha.cisco.com> <20100106123306.ac85e557.akpm@linux-foundation.org> <aday6kbt14a.fsf@roland-alpha.cisco.com> <20100106134232.0025e818.akpm@linux-foundation.org> <adaeim2supb.fsf_-_@roland-alpha.cisco.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20100107163610.aaf831e6.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Mutt/1.5.20 (2009-08-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - crashcourse.ca
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2010-01-07 16:36:10]:
+On Wed, 6 Jan 2010, Roland Dreier wrote:
 
-> On Thu, 7 Jan 2010 12:45:54 +0530
-> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> 
-> > * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2010-01-06 16:12:11]:
-> > > And piles up costs ? I think cgroup guys should pay attention to fork/exit
-> > > costs more. Now, it gets slower and slower.
-> > > In that point, I never like migrate-at-task-move work in cpuset and memcg.
-> > > 
-> > > My 1st objection to this patch is this "shared" doesn't mean "shared between
-> > > cgroup" but means "shared between processes".
-> > > I think it's of no use and no help to users.
-> > >
-> > 
-> > So what in your opinion would help end users? My concern is that as
-> > we make progress with memcg, we account only for privately used pages
-> > with no hint/data about the real usage (shared within or with other
-> > cgroups). 
-> 
-> The real usage is already shown as
-> 
->   [root@bluextal ref-mmotm]# cat /cgroups/memory.stat
->   cache 7706181632 
->   rss 120905728
->   mapped_file 32239616
-> 
-> This is real. And "sum of rss - rss+mapped" doesn't show anything.
-> 
-> > How do we decide if one cgroup is really heavy?
-> >  
-> 
-> What "heavy" means ? "Hard to page out ?"
+> When code relies on a constant being a power of 2:
 >
+> 	#define FOO	512	/* must be a power of 2 */
+>
+> it would be nice to be able to do:
+>
+> 	BUILD_BUG_ON(!is_power_of_2(FOO));
+>
+> However applying an inline function does not result in a
+> compile-time constant that can be used with BUILD_BUG_ON(), so
+> trying that gives results in:
+>
+> 	error: bit-field '<anonymous>' width not an integer constant
+>
+> As suggested by akpm, rather than monkeying around with
+> is_power_of_2() and risking gcc warts about constant expressions,
+> just create a macro BUILD_BUG_ON_NOT_POWER_OF_2() to encapsulate
+> this common requirement.
 
-Heavy can also indicate, should we OOM kill in this cgroup or kill the
-entire cgroup? Should we add or remove resources from this cgroup?
- 
-> Historically, it's caught by pagein/pageout _speed_.
-> "How heavy memory system is ?" can only be measured by "speed".
+  my normal pedantry coming to the surface, but can we at least assume
+that people will use this test to *legitimately* test whether or not
+something is a power of two, and not that there is a single bit set
+(in the case of mask bits where all settings must be mutually
+exclusive)?
 
-Not really... A cgroup might be very large with a large number of its
-pages shared and frequently used. How do we detect if this cgroup
-needs its resources or its taking too many of them.
+  there's a lot of this sort of thing throughout the kernel:
 
-> If you add latency-stat for memcg, I'm glad to use it.
-> 
-> Anyway, "How memory reclaim can go successfully" is generic problem rather
-> than memcg. Maybe no good answers from VM guys....
-> I think you should add codes to global VM rather than cgroup.
-> 
+    (n) != 0 && (((n) & ((n) - 1))
 
-No.. this is not for reclaim
+but it's sometimes unclear whether someone is testing for a) power of
+two, or b) single bit set.  if you're going to introduce that kind of
+BUILD BUG (which is a good idea), let's try to not immediately abuse
+it semantically. :-)
 
-> "How pages are shared" doesn't show good hints. I don't hear such parameter
-> is used in production's resource monitoring software.
-> 
+rday
+--
 
-You mean "How many pages are shared" are not good hints, please see my
-justification above. With Virtualization (look at KSM for example),
-shared pages are going to be increasingly important part of the
-accounting.
+========================================================================
+Robert P. J. Day                               Waterloo, Ontario, CANADA
 
-> 
-> > > And implementation is 2nd thing.
-> > > 
-> > 
-> > More details on your concern, please!
-> > 
-> I already wrote....why do you want to make fork()/exit() slow for a thing
-> which is not necessary to be done in atomic ?
-> 
+            Linux Consulting, Training and Kernel Pedantry.
 
-So your concern is about iterating through the tasks in cgroup, I can
-think of an alternative low cost implementation if possible
-
-> There are many hosts which has thousands of process and a cgrop may contain
-> thousands of process in production server.
-> In that situation, How the "make kernel" can slow down with following ?
-> ==
-> while true; do cat /cgroup/memory.shared > /dev/null; done
-> ==
-
-This is the worst case usage scenario that would be effected even if
-memory.shared were replaced by tasks.
-
-> 
-> In a word, the implementation problem is
->  - An operation against a container can cause generic system slow down.
-> Then, I don't like heavy task move under cgroup.
-> 
-> 
-> Yes, this can happen in other places (we have to do some improvements).
-> But this is not good for a concept of isolation by container, anyway.
-
-Thanks for the review!
-
--- 
-	Balbir
+Web page:                                          http://crashcourse.ca
+Twitter:                                       http://twitter.com/rpjday
+========================================================================
