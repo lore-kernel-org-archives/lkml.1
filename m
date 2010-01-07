@@ -1,87 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756456Ab0AGAwa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932796Ab0AGA4r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756456Ab0AGAwa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 19:52:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756338Ab0AGAw3
+	id S932796Ab0AGA4r (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 19:56:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932757Ab0AGA4q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 19:52:29 -0500
-Received: from lon1-post-1.mail.demon.net ([195.173.77.148]:51028 "EHLO
-	lon1-post-1.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756066Ab0AGAw2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 19:52:28 -0500
-Date: Thu, 07 Jan 2010 00:49:54 +0000
-From: Phillip Lougher <phillip@lougher.demon.co.uk>
-To: albin.tonnerre@free-electrons.com, sfr@canb.auug.org.au,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       linux-embedded@vger.kernel.org, akpm@linux-foundation.org
-Subject: [PATCH V2 6/8] lzma: Make lzma available to non initramfs/initrd
- code
-Message-ID: <4b452fb2.pHrkBSPmj0OXtjq3%phillip@lougher.demon.co.uk>
-User-Agent: Heirloom mailx 12.4 7/29/08
+	Wed, 6 Jan 2010 19:56:46 -0500
+Received: from mail.gmx.net ([213.165.64.20]:32856 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S932738Ab0AGA4p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jan 2010 19:56:45 -0500
+X-Authenticated: #12255092
+X-Provags-ID: V01U2FsdGVkX19E3G4rMVlEwMAWt9BO9rHTvt0HDeL0bhheAvJgCl
+	NknasBcm5ST0xy
+From: Peter Huewe <PeterHuewe@gmx.de>
+To: Marc Singer <elf@buici.com>
+Subject: [PATCH] arch/arm: Fix build failure for lpd7a404_defconfig caused by missing includes
+Date: Thu, 7 Jan 2010 01:56:35 +0100
+User-Agent: KMail/1.12.3 (Linux/2.6.27-05415-g69a8594; KDE/4.3.3; x86_64; ; )
+Cc: Russell King <linux@arm.linux.org.uk>,
+       linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Message-Id: <201001070156.36221.PeterHuewe@gmx.de>
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.64
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Peter Huewe <peterhuewe@gmx.de>
+Date: Thu, 7 Jan 2010 01:46:49 +0100
 
-Fix up patch resend using a nice and dumb email client.
-If I'm lucky, email readers may even get the threading right :-)
+This patch fixes a build failure [1] due to missing includes
+This should make the arm tree build again with lpd7a404_defconfig
 
-Phillip
+References:
+http://kisskb.ellerman.id.au/kisskb/buildresult/1983329/
 
->From 1cf6d32e1427398368ff189aece68aa533092e98 Mon Sep 17 00:00:00 2001
-From: Phillip Lougher <phillip@lougher.demon.co.uk>
-Date: Wed, 6 Jan 2010 23:50:12 +0000
-Subject: [PATCH] lzo: Fix-up add support for lzo compressed kernels patch
+Patch against Linus' tree.
 
-The add support for lzo compressed kernels patch relies on
-INIT and error definitions which have been moved to
-separate xxx_mm.h files for each decompressor.
-
-This patch adds a unlzo_mm.h file which supplies these
-definitions.
-
-Signed-off-by: Phillip Lougher <phillip@lougher.demon.co.uk>
+Signed-off-by: Peter Huewe <peterhuewe@gmx.de>
 ---
- include/linux/decompress/unlzo_mm.h |   13 +++++++++++++
- lib/decompress_unlzo.c              |    1 +
- 2 files changed, 14 insertions(+), 0 deletions(-)
- create mode 100644 include/linux/decompress/unlzo_mm.h
+ arch/arm/mach-lh7a40x/clocks.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-diff --git a/include/linux/decompress/unlzo_mm.h b/include/linux/decompress/unlzo_mm.h
-new file mode 100644
-index 0000000..27fe0ab
---- /dev/null
-+++ b/include/linux/decompress/unlzo_mm.h
-@@ -0,0 +1,13 @@
-+#ifndef UNLZO_MM_H
-+#define UNLZO_MM_H
-+
-+#ifdef STATIC
-+/* Code active when included from pre-boot environment: */
-+#define INIT
-+#else
-+/* Compile for initramfs/initrd code only */
-+#define INIT __init
-+static void(*error)(char *m);
-+#endif
-+
-+#endif
-diff --git a/lib/decompress_unlzo.c b/lib/decompress_unlzo.c
-index db521f4..edd82c3 100644
---- a/lib/decompress_unlzo.c
-+++ b/lib/decompress_unlzo.c
-@@ -39,6 +39,7 @@
+diff --git a/arch/arm/mach-lh7a40x/clocks.c b/arch/arm/mach-lh7a40x/clocks.c
+index fcaf876..0651f96 100644
+--- a/arch/arm/mach-lh7a40x/clocks.c
++++ b/arch/arm/mach-lh7a40x/clocks.c
+@@ -10,6 +10,8 @@
+ #include <mach/hardware.h>
+ #include <mach/clocks.h>
+ #include <linux/err.h>
++#include <linux/device.h>
++#include <linux/string.h>
  
- #include <linux/types.h>
- #include <linux/lzo.h>
-+#include <linux/decompress/unlzo_mm.h>
- #include <linux/decompress/mm.h>
+ struct module;
  
- #include <linux/compiler.h>
 -- 
-1.6.3.3
+1.6.4.4
 
