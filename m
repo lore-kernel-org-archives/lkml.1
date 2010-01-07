@@ -1,69 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752583Ab0AGR4V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752625Ab0AGR4n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752583Ab0AGR4V (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 12:56:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752443Ab0AGR4U
+	id S1752625Ab0AGR4n (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 12:56:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752218Ab0AGR4m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 12:56:20 -0500
-Received: from mail-fx0-f225.google.com ([209.85.220.225]:57210 "EHLO
-	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752409Ab0AGR4T (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 12:56:19 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=iMiThzQ+I9D5Iq2Lj+Ti3aWiq+oh1pNyDFTYmob0vrdfQGy1omzopIcBr7T1fWQ3vY
-         FGF1d/eJ5umjYRf1/pmDaqrSywezZwaw9rtIsXNU7wHWwqLvqnl2abUxZt3O88VZFVFg
-         j0qVGgYexwVRK7oIF1ZS5FytFiOjOkcy2JJPY=
-Date: Thu, 7 Jan 2010 18:56:10 +0100
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: Michael Breuer <mbreuer@majjas.com>
-Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
-       flyboy@gmail.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH] af_packet: Don't use skb after dev_queue_xmit()
-Message-ID: <20100107175610.GA3088@del.dom.local>
-References: <4B454A16.3030909@majjas.com>
- <4B455C62.6030504@majjas.com>
- <20100106205343.5460d658@nehalam>
- <4B4571D5.30002@majjas.com>
- <4B457711.1040008@majjas.com>
- <4B458B36.6050509@majjas.com>
- <20100107074756.GB6258@ff.dom.local>
- <4B459368.2000503@majjas.com>
- <20100107082140.GB7229@ff.dom.local>
- <4B45F7D7.3060308@majjas.com>
+	Thu, 7 Jan 2010 12:56:42 -0500
+Received: from e8.ny.us.ibm.com ([32.97.182.138]:45884 "EHLO e8.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752453Ab0AGR4l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jan 2010 12:56:41 -0500
+Date: Thu, 7 Jan 2010 09:56:37 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Josh Triplett <josh@joshtriplett.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       akpm@linux-foundation.org, tglx@linutronix.de, Valdis.Kletnieks@vt.edu,
+       dhowells@redhat.com, laijs@cn.fujitsu.com, dipankar@in.ibm.com
+Subject: Re: [RFC PATCH] introduce sys_membarrier(): process-wide memory
+	barrier
+Message-ID: <20100107175637.GI6764@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20100107044007.GA22863@Krystal> <1262842854.28171.3710.camel@gandalf.stny.rr.com> <20100107061955.GC25786@Krystal> <20100107063558.GC12939@feather> <1262853855.4049.86.camel@laptop> <20100107165249.GE6764@linux.vnet.ibm.com> <1262884716.4049.103.camel@laptop> <20100107173118.GG6764@linux.vnet.ibm.com> <1262886277.28171.3734.camel@gandalf.stny.rr.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4B45F7D7.3060308@majjas.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <1262886277.28171.3734.camel@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 07, 2010 at 10:03:51AM -0500, Michael Breuer wrote:
-> On 1/7/2010 3:21 AM, Jarek Poplawski wrote:
-> >On Thu, Jan 07, 2010 at 02:55:20AM -0500, Michael Breuer wrote:
-> >>Unless I misread the code, I think that in some cases e skb is actually
-> >>freed if the cfq (among others perhaps) scheduler returns an error on
-> >>enqueue (flow control perhaps).  Thus with alternative 1, it is possible
-> >>that the skb is acted upon after being freed - this would be consistent
-> >>with the DMAR errors I saw.
-> >I can't see your point: could you give some scenario?
-> >
-> >Jarek P.
-> With NET_CLS_ACT set, net_dev_enqueue can return an error after
-> freeing the skb. Alternative 1 disregards the error and assumes the
-> skb is still valid. The original code and alternative 2 exit the
-> loop assuming the skb has been freed.
+On Thu, Jan 07, 2010 at 12:44:37PM -0500, Steven Rostedt wrote:
+> On Thu, 2010-01-07 at 09:31 -0800, Paul E. McKenney wrote:
+> 
+> > Something like the following for sys_membarrier(), then?
+> > 
+> >   smp_mb();
+> >   for_each_cpu(cpu, current->mm->cpu_vm_mask) {
+> >      if (cpu_curr(cpu)->mm == current->mm)
+> >         smp_call_function_single(cpu, func, NULL, 1);
+> >   }
+> > 
+> > Then the code changing ->mm on the other CPU also needs to have a
+> > full smp_mb() somewhere after the change to ->mm, but before starting
+> > user-space execution.  Which it might well just due to overhead, but
+> > we need to make sure that someone doesn't optimize us out of existence.
+> 
+> To change the mm requires things like flushing the TLB. I'd be surprised
+> if the change of the mm does not already do a smp_mb() somewhere.
 
-Not exactly: alternative 1 disregards the error, and tries to send
-next skbs if the message was longer. After consuming all the message
-it returns without err code (at least wrt. dev_queue_xmit). This is
-quite often practice to skip dev_queue_xmit() return (try to grep in
-net\). It should never touch any part of an earlier sent skb.
+Agreed, but "somewhere" does not fill me with warm fuzzies.  ;-)
 
-Jarek P.
+							Thanx, Paul
