@@ -1,80 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752325Ab0AGLdv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752387Ab0AGLkq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752325Ab0AGLdv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 06:33:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752039Ab0AGLdu
+	id S1752387Ab0AGLkq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 06:40:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752263Ab0AGLkp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 06:33:50 -0500
-Received: from ey-out-2122.google.com ([74.125.78.25]:34652 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751983Ab0AGLdt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 06:33:49 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=IlVEsQYc+2h8kbCGoX9ex7O8pSZLl2JLqOdae7M9BuVLWbAUUN1PKRbeSVlZaLsCxD
-         bbPWLLOE/1cUP7Ow/US9AYl12J4XgmqdCyS18MfYHsB+ZxdQOGRi/n/RFZ8J6Vi8bC0J
-         06aJWD1tf3hPUsLTE/6I+a0Y565LIYiOcEfmU=
-Date: Thu, 7 Jan 2010 12:33:44 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Jiri Slaby <jslaby@suse.cz>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       jirislaby@gmail.com, reiserfs-devel@vger.kernel.org
-Subject: Re: [PATCH 1/1] FS: reiserfs, fix unreachable statement
-Message-ID: <20100107113341.GA5093@nowhere>
-References: <1262815790-5864-1-git-send-email-jslaby@suse.cz>
+	Thu, 7 Jan 2010 06:40:45 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:36702 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752216Ab0AGLko (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jan 2010 06:40:44 -0500
+Message-ID: <4B45C83A.9000803@suse.cz>
+Date: Thu, 07 Jan 2010 12:40:42 +0100
+From: Michal Marek <mmarek@suse.cz>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.2 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1262815790-5864-1-git-send-email-jslaby@suse.cz>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Cheng Renquan <crquan@gmail.com>
+Cc: linux-kbuild@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [PATCH] kallsyms: skip kernel symbols when lookup in module
+References: <1262846626-27109-1-git-send-email-crquan@gmail.com>
+In-Reply-To: <1262846626-27109-1-git-send-email-crquan@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-2
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 06, 2010 at 11:09:50PM +0100, Jiri Slaby wrote:
-> Stanse found an unreachable statement in reiserfs_ioctl. There is
-> if followed by assignment and `break'. with no braces. Add the
-> braces so that we don't break every time, but only in error case.
+On 7.1.2010 07:43, Cheng Renquan wrote:
+> kernel symbols lookup is expensive, when we know it's a lookup in module,
+> we can skip the heavy kernel symbols.
 > 
-> Signed-off-by: Jiri Slaby <jslaby@suse.cz>
-> Cc: reiserfs-devel@vger.kernel.org
+> Signed-off-by: Cheng Renquan <crquan@gmail.com>
 > ---
-
-
-
-Looks good.
-I've applied it, thanks!
-
-
-
->  fs/reiserfs/ioctl.c |    3 ++-
->  1 files changed, 2 insertions(+), 1 deletions(-)
+>  kernel/kallsyms.c |   12 ++++++++----
+>  1 files changed, 8 insertions(+), 4 deletions(-)
 > 
-> diff --git a/fs/reiserfs/ioctl.c b/fs/reiserfs/ioctl.c
-> index ace7745..f53505d 100644
-> --- a/fs/reiserfs/ioctl.c
-> +++ b/fs/reiserfs/ioctl.c
-> @@ -104,9 +104,10 @@ setflags_out:
->  		err = put_user(inode->i_generation, (int __user *)arg);
->  		break;
->  	case REISERFS_IOC_SETVERSION:
-> -		if (!is_owner_or_cap(inode))
-> +		if (!is_owner_or_cap(inode)) {
->  			err = -EPERM;
->  			break;
+> diff --git a/kernel/kallsyms.c b/kernel/kallsyms.c
+> index 8e5288a..bb9fdc5 100644
+> --- a/kernel/kallsyms.c
+> +++ b/kernel/kallsyms.c
+> @@ -173,12 +173,16 @@ unsigned long kallsyms_lookup_name(const char *name)
+>  	unsigned long i;
+>  	unsigned int off;
+>  
+> -	for (i = 0, off = 0; i < kallsyms_num_syms; i++) {
+> -		off = kallsyms_expand_symbol(off, namebuf);
+> +	/* if a colon ':' found, skip the heavy kernel symbols */
+> +	if (strchr(name, ':') == NULL) {
+> +		for (i = 0, off = 0; i < kallsyms_num_syms; i++) {
+> +			off = kallsyms_expand_symbol(off, namebuf);
+>  
+> -		if (strcmp(namebuf, name) == 0)
+> -			return kallsyms_addresses[i];
+> +			if (strcmp(namebuf, name) == 0)
+> +				return kallsyms_addresses[i];
 > +		}
->  		err = mnt_want_write(filp->f_path.mnt);
->  		if (err)
->  			break;
-> -- 
-> 1.6.5.7
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+>  	}
+> +
+>  	return module_kallsyms_lookup_name(name);
+>  }
+>  EXPORT_SYMBOL_GPL(kallsyms_lookup_name);
 
+It think Rusty is the right person to handle this (CC added). But if you
+want my opinion: The patch looks ok.
+
+Acked-by: Michal Marek <mmarek@suse.cz>
+
+Michal
