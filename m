@@ -1,100 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756743Ab0AGDqS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756750Ab0AGDrM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756743Ab0AGDqS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 22:46:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756730Ab0AGDqR
+	id S1756750Ab0AGDrM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 22:47:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756731Ab0AGDrK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 22:46:17 -0500
-Received: from nwd2mail10.analog.com ([137.71.25.55]:56626 "EHLO
-	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752316Ab0AGDqQ convert rfc822-to-8bit (ORCPT
+	Wed, 6 Jan 2010 22:47:10 -0500
+Received: from mail-iw0-f194.google.com ([209.85.223.194]:48422 "EHLO
+	mail-iw0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752443Ab0AGDrI convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 22:46:16 -0500
-From: "Zhang, Sonic" <Sonic.Zhang@analog.com>
-X-IronPort-AV: E=Sophos;i="4.49,233,1262581200"; 
-   d="scan'208";a="9819776"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-Class: urn:content-classes:message
+	Wed, 6 Jan 2010 22:47:08 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=FbkhxOKDjmTkCPZIAjY6mzrcsGAz1ubwUbaLIzUtYViDw2Yz5Q1e1KoDwHg6w8XYJG
+         i/LAg+RM6I1AjV2F9+ILCYbdpjrXCtrIREh1z9g3cWoxxBo1azonWtipWMw8huByDXX2
+         Min+UCPVPEEKLiIZsXhHx76nFBoHK0FhlJ7n8=
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <1262136291.8733.35.camel@ICE-BOX>
+References: <1262136291.8733.35.camel@ICE-BOX>
+Date: Thu, 7 Jan 2010 13:47:07 +1000
+Message-ID: <21d7e9971001061947k16ef1367k3c331a8849ce0109@mail.gmail.com>
+Subject: Re: [PATCH] drm/radeon/r100.c: check for invalid family
+From: Dave Airlie <airlied@gmail.com>
+To: Darren Jenkins <darrenrjenkins@gmail.com>
+Cc: David Airlie <airlied@linux.ie>,
+       dri-devel mailing list <dri-devel@lists.sourceforge.net>,
+       Kernel Janitors <kernel-janitors@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 8BIT
-Subject: RE: [Kgdb-bugreport] [PATCH 09/37] kgdb,blackfin: Add in kgdb_arch_set_pc for blackfin
-Date: Thu, 7 Jan 2010 11:50:38 +0800
-Message-ID: <0F1B54C89D5F954D8535DB252AF412FA055F00DD@chinexm1.ad.analog.com>
-In-Reply-To: <4B44E7E3.10305@windriver.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [Kgdb-bugreport] [PATCH 09/37] kgdb,blackfin: Add in kgdb_arch_set_pc for blackfin
-Thread-Index: AcqPCIndtvYuiWXRRrqSTCJByUo00AAPjdvw
-References: <1261603190-5036-1-git-send-email-jason.wessel@windriver.com><1261603190-5036-4-git-send-email-jason.wessel@windriver.com><1261603190-5036-5-git-send-email-jason.wessel@windriver.com><1261603190-5036-6-git-send-email-jason.wessel@windriver.com><1261603190-5036-7-git-send-email-jason.wessel@windriver.com><1261603190-5036-8-git-send-email-jason.wessel@windriver.com><1261603190-5036-9-git-send-email-jason.wessel@windriver.com><1261603190-5036-10-git-send-email-jason.wessel@windriver.com><8bd0f97a0912261312x4b7c7df6s14ac0137b702044e@mail.gmail.com><0F1B54C89D5F954D8535DB252AF412FA0553E3A0@chinexm1.ad.analog.com> <4e5ebad50912301845p35b1ea98l2f91c2a209ee863a@mail.gmail.com> <4B44E7E3.10305@windriver.com>
-To: "Jason Wessel" <jason.wessel@windriver.com>,
-       "Sonic Zhang" <sonic.adi@gmail.com>
-CC: "Mike Frysinger" <vapier.adi@gmail.com>,
-       <kgdb-bugreport@lists.sourceforge.net>, <linux-kernel@vger.kernel.org>,
-       <mingo@elte.hu>
-X-OriginalArrivalTime: 07 Jan 2010 03:46:01.0731 (UTC) FILETIME=[EE546D30:01CA8F4B]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jason,
+On Wed, Dec 30, 2009 at 11:24 AM, Darren Jenkins
+<darrenrjenkins@gmail.com> wrote:
+> If there is an invalid family the fw_name is NULL and causes an
+> NULL pointer dereference.
+> This just adds a check for something unexpected.
 
-I tried your latest update of this patch, it works well. So I am OK with
-it.
+NAK.
 
-And I will try your generic CPU switch code on blackfin.
+This can't happen, only gpus with those families set can call this function,
+so we can't get in here without the correct family, and if we did it would be
+due to developer error, so oopsing is very appropriate.
 
+Dave.
 
-Sonic
-
-
------Original Message-----
-From: Jason Wessel [mailto:jason.wessel@windriver.com] 
-Sent: Thursday, January 07, 2010 3:44 AM
-To: Sonic Zhang
-Cc: Zhang, Sonic; Mike Frysinger; kgdb-bugreport@lists.sourceforge.net;
-linux-kernel@vger.kernel.org; mingo@elte.hu
-Subject: Re: [Kgdb-bugreport] [PATCH 09/37] kgdb,blackfin: Add in
-kgdb_arch_set_pc for blackfin
-
-Sonic Zhang wrote:
-> I have to recall my last wrong patch.
 >
-> In blackfin, kgdb is running in delayed exception IRQ5 other than in 
-> exception IRQ3 directly.  Register reti other than retx in pt_regs is 
-> the kgdb return address. So, don't put PC in gdb_regs into retx.
+> Coverity CID: 13251
 >
-> Sonic Zhang
+> Signed-off-by: Darren Jenkins <darrenrjenkins@gmail.com>
 >
-> Index: arch/blackfin/kernel/kgdb.c
-> ============================
-> --- arch/blackfin/kernel/kgdb.c	(revision 8105)
-> +++ arch/blackfin/kernel/kgdb.c	(revision 8106)
-> @@ -147,7 +147,7 @@
->  	regs->lb1 = gdb_regs[BFIN_LB1];
->  	regs->usp = gdb_regs[BFIN_USP];
->  	regs->syscfg = gdb_regs[BFIN_SYSCFG];
-> -	regs->retx = gdb_regs[BFIN_PC];
-> +	regs->retx = gdb_regs[BFIN_RETX];
->  	regs->retn = gdb_regs[BFIN_RETN];
->  	regs->rete = gdb_regs[BFIN_RETE];
->  	regs->pc = gdb_regs[BFIN_PC];
+> diff --git drivers/gpu/drm/radeon/r100.c drivers/gpu/drm/radeon/r100.c
+> index 7172746..e4b9770 100644
+> --- drivers/gpu/drm/radeon/r100.c
+> +++ drivers/gpu/drm/radeon/r100.c
+> @@ -584,6 +584,8 @@ static int r100_cp_init_microcode(struct radeon_device *rdev)
+>                   (rdev->family == CHIP_RV570)) {
+>                DRM_INFO("Loading R500 Microcode\n");
+>                fw_name = FIRMWARE_R520;
+> +       } else {
+> +               return -EINVAL;
+>        }
 >
->   
-
-Sonic,
-
-I pulled in this patch, and made the changes the Mike talked about with
-respect to cleaning up the arch specific kgdb.c for blackfin.  See the
-attached patch.
-
-Your patch and the one here will go into kgdb-next and onto linux-next.
-
-At some point you sent a patch for cpu switching that was blackfin
-specific.  There is new generic code in the debug core for doing this
-without exiting the debug context.  At some point you should test this
-and figure out if something further needs to be done that is blackfin
-specific.
-
-Thanks,
-Jason.
+>        err = request_firmware(&rdev->me_fw, fw_name, &pdev->dev);
+>
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
