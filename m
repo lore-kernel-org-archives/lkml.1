@@ -1,52 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754051Ab0AGXSX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754203Ab0AGXYc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754051Ab0AGXSX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 18:18:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753906Ab0AGXSW
+	id S1754203Ab0AGXYc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 18:24:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753853Ab0AGXYb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 18:18:22 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:36196 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750786Ab0AGXSV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 18:18:21 -0500
-Subject: Re: [PATCH] x86: allow fbdev primary video code on 64-bit.
-From: Dave Airlie <airlied@redhat.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Dave Airlie <airlied@gmail.com>, linux-fbdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <4B4668F7.1000304@zytor.com>
-References: <1262847894-27498-1-git-send-email-airlied@gmail.com>
-	 <4B4668F7.1000304@zytor.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 08 Jan 2010 09:15:16 +1000
-Message-Id: <1262906116.25818.19.camel@localhost>
-Mime-Version: 1.0
+	Thu, 7 Jan 2010 18:24:31 -0500
+Received: from [206.15.93.42] ([206.15.93.42]:12352 "EHLO
+	visionfs1.visionengravers.com" rhost-flags-FAIL-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752541Ab0AGXYa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jan 2010 18:24:30 -0500
+From: H Hartley Sweeten <hartleys@visionengravers.com>
+To: Linux Kernel <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
+Subject: [PATCH] drivers/net/defxx.c: use %pMF to show MAC address
+Date: Thu, 7 Jan 2010 16:24:19 -0700
+Cc: macro@linux-mips.org, davem@davemloft.net
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <201001071624.20139.hartleys@visionengravers.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2010-01-07 at 15:06 -0800, H. Peter Anvin wrote:
-> On 01/06/2010 11:04 PM, Dave Airlie wrote:
-> > From: Dave Airlie <airlied@redhat.com>
-> > 
-> > For some reason the 64-bit tree was doing this differently and
-> > I can't see why it would need to.
-> > 
-> > This correct behaviour when you have two GPUs plugged in and
-> > 32-bit put the console in one place and 64-bit in another.
-> > 
-> > Signed-off-by: Dave Airlie <airlied@redhat.com>
-> 
-> Looks good... I presume this is for .34, though?
+Use the %pMF kernel extension to display the MAC address.
 
-I don't mind, I'll be putting it into Fedora kernel anyways
-since its a real bug when the console turns up different on
-the same machine with 32 vs 64-bit kernels.
+The address will still be displayed in the FDDI Canonical format.
 
-I can't see it having any side effects, not many ppl
-run two fbs on x86 anyways yet.
+Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
+Cc: Maciej W. Rozycki <macro@linux-mips.org>
+Cc: David S. Miller <davem@davemloft.net>
 
-Dave.
+---
 
-
+diff --git a/drivers/net/defxx.c b/drivers/net/defxx.c
+index 6a6ea03..e4eac4b 100644
+--- a/drivers/net/defxx.c
++++ b/drivers/net/defxx.c
+@@ -1052,12 +1052,9 @@ static int __devinit dfx_driver_init(struct net_device *dev,
+ 		board_name = "DEFEA";
+ 	if (dfx_bus_pci)
+ 		board_name = "DEFPA";
+-	pr_info("%s: %s at %saddr = 0x%llx, IRQ = %d, "
+-		"Hardware addr = %02X-%02X-%02X-%02X-%02X-%02X\n",
++	pr_info("%s: %s at %saddr = 0x%llx, IRQ = %d, Hardware addr = %pMF\n",
+ 		print_name, board_name, dfx_use_mmio ? "" : "I/O ",
+-		(long long)bar_start, dev->irq,
+-		dev->dev_addr[0], dev->dev_addr[1], dev->dev_addr[2],
+-		dev->dev_addr[3], dev->dev_addr[4], dev->dev_addr[5]);
++		(long long)bar_start, dev->irq, dev->dev_addr);
+ 
+ 	/*
+ 	 * Get memory for descriptor block, consumer block, and other buffers
