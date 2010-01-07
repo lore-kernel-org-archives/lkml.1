@@ -1,68 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753989Ab0AGT6e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751444Ab0AGUHx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753989Ab0AGT6e (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 14:58:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753972Ab0AGT6d
+	id S1751444Ab0AGUHx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 15:07:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750996Ab0AGUHw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 14:58:33 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:34538 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753967Ab0AGT6c convert rfc822-to-8bit (ORCPT
+	Thu, 7 Jan 2010 15:07:52 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:39393 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750887Ab0AGUHv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 14:58:32 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=sZ5kF1sWTqoV4bndti+x/CEFbp97dHwRCl41SgVwfM3YYf1fTaU4k/h78hqamUh0ef
-         ZiO82aEpCAPAAgE3XOZAWtsnESp8iTRaqcGfwLw1+C5JJqGNQ7+T8ReAe7K++dqo6qqm
-         bmae31N3xSr8lMHkZPebCi8wWVvUNnkGjDeRI=
+	Thu, 7 Jan 2010 15:07:51 -0500
+Date: Thu, 7 Jan 2010 12:06:48 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+cc: Peter Zijlstra <peterz@infradead.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "minchan.kim@gmail.com" <minchan.kim@gmail.com>,
+       "hugh.dickins" <hugh.dickins@tiscali.co.uk>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [RFC][PATCH 6/8] mm: handle_speculative_fault()
+In-Reply-To: <20100107192035.GO6764@linux.vnet.ibm.com>
+Message-ID: <alpine.LFD.2.00.1001071204490.7821@localhost.localdomain>
+References: <20100104182813.753545361@chello.nl> <20100105054536.44bf8002@infradead.org> <alpine.DEB.2.00.1001050916300.1074@router.home> <20100105192243.1d6b2213@infradead.org> <alpine.DEB.2.00.1001071007210.901@router.home> <alpine.LFD.2.00.1001070814080.7821@localhost.localdomain>
+ <1262884960.4049.106.camel@laptop> <alpine.LFD.2.00.1001070934060.7821@localhost.localdomain> <alpine.LFD.2.00.1001070937180.7821@localhost.localdomain> <alpine.LFD.2.00.1001071031440.7821@localhost.localdomain> <20100107192035.GO6764@linux.vnet.ibm.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-In-Reply-To: <4565AEA676113A449269C2F3A549520F04463B74@cosmail03.lsi.com>
-References: <4B3B86CC.5010205@gmail.com> <4565AEA676113A449269C2F3A549520F04463B74@cosmail03.lsi.com>
-From: roel kluin <roel.kluin@gmail.com>
-Date: Thu, 7 Jan 2010 20:58:10 +0100
-Message-ID: <25e057c01001071158n1755ee99iae17522e269aa1ff@mail.gmail.com>
-Subject: Re: [PATCH] mpt2sas: Fix &&/|| confusion in _scsih_sas_device_status_change_event()
-To: "Moore, Eric" <Eric.Moore@lsi.com>
-Cc: "James E.J. Bottomley" <James.Bottomley@suse.de>,
-       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Desai, Kashyap" <Kashyap.Desai@lsi.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 7, 2010 at 8:31 PM, Moore, Eric <Eric.Moore@lsi.com> wrote:
-> nack
->
-> The code beyond this check is intended for either INTERNAL_DEVICE_RESET or CMP_DEVICE_RESET.   If the reason code is something else, we will want to return.  There are 10 other types of reason codes besides these two. This proposed patch means we return only when the reason code is either INTERNAL_DEVICE_RESET or CMP_INTERNAL_RESET.
->
-> Eric Moore
 
-my patch is correct but my changelog was wrong. Sorry for the
-confusion. It should have been:
 
-Even if the ReasonCode is not INTERNAL_DEVICE_RESET nor CMP_DEVICE_RESET
-this still evaluates to true.
+On Thu, 7 Jan 2010, Paul E. McKenney wrote:
+> > +
+> > +	spin_lock(&mm->page_table_lock);
+> > +	if (vma->vm_end == cur_brk) {
+> > +		vma->vm_end = brk;
+> > +		mm->brk = brk;
+> > +		cur_brk = brk;
+> > +	}
+> > +	spin_unlock(&mm->page_table_lock);
+> > +
+> > +	if (cur_brk != brk)
+> 
+> Can this be "if (cur_brk < brk)"?  Seems like it should, given the
+> earlier tests, but I don't claim to understand the VM code.
 
-you can test this with:
+It's really just a flag, to test whether the final check (inside the 
+spinlock) succeeded, or whether we perhaps raced with _another_ brk() call 
+that also had the mm_sem for reading.
 
-#include <stdio.h>
+We know that cur_brk was different from brk before - because otherwise 
+we'd have just returned early (or done the slow case). So testing whether 
+it's different afterwards really only tests whether that 
 
-int main()
-{
-        int d;
-        for (d=0;d<4;++d)
-                printf("!(%d == 1 && %d == 2) = %d\n", d, d, !(d == 1
-&& d == 2));
-        for (d=0;d<4;++d)
-                printf("!(%d == 1 || %d == 2) = %d\n", d, d, !(d == 1
-|| d == 2));
-        return 0;
-}
+	cur_brk = brk;
 
-Roel
+statment was executed or not.
+
+I could have used a separate flag called "success" or something. 
+
+		Linus
