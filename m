@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753394Ab0AGQyL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753369Ab0AGQx4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753394Ab0AGQyL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 11:54:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753172Ab0AGQyH
+	id S1753369Ab0AGQx4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 11:53:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752141Ab0AGQxy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 11:54:07 -0500
-Received: from mail-yw0-f176.google.com ([209.85.211.176]:63461 "EHLO
-	mail-yw0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753382Ab0AGQyE (ORCPT
+	Thu, 7 Jan 2010 11:53:54 -0500
+Received: from mail-gx0-f211.google.com ([209.85.217.211]:41181 "EHLO
+	mail-gx0-f211.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752382Ab0AGQxu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 11:54:04 -0500
+	Thu, 7 Jan 2010 11:53:50 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=WHqwIVp5f4UGgWbrNeqq7/AjPQNVFOoiIDNx+4WR9651OtiOkINUMOxDA5RAwam63j
-         tyfyKpEWvOOjS6ICT3rT75n0vwzhbFMXOgIVsJ8FsxRzu9y2fuQ0nySSVoCHW07LGY97
-         HX8UvrlpQT8Mrb4sFzy/rTRtyG89hjEIIDKHI=
+        b=m4Dd+lgEpKWVoyzMZiK1F/iW/lNU7FcKaP1BuXQYxhNmpxyOSJBqfPYSn4WPTSZqNQ
+         3PkgpODojiv5Q00fwDScAplZJuP7G2wINEA5S6H7T79ZLRq9v11KF0j5DVnzfPADKfYC
+         RFC34inYnghUHUCgYiS0VYE+TOa5F1XCvRJIY=
 From: Brian Gerst <brgerst@gmail.com>
 To: hpa@zytor.com
 Cc: x86@kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 3/3] x86: Merge atomic.h
-Date: Thu,  7 Jan 2010 11:53:35 -0500
-Message-Id: <1262883215-4034-4-git-send-email-brgerst@gmail.com>
+Subject: [PATCH 2/3] x86: Sync atomic_xx.h
+Date: Thu,  7 Jan 2010 11:53:34 -0500
+Message-Id: <1262883215-4034-3-git-send-email-brgerst@gmail.com>
 X-Mailer: git-send-email 1.6.5.2
 In-Reply-To: <1262883215-4034-1-git-send-email-brgerst@gmail.com>
 References: <1262883215-4034-1-git-send-email-brgerst@gmail.com>
@@ -29,268 +29,62 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Prepare for merging into atomic.h.
+
 Signed-off-by: Brian Gerst <brgerst@gmail.com>
 ---
- arch/x86/include/asm/atomic.h    |  299 +++++++++++++++++++++++++++++++++++++-
- arch/x86/include/asm/atomic_32.h |  295 -------------------------------------
- arch/x86/include/asm/atomic_64.h |  295 -------------------------------------
- 3 files changed, 297 insertions(+), 592 deletions(-)
- delete mode 100644 arch/x86/include/asm/atomic_32.h
- delete mode 100644 arch/x86/include/asm/atomic_64.h
+ arch/x86/include/asm/atomic_32.h |   42 +++++++++++++++++---
+ arch/x86/include/asm/atomic_64.h |   81 +++++++++++++++++++++++++-------------
+ 2 files changed, 89 insertions(+), 34 deletions(-)
 
-diff --git a/arch/x86/include/asm/atomic.h b/arch/x86/include/asm/atomic.h
-index 4e1b887..8baaa71 100644
---- a/arch/x86/include/asm/atomic.h
-+++ b/arch/x86/include/asm/atomic.h
-@@ -1,5 +1,300 @@
-+#ifndef _ASM_X86_ATOMIC_H
-+#define _ASM_X86_ATOMIC_H
-+
-+#include <linux/compiler.h>
-+#include <linux/types.h>
-+#include <asm/processor.h>
+diff --git a/arch/x86/include/asm/atomic_32.h b/arch/x86/include/asm/atomic_32.h
+index e128ae9..036962e 100644
+--- a/arch/x86/include/asm/atomic_32.h
++++ b/arch/x86/include/asm/atomic_32.h
+@@ -4,6 +4,7 @@
+ #include <linux/compiler.h>
+ #include <linux/types.h>
+ #include <asm/processor.h>
 +#include <asm/alternative.h>
-+#include <asm/cmpxchg.h>
-+
-+/*
-+ * Atomic operations that C can't guarantee us.  Useful for
-+ * resource counting etc..
-+ */
-+
-+#define ATOMIC_INIT(i)	{ (i) }
-+
-+/**
-+ * atomic_read - read atomic variable
+ #include <asm/cmpxchg.h>
+ 
+ /*
+@@ -145,8 +146,8 @@ static inline int atomic_inc_and_test(atomic_t *v)
+ 
+ /**
+  * atomic_add_negative - add and test if negative
+- * @v: pointer of type atomic_t
+  * @i: integer value to add
 + * @v: pointer of type atomic_t
-+ *
-+ * Atomically reads the value of @v.
-+ */
-+static inline int atomic_read(const atomic_t *v)
-+{
-+	return v->counter;
-+}
-+
-+/**
-+ * atomic_set - set atomic variable
+  *
+  * Atomically adds @i to @v and returns true
+  * if the result is negative, or false when
+@@ -164,8 +165,8 @@ static inline int atomic_add_negative(int i, atomic_t *v)
+ 
+ /**
+  * atomic_add_return - add integer and return
+- * @v: pointer of type atomic_t
+  * @i: integer value to add
 + * @v: pointer of type atomic_t
-+ * @i: required value
-+ *
-+ * Atomically sets the value of @v to @i.
-+ */
-+static inline void atomic_set(atomic_t *v, int i)
-+{
-+	v->counter = i;
-+}
-+
-+/**
-+ * atomic_add - add integer to atomic variable
-+ * @i: integer value to add
-+ * @v: pointer of type atomic_t
-+ *
-+ * Atomically adds @i to @v.
-+ */
-+static inline void atomic_add(int i, atomic_t *v)
-+{
-+	asm volatile(LOCK_PREFIX "addl %1,%0"
-+		     : "+m" (v->counter)
-+		     : "ir" (i));
-+}
-+
-+/**
-+ * atomic_sub - subtract integer from atomic variable
-+ * @i: integer value to subtract
-+ * @v: pointer of type atomic_t
-+ *
-+ * Atomically subtracts @i from @v.
-+ */
-+static inline void atomic_sub(int i, atomic_t *v)
-+{
-+	asm volatile(LOCK_PREFIX "subl %1,%0"
-+		     : "+m" (v->counter)
-+		     : "ir" (i));
-+}
-+
-+/**
-+ * atomic_sub_and_test - subtract value from variable and test result
-+ * @i: integer value to subtract
-+ * @v: pointer of type atomic_t
-+ *
-+ * Atomically subtracts @i from @v and returns
-+ * true if the result is zero, or false for all
-+ * other cases.
-+ */
-+static inline int atomic_sub_and_test(int i, atomic_t *v)
-+{
-+	unsigned char c;
-+
-+	asm volatile(LOCK_PREFIX "subl %2,%0; sete %1"
-+		     : "+m" (v->counter), "=qm" (c)
-+		     : "ir" (i) : "memory");
-+	return c;
-+}
-+
-+/**
-+ * atomic_inc - increment atomic variable
-+ * @v: pointer of type atomic_t
-+ *
-+ * Atomically increments @v by 1.
-+ */
-+static inline void atomic_inc(atomic_t *v)
-+{
-+	asm volatile(LOCK_PREFIX "incl %0"
-+		     : "+m" (v->counter));
-+}
-+
-+/**
-+ * atomic_dec - decrement atomic variable
-+ * @v: pointer of type atomic_t
-+ *
-+ * Atomically decrements @v by 1.
-+ */
-+static inline void atomic_dec(atomic_t *v)
-+{
-+	asm volatile(LOCK_PREFIX "decl %0"
-+		     : "+m" (v->counter));
-+}
-+
-+/**
-+ * atomic_dec_and_test - decrement and test
-+ * @v: pointer of type atomic_t
-+ *
-+ * Atomically decrements @v by 1 and
-+ * returns true if the result is 0, or false for all other
-+ * cases.
-+ */
-+static inline int atomic_dec_and_test(atomic_t *v)
-+{
-+	unsigned char c;
-+
-+	asm volatile(LOCK_PREFIX "decl %0; sete %1"
-+		     : "+m" (v->counter), "=qm" (c)
-+		     : : "memory");
-+	return c != 0;
-+}
-+
-+/**
-+ * atomic_inc_and_test - increment and test
-+ * @v: pointer of type atomic_t
-+ *
-+ * Atomically increments @v by 1
-+ * and returns true if the result is zero, or false for all
-+ * other cases.
-+ */
-+static inline int atomic_inc_and_test(atomic_t *v)
-+{
-+	unsigned char c;
-+
-+	asm volatile(LOCK_PREFIX "incl %0; sete %1"
-+		     : "+m" (v->counter), "=qm" (c)
-+		     : : "memory");
-+	return c != 0;
-+}
-+
-+/**
-+ * atomic_add_negative - add and test if negative
-+ * @i: integer value to add
-+ * @v: pointer of type atomic_t
-+ *
-+ * Atomically adds @i to @v and returns true
-+ * if the result is negative, or false when
-+ * result is greater than or equal to zero.
-+ */
-+static inline int atomic_add_negative(int i, atomic_t *v)
-+{
-+	unsigned char c;
-+
-+	asm volatile(LOCK_PREFIX "addl %2,%0; sets %1"
-+		     : "+m" (v->counter), "=qm" (c)
-+		     : "ir" (i) : "memory");
-+	return c;
-+}
-+
-+/**
-+ * atomic_add_return - add integer and return
-+ * @i: integer value to add
-+ * @v: pointer of type atomic_t
-+ *
-+ * Atomically adds @i to @v and returns @i + @v
-+ */
-+static inline int atomic_add_return(int i, atomic_t *v)
-+{
-+	int __i;
-+#ifdef CONFIG_M386
-+	unsigned long flags;
-+	if (unlikely(boot_cpu_data.x86 <= 3))
-+		goto no_xadd;
-+#endif
-+	/* Modern 486+ processor */
-+	__i = i;
-+	asm volatile(LOCK_PREFIX "xaddl %0, %1"
-+		     : "+r" (i), "+m" (v->counter)
-+		     : : "memory");
-+	return i + __i;
-+
-+#ifdef CONFIG_M386
-+no_xadd: /* Legacy 386 processor */
-+	local_irq_save(flags);
-+	__i = atomic_read(v);
-+	atomic_set(v, i + __i);
-+	local_irq_restore(flags);
-+	return i + __i;
-+#endif
-+}
-+
-+/**
-+ * atomic_sub_return - subtract integer and return
-+ * @v: pointer of type atomic_t
-+ * @i: integer value to subtract
-+ *
-+ * Atomically subtracts @i from @v and returns @v - @i
-+ */
-+static inline int atomic_sub_return(int i, atomic_t *v)
-+{
-+	return atomic_add_return(-i, v);
-+}
-+
+  *
+  * Atomically adds @i to @v and returns @i + @v
+  */
+@@ -206,6 +207,9 @@ static inline int atomic_sub_return(int i, atomic_t *v)
+ 	return atomic_add_return(-i, v);
+ }
+ 
 +#define atomic_inc_return(v)  (atomic_add_return(1, v))
 +#define atomic_dec_return(v)  (atomic_sub_return(1, v))
 +
-+static inline int atomic_cmpxchg(atomic_t *v, int old, int new)
-+{
-+	return cmpxchg(&v->counter, old, new);
-+}
-+
-+static inline int atomic_xchg(atomic_t *v, int new)
-+{
-+	return xchg(&v->counter, new);
-+}
-+
-+/**
-+ * atomic_add_unless - add unless the number is already a given value
-+ * @v: pointer of type atomic_t
-+ * @a: the amount to add to v...
-+ * @u: ...unless v is equal to u.
-+ *
-+ * Atomically adds @a to @v, so long as @v was not already @u.
-+ * Returns non-zero if @v was not @u, and zero otherwise.
-+ */
-+static inline int atomic_add_unless(atomic_t *v, int a, int u)
-+{
-+	int c, old;
-+	c = atomic_read(v);
-+	for (;;) {
-+		if (unlikely(c == (u)))
-+			break;
-+		old = atomic_cmpxchg((v), c, c + (a));
-+		if (likely(old == c))
-+			break;
-+		c = old;
-+	}
-+	return c != (u);
-+}
-+
-+#define atomic_inc_not_zero(v) atomic_add_unless((v), 1, 0)
-+
+ static inline int atomic_cmpxchg(atomic_t *v, int old, int new)
+ {
+ 	return cmpxchg(&v->counter, old, new);
+@@ -242,8 +246,33 @@ static inline int atomic_add_unless(atomic_t *v, int a, int u)
+ 
+ #define atomic_inc_not_zero(v) atomic_add_unless((v), 1, 0)
+ 
+-#define atomic_inc_return(v)  (atomic_add_return(1, v))
+-#define atomic_dec_return(v)  (atomic_sub_return(1, v))
 +/**
 + * atomic_inc_short - increment of a short integer
 + * @v: pointer to type int
@@ -318,635 +112,228 @@ index 4e1b887..8baaa71 100644
 +	asm(LOCK_PREFIX "orq %1, %0" : "+m" (*v1) : "r" (v2));
 +}
 +#endif
-+
-+/* These are x86-specific, used by some header files */
-+#define atomic_clear_mask(mask, addr)				\
-+	asm volatile(LOCK_PREFIX "andl %0,%1"			\
-+		     : : "r" (~(mask)), "m" (*(addr)) : "memory")
-+
-+#define atomic_set_mask(mask, addr)				\
+ 
+ /* These are x86-specific, used by some header files */
+ #define atomic_clear_mask(mask, addr)				\
+@@ -251,8 +280,9 @@ static inline int atomic_add_unless(atomic_t *v, int a, int u)
+ 		     : : "r" (~(mask)), "m" (*(addr)) : "memory")
+ 
+ #define atomic_set_mask(mask, addr)				\
+-	asm volatile(LOCK_PREFIX "orl %0,%1"				\
+-		     : : "r" (mask), "m" (*(addr)) : "memory")
 +	asm volatile(LOCK_PREFIX "orl %0,%1"			\
 +		     : : "r" ((unsigned)(mask)), "m" (*(addr))	\
 +		     : "memory")
-+
-+/* Atomic operations are already serializing on x86 */
-+#define smp_mb__before_atomic_dec()	barrier()
-+#define smp_mb__after_atomic_dec()	barrier()
-+#define smp_mb__before_atomic_inc()	barrier()
-+#define smp_mb__after_atomic_inc()	barrier()
-+
- #ifdef CONFIG_X86_32
--# include "atomic_32.h"
-+# include "atomic64_32.h"
- #else
--# include "atomic_64.h"
-+# include "atomic64_64.h"
- #endif
-+
-+#include <asm-generic/atomic-long.h>
-+#endif /* _ASM_X86_ATOMIC_H */
-diff --git a/arch/x86/include/asm/atomic_32.h b/arch/x86/include/asm/atomic_32.h
-deleted file mode 100644
-index 036962e..0000000
---- a/arch/x86/include/asm/atomic_32.h
-+++ /dev/null
-@@ -1,295 +0,0 @@
--#ifndef _ASM_X86_ATOMIC_32_H
--#define _ASM_X86_ATOMIC_32_H
--
--#include <linux/compiler.h>
--#include <linux/types.h>
--#include <asm/processor.h>
--#include <asm/alternative.h>
--#include <asm/cmpxchg.h>
--
--/*
-- * Atomic operations that C can't guarantee us.  Useful for
-- * resource counting etc..
-- */
--
--#define ATOMIC_INIT(i)	{ (i) }
--
--/**
-- * atomic_read - read atomic variable
-- * @v: pointer of type atomic_t
-- *
-- * Atomically reads the value of @v.
-- */
--static inline int atomic_read(const atomic_t *v)
--{
--	return v->counter;
--}
--
--/**
-- * atomic_set - set atomic variable
-- * @v: pointer of type atomic_t
-- * @i: required value
-- *
-- * Atomically sets the value of @v to @i.
-- */
--static inline void atomic_set(atomic_t *v, int i)
--{
--	v->counter = i;
--}
--
--/**
-- * atomic_add - add integer to atomic variable
-- * @i: integer value to add
-- * @v: pointer of type atomic_t
-- *
-- * Atomically adds @i to @v.
-- */
--static inline void atomic_add(int i, atomic_t *v)
--{
--	asm volatile(LOCK_PREFIX "addl %1,%0"
--		     : "+m" (v->counter)
--		     : "ir" (i));
--}
--
--/**
-- * atomic_sub - subtract integer from atomic variable
-- * @i: integer value to subtract
-- * @v: pointer of type atomic_t
-- *
-- * Atomically subtracts @i from @v.
-- */
--static inline void atomic_sub(int i, atomic_t *v)
--{
--	asm volatile(LOCK_PREFIX "subl %1,%0"
--		     : "+m" (v->counter)
--		     : "ir" (i));
--}
--
--/**
-- * atomic_sub_and_test - subtract value from variable and test result
-- * @i: integer value to subtract
-- * @v: pointer of type atomic_t
-- *
-- * Atomically subtracts @i from @v and returns
-- * true if the result is zero, or false for all
-- * other cases.
-- */
--static inline int atomic_sub_and_test(int i, atomic_t *v)
--{
--	unsigned char c;
--
--	asm volatile(LOCK_PREFIX "subl %2,%0; sete %1"
--		     : "+m" (v->counter), "=qm" (c)
--		     : "ir" (i) : "memory");
--	return c;
--}
--
--/**
-- * atomic_inc - increment atomic variable
-- * @v: pointer of type atomic_t
-- *
-- * Atomically increments @v by 1.
-- */
--static inline void atomic_inc(atomic_t *v)
--{
--	asm volatile(LOCK_PREFIX "incl %0"
--		     : "+m" (v->counter));
--}
--
--/**
-- * atomic_dec - decrement atomic variable
-- * @v: pointer of type atomic_t
-- *
-- * Atomically decrements @v by 1.
-- */
--static inline void atomic_dec(atomic_t *v)
--{
--	asm volatile(LOCK_PREFIX "decl %0"
--		     : "+m" (v->counter));
--}
--
--/**
-- * atomic_dec_and_test - decrement and test
-- * @v: pointer of type atomic_t
-- *
-- * Atomically decrements @v by 1 and
-- * returns true if the result is 0, or false for all other
-- * cases.
-- */
--static inline int atomic_dec_and_test(atomic_t *v)
--{
--	unsigned char c;
--
--	asm volatile(LOCK_PREFIX "decl %0; sete %1"
--		     : "+m" (v->counter), "=qm" (c)
--		     : : "memory");
--	return c != 0;
--}
--
--/**
-- * atomic_inc_and_test - increment and test
-- * @v: pointer of type atomic_t
-- *
-- * Atomically increments @v by 1
-- * and returns true if the result is zero, or false for all
-- * other cases.
-- */
--static inline int atomic_inc_and_test(atomic_t *v)
--{
--	unsigned char c;
--
--	asm volatile(LOCK_PREFIX "incl %0; sete %1"
--		     : "+m" (v->counter), "=qm" (c)
--		     : : "memory");
--	return c != 0;
--}
--
--/**
-- * atomic_add_negative - add and test if negative
-- * @i: integer value to add
-- * @v: pointer of type atomic_t
-- *
-- * Atomically adds @i to @v and returns true
-- * if the result is negative, or false when
-- * result is greater than or equal to zero.
-- */
--static inline int atomic_add_negative(int i, atomic_t *v)
--{
--	unsigned char c;
--
--	asm volatile(LOCK_PREFIX "addl %2,%0; sets %1"
--		     : "+m" (v->counter), "=qm" (c)
--		     : "ir" (i) : "memory");
--	return c;
--}
--
--/**
-- * atomic_add_return - add integer and return
-- * @i: integer value to add
-- * @v: pointer of type atomic_t
-- *
-- * Atomically adds @i to @v and returns @i + @v
-- */
--static inline int atomic_add_return(int i, atomic_t *v)
--{
--	int __i;
--#ifdef CONFIG_M386
--	unsigned long flags;
--	if (unlikely(boot_cpu_data.x86 <= 3))
--		goto no_xadd;
--#endif
--	/* Modern 486+ processor */
--	__i = i;
--	asm volatile(LOCK_PREFIX "xaddl %0, %1"
--		     : "+r" (i), "+m" (v->counter)
--		     : : "memory");
--	return i + __i;
--
--#ifdef CONFIG_M386
--no_xadd: /* Legacy 386 processor */
--	local_irq_save(flags);
--	__i = atomic_read(v);
--	atomic_set(v, i + __i);
--	local_irq_restore(flags);
--	return i + __i;
--#endif
--}
--
--/**
-- * atomic_sub_return - subtract integer and return
-- * @v: pointer of type atomic_t
-- * @i: integer value to subtract
-- *
-- * Atomically subtracts @i from @v and returns @v - @i
-- */
--static inline int atomic_sub_return(int i, atomic_t *v)
--{
--	return atomic_add_return(-i, v);
--}
--
--#define atomic_inc_return(v)  (atomic_add_return(1, v))
--#define atomic_dec_return(v)  (atomic_sub_return(1, v))
--
--static inline int atomic_cmpxchg(atomic_t *v, int old, int new)
--{
--	return cmpxchg(&v->counter, old, new);
--}
--
--static inline int atomic_xchg(atomic_t *v, int new)
--{
--	return xchg(&v->counter, new);
--}
--
--/**
-- * atomic_add_unless - add unless the number is already a given value
-- * @v: pointer of type atomic_t
-- * @a: the amount to add to v...
-- * @u: ...unless v is equal to u.
-- *
-- * Atomically adds @a to @v, so long as @v was not already @u.
-- * Returns non-zero if @v was not @u, and zero otherwise.
-- */
--static inline int atomic_add_unless(atomic_t *v, int a, int u)
--{
--	int c, old;
--	c = atomic_read(v);
--	for (;;) {
--		if (unlikely(c == (u)))
--			break;
--		old = atomic_cmpxchg((v), c, c + (a));
--		if (likely(old == c))
--			break;
--		c = old;
--	}
--	return c != (u);
--}
--
--#define atomic_inc_not_zero(v) atomic_add_unless((v), 1, 0)
--
--/**
-- * atomic_inc_short - increment of a short integer
-- * @v: pointer to type int
-- *
-- * Atomically adds 1 to @v
-- * Returns the new value of @u
-- */
--static inline short int atomic_inc_short(short int *v)
--{
--	asm(LOCK_PREFIX "addw $1, %0" : "+m" (*v));
--	return *v;
--}
--
--#ifdef CONFIG_X86_64
--/**
-- * atomic_or_long - OR of two long integers
-- * @v1: pointer to type unsigned long
-- * @v2: pointer to type unsigned long
-- *
-- * Atomically ORs @v1 and @v2
-- * Returns the result of the OR
-- */
--static inline void atomic_or_long(unsigned long *v1, unsigned long v2)
--{
--	asm(LOCK_PREFIX "orq %1, %0" : "+m" (*v1) : "r" (v2));
--}
--#endif
--
--/* These are x86-specific, used by some header files */
--#define atomic_clear_mask(mask, addr)				\
--	asm volatile(LOCK_PREFIX "andl %0,%1"			\
--		     : : "r" (~(mask)), "m" (*(addr)) : "memory")
--
--#define atomic_set_mask(mask, addr)				\
--	asm volatile(LOCK_PREFIX "orl %0,%1"			\
--		     : : "r" ((unsigned)(mask)), "m" (*(addr))	\
--		     : "memory")
--
--/* Atomic operations are already serializing on x86 */
--#define smp_mb__before_atomic_dec()	barrier()
--#define smp_mb__after_atomic_dec()	barrier()
--#define smp_mb__before_atomic_inc()	barrier()
--#define smp_mb__after_atomic_inc()	barrier()
--
--#include <asm/atomic64_32.h>
--#include <asm-generic/atomic-long.h>
--#endif /* _ASM_X86_ATOMIC_32_H */
+ 
+ /* Atomic operations are already serializing on x86 */
+ #define smp_mb__before_atomic_dec()	barrier()
 diff --git a/arch/x86/include/asm/atomic_64.h b/arch/x86/include/asm/atomic_64.h
-deleted file mode 100644
-index 7740788..0000000
+index 042c331..7740788 100644
 --- a/arch/x86/include/asm/atomic_64.h
-+++ /dev/null
-@@ -1,295 +0,0 @@
--#ifndef _ASM_X86_ATOMIC_64_H
--#define _ASM_X86_ATOMIC_64_H
--
--#include <linux/compiler.h>
--#include <linux/types.h>
--#include <asm/processor.h>
--#include <asm/alternative.h>
--#include <asm/cmpxchg.h>
--
--/*
-- * Atomic operations that C can't guarantee us.  Useful for
-- * resource counting etc..
-- */
--
--#define ATOMIC_INIT(i)	{ (i) }
--
--/**
-- * atomic_read - read atomic variable
-- * @v: pointer of type atomic_t
-- *
-- * Atomically reads the value of @v.
-- */
--static inline int atomic_read(const atomic_t *v)
--{
--	return v->counter;
--}
--
--/**
-- * atomic_set - set atomic variable
-- * @v: pointer of type atomic_t
-- * @i: required value
-- *
-- * Atomically sets the value of @v to @i.
-- */
--static inline void atomic_set(atomic_t *v, int i)
--{
--	v->counter = i;
--}
--
--/**
-- * atomic_add - add integer to atomic variable
-- * @i: integer value to add
-- * @v: pointer of type atomic_t
-- *
-- * Atomically adds @i to @v.
-- */
--static inline void atomic_add(int i, atomic_t *v)
--{
--	asm volatile(LOCK_PREFIX "addl %1,%0"
--		     : "+m" (v->counter)
--		     : "ir" (i));
--}
--
--/**
-- * atomic_sub - subtract integer from atomic variable
-- * @i: integer value to subtract
-- * @v: pointer of type atomic_t
-- *
-- * Atomically subtracts @i from @v.
-- */
--static inline void atomic_sub(int i, atomic_t *v)
--{
--	asm volatile(LOCK_PREFIX "subl %1,%0"
--		     : "+m" (v->counter)
--		     : "ir" (i));
--}
--
--/**
-- * atomic_sub_and_test - subtract value from variable and test result
-- * @i: integer value to subtract
-- * @v: pointer of type atomic_t
-- *
-- * Atomically subtracts @i from @v and returns
-- * true if the result is zero, or false for all
-- * other cases.
-- */
--static inline int atomic_sub_and_test(int i, atomic_t *v)
--{
--	unsigned char c;
--
--	asm volatile(LOCK_PREFIX "subl %2,%0; sete %1"
--		     : "+m" (v->counter), "=qm" (c)
--		     : "ir" (i) : "memory");
--	return c;
--}
--
--/**
-- * atomic_inc - increment atomic variable
-- * @v: pointer of type atomic_t
-- *
-- * Atomically increments @v by 1.
-- */
--static inline void atomic_inc(atomic_t *v)
--{
--	asm volatile(LOCK_PREFIX "incl %0"
--		     : "+m" (v->counter));
--}
--
--/**
-- * atomic_dec - decrement atomic variable
-- * @v: pointer of type atomic_t
-- *
-- * Atomically decrements @v by 1.
-- */
--static inline void atomic_dec(atomic_t *v)
--{
--	asm volatile(LOCK_PREFIX "decl %0"
--		     : "+m" (v->counter));
--}
--
--/**
-- * atomic_dec_and_test - decrement and test
-- * @v: pointer of type atomic_t
-- *
-- * Atomically decrements @v by 1 and
-- * returns true if the result is 0, or false for all other
-- * cases.
-- */
--static inline int atomic_dec_and_test(atomic_t *v)
--{
--	unsigned char c;
--
--	asm volatile(LOCK_PREFIX "decl %0; sete %1"
--		     : "+m" (v->counter), "=qm" (c)
--		     : : "memory");
--	return c != 0;
--}
--
--/**
-- * atomic_inc_and_test - increment and test
-- * @v: pointer of type atomic_t
-- *
-- * Atomically increments @v by 1
-- * and returns true if the result is zero, or false for all
-- * other cases.
-- */
--static inline int atomic_inc_and_test(atomic_t *v)
--{
--	unsigned char c;
--
--	asm volatile(LOCK_PREFIX "incl %0; sete %1"
--		     : "+m" (v->counter), "=qm" (c)
--		     : : "memory");
--	return c != 0;
--}
--
--/**
-- * atomic_add_negative - add and test if negative
-- * @i: integer value to add
-- * @v: pointer of type atomic_t
-- *
-- * Atomically adds @i to @v and returns true
-- * if the result is negative, or false when
-- * result is greater than or equal to zero.
-- */
--static inline int atomic_add_negative(int i, atomic_t *v)
--{
--	unsigned char c;
--
--	asm volatile(LOCK_PREFIX "addl %2,%0; sets %1"
--		     : "+m" (v->counter), "=qm" (c)
--		     : "ir" (i) : "memory");
--	return c;
--}
--
--/**
-- * atomic_add_return - add integer and return
-- * @i: integer value to add
-- * @v: pointer of type atomic_t
-- *
-- * Atomically adds @i to @v and returns @i + @v
-- */
--static inline int atomic_add_return(int i, atomic_t *v)
--{
--	int __i;
--#ifdef CONFIG_M386
--	unsigned long flags;
--	if (unlikely(boot_cpu_data.x86 <= 3))
--		goto no_xadd;
--#endif
--	/* Modern 486+ processor */
--	__i = i;
--	asm volatile(LOCK_PREFIX "xaddl %0, %1"
--		     : "+r" (i), "+m" (v->counter)
--		     : : "memory");
--	return i + __i;
--
--#ifdef CONFIG_M386
--no_xadd: /* Legacy 386 processor */
--	local_irq_save(flags);
--	__i = atomic_read(v);
--	atomic_set(v, i + __i);
--	local_irq_restore(flags);
--	return i + __i;
--#endif
--}
--
--/**
-- * atomic_sub_return - subtract integer and return
-- * @v: pointer of type atomic_t
-- * @i: integer value to subtract
-- *
-- * Atomically subtracts @i from @v and returns @v - @i
-- */
--static inline int atomic_sub_return(int i, atomic_t *v)
--{
--	return atomic_add_return(-i, v);
--}
--
--#define atomic_inc_return(v)  (atomic_add_return(1, v))
--#define atomic_dec_return(v)  (atomic_sub_return(1, v))
--
--static inline int atomic_cmpxchg(atomic_t *v, int old, int new)
--{
--	return cmpxchg(&v->counter, old, new);
--}
--
--static inline int atomic_xchg(atomic_t *v, int new)
--{
--	return xchg(&v->counter, new);
--}
--
--/**
-- * atomic_add_unless - add unless the number is already a given value
-- * @v: pointer of type atomic_t
-- * @a: the amount to add to v...
-- * @u: ...unless v is equal to u.
-- *
-- * Atomically adds @a to @v, so long as @v was not already @u.
-- * Returns non-zero if @v was not @u, and zero otherwise.
-- */
--static inline int atomic_add_unless(atomic_t *v, int a, int u)
--{
--	int c, old;
--	c = atomic_read(v);
--	for (;;) {
--		if (unlikely(c == (u)))
--			break;
--		old = atomic_cmpxchg((v), c, c + (a));
--		if (likely(old == c))
--			break;
--		c = old;
--	}
--	return c != (u);
--}
--
--#define atomic_inc_not_zero(v) atomic_add_unless((v), 1, 0)
--
--/**
-- * atomic_inc_short - increment of a short integer
-- * @v: pointer to type int
-- *
-- * Atomically adds 1 to @v
-- * Returns the new value of @u
-- */
--static inline short int atomic_inc_short(short int *v)
--{
--	asm(LOCK_PREFIX "addw $1, %0" : "+m" (*v));
--	return *v;
--}
--
--#ifdef CONFIG_X86_64
--/**
-- * atomic_or_long - OR of two long integers
-- * @v1: pointer to type unsigned long
-- * @v2: pointer to type unsigned long
-- *
-- * Atomically ORs @v1 and @v2
-- * Returns the result of the OR
-- */
--static inline void atomic_or_long(unsigned long *v1, unsigned long v2)
--{
--	asm(LOCK_PREFIX "orq %1, %0" : "+m" (*v1) : "r" (v2));
--}
--#endif
--
--/* These are x86-specific, used by some header files */
--#define atomic_clear_mask(mask, addr)				\
--	asm volatile(LOCK_PREFIX "andl %0,%1"			\
--		     : : "r" (~(mask)), "m" (*(addr)) : "memory")
--
--#define atomic_set_mask(mask, addr)				\
--	asm volatile(LOCK_PREFIX "orl %0,%1"			\
--		     : : "r" ((unsigned)(mask)), "m" (*(addr))	\
--		     : "memory")
--
--/* Atomic operations are already serializing on x86 */
--#define smp_mb__before_atomic_dec()	barrier()
--#define smp_mb__after_atomic_dec()	barrier()
--#define smp_mb__before_atomic_inc()	barrier()
--#define smp_mb__after_atomic_inc()	barrier()
--
--#include <asm/atomic64_64.h>
--#include <asm-generic/atomic-long.h>
--#endif /* _ASM_X86_ATOMIC_64_H */
++++ b/arch/x86/include/asm/atomic_64.h
+@@ -1,7 +1,9 @@
+ #ifndef _ASM_X86_ATOMIC_64_H
+ #define _ASM_X86_ATOMIC_64_H
+ 
++#include <linux/compiler.h>
+ #include <linux/types.h>
++#include <asm/processor.h>
+ #include <asm/alternative.h>
+ #include <asm/cmpxchg.h>
+ 
+@@ -45,12 +47,12 @@ static inline void atomic_set(atomic_t *v, int i)
+ static inline void atomic_add(int i, atomic_t *v)
+ {
+ 	asm volatile(LOCK_PREFIX "addl %1,%0"
+-		     : "=m" (v->counter)
+-		     : "ir" (i), "m" (v->counter));
++		     : "+m" (v->counter)
++		     : "ir" (i));
+ }
+ 
+ /**
+- * atomic_sub - subtract the atomic variable
++ * atomic_sub - subtract integer from atomic variable
+  * @i: integer value to subtract
+  * @v: pointer of type atomic_t
+  *
+@@ -59,8 +61,8 @@ static inline void atomic_add(int i, atomic_t *v)
+ static inline void atomic_sub(int i, atomic_t *v)
+ {
+ 	asm volatile(LOCK_PREFIX "subl %1,%0"
+-		     : "=m" (v->counter)
+-		     : "ir" (i), "m" (v->counter));
++		     : "+m" (v->counter)
++		     : "ir" (i));
+ }
+ 
+ /**
+@@ -77,8 +79,8 @@ static inline int atomic_sub_and_test(int i, atomic_t *v)
+ 	unsigned char c;
+ 
+ 	asm volatile(LOCK_PREFIX "subl %2,%0; sete %1"
+-		     : "=m" (v->counter), "=qm" (c)
+-		     : "ir" (i), "m" (v->counter) : "memory");
++		     : "+m" (v->counter), "=qm" (c)
++		     : "ir" (i) : "memory");
+ 	return c;
+ }
+ 
+@@ -91,8 +93,7 @@ static inline int atomic_sub_and_test(int i, atomic_t *v)
+ static inline void atomic_inc(atomic_t *v)
+ {
+ 	asm volatile(LOCK_PREFIX "incl %0"
+-		     : "=m" (v->counter)
+-		     : "m" (v->counter));
++		     : "+m" (v->counter));
+ }
+ 
+ /**
+@@ -104,8 +105,7 @@ static inline void atomic_inc(atomic_t *v)
+ static inline void atomic_dec(atomic_t *v)
+ {
+ 	asm volatile(LOCK_PREFIX "decl %0"
+-		     : "=m" (v->counter)
+-		     : "m" (v->counter));
++		     : "+m" (v->counter));
+ }
+ 
+ /**
+@@ -121,8 +121,8 @@ static inline int atomic_dec_and_test(atomic_t *v)
+ 	unsigned char c;
+ 
+ 	asm volatile(LOCK_PREFIX "decl %0; sete %1"
+-		     : "=m" (v->counter), "=qm" (c)
+-		     : "m" (v->counter) : "memory");
++		     : "+m" (v->counter), "=qm" (c)
++		     : : "memory");
+ 	return c != 0;
+ }
+ 
+@@ -139,8 +139,8 @@ static inline int atomic_inc_and_test(atomic_t *v)
+ 	unsigned char c;
+ 
+ 	asm volatile(LOCK_PREFIX "incl %0; sete %1"
+-		     : "=m" (v->counter), "=qm" (c)
+-		     : "m" (v->counter) : "memory");
++		     : "+m" (v->counter), "=qm" (c)
++		     : : "memory");
+ 	return c != 0;
+ }
+ 
+@@ -158,13 +158,13 @@ static inline int atomic_add_negative(int i, atomic_t *v)
+ 	unsigned char c;
+ 
+ 	asm volatile(LOCK_PREFIX "addl %2,%0; sets %1"
+-		     : "=m" (v->counter), "=qm" (c)
+-		     : "ir" (i), "m" (v->counter) : "memory");
++		     : "+m" (v->counter), "=qm" (c)
++		     : "ir" (i) : "memory");
+ 	return c;
+ }
+ 
+ /**
+- * atomic_add_return - add and return
++ * atomic_add_return - add integer and return
+  * @i: integer value to add
+  * @v: pointer of type atomic_t
+  *
+@@ -172,13 +172,36 @@ static inline int atomic_add_negative(int i, atomic_t *v)
+  */
+ static inline int atomic_add_return(int i, atomic_t *v)
+ {
+-	int __i = i;
++	int __i;
++#ifdef CONFIG_M386
++	unsigned long flags;
++	if (unlikely(boot_cpu_data.x86 <= 3))
++		goto no_xadd;
++#endif
++	/* Modern 486+ processor */
++	__i = i;
+ 	asm volatile(LOCK_PREFIX "xaddl %0, %1"
+ 		     : "+r" (i), "+m" (v->counter)
+ 		     : : "memory");
+ 	return i + __i;
++
++#ifdef CONFIG_M386
++no_xadd: /* Legacy 386 processor */
++	local_irq_save(flags);
++	__i = atomic_read(v);
++	atomic_set(v, i + __i);
++	local_irq_restore(flags);
++	return i + __i;
++#endif
+ }
+ 
++/**
++ * atomic_sub_return - subtract integer and return
++ * @v: pointer of type atomic_t
++ * @i: integer value to subtract
++ *
++ * Atomically subtracts @i from @v and returns @v - @i
++ */
+ static inline int atomic_sub_return(int i, atomic_t *v)
+ {
+ 	return atomic_add_return(-i, v);
+@@ -187,23 +210,23 @@ static inline int atomic_sub_return(int i, atomic_t *v)
+ #define atomic_inc_return(v)  (atomic_add_return(1, v))
+ #define atomic_dec_return(v)  (atomic_sub_return(1, v))
+ 
+-static inline long atomic_cmpxchg(atomic_t *v, int old, int new)
++static inline int atomic_cmpxchg(atomic_t *v, int old, int new)
+ {
+ 	return cmpxchg(&v->counter, old, new);
+ }
+ 
+-static inline long atomic_xchg(atomic_t *v, int new)
++static inline int atomic_xchg(atomic_t *v, int new)
+ {
+ 	return xchg(&v->counter, new);
+ }
+ 
+ /**
+- * atomic_add_unless - add unless the number is a given value
++ * atomic_add_unless - add unless the number is already a given value
+  * @v: pointer of type atomic_t
+  * @a: the amount to add to v...
+  * @u: ...unless v is equal to u.
+  *
+- * Atomically adds @a to @v, so long as it was not @u.
++ * Atomically adds @a to @v, so long as @v was not already @u.
+  * Returns non-zero if @v was not @u, and zero otherwise.
+  */
+ static inline int atomic_add_unless(atomic_t *v, int a, int u)
+@@ -236,6 +259,7 @@ static inline short int atomic_inc_short(short int *v)
+ 	return *v;
+ }
+ 
++#ifdef CONFIG_X86_64
+ /**
+  * atomic_or_long - OR of two long integers
+  * @v1: pointer to type unsigned long
+@@ -248,15 +272,16 @@ static inline void atomic_or_long(unsigned long *v1, unsigned long v2)
+ {
+ 	asm(LOCK_PREFIX "orq %1, %0" : "+m" (*v1) : "r" (v2));
+ }
++#endif
+ 
+ /* These are x86-specific, used by some header files */
+-#define atomic_clear_mask(mask, addr)					\
+-	asm volatile(LOCK_PREFIX "andl %0,%1"				\
++#define atomic_clear_mask(mask, addr)				\
++	asm volatile(LOCK_PREFIX "andl %0,%1"			\
+ 		     : : "r" (~(mask)), "m" (*(addr)) : "memory")
+ 
+-#define atomic_set_mask(mask, addr)					\
+-	asm volatile(LOCK_PREFIX "orl %0,%1"				\
+-		     : : "r" ((unsigned)(mask)), "m" (*(addr))		\
++#define atomic_set_mask(mask, addr)				\
++	asm volatile(LOCK_PREFIX "orl %0,%1"			\
++		     : : "r" ((unsigned)(mask)), "m" (*(addr))	\
+ 		     : "memory")
+ 
+ /* Atomic operations are already serializing on x86 */
 -- 
 1.6.5.2
 
