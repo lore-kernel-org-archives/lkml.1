@@ -1,792 +1,794 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753624Ab0AGWg5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753405Ab0AGWhT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753624Ab0AGWg5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 17:36:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753334Ab0AGWgg
+	id S1753405Ab0AGWhT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 17:37:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753326Ab0AGWgf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 17:36:36 -0500
-Received: from nlpi129.sbcis.sbc.com ([207.115.36.143]:46412 "EHLO
+	Thu, 7 Jan 2010 17:36:35 -0500
+Received: from nlpi129.sbcis.sbc.com ([207.115.36.143]:46421 "EHLO
 	nlpi129.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752910Ab0AGWge (ORCPT
+	with ESMTP id S1753272Ab0AGWge (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 7 Jan 2010 17:36:34 -0500
-Message-Id: <20100107223548.270401090@quilx.com>
+Message-Id: <20100107223547.679172327@quilx.com>
 References: <20100107223524.760517016@quilx.com>
 User-Agent: quilt/0.46-1
-Date: Thu, 07 Jan 2010 16:35:26 -0600
+Date: Thu, 07 Jan 2010 16:35:25 -0600
 From: Christoph Lameter <cl@linux-foundation.org>
 To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 Cc: Tejun Heo <tj@kernel.org>
 Cc: Mike Frysinger <vapier.adi@gmail.com>
 Cc: Arnd Bergmann <arnd@arndb.de>
 Cc: linux-kernel@vger.kernel.org
-Subject: [RFC local_t removal V2 2/3] Remove local_t type from tree.
-Content-Disposition: inline; filename=remove_local_t
+Subject: [RFC local_t removal V2 1/3] Remove unused local.h functions
+Content-Disposition: inline; filename=remove_unused_local.h
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It would be better if local ops would generically work on any scalar. local_t
-only allows the use of long. local_t also requires initializers and a read
-function that never does anything aside from setting or reading a variable.
+The ringbuffer logic is the last user of local.h and it uses only the
+following functions and types:
 
-Remove local_t and replace with long. For now the API still only supports
-a single type but asm-generic/local.h shows how it can be genericized similar
-to what cmpxchg_local() does.
+local_t
 
-With that we can get rid of local_read/set and LOCAL_INIT too.
+local_set()
+local_read()
 
-We need to update the ringbuffer users to no longer refer to these functions.
+local_add_return()
+local_add()
+local_sub()
+local_inc()
+local_dec()
+
+local_cmpxchg()
+
+Keep those and remove all other local.h functions
 
 Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
 
 ---
- arch/alpha/include/asm/local.h       |   29 +++------
- arch/m32r/include/asm/local.h        |   37 +-----------
- arch/mips/include/asm/local.h        |   39 ++++---------
- arch/powerpc/include/asm/local.h     |   26 ++------
- arch/x86/include/asm/local.h         |   35 ++++-------
- include/asm-generic/local.h          |   66 +++++++++++++---------
- kernel/trace/ring_buffer.c           |  104 +++++++++++++++++------------------
- kernel/trace/ring_buffer_benchmark.c |    4 -
- 8 files changed, 141 insertions(+), 199 deletions(-)
+ arch/alpha/include/asm/local.h   |   61 -------------
+ arch/m32r/include/asm/local.h    |  181 ---------------------------------------
+ arch/mips/include/asm/local.h    |  120 -------------------------
+ arch/powerpc/include/asm/local.h |  133 ----------------------------
+ arch/x86/include/asm/local.h     |  118 -------------------------
+ include/asm-generic/local.h      |   16 ---
+ 6 files changed, 3 insertions(+), 626 deletions(-)
 
 Index: linux-2.6/arch/powerpc/include/asm/local.h
 ===================================================================
---- linux-2.6.orig/arch/powerpc/include/asm/local.h	2010-01-07 16:09:45.000000000 -0600
-+++ linux-2.6/arch/powerpc/include/asm/local.h	2010-01-07 16:25:53.000000000 -0600
-@@ -4,22 +4,7 @@
- #include <linux/percpu.h>
- #include <asm/atomic.h>
- 
--typedef struct
--{
--	atomic_long_t a;
--} local_t;
--
--#define LOCAL_INIT(i)	{ ATOMIC_LONG_INIT(i) }
--
--#define local_read(l)	atomic_long_read(&(l)->a)
--#define local_set(l,i)	atomic_long_set(&(l)->a, (i))
--
--#define local_add(i,l)	atomic_long_add((i),(&(l)->a))
--#define local_sub(i,l)	atomic_long_sub((i),(&(l)->a))
--#define local_inc(l)	atomic_long_inc(&(l)->a)
--#define local_dec(l)	atomic_long_dec(&(l)->a)
--
--static __inline__ long local_add_return(long a, local_t *l)
-+static __inline__ long local_add_return(long a, long *l)
- {
- 	long t;
- 
-@@ -30,13 +15,18 @@ static __inline__ long local_add_return(
- 	PPC_STLCX	"%0,0,%2 \n\
- 	bne-	1b"
- 	: "=&r" (t)
--	: "r" (a), "r" (&(l->a.counter))
-+	: "r" (a), "r" (*l)
- 	: "cc", "memory");
- 
+--- linux-2.6.orig/arch/powerpc/include/asm/local.h	2010-01-07 16:05:53.000000000 -0600
++++ linux-2.6/arch/powerpc/include/asm/local.h	2010-01-07 16:26:26.000000000 -0600
+@@ -36,140 +36,7 @@ static __inline__ long local_add_return(
  	return t;
  }
  
-+#define local_add(i, l)	local_add_return((i), (l))
-+#define local_sub(i, l)	local_add_return(-(i), (l))
-+#define local_inc(l)	local_add_return(1, (l))
-+#define local_dec(l)	local_add_return(-1, (l))
-+
+-#define local_add_negative(a, l)	(local_add_return((a), (l)) < 0)
+-
+-static __inline__ long local_sub_return(long a, local_t *l)
+-{
+-	long t;
+-
+-	__asm__ __volatile__(
+-"1:"	PPC_LLARX	"%0,0,%2		# local_sub_return\n\
+-	subf	%0,%1,%0\n"
+-	PPC405_ERR77(0,%2)
+-	PPC_STLCX	"%0,0,%2 \n\
+-	bne-	1b"
+-	: "=&r" (t)
+-	: "r" (a), "r" (&(l->a.counter))
+-	: "cc", "memory");
+-
+-	return t;
+-}
+-
+-static __inline__ long local_inc_return(local_t *l)
+-{
+-	long t;
+-
+-	__asm__ __volatile__(
+-"1:"	PPC_LLARX	"%0,0,%1		# local_inc_return\n\
+-	addic	%0,%0,1\n"
+-	PPC405_ERR77(0,%1)
+-	PPC_STLCX	"%0,0,%1 \n\
+-	bne-	1b"
+-	: "=&r" (t)
+-	: "r" (&(l->a.counter))
+-	: "cc", "xer", "memory");
+-
+-	return t;
+-}
+-
+-/*
+- * local_inc_and_test - increment and test
+- * @l: pointer of type local_t
+- *
+- * Atomically increments @l by 1
+- * and returns true if the result is zero, or false for all
+- * other cases.
+- */
+-#define local_inc_and_test(l) (local_inc_return(l) == 0)
+-
+-static __inline__ long local_dec_return(local_t *l)
+-{
+-	long t;
+-
+-	__asm__ __volatile__(
+-"1:"	PPC_LLARX	"%0,0,%1		# local_dec_return\n\
+-	addic	%0,%0,-1\n"
+-	PPC405_ERR77(0,%1)
+-	PPC_STLCX	"%0,0,%1\n\
+-	bne-	1b"
+-	: "=&r" (t)
+-	: "r" (&(l->a.counter))
+-	: "cc", "xer", "memory");
+-
+-	return t;
+-}
+-
  #define local_cmpxchg(l, o, n) \
--	(cmpxchg_local(&((l)->a.counter), (o), (n)))
-+	(cmpxchg_local((l), (o), (n)))
+ 	(cmpxchg_local(&((l)->a.counter), (o), (n)))
+-#define local_xchg(l, n) (xchg_local(&((l)->a.counter), (n)))
+-
+-/**
+- * local_add_unless - add unless the number is a given value
+- * @l: pointer of type local_t
+- * @a: the amount to add to v...
+- * @u: ...unless v is equal to u.
+- *
+- * Atomically adds @a to @l, so long as it was not @u.
+- * Returns non-zero if @l was not @u, and zero otherwise.
+- */
+-static __inline__ int local_add_unless(local_t *l, long a, long u)
+-{
+-	long t;
+-
+-	__asm__ __volatile__ (
+-"1:"	PPC_LLARX	"%0,0,%1		# local_add_unless\n\
+-	cmpw	0,%0,%3 \n\
+-	beq-	2f \n\
+-	add	%0,%2,%0 \n"
+-	PPC405_ERR77(0,%2)
+-	PPC_STLCX	"%0,0,%1 \n\
+-	bne-	1b \n"
+-"	subf	%0,%2,%0 \n\
+-2:"
+-	: "=&r" (t)
+-	: "r" (&(l->a.counter)), "r" (a), "r" (u)
+-	: "cc", "memory");
+-
+-	return t != u;
+-}
+-
+-#define local_inc_not_zero(l) local_add_unless((l), 1, 0)
+-
+-#define local_sub_and_test(a, l)	(local_sub_return((a), (l)) == 0)
+-#define local_dec_and_test(l)		(local_dec_return((l)) == 0)
+-
+-/*
+- * Atomically test *l and decrement if it is greater than 0.
+- * The function returns the old value of *l minus 1.
+- */
+-static __inline__ long local_dec_if_positive(local_t *l)
+-{
+-	long t;
+-
+-	__asm__ __volatile__(
+-"1:"	PPC_LLARX	"%0,0,%1		# local_dec_if_positive\n\
+-	cmpwi	%0,1\n\
+-	addi	%0,%0,-1\n\
+-	blt-	2f\n"
+-	PPC405_ERR77(0,%1)
+-	PPC_STLCX	"%0,0,%1\n\
+-	bne-	1b"
+-	"\n\
+-2:"	: "=&b" (t)
+-	: "r" (&(l->a.counter))
+-	: "cc", "memory");
+-
+-	return t;
+-}
+-
+-/* Use these for per-cpu local_t variables: on some archs they are
+- * much more efficient than these naive implementations.  Note they take
+- * a variable, not an address.
+- */
+-
+-#define __local_inc(l)		((l)->a.counter++)
+-#define __local_dec(l)		((l)->a.counter++)
+-#define __local_add(i,l)	((l)->a.counter+=(i))
+-#define __local_sub(i,l)	((l)->a.counter-=(i))
  
  #endif /* _ARCH_POWERPC_LOCAL_H */
 Index: linux-2.6/arch/x86/include/asm/local.h
 ===================================================================
---- linux-2.6.orig/arch/x86/include/asm/local.h	2010-01-07 16:09:45.000000000 -0600
-+++ linux-2.6/arch/x86/include/asm/local.h	2010-01-07 16:25:54.000000000 -0600
-@@ -7,38 +7,29 @@
- #include <asm/atomic.h>
- #include <asm/asm.h>
+--- linux-2.6.orig/arch/x86/include/asm/local.h	2010-01-07 16:05:53.000000000 -0600
++++ linux-2.6/arch/x86/include/asm/local.h	2010-01-07 16:26:26.000000000 -0600
+@@ -43,80 +43,6 @@ static inline void local_sub(long i, loc
+ }
  
--typedef struct {
--	atomic_long_t a;
--} local_t;
+ /**
+- * local_sub_and_test - subtract value from variable and test result
+- * @i: integer value to subtract
+- * @l: pointer to type local_t
+- *
+- * Atomically subtracts @i from @l and returns
+- * true if the result is zero, or false for all
+- * other cases.
+- */
+-static inline int local_sub_and_test(long i, local_t *l)
+-{
+-	unsigned char c;
 -
--#define LOCAL_INIT(i)	{ ATOMIC_LONG_INIT(i) }
+-	asm volatile(_ASM_SUB "%2,%0; sete %1"
+-		     : "+m" (l->a.counter), "=qm" (c)
+-		     : "ir" (i) : "memory");
+-	return c;
+-}
 -
--#define local_read(l)	atomic_long_read(&(l)->a)
--#define local_set(l, i)	atomic_long_set(&(l)->a, (i))
+-/**
+- * local_dec_and_test - decrement and test
+- * @l: pointer to type local_t
+- *
+- * Atomically decrements @l by 1 and
+- * returns true if the result is 0, or false for all other
+- * cases.
+- */
+-static inline int local_dec_and_test(local_t *l)
+-{
+-	unsigned char c;
 -
--static inline void local_inc(local_t *l)
-+static inline void local_inc(long *l)
- {
- 	asm volatile(_ASM_INC "%0"
--		     : "+m" (l->a.counter));
-+		     : "+m" (*l));
- }
- 
--static inline void local_dec(local_t *l)
-+static inline void local_dec(long *l)
- {
- 	asm volatile(_ASM_DEC "%0"
--		     : "+m" (l->a.counter));
-+		     : "+m" (*l));
- }
- 
--static inline void local_add(long i, local_t *l)
-+static inline void local_add(long i, long *l)
- {
- 	asm volatile(_ASM_ADD "%1,%0"
--		     : "+m" (l->a.counter)
-+		     : "+m" (*l)
- 		     : "ir" (i));
- }
- 
--static inline void local_sub(long i, local_t *l)
-+static inline void local_sub(long i, long *l)
- {
- 	asm volatile(_ASM_SUB "%1,%0"
--		     : "+m" (l->a.counter)
-+		     : "+m" (*l)
- 		     : "ir" (i));
- }
- 
-@@ -49,7 +40,7 @@ static inline void local_sub(long i, loc
-  *
-  * Atomically adds @i to @l and returns @i + @l
-  */
--static inline long local_add_return(long i, local_t *l)
-+static inline long local_add_return(long i, long *l)
- {
- 	long __i;
- #ifdef CONFIG_M386
-@@ -60,21 +51,21 @@ static inline long local_add_return(long
- 	/* Modern 486+ processor */
- 	__i = i;
- 	asm volatile(_ASM_XADD "%0, %1;"
--		     : "+r" (i), "+m" (l->a.counter)
-+		     : "+r" (i), "+m" (*l)
- 		     : : "memory");
- 	return i + __i;
- 
- #ifdef CONFIG_M386
- no_xadd: /* Legacy 386 processor */
- 	local_irq_save(flags);
--	__i = local_read(l);
--	local_set(l, i + __i);
-+	__i = *l;
-+	*l = i + __i;
- 	local_irq_restore(flags);
- 	return i + __i;
+-	asm volatile(_ASM_DEC "%0; sete %1"
+-		     : "+m" (l->a.counter), "=qm" (c)
+-		     : : "memory");
+-	return c != 0;
+-}
+-
+-/**
+- * local_inc_and_test - increment and test
+- * @l: pointer to type local_t
+- *
+- * Atomically increments @l by 1
+- * and returns true if the result is zero, or false for all
+- * other cases.
+- */
+-static inline int local_inc_and_test(local_t *l)
+-{
+-	unsigned char c;
+-
+-	asm volatile(_ASM_INC "%0; sete %1"
+-		     : "+m" (l->a.counter), "=qm" (c)
+-		     : : "memory");
+-	return c != 0;
+-}
+-
+-/**
+- * local_add_negative - add and test if negative
+- * @i: integer value to add
+- * @l: pointer to type local_t
+- *
+- * Atomically adds @i to @l and returns true
+- * if the result is negative, or false when
+- * result is greater than or equal to zero.
+- */
+-static inline int local_add_negative(long i, local_t *l)
+-{
+-	unsigned char c;
+-
+-	asm volatile(_ASM_ADD "%2,%0; sets %1"
+-		     : "+m" (l->a.counter), "=qm" (c)
+-		     : "ir" (i) : "memory");
+-	return c;
+-}
+-
+-/**
+  * local_add_return - add and return
+  * @i: integer value to add
+  * @l: pointer to type local_t
+@@ -148,51 +74,7 @@ no_xadd: /* Legacy 386 processor */
  #endif
  }
  
+-static inline long local_sub_return(long i, local_t *l)
+-{
+-	return local_add_return(-i, l);
+-}
+-
+-#define local_inc_return(l)  (local_add_return(1, l))
+-#define local_dec_return(l)  (local_sub_return(1, l))
+-
  #define local_cmpxchg(l, o, n) \
--	(cmpxchg_local(&((l)->a.counter), (o), (n)))
-+	(cmpxchg_local((l), (o), (n)))
+ 	(cmpxchg_local(&((l)->a.counter), (o), (n)))
+-/* Always has a lock prefix */
+-#define local_xchg(l, n) (xchg(&((l)->a.counter), (n)))
+-
+-/**
+- * local_add_unless - add unless the number is a given value
+- * @l: pointer of type local_t
+- * @a: the amount to add to l...
+- * @u: ...unless l is equal to u.
+- *
+- * Atomically adds @a to @l, so long as it was not @u.
+- * Returns non-zero if @l was not @u, and zero otherwise.
+- */
+-#define local_add_unless(l, a, u)				\
+-({								\
+-	long c, old;						\
+-	c = local_read((l));					\
+-	for (;;) {						\
+-		if (unlikely(c == (u)))				\
+-			break;					\
+-		old = local_cmpxchg((l), c, c + (a));		\
+-		if (likely(old == c))				\
+-			break;					\
+-		c = old;					\
+-	}							\
+-	c != (u);						\
+-})
+-#define local_inc_not_zero(l) local_add_unless((l), 1, 0)
+-
+-/* On x86_32, these are no better than the atomic variants.
+- * On x86-64 these are better than the atomic variants on SMP kernels
+- * because they dont use a lock prefix.
+- */
+-#define __local_inc(l)		local_inc(l)
+-#define __local_dec(l)		local_dec(l)
+-#define __local_add(i, l)	local_add((i), (l))
+-#define __local_sub(i, l)	local_sub((i), (l))
  
  #endif /* _ASM_X86_LOCAL_H */
 Index: linux-2.6/include/asm-generic/local.h
 ===================================================================
---- linux-2.6.orig/include/asm-generic/local.h	2010-01-07 16:09:45.000000000 -0600
-+++ linux-2.6/include/asm-generic/local.h	2010-01-07 16:26:19.000000000 -0600
-@@ -1,39 +1,53 @@
- #ifndef _ASM_GENERIC_LOCAL_H
- #define _ASM_GENERIC_LOCAL_H
+--- linux-2.6.orig/include/asm-generic/local.h	2010-01-07 16:05:53.000000000 -0600
++++ linux-2.6/include/asm-generic/local.h	2010-01-07 16:26:26.000000000 -0600
+@@ -32,24 +32,8 @@ typedef struct
+ #define local_add(i,l)	atomic_long_add((i),(&(l)->a))
+ #define local_sub(i,l)	atomic_long_sub((i),(&(l)->a))
  
--#include <linux/percpu.h>
--#include <asm/atomic.h>
- #include <asm/types.h>
-+#include <linux/kernel.h>
+-#define local_sub_and_test(i, l) atomic_long_sub_and_test((i), (&(l)->a))
+-#define local_dec_and_test(l) atomic_long_dec_and_test(&(l)->a)
+-#define local_inc_and_test(l) atomic_long_inc_and_test(&(l)->a)
+-#define local_add_negative(i, l) atomic_long_add_negative((i), (&(l)->a))
+ #define local_add_return(i, l) atomic_long_add_return((i), (&(l)->a))
+-#define local_sub_return(i, l) atomic_long_sub_return((i), (&(l)->a))
+-#define local_inc_return(l) atomic_long_inc_return(&(l)->a)
  
- /*
-- * A signed long type for operations which are atomic for a single CPU.
-- * Usually used in combination with per-cpu variables.
-+ * The whole point here is to allow the use of atomic wrt IRQ operations of
-+ * some cpus. local_xx ops allow to exploit such operations.
-  *
-- * This is the default implementation, which uses atomic_long_t.  Which is
-- * rather pointless.  The whole point behind local_t is that some processors
-- * can perform atomic adds and subtracts in a manner which is atomic wrt IRQs
-- * running on this CPU.  local_t allows exploitation of such capabilities.
-+ * Note that the percpu subsystem contains similar operations that also
-+ * perform relocation to the per cpu area of the current processor in the
-+ * same instruction. This guarantees that each processor has its own variable.
-+ *
-+ * The use of these operations here requires that the user has made his
-+ * own arrangements to guarantee that concurrrent modifications / accesses
-+ * to the specified variable from different processors does not occur.
-  */
- 
--/* Implement in terms of atomics. */
+ #define local_cmpxchg(l, o, n) atomic_long_cmpxchg((&(l)->a), (o), (n))
+-#define local_xchg(l, n) atomic_long_xchg((&(l)->a), (n))
+-#define local_add_unless(l, _a, u) atomic_long_add_unless((&(l)->a), (_a), (u))
+-#define local_inc_not_zero(l) atomic_long_inc_not_zero(&(l)->a)
 -
--/* Don't use typedef: don't want them to be mixed with atomic_t's. */
--typedef struct
-+/*
-+ * Generic version of __add_return_local (disables interrupts). Takes an
-+ * unsigned long parameter, supporting various types of architectures.
-+ */
-+static inline unsigned long __local_add_return(volatile void *ptr,
-+				unsigned long value, size_t size)
- {
--	atomic_long_t a;
--} local_t;
--
--#define LOCAL_INIT(i)	{ ATOMIC_LONG_INIT(i) }
--
--#define local_read(l)	atomic_long_read(&(l)->a)
--#define local_set(l,i)	atomic_long_set((&(l)->a),(i))
--#define local_inc(l)	atomic_long_inc(&(l)->a)
--#define local_dec(l)	atomic_long_dec(&(l)->a)
--#define local_add(i,l)	atomic_long_add((i),(&(l)->a))
--#define local_sub(i,l)	atomic_long_sub((i),(&(l)->a))
-+	unsigned long flags, r;
+-/* Non-atomic variants, ie. preemption disabled and won't be touched
+- * in interrupt, etc.  Some archs can optimize this case well. */
+-#define __local_inc(l)		local_set((l), local_read(l) + 1)
+-#define __local_dec(l)		local_set((l), local_read(l) - 1)
+-#define __local_add(i,l)	local_set((l), local_read(l) + (i))
+-#define __local_sub(i,l)	local_set((l), local_read(l) - (i))
  
--#define local_add_return(i, l) atomic_long_add_return((i), (&(l)->a))
-+	local_irq_save(flags);
-+	switch (size) {
-+	case 1: r = (*((u8 *)ptr) += value);
-+		break;
-+	case 2: r = (*((u16 *)ptr) += value);
-+		break;
-+	case 4: r = (*((u32 *)ptr) += value);
-+		break;
-+	case 8: r = (*((u64 *)ptr) += value);
-+		break;
-+	}
-+	local_irq_restore(flags);
-+	return r;
-+}
-+
-+#define local_add_return(i, l) __local_add_return((l), (i), sizeof(*(l)))
-+
-+#define local_inc(l)	local_add_return(1, (l))
-+#define local_dec(l)	local_add_return(-1, (l))
-+#define local_add(i,l)	local_add_return((i), (l))
-+#define local_sub(i,l)	local_add_return(-(i), (l))
- 
--#define local_cmpxchg(l, o, n) atomic_long_cmpxchg((&(l)->a), (o), (n))
-+#define local_cmpxchg(l, o, n) cmpxchg_local((l), (o), (n))
- 
--#endif /* _ASM_GENERIC_LOCAL_H */
-+#endif /* _ASM_GENERIC_LOCAL_i */
-Index: linux-2.6/kernel/trace/ring_buffer.c
-===================================================================
---- linux-2.6.orig/kernel/trace/ring_buffer.c	2010-01-07 16:09:45.000000000 -0600
-+++ linux-2.6/kernel/trace/ring_buffer.c	2010-01-07 16:25:54.000000000 -0600
-@@ -312,7 +312,7 @@ EXPORT_SYMBOL_GPL(ring_buffer_event_data
- 
- struct buffer_data_page {
- 	u64		 time_stamp;	/* page time stamp */
--	local_t		 commit;	/* write committed index */
-+	long		 commit;	/* write committed index */
- 	unsigned char	 data[];	/* data of buffer page */
- };
- 
-@@ -326,9 +326,9 @@ struct buffer_data_page {
-  */
- struct buffer_page {
- 	struct list_head list;		/* list of buffer pages */
--	local_t		 write;		/* index for next write */
-+	long		 write;		/* index for next write */
- 	unsigned	 read;		/* index for next read */
--	local_t		 entries;	/* entries on this page */
-+	long		 entries;	/* entries on this page */
- 	struct buffer_data_page *page;	/* Actual data page */
- };
- 
-@@ -349,7 +349,7 @@ struct buffer_page {
- 
- static void rb_init_page(struct buffer_data_page *bpage)
- {
--	local_set(&bpage->commit, 0);
-+	bpage->commit = 0;
- }
- 
- /**
-@@ -360,7 +360,7 @@ static void rb_init_page(struct buffer_d
-  */
- size_t ring_buffer_page_len(void *page)
- {
--	return local_read(&((struct buffer_data_page *)page)->commit)
-+	return ((struct buffer_data_page *)page)->commit
- 		+ BUF_PAGE_HDR_SIZE;
- }
- 
-@@ -431,11 +431,11 @@ struct ring_buffer_per_cpu {
- 	struct buffer_page		*tail_page;	/* write to tail */
- 	struct buffer_page		*commit_page;	/* committed pages */
- 	struct buffer_page		*reader_page;
--	local_t				commit_overrun;
--	local_t				overrun;
--	local_t				entries;
--	local_t				committing;
--	local_t				commits;
-+	long				commit_overrun;
-+	long				overrun;
-+	long				entries;
-+	long				committing;
-+	long				commits;
- 	unsigned long			read;
- 	u64				write_stamp;
- 	u64				read_stamp;
-@@ -861,7 +861,7 @@ static int rb_tail_page_update(struct ri
- 		 * it only can increment when a commit takes place. But that
- 		 * only happens in the outer most nested commit.
- 		 */
--		local_set(&next_page->page->commit, 0);
-+		next_page->page->commit = 0;
- 
- 		old_tail = cmpxchg(&cpu_buffer->tail_page,
- 				   tail_page, next_page);
-@@ -1394,17 +1394,17 @@ rb_iter_head_event(struct ring_buffer_it
- 
- static inline unsigned long rb_page_write(struct buffer_page *bpage)
- {
--	return local_read(&bpage->write) & RB_WRITE_MASK;
-+	return bpage->write & RB_WRITE_MASK;
- }
- 
- static inline unsigned rb_page_commit(struct buffer_page *bpage)
- {
--	return local_read(&bpage->page->commit);
-+	return bpage->page->commit;
- }
- 
- static inline unsigned long rb_page_entries(struct buffer_page *bpage)
- {
--	return local_read(&bpage->entries) & RB_WRITE_MASK;
-+	return bpage->entries & RB_WRITE_MASK;
- }
- 
- /* Size is determined by what has been commited */
-@@ -1463,8 +1463,8 @@ rb_set_commit_to_write(struct ring_buffe
- 		if (RB_WARN_ON(cpu_buffer,
- 			       rb_is_reader_page(cpu_buffer->tail_page)))
- 			return;
--		local_set(&cpu_buffer->commit_page->page->commit,
--			  rb_page_write(cpu_buffer->commit_page));
-+		cpu_buffer->commit_page->page->commit =
-+			  rb_page_write(cpu_buffer->commit_page);
- 		rb_inc_page(cpu_buffer, &cpu_buffer->commit_page);
- 		cpu_buffer->write_stamp =
- 			cpu_buffer->commit_page->page->time_stamp;
-@@ -1474,10 +1474,10 @@ rb_set_commit_to_write(struct ring_buffe
- 	while (rb_commit_index(cpu_buffer) !=
- 	       rb_page_write(cpu_buffer->commit_page)) {
- 
--		local_set(&cpu_buffer->commit_page->page->commit,
--			  rb_page_write(cpu_buffer->commit_page));
-+		cpu_buffer->commit_page->page->commit =
-+			  rb_page_write(cpu_buffer->commit_page);
- 		RB_WARN_ON(cpu_buffer,
--			   local_read(&cpu_buffer->commit_page->page->commit) &
-+			   cpu_buffer->commit_page->page->commit &
- 			   ~RB_WRITE_MASK);
- 		barrier();
- 	}
-@@ -1943,7 +1943,7 @@ rb_try_to_discard(struct ring_buffer_per
- 
- 	if (bpage->page == (void *)addr && rb_page_write(bpage) == old_index) {
- 		unsigned long write_mask =
--			local_read(&bpage->write) & ~RB_WRITE_MASK;
-+			bpage->write & ~RB_WRITE_MASK;
- 		/*
- 		 * This is on the tail page. It is possible that
- 		 * a write could come in and move the tail page
-@@ -2039,14 +2039,14 @@ static void rb_end_commit(struct ring_bu
- 	unsigned long commits;
- 
- 	if (RB_WARN_ON(cpu_buffer,
--		       !local_read(&cpu_buffer->committing)))
-+		       !cpu_buffer->committing))
- 		return;
- 
-  again:
--	commits = local_read(&cpu_buffer->commits);
-+	commits = cpu_buffer->commits;
- 	/* synchronize with interrupts */
- 	barrier();
--	if (local_read(&cpu_buffer->committing) == 1)
-+	if (cpu_buffer->committing == 1)
- 		rb_set_commit_to_write(cpu_buffer);
- 
- 	local_dec(&cpu_buffer->committing);
-@@ -2059,8 +2059,8 @@ static void rb_end_commit(struct ring_bu
- 	 * updating of the commit page and the clearing of the
- 	 * committing counter.
- 	 */
--	if (unlikely(local_read(&cpu_buffer->commits) != commits) &&
--	    !local_read(&cpu_buffer->committing)) {
-+	if (unlikely(cpu_buffer->commits != commits) &&
-+	    !cpu_buffer->committing) {
- 		local_inc(&cpu_buffer->committing);
- 		goto again;
- 	}
-@@ -2415,7 +2415,7 @@ void ring_buffer_discard_commit(struct r
- 	 * committed yet. Thus we can assume that preemption
- 	 * is still disabled.
- 	 */
--	RB_WARN_ON(buffer, !local_read(&cpu_buffer->committing));
-+	RB_WARN_ON(buffer, !cpu_buffer->committing);
- 
- 	rb_decrement_entry(cpu_buffer, event);
- 	if (rb_try_to_discard(cpu_buffer, event))
-@@ -2604,7 +2604,7 @@ unsigned long ring_buffer_entries_cpu(st
- 		return 0;
- 
- 	cpu_buffer = buffer->buffers[cpu];
--	ret = (local_read(&cpu_buffer->entries) - local_read(&cpu_buffer->overrun))
-+	ret = cpu_buffer->entries - cpu_buffer->overrun
- 		- cpu_buffer->read;
- 
- 	return ret;
-@@ -2625,7 +2625,7 @@ unsigned long ring_buffer_overrun_cpu(st
- 		return 0;
- 
- 	cpu_buffer = buffer->buffers[cpu];
--	ret = local_read(&cpu_buffer->overrun);
-+	ret = cpu_buffer->overrun;
- 
- 	return ret;
- }
-@@ -2646,7 +2646,7 @@ ring_buffer_commit_overrun_cpu(struct ri
- 		return 0;
- 
- 	cpu_buffer = buffer->buffers[cpu];
--	ret = local_read(&cpu_buffer->commit_overrun);
-+	ret = cpu_buffer->commit_overrun;
- 
- 	return ret;
- }
-@@ -2668,8 +2668,8 @@ unsigned long ring_buffer_entries(struct
- 	/* if you care about this being correct, lock the buffer */
- 	for_each_buffer_cpu(buffer, cpu) {
- 		cpu_buffer = buffer->buffers[cpu];
--		entries += (local_read(&cpu_buffer->entries) -
--			    local_read(&cpu_buffer->overrun)) - cpu_buffer->read;
-+		entries += cpu_buffer->entries -
-+			    cpu_buffer->overrun - cpu_buffer->read;
- 	}
- 
- 	return entries;
-@@ -2692,7 +2692,7 @@ unsigned long ring_buffer_overruns(struc
- 	/* if you care about this being correct, lock the buffer */
- 	for_each_buffer_cpu(buffer, cpu) {
- 		cpu_buffer = buffer->buffers[cpu];
--		overruns += local_read(&cpu_buffer->overrun);
-+		overruns += cpu_buffer->overrun;
- 	}
- 
- 	return overruns;
-@@ -2861,9 +2861,9 @@ rb_get_reader_page(struct ring_buffer_pe
- 	/*
- 	 * Reset the reader page to size zero.
- 	 */
--	local_set(&cpu_buffer->reader_page->write, 0);
--	local_set(&cpu_buffer->reader_page->entries, 0);
--	local_set(&cpu_buffer->reader_page->page->commit, 0);
-+	cpu_buffer->reader_page->write = 0;
-+	cpu_buffer->reader_page->entries = 0;
-+	cpu_buffer->reader_page->page->commit = 0;
- 
-  spin:
- 	/*
-@@ -3354,9 +3354,9 @@ rb_reset_cpu(struct ring_buffer_per_cpu 
- 
- 	cpu_buffer->head_page
- 		= list_entry(cpu_buffer->pages, struct buffer_page, list);
--	local_set(&cpu_buffer->head_page->write, 0);
--	local_set(&cpu_buffer->head_page->entries, 0);
--	local_set(&cpu_buffer->head_page->page->commit, 0);
-+	cpu_buffer->head_page->write = 0;
-+	cpu_buffer->head_page->entries = 0;
-+	cpu_buffer->head_page->page->commit = 0;
- 
- 	cpu_buffer->head_page->read = 0;
- 
-@@ -3364,16 +3364,16 @@ rb_reset_cpu(struct ring_buffer_per_cpu 
- 	cpu_buffer->commit_page = cpu_buffer->head_page;
- 
- 	INIT_LIST_HEAD(&cpu_buffer->reader_page->list);
--	local_set(&cpu_buffer->reader_page->write, 0);
--	local_set(&cpu_buffer->reader_page->entries, 0);
--	local_set(&cpu_buffer->reader_page->page->commit, 0);
-+	cpu_buffer->reader_page->write = 0;
-+	cpu_buffer->reader_page->entries = 0;
-+	cpu_buffer->reader_page->page->commit = 0;
- 	cpu_buffer->reader_page->read = 0;
- 
--	local_set(&cpu_buffer->commit_overrun, 0);
--	local_set(&cpu_buffer->overrun, 0);
--	local_set(&cpu_buffer->entries, 0);
--	local_set(&cpu_buffer->committing, 0);
--	local_set(&cpu_buffer->commits, 0);
-+	cpu_buffer->commit_overrun = 0;
-+	cpu_buffer->overrun = 0;
-+	cpu_buffer->entries = 0;
-+	cpu_buffer->committing = 0;
-+	cpu_buffer->commits = 0;
- 	cpu_buffer->read = 0;
- 
- 	cpu_buffer->write_stamp = 0;
-@@ -3399,7 +3399,7 @@ void ring_buffer_reset_cpu(struct ring_b
- 
- 	spin_lock_irqsave(&cpu_buffer->reader_lock, flags);
- 
--	if (RB_WARN_ON(cpu_buffer, local_read(&cpu_buffer->committing)))
-+	if (RB_WARN_ON(cpu_buffer, cpu_buffer->committing))
- 		goto out;
- 
- 	arch_spin_lock(&cpu_buffer->lock);
-@@ -3547,9 +3547,9 @@ int ring_buffer_swap_cpu(struct ring_buf
- 	atomic_inc(&cpu_buffer_b->record_disabled);
- 
- 	ret = -EBUSY;
--	if (local_read(&cpu_buffer_a->committing))
-+	if (cpu_buffer_a->committing)
- 		goto out_dec;
--	if (local_read(&cpu_buffer_b->committing))
-+	if (cpu_buffer_b->committing)
- 		goto out_dec;
- 
- 	buffer_a->buffers[cpu] = cpu_buffer_b;
-@@ -3733,7 +3733,7 @@ int ring_buffer_read_page(struct ring_bu
- 		} while (len > size);
- 
- 		/* update bpage */
--		local_set(&bpage->commit, pos);
-+		bpage->commit = pos;
- 		bpage->time_stamp = save_timestamp;
- 
- 		/* we copied everything to the beginning */
-@@ -3746,8 +3746,8 @@ int ring_buffer_read_page(struct ring_bu
- 		rb_init_page(bpage);
- 		bpage = reader->page;
- 		reader->page = *data_page;
--		local_set(&reader->write, 0);
--		local_set(&reader->entries, 0);
-+		reader->write = 0;
-+		reader->entries = 0;
- 		reader->read = 0;
- 		*data_page = bpage;
- 	}
-Index: linux-2.6/kernel/trace/ring_buffer_benchmark.c
-===================================================================
---- linux-2.6.orig/kernel/trace/ring_buffer_benchmark.c	2010-01-07 16:09:45.000000000 -0600
-+++ linux-2.6/kernel/trace/ring_buffer_benchmark.c	2010-01-07 16:12:46.000000000 -0600
-@@ -12,7 +12,7 @@
- 
- struct rb_page {
- 	u64		ts;
--	local_t		commit;
-+	long		commit;
- 	char		data[4080];
- };
- 
-@@ -113,7 +113,7 @@ static enum event_status read_page(int c
- 	ret = ring_buffer_read_page(buffer, &bpage, PAGE_SIZE, cpu, 1);
- 	if (ret >= 0) {
- 		rpage = bpage;
--		commit = local_read(&rpage->commit);
-+		commit = rpage->commit;
- 		for (i = 0; i < commit && !kill_test; i += inc) {
- 
- 			if (i >= (PAGE_SIZE - offsetof(struct rb_page, data))) {
+ #endif /* _ASM_GENERIC_LOCAL_H */
 Index: linux-2.6/arch/alpha/include/asm/local.h
 ===================================================================
---- linux-2.6.orig/arch/alpha/include/asm/local.h	2010-01-07 16:09:45.000000000 -0600
-+++ linux-2.6/arch/alpha/include/asm/local.h	2010-01-07 16:25:53.000000000 -0600
-@@ -1,23 +1,9 @@
- #ifndef _ALPHA_LOCAL_H
- #define _ALPHA_LOCAL_H
- 
--#include <linux/percpu.h>
--#include <asm/atomic.h>
-+#include <linux/types.h>
- 
--typedef struct
--{
--	atomic_long_t a;
--} local_t;
--
--#define LOCAL_INIT(i)	{ ATOMIC_LONG_INIT(i) }
--#define local_read(l)	atomic_long_read(&(l)->a)
--#define local_set(l,i)	atomic_long_set(&(l)->a, (i))
--#define local_inc(l)	atomic_long_inc(&(l)->a)
--#define local_dec(l)	atomic_long_dec(&(l)->a)
--#define local_add(i,l)	atomic_long_add((i),(&(l)->a))
--#define local_sub(i,l)	atomic_long_sub((i),(&(l)->a))
--
--static __inline__ long local_add_return(long i, local_t * l)
-+static __inline__ long local_add_return(long i, long *l)
- {
- 	long temp, result;
- 	__asm__ __volatile__(
-@@ -29,12 +15,17 @@ static __inline__ long local_add_return(
- 	".subsection 2\n"
- 	"2:	br 1b\n"
- 	".previous"
--	:"=&r" (temp), "=m" (l->a.counter), "=&r" (result)
--	:"Ir" (i), "m" (l->a.counter) : "memory");
-+	:"=&r" (temp), "=m" (*l), "=&r" (result)
-+	:"Ir" (i), "m" (*l) : "memory");
+--- linux-2.6.orig/arch/alpha/include/asm/local.h	2010-01-07 16:05:53.000000000 -0600
++++ linux-2.6/arch/alpha/include/asm/local.h	2010-01-07 16:26:26.000000000 -0600
+@@ -34,68 +34,7 @@ static __inline__ long local_add_return(
  	return result;
  }
  
-+#define local_inc(l)	local_add_return(1, (l))
-+#define local_dec(l)	local_add_return(-1, (l))
-+#define local_add(i,l)	local_add_return((i),(l))
-+#define local_sub(i,l)	local_add_return(-(i),(l))
-+
+-static __inline__ long local_sub_return(long i, local_t * l)
+-{
+-	long temp, result;
+-	__asm__ __volatile__(
+-	"1:	ldq_l %0,%1\n"
+-	"	subq %0,%3,%2\n"
+-	"	subq %0,%3,%0\n"
+-	"	stq_c %0,%1\n"
+-	"	beq %0,2f\n"
+-	".subsection 2\n"
+-	"2:	br 1b\n"
+-	".previous"
+-	:"=&r" (temp), "=m" (l->a.counter), "=&r" (result)
+-	:"Ir" (i), "m" (l->a.counter) : "memory");
+-	return result;
+-}
+-
  #define local_cmpxchg(l, o, n) \
--	(cmpxchg_local(&((l)->a.counter), (o), (n)))
-+	(cmpxchg_local((l), (o), (n)))
+ 	(cmpxchg_local(&((l)->a.counter), (o), (n)))
+-#define local_xchg(l, n) (xchg_local(&((l)->a.counter), (n)))
+-
+-/**
+- * local_add_unless - add unless the number is a given value
+- * @l: pointer of type local_t
+- * @a: the amount to add to l...
+- * @u: ...unless l is equal to u.
+- *
+- * Atomically adds @a to @l, so long as it was not @u.
+- * Returns non-zero if @l was not @u, and zero otherwise.
+- */
+-#define local_add_unless(l, a, u)				\
+-({								\
+-	long c, old;						\
+-	c = local_read(l);					\
+-	for (;;) {						\
+-		if (unlikely(c == (u)))				\
+-			break;					\
+-		old = local_cmpxchg((l), c, c + (a));	\
+-		if (likely(old == c))				\
+-			break;					\
+-		c = old;					\
+-	}							\
+-	c != (u);						\
+-})
+-#define local_inc_not_zero(l) local_add_unless((l), 1, 0)
+-
+-#define local_add_negative(a, l) (local_add_return((a), (l)) < 0)
+-
+-#define local_dec_return(l) local_sub_return(1,(l))
+-
+-#define local_inc_return(l) local_add_return(1,(l))
+-
+-#define local_sub_and_test(i,l) (local_sub_return((i), (l)) == 0)
+-
+-#define local_inc_and_test(l) (local_add_return(1, (l)) == 0)
+-
+-#define local_dec_and_test(l) (local_sub_return(1, (l)) == 0)
+-
+-/* Verify if faster than atomic ops */
+-#define __local_inc(l)		((l)->a.counter++)
+-#define __local_dec(l)		((l)->a.counter++)
+-#define __local_add(i,l)	((l)->a.counter+=(i))
+-#define __local_sub(i,l)	((l)->a.counter-=(i))
  
  #endif /* _ALPHA_LOCAL_H */
 Index: linux-2.6/arch/m32r/include/asm/local.h
 ===================================================================
---- linux-2.6.orig/arch/m32r/include/asm/local.h	2010-01-07 16:09:45.000000000 -0600
-+++ linux-2.6/arch/m32r/include/asm/local.h	2010-01-07 16:25:54.000000000 -0600
-@@ -15,37 +15,6 @@
- #include <asm/system.h>
- #include <asm/local.h>
+--- linux-2.6.orig/arch/m32r/include/asm/local.h	2010-01-07 16:05:53.000000000 -0600
++++ linux-2.6/arch/m32r/include/asm/local.h	2010-01-07 16:26:26.000000000 -0600
+@@ -78,37 +78,6 @@ static inline long local_add_return(long
+ }
  
--/*
-- * Atomic operations that C can't guarantee us.  Useful for
-- * resource counting etc..
-- */
--
--/*
-- * Make sure gcc doesn't try to be clever and move things around
-- * on us. We need to use _exactly_ the address the user gave us,
-- * not some alias that contains the same information.
-- */
--typedef struct { volatile int counter; } local_t;
--
--#define LOCAL_INIT(i)	{ (i) }
--
--/**
-- * local_read - read local variable
-- * @l: pointer of type local_t
-- *
-- * Atomically reads the value of @l.
-- */
--#define local_read(l)	((l)->counter)
--
--/**
-- * local_set - set local variable
-- * @l: pointer of type local_t
-- * @i: required value
-- *
-- * Atomically sets the value of @l to @i.
-- */
--#define local_set(l, i)	(((l)->counter) = (i))
--
  /**
-  * local_add_return - add long to local variable and return it
-  * @i: long value to add
-@@ -53,7 +22,7 @@ typedef struct { volatile int counter; }
-  *
-  * Atomically adds @i to @l and return (@i + @l).
-  */
--static inline long local_add_return(long i, local_t *l)
-+static inline long local_add_return(long i, long *l)
- {
- 	unsigned long flags;
- 	long result;
-@@ -66,7 +35,7 @@ static inline long local_add_return(long
- 		"add	%0, %2;			\n\t"
- 		"st %0, @%1;			\n\t"
- 		: "=&r" (result)
+- * local_sub_return - subtract long from local variable and return it
+- * @i: long value to subtract
+- * @l: pointer of type local_t
+- *
+- * Atomically subtracts @i from @l and return (@l - @i).
+- */
+-static inline long local_sub_return(long i, local_t *l)
+-{
+-	unsigned long flags;
+-	long result;
+-
+-	local_irq_save(flags);
+-	__asm__ __volatile__ (
+-		"# local_sub_return		\n\t"
+-		DCACHE_CLEAR("%0", "r4", "%1")
+-		"ld %0, @%1;			\n\t"
+-		"sub	%0, %2;			\n\t"
+-		"st %0, @%1;			\n\t"
+-		: "=&r" (result)
 -		: "r" (&l->counter), "r" (i)
-+		: "r" (*l), "r" (i)
- 		: "memory"
- #ifdef CONFIG_CHIP_M32700_TS1
- 		, "r4"
-@@ -111,7 +80,7 @@ static inline long local_add_return(long
+-		: "memory"
+-#ifdef CONFIG_CHIP_M32700_TS1
+-		, "r4"
+-#endif	/* CONFIG_CHIP_M32700_TS1 */
+-	);
+-	local_irq_restore(flags);
+-
+-	return result;
+-}
+-
+-/**
+  * local_add - add long to local variable
+  * @i: long value to add
+  * @l: pointer of type local_t
+@@ -124,78 +93,7 @@ static inline long local_sub_return(long
+  *
+  * Atomically subtracts @i from @l.
   */
- #define local_dec(l) local_sub(1, (l))
+-#define local_sub(i, l) ((void) local_sub_return((i), (l)))
+-
+-/**
+- * local_sub_and_test - subtract value from variable and test result
+- * @i: integer value to subtract
+- * @l: pointer of type local_t
+- *
+- * Atomically subtracts @i from @l and returns
+- * true if the result is zero, or false for all
+- * other cases.
+- */
+-#define local_sub_and_test(i, l) (local_sub_return((i), (l)) == 0)
+-
+-/**
+- * local_inc_return - increment local variable and return it
+- * @l: pointer of type local_t
+- *
+- * Atomically increments @l by 1 and returns the result.
+- */
+-static inline long local_inc_return(local_t *l)
+-{
+-	unsigned long flags;
+-	long result;
+-
+-	local_irq_save(flags);
+-	__asm__ __volatile__ (
+-		"# local_inc_return		\n\t"
+-		DCACHE_CLEAR("%0", "r4", "%1")
+-		"ld %0, @%1;			\n\t"
+-		"addi	%0, #1;			\n\t"
+-		"st %0, @%1;			\n\t"
+-		: "=&r" (result)
+-		: "r" (&l->counter)
+-		: "memory"
+-#ifdef CONFIG_CHIP_M32700_TS1
+-		, "r4"
+-#endif	/* CONFIG_CHIP_M32700_TS1 */
+-	);
+-	local_irq_restore(flags);
+-
+-	return result;
+-}
+-
+-/**
+- * local_dec_return - decrement local variable and return it
+- * @l: pointer of type local_t
+- *
+- * Atomically decrements @l by 1 and returns the result.
+- */
+-static inline long local_dec_return(local_t *l)
+-{
+-	unsigned long flags;
+-	long result;
+-
+-	local_irq_save(flags);
+-	__asm__ __volatile__ (
+-		"# local_dec_return		\n\t"
+-		DCACHE_CLEAR("%0", "r4", "%1")
+-		"ld %0, @%1;			\n\t"
+-		"addi	%0, #-1;		\n\t"
+-		"st %0, @%1;			\n\t"
+-		: "=&r" (result)
+-		: "r" (&l->counter)
+-		: "memory"
+-#ifdef CONFIG_CHIP_M32700_TS1
+-		, "r4"
+-#endif	/* CONFIG_CHIP_M32700_TS1 */
+-	);
+-	local_irq_restore(flags);
+-
+-	return result;
+-}
++#define local_sub(i, l) ((void) local_add_return(-(i), (l)))
  
--#define local_cmpxchg(l, o, n) (cmpxchg_local(&((l)->counter), (o), (n)))
-+#define local_cmpxchg(l, o, n) (cmpxchg_local((l), (o), (n)))
+ /**
+  * local_inc - increment local variable
+@@ -203,7 +101,7 @@ static inline long local_dec_return(loca
+  *
+  * Atomically increments @l by 1.
+  */
+-#define local_inc(l) ((void)local_inc_return(l))
++#define local_inc(l) local_add(1, (l))
+ 
+ /**
+  * local_dec - decrement local variable
+@@ -211,67 +109,9 @@ static inline long local_dec_return(loca
+  *
+  * Atomically decrements @l by 1.
+  */
+-#define local_dec(l) ((void)local_dec_return(l))
+-
+-/**
+- * local_inc_and_test - increment and test
+- * @l: pointer of type local_t
+- *
+- * Atomically increments @l by 1
+- * and returns true if the result is zero, or false for all
+- * other cases.
+- */
+-#define local_inc_and_test(l) (local_inc_return(l) == 0)
+-
+-/**
+- * local_dec_and_test - decrement and test
+- * @l: pointer of type local_t
+- *
+- * Atomically decrements @l by 1 and
+- * returns true if the result is 0, or false for all
+- * other cases.
+- */
+-#define local_dec_and_test(l) (local_dec_return(l) == 0)
+-
+-/**
+- * local_add_negative - add and test if negative
+- * @l: pointer of type local_t
+- * @i: integer value to add
+- *
+- * Atomically adds @i to @l and returns true
+- * if the result is negative, or false when
+- * result is greater than or equal to zero.
+- */
+-#define local_add_negative(i, l) (local_add_return((i), (l)) < 0)
++#define local_dec(l) local_sub(1, (l))
+ 
+ #define local_cmpxchg(l, o, n) (cmpxchg_local(&((l)->counter), (o), (n)))
+-#define local_xchg(v, new) (xchg_local(&((l)->counter), new))
+-
+-/**
+- * local_add_unless - add unless the number is a given value
+- * @l: pointer of type local_t
+- * @a: the amount to add to l...
+- * @u: ...unless l is equal to u.
+- *
+- * Atomically adds @a to @l, so long as it was not @u.
+- * Returns non-zero if @l was not @u, and zero otherwise.
+- */
+-static inline int local_add_unless(local_t *l, long a, long u)
+-{
+-	long c, old;
+-	c = local_read(l);
+-	for (;;) {
+-		if (unlikely(c == (u)))
+-			break;
+-		old = local_cmpxchg((l), c, c + (a));
+-		if (likely(old == c))
+-			break;
+-		c = old;
+-	}
+-	return c != (u);
+-}
+-
+-#define local_inc_not_zero(l) local_add_unless((l), 1, 0)
  
  static inline void local_clear_mask(unsigned long  mask, local_t *addr)
  {
+@@ -323,19 +163,4 @@ static inline void local_set_mask(unsign
+ #define smp_mb__before_local_inc()	barrier()
+ #define smp_mb__after_local_inc()	barrier()
+ 
+-/* Use these for per-cpu local_t variables: on some archs they are
+- * much more efficient than these naive implementations.  Note they take
+- * a variable, not an address.
+- */
+-
+-#define __local_inc(l)		((l)->a.counter++)
+-#define __local_dec(l)		((l)->a.counter++)
+-#define __local_add(i, l)	((l)->a.counter += (i))
+-#define __local_sub(i, l)	((l)->a.counter -= (i))
+-
+-/* Use these for per-cpu local_t variables: on some archs they are
+- * much more efficient than these naive implementations.  Note they take
+- * a variable, not an address.
+- */
+-
+ #endif /* __M32R_LOCAL_H */
 Index: linux-2.6/arch/mips/include/asm/local.h
 ===================================================================
---- linux-2.6.orig/arch/mips/include/asm/local.h	2010-01-07 16:09:45.000000000 -0600
-+++ linux-2.6/arch/mips/include/asm/local.h	2010-01-07 16:25:53.000000000 -0600
-@@ -7,25 +7,7 @@
- #include <asm/cmpxchg.h>
- #include <asm/war.h>
- 
--typedef struct
--{
--	atomic_long_t a;
--} local_t;
--
--#define LOCAL_INIT(i)	{ ATOMIC_LONG_INIT(i) }
--
--#define local_read(l)	atomic_long_read(&(l)->a)
--#define local_set(l, i)	atomic_long_set(&(l)->a, (i))
--
--#define local_add(i, l)	atomic_long_add((i), (&(l)->a))
--#define local_sub(i, l)	atomic_long_sub((i), (&(l)->a))
--#define local_inc(l)	atomic_long_inc(&(l)->a)
--#define local_dec(l)	atomic_long_dec(&(l)->a)
--
--/*
-- * Same as above, but return the result value
-- */
--static __inline__ long local_add_return(long i, local_t * l)
-+static __inline__ long local_add_return(long i, long * l)
- {
- 	unsigned long result;
- 
-@@ -40,8 +22,8 @@ static __inline__ long local_add_return(
- 		"	beqzl	%0, 1b					\n"
- 		"	addu	%0, %1, %3				\n"
- 		"	.set	mips0					\n"
--		: "=&r" (result), "=&r" (temp), "=m" (l->a.counter)
--		: "Ir" (i), "m" (l->a.counter)
-+		: "=&r" (result), "=&r" (temp), "=m" (*l)
-+		: "Ir" (i), "m" (*l)
- 		: "memory");
- 	} else if (kernel_uses_llsc) {
- 		unsigned long temp;
-@@ -54,23 +36,28 @@ static __inline__ long local_add_return(
- 		"	beqz	%0, 1b					\n"
- 		"	addu	%0, %1, %3				\n"
- 		"	.set	mips0					\n"
--		: "=&r" (result), "=&r" (temp), "=m" (l->a.counter)
--		: "Ir" (i), "m" (l->a.counter)
-+		: "=&r" (result), "=&r" (temp), "=m" (*l)
-+		: "Ir" (i), "m" (*l)
- 		: "memory");
- 	} else {
- 		unsigned long flags;
- 
- 		local_irq_save(flags);
--		result = l->a.counter;
-+		result = *l;
- 		result += i;
--		l->a.counter = result;
-+		*l = result;
- 		local_irq_restore(flags);
- 	}
- 
+--- linux-2.6.orig/arch/mips/include/asm/local.h	2010-01-07 16:06:42.000000000 -0600
++++ linux-2.6/arch/mips/include/asm/local.h	2010-01-07 16:26:26.000000000 -0600
+@@ -70,127 +70,7 @@ static __inline__ long local_add_return(
  	return result;
  }
  
-+#define local_add(i, l)	local_add_return((i), (l))
-+#define local_sub(i, l)	local_add_return(-(i), (l))
-+#define local_inc(l)	local_add_return(-1, (l))
-+#define local_dec(l)	local_add_return(-1, (l))
-+
+-static __inline__ long local_sub_return(long i, local_t * l)
+-{
+-	unsigned long result;
+-
+-	if (kernel_uses_llsc && R10000_LLSC_WAR) {
+-		unsigned long temp;
+-
+-		__asm__ __volatile__(
+-		"	.set	mips3					\n"
+-		"1:"	__LL	"%1, %2		# local_sub_return	\n"
+-		"	subu	%0, %1, %3				\n"
+-			__SC	"%0, %2					\n"
+-		"	beqzl	%0, 1b					\n"
+-		"	subu	%0, %1, %3				\n"
+-		"	.set	mips0					\n"
+-		: "=&r" (result), "=&r" (temp), "=m" (l->a.counter)
+-		: "Ir" (i), "m" (l->a.counter)
+-		: "memory");
+-	} else if (kernel_uses_llsc) {
+-		unsigned long temp;
+-
+-		__asm__ __volatile__(
+-		"	.set	mips3					\n"
+-		"1:"	__LL	"%1, %2		# local_sub_return	\n"
+-		"	subu	%0, %1, %3				\n"
+-			__SC	"%0, %2					\n"
+-		"	beqz	%0, 1b					\n"
+-		"	subu	%0, %1, %3				\n"
+-		"	.set	mips0					\n"
+-		: "=&r" (result), "=&r" (temp), "=m" (l->a.counter)
+-		: "Ir" (i), "m" (l->a.counter)
+-		: "memory");
+-	} else {
+-		unsigned long flags;
+-
+-		local_irq_save(flags);
+-		result = l->a.counter;
+-		result -= i;
+-		l->a.counter = result;
+-		local_irq_restore(flags);
+-	}
+-
+-	return result;
+-}
+-
  #define local_cmpxchg(l, o, n) \
--	((long)cmpxchg_local(&((l)->a.counter), (o), (n)))
-+	((long)cmpxchg_local((l), (o), (n)))
+ 	((long)cmpxchg_local(&((l)->a.counter), (o), (n)))
+-#define local_xchg(l, n) (xchg_local(&((l)->a.counter), (n)))
+-
+-/**
+- * local_add_unless - add unless the number is a given value
+- * @l: pointer of type local_t
+- * @a: the amount to add to l...
+- * @u: ...unless l is equal to u.
+- *
+- * Atomically adds @a to @l, so long as it was not @u.
+- * Returns non-zero if @l was not @u, and zero otherwise.
+- */
+-#define local_add_unless(l, a, u)				\
+-({								\
+-	long c, old;						\
+-	c = local_read(l);					\
+-	while (c != (u) && (old = local_cmpxchg((l), c, c + (a))) != c) \
+-		c = old;					\
+-	c != (u);						\
+-})
+-#define local_inc_not_zero(l) local_add_unless((l), 1, 0)
+-
+-#define local_dec_return(l) local_sub_return(1, (l))
+-#define local_inc_return(l) local_add_return(1, (l))
+-
+-/*
+- * local_sub_and_test - subtract value from variable and test result
+- * @i: integer value to subtract
+- * @l: pointer of type local_t
+- *
+- * Atomically subtracts @i from @l and returns
+- * true if the result is zero, or false for all
+- * other cases.
+- */
+-#define local_sub_and_test(i, l) (local_sub_return((i), (l)) == 0)
+-
+-/*
+- * local_inc_and_test - increment and test
+- * @l: pointer of type local_t
+- *
+- * Atomically increments @l by 1
+- * and returns true if the result is zero, or false for all
+- * other cases.
+- */
+-#define local_inc_and_test(l) (local_inc_return(l) == 0)
+-
+-/*
+- * local_dec_and_test - decrement by 1 and test
+- * @l: pointer of type local_t
+- *
+- * Atomically decrements @l by 1 and
+- * returns true if the result is 0, or false for all other
+- * cases.
+- */
+-#define local_dec_and_test(l) (local_sub_return(1, (l)) == 0)
+-
+-/*
+- * local_add_negative - add and test if negative
+- * @l: pointer of type local_t
+- * @i: integer value to add
+- *
+- * Atomically adds @i to @l and returns true
+- * if the result is negative, or false when
+- * result is greater than or equal to zero.
+- */
+-#define local_add_negative(i, l) (local_add_return(i, (l)) < 0)
+-
+-/* Use these for per-cpu local_t variables: on some archs they are
+- * much more efficient than these naive implementations.  Note they take
+- * a variable, not an address.
+- */
+-
+-#define __local_inc(l)		((l)->a.counter++)
+-#define __local_dec(l)		((l)->a.counter++)
+-#define __local_add(i, l)	((l)->a.counter+=(i))
+-#define __local_sub(i, l)	((l)->a.counter-=(i))
  
  #endif /* _ARCH_MIPS_LOCAL_H */
 
