@@ -1,87 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756639Ab0AGCfR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756652Ab0AGCfz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756639Ab0AGCfR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 21:35:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756613Ab0AGCfQ
+	id S1756652Ab0AGCfz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 21:35:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756613Ab0AGCfy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 21:35:16 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:38474 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755461Ab0AGCfP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 21:35:15 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Thu, 7 Jan 2010 11:31:54 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       "menage@google.com" <menage@google.com>, kirill@shutemov.name,
-       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>
-Subject: Re: mmotm 2010-01-06-14-34 uploaded (kernel/cgroup)
-Message-Id: <20100107113154.a1fa0103.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20100106170849.d0d95c9b.randy.dunlap@oracle.com>
-References: <201001062259.o06MxQrp023236@imap1.linux-foundation.org>
-	<20100106170849.d0d95c9b.randy.dunlap@oracle.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 6 Jan 2010 21:35:54 -0500
+Received: from mail.gmx.net ([213.165.64.20]:47452 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1756583Ab0AGCfy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jan 2010 21:35:54 -0500
+X-Authenticated: #12255092
+X-Provags-ID: V01U2FsdGVkX1+s4pscB1CsKtV9QTQIbdhovfj6ehCwHg7G6UCEx4
+	UD8l7Zg7djHrAM
+From: Peter Huewe <PeterHuewe@gmx.de>
+To: Wim Van Sebroeck <wim@iguana.be>
+Subject: [PATCH] watchdog/ixp2000: Fix build failure caused by missing include
+Date: Thu, 7 Jan 2010 03:35:49 +0100
+User-Agent: KMail/1.12.3 (Linux/2.6.27-05415-g69a8594; KDE/4.3.3; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org, Russell King <rmk+kernel@arm.linux.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Message-Id: <201001070335.49710.PeterHuewe@gmx.de>
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.62
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 6 Jan 2010 17:08:49 -0800
-Randy Dunlap <randy.dunlap@oracle.com> wrote:
+From: Peter Huewe <peterhuewe@gmx.de>
+Date: Thu, 7 Jan 2010 03:24:28 +0100
 
-> On Wed, 06 Jan 2010 14:34:36 -0800 akpm@linux-foundation.org wrote:
-> 
-> > The mm-of-the-moment snapshot 2010-01-06-14-34 has been uploaded to
-> > 
-> >    http://userweb.kernel.org/~akpm/mmotm/
-> > 
-> > and will soon be available at
-> > 
-> >    git://zen-kernel.org/kernel/mmotm.git
-> > 
-> > It contains the following patches against 2.6.33-rc3:
-> 
-> 
-> kernel/cgroup.c: In function 'cgroup_write_event_control':
-> kernel/cgroup.c:2949: error: implicit declaration of function 'eventfd_fget'
-> kernel/cgroup.c:2949: warning: assignment makes pointer from integer without a cast
-> kernel/cgroup.c:2955: error: implicit declaration of function 'eventfd_ctx_fileget'
-> kernel/cgroup.c:2955: warning: assignment makes pointer from integer without a cast
-> make[2]: *** [kernel/cgroup.o] Error 1
-> 
+This patch fixes a build failure[1] caused by the missing include of
+timer.h and thus fixes the build failure.
 
-Hmm, how about this rather than adding #ifdefs..
-Paul, Li, how do you think ?
-==
-Cgroup's eventdf feature has depenedecy to EVENTFD
+Notably the build failure existed since October 2009! [2]
 
-This is a patch onto
-cgroup-implement-eventfd-based-generic-api-for-notifications.patch
+References:
+[1] http://kisskb.ellerman.id.au/kisskb/buildresult/1983339/
+[2] http://kisskb.ellerman.id.au/kisskb/buildresult/1351737/
 
-CC: Li Zefan <lizf@cn.fujitsu.com>
-CC: Kirill A. Shutemov <kirill@shutemov.name>
-CC: Paul Menage <menage@google.com>
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Patch against Linus' tree
 
+Signed-off-by: Peter Huewe <peterhuewe@gmx.de>
 ---
- init/Kconfig |    1 +
- 1 file changed, 1 insertion(+)
+ drivers/watchdog/ixp2000_wdt.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-Index: ref-mmotm/init/Kconfig
-===================================================================
---- ref-mmotm.orig/init/Kconfig
-+++ ref-mmotm/init/Kconfig
-@@ -509,6 +509,7 @@ endchoice
- 
- menuconfig CGROUPS
- 	boolean "Control Group support"
-+	depends on EVENTFD
- 	help
- 	  This option adds support for grouping sets of processes together, for
- 	  use with process control subsystems such as Cpusets, CFS, memory
+diff --git a/drivers/watchdog/ixp2000_wdt.c b/drivers/watchdog/ixp2000_wdt.c
+index 4f4b35a..3c79dc5 100644
+--- a/drivers/watchdog/ixp2000_wdt.c
++++ b/drivers/watchdog/ixp2000_wdt.c
+@@ -19,6 +19,7 @@
+ #include <linux/module.h>
+ #include <linux/moduleparam.h>
+ #include <linux/types.h>
++#include <linux/timer.h>
+ #include <linux/kernel.h>
+ #include <linux/fs.h>
+ #include <linux/miscdevice.h>
+-- 
+1.6.4.4
 
