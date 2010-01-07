@@ -1,62 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754056Ab0AGFvr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932434Ab0AGFzq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754056Ab0AGFvr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 00:51:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751520Ab0AGFvp
+	id S932434Ab0AGFzq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 00:55:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752161Ab0AGFzo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 00:51:45 -0500
-Received: from g4t0017.houston.hp.com ([15.201.24.20]:29882 "EHLO
-	g4t0017.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751006Ab0AGFvo (ORCPT
+	Thu, 7 Jan 2010 00:55:44 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:46766 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751144Ab0AGFzk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 00:51:44 -0500
-Subject: Re: BAR 0: can't allocate resource
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Alex Brooks <a.brooks@marathon-robotics.com>
-Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <201001071209.01975.a.brooks@marathon-robotics.com>
-References: <201001061305.31635.a.brooks@marathon-robotics.com>
-	 <201001061316.21744.a.brooks@marathon-robotics.com>
-	 <201001061319.54436.bjorn.helgaas@hp.com>
-	 <201001071209.01975.a.brooks@marathon-robotics.com>
-Content-Type: text/plain
-Date: Wed, 06 Jan 2010 22:46:16 -0700
-Message-Id: <1262843176.27608.2.camel@dc7800.home>
+	Thu, 7 Jan 2010 00:55:40 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Thu, 7 Jan 2010 14:52:23 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH -mmotm] build fix for
+ memcg-move-charges-of-anonymous-swap.patch
+Message-Id: <20100107145223.a73e2be9.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20100107141401.6a182085.nishimura@mxp.nes.nec.co.jp>
+References: <201001062259.o06MxQrp023236@imap1.linux-foundation.org>
+	<20100106171058.f1d6f393.randy.dunlap@oracle.com>
+	<20100107111319.7d95fe86.nishimura@mxp.nes.nec.co.jp>
+	<20100107112150.2e585f1c.kamezawa.hiroyu@jp.fujitsu.com>
+	<20100107115901.594330d0.nishimura@mxp.nes.nec.co.jp>
+	<20100107120233.f244d4b7.kamezawa.hiroyu@jp.fujitsu.com>
+	<20100107130609.31fe83dc.nishimura@mxp.nes.nec.co.jp>
+	<20100107133026.6350bd9d.kamezawa.hiroyu@jp.fujitsu.com>
+	<20100107141401.6a182085.nishimura@mxp.nes.nec.co.jp>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2010-01-07 at 12:09 +1100, Alex Brooks wrote:
-> > You mentioned two messages.  Here's the first:
-> >   PCI: BIOS Bug: MCFG area at e0000000 is not reserved in ACPI motherboard
-> > resources PCI: Not using MMCONFIG.
-> >
-> > and the second:
-> >   PCI: Cannot allocate resource region 0 of device 0000:01:04.0
-> >   PCI: Error while updating region 0000:01:04.0/0 (feb00002 != 00000000)
-> >
-> > The "Error while updating region" message is because we wrote something
-> > to a BAR, read it back, and they didn't match.  I suppose this could be
-> > some kind of config space problem related to the fact that we're not
-> > using MMCONFIG.
-> >
-> > Can you try removing the MCFG reservation check, so we do try to use
-> > MMCONFIG?  If you do this on a current kernel, we'll also get a little
-> > more debug output about the subsequent resource allocation failure.
+On Thu, 7 Jan 2010 14:14:01 +0900
+Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
+
+> Anyway, I'm sorry that the first patch was wrong...
+> This is the correct one.
 > 
-> I did this on my 2.6.26 kernel (is this current enough or would a later kernel 
-> be better?) and attached the dmesg output.
+> ===
+> From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+> 
+> build fix in !CONFIG_SWAP case.
+> 
+>   CC      mm/memcontrol.o
+> mm/memcontrol.c: In function 'is_target_pte_for_mc':
+> mm/memcontrol.c:3648: error: implicit declaration of function 'mem_cgroup_count_swap_user'
+> make[1]: *** [mm/memcontrol.o] Error 1
+> make: *** [mm] Error 2
+> 
+> Reported-by: Randy Dunlap <randy.dunlap@oracle.com>
+> Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
 
-Looks like you got the same errors when accessing config space as
-before.
+Thank you.
 
-I was hoping for a kernel directly from Linus' git repo, e.g.,
-2.6.33-rc3; I don't think the debug output I'm thinking about went in
-until after 2.6.32 was released.
+Acked-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-Bjorn
+BTW, maybe it's time to
+  - remove EXPERIMENTAL from CONFIG_CGROUP_MEM_RES_CTRL_SWAP
+and more,
+  - remove CONFIG_CGROUP_MEM_RES_CTRL_SWAP
+    (to reduce complicated #ifdefs and replace them with CONFIG_SWAP.)
 
+It's very stable as far as I test.
+
+Thanks,
+-Kame
 
