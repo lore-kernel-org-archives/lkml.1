@@ -1,64 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932562Ab0AGCS4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756519Ab0AGCUW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932562Ab0AGCS4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 21:18:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756251Ab0AGCSz
+	id S1756519Ab0AGCUW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 21:20:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756271Ab0AGCUW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 21:18:55 -0500
-Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:35037 "EHLO
-	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752316Ab0AGCSy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 21:18:54 -0500
-Date: Thu, 7 Jan 2010 11:13:19 +0900
-From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Subject: Re: mmotm 2010-01-06-14-34 uploaded (mm/memcontrol)
-Message-Id: <20100107111319.7d95fe86.nishimura@mxp.nes.nec.co.jp>
-In-Reply-To: <20100106171058.f1d6f393.randy.dunlap@oracle.com>
-References: <201001062259.o06MxQrp023236@imap1.linux-foundation.org>
-	<20100106171058.f1d6f393.randy.dunlap@oracle.com>
-Organization: NEC Soft, Ltd.
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.10.14; i686-pc-mingw32)
+	Wed, 6 Jan 2010 21:20:22 -0500
+Received: from mail.perches.com ([173.55.12.10]:1614 "EHLO mail.perches.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752279Ab0AGCUU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jan 2010 21:20:20 -0500
+Subject: [PATCH] net/netfilter/xt_osf.c: Change %pi4 to %pI4
+From: Joe Perches <joe@perches.com>
+To: Patrick McHardy <kaber@trash.net>
+Cc: "David S. Miller" <davem@davemloft.net>, netfilter-devel@vger.kernel.org,
+       netfilter@vger.kernel.org, coreteam@netfilter.org,
+       netdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 06 Jan 2010 18:20:18 -0800
+Message-ID: <1262830818.1872.52.camel@Joe-Laptop.home>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thank you for your report.
+commit 8a27f7c90ffcb791eed7574922b51fb60b08fc89
+changed the output style of %pi4 to use fixed
+width leading zero IP addresses "001.002.003.004".
 
-On Wed, 6 Jan 2010 17:10:58 -0800, Randy Dunlap <randy.dunlap@oracle.com> wrote:
-> On Wed, 06 Jan 2010 14:34:36 -0800 akpm@linux-foundation.org wrote:
-> 
-> > The mm-of-the-moment snapshot 2010-01-06-14-34 has been uploaded to
-> > 
-> >    http://userweb.kernel.org/~akpm/mmotm/
-> > 
-> > and will soon be available at
-> > 
-> >    git://zen-kernel.org/kernel/mmotm.git
-> > 
-> > It contains the following patches against 2.6.33-rc3:
-> 
-> 
-> mm/memcontrol.c: In function 'is_target_pte_for_mc':
-> mm/memcontrol.c:3985: error: implicit declaration of function 'mem_cgroup_count_swap_user'
-> mm/memcontrol.c: In function 'mem_cgroup_move_charge_pte_range':
-> mm/memcontrol.c:4220: error: too many arguments to function 'mem_cgroup_move_swap_account'
-> mm/memcontrol.c:4220: error: too many arguments to function 'mem_cgroup_move_swap_account'
-> mm/memcontrol.c:4220: error: too many arguments to function 'mem_cgroup_move_swap_account'
-> 
-> 
-> config attached.
-> 
-I'm sorry I missed the !CONFIG_SWAP or !CONFIG_CGROUP_MEM_RES_CTLR_SWAP case.
+It's useful when printing multiple lines of
+addresses, but was a change in output style for
+some existing uses.
 
-I'll prepare fixes.
+Using %pI4 restores the previous output style.
+
+Signed-off-by: Joe Perches <joe@perches.com>
+
+diff --git a/net/netfilter/xt_osf.c b/net/netfilter/xt_osf.c
+index 4d1a41b..4169e20 100644
+--- a/net/netfilter/xt_osf.c
++++ b/net/netfilter/xt_osf.c
+@@ -334,7 +334,7 @@ static bool xt_osf_match_packet(const struct sk_buff *skb,
+ 			if (info->flags & XT_OSF_LOG)
+ 				nf_log_packet(p->family, p->hooknum, skb,
+ 					p->in, p->out, NULL,
+-					"%s [%s:%s] : %pi4:%d -> %pi4:%d hops=%d\n",
++					"%s [%s:%s] : %pI4:%d -> %pI4:%d hops=%d\n",
+ 					f->genre, f->version, f->subtype,
+ 					&ip->saddr, ntohs(tcp->source),
+ 					&ip->daddr, ntohs(tcp->dest),
+@@ -349,7 +349,7 @@ static bool xt_osf_match_packet(const struct sk_buff *skb,
+ 
+ 	if (!fcount && (info->flags & XT_OSF_LOG))
+ 		nf_log_packet(p->family, p->hooknum, skb, p->in, p->out, NULL,
+-			"Remote OS is not known: %pi4:%u -> %pi4:%u\n",
++			"Remote OS is not known: %pI4:%u -> %pI4:%u\n",
+ 				&ip->saddr, ntohs(tcp->source),
+ 				&ip->daddr, ntohs(tcp->dest));
+ 
 
 
-Thanks,
-Daisuke Nishimura.
