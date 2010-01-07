@@ -1,65 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932341Ab0AGC63@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756690Ab0AGDA4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932341Ab0AGC63 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 21:58:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932301Ab0AGC62
+	id S1756690Ab0AGDA4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 22:00:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756675Ab0AGDAz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 21:58:28 -0500
-Received: from smtp-out.google.com ([216.239.44.51]:48426 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755788Ab0AGC61 (ORCPT
+	Wed, 6 Jan 2010 22:00:55 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:39751 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756670Ab0AGDAz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 21:58:27 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=from:subject:to:cc:date:message-id:user-agent:
-	mime-version:content-type:content-transfer-encoding:x-system-of-record;
-	b=McTVaY695c+VLm+W851Ri7+Ce/uP0q/XsL8esSEW3UFOSKvFdjOx5Kb7/Yv8FbW/W
-	nTNM+CARd+vN7D/uUY1Xg==
-From: Divyesh Shah <dpshah@google.com>
-Subject: [PATCH] cfq-iosched: Respect ioprio_class when preempting
-To: jens.axboe@oracle.com, czoccolo@gmail.com, linux-kernel@vger.kernel.org
-Cc: nauman@google.com, mikew@google.com, ctalbott@google.com
-Date: Wed, 06 Jan 2010 18:58:20 -0800
-Message-ID: <20100107025413.27610.48801.stgit@austin.mtv.corp.google.com>
-User-Agent: StGIT/0.14.3
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+	Wed, 6 Jan 2010 22:00:55 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Thu, 7 Jan 2010 11:57:36 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Tejun Heo <tj@kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Nick Piggin <npiggin@suse.de>,
+       Andi Kleen <andi@firstfloor.org>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Huang, Ying" <ying.huang@intel.com>
+Subject: Re: [RFC][PATCH] vmalloc: simplify vread()/vwrite()
+Message-Id: <20100107115736.ee815579.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20100107025054.GA11252@localhost>
+References: <20100107012458.GA9073@localhost>
+	<20100107103825.239ffcf9.kamezawa.hiroyu@jp.fujitsu.com>
+	<20100107025054.GA11252@localhost>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In cfq_should_preempt(), we currently allow some cases where a non-RT request
-can preempt an ongoing RT cfqq timeslice. This should not happen.
-Examples include:
-
-o A sync_noidle wl type non-RT request pre-empting a sync_noidle wl type cfqq
-  on which we are idling.
-o Once we have per-cgroup async queues, a non-RT sync request pre-empting a RT
-  async cfqq.
-
-Signed-off-by: Divyesh Shah<dpshah@google.com>
----
-
- block/cfq-iosched.c |    6 ++++++
- 1 files changed, 6 insertions(+), 0 deletions(-)
-
-diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
-index 7d6cef9..e9e6610 100644
---- a/block/cfq-iosched.c
-+++ b/block/cfq-iosched.c
-@@ -3104,6 +3104,12 @@ cfq_should_preempt(struct cfq_data *cfqd, struct cfq_queue *new_cfqq,
- 		return true;
+On Thu, 7 Jan 2010 10:50:54 +0800
+Wu Fengguang <fengguang.wu@intel.com> wrote:
  
- 	/*
-+	 * Don't allow a non-RT request to preempt an ongoing RT cfqq timeslice.
-+	 */
-+	if (cfq_class_rt(cfqq) && !cfq_class_rt(new_cfqq))
-+		return false;
-+
-+	/*
- 	 * if the new request is sync, but the currently running queue is
- 	 * not, let the sync request have priority.
- 	 */
+> > > The changes are:
+> > > - remove the vmlist walk and rely solely on vmalloc_to_page()
+> > > - replace the VM_IOREMAP check with (page && page_is_ram(pfn))
+> > > 
+> > > The VM_IOREMAP check is introduced in commit d0107eb07320b for per-cpu
+> > > alloc. Kame, would you double check if this change is OK for that
+> > > purpose?
+> > > 
+> > I think VM_IOREMAP is for avoiding access to device configuration area and
+> > unexpected breakage in device. Then, VM_IOREMAP are should be skipped by
+> > the caller. (My patch _just_ moves the avoidance of callers to vread()/vwrite())
+> 
+> "device configuration area" is not RAM, so testing of RAM would be
+> able to skip them?
+>
+Sorry, that's an area what I'm not sure. 
+But, page_is_ram() implementation other than x86 seems not very safe...
+(And it seems that it's not defiend in some archs.)
+
+> > 
+> > > The page_is_ram() check is necessary because kmap_atomic() is not
+> > > designed to work with non-RAM pages.
+> > > 
+> > I think page_is_ram() is not a complete method...on x86, it just check
+> > e820's memory range. checking VM_IOREMAP is better, I think.
+> 
+> (double check) Not complete or not safe?
+> 
+I think not-safe because e820 doesn't seem to be updated.
+
+> EFI seems to not update e820 table by default.  Ying, do you know why?
+> 
+
+I hope all this kinds can be fixed by kernel/resource.c in generic way....
+Now, each archs have its own.
+
+> > > Even for a RAM page, we don't own the page, and cannot assume it's a
+> > > _PAGE_CACHE_WB page. So I wonder whether it's necessary to do another
+> > > patch to call reserve_memtype() before kmap_atomic() to ensure cache
+> > > consistency?
+> > > 
+> > > TODO: update comments accordingly
+> > > 
+> > 
+> > BTW, f->f_pos problem on 64bit machine still exists and this patch is still
+> > hard to test. I stopped that because anyone doesn't show any interests.
+> 
+> I'm using your patch :)
+> 
+> I feel most inconfident on this patch, so submitted it for RFC first.
+> I'll then submit a full patch series including your f_pos fix.
+> 
+Thank you, it's helpful.
+
+Thanks,
+-Kame
 
