@@ -1,51 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753368Ab0AGSUU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753272Ab0AGSXs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753368Ab0AGSUU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 13:20:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753274Ab0AGSUT
+	id S1753272Ab0AGSXs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 13:23:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752113Ab0AGSXr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 13:20:19 -0500
-Received: from mta2.srv.hcvlny.cv.net ([167.206.4.197]:41228 "EHLO
-	mta2.srv.hcvlny.cv.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753286Ab0AGSUS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 13:20:18 -0500
-Date: Thu, 07 Jan 2010 13:19:41 -0500
-From: Michael Breuer <mbreuer@majjas.com>
-Subject: Re: [PATCH] af_packet: Don't use skb after dev_queue_xmit()
-In-reply-to: <20100107180114.GB3088@del.dom.local>
-To: Jarek Poplawski <jarkao2@gmail.com>
-Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
-       flyboy@gmail.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Message-id: <4B4625BD.3070202@majjas.com>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7BIT
-References: <4B451C31.3000309@majjas.com> <4B454A16.3030909@majjas.com>
- <4B455C62.6030504@majjas.com> <20100106205343.5460d658@nehalam>
- <4B4571D5.30002@majjas.com> <4B457711.1040008@majjas.com>
- <4B458B36.6050509@majjas.com> <20100107074756.GB6258@ff.dom.local>
- <4B459368.2000503@majjas.com> <4B45F841.8030407@majjas.com>
- <20100107180114.GB3088@del.dom.local>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.5)
- Gecko/20091204 Lightning/1.0b2pre Thunderbird/3.0
+	Thu, 7 Jan 2010 13:23:47 -0500
+Received: from mail.perches.com ([173.55.12.10]:1618 "EHLO mail.perches.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752006Ab0AGSXq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jan 2010 13:23:46 -0500
+Subject: [PATCH] lib/vsprintf.c: Add %pMF to format FDDI bit reversed MAC
+ addresses
+From: Joe Perches <joe@perches.com>
+To: H Hartley Sweeten <hartleys@visionengravers.com>
+Cc: David Miller <davem@davemloft.net>,
+       "Maciej W. Rozycki" <macro@linux-mips.org>,
+       linux-kernel@vger.kernel.org, netdev <netdev@vger.kernel.org>
+In-Reply-To: <BD79186B4FD85F4B8E60E381CAEE19090208954A@mi8nycmail19.Mi8.com>
+References: <BD79186B4FD85F4B8E60E381CAEE19090208954A@mi8nycmail19.Mi8.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 07 Jan 2010 10:23:45 -0800
+Message-ID: <1262888625.10429.23.camel@Joe-Laptop.home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 1/7/2010 1:01 PM, Jarek Poplawski wrote:
-> On Thu, Jan 07, 2010 at 10:05:37AM -0500, Michael Breuer wrote:
->    
->> Bad news - crashed about an hour after I wrote this email - under
->> load - same crash as before. Network watchdog... lots of attempts to
->> reset the adapter... then hw watchdog rebooted the system.
->>      
-> It's a pity. Anyway, I'd be still interested in CONFIG_PACKET_MMAP off
-> if you find time.
->
-> Jarek P.
->    
-Ok - any particular patch set to try with? I'm going to start with a 
-clean tree using the latest 2.6.32 from git (tried 2.6.33-rc3, but can't 
-get a usable console... will look at that later.)
+On Mon, 2010-01-04 at 23:43 +0000, Maciej W. Rozycki wrote:
+> The example below shows an address, and the sequence of bits or symbols 
+> that would be transmitted when the address is used in the Source Address 
+> or Destination Address fields on the MAC header.  The transmission line 
+> shows the address bits in the order transmitted, from left to right.  For 
+> IEEE 802 LANs these correspond to actual bits on the medium.  The FDDI 
+> symbols line shows how the FDDI PHY sends the address bits as encoded 
+> symbols.
+> 
+>         MSB:            35:7B:12:00:00:01
+>         Canonical:      AC-DE-48-00-00-80
+>         Transmission:   00110101 01111011 00010010 00000000 00000000 00000001
+>         FDDI Symbols:   35 7B 12 00 00 01"
+> 
+> Please note that this address has its group bit clear.
+> 
+>  This notation is also defined in the "FDDI MEDIA ACCESS CONTROL-2 
+> (MAC-2)" (X3T9/92-120) document although that book does not have a need 
+> to use the MSB form and it's skipped.
+
+Adds 56 bytes to object size
+
+New:
+$ size lib/vsprintf.o
+   text	   data	    bss	    dec	    hex	filename
+   8714	      0	      2	   8716	   220c	lib/vsprintf.o
+old:
+$ size lib/vsprintf.o
+   text	   data	    bss	    dec	    hex	filename
+   8658	      0	      2	   8660	   21d4	lib/vsprintf.o
+
+Signed-off-by: Joe Perches <joe@perches.com>
+diff --git a/lib/vsprintf.c b/lib/vsprintf.c
+index d4996cf..36959cc 100644
+--- a/lib/vsprintf.c
++++ b/lib/vsprintf.c
+@@ -25,6 +25,7 @@
+ #include <linux/kallsyms.h>
+ #include <linux/uaccess.h>
+ #include <linux/ioport.h>
++#include <linux/bitrev.h>
+ #include <net/addrconf.h>
+ 
+ #include <asm/page.h>		/* for PAGE_SIZE */
+@@ -675,17 +676,37 @@ static char *resource_string(char *buf, char *end, struct resource *res,
+ 	return string(buf, end, sym, spec);
+ }
+ 
++static u8 mac_byte(u8 val)
++{
++	return val;
++}
++
++static u8 mac_byte_rev(u8 val)
++{
++	return bitrev8(val);
++}
++
+ static char *mac_address_string(char *buf, char *end, u8 *addr,
+ 				struct printf_spec spec, const char *fmt)
+ {
+ 	char mac_addr[sizeof("xx:xx:xx:xx:xx:xx")];
+ 	char *p = mac_addr;
+ 	int i;
++	u8 (*mac_byte_fn)(u8 val);
++	char separator;
++
++	if (fmt[1] == 'F') {		/* FDDI canonical format */
++		mac_byte_fn = mac_byte_rev;
++		separator = '-';
++	} else {
++		mac_byte_fn = mac_byte;
++		separator  = ':';
++	}
+ 
+ 	for (i = 0; i < 6; i++) {
+-		p = pack_hex_byte(p, addr[i]);
++		p = pack_hex_byte(p, mac_byte_fn(addr[i]));
+ 		if (fmt[0] == 'M' && i != 5)
+-			*p++ = ':';
++			*p++ = separator;
+ 	}
+ 	*p = '\0';
+ 
+@@ -896,6 +917,10 @@ static char *uuid_string(char *buf, char *end, const u8 *addr,
+  * - 'M' For a 6-byte MAC address, it prints the address in the
+  *       usual colon-separated hex notation
+  * - 'm' For a 6-byte MAC address, it prints the hex address without colons
++ * - 'MF' For a 6-byte MAC FDDI address, it prints the address
++ *       with a dash-separated hex notation with bit reversed bytes
++ * - 'mF' For a 6-byte MAC FDDI address, it prints the address
++ *       in hex notation without separators with bit reversed bytes
+  * - 'I' [46] for IPv4/IPv6 addresses printed in the usual way
+  *       IPv4 uses dot-separated decimal without leading 0's (1.2.3.4)
+  *       IPv6 uses colon separated network-order 16 bit hex with leading 0's
+@@ -939,6 +964,7 @@ static char *pointer(const char *fmt, char *buf, char *end, void *ptr,
+ 		return resource_string(buf, end, ptr, spec, fmt);
+ 	case 'M':			/* Colon separated: 00:01:02:03:04:05 */
+ 	case 'm':			/* Contiguous: 000102030405 */
++					/* [mM]F (FDDI, bit reversed) */
+ 		return mac_address_string(buf, end, ptr, spec, fmt);
+ 	case 'I':			/* Formatted IP supported
+ 					 * 4:	1.2.3.4
+
+
