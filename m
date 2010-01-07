@@ -1,81 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753291Ab0AGSQN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753326Ab0AGSQo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753291Ab0AGSQN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 13:16:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753207Ab0AGSQL
+	id S1753326Ab0AGSQo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 13:16:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753303Ab0AGSQn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 13:16:11 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:60434 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753199Ab0AGSQJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 13:16:09 -0500
-Date: Thu, 7 Jan 2010 10:15:31 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Peter Zijlstra <peterz@infradead.org>
-cc: Christoph Lameter <cl@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "minchan.kim@gmail.com" <minchan.kim@gmail.com>,
-       "hugh.dickins" <hugh.dickins@tiscali.co.uk>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [RFC][PATCH 6/8] mm: handle_speculative_fault()
-In-Reply-To: <1262887207.4049.127.camel@laptop>
-Message-ID: <alpine.LFD.2.00.1001071007010.7821@localhost.localdomain>
-References: <20100104182429.833180340@chello.nl>  <20100104182813.753545361@chello.nl>  <20100105054536.44bf8002@infradead.org>  <alpine.DEB.2.00.1001050916300.1074@router.home>  <20100105192243.1d6b2213@infradead.org>  <alpine.DEB.2.00.1001071007210.901@router.home>
-  <alpine.LFD.2.00.1001070814080.7821@localhost.localdomain>  <1262884960.4049.106.camel@laptop>  <alpine.LFD.2.00.1001070934060.7821@localhost.localdomain>  <alpine.LFD.2.00.1001070937180.7821@localhost.localdomain> <1262887207.4049.127.camel@laptop>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Thu, 7 Jan 2010 13:16:43 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:62140 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753111Ab0AGSQm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jan 2010 13:16:42 -0500
+Date: Thu, 7 Jan 2010 19:16:32 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: Roland McGrath <roland@redhat.com>, caiqian@redhat.com,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Jan Kratochvil <jkratoch@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-s390@vger.kernel.org, utrace-devel@redhat.com
+Subject: Re: s390 && user_enable_single_step() (Was: odd utrace testing
+	results on s390x)
+Message-ID: <20100107181632.GC13300@redhat.com>
+References: <1503844142.2061111261478093776.JavaMail.root@zmail06.collab.prod.int.phx2.redhat.com> <1257887498.2061171261478252049.JavaMail.root@zmail06.collab.prod.int.phx2.redhat.com> <20100104155225.GA16650@redhat.com> <20100104171626.22ea2d9c@mschwide.boeblingen.de.ibm.com> <20100104181412.GA21146@redhat.com> <20100104211147.4CC94D532@magilla.sf.frob.com> <20100105105030.66bb8a0a@mschwide.boeblingen.de.ibm.com> <20100105153633.GA9376@redhat.com> <20100106210812.E03A1134D@magilla.sf.frob.com> <20100107101619.0877cf67@mschwide.boeblingen.de.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100107101619.0877cf67@mschwide.boeblingen.de.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 01/07, Martin Schwidefsky wrote:
+>
+> On Wed,  6 Jan 2010 13:08:12 -0800 (PST)
+> Roland McGrath <roland@redhat.com> wrote:
+>
+> > That's what tracehook_signal_handler is for.  You're both doing it yourself
+> > in the arch code (by setting TIF_SINGLE_STEP), and then telling the generic
+> > code to do it (by passing stepping=1 to tracehook_signal_handler).
+>
+> Ok, so with the full utrace the semantics of tracehook_signal_handler
+> is more than just causing a SIGTRAP. It is an indication for a signal
+> AND a SIGTRAP if single-stepping is active. To make both cases work we
+> should stop setting TIF_SINGLE_STEP in do_signal and pass
+> current->thread.per_info.single_step to tracehook_signal_handler
+> instead of test_thread_flag(TIF_SINGLE_STEP).
 
+Can't understand why do we need TIF_SINGLE_STEP at all.
 
-On Thu, 7 Jan 2010, Peter Zijlstra wrote:
-> 
-> Well, with that sync_vma() thing I posted the other day all the
-> speculative page fault needs is a write to current->fault_vma, the ptl
-> and an O(nr_threads) loop on unmap() for file vmas -- aside from writing
-> the pte itself of course.
+Just pass current->thread.per_info.single_step to
+tracehook_signal_handler() ?
 
-How do you handle the race of
+Oleg.
 
-	fault handler:			munmap
+--- a/arch/s390/kernel/signal.c
++++ b/arch/s390/kernel/signal.c
+@@ -504,14 +504,8 @@ void do_signal(struct pt_regs *regs)
+ 			 * for a normal instruction, act like we took
+ 			 * one for the handler setup.
+ 			 */
+-			if (current->thread.per_info.single_step)
+-				set_thread_flag(TIF_SINGLE_STEP);
+-
+-			/*
+-			 * Let tracing know that we've done the handler setup.
+-			 */
+ 			tracehook_signal_handler(signr, &info, &ka, regs,
+-					 test_thread_flag(TIF_SINGLE_STEP));
++					 current->thread.per_info.single_step);
+ 		}
+ 		return;
+ 	}
 
-	look up vma without locks
-
-	.. interrupt happens or
-	  something delays things ..
-					remove the vma from the list
-					sync_vma()
-
-	current->fault_vma = vma
-
-etc?
-
-Maybe I'm missing something, but quite frankly, the above looks pretty 
-damn fundamental. Something needs to take a lock. If you get rid of the 
-mmap_sem, you need to replace it with another lock.
-
-There's no sane way to "look up vma and atomically mark it as busy" 
-without locks. You can do it with extra work, ie something like
-
-	look up vma without locks
-	current->fault_vma = vma
-	smp_mb();
-	check that the vma is still on the list
-
-(with he appropriate barriers on the munmap side too, of course) where you 
-avoid the lock by basically turning it into an ordering problem, but it 
-ends up being pretty much as expensive anyway for single threads.
-
-And for lots and lots of threads, you now made that munmap be pretty 
-expensive.
-
-		Linus
