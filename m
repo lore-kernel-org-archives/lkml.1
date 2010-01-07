@@ -1,144 +1,49 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754486Ab0AECGB (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Mon, 4 Jan 2010 21:06:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754256Ab0AECES
+	id S1752261Ab0AGLIl (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Thu, 7 Jan 2010 06:08:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752196Ab0AGLIk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 4 Jan 2010 21:04:18 -0500
-Received: from e7.ny.us.ibm.com ([32.97.182.137]:55185 "EHLO e7.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754214Ab0AECEO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 4 Jan 2010 21:04:14 -0500
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: mingo@elte.hu, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
-        akpm@linux-foundation.org, mathieu.desnoyers@polymtl.ca,
-        josh@joshtriplett.org, dvhltc@us.ibm.com, niv@us.ibm.com,
-        tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
-        Valdis.Kletnieks@vt.edu, dhowells@redhat.com,
-        "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: [PATCH tip/core/rcu 2/8] rcu: add lockdep-enabled variants of rcu_dereference()
-Date: Mon,  4 Jan 2010 18:04:05 -0800
-Message-Id: <12626570513792-git-send-email->
-X-Mailer: git-send-email 1.5.2.5
-In-Reply-To: <20100105020345.GA32114@linux.vnet.ibm.com>
-References: <20100105020345.GA32114@linux.vnet.ibm.com>
+	Thu, 7 Jan 2010 06:08:40 -0500
+Received: from fallback4.mail.ru ([94.100.176.42]:43108 "EHLO
+	fallback4.mail.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752113Ab0AGLIj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jan 2010 06:08:39 -0500
+X-Greylist: delayed 658 seconds by postgrey-1.27 at vger.kernel.org; Thu, 07 Jan 2010 06:08:39 EST
+From: Kirill Afonshin <kirill_nnov@mail.ru>
+To: Corrado Zoccolo <czoccolo@gmail.com>
+Cc: Jeff Moyer <jmoyer@redhat.com>, Vivek Goyal <vgoyal@redhat.com>,
+        Jens Axboe <jens.axboe@oracle.com>,
+        Linux-Kernel <linux-kernel@vger.kernel.org>,
+        Shaohua Li <shaohua.li@intel.com>,
+        Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+Subject: =?koi8-r?Q?Re=3A_[PATCH]_cfq-iosched=3A_non-rot_devices_do_not_need_read_queue__merging?=
+Mime-Version: 1.0
+X-Mailer: mPOP Web-Mail 2.19
+X-Originating-IP: [95.37.217.228]
+Date: Thu, 07 Jan 2010 13:56:40 +0300
+References: <4e5e476b1001051348y4637986epb9b56958c738061a@mail.gmail.com>
+In-Reply-To: <4e5e476b1001051348y4637986epb9b56958c738061a@mail.gmail.com>
+Reply-To: Kirill Afonshin <kirill_nnov@mail.ru>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-Id: <E1NSq2i-0000wY-00.kirill_nnov-mail-ru@foot.mail.ru>
+X-Spam: Not detected
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+I think we should not rely on NCQ/non-NCQ or blk_queue_nonrot() because it may be incorrect:
+try this:
 
-Make rcu_dereference() check for being in an RCU read-side critical
-section, and create rcu_dereference_bh(), rcu_dereference_sched(), and
-srcu_dereference() to check for the other flavors of RCU.  Also create
-rcu_dereference_raw() to avoid checking.
+find /sys/ -name rotational 2>/dev/null
+find /sys/ -name rotational 2>/dev/null|xargs cat
 
-Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
----
- include/linux/rcupdate.h |   45 ++++++++++++++++++++++++++++++++++-----------
- include/linux/srcu.h     |    8 ++++++++
- 2 files changed, 42 insertions(+), 11 deletions(-)
+all devices are reported as rotational for me including ram, loop and usb flash drive. Physical block size and optimal io size has invalid values for all my usb flash drives.
+ 
+I think it would be better to do a short performance test before mount. It will provide all necessary information for io scheduler. We doesn't need information about NCQ and rotational. We need to predict how much time specific io operation will take in current context.
 
-diff --git a/include/linux/rcupdate.h b/include/linux/rcupdate.h
-index aa6c738..a52af93 100644
---- a/include/linux/rcupdate.h
-+++ b/include/linux/rcupdate.h
-@@ -156,7 +156,7 @@ static inline int rcu_read_lock_sched_held(void)
- 	({ \
- 		if (debug_locks) \
- 			WARN_ON_ONCE(!(c)); \
--		rcu_dereference(p); \
-+		rcu_dereference_raw(p); \
- 	})
- 
- #else /* #ifdef CONFIG_DEBUG_LOCK_ALLOC */
-@@ -183,11 +183,7 @@ static inline int rcu_read_lock_sched_held(void)
- 	return preempt_count() != 0;
- }
- 
--#define rcu_dereference_check(p, c) \
--	({ \
--		(void)(c); \
--		rcu_dereference(p); \
--	})
-+#define rcu_dereference_check(p, c)	rcu_dereference_raw(p)
- 
- #endif /* #else #ifdef CONFIG_DEBUG_LOCK_ALLOC */
- 
-@@ -323,22 +319,49 @@ static inline notrace void rcu_read_unlock_sched_notrace(void)
- 
- 
- /**
-- * rcu_dereference - fetch an RCU-protected pointer in an
-- * RCU read-side critical section.  This pointer may later
-- * be safely dereferenced.
-+ * rcu_dereference_raw - fetch an RCU-protected pointer
-+ *
-+ * The caller must be within some flavor of RCU read-side critical
-+ * section, or must be otherwise preventing the pointer from changing,
-+ * for example, by holding an appropriate lock.  This pointer may later
-+ * be safely dereferenced.  It is the caller's responsibility to have
-+ * done the right thing, as this primitive does no checking of any kind.
-  *
-  * Inserts memory barriers on architectures that require them
-  * (currently only the Alpha), and, more importantly, documents
-  * exactly which pointers are protected by RCU.
-  */
--
--#define rcu_dereference(p)     ({ \
-+#define rcu_dereference_raw(p)	({ \
- 				typeof(p) _________p1 = ACCESS_ONCE(p); \
- 				smp_read_barrier_depends(); \
- 				(_________p1); \
- 				})
- 
- /**
-+ * rcu_dereference - fetch an RCU-protected pointer, checking for RCU
-+ *
-+ * Makes rcu_dereference_check() do the dirty work.
-+ */
-+#define rcu_dereference(p) \
-+	rcu_dereference_check(p, rcu_read_lock_held())
-+
-+/**
-+ * rcu_dereference_bh - fetch an RCU-protected pointer, checking for RCU-bh
-+ *
-+ * Makes rcu_dereference_check() do the dirty work.
-+ */
-+#define rcu_dereference_bh(p) \
-+		rcu_dereference_check(p, rcu_read_lock_bh_held())
-+
-+/**
-+ * rcu_dereference_sched - fetch RCU-protected pointer, checking for RCU-sched
-+ *
-+ * Makes rcu_dereference_check() do the dirty work.
-+ */
-+#define rcu_dereference_sched(p) \
-+		rcu_dereference_check(p, rcu_read_lock_sched_held())
-+
-+/**
-  * rcu_assign_pointer - assign (publicize) a pointer to a newly
-  * initialized structure that will be dereferenced by RCU read-side
-  * critical sections.  Returns the value assigned.
-diff --git a/include/linux/srcu.h b/include/linux/srcu.h
-index adbe167..3084f80 100644
---- a/include/linux/srcu.h
-+++ b/include/linux/srcu.h
-@@ -106,6 +106,14 @@ static inline int srcu_read_lock_held(struct srcu_struct *sp)
- #endif /* #else #ifdef CONFIG_DEBUG_LOCK_ALLOC */
- 
- /**
-+ * srcu_dereference - fetch SRCU-protected pointer with checking
-+ *
-+ * Makes rcu_dereference_check() do the dirty work.
-+ */
-+#define srcu_dereference(p, sp) \
-+		rcu_dereference_check(p, srcu_read_lock_held(sp))
-+
-+/**
-  * srcu_read_lock - register a new reader for an SRCU-protected structure.
-  * @sp: srcu_struct in which to register the new reader.
-  *
--- 
-1.5.2.5
+PS: I'm not native speaker.
 
+Best regards,
+Kirill Afonshin
