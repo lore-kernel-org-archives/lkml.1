@@ -1,97 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932800Ab0AGBqN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756548Ab0AGBsv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932800Ab0AGBqN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 20:46:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932435Ab0AGBqM
+	id S1756548Ab0AGBsv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 20:48:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755909Ab0AGBsv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 20:46:12 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:60267 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932276Ab0AGBqM (ORCPT
+	Wed, 6 Jan 2010 20:48:51 -0500
+Received: from mail-fx0-f225.google.com ([209.85.220.225]:54414 "EHLO
+	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755873Ab0AGBsu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 20:46:12 -0500
-Date: Wed, 6 Jan 2010 18:59:11 -0200
-From: Arnaldo Carvalho de Melo <acme@infradead.org>
-To: Miles Bader <miles@gnu.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: tools/perf: "perf record" restricted to root in latest kernel?
-Message-ID: <20100106205911.GC18919@ghostprotocols.net>
-References: <buopr5nol26.fsf@dhlpc061.dev.necel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <buopr5nol26.fsf@dhlpc061.dev.necel.com>
-X-Url: http://acmel.wordpress.com
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <acme@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Wed, 6 Jan 2010 20:48:50 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=Uu3YCDLVS4/ggmcCdWOBwsupcGZcTCkTAmTFGigBbRdG+GVI5ajdIIXe42iGP4phXt
+         KhIi4AAA7/4NoLbxMf2yjdgDwcUCz70OndC3L+scyR2zOph10d483dwpFGQE1E1XHSv+
+         5J/c8FF7KBCOBwnIOsss3DKhS1oxrEEW3Pai0=
+From: Alexander Beregalov <a.beregalov@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: Alexander Beregalov <a.beregalov@gmail.com>,
+       David Woodhouse <dwmw2@infradead.org>
+Subject: [PATCH 1/4] mtd: mxc_nand: avoid NULL pointer dereference
+Date: Thu,  7 Jan 2010 04:48:38 +0300
+Message-Id: <1262828921-29517-1-git-send-email-a.beregalov@gmail.com>
+X-Mailer: git-send-email 1.6.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Wed, Jan 06, 2010 at 02:32:17PM +0900, Miles Bader escreveu:
-> I tried compiling tools/perf in an old linux source tree (ab86e5765,
-> roughly 2.6.31), and the resulting perf tool seemed to work fine
-> ("perf record" ... "perf report", "perf stat" etc); I ran it as an
-> ordinary user.
-> 
-> Next I updated to the latest linus tree (c5974b835a), and recompiled perf.
-> It still seems to work, and has obviously had a lot of features added, but
-> now it only wants to let me run "perf record" if I'm root.  This is
-> slightly annoying -- even if I use "sudo" or make it setuid, it still ends
-> up generating an output file owned by root, etc.
-> 
-> In both cases, I'm using the same kernel (I only recompiled the tool), 2.6.32.
-> 
-> I used no options with "perf record", just gave the command I wanted to profile.
-> 
-> Is there a reason why the newer version perf tool restricts "perf record"
-> to root, especially given that the older version still seems to work fine
-> as non-root?
+Assign nand_chip and host only if host is not NULL.
 
-Don't recall noticing such problem, here it works just fine:
+Cc: David Woodhouse <dwmw2@infradead.org>
+Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
+---
+ drivers/mtd/nand/mxc_nand.c |   12 ++++++++----
+ 1 files changed, 8 insertions(+), 4 deletions(-)
 
-[acme@doppio linux-2.6-tip]$ mkdir tmp
-[acme@doppio linux-2.6-tip]$ cd tmp
-[acme@doppio tmp]$ time perf record find ~/git/ > /dev/null
-[ perf record: Woken up 1 times to write data ]
-[ perf record: Captured and wrote 0.053 MB perf.data (~2312 samples) ]
+diff --git a/drivers/mtd/nand/mxc_nand.c b/drivers/mtd/nand/mxc_nand.c
+index 45dec57..4ace54c 100644
+--- a/drivers/mtd/nand/mxc_nand.c
++++ b/drivers/mtd/nand/mxc_nand.c
+@@ -881,12 +881,14 @@ static int __devexit mxcnd_remove(struct platform_device *pdev)
+ static int mxcnd_suspend(struct platform_device *pdev, pm_message_t state)
+ {
+ 	struct mtd_info *mtd = platform_get_drvdata(pdev);
+-	struct nand_chip *nand_chip = mtd->priv;
+-	struct mxc_nand_host *host = nand_chip->priv;
++	struct nand_chip *nand_chip;
++	struct mxc_nand_host *host;
+ 	int ret = 0;
+ 
+ 	DEBUG(MTD_DEBUG_LEVEL0, "MXC_ND : NAND suspend\n");
+ 	if (mtd) {
++		nand_chip = mtd->priv;
++		host = nand_chip->priv;
+ 		ret = mtd->suspend(mtd);
+ 		/* Disable the NFC clock */
+ 		clk_disable(host->clk);
+@@ -898,13 +900,15 @@ static int mxcnd_suspend(struct platform_device *pdev, pm_message_t state)
+ static int mxcnd_resume(struct platform_device *pdev)
+ {
+ 	struct mtd_info *mtd = platform_get_drvdata(pdev);
+-	struct nand_chip *nand_chip = mtd->priv;
+-	struct mxc_nand_host *host = nand_chip->priv;
++	struct nand_chip *nand_chip;
++	struct mxc_nand_host *host;
+ 	int ret = 0;
+ 
+ 	DEBUG(MTD_DEBUG_LEVEL0, "MXC_ND : NAND resume\n");
+ 
+ 	if (mtd) {
++		nand_chip = mtd->priv;
++		host = nand_chip->priv;
+ 		/* Enable the NFC clock */
+ 		clk_enable(host->clk);
+ 		mtd->resume(mtd);
+-- 
+1.6.6
 
-real	0m25.602s
-user	0m0.007s
-sys	0m0.020s
-[acme@doppio tmp]$ perf report | head -13
-# Samples: 1628008142
-#
-# Overhead  Command           Shared Object  Symbol
-# ........  .......  ......................  ......
-#
-     6.03%     find  libc-2.10.2.so          [.] _IO_vfprintf_internal
-     5.70%     find  find                    [.] 0x0000000000351d
-     3.39%     find  [kernel]                [k] ext4_htree_store_dirent
-     2.85%     find  [kernel]                [k] __kmalloc
-     2.14%     find  [kernel]                [k] _raw_spin_lock
-     2.10%     find  [kernel]                [k] read_hpet
-     2.10%     find  [kernel]                [k] half_md4_transform
-     2.08%     find  libc-2.10.2.so          [.] __GI_memmove
-[acme@doppio tmp]$ perf report --sort dso
-# Samples: 1628008142
-#
-# Overhead                Shared Object
-# ........  ...........................
-#
-    74.66%  [kernel]                   
-    16.74%  libc-2.10.2.so             
-     7.59%  find                       
-     0.72%  ld-2.10.2.so               
-     0.29%  libpthread-2.10.2.so       
-[acme@doppio tmp]$ cd ..
-[acme@doppio linux-2.6-tip]$ uname -r
-2.6.33-rc3-tip+
-[acme@doppio linux-2.6-tip]$ git branch | grep ^\*
-* perf
-[acme@doppio linux-2.6-tip]$ cat .git/refs/heads/perf
-1dcff0bf19619e4d7bc61628770e6d88c631015c
-[acme@doppio linux-2.6-tip]$
-
-- Arnaldo
