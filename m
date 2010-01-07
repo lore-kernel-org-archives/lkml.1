@@ -1,88 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933036Ab0AGJTQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932798Ab0AGJTc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933036Ab0AGJTQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 04:19:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932948Ab0AGJTG
+	id S932798Ab0AGJTc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 04:19:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933017Ab0AGJT0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 04:19:06 -0500
-Received: from mtagate2.de.ibm.com ([195.212.17.162]:58299 "EHLO
-	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933014Ab0AGJS7 (ORCPT
+	Thu, 7 Jan 2010 04:19:26 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:39627
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933031Ab0AGJTP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 04:18:59 -0500
-Date: Thu, 7 Jan 2010 10:18:55 +0100
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: Roland McGrath <roland@redhat.com>
-Cc: Oleg Nesterov <oleg@redhat.com>, caiqian@redhat.com,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Jan Kratochvil <jkratoch@redhat.com>, linux-kernel@vger.kernel.org,
-       linux-s390@vger.kernel.org, utrace-devel@redhat.com
-Subject: Re: s390 && user_enable_single_step() (Was: odd utrace testing
- results on s390x)
-Message-ID: <20100107101855.13248dc2@mschwide.boeblingen.de.ibm.com>
-In-Reply-To: <20100106211329.DB4F5134D@magilla.sf.frob.com>
-References: <20100104155225.GA16650@redhat.com>
-	<20100104171626.22ea2d9c@mschwide.boeblingen.de.ibm.com>
-	<20100104181412.GA21146@redhat.com>
-	<20100104211147.4CC94D532@magilla.sf.frob.com>
-	<20100105105030.66bb8a0a@mschwide.boeblingen.de.ibm.com>
-	<20100105153633.GA9376@redhat.com>
-	<20100105164610.388effd3@mschwide.boeblingen.de.ibm.com>
-	<20100105155913.GA10652@redhat.com>
-	<20100105170301.GA13641@redhat.com>
-	<20100105195818.GA20358@redhat.com>
-	<20100106201722.GB26204@redhat.com>
-	<20100106211329.DB4F5134D@magilla.sf.frob.com>
-Organization: IBM Corporation
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.18.5; i486-pc-linux-gnu)
+	Thu, 7 Jan 2010 04:19:15 -0500
+Date: Thu, 07 Jan 2010 01:19:23 -0800 (PST)
+Message-Id: <20100107.011923.222222050.davem@davemloft.net>
+To: hartleys@visionengravers.com
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH] drivers/net/wimax/i2400m/fw.c: use %pM to show MAC
+ address
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <201001051001.55024.hartleys@visionengravers.com>
+References: <201001051001.55024.hartleys@visionengravers.com>
+X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed,  6 Jan 2010 13:13:29 -0800 (PST)
-Roland McGrath <roland@redhat.com> wrote:
+From: H Hartley Sweeten <hartleys@visionengravers.com>
+Date: Tue, 5 Jan 2010 10:01:54 -0700
 
-> > However, with or without CONFIG_UTRACE, 6580807da14c423f0d0a708108e6df6ebc8bc83d
-> > is needed on s390 too, otherwise the child gets unnecessary traps.
+> Use the %pM kernel extension to display the MAC address.
 > 
-> This confuses me.  user_disable_single_step on non-current doesn't do
-> anything not already done by the memset in copy_thread.  Ooh, except
-> perhaps it does not clear PSW_MASK_PER.  Maybe that matters.  That's
-> the only thing I can think of.  Maybe Martin can make sense of it.
+> Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
 
-The additional traps should not happen anymore with this patch:
---
-Subject: [PATCH] clear TIF_SINGLE_STEP for new process.
-
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-
-Clear the TIF_SINGLE_STEP bit in copy_thread. If the new process is
-not auto-attached by the tracer it is wrong to delivere SIGTRAP to
-the new process.
-
-Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
----
-
- arch/s390/kernel/process.c |    1 +
- 1 file changed, 1 insertion(+)
-
-diff -urpN linux-2.6/arch/s390/kernel/process.c linux-2.6-patched/arch/s390/kernel/process.c
---- linux-2.6/arch/s390/kernel/process.c	2009-12-03 04:51:21.000000000 +0100
-+++ linux-2.6-patched/arch/s390/kernel/process.c	2010-01-07 09:25:53.000000000 +0100
-@@ -217,6 +217,7 @@ int copy_thread(unsigned long clone_flag
- 	p->thread.mm_segment = get_fs();
- 	/* Don't copy debug registers */
- 	memset(&p->thread.per_info, 0, sizeof(p->thread.per_info));
-+	clear_tsk_thread_flag(p, TIF_SINGLE_STEP);
- 	/* Initialize per thread user and system timer values */
- 	ti = task_thread_info(p);
- 	ti->user_timer = 0;
--- 
-blue skies,
-   Martin.
-
-"Reality continues to ruin my life." - Calvin.
-
+Applied.
