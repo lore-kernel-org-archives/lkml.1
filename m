@@ -1,141 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932669Ab0AGJA6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932709Ab0AGJBJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932669Ab0AGJA6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 04:00:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756357Ab0AGJA4
+	id S932709Ab0AGJBJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 04:01:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932597Ab0AGJA5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 04:00:56 -0500
-Received: from mtagate3.de.ibm.com ([195.212.17.163]:33225 "EHLO
-	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756336Ab0AGJAz (ORCPT
+	Thu, 7 Jan 2010 04:00:57 -0500
+Received: from casper.infradead.org ([85.118.1.10]:51678 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756346Ab0AGJA4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 04:00:55 -0500
-Date: Thu, 7 Jan 2010 10:00:50 +0100
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: Roland McGrath <roland@redhat.com>
-Cc: Oleg Nesterov <oleg@redhat.com>, caiqian@redhat.com,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Jan Kratochvil <jkratoch@redhat.com>, linux-kernel@vger.kernel.org,
-       linux-s390@vger.kernel.org, utrace-devel@redhat.com
-Subject: Re: s390 && user_enable_single_step() (Was: odd utrace testing
- results on s390x)
-Message-ID: <20100107100050.31724463@mschwide.boeblingen.de.ibm.com>
-In-Reply-To: <20100106205633.700CC134D@magilla.sf.frob.com>
-References: <1503844142.2061111261478093776.JavaMail.root@zmail06.collab.prod.int.phx2.redhat.com>
-	<1257887498.2061171261478252049.JavaMail.root@zmail06.collab.prod.int.phx2.redhat.com>
-	<20100104155225.GA16650@redhat.com>
-	<20100104171626.22ea2d9c@mschwide.boeblingen.de.ibm.com>
-	<20100104181412.GA21146@redhat.com>
-	<20100104211147.4CC94D532@magilla.sf.frob.com>
-	<20100105105030.66bb8a0a@mschwide.boeblingen.de.ibm.com>
-	<20100106205633.700CC134D@magilla.sf.frob.com>
-Organization: IBM Corporation
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.18.5; i486-pc-linux-gnu)
+	Thu, 7 Jan 2010 04:00:56 -0500
+Subject: Re: [PATCH] perf_events: improve Intel event scheduling
+From: Peter Zijlstra <peterz@infradead.org>
+To: Paul Mackerras <paulus@samba.org>
+Cc: Stephane Eranian <eranian@google.com>, eranian@gmail.com,
+       linux-kernel@vger.kernel.org, mingo@elte.hu,
+       perfmon2-devel@lists.sf.net, "David S. Miller" <davem@davemloft.net>
+In-Reply-To: <20100107041340.GA30718@drongo>
+References: <1255964630-5878-1-git-send-email-eranian@gmail.com>
+	 <1258561957.3918.661.camel@laptop>
+	 <7c86c4470912110300n44650d98ke52ec56cf4d925c1@mail.gmail.com>
+	 <7c86c4470912110359i5a4416c2t9075eaa47d25865a@mail.gmail.com>
+	 <1261410040.4314.178.camel@laptop> <20091222010238.GB31264@drongo>
+	 <bd4cb8900912290647wa79615bs3ac8618ca36808c3@mail.gmail.com>
+	 <20100107041340.GA30718@drongo>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 07 Jan 2010 10:00:26 +0100
+Message-ID: <1262854826.4049.91.camel@laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed,  6 Jan 2010 12:56:33 -0800 (PST)
-Roland McGrath <roland@redhat.com> wrote:
-
-> > do_signal is called before do_single_step. The order of checks of the
-> > TIF_ bits is 1) machine checks, 2) need resched, 3) signal pending, 4)
-> > notify resume, 5) restarting system call, 6) single step.
+On Thu, 2010-01-07 at 15:13 +1100, Paul Mackerras wrote:
 > 
-> I see.  Then the potential issue I raised would exist.
+> > All the enable and disable calls can be called from NMI interrupt context
+> > and thus must be very careful with locks.
 > 
-> > But why is that important ? If the TIF_SINGLE_STEP bit is set the order
-> > of do_signal vs. do_single_step does not seem to be important to me.
-> > There will be a SIGTRAP if TIF_SINGLE_STEP is set, no ?
-> 
-> Right.  It only becomes relevant if something else clears TIF_SINGLE_STEP,
-> which does not happen now.  I was discussing the scenario of having
-> user_disable_single_step clear it.  That might happen inside a stop,
-> i.e. inside do_signal (get_signal_to_deliver).  So given that order of
-> checks, it becomes possible for user_disable_single_step to affect the
-> pending-step-should-SIGTRAP situation.
+> I didn't think the pmu->enable() and pmu->disable() functions could be
+> called from NMI context.
 
-That was the idea about the TIF_SINGLE_STEP bit. I can be set and later
-unset if we don't want to deliver the SIGTRAP after all.
+I don't think they're called from NMI context either, most certainly not
+from the generic code.
 
-> > But I agree, it is probably better to make all arches look the same in
-> > regard to that pending step report. 
-> 
-> Right.  That means we should leave the status quo of not clearing
-> TIF_SINGLE_STEP in user_disable_single_step.
+The x86 calls the raw disable from nmi to throttle the counter, but all
+that (should) do is disable that counter, which is limited to a single
+msr write. After that it schedules a full disable by sending a self-ipi.
 
-Ok, although it seems a bit strange not to do it. Perhaps I should add a
-comment about it.
 
-> > The LCTLG of multiple control registers is rather expensive. Does it
-> > happen often that user_*_single_step is called without need? For gdb is
-> > doesn't matter, the cost to switch between tracer and tracee is already
-> > large, the cycles added to FixPerRegisters won't matter much. For
-> > utrace things might be different.
-> 
-> In old (current) ptrace, user_*_single_step is never called on current.
-> In utrace, it's always called on current, so utrace-based ptrace alone
-> adds this second reload overhead beyond the same context-switch overhead
-> old ptrace has.  Indeed that addition may be neglible.
-
-So after everthing has been converted to utrace we always will load the
-control registers in FixPerRegisters.
- 
-> In other circumstances with utrace, it is very possible to wind up with
-> user_disable_single_step being called superfluously when there was no
-> stop (and so not necessarily any context switch or other high overhead).
-> On other machines, user_disable_single_step is pretty cheap even where
-> user_enable_single_step is quite costly.  Given how simple and cheap it
-> is to short-circuit the excess work on s390, I think it is worthwhile.
-
-We could use the same compare of the control registers as the code in
-__switch_to. See below.
-
-> It looks like the context-switch code already checks some magic bits in
-> per_info to decide whether to do the costly reload.  So it seems vaguely
-> consistent with that to conditionalize FixPerRegisters similarly.  The
-> single_step cases are a special case with an easy one-bit check to
-> short-circuit, so skipping all of FixPerRegisters seems worthwhile IMHO.
-
-What the magic code in __switch_to does is to check if the next process
-wants to use per and do the load of the control registers only if the
-current set of control registers 9 to 11 differ from the set for the
-next process.
-The check if the next process wants to use per is done with a
-test-under-mask (TM) instruction and a mask of 0xe8. This checks for 4
-bits: em_branching, em_instruction_fetch, em_storage_alteration and
-em_store_real_address. If one of the bits is set then the current set
-of control registers is stored, compared with the set for the next
-process and only if they differ is the lctlg done.
-The store of control registers is cheap (n cycles for n registers), the
-load is expensive for specific control registers. For 9 to 11 it costs
-more than 100 cycles.
-
-> To be really optimization-happy about it, you'd also hack FixPerRegisters
-> itself to do the reload on current only if PSW_MASK_PER is or was set (if
-> I'm following the code correctly).  Or perhaps it should check PER_EM_MASK
-> instead to match what __switch_to does.  (I don't understand the
-> distinction between those two tests, if there is one.)  Extra frobbity
-> would be to leave the old state too when clearing PSW_MASK_PER, and then
-> just have the trap handler lazily ignore a hit when current doesn't have
-> it set.  Then in a case where there is no hit before context switch,
-> you haven't done anything.  But that is probably both excessive and
-> not even a win if the PER use is single-step and so there will really
-> very likely be a hit before context switch.
-
-The PSW_MASK_PER is the "global" PER enablement switch, the PER_EM_MASK
-bits enable the different PER events. We check for the PER_EM_MASK bits
-because it is easier to access in __switch_to. The return PSW is stored
-in the pt_regs structure, we would have to get a pointer to it (what
-"regs = task_pt_regs(taks)" does in FixPerRegisters). In
-FixPerRegisters we can as well use the PSW_MASK_PER bit.
-
--- 
-blue skies,
-   Martin.
-
-"Reality continues to ruin my life." - Calvin.
 
