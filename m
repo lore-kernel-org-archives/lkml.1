@@ -1,88 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932469Ab0AGIE4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932514Ab0AGIGF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932469Ab0AGIE4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 03:04:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932393Ab0AGIEz
+	id S932514Ab0AGIGF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 03:06:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756230Ab0AGIGE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 03:04:55 -0500
-Received: from smtp-out.google.com ([216.239.44.51]:54303 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932356Ab0AGIEy (ORCPT
+	Thu, 7 Jan 2010 03:06:04 -0500
+Received: from RELAY.ANDREW.CMU.EDU ([128.2.10.212]:37158 "EHLO
+	relay.andrew.cmu.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756224Ab0AGIGD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 03:04:54 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=KHTkrR9JmtMeaxtTWpOxiMFpm7qHUgDJBY0kRmtccBcMSXgxy/0UvBfMuotUUfSVi
-	klPmZ3lZx3TiuAuq5aqaA==
-Date: Thu, 7 Jan 2010 00:04:47 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Rusty Russell <rusty@rustcorp.com.au>, Ingo Molnar <mingo@redhat.com>
-cc: Anton Blanchard <anton@samba.org>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org,
+	Thu, 7 Jan 2010 03:06:03 -0500
+Date: Thu, 7 Jan 2010 03:04:38 -0500
+From: Ben Blum <bblum@andrew.cmu.edu>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Li Zefan <lizf@cn.fujitsu.com>, Andrew Morton <akpm@linux-foundation.org>,
+       menage@google.com, containers@lists.linux-foundation.org,
        linux-kernel@vger.kernel.org
-Subject: Re: [patch 6/6] x86: cpumask_of_node() should handle -1 as a node
-In-Reply-To: <201001071109.10362.rusty@rustcorp.com.au>
-Message-ID: <alpine.DEB.2.00.1001062353570.15070@chino.kir.corp.google.com>
-References: <20100106045509.245662398@samba.org> <20100106233151.GC12742@kryten> <alpine.DEB.2.00.1001061545210.19882@chino.kir.corp.google.com> <201001071109.10362.rusty@rustcorp.com.au>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+Subject: Re: [PATCH v4 0/4] cgroups: support for module-loadable subsystems
+Message-ID: <20100107080438.GB16656@andrew.cmu.edu>
+References: <20091231051050.GA714@andrew.cmu.edu> <20100106160414.bd555474.akpm@linux-foundation.org> <20100107012606.GA25577@andrew.cmu.edu> <20100107120732.97d502bd.kamezawa.hiroyu@jp.fujitsu.com> <4B45824B.9030108@cn.fujitsu.com> <20100107161627.34b31e0c.kamezawa.hiroyu@jp.fujitsu.com> <20100107074812.GA16656@andrew.cmu.edu> <20100107165117.dca1dc52.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100107165117.dca1dc52.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 7 Jan 2010, Rusty Russell wrote:
-
-> On Thu, 7 Jan 2010 10:21:06 am David Rientjes wrote:
-> > On Thu, 7 Jan 2010, Anton Blanchard wrote:
-> > 
-> > > I don't like the use of -1 as a node, but it's much more widespread than
-> > > x86; including sh, powerpc, sparc and the generic topology code. eg:
-> > > 
-> > > 
-> > > #fdef CONFIG_PCI
-> > > extern int pcibus_to_node(struct pci_bus *pbus);
-> > > #else
-> > > static inline int pcibus_to_node(struct pci_bus *pbus)
-> > > {
-> > >         return -1;
-> > > }
-> > 
-> > This seems to be the same semantics that NUMA_NO_NODE was defined for, 
-> > it's not necessarily a special case.
+On Thu, Jan 07, 2010 at 04:51:17PM +0900, KAMEZAWA Hiroyuki wrote:
+> On Thu, 7 Jan 2010 02:48:12 -0500
+> Ben Blum <bblum@andrew.cmu.edu> wrote:
 > 
-> It's widespread, and we've just had another bug due to pcibus_to_node handling
-> -1 and cpumask_of_node not.  (Search lkml for subject "[Regression] 2.6.33-rc2
->  - pci: Commit e0cd516 causes OOPS").
+> > >  2. Making this to be reasonable value.
+> > > #define CGROUP_SUBSYS_COUNT (BITS_PER_BYTE*sizeof(unsigned long))
+> > >    I can't find why.
+> > 
+> > "We limit to this many since cgroupfs_root has subsys_bits to keep track
+> > of all of them." should it be less, perhaps?
 > 
+> It's ok if it's clear that
+> "this decistion is done by implementation choice, not by cgroup's nature"
 
-That's similiar to the problem in cpumask_of_pcibus() that I fixed with 
-7715a1e back in September.  The difference is that I isolated my fix to 
-the pci bus implementation that defined the nid of -1 to mean no NUMA 
-affinity, whereas generic kernel code can use that value for any (or no) 
-definition and returning cpu_all_mask may not apply.  We know it does for 
-pcibus, but not for generic NUMA node ids that happen to be invald.
+mhm, well, it is the upper limit due to nature, but why it and not a
+smaller number is by choice.
 
-The hope is that eventually we can remove many dependencies on node ids 
-for these purposes; buses with no affinity are not actually members of any 
-NUMA node.  I had a proposal for a generic kernel interface that is based 
-on ACPI system localities that would define the proximity of any system 
-entity (of which node is only a type defining "memory") to each other.  
-I'm waiting for enough time to work on that project.
+> 
+> > the memory footprint is not
+> > great, it is true, but implementing dynamically sized subsystem tracking
+> > data structures requires much cleverer code in many places.
+> > 
+> yes. I don't request that.
 
-NUMA is special because a single cpu is always a member of a single node, 
-so we're violating the bidirectional mapping by saying that node -1 maps 
-to all cpus while all cpus don't map to node -1.  In other words, I think 
-we should take this as an opportunity to find and fix broken callers as 
-we've done both by my patch from September and by your aforementioned 
-case.  In this particular case, it would be a matter of doing:
+it might be possible to have a config option as CGROUP_EXTRA_SUBSYSTEMS
+(with max being 64 or 32) which would add slots for subsystems outside
+of the kernel tree, to avoid using up a lot of blank slots in typical
+use cases. not entirely sure how to implement it in the scope of the
+configuration world, just speculation.
 
-	mask = (nid != -1) ? cpumask_of_node(nid) : cpu_all_mask;
+> > >  3. show whehter a subsys is a loadable module or not via /proc/cgroups
+> > 
+> > with just "y" or "n"? possible, and probably easy. do note that since
+> > they are sorted by subsys_id, all the ones above a certain line will be
+> > "n" and all below will be "y".
+> > 
+> yes. 
+> 
+> #subsys_name    hierarchy       num_cgroups     enabled  module
+> cpuset  0       1       1	0
+> 
+> and 0/1 to show y/n ? (but this cause interface incompatibility...)
 
-I'm hoping that Ingo will weigh in on this topic with his taste and vision 
-for how we should decouple device locality information from entities that 
-are not members of any NUMA node if we continue to "special case" these 
-things.
+well, format should be agreed upon. 1/0 would be consistent with the
+rest of the output.
+
+> 
+> 
+> Thanks,
+> -Kame
+>    
+> 
+> 
