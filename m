@@ -1,89 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932878Ab0AGBBm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932904Ab0AGBDf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932878Ab0AGBBm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 20:01:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756469Ab0AGBBg
+	id S932904Ab0AGBDf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 20:03:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932800Ab0AGBDe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 20:01:36 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:39361 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752209Ab0AGBBf convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 20:01:35 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=MngZCrPf3mV9lUPk3gd1zzA/YjhnoO8yo/3x/AceIE+OcY3EWV4dEwwCQP/PxCfqB
-	ESwS4I8K+M6C7IpebZgQA==
+	Wed, 6 Jan 2010 20:03:34 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:56931 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S932736Ab0AGBDd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jan 2010 20:03:33 -0500
+Message-ID: <4B453280.7040800@cn.fujitsu.com>
+Date: Thu, 07 Jan 2010 09:01:52 +0800
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-In-Reply-To: <9411cbdd545e1232c916bfef03a60cf95510016d.1262186098.git.kirill@shutemov.name>
-References: <cover.1262186097.git.kirill@shutemov.name>
-	 <9411cbdd545e1232c916bfef03a60cf95510016d.1262186098.git.kirill@shutemov.name>
-Date: Wed, 6 Jan 2010 17:01:21 -0800
-Message-ID: <6599ad831001061701x72098dacn7a5d916418396e33@mail.gmail.com>
-Subject: Re: [PATCH v5 1/4] cgroup: implement eventfd-based generic API for 
-	notifications
-From: Paul Menage <menage@google.com>
-To: "Kirill A. Shutemov" <kirill@shutemov.name>
-Cc: containers@lists.linux-foundation.org, linux-mm@kvack.org,
-       Li Zefan <lizf@cn.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Pavel Emelyanov <xemul@openvz.org>, Dan Malek <dan@embeddedalley.com>,
-       Vladislav Buzov <vbuzov@embeddedalley.com>,
-       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
-       Alexander Shishkin <virtuoso@slind.org>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-System-Of-Record: true
+To: rostedt@goodmis.org
+CC: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] trace_syscalls: cleanup for syscalls_metadata
+References: <4B448499.6080609@cn.fujitsu.com> <1262797070.28171.2972.camel@gandalf.stny.rr.com>
+In-Reply-To: <1262797070.28171.2972.camel@gandalf.stny.rr.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Dec 30, 2009 at 7:57 AM, Kirill A. Shutemov
-<kirill@shutemov.name> wrote:
-> This patch introduces write-only file "cgroup.event_control" in every
-> cgroup.
+Steven Rostedt wrote:
+> On Wed, 2010-01-06 at 20:39 +0800, Lai Jiangshan wrote:
+>> NR_syscalls is compile-time constant.
+> 
+> The question is, is that always true on all archs, and will that always
+> be true?
+> 
+> Unless we can guarantee somewhere that NR_syscalls must be constant on
+> all archs, we can't make this change. If it is guaranteed, then sure,
+> this patch is fine.
+> 
 
-This looks like a nice generic API for doing event notifications - thanks!
+It seems that there is no spec/document guarantees it.
 
-Sorry I hadn't had a chance to review it before now, due to travelling
-and day-job pressures.
+I searched all NR_syscalls in current kernel source code,
+and I found it is a constant in header file (all archs).
 
+trace_syscalls.c has already used it as a compile-time constant:
 
-> +}
-> +
-> +static int cgroup_event_wake(wait_queue_t *wait, unsigned mode,
-> +               int sync, void *key)
+static DECLARE_BITMAP(enabled_enter_syscalls, NR_syscalls);
+static DECLARE_BITMAP(enabled_exit_syscalls, NR_syscalls);
 
-Maybe some comments here indicating how/when it gets called? (And more
-comments for each function generally?)
-
-> +       if (flags & POLLHUP) {
-> +               spin_lock(&cgrp->event_list_lock);
-> +               list_del(&event->list);
-> +               spin_unlock(&cgrp->event_list_lock);
-> +               schedule_work(&event->remove);
-
-Comment saying why we can't do the remove immediately in this context?
-
-> +
-> +fail:
-> +       if (!IS_ERR(cfile))
-> +               fput(cfile);
-
-cfile is either valid or NULL - it never contains an error value.
-
-> +
-> +       if (!IS_ERR(efile))
-> +               fput(efile);
-
-While this is OK currently, it's a bit fragile. efile starts as NULL,
-and IS_ERR(NULL) is false. So if we jump to fail: before trying to do
-the eventfd_fget() then we'll try to fput(NULL), which will oops. This
-works because we don't currently jump to fail: until after
-eventfd_fget(), but someone could add an extra setup step between the
-kzalloc() and the eventfd_fget() which could fail.
-
-Paul
+Thanks, Lai
