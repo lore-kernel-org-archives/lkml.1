@@ -1,68 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752795Ab0AGUW6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752721Ab0AGUZb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752795Ab0AGUW6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 15:22:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752651Ab0AGUW5
+	id S1752721Ab0AGUZb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 15:25:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752561Ab0AGUZa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 15:22:57 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:45733 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752626Ab0AGUW4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 15:22:56 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=VCWb4W1SRJQJyuZ38q4o14t0u/RSl8W6AvJSGI3Pu793Gv1/t+BBlhnGxFc8TBtbFl
-         qOXrdmR8kIGZaKTw7RvZm4EgfjP56KaAMyJdclCa5p/lXZtbH9nH5b4dD0TA/HXXohqa
-         ysiE6SRfUZ9vn6T78LkWz4KBxMCiiIFuKPJZc=
+	Thu, 7 Jan 2010 15:25:30 -0500
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:39079 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752230Ab0AGUZ3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jan 2010 15:25:29 -0500
+Date: Thu, 7 Jan 2010 12:25:26 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "minchan.kim@gmail.com" <minchan.kim@gmail.com>,
+       "hugh.dickins" <hugh.dickins@tiscali.co.uk>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [RFC][PATCH 6/8] mm: handle_speculative_fault()
+Message-ID: <20100107202526.GQ6764@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <alpine.DEB.2.00.1001050916300.1074@router.home> <20100105192243.1d6b2213@infradead.org> <alpine.DEB.2.00.1001071007210.901@router.home> <alpine.LFD.2.00.1001070814080.7821@localhost.localdomain> <1262884960.4049.106.camel@laptop> <alpine.LFD.2.00.1001070934060.7821@localhost.localdomain> <alpine.LFD.2.00.1001070937180.7821@localhost.localdomain> <alpine.LFD.2.00.1001071031440.7821@localhost.localdomain> <20100107192035.GO6764@linux.vnet.ibm.com> <alpine.LFD.2.00.1001071204490.7821@localhost.localdomain>
 MIME-Version: 1.0
-In-Reply-To: <2d0a357f1001071214m6780def8md80c056161d0aa79@mail.gmail.com>
-References: <8db1092f1001071136o20ac7e19nb102c7afde8c21e7@mail.gmail.com>
-	 <2d0a357f1001071214m6780def8md80c056161d0aa79@mail.gmail.com>
-Date: Thu, 7 Jan 2010 21:22:53 +0100
-Message-ID: <8db1092f1001071222i1844e559g75e6067faf05fb63@mail.gmail.com>
-Subject: Re: [2.6.33-rc3] [WMI?] [RFKILL?] [WIRELESS?] hang: BUG: Unable to 
-	handle kernel NULL pointer dereference at 00000008
-From: Maciej Rutecki <maciej.rutecki@gmail.com>
-To: sedat.dilek@gmail.com
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       carlos@strangeworlds.co.uk,
-       Linux Wireless List <linux-wireless@vger.kernel.org>,
-       Johannes Berg <johannes@sipsolutions.net>, ilw@linux.intel.com,
-       len.brown@intel.com, Anisse Astier <anisse@astier.eu>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.1001071204490.7821@localhost.localdomain>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2010/1/7 Sedat Dilek <sedat.dilek@googlemail.com>:
-> Hi,
->
-> seems like the ACPI/hp-wmi bug, nothing to do with linux-wireless.
->
-> I have already reported this bug (again) [1] and unfortunately it has
-> re-entered upstream.
-> A single new patch was sent by Anisse [2].
-> This patch is waiting in linux-acpi-2.6/test [3].
->
-> Don't ask me why it has not been included in 2.6.33-rc3.
-> For some HP-notebook users it is a CRITICAL bug.
->
-> Kind Regards,
-> - Sedat -
->
-> [1] http://marc.info/?t=126227644600001&r=1&w=2
-> [2] http://marc.info/?t=126215864800004&r=1&w=2
-> [3] http://git.kernel.org/?p=linux/kernel/git/lenb/linux-acpi-2.6.git;a=commit;h=c9c041fcb1a4d69ed4791f00b57554eeb341d148
->
+On Thu, Jan 07, 2010 at 12:06:48PM -0800, Linus Torvalds wrote:
+> 
+> 
+> On Thu, 7 Jan 2010, Paul E. McKenney wrote:
+> > > +
+> > > +	spin_lock(&mm->page_table_lock);
+> > > +	if (vma->vm_end == cur_brk) {
+> > > +		vma->vm_end = brk;
+> > > +		mm->brk = brk;
+> > > +		cur_brk = brk;
+> > > +	}
+> > > +	spin_unlock(&mm->page_table_lock);
+> > > +
+> > > +	if (cur_brk != brk)
+> > 
+> > Can this be "if (cur_brk < brk)"?  Seems like it should, given the
+> > earlier tests, but I don't claim to understand the VM code.
+> 
+> It's really just a flag, to test whether the final check (inside the 
+> spinlock) succeeded, or whether we perhaps raced with _another_ brk() call 
+> that also had the mm_sem for reading.
+> 
+> We know that cur_brk was different from brk before - because otherwise 
+> we'd have just returned early (or done the slow case). So testing whether 
+> it's different afterwards really only tests whether that 
+> 
+> 	cur_brk = brk;
+> 
+> statment was executed or not.
+> 
+> I could have used a separate flag called "success" or something. 
 
+I was (perhaps confusedly) thinking of a pair of threads both trying
+to sbrk() at the same time.  One of them wins by acquiring the
+->page_table_lock first.  Then the other acquires the spinlock, but
+sees vma->vm_end != cur_brk.  But if the first one extended the region
+at least as far as the second intended to, the second one's work is done.
 
+Of course, we can debate the sanity of an application that actually does
+concurrent sbrk() calls.
 
-Thanks for the answer.
-
-Regards
--- 
-Maciej Rutecki
-http://www.maciek.unixy.pl
+							Thanx, Paul
