@@ -1,57 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752180Ab0AGNPg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752403Ab0AGNic@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752180Ab0AGNPg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 08:15:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751567Ab0AGNPf
+	id S1752403Ab0AGNic (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 08:38:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752118Ab0AGNib
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 08:15:35 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:41568 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751460Ab0AGNPf (ORCPT
+	Thu, 7 Jan 2010 08:38:31 -0500
+Received: from ey-out-2122.google.com ([74.125.78.26]:57540 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752056Ab0AGNia (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 08:15:35 -0500
-X-Authority-Analysis: v=1.0 c=1 a=r_nf4N-T2GkA:10 a=7U3hwN5JcxgA:10 a=FZey-0LJvhJXiqaw6WAA:9 a=5MDFvkrlsBTuuZ5KAUiWkHRrp1QA:4
-X-Cloudmark-Score: 0
-X-Originating-IP: 74.67.89.75
-Subject: Re: [RFC PATCH] introduce sys_membarrier(): process-wide memory
- barrier
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Josh Triplett <josh@joshtriplett.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       linux-kernel@vger.kernel.org,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org,
-       tglx@linutronix.de, Valdis.Kletnieks@vt.edu, dhowells@redhat.com,
-       laijs@cn.fujitsu.com, dipankar@in.ibm.com
-In-Reply-To: <1262853855.4049.86.camel@laptop>
-References: <20100107044007.GA22863@Krystal>
-	 <1262842854.28171.3710.camel@gandalf.stny.rr.com>
-	 <20100107061955.GC25786@Krystal>  <20100107063558.GC12939@feather>
-	 <1262853855.4049.86.camel@laptop>
-Content-Type: text/plain; charset="ISO-8859-15"
-Organization: Kihon Technologies Inc.
-Date: Thu, 07 Jan 2010 08:15:31 -0500
-Message-ID: <1262870131.28171.3711.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 7 Jan 2010 08:38:30 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=wBKUqIUyOpADXL3zDNSYbuMdhz3A1rij1JCyOKYcqxlC8JlQebD3oGYPVtfOLVTE4o
+         jK7o+fhBPrbZT113PHB+0eW4hD5z5RLCxqiBJy1J55zCwTRUIBixUPhZLrnKv0NsiKJ1
+         czLywOSrwCDGTDL3DQk6tprOU2shW3syUt24w=
+MIME-Version: 1.0
+In-Reply-To: <E1NSq2i-0000wY-00.kirill_nnov-mail-ru@foot.mail.ru>
+References: <4e5e476b1001051348y4637986epb9b56958c738061a@mail.gmail.com>
+	 <E1NSq2i-0000wY-00.kirill_nnov-mail-ru@foot.mail.ru>
+Date: Thu, 7 Jan 2010 14:38:29 +0100
+Message-ID: <4e5e476b1001070538y35143cc8me7443f3eb0d377@mail.gmail.com>
+Subject: Re: [PATCH] cfq-iosched: non-rot devices do not need read queue 
+	merging
+From: Corrado Zoccolo <czoccolo@gmail.com>
+To: Kirill Afonshin <kirill_nnov@mail.ru>
+Cc: Jeff Moyer <jmoyer@redhat.com>, Vivek Goyal <vgoyal@redhat.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>,
+       Shaohua Li <shaohua.li@intel.com>,
+       Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2010-01-07 at 09:44 +0100, Peter Zijlstra wrote:
+Hi Kirill,
+NCQ is actually measured, so it is reliable.
+Rotational can be wrong, but you can write to it (e.g. at machine
+startup) to obtain better handling of your disks.
+I am also a fan of auto-tuning, and trying to achieve it in cfq, but
+it is kind of complex, since there are many factors, and some of them
+aren't modeled by cfq currently.
+An example is that, on cheap SSDs or flash cards, small writes are far
+slower than anything else (they can take up to 0.5s), while a read
+will usually take less than 1ms. Currently, CFQ has no way to handle
+this extreme situation, since it uses just one idle value (8ms) for
+all transitions.
 
-> A simple:
-> 
->   for_each_cpu(cpu, current->mm->cpu_vm_mask) {
->      if (cpu_curr(cpu)->mm == current->mm)
->         smp_call_function_single(cpu, func, NULL, 1);
->   }
+Corrado
 
-I like this algorithm the best ;-)
-
--- Steve
-
-
+On 1/7/10, Kirill Afonshin <kirill_nnov@mail.ru> wrote:
+> I think we should not rely on NCQ/non-NCQ or blk_queue_nonrot() because it
+> may be incorrect:
+> try this:
+>
+> find /sys/ -name rotational 2>/dev/null
+> find /sys/ -name rotational 2>/dev/null|xargs cat
+>
+> all devices are reported as rotational for me including ram, loop and usb
+> flash drive. Physical block size and optimal io size has invalid values for
+> all my usb flash drives.
+>
+> I think it would be better to do a short performance test before mount. It
+> will provide all necessary information for io scheduler. We doesn't need
+> information about NCQ and rotational. We need to predict how much time
+> specific io operation will take in current context.
+>
+> PS: I'm not native speaker.
+>
+> Best regards,
+> Kirill Afonshin
+>
