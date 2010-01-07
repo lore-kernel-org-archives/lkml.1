@@ -1,64 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753803Ab0AGTWR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753778Ab0AGTZQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753803Ab0AGTWR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 14:22:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753377Ab0AGTWQ
+	id S1753778Ab0AGTZQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 14:25:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753602Ab0AGTZP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 14:22:16 -0500
-Received: from mail-yw0-f176.google.com ([209.85.211.176]:63814 "EHLO
-	mail-yw0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753130Ab0AGTWP (ORCPT
+	Thu, 7 Jan 2010 14:25:15 -0500
+Received: from nlpi129.sbcis.sbc.com ([207.115.36.143]:56012 "EHLO
+	nlpi129.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752113Ab0AGTZN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 14:22:15 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=wbpKXrXHpniwsNkMAJSl/QT6nQSMYdiWyrFa8dR6A3iD0ZBxUK8kfunLhi24nK05NH
-         RsmdDPdcC/R4B7EY9xWLbOthKcti5PdF/TWd6S/2J++z7Ful9Bhw6G1vDADPZKGE60G+
-         QqW2YZo686vyXICmYc9FjlpaJ8+t6/JskZBfk=
-Message-ID: <4B463484.7060703@gmail.com>
-Date: Thu, 07 Jan 2010 11:22:44 -0800
-From: "Justin P. Mattock" <justinmattock@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091114 Lightning/1.0pre Thunderbird/3.0b4
+	Thu, 7 Jan 2010 14:25:13 -0500
+Date: Thu, 7 Jan 2010 13:24:33 -0600 (CST)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@router.home
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Peter Zijlstra <peterz@infradead.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "minchan.kim@gmail.com" <minchan.kim@gmail.com>,
+       "hugh.dickins" <hugh.dickins@tiscali.co.uk>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [RFC][PATCH 6/8] mm: handle_speculative_fault()
+In-Reply-To: <alpine.LFD.2.00.1001071031440.7821@localhost.localdomain>
+Message-ID: <alpine.DEB.2.00.1001071308320.2981@router.home>
+References: <20100104182429.833180340@chello.nl>  <20100104182813.753545361@chello.nl>  <20100105054536.44bf8002@infradead.org>  <alpine.DEB.2.00.1001050916300.1074@router.home>  <20100105192243.1d6b2213@infradead.org>  <alpine.DEB.2.00.1001071007210.901@router.home>
+  <alpine.LFD.2.00.1001070814080.7821@localhost.localdomain> <1262884960.4049.106.camel@laptop> <alpine.LFD.2.00.1001070934060.7821@localhost.localdomain> <alpine.LFD.2.00.1001070937180.7821@localhost.localdomain>
+ <alpine.LFD.2.00.1001071031440.7821@localhost.localdomain>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [bisected] sys_paccept: disable paccept() causes my macbook	pro
- to  have an annoying whining sound
-References: <dd18b0c31001062216m316163f4t992c000eca0f76d@mail.gmail.com> <873a2ixmwy.fsf@basil.nowhere.org> <4B460132.3010706@gmail.com> <20100107160246.GB16076@basil.fritz.box>
-In-Reply-To: <20100107160246.GB16076@basil.fritz.box>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/07/10 08:02, Andi Kleen wrote:
+On Thu, 7 Jan 2010, Linus Torvalds wrote:
 
-o.k. so using the boot param
-with the latest kernel takes care
-of the noise.
-
-Now as a test I did
-git reset --hard origin 2d4c8266
-to where the bisect was pointing too.
-then once booting the noise was there.
-Then reverting that commit, caused the system
-to be noiseless..
-
-My guess since this might be power related
-it could be anything(sys_paccept hit it just right)
-i.g. whatever sys_paccept does(when turned on)
-generates enough wakeups(if this is correct term),
-to keep the system from generating this noise at the certain
-C level or however/whatever it's doing.
-
-At this point I'm not sure what to really do.
-if using the boot param(max_cstate) is a safe option
-then I'll just use that and/or look at paccept/accept4 to see
-what really generates enough wakeups or keeps the processor
-at a level to keep the noise from generating.
+> +	if (brk < cur_brk)
+> +		goto slow_case;
+> +	if (brk == cur_brk)
+> +		goto out;
+> +
+> +	vma = ok_to_extend_brk(mm, cur_brk, brk);
+> +	if (!vma)
+> +		goto slow_case;
+> +
+> +	spin_lock(&mm->page_table_lock);
 
 
-Justin P. Mattock
+page_table_lock used to serialize multiple fast brks?
+
+CONFIG_SPLIT_PTLOCK implies that code will not use this lock in fault
+handling. So no serialization with faults.
+
+Also the current code assumes vm_end and so on to be stable if mmap_sem is
+held. F.e. find_vma() from do_fault is now running while vm_end may be changing
+under it.
+
+
