@@ -1,56 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932941Ab0AGEEj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756758Ab0AGEH3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932941Ab0AGEEj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 23:04:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932341Ab0AGEEi
+	id S1756758Ab0AGEH3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 23:07:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756642Ab0AGEH1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 23:04:38 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:60871 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932324Ab0AGEEh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 23:04:37 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type;
-        b=kWfZLhIHp+LE50iB8Yyp1eu+ceHrL7b393gQZ4a0iAdVTse+8RjqLRVB1NqOsFka9O
-         fc4foH+lMOXOTWeXWrGJHCpqtF1WvN/eiUgolMbdAvPTMr16bYqiSA3EjPhX9sOdFH1c
-         TkRvl1/JxHAOZ3UIL5qGIrGG8ZO4B4GcYCpVQ=
-MIME-Version: 1.0
-In-Reply-To: <51f3faa71001061553q29e0821evda63c4ca3eeee3b1@mail.gmail.com>
-References: <20100105110256.D2DF133C4B0@tippex.mynet.homeunix.org> 
-	<4B43DF97.7080208@gmail.com> <20100106083214.DAAA933C5F5@tippex.mynet.homeunix.org> 
-	<51f3faa71001061553q29e0821evda63c4ca3eeee3b1@mail.gmail.com>
-From: Bryan Donlan <bdonlan@gmail.com>
-Date: Wed, 6 Jan 2010 23:04:16 -0500
-Message-ID: <3e8340491001062004h302912a5h8ac441f9fe629af6@mail.gmail.com>
-Subject: Re: Memory probing fails after 2.6.30 (bisected)
-To: Robert Hancock <hancockrwd@gmail.com>
-Cc: Anders Eriksson <aeriksson@fastmail.fm>, mingo@elte.hu,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 6 Jan 2010 23:07:27 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:52608 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756638Ab0AGEH0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jan 2010 23:07:26 -0500
+Date: Thu, 7 Jan 2010 15:07:23 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: linux-next: manual merge of the suspend tree with the input tree
+Message-Id: <20100107150723.b07d521b.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 3.0.0beta4 (GTK+ 2.18.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 6, 2010 at 6:53 PM, Robert Hancock <hancockrwd@gmail.com> wrote:
-> On Wed, Jan 6, 2010 at 2:32 AM, Anders Eriksson <aeriksson@fastmail.fm> wrote:
->>
->> hancockrwd@gmail.com said:
->>> Think you missed posting which was the actual bad commit it reported?
->>
->> The last one in the list:
->> 8ecee4620e76aae418bfa0e8cc830e92cb559bbb
->>
->> That's a merge commit. How do i dig futher into that? My git-fu is lacking...
->
-> AFAIK, the bisect shouldn't land on a merge commit unless the changes
-> in the commit itself are what are causing the problem, and the merge
-> commit itself doesn't have any changes. Is it possible something went
-> wrong in the bisect and one of your good/bad results was incorrect?
+Hi Rafael,
 
-It's also possible for the bisect to land on a merge if each parent of
-the merge works, but combining them leads to an interaction causing
-the bug. I'd suggest specifically retesting each of the parents of the
-merge, and the merge itself.
+Today's linux-next merge of the suspend tree got a conflict in
+drivers/input/serio/serio.c between commits
+386d8772980be01b94bd463ea1e745732d7eb502 ("Input: serio - use device core
+to create 'id' attribute group") and
+ddf1ffbd40c92ff1e58c45fa96d309788f7beb60 ("Input: serio - let device core
+tell us if device was registered") from the input tree and commit
+f543d6795ccfbd443a042e012a6aea15e4f4c87a ("PM: Allow serio input devices
+to suspend/resume asynchronously") from the suspend tree.
+
+I fixed it up (see below) but am not sure it this is the correct fix.  I
+can carry this fix as necessary.
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+diff --cc drivers/input/serio/serio.c
+index c3b626e,42970e4..0000000
+--- a/drivers/input/serio/serio.c
++++ b/drivers/input/serio/serio.c
+@@@ -547,15 -555,22 +547,17 @@@ static void serio_add_port(struct seri
+  	}
+  
+  	list_add_tail(&serio->node, &serio_list);
+ +
+  	if (serio->start)
+  		serio->start(serio);
+ +
+  	error = device_add(&serio->dev);
+  	if (error)
+ -		printk(KERN_ERR
+ -			"serio: device_add() failed for %s (%s), error: %d\n",
+ +		dev_err(&serio->dev,
+ +			"device_add() failed for %s (%s), error: %d\n",
+  			serio->phys, serio->name, error);
+ -	else {
+ -		serio->registered = true;
+ -		error = sysfs_create_group(&serio->dev.kobj, &serio_id_attr_group);
+ -		if (error)
+ -			printk(KERN_ERR
+ -				"serio: sysfs_create_group() failed for %s (%s), error: %d\n",
+ -				serio->phys, serio->name, error);
+++	else
++ 		device_enable_async_suspend(&serio->dev, true);
+ -	}
+  }
+  
+  /*
