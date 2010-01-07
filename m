@@ -1,82 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754033Ab0AGVAk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753469Ab0AGVEy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754033Ab0AGVAk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 16:00:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754004Ab0AGVAi
+	id S1753469Ab0AGVEy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 16:04:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752794Ab0AGVEx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 16:00:38 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:42330 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752036Ab0AGVA3 (ORCPT
+	Thu, 7 Jan 2010 16:04:53 -0500
+Received: from extranet.aprogsys.com ([91.121.73.63]:50840 "EHLO
+	extranet.aprogsys.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752312Ab0AGVEw convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 16:00:29 -0500
-To: Trond.Myklebust@netapp.com
-Cc: linux-kernel@vger.kernel.org, torvalds@osdl.org
-Subject: Re: [GIT PULL] Please pull NFS client bugfixes....
-From: Andi Kleen <andi@firstfloor.org>
-References: <1262896174.2659.3.camel@localhost>
-Date: Thu, 07 Jan 2010 22:00:26 +0100
-In-Reply-To: <1262896174.2659.3.camel@localhost> (Trond Myklebust's message of "Thu, 07 Jan 2010 15:29:34 -0500")
-Message-ID: <87zl4pmxzp.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
+	Thu, 7 Jan 2010 16:04:52 -0500
+From: Vincent ETIENNE <ve@vetienne.net>
+Organization: HOME
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [Bug #14906] boot problem bisected to commit 99935a7a59
+Date: Thu, 7 Jan 2010 22:04:50 +0100
+User-Agent: KMail/1.12.4 (Linux/2.6.33-rc3; KDE/4.3.4; x86_64; ; )
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "Yinghai Lu" <yinghai@kernel.org>
+References: <LptzGUUXbTK.A.MSF.ymhOLB@chimera> <200912292237.58999.ve@vetienne.net> <200912292343.09795.rjw@sisk.pl>
+In-Reply-To: <200912292343.09795.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Message-Id: <201001072204.50798.ve@vetienne.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Le mardi 29 décembre 2009 23:43:09, Rafael J. Wysocki a écrit :
+> On Tuesday 29 December 2009, Vincent ETIENNE wrote:
+> > Le mardi 29 décembre 2009 16:09:58, Rafael J. Wysocki a écrit :
+> > > This message has been generated automatically as a part of a report
+> > > of recent regressions.
+> > >
+> > > The following bug entry is on the current list of known regressions
+> > > from 2.6.32.  Please verify if it still should be listed and let me
+> > > know (either way).
+> > >
+> > >
+> > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14906
+> > > Subject		: boot problem bisected to commit 99935a7a59
+> > > Submitter	: Vincent ETIENNE <ve@vetienne.net>
+> > > Date		: 2009-12-19 16:07 (11 days old)
+> > > References	: http://marc.info/?l=linux-kernel&m=126123946509316&w=4
+> > > Handled-By	: Yinghai Lu <yinghai@kernel.org>
+> > > Patch		: http://patchwork.kernel.org/patch/68941/
+> >
+> > The proposed patch works for me but the bug is still present in
+> > 2.6.33-rc2 (patch still aply cleanly in rc2 and continue to solve the
+> > problem). Have to wait for rc3.
+> 
+> Thanks for the update.
+> 
+> Rafael
+> 
 
-> Hi Linus,
->
-> Please pull from the "bugfixes" branch of the repository at
->
->    git pull git://git.linux-nfs.org/projects/trondmy/nfs-2.6.git bugfixes
->
-> This will update the following files through the appended changesets.
-
-How about the mmap lock order inversion patch?
-
-That problem is still there and hits immediately after mounting root 
-with a lockdep warning on any lockdep enabled NFS root kernel.
-
--Andi
-
----
-
-NFS: don't revalidate in mmap
-
-nfs_revalidate_mapping takes i_mutex, but mmap already has mmap_sem
-hold and taking i_mutex inside mmap_sem is not allowed by the VFS.
-
-So don't revalidate on mmap time and trust it has been already done.
-
-Signed-off-by: Andi Kleen <ak@linux.intel.com>
-
----
- fs/nfs/file.c |    7 +------
- 1 file changed, 1 insertion(+), 6 deletions(-)
-
-Index: linux-2.6.32-ak/fs/nfs/file.c
-===================================================================
---- linux-2.6.32-ak.orig/fs/nfs/file.c
-+++ linux-2.6.32-ak/fs/nfs/file.c
-@@ -297,14 +297,9 @@ nfs_file_mmap(struct file * file, struct
- 	dprintk("NFS: mmap(%s/%s)\n",
- 		dentry->d_parent->d_name.name, dentry->d_name.name);
- 
--	/* Note: generic_file_mmap() returns ENOSYS on nommu systems
--	 *       so we call that before revalidating the mapping
--	 */
- 	status = generic_file_mmap(file, vma);
--	if (!status) {
-+	if (!status)
- 		vma->vm_ops = &nfs_file_vm_ops;
--		status = nfs_revalidate_mapping(inode, file->f_mapping);
--	}
- 	return status;
- }
- 
+Hopes not to be too much cumbersome but still no luck in 2.6.33.rc3 : the 
+problem is present. Nethertheless the proposed patch still cure it. 
 
 
--- 
-ak@linux.intel.com -- Speaking for myself only.
+
