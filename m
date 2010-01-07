@@ -1,120 +1,167 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754208Ab0AGV4F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754234Ab0AGV74@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754208Ab0AGV4F (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 16:56:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754153Ab0AGV4E
+	id S1754234Ab0AGV74 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 16:59:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752273Ab0AGV7z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 16:56:04 -0500
-Received: from xenotime.net ([72.52.64.118]:46018 "HELO xenotime.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753756Ab0AGV4A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 16:56:00 -0500
-Date: Thu, 7 Jan 2010 13:55:57 -0800
-From: Randy Dunlap <rdunlap@xenotime.net>
-To: Michal Marek <mmarek@suse.cz>
-Cc: Dominik Brodowski <linux@dominikbrodowski.net>,
-       Randy Dunlap <rdunlap@xenotime.net>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-kbuild@vger.kernel.org,
-       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Valdis.Kletnieks@vt.edu
-Subject: Re: linux-next: Tree for January 7 (pcmcia)
-Message-Id: <20100107135557.989c9585.rdunlap@xenotime.net>
-In-Reply-To: <20100107210744.GA10320@sepie.suse.cz>
-References: <20100107172134.af71c742.sfr@canb.auug.org.au>
-	<20100107101006.e59989a8.rdunlap@xenotime.net>
-	<20100107205728.GA19115@isilmar.linta.de>
-	<20100107210744.GA10320@sepie.suse.cz>
-Organization: YPO4
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 7 Jan 2010 16:59:55 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:57446 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750870Ab0AGV7y (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jan 2010 16:59:54 -0500
+From: Arnaldo Carvalho de Melo <acme@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, Arnaldo Carvalho de Melo <acme@redhat.com>,
+       =?utf-8?q?Fr=C3=A9d=C3=A9ric=20Weisbecker?= <fweisbec@gmail.com>,
+       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Mackerras <paulus@samba.org>
+Subject: [PATCH 2/6] perf symbols: Record the domain of DSOs in HEADER_BUILD_ID header table
+Date: Thu,  7 Jan 2010 19:59:39 -0200
+Message-Id: <1262901583-8074-2-git-send-email-acme@infradead.org>
+X-Mailer: git-send-email 1.6.2.5
+In-Reply-To: <1262901583-8074-1-git-send-email-acme@infradead.org>
+References: <1262901583-8074-1-git-send-email-acme@infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <acme@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 7 Jan 2010 22:07:44 +0100 Michal Marek wrote:
+From: Arnaldo Carvalho de Melo <acme@redhat.com>
 
-> On Thu, Jan 07, 2010 at 09:57:28PM +0100, Dominik Brodowski wrote:
-> > Hey,
-> > 
-> > On Thu, Jan 07, 2010 at 10:10:06AM -0800, Randy Dunlap wrote:
-> > > > Hi all,
-> > > > 
-> > > > Changes since 20100106:
-> > > 
-> > > 
-> > > drivers/built-in.o: In function `yenta_probe':
-> > > yenta_socket.c:(.devinit.text+0x1e582): undefined reference to `pccard_nonstatic_ops'
-> > > 
-> > > CONFIG_PCCARD=y
-> > > CONFIG_PCMCIA=m
-> > > CONFIG_PCCARD_NONSTATIC=m
-> > > CONFIG_YENTA=y
-> > > 
-> > > so yenta code (built-in) tries to reference data that lives in a
-> > > loadable module.
-> > 
-> > Uh, that was I. If kconfig can't be fixed easily, I'll revert the change
-> 
-> Hi Randy, Dominik,
-> 
-> Please try this one-liner. The problem is that 'if X' and 'if X!=n' are not
-> the same in ternary logic.
-> 
-> Michal
-> 
-> From e7b12e70272484da2161c0b6c459f2eff2a989a8 Mon Sep 17 00:00:00 2001
-> From: Michal Marek <mmarek@suse.cz>
-> Date: Thu, 7 Jan 2010 21:03:11 +0100
-> Subject: [PATCH] pcmcia: fix yenta dependency on PCCARD_NONSTATIC
-> 
-> With CONFIG_PCMCIA=m and CONFIG_YENTA=y, we get
-> 
-> drivers/built-in.o: In function `yenta_probe':
-> yenta_socket.c:(.devinit.text+0x1e582): undefined reference to
-> `pccard_nonstatic_ops'
-> 
-> This is because
-> 
-> select PCCARD_NONSTATIC if PCMCIA
-> 
-> sets PCCARD_NONSTATIC = min(YENTA, PCMCIA). Change it to 'if PCMCIA!=n'
-> to remove the upper limit.
-> 
-> Reported-by: Randy Dunlap <rdunlap@xenotime.net>
-> Signed-off-by: Michal Marek <mmarek@suse.cz>
+So that we can restore them to the right DSO list (either dsos__kernel
+or dsos__user).
 
-Acked-by: Randy Dunlap <rdunlap@xenotime.net>
+We do that just like the kernel does for the other events, encoding
+PERF_RECORD_MISC_{KERNEL,USER} in perf_event_header.
 
-Thanks.
-
-> ---
->  drivers/pcmcia/Kconfig |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/pcmcia/Kconfig b/drivers/pcmcia/Kconfig
-> index 5cea8ba..e196a19 100644
-> --- a/drivers/pcmcia/Kconfig
-> +++ b/drivers/pcmcia/Kconfig
-> @@ -84,7 +84,7 @@ config YENTA
->  	tristate "CardBus yenta-compatible bridge support"
->  	depends on PCI
->  	select CARDBUS if !EMBEDDED
-> -	select PCCARD_NONSTATIC if PCMCIA
-> +	select PCCARD_NONSTATIC if PCMCIA != n
->  	---help---
->  	  This option enables support for CardBus host bridges.  Virtually
->  	  all modern PCMCIA bridges are CardBus compatible.  A "bridge" is
-> -- 
-> 1.6.5.3
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-
-
+Cc: Frédéric Weisbecker <fweisbec@gmail.com>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Paul Mackerras <paulus@samba.org>
+Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
 ---
-~Randy
+ tools/perf/util/header.c  |    9 ++++++---
+ tools/perf/util/session.c |    6 +++++-
+ tools/perf/util/symbol.c  |    6 +++---
+ tools/perf/util/symbol.h  |   11 +++++++++--
+ 4 files changed, 23 insertions(+), 9 deletions(-)
+
+diff --git a/tools/perf/util/header.c b/tools/perf/util/header.c
+index 942f7da..ec96321 100644
+--- a/tools/perf/util/header.c
++++ b/tools/perf/util/header.c
+@@ -193,7 +193,7 @@ static int write_padded(int fd, const void *bf, size_t count,
+ 			continue;		\
+ 		else
+ 
+-static int __dsos__write_buildid_table(struct list_head *head, int fd)
++static int __dsos__write_buildid_table(struct list_head *head, u16 misc, int fd)
+ {
+ 	struct dso *pos;
+ 
+@@ -205,6 +205,7 @@ static int __dsos__write_buildid_table(struct list_head *head, int fd)
+ 		len = ALIGN(len, NAME_ALIGN);
+ 		memset(&b, 0, sizeof(b));
+ 		memcpy(&b.build_id, pos->build_id, sizeof(pos->build_id));
++		b.header.misc = misc;
+ 		b.header.size = sizeof(b) + len;
+ 		err = do_write(fd, &b, sizeof(b));
+ 		if (err < 0)
+@@ -220,9 +221,11 @@ static int __dsos__write_buildid_table(struct list_head *head, int fd)
+ 
+ static int dsos__write_buildid_table(int fd)
+ {
+-	int err = __dsos__write_buildid_table(&dsos__kernel, fd);
++	int err = __dsos__write_buildid_table(&dsos__kernel,
++					      PERF_RECORD_MISC_KERNEL, fd);
+ 	if (err == 0)
+-		err = __dsos__write_buildid_table(&dsos__user, fd);
++		err = __dsos__write_buildid_table(&dsos__user,
++						  PERF_RECORD_MISC_USER, fd);
+ 	return err;
+ }
+ 
+diff --git a/tools/perf/util/session.c b/tools/perf/util/session.c
+index e0e6a07..378ac54 100644
+--- a/tools/perf/util/session.c
++++ b/tools/perf/util/session.c
+@@ -255,6 +255,7 @@ int perf_header__read_build_ids(int input, u64 offset, u64 size)
+ 	while (offset < limit) {
+ 		struct dso *dso;
+ 		ssize_t len;
++		struct list_head *head = &dsos__user;
+ 
+ 		if (read(input, &bev, sizeof(bev)) != sizeof(bev))
+ 			goto out;
+@@ -263,7 +264,10 @@ int perf_header__read_build_ids(int input, u64 offset, u64 size)
+ 		if (read(input, filename, len) != len)
+ 			goto out;
+ 
+-		dso = dsos__findnew(filename);
++		if (bev.header.misc & PERF_RECORD_MISC_KERNEL)
++			head = &dsos__kernel;
++
++		dso = __dsos__findnew(head, filename);
+ 		if (dso != NULL)
+ 			dso__set_build_id(dso, &bev.build_id);
+ 
+diff --git a/tools/perf/util/symbol.c b/tools/perf/util/symbol.c
+index da2f07f..8e6627e 100644
+--- a/tools/perf/util/symbol.c
++++ b/tools/perf/util/symbol.c
+@@ -1615,14 +1615,14 @@ static struct dso *dsos__find(struct list_head *head, const char *name)
+ 	return NULL;
+ }
+ 
+-struct dso *dsos__findnew(const char *name)
++struct dso *__dsos__findnew(struct list_head *head, const char *name)
+ {
+-	struct dso *dso = dsos__find(&dsos__user, name);
++	struct dso *dso = dsos__find(head, name);
+ 
+ 	if (!dso) {
+ 		dso = dso__new(name);
+ 		if (dso != NULL) {
+-			dsos__add(&dsos__user, dso);
++			dsos__add(head, dso);
+ 			dso__set_basename(dso);
+ 		}
+ 	}
+diff --git a/tools/perf/util/symbol.h b/tools/perf/util/symbol.h
+index b2b5330..ee0b459 100644
+--- a/tools/perf/util/symbol.h
++++ b/tools/perf/util/symbol.h
+@@ -115,9 +115,17 @@ bool dso__sorted_by_name(const struct dso *self, enum map_type type);
+ 
+ void dso__sort_by_name(struct dso *self, enum map_type type);
+ 
++extern struct list_head dsos__user, dsos__kernel;
++
++struct dso *__dsos__findnew(struct list_head *head, const char *name);
++
++static inline struct dso *dsos__findnew(const char *name)
++{
++	return __dsos__findnew(&dsos__user, name);
++}
++
+ struct perf_session;
+ 
+-struct dso *dsos__findnew(const char *name);
+ int dso__load(struct dso *self, struct map *map, struct perf_session *session,
+ 	      symbol_filter_t filter);
+ void dsos__fprintf(FILE *fp);
+@@ -143,6 +151,5 @@ bool symbol_type__is_a(char symbol_type, enum map_type map_type);
+ 
+ int perf_session__create_kernel_maps(struct perf_session *self);
+ 
+-extern struct list_head dsos__user, dsos__kernel;
+ extern struct dso *vdso;
+ #endif /* __PERF_SYMBOL */
+-- 
+1.6.2.5
+
