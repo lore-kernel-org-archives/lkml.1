@@ -1,127 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752787Ab0AGFYM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752972Ab0AGFcn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752787Ab0AGFYM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 00:24:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752050Ab0AGFYL
+	id S1752972Ab0AGFcn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 00:32:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752285Ab0AGFcm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 00:24:11 -0500
-Received: from mga01.intel.com ([192.55.52.88]:43841 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751748Ab0AGFYK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 00:24:10 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,233,1262592000"; 
-   d="scan'208";a="529176165"
-Date: Thu, 7 Jan 2010 13:24:03 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "Huang, Ying" <ying.huang@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Tejun Heo <tj@kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Nick Piggin <npiggin@suse.de>,
-       Andi Kleen <andi@firstfloor.org>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC][PATCH] vmalloc: simplify vread()/vwrite()
-Message-ID: <20100107052403.GA25203@localhost>
-References: <20100107012458.GA9073@localhost> <20100107103825.239ffcf9.kamezawa.hiroyu@jp.fujitsu.com> <20100107025054.GA11252@localhost> <1262834141.17852.23.camel@yhuang-dev.sh.intel.com> <20100107122304.b5c1d777.kamezawa.hiroyu@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100107122304.b5c1d777.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 7 Jan 2010 00:32:42 -0500
+Received: from mta3.srv.hcvlny.cv.net ([167.206.4.198]:44408 "EHLO
+	mta3.srv.hcvlny.cv.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752025Ab0AGFck (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jan 2010 00:32:40 -0500
+Date: Thu, 07 Jan 2010 00:32:05 -0500
+From: Michael Breuer <mbreuer@majjas.com>
+Subject: Re: [PATCH] af_packet: Don't use skb after dev_queue_xmit()
+In-reply-to: <20100106205343.5460d658@nehalam>
+To: Stephen Hemminger <shemminger@linux-foundation.org>
+Cc: Jarek Poplawski <jarkao2@gmail.com>, David Miller <davem@davemloft.net>,
+       akpm@linux-foundation.org, flyboy@gmail.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Message-id: <4B4571D5.30002@majjas.com>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7BIT
+References: <20100105230746.GA6612@del.dom.local> <4B43F72C.9090004@majjas.com>
+ <20100106072208.GA6711@ff.dom.local> <4B44E952.5000804@majjas.com>
+ <20100106131044.25b4e500@nehalam> <4B451C31.3000309@majjas.com>
+ <4B454A16.3030909@majjas.com> <4B455C62.6030504@majjas.com>
+ <20100106205343.5460d658@nehalam>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.5)
+ Gecko/20091204 Lightning/1.0b2pre Thunderbird/3.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 07, 2010 at 11:23:04AM +0800, KAMEZAWA Hiroyuki wrote:
-> On Thu, 07 Jan 2010 11:15:41 +0800
-> Huang Ying <ying.huang@intel.com> wrote:
-> 
-> > > > 
-> > > > > The page_is_ram() check is necessary because kmap_atomic() is not
-> > > > > designed to work with non-RAM pages.
-> > > > > 
-> > > > I think page_is_ram() is not a complete method...on x86, it just check
-> > > > e820's memory range. checking VM_IOREMAP is better, I think.
-> > > 
-> > > (double check) Not complete or not safe?
-> > > 
-> > > EFI seems to not update e820 table by default.  Ying, do you know why?
-> > 
-> > In EFI system, E820 table is constructed from EFI memory map in boot
-> > loader, so I think you can rely on E820 table.
-> > 
-> Yes, we can rely on. But concerns here is that we cannot get any
-> information of ioremap via e820 map. 
-> 
-> But yes,
-> == ioremap()
->  140         for (pfn = phys_addr >> PAGE_SHIFT;
->  141                                 (pfn << PAGE_SHIFT) < (last_addr & PAGE_MASK);
->  142                                 pfn++) {
->  143 
->  144                 int is_ram = page_is_ram(pfn);
->  145 
->  146                 if (is_ram && pfn_valid(pfn) && !PageReserved(pfn_to_page(pfn)))
->  147                         return NULL;
->  148                 WARN_ON_ONCE(is_ram);
->  149         }
-> ==
-> you'll get warned before access if "ram" area is remapped...
+On 1/6/2010 11:53 PM, Stephen Hemminger wrote:
+> On Wed, 06 Jan 2010 23:00:34 -0500
+> Michael Breuer<mbreuer@majjas.com>  wrote:
+>
+>    
+>> Changing MTU to 9000, everything basically breaks - Can't use X11 (local
+>> or remote - get X11 screen after gdm login locally, but then goes back
+>> to greeter; remote gets no greeter); ssh sessions hang; etc. This time I
+>> was able to reset the MTU back to 1500 without a reboot - but I did have
+>> to ifconfig eth0 down and then up. Looking at the sk98lin code, it looks
+>> to me like they do a bit more work with existing buffers before
+>> completing the MTU switch. Note that even doing this, X11 did not work
+>> (it did with the old mtu change code). Tried changing to mtu 4500 - same
+>> effect as 9000... but when I switched back to 1500, ksoftirqd started
+>> spinning using 100% of one core.
+>>      
+> The problem is that patch was enabling scatter-gather and checksum offload
+> that won't work on EC_U hardware with 9K MTU.  At least, it never worked
+> for me when I tested it. So because of that it really doesn't change anything
+> for the better on that chip version.
+>
+> What version chip is on that motherboard?  Mine is:
+>   Yukon-2 EC Ultra chip revision 3
+> which corresponds to B0 step.
+>
+> Another possibility is the PHY register which controls number of ticks
+> of buffering.  The default is zero, which gives the most buffering (good),
+> but the firmware could be reprogramming it (bad).  In general, the driver
+> doesn't fiddle with bits that are already set correctly, because sometimes
+> vendors need to tweak PCI timing in firmware/BIOS.  It seems the firmware on this
+> chip is just a bunch of register setups done on power on.
+>    
+Also - I'm seeing a huge number of dropped packets  (RX) 200-300/second. 
+Probably why this is so slow.
 
-Right.
+Current ifconfig:
+eth0      Link encap:Ethernet  HWaddr 00:26:18:00:1C:3B
+           inet addr:10.0.0.1  Bcast:10.0.0.255  Mask:255.255.255.0
+           inet6 addr: fe80::226:18ff:fe00:1c3b/64 Scope:Link
+           UP BROADCAST RUNNING ALLMULTI MULTICAST  MTU:1500  Metric:1
+           RX packets:26647536 errors:0 dropped:517884 overruns:0 frame:0
+           TX packets:12112780 errors:0 dropped:0 overruns:0 carrier:0
+           collisions:0 txqueuelen:1000
+           RX bytes:38960063319 (36.2 GiB)  TX bytes:1889879762 (1.7 GiB)
+           Interrupt:18
 
-> But, about this patch, it seems that page_is_ram() is not free from architecture
-> dependecy.
 
-Yes this is a problem. We can provide a generic page_is_ram() as below.
-And could further convert the existing x86 (and others) page_is_ram()
-to be resource-based -- since at least for now the e820 table won't be
-updated on memory hotplug.
 
-Thanks,
-Fengguang
----
- include/linux/ioport.h |    2 ++
- kernel/resource.c      |   18 ++++++++++++++++++
- 2 files changed, 20 insertions(+)
-
---- linux-mm.orig/kernel/resource.c	2010-01-07 12:40:55.000000000 +0800
-+++ linux-mm/kernel/resource.c	2010-01-07 13:13:46.000000000 +0800
-@@ -297,6 +297,24 @@ int walk_system_ram_range(unsigned long 
- 
- #endif
- 
-+static int __page_is_ram(unsigned long pfn, unsigned long nr_pages, void *arg)
-+{
-+	int *is_ram = arg;
-+
-+	*is_ram = 1;
-+
-+	return 1;
-+}
-+
-+int __attribute__((weak)) page_is_ram(unsigned long pagenr)
-+{
-+	int is_ram = 0;
-+
-+	walk_system_ram_range(pagenr, 1, &is_ram, __page_is_ram);
-+
-+	return is_ram;
-+}
-+
- /*
-  * Find empty slot in the resource tree given range and alignment.
-  */
---- linux-mm.orig/include/linux/ioport.h	2010-01-07 13:11:43.000000000 +0800
-+++ linux-mm/include/linux/ioport.h	2010-01-07 13:12:37.000000000 +0800
-@@ -188,5 +188,7 @@ extern int
- walk_system_ram_range(unsigned long start_pfn, unsigned long nr_pages,
- 		void *arg, int (*func)(unsigned long, unsigned long, void *));
- 
-+extern int page_is_ram(unsigned long pagenr);
-+
- #endif /* __ASSEMBLY__ */
- #endif	/* _LINUX_IOPORT_H */
