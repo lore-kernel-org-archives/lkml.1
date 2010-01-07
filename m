@@ -1,87 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753122Ab0AGPMR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753139Ab0AGPMm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753122Ab0AGPMR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 10:12:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753001Ab0AGPMQ
+	id S1753139Ab0AGPMm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 10:12:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753076Ab0AGPMl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 10:12:16 -0500
-Received: from tomts40.bellnexxia.net ([209.226.175.97]:37870 "EHLO
-	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752432Ab0AGPMQ (ORCPT
+	Thu, 7 Jan 2010 10:12:41 -0500
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:57495 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753001Ab0AGPMk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 10:12:16 -0500
-Date: Thu, 7 Jan 2010 10:12:14 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: linux-kernel@vger.kernel.org,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org,
-       josh@joshtriplett.org, tglx@linutronix.de, peterz@infradead.org,
-       rostedt@goodmis.org, Valdis.Kletnieks@vt.edu, dhowells@redhat.com,
-       laijs@cn.fujitsu.com, dipankar@in.ibm.com
-Subject: Re: [RFC PATCH] introduce sys_membarrier(): process-wide memory
-	barrier
-Message-ID: <20100107151214.GC14259@Krystal>
-References: <20100107044007.GA22863@Krystal> <877hruxmzh.fsf@basil.nowhere.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <877hruxmzh.fsf@basil.nowhere.org>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.27.31-grsec (i686)
-X-Uptime: 10:10:37 up 21 days, 23:29,  6 users,  load average: 0.15, 0.23,
-	0.15
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 7 Jan 2010 10:12:40 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type;
+        b=vP8ykKCusejzifqiW4IsJSNdJxleZi1V2ZMKWmF/Fu+G+6Kn8px1txeaEFqW5e5wsJ
+         JHrPfipbVF7tRB5thMX0eT+UE/Z32ZC8dCnCJqMx96MxeOMv54uqrXUZl+rT59tdkEHr
+         SvhMz6AVytcDxgbIfAmRA9G4QR5BT147uXhuA=
+MIME-Version: 1.0
+Date: Fri, 8 Jan 2010 00:12:40 +0900
+Message-ID: <7f65365c1001070712p348c3522l1874886b0bfb80b9@mail.gmail.com>
+Subject: Multicasting from kernel space.
+From: Vadim Galitsyn <galitsyn@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Andi Kleen (andi@firstfloor.org) wrote:
-> Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> writes:
-> 
-> > Both the signal-based and the sys_membarrier userspace RCU schemes
-> > permit us to remove the memory barrier from the userspace RCU
-> > rcu_read_lock() and rcu_read_unlock() primitives, thus significantly
-> > accelerating them. These memory barriers are replaced by compiler
-> > barriers on the read-side, and all matching memory barriers on the
-> > write-side are turned into an invokation of a memory barrier on all
-> > active threads in the process. By letting the kernel perform this
-> > synchronization rather than dumbly sending a signal to every process
-> > threads (as we currently do), we diminish the number of unnecessary wake
-> > ups and only issue the memory barriers on active threads. Non-running
-> > threads do not need to execute such barrier anyway, because these are
-> > implied by the scheduler context switches.
-> 
-> I'm not sure all this effort is really needed on architectures
-> with strong memory ordering.
+Hi All,
 
-Do we still have many out there that support SMP ? Even newer ARM now
-need memory barriers.
+I am trying to find the proper way to send multicast traffic from
+kernel space at 2.6.32 kernel.
+My code is like this:
 
-> 
-> > + * The current implementation simply executes a memory barrier in an IPI handler
-> > + * on each active cpu. Going through the hassle of taking run queue locks and
-> > + * checking if the thread running on each online CPU belongs to the current
-> > + * thread seems more heavyweight than the cost of the IPI itself.
-> > + */
-> > +SYSCALL_DEFINE0(membarrier)
-> > +{
-> > +	on_each_cpu(membarrier_ipi, NULL, 1);
-> 
-> Can't you use mm->cpu_vm_mask?
+/* Create a socket */
+static struct socket *sock;
 
-I'll go for PeterZ scheme, which is based on cpu_vm_mask.
+sock_create_kern(AF_INET, SOCK_DGRAM,
+                           IPPROTO_UDP, &sock);
 
-Thanks,
+...
 
-Mathieu
+/* Set address */
+struct sockaddr_in mc_addr;
 
+mc_addr.sin_family = AF_INET;
+#define MCAST_ADDR "224.1.1.1"
+#define MCAST_PORT 10000
+mc_addr.sin_addr.s_addr = htonl((__be32)MCAST_ADDR);
+mc_addr.sin_port = htons(MCAST_PORT);
 
-> 
-> -Andi
+/* Prepare transfer */
+struct kvec   vec;
+struct msghdr msg;
 
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+vec.iov_base = buf;
+vec.iov_len  = BUF_SIZE;
+msg.msg_name = &mc_addr;
+msg.msg_namelen = sizeof(mc_addr);
+kernel_sendmsg(sock, &msg, &vec, 1, size);
+
+I am getting error -101 (ENETUNREACH) here. But routing table is ok:
+
+root:~> route
+Kernel IP routing table
+Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
+10.1.0.0        *               255.255.255.0   U     0      0        0 eth0
+224.0.0.0       *               240.0.0.0       U     0      0        0 eth0
+root:~>
+
+I am able to send multicast packets from user space in this
+configuration. What's wrong with kernel space?
+
+Thank you,
+Vadim.
