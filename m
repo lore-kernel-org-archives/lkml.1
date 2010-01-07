@@ -1,45 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751926Ab0AGNKI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752107Ab0AGNLl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751926Ab0AGNKI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 08:10:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751706Ab0AGNKH
+	id S1752107Ab0AGNLl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 08:11:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751690Ab0AGNLk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 08:10:07 -0500
-Received: from web31703.mail.mud.yahoo.com ([68.142.201.183]:25442 "HELO
-	web31703.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751623Ab0AGNKG convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 08:10:06 -0500
-X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Thu, 07 Jan 2010 08:10:06 EST
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding;
-  b=w8vfm0jJDkwL4shVD6WmsdWqEs3yyVJZ2VTvxk8eRNF5rzOEXB1Cykd0a4GNgWEBU+5Z13E2jKPXezG+3NEzwClXuz+Y0nlqjOYd8tTXtRKMInfngIw+C5YTC9sNedjrUiI6bXytvgnw2cEv9OdDb7HlZ0ab/0XJzX3eupxoCiU=;
-Message-ID: <224142.50171.qm@web31703.mail.mud.yahoo.com>
-X-YMail-OSG: fWZEwHwVM1l7OL.Q0MaJ9JTsbn3s1Pv0T7Ls17FLW7ga8nWGH7Bm1h6k77oxUyOUkIGJ9PR_yu.pc2qaysvTHUnkMVas7nT8hO1xKjqS5jrjhzK2oElIfzMm7mc9FnRymsv5EJI91TZAeAP4tsXLWQW8Sc24TZICipf_ok9JigVaVixM3SPUIWK2n6t1aLedZ_8IecX5RZfEneDo9WMYOKVVqd6xCaUj2G6gaPynJnxBrNc9Dd2xeTqWgv4tmDmG2whgsF2hnKpV4gVaPMd_A5dUvQUu.NL8s_9t1DnslOgkGERz1j0DkT3pnOKmeL52RN1ZUAputXlZYwKzYdt_9qiBUbcW.C.a1zdYVoD6FO__sGUMhkTNC_AvpRL80vuJ3YmPTRsMQMzknsSUw2iHnqNEQ6_NsbiZKMIh0FW_br.8eP42Juyte.lke7MV4y.WKS10P3CMC_mx36A4fL1JGkrggLfq5N_pl2Kk
-X-Mailer: YahooMailRC/240.3 YahooMailWebService/0.8.100.260964
-Date: Thu, 7 Jan 2010 05:03:24 -0800 (PST)
-From: Sanka Piyaratna <cesanka@yahoo.com>
-Subject: demand driven memory allocation
-To: linux-kernel@vger.kernel.org
+	Thu, 7 Jan 2010 08:11:40 -0500
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:39948 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751706Ab0AGNLk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jan 2010 08:11:40 -0500
+Date: Thu, 7 Jan 2010 07:54:33 -0500
+From: "John W. Linville" <linville@tuxdriver.com>
+To: Justin Mattock <justinmattock@gmail.com>
+Cc: linux-wireless@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [bisected] sys_paccept: disable paccept() causes my macbook
+	pro to have an annoying whining sound
+Message-ID: <20100107125433.GB13603@tuxdriver.com>
+References: <dd18b0c31001062216m316163f4t992c000eca0f76d@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <dd18b0c31001062216m316163f4t992c000eca0f76d@mail.gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Wed, Jan 06, 2010 at 10:16:27PM -0800, Justin Mattock wrote:
+> for a while I've been hearing this odd
+> annoying sound coming from my macbook pro
+> when the system is idle(no internet use tv/radio/web etc...)
+> as soon as I do anything(radio,web) the noise disappears.
+> 
+> here is a  url where they are experiencing the same issue:
+> https://help.ubuntu.com/community/MacBook1-1/Hardy
+> (down under whining noise);
+> 
+> here is is the result of my bisect:
+> 
+> 2d4c8266774188cda7f7e612e6dfb8ad12c579d5 is the first bad commit
+> commit 2d4c8266774188cda7f7e612e6dfb8ad12c579d5
+> Author: Michael Kerrisk <mtk.manpages@googlemail.com>
+> Date:   Mon Sep 22 13:57:49 2008 -0700
+> 
+>     sys_paccept: disable paccept() until API design is resolved
 
-I have implemented a PCIe device using an Xilinx Virtex 5 device. I have an A/D controller sampling an RF signal based on the incoming signal level. These samples are transferred to the computer via the FPGA. I have implemented scatter-gather DMA using a DMA parameter (Page address and size) FIFO where a page table can be programmed where the incoming data would go. The device supports a programmable interrupt period where, once N number of pages are filled in the PC memory, an interrupt would be triggered and the new DMA parameters could be loaded in to the free memory in the FIFO. I can allocate a large enough number of pages in the kernel for the signal to be captured. I would like to create a pointer that the user mode programs can access using the pages that has got all the received signal. I want to have the user mode application progressing this data buffer while the next set of pages from my kernel page pool is getting filled. 
+Any particular reason you sent this to linux-wireless??
 
-I am wondering if anyone could suggest me the best way to address this situation. I have implemented the mmap(). However, as I understand it, the length of the memory block need to be known to call mmap().
-
-Thanks and regards,
-
-Sanka Piyaratna
-
-
-
-      __________________________________________________________________________________
-See what's on at the movies in your area. Find out now: http://au.movies.yahoo.com/session-times/
+-- 
+John W. Linville		Someday the world will need a hero, and you
+linville@tuxdriver.com			might be all we have.  Be ready.
