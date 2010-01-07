@@ -1,47 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753814Ab0AGTVh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753803Ab0AGTWR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753814Ab0AGTVh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 14:21:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753760Ab0AGTVf
+	id S1753803Ab0AGTWR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 14:22:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753377Ab0AGTWQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 14:21:35 -0500
-Received: from wavehammer.waldi.eu.org ([82.139.201.20]:39231 "EHLO
-	wavehammer.waldi.eu.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752025Ab0AGTVe (ORCPT
+	Thu, 7 Jan 2010 14:22:16 -0500
+Received: from mail-yw0-f176.google.com ([209.85.211.176]:63814 "EHLO
+	mail-yw0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753130Ab0AGTWP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 14:21:34 -0500
-Date: Thu, 7 Jan 2010 20:21:33 +0100
-From: Bastian Blank <waldi@debian.org>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Ping Cheng <pingc@wacom.com>
-Subject: Re: [PATCH 7/7] Input: wacom - Fail on missing features
-Message-ID: <20100107192133.GB15015@wavehammer.waldi.eu.org>
-Mail-Followup-To: Bastian Blank <waldi@debian.org>,
-	Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-	linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-	Ping Cheng <pingc@wacom.com>
-References: <20100107182553.GA11236@wavehammer.waldi.eu.org> <20100107183009.GA13036@wavehammer.waldi.eu.org> <201001071108.38253.dmitry.torokhov@gmail.com>
+	Thu, 7 Jan 2010 14:22:15 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=wbpKXrXHpniwsNkMAJSl/QT6nQSMYdiWyrFa8dR6A3iD0ZBxUK8kfunLhi24nK05NH
+         RsmdDPdcC/R4B7EY9xWLbOthKcti5PdF/TWd6S/2J++z7Ful9Bhw6G1vDADPZKGE60G+
+         QqW2YZo686vyXICmYc9FjlpaJ8+t6/JskZBfk=
+Message-ID: <4B463484.7060703@gmail.com>
+Date: Thu, 07 Jan 2010 11:22:44 -0800
+From: "Justin P. Mattock" <justinmattock@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091114 Lightning/1.0pre Thunderbird/3.0b4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <201001071108.38253.dmitry.torokhov@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Andi Kleen <andi@firstfloor.org>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [bisected] sys_paccept: disable paccept() causes my macbook	pro
+ to  have an annoying whining sound
+References: <dd18b0c31001062216m316163f4t992c000eca0f76d@mail.gmail.com> <873a2ixmwy.fsf@basil.nowhere.org> <4B460132.3010706@gmail.com> <20100107160246.GB16076@basil.fritz.box>
+In-Reply-To: <20100107160246.GB16076@basil.fritz.box>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 07, 2010 at 11:08:38AM -0800, Dmitry Torokhov wrote:
-> On Thursday 07 January 2010 10:30:09 am Bastian Blank wrote:
-> > +	if (!features)
-> > +		return -EIO;
-> -EINVAL is probably better.
+On 01/07/10 08:02, Andi Kleen wrote:
 
-Yes, that is what I was trying to find.
+o.k. so using the boot param
+with the latest kernel takes care
+of the noise.
 
-Bastian
+Now as a test I did
+git reset --hard origin 2d4c8266
+to where the bisect was pointing too.
+then once booting the noise was there.
+Then reverting that commit, caused the system
+to be noiseless..
 
--- 
-There's a way out of any cage.
-		-- Captain Christopher Pike, "The Menagerie" ("The Cage"),
-		   stardate unknown.
+My guess since this might be power related
+it could be anything(sys_paccept hit it just right)
+i.g. whatever sys_paccept does(when turned on)
+generates enough wakeups(if this is correct term),
+to keep the system from generating this noise at the certain
+C level or however/whatever it's doing.
+
+At this point I'm not sure what to really do.
+if using the boot param(max_cstate) is a safe option
+then I'll just use that and/or look at paccept/accept4 to see
+what really generates enough wakeups or keeps the processor
+at a level to keep the noise from generating.
+
+
+Justin P. Mattock
