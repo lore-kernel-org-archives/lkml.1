@@ -1,66 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753029Ab0AGPo5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753084Ab0AGPxD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753029Ab0AGPo5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 10:44:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752870Ab0AGPo4
+	id S1753084Ab0AGPxD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 10:53:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752859Ab0AGPxB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 10:44:56 -0500
-Received: from mail-yw0-f176.google.com ([209.85.211.176]:61695 "EHLO
-	mail-yw0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752315Ab0AGPoz (ORCPT
+	Thu, 7 Jan 2010 10:53:01 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:59622 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752079Ab0AGPxA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 10:44:55 -0500
+	Thu, 7 Jan 2010 10:53:00 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=d+H4ZGmy/HHmmPyYr16UlJVuYcSGPHSkauWGYt4WELL++biF3cUT99HVv8AW0O/bo/
-         cEbvqmgEnYz04j1hJ05El0XQhXp4ZkK7EHvydUoMAnWDDYMn5TZUjMy5BrUmaYwnPM4g
-         LpYOM1Qq2gRX1awX0HyFwcGhoTnuH0+MRFv8o=
-Message-ID: <4B460188.1050504@gmail.com>
-Date: Thu, 07 Jan 2010 07:45:12 -0800
-From: "Justin P. Mattock" <justinmattock@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.4pre) Gecko/20091114 Lightning/1.0pre Thunderbird/3.0b4
+        h=message-id:date:from:user-agent:mime-version:to:subject
+         :content-type:content-transfer-encoding;
+        b=RZiCsAVaRGht7AZUHB/5WIRc3QqTHAm0s10Fyi1IIjLrJCFnKVK/rI8nruzuC6Ffn7
+         6uVibhFkD2O2+SQr6YNzSXqRiNEXNKp5Dk6+mV6nvXKoqtbZBWERryHD7YfJreuE1Hv4
+         HxZBfCej2HGejD3uJbgyQ+JjzP1PBropx0KJM=
+Message-ID: <4B460441.6090602@gmail.com>
+Date: Thu, 07 Jan 2010 16:56:49 +0100
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
 MIME-Version: 1.0
-To: "John W. Linville" <linville@tuxdriver.com>
-CC: linux-wireless@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [bisected] sys_paccept: disable paccept() causes my macbook	pro
- to have an annoying whining sound
-References: <dd18b0c31001062216m316163f4t992c000eca0f76d@mail.gmail.com> <20100107125433.GB13603@tuxdriver.com>
-In-Reply-To: <20100107125433.GB13603@tuxdriver.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Avi Kivity <avi@redhat.com>, Marcelo Tosatti <mtosatti@redhat.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] kvm: don't treat NULL parent_pte as multimapped in mmu_parent_walk()
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/07/10 04:54, John W. Linville wrote:
-> On Wed, Jan 06, 2010 at 10:16:27PM -0800, Justin Mattock wrote:
->> for a while I've been hearing this odd
->> annoying sound coming from my macbook pro
->> when the system is idle(no internet use tv/radio/web etc...)
->> as soon as I do anything(radio,web) the noise disappears.
->>
->> here is a  url where they are experiencing the same issue:
->> https://help.ubuntu.com/community/MacBook1-1/Hardy
->> (down under whining noise);
->>
->> here is is the result of my bisect:
->>
->> 2d4c8266774188cda7f7e612e6dfb8ad12c579d5 is the first bad commit
->> commit 2d4c8266774188cda7f7e612e6dfb8ad12c579d5
->> Author: Michael Kerrisk<mtk.manpages@googlemail.com>
->> Date:   Mon Sep 22 13:57:49 2008 -0700
->>
->>      sys_paccept: disable paccept() until API design is resolved
->
-> Any particular reason you sent this to linux-wireless??
->
+If a kvm_mmu_page is not multimapped but parent_pte is NULL
+don't treat it as multimapped and dereference it.
 
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+This wasn't tested and maybe I misunderstood so please review.
 
-because the bisect had resulted in
-something with wireless, so I figured
-it was the next best thing todo.
+diff --git a/arch/x86/kvm/mmu.c b/arch/x86/kvm/mmu.c
+index 4c3e5b2..eb17287 100644
+--- a/arch/x86/kvm/mmu.c
++++ b/arch/x86/kvm/mmu.c
+@@ -1031,10 +1031,12 @@ static void mmu_parent_walk(struct kvm_vcpu *vcpu, struct kvm_mmu_page *sp,
+ 	struct kvm_mmu_page *parent_sp;
+ 	int i;
+ 
+-	if (!sp->multimapped && sp->parent_pte) {
+-		parent_sp = page_header(__pa(sp->parent_pte));
+-		fn(vcpu, parent_sp);
+-		mmu_parent_walk(vcpu, parent_sp, fn);
++	if (!sp->multimapped) {
++		if (sp->parent_pte) {
++			parent_sp = page_header(__pa(sp->parent_pte));
++			fn(vcpu, parent_sp);
++			mmu_parent_walk(vcpu, parent_sp, fn);
++		}
+ 		return;
+ 	}
+ 	hlist_for_each_entry(pte_chain, node, &sp->parent_ptes, link)
 
-Justin P. Mattock
