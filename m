@@ -1,170 +1,161 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755391Ab0AGGfG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755687Ab0AGGgK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755391Ab0AGGfG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 01:35:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752542Ab0AGGfD
+	id S1755687Ab0AGGgK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 01:36:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753509Ab0AGGgI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 01:35:03 -0500
-Received: from hera.kernel.org ([140.211.167.34]:51220 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750876Ab0AGGfC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 01:35:02 -0500
-Message-ID: <4B45803D.106@kernel.org>
-Date: Wed, 06 Jan 2010 22:33:33 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
+	Thu, 7 Jan 2010 01:36:08 -0500
+Received: from relay1-v.mail.gandi.net ([217.70.178.75]:39347 "EHLO
+	relay1-v.mail.gandi.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752542Ab0AGGgH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jan 2010 01:36:07 -0500
+Date: Wed, 6 Jan 2010 22:35:59 -0800
+From: Josh Triplett <josh@joshtriplett.org>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org,
+       tglx@linutronix.de, peterz@infradead.org, Valdis.Kletnieks@vt.edu,
+       dhowells@redhat.com, laijs@cn.fujitsu.com, dipankar@in.ibm.com
+Subject: Re: [RFC PATCH] introduce sys_membarrier(): process-wide memory
+ barrier
+Message-ID: <20100107063558.GC12939@feather>
+References: <20100107044007.GA22863@Krystal>
+ <1262842854.28171.3710.camel@gandalf.stny.rr.com>
+ <20100107061955.GC25786@Krystal>
 MIME-Version: 1.0
-To: Torsten Kaiser <just.for.lkml@googlemail.com>
-CC: Robert Hancock <hancockrwd@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Vivek Mahajan <vivek.mahajan@freescale.com>,
-       Jeff Garzik <jgarzik@pobox.com>, linux-ide@vger.kernel.org,
-       Peer Chen <pchen@nvidia.com>
-Subject: Re: New MSI support in sata_sil24 still broken in 2.6.33-rc3
-References: <64bb37e1001060137h597322e8s4305b7cc1c91527e@mail.gmail.com>	 <4B4531F9.3060108@gmail.com>	 <64bb37e1001061827i64ead7f9m3dbe1b7b707c79eb@mail.gmail.com>	 <4B454F8B.5040900@gmail.com> <64bb37e1001061928k746d090cpe48d2ea7bbd3f774@mail.gmail.com>
-In-Reply-To: <64bb37e1001061928k746d090cpe48d2ea7bbd3f774@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100107061955.GC25786@Krystal>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/06/2010 07:28 PM, Torsten Kaiser wrote:
-> On Thu, Jan 7, 2010 at 4:05 AM, Robert Hancock <hancockrwd@gmail.com> wrote:
->> Hmm, well presumably the problem isn't related to that then. I was looking
->> at your lspci output though:
->>
->> 00:05.0 IDE interface: nVidia Corporation MCP55 SATA Controller (rev a3)
->> (prog-if 85 [Master SecO PriO])
->>        Subsystem: ASUSTeK Computer Inc. Device 81f0
->>        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
->> Stepping- SERR- FastB2B- DisINTx+
->>        Status: Cap+ 66MHz+ UDF- FastB2B+ ParErr- DEVSEL=fast >TAbort-
->> <TAbort- <MAbort- >SERR- <PERR- INTx-
->>        Latency: 0 (750ns min, 250ns max)
->>        Interrupt: pin A routed to IRQ 30
->>        Region 0: I/O ports at cc00 [size=8]
->>        Region 1: I/O ports at c880 [size=4]
->>        Region 2: I/O ports at c800 [size=8]
->>        Region 3: I/O ports at c480 [size=4]
->>        Region 4: I/O ports at c400 [size=16]
->>        Region 5: Memory at efafb000 (32-bit, non-prefetchable) [size=4K]
->>        Capabilities: [44] Power Management version 2
->>                Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA
->> PME(D0-,D1-,D2-,D3hot-,D3cold-)
->>                Status: D0 NoSoftRst- PME-Enable- DSel=0 DScale=0 PME-
->>        Capabilities: [b0] MSI: Enable+ Count=1/4 Maskable- 64bit+
->>                Address: 00000000fee0f00c  Data: 4189
->>        Capabilities: [cc] HyperTransport: MSI Mapping Enable- Fixed+
->>
->> The HT MSI Mapping capability is not enabled on the device. I'm thinking it
->> should be, but I'm not sure. And it's also not enabled on the bus which has
->> the Silicon Image controller:
->>
->> 04:00.0 Mass storage controller: Silicon Image, Inc. SiI 3132 Serial ATA
->> Raid II Controller (rev 01)
->>
->> on its subordinate bus:
->>
->> 00:0b.0 PCI bridge: nVidia Corporation MCP55 PCI Express bridge (rev a3)
->> (prog-if 00 [Normal decode])
->>        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
->> Stepping- SERR- FastB2B- DisINTx+
->>        Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort-
->> <TAbort- <MAbort- >SERR- <PERR- INTx-
->>        Latency: 0, Cache Line Size: 64 bytes
->>        Bus: primary=00, secondary=04, subordinate=04, sec-latency=0
->>        I/O behind bridge: 0000e000-0000efff
->>        Memory behind bridge: efe00000-efefffff
->>        Secondary status: 66MHz- FastB2B- ParErr- DEVSEL=fast >TAbort-
->> <TAbort- <MAbort- <SERR- <PERR-
->>        BridgeCtl: Parity- SERR+ NoISA- VGA- MAbort- >Reset- FastB2B-
->>                PriDiscTmr- SecDiscTmr- DiscTmrStat- DiscTmrSERREn-
->>        Capabilities: [40] Subsystem: nVidia Corporation Device 0000
->>        Capabilities: [48] Power Management version 2
->>                Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA
->> PME(D0+,D1+,D2+,D3hot+,D3cold+)
->>                Status: D0 NoSoftRst- PME-Enable- DSel=0 DScale=0 PME-
->>        Capabilities: [50] MSI: Enable+ Count=1/2 Maskable- 64bit+
->>                Address: 00000000fee0f00c  Data: 4149
->>        Capabilities: [60] HyperTransport: MSI Mapping Enable- Fixed-
->>                Mapping Address Base: 00000000fee00000
->>
->> CCing some people that might have some idea about this..
+On Thu, Jan 07, 2010 at 01:19:55AM -0500, Mathieu Desnoyers wrote:
+> * Steven Rostedt (rostedt@goodmis.org) wrote:
+> > On Wed, 2010-01-06 at 23:40 -0500, Mathieu Desnoyers wrote:
+> > > Here is an implementation of a new system call, sys_membarrier(), which
+> > > executes a memory barrier on all threads of the current process.
+> > > 
+> > > It aims at greatly simplifying and enhancing the current signal-based
+> > > liburcu userspace RCU synchronize_rcu() implementation.
+> > > (found at http://lttng.org/urcu)
+> > > 
+> > 
+> > Nice.
+> > 
+> > > Both the signal-based and the sys_membarrier userspace RCU schemes
+> > > permit us to remove the memory barrier from the userspace RCU
+> > > rcu_read_lock() and rcu_read_unlock() primitives, thus significantly
+> > > accelerating them. These memory barriers are replaced by compiler
+> > > barriers on the read-side, and all matching memory barriers on the
+> > > write-side are turned into an invokation of a memory barrier on all
+> > > active threads in the process. By letting the kernel perform this
+> > > synchronization rather than dumbly sending a signal to every process
+> > > threads (as we currently do), we diminish the number of unnecessary wake
+> > > ups and only issue the memory barriers on active threads. Non-running
+> > > threads do not need to execute such barrier anyway, because these are
+> > > implied by the scheduler context switches.
+> > > 
+> > > To explain the benefit of this scheme, let's introduce two example threads:
+> > > 
+> > > Thread A (non-frequent, e.g. executing liburcu synchronize_rcu())
+> > > Thread B (frequent, e.g. executing liburcu rcu_read_lock()/rcu_read_unlock())
+> > > 
+> > > In a scheme where all smp_mb() in thread A synchronize_rcu() are
+> > > ordering memory accesses with respect to smp_mb() present in
+> > > rcu_read_lock/unlock(), we can change all smp_mb() from
+> > > synchronize_rcu() into calls to sys_membarrier() and all smp_mb() from
+> > > rcu_read_lock/unlock() into compiler barriers "barrier()".
+> > > 
+> > > Before the change, we had, for each smp_mb() pairs:
+> > > 
+> > > Thread A                    Thread B
+> > > prev mem accesses           prev mem accesses
+> > > smp_mb()                    smp_mb()
+> > > follow mem accesses         follow mem accesses
+> > > 
+> > > After the change, these pairs become:
+> > > 
+> > > Thread A                    Thread B
+> > > prev mem accesses           prev mem accesses
+> > > sys_membarrier()            barrier()
+> > > follow mem accesses         follow mem accesses
+> > > 
+> > > As we can see, there are two possible scenarios: either Thread B memory
+> > > accesses do not happen concurrently with Thread A accesses (1), or they
+> > > do (2).
+> > > 
+> > > 1) Non-concurrent Thread A vs Thread B accesses:
+> > > 
+> > > Thread A                    Thread B
+> > > prev mem accesses
+> > > sys_membarrier()
+> > > follow mem accesses
+> > >                             prev mem accesses
+> > >                             barrier()
+> > >                             follow mem accesses
+> > > 
+> > > In this case, thread B accesses will be weakly ordered. This is OK,
+> > > because at that point, thread A is not particularly interested in
+> > > ordering them with respect to its own accesses.
+> > > 
+> > > 2) Concurrent Thread A vs Thread B accesses
+> > > 
+> > > Thread A                    Thread B
+> > > prev mem accesses           prev mem accesses
+> > > sys_membarrier()            barrier()
+> > > follow mem accesses         follow mem accesses
+> > > 
+> > > In this case, thread B accesses, which are ensured to be in program
+> > > order thanks to the compiler barrier, will be "upgraded" to full
+> > > smp_mb() thanks to the IPIs executing memory barriers on each active
+> > > system threads. Each non-running process threads are intrinsically
+> > > serialized by the scheduler.
+> > > 
+> > > The current implementation simply executes a memory barrier in an IPI
+> > > handler on each active cpu. Going through the hassle of taking run queue
+> > > locks and checking if the thread running on each online CPU belongs to
+> > > the current thread seems more heavyweight than the cost of the IPI
+> > > itself (not measured though).
+> > > 
+> > 
+> > 
+> > I don't think you need to grab any locks. Doing an rcu_read_lock()
+> > should prevent tasks from disappearing (since destruction of tasks use
+> > RCU). You may still need to grab the tasklist_lock under read_lock().
+> > 
+> > So what you could do, is find each task that is a thread of the calling
+> > task, and then just check task_rq(task)->curr != task. Just send the
+> > IPI's to those tasks that pass the test.
 > 
-> part of the PCI tree:
->            +-0b.0-[04]----00.0  Silicon Image, Inc. SiI 3132 Serial
-> ATA Raid II Controller
->            +-0c.0-[03]----00.0  Broadcom Corporation NetXtreme BCM5754
-> Gigabit Ethernet PCI Express
->            +-0d.0-[02]----00.0  Broadcom Corporation NetXtreme BCM5754
-> Gigabit Ethernet PCI Express
->            +-0f.0-[01]--+-00.0  ATI Technologies Inc RV370 5B60
-> [Radeon X300 (PCIE)]
->            |            \-00.1  ATI Technologies Inc RV370 [Radeon X300SE]
+> I guess you mean
 > 
-> The three devices attached to 0c.0, 0d.0 and 0f.0 work correctly with MSI.
-> But each of these PCI Express bridges also has this Mapping disabled:
->         Capabilities: [60] HyperTransport: MSI Mapping Enable- Fixed-
->                 Mapping Address Base: 00000000fee00000
+> "then just check task_rq(task)->curr == task" ... ?
+> 
+> > 
+> > If the task->rq changes, or the task->rq->curr changes, and makes the
+> > condition fail (or even pass), the events that cause those changes are
+> > probably good enough than needing to call smp_mb();
+> 
+> I see your point.
+> 
+> This would probably be good for machines with very large number of cpus
+> and without IPI broadcast support, running processes with only few
+> threads.
 
-so that could be Sil silicon problem or driver problem.
+Or with expensive IPIs and/or expensive user-kernel switches.
 
-> 
-> This capability seems only to be enabled at the root:
-> 00:00.0 RAM memory: nVidia Corporation MCP55 Memory Controller (rev a2)
->         Subsystem: ASUSTeK Computer Inc. Device 81f0
->         Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop-
-> ParErr- Stepping- S
->         Status: Cap+ 66MHz+ UDF- FastB2B+ ParErr- DEVSEL=fast >TAbort-
-> <TAbort- <MAbort
->         Latency: 0
->         Capabilities: [44] HyperTransport: Slave or Primary Interface
->                 Command: BaseUnitID=0 UnitCnt=15 MastHost- DefDir- DUL-
->                 Link Control 0: CFlE+ CST- CFE- <LkFail- Init+ EOC-
-> TXO- <CRCErr=0 Isoc
->                 Link Config 0: MLWI=16bit DwFcIn- MLWO=16bit DwFcOut-
-> LWI=16bit DwFcInE
->                 Link Control 1: CFlE- CST- CFE- <LkFail+ Init- EOC+
-> TXO+ <CRCErr=0 Isoc
->                 Link Config 1: MLWI=8bit DwFcIn- MLWO=8bit DwFcOut-
-> LWI=8bit DwFcInEn-
->                 Revision ID: 1.03
->                 Link Frequency 0: 1.0GHz
->                 Link Error 0: <Prot- <Ovfl- <EOC- CTLTm-
->                 Link Frequency Capability 0: 200MHz+ 300MHz+ 400MHz+
-> 500MHz+ 600MHz+ 80
->                 Feature Capability: IsocFC+ LDTSTOP+ CRCTM- ECTLT- 64bA- UIDRD-
->                 Link Frequency 1: 200MHz
->                 Link Error 1: <Prot- <Ovfl- <EOC- CTLTm-
->                 Link Frequency Capability 1: 200MHz- 300MHz- 400MHz-
-> 500MHz- 600MHz- 80
->                 Error Handling: PFlE+ OFlE+ PFE- OFE- EOCFE- RFE-
-> CRCFE- SERRFE- CF- RE
->                 Prefetchable memory behind bridge Upper: 00-00
->                 Bus Number: 00
->         Capabilities: [dc] HyperTransport: MSI Mapping Enable+ Fixed-
->                 Mapping Address Base: 00000000fee00000
-> 
->>From my dmesg:
-> [    1.636318] pci 0000:00:00.0: Found enabled HT MSI Mapping
-> [    1.641854] pci 0000:00:00.0: Found enabled HT MSI Mapping
-> [    1.647420] pci 0000:00:00.0: Found enabled HT MSI Mapping
-> [    1.652946] pci 0000:00:00.0: Found enabled HT MSI Mapping
-> [    1.658505] pci 0000:00:00.0: Found enabled HT MSI Mapping
-> [    1.664055] pci 0000:00:00.0: Found enabled HT MSI Mapping
-> [    1.669597] pci 0000:00:00.0: Found enabled HT MSI Mapping
-> [    1.675172] pci 0000:00:00.0: Found enabled HT MSI Mapping
-> [    1.680715] pci 0000:00:00.0: Found enabled HT MSI Mapping
-> 
-> I found this output very strange, as it always referred to the same
-> pci device, but looking at the code, that might only be a visual nit.
-> 
-> The output is from msi_ht_cap_enabled() in drivers/pci/quirks.c. This
-> will be called via nv_ht_enable_msi_mapping(), but always to check the
-> 'host_bridge', not the devices that __nv_msi_ht_cap_quirk() loops
-> over.
+> I really start to think that we should have some way to compare
+> the number of threads belonging to a process and choose between the
+> broadcast IPI and the per-cpu IPI depending if we are over or under an
+> arbitrary threshold.
 
-if the host_brige get that ht_msi mapping enabled, then don't need to enable that on bridge under that.
+The number of threads doesn't matter nearly as much as the number of
+threads typically running at a time compared to the number of
+processors.  Of course, we can't measure that as easily, but I don't
+know that your proposed heuristic would approximate it well.
 
-YH
+- Josh Triplett
