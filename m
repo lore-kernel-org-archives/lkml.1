@@ -1,41 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753136Ab0AGUd6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753149Ab0AGUfU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753136Ab0AGUd6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 15:33:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752823Ab0AGUd4
+	id S1753149Ab0AGUfU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 15:35:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752964Ab0AGUfS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 15:33:56 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:49422 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752625Ab0AGUdy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 15:33:54 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=bqUofU6XyJsLAjXCtl/mD27dwZABsdYlRfS6TwB/bdfh2kGMxozDg78C6ga1C8xivd
-         yYg0wA8HR68M/IkjuS4v+NSV+sqMIv+mR5i9LjhO2Schm5LR0bqGsDp4oEPpbnt3CBwY
-         h6tQwl97JaOZnTW9ijP/r4cj8JJSRU1wyxeP0=
-Message-ID: <4B46453E.1060206@googlemail.com>
-Date: Thu, 07 Jan 2010 21:34:06 +0100
-From: =?ISO-8859-1?Q?Ren=E9_Bolldorf?= <xsecute@googlemail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.5) Gecko/20091204 Thunderbird/3.0
+	Thu, 7 Jan 2010 15:35:18 -0500
+Received: from mail.gmx.net ([213.165.64.20]:47220 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752875Ab0AGUfR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jan 2010 15:35:17 -0500
+X-Authenticated: #12255092
+X-Provags-ID: V01U2FsdGVkX1+2l7FGfoG262Yy6R5nF9bOuYwMqhUGSS4cJN9eLD
+	3sDmH83KlCocRy
+From: Peter Huewe <PeterHuewe@gmx.de>
+To: "Greg Kroah-Hartman" <gregkh@suse.de>
+Subject: [PATCH 2/3] staging/rtl8192u: Add select WEXT_PRIV to Kconfig to prevent build failure
+Date: Thu, 7 Jan 2010 21:35:08 +0100
+User-Agent: KMail/1.12.3 (Linux/2.6.27-05415-g69a8594; KDE/4.3.3; x86_64; ; )
+Cc: devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org,
+       Mauro Carvalho Chehab <mchehab@redhat.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>
+References: <201001072133.20487.PeterHuewe@gmx.de>
+In-Reply-To: <201001072133.20487.PeterHuewe@gmx.de>
 MIME-Version: 1.0
-To: Jeff Garzik <jgarzik@pobox.com>
-CC: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-scsi <linux-scsi@vger.kernel.org>
-Subject: Re: [PATCH]drivers/ata/libata-eh.c:1509 unneeded memset()
-References: <4B3BDB66.6000008@googlemail.com> <4B4632BF.4070806@pobox.com>
-In-Reply-To: <4B4632BF.4070806@pobox.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <201001072135.08745.PeterHuewe@gmx.de>
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.53
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/07/10 20:15, Jeff Garzik wrote:
-> I need a little bit more detail than an unqualified statement...  Did
-> you audit all paths leading to this code point?
+From: Peter Huewe <peterhuewe@gmx.de>
+Date: Thu, 7 Jan 2010 21:19:11 +0100
 
-Yes, and my two systems running fine with the patch, no oops or panic's.
+Without WEXT_PRIV set the driver fails to build due to unknown fields in
+the iw_handler_def struct.
+Those fields are enclosed in WEXT_PRIV conditionals in the prototype
+of iw_handler_def in include/net/iw_handler.h
+
+
+Signed-off-by: Peter Huewe <peterhuewe@gmx.de>
+---
+Patch against Linux-next of Do 7. Jan 19:59:41 CET 2010
+
+ drivers/staging/rtl8192u/Kconfig |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/staging/rtl8192u/Kconfig b/drivers/staging/rtl8192u/Kconfig
+index 9913ab8..8e5eb92 100644
+--- a/drivers/staging/rtl8192u/Kconfig
++++ b/drivers/staging/rtl8192u/Kconfig
+@@ -2,5 +2,6 @@ config RTL8192U
+ 	tristate "RealTek RTL8192U Wireless LAN NIC driver"
+ 	depends on PCI && WLAN && USB
+ 	depends on WIRELESS_EXT
++    select WEXT_PRIV
+ 	default N
+ 	---help---
+-- 
+1.6.4.4
+
+
