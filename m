@@ -1,60 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754158Ab0AGVom@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754147Ab0AGVpW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754158Ab0AGVom (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 16:44:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754131Ab0AGVok
+	id S1754147Ab0AGVpW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 16:45:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754131Ab0AGVpV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 16:44:40 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:52521 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754127Ab0AGVoi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 16:44:38 -0500
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 7 Jan 2010 16:45:21 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:49969 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753673Ab0AGVpT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jan 2010 16:45:19 -0500
+Subject: Re: [RFC][PATCH 6/8] mm: handle_speculative_fault()
+From: Peter Zijlstra <peterz@infradead.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Christoph Lameter <cl@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "minchan.kim@gmail.com" <minchan.kim@gmail.com>,
+       "hugh.dickins" <hugh.dickins@tiscali.co.uk>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <alpine.LFD.2.00.1001071031440.7821@localhost.localdomain>
+References: <20100104182429.833180340@chello.nl>
+	 <20100104182813.753545361@chello.nl>
+	 <20100105054536.44bf8002@infradead.org>
+	 <alpine.DEB.2.00.1001050916300.1074@router.home>
+	 <20100105192243.1d6b2213@infradead.org>
+	 <alpine.DEB.2.00.1001071007210.901@router.home>
+	 <alpine.LFD.2.00.1001070814080.7821@localhost.localdomain>
+	 <1262884960.4049.106.camel@laptop>
+	 <alpine.LFD.2.00.1001070934060.7821@localhost.localdomain>
+	 <alpine.LFD.2.00.1001070937180.7821@localhost.localdomain>
+	 <alpine.LFD.2.00.1001071031440.7821@localhost.localdomain>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 07 Jan 2010 22:44:43 +0100
+Message-ID: <1262900683.4049.139.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Oleg Nesterov <oleg@redhat.com>
-X-Fcc: ~/Mail/linus
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>, caiqian@redhat.com,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Jan Kratochvil <jkratoch@redhat.com>, linux-kernel@vger.kernel.org,
-       linux-s390@vger.kernel.org, utrace-devel@redhat.com
-Subject: Re: s390 && user_enable_single_step() (Was: odd utrace testing
-	results on s390x)
-In-Reply-To: Oleg Nesterov's message of  Thursday, 7 January 2010 19:16:32 +0100 <20100107181632.GC13300@redhat.com>
-References: <1503844142.2061111261478093776.JavaMail.root@zmail06.collab.prod.int.phx2.redhat.com>
-	<1257887498.2061171261478252049.JavaMail.root@zmail06.collab.prod.int.phx2.redhat.com>
-	<20100104155225.GA16650@redhat.com>
-	<20100104171626.22ea2d9c@mschwide.boeblingen.de.ibm.com>
-	<20100104181412.GA21146@redhat.com>
-	<20100104211147.4CC94D532@magilla.sf.frob.com>
-	<20100105105030.66bb8a0a@mschwide.boeblingen.de.ibm.com>
-	<20100105153633.GA9376@redhat.com>
-	<20100106210812.E03A1134D@magilla.sf.frob.com>
-	<20100107101619.0877cf67@mschwide.boeblingen.de.ibm.com>
-	<20100107181632.GC13300@redhat.com>
-X-Antipastobozoticataclysm: When George Bush projectile vomits antipasto on the Japanese.
-Message-Id: <20100107214429.6388A7300@magilla.sf.frob.com>
-Date: Thu,  7 Jan 2010 13:44:29 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Can't understand why do we need TIF_SINGLE_STEP at all.
+On Thu, 2010-01-07 at 10:44 -0800, Linus Torvalds wrote:
+> 
+> On Thu, 7 Jan 2010, Linus Torvalds wrote:
+> > 
+> > For example: there's no real reason why we take mmap_sem for writing when 
+> > extending an existing vma. And while 'brk()' is a very oldfashioned way of 
+> > doing memory management, it's still quite common. So rather than looking 
+> > at subtle lockless algorithms, why not look at doing the common cases of 
+> > an extending brk? Make that one take the mmap_sem for _reading_, and then 
+> > do the extending of the brk area with a simple cmpxchg or something?
+> 
+> I didn't use cmpxchg, because we actually want to update both 
+> 'current->brk' _and_ the vma->vm_end atomically, so here's a totally 
+> untested patch that uses the page_table_lock spinlock for it instead (it 
+> could be a new spinlock, not worth it).
+> 
+> It's also totally untested and might be horribly broken. But you get the 
+> idea.
+> 
+> We could probably do things like this in regular mmap() too for the 
+> "extend a mmap" case. brk() is just especially simple.
 
-I think you mean "why we need to set it in do_signal" here,
-not "why do we need it to exist at all".
+I haven't yet looked at the patch, but isn't expand_stack() kinda like
+what you want? That serializes using anon_vma_lock().
 
-> Just pass current->thread.per_info.single_step to
-> tracehook_signal_handler() ?
-
-Yes.  I believe this is what Martin meant, and it's what I meant to endorse.
-
-do_signal should not do anything with TIF_SINGLE_STEP at all.
-Its only purpose should be to communicate from the low-level
-trap assembly code up to the return-to-user assembly code so
-it calls do_single_step.
-
-
-Thanks,
-Roland
