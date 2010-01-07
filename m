@@ -1,79 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756736Ab0AGDl3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756743Ab0AGDqS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756736Ab0AGDl3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 22:41:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756727Ab0AGDl2
+	id S1756743Ab0AGDqS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 22:46:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756730Ab0AGDqR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 22:41:28 -0500
-Received: from moutng.kundenserver.de ([212.227.17.9]:60364 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756588Ab0AGDl1 (ORCPT
+	Wed, 6 Jan 2010 22:46:17 -0500
+Received: from nwd2mail10.analog.com ([137.71.25.55]:56626 "EHLO
+	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752316Ab0AGDqQ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 22:41:27 -0500
-Date: Wed, 6 Jan 2010 19:41:05 -0800 (PST)
-From: Christian Kujau <lists@nerdbynature.de>
-To: Jean Delvare <khali@linux-fr.org>
-cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, linuxppc-dev@ozlabs.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: i2c_powermac: Kernel access of bad area
-In-Reply-To: <20100106173745.57207520@hyperion.delvare>
-Message-ID: <alpine.DEB.2.01.1001061913310.3483@bogon.housecafe.de>
-References: <alpine.DEB.2.01.0912281934170.3483@bogon.housecafe.de> <1262079255.2173.216.camel@pasglop> <20100106173745.57207520@hyperion.delvare>
-User-Agent: Alpine 2.01 (DEB 1266 2009-07-14)
+	Wed, 6 Jan 2010 22:46:16 -0500
+From: "Zhang, Sonic" <Sonic.Zhang@analog.com>
+X-IronPort-AV: E=Sophos;i="4.49,233,1262581200"; 
+   d="scan'208";a="9819776"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-Class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Provags-ID: V01U2FsdGVkX18gSoKCdP69sazYaBCMzBMEdELSXDfOcu+TyXi
- dk7Wu6hK5i6o+FRvrzlmTU1jiJk1krDEyiwWEoMFtN+dxD5msA
- kBqsgAFMOpl5kA8kAZWKg==
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [Kgdb-bugreport] [PATCH 09/37] kgdb,blackfin: Add in kgdb_arch_set_pc for blackfin
+Date: Thu, 7 Jan 2010 11:50:38 +0800
+Message-ID: <0F1B54C89D5F954D8535DB252AF412FA055F00DD@chinexm1.ad.analog.com>
+In-Reply-To: <4B44E7E3.10305@windriver.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [Kgdb-bugreport] [PATCH 09/37] kgdb,blackfin: Add in kgdb_arch_set_pc for blackfin
+Thread-Index: AcqPCIndtvYuiWXRRrqSTCJByUo00AAPjdvw
+References: <1261603190-5036-1-git-send-email-jason.wessel@windriver.com><1261603190-5036-4-git-send-email-jason.wessel@windriver.com><1261603190-5036-5-git-send-email-jason.wessel@windriver.com><1261603190-5036-6-git-send-email-jason.wessel@windriver.com><1261603190-5036-7-git-send-email-jason.wessel@windriver.com><1261603190-5036-8-git-send-email-jason.wessel@windriver.com><1261603190-5036-9-git-send-email-jason.wessel@windriver.com><1261603190-5036-10-git-send-email-jason.wessel@windriver.com><8bd0f97a0912261312x4b7c7df6s14ac0137b702044e@mail.gmail.com><0F1B54C89D5F954D8535DB252AF412FA0553E3A0@chinexm1.ad.analog.com> <4e5ebad50912301845p35b1ea98l2f91c2a209ee863a@mail.gmail.com> <4B44E7E3.10305@windriver.com>
+To: "Jason Wessel" <jason.wessel@windriver.com>,
+       "Sonic Zhang" <sonic.adi@gmail.com>
+CC: "Mike Frysinger" <vapier.adi@gmail.com>,
+       <kgdb-bugreport@lists.sourceforge.net>, <linux-kernel@vger.kernel.org>,
+       <mingo@elte.hu>
+X-OriginalArrivalTime: 07 Jan 2010 03:46:01.0731 (UTC) FILETIME=[EE546D30:01CA8F4B]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jean,
+Jason,
 
-On Wed, 6 Jan 2010 at 17:37, Jean Delvare wrote:
-> I think that sysfs files creation should be moved to the end of
-> probe_thermostat() and sysfs files removal should be moved to the
-> beginning of remove_thermostat(). Something like the totally untested
-> patch below (no ppc machine at hand):
+I tried your latest update of this patch, it works well. So I am OK with
+it.
 
-I applied your patch to 2.6.33-rc3, and was able to unload i2c-powermac and 
-then reading the files left in /sys/devices/temperatures. I even tried to 
-read the non-existant files (e.g. sensor1_fan_speed, etc...), but the 
-kernel just wouldn't oops :)
+And I will try your generic CPU switch code on blackfin.
 
-So the initial oops is gone - yeah!
 
-However, the "Badness" remains when I try to modprobe i2c-powermac again:
+Sonic
 
-[  442.148222] PowerMac i2c bus pmu 2 registered
-[  442.148792] PowerMac i2c bus pmu 1 registered
-[  442.149299] PowerMac i2c bus mac-io 0 registered
-[  442.163573] adt746x: ADT7467 initializing
-[  442.170072] adt746x: Lowering max temperatures from 73, 80, 109 to 67, 47, 67
-[  442.176559] PowerMac i2c bus uni-n 1 registered
-[  442.227115] sysfs: cannot create duplicate filename '/devices/ams'
-[  442.227697] ------------[ cut here ]------------
-[  442.228176] Badness at fs/sysfs/dir.c:487
-[  442.228642] NIP: c00eb71c LR: c00eb71c CTR: 00000000
-[  442.229117] REGS: eea0fa50 TRAP: 0700   Not tainted  (2.6.33-rc3)
-[  442.229592] MSR: 00029032 <EE,ME,CE,IR,DR>  CR: 42008444  XER: 00000000
-[  442.230151] TASK = eea10000[2821] 'modprobe' THREAD: eea0e000
-[  442.230191] GPR00: c00eb71c eea0fb00 eea10000 0000004c 000064c6 ffffffff ffffffff 00000000 
-[  442.230758] GPR08: efa71740 c03e0000 00000000 000064c6 44008428 10020390 100e0000 100df49c 
-[  442.231326] GPR16: 100b54c0 100df49c 100ddd20 1018fb08 100b5340 c03e674c c03e6720 c03ea044 
-[  442.231902] GPR24: 00000000 24008422 ffffffea eea0fb58 ef0e9000 ef0e9000 ef0a9ea0 ffffffef 
-[  442.233187] NIP [c00eb71c] sysfs_add_one+0x94/0xc0
-[  442.233695] LR [c00eb71c] sysfs_add_one+0x94/0xc0
-[  442.234363] Call Trace:
 
-I've put the whole dmesg on:
+-----Original Message-----
+From: Jason Wessel [mailto:jason.wessel@windriver.com] 
+Sent: Thursday, January 07, 2010 3:44 AM
+To: Sonic Zhang
+Cc: Zhang, Sonic; Mike Frysinger; kgdb-bugreport@lists.sourceforge.net;
+linux-kernel@vger.kernel.org; mingo@elte.hu
+Subject: Re: [Kgdb-bugreport] [PATCH 09/37] kgdb,blackfin: Add in
+kgdb_arch_set_pc for blackfin
 
-   http://nerdbynature.de/bits/2.6.33-rc2/i2c_powermac/r1/
+Sonic Zhang wrote:
+> I have to recall my last wrong patch.
+>
+> In blackfin, kgdb is running in delayed exception IRQ5 other than in 
+> exception IRQ3 directly.  Register reti other than retx in pt_regs is 
+> the kgdb return address. So, don't put PC in gdb_regs into retx.
+>
+> Sonic Zhang
+>
+> Index: arch/blackfin/kernel/kgdb.c
+> ============================
+> --- arch/blackfin/kernel/kgdb.c	(revision 8105)
+> +++ arch/blackfin/kernel/kgdb.c	(revision 8106)
+> @@ -147,7 +147,7 @@
+>  	regs->lb1 = gdb_regs[BFIN_LB1];
+>  	regs->usp = gdb_regs[BFIN_USP];
+>  	regs->syscfg = gdb_regs[BFIN_SYSCFG];
+> -	regs->retx = gdb_regs[BFIN_PC];
+> +	regs->retx = gdb_regs[BFIN_RETX];
+>  	regs->retn = gdb_regs[BFIN_RETN];
+>  	regs->rete = gdb_regs[BFIN_RETE];
+>  	regs->pc = gdb_regs[BFIN_PC];
+>
+>   
 
-Thanks for your time,
-Christian.
--- 
-BOFH excuse #168:
+Sonic,
 
-le0: no carrier: transceiver cable problem?
+I pulled in this patch, and made the changes the Mike talked about with
+respect to cleaning up the arch specific kgdb.c for blackfin.  See the
+attached patch.
+
+Your patch and the one here will go into kgdb-next and onto linux-next.
+
+At some point you sent a patch for cpu switching that was blackfin
+specific.  There is new generic code in the debug core for doing this
+without exiting the debug context.  At some point you should test this
+and figure out if something further needs to be done that is blackfin
+specific.
+
+Thanks,
+Jason.
