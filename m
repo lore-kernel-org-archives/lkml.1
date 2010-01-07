@@ -1,87 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756594Ab0AGCt7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932330Ab0AGCuo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756594Ab0AGCt7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 21:49:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755942Ab0AGCt7
+	id S932330Ab0AGCuo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 21:50:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755950Ab0AGCun
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 21:49:59 -0500
-Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:46438 "EHLO
-	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752289Ab0AGCt6 (ORCPT
+	Wed, 6 Jan 2010 21:50:43 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:54250 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755569Ab0AGCum (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 21:49:58 -0500
-From: Miles Bader <miles@gnu.org>
-To: Arnaldo Carvalho de Melo <acme@infradead.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: tools/perf: "perf record" restricted to root in latest kernel?
-References: <buopr5nol26.fsf@dhlpc061.dev.necel.com>
-	<20100106205911.GC18919@ghostprotocols.net>
-Reply-To: Miles Bader <miles@gnu.org>
-System-Type: x86_64-unknown-linux-gnu
-Blat: Foop
-Date: Thu, 07 Jan 2010 11:49:34 +0900
-In-Reply-To: <20100106205911.GC18919@ghostprotocols.net> (Arnaldo Carvalho de
-	Melo's message of "Wed, 6 Jan 2010 18:59:11 -0200")
-Message-ID: <buovdfeocht.fsf@dhlpc061.dev.necel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 6 Jan 2010 21:50:42 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Thu, 7 Jan 2010 11:47:28 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, "menage@google.com" <menage@google.com>,
+       kirill@shutemov.name
+Subject: Re: mmotm 2010-01-06-14-34 uploaded (kernel/cgroup)
+Message-Id: <20100107114728.58166ce4.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <4B4549CB.8000809@cn.fujitsu.com>
+References: <201001062259.o06MxQrp023236@imap1.linux-foundation.org>
+	<20100106170849.d0d95c9b.randy.dunlap@oracle.com>
+	<20100107113154.a1fa0103.kamezawa.hiroyu@jp.fujitsu.com>
+	<4B4549CB.8000809@cn.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arnaldo Carvalho de Melo <acme@infradead.org> writes:
->> Next I updated to the latest linus tree (c5974b835a), and recompiled perf.
->> It still seems to work, and has obviously had a lot of features added, but
->> now it only wants to let me run "perf record" if I'm root.
->
-> Don't recall noticing such problem, here it works just fine:
->
-> [acme@doppio linux-2.6-tip]$ mkdir tmp
-> [acme@doppio linux-2.6-tip]$ cd tmp
-> [acme@doppio tmp]$ time perf record find ~/git/ > /dev/null
-> [ perf record: Woken up 1 times to write data ]
-> [ perf record: Captured and wrote 0.053 MB perf.data (~2312 samples) ]
+On Thu, 07 Jan 2010 10:41:15 +0800
+Li Zefan <lizf@cn.fujitsu.com> wrote:
 
-Weird... if I try your recipe, I get:
+> KAMEZAWA Hiroyuki wrote:
+> > On Wed, 6 Jan 2010 17:08:49 -0800
+> > Randy Dunlap <randy.dunlap@oracle.com> wrote:
+> > 
+> >> On Wed, 06 Jan 2010 14:34:36 -0800 akpm@linux-foundation.org wrote:
+> >>
+> >>> The mm-of-the-moment snapshot 2010-01-06-14-34 has been uploaded to
+> >>>
+> >>>    http://userweb.kernel.org/~akpm/mmotm/
+> >>>
+> >>> and will soon be available at
+> >>>
+> >>>    git://zen-kernel.org/kernel/mmotm.git
+> >>>
+> >>> It contains the following patches against 2.6.33-rc3:
+> >>
+> >> kernel/cgroup.c: In function 'cgroup_write_event_control':
+> >> kernel/cgroup.c:2949: error: implicit declaration of function 'eventfd_fget'
+> >> kernel/cgroup.c:2949: warning: assignment makes pointer from integer without a cast
+> >> kernel/cgroup.c:2955: error: implicit declaration of function 'eventfd_ctx_fileget'
+> >> kernel/cgroup.c:2955: warning: assignment makes pointer from integer without a cast
+> >> make[2]: *** [kernel/cgroup.o] Error 1
+> >>
+> > 
+> > Hmm, how about this rather than adding #ifdefs..
+> > Paul, Li, how do you think ?
+> 
+> I think make CONFIG_CGROUPS select EVENTFD would be better.
+> 
+Hm, as far as I know, SELECT is not recommended. But yes, it seems side-effect
+of select is small here. But I avoid it as much as possible, usually.
 
-   $ cd /usr/local/tmp
-   $ ls
-   gstlfilt.zip  q2.jpg  q3.jpg
-   $ time perf record find /usr/local/src/git/ > /dev/null
-     Fatal: Permission error - are you root?
+Moreover, in this case,
+  - EVENTFD is a feature which is enabled by default.
+  - cgroup is "Say N if unsure" config.
 
-   real	0m0.032s
-   user	0m0.004s
-   sys	0m0.012s
-
-> [acme@doppio linux-2.6-tip]$ uname -r
-> 2.6.33-rc3-tip+
-
-Perhaps the newer version of perf works better with newer kernels, or
-with some specific option enabled?  [Since it's a fairly new tool, I
-suppose it may not work well unless the perf version and the kernel
-version are in sync.]
-
-I'm using a standard debian kernel:
-
-   $ uname -r
-   2.6.32-trunk-amd64
-
-   $ grep PERF_ /boot/config-2.6.32-trunk-amd64 
-   CONFIG_HAVE_PERF_EVENTS=y
-   CONFIG_PERF_EVENTS=y
-   # CONFIG_PERF_COUNTERS is not set
-   # CONFIG_DEBUG_PERF_USE_VMALLOC is not set
-
-I notice that the system call which results in an error for me changed
-between the two versions of perf -- from "sys_perf_counter_open" to
-"sys_perf_event_open" -- though I don't understand the difference.
+In this case, "depends on" is good.
 
 Thanks,
+-Kame
 
--Miles
-
--- 
-Youth, n. The Period of Possibility, when Archimedes finds a fulcrum,
-Cassandra has a following and seven cities compete for the honor of endowing a
-living Homer.
