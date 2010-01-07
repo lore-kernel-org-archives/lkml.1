@@ -1,67 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754872Ab0AGHIL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754698Ab0AGHMf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754872Ab0AGHIL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 02:08:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754276Ab0AGHIJ
+	id S1754698Ab0AGHMf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 02:12:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753771Ab0AGHMe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 02:08:09 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:15619 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753857Ab0AGHII (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 02:08:08 -0500
-From: Dave Airlie <airlied@gmail.com>
-To: linux-fbdev-devel@lists.sf.net
-Cc: linux-kernel@vger.kernel.org, Dave Airlie <airlied@redhat.com>
-Subject: [PATCH] x86: allow fbdev primary video code on 64-bit.
-Date: Thu,  7 Jan 2010 17:04:54 +1000
-Message-Id: <1262847894-27498-1-git-send-email-airlied@gmail.com>
+	Thu, 7 Jan 2010 02:12:34 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:55217 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750876Ab0AGHMe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jan 2010 02:12:34 -0500
+Date: Thu, 7 Jan 2010 08:12:29 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Huang Ying <ying.huang@intel.com>
+Cc: "lenb@kernel.org" <lenb@kernel.org>,
+       "ak@linux.intel.com" <ak@linux.intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
+Subject: Re: [PATCH 4/5] ACPI, APEI, EINJ support
+Message-ID: <20100107071229.GC1689@ucw.cz>
+References: <1261980744-4450-1-git-send-email-ying.huang@intel.com> <1261980744-4450-2-git-send-email-ying.huang@intel.com> <1261980744-4450-3-git-send-email-ying.huang@intel.com> <1261980744-4450-4-git-send-email-ying.huang@intel.com> <1261980744-4450-5-git-send-email-ying.huang@intel.com> <20100106070807.GA1494@ucw.cz> <1262762186.17852.7.camel@yhuang-dev.sh.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1262762186.17852.7.camel@yhuang-dev.sh.intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Dave Airlie <airlied@redhat.com>
+On Wed 2010-01-06 15:16:26, Huang Ying wrote:
+> Hi, Pavel,
+> 
+> On Wed, 2010-01-06 at 15:08 +0800, Pavel Machek wrote:
+> > On Mon 2009-12-28 14:12:23, Huang Ying wrote:
+> > > EINJ provides a hardware error injection mechanism, this is useful for
+> > > debugging and testing of other APEI and RAS features.
+> > > 
+> > > Signed-off-by: Huang Ying <ying.huang@intel.com>
+> > > ---
+> > >  drivers/acpi/apei/Kconfig  |    7 +
+> > >  drivers/acpi/apei/Makefile |    1 +
+> > >  drivers/acpi/apei/einj.c   |  471 ++++++++++++++++++++++++++++++++++++++++++++
+> > 
+> > 
+> > Can we get more meaningfull name? err_inject.c?
+> 
+> einj is the abbreviation used in ACPI specification. I think following
+> specification can avoid some confusion. Do you think so?
 
-For some reason the 64-bit tree was doing this differently and
-I can't see why it would need to.
+The spec is way too ugly to follow here.
 
-This correct behaviour when you have two GPUs plugged in and
-32-bit put the console in one place and 64-bit in another.
-
-Signed-off-by: Dave Airlie <airlied@redhat.com>
----
- arch/x86/Makefile         |    2 --
- arch/x86/include/asm/fb.h |    4 ----
- 2 files changed, 0 insertions(+), 6 deletions(-)
-
-diff --git a/arch/x86/Makefile b/arch/x86/Makefile
-index 78b32be..0a43dc5 100644
---- a/arch/x86/Makefile
-+++ b/arch/x86/Makefile
-@@ -135,9 +135,7 @@ drivers-$(CONFIG_OPROFILE) += arch/x86/oprofile/
- # suspend and hibernation support
- drivers-$(CONFIG_PM) += arch/x86/power/
- 
--ifeq ($(CONFIG_X86_32),y)
- drivers-$(CONFIG_FB) += arch/x86/video/
--endif
- 
- ####
- # boot loader support. Several targets are kept for legacy purposes
-diff --git a/arch/x86/include/asm/fb.h b/arch/x86/include/asm/fb.h
-index 5301846..2519d06 100644
---- a/arch/x86/include/asm/fb.h
-+++ b/arch/x86/include/asm/fb.h
-@@ -12,10 +12,6 @@ static inline void fb_pgprotect(struct file *file, struct vm_area_struct *vma,
- 		pgprot_val(vma->vm_page_prot) |= _PAGE_PCD;
- }
- 
--#ifdef CONFIG_X86_32
- extern int fb_is_primary_device(struct fb_info *info);
--#else
--static inline int fb_is_primary_device(struct fb_info *info) { return 0; }
--#endif
- 
- #endif /* _ASM_X86_FB_H */
 -- 
-1.6.5.2
-
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
