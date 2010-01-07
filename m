@@ -1,123 +1,163 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754117Ab0AGVnx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754142Ab0AGVob@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754117Ab0AGVnx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 16:43:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752844Ab0AGVnw
+	id S1754142Ab0AGVob (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 16:44:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754131Ab0AGVoa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 16:43:52 -0500
-Received: from mail.perches.com ([173.55.12.10]:1635 "EHLO mail.perches.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752418Ab0AGVnv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 16:43:51 -0500
-Subject: [PATCH V3] lib/vsprintf.c: Add %pMF to format FDDI bit reversed
- MAC addresses
-From: Joe Perches <joe@perches.com>
-To: =?UTF-8?Q?Micha=C5=82_Miros=C5=82aw?= <mirqus@gmail.com>
-Cc: H Hartley Sweeten <hartleys@visionengravers.com>,
-       David Miller <davem@davemloft.net>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>,
-       linux-kernel@vger.kernel.org, netdev <netdev@vger.kernel.org>
-In-Reply-To: <e2d7436a1001071318l75750b29uece2a61884538d5b@mail.gmail.com>
-References: <BD79186B4FD85F4B8E60E381CAEE19090208954A@mi8nycmail19.Mi8.com>
-	 <1262888625.10429.23.camel@Joe-Laptop.home>
-	 <e2d7436a1001071318l75750b29uece2a61884538d5b@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 07 Jan 2010 13:43:50 -0800
-Message-ID: <1262900630.10429.80.camel@Joe-Laptop.home>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 7 Jan 2010 16:44:30 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:32987 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754079Ab0AGVo3 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jan 2010 16:44:29 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=dxwmKa3hZO0suMbjyEizlUPqMYQfhdWY+k77YlCrLRNt7Rpn9VGkQrbRaOBtQf39ak
+         nd6KekITbUK3ePu7dTJxKwlv8Wdkb392Hl3M42tPiRj6zxMfJTUr6JKq3DCg6QMCl8t5
+         GyIOYLgOBycGZRysmwisDkUTc6bQcKde8iL3Y=
+MIME-Version: 1.0
+In-Reply-To: <1262829893.4984.13.camel@sli10-desk.sh.intel.com>
+References: <20091225091030.GA28365@sli10-desk.sh.intel.com>
+	 <4e5e476b0912250144l96c4d34v300910216e5c7a08@mail.gmail.com>
+	 <20091228033554.GB15242@sli10-desk.sh.intel.com>
+	 <4e5e476b0912280102t2278d7a5ld3e8784f52f2be31@mail.gmail.com>
+	 <1262829893.4984.13.camel@sli10-desk.sh.intel.com>
+Date: Thu, 7 Jan 2010 22:44:27 +0100
+Message-ID: <4e5e476b1001071344i4f702496y22f33bc2d4bc834d@mail.gmail.com>
+Subject: Re: [RFC]cfq-iosched: quantum check tweak
+From: Corrado Zoccolo <czoccolo@gmail.com>
+To: Shaohua Li <shaohua.li@intel.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
+       "Zhang, Yanmin" <yanmin.zhang@intel.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2010-01-04 at 23:43 +0000, Maciej W. Rozycki wrote:
-> The example below shows an address, and the sequence of bits or symbols 
-> that would be transmitted when the address is used in the Source Address 
-> or Destination Address fields on the MAC header.  The transmission line 
-> shows the address bits in the order transmitted, from left to right.  For 
-> IEEE 802 LANs these correspond to actual bits on the medium.  The FDDI 
-> symbols line shows how the FDDI PHY sends the address bits as encoded 
-> symbols.
-> 
->         MSB:            35:7B:12:00:00:01
->         Canonical:      AC-DE-48-00-00-80
->         Transmission:   00110101 01111011 00010010 00000000 00000000 00000001
->         FDDI Symbols:   35 7B 12 00 00 01"
-> 
-> Please note that this address has its group bit clear.
-> 
->  This notation is also defined in the "FDDI MEDIA ACCESS CONTROL-2 
-> (MAC-2)" (X3T9/92-120) document although that book does not have a need 
-> to use the MSB form and it's skipped.
+Hi Shahoua,
 
-Adds 6 bytes to object size for x86
+On Thu, Jan 7, 2010 at 3:04 AM, Shaohua Li <shaohua.li@intel.com> wrote:
+> On Mon, 2009-12-28 at 17:02 +0800, Corrado Zoccolo wrote:
+>> Hi Shaohua,
+>> On Mon, Dec 28, 2009 at 4:35 AM, Shaohua Li <shaohua.li@intel.com> wrote:
+>> > On Fri, Dec 25, 2009 at 05:44:40PM +0800, Corrado Zoccolo wrote:
+>> >> On Fri, Dec 25, 2009 at 10:10 AM, Shaohua Li <shaohua.li@intel.com> wrote:
+>> >> > Currently a queue can only dispatch up to 4 requests if there are other queues.
+>> >> > This isn't optimal, device can handle more requests, for example, AHCI can
+>> >> > handle 31 requests. I can understand the limit is for fairness, but we could
+>> >> > do some tweaks:
+>> >> > 1. if the queue still has a lot of slice left, sounds we could ignore the limit
+>> >> ok. You can even scale the limit proportionally to the remaining slice
+>> >> (see below).
+>> > I can't understand the meaning of below scale. cfq_slice_used_soon() means
+>> > dispatched requests can finish before slice is used, so other queues will not be
+>> > impacted. I thought/hope a cfq_slice_idle time is enough to finish the
+>> > dispatched requests.
+>> cfq_slice_idle is 8ms, that is the average time to complete 1 request
+>> on most disks. If you have more requests dispatched on a
+>> NCQ-rotational disk (non-RAID), it will take more time. Probably a
+>> linear formula is not the most accurate, but still more accurate than
+>> taking just 1 cfq_slice_idle. If you can experiment a bit, you could
+>> also try:
+>>  cfq_slice_idle * ilog2(nr_dispatched+1)
+>>  cfq_slice_idle * (1<<(ilog2(nr_dispatched+1)>>1))
+>>
+>> >
+>> >> > 2. we could keep the check only when cfq_latency is on. For uses who don't care
+>> >> > about latency should be happy to have device fully piped on.
+>> >> I wouldn't overload low_latency with this meaning. You can obtain the
+>> >> same by setting the quantum to 32.
+>> > As this impact fairness, so natually thought we could use low_latency. I'll remove
+>> > the check in next post.
+>> Great.
+>> >> > I have a test of random direct io of two threads, each has 32 requests one time
+>> >> > without patch: 78m/s
+>> >> > with tweak 1: 138m/s
+>> >> > with two tweaks and disable latency: 156m/s
+>> >>
+>> >> Please, test also with competing seq/random(depth1)/async workloads,
+>> >> and measure also introduced latencies.
+>> > depth1 should be ok, as if device can only send one request, it should not require
+>> > more requests from ioscheduler.
+>> I mean have a run with, at the same time:
+>> * one seq reader,
+>> * h random readers with depth 1 (non-aio)
+>> * one async seq writer
+>> * k random readers with large depth.
+>> In this way, you can see if the changes you introduce to boost your
+>> workload affect more realistic scenarios, in which various workloads
+>> are mixed.
+>> I explicitly add the depth1 random readers, since they are sceduled
+>> differently than the large (>4) depth ones.
+> I tried a fio script which does like your description, but the data
+> isn't stable, especially the write speed, other kind of io speed is
+> stable. Apply below patch doesn't make things worse (still write speed
+> isn't stable, other io is stable), so I can't say if the patch passes
+> the test, but it appears latency reported by fio hasn't change. I adopt
+> the slice_idle * dispatched approach, which I thought should be safe.
 
-New:
-$ size lib/vsprintf.o
-   text	   data	    bss	    dec	    hex	filename
-   8664	      0	      2	   8666	   21da	lib/vsprintf.o
-$ size lib/vsprintf.o
-   text    data     bss     dec     hex filename
-   8658       0       2    8660    21d4 lib/vsprintf.o
+I'm doing some tests right now on a single ncq rotational disk, and
+the average service time when submitting with a high depth is halved
+w.r.t. depth 1, so I think you could test also with the formula :
+slice_idle * dispatched / 2. It should give a performance boost,
+without noticeable impact on latency.
 
-Signed-off-by: Joe Perches <joe@perches.com>
----
-diff --git a/lib/vsprintf.c b/lib/vsprintf.c
-index d4996cf..dc48d2b 100644
---- a/lib/vsprintf.c
-+++ b/lib/vsprintf.c
-@@ -25,6 +25,7 @@
- #include <linux/kallsyms.h>
- #include <linux/uaccess.h>
- #include <linux/ioport.h>
-+#include <linux/bitrev.h>
- #include <net/addrconf.h>
- 
- #include <asm/page.h>		/* for PAGE_SIZE */
-@@ -681,11 +682,21 @@ static char *mac_address_string(char *buf, char *end, u8 *addr,
- 	char mac_addr[sizeof("xx:xx:xx:xx:xx:xx")];
- 	char *p = mac_addr;
- 	int i;
-+	bool bitrev;
-+	char separator;
-+
-+	if (fmt[1] == 'F') {		/* FDDI canonical format */
-+		bitrev = true;
-+		separator = '-';
-+	} else {
-+		bitrev = false;
-+		separator = ':';
-+	}
- 
- 	for (i = 0; i < 6; i++) {
--		p = pack_hex_byte(p, addr[i]);
-+		p = pack_hex_byte(p, bitrev ? bitrev8(addr[i]) : addr[i]);
- 		if (fmt[0] == 'M' && i != 5)
--			*p++ = ':';
-+			*p++ = separator;
- 	}
- 	*p = '\0';
- 
-@@ -896,6 +907,10 @@ static char *uuid_string(char *buf, char *end, const u8 *addr,
-  * - 'M' For a 6-byte MAC address, it prints the address in the
-  *       usual colon-separated hex notation
-  * - 'm' For a 6-byte MAC address, it prints the hex address without colons
-+ * - 'MF' For a 6-byte MAC FDDI address, it prints the address
-+ *       with a dash-separated hex notation with bit reversed bytes
-+ * - 'mF' For a 6-byte MAC FDDI address, it prints the address
-+ *       in hex notation without separators with bit reversed bytes
-  * - 'I' [46] for IPv4/IPv6 addresses printed in the usual way
-  *       IPv4 uses dot-separated decimal without leading 0's (1.2.3.4)
-  *       IPv6 uses colon separated network-order 16 bit hex with leading 0's
-@@ -939,6 +954,7 @@ static char *pointer(const char *fmt, char *buf, char *end, void *ptr,
- 		return resource_string(buf, end, ptr, spec, fmt);
- 	case 'M':			/* Colon separated: 00:01:02:03:04:05 */
- 	case 'm':			/* Contiguous: 000102030405 */
-+					/* [mM]F (FDDI, bit reversed) */
- 		return mac_address_string(buf, end, ptr, spec, fmt);
- 	case 'I':			/* Formatted IP supported
- 					 * 4:	1.2.3.4
+> Currently a queue can only dispatch up to 4 requests if there are other queues.
+> This isn't optimal, device can handle more requests, for example, AHCI can
+> handle 31 requests. I can understand the limit is for fairness, but we could
+> do a tweak: if the queue still has a lot of slice left, sounds we could ignore
+> the limit.
+> For async io, 40ms/8ms = 5 - quantum = 1, we only send extra 1 request in maxium.
+> For sync io, 100ms/8ms = 12 - quantum = 8, we might send extra 8 requests in maxium.
+> This might cause latency issue if the queue is preempted at the very beginning.
+>
+> This patch boost my workload from 78m/s to 102m/s, which isn't that big as my last
+> post, but also is a big improvement.
 
+Acked-by: Corrado Zoccolo <czoccolo@gmail.com>
 
-
+>
+> Signed-off-by: Shaohua Li <shaohua.li@intel.com>
+> ---
+>  block/cfq-iosched.c |   15 ++++++++++++++-
+>  1 file changed, 14 insertions(+), 1 deletion(-)
+>
+> Index: linux-2.6/block/cfq-iosched.c
+> ===================================================================
+> --- linux-2.6.orig/block/cfq-iosched.c
+> +++ linux-2.6/block/cfq-iosched.c
+> @@ -2242,6 +2242,19 @@ static int cfq_forced_dispatch(struct cf
+>        return dispatched;
+>  }
+>
+> +static inline bool cfq_slice_used_soon(struct cfq_data *cfqd,
+> +       struct cfq_queue *cfqq)
+> +{
+> +       /* the queue hasn't finished any request, can't estimate */
+> +       if (cfq_cfqq_slice_new(cfqq))
+> +               return true;
+> +       if (time_after(jiffies + cfqd->cfq_slice_idle * cfqq->dispatched,
+> +               cfqq->slice_end))
+> +               return true;
+> +
+> +       return false;
+> +}
+> +
+>  static bool cfq_may_dispatch(struct cfq_data *cfqd, struct cfq_queue *cfqq)
+>  {
+>        unsigned int max_dispatch;
+> @@ -2275,7 +2288,7 @@ static bool cfq_may_dispatch(struct cfq_
+>                /*
+>                 * We have other queues, don't allow more IO from this one
+>                 */
+> -               if (cfqd->busy_queues > 1)
+> +               if (cfqd->busy_queues > 1 && cfq_slice_used_soon(cfqd, cfqq))
+>                        return false;
+>
+>                /*
+>
+>
