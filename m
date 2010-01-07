@@ -1,125 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756705Ab0AGDUq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756718Ab0AGDVi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756705Ab0AGDUq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 22:20:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756106Ab0AGDUp
+	id S1756718Ab0AGDVi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 22:21:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756708Ab0AGDVh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 22:20:45 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:37933 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752251Ab0AGDUo convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 22:20:44 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=t6r7ipDULGdJ+Q0WAiSCkqOC8qrCD6EB11UqJ+Bt8aEGqzURQ7Hc0Dfpptj92L1EbX
-         VNUd9StaLWTJ3OBRMf7Kr4GZssphhonyba8yuceZLAX8+YFVj0rP5aZmb4mWRbEXLfPF
-         NWck1JAcFirmHOX8sbi996E4qhmjJbaEMDtKs=
+	Wed, 6 Jan 2010 22:21:37 -0500
+Received: from mga11.intel.com ([192.55.52.93]:40348 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756675Ab0AGDVf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jan 2010 22:21:35 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,233,1262592000"; 
+   d="scan'208";a="529154441"
+Date: Thu, 7 Jan 2010 11:21:31 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Tejun Heo <tj@kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Nick Piggin <npiggin@suse.de>,
+       Andi Kleen <andi@firstfloor.org>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Huang, Ying" <ying.huang@intel.com>
+Subject: Re: [RFC][PATCH] vmalloc: simplify vread()/vwrite()
+Message-ID: <20100107032130.GA12815@localhost>
+References: <20100107012458.GA9073@localhost> <20100107103825.239ffcf9.kamezawa.hiroyu@jp.fujitsu.com> <20100107025054.GA11252@localhost> <20100107115736.ee815579.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
-In-Reply-To: <6041d2001001061907r5f5797b9g1b7ee4057f6a82b0@mail.gmail.com>
-References: <6041d2001001011627o5c494df4v37c0c466df3d444c@mail.gmail.com>
-	 <6041d2001001041043ka810288l64ae9d6d8105b284@mail.gmail.com>
-	 <4B42AA40.3060406@redhat.com>
-	 <6041d2001001041923u7bd512a6w4b5399af17424422@mail.gmail.com>
-	 <4B4311E8.1000001@redhat.com>
-	 <6041d2001001051458j46cdf7abqc4a0a249445ec348@mail.gmail.com>
-	 <4B445B0E.50208@redhat.com>
-	 <6041d2001001061644i59d9cbb6pfcd85177d8391419@mail.gmail.com>
-	 <4B454C48.2000404@redhat.com>
-	 <6041d2001001061907r5f5797b9g1b7ee4057f6a82b0@mail.gmail.com>
-Date: Wed, 6 Jan 2010 22:20:42 -0500
-Message-ID: <6041d2001001061920k5ff1fa5bx8e9541a0afd537@mail.gmail.com>
-Subject: Re: BUG during shutdown - bisected to commit e2912009
-From: Marc Dionne <marc.c.dionne@gmail.com>
-To: Xiaotian Feng <dfeng@redhat.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100107115736.ee815579.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 6, 2010 at 10:07 PM, Marc Dionne <marc.c.dionne@gmail.com> wrote:
-> On Wed, Jan 6, 2010 at 9:51 PM, Xiaotian Feng <dfeng@redhat.com> wrote:
->> On 01/07/2010 08:44 AM, Marc Dionne wrote:
->>>
->>> On Wed, Jan 6, 2010 at 4:42 AM, Xiaotian Feng<dfeng@redhat.com>  wrote:
->>>>
->>>> On 01/06/2010 06:58 AM, Marc Dionne wrote:
->>>>>
->>>>> On Tue, Jan 5, 2010 at 5:18 AM, Xiaotian Feng<dfeng@redhat.com>
->>>>>  wrote:
->>>>>>
->>>>>> This is outputed by sound module, but it will not affect clockevents,
->>>>>> could
->>>>>> you please try following patch and let me know the output before BUG_ON
->>>>>> happens? We can gather more information on the BUG_ON. Thank you.
->>>>>>
->>>>>> diff --git a/kernel/time/clockevents.c b/kernel/time/clockevents.c
->>>>>> index 6f740d9..7c945e8 100644
->>>>>> --- a/kernel/time/clockevents.c
->>>>>> +++ b/kernel/time/clockevents.c
->>>>>> @@ -260,6 +260,9 @@ void clockevents_notify(unsigned long reason, void
->>>>>> *arg)
->>>>>>                list_for_each_entry_safe(dev, tmp,&clockevent_devices,
->>>>>> list)
->>>>>> {
->>>>>>                        if (cpumask_test_cpu(cpu, dev->cpumask)&&
->>>>>>                            cpumask_weight(dev->cpumask) == 1) {
->>>>>> +                               if (dev->mode != CLOCK_EVT_MODE_UNUSED)
->>>>>> +                                       printk("invalid dev %s mode %d
->>>>>> on
->>>>>> cpu %d\n", dev->name,
->>>>>> +                                               dev->mode, cpu);
->>>>>>                                BUG_ON(dev->mode !=
->>>>>> CLOCK_EVT_MODE_UNUSED);
->>>>>>                                list_del(&dev->list);
->>>>>
->>>>> I don't get anything on screen from the printk - is there a trick
->>>>> needed to getting printk output at that stage of shutting down?  I
->>>>> tried inserting an mdelay() before the BUG, which delayed the bug
->>>>> output but still didn't print the invalid dev message.
->>>>
->>>> Did you notice this BUG when you're doing suspend/resume?
->>>>
->>>> Does the BUG still appear if we changed BUG_ON line to BUG_ON(dev->mode
->>>> !=
->>>> CLOCK_EVT_MODE_UNUSED&&  dev->mode != CLOCK_EVT_MODE_SHUTDOWN)?
->>>
->>> I only see the BUG on halt - reboot works normally and suspend
->>> actually freezes and doesn't suspend, but that's perhaps unrelated.
->>>
->>> I managed to get your suggested printk to work by adding KERN_CRIT
->>> (otherwise I got no output), and the offending dev is:
->>>  "hpet", mode 3 (CLOCK_EVT_MODE_ONESHOT?), cpu 4.
->>
->> It looks like kernel is trying to remove broadcast device, could you please
->> try following patch?
->>
->> diff --git a/kernel/time/clockevents.c b/kernel/time/clockevents.c
->> index 6f740d9..d7395fd 100644
->> --- a/kernel/time/clockevents.c
->> +++ b/kernel/time/clockevents.c
->> @@ -259,7 +259,8 @@ void clockevents_notify(unsigned long reason, void *arg)
->>                cpu = *((int *)arg);
->>                list_for_each_entry_safe(dev, tmp, &clockevent_devices, list)
->> {
->>                        if (cpumask_test_cpu(cpu, dev->cpumask) &&
->> -                           cpumask_weight(dev->cpumask) == 1) {
->> +                           cpumask_weight(dev->cpumask) == 1 &&
->> +                           !tick_is_broadcast_device(dev)) {
->>                                BUG_ON(dev->mode != CLOCK_EVT_MODE_UNUSED);
->>                                list_del(&dev->list);
->>                        }
->
-> That works - no problem shutting down with that patch applied.
+On Thu, Jan 07, 2010 at 10:57:36AM +0800, KAMEZAWA Hiroyuki wrote:
+> On Thu, 7 Jan 2010 10:50:54 +0800
+> Wu Fengguang <fengguang.wu@intel.com> wrote:
+>  
+> > > > The changes are:
+> > > > - remove the vmlist walk and rely solely on vmalloc_to_page()
+> > > > - replace the VM_IOREMAP check with (page && page_is_ram(pfn))
+> > > > 
+> > > > The VM_IOREMAP check is introduced in commit d0107eb07320b for per-cpu
+> > > > alloc. Kame, would you double check if this change is OK for that
+> > > > purpose?
+> > > > 
+> > > I think VM_IOREMAP is for avoiding access to device configuration area and
+> > > unexpected breakage in device. Then, VM_IOREMAP are should be skipped by
+> > > the caller. (My patch _just_ moves the avoidance of callers to vread()/vwrite())
+> > 
+> > "device configuration area" is not RAM, so testing of RAM would be
+> > able to skip them?
+> >
+> Sorry, that's an area what I'm not sure. 
 
-And after doing a bit more testing, it turns out that applying this
-patch also makes suspend/resume work normally again, so it looks like
-the hang on suspend was also related to this.
+I believe the fundamental correctness requirement would be: to avoid
+accessing _PAGE_CACHE_UC/WC pages by building _PAGE_CACHE_WB mapping
+to them(which kmap_atomic do), whether it be physical RAM or device
+address area.
+
+For example, /dev/mem allows access to
+- device areas, with proper _PAGE_CACHE_* via ioremap_cache() 
+- _low_ physical RAM, which it directly reuse the 1:1 kernel mapping
+
+> But, page_is_ram() implementation other than x86 seems not very safe...
+> (And it seems that it's not defiend in some archs.)
+
+Ah didn't know archs other than x86.  And hotplug won't update e820 as
+well..
+
+> > > 
+> > > > The page_is_ram() check is necessary because kmap_atomic() is not
+> > > > designed to work with non-RAM pages.
+> > > > 
+> > > I think page_is_ram() is not a complete method...on x86, it just check
+> > > e820's memory range. checking VM_IOREMAP is better, I think.
+> > 
+> > (double check) Not complete or not safe?
+> > 
+> I think not-safe because e820 doesn't seem to be updated.
+> 
+> > EFI seems to not update e820 table by default.  Ying, do you know why?
+
+Ying just confirmed that the kernel didn't update e820 with EFI memmap
+because the bootloader will fake one e820 table based on EFI memmap,
+in order to run legacy/unmodified kernel.
+
+> 
+> I hope all this kinds can be fixed by kernel/resource.c in generic way....
+> Now, each archs have its own.
+ 
+Agreed.
+
+> > > > Even for a RAM page, we don't own the page, and cannot assume it's a
+> > > > _PAGE_CACHE_WB page. So I wonder whether it's necessary to do another
+> > > > patch to call reserve_memtype() before kmap_atomic() to ensure cache
+> > > > consistency?
+> > > > 
+> > > > TODO: update comments accordingly
+> > > > 
+> > > 
+> > > BTW, f->f_pos problem on 64bit machine still exists and this patch is still
+> > > hard to test. I stopped that because anyone doesn't show any interests.
+> > 
+> > I'm using your patch :)
+> > 
+> > I feel most inconfident on this patch, so submitted it for RFC first.
+> > I'll then submit a full patch series including your f_pos fix.
+> > 
+> Thank you, it's helpful.
 
 Thanks,
-Marc
+Fengguang
