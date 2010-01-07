@@ -1,88 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752296Ab0AGRuS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752485Ab0AGRy6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752296Ab0AGRuS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 12:50:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752085Ab0AGRuR
+	id S1752485Ab0AGRy6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 12:54:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752401Ab0AGRy5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 12:50:17 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52989 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751839Ab0AGRuQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 12:50:16 -0500
-Date: Thu, 7 Jan 2010 09:49:45 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Peter Zijlstra <peterz@infradead.org>
-cc: Christoph Lameter <cl@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "minchan.kim@gmail.com" <minchan.kim@gmail.com>,
-       "hugh.dickins" <hugh.dickins@tiscali.co.uk>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [RFC][PATCH 6/8] mm: handle_speculative_fault()
-In-Reply-To: <alpine.LFD.2.00.1001070934060.7821@localhost.localdomain>
-Message-ID: <alpine.LFD.2.00.1001070937180.7821@localhost.localdomain>
-References: <20100104182429.833180340@chello.nl>  <20100104182813.753545361@chello.nl>  <20100105054536.44bf8002@infradead.org>  <alpine.DEB.2.00.1001050916300.1074@router.home>  <20100105192243.1d6b2213@infradead.org>  <alpine.DEB.2.00.1001071007210.901@router.home>
-  <alpine.LFD.2.00.1001070814080.7821@localhost.localdomain> <1262884960.4049.106.camel@laptop> <alpine.LFD.2.00.1001070934060.7821@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Thu, 7 Jan 2010 12:54:57 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:36957 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752292Ab0AGRy4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jan 2010 12:54:56 -0500
+Date: Thu, 7 Jan 2010 18:54:46 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: Roland McGrath <roland@redhat.com>, caiqian@redhat.com,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Jan Kratochvil <jkratoch@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-s390@vger.kernel.org, utrace-devel@redhat.com
+Subject: Re: s390 && user_enable_single_step() (Was: odd utrace testing
+	results on s390x)
+Message-ID: <20100107175446.GA13300@redhat.com>
+References: <20100104211147.4CC94D532@magilla.sf.frob.com> <20100105105030.66bb8a0a@mschwide.boeblingen.de.ibm.com> <20100105153633.GA9376@redhat.com> <20100105164610.388effd3@mschwide.boeblingen.de.ibm.com> <20100105155913.GA10652@redhat.com> <20100105170301.GA13641@redhat.com> <20100105195818.GA20358@redhat.com> <20100106201722.GB26204@redhat.com> <20100106211329.DB4F5134D@magilla.sf.frob.com> <20100107101855.13248dc2@mschwide.boeblingen.de.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100107101855.13248dc2@mschwide.boeblingen.de.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Martin, sorry for delay,
+
+On 01/07, Martin Schwidefsky wrote:
+>
+> On Wed,  6 Jan 2010 13:13:29 -0800 (PST)
+> Roland McGrath <roland@redhat.com> wrote:
+>
+> > > However, with or without CONFIG_UTRACE, 6580807da14c423f0d0a708108e6df6ebc8bc83d
+> > > is needed on s390 too, otherwise the child gets unnecessary traps.
+> >
+> > This confuses me.  user_disable_single_step on non-current doesn't do
+> > anything not already done by the memset in copy_thread.  Ooh, except
+> > perhaps it does not clear PSW_MASK_PER.  Maybe that matters.  That's
+> > the only thing I can think of.  Maybe Martin can make sense of it.
+
+I am confused as well. Yes, I thought about regs->psw.mask change too,
+but I don't understand why it helps..
+
+> The additional traps should not happen anymore with this patch:
+> --
+> Subject: [PATCH] clear TIF_SINGLE_STEP for new process.
+>
+> From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+>
+> Clear the TIF_SINGLE_STEP bit in copy_thread. If the new process is
+> not auto-attached by the tracer it is wrong to delivere SIGTRAP to
+> the new process.
+>
+> Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+> ---
+>
+>  arch/s390/kernel/process.c |    1 +
+>  1 file changed, 1 insertion(+)
+>
+> diff -urpN linux-2.6/arch/s390/kernel/process.c linux-2.6-patched/arch/s390/kernel/process.c
+> --- linux-2.6/arch/s390/kernel/process.c	2009-12-03 04:51:21.000000000 +0100
+> +++ linux-2.6-patched/arch/s390/kernel/process.c	2010-01-07 09:25:53.000000000 +0100
+> @@ -217,6 +217,7 @@ int copy_thread(unsigned long clone_flag
+>  	p->thread.mm_segment = get_fs();
+>  	/* Don't copy debug registers */
+>  	memset(&p->thread.per_info, 0, sizeof(p->thread.per_info));
+> +	clear_tsk_thread_flag(p, TIF_SINGLE_STEP);
+
+Even if I don't understand s390, I think this patch makes sense
+anyway. Or, user_disable_single_step() can clear this bit.
 
 
-On Thu, 7 Jan 2010, Linus Torvalds wrote:
-> 
-> Well, I have yet to hear a realistic scenario of _how_ to do it all 
-> speculatively in the first place, at least not without horribly subtle 
-> complexity issues. So I'd really rather see how far we can possibly get by 
-> just improving mmap_sem.
+But. Acoording to the testing I did (unless I did something wrong
+again) this patch doesn't make any difference in this particular
+case. 6580807da14c423f0d0a708108e6df6ebc8bc83d does.
 
-For an example of this: it's entirely possible that one avenue of mmap_sem 
-improvement would be to look at the _writer_ side, and see how that can be 
-improved. 
+And. Please note that the test-case triggers 799 "false step", but
+TIF_SINGLE_STEP is surely cleared (by the caller) after the first
+invocation of do_single_step().
 
-An example of where we've done that is in madvise(): we used to always 
-take it for writing (because _some_ madvise versions needed the exclusive 
-access). And suddenly some operations got way more scalable, and work in 
-the presense of concurrent page faults.
+Oleg.
 
-And quite frankly, I'd _much_ rather look at that kind of simple and 
-logically fairly straightforward solutions, instead of doing the whole 
-speculative page fault work.
-
-For example: there's no real reason why we take mmap_sem for writing when 
-extending an existing vma. And while 'brk()' is a very oldfashioned way of 
-doing memory management, it's still quite common. So rather than looking 
-at subtle lockless algorithms, why not look at doing the common cases of 
-an extending brk? Make that one take the mmap_sem for _reading_, and then 
-do the extending of the brk area with a simple cmpxchg or something?
-
-And "extending brk" is actually a lot more common than shrinking it, and 
-is common for exactly the kind of workloads that are often nasty right now 
-(threaded allocators with lots and lots of smallish allocations)
-
-The thing is, I can pretty much _guarantee_ that the speculative page 
-fault is going to end up doing a lot of nasty stuff that still needs 
-almost-global locking, and it's likely to be more complicated and slower 
-for the single-threaded case (you end up needing refcounts, a new "local" 
-lock or something).
-
-Sure, moving to a per-vma lock can help, but it doesn't help a lot. It 
-doesn't help AT ALL for the single-threaded case, and for the 
-multi-threaded case I will bet you that a _lot_ of cases will have one 
-very hot vma - the regular data vma that gets shared for normal malloc() 
-etc. 
-
-So I'm personally rather doubtful about the whole speculative work. It's a 
-fair amount of complexity without any really obvious upside. Yes, the 
-mmap_sem can be very annoying, but nobody can really honestly claim that 
-we've really optimized it all that much.
-
-		Linus
