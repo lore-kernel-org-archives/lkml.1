@@ -1,72 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752521Ab0AGMLe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752561Ab0AGMME@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752521Ab0AGMLe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 07:11:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752475Ab0AGMLd
+	id S1752561Ab0AGMME (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 07:12:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752131Ab0AGMMA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 07:11:33 -0500
-Received: from mta-2.ms.rz.RWTH-Aachen.DE ([134.130.7.73]:41506 "EHLO
-	mta-2.ms.rz.rwth-aachen.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752474Ab0AGMLd (ORCPT
+	Thu, 7 Jan 2010 07:12:00 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:40098 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752475Ab0AGMMA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 07:11:33 -0500
-MIME-version: 1.0
-Content-transfer-encoding: 7BIT
-Content-type: text/plain; charset=ISO-8859-1
-X-IronPort-AV: E=Sophos;i="4.49,234,1262559600";   d="scan'208";a="40025910"
-Message-id: <4B45CF73.9090304@nets.rwth-aachen.de>
-Date: Thu, 07 Jan 2010 13:11:31 +0100
-From: Arnd Hannemann <hannemann@nets.rwth-aachen.de>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-To: Richard Purdie <rpurdie@rpsys.net>
-Cc: Arnd Hannemann <Arnd.Hannemann@nets.rwth-aachen.de>,
-       Daniel Mack <daniel@caiaq.de>, LKML <linux-kernel@vger.kernel.org>,
-       "linux-geode@lists.infradead.org" <linux-geode@lists.infradead.org>
-Subject: Re: 2.6.33-rc3 regression: leds_alix2: can't allocate I/O for GPIO
-References: <4B45B6DD.4060903@nets.rwth-aachen.de>
- <1262861484.8493.14.camel@dax.rpnet.com> <4B45CC4C.4030603@nets.rwth-aachen.de>
-In-reply-to: <4B45CC4C.4030603@nets.rwth-aachen.de>
+	Thu, 7 Jan 2010 07:12:00 -0500
+Message-ID: <4B45CF8E.7000707@cs.helsinki.fi>
+Date: Thu, 07 Jan 2010 14:11:58 +0200
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+MIME-Version: 1.0
+To: Haicheng Li <haicheng.li@linux.intel.com>
+CC: Christoph Lameter <cl@linux-foundation.org>, linux-mm@kvack.org,
+       Matt Mackall <mpm@selenic.com>, Andi Kleen <andi@firstfloor.org>,
+       Eric Dumazet <eric.dumazet@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v3] slab: initialize unused alien cache entry as NULL
+ at alloc_alien_cache().
+References: <4B443AE3.2080800@linux.intel.com>
+In-Reply-To: <4B443AE3.2080800@linux.intel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arnd Hannemann schrieb:
-> Richard Purdie schrieb:
->> On Thu, 2010-01-07 at 11:26 +0100, Arnd Hannemann wrote:
->>> with 2.6.33-rc3 the LEDs are not working anymore on my Geode embedded board:
->>> If I remember correctly this was working fine with 2.6.32, but certainly with 2.6.31
->>>
->>> relevant dmesg output of 2.6.33-rc3:
->>>
->>> [    0.709643] cs5535_gpio: base=0x6100 mask=0xb003c66 major=253
->>>
->>> [    2.207947] leds_alix2: system is recognized as "PC Engines ALIX.2 v0.99h"
->>> [    2.228678] leds_alix2: can't allocate I/O for GPIO
->>>
->>>
->>> For reference dmesg of 2.6.31.3:
->>>
->>> [    0.611953] cs5535_gpio: base=0x6100 mask=0xb003c66 major=253
->>>
->>> [    2.379114] leds_alix2: system is recognized as "PC Engines ALIX.2"
->>> [    2.399097] Registered led device: alix:1
->>> [    2.411404] Registered led device: alix:2
->>> [    2.423720] Registered led device: alix:3
->> Its likely to be commit 7f131cf3ed96c969d7b092bf629e25c3df50901e. It
->> looks like the request_region() call is failing. Daniel, any idea why?
+Haicheng Li kirjoitti:
+> Comparing with existing code, it's a simpler way to use kzalloc_node()
+> to ensure that each unused alien cache entry is NULL.
 > 
-> Some additional debug information:
+> CC: Pekka Enberg <penberg@cs.helsinki.fi>
+> CC: Eric Dumazet <eric.dumazet@gmail.com>
+> ---
+>  mm/slab.c |    6 ++----
+>  1 files changed, 2 insertions(+), 4 deletions(-)
 > 
-> elara:~# rdmsr 0x5140000C
-> f00100006100
+> diff --git a/mm/slab.c b/mm/slab.c
+> index 7dfa481..5d1a782 100644
+> --- a/mm/slab.c
+> +++ b/mm/slab.c
+> @@ -971,13 +971,11 @@ static struct array_cache **alloc_alien_cache(int 
+> node, int limit, gfp_t gfp)
 > 
-> /proc/ioports says:
-> 6100-61ff : 0000:00:0f.0
->   6100-61ff : cs5535_gpio
-> 
-> BTW: why is request_region() needed there after all?
+>      if (limit > 1)
+>          limit = 12;
+> -    ac_ptr = kmalloc_node(memsize, gfp, node);
+> +    ac_ptr = kzalloc_node(memsize, gfp, node);
+>      if (ac_ptr) {
+>          for_each_node(i) {
+> -            if (i == node || !node_online(i)) {
+> -                ac_ptr[i] = NULL;
+> +            if (i == node || !node_online(i))
+>                  continue;
+> -            }
+>              ac_ptr[i] = alloc_arraycache(node, limit, 0xbaadf00d, gfp);
+>              if (!ac_ptr[i]) {
+>                  for (i--; i >= 0; i--)
 
-Oh, maybe using cs5535_gpio AND leds_alix2 together was never supposed to work?
-
-Best regards,
-Arnd
+Christoph? Matt?
