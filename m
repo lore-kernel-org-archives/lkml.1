@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933045Ab0AGJVO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932904Ab0AGJVy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933045Ab0AGJVO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 04:21:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932972Ab0AGJSo
+	id S932904Ab0AGJVy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 04:21:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932742Ab0AGJVs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 04:18:44 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:39611
+	Thu, 7 Jan 2010 04:21:48 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:34616
 	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932800Ab0AGJSm (ORCPT
+	by vger.kernel.org with ESMTP id S932904Ab0AGJS2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 04:18:42 -0500
-Date: Thu, 07 Jan 2010 01:18:50 -0800 (PST)
-Message-Id: <20100107.011850.176718572.davem@davemloft.net>
+	Thu, 7 Jan 2010 04:18:28 -0500
+Date: Thu, 07 Jan 2010 01:18:37 -0800 (PST)
+Message-Id: <20100107.011837.129472809.davem@davemloft.net>
 To: hartleys@visionengravers.com
 Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH] drivers/net/ixgbe/ixgbe_common.c: use %pM to show MAC
+Subject: Re: [PATCH] drivers/net/atl1c/atl1c_main.c: use %pM to show MAC
  address
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <201001050956.53199.hartleys@visionengravers.com>
-References: <201001050956.53199.hartleys@visionengravers.com>
+In-Reply-To: <201001050954.01826.hartleys@visionengravers.com>
+References: <201001050954.01826.hartleys@visionengravers.com>
 X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -28,7 +28,7 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: H Hartley Sweeten <hartleys@visionengravers.com>
-Date: Tue, 5 Jan 2010 09:56:52 -0700
+Date: Tue, 5 Jan 2010 09:54:01 -0700
 
 > Use the %pM kernel extension to display the MAC address.
 > 
