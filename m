@@ -1,90 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751612Ab0AGR3o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751719Ab0AGRbY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751612Ab0AGR3o (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 12:29:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751422Ab0AGR3o
+	id S1751719Ab0AGRbY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 12:31:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751449Ab0AGRbX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 12:29:44 -0500
-Received: from mail-fx0-f225.google.com ([209.85.220.225]:34330 "EHLO
-	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750825Ab0AGR3n convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 12:29:43 -0500
+	Thu, 7 Jan 2010 12:31:23 -0500
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:35488 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751444Ab0AGRbW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jan 2010 12:31:22 -0500
+Date: Thu, 7 Jan 2010 09:31:18 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Josh Triplett <josh@joshtriplett.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org,
+       tglx@linutronix.de, Valdis.Kletnieks@vt.edu, dhowells@redhat.com,
+       laijs@cn.fujitsu.com, dipankar@in.ibm.com
+Subject: Re: [RFC PATCH] introduce sys_membarrier(): process-wide memory
+	barrier
+Message-ID: <20100107173118.GG6764@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20100107044007.GA22863@Krystal> <1262842854.28171.3710.camel@gandalf.stny.rr.com> <20100107061955.GC25786@Krystal> <20100107063558.GC12939@feather> <1262853855.4049.86.camel@laptop> <20100107165249.GE6764@linux.vnet.ibm.com> <1262884716.4049.103.camel@laptop>
 MIME-Version: 1.0
-In-Reply-To: <20100107113154.a1fa0103.kamezawa.hiroyu@jp.fujitsu.com>
-References: <201001062259.o06MxQrp023236@imap1.linux-foundation.org>
-	 <20100106170849.d0d95c9b.randy.dunlap@oracle.com>
-	 <20100107113154.a1fa0103.kamezawa.hiroyu@jp.fujitsu.com>
-Date: Thu, 7 Jan 2010 19:29:41 +0200
-Message-ID: <cc557aab1001070929p32d50284jaac2cd5230559697@mail.gmail.com>
-Subject: Re: mmotm 2010-01-06-14-34 uploaded (kernel/cgroup)
-From: "Kirill A. Shutemov" <kirill@shutemov.name>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, "menage@google.com" <menage@google.com>,
-       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1262884716.4049.103.camel@laptop>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 7, 2010 at 4:31 AM, KAMEZAWA Hiroyuki
-<kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> On Wed, 6 Jan 2010 17:08:49 -0800
-> Randy Dunlap <randy.dunlap@oracle.com> wrote:
->
->> On Wed, 06 Jan 2010 14:34:36 -0800 akpm@linux-foundation.org wrote:
->>
->> > The mm-of-the-moment snapshot 2010-01-06-14-34 has been uploaded to
->> >
->> >    http://userweb.kernel.org/~akpm/mmotm/
->> >
->> > and will soon be available at
->> >
->> >    git://zen-kernel.org/kernel/mmotm.git
->> >
->> > It contains the following patches against 2.6.33-rc3:
->>
->>
->> kernel/cgroup.c: In function 'cgroup_write_event_control':
->> kernel/cgroup.c:2949: error: implicit declaration of function 'eventfd_fget'
->> kernel/cgroup.c:2949: warning: assignment makes pointer from integer without a cast
->> kernel/cgroup.c:2955: error: implicit declaration of function 'eventfd_ctx_fileget'
->> kernel/cgroup.c:2955: warning: assignment makes pointer from integer without a cast
->> make[2]: *** [kernel/cgroup.o] Error 1
->>
->
-> Hmm, how about this rather than adding #ifdefs..
-> Paul, Li, how do you think ?
-> ==
-> Cgroup's eventdf feature has depenedecy to EVENTFD
->
-> This is a patch onto
-> cgroup-implement-eventfd-based-generic-api-for-notifications.patch
->
-> CC: Li Zefan <lizf@cn.fujitsu.com>
-> CC: Kirill A. Shutemov <kirill@shutemov.name>
-> CC: Paul Menage <menage@google.com>
-> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
->
-> ---
->  init/Kconfig |    1 +
->  1 file changed, 1 insertion(+)
->
-> Index: ref-mmotm/init/Kconfig
-> ===================================================================
-> --- ref-mmotm.orig/init/Kconfig
-> +++ ref-mmotm/init/Kconfig
-> @@ -509,6 +509,7 @@ endchoice
->
->  menuconfig CGROUPS
->        boolean "Control Group support"
-> +       depends on EVENTFD
->        help
->          This option adds support for grouping sets of processes together, for
->          use with process control subsystems such as Cpusets, CFS, memory
->
->
+On Thu, Jan 07, 2010 at 06:18:36PM +0100, Peter Zijlstra wrote:
+> On Thu, 2010-01-07 at 08:52 -0800, Paul E. McKenney wrote:
+> > On Thu, Jan 07, 2010 at 09:44:15AM +0100, Peter Zijlstra wrote:
+> > > On Wed, 2010-01-06 at 22:35 -0800, Josh Triplett wrote:
+> > > > 
+> > > > The number of threads doesn't matter nearly as much as the number of
+> > > > threads typically running at a time compared to the number of
+> > > > processors.  Of course, we can't measure that as easily, but I don't
+> > > > know that your proposed heuristic would approximate it well.
+> > > 
+> > > Quite agreed, and not disturbing RT tasks is even more important.
+> > 
+> > OK, so I stand un-Reviewed-by twice in one morning.  ;-)
+> > 
+> > > A simple:
+> > > 
+> > >   for_each_cpu(cpu, current->mm->cpu_vm_mask) {
+> > >      if (cpu_curr(cpu)->mm == current->mm)
+> > >         smp_call_function_single(cpu, func, NULL, 1);
+> > >   }
+> > > 
+> > > seems far preferable over anything else, if you really want you can use
+> > > a cpumask to copy cpu_vm_mask in and unset bits and use the mask with
+> > > smp_call_function_any(), but that includes having to allocate the
+> > > cpumask, which might or might not be too expensive for Mathieu.
+> > 
+> > This would be vulnerable to the sys_membarrier() CPU seeing an old value
+> > of cpu_curr(cpu)->mm, and that other task seeing the old value of the
+> > pointer we are trying to RCU-destroy, right?
+> 
+> Right, so I was thinking that since you want a mb to be executed when
+> calling sys_membarrier(). If you observe a matching ->mm but the cpu has
+> since scheduled, we're good since it scheduled (but we'll still send the
+> IPI anyway), if we do not observe it because the task gets scheduled in
+> after we do the iteration we're still good because it scheduled.
 
-Acked-by: Kirill A. Shutemov <kirill@shutemov.name>
+Something like the following for sys_membarrier(), then?
+
+  smp_mb();
+  for_each_cpu(cpu, current->mm->cpu_vm_mask) {
+     if (cpu_curr(cpu)->mm == current->mm)
+        smp_call_function_single(cpu, func, NULL, 1);
+  }
+
+Then the code changing ->mm on the other CPU also needs to have a
+full smp_mb() somewhere after the change to ->mm, but before starting
+user-space execution.  Which it might well just due to overhead, but
+we need to make sure that someone doesn't optimize us out of existence.
+
+							Thanx, Paul
+
+> As to needing to keep rcu_read_lock() around the iteration, for sure we
+> need that to ensure the remote task_struct reference we take is valid.
+> 
