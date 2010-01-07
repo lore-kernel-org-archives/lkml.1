@@ -1,49 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932680Ab0AGA0M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756162Ab0AGA2i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932680Ab0AGA0M (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 19:26:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932584Ab0AGA0K
+	id S1756162Ab0AGA2i (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 19:28:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755940Ab0AGA2h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 19:26:10 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:28750 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932609Ab0AGA0J (ORCPT
+	Wed, 6 Jan 2010 19:28:37 -0500
+Received: from mail-yw0-f176.google.com ([209.85.211.176]:47263 "EHLO
+	mail-yw0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755978Ab0AGA2g (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 19:26:09 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=fxl5rgPO5WlAHQceoGGXrdeH1aeiH83MCrTeFveAE2O6Z+ab3WkUUPP131ZwdHPaw
-	Pa1+lfmJkbqxewGNmw8ag==
-Date: Wed, 6 Jan 2010 16:25:59 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Anton Blanchard <anton@samba.org>
-cc: Rusty Russell <rusty@rustcorp.com.au>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 6/6] x86: cpumask_of_node() should handle -1 as a node
-In-Reply-To: <20100107000106.GD12742@kryten>
-Message-ID: <alpine.DEB.2.00.1001061623130.24920@chino.kir.corp.google.com>
-References: <20100106045509.245662398@samba.org> <20100106045509.245662398@samba.org> <20100106045525.476396870@samba.org> <201001061706.26845.rusty@rustcorp.com.au> <alpine.DEB.2.00.1001061454580.11653@chino.kir.corp.google.com> <20100106233151.GC12742@kryten>
- <alpine.DEB.2.00.1001061545210.19882@chino.kir.corp.google.com> <20100107000106.GD12742@kryten>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+	Wed, 6 Jan 2010 19:28:36 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
+         :mime-version:content-type:content-transfer-encoding;
+        b=jFCV1eM4kC4A5GPFvGWfWZmuVMLkO6Dts2v9spbcj4kzcuG2RWrIDUGCpLFgkYHGSq
+         xmqqL75tfgZIWw4kAO1W2KgSipec8bqWsf/WGFHvok4ohrm94Ocx6trrMeo6j/Kv4D1Z
+         mrBD8+A2KeP5mp0+r93o1gLJWbvj2PoehFZYc=
+Date: Wed, 6 Jan 2010 18:28:30 -0600
+From: J K Cliburn <jcliburn@gmail.com>
+To: Jiri Slaby <jslaby@suse.cz>
+Cc: davem@davemloft.net, linux-kernel@vger.kernel.org, jirislaby@gmail.com,
+       Chris Snook <chris.snook@gmail.com>, Jie Yang <jie.yang@atheros.com>,
+       atl1-devel@lists.sourceforge.net, netdev@vger.kernel.org
+Subject: Re: [PATCH 1/1] NET: atlx, fix memory leak
+Message-ID: <20100106182830.4bd861fe@gmail.com>
+In-Reply-To: <1262796856-21919-1-git-send-email-jslaby@suse.cz>
+References: <1262796856-21919-1-git-send-email-jslaby@suse.cz>
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.18.5; i686-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 7 Jan 2010, Anton Blanchard wrote:
+On Wed,  6 Jan 2010 17:54:16 +0100
+Jiri Slaby <jslaby@suse.cz> wrote:
 
-> I wasn't using the example to strengthen the case of the -1 behaviour, but to
-> highlight that a complete fix would be more work and risk not making it back
-> to -stable.
+> Stanse found a memory leak in atl2_get_eeprom. eeprom_buff is not
+> freed/assigned on all paths. Fix that.
+
+Acked by: Jay Cliburn <jcliburn@gmail.com>
+
 > 
+> Signed-off-by: Jiri Slaby <jslaby@suse.cz>
+> Cc: Jay Cliburn <jcliburn@gmail.com>
+> Cc: Chris Snook <chris.snook@gmail.com>
+> Cc: Jie Yang <jie.yang@atheros.com>
+> Cc: atl1-devel@lists.sourceforge.net
+> Cc: "David S. Miller" <davem@davemloft.net>
+> Cc: netdev@vger.kernel.org
+> ---
+>  drivers/net/atlx/atl2.c |    7 +++++--
+>  1 files changed, 5 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/net/atlx/atl2.c b/drivers/net/atlx/atl2.c
+> index c0451d7..ec52529 100644
+> --- a/drivers/net/atlx/atl2.c
+> +++ b/drivers/net/atlx/atl2.c
+> @@ -1959,12 +1959,15 @@ static int atl2_get_eeprom(struct net_device
+> *netdev, return -ENOMEM;
+>  
+>  	for (i = first_dword; i < last_dword; i++) {
+> -		if (!atl2_read_eeprom(hw, i*4,
+> &(eeprom_buff[i-first_dword])))
+> -			return -EIO;
+> +		if (!atl2_read_eeprom(hw, i*4,
+> &(eeprom_buff[i-first_dword]))) {
+> +			ret_val = -EIO;
+> +			goto free;
+> +		}
+>  	}
+>  
+>  	memcpy(bytes, (u8 *)eeprom_buff + (eeprom->offset & 3),
+>  		eeprom->len);
+> +free:
+>  	kfree(eeprom_buff);
+>  
+>  	return ret_val;
 
-I don't think that we should defer a complete fix to the callers because 
-it's "more work."  If you've identified places where -1 is passed to 
-cpumask_of_node() without being checked, I think those would be fairly 
-obvious -stable candidates themselves instead of this series.
