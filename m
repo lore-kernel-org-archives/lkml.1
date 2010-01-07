@@ -1,61 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752822Ab0AGSAt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752884Ab0AGSA7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752822Ab0AGSAt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 13:00:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752711Ab0AGSAs
+	id S1752884Ab0AGSA7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 13:00:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752558Ab0AGSA4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 13:00:48 -0500
-Received: from casper.infradead.org ([85.118.1.10]:43180 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752651Ab0AGSAs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 13:00:48 -0500
-Subject: Re: [RFC][PATCH 6/8] mm: handle_speculative_fault()
-From: Peter Zijlstra <peterz@infradead.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Christoph Lameter <cl@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "minchan.kim@gmail.com" <minchan.kim@gmail.com>,
-       "hugh.dickins" <hugh.dickins@tiscali.co.uk>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <alpine.LFD.2.00.1001070937180.7821@localhost.localdomain>
-References: <20100104182429.833180340@chello.nl>
-	 <20100104182813.753545361@chello.nl>
-	 <20100105054536.44bf8002@infradead.org>
-	 <alpine.DEB.2.00.1001050916300.1074@router.home>
-	 <20100105192243.1d6b2213@infradead.org>
-	 <alpine.DEB.2.00.1001071007210.901@router.home>
-	 <alpine.LFD.2.00.1001070814080.7821@localhost.localdomain>
-	 <1262884960.4049.106.camel@laptop>
-	 <alpine.LFD.2.00.1001070934060.7821@localhost.localdomain>
-	 <alpine.LFD.2.00.1001070937180.7821@localhost.localdomain>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 07 Jan 2010 19:00:07 +0100
-Message-ID: <1262887207.4049.127.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 7 Jan 2010 13:00:56 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:50549 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752626Ab0AGSAy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jan 2010 13:00:54 -0500
+Date: Thu, 7 Jan 2010 09:58:09 -0800
+From: Greg KH <gregkh@suse.de>
+To: Mike Frysinger <vapier.adi@gmail.com>
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org, stable-review@kernel.org,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, David Howells <dhowells@redhat.com>,
+       James Morris <jmorris@namei.org>
+Subject: Re: [PATCH 59/97] NOMMU: Optimise away the {dac_,}mmap_min_addr
+ tests
+Message-ID: <20100107175809.GA17276@suse.de>
+References: <20100105003133.GA7199@kroah.com>
+ <1262651630-7354-59-git-send-email-gregkh@suse.de>
+ <8bd0f97a1001061803xe3cdd80l1a3c416902452134@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <8bd0f97a1001061803xe3cdd80l1a3c416902452134@mail.gmail.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2010-01-07 at 09:49 -0800, Linus Torvalds wrote:
+On Wed, Jan 06, 2010 at 09:03:31PM -0500, Mike Frysinger wrote:
+> On Mon, Jan 4, 2010 at 19:33, Greg Kroah-Hartman wrote:
+> > --- a/kernel/sysctl.c
+> > +++ b/kernel/sysctl.c
+> > @@ -1200,6 +1200,7 @@ static struct ctl_table vm_table[] = {
+> >                .extra2         = (void *)&hugetlb_infinity,
+> >        },
+> >  #endif
+> > +#ifdef CONFIG_MMU
+> >        {
+> >                .ctl_name       = VM_LOWMEM_RESERVE_RATIO,
+> >                .procname       = "lowmem_reserve_ratio",
+> > @@ -1353,6 +1354,7 @@ static struct ctl_table vm_table[] = {
+> >                .mode           = 0644,
+> >                .proc_handler   = &mmap_min_addr_handler,
+> >        },
+> > +#endif
+> >  #ifdef CONFIG_NUMA
+> >        {
+> >                .ctl_name       = CTL_UNNUMBERED,
 > 
-> The thing is, I can pretty much _guarantee_ that the speculative page 
-> fault is going to end up doing a lot of nasty stuff that still needs 
-> almost-global locking, and it's likely to be more complicated and slower 
-> for the single-threaded case (you end up needing refcounts, a new "local" 
-> lock or something).
+> seems there was a merge error here when adding the patch to the stable
+> branch.  this change disables a large number of things when it should
+> only be disabling mmap_min_addr.  notice how the first #ifdef appears
+> at line ~1200 while the second appears at line ~1353.  the original
+> commit was ~1214 to ~1221.
 
-Well, with that sync_vma() thing I posted the other day all the
-speculative page fault needs is a write to current->fault_vma, the ptl
-and an O(nr_threads) loop on unmap() for file vmas -- aside from writing
-the pte itself of course.
+Ah crap :(
 
+Can you send me a patch against 2.6.32.3 that fixes this up so I can get
+a new release out with it?
 
+thanks,
 
-
+greg k-h
