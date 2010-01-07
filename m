@@ -1,79 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932330Ab0AGCuo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932351Ab0AGCvL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932330Ab0AGCuo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 21:50:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755950Ab0AGCun
+	id S932351Ab0AGCvL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 21:51:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932313Ab0AGCvJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 21:50:43 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:54250 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755569Ab0AGCum (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 21:50:42 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Thu, 7 Jan 2010 11:47:28 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, "menage@google.com" <menage@google.com>,
-       kirill@shutemov.name
-Subject: Re: mmotm 2010-01-06-14-34 uploaded (kernel/cgroup)
-Message-Id: <20100107114728.58166ce4.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <4B4549CB.8000809@cn.fujitsu.com>
-References: <201001062259.o06MxQrp023236@imap1.linux-foundation.org>
-	<20100106170849.d0d95c9b.randy.dunlap@oracle.com>
-	<20100107113154.a1fa0103.kamezawa.hiroyu@jp.fujitsu.com>
-	<4B4549CB.8000809@cn.fujitsu.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 6 Jan 2010 21:51:09 -0500
+Received: from mga14.intel.com ([143.182.124.37]:30843 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755950Ab0AGCvB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jan 2010 21:51:01 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
+   d="scan'208";a="230058969"
+Date: Thu, 7 Jan 2010 10:50:54 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Tejun Heo <tj@kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Nick Piggin <npiggin@suse.de>,
+       Andi Kleen <andi@firstfloor.org>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Huang, Ying" <ying.huang@intel.com>
+Subject: Re: [RFC][PATCH] vmalloc: simplify vread()/vwrite()
+Message-ID: <20100107025054.GA11252@localhost>
+References: <20100107012458.GA9073@localhost> <20100107103825.239ffcf9.kamezawa.hiroyu@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100107103825.239ffcf9.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 07 Jan 2010 10:41:15 +0800
-Li Zefan <lizf@cn.fujitsu.com> wrote:
-
-> KAMEZAWA Hiroyuki wrote:
-> > On Wed, 6 Jan 2010 17:08:49 -0800
-> > Randy Dunlap <randy.dunlap@oracle.com> wrote:
-> > 
-> >> On Wed, 06 Jan 2010 14:34:36 -0800 akpm@linux-foundation.org wrote:
-> >>
-> >>> The mm-of-the-moment snapshot 2010-01-06-14-34 has been uploaded to
-> >>>
-> >>>    http://userweb.kernel.org/~akpm/mmotm/
-> >>>
-> >>> and will soon be available at
-> >>>
-> >>>    git://zen-kernel.org/kernel/mmotm.git
-> >>>
-> >>> It contains the following patches against 2.6.33-rc3:
-> >>
-> >> kernel/cgroup.c: In function 'cgroup_write_event_control':
-> >> kernel/cgroup.c:2949: error: implicit declaration of function 'eventfd_fget'
-> >> kernel/cgroup.c:2949: warning: assignment makes pointer from integer without a cast
-> >> kernel/cgroup.c:2955: error: implicit declaration of function 'eventfd_ctx_fileget'
-> >> kernel/cgroup.c:2955: warning: assignment makes pointer from integer without a cast
-> >> make[2]: *** [kernel/cgroup.o] Error 1
-> >>
-> > 
-> > Hmm, how about this rather than adding #ifdefs..
-> > Paul, Li, how do you think ?
+On Thu, Jan 07, 2010 at 09:38:25AM +0800, KAMEZAWA Hiroyuki wrote:
+> On Thu, 7 Jan 2010 09:24:59 +0800
+> Wu Fengguang <fengguang.wu@intel.com> wrote:
 > 
-> I think make CONFIG_CGROUPS select EVENTFD would be better.
+> > vread()/vwrite() is only called from kcore/kmem to access one page at
+> > a time.  So the logic can be vastly simplified.
+> > 
+> I recommend you to rename the function because safety of function is
+> changed and you can show what callers are influenced.
+
+OK.
+ 
+> > The changes are:
+> > - remove the vmlist walk and rely solely on vmalloc_to_page()
+> > - replace the VM_IOREMAP check with (page && page_is_ram(pfn))
+> > 
+> > The VM_IOREMAP check is introduced in commit d0107eb07320b for per-cpu
+> > alloc. Kame, would you double check if this change is OK for that
+> > purpose?
+> > 
+> I think VM_IOREMAP is for avoiding access to device configuration area and
+> unexpected breakage in device. Then, VM_IOREMAP are should be skipped by
+> the caller. (My patch _just_ moves the avoidance of callers to vread()/vwrite())
+
+"device configuration area" is not RAM, so testing of RAM would be
+able to skip them?
+
 > 
-Hm, as far as I know, SELECT is not recommended. But yes, it seems side-effect
-of select is small here. But I avoid it as much as possible, usually.
+> > The page_is_ram() check is necessary because kmap_atomic() is not
+> > designed to work with non-RAM pages.
+> > 
+> I think page_is_ram() is not a complete method...on x86, it just check
+> e820's memory range. checking VM_IOREMAP is better, I think.
 
-Moreover, in this case,
-  - EVENTFD is a feature which is enabled by default.
-  - cgroup is "Say N if unsure" config.
+(double check) Not complete or not safe?
 
-In this case, "depends on" is good.
+EFI seems to not update e820 table by default.  Ying, do you know why?
+
+> > Even for a RAM page, we don't own the page, and cannot assume it's a
+> > _PAGE_CACHE_WB page. So I wonder whether it's necessary to do another
+> > patch to call reserve_memtype() before kmap_atomic() to ensure cache
+> > consistency?
+> > 
+> > TODO: update comments accordingly
+> > 
+> 
+> BTW, f->f_pos problem on 64bit machine still exists and this patch is still
+> hard to test. I stopped that because anyone doesn't show any interests.
+
+I'm using your patch :)
+
+I feel most inconfident on this patch, so submitted it for RFC first.
+I'll then submit a full patch series including your f_pos fix.
+
+> I have no objection to your direction.
+> 
+> but please rewrite the function explanation as
+> "addr" should be page alinged and bufsize should be multiple of page size."
+> and change the function names.
+
+OK, I'll rename it to vread_page().
 
 Thanks,
--Kame
-
+Fengguang
