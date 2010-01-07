@@ -1,75 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756473Ab0AGHyd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756522Ab0AGHz6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756473Ab0AGHyd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 02:54:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756393Ab0AGHyc
+	id S1756522Ab0AGHz6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 02:55:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756444Ab0AGHz5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 02:54:32 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:52477 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756290Ab0AGHyb (ORCPT
+	Thu, 7 Jan 2010 02:55:57 -0500
+Received: from mta3.srv.hcvlny.cv.net ([167.206.4.198]:60277 "EHLO
+	mta3.srv.hcvlny.cv.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756311Ab0AGHz4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 02:54:31 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Thu, 7 Jan 2010 16:51:17 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Ben Blum <bblum@andrew.cmu.edu>
-Cc: Li Zefan <lizf@cn.fujitsu.com>, Andrew Morton <akpm@linux-foundation.org>,
-       menage@google.com, containers@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v4 0/4] cgroups: support for module-loadable subsystems
-Message-Id: <20100107165117.dca1dc52.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20100107074812.GA16656@andrew.cmu.edu>
-References: <20091231051050.GA714@andrew.cmu.edu>
-	<20100106160414.bd555474.akpm@linux-foundation.org>
-	<20100107012606.GA25577@andrew.cmu.edu>
-	<20100107120732.97d502bd.kamezawa.hiroyu@jp.fujitsu.com>
-	<4B45824B.9030108@cn.fujitsu.com>
-	<20100107161627.34b31e0c.kamezawa.hiroyu@jp.fujitsu.com>
-	<20100107074812.GA16656@andrew.cmu.edu>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 7 Jan 2010 02:55:56 -0500
+Date: Thu, 07 Jan 2010 02:55:20 -0500
+From: Michael Breuer <mbreuer@majjas.com>
+Subject: Re: [PATCH] af_packet: Don't use skb after dev_queue_xmit()
+In-reply-to: <20100107074756.GB6258@ff.dom.local>
+To: Jarek Poplawski <jarkao2@gmail.com>
+Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
+       flyboy@gmail.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Message-id: <4B459368.2000503@majjas.com>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7BIT
+References: <20100106072208.GA6711@ff.dom.local> <4B44E952.5000804@majjas.com>
+ <20100106131044.25b4e500@nehalam> <4B451C31.3000309@majjas.com>
+ <4B454A16.3030909@majjas.com> <4B455C62.6030504@majjas.com>
+ <20100106205343.5460d658@nehalam> <4B4571D5.30002@majjas.com>
+ <4B457711.1040008@majjas.com> <4B458B36.6050509@majjas.com>
+ <20100107074756.GB6258@ff.dom.local>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.5)
+ Gecko/20091204 Lightning/1.0b2pre Thunderbird/3.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 7 Jan 2010 02:48:12 -0500
-Ben Blum <bblum@andrew.cmu.edu> wrote:
+On 1/7/2010 2:47 AM, Jarek Poplawski wrote:
+> On Thu, Jan 07, 2010 at 02:20:22AM -0500, Michael Breuer wrote:
+>    
+>> ...
+>> Reapplied a couple of earlier patches - still can't do jumbo frames, but
+>> the rx errors are gone and speed has improved. Too early to assure that
+>> it's stable.
+>>
+>> Patches that seem to fix the rx drops (all from Stephen):
+>> 1) Patch change to tx_init
+>> 2) Patch to lock netif_device_detach
+>> 3) Patch to sky2_tx_complete to add netif_device_present test
+>> Also in the mix: Jarek's alternative 2
+>>      
+> BTW, the main difference between alt. 1 and 2 is error notification:
+> alternative 2 doesn't hide some (most) of drops, so, dependending on
+> app, there might be more and faster retransmits. (I don't know what
+> apps used by you (other than dhcp) can depend so much on this.)
+>
+>    
+Unless I misread the code, I think that in some cases e skb is actually 
+freed if the cfq (among others perhaps) scheduler returns an error on 
+enqueue (flow control perhaps).  Thus with alternative 1, it is possible 
+that the skb is acted upon after being freed - this would be consistent 
+with the DMAR errors I saw.
 
-> >  2. Making this to be reasonable value.
-> > #define CGROUP_SUBSYS_COUNT (BITS_PER_BYTE*sizeof(unsigned long))
-> >    I can't find why.
-> 
-> "We limit to this many since cgroupfs_root has subsys_bits to keep track
-> of all of them." should it be less, perhaps?
-
-It's ok if it's clear that
-"this decistion is done by implementation choice, not by cgroup's nature"
-
-> the memory footprint is not
-> great, it is true, but implementing dynamically sized subsystem tracking
-> data structures requires much cleverer code in many places.
-> 
-yes. I don't request that.
-
-> >  3. show whehter a subsys is a loadable module or not via /proc/cgroups
-> 
-> with just "y" or "n"? possible, and probably easy. do note that since
-> they are sorted by subsys_id, all the ones above a certain line will be
-> "n" and all below will be "y".
-> 
-yes. 
-
-#subsys_name    hierarchy       num_cgroups     enabled  module
-cpuset  0       1       1	0
-
-and 0/1 to show y/n ? (but this cause interface incompatibility...)
-
-
-Thanks,
--Kame
-   
+>> With this set and mtu=1500 all seems good - decent if not stellar
+>> throughput; no logged errors; no reported packet loss. As before, will
+>> leave running and see if anything falls apart.
+>>      
+> Good news!
+>
+> Jarek P.
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>    
 
