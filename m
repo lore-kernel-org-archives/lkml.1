@@ -1,172 +1,283 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753332Ab0AGGT7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754526Ab0AGGVn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753332Ab0AGGT7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 01:19:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751406Ab0AGGT6
+	id S1754526Ab0AGGVn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 01:21:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751728Ab0AGGVm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 01:19:58 -0500
-Received: from tomts13.bellnexxia.net ([209.226.175.34]:33396 "EHLO
-	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751248Ab0AGGT6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 01:19:58 -0500
-Date: Thu, 7 Jan 2010 01:19:55 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org,
-       josh@joshtriplett.org, tglx@linutronix.de, peterz@infradead.org,
-       Valdis.Kletnieks@vt.edu, dhowells@redhat.com, laijs@cn.fujitsu.com,
-       dipankar@in.ibm.com
-Subject: Re: [RFC PATCH] introduce sys_membarrier(): process-wide memory
-	barrier
-Message-ID: <20100107061955.GC25786@Krystal>
-References: <20100107044007.GA22863@Krystal> <1262842854.28171.3710.camel@gandalf.stny.rr.com>
+	Thu, 7 Jan 2010 01:21:42 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:57953 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751406Ab0AGGVk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jan 2010 01:21:40 -0500
+Date: Thu, 7 Jan 2010 17:21:34 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-next@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: linux-next: Tree for January 7
+Message-Id: <20100107172134.af71c742.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 3.0.0beta4 (GTK+ 2.18.5; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <1262842854.28171.3710.camel@gandalf.stny.rr.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.27.31-grsec (i686)
-X-Uptime: 01:16:39 up 21 days, 14:35,  5 users,  load average: 0.07, 0.15,
-	0.15
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Thu__7_Jan_2010_17_21_34_+1100_mIvV7bvjJ9pYg4g6"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Steven Rostedt (rostedt@goodmis.org) wrote:
-> On Wed, 2010-01-06 at 23:40 -0500, Mathieu Desnoyers wrote:
-> > Here is an implementation of a new system call, sys_membarrier(), which
-> > executes a memory barrier on all threads of the current process.
-> > 
-> > It aims at greatly simplifying and enhancing the current signal-based
-> > liburcu userspace RCU synchronize_rcu() implementation.
-> > (found at http://lttng.org/urcu)
-> > 
-> 
-> Nice.
-> 
-> > Both the signal-based and the sys_membarrier userspace RCU schemes
-> > permit us to remove the memory barrier from the userspace RCU
-> > rcu_read_lock() and rcu_read_unlock() primitives, thus significantly
-> > accelerating them. These memory barriers are replaced by compiler
-> > barriers on the read-side, and all matching memory barriers on the
-> > write-side are turned into an invokation of a memory barrier on all
-> > active threads in the process. By letting the kernel perform this
-> > synchronization rather than dumbly sending a signal to every process
-> > threads (as we currently do), we diminish the number of unnecessary wake
-> > ups and only issue the memory barriers on active threads. Non-running
-> > threads do not need to execute such barrier anyway, because these are
-> > implied by the scheduler context switches.
-> > 
-> > To explain the benefit of this scheme, let's introduce two example threads:
-> > 
-> > Thread A (non-frequent, e.g. executing liburcu synchronize_rcu())
-> > Thread B (frequent, e.g. executing liburcu rcu_read_lock()/rcu_read_unlock())
-> > 
-> > In a scheme where all smp_mb() in thread A synchronize_rcu() are
-> > ordering memory accesses with respect to smp_mb() present in
-> > rcu_read_lock/unlock(), we can change all smp_mb() from
-> > synchronize_rcu() into calls to sys_membarrier() and all smp_mb() from
-> > rcu_read_lock/unlock() into compiler barriers "barrier()".
-> > 
-> > Before the change, we had, for each smp_mb() pairs:
-> > 
-> > Thread A                    Thread B
-> > prev mem accesses           prev mem accesses
-> > smp_mb()                    smp_mb()
-> > follow mem accesses         follow mem accesses
-> > 
-> > After the change, these pairs become:
-> > 
-> > Thread A                    Thread B
-> > prev mem accesses           prev mem accesses
-> > sys_membarrier()            barrier()
-> > follow mem accesses         follow mem accesses
-> > 
-> > As we can see, there are two possible scenarios: either Thread B memory
-> > accesses do not happen concurrently with Thread A accesses (1), or they
-> > do (2).
-> > 
-> > 1) Non-concurrent Thread A vs Thread B accesses:
-> > 
-> > Thread A                    Thread B
-> > prev mem accesses
-> > sys_membarrier()
-> > follow mem accesses
-> >                             prev mem accesses
-> >                             barrier()
-> >                             follow mem accesses
-> > 
-> > In this case, thread B accesses will be weakly ordered. This is OK,
-> > because at that point, thread A is not particularly interested in
-> > ordering them with respect to its own accesses.
-> > 
-> > 2) Concurrent Thread A vs Thread B accesses
-> > 
-> > Thread A                    Thread B
-> > prev mem accesses           prev mem accesses
-> > sys_membarrier()            barrier()
-> > follow mem accesses         follow mem accesses
-> > 
-> > In this case, thread B accesses, which are ensured to be in program
-> > order thanks to the compiler barrier, will be "upgraded" to full
-> > smp_mb() thanks to the IPIs executing memory barriers on each active
-> > system threads. Each non-running process threads are intrinsically
-> > serialized by the scheduler.
-> > 
-> > The current implementation simply executes a memory barrier in an IPI
-> > handler on each active cpu. Going through the hassle of taking run queue
-> > locks and checking if the thread running on each online CPU belongs to
-> > the current thread seems more heavyweight than the cost of the IPI
-> > itself (not measured though).
-> > 
-> 
-> 
-> I don't think you need to grab any locks. Doing an rcu_read_lock()
-> should prevent tasks from disappearing (since destruction of tasks use
-> RCU). You may still need to grab the tasklist_lock under read_lock().
-> 
-> So what you could do, is find each task that is a thread of the calling
-> task, and then just check task_rq(task)->curr != task. Just send the
-> IPI's to those tasks that pass the test.
+--Signature=_Thu__7_Jan_2010_17_21_34_+1100_mIvV7bvjJ9pYg4g6
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I guess you mean
+Hi all,
 
-"then just check task_rq(task)->curr == task" ... ?
+Changes since 20100106:
 
-> 
-> If the task->rq changes, or the task->rq->curr changes, and makes the
-> condition fail (or even pass), the events that cause those changes are
-> probably good enough than needing to call smp_mb();
+The net tree gained a conflict against the wireless-current tree.
 
-I see your point.
+The mfd tree gained some conflicts against the tmio-mmc tree.
 
-This would probably be good for machines with very large number of cpus
-and without IPI broadcast support, running processes with only few
-threads. I really start to think that we should have some way to compare
-the number of threads belonging to a process and choose between the
-broadcast IPI and the per-cpu IPI depending if we are over or under an
-arbitrary threshold.
+The agp tree still has a build failure for which I reverted a commit.
 
-Thanks,
+The suspend tree gained a conflict against the input tree.
 
-Mathieu
+----------------------------------------------------------------------------
 
+I have created today's linux-next tree at
+git://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
+(patches at http://www.kernel.org/pub/linux/kernel/v2.6/next/ ).  If you
+are tracking the linux-next tree using git, you should not use "git pull"
+to do so as that will try to merge the new linux-next release with the
+old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
+(see below).
 
-> 
-> -- Steve
-> 
-> 
-> 
-> > The system call number is only assigned for x86_64 in this RFC patch.
-> 
-> 
+You can see which trees have been included by looking in the Next/Trees
+file in the source.  There are also quilt-import.log and merge.log files
+in the Next directory.  Between each merge, the tree was built with
+a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
+final fixups (if any), it is also built with powerpc allnoconfig (32 and
+64 bit), ppc44x_defconfig and allyesconfig (minus
+CONFIG_PROFILE_ALL_BRANCHES - this fails its final link) and i386, sparc
+and sparc64 defconfig. These builds also have
+CONFIG_ENABLE_WARN_DEPRECATED, CONFIG_ENABLE_MUST_CHECK and
+CONFIG_DEBUG_INFO disabled when necessary.
 
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Below is a summary of the state of the merge.
+
+We are up to 155 trees (counting Linus' and 22 trees of patches pending
+for Linus' tree), more are welcome (even if they are currently empty).
+Thanks to those who have contributed, and to those who haven't, please do.
+
+Status of my local build tests will be at
+http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
+advice about cross compilers/configs that work, we are always open to add
+more builds.
+
+Thanks to Jan Dittmer for adding the linux-next tree to his build tests
+at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
+Dunlap for doing many randconfig builds.
+
+There is a wiki covering stuff to do with linux-next at
+http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+$ git checkout master
+$ git reset --hard stable
+Merging origin/master
+Merging fixes/fixes
+Merging arm-current/master
+Merging m68k-current/for-linus
+Merging powerpc-merge/merge
+Merging sparc-current/master
+Merging scsi-rc-fixes/master
+Merging net-current/master
+CONFLICT (content): Merge conflict in drivers/scsi/cxgb3i/cxgb3i_offload.c
+Merging sound-current/for-linus
+Merging pci-current/for-linus
+Merging wireless-current/master
+Merging kbuild-current/for-linus
+Merging quilt/driver-core.current
+Merging quilt/tty.current
+Merging quilt/usb.current
+Merging quilt/staging.current
+Merging cpufreq-current/fixes
+Merging input-current/for-linus
+Merging md-current/for-linus
+Merging audit-current/for-linus
+Merging crypto-current/master
+Merging ide-curent/master
+Merging dwmw2/master
+Merging arm/devel
+Merging davinci/davinci-next
+Merging msm/for-next
+Merging omap/for-next
+Merging pxa/for-next
+Merging samsung/next-samsung
+Merging avr32/avr32-arch
+Merging blackfin/for-linus
+Merging cris/for-next
+Merging ia64/test
+Merging m68k/for-next
+Merging m68knommu/for-next
+Merging microblaze/next
+Merging mips/mips-for-linux-next
+Merging parisc/next
+Merging powerpc/next
+Merging 4xx/next
+Merging 52xx-and-virtex/next
+Merging galak/next
+Merging s390/features
+Merging sh/master
+Merging sparc/master
+Merging xtensa/master
+Merging ceph/for-next
+Merging cifs/master
+Merging configfs/linux-next
+Merging ecryptfs/next
+Merging ext3/for_next
+Merging ext4/next
+Merging fatfs/master
+Merging fuse/for-next
+Merging gfs2/master
+Merging jfs/next
+Merging logfs/master
+Merging nfs/linux-next
+Merging nfsd/nfsd-next
+Merging nilfs2/for-next
+Merging ocfs2/linux-next
+Merging squashfs/master
+Merging udf/for_next
+Merging v9fs/for-next
+CONFLICT (add/add): Merge conflict in fs/9p/cache.c
+Merging ubifs/linux-next
+Merging xfs/master
+CONFLICT (add/add): Merge conflict in fs/xfs/linux-2.6/xfs_trace.h
+CONFLICT (content): Merge conflict in include/linux/fs.h
+Merging reiserfs-bkl/reiserfs/kill-bkl
+Merging vfs/for-next
+Merging pci/linux-next
+Merging hid/for-next
+Merging quilt/i2c
+Merging bjdooks-i2c/next-i2c
+Merging quilt/jdelvare-hwmon
+Merging quilt/kernel-doc
+Merging v4l-dvb/master
+Merging kbuild/for-next
+Merging kconfig/for-next
+Merging ide/master
+Merging libata/NEXT
+Merging infiniband/for-next
+Merging acpi/test
+Merging ieee1394/for-next
+Merging ubi/linux-next
+Merging kvm/linux-next
+Merging dlm/next
+Merging scsi/master
+Merging async_tx/next
+Merging net/master
+CONFLICT (content): Merge conflict in net/mac80211/iface.c
+CONFLICT (content): Merge conflict in net/mac80211/scan.c
+Merging wireless/master
+CONFLICT (content): Merge conflict in drivers/net/wireless/iwlwifi/iwl-core=
+.h
+Merging mtd/master
+Merging crypto/master
+Merging sound/for-next
+Merging cpufreq/next
+Merging quilt/rr
+Merging mmc/next
+Merging tmio-mmc/linux-next
+Merging input/next
+Merging lsm/for-next
+Merging block/for-next
+Merging quilt/device-mapper
+Merging embedded/master
+Merging firmware/master
+Merging pcmcia/master
+Merging battery/master
+Merging leds/for-mm
+Merging backlight/for-mm
+Merging kgdb/kgdb-next
+Merging slab/for-next
+Merging uclinux/for-next
+Merging md/for-next
+Merging mfd/for-next
+CONFLICT (content): Merge conflict in drivers/mfd/asic3.c
+CONFLICT (content): Merge conflict in drivers/mfd/t7l66xb.c
+CONFLICT (content): Merge conflict in drivers/mfd/tc6387xb.c
+CONFLICT (content): Merge conflict in drivers/mfd/tc6393xb.c
+CONFLICT (add/add): Merge conflict in drivers/mfd/tmio_core.c
+CONFLICT (content): Merge conflict in drivers/mmc/host/tmio_mmc.c
+CONFLICT (content): Merge conflict in drivers/mmc/host/tmio_mmc.h
+CONFLICT (content): Merge conflict in include/linux/mfd/tmio.h
+Merging hdlc/hdlc-next
+Merging drm/drm-next
+Merging voltage/for-next
+Merging security-testing/next
+Merging lblnet/master
+Merging agp/agp-next
+[master a8ed08d] Revert "drivers/char/agp/amd64-agp.c: squish warning"
+Merging uwb/for-upstream
+Merging watchdog/master
+Merging bdev/master
+Merging dwmw2-iommu/master
+Merging cputime/cputime
+Merging osd/linux-next
+Merging jc_docs/docs-next
+Merging nommu/master
+Merging trivial/for-next
+Merging audit/for-next
+Merging quilt/aoe
+Merging suspend/linux-next
+CONFLICT (content): Merge conflict in drivers/input/serio/serio.c
+Merging bluetooth/master
+Merging fsnotify/for-next
+Merging irda/for-next
+CONFLICT (content): Merge conflict in drivers/net/irda/irda-usb.c
+Merging hwlat/for-linus
+CONFLICT (content): Merge conflict in MAINTAINERS
+CONFLICT (content): Merge conflict in drivers/misc/Makefile
+Merging drbd/for-jens
+Merging catalin/for-next
+Merging alacrity/linux-next
+CONFLICT (content): Merge conflict in lib/Kconfig
+Merging i7core_edac/linux_next
+Merging devicetree/next-devicetree
+Merging spi/next-spi
+Merging limits/writable_limits
+CONFLICT (content): Merge conflict in arch/x86/ia32/ia32entry.S
+CONFLICT (content): Merge conflict in arch/x86/include/asm/unistd_32.h
+CONFLICT (content): Merge conflict in arch/x86/include/asm/unistd_64.h
+CONFLICT (content): Merge conflict in arch/x86/kernel/syscall_table_32.S
+Merging omap_dss2/for-next
+Merging tip/auto-latest
+Merging edac-amd/for-next
+Merging oprofile/for-next
+Merging percpu/for-next
+Applying: slab: update for percpu API change
+Merging workqueues/for-next
+Merging sfi/sfi-test
+Merging asm-generic/next
+Merging hwpoison/hwpoison
+Merging sysctl/master
+Merging quilt/driver-core
+Merging quilt/tty
+Merging quilt/usb
+Merging quilt/staging
+Merging scsi-post-merge/master
+
+--Signature=_Thu__7_Jan_2010_17_21_34_+1100_mIvV7bvjJ9pYg4g6
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAktFfW4ACgkQjjKRsyhoI8wcKgCgrZhQzrqtV9wqjfwuYRq0t/co
+DEMAn1ja6DZM8Fug7a0O8+7dLsg/B9J1
+=tanW
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__7_Jan_2010_17_21_34_+1100_mIvV7bvjJ9pYg4g6--
