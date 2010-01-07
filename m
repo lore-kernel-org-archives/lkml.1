@@ -1,100 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753334Ab0AGQtx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753358Ab0AGQt6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753334Ab0AGQtx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 11:49:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753337Ab0AGQtv
+	id S1753358Ab0AGQt6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 11:49:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753343Ab0AGQtw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Thu, 7 Jan 2010 11:49:52 -0500
+Received: from e9.ny.us.ibm.com ([32.97.182.139]:43173 "EHLO e9.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753336Ab0AGQtv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 7 Jan 2010 11:49:51 -0500
-Received: from rcsinet12.oracle.com ([148.87.113.124]:24141 "EHLO
-	rcsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753261Ab0AGQtu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 11:49:50 -0500
-Date: Thu, 7 Jan 2010 08:47:59 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       "menage@google.com" <menage@google.com>, kirill@shutemov.name,
-       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>
-Subject: Re: mmotm 2010-01-06-14-34 uploaded (kernel/cgroup)
-Message-Id: <20100107084759.638aa3bd.randy.dunlap@oracle.com>
-In-Reply-To: <20100107113154.a1fa0103.kamezawa.hiroyu@jp.fujitsu.com>
-References: <201001062259.o06MxQrp023236@imap1.linux-foundation.org>
-	<20100106170849.d0d95c9b.randy.dunlap@oracle.com>
-	<20100107113154.a1fa0103.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt354.oracle.com [141.146.40.154]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090205.4B46104C.0050:SCFMA4539814,ss=1,fgs=0
+Date: Thu, 7 Jan 2010 08:49:46 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       akpm@linux-foundation.org, josh@joshtriplett.org, tglx@linutronix.de,
+       peterz@infradead.org, Valdis.Kletnieks@vt.edu, dhowells@redhat.com,
+       laijs@cn.fujitsu.com, dipankar@in.ibm.com
+Subject: Re: [RFC PATCH] introduce sys_membarrier(): process-wide memory
+	barrier
+Message-ID: <20100107164946.GD6764@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20100107044007.GA22863@Krystal> <1262842854.28171.3710.camel@gandalf.stny.rr.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1262842854.28171.3710.camel@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 7 Jan 2010 11:31:54 +0900 KAMEZAWA Hiroyuki wrote:
-
-> On Wed, 6 Jan 2010 17:08:49 -0800
-> Randy Dunlap <randy.dunlap@oracle.com> wrote:
-> 
-> > On Wed, 06 Jan 2010 14:34:36 -0800 akpm@linux-foundation.org wrote:
+On Thu, Jan 07, 2010 at 12:40:54AM -0500, Steven Rostedt wrote:
+> On Wed, 2010-01-06 at 23:40 -0500, Mathieu Desnoyers wrote:
+> > Here is an implementation of a new system call, sys_membarrier(), which
+> > executes a memory barrier on all threads of the current process.
 > > 
-> > > The mm-of-the-moment snapshot 2010-01-06-14-34 has been uploaded to
-> > > 
-> > >    http://userweb.kernel.org/~akpm/mmotm/
-> > > 
-> > > and will soon be available at
-> > > 
-> > >    git://zen-kernel.org/kernel/mmotm.git
-> > > 
-> > > It contains the following patches against 2.6.33-rc3:
-> > 
-> > 
-> > kernel/cgroup.c: In function 'cgroup_write_event_control':
-> > kernel/cgroup.c:2949: error: implicit declaration of function 'eventfd_fget'
-> > kernel/cgroup.c:2949: warning: assignment makes pointer from integer without a cast
-> > kernel/cgroup.c:2955: error: implicit declaration of function 'eventfd_ctx_fileget'
-> > kernel/cgroup.c:2955: warning: assignment makes pointer from integer without a cast
-> > make[2]: *** [kernel/cgroup.o] Error 1
+> > It aims at greatly simplifying and enhancing the current signal-based
+> > liburcu userspace RCU synchronize_rcu() implementation.
+> > (found at http://lttng.org/urcu)
 > > 
 > 
-> Hmm, how about this rather than adding #ifdefs..
-> Paul, Li, how do you think ?
-> ==
-> Cgroup's eventdf feature has depenedecy to EVENTFD
+> Nice.
 > 
-> This is a patch onto
-> cgroup-implement-eventfd-based-generic-api-for-notifications.patch
+> > Both the signal-based and the sys_membarrier userspace RCU schemes
+> > permit us to remove the memory barrier from the userspace RCU
+> > rcu_read_lock() and rcu_read_unlock() primitives, thus significantly
+> > accelerating them. These memory barriers are replaced by compiler
+> > barriers on the read-side, and all matching memory barriers on the
+> > write-side are turned into an invokation of a memory barrier on all
+> > active threads in the process. By letting the kernel perform this
+> > synchronization rather than dumbly sending a signal to every process
+> > threads (as we currently do), we diminish the number of unnecessary wake
+> > ups and only issue the memory barriers on active threads. Non-running
+> > threads do not need to execute such barrier anyway, because these are
+> > implied by the scheduler context switches.
+> > 
+> > To explain the benefit of this scheme, let's introduce two example threads:
+> > 
+> > Thread A (non-frequent, e.g. executing liburcu synchronize_rcu())
+> > Thread B (frequent, e.g. executing liburcu rcu_read_lock()/rcu_read_unlock())
+> > 
+> > In a scheme where all smp_mb() in thread A synchronize_rcu() are
+> > ordering memory accesses with respect to smp_mb() present in
+> > rcu_read_lock/unlock(), we can change all smp_mb() from
+> > synchronize_rcu() into calls to sys_membarrier() and all smp_mb() from
+> > rcu_read_lock/unlock() into compiler barriers "barrier()".
+> > 
+> > Before the change, we had, for each smp_mb() pairs:
+> > 
+> > Thread A                    Thread B
+> > prev mem accesses           prev mem accesses
+> > smp_mb()                    smp_mb()
+> > follow mem accesses         follow mem accesses
+> > 
+> > After the change, these pairs become:
+> > 
+> > Thread A                    Thread B
+> > prev mem accesses           prev mem accesses
+> > sys_membarrier()            barrier()
+> > follow mem accesses         follow mem accesses
+> > 
+> > As we can see, there are two possible scenarios: either Thread B memory
+> > accesses do not happen concurrently with Thread A accesses (1), or they
+> > do (2).
+> > 
+> > 1) Non-concurrent Thread A vs Thread B accesses:
+> > 
+> > Thread A                    Thread B
+> > prev mem accesses
+> > sys_membarrier()
+> > follow mem accesses
+> >                             prev mem accesses
+> >                             barrier()
+> >                             follow mem accesses
+> > 
+> > In this case, thread B accesses will be weakly ordered. This is OK,
+> > because at that point, thread A is not particularly interested in
+> > ordering them with respect to its own accesses.
+> > 
+> > 2) Concurrent Thread A vs Thread B accesses
+> > 
+> > Thread A                    Thread B
+> > prev mem accesses           prev mem accesses
+> > sys_membarrier()            barrier()
+> > follow mem accesses         follow mem accesses
+> > 
+> > In this case, thread B accesses, which are ensured to be in program
+> > order thanks to the compiler barrier, will be "upgraded" to full
+> > smp_mb() thanks to the IPIs executing memory barriers on each active
+> > system threads. Each non-running process threads are intrinsically
+> > serialized by the scheduler.
+> > 
+> > The current implementation simply executes a memory barrier in an IPI
+> > handler on each active cpu. Going through the hassle of taking run queue
+> > locks and checking if the thread running on each online CPU belongs to
+> > the current thread seems more heavyweight than the cost of the IPI
+> > itself (not measured though).
+> > 
 > 
-> CC: Li Zefan <lizf@cn.fujitsu.com>
-> CC: Kirill A. Shutemov <kirill@shutemov.name>
-> CC: Paul Menage <menage@google.com>
-> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-
-Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
-
-Thanks.
-
-> ---
->  init/Kconfig |    1 +
->  1 file changed, 1 insertion(+)
 > 
-> Index: ref-mmotm/init/Kconfig
-> ===================================================================
-> --- ref-mmotm.orig/init/Kconfig
-> +++ ref-mmotm/init/Kconfig
-> @@ -509,6 +509,7 @@ endchoice
->  
->  menuconfig CGROUPS
->  	boolean "Control Group support"
-> +	depends on EVENTFD
->  	help
->  	  This option adds support for grouping sets of processes together, for
->  	  use with process control subsystems such as Cpusets, CFS, memory
+> I don't think you need to grab any locks. Doing an rcu_read_lock()
+> should prevent tasks from disappearing (since destruction of tasks use
+> RCU). You may still need to grab the tasklist_lock under read_lock().
 > 
+> So what you could do, is find each task that is a thread of the calling
+> task, and then just check task_rq(task)->curr != task. Just send the
+> IPI's to those tasks that pass the test.
+> 
+> If the task->rq changes, or the task->rq->curr changes, and makes the
+> condition fail (or even pass), the events that cause those changes are
+> probably good enough than needing to call smp_mb();
 
+This narrows the fatal window, but does not eliminate it.  :-(
 
----
-~Randy
+The CPU doing the sys_membarrier() might see an old value of ->curr,
+and the other CPU might see an old value of whatever pointer we are
+trying to recycle.  This combination is fatal.
+
+							Thanx, Paul
