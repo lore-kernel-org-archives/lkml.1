@@ -1,37 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932705Ab0AGAMh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756066Ab0AGAWB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932705Ab0AGAMh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 19:12:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932411Ab0AGAMg
+	id S1756066Ab0AGAWB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 19:22:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755309Ab0AGAWA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 19:12:36 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:25786 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932318Ab0AGAMe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 19:12:34 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <alpine.LFD.2.00.1001061044000.3630@localhost.localdomain>
-References: <alpine.LFD.2.00.1001061044000.3630@localhost.localdomain> <20100106172317.25862.64950.stgit@warthog.procyon.org.uk> <20100106172333.25862.40963.stgit@warthog.procyon.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: dhowells@redhat.com, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, uclinux-dev@uclinux.org,
-       Daisuke HATAYAMA <d.hatayama@jp.fujitsu.com>,
-       Paul Mundt <lethal@linux-sh.org>
-Subject: Re: [PATCH 4/4] elf_fdpic_core_dump(): fix build break in 2.6.33-rc1
-Date: Thu, 07 Jan 2010 00:12:16 +0000
-Message-ID: <11214.1262823136@redhat.com>
+	Wed, 6 Jan 2010 19:22:00 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:34596 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750832Ab0AGAV7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jan 2010 19:21:59 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=cFlKWbdRTPECIM9q8jLJiED1+Tcxlz2ysrMbPCN0Ckx4Vw/r53X1awWCA++5huY6rg
+         aowADiFfXG5nrIdnoTv+XhQmRbLguhZZtRMuUCK2YGq+MymdQ1LfBBPc6kW2tnFuHzT7
+         i3xMGKt2Ldswcxxq+7Fu+LifHLfI73j9Zyoh0=
+From: Alexander Beregalov <a.beregalov@gmail.com>
+To: gregkh@suse.de, linux-kernel@vger.kernel.org
+Cc: Alexander Beregalov <a.beregalov@gmail.com>
+Subject: [PATCH] staging: cx25821: avoid NULL pointer dereference
+Date: Thu,  7 Jan 2010 03:21:48 +0300
+Message-Id: <1262823708-28664-1-git-send-email-a.beregalov@gmail.com>
+X-Mailer: git-send-email 1.6.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds <torvalds@linux-foundation.org> wrote:
+Assign dev only if fh is not NULL.
 
-> So a strong NAK to this patch.
+Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
+---
+ drivers/staging/cx25821/cx25821-audups11.c |    3 ++-
+ drivers/staging/cx25821/cx25821-video.c    |    3 ++-
+ 2 files changed, 4 insertions(+), 2 deletions(-)
 
-Okay, forget that one then.  Can you take the others?
+diff --git a/drivers/staging/cx25821/cx25821-audups11.c b/drivers/staging/cx25821/cx25821-audups11.c
+index 89c8fe2..46c7f78 100644
+--- a/drivers/staging/cx25821/cx25821-audups11.c
++++ b/drivers/staging/cx25821/cx25821-audups11.c
+@@ -343,10 +343,11 @@ static int vidioc_s_ctrl(struct file *file, void *priv,
+ 			 struct v4l2_control *ctl)
+ {
+ 	struct cx25821_fh *fh = priv;
+-	struct cx25821_dev *dev = fh->dev;
++	struct cx25821_dev *dev;
+ 	int err;
+ 
+ 	if (fh) {
++		dev = fh->dev;
+ 		err = v4l2_prio_check(&dev->prio, &fh->prio);
+ 		if (0 != err)
+ 			return err;
+diff --git a/drivers/staging/cx25821/cx25821-video.c b/drivers/staging/cx25821/cx25821-video.c
+index c7c14c7..9bcece7 100644
+--- a/drivers/staging/cx25821/cx25821-video.c
++++ b/drivers/staging/cx25821/cx25821-video.c
+@@ -963,10 +963,11 @@ int cx25821_set_freq(struct cx25821_dev *dev, struct v4l2_frequency *f)
+ int vidioc_s_frequency(struct file *file, void *priv, struct v4l2_frequency *f)
+ {
+ 	struct cx25821_fh *fh = priv;
+-	struct cx25821_dev *dev = fh->dev;
++	struct cx25821_dev *dev;
+ 	int err;
+ 
+ 	if (fh) {
++		dev = fh->dev;
+ 		err = v4l2_prio_check(&dev->prio, &fh->prio);
+ 		if (0 != err)
+ 			return err;
+-- 
+1.6.6
 
-David
