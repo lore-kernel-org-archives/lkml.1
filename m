@@ -1,78 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756403Ab0AGHeZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932393Ab0AGHeK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756403Ab0AGHeZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 02:34:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756381Ab0AGHeY
+	id S932393Ab0AGHeK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 02:34:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756322Ab0AGHeJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 02:34:24 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:39274 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756329Ab0AGHeJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 7 Jan 2010 02:34:09 -0500
-Date: Thu, 7 Jan 2010 08:34:08 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Huang Ying <ying.huang@intel.com>
-Cc: "lenb@kernel.org" <lenb@kernel.org>,
-       "ak@linux.intel.com" <ak@linux.intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
-Subject: Re: [PATCH 5/5] ACPI, APEI, Document for APEI
-Message-ID: <20100107073408.GA1007@atrey.karlin.mff.cuni.cz>
-References: <1261980744-4450-2-git-send-email-ying.huang@intel.com> <1261980744-4450-3-git-send-email-ying.huang@intel.com> <1261980744-4450-4-git-send-email-ying.huang@intel.com> <1261980744-4450-5-git-send-email-ying.huang@intel.com> <1261980744-4450-6-git-send-email-ying.huang@intel.com> <20100106071431.GB1494@ucw.cz> <20100106071609.GA1648@ucw.cz> <1262762503.17852.9.camel@yhuang-dev.sh.intel.com> <20100107071254.GE1689@ucw.cz> <1262849184.17852.41.camel@yhuang-dev.sh.intel.com>
+Received: from mail-qy0-f194.google.com ([209.85.221.194]:36358 "EHLO
+	mail-qy0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756265Ab0AGHeH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jan 2010 02:34:07 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type;
+        b=AS4n2gQw9aMBMduNaZmUbMBcZ0flmhX/z5EeCxLc6WEDhQqUZTJUEN17ItaF7xdX36
+         p0Tmq6XZl69kcqTeFKEXGdOKTpN20d/xa+N808BW2S+H+rqiOf2vXfbh6tu3NN0avOM1
+         E/lNK4WXP1O1eHEms7P5Z0XmM/slghhbdX7w0=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1262849184.17852.41.camel@yhuang-dev.sh.intel.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20100107065230.GA1303@ucw.cz>
+References: <20100106071026.GD1382@ucw.cz> <f17812d71001052317h2bf25fady6bd729b35ef6db63@mail.gmail.com> 
+	<20100107065230.GA1303@ucw.cz>
+From: Eric Miao <eric.y.miao@gmail.com>
+Date: Thu, 7 Jan 2010 15:33:46 +0800
+Message-ID: <f17812d71001062333y2e49fa21scf91718da9ae3091@mail.gmail.com>
+Subject: Re: sharp c-3000 aka spitz: fix warn_on introduced in 2.6.32-rc1
+To: Pavel Machek <pavel@ucw.cz>
+Cc: dtor@mail.ru, linux-input@vger.kernel.org, rpurdie@rpsys.net,
+       lenz@cs.wisc.edu, kernel list <linux-kernel@vger.kernel.org>,
+       Dirk@opfer-online.de, arminlitzel@web.de, Cyril Hrubis <metan@ucw.cz>,
+       thommycheck@gmail.com,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+       dbaryshkov@gmail.com, omegamoon@gmail.com, utx@penguin.cz,
+       zaurus-devel@www.linuxtogo.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@osdl.org>
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Jan 7, 2010 at 2:52 PM, Pavel Machek <pavel@ucw.cz> wrote:
+> On Wed 2010-01-06 15:17:39, Eric Miao wrote:
+>> On Wed, Jan 6, 2010 at 3:10 PM, Pavel Machek <pavel@ucw.cz> wrote:
+>> >
+>> > Sharp-SL code uses strange, complex grouping of gpios for wakeups
+>> > toggling. Fortunately, it is unneeded in recent kernels (and actually
+>> > provokes WARN_ONs during resume). Remove it.
+>> >
+>> > Signed-off-by: Pavel Machek <pavel@ucw.cz>
+>>
+>> Pavel,
+>>
+>> The code to be removed below is used to support pxa27x_keypad
+>> to be able to resume from sleep. What's the exact reason to remove
+>> this on spitz?
+>
+> Well, otherwise I get this during resume: (2.6.32 regression)
+>
+> (and similar for matrix-keypad, but dmitry worked around that
+> already).
+>
+> Problem is that gpio-keys and matrix-keypad want to set_wake for each
+> gpio individually, hw can do that, but pxa27x.c breaks it.
+>
+> I don't get it; what is pxa27x_keypad used on? It looks like
+> matrix-keypad subset.
+>
 
-> On Thu, 2010-01-07 at 15:12 +0800, Pavel Machek wrote:
-> > On Wed 2010-01-06 15:21:43, Huang Ying wrote:
-> > > On Wed, 2010-01-06 at 15:16 +0800, Pavel Machek wrote:
-> > > > > > +The user interface of EINJ is in debug file system, under the
-> > > > > > +directory apei/einj. The following files are provided.
-> > > > > > +
-> > > > > > +- available_error_type
-> > > > > > +  Read this file will return the error injection capability of the
-> > > > > > +  platform, that is, which error types are supported. The error type
-> > > > > > +  definition is as follow, the left field is the error type value, the
-> > > > > > +  right field is error description.
-> > > > > > +
-> > > > > > +    0x00000001	Processor Correctable
-> > > > > > +    0x00000002	Processor Uncorrectable non-fatal
-> > > > > > +    0x00000004	Processor Uncorrectable fatal
-> > > > > > +    0x00000008  Memory Correctable
-> > > > > > +    0x00000010  Memory Uncorrectable non-fatal
-> > > > > > +    0x00000020  Memory Uncorrectable fatal
-> > > > > > +    0x00000040	PCI Express Correctable
-> > > > > > +    0x00000080	PCI Express Uncorrectable fatal
-> > > > > > +    0x00000100	PCI Express Uncorrectable non-fatal
-> > > > > > +    0x00000200	Platform Correctable
-> > > > > > +    0x00000400	Platform Uncorrectable non-fatal
-> > > > > > +    0x00000800	Platform Uncorrectable fatal
-> > > > > > +
-> > > > > > +  The format of file contents are as above, except there are only the
-> > > > > > +  available error type lines.
-> > > > 
-> > > > Strange interface. Why not simply pass single integer -- the bit mask?
-> > > > Bit meanings are not going to change, anyway.
-> > > 
-> > > I have used bit mask in previous versions. But I think this version has
-> > > better readability.
-> > 
-> > Better usability for humans, but kernel interfaces are not for
-> > humans. Please revert to bit mask. 
-> 
-> I think this interface is for humans too. Maybe we can provide both bit
-> mask and human readable explanation as now.
-
-It sucks as a kernel interface. If you want nice interface for humans,
-create a script.
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+pxa27x has its own specific keypad controller. And since we now
+use enable_irq_wake, and the keypad controller has only one
+such IRQ_KEYPAD, will have to setup the keypad GPIO wakeup
+as a whole.
