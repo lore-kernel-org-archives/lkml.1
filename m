@@ -1,53 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753334Ab0AGSSK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753368Ab0AGSUU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753334Ab0AGSSK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 13:18:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753272Ab0AGSSJ
+	id S1753368Ab0AGSUU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 13:20:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753274Ab0AGSUT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 13:18:09 -0500
-Received: from mail-fx0-f225.google.com ([209.85.220.225]:56097 "EHLO
-	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753273Ab0AGSSH (ORCPT
+	Thu, 7 Jan 2010 13:20:19 -0500
+Received: from mta2.srv.hcvlny.cv.net ([167.206.4.197]:41228 "EHLO
+	mta2.srv.hcvlny.cv.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753286Ab0AGSUS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 13:18:07 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=HBINKsbRgdHS6fgNsZoE2jG7JZM9SZ2DhEhmfTcMQj76JLLuSqX02nOKavgPN2hdzf
-         lPj4KcYBSb9pEZq1PUY6iV0CCc1iCgXiGxwXsh14WU9eHLf8DSyA+ePgcNkYD17FDRs6
-         +zgUUKHALvVJDcVWJZRqcfbEK2JclGSpjyAbw=
-Date: Thu, 7 Jan 2010 19:17:59 +0100
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: Michael Breuer <mbreuer@majjas.com>
+	Thu, 7 Jan 2010 13:20:18 -0500
+Date: Thu, 07 Jan 2010 13:19:41 -0500
+From: Michael Breuer <mbreuer@majjas.com>
+Subject: Re: [PATCH] af_packet: Don't use skb after dev_queue_xmit()
+In-reply-to: <20100107180114.GB3088@del.dom.local>
+To: Jarek Poplawski <jarkao2@gmail.com>
 Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
        David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
        flyboy@gmail.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH] af_packet: Don't use skb after dev_queue_xmit()
-Message-ID: <20100107181759.GC3088@del.dom.local>
-References: <4B455C62.6030504@majjas.com>
- <20100106205343.5460d658@nehalam>
- <4B4571D5.30002@majjas.com>
- <4B457711.1040008@majjas.com>
- <4B458B36.6050509@majjas.com>
- <20100107074756.GB6258@ff.dom.local>
- <4B459368.2000503@majjas.com>
- <20100107082140.GB7229@ff.dom.local>
- <4B45F7D7.3060308@majjas.com>
- <20100107175610.GA3088@del.dom.local>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100107175610.GA3088@del.dom.local>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Message-id: <4B4625BD.3070202@majjas.com>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7BIT
+References: <4B451C31.3000309@majjas.com> <4B454A16.3030909@majjas.com>
+ <4B455C62.6030504@majjas.com> <20100106205343.5460d658@nehalam>
+ <4B4571D5.30002@majjas.com> <4B457711.1040008@majjas.com>
+ <4B458B36.6050509@majjas.com> <20100107074756.GB6258@ff.dom.local>
+ <4B459368.2000503@majjas.com> <4B45F841.8030407@majjas.com>
+ <20100107180114.GB3088@del.dom.local>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.5)
+ Gecko/20091204 Lightning/1.0b2pre Thunderbird/3.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 07, 2010 at 06:56:10PM +0100, Jarek Poplawski wrote:
-> [...] (try to grep in net\). [...]
-
-Did I say "net\"?!
-
-Extremely sorry! ;-)
-Jarek P.
+On 1/7/2010 1:01 PM, Jarek Poplawski wrote:
+> On Thu, Jan 07, 2010 at 10:05:37AM -0500, Michael Breuer wrote:
+>    
+>> Bad news - crashed about an hour after I wrote this email - under
+>> load - same crash as before. Network watchdog... lots of attempts to
+>> reset the adapter... then hw watchdog rebooted the system.
+>>      
+> It's a pity. Anyway, I'd be still interested in CONFIG_PACKET_MMAP off
+> if you find time.
+>
+> Jarek P.
+>    
+Ok - any particular patch set to try with? I'm going to start with a 
+clean tree using the latest 2.6.32 from git (tried 2.6.33-rc3, but can't 
+get a usable console... will look at that later.)
