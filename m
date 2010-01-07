@@ -1,339 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753369Ab0AGQx4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753340Ab0AGQ5J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753369Ab0AGQx4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 11:53:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752141Ab0AGQxy
+	id S1753340Ab0AGQ5J (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 11:57:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752944Ab0AGQ5H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 11:53:54 -0500
-Received: from mail-gx0-f211.google.com ([209.85.217.211]:41181 "EHLO
-	mail-gx0-f211.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752382Ab0AGQxu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 11:53:50 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=m4Dd+lgEpKWVoyzMZiK1F/iW/lNU7FcKaP1BuXQYxhNmpxyOSJBqfPYSn4WPTSZqNQ
-         3PkgpODojiv5Q00fwDScAplZJuP7G2wINEA5S6H7T79ZLRq9v11KF0j5DVnzfPADKfYC
-         RFC34inYnghUHUCgYiS0VYE+TOa5F1XCvRJIY=
-From: Brian Gerst <brgerst@gmail.com>
-To: hpa@zytor.com
-Cc: x86@kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 2/3] x86: Sync atomic_xx.h
-Date: Thu,  7 Jan 2010 11:53:34 -0500
-Message-Id: <1262883215-4034-3-git-send-email-brgerst@gmail.com>
-X-Mailer: git-send-email 1.6.5.2
-In-Reply-To: <1262883215-4034-1-git-send-email-brgerst@gmail.com>
-References: <1262883215-4034-1-git-send-email-brgerst@gmail.com>
+	Thu, 7 Jan 2010 11:57:07 -0500
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:42276 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752923Ab0AGQ5E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jan 2010 11:57:04 -0500
+Date: Thu, 7 Jan 2010 08:56:59 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       akpm@linux-foundation.org, josh@joshtriplett.org, tglx@linutronix.de,
+       peterz@infradead.org, rostedt@goodmis.org, Valdis.Kletnieks@vt.edu,
+       dhowells@redhat.com, laijs@cn.fujitsu.com, dipankar@in.ibm.com
+Subject: Re: [RFC PATCH] introduce sys_membarrier(): process-wide memory
+	barrier
+Message-ID: <20100107165659.GF6764@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20100107044007.GA22863@Krystal> <877hruxmzh.fsf@basil.nowhere.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <877hruxmzh.fsf@basil.nowhere.org>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Prepare for merging into atomic.h.
+On Thu, Jan 07, 2010 at 10:50:26AM +0100, Andi Kleen wrote:
+> Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> writes:
+> 
+> > Both the signal-based and the sys_membarrier userspace RCU schemes
+> > permit us to remove the memory barrier from the userspace RCU
+> > rcu_read_lock() and rcu_read_unlock() primitives, thus significantly
+> > accelerating them. These memory barriers are replaced by compiler
+> > barriers on the read-side, and all matching memory barriers on the
+> > write-side are turned into an invokation of a memory barrier on all
+> > active threads in the process. By letting the kernel perform this
+> > synchronization rather than dumbly sending a signal to every process
+> > threads (as we currently do), we diminish the number of unnecessary wake
+> > ups and only issue the memory barriers on active threads. Non-running
+> > threads do not need to execute such barrier anyway, because these are
+> > implied by the scheduler context switches.
+> 
+> I'm not sure all this effort is really needed on architectures
+> with strong memory ordering.
 
-Signed-off-by: Brian Gerst <brgerst@gmail.com>
----
- arch/x86/include/asm/atomic_32.h |   42 +++++++++++++++++---
- arch/x86/include/asm/atomic_64.h |   81 +++++++++++++++++++++++++-------------
- 2 files changed, 89 insertions(+), 34 deletions(-)
+Even CPUs with strong memory ordering allow later reads to complete
+prior to earlier writes, which is enough to cause problems.
 
-diff --git a/arch/x86/include/asm/atomic_32.h b/arch/x86/include/asm/atomic_32.h
-index e128ae9..036962e 100644
---- a/arch/x86/include/asm/atomic_32.h
-+++ b/arch/x86/include/asm/atomic_32.h
-@@ -4,6 +4,7 @@
- #include <linux/compiler.h>
- #include <linux/types.h>
- #include <asm/processor.h>
-+#include <asm/alternative.h>
- #include <asm/cmpxchg.h>
- 
- /*
-@@ -145,8 +146,8 @@ static inline int atomic_inc_and_test(atomic_t *v)
- 
- /**
-  * atomic_add_negative - add and test if negative
-- * @v: pointer of type atomic_t
-  * @i: integer value to add
-+ * @v: pointer of type atomic_t
-  *
-  * Atomically adds @i to @v and returns true
-  * if the result is negative, or false when
-@@ -164,8 +165,8 @@ static inline int atomic_add_negative(int i, atomic_t *v)
- 
- /**
-  * atomic_add_return - add integer and return
-- * @v: pointer of type atomic_t
-  * @i: integer value to add
-+ * @v: pointer of type atomic_t
-  *
-  * Atomically adds @i to @v and returns @i + @v
-  */
-@@ -206,6 +207,9 @@ static inline int atomic_sub_return(int i, atomic_t *v)
- 	return atomic_add_return(-i, v);
- }
- 
-+#define atomic_inc_return(v)  (atomic_add_return(1, v))
-+#define atomic_dec_return(v)  (atomic_sub_return(1, v))
-+
- static inline int atomic_cmpxchg(atomic_t *v, int old, int new)
- {
- 	return cmpxchg(&v->counter, old, new);
-@@ -242,8 +246,33 @@ static inline int atomic_add_unless(atomic_t *v, int a, int u)
- 
- #define atomic_inc_not_zero(v) atomic_add_unless((v), 1, 0)
- 
--#define atomic_inc_return(v)  (atomic_add_return(1, v))
--#define atomic_dec_return(v)  (atomic_sub_return(1, v))
-+/**
-+ * atomic_inc_short - increment of a short integer
-+ * @v: pointer to type int
-+ *
-+ * Atomically adds 1 to @v
-+ * Returns the new value of @u
-+ */
-+static inline short int atomic_inc_short(short int *v)
-+{
-+	asm(LOCK_PREFIX "addw $1, %0" : "+m" (*v));
-+	return *v;
-+}
-+
-+#ifdef CONFIG_X86_64
-+/**
-+ * atomic_or_long - OR of two long integers
-+ * @v1: pointer to type unsigned long
-+ * @v2: pointer to type unsigned long
-+ *
-+ * Atomically ORs @v1 and @v2
-+ * Returns the result of the OR
-+ */
-+static inline void atomic_or_long(unsigned long *v1, unsigned long v2)
-+{
-+	asm(LOCK_PREFIX "orq %1, %0" : "+m" (*v1) : "r" (v2));
-+}
-+#endif
- 
- /* These are x86-specific, used by some header files */
- #define atomic_clear_mask(mask, addr)				\
-@@ -251,8 +280,9 @@ static inline int atomic_add_unless(atomic_t *v, int a, int u)
- 		     : : "r" (~(mask)), "m" (*(addr)) : "memory")
- 
- #define atomic_set_mask(mask, addr)				\
--	asm volatile(LOCK_PREFIX "orl %0,%1"				\
--		     : : "r" (mask), "m" (*(addr)) : "memory")
-+	asm volatile(LOCK_PREFIX "orl %0,%1"			\
-+		     : : "r" ((unsigned)(mask)), "m" (*(addr))	\
-+		     : "memory")
- 
- /* Atomic operations are already serializing on x86 */
- #define smp_mb__before_atomic_dec()	barrier()
-diff --git a/arch/x86/include/asm/atomic_64.h b/arch/x86/include/asm/atomic_64.h
-index 042c331..7740788 100644
---- a/arch/x86/include/asm/atomic_64.h
-+++ b/arch/x86/include/asm/atomic_64.h
-@@ -1,7 +1,9 @@
- #ifndef _ASM_X86_ATOMIC_64_H
- #define _ASM_X86_ATOMIC_64_H
- 
-+#include <linux/compiler.h>
- #include <linux/types.h>
-+#include <asm/processor.h>
- #include <asm/alternative.h>
- #include <asm/cmpxchg.h>
- 
-@@ -45,12 +47,12 @@ static inline void atomic_set(atomic_t *v, int i)
- static inline void atomic_add(int i, atomic_t *v)
- {
- 	asm volatile(LOCK_PREFIX "addl %1,%0"
--		     : "=m" (v->counter)
--		     : "ir" (i), "m" (v->counter));
-+		     : "+m" (v->counter)
-+		     : "ir" (i));
- }
- 
- /**
-- * atomic_sub - subtract the atomic variable
-+ * atomic_sub - subtract integer from atomic variable
-  * @i: integer value to subtract
-  * @v: pointer of type atomic_t
-  *
-@@ -59,8 +61,8 @@ static inline void atomic_add(int i, atomic_t *v)
- static inline void atomic_sub(int i, atomic_t *v)
- {
- 	asm volatile(LOCK_PREFIX "subl %1,%0"
--		     : "=m" (v->counter)
--		     : "ir" (i), "m" (v->counter));
-+		     : "+m" (v->counter)
-+		     : "ir" (i));
- }
- 
- /**
-@@ -77,8 +79,8 @@ static inline int atomic_sub_and_test(int i, atomic_t *v)
- 	unsigned char c;
- 
- 	asm volatile(LOCK_PREFIX "subl %2,%0; sete %1"
--		     : "=m" (v->counter), "=qm" (c)
--		     : "ir" (i), "m" (v->counter) : "memory");
-+		     : "+m" (v->counter), "=qm" (c)
-+		     : "ir" (i) : "memory");
- 	return c;
- }
- 
-@@ -91,8 +93,7 @@ static inline int atomic_sub_and_test(int i, atomic_t *v)
- static inline void atomic_inc(atomic_t *v)
- {
- 	asm volatile(LOCK_PREFIX "incl %0"
--		     : "=m" (v->counter)
--		     : "m" (v->counter));
-+		     : "+m" (v->counter));
- }
- 
- /**
-@@ -104,8 +105,7 @@ static inline void atomic_inc(atomic_t *v)
- static inline void atomic_dec(atomic_t *v)
- {
- 	asm volatile(LOCK_PREFIX "decl %0"
--		     : "=m" (v->counter)
--		     : "m" (v->counter));
-+		     : "+m" (v->counter));
- }
- 
- /**
-@@ -121,8 +121,8 @@ static inline int atomic_dec_and_test(atomic_t *v)
- 	unsigned char c;
- 
- 	asm volatile(LOCK_PREFIX "decl %0; sete %1"
--		     : "=m" (v->counter), "=qm" (c)
--		     : "m" (v->counter) : "memory");
-+		     : "+m" (v->counter), "=qm" (c)
-+		     : : "memory");
- 	return c != 0;
- }
- 
-@@ -139,8 +139,8 @@ static inline int atomic_inc_and_test(atomic_t *v)
- 	unsigned char c;
- 
- 	asm volatile(LOCK_PREFIX "incl %0; sete %1"
--		     : "=m" (v->counter), "=qm" (c)
--		     : "m" (v->counter) : "memory");
-+		     : "+m" (v->counter), "=qm" (c)
-+		     : : "memory");
- 	return c != 0;
- }
- 
-@@ -158,13 +158,13 @@ static inline int atomic_add_negative(int i, atomic_t *v)
- 	unsigned char c;
- 
- 	asm volatile(LOCK_PREFIX "addl %2,%0; sets %1"
--		     : "=m" (v->counter), "=qm" (c)
--		     : "ir" (i), "m" (v->counter) : "memory");
-+		     : "+m" (v->counter), "=qm" (c)
-+		     : "ir" (i) : "memory");
- 	return c;
- }
- 
- /**
-- * atomic_add_return - add and return
-+ * atomic_add_return - add integer and return
-  * @i: integer value to add
-  * @v: pointer of type atomic_t
-  *
-@@ -172,13 +172,36 @@ static inline int atomic_add_negative(int i, atomic_t *v)
-  */
- static inline int atomic_add_return(int i, atomic_t *v)
- {
--	int __i = i;
-+	int __i;
-+#ifdef CONFIG_M386
-+	unsigned long flags;
-+	if (unlikely(boot_cpu_data.x86 <= 3))
-+		goto no_xadd;
-+#endif
-+	/* Modern 486+ processor */
-+	__i = i;
- 	asm volatile(LOCK_PREFIX "xaddl %0, %1"
- 		     : "+r" (i), "+m" (v->counter)
- 		     : : "memory");
- 	return i + __i;
-+
-+#ifdef CONFIG_M386
-+no_xadd: /* Legacy 386 processor */
-+	local_irq_save(flags);
-+	__i = atomic_read(v);
-+	atomic_set(v, i + __i);
-+	local_irq_restore(flags);
-+	return i + __i;
-+#endif
- }
- 
-+/**
-+ * atomic_sub_return - subtract integer and return
-+ * @v: pointer of type atomic_t
-+ * @i: integer value to subtract
-+ *
-+ * Atomically subtracts @i from @v and returns @v - @i
-+ */
- static inline int atomic_sub_return(int i, atomic_t *v)
- {
- 	return atomic_add_return(-i, v);
-@@ -187,23 +210,23 @@ static inline int atomic_sub_return(int i, atomic_t *v)
- #define atomic_inc_return(v)  (atomic_add_return(1, v))
- #define atomic_dec_return(v)  (atomic_sub_return(1, v))
- 
--static inline long atomic_cmpxchg(atomic_t *v, int old, int new)
-+static inline int atomic_cmpxchg(atomic_t *v, int old, int new)
- {
- 	return cmpxchg(&v->counter, old, new);
- }
- 
--static inline long atomic_xchg(atomic_t *v, int new)
-+static inline int atomic_xchg(atomic_t *v, int new)
- {
- 	return xchg(&v->counter, new);
- }
- 
- /**
-- * atomic_add_unless - add unless the number is a given value
-+ * atomic_add_unless - add unless the number is already a given value
-  * @v: pointer of type atomic_t
-  * @a: the amount to add to v...
-  * @u: ...unless v is equal to u.
-  *
-- * Atomically adds @a to @v, so long as it was not @u.
-+ * Atomically adds @a to @v, so long as @v was not already @u.
-  * Returns non-zero if @v was not @u, and zero otherwise.
-  */
- static inline int atomic_add_unless(atomic_t *v, int a, int u)
-@@ -236,6 +259,7 @@ static inline short int atomic_inc_short(short int *v)
- 	return *v;
- }
- 
-+#ifdef CONFIG_X86_64
- /**
-  * atomic_or_long - OR of two long integers
-  * @v1: pointer to type unsigned long
-@@ -248,15 +272,16 @@ static inline void atomic_or_long(unsigned long *v1, unsigned long v2)
- {
- 	asm(LOCK_PREFIX "orq %1, %0" : "+m" (*v1) : "r" (v2));
- }
-+#endif
- 
- /* These are x86-specific, used by some header files */
--#define atomic_clear_mask(mask, addr)					\
--	asm volatile(LOCK_PREFIX "andl %0,%1"				\
-+#define atomic_clear_mask(mask, addr)				\
-+	asm volatile(LOCK_PREFIX "andl %0,%1"			\
- 		     : : "r" (~(mask)), "m" (*(addr)) : "memory")
- 
--#define atomic_set_mask(mask, addr)					\
--	asm volatile(LOCK_PREFIX "orl %0,%1"				\
--		     : : "r" ((unsigned)(mask)), "m" (*(addr))		\
-+#define atomic_set_mask(mask, addr)				\
-+	asm volatile(LOCK_PREFIX "orl %0,%1"			\
-+		     : : "r" ((unsigned)(mask)), "m" (*(addr))	\
- 		     : "memory")
- 
- /* Atomic operations are already serializing on x86 */
--- 
-1.6.5.2
+That said, some of the lighter-weight schemes sampling ->mm might be
+safe on TSO machines.
 
+> > + * The current implementation simply executes a memory barrier in an IPI handler
+> > + * on each active cpu. Going through the hassle of taking run queue locks and
+> > + * checking if the thread running on each online CPU belongs to the current
+> > + * thread seems more heavyweight than the cost of the IPI itself.
+> > + */
+> > +SYSCALL_DEFINE0(membarrier)
+> > +{
+> > +	on_each_cpu(membarrier_ipi, NULL, 1);
+> 
+> Can't you use mm->cpu_vm_mask?
+
+Hmmm...  Acquiring the corresponding lock would certainly make this
+safe.  Not sure about lock-less access to it, though.
+
+							Thanx, Paul
