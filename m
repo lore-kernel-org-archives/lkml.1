@@ -1,60 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753910Ab0AGU4F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753996Ab0AGU5c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753910Ab0AGU4F (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 15:56:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753102Ab0AGU4E
+	id S1753996Ab0AGU5c (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 15:57:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753256Ab0AGU5b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 15:56:04 -0500
-Received: from mga09.intel.com ([134.134.136.24]:26753 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751775Ab0AGU4B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 15:56:01 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,237,1262592000"; 
-   d="scan'208";a="585276995"
-Date: Thu, 7 Jan 2010 12:55:58 -0800
-From: mark gross <mgross@linux.intel.com>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: 640E9920 <640e9920@gmail.com>, linux-pm@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [linux-pm] [RFC] PM_QOS api update to use handles 1/5
-Message-ID: <20100107205558.GB5703@linux.intel.com>
-Reply-To: mgross@linux.intel.com
-References: <20091130010953.GA4732@mgross-laptop>
- <20100104083127.GA1450@ucw.cz>
- <20100106191132.GD21316@linux.intel.com>
- <20100106191831.GA3045@elf.ucw.cz>
+	Thu, 7 Jan 2010 15:57:31 -0500
+Received: from isilmar.linta.de ([213.133.102.198]:34275 "EHLO linta.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753116Ab0AGU5a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jan 2010 15:57:30 -0500
+Date: Thu, 7 Jan 2010 21:57:28 +0100
+From: Dominik Brodowski <linux@dominikbrodowski.net>
+To: Randy Dunlap <rdunlap@xenotime.net>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-kbuild@vger.kernel.org,
+       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Valdis.Kletnieks@vt.edu
+Subject: Re: linux-next: Tree for January 7 (pcmcia)
+Message-ID: <20100107205728.GA19115@isilmar.linta.de>
+Mail-Followup-To: Dominik Brodowski <linux@dominikbrodowski.net>,
+	Randy Dunlap <rdunlap@xenotime.net>,
+	Stephen Rothwell <sfr@canb.auug.org.au>,
+	linux-kbuild@vger.kernel.org, linux-next@vger.kernel.org,
+	LKML <linux-kernel@vger.kernel.org>, Valdis.Kletnieks@vt.edu
+References: <20100107172134.af71c742.sfr@canb.auug.org.au> <20100107101006.e59989a8.rdunlap@xenotime.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20100106191831.GA3045@elf.ucw.cz>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <20100107101006.e59989a8.rdunlap@xenotime.net>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 06, 2010 at 08:18:31PM +0100, Pavel Machek wrote:
-> Hi!
-> 
-> > > Umm.. passing binary numbers like that... is not exactly good
-> > > interface. Think endianness issues  when writing to it from high-level
-> > > language.
+Hey,
+
+On Thu, Jan 07, 2010 at 10:10:06AM -0800, Randy Dunlap wrote:
+> > Hi all,
 > > 
-> > yeah.  At the moment I can't recall why I went binary for the ABI, 
-> > we can revisit this, but its been in the wild for a few years now :(
-> > 
-> > I guess I can do some tricks to see if its a hex string representation
-> > of a number and parse that as well as supporting the s32.  i.e. accept
-> > strings "0x0000000" ... "0xFFFFFFFF" and return -EINVAL for anything
-> > else.
+> > Changes since 20100106:
 > 
-> Maybe you could use length for detection? If they are writing 4 bytes,
-> it is s32, 10 bytes means ascii?
+> 
+> drivers/built-in.o: In function `yenta_probe':
+> yenta_socket.c:(.devinit.text+0x1e582): undefined reference to `pccard_nonstatic_ops'
+> 
+> CONFIG_PCCARD=y
+> CONFIG_PCMCIA=m
+> CONFIG_PCCARD_NONSTATIC=m
+> CONFIG_YENTA=y
+> 
+> so yenta code (built-in) tries to reference data that lives in a
+> loadable module.
 
-That is what I was thinking + making sure the chars in the string where
-valid hex digits ;)  It would be easy to do.  Let me know if you think I
-should attempt to roll that into the kernel ABI exposed by this thing.
+Uh, that was I. If kconfig can't be fixed easily, I'll revert the change
 
---mgross
+>  But I would expect this Kconfig:
+> 
+> config YENTA
+> 	tristate "CardBus yenta-compatible bridge support"
+> 	depends on PCI
+> 	select CARDBUS if !EMBEDDED
+> 	select PCCARD_NONSTATIC if PCMCIA
+> 
+> to make PCCARD_NONSTATIC=y instead of =m.  Has something changed in
+> kconfig recently that would make that different?
 
-
+Best,
+	Dominik
