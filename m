@@ -1,84 +1,255 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752879Ab0AGOgx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752893Ab0AGOjn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752879Ab0AGOgx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 09:36:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752590Ab0AGOgw
+	id S1752893Ab0AGOjn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 09:39:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752709Ab0AGOjm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 09:36:52 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:50035 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752583Ab0AGOgv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 09:36:51 -0500
-Date: Thu, 7 Jan 2010 09:36:40 -0500
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Corrado Zoccolo <czoccolo@gmail.com>
-Cc: Kirill Afonshin <kirill_nnov@mail.ru>, Jeff Moyer <jmoyer@redhat.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>,
-       Shaohua Li <shaohua.li@intel.com>,
-       Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-Subject: Re: [PATCH] cfq-iosched: non-rot devices do not need read queue
-	merging
-Message-ID: <20100107143640.GB7664@redhat.com>
-References: <4e5e476b1001051348y4637986epb9b56958c738061a@mail.gmail.com> <E1NSq2i-0000wY-00.kirill_nnov-mail-ru@foot.mail.ru> <4e5e476b1001070538y35143cc8me7443f3eb0d377@mail.gmail.com>
+	Thu, 7 Jan 2010 09:39:42 -0500
+Received: from daytona.panasas.com ([67.152.220.89]:61558 "EHLO
+	daytona.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752558Ab0AGOjl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jan 2010 09:39:41 -0500
+Message-ID: <4B45F228.7080506@panasas.com>
+Date: Thu, 07 Jan 2010 16:39:36 +0200
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4e5e476b1001070538y35143cc8me7443f3eb0d377@mail.gmail.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+To: Peter Korsgaard <jacmet@sunsite.dk>
+CC: James.Bottomley@suse.de, james.smart@emulex.com,
+       linux-scsi@vger.kernel.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH,RESEND] scsi: use __uX types for headers exported to user
+ space
+References: <1262874005-25089-1-git-send-email-jacmet@sunsite.dk>
+In-Reply-To: <1262874005-25089-1-git-send-email-jacmet@sunsite.dk>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 07 Jan 2010 14:39:38.0916 (UTC) FILETIME=[3D97F640:01CA8FA7]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 07, 2010 at 02:38:29PM +0100, Corrado Zoccolo wrote:
-> Hi Kirill,
-> NCQ is actually measured, so it is reliable.
-> Rotational can be wrong, but you can write to it (e.g. at machine
-> startup) to obtain better handling of your disks.
-> I am also a fan of auto-tuning, and trying to achieve it in cfq, but
-> it is kind of complex, since there are many factors, and some of them
-> aren't modeled by cfq currently.
-> An example is that, on cheap SSDs or flash cards, small writes are far
-> slower than anything else (they can take up to 0.5s), while a read
-> will usually take less than 1ms. Currently, CFQ has no way to handle
-> this extreme situation, since it uses just one idle value (8ms) for
-> all transitions.
-
-Hi Corrado, 
-
-How does idle time value relate to flash card being slower for writes? If
-flash card is slow and we choose to idle on queue (because of direct
-writes), idle time value does not even kick in. We just continue to remain
-on same cfqq and don't do dispatch from next cfqq.
-
-Idle time value will matter only if there was delay from cpu side or from
-workload side in issuing next request after completion of previous one.
-
-Thanks
-Vivek
-
+On 01/07/2010 04:20 PM, Peter Korsgaard wrote:
+> Commit 9e4f5e29 (FC Pass Thru support) exported a number of header files
+> in include/scsi to user space, but didn't change the uX types to the
+> userspace-compatible __uX types. Without that you'll get compile errors
+> when including them - E.G.:
 > 
-> Corrado
+> /tmp/include/scsi/scsi.h:145: error: expected specifier-qualifier-list
+> before ‘u8’
 > 
-> On 1/7/10, Kirill Afonshin <kirill_nnov@mail.ru> wrote:
-> > I think we should not rely on NCQ/non-NCQ or blk_queue_nonrot() because it
-> > may be incorrect:
-> > try this:
-> >
-> > find /sys/ -name rotational 2>/dev/null
-> > find /sys/ -name rotational 2>/dev/null|xargs cat
-> >
-> > all devices are reported as rotational for me including ram, loop and usb
-> > flash drive. Physical block size and optimal io size has invalid values for
-> > all my usb flash drives.
-> >
-> > I think it would be better to do a short performance test before mount. It
-> > will provide all necessary information for io scheduler. We doesn't need
-> > information about NCQ and rotational. We need to predict how much time
-> > specific io operation will take in current context.
-> >
-> > PS: I'm not native speaker.
-> >
-> > Best regards,
-> > Kirill Afonshin
-> >
+> Signed-off-by: Peter Korsgaard <jacmet@sunsite.dk>
+> ---
+>  No feedback since 27/11, resending.
+> 
+>  include/scsi/scsi.h         |    8 ++++----
+>  include/scsi/scsi_netlink.h |   20 ++++++++++----------
+>  2 files changed, 14 insertions(+), 14 deletions(-)
+> 
+> diff --git a/include/scsi/scsi.h b/include/scsi/scsi.h
+> index 8b4deca..ec3053e 100644
+> --- a/include/scsi/scsi.h
+> +++ b/include/scsi/scsi.h
+> @@ -149,10 +149,10 @@ struct scsi_cmnd;
+>  
+>  /* defined in T10 SCSI Primary Commands-2 (SPC2) */
+>  struct scsi_varlen_cdb_hdr {
+> -	u8 opcode;        /* opcode always == VARIABLE_LENGTH_CMD */
+> -	u8 control;
+> -	u8 misc[5];
+> -	u8 additional_cdb_length;         /* total cdb length - 8 */
+> +	__u8 opcode;        /* opcode always == VARIABLE_LENGTH_CMD */
+> +	__u8 control;
+> +	__u8 misc[5];
+> +	__u8 additional_cdb_length;         /* total cdb length - 8 */
+>  	__be16 service_action;
+>  	/* service specific data follows */
+>  };
+
+This is not the only thing broken here. Perhaps something like:
+---
+git diff --stat -p -M include/scsi/scsi.h
+ include/scsi/scsi.h |   90 ++++++++++++++++++++++++++-------------------------
+ 1 files changed, 46 insertions(+), 44 deletions(-)
+
+diff --git a/include/scsi/scsi.h b/include/scsi/scsi.h
+index 8b4deca..05e8c13 100644
+--- a/include/scsi/scsi.h
++++ b/include/scsi/scsi.h
+@@ -10,33 +10,6 @@
+ 
+ #include <linux/types.h>
+ 
+-struct scsi_cmnd;
+-
+-/*
+- * The maximum number of SG segments that we will put inside a
+- * scatterlist (unless chaining is used). Should ideally fit inside a
+- * single page, to avoid a higher order allocation.  We could define this
+- * to SG_MAX_SINGLE_ALLOC to pack correctly at the highest order.  The
+- * minimum value is 32
+- */
+-#define SCSI_MAX_SG_SEGMENTS	128
+-
+-/*
+- * Like SCSI_MAX_SG_SEGMENTS, but for archs that have sg chaining. This limit
+- * is totally arbitrary, a setting of 2048 will get you at least 8mb ios.
+- */
+-#ifdef ARCH_HAS_SG_CHAIN
+-#define SCSI_MAX_SG_CHAIN_SEGMENTS	2048
+-#else
+-#define SCSI_MAX_SG_CHAIN_SEGMENTS	SCSI_MAX_SG_SEGMENTS
+-#endif
+-
+-/*
+- * Special value for scanning to specify scanning or rescanning of all
+- * possible channels, (target) ids, or luns on a given shost.
+- */
+-#define SCAN_WILD_CARD	~0
+-
+ /*
+  *      SCSI opcodes
+  */
+@@ -149,10 +122,10 @@ struct scsi_cmnd;
+ 
+ /* defined in T10 SCSI Primary Commands-2 (SPC2) */
+ struct scsi_varlen_cdb_hdr {
+-	u8 opcode;        /* opcode always == VARIABLE_LENGTH_CMD */
+-	u8 control;
+-	u8 misc[5];
+-	u8 additional_cdb_length;         /* total cdb length - 8 */
++	__u8 opcode;        /* opcode always == VARIABLE_LENGTH_CMD */
++	__u8 control;
++	__u8 misc[5];
++	__u8 additional_cdb_length;         /* total cdb length - 8 */
+ 	__be16 service_action;
+ 	/* service specific data follows */
+ };
+@@ -163,16 +136,6 @@ scsi_varlen_cdb_length(const void *hdr)
+ 	return ((struct scsi_varlen_cdb_hdr *)hdr)->additional_cdb_length + 8;
+ }
+ 
+-extern const unsigned char scsi_command_size_tbl[8];
+-#define COMMAND_SIZE(opcode) scsi_command_size_tbl[((opcode) >> 5) & 7]
+-
+-static inline unsigned
+-scsi_command_size(const unsigned char *cmnd)
+-{
+-	return (cmnd[0] == VARIABLE_LENGTH_CMD) ?
+-		scsi_varlen_cdb_length(cmnd) : COMMAND_SIZE(cmnd[0]);
+-}
+-
+ /*
+  *  SCSI Architecture Model (SAM) Status codes. Taken from SAM-3 draft
+  *  T10/1561-D Revision 4 Draft dated 7th November 2002.
+@@ -288,9 +251,6 @@ enum scsi_protocol {
+ 	SCSI_PROTOCOL_UNSPEC = 0xf, /* No specific protocol */
+ };
+ 
+-/* Returns a human-readable name for the device */
+-extern const char * scsi_device_type(unsigned type);
+-
+ /*
+  * standard mode-select header prepended to all mode-select commands
+  */
+@@ -515,4 +475,46 @@ static inline __u32 scsi_to_u32(__u8 *ptr)
+ 	return (ptr[0]<<24) + (ptr[1]<<16) + (ptr[2]<<8) + ptr[3];
+ }
+ 
++#ifdef __KERNEL__
++
++/*
++ * The maximum number of SG segments that we will put inside a
++ * scatterlist (unless chaining is used). Should ideally fit inside a
++ * single page, to avoid a higher order allocation.  We could define this
++ * to SG_MAX_SINGLE_ALLOC to pack correctly at the highest order.  The
++ * minimum value is 32
++ */
++#define SCSI_MAX_SG_SEGMENTS	128
++
++/*
++ * Like SCSI_MAX_SG_SEGMENTS, but for archs that have sg chaining. This limit
++ * is totally arbitrary, a setting of 2048 will get you at least 8mb ios.
++ */
++#ifdef ARCH_HAS_SG_CHAIN
++#define SCSI_MAX_SG_CHAIN_SEGMENTS	2048
++#else
++#define SCSI_MAX_SG_CHAIN_SEGMENTS	SCSI_MAX_SG_SEGMENTS
++#endif
++
++/*
++ * Special value for scanning to specify scanning or rescanning of all
++ * possible channels, (target) ids, or luns on a given shost.
++ */
++#define SCAN_WILD_CARD	~0
++
++extern const unsigned char scsi_command_size_tbl[8];
++#define COMMAND_SIZE(opcode) scsi_command_size_tbl[((opcode) >> 5) & 7]
++
++static inline unsigned
++scsi_command_size(const unsigned char *cmnd)
++{
++	return (cmnd[0] == VARIABLE_LENGTH_CMD) ?
++		scsi_varlen_cdb_length(cmnd) : COMMAND_SIZE(cmnd[0]);
++}
++
++/* Returns a human-readable name for the device */
++extern const char * scsi_device_type(unsigned type);
++
++#endif /* __KERNEL__ */
++
+ #endif /* _SCSI_SCSI_H */
+
+
+> diff --git a/include/scsi/scsi_netlink.h b/include/scsi/scsi_netlink.h
+> index 536752c..7445c46 100644
+> --- a/include/scsi/scsi_netlink.h
+> +++ b/include/scsi/scsi_netlink.h
+> @@ -105,8 +105,8 @@ struct scsi_nl_host_vendor_msg {
+>   *    PCI :  ID data is the 16 bit PCI Registered Vendor ID
+>   */
+>  #define SCSI_NL_VID_TYPE_SHIFT		56
+> -#define SCSI_NL_VID_TYPE_MASK		((u64)0xFF << SCSI_NL_VID_TYPE_SHIFT)
+> -#define SCSI_NL_VID_TYPE_PCI		((u64)0x01 << SCSI_NL_VID_TYPE_SHIFT)
+> +#define SCSI_NL_VID_TYPE_MASK		((__u64)0xFF << SCSI_NL_VID_TYPE_SHIFT)
+> +#define SCSI_NL_VID_TYPE_PCI		((__u64)0x01 << SCSI_NL_VID_TYPE_SHIFT)
+>  #define SCSI_NL_VID_ID_MASK		(~ SCSI_NL_VID_TYPE_MASK)
+>  
+>  
+> @@ -125,21 +125,21 @@ struct scsi_nl_host_vendor_msg {
+
+No, from here on down it's in an #ifdef __KERNEL__
+Please remove this hunk
+
+>  #include <scsi/scsi_host.h>
+>  
+>  /* Exported Kernel Interfaces */
+> -int scsi_nl_add_transport(u8 tport,
+> +int scsi_nl_add_transport(__u8 tport,
+>  	 int (*msg_handler)(struct sk_buff *),
+>  	void (*event_handler)(struct notifier_block *, unsigned long, void *));
+> -void scsi_nl_remove_transport(u8 tport);
+> +void scsi_nl_remove_transport(__u8 tport);
+>  
+> -int scsi_nl_add_driver(u64 vendor_id, struct scsi_host_template *hostt,
+> +int scsi_nl_add_driver(__u64 vendor_id, struct scsi_host_template *hostt,
+>  	int (*nlmsg_handler)(struct Scsi_Host *shost, void *payload,
+> -				 u32 len, u32 pid),
+> +				 __u32 len, __u32 pid),
+>  	void (*nlevt_handler)(struct notifier_block *nb,
+>  				 unsigned long event, void *notify_ptr));
+> -void scsi_nl_remove_driver(u64 vendor_id);
+> +void scsi_nl_remove_driver(__u64 vendor_id);
+>  
+> -void scsi_nl_send_transport_msg(u32 pid, struct scsi_nl_hdr *hdr);
+> -int scsi_nl_send_vendor_msg(u32 pid, unsigned short host_no, u64 vendor_id,
+> -			 char *data_buf, u32 data_len);
+> +void scsi_nl_send_transport_msg(__u32 pid, struct scsi_nl_hdr *hdr);
+> +int scsi_nl_send_vendor_msg(__u32 pid, unsigned short host_no, __u64 vendor_id,
+> +			 char *data_buf, __u32 data_len);
+>  
+>  #endif /* __KERNEL__ */
+>  
+
+Boaz
