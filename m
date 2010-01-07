@@ -1,88 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752485Ab0AGRy6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752510Ab0AGRzk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752485Ab0AGRy6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 12:54:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752401Ab0AGRy5
+	id S1752510Ab0AGRzk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 12:55:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752429Ab0AGRzj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 12:54:57 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:36957 "EHLO mx1.redhat.com"
+	Thu, 7 Jan 2010 12:55:39 -0500
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:58250 "EHLO e6.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752292Ab0AGRy4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 12:54:56 -0500
-Date: Thu, 7 Jan 2010 18:54:46 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: Roland McGrath <roland@redhat.com>, caiqian@redhat.com,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Jan Kratochvil <jkratoch@redhat.com>, linux-kernel@vger.kernel.org,
-       linux-s390@vger.kernel.org, utrace-devel@redhat.com
-Subject: Re: s390 && user_enable_single_step() (Was: odd utrace testing
-	results on s390x)
-Message-ID: <20100107175446.GA13300@redhat.com>
-References: <20100104211147.4CC94D532@magilla.sf.frob.com> <20100105105030.66bb8a0a@mschwide.boeblingen.de.ibm.com> <20100105153633.GA9376@redhat.com> <20100105164610.388effd3@mschwide.boeblingen.de.ibm.com> <20100105155913.GA10652@redhat.com> <20100105170301.GA13641@redhat.com> <20100105195818.GA20358@redhat.com> <20100106201722.GB26204@redhat.com> <20100106211329.DB4F5134D@magilla.sf.frob.com> <20100107101855.13248dc2@mschwide.boeblingen.de.ibm.com>
+	id S1752367Ab0AGRzi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jan 2010 12:55:38 -0500
+Date: Thu, 7 Jan 2010 09:55:32 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Josh Triplett <josh@joshtriplett.org>,
+       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org,
+       tglx@linutronix.de, Valdis.Kletnieks@vt.edu, dhowells@redhat.com,
+       laijs@cn.fujitsu.com, dipankar@in.ibm.com
+Subject: Re: [RFC PATCH] introduce sys_membarrier(): process-wide memory
+	barrier
+Message-ID: <20100107175532.GH6764@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20100107044007.GA22863@Krystal> <1262842854.28171.3710.camel@gandalf.stny.rr.com> <20100107061955.GC25786@Krystal> <20100107063558.GC12939@feather> <1262853855.4049.86.camel@laptop> <20100107165249.GE6764@linux.vnet.ibm.com> <1262884716.4049.103.camel@laptop> <20100107173118.GG6764@linux.vnet.ibm.com> <20100107174435.GC16027@Krystal>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20100107101855.13248dc2@mschwide.boeblingen.de.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20100107174435.GC16027@Krystal>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Martin, sorry for delay,
+On Thu, Jan 07, 2010 at 12:44:35PM -0500, Mathieu Desnoyers wrote:
+> * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
+> > On Thu, Jan 07, 2010 at 06:18:36PM +0100, Peter Zijlstra wrote:
+> > > On Thu, 2010-01-07 at 08:52 -0800, Paul E. McKenney wrote:
+> > > > On Thu, Jan 07, 2010 at 09:44:15AM +0100, Peter Zijlstra wrote:
+> > > > > On Wed, 2010-01-06 at 22:35 -0800, Josh Triplett wrote:
+> > > > > > 
+> > > > > > The number of threads doesn't matter nearly as much as the number of
+> > > > > > threads typically running at a time compared to the number of
+> > > > > > processors.  Of course, we can't measure that as easily, but I don't
+> > > > > > know that your proposed heuristic would approximate it well.
+> > > > > 
+> > > > > Quite agreed, and not disturbing RT tasks is even more important.
+> > > > 
+> > > > OK, so I stand un-Reviewed-by twice in one morning.  ;-)
+> > > > 
+> > > > > A simple:
+> > > > > 
+> > > > >   for_each_cpu(cpu, current->mm->cpu_vm_mask) {
+> > > > >      if (cpu_curr(cpu)->mm == current->mm)
+> > > > >         smp_call_function_single(cpu, func, NULL, 1);
+> > > > >   }
+> > > > > 
+> > > > > seems far preferable over anything else, if you really want you can use
+> > > > > a cpumask to copy cpu_vm_mask in and unset bits and use the mask with
+> > > > > smp_call_function_any(), but that includes having to allocate the
+> > > > > cpumask, which might or might not be too expensive for Mathieu.
+> > > > 
+> > > > This would be vulnerable to the sys_membarrier() CPU seeing an old value
+> > > > of cpu_curr(cpu)->mm, and that other task seeing the old value of the
+> > > > pointer we are trying to RCU-destroy, right?
+> > > 
+> > > Right, so I was thinking that since you want a mb to be executed when
+> > > calling sys_membarrier(). If you observe a matching ->mm but the cpu has
+> > > since scheduled, we're good since it scheduled (but we'll still send the
+> > > IPI anyway), if we do not observe it because the task gets scheduled in
+> > > after we do the iteration we're still good because it scheduled.
+> > 
+> > Something like the following for sys_membarrier(), then?
+> > 
+> >   smp_mb();
+> 
+> This smp_mb() is redundant, as we issue it through the for_each_cpu loop
+> on the local CPU already.
 
-On 01/07, Martin Schwidefsky wrote:
->
-> On Wed,  6 Jan 2010 13:13:29 -0800 (PST)
-> Roland McGrath <roland@redhat.com> wrote:
->
-> > > However, with or without CONFIG_UTRACE, 6580807da14c423f0d0a708108e6df6ebc8bc83d
-> > > is needed on s390 too, otherwise the child gets unnecessary traps.
-> >
-> > This confuses me.  user_disable_single_step on non-current doesn't do
-> > anything not already done by the memset in copy_thread.  Ooh, except
-> > perhaps it does not clear PSW_MASK_PER.  Maybe that matters.  That's
-> > the only thing I can think of.  Maybe Martin can make sense of it.
+But we need to do the smp_mb() -before- checking the first cpu_curr(cpu)->mm.
 
-I am confused as well. Yes, I thought about regs->psw.mask change too,
-but I don't understand why it helps..
+> >   for_each_cpu(cpu, current->mm->cpu_vm_mask) {
+> >      if (cpu_curr(cpu)->mm == current->mm)
+> >         smp_call_function_single(cpu, func, NULL, 1);
+> >   }
+> > 
+> > Then the code changing ->mm on the other CPU also needs to have a
+> > full smp_mb() somewhere after the change to ->mm, but before starting
+> > user-space execution.  Which it might well just due to overhead, but
+> > we need to make sure that someone doesn't optimize us out of existence.
+> 
+> I believe we also need one between execution of the userspace task and
+> change to ->mm. If we have these guarantees I think we are fine.
 
-> The additional traps should not happen anymore with this patch:
+Agreed, in case an outgoing RCU read-side critical section does a store
+into an RCU-protected data structure.  Unconventional, but definitely
+permitted.
+
+							Thanx, Paul
+
+> Mathieu
+> 
+> > 
+> > 							Thanx, Paul
+> > 
+> > > As to needing to keep rcu_read_lock() around the iteration, for sure we
+> > > need that to ensure the remote task_struct reference we take is valid.
+> > > 
+> 
+> -- 
+> Mathieu Desnoyers
+> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
 > --
-> Subject: [PATCH] clear TIF_SINGLE_STEP for new process.
->
-> From: Martin Schwidefsky <schwidefsky@de.ibm.com>
->
-> Clear the TIF_SINGLE_STEP bit in copy_thread. If the new process is
-> not auto-attached by the tracer it is wrong to delivere SIGTRAP to
-> the new process.
->
-> Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
-> ---
->
->  arch/s390/kernel/process.c |    1 +
->  1 file changed, 1 insertion(+)
->
-> diff -urpN linux-2.6/arch/s390/kernel/process.c linux-2.6-patched/arch/s390/kernel/process.c
-> --- linux-2.6/arch/s390/kernel/process.c	2009-12-03 04:51:21.000000000 +0100
-> +++ linux-2.6-patched/arch/s390/kernel/process.c	2010-01-07 09:25:53.000000000 +0100
-> @@ -217,6 +217,7 @@ int copy_thread(unsigned long clone_flag
->  	p->thread.mm_segment = get_fs();
->  	/* Don't copy debug registers */
->  	memset(&p->thread.per_info, 0, sizeof(p->thread.per_info));
-> +	clear_tsk_thread_flag(p, TIF_SINGLE_STEP);
-
-Even if I don't understand s390, I think this patch makes sense
-anyway. Or, user_disable_single_step() can clear this bit.
-
-
-But. Acoording to the testing I did (unless I did something wrong
-again) this patch doesn't make any difference in this particular
-case. 6580807da14c423f0d0a708108e6df6ebc8bc83d does.
-
-And. Please note that the test-case triggers 799 "false step", but
-TIF_SINGLE_STEP is surely cleared (by the caller) after the first
-invocation of do_single_step().
-
-Oleg.
-
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
