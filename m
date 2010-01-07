@@ -1,78 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933218Ab0AGACF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756565Ab0AGAEZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933218Ab0AGACF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 19:02:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933145Ab0AGACE
+	id S1756565Ab0AGAEZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 19:04:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756555Ab0AGAEY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 19:02:04 -0500
-Received: from ozlabs.org ([203.10.76.45]:38851 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933109Ab0AGACB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 19:02:01 -0500
-Date: Thu, 7 Jan 2010 11:01:06 +1100
-From: Anton Blanchard <anton@samba.org>
-To: David Rientjes <rientjes@google.com>
-Cc: Rusty Russell <rusty@rustcorp.com.au>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 6/6] x86: cpumask_of_node() should handle -1 as a node
-Message-ID: <20100107000106.GD12742@kryten>
-References: <20100106045509.245662398@samba.org>
- <20100106045509.245662398@samba.org>
- <20100106045525.476396870@samba.org>
- <201001061706.26845.rusty@rustcorp.com.au>
- <alpine.DEB.2.00.1001061454580.11653@chino.kir.corp.google.com>
- <20100106233151.GC12742@kryten>
- <alpine.DEB.2.00.1001061545210.19882@chino.kir.corp.google.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.1001061545210.19882@chino.kir.corp.google.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Wed, 6 Jan 2010 19:04:24 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:34576 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756554Ab0AGAEY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jan 2010 19:04:24 -0500
+Date: Wed, 6 Jan 2010 16:04:14 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ben Blum <bblum@andrew.cmu.edu>
+Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       lizf@cn.fujitsu.com, menage@google.com
+Subject: Re: [PATCH v4 0/4] cgroups: support for module-loadable subsystems
+Message-Id: <20100106160414.bd555474.akpm@linux-foundation.org>
+In-Reply-To: <20091231051050.GA714@andrew.cmu.edu>
+References: <20091231051050.GA714@andrew.cmu.edu>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- 
-Hi David,
+On Thu, 31 Dec 2009 00:10:50 -0500
+Ben Blum <bblum@andrew.cmu.edu> wrote:
 
-> This seems to be the same semantics that NUMA_NO_NODE was defined for, 
-> it's not necessarily a special case.
-> 
-> Regardless, the result of cpumask_of_node(NUMA_NO_NODE) should be 
-> undefined as it currently is unless you want to obsolete NUMA_NO_NODE 
-> entirely which is much more work.  In other words, special-casing a nid of 
-> -1 to mean no affinity is inappropriate if NUMA_NO_NODE represents an 
-> invalid nid.
-> 
-> If x86 pci buses want to use -1 to imply that meaning, that's fine, but it 
-> shouldn't be coded in a generic interface such as cpumask_of_node().  Does 
-> that make sense?
+> This patch series implements support for building, loading, and
+> unloading subsystems as modules, both within and outside the kernel
+> source tree. It provides an interface cgroup_load_subsys() and
+> cgroup_unload_subsys() which modular subsystems can use to register and
+> depart during runtime. The net_cls classifier subsystem serves as the
+> example for a subsystem which can be converted into a module using these
+> changes.
 
-I wasn't using the example to strengthen the case of the -1 behaviour, but to
-highlight that a complete fix would be more work and risk not making it back
-to -stable.
-
-I'm all for removing the special case as a followon patch.
-
-> > Speaking of invalid node ids, I also noticed the scheduler isn't using
-> > node iterators:
-> > 
-> >         for (i = 0; i < nr_node_ids; i++) {
-> > 
-> > which should be fixed at some stage too since it doesn't allow us to
-> > allocate the node structures sparsely.
->
-> That loop has nothing to do with the allocation of a node structure, it's 
-> quite plausible that it checks for various states such as node_online(i) 
-> while looping and doing something else interesting for those that are 
-> offline.  Keep in mind that this isn't equivalent to using for_each_node() 
-> since that only iterates over N_POSSIBLE which is architecture specific.
-
-Yeah I understand it isn't the same thing, but the scheduler oopses in
-a number of places with CPUMASK_OFFSTACK and sparse node ids, so things
-that can be switched to node iterators should and node_online() checks
-should be added elsewhere.
-
-Anton
+What is the value in this?  What are the usage scenarios?  Why does the
+benefit of this change exceed the cost/risk/etc of merging it?
