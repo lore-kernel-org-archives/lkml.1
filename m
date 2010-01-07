@@ -1,95 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753658Ab0AGTHG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753656Ab0AGTIs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753658Ab0AGTHG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 14:07:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753546Ab0AGTHA
+	id S1753656Ab0AGTIs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 14:08:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752184Ab0AGTIr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 14:07:00 -0500
-Received: from ey-out-2122.google.com ([74.125.78.27]:45141 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752270Ab0AGTG7 (ORCPT
+	Thu, 7 Jan 2010 14:08:47 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:44586 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751984Ab0AGTIq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 14:06:59 -0500
+	Thu, 7 Jan 2010 14:08:46 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type;
-        b=eMQzlEfvepvuuxuNSwi96/Y0Tkh1OJxixuJHl88nOo06HYVUb4XmdetP/A9ArO8g5g
-         QDzJAEG/NHXavA9L5m8BZD9XjIhdq4BkteJSreYDCCFgdbpzpzIxE5MS1Qu0/irMgoBp
-         /mamjIw3ZR40CbbH3HSid59WNyhgiu0OKdNLc=
-Message-ID: <4B4630C0.6090206@gmail.com>
-Date: Thu, 07 Jan 2010 20:06:40 +0100
-From: Daniel Borkmann <danborkmann@googlemail.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090706)
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding:message-id;
+        b=glseQfgvrbo3JXcMRiU9bN9LWWQ1BXWHxdlQyP4WGeFFdq8QddcsZaaGLRD0lhmKCI
+         +Xev9JprXTETiELSXTxnqT5zAom9s9J+XQulmlVH7/k9z7fy7ToIBZeqN2Y5MsFvV6f6
+         lC9i6tpjZb+IPKFjohVzZKTDP8qWYkTz6oShw=
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Bastian Blank <waldi@debian.org>
+Subject: Re: [PATCH 7/7] Input: wacom - Fail on missing features
+Date: Thu, 7 Jan 2010 11:08:38 -0800
+User-Agent: KMail/1.12.4 (Linux/2.6.33-rc3; KDE/4.3.4; x86_64; ; )
+Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Ping Cheng <pingc@wacom.com>
+References: <20100107182553.GA11236@wavehammer.waldi.eu.org> <20100107183009.GA13036@wavehammer.waldi.eu.org>
+In-Reply-To: <20100107183009.GA13036@wavehammer.waldi.eu.org>
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: mpm@selenic.com, danborkmann@googlemail.com, linux-kernel@vger.kernel.org,
-       jmoyer@redhat.com, netdev@vger.kernel.org, netdev@oss.sgi.com
-Subject: Re: [PATCH] netpoll: allow execution of multiple rx_hooks per interface
-References: <4B44F895.9080205@gmail.com>	<1262836445.29868.227.camel@calx> <20100107.010201.51693251.davem@davemloft.net>
-In-Reply-To: <20100107.010201.51693251.davem@davemloft.net>
-X-Enigmail-Version: 0.96.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigB6AA20E24023CD39C718DB07"
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201001071108.38253.dmitry.torokhov@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigB6AA20E24023CD39C718DB07
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Thursday 07 January 2010 10:30:09 am Bastian Blank wrote:
+> The driver needs a correct setup feature list, fail if it is not
+> correctly set.
+> 
+> Signed-off-by: Bastian Blank <waldi@debian.org>
+> ---
+>  drivers/input/tablet/wacom_sys.c |    3 +++
+>  1 files changed, 3 insertions(+), 0 deletions(-)
+> 
+> diff --git a/drivers/input/tablet/wacom_sys.c
+>  b/drivers/input/tablet/wacom_sys.c index 41a631b..c44b9f0 100644
+> --- a/drivers/input/tablet/wacom_sys.c
+> +++ b/drivers/input/tablet/wacom_sys.c
+> @@ -534,6 +534,9 @@ static int wacom_probe(struct usb_interface *intf,
+>  const struct usb_device_id *i struct input_dev *input_dev;
+>  	int error = -ENOMEM;
+> 
+> +	if (!features)
+> +		return -EIO;
+> +
 
-David Miller wrote:
-> From: Matt Mackall <mpm@selenic.com>
-> Date: Wed, 06 Jan 2010 21:54:05 -0600
->=20
->> Please inline patches so they can be reviewed easily in reply.
->>
->>
->> -       struct netpoll *np =3D npi->rx_np;
->> +       struct netpoll **np =3D &npi->rx_np;
->> =20
->> -       if (!np)
->> +       if (!(*np))
->>
->> This makes everything horrible. Can you avoid the double indirection?
->> Using a list head might be a good answer.
->>
->=20
-> Agreed on all counts.
->=20
+-EINVAL is probably better.
 
-Agreed on the double indirection, I'll fix it.
+>  	wacom = kzalloc(sizeof(struct wacom), GFP_KERNEL);
+>  	wacom_wac = kzalloc(sizeof(struct wacom_wac), GFP_KERNEL);
+>  	input_dev = input_allocate_device();
+> 
 
-I've already considered the list_head structure, but then I was the opini=
-on
-that a double linked list might not be necessary for this, so I did it th=
-at
-way ... (compare: kernel notifier by Alan Cox). If you insist on that I'l=
-l
-fix it of course ;)
-
-Best regards,
-Daniel
-
-P.s.: Sorry Matt for not CCing. I mainly took those addresses from Jeffs =
-post.
-
-
---------------enigB6AA20E24023CD39C718DB07
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
-
-iEYEARECAAYFAktGMMAACgkQ5AxJm1m3CC8G2ACdFsW7iqKqdCfc9q5Dc0Q+BPfA
-IB0AoI+6DPWww3DX8LRfWeOV4vm7es85
-=QDrK
------END PGP SIGNATURE-----
-
---------------enigB6AA20E24023CD39C718DB07--
+-- 
+Dmitry
