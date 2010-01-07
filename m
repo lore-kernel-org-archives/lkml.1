@@ -1,65 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753288Ab0AGQh1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753293Ab0AGQj6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753288Ab0AGQh1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 11:37:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753086Ab0AGQh0
+	id S1753293Ab0AGQj6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 11:39:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752941Ab0AGQj6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 11:37:26 -0500
-Received: from nlpi157.sbcis.sbc.com ([207.115.36.171]:36001 "EHLO
-	nlpi157.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752956Ab0AGQhZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 11:37:25 -0500
-Date: Thu, 7 Jan 2010 10:36:52 -0600 (CST)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@router.home
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Arjan van de Ven <arjan@infradead.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "minchan.kim@gmail.com" <minchan.kim@gmail.com>,
-       "hugh.dickins" <hugh.dickins@tiscali.co.uk>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [RFC][PATCH 6/8] mm: handle_speculative_fault()
-In-Reply-To: <alpine.LFD.2.00.1001070814080.7821@localhost.localdomain>
-Message-ID: <alpine.DEB.2.00.1001071025450.901@router.home>
-References: <20100104182429.833180340@chello.nl> <20100104182813.753545361@chello.nl> <20100105054536.44bf8002@infradead.org> <alpine.DEB.2.00.1001050916300.1074@router.home> <20100105192243.1d6b2213@infradead.org> <alpine.DEB.2.00.1001071007210.901@router.home>
- <alpine.LFD.2.00.1001070814080.7821@localhost.localdomain>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Thu, 7 Jan 2010 11:39:58 -0500
+Received: from e7.ny.us.ibm.com ([32.97.182.137]:60096 "EHLO e7.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752856Ab0AGQj5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jan 2010 11:39:57 -0500
+Date: Thu, 7 Jan 2010 08:39:23 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       akpm@linux-foundation.org, josh@joshtriplett.org, tglx@linutronix.de,
+       rostedt@goodmis.org, Valdis.Kletnieks@vt.edu, dhowells@redhat.com,
+       laijs@cn.fujitsu.com, dipankar@in.ibm.com
+Subject: Re: [RFC PATCH] introduce sys_membarrier(): process-wide memory
+	barrier
+Message-ID: <20100107163923.GB6764@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20100107044007.GA22863@Krystal> <20100107050248.GA6803@linux.vnet.ibm.com> <1262853136.4049.81.camel@laptop>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1262853136.4049.81.camel@laptop>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 7 Jan 2010, Linus Torvalds wrote:
+On Thu, Jan 07, 2010 at 09:32:16AM +0100, Peter Zijlstra wrote:
+> On Wed, 2010-01-06 at 21:02 -0800, Paul E. McKenney wrote:
+> > 
+> > Beats the heck out of user-mode signal handlers!!!  And it is hard
+> > to imagine groveling through runqueues ever being a win, even on very
+> > large systems.  The only reasonable optimization I can imagine is to
+> > turn this into a no-op for a single-threaded process, but there are
+> > other ways to do that optimization.
+> > 
+> > Reviewed-by: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+> 
+> Then imagine someone doing:
+> 
+>  while (1)
+>   sys_membarrier();
+> 
+> on your multi node machine, see how happy you are then.
 
-> You're missing what Arjan said - the jav workload does a lot of memory
-> allocations too, causing mmap/munmap.
+I guess in that situation, I would be feeling no pain.  Or anything else
+for that matter.  :-/
 
-Well isnt that tunable on the app level? Get bigger chunks of memory in
-order to reduce the frequency of mmap operations? If you want concurrency
-of faults then mmap_sem write locking currently needs to be limited.
+So, good point!!!  I stand un-Reviewed-By.
 
-> So now some paths are indeed holding it for writing (or need to wait for
-> it to become writable). And the fairness of rwsems quite possibly then
-> impacts throughput a _lot_..
+I could imagine throttling the requests, as well as batching them.  If
+any CPU does a sys_membarrier() after this CPU's sys_membarrier has
+entered the kernel, then this CPU can simply return.  A token-bucket
+approach could throttle things nicely, but at some point it becomes
+better to just do POSIX signals.
 
-Very true. Doing range locking (maybe using the split pte lock
-boundaries, shifting some state from mm_struct into vmas) may be a way to
-avoid hold mmap_sem for write in that case.
-
-> (Side note: I wonder if we should wake up _all_ readers when we wake up
-> any. Right now, we wake up all readers - but only until we hit a writer.
-> Which is the _fair_ thing to do, but it does mean that we can end up in
-> horrible patterns of alternating readers/writers, when it could be much
-> better to just say "release the hounds" and let all pending readers go
-> after a writer has had its turn).
-
-Have a cycle with concurrent readers followed by a cycle of serialized
-writers may be best under heavy load. The writers need to be limited in
-frequency otherwise they will starve the readers.
+							Thanx, Paul
