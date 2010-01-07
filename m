@@ -1,66 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753247Ab0AGUiG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753412Ab0AGUkL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753247Ab0AGUiG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 15:38:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753055Ab0AGUiB
+	id S1753412Ab0AGUkL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 15:40:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752025Ab0AGUkJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 15:38:01 -0500
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:55511 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753031Ab0AGUiA (ORCPT
+	Thu, 7 Jan 2010 15:40:09 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:37937 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752485Ab0AGUkH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 15:38:00 -0500
-Date: Thu, 7 Jan 2010 15:37:53 -0500
-From: "John W. Linville" <linville@tuxdriver.com>
-To: "Justin P. Mattock" <justinmattock@gmail.com>
-Cc: linux-wireless@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [bisected] sys_paccept: disable paccept() causes my macbook	pro to have an annoying whining sound
-Message-ID: <20100107203752.GA31726@tuxdriver.com>
-References: <dd18b0c31001062216m316163f4t992c000eca0f76d@mail.gmail.com> <20100107125433.GB13603@tuxdriver.com> <4B460188.1050504@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B460188.1050504@gmail.com>
-User-Agent: Mutt/1.4.1i
-X-Spam-Score: -4.4 (----)
+	Thu, 7 Jan 2010 15:40:07 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=YcWHexn5RWLOenl8dxz/vyeIzH8oQkNCFjI1NGinCOrdMaNCJOUR10EhsG3+x3vzFn
+         qi/nfmawB+S7Qu3IsbRNToln80iFyvPFGC4kvYjFI03xVZTyQAi9gUxU7ZdHhmN2rBWp
+         oRmwar3rsxI63JMz0+VcQHqmwi6x9sDDLpGR8=
+Message-ID: <4B4646B2.6050103@googlemail.com>
+Date: Thu, 07 Jan 2010 21:40:18 +0100
+From: =?ISO-8859-1?Q?Ren=E9_Bolldorf?= <xsecute@googlemail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.5) Gecko/20091204 Thunderbird/3.0
+MIME-Version: 1.0
+To: Jeff Garzik <jgarzik@pobox.com>
+CC: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-scsi <linux-scsi@vger.kernel.org>
+Subject: Re: [PATCH]drivers/ata/libata-eh.c:1509 unneeded memset()
+References: <4B3BDB66.6000008@googlemail.com> <4B4632BF.4070806@pobox.com> <4B46453E.1060206@googlemail.com>
+In-Reply-To: <4B46453E.1060206@googlemail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 07, 2010 at 07:45:12AM -0800, Justin P. Mattock wrote:
-> On 01/07/10 04:54, John W. Linville wrote:
-> >On Wed, Jan 06, 2010 at 10:16:27PM -0800, Justin Mattock wrote:
-> >>for a while I've been hearing this odd
-> >>annoying sound coming from my macbook pro
-> >>when the system is idle(no internet use tv/radio/web etc...)
-> >>as soon as I do anything(radio,web) the noise disappears.
-> >>
-> >>here is a  url where they are experiencing the same issue:
-> >>https://help.ubuntu.com/community/MacBook1-1/Hardy
-> >>(down under whining noise);
-> >>
-> >>here is is the result of my bisect:
-> >>
-> >>2d4c8266774188cda7f7e612e6dfb8ad12c579d5 is the first bad commit
-> >>commit 2d4c8266774188cda7f7e612e6dfb8ad12c579d5
-> >>Author: Michael Kerrisk<mtk.manpages@googlemail.com>
-> >>Date:   Mon Sep 22 13:57:49 2008 -0700
-> >>
-> >>     sys_paccept: disable paccept() until API design is resolved
-> >
-> >Any particular reason you sent this to linux-wireless??
-> >
-> 
-> 
-> because the bisect had resulted in
-> something with wireless, so I figured
-> it was the next best thing todo.
+On 01/07/10 21:34, René Bolldorf wrote:
+> On 01/07/10 20:15, Jeff Garzik wrote:
+>> I need a little bit more detail than an unqualified statement... Did
+>> you audit all paths leading to this code point?
+>
+> Yes, and my two systems running fine with the patch, no oops or panic's.
 
-Well, if you say so. :-)  But, I'm not sure I see the connection
-between sys_paccept and wireless...?
+Sry forgot that:
+	/* initialize sense_buf with the error register,
+	 * for the case where they are -not- overwritten
+	 */
+	sense_buf[0] = 0x70;
+	sense_buf[2] = dfl_sense_key;
 
-John
--- 
-John W. Linville
-linville@tuxdriver.com
+So i think memset() is not needed and works very well without it.
