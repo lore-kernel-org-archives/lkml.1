@@ -1,79 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756748Ab0AGECO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932941Ab0AGEEj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756748Ab0AGECO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 23:02:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756638Ab0AGECL
+	id S932941Ab0AGEEj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 23:04:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932341Ab0AGEEi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 23:02:11 -0500
-Received: from lennier.cc.vt.edu ([198.82.162.213]:58596 "EHLO
-	lennier.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756603Ab0AGECC (ORCPT
+	Wed, 6 Jan 2010 23:04:38 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:60871 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932324Ab0AGEEh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 23:02:02 -0500
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: mmotm 2010-01-06-14-34 uploaded
-In-Reply-To: Your message of "Wed, 06 Jan 2010 22:48:16 EST."
-             <12343.1262836096@localhost>
-From: Valdis.Kletnieks@vt.edu
-References: <201001062259.o06MxQrp023236@imap1.linux-foundation.org>
-            <12343.1262836096@localhost>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1262836907_3937P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Wed, 06 Jan 2010 23:01:47 -0500
-Message-ID: <12823.1262836907@localhost>
-X-Mirapoint-Received-SPF: 128.173.34.103 localhost Valdis.Kletnieks@vt.edu 2 pass
-X-Mirapoint-IP-Reputation: reputation=neutral-1,
-	source=Fixed,
-	refid=n/a,
-	actions=MAILHURDLE SPF TAG
-X-Junkmail-Info: (79) FH_DATE_PAST_20XX,HELO_LOCALHOST
-X-Junkmail-SD-Raw: score=unknown,
-	refid=str=0001.0A020209.4B455CAC.011A,ss=1,fgs=0,
-	ip=0.0.0.0,
-	so=2009-09-22 00:05:22,
-	dmn=2009-09-10 00:05:08,
-	mode=multiengine
-X-Junkmail-IWF: false
-X-Junkmail-Status: score=45/50, host=zidane.cc.vt.edu
+	Wed, 6 Jan 2010 23:04:37 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type;
+        b=kWfZLhIHp+LE50iB8Yyp1eu+ceHrL7b393gQZ4a0iAdVTse+8RjqLRVB1NqOsFka9O
+         fc4foH+lMOXOTWeXWrGJHCpqtF1WvN/eiUgolMbdAvPTMr16bYqiSA3EjPhX9sOdFH1c
+         TkRvl1/JxHAOZ3UIL5qGIrGG8ZO4B4GcYCpVQ=
+MIME-Version: 1.0
+In-Reply-To: <51f3faa71001061553q29e0821evda63c4ca3eeee3b1@mail.gmail.com>
+References: <20100105110256.D2DF133C4B0@tippex.mynet.homeunix.org> 
+	<4B43DF97.7080208@gmail.com> <20100106083214.DAAA933C5F5@tippex.mynet.homeunix.org> 
+	<51f3faa71001061553q29e0821evda63c4ca3eeee3b1@mail.gmail.com>
+From: Bryan Donlan <bdonlan@gmail.com>
+Date: Wed, 6 Jan 2010 23:04:16 -0500
+Message-ID: <3e8340491001062004h302912a5h8ac441f9fe629af6@mail.gmail.com>
+Subject: Re: Memory probing fails after 2.6.30 (bisected)
+To: Robert Hancock <hancockrwd@gmail.com>
+Cc: Anders Eriksson <aeriksson@fastmail.fm>, mingo@elte.hu,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1262836907_3937P
-Content-Type: text/plain; charset=us-ascii
+On Wed, Jan 6, 2010 at 6:53 PM, Robert Hancock <hancockrwd@gmail.com> wrote:
+> On Wed, Jan 6, 2010 at 2:32 AM, Anders Eriksson <aeriksson@fastmail.fm> wrote:
+>>
+>> hancockrwd@gmail.com said:
+>>> Think you missed posting which was the actual bad commit it reported?
+>>
+>> The last one in the list:
+>> 8ecee4620e76aae418bfa0e8cc830e92cb559bbb
+>>
+>> That's a merge commit. How do i dig futher into that? My git-fu is lacking...
+>
+> AFAIK, the bisect shouldn't land on a merge commit unless the changes
+> in the commit itself are what are causing the problem, and the merge
+> commit itself doesn't have any changes. Is it possible something went
+> wrong in the bisect and one of your good/bad results was incorrect?
 
-On Wed, 06 Jan 2010 22:48:16 EST, Valdis.Kletnieks@vt.edu said:
-
-> Building with CONFIG_SQUASHFS=m, CONFIG_SQUASHFS_LZMA=y ,
-> and CONFIG_DECOMPRESS_LZMA=n fails:
-
-> Looks like a missing select/depends for DECOMPRESS_LZMA.  Somebody else can
-> decide which it should be...
-
-Digging further:
-  
-  x Symbol: DECOMPRESS_LZMA [=n]                                            x  
-  x   Selected by: RD_LZMA [=n] && BLK_DEV_INITRD [=y] || SQUASHFS_LZMA [=y x  
-
-How the heck did this happen?  Looks like a SELECT *is* there but it's
-not firing??!?
-
---==_Exmh_1262836907_3937P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFLRVyrcC3lWbTT17ARAoYbAKDXBy1J17UYEa9YyttjTuaTdk4r3ACgm9KI
-U9pDDDxZcOsO6u3quaV0Ens=
-=UR5r
------END PGP SIGNATURE-----
-
---==_Exmh_1262836907_3937P--
-
+It's also possible for the bisect to land on a merge if each parent of
+the merge works, but combining them leads to an interaction causing
+the bug. I'd suggest specifically retesting each of the parents of the
+merge, and the merge itself.
