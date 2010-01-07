@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932990Ab0AGEJl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756096Ab0AGEKg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932990Ab0AGEJl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 23:09:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932363Ab0AGEJk
+	id S1756096Ab0AGEKg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 23:10:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754858Ab0AGEKe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 23:09:40 -0500
-Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:58008 "EHLO
-	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756331Ab0AGEJj (ORCPT
+	Wed, 6 Jan 2010 23:10:34 -0500
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:61567 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753178Ab0AGEKe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 23:09:39 -0500
-Date: Thu, 7 Jan 2010 13:06:09 +0900
+	Wed, 6 Jan 2010 23:10:34 -0500
+Date: Thu, 7 Jan 2010 13:06:31 +0900
 From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Randy Dunlap <randy.dunlap@oracle.com>,
@@ -18,8 +18,8 @@ Cc: Randy Dunlap <randy.dunlap@oracle.com>,
        linux-kernel@vger.kernel.org, linux-mm@kvack.org,
        Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
 Subject: [PATCH -mmotm] build fix for
- memcg-move-charges-of-anonymous-swap.patch
-Message-Id: <20100107130609.31fe83dc.nishimura@mxp.nes.nec.co.jp>
+ memcg-improve-performance-in-moving-swap-charge.patch
+Message-Id: <20100107130631.144750c3.nishimura@mxp.nes.nec.co.jp>
 In-Reply-To: <20100107120233.f244d4b7.kamezawa.hiroyu@jp.fujitsu.com>
 References: <201001062259.o06MxQrp023236@imap1.linux-foundation.org>
 	<20100106171058.f1d6f393.randy.dunlap@oracle.com>
@@ -36,11 +36,13 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-build fix in !CONFIG_SWAP case.
+build fix in !CONFIG_CGROUP_MEM_RES_CTLR_SWAP case.
 
   CC      mm/memcontrol.o
-mm/memcontrol.c: In function 'is_target_pte_for_mc':
-mm/memcontrol.c:3648: error: implicit declaration of function 'mem_cgroup_count_swap_user'
+mm/memcontrol.c: In function 'mem_cgroup_move_charge_pte_range':
+mm/memcontrol.c:3899: error: too many arguments to function 'mem_cgroup_move_swap_account'
+mm/memcontrol.c:3899: error: too many arguments to function 'mem_cgroup_move_swap_account'
+mm/memcontrol.c:3899: error: too many arguments to function 'mem_cgroup_move_swap_account'
 make[1]: *** [mm/memcontrol.o] Error 1
 make: *** [mm] Error 2
 
@@ -48,34 +50,24 @@ Reported-by: Randy Dunlap <randy.dunlap@oracle.com>
 Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
 ---
-This can be applied after memcg-move-charges-of-anonymous-swap.patch.
+This can be applied after memcg-improve-performance-in-moving-swap-charge.patch.
 
- include/linux/swap.h |    5 ++++-
- 1 files changed, 4 insertions(+), 1 deletions(-)
+ mm/memcontrol.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/include/linux/swap.h b/include/linux/swap.h
-index d9b06f7..2e1d5c9 100644
---- a/include/linux/swap.h
-+++ b/include/linux/swap.h
-@@ -287,6 +287,10 @@ extern int shmem_unuse(swp_entry_t entry, struct page *page);
- 
- extern void swap_unplug_io_fn(struct backing_dev_info *, struct page *);
- 
-+#ifdef CONFIG_CGROUP_MEM_RES_CTLR
-+extern int mem_cgroup_count_swap_user(swp_entry_t ent, struct page **pagep);
-+#endif
-+
- #ifdef CONFIG_SWAP
- /* linux/mm/page_io.c */
- extern int swap_readpage(struct page *);
-@@ -356,7 +360,6 @@ static inline void disable_swap_token(void)
- #ifdef CONFIG_CGROUP_MEM_RES_CTLR
- extern void
- mem_cgroup_uncharge_swapcache(struct page *page, swp_entry_t ent, bool swapout);
--extern int mem_cgroup_count_swap_user(swp_entry_t ent, struct page **pagep);
+diff --git a/mm/memcontrol.c b/mm/memcontrol.c
+index 5360d48..65df8d2 100644
+--- a/mm/memcontrol.c
++++ b/mm/memcontrol.c
+@@ -2326,7 +2326,7 @@ static int mem_cgroup_move_swap_account(swp_entry_t entry,
+ }
  #else
- static inline void
- mem_cgroup_uncharge_swapcache(struct page *page, swp_entry_t ent, bool swapout)
+ static inline int mem_cgroup_move_swap_account(swp_entry_t entry,
+-				struct mem_cgroup *from, struct mem_cgroup *to)
++		struct mem_cgroup *from, struct mem_cgroup *to, bool need_fixup)
+ {
+ 	return -EINVAL;
+ }
 -- 
 1.5.6.1
 
