@@ -1,123 +1,172 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752563Ab0AGGQb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753332Ab0AGGT7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752563Ab0AGGQb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 01:16:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751345Ab0AGGQ3
+	id S1753332Ab0AGGT7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 01:19:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751406Ab0AGGT6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 01:16:29 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:40549 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751248Ab0AGGQ2 (ORCPT
+	Thu, 7 Jan 2010 01:19:58 -0500
+Received: from tomts13.bellnexxia.net ([209.226.175.34]:33396 "EHLO
+	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751248Ab0AGGT6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 01:16:28 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type;
-        b=eQbf+wdj87EGdH7TQLiDBsz+tM3/JzcDeCHOIoIzNpV+MWWvdAiwlDXvpXC76h6Nu/
-         8NowGLOJjDODe9ffR59q8/vwRGTfta5j//uhHFNKgK0kcykEUVnSTOfk2FaZdWJZ81h0
-         iMiy47vvLtsOtLXI4Ae1w9YOQTBCl/OADdILU=
-MIME-Version: 1.0
-Date: Wed, 6 Jan 2010 22:16:27 -0800
-Message-ID: <dd18b0c31001062216m316163f4t992c000eca0f76d@mail.gmail.com>
-Subject: [bisected] sys_paccept: disable paccept() causes my macbook pro to 
-	have an annoying whining sound
-From: Justin Mattock <justinmattock@gmail.com>
-To: linux-wireless@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 7 Jan 2010 01:19:58 -0500
+Date: Thu, 7 Jan 2010 01:19:55 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org,
+       josh@joshtriplett.org, tglx@linutronix.de, peterz@infradead.org,
+       Valdis.Kletnieks@vt.edu, dhowells@redhat.com, laijs@cn.fujitsu.com,
+       dipankar@in.ibm.com
+Subject: Re: [RFC PATCH] introduce sys_membarrier(): process-wide memory
+	barrier
+Message-ID: <20100107061955.GC25786@Krystal>
+References: <20100107044007.GA22863@Krystal> <1262842854.28171.3710.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <1262842854.28171.3710.camel@gandalf.stny.rr.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.27.31-grsec (i686)
+X-Uptime: 01:16:39 up 21 days, 14:35,  5 users,  load average: 0.07, 0.15,
+	0.15
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-for a while I've been hearing this odd
-annoying sound coming from my macbook pro
-when the system is idle(no internet use tv/radio/web etc...)
-as soon as I do anything(radio,web) the noise disappears.
+* Steven Rostedt (rostedt@goodmis.org) wrote:
+> On Wed, 2010-01-06 at 23:40 -0500, Mathieu Desnoyers wrote:
+> > Here is an implementation of a new system call, sys_membarrier(), which
+> > executes a memory barrier on all threads of the current process.
+> > 
+> > It aims at greatly simplifying and enhancing the current signal-based
+> > liburcu userspace RCU synchronize_rcu() implementation.
+> > (found at http://lttng.org/urcu)
+> > 
+> 
+> Nice.
+> 
+> > Both the signal-based and the sys_membarrier userspace RCU schemes
+> > permit us to remove the memory barrier from the userspace RCU
+> > rcu_read_lock() and rcu_read_unlock() primitives, thus significantly
+> > accelerating them. These memory barriers are replaced by compiler
+> > barriers on the read-side, and all matching memory barriers on the
+> > write-side are turned into an invokation of a memory barrier on all
+> > active threads in the process. By letting the kernel perform this
+> > synchronization rather than dumbly sending a signal to every process
+> > threads (as we currently do), we diminish the number of unnecessary wake
+> > ups and only issue the memory barriers on active threads. Non-running
+> > threads do not need to execute such barrier anyway, because these are
+> > implied by the scheduler context switches.
+> > 
+> > To explain the benefit of this scheme, let's introduce two example threads:
+> > 
+> > Thread A (non-frequent, e.g. executing liburcu synchronize_rcu())
+> > Thread B (frequent, e.g. executing liburcu rcu_read_lock()/rcu_read_unlock())
+> > 
+> > In a scheme where all smp_mb() in thread A synchronize_rcu() are
+> > ordering memory accesses with respect to smp_mb() present in
+> > rcu_read_lock/unlock(), we can change all smp_mb() from
+> > synchronize_rcu() into calls to sys_membarrier() and all smp_mb() from
+> > rcu_read_lock/unlock() into compiler barriers "barrier()".
+> > 
+> > Before the change, we had, for each smp_mb() pairs:
+> > 
+> > Thread A                    Thread B
+> > prev mem accesses           prev mem accesses
+> > smp_mb()                    smp_mb()
+> > follow mem accesses         follow mem accesses
+> > 
+> > After the change, these pairs become:
+> > 
+> > Thread A                    Thread B
+> > prev mem accesses           prev mem accesses
+> > sys_membarrier()            barrier()
+> > follow mem accesses         follow mem accesses
+> > 
+> > As we can see, there are two possible scenarios: either Thread B memory
+> > accesses do not happen concurrently with Thread A accesses (1), or they
+> > do (2).
+> > 
+> > 1) Non-concurrent Thread A vs Thread B accesses:
+> > 
+> > Thread A                    Thread B
+> > prev mem accesses
+> > sys_membarrier()
+> > follow mem accesses
+> >                             prev mem accesses
+> >                             barrier()
+> >                             follow mem accesses
+> > 
+> > In this case, thread B accesses will be weakly ordered. This is OK,
+> > because at that point, thread A is not particularly interested in
+> > ordering them with respect to its own accesses.
+> > 
+> > 2) Concurrent Thread A vs Thread B accesses
+> > 
+> > Thread A                    Thread B
+> > prev mem accesses           prev mem accesses
+> > sys_membarrier()            barrier()
+> > follow mem accesses         follow mem accesses
+> > 
+> > In this case, thread B accesses, which are ensured to be in program
+> > order thanks to the compiler barrier, will be "upgraded" to full
+> > smp_mb() thanks to the IPIs executing memory barriers on each active
+> > system threads. Each non-running process threads are intrinsically
+> > serialized by the scheduler.
+> > 
+> > The current implementation simply executes a memory barrier in an IPI
+> > handler on each active cpu. Going through the hassle of taking run queue
+> > locks and checking if the thread running on each online CPU belongs to
+> > the current thread seems more heavyweight than the cost of the IPI
+> > itself (not measured though).
+> > 
+> 
+> 
+> I don't think you need to grab any locks. Doing an rcu_read_lock()
+> should prevent tasks from disappearing (since destruction of tasks use
+> RCU). You may still need to grab the tasklist_lock under read_lock().
+> 
+> So what you could do, is find each task that is a thread of the calling
+> task, and then just check task_rq(task)->curr != task. Just send the
+> IPI's to those tasks that pass the test.
 
-here is a  url where they are experiencing the same issue:
-https://help.ubuntu.com/community/MacBook1-1/Hardy
-(down under whining noise);
+I guess you mean
 
-here is is the result of my bisect:
+"then just check task_rq(task)->curr == task" ... ?
 
-2d4c8266774188cda7f7e612e6dfb8ad12c579d5 is the first bad commit
-commit 2d4c8266774188cda7f7e612e6dfb8ad12c579d5
-Author: Michael Kerrisk <mtk.manpages@googlemail.com>
-Date:   Mon Sep 22 13:57:49 2008 -0700
+> 
+> If the task->rq changes, or the task->rq->curr changes, and makes the
+> condition fail (or even pass), the events that cause those changes are
+> probably good enough than needing to call smp_mb();
 
-    sys_paccept: disable paccept() until API design is resolved
+I see your point.
 
-    The reasons for disabling paccept() are as follows:
+This would probably be good for machines with very large number of cpus
+and without IPI broadcast support, running processes with only few
+threads. I really start to think that we should have some way to compare
+the number of threads belonging to a process and choose between the
+broadcast IPI and the per-cpu IPI depending if we are over or under an
+arbitrary threshold.
 
-    * The API is more complex than needed.  There is AFAICS no demonstrated
-      use case that the sigset argument of this syscall serves that couldn't
-      equally be served by the use of pselect/ppoll/epoll_pwait + traditional
-      accept().  Roland seems to concur with this opinion
-      (http://thread.gmane.org/gmane.linux.kernel/723953/focus=732255).  I
-      have (more than once) asked Ulrich to explain otherwise
-      (http://thread.gmane.org/gmane.linux.kernel/723952/focus=731018), but he
-      does not respond, so one is left to assume that he doesn't know of such
-      a case.
+Thanks,
 
-    * The use of a sigset argument is not consistent with other I/O APIs
-      that can block on a single file descriptor (e.g., read(), recv(),
-      connect()).
-
-    * The behavior of paccept() when interrupted by a signal is IMO strange:
-      the kernel restarts the system call if SA_RESTART was set for the
-      handler.  I think that it should not do this -- that it should behave
-      consistently with paccept()/ppoll()/epoll_pwait(), which never restart,
-      regardless of SA_RESTART.  The reasoning here is that the very purpose
-      of paccept() is to wait for a connection or a signal, and that
-      restarting in the latter case is probably never useful.  (Note: Roland
-      disagrees on this point, believing that rather paccept() should be
-      consistent with accept() in its behavior wrt EINTR
-      (http://thread.gmane.org/gmane.linux.kernel/723953/focus=732255).)
-
-    I believe that instead, a simpler API, consistent with Ulrich's other
-    recent additions, is preferable:
-
-    accept4(int fd, struct sockaddr *sa, socklen_t *salen, ind flags);
-
-    (This simpler API was originally proposed by Ulrich:
-    http://thread.gmane.org/gmane.linux.network/92072)
-
-    If this simpler API is added, then if we later decide that the sigset
-    argument really is required, then a suitable bit in 'flags' could be added
-    to indicate the presence of the sigset argument.
-
-    At this point, I am hoping we either will get a counter-argument from
-    Ulrich about why we really do need paccept()'s sigset argument, or that he
-    will resubmit the original accept4() patch.
-
-    Signed-off-by: Michael Kerrisk <mtk.manpages@gmail.com>
-    Cc: David Miller <davem@davemloft.net>
-    Cc: Davide Libenzi <davidel@xmailserver.org>
-    Cc: Alan Cox <alan@redhat.com>
-    Cc: Ulrich Drepper <drepper@redhat.com>
-    Cc: Jakub Jelinek <jakub@redhat.com>
-    Cc: Roland McGrath <roland@redhat.com>
-    Cc: Oleg Nesterov <oleg@tv-sign.ru>
-    Cc: Christoph Hellwig <hch@lst.de>
-    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-    Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-
-:040000 040000 075d833177c2ee952fa0003bd490d50cb16926ec
-d5a2bc1dbca03d3c21e3740cddb6164de6df9cda M	net
+Mathieu
 
 
-I think I was pretty straight forward with it. i.g. a good kernel
-no sound bad kernel whining sound.
-
-Now looking into sys_paccept seems it's been removed
-in place for accept4.
-I went to go revert that manually but there's too much
-that has changed in net/socket.c
-
-what/how is the best way to really find out if
-accept4/sys_paccept is where this noise is coming
-from on my machine(reverting is a mess)?
-
+> 
+> -- Steve
+> 
+> 
+> 
+> > The system call number is only assigned for x86_64 in this RFC patch.
+> 
+> 
 
 -- 
-Justin P. Mattock
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
