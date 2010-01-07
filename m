@@ -1,156 +1,187 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755856Ab0AVXWc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755741Ab0AVXW3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755856Ab0AVXWc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 18:22:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755751Ab0AVXW3
-	(ORCPT <rfc822;linux-kernel-outgoing>);
+	id S1755741Ab0AVXW3 (ORCPT <rfc822;w@1wt.eu>);
 	Fri, 22 Jan 2010 18:22:29 -0500
-Received: from fmmailgate01.web.de ([217.72.192.221]:39135 "EHLO
-	fmmailgate01.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754762Ab0AVXW0 (ORCPT
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755433Ab0AVXW1
+	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Fri, 22 Jan 2010 18:22:27 -0500
+Received: from fmmailgate03.web.de ([217.72.192.234]:60053 "EHLO
+	fmmailgate03.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754055Ab0AVXW0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 22 Jan 2010 18:22:26 -0500
-Message-Id: <903e38a0f1178ce30a5ba1e4e571278f8e7f2bf3.1264201407.git.jan.kiszka@web.de>
+Message-Id: <55d269bad8849ac9b578b9229c3384aa0f71847e.1264201406.git.jan.kiszka@web.de>
 In-Reply-To: <cover.1264201406.git.jan.kiszka@web.de>
 References: <cover.1264201406.git.jan.kiszka@web.de>
 From: Jan Kiszka <jan.kiszka@web.de>
 To: David Miller <davem@davemloft.net>, Karsten Keil <isdn@linux-pingi.de>
 Cc: linux-kernel@vger.kernel.org, i4ldeveloper@listserv.isdn4linux.de,
        isdn4linux@listserv.isdn4linux.de, netdev@vger.kernel.org
-Date: Thu, 7 Jan 2010 19:24:41 +0100
-Subject: [PATCH 14/31] CAPI: Clean up capi_open/release
-X-Provags-ID: V01U2FsdGVkX1+TO+1Xlk4ndM1dH3se5rRe3qWmCnf+QjckZWjG
-	IQnEj5qlnqtQn3S+hBOrJgvGcFT1iYwJimWRl5z3QzMOwQ9c8h
-	ZJRqAqb6w=
+Date: Thu, 7 Jan 2010 11:53:40 +0100
+Subject: [PATCH 08/31] CAPI: Rework capi_ctr_ready/down
+X-Provags-ID: V01U2FsdGVkX19K44GoSMHQGviu80DkhmNbON5TbBOwT7/5B4w3
+	WDZX4DG9pGR/IOl+GfVrPheRJBrxVJsEQgcExUgl5H8qTs/FNc
+	dDqMV8jZw=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fold capidev_alloc and capidev_free into capi_open and capi_release -
-there are no other users. Someone pushed a lock_kernel into capi_open.
-Drop it, we don't need it. Also remove the useless test from open that
-checks for private_data == NULL.
+This step prepares the application of proper controller locking: Push
+all state changing work into the notify handler that are called by
+capi_ctr_ready and capi_ctr_down, switch detach_capi_ctr to issue a
+synchronous ctr_down. Also ensure that we do not go through any action
+if the state did not change.
 
 Signed-off-by: Jan Kiszka <jan.kiszka@web.de>
 ---
- drivers/isdn/capi/capi.c |   93 +++++++++++++++++-----------------------------
- 1 files changed, 34 insertions(+), 59 deletions(-)
+ drivers/isdn/capi/kcapi.c |   95 +++++++++++++++++++++++---------------------
+ 1 files changed, 50 insertions(+), 45 deletions(-)
 
-diff --git a/drivers/isdn/capi/capi.c b/drivers/isdn/capi/capi.c
-index 2af6c05..2af81c8 100644
---- a/drivers/isdn/capi/capi.c
-+++ b/drivers/isdn/capi/capi.c
-@@ -400,46 +400,6 @@ static struct capincci *capincci_find(struct capidev *cdev, u32 ncci)
- 	return p;
- }
+diff --git a/drivers/isdn/capi/kcapi.c b/drivers/isdn/capi/kcapi.c
+index 476239f..3fcc95b 100644
+--- a/drivers/isdn/capi/kcapi.c
++++ b/drivers/isdn/capi/kcapi.c
+@@ -169,44 +169,74 @@ static void release_appl(struct capi_ctr *ctr, u16 applid)
  
--/* -------- struct capidev ------------------------------------------ */
--
--static struct capidev *capidev_alloc(void)
--{
--	struct capidev *cdev;
--
--	cdev = kzalloc(sizeof(*cdev), GFP_KERNEL);
--	if (!cdev)
--		return NULL;
--
--	mutex_init(&cdev->ncci_list_mtx);
--	skb_queue_head_init(&cdev->recvqueue);
--	init_waitqueue_head(&cdev->recvwait);
--
--	mutex_lock(&capidev_list_lock);
--	list_add_tail(&cdev->list, &capidev_list);
--	mutex_unlock(&capidev_list_lock);
--
--        return cdev;
--}
--
--static void capidev_free(struct capidev *cdev)
--{
--	mutex_lock(&capidev_list_lock);
--	list_del(&cdev->list);
--	mutex_unlock(&capidev_list_lock);
--
--	if (cdev->ap.applid) {
--		capi20_release(&cdev->ap);
--		cdev->ap.applid = 0;
+ static void notify_up(u32 contr)
+ {
+-	struct capi_ctr *ctr = get_capi_ctr_by_nr(contr);
+ 	struct capi20_appl *ap;
++	struct capi_ctr *ctr;
+ 	u16 applid;
+ 
+-	if (showcapimsgs & 1) {
++	if (showcapimsgs & 1)
+ 	        printk(KERN_DEBUG "kcapi: notify up contr %dn", contr);
 -	}
--	skb_queue_purge(&cdev->recvqueue);
--
--	mutex_lock(&cdev->ncci_list_mtx);
--	capincci_free(cdev, 0xffffffff);
--	mutex_unlock(&cdev->ncci_list_mtx);
--
--	kfree(cdev);
--}
--
- #ifdef CONFIG_ISDN_CAPI_MIDDLEWARE
- /* -------- handle data queue --------------------------------------- */
- 
-@@ -990,30 +950,45 @@ capi_ioctl(struct inode *inode, struct file *file,
- 	return -EINVAL;
+-	if (!ctr) {
++
++	ctr = get_capi_ctr_by_nr(contr);
++	if (ctr) {
++		if (ctr->state == CAPI_CTR_RUNNING)
++			return;
++
++		ctr->state = CAPI_CTR_RUNNING;
++
++		for (applid = 1; applid <= CAPI_MAXAPPL; applid++) {
++			ap = get_capi_appl_by_nr(applid);
++			if (!ap || ap->release_in_progress)
++				continue;
++			register_appl(ctr, applid, &ap->rparam);
++			if (ap->callback && !ap->release_in_progress)
++				ap->callback(KCI_CONTRUP, contr,
++					     &ctr->profile);
++		}
++	} else
+ 		printk(KERN_WARNING "%s: invalid contr %dn", __func__, contr);
+-		return;
+-	}
+-	for (applid = 1; applid <= CAPI_MAXAPPL; applid++) {
+-		ap = get_capi_appl_by_nr(applid);
+-		if (!ap || ap->release_in_progress) continue;
+-		register_appl(ctr, applid, &ap->rparam);
+-		if (ap->callback && !ap->release_in_progress)
+-			ap->callback(KCI_CONTRUP, contr, &ctr->profile);
+-	}
  }
  
--static int
--capi_open(struct inode *inode, struct file *file)
-+static int capi_open(struct inode *inode, struct file *file)
+ /* -------- KCI_CONTRDOWN ------------------------------------- */
+ 
+-static void notify_down(u32 contr)
++static void ctr_down(struct capi_ctr *ctr)
  {
--	int ret;
--	
--	lock_kernel();
--	if (file->private_data)
--		ret = -EEXIST;
--	else if ((file->private_data = capidev_alloc()) == NULL)
--		ret = -ENOMEM;
--	else
--		ret = nonseekable_open(inode, file);
--	unlock_kernel();
--	return ret;
-+	struct capidev *cdev;
+ 	struct capi20_appl *ap;
+ 	u16 applid;
+ 
+-	if (showcapimsgs & 1) {
+-        	printk(KERN_DEBUG "kcapi: notify down contr %dn", contr);
+-	}
++	if (ctr->state == CAPI_CTR_DETECTED)
++		return;
 +
-+	cdev = kzalloc(sizeof(*cdev), GFP_KERNEL);
-+	if (!cdev)
-+		return -ENOMEM;
++	ctr->state = CAPI_CTR_DETECTED;
 +
-+	mutex_init(&cdev->ncci_list_mtx);
-+	skb_queue_head_init(&cdev->recvqueue);
-+	init_waitqueue_head(&cdev->recvwait);
-+	file->private_data = cdev;
-+
-+	mutex_lock(&capidev_list_lock);
-+	list_add_tail(&cdev->list, &capidev_list);
-+	mutex_unlock(&capidev_list_lock);
-+
-+	return nonseekable_open(inode, file);
++	memset(ctr->manu, 0, sizeof(ctr->manu));
++	memset(&ctr->version, 0, sizeof(ctr->version));
++	memset(&ctr->profile, 0, sizeof(ctr->profile));
++	memset(ctr->serial, 0, sizeof(ctr->serial));
+ 
+ 	for (applid = 1; applid <= CAPI_MAXAPPL; applid++) {
+ 		ap = get_capi_appl_by_nr(applid);
+-		if (ap && ap->callback && !ap->release_in_progress)
+-			ap->callback(KCI_CONTRDOWN, contr, NULL);
++		if (ap && !ap->release_in_progress) {
++			if (ap->callback)
++				ap->callback(KCI_CONTRDOWN, ctr->cnr, NULL);
++			capi_ctr_put(ctr);
++		}
+ 	}
  }
  
--static int
--capi_release(struct inode *inode, struct file *file)
-+static int capi_release(struct inode *inode, struct file *file)
++static void notify_down(u32 contr)
++{
++	struct capi_ctr *ctr;
++
++	if (showcapimsgs & 1)
++		printk(KERN_DEBUG "kcapi: notify down contr %dn", contr);
++
++	ctr = get_capi_ctr_by_nr(contr);
++	if (ctr)
++		ctr_down(ctr);
++	else
++		printk(KERN_WARNING "%s: invalid contr %dn", __func__, contr);
++}
++
+ static void notify_handler(struct work_struct *work)
  {
--	struct capidev *cdev = (struct capidev *)file->private_data;
-+	struct capidev *cdev = file->private_data;
+ 	struct capi_notifier *np =
+@@ -368,8 +398,6 @@ EXPORT_SYMBOL(capi_ctr_handle_message);
  
--	capidev_free(cdev);
--	file->private_data = NULL;
--	
-+	mutex_lock(&capidev_list_lock);
-+	list_del(&cdev->list);
-+	mutex_unlock(&capidev_list_lock);
-+
-+	if (cdev->ap.applid) {
-+		capi20_release(&cdev->ap);
-+		cdev->ap.applid = 0;
-+	}
-+	skb_queue_purge(&cdev->recvqueue);
-+
-+	mutex_lock(&cdev->ncci_list_mtx);
-+	capincci_free(cdev, 0xffffffff);
-+	mutex_unlock(&cdev->ncci_list_mtx);
-+
-+	kfree(cdev);
- 	return 0;
- }
+ void capi_ctr_ready(struct capi_ctr *ctr)
+ {
+-	ctr->state = CAPI_CTR_RUNNING;
+-
+ 	printk(KERN_NOTICE "kcapi: controller [%03d] "%s" ready.n",
+ 	       ctr->cnr, ctr->name);
+ 
+@@ -388,28 +416,6 @@ EXPORT_SYMBOL(capi_ctr_ready);
+ 
+ void capi_ctr_down(struct capi_ctr *ctr)
+ {
+-	u16 appl;
+-
+-	DBG("");
+-
+-	if (ctr->state == CAPI_CTR_DETECTED)
+-		return;
+-
+-	ctr->state = CAPI_CTR_DETECTED;
+-
+-	memset(ctr->manu, 0, sizeof(ctr->manu));
+-	memset(&ctr->version, 0, sizeof(ctr->version));
+-	memset(&ctr->profile, 0, sizeof(ctr->profile));
+-	memset(ctr->serial, 0, sizeof(ctr->serial));
+-
+-	for (appl = 1; appl <= CAPI_MAXAPPL; appl++) {
+-		struct capi20_appl *ap = get_capi_appl_by_nr(appl);
+-		if (!ap || ap->release_in_progress)
+-			continue;
+-
+-		capi_ctr_put(ctr);
+-	}
+-
+ 	printk(KERN_NOTICE "kcapi: controller [%03d] down.n", ctr->cnr);
+ 
+ 	notify_push(KCI_CONTRDOWN, ctr->cnr, 0, 0);
+@@ -517,8 +523,7 @@ EXPORT_SYMBOL(attach_capi_ctr);
+ 
+ int detach_capi_ctr(struct capi_ctr *ctr)
+ {
+-	if (ctr->state != CAPI_CTR_DETECTED)
+-		capi_ctr_down(ctr);
++	ctr_down(ctr);
+ 
+ 	ncontrollers--;
  
 -- 
 1.6.0.2
