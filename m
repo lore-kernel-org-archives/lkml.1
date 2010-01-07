@@ -1,63 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753327Ab0AGQwy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753349Ab0AGQxs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753327Ab0AGQwy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 11:52:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752382Ab0AGQwx
+	id S1753349Ab0AGQxs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 11:53:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752382Ab0AGQxs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 11:52:53 -0500
-Received: from e8.ny.us.ibm.com ([32.97.182.138]:57983 "EHLO e8.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752141Ab0AGQww (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 11:52:52 -0500
-Date: Thu, 7 Jan 2010 08:52:49 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Josh Triplett <josh@joshtriplett.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org,
-       tglx@linutronix.de, Valdis.Kletnieks@vt.edu, dhowells@redhat.com,
-       laijs@cn.fujitsu.com, dipankar@in.ibm.com
-Subject: Re: [RFC PATCH] introduce sys_membarrier(): process-wide memory
-	barrier
-Message-ID: <20100107165249.GE6764@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20100107044007.GA22863@Krystal> <1262842854.28171.3710.camel@gandalf.stny.rr.com> <20100107061955.GC25786@Krystal> <20100107063558.GC12939@feather> <1262853855.4049.86.camel@laptop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1262853855.4049.86.camel@laptop>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	Thu, 7 Jan 2010 11:53:48 -0500
+Received: from mail-yw0-f176.google.com ([209.85.211.176]:63461 "EHLO
+	mail-yw0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752141Ab0AGQxr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jan 2010 11:53:47 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=HBHxJrkK9VZoFd/Bdce3lMH80ngSUkmEAUuDwFka0BCJgU2KVoObLBXTOfPiB1Wzum
+         tWMYMLbiE6bQed5sPxr61+JECzPxqoxwmWe43D2GHDeYzfz1mlOeCqotNn3SErlBGO6X
+         lVpyfCHrkEpb5r0MIGCWsRWSAO3/r4KXf/4E4=
+From: Brian Gerst <brgerst@gmail.com>
+To: hpa@zytor.com
+Cc: x86@kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 0/3] x86: Merge atomic headers
+Date: Thu,  7 Jan 2010 11:53:32 -0500
+Message-Id: <1262883215-4034-1-git-send-email-brgerst@gmail.com>
+X-Mailer: git-send-email 1.6.5.2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 07, 2010 at 09:44:15AM +0100, Peter Zijlstra wrote:
-> On Wed, 2010-01-06 at 22:35 -0800, Josh Triplett wrote:
-> > 
-> > The number of threads doesn't matter nearly as much as the number of
-> > threads typically running at a time compared to the number of
-> > processors.  Of course, we can't measure that as easily, but I don't
-> > know that your proposed heuristic would approximate it well.
-> 
-> Quite agreed, and not disturbing RT tasks is even more important.
+This patchset merges the implementations of the atomic_t functions which 
+are common between 32-bit and 64-bit mode.  It splits out the atomic64_t
+functions into new headers since those are still different.
 
-OK, so I stand un-Reviewed-by twice in one morning.  ;-)
+[PATCH 1/3] x86: Split atomic64_t functions into seperate headers
+[PATCH 2/3] x86: Sync atomic_xx.h
+[PATCH 3/3] x86: Merge atomic.h
 
-> A simple:
-> 
->   for_each_cpu(cpu, current->mm->cpu_vm_mask) {
->      if (cpu_curr(cpu)->mm == current->mm)
->         smp_call_function_single(cpu, func, NULL, 1);
->   }
-> 
-> seems far preferable over anything else, if you really want you can use
-> a cpumask to copy cpu_vm_mask in and unset bits and use the mask with
-> smp_call_function_any(), but that includes having to allocate the
-> cpumask, which might or might not be too expensive for Mathieu.
+ arch/x86/include/asm/atomic.h      |  299 ++++++++++++++++++++++-
+ arch/x86/include/asm/atomic64_32.h |  160 ++++++++++++
+ arch/x86/include/asm/atomic64_64.h |  224 +++++++++++++++++
+ arch/x86/include/asm/atomic_32.h   |  415 ------------------------------
+ arch/x86/include/asm/atomic_64.h   |  485 ------------------------------------
+ 5 files changed, 681 insertions(+), 902 deletions(-)
 
-This would be vulnerable to the sys_membarrier() CPU seeing an old value
-of cpu_curr(cpu)->mm, and that other task seeing the old value of the
-pointer we are trying to RCU-destroy, right?
-
-							Thanx, Paul
