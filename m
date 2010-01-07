@@ -1,77 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753473Ab0AGSkz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753509Ab0AGSle@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753473Ab0AGSkz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 13:40:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753445Ab0AGSkw
+	id S1753509Ab0AGSle (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 13:41:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753497Ab0AGSlb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 13:40:52 -0500
-Received: from wavehammer.waldi.eu.org ([82.139.201.20]:56846 "EHLO
-	wavehammer.waldi.eu.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751719Ab0AGSkv (ORCPT
+	Thu, 7 Jan 2010 13:41:31 -0500
+Received: from mta3.srv.hcvlny.cv.net ([167.206.4.198]:47513 "EHLO
+	mta3.srv.hcvlny.cv.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753490Ab0AGSl0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 13:40:51 -0500
-Date: Thu, 7 Jan 2010 19:29:42 +0100
-From: Bastian Blank <waldi@debian.org>
-To: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Ping Cheng <pingc@wacom.com>
-Subject: [PATCH 3/7] Input: wacom - Set driver info for Wacom Penpartner
-Message-ID: <20100107182941.GA12938@wavehammer.waldi.eu.org>
-Mail-Followup-To: Bastian Blank <waldi@debian.org>,
-	linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-	Ping Cheng <pingc@wacom.com>
-References: <20100107182553.GA11236@wavehammer.waldi.eu.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20100107182553.GA11236@wavehammer.waldi.eu.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 7 Jan 2010 13:41:26 -0500
+Date: Thu, 07 Jan 2010 13:40:53 -0500
+From: Michael Breuer <mbreuer@majjas.com>
+Subject: Re: [PATCH] af_packet: Don't use skb after dev_queue_xmit()
+In-reply-to: <20100107183545.GA3208@del.dom.local>
+To: Jarek Poplawski <jarkao2@gmail.com>
+Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
+       flyboy@gmail.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Message-id: <4B462AB5.3040405@majjas.com>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7BIT
+References: <4B455C62.6030504@majjas.com> <20100106205343.5460d658@nehalam>
+ <4B4571D5.30002@majjas.com> <4B457711.1040008@majjas.com>
+ <4B458B36.6050509@majjas.com> <20100107074756.GB6258@ff.dom.local>
+ <4B459368.2000503@majjas.com> <4B45F841.8030407@majjas.com>
+ <20100107180114.GB3088@del.dom.local> <4B4625BD.3070202@majjas.com>
+ <20100107183545.GA3208@del.dom.local>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.5)
+ Gecko/20091204 Lightning/1.0b2pre Thunderbird/3.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add define to set also driver info in the usb device ids, convert one
-device.
-
-Signed-off-by: Bastian Blank <waldi@debian.org>
----
- drivers/input/tablet/wacom_sys.c |   11 +++++++++--
- 1 files changed, 9 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/input/tablet/wacom_sys.c b/drivers/input/tablet/wacom_sys.c
-index b0f3fc3..aa02fb1 100644
---- a/drivers/input/tablet/wacom_sys.c
-+++ b/drivers/input/tablet/wacom_sys.c
-@@ -665,8 +665,11 @@ static int wacom_reset_resume(struct usb_interface *intf)
- 	return wacom_resume(intf);
- }
- 
-+static struct wacom_features wacom_features_0x00 =
-+	{ "Wacom Penpartner",     WACOM_PKGLEN_PENPRTN,    5040,  3780,  255,  0, PENPARTNER };
-+
- static struct wacom_features wacom_features[] = {
--	{ "Wacom Penpartner",     WACOM_PKGLEN_PENPRTN,    5040,  3780,  255,  0, PENPARTNER },
-+	{ },
- 	{ "Wacom Graphire",       WACOM_PKGLEN_GRAPHIRE,  10206,  7422,  511, 63, GRAPHIRE },
- 	{ "Wacom Graphire2 4x5",  WACOM_PKGLEN_GRAPHIRE,  10206,  7422,  511, 63, GRAPHIRE },
- 	{ "Wacom Graphire2 5x7",  WACOM_PKGLEN_GRAPHIRE,  13918, 10206,  511, 63, GRAPHIRE },
-@@ -732,8 +735,12 @@ static struct wacom_features wacom_features[] = {
- 	{ }
- };
- 
-+#define USB_DEVICE_WACOM(prod) \
-+	USB_DEVICE(USB_VENDOR_ID_WACOM,prod), \
-+	.driver_info = (uintptr_t)&wacom_features_##prod
-+
- static struct usb_device_id wacom_ids[] = {
--	{ USB_DEVICE(USB_VENDOR_ID_WACOM, 0x00) },
-+	{ USB_DEVICE_WACOM(0x00) },
- 	{ USB_DEVICE(USB_VENDOR_ID_WACOM, 0x10) },
- 	{ USB_DEVICE(USB_VENDOR_ID_WACOM, 0x11) },
- 	{ USB_DEVICE(USB_VENDOR_ID_WACOM, 0x12) },
--- 
-1.6.5.7
-
-
--- 
-Immortality consists largely of boredom.
-		-- Zefrem Cochrane, "Metamorphosis", stardate 3219.8
+On 1/7/2010 1:35 PM, Jarek Poplawski wrote:
+> On Thu, Jan 07, 2010 at 01:19:41PM -0500, Michael Breuer wrote:
+>    
+>> On 1/7/2010 1:01 PM, Jarek Poplawski wrote:
+>>      
+>>> On Thu, Jan 07, 2010 at 10:05:37AM -0500, Michael Breuer wrote:
+>>>        
+>>>> Bad news - crashed about an hour after I wrote this email - under
+>>>> load - same crash as before. Network watchdog... lots of attempts to
+>>>> reset the adapter... then hw watchdog rebooted the system.
+>>>>          
+>>> It's a pity. Anyway, I'd be still interested in CONFIG_PACKET_MMAP off
+>>> if you find time.
+>>>
+>>> Jarek P.
+>>>        
+>> Ok - any particular patch set to try with? I'm going to start with a
+>> clean tree using the latest 2.6.32 from git (tried 2.6.33-rc3, but
+>> can't get a usable console... will look at that later.)
+>>      
+> My "Berck E. Nash" and Stephen's "pskb_may_pull" sky2 patches. (BTW,
+> could you remind if it worked any better with 2.6.31 or earlier?)
+>
+> Jarek P.
+>    
+   Never tried earlier than 2.6.31 - new machine. I had a bunch of 
+issues on 2.6.31, including sky2 DMAR errors... so probably not a 2.6.32 
+regression.
