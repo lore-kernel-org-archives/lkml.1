@@ -1,89 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756368Ab0AGAod@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756416Ab0AGAui@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756368Ab0AGAod (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 Jan 2010 19:44:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755199Ab0AGAoc
+	id S1756416Ab0AGAui (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 Jan 2010 19:50:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756263Ab0AGAuh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 Jan 2010 19:44:32 -0500
-Received: from ey-out-2122.google.com ([74.125.78.24]:59203 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756041Ab0AGAob convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 Jan 2010 19:44:31 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=h02zlPkoU6L72INkqoL4RrpLZoDidKWEOJaRcR4D/F+C7ULnIcRM2ayuSqF/5l8btn
-         BQF7ejZt7SWNh6Auw/nMOxHEqVgB6agI0MxbHND3jgu5UVK624ibvDAEDvE51i6sndlb
-         CXxtmjCTaxXG/JCDj7YmTMad2nMqPCEad30hY=
-MIME-Version: 1.0
-In-Reply-To: <4B445B0E.50208@redhat.com>
-References: <6041d2001001011627o5c494df4v37c0c466df3d444c@mail.gmail.com>
-	 <1262392920.32223.10.camel@laptop>
-	 <6041d2001001041043ka810288l64ae9d6d8105b284@mail.gmail.com>
-	 <4B42AA40.3060406@redhat.com>
-	 <6041d2001001041923u7bd512a6w4b5399af17424422@mail.gmail.com>
-	 <4B4311E8.1000001@redhat.com>
-	 <6041d2001001051458j46cdf7abqc4a0a249445ec348@mail.gmail.com>
-	 <4B445B0E.50208@redhat.com>
-Date: Wed, 6 Jan 2010 19:44:29 -0500
-Message-ID: <6041d2001001061644i59d9cbb6pfcd85177d8391419@mail.gmail.com>
-Subject: Re: BUG during shutdown - bisected to commit e2912009
-From: Marc Dionne <marc.c.dionne@gmail.com>
-To: Xiaotian Feng <dfeng@redhat.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 6 Jan 2010 19:50:37 -0500
+Received: from na3sys009aog110.obsmtp.com ([74.125.149.203]:53702 "EHLO
+	na3sys009aog110.obsmtp.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756245Ab0AGAug convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 Jan 2010 19:50:36 -0500
+X-Greylist: delayed 1169 seconds by postgrey-1.27 at vger.kernel.org; Wed, 06 Jan 2010 19:50:36 EST
+From: "Leyendecker, Robert" <Robert.Leyendecker@lsi.com>
+To: Carsten Emde <Carsten.Emde@osadl.org>,
+       Clark Williams <williams@redhat.com>
+CC: John Kacur <jkacur@redhat.com>, RT <linux-rt-users@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Date: Wed, 6 Jan 2010 19:30:55 -0500
+Subject: RE: [RFC] [rt-tests] change to cyclictest behavior
+Thread-Topic: [RFC] [rt-tests] change to cyclictest behavior
+Thread-Index: AcqPIs0RwfoGlVKXQYevTPgQ2PmEBgAADi3Q
+Message-ID: <8C8865ED624BB94F8FE50259E2B5C5B30459433B48@palmail03.lsi.com>
+References: <20100106130400.7f30ae55@torg>
+	<520f0cf11001061139j2af13403qfcbf567647bdfaa8@mail.gmail.com>
+	<4B4502FD.1000404@osadl.org>	<20100106160434.77efc790@torg>
+	<4B450D91.7060403@osadl.org> <20100106162759.1d4d5b57@torg>
+ <4B4513BA.5090001@osadl.org>
+In-Reply-To: <4B4513BA.5090001@osadl.org>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 6, 2010 at 4:42 AM, Xiaotian Feng <dfeng@redhat.com> wrote:
-> On 01/06/2010 06:58 AM, Marc Dionne wrote:
->>
->> On Tue, Jan 5, 2010 at 5:18 AM, Xiaotian Feng<dfeng@redhat.com>  wrote:
->>>
->>> This is outputed by sound module, but it will not affect clockevents,
->>> could
->>> you please try following patch and let me know the output before BUG_ON
->>> happens? We can gather more information on the BUG_ON. Thank you.
->>>
->>> diff --git a/kernel/time/clockevents.c b/kernel/time/clockevents.c
->>> index 6f740d9..7c945e8 100644
->>> --- a/kernel/time/clockevents.c
->>> +++ b/kernel/time/clockevents.c
->>> @@ -260,6 +260,9 @@ void clockevents_notify(unsigned long reason, void
->>> *arg)
->>>                list_for_each_entry_safe(dev, tmp,&clockevent_devices,
->>> list)
->>> {
->>>                        if (cpumask_test_cpu(cpu, dev->cpumask)&&
->>>                            cpumask_weight(dev->cpumask) == 1) {
->>> +                               if (dev->mode != CLOCK_EVT_MODE_UNUSED)
->>> +                                       printk("invalid dev %s mode %d on
->>> cpu %d\n", dev->name,
->>> +                                               dev->mode, cpu);
->>>                                BUG_ON(dev->mode !=
->>> CLOCK_EVT_MODE_UNUSED);
->>>                                list_del(&dev->list);
->>
->> I don't get anything on screen from the printk - is there a trick
->> needed to getting printk output at that stage of shutting down?  I
->> tried inserting an mdelay() before the BUG, which delayed the bug
->> output but still didn't print the invalid dev message.
->
-> Did you notice this BUG when you're doing suspend/resume?
->
-> Does the BUG still appear if we changed BUG_ON line to BUG_ON(dev->mode !=
-> CLOCK_EVT_MODE_UNUSED && dev->mode != CLOCK_EVT_MODE_SHUTDOWN)?
+> 
+> Hmm, I think that this one is less obvious. Apparently, there are a
+> bunch of different opinions on mlockall(). I once heard, for example,
+> the opinion that mlockall() may - under some conditions - introduce a
+> performance penalty, but I did not verify that. Many real-time systems
+> do not have a "swap" line in /etc/fstab; mlockall() is not needed in
+> such systems. In addition, most today's systems have so much RAM that
+> swapping became a rather rare event. I hope some other RT-ers who are
+> more knowledgeable about memory management and swapping can comment on
+> this.
+> 
+> Cyclictest was in use for years, before someone introduced the -m
+> option. I never used this option.
+> 
+> 	Carsten.
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-rt-
+> users" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
-I only see the BUG on halt - reboot works normally and suspend
-actually freezes and doesn't suspend, but that's perhaps unrelated.
 
-I managed to get your suggested printk to work by adding KERN_CRIT
-(otherwise I got no output), and the offending dev is:
- "hpet", mode 3 (CLOCK_EVT_MODE_ONESHOT?), cpu 4.
+As rt user, I hope someone finds this useful-
 
-Marc
+I have found mlockall() necessary. I alloc very large buffers for transmitting and capturing hundreds of voip streams. In my testing, if I don't mlockall() mostly following the advice on the rt-wiki (thanks for this life saver) network rt performance is unacceptable, jitter is 10X - 50X worse on my system. File system activity renders the system choppy and sluggish. All my memory is nailed up and preloaded where possible before I pull the trigger. I run on standard FC distro (with most services turned off). Getting good performance on a standard distro is amazing to me.
+
+Our test team has discovered that they get good network performance while simultaneously running wireshark and other apps like VNC. I think audio guys run huge x apps and full blown distros, while running 12+ channels of raw audio to disk. I can't see how they do it without mlock. Video would also seem to have severe memory requirements, where background tasks might be allowed to swap without serious impact to rt threads.
+
+If rt-tests (or any app) isn't reading and writing big memory buffers, and not flushing cache and system is otherwise idle, I doubt mlock will make much difference in results even with standard distro using swap. For someone benchmarking using rt-tests while other apps are running or using standard distro seems like mlock option would be useful. 
+
+Thanks for all the work here. It is greatly appreciated.
+
+-Bob
+
