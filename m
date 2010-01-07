@@ -1,64 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753206Ab0AGUgn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753273Ab0AGUhN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753206Ab0AGUgn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 15:36:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753031Ab0AGUgm
+	id S1753273Ab0AGUhN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 15:37:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753050Ab0AGUhM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 15:36:42 -0500
-Received: from mail.gmx.net ([213.165.64.20]:32853 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753025Ab0AGUgm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 15:36:42 -0500
-X-Authenticated: #12255092
-X-Provags-ID: V01U2FsdGVkX192iTE0lyl2ldURzFhw7R36WkcR8++4VhoIla9WHK
-	oa77/9gZvpolCF
-From: Peter Huewe <PeterHuewe@gmx.de>
-To: "Greg Kroah-Hartman" <gregkh@suse.de>, Simon Horman <horms@verge.net.au>
-Subject: [PATCH 3/3] staging/wlan-ng: Add select WEXT_PRIV to Kconfig to prevent build failure
-Date: Thu, 7 Jan 2010 21:36:38 +0100
-User-Agent: KMail/1.12.3 (Linux/2.6.27-05415-g69a8594; KDE/4.3.3; x86_64; ; )
-Cc: devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
-References: <201001072133.20487.PeterHuewe@gmx.de> <201001072135.08745.PeterHuewe@gmx.de>
-In-Reply-To: <201001072135.08745.PeterHuewe@gmx.de>
+	Thu, 7 Jan 2010 15:37:12 -0500
+Received: from mailgw5.ericsson.se ([193.180.251.36]:53989 "EHLO
+	mailgw5.ericsson.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751839Ab0AGUhK convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jan 2010 15:37:10 -0500
+X-AuditID: c1b4fb24-b7bb6ae000001052-ec-4b4645f385c8
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201001072136.38318.PeterHuewe@gmx.de>
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.54
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH 1/2] i2c: Add support for Ux500/Nomadik I2C controller
+Date: Thu, 7 Jan 2010 21:37:04 +0100
+Message-ID: <A6D19A13FE030A409EC4362C172E091F0E30CDB5@eseldmw101.eemea.ericsson.se>
+In-Reply-To: <27f8aa32bf40c690930a76ce5e1ee82cec86b248.1262870858.git.srinidhi.kasagar@stericsson.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 1/2] i2c: Add support for Ux500/Nomadik I2C controller
+Thread-Index: AcqPnz3/mkHzCQXOSGmLNSZpe5Ik/QANsR2A
+References: <27f8aa32bf40c690930a76ce5e1ee82cec86b248.1262870858.git.srinidhi.kasagar@stericsson.com>
+From: "Linus Walleij" <linus.walleij@stericsson.com>
+To: "Srinidhi KASAGAR" <srinidhi.kasagar@stericsson.com>,
+       <linux-i2c@vger.kernel.org>
+Cc: <ben-linux@fluff.org>, <linux-kernel@vger.kernel.org>,
+       <STEricsson_nomadik_linux@list.st.com>, <sachin.verma@st.com>,
+       <andrea.gallo@stericsson.com>
+X-OriginalArrivalTime: 07 Jan 2010 20:37:07.0706 (UTC) FILETIME=[2E1195A0:01CA8FD9]
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Peter Huewe <peterhuewe@gmx.de>
-Date: Thu, 7 Jan 2010 21:21:35 +0100
+Hi Srinidhi, great work!
 
-Without WEXT_PRIV set the p80211wext.c fails to build due to unknown fields in
-the iw_handler_def struct.
-Those fields are enclosed in WEXT_PRIV conditionals in the prototype
-of iw_handler_def in include/net/iw_handler.h
+Just a few quickies, if you fix these it's
+Acked-by: Linus Walleij <linus.walleij@stericsson.com> 
 
-Signed-off-by: Peter Huewe <peterhuewe@gmx.de>
----
-Patch against Linux-next of Do 7. Jan 19:59:41 CET 2010
- drivers/staging/wlan-ng/Kconfig |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+> diff --git a/arch/arm/plat-nomadik/include/plat/i2c.h 
+> b/arch/arm/plat-nomadik/include/plat/i2c.h
+> +enum i2c_freq_mode {
+> +	I2C_FREQ_MODE_STANDARD,		/* up to 100 Kb/s */
+> +	I2C_FREQ_MODE_FAST,		/* up to 400 Kb/s */
+> +	I2C_FREQ_MODE_FAST_PLUS,	/* up to 1 Mb/s */
+> +	I2C_FREQ_MODE_HIGH_SPEED	/* up to 3.4 Mb/s */
+> +};
+> +
+> +enum i2c_addr_mode {
+> +	I2C_7_BIT_ADDRESS = 0x1,
+> +	I2C_10_BIT_ADDRESS = 0x2
+> +};
 
-diff --git a/drivers/staging/wlan-ng/Kconfig b/drivers/staging/wlan-ng/Kconfig
-index 704ebd2..82fcc16 100644
---- a/drivers/staging/wlan-ng/Kconfig
-+++ b/drivers/staging/wlan-ng/Kconfig
-@@ -2,6 +2,7 @@ config PRISM2_USB
- 	tristate "Prism2.5/3 USB driver"
- 	depends on WLAN && USB
- 	select WIRELESS_EXT
-+	select WEXT_PRIV
- 	default n
- 	---help---
- 	  This is the wlan-ng prism 2.5/3 USB driver for a wide range of
--- 
-1.6.4.4
+Which field in the struct will use this? Can't
+I2C_FUNC_10BIT_ADDR and I2C_M_TEN from include/linux/i2c.h (and
+siblings) be used for this instead? Leftover?
 
+You have this later:
 
+(...)
++		if (unlikely(msgs[i].flags & I2C_M_TEN)) {
++			dev_err(&dev->pdev->dev, "10 bit addressing"
++					"not supported\n");
++			return -EINVAL;
+(...)
 
+Hmmmm?
+
+> +
+> +struct nmk_i2c_controller {
+
+Please use kerneldoc for these comments.
+(see Documentation/kernel-doc-nano-HOWTO.txt)
+
+> +	unsigned long	clk_freq;
+> +	unsigned short	slsu;	/* slave data set up time */
+
+Comment which unit this is in. (Nanosecs I think?)
+
+> +	unsigned char 	tft;	/* Tx FIFO Threshold */
+> +	unsigned char 	rft;	/* Rx FIFO Threshold */
+
+In bytes?
+
+> +	unsigned short	sm;	/* speed mode */
+
+Shouldn't this last element be 
+enum i2c_freq_mode sm
+then?
+
+> +++ b/drivers/i2c/busses/i2c-nmk.c
+(...)
+> +	dev->irq = platform_get_irq(pdev, 0);
+> +	ret = request_irq(dev->irq, i2c_irq_handler, IRQF_DISABLED,
+> +				DRIVER_NAME, dev);
+
+Since I2C IRQs can be a bit tedious, could this be converted
+to a request_threaded_irq()? OK I know that is probably a bit
+intrusive and can very well be done later (so no blocker) but
+think about it.
+
+Linus Walleij
