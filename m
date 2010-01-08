@@ -1,187 +1,161 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753088Ab0AHRkq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753064Ab0AHRmk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753088Ab0AHRkq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jan 2010 12:40:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753018Ab0AHRko
+	id S1753064Ab0AHRmk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jan 2010 12:42:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752904Ab0AHRmj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jan 2010 12:40:44 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:45423 "EHLO mx1.redhat.com"
+	Fri, 8 Jan 2010 12:42:39 -0500
+Received: from mx2.compro.net ([12.186.155.4]:25417 "EHLO mx2.compro.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753015Ab0AHRkl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jan 2010 12:40:41 -0500
-Date: Fri, 8 Jan 2010 12:40:35 -0500
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Corrado Zoccolo <czoccolo@gmail.com>
-Cc: Shaohua Li <shaohua.li@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
-       "Zhang, Yanmin" <yanmin.zhang@intel.com>
-Subject: Re: [RFC]cfq-iosched: quantum check tweak
-Message-ID: <20100108174035.GD22219@redhat.com>
-References: <20091225091030.GA28365@sli10-desk.sh.intel.com> <4e5e476b0912250144l96c4d34v300910216e5c7a08@mail.gmail.com> <20091228033554.GB15242@sli10-desk.sh.intel.com> <4e5e476b0912280102t2278d7a5ld3e8784f52f2be31@mail.gmail.com> <1262829893.4984.13.camel@sli10-desk.sh.intel.com> <4e5e476b1001071344i4f702496y22f33bc2d4bc834d@mail.gmail.com> <20100108171535.GC22219@redhat.com>
+	id S1752858Ab0AHRmi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jan 2010 12:42:38 -0500
+X-IronPort-AV: E=Sophos;i="4.49,243,1262581200"; 
+   d="scan'208";a="4853852"
+Message-ID: <4B476E8D.1030308@compro.net>
+Date: Fri, 08 Jan 2010 12:42:37 -0500
+From: Mark Hounschell <markh@compro.net>
+Reply-To: markh@compro.net
+Organization: Compro Computer Svcs.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20100108171535.GC22219@redhat.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+CC: Andi Kleen <andi@firstfloor.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "dmarkh@cfl.rr.com" <dmarkh@cfl.rr.com>, Alain Knaff <alain@knaff.lu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "fdutils@fdutils.linux.lu" <fdutils@fdutils.linux.lu>,
+       "Li, Shaohua" <shaohua.li@intel.com>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [Fdutils] DMA cache consistency bug introduced in 2.6.28
+References: <alpine.LFD.2.00.0912220922250.31313@localhost.localdomain>	 <4B310879.9050701@compro.net>	 <1261525076.16916.4.camel@localhost.localdomain>	 <4B3162BC.9000508@cfl.rr.com> <4B3214EC.6020308@compro.net>	 <6598A4E21F1DB24D80BF72956484F59802EFD1C6@orsmsx001.amr.corp.intel.com>	 <4B32386B.2060509@compro.net>	 <alpine.LFD.2.00.0912230828230.6879@localhost.localdomain>	 <87bphpd4rt.fsf@basil.nowhere.org> <4B32565E.6000501@compro.net>	 <20091223191806.GA3336@linux-os.sc.intel.com> <4B3270FE.5090607@compro.net> <1261600243.16916.56.camel@localhost.localdomain>
+In-Reply-To: <1261600243.16916.56.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 08, 2010 at 12:15:35PM -0500, Vivek Goyal wrote:
-> On Thu, Jan 07, 2010 at 10:44:27PM +0100, Corrado Zoccolo wrote:
-> > Hi Shahoua,
-> > 
-> > On Thu, Jan 7, 2010 at 3:04 AM, Shaohua Li <shaohua.li@intel.com> wrote:
-> > > On Mon, 2009-12-28 at 17:02 +0800, Corrado Zoccolo wrote:
-> > >> Hi Shaohua,
-> > >> On Mon, Dec 28, 2009 at 4:35 AM, Shaohua Li <shaohua.li@intel.com> wrote:
-> > >> > On Fri, Dec 25, 2009 at 05:44:40PM +0800, Corrado Zoccolo wrote:
-> > >> >> On Fri, Dec 25, 2009 at 10:10 AM, Shaohua Li <shaohua.li@intel.com> wrote:
-> > >> >> > Currently a queue can only dispatch up to 4 requests if there are other queues.
-> > >> >> > This isn't optimal, device can handle more requests, for example, AHCI can
-> > >> >> > handle 31 requests. I can understand the limit is for fairness, but we could
-> > >> >> > do some tweaks:
-> > >> >> > 1. if the queue still has a lot of slice left, sounds we could ignore the limit
-> > >> >> ok. You can even scale the limit proportionally to the remaining slice
-> > >> >> (see below).
-> > >> > I can't understand the meaning of below scale. cfq_slice_used_soon() means
-> > >> > dispatched requests can finish before slice is used, so other queues will not be
-> > >> > impacted. I thought/hope a cfq_slice_idle time is enough to finish the
-> > >> > dispatched requests.
-> > >> cfq_slice_idle is 8ms, that is the average time to complete 1 request
-> > >> on most disks. If you have more requests dispatched on a
-> > >> NCQ-rotational disk (non-RAID), it will take more time. Probably a
-> > >> linear formula is not the most accurate, but still more accurate than
-> > >> taking just 1 cfq_slice_idle. If you can experiment a bit, you could
-> > >> also try:
-> > >>  cfq_slice_idle * ilog2(nr_dispatched+1)
-> > >>  cfq_slice_idle * (1<<(ilog2(nr_dispatched+1)>>1))
-> > >>
-> > >> >
-> > >> >> > 2. we could keep the check only when cfq_latency is on. For uses who don't care
-> > >> >> > about latency should be happy to have device fully piped on.
-> > >> >> I wouldn't overload low_latency with this meaning. You can obtain the
-> > >> >> same by setting the quantum to 32.
-> > >> > As this impact fairness, so natually thought we could use low_latency. I'll remove
-> > >> > the check in next post.
-> > >> Great.
-> > >> >> > I have a test of random direct io of two threads, each has 32 requests one time
-> > >> >> > without patch: 78m/s
-> > >> >> > with tweak 1: 138m/s
-> > >> >> > with two tweaks and disable latency: 156m/s
-> > >> >>
-> > >> >> Please, test also with competing seq/random(depth1)/async workloads,
-> > >> >> and measure also introduced latencies.
-> > >> > depth1 should be ok, as if device can only send one request, it should not require
-> > >> > more requests from ioscheduler.
-> > >> I mean have a run with, at the same time:
-> > >> * one seq reader,
-> > >> * h random readers with depth 1 (non-aio)
-> > >> * one async seq writer
-> > >> * k random readers with large depth.
-> > >> In this way, you can see if the changes you introduce to boost your
-> > >> workload affect more realistic scenarios, in which various workloads
-> > >> are mixed.
-> > >> I explicitly add the depth1 random readers, since they are sceduled
-> > >> differently than the large (>4) depth ones.
-> > > I tried a fio script which does like your description, but the data
-> > > isn't stable, especially the write speed, other kind of io speed is
-> > > stable. Apply below patch doesn't make things worse (still write speed
-> > > isn't stable, other io is stable), so I can't say if the patch passes
-> > > the test, but it appears latency reported by fio hasn't change. I adopt
-> > > the slice_idle * dispatched approach, which I thought should be safe.
-> > 
-> > I'm doing some tests right now on a single ncq rotational disk, and
-> > the average service time when submitting with a high depth is halved
-> > w.r.t. depth 1, so I think you could test also with the formula :
-> > slice_idle * dispatched / 2. It should give a performance boost,
-> > without noticeable impact on latency.
-> > 
+On 12/23/2009 03:30 PM, Pallipadi, Venkatesh wrote:
+
+>>> Can you try this one line patch either on .28 or .32 (with /proc/interrupts
+>>> output).
+>>> This disables hpet2 and lapic timer should then be used on CPU 0. If things
+>>> work with this test patch, we will know that the failure is somehow related
+>>> to HPET usage in MSI mode.
+>>>
+>>> Thanks,
+>>> Venki
+>>>
+>>> Reduce the rating of percpu hpet timer
+>>>
+>>> Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+>>> ---
+>>>  arch/x86/kernel/hpet.c |    2 +-
+>>>  1 files changed, 1 insertions(+), 1 deletions(-)
+>>>
+>>> diff --git a/arch/x86/kernel/hpet.c b/arch/x86/kernel/hpet.c
+>>> index cafb1c6..f89d17a 100644
+>>> --- a/arch/x86/kernel/hpet.c
+>>> +++ b/arch/x86/kernel/hpet.c
+>>> @@ -480,7 +480,7 @@ static void init_one_hpet_msi_clockevent(struct hpet_dev *hdev, int cpu)
+>>>  	hpet_setup_irq(hdev);
+>>>  	evt->irq = hdev->irq;
+>>>  
+>>> -	evt->rating = 110;
+>>> +	evt->rating = 40;
+>>>  	evt->features = CLOCK_EVT_FEAT_ONESHOT;
+>>>  	if (hdev->flags & HPET_DEV_PERI_CAP)
+>>>  		evt->features |= CLOCK_EVT_FEAT_PERIODIC;
+>>
+>> That made it work. Used 2.6.32.2
+>>
+>> cat /proc/interrupts
+>>            CPU0       CPU1       CPU2       CPU3
+>>   0:         82          0          0          1   IO-APIC-edge      timer
+>>   1:          0          0          0         67   IO-APIC-edge      i8042
+>>   3:          0          0          0          6   IO-APIC-edge
+>>   4:          0          0          0          4   IO-APIC-edge
+>>   6:          0          0          0          4   IO-APIC-edge      floppy
+>>   8:          0          0          0          8   IO-APIC-edge      rtc0
+>>   9:          0          0          0          0   IO-APIC-fasteoi   acpi
+>>  12:          0          0         10       1519   IO-APIC-edge      i8042
+>>  14:          0          0         39      10995   IO-APIC-edge
+>> pata_atiixp
+>>  15:          0          0          3        391   IO-APIC-edge
+>> pata_atiixp
+>>  16:          0          0          2        606   IO-APIC-fasteoi
+>> aic79xx, ohci_hcd:usb3, ohci_hcd:usb4, HDA Intel, Digi DBX2, ni-pci-gpib
+>>  17:          0          0          0          3   IO-APIC-fasteoi
+>> ehci_hcd:usb1, parport0, ni-pci-gpib
+>>  18:          0          0         10       2168   IO-APIC-fasteoi
+>> ohci_hcd:usb5, ohci_hcd:usb6, ohci_hcd:usb7, Digi DBX2, nvidia
+>>  19:          0          0          0        130   IO-APIC-fasteoi
+>> aic7xxx, ehci_hcd:usb2, ttySLG0, eth1
+>>  22:          0          0          8       1151   IO-APIC-fasteoi   ahci
+>>  24:          0          0          0          0  HPET_MSI-edge      hpet2
+>>  29:          0          0          0         48   PCI-MSI-edge
+>> sky2@pci:0000:04:00.0
+>> NMI:          0          0          0          0   Non-maskable interrupts
+>> LOC:      34842      30177      29672      29632   Local timer interrupts
+>> SPU:          0          0          0          0   Spurious interrupts
+>> PMI:          0          0          0          0   Performance monitoring
+>> interrupts
+>> PND:          0          0          0          0   Performance pending work
+>> RES:      17501      20449      16670      11224   Rescheduling interrupts
+>> CAL:      10554       2336       1102       1071   Function call interrupts
+>> TLB:        364        562        753        468   TLB shootdowns
+>> ERR:          0
+>> MIS:          0
+>>
+>>
+>> # fdformat /dev/fd0u1440
+>> Double-sided, 80 tracks, 18 sec/track. Total capacity 1440 kB.
+>> Formatting ... done
+>> Verifying ... done
 > 
-> But I guess the right comparison here would service times vary when we
-> push queue depths from 4 to higher (as done by this patch). Were you
-> running deep seeky queues or sequential queues. Curious to know whether
-> service times reduced even in case of deep seeky queues on this single
-> disk.
+> Hmmm.. Thats very interesting indeed.
 > 
-> I think this patch breaks the meaning of cfq_quantum? Now we can allow
-> dispatch of more requests from the same queue. I had kind of liked the
-> idea of respecting cfq_quantum. Especially it can help in testing. With
-> this patch cfq_quantum will more or less loose its meaning.
+> That clearly says that HPET MSI interrupts somehow is causing some
+> caching side effect in the chipset that results in this floppy dma
+> failure.
+> 
+> Here's is what we have until now.
+> IRQ 0 is based on HPET legacy interrupt and HPET device is also capable
+> of MSI on this platform. So we also have a percpu hpet (hpet2 tied to
+> CPU0). percpu hpet was added to avoid the usage of IRQ0+LAPIC broadcast
+> in cases where LAPIC timer will stop working in deep C-state. As we have
+> only one HPET channel free for percpu HPET, we only have hpet2 tied to
+> CPU 0 and other CPUs still have to go through IRQ0+LAPIC broadcast with
+> deep C-state.
+> 
+> One problem here is that percpu hpet should only get used when LAPIC
+> cannot be used (that is when CPU enters deep C-state). Using hpet2 in
+> place of LAPIC timer even when deep C-state is not supported is not
+> right in terms of performance. We need some changes here to fix that
+> [Problem 1].
+> 
+> But, that still does not explain why we are seeing this problem in the
+> first place. I mean, using hpet2 is not optimal, but should not have
+> functionality issues like this. Even fixing [Problem 1] above, we may
+> see this problem on some other platform that supports deep C-state and
+> so has hpet2 enabled for a valid reason.
+> 
+> Also, I am not sure whether the problem also happens if legacy HPET
+> interrupts are used during run time in place of LAPIC timer (May be
+> worth to try this with a simple test patch, let me think about it). In
+> this case, legacy HPET interrupt rightly goes quiet after boot, giving
+> priority to LAPIC timer.
+> 
+> With hpet MSI interrupts, we do a write followed by read of HPET
+> memmapped register to set a HPET channel timeout + read of global HPET
+> timer. This happens on every timer interrupt on CPU 0. And we also have
+> MSI interrupt being delivered to CPU 0. I cannot think of any reason why
+> this can break dma. We can probably try adding some dummy HPET read
+> after dma write, to see if that flushes things properly.
 > 
 
-I guess this is a question of soft limit and hard limit. May be we can
-bump up default cfq_quantum to 8 and internally define a soft limit of
-of 50% of cfq_quantum. So we will start throttling number of requests
-from a queue when cfqq->dispatched reaches 4. But will allow more
-dispatches up to cfq_quantum based on how much slice is left and what's
-the possiblity that already dispatched request will finish with-in the
-slice.
+Haven't seen any activity on this thread in a while. Just curious, are we
+still working this?
+Is there anything else I can do to help?
 
-That way we will maintain existing behavior, meaning of cfq_quantum as
-well as possibly get performance improvement in the said case.
-
-Vivek
-
-> > > Currently a queue can only dispatch up to 4 requests if there are other queues.
-> > > This isn't optimal, device can handle more requests, for example, AHCI can
-> > > handle 31 requests. I can understand the limit is for fairness, but we could
-> > > do a tweak: if the queue still has a lot of slice left, sounds we could ignore
-> > > the limit.
-> > > For async io, 40ms/8ms = 5 - quantum = 1, we only send extra 1 request in maxium.
-> > > For sync io, 100ms/8ms = 12 - quantum = 8, we might send extra 8 requests in maxium.
-> > > This might cause latency issue if the queue is preempted at the very beginning.
-> > >
-> > > This patch boost my workload from 78m/s to 102m/s, which isn't that big as my last
-> > > post, but also is a big improvement.
-> > 
-> > Acked-by: Corrado Zoccolo <czoccolo@gmail.com>
-> > 
-> > >
-> > > Signed-off-by: Shaohua Li <shaohua.li@intel.com>
-> > > ---
-> > >  block/cfq-iosched.c |   15 ++++++++++++++-
-> > >  1 file changed, 14 insertions(+), 1 deletion(-)
-> > >
-> > > Index: linux-2.6/block/cfq-iosched.c
-> > > ===================================================================
-> > > --- linux-2.6.orig/block/cfq-iosched.c
-> > > +++ linux-2.6/block/cfq-iosched.c
-> > > @@ -2242,6 +2242,19 @@ static int cfq_forced_dispatch(struct cf
-> > >        return dispatched;
-> > >  }
-> > >
-> > > +static inline bool cfq_slice_used_soon(struct cfq_data *cfqd,
-> > > +       struct cfq_queue *cfqq)
-> > > +{
-> > > +       /* the queue hasn't finished any request, can't estimate */
-> > > +       if (cfq_cfqq_slice_new(cfqq))
-> > > +               return true;
-> > > +       if (time_after(jiffies + cfqd->cfq_slice_idle * cfqq->dispatched,
-> > > +               cfqq->slice_end))
-> > > +               return true;
-> > > +
-> > > +       return false;
-> > > +}
-> > > +
-> > >  static bool cfq_may_dispatch(struct cfq_data *cfqd, struct cfq_queue *cfqq)
-> > >  {
-> > >        unsigned int max_dispatch;
-> > > @@ -2275,7 +2288,7 @@ static bool cfq_may_dispatch(struct cfq_
-> > >                /*
-> > >                 * We have other queues, don't allow more IO from this one
-> > >                 */
-> > > -               if (cfqd->busy_queues > 1)
-> > > +               if (cfqd->busy_queues > 1 && cfq_slice_used_soon(cfqd, cfqq))
-> > >                        return false;
-> > >
-> > >                /*
-> > >
-> > >
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > Please read the FAQ at  http://www.tux.org/lkml/
+Thanks
+Mark
