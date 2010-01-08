@@ -1,23 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753761Ab0AHPJr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753756Ab0AHPKc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753761Ab0AHPJr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jan 2010 10:09:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753554Ab0AHPJq
+	id S1753756Ab0AHPKc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jan 2010 10:10:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753640Ab0AHPKa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jan 2010 10:09:46 -0500
-Received: from mail-fx0-f225.google.com ([209.85.220.225]:65009 "EHLO
+	Fri, 8 Jan 2010 10:10:30 -0500
+Received: from mail-fx0-f225.google.com ([209.85.220.225]:38852 "EHLO
 	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752171Ab0AHPJp (ORCPT
+	with ESMTP id S1753646Ab0AHPK3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jan 2010 10:09:45 -0500
+	Fri, 8 Jan 2010 10:10:29 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=subject:from:to:cc:in-reply-to:references:content-type:date
          :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=blfQK+geArL0uf+6yA5H8i2fNHoMKfjXsli1wyw9JbWv8UCiN5f+640NLAXoduvAFW
-         UjPhip1ycW043yaQL4/4MsrlABhanjsHpJ+quJ6e/wTbgoRb87+rAg8i/EzD5sY5LWsT
-         HoHgH3L/pqzzWRvoMaFU5kcrjLQhmu7bQWJV0=
-Subject: [PATCH 6/9] mtd: common module for smartmedia/xD support
+        b=s8LH5TlRRcRzzblqVdUHx/LuoaoUSoxh5ndQr5nAB9sXH+rSizIODd+bmq5Ua27Jaw
+         O+KdH3Q8VkQXCridUO5dV41X0LKdckxaAD1NVzuPXz7m2gaUPvyO3OnTdJ9ab+LLIePc
+         h4HyHo7y7hFiZn6VsU4KC8qm1smLHUr/cINCY=
+Subject: [PATCH 7/9] MTD: add few workarounds to nand system for
+ SmartMedia/xD chips.
 From: Maxim Levitsky <maximlevitsky@gmail.com>
 To: linux-kernel <linux-kernel@vger.kernel.org>
 Cc: linux-mtd <linux-mtd@lists.infradead.org>, Alex Dubov <oakad@yahoo.com>,
@@ -25,8 +26,8 @@ Cc: linux-mtd <linux-mtd@lists.infradead.org>, Alex Dubov <oakad@yahoo.com>,
 In-Reply-To: <1262963092.12577.14.camel@maxim-laptop>
 References: <1262963092.12577.14.camel@maxim-laptop>
 Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 08 Jan 2010 17:09:40 +0200
-Message-ID: <1262963380.12577.20.camel@maxim-laptop>
+Date: Fri, 08 Jan 2010 17:10:24 +0200
+Message-ID: <1262963424.12577.21.camel@maxim-laptop>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
@@ -34,345 +35,184 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 7297f3c08c9cd19b5cca4073afc225e1e4e293fb Mon Sep 17 00:00:00 2001
+>From 4ade18c0eff30b0a5aa7360651448ec4efff761f Mon Sep 17 00:00:00 2001
 From: Maxim Levitsky <maximlevitsky@gmail.com>
-Date: Fri, 8 Jan 2010 16:00:56 +0200
-Subject: [PATCH 6/9] mtd: common module for smartmedia/xD support
- This small module implements few helpers that are usefull
- for nand drivers for SmartMedia/xD card readers
- and for SmartMedia translation layer.
+Date: Fri, 8 Jan 2010 16:03:10 +0200
+Subject: [PATCH 7/9] MTD: add few workarounds to nand system for SmartMedia/xD chips.
+
+* Add an option NAND_SMARTMEDIA that can be set by nand driver
+ If set, it will cause separate ID table to be used, which includes
+ mask rom devices and new xD cards
+
+* Workaround for wrong write protect status on some xD cards
 
 Signed-off-by: Maxim Levitsky <maximlevitsky@gmail.com>
 ---
- drivers/mtd/Kconfig     |    9 ++
- drivers/mtd/Makefile    |    1 +
- drivers/mtd/sm_common.c |  227 +++++++++++++++++++++++++++++++++++++++++++++++
- drivers/mtd/sm_common.h |   50 ++++++++++
- 4 files changed, 287 insertions(+), 0 deletions(-)
- create mode 100644 drivers/mtd/sm_common.c
- create mode 100644 drivers/mtd/sm_common.h
+ drivers/mtd/nand/nand_base.c |   29 +++++++++++++++++++++--------
+ drivers/mtd/nand/nand_ids.c  |   38 ++++++++++++++++++++++++++++++++++++++
+ drivers/mtd/sm_common.c      |    2 +-
+ include/linux/mtd/nand.h     |   11 +++++++++++
+ 4 files changed, 71 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/mtd/Kconfig b/drivers/mtd/Kconfig
-index ecf90f5..ebeabd6 100644
---- a/drivers/mtd/Kconfig
-+++ b/drivers/mtd/Kconfig
-@@ -25,6 +25,15 @@ config MTD_DEBUG_VERBOSE
- 	help
- 	  Determines the verbosity level of the MTD debugging messages.
- 
-+config MTD_NAND_SMARTMEDIA
-+	boolean
+diff --git a/drivers/mtd/nand/nand_base.c b/drivers/mtd/nand/nand_base.c
+index 8e31245..a4a9284 100644
+--- a/drivers/mtd/nand/nand_base.c
++++ b/drivers/mtd/nand/nand_base.c
+@@ -398,9 +398,17 @@ static int nand_default_block_markbad(struct mtd_info *mtd, loff_t ofs)
+ static int nand_check_wp(struct mtd_info *mtd)
+ {
+ 	struct nand_chip *chip = mtd->priv;
++	int wp;
 +
-+config MTD_SM_COMMON
-+	depends on MTD_NAND
-+	select MTD_NAND_SMARTMEDIA
-+	tristate
-+	default n
+ 	/* Check the WP bit */
+ 	chip->cmdfunc(mtd, NAND_CMD_STATUS, -1, -1);
+-	return (chip->read_byte(mtd) & NAND_STATUS_WP) ? 0 : 1;
++	wp = (chip->read_byte(mtd) & NAND_STATUS_WP) ? 0 : 1;
 +
- config MTD_TESTS
- 	tristate "MTD tests support"
- 	depends on m
-diff --git a/drivers/mtd/Makefile b/drivers/mtd/Makefile
-index 82d1e4d..02c5b17 100644
---- a/drivers/mtd/Makefile
-+++ b/drivers/mtd/Makefile
-@@ -7,6 +7,7 @@ obj-$(CONFIG_MTD)		+= mtd.o
- mtd-y				:= mtdcore.o mtdsuper.o mtdbdi.o
- mtd-$(CONFIG_MTD_PARTITIONS)	+= mtdpart.o
++	/* broken xD cards report WP despite beeing writable */
++	if (chip->options & NAND_BROKEN_XD)
++		return 0;
++
++	return wp;
+ }
  
-+obj-$(CONFIG_MTD_SM_COMMON) 	+= sm_common.o
- obj-$(CONFIG_MTD_CONCAT)	+= mtdconcat.o
- obj-$(CONFIG_MTD_REDBOOT_PARTS) += redboot.o
- obj-$(CONFIG_MTD_CMDLINE_PARTS) += cmdlinepart.o
+ /**
+@@ -2624,14 +2632,18 @@ static struct nand_flash_dev *nand_get_flash_type(struct mtd_info *mtd,
+ 	}
+ 
+ 	/* Lookup the flash id */
+-	for (i = 0; nand_flash_ids[i].name != NULL; i++) {
+-		if (dev_id == nand_flash_ids[i].id) {
+-			type =  &nand_flash_ids[i];
++#ifdef CONFIG_MTD_NAND_SMARTMEDIA
++	if (chip->options & NAND_SMARTMEDIA)
++		type = nand_smartmedia_flash_ids;
++	else
++#endif
++		type = nand_flash_ids;
++
++	for (i = 0; type->name != NULL; type++)
++		if (dev_id == type->id)
+ 			break;
+-		}
+-	}
+ 
+-	if (!type)
++	if (!type->name)
+ 		return ERR_PTR(-ENODEV);
+ 
+ 	if (!mtd->name)
+@@ -2988,7 +3000,8 @@ int nand_scan_tail(struct mtd_info *mtd)
+ 
+ 	/* Fill in remaining MTD driver data */
+ 	mtd->type = MTD_NANDFLASH;
+-	mtd->flags = MTD_CAP_NANDFLASH;
++	mtd->flags = chip->options & NAND_ROM ? MTD_CAP_ROM :
++							MTD_CAP_NANDFLASH;
+ 	mtd->erase = nand_erase;
+ 	mtd->point = NULL;
+ 	mtd->unpoint = NULL;
+diff --git a/drivers/mtd/nand/nand_ids.c b/drivers/mtd/nand/nand_ids.c
+index 69ee2c9..7ac7538 100644
+--- a/drivers/mtd/nand/nand_ids.c
++++ b/drivers/mtd/nand/nand_ids.c
+@@ -127,6 +127,44 @@ struct nand_flash_dev nand_flash_ids[] = {
+ 	{NULL,}
+ };
+ 
++#ifdef CONFIG_MTD_NAND_SMARTMEDIA
++struct nand_flash_dev nand_smartmedia_flash_ids[] = {
++
++	/* SmartMedia */
++	{"SmartMedia 1MiB 5V",		0x6e, 256, 1, 0x1000, 0},
++	{"SmartMedia 1MiB 3,3V",	0xe8, 256, 1, 0x1000, 0},
++	{"SmartMedia 1MiB 3,3V",	0xec, 256, 1, 0x1000, 0},
++	{"SmartMedia 2MiB 3,3V",	0xea, 256, 2, 0x1000, 0},
++	{"SmartMedia 2MiB 5V",		0x64, 256, 2, 0x1000, 0},
++	{"SmartMedia 2MiB 3,3V ROM",	0x5d, 512, 2, 0x2000, NAND_ROM},
++	{"SmartMedia 4MiB 3,3V",	0xe3, 512, 4, 0x2000, 0},
++	{"SmartMedia 4MiB 3,3/5V",	0xe5, 512, 4, 0x2000, 0},
++	{"SmartMedia 4MiB 5V",		0x6b, 512, 4, 0x2000, 0},
++	{"SmartMedia 4MiB 3,3V ROM",	0xd5, 512, 4, 0x2000, NAND_ROM},
++	{"SmartMedia 8MiB 3,3V",	0xe6, 512, 8, 0x2000, 0},
++	{"SmartMedia 8MiB 3,3V ROM",	0xd6, 512, 8, 0x2000, NAND_ROM},
++
++	/* xD / SmartMedia */
++	{"SmartMedia/xD 16MiB 3,3V",	0x73, 512, 16, 0x4000, 0},
++	{"SmartMedia 16MiB 3,3V ROM",	0x57, 512, 16, 0x4000, NAND_ROM},
++	{"SmartMedia/xD 32MiB 3,3V",	0x75, 512, 32, 0x4000, 0},
++	{"SmartMedia 32MiB 3,3V ROM",	0x58, 512, 32, 0x4000, NAND_ROM},
++	{"SmartMedia/xD 64MiB 3,3V",	0x76, 512, 64, 0x4000, 0},
++	{"SmartMedia 64MiB 3,3V ROM",	0xd9, 512, 64, 0x4000, NAND_ROM},
++	{"SmartMedia/xD 128MiB 3,3V",	0x79, 512, 128, 0x4000, 0},
++	{"SmartMedia 128MiB 3,3V ROM",	0xda, 512, 128, 0x4000, NAND_ROM},
++	{"SmartMedia/xD 256MiB 3,3V",	0x71, 512, 256, 0x4000, NAND_BROKEN_XD},
++	{"SmartMedia 256MiB 3,3V ROM",	0x5b, 512, 256, 0x4000, NAND_ROM},
++
++	/* xD only */
++	{"xD 512MiB 3,3V",	0xDC, 512, 512, 0x4000, NAND_BROKEN_XD},
++	{"xD 1GiB 3,3V",	0xD3, 512, 1024, 0x4000, NAND_BROKEN_XD},
++	{"xD 2GiB 3,3V",	0xD5, 512, 2048, 0x4000, NAND_BROKEN_XD},
++	{NULL,}
++};
++EXPORT_SYMBOL(nand_smartmedia_flash_ids);
++#endif
++
+ /*
+ *	Manufacturer ID list
+ */
 diff --git a/drivers/mtd/sm_common.c b/drivers/mtd/sm_common.c
-new file mode 100644
-index 0000000..45b577f
---- /dev/null
+index 45b577f..6234482 100644
+--- a/drivers/mtd/sm_common.c
 +++ b/drivers/mtd/sm_common.c
-@@ -0,0 +1,227 @@
-+/*
-+ * Copyright (C) 2009 - Maxim Levitsky
-+ * Common routines & support for xD format
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ */
-+#include <linux/kernel.h>
-+#include <linux/bitops.h>
-+#include <linux/log2.h>
-+#include "sm_common.h"
+@@ -186,7 +186,7 @@ int sm_register_device(struct mtd_info *mtd)
+ 	struct nand_chip *chip = (struct nand_chip *)mtd->priv;
+ 	int ret;
+ 
+-	chip->options |= NAND_SKIP_BBTSCAN | NAND_NO_AUTOINCR;
++	chip->options |= NAND_SKIP_BBTSCAN | NAND_SMARTMEDIA | NAND_NO_AUTOINCR;
+ 
+ 	/* Scan for card properties */
+ 	ret = nand_scan_ident(mtd, 1);
+diff --git a/include/linux/mtd/nand.h b/include/linux/mtd/nand.h
+index 75575fb..a3670c1 100644
+--- a/include/linux/mtd/nand.h
++++ b/include/linux/mtd/nand.h
+@@ -170,6 +170,12 @@ typedef enum {
+ /* Chip does not allow subpage writes */
+ #define NAND_NO_SUBPAGE_WRITE	0x00000200
+ 
++/* Device is one of 'new' xD cards that expose fake nand command set */
++#define NAND_BROKEN_XD		0x00000400
 +
-+static struct nand_ecclayout nand_oob_sm = {
-+	.eccbytes = 6,
-+	.eccpos = {8, 9, 10, 13, 14, 15},
-+	.oobfree = {
-+		{.offset = 0 , .length = 4}, /* reserved */
-+		{.offset = 4 , .length = 2}, /* data & block status */
-+		{.offset = 6 , .length = 2}, /* LBA1 */
-+		{.offset = 11, .length = 2}  /* LBA2 */
-+	}
-+};
++/* Device behaves just like nand, but is readonly */
++#define NAND_ROM		0x00000800
 +
-+static struct nand_ecclayout nand_oob_sm_smallpage = {
-+	.eccbytes = 0,
-+	.oobfree = {
-+		{.offset = 0 , .length = 8},
-+	}
-+};
+ /* Options valid for Samsung large page devices */
+ #define NAND_SAMSUNG_LP_OPTIONS \
+ 	(NAND_NO_PADDING | NAND_CACHEPRG | NAND_COPYBACK)
+@@ -195,9 +201,13 @@ typedef enum {
+ /* This option is defined if the board driver allocates its own buffers
+    (e.g. because it needs them DMA-coherent */
+ #define NAND_OWN_BUFFERS	0x00040000
 +
-+static int sm_get_lba(u8 *lba)
-+{
-+	/* check fixed bits */
-+	if ((lba[0] & 0xF8) != 0x10)
-+		return -2;
+ /* Chip may not exist, so silence any errors in scan */
+ #define NAND_SCAN_SILENT_NODEV	0x00080000
+ 
++/* controller supports only xD/SmartMedia cards*/
++#define NAND_SMARTMEDIA		0x00100000
 +
-+	/* check parity - endianess doesn't matter */
-+	if (hweight16(*(u16 *)lba) & 1)
-+		return -2;
-+
-+	return (lba[1] >> 1) | ((lba[0] & 0x07) << 7);
-+}
-+
-+
-+/*
-+ * Read LBA asscociated with block
-+ * returns -1, if block is erased
-+ * returns -2 if error happens
-+ */
-+int sm_read_lba(struct sm_oob *oob)
-+{
-+	static const u32 erased_pattern[4] = {
-+		0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF };
-+
-+	u16 lba_test;
-+	int lba;
-+
-+	/* First test for erased block */
-+	if (!memcmp(oob, erased_pattern, sizeof(struct sm_oob)))
-+		return -1;
-+
-+	/* Now check is both copies of the LBA differ too much */
-+	lba_test = *(u16 *)oob->lba_copy1 ^ *(u16*)oob->lba_copy2;
-+	if (lba_test && !is_power_of_2(lba_test))
-+		return -2;
-+
-+	/* And read it */
-+	lba = sm_get_lba(oob->lba_copy1);
-+
-+	if (lba == -2)
-+		lba = sm_get_lba(oob->lba_copy2);
-+
-+	return lba;
-+}
-+EXPORT_SYMBOL_GPL(sm_read_lba);
-+
-+void sm_write_lba(struct sm_oob *oob, u16 lba)
-+{
-+	u8 tmp[2];
-+
-+	WARN_ON(lba > 1000);
-+
-+	tmp[0] = 0x10 | ((lba >> 7) & 0x07);
-+	tmp[1] = (lba << 1) & 0xFF;
-+
-+	if (hweight16(*(u16 *)tmp) & 0x01)
-+		tmp[1] |= 1;
-+
-+	oob->lba_copy1[0] = oob->lba_copy2[0] = tmp[0];
-+	oob->lba_copy1[1] = oob->lba_copy2[1] = tmp[1];
-+}
-+EXPORT_SYMBOL_GPL(sm_write_lba);
-+
-+/* Test if whole block is valid, or at least is marked as such...*/
-+int sm_block_valid(struct sm_oob *oob)
-+{
-+	/* test block status */
-+	if (hweight16(oob->block_status) < 7)
-+		return -EIO;
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(sm_block_valid);
-+
-+/* Test if sector is valid */
-+int sm_sector_valid(struct sm_oob *oob)
-+{
-+	/* test data status */
-+	if (hweight16(oob->data_status) < 5)
-+		return -EIO;
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(sm_sector_valid);
-+
-+/* Nand interface helpers */
-+static int sm_block_bad(struct mtd_info *mtd, loff_t ofs, int getchip)
-+{
-+	struct nand_chip *chip = (struct nand_chip *)mtd->priv;
-+	struct mtd_oob_ops ops;
-+	struct sm_oob oob;
-+	int ret;
-+
-+	ops.mode = MTD_OOB_AUTO;
-+	ops.ooboffs = 0;
-+	ops.ooblen = sizeof(struct sm_oob);
-+	ops.oobbuf = (void *)&oob;
-+	ops.datbuf = NULL;
-+
-+	/* TODO: This doesn't take controller lock,
-+		but we know that all xD cards are single chip. */
-+	if (getchip)
-+		chip->select_chip(mtd, 0);
-+
-+	ret = nand_do_read_oob(mtd, ofs, &ops);
-+	if (ret < 0 || ops.oobretlen != sizeof(struct sm_oob))
-+		goto out;
-+
-+	ret = (sm_block_valid(&oob) || sm_sector_valid(&oob)) ? 1 : 0;
-+out:
-+	if (getchip)
-+		chip->select_chip(mtd, -1);
-+
-+	if (ret)
-+		printk(KERN_NOTICE "sm_common: bad sector at %i\n", (int)ofs);
-+	return ret;
-+}
-+
-+static int sm_block_markbad(struct mtd_info *mtd, loff_t ofs)
-+{
-+	struct mtd_oob_ops ops;
-+	struct sm_oob oob;
-+	int ret;
-+
-+	memset(&oob, -1, sizeof(oob));
-+	oob.block_status = 0xF0;
-+
-+	ops.mode = MTD_OOB_AUTO;
-+	ops.ooboffs = 0;
-+	ops.ooblen = sizeof(struct sm_oob);
-+	ops.oobbuf = (void *)&oob;
-+	ops.datbuf = NULL;
-+
-+	ret = nand_do_write_oob(mtd, ofs, &ops);
-+	if (ret < 0 || ops.oobretlen != sizeof(struct sm_oob)) {
-+		printk(KERN_NOTICE "sm_common: can't mark sector at %i as bad\n",
-+					(int)ofs);
-+		return -EIO;
-+	}
-+
-+	return 0;
-+}
-+
-+static int sm_block_bad_dummy(struct mtd_info *mtd, loff_t ofs, int getchip)
-+{
-+	return 0;
-+}
-+
-+static int sm_block_markbad_dummy(struct mtd_info *mtd, loff_t ofs)
-+{
-+	return -EIO;
-+}
-+
-+int sm_register_device(struct mtd_info *mtd)
-+{
-+	struct nand_chip *chip = (struct nand_chip *)mtd->priv;
-+	int ret;
-+
-+	chip->options |= NAND_SKIP_BBTSCAN | NAND_NO_AUTOINCR;
-+
-+	/* Scan for card properties */
-+	ret = nand_scan_ident(mtd, 1);
-+
-+	if (ret)
-+		return ret;
-+
-+	/* Set oob handling functions. */
-+	if (mtd->writesize == SM_SECTOR_SIZE) {
-+		chip->block_bad = sm_block_bad;
-+		chip->block_markbad = sm_block_markbad;
-+		chip->ecc.layout = &nand_oob_sm;
-+
-+	/* SmartMedia on small page nand has page depedent oob layout,
-+		thus let FTL do that hard job */
-+	} else if (mtd->writesize == SM_SMALL_PAGE) {
-+		chip->block_bad = sm_block_bad_dummy;
-+		chip->block_markbad = sm_block_markbad_dummy;
-+		chip->ecc.layout = &nand_oob_sm_smallpage;
-+	} else
-+		return -ENODEV;
-+
-+	ret = nand_scan_tail(mtd);
-+	if (ret)
-+		return ret;
-+
-+	ret = add_mtd_device(mtd);
-+
-+	if (ret)
-+		return ret;
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(sm_register_device);
-+
-+MODULE_LICENSE("GPL");
-+MODULE_AUTHOR("Maxim Levitsky <maximlevitsky@gmail.com>");
-+MODULE_DESCRIPTION("Common SmartMedia/xD functions");
-diff --git a/drivers/mtd/sm_common.h b/drivers/mtd/sm_common.h
-new file mode 100644
-index 0000000..42d94b2
---- /dev/null
-+++ b/drivers/mtd/sm_common.h
-@@ -0,0 +1,50 @@
-+/*
-+ * Copyright (C) 2009 - Maxim Levitsky
-+ * Common routines & support for SmartMedia/xD format
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ */
-+
-+#include <linux/mtd/nand.h>
-+
-+/* Full oob structure as written on the flash */
-+struct sm_oob_raw {
-+	u32 reserved;
-+	u8  data_status;
-+	u8  block_status;
-+	u8 lba_copy1[2];
-+	u8  ecc2[3];
-+	u8 lba_copy2[2];
-+	u8  ecc1[3];
-+} __attribute__((packed));
-+
-+/* oob structure without ecc fields, used by external interfaces */
-+struct sm_oob {
-+	u32 reserved;
-+	u8  data_status;
-+	u8  block_status;
-+	u8 lba_copy1[2];
-+	u8 lba_copy2[2];
-+} __attribute__((packed));
-+
-+
-+/* one sector is always 512 bytes, but it can consist of two nand pages */
-+#define SM_SECTOR_SIZE		512
-+
-+/* minumum size of the page */
-+#define SM_SMALL_PAGE 		256
-+
-+/* oob area is also 16 bytes, but might be from two pages */
-+#define SM_OOB_SIZE		16
-+
-+/* This is maximum zone size, and all devices that have more that one zone
-+   have this size */
-+#define SM_MAX_ZONE_SIZE 	1024
-+
-+extern int sm_register_device(struct mtd_info *mtd);
-+extern int sm_read_lba(struct sm_oob *oob);
-+extern void sm_write_lba(struct sm_oob *oob, u16 lba);
-+extern int sm_block_valid(struct sm_oob *oob);
-+extern int sm_sector_valid(struct sm_oob *oob);
+ /* Options set by nand scan */
+ /* Nand scan has allocated controller struct */
+ #define NAND_CONTROLLER_ALLOC	0x80000000
+@@ -458,6 +468,7 @@ struct nand_manufacturers {
+ };
+ 
+ extern struct nand_flash_dev nand_flash_ids[];
++extern struct nand_flash_dev nand_smartmedia_flash_ids[];
+ extern struct nand_manufacturers nand_manuf_ids[];
+ 
+ extern int nand_scan_bbt(struct mtd_info *mtd, struct nand_bbt_descr *bd);
 -- 
 1.6.3.3
 
