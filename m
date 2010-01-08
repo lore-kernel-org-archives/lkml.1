@@ -1,44 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754017Ab0AHTrH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754058Ab0AHTsF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754017Ab0AHTrH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jan 2010 14:47:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753520Ab0AHTrG
+	id S1754058Ab0AHTsF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jan 2010 14:48:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753520Ab0AHTsB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jan 2010 14:47:06 -0500
-Received: from relay1.sgi.com ([192.48.179.29]:48592 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751379Ab0AHTrF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jan 2010 14:47:05 -0500
-From: Alex Elder <aelder@sgi.com>
-Message-Id: <201001081946.o08JksvX018976@stout.americas.sgi.com>
-Date: Fri, 08 Jan 2010 13:46:54 -0600
-To: torvalds@linux-foundation.org
-Subject: [GIT PULL] XFS update 1 for 2.6.33-rc3
-Cc: linux-kernel@vger.kernel.org, xfs@oss.sgi.com, akpm@linux-foundation.org
-User-Agent: Heirloom mailx 12.4 7/29/08
+	Fri, 8 Jan 2010 14:48:01 -0500
+Received: from mga12.intel.com ([143.182.124.36]:48939 "EHLO
+	azsmga102.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752437Ab0AHTsB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jan 2010 14:48:01 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
+   d="scan'208";a="230758496"
+Message-ID: <4B478BEA.1010504@linux.intel.com>
+Date: Fri, 08 Jan 2010 20:47:54 +0100
+From: Andi Kleen <ak@linux.intel.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: "H. Peter Anvin" <hpa@kernel.org>
+CC: "Zheng, Shaohui" <shaohui.zheng@intel.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "y-goto@jp.fujitsu.com" <y-goto@jp.fujitsu.com>,
+       Dave Hansen <haveblue@us.ibm.com>,
+       "Wu, Fengguang" <fengguang.wu@intel.com>,
+       "x86@kernel.org" <x86@kernel.org>
+Subject: Re: [PATCH - resend] Memory-Hotplug: Fix the bug on interface /dev/mem
+ for 64-bit kernel(v1)
+References: <DA586906BA1FFC4384FCFD6429ECE86031560BAC@shzsmsx502.ccr.corp.intel.com> <4B46BC6F.5060607@kernel.org>
+In-Reply-To: <4B46BC6F.5060607@kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I have a few other commits to send along but there's no sense
-in waiting for them.  I forgot to send this one before; it
-eliminates some i386 build warnings in certain environments.
+H. Peter Anvin wrote:
+> On 01/07/2010 07:32 PM, Zheng, Shaohui wrote:
+>> Resend the patch to the mailing-list, the original patch URL is 
+>> http://patchwork.kernel.org/patch/69075/, it is not accepted without comments,
+>> sent it again to review.
+>>
+>> Memory-Hotplug: Fix the bug on interface /dev/mem for 64-bit kernel
+>>
+>> The new added memory can not be access by interface /dev/mem, because we do not
+>>  update the variable high_memory. This patch add a new e820 entry in e820 table,
+>>  and update max_pfn, max_low_pfn and high_memory.
+>>
+>> We add a function update_pfn in file arch/x86/mm/init.c to udpate these
+>>  varibles. Memory hotplug does not make sense on 32-bit kernel, so we did not
+>>  concern it in this function.
+>>
+> 
+> Memory hotplug makes sense on 32-bit kernels, at least in virtual
+> environments.
 
-					-Alex
+No VM currently supports it to my knowledge. They all use traditional
+balooning.
 
-The following changes since commit 74d2e4f8d79ae0c4b6ec027958d5b18058662eea:
-  Linus Torvalds (1):
-        Linux 2.6.33-rc3
+If someone adds that they can still fix it, but right now fixing it on 64bit
+is the important part.
 
-are available in the git repository at:
-
-  git://oss.sgi.com/xfs/xfs for-linus
-
-Dave Chinner (1):
-      xfs: kill some warnings on i386 builds
-
- fs/xfs/linux-2.6/xfs_trace.h |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
+-Andi
