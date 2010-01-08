@@ -1,64 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753960Ab0AHTdQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753945Ab0AHTkH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753960Ab0AHTdQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jan 2010 14:33:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753719Ab0AHTdQ
+	id S1753945Ab0AHTkH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jan 2010 14:40:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753807Ab0AHTkG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jan 2010 14:33:16 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:49618 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753598Ab0AHTdP (ORCPT
+	Fri, 8 Jan 2010 14:40:06 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:33849 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752709Ab0AHTkE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jan 2010 14:33:15 -0500
-Message-ID: <4B4785C3.4030505@zytor.com>
-Date: Fri, 08 Jan 2010 11:21:39 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
+	Fri, 8 Jan 2010 14:40:04 -0500
+Date: Fri, 8 Jan 2010 11:39:31 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Andi Kleen <andi@firstfloor.org>
+cc: Christoph Lameter <cl@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Minchan Kim <minchan.kim@gmail.com>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "hugh.dickins" <hugh.dickins@tiscali.co.uk>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [RFC][PATCH 6/8] mm: handle_speculative_fault()
+In-Reply-To: <20100108192815.GB14141@basil.fritz.box>
+Message-ID: <alpine.LFD.2.00.1001081137210.7821@localhost.localdomain>
+References: <20100106115233.5621bd5e.kamezawa.hiroyu@jp.fujitsu.com> <alpine.LFD.2.00.1001051917000.3630@localhost.localdomain> <20100106125625.b02c1b3a.kamezawa.hiroyu@jp.fujitsu.com> <alpine.LFD.2.00.1001052007090.3630@localhost.localdomain>
+ <1262969610.4244.36.camel@laptop> <alpine.LFD.2.00.1001080911340.7821@localhost.localdomain> <alpine.DEB.2.00.1001081138260.23727@router.home> <87my0omo3n.fsf@basil.nowhere.org> <alpine.DEB.2.00.1001081255100.26886@router.home>
+ <alpine.LFD.2.00.1001081102120.7821@localhost.localdomain> <20100108192815.GB14141@basil.fritz.box>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Yinghai Lu <yinghai@kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jesse Brandeburg <jesse.brandeburg@intel.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 5/5] x86: update nr_irqs according cpu num
-References: <1262951595-1729-1-git-send-email-yinghai@kernel.org>	<1262951595-1729-5-git-send-email-yinghai@kernel.org> <m1bph4o1il.fsf@fess.ebiederm.org>
-In-Reply-To: <m1bph4o1il.fsf@fess.ebiederm.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/08/2010 11:11 AM, Eric W. Biederman wrote:
-> Yinghai Lu <yinghai@kernel.org> writes:
+
+
+On Fri, 8 Jan 2010, Andi Kleen wrote:
 > 
->> that is max number on run time.
-> 
-> Ouch!  Unless I misread this code this will leave nr_irqs at
-> NR_IRQS_LEGACY. aka 16.
-> 
-> Let's do something stupid and simple.
-> nr_irqs = nr_cpus_ids * 256;  /* Semi-arbitrary number */
+> With 24 CPU threads cheating is very difficult too.
 
-This would be 1048576 on the biggest machines we currently support.
-Now, the number of IRQ *vectors* is limited to
-(224-system vectors)*(cpu count), so one could argue that if there is
-anything that is not semi-arbitrary it would be that number, but that
-doesn't account for vector sharing.
+Stop making value judgements in you word choice, like "cheating".
 
-Do we have any place which requires nr_irqs to be *stable*, or can we
-simply treat it as a high water mark for IRQ numbers used?
+The fact is, the mmap_sem is per-mm, and works perfectly well. Other 
+locking can be vma-specific, but as already mentioned, it's not going to 
+_help_, since most of the time even hugely threaded programs will be using 
+malloc-like functionality and you have allocations not only cross threads, 
+but in general using the same vma. 
 
-> Ideally we would set "nr_irqs = 0x7fffffff;" but we have just enough
-> places using nr_irqs that I think those loops would get painful if we
-> were to do that.
+Another fact is simply that you shouldn't write your app so that it needs 
+to do millions of page faults per second.
 
-Ideally we should presumably get rid of nr_irqs completely?
+So this whole "cheating" argument of yours is total bullshit. It bears no 
+relation to reality.
 
-	-hpa
-
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
-
+			Linus
