@@ -1,572 +1,216 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753995Ab0AHUuJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753930Ab0AHU77@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753995Ab0AHUuJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jan 2010 15:50:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752783Ab0AHUuH
+	id S1753930Ab0AHU77 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jan 2010 15:59:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752931Ab0AHU76
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jan 2010 15:50:07 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:55464 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752113Ab0AHUuD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jan 2010 15:50:03 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=sJQrSGt9yTCpkrRYGhtqPrNprYF8xWU459VWv2GU9f9rC9nUE8u/6bt0C4aM8rB7kp
-         QGPbP8b27bW848xJRkmVf0wC2YNglYiKFFRx8Q0Jr9SziLeRiTxtvN9vGdMghZsWkYvI
-         0pPdVUixzExNDCJandNnAK+Z/bPAyi6gSTY6A=
-Date: Fri, 8 Jan 2010 12:49:46 -0800
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: "Rick L. Vinyard, Jr." <rvinyard@cs.nmsu.edu>
-Cc: linux-kernel@vger.kernel.org, felipe.balbi@nokia.com, pavel@ucw.cz,
-       jayakumar.lkml@gmail.com, linux-fbdev@vger.kernel.org,
-       krzysztof.h1@wp.pl, akpm@linux-foundation.org,
-       linux-usb@vger.kernel.org, oliver@neukum.org,
-       linux-input@vger.kernel.org, jkosina@suse.cz
-Subject: Re: [PATCH] hid: Logitech G13 driver 0.0.3
-Message-ID: <20100108204946.GA22950@core.coreip.homeip.net>
-References: <201001071623.o07GNOB4022157@mustang.cs.nmsu.edu>
- <20100108083020.GB3696@core.coreip.homeip.net>
- <174828e8a25d1e607eb91ab963396b2a.squirrel@intranet.cs.nmsu.edu>
+	Fri, 8 Jan 2010 15:59:58 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:8147 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750746Ab0AHU75 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jan 2010 15:59:57 -0500
+Date: Fri, 8 Jan 2010 15:59:48 -0500
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Corrado Zoccolo <czoccolo@gmail.com>
+Cc: Shaohua Li <shaohua.li@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
+       "Zhang, Yanmin" <yanmin.zhang@intel.com>
+Subject: Re: [RFC]cfq-iosched: quantum check tweak
+Message-ID: <20100108205948.GH22219@redhat.com>
+References: <20091225091030.GA28365@sli10-desk.sh.intel.com> <4e5e476b0912250144l96c4d34v300910216e5c7a08@mail.gmail.com> <20091228033554.GB15242@sli10-desk.sh.intel.com> <4e5e476b0912280102t2278d7a5ld3e8784f52f2be31@mail.gmail.com> <1262829893.4984.13.camel@sli10-desk.sh.intel.com> <4e5e476b1001071344i4f702496y22f33bc2d4bc834d@mail.gmail.com> <20100108171535.GC22219@redhat.com> <4e5e476b1001081235wc2784c1s87c0c70662b5e267@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <174828e8a25d1e607eb91ab963396b2a.squirrel@intranet.cs.nmsu.edu>
-User-Agent: Mutt/1.5.20 (2009-08-17)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <4e5e476b1001081235wc2784c1s87c0c70662b5e267@mail.gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 08, 2010 at 11:32:29AM -0700, Rick L. Vinyard, Jr. wrote:
-> Dmitry Torokhov wrote:
-> > Hi Rick,
-> >
-> > On Thu, Jan 07, 2010 at 09:23:24AM -0700, Rick L. Vinyard Jr. wrote:
-> >> +
-> >> +static int g13_input_setkeycode(struct input_dev *dev,
-> >> +				int scancode,
-> >> +				int keycode)
-> >> +{
-> >> +	int old_keycode;
-> >> +	int i;
-> >> +	struct g13_data *data = input_get_g13data(dev);
-> >> +
-> >> +	if (data == NULL)
-> >> +		return -EINVAL;
-> >> +
-> >> +	if (scancode >= dev->keycodemax)
-> >> +		return -EINVAL;
-> >> +
-> >> +	if (!dev->keycodesize)
-> >> +		return -EINVAL;
-> >> +
-> >> +	if (dev->keycodesize < sizeof(keycode) &&
-> >> +	    (keycode >> (dev->keycodesize * 8)))
-> >> +		return -EINVAL;
-> >> +
-> >> +	write_lock(&data->lock);
-> >> +
-> >> +	old_keycode = data->keycode[scancode];
-> >> +	data->keycode[scancode] = keycode;
-> >> +
-> >> +	clear_bit(old_keycode, dev->keybit);
-> >> +	set_bit(keycode, dev->keybit);
-> >> +
-> >> +	for (i = 0; i < dev->keycodemax; i++) {
-> >> +		if (data->keycode[i] == old_keycode) {
-> >> +			set_bit(old_keycode, dev->keybit);
-> >> +			break; /* Setting the bit twice is useless, so break */
-> >> +		}
-> >> +	}
-> >> +
-> >> +	write_unlock(&data->lock);
-> >> +
-> >> +	return 0;
-> >> +}
-> >> +
-> >> +static int g13_input_getkeycode(struct input_dev *dev,
-> >> +				int scancode,
-> >> +				int *keycode)
-> >> +{
-> >> +	struct g13_data *data = input_get_g13data(dev);
-> >> +
-> >> +	if (!dev->keycodesize)
-> >> +		return -EINVAL;
-> >> +
-> >> +	if (scancode >= dev->keycodemax)
-> >> +		return -EINVAL;
-> >> +
-> >> +	read_lock(&data->lock);
-> >> +
-> >> +	*keycode = data->keycode[scancode];
-> >> +
-> >> +	read_unlock(&data->lock);
-> >> +
-> >> +	return 0;
-> >> +}
-> >
-> > Default input core methods should cover this, no?
-> >
-> 
-> I couldn't find this exposed from input core through sysfs anywhere. From
-> userspace I could access it from an ioctl, but I'd prefer to allow
-> userspace to do everything from libsysfs rather than a mixture of libsysfs
-> and ioctls.
-> 
-> I did make sure the ioctls are still supported by providing functions to
-> input_dev->setkeycode and input_dev->getkeycode.
-> 
-
-Unfortunately the input core does more stuff after driver-specific routines
-get called. And I am planning to add device rebinding upong keymap
-change and more stuff.
-
-> >> +
-> >> +static DEVICE_ATTR(keymap, 0666, g13_keymap_show, g13_keymap_store);
+On Fri, Jan 08, 2010 at 09:35:33PM +0100, Corrado Zoccolo wrote:
+> On Fri, Jan 8, 2010 at 6:15 PM, Vivek Goyal <vgoyal@redhat.com> wrote:
+> > On Thu, Jan 07, 2010 at 10:44:27PM +0100, Corrado Zoccolo wrote:
+> >> Hi Shahoua,
+> >>
+> >> On Thu, Jan 7, 2010 at 3:04 AM, Shaohua Li <shaohua.li@intel.com> wrote:
+> >> > On Mon, 2009-12-28 at 17:02 +0800, Corrado Zoccolo wrote:
+> >> >> Hi Shaohua,
+> >> >> On Mon, Dec 28, 2009 at 4:35 AM, Shaohua Li <shaohua.li@intel.com> wrote:
+> >> >> > On Fri, Dec 25, 2009 at 05:44:40PM +0800, Corrado Zoccolo wrote:
+> >> >> >> On Fri, Dec 25, 2009 at 10:10 AM, Shaohua Li <shaohua.li@intel.com> wrote:
+> >> >> >> > Currently a queue can only dispatch up to 4 requests if there are other queues.
+> >> >> >> > This isn't optimal, device can handle more requests, for example, AHCI can
+> >> >> >> > handle 31 requests. I can understand the limit is for fairness, but we could
+> >> >> >> > do some tweaks:
+> >> >> >> > 1. if the queue still has a lot of slice left, sounds we could ignore the limit
+> >> >> >> ok. You can even scale the limit proportionally to the remaining slice
+> >> >> >> (see below).
+> >> >> > I can't understand the meaning of below scale. cfq_slice_used_soon() means
+> >> >> > dispatched requests can finish before slice is used, so other queues will not be
+> >> >> > impacted. I thought/hope a cfq_slice_idle time is enough to finish the
+> >> >> > dispatched requests.
+> >> >> cfq_slice_idle is 8ms, that is the average time to complete 1 request
+> >> >> on most disks. If you have more requests dispatched on a
+> >> >> NCQ-rotational disk (non-RAID), it will take more time. Probably a
+> >> >> linear formula is not the most accurate, but still more accurate than
+> >> >> taking just 1 cfq_slice_idle. If you can experiment a bit, you could
+> >> >> also try:
+> >> >>  cfq_slice_idle * ilog2(nr_dispatched+1)
+> >> >>  cfq_slice_idle * (1<<(ilog2(nr_dispatched+1)>>1))
+> >> >>
+> >> >> >
+> >> >> >> > 2. we could keep the check only when cfq_latency is on. For uses who don't care
+> >> >> >> > about latency should be happy to have device fully piped on.
+> >> >> >> I wouldn't overload low_latency with this meaning. You can obtain the
+> >> >> >> same by setting the quantum to 32.
+> >> >> > As this impact fairness, so natually thought we could use low_latency. I'll remove
+> >> >> > the check in next post.
+> >> >> Great.
+> >> >> >> > I have a test of random direct io of two threads, each has 32 requests one time
+> >> >> >> > without patch: 78m/s
+> >> >> >> > with tweak 1: 138m/s
+> >> >> >> > with two tweaks and disable latency: 156m/s
+> >> >> >>
+> >> >> >> Please, test also with competing seq/random(depth1)/async workloads,
+> >> >> >> and measure also introduced latencies.
+> >> >> > depth1 should be ok, as if device can only send one request, it should not require
+> >> >> > more requests from ioscheduler.
+> >> >> I mean have a run with, at the same time:
+> >> >> * one seq reader,
+> >> >> * h random readers with depth 1 (non-aio)
+> >> >> * one async seq writer
+> >> >> * k random readers with large depth.
+> >> >> In this way, you can see if the changes you introduce to boost your
+> >> >> workload affect more realistic scenarios, in which various workloads
+> >> >> are mixed.
+> >> >> I explicitly add the depth1 random readers, since they are sceduled
+> >> >> differently than the large (>4) depth ones.
+> >> > I tried a fio script which does like your description, but the data
+> >> > isn't stable, especially the write speed, other kind of io speed is
+> >> > stable. Apply below patch doesn't make things worse (still write speed
+> >> > isn't stable, other io is stable), so I can't say if the patch passes
+> >> > the test, but it appears latency reported by fio hasn't change. I adopt
+> >> > the slice_idle * dispatched approach, which I thought should be safe.
+> >>
+> >> I'm doing some tests right now on a single ncq rotational disk, and
+> >> the average service time when submitting with a high depth is halved
+> >> w.r.t. depth 1, so I think you could test also with the formula :
+> >> slice_idle * dispatched / 2. It should give a performance boost,
+> >> without noticeable impact on latency.
 > >>
 > >
-> > No. Just use EVIOCSKEYCODE.
+> > But I guess the right comparison here would service times vary when we
+> > push queue depths from 4 to higher (as done by this patch).
+> 
+> I think here we want to determine the average cost of a request, when
+> there are many submitted.
+> 
+> > Were you
+> > running deep seeky queues or sequential queues. Curious to know whether
+> > service times reduced even in case of deep seeky queues on this single
+> > disk.
+> 
+> Seeky queues. Seeks where rather small (not more than 1/64 of the
+> whole disk), but already meaningful for comparison.
+> 
 > >
-> 
-> I'd really prefer to provide a sysfs interface as opposed to ioctls.
-> 
+> > I think this patch breaks the meaning of cfq_quantum? Now we can allow
+> > dispatch of more requests from the same queue. I had kind of liked the
+> > idea of respecting cfq_quantum. Especially it can help in testing. With
+> > this patch cfq_quantum will more or less loose its meaning.
+> cfq_quantum will still be enforced at the end of the slice, so its
+> meaning of how many requests can be still pending when you finish your
+> slice is preserved.
 
-I really think we should stick to standard interfaces. For the reason
-see above.
+Not always and it will depend how accurate your approximation of service
+time is. If per request completion time is more than approximation (in
+this case slice_idle), than you will end up with more requests in dispatch
+queue from one cfqq at the time of slice expiry.
 
 > 
-> >> +/*
-> >> + * The "emit_msc_raw" attribute
-> >> + */
-> >> +static ssize_t g13_emit_msc_raw_show(struct device *dev,
-> >> +				     struct device_attribute *attr,
-> >> +				     char *buf)
-> >> +{
-> >> +	struct g13_data *data = dev_get_drvdata(dev);
-> >> +
-> >> +	if (data == NULL)
-> >> +		return -ENODATA;
-> >> +
-> >> +	return sprintf(buf, "%u\n", data->emit_msc_raw);
-> >> +}
-> >> +
-> >> +static ssize_t g13_set_emit_msc_raw(struct hid_device *hdev, unsigned
-> >> k)
-> >> +{
-> >> +	struct g13_data *data = hid_get_g13data(hdev);
-> >> +
-> >> +	if (data == NULL)
-> >> +		return -ENODATA;
-> >> +
-> >> +	data->emit_msc_raw = k;
-> >> +
-> >> +	return 0;
-> >> +}
-> >> +
-> >> +static ssize_t g13_emit_msc_raw_store(struct device *dev,
-> >> +				      struct device_attribute *attr,
-> >> +				      const char *buf, size_t count)
-> >> +{
-> >> +	struct hid_device *hdev;
-> >> +	int i;
-> >> +	unsigned k;
-> >> +	ssize_t set_result;
-> >> +
-> >> +	/* Get the hid associated with the device */
-> >> +	hdev = container_of(dev, struct hid_device, dev);
-> >> +
-> >> +	/* If we have an invalid pointer we'll return ENODATA */
-> >> +	if (hdev == NULL || &(hdev->dev) != dev)
-> >> +		return -ENODATA;
-> >> +
-> >> +	i = sscanf(buf, "%u", &k);
-> >> +	if (i != 1) {
-> >> +		printk(KERN_ERR "unrecognized input: %s", buf);
-> >> +		return -1;
-> >> +	}
-> >> +
-> >> +	set_result = g13_set_emit_msc_raw(hdev, k);
-> >> +
-> >> +	if (set_result < 0)
-> >> +		return set_result;
-> >> +
-> >> +	return count;
-> >> +}
-> >> +
-> >> +static DEVICE_ATTR(emit_msc_raw, 0666,
-> >> +		   g13_emit_msc_raw_show,
-> >> +		   g13_emit_msc_raw_store);
-> >> +
+> One can argue, instead, that this reduces a bit the effectiveness of
+> preemption on ncq disks.
+> However, I don't think preemption is the solution for low latency,
+> while cfq_quantum reduction is.
+> With this change in place, we could change the default cfq_quantum to
+> a smaller number (ideally 1), to have lowest number of leftovers when
+> the slice finishes, while still driving deep queues at the beginning
+> of the slice.
+
+I think using cfq_quantum as hard limit might be a better idea as it gives
+more predictable control. Instead of treating it as soft limit and trying
+to meet it at the end of slice expiry based on our approximation of
+predicted completion time.
+
+> 
+> This needs thorough testing, though. Maybe it is better to delay those
+> changes to 2.6.34...
+
+Agreed. This should be tested more throughly and should be candidate for
+2.6.34.
+
+Thanks
+Vivek
+
+> 
+> Thanks,
+> Corrado
+> 
 > >
-> > I do no see the need for this attribute, simply emit MSC_RAW always.
+> > Vivek
 > >
-> 
-> Will do.
-> 
-> >> +
-> >> +/*
-> >> + * The "keymap_switching" attribute
-> >> + */
-> >> +static ssize_t g13_keymap_switching_show(struct device *dev,
-> >> +					 struct device_attribute *attr,
-> >> +					 char *buf)
-> >> +{
-> >> +	struct g13_data *data = dev_get_drvdata(dev);
-> >> +
-> >> +	if (data == NULL)
-> >> +		return -ENODATA;
-> >> +
-> >> +	return sprintf(buf, "%u\n", data->keymap_switching);
-> >> +}
-> >> +
-> >> +static ssize_t g13_set_keymap_switching(struct hid_device *hdev,
-> >> unsigned k)
-> >> +{
-> >> +	struct g13_data *data = hid_get_g13data(hdev);
-> >> +
-> >> +	if (data == NULL)
-> >> +		return -ENODATA;
-> >> +
-> >> +	data->keymap_switching = k;
-> >> +
-> >> +	if (data->keymap_switching)
-> >> +		g13_set_mled(hdev, 1<<(data->curkeymap));
-> >> +
-> >> +	return 0;
-> >> +}
-> >> +
-> >> +static ssize_t g13_keymap_switching_store(struct device *dev,
-> >> +					  struct device_attribute *attr,
-> >> +					  const char *buf, size_t count)
-> >> +{
-> >> +	struct hid_device *hdev;
-> >> +	int i;
-> >> +	unsigned k;
-> >> +	ssize_t set_result;
-> >> +
-> >> +	/* Get the hid associated with the device */
-> >> +	hdev = container_of(dev, struct hid_device, dev);
-> >> +
-> >> +	/* If we have an invalid pointer we'll return ENODATA */
-> >> +	if (hdev == NULL || &(hdev->dev) != dev)
-> >> +		return -ENODATA;
-> >> +
-> >> +	i = sscanf(buf, "%u", &k);
-> >> +	if (i != 1) {
-> >> +		printk(KERN_ERR "unrecognized input: %s", buf);
-> >> +		return -1;
-> >> +	}
-> >> +
-> >> +	set_result = g13_set_keymap_switching(hdev, k);
-> >> +
-> >> +	if (set_result < 0)
-> >> +		return set_result;
-> >> +
-> >> +	return count;
-> >> +}
-> >> +
-> >> +static DEVICE_ATTR(keymap_switching, 0666,
-> >> +		   g13_keymap_switching_show,
-> >> +		   g13_keymap_switching_store);
-> >
-> > Hmm, attributes that are changing device state are usually 0644.
-> >
-> 
-> Fixed.
-> 
-> >> +
-> >> +
-> >> +static ssize_t g13_name_show(struct device *dev,
-> >> +			     struct device_attribute *attr,
-> >> +			     char *buf)
-> >> +{
-> >> +	struct g13_data *data = dev_get_drvdata(dev);
-> >> +	int result;
-> >> +
-> >> +	if (data == NULL)
-> >> +		return -ENODATA;
-> >> +
-> >> +	if (data->name == NULL) {
-> >> +		buf[0] = 0x00;
-> >> +		return 1;
-> >> +	}
-> >> +
-> >> +	read_lock(&data->lock);
-> >> +	result = sprintf(buf, "%s", data->name);
-> >> +	read_unlock(&data->lock);
-> >> +
-> >> +	return result;
-> >> +}
-> >> +
-> >> +static ssize_t g13_name_store(struct device *dev,
-> >> +			      struct device_attribute *attr,
-> >> +			      const char *buf, size_t count)
-> >> +{
-> >> +	struct g13_data *data = dev_get_drvdata(dev);
-> >> +	size_t limit = count;
-> >> +	char *end;
-> >> +
-> >> +	if (data == NULL)
-> >> +		return -ENODATA;
-> >> +
-> >> +	write_lock(&data->lock);
-> >> +
-> >> +	if (data->name != NULL) {
-> >> +		kfree(data->name);
-> >> +		data->name = NULL;
-> >> +	}
-> >> +
-> >> +	end = strpbrk(buf, "\n\r");
-> >> +	if (end != NULL)
-> >> +		limit = end - buf;
-> >> +
-> >> +	if (end != buf) {
-> >> +
-> >> +		if (limit > 100)
-> >> +			limit = 100;
-> >> +
-> >> +		data->name = kzalloc(limit+1, GFP_KERNEL);
-> >> +
-> >> +		strncpy(data->name, buf, limit);
-> >> +	}
-> >> +
-> >> +	write_unlock(&data->lock);
-> >> +
-> >> +	return count;
-> >> +}
-> >> +
-> >> +static DEVICE_ATTR(name, 0666, g13_name_show, g13_name_store);
-> >
-> > What this attribute is for?
-> >
-> 
-> To provide a mnemonic identifier for the device that can be shared across
-> applications. It also allows a userspace application to lookup a device by
-> name through sysfs.
-
-To set it you need to identify sysfs path fisrt. Once you've identified
-sysfs path you can simply use it in other apps. So I do not see the need
-for the name.
-
-> 
-> >> +
-> >> +/*
-> >> + * The "rgb" attribute
-> >> + * red green blue
-> >> + * each with values 0 - 255 (black - full intensity)
-> >> + */
-> >> +static ssize_t g13_rgb_show(struct device *dev,
-> >> +			    struct device_attribute *attr,
-> >> +			    char *buf)
-> >> +{
-> >> +	unsigned r, g, b;
-> >> +	struct g13_data *data = dev_get_drvdata(dev);
-> >> +
-> >> +	if (data == NULL)
-> >> +		return -ENODATA;
-> >> +
-> >> +	r = data->rgb[0];
-> >> +	g = data->rgb[1];
-> >> +	b = data->rgb[2];
-> >> +
-> >> +	return sprintf(buf, "%u %u %u\n", r, g, b);
-> >> +}
-> >> +
-> >> +static ssize_t g13_set_rgb(struct hid_device *hdev,
-> >> +			   unsigned r, unsigned g, unsigned b)
-> >> +{
-> >> +	struct g13_data *data = hid_get_g13data(hdev);
-> >> +
-> >> +	if (data == NULL || data->backlight_report == NULL)
-> >> +		return -ENODATA;
-> >> +
-> >> +	data->backlight_report->field[0]->value[0] = r;
-> >> +	data->backlight_report->field[0]->value[1] = g;
-> >> +	data->backlight_report->field[0]->value[2] = b;
-> >> +	data->backlight_report->field[0]->value[3] = 0x00;
-> >> +
-> >> +	usbhid_submit_report(hdev, data->backlight_report, USB_DIR_OUT);
-> >> +
-> >> +	data->rgb[0] = r;
-> >> +	data->rgb[1] = g;
-> >> +	data->rgb[2] = b;
-> >> +
-> >> +	return 0;
-> >> +}
-> >> +
-> >> +static ssize_t g13_rgb_store(struct device *dev,
-> >> +			     struct device_attribute *attr,
-> >> +			     const char *buf, size_t count)
-> >> +{
-> >> +	struct hid_device *hdev;
-> >> +	int i;
-> >> +	unsigned r;
-> >> +	unsigned g;
-> >> +	unsigned b;
-> >> +	ssize_t set_result;
-> >> +
-> >> +	/* Get the hid associated with the device */
-> >> +	hdev = container_of(dev, struct hid_device, dev);
-> >> +
-> >> +	/* If we have an invalid pointer we'll return ENODATA */
-> >> +	if (hdev == NULL || &(hdev->dev) != dev)
-> >> +		return -ENODATA;
-> >> +
-> >> +	i = sscanf(buf, "%u %u %u", &r, &g, &b);
-> >> +	if (i != 3) {
-> >> +		printk(KERN_ERR "unrecognized input: %s", buf);
-> >> +		return -1;
-> >> +	}
-> >> +
-> >> +	set_result = g13_set_rgb(hdev, r, g, b);
-> >> +
-> >> +	if (set_result < 0)
-> >> +		return set_result;
-> >> +
-> >> +	return count;
-> >> +}
-> >> +
-> >> +static DEVICE_ATTR(rgb, 0666, g13_rgb_show, g13_rgb_store);
-> >> +
-> >> +/*
-> >> + * Create a group of attributes so that we can create and destroy them
-> >> all
-> >> + * at once.
-> >> + */
-> >> +static struct attribute *g13_attrs[] = {
-> >> +	&dev_attr_name.attr,
-> >> +	&dev_attr_rgb.attr,
-> >> +	&dev_attr_mled.attr,
-> >> +	&dev_attr_keymap_index.attr,
-> >> +	&dev_attr_emit_msc_raw.attr,
-> >> +	&dev_attr_keymap_switching.attr,
-> >> +	&dev_attr_keymap.attr,
-> >> +	&dev_attr_fb_update_rate.attr,
-> >> +	&dev_attr_fb_node.attr,
-> >> +	NULL,	 /* need to NULL terminate the list of attributes */
-> >> +};
-> >> +
-> >> +/*
-> >> + * An unnamed attribute group will put all of the attributes directly
-> >> in
-> >> + * the kobject directory.  If we specify a name, a subdirectory will be
-> >> + * created for the attributes with the directory being the name of the
-> >> + * attribute group.
-> >> + */
-> >> +static struct attribute_group g13_attr_group = {
-> >> +	.attrs = g13_attrs,
-> >> +};
-> >> +
-> >> +static struct fb_deferred_io g13_fb_defio = {
-> >> +	.delay = HZ / G13FB_UPDATE_RATE_DEFAULT,
-> >> +	.deferred_io = g13_fb_deferred_io,
-> >> +};
-> >> +
-> >> +static void g13_raw_event_process_input(struct hid_device *hdev,
-> >> +					struct g13_data *g13data,
-> >> +     u8 *raw_data)
-> >> +{
-> >> +	struct input_dev *idev = g13data->input_dev;
-> >> +	unsigned int code;
-> >> +	int value;
-> >> +	int i;
-> >> +	int mask;
-> >> +	int offset;
-> >> +	u8 val;
-> >> +
-> >> +	g13data->ready2 = 1;
-> >> +
-> >> +	if (idev == NULL)
-> >> +		return;
-> >> +
-> >> +	if (g13data->curkeymap < 3)
-> >> +		offset = G13_KEYS * g13data->curkeymap;
-> >> +	else
-> >> +		offset = 0;
-> >> +
-> >> +	for (i = 0, mask = 0x01; i < 8; i++, mask <<= 1) {
-> >> +		/* Keys G1 through G8 */
-> >> +		code = g13data->keycode[i+offset];
-> >> +		value = raw_data[3] & mask;
-> >> +		if (g13data->keycode[i] != KEY_RESERVED)
-> >> +			input_report_key(idev, code, value);
-> >> +		input_event(idev, EV_MSC, MSC_SCAN, i);
-> >
-> > That means these MSC_SCAN events are emitted _always_. Not sure if that
-> > is too useful. If you were to detect the state change and emit MSC_SCAN
-> > for changed keys, that would be better.
-> >
-> 
-> I couldn't find anything that really explained the purpose of MSC_SCAN.
-> Can I use it just to report scancodes?
-
-Yes, it purpose if to report scancode or it's equivalent of pressed key.
-
-> 
-> In particular can I selectively emit MSC_SCAN when I only want to report
-> specific events such as an unmapped key or a special key such as the
-> backlight or one of the M* keys?
-
-You could, but then users would not really know what scancode to use to
-remap already mapped key. The problem with your approach that userspace
-will get 10 MSC_SCAN before getting KEY_* event. Not terribly useful.
-
-...
-
-> >> +
-> >> +	dbg_hid("Found all reports\n");
-> >> +
-> >> +	for (i = 0; i < 20; i++) {
-> >> +		if (data->ready && data->ready2)
-> >> +			break;
-> >> +		mdelay(10);
-> >> +	}
-> >
-> > Consider using completion?
-> >
-> 
-> I'm not sure what you mean.
-
-Look at wait_for_completion() and wait_completion_timeout() functions.
-These are proper APIs to wait for completion of a certain task instead
-of busily (or sleepily) spinning.
-
-> 
-> >> +
-> >> +	if (!(data->ready && data->ready2))
-> >> +		printk(KERN_ERR "G13 hasn't responded yet, forging ahead with
-> >> initialization\n");
-> >> +	else
-> >> +		dbg_hid("G13 initialized\n");
-> >> +
-> >> +	/*
-> >> +	 * Set the initial color and load the linux logo
-> >> +	 * We're going to ignore the error values. If there is an error at
-> >> this
-> >> +	 * point we'll forge ahead.
-> >> +	 */
-> >> +
-> >> +	dbg_hid("Set default color\n");
-> >> +
-> >> +	error = g13_set_rgb(hdev, G13_DEFAULT_RED, G13_DEFAULT_GREEN,
-> >> G13_DEFAULT_BLUE);
-> >
-> > And...?
-> >
-> 
-> I had an error message before, but took it out. Missed taking out the
-> "error =" since at this point we'll just forge ahead.
-> 
-> Although failing to set the backlight color at this point could indicate
-> some I/O issue it's not critical enough to fail driver initialization.
-> 
-
-Then dev_warn() is your friend.
-
-
-Thanks.
-
--- 
-Dmitry
+> >> > Currently a queue can only dispatch up to 4 requests if there are other queues.
+> >> > This isn't optimal, device can handle more requests, for example, AHCI can
+> >> > handle 31 requests. I can understand the limit is for fairness, but we could
+> >> > do a tweak: if the queue still has a lot of slice left, sounds we could ignore
+> >> > the limit.
+> >> > For async io, 40ms/8ms = 5 - quantum = 1, we only send extra 1 request in maxium.
+> >> > For sync io, 100ms/8ms = 12 - quantum = 8, we might send extra 8 requests in maxium.
+> >> > This might cause latency issue if the queue is preempted at the very beginning.
+> >> >
+> >> > This patch boost my workload from 78m/s to 102m/s, which isn't that big as my last
+> >> > post, but also is a big improvement.
+> >>
+> >> Acked-by: Corrado Zoccolo <czoccolo@gmail.com>
+> >>
+> >> >
+> >> > Signed-off-by: Shaohua Li <shaohua.li@intel.com>
+> >> > ---
+> >> >  block/cfq-iosched.c |   15 ++++++++++++++-
+> >> >  1 file changed, 14 insertions(+), 1 deletion(-)
+> >> >
+> >> > Index: linux-2.6/block/cfq-iosched.c
+> >> > ===================================================================
+> >> > --- linux-2.6.orig/block/cfq-iosched.c
+> >> > +++ linux-2.6/block/cfq-iosched.c
+> >> > @@ -2242,6 +2242,19 @@ static int cfq_forced_dispatch(struct cf
+> >> >        return dispatched;
+> >> >  }
+> >> >
+> >> > +static inline bool cfq_slice_used_soon(struct cfq_data *cfqd,
+> >> > +       struct cfq_queue *cfqq)
+> >> > +{
+> >> > +       /* the queue hasn't finished any request, can't estimate */
+> >> > +       if (cfq_cfqq_slice_new(cfqq))
+> >> > +               return true;
+> >> > +       if (time_after(jiffies + cfqd->cfq_slice_idle * cfqq->dispatched,
+> >> > +               cfqq->slice_end))
+> >> > +               return true;
+> >> > +
+> >> > +       return false;
+> >> > +}
+> >> > +
+> >> >  static bool cfq_may_dispatch(struct cfq_data *cfqd, struct cfq_queue *cfqq)
+> >> >  {
+> >> >        unsigned int max_dispatch;
+> >> > @@ -2275,7 +2288,7 @@ static bool cfq_may_dispatch(struct cfq_
+> >> >                /*
+> >> >                 * We have other queues, don't allow more IO from this one
+> >> >                 */
+> >> > -               if (cfqd->busy_queues > 1)
+> >> > +               if (cfqd->busy_queues > 1 && cfq_slice_used_soon(cfqd, cfqq))
+> >> >                        return false;
+> >> >
+> >> >                /*
