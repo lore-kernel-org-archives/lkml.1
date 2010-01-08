@@ -1,77 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754464Ab0AHAnc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754487Ab0AHAoU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754464Ab0AHAnc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 19:43:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753756Ab0AHAnb
+	id S1754487Ab0AHAoU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 19:44:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754080Ab0AHAoT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 19:43:31 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:33800 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752036Ab0AHAna (ORCPT
+	Thu, 7 Jan 2010 19:44:19 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:35108 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753756Ab0AHAoS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 19:43:30 -0500
-Date: Fri, 8 Jan 2010 01:43:29 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Trond Myklebust <Trond.Myklebust@netapp.com>
-Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       torvalds@osdl.org
-Subject: Re: [GIT PULL] Please pull NFS client bugfixes....
-Message-ID: <20100108004329.GE16076@basil.fritz.box>
-References: <1262896174.2659.3.camel@localhost> <87zl4pmxzp.fsf@basil.nowhere.org> <1262901198.2659.38.camel@localhost> <20100107235149.GD16076@basil.fritz.box> <1262909682.2659.45.camel@localhost>
+	Thu, 7 Jan 2010 19:44:18 -0500
+Message-ID: <4B467FCB.2080101@zytor.com>
+Date: Thu, 07 Jan 2010 16:43:55 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1262909682.2659.45.camel@localhost>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Simon Horman <horms@verge.net.au>
+CC: Masami Hiramatsu <mhiramat@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-kbuild@vger.kernel.org, Michal Marek <mmarek@sues.cz>,
+       Roland Dreier <rdreier@cisco.com>, Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [patch] Makefile: Unexport LANG
+References: <20091224111300.GA31932@verge.net.au> <4B359166.3050106@redhat.com> <4B359BC0.3080808@zytor.com> <20091226112007.GB2818@verge.net.au> <20100108004117.GK2436@verge.net.au>
+In-Reply-To: <20100108004117.GK2436@verge.net.au>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 07, 2010 at 07:14:42PM -0500, Trond Myklebust wrote:
-> On Fri, 2010-01-08 at 00:51 +0100, Andi Kleen wrote: 
-> > > I'd like to see this fixed, but I do not want to jump onto a solution
-> > > that changes the behaviour of mmap() w.r.t. revalidation. The current
-> > > behaviour dates back at least to 2.3.x if not before.
-> > 
-> > So do you have a plan to fix it?
+On 01/07/2010 04:41 PM, Simon Horman wrote:
+> On Sat, Dec 26, 2009 at 10:20:07PM +1100, Simon Horman wrote:
+>> On Fri, Dec 25, 2009 at 09:14:40PM -0800, H. Peter Anvin wrote:
+>>> On 12/25/2009 08:30 PM, Masami Hiramatsu wrote:
+>>>>>  
+>>>>>  # Avoid funny character set dependencies
+>>>>> +unexport LANG
+>>>>>  unexport LC_ALL
+>>>>>  LC_CTYPE=C
+>>>>>  LC_COLLATE=C
+>>>>
+>>>
+>>> At this point, it seems to me that we should just LC_ALL=C and be done
+>>> with it (see other thread.)
+>>
+>> Sure, that would also work for the case that I'm seeing.
+>>
+>> I tested the following:
+>>
+>> # Avoid funny character set dependencies
+>> LC_ALL=C
+>> export LC_ALL
+>>
+>> Though personally I would advocate tweaking the locale as needed closer
+>> to awk scripts and the like, rather than the high-level general change that
+>> was made. Fall-out from a high-level change seems inevitable to me.
 > 
-> Yes. I want to pursue Peter Zijlstra's patches, which split up the mmap
-> function into a set of parts which require the mmap_sem, and other parts
-> which don't, and that adds a filesystem callback that allows for
-> revalidation to occur outside the mmap_sem.
-
-Is that really a 2.6.33 solution?
-
-It sounds intrusive.
-
+> This seems to still be broken. Can we decide on a solution?
 > 
-> > I don't think it'll be possible to do drastic changes in the
-> > VFS for 2.6.33, and it seems preserving the current semantics
-> > would need that.
-> > 
-> > > That's why I'm working slowly on this.
-> > 
-> > Delaying a fix to after 2.6.33 is not an option imho.
-> > 
-> > It hits everyone with LOCKDEP enabled who uses mmap over NFS.
-> > That's new in 2.6.33, previously LOCKDEP didn't diagnose this.
-> > 
-> > I'll keep using my patch, but I suppose once we're going more
-> > towards a release you'll get more reports of this.
-> 
-> Why should this particular issue require us to rush into a solution?
 
-Because every lockdep user NFS+mmap gets spammed now.
+I think it's up to Michal to pick the preferred solution.
 
-That's like having an oops in the startup sequence. The system
-might still boot, but users are not happy.
+It has been pointed out that one option might also to be to *not*
+override LC_CTYPE, and only override LC_COLLATE.
 
-> This has been there for literally _years_, and I've never heard of a
-> single incident in which a deadlock actually occurred. The only reason
-> why we've noticed it at all is because lockdep has started to whine.
+	-hpa
 
-I bet there were deadlocks somewhere, probably just didn't get reported.
 
--Andi
--- 
-ak@linux.intel.com -- Speaking for myself only.
