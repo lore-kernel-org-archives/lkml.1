@@ -1,91 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753476Ab0AHCyh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753446Ab0AHC72@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753476Ab0AHCyh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 21:54:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753443Ab0AHCyf
+	id S1753446Ab0AHC72 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 21:59:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753400Ab0AHC71
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 21:54:35 -0500
-Received: from mga11.intel.com ([192.55.52.93]:22383 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753442Ab0AHCyd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 21:54:33 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,238,1262592000"; 
-   d="scan'208";a="529503569"
-Subject: Re: [RFC PATCH] sched: Pass affine target cpu into wake_affine
-From: Lin Ming <ming.m.lin@intel.com>
-To: Mike Galbraith <efault@gmx.de>
-Cc: Peter Zijlstra <peterz@infradead.org>, lkml <linux-kernel@vger.kernel.org>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-In-Reply-To: <1262870055.9337.34.camel@marge.simson.net>
-References: <1262595827.22471.108.camel@minggr.sh.intel.com>
-	 <1262659686.22471.121.camel@minggr.sh.intel.com>
-	 <1262663058.5748.32.camel@marge.simson.net>
-	 <1262673817.9534.37.camel@marge.simson.net>
-	 <1262853903.18931.17.camel@minggr.sh.intel.com>
-	 <1262870055.9337.34.camel@marge.simson.net>
-Content-Type: text/plain
-Date: Fri, 08 Jan 2010 10:38:51 +0800
-Message-Id: <1262918331.3598.14.camel@minggr.sh.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 (2.24.1-2.fc10) 
-Content-Transfer-Encoding: 7bit
+	Thu, 7 Jan 2010 21:59:27 -0500
+Received: from kirsty.vergenet.net ([202.4.237.240]:34611 "EHLO
+	kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751651Ab0AHC70 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jan 2010 21:59:26 -0500
+Date: Fri, 8 Jan 2010 13:59:24 +1100
+From: Simon Horman <horms@verge.net.au>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Masami Hiramatsu <mhiramat@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-kbuild@vger.kernel.org, Michal Marek <mmarek@sues.cz>,
+       Roland Dreier <rdreier@cisco.com>, Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [patch] Makefile: Unexport LANG
+Message-ID: <20100108025924.GE2465@verge.net.au>
+References: <20091224111300.GA31932@verge.net.au>
+ <4B359166.3050106@redhat.com>
+ <4B359BC0.3080808@zytor.com>
+ <20091226112007.GB2818@verge.net.au>
+ <20100108004117.GK2436@verge.net.au>
+ <4B467FCB.2080101@zytor.com>
+ <20100108024553.GA2465@verge.net.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100108024553.GA2465@verge.net.au>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2010-01-07 at 21:14 +0800, Mike Galbraith wrote:
-> On Thu, 2010-01-07 at 16:45 +0800, Lin Ming wrote:
-> > On Tue, 2010-01-05 at 14:43 +0800, Mike Galbraith wrote:
-> > > On Tue, 2010-01-05 at 04:44 +0100, Mike Galbraith wrote:
-> > > > On Tue, 2010-01-05 at 10:48 +0800, Lin Ming wrote:
-> > > > > On Mon, 2010-01-04 at 17:03 +0800, Lin Ming wrote:
-> > > > > > commit a03ecf08d7bbdd979d81163ea13d194fe21ad339
-> > > > > > Author: Lin Ming <ming.m.lin@intel.com>
-> > > > > > Date:   Mon Jan 4 14:14:50 2010 +0800
-> > > > > > 
-> > > > > >     sched: Pass affine target cpu into wake_affine
-> > > > > >     
-> > > > > >     Since commit a1f84a3(sched: Check for an idle shared cache in select_task_rq_fair()),
-> > > > > >     the affine target maybe adjusted to any idle cpu in cache sharing domains
-> > > > > >     instead of current cpu.
-> > > > > >     But wake_affine still use current cpu to calculate load which is wrong.
-> > > > > >     
-> > > > > >     This patch passes affine cpu into wake_affine.
-> > > > > >     
-> > > > > >     Signed-off-by: Lin Ming <ming.m.lin@intel.com>
-> > > > > 
-> > > > > Mike,
-> > > > > 
-> > > > > Any comment of this patch?
-> > > > 
-> > > > The patch definitely looks like the right thing to do, but when I tried
-> > > > this, it didn't work out well.  Since I can't seem to recall precise
-> > > > details, I'll let my box either remind me or give it's ack.
+On Fri, Jan 08, 2010 at 01:45:56PM +1100, Simon Horman wrote:
+> On Thu, Jan 07, 2010 at 04:43:55PM -0800, H. Peter Anvin wrote:
+> > On 01/07/2010 04:41 PM, Simon Horman wrote:
+> > > On Sat, Dec 26, 2009 at 10:20:07PM +1100, Simon Horman wrote:
+> > >> On Fri, Dec 25, 2009 at 09:14:40PM -0800, H. Peter Anvin wrote:
+> > >>> On 12/25/2009 08:30 PM, Masami Hiramatsu wrote:
+> > >>>>>  
+> > >>>>>  # Avoid funny character set dependencies
+> > >>>>> +unexport LANG
+> > >>>>>  unexport LC_ALL
+> > >>>>>  LC_CTYPE=C
+> > >>>>>  LC_COLLATE=C
+> > >>>>
+> > >>>
+> > >>> At this point, it seems to me that we should just LC_ALL=C and be done
+> > >>> with it (see other thread.)
+> > >>
+> > >> Sure, that would also work for the case that I'm seeing.
+> > >>
+> > >> I tested the following:
+> > >>
+> > >> # Avoid funny character set dependencies
+> > >> LC_ALL=C
+> > >> export LC_ALL
+> > >>
+> > >> Though personally I would advocate tweaking the locale as needed closer
+> > >> to awk scripts and the like, rather than the high-level general change that
+> > >> was made. Fall-out from a high-level change seems inevitable to me.
 > > > 
-> > > Unfortunately, box reminded me.  mysql+oltp peak throughput with
-> > > nr_clients == nr_cpus
+> > > This seems to still be broken. Can we decide on a solution?
+> > > 
 > > 
-> > Did you test with your vmark regression fix patch also applied?
-> 
-> Below is a complete retest.  Mind testing my hacklet?  I bet a nickle
-> it'll work at least as well as yours on your beefy boxen.
+> > I think it's up to Michal to pick the preferred solution.
 
-I tested your hacklet on below 2 machines as before.
-
-Tigerton x86_64 machine: 16cpus(4P/4Cores), 40G mem
-IA64 machine: 32cpus(4P/4Cores/HT), 16G mem
-
-Test1: vmark regression fix patch + pass affine target
-Test2: this hacklet
-
-Compared with upstream 2.6.33-rc2, 
-Test1: Tigerton +3%, IA64 +15%
-Test2: Tigerton +3%, IA64 +10%
-
-The test2 also improves on IA64, although not as good as test1.
-
-I also tested tbench, this hacklet does not help.
-
-Lin Ming
+Is it just me or is Michal's email bouncing of late?
 
