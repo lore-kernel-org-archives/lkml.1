@@ -1,66 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753925Ab0AHSq1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753937Ab0AHSu7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753925Ab0AHSq1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jan 2010 13:46:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753885Ab0AHSq1
+	id S1753937Ab0AHSu7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jan 2010 13:50:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753871Ab0AHSu6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jan 2010 13:46:27 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:38389 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753598Ab0AHSq0 (ORCPT
+	Fri, 8 Jan 2010 13:50:58 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:35844 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752829Ab0AHSu5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jan 2010 13:46:26 -0500
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Minchan Kim <minchan.kim@gmail.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "hugh.dickins" <hugh.dickins@tiscali.co.uk>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [RFC][PATCH 6/8] mm: handle_speculative_fault()
-From: Andi Kleen <andi@firstfloor.org>
-References: <20100104182429.833180340@chello.nl>
-	<20100104182813.753545361@chello.nl>
-	<20100105092559.1de8b613.kamezawa.hiroyu@jp.fujitsu.com>
-	<28c262361001042029w4b95f226lf54a3ed6a4291a3b@mail.gmail.com>
-	<20100105134357.4bfb4951.kamezawa.hiroyu@jp.fujitsu.com>
-	<alpine.LFD.2.00.1001042052210.3630@localhost.localdomain>
-	<20100105143046.73938ea2.kamezawa.hiroyu@jp.fujitsu.com>
-	<20100105163939.a3f146fb.kamezawa.hiroyu@jp.fujitsu.com>
-	<alpine.LFD.2.00.1001050707520.3630@localhost.localdomain>
-	<20100106092212.c8766aa8.kamezawa.hiroyu@jp.fujitsu.com>
-	<alpine.LFD.2.00.1001051718100.3630@localhost.localdomain>
-	<20100106115233.5621bd5e.kamezawa.hiroyu@jp.fujitsu.com>
-	<alpine.LFD.2.00.1001051917000.3630@localhost.localdomain>
-	<20100106125625.b02c1b3a.kamezawa.hiroyu@jp.fujitsu.com>
-	<alpine.LFD.2.00.1001052007090.3630@localhost.localdomain>
-	<1262969610.4244.36.camel@laptop>
-	<alpine.LFD.2.00.1001080911340.7821@localhost.localdomain>
-	<alpine.DEB.2.00.1001081138260.23727@router.home>
-Date: Fri, 08 Jan 2010 19:46:20 +0100
-In-Reply-To: <alpine.DEB.2.00.1001081138260.23727@router.home> (Christoph Lameter's message of "Fri, 8 Jan 2010 11:43:41 -0600 (CST)")
-Message-ID: <87my0omo3n.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
+	Fri, 8 Jan 2010 13:50:57 -0500
+Message-ID: <4B477E69.3060702@zytor.com>
+Date: Fri, 08 Jan 2010 10:50:17 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Michal Marek <mmarek@suse.cz>
+CC: Simon Horman <horms@verge.net.au>, Masami Hiramatsu <mhiramat@redhat.com>,
+       Roland Dreier <rdreier@cisco.com>, Sam Ravnborg <sam@ravnborg.org>,
+       Sergei Trofimovich <slyfox@inbox.ru>, linux-kbuild@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-sh@vger.kernel.org
+Subject: Re: [PATCH] Makefile: do not override LC_CTYPE
+References: <20100108115745.GA14758@sepie.suse.cz> <1262952988-16563-1-git-send-email-mmarek@suse.cz>
+In-Reply-To: <1262952988-16563-1-git-send-email-mmarek@suse.cz>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter <cl@linux-foundation.org> writes:
+On 01/08/2010 04:16 AM, Michal Marek wrote:
+> Setting LC_CTYPE=C breaks localized messages in some setups. With only
+> LC_COLLATE=C and LC_NUMERIC=C, we get almost all we need, except for not
+> so defined character classes and tolower()/toupper(). The former is not
+> a big issue, because we can assume that e.g. [:alpha:] will always
+> include a-zA-Z and we only ever process ASCII input. The latter seems
+> only affect arch/sh/tools/gen-mach-types, which we can handle separately.
+> 
+> So after this patch the meaning of ranges like [a-z], the behavior of
+> sort and join, etc. should be the same everywhere and at the same time
+> gcc should be able to print localized waring and error messages.
+> LC_NUMERIC=C might not be necessary, but setting it doesn't hurt.
+> 
+> Reported-by: Simon Horman <horms@verge.net.au>
+> Reported-by: Sergei Trofimovich <slyfox@inbox.ru>
+> Signed-off-by: Michal Marek <mmarek@suse.cz>
 
-> Can we at least consider a typical standard business server, dual quad
-> core hyperthreaded with 16 "cpus"? Cacheline contention will increase
-> significantly there.
+For what it's worth:
 
-This year's standard server will be more like 24-64 "cpus"
+Acked-by: H. Peter Anvin <hpa@zytor.com>
 
-Cheating with locks usually doesn't work anymore at these sizes.
-
--Andi
+	-hpa
 
 -- 
-ak@linux.intel.com -- Speaking for myself only.
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
+
