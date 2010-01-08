@@ -1,64 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753345Ab0AHRxf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753432Ab0AHRyS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753345Ab0AHRxf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jan 2010 12:53:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753225Ab0AHRxf
+	id S1753432Ab0AHRyS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jan 2010 12:54:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753323Ab0AHRyR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jan 2010 12:53:35 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52537 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753052Ab0AHRxe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jan 2010 12:53:34 -0500
-Date: Fri, 8 Jan 2010 09:52:58 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Christoph Lameter <cl@linux-foundation.org>
-cc: Peter Zijlstra <peterz@infradead.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Minchan Kim <minchan.kim@gmail.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "hugh.dickins" <hugh.dickins@tiscali.co.uk>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [RFC][PATCH 6/8] mm: handle_speculative_fault()
-In-Reply-To: <alpine.DEB.2.00.1001081138260.23727@router.home>
-Message-ID: <alpine.LFD.2.00.1001080950120.7821@localhost.localdomain>
-References: <20100104182429.833180340@chello.nl>  <20100104182813.753545361@chello.nl>  <20100105092559.1de8b613.kamezawa.hiroyu@jp.fujitsu.com>  <28c262361001042029w4b95f226lf54a3ed6a4291a3b@mail.gmail.com>  <20100105134357.4bfb4951.kamezawa.hiroyu@jp.fujitsu.com>
-  <alpine.LFD.2.00.1001042052210.3630@localhost.localdomain>  <20100105143046.73938ea2.kamezawa.hiroyu@jp.fujitsu.com>  <20100105163939.a3f146fb.kamezawa.hiroyu@jp.fujitsu.com>  <alpine.LFD.2.00.1001050707520.3630@localhost.localdomain> 
- <20100106092212.c8766aa8.kamezawa.hiroyu@jp.fujitsu.com>  <alpine.LFD.2.00.1001051718100.3630@localhost.localdomain>  <20100106115233.5621bd5e.kamezawa.hiroyu@jp.fujitsu.com>  <alpine.LFD.2.00.1001051917000.3630@localhost.localdomain> 
- <20100106125625.b02c1b3a.kamezawa.hiroyu@jp.fujitsu.com>  <alpine.LFD.2.00.1001052007090.3630@localhost.localdomain> <1262969610.4244.36.camel@laptop> <alpine.LFD.2.00.1001080911340.7821@localhost.localdomain>
- <alpine.DEB.2.00.1001081138260.23727@router.home>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 8 Jan 2010 12:54:17 -0500
+Received: from mail.perches.com ([173.55.12.10]:1660 "EHLO mail.perches.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752662Ab0AHRyQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jan 2010 12:54:16 -0500
+Subject: RE: [PATCH] drivers/net/defxx.c: use %pMF to show MAC address
+From: Joe Perches <joe@perches.com>
+To: "Maciej W. Rozycki" <macro@linux-mips.org>
+Cc: H Hartley Sweeten <hartleys@visionengravers.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
+       davem@davemloft.net
+In-Reply-To: <alpine.LFD.2.00.1001081316570.13474@eddie.linux-mips.org>
+References: <201001071624.20139.hartleys@visionengravers.com>
+	 <1262914750.10429.88.camel@Joe-Laptop.home>
+	 <alpine.LFD.2.00.1001080143250.13474@eddie.linux-mips.org>
+	 <BD79186B4FD85F4B8E60E381CAEE19090208961F@mi8nycmail19.Mi8.com>
+	 <alpine.LFD.2.00.1001081316570.13474@eddie.linux-mips.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 08 Jan 2010 09:54:14 -0800
+Message-ID: <1262973254.14898.14.camel@Joe-Laptop.home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 2010-01-08 at 13:34 +0000, Maciej W. Rozycki wrote:
+> On Thu, 7 Jan 2010, H Hartley Sweeten wrote:
+> > >> I believe the output will _now_ be in the canonical form.
+> > >> Before it wasn't bit reversed.  Now it should be.
+> > >
+> > > Output was correct -- why would you assume otherwise?
+> > > With the two patches in place the output produced is now broken. :(
 
-
-On Fri, 8 Jan 2010, Christoph Lameter wrote:
+>  Here are excerpts from old bootstrap logs -- I don't have any of these 
+> boards handy at the moment, but I'll have access to a couple in a few 
+> weeks' time:
 > 
-> Can we at least consider a typical standard business server, dual quad
-> core hyperthreaded with 16 "cpus"? Cacheline contention will increase
-> significantly there.
-
-I bet it won't be a problem. It's when things go cross-socket that they 
-suck. So 16 cpu's across two sockets I wouldn't worry about.
-
-> > Because let's face it - if your workload does several million page faults
-> > per second, you're just doing something fundamentally _wrong_.
+> defxx: v1.10 2006/12/14  Lawrence V. Stefani and others
+> tc0: DEFTA at addr = 0x10100000, IRQ = 2, Hardware addr = 08-00-2B-A3-66-C8
+> tc0: registered as fddi0
+> tc1: DEFTA at addr = 0x14100000, IRQ = 3, Hardware addr = 08-00-2B-A3-A3-29
+> tc1: registered as fddi1
 > 
-> You may just want to get your app running and its trying to initialize
-> its memory in parallel on all threads. Nothing wrong with that.
+> defxx: v1.10 2006/12/14  Lawrence V. Stefani and others
+> 0000:00:06.0: DEFPA at addr = 0x41071000, IRQ = 57, Hardware addr = 00-60-B0-58-40-75
+> 0000:00:06.0: registered as fddi0
+> 0000:02:00.0: DEFPA at addr = 0x41510000, IRQ = 57, Hardware addr = 00-60-B0-58-41-E7
+> 0000:02:00.0: registered as fddi1
+> 
+> Compare the addresses reported with the OUIs of the respective 
+> manufacturers -- the former is DEC and the latter is HP.  See 
+> http://standards.ieee.org/regauth/oui/oui.txt for a reference.
 
-Umm. That's going to be limited by the memset/memcpy, not the rwlock, I 
-bet.
+Then isn't the hardware address shown as ethernet and not as
+in the FDDI canonical format?
 
-The benchmark in question literally did a single byte write to each page 
-in order to show just the kernel component. That really isn't realistic 
-for any real load.
+Which confuses me relative to what you wrote earlier.
 
-			Linus
+> On Mon, 2010-01-04 at 23:43 +0000, Maciej W. Rozycki wrote:
+> > The example below shows an address, and the sequence of bits or symbols 
+> > that would be transmitted when the address is used in the Source Address 
+> > or Destination Address fields on the MAC header.  The transmission line 
+> > shows the address bits in the order transmitted, from left to right.  For 
+> > IEEE 802 LANs these correspond to actual bits on the medium.  The FDDI 
+> > symbols line shows how the FDDI PHY sends the address bits as encoded 
+> > symbols.
+> > 
+> >         MSB:            35:7B:12:00:00:01
+> >         Canonical:      AC-DE-48-00-00-80
+
+So, it should simply use %pM correct?
+
+Is there any address that should be shown in the
+FDDI canonical form?
+
+cheers, Joe
+
