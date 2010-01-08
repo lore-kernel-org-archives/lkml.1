@@ -1,54 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752494Ab0AHIz1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752743Ab0AHJLn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752494Ab0AHIz1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jan 2010 03:55:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751579Ab0AHIz0
+	id S1752743Ab0AHJLn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jan 2010 04:11:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752116Ab0AHJLm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jan 2010 03:55:26 -0500
-Received: from moutng.kundenserver.de ([212.227.126.186]:62571 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752142Ab0AHIz0 (ORCPT
+	Fri, 8 Jan 2010 04:11:42 -0500
+Received: from nwd2mail11.analog.com ([137.71.25.57]:11044 "EHLO
+	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751993Ab0AHJLm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jan 2010 03:55:26 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: Christoph Lameter <cl@linux-foundation.org>
-Subject: Re: [RFC local_t removal V2 2/3] Remove local_t type from tree.
-Date: Fri, 8 Jan 2010 09:55:07 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.31-rc8-00053-g43eb7c4-dirty; KDE/4.3.2; x86_64; ; )
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Tejun Heo <tj@kernel.org>, Mike Frysinger <vapier.adi@gmail.com>,
-       linux-kernel@vger.kernel.org
-References: <20100107223524.760517016@quilx.com> <20100107223548.270401090@quilx.com>
-In-Reply-To: <20100107223548.270401090@quilx.com>
+	Fri, 8 Jan 2010 04:11:42 -0500
+X-IronPort-AV: E=Sophos;i="4.49,241,1262581200"; 
+   d="scan'208";a="11291510"
+Subject: Re: [PATCH] Ftrace: irqsoff tracer may cause stack overflow
+From: Li Yi <yi.li@analog.com>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+CC: rostedt@goodmis.org, linux-kernel@vger.kernel.org,
+       uclinux-dist-devel@blackfin.uclinux.org
+In-Reply-To: <20100108051847.GB5468@nowhere>
+References: <1262925925.27700.15.camel@adam-desktop>
+	 <20100108051847.GB5468@nowhere>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 8 Jan 2010 17:13:15 +0800
+Message-ID: <1262941995.27700.282.camel@adam-desktop>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
-Message-Id: <201001080955.07231.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1++IHbMXQxWgxNIOXsQqgVOfaFf8TlJqVuiyk0
- GCN0pCP4kLnVsjPUZeTJ37CzviaMTV0pBEooxdDXlnF44iFDOk
- UbVuDOtOxWKvzh3219TWA==
+X-OriginalArrivalTime: 08 Jan 2010 09:11:36.0357 (UTC) FILETIME=[94498D50:01CA9042]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 07 January 2010 23:35:26 Christoph Lameter wrote:
-> -#define local_add_return(i, l) atomic_long_add_return((i), (&(l)->a))
-> +       local_irq_save(flags);
-> +       switch (size) {
-> +       case 1: r = (*((u8 *)ptr) += value);
-> +               break;
-> +       case 2: r = (*((u16 *)ptr) += value);
-> +               break;
-> +       case 4: r = (*((u32 *)ptr) += value);
-> +               break;
-> +       case 8: r = (*((u64 *)ptr) += value);
-> +               break;
-> +       }
-> +       local_irq_restore(flags);
-> +       return r;
-> +}
+On Fri, 2010-01-08 at 06:18 +0100, Frederic Weisbecker wrote:
+> On Fri, Jan 08, 2010 at 12:45:25PM +0800, Li Yi wrote:
+> > "irqsoff" tracer may cause stack overflow on architectures using
+> > asm-generic/atomic.h, due to recursive invoking of, e.g.
+> > trace_hardirqs_off().
+> > 
+> > trace_hardirqs_off() -> start_critical_timing() -> atomic_inc() ->
+> > atomic_add_return() -> local_irq_save() -> trace_hardirqs_off()
+> > 
+> > Signed-off-by: Yi Li <yi.li@analog.com>
+> 
+> 
+> 
+> Good catch!
+> 
+> However, may be we should keep the local_irq_save there
+> and have __raw_atomic_* versions only for tracing.
+> 
+> It's better to keep track of most irq disabled sites.
+> 
+> Why not something like the following (untested):
+Yes. I agree this is better solution.
 
-This still misses 'volatile'.
+-Yi
 
-	Arnd
