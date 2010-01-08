@@ -1,77 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753178Ab0AHLwy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753288Ab0AHLyw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753178Ab0AHLwy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jan 2010 06:52:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752774Ab0AHLwx
+	id S1753288Ab0AHLyw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jan 2010 06:54:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753147Ab0AHLyt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jan 2010 06:52:53 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:54950 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752552Ab0AHLww (ORCPT
+	Fri, 8 Jan 2010 06:54:49 -0500
+Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:57975 "EHLO
+	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752774Ab0AHLyq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jan 2010 06:52:52 -0500
-Date: Fri, 8 Jan 2010 11:54:06 +0000
-From: Jamie Iles <jamie@jamieiles.com>
-To: Arnaldo Carvalho de Melo <acme@infradead.org>
-Cc: Jamie Iles <jamie.iles@picochip.com>, linux-kernel@vger.kernel.org,
-       Jamie Iles <jamie@jamieiles.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH] perf symbols: don't use modules or try vmlinux unless
-	needed
-Message-ID: <20100108115406.GL4179@wear.picochip.com>
-References: <1262600634-6628-1-git-send-email-jamie.iles@picochip.com> <20100108113657.GE12660@ghostprotocols.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100108113657.GE12660@ghostprotocols.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 8 Jan 2010 06:54:46 -0500
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-type: TEXT/PLAIN
+Date: Fri, 08 Jan 2010 03:53:13 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+Subject: [PATCH 3/5] sparseirq: change irq_desc_ptrs to static
+In-reply-to: <1262951595-1729-1-git-send-email-yinghai@kernel.org>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Jesse Brandeburg <jesse.brandeburg@intel.com>
+Cc: linux-kernel@vger.kernel.org, Yinghai Lu <yinghai@kernel.org>
+Message-id: <1262951595-1729-3-git-send-email-yinghai@kernel.org>
+X-Mailer: git-send-email 1.6.4.2
+References: <1262951595-1729-1-git-send-email-yinghai@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 08, 2010 at 09:36:57AM -0200, Arnaldo Carvalho de Melo wrote:
-> Ecanfcan Mon, Jan 04, 2010 at 10:23:54AM +0000, Jamie Iles escreveu:
-> > Commit 75be6cf (perf symbols: Make symbol_conf global) does what it says
-> > on the tin, but also initialises the member fields use_modules and
-> > try_vmlinux_path to true rather than the 'false' value they would have
-> > had when symbol_conf was static.
-> > 
-> > When there is no vmlinux on the system and modules loaded, perf top will
-> > not show any kernel symbols and perf report will only list raw IP's
-> > rather than symbol names. Unloading the modules will allow perf to give
-> > normal output.
-> > 
-> > Restore previous behaviour by initialising these fields to false.
-> 
-> James,
-> 
-> 	I just tried using perf top here in such conditions:
-> 
-[snip]
-> 
-> And it is resolving the kernel symbols.
-> 
-> Maybe some changes I made that aren't yet in Ingo's tree or upstream
-> fixed it, can you please try after those patches are merged?
-Ok, could you let me know when the relevant ones are in there? From todays
-next tree, without the patch I still only get userspace symbols (system loaded
-with 'dd if=/dev/zero of=/dev/null' to make sure it's busy):
+add replace_irq_desc()
 
-               49.00 17.6% T.276                   /root/tools/perf    
-               25.00  9.0% __GI_strcmp             /lib/libc-2.8.so    
-               21.00  7.6% symbol_filter           /root/tools/perf    
-               17.00  6.1% strncmp                 /root/tools/perf    
-	       ...
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 
-But with the patch applied output looks good:
+---
+ kernel/irq/handle.c       |    8 +++++++-
+ kernel/irq/internals.h    |    6 +-----
+ kernel/irq/numa_migrate.c |    4 ++--
+ 3 files changed, 10 insertions(+), 8 deletions(-)
 
-              597.00 17.0% _raw_spin_unlock_irq        [kernel.kallsyms]
-              589.00 16.8% lock_acquire                [kernel.kallsyms]
-              367.00 10.4% _raw_spin_unlock_irqrestore [kernel.kallsyms]
-              230.00  6.5% vector_swi                  [kernel.kallsyms]
-              122.00  3.5% __memzero                   [kernel.kallsyms]
-               71.00  2.0% lock_release                [kernel.kallsyms]
-	       ...
-
-Jamie
+Index: linux-2.6/kernel/irq/handle.c
+===================================================================
+--- linux-2.6.orig/kernel/irq/handle.c
++++ linux-2.6/kernel/irq/handle.c
+@@ -127,7 +127,7 @@ static void init_one_irq_desc(int irq, s
+  */
+ DEFINE_RAW_SPINLOCK(sparse_irq_lock);
+ 
+-struct irq_desc **irq_desc_ptrs __read_mostly;
++static struct irq_desc **irq_desc_ptrs __read_mostly;
+ 
+ static struct irq_desc irq_desc_legacy[NR_IRQS_LEGACY] __cacheline_aligned_in_smp = {
+ 	[0 ... NR_IRQS_LEGACY-1] = {
+@@ -192,6 +192,12 @@ struct irq_desc *irq_to_desc(unsigned in
+ 	return NULL;
+ }
+ 
++void replace_irq_desc(unsigned int irq, struct irq_desc *desc)
++{
++	if (irq_desc_ptrs && irq < nr_irqs)
++		irq_desc_ptrs[irq] = desc;
++}
++
+ struct irq_desc * __ref irq_to_desc_alloc_node(unsigned int irq, int node)
+ {
+ 	struct irq_desc *desc;
+Index: linux-2.6/kernel/irq/internals.h
+===================================================================
+--- linux-2.6.orig/kernel/irq/internals.h
++++ linux-2.6/kernel/irq/internals.h
+@@ -21,11 +21,7 @@ extern void clear_kstat_irqs(struct irq_
+ extern raw_spinlock_t sparse_irq_lock;
+ 
+ #ifdef CONFIG_SPARSE_IRQ
+-/* irq_desc_ptrs allocated at boot time */
+-extern struct irq_desc **irq_desc_ptrs;
+-#else
+-/* irq_desc_ptrs is a fixed size array */
+-extern struct irq_desc *irq_desc_ptrs[NR_IRQS];
++void replace_irq_desc(unsigned int irq, struct irq_desc *desc);
+ #endif
+ 
+ #ifdef CONFIG_PROC_FS
+Index: linux-2.6/kernel/irq/numa_migrate.c
+===================================================================
+--- linux-2.6.orig/kernel/irq/numa_migrate.c
++++ linux-2.6/kernel/irq/numa_migrate.c
+@@ -70,7 +70,7 @@ static struct irq_desc *__real_move_irq_
+ 	raw_spin_lock_irqsave(&sparse_irq_lock, flags);
+ 
+ 	/* We have to check it to avoid races with another CPU */
+-	desc = irq_desc_ptrs[irq];
++	desc = irq_to_desc(irq);
+ 
+ 	if (desc && old_desc != desc)
+ 		goto out_unlock;
+@@ -90,7 +90,7 @@ static struct irq_desc *__real_move_irq_
+ 		goto out_unlock;
+ 	}
+ 
+-	irq_desc_ptrs[irq] = desc;
++	replace_irq_desc(irq, desc);
+ 	raw_spin_unlock_irqrestore(&sparse_irq_lock, flags);
+ 
+ 	/* free the old one */
