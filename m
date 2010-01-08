@@ -1,58 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752743Ab0AHJLn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752807Ab0AHJPQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752743Ab0AHJLn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jan 2010 04:11:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752116Ab0AHJLm
+	id S1752807Ab0AHJPQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jan 2010 04:15:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752322Ab0AHJPP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jan 2010 04:11:42 -0500
-Received: from nwd2mail11.analog.com ([137.71.25.57]:11044 "EHLO
-	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751993Ab0AHJLm (ORCPT
+	Fri, 8 Jan 2010 04:15:15 -0500
+Received: from mga09.intel.com ([134.134.136.24]:44784 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751112Ab0AHJPN convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jan 2010 04:11:42 -0500
-X-IronPort-AV: E=Sophos;i="4.49,241,1262581200"; 
-   d="scan'208";a="11291510"
-Subject: Re: [PATCH] Ftrace: irqsoff tracer may cause stack overflow
-From: Li Yi <yi.li@analog.com>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-CC: rostedt@goodmis.org, linux-kernel@vger.kernel.org,
-       uclinux-dist-devel@blackfin.uclinux.org
-In-Reply-To: <20100108051847.GB5468@nowhere>
-References: <1262925925.27700.15.camel@adam-desktop>
-	 <20100108051847.GB5468@nowhere>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 8 Jan 2010 17:13:15 +0800
-Message-ID: <1262941995.27700.282.camel@adam-desktop>
+	Fri, 8 Jan 2010 04:15:13 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,241,1262592000"; 
+   d="scan'208";a="482389516"
+From: "Zhang, Xiantao" <xiantao.zhang@intel.com>
+To: Gabor Gombas <gombasg@sztaki.hu>
+CC: Roel Kluin <roel.kluin@gmail.com>,
+       "kvm-ia64@vger.kernel.org" <kvm-ia64@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Date: Fri, 8 Jan 2010 17:14:25 +0800
+Subject: RE: [PATCH] KVM: dereference of NULL pointer in set_pal_result()
+Thread-Topic: [PATCH] KVM: dereference of NULL pointer in set_pal_result()
+Thread-Index: AcqQMeNH9yyhCx5aQr2vdQpCo80pMQAEPa8A
+Message-ID: <EB8593BCECAB3D40A8248BE0B6400A38318A1443@shzsmsx502.ccr.corp.intel.com>
+References: <4B465C2D.8030303@gmail.com>
+ <EB8593BCECAB3D40A8248BE0B6400A38315E5831@shzsmsx502.ccr.corp.intel.com>
+ <20100108071200.GB15621@boogie.lpds.sztaki.hu>
+In-Reply-To: <20100108071200.GB15621@boogie.lpds.sztaki.hu>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 08 Jan 2010 09:11:36.0357 (UTC) FILETIME=[94498D50:01CA9042]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2010-01-08 at 06:18 +0100, Frederic Weisbecker wrote:
-> On Fri, Jan 08, 2010 at 12:45:25PM +0800, Li Yi wrote:
-> > "irqsoff" tracer may cause stack overflow on architectures using
-> > asm-generic/atomic.h, due to recursive invoking of, e.g.
-> > trace_hardirqs_off().
-> > 
-> > trace_hardirqs_off() -> start_critical_timing() -> atomic_inc() ->
-> > atomic_add_return() -> local_irq_save() -> trace_hardirqs_off()
-> > 
-> > Signed-off-by: Yi Li <yi.li@analog.com>
+Gabor Gombas wrote:
+> On Fri, Jan 08, 2010 at 07:28:57AM +0800, Zhang, Xiantao wrote:
 > 
+>> For the check "(p && p->exit_reason == EXIT_REASON_PAL_CALL", if p
+>> is NULL, the reference about "p->exit_reason ==
+>> EXIT_REASON_PAL_CALL" won't be checked any more, so no issue here.  
 > 
+>>> diff --git a/arch/ia64/kvm/kvm_fw.c b/arch/ia64/kvm/kvm_fw.c
+>>> index e4b8231..d28494f 100644
+>>> --- a/arch/ia64/kvm/kvm_fw.c
+>>> +++ b/arch/ia64/kvm/kvm_fw.c
+>>> @@ -75,9 +75,11 @@ static void set_pal_result(struct kvm_vcpu
+>>> *vcpu,  	struct exit_ctl_data *p; 
+>>> 
+>>>  	p = kvm_get_exit_data(vcpu);
+>>> -	if (p && p->exit_reason == EXIT_REASON_PAL_CALL) { +	if (!p)
+>>> +		return;
+>>> +	if (p->exit_reason == EXIT_REASON_PAL_CALL) {
+>>>  		p->u.pal_data.ret = result;
+>>> -		return ;
+>>> +		return;
+>>>  	}
+>>>  	INIT_PAL_STATUS_UNIMPLEMENTED(p->u.pal_data.ret);
 > 
-> Good catch!
-> 
-> However, may be we should keep the local_irq_save there
-> and have __raw_atomic_* versions only for tracing.
-> 
-> It's better to keep track of most irq disabled sites.
-> 
-> Why not something like the following (untested):
-Yes. I agree this is better solution.
-
--Yi
-
+> IMHO it's not the test but the INIT_PAL_STATUS_UNIMPLEMENTED() that
+> does the unwanted dereferencing, and that's fixed by the patch.
+Make sense. 
+Xiantao
