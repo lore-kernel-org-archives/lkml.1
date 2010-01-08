@@ -1,125 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754042Ab0AHQqm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754038Ab0AHQsM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754042Ab0AHQqm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jan 2010 11:46:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754017Ab0AHQql
+	id S1754038Ab0AHQsM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jan 2010 11:48:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753982Ab0AHQsL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jan 2010 11:46:41 -0500
-Received: from mail.cs.nmsu.edu ([128.123.64.3]:43922 "EHLO mail.cs.nmsu.edu"
+	Fri, 8 Jan 2010 11:48:11 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:8864 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754011Ab0AHQqk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jan 2010 11:46:40 -0500
-Message-ID: <afb1408fa27fc03b71f07d39513c2719.squirrel@intranet.cs.nmsu.edu>
-In-Reply-To: <4B473F64.2010203@debian.org>
-References: <200912142122.nBELMW7d001243@mustang.cs.nmsu.edu>
-    <45a44e481001041557t1f87f8d4i959abbbee0c4346@mail.gmail.com>
-    <635ab1237a6a988656a2bf28e488f656.squirrel@intranet.cs.nmsu.edu>
-    <4B473F64.2010203@debian.org>
-Date: Fri, 8 Jan 2010 09:45:30 -0700
-Subject: Re: [PATCH] Logitech G13 driver (fixed cc list --- ignore others)
-From: "Rick L. Vinyard, Jr." <rvinyard@cs.nmsu.edu>
-To: "Giacomo A. Catenazzi" <cate@debian.org>
-Cc: "Jaya Kumar" <jayakumar.lkml@gmail.com>, linux-kernel@vger.kernel.org,
-       krzysztof.h1@wp.pl, akpm@linux-foundation.org,
-       linux-usb@vger.kernel.org, oliver@neukum.org,
-       linux-input@vger.kernel.org, jkosina@suse.cz,
-       linux-fbdev@vger.kernel.org
-User-Agent: SquirrelMail/1.4.19
+	id S1753845Ab0AHQsJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jan 2010 11:48:09 -0500
+Date: Fri, 8 Jan 2010 18:47:09 +0200
+From: Gleb Natapov <gleb@redhat.com>
+To: Marcelo Tosatti <mtosatti@redhat.com>
+Cc: kvm@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       avi@redhat.com, mingo@elte.hu, a.p.zijlstra@chello.nl,
+       tglx@linutronix.de, hpa@zytor.com, riel@redhat.com,
+       cl@linux-foundation.org
+Subject: Re: [PATCH v3 00/12] KVM: Add host swap event notifications for PV
+ guest
+Message-ID: <20100108164709.GA15187@redhat.com>
+References: <1262700774-1808-1-git-send-email-gleb@redhat.com>
+ <20100108161828.GA30404@amt.cnet>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100108161828.GA30404@amt.cnet>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Fri, Jan 08, 2010 at 02:18:28PM -0200, Marcelo Tosatti wrote:
+> On Tue, Jan 05, 2010 at 04:12:42PM +0200, Gleb Natapov wrote:
+> > KVM virtualizes guest memory by means of shadow pages or HW assistance
+> > like NPT/EPT. Not all memory used by a guest is mapped into the guest
+> > address space or even present in a host memory at any given time.
+> > When vcpu tries to access memory page that is not mapped into the guest
+> > address space KVM is notified about it. KVM maps the page into the guest
+> > address space and resumes vcpu execution. If the page is swapped out
+> > from host memory vcpu execution is suspended till the page is not swapped
+> > into the memory again. This is inefficient since vcpu can do other work
+> > (run other task or serve interrupts) while page gets swapped in.
+> > 
+> > To overcome this inefficiency this patch series implements "asynchronous
+> > page fault" for paravirtualized KVM guests. If a page that vcpu is
+> > trying to access is swapped out KVM sends an async PF to the vcpu
+> > and continues vcpu execution. Requested page is swapped in by another
+> > thread in parallel.  When vcpu gets async PF it puts faulted task to
+> > sleep until "wake up" interrupt is delivered. When the page is brought
+> > to the host memory KVM sends "wake up" interrupt and the guest's task
+> > resumes execution.
+> 
+> Some high level comments:
+> 
+> - cr2 used as token: better use the shared region? what if:
+>  
+>  async pf queued
+>  guest triple faults without a vmexit
+>  inject async-pf-done with token in cr2
+> 
+> Also, in such scenario, can't you potentially corrupt guest memory after
+> the triple fault by writing to the previously registered shared region
+> address?
+> 
+After triple faults guest will reboot and this should clear all pending
+async pf injections. I'll check that this is indeed happens.
 
-Giacomo A. Catenazzi wrote:
-> On 07.01.2010 16:59, Rick L. Vinyard, Jr. wrote:
->> Jaya Kumar wrote:
->>> On Tue, Dec 15, 2009 at 5:22 AM, Rick L. Vinyard Jr.
->>> <rvinyard@cs.nmsu.edu>  wrote:
->>>> Additionally, this device contains a 160x43 monochrome LCD display.
->>>> A registered framebuffer device manages this display. The design
->>>> of this portion of the driver was based on the design of the
->>>> hecubafb driver with deferred framebuffer I/O since there is
->>>> no real memory to map.
->>>
->>> Hi Rick,
->>>
->>> Interesting work. I recommend CCing linux-fbdev@vger.kernel.org too
->>> since it contains a fbdev interface.
->>>
->>
->> Thanks. Added.
->>
->>>> +config LOGITECH_G13
->>>> +       tristate "Logitech G13 gameboard support"
->>>> +       depends on HID_LOGITECH
->>>> +       depends on FB
->>>> +       select FB_SYS_FILLRECT
->>>> +       select FB_SYS_COPYAREA
->>>> +       select FB_SYS_IMAGEBLIT
->>>> +       select FB_SYS_FOPS
->
-> Sorry to enter in this discussion so late.
->
-> What about g15 keyboards and related keyboards?
->
-> It would nice if your driver could handle also the other keyboards.
->
+> - The token can overflow relatively easy. Use u64?
+It not only can it frequently does, but since there can't be 2^20
+outstanding page faults per vcpu simultaneously this doesn't cause
+any problem.
 
-I don't have one to test. Technically _I_ don't even have a g13. The two I
-currently have are borrowed.
+> 
+> - Does it really inject interrupts for non-pv guests while waiting
+> for swapin? Can't see that. Wish it was more geared towards fv.
+> 
+No it does not yet. I only started to play with this to see how it can
+work.
 
-> The package g15daemon handles such keyboards (or LCD screens):
->
-> # Logitech g11 -- extra keys, no LCD
-> # Logitech G15 (blue) -- extra keys and LCD
-> # Logitech G15 v2 (orange) -- extra keys and LCD
-> # Logitech Z10 -- extra keys and LCD, shared with audio, not a keyboard
-> # Logitech G15 Gamepanel -- extra keys and LCD
->
-> but using an daemon has it own problems, so I would like to
-> move the support to the kernel.
->
+> - Please share some perf numbers.
+> 
+OK.
 
-I think the ideal approach is to use a split between a userspace daemon
-and the kernel driver. I've exposed a lot of the driver to userspace
-through sysfs to allow a great deal of control through a userspace daemon
-for the G13.
+> - Limit the number of queued async pf's per guest ?
+> 
+Make sense.
 
-In particular I think a similar approach with the framebuffer for those
-devices would be particularly beneficial. It allows things such as the
-cairo library to be used to draw on the LCD which opens up the possibility
-for all kinds of userspace applets.
+> - Unify gfn_to_pfn / gfn_to_pfn_async code in the pf handlers (easier
+> to review).
+OK.
 
-> Is it ok for you?
->
-
-I don't have a problem with it, but I think there might be issues;
-especially if the feature reports are different.
-
-There is similar framebuffer code that could be shared even if the usbhid
-reports differ since the LCD image format is the same.
-
-But, I don't think the framebuffer code could be completely separated
-since the G13 uses the same interrupt pipe for images and key reports.
-That's why the framebuffer code (as minimal as it is) is inside the hid
-driver.
-
-> Could you use a more generic name for configuration?
-> (e.g. CONFIG_LOGITECH_G_SERIES)
->
-
-I don't have a problem with it, but my gut feeling is that they will be
-separate drivers. So perhaps a menu option for the G series with the G
-series drivers under it???
-
----
-
-Rick
-
-
+--
+			Gleb.
