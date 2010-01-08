@@ -1,77 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754523Ab0AHAyE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754530Ab0AHAzq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754523Ab0AHAyE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 19:54:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754506Ab0AHAyB
+	id S1754530Ab0AHAzq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 19:55:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754513Ab0AHAzq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 19:54:01 -0500
-Received: from mail-fx0-f225.google.com ([209.85.220.225]:60918 "EHLO
-	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754498Ab0AHAyB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 19:54:01 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:from:to:cc:subject:references:date:in-reply-to:message-id
-         :user-agent:mime-version:content-type;
-        b=FGFsOMnazunY2+cHqjV0hgS6RQHeUwmJ7I9zz4U6Yqdm7eTqQIznr6G51l9MR/if03
-         +UOuzwbtM/4zw9QABdVw18UvObu5EbU3ryorR/yRPgaaFmYnqftZff9hWdB/bL8ATyWj
-         yumGHfY1eEZHRlnWqwPFy6crpG8RDxLOgjIRo=
-From: Dmitry Monakhov <dmonakhov@openvz.org>
-To: Dmitry Monakhov <rjevskiy@gmail.com>
-Cc: Greg KH <gregkh@suse.de>, Thomas Voegtle <tv@lio96.de>,
-       Jan Kara <jack@suse.cz>, "Theodore Ts'o" <tytso@mit.edu>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, stable@kernel.org
-Subject: [PATCH] quota: fix reserved space management for ordinary fs
-References: <20100106234533.GC1960@kroah.com>
-	<alpine.LNX.2.00.1001071522480.5426@er-systems.de>
-	<20100107180449.GA17495@suse.de>
-	<alpine.LNX.2.00.1001072033301.26784@er-systems.de>
-	<20100107194131.GA22983@suse.de>
-	<alpine.LNX.2.00.1001072125040.26784@er-systems.de>
-	<alpine.LNX.2.00.1001072141340.26784@er-systems.de>
-	<20100107220213.GA24882@suse.de>
-	<c18d6aa21001071603hbe4935clf78984fc837e4bd@mail.gmail.com>
-Date: Fri, 08 Jan 2010 03:53:54 +0300
-In-Reply-To: <c18d6aa21001071603hbe4935clf78984fc837e4bd@mail.gmail.com>
-	(Dmitry Monakhov's message of "Fri, 8 Jan 2010 03:03:30 +0300")
-Message-ID: <87wrztpgbh.fsf_-_@openvz.org>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.50 (gnu/linux)
+	Thu, 7 Jan 2010 19:55:46 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:63015 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1754506Ab0AHAzp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jan 2010 19:55:45 -0500
+Message-ID: <4B46828C.5000703@cn.fujitsu.com>
+Date: Fri, 08 Jan 2010 08:55:40 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: "Kirill A. Shutemov" <kirill@shutemov.name>
+CC: Paul Menage <menage@google.com>, containers@lists.linux-foundation.org,
+       linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Pavel Emelyanov <xemul@openvz.org>, Dan Malek <dan@embeddedalley.com>,
+       Vladislav Buzov <vbuzov@embeddedalley.com>,
+       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
+       Alexander Shishkin <virtuoso@slind.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v5 1/4] cgroup: implement eventfd-based generic API for
+ 	notifications
+References: <cover.1262186097.git.kirill@shutemov.name>	 <9411cbdd545e1232c916bfef03a60cf95510016d.1262186098.git.kirill@shutemov.name>	 <6599ad831001061701x72098dacn7a5d916418396e33@mail.gmail.com> <cc557aab1001070436w446ef85n55dd2af5e733f55e@mail.gmail.com>
+In-Reply-To: <cc557aab1001070436w446ef85n55dd2af5e733f55e@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Kirill A. Shutemov wrote:
+> On Thu, Jan 7, 2010 at 3:01 AM, Paul Menage <menage@google.com> wrote:
+>> On Wed, Dec 30, 2009 at 7:57 AM, Kirill A. Shutemov
+>> <kirill@shutemov.name> wrote:
+>>> +
+>>> +       if (!IS_ERR(efile))
+>>> +               fput(efile);
+>> While this is OK currently, it's a bit fragile. efile starts as NULL,
+>> and IS_ERR(NULL) is false. So if we jump to fail: before trying to do
+>> the eventfd_fget() then we'll try to fput(NULL), which will oops. This
+>> works because we don't currently jump to fail: until after
+>> eventfd_fget(), but someone could add an extra setup step between the
+>> kzalloc() and the eventfd_fget() which could fail.
+> 
+> So we need to use IS_ERR_OR_NULL here instread of IS_ERR, don't we?
+> 
 
-In fact inode_get_rsv_space() function is special in comparison
-with inode_{add,sub,claim}_rsv_space() functions, because
-it may return correct result even for fs without reserved space
-support(correct val == 0). Add trivial check for that case.
-The patch fix regression(BUG at fs/quota/dquot.c:1350) introduced
-in following commit: fd8fbfc1709822bd94247c5b2ab15a5f5041e103
+Use multi labels is much better:
 
-Signed-off-by: Dmitry Monakhov <dmonakhov@openvz.org>
----
- fs/quota/dquot.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+label4::
+	fput(cfile);
+label3:
+	eventfd_ctx_put(event->eventfd);
+label2:
+	fput(efile);
+label1:
+	kfree(event);
 
-diff --git a/fs/quota/dquot.c b/fs/quota/dquot.c
-index dea86ab..d9f06cf 100644
---- a/fs/quota/dquot.c
-+++ b/fs/quota/dquot.c
-@@ -1377,6 +1377,8 @@ static void inode_sub_rsv_space(struct inode *inode, qsize_t number)
- static qsize_t inode_get_rsv_space(struct inode *inode)
- {
- 	qsize_t ret;
-+	if (!inode->i_sb->dq_op->get_reserved_space)
-+		return 0;
- 	spin_lock(&inode->i_lock);
- 	ret = *inode_reserved_space(inode);
- 	spin_unlock(&inode->i_lock);
--- 
-1.6.3.3
+compared to:
 
-
++fail:
++	if (!IS_ERR(cfile))
++		fput(cfile);
++
++	if (event && event->eventfd && !IS_ERR(event->eventfd))
++		eventfd_ctx_put(event->eventfd);
++
++	if (!IS_ERR(efile))
++		fput(efile);
++
++	kfree(event);
 
