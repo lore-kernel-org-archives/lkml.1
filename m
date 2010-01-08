@@ -1,130 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751178Ab0AHFPU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751350Ab0AHFQr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751178Ab0AHFPU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jan 2010 00:15:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750974Ab0AHFPT
+	id S1751350Ab0AHFQr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jan 2010 00:16:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751144Ab0AHFQq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jan 2010 00:15:19 -0500
-Received: from qw-out-2122.google.com ([74.125.92.26]:28649 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750890Ab0AHFPS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jan 2010 00:15:18 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:from:date:message-id:subject:to:cc:content-type;
-        b=jbc+2NZl8XhdB3xiKeXOzqxKkEn2zlVsFhu3CZeP4Etq8qg8xkXpxgPxME3mz7gz/B
-         z5RnzVub9VxRN5aSnFyeouL1C3ZeFrS+nAkianoALpXVIQ28UqqZc5m6d/MzGHxetkH7
-         Szy/x46NLkCbaUtkKTdONk+K1tYKfFn72RB74=
-MIME-Version: 1.0
-From: Eric Miao <eric.y.miao@gmail.com>
-Date: Fri, 8 Jan 2010 13:14:57 +0800
-Message-ID: <f17812d71001072114g95c267cpa6dc06a636c6d9a@mail.gmail.com>
-Subject: [PATCH] gpio: introduce gpio_request_one() and friends
-To: David Brownell <david-b@pacbell.net>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>
-Content-Type: text/plain; charset=UTF-8
+	Fri, 8 Jan 2010 00:16:46 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:49319 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751136Ab0AHFQp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jan 2010 00:16:45 -0500
+Date: Fri, 8 Jan 2010 16:16:36 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Sage Weil <sage@newdream.net>
+Cc: Trond Myklebust <trond.myklebust@fys.uio.no>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
+       Wu Fengguang <fengguang.wu@intel.com>
+Subject: Re: linux-next: nfs/ceph tree build failure
+Message-Id: <20100108161636.f68b72b6.sfr@canb.auug.org.au>
+In-Reply-To: <Pine.LNX.4.64.1001072048420.7474@cobra.newdream.net>
+References: <20100108111136.3feae8c6.sfr@canb.auug.org.au>
+	<1262909913.2659.47.camel@localhost>
+	<20100108121903.6a096bc1.sfr@canb.auug.org.au>
+	<Pine.LNX.4.64.1001072048420.7474@cobra.newdream.net>
+X-Mailer: Sylpheed 3.0.0beta4 (GTK+ 2.18.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Fri__8_Jan_2010_16_16_36_+1100_Iw+OGCPxUHf6PhST"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-commit 29cd35f57699fd93a12132186d52109a55ed57e7
-Author: Eric Miao <eric.y.miao@gmail.com>
-Date:   Fri Jan 8 12:16:28 2010 +0800
+--Signature=_Fri__8_Jan_2010_16_16_36_+1100_Iw+OGCPxUHf6PhST
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-    gpio: introduce gpio_request_one() and friends
+Hi Sage,
 
-    gpio_request() without initial configuration of the GPIO is normally
-    useless, introduce gpio_request_one() together with GPIOF_ flags for
-    input/output direction and initial output level.
+On Thu, 7 Jan 2010 20:51:45 -0800 (PST) Sage Weil <sage@newdream.net> wrote:
+>
+> Okay.  I can move it to my tree as well, where I assume it'll need to be=
+=20
+> when it comes time to merge.
 
-    gpio_{request,free}_array() for multiple GPIOs.
+Well, that depends on the order that the two trees get merged into Linus'
+tree.  If you get in first, then Trond will have to fix up his tree
+before merging (or get Linus to apply my patch as a merge fixup).
 
-    Cc: David Brownell <dbrownell@users.sourceforge.net>
-    Signed-off-by: Eric Miao <eric.y.miao@gmail.com>
+One possible thing you could do is to apply both the nfs tree patch and
+my patch to your tree (or merge the nfs tree into your tree and apply the
+merge fixup), but that will cause a problem if the patch is updated in
+the nfs tree (or the nfs tree rebases) ...
 
-diff --git a/drivers/gpio/gpiolib.c b/drivers/gpio/gpiolib.c
-index a25ad28..e80a1f8 100644
---- a/drivers/gpio/gpiolib.c
-+++ b/drivers/gpio/gpiolib.c
-@@ -1239,6 +1239,48 @@ void gpio_free(unsigned gpio)
- }
- EXPORT_SYMBOL_GPL(gpio_free);
+So the easiest thing (at leas at this early stage of the development
+cycle) is for me to keep applying the merge fixup to my tree when I merge
+the later of your two trees into linux-next (this is an automated
+process).  Maybe in a few weeks we might do something different.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-+int gpio_request_one(unsigned gpio, unsigned long flags, const char *label)
-+{
-+	int err;
-+
-+	err = gpio_request(gpio, label);
-+	if (err)
-+		return err;
-+
-+	if (flags & GPIOF_DIR_IN)
-+		err = gpio_direction_input(gpio);
-+	else
-+		err = gpio_direction_output(gpio,
-+				(flags & GPIOF_INIT_HIGH) ? 1 : 0);
-+
-+	return err;
-+}
-+EXPORT_SYMBOL_GPL(gpio_request_one);
-+
-+int gpio_request_array(struct gpio *array, size_t num)
-+{
-+	int i, err;
-+
-+	for (i = 0; i < num; i++, array++) {
-+		err = gpio_request_one(array->gpio, array->flags, array->label);
-+		if (err)
-+			goto err_free;
-+	}
-+	return 0;
-+
-+err_free:
-+	while (i--)
-+		gpio_free((--array)->gpio);
-+	return err;
-+}
-+EXPORT_SYMBOL_GPL(gpio_request_array);
-+
-+void gpio_free_array(struct gpio *array, size_t num)
-+{
-+	while (num--)
-+		gpio_free((array++)->gpio);
-+}
-+EXPORT_SYMBOL_GPL(gpio_free_array);
+--Signature=_Fri__8_Jan_2010_16_16_36_+1100_Iw+OGCPxUHf6PhST
+Content-Type: application/pgp-signature
 
- /**
-  * gpiochip_is_requested - return string iff signal was requested
-diff --git a/include/asm-generic/gpio.h b/include/asm-generic/gpio.h
-index 485eeb6..a9e0b94 100644
---- a/include/asm-generic/gpio.h
-+++ b/include/asm-generic/gpio.h
-@@ -136,6 +136,26 @@ extern int __gpio_cansleep(unsigned gpio);
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
 
- extern int __gpio_to_irq(unsigned gpio);
+iEYEARECAAYFAktGv7QACgkQjjKRsyhoI8yKSwCgk/g/eF0VGWujsVYMXTCbMwZZ
+QE8AoJ6rljv+LFZDqh/Iy28f2xf6zc+a
+=mAUa
+-----END PGP SIGNATURE-----
 
-+#define GPIOF_DIR_OUT	(0 << 0)
-+#define GPIOF_DIR_IN	(1 << 0)
-+
-+#define GPIOF_INIT_LOW	(0 << 1)
-+#define GPIOF_INIT_HIGH	(1 << 1)
-+
-+#define GPIOF_IN		(GPIO_DIR_IN)
-+#define GPIOF_OUT_INIT_LOW	(GPIO_DIR_OUT | GPIO_INIT_LOW)
-+#define GPIOF_OUT_INIT_HIGH	(GPIO_DIR_OUT | GPIO_INIT_HIGH)
-+
-+struct gpio {
-+	unsigned	gpio;
-+	unsigned long	flags;
-+	const char	*label;
-+};
-+
-+extern int gpio_request_one(unsigned gpio, unsigned long flags, const
-char *label);
-+extern int gpio_request_array(struct gpio *array, size_t num);
-+extern void gpio_free_array(struct gpio *array, size_t num);
-+
- #ifdef CONFIG_GPIO_SYSFS
-
- /*
+--Signature=_Fri__8_Jan_2010_16_16_36_+1100_Iw+OGCPxUHf6PhST--
