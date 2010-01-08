@@ -1,99 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751017Ab0AHFNl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751178Ab0AHFPU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751017Ab0AHFNl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jan 2010 00:13:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750848Ab0AHFNk
+	id S1751178Ab0AHFPU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jan 2010 00:15:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750974Ab0AHFPT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jan 2010 00:13:40 -0500
-Received: from mail-gx0-f211.google.com ([209.85.217.211]:60760 "EHLO
-	mail-gx0-f211.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750754Ab0AHFNj (ORCPT
+	Fri, 8 Jan 2010 00:15:19 -0500
+Received: from qw-out-2122.google.com ([74.125.92.26]:28649 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750890Ab0AHFPS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jan 2010 00:13:39 -0500
+	Fri, 8 Jan 2010 00:15:18 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:x-mailer:mime-version
-         :content-type:content-transfer-encoding;
-        b=kC1ILNSyI6W9Fezhyes2MAlN7467iAhupzFIlmRcP9439qhLi6uCmujI2f68cbx1eS
-         0ocLyyIAB/uZxUTixrwPYU7Sf5aFZldWdIZnqtDo66VIx8ln1rvVN2lEeqzm5/vZXl4S
-         jTS1mqzQ8w6a2eKCqiM/TpjbLsJ2yMAHnZMMg=
-Date: Fri, 8 Jan 2010 14:12:35 +0900
-From: Minchan Kim <minchan.kim@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Mel Gorman <mel@csn.ul.ie>, Rik van Riel <riel@redhat.com>,
-       linux-mm <linux-mm@kvack.org>, lkml <linux-kernel@vger.kernel.org>
-Subject: [PATCH -mmotm-2010-01-06-14-34] check high watermark after shrink
- zone
-Message-Id: <20100108141235.ef56b567.minchan.kim@barrios-desktop>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+        h=mime-version:from:date:message-id:subject:to:cc:content-type;
+        b=jbc+2NZl8XhdB3xiKeXOzqxKkEn2zlVsFhu3CZeP4Etq8qg8xkXpxgPxME3mz7gz/B
+         z5RnzVub9VxRN5aSnFyeouL1C3ZeFrS+nAkianoALpXVIQ28UqqZc5m6d/MzGHxetkH7
+         Szy/x46NLkCbaUtkKTdONk+K1tYKfFn72RB74=
+MIME-Version: 1.0
+From: Eric Miao <eric.y.miao@gmail.com>
+Date: Fri, 8 Jan 2010 13:14:57 +0800
+Message-ID: <f17812d71001072114g95c267cpa6dc06a636c6d9a@mail.gmail.com>
+Subject: [PATCH] gpio: introduce gpio_request_one() and friends
+To: David Brownell <david-b@pacbell.net>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kswapd check that zone have enough free by zone_water_mark.
-If any zone doesn't have enough page, it set all_zones_ok to zero.
-all_zone_ok makes kswapd retry not sleeping.
+commit 29cd35f57699fd93a12132186d52109a55ed57e7
+Author: Eric Miao <eric.y.miao@gmail.com>
+Date:   Fri Jan 8 12:16:28 2010 +0800
 
-I think the watermark check before shrink zone is pointless.
-Kswapd try to shrink zone then the check is meaningul.
+    gpio: introduce gpio_request_one() and friends
 
-This patch move the check after shrink zone.
-Signed-off-by: Minchan Kim <minchan.kim@gmail.com>
-CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-CC: Mel Gorman <mel@csn.ul.ie>
-CC: Rik van Riel <riel@redhat.com>
----
- mm/vmscan.c |   21 +++++++++++----------
- 1 files changed, 11 insertions(+), 10 deletions(-)
+    gpio_request() without initial configuration of the GPIO is normally
+    useless, introduce gpio_request_one() together with GPIOF_ flags for
+    input/output direction and initial output level.
 
-diff --git a/mm/vmscan.c b/mm/vmscan.c
-index 885207a..b81adf8 100644
---- a/mm/vmscan.c
-+++ b/mm/vmscan.c
-@@ -2057,9 +2057,6 @@ loop_again:
- 					priority != DEF_PRIORITY)
- 				continue;
- 
--			if (!zone_watermark_ok(zone, order,
--					high_wmark_pages(zone), end_zone, 0))
--				all_zones_ok = 0;
- 			temp_priority[i] = priority;
- 			sc.nr_scanned = 0;
- 			note_zone_scanning_priority(zone, priority);
-@@ -2099,13 +2096,17 @@ loop_again:
- 			    total_scanned > sc.nr_reclaimed + sc.nr_reclaimed / 2)
- 				sc.may_writepage = 1;
- 
--			/*
--			 * We are still under min water mark. it mean we have
--			 * GFP_ATOMIC allocation failure risk. Hurry up!
--			 */
--			if (!zone_watermark_ok(zone, order, min_wmark_pages(zone),
--					      end_zone, 0))
--				has_under_min_watermark_zone = 1;
-+			if (!zone_watermark_ok(zone, order,
-+					high_wmark_pages(zone), end_zone, 0)) {
-+				all_zones_ok = 0;
-+				/*
-+				 * We are still under min water mark. it mean we have
-+				 * GFP_ATOMIC allocation failure risk. Hurry up!
-+				 */
-+				if (!zone_watermark_ok(zone, order, min_wmark_pages(zone),
-+						      end_zone, 0))
-+					has_under_min_watermark_zone = 1;
-+			}
- 
- 		}
- 		if (all_zones_ok)
--- 
-1.5.6.3
+    gpio_{request,free}_array() for multiple GPIOs.
 
+    Cc: David Brownell <dbrownell@users.sourceforge.net>
+    Signed-off-by: Eric Miao <eric.y.miao@gmail.com>
 
+diff --git a/drivers/gpio/gpiolib.c b/drivers/gpio/gpiolib.c
+index a25ad28..e80a1f8 100644
+--- a/drivers/gpio/gpiolib.c
++++ b/drivers/gpio/gpiolib.c
+@@ -1239,6 +1239,48 @@ void gpio_free(unsigned gpio)
+ }
+ EXPORT_SYMBOL_GPL(gpio_free);
 
--- 
-Kind regards,
-Minchan Kim
++int gpio_request_one(unsigned gpio, unsigned long flags, const char *label)
++{
++	int err;
++
++	err = gpio_request(gpio, label);
++	if (err)
++		return err;
++
++	if (flags & GPIOF_DIR_IN)
++		err = gpio_direction_input(gpio);
++	else
++		err = gpio_direction_output(gpio,
++				(flags & GPIOF_INIT_HIGH) ? 1 : 0);
++
++	return err;
++}
++EXPORT_SYMBOL_GPL(gpio_request_one);
++
++int gpio_request_array(struct gpio *array, size_t num)
++{
++	int i, err;
++
++	for (i = 0; i < num; i++, array++) {
++		err = gpio_request_one(array->gpio, array->flags, array->label);
++		if (err)
++			goto err_free;
++	}
++	return 0;
++
++err_free:
++	while (i--)
++		gpio_free((--array)->gpio);
++	return err;
++}
++EXPORT_SYMBOL_GPL(gpio_request_array);
++
++void gpio_free_array(struct gpio *array, size_t num)
++{
++	while (num--)
++		gpio_free((array++)->gpio);
++}
++EXPORT_SYMBOL_GPL(gpio_free_array);
+
+ /**
+  * gpiochip_is_requested - return string iff signal was requested
+diff --git a/include/asm-generic/gpio.h b/include/asm-generic/gpio.h
+index 485eeb6..a9e0b94 100644
+--- a/include/asm-generic/gpio.h
++++ b/include/asm-generic/gpio.h
+@@ -136,6 +136,26 @@ extern int __gpio_cansleep(unsigned gpio);
+
+ extern int __gpio_to_irq(unsigned gpio);
+
++#define GPIOF_DIR_OUT	(0 << 0)
++#define GPIOF_DIR_IN	(1 << 0)
++
++#define GPIOF_INIT_LOW	(0 << 1)
++#define GPIOF_INIT_HIGH	(1 << 1)
++
++#define GPIOF_IN		(GPIO_DIR_IN)
++#define GPIOF_OUT_INIT_LOW	(GPIO_DIR_OUT | GPIO_INIT_LOW)
++#define GPIOF_OUT_INIT_HIGH	(GPIO_DIR_OUT | GPIO_INIT_HIGH)
++
++struct gpio {
++	unsigned	gpio;
++	unsigned long	flags;
++	const char	*label;
++};
++
++extern int gpio_request_one(unsigned gpio, unsigned long flags, const
+char *label);
++extern int gpio_request_array(struct gpio *array, size_t num);
++extern void gpio_free_array(struct gpio *array, size_t num);
++
+ #ifdef CONFIG_GPIO_SYSFS
+
+ /*
