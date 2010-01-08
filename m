@@ -1,99 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752264Ab0AHIfG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751715Ab0AHIwa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752264Ab0AHIfG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jan 2010 03:35:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752039Ab0AHIfE
+	id S1751715Ab0AHIwa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jan 2010 03:52:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751465Ab0AHIw3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jan 2010 03:35:04 -0500
-Received: from mtagate5.de.ibm.com ([195.212.17.165]:43462 "EHLO
-	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751674Ab0AHIfB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jan 2010 03:35:01 -0500
-Date: Fri, 8 Jan 2010 09:34:52 +0100
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: Roland McGrath <roland@redhat.com>, caiqian@redhat.com,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Jan Kratochvil <jkratoch@redhat.com>, linux-kernel@vger.kernel.org,
-       linux-s390@vger.kernel.org, utrace-devel@redhat.com
-Subject: Re: s390 && user_enable_single_step() (Was: odd utrace testing
- results on s390x)
-Message-ID: <20100108093452.15101939@mschwide.boeblingen.de.ibm.com>
-In-Reply-To: <20100107181632.GC13300@redhat.com>
-References: <1503844142.2061111261478093776.JavaMail.root@zmail06.collab.prod.int.phx2.redhat.com>
-	<1257887498.2061171261478252049.JavaMail.root@zmail06.collab.prod.int.phx2.redhat.com>
-	<20100104155225.GA16650@redhat.com>
-	<20100104171626.22ea2d9c@mschwide.boeblingen.de.ibm.com>
-	<20100104181412.GA21146@redhat.com>
-	<20100104211147.4CC94D532@magilla.sf.frob.com>
-	<20100105105030.66bb8a0a@mschwide.boeblingen.de.ibm.com>
-	<20100105153633.GA9376@redhat.com>
-	<20100106210812.E03A1134D@magilla.sf.frob.com>
-	<20100107101619.0877cf67@mschwide.boeblingen.de.ibm.com>
-	<20100107181632.GC13300@redhat.com>
-Organization: IBM Corporation
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.18.5; i486-pc-linux-gnu)
+	Fri, 8 Jan 2010 03:52:29 -0500
+Received: from sh.osrg.net ([192.16.179.4]:49218 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750709Ab0AHIw3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jan 2010 03:52:29 -0500
+Date: Fri, 8 Jan 2010 17:52:20 +0900
+To: adharmap@codeaurora.org
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: RFC non barrier versions of dma_map functions 
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <4B4279A1.4090706@codeaurora.org>
+References: <4B4279A1.4090706@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-Id: <20100108175201Z.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Fri, 08 Jan 2010 17:52:21 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 7 Jan 2010 19:16:32 +0100
-Oleg Nesterov <oleg@redhat.com> wrote:
+On Mon, 04 Jan 2010 15:28:33 -0800
+Abhijeet Dharmapurikar <adharmap@codeaurora.org> wrote:
 
-> On 01/07, Martin Schwidefsky wrote:
-> >
-> > On Wed,  6 Jan 2010 13:08:12 -0800 (PST)
-> > Roland McGrath <roland@redhat.com> wrote:
-> >
-> > > That's what tracehook_signal_handler is for.  You're both doing it yourself
-> > > in the arch code (by setting TIF_SINGLE_STEP), and then telling the generic
-> > > code to do it (by passing stepping=1 to tracehook_signal_handler).
-> >
-> > Ok, so with the full utrace the semantics of tracehook_signal_handler
-> > is more than just causing a SIGTRAP. It is an indication for a signal
-> > AND a SIGTRAP if single-stepping is active. To make both cases work we
-> > should stop setting TIF_SINGLE_STEP in do_signal and pass
-> > current->thread.per_info.single_step to tracehook_signal_handler
-> > instead of test_thread_flag(TIF_SINGLE_STEP).
+>    This is a request for extending the DMA api for efficient handling of 
+> multiple buffers or scatter gather mapping/unmapping operations.
 > 
-> Can't understand why do we need TIF_SINGLE_STEP at all.
+>    I am based on an ARMv7 device and we have a situation where we need 
+> to dma map multiple cached buffers for a single dma transaction.
 > 
-> Just pass current->thread.per_info.single_step to
-> tracehook_signal_handler() ?
-> 
-> Oleg.
-> 
-> --- a/arch/s390/kernel/signal.c
-> +++ b/arch/s390/kernel/signal.c
-> @@ -504,14 +504,8 @@ void do_signal(struct pt_regs *regs)
->  			 * for a normal instruction, act like we took
->  			 * one for the handler setup.
->  			 */
-> -			if (current->thread.per_info.single_step)
-> -				set_thread_flag(TIF_SINGLE_STEP);
-> -
-> -			/*
-> -			 * Let tracing know that we've done the handler setup.
-> -			 */
->  			tracehook_signal_handler(signr, &info, &ka, regs,
-> -					 test_thread_flag(TIF_SINGLE_STEP));
-> +					 current->thread.per_info.single_step);
->  		}
->  		return;
->  	}
-> 
+>    The current DMA api suggests the use of dma_map_single/ 
+> dma_unmap_single for cache consistency. On ARMv7 it performs the 
+> necessary cache-operations and calls data sync barrier instruction 
+> (DSB). In our case we would be executing multiple DSB instructions
+> before starting the dma operation - we need memory to be consistent
+> only after we map the last buffer.
 
-That is what I meant in the other mail. The patch on my local disk
-looks almost the same but it removes the comment prior to the
-TIF_SINGLE_STEP if statement as well.
-
--- 
-blue skies,
-   Martin.
-
-"Reality continues to ruin my life." - Calvin.
-
+dma_map_sg? dma_map_sg requires the buffers to be consistent only
+after it maps the last buffer, I think (I guess that you mean
+'consistent' buffer is 'DMA ready' wrt cache).
