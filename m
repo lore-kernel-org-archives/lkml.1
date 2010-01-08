@@ -1,51 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754175Ab0AHWBr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754192Ab0AHWCg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754175Ab0AHWBr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jan 2010 17:01:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754123Ab0AHWBq
+	id S1754192Ab0AHWCg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jan 2010 17:02:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754136Ab0AHWCf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jan 2010 17:01:46 -0500
-Received: from mail2.shareable.org ([80.68.89.115]:36301 "EHLO
-	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754109Ab0AHWBq (ORCPT
+	Fri, 8 Jan 2010 17:02:35 -0500
+Received: from mail-fx0-f225.google.com ([209.85.220.225]:36596 "EHLO
+	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754123Ab0AHWCe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jan 2010 17:01:46 -0500
-Date: Fri, 8 Jan 2010 22:01:43 +0000
-From: Jamie Lokier <jamie@shareable.org>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [PATCH] Add __devexit_p around reference to virtio_pci_remove
-Message-ID: <20100108220143.GA2133@shareable.org>
+	Fri, 8 Jan 2010 17:02:34 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=SlEsNKJnL+hMpf3NsWYe/Jgl9wgUOhSDLTX9vHirisExEPm/9F+cS4CsuLzUpCkSCZ
+         rIu14jVJ0d7eRfRXldi+mahAhD4CdL5kzO+RFgYIneu+TOBtq3vlH/k90+9BbTuZ0Lde
+         XmbWHDo/SWby/6YQjZSLROhjEpJsBu2nO4/3E=
+Date: Fri, 8 Jan 2010 23:02:28 +0100
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: Michael Breuer <mbreuer@majjas.com>
+Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
+       flyboy@gmail.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH] af_packet: Don't use skb after dev_queue_xmit()
+Message-ID: <20100108220228.GB3078@del.dom.local>
+References: <20100107180114.GB3088@del.dom.local>
+ <4B4625BD.3070202@majjas.com>
+ <20100107183545.GA3208@del.dom.local>
+ <4B462B3C.90506@majjas.com>
+ <20100107185040.GB3208@del.dom.local>
+ <4B466A26.5070506@majjas.com>
+ <20100108074539.GA6205@ff.dom.local>
+ <4B475FF9.7000702@majjas.com>
+ <20100108212923.GA3078@del.dom.local>
+ <4B47A81B.5040601@majjas.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <4B47A81B.5040601@majjas.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is needed to compile with CONFIG_VIRTIO_PCI=y,
-because virtio_pci_remove is marked __devexit.
+On Fri, Jan 08, 2010 at 04:48:11PM -0500, Michael Breuer wrote:
+> On 1/8/2010 4:29 PM, Jarek Poplawski wrote:
+> >On Fri, Jan 08, 2010 at 11:40:25AM -0500, Michael Breuer wrote:
+> >>On 1/8/2010 2:45 AM, Jarek Poplawski wrote:
+> >>...
+> >Berck Nash reported oopses during sky2 TX timeout recovery, which are
+> >generally hardware/driver problems, and shouldn't be triggered by ip
+> >level bugs, so it should be queried as a separate bug report.
+> >
+> My thought was that his crash was secondary to the netdev watchdog &
+> subsequent reset that I saw.
 
-Signed-off-by: Jamie Lokier <jamie@shareable.org>
----
- drivers/virtio/virtio_pci.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Yes, the netdev watchdog which triggers on TX timeout.
 
-diff --git a/drivers/virtio/virtio_pci.c b/drivers/virtio/virtio_pci.c
-index 28d9cf7..1d5191f 100644
---- a/drivers/virtio/virtio_pci.c
-+++ b/drivers/virtio/virtio_pci.c
-@@ -702,7 +702,7 @@ static struct pci_driver virtio_pci_driver = {
- 	.name		= "virtio-pci",
- 	.id_table	= virtio_pci_id_table,
- 	.probe		= virtio_pci_probe,
--	.remove		= virtio_pci_remove,
-+	.remove		= __devexit_p(virtio_pci_remove),
- #ifdef CONFIG_PM
- 	.suspend	= virtio_pci_suspend,
- 	.resume		= virtio_pci_resume,
--- 
-1.6.3.3
-
+Jarek P.
