@@ -1,49 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753405Ab0AHIOM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753429Ab0AHIOp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753405Ab0AHIOM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jan 2010 03:14:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753353Ab0AHIOK
+	id S1753429Ab0AHIOp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jan 2010 03:14:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753353Ab0AHIOp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jan 2010 03:14:10 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:53184
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753337Ab0AHIOJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jan 2010 03:14:09 -0500
-Date: Fri, 08 Jan 2010 00:14:16 -0800 (PST)
-Message-Id: <20100108.001416.189746434.davem@davemloft.net>
-To: bzolnier@gmail.com
-Cc: jkosina@suse.cz, peterhuewe@gmx.de, kernel-janitors@vger.kernel.org,
-       sshtylyov@ru.mvista.com, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] ide: add __init/__exit macros to
- drivers/ide/scc_pata.c
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20100108.001302.146106973.davem@davemloft.net>
-References: <alpine.LNX.2.00.1001051124150.2277@pobox.suse.cz>
-	<201001051939.07756.bzolnier@gmail.com>
-	<20100108.001302.146106973.davem@davemloft.net>
-X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Fri, 8 Jan 2010 03:14:45 -0500
+Received: from mail.gmx.net ([213.165.64.20]:32846 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1753334Ab0AHIOo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jan 2010 03:14:44 -0500
+X-Authenticated: #12255092
+X-Provags-ID: V01U2FsdGVkX19AEOoHee1A8CUrYlUGJUob3QgAIAwbgDsQetSlmO
+	Cae+HhfFbXj6ZV
+From: Peter =?iso-8859-1?q?H=FCwe?= <PeterHuewe@gmx.de>
+To: devel@driverdev.osuosl.org
+Subject: [PATCH 2/3 v2] staging/rtl8192u: Add select WEXT_PRIV to Kconfig to prevent build failure
+Date: Fri, 8 Jan 2010 09:14:38 +0100
+User-Agent: KMail/1.12.3 (Linux/2.6.27-05415-g69a8594; KDE/4.3.3; x86_64; ; )
+Cc: "Greg Kroah-Hartman" <gregkh@suse.de>, devel@driverdev.osuosl.org,
+       Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org,
+       Mauro Carvalho Chehab <mchehab@redhat.com>,
+       Simon Horman <horms@verge.net.au>
+References: <201001072133.20487.PeterHuewe@gmx.de> <201001072135.08745.PeterHuewe@gmx.de>
+In-Reply-To: <201001072135.08745.PeterHuewe@gmx.de>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <201001080914.39084.PeterHuewe@gmx.de>
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.53
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Miller <davem@davemloft.net>
-Date: Fri, 08 Jan 2010 00:13:02 -0800 (PST)
+From: Peter Huewe <peterhuewe@gmx.de>
+Date: Fri, 8 Jan 2010 09:10:13 +0100
 
-> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> Date: Tue, 5 Jan 2010 19:39:07 +0100
-> 
->> -	ide_pci_unregister_driver(&scc_pci_driver);
->> +	pci_unregister_driver(&scc_pci_driver);
-> 
-> As a side note I can't figure out how this driver can currently even
-> build without errors before this patch.
-> 
-> ide_pci_unregister_driver() isn't even defined anywhere these days.
+Without WEXT_PRIV set the driver fails to build due to unknown fields in
+the iw_handler_def struct.
+Those fields are enclosed in WEXT_PRIV conditionals in the prototype
+of iw_handler_def in include/net/iw_handler.h
 
-Ignore me, I'm an idiot, this code was commented out of course.
-:-)
+Signed-off-by: Peter Huewe <peterhuewe@gmx.de>
+---
+This time without whitespace error  - sorry about that.
+
+ drivers/staging/rtl8192u/Kconfig |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/staging/rtl8192u/Kconfig b/drivers/staging/rtl8192u/Kconfig
+index 9913ab8..d7bc35c 100644
+--- a/drivers/staging/rtl8192u/Kconfig
++++ b/drivers/staging/rtl8192u/Kconfig
+@@ -2,5 +2,6 @@ config RTL8192U
+ 	tristate "RealTek RTL8192U Wireless LAN NIC driver"
+ 	depends on PCI && WLAN && USB
+ 	depends on WIRELESS_EXT
++	select WEXT_PRIV
+ 	default N
+ 	---help---
+-- 
+1.6.4.4
+
