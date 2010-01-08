@@ -1,246 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932171Ab0AVX1F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755687Ab0AVX2i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932171Ab0AVX1F (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 18:27:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756213Ab0AVX0T
+	id S1755687Ab0AVX2i (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 18:28:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756227Ab0AVX2O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 18:26:19 -0500
-Received: from fmmailgate03.web.de ([217.72.192.234]:33270 "EHLO
+	Fri, 22 Jan 2010 18:28:14 -0500
+Received: from fmmailgate03.web.de ([217.72.192.234]:34198 "EHLO
 	fmmailgate03.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756194Ab0AVX0H (ORCPT
+	with ESMTP id S1756339Ab0AVX2J (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 18:26:07 -0500
-Message-Id: <6eeb441ec0ddbac9916d0b4cd7195895b8e9c291.1264201408.git.jan.kiszka@web.de>
+	Fri, 22 Jan 2010 18:28:09 -0500
+Message-Id: <506756781e11cfe356b16c3c74f86fe1719b04a7.1264201408.git.jan.kiszka@web.de>
 In-Reply-To: <cover.1264201406.git.jan.kiszka@web.de>
 References: <cover.1264201406.git.jan.kiszka@web.de>
 From: Jan Kiszka <jan.kiszka@web.de>
 To: David Miller <davem@davemloft.net>, Karsten Keil <isdn@linux-pingi.de>
 Cc: linux-kernel@vger.kernel.org, i4ldeveloper@listserv.isdn4linux.de,
        isdn4linux@listserv.isdn4linux.de, netdev@vger.kernel.org
-Date: Fri, 8 Jan 2010 14:38:02 +0100
-Subject: [PATCH 22/31] CAPI: Rework tty locking in RX and TX path of capiminor
-X-Provags-ID: V01U2FsdGVkX1/05SBZNWsov4QrkphiKDdSwawnJcl142DEQ91m
-	WR/ncUOo3NtKhDAhu9p3f2BdszQ7f7ua7ca/C3zAAtmXw6JCcX
-	kETqI4C7k=
+Date: Fri, 8 Jan 2010 15:11:11 +0100
+Subject: [PATCH 28/31] CAPI: Drop handle_minor_send return value
+X-Provags-ID: V01U2FsdGVkX1+9LXNML/k2TjebNUghUkNsfIN9elQIQrEIQBAB
+	ZPyQS2mFE4rXzioDwkDBqjciTbFUnW9+2D6mxxpOnL61waS0n+
+	JGrpwiJcc=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Introduce a mutex called ttylock to make handle_recv_skb atomic /wrt
-parallel invocations as well as capinc_tty_close clearing the tty_struct
-reference. Also avoid re-queuing skbs unless the error detected in
-handle_recv_skb is expected to be recoverable such as lacking memory, a
-full CAPI queue, or a full TTY input buffer.
-
-As we expect to be in thread context in handle_recv_skb, we must neither
-call this function from potenially atomic capinc_tty_write nor while
-holding the workaround_lock. For the same reason, we do not need to
-allocate skbs atomically in gen_data_b3_resp_for.
-
-The ttylock is also used to avoid waking up a non-existent TTY in
-capi_recv_message.
+We did not evaluate handle_minor_send's return value, just (void)'ed it
+away. Time for a cleanup.
 
 Signed-off-by: Jan Kiszka <jan.kiszka@web.de>
 ---
- drivers/isdn/capi/capi.c |   90 ++++++++++++++++++++++++++++------------------
- 1 files changed, 55 insertions(+), 35 deletions(-)
+ drivers/isdn/capi/capi.c |   20 +++++++++-----------
+ 1 files changed, 9 insertions(+), 11 deletions(-)
 
 diff --git a/drivers/isdn/capi/capi.c b/drivers/isdn/capi/capi.c
-index 77faa4e..e880639 100644
+index 7a04492..a91b9ae 100644
 --- a/drivers/isdn/capi/capi.c
 +++ b/drivers/isdn/capi/capi.c
-@@ -93,9 +93,10 @@ struct capiminor {
- 	u16		 datahandle;
- 	u16		 msgid;
- 
--	struct tty_struct *tty;
--	int                ttyinstop;
--	int                ttyoutstop;
-+	struct tty_struct	*tty;
-+	struct mutex		ttylock;
-+	int			ttyinstop;
-+	int			ttyoutstop;
- 	struct sk_buff    *ttyskb;
- 
- 	struct sk_buff_head inqueue;
-@@ -228,6 +229,8 @@ static struct capiminor *capiminor_alloc(struct capi20_appl *ap, u32 ncci)
- 	skb_queue_head_init(&mp->inqueue);
- 	skb_queue_head_init(&mp->outqueue);
- 
-+	mutex_init(&mp->ttylock);
-+
- 	/* Allocate the least unused minor number.
- 	 */
- 	if (list_empty(&capiminor_list))
-@@ -385,7 +388,7 @@ static struct sk_buff *
- gen_data_b3_resp_for(struct capiminor *mp, struct sk_buff *skb)
- {
- 	struct sk_buff *nskb;
--	nskb = alloc_skb(CAPI_DATA_B3_RESP_LEN, GFP_ATOMIC);
-+	nskb = alloc_skb(CAPI_DATA_B3_RESP_LEN, GFP_KERNEL);
- 	if (nskb) {
- 		u16 datahandle = CAPIMSG_U16(skb->data,CAPIMSG_BASELEN+4+4+2);
- 		unsigned char *s = skb_put(nskb, CAPI_DATA_B3_RESP_LEN);
-@@ -406,61 +409,74 @@ static int handle_recv_skb(struct capiminor *mp, struct sk_buff *skb)
- 	int datalen;
- 	u16 errcode, datahandle;
- 	struct tty_ldisc *ld;
--	
--	datalen = skb->len - CAPIMSG_LEN(skb->data);
--	if (mp->tty == NULL)
--	{
-+	int ret = -1;
-+
-+	mutex_lock(&mp->ttylock);
-+
-+	if (!mp->tty) {
- #ifdef _DEBUG_DATAFLOW
- 		printk(KERN_DEBUG "capi: currently no receivern");
- #endif
-+		mutex_unlock(&mp->ttylock);
- 		return -1;
- 	}
- 	
- 	ld = tty_ldisc_ref(mp->tty);
--	if (ld == NULL)
--		return -1;
--	if (ld->ops->receive_buf == NULL) {
-+	if (!ld || !ld->ops->receive_buf) {
- #if defined(_DEBUG_DATAFLOW) || defined(_DEBUG_TTYFUNCS)
--		printk(KERN_DEBUG "capi: ldisc has no receive_buf functionn");
-+		printk(KERN_DEBUG "capi: no ldisc or receive_buf functionn");
- #endif
--		goto bad;
-+		ret = 0;
-+		goto drop;
- 	}
- 	if (mp->ttyinstop) {
- #if defined(_DEBUG_DATAFLOW) || defined(_DEBUG_TTYFUNCS)
- 		printk(KERN_DEBUG "capi: recv tty throttledn");
- #endif
--		goto bad;
-+		goto keep;
- 	}
-+
-+	datalen = skb->len - CAPIMSG_LEN(skb->data);
- 	if (mp->tty->receive_room < datalen) {
- #if defined(_DEBUG_DATAFLOW) || defined(_DEBUG_TTYFUNCS)
- 		printk(KERN_DEBUG "capi: no room in ttyn");
- #endif
--		goto bad;
-+		goto keep;
- 	}
--	if ((nskb = gen_data_b3_resp_for(mp, skb)) == NULL) {
-+
-+	nskb = gen_data_b3_resp_for(mp, skb);
-+	if (!nskb) {
- 		printk(KERN_ERR "capi: gen_data_b3_resp failedn");
--		goto bad;
-+		goto keep;
- 	}
-+
- 	datahandle = CAPIMSG_U16(skb->data,CAPIMSG_BASELEN+4);
-+
- 	errcode = capi20_put_message(mp->ap, nskb);
--	if (errcode != CAPI_NOERROR) {
-+
-+	if (errcode == CAPI_NOERROR) {
-+		skb_pull(skb, CAPIMSG_LEN(skb->data));
-+#ifdef _DEBUG_DATAFLOW
-+		printk(KERN_DEBUG "capi: DATA_B3_RESP %u len=%d => ldiscn",
-+					datahandle, skb->len);
-+#endif
-+		ld->ops->receive_buf(mp->tty, skb->data, NULL, skb->len);
-+	} else {
- 		printk(KERN_ERR "capi: send DATA_B3_RESP failed=%xn",
- 				errcode);
- 		kfree_skb(nskb);
--		goto bad;
-+
-+		if (errcode == CAPI_SENDQUEUEFULL)
-+			goto keep;
- 	}
--	(void)skb_pull(skb, CAPIMSG_LEN(skb->data));
--#ifdef _DEBUG_DATAFLOW
--	printk(KERN_DEBUG "capi: DATA_B3_RESP %u len=%d => ldiscn",
--				datahandle, skb->len);
--#endif
--	ld->ops->receive_buf(mp->tty, skb->data, NULL, skb->len);
-+	ret = 0;
-+
-+drop:
- 	kfree_skb(skb);
-+keep:
- 	tty_ldisc_deref(ld);
--	return 0;
--bad:
--	tty_ldisc_deref(ld);
--	return -1;
-+	mutex_unlock(&mp->ttylock);
-+	return ret;
+@@ -477,11 +477,10 @@ static void handle_minor_recv(struct capiminor *mp)
+ 		}
  }
  
- static void handle_minor_recv(struct capiminor *mp)
-@@ -610,8 +626,10 @@ static void capi_recv_message(struct capi20_appl *ap, struct sk_buff *skb)
+-static int handle_minor_send(struct capiminor *mp)
++static void handle_minor_send(struct capiminor *mp)
+ {
+ 	struct sk_buff *skb;
+ 	u16 len;
+-	int count = 0;
+ 	u16 errcode;
+ 	u16 datahandle;
+ 
+@@ -489,7 +488,7 @@ static int handle_minor_send(struct capiminor *mp)
+ #if defined(_DEBUG_DATAFLOW) || defined(_DEBUG_TTYFUNCS)
+ 		printk(KERN_DEBUG "capi: send: tty stoppedn");
  #endif
+-		return 0;
++		return;
+ 	}
+ 
+ 	while (1) {
+@@ -525,11 +524,10 @@ static int handle_minor_send(struct capiminor *mp)
+ 			mp->outbytes += len;
+ 			spin_unlock_bh(&mp->outlock);
+ 
+-			return count;
++			break;
+ 		}
+ 		errcode = capi20_put_message(mp->ap, skb);
+ 		if (errcode == CAPI_NOERROR) {
+-			count++;
+ #ifdef _DEBUG_DATAFLOW
+ 			printk(KERN_DEBUG "capi: DATA_B3_REQ %u len=%un",
+ 							datahandle, len);
+@@ -553,7 +551,6 @@ static int handle_minor_send(struct capiminor *mp)
+ 		printk(KERN_ERR "capi: put_message = %xn", errcode);
  		kfree_skb(skb);
- 		(void)capiminor_del_ack(mp, datahandle);
-+		mutex_lock(&mp->ttylock);
+ 	}
+-	return count;
+ }
+ 
+ #endif /* CONFIG_ISDN_CAPI_MIDDLEWARE */
+@@ -629,7 +626,8 @@ static void capi_recv_message(struct capi20_appl *ap, struct sk_buff *skb)
  		if (mp->tty)
  			tty_wakeup(mp->tty);
-+		mutex_unlock(&mp->ttylock);
- 		(void)handle_minor_send(mp);
+ 		mutex_unlock(&mp->ttylock);
+-		(void)handle_minor_send(mp);
++
++		handle_minor_send(mp);
  
  	} else {
-@@ -1006,8 +1024,12 @@ static void capinc_tty_close(struct tty_struct * tty, struct file * file)
- 
- 	mutex_lock(&glue_lock);
- 
--	if (tty->count == 1)
-+	if (tty->count == 1) {
-+		mutex_lock(&mp->ttylock);
- 		mp->tty = NULL;
-+		mutex_unlock(&mp->ttylock);
-+	}
-+
- 	if (!mp->nccip)
- 		capiminor_free(mp);
- 
-@@ -1046,7 +1068,6 @@ static int capinc_tty_write(struct tty_struct * tty,
- 	skb_queue_tail(&mp->outqueue, skb);
+ 		/* ups, let capi application handle it :-) */
+@@ -1063,7 +1061,7 @@ static int capinc_tty_write(struct tty_struct * tty,
  	mp->outbytes += skb->len;
- 	(void)handle_minor_send(mp);
--	(void)handle_minor_recv(mp);
- 	spin_unlock_irqrestore(&workaround_lock, flags);
+ 	spin_unlock_bh(&mp->outlock);
+ 
+-	(void)handle_minor_send(mp);
++	handle_minor_send(mp);
+ 
  	return count;
  }
-@@ -1106,8 +1127,9 @@ static void capinc_tty_flush_chars(struct tty_struct *tty)
+@@ -1106,7 +1104,7 @@ unlock_out:
+ 	spin_unlock_bh(&mp->outlock);
+ 
+ 	if (invoke_send)
+-		(void)handle_minor_send(mp);
++		handle_minor_send(mp);
+ 
+ 	return ret;
+ }
+@@ -1128,7 +1126,7 @@ static void capinc_tty_flush_chars(struct tty_struct *tty)
  		mp->outbytes += skb->len;
- 		(void)handle_minor_send(mp);
- 	}
--	(void)handle_minor_recv(mp);
- 	spin_unlock_irqrestore(&workaround_lock, flags);
-+
-+	handle_minor_recv(mp);
- }
+ 		spin_unlock_bh(&mp->outlock);
  
- static int capinc_tty_write_room(struct tty_struct *tty)
-@@ -1167,14 +1189,12 @@ static void capinc_tty_throttle(struct tty_struct * tty)
- static void capinc_tty_unthrottle(struct tty_struct * tty)
- {
- 	struct capiminor *mp = tty->driver_data;
--	unsigned long flags;
-+
- #ifdef _DEBUG_TTYFUNCS
- 	printk(KERN_DEBUG "capinc_tty_unthrottlen");
+-		(void)handle_minor_send(mp);
++		handle_minor_send(mp);
+ 	} else
+ 		spin_unlock_bh(&mp->outlock);
+ 
+@@ -1217,7 +1215,7 @@ static void capinc_tty_start(struct tty_struct *tty)
+ 	printk(KERN_DEBUG "capinc_tty_startn");
  #endif
--	spin_lock_irqsave(&workaround_lock, flags);
- 	mp->ttyinstop = 0;
- 	handle_minor_recv(mp);
--	spin_unlock_irqrestore(&workaround_lock, flags);
+ 	mp->ttyoutstop = 0;
+-	(void)handle_minor_send(mp);
++	handle_minor_send(mp);
  }
  
- static void capinc_tty_stop(struct tty_struct *tty)
+ static void capinc_tty_hangup(struct tty_struct *tty)
 -- 
 1.6.0.2
 
