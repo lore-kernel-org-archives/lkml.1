@@ -1,46 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752293Ab0AHEzl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750826Ab0AHFBS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752293Ab0AHEzl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 23:55:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751839Ab0AHEzk
+	id S1750826Ab0AHFBS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jan 2010 00:01:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750709Ab0AHFBR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 23:55:40 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:39023 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751618Ab0AHEzj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 23:55:39 -0500
-Date: Thu, 7 Jan 2010 20:46:46 -0800
-From: Greg KH <gregkh@suse.de>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
-       Karsten Keil <isdn@linux-pingi.de>, isdn4linux@listserv.isdn4linux.de
-Subject: Re: Can we remove pci_find_device() yet?
-Message-ID: <20100108044646.GC6611@suse.de>
-References: <20100108112236.462a3da2.sfr@canb.auug.org.au>
+	Fri, 8 Jan 2010 00:01:17 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:50287 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750702Ab0AHFBQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jan 2010 00:01:16 -0500
+Date: Thu, 7 Jan 2010 21:00:34 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Arjan van de Ven <arjan@infradead.org>
+cc: Christoph Lameter <cl@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "minchan.kim@gmail.com" <minchan.kim@gmail.com>,
+       "hugh.dickins" <hugh.dickins@tiscali.co.uk>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [RFC][PATCH 6/8] mm: handle_speculative_fault()
+In-Reply-To: <20100107204940.253ed753@infradead.org>
+Message-ID: <alpine.LFD.2.00.1001072058010.7821@localhost.localdomain>
+References: <20100104182429.833180340@chello.nl> <20100104182813.753545361@chello.nl> <20100105054536.44bf8002@infradead.org> <alpine.DEB.2.00.1001050916300.1074@router.home> <20100105192243.1d6b2213@infradead.org> <alpine.DEB.2.00.1001071007210.901@router.home>
+ <alpine.LFD.2.00.1001070814080.7821@localhost.localdomain> <alpine.DEB.2.00.1001071025450.901@router.home> <20100107204940.253ed753@infradead.org>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100108112236.462a3da2.sfr@canb.auug.org.au>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 08, 2010 at 11:22:36AM +1100, Stephen Rothwell wrote:
-> Hi all,
+
+
+On Thu, 7 Jan 2010, Arjan van de Ven wrote:
 > 
-> This interface has been deprecated since November 2006, so can something
-> be done about the last users (I think only some ISDN drivers)?  Or should
-> we just remove the interface and mark those drivers BROKEN (and maybe
-> move them to staging)?
+> if an app has to change because our kernel sucks (for no good reason),
+> "change the app" really is the lame type of answer.
 
-Ick, the "new" isdn drivers are still not merged that replace those
-older ones?  I thought that happened a while ago.  Karsten, what are you
-plans on dropping them?
+Well, in all fairness, I doubt other kernels do any better. So changing 
+the app is likely to help in general, and thus be at least part of the 
+right solution.
 
-I recommend putting them in staging if you want a way to get them out of
-the kernel tree :)
+But as outlined, we _can_ almost certainly do better on many simple and 
+common cases, so changing the kernel - in addition to fixing app memory 
+allocation patterns - sounds like a good avenue.
 
-thanks,
-
-greg k-h
+			Linus
