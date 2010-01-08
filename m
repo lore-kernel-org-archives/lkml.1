@@ -1,60 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753082Ab0AHP1m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753226Ab0AHP2u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753082Ab0AHP1m (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jan 2010 10:27:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752729Ab0AHP1l
+	id S1753226Ab0AHP2u (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jan 2010 10:28:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752196Ab0AHP2t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jan 2010 10:27:41 -0500
-Received: from mail2.picochip.com ([82.111.145.34]:35080 "EHLO
-	thurne.picochip.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752669Ab0AHP1j (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jan 2010 10:27:39 -0500
-From: Jamie Iles <jamie.iles@picochip.com>
-To: linux-kernel@vger.kernel.org
-Cc: Jamie Iles <jamie.iles@picochip.com>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Russell King - ARM Linux <linux@arm.linux.org.uk>
-Subject: [PATCH] sched/perf: make sure irqs are disabled for perf_event_task_sched_in()
-Date: Fri,  8 Jan 2010 15:27:33 +0000
-Message-Id: <1262964453-27370-1-git-send-email-jamie.iles@picochip.com>
-X-Mailer: git-send-email 1.6.5.4
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (thurne.picochip.com [172.17.0.105]); Fri, 08 Jan 2010 15:27:10 +0000 (GMT)
+	Fri, 8 Jan 2010 10:28:49 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:58637 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751379Ab0AHP2s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jan 2010 10:28:48 -0500
+Subject: Re: [PATCH]drivers/ata/libata-eh.c:1509 unneeded memset()
+From: James Bottomley <James.Bottomley@suse.de>
+To: Jeff Garzik <jgarzik@pobox.com>
+Cc: =?ISO-8859-1?Q?Ren=E9?= Bolldorf <xsecute@googlemail.com>,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-scsi <linux-scsi@vger.kernel.org>
+In-Reply-To: <4B4632BF.4070806@pobox.com>
+References: <4B3BDB66.6000008@googlemail.com>  <4B4632BF.4070806@pobox.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 08 Jan 2010 09:28:39 -0600
+Message-Id: <1262964519.3025.614.camel@mulgrave.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.0 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-perf_event_task_sched_in() expects interrupts to be disabled, but
-on architectures with __ARCH_WANT_INTERRUPTS_ON_CTXSW defined, this
-isn't true. If this is defined, disable irqs around the call in
-finish_task_switch().
+On Thu, 2010-01-07 at 14:15 -0500, Jeff Garzik wrote:
+> On 12/30/2009 05:59 PM, René Bolldorf wrote:
+> > We don't need this ;-).
+> >
+> > Best regards René Bolldorf & a happy new year in advance.
+> >
+> > --- ./drivers/ata/libata-eh.c 2009-12-30 23:44:05.578988545 +0100
+> > +++ ./drivers/ata/libata-eh.c 2009-12-30 23:45:06.991987607 +0100
+> > @@ -1505,9 +1505,6 @@ static unsigned int atapi_eh_request_sen
+> >
+> > DPRINTK("ATAPI request sense\n");
+> >
+> > - /* FIXME: is this needed? */
+> > - memset(sense_buf, 0, SCSI_SENSE_BUFFERSIZE);
+> 
+> I need a little bit more detail than an unqualified statement...  Did 
+> you audit all paths leading to this code point?
 
-Signed-off-by: Jamie Iles <jamie.iles@picochip.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>
----
- kernel/sched.c |    6 ++++++
- 1 files changed, 6 insertions(+), 0 deletions(-)
+There are two code paths coming into here.  One directly from the scsi
+sense buffer:
 
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 22c14eb..78132b4 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -2783,7 +2783,13 @@ static void finish_task_switch(struct rq *rq, struct task_struct *prev)
- 	 */
- 	prev_state = prev->state;
- 	finish_arch_switch(prev);
-+#ifdef __ARCH_WANT_INTERRUPTS_ON_CTXSW
-+	local_irq_disable();
-+#endif /* __ARCH_WANT_INTERRUPTS_ON_CTXSW */
- 	perf_event_task_sched_in(current);
-+#ifdef __ARCH_WANT_INTERRUPTS_ON_CTXSW
-+	local_irq_enable();
-+#endif /* __ARCH_WANT_INTERRUPTS_ON_CTXSW */
- 	finish_lock_switch(rq, prev);
- 
- 	fire_sched_in_preempt_notifiers(current);
--- 
-1.6.5.4
+		if (!(qc->ap->pflags & ATA_PFLAG_FROZEN)) {
+			tmp = atapi_eh_request_sense(qc->dev,
+						qc->scsicmd->sense_buffer,
+						qc->result_tf.feature >> 4);
+
+Which is fine because SCSI zeros the sense buffer.
+
+But one also here:
+
+		u8 *sense_buffer = dev->link->ap->sector_buf;
+		[...]
+		err_mask = atapi_eh_request_sense(dev, sense_buffer, sense_key);
+
+Which doesn't look OK because it looks like the sector_buf isn't cleared
+(and it is reused).
+
+James
+
 
