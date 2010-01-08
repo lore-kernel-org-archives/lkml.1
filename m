@@ -1,79 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754003Ab0AHUri@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754068Ab0AHUue@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754003Ab0AHUri (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jan 2010 15:47:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750904Ab0AHUrh
+	id S1754068Ab0AHUue (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jan 2010 15:50:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754047Ab0AHUua
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jan 2010 15:47:37 -0500
-Received: from fg-out-1718.google.com ([72.14.220.152]:8914 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750750Ab0AHUrg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jan 2010 15:47:36 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=lqOU2JC4jGCHzL4Fzx6pAJO2wNffMH11tPOa16JAgPRsnhGTJ669tNd1NDLSMdP+2Z
-         HYUmK6GLyW1G8haDSMrjfbxs55kze10xObYK0+lSp89owLtoz3IjrUQGMQ77sGAMfYCm
-         nP/bz9HJbuwnblfDdjkjpDh94EW74WHEaiaOk=
-Message-ID: <4B4799FB.9030208@googlemail.com>
-Date: Fri, 08 Jan 2010 21:47:55 +0100
-From: =?UTF-8?B?UmVuw6kgQm9sbGRvcmY=?= <xsecute@googlemail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.5) Gecko/20091204 Thunderbird/3.0
-MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@suse.de>
-CC: Jeff Garzik <jgarzik@pobox.com>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-scsi <linux-scsi@vger.kernel.org>
-Subject: Re: [PATCH]drivers/ata/libata-eh.c:1509 unneeded memset()
-References: <4B3BDB66.6000008@googlemail.com>  <4B4632BF.4070806@pobox.com> <1262964519.3025.614.camel@mulgrave.site>
-In-Reply-To: <1262964519.3025.614.camel@mulgrave.site>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+	Fri, 8 Jan 2010 15:50:30 -0500
+Received: from lo.gmane.org ([80.91.229.12]:43590 "EHLO lo.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752904Ab0AHUuH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jan 2010 15:50:07 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Paul Turner <pjt@google.com>
+Subject: Re: [RFC v5 PATCH 0/8] CFS Hard limits - v5
+Date: Fri, 8 Jan 2010 20:45:27 +0000 (UTC)
+Message-ID: <loom.20100108T214459-933@post.gmane.org>
+References: <20100105075703.GE27899@in.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: sea.gmane.org
+User-Agent: Loom/3.14 (http://gmane.org/)
+X-Loom-IP: 216.239.45.4 (Mozilla/5.0 (X11; U; Linux x86_64; en-US) AppleWebKit/532.8 (KHTML, like Gecko) Chrome/4.0.288.1 Safari/532.8)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/08/10 16:28, James Bottomley wrote:
-> On Thu, 2010-01-07 at 14:15 -0500, Jeff Garzik wrote:
->> On 12/30/2009 05:59 PM, René Bolldorf wrote:
->>> We don't need this ;-).
->>>
->>> Best regards René Bolldorf&  a happy new year in advance.
->>>
->>> --- ./drivers/ata/libata-eh.c 2009-12-30 23:44:05.578988545 +0100
->>> +++ ./drivers/ata/libata-eh.c 2009-12-30 23:45:06.991987607 +0100
->>> @@ -1505,9 +1505,6 @@ static unsigned int atapi_eh_request_sen
->>>
->>> DPRINTK("ATAPI request sense\n");
->>>
->>> - /* FIXME: is this needed? */
->>> - memset(sense_buf, 0, SCSI_SENSE_BUFFERSIZE);
->>
->> I need a little bit more detail than an unqualified statement...  Did
->> you audit all paths leading to this code point?
->
-> There are two code paths coming into here.  One directly from the scsi
-> sense buffer:
->
-> 		if (!(qc->ap->pflags&  ATA_PFLAG_FROZEN)) {
-> 			tmp = atapi_eh_request_sense(qc->dev,
-> 						qc->scsicmd->sense_buffer,
-> 						qc->result_tf.feature>>  4);
->
-> Which is fine because SCSI zeros the sense buffer.
->
-> But one also here:
->
-> 		u8 *sense_buffer = dev->link->ap->sector_buf;
-> 		[...]
-> 		err_mask = atapi_eh_request_sense(dev, sense_buffer, sense_key);
->
-> Which doesn't look OK because it looks like the sector_buf isn't cleared
-> (and it is reused).
->
-> James
->
->
+Hi Bharata,
 
-Thank's, you're right. I have overseen this, sry for that.
+Thanks for the updated patchset.  As discussed the other day briefly I have some
+concerns with the usage of the current RT bandwidth rate-limiting code as there
+are some assumptions made that I feel don't fit the general case well.
+
+The reason for this is that the borrowing logic in bandwidth rebalance appears
+to make the assumption that we wil will be able to converge rapidly to the
+period.  Indeed, in each iteration of redistribution we take only
+1/weight(nrcpus) [assuming no cpuset partitions] of the time remaining.  This is
+a decreasing series, and if we can't exceed the period our convergence looks
+pretty slow [geometric series].
+
+In general it appears the following relation be satisfied for efficient
+execution:  (weight(nr_cpus) * runtime) >> period
+
+This assumption is well satisfied in the RT case since the available bandwidth
+is very high.  However I fear for the general case of user limits on tg usage
+lie at the other end of the spectrum.  Especially for those trying to partition
+large machines into many smaller well provisioned fractions, e.g. 0-2 cores out
+of a total 64.  The lock and re-distribution cost for each iteration is also
+going to be quite high in this case which will potentially compound on the
+number of iterations required above.
+
+What are your thoughts on using a separate mechanism for the general case.  A 
+draft proposal follows:
+
+- Maintain a global run-time pool for each tg.  The runtime specified by the
+  user represents the value that this pool will be refilled to each period.
+- We continue to maintain the local notion of runtime/period in each cfs_rq,
+  continue to accumulate locally here.
+
+Upon locally exceeding the period acquire new credit from the global pool
+(either under lock or more likely using atomic ops).  This can either be in
+fixed steppings (e.g. 10ms, could be tunable) or following some quasi-curve
+variant with historical demand.
+
+One caveat here is that there is some over-commit in the system, the local
+differences of runtime vs period represent additional over the global pool.
+However it should not be possible to consistently exceed limits since the rate
+of refill is gated by the runtime being input into the system via the per-tg
+pool.
+
+This would also naturally associate with an interface change that would mean the
+runtime limit for a group would be the effective cpurate within the period.
+
+e.g. by setting a runtime of 200000us on a 100000us period it would effectively
+allow you to use 2 cpus worth of wall-time on a multicore system.
+
+I feel this is slightly more natural than the current definition which due to
+being local means that values set will not result in consistent behavior across
+machines of different core counts.  It also has the benefit of being consistent
+with observed exports of time consumed, e.g. rusage, (indirectly) time, etc.
+
+For future scalability as machine size grows this could potentially be
+partitioned below the tg level along the boundaries of sched_domains (or
+something similar).  However for an initial draft given current machine sizes
+the contention on the global pool should hopefully be fairly low.
+
+- Paul
+
+
