@@ -1,61 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752929Ab0AHP3z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753450Ab0AHPbY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752929Ab0AHP3z (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jan 2010 10:29:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750863Ab0AHP3y
+	id S1753450Ab0AHPbY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jan 2010 10:31:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753329Ab0AHPbX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jan 2010 10:29:54 -0500
-Received: from lazybastard.de ([212.112.238.170]:49285 "EHLO
+	Fri, 8 Jan 2010 10:31:23 -0500
+Received: from lazybastard.de ([212.112.238.170]:49289 "EHLO
 	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750709Ab0AHP3x (ORCPT
+	with ESMTP id S1752219Ab0AHPbW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jan 2010 10:29:53 -0500
-X-Greylist: delayed 498 seconds by postgrey-1.27 at vger.kernel.org; Fri, 08 Jan 2010 10:29:53 EST
-Date: Fri, 8 Jan 2010 16:29:45 +0100
+	Fri, 8 Jan 2010 10:31:22 -0500
+Date: Fri, 8 Jan 2010 16:31:15 +0100
 From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
 To: Maxim Levitsky <maximlevitsky@gmail.com>
 Cc: linux-kernel <linux-kernel@vger.kernel.org>,
        linux-mtd <linux-mtd@lists.infradead.org>, Alex Dubov <oakad@yahoo.com>
-Subject: Re: [PATCH 9/9] mtd: Add new SmartMedia/xD FTL
-Message-ID: <20100108152945.GC31872@logfs.org>
-References: <1262963092.12577.14.camel@maxim-laptop> <1262963524.12577.23.camel@maxim-laptop>
+Subject: Re: [PATCH 2/9] MTD: create lockless versions of {get,put}_mtd_device
+Message-ID: <20100108153114.GD31872@logfs.org>
+References: <1262963092.12577.14.camel@maxim-laptop> <1262963198.12577.16.camel@maxim-laptop> <20100108152119.GB31872@logfs.org> <1262964444.12577.29.camel@maxim-laptop>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <1262963524.12577.23.camel@maxim-laptop>
+In-Reply-To: <1262964444.12577.29.camel@maxim-laptop>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 8 January 2010 17:12:04 +0200, Maxim Levitsky wrote:
+On Fri, 8 January 2010 17:27:24 +0200, Maxim Levitsky wrote:
 > 
-> This implements new readwrite SmartMedia/xd FTL.
+> Yep, you miss this:
 > 
-> It depends on nand driver to define proper oob layout that excludes
-> all ecc areas and nothing more.
+> +extern int __get_mtd_device(struct mtd_info *mtd);
+> +extern void __put_mtd_device(struct mtd_info *mtd);
 > 
-> Support for very old 256 byte/page devices is not yet enabled/complete.
-> For these devices, all ecc handling will be done inside this FTL
-> due to wierd oob layout.
+> I put that into the header, so these functions can be used outside.
 > 
-> Signed-off-by: Maxim Levitsky <maximlevitsky@gmail.com>
-> ---
->  drivers/mtd/Kconfig  |   12 +
->  drivers/mtd/Makefile |    1 +
->  drivers/mtd/sm_ftl.c | 1043 ++++++++++++++++++++++++++++++++++++++++++++++++++
->  drivers/mtd/sm_ftl.h |   75 ++++
+> When I compiled the kernel, there were no warnings.
 
-sm_ftl is certainly nicer than ssfdc.c - at least I can decrypt the
-acronym.  But I am missing a reason why ssfdc is not sufficient and we
-need yet another implementation of the same ftl.
-
-Or maybe ssfdc is sufficient or barely sufficient and just needs a small
-patch?
+Maxim: 1
+Joern: 0
 
 Jörn
 
 -- 
-He that composes himself is wiser than he that composes a book.
--- B. Franklin
+But this is not to say that the main benefit of Linux and other GPL
+software is lower-cost. Control is the main benefit--cost is secondary.
+-- Bruce Perens
