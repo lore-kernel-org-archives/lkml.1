@@ -1,149 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754405Ab0AHXr7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754315Ab0AHXrs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754405Ab0AHXr7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jan 2010 18:47:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754357Ab0AHXrt
+	id S1754315Ab0AHXrs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jan 2010 18:47:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754219Ab0AHXrq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jan 2010 18:47:49 -0500
-Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:44863 "EHLO
-	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754201Ab0AHXrq (ORCPT
+	Fri, 8 Jan 2010 18:47:46 -0500
+Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:42491 "EHLO
+	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752932Ab0AHXrq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 8 Jan 2010 18:47:46 -0500
 MIME-version: 1.0
 Content-transfer-encoding: 7BIT
 Content-type: TEXT/PLAIN
-Date: Fri, 08 Jan 2010 15:46:32 -0800
+Date: Fri, 08 Jan 2010 15:46:29 -0800
 From: Yinghai Lu <yinghai@kernel.org>
-Subject: [PATCH -v2 4/5] sparseirq: use radix_tree instead of ptrs array
-In-reply-to: <1262994393-17391-1-git-send-email-yinghai@kernel.org>
+Subject: [PATCH 1/5] irq: remove not need bootmem code
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        "H. Peter Anvin" <hpa@zytor.com>,
        Andrew Morton <akpm@linux-foundation.org>,
        "Eric W. Biederman" <ebiederm@xmission.com>,
        Jesse Brandeburg <jesse.brandeburg@intel.com>
 Cc: linux-kernel@vger.kernel.org, Yinghai Lu <yinghai@kernel.org>
-Message-id: <1262994393-17391-4-git-send-email-yinghai@kernel.org>
+Message-id: <1262994393-17391-1-git-send-email-yinghai@kernel.org>
 X-Mailer: git-send-email 1.6.4.2
-References: <1262994393-17391-1-git-send-email-yinghai@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-use radix_tree irq_desc_tree instead of irq_desc_ptrs.
-
--v2: according to Eric and cyrill to use radix_tree_lookup_slot and radix_tree_replace_slot
+mem_init is moved early already.
 
 Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 
 ---
- kernel/irq/handle.c |   50 +++++++++++++++++++++++++-------------------------
- 1 file changed, 25 insertions(+), 25 deletions(-)
+ kernel/irq/handle.c |   14 +++-----------
+ 1 file changed, 3 insertions(+), 11 deletions(-)
 
 Index: linux-2.6/kernel/irq/handle.c
 ===================================================================
 --- linux-2.6.orig/kernel/irq/handle.c
 +++ linux-2.6/kernel/irq/handle.c
-@@ -19,6 +19,7 @@
+@@ -19,7 +19,6 @@
  #include <linux/kernel_stat.h>
  #include <linux/rculist.h>
  #include <linux/hash.h>
-+#include <linux/radix-tree.h>
+-#include <linux/bootmem.h>
  #include <trace/events/irq.h>
  
  #include "internals.h"
-@@ -127,7 +128,26 @@ static void init_one_irq_desc(int irq, s
-  */
- DEFINE_RAW_SPINLOCK(sparse_irq_lock);
- 
--static struct irq_desc **irq_desc_ptrs __read_mostly;
-+static RADIX_TREE(irq_desc_tree, GFP_ATOMIC);
-+
-+static void set_irq_desc(unsigned int irq, struct irq_desc *desc)
-+{
-+	radix_tree_insert(&irq_desc_tree, irq, desc);
-+}
-+
-+struct irq_desc *irq_to_desc(unsigned int irq)
-+{
-+	return radix_tree_lookup(&irq_desc_tree, irq);
-+}
-+
-+void replace_irq_desc(unsigned int irq, struct irq_desc *desc)
-+{
-+	void **ptr;
-+
-+	ptr = radix_tree_lookup_slot(&irq_desc_tree, irq);
-+	if (ptr)
-+		radix_tree_replace_slot(ptr, desc);
-+}
- 
- static struct irq_desc irq_desc_legacy[NR_IRQS_LEGACY] __cacheline_aligned_in_smp = {
- 	[0 ... NR_IRQS_LEGACY-1] = {
-@@ -159,9 +179,6 @@ int __init early_irq_init(void)
- 	legacy_count = ARRAY_SIZE(irq_desc_legacy);
- 	node = first_online_node;
- 
--	/* allocate irq_desc_ptrs array based on nr_irqs */
--	irq_desc_ptrs = kcalloc(nr_irqs, sizeof(void *), GFP_NOWAIT);
--
- 	/* allocate based on nr_cpu_ids */
- 	kstat_irqs_legacy = kzalloc_node(NR_IRQS_LEGACY * nr_cpu_ids *
- 					  sizeof(int), GFP_NOWAIT, node);
-@@ -175,29 +192,12 @@ int __init early_irq_init(void)
- 		lockdep_set_class(&desc[i].lock, &irq_desc_lock_class);
- 		alloc_desc_masks(&desc[i], node, true);
- 		init_desc_masks(&desc[i]);
--		irq_desc_ptrs[i] = desc + i;
-+		set_irq_desc(i, &desc[i]);
- 	}
- 
--	for (i = legacy_count; i < nr_irqs; i++)
--		irq_desc_ptrs[i] = NULL;
--
- 	return arch_early_irq_init();
- }
- 
--struct irq_desc *irq_to_desc(unsigned int irq)
--{
--	if (irq_desc_ptrs && irq < nr_irqs)
--		return irq_desc_ptrs[irq];
--
--	return NULL;
--}
--
--void replace_irq_desc(unsigned int irq, struct irq_desc *desc)
--{
--	if (irq_desc_ptrs && irq < nr_irqs)
--		irq_desc_ptrs[irq] = desc;
--}
--
- struct irq_desc * __ref irq_to_desc_alloc_node(unsigned int irq, int node)
+@@ -87,12 +86,8 @@ void __ref init_kstat_irqs(struct irq_de
  {
- 	struct irq_desc *desc;
-@@ -209,14 +209,14 @@ struct irq_desc * __ref irq_to_desc_allo
- 		return NULL;
- 	}
+ 	void *ptr;
  
--	desc = irq_desc_ptrs[irq];
-+	desc = irq_to_desc(irq);
- 	if (desc)
- 		return desc;
+-	if (slab_is_available())
+-		ptr = kzalloc_node(nr * sizeof(*desc->kstat_irqs),
+-				   GFP_ATOMIC, node);
+-	else
+-		ptr = alloc_bootmem_node(NODE_DATA(node),
+-				nr * sizeof(*desc->kstat_irqs));
++	ptr = kzalloc_node(nr * sizeof(*desc->kstat_irqs),
++			   GFP_ATOMIC, node);
  
- 	raw_spin_lock_irqsave(&sparse_irq_lock, flags);
- 
- 	/* We have to check it to avoid races with another CPU */
--	desc = irq_desc_ptrs[irq];
-+	desc = irq_to_desc(irq);
+ 	/*
+ 	 * don't overwite if can not get new one
+@@ -219,10 +214,7 @@ struct irq_desc * __ref irq_to_desc_allo
  	if (desc)
  		goto out_unlock;
  
-@@ -229,7 +229,7 @@ struct irq_desc * __ref irq_to_desc_allo
- 	}
- 	init_one_irq_desc(irq, desc, node);
+-	if (slab_is_available())
+-		desc = kzalloc_node(sizeof(*desc), GFP_ATOMIC, node);
+-	else
+-		desc = alloc_bootmem_node(NODE_DATA(node), sizeof(*desc));
++	desc = kzalloc_node(sizeof(*desc), GFP_ATOMIC, node);
  
--	irq_desc_ptrs[irq] = desc;
-+	set_irq_desc(irq, desc);
- 
- out_unlock:
- 	raw_spin_unlock_irqrestore(&sparse_irq_lock, flags);
+ 	printk(KERN_DEBUG "  alloc irq_desc for %d on node %d\n", irq, node);
+ 	if (!desc) {
