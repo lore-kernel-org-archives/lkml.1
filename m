@@ -1,57 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753593Ab0AHQvP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753857Ab0AHQx6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753593Ab0AHQvP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jan 2010 11:51:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753384Ab0AHQvO
+	id S1753857Ab0AHQx6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jan 2010 11:53:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753756Ab0AHQx5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jan 2010 11:51:14 -0500
-Received: from mail.cs.nmsu.edu ([128.123.64.3]:44071 "EHLO mail.cs.nmsu.edu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753315Ab0AHQvM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jan 2010 11:51:12 -0500
-Message-ID: <a3581fd32d39b5e86aba9ded88bd5f46.squirrel@intranet.cs.nmsu.edu>
-In-Reply-To: <20100108163655.GA8328@elf.ucw.cz>
-References: <201001071623.o07GNOB4022157@mustang.cs.nmsu.edu>
-    <20100108083020.GB3696@core.coreip.homeip.net>
-    <20100108163655.GA8328@elf.ucw.cz>
-Date: Fri, 8 Jan 2010 09:50:33 -0700
-Subject: Re: [PATCH] hid: Logitech G13 driver 0.0.3
-From: "Rick L. Vinyard, Jr." <rvinyard@cs.nmsu.edu>
-To: "Pavel Machek" <pavel@ucw.cz>
-Cc: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>,
-       linux-kernel@vger.kernel.org, felipe.balbi@nokia.com,
-       jayakumar.lkml@gmail.com, linux-fbdev@vger.kernel.org,
-       krzysztof.h1@wp.pl, akpm@linux-foundation.org,
-       linux-usb@vger.kernel.org, oliver@neukum.org,
-       linux-input@vger.kernel.org, jkosina@suse.cz
-User-Agent: SquirrelMail/1.4.19
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
+	Fri, 8 Jan 2010 11:53:57 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:46412 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753653Ab0AHQx5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jan 2010 11:53:57 -0500
+Subject: Re: [RFC][PATCH 6/8] mm: handle_speculative_fault()
+From: Peter Zijlstra <peterz@infradead.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Minchan Kim <minchan.kim@gmail.com>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>, cl@linux-foundation.org,
+       "hugh.dickins" <hugh.dickins@tiscali.co.uk>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <alpine.LFD.2.00.1001052007090.3630@localhost.localdomain>
+References: <20100104182429.833180340@chello.nl>
+	 <20100104182813.753545361@chello.nl>
+	 <20100105092559.1de8b613.kamezawa.hiroyu@jp.fujitsu.com>
+	 <28c262361001042029w4b95f226lf54a3ed6a4291a3b@mail.gmail.com>
+	 <20100105134357.4bfb4951.kamezawa.hiroyu@jp.fujitsu.com>
+	 <alpine.LFD.2.00.1001042052210.3630@localhost.localdomain>
+	 <20100105143046.73938ea2.kamezawa.hiroyu@jp.fujitsu.com>
+	 <20100105163939.a3f146fb.kamezawa.hiroyu@jp.fujitsu.com>
+	 <alpine.LFD.2.00.1001050707520.3630@localhost.localdomain>
+	 <20100106092212.c8766aa8.kamezawa.hiroyu@jp.fujitsu.com>
+	 <alpine.LFD.2.00.1001051718100.3630@localhost.localdomain>
+	 <20100106115233.5621bd5e.kamezawa.hiroyu@jp.fujitsu.com>
+	 <alpine.LFD.2.00.1001051917000.3630@localhost.localdomain>
+	 <20100106125625.b02c1b3a.kamezawa.hiroyu@jp.fujitsu.com>
+	 <alpine.LFD.2.00.1001052007090.3630@localhost.localdomain>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 08 Jan 2010 17:53:30 +0100
+Message-ID: <1262969610.4244.36.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote:
-> Hi!
->
->> > +static DEVICE_ATTR(name, 0666, g13_name_show, g13_name_store);
->>
->> What this attribute is for?
->
-> Actually, all the new files this added need to be documented.
-> 									Pavel
->
+On Tue, 2010-01-05 at 20:20 -0800, Linus Torvalds wrote:
+> 
+> On Wed, 6 Jan 2010, KAMEZAWA Hiroyuki wrote:
+> > > 
+> > > Of course, your other load with MADV_DONTNEED seems to be horrible, and 
+> > > has some nasty spinlock issues, but that looks like a separate deal (I 
+> > > assume that load is just very hard on the pgtable lock).
+> > 
+> > It's zone->lock, I guess. My test program avoids pgtable lock problem.
+> 
+> Yeah, I should have looked more at your callchain. That's nasty. Much 
+> worse than the per-mm lock. I thought the page buffering would avoid the 
+> zone lock becoming a huge problem, but clearly not in this case.
 
-Which is better? A hid-g13.txt file added to Documentation/ or comments in
-the driver itself?
+Right, so I ran some numbers on a multi-socket (2) machine as well:
 
-Thanks,
+                               pf/min
 
----
+-tip                          56398626
+-tip + xadd                  174753190
+-tip + speculative           189274319
+-tip + xadd + speculative    200174641
 
-Rick
+[ variance is around 0.5% for this workload, ran most of these numbers
+with --repeat 5 ]
+
+At both the xadd/speculative point the workload is dominated by the
+zone->lock, the xadd+speculative removes some of the contention, and
+removing the various RSS counters could yield another few percent
+according to the profiles, but then we're pretty much there.
+
+One way around those RSS counters is to track it per task, a quick grep
+shows its only the oom-killer and proc that use them.
+
+A quick hack removing them gets us: 203158058
+
+So from a throughput pov. the whole speculative fault thing might not be
+interesting until the rest of the vm gets a lift to go along with it.
+
+>From a blocking on mmap_sem pov. I think Linus is right in that we
+should first consider things like dropping mmap_sep around IO and page
+zeroing, and generally looking at reducing hold times and such.
+
+So while I think its quite feasible to do these speculative faults, it
+appears we're not quite ready for them.
+
+Maybe I can get -rt to carry it for a while, there we have to reduce
+mmap_sem to a mutex, which hurts lots.
 
 
