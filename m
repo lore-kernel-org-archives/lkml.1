@@ -1,160 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752862Ab0AHKYu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752985Ab0AHKZu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752862Ab0AHKYu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jan 2010 05:24:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752144Ab0AHKYt
+	id S1752985Ab0AHKZu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jan 2010 05:25:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752599Ab0AHKZt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jan 2010 05:24:49 -0500
-Received: from outpost1.zedat.fu-berlin.de ([130.133.4.66]:55000 "EHLO
-	outpost1.zedat.fu-berlin.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750709Ab0AHKYs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jan 2010 05:24:48 -0500
-Date: Fri, 8 Jan 2010 11:26:10 +0100
-From: Benjamin Valentin <benpicco@zedat.fu-berlin.de>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] drivers/input/joystick/xpad.c: Add rumble support for
- original xbox controller
-Message-ID: <20100108112610.0b78785b@piBook>
-In-Reply-To: <20100108075054.GA3696@core.coreip.homeip.net>
-References: <20100108033215.447c814e@rechenknecht2k7>
-	<20100108075054.GA3696@core.coreip.homeip.net>
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.18.5; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=PGP-SHA1;
- boundary="Sig_/5Zz_cY2s+nU5QbnwpRtOXJ2"; protocol="application/pgp-signature"
-X-Originating-IP: 87.77.84.60
+	Fri, 8 Jan 2010 05:25:49 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:63988 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752214Ab0AHKZs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jan 2010 05:25:48 -0500
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Martin Schwidefsky <schwidefsky@de.ibm.com>
+X-Fcc: ~/Mail/linus
+Cc: Oleg Nesterov <oleg@redhat.com>, caiqian@redhat.com,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Jan Kratochvil <jkratoch@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-s390@vger.kernel.org, utrace-devel@redhat.com
+Subject: Re: s390 && user_enable_single_step() (Was: odd utrace testing
+ results on s390x)
+In-Reply-To: Martin Schwidefsky's message of  Friday, 8 January 2010 09:30:25 +0100 <20100108093025.28ec0907@mschwide.boeblingen.de.ibm.com>
+References: <20100104155225.GA16650@redhat.com>
+	<20100104171626.22ea2d9c@mschwide.boeblingen.de.ibm.com>
+	<20100104181412.GA21146@redhat.com>
+	<20100104211147.4CC94D532@magilla.sf.frob.com>
+	<20100105105030.66bb8a0a@mschwide.boeblingen.de.ibm.com>
+	<20100105153633.GA9376@redhat.com>
+	<20100105164610.388effd3@mschwide.boeblingen.de.ibm.com>
+	<20100105155913.GA10652@redhat.com>
+	<20100105170301.GA13641@redhat.com>
+	<20100105195818.GA20358@redhat.com>
+	<20100106201722.GB26204@redhat.com>
+	<20100106211329.DB4F5134D@magilla.sf.frob.com>
+	<20100107101855.13248dc2@mschwide.boeblingen.de.ibm.com>
+	<20100107214642.579F27300@magilla.sf.frob.com>
+	<20100108093025.28ec0907@mschwide.boeblingen.de.ibm.com>
+X-Shopping-List: (1) Antiperspirant exclamation mice
+   (2) Tragicomical itinerant wigs
+   (3) Jubilant notorious yarns
+   (4) Strategic commotions
+   (5) Imperious ointment circumlocutions
+Message-Id: <20100108102539.2E747105F6@magilla.sf.frob.com>
+Date: Fri,  8 Jan 2010 02:25:39 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Sig_/5Zz_cY2s+nU5QbnwpRtOXJ2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+> Ok, I changed the wording slightly:
+> 
+> Clear the TIF_SINGLE_STEP bit in copy_thread. The new process did not get
+> a PER event of its own. It is wrong deliver a SIGTRAP that was meant for
+> the parent process.
 
-On Thu, 7 Jan 2010 23:50:54 -0800
-Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
+Very good!
 
-> Thank you for your patch. Could I please have your "Signed-off-by: "
-> so I can apply it? Also, if you have any more patches ofr in put
-> devices, could you please CC linux-input@vger.kernel.org?
-
-This way?
-
-Signed-off-by: Benjamin Valentin <benpicco@zedat.fu-berlin.de>
-
---- /usr/src/linux-source-2.6.33/drivers/input/joystick/xpad.c
-2010-01-08 02:56:59.365851076 +0100 +++ xpad.c	2010-01-08
-03:13:38.477835651 +0100 @@ -505,7 +505,7 @@
- 	struct usb_endpoint_descriptor *ep_irq_out;
- 	int error =3D -ENOMEM;
-=20
--	if (xpad->xtype !=3D XTYPE_XBOX360)
-+	if (xpad->xtype !=3D XTYPE_XBOX360 && xpad->xtype !=3D XTYPE_XBOX)
- 		return 0;
-=20
- 	xpad->odata =3D usb_buffer_alloc(xpad->udev, XPAD_PKT_LEN,
-@@ -535,13 +535,13 @@
-=20
- static void xpad_stop_output(struct usb_xpad *xpad)
- {
--	if (xpad->xtype =3D=3D XTYPE_XBOX360)
-+	if (xpad->xtype =3D=3D XTYPE_XBOX360 || xpad->xtype !=3D XTYPE_XBOX)
- 		usb_kill_urb(xpad->irq_out);
- }
-=20
- static void xpad_deinit_output(struct usb_xpad *xpad)
- {
--	if (xpad->xtype =3D=3D XTYPE_XBOX360) {
-+	if (xpad->xtype =3D=3D XTYPE_XBOX360 || xpad->xtype !=3D XTYPE_XBOX)
-{ usb_free_urb(xpad->irq_out);
- 		usb_buffer_free(xpad->udev, XPAD_PKT_LEN,
- 				xpad->odata, xpad->odata_dma);
-@@ -554,24 +554,43 @@
- #endif
-=20
- #ifdef CONFIG_JOYSTICK_XPAD_FF
--static int xpad_play_effect(struct input_dev *dev, void *data,
--			    struct ff_effect *effect)
-+static int xpad_send_rumble(struct usb_xpad *xpad, unsigned char left,
-unsigned char right) {
-+	switch(xpad->xtype) {
-+		case XTYPE_XBOX:
-+			xpad->odata[0] =3D 0x00;
-+			xpad->odata[1] =3D 0x06;
-+			xpad->odata[2] =3D 0x00;
-+			xpad->odata[3] =3D left;  // left actuator
-+			xpad->odata[4] =3D 0x00;
-+			xpad->odata[5] =3D right; // right actuator
-+			xpad->irq_out->transfer_buffer_length =3D 6;
-+			return usb_submit_urb(xpad->irq_out,
-GFP_KERNEL);
-+		case XTYPE_XBOX360:
-+			xpad->odata[0] =3D 0x00;
-+			xpad->odata[1] =3D 0x08;
-+			xpad->odata[2] =3D 0x00;
-+			xpad->odata[3] =3D left;  // left actuator?
-+			xpad->odata[4] =3D right; // right actuator?
-+			xpad->odata[5] =3D 0x00;
-+			xpad->odata[6] =3D 0x00;
-+			xpad->odata[7] =3D 0x00;
-+			xpad->irq_out->transfer_buffer_length =3D 8;
-+			return usb_submit_urb(xpad->irq_out,
-GFP_KERNEL);
-+		default:
-+			dbg("%s - rumble command sent to unsupported
-xpad type: %d",=20
-+				__func__, xpad->xtype);
-+			return 0;
-+		}
-+}
-+
-+static int xpad_play_effect(struct input_dev *dev, void *data, struct
-ff_effect *effect) {
- 	struct usb_xpad *xpad =3D input_get_drvdata(dev);
-=20
- 	if (effect->type =3D=3D FF_RUMBLE) {
--		__u16 strong =3D effect->u.rumble.strong_magnitude;
--		__u16 weak =3D effect->u.rumble.weak_magnitude;
--		xpad->odata[0] =3D 0x00;
--		xpad->odata[1] =3D 0x08;
--		xpad->odata[2] =3D 0x00;
--		xpad->odata[3] =3D strong / 256;
--		xpad->odata[4] =3D weak / 256;
--		xpad->odata[5] =3D 0x00;
--		xpad->odata[6] =3D 0x00;
--		xpad->odata[7] =3D 0x00;
--		xpad->irq_out->transfer_buffer_length =3D 8;
--		usb_submit_urb(xpad->irq_out, GFP_KERNEL);
-+		unsigned char strong =3D
-effect->u.rumble.strong_magnitude / 256;
-+		unsigned char weak   =3D
-effect->u.rumble.weak_magnitude / 256;
-+		xpad_send_rumble(xpad, strong, weak);
- 	}
-=20
- 	return 0;
-@@ -579,7 +598,7 @@
-=20
- static int xpad_init_ff(struct usb_xpad *xpad)
- {
--	if (xpad->xtype !=3D XTYPE_XBOX360)
-+	if (xpad->xtype !=3D XTYPE_XBOX360 && xpad->xtype !=3D XTYPE_XBOX)
- 		return 0;
-=20
- 	input_set_capability(xpad->dev, EV_FF, FF_RUMBLE);
-
---Sig_/5Zz_cY2s+nU5QbnwpRtOXJ2
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAktHCEIACgkQg4D7JNscH9pSIwCgn0JhqF3kmQJfEVbabo6DFClD
-GBkAn0gY6FUhVGqglcCM7fzG96zHutQz
-=Wh+d
------END PGP SIGNATURE-----
-
---Sig_/5Zz_cY2s+nU5QbnwpRtOXJ2--
+Thanks,
+Roland
