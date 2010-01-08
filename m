@@ -1,200 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753262Ab0AHICa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753149Ab0AHIDb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753262Ab0AHICa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jan 2010 03:02:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753076Ab0AHIBg
+	id S1753149Ab0AHIDb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jan 2010 03:03:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752987Ab0AHID3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jan 2010 03:01:36 -0500
-Received: from kirsty.vergenet.net ([202.4.237.240]:54977 "EHLO
-	kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751465Ab0AHIBe (ORCPT
+	Fri, 8 Jan 2010 03:03:29 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:48137
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752262Ab0AHID2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jan 2010 03:01:34 -0500
-Message-Id: <20100108075920.944473692@vergenet.net>
-User-Agent: quilt/0.48-1
-Date: Fri, 08 Jan 2010 18:57:51 +1100
-From: horms@vergenet.net
-Subject: [patch 3/6] otus: remove unused constants
-To: devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, Peter Huewe <PeterHuewe@gmx.de>
-References: <20100108075748.059645106@vergenet.net>
-Content-Disposition: inline; filename=otus-unused-function.patch
+	Fri, 8 Jan 2010 03:03:28 -0500
+Date: Fri, 08 Jan 2010 00:03:37 -0800 (PST)
+Message-Id: <20100108.000337.255400791.davem@davemloft.net>
+To: jslaby@suse.cz
+Cc: jirislaby@gmail.com, linux-kernel@vger.kernel.org,
+       sparclinux@vger.kernel.org
+Subject: Re: [PATCH] SPARC: use helpers for rlimits
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1262791479-26594-5-git-send-email-jslaby@suse.cz>
+References: <1262791479-26594-1-git-send-email-jslaby@suse.cz>
+	<1262791479-26594-5-git-send-email-jslaby@suse.cz>
+X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Simon Horman <horms@verge.net.au>
+From: Jiri Slaby <jslaby@suse.cz>
+Date: Wed,  6 Jan 2010 16:24:33 +0100
 
-Index: linux-2.6/drivers/staging/otus/hal/hpreg.c
-===================================================================
---- linux-2.6.orig/drivers/staging/otus/hal/hpreg.c	2010-01-08 16:30:16.000000000 +1100
-+++ linux-2.6/drivers/staging/otus/hal/hpreg.c	2010-01-08 16:33:30.000000000 +1100
-@@ -786,45 +786,6 @@ enum {
- 	WT1_5760_5800,
- };
- 
--static REG_DMN_FREQ_BAND regDmn5GhzTurboFreq[] = {
--	{ 5130, 5210, 5,  6, 40, 40, NO_DFS, NO_PSCAN, 0, 0},	/* T1_5130_5210 */
--	{ 5250, 5330, 5,  6, 40, 40, DFS_FCC3, NO_PSCAN, 0, 0},	/* T1_5250_5330 */
--	{ 5370, 5490, 5,  6, 40, 40, NO_DFS, NO_PSCAN, 0, 0},	/* T1_5370_5490 */
--	{ 5530, 5650, 5,  6, 40, 40, DFS_FCC3, NO_PSCAN, 0, 0},	/* T1_5530_5650 */
--
--	{ 5150, 5190, 5,  6, 40, 40, NO_DFS, NO_PSCAN, 0, 0},	/* T1_5150_5190 */
--	{ 5230, 5310, 5,  6, 40, 40, DFS_FCC3, NO_PSCAN, 0, 0},	/* T1_5230_5310 */
--	{ 5350, 5470, 5,  6, 40, 40, NO_DFS, NO_PSCAN, 0, 0},	/* T1_5350_5470 */
--	{ 5510, 5670, 5,  6, 40, 40, DFS_FCC3, NO_PSCAN, 0, 0},	/* T1_5510_5670 */
--
--	{ 5200, 5240, 17, 6, 40, 40, NO_DFS, NO_PSCAN, 0, 0},	/* T1_5200_5240 */
--	{ 5200, 5240, 23, 6, 40, 40, NO_DFS, NO_PSCAN, 0, 0},	/* T2_5200_5240 */
--	{ 5210, 5210, 17, 6, 40, 40, NO_DFS, NO_PSCAN, 0, 0},	/* T1_5210_5210 */
--	{ 5210, 5210, 23, 0, 40, 40, NO_DFS, NO_PSCAN, 0, 0},	/* T2_5210_5210 */
--
--	{ 5280, 5280, 23, 6, 40, 40, DFS_FCC3, PSCAN_FCC_T, 0, 0},	/* T1_5280_5280 */
--	{ 5280, 5280, 20, 6, 40, 40, DFS_FCC3, PSCAN_FCC_T, 0, 0},	/* T2_5280_5280 */
--	{ 5250, 5250, 17, 0, 40, 40, DFS_FCC3, PSCAN_FCC_T, 0, 0},	/* T1_5250_5250 */
--	{ 5290, 5290, 20, 0, 40, 40, DFS_FCC3, PSCAN_FCC_T, 0, 0},	/* T1_5290_5290 */
--	{ 5250, 5290, 20, 0, 40, 40, DFS_FCC3, PSCAN_FCC_T, 0, 0},	/* T1_5250_5290 */
--	{ 5250, 5290, 23, 6, 40, 40, DFS_FCC3, PSCAN_FCC_T, 0, 0},	/* T2_5250_5290 */
--
--	{ 5540, 5660, 20, 6, 40, 40, DFS_FCC3, PSCAN_FCC_T, 0, 0},	/* T1_5540_5660 */
--	{ 5760, 5800, 20, 0, 40, 40, NO_DFS, NO_PSCAN, 0, 0},	/* T1_5760_5800 */
--	{ 5760, 5800, 30, 6, 40, 40, NO_DFS, NO_PSCAN, 0, 0},	/* T2_5760_5800 */
--
--	{ 5765, 5805, 30, 6, 40, 40, NO_DFS, NO_PSCAN, 0, 0},	/* T1_5765_5805 */
--
--	/*
--	 * Below are the WWR frequencies
--	 */
--
--	{ 5210, 5250, 15, 0, 40, 40, DFS_FCC3 | DFS_ETSI, PSCAN_WWR, 0, 0}, /* WT1_5210_5250 */
--	{ 5290, 5290, 18, 0, 40, 40, DFS_FCC3 | DFS_ETSI, PSCAN_WWR, 0, 0}, /* WT1_5290_5290 */
--	{ 5540, 5660, 20, 0, 40, 40, DFS_FCC3 | DFS_ETSI, PSCAN_WWR, 0, 0}, /* WT1_5540_5660 */
--	{ 5760, 5800, 20, 0, 40, 40, NO_DFS, PSCAN_WWR, 0, 0},	/* WT1_5760_5800 */
--};
--
- /*
-  * 2GHz 11b channel tags
-  */
-@@ -864,45 +825,6 @@ enum {
- 	W2_2484_2484,
- };
- 
--static REG_DMN_FREQ_BAND regDmn2GhzFreq[] = {
--	{ 2312, 2372, 5,  6, 20, 5, NO_DFS, NO_PSCAN, 0, 0},	/* F1_2312_2372 */
--	{ 2312, 2372, 20, 0, 20, 5, NO_DFS, NO_PSCAN, 0, 0},	/* F2_2312_2372 */
--
--	{ 2412, 2472, 5,  6, 20, 5, NO_DFS, NO_PSCAN, 0, 0},	/* F1_2412_2472 */
--	{ 2412, 2472, 20, 0, 20, 5, NO_DFS, PSCAN_MKKA, 0, 0},	/* F2_2412_2472 */
--	{ 2412, 2472, 30, 0, 20, 5, NO_DFS, NO_PSCAN, 0, 0},	/* F3_2412_2472 */
--
--	{ 2412, 2462, 27, 6, 20, 5, NO_DFS, NO_PSCAN, 0, 0},	/* F1_2412_2462 */
--	{ 2412, 2462, 20, 0, 20, 5, NO_DFS, PSCAN_MKKA, 0, 0},	/* F2_2412_2462 */
--	{ 2432, 2442, 20, 0, 20, 5, NO_DFS, NO_PSCAN, 0, 0},	/* F1_2432_2442 */
--
--	{ 2457, 2472, 20, 0, 20, 5, NO_DFS, NO_PSCAN, 0, 0},	/* F1_2457_2472 */
--
--	{ 2467, 2472, 20, 0, 20, 5, NO_DFS, PSCAN_MKKA2 | PSCAN_MKKA, 0, 0}, /* F1_2467_2472 */
--
--	{ 2484, 2484, 5,  6, 20, 5, NO_DFS, NO_PSCAN, 0, 0},	/* F1_2484_2484 */
--	{ 2484, 2484, 20, 0, 20, 5, NO_DFS, PSCAN_MKKA | PSCAN_MKKA1 | PSCAN_MKKA2, 0, 0},	/* F2_2484_2484 */
--
--	{ 2512, 2732, 5,  6, 20, 5, NO_DFS, NO_PSCAN, 0, 0},	/* F1_2512_2732 */
--
--	/*
--	 * WWR have powers opened up to 20dBm.  Limits should often come from CTL/Max powers
--	 */
--
--	{ 2312, 2372, 20, 0, 20, 5, NO_DFS, NO_PSCAN, 0, 0},	/* W1_2312_2372 */
--	{ 2412, 2412, 20, 0, 20, 5, NO_DFS, NO_PSCAN, 0, 0},	/* W1_2412_2412 */
--	{ 2417, 2432, 20, 0, 20, 5, NO_DFS, NO_PSCAN, 0, 0},	/* W1_2417_2432 */
--	{ 2437, 2442, 20, 0, 20, 5, NO_DFS, NO_PSCAN, 0, 0},	/* W1_2437_2442 */
--	{ 2447, 2457, 20, 0, 20, 5, NO_DFS, NO_PSCAN, 0, 0},	/* W1_2447_2457 */
--	{ 2462, 2462, 20, 0, 20, 5, NO_DFS, NO_PSCAN, 0, 0},	/* W1_2462_2462 */
--	{ 2467, 2467, 20, 0, 20, 5, NO_DFS, PSCAN_WWR | IS_ECM_CHAN, 0, 0}, /* W1_2467_2467 */
--	{ 2467, 2467, 20, 0, 20, 5, NO_DFS, NO_PSCAN | IS_ECM_CHAN, 0, 0},	/* W2_2467_2467 */
--	{ 2472, 2472, 20, 0, 20, 5, NO_DFS, PSCAN_WWR | IS_ECM_CHAN, 0, 0}, /* W1_2472_2472 */
--	{ 2472, 2472, 20, 0, 20, 5, NO_DFS, NO_PSCAN | IS_ECM_CHAN, 0, 0},	/* W2_2472_2472 */
--	{ 2484, 2484, 20, 0, 20, 5, NO_DFS, PSCAN_WWR | IS_ECM_CHAN, 0, 0}, /* W1_2484_2484 */
--	{ 2484, 2484, 20, 0, 20, 5, NO_DFS, NO_PSCAN | IS_ECM_CHAN, 0, 0},	/* W2_2484_2484 */
--};
--
- 
- /*
-  * 2GHz 11g channel tags
-@@ -984,16 +906,6 @@ enum {
- 	T1_2512_2732
- };
- 
--static REG_DMN_FREQ_BAND regDmn2Ghz11gTurboFreq[] = {
--	{ 2312, 2372, 5,  6, 40, 40, NO_DFS, NO_PSCAN, 0, 0},  /* T1_2312_2372 */
--	{ 2437, 2437, 5,  6, 40, 40, NO_DFS, NO_PSCAN, 0, 0},  /* T1_2437_2437 */
--	{ 2437, 2437, 20, 6, 40, 40, NO_DFS, NO_PSCAN, 0, 0},  /* T2_2437_2437 */
--	{ 2437, 2437, 18, 6, 40, 40, NO_DFS, PSCAN_WWR, 0, 0}, /* T3_2437_2437 */
--	{ 2512, 2732, 5,  6, 40, 40, NO_DFS, NO_PSCAN, 0, 0},  /* T1_2512_2732 */
--};
--
--
--
- /*
-  * 2GHz 11n frequency tags
-  */
-@@ -1005,15 +917,6 @@ enum {
-     NG_DEMO_ALL_CHANNELS,
- };
- 
--static REG_DMN_FREQ_BAND regDmn2Ghz11ngFreq[] = {
--    { 2422, 2452, 20, 0, 40, 5, NO_DFS, NO_PSCAN, 0, 0},    /* NG1_2422_2452 */
--    { 2422, 2452, 27, 0, 40, 5, NO_DFS, NO_PSCAN, 0, 0},    /* NG2_2422_2452 */
--    { 2422, 2452, 30, 0, 40, 5, NO_DFS, NO_PSCAN, 0, 0},    /* NG3_2422_2452 */
--
--	{ 2312, 2732, 27, 6, 20, 5, NO_DFS, NO_PSCAN, 0, 0},    /* NG_DEMO_ALL_CHANNELS */
--};
--
--
- /*
-  * 5GHz 11n frequency tags
-  */
-@@ -1050,42 +953,6 @@ enum {
-     NA_DEMO_ALL_CHANNELS,
- };
- 
--static REG_DMN_FREQ_BAND regDmn5Ghz11naFreq[] = {
--    /*
--     * ToDo: This table needs to be completely populated with 5GHz 11n properties
--     */
--	{ 5190, 5230, 15,  0, 40, 40, NO_DFS, NO_PSCAN, 0, 0},	    /* NA1_5190_5230 */
--	{ 5190, 5230, 17,  6, 40, 40, NO_DFS, NO_PSCAN, 0, 0},	/* NA2_5190_5230 */
--	{ 5190, 5230, 18,  6, 40, 40, NO_DFS, NO_PSCAN, 0, 0},	    /* NA3_5190_5230 */
--	{ 5190, 5230, 20,  0, 40, 40, NO_DFS, NO_PSCAN, 0, 0},	/* NA4_5190_5230 */
--	{ 5190, 5230, 23,  6, 40, 40, NO_DFS, NO_PSCAN, 0, 0},	    /* NA5_5190_5230 */
--
--	{ 5270, 5270, 23,  6, 40, 40, DFS_FCC3|DFS_ETSI, NO_PSCAN, 0, 1},  /* NA1_5270_5270 */
--
--	{ 5270, 5310, 18,  6, 40, 40, DFS_FCC3|DFS_ETSI, NO_PSCAN, 0, 1},  /* NA1_5270_5310 */
--	{ 5270, 5310, 20,  0, 40, 40, DFS_FCC3|DFS_ETSI|DFS_MKK4, NO_PSCAN, 0, 1},  /* NA2_5270_5310 */
--	{ 5270, 5310, 23,  6, 40, 40, DFS_FCC3|DFS_ETSI, NO_PSCAN, 0, 1},  /* NA3_5270_5310 */
--	{ 5270, 5310, 30,  6, 40, 40, DFS_FCC3|DFS_ETSI, NO_PSCAN, 0, 1},  /* NA4_5270_5310 */
--
--	{ 5310, 5310, 17,  6, 40, 40, DFS_FCC3|DFS_ETSI, NO_PSCAN, 0, 1},  /* NA1_5310_5310 */
--
--	{ 5510, 5630, 30,  6, 40, 40, DFS_FCC3|DFS_ETSI, NO_PSCAN, 0, 1},  /* NA1_5510_5630 */
--
--	{ 5510, 5670, 20,  6, 40, 40, DFS_FCC3|DFS_ETSI|DFS_MKK4, NO_PSCAN, 0, 1},  /* NA1_5510_5670 */
--	{ 5510, 5670, 27,  0, 40, 40, DFS_FCC3|DFS_ETSI, NO_PSCAN, 0, 1},  /* NA2_5510_5670 */
--	{ 5510, 5670, 30,  6, 40, 40, DFS_FCC3, NO_PSCAN, 0, 1},   /* NA3_5510_5670 */
--
--	{ 5755, 5795, 17,  0, 40, 40, NO_DFS, NO_PSCAN, 0, 0},	    /* NA1_5755_5795 */
--	{ 5755, 5795, 20,  6, 40, 40, DFS_ETSI, NO_PSCAN, 0, 0},	    /* NA2_5755_5795 */
--	{ 5755, 5795, 23,  0, 40, 40, NO_DFS, NO_PSCAN, 0, 0},	    /* NA3_5755_5795 */
--	{ 5755, 5795, 30,  0, 40, 40, NO_DFS, NO_PSCAN, 0, 0},	/* NA4_5755_5795 */
--	{ 5755, 5795, 30,  6, 40, 40, NO_DFS, NO_PSCAN, 0, 0},	    /* NA5_5755_5795 */
--
--	{ 5795, 5795, 30,  6, 40, 40, NO_DFS, NO_PSCAN, 0, 0},	    /* NA1_5795_5795 */
--
--    { 4920, 6100, 30,  6, 40, 40, NO_DFS, NO_PSCAN, 0, 0},	/* NA_DEMO_ALL_CHANNELS */
--};
--
- typedef struct regDomain {
- 	u16_t regDmnEnum;	/* value from EnumRd table */
- 	u8_t conformanceTestLimit;
+> Make sure compiler won't do weird things with limits. E.g. fetching
+> them twice may return 2 different values after writable limits are
+> implemented.
+> 
+> I.e. either use rlimit helpers added in
+> 3e10e716abf3c71bdb5d86b8f507f9e72236c9cd
+> or ACCESS_ONCE if not applicable.
+> 
+> Signed-off-by: Jiri Slaby <jslaby@suse.cz>
 
+Applied, thanks Jiri.
