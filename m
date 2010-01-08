@@ -1,190 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752980Ab0AHK7t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752896Ab0AHLDM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752980Ab0AHK7t (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jan 2010 05:59:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752826Ab0AHK7s
+	id S1752896Ab0AHLDM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jan 2010 06:03:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752465Ab0AHLDL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jan 2010 05:59:48 -0500
-Received: from moutng.kundenserver.de ([212.227.17.10]:59666 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751808Ab0AHK7r (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jan 2010 05:59:47 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: Christoph Hellwig <hch@lst.de>
-Subject: Re: [PATCH v3 3/3] generic sys_ipc wrapper
-Date: Fri, 8 Jan 2010 11:57:17 +0100
-User-Agent: KMail/1.12.2 (Linux/2.6.31-rc8-00053-g43eb7c4-dirty; KDE/4.3.2; x86_64; ; )
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org, linux@arm.linux.org.uk, starvik@axis.com,
-       jesper.nilsson@axis.com, dhowells@redhat.com,
-       ysato@users.sourceforge.jp, takata@linux-m32r.org, geert@linux-m68k.org,
-       zippel@linux-m68k.org, gerg@uclinux.org, ralf@linux-mips.org,
-       benh@kernel.crashing.org, schwidefsky@de.ibm.com,
-       heiko.carstens@de.ibm.com, lethal@linux-sh.org, davem@davemloft.net,
-       jdike@addtoit.com, tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com,
-       viro@zeniv.linux.org.uk
-References: <20100106172152.GC17163@lst.de> <20100108095023.GA29560@lst.de> <20100108100347.GA30353@lst.de>
-In-Reply-To: <20100108100347.GA30353@lst.de>
+	Fri, 8 Jan 2010 06:03:11 -0500
+Received: from er-systems.de ([85.25.136.202]:46011 "EHLO er-systems.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752807Ab0AHLDL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jan 2010 06:03:11 -0500
+Date: Fri, 8 Jan 2010 12:03:07 +0100 (CET)
+From: Thomas Voegtle <tv@lio96.de>
+To: Dmitry Monakhov <dmonakhov@openvz.org>
+cc: Dmitry Monakhov <rjevskiy@gmail.com>, Greg KH <gregkh@suse.de>,
+       Jan Kara <jack@suse.cz>, "Theodore Ts'o" <tytso@mit.edu>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org, stable@kernel.org
+Subject: Re: [PATCH] quota: fix reserved space management for ordinary fs
+In-Reply-To: <87wrztpgbh.fsf_-_@openvz.org>
+Message-ID: <alpine.LNX.2.00.1001081133180.1461@er-systems.de>
+References: <20100106234533.GC1960@kroah.com> <alpine.LNX.2.00.1001071522480.5426@er-systems.de> <20100107180449.GA17495@suse.de> <alpine.LNX.2.00.1001072033301.26784@er-systems.de> <20100107194131.GA22983@suse.de> <alpine.LNX.2.00.1001072125040.26784@er-systems.de>
+ <alpine.LNX.2.00.1001072141340.26784@er-systems.de> <20100107220213.GA24882@suse.de> <c18d6aa21001071603hbe4935clf78984fc837e4bd@mail.gmail.com> <87wrztpgbh.fsf_-_@openvz.org>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201001081157.17195.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1//qohNSM8J/tnlT9SNw3cjfrinlBh0CtZ6aOy
- O4qAkCEGP/9iHqgG1kueDukFABneG0gmQzdjnw79cxbTPhMgs9
- U2IGrKuDoMptm01HoC9og==
+Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
+X-Virus-Checker-Version: clamassassin 1.2.4 with clamdscan / ClamAV 0.95.3/10272/Fri Jan  8 06:21:23 2010 signatures .
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 08 January 2010 11:03:47 Christoph Hellwig wrote:
-> On Fri, Jan 08, 2010 at 10:50:23AM +0100, Christoph Hellwig wrote:
-> > Always return -EINVAL for the iBCS2 special case in SHMAT, and add a
-> > prototype to linux/syscalls.h
+On Fri, 8 Jan 2010, Dmitry Monakhov wrote:
 
-ok, the changes look good.
+>
+> In fact inode_get_rsv_space() function is special in comparison
+> with inode_{add,sub,claim}_rsv_space() functions, because
+> it may return correct result even for fs without reserved space
+> support(correct val == 0). Add trivial check for that case.
+> The patch fix regression(BUG at fs/quota/dquot.c:1350) introduced
+> in following commit: fd8fbfc1709822bd94247c5b2ab15a5f5041e103
+>
+> Signed-off-by: Dmitry Monakhov <dmonakhov@openvz.org>
+> ---
+> fs/quota/dquot.c |    2 ++
+> 1 files changed, 2 insertions(+), 0 deletions(-)
+>
+> diff --git a/fs/quota/dquot.c b/fs/quota/dquot.c
+> index dea86ab..d9f06cf 100644
+> --- a/fs/quota/dquot.c
+> +++ b/fs/quota/dquot.c
+> @@ -1377,6 +1377,8 @@ static void inode_sub_rsv_space(struct inode *inode, qsize_t number)
+> static qsize_t inode_get_rsv_space(struct inode *inode)
+> {
+> 	qsize_t ret;
+> +	if (!inode->i_sb->dq_op->get_reserved_space)
+> +		return 0;
+> 	spin_lock(&inode->i_lock);
+> 	ret = *inode_reserved_space(inode);
+> 	spin_unlock(&inode->i_lock);
+>
 
-> Add a generic implementation of the ipc demultiplexer syscall.  Except for
-> s390 and sparc64 all implementations of the sys_ipc are nearly identical.
+Patch works for me on top of 2.6.33-rc3 and on top of 2.6.31.11.
 
-I think the s390 version is trivial to add as well, like
+Thanks,
 
-SYSCALL_DEFINE5(s390_ipc, uint, call, int, first, unsigned long, second,
- 		unsigned long, third, void __user *, ptr)
-{
-	if (call == SEMTIMEDOP)
-		return sys_semtimedop(first, (struct sembuf __user *)ptr,
-				      (unsigned) second,
-				      (const struct timespec __user *)third);
+Thomas
 
-	return sys_ipc(call & 0xffff, first, second, third, ptr, 0);
-}
 
-But while going over the code again, I noticed that you broke sign extension
-at least on powerpc and s390, possibly on all 64 bit machines:
-
-> +SYSCALL_DEFINE6(ipc, unsigned int, call, int, first, int, second,
-> +		unsigned long, third, void __user *, ptr, long, fifth)
-> +{
-> +	int version, ret;
-> +
-> +	version = call >> 16; /* hack for backward compatibility */
-> +	call &= 0xffff;
-> +
-> +	switch (call) {
-> +	case SEMOP:
-> +		return sys_semtimedop(first, (struct sembuf __user *)ptr,
-> +				      second, NULL);
-
-                                       (unsigned)second, NULL
-
-> +	case SEMTIMEDOP:
-> +		return sys_semtimedop(first, (struct sembuf __user *)ptr,
-> +				      second,
-
-                                      (unsigned)second,
-
-> +				      (const struct timespec __user *)fifth);
-> +
-> +	case SEMGET:
-> +		return sys_semget(first, second, third);
-
-                                         (int)second,
-
-> +	case SEMCTL: {
-> +		union semun fourth;
-> +		if (!ptr)
-> +			return -EINVAL;
-> +		if (get_user(fourth.__pad, (void __user * __user *) ptr))
-> +			return -EFAULT;
-> +		return sys_semctl(first, second, third, fourth);
-
-		return sys_semctl(first, (int)second, third, fourth);
-
-> +	case MSGSND:
-> +		return sys_msgsnd(first, (struct msgbuf __user *) ptr,
-> +				  second, third);
-
-				  (size_t)second, third);
-
-> +	case MSGRCV:
-> +		switch (version) {
-> +		case 0: {
-> +			struct ipc_kludge tmp;
-> +			if (!ptr)
-> +				return -EINVAL;
-> +
-> +			if (copy_from_user(&tmp,
-> +					   (struct ipc_kludge __user *) ptr,
-> +					   sizeof(tmp)))
-> +				return -EFAULT;
-> +			return sys_msgrcv(first, tmp.msgp, second,
-
-			return sys_msgrcv(first, tmp.msgp, (size_t)second,
-
-> +					   tmp.msgtyp, third);
-> +		}
-> +		default:
-> +			return sys_msgrcv(first,
-> +					   (struct msgbuf __user *) ptr,
-> +					   second, fifth, third);
-
-					   (size_t)second, fifth, third);
-
-> +		}
-> +	case MSGGET:
-> +		return sys_msgget((key_t) first, second);
-
-		return sys_msgget((key_t) first, (int)second);
-
-> +	case MSGCTL:
-> +		return sys_msgctl(first, second, (struct msqid_ds __user *)ptr);
-
-		return sys_msgctl(first, (int)second, (struct msqid_ds __user *)ptr);
-
-> +	case SHMAT:
-> +		switch (version) {
-> +		default: {
-> +			unsigned long raddr;
-> +			ret = do_shmat(first, (char __user *)ptr,
-> +				       second, &raddr);
-
-				       (int)second, &raddr);
-
-> +			if (ret)
-> +				return ret;
-> +			return put_user(raddr, (unsigned long __user *) third);
-> +		}
-> +		case 1:
-> +			/*
-> +			 * This was the entry point for kernel-originating calls
-> +			 * from iBCS2 in 2.2 days.
-> +			 */
-> +			return -EINVAL;
-> +		}
-> +	case SHMDT:
-> +		return sys_shmdt((char __user *)ptr);
-> +	case SHMGET:
-> +		return sys_shmget(first, second, third);
-
-				       (size_t)second, &raddr);
-
-> +	case SHMCTL:
-> +		return sys_shmctl(first, second,
-
-		return sys_shmctl(first, (int)second,
-
-> +				   (struct shmid_ds __user *) ptr);
-> +	default:
-> +		return -ENOSYS;
-> +	}
-> +}
-
-This is needed to make sure the upper half of the register is filled with
-zero-extended or sign-extended correctly and does not contain random garbage
-in the native 64 bit case. IIRC, x86_64 does not have this problem and mips64
-may have the wrong code already. Alpha, parisc and ia64 don't have a native
-sys_ipc and the rest are 32 bit, so they don't care.
-
-	Arnd
