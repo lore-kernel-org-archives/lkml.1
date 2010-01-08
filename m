@@ -1,95 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752623Ab0AHRXY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752832Ab0AHRZl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752623Ab0AHRXY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jan 2010 12:23:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752273Ab0AHRXX
+	id S1752832Ab0AHRZl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jan 2010 12:25:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752681Ab0AHRZk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jan 2010 12:23:23 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:55973 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752259Ab0AHRXW (ORCPT
+	Fri, 8 Jan 2010 12:25:40 -0500
+Received: from acsinet11.oracle.com ([141.146.126.233]:62551 "EHLO
+	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752300Ab0AHRZj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jan 2010 12:23:22 -0500
-Date: Fri, 8 Jan 2010 09:22:14 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Peter Zijlstra <peterz@infradead.org>
-cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Minchan Kim <minchan.kim@gmail.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>, cl@linux-foundation.org,
-       "hugh.dickins" <hugh.dickins@tiscali.co.uk>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [RFC][PATCH 6/8] mm: handle_speculative_fault()
-In-Reply-To: <1262969610.4244.36.camel@laptop>
-Message-ID: <alpine.LFD.2.00.1001080911340.7821@localhost.localdomain>
-References: <20100104182429.833180340@chello.nl>  <20100104182813.753545361@chello.nl>  <20100105092559.1de8b613.kamezawa.hiroyu@jp.fujitsu.com>  <28c262361001042029w4b95f226lf54a3ed6a4291a3b@mail.gmail.com>  <20100105134357.4bfb4951.kamezawa.hiroyu@jp.fujitsu.com>
-  <alpine.LFD.2.00.1001042052210.3630@localhost.localdomain>  <20100105143046.73938ea2.kamezawa.hiroyu@jp.fujitsu.com>  <20100105163939.a3f146fb.kamezawa.hiroyu@jp.fujitsu.com>  <alpine.LFD.2.00.1001050707520.3630@localhost.localdomain> 
- <20100106092212.c8766aa8.kamezawa.hiroyu@jp.fujitsu.com>  <alpine.LFD.2.00.1001051718100.3630@localhost.localdomain>  <20100106115233.5621bd5e.kamezawa.hiroyu@jp.fujitsu.com>  <alpine.LFD.2.00.1001051917000.3630@localhost.localdomain> 
- <20100106125625.b02c1b3a.kamezawa.hiroyu@jp.fujitsu.com>  <alpine.LFD.2.00.1001052007090.3630@localhost.localdomain> <1262969610.4244.36.camel@laptop>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 8 Jan 2010 12:25:39 -0500
+Date: Fri, 8 Jan 2010 09:25:05 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>, netdev@vger.kernel.org
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Arnd Bergmann <arnd@arndb.de>
+Subject: Re: linux-next: Tree for January 8 (net/ip.h, BUG=n)
+Message-Id: <20100108092505.4f4e1ac3.randy.dunlap@oracle.com>
+In-Reply-To: <20100108164232.d3e1a164.sfr@canb.auug.org.au>
+References: <20100108164232.d3e1a164.sfr@canb.auug.org.au>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt353.oracle.com [141.146.40.153]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090202.4B476A88.0243:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 8 Jan 2010 16:42:32 +1100 Stephen Rothwell wrote:
 
-
-On Fri, 8 Jan 2010, Peter Zijlstra wrote:
-
-> On Tue, 2010-01-05 at 20:20 -0800, Linus Torvalds wrote:
-> > 
-> > Yeah, I should have looked more at your callchain. That's nasty. Much 
-> > worse than the per-mm lock. I thought the page buffering would avoid the 
-> > zone lock becoming a huge problem, but clearly not in this case.
+> Hi all,
 > 
-> Right, so I ran some numbers on a multi-socket (2) machine as well:
-> 
->                                pf/min
-> 
-> -tip                          56398626
-> -tip + xadd                  174753190
-> -tip + speculative           189274319
-> -tip + xadd + speculative    200174641
-> 
-> [ variance is around 0.5% for this workload, ran most of these numbers
-> with --repeat 5 ]
+> Changes since 20100107:
 
-That's a huge jump. It's clear that the spinlock-based rwsem's simply 
-suck.  The speculation gets rid of some additional mmap_sem contention, 
-but at least for two sockets it looks like the rwsem implementation was 
-the biggest problem by far.
 
-> At both the xadd/speculative point the workload is dominated by the
-> zone->lock, the xadd+speculative removes some of the contention, and
-> removing the various RSS counters could yield another few percent
-> according to the profiles, but then we're pretty much there.
+When CONFIG_BUG=n, CONFIG_GENERIC_BUG=n:
 
-I don't know if worrying about a few percent is worth it. "Perfect is the 
-enemy of good", and the workload is pretty dang artificial with the whole 
-"remove pages and re-fault them as fast as you can".
+include/net/ip.h:341: error: implicit declaration of function '__WARN'
 
-So the benchmark is pointless and extreme, and I think it's not worth 
-worrying too much about details. Especially when compared to just the 
-*three-fold* jump from just the fairly trivial rwsem implementation change 
-(with speculation on top of it then adding another 15% improvement - 
-nothing to sneeze at, but it's still in a different class).
+This affects:
+make[3]: *** [security/selinux/hooks.o] Error 1
+make[3]: *** [fs/ceph/messenger.o] Error 1
+make[3]: *** [net/core/sock.o] Error 1
+make[4]: *** [drivers/net/benet/be_main.o] Error 1
 
-Of course, larger numbers of sockets will likely change the situation, but 
-at the same time I do suspect that workloads designed for hundreds of 
-cores will need to try to behave better than that benchmark anyway ;)
 
-> One way around those RSS counters is to track it per task, a quick grep
-> shows its only the oom-killer and proc that use them.
-> 
-> A quick hack removing them gets us: 203158058
+(this was on i386 builds)
 
-Yeah, well.. After that 200% and 15% improvement, a 1.5% improvement on a 
-totally artificial benchmark looks less interesting.
-
-Because let's face it - if your workload does several million page faults 
-per second, you're just doing something fundamentally _wrong_.
-
-			Linus
+---
+~Randy
