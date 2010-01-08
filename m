@@ -1,46 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754341Ab0AHWwe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754369Ab0AHXAn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754341Ab0AHWwe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jan 2010 17:52:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754233Ab0AHWwd
+	id S1754369Ab0AHXAn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jan 2010 18:00:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754358Ab0AHXAm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jan 2010 17:52:33 -0500
-Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:45377 "EHLO
-	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754259Ab0AHWwc (ORCPT
+	Fri, 8 Jan 2010 18:00:42 -0500
+Received: from [206.15.93.42] ([206.15.93.42]:11783 "EHLO
+	visionfs1.visionengravers.com" rhost-flags-FAIL-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754355Ab0AHXAl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jan 2010 17:52:32 -0500
-Date: Fri, 8 Jan 2010 23:52:31 +0100
-From: Andreas Mohr <andi@lisas.de>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Christoph Hellwig <hch@lst.de>, Al Viro <viro@ZenIV.linux.org.uk>,
-       Matthew Wilcox <matthew@wil.cx>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       linux@arm.linux.org.uk, dhowells@redhat.com, ysato@users.sourceforge.jp,
-       tony.luck@intel.com
-Subject: Re: [PATCH 1/3] generic sys_old_select
-Message-ID: <20100108225231.GA11332@rhlx01.hs-esslingen.de>
+	Fri, 8 Jan 2010 18:00:41 -0500
+From: H Hartley Sweeten <hartleys@visionengravers.com>
+To: Linux Kernel <linux-kernel@vger.kernel.org>, linux-media@vger.kernel.org
+Subject: [PATCH] drivers/media/common: remove unnecessary casts of void *
+Date: Fri, 8 Jan 2010 15:51:42 -0700
+Cc: michael@mihu.de, mchehab@infradead.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-X-Priority: none
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <201001081551.42264.hartleys@visionengravers.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> There is, however, a reason *not* to do it which should be carefully
-> considered: by co-locating the compatibility version with the modern
-> version, it gets access to static functions that are part of the
-> implementation of the modern version.  If we move the compatibility
-> versions out, it may entail having to export those statics.
-> 
->         -hpa
+drivers/media/common: Remove unnecessary casts of void *
 
-Hmm, do I hear a reason to simply fully #include the (newly separated)
-old-style .c file from within the new-style .c file?
-Not necessarily a wonderful approach, but perhaps it beats doing a "correct
-full separation" and thus having a couple new-born (and unhappy ;) exports
-any day?
+void pointers do not need to be cast to other pointer types.
 
-Andreas Mohr
+Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
+Cc: Michael Hunold <michael@mihu.de>
+Cc: Mauro Carvalho Chehab <mchehab@infradead.org>
+
+---
+
+ drivers/media/common/saa7146_vbi.c   |    6 +++---
+ drivers/media/common/saa7146_video.c |    4 ++--
+ 2 files changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/media/common/saa7146_vbi.c b/drivers/media/common/saa7146_vbi.c
+index 74e2b56..301a795 100644
+--- a/drivers/media/common/saa7146_vbi.c
++++ b/drivers/media/common/saa7146_vbi.c
+@@ -3,7 +3,7 @@
+ static int vbi_pixel_to_capture = 720 * 2;
+ 
+ static int vbi_workaround(struct saa7146_dev *dev)
+-{
++{.remove_casts.hhs~
+ 	struct saa7146_vv *vv = dev->vv_data;
+ 
+ 	u32          *cpu;
+@@ -375,7 +375,7 @@ static void vbi_init(struct saa7146_dev *dev, struct saa7146_vv *vv)
+ 
+ static int vbi_open(struct saa7146_dev *dev, struct file *file)
+ {
+-	struct saa7146_fh *fh = (struct saa7146_fh *)file->private_data;
++	struct saa7146_fh *fh = file->private_data;
+ 
+ 	u32 arbtr_ctrl	= saa7146_read(dev, PCI_BT_V1);
+ 	int ret = 0;
+@@ -437,7 +437,7 @@ static int vbi_open(struct saa7146_dev *dev, struct file *file)
+ 
+ static void vbi_close(struct saa7146_dev *dev, struct file *file)
+ {
+-	struct saa7146_fh *fh = (struct saa7146_fh *)file->private_data;
++	struct saa7146_fh *fh = file->private_data;
+ 	struct saa7146_vv *vv = dev->vv_data;
+ 	DEB_VBI(("dev:%p, fh:%p\n",dev,fh));
+ 
+diff --git a/drivers/media/common/saa7146_video.c b/drivers/media/common/saa7146_video.c
+index becbaad..cfc8634 100644
+--- a/drivers/media/common/saa7146_video.c
++++ b/drivers/media/common/saa7146_video.c
+@@ -1368,7 +1368,7 @@ static void video_init(struct saa7146_dev *dev, struct saa7146_vv *vv)
+ 
+ static int video_open(struct saa7146_dev *dev, struct file *file)
+ {
+-	struct saa7146_fh *fh = (struct saa7146_fh *)file->private_data;
++	struct saa7146_fh *fh = file->private_data;
+ 	struct saa7146_format *sfmt;
+ 
+ 	fh->video_fmt.width = 384;
+@@ -1392,7 +1392,7 @@ static int video_open(struct saa7146_dev *dev, struct file *file)
+ 
+ static void video_close(struct saa7146_dev *dev, struct file *file)
+ {
+-	struct saa7146_fh *fh = (struct saa7146_fh *)file->private_data;
++	struct saa7146_fh *fh = file->private_data;
+ 	struct saa7146_vv *vv = dev->vv_data;
+ 	struct videobuf_queue *q = &fh->video_q;
+ 	int err;
