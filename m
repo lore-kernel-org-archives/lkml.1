@@ -1,81 +1,205 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753313Ab0AHCLk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753333Ab0AHCN1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753313Ab0AHCLk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 21:11:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753284Ab0AHCLi
+	id S1753333Ab0AHCN1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 21:13:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753295Ab0AHCN0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 21:11:38 -0500
-Received: from exprod6og107.obsmtp.com ([64.18.1.208]:34765 "HELO
-	exprod6og107.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750983Ab0AHCLh convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 21:11:37 -0500
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Thu, 7 Jan 2010 21:13:26 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:17055 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753195Ab0AHCNZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jan 2010 21:13:25 -0500
+Message-ID: <4B469511.1030402@redhat.com>
+Date: Thu, 07 Jan 2010 21:14:41 -0500
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: RE: [PATCH] drivers/net/defxx.c: use %pMF to show MAC address
-Date: Thu, 7 Jan 2010 21:11:34 -0500
-Message-ID: <BD79186B4FD85F4B8E60E381CAEE19090208961F@mi8nycmail19.Mi8.com>
-In-Reply-To: <alpine.LFD.2.00.1001080143250.13474@eddie.linux-mips.org>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] drivers/net/defxx.c: use %pMF to show MAC address
-Thread-Index: AcqQByo2d3IyWpHBTQ+Z2QITGltPXQAACpzQ
-References: <201001071624.20139.hartleys@visionengravers.com> <1262914750.10429.88.camel@Joe-Laptop.home> <alpine.LFD.2.00.1001080143250.13474@eddie.linux-mips.org>
-From: "H Hartley Sweeten" <hartleys@visionengravers.com>
-To: "Maciej W. Rozycki" <macro@linux-mips.org>,
-       "Joe Perches" <joe@perches.com>
-Cc: "Linux Kernel" <linux-kernel@vger.kernel.org>, <netdev@vger.kernel.org>,
-       <davem@davemloft.net>
-X-OriginalArrivalTime: 08 Jan 2010 02:11:36.0023 (UTC) FILETIME=[E7B7BE70:01CA9007]
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Daisuke HATAYAMA <d.hatayama@jp.fujitsu.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, xiyou.wangcong@gmail.com,
+       andi@firstfloor.org, jdike@addtoit.com, tony.luck@intel.com
+Subject: Re: [RESEND][mmotm][PATCH v2, 0/5] elf coredump: Add extended numbering
+ support
+References: <20100104.100607.189714443.d.hatayama@jp.fujitsu.com>	<20100107162928.1d6eba76.akpm@linux-foundation.org> <20100107163259.86165aee.akpm@linux-foundation.org>
+In-Reply-To: <20100107163259.86165aee.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, January 07, 2010 7:06 PM, Maciej W. Rozycki wrote:
-> On Thu, 7 Jan 2010, Joe Perches wrote:
->
->> On Thu, 2010-01-07 at 16:24 -0700, H Hartley Sweeten wrote:
->>> Use the %pMF kernel extension to display the MAC address.
->>> The address will still be displayed in the FDDI Canonical format.
->> 
->>> diff --git a/drivers/net/defxx.c b/drivers/net/defxx.c
->>> index 6a6ea03..e4eac4b 100644
->>> --- a/drivers/net/defxx.c
->>> +++ b/drivers/net/defxx.c
->>> @@ -1052,12 +1052,9 @@ static int __devinit dfx_driver_init(struct net_device *dev,
->>>  		board_name = "DEFEA";
->>>  	if (dfx_bus_pci)
->>>  		board_name = "DEFPA";
->>> -	pr_info("%s: %s at %saddr = 0x%llx, IRQ = %d, "
->>> -		"Hardware addr = %02X-%02X-%02X-%02X-%02X-%02X\n",
->>> +	pr_info("%s: %s at %saddr = 0x%llx, IRQ = %d, Hardware addr = %pMF\n",
->>>  		print_name, board_name, dfx_use_mmio ? "" : "I/O ",
->> 
->> I believe the output will _now_ be in the canonical form.
->> Before it wasn't bit reversed.  Now it should be.
->
-> Output was correct -- why would you assume otherwise?  The bit order in 
-> the MLA (My Long Address) register as retrieved from the MAC chip by 
-> board's firmware has nothing to do with the wire order and is already in 
-> the canonical form (the same applies to CAM entries and frame headers) -- 
-> the board designers were sane people.
->
-> With the two patches in place the output produced is now broken. :(
->
+Andrew Morton wrote:
+> On Thu, 7 Jan 2010 16:29:28 -0800
+> Andrew Morton <akpm@linux-foundation.org> wrote:
+> 
+>> On Mon, 04 Jan 2010 10:06:07 +0900 (JST)
+>> Daisuke HATAYAMA <d.hatayama@jp.fujitsu.com> wrote:
+>>
+>>> The current ELF dumper can produce broken corefiles if program headers
+>>> exceed 65535. In particular, the program in 64-bit environment often
+>>> demands more than 65535 mmaps. If you google max_map_count, then you
+>>> can find many users facing this problem.
+>>>
+>>> Solaris has already dealt with this issue, and other OSes have also
+>>> adopted the same method as in Solaris. Currently, Sun's document and
+>>> AMD 64 ABI include the description for the extension, where they call
+>>> the extension Extended Numbering. See Reference for further information.
+>>>
+>>> I believe that linux kernel should adopt the same way as they did, so
+>>> I've written this patch.
+>>>
+>>> I am also preparing for patches of GDB and binutils.
+>>
+>> That's a beautifully presented patchset.  Thanks for doing all that
+>> work - it helps.
+>>
+>> UML maintenance appears to have ceased in recent times, so if we wish
+>> to have these changes runtime tested (we should) then I think it would
+>> be best if you could find someone to do that please.
+>>
+>> And no akpm code-review would be complete without: dump_seek() is
+>> waaaay to large to be inlined.  Is there some common .c file to where
+>> we could move it?
+>>
+> 
+> Also, these patches made a bit of a mess of
+> mm-pass-mm-flags-as-a-coredump-parameter-for-consistency.patch.
+> 
+> I consider
+> mm-pass-mm-flags-as-a-coredump-parameter-for-consistency.patch to be
+> less important (although older) than this patch series so I've fixed up
+> mm-pass-mm-flags-as-a-coredump-parameter-for-consistency.patch and have
+> staged it after your patch series.  If this causes problems then I'll
+> drop mm-pass-mm-flags-as-a-coredump-parameter-for-consistency.patch,
+> sorry.
 
-Ugh.. This is a mess...
+Sure, that's fine to me too.
+It seems that those patches are not conflict each other directly.
 
-David,
+Thank you for modifying my patch.
+And I found just two misses.
 
-Can you please un-apply both this patch and the one for skfddi.c?
-I think they should both use some form of the %p[mMF] format to display
-the address but it appears Maciej is the only person that really knows
-what the output _should" be...
+> From: Masami Hiramatsu <mhiramat@redhat.com>
+> 
+> Pass mm->flags as a coredump parameter for consistency.
+> 
+>  ---
+> 1787         if (mm->core_state || !get_dumpable(mm)) {  <- (1)
+> 1788                 up_write(&mm->mmap_sem);
+> 1789                 put_cred(cred);
+> 1790                 goto fail;
+> 1791         }
+> 1792
+> [...]
+> 1798         if (get_dumpable(mm) == 2) {    /* Setuid core dump mode */ <-(2)
+> 1799                 flag = O_EXCL;          /* Stop rewrite attacks */
+> 1800                 cred->fsuid = 0;        /* Dump root private */
+> 1801         }
+>  ---
+> 
+> Since dumpable bits are not protected by lock, there is a chance to change
+> these bits between (1) and (2).
+> 
+> To solve this issue, this patch copies mm->flags to
+> coredump_params.mm_flags at the beginning of do_coredump() and uses it
+> instead of get_dumpable() while dumping core.
+> 
+> This copy is also passed to binfmt->core_dump, since elf*_core_dump() uses
+> dump_filter bits in mm->flags.
+> 
+> Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+> Acked-by: Roland McGrath <roland@redhat.com>
+> Cc: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+> Cc: Oleg Nesterov <oleg@redhat.com>
+> Cc: Ingo Molnar <mingo@elte.hu>
+> Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+> ---
+> 
+>  fs/binfmt_elf.c         |   12 ++----------
+>  fs/binfmt_elf_fdpic.c   |   12 ++----------
+>  fs/exec.c               |   20 ++++++++++++++++----
+>  include/linux/binfmts.h |    1 +
+>  4 files changed, 21 insertions(+), 24 deletions(-)
+> 
+> diff -puN fs/binfmt_elf.c~mm-pass-mm-flags-as-a-coredump-parameter-for-consistency fs/binfmt_elf.c
+> --- a/fs/binfmt_elf.c~mm-pass-mm-flags-as-a-coredump-parameter-for-consistency
+> +++ a/fs/binfmt_elf.c
+> @@ -1905,7 +1905,6 @@ static int elf_core_dump(struct coredump
+>  	struct vm_area_struct *vma, *gate_vma;
+>  	struct elfhdr *elf = NULL;
+>  	loff_t offset = 0, dataoff, foffset;
+> -	unsigned long mm_flags;
+>  	struct elf_note_info info;
+>  	struct elf_phdr *phdr4note = NULL;
+>  	struct elf_shdr *shdr4extnum = NULL;
+> @@ -1980,13 +1979,6 @@ static int elf_core_dump(struct coredump
+>  
+>  	dataoff = offset = roundup(offset, ELF_EXEC_PAGESIZE);
+>  
+> -	/*
+> -	 * We must use the same mm->flags while dumping core to avoid
+> -	 * inconsistency between the program headers and bodies, otherwise an
+> -	 * unusable core file can be generated.
+> -	 */
+> -	mm_flags = current->mm->flags;
+> -
+>  	offset += elf_core_vma_data_size(gate_vma, mm_flags);
+						   ^^^^^^^^ cprm->mm_flags
 
-Oh well... So much for trying to make things consistent...
+>  	offset += elf_core_extra_data_size();
+>  	e_shoff = offset;
+> @@ -2018,7 +2010,7 @@ static int elf_core_dump(struct coredump
+>  		phdr.p_offset = offset;
+>  		phdr.p_vaddr = vma->vm_start;
+>  		phdr.p_paddr = 0;
+> -		phdr.p_filesz = vma_dump_size(vma, mm_flags);
+> +		phdr.p_filesz = vma_dump_size(vma, cprm->mm_flags);
+>  		phdr.p_memsz = vma->vm_end - vma->vm_start;
+>  		offset += phdr.p_filesz;
+>  		phdr.p_flags = vma->vm_flags & VM_READ ? PF_R : 0;
+> @@ -2053,7 +2045,7 @@ static int elf_core_dump(struct coredump
+>  		unsigned long addr;
+>  		unsigned long end;
+>  
+> -		end = vma->vm_start + vma_dump_size(vma, mm_flags);
+> +		end = vma->vm_start + vma_dump_size(vma, cprm->mm_flags);
+>  
+>  		for (addr = vma->vm_start; addr < end; addr += PAGE_SIZE) {
+>  			struct page *page;
+> diff -puN fs/binfmt_elf_fdpic.c~mm-pass-mm-flags-as-a-coredump-parameter-for-consistency fs/binfmt_elf_fdpic.c
+> --- a/fs/binfmt_elf_fdpic.c~mm-pass-mm-flags-as-a-coredump-parameter-for-consistency
+> +++ a/fs/binfmt_elf_fdpic.c
+> @@ -1623,7 +1623,6 @@ static int elf_fdpic_core_dump(struct co
+>  #endif
+>  	int thread_status_size = 0;
+>  	elf_addr_t *auxv;
+> -	unsigned long mm_flags;
+>  	struct elf_phdr *phdr4note = NULL;
+>  	struct elf_shdr *shdr4extnum = NULL;
+>  	Elf_Half e_phnum;
+> @@ -1766,13 +1765,6 @@ static int elf_fdpic_core_dump(struct co
+>  	/* Page-align dumped data */
+>  	dataoff = offset = roundup(offset, ELF_EXEC_PAGESIZE);
+>  
+> -	/*
+> -	 * We must use the same mm->flags while dumping core to avoid
+> -	 * inconsistency between the program headers and bodies, otherwise an
+> -	 * unusable core file can be generated.
+> -	 */
+> -	mm_flags = current->mm->flags;
+> -
+>  	offset += elf_core_vma_data_size(mm_flags);
+                                         ^^^^^^^^ cprm->mm_flags
 
-Regards,
-Hartley
+Thanks!
+
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
+
