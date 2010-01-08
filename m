@@ -1,66 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754065Ab0AHTti@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754024Ab0AHT4Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754065Ab0AHTti (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jan 2010 14:49:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753977Ab0AHTti
+	id S1754024Ab0AHT4Q (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jan 2010 14:56:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753648Ab0AHT4P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jan 2010 14:49:38 -0500
-Received: from mail-pz0-f171.google.com ([209.85.222.171]:45449 "EHLO
-	mail-pz0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753928Ab0AHTth convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jan 2010 14:49:37 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=cgsjWYNxuy7Oro5u3lFNcMsfnFhQVpyQE7ruNlYoet16csqJ6KNl5hevS79UgY7tcs
-         g5lKwD6+kjpXdLobZ6VT0LgzHy9asx5hi1XZnWVyvbnGTOpo8oN4d41F4GDqhMFtcDmk
-         vA4T2ViHRXUonIkS8xIguqWKRY5xTdZiBifZQ=
+	Fri, 8 Jan 2010 14:56:15 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:49745 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753376Ab0AHT4P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jan 2010 14:56:15 -0500
+Message-ID: <4B478DBC.6010502@redhat.com>
+Date: Fri, 08 Jan 2010 14:55:40 -0500
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Lightning/1.0pre Thunderbird/3.0
 MIME-Version: 1.0
-In-Reply-To: <m1bph4o1il.fsf@fess.ebiederm.org>
-References: <1262951595-1729-1-git-send-email-yinghai@kernel.org>
-	 <1262951595-1729-5-git-send-email-yinghai@kernel.org>
-	 <m1bph4o1il.fsf@fess.ebiederm.org>
-Date: Fri, 8 Jan 2010 11:49:36 -0800
-X-Google-Sender-Auth: 467b9b5596618e09
-Message-ID: <86802c441001081149k1be26027m62752604dca53aa@mail.gmail.com>
-Subject: Re: [PATCH 5/5] x86: update nr_irqs according cpu num
-From: Yinghai Lu <yinghai@kernel.org>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jesse Brandeburg <jesse.brandeburg@intel.com>,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: Bryan Donlan <bdonlan@gmail.com>
+CC: Marcelo Tosatti <mtosatti@redhat.com>, Gleb Natapov <gleb@redhat.com>,
+       kvm@vger.kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       avi@redhat.com, mingo@elte.hu, a.p.zijlstra@chello.nl,
+       tglx@linutronix.de, hpa@zytor.com, cl@linux-foundation.org
+Subject: Re: [PATCH v3 00/12] KVM: Add host swap event notifications for PV
+ 	guest
+References: <1262700774-1808-1-git-send-email-gleb@redhat.com> 	<20100108161828.GA30404@amt.cnet> <4B478689.5020907@redhat.com> <3e8340491001081130v2adb8e07k3b32f7f860daf603@mail.gmail.com>
+In-Reply-To: <3e8340491001081130v2adb8e07k3b32f7f860daf603@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 8, 2010 at 11:11 AM, Eric W. Biederman
-<ebiederm@xmission.com> wrote:
-> Yinghai Lu <yinghai@kernel.org> writes:
+On 01/08/2010 02:30 PM, Bryan Donlan wrote:
+> On Fri, Jan 8, 2010 at 2:24 PM, Rik van Riel<riel@redhat.com>  wrote:
+>> On 01/08/2010 11:18 AM, Marcelo Tosatti wrote:
+>>
+>>> - Limit the number of queued async pf's per guest ?
+>>
+>> This is automatically limited to the number of processes
+>> running in a guest :)
 >
->> that is max number on run time.
->
-> Ouch!  Unless I misread this code this will leave nr_irqs at
-> NR_IRQS_LEGACY. aka 16.
+> Only if the guest is nice and plays by the rules. What is to stop a
+> malicious guest from just immediately switching back to userspace and
+> kicking off another page-in every time it gets an async PF?
 
-nr_irqs is set to NR_IRQS before.
+Good point, a malicious guest could do that and ruin
+things for everyone.  I guess we do need a limit :)
 
->
-> Let's do something stupid and simple.
-> nr_irqs = nr_cpus_ids * 256;  /* Semi-arbitrary number */
->
-> Ideally we would set "nr_irqs = 0x7fffffff;" but we have just enough
-> places using nr_irqs that I think those loops would get painful if we
-> were to do that.
-
-or you need have NR_IRQS = NR_CPUS * 256 at first,
-
-and then make nr_irqs = nr_cpu_ids * 224 ?
-
-YH
+-- 
+All rights reversed.
