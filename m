@@ -1,69 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754618Ab0AHBMv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754627Ab0AHBTM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754618Ab0AHBMv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 20:12:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754594Ab0AHBMv
+	id S1754627Ab0AHBTM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 20:19:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754611Ab0AHBTL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 20:12:51 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:32951 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754168Ab0AHBMu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 20:12:50 -0500
-Date: Thu, 7 Jan 2010 17:12:29 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Trond Myklebust <Trond.Myklebust@netapp.com>
-cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
-Subject: Re: [GIT PULL] Please pull NFS client bugfixes....
-In-Reply-To: <1262912601.2659.89.camel@localhost>
-Message-ID: <alpine.LFD.2.00.1001071707430.7821@localhost.localdomain>
-References: <1262896174.2659.3.camel@localhost>  <87zl4pmxzp.fsf@basil.nowhere.org> <1262901198.2659.38.camel@localhost>  <20100107235149.GD16076@basil.fritz.box>  <1262909682.2659.45.camel@localhost>  <alpine.LFD.2.00.1001071633200.7821@localhost.localdomain>
- <1262912601.2659.89.camel@localhost>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 7 Jan 2010 20:19:11 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:40613 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754152Ab0AHBTK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jan 2010 20:19:10 -0500
+Date: Fri, 8 Jan 2010 12:19:03 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Peter Zijlstra <peterz@infradead.org>, Sage Weil <sage@newdream.net>,
+       Wu Fengguang <fengguang.wu@intel.com>
+Subject: Re: linux-next: nfs/ceph tree build failure
+Message-Id: <20100108121903.6a096bc1.sfr@canb.auug.org.au>
+In-Reply-To: <1262909913.2659.47.camel@localhost>
+References: <20100108111136.3feae8c6.sfr@canb.auug.org.au>
+	<1262909913.2659.47.camel@localhost>
+X-Mailer: Sylpheed 3.0.0beta4 (GTK+ 2.18.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Fri__8_Jan_2010_12_19_03_+1100_5UAFgA1/S_7U34Zn"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--Signature=_Fri__8_Jan_2010_12_19_03_+1100_5UAFgA1/S_7U34Zn
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
+Hi Trond,
 
-On Thu, 7 Jan 2010, Trond Myklebust wrote:
-> > 
-> > Because it means that you can trivially take page faults before the thing 
-> > is validated (think threads).
-> 
-> Which would mean that another process/thread already has part of the
-> file mmapped on the same client. I'm not arguing that have to revalidate
-> in _that_ case.
+On Thu, 07 Jan 2010 19:18:33 -0500 Trond Myklebust <trond.myklebust@fys.uio=
+.no> wrote:
+>
+> The patch itself looks correct to me.
 
-No, I'm talking about the new mapping. Nothing else.
+Thanks for the confirmation.
 
-If the mmap'ing thread releases mmap_sem, and then does the revalidate, 
-then you can have
+> How would you like me to proceed? Should I revert the VM changes from
+> the NFS linux-next tree, or would you be OK with keeping the above patch
+> for now?
 
-	thread1				thread2
-	-------				-------
+I am OK with keeping the patch - we just need to remember it during the
+next merge window.
 
-	mmap
-	map it in
-	release mmap_sem
-					page-fault the mapping before it got validated
-	->post_mmap()
-	revalidate outside mmap_sem
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-See? No "already part of the file mmapped" case at all. The exact mmap 
-that you just set up - without the revalidation having happened.
+--Signature=_Fri__8_Jan_2010_12_19_03_+1100_5UAFgA1/S_7U34Zn
+Content-Type: application/pgp-signature
 
-In fact, because of this kind of _fundamental_ race, I don't see why I 
-would ever accept any patches that add multiple mmap() down-calls at 
-different phases to the filesystem at the VFS layer.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
 
-A filesystem that depends on the different phases would be a fundamentally 
-buggy filesystem. Right now mmap is "atomic", and you can pre-populate (or 
-pre-verify, like NFS does) the mapping in the _knowledge_ that there are 
-no page faults that will populate it concurrently. Exactly because we hold 
-the mmap_sem for writing.
+iEYEARECAAYFAktGiAcACgkQjjKRsyhoI8yNAgCgqm5Ad/AF8O3eU8ndU8ZJc98I
+TTwAn1fIMvabHKzzxgX8dqYpQWTOEed0
+=80A/
+-----END PGP SIGNATURE-----
 
-				Linus
+--Signature=_Fri__8_Jan_2010_12_19_03_+1100_5UAFgA1/S_7U34Zn--
