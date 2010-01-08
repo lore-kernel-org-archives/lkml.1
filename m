@@ -1,86 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753432Ab0AHCy2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753476Ab0AHCyh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753432Ab0AHCy2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 21:54:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753318Ab0AHCy1
+	id S1753476Ab0AHCyh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 21:54:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753443Ab0AHCyf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 21:54:27 -0500
-Received: from www262.sakura.ne.jp ([202.181.97.72]:58830 "EHLO
-	www262.sakura.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752939Ab0AHCy1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 21:54:27 -0500
-Message-Id: <201001080254.o082sOXB018423@www262.sakura.ne.jp>
-Subject: [2.6.30 and later] file corruption on ext3 filesystem.
-From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-MIME-Version: 1.0
+	Thu, 7 Jan 2010 21:54:35 -0500
+Received: from mga11.intel.com ([192.55.52.93]:22383 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753442Ab0AHCyd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jan 2010 21:54:33 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,238,1262592000"; 
+   d="scan'208";a="529503569"
+Subject: Re: [RFC PATCH] sched: Pass affine target cpu into wake_affine
+From: Lin Ming <ming.m.lin@intel.com>
+To: Mike Galbraith <efault@gmx.de>
+Cc: Peter Zijlstra <peterz@infradead.org>, lkml <linux-kernel@vger.kernel.org>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+In-Reply-To: <1262870055.9337.34.camel@marge.simson.net>
+References: <1262595827.22471.108.camel@minggr.sh.intel.com>
+	 <1262659686.22471.121.camel@minggr.sh.intel.com>
+	 <1262663058.5748.32.camel@marge.simson.net>
+	 <1262673817.9534.37.camel@marge.simson.net>
+	 <1262853903.18931.17.camel@minggr.sh.intel.com>
+	 <1262870055.9337.34.camel@marge.simson.net>
+Content-Type: text/plain
+Date: Fri, 08 Jan 2010 10:38:51 +0800
+Message-Id: <1262918331.3598.14.camel@minggr.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 (2.24.1-2.fc10) 
 Content-Transfer-Encoding: 7bit
-Date: Fri, 08 Jan 2010 11:54:24 +0900
-Content-Type: text/plain; charset="ISO-2022-JP"
-X-Anti-Virus: K-Prox Anti-Virus Powered by Kaspersky, bases: 08012010 #3087878, status: clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+On Thu, 2010-01-07 at 21:14 +0800, Mike Galbraith wrote:
+> On Thu, 2010-01-07 at 16:45 +0800, Lin Ming wrote:
+> > On Tue, 2010-01-05 at 14:43 +0800, Mike Galbraith wrote:
+> > > On Tue, 2010-01-05 at 04:44 +0100, Mike Galbraith wrote:
+> > > > On Tue, 2010-01-05 at 10:48 +0800, Lin Ming wrote:
+> > > > > On Mon, 2010-01-04 at 17:03 +0800, Lin Ming wrote:
+> > > > > > commit a03ecf08d7bbdd979d81163ea13d194fe21ad339
+> > > > > > Author: Lin Ming <ming.m.lin@intel.com>
+> > > > > > Date:   Mon Jan 4 14:14:50 2010 +0800
+> > > > > > 
+> > > > > >     sched: Pass affine target cpu into wake_affine
+> > > > > >     
+> > > > > >     Since commit a1f84a3(sched: Check for an idle shared cache in select_task_rq_fair()),
+> > > > > >     the affine target maybe adjusted to any idle cpu in cache sharing domains
+> > > > > >     instead of current cpu.
+> > > > > >     But wake_affine still use current cpu to calculate load which is wrong.
+> > > > > >     
+> > > > > >     This patch passes affine cpu into wake_affine.
+> > > > > >     
+> > > > > >     Signed-off-by: Lin Ming <ming.m.lin@intel.com>
+> > > > > 
+> > > > > Mike,
+> > > > > 
+> > > > > Any comment of this patch?
+> > > > 
+> > > > The patch definitely looks like the right thing to do, but when I tried
+> > > > this, it didn't work out well.  Since I can't seem to recall precise
+> > > > details, I'll let my box either remind me or give it's ack.
+> > > 
+> > > Unfortunately, box reminded me.  mysql+oltp peak throughput with
+> > > nr_clients == nr_cpus
+> > 
+> > Did you test with your vmark regression fix patch also applied?
+> 
+> Below is a complete retest.  Mind testing my hacklet?  I bet a nickle
+> it'll work at least as well as yours on your beefy boxen.
 
-I'm experiencing file corruption problem.
-Can somebody reproduce below result?
+I tested your hacklet on below 2 machines as before.
 
-My environment:
-  VMware Workstation 6.5.3 with 2CPUs / 512MB RAM.
-  ext3 filesystem ( /dev/sda1 ) mounted on / .
+Tigerton x86_64 machine: 16cpus(4P/4Cores), 40G mem
+IA64 machine: 32cpus(4P/4Cores/HT), 16G mem
 
-  2.6.33-rc3 ( http://I-love.SAKURA.ne.jp/tmp/config-2.6.33-rc3-ext3 )
-  2.6.32.3   ( http://I-love.SAKURA.ne.jp/tmp/config-2.6.32.3-ext3 )
-  2.6.31.11  ( http://I-love.SAKURA.ne.jp/tmp/config-2.6.31.11-ext3 )
-  2.6.30.10
+Test1: vmark regression fix patch + pass affine target
+Test2: this hacklet
 
-  So far, I haven't succeeded to reproduce this problem for 2.6.29 and earlier.
-  Maybe this problem exists in only 2.6.30 and later.
+Compared with upstream 2.6.33-rc2, 
+Test1: Tigerton +3%, IA64 +15%
+Test2: Tigerton +3%, IA64 +10%
 
-Steps to reproduce:
+The test2 also improves on IA64, although not as good as test1.
 
-  Compile below program using "gcc -Wall -O3 -o a.out".
+I also tested tbench, this hacklet does not help.
 
-----------
-#include <stdio.h>
-#include <string.h>
-#include <unistd.h>
+Lin Ming
 
-int main(int argc, char *argv[])
-{
-	FILE *fp = fopen("/testfile", "a");
-	char buffer[4096];
-	memset(buffer, argc > 1 ? argv[1][0] : 0x20, sizeof(buffer));
-	buffer[sizeof(buffer) - 1] = '\n';
-	fwrite(buffer, 1, sizeof(buffer), fp);
-	fflush(fp);
-	sleep(5);
-	fprintf(stderr, "Let power fail after a few seconds.\n");
-	while (1) {
-		sleep(1);
-		fwrite(buffer, 1, sizeof(buffer), fp);
-	}
-	return 0;
-}
-----------
-
-  Reboot the system by executing /sbin/reboot .
-
-  Run ./a.out and let the power fail (i.e. unplug the electric cable
-  or do equivalent) after more than 5 seconds (i.e. longer than kjournald's
-  commit interval). Probably 2 or 3 seconds after
-  "Let power fail after a few seconds.\n" was printed is the best.
-
-  Restart the system (and fsck will be executed).
-
-  Run "cat /testfile". It should contain only lines of 4095 spaces + '\n'
-  (or the byte specified via argv[]). But it contains different data.
-
-  This problem does not show up if the data written by ./a.out and the data in
-  previously deleted files are identical. Therefore, you may want to try with
-  different patterns like "./a.out 1" "./a.out 2" "./a.out 3" ...
-
-Regards.
