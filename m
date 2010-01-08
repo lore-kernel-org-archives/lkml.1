@@ -1,60 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753239Ab0AHCGQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753261Ab0AHCLH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753239Ab0AHCGQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 21:06:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752884Ab0AHCGP
+	id S1753261Ab0AHCLH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 21:11:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753130Ab0AHCLF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 21:06:15 -0500
-Received: from eddie.linux-mips.org ([78.24.191.182]:59823 "EHLO
-	eddie.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752181Ab0AHCGP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 21:06:15 -0500
-Date: Fri, 8 Jan 2010 02:06:14 +0000 (GMT)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Joe Perches <joe@perches.com>
-cc: H Hartley Sweeten <hartleys@visionengravers.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
-       davem@davemloft.net
-Subject: Re: [PATCH] drivers/net/defxx.c: use %pMF to show MAC address
-In-Reply-To: <1262914750.10429.88.camel@Joe-Laptop.home>
-Message-ID: <alpine.LFD.2.00.1001080143250.13474@eddie.linux-mips.org>
-References: <201001071624.20139.hartleys@visionengravers.com> <1262914750.10429.88.camel@Joe-Laptop.home>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 7 Jan 2010 21:11:05 -0500
+Received: from trinity.fluff.org ([89.16.178.74]:56203 "EHLO trinity.fluff.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752918Ab0AHCLE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jan 2010 21:11:04 -0500
+To: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+       linux-samsung-soc@vger.kernel.org, torvalds@linux-foundation.org
+Subject: Please pull bjdooks' for-linus/samsung
+From: Ben Dooks <ben-linux@fluff.org>
+Message-Id: <E1NT4JR-0006WN-6J@trinity.fluff.org>
+Date: Fri, 08 Jan 2010 02:10:53 +0000
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: ben@trinity.fluff.org
+X-SA-Exim-Scanned: No (on trinity.fluff.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 7 Jan 2010, Joe Perches wrote:
+The following changes since commit c5974b835a909ff15c3b7e6cf6789b5eb919f419:
+  Linus Torvalds (1):
+        Merge branch 'limits_cleanup' of git://decibel.fi.muni.cz/~xslaby/linux
 
-> On Thu, 2010-01-07 at 16:24 -0700, H Hartley Sweeten wrote:
-> > Use the %pMF kernel extension to display the MAC address.
-> > The address will still be displayed in the FDDI Canonical format.
-> 
-> > diff --git a/drivers/net/defxx.c b/drivers/net/defxx.c
-> > index 6a6ea03..e4eac4b 100644
-> > --- a/drivers/net/defxx.c
-> > +++ b/drivers/net/defxx.c
-> > @@ -1052,12 +1052,9 @@ static int __devinit dfx_driver_init(struct net_device *dev,
-> >  		board_name = "DEFEA";
-> >  	if (dfx_bus_pci)
-> >  		board_name = "DEFPA";
-> > -	pr_info("%s: %s at %saddr = 0x%llx, IRQ = %d, "
-> > -		"Hardware addr = %02X-%02X-%02X-%02X-%02X-%02X\n",
-> > +	pr_info("%s: %s at %saddr = 0x%llx, IRQ = %d, Hardware addr = %pMF\n",
-> >  		print_name, board_name, dfx_use_mmio ? "" : "I/O ",
-> 
-> I believe the output will _now_ be in the canonical form.
-> Before it wasn't bit reversed.  Now it should be.
+are available in the git repository at:
 
- Output was correct -- why would you assume otherwise?  The bit order in 
-the MLA (My Long Address) register as retrieved from the MAC chip by 
-board's firmware has nothing to do with the wire order and is already in 
-the canonical form (the same applies to CAM entries and frame headers) -- 
-the board designers were sane people.
+  git://git.fluff.org/bjdooks/linux.git for-linus/samsung
 
- With the two patches in place the output produced is now broken. :(
+Ben Dooks (1):
+      ARM: S3C64XX: Fix possible clock look in EPLL and MPLL clock chains
 
-  Maciej
+ arch/arm/plat-s3c64xx/s3c6400-clock.c |   10 +---------
+ 1 files changed, 1 insertions(+), 9 deletions(-)
