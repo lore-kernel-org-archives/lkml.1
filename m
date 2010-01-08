@@ -1,85 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753432Ab0AHRyS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753671Ab0AHSKA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753432Ab0AHRyS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jan 2010 12:54:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753323Ab0AHRyR
+	id S1753671Ab0AHSKA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jan 2010 13:10:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752901Ab0AHSJ7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jan 2010 12:54:17 -0500
-Received: from mail.perches.com ([173.55.12.10]:1660 "EHLO mail.perches.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752662Ab0AHRyQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jan 2010 12:54:16 -0500
-Subject: RE: [PATCH] drivers/net/defxx.c: use %pMF to show MAC address
-From: Joe Perches <joe@perches.com>
-To: "Maciej W. Rozycki" <macro@linux-mips.org>
-Cc: H Hartley Sweeten <hartleys@visionengravers.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
-       davem@davemloft.net
-In-Reply-To: <alpine.LFD.2.00.1001081316570.13474@eddie.linux-mips.org>
-References: <201001071624.20139.hartleys@visionengravers.com>
-	 <1262914750.10429.88.camel@Joe-Laptop.home>
-	 <alpine.LFD.2.00.1001080143250.13474@eddie.linux-mips.org>
-	 <BD79186B4FD85F4B8E60E381CAEE19090208961F@mi8nycmail19.Mi8.com>
-	 <alpine.LFD.2.00.1001081316570.13474@eddie.linux-mips.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 08 Jan 2010 09:54:14 -0800
-Message-ID: <1262973254.14898.14.camel@Joe-Laptop.home>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 8 Jan 2010 13:09:59 -0500
+Received: from relay1.sgi.com ([192.48.179.29]:41964 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752798Ab0AHSJ7 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jan 2010 13:09:59 -0500
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Subject: RE: [GIT PULL] XFS update for 2.6.33-rc1
+Date: Fri, 8 Jan 2010 12:09:54 -0600
+Message-ID: <1AB9A794DBDDF54A8A81BE2296F7BDFE012A6931@cf--amer001e--3.americas.sgi.com>
+In-Reply-To: <20100108094428.ff03c720.randy.dunlap@oracle.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [GIT PULL] XFS update for 2.6.33-rc1
+Thread-Index: AcqQik3BMM2tECHFQwGmeZGO+yJPIAAAs5Hw
+From: "Alex Elder" <aelder@sgi.com>
+To: "Randy Dunlap" <randy.dunlap@oracle.com>
+Cc: "Dave Chinner" <david@fromorbit.com>, <torvalds@linux-foundation.org>,
+       <linux-kernel@vger.kernel.org>, <xfs@oss.sgi.com>,
+       <akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2010-01-08 at 13:34 +0000, Maciej W. Rozycki wrote:
-> On Thu, 7 Jan 2010, H Hartley Sweeten wrote:
-> > >> I believe the output will _now_ be in the canonical form.
-> > >> Before it wasn't bit reversed.  Now it should be.
-> > >
-> > > Output was correct -- why would you assume otherwise?
-> > > With the two patches in place the output produced is now broken. :(
-
->  Here are excerpts from old bootstrap logs -- I don't have any of these 
-> boards handy at the moment, but I'll have access to a couple in a few 
-> weeks' time:
+Randy Dunlap wrote:
+> On Wed, 16 Dec 2009 21:41:12 -0600 Alex Elder wrote:
 > 
-> defxx: v1.10 2006/12/14  Lawrence V. Stefani and others
-> tc0: DEFTA at addr = 0x10100000, IRQ = 2, Hardware addr = 08-00-2B-A3-66-C8
-> tc0: registered as fddi0
-> tc1: DEFTA at addr = 0x14100000, IRQ = 3, Hardware addr = 08-00-2B-A3-A3-29
-> tc1: registered as fddi1
+>> Dave Chinner wrote:
+>>> On Wed, Dec 16, 2009 at 01:55:12PM -0800, Randy Dunlap wrote:
+>>>> On Wed, 16 Dec 2009 15:26:10 -0600 Alex Elder wrote:
+>>>> 
+>>>>> One more XFS update for -rc1, now that the new XFS tracing code has
+>>>>> been committed.
+>>>> 
+>>>> Sorry if I have missed it, but have the printk format warnings
+>>>> on i386 builds been fixed?
+>>> 
+>>> I don't see any here w/ gcc 4.3.4 x86-64 compiling i386 kernels....
+>> 
+>> I didn't get them either when I built in my environment.
+>> 
+>> Dave, your patch looks good to me, and Randy has acked it
+>> so I'm going to pull it into our XFS top-of-tree.  I'll
+>> hold off sending yet another pull request to Linus for
+>> now.  Thanks for addressing it quickly.
+>> 
+>> 					-Alex
 > 
-> defxx: v1.10 2006/12/14  Lawrence V. Stefani and others
-> 0000:00:06.0: DEFPA at addr = 0x41071000, IRQ = 57, Hardware addr = 00-60-B0-58-40-75
-> 0000:00:06.0: registered as fddi0
-> 0000:02:00.0: DEFPA at addr = 0x41510000, IRQ = 57, Hardware addr = 00-60-B0-58-41-E7
-> 0000:02:00.0: registered as fddi1
+> Hi Alex,
+> Dave's patch is now needed in Linus's mainline kernel tree...
+
+Yes, I noticed that.  I forgot I hadn't requested it get pulled.
+Sorry.  Working on that today.
+
+					-Alex
+
+
+>>> /me hates gcc's warning inconsistencies with a passion.
+>>> 
+>>>> e.g.:
+>>>> 
+>>>> In file included from linux-next-20091216/include/trace/ftrace.h:398,
+>>>>                  from linux-next-20091216/include/trace/define_trace.h:69,
+>>>>                  from linux-next-20091216/fs/xfs/linux-2.6/xfs_trace.h:1369,
+>>>>                  from linux-next-20091216/fs/xfs/linux-2.6/xfs_trace.c:75:
+>>>> linux-next-20091216/fs/xfs/linux-2.6/./xfs_trace.h: In function
+>>>> 'ftrace_raw_output_id_xfs_iomap_enter':
+>>>> linux-next-20091216/fs/xfs/linux-2.6/./xfs_trace.h:830: warning: format '%llx' expects type
+>>>> 'long long unsigned int', but argument 12 has type 'xfs_fsblock_t'
+>>> 
+>>> Patch that should fix this below.
+>>> 
+>>> Cheers,
+>>> 
+>>> Dave.
 > 
-> Compare the addresses reported with the OUIs of the respective 
-> manufacturers -- the former is DEC and the latter is HP.  See 
-> http://standards.ieee.org/regauth/oui/oui.txt for a reference.
-
-Then isn't the hardware address shown as ethernet and not as
-in the FDDI canonical format?
-
-Which confuses me relative to what you wrote earlier.
-
-> On Mon, 2010-01-04 at 23:43 +0000, Maciej W. Rozycki wrote:
-> > The example below shows an address, and the sequence of bits or symbols 
-> > that would be transmitted when the address is used in the Source Address 
-> > or Destination Address fields on the MAC header.  The transmission line 
-> > shows the address bits in the order transmitted, from left to right.  For 
-> > IEEE 802 LANs these correspond to actual bits on the medium.  The FDDI 
-> > symbols line shows how the FDDI PHY sends the address bits as encoded 
-> > symbols.
-> > 
-> >         MSB:            35:7B:12:00:00:01
-> >         Canonical:      AC-DE-48-00-00-80
-
-So, it should simply use %pM correct?
-
-Is there any address that should be shown in the
-FDDI canonical form?
-
-cheers, Joe
+> 
+> ---
+> ~Randy
 
