@@ -1,98 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753358Ab0AHMgt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753378Ab0AHMjP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753358Ab0AHMgt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jan 2010 07:36:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753285Ab0AHMgs
+	id S1753378Ab0AHMjP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jan 2010 07:39:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753285Ab0AHMjO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jan 2010 07:36:48 -0500
-Received: from bld-mail17.adl2.internode.on.net ([150.101.137.102]:37078 "EHLO
-	mail.internode.on.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753218Ab0AHMgr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jan 2010 07:36:47 -0500
-Date: Fri, 8 Jan 2010 23:36:41 +1100
-From: Dave Chinner <david@fromorbit.com>
-To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [2.6.30 and later] file corruption on ext3 filesystem.
-Message-ID: <20100108123641.GB8654@discord.disaster>
-References: <201001080254.o082sOXB018423@www262.sakura.ne.jp>
+	Fri, 8 Jan 2010 07:39:14 -0500
+Received: from cantor.suse.de ([195.135.220.2]:59614 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753226Ab0AHMjN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jan 2010 07:39:13 -0500
+Date: Fri, 8 Jan 2010 13:39:15 +0100
+From: Jan Kara <jack@suse.cz>
+To: Dmitry Monakhov <rjevskiy@gmail.com>
+Cc: Greg KH <gregkh@suse.de>, Thomas Voegtle <tv@lio96.de>,
+       Jan Kara <jack@suse.cz>, "Theodore Ts'o" <tytso@mit.edu>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org, stable@kernel.org
+Subject: Re: Linux 2.6.31.10
+Message-ID: <20100108123915.GB3354@quack.suse.cz>
+References: <20100106234533.GC1960@kroah.com>
+ <alpine.LNX.2.00.1001071522480.5426@er-systems.de>
+ <20100107180449.GA17495@suse.de>
+ <alpine.LNX.2.00.1001072033301.26784@er-systems.de>
+ <20100107194131.GA22983@suse.de>
+ <alpine.LNX.2.00.1001072125040.26784@er-systems.de>
+ <alpine.LNX.2.00.1001072141340.26784@er-systems.de>
+ <20100107220213.GA24882@suse.de>
+ <c18d6aa21001071603hbe4935clf78984fc837e4bd@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <201001080254.o082sOXB018423@www262.sakura.ne.jp>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <c18d6aa21001071603hbe4935clf78984fc837e4bd@mail.gmail.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 08, 2010 at 11:54:24AM +0900, Tetsuo Handa wrote:
-> Hello.
-> 
-> I'm experiencing file corruption problem.
-> Can somebody reproduce below result?
-> 
-> My environment:
->   VMware Workstation 6.5.3 with 2CPUs / 512MB RAM.
->   ext3 filesystem ( /dev/sda1 ) mounted on / .
-> 
->   2.6.33-rc3 ( http://I-love.SAKURA.ne.jp/tmp/config-2.6.33-rc3-ext3 )
->   2.6.32.3   ( http://I-love.SAKURA.ne.jp/tmp/config-2.6.32.3-ext3 )
->   2.6.31.11  ( http://I-love.SAKURA.ne.jp/tmp/config-2.6.31.11-ext3 )
->   2.6.30.10
-> 
->   So far, I haven't succeeded to reproduce this problem for 2.6.29 and earlier.
->   Maybe this problem exists in only 2.6.30 and later.
+On Fri 08-01-10 03:03:30, Dmitry Monakhov wrote:
+> 2010/1/8 Greg KH <gregkh@suse.de>:
+> > On Thu, Jan 07, 2010 at 09:42:52PM +0100, Thomas Voegtle wrote:
+> >> On Thu, 7 Jan 2010, Thomas Voegtle wrote:
+> >>
+> >>> Done, between 2.6.31.9 and 2.6.31.11
+> >>>
+> >>>
+> >>> c169e13a6662cbf36fc0098508e7aa31b49cbf23 is first bad commit
+> >>> commit c169e13a6662cbf36fc0098508e7aa31b49cbf23
+> >>> Author: Dmitry Monakhov <dmonakhov@openvz.org>
+> >>> Date:   Mon Dec 14 15:21:13 2009 +0300
+> >>>
+> >>>    quota: decouple fs reserved space from quota reservation
+> >>>
+> >>>    commit fd8fbfc1709822bd94247c5b2ab15a5f5041e103 upstream.
+> Ohhh No...
+> This is totaly my fault. after some cleanups i've forgot to test
+> ext3+quota scenario :( . The error is trivial, it is too sad what this
+> error
+> was found this late.'
+> calltrace:
+> ->chown
+>     ->dquot_transfer
+>        ->inode_get_rsv_space
+  Yeah, it's also my fault because I've tested your patches only with ext4
+so this was not uncovered. I've actually noticed the bug on Wednesday
+evening (and fixed it in my tree) but forgot to push it do stable :(
 
-Isn't that when the default mount options  changed from data=ordered to
-data=writeback?
-
-> Steps to reproduce:
-> 
->   Compile below program using "gcc -Wall -O3 -o a.out".
-> 
-> ----------
-> #include <stdio.h>
-> #include <string.h>
-> #include <unistd.h>
-> 
-> int main(int argc, char *argv[])
-> {
-> 	FILE *fp = fopen("/testfile", "a");
-> 	char buffer[4096];
-> 	memset(buffer, argc > 1 ? argv[1][0] : 0x20, sizeof(buffer));
-> 	buffer[sizeof(buffer) - 1] = '\n';
-> 	fwrite(buffer, 1, sizeof(buffer), fp);
-> 	fflush(fp);
-> 	sleep(5);
-> 	fprintf(stderr, "Let power fail after a few seconds.\n");
-> 	while (1) {
-> 		sleep(1);
-> 		fwrite(buffer, 1, sizeof(buffer), fp);
-> 	}
-> 	return 0;
-> }
-> ----------
-> 
->   Reboot the system by executing /sbin/reboot .
-> 
->   Run ./a.out and let the power fail (i.e. unplug the electric cable
->   or do equivalent) after more than 5 seconds (i.e. longer than kjournald's
->   commit interval). Probably 2 or 3 seconds after
->   "Let power fail after a few seconds.\n" was printed is the best.
-> 
->   Restart the system (and fsck will be executed).
-> 
->   Run "cat /testfile". It should contain only lines of 4095 spaces + '\n'
->   (or the byte specified via argv[]). But it contains different data.
-
-You didn't fsync() it, so there is no reason for the kernel
-to have ever written it to disk. Therefore the result after powerfail
-is completely undefined - you data may be there, it may not...
-
-Cheers,
-
-Dave.
+								Honza
 -- 
-Dave Chinner
-david@fromorbit.com
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
