@@ -1,56 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754047Ab0AHTKy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754051Ab0AHTLW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754047Ab0AHTKy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jan 2010 14:10:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753975Ab0AHTKx
+	id S1754051Ab0AHTLW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jan 2010 14:11:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753928Ab0AHTLV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jan 2010 14:10:53 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:42684 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753910Ab0AHTKx (ORCPT
+	Fri, 8 Jan 2010 14:11:21 -0500
+Received: from out02.mta.xmission.com ([166.70.13.232]:54328 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753910Ab0AHTLU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jan 2010 14:10:53 -0500
-Date: Fri, 8 Jan 2010 20:10:51 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Minchan Kim <minchan.kim@gmail.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "hugh.dickins" <hugh.dickins@tiscali.co.uk>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [RFC][PATCH 6/8] mm: handle_speculative_fault()
-Message-ID: <20100108191051.GA14141@basil.fritz.box>
-References: <alpine.LFD.2.00.1001051718100.3630@localhost.localdomain> <20100106115233.5621bd5e.kamezawa.hiroyu@jp.fujitsu.com> <alpine.LFD.2.00.1001051917000.3630@localhost.localdomain> <20100106125625.b02c1b3a.kamezawa.hiroyu@jp.fujitsu.com> <alpine.LFD.2.00.1001052007090.3630@localhost.localdomain> <1262969610.4244.36.camel@laptop> <alpine.LFD.2.00.1001080911340.7821@localhost.localdomain> <alpine.DEB.2.00.1001081138260.23727@router.home> <87my0omo3n.fsf@basil.nowhere.org> <alpine.DEB.2.00.1001081255100.26886@router.home>
+	Fri, 8 Jan 2010 14:11:20 -0500
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jesse Brandeburg <jesse.brandeburg@intel.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 5/5] x86: update nr_irqs according cpu num
+References: <1262951595-1729-1-git-send-email-yinghai@kernel.org>
+	<1262951595-1729-5-git-send-email-yinghai@kernel.org>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Fri, 08 Jan 2010 11:11:14 -0800
+In-Reply-To: <1262951595-1729-5-git-send-email-yinghai@kernel.org> (Yinghai Lu's message of "Fri\, 08 Jan 2010 03\:53\:15 -0800")
+Message-ID: <m1bph4o1il.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.1001081255100.26886@router.home>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Scanned: No (on in01.mta.xmission.com); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 08, 2010 at 12:56:08PM -0600, Christoph Lameter wrote:
-> On Fri, 8 Jan 2010, Andi Kleen wrote:
-> 
-> > This year's standard server will be more like 24-64 "cpus"
-> 
-> What will it be? 2 or 4 sockets?
+Yinghai Lu <yinghai@kernel.org> writes:
 
-2-4 sockets.
- 
-> > Cheating with locks usually doesn't work anymore at these sizes.
-> 
-> Cheating means?
+> that is max number on run time.
 
-Not really fixing the underlying data structure problem.
+Ouch!  Unless I misread this code this will leave nr_irqs at
+NR_IRQS_LEGACY. aka 16.
 
--Andi
+Let's do something stupid and simple.
+nr_irqs = nr_cpus_ids * 256;  /* Semi-arbitrary number */
 
--- 
-ak@linux.intel.com -- Speaking for myself only.
+Ideally we would set "nr_irqs = 0x7fffffff;" but we have just enough
+places using nr_irqs that I think those loops would get painful if we
+were to do that.
+
+Eric
