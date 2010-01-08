@@ -1,235 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755304Ab0AVX0F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755437Ab0AVX01@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755304Ab0AVX0F (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 18:26:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755414Ab0AVXYM
+	id S1755437Ab0AVX01 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 18:26:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756239Ab0AVX0U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 18:24:12 -0500
-Received: from fmmailgate03.web.de ([217.72.192.234]:60631 "EHLO
-	fmmailgate03.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755280Ab0AVXYE (ORCPT
+	Fri, 22 Jan 2010 18:26:20 -0500
+Received: from fmmailgate02.web.de ([217.72.192.227]:49661 "EHLO
+	fmmailgate02.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753767Ab0AVX0H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 18:24:04 -0500
-Message-Id: <c0d3d79e2e332a019926360f80cb4c893826cf71.1264201407.git.jan.kiszka@web.de>
+	Fri, 22 Jan 2010 18:26:07 -0500
+Message-Id: <136f269e37529d1e40fc54ef3da02facd7bda21a.1264201407.git.jan.kiszka@web.de>
 In-Reply-To: <cover.1264201406.git.jan.kiszka@web.de>
 References: <cover.1264201406.git.jan.kiszka@web.de>
 From: Jan Kiszka <jan.kiszka@web.de>
 To: David Miller <davem@davemloft.net>, Karsten Keil <isdn@linux-pingi.de>
 Cc: linux-kernel@vger.kernel.org, i4ldeveloper@listserv.isdn4linux.de,
        isdn4linux@listserv.isdn4linux.de, netdev@vger.kernel.org
-Date: Fri, 8 Jan 2010 10:45:04 +0100
-Subject: [PATCH 19/31] CAPI: Fix locking around glueing capiminor and capidev
-X-Provags-ID: V01U2FsdGVkX1/UH/mULMbu9ty2sN8T7PCzSEasRRORZwph5kmt
-	0BGGuIMejFUOwrxZ919OBwdJHpNcDFGvYfV0YPjFpkjrfxCRsr
-	vOGzV/eAg=
+Date: Fri, 8 Jan 2010 11:38:58 +0100
+Subject: [PATCH 20/31] CAPI: Drop atomic ttyopencount
+X-Provags-ID: V01U2FsdGVkX19Fttd5Fb3BV6k93tb6KXC7wwB4zoBSFhXGdKNJ
+	ccmSGvk1dtFCJd+x93HM3zOYX9lY6EtYbYNFB9hXtnNLUNh4ba
+	Jk81GA5xM=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The CAPI user interface comes with two types of devices: /dev/capi20 is
-a character device, instances are represented by capidev objects. Each
-established network control connection triggers the creation of a TTY
-device (/dev/capi/<ncci>), open instances are managed via capiminor
-objects. capincci objects are representing the connections, and they
-link the corresponding capiminor to its capidev. Unfortunately, the
-lifetimes of an NCCI is not identical to that of a capiminor instance.
-So we need proper locking to glue things and also unbind them again.
-
-This patch fixes the totally broken attempts to achieve this via a
-rwlock and some atomic counter. It converts the rwlock into a mutex and
-applies it to all related critical sections (capinc_tty_open/close as
-well as capiminor_alloc/release).
+Not needed, tty->count keeps track of this information. At this chance,
+drop traces of ancient attempts to debug this logic via _DEBUG_REFCOUNT.
 
 Signed-off-by: Jan Kiszka <jan.kiszka@web.de>
 ---
- drivers/isdn/capi/capi.c |   82 +++++++++++++++++++++++----------------------
- 1 files changed, 42 insertions(+), 40 deletions(-)
+ drivers/isdn/capi/capi.c |   31 +++----------------------------
+ 1 files changed, 3 insertions(+), 28 deletions(-)
 
 diff --git a/drivers/isdn/capi/capi.c b/drivers/isdn/capi/capi.c
-index 249ff13..b53cead 100644
+index b53cead..7710a66 100644
 --- a/drivers/isdn/capi/capi.c
 +++ b/drivers/isdn/capi/capi.c
-@@ -150,7 +150,7 @@ static LIST_HEAD(capidev_list);
+@@ -44,7 +44,6 @@ MODULE_DESCRIPTION("CAPI4Linux: Userspace /dev/capi20 interface");
+ MODULE_AUTHOR("Carsten Paeth");
+ MODULE_LICENSE("GPL");
  
- #ifdef CONFIG_ISDN_CAPI_MIDDLEWARE
+-#undef _DEBUG_REFCOUNT		/* alloc/free and open/close debug */
+ #undef _DEBUG_TTYFUNCS		/* call to tty_driver */
+ #undef _DEBUG_DATAFLOW		/* data flow */
  
--static DEFINE_RWLOCK(capiminor_list_lock);
-+static DEFINE_MUTEX(glue_lock);
- static LIST_HEAD(capiminor_list);
+@@ -98,7 +97,6 @@ struct capiminor {
+ 	int                ttyinstop;
+ 	int                ttyoutstop;
+ 	struct sk_buff    *ttyskb;
+-	atomic_t           ttyopencount;
  
- /* -------- datahandles --------------------------------------------- */
-@@ -214,7 +214,6 @@ static struct capiminor *capiminor_alloc(struct capi20_appl *ap, u32 ncci)
- {
- 	struct capiminor *mp, *p;
- 	unsigned int minor = 0;
--	unsigned long flags;
+ 	struct sk_buff_head inqueue;
+ 	int                 inbytes;
+@@ -224,7 +222,6 @@ static struct capiminor *capiminor_alloc(struct capi20_appl *ap, u32 ncci)
+ 	mp->ap = ap;
+ 	mp->ncci = ncci;
+ 	mp->msgid = 0;
+-	atomic_set(&mp->ttyopencount,0);
+ 	INIT_LIST_HEAD(&mp->ackqueue);
+ 	spin_lock_init(&mp->ackqlock);
  
- 	mp = kzalloc(sizeof(*mp), GFP_KERNEL);
-   	if (!mp) {
-@@ -234,7 +233,6 @@ static struct capiminor *capiminor_alloc(struct capi20_appl *ap, u32 ncci)
- 
- 	/* Allocate the least unused minor number.
- 	 */
--	write_lock_irqsave(&capiminor_list_lock, flags);
- 	if (list_empty(&capiminor_list))
- 		list_add(&mp->list, &capiminor_list);
- 	else {
-@@ -249,7 +247,6 @@ static struct capiminor *capiminor_alloc(struct capi20_appl *ap, u32 ncci)
- 			list_add(&mp->list, p->list.prev);
- 		}
- 	}
--		write_unlock_irqrestore(&capiminor_list_lock, flags);
- 
- 	if (!(minor < capi_ttyminors)) {
- 		printk(KERN_NOTICE "capi: out of minorsn");
-@@ -262,36 +259,25 @@ static struct capiminor *capiminor_alloc(struct capi20_appl *ap, u32 ncci)
- 
- static void capiminor_free(struct capiminor *mp)
- {
--	unsigned long flags;
--
--	write_lock_irqsave(&capiminor_list_lock, flags);
- 	list_del(&mp->list);
--	write_unlock_irqrestore(&capiminor_list_lock, flags);
- 
- 	kfree_skb(mp->ttyskb);
--	mp->ttyskb = NULL;
- 	skb_queue_purge(&mp->inqueue);
- 	skb_queue_purge(&mp->outqueue);
-+
- 	capiminor_del_all_ack(mp);
-+
- 	kfree(mp);
- }
- 
- static struct capiminor *capiminor_find(unsigned int minor)
- {
--	struct list_head *l;
--	struct capiminor *p = NULL;
--
--	read_lock(&capiminor_list_lock);
--	list_for_each(l, &capiminor_list) {
--		p = list_entry(l, struct capiminor, list);
--		if (p->minor == minor)
--			break;
--	}
--	read_unlock(&capiminor_list_lock);
--	if (l == &capiminor_list)
--		return NULL;
-+	struct capiminor *mp;
- 
--	return p;
-+	list_for_each_entry(mp, &capiminor_list, list)
-+		if (mp->minor == minor)
-+			return mp;
-+	return NULL;
- }
- 
- /* -------- struct capincci ----------------------------------------- */
-@@ -303,6 +289,8 @@ static void capincci_alloc_minor(struct capidev *cdev, struct capincci *np)
- 	if (!(cdev->userflags & CAPIFLAG_HIGHJACKING))
- 		return;
- 
-+	mutex_lock(&glue_lock);
-+
+@@ -294,9 +291,6 @@ static void capincci_alloc_minor(struct capidev *cdev, struct capincci *np)
  	mp = np->minorp = capiminor_alloc(&cdev->ap, np->ncci);
  	if (mp) {
  		mp->nccip = np;
-@@ -313,12 +301,17 @@ static void capincci_alloc_minor(struct capidev *cdev, struct capincci *np)
+-#ifdef _DEBUG_REFCOUNT
+-		printk(KERN_DEBUG "set mp->nccipn");
+-#endif
+ 		mp->capifs_dentry =
  			capifs_new_ncci(mp->minor,
  					MKDEV(capi_ttymajor, mp->minor));
- 	}
-+
-+	mutex_unlock(&glue_lock);
- }
- 
- static void capincci_free_minor(struct capincci *np)
- {
--	struct capiminor *mp = np->minorp;
-+	struct capiminor *mp;
- 
-+	mutex_lock(&glue_lock);
-+
-+	mp = np->minorp;
- 	if (mp) {
+@@ -316,9 +310,6 @@ static void capincci_free_minor(struct capincci *np)
  		capifs_free_ncci(mp->capifs_dentry);
  		if (mp->tty) {
-@@ -331,6 +324,8 @@ static void capincci_free_minor(struct capincci *np)
+ 			mp->nccip = NULL;
+-#ifdef _DEBUG_REFCOUNT
+-			printk(KERN_DEBUG "reset mp->nccipn");
+-#endif
+ 			tty_hangup(mp->tty);
+ 		} else {
  			capiminor_free(mp);
- 		}
- 	}
-+
-+	mutex_unlock(&glue_lock);
+@@ -332,7 +323,7 @@ static inline unsigned int capincci_minor_opencount(struct capincci *np)
+ {
+ 	struct capiminor *mp = np->minorp;
+ 
+-	return mp ? atomic_read(&mp->ttyopencount) : 0;
++	return (mp && mp->tty) ? mp->tty->count : 0;
  }
  
- static inline unsigned int capincci_minor_opencount(struct capincci *np)
-@@ -992,13 +987,17 @@ static int capinc_tty_open(struct tty_struct * tty, struct file * file)
- {
- 	struct capiminor *mp;
- 	unsigned long flags;
-+	int err = 0;
+ #else /* !CONFIG_ISDN_CAPI_MIDDLEWARE */
+@@ -998,14 +989,9 @@ static int capinc_tty_open(struct tty_struct * tty, struct file * file)
+ 	}
  
--	if ((mp = capiminor_find(iminor(file->f_path.dentry->d_inode))) == NULL)
--		return -ENXIO;
--	if (mp->nccip == NULL)
--		return -ENXIO;
-+	mutex_lock(&glue_lock);
- 
--	tty->driver_data = (void *)mp;
-+	mp = capiminor_find(iminor(file->f_path.dentry->d_inode));
-+	if (!mp || !mp->nccip) {
-+		err = -ENXIO;
-+		goto unlock_out;
-+	}
-+
-+	tty->driver_data = mp;
+ 	tty->driver_data = mp;
++	mp->tty = tty;
  
  	spin_lock_irqsave(&workaround_lock, flags);
- 	if (atomic_read(&mp->ttyopencount) == 0)
-@@ -1009,28 +1008,31 @@ static int capinc_tty_open(struct tty_struct * tty, struct file * file)
- #endif
+-	if (atomic_read(&mp->ttyopencount) == 0)
+-		mp->tty = tty;
+-	atomic_inc(&mp->ttyopencount);
+-#ifdef _DEBUG_REFCOUNT
+-	printk(KERN_DEBUG "capinc_tty_open ocount=%dn", atomic_read(&mp->ttyopencount));
+-#endif
  	handle_minor_recv(mp);
  	spin_unlock_irqrestore(&workaround_lock, flags);
--	return 0;
-+
-+unlock_out:
-+	mutex_unlock(&glue_lock);
-+	return err;
+ 
+@@ -1020,23 +1006,12 @@ static void capinc_tty_close(struct tty_struct * tty, struct file * file)
+ 
+ 	mutex_lock(&glue_lock);
+ 
+-	if (atomic_dec_and_test(&mp->ttyopencount)) {
+-#ifdef _DEBUG_REFCOUNT
+-		printk(KERN_DEBUG "capinc_tty_close lastclosen");
+-#endif
++	if (tty->count == 1)
+ 		mp->tty = NULL;
+-	}
+-#ifdef _DEBUG_REFCOUNT
+-		printk(KERN_DEBUG "capinc_tty_close ocount=%dn", atomic_read(&mp->ttyopencount));
+-#endif
+ 	if (!mp->nccip)
+ 		capiminor_free(mp);
+ 
+ 	mutex_unlock(&glue_lock);
+-
+-#ifdef _DEBUG_REFCOUNT
+-	printk(KERN_DEBUG "capinc_tty_closen");
+-#endif
  }
  
- static void capinc_tty_close(struct tty_struct * tty, struct file * file)
- {
--	struct capiminor *mp;
-+	struct capiminor *mp = tty->driver_data;
- 
--	mp = (struct capiminor *)tty->driver_data;
--	if (mp)	{
--		if (atomic_dec_and_test(&mp->ttyopencount)) {
-+	mutex_lock(&glue_lock);
-+
-+	if (atomic_dec_and_test(&mp->ttyopencount)) {
- #ifdef _DEBUG_REFCOUNT
--			printk(KERN_DEBUG "capinc_tty_close lastclosen");
-+		printk(KERN_DEBUG "capinc_tty_close lastclosen");
- #endif
--			tty->driver_data = NULL;
--			mp->tty = NULL;
--		}
-+		mp->tty = NULL;
-+	}
- #ifdef _DEBUG_REFCOUNT
- 		printk(KERN_DEBUG "capinc_tty_close ocount=%dn", atomic_read(&mp->ttyopencount));
- #endif
--		if (mp->nccip == NULL)
--			capiminor_free(mp);
--	}
-+	if (!mp->nccip)
-+		capiminor_free(mp);
-+
-+	mutex_unlock(&glue_lock);
- 
- #ifdef _DEBUG_REFCOUNT
- 	printk(KERN_DEBUG "capinc_tty_closen");
+ static int capinc_tty_write(struct tty_struct * tty,
 -- 
 1.6.0.2
 
