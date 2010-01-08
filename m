@@ -1,82 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753288Ab0AHUGX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753728Ab0AHUId@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753288Ab0AHUGX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jan 2010 15:06:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752214Ab0AHUGW
+	id S1753728Ab0AHUId (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jan 2010 15:08:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752975Ab0AHUIc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jan 2010 15:06:22 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:56215 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752161Ab0AHUGV convert rfc822-to-8bit (ORCPT
+	Fri, 8 Jan 2010 15:08:32 -0500
+Received: from vms173017pub.verizon.net ([206.46.173.17]:50009 "EHLO
+	vms173017pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752910Ab0AHUIb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jan 2010 15:06:21 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=YEjrFyuDCBO88RsZc83baOK9jQxrxY2q/o6ofAih7urKugLM1JxZevkOq2KI5NGxVz
-         Fuql34Ko+emA66LIPm1Mvftf89ZbXLlFNLOsa3/VCmFPDiIi3Dv3k/esXBdKTWRHFXjZ
-         P1FU8nZcU57mVHSVgyd5pxGLSujBSAN5SUS2Y=
-MIME-Version: 1.0
-In-Reply-To: <4B4785C3.4030505@zytor.com>
-References: <1262951595-1729-1-git-send-email-yinghai@kernel.org>
-	 <1262951595-1729-5-git-send-email-yinghai@kernel.org>
-	 <m1bph4o1il.fsf@fess.ebiederm.org> <4B4785C3.4030505@zytor.com>
-Date: Fri, 8 Jan 2010 12:06:21 -0800
-X-Google-Sender-Auth: 8bc4c8113043699a
-Message-ID: <86802c441001081206r1df18abdhbb9a882868cc6b39@mail.gmail.com>
-Subject: Re: [PATCH 5/5] x86: update nr_irqs according cpu num
-From: Yinghai Lu <yinghai@kernel.org>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jesse Brandeburg <jesse.brandeburg@intel.com>,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Fri, 8 Jan 2010 15:08:31 -0500
+Date: Fri, 08 Jan 2010 15:08:03 -0500 (EST)
+From: Len Brown <lenb@kernel.org>
+X-X-Sender: lenb@localhost.localdomain
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Linux PCI <linux-pci@vger.kernel.org>,
+       Oliver Neukum <oliver@neukum.org>, Bjorn Helgaas <bjorn.helgaas@hp.com>,
+       Shaohua Li <shaohua.li@intel.com>,
+       Francois Romieu <romieu@fr.zoreil.com>
+Subject: Re: [PATCH 4/12] PCI PM: Make it possible to force using INTx for PCIe
+ PME signaling
+In-reply-to: <201001070000.41807.rjw@sisk.pl>
+Message-id: <alpine.LFD.2.00.1001081502010.4012@localhost.localdomain>
+References: <200912272057.10443.rjw@sisk.pl>
+ <20100106135625.14b37f10@jbarnes-piketon>
+ <20100106220214.GA25366@srcf.ucam.org> <201001070000.41807.rjw@sisk.pl>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 8, 2010 at 11:21 AM, H. Peter Anvin <hpa@zytor.com> wrote:
-> On 01/08/2010 11:11 AM, Eric W. Biederman wrote:
->> Yinghai Lu <yinghai@kernel.org> writes:
->>
->>> that is max number on run time.
->>
->> Ouch!  Unless I misread this code this will leave nr_irqs at
->> NR_IRQS_LEGACY. aka 16.
->>
->> Let's do something stupid and simple.
->> nr_irqs = nr_cpus_ids * 256;  /* Semi-arbitrary number */
->
-> This would be 1048576 on the biggest machines we currently support.
-> Now, the number of IRQ *vectors* is limited to
-> (224-system vectors)*(cpu count), so one could argue that if there is
-> anything that is not semi-arbitrary it would be that number, but that
-> doesn't account for vector sharing.
+> > > This scares me a little... seems like we're not restoring some state on
+> > > resume that's needed for MSIs to work?  Looks fine though.
+> > 
+> > Yeah, that was my concern. We debugged this a little on IRC and didn't 
+> > get anywhere, though, so probably need to find someone who knows more 
+> > about MSIs...
+> 
+> I'd rather say someone who knows more about ICH7. :-)
+> 
+> MSIs work just fine after resume for the other devices in the same box,
+> so I'd say it's a chipset issue.
 
-(256 - 32 - 16 - system_vectors) * cpu_count + 16
+Hmmm, do all the ICH7 boxes behave the same way?
 
-the 16 is legacy from IRQ0 to 15 has domain with all cpus set.
+Yesterday MSI announced a netbook running Suse/Moblin,
+so there is hope for more technical work w/ MSI to support Linux...
 
-later could move arch_probe_nr_irqs out of early_irq_init,
-call it after init_IRQ(), so could use first_system_vector exactly
-instead of 0x10
+It is a bit worrysome to go out of the gate to need a DMI blacklist
+for relatively new hardware.
 
->
-> Do we have any place which requires nr_irqs to be *stable*, or can we
-> simply treat it as a high water mark for IRQ numbers used?
->
->> Ideally we would set "nr_irqs = 0x7fffffff;" but we have just enough
->> places using nr_irqs that I think those loops would get painful if we
->> were to do that.
-yes, those loops
->
-> Ideally we should presumably get rid of nr_irqs completely?
+cheers,
+Len Brown, Intel Open Source Technology Center
 
-some interface in /proc/interrupts need it to make sure sth in sequence.
 
-YH
