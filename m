@@ -1,80 +1,190 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753036Ab0AHKxi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752980Ab0AHK7t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753036Ab0AHKxi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jan 2010 05:53:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752435Ab0AHKxi
+	id S1752980Ab0AHK7t (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jan 2010 05:59:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752826Ab0AHK7s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jan 2010 05:53:38 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:53357 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752377Ab0AHKxh (ORCPT
+	Fri, 8 Jan 2010 05:59:48 -0500
+Received: from moutng.kundenserver.de ([212.227.17.10]:59666 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751808Ab0AHK7r (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jan 2010 05:53:37 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=h52VlQDLK0uWwFD3N2rwTfR7G3QuDLQaU736NNLgXcQ7yTe3ZU30oFBXc/PDToFeMW
-         +ee6ytlGuJRua8ZuegW6YxOkA2Ju5tubn9iNS10elwwTc82wEV6+LusQN+14YWavPxqA
-         d+AYZ2/JE0OWUChzHJ1kYBxqK6zY4cRBBHMrA=
-Subject: Re: [PATCH 1/4] mfd: mc13783: Take care of semantic inversion
- between read and write value of two bits in POWER_MISCELLANEUS register.
-From: Alberto Panizzo <maramaopercheseimorto@gmail.com>
-To: Uwe =?ISO-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-Cc: Samuel Ortiz <sameo@linux.intel.com>,
-       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
-       Sascha linux-arm <s.hauer@pengutronix.de>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-arm-kernel-infradead <linux-arm-kernel@lists.infradead.org>,
-       Liam Girdwood <lrg@slimlogic.co.uk>
-In-Reply-To: <20100105195520.GA8555@pengutronix.de>
-References: <1260808880.2022.98.camel@climbing-alby>
-	 <1260810776.2022.130.camel@climbing-alby> <4B26799F.1020507@ru.mvista.com>
-	 <1260813540.2022.174.camel@climbing-alby>
-	 <20100105181541.GE4274@sortiz.org>  <20100105195520.GA8555@pengutronix.de>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 08 Jan 2010 11:53:31 +0100
-Message-ID: <1262948011.2050.3.camel@climbing-alby>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 8bit
+	Fri, 8 Jan 2010 05:59:47 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: Christoph Hellwig <hch@lst.de>
+Subject: Re: [PATCH v3 3/3] generic sys_ipc wrapper
+Date: Fri, 8 Jan 2010 11:57:17 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.31-rc8-00053-g43eb7c4-dirty; KDE/4.3.2; x86_64; ; )
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-arch@vger.kernel.org, linux@arm.linux.org.uk, starvik@axis.com,
+       jesper.nilsson@axis.com, dhowells@redhat.com,
+       ysato@users.sourceforge.jp, takata@linux-m32r.org, geert@linux-m68k.org,
+       zippel@linux-m68k.org, gerg@uclinux.org, ralf@linux-mips.org,
+       benh@kernel.crashing.org, schwidefsky@de.ibm.com,
+       heiko.carstens@de.ibm.com, lethal@linux-sh.org, davem@davemloft.net,
+       jdike@addtoit.com, tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com,
+       viro@zeniv.linux.org.uk
+References: <20100106172152.GC17163@lst.de> <20100108095023.GA29560@lst.de> <20100108100347.GA30353@lst.de>
+In-Reply-To: <20100108100347.GA30353@lst.de>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201001081157.17195.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1//qohNSM8J/tnlT9SNw3cjfrinlBh0CtZ6aOy
+ O4qAkCEGP/9iHqgG1kueDukFABneG0gmQzdjnw79cxbTPhMgs9
+ U2IGrKuDoMptm01HoC9og==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sorry for late response.. as Uwe said, we have discuss about this 
-and I will prepare another patch that involve the regulator driver.
+On Friday 08 January 2010 11:03:47 Christoph Hellwig wrote:
+> On Fri, Jan 08, 2010 at 10:50:23AM +0100, Christoph Hellwig wrote:
+> > Always return -EINVAL for the iBCS2 special case in SHMAT, and add a
+> > prototype to linux/syscalls.h
 
-Alberto!
+ok, the changes look good.
 
-Il giorno mar, 05/01/2010 alle 20.55 +0100, Uwe Kleine-König ha scritto:
-> On Tue, Jan 05, 2010 at 07:15:42PM +0100, Samuel Ortiz wrote:
-> > > @@ -187,6 +190,13 @@ int mc13783_reg_write(struct mc13783 *mc13783, unsigned int offset, u32 val)
-> > >  
-> > >         buf = 1 << 31 | offset << MC13783_REGOFFSET_SHIFT | val;
-> > >  
-> > > +       /* Take care of table 4-24 in Freescale MC13783IGPLDRM.pdf making
-> > > +        * the assumption that PWGTnDRV signals controls core power supplies
-> > > +        * that software must not disable. */
-> > > +       if (offset == MC13783_REG_POWER_MISCELLANEOUS)
-> > > +               buf &= ~(MC13783_REGCTRL_PWGT1SPIEN |
-> > > +                        MC13783_REGCTRL_PWGT2SPIEN);
-> > > +
-> > Although I see where you want to go, I dont really enjoy that solution.
-> > I would prefere to have specific register write/rmw routines for
-> > MC13783_REG_POWER_MISCELLANEOUS, and at the same time forbid to access the
-> > latter from the current mc13783_reg_* API.
-> Ack.  This is what I already suggested in
-> 
-> 	http://thread.gmane.org/gmane.linux.kernel/927112/focus=930317
-> 
-> (This happend to be a reply to patch 2/4 as I replied to Alberto's ping
-> for patches 1 and 2.)
-> 
-> Best regards
-> Uwe
-> 
+> Add a generic implementation of the ipc demultiplexer syscall.  Except for
+> s390 and sparc64 all implementations of the sys_ipc are nearly identical.
 
+I think the s390 version is trivial to add as well, like
 
+SYSCALL_DEFINE5(s390_ipc, uint, call, int, first, unsigned long, second,
+ 		unsigned long, third, void __user *, ptr)
+{
+	if (call == SEMTIMEDOP)
+		return sys_semtimedop(first, (struct sembuf __user *)ptr,
+				      (unsigned) second,
+				      (const struct timespec __user *)third);
+
+	return sys_ipc(call & 0xffff, first, second, third, ptr, 0);
+}
+
+But while going over the code again, I noticed that you broke sign extension
+at least on powerpc and s390, possibly on all 64 bit machines:
+
+> +SYSCALL_DEFINE6(ipc, unsigned int, call, int, first, int, second,
+> +		unsigned long, third, void __user *, ptr, long, fifth)
+> +{
+> +	int version, ret;
+> +
+> +	version = call >> 16; /* hack for backward compatibility */
+> +	call &= 0xffff;
+> +
+> +	switch (call) {
+> +	case SEMOP:
+> +		return sys_semtimedop(first, (struct sembuf __user *)ptr,
+> +				      second, NULL);
+
+                                       (unsigned)second, NULL
+
+> +	case SEMTIMEDOP:
+> +		return sys_semtimedop(first, (struct sembuf __user *)ptr,
+> +				      second,
+
+                                      (unsigned)second,
+
+> +				      (const struct timespec __user *)fifth);
+> +
+> +	case SEMGET:
+> +		return sys_semget(first, second, third);
+
+                                         (int)second,
+
+> +	case SEMCTL: {
+> +		union semun fourth;
+> +		if (!ptr)
+> +			return -EINVAL;
+> +		if (get_user(fourth.__pad, (void __user * __user *) ptr))
+> +			return -EFAULT;
+> +		return sys_semctl(first, second, third, fourth);
+
+		return sys_semctl(first, (int)second, third, fourth);
+
+> +	case MSGSND:
+> +		return sys_msgsnd(first, (struct msgbuf __user *) ptr,
+> +				  second, third);
+
+				  (size_t)second, third);
+
+> +	case MSGRCV:
+> +		switch (version) {
+> +		case 0: {
+> +			struct ipc_kludge tmp;
+> +			if (!ptr)
+> +				return -EINVAL;
+> +
+> +			if (copy_from_user(&tmp,
+> +					   (struct ipc_kludge __user *) ptr,
+> +					   sizeof(tmp)))
+> +				return -EFAULT;
+> +			return sys_msgrcv(first, tmp.msgp, second,
+
+			return sys_msgrcv(first, tmp.msgp, (size_t)second,
+
+> +					   tmp.msgtyp, third);
+> +		}
+> +		default:
+> +			return sys_msgrcv(first,
+> +					   (struct msgbuf __user *) ptr,
+> +					   second, fifth, third);
+
+					   (size_t)second, fifth, third);
+
+> +		}
+> +	case MSGGET:
+> +		return sys_msgget((key_t) first, second);
+
+		return sys_msgget((key_t) first, (int)second);
+
+> +	case MSGCTL:
+> +		return sys_msgctl(first, second, (struct msqid_ds __user *)ptr);
+
+		return sys_msgctl(first, (int)second, (struct msqid_ds __user *)ptr);
+
+> +	case SHMAT:
+> +		switch (version) {
+> +		default: {
+> +			unsigned long raddr;
+> +			ret = do_shmat(first, (char __user *)ptr,
+> +				       second, &raddr);
+
+				       (int)second, &raddr);
+
+> +			if (ret)
+> +				return ret;
+> +			return put_user(raddr, (unsigned long __user *) third);
+> +		}
+> +		case 1:
+> +			/*
+> +			 * This was the entry point for kernel-originating calls
+> +			 * from iBCS2 in 2.2 days.
+> +			 */
+> +			return -EINVAL;
+> +		}
+> +	case SHMDT:
+> +		return sys_shmdt((char __user *)ptr);
+> +	case SHMGET:
+> +		return sys_shmget(first, second, third);
+
+				       (size_t)second, &raddr);
+
+> +	case SHMCTL:
+> +		return sys_shmctl(first, second,
+
+		return sys_shmctl(first, (int)second,
+
+> +				   (struct shmid_ds __user *) ptr);
+> +	default:
+> +		return -ENOSYS;
+> +	}
+> +}
+
+This is needed to make sure the upper half of the register is filled with
+zero-extended or sign-extended correctly and does not contain random garbage
+in the native 64 bit case. IIRC, x86_64 does not have this problem and mips64
+may have the wrong code already. Alpha, parisc and ia64 don't have a native
+sys_ipc and the rest are 32 bit, so they don't care.
+
+	Arnd
