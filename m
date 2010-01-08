@@ -1,79 +1,160 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752774Ab0AHKX5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752862Ab0AHKYu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752774Ab0AHKX5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jan 2010 05:23:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752144Ab0AHKX4
+	id S1752862Ab0AHKYu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jan 2010 05:24:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752144Ab0AHKYt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jan 2010 05:23:56 -0500
-Received: from astoria.ccjclearline.com ([64.235.106.9]:45287 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751815Ab0AHKXz (ORCPT
+	Fri, 8 Jan 2010 05:24:49 -0500
+Received: from outpost1.zedat.fu-berlin.de ([130.133.4.66]:55000 "EHLO
+	outpost1.zedat.fu-berlin.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750709Ab0AHKYs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jan 2010 05:23:55 -0500
-Date: Fri, 8 Jan 2010 05:23:13 -0500 (EST)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost
-To: Greg KH <greg@kroah.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Documentation/feature-removal-schedule.txt to be updated soon?
-In-Reply-To: <20100103212913.GB3220@kroah.com>
-Message-ID: <alpine.LFD.2.00.1001080515560.11113@localhost>
-References: <alpine.LFD.2.00.1001030652110.6587@localhost> <20100103212913.GB3220@kroah.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+	Fri, 8 Jan 2010 05:24:48 -0500
+Date: Fri, 8 Jan 2010 11:26:10 +0100
+From: Benjamin Valentin <benpicco@zedat.fu-berlin.de>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] drivers/input/joystick/xpad.c: Add rumble support for
+ original xbox controller
+Message-ID: <20100108112610.0b78785b@piBook>
+In-Reply-To: <20100108075054.GA3696@core.coreip.homeip.net>
+References: <20100108033215.447c814e@rechenknecht2k7>
+	<20100108075054.GA3696@core.coreip.homeip.net>
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.18.5; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=PGP-SHA1;
+ boundary="Sig_/5Zz_cY2s+nU5QbnwpRtOXJ2"; protocol="application/pgp-signature"
+X-Originating-IP: 87.77.84.60
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 3 Jan 2010, Greg KH wrote:
+--Sig_/5Zz_cY2s+nU5QbnwpRtOXJ2
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-> On Sun, Jan 03, 2010 at 06:54:10AM -0500, Robert P. J. Day wrote:
-> >
-> >   as is my wont, i will mutter quietly about the amount of content
-> > in the file Documentation/feature-removal-schedule.txt referring
-> > to stuff that should have been removed ages ago (some of it is
-> > dated as far back as 2005).
-> >
-> >   is there any plan on bringing that file up to date, and/or
-> > deleting stuff that's been marked for deletion for years?
->
-> Sure, feel free to send patches, and if they are rejected, send a
-> patch for the feature-removal-schedule.txt file removing the option
-> there.
+On Thu, 7 Jan 2010 23:50:54 -0800
+Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
 
-  that's a nice idea, i wonder how well it would work in practice.  a
-couple years ago, i submitted a patch to remove the *clearly*
-deprecated/obsolete pcmcia ioctl feature.  that was less than
-spectacularly successful:
+> Thank you for your patch. Could I please have your "Signed-off-by: "
+> so I can apply it? Also, if you have any more patches ofr in put
+> devices, could you please CC linux-input@vger.kernel.org?
 
-http://lists.infradead.org/pipermail/linux-pcmcia/2007-May/thread.html#4536
+This way?
 
-it's now 2.5 years later, that feature is still there and is now 5
-years overdue for removal.  i'll submit another patch to get rid of
-it, but if there's yet another argument for why it can't quite be
-deleted yet, i'm not sure what value the feature-removal-schedule file
-has anymore.
+Signed-off-by: Benjamin Valentin <benpicco@zedat.fu-berlin.de>
 
-either people should take it moderately seriously, or it should be
-deleted as a waste of time.
+--- /usr/src/linux-source-2.6.33/drivers/input/joystick/xpad.c
+2010-01-08 02:56:59.365851076 +0100 +++ xpad.c	2010-01-08
+03:13:38.477835651 +0100 @@ -505,7 +505,7 @@
+ 	struct usb_endpoint_descriptor *ep_irq_out;
+ 	int error =3D -ENOMEM;
+=20
+-	if (xpad->xtype !=3D XTYPE_XBOX360)
++	if (xpad->xtype !=3D XTYPE_XBOX360 && xpad->xtype !=3D XTYPE_XBOX)
+ 		return 0;
+=20
+ 	xpad->odata =3D usb_buffer_alloc(xpad->udev, XPAD_PKT_LEN,
+@@ -535,13 +535,13 @@
+=20
+ static void xpad_stop_output(struct usb_xpad *xpad)
+ {
+-	if (xpad->xtype =3D=3D XTYPE_XBOX360)
++	if (xpad->xtype =3D=3D XTYPE_XBOX360 || xpad->xtype !=3D XTYPE_XBOX)
+ 		usb_kill_urb(xpad->irq_out);
+ }
+=20
+ static void xpad_deinit_output(struct usb_xpad *xpad)
+ {
+-	if (xpad->xtype =3D=3D XTYPE_XBOX360) {
++	if (xpad->xtype =3D=3D XTYPE_XBOX360 || xpad->xtype !=3D XTYPE_XBOX)
+{ usb_free_urb(xpad->irq_out);
+ 		usb_buffer_free(xpad->udev, XPAD_PKT_LEN,
+ 				xpad->odata, xpad->odata_dma);
+@@ -554,24 +554,43 @@
+ #endif
+=20
+ #ifdef CONFIG_JOYSTICK_XPAD_FF
+-static int xpad_play_effect(struct input_dev *dev, void *data,
+-			    struct ff_effect *effect)
++static int xpad_send_rumble(struct usb_xpad *xpad, unsigned char left,
+unsigned char right) {
++	switch(xpad->xtype) {
++		case XTYPE_XBOX:
++			xpad->odata[0] =3D 0x00;
++			xpad->odata[1] =3D 0x06;
++			xpad->odata[2] =3D 0x00;
++			xpad->odata[3] =3D left;  // left actuator
++			xpad->odata[4] =3D 0x00;
++			xpad->odata[5] =3D right; // right actuator
++			xpad->irq_out->transfer_buffer_length =3D 6;
++			return usb_submit_urb(xpad->irq_out,
+GFP_KERNEL);
++		case XTYPE_XBOX360:
++			xpad->odata[0] =3D 0x00;
++			xpad->odata[1] =3D 0x08;
++			xpad->odata[2] =3D 0x00;
++			xpad->odata[3] =3D left;  // left actuator?
++			xpad->odata[4] =3D right; // right actuator?
++			xpad->odata[5] =3D 0x00;
++			xpad->odata[6] =3D 0x00;
++			xpad->odata[7] =3D 0x00;
++			xpad->irq_out->transfer_buffer_length =3D 8;
++			return usb_submit_urb(xpad->irq_out,
+GFP_KERNEL);
++		default:
++			dbg("%s - rumble command sent to unsupported
+xpad type: %d",=20
++				__func__, xpad->xtype);
++			return 0;
++		}
++}
++
++static int xpad_play_effect(struct input_dev *dev, void *data, struct
+ff_effect *effect) {
+ 	struct usb_xpad *xpad =3D input_get_drvdata(dev);
+=20
+ 	if (effect->type =3D=3D FF_RUMBLE) {
+-		__u16 strong =3D effect->u.rumble.strong_magnitude;
+-		__u16 weak =3D effect->u.rumble.weak_magnitude;
+-		xpad->odata[0] =3D 0x00;
+-		xpad->odata[1] =3D 0x08;
+-		xpad->odata[2] =3D 0x00;
+-		xpad->odata[3] =3D strong / 256;
+-		xpad->odata[4] =3D weak / 256;
+-		xpad->odata[5] =3D 0x00;
+-		xpad->odata[6] =3D 0x00;
+-		xpad->odata[7] =3D 0x00;
+-		xpad->irq_out->transfer_buffer_length =3D 8;
+-		usb_submit_urb(xpad->irq_out, GFP_KERNEL);
++		unsigned char strong =3D
+effect->u.rumble.strong_magnitude / 256;
++		unsigned char weak   =3D
+effect->u.rumble.weak_magnitude / 256;
++		xpad_send_rumble(xpad, strong, weak);
+ 	}
+=20
+ 	return 0;
+@@ -579,7 +598,7 @@
+=20
+ static int xpad_init_ff(struct usb_xpad *xpad)
+ {
+-	if (xpad->xtype !=3D XTYPE_XBOX360)
++	if (xpad->xtype !=3D XTYPE_XBOX360 && xpad->xtype !=3D XTYPE_XBOX)
+ 		return 0;
+=20
+ 	input_set_capability(xpad->dev, EV_FF, FF_RUMBLE);
 
-rday
---
+--Sig_/5Zz_cY2s+nU5QbnwpRtOXJ2
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Disposition: attachment; filename=signature.asc
 
-========================================================================
-Robert P. J. Day                               Waterloo, Ontario, CANADA
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
 
-            Linux Consulting, Training and Kernel Pedantry.
+iEYEARECAAYFAktHCEIACgkQg4D7JNscH9pSIwCgn0JhqF3kmQJfEVbabo6DFClD
+GBkAn0gY6FUhVGqglcCM7fzG96zHutQz
+=Wh+d
+-----END PGP SIGNATURE-----
 
-Web page:                                          http://crashcourse.ca
-Twitter:                                       http://twitter.com/rpjday
-========================================================================
+--Sig_/5Zz_cY2s+nU5QbnwpRtOXJ2--
