@@ -1,61 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753133Ab0AHLNm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752964Ab0AHLbA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753133Ab0AHLNm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jan 2010 06:13:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752669Ab0AHLNl
+	id S1752964Ab0AHLbA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jan 2010 06:31:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751944Ab0AHLa7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jan 2010 06:13:41 -0500
-Received: from mail-ew0-f219.google.com ([209.85.219.219]:44900 "EHLO
-	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752599Ab0AHLNk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jan 2010 06:13:40 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=slomS6MmeHmcqEILON/R2ZnP014sOpb56wugLtmtKaAcR+/KcZj8axGZ7wMyrbP+yQ
-         fvjGZtr5vAZ6o0mTXla9m1TRoPkOxNwec2QwLrI1D2TF9/J4+VqVQUSTNtMwm215OKuz
-         u25/VdEesOLH9BTHvIR8/8fSaSqgGLqfGHZMs=
-Subject: Re: [PATCH 2/4] mfd: mc13783: When probing, unlock the mc13783
- before subsystems initialisation.
-From: Alberto Panizzo <maramaopercheseimorto@gmail.com>
-To: Uwe =?ISO-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-Cc: Samuel Ortiz <sameo@linux.intel.com>,
-       Sascha linux-arm <s.hauer@pengutronix.de>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-arm-kernel-infradead <linux-arm-kernel@lists.infradead.org>,
-       Liam Girdwood <lrg@slimlogic.co.uk>
-In-Reply-To: <1261349401.5224.154.camel@climbing-alby>
-References: <1260808880.2022.98.camel@climbing-alby>
-	 <1260810776.2022.130.camel@climbing-alby>
-	 <1260811085.2022.135.camel@climbing-alby>
-	 <1261152746.3356.72.camel@climbing-alby>
-	 <20091219201816.GA28742@pengutronix.de>
-	 <1261316918.5224.15.camel@climbing-alby>
-	 <20091220184941.GA13294@pengutronix.de>
-	 <1261349401.5224.154.camel@climbing-alby>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 08 Jan 2010 12:13:35 +0100
-Message-ID: <1262949215.2050.19.camel@climbing-alby>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	Fri, 8 Jan 2010 06:30:59 -0500
+Received: from mail.sf-mail.de ([62.27.20.61]:42373 "EHLO mail.sf-mail.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751579Ab0AHLa6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jan 2010 06:30:58 -0500
+From: Rolf Eike Beer <eike-kernel@sf-tec.de>
+To: =?iso-8859-1?q?Ren=E9_Bolldorf?= <xsecute@googlemail.com>
+Subject: Re: [PATCH]drivers/ata/libata-eh.c:1509 unneeded memset()
+Date: Fri, 8 Jan 2010 12:30:13 +0100
+User-Agent: KMail/1.13.0 (Linux/2.6.31.5-0.1-desktop; KDE/4.3.85; i686; ; )
+Cc: Jeff Garzik <jgarzik@pobox.com>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org, "linux-scsi" <linux-scsi@vger.kernel.org>
+References: <4B3BDB66.6000008@googlemail.com> <4B46453E.1060206@googlemail.com> <4B4646B2.6050103@googlemail.com>
+In-Reply-To: <4B4646B2.6050103@googlemail.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart1800099.K2pXvrlG51";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
+Message-Id: <201001081230.14419.eike-kernel@sf-tec.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Samuel, although patch [1/4] is not a matter of .33 
-I think this one [2/4] can go to mainline in this subversion.
+--nextPart1800099.K2pXvrlG51
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-As submitted by Valentin Longchamp here:
+Ren=E9 Bolldorf wrote:
+> On 01/07/10 21:34, Ren=E9 Bolldorf wrote:
+> > On 01/07/10 20:15, Jeff Garzik wrote:
+> >> I need a little bit more detail than an unqualified statement... Did
+> >> you audit all paths leading to this code point?
+> >
+> > Yes, and my two systems running fine with the patch, no oops or panic's.
+>=20
+> Sry forgot that:
+> 	/* initialize sense_buf with the error register,
+> 	 * for the case where they are -not- overwritten
+> 	 */
+> 	sense_buf[0] =3D 0x70;
+> 	sense_buf[2] =3D dfl_sense_key;
+>=20
+> So i think memset() is not needed and works very well without it.
 
-http://thread.gmane.org/gmane.linux.ports.arm.kernel/71128/focus=71127
+What happens to sense_buf[1]?
 
-this patch, Acked by Uwe, fix a little regression in mc13783-core.
+--nextPart1800099.K2pXvrlG51
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
-Best Regards,
-Alberto!
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.12 (GNU/Linux)
 
+iEYEABECAAYFAktHF0YACgkQXKSJPmm5/E6rFwCfVCg5PogrUdwVJOuEeXK5w+LN
+hVsAn05KNRlTAQyUdHgCdSoFJ+ou3gFf
+=/Ctq
+-----END PGP SIGNATURE-----
+
+--nextPart1800099.K2pXvrlG51--
