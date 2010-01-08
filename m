@@ -1,54 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750826Ab0AHFBS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750915Ab0AHFKe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750826Ab0AHFBS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jan 2010 00:01:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750709Ab0AHFBR
+	id S1750915Ab0AHFKe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jan 2010 00:10:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750799Ab0AHFKd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jan 2010 00:01:17 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:50287 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750702Ab0AHFBQ (ORCPT
+	Fri, 8 Jan 2010 00:10:33 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:54081 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750748Ab0AHFKd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jan 2010 00:01:16 -0500
-Date: Thu, 7 Jan 2010 21:00:34 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Arjan van de Ven <arjan@infradead.org>
-cc: Christoph Lameter <cl@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "minchan.kim@gmail.com" <minchan.kim@gmail.com>,
-       "hugh.dickins" <hugh.dickins@tiscali.co.uk>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [RFC][PATCH 6/8] mm: handle_speculative_fault()
-In-Reply-To: <20100107204940.253ed753@infradead.org>
-Message-ID: <alpine.LFD.2.00.1001072058010.7821@localhost.localdomain>
-References: <20100104182429.833180340@chello.nl> <20100104182813.753545361@chello.nl> <20100105054536.44bf8002@infradead.org> <alpine.DEB.2.00.1001050916300.1074@router.home> <20100105192243.1d6b2213@infradead.org> <alpine.DEB.2.00.1001071007210.901@router.home>
- <alpine.LFD.2.00.1001070814080.7821@localhost.localdomain> <alpine.DEB.2.00.1001071025450.901@router.home> <20100107204940.253ed753@infradead.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Fri, 8 Jan 2010 00:10:33 -0500
+Message-ID: <4B46BC6F.5060607@kernel.org>
+Date: Thu, 07 Jan 2010 21:02:39 -0800
+From: "H. Peter Anvin" <hpa@kernel.org>
+Organization: Linux Kernel Organization, Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: "Zheng, Shaohui" <shaohui.zheng@intel.com>
+CC: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "ak@linux.intel.com" <ak@linux.intel.com>,
+       "y-goto@jp.fujitsu.com" <y-goto@jp.fujitsu.com>,
+       Dave Hansen <haveblue@us.ibm.com>,
+       "Wu, Fengguang" <fengguang.wu@intel.com>,
+       "x86@kernel.org" <x86@kernel.org>
+Subject: Re: [PATCH - resend] Memory-Hotplug: Fix the bug on interface /dev/mem
+ for 64-bit kernel(v1)
+References: <DA586906BA1FFC4384FCFD6429ECE86031560BAC@shzsmsx502.ccr.corp.intel.com>
+In-Reply-To: <DA586906BA1FFC4384FCFD6429ECE86031560BAC@shzsmsx502.ccr.corp.intel.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Thu, 7 Jan 2010, Arjan van de Ven wrote:
+On 01/07/2010 07:32 PM, Zheng, Shaohui wrote:
+> Resend the patch to the mailing-list, the original patch URL is 
+> http://patchwork.kernel.org/patch/69075/, it is not accepted without comments,
+> sent it again to review.
 > 
-> if an app has to change because our kernel sucks (for no good reason),
-> "change the app" really is the lame type of answer.
+> Memory-Hotplug: Fix the bug on interface /dev/mem for 64-bit kernel
+> 
+> The new added memory can not be access by interface /dev/mem, because we do not
+>  update the variable high_memory. This patch add a new e820 entry in e820 table,
+>  and update max_pfn, max_low_pfn and high_memory.
+> 
+> We add a function update_pfn in file arch/x86/mm/init.c to udpate these
+>  varibles. Memory hotplug does not make sense on 32-bit kernel, so we did not
+>  concern it in this function.
+> 
 
-Well, in all fairness, I doubt other kernels do any better. So changing 
-the app is likely to help in general, and thus be at least part of the 
-right solution.
+Memory hotplug makes sense on 32-bit kernels, at least in virtual
+environments.
 
-But as outlined, we _can_ almost certainly do better on many simple and 
-common cases, so changing the kernel - in addition to fixing app memory 
-allocation patterns - sounds like a good avenue.
-
-			Linus
+	-hpa
