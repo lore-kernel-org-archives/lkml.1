@@ -1,107 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753288Ab0AHLyw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753261Ab0AHLyv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753288Ab0AHLyw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jan 2010 06:54:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753147Ab0AHLyt
+	id S1753261Ab0AHLyv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jan 2010 06:54:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753228Ab0AHLyt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Fri, 8 Jan 2010 06:54:49 -0500
-Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:57975 "EHLO
+Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:57973 "EHLO
 	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752774Ab0AHLyq (ORCPT
+	with ESMTP id S1753108Ab0AHLyq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 8 Jan 2010 06:54:46 -0500
 MIME-version: 1.0
 Content-transfer-encoding: 7BIT
 Content-type: TEXT/PLAIN
-Date: Fri, 08 Jan 2010 03:53:13 -0800
+Date: Fri, 08 Jan 2010 03:53:11 -0800
 From: Yinghai Lu <yinghai@kernel.org>
-Subject: [PATCH 3/5] sparseirq: change irq_desc_ptrs to static
-In-reply-to: <1262951595-1729-1-git-send-email-yinghai@kernel.org>
+Subject: [PATCH 1/5] irq: remove not need bootmem code
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        "H. Peter Anvin" <hpa@zytor.com>,
        Andrew Morton <akpm@linux-foundation.org>,
        "Eric W. Biederman" <ebiederm@xmission.com>,
        Jesse Brandeburg <jesse.brandeburg@intel.com>
 Cc: linux-kernel@vger.kernel.org, Yinghai Lu <yinghai@kernel.org>
-Message-id: <1262951595-1729-3-git-send-email-yinghai@kernel.org>
+Message-id: <1262951595-1729-1-git-send-email-yinghai@kernel.org>
 X-Mailer: git-send-email 1.6.4.2
-References: <1262951595-1729-1-git-send-email-yinghai@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-add replace_irq_desc()
+mem_init is moved early already.
 
 Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 
 ---
- kernel/irq/handle.c       |    8 +++++++-
- kernel/irq/internals.h    |    6 +-----
- kernel/irq/numa_migrate.c |    4 ++--
- 3 files changed, 10 insertions(+), 8 deletions(-)
+ kernel/irq/handle.c |   14 +++-----------
+ 1 file changed, 3 insertions(+), 11 deletions(-)
 
 Index: linux-2.6/kernel/irq/handle.c
 ===================================================================
 --- linux-2.6.orig/kernel/irq/handle.c
 +++ linux-2.6/kernel/irq/handle.c
-@@ -127,7 +127,7 @@ static void init_one_irq_desc(int irq, s
-  */
- DEFINE_RAW_SPINLOCK(sparse_irq_lock);
+@@ -19,7 +19,6 @@
+ #include <linux/kernel_stat.h>
+ #include <linux/rculist.h>
+ #include <linux/hash.h>
+-#include <linux/bootmem.h>
+ #include <trace/events/irq.h>
  
--struct irq_desc **irq_desc_ptrs __read_mostly;
-+static struct irq_desc **irq_desc_ptrs __read_mostly;
- 
- static struct irq_desc irq_desc_legacy[NR_IRQS_LEGACY] __cacheline_aligned_in_smp = {
- 	[0 ... NR_IRQS_LEGACY-1] = {
-@@ -192,6 +192,12 @@ struct irq_desc *irq_to_desc(unsigned in
- 	return NULL;
- }
- 
-+void replace_irq_desc(unsigned int irq, struct irq_desc *desc)
-+{
-+	if (irq_desc_ptrs && irq < nr_irqs)
-+		irq_desc_ptrs[irq] = desc;
-+}
-+
- struct irq_desc * __ref irq_to_desc_alloc_node(unsigned int irq, int node)
+ #include "internals.h"
+@@ -87,12 +86,8 @@ void __ref init_kstat_irqs(struct irq_de
  {
- 	struct irq_desc *desc;
-Index: linux-2.6/kernel/irq/internals.h
-===================================================================
---- linux-2.6.orig/kernel/irq/internals.h
-+++ linux-2.6/kernel/irq/internals.h
-@@ -21,11 +21,7 @@ extern void clear_kstat_irqs(struct irq_
- extern raw_spinlock_t sparse_irq_lock;
+ 	void *ptr;
  
- #ifdef CONFIG_SPARSE_IRQ
--/* irq_desc_ptrs allocated at boot time */
--extern struct irq_desc **irq_desc_ptrs;
--#else
--/* irq_desc_ptrs is a fixed size array */
--extern struct irq_desc *irq_desc_ptrs[NR_IRQS];
-+void replace_irq_desc(unsigned int irq, struct irq_desc *desc);
- #endif
+-	if (slab_is_available())
+-		ptr = kzalloc_node(nr * sizeof(*desc->kstat_irqs),
+-				   GFP_ATOMIC, node);
+-	else
+-		ptr = alloc_bootmem_node(NODE_DATA(node),
+-				nr * sizeof(*desc->kstat_irqs));
++	ptr = kzalloc_node(nr * sizeof(*desc->kstat_irqs),
++			   GFP_ATOMIC, node);
  
- #ifdef CONFIG_PROC_FS
-Index: linux-2.6/kernel/irq/numa_migrate.c
-===================================================================
---- linux-2.6.orig/kernel/irq/numa_migrate.c
-+++ linux-2.6/kernel/irq/numa_migrate.c
-@@ -70,7 +70,7 @@ static struct irq_desc *__real_move_irq_
- 	raw_spin_lock_irqsave(&sparse_irq_lock, flags);
- 
- 	/* We have to check it to avoid races with another CPU */
--	desc = irq_desc_ptrs[irq];
-+	desc = irq_to_desc(irq);
- 
- 	if (desc && old_desc != desc)
+ 	/*
+ 	 * don't overwite if can not get new one
+@@ -219,10 +214,7 @@ struct irq_desc * __ref irq_to_desc_allo
+ 	if (desc)
  		goto out_unlock;
-@@ -90,7 +90,7 @@ static struct irq_desc *__real_move_irq_
- 		goto out_unlock;
- 	}
  
--	irq_desc_ptrs[irq] = desc;
-+	replace_irq_desc(irq, desc);
- 	raw_spin_unlock_irqrestore(&sparse_irq_lock, flags);
+-	if (slab_is_available())
+-		desc = kzalloc_node(sizeof(*desc), GFP_ATOMIC, node);
+-	else
+-		desc = alloc_bootmem_node(NODE_DATA(node), sizeof(*desc));
++	desc = kzalloc_node(sizeof(*desc), GFP_ATOMIC, node);
  
- 	/* free the old one */
+ 	printk(KERN_DEBUG "  alloc irq_desc for %d on node %d\n", irq, node);
+ 	if (!desc) {
