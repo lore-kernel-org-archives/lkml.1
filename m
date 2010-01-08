@@ -1,66 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752594Ab0AHBoc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752753Ab0AHBvv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752594Ab0AHBoc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 20:44:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752218Ab0AHBob
+	id S1752753Ab0AHBvv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 20:51:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752269Ab0AHBvv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 20:44:31 -0500
-Received: from qw-out-2122.google.com ([74.125.92.26]:40917 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751444Ab0AHBoa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 20:44:30 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type;
-        b=rcbVtRDX2DsM6jomSpcitZ+m+I0mT5aViVU07Kg495AC23JsL+WhQ1Zqafay/5OW2+
-         JvOE7UW8ncRW87grW37mjNNv/gDuX926IHhZsJq7jXpJjhwKFuP86uWjW2ATj3xG/p6C
-         uu+aSpvO0zWb0AW4xsGQXNMAfhgTc/ld8y2OY=
-MIME-Version: 1.0
-In-Reply-To: <1262903483.5722.7.camel@utx.utx.cz>
-References: <20100107203104.GA22681@elf.ucw.cz> <1262903483.5722.7.camel@utx.utx.cz>
-From: Eric Miao <eric.y.miao@gmail.com>
-Date: Fri, 8 Jan 2010 09:44:10 +0800
-Message-ID: <f17812d71001071744m2dccc09btf0ea2a63ccd33b55@mail.gmail.com>
-Subject: Re: [patch] fix strange characters in zaurus gpio .desc
-To: Stanislav Brabec <utx@penguin.cz>
-Cc: Pavel Machek <pavel@ucw.cz>, rpurdie@rpsys.net, lenz@cs.wisc.edu,
-       kernel list <linux-kernel@vger.kernel.org>, Dirk@opfer-online.de,
-       arminlitzel@web.de, Cyril Hrubis <metan@ucw.cz>, thommycheck@gmail.com,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-       dbaryshkov@gmail.com, omegamoon@gmail.com,
-       zaurus-devel@www.linuxtogo.org, Andrew Morton <akpm@osdl.org>
-Content-Type: text/plain; charset=UTF-8
+	Thu, 7 Jan 2010 20:51:51 -0500
+Received: from mail.perches.com ([173.55.12.10]:1650 "EHLO mail.perches.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750983Ab0AHBvu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jan 2010 20:51:50 -0500
+Subject: Re: [PATCH] lib/vsprintf.c: Add %pMF to format FDDI bit reversed
+ MAC addresses
+From: Joe Perches <joe@perches.com>
+To: Simon Horman <horms@verge.net.au>
+Cc: David Miller <davem@davemloft.net>, macro@linux-mips.org,
+       hartleys@visionengravers.com, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+In-Reply-To: <20100108000843.GI2436@verge.net.au>
+References: <BD79186B4FD85F4B8E60E381CAEE19090208954A@mi8nycmail19.Mi8.com>
+	 <1262888625.10429.23.camel@Joe-Laptop.home>
+	 <alpine.LFD.2.00.1001072037170.13474@eddie.linux-mips.org>
+	 <20100107.140942.135976087.davem@davemloft.net>
+	 <20100108000843.GI2436@verge.net.au>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 07 Jan 2010 17:51:48 -0800
+Message-ID: <1262915508.10429.99.camel@Joe-Laptop.home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2010/1/8 Stanislav Brabec <utx@penguin.cz>:
-> Pavel Machek wrote:
->> From: Cyril Hrubis <metan@ucw.cz>
->>
->> Somehow,
-> Some = my Evolution Mail
->
-> I remember that I prepared a patch and fixed capitalization of these
-> strings in the mail body in the last minute before sending.
->
->> strange characters made their way zaurus gpio .desc
->> fields. Fix it.
->>
->> Signed-off-by: Pavel Machek <pavel@ucw.cz>
->
-> Acked-by: Stanislav Brabec <utx@penguin.cz>
->
+On Fri, 2010-01-08 at 11:08 +1100, Simon Horman wrote:
+> In the vein of this, would it be worth adding some modifier to %i4 to
+> print addresses for ftp helpers? That is, %u,%u,%u,%u. I think
+> there are currently two users of that format string after Joe's latest
+> round of updates.
 
-Applied.
+I think not.  I think the comma separated uses
+are unusual enough to not support in lib/vsprintf.
 
-> Hint: If you use Evolution Mail for sending mails, never edit anything
-> inside inlined patch and never use old mail as a template, otherwise
-> Evolution Mail will include invisible characters to your mail.
->
-> Let's see whether it is fixed in the evolution-2.28.
->
+I did submit a patch to support format strings
+for le32 and u32 ipv4 addresses.
 
-Documentation/email-clients.txt may help?
+> The users are net/netfilter/ipvs/ip_vs_ftp.c and
+> net/ipv4/netfilter/nf_nat_ftp.c. Prior to Joe's latest
+> changes ip_vs_ftp.c used %d,%d,%d,%d.
+
+I submitted a couple of patches that should help.
+
+o eventually remove NIPQUAD and NIPQUAD_FMT
+o consolidate the 2 netfilter "%u,%u,%u,%u" uses
+  to a single function
+
+
+
