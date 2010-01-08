@@ -1,100 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753903Ab0AHSoK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753925Ab0AHSq1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753903Ab0AHSoK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jan 2010 13:44:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752927Ab0AHSoI
+	id S1753925Ab0AHSq1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jan 2010 13:46:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753885Ab0AHSq1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jan 2010 13:44:08 -0500
-Received: from out02.mta.xmission.com ([166.70.13.232]:38206 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752550Ab0AHSoH (ORCPT
+	Fri, 8 Jan 2010 13:46:27 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:38389 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753598Ab0AHSq0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jan 2010 13:44:07 -0500
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-Cc: Yinghai Lu <yinghai@kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jesse Brandeburg <jesse.brandeburg@intel.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 4/5] sparseirq: use radix_tree instead of ptrs array
-References: <1262951595-1729-1-git-send-email-yinghai@kernel.org>
-	<1262951595-1729-4-git-send-email-yinghai@kernel.org>
-	<20100108121414.GB4967@lenovo>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Fri, 08 Jan 2010 10:43:53 -0800
-In-Reply-To: <20100108121414.GB4967@lenovo> (Cyrill Gorcunov's message of "Fri\, 8 Jan 2010 15\:14\:14 +0300")
-Message-ID: <m1k4vsphcm.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Fri, 8 Jan 2010 13:46:26 -0500
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Minchan Kim <minchan.kim@gmail.com>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "hugh.dickins" <hugh.dickins@tiscali.co.uk>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [RFC][PATCH 6/8] mm: handle_speculative_fault()
+From: Andi Kleen <andi@firstfloor.org>
+References: <20100104182429.833180340@chello.nl>
+	<20100104182813.753545361@chello.nl>
+	<20100105092559.1de8b613.kamezawa.hiroyu@jp.fujitsu.com>
+	<28c262361001042029w4b95f226lf54a3ed6a4291a3b@mail.gmail.com>
+	<20100105134357.4bfb4951.kamezawa.hiroyu@jp.fujitsu.com>
+	<alpine.LFD.2.00.1001042052210.3630@localhost.localdomain>
+	<20100105143046.73938ea2.kamezawa.hiroyu@jp.fujitsu.com>
+	<20100105163939.a3f146fb.kamezawa.hiroyu@jp.fujitsu.com>
+	<alpine.LFD.2.00.1001050707520.3630@localhost.localdomain>
+	<20100106092212.c8766aa8.kamezawa.hiroyu@jp.fujitsu.com>
+	<alpine.LFD.2.00.1001051718100.3630@localhost.localdomain>
+	<20100106115233.5621bd5e.kamezawa.hiroyu@jp.fujitsu.com>
+	<alpine.LFD.2.00.1001051917000.3630@localhost.localdomain>
+	<20100106125625.b02c1b3a.kamezawa.hiroyu@jp.fujitsu.com>
+	<alpine.LFD.2.00.1001052007090.3630@localhost.localdomain>
+	<1262969610.4244.36.camel@laptop>
+	<alpine.LFD.2.00.1001080911340.7821@localhost.localdomain>
+	<alpine.DEB.2.00.1001081138260.23727@router.home>
+Date: Fri, 08 Jan 2010 19:46:20 +0100
+In-Reply-To: <alpine.DEB.2.00.1001081138260.23727@router.home> (Christoph Lameter's message of "Fri, 8 Jan 2010 11:43:41 -0600 (CST)")
+Message-ID: <87my0omo3n.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Scanned: No (on in02.mta.xmission.com); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Cyrill Gorcunov <gorcunov@gmail.com> writes:
+Christoph Lameter <cl@linux-foundation.org> writes:
 
-> On Fri, Jan 08, 2010 at 03:53:14AM -0800, Yinghai Lu wrote:
->> use radix_tree irq_desc_tree instead of irq_desc_ptrs.
->> 
->> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
->> 
->> ---
->>  kernel/irq/handle.c |   47 ++++++++++++++++++++++-------------------------
->>  1 file changed, 22 insertions(+), 25 deletions(-)
->> 
->> Index: linux-2.6/kernel/irq/handle.c
->> ===================================================================
->> --- linux-2.6.orig/kernel/irq/handle.c
->> +++ linux-2.6/kernel/irq/handle.c
->> @@ -19,6 +19,7 @@
->>  #include <linux/kernel_stat.h>
->>  #include <linux/rculist.h>
->>  #include <linux/hash.h>
->> +#include <linux/radix-tree.h>
->>  #include <trace/events/irq.h>
->>  
->>  #include "internals.h"
->> @@ -127,7 +128,23 @@ static void init_one_irq_desc(int irq, s
->>   */
->>  DEFINE_RAW_SPINLOCK(sparse_irq_lock);
->>  
->> -static struct irq_desc **irq_desc_ptrs __read_mostly;
->> +static RADIX_TREE(irq_desc_tree, GFP_KERNEL);
->> +
->> +static void set_irq_desc(unsigned int irq, struct irq_desc *desc)
->> +{
->> +	radix_tree_insert(&irq_desc_tree, irq, desc);
->> +}
->> +
->> +struct irq_desc *irq_to_desc(unsigned int irq)
->> +{
->> +	return radix_tree_lookup(&irq_desc_tree, irq);
->> +}
->> +
->> +void replace_irq_desc(unsigned int irq, struct irq_desc *desc)
->> +{
->> +	radix_tree_delete(&irq_desc_tree, irq);
->> +	radix_tree_insert(&irq_desc_tree, irq, desc);
->> +}
->>  
-> ...
->
-> Hi Yinghai,
->
-> should not we printk\warn if radix_tree_insert() is get failed?
-> This is hardly (if ever) happen on machines with small number
-> of interrupts allocated but anyway.
->
-> Or I miss something?
+> Can we at least consider a typical standard business server, dual quad
+> core hyperthreaded with 16 "cpus"? Cacheline contention will increase
+> significantly there.
 
-It looks to me like we can use radix_tree_lookup_slot and
-radix_tree_replace_slot here.  Since we don't have to allocate
-memory radix_tree_replace_slot can not fail.  Using a case
-that can never fail seems better than worry about a case that
-can rarely fail.
+This year's standard server will be more like 24-64 "cpus"
 
-Eric
+Cheating with locks usually doesn't work anymore at these sizes.
+
+-Andi
+
+-- 
+ak@linux.intel.com -- Speaking for myself only.
