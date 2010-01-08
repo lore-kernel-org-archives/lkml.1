@@ -1,56 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754029Ab0AHAWp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752897Ab0AHA04@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754029Ab0AHAWp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 19:22:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753359Ab0AHAWo
+	id S1752897Ab0AHA04 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 19:26:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752222Ab0AHA0z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 19:22:44 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:49333 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753256Ab0AHAWo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 19:22:44 -0500
-Date: Fri, 8 Jan 2010 11:22:36 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: netdev@vger.kernel.org, Karsten Keil <isdn@linux-pingi.de>,
-       isdn4linux@listserv.isdn4linux.de, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: Can we remove pci_find_device() yet?
-Message-Id: <20100108112236.462a3da2.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 3.0.0beta4 (GTK+ 2.18.5; i486-pc-linux-gnu)
+	Thu, 7 Jan 2010 19:26:55 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:60808 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752113Ab0AHA0y (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jan 2010 19:26:54 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Fri, 8 Jan 2010 09:23:33 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "minchan.kim@gmail.com" <minchan.kim@gmail.com>,
+       "hugh.dickins" <hugh.dickins@tiscali.co.uk>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [RFC][PATCH 6/8] mm: handle_speculative_fault()
+Message-Id: <20100108092333.1040c799.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <alpine.LFD.2.00.1001071426590.7821@localhost.localdomain>
+References: <20100104182429.833180340@chello.nl>
+	<20100104182813.753545361@chello.nl>
+	<20100105054536.44bf8002@infradead.org>
+	<alpine.DEB.2.00.1001050916300.1074@router.home>
+	<20100105192243.1d6b2213@infradead.org>
+	<alpine.DEB.2.00.1001071007210.901@router.home>
+	<alpine.LFD.2.00.1001070814080.7821@localhost.localdomain>
+	<1262884960.4049.106.camel@laptop>
+	<alpine.LFD.2.00.1001070934060.7821@localhost.localdomain>
+	<alpine.LFD.2.00.1001070937180.7821@localhost.localdomain>
+	<alpine.LFD.2.00.1001071031440.7821@localhost.localdomain>
+	<1262900683.4049.139.camel@laptop>
+	<alpine.LFD.2.00.1001071426590.7821@localhost.localdomain>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Fri__8_Jan_2010_11_22_36_+1100_n61xPJunSsPD3M0R"
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Fri__8_Jan_2010_11_22_36_+1100_n61xPJunSsPD3M0R
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Thu, 7 Jan 2010 14:33:50 -0800 (PST)
+Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-Hi all,
+> 
+> 
+> On Thu, 7 Jan 2010, Peter Zijlstra wrote:
+> >
+> > I haven't yet looked at the patch, but isn't expand_stack() kinda like
+> > what you want? That serializes using anon_vma_lock().
+> 
+> Yeah, that sounds like the right thing to do.  It is the same operation, 
+> after all (and has the same effects, especially for the special case of 
+> upwards-growing stacks).
+> 
+> So basically the idea is to extend that stack expansion to brk(), and 
+> possibly mmap() in general.
+> 
+Hmm, do_brk() sometimes unmap conflicting mapping. Isn't it be a problem ?
+Stack expansion just fails and SEGV if it hit with other mmaps....
 
-This interface has been deprecated since November 2006, so can something
-be done about the last users (I think only some ISDN drivers)?  Or should
-we just remove the interface and mark those drivers BROKEN (and maybe
-move them to staging)?
+Thanks,
+-Kame
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
 
---Signature=_Fri__8_Jan_2010_11_22_36_+1100_n61xPJunSsPD3M0R
-Content-Type: application/pgp-signature
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
 
-iEYEARECAAYFAktGeswACgkQjjKRsyhoI8zOnACgr/3bY0XN4/htVJZBClLknFS3
-AvUAmwbRpv3TVqxGCAAT7204+h3xNlBW
-=MLzZ
------END PGP SIGNATURE-----
 
---Signature=_Fri__8_Jan_2010_11_22_36_+1100_n61xPJunSsPD3M0R--
