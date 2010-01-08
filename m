@@ -1,69 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753304Ab0AHRqW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753345Ab0AHRxf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753304Ab0AHRqW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jan 2010 12:46:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752465Ab0AHRqV
+	id S1753345Ab0AHRxf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jan 2010 12:53:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753225Ab0AHRxf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jan 2010 12:46:21 -0500
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:51114 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751379Ab0AHRqU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jan 2010 12:46:20 -0500
-From: Jay Vosburgh <fubar@us.ibm.com>
-To: Jiri Slaby <jirislaby@gmail.com>
-cc: netdev@vger.kernel.org, "David S. Miller" <davem@davemloft.net>,
-       bonding-devel@lists.sourceforge.net,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: bonding: potential null dereference?
-In-reply-to: <4B470606.7090409@gmail.com>
-References: <4B470606.7090409@gmail.com>
-Comments: In-reply-to Jiri Slaby <jirislaby@gmail.com>
-   message dated "Fri, 08 Jan 2010 11:16:38 +0100."
-X-Mailer: MH-E 8.0.3; nmh 1.3-RC3; GNU Emacs 22.2.1
-Date: Fri, 08 Jan 2010 09:46:00 -0800
-Message-ID: <16196.1262972760@death.nxdomain.ibm.com>
+	Fri, 8 Jan 2010 12:53:35 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52537 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753052Ab0AHRxe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jan 2010 12:53:34 -0500
+Date: Fri, 8 Jan 2010 09:52:58 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Christoph Lameter <cl@linux-foundation.org>
+cc: Peter Zijlstra <peterz@infradead.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Minchan Kim <minchan.kim@gmail.com>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "hugh.dickins" <hugh.dickins@tiscali.co.uk>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [RFC][PATCH 6/8] mm: handle_speculative_fault()
+In-Reply-To: <alpine.DEB.2.00.1001081138260.23727@router.home>
+Message-ID: <alpine.LFD.2.00.1001080950120.7821@localhost.localdomain>
+References: <20100104182429.833180340@chello.nl>  <20100104182813.753545361@chello.nl>  <20100105092559.1de8b613.kamezawa.hiroyu@jp.fujitsu.com>  <28c262361001042029w4b95f226lf54a3ed6a4291a3b@mail.gmail.com>  <20100105134357.4bfb4951.kamezawa.hiroyu@jp.fujitsu.com>
+  <alpine.LFD.2.00.1001042052210.3630@localhost.localdomain>  <20100105143046.73938ea2.kamezawa.hiroyu@jp.fujitsu.com>  <20100105163939.a3f146fb.kamezawa.hiroyu@jp.fujitsu.com>  <alpine.LFD.2.00.1001050707520.3630@localhost.localdomain> 
+ <20100106092212.c8766aa8.kamezawa.hiroyu@jp.fujitsu.com>  <alpine.LFD.2.00.1001051718100.3630@localhost.localdomain>  <20100106115233.5621bd5e.kamezawa.hiroyu@jp.fujitsu.com>  <alpine.LFD.2.00.1001051917000.3630@localhost.localdomain> 
+ <20100106125625.b02c1b3a.kamezawa.hiroyu@jp.fujitsu.com>  <alpine.LFD.2.00.1001052007090.3630@localhost.localdomain> <1262969610.4244.36.camel@laptop> <alpine.LFD.2.00.1001080911340.7821@localhost.localdomain>
+ <alpine.DEB.2.00.1001081138260.23727@router.home>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jiri Slaby <jirislaby@gmail.com> wrote:
 
->I'm looking at Stanse errors and it detected a suspected behaviour in
->bonding. In bond_slave_netdev_event, bond_dev is passed down to
->netdev_priv, but due to 'if (bond_dev)' test later, it deduced it can be
->also NULL.
->
->I can see, that passing NULL to netdev_priv is OK nowadays, as it just
->returns NULL + some offset. But what if this changes in the future?
->
->I would bake a patch, but I don't know if bond_dev may be NULL at all
->(i.e. superfluous test) or may not (wrong netdev_priv(bond_dev)).
->
->static int (unsigned long event,
->                                   struct net_device *slave_dev)
->{
->        struct net_device *bond_dev = slave_dev->master;
->        struct bonding *bond = netdev_priv(bond_dev);
->
->        switch (event) {
->        case NETDEV_UNREGISTER:
->                if (bond_dev) {
->                        if (bond->setup_by_slave)
->                                bond_release_and_destroy(bond_dev,
->slave_dev);
->                        else
->                                bond_release(bond_dev, slave_dev);
->                }
->                break;
 
-	I don't believe bond_dev will ever actually be NULL here,
-because bond_netdev_event (the only caller of bond_slave_netdev_event)
-checks that the device is, in fact, a bonding slave before the call.
+On Fri, 8 Jan 2010, Christoph Lameter wrote:
+> 
+> Can we at least consider a typical standard business server, dual quad
+> core hyperthreaded with 16 "cpus"? Cacheline contention will increase
+> significantly there.
 
-	Just from looking at the code, I don't see any issues with
-removing the "if (bond_dev)" test.
+I bet it won't be a problem. It's when things go cross-socket that they 
+suck. So 16 cpu's across two sockets I wouldn't worry about.
 
-	-J
+> > Because let's face it - if your workload does several million page faults
+> > per second, you're just doing something fundamentally _wrong_.
+> 
+> You may just want to get your app running and its trying to initialize
+> its memory in parallel on all threads. Nothing wrong with that.
 
----
-	-Jay Vosburgh, IBM Linux Technology Center, fubar@us.ibm.com
+Umm. That's going to be limited by the memset/memcpy, not the rwlock, I 
+bet.
+
+The benchmark in question literally did a single byte write to each page 
+in order to show just the kernel component. That really isn't realistic 
+for any real load.
+
+			Linus
