@@ -1,56 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753411Ab0AHT2T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753079Ab0AHT3f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753411Ab0AHT2T (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jan 2010 14:28:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752161Ab0AHT2S
+	id S1753079Ab0AHT3f (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jan 2010 14:29:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752910Ab0AHT3e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jan 2010 14:28:18 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:36831 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752026Ab0AHT2R (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jan 2010 14:28:17 -0500
-Date: Fri, 8 Jan 2010 20:28:15 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Christoph Lameter <cl@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, Peter Zijlstra <peterz@infradead.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Minchan Kim <minchan.kim@gmail.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "hugh.dickins" <hugh.dickins@tiscali.co.uk>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [RFC][PATCH 6/8] mm: handle_speculative_fault()
-Message-ID: <20100108192815.GB14141@basil.fritz.box>
-References: <20100106115233.5621bd5e.kamezawa.hiroyu@jp.fujitsu.com> <alpine.LFD.2.00.1001051917000.3630@localhost.localdomain> <20100106125625.b02c1b3a.kamezawa.hiroyu@jp.fujitsu.com> <alpine.LFD.2.00.1001052007090.3630@localhost.localdomain> <1262969610.4244.36.camel@laptop> <alpine.LFD.2.00.1001080911340.7821@localhost.localdomain> <alpine.DEB.2.00.1001081138260.23727@router.home> <87my0omo3n.fsf@basil.nowhere.org> <alpine.DEB.2.00.1001081255100.26886@router.home> <alpine.LFD.2.00.1001081102120.7821@localhost.localdomain>
+	Fri, 8 Jan 2010 14:29:34 -0500
+Received: from mail.issp.bas.bg ([195.96.236.10]:49704 "EHLO mail.issp.bas.bg"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752263Ab0AHT3d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jan 2010 14:29:33 -0500
+From: Marin Mitov <mitov@issp.bas.bg>
+Organization: Institute of Solid State Physics
+To: linux-kernel@vger.kernel.org
+Subject: [BUG?]Section mismatch dmar_ir_support()
+Date: Fri, 8 Jan 2010 21:27:22 +0200
+User-Agent: KMail/1.11.4 (Linux/2.6.33-rc3; KDE/4.2.4; x86_64; ; )
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.1001081102120.7821@localhost.localdomain>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Message-Id: <201001082127.22685.mitov@issp.bas.bg>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 08, 2010 at 11:11:32AM -0800, Linus Torvalds wrote:
-> 
-> 
-> On Fri, 8 Jan 2010, Christoph Lameter wrote:
-> 
-> > On Fri, 8 Jan 2010, Andi Kleen wrote:
-> > 
-> > > This year's standard server will be more like 24-64 "cpus"
-> > 
-> > What will it be? 2 or 4 sockets?
-> 
-> I think we can be pretty safe in saying that two sockets is going to be 
-> overwhelmingly the more common case.
+Hi all,
 
-With 24 CPU threads cheating is very difficult too.
+Please, look at how many times the same patch is proposed, 
+but still not fixed:-)
 
-Besides even the "uncommon" part of a large pie can be still a lot of systems.
+http://lkml.org/lkml/2009/10/3/3
+http://lkml.org/lkml/2009/11/13/271
+http://lkml.org/lkml/2009/12/4/462
+http://lkml.org/lkml/2009/12/16/424
+http://lkml.org/lkml/2009/12/20/21
 
--Andi
+Sure I could be missing some other postings :-)
 
+Who could take care of it? And should we?
+
+Best regards.
+
+Marin Mitov
