@@ -1,47 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754102Ab0AHVoJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754125Ab0AHVss@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754102Ab0AHVoJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jan 2010 16:44:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753898Ab0AHVoH
+	id S1754125Ab0AHVss (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jan 2010 16:48:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753949Ab0AHVsr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jan 2010 16:44:07 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:52389 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753871Ab0AHVoE (ORCPT
+	Fri, 8 Jan 2010 16:48:47 -0500
+Received: from mta2.srv.hcvlny.cv.net ([167.206.4.197]:39304 "EHLO
+	mta2.srv.hcvlny.cv.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752110Ab0AHVsr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jan 2010 16:44:04 -0500
-Message-ID: <4B47A713.9060405@zytor.com>
-Date: Fri, 08 Jan 2010 13:43:47 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
-MIME-Version: 1.0
-To: Karel Zak <kzak@redhat.com>
-CC: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       util-linux-ng@vger.kernel.org
-Subject: Re: [ANNOUNCE] util-linux-ng v2.17 (stable)
-References: <20100108093302.GS1969@nb.net.home>
-In-Reply-To: <20100108093302.GS1969@nb.net.home>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Fri, 8 Jan 2010 16:48:47 -0500
+Date: Fri, 08 Jan 2010 16:48:11 -0500
+From: Michael Breuer <mbreuer@majjas.com>
+Subject: Re: [PATCH] af_packet: Don't use skb after dev_queue_xmit()
+In-reply-to: <20100108212923.GA3078@del.dom.local>
+To: Jarek Poplawski <jarkao2@gmail.com>
+Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
+       flyboy@gmail.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Message-id: <4B47A81B.5040601@majjas.com>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7BIT
+References: <4B459368.2000503@majjas.com> <4B45F841.8030407@majjas.com>
+ <20100107180114.GB3088@del.dom.local> <4B4625BD.3070202@majjas.com>
+ <20100107183545.GA3208@del.dom.local> <4B462B3C.90506@majjas.com>
+ <20100107185040.GB3208@del.dom.local> <4B466A26.5070506@majjas.com>
+ <20100108074539.GA6205@ff.dom.local> <4B475FF9.7000702@majjas.com>
+ <20100108212923.GA3078@del.dom.local>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.5)
+ Gecko/20091204 Lightning/1.0b2pre Thunderbird/3.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/08/2010 01:33 AM, Karel Zak wrote:
-> 
-> fdisk:
->    - the fdisk command aligns newly created partitions to minimum_io_size
->      boundary ("minimum_io_size" is physical sector size or stripe chunk
->      size on RAIDs).
-> 
->    - the fdisk command supports disks with alignment_offset now.
-> 
-
-I think we should align, by default, much more aggressively than that --
-because frequently we just don't know what the real physical alignment
-is (think of flash media, which uses large erase blocks underneath.)
-Windows aligns partitions 1 MB boundaries by default now -- I think
-that's probably a reasonably good idea, at least for any disk that's not
-tiny, say 256 MB or less.
-
-	-hpa
+On 1/8/2010 4:29 PM, Jarek Poplawski wrote:
+> On Fri, Jan 08, 2010 at 11:40:25AM -0500, Michael Breuer wrote:
+>    
+>> On 1/8/2010 2:45 AM, Jarek Poplawski wrote:
+>>      
+>> ...
+> Berck Nash reported oopses during sky2 TX timeout recovery, which are
+> generally hardware/driver problems, and shouldn't be triggered by ip
+> level bugs, so it should be queried as a separate bug report.
+>
+>    
+My thought was that his crash was secondary to the netdev watchdog & 
+subsequent reset that I saw.
+>> Will try rerunning without disable_msi later (after I catch the dns
+>> thing in the sniffer).
+>>      
+>>>> I'm leaving this one running for now. Not retesting jumbo for now. Be
+>>>> happy to help dig further.
+>>>>
+>>>> Tentative recommendations:
+>>>>
+>>>> 1) The af alternative patch seems rather necessary. First alternative
+>>>> seems to be working, I'd suggest that be submitted and backported to
+>>>> 2.6.32.
+>>>>          
+> BTW, don't hurry with that yet, but in the next test, please try
+> alternative 2 again (i.e. with MMAP + no DMAR + disable_msi).
+>
+>    
+Will do - still up from yesterday... no more dropped packets... none of 
+the dns errors either. To be expected I suppose as long as I'm trying to 
+sniff it. Assuming no immediate erorrs with alt2, no DMAR + disable_msi 
+I'll report back after it's been up for a while.
