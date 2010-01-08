@@ -1,133 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753343Ab0AHMFw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753207Ab0AHMOU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753343Ab0AHMFw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jan 2010 07:05:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753311Ab0AHMFv
+	id S1753207Ab0AHMOU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jan 2010 07:14:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752856Ab0AHMOT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jan 2010 07:05:51 -0500
-Received: from devils.ext.ti.com ([198.47.26.153]:45431 "EHLO
-	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753301Ab0AHMFu (ORCPT
+	Fri, 8 Jan 2010 07:14:19 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:53934 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752518Ab0AHMOT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jan 2010 07:05:50 -0500
-From: Chaithrika U S <chaithrika@ti.com>
-To: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org, davinci-linux-open-source@linux.davincidsp.com,
-       khilman@deeprootsystems.com, Chaithrika U S <chaithrika@ti.com>
-Subject: [PATCH  v3 2/2] davinci: MMC: updates to suspend/resume implementation
-Date: Fri,  8 Jan 2010 17:09:00 +0530
-Message-Id: <1262950740-12625-1-git-send-email-chaithrika@ti.com>
-X-Mailer: git-send-email 1.5.6
+	Fri, 8 Jan 2010 07:14:19 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=N9jqmecnr2Ypj1V9JnpFyPRhB0QQIioV2E3UIfShKMBmHPJqnLPLZbwSUDHt4o/KPB
+         /4zLnrbNugHbrQwh3VyFkIj1GnizhSBQeyVRdiZpnDgcl4OPQpzmTlIXTvdgCynnF8+1
+         M0AYLaeCRVw7t7okKHGFyZwZZ7oHY5+oHValE=
+Date: Fri, 8 Jan 2010 15:14:14 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Jesse Brandeburg <jesse.brandeburg@intel.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 4/5] sparseirq: use radix_tree instead of ptrs array
+Message-ID: <20100108121414.GB4967@lenovo>
+References: <1262951595-1729-1-git-send-email-yinghai@kernel.org> <1262951595-1729-4-git-send-email-yinghai@kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1262951595-1729-4-git-send-email-yinghai@kernel.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Improve the suspend and resume callbacks in DaVinci MMC host controller driver.
-Modify the reset status of the contorller and clock during suspend and resume.
-Also migrate the power management callbacks from platform driver to dev_pm_ops
-structure.
+On Fri, Jan 08, 2010 at 03:53:14AM -0800, Yinghai Lu wrote:
+> use radix_tree irq_desc_tree instead of irq_desc_ptrs.
+> 
+> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+> 
+> ---
+>  kernel/irq/handle.c |   47 ++++++++++++++++++++++-------------------------
+>  1 file changed, 22 insertions(+), 25 deletions(-)
+> 
+> Index: linux-2.6/kernel/irq/handle.c
+> ===================================================================
+> --- linux-2.6.orig/kernel/irq/handle.c
+> +++ linux-2.6/kernel/irq/handle.c
+> @@ -19,6 +19,7 @@
+>  #include <linux/kernel_stat.h>
+>  #include <linux/rculist.h>
+>  #include <linux/hash.h>
+> +#include <linux/radix-tree.h>
+>  #include <trace/events/irq.h>
+>  
+>  #include "internals.h"
+> @@ -127,7 +128,23 @@ static void init_one_irq_desc(int irq, s
+>   */
+>  DEFINE_RAW_SPINLOCK(sparse_irq_lock);
+>  
+> -static struct irq_desc **irq_desc_ptrs __read_mostly;
+> +static RADIX_TREE(irq_desc_tree, GFP_KERNEL);
+> +
+> +static void set_irq_desc(unsigned int irq, struct irq_desc *desc)
+> +{
+> +	radix_tree_insert(&irq_desc_tree, irq, desc);
+> +}
+> +
+> +struct irq_desc *irq_to_desc(unsigned int irq)
+> +{
+> +	return radix_tree_lookup(&irq_desc_tree, irq);
+> +}
+> +
+> +void replace_irq_desc(unsigned int irq, struct irq_desc *desc)
+> +{
+> +	radix_tree_delete(&irq_desc_tree, irq);
+> +	radix_tree_insert(&irq_desc_tree, irq, desc);
+> +}
+>  
+...
 
-Tested on DA850/OMAP-L138 EVM. This testing requires patches
-which add suspen-to-RAM support to DA850/OMAP-L138 SoC[1].
+Hi Yinghai,
 
-[1]http://linux.davincidsp.com/pipermail/davinci-linux-open-source/
-2009-September/016118.html
+should not we printk\warn if radix_tree_insert() is get failed?
+This is hardly (if ever) happen on machines with small number
+of interrupts allocated but anyway.
 
-Signed-off-by: Chaithrika U S <chaithrika@ti.com>
----
-Applies to Linus' kernel tree.
-Since the previous version, patch description has been updated.
+Or I miss something?
 
- drivers/mmc/host/davinci_mmc.c |   51 +++++++++++++++++++++++++++++++++------
- 1 files changed, 43 insertions(+), 8 deletions(-)
-
-diff --git a/drivers/mmc/host/davinci_mmc.c b/drivers/mmc/host/davinci_mmc.c
-index 25645bf..d60f648 100644
---- a/drivers/mmc/host/davinci_mmc.c
-+++ b/drivers/mmc/host/davinci_mmc.c
-@@ -170,6 +170,7 @@ struct mmc_davinci_host {
- #define DAVINCI_MMC_DATADIR_READ	1
- #define DAVINCI_MMC_DATADIR_WRITE	2
- 	unsigned char data_dir;
-+	unsigned char suspended;
- 
- 	/* buffer is used during PIO of one scatterlist segment, and
- 	 * is updated along with buffer_bytes_left.  bytes_left applies
-@@ -1297,32 +1298,66 @@ static int __exit davinci_mmcsd_remove(struct platform_device *pdev)
- }
- 
- #ifdef CONFIG_PM
--static int davinci_mmcsd_suspend(struct platform_device *pdev, pm_message_t msg)
-+static int davinci_mmcsd_suspend(struct device *dev)
- {
-+	struct platform_device *pdev = to_platform_device(dev);
- 	struct mmc_davinci_host *host = platform_get_drvdata(pdev);
-+	struct pm_message msg = { PM_EVENT_SUSPEND };
-+	int ret;
- 
--	return mmc_suspend_host(host->mmc, msg);
-+	mmc_host_enable(host->mmc);
-+	ret = mmc_suspend_host(host->mmc, msg);
-+	if (!ret) {
-+		writel(0, host->base + DAVINCI_MMCIM);
-+		mmc_davinci_reset_ctrl(host, 1);
-+		mmc_host_disable(host->mmc);
-+		clk_disable(host->clk);
-+		host->suspended = 1;
-+	} else {
-+		host->suspended = 0;
-+		mmc_host_disable(host->mmc);
-+	}
-+
-+	return ret;
- }
- 
--static int davinci_mmcsd_resume(struct platform_device *pdev)
-+static int davinci_mmcsd_resume(struct device *dev)
- {
-+	struct platform_device *pdev = to_platform_device(dev);
- 	struct mmc_davinci_host *host = platform_get_drvdata(pdev);
-+	int ret;
- 
--	return mmc_resume_host(host->mmc);
-+	if (!host->suspended)
-+		return 0;
-+
-+	clk_enable(host->clk);
-+	mmc_host_enable(host->mmc);
-+
-+	mmc_davinci_reset_ctrl(host, 0);
-+	ret = mmc_resume_host(host->mmc);
-+	if (!ret)
-+		host->suspended = 0;
-+
-+	return ret;
- }
-+
-+static struct dev_pm_ops davinci_mmcsd_pm = {
-+	.suspend        = davinci_mmcsd_suspend,
-+	.resume         = davinci_mmcsd_resume,
-+};
-+
-+#define davinci_mmcsd_pm_ops (&davinci_mmcsd_pm)
- #else
--#define davinci_mmcsd_suspend	NULL
--#define davinci_mmcsd_resume	NULL
-+#define davinci_mmcsd_pm_ops NULL
- #endif
- 
- static struct platform_driver davinci_mmcsd_driver = {
- 	.driver		= {
- 		.name	= "davinci_mmc",
- 		.owner	= THIS_MODULE,
-+		.pm	= davinci_mmcsd_pm_ops,
- 	},
- 	.remove		= __exit_p(davinci_mmcsd_remove),
--	.suspend	= davinci_mmcsd_suspend,
--	.resume		= davinci_mmcsd_resume,
- };
- 
- static int __init davinci_mmcsd_init(void)
--- 
-1.5.6
-
+	-- Cyrill
