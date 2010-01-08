@@ -1,70 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752571Ab0AHNPQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752712Ab0AHNS5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752571Ab0AHNPQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jan 2010 08:15:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752368Ab0AHNPO
+	id S1752712Ab0AHNS5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jan 2010 08:18:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752054Ab0AHNS4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jan 2010 08:15:14 -0500
-Received: from wine.ocn.ne.jp ([122.1.235.145]:55477 "EHLO smtp.wine.ocn.ne.jp"
+	Fri, 8 Jan 2010 08:18:56 -0500
+Received: from cantor.suse.de ([195.135.220.2]:32831 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752132Ab0AHNPM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jan 2010 08:15:12 -0500
-To: david@fromorbit.com
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [2.6.30 and later] file corruption on ext3 filesystem.
-From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-References: <201001080254.o082sOXB018423@www262.sakura.ne.jp>
-	<20100108123641.GB8654@discord.disaster>
-In-Reply-To: <20100108123641.GB8654@discord.disaster>
-Message-Id: <201001082215.EJH52647.JLtFSFFVQOHMOO@I-love.SAKURA.ne.jp>
-X-Mailer: Winbiff [Version 2.51 PL2]
-X-Accept-Language: ja,en,zh
-Date: Fri, 8 Jan 2010 22:15:10 +0900
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1751753Ab0AHNS4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jan 2010 08:18:56 -0500
+Message-ID: <4B4730C0.6000601@suse.cz>
+Date: Fri, 08 Jan 2010 14:18:56 +0100
+From: Michal Marek <mmarek@suse.cz>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Randy Dunlap <rdunlap@xenotime.net>, linux-kbuild@vger.kernel.org,
+       Artem Bityutskiy <dedekind1@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: sections mismatch detection
+References: <1262772683.4263.147.camel@localhost> <20100106104823.GA30439@merkur.ravnborg.org> <4B44762C.1090605@suse.cz> <20100107150339.b66fadc5.rdunlap@xenotime.net> <20100108054144.GA15827@merkur.ravnborg.org>
+In-Reply-To: <20100108054144.GA15827@merkur.ravnborg.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
-
-Dave Chinner wrote:
-> On Fri, Jan 08, 2010 at 11:54:24AM +0900, Tetsuo Handa wrote:
-> > I'm experiencing file corruption problem.
-> > Can somebody reproduce below result?
-> > 
-> > My environment:
-> >   VMware Workstation 6.5.3 with 2CPUs / 512MB RAM.
-> >   ext3 filesystem ( /dev/sda1 ) mounted on / .
-> > 
-> >   2.6.33-rc3 ( http://I-love.SAKURA.ne.jp/tmp/config-2.6.33-rc3-ext3 )
-> >   2.6.32.3   ( http://I-love.SAKURA.ne.jp/tmp/config-2.6.32.3-ext3 )
-> >   2.6.31.11  ( http://I-love.SAKURA.ne.jp/tmp/config-2.6.31.11-ext3 )
-> >   2.6.30.10
-> > 
-> >   So far, I haven't succeeded to reproduce this problem for 2.6.29 and earlier.
-> >   Maybe this problem exists in only 2.6.30 and later.
+Sam Ravnborg napsal(a):
+>> I would prefer to see (logically) the same section mismatch not be
+>> reported multiple times, even though they are in different binary
+>> files.  This would reduce the noise level quite a bit IMO.
 > 
-> Isn't that when the default mount options  changed from data=ordered to
-> data=writeback?
-Ah, indeed. 2.6.31 mounts data=writeback whereas 2.6.29 mounts data=ordered.
+> That would be nice but is not trivially doable.
+> We need to discover when there is a section mismatch
+> resulting from for example a function in kernel/*
+> calling a function in arch/$ARCH/kernel so we
+> need to execute the check on multiple levels
+> i order to catch the bugs as early as possible.
+> 
+> The easy 'fix' would be to execute the check only
+> on vmlinux.o (default behaviour) but the added
+> checks with the option enabled allows us to
+> be much more precise in reporting where
+> the section mismatch originate from.
 
-In my Ubuntu 9.10 environment, it is using data=writeback mode, and therefore
-I got garbage data taken from other deleted files.
+But we could remember the (caller,callee) pairs and only emit the first
+warning. Or am I missing something?
 
-> You didn't fsync() it, so there is no reason for the kernel
-> to have ever written it to disk. Therefore the result after powerfail
-> is completely undefined - you data may be there, it may not...
-
-I didn't call fsync(). Thus, I don't mind if the data I wrote is not written
-to disk.
-
-However, I feel something is very wrong because the file got data which I
-didn't write. The file gets data from deleted files. Imagine that unprivileged
-user can get the content of /etc/shadow if power failure occurred when the user
-was running ./a.out .
-
-The file should not get data from deleted files, but I can read the data from
-deleted files by "cat /testfile". I feel something is very wrong.
-
-Regards.
+Michal
