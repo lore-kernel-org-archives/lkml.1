@@ -1,91 +1,572 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754068Ab0AHUue@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753995Ab0AHUuJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754068Ab0AHUue (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jan 2010 15:50:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754047Ab0AHUua
+	id S1753995Ab0AHUuJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jan 2010 15:50:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752783Ab0AHUuH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jan 2010 15:50:30 -0500
-Received: from lo.gmane.org ([80.91.229.12]:43590 "EHLO lo.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752904Ab0AHUuH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 8 Jan 2010 15:50:07 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Paul Turner <pjt@google.com>
-Subject: Re: [RFC v5 PATCH 0/8] CFS Hard limits - v5
-Date: Fri, 8 Jan 2010 20:45:27 +0000 (UTC)
-Message-ID: <loom.20100108T214459-933@post.gmane.org>
-References: <20100105075703.GE27899@in.ibm.com>
-Mime-Version: 1.0
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:55464 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752113Ab0AHUuD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jan 2010 15:50:03 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=sJQrSGt9yTCpkrRYGhtqPrNprYF8xWU459VWv2GU9f9rC9nUE8u/6bt0C4aM8rB7kp
+         QGPbP8b27bW848xJRkmVf0wC2YNglYiKFFRx8Q0Jr9SziLeRiTxtvN9vGdMghZsWkYvI
+         0pPdVUixzExNDCJandNnAK+Z/bPAyi6gSTY6A=
+Date: Fri, 8 Jan 2010 12:49:46 -0800
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: "Rick L. Vinyard, Jr." <rvinyard@cs.nmsu.edu>
+Cc: linux-kernel@vger.kernel.org, felipe.balbi@nokia.com, pavel@ucw.cz,
+       jayakumar.lkml@gmail.com, linux-fbdev@vger.kernel.org,
+       krzysztof.h1@wp.pl, akpm@linux-foundation.org,
+       linux-usb@vger.kernel.org, oliver@neukum.org,
+       linux-input@vger.kernel.org, jkosina@suse.cz
+Subject: Re: [PATCH] hid: Logitech G13 driver 0.0.3
+Message-ID: <20100108204946.GA22950@core.coreip.homeip.net>
+References: <201001071623.o07GNOB4022157@mustang.cs.nmsu.edu>
+ <20100108083020.GB3696@core.coreip.homeip.net>
+ <174828e8a25d1e607eb91ab963396b2a.squirrel@intranet.cs.nmsu.edu>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: sea.gmane.org
-User-Agent: Loom/3.14 (http://gmane.org/)
-X-Loom-IP: 216.239.45.4 (Mozilla/5.0 (X11; U; Linux x86_64; en-US) AppleWebKit/532.8 (KHTML, like Gecko) Chrome/4.0.288.1 Safari/532.8)
+Content-Disposition: inline
+In-Reply-To: <174828e8a25d1e607eb91ab963396b2a.squirrel@intranet.cs.nmsu.edu>
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Bharata,
+On Fri, Jan 08, 2010 at 11:32:29AM -0700, Rick L. Vinyard, Jr. wrote:
+> Dmitry Torokhov wrote:
+> > Hi Rick,
+> >
+> > On Thu, Jan 07, 2010 at 09:23:24AM -0700, Rick L. Vinyard Jr. wrote:
+> >> +
+> >> +static int g13_input_setkeycode(struct input_dev *dev,
+> >> +				int scancode,
+> >> +				int keycode)
+> >> +{
+> >> +	int old_keycode;
+> >> +	int i;
+> >> +	struct g13_data *data = input_get_g13data(dev);
+> >> +
+> >> +	if (data == NULL)
+> >> +		return -EINVAL;
+> >> +
+> >> +	if (scancode >= dev->keycodemax)
+> >> +		return -EINVAL;
+> >> +
+> >> +	if (!dev->keycodesize)
+> >> +		return -EINVAL;
+> >> +
+> >> +	if (dev->keycodesize < sizeof(keycode) &&
+> >> +	    (keycode >> (dev->keycodesize * 8)))
+> >> +		return -EINVAL;
+> >> +
+> >> +	write_lock(&data->lock);
+> >> +
+> >> +	old_keycode = data->keycode[scancode];
+> >> +	data->keycode[scancode] = keycode;
+> >> +
+> >> +	clear_bit(old_keycode, dev->keybit);
+> >> +	set_bit(keycode, dev->keybit);
+> >> +
+> >> +	for (i = 0; i < dev->keycodemax; i++) {
+> >> +		if (data->keycode[i] == old_keycode) {
+> >> +			set_bit(old_keycode, dev->keybit);
+> >> +			break; /* Setting the bit twice is useless, so break */
+> >> +		}
+> >> +	}
+> >> +
+> >> +	write_unlock(&data->lock);
+> >> +
+> >> +	return 0;
+> >> +}
+> >> +
+> >> +static int g13_input_getkeycode(struct input_dev *dev,
+> >> +				int scancode,
+> >> +				int *keycode)
+> >> +{
+> >> +	struct g13_data *data = input_get_g13data(dev);
+> >> +
+> >> +	if (!dev->keycodesize)
+> >> +		return -EINVAL;
+> >> +
+> >> +	if (scancode >= dev->keycodemax)
+> >> +		return -EINVAL;
+> >> +
+> >> +	read_lock(&data->lock);
+> >> +
+> >> +	*keycode = data->keycode[scancode];
+> >> +
+> >> +	read_unlock(&data->lock);
+> >> +
+> >> +	return 0;
+> >> +}
+> >
+> > Default input core methods should cover this, no?
+> >
+> 
+> I couldn't find this exposed from input core through sysfs anywhere. From
+> userspace I could access it from an ioctl, but I'd prefer to allow
+> userspace to do everything from libsysfs rather than a mixture of libsysfs
+> and ioctls.
+> 
+> I did make sure the ioctls are still supported by providing functions to
+> input_dev->setkeycode and input_dev->getkeycode.
+> 
 
-Thanks for the updated patchset.  As discussed the other day briefly I have some
-concerns with the usage of the current RT bandwidth rate-limiting code as there
-are some assumptions made that I feel don't fit the general case well.
+Unfortunately the input core does more stuff after driver-specific routines
+get called. And I am planning to add device rebinding upong keymap
+change and more stuff.
 
-The reason for this is that the borrowing logic in bandwidth rebalance appears
-to make the assumption that we wil will be able to converge rapidly to the
-period.  Indeed, in each iteration of redistribution we take only
-1/weight(nrcpus) [assuming no cpuset partitions] of the time remaining.  This is
-a decreasing series, and if we can't exceed the period our convergence looks
-pretty slow [geometric series].
+> >> +
+> >> +static DEVICE_ATTR(keymap, 0666, g13_keymap_show, g13_keymap_store);
+> >>
+> >
+> > No. Just use EVIOCSKEYCODE.
+> >
+> 
+> I'd really prefer to provide a sysfs interface as opposed to ioctls.
+> 
 
-In general it appears the following relation be satisfied for efficient
-execution:  (weight(nr_cpus) * runtime) >> period
+I really think we should stick to standard interfaces. For the reason
+see above.
 
-This assumption is well satisfied in the RT case since the available bandwidth
-is very high.  However I fear for the general case of user limits on tg usage
-lie at the other end of the spectrum.  Especially for those trying to partition
-large machines into many smaller well provisioned fractions, e.g. 0-2 cores out
-of a total 64.  The lock and re-distribution cost for each iteration is also
-going to be quite high in this case which will potentially compound on the
-number of iterations required above.
+> 
+> >> +/*
+> >> + * The "emit_msc_raw" attribute
+> >> + */
+> >> +static ssize_t g13_emit_msc_raw_show(struct device *dev,
+> >> +				     struct device_attribute *attr,
+> >> +				     char *buf)
+> >> +{
+> >> +	struct g13_data *data = dev_get_drvdata(dev);
+> >> +
+> >> +	if (data == NULL)
+> >> +		return -ENODATA;
+> >> +
+> >> +	return sprintf(buf, "%u\n", data->emit_msc_raw);
+> >> +}
+> >> +
+> >> +static ssize_t g13_set_emit_msc_raw(struct hid_device *hdev, unsigned
+> >> k)
+> >> +{
+> >> +	struct g13_data *data = hid_get_g13data(hdev);
+> >> +
+> >> +	if (data == NULL)
+> >> +		return -ENODATA;
+> >> +
+> >> +	data->emit_msc_raw = k;
+> >> +
+> >> +	return 0;
+> >> +}
+> >> +
+> >> +static ssize_t g13_emit_msc_raw_store(struct device *dev,
+> >> +				      struct device_attribute *attr,
+> >> +				      const char *buf, size_t count)
+> >> +{
+> >> +	struct hid_device *hdev;
+> >> +	int i;
+> >> +	unsigned k;
+> >> +	ssize_t set_result;
+> >> +
+> >> +	/* Get the hid associated with the device */
+> >> +	hdev = container_of(dev, struct hid_device, dev);
+> >> +
+> >> +	/* If we have an invalid pointer we'll return ENODATA */
+> >> +	if (hdev == NULL || &(hdev->dev) != dev)
+> >> +		return -ENODATA;
+> >> +
+> >> +	i = sscanf(buf, "%u", &k);
+> >> +	if (i != 1) {
+> >> +		printk(KERN_ERR "unrecognized input: %s", buf);
+> >> +		return -1;
+> >> +	}
+> >> +
+> >> +	set_result = g13_set_emit_msc_raw(hdev, k);
+> >> +
+> >> +	if (set_result < 0)
+> >> +		return set_result;
+> >> +
+> >> +	return count;
+> >> +}
+> >> +
+> >> +static DEVICE_ATTR(emit_msc_raw, 0666,
+> >> +		   g13_emit_msc_raw_show,
+> >> +		   g13_emit_msc_raw_store);
+> >> +
+> >
+> > I do no see the need for this attribute, simply emit MSC_RAW always.
+> >
+> 
+> Will do.
+> 
+> >> +
+> >> +/*
+> >> + * The "keymap_switching" attribute
+> >> + */
+> >> +static ssize_t g13_keymap_switching_show(struct device *dev,
+> >> +					 struct device_attribute *attr,
+> >> +					 char *buf)
+> >> +{
+> >> +	struct g13_data *data = dev_get_drvdata(dev);
+> >> +
+> >> +	if (data == NULL)
+> >> +		return -ENODATA;
+> >> +
+> >> +	return sprintf(buf, "%u\n", data->keymap_switching);
+> >> +}
+> >> +
+> >> +static ssize_t g13_set_keymap_switching(struct hid_device *hdev,
+> >> unsigned k)
+> >> +{
+> >> +	struct g13_data *data = hid_get_g13data(hdev);
+> >> +
+> >> +	if (data == NULL)
+> >> +		return -ENODATA;
+> >> +
+> >> +	data->keymap_switching = k;
+> >> +
+> >> +	if (data->keymap_switching)
+> >> +		g13_set_mled(hdev, 1<<(data->curkeymap));
+> >> +
+> >> +	return 0;
+> >> +}
+> >> +
+> >> +static ssize_t g13_keymap_switching_store(struct device *dev,
+> >> +					  struct device_attribute *attr,
+> >> +					  const char *buf, size_t count)
+> >> +{
+> >> +	struct hid_device *hdev;
+> >> +	int i;
+> >> +	unsigned k;
+> >> +	ssize_t set_result;
+> >> +
+> >> +	/* Get the hid associated with the device */
+> >> +	hdev = container_of(dev, struct hid_device, dev);
+> >> +
+> >> +	/* If we have an invalid pointer we'll return ENODATA */
+> >> +	if (hdev == NULL || &(hdev->dev) != dev)
+> >> +		return -ENODATA;
+> >> +
+> >> +	i = sscanf(buf, "%u", &k);
+> >> +	if (i != 1) {
+> >> +		printk(KERN_ERR "unrecognized input: %s", buf);
+> >> +		return -1;
+> >> +	}
+> >> +
+> >> +	set_result = g13_set_keymap_switching(hdev, k);
+> >> +
+> >> +	if (set_result < 0)
+> >> +		return set_result;
+> >> +
+> >> +	return count;
+> >> +}
+> >> +
+> >> +static DEVICE_ATTR(keymap_switching, 0666,
+> >> +		   g13_keymap_switching_show,
+> >> +		   g13_keymap_switching_store);
+> >
+> > Hmm, attributes that are changing device state are usually 0644.
+> >
+> 
+> Fixed.
+> 
+> >> +
+> >> +
+> >> +static ssize_t g13_name_show(struct device *dev,
+> >> +			     struct device_attribute *attr,
+> >> +			     char *buf)
+> >> +{
+> >> +	struct g13_data *data = dev_get_drvdata(dev);
+> >> +	int result;
+> >> +
+> >> +	if (data == NULL)
+> >> +		return -ENODATA;
+> >> +
+> >> +	if (data->name == NULL) {
+> >> +		buf[0] = 0x00;
+> >> +		return 1;
+> >> +	}
+> >> +
+> >> +	read_lock(&data->lock);
+> >> +	result = sprintf(buf, "%s", data->name);
+> >> +	read_unlock(&data->lock);
+> >> +
+> >> +	return result;
+> >> +}
+> >> +
+> >> +static ssize_t g13_name_store(struct device *dev,
+> >> +			      struct device_attribute *attr,
+> >> +			      const char *buf, size_t count)
+> >> +{
+> >> +	struct g13_data *data = dev_get_drvdata(dev);
+> >> +	size_t limit = count;
+> >> +	char *end;
+> >> +
+> >> +	if (data == NULL)
+> >> +		return -ENODATA;
+> >> +
+> >> +	write_lock(&data->lock);
+> >> +
+> >> +	if (data->name != NULL) {
+> >> +		kfree(data->name);
+> >> +		data->name = NULL;
+> >> +	}
+> >> +
+> >> +	end = strpbrk(buf, "\n\r");
+> >> +	if (end != NULL)
+> >> +		limit = end - buf;
+> >> +
+> >> +	if (end != buf) {
+> >> +
+> >> +		if (limit > 100)
+> >> +			limit = 100;
+> >> +
+> >> +		data->name = kzalloc(limit+1, GFP_KERNEL);
+> >> +
+> >> +		strncpy(data->name, buf, limit);
+> >> +	}
+> >> +
+> >> +	write_unlock(&data->lock);
+> >> +
+> >> +	return count;
+> >> +}
+> >> +
+> >> +static DEVICE_ATTR(name, 0666, g13_name_show, g13_name_store);
+> >
+> > What this attribute is for?
+> >
+> 
+> To provide a mnemonic identifier for the device that can be shared across
+> applications. It also allows a userspace application to lookup a device by
+> name through sysfs.
 
-What are your thoughts on using a separate mechanism for the general case.  A 
-draft proposal follows:
+To set it you need to identify sysfs path fisrt. Once you've identified
+sysfs path you can simply use it in other apps. So I do not see the need
+for the name.
 
-- Maintain a global run-time pool for each tg.  The runtime specified by the
-  user represents the value that this pool will be refilled to each period.
-- We continue to maintain the local notion of runtime/period in each cfs_rq,
-  continue to accumulate locally here.
+> 
+> >> +
+> >> +/*
+> >> + * The "rgb" attribute
+> >> + * red green blue
+> >> + * each with values 0 - 255 (black - full intensity)
+> >> + */
+> >> +static ssize_t g13_rgb_show(struct device *dev,
+> >> +			    struct device_attribute *attr,
+> >> +			    char *buf)
+> >> +{
+> >> +	unsigned r, g, b;
+> >> +	struct g13_data *data = dev_get_drvdata(dev);
+> >> +
+> >> +	if (data == NULL)
+> >> +		return -ENODATA;
+> >> +
+> >> +	r = data->rgb[0];
+> >> +	g = data->rgb[1];
+> >> +	b = data->rgb[2];
+> >> +
+> >> +	return sprintf(buf, "%u %u %u\n", r, g, b);
+> >> +}
+> >> +
+> >> +static ssize_t g13_set_rgb(struct hid_device *hdev,
+> >> +			   unsigned r, unsigned g, unsigned b)
+> >> +{
+> >> +	struct g13_data *data = hid_get_g13data(hdev);
+> >> +
+> >> +	if (data == NULL || data->backlight_report == NULL)
+> >> +		return -ENODATA;
+> >> +
+> >> +	data->backlight_report->field[0]->value[0] = r;
+> >> +	data->backlight_report->field[0]->value[1] = g;
+> >> +	data->backlight_report->field[0]->value[2] = b;
+> >> +	data->backlight_report->field[0]->value[3] = 0x00;
+> >> +
+> >> +	usbhid_submit_report(hdev, data->backlight_report, USB_DIR_OUT);
+> >> +
+> >> +	data->rgb[0] = r;
+> >> +	data->rgb[1] = g;
+> >> +	data->rgb[2] = b;
+> >> +
+> >> +	return 0;
+> >> +}
+> >> +
+> >> +static ssize_t g13_rgb_store(struct device *dev,
+> >> +			     struct device_attribute *attr,
+> >> +			     const char *buf, size_t count)
+> >> +{
+> >> +	struct hid_device *hdev;
+> >> +	int i;
+> >> +	unsigned r;
+> >> +	unsigned g;
+> >> +	unsigned b;
+> >> +	ssize_t set_result;
+> >> +
+> >> +	/* Get the hid associated with the device */
+> >> +	hdev = container_of(dev, struct hid_device, dev);
+> >> +
+> >> +	/* If we have an invalid pointer we'll return ENODATA */
+> >> +	if (hdev == NULL || &(hdev->dev) != dev)
+> >> +		return -ENODATA;
+> >> +
+> >> +	i = sscanf(buf, "%u %u %u", &r, &g, &b);
+> >> +	if (i != 3) {
+> >> +		printk(KERN_ERR "unrecognized input: %s", buf);
+> >> +		return -1;
+> >> +	}
+> >> +
+> >> +	set_result = g13_set_rgb(hdev, r, g, b);
+> >> +
+> >> +	if (set_result < 0)
+> >> +		return set_result;
+> >> +
+> >> +	return count;
+> >> +}
+> >> +
+> >> +static DEVICE_ATTR(rgb, 0666, g13_rgb_show, g13_rgb_store);
+> >> +
+> >> +/*
+> >> + * Create a group of attributes so that we can create and destroy them
+> >> all
+> >> + * at once.
+> >> + */
+> >> +static struct attribute *g13_attrs[] = {
+> >> +	&dev_attr_name.attr,
+> >> +	&dev_attr_rgb.attr,
+> >> +	&dev_attr_mled.attr,
+> >> +	&dev_attr_keymap_index.attr,
+> >> +	&dev_attr_emit_msc_raw.attr,
+> >> +	&dev_attr_keymap_switching.attr,
+> >> +	&dev_attr_keymap.attr,
+> >> +	&dev_attr_fb_update_rate.attr,
+> >> +	&dev_attr_fb_node.attr,
+> >> +	NULL,	 /* need to NULL terminate the list of attributes */
+> >> +};
+> >> +
+> >> +/*
+> >> + * An unnamed attribute group will put all of the attributes directly
+> >> in
+> >> + * the kobject directory.  If we specify a name, a subdirectory will be
+> >> + * created for the attributes with the directory being the name of the
+> >> + * attribute group.
+> >> + */
+> >> +static struct attribute_group g13_attr_group = {
+> >> +	.attrs = g13_attrs,
+> >> +};
+> >> +
+> >> +static struct fb_deferred_io g13_fb_defio = {
+> >> +	.delay = HZ / G13FB_UPDATE_RATE_DEFAULT,
+> >> +	.deferred_io = g13_fb_deferred_io,
+> >> +};
+> >> +
+> >> +static void g13_raw_event_process_input(struct hid_device *hdev,
+> >> +					struct g13_data *g13data,
+> >> +     u8 *raw_data)
+> >> +{
+> >> +	struct input_dev *idev = g13data->input_dev;
+> >> +	unsigned int code;
+> >> +	int value;
+> >> +	int i;
+> >> +	int mask;
+> >> +	int offset;
+> >> +	u8 val;
+> >> +
+> >> +	g13data->ready2 = 1;
+> >> +
+> >> +	if (idev == NULL)
+> >> +		return;
+> >> +
+> >> +	if (g13data->curkeymap < 3)
+> >> +		offset = G13_KEYS * g13data->curkeymap;
+> >> +	else
+> >> +		offset = 0;
+> >> +
+> >> +	for (i = 0, mask = 0x01; i < 8; i++, mask <<= 1) {
+> >> +		/* Keys G1 through G8 */
+> >> +		code = g13data->keycode[i+offset];
+> >> +		value = raw_data[3] & mask;
+> >> +		if (g13data->keycode[i] != KEY_RESERVED)
+> >> +			input_report_key(idev, code, value);
+> >> +		input_event(idev, EV_MSC, MSC_SCAN, i);
+> >
+> > That means these MSC_SCAN events are emitted _always_. Not sure if that
+> > is too useful. If you were to detect the state change and emit MSC_SCAN
+> > for changed keys, that would be better.
+> >
+> 
+> I couldn't find anything that really explained the purpose of MSC_SCAN.
+> Can I use it just to report scancodes?
 
-Upon locally exceeding the period acquire new credit from the global pool
-(either under lock or more likely using atomic ops).  This can either be in
-fixed steppings (e.g. 10ms, could be tunable) or following some quasi-curve
-variant with historical demand.
+Yes, it purpose if to report scancode or it's equivalent of pressed key.
 
-One caveat here is that there is some over-commit in the system, the local
-differences of runtime vs period represent additional over the global pool.
-However it should not be possible to consistently exceed limits since the rate
-of refill is gated by the runtime being input into the system via the per-tg
-pool.
+> 
+> In particular can I selectively emit MSC_SCAN when I only want to report
+> specific events such as an unmapped key or a special key such as the
+> backlight or one of the M* keys?
 
-This would also naturally associate with an interface change that would mean the
-runtime limit for a group would be the effective cpurate within the period.
+You could, but then users would not really know what scancode to use to
+remap already mapped key. The problem with your approach that userspace
+will get 10 MSC_SCAN before getting KEY_* event. Not terribly useful.
 
-e.g. by setting a runtime of 200000us on a 100000us period it would effectively
-allow you to use 2 cpus worth of wall-time on a multicore system.
+...
 
-I feel this is slightly more natural than the current definition which due to
-being local means that values set will not result in consistent behavior across
-machines of different core counts.  It also has the benefit of being consistent
-with observed exports of time consumed, e.g. rusage, (indirectly) time, etc.
+> >> +
+> >> +	dbg_hid("Found all reports\n");
+> >> +
+> >> +	for (i = 0; i < 20; i++) {
+> >> +		if (data->ready && data->ready2)
+> >> +			break;
+> >> +		mdelay(10);
+> >> +	}
+> >
+> > Consider using completion?
+> >
+> 
+> I'm not sure what you mean.
 
-For future scalability as machine size grows this could potentially be
-partitioned below the tg level along the boundaries of sched_domains (or
-something similar).  However for an initial draft given current machine sizes
-the contention on the global pool should hopefully be fairly low.
+Look at wait_for_completion() and wait_completion_timeout() functions.
+These are proper APIs to wait for completion of a certain task instead
+of busily (or sleepily) spinning.
 
-- Paul
+> 
+> >> +
+> >> +	if (!(data->ready && data->ready2))
+> >> +		printk(KERN_ERR "G13 hasn't responded yet, forging ahead with
+> >> initialization\n");
+> >> +	else
+> >> +		dbg_hid("G13 initialized\n");
+> >> +
+> >> +	/*
+> >> +	 * Set the initial color and load the linux logo
+> >> +	 * We're going to ignore the error values. If there is an error at
+> >> this
+> >> +	 * point we'll forge ahead.
+> >> +	 */
+> >> +
+> >> +	dbg_hid("Set default color\n");
+> >> +
+> >> +	error = g13_set_rgb(hdev, G13_DEFAULT_RED, G13_DEFAULT_GREEN,
+> >> G13_DEFAULT_BLUE);
+> >
+> > And...?
+> >
+> 
+> I had an error message before, but took it out. Missed taking out the
+> "error =" since at this point we'll just forge ahead.
+> 
+> Although failing to set the backlight color at this point could indicate
+> some I/O issue it's not critical enough to fail driver initialization.
+> 
+
+Then dev_warn() is your friend.
 
 
+Thanks.
+
+-- 
+Dmitry
