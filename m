@@ -1,58 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753937Ab0AHSu7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753893Ab0AHSw3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753937Ab0AHSu7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jan 2010 13:50:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753871Ab0AHSu6
+	id S1753893Ab0AHSw3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jan 2010 13:52:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752259Ab0AHSw2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jan 2010 13:50:58 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:35844 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752829Ab0AHSu5 (ORCPT
+	Fri, 8 Jan 2010 13:52:28 -0500
+Received: from out02.mta.xmission.com ([166.70.13.232]:54861 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752171Ab0AHSw1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jan 2010 13:50:57 -0500
-Message-ID: <4B477E69.3060702@zytor.com>
-Date: Fri, 08 Jan 2010 10:50:17 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
+	Fri, 8 Jan 2010 13:52:27 -0500
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jesse Brandeburg <jesse.brandeburg@intel.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/5] irq: remove not need bootmem code
+References: <1262951595-1729-1-git-send-email-yinghai@kernel.org>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Fri, 08 Jan 2010 10:52:23 -0800
+In-Reply-To: <1262951595-1729-1-git-send-email-yinghai@kernel.org> (Yinghai Lu's message of "Fri\, 08 Jan 2010 03\:53\:11 -0800")
+Message-ID: <m14omwpgyg.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-To: Michal Marek <mmarek@suse.cz>
-CC: Simon Horman <horms@verge.net.au>, Masami Hiramatsu <mhiramat@redhat.com>,
-       Roland Dreier <rdreier@cisco.com>, Sam Ravnborg <sam@ravnborg.org>,
-       Sergei Trofimovich <slyfox@inbox.ru>, linux-kbuild@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-sh@vger.kernel.org
-Subject: Re: [PATCH] Makefile: do not override LC_CTYPE
-References: <20100108115745.GA14758@sepie.suse.cz> <1262952988-16563-1-git-send-email-mmarek@suse.cz>
-In-Reply-To: <1262952988-16563-1-git-send-email-mmarek@suse.cz>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Scanned: No (on in02.mta.xmission.com); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/08/2010 04:16 AM, Michal Marek wrote:
-> Setting LC_CTYPE=C breaks localized messages in some setups. With only
-> LC_COLLATE=C and LC_NUMERIC=C, we get almost all we need, except for not
-> so defined character classes and tolower()/toupper(). The former is not
-> a big issue, because we can assume that e.g. [:alpha:] will always
-> include a-zA-Z and we only ever process ASCII input. The latter seems
-> only affect arch/sh/tools/gen-mach-types, which we can handle separately.
-> 
-> So after this patch the meaning of ranges like [a-z], the behavior of
-> sort and join, etc. should be the same everywhere and at the same time
-> gcc should be able to print localized waring and error messages.
-> LC_NUMERIC=C might not be necessary, but setting it doesn't hurt.
-> 
-> Reported-by: Simon Horman <horms@verge.net.au>
-> Reported-by: Sergei Trofimovich <slyfox@inbox.ru>
-> Signed-off-by: Michal Marek <mmarek@suse.cz>
+Yinghai Lu <yinghai@kernel.org> writes:
 
-For what it's worth:
+YH overall this looks like a good patch series, that enables
+additional cleanups beyond what it does.  Thank you for putting this
+together.
 
-Acked-by: H. Peter Anvin <hpa@zytor.com>
-
-	-hpa
-
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
-
+Eric
