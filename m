@@ -1,61 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752784Ab0AHEtU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751996Ab0AHEvm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752784Ab0AHEtU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 23:49:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752620Ab0AHEtT
+	id S1751996Ab0AHEvm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 23:51:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751355Ab0AHEvl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 23:49:19 -0500
-Received: from smtpauth.net4india.com ([202.71.129.41]:39441 "EHLO
-	smtpauth.net4india.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752580Ab0AHEtS (ORCPT
+	Thu, 7 Jan 2010 23:51:41 -0500
+Received: from cobra.newdream.net ([66.33.216.30]:38729 "EHLO
+	cobra.newdream.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751259Ab0AHEvk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 23:49:18 -0500
-Message-ID: <4B46B924.6070903@xenontk.org>
-Date: Fri, 08 Jan 2010 10:18:36 +0530
-From: David John <davidjon@xenontk.org>
-Reply-To: davidjon@xenontk.org
-User-Agent: Mozilla/5.0 (X11; X; Linux x86_64; rv:1.9.1.5) Gecko/20091209 Thunderbird/3.0
+	Thu, 7 Jan 2010 23:51:40 -0500
+Date: Thu, 7 Jan 2010 20:51:45 -0800 (PST)
+From: Sage Weil <sage@newdream.net>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+cc: Trond Myklebust <trond.myklebust@fys.uio.no>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
+       Wu Fengguang <fengguang.wu@intel.com>
+Subject: Re: linux-next: nfs/ceph tree build failure
+In-Reply-To: <20100108121903.6a096bc1.sfr@canb.auug.org.au>
+Message-ID: <Pine.LNX.4.64.1001072048420.7474@cobra.newdream.net>
+References: <20100108111136.3feae8c6.sfr@canb.auug.org.au>
+ <1262909913.2659.47.camel@localhost> <20100108121903.6a096bc1.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-CC: Rusty Russell <rusty@rustcorp.com.au>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [patch] generic-ipi: fix backtrace in smp_call_function_any()
-References: <1262908019.2779.24.camel@sbs-t61.sc.intel.com>
-In-Reply-To: <1262908019.2779.24.camel@sbs-t61.sc.intel.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/08/2010 05:16 AM, Suresh Siddha wrote:
-> On my westmere box, I see this backtrace with 2.6.33-rc kernels:
+On Fri, 8 Jan 2010, Stephen Rothwell wrote:
+
+> Hi Trond,
 > 
->> cpumask_of_node(3): node > nr_node_ids(1)
->> Pid: 1, comm: swapper Not tainted 2.6.33-rc3-00097-g2c1f189 #223
->> Call Trace:
->>  [<ffffffff81028bb3>] cpumask_of_node+0x23/0x58
->>  [<ffffffff81061f51>] smp_call_function_any+0x65/0xfa
->>  [<ffffffff810160d1>] ? do_drv_read+0x0/0x2f
->>  [<ffffffff81015fba>] get_cur_val+0xb0/0x102
->>  [<ffffffff81016080>] get_cur_freq_on_cpu+0x74/0xc5
->>  [<ffffffff810168a7>] acpi_cpufreq_cpu_init+0x417/0x515
->>  [<ffffffff81562ce9>] ? __down_write+0xb/0xd
->>  [<ffffffff8148055e>] cpufreq_add_dev+0x278/0x922
+> On Thu, 07 Jan 2010 19:18:33 -0500 Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
+> >
+> > The patch itself looks correct to me.
 > 
-> fix it by using the cpu_to_node() and using the node number instead
-> of the cpu for cpumask_of_node().
+> Thanks for the confirmation.
+
+Yep, looks good.
+
+> > How would you like me to proceed? Should I revert the VM changes from
+> > the NFS linux-next tree, or would you be OK with keeping the above patch
+> > for now?
 > 
-> Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+> I am OK with keeping the patch - we just need to remember it during the
+> next merge window.
 
-Hi Suresh,
+Okay.  I can move it to my tree as well, where I assume it'll need to be 
+when it comes time to merge.
 
-I have already sent a patch for this:
-http://www.gossamer-threads.com/lists/linux/kernel/1173978?do=post_view_threaded
-
-Can you ACK that instead?
-
-Regards,
-David.
-
+Thanks-
+sage
