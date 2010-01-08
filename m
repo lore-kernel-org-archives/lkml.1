@@ -1,72 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754007Ab0AHALl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754068Ab0AHAPy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754007Ab0AHALl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 19:11:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753343Ab0AHALk
+	id S1754068Ab0AHAPy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 19:15:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753952Ab0AHAPx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 19:11:40 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:55301 "EHLO smtps.tip.net.au"
+	Thu, 7 Jan 2010 19:15:53 -0500
+Received: from mx2.netapp.com ([216.240.18.37]:26284 "EHLO mx2.netapp.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753260Ab0AHALk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 19:11:40 -0500
-Date: Fri, 8 Jan 2010 11:11:36 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Peter Zijlstra <peterz@infradead.org>, Sage Weil <sage@newdream.net>,
-       Wu Fengguang <fengguang.wu@intel.com>
-Subject: linux-next: nfs/ceph tree build failure
-Message-Id: <20100108111136.3feae8c6.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 3.0.0beta4 (GTK+ 2.18.5; i486-pc-linux-gnu)
+	id S1753937Ab0AHAPw convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jan 2010 19:15:52 -0500
+X-IronPort-AV: E=Sophos;i="4.49,238,1262592000"; 
+   d="scan'208";a="298885411"
+Subject: Re: [GIT PULL] Please pull NFS client bugfixes....
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: linux-kernel@vger.kernel.org, torvalds@osdl.org
+In-Reply-To: <20100107235149.GD16076@basil.fritz.box>
+References: <1262896174.2659.3.camel@localhost>
+	 <87zl4pmxzp.fsf@basil.nowhere.org> <1262901198.2659.38.camel@localhost>
+	 <20100107235149.GD16076@basil.fritz.box>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
+Organization: NetApp
+Date: Thu, 07 Jan 2010 19:14:42 -0500
+Message-ID: <1262909682.2659.45.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.28.2 (2.28.2-1.fc12) 
+X-OriginalArrivalTime: 08 Jan 2010 00:15:37.0157 (UTC) FILETIME=[B3E90F50:01CA8FF7]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+On Fri, 2010-01-08 at 00:51 +0100, Andi Kleen wrote: 
+> > I'd like to see this fixed, but I do not want to jump onto a solution
+> > that changes the behaviour of mmap() w.r.t. revalidation. The current
+> > behaviour dates back at least to 2.3.x if not before.
+> 
+> So do you have a plan to fix it?
 
-Today's linux-next build (x86_64 allmodconfig) failed like this:
+Yes. I want to pursue Peter Zijlstra's patches, which split up the mmap
+function into a set of parts which require the mmap_sem, and other parts
+which don't, and that adds a filesystem callback that allows for
+revalidation to occur outside the mmap_sem.
 
-fs/ceph/addr.c: In function 'ceph_set_page_dirty':
-fs/ceph/addr.c:105: error: 'BDI_RECLAIMABLE' undeclared (first use in this function)
+> I don't think it'll be possible to do drastic changes in the
+> VFS for 2.6.33, and it seems preserving the current semantics
+> would need that.
+> 
+> > That's why I'm working slowly on this.
+> 
+> Delaying a fix to after 2.6.33 is not an option imho.
+> 
+> It hits everyone with LOCKDEP enabled who uses mmap over NFS.
+> That's new in 2.6.33, previously LOCKDEP didn't diagnose this.
+> 
+> I'll keep using my patch, but I suppose once we're going more
+> towards a release you'll get more reports of this.
 
-Commit 69f0302c4bd28846c3251e25976a2336cd6a6e6f ("VM: Split out the
-accounting of unstable writes from BDI_RECLAIMABLE") from the nfs tree
-interacts with commit 1d3576fd10f0d7a104204267b81cf84a07028dad ("ceph:
-address space operations") from the ceph tree.
+Why should this particular issue require us to rush into a solution?
+This has been there for literally _years_, and I've never heard of a
+single incident in which a deadlock actually occurred. The only reason
+why we've noticed it at all is because lockdep has started to whine.
 
-I applied the following patch for today (I am not sure it is correct) and
-will keep it as a merge fixup as necessary.
+I agree it should be fixed.
 
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+I don't agree that it is urgent enough to warrant kneejerk reactions in
+2.6.33 which change long established behaviours that people are actually
+relying on.
 
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Fri, 8 Jan 2010 11:04:27 +1100
-Subject: [PATCH] ceph: update for BDI_RECLAIMABLE change
-
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- fs/ceph/addr.c |    3 +--
- 1 files changed, 1 insertions(+), 2 deletions(-)
-
-diff --git a/fs/ceph/addr.c b/fs/ceph/addr.c
-index bf53581..eab46b0 100644
---- a/fs/ceph/addr.c
-+++ b/fs/ceph/addr.c
-@@ -101,8 +101,7 @@ static int ceph_set_page_dirty(struct page *page)
- 
- 		if (mapping_cap_account_dirty(mapping)) {
- 			__inc_zone_page_state(page, NR_FILE_DIRTY);
--			__inc_bdi_stat(mapping->backing_dev_info,
--					BDI_RECLAIMABLE);
-+			__inc_bdi_stat(mapping->backing_dev_info, BDI_DIRTY);
- 			task_io_account_write(PAGE_CACHE_SIZE);
- 		}
- 		radix_tree_tag_set(&mapping->page_tree,
--- 
-1.6.5.7
-
+  Trond
