@@ -1,53 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753462Ab0AHOF6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753468Ab0AHOGi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753462Ab0AHOF6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jan 2010 09:05:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753442Ab0AHOF6
+	id S1753468Ab0AHOGi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jan 2010 09:06:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753402Ab0AHOGh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jan 2010 09:05:58 -0500
-Received: from ch-smtp03.sth.basefarm.net ([80.76.149.214]:56986 "EHLO
-	ch-smtp03.sth.basefarm.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751675Ab0AHOF5 (ORCPT
+	Fri, 8 Jan 2010 09:06:37 -0500
+Received: from g1t0028.austin.hp.com ([15.216.28.35]:25194 "EHLO
+	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752196Ab0AHOGh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jan 2010 09:05:57 -0500
-X-Mailer: exmh version 2.7.2 04/02/2003 (gentoo 2.7.2) with nmh-1.3-dev
-To: Yinghai Lu <yinghai@kernel.org>
-cc: Anders Eriksson <aeriksson@fastmail.fm>, mingo@elte.hu,
-       linux-kernel@vger.kernel.org
-Subject: Re: Memory probing fails after 2.6.30 (bisected)
-In-reply-to: <4B43BAEB.7070308@kernel.org>
-References: <20100105110256.D2DF133C4B0@tippex.mynet.homeunix.org> <86802c441001051102j547f10bga2b40fbaee9cf623@mail.gmail.com> <20100105211522.57A3E33C5F5@tippex.mynet.homeunix.org> <4B43BAEB.7070308@kernel.org>
-Comments: In-reply-to Yinghai Lu <yinghai@kernel.org>
-   message dated "Tue, 05 Jan 2010 14:19:23 -0800."
+	Fri, 8 Jan 2010 09:06:37 -0500
+Subject: Re: + hugetlb-fix-section-mismatch-warning-in-hugetlbc.patch added
+ to  -mm tree
+From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+To: Rakib Mullick <rakib.mullick@gmail.com>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, akpm@linux-foundation.org
+In-Reply-To: <b9df5fa11001072234o2e5fb8bfv7b57a562d9a6e4d1@mail.gmail.com>
+References: <201001072218.o07MIPNm020870@imap1.linux-foundation.org>
+	 <20100107143651.2fa73662.randy.dunlap@oracle.com>
+	 <b9df5fa11001072234o2e5fb8bfv7b57a562d9a6e4d1@mail.gmail.com>
+Content-Type: text/plain
+Organization: HP/LKTT
+Date: Fri, 08 Jan 2010 09:06:09 -0500
+Message-Id: <1262959569.24795.22.camel@useless.americas.hpqcorp.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Date: Fri, 08 Jan 2010 15:04:19 +0100
-From: Anders Eriksson <aeriksson@fastmail.fm>
-Message-Id: <20100108140419.88E1533C5F9@tippex.mynet.homeunix.org>
-X-Originating-IP: 83.252.238.172
-X-Scan-Result: No virus found in message 1NTFTO-0001in-AW.
-X-Scan-Signature: ch-smtp03.sth.basefarm.net 1NTFTO-0001in-AW 6d9bdc648553db087da847e789011885
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 2010-01-08 at 12:34 +0600, Rakib Mullick wrote:
+> On 1/8/10, Randy Dunlap <randy.dunlap@oracle.com> wrote:
+> 
+> Hi,
+> >
+> > Hi,
+> >
+> >  If so, then hugetlb_register_node() could be called at any time
+> >  (like after system init), and it would then call
+> >  hugetlb_sysfs_add_hstate(), which would be bad.
+> >
+> But - hugetlb_register_node is only called from hugetlb_register_all_nodes.
 
-Success!
+No, hugetlb_register_node() is also called from the similarly named
+function in drivers/base/node.c.   mm/hugetlb.c registers its version of
+"hugetlb_register_node()" at start up for use at node hotplug.  See
+register_hugetlbfs_with_node() in node.c and its use in hugetlb.c.
 
-yinghai@kernel.org said:
-> can you try to revert some e820 detect patch?
->
-> bca23db: x86, setup: revert ACPI 3 E820 extended attributes support 
-> df7699c: x86, setup: "glove box" BIOS interrupts in the core boot code 
-> cd67059: x86, setup: guard against pre-ACPI 3 e820 code not updating %ecx 
-> c549e71: x86, setup: ACPI 3, BIOS workaround for E820-probing code
+We had to do it this way because node.c is part of the base kernel and
+hugetlb support can be built as a module.  All sysfs node kobjs have
+been registered by the time hugetlb inits, so hugetlb registers the
+nodes' hstate attributes when it initializes.  However, when a node is
+hotplugged later, the node driver calls into hugetlb to register the
+attributes.
 
-Starting at 33-rc3, reverting the above 4 commits cumulatively, brings back my 
-e820 table.
+So, we need to keep mm/hugetlb.c:hugetlb_register_node() around during
+run time when mem/node hot-plug is supported.
 
-I have no idea how to fix c549e71 so it don't break on my system.
-
-This is a hp nc6400 laptop, btw.
+Lee
 
 
+> The call sequence is :
+>                     hugetlb_init   --------------->  was __init
+>                          \-> hugetlb_register_all_nodes  ----> we make it __init
+>                                           \-> hugetlb_register_node
+> ---> we make it __init
+>                                                  \->
+> hugetlb_sysfs_add_hstate -> this was __init
+> 
+> Above all happens in __init context. So - hugetlb_register_node is
+> called only at
+> system init. But I don't think __init is used for hotplug support, for
+> proper hotplug
+> support we might use __meminit.
+> 
+> And register_hugetlbfs_with_node is called from hugetlb_un/register_node.
+> But hugetlb_unregister_node doesn't use callback function. It's not referencing
+> hugetlb_sysfs_add_hstate(). So - it's safe. Unless I'm not missing
+> anything, too.
+> 
+> thanks,
+> 
+> >  Thanks.
+> > ---
+> >
+> > ~Randy
+> >
+> 
+> --
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
 
