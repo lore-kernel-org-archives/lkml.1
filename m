@@ -1,250 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754071Ab0AHXOP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754121Ab0AHXTs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754071Ab0AHXOP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jan 2010 18:14:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752888Ab0AHXOO
+	id S1754121Ab0AHXTs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jan 2010 18:19:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753892Ab0AHXTr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jan 2010 18:14:14 -0500
-Received: from [206.15.93.42] ([206.15.93.42]:12343 "EHLO
-	visionfs1.visionengravers.com" rhost-flags-FAIL-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752670Ab0AHXON (ORCPT
+	Fri, 8 Jan 2010 18:19:47 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:43151 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752670Ab0AHXTq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jan 2010 18:14:13 -0500
-From: H Hartley Sweeten <hartleys@visionengravers.com>
-To: Linux Kernel <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
-       linux-wireless@vger.kernel.org, ilw@linux.intel.com
-Subject: [PATCH] iwl-debugfs.c: remove unnecessary casts of void *
-Date: Fri, 8 Jan 2010 16:14:10 -0700
-Cc: yi.zhu@intel.com, reinette.chatre@intel.com, linville@tuxdriver.com
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Fri, 8 Jan 2010 18:19:46 -0500
+Date: Fri, 8 Jan 2010 15:18:47 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Stefani Seibold <stefani@seibold.net>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       Johan Hovold <jhovold@gmail.com>, Pete Zaitcev <zaitcev@redhat.com>
+Subject: Re: [tip:urgent] fix kfifo_out_locked race bug
+Message-Id: <20100108151847.7fdf0fd8.akpm@linux-foundation.org>
+In-Reply-To: <1262698715.4532.7.camel@wall-e>
+References: <20100104174352.GA26606@localhost>
+	<1262632804.4814.17.camel@wall-e>
+	<20100105004344.082bb69f@redhat.com>
+	<20100105110418.GA10442@localhost>
+	<1262689759.21020.2.camel@wall-e>
+	<20100105111401.GB10442@localhost>
+	<1262690734.22009.3.camel@wall-e>
+	<20100105113525.GA19371@localhost>
+	<1262692881.23577.15.camel@wall-e>
+	<1262698715.4532.7.camel@wall-e>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <201001081614.10343.hartleys@visionengravers.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-iwl-debugfs.c: remove unnecessary casts of void *
+On Tue, 05 Jan 2010 14:38:35 +0100
+Stefani Seibold <stefani@seibold.net> wrote:
 
-void pointers do not need to be cast to other pointer types.
+> This patch fix a wrong optimization in include/linux/kfifo.h which could
+> cause a race in kfifo_out_locked.
+> 
+> Please apply it to the 2.6.33-rc* tree.
+> 
+> Signed-off-by: Stefani Seibold <stefani@seibold.net>
+> ---
+>  kfifo.h |    7 -------
+>  1 file changed, 7 deletions(-)
+> 
+> --- linux-2.6.33-rc2.orig/include/linux/kfifo.h	2009-12-27
+> 23:37:04.921185257 +0100
+> +++ kfifo.h	2010-01-05 14:32:31.414316321 +0100
+> @@ -228,13 +228,6 @@ static inline __must_check unsigned int 
+>  
+>  	ret = kfifo_out(fifo, to, n);
+>  
+> -	/*
+> -	 * optimization: if the FIFO is empty, set the indices to 0
+> -	 * so we don't wrap the next time
+> -	 */
+> -	if (kfifo_is_empty(fifo))
+> -		kfifo_reset(fifo);
+> -
+>  	spin_unlock_irqrestore(lock, flags);
+>  
+>  	return ret;
+> 
 
-Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
-Cc: Zhu Yi <yi.zhu@intel.com>
-Cc: Reinette Chatre <reinette.chatre@intel.com>
-Cc: John W. Linville <linville@tuxdriver.com>
+Thanks.  Some nits:
 
----
+- the patch is wordwrapped.  I fixed that up.
 
-diff --git a/drivers/net/wireless/iwlwifi/iwl-debugfs.c b/drivers/net/wireless/iwlwifi/iwl-debugfs.c
-index 21e0f66..351dbd8 100644
---- a/drivers/net/wireless/iwlwifi/iwl-debugfs.c
-+++ b/drivers/net/wireless/iwlwifi/iwl-debugfs.c
-@@ -125,7 +125,7 @@ static ssize_t iwl_dbgfs_tx_statistics_read(struct file *file,
- 						char __user *user_buf,
- 						size_t count, loff_t *ppos) {
- 
--	struct iwl_priv *priv = (struct iwl_priv *)file->private_data;
-+	struct iwl_priv *priv = file->private_data;
- 	char *buf;
- 	int pos = 0;
- 
-@@ -184,7 +184,7 @@ static ssize_t iwl_dbgfs_rx_statistics_read(struct file *file,
- 						char __user *user_buf,
- 						size_t count, loff_t *ppos) {
- 
--	struct iwl_priv *priv = (struct iwl_priv *)file->private_data;
-+	struct iwl_priv *priv = file->private_data;
- 	char *buf;
- 	int pos = 0;
- 	int cnt;
-@@ -232,7 +232,7 @@ static ssize_t iwl_dbgfs_sram_read(struct file *file,
- 	ssize_t ret;
- 	int i;
- 	int pos = 0;
--	struct iwl_priv *priv = (struct iwl_priv *)file->private_data;
-+	struct iwl_priv *priv = file->private_data;
- 	size_t bufsz;
- 
- 	/* default is to dump the entire data segment */
-@@ -306,7 +306,7 @@ static ssize_t iwl_dbgfs_sram_write(struct file *file,
- static ssize_t iwl_dbgfs_stations_read(struct file *file, char __user *user_buf,
- 					size_t count, loff_t *ppos)
- {
--	struct iwl_priv *priv = (struct iwl_priv *)file->private_data;
-+	struct iwl_priv *priv = file->private_data;
- 	struct iwl_station_entry *station;
- 	int max_sta = priv->hw_params.max_stations;
- 	char *buf;
-@@ -376,7 +376,7 @@ static ssize_t iwl_dbgfs_nvm_read(struct file *file,
- 				       loff_t *ppos)
- {
- 	ssize_t ret;
--	struct iwl_priv *priv = (struct iwl_priv *)file->private_data;
-+	struct iwl_priv *priv = file->private_data;
- 	int pos = 0, ofs = 0, buf_size = 0;
- 	const u8 *ptr;
- 	char *buf;
-@@ -446,7 +446,7 @@ static ssize_t iwl_dbgfs_log_event_write(struct file *file,
- static ssize_t iwl_dbgfs_channels_read(struct file *file, char __user *user_buf,
- 				       size_t count, loff_t *ppos)
- {
--	struct iwl_priv *priv = (struct iwl_priv *)file->private_data;
-+	struct iwl_priv *priv = file->private_data;
- 	struct ieee80211_channel *channels = NULL;
- 	const struct ieee80211_supported_band *supp_band = NULL;
- 	int pos = 0, i, bufsz = PAGE_SIZE;
-@@ -519,7 +519,7 @@ static ssize_t iwl_dbgfs_status_read(struct file *file,
- 						char __user *user_buf,
- 						size_t count, loff_t *ppos) {
- 
--	struct iwl_priv *priv = (struct iwl_priv *)file->private_data;
-+	struct iwl_priv *priv = file->private_data;
- 	char buf[512];
- 	int pos = 0;
- 	const size_t bufsz = sizeof(buf);
-@@ -567,7 +567,7 @@ static ssize_t iwl_dbgfs_interrupt_read(struct file *file,
- 					char __user *user_buf,
- 					size_t count, loff_t *ppos) {
- 
--	struct iwl_priv *priv = (struct iwl_priv *)file->private_data;
-+	struct iwl_priv *priv = file->private_data;
- 	int pos = 0;
- 	int cnt = 0;
- 	char *buf;
-@@ -654,7 +654,7 @@ static ssize_t iwl_dbgfs_interrupt_write(struct file *file,
- static ssize_t iwl_dbgfs_qos_read(struct file *file, char __user *user_buf,
- 				       size_t count, loff_t *ppos)
- {
--	struct iwl_priv *priv = (struct iwl_priv *)file->private_data;
-+	struct iwl_priv *priv = file->private_data;
- 	int pos = 0, i;
- 	char buf[256];
- 	const size_t bufsz = sizeof(buf);
-@@ -677,7 +677,7 @@ static ssize_t iwl_dbgfs_qos_read(struct file *file, char __user *user_buf,
- static ssize_t iwl_dbgfs_led_read(struct file *file, char __user *user_buf,
- 				  size_t count, loff_t *ppos)
- {
--	struct iwl_priv *priv = (struct iwl_priv *)file->private_data;
-+	struct iwl_priv *priv = file->private_data;
- 	int pos = 0;
- 	char buf[256];
- 	const size_t bufsz = sizeof(buf);
-@@ -703,7 +703,7 @@ static ssize_t iwl_dbgfs_thermal_throttling_read(struct file *file,
- 				char __user *user_buf,
- 				size_t count, loff_t *ppos)
- {
--	struct iwl_priv *priv = (struct iwl_priv *)file->private_data;
-+	struct iwl_priv *priv = file->private_data;
- 	struct iwl_tt_mgmt *tt = &priv->thermal_throttle;
- 	struct iwl_tt_restriction *restriction;
- 	char buf[100];
-@@ -763,7 +763,7 @@ static ssize_t iwl_dbgfs_disable_ht40_read(struct file *file,
- 					 char __user *user_buf,
- 					 size_t count, loff_t *ppos)
- {
--	struct iwl_priv *priv = (struct iwl_priv *)file->private_data;
-+	struct iwl_priv *priv = file->private_data;
- 	char buf[100];
- 	int pos = 0;
- 	const size_t bufsz = sizeof(buf);
-@@ -820,7 +820,7 @@ static ssize_t iwl_dbgfs_sleep_level_override_read(struct file *file,
- 						   char __user *user_buf,
- 						   size_t count, loff_t *ppos)
- {
--	struct iwl_priv *priv = (struct iwl_priv *)file->private_data;
-+	struct iwl_priv *priv = file->private_data;
- 	char buf[10];
- 	int pos, value;
- 	const size_t bufsz = sizeof(buf);
-@@ -838,7 +838,7 @@ static ssize_t iwl_dbgfs_current_sleep_command_read(struct file *file,
- 						    char __user *user_buf,
- 						    size_t count, loff_t *ppos)
- {
--	struct iwl_priv *priv = (struct iwl_priv *)file->private_data;
-+	struct iwl_priv *priv = file->private_data;
- 	char buf[200];
- 	int pos = 0, i;
- 	const size_t bufsz = sizeof(buf);
-@@ -976,7 +976,7 @@ static ssize_t iwl_dbgfs_tx_queue_read(struct file *file,
- 						char __user *user_buf,
- 						size_t count, loff_t *ppos) {
- 
--	struct iwl_priv *priv = (struct iwl_priv *)file->private_data;
-+	struct iwl_priv *priv = file->private_data;
- 	struct iwl_tx_queue *txq;
- 	struct iwl_queue *q;
- 	char *buf;
-@@ -1022,7 +1022,7 @@ static ssize_t iwl_dbgfs_rx_queue_read(struct file *file,
- 						char __user *user_buf,
- 						size_t count, loff_t *ppos) {
- 
--	struct iwl_priv *priv = (struct iwl_priv *)file->private_data;
-+	struct iwl_priv *priv = file->private_data;
- 	struct iwl_rx_queue *rxq = &priv->rxq;
- 	char buf[256];
- 	int pos = 0;
-@@ -1068,7 +1068,7 @@ static ssize_t iwl_dbgfs_ucode_rx_stats_read(struct file *file,
- 					char __user *user_buf,
- 					size_t count, loff_t *ppos)
- {
--	struct iwl_priv *priv = (struct iwl_priv *)file->private_data;
-+	struct iwl_priv *priv = file->private_data;
- 	int pos = 0;
- 	char *buf;
- 	int bufsz = sizeof(struct statistics_rx_phy) * 20 +
-@@ -1379,7 +1379,7 @@ static ssize_t iwl_dbgfs_ucode_tx_stats_read(struct file *file,
- 					char __user *user_buf,
- 					size_t count, loff_t *ppos)
- {
--	struct iwl_priv *priv = (struct iwl_priv *)file->private_data;
-+	struct iwl_priv *priv = file->private_data;
- 	int pos = 0;
- 	char *buf;
- 	int bufsz = (sizeof(struct statistics_tx) * 24) + 250;
-@@ -1521,7 +1521,7 @@ static ssize_t iwl_dbgfs_ucode_general_stats_read(struct file *file,
- 					char __user *user_buf,
- 					size_t count, loff_t *ppos)
- {
--	struct iwl_priv *priv = (struct iwl_priv *)file->private_data;
-+	struct iwl_priv *priv = file->private_data;
- 	int pos = 0;
- 	char *buf;
- 	int bufsz = sizeof(struct statistics_general) * 4 + 250;
-@@ -1612,7 +1612,7 @@ static ssize_t iwl_dbgfs_sensitivity_read(struct file *file,
- 					char __user *user_buf,
- 					size_t count, loff_t *ppos) {
- 
--	struct iwl_priv *priv = (struct iwl_priv *)file->private_data;
-+	struct iwl_priv *priv = file->private_data;
- 	int pos = 0;
- 	int cnt = 0;
- 	char *buf;
-@@ -1693,7 +1693,7 @@ static ssize_t iwl_dbgfs_chain_noise_read(struct file *file,
- 					char __user *user_buf,
- 					size_t count, loff_t *ppos) {
- 
--	struct iwl_priv *priv = (struct iwl_priv *)file->private_data;
-+	struct iwl_priv *priv = file->private_data;
- 	int pos = 0;
- 	int cnt = 0;
- 	char *buf;
-@@ -1751,7 +1751,7 @@ static ssize_t iwl_dbgfs_tx_power_read(struct file *file,
- 					char __user *user_buf,
- 					size_t count, loff_t *ppos) {
- 
--	struct iwl_priv *priv = (struct iwl_priv *)file->private_data;
-+	struct iwl_priv *priv = file->private_data;
- 	char buf[128];
- 	int pos = 0;
- 	ssize_t ret;
-@@ -1802,7 +1802,7 @@ static ssize_t iwl_dbgfs_power_save_status_read(struct file *file,
- 						    char __user *user_buf,
- 						    size_t count, loff_t *ppos)
- {
--	struct iwl_priv *priv = (struct iwl_priv *)file->private_data;
-+	struct iwl_priv *priv = file->private_data;
- 	char buf[60];
- 	int pos = 0;
- 	const size_t bufsz = sizeof(buf);
+- you removed the cc's of the particpants in the earlier dicsussion. 
+  I restored them here.
+
+- the changelog didn't describe the bug - what was the race??
+
+- I added "Reported-by: Johan Hovold <jhovold@gmail.com>" to the changelog
+
+- the "[tip:urgent]" tag in the Subject: line is something which
+  Ingo's patch tools add to outgoing email notifications and wasn't
+  appropriate here.  Plain old "[patch]" would be typical.
+
