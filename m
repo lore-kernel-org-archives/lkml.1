@@ -1,89 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756190Ab0AVXZb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756234Ab0AVX0U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756190Ab0AVXZb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 18:25:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756149Ab0AVXZX
+	id S1756234Ab0AVX0U (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 18:26:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756113Ab0AVX0M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 18:25:23 -0500
-Received: from mta5.srv.hcvlny.cv.net ([167.206.4.200]:36783 "EHLO
-	mta5.srv.hcvlny.cv.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755713Ab0AVXZT (ORCPT
+	Fri, 22 Jan 2010 18:26:12 -0500
+Received: from fmmailgate03.web.de ([217.72.192.234]:33266 "EHLO
+	fmmailgate03.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756177Ab0AVX0H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 18:25:19 -0500
-Date: Fri, 22 Jan 2010 18:25:12 -0500
-From: Michael Breuer <mbreuer@majjas.com>
-Subject: Re: Hang: 2.6.32.4 sky2/DMAR (was [PATCH] sky2: Fix WARNING: at
- lib/dma-debug.c:902 check_sync)
-In-reply-to: <20100122230605.GB3105@del.dom.local>
-To: Jarek Poplawski <jarkao2@gmail.com>
-Cc: David Miller <davem@davemloft.net>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       akpm@linux-foundation.org, flyboy@gmail.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       Michael Chan <mchan@broadcom.com>, Don Fry <pcnet32@verizon.net>,
-       Francois Romieu <romieu@fr.zoreil.com>,
-       Matt Carlson <mcarlson@broadcom.com>
-Message-id: <4B5A33D8.90501@majjas.com>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7BIT
-References: <20100120094103.GA6225@ff.dom.local> <4B58B217.8030001@majjas.com>
- <20100121204133.GB3085@del.dom.local> <4B59E7EB.3050605@majjas.com>
- <20100122215304.GA3105@del.dom.local> <4B5A2362.6000306@majjas.com>
- <20100122230605.GB3105@del.dom.local>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.7)
- Gecko/20100111 Lightning/1.0b2pre Thunderbird/3.0.1
+	Fri, 22 Jan 2010 18:26:07 -0500
+Message-Id: <c4afddbc4700ff0df16dc832c59f191e42684e76.1264201408.git.jan.kiszka@web.de>
+In-Reply-To: <cover.1264201406.git.jan.kiszka@web.de>
+References: <cover.1264201406.git.jan.kiszka@web.de>
+From: Jan Kiszka <jan.kiszka@web.de>
+To: David Miller <davem@davemloft.net>, Karsten Keil <isdn@linux-pingi.de>
+Cc: linux-kernel@vger.kernel.org, i4ldeveloper@listserv.isdn4linux.de,
+       isdn4linux@listserv.isdn4linux.de, netdev@vger.kernel.org
+Date: Fri, 8 Jan 2010 12:57:25 +0100
+Subject: [PATCH 25/31] CAPI: Drop capiminor's unused inbytes counter
+X-Provags-ID: V01U2FsdGVkX181feyfLEaH3qli+fqDJaFhvYXU34KEddHuoBfU
+	kls17kfHtvY6Xq1TG6sn4zP7ogajlgrhIIvZkXk9IgpWj4ckTy
+	jE/ZRa24A=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 1/22/2010 6:06 PM, Jarek Poplawski wrote:
-> On Fri, Jan 22, 2010 at 05:14:58PM -0500, Michael Breuer wrote:
->    
->> On 1/22/2010 4:53 PM, Jarek Poplawski wrote:
->>      
->>> On Fri, Jan 22, 2010 at 01:01:15PM -0500, Michael Breuer wrote:
->>>        
->>>> Kernel 2.6.32.4 (git) with the following patches applied:
->>>>
->>>> af_packet.c (tpacket_snd version 3)
->>>> sky2.c pskb_may_pull
->>>> sky2 fix WARNING at lib/dma-debug.c check_sync
->>>>          
->>> I guess, you meant the "sky2.c receive_copy" patch which you tested
->>> earlier, or at least you managed to crash DMAR with that patch
->>> before crashing it with Stephen's "lib/dma-debug.c check_sync" patch,
->>> right?
->>>
->>>        
->> Yes - sorry, correct - all three patches were in the last run.
->> Previously, I've encountered the crash without these patches.
->>      
-> OK, thanks for testing - it's really very helpful, and supports
-> David's opinion that dmar is a different problem.
-> ...
->    
->> Not sure I can do that. Note that based on the log messages, there
->> were no errors/dropped packets involving dhcp. Moving the dhcp
->> server off of the affected machine is not trivial. The dhcp
->> correlation is based on logged messages preceding each crash. I
->> cannot confirm that they're related, however it's really suspicious.
->> If it helps, HP replaced my unmanaged switch with a managed one so I
->> can see whether there were any switch events logged the next time I
->> have a crash.
->>
->> At this point, it seems the following is required to trigger the crash:
->> 1) Uptime of 24-36 hours
->> 2) High RX load on server (cifs traffic is what I've triggered it with).
->> 3) Normal DHCP traffic.
->>      
-> Do you mean you got these crashes with the new switch too, and this
-> switch doesn't drop DHCP at all? (Otherwise, let's try this switch
-> first.)
->
-> Jarek P.
->    
-Nope - just got the new switch. Crash was old switch. That said, I don't 
-think (based on the log messages) that the dhcpoffer packet drop was 
-happening prior to the crash. I also can't fathom why a DHCPOFFER packet 
-dropped after leaving the server would have any bearing on the issue.
+The inbytes counter was only updated but never read.
+
+Signed-off-by: Jan Kiszka <jan.kiszka@web.de>
+---
+ drivers/isdn/capi/capi.c |   10 +++-------
+ 1 files changed, 3 insertions(+), 7 deletions(-)
+
+diff --git a/drivers/isdn/capi/capi.c b/drivers/isdn/capi/capi.c
+index 6ab496c..40468ac 100644
+--- a/drivers/isdn/capi/capi.c
++++ b/drivers/isdn/capi/capi.c
+@@ -100,7 +100,6 @@ struct capiminor {
+ 	struct sk_buff    *ttyskb;
+ 
+ 	struct sk_buff_head inqueue;
+-	int                 inbytes;
+ 	struct sk_buff_head outqueue;
+ 	int                 outbytes;
+ 
+@@ -481,15 +480,12 @@ keep:
+ static void handle_minor_recv(struct capiminor *mp)
+ {
+ 	struct sk_buff *skb;
+-	while ((skb = skb_dequeue(&mp->inqueue)) != NULL) {
+-		unsigned int len = skb->len;
+-		mp->inbytes -= len;
++
++	while ((skb = skb_dequeue(&mp->inqueue)) != NULL)
+ 		if (handle_recv_skb(mp, skb) < 0) {
+ 			skb_queue_head(&mp->inqueue, skb);
+-			mp->inbytes += len;
+ 			return;
+ 		}
+-	}
+ }
+ 
+ static int handle_minor_send(struct capiminor *mp)
+@@ -611,7 +607,7 @@ static void capi_recv_message(struct capi20_appl *ap, struct sk_buff *skb)
+ 				datahandle, skb->len-CAPIMSG_LEN(skb->data));
+ #endif
+ 		skb_queue_tail(&mp->inqueue, skb);
+-		mp->inbytes += skb->len;
++
+ 		handle_minor_recv(mp);
+ 
+ 	} else if (CAPIMSG_SUBCOMMAND(skb->data) == CAPI_CONF) {
+-- 
+1.6.0.2
+
