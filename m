@@ -1,59 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753261Ab0AHMZw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753358Ab0AHMgt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753261Ab0AHMZw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jan 2010 07:25:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752323Ab0AHMZv
+	id S1753358Ab0AHMgt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jan 2010 07:36:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753285Ab0AHMgs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jan 2010 07:25:51 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:59637 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751815Ab0AHMZu convert rfc822-to-8bit (ORCPT
+	Fri, 8 Jan 2010 07:36:48 -0500
+Received: from bld-mail17.adl2.internode.on.net ([150.101.137.102]:37078 "EHLO
+	mail.internode.on.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753218Ab0AHMgr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jan 2010 07:25:50 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=IJvDK4ADl8UgWxIeZyXcCsXeuydF9LLVbHY1RDrPbYVSiKRDOUrfJAbiy5ZorEa8Jm
-         UiD+AcpQmm3I9MDIBhGL3HPI9wsi7pG+BTbKXLicMvxWmeUAlQMdGxS9JNzREd/p/H9u
-         5x6qYIygpupRNoNLBd1dcjtFOD5hCAMzAmt34=
+	Fri, 8 Jan 2010 07:36:47 -0500
+Date: Fri, 8 Jan 2010 23:36:41 +1100
+From: Dave Chinner <david@fromorbit.com>
+To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [2.6.30 and later] file corruption on ext3 filesystem.
+Message-ID: <20100108123641.GB8654@discord.disaster>
+References: <201001080254.o082sOXB018423@www262.sakura.ne.jp>
 MIME-Version: 1.0
-In-Reply-To: <20100108071200.GB15621@boogie.lpds.sztaki.hu>
-References: <4B465C2D.8030303@gmail.com> <EB8593BCECAB3D40A8248BE0B6400A38315E5831@shzsmsx502.ccr.corp.intel.com> 
-	<20100108071200.GB15621@boogie.lpds.sztaki.hu>
-From: roel kluin <roel.kluin@gmail.com>
-Date: Fri, 8 Jan 2010 13:25:29 +0100
-Message-ID: <25e057c01001080425q33ea8641ncf940c60700e9410@mail.gmail.com>
-Subject: Re: [PATCH] KVM: dereference of NULL pointer in set_pal_result()
-To: Gabor Gombas <gombasg@sztaki.hu>
-Cc: "Zhang, Xiantao" <xiantao.zhang@intel.com>,
-       "kvm-ia64@vger.kernel.org" <kvm-ia64@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <201001080254.o082sOXB018423@www262.sakura.ne.jp>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> For the check "(p && p->exit_reason == EXIT_REASON_PAL_CALL", if p is NULL, the reference about "p->exit_reason == EXIT_REASON_PAL_CALL" won't be checked any more, so no issue here.
+On Fri, Jan 08, 2010 at 11:54:24AM +0900, Tetsuo Handa wrote:
+> Hello.
+> 
+> I'm experiencing file corruption problem.
+> Can somebody reproduce below result?
+> 
+> My environment:
+>   VMware Workstation 6.5.3 with 2CPUs / 512MB RAM.
+>   ext3 filesystem ( /dev/sda1 ) mounted on / .
+> 
+>   2.6.33-rc3 ( http://I-love.SAKURA.ne.jp/tmp/config-2.6.33-rc3-ext3 )
+>   2.6.32.3   ( http://I-love.SAKURA.ne.jp/tmp/config-2.6.32.3-ext3 )
+>   2.6.31.11  ( http://I-love.SAKURA.ne.jp/tmp/config-2.6.31.11-ext3 )
+>   2.6.30.10
+> 
+>   So far, I haven't succeeded to reproduce this problem for 2.6.29 and earlier.
+>   Maybe this problem exists in only 2.6.30 and later.
 
->> >     p = kvm_get_exit_data(vcpu);
->> > -   if (p && p->exit_reason == EXIT_REASON_PAL_CALL) {
->> > +   if (!p)
->> > +           return;
->> > +   if (p->exit_reason == EXIT_REASON_PAL_CALL) {
->> >             p->u.pal_data.ret = result;
->> > -           return ;
->> > +           return;
->> >     }
->> >     INIT_PAL_STATUS_UNIMPLEMENTED(p->u.pal_data.ret);
->
-> IMHO it's not the test but the INIT_PAL_STATUS_UNIMPLEMENTED() that does
-> the unwanted dereferencing, and that's fixed by the patch.
->
-> Gabor
+Isn't that when the default mount options  changed from data=ordered to
+data=writeback?
 
-Correct. Thanks,
+> Steps to reproduce:
+> 
+>   Compile below program using "gcc -Wall -O3 -o a.out".
+> 
+> ----------
+> #include <stdio.h>
+> #include <string.h>
+> #include <unistd.h>
+> 
+> int main(int argc, char *argv[])
+> {
+> 	FILE *fp = fopen("/testfile", "a");
+> 	char buffer[4096];
+> 	memset(buffer, argc > 1 ? argv[1][0] : 0x20, sizeof(buffer));
+> 	buffer[sizeof(buffer) - 1] = '\n';
+> 	fwrite(buffer, 1, sizeof(buffer), fp);
+> 	fflush(fp);
+> 	sleep(5);
+> 	fprintf(stderr, "Let power fail after a few seconds.\n");
+> 	while (1) {
+> 		sleep(1);
+> 		fwrite(buffer, 1, sizeof(buffer), fp);
+> 	}
+> 	return 0;
+> }
+> ----------
+> 
+>   Reboot the system by executing /sbin/reboot .
+> 
+>   Run ./a.out and let the power fail (i.e. unplug the electric cable
+>   or do equivalent) after more than 5 seconds (i.e. longer than kjournald's
+>   commit interval). Probably 2 or 3 seconds after
+>   "Let power fail after a few seconds.\n" was printed is the best.
+> 
+>   Restart the system (and fsck will be executed).
+> 
+>   Run "cat /testfile". It should contain only lines of 4095 spaces + '\n'
+>   (or the byte specified via argv[]). But it contains different data.
 
-Roel
+You didn't fsync() it, so there is no reason for the kernel
+to have ever written it to disk. Therefore the result after powerfail
+is completely undefined - you data may be there, it may not...
+
+Cheers,
+
+Dave.
+-- 
+Dave Chinner
+david@fromorbit.com
