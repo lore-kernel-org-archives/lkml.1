@@ -1,27 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753036Ab0AHCBx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753239Ab0AHCGQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753036Ab0AHCBx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 21:01:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751768Ab0AHCBx
+	id S1753239Ab0AHCGQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 21:06:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752884Ab0AHCGP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 21:01:53 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:36157 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750951Ab0AHCBw (ORCPT
+	Thu, 7 Jan 2010 21:06:15 -0500
+Received: from eddie.linux-mips.org ([78.24.191.182]:59823 "EHLO
+	eddie.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752181Ab0AHCGP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 21:01:52 -0500
-Date: Thu, 7 Jan 2010 18:00:42 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Trond Myklebust <Trond.Myklebust@netapp.com>
-cc: Andi Kleen <andi@firstfloor.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [GIT PULL] Please pull NFS client bugfixes....
-In-Reply-To: <alpine.LFD.2.00.1001071731440.7821@localhost.localdomain>
-Message-ID: <alpine.LFD.2.00.1001071752240.7821@localhost.localdomain>
-References: <1262896174.2659.3.camel@localhost>  <87zl4pmxzp.fsf@basil.nowhere.org> <1262901198.2659.38.camel@localhost>  <20100107235149.GD16076@basil.fritz.box>  <1262909682.2659.45.camel@localhost>  <alpine.LFD.2.00.1001071633200.7821@localhost.localdomain>
-  <1262912601.2659.89.camel@localhost>  <alpine.LFD.2.00.1001071707430.7821@localhost.localdomain> <1262913752.2659.100.camel@localhost> <alpine.LFD.2.00.1001071727490.7821@localhost.localdomain> <alpine.LFD.2.00.1001071731440.7821@localhost.localdomain>
+	Thu, 7 Jan 2010 21:06:15 -0500
+Date: Fri, 8 Jan 2010 02:06:14 +0000 (GMT)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Joe Perches <joe@perches.com>
+cc: H Hartley Sweeten <hartleys@visionengravers.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
+       davem@davemloft.net
+Subject: Re: [PATCH] drivers/net/defxx.c: use %pMF to show MAC address
+In-Reply-To: <1262914750.10429.88.camel@Joe-Laptop.home>
+Message-ID: <alpine.LFD.2.00.1001080143250.13474@eddie.linux-mips.org>
+References: <201001071624.20139.hartleys@visionengravers.com> <1262914750.10429.88.camel@Joe-Laptop.home>
 User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -29,29 +27,34 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 7 Jan 2010, Joe Perches wrote:
 
-
-On Thu, 7 Jan 2010, Linus Torvalds wrote:
+> On Thu, 2010-01-07 at 16:24 -0700, H Hartley Sweeten wrote:
+> > Use the %pMF kernel extension to display the MAC address.
+> > The address will still be displayed in the FDDI Canonical format.
 > 
-> You cannot mmap a directory (and you can't readdir a non-directory), so if 
-> it's a per-inode NFS lock, then the simplest fix _might_ be to just put 
-> directory locks in a different lockdep class from non-directory locks. 
-> That might fix it.
+> > diff --git a/drivers/net/defxx.c b/drivers/net/defxx.c
+> > index 6a6ea03..e4eac4b 100644
+> > --- a/drivers/net/defxx.c
+> > +++ b/drivers/net/defxx.c
+> > @@ -1052,12 +1052,9 @@ static int __devinit dfx_driver_init(struct net_device *dev,
+> >  		board_name = "DEFEA";
+> >  	if (dfx_bus_pci)
+> >  		board_name = "DEFPA";
+> > -	pr_info("%s: %s at %saddr = 0x%llx, IRQ = %d, "
+> > -		"Hardware addr = %02X-%02X-%02X-%02X-%02X-%02X\n",
+> > +	pr_info("%s: %s at %saddr = 0x%llx, IRQ = %d, Hardware addr = %pMF\n",
+> >  		print_name, board_name, dfx_use_mmio ? "" : "I/O ",
 > 
-> Of course, if it's not a per-inode lock, that doesn't help.
+> I believe the output will _now_ be in the canonical form.
+> Before it wasn't bit reversed.  Now it should be.
 
-Hmm. I notice that we already do this in unlock_new_inode() for i_mutex. 
-And I googled for the problem, and it does indeed seem to be about the 
-normal i_mutex <-> mmap_sem thing with filldir-vs-mmap.
+ Output was correct -- why would you assume otherwise?  The bit order in 
+the MLA (My Long Address) register as retrieved from the MAC chip by 
+board's firmware has nothing to do with the wire order and is already in 
+the canonical form (the same applies to CAM entries and frame headers) -- 
+the board designers were sane people.
 
-Is there perhaps some path where NFS creates new inodes without going 
-through the normal path? Like the root inode or something? So then you'd 
-have a root inode with i_mutex annotated as being in the same class as a 
-regular file, which completes the lockdep chain.
+ With the two patches in place the output produced is now broken. :(
 
-Or maybe there is something else I'm missing.
-
-I'm adding Peter and Ingo to the Cc as the "lockdep guys". Maybe they see 
-what I am missing.
-
-		Linus
+  Maciej
