@@ -1,65 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753429Ab0AHIOp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753468Ab0AHI2d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753429Ab0AHIOp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jan 2010 03:14:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753353Ab0AHIOp
+	id S1753468Ab0AHI2d (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jan 2010 03:28:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753086Ab0AHI2c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jan 2010 03:14:45 -0500
-Received: from mail.gmx.net ([213.165.64.20]:32846 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753334Ab0AHIOo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jan 2010 03:14:44 -0500
-X-Authenticated: #12255092
-X-Provags-ID: V01U2FsdGVkX19AEOoHee1A8CUrYlUGJUob3QgAIAwbgDsQetSlmO
-	Cae+HhfFbXj6ZV
-From: Peter =?iso-8859-1?q?H=FCwe?= <PeterHuewe@gmx.de>
-To: devel@driverdev.osuosl.org
-Subject: [PATCH 2/3 v2] staging/rtl8192u: Add select WEXT_PRIV to Kconfig to prevent build failure
-Date: Fri, 8 Jan 2010 09:14:38 +0100
-User-Agent: KMail/1.12.3 (Linux/2.6.27-05415-g69a8594; KDE/4.3.3; x86_64; ; )
-Cc: "Greg Kroah-Hartman" <gregkh@suse.de>, devel@driverdev.osuosl.org,
-       Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org,
-       Mauro Carvalho Chehab <mchehab@redhat.com>,
-       Simon Horman <horms@verge.net.au>
-References: <201001072133.20487.PeterHuewe@gmx.de> <201001072135.08745.PeterHuewe@gmx.de>
-In-Reply-To: <201001072135.08745.PeterHuewe@gmx.de>
+	Fri, 8 Jan 2010 03:28:32 -0500
+Received: from trinity.fluff.org ([89.16.178.74]:48224 "EHLO trinity.fluff.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752729Ab0AHI2b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jan 2010 03:28:31 -0500
+Date: Fri, 8 Jan 2010 08:28:26 +0000
+From: Ben Dooks <ben-linux@fluff.org>
+To: Eric Miao <eric.y.miao@gmail.com>
+Cc: Ben Dooks <ben-linux@fluff.org>, linux-samsung-soc@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Subject: Re: [PATCH] gpiolib: add gpio_lookup_chip() to get chip
+	information for gpio
+Message-ID: <20100108082826.GC1224@trinity.fluff.org>
+References: <1262932348-2888-1-git-send-email-ben-linux@fluff.org> <1262932348-2888-2-git-send-email-ben-linux@fluff.org> <f17812d71001072330t7a9f7607v8b55b2fc346745e5@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201001080914.39084.PeterHuewe@gmx.de>
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.53
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <f17812d71001072330t7a9f7607v8b55b2fc346745e5@mail.gmail.com>
+X-Disclaimer: These are my views alone.
+X-URL: http://www.fluff.org/
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: ben@trinity.fluff.org
+X-SA-Exim-Scanned: No (on trinity.fluff.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Peter Huewe <peterhuewe@gmx.de>
-Date: Fri, 8 Jan 2010 09:10:13 +0100
+On Fri, Jan 08, 2010 at 03:30:36PM +0800, Eric Miao wrote:
+> On Fri, Jan 8, 2010 at 2:32 PM, Ben Dooks <ben-linux@fluff.org> wrote:
+> > Add a call to get the 'struct gpio_chip' pointer for a given gpio, so
+> > that core implementations which want to use gpiolib gpio numbering for
+> > things like mux configuration can get back to the gpio_chip that they
+> > registered without having to have their own list of gpio.
+> >
+> > This is especially useful for the Samsung S3C64XX series where the GPIO
+> > bank sizes can vary from 32 down to 3, making it difficult to store an
+> > array to convert a number to chip.
+> >
+> 
+> I think this is generally a good idea. Will most likely be useful to
+> pxa platforms as well. Not sure though if you want to export this
+> symbol as well since we do allow gpio chip drivers to be modules.
 
-Without WEXT_PRIV set the driver fails to build due to unknown fields in
-the iw_handler_def struct.
-Those fields are enclosed in WEXT_PRIV conditionals in the prototype
-of iw_handler_def in include/net/iw_handler.h
+Probably not, since all the gpio call methods pass gpio_chip as their
+first parameter. This is only in the case we want to use gpios for
+something other than in/out/irq.
 
-Signed-off-by: Peter Huewe <peterhuewe@gmx.de>
----
-This time without whitespace error  - sorry about that.
-
- drivers/staging/rtl8192u/Kconfig |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/staging/rtl8192u/Kconfig b/drivers/staging/rtl8192u/Kconfig
-index 9913ab8..d7bc35c 100644
---- a/drivers/staging/rtl8192u/Kconfig
-+++ b/drivers/staging/rtl8192u/Kconfig
-@@ -2,5 +2,6 @@ config RTL8192U
- 	tristate "RealTek RTL8192U Wireless LAN NIC driver"
- 	depends on PCI && WLAN && USB
- 	depends on WIRELESS_EXT
-+	select WEXT_PRIV
- 	default N
- 	---help---
 -- 
-1.6.4.4
+Ben
+
+Q:      What's a light-year?
+A:      One-third less calories than a regular year.
 
