@@ -1,138 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754277Ab0AHWGY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754207Ab0AHWKW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754277Ab0AHWGY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jan 2010 17:06:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754220Ab0AHWFm
+	id S1754207Ab0AHWKW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jan 2010 17:10:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754027Ab0AHWKV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jan 2010 17:05:42 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:3549 "EHLO mx1.redhat.com"
+	Fri, 8 Jan 2010 17:10:21 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:37566 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754218Ab0AHWFj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jan 2010 17:05:39 -0500
+	id S1753871Ab0AHWKV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jan 2010 17:10:21 -0500
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 4/6] NOMMU: Don't need get_unmapped_area() for NOMMU
-To: viro@ZenIV.linux.org.uk, vapier@gentoo.org, lethal@linux-sh.org
-Cc: dhowells@redhat.com, linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Date: Fri, 08 Jan 2010 22:05:33 +0000
-Message-ID: <20100108220533.23489.99121.stgit@warthog.procyon.org.uk>
 In-Reply-To: <20100108220516.23489.11319.stgit@warthog.procyon.org.uk>
 References: <20100108220516.23489.11319.stgit@warthog.procyon.org.uk>
-User-Agent: StGIT/0.14.3
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Cc: dhowells@redhat.com, viro@ZenIV.linux.org.uk, vapier@gentoo.org,
+       lethal@linux-sh.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/6] NOMMU: Fix SYSV SHM for NOMMU
+Date: Fri, 08 Jan 2010 22:10:13 +0000
+Message-ID: <23917.1262988613@redhat.com>
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-get_unmapped_area() is unnecessary for NOMMU as no-one calls it.
+David Howells <dhowells@redhat.com> wrote:
+
+> Put it back conditionally on CONFIG_MMU=n.
+
+Seems I forgot to put in the conditional bits.  Revised patch attached.
+
+David
+---
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH] NOMMU: Fix SYSV SHM for NOMMU
+
+Commit c4caa778157dbbf04116f0ac2111e389b5cd7a29 broke SYSV SHM for NOMMU by
+taking away the pointer to shm_get_unmapped_area() from shm_file_operations.
+
+Put it back conditionally on CONFIG_MMU=n.
+
+file->f_ops->get_unmapped_area() is used to find out the base address for a
+mapping of a mappable chardev device or mappable memory-based file (such as a
+ramfs file).  It needs to be called prior to file->f_ops->mmap() being called.
 
 Signed-off-by: David Howells <dhowells@redhat.com>
 ---
 
- include/linux/mm_types.h |    2 ++
- include/linux/sched.h    |    7 +++++--
- mm/nommu.c               |   21 ---------------------
- mm/util.c                |    2 +-
- 4 files changed, 8 insertions(+), 24 deletions(-)
+ ipc/shm.c |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
 
 
-diff --git a/include/linux/mm_types.h b/include/linux/mm_types.h
-index 80cfa78..36f9627 100644
---- a/include/linux/mm_types.h
-+++ b/include/linux/mm_types.h
-@@ -205,10 +205,12 @@ struct mm_struct {
- 	struct vm_area_struct * mmap;		/* list of VMAs */
- 	struct rb_root mm_rb;
- 	struct vm_area_struct * mmap_cache;	/* last find_vma result */
-+#ifdef CONFIG_MMU
- 	unsigned long (*get_unmapped_area) (struct file *filp,
- 				unsigned long addr, unsigned long len,
- 				unsigned long pgoff, unsigned long flags);
- 	void (*unmap_area) (struct mm_struct *mm, unsigned long addr);
+diff --git a/ipc/shm.c b/ipc/shm.c
+index 92fe923..23256b8 100644
+--- a/ipc/shm.c
++++ b/ipc/shm.c
+@@ -298,6 +298,9 @@ static const struct file_operations shm_file_operations = {
+ 	.mmap		= shm_mmap,
+ 	.fsync		= shm_fsync,
+ 	.release	= shm_release,
++#ifndef CONFIG_MMU
++	.get_unmapped_area	= shm_get_unmapped_area,
 +#endif
- 	unsigned long mmap_base;		/* base of mmap area */
- 	unsigned long task_size;		/* size of task vm space */
- 	unsigned long cached_hole_size; 	/* if non-zero, the largest hole below free_area_cache */
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index 8d4991b..08a2523 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -377,6 +377,8 @@ extern int sysctl_max_map_count;
+ };
  
- #include <linux/aio.h>
- 
-+#ifdef CONFIG_MMU
-+extern void arch_pick_mmap_layout(struct mm_struct *mm);
- extern unsigned long
- arch_get_unmapped_area(struct file *, unsigned long, unsigned long,
- 		       unsigned long, unsigned long);
-@@ -386,6 +388,9 @@ arch_get_unmapped_area_topdown(struct file *filp, unsigned long addr,
- 			  unsigned long flags);
- extern void arch_unmap_area(struct mm_struct *, unsigned long);
- extern void arch_unmap_area_topdown(struct mm_struct *, unsigned long);
-+#else
-+extern void arch_pick_mmap_layout(struct mm_struct *mm) {}
-+#endif
- 
- #if USE_SPLIT_PTLOCKS
- /*
-@@ -2491,8 +2496,6 @@ static inline void set_task_cpu(struct task_struct *p, unsigned int cpu)
- 
- #endif /* CONFIG_SMP */
- 
--extern void arch_pick_mmap_layout(struct mm_struct *mm);
--
- #ifdef CONFIG_TRACING
- extern void
- __trace_special(void *__tr, void *__data,
-diff --git a/mm/nommu.c b/mm/nommu.c
-index d6dd656..32be0cf 100644
---- a/mm/nommu.c
-+++ b/mm/nommu.c
-@@ -1761,27 +1761,6 @@ void unmap_mapping_range(struct address_space *mapping,
- EXPORT_SYMBOL(unmap_mapping_range);
- 
- /*
-- * ask for an unmapped area at which to create a mapping on a file
-- */
--unsigned long get_unmapped_area(struct file *file, unsigned long addr,
--				unsigned long len, unsigned long pgoff,
--				unsigned long flags)
--{
--	unsigned long (*get_area)(struct file *, unsigned long, unsigned long,
--				  unsigned long, unsigned long);
--
--	get_area = current->mm->get_unmapped_area;
--	if (file && file->f_op && file->f_op->get_unmapped_area)
--		get_area = file->f_op->get_unmapped_area;
--
--	if (!get_area)
--		return -ENOSYS;
--
--	return get_area(file, addr, len, pgoff, flags);
--}
--EXPORT_SYMBOL(get_unmapped_area);
--
--/*
-  * Check that a process has enough memory to allocate a new virtual
-  * mapping. 0 means there is enough memory for the allocation to
-  * succeed and -ENOMEM implies there is not.
-diff --git a/mm/util.c b/mm/util.c
-index 7c35ad9..834db7b 100644
---- a/mm/util.c
-+++ b/mm/util.c
-@@ -220,7 +220,7 @@ char *strndup_user(const char __user *s, long n)
- }
- EXPORT_SYMBOL(strndup_user);
- 
--#ifndef HAVE_ARCH_PICK_MMAP_LAYOUT
-+#if defined(CONFIG_MMU) && !defined(HAVE_ARCH_PICK_MMAP_LAYOUT)
- void arch_pick_mmap_layout(struct mm_struct *mm)
- {
- 	mm->mmap_base = TASK_UNMAPPED_BASE;
-
+ static const struct file_operations shm_file_operations_huge = {
