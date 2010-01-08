@@ -1,45 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751895Ab0AHHEL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751582Ab0AHHMG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751895Ab0AHHEL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jan 2010 02:04:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751208Ab0AHHEK
+	id S1751582Ab0AHHMG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jan 2010 02:12:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750982Ab0AHHMF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jan 2010 02:04:10 -0500
-Received: from mail-pz0-f188.google.com ([209.85.222.188]:55264 "EHLO
-	mail-pz0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751150Ab0AHHEJ (ORCPT
+	Fri, 8 Jan 2010 02:12:05 -0500
+Received: from boogie.lpds.sztaki.hu ([193.224.70.237]:53717 "EHLO
+	boogie.lpds.sztaki.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750934Ab0AHHME (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jan 2010 02:04:09 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=O5tszVHCIRBXx2Lhmi+8V6gL/fceUHHnKjUbusJJ4GHqr6aMiOVrpTVIg5ZSgS0D7L
-         RUEkbYL23pJMQrVMDRtiznC2422oFNbOpqZ86jxFt30Rq3VLfqyO+mF8jIukRi0pSBgA
-         HEJAmE3UQwWmImpJIEy30zDsDTos0gMVfli6M=
+	Fri, 8 Jan 2010 02:12:04 -0500
+Date: Fri, 8 Jan 2010 08:12:00 +0100
+From: Gabor Gombas <gombasg@sztaki.hu>
+To: "Zhang, Xiantao" <xiantao.zhang@intel.com>
+Cc: Roel Kluin <roel.kluin@gmail.com>,
+       "kvm-ia64@vger.kernel.org" <kvm-ia64@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] KVM: dereference of NULL pointer in set_pal_result()
+Message-ID: <20100108071200.GB15621@boogie.lpds.sztaki.hu>
+References: <4B465C2D.8030303@gmail.com>
+ <EB8593BCECAB3D40A8248BE0B6400A38315E5831@shzsmsx502.ccr.corp.intel.com>
 MIME-Version: 1.0
-In-Reply-To: <20100107145126.22271109.akpm@linux-foundation.org>
-References: <b9df5fa11001030527h71b66dbcgd4ef29c04545cdaf@mail.gmail.com>
-	 <20100107145126.22271109.akpm@linux-foundation.org>
-Date: Fri, 8 Jan 2010 13:04:05 +0600
-Message-ID: <b9df5fa11001072304i71b7e08ctb4f71504cee4f45d@mail.gmail.com>
-Subject: Re: [PATCH] acpi: Fix unused variable warning in sbs.c
-From: Rakib Mullick <rakib.mullick@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Len Brown <lenb@kernel.org>,
-       Alexey Starikovskiy <astarikovskiy@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <EB8593BCECAB3D40A8248BE0B6400A38315E5831@shzsmsx502.ccr.corp.intel.com>
+X-Copyright: Forwarding or publishing without permission is prohibited.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 1/8/10, Andrew Morton <akpm@linux-foundation.org> wrote:
+On Fri, Jan 08, 2010 at 07:28:57AM +0800, Zhang, Xiantao wrote:
 
->
->  I wonder if it can be fixed in Kconfig.  Is there any sane use of
->  this code when CONFIG_ACPI_SYSFS_POWER=n && CONFIG_ACPI_PROCFS_POWER=n?
->
-No. Making it depend on CONFIG_ACPI_SYSFS_POWER ||
-CONFIG_ACPI_PROCFS_POWER, doesn't make sense too.
-What about wrapping around acpi_battery_remove with #ifdef from
-it's calling point.
+> For the check "(p && p->exit_reason == EXIT_REASON_PAL_CALL", if p is NULL, the reference about "p->exit_reason == EXIT_REASON_PAL_CALL" won't be checked any more, so no issue here. 
+
+> > diff --git a/arch/ia64/kvm/kvm_fw.c b/arch/ia64/kvm/kvm_fw.c
+> > index e4b8231..d28494f 100644
+> > --- a/arch/ia64/kvm/kvm_fw.c
+> > +++ b/arch/ia64/kvm/kvm_fw.c
+> > @@ -75,9 +75,11 @@ static void set_pal_result(struct kvm_vcpu *vcpu,
+> >  	struct exit_ctl_data *p;
+> > 
+> >  	p = kvm_get_exit_data(vcpu);
+> > -	if (p && p->exit_reason == EXIT_REASON_PAL_CALL) {
+> > +	if (!p)
+> > +		return;
+> > +	if (p->exit_reason == EXIT_REASON_PAL_CALL) {
+> >  		p->u.pal_data.ret = result;
+> > -		return ;
+> > +		return;
+> >  	}
+> >  	INIT_PAL_STATUS_UNIMPLEMENTED(p->u.pal_data.ret);
+
+IMHO it's not the test but the INIT_PAL_STATUS_UNIMPLEMENTED() that does
+the unwanted dereferencing, and that's fixed by the patch.
+
+Gabor
+
+-- 
+     ---------------------------------------------------------
+     MTA SZTAKI Computer and Automation Research Institute
+                Hungarian Academy of Sciences
+     ---------------------------------------------------------
