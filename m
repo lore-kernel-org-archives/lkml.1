@@ -1,318 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753915Ab0AHQeT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753937Ab0AHQhZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753915Ab0AHQeT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jan 2010 11:34:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753876Ab0AHQeS
+	id S1753937Ab0AHQhZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jan 2010 11:37:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753921Ab0AHQhX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jan 2010 11:34:18 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:63798 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753871Ab0AHQeR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jan 2010 11:34:17 -0500
-Date: Fri, 8 Jan 2010 11:33:52 -0500
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Li Zefan <lizf@cn.fujitsu.com>, axboe@kernel.dk, ryov@valinux.co.jp,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>, menage@google.com,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC] [PATCH 2/2] cgroups: blkio subsystem as module
-Message-ID: <20100108163352.GB22219@redhat.com>
-References: <20091231051050.GA714@andrew.cmu.edu> <20100106160414.bd555474.akpm@linux-foundation.org> <20100107012606.GA25577@andrew.cmu.edu> <20100107120732.97d502bd.kamezawa.hiroyu@jp.fujitsu.com> <4B45824B.9030108@cn.fujitsu.com> <20100108052734.GA13168@andrew.cmu.edu> <20100108053021.GC13168@andrew.cmu.edu>
+	Fri, 8 Jan 2010 11:37:23 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:58769 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753909Ab0AHQhW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jan 2010 11:37:22 -0500
+Date: Fri, 8 Jan 2010 17:36:56 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: "Rick L. Vinyard Jr." <rvinyard@cs.nmsu.edu>, linux-kernel@vger.kernel.org,
+       felipe.balbi@nokia.com, jayakumar.lkml@gmail.com,
+       linux-fbdev@vger.kernel.org, krzysztof.h1@wp.pl,
+       akpm@linux-foundation.org, linux-usb@vger.kernel.org, oliver@neukum.org,
+       linux-input@vger.kernel.org, jkosina@suse.cz
+Subject: Re: [PATCH] hid: Logitech G13 driver 0.0.3
+Message-ID: <20100108163655.GA8328@elf.ucw.cz>
+References: <201001071623.o07GNOB4022157@mustang.cs.nmsu.edu>
+ <20100108083020.GB3696@core.coreip.homeip.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20100108053021.GC13168@andrew.cmu.edu>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <20100108083020.GB3696@core.coreip.homeip.net>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 08, 2010 at 12:30:21AM -0500, Ben Blum wrote:
-> Convert blk-cgroup to be buildable as a module
+Hi!
+
+> > +static DEVICE_ATTR(name, 0666, g13_name_show, g13_name_store);
 > 
-> From: Ben Blum <bblum@andrew.cmu.edu>
-> 
-> This patch modifies the Block I/O cgroup subsystem to be able to be built as a
-> module. As the CFQ disk scheduler optionally depends on blk-cgroup, config
-> options in block/Kconfig, block/Kconfig.iosched, and block/blk-cgroup.h are
-> enhanced to support the new module dependency.
-> 
-> Signed-off-by: Ben Blum <bblum@andrew.cmu.edu>
+> What this attribute is for?
 
-Two quick observations with testing.
+Actually, all the new files this added need to be documented.
+									Pavel
 
-You need to EXPORT cgroup_path.
-
-Second, after loading the module, I mounted the blkio controller. But creating
-a cgroup directory crashed.
-
-Vivek
-
-BUG: unable to handle kernel NULL pointer dereference at 0000000000000020
-IP: [<ffffffff8106bcb4>] cgroup_mkdir+0x17e/0x350
-PGD 1a7fe0067 PUD 1a0f19067 PMD 0 
-Oops: 0000 [#1] SMP 
-last sysfs file: /sys/devices/system/cpu/cpu3/cache/index2/shared_cpu_map
-CPU 3 
-Pid: 3984, comm: mkdir Not tainted 2.6.33-rc3-cgroup-module #2 /ProLiant DL380 G5
-RIP: 0010:[<ffffffff8106bcb4>]  [<ffffffff8106bcb4>] cgroup_mkdir+0x17e/0x350
-RSP: 0018:ffff8801a0f17e38  EFLAGS: 00010203
-RAX: ffff8801a8cbde00 RBX: ffffffffa02cc8e0 RCX: ffff8801a8cbde00
-RDX: 0000000000000000 RSI: 0000000000000001 RDI: 0000000000000000
-RBP: ffff8801a770c000 R08: 0000000000000040 R09: ffff8801a0f17d48
-R10: ffff8801a0f17ec8 R11: ffffffff8113efb4 R12: 0000000000000001
-R13: ffff8801a0f22000 R14: ffff8801948aa980 R15: ffff8801a0f22030
-FS:  00007ff9ecf5a710(0000) GS:ffff8800282c0000(0000) knlGS:0000000000000000
-CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-CR2: 0000000000000020 CR3: 00000001a257e000 CR4: 00000000000406e0
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-Process mkdir (pid: 3984, threadinfo ffff8801a0f16000, task ffff8801a8e2c040)
-Stack:
- 0000000000000003 000001ed948a8db0 ffff8801a0e1e800 0000000000000000
-<0> ffff8801a7745940 ffff8801948a8db0 ffff8801948aa980 0000000000000000
-<0> 00000000000001ed 00007fff661cb6eb 0000000000000000 ffffffff810d837e
-Call Trace:
- [<ffffffff810d837e>] ? vfs_mkdir+0xd5/0x164
- [<ffffffff810da743>] ? sys_mkdirat+0x85/0xd1
- [<ffffffff810773be>] ? audit_syscall_entry+0x1b9/0x1e4
- [<ffffffff8100286b>] ? system_call_fastpath+0x16/0x1b
-Code: 4c 24 18 e8 82 f3 ff ff 31 f6 48 3d 00 f0 ff ff 48 89 c1 76 20 85 c0 74 35 45 31 e4 e9 5a 01 00 00 48 8b 7c 24 18 48 63 d6 ff c6 <66> 8b 44 57 20 66 89 44 51 20 44 39 e6 7c e7 8b 51 08 49 63 c4 
-RIP  [<ffffffff8106bcb4>] cgroup_mkdir+0x17e/0x350
- RSP <ffff8801a0f17e38>
-CR2: 0000000000000020
----[ end trace 09377bc5e5c2b563 ]---
-
-> ---
->  block/Kconfig             |    2 +-
->  block/Kconfig.iosched     |    2 +-
->  block/blk-cgroup.c        |   53 +++++++++++++++++++++++++++++++++++----------
->  block/blk-cgroup.h        |   10 +++++++-
->  include/linux/iocontext.h |    2 +-
->  kernel/cgroup.c           |    8 +++++++
->  6 files changed, 60 insertions(+), 17 deletions(-)
-> 
-> diff --git a/block/Kconfig b/block/Kconfig
-> index e20fbde..62a5921 100644
-> --- a/block/Kconfig
-> +++ b/block/Kconfig
-> @@ -78,7 +78,7 @@ config BLK_DEV_INTEGRITY
->  	Protection.  If in doubt, say N.
->  
->  config BLK_CGROUP
-> -	bool
-> +	tristate
->  	depends on CGROUPS
->  	default n
->  	---help---
-> diff --git a/block/Kconfig.iosched b/block/Kconfig.iosched
-> index b71abfb..fc71cf0 100644
-> --- a/block/Kconfig.iosched
-> +++ b/block/Kconfig.iosched
-> @@ -23,6 +23,7 @@ config IOSCHED_DEADLINE
->  
->  config IOSCHED_CFQ
->  	tristate "CFQ I/O scheduler"
-> +	select BLK_CGROUP if CFQ_GROUP_IOSCHED
->  	default y
->  	---help---
->  	  The CFQ I/O scheduler tries to distribute bandwidth equally
-> @@ -35,7 +36,6 @@ config IOSCHED_CFQ
->  config CFQ_GROUP_IOSCHED
->  	bool "CFQ Group Scheduling support"
->  	depends on IOSCHED_CFQ && CGROUPS
-> -	select BLK_CGROUP
->  	default n
->  	---help---
->  	  Enable group IO scheduling in CFQ.
-> diff --git a/block/blk-cgroup.c b/block/blk-cgroup.c
-> index 1fa2654..6c73380 100644
-> --- a/block/blk-cgroup.c
-> +++ b/block/blk-cgroup.c
-> @@ -23,6 +23,31 @@ static LIST_HEAD(blkio_list);
->  struct blkio_cgroup blkio_root_cgroup = { .weight = 2*BLKIO_WEIGHT_DEFAULT };
->  EXPORT_SYMBOL_GPL(blkio_root_cgroup);
->  
-> +static struct cgroup_subsys_state *blkiocg_create(struct cgroup_subsys *,
-> +						  struct cgroup *);
-> +static int blkiocg_can_attach(struct cgroup_subsys *, struct cgroup *,
-> +			      struct task_struct *, bool);
-> +static void blkiocg_attach(struct cgroup_subsys *, struct cgroup *,
-> +			   struct cgroup *, struct task_struct *, bool);
-> +static void blkiocg_destroy(struct cgroup_subsys *, struct cgroup *);
-> +static int blkiocg_populate(struct cgroup_subsys *, struct cgroup *);
-> +
-> +struct cgroup_subsys blkio_subsys = {
-> +	.name = "blkio",
-> +	.create = blkiocg_create,
-> +	.can_attach = blkiocg_can_attach,
-> +	.attach = blkiocg_attach,
-> +	.destroy = blkiocg_destroy,
-> +	.populate = blkiocg_populate,
-> +#ifdef CONFIG_BLK_CGROUP
-> +	/* note: blkio_subsys_id is otherwise defined in blk-cgroup.h */
-> +	.subsys_id = blkio_subsys_id,
-> +#endif
-> +	.use_id = 1,
-> +	.module = THIS_MODULE,
-> +};
-> +EXPORT_SYMBOL_GPL(blkio_subsys);
-> +
->  bool blkiocg_css_tryget(struct blkio_cgroup *blkcg)
->  {
->  	if (!css_tryget(&blkcg->css))
-> @@ -267,7 +292,8 @@ remove_entry:
->  done:
->  	free_css_id(&blkio_subsys, &blkcg->css);
->  	rcu_read_unlock();
-> -	kfree(blkcg);
-> +	if (blkcg != &blkio_root_cgroup)
-> +		kfree(blkcg);
->  }
->  
->  static struct cgroup_subsys_state *
-> @@ -333,17 +359,6 @@ static void blkiocg_attach(struct cgroup_subsys *subsys, struct cgroup *cgroup,
->  	task_unlock(tsk);
->  }
->  
-> -struct cgroup_subsys blkio_subsys = {
-> -	.name = "blkio",
-> -	.create = blkiocg_create,
-> -	.can_attach = blkiocg_can_attach,
-> -	.attach = blkiocg_attach,
-> -	.destroy = blkiocg_destroy,
-> -	.populate = blkiocg_populate,
-> -	.subsys_id = blkio_subsys_id,
-> -	.use_id = 1,
-> -};
-> -
->  void blkio_policy_register(struct blkio_policy_type *blkiop)
->  {
->  	spin_lock(&blkio_list_lock);
-> @@ -359,3 +374,17 @@ void blkio_policy_unregister(struct blkio_policy_type *blkiop)
->  	spin_unlock(&blkio_list_lock);
->  }
->  EXPORT_SYMBOL_GPL(blkio_policy_unregister);
-> +
-> +static int __init init_cgroup_blkio(void)
-> +{
-> +	return cgroup_load_subsys(&blkio_subsys);
-> +}
-> +
-> +static void __exit exit_cgroup_blkio(void)
-> +{
-> +	cgroup_unload_subsys(&blkio_subsys);
-> +}
-> +
-> +module_init(init_cgroup_blkio);
-> +module_exit(exit_cgroup_blkio);
-> +MODULE_LICENSE("GPL");
-> diff --git a/block/blk-cgroup.h b/block/blk-cgroup.h
-> index 4d316df..57648c6 100644
-> --- a/block/blk-cgroup.h
-> +++ b/block/blk-cgroup.h
-> @@ -15,7 +15,13 @@
->  
->  #include <linux/cgroup.h>
->  
-> -#ifdef CONFIG_BLK_CGROUP
-> +#if defined(CONFIG_BLK_CGROUP) || defined(CONFIG_BLK_CGROUP_MODULE)
-> +
-> +#ifndef CONFIG_BLK_CGROUP
-> +/* When blk-cgroup is a module, its subsys_id isn't a compile-time constant */
-> +extern struct cgroup_subsys blkio_subsys;
-> +#define blkio_subsys_id blkio_subsys.subsys_id
-> +#endif
->  
->  struct blkio_cgroup {
->  	struct cgroup_subsys_state css;
-> @@ -94,7 +100,7 @@ static inline void blkiocg_update_blkio_group_dequeue_stats(
->  			struct blkio_group *blkg, unsigned long dequeue) {}
->  #endif
->  
-> -#ifdef CONFIG_BLK_CGROUP
-> +#if defined(CONFIG_BLK_CGROUP) || defined(CONFIG_BLK_CGROUP_MODULE)
->  extern struct blkio_cgroup blkio_root_cgroup;
->  extern struct blkio_cgroup *cgroup_to_blkio_cgroup(struct cgroup *cgroup);
->  extern void blkiocg_add_blkio_group(struct blkio_cgroup *blkcg,
-> diff --git a/include/linux/iocontext.h b/include/linux/iocontext.h
-> index a632359..b9f109d 100644
-> --- a/include/linux/iocontext.h
-> +++ b/include/linux/iocontext.h
-> @@ -68,7 +68,7 @@ struct io_context {
->  	unsigned short ioprio;
->  	unsigned short ioprio_changed;
->  
-> -#ifdef CONFIG_BLK_CGROUP
-> +#if defined(CONFIG_BLK_CGROUP) || defined(CONFIG_BLK_CGROUP_MODULE)
->  	unsigned short cgroup_changed;
->  #endif
->  
-> diff --git a/kernel/cgroup.c b/kernel/cgroup.c
-> index 5af59eb..391ff41 100644
-> --- a/kernel/cgroup.c
-> +++ b/kernel/cgroup.c
-> @@ -690,6 +690,7 @@ void cgroup_lock(void)
->  {
->  	mutex_lock(&cgroup_mutex);
->  }
-> +EXPORT_SYMBOL_GPL(cgroup_lock);
->  
->  /**
->   * cgroup_unlock - release lock on cgroup changes
-> @@ -700,6 +701,7 @@ void cgroup_unlock(void)
->  {
->  	mutex_unlock(&cgroup_mutex);
->  }
-> +EXPORT_SYMBOL_GPL(cgroup_unlock);
->  
->  /*
->   * A couple of forward declarations required, due to cyclic reference loop:
-> @@ -1762,6 +1764,7 @@ bool cgroup_lock_live_group(struct cgroup *cgrp)
->  	}
->  	return true;
->  }
-> +EXPORT_SYMBOL_GPL(cgroup_lock_live_group);
->  
->  static int cgroup_release_agent_write(struct cgroup *cgrp, struct cftype *cft,
->  				      const char *buffer)
-> @@ -4034,6 +4037,7 @@ void __css_put(struct cgroup_subsys_state *css)
->  	rcu_read_unlock();
->  	WARN_ON_ONCE(val < 1);
->  }
-> +EXPORT_SYMBOL_GPL(__css_put);
->  
->  /*
->   * Notify userspace when a cgroup is released, by running the
-> @@ -4149,6 +4153,7 @@ unsigned short css_id(struct cgroup_subsys_state *css)
->  		return cssid->id;
->  	return 0;
->  }
-> +EXPORT_SYMBOL_GPL(css_id);
->  
->  unsigned short css_depth(struct cgroup_subsys_state *css)
->  {
-> @@ -4158,6 +4163,7 @@ unsigned short css_depth(struct cgroup_subsys_state *css)
->  		return cssid->depth;
->  	return 0;
->  }
-> +EXPORT_SYMBOL_GPL(css_depth);
->  
->  bool css_is_ancestor(struct cgroup_subsys_state *child,
->  		    const struct cgroup_subsys_state *root)
-> @@ -4194,6 +4200,7 @@ void free_css_id(struct cgroup_subsys *ss, struct cgroup_subsys_state *css)
->  	spin_unlock(&ss->id_lock);
->  	call_rcu(&id->rcu_head, __free_css_id_cb);
->  }
-> +EXPORT_SYMBOL_GPL(free_css_id);
->  
->  /*
->   * This is called by init or create(). Then, calls to this function are
-> @@ -4310,6 +4317,7 @@ struct cgroup_subsys_state *css_lookup(struct cgroup_subsys *ss, int id)
->  
->  	return rcu_dereference(cssid->css);
->  }
-> +EXPORT_SYMBOL_GPL(css_lookup);
->  
->  /**
->   * css_get_next - lookup next cgroup under specified hierarchy.
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
