@@ -1,82 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753405Ab0AHMlk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753445Ab0AHMts@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753405Ab0AHMlk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jan 2010 07:41:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752344Ab0AHMlj
+	id S1753445Ab0AHMts (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jan 2010 07:49:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753393Ab0AHMtq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jan 2010 07:41:39 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:52479 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751185Ab0AHMli (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jan 2010 07:41:38 -0500
-Date: Fri, 8 Jan 2010 13:41:39 +0100
-From: Jan Kara <jack@suse.cz>
-To: Greg KH <gregkh@suse.de>
-Cc: Dmitry Monakhov <dmonakhov@openvz.org>,
-       Dmitry Monakhov <rjevskiy@gmail.com>, Greg KH <gregkh@suse.de>,
-       Thomas Voegtle <tv@lio96.de>, Jan Kara <jack@suse.cz>,
-       "Theodore Ts'o" <tytso@mit.edu>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, stable@kernel.org
-Subject: Re: [PATCH] quota: fix reserved space management for ordinary fs
-Message-ID: <20100108124139.GC3354@quack.suse.cz>
-References: <20100106234533.GC1960@kroah.com>
- <alpine.LNX.2.00.1001071522480.5426@er-systems.de>
- <20100107180449.GA17495@suse.de>
- <alpine.LNX.2.00.1001072033301.26784@er-systems.de>
- <20100107194131.GA22983@suse.de>
- <alpine.LNX.2.00.1001072125040.26784@er-systems.de>
- <alpine.LNX.2.00.1001072141340.26784@er-systems.de>
- <20100107220213.GA24882@suse.de>
- <c18d6aa21001071603hbe4935clf78984fc837e4bd@mail.gmail.com>
- <87wrztpgbh.fsf_-_@openvz.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <87wrztpgbh.fsf_-_@openvz.org>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Fri, 8 Jan 2010 07:49:46 -0500
+Received: from landau.phys.spbu.ru ([195.19.235.38]:37362 "EHLO
+	landau.phys.spbu.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753265Ab0AHMtp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jan 2010 07:49:45 -0500
+From: Kirill Smelkov <kirr@landau.phys.spbu.ru>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Kirill Smelkov <kirr@landau.phys.spbu.ru>, linux-kernel@vger.kernel.org
+Subject: [PATCH 0/6] perf tools: fix annotate and top->annotate + more
+Date: Fri,  8 Jan 2010 15:23:03 +0300
+Message-Id: <cover.1262952612.git.kirr@landau.phys.spbu.ru>
+X-Mailer: git-send-email 1.6.6.79.gd514e.dirty
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri 08-01-10 03:53:54, Dmitry Monakhov wrote:
-> 
-> In fact inode_get_rsv_space() function is special in comparison
-> with inode_{add,sub,claim}_rsv_space() functions, because
-> it may return correct result even for fs without reserved space
-> support(correct val == 0). Add trivial check for that case.
-> The patch fix regression(BUG at fs/quota/dquot.c:1350) introduced
-> in following commit: fd8fbfc1709822bd94247c5b2ab15a5f5041e103
-> 
-> Signed-off-by: Dmitry Monakhov <dmonakhov@openvz.org>
-  Acked-by: Jan Kara <jack@suse.cz>
+Ingo, All,
 
-Greg, please merge this patch to stable series. I'll push the same
-patch I have in my tree to Linus on Monday.
+While studying perf, I've noticed `perf top` can't annotate userspace. Then I
+also discovered that `perf annotate` wrongly annotates non-prelinked libraries.
+Please find fixes below.
 
-								Honza
-> ---
->  fs/quota/dquot.c |    2 ++
->  1 files changed, 2 insertions(+), 0 deletions(-)
-> 
-> diff --git a/fs/quota/dquot.c b/fs/quota/dquot.c
-> index dea86ab..d9f06cf 100644
-> --- a/fs/quota/dquot.c
-> +++ b/fs/quota/dquot.c
-> @@ -1377,6 +1377,8 @@ static void inode_sub_rsv_space(struct inode *inode, qsize_t number)
->  static qsize_t inode_get_rsv_space(struct inode *inode)
->  {
->  	qsize_t ret;
-> +	if (!inode->i_sb->dq_op->get_reserved_space)
-> +		return 0;
->  	spin_lock(&inode->i_lock);
->  	ret = *inode_reserved_space(inode);
->  	spin_unlock(&inode->i_lock);
-> -- 
-> 1.6.3.3
-> 
-> 
-> 
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+Kirill
+
+Btw, thanks for nice tools.
+
+
+Kirill Smelkov (6):
+  perf top: teach it to autolocate vmlinux
+  perf top: align help text on keys
+  perf top: fix code typo in prompt_symbol()
+  perf annotate: fix it for non-prelinked *.so
+  perf top: fix annotate for userspace
+  perf: fix few typos + cosmetics
+
+ tools/perf/Documentation/perf-top.txt |    2 +-
+ tools/perf/Documentation/perf.txt     |    2 +-
+ tools/perf/builtin-annotate.c         |    4 +-
+ tools/perf/builtin-top.c              |   67 +++++++++++++++++++--------------
+ tools/perf/design.txt                 |    8 ++--
+ tools/perf/util/map.c                 |   22 +++++++++++
+ tools/perf/util/map.h                 |   10 +++++
+ 7 files changed, 79 insertions(+), 36 deletions(-)
