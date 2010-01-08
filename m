@@ -1,213 +1,250 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752904Ab0AHXGN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754071Ab0AHXOP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752904Ab0AHXGN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jan 2010 18:06:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752273Ab0AHXGN
+	id S1754071Ab0AHXOP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jan 2010 18:14:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752888Ab0AHXOO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jan 2010 18:06:13 -0500
-Received: from [206.15.93.42] ([206.15.93.42]:12339 "EHLO
+	Fri, 8 Jan 2010 18:14:14 -0500
+Received: from [206.15.93.42] ([206.15.93.42]:12343 "EHLO
 	visionfs1.visionengravers.com" rhost-flags-FAIL-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752219Ab0AHXGL (ORCPT
+	by vger.kernel.org with ESMTP id S1752670Ab0AHXON (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jan 2010 18:06:11 -0500
+	Fri, 8 Jan 2010 18:14:13 -0500
 From: H Hartley Sweeten <hartleys@visionengravers.com>
-To: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH] i2o_proc: remove unnecessary casts of void *
-Date: Fri, 8 Jan 2010 16:06:09 -0700
+To: Linux Kernel <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
+       linux-wireless@vger.kernel.org, ilw@linux.intel.com
+Subject: [PATCH] iwl-debugfs.c: remove unnecessary casts of void *
+Date: Fri, 8 Jan 2010 16:14:10 -0700
+Cc: yi.zhu@intel.com, reinette.chatre@intel.com, linville@tuxdriver.com
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <201001081606.09314.hartleys@visionengravers.com>
+Message-Id: <201001081614.10343.hartleys@visionengravers.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-i2o_proc: remove unnecessary casts of void *
+iwl-debugfs.c: remove unnecessary casts of void *
 
 void pointers do not need to be cast to other pointer types.
 
 Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
+Cc: Zhu Yi <yi.zhu@intel.com>
+Cc: Reinette Chatre <reinette.chatre@intel.com>
+Cc: John W. Linville <linville@tuxdriver.com>
 
 ---
 
-diff --git a/drivers/message/i2o/i2o_proc.c b/drivers/message/i2o/i2o_proc.c
-index 7045c45..93ff739 100644
---- a/drivers/message/i2o/i2o_proc.c
-+++ b/drivers/message/i2o/i2o_proc.c
-@@ -296,8 +296,8 @@ static char *bus_strings[] = {
+diff --git a/drivers/net/wireless/iwlwifi/iwl-debugfs.c b/drivers/net/wireless/iwlwifi/iwl-debugfs.c
+index 21e0f66..351dbd8 100644
+--- a/drivers/net/wireless/iwlwifi/iwl-debugfs.c
++++ b/drivers/net/wireless/iwlwifi/iwl-debugfs.c
+@@ -125,7 +125,7 @@ static ssize_t iwl_dbgfs_tx_statistics_read(struct file *file,
+ 						char __user *user_buf,
+ 						size_t count, loff_t *ppos) {
  
- static int i2o_seq_show_hrt(struct seq_file *seq, void *v)
- {
--	struct i2o_controller *c = (struct i2o_controller *)seq->private;
--	i2o_hrt *hrt = (i2o_hrt *) c->hrt.virt;
-+	struct i2o_controller *c = seq->private;
-+	i2o_hrt *hrt = c->hrt.virt;
- 	u32 bus;
+-	struct iwl_priv *priv = (struct iwl_priv *)file->private_data;
++	struct iwl_priv *priv = file->private_data;
+ 	char *buf;
+ 	int pos = 0;
+ 
+@@ -184,7 +184,7 @@ static ssize_t iwl_dbgfs_rx_statistics_read(struct file *file,
+ 						char __user *user_buf,
+ 						size_t count, loff_t *ppos) {
+ 
+-	struct iwl_priv *priv = (struct iwl_priv *)file->private_data;
++	struct iwl_priv *priv = file->private_data;
+ 	char *buf;
+ 	int pos = 0;
+ 	int cnt;
+@@ -232,7 +232,7 @@ static ssize_t iwl_dbgfs_sram_read(struct file *file,
+ 	ssize_t ret;
  	int i;
+ 	int pos = 0;
+-	struct iwl_priv *priv = (struct iwl_priv *)file->private_data;
++	struct iwl_priv *priv = file->private_data;
+ 	size_t bufsz;
  
-@@ -397,8 +397,8 @@ static int i2o_seq_show_hrt(struct seq_file *seq, void *v)
- 
- static int i2o_seq_show_lct(struct seq_file *seq, void *v)
+ 	/* default is to dump the entire data segment */
+@@ -306,7 +306,7 @@ static ssize_t iwl_dbgfs_sram_write(struct file *file,
+ static ssize_t iwl_dbgfs_stations_read(struct file *file, char __user *user_buf,
+ 					size_t count, loff_t *ppos)
  {
--	struct i2o_controller *c = (struct i2o_controller *)seq->private;
--	i2o_lct *lct = (i2o_lct *) c->lct;
-+	struct i2o_controller *c = seq->private;
-+	i2o_lct *lct = c->lct;
- 	int entries;
- 	int i;
- 
-@@ -527,7 +527,7 @@ static int i2o_seq_show_lct(struct seq_file *seq, void *v)
- 
- static int i2o_seq_show_status(struct seq_file *seq, void *v)
+-	struct iwl_priv *priv = (struct iwl_priv *)file->private_data;
++	struct iwl_priv *priv = file->private_data;
+ 	struct iwl_station_entry *station;
+ 	int max_sta = priv->hw_params.max_stations;
+ 	char *buf;
+@@ -376,7 +376,7 @@ static ssize_t iwl_dbgfs_nvm_read(struct file *file,
+ 				       loff_t *ppos)
  {
--	struct i2o_controller *c = (struct i2o_controller *)seq->private;
-+	struct i2o_controller *c = seq->private;
- 	char prodstr[25];
- 	int version;
- 	i2o_status_block *sb = c->status_block.virt;
-@@ -724,7 +724,7 @@ static int i2o_seq_show_status(struct seq_file *seq, void *v)
- 
- static int i2o_seq_show_hw(struct seq_file *seq, void *v)
+ 	ssize_t ret;
+-	struct iwl_priv *priv = (struct iwl_priv *)file->private_data;
++	struct iwl_priv *priv = file->private_data;
+ 	int pos = 0, ofs = 0, buf_size = 0;
+ 	const u8 *ptr;
+ 	char *buf;
+@@ -446,7 +446,7 @@ static ssize_t iwl_dbgfs_log_event_write(struct file *file,
+ static ssize_t iwl_dbgfs_channels_read(struct file *file, char __user *user_buf,
+ 				       size_t count, loff_t *ppos)
  {
--	struct i2o_controller *c = (struct i2o_controller *)seq->private;
-+	struct i2o_controller *c = seq->private;
- 	static u32 work32[5];
- 	static u8 *work8 = (u8 *) work32;
- 	static u16 *work16 = (u16 *) work32;
-@@ -781,7 +781,7 @@ static int i2o_seq_show_hw(struct seq_file *seq, void *v)
- /* Executive group 0003h - Executing DDM List (table) */
- static int i2o_seq_show_ddm_table(struct seq_file *seq, void *v)
+-	struct iwl_priv *priv = (struct iwl_priv *)file->private_data;
++	struct iwl_priv *priv = file->private_data;
+ 	struct ieee80211_channel *channels = NULL;
+ 	const struct ieee80211_supported_band *supp_band = NULL;
+ 	int pos = 0, i, bufsz = PAGE_SIZE;
+@@ -519,7 +519,7 @@ static ssize_t iwl_dbgfs_status_read(struct file *file,
+ 						char __user *user_buf,
+ 						size_t count, loff_t *ppos) {
+ 
+-	struct iwl_priv *priv = (struct iwl_priv *)file->private_data;
++	struct iwl_priv *priv = file->private_data;
+ 	char buf[512];
+ 	int pos = 0;
+ 	const size_t bufsz = sizeof(buf);
+@@ -567,7 +567,7 @@ static ssize_t iwl_dbgfs_interrupt_read(struct file *file,
+ 					char __user *user_buf,
+ 					size_t count, loff_t *ppos) {
+ 
+-	struct iwl_priv *priv = (struct iwl_priv *)file->private_data;
++	struct iwl_priv *priv = file->private_data;
+ 	int pos = 0;
+ 	int cnt = 0;
+ 	char *buf;
+@@ -654,7 +654,7 @@ static ssize_t iwl_dbgfs_interrupt_write(struct file *file,
+ static ssize_t iwl_dbgfs_qos_read(struct file *file, char __user *user_buf,
+ 				       size_t count, loff_t *ppos)
  {
--	struct i2o_controller *c = (struct i2o_controller *)seq->private;
-+	struct i2o_controller *c = seq->private;
- 	int token;
- 	int i;
- 
-@@ -857,7 +857,7 @@ static int i2o_seq_show_ddm_table(struct seq_file *seq, void *v)
- /* Executive group 0004h - Driver Store (scalar) */
- static int i2o_seq_show_driver_store(struct seq_file *seq, void *v)
+-	struct iwl_priv *priv = (struct iwl_priv *)file->private_data;
++	struct iwl_priv *priv = file->private_data;
+ 	int pos = 0, i;
+ 	char buf[256];
+ 	const size_t bufsz = sizeof(buf);
+@@ -677,7 +677,7 @@ static ssize_t iwl_dbgfs_qos_read(struct file *file, char __user *user_buf,
+ static ssize_t iwl_dbgfs_led_read(struct file *file, char __user *user_buf,
+ 				  size_t count, loff_t *ppos)
  {
--	struct i2o_controller *c = (struct i2o_controller *)seq->private;
-+	struct i2o_controller *c = seq->private;
- 	u32 work32[8];
- 	int token;
- 
-@@ -893,7 +893,7 @@ static int i2o_seq_show_drivers_stored(struct seq_file *seq, void *v)
- 		u32 module_flags;
- 	} i2o_driver_store_table;
- 
--	struct i2o_controller *c = (struct i2o_controller *)seq->private;
-+	struct i2o_controller *c = seq->private;
- 	int token;
- 	int i;
- 
-@@ -959,7 +959,7 @@ static int i2o_seq_show_drivers_stored(struct seq_file *seq, void *v)
- /* Generic group F000h - Params Descriptor (table) */
- static int i2o_seq_show_groups(struct seq_file *seq, void *v)
+-	struct iwl_priv *priv = (struct iwl_priv *)file->private_data;
++	struct iwl_priv *priv = file->private_data;
+ 	int pos = 0;
+ 	char buf[256];
+ 	const size_t bufsz = sizeof(buf);
+@@ -703,7 +703,7 @@ static ssize_t iwl_dbgfs_thermal_throttling_read(struct file *file,
+ 				char __user *user_buf,
+ 				size_t count, loff_t *ppos)
  {
--	struct i2o_device *d = (struct i2o_device *)seq->private;
-+	struct i2o_device *d = seq->private;
- 	int token;
- 	int i;
- 	u8 properties;
-@@ -1035,7 +1035,7 @@ static int i2o_seq_show_groups(struct seq_file *seq, void *v)
- /* Generic group F001h - Physical Device Table (table) */
- static int i2o_seq_show_phys_device(struct seq_file *seq, void *v)
+-	struct iwl_priv *priv = (struct iwl_priv *)file->private_data;
++	struct iwl_priv *priv = file->private_data;
+ 	struct iwl_tt_mgmt *tt = &priv->thermal_throttle;
+ 	struct iwl_tt_restriction *restriction;
+ 	char buf[100];
+@@ -763,7 +763,7 @@ static ssize_t iwl_dbgfs_disable_ht40_read(struct file *file,
+ 					 char __user *user_buf,
+ 					 size_t count, loff_t *ppos)
  {
--	struct i2o_device *d = (struct i2o_device *)seq->private;
-+	struct i2o_device *d = seq->private;
- 	int token;
- 	int i;
- 
-@@ -1076,7 +1076,7 @@ static int i2o_seq_show_phys_device(struct seq_file *seq, void *v)
- /* Generic group F002h - Claimed Table (table) */
- static int i2o_seq_show_claimed(struct seq_file *seq, void *v)
+-	struct iwl_priv *priv = (struct iwl_priv *)file->private_data;
++	struct iwl_priv *priv = file->private_data;
+ 	char buf[100];
+ 	int pos = 0;
+ 	const size_t bufsz = sizeof(buf);
+@@ -820,7 +820,7 @@ static ssize_t iwl_dbgfs_sleep_level_override_read(struct file *file,
+ 						   char __user *user_buf,
+ 						   size_t count, loff_t *ppos)
  {
--	struct i2o_device *d = (struct i2o_device *)seq->private;
-+	struct i2o_device *d = seq->private;
- 	int token;
- 	int i;
- 
-@@ -1116,7 +1116,7 @@ static int i2o_seq_show_claimed(struct seq_file *seq, void *v)
- /* Generic group F003h - User Table (table) */
- static int i2o_seq_show_users(struct seq_file *seq, void *v)
+-	struct iwl_priv *priv = (struct iwl_priv *)file->private_data;
++	struct iwl_priv *priv = file->private_data;
+ 	char buf[10];
+ 	int pos, value;
+ 	const size_t bufsz = sizeof(buf);
+@@ -838,7 +838,7 @@ static ssize_t iwl_dbgfs_current_sleep_command_read(struct file *file,
+ 						    char __user *user_buf,
+ 						    size_t count, loff_t *ppos)
  {
--	struct i2o_device *d = (struct i2o_device *)seq->private;
-+	struct i2o_device *d = seq->private;
- 	int token;
- 	int i;
+-	struct iwl_priv *priv = (struct iwl_priv *)file->private_data;
++	struct iwl_priv *priv = file->private_data;
+ 	char buf[200];
+ 	int pos = 0, i;
+ 	const size_t bufsz = sizeof(buf);
+@@ -976,7 +976,7 @@ static ssize_t iwl_dbgfs_tx_queue_read(struct file *file,
+ 						char __user *user_buf,
+ 						size_t count, loff_t *ppos) {
  
-@@ -1170,7 +1170,7 @@ static int i2o_seq_show_users(struct seq_file *seq, void *v)
- /* Generic group F005h - Private message extensions (table) (optional) */
- static int i2o_seq_show_priv_msgs(struct seq_file *seq, void *v)
+-	struct iwl_priv *priv = (struct iwl_priv *)file->private_data;
++	struct iwl_priv *priv = file->private_data;
+ 	struct iwl_tx_queue *txq;
+ 	struct iwl_queue *q;
+ 	char *buf;
+@@ -1022,7 +1022,7 @@ static ssize_t iwl_dbgfs_rx_queue_read(struct file *file,
+ 						char __user *user_buf,
+ 						size_t count, loff_t *ppos) {
+ 
+-	struct iwl_priv *priv = (struct iwl_priv *)file->private_data;
++	struct iwl_priv *priv = file->private_data;
+ 	struct iwl_rx_queue *rxq = &priv->rxq;
+ 	char buf[256];
+ 	int pos = 0;
+@@ -1068,7 +1068,7 @@ static ssize_t iwl_dbgfs_ucode_rx_stats_read(struct file *file,
+ 					char __user *user_buf,
+ 					size_t count, loff_t *ppos)
  {
--	struct i2o_device *d = (struct i2o_device *)seq->private;
-+	struct i2o_device *d = seq->private;
- 	int token;
- 	int i;
- 
-@@ -1219,7 +1219,7 @@ static int i2o_seq_show_priv_msgs(struct seq_file *seq, void *v)
- /* Generic group F006h - Authorized User Table (table) */
- static int i2o_seq_show_authorized_users(struct seq_file *seq, void *v)
+-	struct iwl_priv *priv = (struct iwl_priv *)file->private_data;
++	struct iwl_priv *priv = file->private_data;
+ 	int pos = 0;
+ 	char *buf;
+ 	int bufsz = sizeof(struct statistics_rx_phy) * 20 +
+@@ -1379,7 +1379,7 @@ static ssize_t iwl_dbgfs_ucode_tx_stats_read(struct file *file,
+ 					char __user *user_buf,
+ 					size_t count, loff_t *ppos)
  {
--	struct i2o_device *d = (struct i2o_device *)seq->private;
-+	struct i2o_device *d = seq->private;
- 	int token;
- 	int i;
- 
-@@ -1260,7 +1260,7 @@ static int i2o_seq_show_authorized_users(struct seq_file *seq, void *v)
- /* Generic group F100h - Device Identity (scalar) */
- static int i2o_seq_show_dev_identity(struct seq_file *seq, void *v)
+-	struct iwl_priv *priv = (struct iwl_priv *)file->private_data;
++	struct iwl_priv *priv = file->private_data;
+ 	int pos = 0;
+ 	char *buf;
+ 	int bufsz = (sizeof(struct statistics_tx) * 24) + 250;
+@@ -1521,7 +1521,7 @@ static ssize_t iwl_dbgfs_ucode_general_stats_read(struct file *file,
+ 					char __user *user_buf,
+ 					size_t count, loff_t *ppos)
  {
--	struct i2o_device *d = (struct i2o_device *)seq->private;
-+	struct i2o_device *d = seq->private;
- 	static u32 work32[128];	// allow for "stuff" + up to 256 byte (max) serial number
- 	// == (allow) 512d bytes (max)
- 	static u16 *work16 = (u16 *) work32;
-@@ -1298,7 +1298,7 @@ static int i2o_seq_show_dev_identity(struct seq_file *seq, void *v)
+-	struct iwl_priv *priv = (struct iwl_priv *)file->private_data;
++	struct iwl_priv *priv = file->private_data;
+ 	int pos = 0;
+ 	char *buf;
+ 	int bufsz = sizeof(struct statistics_general) * 4 + 250;
+@@ -1612,7 +1612,7 @@ static ssize_t iwl_dbgfs_sensitivity_read(struct file *file,
+ 					char __user *user_buf,
+ 					size_t count, loff_t *ppos) {
  
- static int i2o_seq_show_dev_name(struct seq_file *seq, void *v)
+-	struct iwl_priv *priv = (struct iwl_priv *)file->private_data;
++	struct iwl_priv *priv = file->private_data;
+ 	int pos = 0;
+ 	int cnt = 0;
+ 	char *buf;
+@@ -1693,7 +1693,7 @@ static ssize_t iwl_dbgfs_chain_noise_read(struct file *file,
+ 					char __user *user_buf,
+ 					size_t count, loff_t *ppos) {
+ 
+-	struct iwl_priv *priv = (struct iwl_priv *)file->private_data;
++	struct iwl_priv *priv = file->private_data;
+ 	int pos = 0;
+ 	int cnt = 0;
+ 	char *buf;
+@@ -1751,7 +1751,7 @@ static ssize_t iwl_dbgfs_tx_power_read(struct file *file,
+ 					char __user *user_buf,
+ 					size_t count, loff_t *ppos) {
+ 
+-	struct iwl_priv *priv = (struct iwl_priv *)file->private_data;
++	struct iwl_priv *priv = file->private_data;
+ 	char buf[128];
+ 	int pos = 0;
+ 	ssize_t ret;
+@@ -1802,7 +1802,7 @@ static ssize_t iwl_dbgfs_power_save_status_read(struct file *file,
+ 						    char __user *user_buf,
+ 						    size_t count, loff_t *ppos)
  {
--	struct i2o_device *d = (struct i2o_device *)seq->private;
-+	struct i2o_device *d = seq->private;
- 
- 	seq_printf(seq, "%s\n", dev_name(&d->device));
- 
-@@ -1308,7 +1308,7 @@ static int i2o_seq_show_dev_name(struct seq_file *seq, void *v)
- /* Generic group F101h - DDM Identity (scalar) */
- static int i2o_seq_show_ddm_identity(struct seq_file *seq, void *v)
- {
--	struct i2o_device *d = (struct i2o_device *)seq->private;
-+	struct i2o_device *d = seq->private;
- 	int token;
- 
- 	struct {
-@@ -1345,7 +1345,7 @@ static int i2o_seq_show_ddm_identity(struct seq_file *seq, void *v)
- /* Generic group F102h - User Information (scalar) */
- static int i2o_seq_show_uinfo(struct seq_file *seq, void *v)
- {
--	struct i2o_device *d = (struct i2o_device *)seq->private;
-+	struct i2o_device *d = seq->private;
- 	int token;
- 
- 	struct {
-@@ -1377,7 +1377,7 @@ static int i2o_seq_show_uinfo(struct seq_file *seq, void *v)
- /* Generic group F103h - SGL Operating Limits (scalar) */
- static int i2o_seq_show_sgl_limits(struct seq_file *seq, void *v)
- {
--	struct i2o_device *d = (struct i2o_device *)seq->private;
-+	struct i2o_device *d = seq->private;
- 	static u32 work32[12];
- 	static u16 *work16 = (u16 *) work32;
- 	static u8 *work8 = (u8 *) work32;
-@@ -1424,7 +1424,7 @@ static int i2o_seq_show_sgl_limits(struct seq_file *seq, void *v)
- /* Generic group F200h - Sensors (scalar) */
- static int i2o_seq_show_sensors(struct seq_file *seq, void *v)
- {
--	struct i2o_device *d = (struct i2o_device *)seq->private;
-+	struct i2o_device *d = seq->private;
- 	int token;
- 
- 	struct {
+-	struct iwl_priv *priv = (struct iwl_priv *)file->private_data;
++	struct iwl_priv *priv = file->private_data;
+ 	char buf[60];
+ 	int pos = 0;
+ 	const size_t bufsz = sizeof(buf);
