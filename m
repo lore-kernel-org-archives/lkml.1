@@ -1,67 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752875Ab0AHKSi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752774Ab0AHKX5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752875Ab0AHKSi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jan 2010 05:18:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752018Ab0AHKSh
+	id S1752774Ab0AHKX5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jan 2010 05:23:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752144Ab0AHKX4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jan 2010 05:18:37 -0500
-Received: from kirsty.vergenet.net ([202.4.237.240]:57854 "EHLO
-	kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752847Ab0AHKSg (ORCPT
+	Fri, 8 Jan 2010 05:23:56 -0500
+Received: from astoria.ccjclearline.com ([64.235.106.9]:45287 "EHLO
+	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751815Ab0AHKXz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jan 2010 05:18:36 -0500
-Date: Fri, 8 Jan 2010 21:18:35 +1100
-From: Simon Horman <horms@verge.net.au>
-To: Peter =?utf-8?B?SMO8d2U=?= <PeterHuewe@gmx.de>
-Cc: devel@driverdev.osuosl.org, Greg Kroah-Hartman <gregkh@suse.de>,
-       devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3 v2] staging/otus: Add select WEXT_PRIV to Kconfig
- to prevent build failure
-Message-ID: <20100108101835.GB27997@verge.net.au>
-References: <201001072133.20487.PeterHuewe@gmx.de>
- <201001080913.19300.PeterHuewe@gmx.de>
+	Fri, 8 Jan 2010 05:23:55 -0500
+Date: Fri, 8 Jan 2010 05:23:13 -0500 (EST)
+From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+X-X-Sender: rpjday@localhost
+To: Greg KH <greg@kroah.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Documentation/feature-removal-schedule.txt to be updated soon?
+In-Reply-To: <20100103212913.GB3220@kroah.com>
+Message-ID: <alpine.LFD.2.00.1001080515560.11113@localhost>
+References: <alpine.LFD.2.00.1001030652110.6587@localhost> <20100103212913.GB3220@kroah.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <201001080913.19300.PeterHuewe@gmx.de>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - crashcourse.ca
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 08, 2010 at 09:13:19AM +0100, Peter Hüwe wrote:
-> From: Peter Huewe <peterhuewe@gmx.de>
-> Date: Fri, 8 Jan 2010 09:09:12 +0100
-> 
-> Without WEXT_PRIV set the driver fails to build due to unknown fields in
-> the iw_handler_def struct.
-> Those fields are enclosed in WEXT_PRIV conditionals in the prototype
-> of iw_handler_def in include/net/iw_handler.h
-> 
-> Signed-off-by: Peter Huewe <peterhuewe@gmx.de>
+On Sun, 3 Jan 2010, Greg KH wrote:
 
-Acked-by: Simon Horman <horms@verge.net.au>
+> On Sun, Jan 03, 2010 at 06:54:10AM -0500, Robert P. J. Day wrote:
+> >
+> >   as is my wont, i will mutter quietly about the amount of content
+> > in the file Documentation/feature-removal-schedule.txt referring
+> > to stuff that should have been removed ages ago (some of it is
+> > dated as far back as 2005).
+> >
+> >   is there any plan on bringing that file up to date, and/or
+> > deleting stuff that's been marked for deletion for years?
+>
+> Sure, feel free to send patches, and if they are rejected, send a
+> patch for the feature-removal-schedule.txt file removing the option
+> there.
 
-> ---
-> This time without whitespace/indention errors. Sorry about that.
-> 
->  drivers/staging/otus/Kconfig |    2 ++
->  1 files changed, 2 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/staging/otus/Kconfig b/drivers/staging/otus/Kconfig
-> index f6cc262..e918134 100644
-> --- a/drivers/staging/otus/Kconfig
-> +++ b/drivers/staging/otus/Kconfig
-> @@ -1,6 +1,8 @@
->  config OTUS
->  	tristate "Atheros OTUS 802.11n USB wireless support"
->  	depends on USB && WLAN && MAC80211
-> +	select WIRELESS_EXT
-> +	select WEXT_PRIV
->  	default N
->  	---help---
->  	  Enable support for Atheros 802.11n USB hardware:
-> -- 
-> 1.6.4.4
-> 
+  that's a nice idea, i wonder how well it would work in practice.  a
+couple years ago, i submitted a patch to remove the *clearly*
+deprecated/obsolete pcmcia ioctl feature.  that was less than
+spectacularly successful:
+
+http://lists.infradead.org/pipermail/linux-pcmcia/2007-May/thread.html#4536
+
+it's now 2.5 years later, that feature is still there and is now 5
+years overdue for removal.  i'll submit another patch to get rid of
+it, but if there's yet another argument for why it can't quite be
+deleted yet, i'm not sure what value the feature-removal-schedule file
+has anymore.
+
+either people should take it moderately seriously, or it should be
+deleted as a waste of time.
+
+rday
+--
+
+========================================================================
+Robert P. J. Day                               Waterloo, Ontario, CANADA
+
+            Linux Consulting, Training and Kernel Pedantry.
+
+Web page:                                          http://crashcourse.ca
+Twitter:                                       http://twitter.com/rpjday
+========================================================================
