@@ -1,98 +1,363 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753490Ab0AHDJP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753512Ab0AHDRG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753490Ab0AHDJP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 22:09:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753408Ab0AHDJO
+	id S1753512Ab0AHDRG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 22:17:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753408Ab0AHDRF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 22:09:14 -0500
-Received: from buzzloop.caiaq.de ([212.112.241.133]:58913 "EHLO
-	buzzloop.caiaq.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753155Ab0AHDJO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 22:09:14 -0500
-Date: Fri, 8 Jan 2010 11:08:37 +0800
-From: Daniel Mack <daniel@caiaq.de>
-To: Richard Purdie <rpurdie@rpsys.net>
-Cc: Arnd Hannemann <hannemann@nets.rwth-aachen.de>,
-       Arnd Hannemann <Arnd.Hannemann@nets.rwth-aachen.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "linux-geode@lists.infradead.org" <linux-geode@lists.infradead.org>
-Subject: Re: 2.6.33-rc3 regression: leds_alix2: can't allocate I/O for GPIO
-Message-ID: <20100108030837.GY28375@buzzloop.caiaq.de>
-References: <4B45B6DD.4060903@nets.rwth-aachen.de>
- <1262861484.8493.14.camel@dax.rpnet.com>
- <4B45CC4C.4030603@nets.rwth-aachen.de>
- <4B45CF73.9090304@nets.rwth-aachen.de>
- <20100107124630.GU28375@buzzloop.caiaq.de>
- <4B45E905.7040401@nets.rwth-aachen.de>
- <1262885241.27762.1.camel@dax.rpnet.com>
+	Thu, 7 Jan 2010 22:17:05 -0500
+Received: from mga02.intel.com ([134.134.136.20]:34489 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751196Ab0AHDRB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 Jan 2010 22:17:01 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,239,1262592000"; 
+   d="scan'208";a="482329492"
+From: "Zheng, Shaohui" <shaohui.zheng@intel.com>
+To: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "ak@linux.intel.com" <ak@linux.intel.com>,
+       "y-goto@jp.fujitsu.com" <y-goto@jp.fujitsu.com>,
+       Dave Hansen <haveblue@us.ibm.com>,
+       "Wu, Fengguang" <fengguang.wu@intel.com>,
+       "x86@kernel.org" <x86@kernel.org>
+Date: Fri, 8 Jan 2010 11:16:13 +0800
+Subject: [PATCH - resend ] memory-hotplug: create /sys/firmware/memmap entry
+ for new memory(v3)
+Thread-Topic: [PATCH - resend ] memory-hotplug: create /sys/firmware/memmap
+ entry for new memory(v3)
+Thread-Index: AcqQEO6R/XWGsE6nQtu+/ngbeNU/ow==
+Message-ID: <DA586906BA1FFC4384FCFD6429ECE86031560B8D@shzsmsx502.ccr.corp.intel.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: yes
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: multipart/mixed;
+	boundary="_002_DA586906BA1FFC4384FCFD6429ECE86031560B8Dshzsmsx502ccrco_"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1262885241.27762.1.camel@dax.rpnet.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 07, 2010 at 05:27:21PM +0000, Richard Purdie wrote:
-> On Thu, 2010-01-07 at 15:00 +0100, Arnd Hannemann wrote:
-> > Daniel Mack schrieb:
-> > > On Thu, Jan 07, 2010 at 01:11:31PM +0100, Arnd Hannemann wrote:
-> > >> Arnd Hannemann schrieb:
-> > >> Oh, maybe using cs5535_gpio AND leds_alix2 together was never supposed to work?
-> > > 
-> > > That is the problem indeed. The problem is that three of these GPIOs are
-> > > connected to LEDs, so if both drivers are enabled, they will both alter
-> > > the same GPIOs. Hmm, don't know how to handle this. Maybe the LED driver
-> > > should use the GPIO interface and that's it?
-> > 
-> > I'm not sure that this configuration needs to be supported at all,
-> > so disallowing that both drivers are configured via Kconfig could be a simple solution.
-> 
-> Agreed, Kconfig dependencies for this until the code is improved look
-> like the best option. Does someone want to send me a patch?
+--_002_DA586906BA1FFC4384FCFD6429ECE86031560B8Dshzsmsx502ccrco_
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-Does the one below look ok?
+Resend the patch to the mailing-list, the original patch URL is at=20
+http://patchwork.kernel.org/patch/69071/. It is already reviewed, but It is=
+ still not=20
+accepted and no comments, I guess that it should be ignored since we have s=
+o many=20
+patches each day, send it again. =20
 
-Thanks,
-Daniel
+memory-hotplug: create /sys/firmware/memmap entry for hot-added memory
 
+Interface firmware_map_add was not called in explicit, Remove it and add fu=
+nction
+firmware_map_add_hotplug as hotplug interface of memmap.
 
->From ebb89d7d1908e85587f3e64bcea0dd77a92cc744 Mon Sep 17 00:00:00 2001
-From: Daniel Mack <daniel@caiaq.de>
-Date: Fri, 8 Jan 2010 02:22:10 +0800
-Subject: [PATCH] LEDS: ALIX2: Add dependency to !GPIO_CS5335
+When we hot-add new memory, sysfs does not export memmap entry for it. we a=
+dd
+ a call in function add_memory to function firmware_map_add_hotplug.
 
-The ALIX2 LED driver and the CS5535 GPIO driver share the same I/O
-range which causes a conflict if they're both enabled. Fix this for now
-by adding a Kconfig dependency. While at it, also drop the EXPERIMENTAL
-flag, as the code has been around for awhile already.
+Add a new function add_sysfs_fw_map_entry to create memmap entry, it can av=
+oid=20
+duplicated codes.
 
-Note that this is a hack. At some point, a real platform support for
-this board should be added which handles the LEDs via the leds-gpio
-driver.
+Thanks for the careful review from Fengguang Wu and Dave Hansen.
 
-Signed-off-by: Daniel Mack <daniel@caiaq.de>
-Cc: Richard Purdie <rpurdie@rpsys.net>
-Cc: Arnd Hannemann <hannemann@nets.rwth-aachen.de>
+Signed-off-by: Shaohui Zheng <shaohui.zheng@intel.com>
+Acked-by: Andi Kleen <ak@linux.intel.com>
+Acked-by: Yasunori Goto <y-goto@jp.fujitsu.com>
+Acked-by: Dave Hansen <dave@linux.vnet.ibm.com>
+Reviewed-by: Wu Fengguang <fengguang.wu@intel.com>
 ---
- drivers/leds/Kconfig |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+diff --git a/drivers/firmware/memmap.c b/drivers/firmware/memmap.c
+index 56f9234..ec8c3d4 100644
+--- a/drivers/firmware/memmap.c
++++ b/drivers/firmware/memmap.c
+@@ -123,52 +123,75 @@ static int firmware_map_add_entry(u64 start, u64 end,
+ }
+=20
+ /**
+- * firmware_map_add() - Adds a firmware mapping entry.
++ * Add memmap entry on sysfs
++ */
++static int add_sysfs_fw_map_entry(struct firmware_map_entry *entry) {
++	static int map_entries_nr;
++	static struct kset *mmap_kset;
++
++	if (!mmap_kset) {
++		mmap_kset =3D kset_create_and_add("memmap", NULL, firmware_kobj);
++		if (WARN_ON(!mmap_kset))
++			return -ENOMEM;
++	}
++
++	entry->kobj.kset =3D mmap_kset;
++	if (kobject_add(&entry->kobj, NULL, "%d", map_entries_nr++))
++		kobject_put(&entry->kobj);
++
++	return 0;
++}
++
++/**
++ * firmware_map_add_early() - Adds a firmware mapping entry.
+  * @start: Start of the memory range.
+  * @end:   End of the memory range (inclusive).
+  * @type:  Type of the memory range.
+  *
+- * This function uses kmalloc() for memory
+- * allocation. Use firmware_map_add_early() if you want to use the bootmem
+- * allocator.
++ * Adds a firmware mapping entry. This function uses the bootmem allocator
++ * for memory allocation.
+  *
+  * That function must be called before late_initcall.
+  *
+  * Returns 0 on success, or -ENOMEM if no memory could be allocated.
+  **/
+-int firmware_map_add(u64 start, u64 end, const char *type)
++int __init firmware_map_add_early(u64 start, u64 end, const char *type)
+ {
+ 	struct firmware_map_entry *entry;
+=20
+-	entry =3D kmalloc(sizeof(struct firmware_map_entry), GFP_ATOMIC);
+-	if (!entry)
++	entry =3D alloc_bootmem(sizeof(struct firmware_map_entry));
++	if (WARN_ON(!entry))
+ 		return -ENOMEM;
+=20
+ 	return firmware_map_add_entry(start, end, type, entry);
+ }
+=20
+ /**
+- * firmware_map_add_early() - Adds a firmware mapping entry.
++ * firmware_map_add_hotplug() - Adds a firmware mapping entry when we do
++ * memory hotplug.
+  * @start: Start of the memory range.
+  * @end:   End of the memory range (inclusive).
+  * @type:  Type of the memory range.
+  *
+- * Adds a firmware mapping entry. This function uses the bootmem allocator
+- * for memory allocation. Use firmware_map_add() if you want to use kmallo=
+c().
+- *
+- * That function must be called before late_initcall.
++ * Adds a firmware mapping entry. This function is for memory hotplug, it =
+is
++ * simiar with function firmware_map_add_early. the only difference is tha=
+t
++ * it will create the syfs entry dynamically.
+  *
+  * Returns 0 on success, or -ENOMEM if no memory could be allocated.
+  **/
+-int __init firmware_map_add_early(u64 start, u64 end, const char *type)
++int __meminit firmware_map_add_hotplug(u64 start, u64 end, const char *typ=
+e)
+ {
+ 	struct firmware_map_entry *entry;
+=20
+-	entry =3D alloc_bootmem(sizeof(struct firmware_map_entry));
++	entry =3D kzalloc(sizeof(struct firmware_map_entry), GFP_ATOMIC);
+ 	if (WARN_ON(!entry))
+ 		return -ENOMEM;
+=20
+-	return firmware_map_add_entry(start, end, type, entry);
++	firmware_map_add_entry(start, end, type, entry);
++	/* create the memmap entry */
++	add_sysfs_fw_map_entry(entry);
++
++	return 0;
+ }
+=20
+ /*
+@@ -214,18 +237,10 @@ static ssize_t memmap_attr_show(struct kobject *kobj,
+  */
+ static int __init memmap_init(void)
+ {
+-	int i =3D 0;
+ 	struct firmware_map_entry *entry;
+-	struct kset *memmap_kset;
+-
+-	memmap_kset =3D kset_create_and_add("memmap", NULL, firmware_kobj);
+-	if (WARN_ON(!memmap_kset))
+-		return -ENOMEM;
+=20
+ 	list_for_each_entry(entry, &map_entries, list) {
+-		entry->kobj.kset =3D memmap_kset;
+-		if (kobject_add(&entry->kobj, NULL, "%d", i++))
+-			kobject_put(&entry->kobj);
++		add_sysfs_fw_map_entry(entry);
+ 	}
+=20
+ 	return 0;
+diff --git a/include/linux/firmware-map.h b/include/linux/firmware-map.h
+index 875451f..c6dcc1d 100644
+--- a/include/linux/firmware-map.h
++++ b/include/linux/firmware-map.h
+@@ -24,17 +24,17 @@
+  */
+ #ifdef CONFIG_FIRMWARE_MEMMAP
+=20
+-int firmware_map_add(u64 start, u64 end, const char *type);
+ int firmware_map_add_early(u64 start, u64 end, const char *type);
++int firmware_map_add_hotplug(u64 start, u64 end, const char *type);
+=20
+ #else /* CONFIG_FIRMWARE_MEMMAP */
+=20
+-static inline int firmware_map_add(u64 start, u64 end, const char *type)
++static inline int firmware_map_add_early(u64 start, u64 end, const char *t=
+ype)
+ {
+ 	return 0;
+ }
+=20
+-static inline int firmware_map_add_early(u64 start, u64 end, const char *t=
+ype)
++static inline int firmware_map_add_hotplug(u64 start, u64 end, const char =
+*type)
+ {
+ 	return 0;
+ }
+diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
+index 030ce8a..78e34e6 100644
+--- a/mm/memory_hotplug.c
++++ b/mm/memory_hotplug.c
+@@ -28,6 +28,7 @@
+ #include <linux/pfn.h>
+ #include <linux/suspend.h>
+ #include <linux/mm_inline.h>
++#include <linux/firmware-map.h>
+=20
+ #include <asm/tlbflush.h>
+=20
+@@ -523,6 +524,9 @@ int __ref add_memory(int nid, u64 start, u64 size)
+ 		BUG_ON(ret);
+ 	}
+=20
++	/* create new memmap entry */
++	firmware_map_add_hotplug(start, start + size, "System RAM");
++
+ 	goto out;
+=20
+ error:
 
-diff --git a/drivers/leds/Kconfig b/drivers/leds/Kconfig
-index 8a0e1ec..7f292ae 100644
---- a/drivers/leds/Kconfig
-+++ b/drivers/leds/Kconfig
-@@ -72,7 +72,7 @@ config LEDS_WRAP
- 
- config LEDS_ALIX2
- 	tristate "LED Support for ALIX.2 and ALIX.3 series"
--	depends on LEDS_CLASS && X86 && EXPERIMENTAL
-+	depends on LEDS_CLASS && X86 && !GPIO_CS5535
- 	help
- 	  This option enables support for the PCEngines ALIX.2 and ALIX.3 LEDs.
- 	  You have to set leds-alix2.force=1 for boards with Award BIOS.
--- 
-1.6.3.3
+Thanks & Regards,
+Shaohui
 
+
+
+--_002_DA586906BA1FFC4384FCFD6429ECE86031560B8Dshzsmsx502ccrco_
+Content-Type: application/octet-stream; name=
+	"memory-hotplug-create-sys-firmware-memmap-entry-for-new-memory-v3.patch"
+Content-Description: memory-hotplug-create-sys-firmware-memmap-entry-for-new-memory-v3.patch
+Content-Disposition: attachment; filename=
+	"memory-hotplug-create-sys-firmware-memmap-entry-for-new-memory-v3.patch";
+	size=5746; creation-date="Fri, 18 Dec 2009 16:26:02 GMT";
+	modification-date="Mon, 21 Dec 2009 09:38:34 GMT"
+Content-Transfer-Encoding: base64
+
+bWVtb3J5LWhvdHBsdWc6IGNyZWF0ZSAvc3lzL2Zpcm13YXJlL21lbW1hcCBlbnRyeSBmb3IgaG90
+LWFkZGVkIG1lbW9yeQoKSW50ZXJmYWNlIGZpcm13YXJlX21hcF9hZGQgd2FzIG5vdCBjYWxsZWQg
+aW4gZXhwbGljaXQsIFJlbW92ZSBpdCBhbmQgYWRkIGZ1bmN0aW9uCmZpcm13YXJlX21hcF9hZGRf
+aG90cGx1ZyBhcyBob3RwbHVnIGludGVyZmFjZSBvZiBtZW1tYXAuCgpXaGVuIHdlIGhvdC1hZGQg
+bmV3IG1lbW9yeSwgc3lzZnMgZG9lcyBub3QgZXhwb3J0IG1lbW1hcCBlbnRyeSBmb3IgaXQuIHdl
+IGFkZAogYSBjYWxsIGluIGZ1bmN0aW9uIGFkZF9tZW1vcnkgdG8gZnVuY3Rpb24gZmlybXdhcmVf
+bWFwX2FkZF9ob3RwbHVnLgoKQWRkIGEgbmV3IGZ1bmN0aW9uIGFkZF9zeXNmc19md19tYXBfZW50
+cnkgdG8gY3JlYXRlIG1lbW1hcCBlbnRyeSwgaXQgY2FuIGF2b2lkIApkdXBsaWNhdGVkIGNvZGVz
+LgoKVGhhbmtzIGZvciB0aGUgY2FyZWZ1bCByZXZpZXcgZnJvbSBGZW5nZ3VhbmcgV3UgYW5kIERh
+dmUgSGFuc2VuLgoKU2lnbmVkLW9mZi1ieTogU2hhb2h1aSBaaGVuZyA8c2hhb2h1aS56aGVuZ0Bp
+bnRlbC5jb20+CkFja2VkLWJ5OiBBbmRpIEtsZWVuIDxha0BsaW51eC5pbnRlbC5jb20+CkFja2Vk
+LWJ5OiBZYXN1bm9yaSBHb3RvIDx5LWdvdG9AanAuZnVqaXRzdS5jb20+CkFja2VkLWJ5OiBEYXZl
+IEhhbnNlbiA8ZGF2ZUBsaW51eC52bmV0LmlibS5jb20+ClJldmlld2VkLWJ5OiBXdSBGZW5nZ3Vh
+bmcgPGZlbmdndWFuZy53dUBpbnRlbC5jb20+Ci0tLQpkaWZmIC0tZ2l0IGEvZHJpdmVycy9maXJt
+d2FyZS9tZW1tYXAuYyBiL2RyaXZlcnMvZmlybXdhcmUvbWVtbWFwLmMKaW5kZXggNTZmOTIzNC4u
+ZWM4YzNkNCAxMDA2NDQKLS0tIGEvZHJpdmVycy9maXJtd2FyZS9tZW1tYXAuYworKysgYi9kcml2
+ZXJzL2Zpcm13YXJlL21lbW1hcC5jCkBAIC0xMjMsNTIgKzEyMyw3NSBAQCBzdGF0aWMgaW50IGZp
+cm13YXJlX21hcF9hZGRfZW50cnkodTY0IHN0YXJ0LCB1NjQgZW5kLAogfQogCiAvKioKLSAqIGZp
+cm13YXJlX21hcF9hZGQoKSAtIEFkZHMgYSBmaXJtd2FyZSBtYXBwaW5nIGVudHJ5LgorICogQWRk
+IG1lbW1hcCBlbnRyeSBvbiBzeXNmcworICovCitzdGF0aWMgaW50IGFkZF9zeXNmc19md19tYXBf
+ZW50cnkoc3RydWN0IGZpcm13YXJlX21hcF9lbnRyeSAqZW50cnkpIHsKKwlzdGF0aWMgaW50IG1h
+cF9lbnRyaWVzX25yOworCXN0YXRpYyBzdHJ1Y3Qga3NldCAqbW1hcF9rc2V0OworCisJaWYgKCFt
+bWFwX2tzZXQpIHsKKwkJbW1hcF9rc2V0ID0ga3NldF9jcmVhdGVfYW5kX2FkZCgibWVtbWFwIiwg
+TlVMTCwgZmlybXdhcmVfa29iaik7CisJCWlmIChXQVJOX09OKCFtbWFwX2tzZXQpKQorCQkJcmV0
+dXJuIC1FTk9NRU07CisJfQorCisJZW50cnktPmtvYmoua3NldCA9IG1tYXBfa3NldDsKKwlpZiAo
+a29iamVjdF9hZGQoJmVudHJ5LT5rb2JqLCBOVUxMLCAiJWQiLCBtYXBfZW50cmllc19ucisrKSkK
+KwkJa29iamVjdF9wdXQoJmVudHJ5LT5rb2JqKTsKKworCXJldHVybiAwOworfQorCisvKioKKyAq
+IGZpcm13YXJlX21hcF9hZGRfZWFybHkoKSAtIEFkZHMgYSBmaXJtd2FyZSBtYXBwaW5nIGVudHJ5
+LgogICogQHN0YXJ0OiBTdGFydCBvZiB0aGUgbWVtb3J5IHJhbmdlLgogICogQGVuZDogICBFbmQg
+b2YgdGhlIG1lbW9yeSByYW5nZSAoaW5jbHVzaXZlKS4KICAqIEB0eXBlOiAgVHlwZSBvZiB0aGUg
+bWVtb3J5IHJhbmdlLgogICoKLSAqIFRoaXMgZnVuY3Rpb24gdXNlcyBrbWFsbG9jKCkgZm9yIG1l
+bW9yeQotICogYWxsb2NhdGlvbi4gVXNlIGZpcm13YXJlX21hcF9hZGRfZWFybHkoKSBpZiB5b3Ug
+d2FudCB0byB1c2UgdGhlIGJvb3RtZW0KLSAqIGFsbG9jYXRvci4KKyAqIEFkZHMgYSBmaXJtd2Fy
+ZSBtYXBwaW5nIGVudHJ5LiBUaGlzIGZ1bmN0aW9uIHVzZXMgdGhlIGJvb3RtZW0gYWxsb2NhdG9y
+CisgKiBmb3IgbWVtb3J5IGFsbG9jYXRpb24uCiAgKgogICogVGhhdCBmdW5jdGlvbiBtdXN0IGJl
+IGNhbGxlZCBiZWZvcmUgbGF0ZV9pbml0Y2FsbC4KICAqCiAgKiBSZXR1cm5zIDAgb24gc3VjY2Vz
+cywgb3IgLUVOT01FTSBpZiBubyBtZW1vcnkgY291bGQgYmUgYWxsb2NhdGVkLgogICoqLwotaW50
+IGZpcm13YXJlX21hcF9hZGQodTY0IHN0YXJ0LCB1NjQgZW5kLCBjb25zdCBjaGFyICp0eXBlKQor
+aW50IF9faW5pdCBmaXJtd2FyZV9tYXBfYWRkX2Vhcmx5KHU2NCBzdGFydCwgdTY0IGVuZCwgY29u
+c3QgY2hhciAqdHlwZSkKIHsKIAlzdHJ1Y3QgZmlybXdhcmVfbWFwX2VudHJ5ICplbnRyeTsKIAot
+CWVudHJ5ID0ga21hbGxvYyhzaXplb2Yoc3RydWN0IGZpcm13YXJlX21hcF9lbnRyeSksIEdGUF9B
+VE9NSUMpOwotCWlmICghZW50cnkpCisJZW50cnkgPSBhbGxvY19ib290bWVtKHNpemVvZihzdHJ1
+Y3QgZmlybXdhcmVfbWFwX2VudHJ5KSk7CisJaWYgKFdBUk5fT04oIWVudHJ5KSkKIAkJcmV0dXJu
+IC1FTk9NRU07CiAKIAlyZXR1cm4gZmlybXdhcmVfbWFwX2FkZF9lbnRyeShzdGFydCwgZW5kLCB0
+eXBlLCBlbnRyeSk7CiB9CiAKIC8qKgotICogZmlybXdhcmVfbWFwX2FkZF9lYXJseSgpIC0gQWRk
+cyBhIGZpcm13YXJlIG1hcHBpbmcgZW50cnkuCisgKiBmaXJtd2FyZV9tYXBfYWRkX2hvdHBsdWco
+KSAtIEFkZHMgYSBmaXJtd2FyZSBtYXBwaW5nIGVudHJ5IHdoZW4gd2UgZG8KKyAqIG1lbW9yeSBo
+b3RwbHVnLgogICogQHN0YXJ0OiBTdGFydCBvZiB0aGUgbWVtb3J5IHJhbmdlLgogICogQGVuZDog
+ICBFbmQgb2YgdGhlIG1lbW9yeSByYW5nZSAoaW5jbHVzaXZlKS4KICAqIEB0eXBlOiAgVHlwZSBv
+ZiB0aGUgbWVtb3J5IHJhbmdlLgogICoKLSAqIEFkZHMgYSBmaXJtd2FyZSBtYXBwaW5nIGVudHJ5
+LiBUaGlzIGZ1bmN0aW9uIHVzZXMgdGhlIGJvb3RtZW0gYWxsb2NhdG9yCi0gKiBmb3IgbWVtb3J5
+IGFsbG9jYXRpb24uIFVzZSBmaXJtd2FyZV9tYXBfYWRkKCkgaWYgeW91IHdhbnQgdG8gdXNlIGtt
+YWxsb2MoKS4KLSAqCi0gKiBUaGF0IGZ1bmN0aW9uIG11c3QgYmUgY2FsbGVkIGJlZm9yZSBsYXRl
+X2luaXRjYWxsLgorICogQWRkcyBhIGZpcm13YXJlIG1hcHBpbmcgZW50cnkuIFRoaXMgZnVuY3Rp
+b24gaXMgZm9yIG1lbW9yeSBob3RwbHVnLCBpdCBpcworICogc2ltaWFyIHdpdGggZnVuY3Rpb24g
+ZmlybXdhcmVfbWFwX2FkZF9lYXJseS4gdGhlIG9ubHkgZGlmZmVyZW5jZSBpcyB0aGF0CisgKiBp
+dCB3aWxsIGNyZWF0ZSB0aGUgc3lmcyBlbnRyeSBkeW5hbWljYWxseS4KICAqCiAgKiBSZXR1cm5z
+IDAgb24gc3VjY2Vzcywgb3IgLUVOT01FTSBpZiBubyBtZW1vcnkgY291bGQgYmUgYWxsb2NhdGVk
+LgogICoqLwotaW50IF9faW5pdCBmaXJtd2FyZV9tYXBfYWRkX2Vhcmx5KHU2NCBzdGFydCwgdTY0
+IGVuZCwgY29uc3QgY2hhciAqdHlwZSkKK2ludCBfX21lbWluaXQgZmlybXdhcmVfbWFwX2FkZF9o
+b3RwbHVnKHU2NCBzdGFydCwgdTY0IGVuZCwgY29uc3QgY2hhciAqdHlwZSkKIHsKIAlzdHJ1Y3Qg
+ZmlybXdhcmVfbWFwX2VudHJ5ICplbnRyeTsKIAotCWVudHJ5ID0gYWxsb2NfYm9vdG1lbShzaXpl
+b2Yoc3RydWN0IGZpcm13YXJlX21hcF9lbnRyeSkpOworCWVudHJ5ID0ga3phbGxvYyhzaXplb2Yo
+c3RydWN0IGZpcm13YXJlX21hcF9lbnRyeSksIEdGUF9BVE9NSUMpOwogCWlmIChXQVJOX09OKCFl
+bnRyeSkpCiAJCXJldHVybiAtRU5PTUVNOwogCi0JcmV0dXJuIGZpcm13YXJlX21hcF9hZGRfZW50
+cnkoc3RhcnQsIGVuZCwgdHlwZSwgZW50cnkpOworCWZpcm13YXJlX21hcF9hZGRfZW50cnkoc3Rh
+cnQsIGVuZCwgdHlwZSwgZW50cnkpOworCS8qIGNyZWF0ZSB0aGUgbWVtbWFwIGVudHJ5ICovCisJ
+YWRkX3N5c2ZzX2Z3X21hcF9lbnRyeShlbnRyeSk7CisKKwlyZXR1cm4gMDsKIH0KIAogLyoKQEAg
+LTIxNCwxOCArMjM3LDEwIEBAIHN0YXRpYyBzc2l6ZV90IG1lbW1hcF9hdHRyX3Nob3coc3RydWN0
+IGtvYmplY3QgKmtvYmosCiAgKi8KIHN0YXRpYyBpbnQgX19pbml0IG1lbW1hcF9pbml0KHZvaWQp
+CiB7Ci0JaW50IGkgPSAwOwogCXN0cnVjdCBmaXJtd2FyZV9tYXBfZW50cnkgKmVudHJ5OwotCXN0
+cnVjdCBrc2V0ICptZW1tYXBfa3NldDsKLQotCW1lbW1hcF9rc2V0ID0ga3NldF9jcmVhdGVfYW5k
+X2FkZCgibWVtbWFwIiwgTlVMTCwgZmlybXdhcmVfa29iaik7Ci0JaWYgKFdBUk5fT04oIW1lbW1h
+cF9rc2V0KSkKLQkJcmV0dXJuIC1FTk9NRU07CiAKIAlsaXN0X2Zvcl9lYWNoX2VudHJ5KGVudHJ5
+LCAmbWFwX2VudHJpZXMsIGxpc3QpIHsKLQkJZW50cnktPmtvYmoua3NldCA9IG1lbW1hcF9rc2V0
+OwotCQlpZiAoa29iamVjdF9hZGQoJmVudHJ5LT5rb2JqLCBOVUxMLCAiJWQiLCBpKyspKQotCQkJ
+a29iamVjdF9wdXQoJmVudHJ5LT5rb2JqKTsKKwkJYWRkX3N5c2ZzX2Z3X21hcF9lbnRyeShlbnRy
+eSk7CiAJfQogCiAJcmV0dXJuIDA7CmRpZmYgLS1naXQgYS9pbmNsdWRlL2xpbnV4L2Zpcm13YXJl
+LW1hcC5oIGIvaW5jbHVkZS9saW51eC9maXJtd2FyZS1tYXAuaAppbmRleCA4NzU0NTFmLi5jNmRj
+YzFkIDEwMDY0NAotLS0gYS9pbmNsdWRlL2xpbnV4L2Zpcm13YXJlLW1hcC5oCisrKyBiL2luY2x1
+ZGUvbGludXgvZmlybXdhcmUtbWFwLmgKQEAgLTI0LDE3ICsyNCwxNyBAQAogICovCiAjaWZkZWYg
+Q09ORklHX0ZJUk1XQVJFX01FTU1BUAogCi1pbnQgZmlybXdhcmVfbWFwX2FkZCh1NjQgc3RhcnQs
+IHU2NCBlbmQsIGNvbnN0IGNoYXIgKnR5cGUpOwogaW50IGZpcm13YXJlX21hcF9hZGRfZWFybHko
+dTY0IHN0YXJ0LCB1NjQgZW5kLCBjb25zdCBjaGFyICp0eXBlKTsKK2ludCBmaXJtd2FyZV9tYXBf
+YWRkX2hvdHBsdWcodTY0IHN0YXJ0LCB1NjQgZW5kLCBjb25zdCBjaGFyICp0eXBlKTsKIAogI2Vs
+c2UgLyogQ09ORklHX0ZJUk1XQVJFX01FTU1BUCAqLwogCi1zdGF0aWMgaW5saW5lIGludCBmaXJt
+d2FyZV9tYXBfYWRkKHU2NCBzdGFydCwgdTY0IGVuZCwgY29uc3QgY2hhciAqdHlwZSkKK3N0YXRp
+YyBpbmxpbmUgaW50IGZpcm13YXJlX21hcF9hZGRfZWFybHkodTY0IHN0YXJ0LCB1NjQgZW5kLCBj
+b25zdCBjaGFyICp0eXBlKQogewogCXJldHVybiAwOwogfQogCi1zdGF0aWMgaW5saW5lIGludCBm
+aXJtd2FyZV9tYXBfYWRkX2Vhcmx5KHU2NCBzdGFydCwgdTY0IGVuZCwgY29uc3QgY2hhciAqdHlw
+ZSkKK3N0YXRpYyBpbmxpbmUgaW50IGZpcm13YXJlX21hcF9hZGRfaG90cGx1Zyh1NjQgc3RhcnQs
+IHU2NCBlbmQsIGNvbnN0IGNoYXIgKnR5cGUpCiB7CiAJcmV0dXJuIDA7CiB9CmRpZmYgLS1naXQg
+YS9tbS9tZW1vcnlfaG90cGx1Zy5jIGIvbW0vbWVtb3J5X2hvdHBsdWcuYwppbmRleCAwMzBjZThh
+Li43OGUzNGU2IDEwMDY0NAotLS0gYS9tbS9tZW1vcnlfaG90cGx1Zy5jCisrKyBiL21tL21lbW9y
+eV9ob3RwbHVnLmMKQEAgLTI4LDYgKzI4LDcgQEAKICNpbmNsdWRlIDxsaW51eC9wZm4uaD4KICNp
+bmNsdWRlIDxsaW51eC9zdXNwZW5kLmg+CiAjaW5jbHVkZSA8bGludXgvbW1faW5saW5lLmg+Cisj
+aW5jbHVkZSA8bGludXgvZmlybXdhcmUtbWFwLmg+CiAKICNpbmNsdWRlIDxhc20vdGxiZmx1c2gu
+aD4KIApAQCAtNTIzLDYgKzUyNCw5IEBAIGludCBfX3JlZiBhZGRfbWVtb3J5KGludCBuaWQsIHU2
+NCBzdGFydCwgdTY0IHNpemUpCiAJCUJVR19PTihyZXQpOwogCX0KIAorCS8qIGNyZWF0ZSBuZXcg
+bWVtbWFwIGVudHJ5ICovCisJZmlybXdhcmVfbWFwX2FkZF9ob3RwbHVnKHN0YXJ0LCBzdGFydCAr
+IHNpemUsICJTeXN0ZW0gUkFNIik7CisKIAlnb3RvIG91dDsKIAogZXJyb3I6Cg==
+
+--_002_DA586906BA1FFC4384FCFD6429ECE86031560B8Dshzsmsx502ccrco_--
