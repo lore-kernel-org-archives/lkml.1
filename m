@@ -1,101 +1,200 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753155Ab0AHIC6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753262Ab0AHICa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753155Ab0AHIC6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jan 2010 03:02:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753037Ab0AHIBg
+	id S1753262Ab0AHICa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jan 2010 03:02:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753076Ab0AHIBg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Fri, 8 Jan 2010 03:01:36 -0500
-Received: from kirsty.vergenet.net ([202.4.237.240]:54978 "EHLO
+Received: from kirsty.vergenet.net ([202.4.237.240]:54977 "EHLO
 	kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751582Ab0AHIBe (ORCPT
+	with ESMTP id S1751465Ab0AHIBe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 8 Jan 2010 03:01:34 -0500
-Message-Id: <20100108075921.128458726@vergenet.net>
+Message-Id: <20100108075920.944473692@vergenet.net>
 User-Agent: quilt/0.48-1
-Date: Fri, 08 Jan 2010 18:57:52 +1100
+Date: Fri, 08 Jan 2010 18:57:51 +1100
 From: horms@vergenet.net
-Subject: [patch 4/6] otus: Fix ZM_SEQ_DEBUG macro for no-debug case
+Subject: [patch 3/6] otus: remove unused constants
 To: devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
 Cc: Greg Kroah-Hartman <gregkh@suse.de>, Peter Huewe <PeterHuewe@gmx.de>
 References: <20100108075748.059645106@vergenet.net>
-Content-Disposition: inline; filename=otus-no-effect.patch
+Content-Disposition: inline; filename=otus-unused-function.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-tcp_seq is only initialised in case where ZM_ENABLE_PERFORMANCE_EVALUATION
-is defined. So move the call to ZM_SEQ_DEBUG() and the decleration of
-tcp_seq in there too.  This allows ZM_SEQ_DEBUG() to be removed from the
-non-ZM_ENABLE_PERFORMANCE_EVALUATION case in the header file.
-
-This resolves several compile warnings for the
-non-ZM_ENABLE_PERFORMANCE_EVALUATION case.
-However, the ZM_ENABLE_PERFORMANCE_EVALUATION
-case seems to be completely broken.
-
-$ gcc (Debian 4.4.2-8) 4.4.2
-Copyright (C) 2009 Free Software Foundation, Inc.
-This is free software; see the source for copying conditions.  There is NO
-warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-$ make
-...
-drivers/staging/otus/80211core/cagg.c: In function 'zfAggRxEnabled':
-drivers/staging/otus/80211core/cagg.c:1872: warning: left-hand operand of
-comma expression has no effect
-drivers/staging/otus/80211core/cagg.c:1872: warning: left-hand operand of
-comma expression has no effect
-drivers/staging/otus/80211core/cagg.c:1872: warning: statement with no
-effect
-...
-
 Signed-off-by: Simon Horman <horms@verge.net.au>
 
-Index: linux-2.6/drivers/staging/otus/80211core/pub_zfi.h
+Index: linux-2.6/drivers/staging/otus/hal/hpreg.c
 ===================================================================
---- linux-2.6.orig/drivers/staging/otus/80211core/pub_zfi.h	2010-01-08 17:36:50.000000000 +1100
-+++ linux-2.6/drivers/staging/otus/80211core/pub_zfi.h	2010-01-08 17:39:03.000000000 +1100
-@@ -814,7 +814,6 @@ extern void zfiRxPerformanceReg(zdev_t* 
- #define ZM_PERFORMANCE_RX_AMSDU(dev, buf, len)
- #define ZM_PERFORMANCE_RX_FLUSH(dev)
- #define ZM_PERFORMANCE_RX_CLEAR(dev)
--#define ZM_SEQ_DEBUG
- #define ZM_PERFORMANCE_RX_REORDER(dev)
- #endif
- /***** End of section 3 *****/
-Index: linux-2.6/drivers/staging/otus/80211core/cagg.c
-===================================================================
---- linux-2.6.orig/drivers/staging/otus/80211core/cagg.c	2010-01-08 17:38:36.000000000 +1100
-+++ linux-2.6/drivers/staging/otus/80211core/cagg.c	2010-01-08 17:38:46.000000000 +1100
-@@ -1838,7 +1838,6 @@ struct agg_tid_rx* zfAggRxEnabled(zdev_t
-     u16_t frameType;
-     u16_t frameCtrl;
-     u16_t frameSubtype;
--    u32_t tcp_seq;
-     //struct aggSta *agg_sta;
- #if ZM_AGG_FPGA_REORDERING
-     struct agg_tid_rx *tid_rx;
-@@ -1863,13 +1862,17 @@ struct agg_tid_rx* zfAggRxEnabled(zdev_t
-         return NULL;
-     }
- #ifdef ZM_ENABLE_PERFORMANCE_EVALUATION
--    tcp_seq = zmw_rx_buf_readb(dev, buf, 22+36) << 24;
--    tcp_seq += zmw_rx_buf_readb(dev, buf, 22+37) << 16;
--    tcp_seq += zmw_rx_buf_readb(dev, buf, 22+38) << 8;
--    tcp_seq += zmw_rx_buf_readb(dev, buf, 22+39);
-+    {
-+        u32_t tcp_seq;
-+
-+        tcp_seq = zmw_rx_buf_readb(dev, buf, 22+36) << 24;
-+        tcp_seq += zmw_rx_buf_readb(dev, buf, 22+37) << 16;
-+        tcp_seq += zmw_rx_buf_readb(dev, buf, 22+38) << 8;
-+        tcp_seq += zmw_rx_buf_readb(dev, buf, 22+39);
-+        ZM_SEQ_DEBUG("In                   %5d, %12u\n", seq_no, tcp_seq);
-+    }
- #endif
+--- linux-2.6.orig/drivers/staging/otus/hal/hpreg.c	2010-01-08 16:30:16.000000000 +1100
++++ linux-2.6/drivers/staging/otus/hal/hpreg.c	2010-01-08 16:33:30.000000000 +1100
+@@ -786,45 +786,6 @@ enum {
+ 	WT1_5760_5800,
+ };
  
--    ZM_SEQ_DEBUG("In                   %5d, %12u\n", seq_no, tcp_seq);
-     dst0 = zmw_rx_buf_readh(dev, buf, offset+4);
+-static REG_DMN_FREQ_BAND regDmn5GhzTurboFreq[] = {
+-	{ 5130, 5210, 5,  6, 40, 40, NO_DFS, NO_PSCAN, 0, 0},	/* T1_5130_5210 */
+-	{ 5250, 5330, 5,  6, 40, 40, DFS_FCC3, NO_PSCAN, 0, 0},	/* T1_5250_5330 */
+-	{ 5370, 5490, 5,  6, 40, 40, NO_DFS, NO_PSCAN, 0, 0},	/* T1_5370_5490 */
+-	{ 5530, 5650, 5,  6, 40, 40, DFS_FCC3, NO_PSCAN, 0, 0},	/* T1_5530_5650 */
+-
+-	{ 5150, 5190, 5,  6, 40, 40, NO_DFS, NO_PSCAN, 0, 0},	/* T1_5150_5190 */
+-	{ 5230, 5310, 5,  6, 40, 40, DFS_FCC3, NO_PSCAN, 0, 0},	/* T1_5230_5310 */
+-	{ 5350, 5470, 5,  6, 40, 40, NO_DFS, NO_PSCAN, 0, 0},	/* T1_5350_5470 */
+-	{ 5510, 5670, 5,  6, 40, 40, DFS_FCC3, NO_PSCAN, 0, 0},	/* T1_5510_5670 */
+-
+-	{ 5200, 5240, 17, 6, 40, 40, NO_DFS, NO_PSCAN, 0, 0},	/* T1_5200_5240 */
+-	{ 5200, 5240, 23, 6, 40, 40, NO_DFS, NO_PSCAN, 0, 0},	/* T2_5200_5240 */
+-	{ 5210, 5210, 17, 6, 40, 40, NO_DFS, NO_PSCAN, 0, 0},	/* T1_5210_5210 */
+-	{ 5210, 5210, 23, 0, 40, 40, NO_DFS, NO_PSCAN, 0, 0},	/* T2_5210_5210 */
+-
+-	{ 5280, 5280, 23, 6, 40, 40, DFS_FCC3, PSCAN_FCC_T, 0, 0},	/* T1_5280_5280 */
+-	{ 5280, 5280, 20, 6, 40, 40, DFS_FCC3, PSCAN_FCC_T, 0, 0},	/* T2_5280_5280 */
+-	{ 5250, 5250, 17, 0, 40, 40, DFS_FCC3, PSCAN_FCC_T, 0, 0},	/* T1_5250_5250 */
+-	{ 5290, 5290, 20, 0, 40, 40, DFS_FCC3, PSCAN_FCC_T, 0, 0},	/* T1_5290_5290 */
+-	{ 5250, 5290, 20, 0, 40, 40, DFS_FCC3, PSCAN_FCC_T, 0, 0},	/* T1_5250_5290 */
+-	{ 5250, 5290, 23, 6, 40, 40, DFS_FCC3, PSCAN_FCC_T, 0, 0},	/* T2_5250_5290 */
+-
+-	{ 5540, 5660, 20, 6, 40, 40, DFS_FCC3, PSCAN_FCC_T, 0, 0},	/* T1_5540_5660 */
+-	{ 5760, 5800, 20, 0, 40, 40, NO_DFS, NO_PSCAN, 0, 0},	/* T1_5760_5800 */
+-	{ 5760, 5800, 30, 6, 40, 40, NO_DFS, NO_PSCAN, 0, 0},	/* T2_5760_5800 */
+-
+-	{ 5765, 5805, 30, 6, 40, 40, NO_DFS, NO_PSCAN, 0, 0},	/* T1_5765_5805 */
+-
+-	/*
+-	 * Below are the WWR frequencies
+-	 */
+-
+-	{ 5210, 5250, 15, 0, 40, 40, DFS_FCC3 | DFS_ETSI, PSCAN_WWR, 0, 0}, /* WT1_5210_5250 */
+-	{ 5290, 5290, 18, 0, 40, 40, DFS_FCC3 | DFS_ETSI, PSCAN_WWR, 0, 0}, /* WT1_5290_5290 */
+-	{ 5540, 5660, 20, 0, 40, 40, DFS_FCC3 | DFS_ETSI, PSCAN_WWR, 0, 0}, /* WT1_5540_5660 */
+-	{ 5760, 5800, 20, 0, 40, 40, NO_DFS, PSCAN_WWR, 0, 0},	/* WT1_5760_5800 */
+-};
+-
+ /*
+  * 2GHz 11b channel tags
+  */
+@@ -864,45 +825,6 @@ enum {
+ 	W2_2484_2484,
+ };
  
-     src[0] = zmw_rx_buf_readh(dev, buf, offset+10);
+-static REG_DMN_FREQ_BAND regDmn2GhzFreq[] = {
+-	{ 2312, 2372, 5,  6, 20, 5, NO_DFS, NO_PSCAN, 0, 0},	/* F1_2312_2372 */
+-	{ 2312, 2372, 20, 0, 20, 5, NO_DFS, NO_PSCAN, 0, 0},	/* F2_2312_2372 */
+-
+-	{ 2412, 2472, 5,  6, 20, 5, NO_DFS, NO_PSCAN, 0, 0},	/* F1_2412_2472 */
+-	{ 2412, 2472, 20, 0, 20, 5, NO_DFS, PSCAN_MKKA, 0, 0},	/* F2_2412_2472 */
+-	{ 2412, 2472, 30, 0, 20, 5, NO_DFS, NO_PSCAN, 0, 0},	/* F3_2412_2472 */
+-
+-	{ 2412, 2462, 27, 6, 20, 5, NO_DFS, NO_PSCAN, 0, 0},	/* F1_2412_2462 */
+-	{ 2412, 2462, 20, 0, 20, 5, NO_DFS, PSCAN_MKKA, 0, 0},	/* F2_2412_2462 */
+-	{ 2432, 2442, 20, 0, 20, 5, NO_DFS, NO_PSCAN, 0, 0},	/* F1_2432_2442 */
+-
+-	{ 2457, 2472, 20, 0, 20, 5, NO_DFS, NO_PSCAN, 0, 0},	/* F1_2457_2472 */
+-
+-	{ 2467, 2472, 20, 0, 20, 5, NO_DFS, PSCAN_MKKA2 | PSCAN_MKKA, 0, 0}, /* F1_2467_2472 */
+-
+-	{ 2484, 2484, 5,  6, 20, 5, NO_DFS, NO_PSCAN, 0, 0},	/* F1_2484_2484 */
+-	{ 2484, 2484, 20, 0, 20, 5, NO_DFS, PSCAN_MKKA | PSCAN_MKKA1 | PSCAN_MKKA2, 0, 0},	/* F2_2484_2484 */
+-
+-	{ 2512, 2732, 5,  6, 20, 5, NO_DFS, NO_PSCAN, 0, 0},	/* F1_2512_2732 */
+-
+-	/*
+-	 * WWR have powers opened up to 20dBm.  Limits should often come from CTL/Max powers
+-	 */
+-
+-	{ 2312, 2372, 20, 0, 20, 5, NO_DFS, NO_PSCAN, 0, 0},	/* W1_2312_2372 */
+-	{ 2412, 2412, 20, 0, 20, 5, NO_DFS, NO_PSCAN, 0, 0},	/* W1_2412_2412 */
+-	{ 2417, 2432, 20, 0, 20, 5, NO_DFS, NO_PSCAN, 0, 0},	/* W1_2417_2432 */
+-	{ 2437, 2442, 20, 0, 20, 5, NO_DFS, NO_PSCAN, 0, 0},	/* W1_2437_2442 */
+-	{ 2447, 2457, 20, 0, 20, 5, NO_DFS, NO_PSCAN, 0, 0},	/* W1_2447_2457 */
+-	{ 2462, 2462, 20, 0, 20, 5, NO_DFS, NO_PSCAN, 0, 0},	/* W1_2462_2462 */
+-	{ 2467, 2467, 20, 0, 20, 5, NO_DFS, PSCAN_WWR | IS_ECM_CHAN, 0, 0}, /* W1_2467_2467 */
+-	{ 2467, 2467, 20, 0, 20, 5, NO_DFS, NO_PSCAN | IS_ECM_CHAN, 0, 0},	/* W2_2467_2467 */
+-	{ 2472, 2472, 20, 0, 20, 5, NO_DFS, PSCAN_WWR | IS_ECM_CHAN, 0, 0}, /* W1_2472_2472 */
+-	{ 2472, 2472, 20, 0, 20, 5, NO_DFS, NO_PSCAN | IS_ECM_CHAN, 0, 0},	/* W2_2472_2472 */
+-	{ 2484, 2484, 20, 0, 20, 5, NO_DFS, PSCAN_WWR | IS_ECM_CHAN, 0, 0}, /* W1_2484_2484 */
+-	{ 2484, 2484, 20, 0, 20, 5, NO_DFS, NO_PSCAN | IS_ECM_CHAN, 0, 0},	/* W2_2484_2484 */
+-};
+-
+ 
+ /*
+  * 2GHz 11g channel tags
+@@ -984,16 +906,6 @@ enum {
+ 	T1_2512_2732
+ };
+ 
+-static REG_DMN_FREQ_BAND regDmn2Ghz11gTurboFreq[] = {
+-	{ 2312, 2372, 5,  6, 40, 40, NO_DFS, NO_PSCAN, 0, 0},  /* T1_2312_2372 */
+-	{ 2437, 2437, 5,  6, 40, 40, NO_DFS, NO_PSCAN, 0, 0},  /* T1_2437_2437 */
+-	{ 2437, 2437, 20, 6, 40, 40, NO_DFS, NO_PSCAN, 0, 0},  /* T2_2437_2437 */
+-	{ 2437, 2437, 18, 6, 40, 40, NO_DFS, PSCAN_WWR, 0, 0}, /* T3_2437_2437 */
+-	{ 2512, 2732, 5,  6, 40, 40, NO_DFS, NO_PSCAN, 0, 0},  /* T1_2512_2732 */
+-};
+-
+-
+-
+ /*
+  * 2GHz 11n frequency tags
+  */
+@@ -1005,15 +917,6 @@ enum {
+     NG_DEMO_ALL_CHANNELS,
+ };
+ 
+-static REG_DMN_FREQ_BAND regDmn2Ghz11ngFreq[] = {
+-    { 2422, 2452, 20, 0, 40, 5, NO_DFS, NO_PSCAN, 0, 0},    /* NG1_2422_2452 */
+-    { 2422, 2452, 27, 0, 40, 5, NO_DFS, NO_PSCAN, 0, 0},    /* NG2_2422_2452 */
+-    { 2422, 2452, 30, 0, 40, 5, NO_DFS, NO_PSCAN, 0, 0},    /* NG3_2422_2452 */
+-
+-	{ 2312, 2732, 27, 6, 20, 5, NO_DFS, NO_PSCAN, 0, 0},    /* NG_DEMO_ALL_CHANNELS */
+-};
+-
+-
+ /*
+  * 5GHz 11n frequency tags
+  */
+@@ -1050,42 +953,6 @@ enum {
+     NA_DEMO_ALL_CHANNELS,
+ };
+ 
+-static REG_DMN_FREQ_BAND regDmn5Ghz11naFreq[] = {
+-    /*
+-     * ToDo: This table needs to be completely populated with 5GHz 11n properties
+-     */
+-	{ 5190, 5230, 15,  0, 40, 40, NO_DFS, NO_PSCAN, 0, 0},	    /* NA1_5190_5230 */
+-	{ 5190, 5230, 17,  6, 40, 40, NO_DFS, NO_PSCAN, 0, 0},	/* NA2_5190_5230 */
+-	{ 5190, 5230, 18,  6, 40, 40, NO_DFS, NO_PSCAN, 0, 0},	    /* NA3_5190_5230 */
+-	{ 5190, 5230, 20,  0, 40, 40, NO_DFS, NO_PSCAN, 0, 0},	/* NA4_5190_5230 */
+-	{ 5190, 5230, 23,  6, 40, 40, NO_DFS, NO_PSCAN, 0, 0},	    /* NA5_5190_5230 */
+-
+-	{ 5270, 5270, 23,  6, 40, 40, DFS_FCC3|DFS_ETSI, NO_PSCAN, 0, 1},  /* NA1_5270_5270 */
+-
+-	{ 5270, 5310, 18,  6, 40, 40, DFS_FCC3|DFS_ETSI, NO_PSCAN, 0, 1},  /* NA1_5270_5310 */
+-	{ 5270, 5310, 20,  0, 40, 40, DFS_FCC3|DFS_ETSI|DFS_MKK4, NO_PSCAN, 0, 1},  /* NA2_5270_5310 */
+-	{ 5270, 5310, 23,  6, 40, 40, DFS_FCC3|DFS_ETSI, NO_PSCAN, 0, 1},  /* NA3_5270_5310 */
+-	{ 5270, 5310, 30,  6, 40, 40, DFS_FCC3|DFS_ETSI, NO_PSCAN, 0, 1},  /* NA4_5270_5310 */
+-
+-	{ 5310, 5310, 17,  6, 40, 40, DFS_FCC3|DFS_ETSI, NO_PSCAN, 0, 1},  /* NA1_5310_5310 */
+-
+-	{ 5510, 5630, 30,  6, 40, 40, DFS_FCC3|DFS_ETSI, NO_PSCAN, 0, 1},  /* NA1_5510_5630 */
+-
+-	{ 5510, 5670, 20,  6, 40, 40, DFS_FCC3|DFS_ETSI|DFS_MKK4, NO_PSCAN, 0, 1},  /* NA1_5510_5670 */
+-	{ 5510, 5670, 27,  0, 40, 40, DFS_FCC3|DFS_ETSI, NO_PSCAN, 0, 1},  /* NA2_5510_5670 */
+-	{ 5510, 5670, 30,  6, 40, 40, DFS_FCC3, NO_PSCAN, 0, 1},   /* NA3_5510_5670 */
+-
+-	{ 5755, 5795, 17,  0, 40, 40, NO_DFS, NO_PSCAN, 0, 0},	    /* NA1_5755_5795 */
+-	{ 5755, 5795, 20,  6, 40, 40, DFS_ETSI, NO_PSCAN, 0, 0},	    /* NA2_5755_5795 */
+-	{ 5755, 5795, 23,  0, 40, 40, NO_DFS, NO_PSCAN, 0, 0},	    /* NA3_5755_5795 */
+-	{ 5755, 5795, 30,  0, 40, 40, NO_DFS, NO_PSCAN, 0, 0},	/* NA4_5755_5795 */
+-	{ 5755, 5795, 30,  6, 40, 40, NO_DFS, NO_PSCAN, 0, 0},	    /* NA5_5755_5795 */
+-
+-	{ 5795, 5795, 30,  6, 40, 40, NO_DFS, NO_PSCAN, 0, 0},	    /* NA1_5795_5795 */
+-
+-    { 4920, 6100, 30,  6, 40, 40, NO_DFS, NO_PSCAN, 0, 0},	/* NA_DEMO_ALL_CHANNELS */
+-};
+-
+ typedef struct regDomain {
+ 	u16_t regDmnEnum;	/* value from EnumRd table */
+ 	u8_t conformanceTestLimit;
 
