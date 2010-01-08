@@ -1,60 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752985Ab0AHKZu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752948Ab0AHKop@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752985Ab0AHKZu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jan 2010 05:25:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752599Ab0AHKZt
+	id S1752948Ab0AHKop (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jan 2010 05:44:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752261Ab0AHKoo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jan 2010 05:25:49 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:63988 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752214Ab0AHKZs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jan 2010 05:25:48 -0500
+	Fri, 8 Jan 2010 05:44:44 -0500
+Received: from mail.gmx.net ([213.165.64.20]:58115 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752214Ab0AHKoo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jan 2010 05:44:44 -0500
+X-Authenticated: #12255092
+X-Provags-ID: V01U2FsdGVkX1+zIDxDwSizNCDh+y40hlBMeSqT7807e5I0XoXCwL
+	LvJtvvxsZc2m2Q
+From: Peter =?utf-8?q?H=C3=BCwe?= <PeterHuewe@gmx.de>
+To: Simon Horman <horms@verge.net.au>
+Subject: Re: [PATCH 2/3 v3] staging/rtl8192u: Add select WEXT_PRIV to Kconfig to prevent build failure
+Date: Fri, 8 Jan 2010 11:44:38 +0100
+User-Agent: KMail/1.12.3 (Linux/2.6.27-05415-g69a8594; KDE/4.3.3; x86_64; ; )
+Cc: devel@driverdev.osuosl.org, "Greg Kroah-Hartman" <gregkh@suse.de>,
+       Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org,
+       Mauro Carvalho Chehab <mchehab@redhat.com>
+References: <201001072133.20487.PeterHuewe@gmx.de> <201001080914.39084.PeterHuewe@gmx.de> <20100108101822.GA27997@verge.net.au>
+In-Reply-To: <20100108101822.GA27997@verge.net.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-X-Fcc: ~/Mail/linus
-Cc: Oleg Nesterov <oleg@redhat.com>, caiqian@redhat.com,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Jan Kratochvil <jkratoch@redhat.com>, linux-kernel@vger.kernel.org,
-       linux-s390@vger.kernel.org, utrace-devel@redhat.com
-Subject: Re: s390 && user_enable_single_step() (Was: odd utrace testing
- results on s390x)
-In-Reply-To: Martin Schwidefsky's message of  Friday, 8 January 2010 09:30:25 +0100 <20100108093025.28ec0907@mschwide.boeblingen.de.ibm.com>
-References: <20100104155225.GA16650@redhat.com>
-	<20100104171626.22ea2d9c@mschwide.boeblingen.de.ibm.com>
-	<20100104181412.GA21146@redhat.com>
-	<20100104211147.4CC94D532@magilla.sf.frob.com>
-	<20100105105030.66bb8a0a@mschwide.boeblingen.de.ibm.com>
-	<20100105153633.GA9376@redhat.com>
-	<20100105164610.388effd3@mschwide.boeblingen.de.ibm.com>
-	<20100105155913.GA10652@redhat.com>
-	<20100105170301.GA13641@redhat.com>
-	<20100105195818.GA20358@redhat.com>
-	<20100106201722.GB26204@redhat.com>
-	<20100106211329.DB4F5134D@magilla.sf.frob.com>
-	<20100107101855.13248dc2@mschwide.boeblingen.de.ibm.com>
-	<20100107214642.579F27300@magilla.sf.frob.com>
-	<20100108093025.28ec0907@mschwide.boeblingen.de.ibm.com>
-X-Shopping-List: (1) Antiperspirant exclamation mice
-   (2) Tragicomical itinerant wigs
-   (3) Jubilant notorious yarns
-   (4) Strategic commotions
-   (5) Imperious ointment circumlocutions
-Message-Id: <20100108102539.2E747105F6@magilla.sf.frob.com>
-Date: Fri,  8 Jan 2010 02:25:39 -0800 (PST)
+Message-Id: <201001081144.39138.PeterHuewe@gmx.de>
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.53
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Ok, I changed the wording slightly:
-> 
-> Clear the TIF_SINGLE_STEP bit in copy_thread. The new process did not get
-> a PER event of its own. It is wrong deliver a SIGTRAP that was meant for
-> the parent process.
+From: Peter Huewe <peterhuewe@gmx.de>
+Date: Fri, 8 Jan 2010 09:10:13 +0100
 
-Very good!
+Without WEXT_PRIV set the driver fails to build due to unknown fields in
+the iw_handler_def struct.
+Those fields are enclosed in WEXT_PRIV conditionals in the prototype
+of iw_handler_def in include/net/iw_handler.h
 
-Thanks,
-Roland
+Signed-off-by: Peter Huewe <peterhuewe@gmx.de>
+Acked-by: Simon Horman <horms@verge.net.au>
+---
+ drivers/staging/rtl8192u/Kconfig |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/staging/rtl8192u/Kconfig b/drivers/staging/rtl8192u/Kconfig
+index 9913ab8..0439c90 100644
+--- a/drivers/staging/rtl8192u/Kconfig
++++ b/drivers/staging/rtl8192u/Kconfig
+@@ -1,6 +1,7 @@
+ config RTL8192U
+ 	tristate "RealTek RTL8192U Wireless LAN NIC driver"
+ 	depends on PCI && WLAN && USB
+-	depends on WIRELESS_EXT
++	select WIRELESS_EXT
++	select WEXT_PRIV
+ 	default N
+ 	---help---
+-- 
+1.6.4.4
+
