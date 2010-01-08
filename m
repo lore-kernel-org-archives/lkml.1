@@ -1,62 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754437Ab0AHAlY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754473Ab0AHAmH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754437Ab0AHAlY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 Jan 2010 19:41:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754064Ab0AHAlX
+	id S1754473Ab0AHAmH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 Jan 2010 19:42:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752025Ab0AHAmG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 Jan 2010 19:41:23 -0500
-Received: from kirsty.vergenet.net ([202.4.237.240]:52545 "EHLO
-	kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754005Ab0AHAlX (ORCPT
+	Thu, 7 Jan 2010 19:42:06 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:40598 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754460Ab0AHAmF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 Jan 2010 19:41:23 -0500
-Date: Fri, 8 Jan 2010 11:41:18 +1100
-From: Simon Horman <horms@verge.net.au>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Masami Hiramatsu <mhiramat@redhat.com>, linux-kernel@vger.kernel.org,
-       linux-kbuild@vger.kernel.org, Michal Marek <mmarek@sues.cz>,
-       Roland Dreier <rdreier@cisco.com>, Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [patch] Makefile: Unexport LANG
-Message-ID: <20100108004117.GK2436@verge.net.au>
-References: <20091224111300.GA31932@verge.net.au>
- <4B359166.3050106@redhat.com>
- <4B359BC0.3080808@zytor.com>
- <20091226112007.GB2818@verge.net.au>
+	Thu, 7 Jan 2010 19:42:05 -0500
+Date: Thu, 7 Jan 2010 16:41:43 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+cc: Peter Zijlstra <peterz@infradead.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "minchan.kim@gmail.com" <minchan.kim@gmail.com>,
+       "hugh.dickins" <hugh.dickins@tiscali.co.uk>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [RFC][PATCH 6/8] mm: handle_speculative_fault()
+In-Reply-To: <alpine.LFD.2.00.1001071634500.7821@localhost.localdomain>
+Message-ID: <alpine.LFD.2.00.1001071639560.7821@localhost.localdomain>
+References: <20100104182429.833180340@chello.nl> <20100104182813.753545361@chello.nl> <20100105054536.44bf8002@infradead.org> <alpine.DEB.2.00.1001050916300.1074@router.home> <20100105192243.1d6b2213@infradead.org> <alpine.DEB.2.00.1001071007210.901@router.home>
+ <alpine.LFD.2.00.1001070814080.7821@localhost.localdomain> <1262884960.4049.106.camel@laptop> <alpine.LFD.2.00.1001070934060.7821@localhost.localdomain> <alpine.LFD.2.00.1001070937180.7821@localhost.localdomain> <alpine.LFD.2.00.1001071031440.7821@localhost.localdomain>
+ <1262900683.4049.139.camel@laptop> <alpine.LFD.2.00.1001071426590.7821@localhost.localdomain> <20100108092333.1040c799.kamezawa.hiroyu@jp.fujitsu.com> <alpine.LFD.2.00.1001071634500.7821@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091226112007.GB2818@verge.net.au>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Dec 26, 2009 at 10:20:07PM +1100, Simon Horman wrote:
-> On Fri, Dec 25, 2009 at 09:14:40PM -0800, H. Peter Anvin wrote:
-> > On 12/25/2009 08:30 PM, Masami Hiramatsu wrote:
-> > >>  
-> > >>  # Avoid funny character set dependencies
-> > >> +unexport LANG
-> > >>  unexport LC_ALL
-> > >>  LC_CTYPE=C
-> > >>  LC_COLLATE=C
-> > > 
-> > 
-> > At this point, it seems to me that we should just LC_ALL=C and be done
-> > with it (see other thread.)
-> 
-> Sure, that would also work for the case that I'm seeing.
-> 
-> I tested the following:
-> 
-> # Avoid funny character set dependencies
-> LC_ALL=C
-> export LC_ALL
-> 
-> Though personally I would advocate tweaking the locale as needed closer
-> to awk scripts and the like, rather than the high-level general change that
-> was made. Fall-out from a high-level change seems inevitable to me.
-
-This seems to still be broken. Can we decide on a solution?
 
 
+On Thu, 7 Jan 2010, Linus Torvalds wrote:
+> 
+>  - the patch I sent out just falls back to the old code if it finds 
+>    something fishy, so it will do whatever do_brk() does regardless.
+
+Btw, I'd like to state it again - the patch I sent out was not ready to be 
+applied. I'm pretty sure it should check things like certain vm_flags 
+too(VM_LOCKED etc), and fall back for those cases as well.
+
+So the patch was more meant to illustrate the _concept_ than meant to 
+necessarily be taken seriously as-is.
+
+			Linus
