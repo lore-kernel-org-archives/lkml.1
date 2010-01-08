@@ -1,53 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754042Ab0AHVBz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754098Ab0AHVSK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754042Ab0AHVBz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jan 2010 16:01:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753225Ab0AHVBx
+	id S1754098Ab0AHVSK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jan 2010 16:18:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754081Ab0AHVSJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jan 2010 16:01:53 -0500
-Received: from kroah.org ([198.145.64.141]:48536 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752783Ab0AHVBw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jan 2010 16:01:52 -0500
-Date: Fri, 8 Jan 2010 12:25:03 -0800
-From: Greg KH <greg@kroah.com>
-To: Len Brown <lenb@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Matthew Garrett <mjg59@srcf.ucam.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Linux PCI <linux-pci@vger.kernel.org>,
-       Oliver Neukum <oliver@neukum.org>, Bjorn Helgaas <bjorn.helgaas@hp.com>,
-       Shaohua Li <shaohua.li@intel.com>,
-       Francois Romieu <romieu@fr.zoreil.com>
-Subject: Re: [PATCH 4/12] PCI PM: Make it possible to force using INTx for
- PCIe PME signaling
-Message-ID: <20100108202503.GA31623@kroah.com>
-References: <200912272057.10443.rjw@sisk.pl>
- <20100106135625.14b37f10@jbarnes-piketon>
- <20100106220214.GA25366@srcf.ucam.org>
- <201001070000.41807.rjw@sisk.pl>
- <alpine.LFD.2.00.1001081502010.4012@localhost.localdomain>
+	Fri, 8 Jan 2010 16:18:09 -0500
+Received: from [206.15.93.42] ([206.15.93.42]:32566 "EHLO
+	visionfs1.visionengravers.com" rhost-flags-FAIL-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754080Ab0AHVSH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jan 2010 16:18:07 -0500
+From: H Hartley Sweeten <hartleys@visionengravers.com>
+To: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: [PATCH] drivers/gpu/drm/i915/i915_debugfs.c: remove unnecessary casts
+Date: Fri, 8 Jan 2010 14:18:01 -0700
+Cc: dri-devel@lists.sourceforge.net, airlied@linux.ie
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.1001081502010.4012@localhost.localdomain>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Message-Id: <201001081418.01471.hartleys@visionengravers.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 08, 2010 at 03:08:03PM -0500, Len Brown wrote:
-> Yesterday MSI announced a netbook running Suse/Moblin,
-> so there is hope for more technical work w/ MSI to support Linux...
+drivers/gpu/drm/i915/i915_debugfs.c: Remove unnecessary casts.
 
-Yes, we are currently working on a patch for the existing msi driver to
-get some of the keys to work a bit better.  It's still going through
-review back-and-forth between me and the developer, and will be posted
-soon.
+The struct seq_file 'private' member is a void *, the casts are not needed.
 
-thanks,
+Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
+Cc: David Airlie <airlied@linux.ie>
 
-greg k-h
+---
+
+diff --git a/drivers/gpu/drm/i915/i915_debugfs.c b/drivers/gpu/drm/i915/i915_debugfs.c
+index 9c9998c..94d8fac 100644
+--- a/drivers/gpu/drm/i915/i915_debugfs.c
++++ b/drivers/gpu/drm/i915/i915_debugfs.c
+@@ -64,7 +64,7 @@ static const char *get_tiling_flag(struct drm_i915_gem_object *obj_priv)
+ 
+ static int i915_gem_object_list_info(struct seq_file *m, void *data)
+ {
+-	struct drm_info_node *node = (struct drm_info_node *) m->private;
++	struct drm_info_node *node = m->private;
+ 	uintptr_t list = (uintptr_t) node->info_ent->data;
+ 	struct list_head *head;
+ 	struct drm_device *dev = node->minor->dev;
+@@ -123,7 +123,7 @@ static int i915_gem_object_list_info(struct seq_file *m, void *data)
+ 
+ static int i915_gem_request_info(struct seq_file *m, void *data)
+ {
+-	struct drm_info_node *node = (struct drm_info_node *) m->private;
++	struct drm_info_node *node = m->private;
+ 	struct drm_device *dev = node->minor->dev;
+ 	drm_i915_private_t *dev_priv = dev->dev_private;
+ 	struct drm_i915_gem_request *gem_request;
+@@ -139,7 +139,7 @@ static int i915_gem_request_info(struct seq_file *m, void *data)
+ 
+ static int i915_gem_seqno_info(struct seq_file *m, void *data)
+ {
+-	struct drm_info_node *node = (struct drm_info_node *) m->private;
++	struct drm_info_node *node = m->private;
+ 	struct drm_device *dev = node->minor->dev;
+ 	drm_i915_private_t *dev_priv = dev->dev_private;
+ 
+@@ -158,7 +158,7 @@ static int i915_gem_seqno_info(struct seq_file *m, void *data)
+ 
+ static int i915_interrupt_info(struct seq_file *m, void *data)
+ {
+-	struct drm_info_node *node = (struct drm_info_node *) m->private;
++	struct drm_info_node *node = m->private;
+ 	struct drm_device *dev = node->minor->dev;
+ 	drm_i915_private_t *dev_priv = dev->dev_private;
+ 
+@@ -210,7 +210,7 @@ static int i915_interrupt_info(struct seq_file *m, void *data)
+ 
+ static int i915_gem_fence_regs_info(struct seq_file *m, void *data)
+ {
+-	struct drm_info_node *node = (struct drm_info_node *) m->private;
++	struct drm_info_node *node = m->private;
+ 	struct drm_device *dev = node->minor->dev;
+ 	drm_i915_private_t *dev_priv = dev->dev_private;
+ 	int i;
+@@ -245,7 +245,7 @@ static int i915_gem_fence_regs_info(struct seq_file *m, void *data)
+ 
+ static int i915_hws_info(struct seq_file *m, void *data)
+ {
+-	struct drm_info_node *node = (struct drm_info_node *) m->private;
++	struct drm_info_node *node = m->private;
+ 	struct drm_device *dev = node->minor->dev;
+ 	drm_i915_private_t *dev_priv = dev->dev_private;
+ 	int i;
+@@ -278,7 +278,7 @@ static void i915_dump_pages(struct seq_file *m, struct page **pages, int page_co
+ 
+ static int i915_batchbuffer_info(struct seq_file *m, void *data)
+ {
+-	struct drm_info_node *node = (struct drm_info_node *) m->private;
++	struct drm_info_node *node = m->private;
+ 	struct drm_device *dev = node->minor->dev;
+ 	drm_i915_private_t *dev_priv = dev->dev_private;
+ 	struct drm_gem_object *obj;
+@@ -311,7 +311,7 @@ static int i915_batchbuffer_info(struct seq_file *m, void *data)
+ 
+ static int i915_ringbuffer_data(struct seq_file *m, void *data)
+ {
+-	struct drm_info_node *node = (struct drm_info_node *) m->private;
++	struct drm_info_node *node = m->private;
+ 	struct drm_device *dev = node->minor->dev;
+ 	drm_i915_private_t *dev_priv = dev->dev_private;
+ 	u8 *virt;
+@@ -334,7 +334,7 @@ static int i915_ringbuffer_data(struct seq_file *m, void *data)
+ 
+ static int i915_ringbuffer_info(struct seq_file *m, void *data)
+ {
+-	struct drm_info_node *node = (struct drm_info_node *) m->private;
++	struct drm_info_node *node = m->private;
+ 	struct drm_device *dev = node->minor->dev;
+ 	drm_i915_private_t *dev_priv = dev->dev_private;
+ 	unsigned int head, tail;
+@@ -352,7 +352,7 @@ static int i915_ringbuffer_info(struct seq_file *m, void *data)
+ 
+ static int i915_error_state(struct seq_file *m, void *unused)
+ {
+-	struct drm_info_node *node = (struct drm_info_node *) m->private;
++	struct drm_info_node *node = m->private;
+ 	struct drm_device *dev = node->minor->dev;
+ 	drm_i915_private_t *dev_priv = dev->dev_private;
+ 	struct drm_i915_error_state *error;
