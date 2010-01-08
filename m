@@ -1,660 +1,201 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752994Ab0AHUdR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753646Ab0AHUfg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752994Ab0AHUdR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jan 2010 15:33:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752910Ab0AHUdQ
+	id S1753646Ab0AHUfg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jan 2010 15:35:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752959Ab0AHUff
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jan 2010 15:33:16 -0500
-Received: from exprod6og103.obsmtp.com ([64.18.1.185]:41561 "HELO
-	exprod6og103.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752883Ab0AHUdP (ORCPT
+	Fri, 8 Jan 2010 15:35:35 -0500
+Received: from ey-out-2122.google.com ([74.125.78.25]:14322 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752944Ab0AHUff convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jan 2010 15:33:15 -0500
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Fri, 8 Jan 2010 15:35:35 -0500
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="utf-8"
-Subject: RE: input: add mxc-keypad driver to support the keypad interface present in the mxc application processors family.
-Date: Fri, 8 Jan 2010 15:33:12 -0500
-Message-ID: <BD79186B4FD85F4B8E60E381CAEE190902089738@mi8nycmail19.Mi8.com>
-In-Reply-To: <1262977099.2050.75.camel@climbing-alby>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: input: add mxc-keypad driver to support the keypad interface present in the mxc application processors family.
-Thread-Index: AcqQlMlC6Z7H4oMXQ9uC0Qn/PbEXqwACTu4g
-References: <1262977099.2050.75.camel@climbing-alby>
-From: "H Hartley Sweeten" <hartleys@visionengravers.com>
-To: "Alberto Panizzo" <maramaopercheseimorto@gmail.com>,
-       <linux-input@vger.kernel.org>
-Cc: "linux-kernel" <linux-kernel@vger.kernel.org>,
-       "Dmitry Torokhov" <dmitry.torokhov@gmail.com>,
-       "linux-arm-kernel-infradead" <linux-arm-kernel@lists.infradead.org>,
-       "Sascha linux-arm" <s.hauer@pengutronix.de>
-X-OriginalArrivalTime: 08 Jan 2010 20:33:13.0241 (UTC) FILETIME=[CCBAD090:01CA90A1]
+In-Reply-To: <20100108171535.GC22219@redhat.com>
+References: <20091225091030.GA28365@sli10-desk.sh.intel.com>
+	 <4e5e476b0912250144l96c4d34v300910216e5c7a08@mail.gmail.com>
+	 <20091228033554.GB15242@sli10-desk.sh.intel.com>
+	 <4e5e476b0912280102t2278d7a5ld3e8784f52f2be31@mail.gmail.com>
+	 <1262829893.4984.13.camel@sli10-desk.sh.intel.com>
+	 <4e5e476b1001071344i4f702496y22f33bc2d4bc834d@mail.gmail.com>
+	 <20100108171535.GC22219@redhat.com>
+Date: Fri, 8 Jan 2010 21:35:33 +0100
+Message-ID: <4e5e476b1001081235wc2784c1s87c0c70662b5e267@mail.gmail.com>
+Subject: Re: [RFC]cfq-iosched: quantum check tweak
+From: Corrado Zoccolo <czoccolo@gmail.com>
+To: Vivek Goyal <vgoyal@redhat.com>
+Cc: Shaohua Li <shaohua.li@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
+       "Zhang, Yanmin" <yanmin.zhang@intel.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id o08KY516009740
 
-On Friday, January 08, 2010 11:58 AM, Alberto Panizzo wrote:
-> The MXC family of Application Processors is shipped with a
-> Keypad Port supported now by this driver.
-> 
-> The peripheral can control up to an 8x8 matrix key pad where
-> all the scanning procedure is done via software. 
-> 
-> The hardware provide two interrupts: one for a key pressed (KDI)
-> and one for all key releases (KRI). There is also a simple circuit for glitch 
-> reduction (said for synchronization) made by two series of 3 D-latches
-> that stabilize the interrupts sources.
-> KDI and KRI are fired only if the respective conditions are maintained for 
-> at last 4 keypad-clock cycle.
-> 
-> Those simple synchronization circuits are used also for multiple
-> key pressures: between a KDI and a KRI the driver reset the 
-> sync circuit and re-enable the KDI interrupt so after 3
-> keypad-clock cycle another KDI is fired making possible to repeat
-> the matrix scan operation.
-> 
-> This algorithm is done via a threaded management of the keypad
-> interrupt source and delayed by a proper (and longer) debounce
-> interval controlled by the platform initialization.
-> If a key is pressed for a lot of time, the driver relaxes a bit
-> the timings to not over load the cpu in a long time keypad interaction.
-> 
-> Key configuration is done via platform initialization in 
-> a standard matrix_keypad manner.
-> 
-> This driver is tested for build in kernel or as a module
-> and follow the specification of freescale i.MX 25 27 31 35 51
-> especially it is tested in the mx31pdk board.
-> 
+On Fri, Jan 8, 2010 at 6:15 PM, Vivek Goyal <vgoyal@redhat.com> wrote:
+> On Thu, Jan 07, 2010 at 10:44:27PM +0100, Corrado Zoccolo wrote:
+>> Hi Shahoua,
+>>
+>> On Thu, Jan 7, 2010 at 3:04 AM, Shaohua Li <shaohua.li@intel.com> wrote:
+>> > On Mon, 2009-12-28 at 17:02 +0800, Corrado Zoccolo wrote:
+>> >> Hi Shaohua,
+>> >> On Mon, Dec 28, 2009 at 4:35 AM, Shaohua Li <shaohua.li@intel.com> wrote:
+>> >> > On Fri, Dec 25, 2009 at 05:44:40PM +0800, Corrado Zoccolo wrote:
+>> >> >> On Fri, Dec 25, 2009 at 10:10 AM, Shaohua Li <shaohua.li@intel.com> wrote:
+>> >> >> > Currently a queue can only dispatch up to 4 requests if there are other queues.
+>> >> >> > This isn't optimal, device can handle more requests, for example, AHCI can
+>> >> >> > handle 31 requests. I can understand the limit is for fairness, but we could
+>> >> >> > do some tweaks:
+>> >> >> > 1. if the queue still has a lot of slice left, sounds we could ignore the limit
+>> >> >> ok. You can even scale the limit proportionally to the remaining slice
+>> >> >> (see below).
+>> >> > I can't understand the meaning of below scale. cfq_slice_used_soon() means
+>> >> > dispatched requests can finish before slice is used, so other queues will not be
+>> >> > impacted. I thought/hope a cfq_slice_idle time is enough to finish the
+>> >> > dispatched requests.
+>> >> cfq_slice_idle is 8ms, that is the average time to complete 1 request
+>> >> on most disks. If you have more requests dispatched on a
+>> >> NCQ-rotational disk (non-RAID), it will take more time. Probably a
+>> >> linear formula is not the most accurate, but still more accurate than
+>> >> taking just 1 cfq_slice_idle. If you can experiment a bit, you could
+>> >> also try:
+>> >> Â cfq_slice_idle * ilog2(nr_dispatched+1)
+>> >> Â cfq_slice_idle * (1<<(ilog2(nr_dispatched+1)>>1))
+>> >>
+>> >> >
+>> >> >> > 2. we could keep the check only when cfq_latency is on. For uses who don't care
+>> >> >> > about latency should be happy to have device fully piped on.
+>> >> >> I wouldn't overload low_latency with this meaning. You can obtain the
+>> >> >> same by setting the quantum to 32.
+>> >> > As this impact fairness, so natually thought we could use low_latency. I'll remove
+>> >> > the check in next post.
+>> >> Great.
+>> >> >> > I have a test of random direct io of two threads, each has 32 requests one time
+>> >> >> > without patch: 78m/s
+>> >> >> > with tweak 1: 138m/s
+>> >> >> > with two tweaks and disable latency: 156m/s
+>> >> >>
+>> >> >> Please, test also with competing seq/random(depth1)/async workloads,
+>> >> >> and measure also introduced latencies.
+>> >> > depth1 should be ok, as if device can only send one request, it should not require
+>> >> > more requests from ioscheduler.
+>> >> I mean have a run with, at the same time:
+>> >> * one seq reader,
+>> >> * h random readers with depth 1 (non-aio)
+>> >> * one async seq writer
+>> >> * k random readers with large depth.
+>> >> In this way, you can see if the changes you introduce to boost your
+>> >> workload affect more realistic scenarios, in which various workloads
+>> >> are mixed.
+>> >> I explicitly add the depth1 random readers, since they are sceduled
+>> >> differently than the large (>4) depth ones.
+>> > I tried a fio script which does like your description, but the data
+>> > isn't stable, especially the write speed, other kind of io speed is
+>> > stable. Apply below patch doesn't make things worse (still write speed
+>> > isn't stable, other io is stable), so I can't say if the patch passes
+>> > the test, but it appears latency reported by fio hasn't change. I adopt
+>> > the slice_idle * dispatched approach, which I thought should be safe.
+>>
+>> I'm doing some tests right now on a single ncq rotational disk, and
+>> the average service time when submitting with a high depth is halved
+>> w.r.t. depth 1, so I think you could test also with the formula :
+>> slice_idle * dispatched / 2. It should give a performance boost,
+>> without noticeable impact on latency.
+>>
+>
+> But I guess the right comparison here would service times vary when we
+> push queue depths from 4 to higher (as done by this patch).
 
-You might consider using some of the matrix_keypad support already in
-the kernel.  Specific's below.
+I think here we want to determine the average cost of a request, when
+there are many submitted.
 
-> 
-> Signed-off-by: Alberto Panizzo <maramaopercheseimorto@gmail.com>
-> ---
->  arch/arm/plat-mxc/include/mach/mxc_keypad.h |   20 ++
->  drivers/input/keyboard/Kconfig              |    9 +
->  drivers/input/keyboard/Makefile             |    1 +
->  drivers/input/keyboard/mxc_keypad.c         |  485 +++++++++++++++++++++++++++
->  4 files changed, 515 insertions(+), 0 deletions(-)
->  create mode 100644 arch/arm/plat-mxc/include/mach/mxc_keypad.h
->  create mode 100644 drivers/input/keyboard/mxc_keypad.c
-> 
-> diff --git a/arch/arm/plat-mxc/include/mach/mxc_keypad.h b/arch/arm/plat-mxc/include/mach/mxc_keypad.h
-> new file mode 100644
-> index 0000000..1b05093
-> --- /dev/null
-> +++ b/arch/arm/plat-mxc/include/mach/mxc_keypad.h
-> @@ -0,0 +1,20 @@
-> +#ifndef __MACH_MXC_KEYPAD_H
-> +#define __MACH_MXC_KEYPAD_H
-> +
-> +#define MAX_MATRIX_KEY_ROWS	(8)
-> +#define MAX_MATRIX_KEY_COLS	(8)
-> +#define MATRIX_ROW_SHIFT	(3)
-> +
-> +struct mxc_keypad_platform_data {
-> +
-> +	/* code map for the matrix keys */
-> +	unsigned int	matrix_key_rows;
-> +	unsigned int	matrix_key_cols;
-> +	unsigned int	*matrix_key_map;
-> +	int		matrix_key_map_size;
-> +
-> +	/* key debounce interval */
-> +	unsigned int	debounce_ms;
-> +};
+> Were you
+> running deep seeky queues or sequential queues. Curious to know whether
+> service times reduced even in case of deep seeky queues on this single
+> disk.
 
-You could use struct matrix_keymap_data to hold your matrix_key_map and
-matrix_key_map_size.  Take a look at include/linux/input/matrix_keypad.h.
+Seeky queues. Seeks where rather small (not more than 1/64 of the
+whole disk), but already meaningful for comparison.
 
-> +
-> +#endif /* __MACH_MXC_KEYPAD_H */
-> diff --git a/drivers/input/keyboard/Kconfig b/drivers/input/keyboard/Kconfig
-> index ee98b1b..eff32fe 100644
-> --- a/drivers/input/keyboard/Kconfig
-> +++ b/drivers/input/keyboard/Kconfig
-> @@ -282,6 +282,15 @@ config KEYBOARD_MAX7359
->  	  To compile this driver as a module, choose M here: the
->  	  module will be called max7359_keypad.
->  
-> +config KEYBOARD_MXC
-> +	tristate "MXC keypad support"
-> +	depends on ARCH_MXC
-> +	help
-> +	  Enable support for MXC keypad port.
-> +
-> +	  To compile this driver as a module, choose M here: the
-> +	  module will be called mxc_keypad.
-> +
->  config KEYBOARD_NEWTON
->  	tristate "Newton keyboard"
->  	select SERIO
-> diff --git a/drivers/input/keyboard/Makefile b/drivers/input/keyboard/Makefile
-> index babad5e..9c7133a 100644
-> --- a/drivers/input/keyboard/Makefile
-> +++ b/drivers/input/keyboard/Makefile
-> @@ -23,6 +23,7 @@ obj-$(CONFIG_KEYBOARD_LOCOMO)		+= locomokbd.o
->  obj-$(CONFIG_KEYBOARD_MAPLE)		+= maple_keyb.o
->  obj-$(CONFIG_KEYBOARD_MATRIX)		+= matrix_keypad.o
->  obj-$(CONFIG_KEYBOARD_MAX7359)		+= max7359_keypad.o
-> +obj-$(CONFIG_KEYBOARD_MXC)		+= mxc_keypad.o
->  obj-$(CONFIG_KEYBOARD_NEWTON)		+= newtonkbd.o
->  obj-$(CONFIG_KEYBOARD_OMAP)		+= omap-keypad.o
->  obj-$(CONFIG_KEYBOARD_OPENCORES)	+= opencores-kbd.o
-> diff --git a/drivers/input/keyboard/mxc_keypad.c b/drivers/input/keyboard/mxc_keypad.c
-> new file mode 100644
-> index 0000000..4acd311
-> --- /dev/null
-> +++ b/drivers/input/keyboard/mxc_keypad.c
-> @@ -0,0 +1,485 @@
-> +/*
-> + * linux/drivers/input/keyboard/mxc_keypad.c
-> + *
-> + * Driver for the MXC keypad port.
-> + * Copyright (C) 2009 Alberto Panizzo <maramaopercheseimorto@gmail.com>
-> + *  based on Rodolfo Giometti & others work in pxa27x_keypad.c
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License version 2 as
-> + * published by the Free Software Foundation.
-> + *
-> + * >>Power management need to be implemented<<.
-> + */
-> +
-> +#include <linux/clk.h>
-> +#include <linux/delay.h>
-> +#include <linux/device.h>
-> +#include <linux/err.h>
-> +#include <linux/init.h>
-> +#include <linux/input.h>
-> +#include <linux/input/matrix_keypad.h>
+>
+> I think this patch breaks the meaning of cfq_quantum? Now we can allow
+> dispatch of more requests from the same queue. I had kind of liked the
+> idea of respecting cfq_quantum. Especially it can help in testing. With
+> this patch cfq_quantum will more or less loose its meaning.
+cfq_quantum will still be enforced at the end of the slice, so its
+meaning of how many requests can be still pending when you finish your
+slice is preserved.
 
-input.h is not needed if you are including matrix_keypad.h
+One can argue, instead, that this reduces a bit the effectiveness of
+preemption on ncq disks.
+However, I don't think preemption is the solution for low latency,
+while cfq_quantum reduction is.
+With this change in place, we could change the default cfq_quantum to
+a smaller number (ideally 1), to have lowest number of leftovers when
+the slice finishes, while still driving deep queues at the beginning
+of the slice.
 
-> +#include <linux/interrupt.h>
-> +#include <linux/io.h>
-> +#include <linux/kernel.h>
-> +#include <linux/module.h>
-> +#include <linux/platform_device.h>
-> +
-> +#include <mach/mxc_keypad.h>
-> +
-> +/*
-> + * Keypad Controller registers (halfword)
-> + */
-> +#define KPCR		0x00 /* Keypad Control Register */
-> +
-> +#define KPSR		0x02 /* Keypad Status Register */
-> +#define KBD_STAT_KPKD	(0x1 << 0) /* Key Press Interrupt Status bit */
-> +#define KBD_STAT_KPKR	(0x1 << 1) /* Key Release Interrupt Status bit */
-> +#define KBD_STAT_KDSC	(0x1 << 2) /* Key Depress Synch Chain Status bit */
-> +#define KBD_STAT_KRSS	(0x1 << 3) /* Key Release Synch Status bit */
-> +#define KBD_STAT_KDIE	(0x1 << 8) /* Key Depress Interrupt Enable Status bit */
-> +#define KBD_STAT_KRIE	(0x1 << 9) /* Key Release Interrupt Enable */
-> +#define KBD_STAT_KPPEN	(0x1 << 10) /* Keypad Clock Enable */
-> +
-> +#define KDDR		0x04 /* Keypad Data Direction Register */
-> +#define KPDR		0x06 /* Keypad Data Register */
-> +
-> +#define keypad_readw(off)	__raw_readw(keypad->mmio_base + (off))
-> +#define keypad_writew(off, v)	__raw_writew((v), keypad->mmio_base + (off))
+This needs thorough testing, though. Maybe it is better to delay those
+changes to 2.6.34...
 
-Please make the above macros inline functions.
-See Documentation/CodingStyle, Chapter 12.
+Thanks,
+Corrado
 
-> +
-> +#define MAX_MATRIX_KEY_NUM	(MAX_MATRIX_KEY_ROWS * MAX_MATRIX_KEY_COLS)
-> +
-> +struct mxc_keypad {
-> +	struct mxc_keypad_platform_data *pdata;
-> +
-> +	struct clk *clk;
-> +	struct input_dev *input_dev;
-> +	void __iomem *mmio_base;
-> +
-> +	int			irq;
-> +
-> +#define MXC_IRQ_DEPRESS		1
-> +#define MXC_IRQ_RELEASE		2
-> +	unsigned int		irq_type;
-> +
-> +	int 			irq_since_last_change;
-> +
-> +	unsigned short 		keycodes[MAX_MATRIX_KEY_NUM];
-> +
-> +	/* state row bits of each column scan */
-> +	unsigned short 		matrix_key_state[MAX_MATRIX_KEY_COLS];
-> +};
-> +
-> +static void mxc_keypad_build_keycode(struct mxc_keypad *keypad)
-> +{
-> +	struct mxc_keypad_platform_data *pdata = keypad->pdata;
-> +	struct input_dev *input_dev = keypad->input_dev;
-> +	unsigned short keycode;
-> +	int i;
-> +
-> +	for (i = 0; i < pdata->matrix_key_map_size; i++) {
-> +		unsigned int key = pdata->matrix_key_map[i];
-> +		unsigned int row = KEY_ROW(key);
-> +		unsigned int col = KEY_COL(key);
-> +		unsigned int scancode = MATRIX_SCAN_CODE(row, col,
-> +							 MATRIX_ROW_SHIFT);
-> +
-> +		keycode = KEY_VAL(key);
-> +		keypad->keycodes[scancode] = keycode;
-> +		__set_bit(keycode, input_dev->keybit);
-> +	}
-> +
-> +	__clear_bit(KEY_RESERVED, input_dev->keybit);
-> +}
-
-You should be able to use matrix_keypad_build_keymap() if you use
-struct matrix_keymap_data as mentioned above.
-
-> +
-> +/* Return 0 if no changes are detected in matrix */
-> +static int mxc_keypad_scan_matrix(struct mxc_keypad *keypad)
-> +{
-> +	struct mxc_keypad_platform_data *pdata = keypad->pdata;
-> +	struct input_dev *input_dev = keypad->input_dev;
-> +	int row, col, changed = 0;
-> +	unsigned short new_state[MAX_MATRIX_KEY_COLS];
-> +	unsigned short reg_val;
-> +
-> +	memset(new_state, 0, sizeof(new_state));
-> +
-> +	for (col = 0; col < pdata->matrix_key_cols; col++) {
-> +		/* Discharge keypad capacitance:
-> +		 * 2. write 1s on column data.
-> +		 * 3. configure columns as totem-pole to discharge capacitance.
-> +		 * 4. configure columns as open-drain.*/
-> +		reg_val = keypad_readw(KPDR);
-> +		reg_val |= 0xff00;
-> +		keypad_writew(KPDR, reg_val);
-> +
-> +		reg_val = keypad_readw(KPCR);
-> +		reg_val &= ~(((1 << pdata->matrix_key_cols) - 1) << 8);
-> +		keypad_writew(KPCR, reg_val);
-> +
-> +		udelay(2);
-> +
-> +		reg_val = keypad_readw(KPCR);
-> +		reg_val |= ((1 << pdata->matrix_key_cols) - 1) << 8;
-> +		keypad_writew(KPCR, reg_val);
-> +
-> +		/*
-> +		 * 5. Write a single column to 0, others to 1.
-> +		 * 6. Sample row inputs and save data.
-> +		 * 7. Repeat steps 2 - 6 for remaining columns.
-> +		 */
-> +		reg_val = keypad_readw(KPDR);
-> +		reg_val &= ~(1 << (8 + col));
-> +		keypad_writew(KPDR, reg_val);
-> +
-> +		/* Delay added to avoid propagating the 0 from column to row
-> +		 * when scanning. */
-> +		udelay(5);
-> +
-> +		/* 1s in state detect a key pressure */
-> +		new_state[col] = (~keypad_readw(KPDR)) & 0x00ff;
-> +	}
-> +
-> +	/* Test the state changes */
-> +	for (col = 0; col < pdata->matrix_key_cols; col++) {
-> +		unsigned short bits_changed;
-> +		int code;
-> +
-> +		bits_changed = keypad->matrix_key_state[col] ^ new_state[col];
-> +		if (bits_changed == 0)
-> +			continue;
-> +
-> +		changed = 1;
-> +		for (row = 0; row < pdata->matrix_key_rows; row++) {
-> +			if ((bits_changed & (1 << row)) == 0)
-> +				continue;
-> +
-> +			code = MATRIX_SCAN_CODE(row, col, MATRIX_ROW_SHIFT);
-> +			input_event(input_dev, EV_MSC, MSC_SCAN, code);
-> +			input_report_key(input_dev, keypad->keycodes[code],
-> +					 new_state[col] & (1 << row));
-> +			dev_dbg(&input_dev->dev, "Event code: %d, val: %d",
-> +					keypad->keycodes[code],
-> +					new_state[col] & (1 << row));
-> +		}
-> +	}
-> +	input_sync(input_dev);
-> +	memcpy(keypad->matrix_key_state, new_state, sizeof(new_state));
-> +
-> +	/* Return in standby mode:
-> +	 * 9. write 0s to columns */
-> +	reg_val = keypad_readw(KPDR);
-> +	reg_val &= 0x00ff;
-> +	keypad_writew(KPDR, reg_val);
-> +
-> +	return changed;
-> +}
-> +
-> +static irqreturn_t mxc_keypad_irq_handler_thread(int irq, void *dev_id)
-> +{
-> +	struct mxc_keypad *keypad = dev_id;
-> +	struct mxc_keypad_platform_data *pdata = keypad->pdata;
-> +	struct input_dev *idev = keypad->input_dev;
-> +	unsigned short reg_val;
-> +
-> +	dev_dbg(&idev->dev, "Handling Interrupt of type %x\n",
-> +						keypad->irq_type);
-> +
-> +	/* Wait till debounce */
-> +	msleep(pdata->debounce_ms);
-> +
-> +	/* Do the scan routine and Keep track for how many time we got
-> +	 * interrupt that make no change */
-> +	if (mxc_keypad_scan_matrix(keypad))
-> +		keypad->irq_since_last_change = 0;
-> +	else
-> +		keypad->irq_since_last_change++;
-> +
-> +	/* If the key is pressed since too many time, relax the update period */
-> +	if (keypad->irq_since_last_change > 2)
-> +		msleep(100);
-> +
-> +	/* 10. Clear KPKD and KPKR status bits
-> +	 *     Set the KPKR sync chain and clear the KPKD sync chain */
-> +	reg_val = keypad_readw(KPSR);
-> +	reg_val |= KBD_STAT_KPKD | KBD_STAT_KPKR |
-> +		   KBD_STAT_KDSC | KBD_STAT_KRSS;
-> +	keypad_writew(KPSR, reg_val);
-> +
-> +	/* Re enable interrupts and clear sync reset bits.
-> +	 * Next KDI is used for detect multiple pressures. */
-> +	reg_val = keypad_readw(KPSR);
-> +	reg_val &= ~(KBD_STAT_KDSC | KBD_STAT_KRSS);
-> +	keypad_writew(KPSR, reg_val);
-> +
-> +	reg_val |= KBD_STAT_KDIE | KBD_STAT_KRIE;
-> +	if (keypad->irq_type == MXC_IRQ_RELEASE)
-> +		reg_val &= ~KBD_STAT_KRIE;
-> +	keypad_writew(KPSR, reg_val);
-> +
-> +	return IRQ_HANDLED;
-> +}
-> +static irqreturn_t mxc_keypad_irq_handler(int irq, void *dev_id)
-> +{
-> +	struct mxc_keypad *keypad = dev_id;
-> +	unsigned short reg_val;
-> +
-> +	/* Disable every interrupt */
-> +	reg_val = keypad_readw(KPSR);
-> +	reg_val &= ~(KBD_STAT_KRIE | KBD_STAT_KDIE);
-> +	keypad_writew(KPSR, reg_val);
-> +
-> +	keypad->irq_type = reg_val & KBD_STAT_KPKD ?
-> +			   MXC_IRQ_DEPRESS : MXC_IRQ_RELEASE;
-> +
-> +	return IRQ_WAKE_THREAD;
-> +}
-> +
-> +static void mxc_keypad_config(struct mxc_keypad *keypad)
-> +{
-> +	struct mxc_keypad_platform_data *pdata = keypad->pdata;
-> +	unsigned short reg_val;
-> +
-> +	/* Enable number of rows in keypad (KPCR[7:0])
-> +	 * Configure keypad columns as open-drain (KPCR[15:8])
-> +	 */
-> +	reg_val = keypad_readw(KPCR);
-> +	reg_val |= (1 << pdata->matrix_key_rows) - 1;		/* LSB */
-> +	reg_val |= ((1 << pdata->matrix_key_cols) - 1) << 8;	/* MSB */
-> +	keypad_writew(KPCR, reg_val);
-> +
-> +	/* Write 0's to KPDR[15:8] (Colums)*/
-> +	reg_val = keypad_readw(KPDR);
-> +	reg_val &= 0x00ff;
-> +	keypad_writew(KPDR, reg_val);
-> +
-> +	/* Configure columns as output, rows as input (KDDR[15:0]) */
-> +	reg_val = keypad_readw(KDDR);
-> +	reg_val |= 0xff00;
-> +	reg_val &= 0xff00;
-> +	keypad_writew(KDDR, reg_val);
-> +
-> +	/* Clear Key Depress and Key Release status bit.
-> +	 * Clear synchronizer chain.
-> +	 * */
-> +	reg_val = keypad_readw(KPSR);
-> +	reg_val |= KBD_STAT_KPKR | KBD_STAT_KPKD |
-> +		   KBD_STAT_KDSC | KBD_STAT_KRSS;
-> +	keypad_writew(KPSR, reg_val);
-> +
-> +	/* Set the KDIE control bit, and clear the KRIE control bit
-> +	 * (avoid false release events). */
-> +	reg_val |= KBD_STAT_KDIE;
-> +	reg_val &= ~KBD_STAT_KRIE;
-> +	keypad_writew(KPSR, reg_val);
-> +}
-> +
-> +static void mxc_keypad_inhibit(struct mxc_keypad *keypad)
-> +{
-> +	unsigned short reg_val;
-> +
-> +	/* Colums as open drain and disable rows */
-> +	keypad_writew(KPCR, 0xff00);
-> +
-> +	/* Clear the KPKD status flag and synchronizer chain.
-> +	 * Clear KDIE control bit and KRIE control bit.
-> +	 */
-> +	reg_val = keypad_readw(KPSR);
-> +	reg_val |= KBD_STAT_KPKD | KBD_STAT_KDSC;
-> +	reg_val &= ~(KBD_STAT_KRIE | KBD_STAT_KDIE);
-> +	keypad_writew(KPSR, reg_val);
-> +}
-> +
-> +static int mxc_keypad_open(struct input_dev *dev)
-> +{
-> +	struct mxc_keypad *keypad = input_get_drvdata(dev);
-> +	struct mxc_keypad_platform_data *pdata = keypad->pdata;
-> +
-> +	dev_dbg(&dev->dev, "%s\n", __func__);
-> +
-> +	/* Enable unit clock */
-> +	clk_enable(keypad->clk);
-> +	mxc_keypad_config(keypad);
-> +
-> +	/* Sanity control, not all the rows must be to 0s now. */
-> +	if ((keypad_readw(KPDR) & ((1 << pdata->matrix_key_rows) - 1)) == 0) {
-> +		dev_err(&dev->dev, "Too much keys pressed for now. "
-> +				"Control pins initialisation.\n");
-> +		goto open_err;
-> +	}
-> +
-> +	return 0;
-> +
-> +open_err:
-> +	mxc_keypad_inhibit(keypad);
-> +	return -EIO;
-> +}
-> +
-> +static void mxc_keypad_close(struct input_dev *dev)
-> +{
-> +	struct mxc_keypad *keypad = input_get_drvdata(dev);
-> +
-> +	mxc_keypad_inhibit(keypad);
-> +
-> +	/* Disable clock unit */
-> +	clk_disable(keypad->clk);
-> +}
-> +
-> +static int __devinit mxc_keypad_probe(struct platform_device *pdev)
-> +{
-> +	struct mxc_keypad_platform_data *pdata = pdev->dev.platform_data;
-> +	struct mxc_keypad *keypad;
-> +	struct input_dev *input_dev;
-> +	struct resource *res;
-> +	int irq, error;
-> +
-> +	if (pdata == NULL) {
-> +		dev_err(&pdev->dev, "no platform data defined\n");
-> +		return -EINVAL;
-> +	}
-> +
-> +	irq = platform_get_irq(pdev, 0);
-> +	if (irq < 0) {
-> +		dev_err(&pdev->dev, "failed to get keypad irq\n");
-> +		return -ENXIO;
-> +	}
-> +
-> +	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-> +	if (res == NULL) {
-> +		dev_err(&pdev->dev, "failed to get I/O memory\n");
-> +		return -ENXIO;
-> +	}
-> +
-> +	keypad = kzalloc(sizeof(struct mxc_keypad), GFP_KERNEL);
-> +	input_dev = input_allocate_device();
-> +	if (!keypad || !input_dev) {
-> +		dev_err(&pdev->dev, "failed to allocate memory\n");
-> +		error = -ENOMEM;
-> +		goto failed_free;
-> +	}
-> +
-> +	keypad->pdata = pdata;
-> +	keypad->input_dev = input_dev;
-> +	keypad->irq = irq;
-> +
-> +	res = request_mem_region(res->start, resource_size(res), pdev->name);
-> +	if (res == NULL) {
-> +		dev_err(&pdev->dev, "failed to request I/O memory\n");
-> +		error = -EBUSY;
-> +		goto failed_free;
-> +	}
-> +
-> +	keypad->mmio_base = ioremap(res->start, resource_size(res));
-> +	if (keypad->mmio_base == NULL) {
-> +		dev_err(&pdev->dev, "failed to remap I/O memory\n");
-> +		error = -ENXIO;
-> +		goto failed_free_mem;
-> +	}
-> +
-> +	keypad->clk = clk_get(NULL, "kpp");
-> +	if (IS_ERR(keypad->clk)) {
-> +		dev_err(&pdev->dev, "failed to get keypad clock\n");
-> +		error = PTR_ERR(keypad->clk);
-> +		goto failed_free_io;
-> +	}
-> +
-> +	input_dev->name = pdev->name;
-> +	input_dev->id.bustype = BUS_HOST;
-> +	input_dev->open = mxc_keypad_open;
-> +	input_dev->close = mxc_keypad_close;
-> +	input_dev->dev.parent = &pdev->dev;
-> +
-> +	input_dev->keycode = keypad->keycodes;
-> +	input_dev->keycodesize = sizeof(keypad->keycodes[0]);
-> +	input_dev->keycodemax = ARRAY_SIZE(keypad->keycodes);
-> +
-> +	input_set_drvdata(input_dev, keypad);
-> +
-> +	input_dev->evbit[0] = BIT_MASK(EV_KEY) | BIT_MASK(EV_REP);
-> +	input_set_capability(input_dev, EV_MSC, MSC_SCAN);
-> +
-> +	mxc_keypad_build_keycode(keypad);
-> +
-> +	error = request_threaded_irq(irq, mxc_keypad_irq_handler,
-> +			mxc_keypad_irq_handler_thread, IRQF_DISABLED,
-> +			pdev->name, keypad);
-> +	if (error) {
-> +		dev_err(&pdev->dev, "failed to request IRQ\n");
-> +		goto failed_put_clk;
-> +	}
-> +
-> +	/* Register the input device */
-> +	error = input_register_device(input_dev);
-> +	if (error) {
-> +		dev_err(&pdev->dev, "failed to register input device\n");
-> +		goto failed_free_irq;
-> +	}
-> +
-> +	platform_set_drvdata(pdev, keypad);
-> +	device_init_wakeup(&pdev->dev, 1);
-> +
-> +	dev_info(&pdev->dev, "device probed.\n");
-> +
-> +	return 0;
-> +
-> +failed_free_irq:
-> +	free_irq(irq, pdev);
-> +failed_put_clk:
-> +	clk_put(keypad->clk);
-> +failed_free_io:
-> +	iounmap(keypad->mmio_base);
-> +failed_free_mem:
-> +	release_mem_region(res->start, resource_size(res));
-> +failed_free:
-> +	input_free_device(input_dev);
-> +	kfree(keypad);
-> +	return error;
-> +}
-> +
-> +static int __devexit mxc_keypad_remove(struct platform_device *pdev)
-> +{
-> +	struct mxc_keypad *keypad = platform_get_drvdata(pdev);
-> +	struct resource *res;
-> +
-> +	free_irq(keypad->irq, keypad);
-
-You might want to move the platform_set_drvdata(pdev, NULL) to prevent
-any race conditions.
-
-> +	clk_put(keypad->clk);
-> +
-> +	input_unregister_device(keypad->input_dev);
-> +	input_free_device(keypad->input_dev);
-
-input_free_device is unnecessary for already registered devices.
-
-> +
-> +	iounmap(keypad->mmio_base);
-> +
-> +	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-> +	release_mem_region(res->start, resource_size(res));
-> +
-> +	platform_set_drvdata(pdev, NULL);
-> +	kfree(keypad);
-> +
-> +	return 0;
-> +}
-> +
-> +static struct platform_driver mxc_keypad_driver = {
-> +	.driver		= {
-> +		.name	= "mxc-keypad",
-> +		.owner	= THIS_MODULE,
-> +	},
-> +	.probe		= mxc_keypad_probe,
-> +	.remove		= __devexit_p(mxc_keypad_remove),
-> +};
-> +
-> +static int __init mxc_keypad_init(void)
-> +{
-> +	return platform_driver_register(&mxc_keypad_driver);
-> +}
-> +
-> +static void __exit mxc_keypad_exit(void)
-> +{
-> +	platform_driver_unregister(&mxc_keypad_driver);
-> +}
-> +
-> +module_init(mxc_keypad_init);
-> +module_exit(mxc_keypad_exit);
-> +
-> +MODULE_AUTHOR("Alberto Panizzo <maramaopercheseimorto@gmail.com>");
-> +MODULE_DESCRIPTION("MXC Keypad Port Driver");
-> +MODULE_LICENSE("GPL v2");
-> +MODULE_ALIAS("platform:mxc-keypad");
-ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éÝ¶¥Šwÿº{.nÇ+‰·¥Š{±þG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŽŠÝ¢j"ú¶m§ÿÿ¾«þG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+>
+> Vivek
+>
+>> > Currently a queue can only dispatch up to 4 requests if there are other queues.
+>> > This isn't optimal, device can handle more requests, for example, AHCI can
+>> > handle 31 requests. I can understand the limit is for fairness, but we could
+>> > do a tweak: if the queue still has a lot of slice left, sounds we could ignore
+>> > the limit.
+>> > For async io, 40ms/8ms = 5 - quantum = 1, we only send extra 1 request in maxium.
+>> > For sync io, 100ms/8ms = 12 - quantum = 8, we might send extra 8 requests in maxium.
+>> > This might cause latency issue if the queue is preempted at the very beginning.
+>> >
+>> > This patch boost my workload from 78m/s to 102m/s, which isn't that big as my last
+>> > post, but also is a big improvement.
+>>
+>> Acked-by: Corrado Zoccolo <czoccolo@gmail.com>
+>>
+>> >
+>> > Signed-off-by: Shaohua Li <shaohua.li@intel.com>
+>> > ---
+>> > Â block/cfq-iosched.c | Â  15 ++++++++++++++-
+>> > Â 1 file changed, 14 insertions(+), 1 deletion(-)
+>> >
+>> > Index: linux-2.6/block/cfq-iosched.c
+>> > ===================================================================
+>> > --- linux-2.6.orig/block/cfq-iosched.c
+>> > +++ linux-2.6/block/cfq-iosched.c
+>> > @@ -2242,6 +2242,19 @@ static int cfq_forced_dispatch(struct cf
+>> > Â  Â  Â  Â return dispatched;
+>> > Â }
+>> >
+>> > +static inline bool cfq_slice_used_soon(struct cfq_data *cfqd,
+>> > + Â  Â  Â  struct cfq_queue *cfqq)
+>> > +{
+>> > + Â  Â  Â  /* the queue hasn't finished any request, can't estimate */
+>> > + Â  Â  Â  if (cfq_cfqq_slice_new(cfqq))
+>> > + Â  Â  Â  Â  Â  Â  Â  return true;
+>> > + Â  Â  Â  if (time_after(jiffies + cfqd->cfq_slice_idle * cfqq->dispatched,
+>> > + Â  Â  Â  Â  Â  Â  Â  cfqq->slice_end))
+>> > + Â  Â  Â  Â  Â  Â  Â  return true;
+>> > +
+>> > + Â  Â  Â  return false;
+>> > +}
+>> > +
+>> > Â static bool cfq_may_dispatch(struct cfq_data *cfqd, struct cfq_queue *cfqq)
+>> > Â {
+>> > Â  Â  Â  Â unsigned int max_dispatch;
+>> > @@ -2275,7 +2288,7 @@ static bool cfq_may_dispatch(struct cfq_
+>> > Â  Â  Â  Â  Â  Â  Â  Â /*
+>> > Â  Â  Â  Â  Â  Â  Â  Â  * We have other queues, don't allow more IO from this one
+>> > Â  Â  Â  Â  Â  Â  Â  Â  */
+>> > - Â  Â  Â  Â  Â  Â  Â  if (cfqd->busy_queues > 1)
+>> > + Â  Â  Â  Â  Â  Â  Â  if (cfqd->busy_queues > 1 && cfq_slice_used_soon(cfqd, cfqq))
+>> > Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â return false;
+>> >
+>> > Â  Â  Â  Â  Â  Â  Â  Â /*
