@@ -1,67 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754328Ab0AHXdi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754281Ab0AHXpV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754328Ab0AHXdi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jan 2010 18:33:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754285Ab0AHXdh
+	id S1754281Ab0AHXpV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jan 2010 18:45:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752110Ab0AHXpU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jan 2010 18:33:37 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:51588 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754281Ab0AHXdg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jan 2010 18:33:36 -0500
-Message-ID: <4B47C0BD.5010700@zytor.com>
-Date: Fri, 08 Jan 2010 15:33:17 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
+	Fri, 8 Jan 2010 18:45:20 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:52903 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754140Ab0AHXpT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jan 2010 18:45:19 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Eric Anholt <eric@anholt.net>
+Subject: [PATCH] DRM / i915: Fix resume regression on MSI Wind U100 w/o KMS
+Date: Sat, 9 Jan 2010 00:45:33 +0100
+User-Agent: KMail/1.12.3 (Linux/2.6.33-rc3-rjw; KDE/4.3.3; x86_64; ; )
+Cc: Zhenyu Wang <zhenyuw@linux.intel.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       dri-devel@lists.sourceforge.net
 MIME-Version: 1.0
-To: Andreas Dilger <adilger@Sun.COM>
-CC: Karel Zak <kzak@redhat.com>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, util-linux-ng@vger.kernel.org
-Subject: Re: [ANNOUNCE] util-linux-ng v2.17 (stable)
-References: <20100108093302.GS1969@nb.net.home> <4B47A713.9060405@zytor.com> <329167C1-CF54-4742-B0B7-AD0B9DEFDEC1@sun.com>
-In-Reply-To: <329167C1-CF54-4742-B0B7-AD0B9DEFDEC1@sun.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: Text/Plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Message-Id: <201001090045.33784.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/08/2010 02:40 PM, Andreas Dilger wrote:
-> On 2010-01-08, at 14:43, H. Peter Anvin wrote:
->> On 01/08/2010 01:33 AM, Karel Zak wrote:
->>> fdisk:
->>>   - the fdisk command aligns newly created partitions to  
->>> minimum_io_size
->>>     boundary ("minimum_io_size" is physical sector size or stripe  
->>> chunk
->>>     size on RAIDs).
->>>
->>>   - the fdisk command supports disks with alignment_offset now.
->>
->> I think we should align, by default, much more aggressively than  
->> that --
->> because frequently we just don't know what the real physical alignment
->> is (think of flash media, which uses large erase blocks underneath.)
->> Windows aligns partitions 1 MB boundaries by default now -- I think
->> that's probably a reasonably good idea, at least for any disk that's  
->> not
->> tiny, say 256 MB or less.
-> 
-> I agree whole heartedly.  We steer users very sharply away from using  
-> partitions at all, because on h/w RAID devices the 512-byte offset  
-> from fdisk completely kills RAID-5/6 performance.
-> 
-> Making the default minimum alignment for DOS/GPT partitions makes a  
-> lot of sense, and LVM PEs should be on 1MB boundaries as well (I don't  
-> think that is the case today either).
-> 
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-As far as I can tell, there is absolutely no reason to not align all
-partitions, all the time (for both GPT and MBR... GPT may need a "dummy
-alignment partition" to fulfill the "no nonpartitioned space" dictum,
-although it seems like an impossible requirement in practice -- I think
-they main reason for it is to avoid abusers like Grub relying on putting
-data in unpartitioned space.)
+Commit cbda12d77ea590082edb6d30bd342a67ebc459e0 (drm/i915: implement
+new pm ops for i915), among other things, removed the .suspend and
+.resume pointers from the struct drm_driver object in i915_drv.c,
+which broke resume without KMS on my MSI Wind U100.
 
-	-hpa
+Fix this by reverting that part of commit cbda12d77ea59.
+
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ drivers/gpu/drm/i915/i915_drv.c |   53 ++++------------------------------------
+ 1 file changed, 6 insertions(+), 47 deletions(-)
+
+Index: linux-2.6/drivers/gpu/drm/i915/i915_drv.c
+===================================================================
+--- linux-2.6.orig/drivers/gpu/drm/i915/i915_drv.c
++++ linux-2.6/drivers/gpu/drm/i915/i915_drv.c
+@@ -464,6 +418,8 @@ static struct drm_driver driver = {
+ 	.lastclose = i915_driver_lastclose,
+ 	.preclose = i915_driver_preclose,
+ 	.postclose = i915_driver_postclose,
++	.suspend = i915_suspend,
++	.resume = i915_resume,
+ 	.device_is_agp = i915_driver_device_is_agp,
+ 	.enable_vblank = i915_enable_vblank,
+ 	.disable_vblank = i915_disable_vblank,
