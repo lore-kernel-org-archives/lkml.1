@@ -1,93 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754044Ab0AIM2h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754118Ab0AIMiU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754044Ab0AIM2h (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Jan 2010 07:28:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753985Ab0AIM2h
+	id S1754118Ab0AIMiU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Jan 2010 07:38:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754061Ab0AIMiR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Jan 2010 07:28:37 -0500
-Received: from mail-fx0-f225.google.com ([209.85.220.225]:53004 "EHLO
-	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753950Ab0AIM2g (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Jan 2010 07:28:36 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=FjJXuBZFASG8HUbA5uYmrg5FULW838UZ4BK244tqJXPRssf5Ype7AONdAhiYQOrUtT
-         l4XvOaoH6nayAKPLyPhB07cidCd/u/HOl1drdD0lW+pppo6MuF3fuV1uYnkIYpZlM7Iv
-         BaiDkA0s8KvzL43HE7NSOaJOvqIF+WOpwaOEg=
-Date: Sat, 9 Jan 2010 13:28:30 +0100
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: Michael Breuer <mbreuer@majjas.com>
-Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
-       flyboy@gmail.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH] af_packet: Don't use skb after dev_queue_xmit()
-Message-ID: <20100109122830.GA4386@del.dom.local>
-References: <4B4625BD.3070202@majjas.com>
- <20100107183545.GA3208@del.dom.local>
- <4B462B3C.90506@majjas.com>
- <20100107185040.GB3208@del.dom.local>
- <4B466A26.5070506@majjas.com>
- <20100108074539.GA6205@ff.dom.local>
- <4B475FF9.7000702@majjas.com>
- <20100108212923.GA3078@del.dom.local>
- <4B47A81B.5040601@majjas.com>
- <4B4809EF.1070609@majjas.com>
+	Sat, 9 Jan 2010 07:38:17 -0500
+Received: from isilmar.linta.de ([213.133.102.198]:37509 "EHLO linta.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754026Ab0AIMiQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 Jan 2010 07:38:16 -0500
+Date: Sat, 9 Jan 2010 13:16:41 +0100
+From: Dominik Brodowski <linux@dominikbrodowski.net>
+To: H Hartley Sweeten <hartleys@visionengravers.com>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>, laforge@gnumonks.org
+Subject: Re: [PATCH] cm4000_cs.c: Remove unnecessary cast
+Message-ID: <20100109121641.GA4491@comet.dominikbrodowski.net>
+Mail-Followup-To: Dominik Brodowski <linux@dominikbrodowski.net>,
+	H Hartley Sweeten <hartleys@visionengravers.com>,
+	Linux Kernel <linux-kernel@vger.kernel.org>, laforge@gnumonks.org
+References: <201001081130.13177.hartleys@visionengravers.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4B4809EF.1070609@majjas.com>
+In-Reply-To: <201001081130.13177.hartleys@visionengravers.com>
 User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 08, 2010 at 11:45:35PM -0500, Michael Breuer wrote:
-> On 1/8/2010 4:48 PM, Michael Breuer wrote:
-> >On 1/8/2010 4:29 PM, Jarek Poplawski wrote:
-> >...
-> >>BTW, don't hurry with that yet, but in the next test, please try
-> >>alternative 2 again (i.e. with MMAP + no DMAR + disable_msi).
-> >>
-> >Will do - still up from yesterday... no more dropped packets...
-> >none of the dns errors either. To be expected I suppose as long as
-> >I'm trying to sniff it. Assuming no immediate erorrs with alt2, no
-> >DMAR + disable_msi I'll report back after it's been up for a
-> >while.
-> >-- 
-> Ok - ran alt1 and alt2, both with MMAP, no DMAR and disable_msi.
-> Both seem to behave similarly. No logged errors;
+Hey,
 
-Ok - since alt2 introduces less changes and is acked by Stephen
-already, I'll resend it with your "Tested-by" in a new thread to clear
-things a bit.
-
-> large numbers of dropped RX packets.
-
-You might try some tweaking with another sky2 parameter "copybreak"
-or even editing its "NAPI_WEIGHT" variable.
-
-> One odd thing: when driving every sort of
-> traffic through, I was able to hose the client adapter (win7)
-> repeatedly by runnnig the win7 backup and connecting Windows Media
-> Player to a Mediatomb stream while also running a remote X11
-> session. Looks like the SSDP traffic that occurs at the same time as
-> the SMB traffic and X11 traffic takes out the adapter on Win7 -
-> Nforce.
-> Reran with msi enabled, MMAP and no DMAR. Also no errors; much
-> faster, and the Win7 side survives the same conditions that don't
-> work when msi is disabled. Doesn't make sense to me, but it is what
-> it is.
+On Fri, Jan 08, 2010 at 11:30:13AM -0700, H Hartley Sweeten wrote:
+> cm4000_cs.c: Remove unnecessary cast
 > 
-> Going to leave this up for a while and see if things remain functional.
+> The struct file 'private_data' member is a void *, the cast is not needed.
+> 
+> Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
+> Cc: Harald Welte <laforge@gnumonks.org>
 
-It looks like DMAR is the main candidate for a new linux-kernel@ or
-bugzilla bug report. You should also consider reporting these ipv6
-problems, especially if you think they can trigger TX timeouts. (In
-both cases it would be good to try current mainline first, when you
-get it workable.)
+Applied to linux-pcmcia, in queue for 2.6.34-rc1.
 
 Thanks,
-Jarek P.
+	Dominik
