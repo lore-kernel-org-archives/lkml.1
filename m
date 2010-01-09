@@ -1,105 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751839Ab0AIWv2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751667Ab0AIXDc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751839Ab0AIWv2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Jan 2010 17:51:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751040Ab0AIWv1
+	id S1751667Ab0AIXDc (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Jan 2010 18:03:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751381Ab0AIXDb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Jan 2010 17:51:27 -0500
-Received: from mail-px0-f174.google.com ([209.85.216.174]:48499 "EHLO
-	mail-px0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751140Ab0AIWv0 convert rfc822-to-8bit (ORCPT
+	Sat, 9 Jan 2010 18:03:31 -0500
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:61229 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751346Ab0AIXDa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Jan 2010 17:51:26 -0500
+	Sat, 9 Jan 2010 18:03:30 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=SopWOGo5oPjHEgBFt6LETZOW1RMLPoq4mL95+1eXtGD+RJQAyoDevZhpK2B4NCDkZc
-         YbAEEU2C4A3PSkkaeyAG2oJijYgj7lwgm7G9LUbrsdA1Qtura1KsdFDZi0d/Uid10Axg
-         ioip8WZ/+xYVLhR7bh8/D8VvMbv0agrwjgOUc=
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
+        b=eo2j1mS7JYPHI2LTy5s8ymDFVeSde83eVyivBsY5Y+jYXi1Q9EaHoK685B2cPGFQLi
+         l0eaJTlrG7JBFyxq8WlW2f2hqbpD8lnGF/kI2LmHIMnnEYfUzxIRvKplZLToDjtrxLyU
+         PszNYaqf0DCQ+TfJrkctdHzDhXCEKoeYPORrI=
 MIME-Version: 1.0
-In-Reply-To: <alpine.LFD.2.00.1001091007150.7821@localhost.localdomain>
-References: <20100109101038.GA17555@in.ibm.com>
-	 <alpine.LFD.2.00.1001091007150.7821@localhost.localdomain>
-Date: Sat, 9 Jan 2010 14:51:26 -0800
-X-Google-Sender-Auth: 7fe1a32c0f28d999
-Message-ID: <86802c441001091451t1edcfd26m9368628b6cc4f711@mail.gmail.com>
-Subject: Re: [PATCH] Make Intel 8-way Xeons boot again
+In-Reply-To: <20100108140419.88E1533C5F9@tippex.mynet.homeunix.org>
+References: <20100105110256.D2DF133C4B0@tippex.mynet.homeunix.org>
+	 <86802c441001051102j547f10bga2b40fbaee9cf623@mail.gmail.com>
+	 <20100105211522.57A3E33C5F5@tippex.mynet.homeunix.org>
+	 <4B43BAEB.7070308@kernel.org>
+	 <20100108140419.88E1533C5F9@tippex.mynet.homeunix.org>
+Date: Sat, 9 Jan 2010 15:03:30 -0800
+X-Google-Sender-Auth: 6488f95a32d25a55
+Message-ID: <86802c441001091503j7da9a5c4s64af67095bbef095@mail.gmail.com>
+Subject: Re: Memory probing fails after 2.6.30 (bisected)
 From: Yinghai Lu <yinghai@kernel.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>, suresh.b.siddha@intel.com,
-       Ingo Molnar <mingo@elte.hu>, lkml <linux-kernel@vger.kernel.org>,
-       stable@kernel.org
+To: Anders Eriksson <aeriksson@fastmail.fm>, "H. Peter Anvin" <hpa@zytor.com>
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jan 9, 2010 at 10:11 AM, Linus Torvalds
-<torvalds@linux-foundation.org> wrote:
+On Fri, Jan 8, 2010 at 6:04 AM, Anders Eriksson <aeriksson@fastmail.fm> wrote:
 >
+> Success!
 >
-> On Sat, 9 Jan 2010, Ananth N Mavinakayanahalli wrote:
+> yinghai@kernel.org said:
+>> can you try to revert some e820 detect patch?
 >>
->> On an 8-way system with Intel Xeon X7350 CPUs, booting 2.6.32 or newer
->> kernels fails at:
->>
->> ...
->> CPU0: Intel(R) Xeon(R) CPU           X7350  @ 2.93GHz stepping 0b
->> Booting Node   0, Processors  #1 #2 #3 #4 #5 #6 #7 Ok.
->> Brought up 8 CPUs
->> Total of 8 processors activated (46906.05 BogoMIPS).
->>
->> Git bisect showed 2fbd07a5f as the offending commit.
+>> bca23db: x86, setup: revert ACPI 3 E820 extended attributes support
+>> df7699c: x86, setup: "glove box" BIOS interrupts in the core boot code
+>> cd67059: x86, setup: guard against pre-ACPI 3 e820 code not updating %ecx
+>> c549e71: x86, setup: ACPI 3, BIOS workaround for E820-probing code
 >
-> Ok, that commit definitely is buggy.
+> Starting at 33-rc3, reverting the above 4 commits cumulatively, brings back my
+> e820 table.
 >
->> With the patch below, I am able to boot the latest Linus' git tree on
->> the machine. If this patch is correct, it needs to get into the stable
->> tree too.
+> I have no idea how to fix c549e71 so it don't break on my system.
 >
-> I don't think the patch is correct, though. The thing is, the AMD check
-> seems to be the correct one: you can only use 'apic_flat' if all the APIC
-> ID's are < 8.
->
-> It doesn't matter _how_ many CPU's you have. If you have two CPU's, but
-> one of them has an APIC ID >= 8, then you cannot use the flat APIC model,
-> since it depends on a 8-bit bitfield.
->
-> So your patch doesn't seem right either, because it still tests
-> num_processors, which is bogus.
->
-> In fact, I can't for the life of me understand why it treats different
-> vendors differently. Why is that code not just a simple
->
->        /* Flat apic mode requires that all APIC ID's are in the range 0..7 */
->        if (apic == &apic_flat && max_physical_apicid >= 8)
->                apic = &apic_physflat;
->
-> instead, with no crazy vendor tests.
->
-> What am I missing?
+> This is a hp nc6400 laptop, btw.
 
-according to Suresh, intel CPUs could use logical flat mode when total
-num_cpus <=8 even some cpu's physical apicid > 0.
-
-and init_apic_ldr should set ldr to the cpu to map cpu index to the cpu.
-
-static void flat_init_apic_ldr(void)
-{
-        unsigned long val;
-        unsigned long num, id;
-
-        num = smp_processor_id();
-        id = 1UL << num;
-        apic_write(APIC_DFR, APIC_DFR_FLAT);
-        val = apic_read(APIC_LDR) & ~APIC_LDR_MASK;
-        val |= SET_APIC_LOGICAL_ID(id);
-        apic_write(APIC_LDR, val);
-}
-
-in Ananth's case, APs are started, so LDR should be set correctly.
+so it mean bca23db the reverting for c49e71 etc is not right?
 
 YH
