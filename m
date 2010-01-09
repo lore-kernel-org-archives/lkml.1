@@ -1,51 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752371Ab0AIXQd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752837Ab0AIXQp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752371Ab0AIXQd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Jan 2010 18:16:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751532Ab0AIXQc
+	id S1752837Ab0AIXQp (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Jan 2010 18:16:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752553Ab0AIXQo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Jan 2010 18:16:32 -0500
-Received: from hera.kernel.org ([140.211.167.34]:42682 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751440Ab0AIXQb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Jan 2010 18:16:31 -0500
-Message-ID: <4B484829.6060405@kernel.org>
-Date: Sat, 09 Jan 2010 18:11:05 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
-MIME-Version: 1.0
-To: Torsten Kaiser <just.for.lkml@googlemail.com>
-CC: linux-kernel@vger.kernel.org, Jeff Garzik <jgarzik@pobox.com>,
-       linux-ide@vger.kernel.org
-Subject: Re: MSI broken in libata?
-References: <64bb37e0912250122n4e0e1842q88c0dad7e99ec6a7@mail.gmail.com>
-In-Reply-To: <64bb37e0912250122n4e0e1842q88c0dad7e99ec6a7@mail.gmail.com>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat, 9 Jan 2010 18:16:44 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:40189 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752558Ab0AIXQm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 Jan 2010 18:16:42 -0500
+X-Authority-Analysis: v=1.0 c=1 a=r_nf4N-T2GkA:10 a=7U3hwN5JcxgA:10 a=uGrhdwFXV8AXpu0HQR0A:9 a=wIYYDMkypuYq_A6r0uFA6mLe9ewA:4
+X-Cloudmark-Score: 0
+X-Originating-IP: 74.67.89.75
+Subject: Re: [RFC PATCH] introduce sys_membarrier(): process-wide memory
+ barrier
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Oleg Nesterov <oleg@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       akpm@linux-foundation.org, josh@joshtriplett.org, tglx@linutronix.de,
+       Valdis.Kletnieks@vt.edu, dhowells@redhat.com, laijs@cn.fujitsu.com,
+       dipankar@in.ibm.com
+In-Reply-To: <1263078327.28171.3792.camel@gandalf.stny.rr.com>
+References: <20100107191657.GN6764@linux.vnet.ibm.com>
+	 <1262893243.28171.3753.camel@gandalf.stny.rr.com>
+	 <20100107205830.GR6764@linux.vnet.ibm.com>
+	 <1262900140.28171.3773.camel@gandalf.stny.rr.com>
+	 <20100108235338.GA18050@Krystal> <20100109002043.GD6816@linux.vnet.ibm.com>
+	 <20100109010231.GA25368@Krystal> <20100109012128.GF6816@linux.vnet.ibm.com>
+	 <20100109023842.GA1696@Krystal> <20100109054215.GB9044@linux.vnet.ibm.com>
+	 <20100109192006.GA23672@Krystal>
+	 <1263078327.28171.3792.camel@gandalf.stny.rr.com>
+Content-Type: text/plain; charset="ISO-8859-15"
+Organization: Kihon Technologies Inc.
+Date: Sat, 09 Jan 2010 18:16:40 -0500
+Message-ID: <1263079000.28171.3795.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Sat, 09 Jan 2010 23:16:29 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/25/2009 06:22 PM, Torsten Kaiser wrote:
-> As reported in http://lkml.org/lkml/2009/12/19/82 the new MSI support
-> for sata_sil24 does not work for me.
-> This is still the same with 2.6.33-rc2.
+On Sat, 2010-01-09 at 18:05 -0500, Steven Rostedt wrote:
+
+> Then we should have O(tasks) for spinlocks taken, and 
+> O(min(tasks, CPUS)) for IPIs.
 > 
-> Why I think, this might be a problem within libata:
->  * other drivers can use MSI successful on my system (tg3, radeon, hda-intel)
->  * happens both in sata_sil24 and sata_nv
->  * the count in /proc/interrupts increases for the MSIs assigned to
-> sata_sil24/sata_nv, so interrupt delivery seems to work
->  * only writing seems to fail
 
-How does it fail?  Timeouts?  Also, ahci enables MSI by default if
-available and works fine on many configurations so I don't think
-anything in libata core layer is broken regarding MSI (there just
-isn't anything which can break).
+And for nr tasks >> CPUS, this may help too:
 
-Thanks.
+> cpumask = 0;
+> foreach task {
 
--- 
-tejun
+	if (cpumask == online_cpus)
+		break;
+
+> 	spin_lock(task_rq(task)->rq->lock);
+> 	if (task_rq(task)->curr == task)
+> 		cpu_set(task_cpu(task), cpumask);
+> 	spin_unlock(task_rq(task)->rq->lock);
+> }
+> send_ipi(cpumask);
+> 
+
+-- Steve
+
+
