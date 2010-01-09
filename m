@@ -1,128 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754462Ab0AIWsa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751839Ab0AIWv2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754462Ab0AIWsa (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Jan 2010 17:48:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751301Ab0AIWs3
+	id S1751839Ab0AIWv2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Jan 2010 17:51:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751040Ab0AIWv1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Jan 2010 17:48:29 -0500
-Received: from mail-gx0-f211.google.com ([209.85.217.211]:65145 "EHLO
-	mail-gx0-f211.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750702Ab0AIWs2 (ORCPT
+	Sat, 9 Jan 2010 17:51:27 -0500
+Received: from mail-px0-f174.google.com ([209.85.216.174]:48499 "EHLO
+	mail-px0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751140Ab0AIWv0 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Jan 2010 17:48:28 -0500
+	Sat, 9 Jan 2010 17:51:26 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:content-transfer-encoding
-         :in-reply-to:user-agent;
-        b=pFM3B6knvEtz3A96SzZRykTtK6qKPPupT523C0had5JMYReKa02f+YKLhuB7r9r9Aq
-         +P2YQOnBRUCU+nA+d23sP/7O1zySkyVP5m6nPOGclEHkdoDRSJ7QAFyOtbh+gDyhK0ZV
-         OdWyvwHT1vYImrPkpy8CXEiFTNBnTgPBZ5Ov0=
-Date: Sat, 9 Jan 2010 16:48:28 -0600
-From: Jonathan Nieder <jrnieder@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Michal Marek <mmarek@suse.cz>,
-       Sebastian =?iso-8859-1?Q?Dalfu=DF?= <sd@sedf.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Michael Tokarev <mjt@tls.msk.ru>, Alek Du <alek.du@intel.com>,
-       linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [GIT PULL] kbuild fix for 2.6.33
-Message-ID: <20100109224827.GA30610@progeny.tock>
-References: <20100105155038.GA20834@sepie.suse.cz>
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=SopWOGo5oPjHEgBFt6LETZOW1RMLPoq4mL95+1eXtGD+RJQAyoDevZhpK2B4NCDkZc
+         YbAEEU2C4A3PSkkaeyAG2oJijYgj7lwgm7G9LUbrsdA1Qtura1KsdFDZi0d/Uid10Axg
+         ioip8WZ/+xYVLhR7bh8/D8VvMbv0agrwjgOUc=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20100105155038.GA20834@sepie.suse.cz>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <alpine.LFD.2.00.1001091007150.7821@localhost.localdomain>
+References: <20100109101038.GA17555@in.ibm.com>
+	 <alpine.LFD.2.00.1001091007150.7821@localhost.localdomain>
+Date: Sat, 9 Jan 2010 14:51:26 -0800
+X-Google-Sender-Auth: 7fe1a32c0f28d999
+Message-ID: <86802c441001091451t1edcfd26m9368628b6cc4f711@mail.gmail.com>
+Subject: Re: [PATCH] Make Intel 8-way Xeons boot again
+From: Yinghai Lu <yinghai@kernel.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>, suresh.b.siddha@intel.com,
+       Ingo Molnar <mingo@elte.hu>, lkml <linux-kernel@vger.kernel.org>,
+       stable@kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On Sat, Jan 9, 2010 at 10:11 AM, Linus Torvalds
+<torvalds@linux-foundation.org> wrote:
+>
+>
+> On Sat, 9 Jan 2010, Ananth N Mavinakayanahalli wrote:
+>>
+>> On an 8-way system with Intel Xeon X7350 CPUs, booting 2.6.32 or newer
+>> kernels fails at:
+>>
+>> ...
+>> CPU0: Intel(R) Xeon(R) CPU † † † † † X7350 †@ 2.93GHz stepping 0b
+>> Booting Node † 0, Processors †#1 #2 #3 #4 #5 #6 #7 Ok.
+>> Brought up 8 CPUs
+>> Total of 8 processors activated (46906.05 BogoMIPS).
+>>
+>> Git bisect showed 2fbd07a5f as the offending commit.
+>
+> Ok, that commit definitely is buggy.
+>
+>> With the patch below, I am able to boot the latest Linus' git tree on
+>> the machine. If this patch is correct, it needs to get into the stable
+>> tree too.
+>
+> I don't think the patch is correct, though. The thing is, the AMD check
+> seems to be the correct one: you can only use 'apic_flat' if all the APIC
+> ID's are < 8.
+>
+> It doesn't matter _how_ many CPU's you have. If you have two CPU's, but
+> one of them has an APIC ID >= 8, then you cannot use the flat APIC model,
+> since it depends on a 8-bit bitfield.
+>
+> So your patch doesn't seem right either, because it still tests
+> num_processors, which is bogus.
+>
+> In fact, I can't for the life of me understand why it treats different
+> vendors differently. Why is that code not just a simple
+>
+> † † † †/* Flat apic mode requires that all APIC ID's are in the range 0..7 */
+> † † † †if (apic == &apic_flat && max_physical_apicid >= 8)
+> † † † † † † † †apic = &apic_physflat;
+>
+> instead, with no crazy vendor tests.
+>
+> What am I missing?
 
-Michal Marek wrote:
+according to Suresh, intel CPUs could use logical flat mode when total
+num_cpus <=8 even some cpu's physical apicid > 0.
 
-> please pull this to fix build with /bin/sh -> dash (as used in Ubuntu).
+and init_apic_ldr should set ldr to the cpu to map cpu index to the cpu.
 
-Could you look over this patch and perhaps apply it?  In the
-grand scheme of things, it is a small issue, but it has been
-offering some Debian and Ubuntu users a lot of annoyance.
+static void flat_init_apic_ldr(void)
+{
+        unsigned long val;
+        unsigned long num, id;
 
-The problem is that dash's echo and printf do not support \x...
-escapes.  The symptom is a build without errors resulting in a
-vmlinuz that cannot boot.
+        num = smp_processor_id();
+        id = 1UL << num;
+        apic_write(APIC_DFR, APIC_DFR_FLAT);
+        val = apic_read(APIC_LDR) & ~APIC_LDR_MASK;
+        val |= SET_APIC_LOGICAL_ID(id);
+        apic_write(APIC_LDR, val);
+}
 
-Thanks,
-Jonathan
+in Ananth's case, APs are started, so LDR should be set correctly.
 
-> The following changes since commit 45d28b097280a78893ce25a5d0db41e6a2717853:
->   Linus Torvalds (1):
->         Merge branch 'reiserfs/kill-bkl' of git://git.kernel.org/.../frederic/random-tracing
-> 
-> are available in the git repository at:
-> 
->   git://repo.or.cz/linux-kbuild.git for-33
-
--- %< --
-From: Jonathan Nieder <jrnieder@gmail.com>
-Date: Mon, 28 Dec 2009 19:38:27 +0000
-Subject: [PATCH] kbuild: really fix bzImage build with non-bash sh
-
-dash's echo and printf do not support \x... escapes.  The symptom
-is a build without errors resulting in a vmlinuz that cannot
-boot.
-
-Previous commits replaced "echo -ne" first with "/bin/echo -ne",
-then "printf" in the hope of improving portability, but none of
-these commands is guaranteed to support hexadecimal escapes on
-POSIX systems.  Use arithmetic expansion to convert from
-hexadecimal to octal to fix this.
-
-You can see what is happening by examining the end of
-arch/x86/boot/compressed/vmlinux.bin.lzma after an x86 build with
-CONFIG_KERNEL_LZMA enabled and /bin/sh a symlink to dash.
-Without this patch, it ends with '\xf0\x7d\x39\x00' (16 bytes)
-instead of the 4 bytes intended and the resulting vmlinuz fails
-to boot.
-
-With this change, an LZMA-compressed kernel built with dash as sh
-boots correctly again.
-
-Fixes: http://bugzilla.kernel.org/show_bug.cgi?id=14907
-Reported-by: Sebastian Dalfuﬂ <sd@sedf.de>
-Reported-by: Oliver Hartkopp <oliver@hartkopp.net>
-Reported-by: Michael Guntsche <mike@it-loops.com>
-Tested-by: Meelis Roos <mroos@linux.ee>
-Cc: Michael Tokarev <mjt@tls.msk.ru>
-Cc: Alek Du <alek.du@intel.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Acked-by: Michal Marek <mmarek@suse.cz>
-Signed-off-by: Jonathan Nieder <jrnieder@gmail.com>
----
- scripts/Makefile.lib |    9 +++++++--
- 1 files changed, 7 insertions(+), 2 deletions(-)
-
-diff --git a/scripts/Makefile.lib b/scripts/Makefile.lib
-index cd815ac..eabedbb 100644
---- a/scripts/Makefile.lib
-+++ b/scripts/Makefile.lib
-@@ -219,8 +219,13 @@ for F in $1; do								\
- 	fsize=$$(stat -c "%s" $$F);					\
- 	dec_size=$$(expr $$dec_size + $$fsize);				\
- done;									\
--printf "%08x" $$dec_size |						\
--	sed 's/\(..\)\(..\)\(..\)\(..\)/\\\\x\4\\\\x\3\\\\x\2\\\\x\1/g'	\
-+printf "%08x\n" $$dec_size |						\
-+	sed 's/\(..\)/\1 /g' | {					\
-+		read ch0 ch1 ch2 ch3;					\
-+		for ch in $$ch3 $$ch2 $$ch1 $$ch0; do			\
-+			printf '%s%03o' '\\' $$((0x$$ch)); 		\
-+		done;							\
-+	}								\
- )
- 
- quiet_cmd_bzip2 = BZIP2   $@
--- 
-1.6.6
-
+YH
