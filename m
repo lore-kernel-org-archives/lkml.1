@@ -1,66 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754803Ab0AISSM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754792Ab0AIS3g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754803Ab0AISSM (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Jan 2010 13:18:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754771Ab0AISSK
+	id S1754792Ab0AIS3g (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Jan 2010 13:29:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753779Ab0AIS3g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Jan 2010 13:18:10 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:55245 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754741Ab0AISSJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Jan 2010 13:18:09 -0500
-Date: Sat, 9 Jan 2010 10:17:19 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Jerome Glisse <glisse@freedesktop.org>
-cc: Jesse Barnes <jbarnes@virtuousgeek.org>, Dave Airlie <airlied@linux.ie>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       dri-devel@lists.sourceforge.net
-Subject: Re: [PATCH] DRM / i915: Fix resume regression on MSI Wind U100 w/o
- KMS
-In-Reply-To: <20100109120141.GA4319@localhost.localdomain>
-Message-ID: <alpine.LFD.2.00.1001091012080.7821@localhost.localdomain>
-References: <201001090045.33784.rjw@sisk.pl> <alpine.LFD.2.00.1001081548320.7821@localhost.localdomain> <alpine.DEB.2.00.1001090214220.21286@skynet.skynet.ie> <20100108185041.7aae6c01@jbarnes-piketon> <20100109120141.GA4319@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Sat, 9 Jan 2010 13:29:36 -0500
+Received: from cantor.suse.de ([195.135.220.2]:49997 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753768Ab0AIS3f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 Jan 2010 13:29:35 -0500
+Date: Sat, 9 Jan 2010 10:23:43 -0800
+From: Greg KH <gregkh@suse.de>
+To: Chandru <chandru@in.ibm.com>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] ibmphp : read the length of ebda and map entire ebda
+ region
+Message-ID: <20100109182343.GA4695@suse.de>
+References: <201001091712.25655.chandru@in.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <201001091712.25655.chandru@in.ibm.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Sat, 9 Jan 2010, Jerome Glisse wrote:
-
-> On Fri, Jan 08, 2010 at 06:50:41PM -0800, Jesse Barnes wrote:
-> > 
-> > Linus, can we ever drop those old paths?  Maybe after the new bits have
-> > been around for awhile?  Users of really old userspace stacks would
-> > lose 3D support, but they'd still have 2D, so it wouldn't be a complete
-> > break.  The non-KMS paths sometimes break like this anyway without us
-> > noticing (especially some of the weirder 3D paths)...
-> > 
-> > Just thinking out loud, we could really kill a lot of really bad code...
+On Sat, Jan 09, 2010 at 05:12:25PM +0530, Chandru wrote:
+> ibmphp driver currently maps only 1KB of ebda memory area into kernel address 
+> space during driver initialization. This causes kernel oops when the driver is 
+> modprobe'd and it accesses memory area beyond 1KB within ebda segment. The first 
+> byte of ebda segment actually stores the length of the ebda region in 
+> Kilobytes. Hence make use of the length parameter and map the entire ebda 
+> region.
 > 
-> I among those who would love such things to happen :)
+> 
+> Signed-off-by: Chandru Siddalingappa <chandru@linux.vnet.ibm.com>
+> ---
+> 
+>  drivers/pci/hotplug/ibmphp_ebda.c |   11 +++++++++--
 
-I don't want to drop it _yet_, but "ever"? Sure. When people are sure that 
-KMS actually handles all the cases that old X does (maybe that's true 
-now), and we've had more than just a couple of kernel releases of _stable_ 
-Intel KMS, I suspect we can start thinking about "ok, nobody seriously 
-uses 3D on Intel integrated graphics _and_ updates the kernel".
+Please use the scripts/get_maintainer.pl script to get the proper person
+and mailing list to send this patch to (hint, it's not me.)
 
-The fact that they'd still have a working X setup would make it generally 
-much more palatable, I think. 
+thanks,
 
-But we definitely need more than just a couple of kernel releases. So 
-we're talking timescales of "more than a year of stable code". Whether 
-that is "six months from now" or "two years from now", I can't judge. 
-
-And people can try to convince me to be more or less aggressive about it, 
-so take the above as a more of a personal opinion that is open to 
-change than anything definite and final.
-
-		Linus
+greg k-h
