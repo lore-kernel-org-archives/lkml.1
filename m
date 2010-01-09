@@ -1,58 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754644Ab0AIOqr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754672Ab0AIOsI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754644Ab0AIOqr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Jan 2010 09:46:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753611Ab0AIOqr
+	id S1754672Ab0AIOsI (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Jan 2010 09:48:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754103Ab0AIOsH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Jan 2010 09:46:47 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:47027 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753472Ab0AIOqq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Jan 2010 09:46:46 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=fNC7e4cHwi5V/SIPkcehJcWF+g5hFY7EH5Vu2VkerTYyJpnuVUf1lZCucxQfPF45UW
-         V420VaKlGGSwVvxBkrB2t10hlhilA26EPKc/CTFV4cp0lJwjzawBsoBxd89NwVkJ4GJw
-         4OmmO2zG3QT5Yr1lf3gs8HFWPSXqqeRwJtgdM=
-From: Alexander Beregalov <a.beregalov@gmail.com>
-To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-Cc: Alexander Beregalov <a.beregalov@gmail.com>
-Subject: [PATCH] kernel/resource.c: fix memory leak
-Date: Sat,  9 Jan 2010 17:46:35 +0300
-Message-Id: <1263048395-14873-1-git-send-email-a.beregalov@gmail.com>
-X-Mailer: git-send-email 1.6.6
+	Sat, 9 Jan 2010 09:48:07 -0500
+Received: from mail001.aei.ca ([206.123.6.130]:51178 "EHLO mail001.aei.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753986Ab0AIOsG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 Jan 2010 09:48:06 -0500
+From: Ed Tomlinson <edt@aei.ca>
+To: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [RFC][PATCH 6/8] mm: handle_speculative_fault()
+Date: Sat, 9 Jan 2010 09:47:57 -0500
+User-Agent: KMail/1.12.4 (Linux/2.6.32.3-crc; KDE/4.3.4; x86_64; ; )
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Minchan Kim <minchan.kim@gmail.com>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>, cl@linux-foundation.org,
+       "hugh.dickins" <hugh.dickins@tiscali.co.uk>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>,
+       Nitin Gupta <ngupta@vflare.org>
+References: <20100104182429.833180340@chello.nl> <alpine.LFD.2.00.1001052007090.3630@localhost.localdomain> <1262969610.4244.36.camel@laptop>
+In-Reply-To: <1262969610.4244.36.camel@laptop>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201001090947.57479.edt@aei.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Free res before exit.
-Found by cppcheck.
+On Friday 08 January 2010 11:53:30 Peter Zijlstra wrote:
+> On Tue, 2010-01-05 at 20:20 -0800, Linus Torvalds wrote:
+> > 
+> > On Wed, 6 Jan 2010, KAMEZAWA Hiroyuki wrote:
+> > > > 
+> > > > Of course, your other load with MADV_DONTNEED seems to be horrible, and 
+> > > > has some nasty spinlock issues, but that looks like a separate deal (I 
+> > > > assume that load is just very hard on the pgtable lock).
+> > > 
+> > > It's zone->lock, I guess. My test program avoids pgtable lock problem.
+> > 
+> > Yeah, I should have looked more at your callchain. That's nasty. Much 
+> > worse than the per-mm lock. I thought the page buffering would avoid the 
+> > zone lock becoming a huge problem, but clearly not in this case.
+> 
+> Right, so I ran some numbers on a multi-socket (2) machine as well:
+> 
+>                                pf/min
+> 
+> -tip                          56398626
+> -tip + xadd                  174753190
+> -tip + speculative           189274319
+> -tip + xadd + speculative    200174641
 
-Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
----
- kernel/resource.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+Has anyone tried these patches with ramzswap?  Nitin do they help with the locking
+issues you mentioned?
 
-diff --git a/kernel/resource.c b/kernel/resource.c
-index af96c1e..ae2e177 100644
---- a/kernel/resource.c
-+++ b/kernel/resource.c
-@@ -545,11 +545,12 @@ static void __init __reserve_region_with_split(struct resource *root,
- 	res->flags = IORESOURCE_BUSY;
- 
- 	conflict = __request_resource(parent, res);
-+	kfree(res);
-+
- 	if (!conflict)
- 		return;
- 
- 	/* failed, split and try again */
--	kfree(res);
- 
- 	/* conflict covered whole area */
- 	if (conflict->start <= start && conflict->end >= end)
--- 
-1.6.6
+Thanks,
+Ed
 
+ 
+> [ variance is around 0.5% for this workload, ran most of these numbers
+> with --repeat 5 ]
+> 
+> At both the xadd/speculative point the workload is dominated by the
+> zone->lock, the xadd+speculative removes some of the contention, and
+> removing the various RSS counters could yield another few percent
+> according to the profiles, but then we're pretty much there.
+> 
+> One way around those RSS counters is to track it per task, a quick grep
+> shows its only the oom-killer and proc that use them.
+> 
+> A quick hack removing them gets us: 203158058
+> 
+> So from a throughput pov. the whole speculative fault thing might not be
+> interesting until the rest of the vm gets a lift to go along with it.
+> 
+> >From a blocking on mmap_sem pov. I think Linus is right in that we
+> should first consider things like dropping mmap_sep around IO and page
+> zeroing, and generally looking at reducing hold times and such.
+> 
+> So while I think its quite feasible to do these speculative faults, it
+> appears we're not quite ready for them.
+> 
+> Maybe I can get -rt to carry it for a while, there we have to reduce
+> mmap_sem to a mutex, which hurts lots.
+> 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+> 
