@@ -1,41 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752814Ab0AIKfa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752938Ab0AIKiM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752814Ab0AIKfa (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Jan 2010 05:35:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751617Ab0AIKfa
+	id S1752938Ab0AIKiM (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Jan 2010 05:38:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752724Ab0AIKiL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Jan 2010 05:35:30 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:56644 "EHLO
+	Sat, 9 Jan 2010 05:38:11 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:47942 "EHLO
 	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751484Ab0AIKf3 (ORCPT
+	with ESMTP id S1752511Ab0AIKiK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Jan 2010 05:35:29 -0500
-Date: Sat, 9 Jan 2010 11:32:12 +0100
+	Sat, 9 Jan 2010 05:38:10 -0500
+Date: Sat, 9 Jan 2010 11:34:55 +0100
 From: Pavel Machek <pavel@ucw.cz>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Bart?omiej Zimo? <uzi18@o2.pl>, Andy Walls <awalls@radix.net>,
-       Daniel Borkmann <danborkmann@googlemail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [suspend/resume] Re: userspace notification from module
-Message-ID: <20100109103212.GA1429@ucw.cz>
-References: <686edb2c.6263643a.4b3f4a3b.b60b3@o2.pl> <6f52f5b81001020756i73fbb137if1af8ac8b306f6ba@mail.gmail.com> <ddef1cf.2c9460e3.4b3f8fd5.c10cd@o2.pl> <201001022201.04281.rjw@sisk.pl>
+To: Miles Lane <miles.lane@gmail.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
+       David Airlie <airlied@linux.ie>,
+       Sylvain Meyer <sylvain.meyer@worldonline.fr>,
+       linux-fbdev@vger.kernel.org
+Subject: Re: 2.6.33-rc3 -- Intel 945GME (inteldrmfb) -- Two Tux images
+	displayed are side by side (should only show one).
+Message-ID: <20100109103454.GA1458@ucw.cz>
+References: <a44ae5cd1001060916s4db1d94fsb7e012ab80ce6add@mail.gmail.com> <1262801263.4049.53.camel@laptop> <a44ae5cd1001061035n65b5a41flc84a81285df4279c@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <201001022201.04281.rjw@sisk.pl>
+In-Reply-To: <a44ae5cd1001061035n65b5a41flc84a81285df4279c@mail.gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > Just need as fast as possible solution and on the other hand acceptable for kernel sources.
-> > Usually programs needs just to disconnect something or set one flag.
-> > Even if program will have no time for this it could be enough just to send this precious info.
+On Wed 2010-01-06 13:35:59, Miles Lane wrote:
+> On Wed, Jan 6, 2010 at 1:07 PM, Peter Zijlstra <peterz@infradead.org> wrote:
+> > On Wed, 2010-01-06 at 12:16 -0500, Miles Lane wrote:
+> >> For a long time I have gotten two pictures of Tux showing up when I
+> >> include the Tux display option in my custom kernel builds.
+> >
+> > Doesn't it show one for each cpu in the system?
 > 
-> Perhaps I don't understand correctly what you're trying to achieve, but at the
-> moment suspend is always started from user space, this way or another, and on
+> I know this is cosmetic, but could we change this behavior and just
+> show one Tux on all systems?  As a software tester, this just looks
 
-At least zaurus (arm) suspends from kernel on battery critical.
+Its well-known joke by now. Please keep it.
 
 -- 
 (english) http://www.livejournal.com/~pavelmachek
