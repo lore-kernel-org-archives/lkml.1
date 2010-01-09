@@ -1,66 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752519Ab0AIEqL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751105Ab0AIFmV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752519Ab0AIEqL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jan 2010 23:46:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751551Ab0AIEqK
+	id S1751105Ab0AIFmV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Jan 2010 00:42:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751018Ab0AIFmU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jan 2010 23:46:10 -0500
-Received: from mta3.srv.hcvlny.cv.net ([167.206.4.198]:43683 "EHLO
-	mta3.srv.hcvlny.cv.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750782Ab0AIEqJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jan 2010 23:46:09 -0500
-Date: Fri, 08 Jan 2010 23:45:35 -0500
-From: Michael Breuer <mbreuer@majjas.com>
-Subject: Re: [PATCH] af_packet: Don't use skb after dev_queue_xmit()
-In-reply-to: <4B47A81B.5040601@majjas.com>
-To: Jarek Poplawski <jarkao2@gmail.com>
-Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
-       flyboy@gmail.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Message-id: <4B4809EF.1070609@majjas.com>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7BIT
-References: <4B459368.2000503@majjas.com> <4B45F841.8030407@majjas.com>
- <20100107180114.GB3088@del.dom.local> <4B4625BD.3070202@majjas.com>
- <20100107183545.GA3208@del.dom.local> <4B462B3C.90506@majjas.com>
- <20100107185040.GB3208@del.dom.local> <4B466A26.5070506@majjas.com>
- <20100108074539.GA6205@ff.dom.local> <4B475FF9.7000702@majjas.com>
- <20100108212923.GA3078@del.dom.local> <4B47A81B.5040601@majjas.com>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.5)
- Gecko/20091204 Lightning/1.0b2pre Thunderbird/3.0
+	Sat, 9 Jan 2010 00:42:20 -0500
+Received: from e7.ny.us.ibm.com ([32.97.182.137]:56983 "EHLO e7.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750909Ab0AIFmU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 Jan 2010 00:42:20 -0500
+Date: Fri, 8 Jan 2010 21:42:15 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Steven Rostedt <rostedt@goodmis.org>, Oleg Nesterov <oleg@redhat.com>,
+       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org,
+       josh@joshtriplett.org, tglx@linutronix.de, Valdis.Kletnieks@vt.edu,
+       dhowells@redhat.com, laijs@cn.fujitsu.com, dipankar@in.ibm.com
+Subject: Re: [RFC PATCH] introduce sys_membarrier(): process-wide memory
+	barrier
+Message-ID: <20100109054215.GB9044@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <1262890782.28171.3738.camel@gandalf.stny.rr.com> <20100107191657.GN6764@linux.vnet.ibm.com> <1262893243.28171.3753.camel@gandalf.stny.rr.com> <20100107205830.GR6764@linux.vnet.ibm.com> <1262900140.28171.3773.camel@gandalf.stny.rr.com> <20100108235338.GA18050@Krystal> <20100109002043.GD6816@linux.vnet.ibm.com> <20100109010231.GA25368@Krystal> <20100109012128.GF6816@linux.vnet.ibm.com> <20100109023842.GA1696@Krystal>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100109023842.GA1696@Krystal>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 1/8/2010 4:48 PM, Michael Breuer wrote:
-> On 1/8/2010 4:29 PM, Jarek Poplawski wrote:
-> ...
->> BTW, don't hurry with that yet, but in the next test, please try
->> alternative 2 again (i.e. with MMAP + no DMAR + disable_msi).
->>
-> Will do - still up from yesterday... no more dropped packets... none 
-> of the dns errors either. To be expected I suppose as long as I'm 
-> trying to sniff it. Assuming no immediate erorrs with alt2, no DMAR + 
-> disable_msi I'll report back after it's been up for a while.
-> -- 
-Ok - ran alt1 and alt2, both with MMAP, no DMAR and disable_msi. Both 
-seem to behave similarly. No logged errors; large numbers of dropped RX 
-packets. One odd thing: when driving every sort of traffic through, I 
-was able to hose the client adapter (win7) repeatedly by runnnig the 
-win7 backup and connecting Windows Media Player to a Mediatomb stream 
-while also running a remote X11 session. Looks like the SSDP traffic 
-that occurs at the same time as the SMB traffic and X11 traffic takes 
-out the adapter on Win7 - Nforce.
-Reran with msi enabled, MMAP and no DMAR. Also no errors; much faster, 
-and the Win7 side survives the same conditions that don't work when msi 
-is disabled. Doesn't make sense to me, but it is what it is.
+On Fri, Jan 08, 2010 at 09:38:42PM -0500, Mathieu Desnoyers wrote:
+> * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
+> > On Fri, Jan 08, 2010 at 08:02:31PM -0500, Mathieu Desnoyers wrote:
+> > > * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
+> > > > On Fri, Jan 08, 2010 at 06:53:38PM -0500, Mathieu Desnoyers wrote:
+> > > > > * Steven Rostedt (rostedt@goodmis.org) wrote:
+> > > > > > Well, if we just grab the task_rq(task)->lock here, then we should be
+> > > > > > OK? We would guarantee that curr is either the task we want or not.
+> > > > > 
+> > > > > Hrm, I just tested it, and there seems to be a significant performance
+> > > > > penality involved with taking these locks for each CPU, even with just 8
+> > > > > cores. So if we can do without the locks, that would be preferred.
+> > > > 
+> > > > How significant?  Factor of two?  Two orders of magnitude?
+> > > > 
+> > > 
+> > > On a 8-core Intel Xeon (T is the number of threads receiving the IPIs):
+> > > 
+> > > Without runqueue locks:
+> > > 
+> > > T=1: 0m13.911s
+> > > T=2: 0m20.730s
+> > > T=3: 0m21.474s
+> > > T=4: 0m27.952s
+> > > T=5: 0m26.286s
+> > > T=6: 0m27.855s
+> > > T=7: 0m29.695s
+> > > 
+> > > With runqueue locks:
+> > > 
+> > > T=1: 0m15.802s
+> > > T=2: 0m22.484s
+> > > T=3: 0m24.751s
+> > > T=4: 0m29.134s
+> > > T=5: 0m30.094s
+> > > T=6: 0m33.090s
+> > > T=7: 0m33.897s
+> > > 
+> > > So on 8 cores, taking spinlocks for each of the 8 runqueues adds about
+> > > 15% overhead when doing an IPI to 1 thread. Therefore, that won't be
+> > > pretty on 128+-core machines.
+> > 
+> > But isn't the bulk of the overhead the IPIs rather than the runqueue
+> > locks?
+> > 
+> >      W/out RQ       W/RQ   % degradation
+> fix:
+>        W/out RQ       W/RQ   ratio
+> > T=1:    13.91      15.8    1.14
+> > T=2:    20.73      22.48   1.08
+> > T=3:    21.47      24.75   1.15
+> > T=4:    27.95      29.13   1.04
+> > T=5:    26.29      30.09   1.14
+> > T=6:    27.86      33.09   1.19
+> > T=7:    29.7       33.9    1.14
+> 
+> These numbers tell you that the degradation is roughly constant as we
+> add more threads (let's consider 1 thread per core, 1 IPI per thread,
+> with active threads). It is all run on a 8-core system will all cpus
+> active. As we increase the number of IPIs (e.g. T=2 -> T=7) we add 9s,
+> for 1.8s/IPI (always for 10,000,000 sys_membarrier() calls), for an
+> added 180 ns/core per call. (note: T=1 is a special-case, as I do not
+> allocate any cpumask.)
+> 
+> Using the spinlocks adds about 3s for 10,000,000 sys_membarrier() calls
+> or a 8-core system, for an added 300 ns/core per call.
+> 
+> So the overhead of taking the task lock is about twice higher, per core,
+> than the overhead of the IPIs. This is understandable if the
+> architecture does an IPI broadcast: the scalability problem then boils
+> down to exchange cache-lines to inform the ipi sender that the other
+> cpus have completed. An atomic operation exchanging a cache-line would
+> be expected to be within the irqoff+spinlock+spinunlock+irqon overhead.
 
-Going to leave this up for a while and see if things remain functional.
-> To unsubscribe from this list: send the line "unsubscribe 
-> linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Let me rephrase the question...  Isn't the vast bulk of the overhead
+something other than the runqueue spinlocks?
 
+> > So if we had lots of CPUs, we might want to fan the IPIs out through
+> > intermediate CPUs in a tree fashion, but the runqueue locks are not
+> > causing excessive pain.
+> 
+> A tree hierarchy may not be useful for sending the IPIs (as, hopefully,
+> they can be broadcasted pretty efficiciently), but however could be
+> useful when waiting for the IPIs to complete efficiently.
+
+OK, given that you precompute the CPU mask, you might be able to take
+advantage of hardware broadcast, on architectures having it.
+
+> > How does this compare to use of POSIX signals?  Never mind, POSIX
+> > signals are arbitrarily bad if you have way more threads than are
+> > actually running at the time...
+> 
+> POSIX signals to all threads are terrible in that they require to wake
+> up all those threads. I have not even thought it useful to compare
+> these two approaches with benchmarks yet (I'll do that when the
+> sys_membarrier() support is implemented in liburcu).
+
+It would be of some interest.  I bet that the runqueue spinlock overhead
+is -way- down in the noise by comparison to POSIX signals, even when all
+the threads are running.  ;-)
+
+							Thanx, Paul
