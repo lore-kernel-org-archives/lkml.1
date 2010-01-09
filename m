@@ -1,97 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754607Ab0AIAcU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751917Ab0AIAiv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754607Ab0AIAcU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jan 2010 19:32:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754358Ab0AIAcS
+	id S1751917Ab0AIAiv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jan 2010 19:38:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751274Ab0AIAiv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jan 2010 19:32:18 -0500
-Received: from outbound-mail-305.bluehost.com ([67.222.53.251]:57791 "HELO
-	outbound-mail-305.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754219Ab0AIAcR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jan 2010 19:32:17 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=cXHiP6uB2H6I+1BnevaCYhFwU2j0NQNSjdkFGnj75mLm7rUDaQNeJzdXhw6779ns5rUPgoxUYb2UUdIYmPO5uFy08mmNnHAqhmeBB3FASE6JX7Hdgn48cQwyEO2CqP67;
-Date: Fri, 8 Jan 2010 16:32:17 -0800
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Eric Anholt <eric@anholt.net>,
-       Zhenyu Wang <zhenyuw@linux.intel.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       dri-devel@lists.sourceforge.net
-Subject: Re: [PATCH] DRM / i915: Fix resume regression on MSI Wind U100 w/o
- KMS
-Message-ID: <20100108163217.341da699@jbarnes-piketon>
-In-Reply-To: <alpine.LFD.2.00.1001081548320.7821@localhost.localdomain>
-References: <201001090045.33784.rjw@sisk.pl>
-	<alpine.LFD.2.00.1001081548320.7821@localhost.localdomain>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
+	Fri, 8 Jan 2010 19:38:51 -0500
+Received: from mail.df.lth.se ([194.47.250.12]:59403 "EHLO df.lth.se"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751135Ab0AIAiu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jan 2010 19:38:50 -0500
+From: Linus Walleij <linus.walleij@stericsson.com>
+To: Samuel Ortiz <sameo@linux.intel.com>, linux-kernel@vger.kernel.org
+Cc: Linus Walleij <linus.walleij@stericsson.com>,
+       Robin Getz <rgetz@blackfin.uclinux.org>, Matt Mackall <mpm@selenic.com>
+Subject: [PATCH] Use AB3100 MFD core IRQ for interrupt randomness
+Date: Sat,  9 Jan 2010 01:38:29 +0100
+Message-Id: <1262997509-5680-1-git-send-email-linus.walleij@stericsson.com>
+X-Mailer: git-send-email 1.6.2.rc1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 8 Jan 2010 16:01:46 -0800 (PST)
-Linus Torvalds <torvalds@linux-foundation.org> wrote:
+This reintroduces the entropy sampling of the AB3100 IRQ as the
+IRQF_SAMPLE_RANDOM is going out according to the feature removal
+schedule. I'm trying to do this the right way then, so CC:ing some
+random people for a quick review. We add entropy for interrupt
+events in the AB3100 which are truly random in nature, like
+external cables being connected, voltages on batteries dropping
+below certain ranges, ADC triggers or overheating.
 
-> 
-> 
-> On Sat, 9 Jan 2010, Rafael J. Wysocki wrote:
-> >
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > 
-> > Commit cbda12d77ea590082edb6d30bd342a67ebc459e0 (drm/i915: implement
-> > new pm ops for i915), among other things, removed the .suspend and
-> > .resume pointers from the struct drm_driver object in i915_drv.c,
-> > which broke resume without KMS on my MSI Wind U100.
-> > 
-> > Fix this by reverting that part of commit cbda12d77ea59.
-> 
-> Hmm. I get the feeling that perhaps the of the drm_driver callbacks
-> was very muchintentional, and that the code presumably wants to be
-> called purely through the PCI layer, and not through the "drm class"
-> logic at all?
-> 
-> Your patch seems like it would always execute the silly class suspend
-> even though we explicitly don't want to. And a much nicer fix would
-> seem to register the thing properly as a PCI driver even if you don't
-> then use KMS.
-> 
-> So it looks to me like the problem is that drm_init() will register
-> the driver as a real PCI driver only if
-> 
-> 	driver->driver_features & DRIVER_MODESET
-> 
-> and otherwise it does that very odd "stealth mode manual scanning"
-> thing which doesn't register it as a proper PCI driver.
-> 
-> So could we instead make that "disable KSM" _just_ disable the mode 
-> setting part, not disable the "I'm a real driver" part?
+Signed-off-by: Linus Walleij <linus.walleij@stericsson.com>
+Cc: Robin Getz <rgetz@blackfin.uclinux.org>
+Cc: Matt Mackall <mpm@selenic.com>
+---
+ drivers/mfd/ab3100-core.c |   17 +++++++++--------
+ 1 files changed, 9 insertions(+), 8 deletions(-)
 
-This is the minimal fix I think (totally untested):
-
-diff --git a/drivers/gpu/drm/i915/i915_drv.c
-b/drivers/gpu/drm/i915/i915_drv.c index a0a2cad..1364c3e 100644
---- a/drivers/gpu/drm/i915/i915_drv.c
-+++ b/drivers/gpu/drm/i915/i915_drv.c
-@@ -541,6 +541,11 @@ static int __init i915_init(void)
-                driver.driver_features &= ~DRIVER_MODESET;
- #endif
+diff --git a/drivers/mfd/ab3100-core.c b/drivers/mfd/ab3100-core.c
+index aa3824a..a2ce3b6 100644
+--- a/drivers/mfd/ab3100-core.c
++++ b/drivers/mfd/ab3100-core.c
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (C) 2007-2009 ST-Ericsson
++ * Copyright (C) 2007-2010 ST-Ericsson
+  * License terms: GNU General Public License (GPL) version 2
+  * Low-level core for exclusive access to the AB3100 IC on the I2C bus
+  * and some basic chip-configuration.
+@@ -14,6 +14,7 @@
+ #include <linux/platform_device.h>
+ #include <linux/device.h>
+ #include <linux/interrupt.h>
++#include <linux/random.h>
+ #include <linux/debugfs.h>
+ #include <linux/seq_file.h>
+ #include <linux/uaccess.h>
+@@ -376,6 +377,8 @@ static irqreturn_t ab3100_irq_handler(int irq, void *data)
+ 	u32 fatevent;
+ 	int err;
  
-+       if (!(driver.driver_features & DRIVER_MODESET)) {
-+               driver.suspend = i915_suspend;
-+               driver.resume = i915_resume;
-+       }
++	add_interrupt_randomness(irq);
 +
-        return drm_init(&driver);
+ 	err = ab3100_get_register_page_interruptible(ab3100, AB3100_EVENTA1,
+ 				       event_regs, 3);
+ 	if (err)
+@@ -720,10 +723,7 @@ static struct platform_device ab3100_##devname##_device = {	\
+ 	.id		= -1,					\
  }
  
-
-
+-/*
+- * This lists all the subdevices and corresponding register
+- * ranges.
+- */
++/* This lists all the subdevices */
+ AB3100_DEVICE(dac, "ab3100-dac");
+ AB3100_DEVICE(leds, "ab3100-leds");
+ AB3100_DEVICE(power, "ab3100-power");
+@@ -889,10 +889,11 @@ static int __init ab3100_probe(struct i2c_client *client,
+ 	if (err)
+ 		goto exit_no_setup;
+ 
+-	/* This real unpredictable IRQ is of course sampled for entropy */
+ 	err = request_threaded_irq(client->irq, NULL, ab3100_irq_handler,
+-			  IRQF_ONESHOT,
+-			  "ab3100-core", ab3100);
++				IRQF_ONESHOT, "ab3100-core", ab3100);
++	/* This real unpredictable IRQ is of course sampled for entropy */
++	rand_initialize_irq(client->irq);
++
+ 	if (err)
+ 		goto exit_no_irq;
+ 
 -- 
-Jesse Barnes, Intel Open Source Technology Center
+1.6.5.2
+
