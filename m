@@ -1,80 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754752Ab0AIQ7S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754758Ab0AIRBb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754752Ab0AIQ7S (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Jan 2010 11:59:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754712Ab0AIQ7R
+	id S1754758Ab0AIRBb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Jan 2010 12:01:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752202Ab0AIRBa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Jan 2010 11:59:17 -0500
-Received: from mail-yw0-f176.google.com ([209.85.211.176]:39737 "EHLO
-	mail-yw0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754698Ab0AIQ7Q (ORCPT
+	Sat, 9 Jan 2010 12:01:30 -0500
+Received: from ppsw-0.csi.cam.ac.uk ([131.111.8.130]:48795 "EHLO
+	ppsw-0.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754200Ab0AIRBa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Jan 2010 11:59:16 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=VFCwUsPeYfnRWtY43jpCDWHFC1a+zTRdBLap9jEx9oMRFAGeALPTXVot2zCrdEGucc
-         AUpr3FmfEw3UpE4TwqCDwJT5l8wKuxrxt0+1qKCVct7Yy+pnMItSxEuquWbdt4Rdu6T4
-         YF6V1uTCnDCE42xS+SRUAEjaH0tsqwVphRu6w=
-Date: Sun, 10 Jan 2010 01:01:03 +0800
-From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
-To: Alexander Beregalov <a.beregalov@gmail.com>
-Cc: akpm@linux-foundation.org, daniel@caiaq.de, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] rtc: mxc: fix memory leak
-Message-ID: <20100109170103.GB9190@hack>
-References: <1263055387-31340-1-git-send-email-a.beregalov@gmail.com>
+	Sat, 9 Jan 2010 12:01:30 -0500
+X-Cam-AntiVirus: no malware found
+X-Cam-SpamDetails: not scanned
+X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
+Message-ID: <4B48B66D.8050406@cam.ac.uk>
+Date: Sat, 09 Jan 2010 17:01:33 +0000
+From: Jonathan Cameron <jic23@cam.ac.uk>
+User-Agent: Thunderbird 2.0.0.23 (X11/20091029)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1263055387-31340-1-git-send-email-a.beregalov@gmail.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+To: LKML <linux-kernel@vger.kernel.org>, Greg Kroah-Hartman <gregkh@suse.de>
+CC: error27@gmail.com
+Subject: [PATCH 2/2] staging: iio: Fix incorrect existence check for a shared
+ event pointer.
+References: <4B48B57E.40300@cam.ac.uk>
+In-Reply-To: <4B48B57E.40300@cam.ac.uk>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jan 09, 2010 at 07:43:07PM +0300, Alexander Beregalov wrote:
->Free pdata before exit.
->Found by cppcheck.
->
->Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
+Signed-off-by: Jonathan Cameron <jic23@cam.ac.uk>
+---
+ A second smatch detected error. First part fixes in a typo
+ in the comment directly above that I noticed whilst trying
+ to remember what this code actually does. Second part is
+ the actual fix.  I'm fairly amazed this one never caused
+ trouble in testing as it is in one of the most common paths.
 
-This patch looks fine for me.
+ drivers/staging/iio/industrialio-core.c |   16 ++++++++--------
+ 1 files changed, 8 insertions(+), 8 deletions(-)
 
-Reviewed-by: WANG Cong <xiyou.wangcong@gmail.com>
-
-Thanks!
-
->---
-> drivers/rtc/rtc-mxc.c |    6 ++++--
-> 1 files changed, 4 insertions(+), 2 deletions(-)
->
->diff --git a/drivers/rtc/rtc-mxc.c b/drivers/rtc/rtc-mxc.c
->index 6bd5072..2642e6b 100644
->--- a/drivers/rtc/rtc-mxc.c
->+++ b/drivers/rtc/rtc-mxc.c
->@@ -396,8 +396,10 @@ static int __init mxc_rtc_probe(struct platform_device *pdev)
-> 	pdata->ioaddr = ioremap(res->start, resource_size(res));
-> 
-> 	clk = clk_get(&pdev->dev, "ckil");
->-	if (IS_ERR(clk))
->-		return PTR_ERR(clk);
->+	if (IS_ERR(clk)) {
->+		ret = PTR_ERR(clk);
->+		goto exit_free_pdata;
->+	}
-> 
-> 	rate = clk_get_rate(clk);
-> 	clk_put(clk);
->-- 
->1.6.6
->
->--
->To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->the body of a message to majordomo@vger.kernel.org
->More majordomo info at  http://vger.kernel.org/majordomo-info.html
->Please read the FAQ at  http://www.tux.org/lkml/
-
--- 
-Live like a child, think like the god.
+diff --git a/drivers/staging/iio/industrialio-core.c b/drivers/staging/iio/industrialio-core.c
+index 87799b2..4ff683a 100644
+--- a/drivers/staging/iio/industrialio-core.c
++++ b/drivers/staging/iio/industrialio-core.c
+@@ -292,16 +292,16 @@ ssize_t iio_event_chrdev_read(struct file *filep,
+ 	mutex_unlock(&ev_int->event_list_lock);
+ 	/*
+ 	 * Possible concurency issue if an update of this event is on its way
+-	 * through. May lead to new even being removed whilst the reported event
+-	 * was the unescalated event. In typical use case this is not a problem
+-	 * as userspace will say read half the buffer due to a 50% full event
+-	 * which would make the correct 100% full incorrect anyway.
++	 * through. May lead to new event being removed whilst the reported
++	 * event was the unescalated event. In typical use case this is not a
++	 * problem as userspace will say read half the buffer due to a 50%
++	 * full event which would make the correct 100% full incorrect anyway.
+ 	 */
+-	spin_lock(&el->shared_pointer->lock);
+-	if (el->shared_pointer)
++	if (el->shared_pointer) {
++		spin_lock(&el->shared_pointer->lock);
+ 		(el->shared_pointer->ev_p) = NULL;
+-	spin_unlock(&el->shared_pointer->lock);
+-
++		spin_unlock(&el->shared_pointer->lock);
++	}
+ 	kfree(el);
  
+ 	return len;
+-- 
+1.6.4.4
