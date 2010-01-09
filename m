@@ -1,154 +1,228 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754699Ab0AIP7R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754714Ab0AIQVW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754699Ab0AIP7R (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Jan 2010 10:59:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753986Ab0AIP7Q
+	id S1754714Ab0AIQVW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Jan 2010 11:21:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754679Ab0AIQVW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Jan 2010 10:59:16 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:37914 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753472Ab0AIP7P (ORCPT
+	Sat, 9 Jan 2010 11:21:22 -0500
+Received: from tomts20.bellnexxia.net ([209.226.175.74]:45103 "EHLO
+	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752451Ab0AIQVV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Jan 2010 10:59:15 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=WQvpMZ6WfG1yrSlF0r5mub5wNsYL+FAcNbUM9Ij/qUpY8ltjeaneV9kjC+jmjxc7Lf
-         blpGEtfsJla3oyVsnBo8UfdxgtGjyFPm+L0kQGBxl0/r7LUrWYcK3lRPI0/luDlhMvNc
-         osDyF1b8WA1ThE6i6IC2YD2xYIucmpAk7NCwI=
-From: Corrado Zoccolo <czoccolo@gmail.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Linux-Kernel <linux-kernel@vger.kernel.org>,
-       Jeff Moyer <jmoyer@redhat.com>, Vivek Goyal <vgoyal@redhat.com>,
-       Shaohua Li <shaohua.li@intel.com>,
-       Gui Jianfeng <guijianfeng@cn.fujitsu.com>,
-       Yanmin Zhang <yanmin_zhang@linux.intel.com>,
-       Corrado Zoccolo <czoccolo@gmail.com>
-Subject: [PATCH] cfq-iosched: rework seeky detection
-Date: Sat,  9 Jan 2010 16:59:17 +0100
-Message-Id: <1263052757-23436-1-git-send-email-czoccolo@gmail.com>
-X-Mailer: git-send-email 1.6.4.4
+	Sat, 9 Jan 2010 11:21:21 -0500
+Date: Sat, 9 Jan 2010 11:16:18 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>,
+       paulmck@linux.vnet.ibm.com, Josh Triplett <josh@joshtriplett.org>,
+       Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org,
+       tglx@linutronix.de, Valdis.Kletnieks@vt.edu, dhowells@redhat.com,
+       laijs@cn.fujitsu.com, dipankar@in.ibm.com
+Subject: Re: [RFC PATCH] introduce sys_membarrier(): process-wide memory
+	barrier (v2)
+Message-ID: <20100109161617.GA13505@Krystal>
+References: <20100108235649.GA18477@Krystal> <1263034063.557.6495.camel@twins>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <1263034063.557.6495.camel@twins>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.27.31-grsec (i686)
+X-Uptime: 10:50:25 up 24 days, 8 min,  4 users,  load average: 0.32, 0.25,
+	0.43
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Current seeky detection is based on average seek lenght.
-This is suboptimal, since the average will not distinguish between:
-* a process doing medium sized seeks
-* a process doing some sequential requests interleaved with larger seeks
-and even a medium seek can take lot of time, if the requested sector
-happens to be behind the disk head in the rotation (50% probability).
+* Peter Zijlstra (peterz@infradead.org) wrote:
+> On Fri, 2010-01-08 at 18:56 -0500, Mathieu Desnoyers wrote:
+> 
+> > Index: linux-2.6-lttng/kernel/sched.c
+> > ===================================================================
+> > --- linux-2.6-lttng.orig/kernel/sched.c	2010-01-06 23:23:34.000000000 -0500
+> > +++ linux-2.6-lttng/kernel/sched.c	2010-01-08 18:17:44.000000000 -0500
+> > @@ -119,6 +119,11 @@
+> >   */
+> >  #define RUNTIME_INF	((u64)~0ULL)
+> >  
+> > +/*
+> > + * IPI vs cpumask broadcast threshold. Threshold of 1 IPI.
+> > + */
+> > +#define ADAPT_IPI_THRESHOLD	1
+> > +
+> >  static inline int rt_policy(int policy)
+> >  {
+> >  	if (unlikely(policy == SCHED_FIFO || policy == SCHED_RR))
+> > @@ -10822,6 +10827,124 @@ struct cgroup_subsys cpuacct_subsys = {
+> >  };
+> >  #endif	/* CONFIG_CGROUP_CPUACCT */
+> >  
+> > +/*
+> > + * Execute a memory barrier on all CPUs on SMP systems.
+> > + * Do not rely on implicit barriers in smp_call_function(), just in case they
+> > + * are ever relaxed in the future.
+> > + */
+> > +static void membarrier_ipi(void *unused)
+> > +{
+> > +	smp_mb();
+> > +}
+> > +
+> > +/*
+> > + * Handle out-of-mem by sending per-cpu IPIs instead.
+> > + */
+> > +static void membarrier_retry(void)
+> > +{
+> > +	int cpu;
+> > +
+> > +	for_each_cpu(cpu, mm_cpumask(current->mm)) {
+> > +		if (cpu_curr(cpu)->mm == current->mm)
+> > +			smp_call_function_single(cpu, membarrier_ipi,
+> > +						 NULL, 1);
+> > +	}
+> > +}
+> 
+> 
+> > +SYSCALL_DEFINE0(membarrier)
+> > +{
+> > +#ifdef CONFIG_SMP
+> > +	int cpu, i, cpu_ipi[ADAPT_IPI_THRESHOLD], nr_cpus = 0;
+> > +	cpumask_var_t tmpmask;
+> > +	int this_cpu;
+> > +
+> > +	if (likely(!thread_group_empty(current))) {
+> > +		rcu_read_lock();	/* protect cpu_curr(cpu)-> access */
+> > +		/*
+> > +		 * We don't need to include ourself in IPI, as we already
+> > +		 * surround our execution with memory barriers. We also
+> > +		 * don't have to disable preemption here, because if we
+> > +		 * migrate out of "this_cpu", then there is an implied memory
+> > +		 * barrier for the thread now running on "this_cpu".
+> > +		 */
+> > +		this_cpu = raw_smp_processor_id();
+> 
+> How is this not a bug?
 
-Therefore, we change the seeky queue detection to work as follows:
-* each request can be classified as sequential if it is very close to
-  the current head position, i.e. it is likely in the disk cache (disks
-  usually read more data than requested, and put it in cache for
-  subsequent reads). Otherwise, the request is classified as seeky.
-* an history window of the last 32 requests is kept, storing the
-  classification result.
-* A queue is marked as seeky if more than 1/8 of the last 32 requests
-  were seeky.
+This should be moved it right below the following smp_mb(). See below,
 
-This patch fixes a regression reported by Yanmin, on mmap 64k random
-reads.
+> 
+> > +		/*
+> > +		 * Memory barrier on the caller thread _before_ the first
+> > +		 * cpu_curr(cpu)->mm read and also before sending first IPI.
+> > +		 */
+> > +		smp_mb();
 
-Reported-by: Yanmin Zhang <yanmin_zhang@linux.intel.com>
-Signed-off-by: Corrado Zoccolo <czoccolo@gmail.com>
----
- block/cfq-iosched.c |   54 +++++++++++++-------------------------------------
- 1 files changed, 14 insertions(+), 40 deletions(-)
+So let's move it here. Now, why this should be ok:
 
-diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
-index c6d5678..4e203c4 100644
---- a/block/cfq-iosched.c
-+++ b/block/cfq-iosched.c
-@@ -133,9 +133,7 @@ struct cfq_queue {
- 	unsigned short ioprio, org_ioprio;
- 	unsigned short ioprio_class, org_ioprio_class;
- 
--	unsigned int seek_samples;
--	u64 seek_total;
--	sector_t seek_mean;
-+	u32 seek_history;
- 	sector_t last_request_pos;
- 	unsigned long seeky_start;
- 
-@@ -1658,22 +1656,13 @@ static inline sector_t cfq_dist_from_last(struct cfq_data *cfqd,
- 		return cfqd->last_position - blk_rq_pos(rq);
- }
- 
--#define CFQQ_SEEK_THR		8 * 1024
--#define CFQQ_SEEKY(cfqq)	((cfqq)->seek_mean > CFQQ_SEEK_THR)
-+#define CFQQ_SEEK_THR		(sector_t)(8 * 100)
-+#define CFQQ_SEEKY(cfqq)	(hweight32(cfqq->seek_history) > 32/8)
- 
- static inline int cfq_rq_close(struct cfq_data *cfqd, struct cfq_queue *cfqq,
- 			       struct request *rq, bool for_preempt)
- {
--	sector_t sdist = cfqq->seek_mean;
--
--	if (!sample_valid(cfqq->seek_samples))
--		sdist = CFQQ_SEEK_THR;
--
--	/* if seek_mean is big, using it as close criteria is meaningless */
--	if (sdist > CFQQ_SEEK_THR && !for_preempt)
--		sdist = CFQQ_SEEK_THR;
--
--	return cfq_dist_from_last(cfqd, rq) <= sdist;
-+	return cfq_dist_from_last(cfqd, rq) <= CFQQ_SEEK_THR;
- }
- 
- static struct cfq_queue *cfqq_close(struct cfq_data *cfqd,
-@@ -2971,30 +2960,16 @@ static void
- cfq_update_io_seektime(struct cfq_data *cfqd, struct cfq_queue *cfqq,
- 		       struct request *rq)
- {
--	sector_t sdist;
--	u64 total;
--
--	if (!cfqq->last_request_pos)
--		sdist = 0;
--	else if (cfqq->last_request_pos < blk_rq_pos(rq))
--		sdist = blk_rq_pos(rq) - cfqq->last_request_pos;
--	else
--		sdist = cfqq->last_request_pos - blk_rq_pos(rq);
--
--	/*
--	 * Don't allow the seek distance to get too large from the
--	 * odd fragment, pagein, etc
--	 */
--	if (cfqq->seek_samples <= 60) /* second&third seek */
--		sdist = min(sdist, (cfqq->seek_mean * 4) + 2*1024*1024);
--	else
--		sdist = min(sdist, (cfqq->seek_mean * 4) + 2*1024*64);
-+	sector_t sdist = 0;
-+	if (cfqq->last_request_pos) {
-+		if (cfqq->last_request_pos < blk_rq_pos(rq))
-+			sdist = blk_rq_pos(rq) - cfqq->last_request_pos;
-+		else
-+			sdist = cfqq->last_request_pos - blk_rq_pos(rq);
-+	}
- 
--	cfqq->seek_samples = (7*cfqq->seek_samples + 256) / 8;
--	cfqq->seek_total = (7*cfqq->seek_total + (u64)256*sdist) / 8;
--	total = cfqq->seek_total + (cfqq->seek_samples/2);
--	do_div(total, cfqq->seek_samples);
--	cfqq->seek_mean = (sector_t)total;
-+	cfqq->seek_history <<= 1;
-+	cfqq->seek_history |= (sdist > CFQQ_SEEK_THR);
- 
- 	/*
- 	 * If this cfqq is shared between multiple processes, check to
-@@ -3032,8 +3007,7 @@ cfq_update_idle_window(struct cfq_data *cfqd, struct cfq_queue *cfqq,
- 		cfq_mark_cfqq_deep(cfqq);
- 
- 	if (!atomic_read(&cic->ioc->nr_tasks) || !cfqd->cfq_slice_idle ||
--	    (!cfq_cfqq_deep(cfqq) && sample_valid(cfqq->seek_samples)
--	     && CFQQ_SEEKY(cfqq)))
-+	    (!cfq_cfqq_deep(cfqq) && CFQQ_SEEKY(cfqq)))
- 		enable_idle = 0;
- 	else if (sample_valid(cic->ttime_samples)) {
- 		if (cic->ttime_mean > cfqd->cfq_slice_idle)
+The requirement of this algorithm is that, between the two smp_mb()
+issued at the beginning and end of sys_membarrier() execution, we can be
+sure that smp_mb() are issued on all processors running threads which
+belong to our process.
+
+So if we are preempted after reading the processor ID and migrated (and
+another thread belonging to our process is run on our CPU), the
+scheduler activity happening between the two smp_mb() surrounding
+sys_membarrier() guarantees that memory barriers are issued for the
+newly coming process. Therefore, we can skip the CPU on which we took
+the processor ID, even if we happen to be moved to a different CPU.
+
+It is based on the same assumption as the "racy" cpu_curr(cpu)->mm read:
+we need to be sure that the scheduler issues a smp_mb() between the
+execution of user-level instructions and scheduler activity (but in this
+case, the scenario also involves a migration).
+
+
+> > +		/* Get CPU IDs up to threshold */
+> > +		for_each_cpu(cpu, mm_cpumask(current->mm)) {
+> > +			if (unlikely(cpu == this_cpu))
+> > +				continue;
+> > +			if (cpu_curr(cpu)->mm == current->mm) {
+> > +				if (nr_cpus == ADAPT_IPI_THRESHOLD) {
+> > +					nr_cpus++;
+> > +					break;
+> > +				}
+> > +				cpu_ipi[nr_cpus++] = cpu;
+> > +			}
+> > +		}
+> > +		if (likely(nr_cpus <= ADAPT_IPI_THRESHOLD)) {
+> > +			for (i = 0; i < nr_cpus; i++) {
+> > +				smp_call_function_single(cpu_ipi[i],
+> > +							 membarrier_ipi,
+> > +							 NULL, 1);
+> > +			}
+> > +		} else {
+> > +			if (!alloc_cpumask_var(&tmpmask, GFP_KERNEL)) {
+> > +				membarrier_retry();
+> > +				goto unlock;
+> > +			}
+> > +			for (i = 0; i < ADAPT_IPI_THRESHOLD; i++)
+> > +				cpumask_set_cpu(cpu_ipi[i], tmpmask);
+> > +			/* Continue previous for_each_cpu() */
+> > +			do {
+> > +				if (cpu_curr(cpu)->mm == current->mm)
+> > +					cpumask_set_cpu(cpu, tmpmask);
+> > +				cpu = cpumask_next(cpu,
+> > +						   mm_cpumask(current->mm));
+> > +				if (unlikely(cpu == this_cpu))
+> > +					continue;
+> > +			} while (cpu < nr_cpu_ids);
+> > +			preempt_disable();	/* explicitly required */
+> 
+> This seems to indicate the same.
+
+I solely added these preempt disable/enable because they are explicitly
+required by smp_call_function_many() (see the comment at the beginning
+of the implementation). I have not checked whether or not this would
+indeed be required in this very specific case, or somehow permitted due
+following my explanation above. Given that smp_processor_id() is used in
+smp_call_function_many, it would complain if preemption is not disabled,
+so it's better to stick with preemption disabling anyway.
+
+So it all depends: I'm a bit reluctant to disable preemption when
+iterating on all CPUs, as it's pushing the duration of the preempt-off
+section as we add more cores on the system. So if possible I'd like to
+keep preemption on. However, given that we already disable preemption
+while waiting for other processor to acknowledge the IPI, we might as
+well bite the bullet and disable it around the whole system call
+althogether.
+
+Anyway I don't see the impact of keeping preemption on as being as
+important as taking all runqueue locks, so I could do with keeping
+preemption off if it keeps the complexity level down.
+
+Thoughts ?
+
+Thanks,
+
+Mathieu
+
+> 
+> > +			smp_call_function_many(tmpmask, membarrier_ipi, NULL,
+> > +					       1);
+> > +			preempt_enable();
+> > +			free_cpumask_var(tmpmask);
+> > +		}
+> > +unlock:
+> > +		/*
+> > +		 * Memory barrier on the caller thread _after_ we finished
+> > +		 * waiting for the last IPI and also after reading the last
+> > +		 * cpu_curr(cpu)->mm.
+> > +		 */
+> > +		smp_mb();
+> > +		rcu_read_unlock();
+> > +	}
+> > +#endif	/* #ifdef CONFIG_SMP */
+> > +	return 0;
+> > +}
+> > +
+> >  #ifndef CONFIG_SMP
+> >  
+> >  int rcu_expedited_torture_stats(char *page)
+> 
+> 
+
 -- 
-1.6.4.4
-
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
