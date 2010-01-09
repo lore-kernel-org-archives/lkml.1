@@ -1,75 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753023Ab0AILmb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753369Ab0AIMFF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753023Ab0AILmb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Jan 2010 06:42:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752773Ab0AILma
+	id S1753369Ab0AIMFF (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Jan 2010 07:05:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752605Ab0AIMFD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Jan 2010 06:42:30 -0500
-Received: from e28smtp07.in.ibm.com ([122.248.162.7]:38070 "EHLO
-	e28smtp07.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752613Ab0AILma (ORCPT
+	Sat, 9 Jan 2010 07:05:03 -0500
+Received: from ey-out-2122.google.com ([74.125.78.25]:10200 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751319Ab0AIMFB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Jan 2010 06:42:30 -0500
-From: Chandru <chandru@in.ibm.com>
-Organization: ibm
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] ibmphp : read the length of ebda and map entire ebda region
-Date: Sat, 9 Jan 2010 17:12:25 +0530
-User-Agent: KMail/1.11.2 (Linux/2.6.30.9-90.fc11.x86_64; KDE/4.2.2; x86_64; ; )
-Cc: gregkh@suse.de, Andrew Morton <akpm@linux-foundation.org>
+	Sat, 9 Jan 2010 07:05:01 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject
+         :content-type:content-transfer-encoding;
+        b=AOJBQFvsUUnkCWW1ZGcdE1Gc9pcHJMPKZ9lYJ5uzC7F6pXhtCg3QAg7wX6GWhjNjid
+         bIHzdz4NY/z+kP4Ac1dOe7kH1JjH5FfAKF/QBJpN1Jpp/4xSSYJSbLHzYvPPml1vNmxQ
+         B0Zjph/oBdquN6OZX+TbgVT/CtAGahKvbfuvA=
+Message-ID: <4B4871DD.5070505@gmail.com>
+Date: Sat, 09 Jan 2010 13:09:01 +0100
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
+To: Felipe Balbi <felipe.balbi@nokia.com>, linux-usb@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] musb: Test always evaluates to false
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <201001091712.25655.chandru@in.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ibmphp driver currently maps only 1KB of ebda memory area into kernel address 
-space during driver initialization. This causes kernel oops when the driver is 
-modprobe'd and it accesses memory area beyond 1KB within ebda segment. The first 
-byte of ebda segment actually stores the length of the ebda region in 
-Kilobytes. Hence make use of the length parameter and map the entire ebda 
-region.
+The removed part always evaluates to false.
 
-
-Signed-off-by: Chandru Siddalingappa <chandru@linux.vnet.ibm.com>
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
 ---
+ drivers/usb/musb/musb_gadget.c |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
 
- drivers/pci/hotplug/ibmphp_ebda.c |   11 +++++++++--
- 1 file changed, 9 insertions(+), 2 deletions(-)
+Was a different test intended?
 
---- linux-2.6.33-rc2/drivers/pci/hotplug/ibmphp_ebda.c.orig	2010-01-09 
-15:23:54.000000000 +0530
-+++ linux-2.6.33-rc2/drivers/pci/hotplug/ibmphp_ebda.c	2010-01-09 
-17:01:06.000000000 +0530
-@@ -245,7 +245,7 @@ static void __init print_ebda_hpc (void)
+diff --git a/drivers/usb/musb/musb_gadget.c b/drivers/usb/musb/musb_gadget.c
+index cbcf14a..1a19203 100644
+--- a/drivers/usb/musb/musb_gadget.c
++++ b/drivers/usb/musb/musb_gadget.c
+@@ -1697,8 +1697,7 @@ int usb_gadget_register_driver(struct usb_gadget_driver *driver)
+ 		return -EINVAL;
  
- int __init ibmphp_access_ebda (void)
- {
--	u8 format, num_ctlrs, rio_complete, hs_complete;
-+	u8 format, num_ctlrs, rio_complete, hs_complete, ebda_sz;
- 	u16 ebda_seg, num_entries, next_offset, offset, blk_id, sub_addr, re, rc_id, 
-re_id, base;
- 	int rc = 0;
- 
-@@ -260,7 +260,14 @@ int __init ibmphp_access_ebda (void)
- 	iounmap (io_mem);
- 	debug ("returned ebda segment: %x\n", ebda_seg);
- 	
--	io_mem = ioremap(ebda_seg<<4, 1024);
-+	io_mem = ioremap(ebda_seg<<4, 1);
-+	ebda_sz = readb(io_mem);
-+	iounmap(io_mem);
-+	debug("ebda size: %d(KiB)\n", ebda_sz);
-+	if (ebda_sz == 0)
-+		return -ENOMEM;
-+
-+	io_mem = ioremap(ebda_seg<<4, (ebda_sz * 1024));
- 	if (!io_mem )
- 		return -ENOMEM;
- 	next_offset = 0x180;
-
-
+ 	/* driver must be initialized to support peripheral mode */
+-	if (!musb || !(musb->board_mode == MUSB_OTG
+-				|| musb->board_mode != MUSB_OTG)) {
++	if (!musb) {
+ 		DBG(1, "%s, no dev??\n", __func__);
+ 		return -ENODEV;
+ 	}
