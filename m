@@ -1,98 +1,191 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754311Ab0AIVcc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754357Ab0AIVfE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754311Ab0AIVcc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Jan 2010 16:32:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754079Ab0AIVcc
+	id S1754357Ab0AIVfE (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Jan 2010 16:35:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754120Ab0AIVfD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Jan 2010 16:32:32 -0500
-Received: from mail-iw0-f194.google.com ([209.85.223.194]:59536 "EHLO
-	mail-iw0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753766Ab0AIVcb convert rfc822-to-8bit (ORCPT
+	Sat, 9 Jan 2010 16:35:03 -0500
+Received: from casper.infradead.org ([85.118.1.10]:56008 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754105Ab0AIVfA convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Jan 2010 16:32:31 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=O1+0wmzsSs9NAnl3Yn9l+tXFYe3w6quG1htzgoelK3DSogyhGVRR2XwhBuz3CuNjaf
-         1aPacGdyWK9gsvpnNN1F1/+KGu0oJFEdP7vdgruzS/1YT+UZQ3mu5wZ8tZN7ZXXOGBYy
-         +sHmw4rxEcmclEjTk8WFGxiDw3B4Xh44aqxno=
-MIME-Version: 1.0
-In-Reply-To: <alpine.LFD.2.00.1001091012080.7821@localhost.localdomain>
-References: <201001090045.33784.rjw@sisk.pl>
-	 <alpine.LFD.2.00.1001081548320.7821@localhost.localdomain>
-	 <alpine.DEB.2.00.1001090214220.21286@skynet.skynet.ie>
-	 <20100108185041.7aae6c01@jbarnes-piketon>
-	 <20100109120141.GA4319@localhost.localdomain>
-	 <alpine.LFD.2.00.1001091012080.7821@localhost.localdomain>
-Date: Sun, 10 Jan 2010 07:32:30 +1000
-Message-ID: <21d7e9971001091332v23ac0e28m1b1890cd667aacb8@mail.gmail.com>
-Subject: Re: [PATCH] DRM / i915: Fix resume regression on MSI Wind U100 w/o 
-	KMS
-From: Dave Airlie <airlied@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Jerome Glisse <glisse@freedesktop.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, Dave Airlie <airlied@linux.ie>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       dri-devel@lists.sourceforge.net
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat, 9 Jan 2010 16:35:00 -0500
+Date: Sat, 9 Jan 2010 13:37:44 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: linux-kernel@vger.kernel.org
+Cc: tglx@tglx.de, mingo@elte.hu, Cyrill Gorcunov <gorcunov@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>, akpm@linux-foundation.org
+Subject: [PATCH] timers: Introduce the concept of timer slack for legacy
+ timers
+Message-ID: <20100109133744.29829988@infradead.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.6; i586-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 8BIT
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 10, 2010 at 4:17 AM, Linus Torvalds
-<torvalds@linux-foundation.org> wrote:
->
->
-> On Sat, 9 Jan 2010, Jerome Glisse wrote:
->
->> On Fri, Jan 08, 2010 at 06:50:41PM -0800, Jesse Barnes wrote:
->> >
->> > Linus, can we ever drop those old paths?  Maybe after the new bits have
->> > been around for awhile?  Users of really old userspace stacks would
->> > lose 3D support, but they'd still have 2D, so it wouldn't be a complete
->> > break.  The non-KMS paths sometimes break like this anyway without us
->> > noticing (especially some of the weirder 3D paths)...
->> >
->> > Just thinking out loud, we could really kill a lot of really bad code...
->>
->> I among those who would love such things to happen :)
->
-> I don't want to drop it _yet_, but "ever"? Sure. When people are sure that
-> KMS actually handles all the cases that old X does (maybe that's true
-> now), and we've had more than just a couple of kernel releases of _stable_
-> Intel KMS, I suspect we can start thinking about "ok, nobody seriously
-> uses 3D on Intel integrated graphics _and_ updates the kernel".
->
-> The fact that they'd still have a working X setup would make it generally
-> much more palatable, I think.
->
-> But we definitely need more than just a couple of kernel releases. So
-> we're talking timescales of "more than a year of stable code". Whether
-> that is "six months from now" or "two years from now", I can't judge.
->
-> And people can try to convince me to be more or less aggressive about it,
-> so take the above as a more of a personal opinion that is open to
-> change than anything definite and final.
+>From d3bc98c6d3dbb202aeed9719cd6fc215907907e7 Mon Sep 17 00:00:00 2001
+From: Arjan van de Ven <arjan@linux.intel.com>
+Date: Sat, 9 Jan 2010 13:30:38 -0800
+Subject: [PATCH] timers: Introduce the concept of timer slack for legacy timers
 
-I'm in the 2-3 years at a minimum, with at least one kernel with no serious
-regressions in Intel KMS, which we haven't gotten close to yet. I'm not even
-sure the Intel guys are taking stable seriously enough yet. So far I don't think
-there is one kernel release (even stable) that works on all Intel
-chipsets without
-backporting patches. 2.6.32 needs the changes to remove the messed up
-render clock hacks which should really have been reverted a lot earlier since
-we had a lot of regression reports. The number of users using powersave=0
-to get anything approaching useable is growing etc.
+While HR timers have had the concept of timer slack for quite some time
+now, the legacy timers lacked this concept, and had to make do with
+round_jiffies() and friends.
 
-We do have ppl who run latest kernels on RHEL5 userspace and I'd rather
-not have that break badly, I'm guessing more than 3D will break if we remove
-this, since we need the DRM to allocate memory for 2D stuff, and will probably
-find the fallback to AGP is broken. Again Intel ppl would have to do a lot
-of testing on the fallback before removing anything, which is time I don't see
-anyone willing to spend.
+Timer slack is important for power management; grouping timers reduces
+the number of wakeups which in turn reduces power consumption.
 
-Dave.
-Dave.
+This patch introduces timer slack to the legacy timers using the following
+pieces:
+* A slack field in the timer struct
+* An api (set_timer_slack) that callers can use to set explicit timer slack
+* A default slack of 0.4% of the requested delay for callers that do not set
+  any explicit slack
+* Rounding code that is part of mod_timer() that tries to
+  group timers around jiffies values every 'power of two'
+  (so quick timers will group around every 2, but longer timers
+  will group around every 4, 8, 16, 32 etc)
+
+Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+---
+ include/linux/timer.h |   10 +++++++-
+ kernel/timer.c        |   56 +++++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 65 insertions(+), 1 deletions(-)
+
+diff --git a/include/linux/timer.h b/include/linux/timer.h
+index 763f58f..ea074d7 100644
+--- a/include/linux/timer.h
++++ b/include/linux/timer.h
+@@ -10,13 +10,19 @@
+ struct tvec_base;
+ 
+ struct timer_list {
++	/*
++	 * All fields that change during normal runtime grouped to the
++	 * same cacheline
++	 */
+ 	struct list_head entry;
+ 	unsigned long expires;
++	struct tvec_base *base;
+ 
+ 	void (*function)(unsigned long);
+ 	unsigned long data;
+ 
+-	struct tvec_base *base;
++	int slack;
++
+ #ifdef CONFIG_TIMER_STATS
+ 	void *start_site;
+ 	char start_comm[16];
+@@ -166,6 +172,8 @@ extern int mod_timer_msec(struct timer_list *timer, unsigned long delay_ms);
+ extern int mod_timer_pending(struct timer_list *timer, unsigned long expires);
+ extern int mod_timer_pinned(struct timer_list *timer, unsigned long expires);
+ 
++extern void set_timer_slack(struct timer_list *time, int slack_hz);
++
+ #define TIMER_NOT_PINNED	0
+ #define TIMER_PINNED		1
+ /*
+diff --git a/kernel/timer.c b/kernel/timer.c
+index 0efd9fa..c252e3f 100644
+--- a/kernel/timer.c
++++ b/kernel/timer.c
+@@ -318,6 +318,24 @@ unsigned long round_jiffies_up_relative(unsigned long j)
+ }
+ EXPORT_SYMBOL_GPL(round_jiffies_up_relative);
+ 
++/**
++ * set_timer_slack - set the allowed slack for a timer
++ * @slack_hz: the amount of time (in jiffies) allowed for rounding
++ *
++ * Set the amount of time, in jiffies, that a certain timer has
++ * in terms of slack. By setting this value, the timer subsystem
++ * will schedule the actual timer somewhere between
++ * the time mod_timer() asks for, and that time plus the slack.
++ *
++ * By setting the slack to -1, a percentage of the delay is used
++ * instead.
++ */
++void set_timer_slack(struct timer_list *timer, int slack_hz)
++{
++	timer->slack = slack_hz;
++}
++EXPORT_SYMBOL_GPL(set_timer_slack);
++
+ 
+ static inline void set_running_timer(struct tvec_base *base,
+ 					struct timer_list *timer)
+@@ -549,6 +567,7 @@ static void __init_timer(struct timer_list *timer,
+ {
+ 	timer->entry.next = NULL;
+ 	timer->base = __raw_get_cpu_var(tvec_bases);
++	timer->slack = -1;
+ #ifdef CONFIG_TIMER_STATS
+ 	timer->start_site = NULL;
+ 	timer->start_pid = -1;
+@@ -714,6 +733,41 @@ int mod_timer_pending(struct timer_list *timer, unsigned long expires)
+ }
+ EXPORT_SYMBOL(mod_timer_pending);
+ 
++/*
++ * Decide where to put the timer while taking the slack into account
++ *
++ * Algorithm:
++ *   1) calculate the maximum (absolute) time
++ *   2) calculate the highest bit where the expires and new max are different
++ *   3) use this bit to make a mask
++ *   4) use the bitmask to round down the maximum time, so that all last
++ *      bits are zeros
++ */
++static inline
++unsigned long apply_slack(struct timer_list *timer, unsigned long expires)
++{
++	unsigned long expires_limit, mask;
++	int bit;
++
++	expires_limit = expires + timer->slack;
++
++	if (timer->slack < 0) /* auto slack: use 0.4% */
++		expires_limit = expires + (expires - jiffies)/256;
++
++	mask = expires ^ expires_limit;
++
++	if (mask == 0)
++		return expires;
++
++	bit = find_last_bit(&mask, BITS_PER_LONG);
++
++	mask = (1 << bit) - 1;
++
++	expires_limit = expires_limit & ~(mask);
++
++	return expires_limit;
++}
++
+ /**
+  * mod_timer - modify a timer's timeout
+  * @timer: the timer to be modified
+@@ -744,6 +798,8 @@ int mod_timer(struct timer_list *timer, unsigned long expires)
+ 	if (timer_pending(timer) && timer->expires == expires)
+ 		return 1;
+ 
++	expires = apply_slack(timer, expires);
++
+ 	return __mod_timer(timer, expires, false, TIMER_NOT_PINNED);
+ }
+ EXPORT_SYMBOL(mod_timer);
+-- 
+1.6.2.5
+
+
+
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
