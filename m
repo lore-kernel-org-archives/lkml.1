@@ -1,73 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754645Ab0AIN7c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754630Ab0AIN7X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754645Ab0AIN7c (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Jan 2010 08:59:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754634Ab0AIN7b
+	id S1754630Ab0AIN7X (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Jan 2010 08:59:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753986Ab0AIN7W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Jan 2010 08:59:31 -0500
-Received: from out4.smtp.messagingengine.com ([66.111.4.28]:34315 "EHLO
-	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752410Ab0AIN7W (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 9 Jan 2010 08:59:22 -0500
-X-Sasl-enc: Ai9nSZVAHHsB1+IU+sQ1UlFwVCZTweU4qJpLeJMMGdvc 1263045561
-Date: Sat, 9 Jan 2010 11:59:19 -0200
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, len.brown@intel.com,
-       ibm-acpi@hmh.eng.br, kernel list <linux-kernel@vger.kernel.org>,
-       ibm-acpi-devel@lists.sourceforge.net
-Subject: Re: [ibm-acpi-devel] 2.6.33-rc2: regression: gkrellm no longer
- shows all the temperatures on thinkpad x60
-Message-ID: <20100109135919.GC936@khazad-dum.debian.net>
-References: <20091227215722.GN11737@elf.ucw.cz>
- <20091228130138.GA19362@khazad-dum.debian.net>
- <20100107214904.GB25538@elf.ucw.cz>
- <20100109134409.GA936@khazad-dum.debian.net>
+Received: from mga01.intel.com ([192.55.52.88]:49188 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751254Ab0AIN7V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 Jan 2010 08:59:21 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,247,1262592000"; 
+   d="scan'208";a="762774616"
+Date: Sat, 9 Jan 2010 21:59:04 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Quentin Barnes <qbarnes+nfs@yahoo-inc.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       Nick Piggin <npiggin@suse.de>, Steven Whitehouse <swhiteho@redhat.com>,
+       David Howells <dhowells@redhat.com>, Al Viro <viro@zeniv.linux.org.uk>,
+       Jonathan Corbet <corbet@lwn.net>
+Subject: Re: [RFC][PATCH v2] readahead: introduce O_RANDOM_READ for
+	POSIX_FADV_RANDOM
+Message-ID: <20100109135904.GA23944@localhost>
+References: <20091225000717.GA26949@yahoo-inc.com> <87aax18xms.fsf@basil.nowhere.org> <20091230051540.GA16308@localhost> <20091230052402.GB26364@localhost> <873a2s8hmp.fsf@basil.nowhere.org> <20091231043116.GA19397@localhost> <20100108130828.GA30480@infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20100109134409.GA936@khazad-dum.debian.net>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
- 1CDB 0FE3
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <20100108130828.GA30480@infradead.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 09 Jan 2010, Henrique de Moraes Holschuh wrote:
-> On Thu, 07 Jan 2010, Pavel Machek wrote:
-> > > Please apply the latest stack of patches (sent them to acpi-test
-> > > yesterday).
-> > > 
-> > > It is failing to register the ALSA mixer for some reason, and due
-> > > to a bug, it is not loading the module at all.  I will look at the reason it
-> > > is failing to register the ALSA mixer soon.  Meanwhile, the patches I sent
-> > > to Len make sure the module can still load sucessfully.
-> > 
-> > Well, I'm not sure its completely fixed. I got this in my syslog:
-> > 
-> > thinkpad_acpi: THERMAL EMERGENCY: a sensor reports something is
-> > extremely hot!
-> > thinkpad_acpi: temperatures (Celsius): 95 47 N/A 89 47 N/A 41 N/A 51
-> > 61 N/A N/A N/A N/A N/A N/A
-> 
-> And the extremely hot sensor is that 89°C, which is the GPU I think (varies
-> from thinkpad to thinkpad).  That is not normal, and I'd say it needs
-> repair, probably a badly seated heatsink or failed thermal interface
-> compound.
+On Fri, Jan 08, 2010 at 09:08:28PM +0800, Christoph Hellwig wrote:
+> Just thinking about this again, why don't you put the flag into
+> file->f_mode and the FMODE_* namespace given that we don't want it to be
+> settable from open?
 
-Hmm... come to think of it, the CPU is also quite hot (95°C), and it usually
-shares the heatsink system with the GPU/north bridge, so the problem might
-be on the CPU side of things.
+Good idea. To do that without race I would like to add ->f_lock to 
+f_mode modifications at non-open time, like this. What do you think?
 
-While it can easily be a hardware problem in the heatsink, we could also
-have a screwed up ACPI thermal control in our hands once again (either
-kernel bug, or bogus ACPI firmware in the laptop).
+---
+vfs: take f_lock on modifying f_mode after open time
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+---
+ fs/file_table.c     |    2 ++
+ fs/nfsd/nfs4state.c |    2 ++
+ 2 files changed, 4 insertions(+)
+
+--- linux.orig/fs/file_table.c	2010-01-09 10:50:24.000000000 +0800
++++ linux/fs/file_table.c	2010-01-09 10:51:06.000000000 +0800
+@@ -394,7 +394,9 @@ retry:
+ 			continue;
+ 		if (!(f->f_mode & FMODE_WRITE))
+ 			continue;
++		spin_lock(&f->f_lock);
+ 		f->f_mode &= ~FMODE_WRITE;
++		spin_unlock(&f->f_lock);
+ 		if (file_check_writeable(f) != 0)
+ 			continue;
+ 		file_release_write(f);
+--- linux.orig/fs/nfsd/nfs4state.c	2010-01-09 10:52:54.000000000 +0800
++++ linux/fs/nfsd/nfs4state.c	2010-01-09 10:52:56.000000000 +0800
+@@ -1998,7 +1998,9 @@ nfs4_file_downgrade(struct file *filp, u
+ {
+ 	if (share_access & NFS4_SHARE_ACCESS_WRITE) {
+ 		drop_file_write_access(filp);
++		spin_lock(&filp->f_lock);
+ 		filp->f_mode = (filp->f_mode | FMODE_READ) & ~FMODE_WRITE;
++		spin_unlock(&filp->f_lock);
+ 	}
+ }
+ 
