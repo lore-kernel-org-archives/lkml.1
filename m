@@ -1,48 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753340Ab0AIAvX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753438Ab0AIAyE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753340Ab0AIAvX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jan 2010 19:51:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753119Ab0AIAvW
+	id S1753438Ab0AIAyE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jan 2010 19:54:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753257Ab0AIAyD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jan 2010 19:51:22 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52777 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751630Ab0AIAvW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jan 2010 19:51:22 -0500
-Date: Fri, 8 Jan 2010 16:50:57 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Jesse Barnes <jbarnes@virtuousgeek.org>, Eric Anholt <eric@anholt.net>,
-       Zhenyu Wang <zhenyuw@linux.intel.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       dri-devel@lists.sourceforge.net
-Subject: Re: [PATCH] DRM / i915: Fix resume regression on MSI Wind U100 w/o
- KMS
-In-Reply-To: <201001090146.17793.rjw@sisk.pl>
-Message-ID: <alpine.LFD.2.00.1001081648490.7821@localhost.localdomain>
-References: <201001090045.33784.rjw@sisk.pl> <alpine.LFD.2.00.1001081548320.7821@localhost.localdomain> <20100108163217.341da699@jbarnes-piketon> <201001090146.17793.rjw@sisk.pl>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Fri, 8 Jan 2010 19:54:03 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:37517 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751644Ab0AIAyA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jan 2010 19:54:00 -0500
+Message-ID: <4B47D39E.20104@redhat.com>
+Date: Fri, 08 Jan 2010 19:53:50 -0500
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Michal Marek <mmarek@suse.cz>, Simon Horman <horms@verge.net.au>,
+       Roland Dreier <rdreier@cisco.com>, Sam Ravnborg <sam@ravnborg.org>,
+       Sergei Trofimovich <slyfox@inbox.ru>, linux-kbuild@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-sh@vger.kernel.org
+Subject: Re: [PATCH] Makefile: do not override LC_CTYPE
+References: <20100108115745.GA14758@sepie.suse.cz> <1262952988-16563-1-git-send-email-mmarek@suse.cz> <4B47C94E.8070302@redhat.com> <4B47CACA.7080103@zytor.com>
+In-Reply-To: <4B47CACA.7080103@zytor.com>
+X-Enigmail-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Sat, 9 Jan 2010, Rafael J. Wysocki wrote:
+H. Peter Anvin wrote:
+> On 01/08/2010 04:09 PM, Masami Hiramatsu wrote:
+>> Hi Michal,
+>>
+>> Michal Marek wrote:
+>>> Setting LC_CTYPE=C breaks localized messages in some setups. With only
+>>> LC_COLLATE=C and LC_NUMERIC=C, we get almost all we need, except for not
+>>> so defined character classes and tolower()/toupper(). The former is not
+>>> a big issue, because we can assume that e.g. [:alpha:] will always
+>>> include a-zA-Z and we only ever process ASCII input. The latter seems
+>>> only affect arch/sh/tools/gen-mach-types, which we can handle separately.
+>>
+>> Hmm, this also affects arch/x/tools/gen-insn-attr-x86.awk.
+>> Could you also wrap it?
+>>
 > 
-> Which is functionally equivalent to my patch, because i915_suspend/resume()
-> won't be called by drm_class_suspend/resume() in the KMS case anyway.
+> This is tolower/toupper()?  Do there exist locales where tolower/toupper
+> on ASCII input do weird things, or are we merely hypothesizing?
 
-Ahh, right you are - that class suspend function does a check for 
-DRIVER_MODESET, and only does the suspend/resume if it's not a MODESET 
-driver.
+Ah, sorry, I was just hypothesizing.
+---
+#!/bin/sh
+# en_US locale sorts alphabets as AaBb...
+LANG=en_US
+LC_ALL=
+LC_COLLATE=C
+LC_NUMERIC=C
+export LC_COLLATE LC_NUMERIC
+awk 'BEGIN{if (match("C","[a-z]")) {print "NG"} else {print "OK"} exit;}'
+---
+this returns "OK". So, the patch is OK for me too.
 
-Ok, so I withdraw my objections to your original patch - it's confusing, 
-but that's just because DRM is such a horrible mess with subtle things.
+Thanks,
 
-			Linus
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
+
