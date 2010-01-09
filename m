@@ -1,38 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752419Ab0AIXiK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753165Ab0AIXij@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752419Ab0AIXiK (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Jan 2010 18:38:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751667Ab0AIXiJ
+	id S1753165Ab0AIXij (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Jan 2010 18:38:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752602Ab0AIXij
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Jan 2010 18:38:09 -0500
-Received: from cavan.codon.org.uk ([93.93.128.6]:47617 "EHLO
-	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751041Ab0AIXiG (ORCPT
+	Sat, 9 Jan 2010 18:38:39 -0500
+Received: from casper.infradead.org ([85.118.1.10]:56589 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752187Ab0AIXii convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Jan 2010 18:38:06 -0500
-Date: Sat, 9 Jan 2010 23:38:02 +0000
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Peter Paul <abnominales@web.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: ACPI quirks - acpi_osi="!Windows 2006" required on FSC Amilo
-	notebooks to enable brightness keys
-Message-ID: <20100109233802.GA20615@srcf.ucam.org>
-References: <539929391@web.de> <20100109202642.GA18657@srcf.ucam.org> <1263073701.6497.75.camel@rechenknecht2k7> <20100109220606.GA19441@srcf.ucam.org> <1263076707.1675.6.camel@virtubuntu> <20100109231122.GA19789@srcf.ucam.org> <1263079195.20284.2.camel@virtubuntu> <20100109232324.GA20504@srcf.ucam.org> <1263079816.20284.3.camel@virtubuntu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1263079816.20284.3.camel@virtubuntu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@cavan.codon.org.uk
-X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
+	Sat, 9 Jan 2010 18:38:38 -0500
+Date: Sat, 9 Jan 2010 15:41:15 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: =?UTF-8?B?TsOpbWV0aCBNw6FydG9u?= <nm127@freemail.hu>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, devel@driverdev.osuosl.org,
+       LKML <linux-kernel@vger.kernel.org>, Julia Lawall <julia@diku.dk>,
+       cocci@diku.dk
+Subject: Re: [PATCH 1/3] staging: make PCI device id constant
+Message-ID: <20100109154115.152c55e1@infradead.org>
+In-Reply-To: <4B490EC2.7050703@freemail.hu>
+References: <4B490EC2.7050703@freemail.hu>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.6; i586-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sorry, 
+On Sun, 10 Jan 2010 00:18:26 +0100
+Németh Márton <nm127@freemail.hu> wrote:
 
-grep -r . /proc/acpi/video
+> From: Márton Németh <nm127@freemail.hu>
+> 
+> The id_table field of the struct pci_driver is constant in
+> <linux/pci.h> so it is worth to make the initialization data also
+> constant.
+
+
+the PCI ID table can get written too via sysfs... making it const
+breaks that...
+
 
 -- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
