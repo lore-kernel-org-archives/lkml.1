@@ -1,50 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754555Ab0AIAPt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754407Ab0AIAQi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754555Ab0AIAPt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jan 2010 19:15:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754521Ab0AIAPs
+	id S1754407Ab0AIAQi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jan 2010 19:16:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752994Ab0AIAQh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jan 2010 19:15:48 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:41109 "EHLO
+	Fri, 8 Jan 2010 19:16:37 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:41126 "EHLO
 	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754324Ab0AIAPs (ORCPT
+	with ESMTP id S1750781Ab0AIAQg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jan 2010 19:15:48 -0500
-Message-ID: <4B47C984.1080903@zytor.com>
-Date: Fri, 08 Jan 2010 16:10:44 -0800
+	Fri, 8 Jan 2010 19:16:36 -0500
+Message-ID: <4B47CACA.7080103@zytor.com>
+Date: Fri, 08 Jan 2010 16:16:10 -0800
 From: "H. Peter Anvin" <hpa@zytor.com>
 User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
 MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-CC: Arjan van de Ven <arjan@infradead.org>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       David Miller <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: strict copy_from_user checks issues?
-References: <20100104154345.GA5671@osiris.boeblingen.de.ibm.com> <201001071502.29777.arnd@arndb.de> <4B4674FF.5070700@zytor.com> <201001090107.43402.arnd@arndb.de>
-In-Reply-To: <201001090107.43402.arnd@arndb.de>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Masami Hiramatsu <mhiramat@redhat.com>
+CC: Michal Marek <mmarek@suse.cz>, Simon Horman <horms@verge.net.au>,
+       Roland Dreier <rdreier@cisco.com>, Sam Ravnborg <sam@ravnborg.org>,
+       Sergei Trofimovich <slyfox@inbox.ru>, linux-kbuild@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-sh@vger.kernel.org
+Subject: Re: [PATCH] Makefile: do not override LC_CTYPE
+References: <20100108115745.GA14758@sepie.suse.cz> <1262952988-16563-1-git-send-email-mmarek@suse.cz> <4B47C94E.8070302@redhat.com>
+In-Reply-To: <4B47C94E.8070302@redhat.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/08/2010 04:07 PM, Arnd Bergmann wrote:
+On 01/08/2010 04:09 PM, Masami Hiramatsu wrote:
+> Hi Michal,
 > 
-> Also, the calling conventions require you to write slightly more when
-> you want to pass down an error value, e.g.
+> Michal Marek wrote:
+>> Setting LC_CTYPE=C breaks localized messages in some setups. With only
+>> LC_COLLATE=C and LC_NUMERIC=C, we get almost all we need, except for not
+>> so defined character classes and tolower()/toupper(). The former is not
+>> a big issue, because we can assume that e.g. [:alpha:] will always
+>> include a-zA-Z and we only ever process ASCII input. The latter seems
+>> only affect arch/sh/tools/gen-mach-types, which we can handle separately.
 > 
-> 	return copy_to_user(uptr, &data, sizeof(data)) ? -EFAULT : 0;
-> 
-> instead of
-> 
-> 	return put_user(data, uptr);
-> 
-> The latter form requires a macro instead of a function for the user copy,
-> but we now have that anyway because of the size check.
+> Hmm, this also affects arch/x/tools/gen-insn-attr-x86.awk.
+> Could you also wrap it?
 > 
 
-Well... we already have the latter form?
+This is tolower/toupper()?  Do there exist locales where tolower/toupper
+on ASCII input do weird things, or are we merely hypothesizing?
 
 	-hpa
+
+
 
