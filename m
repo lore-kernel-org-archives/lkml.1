@@ -1,74 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753438Ab0AIAyE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753502Ab0AIA4K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753438Ab0AIAyE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jan 2010 19:54:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753257Ab0AIAyD
+	id S1753502Ab0AIA4K (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jan 2010 19:56:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753274Ab0AIA4J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jan 2010 19:54:03 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:37517 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751644Ab0AIAyA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jan 2010 19:54:00 -0500
-Message-ID: <4B47D39E.20104@redhat.com>
-Date: Fri, 08 Jan 2010 19:53:50 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
+	Fri, 8 Jan 2010 19:56:09 -0500
+Received: from mail-yx0-f188.google.com ([209.85.210.188]:54715 "EHLO
+	mail-yx0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753406Ab0AIA4I (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jan 2010 19:56:08 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type;
+        b=rQ0cYLxuo/xEEaJ58gufscBWkRii3/ya3w/aCUy7/8G/v3ieo72j8rXLbPPX1mKL34
+         6IpLS5GPgDpz1O1Xz66rcsVQ2LDNw/teD3J5hznFOw/GkC43rFO+NizFERvPrj8eaBfF
+         QMPyOkLToIyvimTDapVpwkBDdbwzdweQ6ZgFY=
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Michal Marek <mmarek@suse.cz>, Simon Horman <horms@verge.net.au>,
-       Roland Dreier <rdreier@cisco.com>, Sam Ravnborg <sam@ravnborg.org>,
-       Sergei Trofimovich <slyfox@inbox.ru>, linux-kbuild@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-sh@vger.kernel.org
-Subject: Re: [PATCH] Makefile: do not override LC_CTYPE
-References: <20100108115745.GA14758@sepie.suse.cz> <1262952988-16563-1-git-send-email-mmarek@suse.cz> <4B47C94E.8070302@redhat.com> <4B47CACA.7080103@zytor.com>
-In-Reply-To: <4B47CACA.7080103@zytor.com>
-X-Enigmail-Version: 1.0
+In-Reply-To: <20100108220533.23489.99121.stgit@warthog.procyon.org.uk>
+References: <20100108220516.23489.11319.stgit@warthog.procyon.org.uk> 
+	<20100108220533.23489.99121.stgit@warthog.procyon.org.uk>
+From: Mike Frysinger <vapier.adi@gmail.com>
+Date: Fri, 8 Jan 2010 19:55:48 -0500
+Message-ID: <8bd0f97a1001081655s4ee3d4a7q3ef6a10d211ce6d1@mail.gmail.com>
+Subject: Re: [PATCH 4/6] NOMMU: Don't need get_unmapped_area() for NOMMU
+To: David Howells <dhowells@redhat.com>
+Cc: viro@zeniv.linux.org.uk, lethal@linux-sh.org, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> On 01/08/2010 04:09 PM, Masami Hiramatsu wrote:
->> Hi Michal,
->>
->> Michal Marek wrote:
->>> Setting LC_CTYPE=C breaks localized messages in some setups. With only
->>> LC_COLLATE=C and LC_NUMERIC=C, we get almost all we need, except for not
->>> so defined character classes and tolower()/toupper(). The former is not
->>> a big issue, because we can assume that e.g. [:alpha:] will always
->>> include a-zA-Z and we only ever process ASCII input. The latter seems
->>> only affect arch/sh/tools/gen-mach-types, which we can handle separately.
->>
->> Hmm, this also affects arch/x/tools/gen-insn-attr-x86.awk.
->> Could you also wrap it?
->>
-> 
-> This is tolower/toupper()?  Do there exist locales where tolower/toupper
-> on ASCII input do weird things, or are we merely hypothesizing?
+On Fri, Jan 8, 2010 at 17:05, David Howells wrote:
+> --- a/include/linux/sched.h
+> +++ b/include/linux/sched.h
+>
+> +#ifdef CONFIG_MMU
+> +extern void arch_pick_mmap_layout(struct mm_struct *mm);
+> +#else
+> +extern void arch_pick_mmap_layout(struct mm_struct *mm) {}
+> +#endif
 
-Ah, sorry, I was just hypothesizing.
----
-#!/bin/sh
-# en_US locale sorts alphabets as AaBb...
-LANG=en_US
-LC_ALL=
-LC_COLLATE=C
-LC_NUMERIC=C
-export LC_COLLATE LC_NUMERIC
-awk 'BEGIN{if (match("C","[a-z]")) {print "NG"} else {print "OK"} exit;}'
----
-this returns "OK". So, the patch is OK for me too.
-
-Thanks,
-
--- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
-
+static inline instead of extern when !MMU ?
+-mike
