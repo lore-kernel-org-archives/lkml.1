@@ -1,73 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752225Ab0AIIxz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751888Ab0AIJkc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752225Ab0AIIxz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Jan 2010 03:53:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751870Ab0AIIxy
+	id S1751888Ab0AIJkc (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Jan 2010 04:40:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751309Ab0AIJkb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Jan 2010 03:53:54 -0500
-Received: from mail-ew0-f214.google.com ([209.85.219.214]:38713 "EHLO
-	mail-ew0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751545Ab0AIIxx (ORCPT
+	Sat, 9 Jan 2010 04:40:31 -0500
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:37010 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750937Ab0AIJka (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Jan 2010 03:53:53 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:subject:message-id:mail-followup-to:mime-version
-         :content-type:content-disposition:user-agent;
-        b=yBKL/dSyPVCiS2MaffaE+ZMv8FpyGQ+CjiHAs0PeYeM1+EcY2gMP7wfnQJuIMrnpQP
-         tXmKKwwwH0KD+whdWrV79R0Q3GA8WmfgoHA5/eOelNeW7ef5STHH3frQz97Lzic0qsdP
-         8kG9bvCu3s4we4xIv20HGBmBUcN1KGoAsa9K8=
-Date: Sat, 9 Jan 2010 11:53:25 +0300
-From: Dan Carpenter <error27@gmail.com>
-To: linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [announce] smatch 1.54
-Message-ID: <20100109085325.GE7840@bicker>
-Mail-Followup-To: Dan Carpenter <error27@gmail.com>,
-	linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+	Sat, 9 Jan 2010 04:40:30 -0500
+Date: Sat, 9 Jan 2010 10:39:37 +0100
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: Joe Perches <joe@perches.com>
+Cc: Russell King <linux@arm.linux.org.uk>,
+       linux-arm-kernel@lists.infradead.org,
+       Sascha Hauer <kernel@pengutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] arch/arm: Remove unnecessary semicolons
+Message-ID: <20100109093937.GA15632@pengutronix.de>
+References: <1263019425.20926.12.camel@Joe-Laptop.home>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="u3/rZRmxL6MmkK24"
 Content-Disposition: inline
+In-Reply-To: <1263019425.20926.12.camel@Joe-Laptop.home>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: wsa@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Smatch is a static checker for C.  Download it here:  
-http://repo.or.cz/w/smatch.git
 
-These days there are at least seven static checkers people are using 
-to check the kernel source.  I can't swear that it's better than all
-the others...  Smatch is open source.  It's written in C.  It's based
-on sparse.  It's not horribly slow.  It has a git repo that gets updated
-every few days.
+--u3/rZRmxL6MmkK24
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Really what I would like is for smatch to become a smarter version
-of checkpatch.pl.  I'd like it to be something simple, that catches many 
-types of common bugs.  Something that people run before submitting code.
-It's still probably a year away from being good enough for that.
 
-Since the last release:
-	* You need to pass "-p=kernel" to check the kernel source.
-	make CHECK="/path/to/smatch -p=kernel" C=1 bzImage
+On Fri, Jan 08, 2010 at 10:43:45PM -0800, Joe Perches wrote:
+> Signed-off-by: Joe Perches <joe@perches.com>
 
-	* The output has been cleaned up.  You can still pass --spammy
-	and --info if you want the old output.
+First I just wanted to ack the mxc-part, but it looks all obviously correct,
+so:
 
-	* The array overflow check has improved and finds around 30
-	bugs in the 2.6.33-rc2 kernel.
+Acked-by: Wolfram Sang <w.sang@pengutronix.de>
 
-	* There is a new "dma on the stack" check that finds 382
-	bugs.  The ones from drivers/usb/serial/ have fixes already.
-	This could maybe be rewritten as a Coccinelle script.  The
-	fixes are pretty mechanical.
+--=20
+Pengutronix e.K.                           | Wolfram Sang                |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
 
-That's the main stuff.
+--u3/rZRmxL6MmkK24
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
->From what I can tell about the open source checkers is that only the
-authors use them.  Smatch has two users besides me (they do userspace 
-stuff so they're not on this list), so it's one of the most popular.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-Anyway, feedback is always good.  :)
+iEYEARECAAYFAktITtkACgkQD27XaX1/VRvFbgCgmf5Mf0Yu0G6gVIwV0ahXc0w5
+TkwAnj/5tmVSOwXFlYLdBUp6zUOO5m4v
+=Ytyi
+-----END PGP SIGNATURE-----
 
-regards,
-dan carpenter
+--u3/rZRmxL6MmkK24--
