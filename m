@@ -1,95 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754105Ab0AINnU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754176Ab0AINoQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754105Ab0AINnU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Jan 2010 08:43:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751254Ab0AINnT
+	id S1754176Ab0AINoQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Jan 2010 08:44:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751484Ab0AINoQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Jan 2010 08:43:19 -0500
-Received: from cantor.suse.de ([195.135.220.2]:42661 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750786Ab0AINnS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Jan 2010 08:43:18 -0500
-Date: Sat, 9 Jan 2010 14:43:12 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-To: "Rick L. Vinyard, Jr." <rvinyard@cs.nmsu.edu>
-Cc: Jaya Kumar <jayakumar.lkml@gmail.com>, linux-kernel@vger.kernel.org,
-       felipe.balbi@nokia.com, Pavel Machek <pavel@ucw.cz>,
-       linux-fbdev@vger.kernel.org, krzysztof.h1@wp.pl,
-       Andrew Morton <akpm@linux-foundation.org>, linux-usb@vger.kernel.org,
-       Oliver Neukum <oliver@neukum.org>, linux-input@vger.kernel.org,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Subject: Re: [PATCH] hid: Logitech G13 driver 0.0.3
-In-Reply-To: <5370b38ca0c149470c0e364627c56ee4.squirrel@intranet.cs.nmsu.edu>
-Message-ID: <alpine.LNX.2.00.1001091441180.7275@pobox.suse.cz>
-References: <201001071623.o07GNOB4022157@mustang.cs.nmsu.edu>    <45a44e481001071832q40d6f913w2ccf89c4c45a692a@mail.gmail.com> <5370b38ca0c149470c0e364627c56ee4.squirrel@intranet.cs.nmsu.edu>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+	Sat, 9 Jan 2010 08:44:16 -0500
+Received: from out4.smtp.messagingengine.com ([66.111.4.28]:54533 "EHLO
+	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750917Ab0AINoP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 Jan 2010 08:44:15 -0500
+X-Sasl-enc: NFwVZAirJuSD6BjYTz08bAffYw2We6og0SHxmdDoEF7G 1263044652
+Date: Sat, 9 Jan 2010 11:44:09 -0200
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: kernel list <linux-kernel@vger.kernel.org>, ibm-acpi@hmh.eng.br,
+       len.brown@intel.com, ibm-acpi-devel@lists.sourceforge.net,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [ibm-acpi-devel] 2.6.33-rc2: regression: gkrellm no longer
+ shows all the temperatures on thinkpad x60
+Message-ID: <20100109134409.GA936@khazad-dum.debian.net>
+References: <20091227215722.GN11737@elf.ucw.cz>
+ <20091228130138.GA19362@khazad-dum.debian.net>
+ <20100107214904.GB25538@elf.ucw.cz>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20100107214904.GB25538@elf.ucw.cz>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+ 1CDB 0FE3
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 7 Jan 2010, Rick L. Vinyard, Jr. wrote:
-
-> >> +static ssize_t g13_mled_store(struct device *dev,
-> >> +                             struct device_attribute *attr,
-> >> +        const char *buf, size_t count)
-> >> +{
-> >> +       struct hid_device *hdev;
-> >> +       int i;
-> >> +       unsigned m[4];
-> >> +       unsigned mled;
-> >> +       ssize_t set_result;
-> >> +
-> >> +       /* Get the hid associated with the device */
-> >> +       hdev = container_of(dev, struct hid_device, dev);
-> >> +
-> >> +       /* If we have an invalid pointer we'll return ENODATA */
-> >> +       if (hdev == NULL || &(hdev->dev) != dev)
-> >> +               return -ENODATA;
-> >> +
-> >> +       i = sscanf(buf, "%u %u %u %u", m, m+1, m+2, m+3);
-> >> +       if (!(i == 4 || i == 1)) {
-> >> +               printk(KERN_ERR "unrecognized input: %s", buf);
-> >> +               return -1;
-> >> +       }
-> >> +
-> >> +       if (i == 1)
-> >> +               mled = m[0];
-> >> +       else
-> >> +               mled = (m[0] ? 1 : 0) | (m[1] ? 2 : 0) |
-> >> +                               (m[2] ? 4 : 0) | (m[3] ? 8 : 0);
-> >> +
-> >> +       set_result = g13_set_mled(hdev, mled);
-> >> +
-> >> +       if (set_result < 0)
-> >> +               return set_result;
-> >> +
-> >> +       return count;
-> >> +}
-> >> +
-> >> +static DEVICE_ATTR(mled, 0666, g13_mled_show, g13_mled_store);
-> >
-> > Have you considered the use of the LED class driver as an alternative
-> > to introducing these sysfs led controls for the device?
-> >
+On Thu, 07 Jan 2010, Pavel Machek wrote:
+> > Please apply the latest stack of patches (sent them to acpi-test
+> > yesterday).
+> > 
+> > It is failing to register the ALSA mixer for some reason, and due
+> > to a bug, it is not loading the module at all.  I will look at the reason it
+> > is failing to register the ALSA mixer soon.  Meanwhile, the patches I sent
+> > to Len make sure the module can still load sucessfully.
 > 
-> I did, but this seemed a simpler approach to let user space (such as a
-> daemon) manage the leds. In particular this could be used by a user space
-> program to map the keys. The MR led could be used to indicate an active
-> record mode, etc.
+> Well, I'm not sure its completely fixed. I got this in my syslog:
+> 
+> thinkpad_acpi: THERMAL EMERGENCY: a sensor reports something is
+> extremely hot!
+> thinkpad_acpi: temperatures (Celsius): 95 47 N/A 89 47 N/A 41 N/A 51
+> 61 N/A N/A N/A N/A N/A N/A
 
-I finally had some time to go through the driver as well (thanks Dmitry 
-for beating me with proper review).
+And the extremely hot sensor is that 89°C, which is the GPU I think (varies
+from thinkpad to thinkpad).  That is not normal, and I'd say it needs
+repair, probably a badly seated heatsink or failed thermal interface
+compound.
 
-Could you be more specific about reasons why you are hesitating to use LED 
-subsystem instead of the whole mled stuff in the driver?
+> ...meaning thinkpad_acpi is active and working, but still gkrellm does
+> not report temperatures as it used to.
 
-I don't see anything that couldn't be achieved using LED class.
+Well, gkrellm has always been a hack, it may be objecting to the third N/A
+there (which reads as -128 through /proc, and results in ENXIO on hwmon
+sysfs).
 
-Thanks,
+> root@amd:~# cat /proc/acpi/ibm/thermal 
+> temperatures:	74 48 -128 75 47 -128 41 -128 51 58 -128 -128 -128
+> -128 -128 -128
+> root@amd:~# 
+
+The driver is operating normally (which doesn't surprise me, I didn't touch
+that code for quite a while, other than adding the temperature dump so that
+we could track what was cooking in your thinkpad :) ).
+
+> ...is there, so I'm not sure why gkrellm stopped working.
+
+I'd take a look on the gkrellm side of things.  Maybe I am doing something
+it doesn't like in the hwmon interface, etc.
 
 -- 
-Jiri Kosina
-SUSE Labs, Novell Inc.
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
