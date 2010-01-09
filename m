@@ -1,84 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753493Ab0AIMIh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754044Ab0AIM2h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753493Ab0AIMIh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Jan 2010 07:08:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753267Ab0AIMIg
+	id S1754044Ab0AIM2h (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Jan 2010 07:28:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753985Ab0AIM2h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Jan 2010 07:08:36 -0500
-Received: from mail01a.mail.t-online.hu ([84.2.40.6]:56361 "EHLO
-	mail01a.mail.t-online.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752977Ab0AIMIf (ORCPT
+	Sat, 9 Jan 2010 07:28:37 -0500
+Received: from mail-fx0-f225.google.com ([209.85.220.225]:53004 "EHLO
+	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753950Ab0AIM2g (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Jan 2010 07:08:35 -0500
-Message-ID: <4B4871B9.9050608@freemail.hu>
-Date: Sat, 09 Jan 2010 13:08:25 +0100
-From: =?UTF-8?B?TsOpbWV0aCBNw6FydG9u?= <nm127@freemail.hu>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; hu-HU; rv:1.8.1.21) Gecko/20090402 SeaMonkey/1.1.16
+	Sat, 9 Jan 2010 07:28:36 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=FjJXuBZFASG8HUbA5uYmrg5FULW838UZ4BK244tqJXPRssf5Ype7AONdAhiYQOrUtT
+         l4XvOaoH6nayAKPLyPhB07cidCd/u/HOl1drdD0lW+pppo6MuF3fuV1uYnkIYpZlM7Iv
+         BaiDkA0s8KvzL43HE7NSOaJOvqIF+WOpwaOEg=
+Date: Sat, 9 Jan 2010 13:28:30 +0100
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: Michael Breuer <mbreuer@majjas.com>
+Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
+       flyboy@gmail.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH] af_packet: Don't use skb after dev_queue_xmit()
+Message-ID: <20100109122830.GA4386@del.dom.local>
+References: <4B4625BD.3070202@majjas.com>
+ <20100107183545.GA3208@del.dom.local>
+ <4B462B3C.90506@majjas.com>
+ <20100107185040.GB3208@del.dom.local>
+ <4B466A26.5070506@majjas.com>
+ <20100108074539.GA6205@ff.dom.local>
+ <4B475FF9.7000702@majjas.com>
+ <20100108212923.GA3078@del.dom.local>
+ <4B47A81B.5040601@majjas.com>
+ <4B4809EF.1070609@majjas.com>
 MIME-Version: 1.0
-To: Alex Dubov <oakad@yahoo.com>
-CC: LKML <linux-kernel@vger.kernel.org>, Julia Lawall <julia@diku.dk>,
-       cocci@diku.dk
-Subject: [PATCH] memstick: make PCI device id constant
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-DCC-mail.t-online.hu-Metrics: mail01a.mail.t-online.hu 32721; Body=4 Fuz1=4
-	Fuz2=4
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B4809EF.1070609@majjas.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Márton Németh <nm127@freemail.hu>
+On Fri, Jan 08, 2010 at 11:45:35PM -0500, Michael Breuer wrote:
+> On 1/8/2010 4:48 PM, Michael Breuer wrote:
+> >On 1/8/2010 4:29 PM, Jarek Poplawski wrote:
+> >...
+> >>BTW, don't hurry with that yet, but in the next test, please try
+> >>alternative 2 again (i.e. with MMAP + no DMAR + disable_msi).
+> >>
+> >Will do - still up from yesterday... no more dropped packets...
+> >none of the dns errors either. To be expected I suppose as long as
+> >I'm trying to sniff it. Assuming no immediate erorrs with alt2, no
+> >DMAR + disable_msi I'll report back after it's been up for a
+> >while.
+> >-- 
+> Ok - ran alt1 and alt2, both with MMAP, no DMAR and disable_msi.
+> Both seem to behave similarly. No logged errors;
 
-The id_table field of the struct pci_driver is constant in <linux/pci.h>
-so it is worth to make pci_device_id also constant.
+Ok - since alt2 introduces less changes and is acked by Stephen
+already, I'll resend it with your "Tested-by" in a new thread to clear
+things a bit.
 
-The semantic match that finds this kind of pattern is as follows:
-(http://coccinelle.lip6.fr/)
+> large numbers of dropped RX packets.
 
-// <smpl>
-@r@
-disable decl_init,const_decl_init;
-identifier I1, I2, x;
-@@
-	struct I1 {
-	  ...
-	  const struct I2 *x;
-	  ...
-	};
-@s@
-identifier r.I1, y;
-identifier r.x, E;
-@@
-	struct I1 y = {
-	  .x = E,
-	};
-@c@
-identifier r.I2;
-identifier s.E;
-@@
-	const struct I2 E[] = ... ;
-@depends on !c@
-identifier r.I2;
-identifier s.E;
-@@
-+	const
-	struct I2 E[] = ...;
-// </smpl>
+You might try some tweaking with another sky2 parameter "copybreak"
+or even editing its "NAPI_WEIGHT" variable.
 
-Signed-off-by: Márton Németh <nm127@freemail.hu>
-Cc: Julia Lawall <julia@diku.dk>
-Cc: cocci@diku.dk
----
-diff -u -p a/drivers/memstick/host/jmb38x_ms.c b/drivers/memstick/host/jmb38x_ms.c
---- a/drivers/memstick/host/jmb38x_ms.c 2009-12-03 04:51:21.000000000 +0100
-+++ b/drivers/memstick/host/jmb38x_ms.c 2010-01-08 19:37:31.000000000 +0100
-@@ -981,7 +981,7 @@ static void jmb38x_ms_remove(struct pci_
- 	kfree(jm);
- }
+> One odd thing: when driving every sort of
+> traffic through, I was able to hose the client adapter (win7)
+> repeatedly by runnnig the win7 backup and connecting Windows Media
+> Player to a Mediatomb stream while also running a remote X11
+> session. Looks like the SSDP traffic that occurs at the same time as
+> the SMB traffic and X11 traffic takes out the adapter on Win7 -
+> Nforce.
+> Reran with msi enabled, MMAP and no DMAR. Also no errors; much
+> faster, and the Win7 side survives the same conditions that don't
+> work when msi is disabled. Doesn't make sense to me, but it is what
+> it is.
+> 
+> Going to leave this up for a while and see if things remain functional.
 
--static struct pci_device_id jmb38x_ms_id_tbl [] = {
-+static const struct pci_device_id jmb38x_ms_id_tbl[] = {
- 	{ PCI_VENDOR_ID_JMICRON, PCI_DEVICE_ID_JMICRON_JMB38X_MS, PCI_ANY_ID,
- 	  PCI_ANY_ID, 0, 0, 0 },
- 	{ }
+It looks like DMAR is the main candidate for a new linux-kernel@ or
+bugzilla bug report. You should also consider reporting these ipv6
+problems, especially if you think they can trigger TX timeouts. (In
+both cases it would be good to try current mainline first, when you
+get it workable.)
 
+Thanks,
+Jarek P.
