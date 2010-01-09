@@ -1,141 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754065Ab0AICnq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754356Ab0AICub@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754065Ab0AICnq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jan 2010 21:43:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753189Ab0AICnp
+	id S1754356Ab0AICub (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jan 2010 21:50:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753497Ab0AICua
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jan 2010 21:43:45 -0500
-Received: from tomts13-srv.bellnexxia.net ([209.226.175.34]:63666 "EHLO
-	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752914Ab0AICnp (ORCPT
+	Fri, 8 Jan 2010 21:50:30 -0500
+Received: from mail-pz0-f171.google.com ([209.85.222.171]:35775 "EHLO
+	mail-pz0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753496Ab0AICu3 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jan 2010 21:43:45 -0500
-Date: Fri, 8 Jan 2010 21:38:42 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>, Oleg Nesterov <oleg@redhat.com>,
-       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org,
-       josh@joshtriplett.org, tglx@linutronix.de, Valdis.Kletnieks@vt.edu,
-       dhowells@redhat.com, laijs@cn.fujitsu.com, dipankar@in.ibm.com
-Subject: Re: [RFC PATCH] introduce sys_membarrier(): process-wide memory
-	barrier
-Message-ID: <20100109023842.GA1696@Krystal>
-References: <20100107183946.GL6764@linux.vnet.ibm.com> <1262890782.28171.3738.camel@gandalf.stny.rr.com> <20100107191657.GN6764@linux.vnet.ibm.com> <1262893243.28171.3753.camel@gandalf.stny.rr.com> <20100107205830.GR6764@linux.vnet.ibm.com> <1262900140.28171.3773.camel@gandalf.stny.rr.com> <20100108235338.GA18050@Krystal> <20100109002043.GD6816@linux.vnet.ibm.com> <20100109010231.GA25368@Krystal> <20100109012128.GF6816@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20100109012128.GF6816@linux.vnet.ibm.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.27.31-grsec (i686)
-X-Uptime: 21:15:12 up 23 days, 10:33,  7 users,  load average: 0.16, 0.10,
-	0.08
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 8 Jan 2010 21:50:29 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=ehx3pRdnVYYpug3urB0JdjdW8CeWYTRS0OSLJpvb0TmYc65WnvcwOF6PyOnE1aPVz5
+         T+khwe26ajPKsSoonP3wQnZODkObfM2Juzs5ak1wR86WA1R5D/fThbWr7wjes6aJE/7g
+         GIjcCHscWQZiHEg7LOR9e8vObJO71BpeitpUI=
+MIME-Version: 1.0
+In-Reply-To: <4B47E7A9.6090904@zytor.com>
+References: <1263002989.2879.664.camel@sbs-t61.sc.intel.com>
+	 <4B47E7A9.6090904@zytor.com>
+Date: Fri, 8 Jan 2010 18:50:29 -0800
+X-Google-Sender-Auth: b19621c52f067d76
+Message-ID: <86802c441001081850s4965fca3y4cba3782d3eaeec6@mail.gmail.com>
+Subject: Re: [patch] x86, apic: use 0x20 for the IRQ_MOVE_CLEANUP_VECTOR 
+	instead of 0x1f
+From: Yinghai Lu <yinghai@kernel.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Suresh Siddha <suresh.b.siddha@intel.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       "ebiederm@xmission.com" <ebiederm@xmission.com>,
+       "Maciej W. Rozycki" <macro@linux-mips.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
-> On Fri, Jan 08, 2010 at 08:02:31PM -0500, Mathieu Desnoyers wrote:
-> > * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
-> > > On Fri, Jan 08, 2010 at 06:53:38PM -0500, Mathieu Desnoyers wrote:
-> > > > * Steven Rostedt (rostedt@goodmis.org) wrote:
-> > > > > Well, if we just grab the task_rq(task)->lock here, then we should be
-> > > > > OK? We would guarantee that curr is either the task we want or not.
-> > > > 
-> > > > Hrm, I just tested it, and there seems to be a significant performance
-> > > > penality involved with taking these locks for each CPU, even with just 8
-> > > > cores. So if we can do without the locks, that would be preferred.
-> > > 
-> > > How significant?  Factor of two?  Two orders of magnitude?
-> > > 
-> > 
-> > On a 8-core Intel Xeon (T is the number of threads receiving the IPIs):
-> > 
-> > Without runqueue locks:
-> > 
-> > T=1: 0m13.911s
-> > T=2: 0m20.730s
-> > T=3: 0m21.474s
-> > T=4: 0m27.952s
-> > T=5: 0m26.286s
-> > T=6: 0m27.855s
-> > T=7: 0m29.695s
-> > 
-> > With runqueue locks:
-> > 
-> > T=1: 0m15.802s
-> > T=2: 0m22.484s
-> > T=3: 0m24.751s
-> > T=4: 0m29.134s
-> > T=5: 0m30.094s
-> > T=6: 0m33.090s
-> > T=7: 0m33.897s
-> > 
-> > So on 8 cores, taking spinlocks for each of the 8 runqueues adds about
-> > 15% overhead when doing an IPI to 1 thread. Therefore, that won't be
-> > pretty on 128+-core machines.
-> 
-> But isn't the bulk of the overhead the IPIs rather than the runqueue
-> locks?
-> 
->      W/out RQ       W/RQ   % degradation
-fix:
-       W/out RQ       W/RQ   ratio
-> T=1:    13.91      15.8    1.14
-> T=2:    20.73      22.48   1.08
-> T=3:    21.47      24.75   1.15
-> T=4:    27.95      29.13   1.04
-> T=5:    26.29      30.09   1.14
-> T=6:    27.86      33.09   1.19
-> T=7:    29.7       33.9    1.14
+On Fri, Jan 8, 2010 at 6:19 PM, H. Peter Anvin <hpa@zytor.com> wrote:
 
-These numbers tell you that the degradation is roughly constant as we
-add more threads (let's consider 1 thread per core, 1 IPI per thread,
-with active threads). It is all run on a 8-core system will all cpus
-active. As we increase the number of IPIs (e.g. T=2 -> T=7) we add 9s,
-for 1.8s/IPI (always for 10,000,000 sys_membarrier() calls), for an
-added 180 ns/core per call. (note: T=1 is a special-case, as I do not
-allocate any cpumask.)
+> However, my most serious concern with this patch is that there is a
+> fairly significant change due to this patch, which is that the legacy
+> IRQ vectors now fall *inside* the FIRST_DEVICE_VECTOR range.  This isn't
+> a bad thing -- in fact, it is fundamentally the right thing to do
+> especially once we consider platforms which *don't* have the legacy IRQs
+> -- but it makes me scared of unexpected behavior changes as a result.
+> If you feel confident that that is not the case, could you outline why
+> it shouldn't be a problem?
+>
 
-Using the spinlocks adds about 3s for 10,000,000 sys_membarrier() calls
-or a 8-core system, for an added 300 ns/core per call.
+if it is not used by ioapic instead of legacy,
+do we need to re assign irq0 to irq15 domain from all cpus to
+apic->vector_allocation_domain()?
 
-So the overhead of taking the task lock is about twice higher, per core,
-than the overhead of the IPIs. This is understandable if the
-architecture does an IPI broadcast: the scalability problem then boils
-down to exchange cache-lines to inform the ipi sender that the other
-cpus have completed. An atomic operation exchanging a cache-line would
-be expected to be within the irqoff+spinlock+spinunlock+irqon overhead.
-
-> 
-> So if we had lots of CPUs, we might want to fan the IPIs out through
-> intermediate CPUs in a tree fashion, but the runqueue locks are not
-> causing excessive pain.
-
-A tree hierarchy may not be useful for sending the IPIs (as, hopefully,
-they can be broadcasted pretty efficiciently), but however could be
-useful when waiting for the IPIs to complete efficiently.
-
-> 
-> How does this compare to use of POSIX signals?  Never mind, POSIX
-> signals are arbitrarily bad if you have way more threads than are
-> actually running at the time...
-
-POSIX signals to all threads are terrible in that they require to wake
-up all those threads. I have not even thought it useful to compare
-these two approaches with benchmarks yet (I'll do that when the
-sys_membarrier() support is implemented in liburcu).
-
-Thanks,
-
-Mathieu
-
-> 
-> 							Thanx, Paul
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+YH
