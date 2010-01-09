@@ -1,87 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754161Ab0AIVNq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754311Ab0AIVcc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754161Ab0AIVNq convert rfc822-to-quoted-printable (ORCPT
-	<rfc822;w@1wt.eu>); Sat, 9 Jan 2010 16:13:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752996Ab0AIVNq
+	id S1754311Ab0AIVcc (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Jan 2010 16:32:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754079Ab0AIVcc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Jan 2010 16:13:46 -0500
-Received: from mail-pz0-f171.google.com ([209.85.222.171]:37889 "EHLO
-	mail-pz0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752948Ab0AIVNp convert rfc822-to-8bit (ORCPT
+	Sat, 9 Jan 2010 16:32:32 -0500
+Received: from mail-iw0-f194.google.com ([209.85.223.194]:59536 "EHLO
+	mail-iw0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753766Ab0AIVcb convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Jan 2010 16:13:45 -0500
+	Sat, 9 Jan 2010 16:32:31 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=mime-version:in-reply-to:references:date:message-id:subject:from:to
          :cc:content-type:content-transfer-encoding;
-        b=Gw452c3ocAGXz/3kSlJrudrtLxJ6QmtJRfz5/626FJwZx3TXDlEY7JfNYwPGnQ0NHh
-         qTxeWYxzFi67RXhJKKbFJLq0lKs5xzZ5W9tuAiBELc6yGdQfEITsQAhrE5HrqK5jFIoO
-         eooSXBfT8n8gBzW5He1L9O+CdxG4QBH7n9wyg=
+        b=O1+0wmzsSs9NAnl3Yn9l+tXFYe3w6quG1htzgoelK3DSogyhGVRR2XwhBuz3CuNjaf
+         1aPacGdyWK9gsvpnNN1F1/+KGu0oJFEdP7vdgruzS/1YT+UZQ3mu5wZ8tZN7ZXXOGBYy
+         +sHmw4rxEcmclEjTk8WFGxiDw3B4Xh44aqxno=
 MIME-Version: 1.0
-In-Reply-To: <20100109101038.GA17555@in.ibm.com>
-References: <20100109101038.GA17555@in.ibm.com>
-Date: Sat, 9 Jan 2010 13:13:39 -0800
-Message-ID: <86802c441001091313y1f64f011t616f08cd282a7123@mail.gmail.com>
-Subject: Re: [PATCH] Make Intel 8-way Xeons boot again
-From: Yinghai Lu <yhlu.kernel@gmail.com>
-To: ananth@in.ibm.com
-Cc: suresh.b.siddha@intel.com, Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, lkml <linux-kernel@vger.kernel.org>,
-       stable@kernel.org
+In-Reply-To: <alpine.LFD.2.00.1001091012080.7821@localhost.localdomain>
+References: <201001090045.33784.rjw@sisk.pl>
+	 <alpine.LFD.2.00.1001081548320.7821@localhost.localdomain>
+	 <alpine.DEB.2.00.1001090214220.21286@skynet.skynet.ie>
+	 <20100108185041.7aae6c01@jbarnes-piketon>
+	 <20100109120141.GA4319@localhost.localdomain>
+	 <alpine.LFD.2.00.1001091012080.7821@localhost.localdomain>
+Date: Sun, 10 Jan 2010 07:32:30 +1000
+Message-ID: <21d7e9971001091332v23ac0e28m1b1890cd667aacb8@mail.gmail.com>
+Subject: Re: [PATCH] DRM / i915: Fix resume regression on MSI Wind U100 w/o 
+	KMS
+From: Dave Airlie <airlied@gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Jerome Glisse <glisse@freedesktop.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, Dave Airlie <airlied@linux.ie>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       dri-devel@lists.sourceforge.net
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jan 9, 2010 at 2:10 AM, Ananth N Mavinakayanahalli
-<ananth@in.ibm.com> wrote:
-> On an 8-way system with Intel Xeon X7350 CPUs, booting 2.6.32 or newe=
-r
-> kernels fails at:
+On Sun, Jan 10, 2010 at 4:17 AM, Linus Torvalds
+<torvalds@linux-foundation.org> wrote:
 >
-> ...
-> CPU0: Intel(R) Xeon(R) CPU =A0 =A0 =A0 =A0 =A0 X7350 =A0@ 2.93GHz ste=
-pping 0b
-> Booting Node =A0 0, Processors =A0#1 #2 #3 #4 #5 #6 #7 Ok.
-> Brought up 8 CPUs
-> Total of 8 processors activated (46906.05 BogoMIPS).
 >
-> Git bisect showed 2fbd07a5f as the offending commit.
+> On Sat, 9 Jan 2010, Jerome Glisse wrote:
 >
-> With the patch below, I am able to boot the latest Linus' git tree on
-> the machine. If this patch is correct, it needs to get into the stabl=
-e
-> tree too.
+>> On Fri, Jan 08, 2010 at 06:50:41PM -0800, Jesse Barnes wrote:
+>> >
+>> > Linus, can we ever drop those old paths?  Maybe after the new bits have
+>> > been around for awhile?  Users of really old userspace stacks would
+>> > lose 3D support, but they'd still have 2D, so it wouldn't be a complete
+>> > break.  The non-KMS paths sometimes break like this anyway without us
+>> > noticing (especially some of the weirder 3D paths)...
+>> >
+>> > Just thinking out loud, we could really kill a lot of really bad code...
+>>
+>> I among those who would love such things to happen :)
 >
-> Signed-off-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-> ---
-> Index: linux-2.6/arch/x86/kernel/apic/probe_64.c
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> --- linux-2.6.orig/arch/x86/kernel/apic/probe_64.c =A0 =A0 =A02010-01=
--09 14:54:29.000000000 +0530
-> +++ linux-2.6/arch/x86/kernel/apic/probe_64.c =A0 2010-01-09 14:57:53=
-=2E000000000 +0530
-> @@ -70,7 +70,7 @@
-> =A0 =A0 =A0 =A0if (apic =3D=3D &apic_flat) {
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0switch (boot_cpu_data.x86_vendor) {
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0case X86_VENDOR_INTEL:
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (num_processors > 8)
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (num_processors >=3D=
- 8)
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0apic =3D=
- &apic_physflat;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0break;
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0case X86_VENDOR_AMD:
+> I don't want to drop it _yet_, but "ever"? Sure. When people are sure that
+> KMS actually handles all the cases that old X does (maybe that's true
+> now), and we've had more than just a couple of kernel releases of _stable_
+> Intel KMS, I suspect we can start thinking about "ok, nobody seriously
+> uses 3D on Intel integrated graphics _and_ updates the kernel".
+>
+> The fact that they'd still have a working X setup would make it generally
+> much more palatable, I think.
+>
+> But we definitely need more than just a couple of kernel releases. So
+> we're talking timescales of "more than a year of stable code". Whether
+> that is "six months from now" or "two years from now", I can't judge.
+>
+> And people can try to convince me to be more or less aggressive about it,
+> so take the above as a more of a personal opinion that is open to
+> change than anything definite and final.
 
-can you send out whole bootlog with apic=3Ddebug?
+I'm in the 2-3 years at a minimum, with at least one kernel with no serious
+regressions in Intel KMS, which we haven't gotten close to yet. I'm not even
+sure the Intel guys are taking stable seriously enough yet. So far I don't think
+there is one kernel release (even stable) that works on all Intel
+chipsets without
+backporting patches. 2.6.32 needs the changes to remove the messed up
+render clock hacks which should really have been reverted a lot earlier since
+we had a lot of regression reports. The number of users using powersave=0
+to get anything approaching useable is growing etc.
 
-YH
---
-To unsubscribe from this list: send the line "unsubscribe linux-kernel"=
- in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
-Please read the FAQ at  http://www.tux.org/lkml/
+We do have ppl who run latest kernels on RHEL5 userspace and I'd rather
+not have that break badly, I'm guessing more than 3D will break if we remove
+this, since we need the DRM to allocate memory for 2D stuff, and will probably
+find the fallback to AGP is broken. Again Intel ppl would have to do a lot
+of testing on the fallback before removing anything, which is time I don't see
+anyone willing to spend.
+
+Dave.
+Dave.
