@@ -1,79 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754449Ab0AIMjQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752962Ab0AIM4M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754449Ab0AIMjQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Jan 2010 07:39:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754099Ab0AIMjO
+	id S1752962Ab0AIM4M (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Jan 2010 07:56:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752088Ab0AIM4I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Jan 2010 07:39:14 -0500
-Received: from mail-out.m-online.net ([212.18.0.9]:38854 "EHLO
-	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754089Ab0AIMjL (ORCPT
+	Sat, 9 Jan 2010 07:56:08 -0500
+Received: from mail01d.mail.t-online.hu ([84.2.42.6]:62177 "EHLO
+	mail01d.mail.t-online.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751254Ab0AIM4H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Jan 2010 07:39:11 -0500
-X-Auth-Info: R0ktkecH2e2vLiPLMEuCLeQsd9mCUAjxts53GMTnKiM=
-From: Andreas Schwab <schwab@linux-m68k.org>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Eric Dumazet <eric.dumazet@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       Al Viro <viro@zeniv.linux.org.uk>,
-       Christoph Hellwig <hch@infradead.org>, Eric Paris <eparis@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel\@vger.kernel.org" <linux-fsdevel@vger.kernel.org>
-Subject: Re: [PATCH] fs: O_* bit numbers uniqueness check
-References: <20100106065526.GB11368@localhost> <4B443695.5090301@gmail.com>
-	<20100106072029.GA25169@localhost>
-X-Yow: The FALAFEL SANDWICH lands on my HEAD and I become a VEGETARIAN...
-Date: Wed, 06 Jan 2010 10:13:54 +0100
-In-Reply-To: <20100106072029.GA25169@localhost> (Wu Fengguang's message of
-	"Wed, 6 Jan 2010 15:20:29 +0800")
-Message-ID: <m2iqbfwq7h.fsf@whitebox.home>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.91 (gnu/linux)
+	Sat, 9 Jan 2010 07:56:07 -0500
+Message-ID: <4B487CDC.80303@freemail.hu>
+Date: Sat, 09 Jan 2010 13:55:56 +0100
+From: =?UTF-8?B?TsOpbWV0aCBNw6FydG9u?= <nm127@freemail.hu>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; hu-HU; rv:1.8.1.21) Gecko/20090402 SeaMonkey/1.1.16
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+CC: linux-input@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH 2/5] input: make Open Firmware device id constant
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
+X-DCC-mail.t-online.hu-Metrics: mail01d.mail.t-online.hu 32711; Body=3 Fuz1=3
+	Fuz2=3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Wu Fengguang <fengguang.wu@intel.com> writes:
+From: Márton Németh <nm127@freemail.hu>
 
-> On Wed, Jan 06, 2010 at 03:07:01PM +0800, Eric Dumazet wrote:
->> Le 06/01/2010 07:55, Wu Fengguang a écrit :
->> > The O_* bit numbers are defined in 20+ arch/*, and hence can silently
->> > overlap. Add a boot time check to ensure the uniqueness as suggested
->> > by David Miller.
->> > 
->> > CC: David Miller <davem@davemloft.net>
->> > CC: Stephen Rothwell <sfr@canb.auug.org.au>
->> > CC: Al Viro <viro@zeniv.linux.org.uk>
->> > CC: Christoph Hellwig <hch@infradead.org>
->> > CC: Eric Paris <eparis@redhat.com>
->> > Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
->> > ---
->> >  {
->> > +	/* please add new bits here to ensure allocation uniqueness */
->> > +	BUG_ON(20 != hweight32(
->> > +		O_RDONLY	| O_WRONLY	| O_RDWR	|
->> > +		O_CREAT		| O_EXCL	| O_NOCTTY	|
->> > +		O_TRUNC		| O_APPEND	| O_NONBLOCK	|
->> > +		O_SYNC		| FASYNC	| O_DIRECT	|
->> > +		O_LARGEFILE	| O_DIRECTORY	| O_NOFOLLOW	|
->> > +		O_NOATIME	| O_CLOEXEC	| O_RANDOM	|
->> > +		FMODE_EXEC	| FMODE_NONOTIFY));
->> > +
->> 
->> I cannot test it, but given O_RDONLY is 0, are you sure 20 bits are actually set ?
->
-> Yes, I tested it. The tricky one is O_SYNC, which actually has two bits..
+The match_table field of the struct of_device_id is constant in <linux/of_platform.h>
+so it is worth to make xps2_of_match also constant.
 
-What if a new architecture wants to use a single bit value (since it
-does not need backwards compatibility)?
+The semantic match that finds this kind of pattern is as follows:
+(http://coccinelle.lip6.fr/)
 
-Andreas.
+// <smpl>
+@r@
+disable decl_init,const_decl_init;
+identifier I1, I2, x;
+@@
+	struct I1 {
+	  ...
+	  const struct I2 *x;
+	  ...
+	};
+@s@
+identifier r.I1, y;
+identifier r.x, E;
+@@
+	struct I1 y = {
+	  .x = E,
+	};
+@c@
+identifier r.I2;
+identifier s.E;
+@@
+	const struct I2 E[] = ... ;
+@depends on !c@
+identifier r.I2;
+identifier s.E;
+@@
++	const
+	struct I2 E[] = ...;
+// </smpl>
 
--- 
-Andreas Schwab, schwab@linux-m68k.org
-GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+Signed-off-by: Márton Németh <nm127@freemail.hu>
+Cc: Julia Lawall <julia@diku.dk>
+Cc: cocci@diku.dk
+---
+diff -u -p a/drivers/input/serio/xilinx_ps2.c b/drivers/input/serio/xilinx_ps2.c
+--- a/drivers/input/serio/xilinx_ps2.c 2009-12-03 04:51:21.000000000 +0100
++++ b/drivers/input/serio/xilinx_ps2.c 2010-01-08 19:13:45.000000000 +0100
+@@ -354,7 +354,7 @@ static int __devexit xps2_of_remove(stru
+ }
+
+ /* Match table for of_platform binding */
+-static struct of_device_id xps2_of_match[] __devinitdata = {
++static const struct of_device_id xps2_of_match[] __devinitconst = {
+ 	{ .compatible = "xlnx,xps-ps2-1.00.a", },
+ 	{ /* end of list */ },
+ };
