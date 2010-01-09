@@ -1,96 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751917Ab0AIAiv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752380Ab0AIAl5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751917Ab0AIAiv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jan 2010 19:38:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751274Ab0AIAiv
+	id S1752380Ab0AIAl5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jan 2010 19:41:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751786Ab0AIAl4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jan 2010 19:38:51 -0500
-Received: from mail.df.lth.se ([194.47.250.12]:59403 "EHLO df.lth.se"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751135Ab0AIAiu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jan 2010 19:38:50 -0500
-From: Linus Walleij <linus.walleij@stericsson.com>
-To: Samuel Ortiz <sameo@linux.intel.com>, linux-kernel@vger.kernel.org
-Cc: Linus Walleij <linus.walleij@stericsson.com>,
-       Robin Getz <rgetz@blackfin.uclinux.org>, Matt Mackall <mpm@selenic.com>
-Subject: [PATCH] Use AB3100 MFD core IRQ for interrupt randomness
-Date: Sat,  9 Jan 2010 01:38:29 +0100
-Message-Id: <1262997509-5680-1-git-send-email-linus.walleij@stericsson.com>
-X-Mailer: git-send-email 1.6.2.rc1
+	Fri, 8 Jan 2010 19:41:56 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:42404 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751612Ab0AIAlz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jan 2010 19:41:55 -0500
+Date: Fri, 8 Jan 2010 16:39:10 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jean Delvare <khali@linux-fr.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Ralf Baechle <ralf@linux-mips.org>,
+       Samuel Ortiz <sameo@linux.intel.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       Yinghai Lu <yinghai@kernel.org>
+Subject: Re: [PATCH] set_irq_noprobe shouldn't be __init
+Message-Id: <20100108163910.ed49b5f4.akpm@linux-foundation.org>
+In-Reply-To: <20100105203842.04a1a523@hyperion.delvare>
+References: <20100105203842.04a1a523@hyperion.delvare>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This reintroduces the entropy sampling of the AB3100 IRQ as the
-IRQF_SAMPLE_RANDOM is going out according to the feature removal
-schedule. I'm trying to do this the right way then, so CC:ing some
-random people for a quick review. We add entropy for interrupt
-events in the AB3100 which are truly random in nature, like
-external cables being connected, voltages on batteries dropping
-below certain ranges, ADC triggers or overheating.
+On Tue, 5 Jan 2010 20:38:42 +0100
+Jean Delvare <khali@linux-fr.org> wrote:
 
-Signed-off-by: Linus Walleij <linus.walleij@stericsson.com>
-Cc: Robin Getz <rgetz@blackfin.uclinux.org>
-Cc: Matt Mackall <mpm@selenic.com>
----
- drivers/mfd/ab3100-core.c |   17 +++++++++--------
- 1 files changed, 9 insertions(+), 8 deletions(-)
+> Non-__init functions need to call set_irq_noprobe() so this function
+> shouldn't be marked __init. Also remove __init from set_irq_probe()
+> for consistency.
+> 
+> Signed-off-by: Jean Delvare <khali@linux-fr.org>
+> Cc: Ralf Baechle <ralf@linux-mips.org>
+> Cc: Samuel Ortiz <sameo@linux.intel.com>
+> ---
+>  kernel/irq/chip.c |    4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> --- linux-2.6.33-rc2.orig/kernel/irq/chip.c	2009-12-18 08:34:52.000000000 +0100
+> +++ linux-2.6.33-rc2/kernel/irq/chip.c	2010-01-05 17:21:38.000000000 +0100
+> @@ -682,7 +682,7 @@ set_irq_chip_and_handler_name(unsigned i
+>  	__set_irq_handler(irq, handle, 0, name);
+>  }
+>  
+> -void __init set_irq_noprobe(unsigned int irq)
+> +void set_irq_noprobe(unsigned int irq)
+>  {
+>  	struct irq_desc *desc = irq_to_desc(irq);
+>  	unsigned long flags;
+> @@ -697,7 +697,7 @@ void __init set_irq_noprobe(unsigned int
+>  	raw_spin_unlock_irqrestore(&desc->lock, flags);
+>  }
+>  
+> -void __init set_irq_probe(unsigned int irq)
+> +void set_irq_probe(unsigned int irq)
+>  {
+>  	struct irq_desc *desc = irq_to_desc(irq);
+>  	unsigned long flags;
 
-diff --git a/drivers/mfd/ab3100-core.c b/drivers/mfd/ab3100-core.c
-index aa3824a..a2ce3b6 100644
---- a/drivers/mfd/ab3100-core.c
-+++ b/drivers/mfd/ab3100-core.c
-@@ -1,5 +1,5 @@
- /*
-- * Copyright (C) 2007-2009 ST-Ericsson
-+ * Copyright (C) 2007-2010 ST-Ericsson
-  * License terms: GNU General Public License (GPL) version 2
-  * Low-level core for exclusive access to the AB3100 IC on the I2C bus
-  * and some basic chip-configuration.
-@@ -14,6 +14,7 @@
- #include <linux/platform_device.h>
- #include <linux/device.h>
- #include <linux/interrupt.h>
-+#include <linux/random.h>
- #include <linux/debugfs.h>
- #include <linux/seq_file.h>
- #include <linux/uaccess.h>
-@@ -376,6 +377,8 @@ static irqreturn_t ab3100_irq_handler(int irq, void *data)
- 	u32 fatevent;
- 	int err;
- 
-+	add_interrupt_randomness(irq);
-+
- 	err = ab3100_get_register_page_interruptible(ab3100, AB3100_EVENTA1,
- 				       event_regs, 3);
- 	if (err)
-@@ -720,10 +723,7 @@ static struct platform_device ab3100_##devname##_device = {	\
- 	.id		= -1,					\
- }
- 
--/*
-- * This lists all the subdevices and corresponding register
-- * ranges.
-- */
-+/* This lists all the subdevices */
- AB3100_DEVICE(dac, "ab3100-dac");
- AB3100_DEVICE(leds, "ab3100-leds");
- AB3100_DEVICE(power, "ab3100-power");
-@@ -889,10 +889,11 @@ static int __init ab3100_probe(struct i2c_client *client,
- 	if (err)
- 		goto exit_no_setup;
- 
--	/* This real unpredictable IRQ is of course sampled for entropy */
- 	err = request_threaded_irq(client->irq, NULL, ab3100_irq_handler,
--			  IRQF_ONESHOT,
--			  "ab3100-core", ab3100);
-+				IRQF_ONESHOT, "ab3100-core", ab3100);
-+	/* This real unpredictable IRQ is of course sampled for entropy */
-+	rand_initialize_irq(client->irq);
-+
- 	if (err)
- 		goto exit_no_irq;
- 
--- 
-1.6.5.2
+These non-__init callers will instantly crash, surely?  Are there any
+reports of such crashes?
+
+If you're talking about new code then what is the status of that code?
+
+Right now I don't know if this patch is needed in 2.6.34, 2.6.33 or
+2.6.32.x and earlier.
+
+IOW: the changelog sucks :)
+
+Thanks.
 
