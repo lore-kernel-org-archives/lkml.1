@@ -1,72 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754736Ab0AIQz7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754746Ab0AIQ5c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754736Ab0AIQz7 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Jan 2010 11:55:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754712Ab0AIQz6
+	id S1754746Ab0AIQ5c (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Jan 2010 11:57:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754712Ab0AIQ5b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Jan 2010 11:55:58 -0500
-Received: from mail-yx0-f187.google.com ([209.85.210.187]:63399 "EHLO
-	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754711Ab0AIQz6 (ORCPT
+	Sat, 9 Jan 2010 11:57:31 -0500
+Received: from ppsw-7.csi.cam.ac.uk ([131.111.8.137]:51463 "EHLO
+	ppsw-7.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753472Ab0AIQ5a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Jan 2010 11:55:58 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=muR21XbzqkjKRo2Mfdkni15gA+1UlQ5e+QDGb2zPMBcfen3C+Ohn5QyLSJ+lfttiqf
-         a8lGtqs6sLOzCE3gu6gBsW4b4A82+a+SLqDU9naa+vy0ruaSWe77tqlgGxXzxPL/rZq6
-         4vpk2H9NvLkQ0EepEisnCvBw6mOimKCXSJIf0=
-Date: Sun, 10 Jan 2010 00:57:43 +0800
-From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
-To: Alexander Beregalov <a.beregalov@gmail.com>
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] kernel/resource.c: fix memory leak
-Message-ID: <20100109165743.GA9190@hack>
-References: <1263048395-14873-1-git-send-email-a.beregalov@gmail.com>
+	Sat, 9 Jan 2010 11:57:30 -0500
+X-Cam-AntiVirus: no malware found
+X-Cam-SpamDetails: not scanned
+X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
+Message-ID: <4B48B57E.40300@cam.ac.uk>
+Date: Sat, 09 Jan 2010 16:57:34 +0000
+From: Jonathan Cameron <jic23@cam.ac.uk>
+User-Agent: Thunderbird 2.0.0.23 (X11/20091029)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1263048395-14873-1-git-send-email-a.beregalov@gmail.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+To: LKML <linux-kernel@vger.kernel.org>, Greg Kroah-Hartman <gregkh@suse.de>
+CC: error27@gmail.com
+Subject: [PATCH 1/2] staging: iio: Ensure mutex is correctly unlocked in __iio_push_event
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jan 09, 2010 at 05:46:35PM +0300, Alexander Beregalov wrote:
->Free res before exit.
->Found by cppcheck.
->
->Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
->---
-> kernel/resource.c |    3 ++-
-> 1 files changed, 2 insertions(+), 1 deletions(-)
->
->diff --git a/kernel/resource.c b/kernel/resource.c
->index af96c1e..ae2e177 100644
->--- a/kernel/resource.c
->+++ b/kernel/resource.c
->@@ -545,11 +545,12 @@ static void __init __reserve_region_with_split(struct resource *root,
-> 	res->flags = IORESOURCE_BUSY;
-> 
-> 	conflict = __request_resource(parent, res);
->+	kfree(res);
->+
-> 	if (!conflict)
-> 		return;
-> 
-> 	/* failed, split and try again */
->-	kfree(res);
-> 
-> 	/* conflict covered whole area */
-> 	if (conflict->start <= start && conflict->end >= end)
 
-NAK.
+Signed-off-by: Jonathan Cameron <jic23@cam.ac.uk>
+---
 
-If I read it correctly, 'res' will be used if !conflict, we
-should't kfree it.
-
-
--- 
-Live like a child, think like the god.
+ This error was picked up by running the smatch static
+ checker over all the IIO subsytem.
  
+ Whilst there are some false positives in some of the
+ drivers, it picked up two real errors in the core. I
+ was very impressed at the quality of the reporting and
+ so Dan you can add me to your list of users as I'll be
+ making frequent use of it in the future!
+
+ drivers/staging/iio/industrialio-core.c |    5 ++++-
+ 1 files changed, 4 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/staging/iio/industrialio-core.c b/drivers/staging/iio/industrialio-core.c
+index 768f448..87799b2 100644
+--- a/drivers/staging/iio/industrialio-core.c
++++ b/drivers/staging/iio/industrialio-core.c
+@@ -79,11 +79,14 @@ EXPORT_SYMBOL(__iio_change_event);
+ 	/* Does anyone care? */
+ 	mutex_lock(&ev_int->event_list_lock);
+ 	if (test_bit(IIO_BUSY_BIT_POS, &ev_int->handler.flags)) {
+-		if (ev_int->current_events == ev_int->max_events)
++		if (ev_int->current_events == ev_int->max_events) {
++			mutex_unlock(&ev_int->event_list_lock);
+ 			return 0;
++		}
+ 		ev = kmalloc(sizeof(*ev), GFP_KERNEL);
+ 		if (ev == NULL) {
+ 			ret = -ENOMEM;
++			mutex_unlock(&ev_int->event_list_lock);
+ 			goto error_ret;
+ 		}
+ 		ev->ev.id = ev_code;
+-- 
+1.6.4.4
+
