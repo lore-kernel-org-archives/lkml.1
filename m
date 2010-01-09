@@ -1,91 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754379Ab0AIVlE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754473Ab0AIVlT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754379Ab0AIVlE (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Jan 2010 16:41:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753683Ab0AIVlD
+	id S1754473Ab0AIVlT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Jan 2010 16:41:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754427Ab0AIVlR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Jan 2010 16:41:03 -0500
-Received: from mail-iw0-f194.google.com ([209.85.223.194]:63998 "EHLO
-	mail-iw0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753189Ab0AIVlB (ORCPT
+	Sat, 9 Jan 2010 16:41:17 -0500
+Received: from casper.infradead.org ([85.118.1.10]:36097 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754412Ab0AIVlO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Jan 2010 16:41:01 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=cl6yfw45vQOZgAub2Gsq4lfaHKnKrlESgd6GPA6YWE9X9ebXTLVW0G4SmFqCTKLtQn
-         xrH/VdIQ7GpF9WzsrtZfwUMjauRlDLzmVonxLL8VoPVtLBjEjxrVXKVKuw6/vQonudVE
-         2NYOWRdqmh8Tjq2CzEfVvU+mZcNHqYWaxfF1s=
-MIME-Version: 1.0
-In-Reply-To: <201001091435.56157.rjw@sisk.pl>
-References: <201001090045.33784.rjw@sisk.pl>
-	 <alpine.LFD.2.00.1001081648490.7821@localhost.localdomain>
-	 <20100108171311.128c43d0@jbarnes-piketon>
-	 <201001091435.56157.rjw@sisk.pl>
-Date: Sun, 10 Jan 2010 07:41:00 +1000
-Message-ID: <21d7e9971001091341j313e6274vd883c0d5301b2586@mail.gmail.com>
-Subject: Re: [PATCH] i915: Always register as a PCI driver (was: Re: [PATCH] 
-	DRM / i915: Fix resume regression on MSI Wind U100 w/o KMS)
-From: Dave Airlie <airlied@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Eric Anholt <eric@anholt.net>, Zhenyu Wang <zhenyuw@linux.intel.com>,
-       LKML <linux-kernel@vger.kernel.org>, dri-devel@lists.sourceforge.net
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat, 9 Jan 2010 16:41:14 -0500
+Date: Sat, 9 Jan 2010 13:43:52 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: Alex Chiang <achiang@hp.com>
+Cc: Dimitrios Apostolou <jimis@gmx.net>, Len Brown <lenb@kernel.org>,
+       Bjorn Helgaas <bjorn.helgaas@hp.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Yinghai Lu <yinghai@kernel.org>, linux-kernel@vger.kernel.org
+Subject: Re: High cpu temperature with 2.6.32, bisection shows commit 69d258
+ (fwd)
+Message-ID: <20100109134352.3dedd4ea@infradead.org>
+In-Reply-To: <20100108171513.GB22713@ldl.fc.hp.com>
+References: <alpine.LNX.2.00.1001071941470.1363@localhost.localdomain>
+	<20100108171513.GB22713@ldl.fc.hp.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.6; i586-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jan 9, 2010 at 11:35 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Saturday 09 January 2010, Jesse Barnes wrote:
->> On Fri, 8 Jan 2010 16:50:57 -0800 (PST)
->> Linus Torvalds <torvalds@linux-foundation.org> wrote:
->>
->> >
->> >
->> > On Sat, 9 Jan 2010, Rafael J. Wysocki wrote:
->> > >
->> > > Which is functionally equivalent to my patch, because
->> > > i915_suspend/resume() won't be called by drm_class_suspend/resume()
->> > > in the KMS case anyway.
->> >
->> > Ahh, right you are - that class suspend function does a check for
->> > DRIVER_MODESET, and only does the suspend/resume if it's not a
->> > MODESET driver.
->> >
->> > Ok, so I withdraw my objections to your original patch - it's
->> > confusing, but that's just because DRM is such a horrible mess with
->> > subtle things.
->>
->> Yeah the non-KMS paths just suck.
->>
->> Acked-by: Jesse Barnes <jbarnes@virtuousgeek.org>
->>
->> Though hopefully you can get the PCI driver registration working w/o
->> too much trouble; that would be even better.
->
-> Actually, I have a working patch, with one tiny detail I'm not sure of.
->
-> Namely, I need to call pci_set_drvdata(pdev, dev) unconditionally in drm_stub.c
-> for the things to work, but I _think_ it won't hurt even if we're not going to
-> use the pdev's private data.
->
-> The benefit of this is having just one code path for suspend/resume instead of
-> two different code paths depending on whether the driver is using the KMS or
-> not, which is well worth it IMO.
->
-> The patch is appended.
+On Fri, 8 Jan 2010 10:15:13 -0700
+Alex Chiang <achiang@hp.com> wrote:
 
-NAK
+> Since you bisected this down to a commit from Arjan, it might
+> help to cc him.
 
-for the reasons I explained in the previous email. This conflicts with systems
-where intelfb and intel drm are used together, this is something that ppl do use
-prior to KMS happening.
 
-We just need to document in the headers why the hooks are needed,
-and maybe a bit of patch review to make sure nobody removes them again.
+please send me "powertop -d" output, as well as the output of
+"dmidecode"..... quite possible that that's enough for me to fix this..
 
-Dave.
+
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
