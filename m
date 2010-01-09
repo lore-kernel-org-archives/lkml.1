@@ -1,98 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754810Ab0AISev@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754805Ab0AISvo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754810Ab0AISev (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Jan 2010 13:34:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753779Ab0AISeu
+	id S1754805Ab0AISvo (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Jan 2010 13:51:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753779Ab0AISvo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Jan 2010 13:34:50 -0500
-Received: from mta4.srv.hcvlny.cv.net ([167.206.4.199]:33791 "EHLO
-	mta4.srv.hcvlny.cv.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750841Ab0AISet (ORCPT
+	Sat, 9 Jan 2010 13:51:44 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:35518 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750841Ab0AISvn convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Jan 2010 13:34:49 -0500
-Date: Sat, 09 Jan 2010 13:34:20 -0500
-From: Michael Breuer <mbreuer@majjas.com>
-Subject: Re: [PATCH] af_packet: Don't use skb after dev_queue_xmit()
-In-reply-to: <20100109122830.GA4386@del.dom.local>
-To: Jarek Poplawski <jarkao2@gmail.com>
-Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
-       flyboy@gmail.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Message-id: <4B48CC2C.2090403@majjas.com>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7BIT
-References: <4B4625BD.3070202@majjas.com> <20100107183545.GA3208@del.dom.local>
- <4B462B3C.90506@majjas.com> <20100107185040.GB3208@del.dom.local>
- <4B466A26.5070506@majjas.com> <20100108074539.GA6205@ff.dom.local>
- <4B475FF9.7000702@majjas.com> <20100108212923.GA3078@del.dom.local>
- <4B47A81B.5040601@majjas.com> <4B4809EF.1070609@majjas.com>
- <20100109122830.GA4386@del.dom.local>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.5)
- Gecko/20091204 Lightning/1.0b2pre Thunderbird/3.0
+	Sat, 9 Jan 2010 13:51:43 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=rEESUrRemDqeJPL9EAbruUxxusAcN/txnSYJvGT2421++lWcQreLufzeQTCujNXvAf
+         dj3fgTtQvACT80eCh8TdFnxfhZitgPu4mDs+L4nDsGasG3aaGWPOFLOK8ZdMpbUdbYRl
+         MzehFZXDSfXaaj+nfSqGbF+UnQF89vUe7bwHQ=
+MIME-Version: 1.0
+In-Reply-To: <alpine.LNX.2.00.1001091608230.7275@pobox.suse.cz>
+References: <4B489B44.50101@gmail.com> <alpine.LNX.2.00.1001091608230.7275@pobox.suse.cz>
+From: roel kluin <roel.kluin@gmail.com>
+Date: Sat, 9 Jan 2010 19:51:21 +0100
+Message-ID: <25e057c01001091051q7c09ed40u6a860adee6a750d4@mail.gmail.com>
+Subject: Re: HID: is scancode correctly reported after key status change in 
+	hidinput_hid_event()?
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: linux-input@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 1/9/2010 7:28 AM, Jarek Poplawski wrote:
-> On Fri, Jan 08, 2010 at 11:45:35PM -0500, Michael Breuer wrote:
->    
->> On 1/8/2010 4:48 PM, Michael Breuer wrote:
->>      
->>> On 1/8/2010 4:29 PM, Jarek Poplawski wrote:
->>> ...
->>>        
->>>> BTW, don't hurry with that yet, but in the next test, please try
->>>> alternative 2 again (i.e. with MMAP + no DMAR + disable_msi).
->>>>
->>>>          
->>> Will do - still up from yesterday... no more dropped packets...
->>> none of the dns errors either. To be expected I suppose as long as
->>> I'm trying to sniff it. Assuming no immediate erorrs with alt2, no
->>> DMAR + disable_msi I'll report back after it's been up for a
->>> while.
->>> -- 
->>>        
->> Ok - ran alt1 and alt2, both with MMAP, no DMAR and disable_msi.
->> Both seem to behave similarly. No logged errors;
->>      
-> Ok - since alt2 introduces less changes and is acked by Stephen
-> already, I'll resend it with your "Tested-by" in a new thread to clear
-> things a bit.
+On Sat, Jan 9, 2010 at 4:15 PM, Jiri Kosina <jkosina@suse.cz> wrote:
+> On Sat, 9 Jan 2010, Roel Kluin wrote:
 >
->    
-Ok - good, and thank you for all your help.
->> large numbers of dropped RX packets.
->>      
-> You might try some tweaking with another sky2 parameter "copybreak"
-> or even editing its "NAPI_WEIGHT" variable.
->
->    
-I'll play around with this after I figure out what's actually being 
-dropped and why. Looking at ethtool, over 99% of RX packets are in the 
- >=1024 bucket. I'll play with weight and perhaps rmem as time permits.
->> One odd thing: when driving every sort of
->> traffic through, I was able to hose the client adapter (win7)
->> repeatedly by runnnig the win7 backup and connecting Windows Media
->> Player to a Mediatomb stream while also running a remote X11
->> session. Looks like the SSDP traffic that occurs at the same time as
->> the SMB traffic and X11 traffic takes out the adapter on Win7 -
->> Nforce.
->> Reran with msi enabled, MMAP and no DMAR. Also no errors; much
->> faster, and the Win7 side survives the same conditions that don't
->> work when msi is disabled. Doesn't make sense to me, but it is what
->> it is.
+>> vi drivers/hid/hid-input.c +634 and not in hidinput_hid_event()
 >>
->> Going to leave this up for a while and see if things remain functional.
->>      
-> It looks like DMAR is the main candidate for a new linux-kernel@ or
-> bugzilla bug report. You should also consider reporting these ipv6
-> problems, especially if you think they can trigger TX timeouts. (In
-> both cases it would be good to try current mainline first, when you
-> get it workable.)
->    
-Ok - I'll get onto mainline and then deal with DMAR.
-> Thanks,
-> Jarek P.
->    
+>>       /* report the usage code as scancode if the key status has changed */
+>>       if (usage->type == EV_KEY && !!test_bit(usage->code, input->key) != value)
+>>               input_event(input, EV_MSC, MSC_SCAN, usage->hid);
+>>
+>> Only if value is 1 or 0 the input_event() can occur, but value doesn't
+>> seem to be intended to be used as a boolean. are we really doing the
+>> correct test here?
+>
+> Hi Roel,
+>
+> well, value 2 means 'repeated' key, and there is no other possibility for
+> EV_KEY value than 0,1,2.
+>
+> For EV_KEY events generated by HID devices, the autorepeat is done by
+> input core (as the device sends the report only when status is changed),
+> so there is no easy way how to inject EV_MSC into the 'autorepeat reports'
+> anyway.
+>
+> Are you hitting some bug because of this, or have you found this out
+> solely by code reading?
 
+only code reading.
+
+Thanks
