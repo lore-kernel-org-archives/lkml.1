@@ -1,114 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754615Ab0AINwd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754645Ab0AIN7c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754615Ab0AINwd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Jan 2010 08:52:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754553Ab0AINwc
+	id S1754645Ab0AIN7c (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Jan 2010 08:59:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754634Ab0AIN7b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Jan 2010 08:52:32 -0500
-Received: from mga11.intel.com ([192.55.52.93]:44506 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752410Ab0AINwb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Jan 2010 08:52:31 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,246,1262592000"; 
-   d="scan'208";a="529871664"
-Date: Sat, 9 Jan 2010 21:52:19 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       Al Viro <viro@zeniv.linux.org.uk>, Eric Paris <eparis@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>
-Subject: Re: [PATCH] fs: O_* bit numbers uniqueness check
-Message-ID: <20100109135219.GD20015@localhost>
-References: <20100106065526.GB11368@localhost> <20100106154814.GA5172@infradead.org>
+	Sat, 9 Jan 2010 08:59:31 -0500
+Received: from out4.smtp.messagingengine.com ([66.111.4.28]:34315 "EHLO
+	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752410Ab0AIN7W (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 Jan 2010 08:59:22 -0500
+X-Sasl-enc: Ai9nSZVAHHsB1+IU+sQ1UlFwVCZTweU4qJpLeJMMGdvc 1263045561
+Date: Sat, 9 Jan 2010 11:59:19 -0200
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, len.brown@intel.com,
+       ibm-acpi@hmh.eng.br, kernel list <linux-kernel@vger.kernel.org>,
+       ibm-acpi-devel@lists.sourceforge.net
+Subject: Re: [ibm-acpi-devel] 2.6.33-rc2: regression: gkrellm no longer
+ shows all the temperatures on thinkpad x60
+Message-ID: <20100109135919.GC936@khazad-dum.debian.net>
+References: <20091227215722.GN11737@elf.ucw.cz>
+ <20091228130138.GA19362@khazad-dum.debian.net>
+ <20100107214904.GB25538@elf.ucw.cz>
+ <20100109134409.GA936@khazad-dum.debian.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20100106154814.GA5172@infradead.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20100109134409.GA936@khazad-dum.debian.net>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+ 1CDB 0FE3
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 06, 2010 at 11:48:14PM +0800, Christoph Hellwig wrote:
-> On Wed, Jan 06, 2010 at 02:55:26PM +0800, Wu Fengguang wrote:
-> > The O_* bit numbers are defined in 20+ arch/*, and hence can silently
-> > overlap. Add a boot time check to ensure the uniqueness as suggested
-> > by David Miller.
+On Sat, 09 Jan 2010, Henrique de Moraes Holschuh wrote:
+> On Thu, 07 Jan 2010, Pavel Machek wrote:
+> > > Please apply the latest stack of patches (sent them to acpi-test
+> > > yesterday).
+> > > 
+> > > It is failing to register the ALSA mixer for some reason, and due
+> > > to a bug, it is not loading the module at all.  I will look at the reason it
+> > > is failing to register the ALSA mixer soon.  Meanwhile, the patches I sent
+> > > to Len make sure the module can still load sucessfully.
+> > 
+> > Well, I'm not sure its completely fixed. I got this in my syslog:
+> > 
+> > thinkpad_acpi: THERMAL EMERGENCY: a sensor reports something is
+> > extremely hot!
+> > thinkpad_acpi: temperatures (Celsius): 95 47 N/A 89 47 N/A 41 N/A 51
+> > 61 N/A N/A N/A N/A N/A N/A
 > 
-> The right fix is to stop overlyaing the FMODE_ flags into the O_
-> namespace.  Al has been working towards this.
+> And the extremely hot sensor is that 89°C, which is the GPU I think (varies
+> from thinkpad to thinkpad).  That is not normal, and I'd say it needs
+> repair, probably a badly seated heatsink or failed thermal interface
+> compound.
 
-I thinks they are orthogonal problems -- this patch watches for the
-possible conflicting O_* in so many archs.
+Hmm... come to think of it, the CPU is also quite hot (95°C), and it usually
+shares the heatsink system with the GPU/north bridge, so the problem might
+be on the CPU side of things.
 
-Anyway here is the new version without the FMODE_ and O_RANDOM.
+While it can easily be a hardware problem in the heatsink, we could also
+have a screwed up ACPI thermal control in our hands once again (either
+kernel bug, or bogus ACPI firmware in the laptop).
 
-Thanks,
-Fengguang
----
-fs: O_* bit numbers uniqueness check
-
-The O_* bit numbers are defined in 20+ arch/*, and hence can silently
-overlap. Add a boot time check to ensure the uniqueness as suggested
-by David Miller.
-
-v4: use the nice hweight_long() as suggested by Jamie
-    split O_SYNC to (__O_SYNC | O_DSYNC) as suggested by Andreas
-    take away FMODE_* and O_RANDOM
-v3: change to BUILD_BUG_ON() as suggested by Roland
-
-CC: David Miller <davem@davemloft.net>
-CC: Stephen Rothwell <sfr@canb.auug.org.au>
-CC: Al Viro <viro@zeniv.linux.org.uk>
-CC: Christoph Hellwig <hch@infradead.org>
-CC: Eric Paris <eparis@redhat.com>
-CC: Roland Dreier <rdreier@cisco.com>
-CC: Jamie Lokier <jamie@shareable.org>
-CC: Andreas Schwab <schwab@linux-m68k.org>
-Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
----
- fs/fcntl.c                  |   14 ++++++++++++--
- include/asm-generic/fcntl.h |    2 ++
- 2 files changed, 14 insertions(+), 2 deletions(-)
-
---- linux.orig/fs/fcntl.c	2010-01-09 11:02:57.000000000 +0800
-+++ linux/fs/fcntl.c	2010-01-09 21:36:16.000000000 +0800
-@@ -709,11 +709,21 @@ void kill_fasync(struct fasync_struct **
- }
- EXPORT_SYMBOL(kill_fasync);
- 
--static int __init fasync_init(void)
-+static int __init fcntl_init(void)
- {
-+	/* please add new bits here to ensure allocation uniqueness */
-+	BUILD_BUG_ON(17 != hweight_long(
-+		O_RDONLY	| O_WRONLY	| O_RDWR	|
-+		O_CREAT		| O_EXCL	| O_NOCTTY	|
-+		O_TRUNC		| O_APPEND	| O_NONBLOCK	|
-+		__O_SYNC	| O_DSYNC	| FASYNC	|
-+		O_DIRECT	| O_LARGEFILE	| O_DIRECTORY	|
-+		O_NOFOLLOW	| O_NOATIME	| O_CLOEXEC
-+		));
-+
- 	fasync_cache = kmem_cache_create("fasync_cache",
- 		sizeof(struct fasync_struct), 0, SLAB_PANIC, NULL);
- 	return 0;
- }
- 
--module_init(fasync_init)
-+module_init(fcntl_init)
---- linux.orig/include/asm-generic/fcntl.h	2010-01-09 11:02:57.000000000 +0800
-+++ linux/include/asm-generic/fcntl.h	2010-01-09 12:23:17.000000000 +0800
-@@ -4,6 +4,8 @@
- #include <linux/types.h>
- 
- /*
-+ * When introducing new O_* bits, please check its uniqueness in fcntl_init().
-+ *
-  * FMODE_EXEC is 0x20
-  * FMODE_NONOTIFY is 0x1000000
-  * These cannot be used by userspace O_* until internal and external open
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
