@@ -1,117 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754664Ab0AIORb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754668Ab0AIOXu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754664Ab0AIORb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Jan 2010 09:17:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754469Ab0AIORa
+	id S1754668Ab0AIOXu (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Jan 2010 09:23:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753160Ab0AIOXt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Jan 2010 09:17:30 -0500
-Received: from bamako.nerim.net ([62.4.17.28]:62191 "EHLO bamako.nerim.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754186Ab0AIOR3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Jan 2010 09:17:29 -0500
-Date: Sat, 9 Jan 2010 15:17:24 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ralf Baechle <ralf@linux-mips.org>,
-       Samuel Ortiz <sameo@linux.intel.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       Yinghai Lu <yinghai@kernel.org>
-Subject: Re: [PATCH] set_irq_noprobe shouldn't be __init
-Message-ID: <20100109151724.128487db@hyperion.delvare>
-In-Reply-To: <20100108163910.ed49b5f4.akpm@linux-foundation.org>
-References: <20100105203842.04a1a523@hyperion.delvare>
-	<20100108163910.ed49b5f4.akpm@linux-foundation.org>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 9 Jan 2010 09:23:49 -0500
+Received: from pindarots.xs4all.nl ([80.101.128.228]:54801 "EHLO
+	pindarots.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751484Ab0AIOXs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 Jan 2010 09:23:48 -0500
+X-Greylist: delayed 480 seconds by postgrey-1.27 at vger.kernel.org; Sat, 09 Jan 2010 09:23:47 EST
+Message-ID: <4B488F90.2010101@xs4all.nl>
+Date: Sat, 09 Jan 2010 15:15:44 +0100
+From: Udo van den Heuvel <udovdh@xs4all.nl>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Lightning/1.0pre Thunderbird/3.0
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: WARNING: at net/sched/sch_generic.c:261 dev_watchdog+0x21a/0x230()
+X-Enigmail-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew,
 
-On Fri, 8 Jan 2010 16:39:10 -0800, Andrew Morton wrote:
-> On Tue, 5 Jan 2010 20:38:42 +0100
-> Jean Delvare <khali@linux-fr.org> wrote:
-> 
-> > Non-__init functions need to call set_irq_noprobe() so this function
-> > shouldn't be marked __init. Also remove __init from set_irq_probe()
-> > for consistency.
-> > 
-> > Signed-off-by: Jean Delvare <khali@linux-fr.org>
-> > Cc: Ralf Baechle <ralf@linux-mips.org>
-> > Cc: Samuel Ortiz <sameo@linux.intel.com>
-> > ---
-> >  kernel/irq/chip.c |    4 ++--
-> >  1 file changed, 2 insertions(+), 2 deletions(-)
-> > 
-> > --- linux-2.6.33-rc2.orig/kernel/irq/chip.c	2009-12-18 08:34:52.000000000 +0100
-> > +++ linux-2.6.33-rc2/kernel/irq/chip.c	2010-01-05 17:21:38.000000000 +0100
-> > @@ -682,7 +682,7 @@ set_irq_chip_and_handler_name(unsigned i
-> >  	__set_irq_handler(irq, handle, 0, name);
-> >  }
-> >  
-> > -void __init set_irq_noprobe(unsigned int irq)
-> > +void set_irq_noprobe(unsigned int irq)
-> >  {
-> >  	struct irq_desc *desc = irq_to_desc(irq);
-> >  	unsigned long flags;
-> > @@ -697,7 +697,7 @@ void __init set_irq_noprobe(unsigned int
-> >  	raw_spin_unlock_irqrestore(&desc->lock, flags);
-> >  }
-> >  
-> > -void __init set_irq_probe(unsigned int irq)
-> > +void set_irq_probe(unsigned int irq)
-> >  {
-> >  	struct irq_desc *desc = irq_to_desc(irq);
-> >  	unsigned long flags;
-> 
-> These non-__init callers will instantly crash, surely?  Are there any
-> reports of such crashes?
+Hello,
 
-I am not aware of such crashes being reported, but I am not the
-maintainer of the affected drivers (these are mfd drivers.) I suppose
-that the crash would only happen if these drivers were built as
-modules: if built into the kernel (and they always are, being boolean
-options in Kconfig), maybe they have time to initialize before the
-__init code is removed? I'm not familiar enough with this mechanism to
-tell.
+I just powered up my H2210 Ipaq PDA and the kernel on the workstation it
+was attached to mentioned:
 
-The only thing I'm sure of is that 'make
-CONFIG_DEBUG_SECTION_MISMATCH=y' complains.
+IPv6 addrconf: prefix with wrong length 48
+IPv6 addrconf: prefix with wrong length 48
+IPv6 addrconf: prefix with wrong length 48
+IPv6 addrconf: prefix with wrong length 48
+IPv6 addrconf: prefix with wrong length 48
+usb 3-1: new full speed USB device using ohci_hcd and address 2
+usb 3-1: New USB device found, idVendor=049f, idProduct=505a
+usb 3-1: New USB device strings: Mfr=1, Product=2, SerialNumber=0
+usb 3-1: Product: Ethernet Gadget
+usb 3-1: Manufacturer: Linux 2.6.15-hh1/pxa2xx_udc
+usb 3-1: configuration #1 chosen from 1 choice
+usb0: register 'cdc_subset' at usb-0000:00:12.1-1, Linux Device,
+9e:b5:6f:2c:07:4c
+usb 3-1: USB disconnect, address 2
+usb0: unregister 'cdc_subset' usb-0000:00:12.1-1, Linux Device
+usb 3-1: new full speed USB device using ohci_hcd and address 3
+usb 3-1: New USB device found, idVendor=0525, idProduct=a4a2
+usb 3-1: New USB device strings: Mfr=1, Product=2, SerialNumber=0
+usb 3-1: Product: RNDIS/Ethernet Gadget
+usb 3-1: Manufacturer: Linux 2.6.21-hh20/pxa2xx_udc
+usb 3-1: configuration #1 chosen from 2 choices
+usb0: register 'cdc_subset' at usb-0000:00:12.1-1, Linux Device,
+9e:b5:6f:2c:07:4c
+usb0: no IPv6 routers present
+ata7: exception Emask 0x10 SAct 0x0 SErr 0x0 action 0xe frozen
+ata7: irq_stat 0x00a00080, device exchanged
+ata7: hard resetting link
+usb 2-6: new high speed USB device using ehci_hcd and address 5
+usb 2-6: New USB device found, idVendor=05e3, idProduct=0608
+usb 2-6: New USB device strings: Mfr=0, Product=1, SerialNumber=0
+usb 2-6: Product: USB2.0 Hub
+usb 2-6: configuration #1 chosen from 1 choice
+hub 2-6:1.0: USB hub found
+hub 2-6:1.0: 4 ports detected
+usb 2-6.4: new high speed USB device using ehci_hcd and address 6
+usb 2-6.4: New USB device found, idVendor=05e3, idProduct=0723
+usb 2-6.4: New USB device strings: Mfr=3, Product=4, SerialNumber=2
+usb 2-6.4: Product: USB Storage
+usb 2-6.4: Manufacturer: Generic
+usb 2-6.4: SerialNumber: 000000009451
+usb 2-6.4: configuration #1 chosen from 1 choice
+Initializing USB Mass Storage driver...
+scsi9 : SCSI emulation for USB Mass Storage devices
+usb-storage: device found at 6
+usb-storage: waiting for device to settle before scanning
+usbcore: registered new interface driver usb-storage
+USB Mass Storage support registered.
+------------[ cut here ]------------
+WARNING: at net/sched/sch_generic.c:261 dev_watchdog+0x21a/0x230()
+Hardware name:
+NETDEV WATCHDOG: usb0 (cdc_subset): transmit queue 0 timed out
+Modules linked in: usb_storage hid_sunplus usbhid radeon ttm
+drm_kms_helper drm fb i2c_algo_bit cfbcopyarea cfbimgblt cfbfillrect
+rfcomm sco bridge stp llc bnep l2cap nfsd nfs_acl auth_rpcgss exportfs
+it87 hwmon_vid lockd sunrpc ipt_REJECT iptable_filter ipt_MASQUERADE
+iptable_nat nf_nat nf_conntrack_ipv4 nf_defrag_ipv4 ip_tables
+nf_conntrack_netbios_ns ip6t_REJECT xt_tcpudp nf_conntrack_ipv6 xt_state
+nf_conntrack ip6table_filter ip6_tables x_tables ipv6 powernow_k8
+binfmt_misc pwc videodev v4l1_compat v4l2_compat_ioctl32 btusb bluetooth
+usblp dm_mirror dm_region_hash dm_log snd_hda_codec_atihdmi
+snd_hda_codec_realtek snd_hda_intel snd_hda_codec snd_seq snd_seq_device
+snd_pcm snd_timer snd ohci1394 sr_mod ppdev ehci_hcd sg ieee1394
+parport_pc snd_page_alloc parport ohci_hcd evdev cdrom i2c_piix4 k10temp
+button pata_atiixp sata_sil24 floppy [last unloaded: scsi_wait_scan]
+Pid: 0, comm: swapper Not tainted 2.6.32.2 #4
+Call Trace:
+ <IRQ>  [<ffffffff81042d43>] ? warn_slowpath_common+0x73/0xb0
+ [<ffffffff8103c92e>] ? walk_tg_tree+0x8e/0xc0
+ [<ffffffff81042de0>] ? warn_slowpath_fmt+0x40/0x50
+ [<ffffffff811a9761>] ? strlcpy+0x41/0x50
+ [<ffffffff812f25ca>] ? dev_watchdog+0x21a/0x230
+ [<ffffffff810340ac>] ? __wake_up+0x3c/0x60
+ [<ffffffff8135d912>] ? _spin_unlock_irqrestore+0x12/0x40
+ [<ffffffff812f23b0>] ? dev_watchdog+0x0/0x230
+ [<ffffffff8104d052>] ? run_timer_softirq+0x162/0x260
+ [<ffffffff810615fb>] ? ktime_get+0x5b/0xe0
+ [<ffffffff810487e4>] ? __do_softirq+0xb4/0x140
+ [<ffffffff8100c3ec>] ? call_softirq+0x1c/0x30
+ [<ffffffff8100e2ed>] ? do_softirq+0x4d/0x80
+ [<ffffffff810484c5>] ? irq_exit+0x85/0x90
+ [<ffffffff8101eccb>] ? smp_apic_timer_interrupt+0x6b/0xa0
+ [<ffffffff8100bde3>] ? apic_timer_interrupt+0x13/0x20
+ <EOI>  [<ffffffff81012e10>] ? default_idle+0x20/0x40
+ [<ffffffff8101316b>] ? c1e_idle+0x7b/0x100
+ [<ffffffff8100a516>] ? cpu_idle+0x56/0xc0
+---[ end trace c9c0cf5c72497ec6 ]---
 
-I initially proposed the most immediate fix, but it might as well be
-that it is reasonable to leave set_irq_probe() in __init and fix all
-callers, under the assumption that all drivers which need it will be
-for specific chips which require built-in support and can't be
-hot-plugged by design.
 
-What I don't quite get is how to guarantee that the devices in question
-will be reachable early. These are SPI and I2C devices, so they
-require the right bus driver to be loaded first. But this cannot happen
-if they are built as modules (which nothing prevents as far as I can
-see.) So I suspect that, if everything in the drivers was tagged __init
-as it would have to if we want set_irq_probe() in __init, but the
-relevant SPI or I2C bus driver was built as a module, bad things would
-happen.
+This is on Fedora 12 x86_64 with a kernel.org 2.6.32.2...
 
-The proper fix in that case is somewhat beyond me. This might be one of
-these cases where I should have refrained from sending a patch when I
-finally did not know what the best solution to the problem would be.
-Feel free to ignore me.
-
-> If you're talking about new code then what is the status of that code?
-> 
-> Right now I don't know if this patch is needed in 2.6.34, 2.6.33 or
-> 2.6.32.x and earlier.
-> 
-> IOW: the changelog sucks :)
-
-You're right, sorry about that. The affected drivers are
-twl4030/twl6030, ezx-pcap and wm831x (all mfd drivers), offending lines
-are in the kernel tree since 2.6.28/2.6.33, 2.6.31 and 2.6.33,
-respectively.
-
--- 
-Jean Delvare
+Udo
