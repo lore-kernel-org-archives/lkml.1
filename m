@@ -1,99 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754369Ab0AIBIW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754019Ab0AIBNL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754369Ab0AIBIW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jan 2010 20:08:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753928Ab0AIBIV
+	id S1754019Ab0AIBNL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jan 2010 20:13:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752584Ab0AIBNK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jan 2010 20:08:21 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:34586 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753257Ab0AIBIU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jan 2010 20:08:20 -0500
-Message-ID: <4B47D6E3.8080300@redhat.com>
-Date: Fri, 08 Jan 2010 20:07:47 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
-MIME-Version: 1.0
-To: Michal Marek <mmarek@suse.cz>
-CC: "H. Peter Anvin" <hpa@zytor.com>, Simon Horman <horms@verge.net.au>,
-       Roland Dreier <rdreier@cisco.com>, Sam Ravnborg <sam@ravnborg.org>,
-       Sergei Trofimovich <slyfox@inbox.ru>, linux-kbuild@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-sh@vger.kernel.org
-Subject: Re: [PATCH] Makefile: do not override LC_CTYPE
-References: <20100108115745.GA14758@sepie.suse.cz> <1262952988-16563-1-git-send-email-mmarek@suse.cz>
-In-Reply-To: <1262952988-16563-1-git-send-email-mmarek@suse.cz>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=ISO-2022-JP
+	Fri, 8 Jan 2010 20:13:10 -0500
+Received: from outbound-mail-139.bluehost.com ([67.222.39.29]:44791 "HELO
+	outbound-mail-139.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752351Ab0AIBNJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jan 2010 20:13:09 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=pYKNYbFyFTn+putqKosByNJrZV3a9xSzv4Yp1j0hF49S2Ze0cm9TR/nvyMDYF2Srb6WPXjS+8UiCT3umrKOqF5QmUIIssaQ15fCQKgbxywhg9s8IHBrOWGHQiwbBhRhP;
+Date: Fri, 8 Jan 2010 17:13:11 -0800
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Eric Anholt <eric@anholt.net>,
+       Zhenyu Wang <zhenyuw@linux.intel.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       dri-devel@lists.sourceforge.net
+Subject: Re: [PATCH] DRM / i915: Fix resume regression on MSI Wind U100 w/o
+ KMS
+Message-ID: <20100108171311.128c43d0@jbarnes-piketon>
+In-Reply-To: <alpine.LFD.2.00.1001081648490.7821@localhost.localdomain>
+References: <201001090045.33784.rjw@sisk.pl>
+	<alpine.LFD.2.00.1001081548320.7821@localhost.localdomain>
+	<20100108163217.341da699@jbarnes-piketon>
+	<201001090146.17793.rjw@sisk.pl>
+	<alpine.LFD.2.00.1001081648490.7821@localhost.localdomain>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michal Marek wrote:
-> Setting LC_CTYPE=C breaks localized messages in some setups. With only
-> LC_COLLATE=C and LC_NUMERIC=C, we get almost all we need, except for not
-> so defined character classes and tolower()/toupper(). The former is not
-> a big issue, because we can assume that e.g. [:alpha:] will always
-> include a-zA-Z and we only ever process ASCII input. The latter seems
-> only affect arch/sh/tools/gen-mach-types, which we can handle separately.
-> 
-> So after this patch the meaning of ranges like [a-z], the behavior of
-> sort and join, etc. should be the same everywhere and at the same time
-> gcc should be able to print localized waring and error messages.
-> LC_NUMERIC=C might not be necessary, but setting it doesn't hurt.
-> 
-> Reported-by: Simon Horman <horms@verge.net.au>
-> Reported-by: Sergei Trofimovich <slyfox@inbox.ru>
-> Signed-off-by: Michal Marek <mmarek@suse.cz>
+On Fri, 8 Jan 2010 16:50:57 -0800 (PST)
+Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-I checked that this change doesn't affect arch/x86/tools/gen-insn-attr-x86.awk.
-
-Tested-by: Masami Hiramatsu <mhiramat@redhat.com>
-
-Thank you!
-
-
-> ---
 > 
-> Note: if this still breaks for someone, we will simply set LC_ALL=C.
 > 
->  Makefile               |    3 +--
->  arch/sh/tools/Makefile |    2 +-
->  2 files changed, 2 insertions(+), 3 deletions(-)
+> On Sat, 9 Jan 2010, Rafael J. Wysocki wrote:
+> > 
+> > Which is functionally equivalent to my patch, because
+> > i915_suspend/resume() won't be called by drm_class_suspend/resume()
+> > in the KMS case anyway.
 > 
-> diff --git a/Makefile b/Makefile
-> index 09a320f..a7b4351 100644
-> --- a/Makefile
-> +++ b/Makefile
-> @@ -18,10 +18,9 @@ MAKEFLAGS += -rR --no-print-directory
->  
->  # Avoid funny character set dependencies
->  unexport LC_ALL
-> -LC_CTYPE=C
->  LC_COLLATE=C
->  LC_NUMERIC=C
-> -export LC_CTYPE LC_COLLATE LC_NUMERIC
-> +export LC_COLLATE LC_NUMERIC
->  
->  # We are using a recursive build, so we need to do a little thinking
->  # to get the ordering right.
-> diff --git a/arch/sh/tools/Makefile b/arch/sh/tools/Makefile
-> index 558a56b..2082af1 100644
-> --- a/arch/sh/tools/Makefile
-> +++ b/arch/sh/tools/Makefile
-> @@ -13,4 +13,4 @@
->  include/generated/machtypes.h: $(src)/gen-mach-types $(src)/mach-types
->  	@echo '  Generating $@'
->  	$(Q)mkdir -p $(dir $@)
-> -	$(Q)$(AWK) -f $^ > $@ || { rm -f $@; /bin/false; }
-> +	$(Q)LC_ALL=C $(AWK) -f $^ > $@ || { rm -f $@; /bin/false; }
+> Ahh, right you are - that class suspend function does a check for 
+> DRIVER_MODESET, and only does the suspend/resume if it's not a
+> MODESET driver.
+> 
+> Ok, so I withdraw my objections to your original patch - it's
+> confusing, but that's just because DRM is such a horrible mess with
+> subtle things.
+
+Yeah the non-KMS paths just suck.
+
+Acked-by: Jesse Barnes <jbarnes@virtuousgeek.org>
+
+Though hopefully you can get the PCI driver registration working w/o
+too much trouble; that would be even better.
 
 -- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
-
+Jesse Barnes, Intel Open Source Technology Center
