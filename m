@@ -1,25 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754797Ab0AISNv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754803Ab0AISSM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754797Ab0AISNv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Jan 2010 13:13:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754771Ab0AISNu
+	id S1754803Ab0AISSM (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Jan 2010 13:18:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754771Ab0AISSK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Jan 2010 13:13:50 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:42528 "EHLO
+	Sat, 9 Jan 2010 13:18:10 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:55245 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754763Ab0AISNu (ORCPT
+	by vger.kernel.org with ESMTP id S1754741Ab0AISSJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Jan 2010 13:13:50 -0500
-Date: Sat, 9 Jan 2010 10:11:47 -0800 (PST)
+	Sat, 9 Jan 2010 13:18:09 -0500
+Date: Sat, 9 Jan 2010 10:17:19 -0800 (PST)
 From: Linus Torvalds <torvalds@linux-foundation.org>
 X-X-Sender: torvalds@localhost.localdomain
-To: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-cc: suresh.b.siddha@intel.com, yinghai@kernel.org, Ingo Molnar <mingo@elte.hu>,
-       lkml <linux-kernel@vger.kernel.org>, stable@kernel.org
-Subject: Re: [PATCH] Make Intel 8-way Xeons boot again
-In-Reply-To: <20100109101038.GA17555@in.ibm.com>
-Message-ID: <alpine.LFD.2.00.1001091007150.7821@localhost.localdomain>
-References: <20100109101038.GA17555@in.ibm.com>
+To: Jerome Glisse <glisse@freedesktop.org>
+cc: Jesse Barnes <jbarnes@virtuousgeek.org>, Dave Airlie <airlied@linux.ie>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       dri-devel@lists.sourceforge.net
+Subject: Re: [PATCH] DRM / i915: Fix resume regression on MSI Wind U100 w/o
+ KMS
+In-Reply-To: <20100109120141.GA4319@localhost.localdomain>
+Message-ID: <alpine.LFD.2.00.1001091012080.7821@localhost.localdomain>
+References: <201001090045.33784.rjw@sisk.pl> <alpine.LFD.2.00.1001081548320.7821@localhost.localdomain> <alpine.DEB.2.00.1001090214220.21286@skynet.skynet.ie> <20100108185041.7aae6c01@jbarnes-piketon> <20100109120141.GA4319@localhost.localdomain>
 User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -29,45 +32,35 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 
-On Sat, 9 Jan 2010, Ananth N Mavinakayanahalli wrote:
->
-> On an 8-way system with Intel Xeon X7350 CPUs, booting 2.6.32 or newer
-> kernels fails at:
+On Sat, 9 Jan 2010, Jerome Glisse wrote:
+
+> On Fri, Jan 08, 2010 at 06:50:41PM -0800, Jesse Barnes wrote:
+> > 
+> > Linus, can we ever drop those old paths?  Maybe after the new bits have
+> > been around for awhile?  Users of really old userspace stacks would
+> > lose 3D support, but they'd still have 2D, so it wouldn't be a complete
+> > break.  The non-KMS paths sometimes break like this anyway without us
+> > noticing (especially some of the weirder 3D paths)...
+> > 
+> > Just thinking out loud, we could really kill a lot of really bad code...
 > 
-> ...
-> CPU0: Intel(R) Xeon(R) CPU           X7350  @ 2.93GHz stepping 0b
-> Booting Node   0, Processors  #1 #2 #3 #4 #5 #6 #7 Ok.
-> Brought up 8 CPUs
-> Total of 8 processors activated (46906.05 BogoMIPS).
-> 
-> Git bisect showed 2fbd07a5f as the offending commit.
+> I among those who would love such things to happen :)
 
-Ok, that commit definitely is buggy.
+I don't want to drop it _yet_, but "ever"? Sure. When people are sure that 
+KMS actually handles all the cases that old X does (maybe that's true 
+now), and we've had more than just a couple of kernel releases of _stable_ 
+Intel KMS, I suspect we can start thinking about "ok, nobody seriously 
+uses 3D on Intel integrated graphics _and_ updates the kernel".
 
-> With the patch below, I am able to boot the latest Linus' git tree on
-> the machine. If this patch is correct, it needs to get into the stable
-> tree too.
+The fact that they'd still have a working X setup would make it generally 
+much more palatable, I think. 
 
-I don't think the patch is correct, though. The thing is, the AMD check 
-seems to be the correct one: you can only use 'apic_flat' if all the APIC 
-ID's are < 8.
+But we definitely need more than just a couple of kernel releases. So 
+we're talking timescales of "more than a year of stable code". Whether 
+that is "six months from now" or "two years from now", I can't judge. 
 
-It doesn't matter _how_ many CPU's you have. If you have two CPU's, but 
-one of them has an APIC ID >= 8, then you cannot use the flat APIC model, 
-since it depends on a 8-bit bitfield.
-
-So your patch doesn't seem right either, because it still tests 
-num_processors, which is bogus.
-
-In fact, I can't for the life of me understand why it treats different 
-vendors differently. Why is that code not just a simple
-
-	/* Flat apic mode requires that all APIC ID's are in the range 0..7 */
-	if (apic == &apic_flat && max_physical_apicid >= 8)
-		apic = &apic_physflat;
-
-instead, with no crazy vendor tests.
-
-What am I missing? 
+And people can try to convince me to be more or less aggressive about it, 
+so take the above as a more of a personal opinion that is open to 
+change than anything definite and final.
 
 		Linus
