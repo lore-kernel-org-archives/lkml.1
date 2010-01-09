@@ -1,64 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754358Ab0AIBRv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754288Ab0AIBVb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754358Ab0AIBRv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 Jan 2010 20:17:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753576Ab0AIBRu
+	id S1754288Ab0AIBVb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 Jan 2010 20:21:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753538Ab0AIBVb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 Jan 2010 20:17:50 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:55998 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751644Ab0AIBRu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 Jan 2010 20:17:50 -0500
-Date: Fri, 8 Jan 2010 17:17:14 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Trond Myklebust <Trond.Myklebust@netapp.com>
-cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       linux-nfs@vger.kernel.org
-Subject: Re: [RFC PATCH 0/2] Fix up the NFS mmap code
-In-Reply-To: <20100109005624.7473.33215.stgit@localhost.localdomain>
-Message-ID: <alpine.LFD.2.00.1001081709470.7821@localhost.localdomain>
-References: <1262913974.2659.101.camel@localhost> <20100109005624.7473.33215.stgit@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Fri, 8 Jan 2010 20:21:31 -0500
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:60313 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753541Ab0AIBVa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 Jan 2010 20:21:30 -0500
+Date: Fri, 8 Jan 2010 17:21:28 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Steven Rostedt <rostedt@goodmis.org>, Oleg Nesterov <oleg@redhat.com>,
+       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org,
+       josh@joshtriplett.org, tglx@linutronix.de, Valdis.Kletnieks@vt.edu,
+       dhowells@redhat.com, laijs@cn.fujitsu.com, dipankar@in.ibm.com
+Subject: Re: [RFC PATCH] introduce sys_membarrier(): process-wide memory
+	barrier
+Message-ID: <20100109012128.GF6816@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20100107183010.GA14980@redhat.com> <20100107183946.GL6764@linux.vnet.ibm.com> <1262890782.28171.3738.camel@gandalf.stny.rr.com> <20100107191657.GN6764@linux.vnet.ibm.com> <1262893243.28171.3753.camel@gandalf.stny.rr.com> <20100107205830.GR6764@linux.vnet.ibm.com> <1262900140.28171.3773.camel@gandalf.stny.rr.com> <20100108235338.GA18050@Krystal> <20100109002043.GD6816@linux.vnet.ibm.com> <20100109010231.GA25368@Krystal>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100109010231.GA25368@Krystal>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Jan 08, 2010 at 08:02:31PM -0500, Mathieu Desnoyers wrote:
+> * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
+> > On Fri, Jan 08, 2010 at 06:53:38PM -0500, Mathieu Desnoyers wrote:
+> > > * Steven Rostedt (rostedt@goodmis.org) wrote:
+> > > > Well, if we just grab the task_rq(task)->lock here, then we should be
+> > > > OK? We would guarantee that curr is either the task we want or not.
+> > > 
+> > > Hrm, I just tested it, and there seems to be a significant performance
+> > > penality involved with taking these locks for each CPU, even with just 8
+> > > cores. So if we can do without the locks, that would be preferred.
+> > 
+> > How significant?  Factor of two?  Two orders of magnitude?
+> > 
+> 
+> On a 8-core Intel Xeon (T is the number of threads receiving the IPIs):
+> 
+> Without runqueue locks:
+> 
+> T=1: 0m13.911s
+> T=2: 0m20.730s
+> T=3: 0m21.474s
+> T=4: 0m27.952s
+> T=5: 0m26.286s
+> T=6: 0m27.855s
+> T=7: 0m29.695s
+> 
+> With runqueue locks:
+> 
+> T=1: 0m15.802s
+> T=2: 0m22.484s
+> T=3: 0m24.751s
+> T=4: 0m29.134s
+> T=5: 0m30.094s
+> T=6: 0m33.090s
+> T=7: 0m33.897s
+> 
+> So on 8 cores, taking spinlocks for each of the 8 runqueues adds about
+> 15% overhead when doing an IPI to 1 thread. Therefore, that won't be
+> pretty on 128+-core machines.
 
+But isn't the bulk of the overhead the IPIs rather than the runqueue
+locks?
 
-On Fri, 8 Jan 2010, Trond Myklebust wrote:
->
-> How about something like the following. I chose to wrap the call to
-> do_mmap_pgoff() instead of making a special ->pre_mmap(), since that
-> seems more consistent with the way we handle ->read() and ->write().
+     W/out RQ       W/RQ   % degradation
+T=1:    13.91      15.8    1.14
+T=2:    20.73      22.48   1.08
+T=3:    21.47      24.75   1.15
+T=4:    27.95      29.13   1.04
+T=5:    26.29      30.09   1.14
+T=6:    27.86      33.09   1.19
+T=7:    29.7       33.9    1.14
 
-I still don't think that you can ever do mmap _and_ readdir on the same 
-inode, so there's something wrong with the lockdep annotations.
+So if we had lots of CPUs, we might want to fan the IPIs out through
+intermediate CPUs in a tree fashion, but the runqueue locks are not
+causing excessive pain.
 
-See my earlier mail about putting directory inodes in a different class 
-from non-directory inodes, and the email after that that points out that 
-we already do:
+How does this compare to use of POSIX signals?  Never mind, POSIX
+signals are arbitrarily bad if you have way more threads than are
+actually running at the time...
 
- - inode_init_always():
-	lockdep_set_class(&inode->i_mutex, &sb->s_type->i_mutex_key);
-
- - unlock_new_inode() (for directories):
-	lockdep_set_class(&inode->i_mutex, &type->i_mutex_dir_key);
-
-and I suspect that the reason why NFS triggers lockdep problems is that 
-NFS probably plays some game with inodes (presumably the root inode) that 
-ends up bypassing the normal new-inode handling.
-
-In short - I really don't think this issue merits VFS-level (or VM, 
-whatever you want to call it) hooks. There's a bug there, but I don't 
-think you're actually fixing the right thing.
-
-And _especially_ not the way you did it, where the filesystem can wrap the 
-whole complex do_mmap_pgoff. The NFS use you have doesn't seem too bad, 
-but anybody who tries to be clever and avoid "generic_mmap_do_pgoff()" 
-would immediately be a major disaster.
-
-		Linus
+							Thanx, Paul
