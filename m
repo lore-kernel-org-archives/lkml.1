@@ -1,17 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754384Ab0AJWlo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754502Ab0AJWmq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754384Ab0AJWlo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jan 2010 17:41:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754354Ab0AJWli
+	id S1754502Ab0AJWmq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jan 2010 17:42:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754434Ab0AJWmO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jan 2010 17:41:38 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:57957 "EHLO ogre.sisk.pl"
+	Sun, 10 Jan 2010 17:42:14 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:57984 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754282Ab0AJWlh convert rfc822-to-8bit (ORCPT
+	id S1754426Ab0AJWmM convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jan 2010 17:41:37 -0500
+	Sun, 10 Jan 2010 17:42:12 -0500
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Lin Ming" <ming.m.lin@intel.com>, "Mike Galbraith" <efault@gmx.de>
+       "Dave Airlie" <airlied@redhat.com>,
+       "James Simmons" <jsimmons@infradead.org>,
+       "Johan Hovold" <jhovold@gmail.com>
 References: <wnS54-l8PVO.A.TlF.oMlSLB@chimera>
 In-Reply-To: <wnS54-l8PVO.A.TlF.oMlSLB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -19,10 +21,10 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <omZ8aBZReyD.A.BXG.2MlSLB@chimera>
-Subject: [Bug #15034] volano ~30% regression
+Message-ID: <omZ8aBZReyD.A.C_F.wMlSLB@chimera>
+Subject: [Bug #15038] drm/ksm: fbdev blanking regression
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Sun, 10 Jan 2010 23:32:58 +0100 (CET)
+Date: Sun, 10 Jan 2010 23:32:59 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -35,12 +37,12 @@ from 2.6.32.  Please verify if it still should be listed and let me know
 (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=15034
-Subject		: volano ~30% regression
-Submitter	: Lin Ming <ming.m.lin@intel.com>
-Date		: 2010-01-04 8:15 (7 days old)
-References	: http://marc.info/?l=linux-kernel&m=126259391411982&w=4
-Handled-By	: Mike Galbraith <efault@gmx.de>
-Patch		: http://patchwork.kernel.org/patch/70623/
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=15038
+Subject		: drm/ksm: fbdev blanking regression
+Submitter	: Johan Hovold <jhovold@gmail.com>
+Date		: 2010-01-06 17:00 (5 days old)
+First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=731b5a15a3b1474a41c2ca29b4c32b0f21bc852e
+References	: http://marc.info/?l=linux-kernel&m=126279726418748&w=4
+Handled-By	: James Simmons <jsimmons@infradead.org>
 
 
