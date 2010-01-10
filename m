@@ -1,71 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754148Ab0AJWhw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754187Ab0AJWkJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754148Ab0AJWhw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jan 2010 17:37:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754067Ab0AJWhw
+	id S1754187Ab0AJWkJ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jan 2010 17:40:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754167Ab0AJWkH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jan 2010 17:37:52 -0500
-Received: from lists.laptop.org ([18.85.2.145]:58549 "EHLO mail.laptop.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753955Ab0AJWhv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jan 2010 17:37:51 -0500
-Date: Sun, 10 Jan 2010 17:40:10 -0500
-From: Michael Stone <michael@laptop.org>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       linux-security-module@vger.kernel.org, Andi Kleen <andi@firstfloor.org>,
-       David Lang <david@lang.hm>, Oliver Hartkopp <socketcan@hartkopp.net>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Valdis Kletnieks <Valdis.Kletnieks@vt.edu>,
-       Bryan Donlan <bdonlan@gmail.com>, Evgeniy Polyakov <zbr@ioremap.net>,
-       "C. Scott Ananian" <cscott@cscott.net>,
-       James Morris <jmorris@namei.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Bernie Innocenti <bernie@codewiz.org>,
-       Mark Seaborn <mrs@mythic-beasts.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       =?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>,
-       Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
-       Samir Bellabes <sam@synack.fr>,
-       Casey Schaufler <casey@schaufler-ca.com>,
-       "Serge E. Hallyn" <serue@us.ibm.com>, Pavel Machek <pavel@ucw.cz>,
-       Al Viro <viro@ZenIV.linux.org.uk>, Michael Stone <michael@laptop.org>
-Subject: Re: [PATCH 2/3] Security: Implement disablenetwork semantics. (v4)
-Message-ID: <20100110224010.GA3825@heat>
+	Sun, 10 Jan 2010 17:40:07 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:57871 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754124Ab0AJWkF convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Jan 2010 17:40:05 -0500
+Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "Joshua Covington" <joshuacov@googlemail.com>,
+       "Luis R. Rodriguez" <mcgrof@gmail.com>
+References: <wnS54-l8PVO.A.TlF.oMlSLB@chimera>
+In-Reply-To: <wnS54-l8PVO.A.TlF.oMlSLB@chimera>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Disposition: inline
-In-Reply-To: <20100110215848.GA26609@elf.ucw.cz>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Message-ID: <omZ8aBZReyD.A.1h.vNlSLB@chimera>
+Subject: [Bug #14874] Ath5k regression with commit 8bf3d79bc401ca417ccf9fc076d3295d1a71dbf5
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Date: Sun, 10 Jan 2010 23:32:53 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote:
+This message has been generated automatically as a part of a report
+of recent regressions.
 
-> You can trivialy make disablenetwork disable setuid exec, too. That
-> will introduce better isolation facilities, but not introduce any new
-> security problems.
-> 
-> For some reason, you don't want to do the obviously right thing.
+The following bug entry is on the current list of known regressions
+from 2.6.32.  Please verify if it still should be listed and let me know
+(either way).
 
-I don't want to do it because it's not "obviously right" to me: I *have* setuid
-programs that I want to be able to raise privileges when network-disabled.
-I *don't have* any setuid programs that will be harmed by disablenetwork.
 
-Examples of software that I want to be able to gain privileges normally include:
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14874
+Subject		: Ath5k regression with commit 8bf3d79bc401ca417ccf9fc076d3295d1a71dbf5
+Submitter	: Joshua Covington <joshuacov@googlemail.com>
+Date		: 2009-12-25 00:49 (17 days old)
+Handled-By	: Luis R. Rodriguez <mcgrof@gmail.com>
+Patch		: http://bugzilla.kernel.org/attachment.cgi?id=24335
 
-   rainbow, which requires privilege in order to add new accounts to the system
-   and in order to call setuid() but which does not require networking
-   privileges.
 
-   qmail-queue, which uses setuid to deliver mail that it reads from fd 0 to
-   local users
-
-   and other old favorites like mount, fusermount, X, and, presumably, any audio
-   software that wants to go realtime.
-
-Kind regards,
-
-Michael
