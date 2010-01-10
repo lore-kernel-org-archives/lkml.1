@@ -1,116 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753171Ab0AJLUe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752817Ab0AJLXH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753171Ab0AJLUe (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jan 2010 06:20:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752308Ab0AJLUd
+	id S1752817Ab0AJLXH (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jan 2010 06:23:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752349Ab0AJLXG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jan 2010 06:20:33 -0500
-Received: from mail01a.mail.t-online.hu ([84.2.40.6]:52166 "EHLO
-	mail01a.mail.t-online.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752011Ab0AJLUd (ORCPT
+	Sun, 10 Jan 2010 06:23:06 -0500
+Received: from fg-out-1718.google.com ([72.14.220.152]:32244 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752331Ab0AJLXF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jan 2010 06:20:33 -0500
-X-Authuid: nmarci
-Message-ID: <4B49B7FB.4020402@freemail.hu>
-Date: Sun, 10 Jan 2010 12:20:27 +0100
-From: =?UTF-8?B?TsOpbWV0aCBNw6FydG9u?= <nm127@freemail.hu>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; hu-HU; rv:1.8.1.21) Gecko/20090402 SeaMonkey/1.1.16
+	Sun, 10 Jan 2010 06:23:05 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:cc:subject:references
+         :in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=TVRs5FmE4O8E9arSCX/01HwJk5eZakvJ3roscVWLIJDxdowZosvwjGmV99fdKj2WDV
+         RXfiagnZhPb05kFqqXsdipKPmgmtgZWjBjB/ioopfYoHW/ugM/zSc1+e+VlTR+lhnsg3
+         OYlb67DYiAizbsj46Aym/BQEI7+XfmuruAnjo=
+Message-ID: <4B49B895.1060507@gmail.com>
+Date: Sun, 10 Jan 2010 12:23:01 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-16.1 Thunderbird/3.0
 MIME-Version: 1.0
-To: Doug Thompson <dougthompson@xmission.com>,
-       Grant Erickson <gerickson@nuovations.com>,
-       Dave Jiang <djiang@mvista.com>
-CC: bluesmoke-devel@lists.sourceforge.net, LKML <linux-kernel@vger.kernel.org>,
-       Julia Lawall <julia@diku.dk>, cocci@diku.dk
-Subject: [PATCH] edac: make Open Firmware device id constant
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-DCC-mail.t-online.hu-Metrics: mail01a.mail.t-online.hu 32711; Body=7 Fuz1=7
-	Fuz2=7
+CC: gregkh@suse.de, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       Alan Cox <alan@linux.intel.com>
+Subject: Re: [PATCH 1/1] Char: synclink, fix potential null dereference
+References: <1263113518-6377-1-git-send-email-jslaby@suse.cz>
+In-Reply-To: <1263113518-6377-1-git-send-email-jslaby@suse.cz>
+X-Enigmail-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-2
+Content-Transfer-Encoding: 7bit
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Márton Németh <nm127@freemail.hu>
+On 01/10/2010 09:51 AM, Jiri Slaby wrote:
+> Stanse found a potential null dereference in mgsl_put_char and
+> mgsl_write. There is a check for tty being NULL, but it is
+> dereferenced earlier. Move the dereference after the check.
+> 
+> Also reorder mgsl_paranoia_check so that it makes sense:
+> * check !tty
+> * deref tty
+> * check !info
+> * deref info
 
-The match_table field of the struct of_device_id is constant in <linux/of_platform.h>
-so it is worth to make the initialization data constant.
+Actually, this is wrong, .write and .put_char cannot be called with NULL
+tty.
 
-The semantic match that finds this kind of pattern is as follows:
-(http://coccinelle.lip6.fr/)
-
-// <smpl>
-@r@
-disable decl_init,const_decl_init;
-identifier I1, I2, x;
-@@
-	struct I1 {
-	  ...
-	  const struct I2 *x;
-	  ...
-	};
-@s@
-identifier r.I1, y;
-identifier r.x, E;
-@@
-	struct I1 y = {
-	  .x = E,
-	};
-@c@
-identifier r.I2;
-identifier s.E;
-@@
-	const struct I2 E[] = ... ;
-@depends on !c@
-identifier r.I2;
-identifier s.E;
-@@
-+	const
-	struct I2 E[] = ...;
-// </smpl>
-
-Signed-off-by: Márton Németh <nm127@freemail.hu>
-Cc: Julia Lawall <julia@diku.dk>
-Cc: cocci@diku.dk
----
-diff -u -p a/drivers/edac/ppc4xx_edac.c b/drivers/edac/ppc4xx_edac.c
---- a/drivers/edac/ppc4xx_edac.c 2009-12-03 04:51:21.000000000 +0100
-+++ b/drivers/edac/ppc4xx_edac.c 2010-01-08 04:46:11.000000000 +0100
-@@ -194,7 +194,7 @@ static int ppc4xx_edac_remove(struct of_
-  * Device tree node type and compatible tuples this driver can match
-  * on.
-  */
--static struct of_device_id ppc4xx_edac_match[] = {
-+static const struct of_device_id ppc4xx_edac_match[] = {
- 	{
- 		.compatible	= "ibm,sdram-4xx-ddr2"
- 	},
-diff -u -p a/drivers/edac/mpc85xx_edac.c b/drivers/edac/mpc85xx_edac.c
---- a/drivers/edac/mpc85xx_edac.c 2009-12-03 04:51:21.000000000 +0100
-+++ b/drivers/edac/mpc85xx_edac.c 2010-01-08 04:46:17.000000000 +0100
-@@ -328,7 +328,7 @@ static int mpc85xx_pci_err_remove(struct
- 	return 0;
- }
-
--static struct of_device_id mpc85xx_pci_err_of_match[] = {
-+static const struct of_device_id mpc85xx_pci_err_of_match[] = {
- 	{
- 	 .compatible = "fsl,mpc8540-pcix",
- 	 },
-@@ -633,7 +633,7 @@ static int mpc85xx_l2_err_remove(struct
- 	return 0;
- }
-
--static struct of_device_id mpc85xx_l2_err_of_match[] = {
-+static const struct of_device_id mpc85xx_l2_err_of_match[] = {
- /* deprecate the fsl,85.. forms in the future, 2.6.30? */
- 	{ .compatible = "fsl,8540-l2-cache-controller", },
- 	{ .compatible = "fsl,8541-l2-cache-controller", },
-@@ -973,7 +973,7 @@ static int mpc85xx_mc_err_remove(struct
- 	return 0;
- }
-
--static struct of_device_id mpc85xx_mc_err_of_match[] = {
-+static const struct of_device_id mpc85xx_mc_err_of_match[] = {
- /* deprecate the fsl,85.. forms in the future, 2.6.30? */
- 	{ .compatible = "fsl,8540-memory-controller", },
- 	{ .compatible = "fsl,8541-memory-controller", },
+-- 
+js
