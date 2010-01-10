@@ -1,50 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753067Ab0AJTG0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753211Ab0AJTHf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753067Ab0AJTG0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jan 2010 14:06:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752332Ab0AJTG0
+	id S1753211Ab0AJTHf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jan 2010 14:07:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752329Ab0AJTHf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jan 2010 14:06:26 -0500
-Received: from bamako.nerim.net ([62.4.17.28]:50870 "EHLO bamako.nerim.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752139Ab0AJTGZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jan 2010 14:06:25 -0500
-Date: Sun, 10 Jan 2010 20:06:21 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Yong Wang <yong.y.wang@linux.intel.com>
-Cc: linux-kernel@vger.kernel.org, Huaxu Wan <huaxu.wan@intel.com>,
-       lm-sensors@lm-sensors.org
-Subject: Re: [lm-sensors] [PATCH] hwmon: (coretemp) Fix TjMax for Atom 
- N450/D410/D510 CPUs
-Message-ID: <20100110200621.564a6682@hyperion.delvare>
-In-Reply-To: <20100106160817.72313551@hyperion.delvare>
-References: <20091224073102.GA23058@ywang-moblin2.bj.intel.com>
-	<20100106160817.72313551@hyperion.delvare>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 10 Jan 2010 14:07:35 -0500
+Received: from smtp.sohu.com ([220.181.26.195]:33573 "EHLO smtp.sohu.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752139Ab0AJTHe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Jan 2010 14:07:34 -0500
+From: "txbfjnrv1820@sohu.com" <txbfjnrv1820@sohu.com>
+Date: Mon, 11 Jan 2010 03:07:29 +0800
+Subject: mqvaf
+MIME-Version: 1.0
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Message-Id: <20100110190732.1B0358710D1@smtp.sohu.com>
+To: undisclosed-recipients:;
+X-SOHU-Antispam-Bayes: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 6 Jan 2010 16:08:17 +0100, Jean Delvare wrote:
-> Hi Yong,
-> 
-> On Thu, 24 Dec 2009 15:31:02 +0800, Yong Wang wrote:
-> > The max junction temperature of Atom N450/D410/D510 CPUs is 100 degrees Celsius.
-> > Since these CPUs are always coupled with Intel NM10 chipset in one package, the
-> > best way to verify whether an Atom CPU is N450/D410/D510 is to check the host
-> > bridge device.
-> > 
-> > Signed-off-by: Yong Wang <yong.y.wang@intel.com>
-> > Acked-by: Huaxu Wan <huaxu.wan@intel.com>
-> 
-> Applied, thanks. I've also added a Kconfig dependency on CONFIG_PCI.
-
-Hmm. Thinking about it some more... What about nVidia-based systems?
-Can't we have systems with an Atom N450/D410/D510 and a non-Intel
-chipset?
-
--- 
-Jean Delvare
+uydhmq
