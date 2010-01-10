@@ -1,115 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752473Ab0AJMzy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752552Ab0AJNAZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752473Ab0AJMzy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jan 2010 07:55:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751715Ab0AJMzx
+	id S1752552Ab0AJNAZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jan 2010 08:00:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752042Ab0AJNAZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jan 2010 07:55:53 -0500
-Received: from mail-ew0-f214.google.com ([209.85.219.214]:40143 "EHLO
-	mail-ew0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750834Ab0AJMzw (ORCPT
+	Sun, 10 Jan 2010 08:00:25 -0500
+Received: from mtaout03-winn.ispmail.ntl.com ([81.103.221.49]:6954 "EHLO
+	mtaout03-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751651Ab0AJNAX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jan 2010 07:55:52 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=SFaLXOmKsQdvv+BIrS83BZZ6JoIEyLgcjmbsPo2jrDIJsz0MLRQ0hq6MTSjk1NZLHN
-         wzdncS+LOM54SDpg7CL0KXaIbRPtxL6znBO8gObiGJON10QtVg5F9W/4ydItzytUiaG4
-         I0+m1XDMttzbEXSUQCDieMQbNRdbvPvX1YEpc=
-MIME-Version: 1.0
-In-Reply-To: <4e5e476b1001051348y4637986epb9b56958c738061a@mail.gmail.com>
-References: <20091230213439.GQ4489@kernel.dk>
-	 <x49wrzxak5n.fsf@segfault.boston.devel.redhat.com>
-	 <4e5e476b1001041037x6aa63be6ncfa523a7df78bb0d@mail.gmail.com>
-	 <20100104185100.GF7968@redhat.com>
-	 <x49fx6ladzk.fsf@segfault.boston.devel.redhat.com>
-	 <4e5e476b1001041237v71952c8ewaaef3778353f7521@mail.gmail.com>
-	 <x49zl4s8uoj.fsf@segfault.boston.devel.redhat.com>
-	 <20100105151353.GA4631@redhat.com>
-	 <x49y6kc6yib.fsf@segfault.boston.devel.redhat.com>
-	 <4e5e476b1001051348y4637986epb9b56958c738061a@mail.gmail.com>
-Date: Sun, 10 Jan 2010 13:55:50 +0100
-Message-ID: <4e5e476b1001100455l17a8fa4eyf69282f5717a20c4@mail.gmail.com>
-Subject: Re: [PATCH] cfq-iosched: non-rot devices do not need read queue 
-	merging
-From: Corrado Zoccolo <czoccolo@gmail.com>
-To: Jeff Moyer <jmoyer@redhat.com>
-Cc: Vivek Goyal <vgoyal@redhat.com>, Jens Axboe <jens.axboe@oracle.com>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>,
-       Shaohua Li <shaohua.li@intel.com>,
-       Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8
+	Sun, 10 Jan 2010 08:00:23 -0500
+From: Ian Campbell <ijc@hellion.org.uk>
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+Cc: Brian Gerst <brgerst@gmail.com>, Christian Kujau <lists@nerdbynature.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20100110080940.GB5189@lenovo>
+References: <alpine.DEB.2.01.1001051649100.3483@bogon.housecafe.de>
+	 <4B4405B5.9040205@goop.org>
+	 <alpine.DEB.2.01.1001060240010.3483@bogon.housecafe.de>
+	 <20100106112133.GA5815@lenovo>
+	 <alpine.DEB.2.01.1001060434330.3483@bogon.housecafe.de>
+	 <4B4633D3.2070903@zytor.com>
+	 <alpine.DEB.2.01.1001071123220.3483@bogon.housecafe.de>
+	 <20100108215039.GD4967@lenovo>
+	 <73c1f2161001091750y67a852dfk7539021dcc82fa1f@mail.gmail.com>
+	 <20100110080940.GB5189@lenovo>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sun, 10 Jan 2010 12:59:03 +0000
+Message-ID: <1263128343.2393.45.camel@cthulhu.hellion.org.uk>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.2 
+Content-Transfer-Encoding: 7bit
+X-SA-Exim-Connect-IP: 192.168.1.223
+X-SA-Exim-Mail-From: ijc@hellion.org.uk
+Subject: Re: 2.6.33-rc2: Xen/Guest switching to user mode with no user page
+ tables
+X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
+X-SA-Exim-Scanned: Yes (on hopkins.hellion.org.uk)
+X-Cloudmark-Analysis: v=1.1 cv=1ggfb5FlKZQUfF3vzm9UBYZ2uTfLsbs/8dSljwg5+mE= c=1 sm=0 a=WUDd807v63sA:10 a=pGLkceISAAAA:8 a=oGMlB6cnAAAA:8 a=AZfGcq7nAAAA:8 a=OQNzS2De_kqakrVLa04A:9 a=mSVTvEyaHMOdic_sxecA:7 a=iQLbiVoB4wmno1k11xHwZQgvcUMA:4 a=MSl-tDqOz04A:10 a=CY6gl2JlH4YA:10 a=3mskUyRpf7Zx3Fs6:21 a=YuSJgg-zuaVtQAW8:21 a=HpAAvcLHHh0Zw7uRqdWCyQ==:117
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Sun, 2010-01-10 at 11:09 +0300, Cyrill Gorcunov wrote:
+> On Sat, Jan 09, 2010 at 08:50:04PM -0500, Brian Gerst wrote:
+> ...
+> > > ---
+> > > x86: kernel_thread -- initialize SS to a known state
+> > >
+> > > Before the kernel_thread was converted into "C" we had
+> > > pt_regs::ss set to __KERNEL_DS (by SAVE_ALL asm macro).
+> > >
+> > > Though I must admit I didn't find any *explicit* load of
+> > > %ss from this structure the better to be on a safe side
+> > > and set it to a known value.
+> > 
+> > It shouldn't make any difference, but maybe Xen is doing something
+> > subtle.  In 64-bit mode the %ss segment register is supposed to be
+> > ignored, which is why it is left set to zero.  It works properly on
+> > real hardware.  It can't hurt anything to put __KERNEL_DS back in, but
+> > I'd just like to know why Xen requires it if this does fix it.
+> 
+> Yeah, I didn't found any explicit %ss reloading for this _particular_
+> case (as I marked in patch changelog). So the only suspicious is Xen
+> itself. So as only Christian get ability to test -- we will see the
+> results.
 
-On Tue, Jan 5, 2010 at 10:48 PM, Corrado Zoccolo <czoccolo@gmail.com> wrote:
-> On Tue, Jan 5, 2010 at 10:19 PM, Jeff Moyer <jmoyer@redhat.com> wrote:
->> Vivek Goyal <vgoyal@redhat.com> writes:
->>
->>> Thanks Jeff, one thing comes to mind. Now with recent changes, we drive deeper
->>> depths on SSD with NCQ and there are not many pending cfqq on service tree
->>> until and unless number of parallel threads exceed NCQ depth (32). If
->>> that's the case, then I think we might not be seeing lot of queue merging
->>> happening in this test case until and unless dump utility is creating more
->>> than 32 threads.
->>>
->>> If time permits, it might also be interesting to run the same test with queue
->>> depth 1 and see if SSDs without NCQ will suffer or not.
->>
->> Corrado, I think what Vivek is getting at is that you should check for
->> both blk_queue_nonrot and cfqd->hw_tag (like in cfq_arm_slice_timer).
->> Do you agree?
-> Well, actually I didn't want to distinguish on hw_tag here. I had to
-> still allow merging of writes exactly because a write merge can save
-> hundreds of ms on a non-NCQ SSD.
->
-> Vivek is right that on non-NCQ SSDs a successful merge would increase
-> the performance, but I still think that the likelyhood of a merge is
-> so low that maintaining the RB-tree is superfluous. Usually, those
-> devices are coupled with low-end CPUs, so saving the code execution
-> could be a win there too. I'll run some tests on my netbook.
->
-> BTW, I'm looking at read-test2 right now. I see it doesn't use direct
-> I/O, so it relies also on page cache. I think page cache can detect
-> the hidden sequential pattern, and thus send big readahead requests to
-> the device, making merging impossible (on my SSD, readahead size and
-> max hw request size match).
->
-I did some tests, and found a surprising thing.
-Simply running the test script, the BW levels to a high BW value,
-regardless of queue merging in CFQ is enabled or disabled.
-I suspected something odd was going on, so I modified the script to
-drop caches before each run, and now I found that with queue merging
-it is 3 times faster than without, so on non-ncq SSD it is better to
-have queue merging enabled, after all.
-I'm wondering why the page cache being full can give so large results.
-My disk is 4 times larger than the available RAM, so it should do just
-a 1/4 boost not clearing it.
-I have to do more tests to understand what's going on...
+The difference with Xen is that it must squash the RPL of SS (to 3 for
+64 bit and 1 for 32 bit, 32 bit doesn't matter here though). Perhaps a
+NULL selector can only have RPL==0? (I'm away from my architecture docs
+so I can't check). In any case specifying a non-NULL SS selector allows
+the squashing to occur correctly.
 
-Thanks,
-Corrado
->
->>
->> Cheers,
->> Jeff
->>
->
+However this is not the cause of the original "Guest switching to user
+mode with no user page tables" error. This is down to 
+        commit f443ff4201dd25cd4dec183f9919ecba90c8edc2
+        Author: Brian Gerst <brgerst@gmail.com>
+        Date:   Wed Dec 9 12:34:43 2009 -0500
+        
+            x86: Sync 32/64-bit kernel_thread
+            
+            Signed-off-by: Brian Gerst <brgerst@gmail.com>
+            LKML-Reference: <1260380084-3707-5-git-send-email-brgerst@gmail.com>
+            Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+which on 64 bit resulted in changing regs.cs from "__KERNEL_CS" to
+"__KERNEL_CS | get_kernel_rpl()". The later seems more logical (and is
+correct for 32 bit) but on 64 bit we frequently use a pattern like "cmpl
+$3, CS(%rsp); je foo" quite a bit to detect return to user vs kernel and
+an RPL of 1 will unfortunately incorrectly trigger the return to
+userspace paths.
 
+The correct fix is for the Xen backend to declare kernel RPL == 0 for 64
+bit guests -- the hyervisor already takes care of all the necessary
+squashing to ring 3 transparently (because making the guest worry about
+it would break the very common assumption that you can distinguish user
+from kernel CS by RPL).
 
+With just the CS RPL fix below I see a GPF at kernel_thread_helper with
+SS=3 (hence my hypothesis about NULL selectors and non-zero RPL above).
+With both the SS and CS fixes things work fine.
+
+Ian.
+
+--- 
+Subject: xen: 64 bit kernel RPL should be 0.
+
+Under Xen 64 bit guests actually run their kernel in ring 3, however the
+hypervisor takes care of squashing descriptor the RPLs transparently (in
+order to allow them to continue to differentiate between user and kernel
+space CS using the RPL). Therefore the Xen paravirt backend should use
+RPL==0 instead of 1 (or 3). Using RPL==1 causes generic arch code to
+take incorrect code paths because it uses "testl $3, <CS>, je foo" type
+tests for a userspace CS and this considers 1==userspace.
+
+This issue was previously masked because get_kernel_rpl() was omitted
+when setting CS in kernel_thread(). This was fixed when kernel_thread()
+was unified with 32 bit in f443ff4201dd25cd4dec183f9919ecba90c8edc2.
+
+Signed-off-by: Ian Campbell <ijc@hellion.org.uk>
+
+diff --git a/arch/x86/xen/enlighten.c b/arch/x86/xen/enlighten.c
+index 2b26dd5..36daccb 100644
+--- a/arch/x86/xen/enlighten.c
++++ b/arch/x86/xen/enlighten.c
+@@ -1151,9 +1151,13 @@ asmlinkage void __init xen_start_kernel(void)
+ 
+ 	/* keep using Xen gdt for now; no urgent need to change it */
+ 
++#ifdef CONFIG_X86_32
+ 	pv_info.kernel_rpl = 1;
+ 	if (xen_feature(XENFEAT_supervisor_mode_kernel))
+ 		pv_info.kernel_rpl = 0;
++#else
++	pv_info.kernel_rpl = 0;
++#endif
+ 
+ 	/* set the limit of our address space */
+ 	xen_reserve_top();
+ 
 
 -- 
-__________________________________________________________________________
+Ian Campbell
 
-dott. Corrado Zoccolo                          mailto:czoccolo@gmail.com
-PhD - Department of Computer Science - University of Pisa, Italy
---------------------------------------------------------------------------
-The self-confidence of a warrior is not the self-confidence of the average
-man. The average man seeks certainty in the eyes of the onlooker and calls
-that self-confidence. The warrior seeks impeccability in his own eyes and
-calls that humbleness.
-                               Tales of Power - C. Castaneda
+BOFH excuse #430:
+
+Mouse has out-of-cheese-error
+
