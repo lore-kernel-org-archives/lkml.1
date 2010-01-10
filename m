@@ -1,72 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751674Ab0AJENN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751967Ab0AJEeB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751674Ab0AJENN (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Jan 2010 23:13:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751136Ab0AJENM
+	id S1751967Ab0AJEeB (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Jan 2010 23:34:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751040Ab0AJEeB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Jan 2010 23:13:12 -0500
-Received: from casper.infradead.org ([85.118.1.10]:44503 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751062Ab0AJENM (ORCPT
+	Sat, 9 Jan 2010 23:34:01 -0500
+Received: from mail-fx0-f225.google.com ([209.85.220.225]:61469 "EHLO
+	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750783Ab0AJEeA convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Jan 2010 23:13:12 -0500
-Date: Sat, 9 Jan 2010 20:15:27 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Ray Lee <ray-lk@madrabbit.org>
-Cc: Dimitrios Apostolou <jimis@gmx.net>, Alex Chiang <achiang@hp.com>,
-       Len Brown <lenb@kernel.org>, Bjorn Helgaas <bjorn.helgaas@hp.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Yinghai Lu <yinghai@kernel.org>, linux-kernel@vger.kernel.org
-Subject: Re: High cpu temperature with 2.6.32, bisection shows commit 69d258
-  (fwd)
-Message-ID: <20100109201527.77dd1714@infradead.org>
-In-Reply-To: <2c0942db1001091807k542b1052s96111775d6431bd0@mail.gmail.com>
-References: <alpine.LNX.2.00.1001071941470.1363@localhost.localdomain>
-	<20100108171513.GB22713@ldl.fc.hp.com>
-	<20100109134352.3dedd4ea@infradead.org>
-	<alpine.LNX.2.00.1001100155370.1325@localhost.localdomain>
-	<20100109160836.26a344a9@infradead.org>
-	<alpine.LNX.2.00.1001100226570.1325@localhost.localdomain>
-	<20100109164240.43b21247@infradead.org>
-	<2c0942db1001091807k542b1052s96111775d6431bd0@mail.gmail.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.6; i586-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sat, 9 Jan 2010 23:34:00 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=fI5YSYpeHxooTnz+qjx2OvCXSdTwjvVSCAGPIpYm2LHPwUcHUO6hMgvbCwam9iotuF
+         Fnfv/JghRWqLQjdP+jFBa6Uovte5VYwVsrxgbJF5pXikIAwkiRuIhurn9rkYAH3BaOns
+         iYdJmQDTaTacOdL4ld0BDoa47QHf2egzji5Qw=
+MIME-Version: 1.0
+In-Reply-To: <4B484829.6060405@kernel.org>
+References: <64bb37e0912250122n4e0e1842q88c0dad7e99ec6a7@mail.gmail.com>
+	 <4B484829.6060405@kernel.org>
+Date: Sun, 10 Jan 2010 05:33:58 +0100
+Message-ID: <64bb37e1001092033r1f0b4defw46c1a07101bb2d1b@mail.gmail.com>
+Subject: Re: MSI broken in libata?
+From: Torsten Kaiser <just.for.lkml@googlemail.com>
+To: Tejun Heo <tj@kernel.org>
+Cc: linux-kernel@vger.kernel.org, Jeff Garzik <jgarzik@pobox.com>,
+       linux-ide@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 9 Jan 2010 18:07:14 -0800
-Ray Lee <ray-lk@madrabbit.org> wrote:
+On Sat, Jan 9, 2010 at 10:11 AM, Tejun Heo <tj@kernel.org> wrote:
+> On 12/25/2009 06:22 PM, Torsten Kaiser wrote:
+>> As reported in http://lkml.org/lkml/2009/12/19/82 the new MSI support
+>> for sata_sil24 does not work for me.
+>> This is still the same with 2.6.33-rc2.
+>>
+>> Why I think, this might be a problem within libata:
+>>  * other drivers can use MSI successful on my system (tg3, radeon, hda-intel)
+>>  * happens both in sata_sil24 and sata_nv
+>>  * the count in /proc/interrupts increases for the MSIs assigned to
+>> sata_sil24/sata_nv, so interrupt delivery seems to work
+>>  * only writing seems to fail
+>
+> How does it fail?  Timeouts?
 
-> On Sat, Jan 9, 2010 at 4:42 PM, Arjan van de Ven
-> <arjan@infradead.org> wrote:
-> > basically it appears that your machine, when the kernel asks for C2,
-> > exits C2 immediately again.
-> >
-> > The old algorithm somehow caught this and stopped asking for C2
-> > most of the time; the new algorithm doesn't see any activity and
-> > asks for C2 again.
-> 
-> This change of behavior will certainly bite more users out there. Is
-> there any way we can detect the systems that aren't honoring the C2
-> request and limit back to C1?
+Yes, timeouts.
+I posted the error messages in http://lkml.org/lkml/2009/12/19/82 and
+http://lkml.org/lkml/2010/1/6/60
 
-it's not very likely that there are many such systems; it takes work to
-break C2....
-so far in 6 months 2 systems showed up, and this includes a fedora
-release.
+> Also, ahci enables MSI by default if
+> available and works fine on many configurations so I don't think
+> anything in libata core layer is broken regarding MSI (there just
+> isn't anything which can break).
 
-on the other hand, it's not so easy to detect the situation; exiting c2
-quickly can also happen in normal use, so we'd have to have some sort of
-threshold, which will be fragile by itself.
+The system I'm using does not have a ahci compatible controller, so I
+could not compare this.
+(And my other system that is using ahci, does not use MSI for that)
 
+I just found it suspicious that 3 other drivers (tg3, hda-intel and
+radeon) can use MSI, but both of the libata drivers (sata_sil24 and
+sata_nv) fail in a similar way.
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+I did try the patch from Robert Hancock in
+http://lkml.org/lkml/2010/1/6/417 ,but without success.
+
+if you need any more information, or have something for me to try,
+please just ask. I did look at the code and the documentation about
+enabling MSI, but did not see anything (obvious) wrong, so I don't
+know what to try next.
+
+Torsten
