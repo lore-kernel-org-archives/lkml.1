@@ -1,44 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932091Ab0AJXGB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932097Ab0AJXG3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932091Ab0AJXGB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jan 2010 18:06:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755088Ab0AJXF5
+	id S932097Ab0AJXG3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jan 2010 18:06:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755105Ab0AJXGY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jan 2010 18:05:57 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:58309 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755084Ab0AJXFz convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jan 2010 18:05:55 -0500
-Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Nikola Ciprich" <extmaillist@linuxbox.cz>
-References: <nzLqtSp97aP.A.RGB.hglSLB@chimera>
-In-Reply-To: <nzLqtSp97aP.A.RGB.hglSLB@chimera>
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+	Sun, 10 Jan 2010 18:06:24 -0500
+Received: from lists.laptop.org ([18.85.2.145]:50691 "EHLO mail.laptop.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755049Ab0AJXGU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Jan 2010 18:06:20 -0500
+Date: Sun, 10 Jan 2010 18:08:39 -0500
+From: Michael Stone <michael@laptop.org>
+To: Kyle Moffett <kyle@moffetthome.net>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       linux-security-module@vger.kernel.org, Andi Kleen <andi@firstfloor.org>,
+       David Lang <david@lang.hm>, Oliver Hartkopp <socketcan@hartkopp.net>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Valdis Kletnieks <Valdis.Kletnieks@vt.edu>,
+       Bryan Donlan <bdonlan@gmail.com>, Evgeniy Polyakov <zbr@ioremap.net>,
+       "C. Scott Ananian" <cscott@cscott.net>,
+       James Morris <jmorris@namei.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Bernie Innocenti <bernie@codewiz.org>,
+       Mark Seaborn <mrs@mythic-beasts.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       =?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>,
+       Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
+       Samir Bellabes <sam@synack.fr>,
+       Casey Schaufler <casey@schaufler-ca.com>,
+       "Serge E. Hallyn" <serue@us.ibm.com>, Pavel Machek <pavel@ucw.cz>,
+       Al Viro <viro@ZenIV.linux.org.uk>, Michael Stone <michael@laptop.org>
+Subject: Re: [PATCH 2/3] Security: Implement disablenetwork semantics. (v4)
+Message-ID: <20100110230839.GB3825@heat>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Disposition: inline
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Message-ID: <CXIfLt-ygXM.A.baB.pglSLB@chimera>
-Subject: [Bug #14943] nfs regression?
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Sun, 10 Jan 2010 23:56:20 +0100 (CET)
+In-Reply-To: <f73f7ab81001101418x3b3f8652j256f6311ad6244c5@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This message has been generated automatically as a part of a report
-of regressions introduced between 2.6.31 and 2.6.32.
+Paraphrasing Kyle:
 
-The following bug entry is on the current list of known regressions
-introduced between 2.6.31 and 2.6.32.  Please verify if it still should
-be listed and let me know (either way).
+> Suppose there exist PAM modules which lazily fork background processes. Now
+> assume that one of those PAM modules is hooked from /etc/pam.d/su, that the
+> module fails closed when the network is unavailable, and that Mallory wins
+> the race to start the daemon. Boom.
 
+I'm not disagreeing that there are configurations of programs, written for
+kernels without disablenetwork, which cease to be correct on kernels that
+provide it. However, all this says to me is that people who need to use those
+configurations probably shouldn't use disablenetwork. (Or that we haven't found
+exactly the right semantics for disablenetwork yet.)
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14943
-Subject		: nfs regression?
-Submitter	: Nikola Ciprich <extmaillist@linuxbox.cz>
-Date		: 2009-12-28 12:10 (14 days old)
-References	: http://marc.info/?l=linux-kernel&m=126200276223524&w=4
+Let's keep working on it.
 
-
+Michael
