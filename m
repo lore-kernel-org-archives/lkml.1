@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753705Ab0AJOen@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753997Ab0AJOfV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753705Ab0AJOen (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jan 2010 09:34:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753505Ab0AJOen
+	id S1753997Ab0AJOfV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jan 2010 09:35:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753756Ab0AJOfR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jan 2010 09:34:43 -0500
-Received: from mail02a.mail.t-online.hu ([84.2.40.7]:49211 "EHLO
+	Sun, 10 Jan 2010 09:35:17 -0500
+Received: from mail02a.mail.t-online.hu ([84.2.40.7]:49331 "EHLO
 	mail02a.mail.t-online.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753468Ab0AJOel (ORCPT
+	with ESMTP id S1753738Ab0AJOfL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jan 2010 09:34:41 -0500
+	Sun, 10 Jan 2010 09:35:11 -0500
 X-Authuid: nmarci
-Message-ID: <4B49E570.8050000@freemail.hu>
-Date: Sun, 10 Jan 2010 15:34:24 +0100
+Message-ID: <4B49E597.9070307@freemail.hu>
+Date: Sun, 10 Jan 2010 15:35:03 +0100
 From: =?UTF-8?B?TsOpbWV0aCBNw6FydG9u?= <nm127@freemail.hu>
 User-Agent: Mozilla/5.0 (X11; U; Linux i686; hu-HU; rv:1.8.1.21) Gecko/20090402 SeaMonkey/1.1.16
 MIME-Version: 1.0
 To: Greg Kroah-Hartman <gregkh@suse.de>
 CC: linux-usb@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
        Julia Lawall <julia@diku.dk>, cocci@diku.dk
-Subject: [PATCH 3/9] USB serial: make USB device id constant
+Subject: [PATCH 7/9] USB host: make Open Firmware device id constant
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 X-DCC-mail.t-online.hu-Metrics: mail02a.mail.t-online.hu 32721; Body=5 Fuz1=5
@@ -30,7 +30,7 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Márton Németh <nm127@freemail.hu>
 
-The id_table field of the struct usb_device_id is constant in <linux/usb.h>
+The match_table field of the struct of_device_id is constant in <linux/of_platform.h>
 so it is worth to make the initialization data also constant.
 
 The semantic match that finds this kind of pattern is as follows:
@@ -70,639 +70,63 @@ Signed-off-by: Márton Németh <nm127@freemail.hu>
 Cc: Julia Lawall <julia@diku.dk>
 Cc: cocci@diku.dk
 ---
-diff -u -p a/drivers/usb/serial/ark3116.c b/drivers/usb/serial/ark3116.c
---- a/drivers/usb/serial/ark3116.c 2010-01-07 19:08:47.000000000 +0100
-+++ b/drivers/usb/serial/ark3116.c 2010-01-08 17:39:04.000000000 +0100
-@@ -50,7 +50,7 @@ static int debug;
- /* usb timeout of 1 second */
- #define ARK_TIMEOUT (1*HZ)
+diff -u -p a/drivers/usb/host/ehci-ppc-of.c b/drivers/usb/host/ehci-ppc-of.c
+--- a/drivers/usb/host/ehci-ppc-of.c 2009-12-03 04:51:21.000000000 +0100
++++ b/drivers/usb/host/ehci-ppc-of.c 2010-01-08 17:24:21.000000000 +0100
+@@ -264,7 +264,7 @@ static int ehci_hcd_ppc_of_shutdown(stru
+ }
 
--static struct usb_device_id id_table [] = {
-+static const struct usb_device_id id_table[] = {
- 	{ USB_DEVICE(0x6547, 0x0232) },
- 	{ USB_DEVICE(0x18ec, 0x3118) },		/* USB to IrDA adapter */
- 	{ },
-diff -u -p a/drivers/usb/serial/cp210x.c b/drivers/usb/serial/cp210x.c
---- a/drivers/usb/serial/cp210x.c 2009-12-03 04:51:21.000000000 +0100
-+++ b/drivers/usb/serial/cp210x.c 2010-01-08 17:39:14.000000000 +0100
-@@ -55,7 +55,7 @@ static int cp210x_carrier_raised(struct
 
- static int debug;
+-static struct of_device_id ehci_hcd_ppc_of_match[] = {
++static const struct of_device_id ehci_hcd_ppc_of_match[] = {
+ 	{
+ 		.compatible = "usb-ehci",
+ 	},
+diff -u -p a/drivers/usb/host/fhci-hcd.c b/drivers/usb/host/fhci-hcd.c
+--- a/drivers/usb/host/fhci-hcd.c 2009-12-03 04:51:21.000000000 +0100
++++ b/drivers/usb/host/fhci-hcd.c 2010-01-08 17:25:53.000000000 +0100
+@@ -804,7 +804,7 @@ static int __devexit of_fhci_remove(stru
+ 	return fhci_remove(&ofdev->dev);
+ }
 
--static struct usb_device_id id_table [] = {
-+static const struct usb_device_id id_table[] = {
- 	{ USB_DEVICE(0x0471, 0x066A) }, /* AKTAKOM ACE-1001 cable */
- 	{ USB_DEVICE(0x0489, 0xE000) }, /* Pirelli Broadband S.p.A, DP-L10 SIP/GSM Mobile */
- 	{ USB_DEVICE(0x0745, 0x1000) }, /* CipherLab USB CCD Barcode Scanner 1000 */
-diff -u -p a/drivers/usb/serial/moto_modem.c b/drivers/usb/serial/moto_modem.c
---- a/drivers/usb/serial/moto_modem.c 2009-12-03 04:51:21.000000000 +0100
-+++ b/drivers/usb/serial/moto_modem.c 2010-01-08 17:39:33.000000000 +0100
-@@ -21,7 +21,7 @@
- #include <linux/usb.h>
- #include <linux/usb/serial.h>
-
--static struct usb_device_id id_table [] = {
-+static const struct usb_device_id id_table[] = {
- 	{ USB_DEVICE(0x05c6, 0x3197) },	/* unknown Motorola phone */
- 	{ USB_DEVICE(0x0c44, 0x0022) },	/* unknown Mororola phone */
- 	{ USB_DEVICE(0x22b8, 0x2a64) },	/* Motorola KRZR K1m */
-diff -u -p a/drivers/usb/serial/symbolserial.c b/drivers/usb/serial/symbolserial.c
---- a/drivers/usb/serial/symbolserial.c 2009-12-03 04:51:21.000000000 +0100
-+++ b/drivers/usb/serial/symbolserial.c 2010-01-08 17:40:24.000000000 +0100
-@@ -21,7 +21,7 @@
-
- static int debug;
-
--static struct usb_device_id id_table[] = {
-+static const struct usb_device_id id_table[] = {
- 	{ USB_DEVICE(0x05e0, 0x0600) },
- 	{ },
+-static struct of_device_id of_fhci_match[] = {
++static const struct of_device_id of_fhci_match[] = {
+ 	{ .compatible = "fsl,mpc8323-qe-usb", },
+ 	{},
  };
-diff -u -p a/drivers/usb/serial/garmin_gps.c b/drivers/usb/serial/garmin_gps.c
---- a/drivers/usb/serial/garmin_gps.c 2009-12-03 04:51:21.000000000 +0100
-+++ b/drivers/usb/serial/garmin_gps.c 2010-01-08 17:40:36.000000000 +0100
-@@ -210,7 +210,7 @@ static unsigned char const PRIVATE_REQ[]
+diff -u -p a/drivers/usb/host/ohci-ppc-of.c b/drivers/usb/host/ohci-ppc-of.c
+--- a/drivers/usb/host/ohci-ppc-of.c 2009-12-03 04:51:21.000000000 +0100
++++ b/drivers/usb/host/ohci-ppc-of.c 2010-01-08 17:28:21.000000000 +0100
+@@ -212,7 +212,7 @@ static int ohci_hcd_ppc_of_shutdown(stru
+ }
 
 
+-static struct of_device_id ohci_hcd_ppc_of_match[] = {
++static const struct of_device_id ohci_hcd_ppc_of_match[] = {
+ #ifdef CONFIG_USB_OHCI_HCD_PPC_OF_BE
+ 	{
+ 		.name = "usb",
+diff -u -p a/drivers/usb/host/ehci-xilinx-of.c b/drivers/usb/host/ehci-xilinx-of.c
+--- a/drivers/usb/host/ehci-xilinx-of.c 2010-01-07 19:08:47.000000000 +0100
++++ b/drivers/usb/host/ehci-xilinx-of.c 2010-01-08 17:28:35.000000000 +0100
+@@ -281,7 +281,7 @@ static int ehci_hcd_xilinx_of_shutdown(s
+ }
 
--static struct usb_device_id id_table [] = {
-+static const struct usb_device_id id_table[] = {
- 	/* the same device id seems to be used by all
- 	   usb enabled GPS devices */
- 	{ USB_DEVICE(GARMIN_VENDOR_ID, 3) },
-diff -u -p a/drivers/usb/serial/belkin_sa.c b/drivers/usb/serial/belkin_sa.c
---- a/drivers/usb/serial/belkin_sa.c 2009-12-03 04:51:21.000000000 +0100
-+++ b/drivers/usb/serial/belkin_sa.c 2010-01-08 17:40:48.000000000 +0100
-@@ -103,7 +103,7 @@ static int  belkin_sa_tiocmset(struct tt
- 					unsigned int set, unsigned int clear);
 
-
--static struct usb_device_id id_table_combined [] = {
-+static const struct usb_device_id id_table_combined[] = {
- 	{ USB_DEVICE(BELKIN_SA_VID, BELKIN_SA_PID) },
- 	{ USB_DEVICE(BELKIN_OLD_VID, BELKIN_OLD_PID) },
- 	{ USB_DEVICE(PERACOM_VID, PERACOM_PID) },
-diff -u -p a/drivers/usb/serial/cypress_m8.c b/drivers/usb/serial/cypress_m8.c
---- a/drivers/usb/serial/cypress_m8.c 2009-12-03 04:51:21.000000000 +0100
-+++ b/drivers/usb/serial/cypress_m8.c 2010-01-08 17:41:24.000000000 +0100
-@@ -89,24 +89,24 @@ static int interval;
- #define CYPRESS_BUF_SIZE	1024
- #define CYPRESS_CLOSING_WAIT	(30*HZ)
-
--static struct usb_device_id id_table_earthmate [] = {
-+static const struct usb_device_id id_table_earthmate[] = {
- 	{ USB_DEVICE(VENDOR_ID_DELORME, PRODUCT_ID_EARTHMATEUSB) },
- 	{ USB_DEVICE(VENDOR_ID_DELORME, PRODUCT_ID_EARTHMATEUSB_LT20) },
- 	{ }						/* Terminating entry */
+-static struct of_device_id ehci_hcd_xilinx_of_match[] = {
++static const struct of_device_id ehci_hcd_xilinx_of_match[] = {
+ 		{.compatible = "xlnx,xps-usb-host-1.00.a",},
+ 	{},
  };
+diff -u -p a/drivers/usb/host/isp1760-if.c b/drivers/usb/host/isp1760-if.c
+--- a/drivers/usb/host/isp1760-if.c 2009-12-03 04:51:21.000000000 +0100
++++ b/drivers/usb/host/isp1760-if.c 2010-01-08 17:29:21.000000000 +0100
+@@ -109,7 +109,7 @@ static int of_isp1760_remove(struct of_d
+ 	return 0;
+ }
 
--static struct usb_device_id id_table_cyphidcomrs232 [] = {
-+static const struct usb_device_id id_table_cyphidcomrs232[] = {
- 	{ USB_DEVICE(VENDOR_ID_CYPRESS, PRODUCT_ID_CYPHIDCOM) },
- 	{ USB_DEVICE(VENDOR_ID_POWERCOM, PRODUCT_ID_UPS) },
- 	{ }						/* Terminating entry */
- };
-
--static struct usb_device_id id_table_nokiaca42v2 [] = {
-+static const struct usb_device_id id_table_nokiaca42v2[] = {
- 	{ USB_DEVICE(VENDOR_ID_DAZZLE, PRODUCT_ID_CA42) },
- 	{ }						/* Terminating entry */
- };
-
--static struct usb_device_id id_table_combined [] = {
-+static const struct usb_device_id id_table_combined[] = {
- 	{ USB_DEVICE(VENDOR_ID_DELORME, PRODUCT_ID_EARTHMATEUSB) },
- 	{ USB_DEVICE(VENDOR_ID_DELORME, PRODUCT_ID_EARTHMATEUSB_LT20) },
- 	{ USB_DEVICE(VENDOR_ID_CYPRESS, PRODUCT_ID_CYPHIDCOM) },
-diff -u -p a/drivers/usb/serial/generic.c b/drivers/usb/serial/generic.c
---- a/drivers/usb/serial/generic.c 2010-01-07 19:08:47.000000000 +0100
-+++ b/drivers/usb/serial/generic.c 2010-01-08 17:41:39.000000000 +0100
-@@ -41,7 +41,7 @@ static struct usb_device_id generic_devi
-
- /* we want to look at all devices, as the vendor/product id can change
-  * depending on the command line argument */
--static struct usb_device_id generic_serial_ids[] = {
-+static const struct usb_device_id generic_serial_ids[] = {
- 	{.driver_info = 42},
- 	{}
- };
-diff -u -p a/drivers/usb/serial/ipw.c b/drivers/usb/serial/ipw.c
---- a/drivers/usb/serial/ipw.c 2009-12-03 04:51:21.000000000 +0100
-+++ b/drivers/usb/serial/ipw.c 2010-01-08 17:41:51.000000000 +0100
-@@ -134,7 +134,7 @@ enum {
-
- #define IPW_WANTS_TO_SEND	0x30
-
--static struct usb_device_id usb_ipw_ids[] = {
-+static const struct usb_device_id usb_ipw_ids[] = {
- 	{ USB_DEVICE(IPW_VID, IPW_PID) },
- 	{ },
- };
-diff -u -p a/drivers/usb/serial/io_ti.c b/drivers/usb/serial/io_ti.c
---- a/drivers/usb/serial/io_ti.c 2009-12-03 04:51:21.000000000 +0100
-+++ b/drivers/usb/serial/io_ti.c 2010-01-08 17:42:18.000000000 +0100
-@@ -134,7 +134,7 @@ struct edgeport_serial {
-
-
- /* Devices that this driver supports */
--static struct usb_device_id edgeport_1port_id_table [] = {
-+static const struct usb_device_id edgeport_1port_id_table[] = {
- 	{ USB_DEVICE(USB_VENDOR_ID_ION, ION_DEVICE_ID_TI_EDGEPORT_1) },
- 	{ USB_DEVICE(USB_VENDOR_ID_ION, ION_DEVICE_ID_TI_TI3410_EDGEPORT_1) },
- 	{ USB_DEVICE(USB_VENDOR_ID_ION, ION_DEVICE_ID_TI_TI3410_EDGEPORT_1I) },
-@@ -154,7 +154,7 @@ static struct usb_device_id edgeport_1po
- 	{ }
- };
-
--static struct usb_device_id edgeport_2port_id_table [] = {
-+static const struct usb_device_id edgeport_2port_id_table[] = {
- 	{ USB_DEVICE(USB_VENDOR_ID_ION, ION_DEVICE_ID_TI_EDGEPORT_2) },
- 	{ USB_DEVICE(USB_VENDOR_ID_ION, ION_DEVICE_ID_TI_EDGEPORT_2C) },
- 	{ USB_DEVICE(USB_VENDOR_ID_ION, ION_DEVICE_ID_TI_EDGEPORT_2I) },
-@@ -177,7 +177,7 @@ static struct usb_device_id edgeport_2po
- };
-
- /* Devices that this driver supports */
--static struct usb_device_id id_table_combined [] = {
-+static const struct usb_device_id id_table_combined[] = {
- 	{ USB_DEVICE(USB_VENDOR_ID_ION, ION_DEVICE_ID_TI_EDGEPORT_1) },
- 	{ USB_DEVICE(USB_VENDOR_ID_ION, ION_DEVICE_ID_TI_TI3410_EDGEPORT_1) },
- 	{ USB_DEVICE(USB_VENDOR_ID_ION, ION_DEVICE_ID_TI_TI3410_EDGEPORT_1I) },
-diff -u -p a/drivers/usb/serial/spcp8x5.c b/drivers/usb/serial/spcp8x5.c
---- a/drivers/usb/serial/spcp8x5.c 2009-12-03 04:51:21.000000000 +0100
-+++ b/drivers/usb/serial/spcp8x5.c 2010-01-08 17:42:34.000000000 +0100
-@@ -45,7 +45,7 @@ static int debug;
- #define SPCP8x5_835_VID		0x04fc
- #define SPCP8x5_835_PID		0x0231
-
--static struct usb_device_id id_table [] = {
-+static const struct usb_device_id id_table[] = {
- 	{ USB_DEVICE(SPCP8x5_PHILIPS_VID , SPCP8x5_PHILIPS_PID)},
- 	{ USB_DEVICE(SPCP8x5_INTERMATIC_VID, SPCP8x5_INTERMATIC_PID)},
- 	{ USB_DEVICE(SPCP8x5_835_VID, SPCP8x5_835_PID)},
-diff -u -p a/drivers/usb/serial/io_tables.h b/drivers/usb/serial/io_tables.h
---- a/drivers/usb/serial/io_tables.h 2009-12-03 04:51:21.000000000 +0100
-+++ b/drivers/usb/serial/io_tables.h 2010-01-08 17:43:00.000000000 +0100
-@@ -14,7 +14,7 @@
- #ifndef IO_TABLES_H
- #define IO_TABLES_H
-
--static struct usb_device_id edgeport_2port_id_table [] = {
-+static const struct usb_device_id edgeport_2port_id_table[] = {
- 	{ USB_DEVICE(USB_VENDOR_ID_ION, ION_DEVICE_ID_EDGEPORT_2) },
- 	{ USB_DEVICE(USB_VENDOR_ID_ION, ION_DEVICE_ID_EDGEPORT_2I) },
- 	{ USB_DEVICE(USB_VENDOR_ID_ION, ION_DEVICE_ID_EDGEPORT_421) },
-@@ -23,7 +23,7 @@ static struct usb_device_id edgeport_2po
- 	{ }
- };
-
--static struct usb_device_id edgeport_4port_id_table [] = {
-+static const struct usb_device_id edgeport_4port_id_table[] = {
- 	{ USB_DEVICE(USB_VENDOR_ID_ION, ION_DEVICE_ID_EDGEPORT_4) },
- 	{ USB_DEVICE(USB_VENDOR_ID_ION, ION_DEVICE_ID_RAPIDPORT_4) },
- 	{ USB_DEVICE(USB_VENDOR_ID_ION, ION_DEVICE_ID_EDGEPORT_4T) },
-@@ -37,7 +37,7 @@ static struct usb_device_id edgeport_4po
- 	{ }
- };
-
--static struct usb_device_id edgeport_8port_id_table [] = {
-+static const struct usb_device_id edgeport_8port_id_table[] = {
- 	{ USB_DEVICE(USB_VENDOR_ID_ION, ION_DEVICE_ID_EDGEPORT_8) },
- 	{ USB_DEVICE(USB_VENDOR_ID_ION, ION_DEVICE_ID_EDGEPORT_16_DUAL_CPU) },
- 	{ USB_DEVICE(USB_VENDOR_ID_ION, ION_DEVICE_ID_EDGEPORT_8I) },
-@@ -47,7 +47,7 @@ static struct usb_device_id edgeport_8po
- 	{ }
- };
-
--static struct usb_device_id Epic_port_id_table [] = {
-+static const struct usb_device_id Epic_port_id_table[] = {
- 	{ USB_DEVICE(USB_VENDOR_ID_NCR, NCR_DEVICE_ID_EPIC_0202) },
- 	{ USB_DEVICE(USB_VENDOR_ID_NCR, NCR_DEVICE_ID_EPIC_0203) },
- 	{ USB_DEVICE(USB_VENDOR_ID_NCR, NCR_DEVICE_ID_EPIC_0310) },
-@@ -60,7 +60,7 @@ static struct usb_device_id Epic_port_id
- };
-
- /* Devices that this driver supports */
--static struct usb_device_id id_table_combined [] = {
-+static const struct usb_device_id id_table_combined[] = {
- 	{ USB_DEVICE(USB_VENDOR_ID_ION,	ION_DEVICE_ID_EDGEPORT_4) },
- 	{ USB_DEVICE(USB_VENDOR_ID_ION,	ION_DEVICE_ID_RAPIDPORT_4) },
- 	{ USB_DEVICE(USB_VENDOR_ID_ION,	ION_DEVICE_ID_EDGEPORT_4T) },
-diff -u -p a/drivers/usb/serial/omninet.c b/drivers/usb/serial/omninet.c
---- a/drivers/usb/serial/omninet.c 2009-12-03 04:51:21.000000000 +0100
-+++ b/drivers/usb/serial/omninet.c 2010-01-08 17:43:11.000000000 +0100
-@@ -75,7 +75,7 @@ static void omninet_disconnect(struct us
- static void omninet_release(struct usb_serial *serial);
- static int omninet_attach(struct usb_serial *serial);
-
--static struct usb_device_id id_table[] = {
-+static const struct usb_device_id id_table[] = {
- 	{ USB_DEVICE(ZYXEL_VENDOR_ID, ZYXEL_OMNINET_ID) },
- 	{ USB_DEVICE(ZYXEL_VENDOR_ID, BT_IGNITIONPRO_ID) },
- 	{ }						/* Terminating entry */
-diff -u -p a/drivers/usb/serial/mos7840.c b/drivers/usb/serial/mos7840.c
---- a/drivers/usb/serial/mos7840.c 2010-01-07 19:08:47.000000000 +0100
-+++ b/drivers/usb/serial/mos7840.c 2010-01-08 17:43:28.000000000 +0100
-@@ -181,7 +181,7 @@
- #define URB_TRANSFER_BUFFER_SIZE        32	/* URB Size  */
-
-
--static struct usb_device_id moschip_port_id_table[] = {
-+static const struct usb_device_id moschip_port_id_table[] = {
- 	{USB_DEVICE(USB_VENDOR_ID_MOSCHIP, MOSCHIP_DEVICE_ID_7840)},
- 	{USB_DEVICE(USB_VENDOR_ID_MOSCHIP, MOSCHIP_DEVICE_ID_7820)},
- 	{USB_DEVICE(USB_VENDOR_ID_BANDB, BANDB_DEVICE_ID_USO9ML2_2)},
-@@ -198,7 +198,7 @@ static struct usb_device_id moschip_port
- 	{}			/* terminating entry */
- };
-
--static __devinitdata struct usb_device_id moschip_id_table_combined[] = {
-+static const struct usb_device_id moschip_id_table_combined[] __devinitconst = {
- 	{USB_DEVICE(USB_VENDOR_ID_MOSCHIP, MOSCHIP_DEVICE_ID_7840)},
- 	{USB_DEVICE(USB_VENDOR_ID_MOSCHIP, MOSCHIP_DEVICE_ID_7820)},
- 	{USB_DEVICE(USB_VENDOR_ID_BANDB, BANDB_DEVICE_ID_USO9ML2_2)},
-diff -u -p a/drivers/usb/serial/siemens_mpi.c b/drivers/usb/serial/siemens_mpi.c
---- a/drivers/usb/serial/siemens_mpi.c 2009-12-03 04:51:21.000000000 +0100
-+++ b/drivers/usb/serial/siemens_mpi.c 2010-01-08 17:43:39.000000000 +0100
-@@ -22,7 +22,7 @@
- #define DRIVER_DESC "Driver for Siemens USB/MPI adapter"
-
-
--static struct usb_device_id id_table[] = {
-+static const struct usb_device_id id_table[] = {
- 	/* Vendor and product id for 6ES7-972-0CB20-0XA0 */
- 	{ USB_DEVICE(0x908, 0x0004) },
- 	{ },
-diff -u -p a/drivers/usb/serial/qcserial.c b/drivers/usb/serial/qcserial.c
---- a/drivers/usb/serial/qcserial.c 2009-12-03 04:51:21.000000000 +0100
-+++ b/drivers/usb/serial/qcserial.c 2010-01-08 17:43:43.000000000 +0100
-@@ -21,7 +21,7 @@
-
- static int debug;
-
--static struct usb_device_id id_table[] = {
-+static const struct usb_device_id id_table[] = {
- 	{USB_DEVICE(0x05c6, 0x9211)},	/* Acer Gobi QDL device */
- 	{USB_DEVICE(0x05c6, 0x9212)},	/* Acer Gobi Modem Device */
- 	{USB_DEVICE(0x03f0, 0x1f1d)},	/* HP un2400 Gobi Modem Device */
-diff -u -p a/drivers/usb/serial/kobil_sct.c b/drivers/usb/serial/kobil_sct.c
---- a/drivers/usb/serial/kobil_sct.c 2009-12-03 04:51:21.000000000 +0100
-+++ b/drivers/usb/serial/kobil_sct.c 2010-01-08 17:44:12.000000000 +0100
-@@ -86,7 +86,7 @@ static void kobil_set_termios(struct tty
- 			struct usb_serial_port *port, struct ktermios *old);
- static void kobil_init_termios(struct tty_struct *tty);
-
--static struct usb_device_id id_table [] = {
-+static const struct usb_device_id id_table[] = {
- 	{ USB_DEVICE(KOBIL_VENDOR_ID, KOBIL_ADAPTER_B_PRODUCT_ID) },
- 	{ USB_DEVICE(KOBIL_VENDOR_ID, KOBIL_ADAPTER_K_PRODUCT_ID) },
- 	{ USB_DEVICE(KOBIL_VENDOR_ID, KOBIL_USBTWIN_PRODUCT_ID) },
-diff -u -p a/drivers/usb/serial/iuu_phoenix.c b/drivers/usb/serial/iuu_phoenix.c
---- a/drivers/usb/serial/iuu_phoenix.c 2009-12-03 04:51:21.000000000 +0100
-+++ b/drivers/usb/serial/iuu_phoenix.c 2010-01-08 17:44:27.000000000 +0100
-@@ -43,7 +43,7 @@ static int debug;
- #define DRIVER_VERSION "v0.11"
- #define DRIVER_DESC "Infinity USB Unlimited Phoenix driver"
-
--static struct usb_device_id id_table[] = {
-+static const struct usb_device_id id_table[] = {
- 	{USB_DEVICE(IUU_USB_VENDOR_ID, IUU_USB_PRODUCT_ID)},
- 	{}			/* Terminating entry */
- };
-diff -u -p a/drivers/usb/serial/hp4x.c b/drivers/usb/serial/hp4x.c
---- a/drivers/usb/serial/hp4x.c 2009-12-03 04:51:21.000000000 +0100
-+++ b/drivers/usb/serial/hp4x.c 2010-01-08 17:44:36.000000000 +0100
-@@ -29,7 +29,7 @@
- #define HP_VENDOR_ID 0x03f0
- #define HP49GP_PRODUCT_ID 0x0121
-
--static struct usb_device_id id_table [] = {
-+static const struct usb_device_id id_table[] = {
- 	{ USB_DEVICE(HP_VENDOR_ID, HP49GP_PRODUCT_ID) },
- 	{ }					/* Terminating entry */
- };
-diff -u -p a/drivers/usb/serial/usb_debug.c b/drivers/usb/serial/usb_debug.c
---- a/drivers/usb/serial/usb_debug.c 2009-12-03 04:51:21.000000000 +0100
-+++ b/drivers/usb/serial/usb_debug.c 2010-01-08 17:44:44.000000000 +0100
-@@ -29,7 +29,7 @@ static char USB_DEBUG_BRK[USB_DEBUG_BRK_
- 	0xff,
- };
-
--static struct usb_device_id id_table [] = {
-+static const struct usb_device_id id_table[] = {
- 	{ USB_DEVICE(0x0525, 0x127a) },
- 	{ },
- };
-diff -u -p a/drivers/usb/serial/ir-usb.c b/drivers/usb/serial/ir-usb.c
---- a/drivers/usb/serial/ir-usb.c 2009-12-03 04:51:21.000000000 +0100
-+++ b/drivers/usb/serial/ir-usb.c 2010-01-08 17:44:55.000000000 +0100
-@@ -100,7 +100,7 @@ static u8 ir_baud;
- static u8 ir_xbof;
- static u8 ir_add_bof;
-
--static struct usb_device_id ir_id_table[] = {
-+static const struct usb_device_id ir_id_table[] = {
- 	{ USB_DEVICE(0x050f, 0x0180) },		/* KC Technology, KC-180 */
- 	{ USB_DEVICE(0x08e9, 0x0100) },		/* XTNDAccess */
- 	{ USB_DEVICE(0x09c4, 0x0011) },		/* ACTiSys ACT-IR2000U */
-diff -u -p a/drivers/usb/serial/empeg.c b/drivers/usb/serial/empeg.c
---- a/drivers/usb/serial/empeg.c 2009-12-03 04:51:21.000000000 +0100
-+++ b/drivers/usb/serial/empeg.c 2010-01-08 17:45:10.000000000 +0100
-@@ -93,7 +93,7 @@ static void empeg_init_termios(struct tt
- static void empeg_write_bulk_callback(struct urb *urb);
- static void empeg_read_bulk_callback(struct urb *urb);
-
--static struct usb_device_id id_table [] = {
-+static const struct usb_device_id id_table[] = {
- 	{ USB_DEVICE(EMPEG_VENDOR_ID, EMPEG_PRODUCT_ID) },
- 	{ }					/* Terminating entry */
- };
-diff -u -p a/drivers/usb/serial/mos7720.c b/drivers/usb/serial/mos7720.c
---- a/drivers/usb/serial/mos7720.c 2009-12-03 04:51:21.000000000 +0100
-+++ b/drivers/usb/serial/mos7720.c 2010-01-08 17:45:37.000000000 +0100
-@@ -85,7 +85,7 @@ static int debug;
- #define MOSCHIP_DEVICE_ID_7720		0x7720
- #define MOSCHIP_DEVICE_ID_7715		0x7715
-
--static struct usb_device_id moschip_port_id_table[] = {
-+static const struct usb_device_id moschip_port_id_table[] = {
- 	{ USB_DEVICE(USB_VENDOR_ID_MOSCHIP, MOSCHIP_DEVICE_ID_7720) },
- 	{ } /* terminating entry */
- };
-diff -u -p a/drivers/usb/serial/navman.c b/drivers/usb/serial/navman.c
---- a/drivers/usb/serial/navman.c 2009-12-03 04:51:21.000000000 +0100
-+++ b/drivers/usb/serial/navman.c 2010-01-08 17:45:54.000000000 +0100
-@@ -22,7 +22,7 @@
-
- static int debug;
-
--static struct usb_device_id id_table [] = {
-+static const struct usb_device_id id_table[] = {
- 	{ USB_DEVICE(0x0a99, 0x0001) },	/* Talon Technology device */
- 	{ },
- };
-diff -u -p a/drivers/usb/serial/opticon.c b/drivers/usb/serial/opticon.c
---- a/drivers/usb/serial/opticon.c 2010-01-07 19:08:47.000000000 +0100
-+++ b/drivers/usb/serial/opticon.c 2010-01-08 17:46:12.000000000 +0100
-@@ -22,7 +22,7 @@
-
- static int debug;
-
--static struct usb_device_id id_table[] = {
-+static const struct usb_device_id id_table[] = {
- 	{ USB_DEVICE(0x065a, 0x0009) },
- 	{ },
- };
-diff -u -p a/drivers/usb/serial/oti6858.c b/drivers/usb/serial/oti6858.c
---- a/drivers/usb/serial/oti6858.c 2009-12-03 04:51:21.000000000 +0100
-+++ b/drivers/usb/serial/oti6858.c 2010-01-08 17:46:32.000000000 +0100
-@@ -58,7 +58,7 @@
- #define OTI6858_AUTHOR "Tomasz Michal Lukaszewski <FIXME@FIXME>"
- #define OTI6858_VERSION "0.1"
-
--static struct usb_device_id id_table [] = {
-+static const struct usb_device_id id_table[] = {
- 	{ USB_DEVICE(OTI6858_VENDOR_ID, OTI6858_PRODUCT_ID) },
- 	{ }
- };
-diff -u -p a/drivers/usb/serial/keyspan.h b/drivers/usb/serial/keyspan.h
---- a/drivers/usb/serial/keyspan.h 2009-12-03 04:51:21.000000000 +0100
-+++ b/drivers/usb/serial/keyspan.h 2010-01-08 17:47:21.000000000 +0100
-@@ -456,7 +456,7 @@ static const struct keyspan_device_detai
- 	NULL,
- };
-
--static struct usb_device_id keyspan_ids_combined[] = {
-+static const struct usb_device_id keyspan_ids_combined[] = {
- 	{ USB_DEVICE(KEYSPAN_VENDOR_ID, keyspan_usa18x_pre_product_id) },
- 	{ USB_DEVICE(KEYSPAN_VENDOR_ID, keyspan_usa19_pre_product_id) },
- 	{ USB_DEVICE(KEYSPAN_VENDOR_ID, keyspan_usa19w_pre_product_id) },
-@@ -497,7 +497,7 @@ static struct usb_driver keyspan_driver
- };
-
- /* usb_device_id table for the pre-firmware download keyspan devices */
--static struct usb_device_id keyspan_pre_ids[] = {
-+static const struct usb_device_id keyspan_pre_ids[] = {
- 	{ USB_DEVICE(KEYSPAN_VENDOR_ID, keyspan_usa18x_pre_product_id) },
- 	{ USB_DEVICE(KEYSPAN_VENDOR_ID, keyspan_usa19_pre_product_id) },
- 	{ USB_DEVICE(KEYSPAN_VENDOR_ID, keyspan_usa19qi_pre_product_id) },
-@@ -513,7 +513,7 @@ static struct usb_device_id keyspan_pre_
- 	{ } /* Terminating entry */
- };
-
--static struct usb_device_id keyspan_1port_ids[] = {
-+static const struct usb_device_id keyspan_1port_ids[] = {
- 	{ USB_DEVICE(KEYSPAN_VENDOR_ID, keyspan_usa18x_product_id) },
- 	{ USB_DEVICE(KEYSPAN_VENDOR_ID, keyspan_usa19_product_id) },
- 	{ USB_DEVICE(KEYSPAN_VENDOR_ID, keyspan_usa19qi_product_id) },
-@@ -524,7 +524,7 @@ static struct usb_device_id keyspan_1por
- 	{ } /* Terminating entry */
- };
-
--static struct usb_device_id keyspan_2port_ids[] = {
-+static const struct usb_device_id keyspan_2port_ids[] = {
- 	{ USB_DEVICE(KEYSPAN_VENDOR_ID, keyspan_usa28_product_id) },
- 	{ USB_DEVICE(KEYSPAN_VENDOR_ID, keyspan_usa28x_product_id) },
- 	{ USB_DEVICE(KEYSPAN_VENDOR_ID, keyspan_usa28xa_product_id) },
-@@ -532,7 +532,7 @@ static struct usb_device_id keyspan_2por
- 	{ } /* Terminating entry */
- };
-
--static struct usb_device_id keyspan_4port_ids[] = {
-+static const struct usb_device_id keyspan_4port_ids[] = {
- 	{ USB_DEVICE(KEYSPAN_VENDOR_ID, keyspan_usa49w_product_id) },
- 	{ USB_DEVICE(KEYSPAN_VENDOR_ID, keyspan_usa49wlc_product_id)},
- 	{ USB_DEVICE(KEYSPAN_VENDOR_ID, keyspan_usa49wg_product_id)},
-diff -u -p a/drivers/usb/serial/mct_u232.c b/drivers/usb/serial/mct_u232.c
---- a/drivers/usb/serial/mct_u232.c 2009-12-03 04:51:21.000000000 +0100
-+++ b/drivers/usb/serial/mct_u232.c 2010-01-08 17:47:41.000000000 +0100
-@@ -110,7 +110,7 @@ static void mct_u232_unthrottle(struct t
- /*
-  * All of the device info needed for the MCT USB-RS232 converter.
-  */
--static struct usb_device_id id_table_combined [] = {
-+static const struct usb_device_id id_table_combined[] = {
- 	{ USB_DEVICE(MCT_U232_VID, MCT_U232_PID) },
- 	{ USB_DEVICE(MCT_U232_VID, MCT_U232_SITECOM_PID) },
- 	{ USB_DEVICE(MCT_U232_VID, MCT_U232_DU_H3SP_PID) },
-diff -u -p a/drivers/usb/serial/sierra.c b/drivers/usb/serial/sierra.c
---- a/drivers/usb/serial/sierra.c 2010-01-07 19:08:47.000000000 +0100
-+++ b/drivers/usb/serial/sierra.c 2010-01-08 17:47:55.000000000 +0100
-@@ -226,7 +226,7 @@ static const struct sierra_iface_info di
- 	.ifaceinfo = direct_ip_non_serial_ifaces,
- };
-
--static struct usb_device_id id_table [] = {
-+static const struct usb_device_id id_table[] = {
- 	{ USB_DEVICE(0x0F3D, 0x0112) }, /* Airprime/Sierra PC 5220 */
- 	{ USB_DEVICE(0x03F0, 0x1B1D) },	/* HP ev2200 a.k.a MC5720 */
- 	{ USB_DEVICE(0x03F0, 0x1E1D) },	/* HP hs2300 a.k.a MC8775 */
-diff -u -p a/drivers/usb/serial/pl2303.c b/drivers/usb/serial/pl2303.c
---- a/drivers/usb/serial/pl2303.c 2009-12-03 04:51:21.000000000 +0100
-+++ b/drivers/usb/serial/pl2303.c 2010-01-08 17:48:16.000000000 +0100
-@@ -50,7 +50,7 @@ struct pl2303_buf {
- 	char		*buf_put;
- };
-
--static struct usb_device_id id_table [] = {
-+static const struct usb_device_id id_table[] = {
- 	{ USB_DEVICE(PL2303_VENDOR_ID, PL2303_PRODUCT_ID) },
- 	{ USB_DEVICE(PL2303_VENDOR_ID, PL2303_PRODUCT_ID_RSAQ2) },
- 	{ USB_DEVICE(PL2303_VENDOR_ID, PL2303_PRODUCT_ID_DCU11) },
-diff -u -p a/drivers/usb/serial/digi_acceleport.c b/drivers/usb/serial/digi_acceleport.c
---- a/drivers/usb/serial/digi_acceleport.c 2009-12-03 04:51:21.000000000 +0100
-+++ b/drivers/usb/serial/digi_acceleport.c 2010-01-08 17:48:41.000000000 +0100
-@@ -470,18 +470,18 @@ static int digi_read_oob_callback(struct
-
- static int debug;
-
--static struct usb_device_id id_table_combined [] = {
-+static const struct usb_device_id id_table_combined[] = {
- 	{ USB_DEVICE(DIGI_VENDOR_ID, DIGI_2_ID) },
- 	{ USB_DEVICE(DIGI_VENDOR_ID, DIGI_4_ID) },
- 	{ }						/* Terminating entry */
- };
-
--static struct usb_device_id id_table_2 [] = {
-+static const struct usb_device_id id_table_2[] = {
- 	{ USB_DEVICE(DIGI_VENDOR_ID, DIGI_2_ID) },
- 	{ }						/* Terminating entry */
- };
-
--static struct usb_device_id id_table_4 [] = {
-+static const struct usb_device_id id_table_4[] = {
- 	{ USB_DEVICE(DIGI_VENDOR_ID, DIGI_4_ID) },
- 	{ }						/* Terminating entry */
- };
-diff -u -p a/drivers/usb/serial/cyberjack.c b/drivers/usb/serial/cyberjack.c
---- a/drivers/usb/serial/cyberjack.c 2009-12-03 04:51:21.000000000 +0100
-+++ b/drivers/usb/serial/cyberjack.c 2010-01-08 17:49:01.000000000 +0100
-@@ -70,7 +70,7 @@ static void cyberjack_read_int_callback(
- static void cyberjack_read_bulk_callback(struct urb *urb);
- static void cyberjack_write_bulk_callback(struct urb *urb);
-
--static struct usb_device_id id_table [] = {
-+static const struct usb_device_id id_table[] = {
- 	{ USB_DEVICE(CYBERJACK_VENDOR_ID, CYBERJACK_PRODUCT_ID) },
- 	{ }			/* Terminating entry */
- };
-diff -u -p a/drivers/usb/serial/funsoft.c b/drivers/usb/serial/funsoft.c
---- a/drivers/usb/serial/funsoft.c 2009-12-03 04:51:21.000000000 +0100
-+++ b/drivers/usb/serial/funsoft.c 2010-01-08 17:49:13.000000000 +0100
-@@ -18,7 +18,7 @@
-
- static int debug;
-
--static struct usb_device_id id_table [] = {
-+static const struct usb_device_id id_table[] = {
- 	{ USB_DEVICE(0x1404, 0xcddc) },
- 	{ },
- };
-diff -u -p a/drivers/usb/serial/keyspan_pda.c b/drivers/usb/serial/keyspan_pda.c
---- a/drivers/usb/serial/keyspan_pda.c 2009-12-03 04:51:21.000000000 +0100
-+++ b/drivers/usb/serial/keyspan_pda.c 2010-01-08 17:49:25.000000000 +0100
-@@ -125,7 +125,7 @@ struct keyspan_pda_private {
- #define ENTREGRA_VENDOR_ID		0x1645
- #define ENTREGRA_FAKE_ID		0x8093
-
--static struct usb_device_id id_table_combined [] = {
-+static const struct usb_device_id id_table_combined[] = {
- #ifdef KEYSPAN
- 	{ USB_DEVICE(KEYSPAN_VENDOR_ID, KEYSPAN_PDA_FAKE_ID) },
- #endif
-@@ -147,20 +147,20 @@ static struct usb_driver keyspan_pda_dri
- 	.no_dynamic_id = 	1,
- };
-
--static struct usb_device_id id_table_std [] = {
-+static const struct usb_device_id id_table_std[] = {
- 	{ USB_DEVICE(KEYSPAN_VENDOR_ID, KEYSPAN_PDA_ID) },
- 	{ }						/* Terminating entry */
- };
-
- #ifdef KEYSPAN
--static struct usb_device_id id_table_fake [] = {
-+static const struct usb_device_id id_table_fake[] = {
- 	{ USB_DEVICE(KEYSPAN_VENDOR_ID, KEYSPAN_PDA_FAKE_ID) },
- 	{ }						/* Terminating entry */
- };
- #endif
-
- #ifdef XIRCOM
--static struct usb_device_id id_table_fake_xircom [] = {
-+static const struct usb_device_id id_table_fake_xircom[] = {
- 	{ USB_DEVICE(XIRCOM_VENDOR_ID, XIRCOM_FAKE_ID) },
- 	{ USB_DEVICE(ENTREGRA_VENDOR_ID, ENTREGRA_FAKE_ID) },
- 	{ }
-diff -u -p a/drivers/usb/serial/whiteheat.c b/drivers/usb/serial/whiteheat.c
---- a/drivers/usb/serial/whiteheat.c 2009-12-03 04:51:21.000000000 +0100
-+++ b/drivers/usb/serial/whiteheat.c 2010-01-08 17:49:57.000000000 +0100
-@@ -111,17 +111,17 @@ static int debug;
-    separate ID tables, and then a third table that combines them
-    just for the purpose of exporting the autoloading information.
- */
--static struct usb_device_id id_table_std [] = {
-+static const struct usb_device_id id_table_std[] = {
- 	{ USB_DEVICE(CONNECT_TECH_VENDOR_ID, CONNECT_TECH_WHITE_HEAT_ID) },
- 	{ }						/* Terminating entry */
- };
-
--static struct usb_device_id id_table_prerenumeration [] = {
-+static const struct usb_device_id id_table_prerenumeration[] = {
- 	{ USB_DEVICE(CONNECT_TECH_VENDOR_ID, CONNECT_TECH_FAKE_WHITE_HEAT_ID) },
- 	{ }						/* Terminating entry */
- };
-
--static struct usb_device_id id_table_combined [] = {
-+static const struct usb_device_id id_table_combined[] = {
- 	{ USB_DEVICE(CONNECT_TECH_VENDOR_ID, CONNECT_TECH_WHITE_HEAT_ID) },
- 	{ USB_DEVICE(CONNECT_TECH_VENDOR_ID, CONNECT_TECH_FAKE_WHITE_HEAT_ID) },
- 	{ }						/* Terminating entry */
-diff -u -p a/drivers/usb/serial/ch341.c b/drivers/usb/serial/ch341.c
---- a/drivers/usb/serial/ch341.c 2009-12-03 04:51:21.000000000 +0100
-+++ b/drivers/usb/serial/ch341.c 2010-01-08 17:50:09.000000000 +0100
-@@ -70,7 +70,7 @@
-
- static int debug;
-
--static struct usb_device_id id_table [] = {
-+static const struct usb_device_id id_table[] = {
- 	{ USB_DEVICE(0x4348, 0x5523) },
- 	{ USB_DEVICE(0x1a86, 0x7523) },
- 	{ },
-diff -u -p a/drivers/usb/serial/aircable.c b/drivers/usb/serial/aircable.c
---- a/drivers/usb/serial/aircable.c 2009-12-03 04:51:21.000000000 +0100
-+++ b/drivers/usb/serial/aircable.c 2010-01-08 17:50:15.000000000 +0100
-@@ -78,7 +78,7 @@ static int debug;
- #define DRIVER_DESC "AIRcable USB Driver"
-
- /* ID table that will be registered with USB core */
--static struct usb_device_id id_table [] = {
-+static const struct usb_device_id id_table[] = {
- 	{ USB_DEVICE(AIRCABLE_VID, AIRCABLE_USB_PID) },
- 	{ },
- };
-diff -u -p a/drivers/usb/serial/kl5kusb105.c b/drivers/usb/serial/kl5kusb105.c
---- a/drivers/usb/serial/kl5kusb105.c 2009-12-03 04:51:21.000000000 +0100
-+++ b/drivers/usb/serial/kl5kusb105.c 2010-01-08 17:50:27.000000000 +0100
-@@ -94,7 +94,7 @@ static int  klsi_105_tiocmset(struct tty
- /*
-  * All of the device info needed for the KLSI converters.
-  */
--static struct usb_device_id id_table [] = {
-+static const struct usb_device_id id_table[] = {
- 	{ USB_DEVICE(PALMCONNECT_VID, PALMCONNECT_PID) },
- 	{ USB_DEVICE(KLSI_VID, KLSI_KL5KUSB105D_PID) },
- 	{ }		/* Terminating entry */
-diff -u -p a/drivers/usb/serial/option.c b/drivers/usb/serial/option.c
---- a/drivers/usb/serial/option.c 2010-01-07 19:08:47.000000000 +0100
-+++ b/drivers/usb/serial/option.c 2010-01-08 17:50:50.000000000 +0100
-@@ -344,7 +344,7 @@ static int  option_resume(struct usb_ser
- #define HAIER_VENDOR_ID				0x201e
- #define HAIER_PRODUCT_CE100			0x2009
-
--static struct usb_device_id option_ids[] = {
-+static const struct usb_device_id option_ids[] = {
- 	{ USB_DEVICE(OPTION_VENDOR_ID, OPTION_PRODUCT_COLT) },
- 	{ USB_DEVICE(OPTION_VENDOR_ID, OPTION_PRODUCT_RICOLA) },
- 	{ USB_DEVICE(OPTION_VENDOR_ID, OPTION_PRODUCT_RICOLA_LIGHT) },
+-static struct of_device_id of_isp1760_match[] = {
++static const struct of_device_id of_isp1760_match[] = {
+ 	{
+ 		.compatible = "nxp,usb-isp1760",
+ 	},
