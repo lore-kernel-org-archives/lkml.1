@@ -1,91 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754812Ab0AJAnc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754836Ab0AJAsQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754812Ab0AJAnc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Jan 2010 19:43:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752644Ab0AJAnb
+	id S1754836Ab0AJAsQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Jan 2010 19:48:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752965Ab0AJAsQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Jan 2010 19:43:31 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:46751 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754200Ab0AJAnb (ORCPT
+	Sat, 9 Jan 2010 19:48:16 -0500
+Received: from msa104.auone-net.jp ([61.117.18.164]:49998 "EHLO
+	msa104.auone-net.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751040Ab0AJAsP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Jan 2010 19:43:31 -0500
-X-Authority-Analysis: v=1.0 c=1 a=r_nf4N-T2GkA:10 a=kiMWPxQlYM7JJ5ILkhUA:9 a=lVRQm7Q2HJ4CVP4Y8PoA:7 a=c3fM5yTakJhw_CT7ZLWUUkRJH9gA:4
-X-Cloudmark-Score: 0
-X-Originating-IP: 74.67.89.75
-Subject: Re: [RFC PATCH] introduce sys_membarrier(): process-wide memory
- barrier
-From: Steven Rostedt <rostedt@goodmis.org>
-To: paulmck@linux.vnet.ibm.com
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Oleg Nesterov <oleg@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       akpm@linux-foundation.org, josh@joshtriplett.org, tglx@linutronix.de,
-       Valdis.Kletnieks@vt.edu, dhowells@redhat.com, laijs@cn.fujitsu.com,
-       dipankar@in.ibm.com
-In-Reply-To: <20100110000318.GD9044@linux.vnet.ibm.com>
-References: <1262900140.28171.3773.camel@gandalf.stny.rr.com>
-	 <20100108235338.GA18050@Krystal> <20100109002043.GD6816@linux.vnet.ibm.com>
-	 <20100109010231.GA25368@Krystal> <20100109012128.GF6816@linux.vnet.ibm.com>
-	 <20100109023842.GA1696@Krystal> <20100109054215.GB9044@linux.vnet.ibm.com>
-	 <20100109192006.GA23672@Krystal>
-	 <1263078327.28171.3792.camel@gandalf.stny.rr.com>
-	 <1263079000.28171.3795.camel@gandalf.stny.rr.com>
-	 <20100110000318.GD9044@linux.vnet.ibm.com>
-Content-Type: text/plain
-Date: Sat, 09 Jan 2010 19:41:39 -0500
-Message-Id: <1263084099.2231.5.camel@frodo>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 7bit
+	Sat, 9 Jan 2010 19:48:15 -0500
+X-Greylist: delayed 1017 seconds by postgrey-1.27 at vger.kernel.org; Sat, 09 Jan 2010 19:48:15 EST
+Date: Sun, 10 Jan 2010 09:31:16 +0900
+From: Kusanagi Kouichi <slash@ac.auone-net.jp>
+To: Mauro Carvalho Chehab <mchehab@infradead.org>
+Cc: linux-media@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] cx25840: Fix composite detection.
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-06-14)
+Message-Id: <20100110003117.30E3C15C033@msa104.auone-net.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2010-01-09 at 16:03 -0800, Paul E. McKenney wrote:
-> On Sat, Jan 09, 2010 at 06:16:40PM -0500, Steven Rostedt wrote:
-> > On Sat, 2010-01-09 at 18:05 -0500, Steven Rostedt wrote:
-> > 
-> > > Then we should have O(tasks) for spinlocks taken, and 
-> > > O(min(tasks, CPUS)) for IPIs.
-> > 
-> > And for nr tasks >> CPUS, this may help too:
-> > 
-> > > cpumask = 0;
-> > > foreach task {
-> > 
-> > 	if (cpumask == online_cpus)
-> > 		break;
-> > 
-> > > 	spin_lock(task_rq(task)->rq->lock);
-> > > 	if (task_rq(task)->curr == task)
-> > > 		cpu_set(task_cpu(task), cpumask);
-> > > 	spin_unlock(task_rq(task)->rq->lock);
-> > > }
-> > > send_ipi(cpumask);
-> 
-> Good point, erring on the side of sending too many IPIs is safe.  One
-> might even be able to just send the full set if enough of the CPUs were
-> running the current process and none of the remainder were running
-> real-time threads.  And yes, it would then be necessary to throttle
-> calls to sys_membarrier().
-> 
+If CX25840_VIN1_CH1 and the like is used, input is not detected as composite.
 
-If you need to throttle calls to sys_membarrier(), than why bother
-optimizing it? Again, this is like calling synchronize_sched() in the
-kernel, which is a very heavy operation, and should only be called by
-those that are not performance critical.
+Signed-off-by: Kusanagi Kouichi <slash@ac.auone-net.jp>
+---
+ drivers/media/video/cx25840/cx25840-core.c |    6 ++----
+ 1 files changed, 2 insertions(+), 4 deletions(-)
 
-Why are we struggling so much with optimizing the slow path?
-
-Here's how I take it. This method is much better that sending signals to
-all threads. The advantage the sys_membarrier gives us, is also a way to
-keep user rcu_read_locks barrier free, which means that rcu_read_locks
-are quick and scale well.
-
-So what if we have a linear decrease in performance with the number of
-threads on the write side?
-
--- Steve
-
+diff --git a/drivers/media/video/cx25840/cx25840-core.c b/drivers/media/video/cx25840/cx25840-core.c
+index 385ecd5..764c811 100644
+--- a/drivers/media/video/cx25840/cx25840-core.c
++++ b/drivers/media/video/cx25840/cx25840-core.c
+@@ -734,10 +734,8 @@ static int set_input(struct i2c_client *client, enum cx25840_video_input vid_inp
+ 		v4l_dbg(1, cx25840_debug, client, "vid_input 0x%x\n",
+ 			vid_input);
+ 		reg = vid_input & 0xff;
+-		if ((vid_input & CX25840_SVIDEO_ON) == CX25840_SVIDEO_ON)
+-			is_composite = 0;
+-		else if ((vid_input & CX25840_COMPONENT_ON) == 0)
+-			is_composite = 1;
++		is_composite = !is_component &&
++			((vid_input & CX25840_SVIDEO_ON) != CX25840_SVIDEO_ON);
+ 
+ 		v4l_dbg(1, cx25840_debug, client, "mux cfg 0x%x comp=%d\n",
+ 			reg, is_composite);
+-- 
+1.6.6
 
