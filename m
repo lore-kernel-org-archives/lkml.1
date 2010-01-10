@@ -1,55 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752329Ab0AJS00@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752827Ab0AJSdS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752329Ab0AJS00 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jan 2010 13:26:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751660Ab0AJS0Z
+	id S1752827Ab0AJSdS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jan 2010 13:33:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751984Ab0AJSdR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jan 2010 13:26:25 -0500
-Received: from khc.piap.pl ([195.187.100.11]:35644 "EHLO khc.piap.pl"
+	Sun, 10 Jan 2010 13:33:17 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:57269 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751482Ab0AJS0Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jan 2010 13:26:25 -0500
-From: Krzysztof Halasa <khc@pm.waw.pl>
-To: "Paul G. Allen" <pgallen@gmail.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Linux Serial Performance
-References: <bd8e30a41001091057t97f90abgffe9cca329ace477@mail.gmail.com>
-Date: Sun, 10 Jan 2010 19:26:22 +0100
-In-Reply-To: <bd8e30a41001091057t97f90abgffe9cca329ace477@mail.gmail.com>
-	(Paul G. Allen's message of "Sat, 9 Jan 2010 10:57:48 -0800")
-Message-ID: <m363793jg1.fsf@intrepid.localdomain>
+	id S1750983Ab0AJSdR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Jan 2010 13:33:17 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Maciej Rutecki <maciej.rutecki@gmail.com>
+Subject: Re: [BUG] Linux-2.6.32-git10 drm_i915 error
+Date: Sun, 10 Jan 2010 19:33:39 +0100
+User-Agent: KMail/1.12.3 (Linux/2.6.33-rc3-rjw; KDE/4.3.3; x86_64; ; )
+Cc: Tarkan Erimer <tarkane@netone.com.tr>, linux-kernel@vger.kernel.org
+References: <4B26349D.1080904@netone.com.tr> <8db1092f1001100620w59edea0ah5e7244e11930a005@mail.gmail.com>
+In-Reply-To: <8db1092f1001100620w59edea0ah5e7244e11930a005@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201001101933.39683.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Paul G. Allen" <pgallen@gmail.com> writes:
+On Sunday 10 January 2010, Maciej Rutecki wrote:
+> 2009/12/14 Tarkan Erimer <tarkane@netone.com.tr>:
+> > Frequently, I hit this bug on Linux-2.6.32-git10. It's always
+> > re-producible for me on my i945 video device equipped HP machine. When
+> > hit this bug, it crashes the X server and screen goes black. But,
+> > possible to switch to console. Here is the error log, I had in dmesg:
+> >
+> > [ 2596.328132] [drm:i915_hangcheck_elapsed] *ERROR* Hangcheck timer
+> > elapsed... GPU hung
+> > [ 2596.328146] render error detected, EIR: 0x00000000
+> > [ 2596.328167] [drm:i915_do_wait_request] *ERROR* i915_do_wait_request
+> > returns -5 (awaiting 694588 at 694584)
+> > [ 2596.439006] [drm:i915_hangcheck_elapsed] *ERROR* Hangcheck timer
+> > elapsed... GPU hung
+> > [ 2596.439013] render error detected, EIR: 0x00000000
+> >
+> > Tarkan
+> 
+> I confirm this. A observed this on 2.6.33-rc3-git3 after resume from suspend:
+> 
+> Jan 10 08:51:31 gumis kernel: [  486.880045]
+> [drm:i915_hangcheck_elapsed] *ERROR* Hangcheck timer elapsed... GPU
+> hung
+> Jan 10 08:51:31 gumis kernel: [  486.880063] render error detected,
+> EIR: 0x00000000
+> Jan 10 08:51:31 gumis kernel: [  486.880107]
+> [drm:i915_do_wait_request] *ERROR* i915_do_wait_request returns -5 (
+> awaiting 60107 at 60105)
+> Jan 10 08:51:32 gumis kernel: [  487.276302] [drm:i915_gem_execbuffer]
+> *ERROR* i915_gem_do_execbuffer returns -5
+> Jan 10 08:51:32 gumis kernel: [  487.276799] [drm:i915_gem_execbuffer]
+> *ERROR* i915_gem_do_execbuffer returns -5
+> Jan 10 08:51:32 gumis kernel: [  487.277230] [drm:i915_gem_execbuffer]
+> *ERROR* i915_gem_do_execbuffer returns -5
+> Jan 10 08:51:32 gumis kernel: [  487.278308] [drm:i915_gem_execbuffer]
+> *ERROR* i915_gem_do_execbuffer returns -5
+> Jan 10 08:51:32 gumis kernel: [  487.278533] [drm:i915_gem_execbuffer]
+> *ERROR* i915_gem_do_execbuffer returns -5
+> 
+> 2.6.33-rc2 works fine.
 
-> I ran some tests on Windows XP and Linux CentOS 5.1 using the Sun
-> NetBeans IDE 6.7.1 profiler. The same Java code on both Linux and XP
-> machines, the same model of machine (Dell, Pentium 4 3GHz, 2.5GB
-> memory). I am using the Sun comm API currently, and previously I was
-> using the Serlio API. In all cases, the profiler shows the serial Tx
-> to be about 20x faster (twenty times) on Windows XP than in Linux. It
-> takes Linux several seconds to Tx 1024 byte blocks of data over the
-> serial port where Windows XP takes a fraction of a second.
+http://bugzilla.kernel.org/show_bug.cgi?id=15026 perhaps?
 
-I don't know about Java, but I'm using 460 kb/s and 920 kb/s serial
-ports and Linux can transmit (and receive) full speed data without any
-problem. This includes mobile Pentium III 500 MHz with 460 kb/s NS super
-IO chip.
-
-4-port OX16PCI954, PL2303 (max 2) and FTDI2232-based USB dongles also
-work as well. I know people use ca. 4 Mb/s async serial (with PPP).
-
-The last time I remember serial IO problems it was 8-port 8251-based ISA
-card on 486DX. I think it was reliable at max 19200 b/s.
+Rafael
 
 
-Perhaps you're requesting hardware (or software) handshaking when it's
-unavailable? Or maybe there is some "padding" configured?
+> 
 
-I wonder what does strace say about it.
--- 
-Krzysztof Halasa
