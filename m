@@ -1,53 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752435Ab0AJTEO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753067Ab0AJTG0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752435Ab0AJTEO (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jan 2010 14:04:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751896Ab0AJTEN
+	id S1753067Ab0AJTG0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jan 2010 14:06:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752332Ab0AJTG0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jan 2010 14:04:13 -0500
-Received: from mail.perches.com ([173.55.12.10]:1045 "EHLO mail.perches.com"
+	Sun, 10 Jan 2010 14:06:26 -0500
+Received: from bamako.nerim.net ([62.4.17.28]:50870 "EHLO bamako.nerim.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750876Ab0AJTEM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jan 2010 14:04:12 -0500
-Subject: Re: [PATCH 1/1] MAINTAINERS: ivtv-devel is moderated
-From: Joe Perches <joe@perches.com>
-To: Andy Walls <awalls@radix.net>
-Cc: Jiri Slaby <jslaby@suse.cz>, mchehab@infradead.org,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       jirislaby@gmail.com, linux-media@vger.kernel.org
-In-Reply-To: <1263130149.4061.7.camel@palomino.walls.org>
-References: <1263114197-8476-1-git-send-email-jslaby@suse.cz>
-	 <1263130149.4061.7.camel@palomino.walls.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sun, 10 Jan 2010 11:04:10 -0800
-Message-ID: <1263150250.1907.22.camel@Joe-Laptop.home>
+	id S1752139Ab0AJTGZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Jan 2010 14:06:25 -0500
+Date: Sun, 10 Jan 2010 20:06:21 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Yong Wang <yong.y.wang@linux.intel.com>
+Cc: linux-kernel@vger.kernel.org, Huaxu Wan <huaxu.wan@intel.com>,
+       lm-sensors@lm-sensors.org
+Subject: Re: [lm-sensors] [PATCH] hwmon: (coretemp) Fix TjMax for Atom 
+ N450/D410/D510 CPUs
+Message-ID: <20100110200621.564a6682@hyperion.delvare>
+In-Reply-To: <20100106160817.72313551@hyperion.delvare>
+References: <20091224073102.GA23058@ywang-moblin2.bj.intel.com>
+	<20100106160817.72313551@hyperion.delvare>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2010-01-10 at 08:29 -0500, Andy Walls wrote:
-> On Sun, 2010-01-10 at 10:03 +0100, Jiri Slaby wrote:
-> > Mark ivtv-devel@ivtvdriver.org as 'moderated for non-subscribers'.
-> Yes, that is true.
-> I don't know why it matters after years of not being marked as such,
-> especially since the moderator will push through on-topic posts.
-> I don't know the implications that such an annotation will have on
-> scripts that try to parse MAINTAINERS for e-mail addresses.
+On Wed, 6 Jan 2010 16:08:17 +0100, Jean Delvare wrote:
+> Hi Yong,
+> 
+> On Thu, 24 Dec 2009 15:31:02 +0800, Yong Wang wrote:
+> > The max junction temperature of Atom N450/D410/D510 CPUs is 100 degrees Celsius.
+> > Since these CPUs are always coupled with Intel NM10 chipset in one package, the
+> > best way to verify whether an Atom CPU is N450/D410/D510 is to check the host
+> > bridge device.
+> > 
+> > Signed-off-by: Yong Wang <yong.y.wang@intel.com>
+> > Acked-by: Huaxu Wan <huaxu.wan@intel.com>
+> 
+> Applied, thanks. I've also added a Kconfig dependency on CONFIG_PCI.
 
-I think it's just for people that use MAINTAINERS
-by hand.
+Hmm. Thinking about it some more... What about nVidia-based systems?
+Can't we have systems with an Atom N450/D410/D510 and a non-Intel
+chipset?
 
-As far as I know, scripts/get_maintainer.pl is the
-only script that parses MAINTAINERS.
-
-This annotation doesn't change what lists are returned
-by the script.
-
-The script does filter lists with a "subscribers-only"
-annotation from other lists and only includes them when
-the command line argument "--s" is set.
-
-
+-- 
+Jean Delvare
