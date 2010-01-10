@@ -1,59 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753601Ab0AJPlv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753643Ab0AJPpN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753601Ab0AJPlv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jan 2010 10:41:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751034Ab0AJPlv
+	id S1753643Ab0AJPpN (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jan 2010 10:45:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753100Ab0AJPpM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jan 2010 10:41:51 -0500
-Received: from mail02d.mail.t-online.hu ([84.2.42.7]:55337 "EHLO
-	mail02d.mail.t-online.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752161Ab0AJPlu (ORCPT
+	Sun, 10 Jan 2010 10:45:12 -0500
+Received: from bamako.nerim.net ([62.4.17.28]:59449 "EHLO bamako.nerim.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752459Ab0AJPpL convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jan 2010 10:41:50 -0500
-X-Authuid: nmarci
-Message-ID: <4B49F535.6080108@freemail.hu>
-Date: Sun, 10 Jan 2010 16:41:41 +0100
-From: =?ISO-8859-1?Q?N=E9meth_M=E1rton?= <nm127@freemail.hu>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; hu-HU; rv:1.8.1.21) Gecko/20090402 SeaMonkey/1.1.16
-MIME-Version: 1.0
-To: Alexey Dobriyan <adobriyan@gmail.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/5] block: make PCI device id constant
-References: <20100110141106.GA4293@x200>
-In-Reply-To: <20100110141106.GA4293@x200>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
-X-DCC-mail.t-online.hu-Metrics: mail02d.mail.t-online.hu 32711; Body=2 Fuz1=2
+	Sun, 10 Jan 2010 10:45:11 -0500
+Date: Sun, 10 Jan 2010 16:45:08 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: =?UTF-8?B?TsOpbWV0aCBNw6FydG9u?= <nm127@freemail.hu>
+Cc: Ben Dooks <ben-linux@fluff.org>, linux-i2c@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, Julia Lawall <julia@diku.dk>,
+       cocci@diku.dk
+Subject: Re: [PATCH] i2c-ali1563: remove sparse warnings
+Message-ID: <20100110164508.51fc29a7@hyperion.delvare>
+In-Reply-To: <4B49E533.8050808@freemail.hu>
+References: <4B49E533.8050808@freemail.hu>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Márton Németh <nm127@freemail.hu>
+On Sun, 10 Jan 2010 15:33:23 +0100, NÃ©meth MÃ¡rton wrote:
+> From: MÃ¡rton NÃ©meth <nm127@freemail.hu>
+> 
+> Remove the following sparse warnings (see "make C=1"):
+>  * drivers/i2c/busses/i2c-ali1563.c:91:3: warning: do-while statement is not a compound statement
+>  * drivers/i2c/busses/i2c-ali1563.c:161:3: warning: do-while statement is not a compound statement
+> 
+> Signed-off-by: MÃ¡rton NÃ©meth <nm127@freemail.hu>
+> ---
+> --- linux/drivers/i2c/busses/i2c-ali1563.c.orig	2010-01-10 13:40:31.000000000 +0100
+> +++ linux/drivers/i2c/busses/i2c-ali1563.c	2010-01-10 13:54:16.000000000 +0100
+> @@ -87,9 +87,9 @@
+>  	outb_p(inb_p(SMB_HST_CNTL2) | HST_CNTL2_START, SMB_HST_CNTL2);
+> 
+>  	timeout = ALI1563_MAX_TIMEOUT;
+> -	do
+> +	do {
+>  		msleep(1);
+> -	while (((data = inb_p(SMB_HST_STS)) & HST_STS_BUSY) && --timeout);
+> +	} while (((data = inb_p(SMB_HST_STS)) & HST_STS_BUSY) && --timeout);
+> 
+>  	dev_dbg(&a->dev, "Transaction (post): STS=%02x, CNTL1=%02x, "
+>  		"CNTL2=%02x, CMD=%02x, ADD=%02x, DAT0=%02x, DAT1=%02x\n",
+> @@ -157,9 +157,9 @@
+>  	outb_p(inb_p(SMB_HST_CNTL2) | HST_CNTL2_START, SMB_HST_CNTL2);
+> 
+>  	timeout = ALI1563_MAX_TIMEOUT;
+> -	do
+> +	do {
+>  		msleep(1);
+> -	while (!((data = inb_p(SMB_HST_STS)) & HST_STS_DONE) && --timeout);
+> +	} while (!((data = inb_p(SMB_HST_STS)) & HST_STS_DONE) && --timeout);
+> 
+>  	dev_dbg(&a->dev, "Block (post): STS=%02x, CNTL1=%02x, "
+>  		"CNTL2=%02x, CMD=%02x, ADD=%02x, DAT0=%02x, DAT1=%02x\n",
 
-Use DEFINE_PCI_DEVICE_TABLE() when declaring the PCI device
-table as suggested in Documentation/PCI/pci.txt .
+Applied, thanks.
 
-Signed-off-by: Márton Németh <nm127@freemail.hu>
----
---- drivers/block/DAC960.c.orig	2010-01-10 16:12:25.000000000 +0100
-+++ drivers/block/DAC960.c	2010-01-10 16:16:26.000000000 +0100
-@@ -7134,7 +7134,7 @@
- 	.MemoryWindowSize =	DAC960_PD_RegisterWindowSize,
- };
-
--static struct pci_device_id DAC960_id_table[] = {
-+static DEFINE_PCI_DEVICE_TABLE(DAC960_id_table) = {
- 	{
- 		.vendor 	= PCI_VENDOR_ID_MYLEX,
- 		.device		= PCI_DEVICE_ID_MYLEX_DAC960_GEM,
---- drivers/block/sx8.c.orig	2010-01-10 16:12:38.000000000 +0100
-+++ drivers/block/sx8.c	2010-01-10 16:17:57.000000000 +0100
-@@ -409,7 +409,7 @@
- static void carm_remove_one (struct pci_dev *pdev);
- static int carm_bdev_getgeo(struct block_device *bdev, struct hd_geometry *geo);
-
--static struct pci_device_id carm_pci_tbl[] = {
-+static DEFINE_PCI_DEVICE_TABLE(carm_pci_tbl) = {
- 	{ PCI_VENDOR_ID_PROMISE, 0x8000, PCI_ANY_ID, PCI_ANY_ID, 0, 0, },
- 	{ PCI_VENDOR_ID_PROMISE, 0x8002, PCI_ANY_ID, PCI_ANY_ID, 0, 0, },
- 	{ }	/* terminate list */
+-- 
+Jean Delvare
