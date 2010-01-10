@@ -1,70 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753997Ab0AJLRl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753171Ab0AJLUe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753997Ab0AJLRl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jan 2010 06:17:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753342Ab0AJLRk
+	id S1753171Ab0AJLUe (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jan 2010 06:20:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752308Ab0AJLUd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jan 2010 06:17:40 -0500
-Received: from smtp.mujha-vel.cz ([81.30.225.246]:40209 "EHLO
-	smtp.mujha-vel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752817Ab0AJLRk (ORCPT
+	Sun, 10 Jan 2010 06:20:33 -0500
+Received: from mail01a.mail.t-online.hu ([84.2.40.6]:52166 "EHLO
+	mail01a.mail.t-online.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752011Ab0AJLUd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jan 2010 06:17:40 -0500
-From: Jiri Slaby <jslaby@suse.cz>
-To: samuel@sortiz.org
-Cc: linux-kernel@vger.kernel.org, jirislaby@gmail.com,
-       "David S. Miller" <davem@davemloft.net>,
-       Alan Cox <alan@linux.intel.com>, Greg Kroah-Hartman <gregkh@suse.de>,
-       netdev@vger.kernel.org
-Subject: [PATCH 1/1] NET: irda, remove unnecessary checks
-Date: Sun, 10 Jan 2010 12:17:34 +0100
-Message-Id: <1263122254-18781-1-git-send-email-jslaby@suse.cz>
-X-Mailer: git-send-email 1.6.5.7
-In-Reply-To: <1263114674-10433-1-git-send-email-jslaby@suse.cz>
-References: <1263114674-10433-1-git-send-email-jslaby@suse.cz>
+	Sun, 10 Jan 2010 06:20:33 -0500
+X-Authuid: nmarci
+Message-ID: <4B49B7FB.4020402@freemail.hu>
+Date: Sun, 10 Jan 2010 12:20:27 +0100
+From: =?UTF-8?B?TsOpbWV0aCBNw6FydG9u?= <nm127@freemail.hu>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; hu-HU; rv:1.8.1.21) Gecko/20090402 SeaMonkey/1.1.16
+MIME-Version: 1.0
+To: Doug Thompson <dougthompson@xmission.com>,
+       Grant Erickson <gerickson@nuovations.com>,
+       Dave Jiang <djiang@mvista.com>
+CC: bluesmoke-devel@lists.sourceforge.net, LKML <linux-kernel@vger.kernel.org>,
+       Julia Lawall <julia@diku.dk>, cocci@diku.dk
+Subject: [PATCH] edac: make Open Firmware device id constant
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-DCC-mail.t-online.hu-Metrics: mail01a.mail.t-online.hu 32711; Body=7 Fuz1=7
+	Fuz2=7
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stanse found a potential null dereference in ircomm_tty_close
-and ircomm_tty_hangup. There is a check for tty being NULL,
-but it is dereferenced earlier. But it is bogus, the tty cannot
-be NULL, so remove the !tty checks.
+From: Márton Németh <nm127@freemail.hu>
 
-Signed-off-by: Jiri Slaby <jslaby@suse.cz>
-Cc: Samuel Ortiz <samuel@sortiz.org>
-Cc: "David S. Miller" <davem@davemloft.net>
-Cc: Alan Cox <alan@linux.intel.com>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>
-Cc: netdev@vger.kernel.org
+The match_table field of the struct of_device_id is constant in <linux/of_platform.h>
+so it is worth to make the initialization data constant.
+
+The semantic match that finds this kind of pattern is as follows:
+(http://coccinelle.lip6.fr/)
+
+// <smpl>
+@r@
+disable decl_init,const_decl_init;
+identifier I1, I2, x;
+@@
+	struct I1 {
+	  ...
+	  const struct I2 *x;
+	  ...
+	};
+@s@
+identifier r.I1, y;
+identifier r.x, E;
+@@
+	struct I1 y = {
+	  .x = E,
+	};
+@c@
+identifier r.I2;
+identifier s.E;
+@@
+	const struct I2 E[] = ... ;
+@depends on !c@
+identifier r.I2;
+identifier s.E;
+@@
++	const
+	struct I2 E[] = ...;
+// </smpl>
+
+Signed-off-by: Márton Németh <nm127@freemail.hu>
+Cc: Julia Lawall <julia@diku.dk>
+Cc: cocci@diku.dk
 ---
- net/irda/ircomm/ircomm_tty.c |    6 ------
- 1 files changed, 0 insertions(+), 6 deletions(-)
+diff -u -p a/drivers/edac/ppc4xx_edac.c b/drivers/edac/ppc4xx_edac.c
+--- a/drivers/edac/ppc4xx_edac.c 2009-12-03 04:51:21.000000000 +0100
++++ b/drivers/edac/ppc4xx_edac.c 2010-01-08 04:46:11.000000000 +0100
+@@ -194,7 +194,7 @@ static int ppc4xx_edac_remove(struct of_
+  * Device tree node type and compatible tuples this driver can match
+  * on.
+  */
+-static struct of_device_id ppc4xx_edac_match[] = {
++static const struct of_device_id ppc4xx_edac_match[] = {
+ 	{
+ 		.compatible	= "ibm,sdram-4xx-ddr2"
+ 	},
+diff -u -p a/drivers/edac/mpc85xx_edac.c b/drivers/edac/mpc85xx_edac.c
+--- a/drivers/edac/mpc85xx_edac.c 2009-12-03 04:51:21.000000000 +0100
++++ b/drivers/edac/mpc85xx_edac.c 2010-01-08 04:46:17.000000000 +0100
+@@ -328,7 +328,7 @@ static int mpc85xx_pci_err_remove(struct
+ 	return 0;
+ }
 
-diff --git a/net/irda/ircomm/ircomm_tty.c b/net/irda/ircomm/ircomm_tty.c
-index 811984d..8b85d77 100644
---- a/net/irda/ircomm/ircomm_tty.c
-+++ b/net/irda/ircomm/ircomm_tty.c
-@@ -496,9 +496,6 @@ static void ircomm_tty_close(struct tty_struct *tty, struct file *filp)
- 
- 	IRDA_DEBUG(0, "%s()\n", __func__ );
- 
--	if (!tty)
--		return;
--
- 	IRDA_ASSERT(self != NULL, return;);
- 	IRDA_ASSERT(self->magic == IRCOMM_TTY_MAGIC, return;);
- 
-@@ -1007,9 +1004,6 @@ static void ircomm_tty_hangup(struct tty_struct *tty)
- 	IRDA_ASSERT(self != NULL, return;);
- 	IRDA_ASSERT(self->magic == IRCOMM_TTY_MAGIC, return;);
- 
--	if (!tty)
--		return;
--
- 	/* ircomm_tty_flush_buffer(tty); */
- 	ircomm_tty_shutdown(self);
- 
--- 
-1.6.5.7
+-static struct of_device_id mpc85xx_pci_err_of_match[] = {
++static const struct of_device_id mpc85xx_pci_err_of_match[] = {
+ 	{
+ 	 .compatible = "fsl,mpc8540-pcix",
+ 	 },
+@@ -633,7 +633,7 @@ static int mpc85xx_l2_err_remove(struct
+ 	return 0;
+ }
 
+-static struct of_device_id mpc85xx_l2_err_of_match[] = {
++static const struct of_device_id mpc85xx_l2_err_of_match[] = {
+ /* deprecate the fsl,85.. forms in the future, 2.6.30? */
+ 	{ .compatible = "fsl,8540-l2-cache-controller", },
+ 	{ .compatible = "fsl,8541-l2-cache-controller", },
+@@ -973,7 +973,7 @@ static int mpc85xx_mc_err_remove(struct
+ 	return 0;
+ }
+
+-static struct of_device_id mpc85xx_mc_err_of_match[] = {
++static const struct of_device_id mpc85xx_mc_err_of_match[] = {
+ /* deprecate the fsl,85.. forms in the future, 2.6.30? */
+ 	{ .compatible = "fsl,8540-memory-controller", },
+ 	{ .compatible = "fsl,8541-memory-controller", },
