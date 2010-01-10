@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753997Ab0AJOfV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753958Ab0AJOe4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753997Ab0AJOfV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jan 2010 09:35:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753756Ab0AJOfR
+	id S1753958Ab0AJOe4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jan 2010 09:34:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753921Ab0AJOez
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jan 2010 09:35:17 -0500
-Received: from mail02a.mail.t-online.hu ([84.2.40.7]:49331 "EHLO
+	Sun, 10 Jan 2010 09:34:55 -0500
+Received: from mail02a.mail.t-online.hu ([84.2.40.7]:49280 "EHLO
 	mail02a.mail.t-online.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753738Ab0AJOfL (ORCPT
+	with ESMTP id S1753904Ab0AJOew (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jan 2010 09:35:11 -0500
+	Sun, 10 Jan 2010 09:34:52 -0500
 X-Authuid: nmarci
-Message-ID: <4B49E597.9070307@freemail.hu>
-Date: Sun, 10 Jan 2010 15:35:03 +0100
+Message-ID: <4B49E585.3080705@freemail.hu>
+Date: Sun, 10 Jan 2010 15:34:45 +0100
 From: =?UTF-8?B?TsOpbWV0aCBNw6FydG9u?= <nm127@freemail.hu>
 User-Agent: Mozilla/5.0 (X11; U; Linux i686; hu-HU; rv:1.8.1.21) Gecko/20090402 SeaMonkey/1.1.16
 MIME-Version: 1.0
 To: Greg Kroah-Hartman <gregkh@suse.de>
 CC: linux-usb@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
        Julia Lawall <julia@diku.dk>, cocci@diku.dk
-Subject: [PATCH 7/9] USB host: make Open Firmware device id constant
+Subject: [PATCH 5/9] USB misc: make USB device id constant
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 X-DCC-mail.t-online.hu-Metrics: mail02a.mail.t-online.hu 32721; Body=5 Fuz1=5
@@ -30,7 +30,7 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Márton Németh <nm127@freemail.hu>
 
-The match_table field of the struct of_device_id is constant in <linux/of_platform.h>
+The id_table field of the struct usb_device_id is constant in <linux/usb.h>
 so it is worth to make the initialization data also constant.
 
 The semantic match that finds this kind of pattern is as follows:
@@ -70,63 +70,267 @@ Signed-off-by: Márton Németh <nm127@freemail.hu>
 Cc: Julia Lawall <julia@diku.dk>
 Cc: cocci@diku.dk
 ---
-diff -u -p a/drivers/usb/host/ehci-ppc-of.c b/drivers/usb/host/ehci-ppc-of.c
---- a/drivers/usb/host/ehci-ppc-of.c 2009-12-03 04:51:21.000000000 +0100
-+++ b/drivers/usb/host/ehci-ppc-of.c 2010-01-08 17:24:21.000000000 +0100
-@@ -264,7 +264,7 @@ static int ehci_hcd_ppc_of_shutdown(stru
+diff -u -p a/drivers/usb/misc/ftdi-elan.c b/drivers/usb/misc/ftdi-elan.c
+--- a/drivers/usb/misc/ftdi-elan.c 2009-12-03 04:51:21.000000000 +0100
++++ b/drivers/usb/misc/ftdi-elan.c 2010-01-08 17:32:43.000000000 +0100
+@@ -86,7 +86,7 @@ static struct list_head ftdi_static_list
+ #define USB_FTDI_ELAN_VENDOR_ID 0x0403
+ #define USB_FTDI_ELAN_PRODUCT_ID 0xd6ea
+ /* table of devices that work with this driver*/
+-static struct usb_device_id ftdi_elan_table[] = {
++static const struct usb_device_id ftdi_elan_table[] = {
+         {USB_DEVICE(USB_FTDI_ELAN_VENDOR_ID, USB_FTDI_ELAN_PRODUCT_ID)},
+         { /* Terminating entry */ }
+ };
+diff -u -p a/drivers/usb/misc/vstusb.c b/drivers/usb/misc/vstusb.c
+--- a/drivers/usb/misc/vstusb.c 2009-12-03 04:51:21.000000000 +0100
++++ b/drivers/usb/misc/vstusb.c 2010-01-08 17:32:52.000000000 +0100
+@@ -61,7 +61,7 @@
+
+ #define VST_MAXBUFFER		(64*1024)
+
+-static struct usb_device_id id_table[] = {
++static const struct usb_device_id id_table[] = {
+ 	{ USB_DEVICE(USB_VENDOR_OCEANOPTICS, USB_PRODUCT_USB2000)},
+ 	{ USB_DEVICE(USB_VENDOR_OCEANOPTICS, USB_PRODUCT_HR4000)},
+ 	{ USB_DEVICE(USB_VENDOR_OCEANOPTICS, USB_PRODUCT_USB650)},
+diff -u -p a/drivers/usb/misc/appledisplay.c b/drivers/usb/misc/appledisplay.c
+--- a/drivers/usb/misc/appledisplay.c 2010-01-07 19:08:47.000000000 +0100
++++ b/drivers/usb/misc/appledisplay.c 2010-01-08 17:32:59.000000000 +0100
+@@ -57,7 +57,7 @@
+ 	.bInterfaceProtocol = 0x00
+
+ /* table of devices that work with this driver */
+-static struct usb_device_id appledisplay_table [] = {
++static const struct usb_device_id appledisplay_table[] = {
+ 	{ APPLEDISPLAY_DEVICE(0x9218) },
+ 	{ APPLEDISPLAY_DEVICE(0x9219) },
+ 	{ APPLEDISPLAY_DEVICE(0x921c) },
+diff -u -p a/drivers/usb/misc/adutux.c b/drivers/usb/misc/adutux.c
+--- a/drivers/usb/misc/adutux.c 2009-12-03 04:51:21.000000000 +0100
++++ b/drivers/usb/misc/adutux.c 2010-01-08 17:33:05.000000000 +0100
+@@ -56,7 +56,7 @@ MODULE_PARM_DESC(debug, "Debug enabled o
+ #define ADU_PRODUCT_ID 0x0064
+
+ /* table of devices that work with this driver */
+-static struct usb_device_id device_table [] = {
++static const struct usb_device_id device_table[] = {
+ 	{ USB_DEVICE(ADU_VENDOR_ID, ADU_PRODUCT_ID) },		/* ADU100 */
+ 	{ USB_DEVICE(ADU_VENDOR_ID, ADU_PRODUCT_ID+20) }, 	/* ADU120 */
+ 	{ USB_DEVICE(ADU_VENDOR_ID, ADU_PRODUCT_ID+30) }, 	/* ADU130 */
+diff -u -p a/drivers/usb/misc/cytherm.c b/drivers/usb/misc/cytherm.c
+--- a/drivers/usb/misc/cytherm.c 2009-12-03 04:51:21.000000000 +0100
++++ b/drivers/usb/misc/cytherm.c 2010-01-08 17:33:11.000000000 +0100
+@@ -27,7 +27,7 @@
+ #define USB_SKEL_VENDOR_ID	0x04b4
+ #define USB_SKEL_PRODUCT_ID	0x0002
+
+-static struct usb_device_id id_table [] = {
++static const struct usb_device_id id_table[] = {
+ 	{ USB_DEVICE(USB_SKEL_VENDOR_ID, USB_SKEL_PRODUCT_ID) },
+ 	{ }
+ };
+diff -u -p a/drivers/usb/misc/iowarrior.c b/drivers/usb/misc/iowarrior.c
+--- a/drivers/usb/misc/iowarrior.c 2009-12-03 04:51:21.000000000 +0100
++++ b/drivers/usb/misc/iowarrior.c 2010-01-08 17:33:26.000000000 +0100
+@@ -139,7 +139,7 @@ static int usb_set_report(struct usb_int
+ /* driver registration */
+ /*---------------------*/
+ /* table of devices that work with this driver */
+-static struct usb_device_id iowarrior_ids[] = {
++static const struct usb_device_id iowarrior_ids[] = {
+ 	{USB_DEVICE(USB_VENDOR_ID_CODEMERCS, USB_DEVICE_ID_CODEMERCS_IOW40)},
+ 	{USB_DEVICE(USB_VENDOR_ID_CODEMERCS, USB_DEVICE_ID_CODEMERCS_IOW24)},
+ 	{USB_DEVICE(USB_VENDOR_ID_CODEMERCS, USB_DEVICE_ID_CODEMERCS_IOWPV1)},
+diff -u -p a/drivers/usb/misc/idmouse.c b/drivers/usb/misc/idmouse.c
+--- a/drivers/usb/misc/idmouse.c 2009-12-03 04:51:21.000000000 +0100
++++ b/drivers/usb/misc/idmouse.c 2010-01-08 17:33:32.000000000 +0100
+@@ -48,7 +48,7 @@
+ #define ID_CHERRY  0x0010
+
+ /* device ID table */
+-static struct usb_device_id idmouse_table[] = {
++static const struct usb_device_id idmouse_table[] = {
+ 	{USB_DEVICE(ID_SIEMENS, ID_IDMOUSE)}, /* Siemens ID Mouse (Professional) */
+ 	{USB_DEVICE(ID_SIEMENS, ID_CHERRY )}, /* Cherry FingerTIP ID Board       */
+ 	{}                                    /* terminating null entry          */
+diff -u -p a/drivers/usb/misc/emi62.c b/drivers/usb/misc/emi62.c
+--- a/drivers/usb/misc/emi62.c 2010-01-07 19:08:47.000000000 +0100
++++ b/drivers/usb/misc/emi62.c 2010-01-08 17:33:38.000000000 +0100
+@@ -259,7 +259,7 @@ wraperr:
+ 	return err;
  }
 
+-static __devinitdata struct usb_device_id id_table [] = {
++static const struct usb_device_id id_table[] __devinitconst = {
+ 	{ USB_DEVICE(EMI62_VENDOR_ID, EMI62_PRODUCT_ID) },
+ 	{ }                                             /* Terminating entry */
+ };
+diff -u -p a/drivers/usb/misc/legousbtower.c b/drivers/usb/misc/legousbtower.c
+--- a/drivers/usb/misc/legousbtower.c 2009-12-03 04:51:21.000000000 +0100
++++ b/drivers/usb/misc/legousbtower.c 2010-01-08 17:33:44.000000000 +0100
+@@ -192,7 +192,7 @@ struct tower_get_version_reply {
 
--static struct of_device_id ehci_hcd_ppc_of_match[] = {
-+static const struct of_device_id ehci_hcd_ppc_of_match[] = {
- 	{
- 		.compatible = "usb-ehci",
- 	},
-diff -u -p a/drivers/usb/host/fhci-hcd.c b/drivers/usb/host/fhci-hcd.c
---- a/drivers/usb/host/fhci-hcd.c 2009-12-03 04:51:21.000000000 +0100
-+++ b/drivers/usb/host/fhci-hcd.c 2010-01-08 17:25:53.000000000 +0100
-@@ -804,7 +804,7 @@ static int __devexit of_fhci_remove(stru
- 	return fhci_remove(&ofdev->dev);
+
+ /* table of devices that work with this driver */
+-static struct usb_device_id tower_table [] = {
++static const struct usb_device_id tower_table[] = {
+ 	{ USB_DEVICE(LEGO_USB_TOWER_VENDOR_ID, LEGO_USB_TOWER_PRODUCT_ID) },
+ 	{ }					/* Terminating entry */
+ };
+diff -u -p a/drivers/usb/misc/trancevibrator.c b/drivers/usb/misc/trancevibrator.c
+--- a/drivers/usb/misc/trancevibrator.c 2009-12-03 04:51:21.000000000 +0100
++++ b/drivers/usb/misc/trancevibrator.c 2010-01-08 17:33:50.000000000 +0100
+@@ -33,7 +33,7 @@
+ #define TRANCEVIBRATOR_VENDOR_ID	0x0b49	/* ASCII Corporation */
+ #define TRANCEVIBRATOR_PRODUCT_ID	0x064f	/* Trance Vibrator */
+
+-static struct usb_device_id id_table [] = {
++static const struct usb_device_id id_table[] = {
+ 	{ USB_DEVICE(TRANCEVIBRATOR_VENDOR_ID, TRANCEVIBRATOR_PRODUCT_ID) },
+ 	{ },
+ };
+diff -u -p a/drivers/usb/misc/rio500.c b/drivers/usb/misc/rio500.c
+--- a/drivers/usb/misc/rio500.c 2009-12-03 04:51:21.000000000 +0100
++++ b/drivers/usb/misc/rio500.c 2010-01-08 17:34:08.000000000 +0100
+@@ -510,7 +510,7 @@ static void disconnect_rio(struct usb_in
+ 	}
  }
 
--static struct of_device_id of_fhci_match[] = {
-+static const struct of_device_id of_fhci_match[] = {
- 	{ .compatible = "fsl,mpc8323-qe-usb", },
+-static struct usb_device_id rio_table [] = {
++static const struct usb_device_id rio_table[] = {
+ 	{ USB_DEVICE(0x0841, 1) }, 		/* Rio 500 */
+ 	{ }					/* Terminating entry */
+ };
+diff -u -p a/drivers/usb/misc/usblcd.c b/drivers/usb/misc/usblcd.c
+--- a/drivers/usb/misc/usblcd.c 2009-12-03 04:51:21.000000000 +0100
++++ b/drivers/usb/misc/usblcd.c 2010-01-08 17:34:14.000000000 +0100
+@@ -30,7 +30,7 @@
+ #define IOCTL_GET_DRV_VERSION	2
+
+
+-static struct usb_device_id id_table [] = {
++static const struct usb_device_id id_table[] = {
+ 	{ .idVendor = 0x10D2, .match_flags = USB_DEVICE_ID_MATCH_VENDOR, },
+ 	{ },
+ };
+diff -u -p a/drivers/usb/misc/isight_firmware.c b/drivers/usb/misc/isight_firmware.c
+--- a/drivers/usb/misc/isight_firmware.c 2009-12-03 04:51:21.000000000 +0100
++++ b/drivers/usb/misc/isight_firmware.c 2010-01-08 17:34:17.000000000 +0100
+@@ -26,7 +26,7 @@
+ #include <linux/errno.h>
+ #include <linux/module.h>
+
+-static struct usb_device_id id_table[] = {
++static const struct usb_device_id id_table[] = {
+ 	{USB_DEVICE(0x05ac, 0x8300)},
  	{},
  };
-diff -u -p a/drivers/usb/host/ohci-ppc-of.c b/drivers/usb/host/ohci-ppc-of.c
---- a/drivers/usb/host/ohci-ppc-of.c 2009-12-03 04:51:21.000000000 +0100
-+++ b/drivers/usb/host/ohci-ppc-of.c 2010-01-08 17:28:21.000000000 +0100
-@@ -212,7 +212,7 @@ static int ohci_hcd_ppc_of_shutdown(stru
+diff -u -p a/drivers/usb/misc/emi26.c b/drivers/usb/misc/emi26.c
+--- a/drivers/usb/misc/emi26.c 2009-12-03 04:51:21.000000000 +0100
++++ b/drivers/usb/misc/emi26.c 2010-01-08 17:34:22.000000000 +0100
+@@ -245,7 +245,7 @@ wraperr:
+ 	return err;
  }
 
+-static struct usb_device_id id_table [] = {
++static const struct usb_device_id id_table[] = {
+ 	{ USB_DEVICE(EMI26_VENDOR_ID, EMI26_PRODUCT_ID) },
+ 	{ USB_DEVICE(EMI26_VENDOR_ID, EMI26B_PRODUCT_ID) },
+ 	{ }                                             /* Terminating entry */
+diff -u -p a/drivers/usb/misc/usbled.c b/drivers/usb/misc/usbled.c
+--- a/drivers/usb/misc/usbled.c 2009-12-03 04:51:21.000000000 +0100
++++ b/drivers/usb/misc/usbled.c 2010-01-08 17:34:27.000000000 +0100
+@@ -24,7 +24,7 @@
+ #define PRODUCT_ID	0x1223
 
--static struct of_device_id ohci_hcd_ppc_of_match[] = {
-+static const struct of_device_id ohci_hcd_ppc_of_match[] = {
- #ifdef CONFIG_USB_OHCI_HCD_PPC_OF_BE
- 	{
- 		.name = "usb",
-diff -u -p a/drivers/usb/host/ehci-xilinx-of.c b/drivers/usb/host/ehci-xilinx-of.c
---- a/drivers/usb/host/ehci-xilinx-of.c 2010-01-07 19:08:47.000000000 +0100
-+++ b/drivers/usb/host/ehci-xilinx-of.c 2010-01-08 17:28:35.000000000 +0100
-@@ -281,7 +281,7 @@ static int ehci_hcd_xilinx_of_shutdown(s
- }
-
-
--static struct of_device_id ehci_hcd_xilinx_of_match[] = {
-+static const struct of_device_id ehci_hcd_xilinx_of_match[] = {
- 		{.compatible = "xlnx,xps-usb-host-1.00.a",},
- 	{},
+ /* table of devices that work with this driver */
+-static struct usb_device_id id_table [] = {
++static const struct usb_device_id id_table[] = {
+ 	{ USB_DEVICE(VENDOR_ID, PRODUCT_ID) },
+ 	{ },
  };
-diff -u -p a/drivers/usb/host/isp1760-if.c b/drivers/usb/host/isp1760-if.c
---- a/drivers/usb/host/isp1760-if.c 2009-12-03 04:51:21.000000000 +0100
-+++ b/drivers/usb/host/isp1760-if.c 2010-01-08 17:29:21.000000000 +0100
-@@ -109,7 +109,7 @@ static int of_isp1760_remove(struct of_d
- 	return 0;
+diff -u -p a/drivers/usb/misc/ldusb.c b/drivers/usb/misc/ldusb.c
+--- a/drivers/usb/misc/ldusb.c 2009-12-03 04:51:21.000000000 +0100
++++ b/drivers/usb/misc/ldusb.c 2010-01-08 17:34:37.000000000 +0100
+@@ -69,7 +69,7 @@
+ #endif
+
+ /* table of devices that work with this driver */
+-static struct usb_device_id ld_usb_table [] = {
++static const struct usb_device_id ld_usb_table[] = {
+ 	{ USB_DEVICE(USB_VENDOR_ID_LD, USB_DEVICE_ID_LD_CASSY) },
+ 	{ USB_DEVICE(USB_VENDOR_ID_LD, USB_DEVICE_ID_LD_POCKETCASSY) },
+ 	{ USB_DEVICE(USB_VENDOR_ID_LD, USB_DEVICE_ID_LD_MOBILECASSY) },
+diff -u -p a/drivers/usb/misc/usbtest.c b/drivers/usb/misc/usbtest.c
+--- a/drivers/usb/misc/usbtest.c 2010-01-07 19:08:47.000000000 +0100
++++ b/drivers/usb/misc/usbtest.c 2010-01-08 17:34:48.000000000 +0100
+@@ -2101,7 +2101,7 @@ static struct usbtest_info generic_info
+ #endif
+
+
+-static struct usb_device_id id_table [] = {
++static const struct usb_device_id id_table[] = {
+
+ 	/*-------------------------------------------------------------*/
+
+diff -u -p a/drivers/usb/misc/cypress_cy7c63.c b/drivers/usb/misc/cypress_cy7c63.c
+--- a/drivers/usb/misc/cypress_cy7c63.c 2009-12-03 04:51:21.000000000 +0100
++++ b/drivers/usb/misc/cypress_cy7c63.c 2010-01-08 17:34:55.000000000 +0100
+@@ -56,7 +56,7 @@
+
+
+ /* table of devices that work with this driver */
+-static struct usb_device_id cypress_table [] = {
++static const struct usb_device_id cypress_table[] = {
+ 	{ USB_DEVICE(CYPRESS_VENDOR_ID, CYPRESS_PRODUCT_ID) },
+ 	{ }
+ };
+diff -u -p a/drivers/usb/misc/usbsevseg.c b/drivers/usb/misc/usbsevseg.c
+--- a/drivers/usb/misc/usbsevseg.c 2009-12-03 04:51:21.000000000 +0100
++++ b/drivers/usb/misc/usbsevseg.c 2010-01-08 17:35:01.000000000 +0100
+@@ -27,7 +27,7 @@
+ #define MAXLEN		6
+
+ /* table of devices that work with this driver */
+-static struct usb_device_id id_table[] = {
++static const struct usb_device_id id_table[] = {
+ 	{ USB_DEVICE(VENDOR_ID, PRODUCT_ID) },
+ 	{ },
+ };
+diff -u -p a/drivers/usb/misc/sisusbvga/sisusb.c b/drivers/usb/misc/sisusbvga/sisusb.c
+--- a/drivers/usb/misc/sisusbvga/sisusb.c 2009-12-03 04:51:21.000000000 +0100
++++ b/drivers/usb/misc/sisusbvga/sisusb.c 2010-01-08 17:35:15.000000000 +0100
+@@ -3238,7 +3238,7 @@ static void sisusb_disconnect(struct usb
+ 	kref_put(&sisusb->kref, sisusb_delete);
  }
 
--static struct of_device_id of_isp1760_match[] = {
-+static const struct of_device_id of_isp1760_match[] = {
- 	{
- 		.compatible = "nxp,usb-isp1760",
- 	},
+-static struct usb_device_id sisusb_table [] = {
++static const struct usb_device_id sisusb_table[] = {
+ 	{ USB_DEVICE(0x0711, 0x0550) },
+ 	{ USB_DEVICE(0x0711, 0x0900) },
+ 	{ USB_DEVICE(0x0711, 0x0901) },
+diff -u -p a/drivers/usb/misc/uss720.c b/drivers/usb/misc/uss720.c
+--- a/drivers/usb/misc/uss720.c 2009-12-03 04:51:21.000000000 +0100
++++ b/drivers/usb/misc/uss720.c 2010-01-08 17:36:03.000000000 +0100
+@@ -770,7 +770,7 @@ static void uss720_disconnect(struct usb
+ }
+
+ /* table of cables that work through this driver */
+-static struct usb_device_id uss720_table [] = {
++static const struct usb_device_id uss720_table[] = {
+ 	{ USB_DEVICE(0x047e, 0x1001) },
+ 	{ USB_DEVICE(0x0557, 0x2001) },
+ 	{ USB_DEVICE(0x0729, 0x1284) },
+diff -u -p a/drivers/usb/misc/berry_charge.c b/drivers/usb/misc/berry_charge.c
+--- a/drivers/usb/misc/berry_charge.c 2009-12-03 04:51:21.000000000 +0100
++++ b/drivers/usb/misc/berry_charge.c 2010-01-08 17:36:09.000000000 +0100
+@@ -39,7 +39,7 @@ static int pearl_dual_mode = 1;
+ 	if (debug)						\
+ 		dev_printk(KERN_DEBUG , dev , format , ## arg)
+
+-static struct usb_device_id id_table [] = {
++static const struct usb_device_id id_table[] = {
+ 	{ USB_DEVICE(RIM_VENDOR, BLACKBERRY) },
+ 	{ USB_DEVICE(RIM_VENDOR, BLACKBERRY_PEARL) },
+ 	{ USB_DEVICE(RIM_VENDOR, BLACKBERRY_PEARL_DUAL) },
