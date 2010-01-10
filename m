@@ -1,67 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752868Ab0AJLaV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751984Ab0AJLnW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752868Ab0AJLaV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jan 2010 06:30:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751896Ab0AJLaU
+	id S1751984Ab0AJLnW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jan 2010 06:43:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751344Ab0AJLnV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jan 2010 06:30:20 -0500
-Received: from smtp.mujha-vel.cz ([81.30.225.246]:57628 "EHLO
-	smtp.mujha-vel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751264Ab0AJLaU (ORCPT
+	Sun, 10 Jan 2010 06:43:21 -0500
+Received: from mail02a.mail.t-online.hu ([84.2.40.7]:57777 "EHLO
+	mail02a.mail.t-online.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750876Ab0AJLnU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jan 2010 06:30:20 -0500
-From: Jiri Slaby <jslaby@suse.cz>
-To: gregkh@suse.de
-Cc: linux-kernel@vger.kernel.org, jirislaby@gmail.com,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Alan Cox <alan@linux.intel.com>
-Subject: [PATCH 1/1] Char: synclink, remove unnecessary checks
-Date: Sun, 10 Jan 2010 12:30:16 +0100
-Message-Id: <1263123016-19908-1-git-send-email-jslaby@suse.cz>
-X-Mailer: git-send-email 1.6.5.7
-In-Reply-To: <4B49B895.1060507@gmail.com>
-References: <4B49B895.1060507@gmail.com>
+	Sun, 10 Jan 2010 06:43:20 -0500
+X-Authuid: nmarci
+Message-ID: <4B49BD52.4080109@freemail.hu>
+Date: Sun, 10 Jan 2010 12:43:14 +0100
+From: =?UTF-8?B?TsOpbWV0aCBNw6FydG9u?= <nm127@freemail.hu>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; hu-HU; rv:1.8.1.21) Gecko/20090402 SeaMonkey/1.1.16
+MIME-Version: 1.0
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+CC: linuxppc-dev@ozlabs.org, LKML <linux-kernel@vger.kernel.org>,
+       Julia Lawall <julia@diku.dk>, cocci@diku.dk
+Subject: [PATCH] macintosh: make Open Firmware device id constant
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-DCC-mail.t-online.hu-Metrics: mail02a.mail.t-online.hu 32711; Body=5 Fuz1=5
+	Fuz2=5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stanse found a potential null dereference in mgsl_put_char and
-mgsl_write. There is a check for tty being NULL, but it is
-dereferenced earlier.
+From: Márton Németh <nm127@freemail.hu>
 
-Actually, tty cannot be NULL in .write and .put_char, so remove
-the tests.
+The match_table field of the struct of_device_id is constant in <linux/of_platform.h>
+so it is worth to make the initialization data also constant.
 
-Signed-off-by: Jiri Slaby <jslaby@suse.cz>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Alan Cox <alan@linux.intel.com>
+The semantic match that finds this kind of pattern is as follows:
+(http://coccinelle.lip6.fr/)
+
+// <smpl>
+@r@
+disable decl_init,const_decl_init;
+identifier I1, I2, x;
+@@
+	struct I1 {
+	  ...
+	  const struct I2 *x;
+	  ...
+	};
+@s@
+identifier r.I1, y;
+identifier r.x, E;
+@@
+	struct I1 y = {
+	  .x = E,
+	};
+@c@
+identifier r.I2;
+identifier s.E;
+@@
+	const struct I2 E[] = ... ;
+@depends on !c@
+identifier r.I2;
+identifier s.E;
+@@
++	const
+	struct I2 E[] = ...;
+// </smpl>
+
+Signed-off-by: Márton Németh <nm127@freemail.hu>
+Cc: Julia Lawall <julia@diku.dk>
+Cc: cocci@diku.dk
 ---
- drivers/char/synclink.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+diff -u -p a/drivers/macintosh/therm_windtunnel.c b/drivers/macintosh/therm_windtunnel.c
+--- a/drivers/macintosh/therm_windtunnel.c 2010-01-07 19:08:40.000000000 +0100
++++ b/drivers/macintosh/therm_windtunnel.c 2010-01-08 04:47:10.000000000 +0100
+@@ -457,7 +457,7 @@ therm_of_remove( struct of_device *dev )
+ 	return 0;
+ }
 
-diff --git a/drivers/char/synclink.c b/drivers/char/synclink.c
-index 4846b73..0658fc5 100644
---- a/drivers/char/synclink.c
-+++ b/drivers/char/synclink.c
-@@ -2031,7 +2031,7 @@ static int mgsl_put_char(struct tty_struct *tty, unsigned char ch)
- 	if (mgsl_paranoia_check(info, tty->name, "mgsl_put_char"))
- 		return 0;
- 
--	if (!tty || !info->xmit_buf)
-+	if (!info->xmit_buf)
- 		return 0;
- 
- 	spin_lock_irqsave(&info->irq_spinlock, flags);
-@@ -2121,7 +2121,7 @@ static int mgsl_write(struct tty_struct * tty,
- 	if (mgsl_paranoia_check(info, tty->name, "mgsl_write"))
- 		goto cleanup;
- 
--	if (!tty || !info->xmit_buf)
-+	if (!info->xmit_buf)
- 		goto cleanup;
- 
- 	if ( info->params.mode == MGSL_MODE_HDLC ||
--- 
-1.6.5.7
+-static struct of_device_id therm_of_match[] = {{
++static const struct of_device_id therm_of_match[] = {{
+ 	.name		= "fan",
+ 	.compatible	= "adm1030"
+     }, {}
+diff -u -p a/drivers/macintosh/smu.c b/drivers/macintosh/smu.c
+--- a/drivers/macintosh/smu.c 2009-12-03 04:51:21.000000000 +0100
++++ b/drivers/macintosh/smu.c 2010-01-08 04:47:28.000000000 +0100
+@@ -660,7 +660,7 @@ static int smu_platform_probe(struct of_
+ 	return 0;
+ }
 
+-static struct of_device_id smu_platform_match[] =
++static const struct of_device_id smu_platform_match[] =
+ {
+ 	{
+ 		.type		= "smu",
+diff -u -p a/drivers/macintosh/therm_pm72.c b/drivers/macintosh/therm_pm72.c
+--- a/drivers/macintosh/therm_pm72.c 2009-12-03 04:51:21.000000000 +0100
++++ b/drivers/macintosh/therm_pm72.c 2010-01-08 04:50:17.000000000 +0100
+@@ -2211,7 +2211,7 @@ static int fcu_of_remove(struct of_devic
+ 	return 0;
+ }
+
+-static struct of_device_id fcu_match[] =
++static const struct of_device_id fcu_match[] =
+ {
+ 	{
+ 	.type		= "fcu",
