@@ -1,84 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753333Ab0AJMOf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752669Ab0AJM2G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753333Ab0AJMOf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jan 2010 07:14:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752924Ab0AJMOd
+	id S1752669Ab0AJM2G (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jan 2010 07:28:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752324Ab0AJM2F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jan 2010 07:14:33 -0500
-Received: from mail01d.mail.t-online.hu ([84.2.42.6]:58347 "EHLO
-	mail01d.mail.t-online.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753022Ab0AJMOd (ORCPT
+	Sun, 10 Jan 2010 07:28:05 -0500
+Received: from buzzloop.caiaq.de ([212.112.241.133]:52883 "EHLO
+	buzzloop.caiaq.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751912Ab0AJM2E (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jan 2010 07:14:33 -0500
-X-Authuid: nmarci
-Message-ID: <4B49C4A2.50804@freemail.hu>
-Date: Sun, 10 Jan 2010 13:14:26 +0100
-From: =?UTF-8?B?TsOpbWV0aCBNw6FydG9u?= <nm127@freemail.hu>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; hu-HU; rv:1.8.1.21) Gecko/20090402 SeaMonkey/1.1.16
+	Sun, 10 Jan 2010 07:28:04 -0500
+Date: Sun, 10 Jan 2010 13:27:54 +0100
+From: Daniel Mack <daniel@caiaq.de>
+To: Arnd Hannemann <hannemann@nets.rwth-aachen.de>
+Cc: Richard Purdie <rpurdie@rpsys.net>,
+       Arnd Hannemann <Arnd.Hannemann@nets.rwth-aachen.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "linux-geode@lists.infradead.org" <linux-geode@lists.infradead.org>
+Subject: Re: 2.6.33-rc3 regression: leds_alix2: can't allocate I/O for GPIO
+Message-ID: <20100110122754.GC8970@buzzloop.caiaq.de>
+References: <4B45B6DD.4060903@nets.rwth-aachen.de>
+ <1262861484.8493.14.camel@dax.rpnet.com>
+ <4B45CC4C.4030603@nets.rwth-aachen.de>
+ <4B45CF73.9090304@nets.rwth-aachen.de>
+ <20100107124630.GU28375@buzzloop.caiaq.de>
+ <4B45E905.7040401@nets.rwth-aachen.de>
+ <1262885241.27762.1.camel@dax.rpnet.com>
+ <20100108030837.GY28375@buzzloop.caiaq.de>
+ <4B46EDA1.4030902@nets.rwth-aachen.de>
 MIME-Version: 1.0
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-CC: linux1394-devel@lists.sourceforge.net, LKML <linux-kernel@vger.kernel.org>,
-       Julia Lawall <julia@diku.dk>, cocci@diku.dk
-Subject: [PATCH] firewire: make PCI device id constant
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-DCC-mail.t-online.hu-Metrics: mail01d.mail.t-online.hu 32711; Body=5 Fuz1=5
-	Fuz2=5
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B46EDA1.4030902@nets.rwth-aachen.de>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Márton Németh <nm127@freemail.hu>
+On Fri, Jan 08, 2010 at 09:32:33AM +0100, Arnd Hannemann wrote:
+> Daniel Mack schrieb:
 
-The id_table field of the struct pci_driver is constant in <linux/pci.h>
-so it is worth to make pci_table also constant.
+[...]
 
-The semantic match that finds this kind of pattern is as follows:
-(http://coccinelle.lip6.fr/)
+> > From ebb89d7d1908e85587f3e64bcea0dd77a92cc744 Mon Sep 17 00:00:00 2001
+> > From: Daniel Mack <daniel@caiaq.de>
+> > Date: Fri, 8 Jan 2010 02:22:10 +0800
+> > Subject: [PATCH] LEDS: ALIX2: Add dependency to !GPIO_CS5335
+> > 
+> > The ALIX2 LED driver and the CS5535 GPIO driver share the same I/O
+> > range which causes a conflict if they're both enabled. Fix this for now
+> > by adding a Kconfig dependency. While at it, also drop the EXPERIMENTAL
+> > flag, as the code has been around for awhile already.
+> > 
+> > Note that this is a hack. At some point, a real platform support for
+> > this board should be added which handles the LEDs via the leds-gpio
+> > driver.
+> > 
+> > Signed-off-by: Daniel Mack <daniel@caiaq.de>
+> > Cc: Richard Purdie <rpurdie@rpsys.net>
+> > Cc: Arnd Hannemann <hannemann@nets.rwth-aachen.de>
+> > ---
+> >  drivers/leds/Kconfig |    2 +-
+> >  1 files changed, 1 insertions(+), 1 deletions(-)
+> > 
+> > diff --git a/drivers/leds/Kconfig b/drivers/leds/Kconfig
+> > index 8a0e1ec..7f292ae 100644
+> > --- a/drivers/leds/Kconfig
+> > +++ b/drivers/leds/Kconfig
+> > @@ -72,7 +72,7 @@ config LEDS_WRAP
+> >  
+> >  config LEDS_ALIX2
+> >  	tristate "LED Support for ALIX.2 and ALIX.3 series"
+> > -	depends on LEDS_CLASS && X86 && EXPERIMENTAL
+> > +	depends on LEDS_CLASS && X86 && !GPIO_CS5535
+> 
+> You should add && !CS5535_GPIO, too. In fact CS5535_GPIO
+> was the one that I had issues with. Though, I wonder why
+> there are multiple drivers... Buts thats another issue.
 
-// <smpl>
-@r@
-disable decl_init,const_decl_init;
-identifier I1, I2, x;
-@@
-	struct I1 {
-	  ...
-	  const struct I2 *x;
-	  ...
-	};
-@s@
-identifier r.I1, y;
-identifier r.x, E;
-@@
-	struct I1 y = {
-	  .x = E,
-	};
-@c@
-identifier r.I2;
-identifier s.E;
-@@
-	const struct I2 E[] = ... ;
-@depends on !c@
-identifier r.I2;
-identifier s.E;
-@@
-+	const
-	struct I2 E[] = ...;
-// </smpl>
+Ah, right, thanks for noticing. New patch below.
 
-Signed-off-by: Márton Németh <nm127@freemail.hu>
-Cc: Julia Lawall <julia@diku.dk>
-Cc: cocci@diku.dk
+Daniel
+
+
+>From 0ce35578c6705dd1c44d076529df6dba889b7b76 Mon Sep 17 00:00:00 2001
+From: Daniel Mack <daniel@caiaq.de>
+Date: Fri, 8 Jan 2010 02:22:10 +0800
+Subject: [PATCH] LEDS: ALIX2: Add dependency to !GPIO_CS5335
+
+The ALIX2 LED driver and the CS5535 GPIO drivers share the same I/O
+range which causes a conflict if they're both enabled. Fix this for now
+by adding Kconfig dependencies. While at it, also drop the EXPERIMENTAL
+flag, as the code has been around for awhile already.
+
+Note that this is a hack. At some point, a real platform support for
+this board should be added which handles the LEDs via the leds-gpio
+driver.
+
+Signed-off-by: Daniel Mack <daniel@caiaq.de>
+Cc: Richard Purdie <rpurdie@rpsys.net>
+Cc: Arnd Hannemann <hannemann@nets.rwth-aachen.de>
 ---
-diff -u -p a/drivers/firewire/ohci.c b/drivers/firewire/ohci.c
---- a/drivers/firewire/ohci.c 2010-01-07 19:08:39.000000000 +0100
-+++ b/drivers/firewire/ohci.c 2010-01-08 09:51:11.000000000 +0100
-@@ -2657,7 +2657,7 @@ static int pci_resume(struct pci_dev *de
- }
- #endif
+ drivers/leds/Kconfig |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
--static struct pci_device_id pci_table[] = {
-+static const struct pci_device_id pci_table[] = {
- 	{ PCI_DEVICE_CLASS(PCI_CLASS_SERIAL_FIREWIRE_OHCI, ~0) },
- 	{ }
- };
+diff --git a/drivers/leds/Kconfig b/drivers/leds/Kconfig
+index 8a0e1ec..fef1cf4 100644
+--- a/drivers/leds/Kconfig
++++ b/drivers/leds/Kconfig
+@@ -72,7 +72,7 @@ config LEDS_WRAP
+ 
+ config LEDS_ALIX2
+ 	tristate "LED Support for ALIX.2 and ALIX.3 series"
+-	depends on LEDS_CLASS && X86 && EXPERIMENTAL
++	depends on LEDS_CLASS && X86 && !GPIO_CS5535 && !CS5535_GPIO
+ 	help
+ 	  This option enables support for the PCEngines ALIX.2 and ALIX.3 LEDs.
+ 	  You have to set leds-alix2.force=1 for boards with Award BIOS.
+-- 
+1.6.3.3
+
