@@ -1,64 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754758Ab0AJADV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754797Ab0AJAGA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754758Ab0AJADV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Jan 2010 19:03:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752995Ab0AJADT
+	id S1754797Ab0AJAGA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Jan 2010 19:06:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753664Ab0AJAF7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Jan 2010 19:03:19 -0500
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:44274 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752784Ab0AJADS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Jan 2010 19:03:18 -0500
-Date: Sat, 9 Jan 2010 16:03:18 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Oleg Nesterov <oleg@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       akpm@linux-foundation.org, josh@joshtriplett.org, tglx@linutronix.de,
-       Valdis.Kletnieks@vt.edu, dhowells@redhat.com, laijs@cn.fujitsu.com,
-       dipankar@in.ibm.com
-Subject: Re: [RFC PATCH] introduce sys_membarrier(): process-wide memory
-	barrier
-Message-ID: <20100110000318.GD9044@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <1262900140.28171.3773.camel@gandalf.stny.rr.com> <20100108235338.GA18050@Krystal> <20100109002043.GD6816@linux.vnet.ibm.com> <20100109010231.GA25368@Krystal> <20100109012128.GF6816@linux.vnet.ibm.com> <20100109023842.GA1696@Krystal> <20100109054215.GB9044@linux.vnet.ibm.com> <20100109192006.GA23672@Krystal> <1263078327.28171.3792.camel@gandalf.stny.rr.com> <1263079000.28171.3795.camel@gandalf.stny.rr.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1263079000.28171.3795.camel@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	Sat, 9 Jan 2010 19:05:59 -0500
+Received: from casper.infradead.org ([85.118.1.10]:52480 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752784Ab0AJAF7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 Jan 2010 19:05:59 -0500
+Date: Sat, 9 Jan 2010 16:08:36 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: Dimitrios Apostolou <jimis@gmx.net>
+Cc: Alex Chiang <achiang@hp.com>, Len Brown <lenb@kernel.org>,
+       Bjorn Helgaas <bjorn.helgaas@hp.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Yinghai Lu <yinghai@kernel.org>, linux-kernel@vger.kernel.org
+Subject: Re: High cpu temperature with 2.6.32, bisection shows commit 69d258
+ (fwd)
+Message-ID: <20100109160836.26a344a9@infradead.org>
+In-Reply-To: <alpine.LNX.2.00.1001100155370.1325@localhost.localdomain>
+References: <alpine.LNX.2.00.1001071941470.1363@localhost.localdomain>
+	<20100108171513.GB22713@ldl.fc.hp.com>
+	<20100109134352.3dedd4ea@infradead.org>
+	<alpine.LNX.2.00.1001100155370.1325@localhost.localdomain>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.6; i586-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jan 09, 2010 at 06:16:40PM -0500, Steven Rostedt wrote:
-> On Sat, 2010-01-09 at 18:05 -0500, Steven Rostedt wrote:
-> 
-> > Then we should have O(tasks) for spinlocks taken, and 
-> > O(min(tasks, CPUS)) for IPIs.
-> 
-> And for nr tasks >> CPUS, this may help too:
-> 
-> > cpumask = 0;
-> > foreach task {
-> 
-> 	if (cpumask == online_cpus)
-> 		break;
-> 
-> > 	spin_lock(task_rq(task)->rq->lock);
-> > 	if (task_rq(task)->curr == task)
-> > 		cpu_set(task_cpu(task), cpumask);
-> > 	spin_unlock(task_rq(task)->rq->lock);
-> > }
-> > send_ipi(cpumask);
+On Sun, 10 Jan 2010 01:55:42 +0200 (EET)
+Dimitrios Apostolou <jimis@gmx.net> wrote:
 
-Good point, erring on the side of sending too many IPIs is safe.  One
-might even be able to just send the full set if enough of the CPUs were
-running the current process and none of the remainder were running
-real-time threads.  And yes, it would then be necessary to throttle
-calls to sys_membarrier().
+> L8400B series Notebook PC
 
-Quickly hiding behind a suitable boulder...  ;-)
+can you try this patch?
 
-							Thanx, Paul
+diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
+index d1676b1..6c3145b 100644
+--- a/drivers/acpi/processor_idle.c
++++ b/drivers/acpi/processor_idle.c
+@@ -110,6 +110,14 @@ static struct dmi_system_id __cpuinitdata processor_power_dmi_table[] = {
+ 	  DMI_MATCH(DMI_BIOS_VENDOR,"Phoenix Technologies LTD"),
+ 	  DMI_MATCH(DMI_BIOS_VERSION,"SHE845M0.86C.0013.D.0302131307")},
+ 	 (void *)2},
++	{ set_max_cstate, "Pavilion zv5000", {
++	  DMI_MATCH(DMI_SYS_VENDOR, "Hewlett-Packard"),
++	  DMI_MATCH(DMI_PRODUCT_NAME,"Pavilion zv5000 (DS502A#ABA)")},
++	 (void *)1},
++	{ set_max_cstate, "Asus L8400B", {
++	  DMI_MATCH(DMI_SYS_VENDOR, "ASUSTeK Computer Inc."),
++	  DMI_MATCH(DMI_PRODUCT_NAME,"L8400B series Notebook PC")},
++	 (void *)1},
+ 	{},
+ };
+ 
+
+
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
