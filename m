@@ -1,77 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753847Ab0AJRpO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753861Ab0AJRvq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753847Ab0AJRpO (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jan 2010 12:45:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753663Ab0AJRpM
+	id S1753861Ab0AJRvq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jan 2010 12:51:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753686Ab0AJRvp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jan 2010 12:45:12 -0500
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:39197 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753460Ab0AJRpL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jan 2010 12:45:11 -0500
-Date: Sun, 10 Jan 2010 09:45:12 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Oleg Nesterov <oleg@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       akpm@linux-foundation.org, josh@joshtriplett.org, tglx@linutronix.de,
-       Valdis.Kletnieks@vt.edu, dhowells@redhat.com, laijs@cn.fujitsu.com,
-       dipankar@in.ibm.com
-Subject: Re: [RFC PATCH] introduce sys_membarrier(): process-wide memory
-	barrier
-Message-ID: <20100110174512.GH9044@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20100109054215.GB9044@linux.vnet.ibm.com> <20100109192006.GA23672@Krystal> <1263078327.28171.3792.camel@gandalf.stny.rr.com> <1263079000.28171.3795.camel@gandalf.stny.rr.com> <20100110000318.GD9044@linux.vnet.ibm.com> <1263084099.2231.5.camel@frodo> <20100110014456.GG25790@Krystal> <1263089578.2231.22.camel@frodo> <20100110052508.GG9044@linux.vnet.ibm.com> <1263124209.28171.3798.camel@gandalf.stny.rr.com>
+	Sun, 10 Jan 2010 12:51:45 -0500
+Received: from ey-out-2122.google.com ([74.125.78.25]:6121 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753593Ab0AJRvo convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Jan 2010 12:51:44 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=TlhH3pu5b5orPGWou72Tq2CVPud4tnW+GbiWbAm+T1p/ql8VFPpgOF4Xee1AyiSOOI
+         4i4liygCtb1TAdPfjnsROpyB5X85muv+wSYYdL3tpdweB0qPcea8bYqEQaurAcwc/2d3
+         Y9doq3ZnKBwH4SjN7qlVghso2TR48yS6JoDwg=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1263124209.28171.3798.camel@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <4B4A077C.7020406@freemail.hu>
+References: <4B4A077C.7020406@freemail.hu>
+Date: Sun, 10 Jan 2010 18:51:42 +0100
+Message-ID: <e2d7436a1001100951w4dd7139as96e5808872f5c926@mail.gmail.com>
+Subject: Re: [PATCH 3/3] serial: make PCI device id constant
+From: =?ISO-8859-2?Q?Micha=B3_Miros=B3aw?= <mirqus@gmail.com>
+To: =?ISO-8859-1?Q?N=E9meth_M=E1rton?= <nm127@freemail.hu>
+Cc: linux-serial@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Julia Lawall <julia@diku.dk>, cocci@diku.dk
+Content-Type: text/plain; charset=ISO-8859-2
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 10, 2010 at 06:50:09AM -0500, Steven Rostedt wrote:
-> On Sat, 2010-01-09 at 21:25 -0800, Paul E. McKenney wrote:
-> > On Sat, Jan 09, 2010 at 09:12:58PM -0500, Steven Rostedt wrote:
-> 
-> > > >         < user space >
-> > > > 
-> > > >         < misses that CPU 2 is in rcu section >
-> > > 
-> > > 
-> > > If the TLB flush misses that CPU 2 has a threaded task, and does not
-> > > flush CPU 2s TLB, it can also risk the same type of crash.
-> > 
-> > But isn't the VM's locking helping us out in that case?
-> > 
-> > > >         [CPU 2's ->curr update now visible]
-> > > > 
-> > > >         [CPU 2's rcu_read_lock() store now visible]
-> > > > 
-> > > >         free(obj);
-> > > > 
-> > > >                                         use_object(obj); <=== crash!
-> > > > 
-> > > 
-> > > Think about it. If you change a process mmap, say you updated a mmap of
-> > > a file by flushing out one page and replacing it with another. If the
-> > > above missed sending to CPU 2, then CPU 2 may still be accessing the old
-> > > page of the file, and not the new one.
-> > > 
-> > > I think this may be the safe bet.
-> > 
-> > You might well be correct that we can access that bitmap locklessly,
-> > but there are additional things (like the loading of the arch-specific
-> > page-table register) that are likely to be helping in the VM case, but
-> > not necessarily helping in this case.
-> 
-> Then perhaps the sys_membarrier() should just do a flush_tlb()? That
-> should guarantee the synchronization, right?
+2010/1/10 Németh Márton <nm127@freemail.hu>:
+> From: Márton Németh <nm127@freemail.hu>
+>
+> The id_table field of the struct pci_driver is constant in <linux/pci.h>
+> so it is worth to make initialization data also constant.
+[...]
+> diff -u -p a/drivers/serial/8250_pci.c b/drivers/serial/8250_pci.c
+> --- a/drivers/serial/8250_pci.c 2009-12-03 04:51:21.000000000 +0100
+> +++ b/drivers/serial/8250_pci.c 2010-01-08 18:40:05.000000000 +0100
+> @@ -2567,7 +2567,7 @@ static int pciserial_resume_one(struct p
+>  }
+>  #endif
+>
+> -static struct pci_device_id serial_pci_tbl[] = {
+> +static const struct pci_device_id serial_pci_tbl[] = {
+>        /* Advantech use PCI_DEVICE_ID_ADVANTECH_PCI3620 (0x3620) as 'PCI_SUBVENDOR_ID' */
+>        {       PCI_VENDOR_ID_ADVANTECH, PCI_DEVICE_ID_ADVANTECH_PCI3620,
+>                PCI_DEVICE_ID_ADVANTECH_PCI3620, 0x0001, 0, 0,
+[...]
 
-Isn't just grabbing the runqueue locks a bit more straightforward and
-more clearly correct?  Again, this is the URCU slowpath, so it is hard
-to get too excited about a 15% performance penalty.
+There was similar patch sent to netdev couple days ago. For PCI
+devices it used DEFINE_PCI_DEVICE_TABLE() like this:
 
-							Thanx, Paul
+static DEFINE_PCI_DEVICE_TABLE(serial_pci_tbl) = {
+
+so that the ID data went to the proper .ko section.
+
+Best Regards,
+Micha³ Miros³aw
