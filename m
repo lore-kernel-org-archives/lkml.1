@@ -1,75 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752828Ab0AJMod@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752473Ab0AJMzy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752828Ab0AJMod (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jan 2010 07:44:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752354Ab0AJMoc
+	id S1752473Ab0AJMzy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jan 2010 07:55:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751715Ab0AJMzx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jan 2010 07:44:32 -0500
-Received: from mail-out.m-online.net ([212.18.0.9]:49374 "EHLO
-	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752342Ab0AJMob (ORCPT
+	Sun, 10 Jan 2010 07:55:53 -0500
+Received: from mail-ew0-f214.google.com ([209.85.219.214]:40143 "EHLO
+	mail-ew0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750834Ab0AJMzw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jan 2010 07:44:31 -0500
-From: Andreas Schwab <schwab@linux-m68k.org>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Michael Schmitz <schmitz@biophys.uni-duesseldorf.de>,
-       Tim Abbott <tabbott@ksplice.com>, linux-m68k@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: "m68k: Cleanup linker scripts using new linker script macros." and  old binutils (was: Re: [PATCH] m68k: Atari EtherNAT - Nicolas Pitre has a new  email address)
-References: <10f740e81001100128q644cae1eg61c12b64f22e8398@mail.gmail.com>
-X-Yow: I guess it was all a DREAM..  or an episode of HAWAII FIVE-O...
-Date: Sun, 10 Jan 2010 13:44:26 +0100
-In-Reply-To: <10f740e81001100128q644cae1eg61c12b64f22e8398@mail.gmail.com>
-	(Geert Uytterhoeven's message of "Sun, 10 Jan 2010 10:28:26 +0100")
-Message-ID: <m23a2egmdx.fsf@igel.home>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.91 (gnu/linux)
+	Sun, 10 Jan 2010 07:55:52 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=SFaLXOmKsQdvv+BIrS83BZZ6JoIEyLgcjmbsPo2jrDIJsz0MLRQ0hq6MTSjk1NZLHN
+         wzdncS+LOM54SDpg7CL0KXaIbRPtxL6znBO8gObiGJON10QtVg5F9W/4ydItzytUiaG4
+         I0+m1XDMttzbEXSUQCDieMQbNRdbvPvX1YEpc=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <4e5e476b1001051348y4637986epb9b56958c738061a@mail.gmail.com>
+References: <20091230213439.GQ4489@kernel.dk>
+	 <x49wrzxak5n.fsf@segfault.boston.devel.redhat.com>
+	 <4e5e476b1001041037x6aa63be6ncfa523a7df78bb0d@mail.gmail.com>
+	 <20100104185100.GF7968@redhat.com>
+	 <x49fx6ladzk.fsf@segfault.boston.devel.redhat.com>
+	 <4e5e476b1001041237v71952c8ewaaef3778353f7521@mail.gmail.com>
+	 <x49zl4s8uoj.fsf@segfault.boston.devel.redhat.com>
+	 <20100105151353.GA4631@redhat.com>
+	 <x49y6kc6yib.fsf@segfault.boston.devel.redhat.com>
+	 <4e5e476b1001051348y4637986epb9b56958c738061a@mail.gmail.com>
+Date: Sun, 10 Jan 2010 13:55:50 +0100
+Message-ID: <4e5e476b1001100455l17a8fa4eyf69282f5717a20c4@mail.gmail.com>
+Subject: Re: [PATCH] cfq-iosched: non-rot devices do not need read queue 
+	merging
+From: Corrado Zoccolo <czoccolo@gmail.com>
+To: Jeff Moyer <jmoyer@redhat.com>
+Cc: Vivek Goyal <vgoyal@redhat.com>, Jens Axboe <jens.axboe@oracle.com>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>,
+       Shaohua Li <shaohua.li@intel.com>,
+       Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Geert Uytterhoeven <geert@linux-m68k.org> writes:
+Hi,
 
-> On Sun, Jan 10, 2010 at 05:56, Michael Schmitz
-> <schmitz@biophys.uni-duesseldorf.de> wrote:
->>> > > I'll verify that on the new tree, and start bisecting. Sigh.
->>> >
->>> > Good luck!
->>>
->>> 7c5fd5619dc89fb52d2c2cf144fc6e4365427b86 is first bad commit
->>> commit 7c5fd5619dc89fb52d2c2cf144fc6e4365427b86
->>> Author: Tim Abbott <tabbott@ksplice.com>
->>> Date:   Sun Sep 27 13:57:55 2009 -0400
->>>
->>>     m68k: Cleanup linker scripts using new linker script macros.
->>>
->>>     Signed-off-by: Tim Abbott <tabbott@ksplice.com>
->>>     Tested-by: Andreas Schwab <schwab@linux-m68k.org>
->>>     Cc: Roman Zippel <zippel@linux-m68k.org>
->>>     Cc: Sam Ravnborg <sam@ravnborg.org>
->>>     Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
->>>
->>> :040000 040000 5bdbf7ce5dd4ea2f23669c6a6ec11192865b5bfa
->>> d3b7397533b0af6261747ccef3cff9cd40f6baf9 M    arch
+On Tue, Jan 5, 2010 at 10:48 PM, Corrado Zoccolo <czoccolo@gmail.com> wrote:
+> On Tue, Jan 5, 2010 at 10:19 PM, Jeff Moyer <jmoyer@redhat.com> wrote:
+>> Vivek Goyal <vgoyal@redhat.com> writes:
 >>
->> Backing out that commit on the top of the tree results in a bootable
->> 2.6.33-rc2 for me
+>>> Thanks Jeff, one thing comes to mind. Now with recent changes, we drive deeper
+>>> depths on SSD with NCQ and there are not many pending cfqq on service tree
+>>> until and unless number of parallel threads exceed NCQ depth (32). If
+>>> that's the case, then I think we might not be seeing lot of queue merging
+>>> happening in this test case until and unless dump utility is creating more
+>>> than 32 threads.
+>>>
+>>> If time permits, it might also be interesting to run the same test with queue
+>>> depth 1 and see if SSDs without NCQ will suffer or not.
 >>
->> The order of symbols in the system map is different (as you would expect)
->> but I don't see what implicit assumption would be violated.
+>> Corrado, I think what Vivek is getting at is that you should check for
+>> both blk_queue_nonrot and cfqd->hw_tag (like in cfq_arm_slice_timer).
+>> Do you agree?
+> Well, actually I didn't want to distinguish on hw_tag here. I had to
+> still allow merging of writes exactly because a write merge can save
+> hundreds of ms on a non-NCQ SSD.
 >
-> Tim, any clues? Michael is using gcc 3.3.6 and binutils 2.16.
-> It works fine with my 4.1.2/2.18 vombo.
+> Vivek is right that on non-NCQ SSDs a successful merge would increase
+> the performance, but I still think that the likelyhood of a merge is
+> so low that maintaining the RB-tree is superfluous. Usually, those
+> devices are coupled with low-end CPUs, so saving the code execution
+> could be a win there too. I'll run some tests on my netbook.
+>
+> BTW, I'm looking at read-test2 right now. I see it doesn't use direct
+> I/O, so it relies also on page cache. I think page cache can detect
+> the hidden sequential pattern, and thus send big readahead requests to
+> the device, making merging impossible (on my SSD, readahead size and
+> max hw request size match).
+>
+I did some tests, and found a surprising thing.
+Simply running the test script, the BW levels to a high BW value,
+regardless of queue merging in CFQ is enabled or disabled.
+I suspected something odd was going on, so I modified the script to
+drop caches before each run, and now I found that with queue merging
+it is 3 times faster than without, so on non-ncq SSD it is better to
+have queue merging enabled, after all.
+I'm wondering why the page cache being full can give so large results.
+My disk is 4 times larger than the available RAM, so it should do just
+a 1/4 boost not clearing it.
+I have to do more tests to understand what's going on...
 
-Most likely an alignment issue so that the bootinfo structure is not
-found.  At least that was the issue with previous incarnations of the
-patch.
+Thanks,
+Corrado
+>
+>>
+>> Cheers,
+>> Jeff
+>>
+>
 
-Andreas.
+
 
 -- 
-Andreas Schwab, schwab@linux-m68k.org
-GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+__________________________________________________________________________
+
+dott. Corrado Zoccolo                          mailto:czoccolo@gmail.com
+PhD - Department of Computer Science - University of Pisa, Italy
+--------------------------------------------------------------------------
+The self-confidence of a warrior is not the self-confidence of the average
+man. The average man seeks certainty in the eyes of the onlooker and calls
+that self-confidence. The warrior seeks impeccability in his own eyes and
+calls that humbleness.
+                               Tales of Power - C. Castaneda
