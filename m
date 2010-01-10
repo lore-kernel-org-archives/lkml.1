@@ -1,191 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753881Ab0AJSLV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752416Ab0AJSY1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753881Ab0AJSLV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jan 2010 13:11:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753585Ab0AJSLV
+	id S1752416Ab0AJSY1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jan 2010 13:24:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752011Ab0AJSY0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jan 2010 13:11:21 -0500
-Received: from outpost1.zedat.fu-berlin.de ([130.133.4.66]:40773 "EHLO
-	outpost1.zedat.fu-berlin.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752093Ab0AJSLU (ORCPT
+	Sun, 10 Jan 2010 13:24:26 -0500
+Received: from tomts36-srv.bellnexxia.net ([209.226.175.93]:54405 "EHLO
+	tomts36-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751993Ab0AJSYZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jan 2010 13:11:20 -0500
-Date: Sun, 10 Jan 2010 19:11:12 +0100
-From: Benjamin Valentin <benpicco@zedat.fu-berlin.de>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] drivers/input/joystick/xpad.c: Add rumble support for
- original xbox controller
-Message-ID: <20100110191112.5c66dc94@rechenknecht2k7>
-In-Reply-To: <20100110075615.GC16057@core.coreip.homeip.net>
-References: <20100108033215.447c814e@rechenknecht2k7>
-	<20100108075054.GA3696@core.coreip.homeip.net>
-	<20100108112610.0b78785b@piBook>
-	<20100110075615.GC16057@core.coreip.homeip.net>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
+	Sun, 10 Jan 2010 13:24:25 -0500
+Date: Sun, 10 Jan 2010 13:24:23 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>, Oleg Nesterov <oleg@redhat.com>,
+       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org,
+       josh@joshtriplett.org, tglx@linutronix.de, Valdis.Kletnieks@vt.edu,
+       dhowells@redhat.com, laijs@cn.fujitsu.com, dipankar@in.ibm.com
+Subject: Re: [RFC PATCH] introduce sys_membarrier(): process-wide memory
+	barrier
+Message-ID: <20100110182423.GA22821@Krystal>
+References: <20100109192006.GA23672@Krystal> <1263078327.28171.3792.camel@gandalf.stny.rr.com> <1263079000.28171.3795.camel@gandalf.stny.rr.com> <20100110000318.GD9044@linux.vnet.ibm.com> <1263084099.2231.5.camel@frodo> <20100110014456.GG25790@Krystal> <1263089578.2231.22.camel@frodo> <20100110052508.GG9044@linux.vnet.ibm.com> <1263124209.28171.3798.camel@gandalf.stny.rr.com> <20100110174512.GH9044@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=PGP-SHA1;
- boundary="Sig_/ezAc50RMWWoe6Rqnu+bHGAe"; protocol="application/pgp-signature"
-X-Originating-IP: 87.123.114.39
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20100110174512.GH9044@linux.vnet.ibm.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.27.31-grsec (i686)
+X-Uptime: 13:18:11 up 25 days,  2:36,  4 users,  load average: 0.31, 0.16,
+	0.11
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Sig_/ezAc50RMWWoe6Rqnu+bHGAe
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+* Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
+> On Sun, Jan 10, 2010 at 06:50:09AM -0500, Steven Rostedt wrote:
+> > On Sat, 2010-01-09 at 21:25 -0800, Paul E. McKenney wrote:
+> > > On Sat, Jan 09, 2010 at 09:12:58PM -0500, Steven Rostedt wrote:
+> > 
+> > > > >         < user space >
+> > > > > 
+> > > > >         < misses that CPU 2 is in rcu section >
+> > > > 
+> > > > 
+> > > > If the TLB flush misses that CPU 2 has a threaded task, and does not
+> > > > flush CPU 2s TLB, it can also risk the same type of crash.
+> > > 
+> > > But isn't the VM's locking helping us out in that case?
+> > > 
+> > > > >         [CPU 2's ->curr update now visible]
+> > > > > 
+> > > > >         [CPU 2's rcu_read_lock() store now visible]
+> > > > > 
+> > > > >         free(obj);
+> > > > > 
+> > > > >                                         use_object(obj); <=== crash!
+> > > > > 
+> > > > 
+> > > > Think about it. If you change a process mmap, say you updated a mmap of
+> > > > a file by flushing out one page and replacing it with another. If the
+> > > > above missed sending to CPU 2, then CPU 2 may still be accessing the old
+> > > > page of the file, and not the new one.
+> > > > 
+> > > > I think this may be the safe bet.
+> > > 
+> > > You might well be correct that we can access that bitmap locklessly,
+> > > but there are additional things (like the loading of the arch-specific
+> > > page-table register) that are likely to be helping in the VM case, but
+> > > not necessarily helping in this case.
+> > 
+> > Then perhaps the sys_membarrier() should just do a flush_tlb()? That
+> > should guarantee the synchronization, right?
+> 
+> Isn't just grabbing the runqueue locks a bit more straightforward and
+> more clearly correct?  Again, this is the URCU slowpath, so it is hard
+> to get too excited about a 15% performance penalty.
+> 
 
-On Sat, 9 Jan 2010 23:56:16 -0800
-Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
+Even when taking the spinlocks, efficient iteration on active threads is
+done with for_each_cpu(cpu, mm_cpumask(current->mm)), which depends on
+the same cpumask, and thus requires the same memory barriers around the
+updates.
 
-> > --- /usr/src/linux-source-2.6.33/drivers/input/joystick/xpad.c
-> > 2010-01-08 02:56:59.365851076 +0100 +++ xpad.c	2010-01-08
-> > 03:13:38.477835651 +0100 @@ -505,7 +505,7 @@
-> >  	struct usb_endpoint_descriptor *ep_irq_out;
-> >  	int error =3D -ENOMEM;
-> > =20
-> > -	if (xpad->xtype !=3D XTYPE_XBOX360)
-> > +	if (xpad->xtype !=3D XTYPE_XBOX360 && xpad->xtype !=3D
-> > XTYPE_XBOX) return 0;
-> > =20
-> >  	xpad->odata =3D usb_buffer_alloc(xpad->udev, XPAD_PKT_LEN,
-> > @@ -535,13 +535,13 @@
-> > =20
-> >  static void xpad_stop_output(struct usb_xpad *xpad)
-> >  {
-> > -	if (xpad->xtype =3D=3D XTYPE_XBOX360)
-> > +	if (xpad->xtype =3D=3D XTYPE_XBOX360 || xpad->xtype !=3D
-> > XTYPE_XBOX)
->=20
-> This should cretainly be "... || xpad->xtype =3D=3D XTYPE_XBOX)", I'll fix
-> it up locally.
+We could switch to an inefficient iteration on all online CPUs instead,
+and check read runqueue ->mm with the spinlock held. Is that what you
+propose ? This will cause reading of large amounts of runqueue
+information, especially on large systems running few threads. The other
+way around is to iterate on all the process threads: in this case, small
+systems running many threads will have to read information about many
+inactive threads, which is not much better.
 
-Thank you, this made me discover another bug that eventually leads to a
-kernel oops when the device is unplugged while an effect is playing
-(or the effect is somehow else interrupted).
-This should be fixed by taking the mutex when modifying xpad->odata as
-well as checking whether it has been freed before writing to it.
+Thanks,
 
-Signed-off-by: Benjamin Valentin <benpicco@zedat.fu-berlin.de>
+Mathieu
 
-diff --git a/drivers/input/joystick/xpad.c b/drivers/input/joystick/xpad.c
---- a/drivers/input/joystick/xpad.c
-+++ b/drivers/input/joystick/xpad.c
-@@ -535,16 +535,24 @@
-=20
- static void xpad_stop_output(struct usb_xpad *xpad)
- {
--	if (xpad->xtype =3D=3D XTYPE_XBOX360 || xpad->xtype !=3D XTYPE_XBOX)
--		usb_kill_urb(xpad->irq_out);
-+	if (xpad->xtype !=3D XTYPE_XBOX360 || xpad->xtype !=3D XTYPE_XBOX)
-+		return;
-+	=09
-+	mutex_lock(&xpad->odata_mutex);
-+	usb_kill_urb(xpad->irq_out);
-+	mutex_unlock(&xpad->odata_mutex);
- }
-=20
- static void xpad_deinit_output(struct usb_xpad *xpad)
- {
--	if (xpad->xtype =3D=3D XTYPE_XBOX360 || xpad->xtype !=3D XTYPE_XBOX) {
-+	if (xpad->xtype =3D=3D XTYPE_XBOX360 || xpad->xtype =3D=3D XTYPE_XBOX) {
-+		mutex_lock(&xpad->odata_mutex);
-+	=09
- 		usb_free_urb(xpad->irq_out);
--		usb_buffer_free(xpad->udev, XPAD_PKT_LEN,
-+		usb_buffer_free(xpad->udev, XPAD_PKT_LEN,=20
- 				xpad->odata, xpad->odata_dma);
-+			=09
-+		mutex_unlock(&xpad->odata_mutex);	=09
- 	}
- }
- #else
-@@ -555,32 +563,46 @@
-=20
- #ifdef CONFIG_JOYSTICK_XPAD_FF
- static int xpad_send_rumble(struct usb_xpad *xpad, unsigned char left, uns=
-igned char right) {
--	switch(xpad->xtype) {
--		case XTYPE_XBOX:
--			xpad->odata[0] =3D 0x00;
--			xpad->odata[1] =3D 0x06;
--			xpad->odata[2] =3D 0x00;
--			xpad->odata[3] =3D left;  // left actuator
--			xpad->odata[4] =3D 0x00;
--			xpad->odata[5] =3D right; // right actuator
--			xpad->irq_out->transfer_buffer_length =3D 6;
--			return usb_submit_urb(xpad->irq_out, GFP_KERNEL);
--		case XTYPE_XBOX360:
--			xpad->odata[0] =3D 0x00;
--			xpad->odata[1] =3D 0x08;
--			xpad->odata[2] =3D 0x00;
--			xpad->odata[3] =3D left;  // left actuator?
--			xpad->odata[4] =3D right; // right actuator?
--			xpad->odata[5] =3D 0x00;
--			xpad->odata[6] =3D 0x00;
--			xpad->odata[7] =3D 0x00;
--			xpad->irq_out->transfer_buffer_length =3D 8;
--			return usb_submit_urb(xpad->irq_out, GFP_KERNEL);
--		default:
--			dbg("%s - rumble command sent to unsupported xpad type: %d",=20
--				__func__, xpad->xtype);
--			return 0;
-+	int result =3D 0;
-+=09
-+	mutex_lock(&xpad->odata_mutex);=09
-+	if(xpad->odata) {	=09
-+		switch(xpad->xtype) {
-+			case XTYPE_XBOX:
-+				xpad->odata[0] =3D 0x00;
-+				xpad->odata[1] =3D 0x06;
-+				xpad->odata[2] =3D 0x00;
-+				xpad->odata[3] =3D left;  // left actuator
-+				xpad->odata[4] =3D 0x00;
-+				xpad->odata[5] =3D right; // right actuator
-+				xpad->irq_out->transfer_buffer_length =3D 6;
-+				break;
-+			case XTYPE_XBOX360:
-+				xpad->odata[0] =3D 0x00;
-+				xpad->odata[1] =3D 0x08;
-+				xpad->odata[2] =3D 0x00;
-+				xpad->odata[3] =3D left;  // left actuator?
-+				xpad->odata[4] =3D right; // right actuator?
-+				xpad->odata[5] =3D 0x00;
-+				xpad->odata[6] =3D 0x00;
-+				xpad->odata[7] =3D 0x00;
-+				xpad->irq_out->transfer_buffer_length =3D 8;		=09
-+				break;
-+			default:
-+				dbg("%s - rumble command sent to unsupported xpad type: %d",=20
-+					__func__, xpad->xtype);
-+				result =3D -1;
-+			}
-+		} else {
-+			dbg("%s - xpad->odata already freed", __func__);
-+			result =3D -1;
- 		}
-+	=09
-+		if(result =3D=3D 0)
-+			result =3D usb_submit_urb(xpad->irq_out, GFP_KERNEL);
-+		=09
-+		mutex_unlock(&xpad->odata_mutex);	=09
-+		return result;
- }
-=20
- static int xpad_play_effect(struct input_dev *dev, void *data, struct ff_e=
-ffect *effect)
-
-
---Sig_/ezAc50RMWWoe6Rqnu+bHGAe
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAktKGEAACgkQg4D7JNscH9plkgCeMGrUedYwEfOX3KZ46tf5iJxD
-wosAnjZBNyKaKfIqrZA7Ggx5GydZroY3
-=bSjF
------END PGP SIGNATURE-----
-
---Sig_/ezAc50RMWWoe6Rqnu+bHGAe--
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
