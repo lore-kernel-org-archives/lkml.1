@@ -1,152 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753834Ab0AJVHr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753797Ab0AJVNH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753834Ab0AJVHr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jan 2010 16:07:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753071Ab0AJVHq
+	id S1753797Ab0AJVNH (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jan 2010 16:13:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753171Ab0AJVNG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jan 2010 16:07:46 -0500
-Received: from mail-fx0-f215.google.com ([209.85.220.215]:61521 "EHLO
-	mail-fx0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752263Ab0AJVHq (ORCPT
+	Sun, 10 Jan 2010 16:13:06 -0500
+Received: from mailout-venus.uni-duesseldorf.de ([134.99.128.32]:42266 "EHLO
+	mail.rz.uni-duesseldorf.de" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752762Ab0AJVNF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jan 2010 16:07:46 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=fxoFBlm7qb0wytAR5QhmSdPfm8/TlvHItbECrPeIsVE8yqw3N0bissaQDq3YYMtwZH
-         puM9ykXnFqPt5r5WD4up75nRbz6+p0iCeIRbAAvNLA6ylhcq5VLoLwe2v2qc4UKFwTeq
-         1gHFZr5yxNLCQx3SEq/ReoUc8sttltS5JumBE=
-From: Corrado Zoccolo <czoccolo@gmail.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Linux-Kernel <linux-kernel@vger.kernel.org>,
-       Jeff Moyer <jmoyer@redhat.com>, Vivek Goyal <vgoyal@redhat.com>,
-       Shaohua Li <shaohua.li@intel.com>,
-       Gui Jianfeng <guijianfeng@cn.fujitsu.com>,
-       Corrado Zoccolo <czoccolo@gmail.com>
-Subject: [PATCH] cfq-iosched: NCQ SSDs do not need read queue merging
-Date: Sun, 10 Jan 2010 22:08:04 +0100
-Message-Id: <1263157684-13157-1-git-send-email-czoccolo@gmail.com>
-X-Mailer: git-send-email 1.6.4.4
-In-Reply-To: <1263157461-12294-1-git-send-email-czoccolo@gmail.com>
-References: <1263157461-12294-1-git-send-email-czoccolo@gmail.com>
+	Sun, 10 Jan 2010 16:13:05 -0500
+X-Greylist: delayed 3602 seconds by postgrey-1.27 at vger.kernel.org; Sun, 10 Jan 2010 16:13:05 EST
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-type: TEXT/PLAIN; charset=US-ASCII
+Date: Sun, 10 Jan 2010 21:12:59 +0100 (CET)
+From: Michael Schmitz <schmitz@biophys.uni-duesseldorf.de>
+Subject: Re: "m68k: Cleanup linker scripts using new linker script macros." and
+  old binutils (was: Re: [PATCH] m68k: Atari EtherNAT - Nicolas Pitre has a new
+  email address)
+In-reply-to: <alpine.DEB.1.10.1001101100540.1326@dr-wily.mit.edu>
+To: Tim Abbott <tabbott@ksplice.com>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, linux-m68k@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Message-id: <alpine.DEB.2.00.1001102020420.19754@zirkon.biophys.uni-duesseldorf.de>
+References: <10f740e81001100128q644cae1eg61c12b64f22e8398@mail.gmail.com>
+ <alpine.DEB.1.10.1001101100540.1326@dr-wily.mit.edu>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-NCQ SSDs' performances are not affected by
-distance of read requests, so there is no point in having
-overhead to merge such queues.
+Hi Tim,
 
-Non-NCQ SSDs showed regression in some special cases, so
-they are ruled out by this patch.
+> > > The order of symbols in the system map is different (as you would expect)
+> > > but I don't see what implicit assumption would be violated.
+> > 
+> > Tim, any clues? Michael is using gcc 3.3.6 and binutils 2.16.
+> > It works fine with my 4.1.2/2.18 vombo.
+> 
+> I think to debug this, we'll want to split the patch into the various 
+> small changes that make it up and determine which change caused the 
+> problem.  Michael, are you willing to do that debugging?  I'd be happy to 
+> generate for you a patch series of like a dozen patches broken out for 
+> bisecting if that'd help.
 
-This patch intentionally doesn't affect writes, so
-it changes the queued[] field, to be indexed by
-READ/WRITE instead of SYNC/ASYNC, and only compute proximity
-for queues with WRITE requests.
+Forgot to mention - I did (manually) revert the patch by pieces (throwing out
+the macros and putting back the code that was replaced by the macros). Nothiing 
+short of a complete reversal would fix the problem.
 
-Signed-off-by: Corrado Zoccolo <czoccolo@gmail.com>
----
- block/cfq-iosched.c |   28 +++++++++++++++++-----------
- 1 files changed, 17 insertions(+), 11 deletions(-)
+Seeing as I'm not a toolchain expert, I may have made mistakes in dissecting
+the patch. If you can send a series of patches I'd be happy to test them (just 
+tell me whether they're all relative to git head, or need to be applied strictly 
+in order). 
 
-diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
-index 918c7fd..18bce18 100644
---- a/block/cfq-iosched.c
-+++ b/block/cfq-iosched.c
-@@ -108,9 +108,9 @@ struct cfq_queue {
- 	struct rb_root sort_list;
- 	/* if fifo isn't expired, next request to serve */
- 	struct request *next_rq;
--	/* requests queued in sort_list */
-+	/* requests queued in sort_list, indexed by READ/WRITE */
- 	int queued[2];
--	/* currently allocated requests */
-+	/* currently allocated requests, indexed by READ/WRITE */
- 	int allocated[2];
- 	/* fifo list of requests in sort_list */
- 	struct list_head fifo;
-@@ -436,6 +436,10 @@ static inline void cic_set_cfqq(struct cfq_io_context *cic,
- 	cic->cfqq[is_sync] = cfqq;
- }
- 
-+static inline bool is_smart_ssd(struct cfq_data *cfqd)
-+{
-+	return blk_queue_nonrot(cfqd->queue) && cfqd->hw_tag;
-+}
- /*
-  * We regard a request as SYNC, if it's either a read or has the SYNC bit
-  * set (in which case it could also be direct WRITE).
-@@ -1268,7 +1272,8 @@ static void cfq_prio_tree_add(struct cfq_data *cfqd, struct cfq_queue *cfqq)
- 		return;
- 	if (!cfqq->next_rq)
- 		return;
--
-+	if (is_smart_ssd(cfqd) && !cfqq->queued[WRITE])
-+		return;
- 	cfqq->p_root = &cfqd->prio_trees[cfqq->org_ioprio];
- 	__cfqq = cfq_prio_tree_lookup(cfqd, cfqq->p_root,
- 				      blk_rq_pos(cfqq->next_rq), &parent, &p);
-@@ -1337,10 +1342,10 @@ static void cfq_del_cfqq_rr(struct cfq_data *cfqd, struct cfq_queue *cfqq)
- static void cfq_del_rq_rb(struct request *rq)
- {
- 	struct cfq_queue *cfqq = RQ_CFQQ(rq);
--	const int sync = rq_is_sync(rq);
-+	const int rw = rq_data_dir(rq);
- 
--	BUG_ON(!cfqq->queued[sync]);
--	cfqq->queued[sync]--;
-+	BUG_ON(!cfqq->queued[rw]);
-+	cfqq->queued[rw]--;
- 
- 	elv_rb_del(&cfqq->sort_list, rq);
- 
-@@ -1363,7 +1368,7 @@ static void cfq_add_rq_rb(struct request *rq)
- 	struct cfq_data *cfqd = cfqq->cfqd;
- 	struct request *__alias, *prev;
- 
--	cfqq->queued[rq_is_sync(rq)]++;
-+	cfqq->queued[rq_data_dir(rq)]++;
- 
- 	/*
- 	 * looks a little odd, but the first insert might return an alias.
-@@ -1393,7 +1398,7 @@ static void cfq_add_rq_rb(struct request *rq)
- static void cfq_reposition_rq_rb(struct cfq_queue *cfqq, struct request *rq)
- {
- 	elv_rb_del(&cfqq->sort_list, rq);
--	cfqq->queued[rq_is_sync(rq)]--;
-+	cfqq->queued[rq_data_dir(rq)]--;
- 	cfq_add_rq_rb(rq);
- }
- 
-@@ -1689,7 +1694,8 @@ static struct cfq_queue *cfqq_close(struct cfq_data *cfqd,
- 	struct cfq_queue *__cfqq;
- 	sector_t sector = cfqd->last_position;
- 
--	if (RB_EMPTY_ROOT(root))
-+	if (RB_EMPTY_ROOT(root) ||
-+	    (is_smart_ssd(cfqd) && !cur_cfqq->queued[WRITE]))
- 		return NULL;
- 
- 	/*
-@@ -1796,7 +1802,7 @@ static bool cfq_should_idle(struct cfq_data *cfqd, struct cfq_queue *cfqq)
- 
- 	/* We do for queues that were marked with idle window flag. */
- 	if (cfq_cfqq_idle_window(cfqq) &&
--	   !(blk_queue_nonrot(cfqd->queue) && cfqd->hw_tag))
-+	   !is_smart_ssd(cfqd))
- 		return true;
- 
- 	/*
-@@ -1817,7 +1823,7 @@ static void cfq_arm_slice_timer(struct cfq_data *cfqd)
- 	 * for devices that support queuing, otherwise we still have a problem
- 	 * with sync vs async workloads.
- 	 */
--	if (blk_queue_nonrot(cfqd->queue) && cfqd->hw_tag)
-+	if (is_smart_ssd(cfqd))
- 		return;
- 
- 	WARN_ON(!RB_EMPTY_ROOT(&cfqq->sort_list));
--- 
-1.6.4.4
+Absence or misplacement of bootinfo data as suggested by Andreas seems a good 
+candidate - here's the symbols that are explicitly mentioned in the old LD 
+script, for the new (non-booting) kernel:
 
+00001000 A _text
+00002000 T _start
+00212dc6 A _etext
+00212dd0 R __start___ex_table
+00215590 R __stop___ex_table
+002f0d14 A _edata
+002f1000 A __init_begin
+002f1000 T _sinittext
+0030610e T _einittext
+0030aa80 T __setup_start
+0030ad14 T __initcall_start
+0030ad14 T __setup_end
+0030afcc T __con_initcall_start
+0030afcc T __initcall_end
+0030afd0 T __con_initcall_end
+0030b000 T __initramfs_start
+0030b200 D __start_fixup
+0030b200 T __initramfs_end
+0030bed0 D __stop_fixup
+0030c000 A _end
+0030c000 T __init_end
+
+And this is the same list for the kernel generated using the old LD script:
+
+00001000 A _text
+00002000 T _start
+00212dc6 A _etext
+00212dd0 A __start___ex_table
+00215590 A __stop___ex_table
+002edd14 A _edata
+002ee000 A __init_begin
+002ee000 T _sinittext
+0030310e T _einittext
+00307a80 A __setup_start
+00307d14 A __initcall_start
+00307d14 A __setup_end
+00307fcc A __con_initcall_start
+00307fcc A __initcall_end
+00307fd0 A __con_initcall_end
+00307fd0 D __start_fixup
+00308ca0 D __stop_fixup
+0030a000 A __initramfs_start
+0030a200 A __initramfs_end
+0030c000 A __init_end
+0030e000 A _end
+
+The only difference I can spot is the placement of the fixup section.
+
+FWIW: when stripping the new kernel, I get this warning:
+
+BFD: st7CwWnM: warning: allocated section `.init_end' not in segment
+
+And indeed, the old script places the init task data between .init_end and _end.
+
+Binutils bug, or meaningless? 
+
+	Michael
