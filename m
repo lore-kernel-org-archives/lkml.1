@@ -1,60 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754497Ab0AJXRS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754535Ab0AJXRz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754497Ab0AJXRS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jan 2010 18:17:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754441Ab0AJXRP
+	id S1754535Ab0AJXRz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jan 2010 18:17:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754424Ab0AJXRx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jan 2010 18:17:15 -0500
-Received: from bld-mail19.adl2.internode.on.net ([150.101.137.104]:35083 "EHLO
-	mail.internode.on.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754393Ab0AJXRN (ORCPT
+	Sun, 10 Jan 2010 18:17:53 -0500
+Received: from casper.infradead.org ([85.118.1.10]:40137 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754327Ab0AJXRw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jan 2010 18:17:13 -0500
-Date: Mon, 11 Jan 2010 10:17:08 +1100
-From: Dave Chinner <david@fromorbit.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Allow linker to eliminate unused functions in lib/*
-Message-ID: <20100110231708.GC4019@discord.disaster>
-References: <20100105145917.GA25570@basil.fritz.box> <20100108162930.a011749a.akpm@linux-foundation.org> <20100109165155.GD20773@basil.fritz.box>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100109165155.GD20773@basil.fritz.box>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sun, 10 Jan 2010 18:17:52 -0500
+Date: Sun, 10 Jan 2010 15:20:37 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "Peter Zijlstra" <peterz@infradead.org>,
+       "Thomas Gleixner" <tglx@linutronix.de>
+Subject: Re: [Bug #14657] perf subsystem breakage in 2.6.32-rc7
+Message-ID: <20100110152037.1d59d7cd@infradead.org>
+In-Reply-To: <CXIfLt-ygXM.A.XRD.NilSLB@chimera>
+References: <nzLqtSp97aP.A.RGB.hglSLB@chimera>
+	<CXIfLt-ygXM.A.XRD.NilSLB@chimera>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.6; i586-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jan 09, 2010 at 05:51:56PM +0100, Andi Kleen wrote:
-> > Sneaky.
-> > 
-> > It's a bit sad to reduce the code cleanliness and maintainability in
-> > this way, but 1k is 1k.
-> 
-> Yes. I had actually hoped for more too. I think it might bring 
-> more with -ffunction-sections/--gc-sections, but I haven't tried that.
-> 
-> An alternative might be also to give some more of those explicit Kconfig
-> symbols -- then kernels with module loading enabled would benefit more
-> too -- but I haven't investigated how many changes that would need.
-> 
-> But even with that it's a reasonable improvement and putting the exports
-> separately is not too bad.
-> 
-> > The patch assumes a pre-existing lib-syms.c.  Confused.
-> 
-> Sorry, some day I'll learn how to operate quilt properly.
-> 
-> Updated patch with all files included appended.
+On Sun, 10 Jan 2010 23:56:13 +0100 (CET)
+"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 
-Andi, how do you want to handle the overlap between this and the
-list_sort() patch I sent? I'm going to need a list_sort() available
-in the XFS tree well before the 2.6.34 merge window....
+> This message has been generated automatically as a part of a report
+> of regressions introduced between 2.6.31 and 2.6.32.
+> 
+> The following bug entry is on the current list of known regressions
+> introduced between 2.6.31 and 2.6.32.  Please verify if it still
+> should be listed and let me know (either way).
+> 
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14657
+> Subject		: perf subsystem breakage in 2.6.32-rc7
+> Submitter	: Arjan van de Ven <arjan@infradead.org>
+> Date		: 2009-11-19 19:50 (53 days old)
+> References	:
+> http://marc.info/?l=linux-kernel&m=125866013419738&w=4
 
-Cheers,
 
-Dave.
+patch available in the bugzilla, and also in
+http://patchwork.kernel.org/patch/71962/
+
 -- 
-Dave Chinner
-david@fromorbit.com
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
