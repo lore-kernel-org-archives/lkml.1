@@ -1,77 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753124Ab0AJJ2a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753211Ab0AJK1Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753124Ab0AJJ2a (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jan 2010 04:28:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752516Ab0AJJ23
+	id S1753211Ab0AJK1Q (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jan 2010 05:27:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752922Ab0AJK1Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jan 2010 04:28:29 -0500
-Received: from mail-ew0-f214.google.com ([209.85.219.214]:52101 "EHLO
-	mail-ew0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752040Ab0AJJ21 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jan 2010 04:28:27 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:date:x-google-sender-auth:message-id:subject
-         :from:to:cc:content-type:content-transfer-encoding;
-        b=URbcNij/a3kMFFOXebqzYv+iUj+x1qn9jZBh6I3mKpiOrf5eEPj/YbM8Q1+YC6D9WO
-         WqeR9BFJKJgQrafn78BgoNl86ijqxUnH3k1cezx0CPD8G11rHo1kMSWpw6CUfKXtlhW3
-         ZpMv4avo2WZfuUSSmZl8Qn1ZqxfIuj7tJW0RI=
+	Sun, 10 Jan 2010 05:27:16 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:32914 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752872Ab0AJK1O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Jan 2010 05:27:14 -0500
+Date: Sun, 10 Jan 2010 11:26:38 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: ananth@in.ibm.com, suresh.b.siddha@intel.com,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>, stable@kernel.org,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Subject: Re: [PATCH] Make Intel 8-way Xeons boot again
+Message-ID: <20100110102638.GA7838@elte.hu>
+References: <20100109101038.GA17555@in.ibm.com>
+ <86802c441001091313y1f64f011t616f08cd282a7123@mail.gmail.com>
+ <20100110023015.GA2253@in.ibm.com>
+ <86802c441001092235j79092e6fse18b61e3d7b0ac6@mail.gmail.com>
 MIME-Version: 1.0
-Date: Sun, 10 Jan 2010 10:28:26 +0100
-X-Google-Sender-Auth: 34b0c7d106da9292
-Message-ID: <10f740e81001100128q644cae1eg61c12b64f22e8398@mail.gmail.com>
-Subject: "m68k: Cleanup linker scripts using new linker script macros." and 
-	old binutils (was: Re: [PATCH] m68k: Atari EtherNAT - Nicolas Pitre has a new 
-	email address)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Michael Schmitz <schmitz@biophys.uni-duesseldorf.de>,
-       Tim Abbott <tabbott@ksplice.com>
-Cc: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <86802c441001092235j79092e6fse18b61e3d7b0ac6@mail.gmail.com>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 10, 2010 at 05:56, Michael Schmitz
-<schmitz@biophys.uni-duesseldorf.de> wrote:
->> > > I'll verify that on the new tree, and start bisecting. Sigh.
->> >
->> > Good luck!
->>
->> 7c5fd5619dc89fb52d2c2cf144fc6e4365427b86 is first bad commit
->> commit 7c5fd5619dc89fb52d2c2cf144fc6e4365427b86
->> Author: Tim Abbott <tabbott@ksplice.com>
->> Date:   Sun Sep 27 13:57:55 2009 -0400
->>
->>     m68k: Cleanup linker scripts using new linker script macros.
->>
->>     Signed-off-by: Tim Abbott <tabbott@ksplice.com>
->>     Tested-by: Andreas Schwab <schwab@linux-m68k.org>
->>     Cc: Roman Zippel <zippel@linux-m68k.org>
->>     Cc: Sam Ravnborg <sam@ravnborg.org>
->>     Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
->>
->> :040000 040000 5bdbf7ce5dd4ea2f23669c6a6ec11192865b5bfa
->> d3b7397533b0af6261747ccef3cff9cd40f6baf9 M    arch
->
-> Backing out that commit on the top of the tree results in a bootable
-> 2.6.33-rc2 for me
->
-> The order of symbols in the system map is different (as you would expect)
-> but I don't see what implicit assumption would be violated.
 
-Tim, any clues? Michael is using gcc 3.3.6 and binutils 2.16.
-It works fine with my 4.1.2/2.18 vombo.
+* Yinghai Lu <yinghai@kernel.org> wrote:
 
-Gr{oetje,eeting}s,
+> On Sat, Jan 9, 2010 at 6:30 PM, Ananth N Mavinakayanahalli
+> <ananth@in.ibm.com> wrote:
+> > On Sat, Jan 09, 2010 at 01:13:39PM -0800, Yinghai Lu wrote:
+> >> On Sat, Jan 9, 2010 at 2:10 AM, Ananth N Mavinakayanahalli
+> >> <ananth@in.ibm.com> wrote:
+> >> > On an 8-way system with Intel Xeon X7350 CPUs, booting 2.6.32 or newer
+> >> > kernels fails at:
+> >> >
+> >> > ...
+> >> > CPU0: Intel(R) Xeon(R) CPU ? ? ? ? ? X7350 ?@ 2.93GHz stepping 0b
+> >> > Booting Node ? 0, Processors ?#1 #2 #3 #4 #5 #6 #7 Ok.
+> >> > Brought up 8 CPUs
+> >> > Total of 8 processors activated (46906.05 BogoMIPS).
+> >> >
+> >> > Git bisect showed 2fbd07a5f as the offending commit.
+> >> >
+> >> > With the patch below, I am able to boot the latest Linus' git tree on
+> >> > the machine. If this patch is correct, it needs to get into the stable
+> >> > tree too.
+> >> >
+> >> > Signed-off-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+> >> > ---
+> >> > Index: linux-2.6/arch/x86/kernel/apic/probe_64.c
+> >> > ===================================================================
+> >> > --- linux-2.6.orig/arch/x86/kernel/apic/probe_64.c ? ? ?2010-01-09 14:54:29.000000000 +0530
+> >> > +++ linux-2.6/arch/x86/kernel/apic/probe_64.c ? 2010-01-09 14:57:53.000000000 +0530
+> >> > @@ -70,7 +70,7 @@
+> >> > ? ? ? ?if (apic == &apic_flat) {
+> >> > ? ? ? ? ? ? ? ?switch (boot_cpu_data.x86_vendor) {
+> >> > ? ? ? ? ? ? ? ?case X86_VENDOR_INTEL:
+> >> > - ? ? ? ? ? ? ? ? ? ? ? if (num_processors > 8)
+> >> > + ? ? ? ? ? ? ? ? ? ? ? if (num_processors >= 8)
+> >> > ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?apic = &apic_physflat;
+> >> > ? ? ? ? ? ? ? ? ? ? ? ?break;
+> >> > ? ? ? ? ? ? ? ?case X86_VENDOR_AMD:
+> >>
+> >> can you send out whole bootlog with apic=debug?
+> >
+> > Here it is:
+> > ACPI: LAPIC (acpi_id[0x00] lapic_id[0x0c] enabled)
+> > ACPI: LAPIC (acpi_id[0x01] lapic_id[0x10] enabled)
+> > ACPI: LAPIC (acpi_id[0x02] lapic_id[0x0d] enabled)
+> > ACPI: LAPIC (acpi_id[0x03] lapic_id[0x11] enabled)
+> > ACPI: LAPIC (acpi_id[0x04] lapic_id[0x0e] enabled)
+> > ACPI: LAPIC (acpi_id[0x05] lapic_id[0x12] enabled)
+> > ACPI: LAPIC (acpi_id[0x06] lapic_id[0x0f] enabled)
+> > ACPI: LAPIC (acpi_id[0x07] lapic_id[0x13] enabled)
+> ...
+> > Setting APIC routing to flat
+> > Getting VERSION: 50014
+> > Getting VERSION: 50014
+> > Getting ID: c000000
+> > Getting ID: f3000000
+> > Getting LVT0: 700
+> > Getting LVT1: 400
+> > enabled ExtINT on CPU#0
+> > ESR value before enabling vector: 0x00000040 ?after: 0x00000000
+> > ENABLING IO-APIC IRQs
+> > ..TIMER: vector=0x30 apic1=0 pin1=2 apic2=-1 pin2=-1
+> > CPU0: Intel(R) Xeon(R) CPU ? ? ? ? ? X7350 ?@ 2.93GHz stepping 0b
+> ...
+> 
+> the BSP's physical apic id is 0x0c instead of 0.
+> 
+> not sure Suresh test that or not.
 
-						Geert
+In any case this commit needs to be reverted as the assumption that it's safe 
+to do this optimization is evidently not true.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+	Ingo
