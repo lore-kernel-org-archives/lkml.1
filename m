@@ -1,51 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753630Ab0AJO0e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753494Ab0AJO2P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753630Ab0AJO0e (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jan 2010 09:26:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753447Ab0AJO0c
+	id S1753494Ab0AJO2P (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jan 2010 09:28:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753316Ab0AJO2P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jan 2010 09:26:32 -0500
-Received: from mga09.intel.com ([134.134.136.24]:4251 "EHLO mga09.intel.com"
+	Sun, 10 Jan 2010 09:28:15 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:56485 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752637Ab0AJO0b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jan 2010 09:26:31 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,251,1262592000"; 
-   d="scan'208";a="482853071"
-Date: Sun, 10 Jan 2010 22:25:49 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Minchan Kim <minchan.kim@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Mel Gorman <mel@csn.ul.ie>, Rik van Riel <riel@redhat.com>,
-       linux-mm <linux-mm@kvack.org>, lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH -mmotm-2010-01-06-14-34] check high watermark after
-	shrink zone
-Message-ID: <20100110142549.GA14610@localhost>
-References: <20100108141235.ef56b567.minchan.kim@barrios-desktop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100108141235.ef56b567.minchan.kim@barrios-desktop>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1752552Ab0AJO2O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Jan 2010 09:28:14 -0500
+From: Avi Kivity <avi@redhat.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH][RESEND] core, x86: make LIST_POISON less deadly
+Date: Sun, 10 Jan 2010 16:28:09 +0200
+Message-Id: <1263133689-13123-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 08, 2010 at 02:12:35PM +0900, Minchan Kim wrote:
-> Kswapd check that zone have enough free by zone_water_mark.
-> If any zone doesn't have enough page, it set all_zones_ok to zero.
+From: Avi Kivity <avi@qumranet.com>
 
-> all_zone_ok makes kswapd retry not sleeping.
+The list macros use LIST_POISON1 and LIST_POISON2 as undereferencable
+pointers in order to trap erronous use of freed list_heads.  Unfortunately
+userspace can arrange for those pointers to actually be dereferencable,
+potentially turning an oops to an expolit.
 
-!all_zone_ok :)
+To avoid this allow architectures (currently x86_64 only) to override
+the default values for these pointers with truly-undereferencable values.
+This is easy on x86_64 as the virtual address space is large and contains
+areas that cannot be mapped.
 
-> I think the watermark check before shrink zone is pointless.
-> Kswapd try to shrink zone then the check is meaningul.
-> 
-> This patch move the check after shrink zone.
+Other 64-bit architectures will likely find similar unmapped ranges.
 
-This tends to make kswapd do less work in one invocation, with lower
-priority.  Looks at least not bad to me :) Thanks!
+[ingo: switch to 0xdead000000000000 as the unmapped area]
+[ingo: add comments, cleanup]
+[jaswinder: eliminate sparse warnings]
 
-Reviewed-by: Wu Fengguang <fengguang.wu@intel.com>
+Acked-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Avi Kivity <avi@redhat.com>
+---
+
+Linus, Ingo won't push this for some reason, but he has no objection to
+me submitting the patch and AFAICT no objections to the patch itself.
+
+ arch/x86/Kconfig       |    5 +++++
+ include/linux/poison.h |   16 ++++++++++++++--
+ 2 files changed, 19 insertions(+), 2 deletions(-)
+
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index 3b2a5ac..098f0d3 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -1244,6 +1244,11 @@ config ARCH_MEMORY_PROBE
+ 	def_bool X86_64
+ 	depends on MEMORY_HOTPLUG
+ 
++config ILLEGAL_POINTER_VALUE
++       hex
++       default 0 if X86_32
++       default 0xdead000000000000 if X86_64
++
+ source "mm/Kconfig"
+ 
+ config HIGHPTE
+diff --git a/include/linux/poison.h b/include/linux/poison.h
+index 7fc194a..2110a81 100644
+--- a/include/linux/poison.h
++++ b/include/linux/poison.h
+@@ -2,13 +2,25 @@
+ #define _LINUX_POISON_H
+ 
+ /********** include/linux/list.h **********/
++
++/*
++ * Architectures might want to move the poison pointer offset
++ * into some well-recognized area such as 0xdead000000000000,
++ * that is also not mappable by user-space exploits:
++ */
++#ifdef CONFIG_ILLEGAL_POINTER_VALUE
++# define POISON_POINTER_DELTA _AC(CONFIG_ILLEGAL_POINTER_VALUE, UL)
++#else
++# define POISON_POINTER_DELTA 0
++#endif
++
+ /*
+  * These are non-NULL pointers that will result in page faults
+  * under normal circumstances, used to verify that nobody uses
+  * non-initialized list entries.
+  */
+-#define LIST_POISON1  ((void *) 0x00100100)
+-#define LIST_POISON2  ((void *) 0x00200200)
++#define LIST_POISON1  ((void *) 0x00100100 + POISON_POINTER_DELTA)
++#define LIST_POISON2  ((void *) 0x00200200 + POISON_POINTER_DELTA)
+ 
+ /********** include/linux/timer.h **********/
+ /*
+-- 
+1.6.5.3
+
