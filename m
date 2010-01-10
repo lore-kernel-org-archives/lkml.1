@@ -1,77 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751967Ab0AJEeB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751993Ab0AJEmn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751967Ab0AJEeB (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Jan 2010 23:34:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751040Ab0AJEeB
+	id S1751993Ab0AJEmn (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Jan 2010 23:42:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751144Ab0AJEmm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Jan 2010 23:34:01 -0500
-Received: from mail-fx0-f225.google.com ([209.85.220.225]:61469 "EHLO
-	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750783Ab0AJEeA convert rfc822-to-8bit (ORCPT
+	Sat, 9 Jan 2010 23:42:42 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:51930 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751083Ab0AJEml (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Jan 2010 23:34:00 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=fI5YSYpeHxooTnz+qjx2OvCXSdTwjvVSCAGPIpYm2LHPwUcHUO6hMgvbCwam9iotuF
-         Fnfv/JghRWqLQjdP+jFBa6Uovte5VYwVsrxgbJF5pXikIAwkiRuIhurn9rkYAH3BaOns
-         iYdJmQDTaTacOdL4ld0BDoa47QHf2egzji5Qw=
+	Sat, 9 Jan 2010 23:42:41 -0500
+Date: Sun, 10 Jan 2010 04:42:26 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Jeff Layton <jlayton@redhat.com>, Jamie Lokier <jamie@shareable.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       miklos@szeredi.hu
+Subject: Re: [PATCH 0/3] vfs: plug some holes involving LAST_BIND symlinks
+	and file bind mounts (try #5)
+Message-ID: <20100110044226.GA19799@ZenIV.linux.org.uk>
+References: <m1my2cdhi3.fsf@fess.ebiederm.org> <20091123173616.75c3f600@tlielax.poochiereds.net> <20091123224948.GB5598@shareable.org> <20091123181545.05ad004d@tlielax.poochiereds.net> <20091216123143.GA15784@ZenIV.linux.org.uk> <20091220195903.GG23917@elf.ucw.cz> <20091220210404.GN18217@ZenIV.linux.org.uk> <20091220210619.GK23917@elf.ucw.cz> <20091220212340.GO18217@ZenIV.linux.org.uk> <20100101154027.GK3944@atrey.karlin.mff.cuni.cz>
 MIME-Version: 1.0
-In-Reply-To: <4B484829.6060405@kernel.org>
-References: <64bb37e0912250122n4e0e1842q88c0dad7e99ec6a7@mail.gmail.com>
-	 <4B484829.6060405@kernel.org>
-Date: Sun, 10 Jan 2010 05:33:58 +0100
-Message-ID: <64bb37e1001092033r1f0b4defw46c1a07101bb2d1b@mail.gmail.com>
-Subject: Re: MSI broken in libata?
-From: Torsten Kaiser <just.for.lkml@googlemail.com>
-To: Tejun Heo <tj@kernel.org>
-Cc: linux-kernel@vger.kernel.org, Jeff Garzik <jgarzik@pobox.com>,
-       linux-ide@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100101154027.GK3944@atrey.karlin.mff.cuni.cz>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jan 9, 2010 at 10:11 AM, Tejun Heo <tj@kernel.org> wrote:
-> On 12/25/2009 06:22 PM, Torsten Kaiser wrote:
->> As reported in http://lkml.org/lkml/2009/12/19/82 the new MSI support
->> for sata_sil24 does not work for me.
->> This is still the same with 2.6.33-rc2.
->>
->> Why I think, this might be a problem within libata:
->>  * other drivers can use MSI successful on my system (tg3, radeon, hda-intel)
->>  * happens both in sata_sil24 and sata_nv
->>  * the count in /proc/interrupts increases for the MSIs assigned to
->> sata_sil24/sata_nv, so interrupt delivery seems to work
->>  * only writing seems to fail
->
-> How does it fail?  Timeouts?
+On Fri, Jan 01, 2010 at 04:40:27PM +0100, Pavel Machek wrote:
+> > Access rights belong to file, not to a pathname (and there's no such thing
+> > as _the_ pathname of a file).
+> > 
+> > I'd buy that as a minor QoI issue; as a security one - no way.
+> 
+> Ok, so you see it as a (QoI) problem, but not too major. Good; I hope
+> it gets fixed one day.
 
-Yes, timeouts.
-I posted the error messages in http://lkml.org/lkml/2009/12/19/82 and
-http://lkml.org/lkml/2010/1/6/60
+Actually, I'm not even sure that it *is* worse than what we'd get after
+such change.  Note that it's not just about trying to reopen a file
+currently opened r/o for write; there's the opposite case.  We'd break
+scripts that try to read /dev/stderr and expect to be called with stderr
+redirected to caller-writable file.  With redirects done with 2> and not
+2<>.  Sure, it's a lousy practice.  And scripts in question are not
+well-written in general.  Downright unmaintainable, in fact.  Written
+by sysadmin that had left the job five years ago and can't be located,
+even if he could be bribed into touching That Shite(tm) ever again.
 
-> Also, ahci enables MSI by default if
-> available and works fine on many configurations so I don't think
-> anything in libata core layer is broken regarding MSI (there just
-> isn't anything which can break).
-
-The system I'm using does not have a ahci compatible controller, so I
-could not compare this.
-(And my other system that is using ahci, does not use MSI for that)
-
-I just found it suspicious that 3 other drivers (tg3, hda-intel and
-radeon) can use MSI, but both of the libata drivers (sata_sil24 and
-sata_nv) fail in a similar way.
-
-I did try the patch from Robert Hancock in
-http://lkml.org/lkml/2010/1/6/417 ,but without success.
-
-if you need any more information, or have something for me to try,
-please just ask. I did look at the code and the documentation about
-enabling MSI, but did not see anything (obvious) wrong, so I don't
-know what to try next.
-
-Torsten
+We have far lousier kinds of behaviour we can't fix for compatibility
+reasons.  O_CREAT on dangling symlinks, for one.  We tried to switch to
+sane variant (from the current "create file wherever that symlink points
+to") and had to revert due to userland crap that actually relied on that
+insanity.
