@@ -1,56 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751993Ab0AJEmn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752139Ab0AJEup@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751993Ab0AJEmn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Jan 2010 23:42:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751144Ab0AJEmm
+	id S1752139Ab0AJEup (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Jan 2010 23:50:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751808Ab0AJEuo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Jan 2010 23:42:42 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:51930 "EHLO
+	Sat, 9 Jan 2010 23:50:44 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:52730 "EHLO
 	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751083Ab0AJEml (ORCPT
+	with ESMTP id S1751083Ab0AJEun (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Jan 2010 23:42:41 -0500
-Date: Sun, 10 Jan 2010 04:42:26 +0000
+	Sat, 9 Jan 2010 23:50:43 -0500
+Date: Sun, 10 Jan 2010 04:49:54 +0000
 From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Jeff Layton <jlayton@redhat.com>, Jamie Lokier <jamie@shareable.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       miklos@szeredi.hu
-Subject: Re: [PATCH 0/3] vfs: plug some holes involving LAST_BIND symlinks
-	and file bind mounts (try #5)
-Message-ID: <20100110044226.GA19799@ZenIV.linux.org.uk>
-References: <m1my2cdhi3.fsf@fess.ebiederm.org> <20091123173616.75c3f600@tlielax.poochiereds.net> <20091123224948.GB5598@shareable.org> <20091123181545.05ad004d@tlielax.poochiereds.net> <20091216123143.GA15784@ZenIV.linux.org.uk> <20091220195903.GG23917@elf.ucw.cz> <20091220210404.GN18217@ZenIV.linux.org.uk> <20091220210619.GK23917@elf.ucw.cz> <20091220212340.GO18217@ZenIV.linux.org.uk> <20100101154027.GK3944@atrey.karlin.mff.cuni.cz>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Christoph Hellwig <hch@lst.de>, Matthew Wilcox <matthew@wil.cx>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-arch@vger.kernel.org, linux@arm.linux.org.uk, dhowells@redhat.com,
+       ysato@users.sourceforge.jp, tony.luck@intel.com, geert@linux-m68k.org,
+       zippel@linux-m68k.org, gerg@uclinux.org, schwidefsky@de.ibm.com,
+       heiko.carstens@de.ibm.com, jdike@addtoit.com, tglx@linutronix.de,
+       mingo@redhat.com
+Subject: Re: [PATCH 1/3] generic sys_old_select
+Message-ID: <20100110044954.GB19799@ZenIV.linux.org.uk>
+References: <20100106172112.GA17163@lst.de> <20100106173258.GJ9882@parisc-linux.org> <20100106173438.GA17660@lst.de> <20100106174109.GA30528@ZenIV.linux.org.uk> <20100108093137.GA28722@lst.de> <4B47B031.5000406@zytor.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20100101154027.GK3944@atrey.karlin.mff.cuni.cz>
+In-Reply-To: <4B47B031.5000406@zytor.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 01, 2010 at 04:40:27PM +0100, Pavel Machek wrote:
-> > Access rights belong to file, not to a pathname (and there's no such thing
-> > as _the_ pathname of a file).
-> > 
-> > I'd buy that as a minor QoI issue; as a security one - no way.
+On Fri, Jan 08, 2010 at 02:22:41PM -0800, H. Peter Anvin wrote:
+> > If we do that let's do it consistantly for various old syscalls, not
+> > an odd one out.
 > 
-> Ok, so you see it as a (QoI) problem, but not too major. Good; I hope
-> it gets fixed one day.
+> Yes, and it would be a good idea to do so, rather than hiding all these
+> compatibility calls in all kind of random places.
+> 
+> There is, however, a reason *not* to do it which should be carefully
+> considered: by co-locating the compatibility version with the modern
+> version, it gets access to static functions that are part of the
+> implementation of the modern version.  If we move the compatibility
+> versions out, it may entail having to export those statics.
 
-Actually, I'm not even sure that it *is* worse than what we'd get after
-such change.  Note that it's not just about trying to reopen a file
-currently opened r/o for write; there's the opposite case.  We'd break
-scripts that try to read /dev/stderr and expect to be called with stderr
-redirected to caller-writable file.  With redirects done with 2> and not
-2<>.  Sure, it's a lousy practice.  And scripts in question are not
-well-written in general.  Downright unmaintainable, in fact.  Written
-by sysadmin that had left the job five years ago and can't be located,
-even if he could be bribed into touching That Shite(tm) ever again.
-
-We have far lousier kinds of behaviour we can't fix for compatibility
-reasons.  O_CREAT on dangling symlinks, for one.  We tried to switch to
-sane variant (from the current "create file wherever that symlink points
-to") and had to revert due to userland crap that actually relied on that
-insanity.
+So we don't move such ones...  I agree that it's a separate patch
+queue, BTW.
