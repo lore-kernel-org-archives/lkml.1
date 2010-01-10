@@ -1,43 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753278Ab0AJPLT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753511Ab0AJPMo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753278Ab0AJPLT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jan 2010 10:11:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753068Ab0AJPLS
+	id S1753511Ab0AJPMo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jan 2010 10:12:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753093Ab0AJPMn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jan 2010 10:11:18 -0500
-Received: from senator.holtmann.net ([87.106.208.187]:55650 "EHLO
-	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752838Ab0AJPLS (ORCPT
+	Sun, 10 Jan 2010 10:12:43 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:56023 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753068Ab0AJPMm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jan 2010 10:11:18 -0500
-Subject: Re: [PATCH] bluetooth: make USB device id constant
-From: Marcel Holtmann <marcel@holtmann.org>
-To: =?ISO-8859-1?Q?N=E9meth_M=E1rton?= <nm127@freemail.hu>
-Cc: Maxim Krasnyansky <maxk@qualcomm.com>, LKML <linux-kernel@vger.kernel.org>,
-       Julia Lawall <julia@diku.dk>, cocci@diku.dk
-In-Reply-To: <4B49CA73.1080902@freemail.hu>
-References: <4B49CA73.1080902@freemail.hu>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sun, 10 Jan 2010 07:09:59 -0800
-Message-ID: <1263136199.16627.484.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 (2.28.2-1.fc12) 
-Content-Transfer-Encoding: 8bit
+	Sun, 10 Jan 2010 10:12:42 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <4B49EE5E.9040904@s5r6.in-berlin.de>
+Date: Sun, 10 Jan 2010 16:12:30 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.23) Gecko/20091025 SeaMonkey/1.1.18
+MIME-Version: 1.0
+To: linux-media@vger.kernel.org
+CC: linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v4l/dvb] firedtv: add forgotten __exit annotation
+References: <tkrat.c98a9e80d83e315a@s5r6.in-berlin.de>
+In-Reply-To: <tkrat.c98a9e80d83e315a@s5r6.in-berlin.de>
+X-Enigmail-Version: 0.96.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Marton,
-
-> From: Márton Németh <nm127@freemail.hu>
+Stefan Richter wrote on 2009-12-26:
+> fdtv_fw_exit() is part of the firedtv driver's .exit.text section.
+...
+> --- linux-2.6.33-rc2.orig/drivers/media/dvb/firewire/firedtv-fw.c
+> +++ linux-2.6.33-rc2/drivers/media/dvb/firewire/firedtv-fw.c
+> @@ -332,7 +332,7 @@ int __init fdtv_fw_init(void)
+>  	return driver_register(&fdtv_driver.driver);
+>  }
+>  
+> -void fdtv_fw_exit(void)
+> +void __exit fdtv_fw_exit(void)
+>  {
+>  	driver_unregister(&fdtv_driver.driver);
+>  	fw_core_remove_address_handler(&fcp_handler);
 > 
-> The id_table field of the struct usb_device_id is constant in <linux/usb.h>
-> so it is worth to make bcm203x_table also constant.
 
-patch has been applied to my tree. Thanks.
-
-Regards
-
-Marcel
-
-
+This patch is bogus.  fdtv_fw_exit() is also called from firedtv's init.
+-- 
+Stefan Richter
+-=====-==-=- ---= -=-=-
+http://arcgraph.de/sr/
