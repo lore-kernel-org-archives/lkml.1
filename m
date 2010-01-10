@@ -1,18 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753918Ab0AJVOc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753943Ab0AJVQV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753918Ab0AJVOc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jan 2010 16:14:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753234Ab0AJVOb
+	id S1753943Ab0AJVQV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jan 2010 16:16:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753633Ab0AJVQT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jan 2010 16:14:31 -0500
-Received: from tundra.namei.org ([65.99.196.166]:41724 "EHLO tundra.namei.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752932Ab0AJVOa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jan 2010 16:14:30 -0500
-Date: Mon, 11 Jan 2010 08:11:55 +1100 (EST)
-From: James Morris <jmorris@namei.org>
-To: Pavel Machek <pavel@ucw.cz>
-cc: "Serge E. Hallyn" <serue@us.ibm.com>, Michael Stone <michael@laptop.org>,
+	Sun, 10 Jan 2010 16:16:19 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:56326 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753304Ab0AJVQR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Jan 2010 16:16:17 -0500
+Date: Sun, 10 Jan 2010 22:16:09 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: James Morris <jmorris@namei.org>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>, Michael Stone <michael@laptop.org>,
        linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
        linux-security-module@vger.kernel.org, Andi Kleen <andi@firstfloor.org>,
        David Lang <david@lang.hm>, Oliver Hartkopp <socketcan@hartkopp.net>,
@@ -30,32 +31,44 @@ cc: "Serge E. Hallyn" <serue@us.ibm.com>, Michael Stone <michael@laptop.org>,
        Samir Bellabes <sam@synack.fr>,
        Casey Schaufler <casey@schaufler-ca.com>
 Subject: Re: [PATCH 2/3] Security: Implement disablenetwork semantics. (v4)
-In-Reply-To: <20100101143100.GA3944@atrey.karlin.mff.cuni.cz>
-Message-ID: <alpine.LRH.2.00.1001110811350.25601@tundra.namei.org>
-References: <20091227010441.GA12077@heat> <20091227010650.GA12190@heat> <20091230185053.GB18712@us.ibm.com> <20100101143100.GA3944@atrey.karlin.mff.cuni.cz>
-User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
+Message-ID: <20100110211609.GC26079@elf.ucw.cz>
+References: <20091227010441.GA12077@heat>
+ <20091227010650.GA12190@heat>
+ <20091230185053.GB18712@us.ibm.com>
+ <20100101143100.GA3944@atrey.karlin.mff.cuni.cz>
+ <alpine.LRH.2.00.1001110811350.25601@tundra.namei.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LRH.2.00.1001110811350.25601@tundra.namei.org>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 1 Jan 2010, Pavel Machek wrote:
-
-> > Quoting Michael Stone (michael@laptop.org):
-> > > Implement security_* hooks for socket_create, socket_bind, socket_connect,
-> > > socket_sendmsg, and ptrace_access_check which return -EPERM when called from a
-> > > process with networking restrictions. Exempt AF_UNIX sockets.
-> > > 
-> > > Signed-off-by: Michael Stone <michael@laptop.org>
-> > 
-> > Acked-by: Serge Hallyn <serue@us.ibm.com>
+On Mon 2010-01-11 08:11:55, James Morris wrote:
+> On Fri, 1 Jan 2010, Pavel Machek wrote:
 > 
-> For the record: NAK, as it introduces security holes.
+> > > Quoting Michael Stone (michael@laptop.org):
+> > > > Implement security_* hooks for socket_create, socket_bind, socket_connect,
+> > > > socket_sendmsg, and ptrace_access_check which return -EPERM when called from a
+> > > > process with networking restrictions. Exempt AF_UNIX sockets.
+> > > > 
+> > > > Signed-off-by: Michael Stone <michael@laptop.org>
+> > > 
+> > > Acked-by: Serge Hallyn <serue@us.ibm.com>
+> > 
+> > For the record: NAK, as it introduces security holes.
+> 
+> Please elaborate.
 
-Please elaborate.
+See the mailthread.
 
-
+Allows user to disable suid program's access to network. That bypasses
+audit, and will cause system-wide DoS if suid program decides to go
+daemon.
+									Pavel
 -- 
-James Morris
-<jmorris@namei.org>
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
