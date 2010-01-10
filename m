@@ -1,65 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753418Ab0AJOFE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753489Ab0AJOGP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753418Ab0AJOFE (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jan 2010 09:05:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753359Ab0AJOE5
+	id S1753489Ab0AJOGP (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jan 2010 09:06:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753412Ab0AJOFE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jan 2010 09:04:57 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:56658 "EHLO ogre.sisk.pl"
+	Sun, 10 Jan 2010 09:05:04 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:56666 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753341Ab0AJOEy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jan 2010 09:04:54 -0500
+	id S1753226Ab0AJOE4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Jan 2010 09:04:56 -0500
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>,
-       "Moore, Robert" <robert.moore@intel.com>
-Subject: [PATCH 0/9] PCI run-time PM support (rev. 3)
-Date: Sun, 10 Jan 2010 14:31:38 +0100
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: [PATCH 1/9] PCI PM: Add function for checking PME status of devices
+Date: Sun, 10 Jan 2010 14:35:18 +0100
 User-Agent: KMail/1.12.3 (Linux/2.6.33-rc3-rjw; KDE/4.3.3; x86_64; ; )
-Cc: Matthew Garrett <mjg@redhat.com>, Len Brown <lenb@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
+Cc: "Moore, Robert" <robert.moore@intel.com>, Matthew Garrett <mjg@redhat.com>,
+       Len Brown <lenb@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
        pm list <linux-pm@lists.linux-foundation.org>,
        Linux PCI <linux-pci@vger.kernel.org>,
        Alan Stern <stern@rowland.harvard.edu>,
        Oliver Neukum <oliver@neukum.org>, Bjorn Helgaas <bjorn.helgaas@hp.com>,
        Shaohua Li <shaohua.li@intel.com>
+References: <201001101431.38630.rjw@sisk.pl>
+In-Reply-To: <201001101431.38630.rjw@sisk.pl>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
-  charset="us-ascii"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <201001101431.38630.rjw@sisk.pl>
+Message-Id: <201001101435.18200.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-The following (updated) series of patches provides basic run-time power
-management support for PCI devices through ACPI and/or the native PCIe
-PME.
+Add function pci_check_pme_status() that will check the PME status
+bit of given device and clear it along with the PME enable bit.  It
+will be necessary for PCI run-time power management.
 
-[1/9] - Add function for checking PME status of devices
+Based on a patch from Shaohua Li <shaohua.li@intel.com>
 
-[2/9] - PCIe PME root port service driver
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ drivers/pci/pci.c |   35 +++++++++++++++++++++++++++++++++++
+ drivers/pci/pci.h |    1 +
+ 2 files changed, 36 insertions(+)
 
-[3/9] - "Don't use MSIs for PME signaling" switch for PCIe
+Index: linux-2.6/drivers/pci/pci.h
+===================================================================
+--- linux-2.6.orig/drivers/pci/pci.h
++++ linux-2.6/drivers/pci/pci.h
+@@ -49,6 +49,7 @@ struct pci_platform_pm_ops {
+ extern int pci_set_platform_pm(struct pci_platform_pm_ops *ops);
+ extern void pci_update_current_state(struct pci_dev *dev, pci_power_t state);
+ extern void pci_disable_enabled_device(struct pci_dev *dev);
++extern bool pci_check_pme_status(struct pci_dev *dev);
+ extern void pci_pm_init(struct pci_dev *dev);
+ extern void platform_pci_wakeup_init(struct pci_dev *dev);
+ extern void pci_allocate_cap_save_buffers(struct pci_dev *dev);
+Index: linux-2.6/drivers/pci/pci.c
+===================================================================
+--- linux-2.6.orig/drivers/pci/pci.c
++++ linux-2.6/drivers/pci/pci.c
+@@ -1195,6 +1195,41 @@ int pci_set_pcie_reset_state(struct pci_
+ }
  
-[4/9] - ACPI GPE refcounting, from Matthew Garrett
- 
-[5/9] - ACPI drivers support for GPE refcounting, from Matthew Garrett
- 
-[6/9] - ACPI removal of the old GPE API, from Matthew Garrett
- 
-[7/9] - ACPI add fields for handling run-wake devices
-
-[8/9] - PCI / ACPI platform support for run-time power management
-
-[9/9] - Runtime PM callbacks for the PCI bus type
-
-Bob, patches [4/9] - [6/9] from Matthew introduce GPE refconting which is
-necessary for the PCI run-time power management.  If I remeber correctly, you
-saw these patches some time ago, but we need your ack before they can go
-upstream.  Please let us know if there's anything to fix in these patches.
-
-Thanks,
-Rafael
+ /**
++ * pci_check_pme_status - Check if given device has generated PME.
++ * @dev: Device to check.
++ *
++ * Check the PME status of the device and if set, clear it and clear PME enable
++ * (if set).  Return 'true' if PME status and PME enable were both set or
++ * 'false' otherwise.
++ */
++bool pci_check_pme_status(struct pci_dev *dev)
++{
++	int pmcsr_pos;
++	u16 pmcsr;
++	bool ret = false;
++
++	if (!dev->pm_cap)
++		return false;
++
++	pmcsr_pos = dev->pm_cap + PCI_PM_CTRL;
++	pci_read_config_word(dev, pmcsr_pos, &pmcsr);
++	if (!(pmcsr & PCI_PM_CTRL_PME_STATUS))
++		return false;
++
++	/* Clear PME status. */
++	pmcsr |= PCI_PM_CTRL_PME_STATUS;
++	if (pmcsr & PCI_PM_CTRL_PME_ENABLE) {
++		/* Disable PME to avoid interrupt flood. */
++		pmcsr &= ~PCI_PM_CTRL_PME_ENABLE;
++		ret = true;
++	}
++
++	pci_write_config_word(dev, pmcsr_pos, pmcsr);
++
++	return ret;
++}
++
++/**
+  * pci_pme_capable - check the capability of PCI device to generate PME#
+  * @dev: PCI device to handle.
+  * @state: PCI state from which device will issue PME#.
 
