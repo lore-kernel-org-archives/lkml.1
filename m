@@ -1,101 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756376Ab0AVX31@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756378Ab0AVXaA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756376Ab0AVX31 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Jan 2010 18:29:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755280Ab0AVX0P
+	id S1756378Ab0AVXaA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Jan 2010 18:30:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755823Ab0AVX36
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Jan 2010 18:26:15 -0500
-Received: from fmmailgate02.web.de ([217.72.192.227]:49672 "EHLO
+	Fri, 22 Jan 2010 18:29:58 -0500
+Received: from fmmailgate02.web.de ([217.72.192.227]:51452 "EHLO
 	fmmailgate02.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756182Ab0AVX0H (ORCPT
+	with ESMTP id S1754248Ab0AVX34 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Jan 2010 18:26:07 -0500
-Message-Id: <01a234271a58f2f2f8b7b1a7174e0f3d741b0601.1264201408.git.jan.kiszka@web.de>
+	Fri, 22 Jan 2010 18:29:56 -0500
+Message-Id: <445e1bf881b6f8b6a5886d6eee70f6435a5619d6.1264201408.git.jan.kiszka@web.de>
 In-Reply-To: <cover.1264201406.git.jan.kiszka@web.de>
 References: <cover.1264201406.git.jan.kiszka@web.de>
 From: Jan Kiszka <jan.kiszka@web.de>
 To: David Miller <davem@davemloft.net>, Karsten Keil <isdn@linux-pingi.de>
 Cc: linux-kernel@vger.kernel.org, i4ldeveloper@listserv.isdn4linux.de,
-       isdn4linux@listserv.isdn4linux.de, netdev@vger.kernel.org
-Date: Fri, 8 Jan 2010 12:46:35 +0100
-Subject: [PATCH 24/31] CAPI: Use atomics for capiminor's datahandle and msgid
-X-Provags-ID: V01U2FsdGVkX1+yjLXOd87cT2Fmp51YBt4MdJFOnATLioRIv9QK
-	NXK2EJhaSbJpOCfe44/1nW0ACMdzWvgq3ln/A1WkUFh/I2/OQT
-	YMTKuwZgI=
+       isdn4linux@listserv.isdn4linux.de, netdev@vger.kernel.org,
+       Alan Cox <alan@linux.intel.com>
+Date: Sun, 10 Jan 2010 14:21:31 +0100
+Subject: [PATCH 31/31] CAPI: Officially claim char major 191
+X-Provags-ID: V01U2FsdGVkX19qd7t30joIucvytpLp877UKpepSLhBhtPZERJN
+	6O+5MC69scx46gd5X7JXNbwuYFR3R33rLdHMLo2yfqvvw/C3SQ
+	ERWrOkLOU=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The capiminor members datahandle and msgid are incremented outside any
-lock, so better do this atomically.
+I found no trace of this mysterious "pcl181" device, neither in-tree nor
+out there in the wild. At the same time, the in-tree CAPI middleware is
+using major 191 for many years now and obviously without any conflict.
+Let's officially claim this major number.
 
+CC: Alan Cox <alan@linux.intel.com>
 Signed-off-by: Jan Kiszka <jan.kiszka@web.de>
 ---
- drivers/isdn/capi/capi.c |   16 +++++++---------
- 1 files changed, 7 insertions(+), 9 deletions(-)
+ Documentation/devices.txt |    7 +++++--
+ 1 files changed, 5 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/isdn/capi/capi.c b/drivers/isdn/capi/capi.c
-index b8019a1..6ab496c 100644
---- a/drivers/isdn/capi/capi.c
-+++ b/drivers/isdn/capi/capi.c
-@@ -88,10 +88,10 @@ struct capiminor {
- 	unsigned int      minor;
- 	struct dentry *capifs_dentry;
+diff --git a/Documentation/devices.txt b/Documentation/devices.txt
+index 53d64d3..4dfc2a0 100644
+--- a/Documentation/devices.txt
++++ b/Documentation/devices.txt
+@@ -403,7 +403,7 @@ Your cooperation is appreciated.
+ 		188 = /dev/smbusbios	SMBus BIOS
+ 		189 = /dev/ussp_ctl	User space serial port control
+ 		190 = /dev/crash	Mission Critical Linux crash dump facility
+-		191 = /dev/pcl181	<information missing>
++		191 = /dev/capi/[0-9]*	CAPI 2.0 middleware, NCCI TTYs
+ 		192 = /dev/nas_xbus	NAS xbus LCD/buttons access
+ 		193 = /dev/d7s		SPARC 7-segment display
+ 		194 = /dev/zkshim	Zero-Knowledge network shim control
+@@ -2618,7 +2618,10 @@ Your cooperation is appreciated.
+ 		  1 = /dev/kctt1	Second KCT/T card
+ 		    ...
  
--	struct capi20_appl *ap;
--	u32		 ncci;
--	u16		 datahandle;
--	u16		 msgid;
-+	struct capi20_appl	*ap;
-+	u32			ncci;
-+	atomic_t		datahandle;
-+	atomic_t		msgid;
+-191 char	Reserved for PCMCIA
++191 char	CAPI 2.0 middleware, NCCI TTYs
++		  0 = /dev/capi/0	TTY for NCCI ID 0
++		  1 = /dev/capi/1	TTY for NCCI ID 1
++		    ...
  
- 	struct tty_struct	*tty;
- 	struct mutex		ttylock;
-@@ -222,7 +222,6 @@ static struct capiminor *capiminor_alloc(struct capi20_appl *ap, u32 ncci)
- 
- 	mp->ap = ap;
- 	mp->ncci = ncci;
--	mp->msgid = 0;
- 	INIT_LIST_HEAD(&mp->ackqueue);
- 	spin_lock_init(&mp->ackqlock);
- 
-@@ -396,7 +395,7 @@ gen_data_b3_resp_for(struct capiminor *mp, struct sk_buff *skb)
- 		capimsg_setu16(s, 2, mp->ap->applid);
- 		capimsg_setu8 (s, 4, CAPI_DATA_B3);
- 		capimsg_setu8 (s, 5, CAPI_RESP);
--		capimsg_setu16(s, 6, mp->msgid++);
-+		capimsg_setu16(s, 6, atomic_inc_return(&mp->msgid));
- 		capimsg_setu32(s, 8, mp->ncci);
- 		capimsg_setu16(s, 12, datahandle);
- 	}
-@@ -509,7 +508,7 @@ static int handle_minor_send(struct capiminor *mp)
- 	}
- 
- 	while ((skb = skb_dequeue(&mp->outqueue)) != NULL) {
--		datahandle = mp->datahandle;
-+		datahandle = atomic_inc_return(&mp->datahandle);
- 		len = (u16)skb->len;
- 		skb_push(skb, CAPI_DATA_B3_REQ_LEN);
- 		memset(skb->data, 0, CAPI_DATA_B3_REQ_LEN);
-@@ -517,7 +516,7 @@ static int handle_minor_send(struct capiminor *mp)
- 		capimsg_setu16(skb->data, 2, mp->ap->applid);
- 		capimsg_setu8 (skb->data, 4, CAPI_DATA_B3);
- 		capimsg_setu8 (skb->data, 5, CAPI_REQ);
--		capimsg_setu16(skb->data, 6, mp->msgid++);
-+		capimsg_setu16(skb->data, 6, atomic_inc_return(&mp->msgid));
- 		capimsg_setu32(skb->data, 8, mp->ncci);	/* NCCI */
- 		capimsg_setu32(skb->data, 12, (u32)(long)skb->data);/* Data32 */
- 		capimsg_setu16(skb->data, 16, len);	/* Data length */
-@@ -531,7 +530,6 @@ static int handle_minor_send(struct capiminor *mp)
- 		}
- 		errcode = capi20_put_message(mp->ap, skb);
- 		if (errcode == CAPI_NOERROR) {
--			mp->datahandle++;
- 			count++;
- 			mp->outbytes -= len;
- #ifdef _DEBUG_DATAFLOW
+ 192 char	Kernel profiling interface
+ 		  0 = /dev/profile	Profiling control device
 -- 
 1.6.0.2
-
