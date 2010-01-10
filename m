@@ -1,79 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752435Ab0AJThL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752349Ab0AJTn5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752435Ab0AJThL (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jan 2010 14:37:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750895Ab0AJThK
+	id S1752349Ab0AJTn5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jan 2010 14:43:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751153Ab0AJTn4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jan 2010 14:37:10 -0500
-Received: from fg-out-1718.google.com ([72.14.220.154]:41476 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750822Ab0AJThJ (ORCPT
+	Sun, 10 Jan 2010 14:43:56 -0500
+Received: from mail01d.mail.t-online.hu ([84.2.42.6]:60345 "EHLO
+	mail01d.mail.t-online.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751090Ab0AJTn4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jan 2010 14:37:09 -0500
-Date: Sun, 10 Jan 2010 23:37:03 +0400
-From: Constantin Baranov <const@mimas.ru>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Maciej Rutecki <maciej.rutecki@gmail.com>,
-       Tarkan Erimer <tarkane@netone.com.tr>, linux-kernel@vger.kernel.org
-Subject: Re: [BUG] Linux-2.6.32-git10 drm_i915 error
-Message-Id: <20100110233703.9060e075.const@mimas.ru>
-In-Reply-To: <201001101933.39683.rjw@sisk.pl>
-References: <4B26349D.1080904@netone.com.tr>
-	<8db1092f1001100620w59edea0ah5e7244e11930a005@mail.gmail.com>
-	<201001101933.39683.rjw@sisk.pl>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.18.5; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 10 Jan 2010 14:43:56 -0500
+Message-ID: <4B4A2DF7.5020907@freemail.hu>
+Date: Sun, 10 Jan 2010 20:43:51 +0100
+From: =?ISO-8859-2?Q?N=E9meth_M=E1rton?= <nm127@freemail.hu>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; hu-HU; rv:1.8.1.21) Gecko/20090402 SeaMonkey/1.1.16
+MIME-Version: 1.0
+To: =?ISO-8859-2?Q?Micha=B3_Miros=B3aw?= <mirqus@gmail.com>
+CC: linux-serial@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Julia Lawall <julia@diku.dk>, cocci@diku.dk
+Subject: Re: [PATCH 3/3] serial: make PCI device id constant
+References: <4B4A077C.7020406@freemail.hu> <e2d7436a1001100951w4dd7139as96e5808872f5c926@mail.gmail.com>
+In-Reply-To: <e2d7436a1001100951w4dd7139as96e5808872f5c926@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-2
+Content-Transfer-Encoding: 8bit
+X-DCC-mail.t-online.hu-Metrics: mail01d.mail.t-online.hu 32711; Body=5 Fuz1=5
+	Fuz2=5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 10 Jan 2010 19:33:39 +0100 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> On Sunday 10 January 2010, Maciej Rutecki wrote:
-> > 2009/12/14 Tarkan Erimer <tarkane@netone.com.tr>:
-> > > Frequently, I hit this bug on Linux-2.6.32-git10. It's always
-> > > re-producible for me on my i945 video device equipped HP machine. When
-> > > hit this bug, it crashes the X server and screen goes black. But,
-> > > possible to switch to console. Here is the error log, I had in dmesg:
-> > >
-> > > [ 2596.328132] [drm:i915_hangcheck_elapsed] *ERROR* Hangcheck timer
-> > > elapsed... GPU hung
-> > > [ 2596.328146] render error detected, EIR: 0x00000000
-> > > [ 2596.328167] [drm:i915_do_wait_request] *ERROR* i915_do_wait_request
-> > > returns -5 (awaiting 694588 at 694584)
-> > > [ 2596.439006] [drm:i915_hangcheck_elapsed] *ERROR* Hangcheck timer
-> > > elapsed... GPU hung
-> > > [ 2596.439013] render error detected, EIR: 0x00000000
-> > >
-> > > Tarkan
-> > 
-> > I confirm this. A observed this on 2.6.33-rc3-git3 after resume from suspend:
-> > 
-> > Jan 10 08:51:31 gumis kernel: [  486.880045]
-> > [drm:i915_hangcheck_elapsed] *ERROR* Hangcheck timer elapsed... GPU
-> > hung
-> > Jan 10 08:51:31 gumis kernel: [  486.880063] render error detected,
-> > EIR: 0x00000000
-> > Jan 10 08:51:31 gumis kernel: [  486.880107]
-> > [drm:i915_do_wait_request] *ERROR* i915_do_wait_request returns -5 (
-> > awaiting 60107 at 60105)
-> > Jan 10 08:51:32 gumis kernel: [  487.276302] [drm:i915_gem_execbuffer]
-> > *ERROR* i915_gem_do_execbuffer returns -5
-> > Jan 10 08:51:32 gumis kernel: [  487.276799] [drm:i915_gem_execbuffer]
-> > *ERROR* i915_gem_do_execbuffer returns -5
-> > Jan 10 08:51:32 gumis kernel: [  487.277230] [drm:i915_gem_execbuffer]
-> > *ERROR* i915_gem_do_execbuffer returns -5
-> > Jan 10 08:51:32 gumis kernel: [  487.278308] [drm:i915_gem_execbuffer]
-> > *ERROR* i915_gem_do_execbuffer returns -5
-> > Jan 10 08:51:32 gumis kernel: [  487.278533] [drm:i915_gem_execbuffer]
-> > *ERROR* i915_gem_do_execbuffer returns -5
-> > 
-> > 2.6.33-rc2 works fine.
+Micha³ Miros³aw wrote:
+> 2010/1/10 Németh Márton <nm127@freemail.hu>:
+>> From: Márton Németh <nm127@freemail.hu>
+>>
+>> The id_table field of the struct pci_driver is constant in <linux/pci.h>
+>> so it is worth to make initialization data also constant.
+> [...]
+>> diff -u -p a/drivers/serial/8250_pci.c b/drivers/serial/8250_pci.c
+>> --- a/drivers/serial/8250_pci.c 2009-12-03 04:51:21.000000000 +0100
+>> +++ b/drivers/serial/8250_pci.c 2010-01-08 18:40:05.000000000 +0100
+>> @@ -2567,7 +2567,7 @@ static int pciserial_resume_one(struct p
+>>  }
+>>  #endif
+>>
+>> -static struct pci_device_id serial_pci_tbl[] = {
+>> +static const struct pci_device_id serial_pci_tbl[] = {
+>>        /* Advantech use PCI_DEVICE_ID_ADVANTECH_PCI3620 (0x3620) as 'PCI_SUBVENDOR_ID' */
+>>        {       PCI_VENDOR_ID_ADVANTECH, PCI_DEVICE_ID_ADVANTECH_PCI3620,
+>>                PCI_DEVICE_ID_ADVANTECH_PCI3620, 0x0001, 0, 0,
+> [...]
 > 
-> http://bugzilla.kernel.org/show_bug.cgi?id=15026 perhaps?
+> There was similar patch sent to netdev couple days ago. For PCI
+> devices it used DEFINE_PCI_DEVICE_TABLE() like this:
+> 
+> static DEFINE_PCI_DEVICE_TABLE(serial_pci_tbl) = {
+> 
+> so that the ID data went to the proper .ko section.
 
-I have caught this bug in 2.6.31.9, 2.6.32.2, 2.6.33-rc3 and 2.6.33-rc3-git3
-on my Acer Aspire 1410T with Intel GM45 chipset. It is not needed to perform
-suspend and resume to reproduce the bug. The bug appears for me at startup
-of the Stellarium (trunk version).
+Thanks for the feedback. The DEFINE_PCI_DEVICE_TABLE() is also recommended
+by Documentation/PCI/pci.txt .
+
+Regads,
+
+	Márton Németh
