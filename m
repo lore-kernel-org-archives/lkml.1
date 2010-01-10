@@ -1,103 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753494Ab0AJO2P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753550Ab0AJO3Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753494Ab0AJO2P (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jan 2010 09:28:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753316Ab0AJO2P
+	id S1753550Ab0AJO3Y (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jan 2010 09:29:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753389Ab0AJO3X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jan 2010 09:28:15 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:56485 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752552Ab0AJO2O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jan 2010 09:28:14 -0500
-From: Avi Kivity <avi@redhat.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH][RESEND] core, x86: make LIST_POISON less deadly
-Date: Sun, 10 Jan 2010 16:28:09 +0200
-Message-Id: <1263133689-13123-1-git-send-email-avi@redhat.com>
+	Sun, 10 Jan 2010 09:29:23 -0500
+Received: from mv-drv-hcb004.ocn.ad.jp ([118.23.109.134]:46675 "EHLO
+	mv-drv-hcb004.ocn.ad.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753334Ab0AJO3X (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Jan 2010 09:29:23 -0500
+From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org
+Subject: [PATCH] compat_ioctl: Supress "unknown cmd" message on serial /dev/console
+Date: Sun, 10 Jan 2010 23:29:16 +0900
+Message-Id: <1263133756-27804-1-git-send-email-anemo@mba.ocn.ne.jp>
+X-Mailer: git-send-email 1.5.6.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Avi Kivity <avi@qumranet.com>
+After the commit fb07a5f8 ("compat_ioctl: remove all VT ioctl
+handling"), I got this error message on 64-bit mips kernel with 32-bit
+busybox userland:
 
-The list macros use LIST_POISON1 and LIST_POISON2 as undereferencable
-pointers in order to trap erronous use of freed list_heads.  Unfortunately
-userspace can arrange for those pointers to actually be dereferencable,
-potentially turning an oops to an expolit.
+ioctl32(init:1): Unknown cmd fd(0) cmd(00005600){t:'V';sz:0} arg(7fd76480) on /dev/console
 
-To avoid this allow architectures (currently x86_64 only) to override
-the default values for these pointers with truly-undereferencable values.
-This is easy on x86_64 as the virtual address space is large and contains
-areas that cannot be mapped.
+The cmd 5600 is VT_OPENQRY.  The busybox's init issues this ioctl to
+know vt-console or serial-console.  If the console was serial console,
+VT ioctls are not handled by the serial driver.
 
-Other 64-bit architectures will likely find similar unmapped ranges.
+And by quick search, I found some programs using VT_GETMODE to check
+vt-console is available or not.
 
-[ingo: switch to 0xdead000000000000 as the unmapped area]
-[ingo: add comments, cleanup]
-[jaswinder: eliminate sparse warnings]
-
-Acked-by: Linus Torvalds <torvalds@linux-foundation.org>
-Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Avi Kivity <avi@redhat.com>
+Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
 ---
+ fs/compat_ioctl.c |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
 
-Linus, Ingo won't push this for some reason, but he has no objection to
-me submitting the patch and AFAICT no objections to the patch itself.
-
- arch/x86/Kconfig       |    5 +++++
- include/linux/poison.h |   16 ++++++++++++++--
- 2 files changed, 19 insertions(+), 2 deletions(-)
-
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index 3b2a5ac..098f0d3 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -1244,6 +1244,11 @@ config ARCH_MEMORY_PROBE
- 	def_bool X86_64
- 	depends on MEMORY_HOTPLUG
- 
-+config ILLEGAL_POINTER_VALUE
-+       hex
-+       default 0 if X86_32
-+       default 0xdead000000000000 if X86_64
-+
- source "mm/Kconfig"
- 
- config HIGHPTE
-diff --git a/include/linux/poison.h b/include/linux/poison.h
-index 7fc194a..2110a81 100644
---- a/include/linux/poison.h
-+++ b/include/linux/poison.h
-@@ -2,13 +2,25 @@
- #define _LINUX_POISON_H
- 
- /********** include/linux/list.h **********/
-+
-+/*
-+ * Architectures might want to move the poison pointer offset
-+ * into some well-recognized area such as 0xdead000000000000,
-+ * that is also not mappable by user-space exploits:
-+ */
-+#ifdef CONFIG_ILLEGAL_POINTER_VALUE
-+# define POISON_POINTER_DELTA _AC(CONFIG_ILLEGAL_POINTER_VALUE, UL)
-+#else
-+# define POISON_POINTER_DELTA 0
-+#endif
-+
- /*
-  * These are non-NULL pointers that will result in page faults
-  * under normal circumstances, used to verify that nobody uses
-  * non-initialized list entries.
-  */
--#define LIST_POISON1  ((void *) 0x00100100)
--#define LIST_POISON2  ((void *) 0x00200200)
-+#define LIST_POISON1  ((void *) 0x00100100 + POISON_POINTER_DELTA)
-+#define LIST_POISON2  ((void *) 0x00200200 + POISON_POINTER_DELTA)
- 
- /********** include/linux/timer.h **********/
- /*
+diff --git a/fs/compat_ioctl.c b/fs/compat_ioctl.c
+index 332dd00..c5c45de 100644
+--- a/fs/compat_ioctl.c
++++ b/fs/compat_ioctl.c
+@@ -1005,6 +1005,9 @@ COMPATIBLE_IOCTL(SCSI_IOCTL_SEND_COMMAND)
+ COMPATIBLE_IOCTL(SCSI_IOCTL_PROBE_HOST)
+ COMPATIBLE_IOCTL(SCSI_IOCTL_GET_PCI)
+ #endif
++/* Big V (don't complain on serial console) */
++IGNORE_IOCTL(VT_OPENQRY)
++IGNORE_IOCTL(VT_GETMODE)
+ /* Little p (/dev/rtc, /dev/envctrl, etc.) */
+ COMPATIBLE_IOCTL(RTC_AIE_ON)
+ COMPATIBLE_IOCTL(RTC_AIE_OFF)
 -- 
-1.6.5.3
+1.5.6.5
 
