@@ -1,84 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754752Ab0AJALS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754821Ab0AJAby@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754752Ab0AJALS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 Jan 2010 19:11:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752553Ab0AJALR
+	id S1754821Ab0AJAby (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 Jan 2010 19:31:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752965Ab0AJAby
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 Jan 2010 19:11:17 -0500
-Received: from mail01d.mail.t-online.hu ([84.2.42.6]:65290 "EHLO
-	mail01d.mail.t-online.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751546Ab0AJALR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 Jan 2010 19:11:17 -0500
-X-Authuid: nmarci
-Message-ID: <4B491B17.5070305@freemail.hu>
-Date: Sun, 10 Jan 2010 01:11:03 +0100
-From: =?UTF-8?B?TsOpbWV0aCBNw6FydG9u?= <nm127@freemail.hu>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; hu-HU; rv:1.8.1.21) Gecko/20090402 SeaMonkey/1.1.16
+	Sat, 9 Jan 2010 19:31:54 -0500
+Received: from mail.gmx.net ([213.165.64.20]:57962 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752911Ab0AJAbx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 Jan 2010 19:31:53 -0500
+X-Authenticated: #4463548
+X-Provags-ID: V01U2FsdGVkX19OAD9CzWhOMF6tbY2kLYO2OMUjfXgw1qHjWHTFhY
+	CZ6tdgIt/i5AjS
+Date: Sun, 10 Jan 2010 02:32:11 +0200 (EET)
+From: Dimitrios Apostolou <jimis@gmx.net>
+X-X-Sender: jimis@localhost.localdomain
+To: Arjan van de Ven <arjan@infradead.org>
+cc: Alex Chiang <achiang@hp.com>, Len Brown <lenb@kernel.org>,
+       Bjorn Helgaas <bjorn.helgaas@hp.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Yinghai Lu <yinghai@kernel.org>, linux-kernel@vger.kernel.org
+Subject: Re: High cpu temperature with 2.6.32, bisection shows commit 69d258
+ (fwd)
+In-Reply-To: <20100109160836.26a344a9@infradead.org>
+Message-ID: <alpine.LNX.2.00.1001100226570.1325@localhost.localdomain>
+References: <alpine.LNX.2.00.1001071941470.1363@localhost.localdomain> <20100108171513.GB22713@ldl.fc.hp.com> <20100109134352.3dedd4ea@infradead.org> <alpine.LNX.2.00.1001100155370.1325@localhost.localdomain> <20100109160836.26a344a9@infradead.org>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
 MIME-Version: 1.0
-To: Richard Purdie <rpurdie@rpsys.net>
-CC: LKML <linux-kernel@vger.kernel.org>, Julia Lawall <julia@diku.dk>,
-       cocci@diku.dk
-Subject: [PATCH] leds: make PCI device id constant
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-DCC-mail.t-online.hu-Metrics: mail01d.mail.t-online.hu 32711; Body=4 Fuz1=4
-	Fuz2=4
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.62
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Márton Németh <nm127@freemail.hu>
+On Sat, 9 Jan 2010, Arjan van de Ven wrote:
 
-The id_table field of the struct pci_driver is constant in <linux/pci.h>
-so it is worth to make pci_device_id also constant.
+> On Sun, 10 Jan 2010 01:55:42 +0200 (EET)
+> Dimitrios Apostolou <jimis@gmx.net> wrote:
+>
+>> L8400B series Notebook PC
+>
+> can you try this patch?
+>
 
-The semantic match that finds this kind of pattern is as follows:
-(http://coccinelle.lip6.fr/)
+OK I'm compiling a new kernel right now but that will take a while, I only 
+have access to old hardware at the moment... What exactly this patch does?
 
-// <smpl>
-@r@
-disable decl_init,const_decl_init;
-identifier I1, I2, x;
-@@
-	struct I1 {
-	  ...
-	  const struct I2 *x;
-	  ...
-	};
-@s@
-identifier r.I1, y;
-identifier r.x, E;
-@@
-	struct I1 y = {
-	  .x = E,
-	};
-@c@
-identifier r.I2;
-identifier s.E;
-@@
-	const struct I2 E[] = ... ;
-@depends on !c@
-identifier r.I2;
-identifier s.E;
-@@
-+	const
-	struct I2 E[] = ...;
-// </smpl>
+BTW, how can I remove that irritating -O2 flag? I 'm used to compiling 
+with -O0 my debug builds in userland, because compilation is *many times* 
+faster. I should be really useful for bisections.
 
-Signed-off-by: Márton Németh <nm127@freemail.hu>
-Cc: Julia Lawall <julia@diku.dk>
-Cc: cocci@diku.dk
----
-diff -u -p a/drivers/leds/leds-ss4200.c b/drivers/leds/leds-ss4200.c
---- a/drivers/leds/leds-ss4200.c 2010-01-07 19:08:40.000000000 +0100
-+++ b/drivers/leds/leds-ss4200.c 2010-01-08 11:25:42.000000000 +0100
-@@ -63,7 +63,7 @@ MODULE_LICENSE("GPL");
- /*
-  * PCI ID of the Intel ICH7 LPC Device within which the GPIO block lives.
-  */
--static struct pci_device_id ich7_lpc_pci_id[] =
-+static const struct pci_device_id ich7_lpc_pci_id[] =
- {
- 	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ICH7_0) },
- 	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ICH7_1) },
+
+Thanks,
+Dimitris
+
