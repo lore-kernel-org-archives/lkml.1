@@ -1,46 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753234Ab0AJUN0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753085Ab0AJUQG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753234Ab0AJUN0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jan 2010 15:13:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752662Ab0AJUNZ
+	id S1753085Ab0AJUQG (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jan 2010 15:16:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750782Ab0AJUQF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jan 2010 15:13:25 -0500
-Received: from mail-ew0-f214.google.com ([209.85.219.214]:64930 "EHLO
-	mail-ew0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752184Ab0AJUNY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jan 2010 15:13:24 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=huyK2OanAJspdfG3LYPbSzD6KY3LS/Q2dtpYFU70B1UN/F7NWD+iWfFiWFIwbPcsh0
-         Nu9++/t/AsaPKqA/FM3IeC8IhVxvtcNywjcEO1f/F+dnJufUn0l9AiMvhinakwbSYIra
-         RytVw118Xc92d2i2axB7qxiYTt/W4oAAw+AQw=
-MIME-Version: 1.0
-In-Reply-To: <201001101933.39683.rjw@sisk.pl>
-References: <4B26349D.1080904@netone.com.tr>
-	 <8db1092f1001100620w59edea0ah5e7244e11930a005@mail.gmail.com>
-	 <201001101933.39683.rjw@sisk.pl>
-Date: Sun, 10 Jan 2010 21:13:22 +0100
-Message-ID: <8db1092f1001101213i7bdcfd97oa3c2371c334e86c7@mail.gmail.com>
-Subject: Re: [BUG] Linux-2.6.32-git10 drm_i915 error
-From: Maciej Rutecki <maciej.rutecki@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Tarkan Erimer <tarkane@netone.com.tr>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+	Sun, 10 Jan 2010 15:16:05 -0500
+Received: from nn7.de ([85.214.94.156]:51575 "EHLO nn7.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751009Ab0AJUQE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Jan 2010 15:16:04 -0500
+X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Sun, 10 Jan 2010 15:16:04 EST
+Subject: 2.6.32-rc3-git display goes off with i915.powersave=1
+From: Soeren Sonnenburg <sonne@debian.org>
+To: Linux Kernel <linux-kernel@vger.kernel.org>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-BMQNQmpszDbLMFFnz/Sc"
+Date: Sun, 10 Jan 2010 21:09:20 +0100
+Message-ID: <1263154160.3187.7.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.2 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2010/1/10 Rafael J. Wysocki <rjw@sisk.pl>:
 
->
-> http://bugzilla.kernel.org/show_bug.cgi?id=15026 perhaps?
+--=-BMQNQmpszDbLMFFnz/Sc
+Content-Type: text/plain; charset="ISO-8859-15"
+Content-Transfer-Encoding: quoted-printable
 
-Yes, at now Linux works fine. No problems after resume from suspend (disk/ram).
+Dear all,
 
-Regards
--- 
-Maciej Rutecki
-http://www.maciek.unixy.pl
+on my Samsung NC10 the latest kernel i915 driver with powersaving
+enabled causes the dissplay to go randomly black (or white) after a
+random time (few minutes usually).
+
+The only way to recover from this is a suspend to ram cycle....
+
+I've upgraded to the latest xorg-intel driver to see if it works with
+that one - but no it does not. However, setting powersave=3D0 makes things
+work again..
+
+And it looks like I am not alone:
+
+http://ikibiki.org//blog/2010/01/08/Xorg_tricks_for_Intel_users/
+
+Soeren
+--=20
+For the one fact about the future of which we can be certain is that it
+will be utterly fantastic. -- Arthur C. Clarke, 1962
+
+--=-BMQNQmpszDbLMFFnz/Sc
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iQIcBAABAgAGBQJLSjPvAAoJEH82z1Wqh6p3eRAQAMyui5/NqRXaAm049lqKuqrN
+SBbav3xkEkFXUycDJ6x4H1ZC9TUA8Tzg7xp+psUS1IimZbMKY38+gwdhxN5ljNS7
+7Au23SaZVUDxMoEkc5xLqmG9FWMEbqzEQZnjAf1Z1BW4Gx6jwUTd24Humdpaj+Hn
+E5qKQ2uMeGtR9u0cxvozQujTSF3YOZNIqnAPeyEZo1e4h5Vz/PeJTF29Da/mvChE
+N8CJzJtW7eGeE31h+su865PrriDb9hK1VKeCPNIlTAaLNrmDFyd2TivqDXedA7T2
+aPMaYXhovFBBKLdzdQnp48ioCC42IloOQVogOpC96kizR+n8Soi0EHbOE5KPhgXO
+8trYFnYtYDd4ySgA3MguRdG2SQHK8GnfYIQdeZvvg33xYAG09tixh1LFZywDwiLt
+AlxMzf+LGwYkbBZhrjyIbaY7ZEZ4Uc7v0kyQZceBLIGUPr4GZhXCA4QhbqoR8EQu
+AyDNuyHdNw7fE6YPTvszhq3BNwrzf7lhXLGqnI9x5z7bxjSR/0nE44uvYKySjh9l
+8ulefupziSxTv12CDUeInlR5zVi8zr32ONcds5JXVh1ZqKEuuBdAJ4wWogMNAywq
+ppaH2TOFyF9A6MxDQmOno9cW2zwKz1mx/MtllnZXUvme3t9VXdkyIC7h7xbwHqwi
+N0ZkXezuQLLts7dk8WEZ
+=r/ah
+-----END PGP SIGNATURE-----
+
+--=-BMQNQmpszDbLMFFnz/Sc--
