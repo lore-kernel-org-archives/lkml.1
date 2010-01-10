@@ -1,62 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754198Ab0AJXPV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754266Ab0AJXQP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754198Ab0AJXPV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jan 2010 18:15:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754171Ab0AJXPU
+	id S1754266Ab0AJXQP (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jan 2010 18:16:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754185Ab0AJXQN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jan 2010 18:15:20 -0500
-Received: from borg.medozas.de ([188.40.89.202]:55838 "EHLO borg.medozas.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754067Ab0AJXPT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jan 2010 18:15:19 -0500
-Date: Mon, 11 Jan 2010 00:15:17 +0100 (CET)
-From: Jan Engelhardt <jengelh@medozas.de>
-To: David Miller <davem@davemloft.net>
-cc: sparclinux@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: fstat seems broken on sparc64
-In-Reply-To: <20100110.131158.242584083.davem@davemloft.net>
-Message-ID: <alpine.LSU.2.01.1001102347280.23052@obet.zrqbmnf.qr>
-References: <alpine.LSU.2.01.0912141511280.27692@obet.zrqbmnf.qr> <20091214.233840.236673621.davem@davemloft.net> <alpine.LSU.2.01.1001082355250.20848@obet.zrqbmnf.qr> <20100110.131158.242584083.davem@davemloft.net>
-User-Agent: Alpine 2.01 (LSU 1266 2009-07-14)
+	Sun, 10 Jan 2010 18:16:13 -0500
+Received: from ey-out-2122.google.com ([74.125.78.25]:30042 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754163Ab0AJXQM convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Jan 2010 18:16:12 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=fFNHxg30c3jDZdHP/ZubSrLvm9dRrzIZBQLvB5NI2hl7OlbLibaYf9D59pxDApJGj7
+         ReRVXkn46fRcPiR/wwooMRuTMIQULVTFJLeGmJrn8/Dnbi4mIZiQugahhmDrQRtR2g/0
+         30mBOmggwuCXl9gzMHIFi7ZOQ/PNxspWYFdG0=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <20100110224914.GB5039@nowhere>
+References: <wnS54-l8PVO.A.TlF.oMlSLB@chimera>
+	 <omZ8aBZReyD.A.vd.qNlSLB@chimera> <20100110224914.GB5039@nowhere>
+Date: Mon, 11 Jan 2010 02:16:10 +0300
+Message-ID: <a4423d671001101516l13a709fhe5c07343926160d1@mail.gmail.com>
+Subject: Re: [Bug #14899] reiserfs: inconsistent lock state
+From: Alexander Beregalov <a.beregalov@gmail.com>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 2010-01-10 22:11, David Miller wrote:
+2010/1/11 Frederic Weisbecker <fweisbec@gmail.com>:
+> On Sun, Jan 10, 2010 at 11:32:53PM +0100, Rafael J. Wysocki wrote:
+>> This message has been generated automatically as a part of a report
+>> of recent regressions.
+>>
+>> The following bug entry is on the current list of known regressions
+>> from 2.6.32.  Please verify if it still should be listed and let me know
+>> (either way).
+>>
+>>
+>> Bug-Entry     : http://bugzilla.kernel.org/show_bug.cgi?id=14899
+>> Subject               : reiserfs: inconsistent lock state
+>> Submitter     : Alexander Beregalov <a.beregalov@gmail.com>
+>> Date          : 2009-12-11 22:06 (31 days old)
+>> References    : http://marc.info/?l=linux-kernel&m=126056920702515&w=4
+>> Handled-By    : Frederic Weisbecker <fweisbec@gmail.com>
+>> Patch         : http://patchwork.kernel.org/patch/67256/
+>>                 http://patchwork.kernel.org/patch/67257/
 >
->> libc6   2.10.2-4
 >
->Perfect, now you just have to audit what changed between the -2 and
->the -4 package to find the bug :-)
+>
+> The fix have been pulled upstream. Would be nice to have Alexander
+> confirmation that it's really fixed though.
 
-I really do not believe you when you say your glibc is not affected.
-Maybe some things did not became clear as part of the discussion,
-so let me quickly restate:
-
- - talking about -m64 / libc6-sparc64_2.10.2-*_sparc.deb only
-
- - syscall is screwed up. strace outputs:
-
-C func  | i386      | x86_64     | sparc32   | sparc64
---------+-----------+------------+-----------+---------------
-stat    | stat64    | stat       | stat64    | stat64
-lstat   | lstat64   | lstat      | lstat64   | lstat64
-fstatat | fstatat64 | newfstatat | fstatat64 | fstatat64
-fstat   | fstat64   | fstat      | fstat64   | fstat (*)
-
-
- - I now found and fixed the problem, here is the patch for
-   you to study (as code speaks louder)
-
-Index: glibc-2.10.1/sysdeps/unix/sysv/linux/sparc/sparc64/fxstat.c
-===================================================================
---- glibc-2.10.1.orig/sysdeps/unix/sysv/linux/sparc/sparc64/fxstat.c
-+++ glibc-2.10.1/sysdeps/unix/sysv/linux/sparc/sparc64/fxstat.c
-@@ -1 +1 @@
--#include "../../fxstat.c"
-+#include "../../i386/fxstat.c"
-
-(Hint: Compare with sparc64/lxstat.c)
+Yes, all warnings have disappeared. Thanks a lot.
