@@ -1,52 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753376Ab0AJQI3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753460Ab0AJQPp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753376Ab0AJQI3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jan 2010 11:08:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752834Ab0AJQI2
+	id S1753460Ab0AJQPp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jan 2010 11:15:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753228Ab0AJQPo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jan 2010 11:08:28 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:56484 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751034Ab0AJQI2 (ORCPT
+	Sun, 10 Jan 2010 11:15:44 -0500
+Received: from DMZ-MAILSEC-SCANNER-1.MIT.EDU ([18.9.25.12]:49272 "EHLO
+	dmz-mailsec-scanner-1.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752161Ab0AJQPn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jan 2010 11:08:28 -0500
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <4B49FB63.8050700@s5r6.in-berlin.de>
-Date: Sun, 10 Jan 2010 17:08:03 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.23) Gecko/20091025 SeaMonkey/1.1.18
+	Sun, 10 Jan 2010 11:15:43 -0500
+X-Greylist: delayed 301 seconds by postgrey-1.27 at vger.kernel.org; Sun, 10 Jan 2010 11:15:43 EST
+X-AuditID: 1209190c-b7ccdae00000276b-3b-4b49fc014239
+Date: Sun, 10 Jan 2010 11:05:05 -0500 (EST)
+From: Tim Abbott <tabbott@ksplice.com>
+X-X-Sender: tabbott@dr-wily.mit.edu
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+cc: Michael Schmitz <schmitz@biophys.uni-duesseldorf.de>,
+       linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: "m68k: Cleanup linker scripts using new linker script macros."
+ and  old binutils (was: Re: [PATCH] m68k: Atari EtherNAT - Nicolas Pitre
+ has a new  email address)
+In-Reply-To: <10f740e81001100128q644cae1eg61c12b64f22e8398@mail.gmail.com>
+Message-ID: <alpine.DEB.1.10.1001101100540.1326@dr-wily.mit.edu>
+References: <10f740e81001100128q644cae1eg61c12b64f22e8398@mail.gmail.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-To: =?ISO-8859-1?Q?N=E9meth_M=E1rton?= <nm127@freemail.hu>
-CC: linux1394-devel@lists.sourceforge.net, LKML <linux-kernel@vger.kernel.org>,
-       Julia Lawall <julia@diku.dk>, cocci@diku.dk
-Subject: Re: [PATCH] firewire: make PCI device id constant
-References: <4B49C4A2.50804@freemail.hu>
-In-Reply-To: <4B49C4A2.50804@freemail.hu>
-X-Enigmail-Version: 0.96.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Németh Márton wrote:
-> The id_table field of the struct pci_driver is constant in <linux/pci.h>
-> so it is worth to make pci_table also constant.
-[...]
-> --- a/drivers/firewire/ohci.c 2010-01-07 19:08:39.000000000 +0100
-> +++ b/drivers/firewire/ohci.c 2010-01-08 09:51:11.000000000 +0100
-> @@ -2657,7 +2657,7 @@ static int pci_resume(struct pci_dev *de
->  }
->  #endif
-> 
-> -static struct pci_device_id pci_table[] = {
-> +static const struct pci_device_id pci_table[] = {
->  	{ PCI_DEVICE_CLASS(PCI_CLASS_SERIAL_FIREWIRE_OHCI, ~0) },
->  	{ }
->  };
+On Sun, 10 Jan 2010, Geert Uytterhoeven wrote:
 
-Committed to linux1394-2.6.git with an adequately shortened changelog.
--- 
-Stefan Richter
--=====-==-=- ---= -=-=-
-http://arcgraph.de/sr/
+> On Sun, Jan 10, 2010 at 05:56, Michael Schmitz
+> <schmitz@biophys.uni-duesseldorf.de> wrote:
+> > Backing out that commit on the top of the tree results in a bootable
+> > 2.6.33-rc2 for me
+> >
+> > The order of symbols in the system map is different (as you would expect)
+> > but I don't see what implicit assumption would be violated.
+> 
+> Tim, any clues? Michael is using gcc 3.3.6 and binutils 2.16.
+> It works fine with my 4.1.2/2.18 vombo.
+
+I think to debug this, we'll want to split the patch into the various 
+small changes that make it up and determine which change caused the 
+problem.  Michael, are you willing to do that debugging?  I'd be happy to 
+generate for you a patch series of like a dozen patches broken out for 
+bisecting if that'd help.
+
+	-Tim Abbott
