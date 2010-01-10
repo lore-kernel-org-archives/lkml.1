@@ -1,109 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752844Ab0AJI67@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752868Ab0AJJBW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752844Ab0AJI67 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jan 2010 03:58:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752379Ab0AJI66
+	id S1752868Ab0AJJBW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jan 2010 04:01:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752532Ab0AJJBW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jan 2010 03:58:58 -0500
-Received: from qw-out-2122.google.com ([74.125.92.27]:31229 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752047Ab0AJI66 convert rfc822-to-8bit (ORCPT
+	Sun, 10 Jan 2010 04:01:22 -0500
+Received: from smtp.mujha-vel.cz ([81.30.225.246]:38455 "EHLO
+	smtp.mujha-vel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752527Ab0AJJBV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jan 2010 03:58:58 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=wU2q2Xum6DM2676/OFHMW1rFTbwVNJbA00k1UXmhiPrO3+1pVpxUDzE+QsSLosDDxr
-         emynIn2/fljnvsgywFQ+Py+tUyQ6q9PmOvI/wwDTedyzmAGISNhw6bD012GJOvOpvVFz
-         6nn4ZLqyJuPJbwVdMpNEuTS9I3ft8PR5SOdnk=
-MIME-Version: 1.0
-In-Reply-To: <20100110084704.GC3005@hack>
-References: <a44ae5cd1001060454g22fb5a0ay8185bc680cd4fc67@mail.gmail.com>
-	 <20100110084704.GC3005@hack>
-Date: Sun, 10 Jan 2010 16:58:56 +0800
-Message-ID: <2375c9f91001100058w4bac1cf9s183fc37eafbfde75@mail.gmail.com>
-Subject: Re: 2.6.33-rc3 -- INFO: possible recursive locking -- 
-	(s_active){++++.+}, at: [<c10d2941>] sysfs_hash_and_remove+0x3d/0x4f
-From: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
-To: Miles Lane <miles.lane@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Greg Kroah-Hartman <gregkh@suse.de>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Sun, 10 Jan 2010 04:01:21 -0500
+From: Jiri Slaby <jslaby@suse.cz>
+To: dwmw2@infradead.org
+Cc: linux-kernel@vger.kernel.org, jirislaby@gmail.com,
+       linux-mtd@lists.infradead.org
+Subject: [PATCH 1/1] MTD: chips/cfi, remove unneeded NULL checks
+Date: Sun, 10 Jan 2010 10:01:19 +0100
+Message-Id: <1263114079-8347-1-git-send-email-jslaby@suse.cz>
+X-Mailer: git-send-email 1.6.5.7
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 10, 2010 at 4:47 PM, Américo Wang <xiyou.wangcong@gmail.com> wrote:
->
-> On Wed, Jan 06, 2010 at 07:54:59AM -0500, Miles Lane wrote:
-> >[ 6967.926563] ACPI: Preparing to enter system sleep state S3
-> >[ 6967.956156] Disabling non-boot CPUs ...
-> >[ 6967.970401]
-> >[ 6967.970408] =============================================
-> >[ 6967.970419] [ INFO: possible recursive locking detected ]
-> >[ 6967.970431] 2.6.33-rc2-git6 #27
-> >[ 6967.970439] ---------------------------------------------
-> >[ 6967.970450] pm-suspend/22147 is trying to acquire lock:
-> >[ 6967.970460]  (s_active){++++.+}, at: [<c10d2941>]
-> >sysfs_hash_and_remove+0x3d/0x4f
-> >[ 6967.970493]
-> >[ 6967.970497] but task is already holding lock:
-> >[ 6967.970506]  (s_active){++++.+}, at: [<c10d4110>]
-> >sysfs_get_active_two+0x16/0x36
-> >[ 6967.970531]
-> >[ 6967.970535] other info that might help us debug this:
-> >[ 6967.970547] 6 locks held by pm-suspend/22147:
-> >[ 6967.970556]  #0:  (&buffer->mutex){+.+.+.}, at: [<c10d2ff3>]
-> >sysfs_write_file+0x25/0xeb
-> >[ 6967.970584]  #1:  (s_active){++++.+}, at: [<c10d4110>]
-> >sysfs_get_active_two+0x16/0x36
-> >[ 6967.970612]  #2:  (s_active){++++.+}, at: [<c10d411b>]
-> >sysfs_get_active_two+0x21/0x36
-> >[ 6967.970639]  #3:  (pm_mutex){+.+.+.}, at: [<c1056f00>] enter_state+0x26/0x114
-> >[ 6967.970668]  #4:  (cpu_add_remove_lock){+.+.+.}, at: [<c102ea10>]
-> >cpu_maps_update_begin+0xf/0x11
-> >[ 6967.970697]  #5:  (cpu_hotplug.lock){+.+.+.}, at: [<c102ea3e>]
-> >cpu_hotplug_begin+0x1d/0x40
-> >[ 6967.970724]
-> >[ 6967.970728] stack backtrace:
-> >[ 6967.970740] Pid: 22147, comm: pm-suspend Not tainted 2.6.33-rc2-git6 #27
-> >[ 6967.970751] Call Trace:
-> >[ 6967.970771]  [<c12cc9bf>] ? printk+0xf/0x18
-> >[ 6967.970791]  [<c104dcdb>] __lock_acquire+0x817/0xb6d
-> >[ 6967.970812]  [<c104cbb2>] ? mark_held_locks+0x43/0x5b
-> >[ 6967.970831]  [<c104cf4c>] ? debug_check_no_locks_freed+0xfd/0x107
-> >[ 6967.970851]  [<c104ce1a>] ? trace_hardirqs_on_caller+0x108/0x130
-> >[ 6967.970871]  [<c104e08d>] lock_acquire+0x5c/0x73
-> >[ 6967.970890]  [<c10d2941>] ? sysfs_hash_and_remove+0x3d/0x4f
-> >[ 6967.970910]  [<c10d3ee6>] sysfs_addrm_finish+0x9a/0xfe
-> >[ 6967.970929]  [<c10d2941>] ? sysfs_hash_and_remove+0x3d/0x4f
-> >[ 6967.970953]  [<c10d2941>] sysfs_hash_and_remove+0x3d/0x4f
-> >[ 6967.970974]  [<c10d4c11>] sysfs_remove_group+0x52/0x81
-> >[ 6967.970993]  [<c12cab5d>] mc_cpu_callback+0x73/0x9a
-> >[ 6967.971014]  [<c10427d0>] notifier_call_chain+0x51/0x78
-> >[ 6967.971034]  [<c104285c>] __raw_notifier_call_chain+0xe/0x10
-> >[ 6967.971054]  [<c12c094b>] _cpu_down+0x7a/0x235
-> >[ 6967.971074]  [<c102eab9>] disable_nonboot_cpus+0x58/0xe0
-> >[ 6967.971093]  [<c1056e20>] suspend_devices_and_enter+0xb9/0x173
-> >[ 6967.971094]  [<c1056fa2>] enter_state+0xc8/0x114
-> >[ 6967.971094]  [<c1056855>] state_store+0x93/0xa7
-> >[ 6967.971094]  [<c10567c2>] ? state_store+0x0/0xa7
-> >[ 6967.971094]  [<c1140595>] kobj_attr_store+0x16/0x22
-> >[ 6967.971094]  [<c10d308e>] sysfs_write_file+0xc0/0xeb
-> >[ 6967.971094]  [<c10d2fce>] ? sysfs_write_file+0x0/0xeb
-> >[ 6967.971094]  [<c109511c>] vfs_write+0x80/0xdf
-> >[ 6967.971094]  [<c109520f>] sys_write+0x3b/0x5d
-> >[ 6967.971094]  [<c1002897>] sysenter_do_call+0x12/0x36
-> >[ 6967.973262] CPU 1 is now offline
-> >[ 6967.973271] lockdep: fixing up alternatives.
->
-> Hmmm, does reverting commit 846f99749ab68b help?
->
+In cfi_intelext_setup and cfi_amdstd_setup, mtd is never NULL.
+Remove unnecessary checks.
 
-Of course it will help, but the problem is not that. That patch helps
-us to detect such a problem... I am still investigating. :-/
+Signed-off-by: Jiri Slaby <jslaby@suse.cz>
+Cc: David Woodhouse <dwmw2@infradead.org>
+Cc: linux-mtd@lists.infradead.org
+---
+ drivers/mtd/chips/cfi_cmdset_0001.c |    6 ++----
+ drivers/mtd/chips/cfi_cmdset_0002.c |    6 ++----
+ 2 files changed, 4 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/mtd/chips/cfi_cmdset_0001.c b/drivers/mtd/chips/cfi_cmdset_0001.c
+index 5fbf29e..9253043 100644
+--- a/drivers/mtd/chips/cfi_cmdset_0001.c
++++ b/drivers/mtd/chips/cfi_cmdset_0001.c
+@@ -615,10 +615,8 @@ static struct mtd_info *cfi_intelext_setup(struct mtd_info *mtd)
+ 	return mtd;
+ 
+  setup_err:
+-	if(mtd) {
+-		kfree(mtd->eraseregions);
+-		kfree(mtd);
+-	}
++	kfree(mtd->eraseregions);
++	kfree(mtd);
+ 	kfree(cfi->cmdset_priv);
+ 	return NULL;
+ }
+diff --git a/drivers/mtd/chips/cfi_cmdset_0002.c b/drivers/mtd/chips/cfi_cmdset_0002.c
+index f3600e8..1ebdcdd 100644
+--- a/drivers/mtd/chips/cfi_cmdset_0002.c
++++ b/drivers/mtd/chips/cfi_cmdset_0002.c
+@@ -494,10 +494,8 @@ static struct mtd_info *cfi_amdstd_setup(struct mtd_info *mtd)
+ 	return mtd;
+ 
+  setup_err:
+-	if(mtd) {
+-		kfree(mtd->eraseregions);
+-		kfree(mtd);
+-	}
++	kfree(mtd->eraseregions);
++	kfree(mtd);
+ 	kfree(cfi->cmdset_priv);
+ 	kfree(cfi->cfiq);
+ 	return NULL;
+-- 
+1.6.5.7
+
