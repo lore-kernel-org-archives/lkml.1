@@ -1,179 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753355Ab0AJVDw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753834Ab0AJVHr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753355Ab0AJVDw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jan 2010 16:03:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752043Ab0AJVDw
+	id S1753834Ab0AJVHr (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jan 2010 16:07:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753071Ab0AJVHq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jan 2010 16:03:52 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:64182 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751917Ab0AJVDv (ORCPT
+	Sun, 10 Jan 2010 16:07:46 -0500
+Received: from mail-fx0-f215.google.com ([209.85.220.215]:61521 "EHLO
+	mail-fx0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752263Ab0AJVHq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jan 2010 16:03:51 -0500
-X-Authority-Analysis: v=1.0 c=1 a=r_nf4N-T2GkA:10 a=u9MXAyz5c2_spzLXuogA:9 a=sznMHr-KvYF9mywwjagA:7 a=dbeXDN9k_icfi3D9oAjYVg1gu6kA:4
-X-Cloudmark-Score: 0
-X-Originating-IP: 74.67.89.75
-Subject: Re: [RFC PATCH] introduce sys_membarrier(): process-wide memory
- barrier
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: paulmck@linux.vnet.ibm.com, Oleg Nesterov <oleg@redhat.com>,
-       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org,
-       josh@joshtriplett.org, tglx@linutronix.de, Valdis.Kletnieks@vt.edu,
-       dhowells@redhat.com, laijs@cn.fujitsu.com, dipankar@in.ibm.com
-In-Reply-To: <20100110171020.GA13329@Krystal>
-References: <1263078327.28171.3792.camel@gandalf.stny.rr.com>
-	 <1263079000.28171.3795.camel@gandalf.stny.rr.com>
-	 <20100110000318.GD9044@linux.vnet.ibm.com> <1263084099.2231.5.camel@frodo>
-	 <20100110014456.GG25790@Krystal> <1263089578.2231.22.camel@frodo>
-	 <20100110052508.GG9044@linux.vnet.ibm.com>
-	 <1263124209.28171.3798.camel@gandalf.stny.rr.com>
-	 <20100110160314.GA10587@Krystal> <1263140480.4561.7.camel@frodo>
-	 <20100110171020.GA13329@Krystal>
-Content-Type: text/plain
-Date: Sun, 10 Jan 2010 16:02:01 -0500
-Message-Id: <1263157321.4561.25.camel@frodo>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 7bit
+	Sun, 10 Jan 2010 16:07:46 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
+        b=fxoFBlm7qb0wytAR5QhmSdPfm8/TlvHItbECrPeIsVE8yqw3N0bissaQDq3YYMtwZH
+         puM9ykXnFqPt5r5WD4up75nRbz6+p0iCeIRbAAvNLA6ylhcq5VLoLwe2v2qc4UKFwTeq
+         1gHFZr5yxNLCQx3SEq/ReoUc8sttltS5JumBE=
+From: Corrado Zoccolo <czoccolo@gmail.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Linux-Kernel <linux-kernel@vger.kernel.org>,
+       Jeff Moyer <jmoyer@redhat.com>, Vivek Goyal <vgoyal@redhat.com>,
+       Shaohua Li <shaohua.li@intel.com>,
+       Gui Jianfeng <guijianfeng@cn.fujitsu.com>,
+       Corrado Zoccolo <czoccolo@gmail.com>
+Subject: [PATCH] cfq-iosched: NCQ SSDs do not need read queue merging
+Date: Sun, 10 Jan 2010 22:08:04 +0100
+Message-Id: <1263157684-13157-1-git-send-email-czoccolo@gmail.com>
+X-Mailer: git-send-email 1.6.4.4
+In-Reply-To: <1263157461-12294-1-git-send-email-czoccolo@gmail.com>
+References: <1263157461-12294-1-git-send-email-czoccolo@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2010-01-10 at 12:10 -0500, Mathieu Desnoyers wrote:
+NCQ SSDs' performances are not affected by
+distance of read requests, so there is no point in having
+overhead to merge such queues.
 
-> > 
-> > 	CPU 0			CPU 1
-> >      ----------		    --------------
-> > 	obj = list->obj;
-> > 				<user space>
-> > 				rcu_read_lock();
-> > 				obj = rcu_dereference(list->obj);
-> > 				obj->foo = bar;
-> > 
-> > 				<preempt>
-> > 				<kernel space>
-> > 
-> > 				schedule();
-> > 				cpumask_clear(mm_cpumask, cpu);
-> > 
-> > 	sys_membarrier();
-> > 	free(obj);
-> > 
-> > 				<store to obj->foo goes to memory>  <- corruption
-> > 
-> 
-> Hrm, having a writer like this in a rcu read-side would be a bit weird.
-> We have to look at the actual rcu_read_lock() implementation in urcu to
-> see why load/stores are important on the rcu read-side.
-> 
+Non-NCQ SSDs showed regression in some special cases, so
+they are ruled out by this patch.
 
-No it is not weird, it is common. The read is on the link list that we
-can access. Yes a write should be protected by other locks, so maybe
-that is the weird part.
+This patch intentionally doesn't affect writes, so
+it changes the queued[] field, to be indexed by
+READ/WRITE instead of SYNC/ASYNC, and only compute proximity
+for queues with WRITE requests.
 
-> (note: _STORE_SHARED is simply a volatile store)
-> 
-> (Thread-local variable, shared with the thread doing synchronize_rcu())
-> struct urcu_reader __thread urcu_reader;
-> 
-> static inline void _rcu_read_lock(void)
-> {
->         long tmp;
-> 
->         tmp = urcu_reader.ctr;
->         if (likely(!(tmp & RCU_GP_CTR_NEST_MASK))) {
->                 _STORE_SHARED(urcu_reader.ctr, _LOAD_SHARED(urcu_gp_ctr));
->                 /*
->                  * Set active readers count for outermost nesting level before
->                  * accessing the pointer. See force_mb_all_threads().
->                  */
->                 barrier();
->         } else {
->                 _STORE_SHARED(urcu_reader.ctr, tmp + RCU_GP_COUNT);
->         }
-> }
-> 
-> So as you see here, we have to ensure that the store to urcu_reader.ctr
-> is globally visible before entering the critical section (previous
-> stores must complete before following loads). For rcu_read_unlock, it's
-> the opposite:
-> 
-> static inline void _rcu_read_unlock(void)
-> {
->         long tmp;
-> 
->         tmp = urcu_reader.ctr;
->         /*
->          * Finish using rcu before decrementing the pointer.
->          * See force_mb_all_threads().
->          */
->         if (likely((tmp & RCU_GP_CTR_NEST_MASK) == RCU_GP_COUNT)) {
->                 barrier();
->                 _STORE_SHARED(urcu_reader.ctr, urcu_reader.ctr - RCU_GP_COUNT);
->         } else {
->                 _STORE_SHARED(urcu_reader.ctr, urcu_reader.ctr - RCU_GP_COUNT);
->         }
-> }
+Signed-off-by: Corrado Zoccolo <czoccolo@gmail.com>
+---
+ block/cfq-iosched.c |   28 +++++++++++++++++-----------
+ 1 files changed, 17 insertions(+), 11 deletions(-)
 
-Thanks for the insight of the code. I need to get around and look at
-your userspace implementation ;-)
-
-> 
-> We need to ensure that previous loads complete before following stores.
-> 
-> Therefore, the race with unlock showing that we need to order loads
-> before stores:
-> 
-> 	CPU 0			CPU 1
->         --------------          --------------
->                                 <user space> (already in read-side C.S.)
->                                 obj = rcu_dereference(list->next);
->                                   -> load list->next
->                                 copy = obj->foo;
->                                 rcu_read_unlock();
->                                   -> store to urcu_reader.ctr
->                                 <urcu_reader.ctr store is globally visible>
->         list_del(obj);
->                                 <preempt>
->                                 <kernel space>
-> 
->                                 schedule();
->                                 cpumask_clear(mm_cpumask, cpu);
-
-				but here we are switching to a new task.
-
-> 
->         sys_membarrier();
->         set global g.p. (urcu_gp_ctr) phase to 1
->         wait for all urcu_reader.ctr in phase 0
->         set global g.p. (urcu_gp_ctr) phase to 0
->         wait for all urcu_reader.ctr in phase 1
->         sys_membarrier();
->         free(obj);
->                                 <list->next load hits memory>
->                                 <obj->foo load hits memory> <- corruption
-
-load of obj->foo is really load foo(obj) into some register. And for the
-above to fail, that means that this load happened even after we switched
-to kernel space, and that load of foo(obj) is still pending to get into
-the thread stack that saved that register.
-
-But I'm sure Paul will point me to some arch that does this ;-)
-
-> 
-> > 		
-> > So, if there's no smp_wmb() between the <preempt> and cpumask_clear()
-> > then we have an issue?
-> 
-> Considering the scenario above, we would need a full smp_mb() (or
-> equivalent) rather than just smp_wmb() to be strictly correct.
-
-I agree with Paul, we should just punt and grab the rq locks. That seems
-to be the safest way without resorting to funny tricks to save 15% on a
-slow path.
-
--- Steve
-
+diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+index 918c7fd..18bce18 100644
+--- a/block/cfq-iosched.c
++++ b/block/cfq-iosched.c
+@@ -108,9 +108,9 @@ struct cfq_queue {
+ 	struct rb_root sort_list;
+ 	/* if fifo isn't expired, next request to serve */
+ 	struct request *next_rq;
+-	/* requests queued in sort_list */
++	/* requests queued in sort_list, indexed by READ/WRITE */
+ 	int queued[2];
+-	/* currently allocated requests */
++	/* currently allocated requests, indexed by READ/WRITE */
+ 	int allocated[2];
+ 	/* fifo list of requests in sort_list */
+ 	struct list_head fifo;
+@@ -436,6 +436,10 @@ static inline void cic_set_cfqq(struct cfq_io_context *cic,
+ 	cic->cfqq[is_sync] = cfqq;
+ }
+ 
++static inline bool is_smart_ssd(struct cfq_data *cfqd)
++{
++	return blk_queue_nonrot(cfqd->queue) && cfqd->hw_tag;
++}
+ /*
+  * We regard a request as SYNC, if it's either a read or has the SYNC bit
+  * set (in which case it could also be direct WRITE).
+@@ -1268,7 +1272,8 @@ static void cfq_prio_tree_add(struct cfq_data *cfqd, struct cfq_queue *cfqq)
+ 		return;
+ 	if (!cfqq->next_rq)
+ 		return;
+-
++	if (is_smart_ssd(cfqd) && !cfqq->queued[WRITE])
++		return;
+ 	cfqq->p_root = &cfqd->prio_trees[cfqq->org_ioprio];
+ 	__cfqq = cfq_prio_tree_lookup(cfqd, cfqq->p_root,
+ 				      blk_rq_pos(cfqq->next_rq), &parent, &p);
+@@ -1337,10 +1342,10 @@ static void cfq_del_cfqq_rr(struct cfq_data *cfqd, struct cfq_queue *cfqq)
+ static void cfq_del_rq_rb(struct request *rq)
+ {
+ 	struct cfq_queue *cfqq = RQ_CFQQ(rq);
+-	const int sync = rq_is_sync(rq);
++	const int rw = rq_data_dir(rq);
+ 
+-	BUG_ON(!cfqq->queued[sync]);
+-	cfqq->queued[sync]--;
++	BUG_ON(!cfqq->queued[rw]);
++	cfqq->queued[rw]--;
+ 
+ 	elv_rb_del(&cfqq->sort_list, rq);
+ 
+@@ -1363,7 +1368,7 @@ static void cfq_add_rq_rb(struct request *rq)
+ 	struct cfq_data *cfqd = cfqq->cfqd;
+ 	struct request *__alias, *prev;
+ 
+-	cfqq->queued[rq_is_sync(rq)]++;
++	cfqq->queued[rq_data_dir(rq)]++;
+ 
+ 	/*
+ 	 * looks a little odd, but the first insert might return an alias.
+@@ -1393,7 +1398,7 @@ static void cfq_add_rq_rb(struct request *rq)
+ static void cfq_reposition_rq_rb(struct cfq_queue *cfqq, struct request *rq)
+ {
+ 	elv_rb_del(&cfqq->sort_list, rq);
+-	cfqq->queued[rq_is_sync(rq)]--;
++	cfqq->queued[rq_data_dir(rq)]--;
+ 	cfq_add_rq_rb(rq);
+ }
+ 
+@@ -1689,7 +1694,8 @@ static struct cfq_queue *cfqq_close(struct cfq_data *cfqd,
+ 	struct cfq_queue *__cfqq;
+ 	sector_t sector = cfqd->last_position;
+ 
+-	if (RB_EMPTY_ROOT(root))
++	if (RB_EMPTY_ROOT(root) ||
++	    (is_smart_ssd(cfqd) && !cur_cfqq->queued[WRITE]))
+ 		return NULL;
+ 
+ 	/*
+@@ -1796,7 +1802,7 @@ static bool cfq_should_idle(struct cfq_data *cfqd, struct cfq_queue *cfqq)
+ 
+ 	/* We do for queues that were marked with idle window flag. */
+ 	if (cfq_cfqq_idle_window(cfqq) &&
+-	   !(blk_queue_nonrot(cfqd->queue) && cfqd->hw_tag))
++	   !is_smart_ssd(cfqd))
+ 		return true;
+ 
+ 	/*
+@@ -1817,7 +1823,7 @@ static void cfq_arm_slice_timer(struct cfq_data *cfqd)
+ 	 * for devices that support queuing, otherwise we still have a problem
+ 	 * with sync vs async workloads.
+ 	 */
+-	if (blk_queue_nonrot(cfqd->queue) && cfqd->hw_tag)
++	if (is_smart_ssd(cfqd))
+ 		return;
+ 
+ 	WARN_ON(!RB_EMPTY_ROOT(&cfqq->sort_list));
+-- 
+1.6.4.4
 
