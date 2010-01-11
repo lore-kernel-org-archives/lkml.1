@@ -1,38 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752281Ab0AKKz4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753026Ab0AKK4Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752281Ab0AKKz4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jan 2010 05:55:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751705Ab0AKKzz
+	id S1753026Ab0AKK4Y (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jan 2010 05:56:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752382Ab0AKK4X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jan 2010 05:55:55 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:42325 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751030Ab0AKKzz (ORCPT
+	Mon, 11 Jan 2010 05:56:23 -0500
+Received: from stinky.trash.net ([213.144.137.162]:59954 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751968Ab0AKK4V (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jan 2010 05:55:55 -0500
-Date: Mon, 11 Jan 2010 10:59:37 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Erik Rigtorp <erik@rigtorp.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Monitoring file descriptors without switching context
-Message-ID: <20100111105937.27d2a830@lxorguk.ukuu.org.uk>
-In-Reply-To: <a57051ba1001110229q2ca28ffbqea37d07735debb52@mail.gmail.com>
-References: <a57051ba1001110229q2ca28ffbqea37d07735debb52@mail.gmail.com>
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.18.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 11 Jan 2010 05:56:21 -0500
+Message-ID: <4B4B03CF.8050004@trash.net>
+Date: Mon, 11 Jan 2010 11:56:15 +0100
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090701)
+MIME-Version: 1.0
+To: Joe Perches <joe@perches.com>
+CC: "David S. Miller" <davem@davemloft.net>, netfilter-devel@vger.kernel.org,
+       netfilter@vger.kernel.org, coreteam@netfilter.org,
+       netdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] net/netfilter/xt_osf.c: Change %pi4 to %pI4
+References: <1262830818.1872.52.camel@Joe-Laptop.home>
+In-Reply-To: <1262830818.1872.52.camel@Joe-Laptop.home>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> What I really need is some way to have the hardware block and monitor
-> IO for me. Would it be feasible to implement a special low latency
-> poll() syscall that uses MONITOR/MWAIT instructions to monitor file
-> descriptors?
+Joe Perches wrote:
+> commit 8a27f7c90ffcb791eed7574922b51fb60b08fc89
+> changed the output style of %pi4 to use fixed
+> width leading zero IP addresses "001.002.003.004".
+> 
+> It's useful when printing multiple lines of
+> addresses, but was a change in output style for
+> some existing uses.
+> 
+> Using %pI4 restores the previous output style.
 
-The futex locks are probably the lowest level interface you've got for
-interlocking between tasks and are very fast. You can also pin tasks to
-groups of cpus so you can create an I/O only core for example.
-
-Alan
+Applied, thanks.
