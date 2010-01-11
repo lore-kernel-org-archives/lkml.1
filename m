@@ -1,353 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752837Ab0AKCAy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752497Ab0AKCBJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752837Ab0AKCAy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jan 2010 21:00:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751150Ab0AKCAy
+	id S1752497Ab0AKCBJ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jan 2010 21:01:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751743Ab0AKCBG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jan 2010 21:00:54 -0500
-Received: from mga02.intel.com ([134.134.136.20]:3441 "EHLO mga02.intel.com"
+	Sun, 10 Jan 2010 21:01:06 -0500
+Received: from mga02.intel.com ([134.134.136.20]:3325 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751028Ab0AKCAx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jan 2010 21:00:53 -0500
+	id S1751589Ab0AKCBD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Jan 2010 21:01:03 -0500
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.49,252,1262592000"; 
-   d="scan'208";a="482921837"
-From: "Zheng, Shaohui" <shaohui.zheng@intel.com>
-To: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "ak@linux.intel.com" <ak@linux.intel.com>,
-       "y-goto@jp.fujitsu.com" <y-goto@jp.fujitsu.com>,
-       Dave Hansen <haveblue@us.ibm.com>,
-       "Wu, Fengguang" <fengguang.wu@intel.com>,
-       "x86@kernel.org" <x86@kernel.org>
-Date: Mon, 11 Jan 2010 10:00:11 +0800
-Subject: [PATCH-RESEND v4] memory-hotplug: create /sys/firmware/memmap entry
- for new memory
-Thread-Topic: [PATCH-RESEND v4] memory-hotplug: create /sys/firmware/memmap
- entry for new memory
-Thread-Index: AcqSYc7No9Bh7CQKTSiepPidmdewGQ==
-Message-ID: <DA586906BA1FFC4384FCFD6429ECE86031560F92@shzsmsx502.ccr.corp.intel.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: yes
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: multipart/mixed;
-	boundary="_002_DA586906BA1FFC4384FCFD6429ECE86031560F92shzsmsx502ccrco_"
+   d="scan'208";a="482921873"
+Date: Mon, 11 Jan 2010 10:01:02 +0800
+From: Shaohua Li <shaohua.li@intel.com>
+To: Corrado Zoccolo <czoccolo@gmail.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
+       "Zhang, Yanmin" <yanmin.zhang@intel.com>
+Subject: Re: [RFC]cfq-iosched: quantum check tweak
+Message-ID: <20100111020102.GD22362@sli10-desk.sh.intel.com>
+References: <20091225091030.GA28365@sli10-desk.sh.intel.com>
+ <4e5e476b0912250144l96c4d34v300910216e5c7a08@mail.gmail.com>
+ <20091228033554.GB15242@sli10-desk.sh.intel.com>
+ <4e5e476b0912280102t2278d7a5ld3e8784f52f2be31@mail.gmail.com>
+ <1262829893.4984.13.camel@sli10-desk.sh.intel.com>
+ <4e5e476b1001071344i4f702496y22f33bc2d4bc834d@mail.gmail.com>
+ <20100108005725.GA3083@sli10-desk.sh.intel.com>
+ <4e5e476b1001081222s179db0a8ob5dc0bf75e11b03e@mail.gmail.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <4e5e476b1001081222s179db0a8ob5dc0bf75e11b03e@mail.gmail.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---_002_DA586906BA1FFC4384FCFD6429ECE86031560F92shzsmsx502ccrco_
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+On Sat, Jan 09, 2010 at 04:22:47AM +0800, Corrado Zoccolo wrote:
+> On Fri, Jan 8, 2010 at 1:57 AM, Shaohua Li <shaohua.li@intel.com> wrote:
+> > On Fri, Jan 08, 2010 at 05:44:27AM +0800, Corrado Zoccolo wrote:
+> >> Hi Shahoua,
+> >>
+> >> On Thu, Jan 7, 2010 at 3:04 AM, Shaohua Li <shaohua.li@intel.com> wrote:
+> >> > On Mon, 2009-12-28 at 17:02 +0800, Corrado Zoccolo wrote:
+> >> >> Hi Shaohua,
+> >> >> On Mon, Dec 28, 2009 at 4:35 AM, Shaohua Li <shaohua.li@intel.com> wrote:
+> >> >> > On Fri, Dec 25, 2009 at 05:44:40PM +0800, Corrado Zoccolo wrote:
+> >> >> >> On Fri, Dec 25, 2009 at 10:10 AM, Shaohua Li <shaohua.li@intel.com> wrote:
+> >> >> >> > Currently a queue can only dispatch up to 4 requests if there are other queues.
+> >> >> >> > This isn't optimal, device can handle more requests, for example, AHCI can
+> >> >> >> > handle 31 requests. I can understand the limit is for fairness, but we could
+> >> >> >> > do some tweaks:
+> >> >> >> > 1. if the queue still has a lot of slice left, sounds we could ignore the limit
+> >> >> >> ok. You can even scale the limit proportionally to the remaining slice
+> >> >> >> (see below).
+> >> >> > I can't understand the meaning of below scale. cfq_slice_used_soon() means
+> >> >> > dispatched requests can finish before slice is used, so other queues will not be
+> >> >> > impacted. I thought/hope a cfq_slice_idle time is enough to finish the
+> >> >> > dispatched requests.
+> >> >> cfq_slice_idle is 8ms, that is the average time to complete 1 request
+> >> >> on most disks. If you have more requests dispatched on a
+> >> >> NCQ-rotational disk (non-RAID), it will take more time. Probably a
+> >> >> linear formula is not the most accurate, but still more accurate than
+> >> >> taking just 1 cfq_slice_idle. If you can experiment a bit, you could
+> >> >> also try:
+> >> >>  cfq_slice_idle * ilog2(nr_dispatched+1)
+> >> >>  cfq_slice_idle * (1<<(ilog2(nr_dispatched+1)>>1))
+> >> >>
+> >> >> >
+> >> >> >> > 2. we could keep the check only when cfq_latency is on. For uses who don't care
+> >> >> >> > about latency should be happy to have device fully piped on.
+> >> >> >> I wouldn't overload low_latency with this meaning. You can obtain the
+> >> >> >> same by setting the quantum to 32.
+> >> >> > As this impact fairness, so natually thought we could use low_latency. I'll remove
+> >> >> > the check in next post.
+> >> >> Great.
+> >> >> >> > I have a test of random direct io of two threads, each has 32 requests one time
+> >> >> >> > without patch: 78m/s
+> >> >> >> > with tweak 1: 138m/s
+> >> >> >> > with two tweaks and disable latency: 156m/s
+> >> >> >>
+> >> >> >> Please, test also with competing seq/random(depth1)/async workloads,
+> >> >> >> and measure also introduced latencies.
+> >> >> > depth1 should be ok, as if device can only send one request, it should not require
+> >> >> > more requests from ioscheduler.
+> >> >> I mean have a run with, at the same time:
+> >> >> * one seq reader,
+> >> >> * h random readers with depth 1 (non-aio)
+> >> >> * one async seq writer
+> >> >> * k random readers with large depth.
+> >> >> In this way, you can see if the changes you introduce to boost your
+> >> >> workload affect more realistic scenarios, in which various workloads
+> >> >> are mixed.
+> >> >> I explicitly add the depth1 random readers, since they are sceduled
+> >> >> differently than the large (>4) depth ones.
+> >> > I tried a fio script which does like your description, but the data
+> >> > isn't stable, especially the write speed, other kind of io speed is
+> >> > stable. Apply below patch doesn't make things worse (still write speed
+> >> > isn't stable, other io is stable), so I can't say if the patch passes
+> >> > the test, but it appears latency reported by fio hasn't change. I adopt
+> >> > the slice_idle * dispatched approach, which I thought should be safe.
+> >>
+> >> I'm doing some tests right now on a single ncq rotational disk, and
+> >> the average service time when submitting with a high depth is halved
+> >> w.r.t. depth 1, so I think you could test also with the formula :
+> >> slice_idle * dispatched / 2. It should give a performance boost,
+> >> without noticeable impact on latency
+> > Thanks for looking at it. can you forward your tests to me so I can
+> > check here?
+> Sure, you can find them at:
+> * simple seek time: http://dl.dropbox.com/u/3525644/stride.c
+> * avg seek time with NCQ: http://dl.dropbox.com/u/3525644/ncq.c
+> > I'll do more aggressive formula next. It shouldn't impact
+> > my SSD which is very fast, each request takes less than 1ms. We'd better
+> > have a mechanism to measure device speed, but jiffies isn't good. I'm thinking
+> > using sched_clock() which has its issue too like having drift between CPUs.
+> I'm using ktime_get() successfully. Measuring is the easy part. The
+> difficult one is decide what to do with the value :)
+BTW, is ktime_get() light enough for a 40k/s call? I thought we should have a very
+light clock for counting.
 
-Resend the memmap patch v4 to mailing-list after follow up fengguang's revi=
-ew=20
-comments.=20
-
-memory-hotplug: create /sys/firmware/memmap entry for hot-added memory
-
-Interface firmware_map_add was not called in explict, Remove it and add fun=
-ction
-firmware_map_add_hotplug as hotplug interface of memmap.
-
-When we hot-add new memory, sysfs does not export memmap entry for it. we a=
-dd
- a call in function add_memory to function firmware_map_add_hotplug.
-
-Add a new function add_sysfs_fw_map_entry to create memmap entry, it can av=
-oid=20
-duplicated codes.
-
-Thanks for the careful review from Fengguang Wu and Dave Hansen.
-
-Signed-off-by: Shaohui Zheng <shaohui.zheng@intel.com>
-Acked-by: Andi Kleen <ak@linux.intel.com>
-Acked-by: Yasunori Goto <y-goto@jp.fujitsu.com>
-Reviewed-by: Wu Fengguang <fengguang.wu@intel.com>
-diff --git a/drivers/firmware/memmap.c b/drivers/firmware/memmap.c
-index 56f9234..11baa6d 100644
---- a/drivers/firmware/memmap.c
-+++ b/drivers/firmware/memmap.c
-@@ -123,20 +123,40 @@ static int firmware_map_add_entry(u64 start, u64 end,
- }
-=20
- /**
-- * firmware_map_add() - Adds a firmware mapping entry.
-+ * Add memmap entry on sysfs
-+ */
-+static int add_sysfs_fw_map_entry(struct firmware_map_entry *entry)
-+{
-+	static int map_entries_nr;
-+	static struct kset *mmap_kset;
-+
-+	if (!mmap_kset) {
-+		mmap_kset =3D kset_create_and_add("memmap", NULL, firmware_kobj);
-+		if (!mmap_kset)
-+			return -ENOMEM;
-+	}
-+
-+	entry->kobj.kset =3D mmap_kset;
-+	if (kobject_add(&entry->kobj, NULL, "%d", map_entries_nr++))
-+		kobject_put(&entry->kobj);
-+
-+	return 0;
-+}
-+
-+/**
-+ * firmware_map_add_early() - Adds a firmware mapping entry.
-  * @start: Start of the memory range.
-  * @end:   End of the memory range (inclusive).
-  * @type:  Type of the memory range.
-  *
-- * This function uses kmalloc() for memory
-- * allocation. Use firmware_map_add_early() if you want to use the bootmem
-- * allocator.
-+ * Adds a firmware mapping entry. This function uses the bootmem allocator
-+ * for memory allocation.
-  *
-  * That function must be called before late_initcall.
-  *
-  * Returns 0 on success, or -ENOMEM if no memory could be allocated.
-  **/
--int firmware_map_add(u64 start, u64 end, const char *type)
-+int __init firmware_map_add_early(u64 start, u64 end, const char *type)
- {
- 	struct firmware_map_entry *entry;
-=20
-@@ -148,27 +168,31 @@ int firmware_map_add(u64 start, u64 end, const char *=
-type)
- }
-=20
- /**
-- * firmware_map_add_early() - Adds a firmware mapping entry.
-+ * firmware_map_add_hotplug() - Adds a firmware mapping entry when we do
-+ * memory hotplug.
-  * @start: Start of the memory range.
-  * @end:   End of the memory range (inclusive).
-  * @type:  Type of the memory range.
-  *
-- * Adds a firmware mapping entry. This function uses the bootmem allocator
-- * for memory allocation. Use firmware_map_add() if you want to use kmallo=
-c().
-- *
-- * That function must be called before late_initcall.
-+ * Adds a firmware mapping entry. This function is for memory hotplug, it =
-is
-+ * simiar with function firmware_map_add_early. the only difference is tha=
-t
-+ * it will create the syfs entry dynamically.
-  *
-  * Returns 0 on success, or -ENOMEM if no memory could be allocated.
-  **/
--int __init firmware_map_add_early(u64 start, u64 end, const char *type)
-+int __meminit firmware_map_add_hotplug(u64 start, u64 end, const char *typ=
-e)
- {
- 	struct firmware_map_entry *entry;
-=20
--	entry =3D alloc_bootmem(sizeof(struct firmware_map_entry));
--	if (WARN_ON(!entry))
-+	entry =3D kzalloc(sizeof(struct firmware_map_entry), GFP_ATOMIC);
-+	if (!entry)
- 		return -ENOMEM;
-=20
--	return firmware_map_add_entry(start, end, type, entry);
-+	firmware_map_add_entry(start, end, type, entry);
-+	/* create the memmap entry */
-+	add_sysfs_fw_map_entry(entry);
-+
-+	return 0;
- }
-=20
- /*
-@@ -214,18 +238,10 @@ static ssize_t memmap_attr_show(struct kobject *kobj,
-  */
- static int __init memmap_init(void)
- {
--	int i =3D 0;
- 	struct firmware_map_entry *entry;
--	struct kset *memmap_kset;
--
--	memmap_kset =3D kset_create_and_add("memmap", NULL, firmware_kobj);
--	if (WARN_ON(!memmap_kset))
--		return -ENOMEM;
-=20
- 	list_for_each_entry(entry, &map_entries, list) {
--		entry->kobj.kset =3D memmap_kset;
--		if (kobject_add(&entry->kobj, NULL, "%d", i++))
--			kobject_put(&entry->kobj);
-+		add_sysfs_fw_map_entry(entry);
- 	}
-=20
- 	return 0;
-diff --git a/include/linux/firmware-map.h b/include/linux/firmware-map.h
-index 875451f..c6dcc1d 100644
---- a/include/linux/firmware-map.h
-+++ b/include/linux/firmware-map.h
-@@ -24,17 +24,17 @@
-  */
- #ifdef CONFIG_FIRMWARE_MEMMAP
-=20
--int firmware_map_add(u64 start, u64 end, const char *type);
- int firmware_map_add_early(u64 start, u64 end, const char *type);
-+int firmware_map_add_hotplug(u64 start, u64 end, const char *type);
-=20
- #else /* CONFIG_FIRMWARE_MEMMAP */
-=20
--static inline int firmware_map_add(u64 start, u64 end, const char *type)
-+static inline int firmware_map_add_early(u64 start, u64 end, const char *t=
-ype)
- {
- 	return 0;
- }
-=20
--static inline int firmware_map_add_early(u64 start, u64 end, const char *t=
-ype)
-+static inline int firmware_map_add_hotplug(u64 start, u64 end, const char =
-*type)
- {
- 	return 0;
- }
-diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
-index 030ce8a..78e34e6 100644
---- a/mm/memory_hotplug.c
-+++ b/mm/memory_hotplug.c
-@@ -28,6 +28,7 @@
- #include <linux/pfn.h>
- #include <linux/suspend.h>
- #include <linux/mm_inline.h>
-+#include <linux/firmware-map.h>
-=20
- #include <asm/tlbflush.h>
-=20
-@@ -523,6 +524,9 @@ int __ref add_memory(int nid, u64 start, u64 size)
- 		BUG_ON(ret);
- 	}
-=20
-+	/* create new memmap entry */
-+	firmware_map_add_hotplug(start, start + size, "System RAM");
-+
- 	goto out;
-=20
- error:
-
-Thanks & Regards,
-Shaohui
-
-
-
-
---_002_DA586906BA1FFC4384FCFD6429ECE86031560F92shzsmsx502ccrco_
-Content-Type: application/octet-stream; name=
-	"memory-hotplug-create-sys-firmware-memmap-entry-for-new-memory-v4.patch"
-Content-Description: memory-hotplug-create-sys-firmware-memmap-entry-for-new-memory-v4.patch
-Content-Disposition: attachment; filename=
-	"memory-hotplug-create-sys-firmware-memmap-entry-for-new-memory-v4.patch";
-	size=5538; creation-date="Mon, 11 Jan 2010 09:59:28 GMT";
-	modification-date="Mon, 11 Jan 2010 17:49:36 GMT"
-Content-Transfer-Encoding: base64
-
-bWVtb3J5LWhvdHBsdWc6IGNyZWF0ZSAvc3lzL2Zpcm13YXJlL21lbW1hcCBlbnRyeSBmb3IgaG90
-LWFkZGVkIG1lbW9yeQoKSW50ZXJmYWNlIGZpcm13YXJlX21hcF9hZGQgd2FzIG5vdCBjYWxsZWQg
-aW4gZXhwbGljdCwgUmVtb3ZlIGl0IGFuZCBhZGQgZnVuY3Rpb24KZmlybXdhcmVfbWFwX2FkZF9o
-b3RwbHVnIGFzIGhvdHBsdWcgaW50ZXJmYWNlIG9mIG1lbW1hcC4KCldoZW4gd2UgaG90LWFkZCBu
-ZXcgbWVtb3J5LCBzeXNmcyBkb2VzIG5vdCBleHBvcnQgbWVtbWFwIGVudHJ5IGZvciBpdC4gd2Ug
-YWRkCiBhIGNhbGwgaW4gZnVuY3Rpb24gYWRkX21lbW9yeSB0byBmdW5jdGlvbiBmaXJtd2FyZV9t
-YXBfYWRkX2hvdHBsdWcuCgpBZGQgYSBuZXcgZnVuY3Rpb24gYWRkX3N5c2ZzX2Z3X21hcF9lbnRy
-eSB0byBjcmVhdGUgbWVtbWFwIGVudHJ5LCBpdCBjYW4gYXZvaWQgCmR1cGxpY2F0ZWQgY29kZXMu
-CgpUaGFua3MgZm9yIHRoZSBjYXJlZnVsIHJldmlldyBmcm9tIEZlbmdndWFuZyBXdSBhbmQgRGF2
-ZSBIYW5zZW4uCgpTaWduZWQtb2ZmLWJ5OiBTaGFvaHVpIFpoZW5nIDxzaGFvaHVpLnpoZW5nQGlu
-dGVsLmNvbT4KQWNrZWQtYnk6IEFuZGkgS2xlZW4gPGFrQGxpbnV4LmludGVsLmNvbT4KQWNrZWQt
-Ynk6IFlhc3Vub3JpIEdvdG8gPHktZ290b0BqcC5mdWppdHN1LmNvbT4KUmV2aWV3ZWQtYnk6IFd1
-IEZlbmdndWFuZyA8ZmVuZ2d1YW5nLnd1QGludGVsLmNvbT4KZGlmZiAtLWdpdCBhL2RyaXZlcnMv
-ZmlybXdhcmUvbWVtbWFwLmMgYi9kcml2ZXJzL2Zpcm13YXJlL21lbW1hcC5jCmluZGV4IDU2Zjky
-MzQuLjExYmFhNmQgMTAwNjQ0Ci0tLSBhL2RyaXZlcnMvZmlybXdhcmUvbWVtbWFwLmMKKysrIGIv
-ZHJpdmVycy9maXJtd2FyZS9tZW1tYXAuYwpAQCAtMTIzLDIwICsxMjMsNDAgQEAgc3RhdGljIGlu
-dCBmaXJtd2FyZV9tYXBfYWRkX2VudHJ5KHU2NCBzdGFydCwgdTY0IGVuZCwKIH0KIAogLyoqCi0g
-KiBmaXJtd2FyZV9tYXBfYWRkKCkgLSBBZGRzIGEgZmlybXdhcmUgbWFwcGluZyBlbnRyeS4KKyAq
-IEFkZCBtZW1tYXAgZW50cnkgb24gc3lzZnMKKyAqLworc3RhdGljIGludCBhZGRfc3lzZnNfZndf
-bWFwX2VudHJ5KHN0cnVjdCBmaXJtd2FyZV9tYXBfZW50cnkgKmVudHJ5KQoreworCXN0YXRpYyBp
-bnQgbWFwX2VudHJpZXNfbnI7CisJc3RhdGljIHN0cnVjdCBrc2V0ICptbWFwX2tzZXQ7CisKKwlp
-ZiAoIW1tYXBfa3NldCkgeworCQltbWFwX2tzZXQgPSBrc2V0X2NyZWF0ZV9hbmRfYWRkKCJtZW1t
-YXAiLCBOVUxMLCBmaXJtd2FyZV9rb2JqKTsKKwkJaWYgKCFtbWFwX2tzZXQpCisJCQlyZXR1cm4g
-LUVOT01FTTsKKwl9CisKKwllbnRyeS0+a29iai5rc2V0ID0gbW1hcF9rc2V0OworCWlmIChrb2Jq
-ZWN0X2FkZCgmZW50cnktPmtvYmosIE5VTEwsICIlZCIsIG1hcF9lbnRyaWVzX25yKyspKQorCQlr
-b2JqZWN0X3B1dCgmZW50cnktPmtvYmopOworCisJcmV0dXJuIDA7Cit9CisKKy8qKgorICogZmly
-bXdhcmVfbWFwX2FkZF9lYXJseSgpIC0gQWRkcyBhIGZpcm13YXJlIG1hcHBpbmcgZW50cnkuCiAg
-KiBAc3RhcnQ6IFN0YXJ0IG9mIHRoZSBtZW1vcnkgcmFuZ2UuCiAgKiBAZW5kOiAgIEVuZCBvZiB0
-aGUgbWVtb3J5IHJhbmdlIChpbmNsdXNpdmUpLgogICogQHR5cGU6ICBUeXBlIG9mIHRoZSBtZW1v
-cnkgcmFuZ2UuCiAgKgotICogVGhpcyBmdW5jdGlvbiB1c2VzIGttYWxsb2MoKSBmb3IgbWVtb3J5
-Ci0gKiBhbGxvY2F0aW9uLiBVc2UgZmlybXdhcmVfbWFwX2FkZF9lYXJseSgpIGlmIHlvdSB3YW50
-IHRvIHVzZSB0aGUgYm9vdG1lbQotICogYWxsb2NhdG9yLgorICogQWRkcyBhIGZpcm13YXJlIG1h
-cHBpbmcgZW50cnkuIFRoaXMgZnVuY3Rpb24gdXNlcyB0aGUgYm9vdG1lbSBhbGxvY2F0b3IKKyAq
-IGZvciBtZW1vcnkgYWxsb2NhdGlvbi4KICAqCiAgKiBUaGF0IGZ1bmN0aW9uIG11c3QgYmUgY2Fs
-bGVkIGJlZm9yZSBsYXRlX2luaXRjYWxsLgogICoKICAqIFJldHVybnMgMCBvbiBzdWNjZXNzLCBv
-ciAtRU5PTUVNIGlmIG5vIG1lbW9yeSBjb3VsZCBiZSBhbGxvY2F0ZWQuCiAgKiovCi1pbnQgZmly
-bXdhcmVfbWFwX2FkZCh1NjQgc3RhcnQsIHU2NCBlbmQsIGNvbnN0IGNoYXIgKnR5cGUpCitpbnQg
-X19pbml0IGZpcm13YXJlX21hcF9hZGRfZWFybHkodTY0IHN0YXJ0LCB1NjQgZW5kLCBjb25zdCBj
-aGFyICp0eXBlKQogewogCXN0cnVjdCBmaXJtd2FyZV9tYXBfZW50cnkgKmVudHJ5OwogCkBAIC0x
-NDgsMjcgKzE2OCwzMSBAQCBpbnQgZmlybXdhcmVfbWFwX2FkZCh1NjQgc3RhcnQsIHU2NCBlbmQs
-IGNvbnN0IGNoYXIgKnR5cGUpCiB9CiAKIC8qKgotICogZmlybXdhcmVfbWFwX2FkZF9lYXJseSgp
-IC0gQWRkcyBhIGZpcm13YXJlIG1hcHBpbmcgZW50cnkuCisgKiBmaXJtd2FyZV9tYXBfYWRkX2hv
-dHBsdWcoKSAtIEFkZHMgYSBmaXJtd2FyZSBtYXBwaW5nIGVudHJ5IHdoZW4gd2UgZG8KKyAqIG1l
-bW9yeSBob3RwbHVnLgogICogQHN0YXJ0OiBTdGFydCBvZiB0aGUgbWVtb3J5IHJhbmdlLgogICog
-QGVuZDogICBFbmQgb2YgdGhlIG1lbW9yeSByYW5nZSAoaW5jbHVzaXZlKS4KICAqIEB0eXBlOiAg
-VHlwZSBvZiB0aGUgbWVtb3J5IHJhbmdlLgogICoKLSAqIEFkZHMgYSBmaXJtd2FyZSBtYXBwaW5n
-IGVudHJ5LiBUaGlzIGZ1bmN0aW9uIHVzZXMgdGhlIGJvb3RtZW0gYWxsb2NhdG9yCi0gKiBmb3Ig
-bWVtb3J5IGFsbG9jYXRpb24uIFVzZSBmaXJtd2FyZV9tYXBfYWRkKCkgaWYgeW91IHdhbnQgdG8g
-dXNlIGttYWxsb2MoKS4KLSAqCi0gKiBUaGF0IGZ1bmN0aW9uIG11c3QgYmUgY2FsbGVkIGJlZm9y
-ZSBsYXRlX2luaXRjYWxsLgorICogQWRkcyBhIGZpcm13YXJlIG1hcHBpbmcgZW50cnkuIFRoaXMg
-ZnVuY3Rpb24gaXMgZm9yIG1lbW9yeSBob3RwbHVnLCBpdCBpcworICogc2ltaWFyIHdpdGggZnVu
-Y3Rpb24gZmlybXdhcmVfbWFwX2FkZF9lYXJseS4gdGhlIG9ubHkgZGlmZmVyZW5jZSBpcyB0aGF0
-CisgKiBpdCB3aWxsIGNyZWF0ZSB0aGUgc3lmcyBlbnRyeSBkeW5hbWljYWxseS4KICAqCiAgKiBS
-ZXR1cm5zIDAgb24gc3VjY2Vzcywgb3IgLUVOT01FTSBpZiBubyBtZW1vcnkgY291bGQgYmUgYWxs
-b2NhdGVkLgogICoqLwotaW50IF9faW5pdCBmaXJtd2FyZV9tYXBfYWRkX2Vhcmx5KHU2NCBzdGFy
-dCwgdTY0IGVuZCwgY29uc3QgY2hhciAqdHlwZSkKK2ludCBfX21lbWluaXQgZmlybXdhcmVfbWFw
-X2FkZF9ob3RwbHVnKHU2NCBzdGFydCwgdTY0IGVuZCwgY29uc3QgY2hhciAqdHlwZSkKIHsKIAlz
-dHJ1Y3QgZmlybXdhcmVfbWFwX2VudHJ5ICplbnRyeTsKIAotCWVudHJ5ID0gYWxsb2NfYm9vdG1l
-bShzaXplb2Yoc3RydWN0IGZpcm13YXJlX21hcF9lbnRyeSkpOwotCWlmIChXQVJOX09OKCFlbnRy
-eSkpCisJZW50cnkgPSBremFsbG9jKHNpemVvZihzdHJ1Y3QgZmlybXdhcmVfbWFwX2VudHJ5KSwg
-R0ZQX0FUT01JQyk7CisJaWYgKCFlbnRyeSkKIAkJcmV0dXJuIC1FTk9NRU07CiAKLQlyZXR1cm4g
-ZmlybXdhcmVfbWFwX2FkZF9lbnRyeShzdGFydCwgZW5kLCB0eXBlLCBlbnRyeSk7CisJZmlybXdh
-cmVfbWFwX2FkZF9lbnRyeShzdGFydCwgZW5kLCB0eXBlLCBlbnRyeSk7CisJLyogY3JlYXRlIHRo
-ZSBtZW1tYXAgZW50cnkgKi8KKwlhZGRfc3lzZnNfZndfbWFwX2VudHJ5KGVudHJ5KTsKKworCXJl
-dHVybiAwOwogfQogCiAvKgpAQCAtMjE0LDE4ICsyMzgsMTAgQEAgc3RhdGljIHNzaXplX3QgbWVt
-bWFwX2F0dHJfc2hvdyhzdHJ1Y3Qga29iamVjdCAqa29iaiwKICAqLwogc3RhdGljIGludCBfX2lu
-aXQgbWVtbWFwX2luaXQodm9pZCkKIHsKLQlpbnQgaSA9IDA7CiAJc3RydWN0IGZpcm13YXJlX21h
-cF9lbnRyeSAqZW50cnk7Ci0Jc3RydWN0IGtzZXQgKm1lbW1hcF9rc2V0OwotCi0JbWVtbWFwX2tz
-ZXQgPSBrc2V0X2NyZWF0ZV9hbmRfYWRkKCJtZW1tYXAiLCBOVUxMLCBmaXJtd2FyZV9rb2JqKTsK
-LQlpZiAoV0FSTl9PTighbWVtbWFwX2tzZXQpKQotCQlyZXR1cm4gLUVOT01FTTsKIAogCWxpc3Rf
-Zm9yX2VhY2hfZW50cnkoZW50cnksICZtYXBfZW50cmllcywgbGlzdCkgewotCQllbnRyeS0+a29i
-ai5rc2V0ID0gbWVtbWFwX2tzZXQ7Ci0JCWlmIChrb2JqZWN0X2FkZCgmZW50cnktPmtvYmosIE5V
-TEwsICIlZCIsIGkrKykpCi0JCQlrb2JqZWN0X3B1dCgmZW50cnktPmtvYmopOworCQlhZGRfc3lz
-ZnNfZndfbWFwX2VudHJ5KGVudHJ5KTsKIAl9CiAKIAlyZXR1cm4gMDsKZGlmZiAtLWdpdCBhL2lu
-Y2x1ZGUvbGludXgvZmlybXdhcmUtbWFwLmggYi9pbmNsdWRlL2xpbnV4L2Zpcm13YXJlLW1hcC5o
-CmluZGV4IDg3NTQ1MWYuLmM2ZGNjMWQgMTAwNjQ0Ci0tLSBhL2luY2x1ZGUvbGludXgvZmlybXdh
-cmUtbWFwLmgKKysrIGIvaW5jbHVkZS9saW51eC9maXJtd2FyZS1tYXAuaApAQCAtMjQsMTcgKzI0
-LDE3IEBACiAgKi8KICNpZmRlZiBDT05GSUdfRklSTVdBUkVfTUVNTUFQCiAKLWludCBmaXJtd2Fy
-ZV9tYXBfYWRkKHU2NCBzdGFydCwgdTY0IGVuZCwgY29uc3QgY2hhciAqdHlwZSk7CiBpbnQgZmly
-bXdhcmVfbWFwX2FkZF9lYXJseSh1NjQgc3RhcnQsIHU2NCBlbmQsIGNvbnN0IGNoYXIgKnR5cGUp
-OworaW50IGZpcm13YXJlX21hcF9hZGRfaG90cGx1Zyh1NjQgc3RhcnQsIHU2NCBlbmQsIGNvbnN0
-IGNoYXIgKnR5cGUpOwogCiAjZWxzZSAvKiBDT05GSUdfRklSTVdBUkVfTUVNTUFQICovCiAKLXN0
-YXRpYyBpbmxpbmUgaW50IGZpcm13YXJlX21hcF9hZGQodTY0IHN0YXJ0LCB1NjQgZW5kLCBjb25z
-dCBjaGFyICp0eXBlKQorc3RhdGljIGlubGluZSBpbnQgZmlybXdhcmVfbWFwX2FkZF9lYXJseSh1
-NjQgc3RhcnQsIHU2NCBlbmQsIGNvbnN0IGNoYXIgKnR5cGUpCiB7CiAJcmV0dXJuIDA7CiB9CiAK
-LXN0YXRpYyBpbmxpbmUgaW50IGZpcm13YXJlX21hcF9hZGRfZWFybHkodTY0IHN0YXJ0LCB1NjQg
-ZW5kLCBjb25zdCBjaGFyICp0eXBlKQorc3RhdGljIGlubGluZSBpbnQgZmlybXdhcmVfbWFwX2Fk
-ZF9ob3RwbHVnKHU2NCBzdGFydCwgdTY0IGVuZCwgY29uc3QgY2hhciAqdHlwZSkKIHsKIAlyZXR1
-cm4gMDsKIH0KZGlmZiAtLWdpdCBhL21tL21lbW9yeV9ob3RwbHVnLmMgYi9tbS9tZW1vcnlfaG90
-cGx1Zy5jCmluZGV4IDAzMGNlOGEuLjc4ZTM0ZTYgMTAwNjQ0Ci0tLSBhL21tL21lbW9yeV9ob3Rw
-bHVnLmMKKysrIGIvbW0vbWVtb3J5X2hvdHBsdWcuYwpAQCAtMjgsNiArMjgsNyBAQAogI2luY2x1
-ZGUgPGxpbnV4L3Bmbi5oPgogI2luY2x1ZGUgPGxpbnV4L3N1c3BlbmQuaD4KICNpbmNsdWRlIDxs
-aW51eC9tbV9pbmxpbmUuaD4KKyNpbmNsdWRlIDxsaW51eC9maXJtd2FyZS1tYXAuaD4KIAogI2lu
-Y2x1ZGUgPGFzbS90bGJmbHVzaC5oPgogCkBAIC01MjMsNiArNTI0LDkgQEAgaW50IF9fcmVmIGFk
-ZF9tZW1vcnkoaW50IG5pZCwgdTY0IHN0YXJ0LCB1NjQgc2l6ZSkKIAkJQlVHX09OKHJldCk7CiAJ
-fQogCisJLyogY3JlYXRlIG5ldyBtZW1tYXAgZW50cnkgKi8KKwlmaXJtd2FyZV9tYXBfYWRkX2hv
-dHBsdWcoc3RhcnQsIHN0YXJ0ICsgc2l6ZSwgIlN5c3RlbSBSQU0iKTsKKwogCWdvdG8gb3V0Owog
-CiBlcnJvcjoK
-
---_002_DA586906BA1FFC4384FCFD6429ECE86031560F92shzsmsx502ccrco_--
+Thanks,
+Shaohua
