@@ -1,62 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752862Ab0AKIts@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752872Ab0AKIvN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752862Ab0AKIts (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jan 2010 03:49:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752785Ab0AKItr
+	id S1752872Ab0AKIvN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jan 2010 03:51:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752832Ab0AKIvM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jan 2010 03:49:47 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:47530 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752555Ab0AKItq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jan 2010 03:49:46 -0500
-Date: Mon, 11 Jan 2010 19:49:41 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: David Miller <davem@davemloft.net>
-Cc: netdev@vger.kernel.org, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, hawk@comx.dk, hadi@cyberus.ca
-Subject: Re: linux-next: manual merge of the net tree with Linus' tree
-Message-Id: <20100111194941.1e20b4a8.sfr@canb.auug.org.au>
-In-Reply-To: <20100110.235927.83024662.davem@davemloft.net>
-References: <20100111133109.a191ee64.sfr@canb.auug.org.au>
-	<20100110.225055.167520274.davem@davemloft.net>
-	<20100111185645.a66c6c8a.sfr@canb.auug.org.au>
-	<20100110.235927.83024662.davem@davemloft.net>
-X-Mailer: Sylpheed 3.0.0beta4 (GTK+ 2.18.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__11_Jan_2010_19_49_41_+1100_KVEspoWUy/3q/dl2"
+	Mon, 11 Jan 2010 03:51:12 -0500
+Received: from zbasel.fortytwo.ch ([193.138.215.60]:52968 "EHLO
+	zbasel.fortytwo.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752831Ab0AKIvM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jan 2010 03:51:12 -0500
+From: Adrian von Bidder <avbidder@fortytwo.ch>
+To: Johannes Hirte <johannes.hirte@fem.tu-ilmenau.de>
+Subject: Re: task imap:2958 blocked for more than 120 seconds
+Date: Mon, 11 Jan 2010 08:34:36 +0100
+User-Agent: KMail/1.12.4 (Linux/2.6.31-1-686; KDE/4.3.4; i686; ; )
+Cc: Chris Mason <chris.mason@oracle.com>, linux-btrfs@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <201001102105.47192.johannes.hirte@fem.tu-ilmenau.de>
+In-Reply-To: <201001102105.47192.johannes.hirte@fem.tu-ilmenau.de>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart3876765.vYeTiJJ8uA";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <201001110834.36865@fortytwo.ch>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__11_Jan_2010_19_49_41_+1100_KVEspoWUy/3q/dl2
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
+--nextPart3876765.vYeTiJJ8uA
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 
-Hi Dave,
+On Sunday 10 January 2010 21.05:46 Johannes Hirte wrote:
+> I've observed this hanging task now several times. Not sure when this
+>  started, but 2.6.32 is affected too, IIRC. I don't have a test pattern
+>  for this. Dovecot imap triggers this from time to time. I've enabled
+>  CONFIG_DETECT_HUNG_TASK now and got this two tasks which hang:
 
-On Sun, 10 Jan 2010 23:59:27 -0800 (PST) David Miller <davem@davemloft.net>=
- wrote:
->
-> I have no personal preference, you can leave it how it is :)
+I've had vey similar hangs occasionally; don't remember if they were the=20
+exact same code path or not.
 
-OK, that is easy for me!
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+"btrfs-vol -b" on an 2T btrfs fs (raid 1 mode over 4 disks) on an arm CPU=20
+has triggered it several times, so it seems a reliable way to reproduce=20
+this.
 
---Signature=_Mon__11_Jan_2010_19_49_41_+1100_KVEspoWUy/3q/dl2
-Content-Type: application/pgp-signature
+Unfortunately log rotation has already killed the messages.  Do you want me=
+=20
+to re-run?  2.6.32 kernel, btrfs-progs from git about 4 weeks ago.
+
+
+cheers
+=2D- vbi
+
+
+=2D-=20
+Place stamp here.
+
+--nextPart3876765.vYeTiJJ8uA
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.10 (GNU/Linux)
+Comment: get my key from http://fortytwo.ch/gpg/92082481
 
-iEYEARECAAYFAktK5iUACgkQjjKRsyhoI8yLrgCfS5nxwpULfMEyGHbqva3VW4wt
-a7QAmweMrOvKwsSM7lgUZ2QTfFDT2X3x
-=vZi5
+iKcEABECAGcFAktK1IxgGmh0dHA6Ly9mb3J0eXR3by5jaC9sZWdhbC9ncGcvZW1h
+aWwuMjAwMjA4MjI/dmVyc2lvbj0xLjUmbWQ1c3VtPTVkZmY4NjhkMTE4NDMyNzYw
+NzFiMjVlYjcwMDZkYTNlAAoJECqqZti935l6SmwAoLEaqUxh+lKv6XodLxZMuiZ4
+tyB+AJ4i+xIr0xINN56M3T29ZfIgD664HA==
+=0lwA
 -----END PGP SIGNATURE-----
 
---Signature=_Mon__11_Jan_2010_19_49_41_+1100_KVEspoWUy/3q/dl2--
+--nextPart3876765.vYeTiJJ8uA--
