@@ -1,31 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754155Ab0AKV2d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753093Ab0AKV1w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754155Ab0AKV2d (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jan 2010 16:28:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752975Ab0AKV21
+	id S1753093Ab0AKV1w (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jan 2010 16:27:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752826Ab0AKV1s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jan 2010 16:28:27 -0500
-Received: from mail-ew0-f209.google.com ([209.85.219.209]:50852 "EHLO
+	Mon, 11 Jan 2010 16:27:48 -0500
+Received: from mail-ew0-f209.google.com ([209.85.219.209]:35373 "EHLO
 	mail-ew0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751815Ab0AKV1r (ORCPT
+	with ESMTP id S1752356Ab0AKV1p (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jan 2010 16:27:47 -0500
+	Mon, 11 Jan 2010 16:27:45 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=sender:from:to:cc:subject:date:message-id:x-mailer:in-reply-to
          :references;
-        b=A3lEhvi2IuHcCXTg45N5z4V5qJzzAj5ZVYwesr6VxOInUEX8jQEkSp1NRrPiMC/z+8
-         BqCnZ9ROAIHKsS/PuhTi0Iti7yzy3jCbuzpG0ouJ6XO3qgdIKeUvEUZqQqmsUysSiSYd
-         aboJ+4lXATJ0V/9Cg9ZWM8DxxtqcgtgNSowsM=
+        b=EXbRtfmcLilfXlm76Tb21pZcO9adhC3cPlU+gR7Zx2yByqt4ZW2KISvyQax5wiDvPI
+         sNVajlmSN3157hm6atDqrkJEBTb4F3w4aRqAPXXI4DH7u8pn0lYa9A8bO8KJTdphrMTh
+         CHpHVXD5f3NR0g4Ty/NJv2yrOkF2mP7lviQhk=
 From: John Kacur <jkacur@redhat.com>
 To: Thomas Gleixner <tglx@linutronix.de>, lkml <linux-kernel@vger.kernel.org>,
        Ingo Molnar <mingo@elte.hu>
 Cc: Clark Williams <williams@redhat.com>, John Kacur <jkacur@redhat.com>
-Subject: [PATCH 25/26] kprobes: Convert to raw_spinlocks
-Date: Mon, 11 Jan 2010 22:26:55 +0100
-Message-Id: <1263245216-14754-26-git-send-email-jkacur@redhat.com>
+Subject: [PATCH 23/26] vgacon: Convert vga console lock to raw_spinlock
+Date: Mon, 11 Jan 2010 22:26:53 +0100
+Message-Id: <1263245216-14754-24-git-send-email-jkacur@redhat.com>
 X-Mailer: git-send-email 1.6.5.2
-In-Reply-To: <1263245216-14754-25-git-send-email-jkacur@redhat.com>
+In-Reply-To: <1263245216-14754-23-git-send-email-jkacur@redhat.com>
 References: <1263245216-14754-1-git-send-email-jkacur@redhat.com>
  <1263245216-14754-2-git-send-email-jkacur@redhat.com>
  <1263245216-14754-3-git-send-email-jkacur@redhat.com>
@@ -49,149 +49,201 @@ References: <1263245216-14754-1-git-send-email-jkacur@redhat.com>
  <1263245216-14754-21-git-send-email-jkacur@redhat.com>
  <1263245216-14754-22-git-send-email-jkacur@redhat.com>
  <1263245216-14754-23-git-send-email-jkacur@redhat.com>
- <1263245216-14754-24-git-send-email-jkacur@redhat.com>
- <1263245216-14754-25-git-send-email-jkacur@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Convert locks which cannot be sleeping locks in preempt-rt to raw_spinlocks.
+Convert locks which cannot be sleeping locks in preempt-rt to raw_spinlocks
 
-See also dc23e836d8d25fe5aa4057d54dae2094fbc614f6
+See also 87f163a2ab9601820c2a6b7d14f81ab3d7d2b642
 
 Signed-off-by: John Kacur <jkacur@redhat.com>
 ---
- include/linux/kprobes.h |    2 +-
- kernel/kprobes.c        |   34 +++++++++++++++++-----------------
- 2 files changed, 18 insertions(+), 18 deletions(-)
+ drivers/video/console/vgacon.c |   42 ++++++++++++++++++++--------------------
+ 1 files changed, 21 insertions(+), 21 deletions(-)
 
-diff --git a/include/linux/kprobes.h b/include/linux/kprobes.h
-index 1b672f7..620df87 100644
---- a/include/linux/kprobes.h
-+++ b/include/linux/kprobes.h
-@@ -170,7 +170,7 @@ struct kretprobe {
- 	int nmissed;
- 	size_t data_size;
- 	struct hlist_head free_instances;
--	spinlock_t lock;
-+	raw_spinlock_t lock;
- };
+diff --git a/drivers/video/console/vgacon.c b/drivers/video/console/vgacon.c
+index cc4bbbe..7f29a2e 100644
+--- a/drivers/video/console/vgacon.c
++++ b/drivers/video/console/vgacon.c
+@@ -51,7 +51,7 @@
+ #include <video/vga.h>
+ #include <asm/io.h>
  
- struct kretprobe_instance {
-diff --git a/kernel/kprobes.c b/kernel/kprobes.c
-index b7df302..40547e6 100644
---- a/kernel/kprobes.c
-+++ b/kernel/kprobes.c
-@@ -73,10 +73,10 @@ static bool kprobes_all_disarmed;
- static DEFINE_MUTEX(kprobe_mutex);	/* Protects kprobe_table */
- static DEFINE_PER_CPU(struct kprobe *, kprobe_instance) = NULL;
- static struct {
--	spinlock_t lock ____cacheline_aligned_in_smp;
-+	raw_spinlock_t lock ____cacheline_aligned_in_smp;
- } kretprobe_table_locks[KPROBE_TABLE_SIZE];
+-static DEFINE_SPINLOCK(vga_lock);
++static DEFINE_RAW_SPINLOCK(vga_lock);
+ static int cursor_size_lastfrom;
+ static int cursor_size_lastto;
+ static u32 vgacon_xres;
+@@ -158,7 +158,7 @@ static inline void write_vga(unsigned char reg, unsigned int val)
+ 	 * ddprintk might set the console position from interrupt
+ 	 * handlers, thus the write has to be IRQ-atomic.
+ 	 */
+-	spin_lock_irqsave(&vga_lock, flags);
++	raw_spin_lock_irqsave(&vga_lock, flags);
  
--static spinlock_t *kretprobe_table_lock_ptr(unsigned long hash)
-+static raw_spinlock_t *kretprobe_table_lock_ptr(unsigned long hash)
- {
- 	return &(kretprobe_table_locks[hash].lock);
- }
-@@ -410,9 +410,9 @@ void __kprobes recycle_rp_inst(struct kretprobe_instance *ri,
- 	hlist_del(&ri->hlist);
- 	INIT_HLIST_NODE(&ri->hlist);
- 	if (likely(rp)) {
--		spin_lock(&rp->lock);
-+		raw_spin_lock(&rp->lock);
- 		hlist_add_head(&ri->hlist, &rp->free_instances);
--		spin_unlock(&rp->lock);
-+		raw_spin_unlock(&rp->lock);
- 	} else
- 		/* Unregistering */
- 		hlist_add_head(&ri->hlist, head);
-@@ -422,34 +422,34 @@ void __kprobes kretprobe_hash_lock(struct task_struct *tsk,
- 			 struct hlist_head **head, unsigned long *flags)
- {
- 	unsigned long hash = hash_ptr(tsk, KPROBE_HASH_BITS);
--	spinlock_t *hlist_lock;
-+	raw_spinlock_t *hlist_lock;
- 
- 	*head = &kretprobe_inst_table[hash];
- 	hlist_lock = kretprobe_table_lock_ptr(hash);
--	spin_lock_irqsave(hlist_lock, *flags);
-+	raw_spin_lock_irqsave(hlist_lock, *flags);
+ #ifndef SLOW_VGA
+ 	v1 = reg + (val & 0xff00);
+@@ -171,7 +171,7 @@ static inline void write_vga(unsigned char reg, unsigned int val)
+ 	outb_p(reg + 1, vga_video_port_reg);
+ 	outb_p(val & 0xff, vga_video_port_val);
+ #endif
+-	spin_unlock_irqrestore(&vga_lock, flags);
++	raw_spin_unlock_irqrestore(&vga_lock, flags);
  }
  
- static void __kprobes kretprobe_table_lock(unsigned long hash,
- 	unsigned long *flags)
- {
--	spinlock_t *hlist_lock = kretprobe_table_lock_ptr(hash);
--	spin_lock_irqsave(hlist_lock, *flags);
-+	raw_spinlock_t *hlist_lock = kretprobe_table_lock_ptr(hash);
-+	raw_spin_lock_irqsave(hlist_lock, *flags);
+ static inline void vga_set_mem_top(struct vc_data *c)
+@@ -668,7 +668,7 @@ static void vgacon_set_cursor_size(int xpos, int from, int to)
+ 	cursor_size_lastfrom = from;
+ 	cursor_size_lastto = to;
+ 
+-	spin_lock_irqsave(&vga_lock, flags);
++	raw_spin_lock_irqsave(&vga_lock, flags);
+ 	if (vga_video_type >= VIDEO_TYPE_VGAC) {
+ 		outb_p(VGA_CRTC_CURSOR_START, vga_video_port_reg);
+ 		curs = inb_p(vga_video_port_val);
+@@ -686,7 +686,7 @@ static void vgacon_set_cursor_size(int xpos, int from, int to)
+ 	outb_p(curs, vga_video_port_val);
+ 	outb_p(VGA_CRTC_CURSOR_END, vga_video_port_reg);
+ 	outb_p(cure, vga_video_port_val);
+-	spin_unlock_irqrestore(&vga_lock, flags);
++	raw_spin_unlock_irqrestore(&vga_lock, flags);
  }
  
- void __kprobes kretprobe_hash_unlock(struct task_struct *tsk,
- 	unsigned long *flags)
- {
- 	unsigned long hash = hash_ptr(tsk, KPROBE_HASH_BITS);
--	spinlock_t *hlist_lock;
-+	raw_spinlock_t *hlist_lock;
+ static void vgacon_cursor(struct vc_data *c, int mode)
+@@ -761,7 +761,7 @@ static int vgacon_doresize(struct vc_data *c,
+ 	unsigned int scanlines = height * c->vc_font.height;
+ 	u8 scanlines_lo = 0, r7 = 0, vsync_end = 0, mode, max_scan;
  
- 	hlist_lock = kretprobe_table_lock_ptr(hash);
--	spin_unlock_irqrestore(hlist_lock, *flags);
-+	raw_spin_unlock_irqrestore(hlist_lock, *flags);
- }
+-	spin_lock_irqsave(&vga_lock, flags);
++	raw_spin_lock_irqsave(&vga_lock, flags);
  
- void __kprobes kretprobe_table_unlock(unsigned long hash, unsigned long *flags)
- {
--	spinlock_t *hlist_lock = kretprobe_table_lock_ptr(hash);
--	spin_unlock_irqrestore(hlist_lock, *flags);
-+	raw_spinlock_t *hlist_lock = kretprobe_table_lock_ptr(hash);
-+	raw_spin_unlock_irqrestore(hlist_lock, *flags);
- }
- 
- /*
-@@ -982,12 +982,12 @@ static int __kprobes pre_handler_kretprobe(struct kprobe *p,
- 
- 	/*TODO: consider to only swap the RA after the last pre_handler fired */
- 	hash = hash_ptr(current, KPROBE_HASH_BITS);
--	spin_lock_irqsave(&rp->lock, flags);
-+	raw_spin_lock_irqsave(&rp->lock, flags);
- 	if (!hlist_empty(&rp->free_instances)) {
- 		ri = hlist_entry(rp->free_instances.first,
- 				struct kretprobe_instance, hlist);
- 		hlist_del(&ri->hlist);
--		spin_unlock_irqrestore(&rp->lock, flags);
-+		raw_spin_unlock_irqrestore(&rp->lock, flags);
- 
- 		ri->rp = rp;
- 		ri->task = current;
-@@ -1004,7 +1004,7 @@ static int __kprobes pre_handler_kretprobe(struct kprobe *p,
- 		kretprobe_table_unlock(hash, &flags);
- 	} else {
- 		rp->nmissed++;
--		spin_unlock_irqrestore(&rp->lock, flags);
-+		raw_spin_unlock_irqrestore(&rp->lock, flags);
+ 	vgacon_xres = width * VGA_FONTWIDTH;
+ 	vgacon_yres = height * c->vc_font.height;
+@@ -812,7 +812,7 @@ static int vgacon_doresize(struct vc_data *c,
+ 		outb_p(vsync_end, vga_video_port_val);
  	}
+ 
+-	spin_unlock_irqrestore(&vga_lock, flags);
++	raw_spin_unlock_irqrestore(&vga_lock, flags);
  	return 0;
  }
-@@ -1040,7 +1040,7 @@ int __kprobes register_kretprobe(struct kretprobe *rp)
- 		rp->maxactive = num_possible_cpus();
+ 
+@@ -895,11 +895,11 @@ static void vga_vesa_blank(struct vgastate *state, int mode)
+ {
+ 	/* save original values of VGA controller registers */
+ 	if (!vga_vesa_blanked) {
+-		spin_lock_irq(&vga_lock);
++		raw_spin_lock_irq(&vga_lock);
+ 		vga_state.SeqCtrlIndex = vga_r(state->vgabase, VGA_SEQ_I);
+ 		vga_state.CrtCtrlIndex = inb_p(vga_video_port_reg);
+ 		vga_state.CrtMiscIO = vga_r(state->vgabase, VGA_MIS_R);
+-		spin_unlock_irq(&vga_lock);
++		raw_spin_unlock_irq(&vga_lock);
+ 
+ 		outb_p(0x00, vga_video_port_reg);	/* HorizontalTotal */
+ 		vga_state.HorizontalTotal = inb_p(vga_video_port_val);
+@@ -922,7 +922,7 @@ static void vga_vesa_blank(struct vgastate *state, int mode)
+ 
+ 	/* assure that video is enabled */
+ 	/* "0x20" is VIDEO_ENABLE_bit in register 01 of sequencer */
+-	spin_lock_irq(&vga_lock);
++	raw_spin_lock_irq(&vga_lock);
+ 	vga_wseq(state->vgabase, VGA_SEQ_CLOCK_MODE, vga_state.ClockingMode | 0x20);
+ 
+ 	/* test for vertical retrace in process.... */
+@@ -958,13 +958,13 @@ static void vga_vesa_blank(struct vgastate *state, int mode)
+ 	/* restore both index registers */
+ 	vga_w(state->vgabase, VGA_SEQ_I, vga_state.SeqCtrlIndex);
+ 	outb_p(vga_state.CrtCtrlIndex, vga_video_port_reg);
+-	spin_unlock_irq(&vga_lock);
++	raw_spin_unlock_irq(&vga_lock);
+ }
+ 
+ static void vga_vesa_unblank(struct vgastate *state)
+ {
+ 	/* restore original values of VGA controller registers */
+-	spin_lock_irq(&vga_lock);
++	raw_spin_lock_irq(&vga_lock);
+ 	vga_w(state->vgabase, VGA_MIS_W, vga_state.CrtMiscIO);
+ 
+ 	outb_p(0x00, vga_video_port_reg);	/* HorizontalTotal */
+@@ -989,7 +989,7 @@ static void vga_vesa_unblank(struct vgastate *state)
+ 	/* restore index/control registers */
+ 	vga_w(state->vgabase, VGA_SEQ_I, vga_state.SeqCtrlIndex);
+ 	outb_p(vga_state.CrtCtrlIndex, vga_video_port_reg);
+-	spin_unlock_irq(&vga_lock);
++	raw_spin_unlock_irq(&vga_lock);
+ }
+ 
+ static void vga_pal_blank(struct vgastate *state)
+@@ -1109,7 +1109,7 @@ static int vgacon_do_font_op(struct vgastate *state,char *arg,int set,int ch512)
  #endif
- 	}
--	spin_lock_init(&rp->lock);
-+	raw_spin_lock_init(&rp->lock);
- 	INIT_HLIST_HEAD(&rp->free_instances);
- 	for (i = 0; i < rp->maxactive; i++) {
- 		inst = kmalloc(sizeof(struct kretprobe_instance) +
-@@ -1227,7 +1227,7 @@ static int __init init_kprobes(void)
- 	for (i = 0; i < KPROBE_TABLE_SIZE; i++) {
- 		INIT_HLIST_HEAD(&kprobe_table[i]);
- 		INIT_HLIST_HEAD(&kretprobe_inst_table[i]);
--		spin_lock_init(&(kretprobe_table_locks[i].lock));
-+		raw_spin_lock_init(&(kretprobe_table_locks[i].lock));
+ 
+ 	unlock_kernel();
+-	spin_lock_irq(&vga_lock);
++	raw_spin_lock_irq(&vga_lock);
+ 	/* First, the Sequencer */
+ 	vga_wseq(state->vgabase, VGA_SEQ_RESET, 0x1);
+ 	/* CPU writes only to map 2 */
+@@ -1125,7 +1125,7 @@ static int vgacon_do_font_op(struct vgastate *state,char *arg,int set,int ch512)
+ 	vga_wgfx(state->vgabase, VGA_GFX_MODE, 0x00);
+ 	/* map start at A000:0000 */
+ 	vga_wgfx(state->vgabase, VGA_GFX_MISC, 0x00);
+-	spin_unlock_irq(&vga_lock);
++	raw_spin_unlock_irq(&vga_lock);
+ 
+ 	if (arg) {
+ 		if (set)
+@@ -1152,7 +1152,7 @@ static int vgacon_do_font_op(struct vgastate *state,char *arg,int set,int ch512)
+ 		}
  	}
  
- 	/*
+-	spin_lock_irq(&vga_lock);
++	raw_spin_lock_irq(&vga_lock);
+ 	/* First, the sequencer, Synchronous reset */
+ 	vga_wseq(state->vgabase, VGA_SEQ_RESET, 0x01);	
+ 	/* CPU writes to maps 0 and 1 */
+@@ -1191,7 +1191,7 @@ static int vgacon_do_font_op(struct vgastate *state,char *arg,int set,int ch512)
+ 		inb_p(video_port_status);
+ 		vga_wattr(state->vgabase, VGA_AR_ENABLE_DISPLAY, 0);	
+ 	}
+-	spin_unlock_irq(&vga_lock);
++	raw_spin_unlock_irq(&vga_lock);
+ 	lock_kernel();
+ 	return 0;
+ }
+@@ -1217,26 +1217,26 @@ static int vgacon_adjust_height(struct vc_data *vc, unsigned fontheight)
+ 	   registers; they are write-only on EGA, but it appears that they
+ 	   are all don't care bits on EGA, so I guess it doesn't matter. */
+ 
+-	spin_lock_irq(&vga_lock);
++	raw_spin_lock_irq(&vga_lock);
+ 	outb_p(0x07, vga_video_port_reg);	/* CRTC overflow register */
+ 	ovr = inb_p(vga_video_port_val);
+ 	outb_p(0x09, vga_video_port_reg);	/* Font size register */
+ 	fsr = inb_p(vga_video_port_val);
+-	spin_unlock_irq(&vga_lock);
++	raw_spin_unlock_irq(&vga_lock);
+ 
+ 	vde = maxscan & 0xff;	/* Vertical display end reg */
+ 	ovr = (ovr & 0xbd) +	/* Overflow register */
+ 	    ((maxscan & 0x100) >> 7) + ((maxscan & 0x200) >> 3);
+ 	fsr = (fsr & 0xe0) + (fontheight - 1);	/*  Font size register */
+ 
+-	spin_lock_irq(&vga_lock);
++	raw_spin_lock_irq(&vga_lock);
+ 	outb_p(0x07, vga_video_port_reg);	/* CRTC overflow register */
+ 	outb_p(ovr, vga_video_port_val);
+ 	outb_p(0x09, vga_video_port_reg);	/* Font size */
+ 	outb_p(fsr, vga_video_port_val);
+ 	outb_p(0x12, vga_video_port_reg);	/* Vertical display limit */
+ 	outb_p(vde, vga_video_port_val);
+-	spin_unlock_irq(&vga_lock);
++	raw_spin_unlock_irq(&vga_lock);
+ 	vga_video_font_height = fontheight;
+ 
+ 	for (i = 0; i < MAX_NR_CONSOLES; i++) {
 -- 
 1.6.5.2
 
