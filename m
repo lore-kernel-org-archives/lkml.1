@@ -1,61 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752606Ab0AKIZU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752613Ab0AKIaG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752606Ab0AKIZU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jan 2010 03:25:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752587Ab0AKIZQ
+	id S1752613Ab0AKIaG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jan 2010 03:30:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752587Ab0AKIaF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jan 2010 03:25:16 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:37776 "EHLO smtps.tip.net.au"
+	Mon, 11 Jan 2010 03:30:05 -0500
+Received: from trinity.fluff.org ([89.16.178.74]:45443 "EHLO trinity.fluff.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752580Ab0AKIZN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jan 2010 03:25:13 -0500
-Date: Mon, 11 Jan 2010 19:25:08 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Avi Kivity <avi@qumranet.com>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Alexander Graf <agraf@suse.de>
-Subject: linux-next: kvm tree build warning
-Message-Id: <20100111192508.d98b1c2b.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 3.0.0beta4 (GTK+ 2.18.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__11_Jan_2010_19_25_08_+1100_u7fLP1zzrbtuzL2b"
+	id S1752332Ab0AKIaD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jan 2010 03:30:03 -0500
+Date: Mon, 11 Jan 2010 08:30:02 +0000
+From: Ben Dooks <ben-linux@fluff.org>
+To: linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org
+Subject: Kconfig with multiple sources  of integer value
+Message-ID: <20100111083002.GA24987@trinity.fluff.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-Disclaimer: These are my views alone.
+X-URL: http://www.fluff.org/
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: ben@trinity.fluff.org
+X-SA-Exim-Scanned: No (on trinity.fluff.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__11_Jan_2010_19_25_08_+1100_u7fLP1zzrbtuzL2b
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+I have a situation (and possibly some more) where having the ability
+for multiple options to affect an integer value, in this case ensuring
+a minimum value.
 
-Hi Avi,
+currently we have the following:
 
-Today's linux-next build (powerpc allyesconfig) produced this warning:
+config S3C24XX_GPIO_EXTRA
+        int
+        default 128 if S3C24XX_GPIO_EXTRA128
+        default 64 if S3C24XX_GPIO_EXTRA64
+        default 0
 
-arch/powerpc/kvm/powerpc.c: In function 'kvm_arch_vcpu_ioctl_run':
-arch/powerpc/kvm/powerpc.c:278: warning: 'gpr' may be used uninitialized in=
- this function
+and various machines select S3C24XX_GPIO_EXTRA64 or S3C24XX_GPIO_EXTR128
+such as:
 
-Yes, I know it is probably a false positive.
+config MACH_OSIRIS
+       ...
+        select S3C24XX_GPIO_EXTRA128
 
-Introduced by commit 7f31fad9aad3bb9df95793d72e037bb4d587ee83 ("KVM: PPC:
-Use accessor functions for GPR access").
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
 
---Signature=_Mon__11_Jan_2010_19_25_08_+1100_u7fLP1zzrbtuzL2b
-Content-Type: application/pgp-signature
+It would be nice if I could say
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+config S3C24XX_GPIO_EXTRA
 
-iEYEARECAAYFAktK4GQACgkQjjKRsyhoI8yJJQCgrH8CfDAN+kQjSMpC/8XPsXwU
-Fv0AoJujyY5vFiKCoHROSkIOPyCjuDoE
-=mwN/
------END PGP SIGNATURE-----
+and then
 
---Signature=_Mon__11_Jan_2010_19_25_08_+1100_u7fLP1zzrbtuzL2b--
+config MACH_OSIRIS
+       ...
+       set_min S3C24XX_GPIO_EXTRA 128
+
+or something similar.
+
+
+-- 
+Ben
+
+Q:      What's a light-year?
+A:      One-third less calories than a regular year.
+
