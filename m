@@ -1,97 +1,162 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753374Ab0AKXus@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752177Ab0AKXwQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753374Ab0AKXus (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jan 2010 18:50:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751647Ab0AKXur
+	id S1752177Ab0AKXwQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jan 2010 18:52:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751422Ab0AKXwQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jan 2010 18:50:47 -0500
-Received: from mail1.radix.net ([207.192.128.31]:50031 "EHLO mail1.radix.net"
+	Mon, 11 Jan 2010 18:52:16 -0500
+Received: from mga02.intel.com ([134.134.136.20]:48897 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751536Ab0AKXur (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jan 2010 18:50:47 -0500
-Subject: Re: [PATCH 1/1] media: video/cx18, fix potential null dereference
-From: Andy Walls <awalls@radix.net>
-To: Jiri Slaby <jslaby@suse.cz>
-Cc: mchehab@redhat.com, hverkuil@xs4all.nl, ivtv-devel@ivtvdriver.org,
-       linux-media@vger.kernel.org, linux-kernel@vger.kernel.org,
-       jirislaby@gmail.com
-In-Reply-To: <1263113806-7532-1-git-send-email-jslaby@suse.cz>
-References: <1263113806-7532-1-git-send-email-jslaby@suse.cz>
+	id S1751249Ab0AKXwP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jan 2010 18:52:15 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,258,1262592000"; 
+   d="scan'208";a="483183635"
+Subject: Re: [PATCH] Revert 2fbd07a5f so machines with BSPs phsyical apic
+ id != 0 can boot
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+Reply-To: Suresh Siddha <suresh.b.siddha@intel.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "ananth@in.ibm.com" <ananth@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Yinghai Lu <yinghai@kernel.org>, lkml <linux-kernel@vger.kernel.org>,
+       "stable@kernel.org" <stable@kernel.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+In-Reply-To: <1263253513.2859.833.camel@sbs-t61.sc.intel.com>
+References: <20100109101038.GA17555@in.ibm.com>
+	 <86802c441001091313y1f64f011t616f08cd282a7123@mail.gmail.com>
+	 <20100110023015.GA2253@in.ibm.com>
+	 <86802c441001092235j79092e6fse18b61e3d7b0ac6@mail.gmail.com>
+	 <20100110102638.GA7838@elte.hu>  <20100111045326.GA11725@in.ibm.com>
+	 <1263245985.2859.497.camel@sbs-t61.sc.intel.com>
+	 <alpine.LFD.2.00.1001111454060.17145@localhost.localdomain>
+	 <1263253513.2859.833.camel@sbs-t61.sc.intel.com>
 Content-Type: text/plain
-Date: Mon, 11 Jan 2010 18:48:29 -0500
-Message-Id: <1263253709.4116.1.camel@palomino.walls.org>
+Organization: Intel Corp
+Date: Mon, 11 Jan 2010 15:51:04 -0800
+Message-Id: <1263253864.2859.846.camel@sbs-t61.sc.intel.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2010-01-10 at 09:56 +0100, Jiri Slaby wrote:
-> Stanse found a potential null dereference in cx18_dvb_start_feed
-> and cx18_dvb_stop_feed. There is a check for stream being NULL,
-> but it is dereferenced earlier. Move the dereference after the
-> check.
+On Mon, 2010-01-11 at 15:45 -0800, Suresh Siddha wrote:
+> On Mon, 2010-01-11 at 14:55 -0800, Linus Torvalds wrote:
+> > 
+> > On Mon, 11 Jan 2010, Suresh Siddha wrote:
+> > > 
+> > > So far, I don't see a need for the revert.
+> > 
+> > It's very easy. It breaks. You don't have a fix. We'll revert it.
 > 
-> Signed-off-by: Jiri Slaby <jslaby@suse.cz>
-
-Reviewed-by: Andy Walls <awalls@radix.net>
-Acked-by: Andy Walls <awalls@radix.net>
-
-Regards,
-Andy
-
-> ---
->  drivers/media/video/cx18/cx18-dvb.c |   18 ++++++++++--------
->  1 files changed, 10 insertions(+), 8 deletions(-)
+> Linus, We are in -rc3 and thought we have few days atleast to sort it
+> out and post the correct fix to the problem, rather than do a quick
+> revert (as we know that the current code is not fundamentally broken).
 > 
-> diff --git a/drivers/media/video/cx18/cx18-dvb.c b/drivers/media/video/cx18/cx18-dvb.c
-> index 71ad2d1..0ad5b63 100644
-> --- a/drivers/media/video/cx18/cx18-dvb.c
-> +++ b/drivers/media/video/cx18/cx18-dvb.c
-> @@ -213,10 +213,14 @@ static int cx18_dvb_start_feed(struct dvb_demux_feed *feed)
->  {
->  	struct dvb_demux *demux = feed->demux;
->  	struct cx18_stream *stream = (struct cx18_stream *) demux->priv;
-> -	struct cx18 *cx = stream->cx;
-> +	struct cx18 *cx;
->  	int ret;
->  	u32 v;
->  
-> +	if (!stream)
-> +		return -EINVAL;
-> +
-> +	cx = stream->cx;
->  	CX18_DEBUG_INFO("Start feed: pid = 0x%x index = %d\n",
->  			feed->pid, feed->index);
->  
-> @@ -253,9 +257,6 @@ static int cx18_dvb_start_feed(struct dvb_demux_feed *feed)
->  	if (!demux->dmx.frontend)
->  		return -EINVAL;
->  
-> -	if (!stream)
-> -		return -EINVAL;
-> -
->  	mutex_lock(&stream->dvb.feedlock);
->  	if (stream->dvb.feeding++ == 0) {
->  		CX18_DEBUG_INFO("Starting Transport DMA\n");
-> @@ -279,13 +280,14 @@ static int cx18_dvb_stop_feed(struct dvb_demux_feed *feed)
->  {
->  	struct dvb_demux *demux = feed->demux;
->  	struct cx18_stream *stream = (struct cx18_stream *)demux->priv;
-> -	struct cx18 *cx = stream->cx;
-> +	struct cx18 *cx;
->  	int ret = -EINVAL;
->  
-> -	CX18_DEBUG_INFO("Stop feed: pid = 0x%x index = %d\n",
-> -			feed->pid, feed->index);
-> -
->  	if (stream) {
-> +		cx = stream->cx;
-> +		CX18_DEBUG_INFO("Stop feed: pid = 0x%x index = %d\n",
-> +				feed->pid, feed->index);
-> +
->  		mutex_lock(&stream->dvb.feedlock);
->  		if (--stream->dvb.feeding == 0) {
->  			CX18_DEBUG_INFO("Stopping Transport DMA\n");
+> But if you want to revert, I have appended a patch to revert this, which
+> has the correct subject, description etc atleast. I can work with Ananth
+> and re-submit this for the next release.
+> 
+
+hmm. This time with the actual "reverted" patch.
+
+---
+From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Subject: Revert "x86, apic: Use logical flat on intel with <= 8 logical cpus"
+
+Revert commit 2fbd07a5f5d1295fa9b0c0564ec27da7c276a75a, as this commit breaks
+an IBM platform with quad-core Xeon cpu's.
+
+According to Suresh, this might be an IBM platform issue, as on other Intel
+platforms with <= 8 logical cpu's, logical flat mode works fine irespective of
+physical apic id values (inline with the xapic architecture).
+    
+Revert this for now because of the IBM platform breakage.
+
+Another version will be re-submitted after the complete analysis.
+
+Signed-off-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Acked-by: Suresh Siddha <suresh.b.siddha@intel.com>
+---
+
+diff --git a/arch/x86/kernel/apic/apic.c b/arch/x86/kernel/apic/apic.c
+index aa57c07..e80f291 100644
+--- a/arch/x86/kernel/apic/apic.c
++++ b/arch/x86/kernel/apic/apic.c
+@@ -62,7 +62,7 @@ unsigned int boot_cpu_physical_apicid = -1U;
+ /*
+  * The highest APIC ID seen during enumeration.
+  *
+- * On AMD, this determines the messaging protocol we can use: if all APIC IDs
++ * This determines the messaging protocol we can use: if all APIC IDs
+  * are in the 0 ... 7 range, then we can use logical addressing which
+  * has some performance advantages (better broadcasting).
+  *
+@@ -1898,14 +1898,24 @@ void __cpuinit generic_processor_info(int apicid, int version)
+ 		max_physical_apicid = apicid;
+ 
+ #ifdef CONFIG_X86_32
+-	switch (boot_cpu_data.x86_vendor) {
+-	case X86_VENDOR_INTEL:
+-		if (num_processors > 8)
+-			def_to_bigsmp = 1;
+-		break;
+-	case X86_VENDOR_AMD:
+-		if (max_physical_apicid >= 8)
++	/*
++	 * Would be preferable to switch to bigsmp when CONFIG_HOTPLUG_CPU=y
++	 * but we need to work other dependencies like SMP_SUSPEND etc
++	 * before this can be done without some confusion.
++	 * if (CPU_HOTPLUG_ENABLED || num_processors > 8)
++	 *       - Ashok Raj <ashok.raj@intel.com>
++	 */
++	if (max_physical_apicid >= 8) {
++		switch (boot_cpu_data.x86_vendor) {
++		case X86_VENDOR_INTEL:
++			if (!APIC_XAPIC(version)) {
++				def_to_bigsmp = 0;
++				break;
++			}
++			/* If P4 and above fall through */
++		case X86_VENDOR_AMD:
+ 			def_to_bigsmp = 1;
++		}
+ 	}
+ #endif
+ 
+diff --git a/arch/x86/kernel/apic/probe_64.c b/arch/x86/kernel/apic/probe_64.c
+index c4cbd30..65edc18 100644
+--- a/arch/x86/kernel/apic/probe_64.c
++++ b/arch/x86/kernel/apic/probe_64.c
+@@ -64,23 +64,16 @@ void __init default_setup_apic_routing(void)
+ 			apic = &apic_x2apic_phys;
+ 		else
+ 			apic = &apic_x2apic_cluster;
++		printk(KERN_INFO "Setting APIC routing to %s\n", apic->name);
+ 	}
+ #endif
+ 
+ 	if (apic == &apic_flat) {
+-		switch (boot_cpu_data.x86_vendor) {
+-		case X86_VENDOR_INTEL:
+-			if (num_processors > 8)
+-				apic = &apic_physflat;
+-			break;
+-		case X86_VENDOR_AMD:
+-			if (max_physical_apicid >= 8)
+-				apic = &apic_physflat;
+-		}
++		if (max_physical_apicid >= 8)
++			apic = &apic_physflat;
++		printk(KERN_INFO "Setting APIC routing to %s\n", apic->name);
+ 	}
+ 
+-	printk(KERN_INFO "Setting APIC routing to %s\n", apic->name);
+-
+ 	if (is_vsmp_box()) {
+ 		/* need to update phys_pkg_id */
+ 		apic->phys_pkg_id = apicid_phys_pkg_id;
+
 
