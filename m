@@ -1,43 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753026Ab0AKK4Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753000Ab0AKK6Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753026Ab0AKK4Y (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jan 2010 05:56:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752382Ab0AKK4X
+	id S1753000Ab0AKK6Y (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jan 2010 05:58:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752132Ab0AKK6X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jan 2010 05:56:23 -0500
-Received: from stinky.trash.net ([213.144.137.162]:59954 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751968Ab0AKK4V (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jan 2010 05:56:21 -0500
-Message-ID: <4B4B03CF.8050004@trash.net>
-Date: Mon, 11 Jan 2010 11:56:15 +0100
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090701)
+	Mon, 11 Jan 2010 05:58:23 -0500
+Received: from thoth.sbs.de ([192.35.17.2]:19689 "EHLO thoth.sbs.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751888Ab0AKK6W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jan 2010 05:58:22 -0500
+X-Greylist: delayed 1574 seconds by postgrey-1.27 at vger.kernel.org; Mon, 11 Jan 2010 05:58:22 EST
+Message-ID: <4B4AFE10.8050109@siemens.com>
+Date: Mon, 11 Jan 2010 11:31:44 +0100
+From: Jan Kiszka <jan.kiszka@siemens.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); de; rv:1.8.1.12) Gecko/20080226 SUSE/2.0.0.12-1.1 Thunderbird/2.0.0.12 Mnenhy/0.7.5.666
 MIME-Version: 1.0
-To: Joe Perches <joe@perches.com>
-CC: "David S. Miller" <davem@davemloft.net>, netfilter-devel@vger.kernel.org,
-       netfilter@vger.kernel.org, coreteam@netfilter.org,
-       netdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] net/netfilter/xt_osf.c: Change %pi4 to %pI4
-References: <1262830818.1872.52.camel@Joe-Laptop.home>
-In-Reply-To: <1262830818.1872.52.camel@Joe-Laptop.home>
-X-Enigmail-Version: 0.95.0
+To: Steven Rostedt <rostedt@goodmis.org>
+CC: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH] recordmcount.pl: x86: Derive arch from bits argument
 Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Joe Perches wrote:
-> commit 8a27f7c90ffcb791eed7574922b51fb60b08fc89
-> changed the output style of %pi4 to use fixed
-> width leading zero IP addresses "001.002.003.004".
-> 
-> It's useful when printing multiple lines of
-> addresses, but was a change in output style for
-> some existing uses.
-> 
-> Using %pI4 restores the previous output style.
+Let the arch argument be overruled by bits. Otherwise, building of
+external modules against a i386 target on a x86-64 host (and likely vice
+versa as well) fails unless ARCH=i386 is explicitly passed to make.
 
-Applied, thanks.
+Signed-off-by: Jan Kiszka <jan.kiszka@siemens.com>
+---
+ scripts/recordmcount.pl |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/scripts/recordmcount.pl b/scripts/recordmcount.pl
+index 92f09fe..ea6f6e3 100755
+--- a/scripts/recordmcount.pl
++++ b/scripts/recordmcount.pl
+@@ -194,7 +194,7 @@ sub check_objcopy
+     }
+ }
+ 
+-if ($arch eq "x86") {
++if ($arch =~ /(x86(_64)?)|(i386)/) {
+     if ($bits == 64) {
+ 	$arch = "x86_64";
+     } else {
+-- 
+1.6.0.2
