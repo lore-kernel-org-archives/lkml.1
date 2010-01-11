@@ -1,102 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752870Ab0AKOgY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752901Ab0AKOqE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752870Ab0AKOgY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jan 2010 09:36:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752267Ab0AKOgY
+	id S1752901Ab0AKOqE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jan 2010 09:46:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752479Ab0AKOqD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jan 2010 09:36:24 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:25164 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751221Ab0AKOgX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jan 2010 09:36:23 -0500
-Message-ID: <4B4B373B.5010802@redhat.com>
-Date: Mon, 11 Jan 2010 09:35:39 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
+	Mon, 11 Jan 2010 09:46:03 -0500
+Received: from relay1.sgi.com ([192.48.179.29]:33367 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752417Ab0AKOqB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jan 2010 09:46:01 -0500
+From: Alex Elder <aelder@sgi.com>
+Message-Id: <201001111445.o0BEjt7M024641@stout.americas.sgi.com>
+Date: Mon, 11 Jan 2010 08:45:55 -0600
+To: torvalds@linux-foundation.org
+Subject: [GIT PULL] XFS update 2 for 2.6.33-rc3
+Cc: linux-kernel@vger.kernel.org, xfs@oss.sgi.com, akpm@linux-foundation.org
+User-Agent: Heirloom mailx 12.4 7/29/08
 MIME-Version: 1.0
-To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-CC: Ingo Molnar <mingo@elte.hu>, Arnaldo Carvalho de Melo <acme@infradead.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       utrace-devel <utrace-devel@redhat.com>, Mark Wielaard <mjw@redhat.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Maneesh Soni <maneesh@in.ibm.com>, Jim Keniston <jkenisto@us.ibm.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC] [PATCH 0/7] UBP, XOL and Uprobes
-References: <20100111122521.22050.3654.sendpatchset@srikar.in.ibm.com>
-In-Reply-To: <20100111122521.22050.3654.sendpatchset@srikar.in.ibm.com>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=ISO-2022-JP
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Srikar Dronamraju wrote:
-> Hi, 
-> 
-> This patchset implements Uprobes which enables you to dynamically
-> break into any routine in a user space application and collect
-> information non-disruptively.  Uprobes is based on utrace and uses
-> x86 instruction decoder.
-> 
-> When a uprobe is registered, Uprobes makes a copy of the probed
-> instruction, stops the probed application, replaces the first
-> byte(s) of the probed instruction with a breakpoint instruction and
-> allows the probed application to continue.  (Uprobes uses the same
-> copy-on-write mechanism so that the breakpoint affects only that
-> process.)
-> 
-> When a CPU hits the breakpoint instruction, Uprobes intercepts the
-> SIGTRAP and finds the associated uprobe.  It then executes the
-> associated handler.  Uprobes single-steps its copy of the probed
-> instruction and resumes execution of the probed process at the
-> instruction following the probepoint. Instruction copies to be
-> single-stepped are stored in a per-process "single-step out of line
-> (XOL) area,"
-> 
-> Uprobes can be used to take advantage of static markers available
-> in user space applications.
-> 
-> Advantages of uprobes over conventional debugging include:
-> 1. Non-disruptive.
-> 2. Uses Execution out of line(XOL), 
-> 3. Much better handling of multithreaded programs because of XOL.
-> 4. No context switch between tracer, tracee.
+3 bug fixes and a tracing change that reduces text footprint
+by about 40% for XFS.
 
-Hi Srikar and Jim,
+					-Alex
 
-Great work! thanks for releasing it.
+The following changes since commit 3c8ad49b015eb115fbd6982f56d530f53cf57f84:
+  Linus Torvalds (1):
+        Merge branch 'for-linus' of git://git.kernel.org/.../roland/infiniband
 
-> 
-> Here is the list of TODO Items.
-> 
-> - Provide a perf interface to uprobes.
+are available in the git repository at:
 
-I think we also need to integrate ftrace-kprobe/uprobe to support
-dynamic trace event. it helps perf probe to support uprobe much
-easier. 
+  git://oss.sgi.com/xfs/xfs for-linus
 
-> - Return probes.
+Christoph Hellwig (2):
+      xfs: use DECLARE_EVENT_CLASS
+      xfs: fix timestamp handling in xfs_setattr
 
-Hmm, I think we need some symbol information for supporting
-return probes in user space. Could you tell me how to work it?
-is that requires some user-space helper?
+Dave Chinner (2):
+      xfs: Don't flush stale inodes
+      xfs: Ensure we force all busy extents in range to disk
 
-> - Support for Other Architectures.
-> - Jump optimization.
-
-I assume that you meant this is "uprobe-booster" to skip
-just single stepping after probing, isn't it?
-
-
-Thank you,
--- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
-
+ fs/xfs/linux-2.6/xfs_acl.c   |    3 +-
+ fs/xfs/linux-2.6/xfs_trace.h | 1141 ++++++++++++++++++++++--------------------
+ fs/xfs/xfs_alloc.c           |   44 +-
+ fs/xfs/xfs_inode.c           |   10 +-
+ fs/xfs/xfs_vnodeops.c        |   93 ++--
+ 5 files changed, 666 insertions(+), 625 deletions(-)
