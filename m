@@ -1,51 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753224Ab0AKQ6I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753072Ab0AKRAz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753224Ab0AKQ6I (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jan 2010 11:58:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752591Ab0AKQ6G
+	id S1753072Ab0AKRAz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jan 2010 12:00:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751224Ab0AKRAy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jan 2010 11:58:06 -0500
-Received: from mail-fx0-f215.google.com ([209.85.220.215]:65325 "EHLO
-	mail-fx0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752509Ab0AKQ6E (ORCPT
+	Mon, 11 Jan 2010 12:00:54 -0500
+Received: from fg-out-1718.google.com ([72.14.220.153]:65170 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751209Ab0AKRAx convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jan 2010 11:58:04 -0500
+	Mon, 11 Jan 2010 12:00:53 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=s2jhYq7rNE6VMjr0WH/Ym/lLF42QbZKI6t6LW+WKd7bJJh5f16BpJMXm2zNRlcmaVG
-         ERQUc7T11DFFU2so1rx6YAj9XyTLlIsDJk9Xub4ZasG0sS/+ZZTaH07EgwvpIR4JXZf8
-         uLV10QcXJlz3obq9TAKMZtKZPnUkRv7s1wDiI=
+         :cc:content-type:content-transfer-encoding;
+        b=Oafth0F/FinMD2uO3o19UOfe3f0ueIVf+3Wvww9wYKS/zqtA3P5TMDLqznUQV9dz8d
+         hm1OJvz1D28cv7HeqyMpHy3WkZ2QHtKHFX0g/KnsOBHkiF9Fh+GH/oTF02hfXHKzAHg1
+         HedqD3d6q6/XXnBkpzqf1spicVjVioGAu5JdU=
 MIME-Version: 1.0
-In-Reply-To: <20100111102620.732b574f@lxorguk.ukuu.org.uk>
-References: <13bb8ce11001101156g3cd88a6bn7c6ce657850ab534@mail.gmail.com>
-	 <20100111001745.21d28340@lxorguk.ukuu.org.uk>
-	 <13bb8ce11001101730w640f99p72ecb1204e59f139@mail.gmail.com>
-	 <13bb8ce11001102040j37e061fn976ec74595f30232@mail.gmail.com>
-	 <20100111102620.732b574f@lxorguk.ukuu.org.uk>
-Date: Mon, 11 Jan 2010 10:58:02 -0600
-Message-ID: <13bb8ce11001110858m26363081g5f883b13a587f1a8@mail.gmail.com>
-Subject: Re: staging/et131x Driver Transmits but does not Receive Packets
-From: Daniel Goller <morfic@gmail.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+In-Reply-To: <20100111164433.GB22899@redhat.com>
+References: <1262211768-10858-1-git-send-email-czoccolo@gmail.com>
+	 <1263157461-12294-1-git-send-email-czoccolo@gmail.com>
+	 <4B4B0AA9.5020900@garzik.org>
+	 <4e5e476b1001110426t2afa0502p7f19a9b24e48ba82@mail.gmail.com>
+	 <20100111131317.GB4489@kernel.dk> <4B4B250D.8020205@garzik.org>
+	 <4e5e476b1001110653x397a8008gfea2f62497be1f42@mail.gmail.com>
+	 <20100111164433.GB22899@redhat.com>
+Date: Mon, 11 Jan 2010 18:00:51 +0100
+Message-ID: <4e5e476b1001110900v579054cam246775a74cf1e854@mail.gmail.com>
+Subject: Re: [PATCH] cfq-iosched: NCQ SSDs do not need read queue merging
+From: Corrado Zoccolo <czoccolo@gmail.com>
+To: Vivek Goyal <vgoyal@redhat.com>
+Cc: Jeff Garzik <jeff@garzik.org>, Jens Axboe <jens.axboe@oracle.com>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>,
+       Jeff Moyer <jmoyer@redhat.com>, Shaohua Li <shaohua.li@intel.com>,
+       Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> That looks like an interrupt problem. With iwlagn and r8169 blacklisted
-> see what interrupt number the et131x gets (cat /proc/interrupts) and see
-> if it goes up whenever you send/receive stuff.
+On Mon, Jan 11, 2010 at 5:44 PM, Vivek Goyal <vgoyal@redhat.com> wrote:
+> On Mon, Jan 11, 2010 at 03:53:00PM +0100, Corrado Zoccolo wrote:
+>> On Mon, Jan 11, 2010 at 2:18 PM, Jeff Garzik <jeff@garzik.org> wrote:
+>> > On 01/11/2010 08:13 AM, Jens Axboe wrote:
+>> >>
+>> >> On Mon, Jan 11 2010, Corrado Zoccolo wrote:
+>> >>>
+>> >>> On Mon, Jan 11, 2010 at 12:25 PM, Jeff Garzik<jeff@garzik.org>  wrote:
+>> >>>>
+>> >>>> On 01/10/2010 04:04 PM, Corrado Zoccolo wrote:
+>> >>>>>
+>> >>>>> NCQ SSDs' performances are not affected by
+>> >>>>> distance of read requests, so there is no point in having
+>> >>>>> overhead to merge such queues.
+>> >>>>>
+>> >>>>> Non-NCQ SSDs showed regression in some special cases, so
+>> >>>>> they are ruled out by this patch.
+>> >>>>>
+>> >>>>> This patch intentionally doesn't affect writes, so
+>> >>>>> it changes the queued[] field, to be indexed by
+>> >>>>> READ/WRITE instead of SYNC/ASYNC, and only compute proximity
+>> >>>>> for queues with WRITE requests.
+>> >>>>>
+>> >>>>> Signed-off-by: Corrado Zoccolo<czoccolo@gmail.com>
+>> >>>>
+>> >>>> That's not really true.  Overhead always increases as the total number
+>> >>>> of
+>> >>>> ATA commands issued increases.
+>> >>>
+>> >>> Jeff Moyer tested the patch on the workload that mostly benefit of
+>> >>> queue merging, and found that
+>> >>> the performance was improved by the patch.
+>> >>> So removing the CPU overhead helps much more than the marginal gain
+>> >>> given by merging on this hardware.
+>> >>
+>> >> It's not always going to be true. On SATA the command overhead is fairly
+>> >> low, but on other hardware that may not be the case. Unless you are CPU
+>> >> bound by your IO device, then merging will always be beneficial. I'm a
+>> >> little behind on emails after my vacation, Jeff what numbers did you
+>> >> generate and on what hardware?
+>> >
+>> >  ...and on what workload?   "the workload that mostly benefit of queue
+>> > merging" is highly subjective, and likely does not cover most workloads SSDs
+>> > will see in the field.
+>> Hi Jeff,
+>> exactly.
+>> The workloads that benefits from queue merging are the ones in which a
+>> sequential
+>> read is actually splitt, and carried out by different processes in
+>> different I/O context, each
+>> sending requests with strides. This is clearly not the best way of
+>> doing sequential access
+>> (I would happily declare those programs as buggy).
+>> CFQ has code that merges queues in this case. I'm disabling the READ
+>> part for NCQ SSDs,
+>> since, as Jeff measured, the code overhead outweight the gain from
+>> merging (if any).
+>
+> Hi Corrado,
+>
+> In Jeff's test case of running read-test2, I am not even sure if any
+> merging between the queues took place or not as on NCQ SSD, we are driving
+> deeper queue depths and unless read-test2 is creating more than 32
+> threads, there might not be any merging taking place at all.
 
-16:        385        385   IO-APIC-fasteoi   uhci_hcd:usb3, uhci_hcd:usb7, eth1
- it does change as i bring it up with IP and: ping -I eth1 192.168.1.156
+Jeff's test was modeled after real use cases: widely used, legacy
+programs like dump.
+Since we often said that splitting the sequential stream in multiple
+threads was not the
+correct approach, and we did introduce the change in the kernel just
+to support those
+programs (not to encourage writing more of this league), we can assume
+that if they
+do not drive deeper queues, no one will. So the overhead is just
+overhead, and will never
+give any benefit.
 
-This is in 2.6.30.10
+I therefore want to remove it, since for SSD it matters.
+>
+> We also don't have any data/numbers what kind of cpu savings does this
+> patch bring in.
 
-You say it would be interesting to see if the driver works in
-2.6.29(".0") or just 2.6.29.x in general?
+Jeff's test showed larger bandwidth with merge disabled, so it implies
+some saving is present.
 
-So far i only tried it in 2.6.29.6, and will check interrupts there in
-a little while.
+Thanks,
+Corrado
+
+>
+> Vivek
+>
+>>
+>> As you said, most workloads don't benefit from queue merging. On those
+>> ones, the patch
+>> just removes an overhead.
+>>
+>> Thanks,
+>> Corrado
+>>
+>> >        Jeff
+>> >
+>> >
+>> >
+>> >
