@@ -1,55 +1,455 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754029Ab0AKTwW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754036Ab0AKTw7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754029Ab0AKTwW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jan 2010 14:52:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754010Ab0AKTwV
+	id S1754036Ab0AKTw7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jan 2010 14:52:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753598Ab0AKTw7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jan 2010 14:52:21 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:34923 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753972Ab0AKTwU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jan 2010 14:52:20 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: davidjon@xenontk.org
-Subject: Re: [Bug #14897] i915: Commit 0e442c60 causes flickering
-Date: Mon, 11 Jan 2010 20:52:57 +0100
-User-Agent: KMail/1.12.3 (Linux/2.6.33-rc3-rjw; KDE/4.3.3; x86_64; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Eric Anholt <eric@anholt.net>, Jesse Barnes <jbarnes@virtuousgeek.org>
-References: <nzLqtSp97aP.A.RGB.hglSLB@chimera> <CXIfLt-ygXM.A.DAC.zglSLB@chimera> <4B4AB589.7080004@xenontk.org>
-In-Reply-To: <4B4AB589.7080004@xenontk.org>
+	Mon, 11 Jan 2010 14:52:59 -0500
+Received: from out4.smtp.messagingengine.com ([66.111.4.28]:49362 "EHLO
+	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753259Ab0AKTw5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jan 2010 14:52:57 -0500
+X-Sasl-enc: OM3LuY/aJhw0fZkYdCl9CdbZoWaFOaJVU6QT93kZLgwC 1263239575
+Message-ID: <4B4B802A.2010709@imap.cc>
+Date: Mon, 11 Jan 2010 20:46:50 +0100
+From: Tilman Schmidt <tilman@imap.cc>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; de; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201001112052.57339.rjw@sisk.pl>
+To: Greg KH <gregkh@suse.de>
+CC: Stephen Rothwell <sfr@canb.auug.org.au>,
+       LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
+       Karsten Keil <isdn@linux-pingi.de>, isdn4linux@listserv.isdn4linux.de
+Subject: Re: Can we remove pci_find_device() yet?
+References: <20100108112236.462a3da2.sfr@canb.auug.org.au> <20100108044646.GC6611@suse.de>
+In-Reply-To: <20100108044646.GC6611@suse.de>
+X-Enigmail-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 11 January 2010, David John wrote:
-> On 01/11/2010 04:26 AM, Rafael J. Wysocki wrote:
-> > This message has been generated automatically as a part of a report
-> > of regressions introduced between 2.6.31 and 2.6.32.
-> > 
-> > The following bug entry is on the current list of known regressions
-> > introduced between 2.6.31 and 2.6.32.  Please verify if it still should
-> > be listed and let me know (either way).
-> > 
-> > 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14897
-> > Subject		: i915: Commit 0e442c60 causes flickering
-> > Submitter	: David John <davidjon@xenontk.org>
-> > Date		: 2009-12-09 17:26 (33 days old)
-> > First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=0e442c60dd39ac6924b11a20497734bd2303744c
-> > References	: http://marc.info/?l=linux-kernel&m=126037889600769&w=4
-> > 
-> > 
-> > 
-> 
-> Still present in 2.6.33-rc3.
+Am 08.01.2010 05:46 schrieb Greg KH:
+> On Fri, Jan 08, 2010 at 11:22:36AM +1100, Stephen Rothwell wrote:
+>>
+>> This interface has been deprecated since November 2006, so can something
+>> be done about the last users (I think only some ISDN drivers)?
 
-Thanks for the update.
+That would be the HiSax I4L drivers.
 
-Rafael
+> Ick, the "new" isdn drivers are still not merged that replace those
+> older ones?  I thought that happened a while ago.
+
+mISDN, which is the designated successor to HiSax, has indeed been
+merged in 2008.
+
+Trouble is, mISDN's userspace interface is completely different from I4L.
+Removing HiSax would therefore break userspace compatibility for current
+users of HiSax supported devices. In order to switch to mISDN they'll
+have to replace all of their ISDN4Linux applications with equivalent
+mISDN ones, and I'm not even sure there is a replacement for everything.
+
+Just an idea - as a stopgap measure, couldn't pci_find_device() be made
+a private function of the HiSax drivers? That way, the remainder of the
+kernel won't be polluted by it anymore, and the PCI_LEGACY config option
+can be dropped. Something like this quick and dirty hack:
+
+diff --git a/drivers/isdn/hisax/Kconfig b/drivers/isdn/hisax/Kconfig
+index 3464ebc..452fde9 100644
+--- a/drivers/isdn/hisax/Kconfig
++++ b/drivers/isdn/hisax/Kconfig
+@@ -109,7 +109,7 @@ config HISAX_16_3
+ 
+ config HISAX_TELESPCI
+ 	bool "Teles PCI"
+-	depends on PCI && PCI_LEGACY && (BROKEN || !(SPARC || PPC || PARISC || M68K || (MIPS && !CPU_LITTLE_ENDIAN) || FRV))
++	depends on PCI && (BROKEN || !(SPARC || PPC || PARISC || M68K || (MIPS && !CPU_LITTLE_ENDIAN) || FRV))
+ 	help
+ 	  This enables HiSax support for the Teles PCI.
+ 	  See <file:Documentation/isdn/README.HiSax> on how to configure it.
+@@ -237,7 +237,7 @@ config HISAX_MIC
+ 
+ config HISAX_NETJET
+ 	bool "NETjet card"
+-	depends on PCI && PCI_LEGACY && (BROKEN || !(SPARC || PPC || PARISC || M68K || (MIPS && !CPU_LITTLE_ENDIAN) || FRV))
++	depends on PCI && (BROKEN || !(SPARC || PPC || PARISC || M68K || (MIPS && !CPU_LITTLE_ENDIAN) || FRV))
+ 	help
+ 	  This enables HiSax support for the NetJet from Traverse
+ 	  Technologies.
+@@ -248,7 +248,7 @@ config HISAX_NETJET
+ 
+ config HISAX_NETJET_U
+ 	bool "NETspider U card"
+-	depends on PCI && PCI_LEGACY && (BROKEN || !(SPARC || PPC || PARISC || M68K || (MIPS && !CPU_LITTLE_ENDIAN) || FRV))
++	depends on PCI && (BROKEN || !(SPARC || PPC || PARISC || M68K || (MIPS && !CPU_LITTLE_ENDIAN) || FRV))
+ 	help
+ 	  This enables HiSax support for the Netspider U interface ISDN card
+ 	  from Traverse Technologies.
+@@ -287,7 +287,7 @@ config HISAX_HSTSAPHIR
+ 
+ config HISAX_BKM_A4T
+ 	bool "Telekom A4T card"
+-	depends on PCI && PCI_LEGACY
++	depends on PCI
+ 	help
+ 	  This enables HiSax support for the Telekom A4T card.
+ 
+@@ -297,7 +297,7 @@ config HISAX_BKM_A4T
+ 
+ config HISAX_SCT_QUADRO
+ 	bool "Scitel Quadro card"
+-	depends on PCI && PCI_LEGACY
++	depends on PCI
+ 	help
+ 	  This enables HiSax support for the Scitel Quadro card.
+ 
+@@ -316,7 +316,7 @@ config HISAX_GAZEL
+ 
+ config HISAX_HFC_PCI
+ 	bool "HFC PCI-Bus cards"
+-	depends on PCI && PCI_LEGACY && (BROKEN || !(SPARC || PPC || PARISC || M68K || (MIPS && !CPU_LITTLE_ENDIAN) || FRV))
++	depends on PCI && (BROKEN || !(SPARC || PPC || PARISC || M68K || (MIPS && !CPU_LITTLE_ENDIAN) || FRV))
+ 	help
+ 	  This enables HiSax support for the HFC-S PCI 2BDS0 based cards.
+ 
+@@ -325,7 +325,7 @@ config HISAX_HFC_PCI
+ 
+ config HISAX_W6692
+ 	bool "Winbond W6692 based cards"
+-	depends on PCI && PCI_LEGACY
++	depends on PCI
+ 	help
+ 	  This enables HiSax support for Winbond W6692 based PCI ISDN cards.
+ 
+@@ -341,7 +341,7 @@ config HISAX_HFC_SX
+ 
+ config HISAX_ENTERNOW_PCI
+ 	bool "Formula-n enter:now PCI card"
+-	depends on HISAX_NETJET && PCI && PCI_LEGACY && (BROKEN || !(SPARC || PPC || PARISC || M68K || (MIPS && !CPU_LITTLE_ENDIAN) || FRV))
++	depends on HISAX_NETJET && PCI && (BROKEN || !(SPARC || PPC || PARISC || M68K || (MIPS && !CPU_LITTLE_ENDIAN) || FRV))
+ 	help
+ 	  This enables HiSax support for the Formula-n enter:now PCI
+ 	  ISDN card.
+@@ -412,7 +412,7 @@ config HISAX_HFC4S8S
+ 
+ config HISAX_FRITZ_PCIPNP
+ 	tristate "AVM Fritz!Card PCI/PCIv2/PnP support (EXPERIMENTAL)"
+-	depends on PCI && PCI_LEGACY && EXPERIMENTAL
++	depends on PCI && EXPERIMENTAL
+ 	help
+ 	  This enables the driver for the AVM Fritz!Card PCI,
+ 	  Fritz!Card PCI v2 and Fritz!Card PnP.
+diff --git a/drivers/isdn/hisax/avm_pci.c b/drivers/isdn/hisax/avm_pci.c
+index 7cabc5a..f8d21a0 100644
+--- a/drivers/isdn/hisax/avm_pci.c
++++ b/drivers/isdn/hisax/avm_pci.c
+@@ -822,15 +822,6 @@ static int __devinit avm_pnp_setup(struct IsdnCardState *cs)
+ 
+ #endif /* __ISAPNP__ */
+ 
+-#ifndef CONFIG_PCI_LEGACY
+-
+-static int __devinit avm_pci_setup(struct IsdnCardState *cs)
+-{
+-	return(1);	/* no-op: success */
+-}
+-
+-#else
+-
+ static struct pci_dev *dev_avm __devinitdata = NULL;
+ 
+ static int __devinit avm_pci_setup(struct IsdnCardState *cs)
+@@ -864,8 +855,6 @@ static int __devinit avm_pci_setup(struct IsdnCardState *cs)
+ 	return (1);
+ }
+ 
+-#endif /* CONFIG_PCI_LEGACY */
+-
+ int __devinit
+ setup_avm_pcipnp(struct IsdnCard *card)
+ {
+diff --git a/drivers/isdn/hisax/diva.c b/drivers/isdn/hisax/diva.c
+index 0b0c2e5..830ad46 100644
+--- a/drivers/isdn/hisax/diva.c
++++ b/drivers/isdn/hisax/diva.c
+@@ -1148,7 +1148,6 @@ static int __devinit setup_diva_isapnp(struct IsdnCard *card)
+ 
+ #endif	/* ISAPNP */
+ 
+-#ifdef CONFIG_PCI_LEGACY
+ static struct pci_dev *dev_diva __devinitdata = NULL;
+ static struct pci_dev *dev_diva_u __devinitdata = NULL;
+ static struct pci_dev *dev_diva201 __devinitdata = NULL;
+@@ -1229,15 +1228,6 @@ static int __devinit setup_diva_pci(struct IsdnCard *card)
+ 	return (1);		/* card found */
+ }
+ 
+-#else	/* if !CONFIG_PCI_LEGACY */
+-
+-static int __devinit setup_diva_pci(struct IsdnCard *card)
+-{
+-	return (-1);	/* card not found; continue search */
+-}
+-
+-#endif	/* CONFIG_PCI_LEGACY */
+-
+ int __devinit
+ setup_diva(struct IsdnCard *card)
+ {
+diff --git a/drivers/isdn/hisax/elsa.c b/drivers/isdn/hisax/elsa.c
+index aa29d1c..28f6620 100644
+--- a/drivers/isdn/hisax/elsa.c
++++ b/drivers/isdn/hisax/elsa.c
+@@ -1025,7 +1025,6 @@ setup_elsa_pcmcia(struct IsdnCard *card)
+ 	       cs->irq);
+ }
+ 
+-#ifdef CONFIG_PCI_LEGACY
+ static 	struct pci_dev *dev_qs1000 __devinitdata = NULL;
+ static 	struct pci_dev *dev_qs3000 __devinitdata = NULL;
+ 
+@@ -1086,15 +1085,6 @@ setup_elsa_pci(struct IsdnCard *card)
+ 	return (1);
+ }
+ 
+-#else
+-
+-static int __devinit
+-setup_elsa_pci(struct IsdnCard *card)
+-{
+-	return (1);
+-}
+-#endif /* CONFIG_PCI_LEGACY */
+-
+ static int __devinit
+ setup_elsa_common(struct IsdnCard *card)
+ {
+diff --git a/drivers/isdn/hisax/gazel.c b/drivers/isdn/hisax/gazel.c
+index 0ea3b46..c25f455 100644
+--- a/drivers/isdn/hisax/gazel.c
++++ b/drivers/isdn/hisax/gazel.c
+@@ -531,7 +531,6 @@ setup_gazelisa(struct IsdnCard *card, struct IsdnCardState *cs)
+ 	return (0);
+ }
+ 
+-#ifdef CONFIG_PCI_LEGACY
+ static struct pci_dev *dev_tel __devinitdata = NULL;
+ 
+ static int __devinit
+@@ -620,7 +619,6 @@ setup_gazelpci(struct IsdnCardState *cs)
+ 
+ 	return (0);
+ }
+-#endif /* CONFIG_PCI_LEGACY */
+ 
+ int __devinit
+ setup_gazel(struct IsdnCard *card)
+@@ -639,14 +637,8 @@ setup_gazel(struct IsdnCard *card)
+ 		if (setup_gazelisa(card, cs))
+ 			return (0);
+ 	} else {
+-
+-#ifdef CONFIG_PCI_LEGACY
+ 		if (setup_gazelpci(cs))
+ 			return (0);
+-#else
+-		printk(KERN_WARNING "Gazel: Card PCI requested and NO_PCI_BIOS, unable to config\n");
+-		return (0);
+-#endif				/* CONFIG_PCI */
+ 	}
+ 
+ 	if (reserve_regions(card, cs)) {
+diff --git a/drivers/isdn/hisax/hisax.h b/drivers/isdn/hisax/hisax.h
+index 0685c19..63c8359 100644
+--- a/drivers/isdn/hisax/hisax.h
++++ b/drivers/isdn/hisax/hisax.h
+@@ -1323,3 +1323,22 @@ void release_tei(struct IsdnCardState *cs);
+ char *HiSax_getrev(const char *revision);
+ int TeiNew(void);
+ void TeiFree(void);
++
++#ifdef CONFIG_PCI
++
++#include <linux/pci.h>
++
++/* FIXME */
++static inline struct pci_dev *pci_find_device(unsigned int vendor,
++					      unsigned int device,
++					      struct pci_dev *from)
++{
++	struct pci_dev *pdev;
++
++	pci_dev_get(from);
++	pdev = pci_get_subsys(vendor, device, PCI_ANY_ID, PCI_ANY_ID, from);
++	pci_dev_put(pdev);
++	return pdev;
++}
++
++#endif
+diff --git a/drivers/isdn/hisax/niccy.c b/drivers/isdn/hisax/niccy.c
+index ef00633..13922f6 100644
+--- a/drivers/isdn/hisax/niccy.c
++++ b/drivers/isdn/hisax/niccy.c
+@@ -297,7 +297,6 @@ int __devinit setup_niccy(struct IsdnCard *card)
+ 			return 0;
+ 		}
+ 	} else {
+-#ifdef CONFIG_PCI_LEGACY
+ 		static struct pci_dev *niccy_dev __devinitdata;
+ 
+ 		u_int pci_ioaddr;
+@@ -350,11 +349,6 @@ int __devinit setup_niccy(struct IsdnCard *card)
+ 			release_region(cs->hw.niccy.isac, 4);
+ 			return 0;
+ 		}
+-#else
+-		printk(KERN_WARNING "Niccy: io0 0 and NO_PCI_BIOS\n");
+-		printk(KERN_WARNING "Niccy: unable to config NICCY PCI\n");
+-		return 0;
+-#endif				/* CONFIG_PCI_LEGACY */
+ 	}
+ 	printk(KERN_INFO "HiSax: NICCY %s config irq:%d data:0x%X ale:0x%X\n",
+ 		(cs->subtyp == 1) ? "PnP" : "PCI",
+diff --git a/drivers/isdn/hisax/sedlbauer.c b/drivers/isdn/hisax/sedlbauer.c
+index 5569a52..5cdcb0d 100644
+--- a/drivers/isdn/hisax/sedlbauer.c
++++ b/drivers/isdn/hisax/sedlbauer.c
+@@ -598,7 +598,6 @@ setup_sedlbauer_isapnp(struct IsdnCard *card, int *bytecnt)
+ }
+ #endif /* __ISAPNP__ */
+ 
+-#ifdef CONFIG_PCI_LEGACY
+ static struct pci_dev *dev_sedl __devinitdata = NULL;
+ 
+ static int __devinit
+@@ -665,16 +664,6 @@ setup_sedlbauer_pci(struct IsdnCard *card)
+ 	return (1);
+ }
+ 
+-#else
+-
+-static int __devinit
+-setup_sedlbauer_pci(struct IsdnCard *card)
+-{
+-	return (1);
+-}
+-
+-#endif /* CONFIG_PCI_LEGACY */
+-
+ int __devinit
+ setup_sedlbauer(struct IsdnCard *card)
+ {
+diff --git a/drivers/pci/Kconfig b/drivers/pci/Kconfig
+index b1ecefa..7858a11 100644
+--- a/drivers/pci/Kconfig
++++ b/drivers/pci/Kconfig
+@@ -21,17 +21,6 @@ config PCI_MSI
+ 
+ 	   If you don't know what to do here, say N.
+ 
+-config PCI_LEGACY
+-	bool "Enable deprecated pci_find_* API"
+-	depends on PCI
+-	default y
+-	help
+-	  Say Y here if you want to include support for the deprecated
+-	  pci_find_device() API.  Most drivers have been converted over
+-	  to using the proper hotplug APIs, so this option serves to
+-	  include/exclude only a few drivers that are still using this
+-	  API.
+-
+ config PCI_DEBUG
+ 	bool "PCI Debugging"
+ 	depends on PCI && DEBUG_KERNEL
+diff --git a/drivers/pci/Makefile b/drivers/pci/Makefile
+index 4df48d5..f635608 100644
+--- a/drivers/pci/Makefile
++++ b/drivers/pci/Makefile
+@@ -8,9 +8,6 @@ obj-y		+= access.o bus.o probe.o remove.o pci.o quirks.o \
+ obj-$(CONFIG_PROC_FS) += proc.o
+ obj-$(CONFIG_SYSFS) += slot.o
+ 
+-obj-$(CONFIG_PCI_LEGACY) += legacy.o
+-CFLAGS_legacy.o += -Wno-deprecated-declarations
+-
+ # Build PCI Express stuff if needed
+ obj-$(CONFIG_PCIEPORTBUS) += pcie/
+ 
+diff --git a/drivers/pci/legacy.c b/drivers/pci/legacy.c
+deleted file mode 100644
+index 871f65c..0000000
+--- a/drivers/pci/legacy.c
++++ /dev/null
+@@ -1,34 +0,0 @@
+-#include <linux/init.h>
+-#include <linux/pci.h>
+-#include <linux/module.h>
+-#include <linux/interrupt.h>
+-#include "pci.h"
+-
+-/**
+- * pci_find_device - begin or continue searching for a PCI device by vendor/device id
+- * @vendor: PCI vendor id to match, or %PCI_ANY_ID to match all vendor ids
+- * @device: PCI device id to match, or %PCI_ANY_ID to match all device ids
+- * @from: Previous PCI device found in search, or %NULL for new search.
+- *
+- * Iterates through the list of known PCI devices.  If a PCI device is found
+- * with a matching @vendor and @device, a pointer to its device structure is
+- * returned.  Otherwise, %NULL is returned.
+- * A new search is initiated by passing %NULL as the @from argument.
+- * Otherwise if @from is not %NULL, searches continue from next device
+- * on the global list.
+- *
+- * NOTE: Do not use this function any more; use pci_get_device() instead, as
+- * the PCI device returned by this function can disappear at any moment in
+- * time.
+- */
+-struct pci_dev *pci_find_device(unsigned int vendor, unsigned int device,
+-				struct pci_dev *from)
+-{
+-	struct pci_dev *pdev;
+-
+-	pci_dev_get(from);
+-	pdev = pci_get_subsys(vendor, device, PCI_ANY_ID, PCI_ANY_ID, from);
+-	pci_dev_put(pdev);
+-	return pdev;
+-}
+-EXPORT_SYMBOL(pci_find_device);
+diff --git a/include/linux/pci.h b/include/linux/pci.h
+index 174e539..dd9682c 100644
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -615,12 +615,6 @@ extern void pci_sort_breadthfirst(void);
+ 
+ /* Generic PCI functions exported to card drivers */
+ 
+-#ifdef CONFIG_PCI_LEGACY
+-struct pci_dev __deprecated *pci_find_device(unsigned int vendor,
+-					     unsigned int device,
+-					     struct pci_dev *from);
+-#endif /* CONFIG_PCI_LEGACY */
+-
+ enum pci_lost_interrupt_reason {
+ 	PCI_LOST_IRQ_NO_INFORMATION = 0,
+ 	PCI_LOST_IRQ_DISABLE_MSI,
+@@ -973,13 +967,6 @@ static inline int pci_proc_domain(struct pci_bus *bus)
+ _PCI_NOP_ALL(read, *)
+ _PCI_NOP_ALL(write,)
+ 
+-static inline struct pci_dev *pci_find_device(unsigned int vendor,
+-					      unsigned int device,
+-					      struct pci_dev *from)
+-{
+-	return NULL;
+-}
+-
+ static inline struct pci_dev *pci_get_device(unsigned int vendor,
+ 					     unsigned int device,
+ 					     struct pci_dev *from)
+
+-- 
+Tilman Schmidt                    E-Mail: tilman@imap.cc
+Bonn, Germany
+Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
+Ungeöffnet mindestens haltbar bis: (siehe Rückseite)
