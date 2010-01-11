@@ -1,60 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752086Ab0AKHFe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752018Ab0AKH1c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752086Ab0AKHFe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jan 2010 02:05:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751953Ab0AKHFd
+	id S1752018Ab0AKH1c (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jan 2010 02:27:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751324Ab0AKH1b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jan 2010 02:05:33 -0500
-Received: from mail.gmx.net ([213.165.64.20]:54086 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751836Ab0AKHFc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jan 2010 02:05:32 -0500
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX19Liq4yFvFLxn5LPkfDffnqXGjTuhYolhXoodr6jv
-	qUiC0eamHK0exa
-Subject: Re: [Bug #14621] specjbb2005 and aim7 regression with 2.6.32-rc
- kernels
-From: Mike Galbraith <efault@gmx.de>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Gautham R Shenoy <ego@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-In-Reply-To: <CXIfLt-ygXM.A.DuD.cilSLB@chimera>
-References: <nzLqtSp97aP.A.RGB.hglSLB@chimera>
-	 <CXIfLt-ygXM.A.DuD.cilSLB@chimera>
-Content-Type: text/plain
-Date: Mon, 11 Jan 2010 08:05:28 +0100
-Message-Id: <1263193528.6444.21.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
+	Mon, 11 Jan 2010 02:27:31 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:37646 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751105Ab0AKH1b (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jan 2010 02:27:31 -0500
+Message-ID: <4B4AD2CE.8040207@zytor.com>
+Date: Sun, 10 Jan 2010 23:27:10 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
+MIME-Version: 1.0
+To: "Martin K. Petersen" <martin.petersen@oracle.com>
+CC: Andreas Dilger <adilger@sun.com>, Karel Zak <kzak@redhat.com>,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       util-linux-ng@vger.kernel.org
+Subject: Re: [ANNOUNCE] util-linux-ng v2.17 (stable)
+References: <20100108093302.GS1969@nb.net.home> <4B47A713.9060405@zytor.com>	<329167C1-CF54-4742-B0B7-AD0B9DEFDEC1@sun.com> <yq1ocl187ww.fsf@sermon.lab.mkp.net>
+In-Reply-To: <yq1ocl187ww.fsf@sermon.lab.mkp.net>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.55
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2010-01-10 at 23:56 +0100, Rafael J. Wysocki wrote:
-> This message has been generated automatically as a part of a report
-> of regressions introduced between 2.6.31 and 2.6.32.
+On 01/10/2010 10:36 PM, Martin K. Petersen wrote:
+>>>>>> "Andreas" == Andreas Dilger <adilger@sun.com> writes:
 > 
-> The following bug entry is on the current list of known regressions
-> introduced between 2.6.31 and 2.6.32.  Please verify if it still should
-> be listed and let me know (either way).
+> Andreas> I agree whole heartedly.  We steer users very sharply away from
+> Andreas> using partitions at all, because on h/w RAID devices the
+> Andreas> 512-byte offset from fdisk completely kills RAID-5/6
+> Andreas> performance.
 > 
+> I don't have a problem aligning to 1MB (taking alignment_offset into
+> account) by default but there needs to be an easy override.  There are
+> RAID arrays that internally compensate for the legacy 63 sector offset
+> and we'll cause misalignment if we start at 1MB on those.
 > 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14621
-> Subject		: specjbb2005 and aim7 regression with 2.6.32-rc kernels
-> Submitter	: Zhang, Yanmin <yanmin_zhang@linux.intel.com>
-> Date		: 2009-11-06 7:38 (66 days old)
-> References	: http://marc.info/?l=linux-kernel&m=125749310413174&w=4
+> I'm heavily lobbying our storage partners to make sure they fill out the
+> right SCSI bits if their LUNs are not naturally aligned.  But there are
+> obviously going to be legacy devices out there that will need manual
+> alignment compensation.
+> 
 
-FWIW, I couldn't reproduce the aim7 regression with my one little disk,
-the opposite in fact, attributable to cfq low_latency switch.
+Yes, but we shouldn't default to braindead mode.
 
-(don't have specjbb2005, can't try to reproduce that one)
+	-hpa
 
-	-Mike
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
