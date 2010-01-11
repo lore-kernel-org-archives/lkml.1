@@ -1,62 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750920Ab0AKLZe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752862Ab0AKL1w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750920Ab0AKLZe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jan 2010 06:25:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752432Ab0AKLZd
+	id S1752862Ab0AKL1w (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jan 2010 06:27:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751859Ab0AKL1v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jan 2010 06:25:33 -0500
-Received: from mail-yx0-f187.google.com ([209.85.210.187]:33427 "EHLO
-	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750958Ab0AKLZc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jan 2010 06:25:32 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=Z8mAyjqzoGn0PoVWBDzqcn0yR7NgZUA20TcDAuZvlqgmlHlxqfblo4X7VpC+dg+K0D
-         +SrOELdK8q/1w3HVcriNiGImoutYNvvq7Ik+dH/Ri1DGYYH+mT7SFKpvBbsEBuWW6nBw
-         fmTE5ac/20uvaakvE5O8gKAiftVIP/XYOKia0=
-Message-ID: <4B4B0AA9.5020900@garzik.org>
-Date: Mon, 11 Jan 2010 06:25:29 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
-MIME-Version: 1.0
-To: Corrado Zoccolo <czoccolo@gmail.com>
-CC: Jens Axboe <jens.axboe@oracle.com>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>,
-       Jeff Moyer <jmoyer@redhat.com>, Vivek Goyal <vgoyal@redhat.com>,
-       Shaohua Li <shaohua.li@intel.com>,
-       Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-Subject: Re: [PATCH] cfq-iosched: NCQ SSDs do not need read queue merging
-References: <1262211768-10858-1-git-send-email-czoccolo@gmail.com> <1263157461-12294-1-git-send-email-czoccolo@gmail.com>
-In-Reply-To: <1263157461-12294-1-git-send-email-czoccolo@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 11 Jan 2010 06:27:51 -0500
+Received: from mail.perches.com ([173.55.12.10]:1059 "EHLO mail.perches.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751028Ab0AKL1v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jan 2010 06:27:51 -0500
+Subject: [PATCH V2] MAINTAINERS: netfilter - Document netfilter and
+ netfilter-core lists purposes
+From: Joe Perches <joe@perches.com>
+To: Patrick McHardy <kaber@trash.net>
+Cc: linux-kernel@vger.kernel.org, netfilter-devel@vger.kernel.org,
+       netdev@vger.kernel.org
+In-Reply-To: <4B4B0806.40801@trash.net>
+References: <cover.1262726222.git.joe@perches.com>
+	 <bccf36219f3ea5a9b7565734bc87095bc986dbe0.1262726222.git.joe@perches.com>
+	 <1262805798.1952.105.camel@Joe-Laptop.home>  <4B4B02BE.5060209@trash.net>
+	 <1263208183.1907.50.camel@Joe-Laptop.home>  <4B4B0806.40801@trash.net>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 11 Jan 2010 03:27:49 -0800
+Message-ID: <1263209269.1907.61.camel@Joe-Laptop.home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/10/2010 04:04 PM, Corrado Zoccolo wrote:
-> NCQ SSDs' performances are not affected by
-> distance of read requests, so there is no point in having
-> overhead to merge such queues.
->
-> Non-NCQ SSDs showed regression in some special cases, so
-> they are ruled out by this patch.
->
-> This patch intentionally doesn't affect writes, so
-> it changes the queued[] field, to be indexed by
-> READ/WRITE instead of SYNC/ASYNC, and only compute proximity
-> for queues with WRITE requests.
->
-> Signed-off-by: Corrado Zoccolo<czoccolo@gmail.com>
+> On Mon, 2010-01-11 at 11:51 +0100, Patrick McHardy wrote:
+> it's enough to CC netfilter-devel and optionally
+> netdev on patches, netfilter and netfilter-core are unnecessary.
+> On Mon, 2010-01-11 at 12:14 +0100, Patrick McHardy wrote:
+> A comment stating the purpose of each list would be more appropriate.
+> netfilter-devel is for developers and patches, netfilter is for users
+> and netfilter-core is only meant to reach the coreteam privately.
 
-That's not really true.  Overhead always increases as the total number 
-of ATA commands issued increases.
+Adding "subscribers-only" after the list address stops
+scripts/get_maintainer.pl from including the address
+unless --s is used.  Doesn't matter if the list really
+is subscribers-only or not.
 
-	Jeff
+Signed-off-by: Joe Perches <joe@perches.com>
 
-
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 745643b..ea5ddc8 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -3742,8 +3742,8 @@ P:	Harald Welte
+ P:	Jozsef Kadlecsik
+ M:	Patrick McHardy <kaber@trash.net>
+ L:	netfilter-devel@vger.kernel.org
+-L:	netfilter@vger.kernel.org
+-L:	coreteam@netfilter.org
++L:	netfilter@vger.kernel.org	for user issues, not subscribers-only
++L:	coreteam@netfilter.org		for private emails, not subscribers-only
+ W:	http://www.netfilter.org/
+ W:	http://www.iptables.org/
+ T:	git git://git.kernel.org/pub/scm/linux/kernel/git/kaber/nf-2.6.git
 
 
