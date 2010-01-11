@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753750Ab0AKTFR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753882Ab0AKTJl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753750Ab0AKTFR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jan 2010 14:05:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753475Ab0AKTFQ
+	id S1753882Ab0AKTJl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jan 2010 14:09:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752274Ab0AKTJk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jan 2010 14:05:16 -0500
-Received: from mail-ew0-f209.google.com ([209.85.219.209]:45828 "EHLO
+	Mon, 11 Jan 2010 14:09:40 -0500
+Received: from mail-ew0-f209.google.com ([209.85.219.209]:53650 "EHLO
 	mail-ew0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753509Ab0AKTFP convert rfc822-to-8bit (ORCPT
+	with ESMTP id S1750702Ab0AKTJj convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jan 2010 14:05:15 -0500
+	Mon, 11 Jan 2010 14:09:39 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=mime-version:in-reply-to:references:date:message-id:subject:from:to
          :cc:content-type:content-transfer-encoding;
-        b=w7yv7xWhDCjJhLthve/CQTSEPX6igPmuWoy2ObbmNppoaTcA32YFq/Cbgx2Ms3i8ry
-         JjMUdz6DFQEdjao2xXk7ZKEvipXPGwAB4NKr6JGdWzekLz+ZLBkLFuyyocTygZcBKoKA
-         Sa8U4aufVjgaBwvO6PKpcONlJt9wsOcjQvKVE=
+        b=ATeVyENdHRiTmfElp93rjweeiViTfpvNjNUt8ddm+TrxtmLjP1Jq+uVW37osVz8x4c
+         DxYyKSc/BxKW4ehFCTqfd8qv7DM94DegN2gmqjo/kGdMEyXT6w3yCHrRajnb464Heb3D
+         ZNYxthvp1z3kX8qrG9Jp8bPJJ6kBx48nXaEfs=
 MIME-Version: 1.0
-In-Reply-To: <20100111170735.GD22899@redhat.com>
+In-Reply-To: <20100111171149.GE22899@redhat.com>
 References: <1262211768-10858-1-git-send-email-czoccolo@gmail.com>
 	 <1263157461-12294-1-git-send-email-czoccolo@gmail.com>
 	 <4B4B0AA9.5020900@garzik.org>
@@ -27,9 +27,9 @@ References: <1262211768-10858-1-git-send-email-czoccolo@gmail.com>
 	 <4e5e476b1001110653x397a8008gfea2f62497be1f42@mail.gmail.com>
 	 <20100111164433.GB22899@redhat.com>
 	 <4e5e476b1001110900v579054cam246775a74cf1e854@mail.gmail.com>
-	 <20100111170735.GD22899@redhat.com>
-Date: Mon, 11 Jan 2010 20:05:12 +0100
-Message-ID: <4e5e476b1001111105j2f52982cree173849644efb01@mail.gmail.com>
+	 <20100111171149.GE22899@redhat.com>
+Date: Mon, 11 Jan 2010 20:09:37 +0100
+Message-ID: <4e5e476b1001111109l34f1398dha2f369cdd525596d@mail.gmail.com>
 Subject: Re: [PATCH] cfq-iosched: NCQ SSDs do not need read queue merging
 From: Corrado Zoccolo <czoccolo@gmail.com>
 To: Vivek Goyal <vgoyal@redhat.com>
@@ -43,7 +43,7 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 11, 2010 at 6:07 PM, Vivek Goyal <vgoyal@redhat.com> wrote:
+On Mon, Jan 11, 2010 at 6:11 PM, Vivek Goyal <vgoyal@redhat.com> wrote:
 > On Mon, Jan 11, 2010 at 06:00:51PM +0100, Corrado Zoccolo wrote:
 >> On Mon, Jan 11, 2010 at 5:44 PM, Vivek Goyal <vgoyal@redhat.com> wrote:
 >> > On Mon, Jan 11, 2010 at 03:53:00PM +0100, Corrado Zoccolo wrote:
@@ -121,6 +121,28 @@ On Mon, Jan 11, 2010 at 6:07 PM, Vivek Goyal <vgoyal@redhat.com> wrote:
 >> do not drive deeper queues, no one will. So the overhead is just
 >> overhead, and will never
 >> give any benefit.
+>
+> Two things come to mind.
+>
+> - Even if dump/read-test2 is not driving deeper queue depths, but other
+>  competing programs might be driving deeper queue depths, which can give
+>  queue merging opportunity in case of dump program on NCQ SSD.
+
+Correct. We need a better test to determine if those merges can happen.
+
+>
+> - If we are thinking that on NCQ SSD we practically don't have queue
+>  merging opportunity then there is no point in keeping it enabled for
+>  WRITES also?
+
+Probably. Needs test here, too.
+
+Corrado
+
+
+>
+> Vivek
+>
 >>
 >> I therefore want to remove it, since for SSD it matters.
 >> >
@@ -129,30 +151,6 @@ On Mon, Jan 11, 2010 at 6:07 PM, Vivek Goyal <vgoyal@redhat.com> wrote:
 >>
 >> Jeff's test showed larger bandwidth with merge disabled, so it implies
 >> some saving is present.
->
-> Following is what Jeff had posted.
->
-> ==> vanilla <==
-> Mean: 163.22728
-> Population Std. Dev.: 0.55401
->
-> ==> patched <==
-> Mean: 162.91558
-> Population Std. Dev.: 1.08612
->
->
-> I see that with patched kernel(your patches), "Mean" BW of 50 runs has gone
-> down slightly. So where is the improvement in terms of BW? (Are you referring
-> to higher standard deviation, that means some of the runs observed higher BW
-> and concluding something from that?)
-
-Sorry, I wrongly remembered the numbers where the opposite.
-
-Corrado
-
->
-> Vivek
->
 >>
 >> Thanks,
 >> Corrado
@@ -168,8 +166,3 @@ Corrado
 >> >> Thanks,
 >> >> Corrado
 >> >>
->> >> >        Jeff
->> >> >
->> >> >
->> >> >
->> >> >
