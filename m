@@ -1,70 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753922Ab0AKTRe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753915Ab0AKTTl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753922Ab0AKTRe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jan 2010 14:17:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753887Ab0AKTRd
+	id S1753915Ab0AKTTl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jan 2010 14:19:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753887Ab0AKTTk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jan 2010 14:17:33 -0500
-Received: from mail-fx0-f215.google.com ([209.85.220.215]:60598 "EHLO
-	mail-fx0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753865Ab0AKTRc (ORCPT
+	Mon, 11 Jan 2010 14:19:40 -0500
+Received: from outbound-mail-28.bluehost.com ([69.89.17.198]:51032 "HELO
+	outbound-mail-28.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753259Ab0AKTTk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jan 2010 14:17:32 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:reply-to:to:cc:in-reply-to:references:content-type
-         :date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=uXjofTt4J9d66ca6ShR6OofeNqNSIfLI17jTGz2ahMuOytjcCiNwd6TXiwtustVjkt
-         YZMwN4k/bqbs6OhFwrUMVnDoLv0BwIBBYxTjoIrMWE4OxxhexwZuGl3TJKNbv7O5EHzU
-         10cEHKOfk9NmzJsQ0FOqZVlZFIwgYPUa/iINc=
-Subject: Re: [ANNOUNCE] util-linux-ng v2.17 (stable)
-From: Artem Bityutskiy <dedekind1@gmail.com>
-Reply-To: dedekind1@gmail.com
-To: Pavel Machek <pavel@ucw.cz>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Karel Zak <kzak@redhat.com>,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       util-linux-ng@vger.kernel.org
-In-Reply-To: <20100111140255.GA1416@ucw.cz>
-References: <20100108093302.GS1969@nb.net.home> <4B47A713.9060405@zytor.com>
-	 <20100111140255.GA1416@ucw.cz>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 11 Jan 2010 21:17:28 +0200
-Message-Id: <1263237448.30988.31.camel@localhost.localdomain>
+	Mon, 11 Jan 2010 14:19:40 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=iODjM14UD5e61eti163NyTxWwSu4xGPIZZKS/seGv8JkXbBuu0qGd+bS+LNLHC5tjAVAgKyEkLUHXG2cmBD1u7ttxokwVymHYncfoCbUvm8Ksa/C8yqVB/BCxJ8WwW60;
+Date: Mon, 11 Jan 2010 11:19:41 -0800
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Thomas Meyer <thomas@m3y3r.de>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Eric Anholt <eric@anholt.net>
+Subject: Re: [Bug #14670] i915: playing video via XVideo extension makes the
+ screen flicker
+Message-ID: <20100111111941.189eb41e@jbarnes-piketon>
+In-Reply-To: <8B599161-2977-4A43-B88F-36E87AFCF4EA@m3y3r.de>
+References: <nzLqtSp97aP.A.RGB.hglSLB@chimera>
+	<CXIfLt-ygXM.A.GGD.GilSLB@chimera>
+	<1263228784.12830.0.camel@localhost.localdomain>
+	<20100111085527.104f5c3e@jbarnes-piketon>
+	<8B599161-2977-4A43-B88F-36E87AFCF4EA@m3y3r.de>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2010-01-11 at 15:05 +0100, Pavel Machek wrote:
-> On Fri 2010-01-08 13:43:47, H. Peter Anvin wrote:
-> > On 01/08/2010 01:33 AM, Karel Zak wrote:
-> > > 
-> > > fdisk:
-> > >    - the fdisk command aligns newly created partitions to minimum_io_size
-> > >      boundary ("minimum_io_size" is physical sector size or stripe chunk
-> > >      size on RAIDs).
-> > > 
-> > >    - the fdisk command supports disks with alignment_offset now.
-> > > 
-> > 
-> > I think we should align, by default, much more aggressively than that --
-> > because frequently we just don't know what the real physical alignment
-> > is (think of flash media, which uses large erase blocks underneath.)
+On Mon, 11 Jan 2010 20:03:57 +0100
+Thomas Meyer <thomas@m3y3r.de> wrote:
+
 > 
-> Flash has special mapping layer, and does not care (SD/MMC), or is a
-> raw nand and can't be used as block device (smartmedia).
+> 
+> Am 11.01.2010 um 17:55 schrieb Jesse Barnes
+> <jbarnes@virtuousgeek.org>:
+> 
+> > On Mon, 11 Jan 2010 17:53:04 +0100
+> > Thomas Meyer <thomas@m3y3r.de> wrote:
+> >
+> >> Am Sonntag, den 10.01.2010, 23:56 +0100 schrieb Rafael J. Wysocki:
+> >>> This message has been generated automatically as a part of a
+> >>> report of regressions introduced between 2.6.31 and 2.6.32.
+> >>>
+> >>> The following bug entry is on the current list of known
+> >>> regressions introduced between 2.6.31 and 2.6.32.  Please verify
+> >>> if it still should be listed and let me know (either way).
+> >>>
+> >>
+> >> Yes, still should be listed.
+> >>
+> >> Problem still exists in 2.6.32.3 and 2.6.33-rc3-00097-g2c1f189,
+> >> that contains
+> >> this commit:
+> >> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=cda9d05c499093c67b4a376a15009923acc2127a
+> >>
+> >> The above commit removes the render reclock support, that ought to
+> >> fix a common kind of problem encountered on i915 hardware, but not
+> >> on my machine.
+> >>
+> >> Still need to boot with "nomodeset" to have a workable system.
+> >
+> > Does this patch prevent the flicker?
+> 
+> By the way: how often and in what interval is the function   
+> intel_lvds_detect called?
+> 
+> How long will/can the function acpi_lid_open take to complete?
+> Maybe some acpi interpretation takes really long? Is this possible?
+> 
+> Would this explain the flickering?
 
-MMC does care, and we measured it, non-4KiB aligned writes were
-noticeably slower on real eMMC and some MMC cards. I cannot remember the
-numbers, but I vaguely recall something like 11%.
+It should only be called when a client requests the connection status
+(e.g. xrandr or the GNOME display applet).
 
-So the first statement is incorrect. It really does matter. E.g., we
-observed that FAT FS was slower if the partition did not start from 4KiB
-boundary.
+The LVDS state will also be checked at ACPI LID event time, maybe your
+platforms is getting spurious LID events?
+
+If not, this bisection really confuses me...
 
 -- 
-Best Regards,
-Artem Bityutskiy (Артём Битюцкий)
-
+Jesse Barnes, Intel Open Source Technology Center
