@@ -1,164 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753442Ab0AKBwA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752918Ab0AKB4k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753442Ab0AKBwA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jan 2010 20:52:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753417Ab0AKBv6
+	id S1752918Ab0AKB4k (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jan 2010 20:56:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752043Ab0AKB4k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jan 2010 20:51:58 -0500
-Received: from mga14.intel.com ([143.182.124.37]:2056 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753378Ab0AKBv4 convert rfc822-to-8bit (ORCPT
+	Sun, 10 Jan 2010 20:56:40 -0500
+Received: from ey-out-2122.google.com ([74.125.78.24]:6573 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751301Ab0AKB4j (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jan 2010 20:51:56 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
-   d="scan'208";a="231231905"
-From: "Zheng, Shaohui" <shaohui.zheng@intel.com>
-To: "Wu, Fengguang" <fengguang.wu@intel.com>
-CC: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "ak@linux.intel.com" <ak@linux.intel.com>,
-       "y-goto@jp.fujitsu.com" <y-goto@jp.fujitsu.com>,
-       Dave Hansen <haveblue@us.ibm.com>, "x86@kernel.org" <x86@kernel.org>
-Date: Mon, 11 Jan 2010 09:51:27 +0800
-Subject: RE: [PATCH - resend ] memory-hotplug: create /sys/firmware/memmap
-	entry for new memory(v3)
-Thread-Topic: [PATCH - resend ] memory-hotplug: create /sys/firmware/memmap
-	entry for new memory(v3)
-Thread-Index: AcqQYz/GXymS3/PzT/mHshfQs1WbQwB/E1pw
-Message-ID: <DA586906BA1FFC4384FCFD6429ECE86031560F78@shzsmsx502.ccr.corp.intel.com>
-References: <DA586906BA1FFC4384FCFD6429ECE86031560B8D@shzsmsx502.ccr.corp.intel.com>
- <20100108110810.GA6153@localhost>
-In-Reply-To: <20100108110810.GA6153@localhost>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Sun, 10 Jan 2010 20:56:39 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=qWMfMdFL44xV2VMbQiJqp3/osH57ozuHTiwUFV3Rb+a7LWPtLve3NipCAbttERYd+K
+         XC6jFsv9L5FTfG4vogcN0tG7kj9Lw283gDhnhIKFsVgkLs7xxxZN0MGUSXmiI3v5JlVk
+         PQCNFg+KVhtz6hZy95gXlYMoQ6d0pjW1XMzqY=
+Date: Mon, 11 Jan 2010 02:56:35 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Paul Mackerras <paulus@samba.org>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>
+Subject: Re: [PATCH 6/6] perf: Increase round-robin fairness of flexible
+	events
+Message-ID: <20100111015634.GG5039@nowhere>
+References: <1263087500-14215-1-git-send-regression-fweisbec@gmail.com> <1263087500-14215-7-git-send-regression-fweisbec@gmail.com> <20100110220440.GA4595@brick.ozlabs.ibm.com> <20100110235758.GC5039@nowhere> <20100111003905.GA6066@brick.ozlabs.ibm.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100111003905.GA6066@brick.ozlabs.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks for fengguang's careful review, I will send out the modified patch soon.
-
-Thanks & Regards,
-Shaohui
-
-
------Original Message-----
-From: Wu, Fengguang 
-Sent: Friday, January 08, 2010 7:08 PM
-To: Zheng, Shaohui
-Cc: linux-mm@kvack.org; akpm@linux-foundation.org; linux-kernel@vger.kernel.org; ak@linux.intel.com; y-goto@jp.fujitsu.com; Dave Hansen; x86@kernel.org
-Subject: Re: [PATCH - resend ] memory-hotplug: create /sys/firmware/memmap entry for new memory(v3)
-
-On Fri, Jan 08, 2010 at 11:16:13AM +0800, Zheng, Shaohui wrote:
-> Resend the patch to the mailing-list, the original patch URL is at 
-> http://patchwork.kernel.org/patch/69071/. It is already reviewed, but It is still not 
-> accepted and no comments, I guess that it should be ignored since we have so many 
-> patches each day, send it again.  
+On Mon, Jan 11, 2010 at 11:39:05AM +1100, Paul Mackerras wrote:
+> On Mon, Jan 11, 2010 at 12:57:59AM +0100, Frederic Weisbecker wrote:
 > 
-> memory-hotplug: create /sys/firmware/memmap entry for hot-added memory
+> > I think the constraint of "either every or none get
+> > scheduled in a group" makes a lot of sense for pinned
+> > groups.
+> > 
+> > But I don't see the point in applying this
+> > rule inside flexible groups because the nature
+> > of flexible events implies these have been created to
+> > fight against a limited resource. So if this fight
+> > is done only between groups, this is like raising
+> > a voluntary starvation.
+> > 
+> > Or..or..May be I just realize too late that the semantic
+> > of a group implies that all events inside must be always
+> > counted simultaneously? In which case I agree with you,
+> > this patch makes no sense and must be dropped.
 > 
-> Interface firmware_map_add was not called in explicit, Remove it and add function
-> firmware_map_add_hotplug as hotplug interface of memmap.
+> The original idea of the groups was for situations where you want to
+> take the difference or ratio of two counts.  For example, if you want
+> to measure cache hits but the hardware can only count cache accesses
+> and cache misses.  In that situation you want to compute accesses
+> minus misses, but if the counters for accesses and for misses are
+> independently scheduled, statistical fluctuations can mean there is a
+> lot of noise in the result, and it might even be negative.  Putting
+> the two counters into one group means that you can meaningfully
+> compute the difference or ratio since the two counter values relate to
+> the same set of instructions (even if that isn't the whole execution
+> of the program).
 > 
-> When we hot-add new memory, sysfs does not export memmap entry for it. we add
->  a call in function add_memory to function firmware_map_add_hotplug.
-> 
-> Add a new function add_sysfs_fw_map_entry to create memmap entry, it can avoid 
-> duplicated codes.
-> 
-> Thanks for the careful review from Fengguang Wu and Dave Hansen.
-> 
-> Signed-off-by: Shaohui Zheng <shaohui.zheng@intel.com>
-> Acked-by: Andi Kleen <ak@linux.intel.com>
-> Acked-by: Yasunori Goto <y-goto@jp.fujitsu.com>
-> Acked-by: Dave Hansen <dave@linux.vnet.ibm.com>
-> Reviewed-by: Wu Fengguang <fengguang.wu@intel.com>
-> ---
-> diff --git a/drivers/firmware/memmap.c b/drivers/firmware/memmap.c
-> index 56f9234..ec8c3d4 100644
-> --- a/drivers/firmware/memmap.c
-> +++ b/drivers/firmware/memmap.c
-> @@ -123,52 +123,75 @@ static int firmware_map_add_entry(u64 start, u64 end,
->  }
->  
->  /**
-> - * firmware_map_add() - Adds a firmware mapping entry.
-> + * Add memmap entry on sysfs
-> + */
-> +static int add_sysfs_fw_map_entry(struct firmware_map_entry *entry) {
+> The default situation is that each event is in its own group, so the
+> starvation you talk about won't arise.  If the user has gone to the
+> trouble of putting two events into one group, then they are saying
+> that they need the events to be scheduled on and off together, and if
+> that leads to starvation, that's unfortunate but we can't do any
+> better within the limitations of the hardware.
 
-Minor style issue:
 
-ERROR: open brace '{' following function declarations go on the next line
-#31: FILE: drivers/firmware/memmap.c:128:
-+static int add_sysfs_fw_map_entry(struct firmware_map_entry *entry) {
 
-total: 1 errors, 0 warnings, 145 lines checked
-
-patches/memory-hotplug-create-sys-firmware-memmap-entry-for-new-memory-v3.patch
-has style problems, please review.  If any of these e rrors
-are false positives report them to the maintainer, see CHECKPATCH in
-MAINTAINERS.
-[Zheng, Shaohui] My carelessness, will change it in new patch.
-
-> +	static int map_entries_nr;
-> +	static struct kset *mmap_kset;
-> +
-> +	if (!mmap_kset) {
-> +		mmap_kset = kset_create_and_add("memmap", NULL, firmware_kobj);
-> +		if (WARN_ON(!mmap_kset))
-
-This WARN_ON() may never trigger, or when things go terribly wrong it
-repeatedly produce a dozen stack dumps, which don't really help
-diagnose the root cause.  Better to just remove it.
-[Zheng, Shaohui] Agree.
-
-> +			return -ENOMEM;
-> +	}
-> +
-> +	entry->kobj.kset = mmap_kset;
-> +	if (kobject_add(&entry->kobj, NULL, "%d", map_entries_nr++))
-> +		kobject_put(&entry->kobj);
-> +
-> +	return 0;
-> +}
-> +
-> +/**
-> + * firmware_map_add_early() - Adds a firmware mapping entry.
->   * @start: Start of the memory range.
->   * @end:   End of the memory range (inclusive).
->   * @type:  Type of the memory range.
->   *
-> - * This function uses kmalloc() for memory
-> - * allocation. Use firmware_map_add_early() if you want to use the bootmem
-> - * allocator.
-> + * Adds a firmware mapping entry. This function uses the bootmem allocator
-> + * for memory allocation.
->   *
->   * That function must be called before late_initcall.
->   *
->   * Returns 0 on success, or -ENOMEM if no memory could be allocated.
->   **/
-> -int firmware_map_add(u64 start, u64 end, const char *type)
-> +int __init firmware_map_add_early(u64 start, u64 end, const char *type)
->  {
->  	struct firmware_map_entry *entry;
->  
-> -	entry = kmalloc(sizeof(struct firmware_map_entry), GFP_ATOMIC);
-> -	if (!entry)
-> +	entry = alloc_bootmem(sizeof(struct firmware_map_entry));
-> +	if (WARN_ON(!entry))
-
-Ditto.
-[Zheng, Shaohui] Agree.
-
-Thanks,
-Fengguang
+Agreed. This patch came from my misunderstanding of the purpose of
+groups.
 
