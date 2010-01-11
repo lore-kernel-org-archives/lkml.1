@@ -1,35 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753934Ab0AKTkL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753979Ab0AKTlK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753934Ab0AKTkL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jan 2010 14:40:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753867Ab0AKTkK
+	id S1753979Ab0AKTlK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jan 2010 14:41:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753300Ab0AKTlJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jan 2010 14:40:10 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:34828 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753578Ab0AKTkI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jan 2010 14:40:08 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "flinco@libero.it" <flinco@libero.it>
-Subject: Re: R: [Bug #14886] Asus P2B-DS not detected as SMP moterboard
-Date: Mon, 11 Jan 2010 20:40:45 +0100
-User-Agent: KMail/1.12.3 (Linux/2.6.33-rc3-rjw; KDE/4.3.3; x86_64; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-References: <5550914.425471263201351807.JavaMail.defaultUser@defaultHost>
-In-Reply-To: <5550914.425471263201351807.JavaMail.defaultUser@defaultHost>
+	Mon, 11 Jan 2010 14:41:09 -0500
+Received: from 49.119.116-78.rev.gaoland.net ([78.116.119.49]:52223 "EHLO
+	electric-eye.fr.zoreil.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751087Ab0AKTlI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jan 2010 14:41:08 -0500
+X-Greylist: delayed 70783 seconds by postgrey-1.27 at vger.kernel.org; Mon, 11 Jan 2010 14:41:06 EST
+Date: Mon, 11 Jan 2010 01:01:15 +0100
+From: Francois Romieu <romieu@fr.zoreil.com>
+To: Vlad Dascalu <vlad.dascalu@goobix.com>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: Fwd: r8169 - Serios Regression (was Re: r8169 linux driver)
+Message-ID: <20100111000115.GB8959@electric-eye.fr.zoreil.com>
+Mail-Followup-To: Francois Romieu <romieu@fr.zoreil.com>,
+	Vlad Dascalu <vlad.dascalu@goobix.com>, netdev@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+References: <a16d8c9b1001101351y1783157r327761bd2c86def1@mail.gmail.com>
+ <a16d8c9b1001101355x72565562k7c16e5acca243fe4@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201001112040.45514.rjw@sisk.pl>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <a16d8c9b1001101355x72565562k7c16e5acca243fe4@mail.gmail.com>
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 11 January 2010, flinco@libero.it wrote:
-> Tried 2.6.32.3. The issue is still present.
+On Sun, Jan 10, 2010 at 10:55:23PM +0100, Vlad Dascalu wrote:
+[...]
+> There are lots of reports and stack dumps at
+> https://bugzilla.redhat.com/show_bug.cgi?id=538920.
 
-Thanks for the update.
+Mmmm... Mixing different network cards.
 
-Rafael
+> It seems it's mainly a communication issue to get those dumps on
+> lkml where people can look at it.
+
+I'll take a look tomorrow. A complete dmesg from boot to bug would be
+welcome.
+
+-- 
+Ueimor
