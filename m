@@ -1,48 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751880Ab0AKVVO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751584Ab0AKV1J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751880Ab0AKVVO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jan 2010 16:21:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751430Ab0AKVVN
+	id S1751584Ab0AKV1J (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jan 2010 16:27:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751477Ab0AKV1I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jan 2010 16:21:13 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:41526 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751328Ab0AKVVM (ORCPT
+	Mon, 11 Jan 2010 16:27:08 -0500
+Received: from g1t0027.austin.hp.com ([15.216.28.34]:13688 "EHLO
+	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751317Ab0AKV1H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jan 2010 16:21:12 -0500
-Subject: Re: [RFC PATCH] introduce sys_membarrier(): process-wide memory
- barrier (v3a)
-From: Peter Zijlstra <peterz@infradead.org>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Oleg Nesterov <oleg@redhat.com>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       akpm@linux-foundation.org, josh@joshtriplett.org, tglx@linutronix.de,
-       Valdis.Kletnieks@vt.edu, dhowells@redhat.com, laijs@cn.fujitsu.com,
-       dipankar@in.ibm.com, "David S. Miller" <davem@davemloft.net>
-In-Reply-To: <20100111205250.GA6866@Krystal>
-References: <20100110014456.GG25790@Krystal>
-	 <1263089578.2231.22.camel@frodo> <20100110052508.GG9044@linux.vnet.ibm.com>
-	 <1263124209.28171.3798.camel@gandalf.stny.rr.com>
-	 <20100110174512.GH9044@linux.vnet.ibm.com> <20100110182423.GA22821@Krystal>
-	 <20100111011705.GJ9044@linux.vnet.ibm.com> <20100111042521.GB32213@Krystal>
-	 <20100111042903.GC32213@Krystal> <1263232240.4244.70.camel@laptop>
-	 <20100111205250.GA6866@Krystal>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 11 Jan 2010 22:19:51 +0100
-Message-ID: <1263244791.4244.76.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	Mon, 11 Jan 2010 16:27:07 -0500
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Alex Brooks <a.brooks@marathon-robotics.com>
+Subject: Re: BAR 0: can't allocate resource
+Date: Mon, 11 Jan 2010 14:27:03 -0700
+User-Agent: KMail/1.9.10
+Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <201001061305.31635.a.brooks@marathon-robotics.com> <1262843176.27608.2.camel@dc7800.home> <201001101407.26930.a.brooks@marathon-robotics.com>
+In-Reply-To: <201001101407.26930.a.brooks@marathon-robotics.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <201001111427.03777.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2010-01-11 at 15:52 -0500, Mathieu Desnoyers wrote:
-> >  1) don't like that memory barrier in the generic code, 
+On Saturday 09 January 2010 08:07:26 pm Alex Brooks wrote:
+> > I was hoping for a kernel directly from Linus' git repo, e.g.,
+> > 2.6.33-rc3; I don't think the debug output I'm thinking about went in
+> > until after 2.6.32 was released.
 > 
-> Would that help if we proceed to arch-per-arch modification of
-> switch_mm() instead ? 
+> I'm not sure how to modify the 2.6.33-rc3 kernel source exactly re MCFG -- the 
+> dmesg output for 2.6.33-rc3 is quite different (attached),
 
-Much preferred indeed.
+It's interesting that we now use MMCONFIG by default; no tweaking
+necessary.  I guess Linux just got a little smarter between 2.6.26
+and 2.6.33 -- in this case, it looks like we reduce the size of the
+MMCONFIG region from what the BIOS reported.
 
+But I don't think MMCONFIG is relevant to this problem anyway.
+
+> including some new  
+> information about an address collision for the recalcitrant device:
+> 
+> pci 0000:01:04.0: address space collision: [mem 0x00800000-0x00800fff] already 
+> in use
+> pci 0000:01:04.0: can't reserve [mem 0x00800000-0x00800fff]
+> 
+> Does this shed any more light on things (or can you tell me what I could 
+> modify to get better debug info)?
+
+It shows that we think the octal UART is at 0x00800000, which
+doesn't seem valid (I think it's in the middle of your system RAM).
+
+This is before Linux moves anything around, so normally this would
+be what BIOS left in the BAR.  But BIOS puts it at 0xfebff000 in the
+working case (without the Mini PCI adapter), and the adapter shouldn't
+even be visible to the BIOS, so I would expect the octal UART to still
+be at the same address.
+
+I'm afraid I still don't see a software problem here.  To me (and I'm
+certainly not a hardware person), it feels like an electrical problem
+on the PCI bus: we read a BAR and it has a nonsensical value, we write
+the BAR and can't read that value back, we read the vendor/device/class
+codes and get nonsense.  It's also interesting that most of these
+nonsense values we read seem to have only one bit set.
+
+Bjorn
