@@ -1,48 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751611Ab0AKCPz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752395Ab0AKCQV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751611Ab0AKCPz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jan 2010 21:15:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751280Ab0AKCPy
+	id S1752395Ab0AKCQV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jan 2010 21:16:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751512Ab0AKCQT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jan 2010 21:15:54 -0500
-Received: from hera.kernel.org ([140.211.167.34]:43674 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751259Ab0AKCPx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jan 2010 21:15:53 -0500
-Message-ID: <4B4A8A54.8030406@kernel.org>
-Date: Mon, 11 Jan 2010 11:17:56 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
+	Sun, 10 Jan 2010 21:16:19 -0500
+Received: from mail-ew0-f214.google.com ([209.85.219.214]:41735 "EHLO
+	mail-ew0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932065Ab0AKCQS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Jan 2010 21:16:18 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type;
+        b=e3ByX7JlEQT0fPMOt9ZxZYfHoqQjYSCnYNERIsFJ+xKXwJiPY3hLi14th1eD7AvKcz
+         MBcr2H+7x7goT5hCAdmbDWe3ha8Y92e4mx2AWL1hktDiJE9C+KXeWinl5l4C2wYAMFtj
+         fPz1ROCrl/+Rhllq7RbPJDiXbOsmDTQOp1dxs=
 MIME-Version: 1.0
-To: Robert Hancock <hancockrwd@gmail.com>
-CC: Torsten Kaiser <just.for.lkml@googlemail.com>,
-       linux-kernel@vger.kernel.org, Jeff Garzik <jgarzik@pobox.com>,
-       linux-ide@vger.kernel.org
-Subject: Re: MSI broken in libata?
-References: <64bb37e0912250122n4e0e1842q88c0dad7e99ec6a7@mail.gmail.com>	 <4B484829.6060405@kernel.org> <64bb37e1001092033r1f0b4defw46c1a07101bb2d1b@mail.gmail.com> <4B4A7BC7.6060106@kernel.org> <4B4A815A.60503@gmail.com>
-In-Reply-To: <4B4A815A.60503@gmail.com>
-X-Enigmail-Version: 1.0
+In-Reply-To: <4B4A83E0.9000207@schaufler-ca.com>
+References: <f73f7ab81001101418x3b3f8652j256f6311ad6244c5@mail.gmail.com> 
+	<20100110230839.GB3825@heat> <3e8340491001101541tc776ad9r887be13393bcb7fd@mail.gmail.com> 
+	<4B4A83E0.9000207@schaufler-ca.com>
+From: Bryan Donlan <bdonlan@gmail.com>
+Date: Sun, 10 Jan 2010 21:15:54 -0500
+Message-ID: <3e8340491001101815p887b96dr22b9b3f3108a7541@mail.gmail.com>
+Subject: Re: [PATCH 2/3] Security: Implement disablenetwork semantics. (v4)
+To: Casey Schaufler <casey@schaufler-ca.com>
+Cc: Michael Stone <michael@laptop.org>, Kyle Moffett <kyle@moffetthome.net>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       linux-security-module@vger.kernel.org, Andi Kleen <andi@firstfloor.org>,
+       David Lang <david@lang.hm>, Oliver Hartkopp <socketcan@hartkopp.net>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Valdis Kletnieks <Valdis.Kletnieks@vt.edu>,
+       Evgeniy Polyakov <zbr@ioremap.net>,
+       "C. Scott Ananian" <cscott@cscott.net>,
+       James Morris <jmorris@namei.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Bernie Innocenti <bernie@codewiz.org>,
+       Mark Seaborn <mrs@mythic-beasts.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       =?ISO-8859-1?Q?Am=E9rico_Wang?= <xiyou.wangcong@gmail.com>,
+       Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
+       Samir Bellabes <sam@synack.fr>, "Serge E. Hallyn" <serue@us.ibm.com>,
+       Pavel Machek <pavel@ucw.cz>, Al Viro <viro@zeniv.linux.org.uk>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Mon, 11 Jan 2010 02:15:47 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, Robert.
+On Sun, Jan 10, 2010 at 8:50 PM, Casey Schaufler <casey@schaufler-ca.com> wrote:
+> Bryan Donlan wrote:
+>> On Sun, Jan 10, 2010 at 6:08 PM, Michael Stone <michael@laptop.org> wrote:
+>>
+>>> Paraphrasing Kyle:
+>>>
+>>>
+>>>> Suppose there exist PAM modules which lazily fork background processes.
+>>>> Now
+>>>> assume that one of those PAM modules is hooked from /etc/pam.d/su, that
+>>>> the
+>>>> module fails closed when the network is unavailable, and that Mallory wins
+>>>> the race to start the daemon. Boom.
+>>>>
+>>> I'm not disagreeing that there are configurations of programs, written for
+>>> kernels without disablenetwork, which cease to be correct on kernels that
+>>> provide it. However, all this says to me is that people who need to use
+>>> those
+>>> configurations probably shouldn't use disablenetwork. (Or that we haven't
+>>> found
+>>> exactly the right semantics for disablenetwork yet.)
+>>>
+>>
+>> With the semantics given, the choice for using disablenetwork is given
+>> to the unprivileged process, not to the administrator or privileged
+>> process, so people using these configurations have no choice - the
+>> malicious local user can just use it anyway.
+>>
+>> I still think requiring a drop of suid abilities would be best - if
+>> the suid process wants to run in a no-network environment it can still
+>> disablenetwork itself.
+>>
+>>
+>
+> Stop. If you can count on the program to use the mechanisms you've
+> described correctly you can count on it to use exec, socket, and
+> bind correctly. You're only trading one set of behaviors for another.
 
-On 01/11/2010 10:39 AM, Robert Hancock wrote:
-> It'd be interesting to see if it makes a difference, but I don't think
-> the patch is quite right. According to the datasheet, doing the MSI ack
-> while the interrupt source is still pending will cause a new MSI to be
-> sent, so if you do it before handling the interrupt you'll generate a
-> spurious interrupt after every real one.
+I don't think there's any argument that a program designed with
+disablenetwork in mind will have no problems with disablenetwork
+existing. The only concern is when a malicious (or ill-conceived)
+program disables network access, then invokes a naive setuid program.
 
-Ah... okay, so the generation of MSI is level triggered?  If so, your
-original patch is correct.  I was thinking it might be edge triggered
-and it should be cleared before checking master event mask.
+What I meant by the above is is, by my reading Michael suggests that
+systems where there are setuid programs that grossly misbehave without
+network access should simply not use disablenetwork; however my point
+is that there is no such choice available to the administrator. In the
+proposed APIs, disablenetwork is always available, and any untrusted
+user can push it on all setuid programs in the system.
 
-Thanks.
+There were also suggestions of setuid programs that might themselves
+want to drop network access; but one can simply have said setuid
+program drop network access after it's executed, rather than relying
+on the (untrusted anyway!) invoker to do so. So there's no need to
+have it set by the caller, and indeed this may be undesirable because
+the suid program will need to drop it again _anyway_ since it can't
+assume the caller really did drop it. And of course, since this suid
+program is asking for its network access to be disabled, it is
+presumably prepared to deal with the consequences.
 
--- 
-tejun
+Finally, if there is a need for an untrusted program to invoke a
+set-uid program, this can always be emulated by making a request over
+a unix domain socket. Since presumably the program that used the
+disablenetwork facility is designed around said disablenetwork
+facility, it's not much of a burden to expect it use such a facility
+in the unlikely case that there's a program that can't be trusted to
+use the network, but does need to make some privileged operations.
+
+In short:
+
+* If network access is restored over suid, then we can leak data over
+ping or any number of other routes, so that's right out.
+* If network access is denied over suid, there are concerns of denial
+of service in certain configurations.
+* If suid is denied entirely, we have no denial of service or
+information leak concerns via the suid mechanism (since the mechanism
+is completely unusable). And if we really do need to execute something
+at an elevated privilege, we can ask a helper daemon to do it on our
+behalf.
