@@ -1,76 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753356Ab0AKPLq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753445Ab0AKPPX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753356Ab0AKPLq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jan 2010 10:11:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751994Ab0AKPLp
+	id S1753445Ab0AKPPX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jan 2010 10:15:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753193Ab0AKPPX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jan 2010 10:11:45 -0500
-Received: from xc.sipsolutions.net ([83.246.72.84]:53112 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751895Ab0AKPLo (ORCPT
+	Mon, 11 Jan 2010 10:15:23 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:45179 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752951Ab0AKPPW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jan 2010 10:11:44 -0500
-Subject: Re: REGRESSION for RT2561/RT61 in 2.6.33
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Gertjan van Wingerde <gwingerde@gmail.com>, linux-wireless@vger.kernel.org,
-       netdev@vger.kernel.org,
-       Kernel development list <linux-kernel@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.44L0.1001110947350.2873-100000@iolanthe.rowland.org>
-References: <Pine.LNX.4.44L0.1001110947350.2873-100000@iolanthe.rowland.org>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-MlwfGFwL4KePCVN3SPHL"
-Date: Mon, 11 Jan 2010 16:11:35 +0100
-Message-ID: <1263222695.29743.1.camel@johannes.local>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.29.3.2 
+	Mon, 11 Jan 2010 10:15:22 -0500
+Date: Mon, 11 Jan 2010 10:15:20 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Fruhwirth Clemens <clemens@endorphin.org>
+Subject: Re: [linux-pm] 2.6.33-rc3-git3: Reported regressions 2.6.31 -> 2.6.32
+In-Reply-To: <nzLqtSp97aP.A.RGB.hglSLB@chimera>
+Message-ID: <Pine.LNX.4.44L0.1001111008080.2873-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, 10 Jan 2010, Rafael J. Wysocki wrote:
 
---=-MlwfGFwL4KePCVN3SPHL
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14841
+> Subject	: unable to enumerate USB device on port X after suspend/resume
+> Submitter	: Fruhwirth Clemens <clemens@endorphin.org>
+> Date		: 2009-12-19 11:45 (23 days old)
 
-Alan,
+This bug has been resolved as WILL NOT FIX.  It ended up having nothing
+to do with suspend or resume, it was caused by strange behavior in the
+device hardware.
 
-> The card doesn't work.  Although the firmware load appears to
-> succeed, "iwconfig wlan0" says no wireless extensions present.
-
-You need to set CONFIG_CFG80211_WEXT (it is default y).
-
-> The only clue I can offer is that "rmmod rt61pci" hangs in=20
-> wiphy_unregister() during the wait_event() loop near the start,
-> because=20
-> rdev->opencount is equal to -1.  This suggests a refcounting imbalance
->=20
-> of some sort.
-
-Good point, that's a bug that will go away with CONFIG_CFG80211_WEXT,
-I'll send a fix.
-
-johannes
-
---=-MlwfGFwL4KePCVN3SPHL
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-
-iQIcBAABAgAGBQJLSz+jAAoJEODzc/N7+QmameQP/ibGo0juP/pZsZbBDYYxgkLB
-OvDJrQGrSGcyaB4jdpBtn9677MY0C1n0LTrxvCZBkqwFKGzhKEoGcnYLvL3rrwI8
-EbG2vLFQ6npYm3Fi0mQE0PE3YXaEbBZwUwZRLCwwMnkZPiJtULlGPCEUk1tFFLoL
-QfTFxhf9mJxuHsjOVkK39AuxxqEI8Hc/MnGPtt04Fb40GkcDPkQSNy/b4YcBd9yZ
-XDZl3HBbZXvwLT0bRJGb/35psGNxZfVcPiwWleD3bgNv1J7xBLdcUlQsN3rrgHxi
-NsGznjMOYaKX88ROjZws1HebXRdctf79CGDauHH6coEaK5sCDR/zWE9vDqD1Pc4Y
-D6rGWsrEUvbO7KL5RwnPShnwLS2IVEu/H80PIRbpgZUM9zv0rInaWDohzto+sz1N
-GH1IACEXP2Or4dnvvOl61etzJ+risRY2ip2J63dLibMKX07D1+5v6i2HwfU2IwhZ
-LzIqJG8VO6R05/QGVC28zs1xTwBRSB81NH0v34OzcNU+TmhyPevYtD/ksTbygaOj
-h/sWhM4RSfVGmT6wAz5U4G+0LkyDIege9XJWGolTT4G6z54qFXKOCs12q1xVu6PZ
-RujAH5VdNSfyqLjFeaaf1DPYqUCPuD0ULjlcbnsayQw9RDnXztdjTCSosJcsL74O
-Yxf/e+ULvECrfMBP6JIK
-=L+0q
------END PGP SIGNATURE-----
-
---=-MlwfGFwL4KePCVN3SPHL--
+Alan Stern
 
