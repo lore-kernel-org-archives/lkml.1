@@ -1,65 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754162Ab0AKUGL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754183Ab0AKUGY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754162Ab0AKUGL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jan 2010 15:06:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754142Ab0AKUGJ
+	id S1754183Ab0AKUGY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jan 2010 15:06:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754151Ab0AKUGK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jan 2010 15:06:09 -0500
-Received: from cantor.suse.de ([195.135.220.2]:60778 "EHLO mx1.suse.de"
+	Mon, 11 Jan 2010 15:06:10 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:35049 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754082Ab0AKUGI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1754045Ab0AKUGI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 11 Jan 2010 15:06:08 -0500
-Date: Mon, 11 Jan 2010 12:01:36 -0800
-From: Greg KH <gregkh@suse.de>
-To: Tilman Schmidt <tilman@imap.cc>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-       LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
-       Karsten Keil <isdn@linux-pingi.de>, isdn4linux@listserv.isdn4linux.de
-Subject: Re: Can we remove pci_find_device() yet?
-Message-ID: <20100111200136.GA29955@suse.de>
-References: <20100108112236.462a3da2.sfr@canb.auug.org.au>
- <20100108044646.GC6611@suse.de>
- <4B4B802A.2010709@imap.cc>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Borislav Petkov <petkovbb@googlemail.com>
+Subject: Re: [Bug #14949] drm_vm.c:drm_mmap: possible circular locking dependency detected
+Date: Mon, 11 Jan 2010 21:06:44 +0100
+User-Agent: KMail/1.12.3 (Linux/2.6.33-rc3-rjw; KDE/4.3.3; x86_64; ; )
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       DRI <dri-devel@lists.sourceforge.net>
+References: <wnS54-l8PVO.A.TlF.oMlSLB@chimera> <omZ8aBZReyD.A.NSH.MNlSLB@chimera> <20100111061114.GB19865@liondog.tnic>
+In-Reply-To: <20100111061114.GB19865@liondog.tnic>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B4B802A.2010709@imap.cc>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <201001112106.44155.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 11, 2010 at 08:46:50PM +0100, Tilman Schmidt wrote:
-> Am 08.01.2010 05:46 schrieb Greg KH:
-> > On Fri, Jan 08, 2010 at 11:22:36AM +1100, Stephen Rothwell wrote:
-> >>
-> >> This interface has been deprecated since November 2006, so can something
-> >> be done about the last users (I think only some ISDN drivers)?
+On Monday 11 January 2010, Borislav Petkov wrote:
+> On Sun, Jan 10, 2010 at 11:32:56PM +0100, Rafael J. Wysocki wrote:
+> > This message has been generated automatically as a part of a report
+> > of recent regressions.
+> > 
+> > The following bug entry is on the current list of known regressions
+> > from 2.6.32.  Please verify if it still should be listed and let me know
+> > (either way).
+> > 
+> > 
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14949
+> > Subject		: drm_vm.c:drm_mmap: possible circular locking dependency detected
+> > Submitter	: Borislav Petkov <petkovbb@googlemail.com>
+> > Date		: 2009-12-26 9:45 (16 days old)
+> > References	: http://marc.info/?l=linux-kernel&m=126182073616279&w=4
 > 
-> That would be the HiSax I4L drivers.
-> 
-> > Ick, the "new" isdn drivers are still not merged that replace those
-> > older ones?  I thought that happened a while ago.
-> 
-> mISDN, which is the designated successor to HiSax, has indeed been
-> merged in 2008.
-> 
-> Trouble is, mISDN's userspace interface is completely different from I4L.
-> Removing HiSax would therefore break userspace compatibility for current
-> users of HiSax supported devices. In order to switch to mISDN they'll
-> have to replace all of their ISDN4Linux applications with equivalent
-> mISDN ones, and I'm not even sure there is a replacement for everything.
-> 
-> Just an idea - as a stopgap measure, couldn't pci_find_device() be made
-> a private function of the HiSax drivers? That way, the remainder of the
-> kernel won't be polluted by it anymore, and the PCI_LEGACY config option
-> can be dropped. Something like this quick and dirty hack:
+> Fix for that is at LKML-Reference: <m1y6kh30pi.fsf_-_@fess.ebiederm.org>
 
-Close, but if you do this, please name the function
-hisax_find_pci_device() or something, and change the drivers to use it
-instead.  Also put a big fat warning in the function that calling this
-is unsafe for any PCI hotplug type machine.
+Again, I don't know how to resolve that, sorry.
 
-thanks,
-
-greg k-h
+Rafael
