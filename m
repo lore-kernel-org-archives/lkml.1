@@ -1,69 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751755Ab0AKC65@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752292Ab0AKC7Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751755Ab0AKC65 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jan 2010 21:58:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751179Ab0AKC65
+	id S1752292Ab0AKC7Z (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jan 2010 21:59:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751277Ab0AKC7Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jan 2010 21:58:57 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:58653 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1750783Ab0AKC64 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jan 2010 21:58:56 -0500
-Message-ID: <4B4A92C7.10303@cn.fujitsu.com>
-Date: Mon, 11 Jan 2010 10:53:59 +0800
-From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Sun, 10 Jan 2010 21:59:24 -0500
+Received: from mail-pz0-f188.google.com ([209.85.222.188]:36942 "EHLO
+	mail-pz0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751179Ab0AKC7X convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Jan 2010 21:59:23 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=IhF2tQZxgLaGZBu5jFVgcUvk7Vc24+/Wvt8AT6BjjhsN7uTWn3mCL6fs+EbSyk17pU
+         FGipgSjbfMbG9QJOU41WkQ1mGDZZxjtlUB6S7PpPX9DdhL7ujYdVQ64pMHdSE9xFsVw7
+         hgGWjXbVXLZBhIJYygqxZ7SICSngPV5Mpal7I=
 MIME-Version: 1.0
-To: Shaohua Li <shaohua.li@intel.com>, Corrado Zoccolo <czoccolo@gmail.com>
-CC: Jens Axboe <jens.axboe@oracle.com>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>,
-       Jeff Moyer <jmoyer@redhat.com>, Vivek Goyal <vgoyal@redhat.com>,
-       Yanmin Zhang <yanmin_zhang@linux.intel.com>
-Subject: Re: [PATCH] cfq-iosched: rework seeky detection
-References: <1263052757-23436-1-git-send-email-czoccolo@gmail.com> <20100111014730.GA22362@sli10-desk.sh.intel.com>
-In-Reply-To: <20100111014730.GA22362@sli10-desk.sh.intel.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <4B45DBB5.9070904@linux.intel.com>
+References: <daef60381001060123vbb09aecy7943d72fcb8278a@mail.gmail.com> 
+	<4B448EE3.5060200@linux.intel.com> <daef60381001062143i67da4203rb02919b64794664c@mail.gmail.com> 
+	<4B45DBB5.9070904@linux.intel.com>
+From: Hui Zhu <teawater@gmail.com>
+Date: Mon, 11 Jan 2010 10:59:03 +0800
+Message-ID: <daef60381001101859t43e336fr149e5a1a11c8f981@mail.gmail.com>
+Subject: Re: [PATCH] Fix markup_oops.pl get error in x86
+To: Arjan van de Ven <arjan@linux.intel.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Sam Ravnborg <sam@ravnborg.org>,
+       =?ISO-8859-1?Q?Ozan_=C7aglayan?= <ozan@pardus.org.tr>,
+       Matthew Wilcox <willy@linux.intel.com>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Shaohua Li wrote:
-> On Sat, Jan 09, 2010 at 11:59:17PM +0800, Corrado Zoccolo wrote:
->> Current seeky detection is based on average seek lenght.
->> This is suboptimal, since the average will not distinguish between:
->> * a process doing medium sized seeks
->> * a process doing some sequential requests interleaved with larger seeks
->> and even a medium seek can take lot of time, if the requested sector
->> happens to be behind the disk head in the rotation (50% probability).
+Thanks.
+
+Hui
+
+On Thu, Jan 7, 2010 at 21:03, Arjan van de Ven <arjan@linux.intel.com> wrote:
+> On 1/6/2010 21:43, Hui Zhu wrote:
 >>
->> Therefore, we change the seeky queue detection to work as follows:
->> * each request can be classified as sequential if it is very close to
->>   the current head position, i.e. it is likely in the disk cache (disks
->>   usually read more data than requested, and put it in cache for
->>   subsequent reads). Otherwise, the request is classified as seeky.
->> * an history window of the last 32 requests is kept, storing the
->>   classification result.
->> * A queue is marked as seeky if more than 1/8 of the last 32 requests
->>   were seeky.
+>> What about this version?
+>
+> looks great to me,
+>
+> Acked-by: Arjan van de Ven <arjan@linux.intel.com>
+>
 >>
->> This patch fixes a regression reported by Yanmin, on mmap 64k random
->> reads.
-> Can we not count a big request (say the request data is >= 32k) as seeky
-> regardless the seek distance? In this way we can also make a 64k random sync
-> read not as seeky.
-
-  Or maybe we can rely on *dynamic* CFQQ_SEEK_THR in terms of data lenght to 
-  determine whether a request should be a seeky one.
-
-> 
-> Thanks,
-> Shaohua
-> 
-> 
-> 
-
--- 
-Regards
-Gui Jianfeng
-
+>> Thanks,
+>> Hui
+>>
+>> ---
+>>  scripts/markup_oops.pl |    2 +-
+>>  1 file changed, 1 insertion(+), 1 deletion(-)
+>>
+>> --- a/scripts/markup_oops.pl
+>> +++ b/scripts/markup_oops.pl
+>> @@ -154,7 +154,7 @@ while (<STDIN>) {
+>>        if ($line =~ /RIP: 0010:\[\<([a-z0-9]+)\>\]/) {
+>>                $target = $1;
+>>        }
+>> -       if ($line =~ /EIP is at
+>> ([a-zA-Z0-9\_]+)\+(0x[0-9a-f]+)\/0x[a-f0-9]/) {
+>> +       if ($line =~ /EIP is at
+>> ([a-zA-Z0-9\_]+)\+0x([0-9a-f]+)\/0x[a-f0-9]/) {
+>>                $function = $1;
+>>                $func_offset = $2;
+>>        }
+>
+>
