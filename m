@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753387Ab0AKMZj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753423Ab0AKMZz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753387Ab0AKMZj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jan 2010 07:25:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753373Ab0AKMZi
+	id S1753423Ab0AKMZz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jan 2010 07:25:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753353Ab0AKMZx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jan 2010 07:25:38 -0500
-Received: from e23smtp04.au.ibm.com ([202.81.31.146]:50538 "EHLO
-	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753371Ab0AKMZf (ORCPT
+	Mon, 11 Jan 2010 07:25:53 -0500
+Received: from e23smtp01.au.ibm.com ([202.81.31.143]:42610 "EHLO
+	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753403Ab0AKMZv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jan 2010 07:25:35 -0500
+	Mon, 11 Jan 2010 07:25:51 -0500
 From: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
@@ -22,77 +22,68 @@ Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
        Masami Hiramatsu <mhiramat@redhat.com>,
        Maneesh Soni <maneesh@in.ibm.com>, Mark Wielaard <mjw@redhat.com>,
        LKML <linux-kernel@vger.kernel.org>
-Date: Mon, 11 Jan 2010 17:55:29 +0530
-Message-Id: <20100111122529.22050.32596.sendpatchset@srikar.in.ibm.com>
+Date: Mon, 11 Jan 2010 17:55:45 +0530
+Message-Id: <20100111122545.22050.64994.sendpatchset@srikar.in.ibm.com>
 In-Reply-To: <20100111122521.22050.3654.sendpatchset@srikar.in.ibm.com>
 References: <20100111122521.22050.3654.sendpatchset@srikar.in.ibm.com>
-Subject: [RFC] [PATCH 1/7] User Space Breakpoint Assistance Layer (UBP)
+Subject: [RFC] [PATCH 3/7] Execution out of line (XOL)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-User Space Breakpoint Assistance Layer (UBP)
+Execution out of line (XOL)
 
-User space breakpointing Infrastructure provides kernel subsystems
-with architecture independent interface to establish breakpoints in
-user applications. This patch provides core implementation of ubp and
-also wrappers for architecture dependent methods.
+Slot allocation mechanism for Execution Out of Line strategy in User
+space breakpointing Inftrastructure. (XOL)
 
-UBP currently supports both single stepping inline and execution out
-of line strategies. Two different probepoints in the same process can
-have two different strategies.
+This patch provides slot allocation mechanism for execution out of
+line strategy for use with user space breakpoint infrastructure.
+This patch requires utrace support in kernel.
 
-You need to follow this up with the UBP patch for your architecture.
+This patch provides five functions xol_get_insn_slot(),
+xol_free_insn_slot(), xol_put_area(), xol_get_area() and
+xol_validate_vaddr().
+
+Current slot allocation mechanism:
+1. Allocate one dedicated slot per user breakpoint.
+2. If the allocated vma is completely used, expand current vma.
+3. If we cant expand the vma, allocate a new vma.
 
 Signed-off-by: Jim Keniston <jkenisto@us.ibm.com>
 Signed-off-by: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
 ---
- arch/Kconfig        |   12 +
- include/linux/ubp.h |  282 ++++++++++++++++++++++++++++++
- kernel/Makefile     |    1 
- kernel/ubp_core.c   |  479 ++++++++++++++++++++++++++++++++++++++++++++++++++++
- 4 files changed, 774 insertions(+)
+ arch/Kconfig            |    4 
+ include/linux/ubp_xol.h |   56 ++++
+ kernel/Makefile         |    1 
+ kernel/ubp_xol.c        |  644 ++++++++++++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 705 insertions(+)
 
 Index: new_uprobes.git/arch/Kconfig
 ===================================================================
 --- new_uprobes.git.orig/arch/Kconfig
 +++ new_uprobes.git/arch/Kconfig
-@@ -57,6 +57,15 @@ config KPROBES
- 	  for kernel debugging, non-intrusive instrumentation and testing.
- 	  If in doubt, say "N".
+@@ -102,6 +102,10 @@ config USER_RETURN_NOTIFIER
+ config HAVE_UBP
+ 	def_bool n
  
-+config UBP
-+	bool "User-space breakpoint assistance (EXPERIMENTAL)"
-+	depends on MODULES
-+	depends on HAVE_UBP
-+	help
-+	  Ubp enables kernel subsystems to establish breakpoints
-+	  in user applications. This service is used by components
-+	  such as uprobes. If in doubt, say "N".
-+
- config HAVE_EFFICIENT_UNALIGNED_ACCESS
- 	bool
- 	help
-@@ -90,6 +99,9 @@ config USER_RETURN_NOTIFIER
- 	  Provide a kernel-internal notification when a cpu is about to
- 	  switch to user mode.
- 
-+config HAVE_UBP
-+	def_bool n
++config UBP_XOL
++	def_bool y
++	depends on UBP && UTRACE
 +
  config HAVE_IOREMAP_PROT
  	bool
  
-Index: new_uprobes.git/include/linux/ubp.h
+Index: new_uprobes.git/include/linux/ubp_xol.h
 ===================================================================
 --- /dev/null
-+++ new_uprobes.git/include/linux/ubp.h
-@@ -0,0 +1,282 @@
-+#ifndef _LINUX_UBP_H
-+#define _LINUX_UBP_H
++++ new_uprobes.git/include/linux/ubp_xol.h
+@@ -0,0 +1,56 @@
++#ifndef _LINUX_XOL_H
++#define _LINUX_XOL_H
 +/*
-+ * User-space BreakPoint support (ubp)
-+ * include/linux/ubp.h
++ * User-space BreakPoint support (ubp) -- Allocation of instruction
++ * slots for execution out of line (XOL)
++ * include/linux/ubp_xol.h
 + *
 + * This program is free software; you can redistribute it and/or modify
 + * it under the terms of the GNU General Public License as published by
@@ -108,287 +99,62 @@ Index: new_uprobes.git/include/linux/ubp.h
 + * along with this program; if not, write to the Free Software
 + * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 + *
-+ * Copyright (C) IBM Corporation, 2008, 2009
++ * Copyright (C) IBM Corporation, 2009
 + */
 +
-+#include <asm/ubp.h>
-+struct task_struct;
-+struct pt_regs;
 +
-+/**
-+ * Strategy hints:
-+ *
-+ * %UBP_HNT_INLINE: Specifies that the instruction must
-+ * be single-stepped inline.  Can be set by the caller of
-+ * @arch->analyze_insn() -- e.g., if caller is out of XOL slots --
-+ * or by @arch->analyze_insn() if there's no viable XOL strategy
-+ * for that instruction.  Set in arch->strategies if the architecture
-+ * doesn't implement XOL.
-+ *
-+ * %UBP_HNT_PERMSL: Specifies that the instruction slot whose
-+ * address is @ubp->xol_vaddr is assigned to @ubp for the life of
-+ * the process.  Can be used by @arch->analyze_insn() to simplify
-+ * XOL in some cases.  Ignored in @arch->strategies.
-+ *
-+ * %UBP_HNT_TSKINFO: Set in @arch->strategies if the architecture's
-+ * XOL handling requires the preservation of special
-+ * task-specific info between the calls to @arch->pre_xol()
-+ * and @arch->post_xol().  (E.g., XOL of x86_64 rip-relative
-+ * instructions uses a scratch register, whose value is saved
-+ * by pre_xol() and restored by post_xol().)  The caller
-+ * of @arch->analyze_insn() should set %UBP_HNT_TSKINFO in
-+ * @ubp->strategy if it's set in @arch->strategies and the caller
-+ * can maintain a @ubp_task_arch_info object for each probed task.
-+ * @arch->analyze_insn() should leave this flag set in @ubp->strategy
-+ * if it needs to use the per-task @ubp_task_arch_info object.
-+ */
-+#define UBP_HNT_INLINE	0x1  /* Single-step this insn inline. */
-+#define UBP_HNT_TSKINFO 0x2  /* XOL requires ubp_task_arch_info */
-+#define UBP_HNT_PERMSL	0x4  /* XOL slot assignment is permanent */
-+
-+#define UBP_HNT_MASK	0x7
-+
-+/**
-+ * struct ubp_bkpt - user-space breakpoint/probepoint
-+ *
-+ * @vaddr:	virtual address of probepoint
-+ * @xol_vaddr:	virtual address of XOL slot assigned to this probepoint
-+ * @opcode:	copy of opcode at @vaddr
-+ * @insn:	typically a copy of the instruction at @vaddr.  More
-+ *	precisely, this is the instruction (stream) that will be
-+ *	executed in place of the original instruction.
-+ * @strategy:	hints about how this instruction will be executed
-+ * @fixups:	set of fixups to be executed by @arch->post_xol()
-+ * @arch_info:	architecture-specific info about this probepoint
-+ */
-+struct ubp_bkpt {
-+	unsigned long vaddr;
-+	unsigned long xol_vaddr;
-+	ubp_opcode_t opcode;
-+	u8 insn[UBP_XOL_SLOT_BYTES];
-+	u16 strategy;
-+	u16 fixups;
-+	struct ubp_bkpt_arch_info arch_info;
-+};
-+
-+/* Post-execution fixups.  Some architectures may define others. */
-+#define UPB_FIX_NONE	0x0  /* No fixup needed */
-+#define UBP_FIX_IP	0x1  /* Adjust IP back to vicinity of actual insn */
-+#define UBP_FIX_CALL	0x2  /* Adjust the return address of a call insn */
-+
-+#ifndef UPB_FIX_DEFAULT
-+#define UPB_FIX_DEFAULT UBP_FIX_IP
-+#endif
-+
-+#if defined(CONFIG_UBP)
-+extern int ubp_init(u16 *strategies);
-+extern int ubp_insert_bkpt(struct task_struct *tsk, struct ubp_bkpt *ubp);
-+extern unsigned long ubp_get_bkpt_addr(struct pt_regs *regs);
-+extern int ubp_pre_sstep(struct task_struct *tsk, struct ubp_bkpt *ubp,
-+		struct ubp_task_arch_info *tskinfo, struct pt_regs *regs);
-+extern int ubp_post_sstep(struct task_struct *tsk, struct ubp_bkpt *ubp,
-+		struct ubp_task_arch_info *tskinfo, struct pt_regs *regs);
-+extern int ubp_cancel_xol(struct task_struct *tsk, struct ubp_bkpt *ubp);
-+extern int ubp_remove_bkpt(struct task_struct *tsk, struct ubp_bkpt *ubp);
-+extern int ubp_validate_insn_addr(struct task_struct *tsk,
-+						unsigned long vaddr);
-+extern void ubp_set_ip(struct pt_regs *regs, unsigned long vaddr);
-+#else	/* CONFIG_UBP */
-+static inline int ubp_init(u16 *strategies)
++#if defined(CONFIG_UBP_XOL)
++extern unsigned long xol_get_insn_slot(struct ubp_bkpt *ubp, void *xol_area);
++extern void xol_free_insn_slot(unsigned long, void *xol_area);
++extern int xol_validate_vaddr(struct pid *pid, unsigned long vaddr,
++							void *xol_area);
++extern void *xol_get_area(struct pid *pid);
++extern void xol_put_area(void *xol_area);
++#else /* CONFIG_UBP_XOL */
++static inline unsigned long xol_get_insn_slot(struct ubp_bkpt *ubp,
++							void *xol_area)
++{
++	return 0;
++}
++static inline void xol_free_insn_slot(unsigned long slot_addr, void *xol_area)
++{
++}
++static inline int xol_validate_vaddr(struct pid *pid, unsigned long vaddr,
++							void *xol_area)
 +{
 +	return -ENOSYS;
 +}
-+static inline int ubp_insert_bkpt(struct task_struct *tsk,
-+						struct ubp_bkpt *ubp)
++static inline void *xol_get_area(struct pid *pid)
 +{
-+	return -ENOSYS;
++	return NULL;
 +}
-+static inline unsigned long ubp_get_bkpt_addr(struct pt_regs *regs)
-+{
-+	return -ENOSYS;
-+}
-+static inline int ubp_pre_sstep(struct task_struct *tsk,
-+	struct ubp_bkpt *ubp, struct ubp_task_arch_info *tskinfo,
-+	struct pt_regs *regs)
-+{
-+	return -ENOSYS;
-+}
-+static inline int ubp_post_sstep(struct task_struct *tsk,
-+	struct ubp_bkpt *ubp, struct ubp_task_arch_info *tskinfo,
-+	struct pt_regs *regs)
-+{
-+	return -ENOSYS;
-+}
-+static inline int ubp_cancel_xol(struct task_struct *tsk,
-+	struct ubp_bkpt *ubp)
-+{
-+	return -ENOSYS;
-+}
-+static inline int ubp_remove_bkpt(struct task_struct *tsk,
-+	struct ubp_bkpt *ubp)
-+{
-+	return -ENOSYS;
-+}
-+static inline int ubp_validate_insn_addr(struct task_struct *tsk,
-+	unsigned long vaddr)
-+{
-+	return -ENOSYS;
-+}
-+static inline void ubp_set_ip(struct pt_regs *regs, unsigned long vaddr)
++static inline void xol_put_area(void *xol_area)
 +{
 +}
-+#endif	/* CONFIG_UBP */
++#endif /* CONFIG_UBP_XOL */
 +
-+#ifdef UBP_IMPLEMENTATION
-+/**
-+ * struct ubp_arch_info - architecture-specific parameters and functions
-+ *
-+ * Most architectures can use the default versions of @read_opcode(),
-+ * @set_bkpt(), @set_orig_insn(), and @is_bkpt_insn(); ia64 is an
-+ * exception.  All functions (including @validate_address()) can assume
-+ * that the caller has verified that the probepoint's virtual address
-+ * resides in an executable VM area.
-+ *
-+ * @bkpt_insn:
-+ *	The architecture's breakpoint instruction.  This is used by
-+ *	the default versions of @set_bkpt(), @set_orig_insn(), and
-+ *	@is_bkpt_insn().
-+ * @ip_advancement_by_bkpt_insn:
-+ * 	The number of bytes the instruction pointer is advanced by
-+ * 	this architecture's breakpoint instruction.  For example, after
-+ * 	the powerpc trap instruction executes, the ip still points to the
-+ * 	breakpoint instruction (ip_advancement_by_bkpt_insn = 0); but the
-+ * 	x86 int3 instruction (1 byte) advances the ip past the int3
-+ * 	(ip_advancement_by_bkpt_insn = 1).
-+ * @max_insn_bytes:
-+ *	The maximum length, in bytes, of an instruction in this
-+ *	architecture.  This must be <= UBP_XOL_SLOT_BYTES;
-+ * @strategies:
-+ *	Bit-map of %UBP_HNT_* values recognized by this architecture.
-+ *	Include %UBP_HNT_INLINE iff this architecture doesn't support
-+ *	execution out of line.  Include %UBP_HNT_TSKINFO if
-+ *	XOL of at least some instructions requires communication of
-+ *	per-task state between @pre_xol() and @post_xol().
-+ * @set_ip:
-+ *	Set the instruction pointer in @regs to @vaddr.
-+ * @validate_address:
-+ *	Return 0 if @vaddr is a valid instruction address, or a negative
-+ *	errno (typically -%EINVAL) otherwise.  If you don't provide
-+ *	@validate_address(), any address will be accepted.  Caller
-+ *	guarantees that @vaddr is in an executable VM area.  This
-+ *	function typically just enforces arch-specific instruction
-+ *	alignment.
-+ * @read_opcode:
-+ *	For task @tsk, read the opcode at @vaddr and store it in
-+ *	@opcode.  Return 0 (success) or a negative errno.  Defaults to
-+ *	@ubp_read_opcode().
-+ * @set_bkpt:
-+ *	For task @tsk, store @bkpt_insn at @ubp->vaddr.  Return 0
-+ *	(success) or a negative errno. Defaults to @ubp_set_bkpt().
-+ * @set_orig_insn:
-+ *	For task @tsk, restore the original opcode (@ubp->opcode) at
-+ *	@ubp->vaddr.  If @check is true, first verify that there's
-+ *	actually a breakpoint instruction there.  Return 0 (success) or
-+ *	a negative errno.  Defaults to @ubp_set_orig_insn().
-+ * @is_bkpt_insn:
-+ *	Return %true if @ubp->opcode is @bkpt_insn.  Defaults to
-+ *	@ubp_is_bkpt_insn(), which just tests (ubp->opcode ==
-+ *	arch->bkpt_insn).
-+ * @analyze_insn:
-+ *	Analyze @ubp->insn.  Return 0 if @ubp->insn is an instruction
-+ *	you can probe, or a negative errno (typically -%EPERM)
-+ *	otherwise.  The caller sets @ubp->strategy to %UBP_HNT_INLINE
-+ *	to suppress XOL for this instruction (e.g., because we're
-+ *	out of XOL slots).  If the instruction can be probed but
-+ *	can't be executed out of line, set @ubp->strategy to
-+ *	%UBP_HNT_INLINE.  Otherwise, determine what sort of XOL-related
-+ *	fixups @post_xol() (and possibly @pre_xol()) will need
-+ *	to do for this instruction, and annotate @ubp accordingly.
-+ *	You may modify @ubp->insn (e.g., the x86_64 port does this
-+ *	for rip-relative instructions), but if you do so, you should
-+ *	retain a copy in @ubp->arch_info in case you have to revert
-+ *	to single-stepping inline (see @cancel_xol()).
-+ * @pre_xol:
-+ *	Called just before executing the instruction associated
-+ *	with @ubp out of line.  @ubp->xol_vaddr is the address in
-+ *	@tsk's virtual address space where @ubp->insn has been copied.
-+ *	@pre_xol() should at least set the instruction pointer in
-+ *	@regs to @ubp->xol_vaddr -- which is what the default,
-+ *	@ubp_pre_xol(), does.  If @ubp->strategy includes the
-+ *	%UBP_HNT_TSKINFO flag, then @tskinfo points to a per-task
-+ *	copy of struct ubp_task_arch_info.
-+ * @post_xol:
-+ *	Called after executing the instruction associated with
-+ *	@ubp out of line.  @post_xol() should perform the fixups
-+ *	specified in @ubp->fixups, which includes ensuring that the
-+ *	instruction pointer in @regs points at the next instruction in
-+ *	the probed instruction stream.  @tskinfo is as for @pre_xol().
-+ *	You must provide this function.
-+ * @cancel_xol:
-+ *	The instruction associated with @ubp cannot be executed
-+ *	out of line after all.  (This can happen when XOL slots
-+ *	are lazily assigned, and we run out of slots before we
-+ *	hit this breakpoint.  This function should never be called
-+ *	if @analyze_insn() was previously called for @ubp with a
-+ *	non-zero value of @ubp->xol_vaddr and with %UBP_HNT_PERMSL
-+ *	set in @ubp->strategy.)  Adjust @ubp as needed so it can be
-+ *	single-stepped inline.  Omit this function if you don't need it.
-+ */
-+
-+struct ubp_arch_info {
-+	ubp_opcode_t bkpt_insn;
-+	u8 ip_advancement_by_bkpt_insn;
-+	u8 max_insn_bytes;
-+	u16 strategies;
-+	void (*set_ip)(struct pt_regs *regs, unsigned long vaddr);
-+	int (*validate_address)(struct task_struct *tsk, unsigned long vaddr);
-+	int (*read_opcode)(struct task_struct *tsk, unsigned long vaddr,
-+						ubp_opcode_t *opcode);
-+	int (*set_bkpt)(struct task_struct *tsk, struct ubp_bkpt *ubp);
-+	int (*set_orig_insn)(struct task_struct *tsk,
-+				struct ubp_bkpt *ubp, bool check);
-+	bool (*is_bkpt_insn)(struct ubp_bkpt *ubp);
-+	int (*analyze_insn)(struct task_struct *tsk, struct ubp_bkpt *ubp);
-+	int (*pre_xol)(struct task_struct *tsk, struct ubp_bkpt *ubp,
-+				struct ubp_task_arch_info *tskinfo,
-+				struct pt_regs *regs);
-+	int (*post_xol)(struct task_struct *tsk, struct ubp_bkpt *ubp,
-+				struct ubp_task_arch_info *tskinfo,
-+				struct pt_regs *regs);
-+	void (*cancel_xol)(struct task_struct *tsk, struct ubp_bkpt *ubp);
-+};
-+
-+/* Unexported functions & macros for use by arch-specific code */
-+#define ubp_opcode_sz ((unsigned int)(sizeof(ubp_opcode_t)))
-+extern int ubp_read_vm(struct task_struct *tsk, unsigned long vaddr,
-+						void *kbuf, int nbytes);
-+extern int ubp_write_data(struct task_struct *tsk, unsigned long vaddr,
-+					const void *kbuf, int nbytes);
-+
-+extern struct ubp_arch_info ubp_arch_info;
-+
-+#endif	/* UBP_IMPLEMENTATION */
-+
-+#endif	/* _LINUX_UBP_H */
++#endif  /* _LINUX_XOL_H */
 Index: new_uprobes.git/kernel/Makefile
 ===================================================================
 --- new_uprobes.git.orig/kernel/Makefile
 +++ new_uprobes.git/kernel/Makefile
-@@ -102,6 +102,7 @@ obj-$(CONFIG_SLOW_WORK_DEBUG) += slow-wo
- obj-$(CONFIG_PERF_EVENTS) += perf_event.o
+@@ -103,6 +103,7 @@ obj-$(CONFIG_PERF_EVENTS) += perf_event.
  obj-$(CONFIG_HAVE_HW_BREAKPOINT) += hw_breakpoint.o
  obj-$(CONFIG_USER_RETURN_NOTIFIER) += user-return-notifier.o
-+obj-$(CONFIG_UBP) += ubp_core.o
+ obj-$(CONFIG_UBP) += ubp_core.o
++obj-$(CONFIG_UBP_XOL) += ubp_xol.o
  
  ifneq ($(CONFIG_SCHED_OMIT_FRAME_POINTER),y)
  # According to Alan Modra <alan@linuxcare.com.au>, the -fno-omit-frame-pointer is
-Index: new_uprobes.git/kernel/ubp_core.c
+Index: new_uprobes.git/kernel/ubp_xol.c
 ===================================================================
 --- /dev/null
-+++ new_uprobes.git/kernel/ubp_core.c
-@@ -0,0 +1,479 @@
++++ new_uprobes.git/kernel/ubp_xol.c
+@@ -0,0 +1,644 @@
 +/*
-+ * User-space BreakPoint support (ubp)
++ * User-space BreakPoint support (ubp) -- Allocation of instruction
++ * slots for execution out of line (XOL)
++ * kernel/ubp_xol.c
 + *
 + * This program is free software; you can redistribute it and/or modify
 + * it under the terms of the GNU General Public License as published by
@@ -404,465 +170,628 @@ Index: new_uprobes.git/kernel/ubp_core.c
 + * along with this program; if not, write to the Free Software
 + * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 + *
-+ * Copyright (C) IBM Corporation, 2008, 2009
++ * Copyright (C) IBM Corporation, 2009
 + */
-+
-+#define UBP_IMPLEMENTATION 1
-+
-+#include <linux/kernel.h>
-+#include <linux/init.h>
-+#include <linux/module.h>
-+#include <linux/sched.h>
-+#include <linux/ptrace.h>
-+#include <linux/mm.h>
-+#include <linux/ubp.h>
-+#include <linux/uaccess.h>
 +
 +/*
-+ * TODO: Resolve verbosity.  ubp_insert_bkpt() is the only function
-+ * that reports failures via printk.
++ * Every probepoint gets its own slot.  Once it's assigned a slot, it
++ * keeps that slot until the probepoint goes away.  If we run out of
++ * slots in the XOL vma, we try to expand it by one page.  If we can't
++ * expand it, we allocate an additional vma. Only the probed process
++ * itself can add or expand vmas.
 + */
++#include <linux/list.h>
++#include <linux/mm.h>
++#include <linux/err.h>
++#include <linux/kref.h>
++#include <linux/utrace.h>
++#include <linux/ubp.h>
++#include <linux/errno.h>
++#include <linux/mman.h>
++#include <linux/file.h>
 +
-+static struct ubp_arch_info *arch = &ubp_arch_info;
++#define UINSNS_PER_PAGE	(PAGE_SIZE/UBP_XOL_SLOT_BYTES)
 +
-+static bool ubp_uses_xol(u16 strategy)
-+{
-+	return !(strategy & UBP_HNT_INLINE);
-+}
++struct ubp_xol_vma {
++	struct list_head list;
++	unsigned long *bitmap;		/* 0 = free slot */
 +
-+static bool validate_strategy(u16 strategy, u16 valid_bits)
-+{
-+	return ((strategy & (~valid_bits)) == 0);
-+}
++	/*
++	 * We keep the vma's vm_start rather than a pointer to the vma
++	 * itself.  The probed process or a naughty kernel module could make
++	 * the vma go away, and we must handle that reasonably gracefully.
++	 */
++	unsigned long vaddr;		/* Page(s) of instruction slots */
++	int npages;
++	int nslots;
++};
++
++struct ubp_xol_area {
++	struct list_head vmas;
++	struct mutex mutex;	/* Serializes access to list of vmas */
++
++	/*
++	 * We ref-count threads and clients.  The xol_report_* callbacks
++	 * are all about noticing when the last thread goes away.
++	 */
++	struct kref kref;
++	struct ubp_xol_vma *last_vma;
++	pid_t tgid;
++	bool can_expand;
++};
++
++static const struct utrace_engine_ops xol_engine_ops;
++static void xol_free_area(struct kref *kref);
++
++/*
++ * xol_mutex allows creation of unique ubp_xol_area.
++ * Critical region for xol_mutex includes creation and initialization
++ * of ubp_xol_area and attaching an exclusive engine with
++ * xol_engine_ops for the thread whose pid is thread group id.
++ */
++static DEFINE_MUTEX(xol_mutex);
 +
 +/**
-+ * ubp_init - initialize the ubp data structures
-+ * @strategies indicates which breakpoint-related strategies are
-+ * supported by the client:
-+ *   %UBP_HNT_INLINE: Client supports only single-stepping inline.
-+ *	Otherwise client must provide an instruction slot
-+ *	(UBP_XOL_SLOT_BYTES bytes) in the probed process's address
-+ *	space for each instruction to be executed out of line.
-+ *   %UBP_HNT_TSKINFO: Client can provide and maintain one
-+ *	@ubp_task_arch_info object for each probed task.  (Failure to
-+ *	support this will prevent XOL of rip-relative instructions on
-+ *	x86_64, at least.)
-+ * Upon return, @strategies is updated to reflect those strategies
-+ * required by this particular architecture's implementation of ubp:
-+ *   %UBP_HNT_INLINE: Architecture or client supports only
-+ *	single-stepping inline.
-+ *   %UBP_HNT_TSKINFO: Architecture uses @ubp_task_arch_info, and will
-+ *	expect it to be passed to @ubp_pre_sstep() and @ubp_post_sstep()
-+ *	as needed (see @ubp_insert_bkpt()).
-+ * Possible errors:
-+ * -%ENOSYS: ubp not supported for this architecture.
-+ * -%EINVAL: unrecognized flags in @strategies
++ * xol_put_area - release a reference to ubp_xol_area.
++ * If this happens to be the last reference, free the ubp_xol_area.
++ * @xol_area: unique per process ubp_xol_area for this process.
 + */
-+int ubp_init(u16 *strategies)
++void xol_put_area(void *xol_area)
 +{
-+	u16 inline_bit, tskinfo_bit;
-+	u16 client_strategies = *strategies;
++	struct ubp_xol_area *area = (struct ubp_xol_area *) xol_area;
 +
-+	if (!validate_strategy(client_strategies,
-+				UBP_HNT_INLINE | UBP_HNT_TSKINFO))
-+		return -EINVAL;
++	if (unlikely(!area))
++		return;
++	kref_put(&area->kref, xol_free_area);
++}
 +
-+	inline_bit = (client_strategies | arch->strategies) & UBP_HNT_INLINE;
-+	tskinfo_bit = (client_strategies & arch->strategies) & UBP_HNT_TSKINFO;
-+	*strategies = (inline_bit | tskinfo_bit);
++/*
++ * Need unique ubp_xol_area. This is achieved by using utrace engines.
++ * However code using utrace could be avoided if mm_struct /
++ * mm_context_t had a pointer to ubp_xol_area.
++ */
++
++/*
++ * xol_create_engine - add a thread to watch
++ * xol_create_engine can return these values:
++ *  0: successfully created an engine.
++ *  -EEXIST: don't bother because an engine already exists for this
++ *  thread.
++ *  -ESRCH: Process or thread is exiting; don't need to create an
++ *  engine.
++ *  -ENOMEM: utrace can't allocate memory for the engine
++ *
++ *  This function is called holding a reference to pid.
++ */
++static int xol_create_engine(struct pid *pid, struct ubp_xol_area *area)
++{
++	struct utrace_engine *engine;
++	int result;
++
++	engine = utrace_attach_pid(pid, UTRACE_ATTACH_CREATE |
++			UTRACE_ATTACH_EXCLUSIVE | UTRACE_ATTACH_MATCH_OPS,
++			&xol_engine_ops, area);
++	if (IS_ERR(engine)) {
++		put_pid(pid);
++		return PTR_ERR(engine);
++	}
++	result = utrace_set_events_pid(pid, engine,
++		UTRACE_EVENT(EXEC) | UTRACE_EVENT(CLONE) | UTRACE_EVENT(EXIT));
++	/*
++	 * Since this is the first and only time we set events for this
++	 * engine, there shouldn't be any callbacks in progress.
++	 */
++	WARN_ON(result == -EINPROGRESS);
++	kref_get(&area->kref);
++	put_pid(pid);
++	utrace_engine_put(engine);
 +	return 0;
 +}
 +
 +/*
-+ * Read @nbytes at @vaddr from @tsk into @kbuf.  Return number of bytes read.
-+ * Not exported, but available for use by arch-specific ubp code.
++ * If a thread clones while xol_get_area() is running, it's possible
++ * for xol_create_engine() to be called both from there and from
++ * here.  No problem, since xol_create_engine() refuses to create (or
++ * ref-count) a second engine for the same task.
 + */
-+int ubp_read_vm(struct task_struct *tsk, unsigned long vaddr,
-+						void *kbuf, int nbytes)
++static u32 xol_report_clone(u32 action,
++				struct utrace_engine *engine,
++				unsigned long clone_flags,
++				struct task_struct *child)
 +{
-+	if (tsk == current) {
-+		int nleft = copy_from_user(kbuf, (void __user *) vaddr,
-+				nbytes);
-+		return nbytes - nleft;
-+	} else
-+		return access_process_vm(tsk, vaddr, kbuf, nbytes, 0);
++	if (clone_flags & CLONE_THREAD) {
++		struct pid *child_pid = get_pid(task_pid(child));
++
++		BUG_ON(!child_pid);
++		(void)xol_create_engine(child_pid,
++			(struct ubp_xol_area *) engine->data);
++	}
++	return UTRACE_RESUME;
 +}
 +
 +/*
-+ * Write @nbytes from @kbuf at @vaddr in @tsk.  Return number of bytes written.
-+ * Can be used to write to stack or data VM areas, but not instructions.
-+ * Not exported, but available for use by arch-specific ubp code.
++ * When a multithreaded app execs, the exec-ing thread reports the
++ * exec, and the other threads report exit.
 + */
-+int ubp_write_data(struct task_struct *tsk, unsigned long vaddr,
-+						const void *kbuf, int nbytes)
++static u32 xol_report_exec(u32 action,
++				struct utrace_engine *engine,
++				const struct linux_binfmt *fmt,
++				const struct linux_binprm *bprm,
++				struct pt_regs *regs)
 +{
-+	int nleft;
-+
-+	if (tsk == current) {
-+		nleft = copy_to_user((void __user *) vaddr, kbuf, nbytes);
-+		return nbytes - nleft;
-+	} else
-+		return access_process_vm(tsk, vaddr, (void *) kbuf,
-+				nbytes, 1);
++	xol_put_area((struct ubp_xol_area *)engine->data);
++	return UTRACE_DETACH;
 +}
 +
-+static int ubp_write_opcode(struct task_struct *tsk, unsigned long vaddr,
-+							ubp_opcode_t opcode)
++static u32 xol_report_exit(u32 action, struct utrace_engine *engine,
++			long orig_code, long *code)
 +{
-+	int result;
-+
-+	result = access_process_vm(tsk, vaddr, &opcode, ubp_opcode_sz, 1);
-+	return (result == ubp_opcode_sz ? 0 : -EFAULT);
++	xol_put_area((struct ubp_xol_area *)engine->data);
++	return UTRACE_DETACH;
 +}
 +
-+/* Default implementation of arch->read_opcode */
-+static int ubp_read_opcode(struct task_struct *tsk, unsigned long vaddr,
-+							ubp_opcode_t *opcode)
-+{
-+	int bytes_read;
++static const struct utrace_engine_ops xol_engine_ops = {
++	.report_exit = xol_report_exit,
++	.report_clone = xol_report_clone,
++	.report_exec = xol_report_exec
++};
 +
-+	bytes_read = ubp_read_vm(tsk, vaddr, opcode, ubp_opcode_sz);
-+	return (bytes_read == ubp_opcode_sz ? 0 : -EFAULT);
-+}
-+
-+/* Default implementation of arch->set_bkpt */
-+static int ubp_set_bkpt(struct task_struct *tsk, struct ubp_bkpt *ubp)
++/*
++ * @start_pid is the pid for a thread in the traced process.
++ * Creating engines for a hugely multithreaded process can be
++ * time consuming. Hence engines for other threads are created
++ * outside the critical region.
++ */
++static void create_engine_sibling_threads(struct pid *start_pid,
++						struct ubp_xol_area *area)
 +{
-+	return ubp_write_opcode(tsk, ubp->vaddr, arch->bkpt_insn);
-+}
++	struct task_struct *t, *start;
++	struct utrace_engine *engine;
++	struct pid *pid = NULL;
 +
-+/* Default implementation of arch->set_orig_insn */
-+static int ubp_set_orig_insn(struct task_struct *tsk, struct ubp_bkpt *ubp,
-+								bool check)
-+{
-+	if (check) {
-+		ubp_opcode_t opcode;
-+		int result = arch->read_opcode(tsk, ubp->vaddr, &opcode);
-+		if (result)
-+			return result;
-+		if (opcode != arch->bkpt_insn)
-+			return -EINVAL;
++	rcu_read_lock();
++	start = pid_task(start_pid, PIDTYPE_PID);
++	t = start;
++	if (t) {
++		do {
++			if (t->exit_state) {
++				t = next_thread(t);
++				continue;
++			}
++
++			/*
++			 * This doesn't sleep, does minimal error checking.
++			 */
++			engine = utrace_attach_task(t,
++				UTRACE_ATTACH_MATCH_OPS,
++				&xol_engine_ops, NULL);
++			if (PTR_ERR(engine) == -ENOENT) {
++				pid = get_pid(task_pid(t));
++				(void)xol_create_engine(pid, area);
++			} else if (!IS_ERR(engine))
++				utrace_engine_put(engine);
++
++			t = next_thread(t);
++		} while (t != start);
 +	}
-+	return ubp_write_opcode(tsk, ubp->vaddr, ubp->opcode);
++	rcu_read_unlock();
 +}
 +
-+/* Return 0 if vaddr is in an executable VM area, or -EINVAL otherwise. */
-+static inline int ubp_check_vma(struct task_struct *tsk, unsigned long vaddr)
++/**
++ * xol_get_area - Get a reference to process's ubp_xol_area.
++ * If an ubp_xol_area doesn't exist for @tg_leader's process, create
++ * one.  In any case, increment its refcount and return a pointer
++ * to it.
++ * @tg_leader: pointer to struct pid of a thread whose tid is the
++ * thread group id
++ */
++void *xol_get_area(struct pid *tg_leader)
++{
++	struct ubp_xol_area *area = NULL;
++	struct utrace_engine *engine;
++	struct pid *pid;
++	int ret;
++
++	pid = get_pid(tg_leader);
++	mutex_lock(&xol_mutex);
++	engine = utrace_attach_pid(tg_leader, UTRACE_ATTACH_MATCH_OPS,
++			&xol_engine_ops, NULL);
++	if (!IS_ERR(engine)) {
++		area = engine->data;
++		utrace_engine_put(engine);
++		mutex_unlock(&xol_mutex);
++		goto found_area;
++	}
++
++	area = kzalloc(sizeof(*area), GFP_USER);
++	if (unlikely(!area)) {
++		mutex_unlock(&xol_mutex);
++		return NULL;
++	}
++	mutex_init(&area->mutex);
++	kref_init(&area->kref);
++	area->last_vma = NULL;
++	area->can_expand = true;
++	area->tgid = pid_task(tg_leader, PIDTYPE_PID)->tgid;
++	INIT_LIST_HEAD(&area->vmas);
++	ret = xol_create_engine(pid, area);
++	mutex_unlock(&xol_mutex);
++
++	if (ret != 0) {
++		kfree(area);
++		return NULL;
++	}
++	create_engine_sibling_threads(pid, area);
++
++found_area:
++	if (likely(area))
++		kref_get(&area->kref);
++	return (void *) area;
++}
++
++static void xol_free_area(struct kref *kref)
++{
++	struct ubp_xol_vma *usv, *tmp;
++	struct ubp_xol_area *area;
++
++	area = container_of(kref, struct ubp_xol_area, kref);
++	list_for_each_entry_safe(usv, tmp, &area->vmas, list) {
++		kfree(usv->bitmap);
++		kfree(usv);
++	}
++	kfree(area);
++}
++
++/*
++ * Allocate a bitmap for a new vma, or expand an existing bitmap.
++ * if old_bitmap is non-NULL, xol_realloc_bitmap() never returns
++ * old_bitmap.
++ */
++static unsigned long *xol_realloc_bitmap(unsigned long *old_bitmap,
++					 int old_nslots, int new_nslots)
++{
++	unsigned long *new_bitmap;
++
++	BUG_ON(new_nslots < old_nslots);
++
++	new_bitmap = kzalloc(BITS_TO_LONGS(new_nslots) * sizeof(long),
++								GFP_USER);
++	if (!new_bitmap) {
++		printk(KERN_ERR "ubp_xol: cannot %sallocate bitmap for XOL "
++			"area for pid/tgid %d/%d\n", (old_bitmap ? "re" : ""),
++			current->pid, current->tgid);
++		return NULL;
++	}
++	if (old_bitmap)
++		memcpy(new_bitmap, old_bitmap,
++				BITS_TO_LONGS(old_nslots) * sizeof(long));
++	return new_bitmap;
++}
++
++static struct ubp_xol_vma *xol_alloc_vma(void)
++{
++	struct ubp_xol_vma *usv;
++
++	usv = kzalloc(sizeof(struct ubp_xol_vma), GFP_USER);
++	if (!usv) {
++		printk(KERN_ERR "ubp_xol: cannot allocate kmem for XOL vma"
++			" for pid/tgid %d/%d\n", current->pid, current->tgid);
++		return NULL;
++	}
++	usv->bitmap = xol_realloc_bitmap(NULL, 0, UINSNS_PER_PAGE);
++	if (!usv->bitmap) {
++		kfree(usv);
++		return NULL;
++	}
++	return usv;
++}
++
++static inline struct ubp_xol_vma *xol_add_vma(struct ubp_xol_area *area)
 +{
 +	struct vm_area_struct *vma;
++	struct ubp_xol_vma *usv;
 +	struct mm_struct *mm;
-+	int ret = -EINVAL;
++	struct file *file;
++	unsigned long addr;
 +
-+	mm = get_task_mm(tsk);
++	mm = get_task_mm(current);
 +	if (!mm)
-+		return -EINVAL;
-+	down_read(&mm->mmap_sem);
-+	vma = find_vma(mm, vaddr);
-+	if (vma && vaddr >= vma->vm_start && (vma->vm_flags & VM_EXEC))
-+		ret = 0;
-+	up_read(&mm->mmap_sem);
++		return ERR_PTR(-ESRCH);
++
++	usv = xol_alloc_vma();
++	if (!usv) {
++		mmput(mm);
++		return ERR_PTR(-ENOMEM);
++	}
++
++	down_write(&mm->mmap_sem);
++	/*
++	 * Find the end of the top mapping and skip a page.
++	 * If there is no space for PAGE_SIZE above
++	 * that, mmap will ignore our address hint.
++	 *
++	 * We allocate a "fake" unlinked shmem file because
++	 * anonymous memory might not be granted execute
++	 * permission when the selinux security hooks have
++	 * their way.
++	 */
++	vma = rb_entry(rb_last(&mm->mm_rb), struct vm_area_struct, vm_rb);
++	addr = vma->vm_end + PAGE_SIZE;
++	file = shmem_file_setup("uprobes/ssol", PAGE_SIZE, VM_NORESERVE);
++	if (!file) {
++		printk(KERN_ERR "ubp_xol failed to setup shmem_file while "
++			"allocating vma for pid/tgid %d/%d for "
++			"single-stepping out of line.\n",
++			current->pid, current->tgid);
++		goto fail;
++	}
++	addr = do_mmap_pgoff(file, addr, PAGE_SIZE, PROT_EXEC, MAP_PRIVATE, 0);
++	fput(file);
++
++	if (addr & ~PAGE_MASK) {
++		printk(KERN_ERR "ubp_xol failed to allocate a vma for pid/tgid"
++				" %d/%d for single-stepping out of line.\n",
++				current->pid, current->tgid);
++		goto fail;
++	}
++	vma = find_vma(mm, addr);
++	BUG_ON(!vma);
++
++	/* Don't expand vma on mremap(). */
++	vma->vm_flags |= VM_DONTEXPAND | VM_DONTCOPY;
++	usv->vaddr = vma->vm_start;
++	up_write(&mm->mmap_sem);
 +	mmput(mm);
-+	return ret;
++	usv->npages = 1;
++	usv->nslots = UINSNS_PER_PAGE;
++	INIT_LIST_HEAD(&usv->list);
++	list_add_tail(&usv->list, &area->vmas);
++	area->last_vma = usv;
++	return usv;
++
++fail:
++	up_write(&mm->mmap_sem);
++	mmput(mm);
++	kfree(usv->bitmap);
++	kfree(usv);
++	return ERR_PTR(-ENOMEM);
++}
++
++/* Runs with area->mutex locked */
++static long xol_expand_vma(struct ubp_xol_vma *usv)
++{
++	struct vm_area_struct *vma;
++	unsigned long *new_bitmap;
++	struct mm_struct *mm;
++	unsigned long new_length, result;
++	int new_nslots;
++
++	new_length = PAGE_SIZE * (usv->npages + 1);
++	new_nslots = (int) ((usv->npages + 1) * UINSNS_PER_PAGE);
++
++	/* xol_realloc_bitmap() never returns usv->bitmap. */
++	new_bitmap = xol_realloc_bitmap(usv->bitmap, usv->nslots, new_nslots);
++	if (!new_bitmap)
++		return -ENOMEM;
++
++	mm = get_task_mm(current);
++	if (!mm)
++		return -ESRCH;
++
++	down_write(&mm->mmap_sem);
++	vma = find_vma(mm, usv->vaddr);
++	if (!vma) {
++		printk(KERN_ERR "pid/tgid %d/%d: ubp XOL vma at %#lx"
++			" has disappeared!\n", current->pid, current->tgid,
++			usv->vaddr);
++		result = -ENOMEM;
++		goto fail;
++	}
++	if (vma_pages(vma) != usv->npages || vma->vm_start != usv->vaddr) {
++		printk(KERN_ERR "pid/tgid %d/%d: ubp XOL vma has been"
++			" altered: %#lx/%ld pages; should be %#lx/%d pages\n",
++			current->pid, current->tgid, vma->vm_start,
++			vma_pages(vma), usv->vaddr, usv->npages);
++		result = -ENOMEM;
++		goto fail;
++	}
++	vma->vm_flags &= ~VM_DONTEXPAND;
++	result = do_mremap(usv->vaddr, usv->npages*PAGE_SIZE, new_length, 0, 0);
++	vma->vm_flags |= VM_DONTEXPAND;
++	if (IS_ERR_VALUE(result)) {
++		printk(KERN_WARNING "ubp_xol failed to expand the vma "
++			"for pid/tgid %d/%d for single-stepping out of line.\n",
++			current->pid, current->tgid);
++		goto fail;
++	}
++	BUG_ON(result != usv->vaddr);
++	up_write(&mm->mmap_sem);
++
++	kfree(usv->bitmap);
++	usv->bitmap = new_bitmap;
++	usv->nslots = new_nslots;
++	usv->npages++;
++	return 0;
++
++fail:
++	up_write(&mm->mmap_sem);
++	mmput(mm);
++	kfree(new_bitmap);
++	return result;
++}
++
++/*
++ * Find a slot
++ *  - searching in existing vmas for a free slot.
++ *  - If no free slot in existing vmas, try expanding the last vma.
++ *  - If unable to expand a vma, try adding a new vma.
++ *
++ * Runs with area->mutex locked.
++ */
++static unsigned long xol_take_insn_slot(struct ubp_xol_area *area)
++{
++	struct ubp_xol_vma *usv;
++	unsigned long slot_addr;
++	int slot_nr;
++
++	list_for_each_entry(usv, &area->vmas, list) {
++		slot_nr = find_first_zero_bit(usv->bitmap, usv->nslots);
++		if (slot_nr < usv->nslots) {
++			set_bit(slot_nr, usv->bitmap);
++			slot_addr = usv->vaddr +
++				(slot_nr * UBP_XOL_SLOT_BYTES);
++			return slot_addr;
++		}
++	}
++
++	/*
++	 * All out of space.  Need to allocate a new page.
++	 * Only the probed process itself can add or expand vmas.
++	 */
++	if (!area->can_expand || (area->tgid != current->tgid))
++		goto fail;
++
++	usv = area->last_vma;
++	if (usv) {
++		/* Expand vma, take first of newly added slots. */
++		slot_nr = usv->nslots;
++		if (xol_expand_vma(usv) != 0) {
++			printk(KERN_WARNING "Allocating additional vma.\n");
++			usv = NULL;
++		}
++	}
++	if (!usv) {
++		slot_nr = 0;
++		usv = xol_add_vma(area);
++		if (IS_ERR(usv))
++			goto cant_expand;
++	}
++
++	/* Take first slot of new page. */
++	set_bit(slot_nr, usv->bitmap);
++	slot_addr = usv->vaddr + (slot_nr * UBP_XOL_SLOT_BYTES);
++	return slot_addr;
++
++cant_expand:
++	area->can_expand = false;
++fail:
++	return 0;
 +}
 +
 +/**
-+ * ubp_validate_insn_addr - Validate if the instruction is an
-+ * executable vma.
-+ * Returns 0 if the vaddr is a valid instruction address.
-+ * @tsk: the probed task
-+ * @vaddr: virtual address of the instruction to be verified.
-+ *
-+ * Possible errors:
-+ * -%EINVAL: Instruction passed is not a valid instruction address.
++ * xol_get_insn_slot - If ubp was not allocated a slot, then
++ * allocate a slot. If ubp_insert_bkpt is already called, (i.e
++ * ubp.vaddr != 0) then copy the instruction into the slot.
++ * Allocating a free slot could result in
++ *	- using a free slot in the current vma or
++ * 	- expanding the last vma or
++ * 	- adding a new vma.
++ * Returns the allocated slot address or 0.
++ * @ubp: probepoint information
++ * @xol_area refers the unique per process ubp_xol_area for
++ * this process.
 + */
-+int ubp_validate_insn_addr(struct task_struct *tsk, unsigned long vaddr)
++unsigned long xol_get_insn_slot(struct ubp_bkpt *ubp, void *xol_area)
 +{
++	struct ubp_xol_area *area = (struct ubp_xol_area *) xol_area;
++	int len;
++
++	if (unlikely(!area))
++		return 0;
++	mutex_lock(&area->mutex);
++	if (likely(!ubp->xol_vaddr)) {
++		ubp->xol_vaddr = xol_take_insn_slot(area);
++		/*
++		 * Initialize the slot if ubp->vaddr points to valid
++		 * instruction slot.
++		 */
++		if (likely(ubp->xol_vaddr) && ubp->vaddr) {
++			len = access_process_vm(current, ubp->xol_vaddr,
++					ubp->insn, UBP_XOL_SLOT_BYTES, 1);
++			if (unlikely(len < UBP_XOL_SLOT_BYTES))
++				printk(KERN_ERR "Failed to copy instruction"
++						" at %#lx len = %d\n",
++						ubp->vaddr, len);
++		}
++	}
++	mutex_unlock(&area->mutex);
++	return ubp->xol_vaddr;
++}
++
++/**
++ * xol_free_insn_slot - If slot was earlier allocated by
++ * @xol_get_insn_slot(), make the slot available for
++ * subsequent requests.
++ * @slot_addr: slot address as returned by
++ * @xol_get_insn_area().
++ * @xol_area refers the unique per process ubp_xol_area for
++ * this process.
++ */
++void xol_free_insn_slot(unsigned long slot_addr, void *xol_area)
++{
++	struct ubp_xol_area *area = (struct ubp_xol_area *) xol_area;
++	struct ubp_xol_vma *usv;
++	int found = 0;
++
++	if (unlikely(!slot_addr || IS_ERR_VALUE(slot_addr)))
++		return;
++	if (unlikely(!area))
++		return;
++	mutex_lock(&area->mutex);
++	list_for_each_entry(usv, &area->vmas, list) {
++		unsigned long vma_end = usv->vaddr + usv->npages*PAGE_SIZE;
++		if (usv->vaddr <= slot_addr && slot_addr < vma_end) {
++			int slot_nr;
++			unsigned long offset = slot_addr - usv->vaddr;
++			BUG_ON(offset % UBP_XOL_SLOT_BYTES);
++			slot_nr = offset / UBP_XOL_SLOT_BYTES;
++			BUG_ON(slot_nr >= usv->nslots);
++			clear_bit(slot_nr, usv->bitmap);
++			found = 1;
++		}
++	}
++	mutex_unlock(&area->mutex);
++	if (!found)
++		printk(KERN_ERR "%s: no XOL vma for slot address %#lx\n",
++						__func__, slot_addr);
++}
++
++/**
++ * xol_validate_vaddr - Verify if the specified address is in an
++ * executable vma, but not in an XOL vma.
++ * 	- Return 0 if the specified virtual address is in an
++ * 	  executable vma, but not in an XOL vma.
++ * 	- Return 1 if the specified virtual address is in an
++ * 	  XOL vma.
++ * 	- Return -EINTR otherwise.(i.e non executable vma, or
++ *	  not a valid address
++ * @pid: the probed process
++ * @vaddr: virtual address of the instruction to be validated.
++ * @xol_area refers the unique per process ubp_xol_area for
++ * this process.
++ */
++int xol_validate_vaddr(struct pid *pid, unsigned long vaddr, void *xol_area)
++{
++	struct ubp_xol_area *area = (struct ubp_xol_area *) xol_area;
++	struct ubp_xol_vma *usv;
++	struct task_struct *tsk;
 +	int result;
 +
-+	result = ubp_check_vma(tsk, vaddr);
-+	if (result != 0)
-+		return result;
-+	if (arch->validate_address)
-+		result = arch->validate_address(tsk, vaddr);
-+	return result;
-+}
-+
-+static void ubp_bkpt_insertion_failed(struct task_struct *tsk,
-+				struct ubp_bkpt *ubp, const char *why)
-+{
-+	printk(KERN_ERR "Can't place breakpoint at pid %d vaddr %#lx: %s\n",
-+						tsk->pid, ubp->vaddr, why);
-+}
-+
-+/**
-+ * ubp_insert_bkpt - insert breakpoint
-+ * Insert a breakpoint into the process that includes @tsk, at the
-+ * virtual address @ubp->vaddr.
-+ *
-+ * @ubp->strategy affects how this breakpoint will be handled:
-+ *   %UBP_HNT_INLINE: Probed instruction will be single-stepped inline.
-+ *   %UBP_HNT_TSKINFO: As above.
-+ *   %UBP_HNT_PERMSL: An XOL instruction slot in the probed process's
-+ *	address space has been allocated to this probepoint, and will
-+ *	remain so allocated as long as it's needed.  @ubp->xol_vaddr is
-+ *	its address.  (This slot can be reallocated if
-+ *	@ubp_insert_bkpt() fails.)  The client is NOT required to
-+ *	allocate an instruction slot before calling @ubp_insert_bkpt().
-+ * @ubp_insert_bkpt() updates @ubp->strategy as needed:
-+ *   %UBP_HNT_INLINE: Architecture or client cannot do XOL for this
-+ *	probepoint.
-+ *   %UBP_HNT_TSKINFO: @ubp_task_arch_info will be used for this
-+ *	probepoint.
-+ *
-+ * All threads of the probed process must be stopped while
-+ * @ubp_insert_bkpt() runs.
-+ *
-+ * Possible errors:
-+ * -%ENOSYS: ubp not supported for this architecture
-+ * -%EINVAL: unrecognized/invalid strategy flags
-+ * -%EINVAL: invalid instruction address
-+ * -%EEXIST: breakpoint instruction already exists at that address
-+ * -%EPERM: cannot probe this instruction
-+ * -%EFAULT: failed to insert breakpoint instruction
-+ * [TBD: Validate xol_vaddr?]
-+ */
-+int ubp_insert_bkpt(struct task_struct *tsk, struct ubp_bkpt *ubp)
-+{
-+	int result, len;
-+
-+	BUG_ON(!tsk || !ubp);
-+	if (!validate_strategy(ubp->strategy, UBP_HNT_MASK))
-+		return -EINVAL;
-+
-+	result = ubp_validate_insn_addr(tsk, ubp->vaddr);
++	tsk = pid_task(pid, PIDTYPE_PID);
++	result = ubp_validate_insn_addr(tsk, vaddr);
 +	if (result != 0)
 +		return result;
 +
-+	/*
-+	 * If ubp_read_vm() transfers fewer bytes than the maximum
-+	 * instruction size, assume that the probed instruction is smaller
-+	 * than the max and near the end of the last page of instructions.
-+	 * But there must be room at least for a breakpoint-size instruction.
-+	 */
-+	len = ubp_read_vm(tsk, ubp->vaddr, ubp->insn, arch->max_insn_bytes);
-+	if (len < ubp_opcode_sz) {
-+		ubp_bkpt_insertion_failed(tsk, ubp,
-+					"error reading original instruction");
-+		return -EFAULT;
++	if (unlikely(!area))
++		return 0;
++	mutex_lock(&area->mutex);
++	list_for_each_entry(usv, &area->vmas, list) {
++		unsigned long vma_end = usv->vaddr + usv->npages*PAGE_SIZE;
++		if (usv->vaddr <= vaddr && vaddr < vma_end) {
++			result = 1;
++			break;
++		}
 +	}
-+	memcpy(&ubp->opcode, ubp->insn, ubp_opcode_sz);
-+	if (arch->is_bkpt_insn(ubp)) {
-+		ubp_bkpt_insertion_failed(tsk, ubp,
-+					"bkpt already exists at that addr");
-+		return -EEXIST;
-+	}
-+
-+	result = arch->analyze_insn(tsk, ubp);
-+	if (result < 0) {
-+		ubp_bkpt_insertion_failed(tsk, ubp,
-+					"instruction type cannot be probed");
-+		return result;
-+	}
-+
-+	result = arch->set_bkpt(tsk, ubp);
-+	if (result < 0) {
-+		ubp_bkpt_insertion_failed(tsk, ubp,
-+					"failed to insert bkpt instruction");
-+		return result;
-+	}
-+	return 0;
-+}
-+
-+/**
-+ * ubp_pre_sstep - prepare to single-step the probed instruction
-+ * @tsk: the probed task
-+ * @ubp: the probepoint information, as returned by @ubp_insert_bkpt().
-+ *	Unless the %UBP_HNT_INLINE flag is set in @ubp->strategy,
-+ *	@ubp->xol_vaddr must be the address of an XOL instruction slot
-+ *	that is allocated to this probepoint at least until after the
-+ *	completion of @ubp_post_sstep(), and populated with the contents
-+ *	of @ubp->insn.  [Need to be more precise here to account for
-+ *	untimely exit or UBP_HNT_BOOSTED.]
-+ * @tskinfo: points to a @ubp_task_arch_info object for @tsk, if
-+ *	the %UBP_HNT_TSKINFO flag is set in @ubp->strategy.
-+ * @regs: reflects the saved user state of @tsk.  @ubp_pre_sstep()
-+ *	adjusts this.  In particular, the instruction pointer is set
-+ *	to the instruction to be single-stepped.
-+ * Possible errors:
-+ * -%EFAULT: Failed to read or write @tsk's address space as needed.
-+ *
-+ * The client must ensure that the contents of @ubp are not
-+ * changed during the single-step operation -- i.e., between when
-+ * @ubp_pre_sstep() is called and when @ubp_post_sstep() returns.
-+ * Additionally, if single-stepping inline is used for this probepoint,
-+ * the client must serialize the single-step operation (so multiple
-+ * threads don't step on each other while the opcode replacement is
-+ * taking place).
-+ */
-+int ubp_pre_sstep(struct task_struct *tsk, struct ubp_bkpt *ubp,
-+		struct ubp_task_arch_info *tskinfo, struct pt_regs *regs)
-+{
-+	int result;
-+
-+	BUG_ON(!tsk || !ubp || !regs);
-+	if (ubp_uses_xol(ubp->strategy)) {
-+		BUG_ON(!ubp->xol_vaddr);
-+		return arch->pre_xol(tsk, ubp, tskinfo, regs);
-+	}
-+
-+	/*
-+	 * Single-step this instruction inline.  Replace the breakpoint
-+	 * with the original opcode.
-+	 */
-+	result = arch->set_orig_insn(tsk, ubp, false);
-+	if (result == 0)
-+		arch->set_ip(regs, ubp->vaddr);
++	mutex_unlock(&area->mutex);
 +	return result;
 +}
-+
-+/**
-+ * ubp_post_sstep - prepare to resume execution after single-step
-+ * @tsk: the probed task
-+ * @ubp: the probepoint information, as with @ubp_pre_sstep()
-+ * @tskinfo: the @ubp_task_arch_info object, if any, passed to
-+ *	@ubp_pre_sstep()
-+ * @regs: reflects the saved state of @tsk after the single-step
-+ *	operation.  @ubp_post_sstep() adjusts @tsk's state as needed,
-+ *	including pointing the instruction pointer at the instruction
-+ *	following the probed instruction.
-+ * Possible errors:
-+ * -%EFAULT: Failed to read or write @tsk's address space as needed.
-+ */
-+int ubp_post_sstep(struct task_struct *tsk, struct ubp_bkpt *ubp,
-+		struct ubp_task_arch_info *tskinfo, struct pt_regs *regs)
-+{
-+	BUG_ON(!tsk || !ubp || !regs);
-+	if (ubp_uses_xol(ubp->strategy))
-+		return arch->post_xol(tsk, ubp, tskinfo, regs);
-+
-+	/*
-+	 * Single-stepped this instruction inline.  Put the breakpoint
-+	 * instruction back.
-+	 */
-+	return arch->set_bkpt(tsk, ubp);
-+}
-+
-+/**
-+ * ubp_cancel_xol - cancel XOL for this probepoint
-+ * @tsk: a task in the probed process
-+ * @ubp: the probepoint information
-+ * Switch @ubp's single-stepping strategy from out-of-line to inline.
-+ * If the client employs lazy XOL-slot allocation, it can call
-+ * this function if it determines that it can't provide an XOL
-+ * slot for @ubp.  @ubp_cancel_xol() adjusts @ubp appropriately.
-+ *
-+ * @ubp_cancel_xol()'s behavior is undefined if @ubp_pre_sstep() has
-+ * already been called for @ubp.
-+ *
-+ * Possible errors:
-+ * Can't think of any yet.
-+ */
-+int ubp_cancel_xol(struct task_struct *tsk, struct ubp_bkpt *ubp)
-+{
-+	if (arch->cancel_xol)
-+		arch->cancel_xol(tsk, ubp);
-+	ubp->strategy |= UBP_HNT_INLINE;
-+	return 0;
-+}
-+
-+/**
-+ * ubp_get_bkpt_addr - compute address of bkpt given post-bkpt regs
-+ * @regs: Reflects the saved state of the task after it has hit a breakpoint
-+ * instruction.  Return the address of the breakpoint instruction.
-+ */
-+unsigned long ubp_get_bkpt_addr(struct pt_regs *regs)
-+{
-+	return instruction_pointer(regs) - arch->ip_advancement_by_bkpt_insn;
-+}
-+
-+/**
-+ * ubp_remove_bkpt - remove breakpoint
-+ * For the process that includes @tsk, remove the breakpoint specified
-+ * by @ubp, restoring the original opcode.
-+ *
-+ * Possible errors:
-+ * -%EINVAL: @ubp->vaddr is not a valid instruction address.
-+ * -%ENOENT: There is no breakpoint instruction at @ubp->vaddr.
-+ * -%EFAULT: Failed to read/write @tsk's address space as needed.
-+ */
-+int ubp_remove_bkpt(struct task_struct *tsk, struct ubp_bkpt *ubp)
-+{
-+	if (ubp_validate_insn_addr(tsk, ubp->vaddr) != 0)
-+		return -EINVAL;
-+	return arch->set_orig_insn(tsk, ubp, true);
-+}
-+
-+void ubp_set_ip(struct pt_regs *regs, unsigned long vaddr)
-+{
-+	arch->set_ip(regs, vaddr);
-+}
-+
-+/* Default implementation of arch->is_bkpt_insn */
-+static bool ubp_is_bkpt_insn(struct ubp_bkpt *ubp)
-+{
-+	return (ubp->opcode == arch->bkpt_insn);
-+}
-+
-+/* Default implementation of arch->pre_xol */
-+static int ubp_pre_xol(struct task_struct *tsk, struct ubp_bkpt *ubp,
-+		struct ubp_task_arch_info *tskinfo, struct pt_regs *regs)
-+{
-+	arch->set_ip(regs, ubp->xol_vaddr);
-+	return 0;
-+}
-+
-+/* Validate arch-specific info during ubp initialization. */
-+
-+static int ubp_bad_arch_param(const char *param_name, int value)
-+{
-+	printk(KERN_ERR "ubp: bad value %d/%#x for parameter %s"
-+		" in ubp_arch_info\n", value, value, param_name);
-+	return -ENOSYS;
-+}
-+
-+static int ubp_missing_arch_func(const char *func_name)
-+{
-+	printk(KERN_ERR "ubp: ubp_arch_info lacks required function: %s\n",
-+								func_name);
-+	return -ENOSYS;
-+}
-+
-+static int __init init_ubp(void)
-+{
-+	int result = 0;
-+
-+	/* Accept any value of bkpt_insn. */
-+	if (arch->max_insn_bytes < 1)
-+		result = ubp_bad_arch_param("max_insn_bytes",
-+						arch->max_insn_bytes);
-+	if (arch->ip_advancement_by_bkpt_insn > arch->max_insn_bytes)
-+		result = ubp_bad_arch_param("ip_advancement_by_bkpt_insn",
-+					arch->ip_advancement_by_bkpt_insn);
-+	/* Accept any value of strategies. */
-+	if (!arch->set_ip)
-+		result = ubp_missing_arch_func("set_ip");
-+	/* Null validate_address() is OK. */
-+	if (!arch->read_opcode)
-+		arch->read_opcode = ubp_read_opcode;
-+	if (!arch->set_bkpt)
-+		arch->set_bkpt = ubp_set_bkpt;
-+	if (!arch->set_orig_insn)
-+		arch->set_orig_insn = ubp_set_orig_insn;
-+	if (!arch->is_bkpt_insn)
-+		arch->is_bkpt_insn = ubp_is_bkpt_insn;
-+	if (!arch->analyze_insn)
-+		result = ubp_missing_arch_func("analyze_insn");
-+	if (!arch->pre_xol)
-+		arch->pre_xol = ubp_pre_xol;
-+	if (ubp_uses_xol(arch->strategies) && !arch->post_xol)
-+		result = ubp_missing_arch_func("post_xol");
-+	/* Null cancel_xol() is OK. */
-+	return result;
-+}
-+
-+module_init(init_ubp);
