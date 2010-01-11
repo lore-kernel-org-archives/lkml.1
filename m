@@ -1,64 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753077Ab0AKOYQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753209Ab0AKOZm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753077Ab0AKOYQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jan 2010 09:24:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752274Ab0AKOYP
+	id S1753209Ab0AKOZm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jan 2010 09:25:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752638Ab0AKOZl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jan 2010 09:24:15 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:55634 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752264Ab0AKOYP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jan 2010 09:24:15 -0500
-Date: Mon, 11 Jan 2010 15:24:12 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Dave Chinner <david@fromorbit.com>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Allow linker to eliminate unused functions in lib/*
-Message-ID: <20100111142412.GA28783@one.firstfloor.org>
-References: <20100105145917.GA25570@basil.fritz.box> <20100108162930.a011749a.akpm@linux-foundation.org> <20100109165155.GD20773@basil.fritz.box> <20100110231708.GC4019@discord.disaster>
+	Mon, 11 Jan 2010 09:25:41 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:40845 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752264Ab0AKOZl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jan 2010 09:25:41 -0500
+Subject: GFS2: Pull request (fixes)
+From: Steven Whitehouse <swhiteho@redhat.com>
+To: torvalds@linux-foundation.org
+Cc: cluster-devel@redhat.com, linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Organization: Red Hat (UK) Ltd (Registered in England and Wales, No.
+ 3798903) Registered office: Red Hat UK Ltd, Amberley Place, 107-111 Peascod
+ Street, Windsor, Berkshire, SL4 ITE
+Date: Mon, 11 Jan 2010 14:24:56 +0000
+Message-Id: <1263219896.14393.127.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100110231708.GC4019@discord.disaster>
-User-Agent: Mutt/1.4.2.2i
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 11, 2010 at 10:17:08AM +1100, Dave Chinner wrote:
-> On Sat, Jan 09, 2010 at 05:51:56PM +0100, Andi Kleen wrote:
-> > > Sneaky.
-> > > 
-> > > It's a bit sad to reduce the code cleanliness and maintainability in
-> > > this way, but 1k is 1k.
-> > 
-> > Yes. I had actually hoped for more too. I think it might bring 
-> > more with -ffunction-sections/--gc-sections, but I haven't tried that.
-> > 
-> > An alternative might be also to give some more of those explicit Kconfig
-> > symbols -- then kernels with module loading enabled would benefit more
-> > too -- but I haven't investigated how many changes that would need.
-> > 
-> > But even with that it's a reasonable improvement and putting the exports
-> > separately is not too bad.
-> > 
-> > > The patch assumes a pre-existing lib-syms.c.  Confused.
-> > 
-> > Sorry, some day I'll learn how to operate quilt properly.
-> > 
-> > Updated patch with all files included appended.
-> 
-> Andi, how do you want to handle the overlap between this and the
-> list_sort() patch I sent? I'm going to need a list_sort() available
-> in the XFS tree well before the 2.6.34 merge window....
+Hi,
 
-Shouldn't be difficult to merge, it's just a few lines. Someone will
-do that.
+Please consider pulling the following GFS2 bug fixes,
 
-It wou;ld be better if you put it into a separate file like I suggested
-earlier though, then the list_sort() could be actually eliminated when
-not needed.
+Steve.
 
--Andi
+
+The following changes since commit 74d2e4f8d79ae0c4b6ec027958d5b18058662eea:
+  Linus Torvalds (1):
+        Linux 2.6.33-rc3
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/steve/gfs2-2.6-fixes.git master
+
+Steven Whitehouse (4):
+      GFS2: Ensure uptodate inode size when using O_APPEND
+      GFS2: Fix locking bug in rename
+      GFS2: Fix gfs2_xattr_acl_chmod()
+      GFS2: Use MAX_LFS_FILESIZE for meta inode size
+
+ fs/gfs2/file.c      |   38 ++++++++++++++++++++++++++++++++++++--
+ fs/gfs2/meta_io.c   |    2 +-
+ fs/gfs2/ops_inode.c |    6 ++++--
+ fs/gfs2/xattr.c     |   21 +++++++++++----------
+ 4 files changed, 52 insertions(+), 15 deletions(-)
+
+
