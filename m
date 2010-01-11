@@ -1,66 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753228Ab0AKXIE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753258Ab0AKXIZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753228Ab0AKXIE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jan 2010 18:08:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752856Ab0AKXIB
+	id S1753258Ab0AKXIZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jan 2010 18:08:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753211Ab0AKXIY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jan 2010 18:08:01 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:35789 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751249Ab0AKXIA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jan 2010 18:08:00 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Borislav Petkov <petkovbb@googlemail.com>
-Subject: Re: [Bug #14948] EHCI resume sysfs duplicates
-Date: Tue, 12 Jan 2010 00:08:24 +0100
-User-Agent: KMail/1.12.3 (Linux/2.6.33-rc3-rjw; KDE/4.3.3; x86_64; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-References: <wnS54-l8PVO.A.TlF.oMlSLB@chimera> <201001112106.06787.rjw@sisk.pl> <20100111224159.GA9945@liondog.tnic>
-In-Reply-To: <20100111224159.GA9945@liondog.tnic>
+	Mon, 11 Jan 2010 18:08:24 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:57486 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751422Ab0AKXIY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jan 2010 18:08:24 -0500
+Message-ID: <4B4BAF2B.5020406@zytor.com>
+Date: Mon, 11 Jan 2010 15:07:23 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Suresh Siddha <suresh.b.siddha@intel.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, Yinghai Lu <yinghai@kernel.org>,
+       "Maciej W. Rozycki" <macro@linux-mips.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [patch] x86, apic: use 0x20 for the IRQ_MOVE_CLEANUP_VECTOR instead
+ of 0x1f
+References: <1263002989.2879.664.camel@sbs-t61.sc.intel.com>	<4B47E7A9.6090904@zytor.com>	<1263250418.2859.681.camel@sbs-t61.sc.intel.com> <m1zl4k8cy7.fsf@fess.ebiederm.org>
+In-Reply-To: <m1zl4k8cy7.fsf@fess.ebiederm.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <201001120008.24238.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 11 January 2010, Borislav Petkov wrote:
-> On Mon, Jan 11, 2010 at 09:06:06PM +0100, Rafael J. Wysocki wrote:
-> > On Monday 11 January 2010, Borislav Petkov wrote:
-> > > On Sun, Jan 10, 2010 at 11:32:55PM +0100, Rafael J. Wysocki wrote:
-> > > > This message has been generated automatically as a part of a report
-> > > > of recent regressions.
-> > > > 
-> > > > The following bug entry is on the current list of known regressions
-> > > > from 2.6.32.  Please verify if it still should be listed and let me know
-> > > > (either way).
-> > > > 
-> > > > 
-> > > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14948
-> > > > Subject		: EHCI resume sysfs duplicates
-> > > > Submitter	: Borislav Petkov <petkovbb@googlemail.com>
-> > > > Date		: 2009-12-26 9:36 (16 days old)
-> > > > References	: http://marc.info/?l=linux-kernel&m=126182020615709&w=4
-> > > 
-> > > Preliminary and tested fix is at LKML-Reference: <20100105220829.GA31569@xanatos>
-> > 
-> > Sorry, I don't know how to resolve that.
+On 01/11/2010 03:00 PM, Eric W. Biederman wrote:
+>>
+>> In irqinit.c, we statically pre-assign the per-cpu vector to irq
+>> mappings (vector_irq) for all the legacy IRQ vectors. Similarly irq_cfg
+>> is statically initialized for legacy IRQ's in io_apic.c. So we won't be
+>> able to use this space for anything else.
 > 
-> Sorry about that. One way to resolve it would be:
+> Last I looked when we switched legacy irqs irqs from pic mode to io_apic mode
+> we continue to use the same vector.
 > 
-> http://marc.info/?i=<LKML-Reference>, i.e.
+> Which means we should not be wasting those vectors and that it is dangerous
+> to play lowest priority irq games in that range.
 > 
-> http://marc.info/?i=20100105220829.GA31569@xanatos
-> 
-> for example, which should get rewritten to
-> 
-> http://marc.info/?l=linux-usb&m=126272933202894
 
-Thanks, this works.
+This statement made no sense to me?
 
-Bug entry updated.
+	-hpa
 
-Rafael
