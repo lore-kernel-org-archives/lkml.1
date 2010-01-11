@@ -1,85 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753026Ab0AKJQZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752915Ab0AKJVr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753026Ab0AKJQZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jan 2010 04:16:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752961Ab0AKJQV
+	id S1752915Ab0AKJVr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jan 2010 04:21:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752287Ab0AKJVq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jan 2010 04:16:21 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:4788 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752926Ab0AKJPk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jan 2010 04:15:40 -0500
-From: Steven Whitehouse <swhiteho@redhat.com>
-To: linux-kernel@vger.kernel.org, cluster-devel@redhat.com
-Cc: Steven Whitehouse <swhiteho@redhat.com>
-Subject: [PATCH 3/4] GFS2: Fix gfs2_xattr_acl_chmod()
-Date: Mon, 11 Jan 2010 09:11:39 +0000
-Message-Id: <1263201100-6904-4-git-send-email-swhiteho@redhat.com>
-In-Reply-To: <1263201100-6904-3-git-send-email-swhiteho@redhat.com>
-References: <1263201100-6904-1-git-send-email-swhiteho@redhat.com>
- <1263201100-6904-2-git-send-email-swhiteho@redhat.com>
- <1263201100-6904-3-git-send-email-swhiteho@redhat.com>
+	Mon, 11 Jan 2010 04:21:46 -0500
+Received: from cp-out2.libero.it ([212.52.84.102]:48592 "EHLO
+	cp-out2.libero.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751444Ab0AKJVq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jan 2010 04:21:46 -0500
+X-Greylist: delayed 336 seconds by postgrey-1.27 at vger.kernel.org; Mon, 11 Jan 2010 04:21:45 EST
+Message-ID: <5550914.425471263201351807.JavaMail.defaultUser@defaultHost>
+Date: Mon, 11 Jan 2010 10:15:51 +0100 (CET)
+From: "flinco@libero.it" <flinco@libero.it>
+Reply-To: "flinco@libero.it" <flinco@libero.it>
+To: <rjw@sisk.pl>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: R: [Bug #14886] Asus P2B-DS not detected as SMP moterboard
+Cc: Kernel Testers List <kernel-testers@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain;charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+X-SenderIP: 80.204.186.51
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The ref counting for the bh returned by gfs2_ea_find() was
-wrong. This patch ensures that we always drop the ref count
-to that bh correctly.
+Tried 2.6.32.3. The issue is still present.
 
-Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
----
- fs/gfs2/xattr.c |   21 +++++++++++----------
- 1 files changed, 11 insertions(+), 10 deletions(-)
+Regards,
+Lorenzo Buzzi
 
-diff --git a/fs/gfs2/xattr.c b/fs/gfs2/xattr.c
-index 8a04108..c2ebdf2 100644
---- a/fs/gfs2/xattr.c
-+++ b/fs/gfs2/xattr.c
-@@ -1296,6 +1296,7 @@ fail:
- 
- int gfs2_xattr_acl_chmod(struct gfs2_inode *ip, struct iattr *attr, char *data)
- {
-+	struct gfs2_sbd *sdp = GFS2_SB(&ip->i_inode);
- 	struct gfs2_ea_location el;
- 	struct buffer_head *dibh;
- 	int error;
-@@ -1305,16 +1306,17 @@ int gfs2_xattr_acl_chmod(struct gfs2_inode *ip, struct iattr *attr, char *data)
- 		return error;
- 
- 	if (GFS2_EA_IS_STUFFED(el.el_ea)) {
--		error = gfs2_trans_begin(GFS2_SB(&ip->i_inode), RES_DINODE + RES_EATTR, 0);
--		if (error)
--			return error;
--
--		gfs2_trans_add_bh(ip->i_gl, el.el_bh, 1);
--		memcpy(GFS2_EA2DATA(el.el_ea), data,
--		       GFS2_EA_DATA_LEN(el.el_ea));
--	} else
-+		error = gfs2_trans_begin(sdp, RES_DINODE + RES_EATTR, 0);
-+		if (error == 0) {
-+			gfs2_trans_add_bh(ip->i_gl, el.el_bh, 1);
-+			memcpy(GFS2_EA2DATA(el.el_ea), data,
-+			       GFS2_EA_DATA_LEN(el.el_ea));
-+		}
-+	} else {
- 		error = ea_acl_chmod_unstuffed(ip, el.el_ea, data);
-+	}
- 
-+	brelse(el.el_bh);
- 	if (error)
- 		return error;
- 
-@@ -1327,8 +1329,7 @@ int gfs2_xattr_acl_chmod(struct gfs2_inode *ip, struct iattr *attr, char *data)
- 		brelse(dibh);
- 	}
- 
--	gfs2_trans_end(GFS2_SB(&ip->i_inode));
--
-+	gfs2_trans_end(sdp);
- 	return error;
- }
- 
--- 
-1.6.2.5
+>----
+Messaggio originale----
+>Da: rjw@sisk.pl
+>Data: 10/01/2010 23.56
+>A: "Linux 
+Kernel Mailing List"<linux-kernel@vger.kernel.org>
+>Cc: "Kernel Testers List"
+<kernel-testers@vger.kernel.org>, "Lorenzo Buzzi"<flinco@libero.it>
+>Ogg: [Bug 
+#14886] Asus P2B-DS not detected as SMP moterboard
+>
+>This message has been 
+generated automatically as a part of a report
+>of regressions introduced 
+between 2.6.31 and 2.6.32.
+>
+>The following bug entry is on the current list of 
+known regressions
+>introduced between 2.6.31 and 2.6.32.  Please verify if it 
+still should
+>be listed and let me know (either way).
+>
+>
+>Bug-Entry	: http:
+//bugzilla.kernel.org/show_bug.cgi?id=14886
+>Subject		: Asus P2B-DS not 
+detected as SMP moterboard
+>Submitter	: Lorenzo Buzzi <flinco@libero.it>
+>Date		
+: 2009-12-27 17:20 (15 days old)
+>
+>
+>
+
 
