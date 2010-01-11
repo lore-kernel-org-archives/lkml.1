@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751439Ab0AKEeL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751684Ab0AKEfZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751439Ab0AKEeL (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jan 2010 23:34:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750782Ab0AKEeJ
+	id S1751684Ab0AKEfZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jan 2010 23:35:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751296Ab0AKEfY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jan 2010 23:34:09 -0500
-Received: from tomts5-srv.bellnexxia.net ([209.226.175.25]:32825 "EHLO
-	tomts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751180Ab0AKEeI (ORCPT
+	Sun, 10 Jan 2010 23:35:24 -0500
+Received: from tomts40.bellnexxia.net ([209.226.175.97]:39700 "EHLO
+	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1750917Ab0AKEfX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jan 2010 23:34:08 -0500
-Date: Sun, 10 Jan 2010 23:29:03 -0500
+	Sun, 10 Jan 2010 23:35:23 -0500
+Date: Sun, 10 Jan 2010 23:30:16 -0500
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 Cc: Steven Rostedt <rostedt@goodmis.org>, Oleg Nesterov <oleg@redhat.com>,
@@ -19,8 +19,8 @@ Cc: Steven Rostedt <rostedt@goodmis.org>, Oleg Nesterov <oleg@redhat.com>,
        josh@joshtriplett.org, tglx@linutronix.de, Valdis.Kletnieks@vt.edu,
        dhowells@redhat.com, laijs@cn.fujitsu.com, dipankar@in.ibm.com
 Subject: [RFC PATCH] introduce sys_membarrier(): process-wide memory
-	barrier (v3a)
-Message-ID: <20100111042903.GC32213@Krystal>
+	barrier (v3b)
+Message-ID: <20100111043016.GD32213@Krystal>
 References: <20100110000318.GD9044@linux.vnet.ibm.com> <1263084099.2231.5.camel@frodo> <20100110014456.GG25790@Krystal> <1263089578.2231.22.camel@frodo> <20100110052508.GG9044@linux.vnet.ibm.com> <1263124209.28171.3798.camel@gandalf.stny.rr.com> <20100110174512.GH9044@linux.vnet.ibm.com> <20100110182423.GA22821@Krystal> <20100111011705.GJ9044@linux.vnet.ibm.com> <20100111042521.GB32213@Krystal>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -30,8 +30,8 @@ In-Reply-To: <20100111042521.GB32213@Krystal>
 X-Editor: vi
 X-Info: http://krystal.dyndns.org:8080
 X-Operating-System: Linux/2.6.27.31-grsec (i686)
-X-Uptime: 23:28:00 up 25 days, 12:46,  5 users,  load average: 0.16, 0.20,
-	0.15
+X-Uptime: 23:29:09 up 25 days, 12:47,  5 users,  load average: 0.68, 0.31,
+	0.19
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -53,8 +53,11 @@ Changelog since v1:
 - Issue smp_mb() at the beginning and end of the system call.
 
 Changelog since v2:
-- simply send-to-many to the mm_cpumask. It contains the list of processors we
-  have to IPI to (which use the mm), and this mask is updated atomically.
+
+- Iteration on min(num_online_cpus(), nr threads in the process),
+  taking runqueue spinlocks, allocating a cpumask, ipi to many to the
+  cpumask. Does not allocate the cpumask if only a single IPI is needed.
+
 
 Both the signal-based and the sys_membarrier userspace RCU schemes
 permit us to remove the memory barrier from the userspace RCU
@@ -125,15 +128,67 @@ smp_mb() thanks to the IPIs executing memory barriers on each active
 system threads. Each non-running process threads are intrinsically
 serialized by the scheduler.
 
-For my Intel Xeon E5405 (new set of results, disabled kernel debugging)
+Just tried with a cache-hot kernel compilation using 6/8 CPUs.
 
-T=1: 0m18.921s
-T=2: 0m19.457s
-T=3: 0m21.619s
-T=4: 0m21.641s
-T=5: 0m23.426s
-T=6: 0m26.450s
-T=7: 0m27.731s
+Normally:                                              real 2m41.852s
+With the sys_membarrier+1 busy-looping thread running: real 5m41.830s
+
+So... 2x slower. That hurts.
+
+So let's try allocating a cpu mask for PeterZ scheme. I prefer to have a
+small allocation overhead and benefit from cpumask broadcast if
+possible so we scale better. But that all depends on how big the
+allocation overhead is.
+
+Impact of allocating a cpumask (time for 10,000,000 sys_membarrier
+calls, one thread is doing the sys_membarrier, the others are busy
+looping)).  Given that it costs almost half as much to perform the
+cpumask allocation than to send a single IPI, as we iterate on the CPUs
+until we find more than N match or iterated on all cpus.  If we only have
+N match or less, we send single IPIs. If we need more than that, then we
+switch to the cpumask allocation and send a broadcast IPI to the cpumask
+we construct for the matching CPUs. Let's call it the "adaptative IPI
+scheme".
+
+For my Intel Xeon E5405
+
+*This is calibration only, not taking the runqueue locks*
+
+Just doing local mb()+single IPI to T other threads:
+
+T=1: 0m18.801s
+T=2: 0m29.086s
+T=3: 0m46.841s
+T=4: 0m53.758s
+T=5: 1m10.856s
+T=6: 1m21.142s
+T=7: 1m38.362s
+
+Just doing cpumask alloc+IPI-many to T other threads:
+
+T=1: 0m21.778s
+T=2: 0m22.741s
+T=3: 0m22.185s
+T=4: 0m24.660s
+T=5: 0m26.855s
+T=6: 0m30.841s
+T=7: 0m29.551s
+
+So I think the right threshold should be 1 thread (assuming other
+architecture will behave like mine). So starting with 2 threads, we
+allocate the cpumask before sending IPIs.
+
+*end of calibration*
+
+Resulting adaptative scheme, with runqueue locks:
+
+T=1: 0m20.990s
+T=2: 0m22.588s
+T=3: 0m27.028s
+T=4: 0m29.027s
+T=5: 0m32.592s
+T=6: 0m36.556s
+T=7: 0m33.093s
 
 The expected top pattern, when using 1 CPU for a thread doing sys_membarrier()
 in a loop and other threads busy-waiting in user-space on a variable shows that
@@ -153,25 +208,6 @@ Cpu5  : 96.0%us,  1.3%sy,  0.0%ni,  0.0%id,  0.0%wa,  0.0%hi,  2.6%si,  0.0%st
 Cpu6  :  1.3%us, 98.7%sy,  0.0%ni,  0.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
 Cpu7  : 96.1%us,  3.3%sy,  0.0%ni,  0.0%id,  0.0%wa,  0.3%hi,  0.3%si,  0.0%st
 
-Results in liburcu:
-
-Operations in 10s, 6 readers, 2 writers:
-
-(what we previously had)
-memory barriers in reader: 973494744 reads, 892368 writes
-signal-based scheme:      6289946025 reads,   1251 writes
-
-(what we have now, with dynamic sys_membarrier check)
-memory barriers in reader: 907693804 reads, 817793 writes
-sys_membarrier scheme:    4061976535 reads, 526807 writes
-
-So the dynamic sys_membarrier availability check adds some overhead to the
-read-side, but besides that, we can see that we are close to the read-side
-performance of the signal-based scheme and also close (5/8) to the performance
-of the memory-barrier write-side. We have a write-side speedup of 421:1 over the
-signal-based scheme by using the sys_membarrier system call. This allows a 4.5:1
-read-side speedup over the memory barrier scheme.
-
 The system call number is only assigned for x86_64 in this RFC patch.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
@@ -189,14 +225,14 @@ CC: rostedt@goodmis.org
 CC: Valdis.Kletnieks@vt.edu
 CC: dhowells@redhat.com
 ---
- arch/x86/include/asm/unistd_64.h |    2 +
- kernel/sched.c                   |   59 ++++++++++++++++++++++++++++++++++++++-
- 2 files changed, 60 insertions(+), 1 deletion(-)
+ arch/x86/include/asm/unistd_64.h |    2 
+ kernel/sched.c                   |  219 +++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 221 insertions(+)
 
 Index: linux-2.6-lttng/arch/x86/include/asm/unistd_64.h
 ===================================================================
---- linux-2.6-lttng.orig/arch/x86/include/asm/unistd_64.h	2010-01-10 19:21:31.000000000 -0500
-+++ linux-2.6-lttng/arch/x86/include/asm/unistd_64.h	2010-01-10 19:21:37.000000000 -0500
+--- linux-2.6-lttng.orig/arch/x86/include/asm/unistd_64.h	2010-01-10 22:23:59.000000000 -0500
++++ linux-2.6-lttng/arch/x86/include/asm/unistd_64.h	2010-01-10 22:29:30.000000000 -0500
 @@ -661,6 +661,8 @@ __SYSCALL(__NR_pwritev, sys_pwritev)
  __SYSCALL(__NR_rt_tgsigqueueinfo, sys_rt_tgsigqueueinfo)
  #define __NR_perf_event_open			298
@@ -208,48 +244,186 @@ Index: linux-2.6-lttng/arch/x86/include/asm/unistd_64.h
  #define __ARCH_WANT_OLD_READDIR
 Index: linux-2.6-lttng/kernel/sched.c
 ===================================================================
---- linux-2.6-lttng.orig/kernel/sched.c	2010-01-10 19:21:31.000000000 -0500
-+++ linux-2.6-lttng/kernel/sched.c	2010-01-10 22:22:40.000000000 -0500
-@@ -2861,12 +2861,26 @@ context_switch(struct rq *rq, struct tas
- 	 */
- 	arch_start_context_switch(prev);
+--- linux-2.6-lttng.orig/kernel/sched.c	2010-01-10 22:23:59.000000000 -0500
++++ linux-2.6-lttng/kernel/sched.c	2010-01-10 23:12:35.000000000 -0500
+@@ -119,6 +119,11 @@
+  */
+ #define RUNTIME_INF	((u64)~0ULL)
  
-+	/*
-+	 * sys_membarrier IPI-mb scheme requires a memory barrier between
-+	 * user-space thread execution and update to mm_cpumask.
-+	 */
-+	if (likely(oldmm) && likely(oldmm != mm))
-+		smp_mb__before_clear_bit();
++/*
++ * IPI vs cpumask broadcast threshold. Threshold of 1 IPI.
++ */
++#define ADAPT_IPI_THRESHOLD	1
 +
- 	if (unlikely(!mm)) {
- 		next->active_mm = oldmm;
- 		atomic_inc(&oldmm->mm_count);
- 		enter_lazy_tlb(oldmm, next);
--	} else
-+	} else {
- 		switch_mm(oldmm, mm, next);
-+		/*
-+		 * sys_membarrier IPI-mb scheme requires a memory barrier
-+		 * between update to mm_cpumask and user-space thread execution.
-+		 */
-+		if (likely(oldmm != mm))
-+			smp_mb__after_clear_bit();
-+	}
- 
- 	if (unlikely(!prev->mm)) {
- 		prev->active_mm = NULL;
-@@ -10822,6 +10836,49 @@ struct cgroup_subsys cpuacct_subsys = {
+ static inline int rt_policy(int policy)
+ {
+ 	if (unlikely(policy == SCHED_FIFO || policy == SCHED_RR))
+@@ -10822,6 +10827,220 @@ struct cgroup_subsys cpuacct_subsys = {
  };
  #endif	/* CONFIG_CGROUP_CPUACCT */
  
 +/*
-+ * Execute a memory barrier on all active threads from the current process
-+ * on SMP systems. Do not rely on implicit barriers in
-+ * smp_call_function_many(), just in case they are ever relaxed in the future.
++ * Execute a memory barrier on all CPUs on SMP systems.
++ * Do not rely on implicit barriers in smp_call_function(), just in case they
++ * are ever relaxed in the future.
 + */
 +static void membarrier_ipi(void *unused)
 +{
 +	smp_mb();
++}
++
++/*
++ * Handle out-of-mem by sending per-cpu IPIs instead.
++ */
++static void membarrier_cpus_retry(int this_cpu)
++{
++	struct mm_struct *mm;
++	int cpu;
++
++	for_each_online_cpu(cpu) {
++		if (unlikely(cpu == this_cpu))
++			continue;
++		spin_lock_irq(&cpu_rq(cpu)->lock);
++		mm = cpu_curr(cpu)->mm;
++		spin_unlock_irq(&cpu_rq(cpu)->lock);
++		if (current->mm == mm)
++			smp_call_function_single(cpu, membarrier_ipi, NULL, 1);
++	}
++}
++
++static void membarrier_threads_retry(int this_cpu)
++{
++	struct mm_struct *mm;
++	struct task_struct *t;
++	struct rq *rq;
++	int cpu;
++
++	list_for_each_entry_rcu(t, &current->thread_group, thread_group) {
++		local_irq_disable();
++		rq = __task_rq_lock(t);
++		mm = rq->curr->mm;
++		cpu = rq->cpu;
++		__task_rq_unlock(rq);
++		local_irq_enable();
++		if (cpu == this_cpu)
++			continue;
++		if (current->mm == mm)
++			smp_call_function_single(cpu, membarrier_ipi, NULL, 1);
++	}
++}
++
++static void membarrier_cpus(int this_cpu)
++{
++	int cpu, i, cpu_ipi[ADAPT_IPI_THRESHOLD], nr_cpus = 0;
++	cpumask_var_t tmpmask;
++	struct mm_struct *mm;
++
++	/* Get CPU IDs up to threshold */
++	for_each_online_cpu(cpu) {
++		if (unlikely(cpu == this_cpu))
++			continue;
++		spin_lock_irq(&cpu_rq(cpu)->lock);
++		mm = cpu_curr(cpu)->mm;
++		spin_unlock_irq(&cpu_rq(cpu)->lock);
++		if (current->mm == mm) {
++			if (nr_cpus == ADAPT_IPI_THRESHOLD) {
++				nr_cpus++;
++				break;
++			}
++			cpu_ipi[nr_cpus++] = cpu;
++		}
++	}
++	if (likely(nr_cpus <= ADAPT_IPI_THRESHOLD)) {
++		for (i = 0; i < nr_cpus; i++) {
++			smp_call_function_single(cpu_ipi[i],
++						 membarrier_ipi,
++						 NULL, 1);
++		}
++	} else {
++		if (!alloc_cpumask_var(&tmpmask, GFP_KERNEL)) {
++			membarrier_cpus_retry(this_cpu);
++			return;
++		}
++		for (i = 0; i < ADAPT_IPI_THRESHOLD; i++)
++			cpumask_set_cpu(cpu_ipi[i], tmpmask);
++		/* Continue previous online cpu iteration */
++		cpumask_set_cpu(cpu, tmpmask);
++		for (;;) {
++			cpu = cpumask_next(cpu, cpu_online_mask);
++			if (unlikely(cpu == this_cpu))
++				continue;
++			if (unlikely(cpu >= nr_cpu_ids))
++				break;
++			spin_lock_irq(&cpu_rq(cpu)->lock);
++			mm = cpu_curr(cpu)->mm;
++			spin_unlock_irq(&cpu_rq(cpu)->lock);
++			if (current->mm == mm)
++				cpumask_set_cpu(cpu, tmpmask);
++		}
++		smp_call_function_many(tmpmask, membarrier_ipi, NULL, 1);
++		free_cpumask_var(tmpmask);
++	}
++}
++
++static void membarrier_threads(int this_cpu)
++{
++	int cpu, i, cpu_ipi[ADAPT_IPI_THRESHOLD], nr_cpus = 0;
++	cpumask_var_t tmpmask;
++	struct mm_struct *mm;
++	struct task_struct *t;
++	struct rq *rq;
++
++	/* Get CPU IDs up to threshold */
++	list_for_each_entry_rcu(t, &current->thread_group,
++				thread_group) {
++		local_irq_disable();
++		rq = __task_rq_lock(t);
++		mm = rq->curr->mm;
++		cpu = rq->cpu;
++		__task_rq_unlock(rq);
++		local_irq_enable();
++		if (cpu == this_cpu)
++			continue;
++		if (current->mm == mm) {
++			if (nr_cpus == ADAPT_IPI_THRESHOLD) {
++				nr_cpus++;
++				break;
++			}
++			cpu_ipi[nr_cpus++] = cpu;
++		}
++	}
++	if (likely(nr_cpus <= ADAPT_IPI_THRESHOLD)) {
++		for (i = 0; i < nr_cpus; i++) {
++			smp_call_function_single(cpu_ipi[i],
++						 membarrier_ipi,
++						 NULL, 1);
++		}
++	} else {
++		if (!alloc_cpumask_var(&tmpmask, GFP_KERNEL)) {
++			membarrier_threads_retry(this_cpu);
++			return;
++		}
++		for (i = 0; i < ADAPT_IPI_THRESHOLD; i++)
++			cpumask_set_cpu(cpu_ipi[i], tmpmask);
++		/* Continue previous thread iteration */
++		cpumask_set_cpu(cpu, tmpmask);
++		list_for_each_entry_continue_rcu(t,
++						 &current->thread_group,
++						 thread_group) {
++			local_irq_disable();
++			rq = __task_rq_lock(t);
++			mm = rq->curr->mm;
++			cpu = rq->cpu;
++			__task_rq_unlock(rq);
++			local_irq_enable();
++			if (cpu == this_cpu)
++				continue;
++			if (current->mm == mm)
++				cpumask_set_cpu(cpu, tmpmask);
++		}
++		smp_call_function_many(tmpmask, membarrier_ipi, NULL, 1);
++		free_cpumask_var(tmpmask);
++	}
 +}
 +
 +/*
@@ -259,28 +433,45 @@ Index: linux-2.6-lttng/kernel/sched.c
 + * Upon completion, the caller thread is ensured that all process threads
 + * have passed through a state where memory accesses match program order.
 + * (non-running threads are de facto in such a state)
++ *
++ * We do not use mm_cpumask because there is no guarantee that each architecture
++ * switch_mm issues a smp_mb() before and after mm_cpumask modification upon
++ * scheduling change. Furthermore, leave_mm is also modifying the mm_cpumask (at
++ * least on x86) from the TLB flush IPI handler. So rather than playing tricky
++ * games with lazy TLB flush, let's simply iterate on online cpus/thread group,
++ * whichever is the smallest.
 + */
 +SYSCALL_DEFINE0(membarrier)
 +{
 +#ifdef CONFIG_SMP
++	int this_cpu;
++
 +	if (unlikely(thread_group_empty(current)))
 +		return 0;
++
++	rcu_read_lock();	/* protect cpu_curr(cpu)-> and rcu list */
++	preempt_disable();
 +	/*
-+	 * Memory barrier on the caller thread _before_ sending first
-+	 * IPI. Matches memory barriers around mm_cpumask modification in
-+	 * context_switch().
++	 * Memory barrier on the caller thread _before_ sending first IPI.
 +	 */
 +	smp_mb();
-+	preempt_disable();
-+	smp_call_function_many(mm_cpumask(current->mm), membarrier_ipi,
-+			       NULL, 1);
-+	preempt_enable();
++	/*
++	 * We don't need to include ourself in IPI, as we already
++	 * surround our execution with memory barriers.
++	 */
++	this_cpu = smp_processor_id();
++	/* Approximate which is fastest: CPU or thread group iteration ? */
++	if (num_online_cpus() <= atomic_read(&current->mm->mm_users))
++		membarrier_cpus(this_cpu);
++	else
++		membarrier_threads(this_cpu);
 +	/*
 +	 * Memory barrier on the caller thread _after_ we finished
-+	 * waiting for the last IPI. Matches memory barriers around mm_cpumask
-+	 * modification in context_switch().
++	 * waiting for the last IPI.
 +	 */
 +	smp_mb();
++	preempt_enable();
++	rcu_read_unlock();
 +#endif	/* #ifdef CONFIG_SMP */
 +	return 0;
 +}
