@@ -1,302 +1,187 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752814Ab0AKIon@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752807Ab0AKIpm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752814Ab0AKIon (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jan 2010 03:44:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752785Ab0AKIok
+	id S1752807Ab0AKIpm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jan 2010 03:45:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752730Ab0AKIpl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jan 2010 03:44:40 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:52805 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752530Ab0AKIoh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jan 2010 03:44:37 -0500
-Date: Mon, 11 Jan 2010 19:44:31 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linux-next@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: linux-next: Tree for January 11
-Message-Id: <20100111194431.c103db9b.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 3.0.0beta4 (GTK+ 2.18.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__11_Jan_2010_19_44_31_+1100_EEAvKm_+GHKi+rFT"
+	Mon, 11 Jan 2010 03:45:41 -0500
+Received: from zbasel.fortytwo.ch ([193.138.215.60]:52947 "EHLO
+	zbasel.fortytwo.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752594Ab0AKIpk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jan 2010 03:45:40 -0500
+X-Greylist: delayed 415 seconds by postgrey-1.27 at vger.kernel.org; Mon, 11 Jan 2010 03:45:39 EST
+From: Adrian von Bidder <avbidder@fortytwo.ch>
+To: Johannes Hirte <johannes.hirte@fem.tu-ilmenau.de>
+Subject: Re: task imap:2958 blocked for more than 120 seconds
+Date: Mon, 11 Jan 2010 09:45:31 +0100
+User-Agent: KMail/1.12.4 (Linux/2.6.31-1-686; KDE/4.3.4; i686; ; )
+Cc: Chris Mason <chris.mason@oracle.com>, linux-btrfs@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <201001102105.47192.johannes.hirte@fem.tu-ilmenau.de> <201001110834.36865@fortytwo.ch>
+In-Reply-To: <201001110834.36865@fortytwo.ch>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart4170908.0XA22HpcXH";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <201001110945.32352@fortytwo.ch>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__11_Jan_2010_19_44_31_+1100_EEAvKm_+GHKi+rFT
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
+--nextPart4170908.0XA22HpcXH
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: quoted-printable
 
-Hi all,
+On Monday 11 January 2010 08.34:36 Adrian von Bidder wrote:
+> "btrfs-vol -b" on an 2T btrfs fs (raid 1 mode over 4 disks) on an arm
+>  CPU  has triggered it several times, so it seems a reliable way to
+>  reproduce this.
+>=20
 
-Changes since 20100108:
+=46ound it (Debian kernel 2.6.32 on ARM):
 
-The xfs tree lost a conflict.
+[78260.386272] INFO: task btrfs-vol:10979 blocked for more than 120 seconds.
+[78260.386306] "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables =
+this message.
+[78260.386331] btrfs-vol     D c02b080c     0 10979      1 0x00000001
+[78260.386373] [<c02b080c>] (schedule+0x424/0x488) from [<c02b0c9c>] (sched=
+ule_timeout+0x1c/0x244)
+[78260.386408] [<c02b0c9c>] (schedule_timeout+0x1c/0x244) from [<c02b0b10>]=
+ (wait_for_common+0xdc/0x178)
+[78260.386611] [<c02b0b10>] (wait_for_common+0xdc/0x178) from [<bf29b880>] =
+(merge_reloc_roots+0x15c/0x1a4 [btrfs])
+[78260.386940] [<bf29b880>] (merge_reloc_roots+0x15c/0x1a4 [btrfs]) from [<=
+bf2a3fd8>] (relocate_block_group+0x548/0x5c8 [btrfs])
+[78260.387258] [<bf2a3fd8>] (relocate_block_group+0x548/0x5c8 [btrfs]) from=
+ [<bf2a4434>] (btrfs_relocate_block_group+0x17c/0x3a4 [btrfs])
+[78260.387564] [<bf2a4434>] (btrfs_relocate_block_group+0x17c/0x3a4 [btrfs]=
+) from [<bf2868e0>] (btrfs_relocate_chunk+0x70/0x7c0 [btrfs])
+[78260.387856] [<bf2868e0>] (btrfs_relocate_chunk+0x70/0x7c0 [btrfs]) from =
+[<bf2879f4>] (btrfs_balance+0x370/0x424 [btrfs])
+[78260.388148] [<bf2879f4>] (btrfs_balance+0x370/0x424 [btrfs]) from [<bf28=
+d3a8>] (btrfs_ioctl+0x754/0x968 [btrfs])
+[78260.388319] [<bf28d3a8>] (btrfs_ioctl+0x754/0x968 [btrfs]) from [<c00d87=
+88>] (vfs_ioctl+0x2c/0x70)
+[78260.388357] [<c00d8788>] (vfs_ioctl+0x2c/0x70) from [<c00d8e8c>] (do_vfs=
+_ioctl+0x4f4/0x55c)
+[78260.388390] [<c00d8e8c>] (do_vfs_ioctl+0x4f4/0x55c) from [<c00d8f44>] (s=
+ys_ioctl+0x50/0x74)
+[78260.388423] [<c00d8f44>] (sys_ioctl+0x50/0x74) from [<c0026ea0>] (ret_fa=
+st_syscall+0x0/0x28)
+[78380.381159] INFO: task btrfs-vol:10979 blocked for more than 120 seconds.
+[78380.381194] "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables =
+this message.
+[78380.381219] btrfs-vol     D c02b080c     0 10979      1 0x00000001
+[78380.381262] [<c02b080c>] (schedule+0x424/0x488) from [<c02b0c9c>] (sched=
+ule_timeout+0x1c/0x244)
+[78380.381297] [<c02b0c9c>] (schedule_timeout+0x1c/0x244) from [<c02b0b10>]=
+ (wait_for_common+0xdc/0x178)
+[78380.381501] [<c02b0b10>] (wait_for_common+0xdc/0x178) from [<bf29b880>] =
+(merge_reloc_roots+0x15c/0x1a4 [btrfs])
+[78380.381830] [<bf29b880>] (merge_reloc_roots+0x15c/0x1a4 [btrfs]) from [<=
+bf2a3fd8>] (relocate_block_group+0x548/0x5c8 [btrfs])
+[78380.382232] [<bf2a3fd8>] (relocate_block_group+0x548/0x5c8 [btrfs]) from=
+ [<bf2a4434>] (btrfs_relocate_block_group+0x17c/0x3a4 [btrfs])
+[78380.382545] [<bf2a4434>] (btrfs_relocate_block_group+0x17c/0x3a4 [btrfs]=
+) from [<bf2868e0>] (btrfs_relocate_chunk+0x70/0x7c0 [btrfs])
+[78380.382839] [<bf2868e0>] (btrfs_relocate_chunk+0x70/0x7c0 [btrfs]) from =
+[<bf2879f4>] (btrfs_balance+0x370/0x424 [btrfs])
+[78380.383131] [<bf2879f4>] (btrfs_balance+0x370/0x424 [btrfs]) from [<bf28=
+d3a8>] (btrfs_ioctl+0x754/0x968 [btrfs])
+[78380.383302] [<bf28d3a8>] (btrfs_ioctl+0x754/0x968 [btrfs]) from [<c00d87=
+88>] (vfs_ioctl+0x2c/0x70)
+[78380.383341] [<c00d8788>] (vfs_ioctl+0x2c/0x70) from [<c00d8e8c>] (do_vfs=
+_ioctl+0x4f4/0x55c)
+[78380.383374] [<c00d8e8c>] (do_vfs_ioctl+0x4f4/0x55c) from [<c00d8f44>] (s=
+ys_ioctl+0x50/0x74)
+[78380.383408] [<c00d8f44>] (sys_ioctl+0x50/0x74) from [<c0026ea0>] (ret_fa=
+st_syscall+0x0/0x28)
 
-The kvm tree gained 2 build failures for which I applied patches.
+umount right after some big fs action (not sure, it was either lots of=20
+file deletions, a big rsync of some tree, or right after the btrfs-vol
+stuff) manages to trigger a btrfs related hang, too:
 
-The net tree gained 2 conflicts against Linus' tree and a build failure
-for which I applied a patch.
+[97460.345446] INFO: task umount:12765 blocked for more than 120 seconds.
+[97460.345481] "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables =
+this message.
+[97460.345505] umount        D c02b080c     0 12765  12681 0x00000000
+[97460.345554] [<c02b080c>] (schedule+0x424/0x488) from [<c00e719c>] (bdi_s=
+ched_wait+0xc/0x18)
+[97460.345592] [<c00e719c>] (bdi_sched_wait+0xc/0x18) from [<c02b0f68>] (__=
+wait_on_bit+0x5c/0xa8)
+[97460.345625] [<c02b0f68>] (__wait_on_bit+0x5c/0xa8) from [<c02b1060>] (ou=
+t_of_line_wait_on_bit+0xac/0xc4)
+[97460.345661] [<c02b1060>] (out_of_line_wait_on_bit+0xac/0xc4) from [<c00e=
+7210>] (sync_inodes_sb+0x68/0x100)
+[97460.345699] [<c00e7210>] (sync_inodes_sb+0x68/0x100) from [<c00eb340>] (=
+__sync_filesystem+0x64/0x94)
+[97460.345737] [<c00eb340>] (__sync_filesystem+0x64/0x94) from [<c00cdc74>]=
+ (generic_shutdown_super+0x28/0x110)
+[97460.345776] [<c00cdc74>] (generic_shutdown_super+0x28/0x110) from [<c00c=
+dda8>] (kill_anon_super+0x14/0x3c)
+[97460.345813] [<c00cdda8>] (kill_anon_super+0x14/0x3c) from [<c00ce46c>] (=
+deactivate_super+0x6c/0x90)
+[97460.345849] [<c00ce46c>] (deactivate_super+0x6c/0x90) from [<c00e2310>] =
+(sys_umount+0x2bc/0x2e8)
+[97460.345883] [<c00e2310>] (sys_umount+0x2bc/0x2e8) from [<c0026ea0>] (ret=
+_fast_syscall+0x0/0x28)
+[97580.340641] INFO: task umount:12765 blocked for more than 120 seconds.
+[97580.340674] "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables =
+this message.
+[97580.340699] umount        D c02b080c     0 12765  12681 0x00000000
+[97580.340749] [<c02b080c>] (schedule+0x424/0x488) from [<c00e719c>] (bdi_s=
+ched_wait+0xc/0x18)
+[97580.340787] [<c00e719c>] (bdi_sched_wait+0xc/0x18) from [<c02b0f68>] (__=
+wait_on_bit+0x5c/0xa8)
+[97580.340821] [<c02b0f68>] (__wait_on_bit+0x5c/0xa8) from [<c02b1060>] (ou=
+t_of_line_wait_on_bit+0xac/0xc4)
+[97580.340857] [<c02b1060>] (out_of_line_wait_on_bit+0xac/0xc4) from [<c00e=
+7210>] (sync_inodes_sb+0x68/0x100)
+[97580.340894] [<c00e7210>] (sync_inodes_sb+0x68/0x100) from [<c00eb340>] (=
+__sync_filesystem+0x64/0x94)
+[97580.340932] [<c00eb340>] (__sync_filesystem+0x64/0x94) from [<c00cdc74>]=
+ (generic_shutdown_super+0x28/0x110)
+[97580.340970] [<c00cdc74>] (generic_shutdown_super+0x28/0x110) from [<c00c=
+dda8>] (kill_anon_super+0x14/0x3c)
+[97580.341008] [<c00cdda8>] (kill_anon_super+0x14/0x3c) from [<c00ce46c>] (=
+deactivate_super+0x6c/0x90)
+[97580.341044] [<c00ce46c>] (deactivate_super+0x6c/0x90) from [<c00e2310>] =
+(sys_umount+0x2bc/0x2e8)
+[97580.341079] [<c00e2310>] (sys_umount+0x2bc/0x2e8) from [<c0026ea0>] (ret=
+_fast_syscall+0x0/0x28)
 
-The mfd tree gained a build failure so I used the version from
-next-20100108.
 
-The agp tree lost its build failure.
+I've never had the system or even the affected processes die on me, the=20
+end result was always ok.  Just took ages.  (Ok, btrfs-vol -b taking ages
+on a big fs is ok.  umount taking 10min is a bit over the top, especially
+since the machine only has 1G ram, so there can't be that many dirty caches
+in any case...
 
-The suspend tree lost its conflict.
+cheers
+=2D- vbi
 
-----------------------------------------------------------------------------
 
-I have created today's linux-next tree at
-git://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
-(patches at http://www.kernel.org/pub/linux/kernel/v2.6/next/ ).  If you
-are tracking the linux-next tree using git, you should not use "git pull"
-to do so as that will try to merge the new linux-next release with the
-old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
-(see below).
 
-You can see which trees have been included by looking in the Next/Trees
-file in the source.  There are also quilt-import.log and merge.log files
-in the Next directory.  Between each merge, the tree was built with
-a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
-final fixups (if any), it is also built with powerpc allnoconfig (32 and
-64 bit), ppc44x_defconfig and allyesconfig (minus
-CONFIG_PROFILE_ALL_BRANCHES - this fails its final link) and i386, sparc
-and sparc64 defconfig. These builds also have
-CONFIG_ENABLE_WARN_DEPRECATED, CONFIG_ENABLE_MUST_CHECK and
-CONFIG_DEBUG_INFO disabled when necessary.
+=2D-=20
+featured product: PostgreSQL - http://postgresql.org
 
-Below is a summary of the state of the merge.
-
-We are up to 155 trees (counting Linus' and 22 trees of patches pending
-for Linus' tree), more are welcome (even if they are currently empty).
-Thanks to those who have contributed, and to those who haven't, please do.
-
-Status of my local build tests will be at
-http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
-advice about cross compilers/configs that work, we are always open to add
-more builds.
-
-Thanks to Jan Dittmer for adding the linux-next tree to his build tests
-at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
-Dunlap for doing many randconfig builds.
-
-There is a wiki covering stuff to do with linux-next at
-http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-$ git checkout master
-$ git reset --hard stable
-Merging origin/master
-Merging fixes/fixes
-Merging arm-current/master
-Merging m68k-current/for-linus
-Merging powerpc-merge/merge
-Merging sparc-current/master
-Merging scsi-rc-fixes/master
-Merging net-current/master
-CONFLICT (content): Merge conflict in drivers/scsi/cxgb3i/cxgb3i_offload.c
-Merging sound-current/for-linus
-Merging pci-current/for-linus
-Merging wireless-current/master
-Merging kbuild-current/for-linus
-Merging quilt/driver-core.current
-Merging quilt/tty.current
-Merging quilt/usb.current
-Merging quilt/staging.current
-Merging cpufreq-current/fixes
-Merging input-current/for-linus
-Merging md-current/for-linus
-Merging audit-current/for-linus
-Merging crypto-current/master
-Merging ide-curent/master
-Merging dwmw2/master
-Merging arm/devel
-Merging davinci/davinci-next
-Merging msm/for-next
-Merging omap/for-next
-Merging pxa/for-next
-Merging samsung/next-samsung
-Merging avr32/avr32-arch
-Merging blackfin/for-linus
-Merging cris/for-next
-Merging ia64/test
-Merging m68k/for-next
-Merging m68knommu/for-next
-Merging microblaze/next
-Merging mips/mips-for-linux-next
-Merging parisc/next
-Merging powerpc/next
-Merging 4xx/next
-Merging 52xx-and-virtex/next
-Merging galak/next
-Merging s390/features
-Merging sh/master
-Merging sparc/master
-Merging xtensa/master
-Merging ceph/for-next
-Merging cifs/master
-Merging configfs/linux-next
-Merging ecryptfs/next
-Merging ext3/for_next
-Merging ext4/next
-Merging fatfs/master
-Merging fuse/for-next
-Merging gfs2/master
-Merging jfs/next
-Merging logfs/master
-Merging nfs/linux-next
-Applying: ceph: update for BDI_RECLAIMABLE change
-Merging nfsd/nfsd-next
-Merging nilfs2/for-next
-Merging ocfs2/linux-next
-Merging squashfs/master
-Merging udf/for_next
-Merging v9fs/for-next
-CONFLICT (add/add): Merge conflict in fs/9p/cache.c
-Merging ubifs/linux-next
-Merging xfs/master
-CONFLICT (content): Merge conflict in fs/xfs/linux-2.6/xfs_trace.h
-Merging reiserfs-bkl/reiserfs/kill-bkl
-Merging vfs/for-next
-Merging pci/linux-next
-Merging hid/for-next
-Merging quilt/i2c
-Merging bjdooks-i2c/next-i2c
-Merging quilt/jdelvare-hwmon
-Merging quilt/kernel-doc
-Merging v4l-dvb/master
-Merging kbuild/for-next
-Merging kconfig/for-next
-Merging ide/master
-Merging libata/NEXT
-Merging infiniband/for-next
-Merging acpi/test
-Merging ieee1394/for-next
-Merging ubi/linux-next
-Merging kvm/linux-next
-Merging dlm/next
-Merging scsi/master
-Merging async_tx/next
-Merging net/master
-CONFLICT (content): Merge conflict in drivers/net/benet/be_cmds.h
-CONFLICT (content): Merge conflict in include/linux/sysctl.h
-CONFLICT (content): Merge conflict in net/mac80211/iface.c
-CONFLICT (content): Merge conflict in net/mac80211/scan.c
-Merging wireless/master
-CONFLICT (content): Merge conflict in drivers/net/wireless/iwlwifi/iwl-core=
-.h
-Merging mtd/master
-Merging crypto/master
-Merging sound/for-next
-Merging cpufreq/next
-Merging quilt/rr
-Merging mmc/next
-Merging tmio-mmc/linux-next
-Merging input/next
-Merging lsm/for-next
-Merging block/for-next
-Merging quilt/device-mapper
-Merging embedded/master
-Merging firmware/master
-Merging pcmcia/master
-Merging battery/master
-Merging leds/for-mm
-Merging backlight/for-mm
-Merging kgdb/kgdb-next
-Merging slab/for-next
-Merging uclinux/for-next
-Merging md/for-next
-Merging mfd/for-next
-CONFLICT (content): Merge conflict in drivers/mfd/asic3.c
-CONFLICT (content): Merge conflict in drivers/mfd/t7l66xb.c
-CONFLICT (content): Merge conflict in drivers/mfd/tc6387xb.c
-CONFLICT (content): Merge conflict in drivers/mfd/tc6393xb.c
-CONFLICT (add/add): Merge conflict in drivers/mfd/tmio_core.c
-CONFLICT (content): Merge conflict in drivers/mmc/host/tmio_mmc.c
-CONFLICT (content): Merge conflict in drivers/mmc/host/tmio_mmc.h
-CONFLICT (content): Merge conflict in include/linux/mfd/tmio.h
-$ git reset --hard HEAD^
-Merging refs/next/20100108/mfd
-CONFLICT (content): Merge conflict in drivers/mfd/asic3.c
-CONFLICT (content): Merge conflict in drivers/mfd/t7l66xb.c
-CONFLICT (content): Merge conflict in drivers/mfd/tc6387xb.c
-CONFLICT (content): Merge conflict in drivers/mfd/tc6393xb.c
-CONFLICT (add/add): Merge conflict in drivers/mfd/tmio_core.c
-CONFLICT (content): Merge conflict in drivers/mmc/host/tmio_mmc.c
-CONFLICT (content): Merge conflict in drivers/mmc/host/tmio_mmc.h
-CONFLICT (content): Merge conflict in include/linux/mfd/tmio.h
-Merging hdlc/hdlc-next
-Merging drm/drm-next
-Merging voltage/for-next
-Merging security-testing/next
-Merging lblnet/master
-Merging agp/agp-next
-Merging uwb/for-upstream
-Merging watchdog/master
-Merging bdev/master
-Merging dwmw2-iommu/master
-Merging cputime/cputime
-Merging osd/linux-next
-Merging jc_docs/docs-next
-Merging nommu/master
-Merging trivial/for-next
-Merging audit/for-next
-Merging quilt/aoe
-Merging suspend/linux-next
-Merging bluetooth/master
-Merging fsnotify/for-next
-Merging irda/for-next
-CONFLICT (content): Merge conflict in drivers/net/irda/irda-usb.c
-Merging hwlat/for-linus
-CONFLICT (content): Merge conflict in MAINTAINERS
-CONFLICT (content): Merge conflict in drivers/misc/Makefile
-Merging drbd/for-jens
-Merging catalin/for-next
-Merging alacrity/linux-next
-CONFLICT (content): Merge conflict in lib/Kconfig
-Merging i7core_edac/linux_next
-Merging devicetree/next-devicetree
-Merging spi/next-spi
-Merging limits/writable_limits
-CONFLICT (content): Merge conflict in arch/x86/ia32/ia32entry.S
-CONFLICT (content): Merge conflict in arch/x86/include/asm/unistd_32.h
-CONFLICT (content): Merge conflict in arch/x86/include/asm/unistd_64.h
-CONFLICT (content): Merge conflict in arch/x86/kernel/syscall_table_32.S
-Merging omap_dss2/for-next
-Merging tip/auto-latest
-Merging edac-amd/for-next
-Merging oprofile/for-next
-Merging percpu/for-next
-Applying: slab: update for percpu API change
-Merging workqueues/for-next
-Merging sfi/sfi-test
-Merging asm-generic/next
-Merging hwpoison/hwpoison
-Merging sysctl/master
-Merging quilt/driver-core
-Merging quilt/tty
-Merging quilt/usb
-Merging quilt/staging
-Merging scsi-post-merge/master
-Applying: net: vsprintf now depends on the byte_rev_table
-Applying: kvm: fixup for botched PPC update
-Applying: kvm: another PPC fixup (asm-offsets)
-
---Signature=_Mon__11_Jan_2010_19_44_31_+1100_EEAvKm_+GHKi+rFT
-Content-Type: application/pgp-signature
+--nextPart4170908.0XA22HpcXH
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.10 (GNU/Linux)
+Comment: get my key from http://fortytwo.ch/gpg/92082481
 
-iEYEARECAAYFAktK5O8ACgkQjjKRsyhoI8yf5ACfbyWqefS+Ck/2ZQPgzHy4ledm
-LhUAoJDyfg8QAaWENewRWvI8qCFlhigT
-=iEig
+iKcEABECAGcFAktK5StgGmh0dHA6Ly9mb3J0eXR3by5jaC9sZWdhbC9ncGcvZW1h
+aWwuMjAwMjA4MjI/dmVyc2lvbj0xLjUmbWQ1c3VtPTVkZmY4NjhkMTE4NDMyNzYw
+NzFiMjVlYjcwMDZkYTNlAAoJECqqZti935l6CyEAn3VxuuSGNdlkaw+MhJUBQb/S
+2vkrAKC4Ko6p0eAk850GZkQA3c7TD75vww==
+=ipI9
 -----END PGP SIGNATURE-----
 
---Signature=_Mon__11_Jan_2010_19_44_31_+1100_EEAvKm_+GHKi+rFT--
+--nextPart4170908.0XA22HpcXH--
