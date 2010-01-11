@@ -1,108 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753202Ab0AKXAX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753159Ab0AKXFg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753202Ab0AKXAX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jan 2010 18:00:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753159Ab0AKXAT
+	id S1753159Ab0AKXFg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jan 2010 18:05:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752501Ab0AKXFf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jan 2010 18:00:19 -0500
-Received: from out02.mta.xmission.com ([166.70.13.232]:39545 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752456Ab0AKXAO (ORCPT
+	Mon, 11 Jan 2010 18:05:35 -0500
+Received: from mail-iw0-f197.google.com ([209.85.223.197]:58090 "EHLO
+	mail-iw0-f197.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752456Ab0AKXFf convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jan 2010 18:00:14 -0500
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, Yinghai Lu <yinghai@kernel.org>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [patch] x86, apic: use 0x20 for the IRQ_MOVE_CLEANUP_VECTOR instead of 0x1f
-References: <1263002989.2879.664.camel@sbs-t61.sc.intel.com>
-	<4B47E7A9.6090904@zytor.com>
-	<1263250418.2859.681.camel@sbs-t61.sc.intel.com>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Mon, 11 Jan 2010 15:00:00 -0800
-In-Reply-To: <1263250418.2859.681.camel@sbs-t61.sc.intel.com> (Suresh Siddha's message of "Mon\, 11 Jan 2010 14\:53\:38 -0800")
-Message-ID: <m1zl4k8cy7.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Mon, 11 Jan 2010 18:05:35 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=WGPU9YXmAzFLZO606vnfrjABL51tCRAAOrcIAbEB69xgok697lEVN6Ww9BCYFmrDIz
+         3AZMqJ6hokFdrdux9jZa974R2hHK/rL4YFEwPYVsw3D2+QaDrabHaIRTMCyJ7z7BYpsW
+         UIRr2dg8wn8uwgFrhQmnXpXm1tzWexHL8dxrU=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Scanned: No (on in01.mta.xmission.com); SAEximRunCond expanded to false
+In-Reply-To: <201001112322.14152.rjw@sisk.pl>
+References: <201001090045.33784.rjw@sisk.pl> <201001112204.36724.rjw@sisk.pl>
+	 <20100111214355.GA11456@radis.liafa.jussieu.fr>
+	 <201001112322.14152.rjw@sisk.pl>
+Date: Tue, 12 Jan 2010 09:05:34 +1000
+Message-ID: <21d7e9971001111505ydf12687nbcb752e38efd493c@mail.gmail.com>
+Subject: Re: [PATCH] DRM / i915: Fix resume regression on MSI Wind U100 w/o 
+	KMS
+From: Dave Airlie <airlied@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Julien Cristau <jcristau@debian.org>, Dave Airlie <airlied@linux.ie>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       dri-devel@lists.sourceforge.net,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Suresh Siddha <suresh.b.siddha@intel.com> writes:
+On Tue, Jan 12, 2010 at 8:22 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> On Monday 11 January 2010, Julien Cristau wrote:
+>> On Mon, Jan 11, 2010 at 22:04:36 +0100, Rafael J. Wysocki wrote:
+>>
+>> > Hmm, are you trying to say radeon is better at that?
+>> >
+>> > My experience is quite the opposite to be honest.
+>> >
+>> radeon kms is in staging, doesn't pretend to be stable and force all
+>> users to the experimental paths.  So yes, I would say radeon is better
+>> at that.
+>
+> I guess I should have been more precise.
+>
+> All of my test boxes with ATI/AMD graphics hardware regressed after upgrading
+> from openSUSE 11.1 to openSUSE 11.2, in different ways, because of the user
+> space part of the radeon driver.  Of course, you can argue that the dristro
+> picked up particularly bad release of the driver, but from the user's point of
+> view it actually doesn't matter whether the breakage is in the kernel part or
+> in the user space part of the driver.  The difference is, however, that the
+> breakage in the kernel is fixed _way_ faster than the breakage in the user
+> space, so I very much prefer the Intel people pushing new features aggressively
+> and fixing bugs related to that, then the situation where I need to deal with
+> the broken user space driver, while the KMS radeon is still not reliable
+> enough.
+>
+> IOW, if your user space driver worked 100% of the time, I'd totally agree, but
+> that's not the case, at least as far as I see it.
+>
 
-> On Fri, 2010-01-08 at 18:19 -0800, H. Peter Anvin wrote:
->> On 01/08/2010 06:09 PM, Suresh Siddha wrote:
->> > 
->> > So change the IRQ_MOVE_CLEANUP_VECTOR to 0x20 and  allow 0x21-0x2f to be used
->> > for device interrupts. 0x30-0x3f will be used for ISA interrupts (these
->> > also can be migrated in the context of IOAPIC and hence need to be at a higher
->> > priority level than IRQ_MOVE_CLEANUP_VECTOR).
->> > 
->> 
->> You're referring to when they're accessed as IOAPIC interrupts as
->> opposed to ExtInt interrupts?
->
-> yes.
->
->> > -/*
->> > - * First APIC vector available to drivers: (vectors 0x30-0xee).  We
->> > - * start allocating at 0x31 to spread out vectors evenly between
->> > - * priority levels. (0x80 is the syscall vector)
->> > - */
->> > -#define FIRST_DEVICE_VECTOR		(IRQ15_VECTOR + 1)
->> > -#define VECTOR_OFFSET_START		1
->> > -
->> >  #define NR_VECTORS			 256
->> >  
->> >  #define FPU_IRQ				  13
->> > diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
->> > index d5bfa29..5c090a1 100644
->> > --- a/arch/x86/kernel/apic/io_apic.c
->> > +++ b/arch/x86/kernel/apic/io_apic.c
->> > @@ -1162,8 +1162,8 @@ __assign_irq_vector(int irq, struct irq_cfg *cfg, const struct cpumask *mask)
->> >  	 * Also, we've got to be careful not to trash gate
->> >  	 * 0x80, because int 0x80 is hm, kind of importantish. ;)
->> >  	 */
->> > -	static int current_vector = FIRST_DEVICE_VECTOR + VECTOR_OFFSET_START;
->> > -	static int current_offset = VECTOR_OFFSET_START % 8;
->> > +	static int current_vector = FIRST_DEVICE_VECTOR;
->> > +	static int current_offset = 0;
->> >  	unsigned int old_vector;
->> >  	int cpu, err;
->> >  	cpumask_var_t tmp_mask;
->> > 
->> 
->> I'm not entirely sure I like losing this bit, even though it isn't
->> really necessary with your changes (VECTOR_OFFSET_START would be 0).
->> I'm afraid we might end up with the same buglet being "reinvented" later.
->
-> Ok. We should be able to retain that bit. I will send another version
-> shortly.
->
->> However, my most serious concern with this patch is that there is a
->> fairly significant change due to this patch, which is that the legacy
->> IRQ vectors now fall *inside* the FIRST_DEVICE_VECTOR range.  This isn't
->> a bad thing -- in fact, it is fundamentally the right thing to do
->> especially once we consider platforms which *don't* have the legacy IRQs
->> -- but it makes me scared of unexpected behavior changes as a result.
->> If you feel confident that that is not the case, could you outline why
->> it shouldn't be a problem?
->
-> In irqinit.c, we statically pre-assign the per-cpu vector to irq
-> mappings (vector_irq) for all the legacy IRQ vectors. Similarly irq_cfg
-> is statically initialized for legacy IRQ's in io_apic.c. So we won't be
-> able to use this space for anything else.
+Are you using the Novell radeonhd driver? (I think SuSE default to this for all
+cards > r500).
 
-Last I looked when we switched legacy irqs irqs from pic mode to io_apic mode
-we continue to use the same vector.
+This isn't the driver that is developed by the opensource community and
+really your distro is where you complain about that sort of regression.
 
-Which means we should not be wasting those vectors and that it is dangerous
-to play lowest priority irq games in that range.
+The wierd thing is we see distro picking up fixes for userspace
+drivers *much* quicker
+if their teams are the on the ball since they are only a small
+component to upgrade,
+with the kernel you find most distro fire and forget, so if 2.6.31
+doesn't work on your
+hw you'll wait 6 months to find out that 2.634 doesn't work either.
 
-Eric
+Since ppl aren't targetting stable properly distros are left to fend
+for themselves
+when it comes to backporting large amounts of changes, and you find most
+distros just don't bother.
+
+Dave.
