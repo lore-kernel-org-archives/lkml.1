@@ -1,31 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752855Ab0AKV3f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752974Ab0AKVaF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752855Ab0AKV3f (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jan 2010 16:29:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752366Ab0AKV1i
+	id S1752974Ab0AKVaF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jan 2010 16:30:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753958Ab0AKVaA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jan 2010 16:27:38 -0500
-Received: from mail-ew0-f209.google.com ([209.85.219.209]:35385 "EHLO
+	Mon, 11 Jan 2010 16:30:00 -0500
+Received: from mail-ew0-f209.google.com ([209.85.219.209]:50852 "EHLO
 	mail-ew0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752443Ab0AKV1h (ORCPT
+	with ESMTP id S1752319Ab0AKV1c (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jan 2010 16:27:37 -0500
+	Mon, 11 Jan 2010 16:27:32 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=sender:from:to:cc:subject:date:message-id:x-mailer:in-reply-to
          :references;
-        b=VVpCL1SiM8KKTHVKGTYcO1NlQuTFHWd9uBX+dZcT9BewNxVfjuOC5hgUFgfDP2iC8w
-         QnP16nwM+I0PjBzzRkgvBiyNqbTpftbyxUewPwi5yHiHARVo78i/v947yDy28mAub2J/
-         jHxopT/BjGUa9ISFusTbY4L/pS2Fol+ChxF88=
+        b=HcQ/8tnkWfQu9rqoLHuQ0WIlnfsHmYNU7fbSMB/KdqmArfCTqWMjwwRRuxK6x06h9a
+         ZuQnVatcZ/lpVgs4i+AUX6Ixq277B52E4WFM/XPnqhXdYX70IxLhYiaaccgvyU/5vFkg
+         Dpdwf923UGJov8QHLN7VX4+3tqerItaYj/Zps=
 From: John Kacur <jkacur@redhat.com>
 To: Thomas Gleixner <tglx@linutronix.de>, lkml <linux-kernel@vger.kernel.org>,
        Ingo Molnar <mingo@elte.hu>
 Cc: Clark Williams <williams@redhat.com>, John Kacur <jkacur@redhat.com>
-Subject: [PATCH 18/26] x86 - nmi: Convert nmi_lock to raw_spinlock
-Date: Mon, 11 Jan 2010 22:26:48 +0100
-Message-Id: <1263245216-14754-19-git-send-email-jkacur@redhat.com>
+Subject: [PATCH 16/26] timer_stats: Convert to raw_spinlocks
+Date: Mon, 11 Jan 2010 22:26:46 +0100
+Message-Id: <1263245216-14754-17-git-send-email-jkacur@redhat.com>
 X-Mailer: git-send-email 1.6.5.2
-In-Reply-To: <1263245216-14754-18-git-send-email-jkacur@redhat.com>
+In-Reply-To: <1263245216-14754-16-git-send-email-jkacur@redhat.com>
 References: <1263245216-14754-1-git-send-email-jkacur@redhat.com>
  <1263245216-14754-2-git-send-email-jkacur@redhat.com>
  <1263245216-14754-3-git-send-email-jkacur@redhat.com>
@@ -42,42 +42,51 @@ References: <1263245216-14754-1-git-send-email-jkacur@redhat.com>
  <1263245216-14754-14-git-send-email-jkacur@redhat.com>
  <1263245216-14754-15-git-send-email-jkacur@redhat.com>
  <1263245216-14754-16-git-send-email-jkacur@redhat.com>
- <1263245216-14754-17-git-send-email-jkacur@redhat.com>
- <1263245216-14754-18-git-send-email-jkacur@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Convert locks that cannot sleep in preempt-rt to raw_spinlocks
+Convert locks which cannot sleep in preempt-rt to raw_spinlocks.
 
-See also: a76dd8f3ffcbb1bb446a9ca059b77f40fe100bf1
+See also 54852508231ef28058a88480b2f9ab9b859b0e38
+Completes the conversion started in ecb49d1a639acbacfc3771cae5ec07bed5df3847
 
 Signed-off-by: John Kacur <jkacur@redhat.com>
 ---
- arch/x86/kernel/apic/nmi.c |    6 +++---
+ kernel/time/timer_stats.c |    6 +++---
  1 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/arch/x86/kernel/apic/nmi.c b/arch/x86/kernel/apic/nmi.c
-index 0159a69..51bc6a6 100644
---- a/arch/x86/kernel/apic/nmi.c
-+++ b/arch/x86/kernel/apic/nmi.c
-@@ -416,13 +416,13 @@ nmi_watchdog_tick(struct pt_regs *regs, unsigned reason)
+diff --git a/kernel/time/timer_stats.c b/kernel/time/timer_stats.c
+index 2f3b585..30cb955 100644
+--- a/kernel/time/timer_stats.c
++++ b/kernel/time/timer_stats.c
+@@ -81,7 +81,7 @@ struct entry {
+ /*
+  * Spinlock protecting the tables - not taken during lookup:
+  */
+-static DEFINE_SPINLOCK(table_lock);
++static DEFINE_RAW_SPINLOCK(table_lock);
  
- 	/* We can be called before check_nmi_watchdog, hence NULL check. */
- 	if (cpumask_test_cpu(cpu, to_cpumask(backtrace_mask))) {
--		static DEFINE_SPINLOCK(lock);	/* Serialise the printks */
-+		static DEFINE_RAW_SPINLOCK(lock);	/* Serialise the printks */
+ /*
+  * Per-CPU lookup locks for fast hash lookup:
+@@ -188,7 +188,7 @@ static struct entry *tstat_lookup(struct entry *entry, char *comm)
+ 	prev = NULL;
+ 	curr = *head;
  
--		spin_lock(&lock);
-+		raw_spin_lock(&lock);
- 		printk(KERN_WARNING "NMI backtrace for cpu %d\n", cpu);
- 		show_regs(regs);
- 		dump_stack();
--		spin_unlock(&lock);
-+		raw_spin_unlock(&lock);
- 		cpumask_clear_cpu(cpu, to_cpumask(backtrace_mask));
+-	spin_lock(&table_lock);
++	raw_spin_lock(&table_lock);
+ 	/*
+ 	 * Make sure we have not raced with another CPU:
+ 	 */
+@@ -215,7 +215,7 @@ static struct entry *tstat_lookup(struct entry *entry, char *comm)
+ 			*head = curr;
+ 	}
+  out_unlock:
+-	spin_unlock(&table_lock);
++	raw_spin_unlock(&table_lock);
  
- 		rc = 1;
+ 	return curr;
+ }
 -- 
 1.6.5.2
 
