@@ -1,147 +1,179 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753072Ab0AKRAz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753271Ab0AKRDr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753072Ab0AKRAz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jan 2010 12:00:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751224Ab0AKRAy
+	id S1753271Ab0AKRDr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jan 2010 12:03:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752500Ab0AKRDq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jan 2010 12:00:54 -0500
-Received: from fg-out-1718.google.com ([72.14.220.153]:65170 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751209Ab0AKRAx convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jan 2010 12:00:53 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=Oafth0F/FinMD2uO3o19UOfe3f0ueIVf+3Wvww9wYKS/zqtA3P5TMDLqznUQV9dz8d
-         hm1OJvz1D28cv7HeqyMpHy3WkZ2QHtKHFX0g/KnsOBHkiF9Fh+GH/oTF02hfXHKzAHg1
-         HedqD3d6q6/XXnBkpzqf1spicVjVioGAu5JdU=
+	Mon, 11 Jan 2010 12:03:46 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:30311 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750934Ab0AKRDp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jan 2010 12:03:45 -0500
+Date: Mon, 11 Jan 2010 12:03:39 -0500
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Shaohua Li <shaohua.li@intel.com>
+Cc: Corrado Zoccolo <czoccolo@gmail.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
+       "Zhang, Yanmin" <yanmin.zhang@intel.com>
+Subject: Re: [RFC]cfq-iosched: quantum check tweak
+Message-ID: <20100111170339.GC22899@redhat.com>
+References: <20091225091030.GA28365@sli10-desk.sh.intel.com> <4e5e476b0912250144l96c4d34v300910216e5c7a08@mail.gmail.com> <20091228033554.GB15242@sli10-desk.sh.intel.com> <4e5e476b0912280102t2278d7a5ld3e8784f52f2be31@mail.gmail.com> <1262829893.4984.13.camel@sli10-desk.sh.intel.com> <4e5e476b1001071344i4f702496y22f33bc2d4bc834d@mail.gmail.com> <20100108171535.GC22219@redhat.com> <4e5e476b1001081235wc2784c1s87c0c70662b5e267@mail.gmail.com> <20100108205948.GH22219@redhat.com> <20100111023409.GE22362@sli10-desk.sh.intel.com>
 MIME-Version: 1.0
-In-Reply-To: <20100111164433.GB22899@redhat.com>
-References: <1262211768-10858-1-git-send-email-czoccolo@gmail.com>
-	 <1263157461-12294-1-git-send-email-czoccolo@gmail.com>
-	 <4B4B0AA9.5020900@garzik.org>
-	 <4e5e476b1001110426t2afa0502p7f19a9b24e48ba82@mail.gmail.com>
-	 <20100111131317.GB4489@kernel.dk> <4B4B250D.8020205@garzik.org>
-	 <4e5e476b1001110653x397a8008gfea2f62497be1f42@mail.gmail.com>
-	 <20100111164433.GB22899@redhat.com>
-Date: Mon, 11 Jan 2010 18:00:51 +0100
-Message-ID: <4e5e476b1001110900v579054cam246775a74cf1e854@mail.gmail.com>
-Subject: Re: [PATCH] cfq-iosched: NCQ SSDs do not need read queue merging
-From: Corrado Zoccolo <czoccolo@gmail.com>
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: Jeff Garzik <jeff@garzik.org>, Jens Axboe <jens.axboe@oracle.com>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>,
-       Jeff Moyer <jmoyer@redhat.com>, Shaohua Li <shaohua.li@intel.com>,
-       Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20100111023409.GE22362@sli10-desk.sh.intel.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 11, 2010 at 5:44 PM, Vivek Goyal <vgoyal@redhat.com> wrote:
-> On Mon, Jan 11, 2010 at 03:53:00PM +0100, Corrado Zoccolo wrote:
->> On Mon, Jan 11, 2010 at 2:18 PM, Jeff Garzik <jeff@garzik.org> wrote:
->> > On 01/11/2010 08:13 AM, Jens Axboe wrote:
->> >>
->> >> On Mon, Jan 11 2010, Corrado Zoccolo wrote:
->> >>>
->> >>> On Mon, Jan 11, 2010 at 12:25 PM, Jeff Garzik<jeff@garzik.org>  wrote:
->> >>>>
->> >>>> On 01/10/2010 04:04 PM, Corrado Zoccolo wrote:
->> >>>>>
->> >>>>> NCQ SSDs' performances are not affected by
->> >>>>> distance of read requests, so there is no point in having
->> >>>>> overhead to merge such queues.
->> >>>>>
->> >>>>> Non-NCQ SSDs showed regression in some special cases, so
->> >>>>> they are ruled out by this patch.
->> >>>>>
->> >>>>> This patch intentionally doesn't affect writes, so
->> >>>>> it changes the queued[] field, to be indexed by
->> >>>>> READ/WRITE instead of SYNC/ASYNC, and only compute proximity
->> >>>>> for queues with WRITE requests.
->> >>>>>
->> >>>>> Signed-off-by: Corrado Zoccolo<czoccolo@gmail.com>
->> >>>>
->> >>>> That's not really true.  Overhead always increases as the total number
->> >>>> of
->> >>>> ATA commands issued increases.
->> >>>
->> >>> Jeff Moyer tested the patch on the workload that mostly benefit of
->> >>> queue merging, and found that
->> >>> the performance was improved by the patch.
->> >>> So removing the CPU overhead helps much more than the marginal gain
->> >>> given by merging on this hardware.
->> >>
->> >> It's not always going to be true. On SATA the command overhead is fairly
->> >> low, but on other hardware that may not be the case. Unless you are CPU
->> >> bound by your IO device, then merging will always be beneficial. I'm a
->> >> little behind on emails after my vacation, Jeff what numbers did you
->> >> generate and on what hardware?
->> >
->> >  ...and on what workload?   "the workload that mostly benefit of queue
->> > merging" is highly subjective, and likely does not cover most workloads SSDs
->> > will see in the field.
->> Hi Jeff,
->> exactly.
->> The workloads that benefits from queue merging are the ones in which a
->> sequential
->> read is actually splitt, and carried out by different processes in
->> different I/O context, each
->> sending requests with strides. This is clearly not the best way of
->> doing sequential access
->> (I would happily declare those programs as buggy).
->> CFQ has code that merges queues in this case. I'm disabling the READ
->> part for NCQ SSDs,
->> since, as Jeff measured, the code overhead outweight the gain from
->> merging (if any).
->
-> Hi Corrado,
->
-> In Jeff's test case of running read-test2, I am not even sure if any
-> merging between the queues took place or not as on NCQ SSD, we are driving
-> deeper queue depths and unless read-test2 is creating more than 32
-> threads, there might not be any merging taking place at all.
+On Mon, Jan 11, 2010 at 10:34:09AM +0800, Shaohua Li wrote:
+> On Sat, Jan 09, 2010 at 04:59:48AM +0800, Vivek Goyal wrote:
+> > On Fri, Jan 08, 2010 at 09:35:33PM +0100, Corrado Zoccolo wrote:
+> > > On Fri, Jan 8, 2010 at 6:15 PM, Vivek Goyal <vgoyal@redhat.com> wrote:
+> > > > On Thu, Jan 07, 2010 at 10:44:27PM +0100, Corrado Zoccolo wrote:
+> > > >> Hi Shahoua,
+> > > >>
+> > > >> On Thu, Jan 7, 2010 at 3:04 AM, Shaohua Li <shaohua.li@intel.com> wrote:
+> > > >> > On Mon, 2009-12-28 at 17:02 +0800, Corrado Zoccolo wrote:
+> > > >> >> Hi Shaohua,
+> > > >> >> On Mon, Dec 28, 2009 at 4:35 AM, Shaohua Li <shaohua.li@intel.com> wrote:
+> > > >> >> > On Fri, Dec 25, 2009 at 05:44:40PM +0800, Corrado Zoccolo wrote:
+> > > >> >> >> On Fri, Dec 25, 2009 at 10:10 AM, Shaohua Li <shaohua.li@intel.com> wrote:
+> > > >> >> >> > Currently a queue can only dispatch up to 4 requests if there are other queues.
+> > > >> >> >> > This isn't optimal, device can handle more requests, for example, AHCI can
+> > > >> >> >> > handle 31 requests. I can understand the limit is for fairness, but we could
+> > > >> >> >> > do some tweaks:
+> > > >> >> >> > 1. if the queue still has a lot of slice left, sounds we could ignore the limit
+> > > >> >> >> ok. You can even scale the limit proportionally to the remaining slice
+> > > >> >> >> (see below).
+> > > >> >> > I can't understand the meaning of below scale. cfq_slice_used_soon() means
+> > > >> >> > dispatched requests can finish before slice is used, so other queues will not be
+> > > >> >> > impacted. I thought/hope a cfq_slice_idle time is enough to finish the
+> > > >> >> > dispatched requests.
+> > > >> >> cfq_slice_idle is 8ms, that is the average time to complete 1 request
+> > > >> >> on most disks. If you have more requests dispatched on a
+> > > >> >> NCQ-rotational disk (non-RAID), it will take more time. Probably a
+> > > >> >> linear formula is not the most accurate, but still more accurate than
+> > > >> >> taking just 1 cfq_slice_idle. If you can experiment a bit, you could
+> > > >> >> also try:
+> > > >> >> �cfq_slice_idle * ilog2(nr_dispatched+1)
+> > > >> >> �cfq_slice_idle * (1<<(ilog2(nr_dispatched+1)>>1))
+> > > >> >>
+> > > >> >> >
+> > > >> >> >> > 2. we could keep the check only when cfq_latency is on. For uses who don't care
+> > > >> >> >> > about latency should be happy to have device fully piped on.
+> > > >> >> >> I wouldn't overload low_latency with this meaning. You can obtain the
+> > > >> >> >> same by setting the quantum to 32.
+> > > >> >> > As this impact fairness, so natually thought we could use low_latency. I'll remove
+> > > >> >> > the check in next post.
+> > > >> >> Great.
+> > > >> >> >> > I have a test of random direct io of two threads, each has 32 requests one time
+> > > >> >> >> > without patch: 78m/s
+> > > >> >> >> > with tweak 1: 138m/s
+> > > >> >> >> > with two tweaks and disable latency: 156m/s
+> > > >> >> >>
+> > > >> >> >> Please, test also with competing seq/random(depth1)/async workloads,
+> > > >> >> >> and measure also introduced latencies.
+> > > >> >> > depth1 should be ok, as if device can only send one request, it should not require
+> > > >> >> > more requests from ioscheduler.
+> > > >> >> I mean have a run with, at the same time:
+> > > >> >> * one seq reader,
+> > > >> >> * h random readers with depth 1 (non-aio)
+> > > >> >> * one async seq writer
+> > > >> >> * k random readers with large depth.
+> > > >> >> In this way, you can see if the changes you introduce to boost your
+> > > >> >> workload affect more realistic scenarios, in which various workloads
+> > > >> >> are mixed.
+> > > >> >> I explicitly add the depth1 random readers, since they are sceduled
+> > > >> >> differently than the large (>4) depth ones.
+> > > >> > I tried a fio script which does like your description, but the data
+> > > >> > isn't stable, especially the write speed, other kind of io speed is
+> > > >> > stable. Apply below patch doesn't make things worse (still write speed
+> > > >> > isn't stable, other io is stable), so I can't say if the patch passes
+> > > >> > the test, but it appears latency reported by fio hasn't change. I adopt
+> > > >> > the slice_idle * dispatched approach, which I thought should be safe.
+> > > >>
+> > > >> I'm doing some tests right now on a single ncq rotational disk, and
+> > > >> the average service time when submitting with a high depth is halved
+> > > >> w.r.t. depth 1, so I think you could test also with the formula :
+> > > >> slice_idle * dispatched / 2. It should give a performance boost,
+> > > >> without noticeable impact on latency.
+> > > >>
+> > > >
+> > > > But I guess the right comparison here would service times vary when we
+> > > > push queue depths from 4 to higher (as done by this patch).
+> > > 
+> > > I think here we want to determine the average cost of a request, when
+> > > there are many submitted.
+> > > 
+> > > > Were you
+> > > > running deep seeky queues or sequential queues. Curious to know whether
+> > > > service times reduced even in case of deep seeky queues on this single
+> > > > disk.
+> > > 
+> > > Seeky queues. Seeks where rather small (not more than 1/64 of the
+> > > whole disk), but already meaningful for comparison.
+> > > 
+> > > >
+> > > > I think this patch breaks the meaning of cfq_quantum? Now we can allow
+> > > > dispatch of more requests from the same queue. I had kind of liked the
+> > > > idea of respecting cfq_quantum. Especially it can help in testing. With
+> > > > this patch cfq_quantum will more or less loose its meaning.
+> > > cfq_quantum will still be enforced at the end of the slice, so its
+> > > meaning of how many requests can be still pending when you finish your
+> > > slice is preserved.
+> > 
+> > Not always and it will depend how accurate your approximation of service
+> > time is. If per request completion time is more than approximation (in
+> > this case slice_idle), than you will end up with more requests in dispatch
+> > queue from one cfqq at the time of slice expiry.
+> we use slice_idle for a long time and no complain. So assume the approximation
+> of service time is good.
 
-Jeff's test was modeled after real use cases: widely used, legacy
-programs like dump.
-Since we often said that splitting the sequential stream in multiple
-threads was not the
-correct approach, and we did introduce the change in the kernel just
-to support those
-programs (not to encourage writing more of this league), we can assume
-that if they
-do not drive deeper queues, no one will. So the overhead is just
-overhead, and will never
-give any benefit.
+slice_idle is a variable and user can easily change it to 1ms and even 0.
+In that case you will be theoritically be ready to dispatch 100/1 requests
+from the cfqq?
 
-I therefore want to remove it, since for SSD it matters.
->
-> We also don't have any data/numbers what kind of cpu savings does this
-> patch bring in.
+> 
+> > > 
+> > > One can argue, instead, that this reduces a bit the effectiveness of
+> > > preemption on ncq disks.
+> > > However, I don't think preemption is the solution for low latency,
+> > > while cfq_quantum reduction is.
+> > > With this change in place, we could change the default cfq_quantum to
+> > > a smaller number (ideally 1), to have lowest number of leftovers when
+> > > the slice finishes, while still driving deep queues at the beginning
+> > > of the slice.
+> > 
+> > I think using cfq_quantum as hard limit might be a better idea as it gives
+> > more predictable control. Instead of treating it as soft limit and trying
+> > to meet it at the end of slice expiry based on our approximation of
+> > predicted completion time.
+> Current patch has such hard limit too (100ms/8m = 12 for sync io and 40ms/8
+>  = 5 for async io).
 
-Jeff's test showed larger bandwidth with merge disabled, so it implies
-some saving is present.
+This is software logic driven and not cfq_quantum driven. We can always
+keep on changing how to approximate service time completions. So a user
+first needs to read the code, derive internal limits and then do testing?
 
-Thanks,
-Corrado
+I think than tunable looses its significance. That's why I am advocating
+of treating cfq_quantum as hard limit and derive an internal soft limit
+based on certain % of hard limit and use that as default max queue depth
+for cfqq.
 
->
-> Vivek
->
->>
->> As you said, most workloads don't benefit from queue merging. On those
->> ones, the patch
->> just removes an overhead.
->>
->> Thanks,
->> Corrado
->>
->> >        Jeff
->> >
->> >
->> >
->> >
+In this case user knows no matter what, you are not dispatching more than
+cfq_quantum requests from a queue at a time.
+
+>  
+> > > This needs thorough testing, though. Maybe it is better to delay those
+> > > changes to 2.6.34...
+> > 
+> > Agreed. This should be tested more throughly and should be candidate for
+> > 2.6.34.
+> Sure, this needs a lot of test.
+> 
+> Thanks,
+> Shaohua
