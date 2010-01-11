@@ -1,74 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752883Ab0ALB0p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752224Ab0ALBcA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752883Ab0ALB0p (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jan 2010 20:26:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751233Ab0ALB0o
+	id S1752224Ab0ALBcA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jan 2010 20:32:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751259Ab0ALBb7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jan 2010 20:26:44 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:48701 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751112Ab0ALB0m (ORCPT
+	Mon, 11 Jan 2010 20:31:59 -0500
+Received: from access.cmi.ac.in ([61.12.4.27]:49893 "EHLO
+	mail-relay-in.cmi.ac.in" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751209Ab0ALBb6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jan 2010 20:26:42 -0500
-Date: Mon, 11 Jan 2010 17:26:33 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       Albin Tonnerre <albin.tonnerre@free-electrons.com>
-Subject: Re: linux-next: origin tree build failure
-In-Reply-To: <20100112121434.49930eea.sfr@canb.auug.org.au>
-Message-ID: <alpine.LFD.2.00.1001111720290.17145@localhost.localdomain>
-References: <20100112121434.49930eea.sfr@canb.auug.org.au>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Mon, 11 Jan 2010 20:31:58 -0500
+X-Greylist: delayed 19863 seconds by postgrey-1.27 at vger.kernel.org; Mon, 11 Jan 2010 20:31:58 EST
+Message-ID: <11658de60c42b870bb3460b7d240f1f7.squirrel@www.cmi.ac.in>
+Date: Mon, 11 Jan 2010 16:51:03 -0000
+Subject: Lieber Freund!!! 
+From: "WEBER DITO" <ditoweberm@discuz.org>
+Reply-To: bankas27@aim.com
+User-Agent: SquirrelMail/1.4.19
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+X-Priority: 3 (Normal)
+Importance: Normal
+X-XheaderVersion: 1.1
+X-Organization: Chennai Mathematical Institute
+To: undisclosed-recipients:;
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 
-On Tue, 12 Jan 2010, Stephen Rothwell wrote:
-> 
-> I then got these:
-> 
-> lib/decompress_unlzo.c: In function 'unlzo':
-> lib/decompress_unlzo.c:106: error: 'error' undeclared (first use in this function)
-> lib/decompress_unlzo.c:111: error: implicit declaration of function 'error'
-> 
-> So I just reverted commit
-> cacb246f8db2b9eba89d44a0f0dd4f6ed93bc113 ("Add LZO compression support
-> for initramfs and old-style initrd") after removing my fix above.
 
-Hmm. I think the real problem is that it allowed LZO to be enabled at all, 
-despite HAVE_KERNEL_LZO not being enabled.
+Lieber Freund!!!
 
-In other words, I think the config dependencies for RD_LZO are just 
-totally broken.
+Ich vermute das diese E-Mail eine Überraschung für Sie sein wird, aber es
+ist wahr.Ich bin bei einer routinen Überprüfung in meiner Bank (Standard
+Bank von Süd Afrika) wo ich arbeite, auf einem Konto gestoßen, was nicht
+in anspruch genommen worden ist, wo derzeit $12,500,000
+(zwölfmillionenfünfhundert US Dollar) gutgeschrieben sind.
 
-Does this work for you?
+Dieses Konto gehörte Herrn Manfred Becker, der ein Kunde in unsere Bank
+war, der leider verstorben ist. Herr Becker war ein gebürtiger
+Deutscher.Damit es mir möglich ist dieses Geld $12,500,000 inanspruch
+zunehmen, benötige ich die zusammenarbeit eines Ausländischen Partners wie
+Sie,den ich als Verwandter und Erbe des verstorbenen Herrn Becker
+vorstellen kann,damit wir das Geld inanspruch nehmen können.
 
-(Totally untested and not very much thought about, this is just a "that 
-looks really _wrong_" kind of patch)
+Für diese Unterstützung erhalten Sie 30% der Erbschaftsumme und die
+restlichen 70% teile ich mir mit meinen zwei Arbeitskollegen, die mich bei
+dieser Transaktion ebenfalls unterstützen.Wenn Sie interessiert sind,
+können Sie mir bitte eine E-Mail schicken, damit ich Ihnen mehr Details
+zukommen lassen kann.
 
-		Linus
+Schicken Sie bitte Ihre Antwort auf diese E-Mail Adresse: (ditoweber@aim.com)
 
----
- usr/Kconfig |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Mit freundlichen Grüßen
 
-diff --git a/usr/Kconfig b/usr/Kconfig
-index e2721f5..0254cce 100644
---- a/usr/Kconfig
-+++ b/usr/Kconfig
-@@ -75,7 +75,7 @@ config RD_LZMA
- config RD_LZO
- 	bool "Support initial ramdisks compressed using LZO" if EMBEDDED
- 	default !EMBEDDED
--	depends on BLK_DEV_INITRD
-+	depends on BLK_DEV_INITRD && HAVE_KERNEL_LZO
- 	select DECOMPRESS_LZO
- 	help
- 	  Support loading of a LZO encoded initial ramdisk or cpio buffer
+Herr MARTINS WEBER DITO
+
+
+
+
