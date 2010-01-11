@@ -1,75 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752218Ab0AKWJu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752432Ab0AKWKH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752218Ab0AKWJu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jan 2010 17:09:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751992Ab0AKWJt
+	id S1752432Ab0AKWKH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jan 2010 17:10:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752326Ab0AKWKF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jan 2010 17:09:49 -0500
-Received: from tomts36.bellnexxia.net ([209.226.175.93]:49611 "EHLO
-	tomts36-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751449Ab0AKWJt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jan 2010 17:09:49 -0500
-Date: Mon, 11 Jan 2010 17:04:46 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Oleg Nesterov <oleg@redhat.com>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       akpm@linux-foundation.org, josh@joshtriplett.org, tglx@linutronix.de,
-       Valdis.Kletnieks@vt.edu, dhowells@redhat.com, laijs@cn.fujitsu.com,
-       dipankar@in.ibm.com, "David S. Miller" <davem@davemloft.net>
-Subject: Re: [RFC PATCH] introduce sys_membarrier(): process-wide memory
-	barrier (v3a)
-Message-ID: <20100111220446.GA14937@Krystal>
-References: <20100110052508.GG9044@linux.vnet.ibm.com> <1263124209.28171.3798.camel@gandalf.stny.rr.com> <20100110174512.GH9044@linux.vnet.ibm.com> <20100110182423.GA22821@Krystal> <20100111011705.GJ9044@linux.vnet.ibm.com> <20100111042521.GB32213@Krystal> <20100111042903.GC32213@Krystal> <1263232240.4244.70.camel@laptop> <20100111205250.GA6866@Krystal> <1263244757.4244.75.camel@laptop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 11 Jan 2010 17:10:05 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:35561 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751880Ab0AKWKD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jan 2010 17:10:03 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Nick Bowler <nbowler@elliptictech.com>
+Subject: Re: 2.6.33-rc3-git3: Reported regressions from 2.6.32
+Date: Mon, 11 Jan 2010 23:10:20 +0100
+User-Agent: KMail/1.12.3 (Linux/2.6.33-rc3-rjw; KDE/4.3.3; x86_64; ; )
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Network Development <netdev@vger.kernel.org>,
+       Linux ACPI <linux-acpi@vger.kernel.org>,
+       Linux PM List <linux-pm@lists.linux-foundation.org>,
+       Linux SCSI List <linux-scsi@vger.kernel.org>,
+       Linux Wireless List <linux-wireless@vger.kernel.org>,
+       DRI <dri-devel@lists.sourceforge.net>
+References: <wnS54-l8PVO.A.TlF.oMlSLB@chimera> <20100111214603.GA4335@emergent.ellipticsemi.com>
+In-Reply-To: <20100111214603.GA4335@emergent.ellipticsemi.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <1263244757.4244.75.camel@laptop>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.27.31-grsec (i686)
-X-Uptime: 16:59:00 up 26 days,  6:17,  4 users,  load average: 0.00, 0.09,
-	0.10
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <201001112310.21048.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Peter Zijlstra (peterz@infradead.org) wrote:
-> On Mon, 2010-01-11 at 15:52 -0500, Mathieu Desnoyers wrote:
+On Monday 11 January 2010, Nick Bowler wrote:
+> On 23:27 Sun 10 Jan     , Rafael J. Wysocki wrote:
+> > This message contains a list of some regressions from 2.6.32, for which there
+> > are no fixes in the mainline I know of.  If any of them have been fixed already,
+> > please let me know.
 > > 
-> > So the clear bit can occur far, far away in the future, we don't care.
-> > We'll just send extra IPIs when unneeded in this time-frame.
+> > If you know of any other unresolved regressions from 2.6.32, please let me know
+> > either and I'll add them to the list.  Also, please let me know if any of the
+> > entries below are invalid.
 > 
-> I think we should try harder not to disturb CPUs, particularly in the
-> face of RT tasks and DoS scenarios. Therefore I don't think we should
-> just wildly send to mm_cpumask(), but verify (although speculatively)
-> that the remote tasks' mm matches ours.
+> Here are two that I don't see in the list:
 > 
+>  * LVDS downclocking breaks on G45/thinkpad T500
+> 
+>      LKML: http://lkml.org/lkml/2009/12/26/40
+>      FDO:  http://bugs.freedesktop.org/show_bug.cgi?id=25809
 
-Well, my point of view is that if IPI TLB shootdown does not care about
-disturbing CPUs running other processes in the time window of the lazy
-removal, why should we ? We're adding an overhead very close to that of
-an unrequired IPI shootdown which returns immediately without doing
-anything.
+Added this one.
 
-The tradeoff here seems to be:
-- more overhead within switch_mm() for more precise mm_cpumask.
-vs
-- lazy removal of the cpumask, which implies that some processors
-  running a different process can receive the IPI for nothing.
+>  * Receive failure in et131x (Alan Cox sent me a patch for this but
+>                               it's not in mainline yet)
+> 
+>      LKML: http://lkml.org/lkml/2009/12/29/210
 
-I really doubt we could create an IPI DoS based on such a small
-time window.
+This one is a staging driver, so I'm not going to list it.
 
 Thanks,
-
-Mathieu
-
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Rafael
