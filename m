@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751347Ab0AKFad@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751490Ab0AKFas@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751347Ab0AKFad (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jan 2010 00:30:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751637Ab0AKF3h
+	id S1751490Ab0AKFas (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jan 2010 00:30:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751075Ab0AKFar
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jan 2010 00:29:37 -0500
-Received: from cdptpa-omtalb.mail.rr.com ([75.180.132.120]:48353 "EHLO
+	Mon, 11 Jan 2010 00:30:47 -0500
+Received: from cdptpa-omtalb.mail.rr.com ([75.180.132.121]:55636 "EHLO
 	cdptpa-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751644Ab0AKF3f (ORCPT
+	with ESMTP id S1751836Ab0AKF3g (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jan 2010 00:29:35 -0500
-X-Authority-Analysis: v=1.0 c=1 a=9MZw1ywz0RJEzHxOj5MA:9 a=KZz6I5vbH7joZVWNSy0A:7 a=IpmDVgWshufKJeV9Wr8Y-M0h3tMA:4
+	Mon, 11 Jan 2010 00:29:36 -0500
+X-Authority-Analysis: v=1.0 c=1 a=VIKOhIP_wR24l3dbygoA:9 a=aN59_jGWYFCGHY2OQxkA:7 a=yZs2d_GQIU8vlJt4Gab8JoLM9yAA:4 a=F5Cg3hs7CoJ4hqRF:21 a=fsr6d7OgQxrOGtXA:21
 X-Cloudmark-Score: 0
 X-Originating-IP: 71.70.78.104
-Date: Mon, 11 Jan 2010 00:29:00 -0500
-Message-ID: <87ocl1ryzn.wl%ysato@users.sourceforge.jp>
+Date: Mon, 11 Jan 2010 00:29:25 -0500
+Message-ID: <87iqb9ryyy.wl%ysato@users.sourceforge.jp>
 From: Yoshinori Sato <ysato@users.sourceforge.jp>
 To: tovalds@linux-foundation.org
 Cc: lkml <linux-kernel@vger.kernel.org>
@@ -28,127 +28,143 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-- add ioread/write macros
-- add missing header include
-- add __clear_user
-- move die definition
+Kconfig cleanup.
 
 Signed-off-by: Yoshinori Sato <ysato@users.sourceforge.jp>
 ---
- arch/h8300/Makefile                         |    2 --
- arch/h8300/include/asm/io.h                 |    7 +++++++
- arch/h8300/include/asm/pgtable.h            |    2 ++
- arch/h8300/include/asm/system.h             |    2 --
- arch/h8300/include/asm/uaccess.h            |    3 ++-
- arch/h8300/kernel/time.c                    |    1 +
- arch/h8300/mm/fault.c                       |    2 ++
- arch/h8300/platform/h8300h/generic/Makefile |    2 +-
- 8 files changed, 15 insertions(+), 6 deletions(-)
+ arch/h8300/Kconfig |  120 +---------------------------------------------------
+ 1 files changed, 1 insertions(+), 119 deletions(-)
 
-diff --git a/arch/h8300/Makefile b/arch/h8300/Makefile
-index a556447..7486ea9 100644
---- a/arch/h8300/Makefile
-+++ b/arch/h8300/Makefile
-@@ -41,8 +41,6 @@ LDFLAGS += $(ldflags-y)
- CROSS_COMPILE = h8300-elf-
- LIBGCC := $(shell $(CROSS-COMPILE)$(CC) $(KBUILD_CFLAGS) -print-libgcc-file-name)
+diff --git a/arch/h8300/Kconfig b/arch/h8300/Kconfig
+index 3b1b7db..7b94a64 100644
+--- a/arch/h8300/Kconfig
++++ b/arch/h8300/Kconfig
+@@ -107,125 +107,7 @@ endmenu
  
--head-y := arch/$(ARCH)/platform/$(PLATFORM)/$(BOARD)/crt0_$(MODEL).o
+ source "net/Kconfig"
+ 
+-source "drivers/base/Kconfig"
 -
- core-y	+= arch/$(ARCH)/kernel/ \
- 	   arch/$(ARCH)/mm/
- ifdef PLATFORM
-diff --git a/arch/h8300/include/asm/io.h b/arch/h8300/include/asm/io.h
-index 33e842f..a16f15e 100644
---- a/arch/h8300/include/asm/io.h
-+++ b/arch/h8300/include/asm/io.h
-@@ -233,6 +233,13 @@ static inline void io_insl_noswap(unsigned int addr, void *buf, int len)
- #define insw(a,b,l) io_insw(a,b,l)
- #define insl(a,b,l) io_insl(a,b,l)
- 
-+#define ioread8(a)		__raw_readb(a)
-+#define ioread16(a)		__raw_readw(a)
-+#define ioread32(a)		__raw_readl(a)
-+
-+#define iowrite8(v,a)		__raw_writeb((v),(a))
-+#define iowrite16(v,a)		__raw_writew((v),(a))
-+#define iowrite32(v,a)		__raw_writel((v),(a))
- #define IO_SPACE_LIMIT 0xffffff
- 
- 
-diff --git a/arch/h8300/include/asm/pgtable.h b/arch/h8300/include/asm/pgtable.h
-index a09230a..0755116 100644
---- a/arch/h8300/include/asm/pgtable.h
-+++ b/arch/h8300/include/asm/pgtable.h
-@@ -70,4 +70,6 @@ extern int is_in_rom(unsigned long);
- #define	VMALLOC_END	0xffffffff
- 
- #define arch_enter_lazy_cpu_mode()    do {} while (0)
-+
-+#include <asm-generic/pgtable.h>
- #endif /* _H8300_PGTABLE_H */
-diff --git a/arch/h8300/include/asm/system.h b/arch/h8300/include/asm/system.h
-index d98d976..4b8e475 100644
---- a/arch/h8300/include/asm/system.h
-+++ b/arch/h8300/include/asm/system.h
-@@ -155,6 +155,4 @@ static inline unsigned long __xchg(unsigned long x, volatile void * ptr, int siz
- 
- #define arch_align_stack(x) (x)
- 
--void die(char *str, struct pt_regs *fp, unsigned long err);
+-source "drivers/mtd/Kconfig"
 -
- #endif /* _H8300_SYSTEM_H */
-diff --git a/arch/h8300/include/asm/uaccess.h b/arch/h8300/include/asm/uaccess.h
-index 356068c..352c193 100644
---- a/arch/h8300/include/asm/uaccess.h
-+++ b/arch/h8300/include/asm/uaccess.h
-@@ -153,10 +153,11 @@ static inline long strnlen_user(const char *src, long n)
-  */
+-source "drivers/block/Kconfig"
+-
+-source "drivers/ide/Kconfig"
+-
+-source "arch/h8300/Kconfig.ide"
+-
+-source "drivers/net/Kconfig"
+-
+-#
+-# input - input/joystick depends on it. As does USB.
+-#
+-source "drivers/input/Kconfig"
+-
+-menu "Character devices"
+-
+-config VT
+-	bool "Virtual terminal"
+-	---help---
+-	  If you say Y here, you will get support for terminal devices with
+-	  display and keyboard devices. These are called "virtual" because you
+-	  can run several virtual terminals (also called virtual consoles) on
+-	  one physical terminal. This is rather useful, for example one
+-	  virtual terminal can collect system messages and warnings, another
+-	  one can be used for a text-mode user session, and a third could run
+-	  an X session, all in parallel. Switching between virtual terminals
+-	  is done with certain key combinations, usually Alt-<function key>.
+-
+-	  The setterm command ("man setterm") can be used to change the
+-	  properties (such as colors or beeping) of a virtual terminal. The
+-	  man page console_codes(4) ("man console_codes") contains the special
+-	  character sequences that can be used to change those properties
+-	  directly. The fonts used on virtual terminals can be changed with
+-	  the setfont ("man setfont") command and the key bindings are defined
+-	  with the loadkeys ("man loadkeys") command.
+-
+-	  You need at least one virtual terminal device in order to make use
+-	  of your keyboard and monitor. Therefore, only people configuring an
+-	  embedded system would want to say N here in order to save some
+-	  memory; the only way to log into such a system is then via a serial
+-	  or network connection.
+-
+-	  If unsure, say Y, or else you won't be able to do much with your new
+-	  shiny Linux system :-)
+-
+-config VT_CONSOLE
+-	bool "Support for console on virtual terminal"
+-	depends on VT
+-	---help---
+-	  The system console is the device which receives all kernel messages
+-	  and warnings and which allows logins in single user mode. If you
+-	  answer Y here, a virtual terminal (the device used to interact with
+-	  a physical terminal) can be used as system console. This is the most
+-	  common mode of operations, so you should say Y here unless you want
+-	  the kernel messages be output only to a serial port (in which case
+-	  you should say Y to "Console on serial port", below).
+-
+-	  If you do say Y here, by default the currently visible virtual
+-	  terminal (/dev/tty0) will be used as system console. You can change
+-	  that with a kernel command line option such as "console=tty3" which
+-	  would use the third virtual terminal as system console. (Try "man
+-	  bootparam" or see the documentation of your boot loader (lilo or
+-	  loadlin) about how to pass options to the kernel at boot time.)
+-
+-	  If unsure, say Y.
+-
+-config HW_CONSOLE
+-	bool
+-	depends on VT && !S390 && !UM
+-	default y
+-
+-comment "Unix98 PTY support"
+-
+-config UNIX98_PTYS
+-	bool "Unix98 PTY support"
+-	---help---
+-	  A pseudo terminal (PTY) is a software device consisting of two
+-	  halves: a master and a slave. The slave device behaves identical to
+-	  a physical terminal; the master device is used by a process to
+-	  read data from and write data to the slave, thereby emulating a
+-	  terminal. Typical programs for the master side are telnet servers
+-	  and xterms.
+-
+-	  Linux has traditionally used the BSD-like names /dev/ptyxx for
+-	  masters and /dev/ttyxx for slaves of pseudo terminals. This scheme
+-	  has a number of problems. The GNU C library glibc 2.1 and later,
+-	  however, supports the Unix98 naming standard: in order to acquire a
+-	  pseudo terminal, a process opens /dev/ptmx; the number of the pseudo
+-	  terminal is then made available to the process and the pseudo
+-	  terminal slave can be accessed as /dev/pts/<number>. What was
+-	  traditionally /dev/ttyp2 will then be /dev/pts/2, for example.
+-
+-	  The entries in /dev/pts/ are created on the fly by a virtual
+-	  file system; therefore, if you say Y here you should say Y to
+-	  "/dev/pts file system for Unix98 PTYs" as well.
+-
+-	  If you want to say Y here, you need to have the C library glibc 2.1
+-	  or later (equal to libc-6.1, check with "ls -l /lib/libc.so.*").
+-	  Read the instructions in <file:Documentation/Changes> pertaining to
+-	  pseudo terminals. It's safe to say N.
+-
+-source "drivers/char/pcmcia/Kconfig"
+-
+-source "drivers/serial/Kconfig"
+-
+-source "drivers/i2c/Kconfig"
+-
+-source "drivers/hwmon/Kconfig"
+-
+-source "drivers/usb/Kconfig"
+-
+-source "drivers/uwb/Kconfig"
+-
+-endmenu
+-
+-source "drivers/staging/Kconfig"
++source "drivers/Kconfig"
  
- static inline unsigned long
--clear_user(void *to, unsigned long n)
-+__clear_user(void *to, unsigned long n)
- {
- 	memset(to, 0, n);
- 	return 0;
- }
-+#define clear_user(to, size) __clear_user(to, size)
+ source "fs/Kconfig"
  
- #endif /* _H8300_UACCESS_H */
-diff --git a/arch/h8300/kernel/time.c b/arch/h8300/kernel/time.c
-index 7f2d6cf..259afa5 100644
---- a/arch/h8300/kernel/time.c
-+++ b/arch/h8300/kernel/time.c
-@@ -28,6 +28,7 @@
- 
- #include <asm/io.h>
- #include <asm/timer.h>
-+#include <asm/irq_regs.h>
- 
- #define	TICK_SIZE (tick_nsec / 1000)
- 
-diff --git a/arch/h8300/mm/fault.c b/arch/h8300/mm/fault.c
-index 1d092ab..47f2ced 100644
---- a/arch/h8300/mm/fault.c
-+++ b/arch/h8300/mm/fault.c
-@@ -20,6 +20,8 @@
- #include <asm/system.h>
- #include <asm/pgtable.h>
- 
-+void die(char *str, struct pt_regs *fp, unsigned long err);
-+
- /*
-  * This routine handles page faults.  It determines the problem, and
-  * then passes it off to one of the appropriate routines.
-diff --git a/arch/h8300/platform/h8300h/generic/Makefile b/arch/h8300/platform/h8300h/generic/Makefile
-index 2b12a17..aaed304 100644
---- a/arch/h8300/platform/h8300h/generic/Makefile
-+++ b/arch/h8300/platform/h8300h/generic/Makefile
-@@ -2,4 +2,4 @@
- # Makefile for the linux kernel.
- #
- 
--extra-y :=  crt0_$(MODEL).o
-+obj-y :=  crt0_$(MODEL).o
 -- 
 1.6.5.3
