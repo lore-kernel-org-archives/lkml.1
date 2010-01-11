@@ -1,42 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752761Ab0AKIhf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752751Ab0AKIoa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752761Ab0AKIhf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jan 2010 03:37:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752712Ab0AKIhe
+	id S1752751Ab0AKIoa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jan 2010 03:44:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752593Ab0AKIo3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jan 2010 03:37:34 -0500
-Received: from bamako.nerim.net ([62.4.17.28]:54979 "EHLO bamako.nerim.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752273Ab0AKIhc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jan 2010 03:37:32 -0500
-Date: Mon, 11 Jan 2010 09:37:29 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Steven King <sfking@fdwdc.com>
-Cc: gerg@snapgear.com, ben-linux@fluff.org, linux-i2c@vger.kernel.org,
-       linux-kernel@vger.kernel.org, uclinux-dev@uclinux.org
-Subject: Re: [PATCH] m68knommu: driver for Freescale Coldfire I2C
- controller.
-Message-ID: <20100111093729.63455a90@hyperion.delvare>
-In-Reply-To: <201001101600.41932.sfking@fdwdc.com>
-References: <201001101600.41932.sfking@fdwdc.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
+	Mon, 11 Jan 2010 03:44:29 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:47510
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751444Ab0AKIo2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jan 2010 03:44:28 -0500
+Date: Mon, 11 Jan 2010 00:44:36 -0800 (PST)
+Message-Id: <20100111.004436.217049216.davem@davemloft.net>
+To: joe@perches.com
+Cc: Stephen@Rothwell.id.au, netdev@vger.kernel.org, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, macro@linux-mips.org,
+       hartleys@visionengravers.com
+Subject: Re: linux-next: net tree build failure
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1263197772.1907.44.camel@Joe-Laptop.home>
+References: <20100111184205.8d53fe5b.Stephen@Rothwell.id.au>
+	<20100111.000205.164473435.davem@davemloft.net>
+	<1263197772.1907.44.camel@Joe-Laptop.home>
+X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 10 Jan 2010 16:00:41 -0800, Steven King wrote:
-> Add support for the I2C controller used on Freescale/Motorola Coldfire MCUs. 
-> 
-> Signed-off-by: Steven King <sfking@fdwdc.com>
-> 
->  drivers/i2c/busses/Kconfig   |   11 +
->  drivers/i2c/busses/Makefile  |    1 +
->  drivers/i2c/busses/i2c-mcf.c |  463 ++++++++++++++++++++++++++++++++++++++++++
+From: Joe Perches <joe@perches.com>
+Date: Mon, 11 Jan 2010 00:16:12 -0800
 
-Please come up with a longer name. i2c-coldfire, for example.
+> Perhaps it'd be better to kill off the use of bitrev in
+> lib/vsprintf as Maciej thinks it broken.
+> 
+> Maybe use something like this?
+> 
+> Signed-off-by: Joe Perches <joe@perches.com>
 
--- 
-Jean Delvare
+Yeah that sounds like a better idea, I think I'll commit
+this instead.
+
+Thanks Joe!
