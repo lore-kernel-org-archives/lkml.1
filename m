@@ -1,31 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752398Ab0AKVa1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754253Ab0AKV3d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752398Ab0AKVa1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jan 2010 16:30:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752312Ab0AKV11
+	id S1754253Ab0AKV3d (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jan 2010 16:29:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753071Ab0AKV3a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jan 2010 16:27:27 -0500
-Received: from ey-out-2122.google.com ([74.125.78.24]:34876 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752270Ab0AKV1Z (ORCPT
+	Mon, 11 Jan 2010 16:29:30 -0500
+Received: from mail-ew0-f209.google.com ([209.85.219.209]:35373 "EHLO
+	mail-ew0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752530Ab0AKV1k (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jan 2010 16:27:25 -0500
+	Mon, 11 Jan 2010 16:27:40 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=sender:from:to:cc:subject:date:message-id:x-mailer:in-reply-to
          :references;
-        b=v4GPxSYd/8d7D4/Px62k6hktYukcbU7yyWOUVSTCyNjJVVxZ+lrdImJEfR+M+/b0ID
-         //EeP7zohpudJcTXUPDAndleBgRbLylXr8iZD+yVfLYJA6Br2w3Zjm0W4GZRgRrjuynt
-         MnFMdBCM+fmp2Q28PMxfiXKSz2ccGMSLwVO8Q=
+        b=jzxfpnan9tdgKiboQm/A5b7PGlqT2egJBh0795RIPb0GM4+L4p+P0202tGpdJg88X5
+         Upg90yF8LxHall7ryTeuTh5SKM5U1iKdCsfhSY9P+dlZ7SdOqEdQdCffiP+gjPeZipv7
+         SQ+42xBLurUisQ607ERv0uJoxplwGi+NPro04=
 From: John Kacur <jkacur@redhat.com>
 To: Thomas Gleixner <tglx@linutronix.de>, lkml <linux-kernel@vger.kernel.org>,
        Ingo Molnar <mingo@elte.hu>
 Cc: Clark Williams <williams@redhat.com>, John Kacur <jkacur@redhat.com>
-Subject: [PATCH 12/26] printk: Convert lock to raw_spinlock
-Date: Mon, 11 Jan 2010 22:26:42 +0100
-Message-Id: <1263245216-14754-13-git-send-email-jkacur@redhat.com>
+Subject: [PATCH 19/26] cgroups: Convert cgroups release_list_lock to raw_spinlock
+Date: Mon, 11 Jan 2010 22:26:49 +0100
+Message-Id: <1263245216-14754-20-git-send-email-jkacur@redhat.com>
 X-Mailer: git-send-email 1.6.5.2
-In-Reply-To: <1263245216-14754-12-git-send-email-jkacur@redhat.com>
+In-Reply-To: <1263245216-14754-19-git-send-email-jkacur@redhat.com>
 References: <1263245216-14754-1-git-send-email-jkacur@redhat.com>
  <1263245216-14754-2-git-send-email-jkacur@redhat.com>
  <1263245216-14754-3-git-send-email-jkacur@redhat.com>
@@ -38,222 +38,99 @@ References: <1263245216-14754-1-git-send-email-jkacur@redhat.com>
  <1263245216-14754-10-git-send-email-jkacur@redhat.com>
  <1263245216-14754-11-git-send-email-jkacur@redhat.com>
  <1263245216-14754-12-git-send-email-jkacur@redhat.com>
+ <1263245216-14754-13-git-send-email-jkacur@redhat.com>
+ <1263245216-14754-14-git-send-email-jkacur@redhat.com>
+ <1263245216-14754-15-git-send-email-jkacur@redhat.com>
+ <1263245216-14754-16-git-send-email-jkacur@redhat.com>
+ <1263245216-14754-17-git-send-email-jkacur@redhat.com>
+ <1263245216-14754-18-git-send-email-jkacur@redhat.com>
+ <1263245216-14754-19-git-send-email-jkacur@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Convert locks that cannot sleep in preempt-rt to raw_spinlocks.
+Convert locks which cannot sleep in preempt-rt to raw_spinlocks
 
-See also: 0835f1f82a88e366d8dd20874c94133915dcccdb
+See also 58814bae5de64d5291b813ea0a52192e4fa714ad
 
 Signed-off-by: John Kacur <jkacur@redhat.com>
 ---
- include/linux/ratelimit.h |    4 ++--
- kernel/printk.c           |   42 +++++++++++++++++++++---------------------
- lib/ratelimit.c           |    4 ++--
- 3 files changed, 25 insertions(+), 25 deletions(-)
+ kernel/cgroup.c |   18 +++++++++---------
+ 1 files changed, 9 insertions(+), 9 deletions(-)
 
-diff --git a/include/linux/ratelimit.h b/include/linux/ratelimit.h
-index 668cf1b..7596e38 100644
---- a/include/linux/ratelimit.h
-+++ b/include/linux/ratelimit.h
-@@ -8,7 +8,7 @@
- #define DEFAULT_RATELIMIT_BURST		10
+diff --git a/kernel/cgroup.c b/kernel/cgroup.c
+index 0249f4b..32a80b2 100644
+--- a/kernel/cgroup.c
++++ b/kernel/cgroup.c
+@@ -204,7 +204,7 @@ list_for_each_entry(_root, &roots, root_list)
+ /* the list of cgroups eligible for automatic release. Protected by
+  * release_list_lock */
+ static LIST_HEAD(release_list);
+-static DEFINE_SPINLOCK(release_list_lock);
++static DEFINE_RAW_SPINLOCK(release_list_lock);
+ static void cgroup_release_agent(struct work_struct *work);
+ static DECLARE_WORK(release_agent_work, cgroup_release_agent);
+ static void check_for_release(struct cgroup *cgrp);
+@@ -3151,11 +3151,11 @@ again:
+ 	finish_wait(&cgroup_rmdir_waitq, &wait);
+ 	clear_bit(CGRP_WAIT_ON_RMDIR, &cgrp->flags);
  
- struct ratelimit_state {
--	spinlock_t	lock;		/* protect the state */
-+	raw_spinlock_t	lock;		/* protect the state */
+-	spin_lock(&release_list_lock);
++	raw_spin_lock(&release_list_lock);
+ 	set_bit(CGRP_REMOVED, &cgrp->flags);
+ 	if (!list_empty(&cgrp->release_list))
+ 		list_del(&cgrp->release_list);
+-	spin_unlock(&release_list_lock);
++	raw_spin_unlock(&release_list_lock);
  
- 	int		interval;
- 	int		burst;
-@@ -20,7 +20,7 @@ struct ratelimit_state {
- #define DEFINE_RATELIMIT_STATE(name, interval_init, burst_init)		\
- 									\
- 	struct ratelimit_state name = {					\
--		.lock		= __SPIN_LOCK_UNLOCKED(name.lock),	\
-+		.lock		= __RAW_SPIN_LOCK_UNLOCKED(name.lock),	\
- 		.interval	= interval_init,			\
- 		.burst		= burst_init,				\
- 	}
-diff --git a/kernel/printk.c b/kernel/printk.c
-index 17463ca..4ebb6e0 100644
---- a/kernel/printk.c
-+++ b/kernel/printk.c
-@@ -102,7 +102,7 @@ static int console_locked, console_suspended;
-  * It is also used in interesting ways to provide interlocking in
-  * release_console_sem().
-  */
--static DEFINE_SPINLOCK(logbuf_lock);
-+static DEFINE_RAW_SPINLOCK(logbuf_lock);
- 
- #define LOG_BUF_MASK (log_buf_len-1)
- #define LOG_BUF(idx) (log_buf[(idx) & LOG_BUF_MASK])
-@@ -181,7 +181,7 @@ static int __init log_buf_len_setup(char *str)
- 			goto out;
+ 	cgroup_lock_hierarchy(cgrp->root);
+ 	/* delete this cgroup from parent->children */
+@@ -3691,13 +3691,13 @@ static void check_for_release(struct cgroup *cgrp)
+ 		 * already queued for a userspace notification, queue
+ 		 * it now */
+ 		int need_schedule_work = 0;
+-		spin_lock(&release_list_lock);
++		raw_spin_lock(&release_list_lock);
+ 		if (!cgroup_is_removed(cgrp) &&
+ 		    list_empty(&cgrp->release_list)) {
+ 			list_add(&cgrp->release_list, &release_list);
+ 			need_schedule_work = 1;
  		}
- 
--		spin_lock_irqsave(&logbuf_lock, flags);
-+		raw_spin_lock_irqsave(&logbuf_lock, flags);
- 		log_buf_len = size;
- 		log_buf = new_log_buf;
- 
-@@ -195,7 +195,7 @@ static int __init log_buf_len_setup(char *str)
- 		log_start -= offset;
- 		con_start -= offset;
- 		log_end -= offset;
--		spin_unlock_irqrestore(&logbuf_lock, flags);
-+		raw_spin_unlock_irqrestore(&logbuf_lock, flags);
- 
- 		printk(KERN_NOTICE "log_buf_len: %d\n", log_buf_len);
+-		spin_unlock(&release_list_lock);
++		raw_spin_unlock(&release_list_lock);
+ 		if (need_schedule_work)
+ 			schedule_work(&release_agent_work);
  	}
-@@ -305,18 +305,18 @@ int do_syslog(int type, char __user *buf, int len)
- 		if (error)
- 			goto out;
- 		i = 0;
--		spin_lock_irq(&logbuf_lock);
-+		raw_spin_lock_irq(&logbuf_lock);
- 		while (!error && (log_start != log_end) && i < len) {
- 			c = LOG_BUF(log_start);
- 			log_start++;
--			spin_unlock_irq(&logbuf_lock);
-+			raw_spin_unlock_irq(&logbuf_lock);
- 			error = __put_user(c,buf);
- 			buf++;
- 			i++;
- 			cond_resched();
--			spin_lock_irq(&logbuf_lock);
-+			raw_spin_lock_irq(&logbuf_lock);
- 		}
--		spin_unlock_irq(&logbuf_lock);
-+		raw_spin_unlock_irq(&logbuf_lock);
- 		if (!error)
- 			error = i;
- 		break;
-@@ -337,7 +337,7 @@ int do_syslog(int type, char __user *buf, int len)
- 		count = len;
- 		if (count > log_buf_len)
- 			count = log_buf_len;
--		spin_lock_irq(&logbuf_lock);
-+		raw_spin_lock_irq(&logbuf_lock);
- 		if (count > logged_chars)
- 			count = logged_chars;
- 		if (do_clear)
-@@ -354,12 +354,12 @@ int do_syslog(int type, char __user *buf, int len)
- 			if (j + log_buf_len < log_end)
- 				break;
- 			c = LOG_BUF(j);
--			spin_unlock_irq(&logbuf_lock);
-+			raw_spin_unlock_irq(&logbuf_lock);
- 			error = __put_user(c,&buf[count-1-i]);
- 			cond_resched();
--			spin_lock_irq(&logbuf_lock);
-+			raw_spin_lock_irq(&logbuf_lock);
- 		}
--		spin_unlock_irq(&logbuf_lock);
-+		raw_spin_unlock_irq(&logbuf_lock);
- 		if (error)
- 			break;
- 		error = i;
-@@ -542,7 +542,7 @@ static void zap_locks(void)
- 	oops_timestamp = jiffies;
- 
- 	/* If a crash is occurring, make sure we can't deadlock */
--	spin_lock_init(&logbuf_lock);
-+	raw_spin_lock_init(&logbuf_lock);
- 	/* And make sure that we print immediately */
- 	init_MUTEX(&console_sem);
+@@ -3747,7 +3747,7 @@ static void cgroup_release_agent(struct work_struct *work)
+ {
+ 	BUG_ON(work != &release_agent_work);
+ 	mutex_lock(&cgroup_mutex);
+-	spin_lock(&release_list_lock);
++	raw_spin_lock(&release_list_lock);
+ 	while (!list_empty(&release_list)) {
+ 		char *argv[3], *envp[3];
+ 		int i;
+@@ -3756,7 +3756,7 @@ static void cgroup_release_agent(struct work_struct *work)
+ 						    struct cgroup,
+ 						    release_list);
+ 		list_del_init(&cgrp->release_list);
+-		spin_unlock(&release_list_lock);
++		raw_spin_unlock(&release_list_lock);
+ 		pathbuf = kmalloc(PAGE_SIZE, GFP_KERNEL);
+ 		if (!pathbuf)
+ 			goto continue_free;
+@@ -3786,9 +3786,9 @@ static void cgroup_release_agent(struct work_struct *work)
+  continue_free:
+ 		kfree(pathbuf);
+ 		kfree(agentbuf);
+-		spin_lock(&release_list_lock);
++		raw_spin_lock(&release_list_lock);
+ 	}
+-	spin_unlock(&release_list_lock);
++	raw_spin_unlock(&release_list_lock);
+ 	mutex_unlock(&cgroup_mutex);
  }
-@@ -646,7 +646,7 @@ static int acquire_console_semaphore_for_printk(unsigned int cpu)
- 		}
- 	}
- 	printk_cpu = UINT_MAX;
--	spin_unlock(&logbuf_lock);
-+	raw_spin_unlock(&logbuf_lock);
- 	return retval;
- }
- static const char recursion_bug_msg [] =
-@@ -704,7 +704,7 @@ asmlinkage int vprintk(const char *fmt, va_list args)
- 	}
  
- 	lockdep_off();
--	spin_lock(&logbuf_lock);
-+	raw_spin_lock(&logbuf_lock);
- 	printk_cpu = this_cpu;
- 
- 	if (recursion_bug) {
-@@ -1053,14 +1053,14 @@ void release_console_sem(void)
- 	console_may_schedule = 0;
- 
- 	for ( ; ; ) {
--		spin_lock_irqsave(&logbuf_lock, flags);
-+		raw_spin_lock_irqsave(&logbuf_lock, flags);
- 		wake_klogd |= log_start - log_end;
- 		if (con_start == log_end)
- 			break;			/* Nothing to print */
- 		_con_start = con_start;
- 		_log_end = log_end;
- 		con_start = log_end;		/* Flush */
--		spin_unlock(&logbuf_lock);
-+		raw_spin_unlock(&logbuf_lock);
- 		stop_critical_timings();	/* don't trace print latency */
- 		call_console_drivers(_con_start, _log_end);
- 		start_critical_timings();
-@@ -1068,7 +1068,7 @@ void release_console_sem(void)
- 	}
- 	console_locked = 0;
- 	up(&console_sem);
--	spin_unlock_irqrestore(&logbuf_lock, flags);
-+	raw_spin_unlock_irqrestore(&logbuf_lock, flags);
- 	if (wake_klogd)
- 		wake_up_klogd();
- }
-@@ -1286,9 +1286,9 @@ void register_console(struct console *newcon)
- 		 * release_console_sem() will print out the buffered messages
- 		 * for us.
- 		 */
--		spin_lock_irqsave(&logbuf_lock, flags);
-+		raw_spin_lock_irqsave(&logbuf_lock, flags);
- 		con_start = log_start;
--		spin_unlock_irqrestore(&logbuf_lock, flags);
-+		raw_spin_unlock_irqrestore(&logbuf_lock, flags);
- 	}
- 	release_console_sem();
- 
-@@ -1496,10 +1496,10 @@ void kmsg_dump(enum kmsg_dump_reason reason)
- 	/* Theoretically, the log could move on after we do this, but
- 	   there's not a lot we can do about that. The new messages
- 	   will overwrite the start of what we dump. */
--	spin_lock_irqsave(&logbuf_lock, flags);
-+	raw_spin_lock_irqsave(&logbuf_lock, flags);
- 	end = log_end & LOG_BUF_MASK;
- 	chars = logged_chars;
--	spin_unlock_irqrestore(&logbuf_lock, flags);
-+	raw_spin_unlock_irqrestore(&logbuf_lock, flags);
- 
- 	if (logged_chars > end) {
- 		s1 = log_buf + log_buf_len - logged_chars + end;
-diff --git a/lib/ratelimit.c b/lib/ratelimit.c
-index 09f5ce1..39588b3 100644
---- a/lib/ratelimit.c
-+++ b/lib/ratelimit.c
-@@ -34,7 +34,7 @@ int ___ratelimit(struct ratelimit_state *rs, const char *func)
- 	 * in addition to the one that will be printed by
- 	 * the entity that is holding the lock already:
- 	 */
--	if (!spin_trylock_irqsave(&rs->lock, flags))
-+	if (!raw_spin_trylock_irqsave(&rs->lock, flags))
- 		return 1;
- 
- 	if (!rs->begin)
-@@ -55,7 +55,7 @@ int ___ratelimit(struct ratelimit_state *rs, const char *func)
- 		rs->missed++;
- 		ret = 0;
- 	}
--	spin_unlock_irqrestore(&rs->lock, flags);
-+	raw_spin_unlock_irqrestore(&rs->lock, flags);
- 
- 	return ret;
- }
 -- 
 1.6.5.2
 
