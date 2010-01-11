@@ -1,209 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752040Ab0AKCVH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752838Ab0AKCYX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752040Ab0AKCVH (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jan 2010 21:21:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751402Ab0AKCVG
+	id S1752838Ab0AKCYX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jan 2010 21:24:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751551Ab0AKCYW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jan 2010 21:21:06 -0500
-Received: from mga11.intel.com ([192.55.52.93]:22474 "EHLO mga11.intel.com"
+	Sun, 10 Jan 2010 21:24:22 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:43653 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750940Ab0AKCVD convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jan 2010 21:21:03 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,251,1262592000"; 
-   d="scan'208";a="530105594"
-From: "Zheng, Shaohui" <shaohui.zheng@intel.com>
-To: "Wu, Fengguang" <fengguang.wu@intel.com>
-CC: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "ak@linux.intel.com" <ak@linux.intel.com>,
-       "y-goto@jp.fujitsu.com" <y-goto@jp.fujitsu.com>,
-       Dave Hansen <haveblue@us.ibm.com>, "x86@kernel.org" <x86@kernel.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Date: Mon, 11 Jan 2010 10:20:22 +0800
-Subject: RE: [PATCH - resend] Memory-Hotplug: Fix the bug on interface
-	/dev/mem for 64-bit kernel(v1)
-Thread-Topic: [PATCH - resend] Memory-Hotplug: Fix the bug on interface
-	/dev/mem for 64-bit kernel(v1)
-Thread-Index: AcqQY0vnRq0EymTmSoSAxQPo6rCJSQB/riGg
-Message-ID: <DA586906BA1FFC4384FCFD6429ECE86031560FC1@shzsmsx502.ccr.corp.intel.com>
-References: <DA586906BA1FFC4384FCFD6429ECE86031560BAC@shzsmsx502.ccr.corp.intel.com>
- <20100108124851.GB6153@localhost>
-In-Reply-To: <20100108124851.GB6153@localhost>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-MIME-Version: 1.0
+	id S1751500Ab0AKCYV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Jan 2010 21:24:21 -0500
+Date: Mon, 11 Jan 2010 13:24:18 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: David Miller <davem@davemloft.net>, <netdev@vger.kernel.org>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Sarveshwar Bandi <sarveshwarb@serverengines.com>
+Subject: linux-next: manual merge of the net tree with the Linus' tree
+Message-Id: <20100111132418.8605a86c.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 3.0.0beta4 (GTK+ 2.18.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks Fengguang, see and comments in the email. Only a few different understanding on variable max_low_pfn.
+Hi all,
 
-Thanks & Regards,
-Shaohui
+Today's linux-next merge of the net tree got a conflict in
+drivers/net/benet/be_cmds.h between commit
+fced9999ed7f6975fbb2350a73048918ba60a773 ("be2net: Bug fix to config NIC
+appropriately before loopback test") from the Linus' tree and commit
+368c0ca2f0a69b0818fbc1796d8e21ff02a61b4c ("be2net: implements ethtool
+function to read eeprom data") from the net tree.
 
+Just overlapping additions.  I have fixed ti up (see below) and can carry
+the fix for a while.
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
 
------Original Message-----
-From: Wu, Fengguang 
-Sent: Friday, January 08, 2010 8:49 PM
-To: Zheng, Shaohui
-Cc: linux-mm@kvack.org; akpm@linux-foundation.org; linux-kernel@vger.kernel.org; ak@linux.intel.com; y-goto@jp.fujitsu.com; Dave Hansen; x86@kernel.org; KAMEZAWA Hiroyuki
-Subject: Re: [PATCH - resend] Memory-Hotplug: Fix the bug on interface /dev/mem for 64-bit kernel(v1)
-
-On Fri, Jan 08, 2010 at 11:32:07AM +0800, Zheng, Shaohui wrote:
-> Resend the patch to the mailing-list, the original patch URL is 
-> http://patchwork.kernel.org/patch/69075/, it is not accepted without comments,
-> sent it again to review.
-> 
-> Memory-Hotplug: Fix the bug on interface /dev/mem for 64-bit kernel
-> 
-> The new added memory can not be access by interface /dev/mem, because we do not
->  update the variable high_memory. This patch add a new e820 entry in e820 table,
->  and update max_pfn, max_low_pfn and high_memory.
-> 
-> We add a function update_pfn in file arch/x86/mm/init.c to udpate these
->  varibles. Memory hotplug does not make sense on 32-bit kernel, so we did not
->  concern it in this function.
-> 
-> Signed-off-by: Shaohui Zheng <shaohui.zheng@intel.com>
-> CC: Andi Kleen <ak@linux.intel.com>
-> CC: Wu Fengguang <fengguang.wu@intel.com>
-> CC: Li Haicheng <Haicheng.li@intel.com>
-> 
-> ---
-> diff --git a/arch/x86/kernel/e820.c b/arch/x86/kernel/e820.c
-> index f50447d..b986246 100644
-> --- a/arch/x86/kernel/e820.c
-> +++ b/arch/x86/kernel/e820.c
-> @@ -110,8 +110,8 @@ int __init e820_all_mapped(u64 start, u64 end, unsigned type)
->  /*
->   * Add a memory region to the kernel e820 map.
->   */
-> -static void __init __e820_add_region(struct e820map *e820x, u64 start, u64 size,
-> -					 int type)
-> +static void __meminit __e820_add_region(struct e820map *e820x, u64 start,
-> +					 u64 size, int type)
->  {
->  	int x = e820x->nr_map;
->  
-> @@ -126,7 +126,7 @@ static void __init __e820_add_region(struct e820map *e820x, u64 start, u64 size,
->  	e820x->nr_map++;
->  }
->  
-> -void __init e820_add_region(u64 start, u64 size, int type)
-> +void __meminit e820_add_region(u64 start, u64 size, int type)
->  {
->  	__e820_add_region(&e820, start, size, type);
->  }
-> diff --git a/arch/x86/mm/init.c b/arch/x86/mm/init.c
-> index d406c52..0474459 100644
-> --- a/arch/x86/mm/init.c
-> +++ b/arch/x86/mm/init.c
-> @@ -1,6 +1,7 @@
->  #include <linux/initrd.h>
->  #include <linux/ioport.h>
->  #include <linux/swap.h>
-> +#include <linux/bootmem.h>
->  
->  #include <asm/cacheflush.h>
->  #include <asm/e820.h>
-> @@ -386,3 +387,30 @@ void free_initrd_mem(unsigned long start, unsigned long end)
->  	free_init_pages("initrd memory", start, end);
->  }
->  #endif
-> +
-> +/**
-> + * After memory hotplug, the variable max_pfn, max_low_pfn and high_memory will
-> + * be affected, it will be updated in this function. Memory hotplug does not
-> + * make sense on 32-bit kernel, so we do did not concern it in this function.
-> + */
-> +void __meminit __attribute__((weak)) update_pfn(u64 start, u64 size)
-> +{
-> +#ifdef CONFIG_X86_64
-> +	unsigned long limit_low_pfn = 1UL<<(32 - PAGE_SHIFT);
-> +	unsigned long start_pfn = start >> PAGE_SHIFT;
-> +	unsigned long end_pfn = (start + size) >> PAGE_SHIFT;
-
-Strictly speaking, should use "end_pfn = PFN_UP(start + size);".
-[Zheng, Shaohui] I will use PFN_UP to replace it in new version.
-
-> +	if (end_pfn > max_pfn) {
-> +		max_pfn = end_pfn;
-> +		high_memory = (void *)__va(max_pfn * PAGE_SIZE - 1) + 1;
-> +	}
-> +
-> +	/* if add to low memory, update max_low_pfn */
-> +	if (unlikely(start_pfn < limit_low_pfn)) {
-> +		if (end_pfn <= limit_low_pfn)
-> +			max_low_pfn = end_pfn;
-> +		else
-> +			max_low_pfn = limit_low_pfn;
-
-X86_64 actually always set max_low_pfn=max_pfn, in setup_arch():
-[Zheng, Shaohui] there should be some misunderstanding, I read the code carefully, if the total memory is under 4G, it always max_low_pfn=max_pfn. If the total memory is larger than 4G, max_low_pfn means the end of low ram. It set max_low_pfn = e820_end_of_low_ram_pfn();.
-
- 899 #ifdef CONFIG_X86_64
- 900         if (max_pfn > max_low_pfn) {
- 901                 max_pfn_mapped = init_memory_mapping(1UL<<32,
- 902                                                      max_pfn<<PAGE_SHIFT);
- 903                 /* can we preseve max_low_pfn ?*/
- 904                 max_low_pfn = max_pfn;
- 905         }
- 906 #endif
-
-max_low_pfn is used in
-
-- e820_mark_nosave_regions(max_low_pfn);
-- dump_pagetable()
-- blk_queue_bounce_limit()
-- increase_reservation()
-
-and _seems_ to mean "end of direct addressable pfn".
-
-> +	}
-> +#endif /* CONFIG_X86_64 */
-> +}
-> diff --git a/include/linux/bootmem.h b/include/linux/bootmem.h
-> index b10ec49..6693414 100644
-> --- a/include/linux/bootmem.h
-> +++ b/include/linux/bootmem.h
-> @@ -13,6 +13,7 @@
->  
->  extern unsigned long max_low_pfn;
->  extern unsigned long min_low_pfn;
-> +extern void update_pfn(u64 start, u64 size);
->  
->  /*
->   * highest page
-> diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
-> index 030ce8a..ee7b2d6 100644
-> --- a/mm/memory_hotplug.c
-> +++ b/mm/memory_hotplug.c
-> @@ -523,6 +523,14 @@ int __ref add_memory(int nid, u64 start, u64 size)
->  		BUG_ON(ret);
->  	}
->  
-> +	/* update e820 table */
-
-This comment can be eliminated - you already have the very readable printk :)
-[Zheng, Shaohui] I will remove this comment
-
-> +	printk(KERN_INFO "Adding memory region to e820 table (start:%016Lx, size:%016Lx).\n",
-> +			 (unsigned long long)start, (unsigned long long)size);
-> +	e820_add_region(start, size, E820_RAM);
-
-> +	/* update max_pfn, max_low_pfn and high_memory */
-> +	update_pfn(start, size);
-
-How about renaming function to update_end_of_memory_vars()?
-[Zheng, Shaohui] Agree.
-
-Thanks,
-Fengguang
+diff --cc drivers/net/benet/be_cmds.h
+index c002b83,6eed512..0000000
+--- a/drivers/net/benet/be_cmds.h
++++ b/drivers/net/benet/be_cmds.h
+@@@ -926,5 -926,5 +940,7 @@@ extern int be_cmd_loopback_test(struct 
+  				u32 num_pkts, u64 pattern);
+  extern int be_cmd_ddr_dma_test(struct be_adapter *adapter, u64 pattern,
+  			u32 byte_cnt, struct be_dma_mem *cmd);
+ +extern int be_cmd_set_loopback(struct be_adapter *adapter, u8 port_num,
+ +				u8 loopback_type, u8 enable);
++ extern int be_cmd_get_seeprom_data(struct be_adapter *adapter,
++ 				struct be_dma_mem *nonemb_cmd);
