@@ -1,131 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753059Ab0AKC2t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753355Ab0AKCbO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753059Ab0AKC2t (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jan 2010 21:28:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751270Ab0AKC2r
+	id S1753355Ab0AKCbO (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jan 2010 21:31:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752547Ab0AKCbN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jan 2010 21:28:47 -0500
-Received: from mailout-hades.uni-duesseldorf.de ([134.99.128.34]:64873 "EHLO
-	mail.rz.uni-duesseldorf.de" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751203Ab0AKC2p (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jan 2010 21:28:45 -0500
-MIME-version: 1.0
-Content-transfer-encoding: 7BIT
-Content-type: TEXT/PLAIN; charset=US-ASCII
-Date: Mon, 11 Jan 2010 03:28:43 +0100 (CET)
-From: Michael Schmitz <schmitz@biophys.uni-duesseldorf.de>
-Subject: Re: "m68k: Cleanup linker scripts using new linker script macros." and
- old binutils (was: Re: [PATCH] m68k: Atari EtherNAT - Nicolas Pitre has a new
- email address)
-In-reply-to: <m2wrzpk81j.fsf@igel.home>
-To: Andreas Schwab <schwab@linux-m68k.org>
-Cc: Tim Abbott <tabbott@ksplice.com>,
-       Geert Uytterhoeven <geert@linux-m68k.org>, linux-m68k@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Message-id: <alpine.DEB.2.00.1001110235490.30805@zirkon.biophys.uni-duesseldorf.de>
-References: <10f740e81001100128q644cae1eg61c12b64f22e8398@mail.gmail.com>
- <alpine.DEB.1.10.1001101100540.1326@dr-wily.mit.edu>
- <alpine.DEB.2.00.1001102020420.19754@zirkon.biophys.uni-duesseldorf.de>
- <m2wrzpk81j.fsf@igel.home>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Sun, 10 Jan 2010 21:31:13 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:44833 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752385Ab0AKCbL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Jan 2010 21:31:11 -0500
+Date: Mon, 11 Jan 2010 13:31:09 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: David Miller <davem@davemloft.net>, <netdev@vger.kernel.org>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Jesper Dangaard Brouer <hawk@comx.dk>,
+       Jamal Hadi Salim <hadi@cyberus.ca>
+Subject: linux-next: manual merge of the net tree with Linus' tree
+Message-Id: <20100111133109.a191ee64.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 3.0.0beta4 (GTK+ 2.18.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andreas,
+Hi all,
 
-> > FWIW: when stripping the new kernel, I get this warning:
-> >
-> > BFD: st7CwWnM: warning: allocated section `.init_end' not in segment
-> 
-> This is actually your problem.  The .init_end section is kind of special
-> because it only contains an ALIGN.  What do you get from running
-> "readelf -l vmlinux"?
+Today's linux-next merge of the net tree got a conflict in include/linux/sysctl.h between commit 28f6aeea3f12d37bd258b2c0d5ba891bff4ec479 ("net: restore ip source validation") from Linus' tree and commit 65324144b50bc7022cc9b6ca8f4a536a957019e3 ("net: RFC3069, private VLAN proxy arp support") from the net tree.
 
-Current LD script:
-schmitz@xplor:/org/kernel/linux2.6-m68k-git/linux-m68k$ readelf -l 
-vmlinux-newlds
+They both use the same number in an enum...  I fixed it up (see below) and
+can carry the fix (or some other) for a while.
 
-Elf file type is EXEC (Executable file)
-Entry point 0x2000
-There are 2 program headers, starting at offset 52
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
 
-Program Headers:
-  Type           Offset   VirtAddr   PhysAddr   FileSiz MemSiz  Flg Align
-  LOAD           0x000000 0x00000000 0x00000000 0x2d3240 0x2f0d14 RWE 0x2000
-  LOAD           0x2d5000 0x002f1000 0x002f1000 0x1aed0 0x1aed0 RWE 0x2000
-
- Section to Segment mapping:
-  Segment Sections...
-   00     .text __ex_table .rodata __ksymtab __ksymtab_gpl __ksymtab_strings __param .data .bss 
-   01     .init.text .init.data .m68k_fixup 
-
-Old (working) LD script:
-
-schmitz@xplor:/org/kernel/linux2.6-m68k-git/linux-m68k$ readelf -l 
-vmlinux-oldlds
-
-Elf file type is EXEC (Executable file)
-Entry point 0x2000
-There are 2 program headers, starting at offset 52
-
-Program Headers:
-  Type           Offset   VirtAddr   PhysAddr   FileSiz MemSiz  Flg Align
-  LOAD           0x000000 0x00000000 0x00000000 0x2d0240 0x2edd14 RWE 0x2000
-  LOAD           0x2d2000 0x002ee000 0x002ee000 0x20000 0x20000 RWE 0x2000
-
- Section to Segment mapping:
-  Segment Sections...
-   00     .text __ex_table .rodata __ksymtab __ksymtab_gpl __ksymtab_strings __param .data .bss 
-   01     .init.text .init.data .init.setup .initcall.init .con_initcall.init .m68k_fixup .init.ramfs .data.init_task 
-
-Looks like the size of the BSS segment is not aligned in the broken case. 
-
-Putting this into the script:
-
---- arch/m68k/kernel/vmlinux-std.lds.org	2010-01-09 11:01:05.000000000 
-+1300
-+++ arch/m68k/kernel/vmlinux-std.lds	2010-01-11 09:40:24.000000000 +1300
-@@ -51,6 +51,10 @@
- 	__init_end = .;
-   }
- 
-+  . = . + 0x1000;
-+
-+  . = ALIGN(8192);
-+
-   _end = . ;
- 
-   STABS_DEBUG
-
-does place both __init_end and _end on separate aligned boundaries but leaves
-the end of the actual BSS unaligned. 
-
-Geert's kernel has this readelf output:
-
-schmitz@xplor:/org/m68k/aranym$ readelf -l 
-vmlinux-2.6.33-rc2-atari-00203-gdd8abd9
-
-Elf file type is EXEC (Executable file)
-Entry point 0x2000
-There are 2 program headers, starting at offset 52
-
-Program Headers:
-  Type           Offset   VirtAddr   PhysAddr   FileSiz MemSiz  Flg Align
-  LOAD           0x000000 0x00000000 0x00000000 0x2de440 0x2fb450 RWE 0x2000
-  LOAD           0x2e0000 0x002fc000 0x002fc000 0x1cf4c 0x1d000 RWE 0x2000
-
- Section to Segment mapping:
-  Segment Sections...
-   00     .text __ex_table .rodata __ksymtab __ksymtab_gpl __ksymtab_strings __param .data .bss 
-   01     .init.text .init.data .m68k_fixup .notes .init_end 
-
-The end of the BSS in memory is aligned here. 
-
-What is needed in the script to force this alignment? How do I place a null byte 
-right at __init_end ?? 
-
-Thanks,
-
-	Michael
+diff --cc include/linux/sysctl.h
+index bd27fbc,24ff7e3..0000000
+--- a/include/linux/sysctl.h
++++ b/include/linux/sysctl.h
+@@@ -482,7 -482,7 +482,8 @@@ enu
+  	NET_IPV4_CONF_ARP_ACCEPT=21,
+  	NET_IPV4_CONF_ARP_NOTIFY=22,
+  	NET_IPV4_CONF_ACCEPT_LOCAL=23,
+ -	NET_IPV4_CONF_PROXY_ARP_PVLAN=24,
+ +	NET_IPV4_CONF_SRC_VMARK=24,
+++	NET_IPV4_CONF_PROXY_ARP_PVLAN=25,
+  	__NET_IPV4_CONF_MAX
+  };
+  
