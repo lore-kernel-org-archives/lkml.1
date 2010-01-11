@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752167Ab0AKF3k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751978Ab0AKF3h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752167Ab0AKF3k (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jan 2010 00:29:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752008Ab0AKF3h
-	(ORCPT <rfc822;linux-kernel-outgoing>);
+	id S1751978Ab0AKF3h (ORCPT <rfc822;w@1wt.eu>);
 	Mon, 11 Jan 2010 00:29:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751851Ab0AKF3g
+	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Mon, 11 Jan 2010 00:29:36 -0500
 Received: from cdptpa-omtalb.mail.rr.com ([75.180.132.121]:62521 "EHLO
 	cdptpa-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751791Ab0AKF3g (ORCPT
+	with ESMTP id S1751511Ab0AKF3f (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jan 2010 00:29:36 -0500
-X-Authority-Analysis: v=1.0 c=1 a=p8W1oCF-dHCkkUFJbJwA:9 a=7VPFhxyLXgd0Wop_9Bw6swzWJBcA:4
+	Mon, 11 Jan 2010 00:29:35 -0500
+X-Authority-Analysis: v=1.0 c=1 a=VwQbUJbxAAAA:8 a=aqUDAkckD26gVh4Op2sA:9 a=skqo2IFl16-XfUT3g1Yey4dV7boA:4
 X-Cloudmark-Score: 0
 X-Originating-IP: 71.70.78.104
-Date: Mon, 11 Jan 2010 00:29:14 -0500
-Message-ID: <87k4vpryz9.wl%ysato@users.sourceforge.jp>
+Date: Mon, 11 Jan 2010 00:28:53 -0500
+Message-ID: <87pr5hryzu.wl%ysato@users.sourceforge.jp>
 From: Yoshinori Sato <ysato@users.sourceforge.jp>
 To: tovalds@linux-foundation.org
 Cc: lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [git pull] h8300 update
+Subject: [git pull] h8300 update
 User-Agent: Wanderlust/2.15.6 (Almost Unreal) SEMI/1.14.6 (Maruoka)
  FLIM/1.14.9 (=?ISO-8859-4?Q?Goj=F2?=) APEL/10.7 Emacs/22.3
  (x86_64-pc-linux-gnu) MULE/5.0 (SAKAKI)
@@ -28,77 +28,85 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Wire up new syscalls.
+Hi Linus,
 
-Signed-off-by: Yoshinori Sato <ysato@users.sourceforge.jp>
----
- arch/h8300/include/asm/unistd.h |   20 +++++++++++++++++++-
- arch/h8300/kernel/syscalls.S    |   18 ++++++++++++++++++
- 2 files changed, 37 insertions(+), 1 deletions(-)
+Please pull h8300 archtechture update.
 
-diff --git a/arch/h8300/include/asm/unistd.h b/arch/h8300/include/asm/unistd.h
-index 99f3c35..1d54776 100644
---- a/arch/h8300/include/asm/unistd.h
-+++ b/arch/h8300/include/asm/unistd.h
-@@ -325,10 +325,28 @@
- #define __NR_move_pages		317
- #define __NR_getcpu		318
- #define __NR_epoll_pwait	319
-+#define __NR_utimensat		320
-+#define __NR_signalfd		321
-+#define __NR_timerfd_create	322
-+#define __NR_eventfd		323
-+#define __NR_fallocate		324
-+#define __NR_timerfd_settime	325
-+#define __NR_timerfd_gettime	326
-+#define __NR_signalfd4		327
-+#define __NR_eventfd2		328
-+#define __NR_epoll_create1	329
-+#define __NR_dup3		330
-+#define __NR_pipe2		331
-+#define __NR_inotify_init1	332
-+#define __NR_preadv		333
-+#define __NR_pwritev		334
-+#define __NR_rt_tgsigqueueinfo	335
-+#define __NR_perf_event_open	336
-+#define __NR_recvmmsg		337
- 
- #ifdef __KERNEL__
- 
--#define NR_syscalls 320
-+#define NR_syscalls 338
- 
- #define __ARCH_WANT_IPC_PARSE_VERSION
- #define __ARCH_WANT_OLD_READDIR
-diff --git a/arch/h8300/kernel/syscalls.S b/arch/h8300/kernel/syscalls.S
-index 2d69881..a208ee7 100644
---- a/arch/h8300/kernel/syscalls.S
-+++ b/arch/h8300/kernel/syscalls.S
-@@ -333,6 +333,24 @@ SYMBOL_NAME_LABEL(sys_call_table)
- 	.long SYMBOL_NAME(sys_ni_syscall)	/* sys_move_pages */
- 	.long SYMBOL_NAME(sys_getcpu)
- 	.long SYMBOL_NAME(sys_ni_syscall)	/* sys_epoll_pwait */
-+	.long SYMBOL_NAME(sys_utimensat)		/* 320 */
-+	.long SYMBOL_NAME(sys_signalfd)
-+	.long SYMBOL_NAME(sys_timerfd_create)
-+	.long SYMBOL_NAME(sys_eventfd)
-+	.long SYMBOL_NAME(sys_fallocate)
-+	.long SYMBOL_NAME(sys_timerfd_settime)	/* 325 */
-+	.long SYMBOL_NAME(sys_timerfd_gettime)
-+	.long SYMBOL_NAME(sys_signalfd4)
-+	.long SYMBOL_NAME(sys_eventfd2)
-+	.long SYMBOL_NAME(sys_epoll_create1)
-+	.long SYMBOL_NAME(sys_dup3)			/* 330 */
-+	.long SYMBOL_NAME(sys_pipe2)
-+	.long SYMBOL_NAME(sys_inotify_init1)
-+	.long SYMBOL_NAME(sys_preadv)
-+	.long SYMBOL_NAME(sys_pwritev)
-+	.long SYMBOL_NAME(sys_rt_tgsigqueueinfo)	/* 335 */
-+	.long SYMBOL_NAME(sys_perf_event_open)
-+	.long SYMBOL_NAME(sys_recvmmsg)
- 
- 	.macro	call_sp addr
- 	mov.l	#SYMBOL_NAME(\addr),er6
+  git://git.kernel.org/pub/scm/linux/kernel/git/ysato/h8300.git for-linus
+
+Mathieu Desnoyers (1):
+      h8300 thread flags cleanup
+
+Robert P. J. Day (1):
+      H8/300: Simplify param.h by simply including <asm-generic/param.h>.
+
+Yoshinori Sato (5):
+      Fix various build error.
+      Use generic headers.
+      GCC4 build workaround.
+      Wire up new syscalls.
+      config cleanup.
+
+ arch/h8300/Kconfig                          |  121 +----------------
+ arch/h8300/Makefile                         |    2 -
+ arch/h8300/include/asm/bootinfo.h           |    2 -
+ arch/h8300/include/asm/bugs.h               |   17 +--
+ arch/h8300/include/asm/cachectl.h           |   14 --
+ arch/h8300/include/asm/cacheflush.h         |   41 +------
+ arch/h8300/include/asm/current.h            |   26 +----
+ arch/h8300/include/asm/dbg.h                |    2 -
+ arch/h8300/include/asm/dma.h                |   16 +--
+ arch/h8300/include/asm/fb.h                 |   12 --
+ arch/h8300/include/asm/fpu.h                |    1 -
+ arch/h8300/include/asm/io.h                 |   12 ++-
+ arch/h8300/include/asm/ioctls.h             |   86 +-----------
+ arch/h8300/include/asm/ipcbuf.h             |   30 +----
+ arch/h8300/include/asm/md.h                 |   13 --
+ arch/h8300/include/asm/mmu.h                |   11 +--
+ arch/h8300/include/asm/mmu_context.h        |   33 +-----
+ arch/h8300/include/asm/msgbuf.h             |   32 +----
+ arch/h8300/include/asm/page.h               |   77 +----------
+ arch/h8300/include/asm/param.h              |   16 +--
+ arch/h8300/include/asm/pgalloc.h            |    9 +-
+ arch/h8300/include/asm/pgtable.h            |   60 +-------
+ arch/h8300/include/asm/posix_types.h        |   61 +--------
+ arch/h8300/include/asm/processor.h          |    1 -
+ arch/h8300/include/asm/scatterlist.h        |   19 +---
+ arch/h8300/include/asm/sembuf.h             |   26 +----
+ arch/h8300/include/asm/shm.h                |   31 ----
+ arch/h8300/include/asm/shmbuf.h             |   42 +------
+ arch/h8300/include/asm/shmparam.h           |    7 +-
+ arch/h8300/include/asm/socket.h             |   66 +---------
+ arch/h8300/include/asm/sockios.h            |   14 +--
+ arch/h8300/include/asm/stat.h               |   62 +--------
+ arch/h8300/include/asm/swab.h               |   11 +--
+ arch/h8300/include/asm/system.h             |    2 -
+ arch/h8300/include/asm/termbits.h           |  201 +--------------------------
+ arch/h8300/include/asm/termios.h            |   93 +------------
+ arch/h8300/include/asm/thread_info.h        |   12 +-
+ arch/h8300/include/asm/tlb.h                |   11 --
+ arch/h8300/include/asm/tlbflush.h           |   56 +--------
+ arch/h8300/include/asm/types.h              |   34 +-----
+ arch/h8300/include/asm/uaccess.h            |   27 ++++-
+ arch/h8300/include/asm/ucontext.h           |   13 +--
+ arch/h8300/include/asm/unistd.h             |   20 +++-
+ arch/h8300/include/asm/virtconvert.h        |   20 ---
+ arch/h8300/kernel/asm-offsets.c             |    1 -
+ arch/h8300/kernel/sys_h8300.c               |    1 -
+ arch/h8300/kernel/syscalls.S                |   18 +++
+ arch/h8300/kernel/time.c                    |    1 +
+ arch/h8300/mm/fault.c                       |    2 +
+ arch/h8300/platform/h8300h/generic/Makefile |    2 +-
+ 50 files changed, 117 insertions(+), 1370 deletions(-)
+ delete mode 100644 arch/h8300/include/asm/bootinfo.h
+ delete mode 100644 arch/h8300/include/asm/cachectl.h
+ delete mode 100644 arch/h8300/include/asm/dbg.h
+ delete mode 100644 arch/h8300/include/asm/fb.h
+ delete mode 100644 arch/h8300/include/asm/fpu.h
+ delete mode 100644 arch/h8300/include/asm/md.h
+ delete mode 100644 arch/h8300/include/asm/shm.h
+ delete mode 100644 arch/h8300/include/asm/virtconvert.h
+
 -- 
-1.6.5.3
-
+Yoshinori Sato
+<ysato@users.sourceforge.jp>
