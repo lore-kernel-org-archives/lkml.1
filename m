@@ -1,66 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753300Ab0AKQzn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753224Ab0AKQ6I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753300Ab0AKQzn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jan 2010 11:55:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751209Ab0AKQzl
+	id S1753224Ab0AKQ6I (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jan 2010 11:58:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752591Ab0AKQ6G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jan 2010 11:55:41 -0500
-Received: from casper.infradead.org ([85.118.1.10]:53625 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753172Ab0AKQzk (ORCPT
+	Mon, 11 Jan 2010 11:58:06 -0500
+Received: from mail-fx0-f215.google.com ([209.85.220.215]:65325 "EHLO
+	mail-fx0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752509Ab0AKQ6E (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jan 2010 11:55:40 -0500
-Subject: Re: [BUG?]Section mismatch dmar_ir_support()
-From: David Woodhouse <dwmw2@infradead.org>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Simon Horman <horms@verge.net.au>, Marin Mitov <mitov@issp.bas.bg>,
-       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
-In-Reply-To: <20100111084942.29900ef5@jbarnes-piketon>
-References: <201001082127.22685.mitov@issp.bas.bg>
-	 <20100111132022.GC5198@verge.net.au>
-	 <20100111084942.29900ef5@jbarnes-piketon>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 11 Jan 2010 16:55:03 +0000
-Message-ID: <1263228903.3181.21755.camel@macbook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 (2.28.2-1.fc12) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Mon, 11 Jan 2010 11:58:04 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=s2jhYq7rNE6VMjr0WH/Ym/lLF42QbZKI6t6LW+WKd7bJJh5f16BpJMXm2zNRlcmaVG
+         ERQUc7T11DFFU2so1rx6YAj9XyTLlIsDJk9Xub4ZasG0sS/+ZZTaH07EgwvpIR4JXZf8
+         uLV10QcXJlz3obq9TAKMZtKZPnUkRv7s1wDiI=
+MIME-Version: 1.0
+In-Reply-To: <20100111102620.732b574f@lxorguk.ukuu.org.uk>
+References: <13bb8ce11001101156g3cd88a6bn7c6ce657850ab534@mail.gmail.com>
+	 <20100111001745.21d28340@lxorguk.ukuu.org.uk>
+	 <13bb8ce11001101730w640f99p72ecb1204e59f139@mail.gmail.com>
+	 <13bb8ce11001102040j37e061fn976ec74595f30232@mail.gmail.com>
+	 <20100111102620.732b574f@lxorguk.ukuu.org.uk>
+Date: Mon, 11 Jan 2010 10:58:02 -0600
+Message-ID: <13bb8ce11001110858m26363081g5f883b13a587f1a8@mail.gmail.com>
+Subject: Re: staging/et131x Driver Transmits but does not Receive Packets
+From: Daniel Goller <morfic@gmail.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2010-01-11 at 08:49 -0800, Jesse Barnes wrote:
-> On Tue, 12 Jan 2010 00:20:22 +1100
-> Simon Horman <horms@verge.net.au> wrote:
-> 
-> > [ PCI list and maintainer CC added ]
-> > 
-> > On Fri, Jan 08, 2010 at 09:27:22PM +0200, Marin Mitov wrote:
-> > > Hi all,
-> > > 
-> > > Please, look at how many times the same patch is proposed, 
-> > > but still not fixed:-)
-> > > 
-> > > http://lkml.org/lkml/2009/10/3/3
-> > > http://lkml.org/lkml/2009/11/13/271
-> > > http://lkml.org/lkml/2009/12/4/462
-> > > http://lkml.org/lkml/2009/12/16/424
-> > > http://lkml.org/lkml/2009/12/20/21
-> > > 
-> > > Sure I could be missing some other postings :-)
-> > > 
-> > > Who could take care of it? And should we?
-> > 
-> > I've been wondering about that too.
-> > The patch seems correct to me.
-> 
-> Oh I was thinking David would pick it up.
+> That looks like an interrupt problem. With iwlagn and r8169 blacklisted
+> see what interrupt number the et131x gets (cat /proc/interrupts) and see
+> if it goes up whenever you send/receive stuff.
 
-I did; it's been in my tree for a while.
+16:        385        385   IO-APIC-fasteoi   uhci_hcd:usb3, uhci_hcd:usb7, eth1
+ it does change as i bring it up with IP and: ping -I eth1 192.168.1.156
 
--- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
+This is in 2.6.30.10
 
+You say it would be interesting to see if the driver works in
+2.6.29(".0") or just 2.6.29.x in general?
+
+So far i only tried it in 2.6.29.6, and will check interrupts there in
+a little while.
