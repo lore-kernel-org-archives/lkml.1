@@ -1,62 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752875Ab0AKVzG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752150Ab0AKV5e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752875Ab0AKVzG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jan 2010 16:55:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752289Ab0AKVzF
+	id S1752150Ab0AKV5e (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jan 2010 16:57:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751449Ab0AKV5d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jan 2010 16:55:05 -0500
-Received: from mga02.intel.com ([134.134.136.20]:27334 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751584Ab0AKVzE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jan 2010 16:55:04 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,258,1262592000"; 
-   d="scan'208";a="483155773"
-Subject: Re: [PATCH] Make Intel 8-way Xeons boot again
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-Reply-To: Suresh Siddha <suresh.b.siddha@intel.com>
+	Mon, 11 Jan 2010 16:57:33 -0500
+Received: from g4t0017.houston.hp.com ([15.201.24.20]:35672 "EHLO
+	g4t0017.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750948Ab0AKV5c (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jan 2010 16:57:32 -0500
+Subject: Re: [PATCH 00/14] pci: update pci bridge resources
+From: Patrick Keller <patrick.keller@hp.com>
+Reply-To: patrick.keller@hp.com
 To: Yinghai Lu <yinghai@kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, "ananth@in.ibm.com" <ananth@in.ibm.com>,
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, Ingo Molnar <mingo@elte.hu>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>,
-       "stable@kernel.org" <stable@kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-In-Reply-To: <86802c441001111343p2afaafb7o702884e632260bf7@mail.gmail.com>
-References: <20100109101038.GA17555@in.ibm.com>
-	 <86802c441001091313y1f64f011t616f08cd282a7123@mail.gmail.com>
-	 <20100110023015.GA2253@in.ibm.com>
-	 <86802c441001092235j79092e6fse18b61e3d7b0ac6@mail.gmail.com>
-	 <20100110102638.GA7838@elte.hu>
-	 <86802c441001111343p2afaafb7o702884e632260bf7@mail.gmail.com>
-Content-Type: text/plain
-Organization: Intel Corp
-Date: Mon, 11 Jan 2010 13:53:49 -0800
-Message-Id: <1263246829.2859.537.camel@sbs-t61.sc.intel.com>
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+       "Chiang, Alexander" <achiang@hp.com>,
+       "Helgaas, Bjorn" <bjorn.helgaas@hp.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
+In-Reply-To: <1261522954-12591-1-git-send-email-yinghai@kernel.org>
+References: <1261522954-12591-1-git-send-email-yinghai@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 11 Jan 2010 14:57:00 -0700
+Message-ID: <1263247020.2877.10.camel@pLaptop>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2010-01-11 at 13:43 -0800, Yinghai Lu wrote:
-> On Sun, Jan 10, 2010 at 2:26 AM, Ingo Molnar <mingo@elte.hu> wrote:
-> >
-> > In any case this commit needs to be reverted as the assumption that it's safe
-> > to do this optimization is evidently not true.
-> >
+
+
+On Tue, 2009-12-22 at 23:02 +0000, Yinghai Lu wrote:
+
+> 2. hotplug:
+> BIOS separate IO range between several IOHs, and on some slots, BIOS assign
+> the resource to every bridge. (8M) but when insert one card that big resource,
+> the card can not get resource. because kernel will not touch the bridge
+> resource.
+
+> Thanks
 > 
-> use attached debug patch on one of my intel system and with nr_cpus=8,
-> it seems logical flat works.
-> that system BSP apic id is 0x20.
+> Yinghai
+> 
 
-Same here. I don't see any issues with my testing on two different
-platforms.
+These patches appear to fix logical hotplug so that it is functional
+again.  I think we're good.
 
-This sounds more like an IBM platform issue. So reverting the 2fbd07a5f
-commit is not the correct solution.
-
-thanks,
-suresh
+Tested-by: Patrick Keller <patrick.keller@hp.com>
 
