@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751978Ab0AKF3h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752214Ab0AKF36@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751978Ab0AKF3h (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jan 2010 00:29:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751851Ab0AKF3g
+	id S1752214Ab0AKF36 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jan 2010 00:29:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751851Ab0AKF34
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jan 2010 00:29:36 -0500
-Received: from cdptpa-omtalb.mail.rr.com ([75.180.132.121]:62521 "EHLO
+	Mon, 11 Jan 2010 00:29:56 -0500
+Received: from cdptpa-omtalb.mail.rr.com ([75.180.132.121]:55636 "EHLO
 	cdptpa-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751511Ab0AKF3f (ORCPT
+	with ESMTP id S1751888Ab0AKF3h (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jan 2010 00:29:35 -0500
-X-Authority-Analysis: v=1.0 c=1 a=VwQbUJbxAAAA:8 a=aqUDAkckD26gVh4Op2sA:9 a=skqo2IFl16-XfUT3g1Yey4dV7boA:4
+	Mon, 11 Jan 2010 00:29:37 -0500
+X-Authority-Analysis: v=1.0 c=1 a=ZHe5f0eqAAAA:8 a=iZaFaP6hAAAA:8 a=abLpnCq0AAAA:8 a=rrV7oh7FfNm5StvcrK4A:9 a=izFbmy--GdDN0QBx9mQA:7 a=-xWcd1KBDBTAxfvWbzORBaREjm0A:4 a=cTC7RVecwN8A:10 a=ZNQaShLaqPUA:10 a=8itaGvuMXGQA:10 a=jBpRYYmMR2_EBANS:21 a=jmCQlQNTBVLJB0wX:21
 X-Cloudmark-Score: 0
 X-Originating-IP: 71.70.78.104
-Date: Mon, 11 Jan 2010 00:28:53 -0500
-Message-ID: <87pr5hryzu.wl%ysato@users.sourceforge.jp>
+Date: Mon, 11 Jan 2010 00:29:07 -0500
+Message-ID: <87my0lryzg.wl%ysato@users.sourceforge.jp>
 From: Yoshinori Sato <ysato@users.sourceforge.jp>
 To: tovalds@linux-foundation.org
 Cc: lkml <linux-kernel@vger.kernel.org>
-Subject: [git pull] h8300 update
+Subject: Re: [git pull] h8300 update
 User-Agent: Wanderlust/2.15.6 (Almost Unreal) SEMI/1.14.6 (Maruoka)
  FLIM/1.14.9 (=?ISO-8859-4?Q?Goj=F2?=) APEL/10.7 Emacs/22.3
  (x86_64-pc-linux-gnu) MULE/5.0 (SAKAKI)
@@ -28,76 +28,51 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+Use generic headers.
 
-Please pull h8300 archtechture update.
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/ysato/h8300.git for-linus
-
-Mathieu Desnoyers (1):
-      h8300 thread flags cleanup
-
-Robert P. J. Day (1):
-      H8/300: Simplify param.h by simply including <asm-generic/param.h>.
-
-Yoshinori Sato (5):
-      Fix various build error.
-      Use generic headers.
-      GCC4 build workaround.
-      Wire up new syscalls.
-      config cleanup.
-
- arch/h8300/Kconfig                          |  121 +----------------
- arch/h8300/Makefile                         |    2 -
- arch/h8300/include/asm/bootinfo.h           |    2 -
- arch/h8300/include/asm/bugs.h               |   17 +--
- arch/h8300/include/asm/cachectl.h           |   14 --
- arch/h8300/include/asm/cacheflush.h         |   41 +------
- arch/h8300/include/asm/current.h            |   26 +----
- arch/h8300/include/asm/dbg.h                |    2 -
- arch/h8300/include/asm/dma.h                |   16 +--
- arch/h8300/include/asm/fb.h                 |   12 --
- arch/h8300/include/asm/fpu.h                |    1 -
- arch/h8300/include/asm/io.h                 |   12 ++-
- arch/h8300/include/asm/ioctls.h             |   86 +-----------
- arch/h8300/include/asm/ipcbuf.h             |   30 +----
- arch/h8300/include/asm/md.h                 |   13 --
- arch/h8300/include/asm/mmu.h                |   11 +--
- arch/h8300/include/asm/mmu_context.h        |   33 +-----
- arch/h8300/include/asm/msgbuf.h             |   32 +----
- arch/h8300/include/asm/page.h               |   77 +----------
- arch/h8300/include/asm/param.h              |   16 +--
- arch/h8300/include/asm/pgalloc.h            |    9 +-
- arch/h8300/include/asm/pgtable.h            |   60 +-------
- arch/h8300/include/asm/posix_types.h        |   61 +--------
- arch/h8300/include/asm/processor.h          |    1 -
- arch/h8300/include/asm/scatterlist.h        |   19 +---
- arch/h8300/include/asm/sembuf.h             |   26 +----
- arch/h8300/include/asm/shm.h                |   31 ----
- arch/h8300/include/asm/shmbuf.h             |   42 +------
- arch/h8300/include/asm/shmparam.h           |    7 +-
- arch/h8300/include/asm/socket.h             |   66 +---------
- arch/h8300/include/asm/sockios.h            |   14 +--
- arch/h8300/include/asm/stat.h               |   62 +--------
- arch/h8300/include/asm/swab.h               |   11 +--
- arch/h8300/include/asm/system.h             |    2 -
- arch/h8300/include/asm/termbits.h           |  201 +--------------------------
- arch/h8300/include/asm/termios.h            |   93 +------------
- arch/h8300/include/asm/thread_info.h        |   12 +-
- arch/h8300/include/asm/tlb.h                |   11 --
- arch/h8300/include/asm/tlbflush.h           |   56 +--------
- arch/h8300/include/asm/types.h              |   34 +-----
- arch/h8300/include/asm/uaccess.h            |   27 ++++-
- arch/h8300/include/asm/ucontext.h           |   13 +--
- arch/h8300/include/asm/unistd.h             |   20 +++-
- arch/h8300/include/asm/virtconvert.h        |   20 ---
- arch/h8300/kernel/asm-offsets.c             |    1 -
- arch/h8300/kernel/sys_h8300.c               |    1 -
- arch/h8300/kernel/syscalls.S                |   18 +++
- arch/h8300/kernel/time.c                    |    1 +
- arch/h8300/mm/fault.c                       |    2 +
- arch/h8300/platform/h8300h/generic/Makefile |    2 +-
- 50 files changed, 117 insertions(+), 1370 deletions(-)
+Signed-off-by: Yoshinori Sato <ysato@users.sourceforge.jp>
+---
+ arch/h8300/include/asm/bootinfo.h    |    2 -
+ arch/h8300/include/asm/bugs.h        |   17 +---
+ arch/h8300/include/asm/cachectl.h    |   14 ---
+ arch/h8300/include/asm/cacheflush.h  |   41 +-------
+ arch/h8300/include/asm/current.h     |   26 +----
+ arch/h8300/include/asm/dbg.h         |    2 -
+ arch/h8300/include/asm/dma.h         |   16 +---
+ arch/h8300/include/asm/fb.h          |   12 --
+ arch/h8300/include/asm/fpu.h         |    1 -
+ arch/h8300/include/asm/io.h          |    5 +-
+ arch/h8300/include/asm/ioctls.h      |   86 +--------------
+ arch/h8300/include/asm/ipcbuf.h      |   30 +-----
+ arch/h8300/include/asm/md.h          |   13 --
+ arch/h8300/include/asm/mmu.h         |   11 +--
+ arch/h8300/include/asm/mmu_context.h |   33 +------
+ arch/h8300/include/asm/msgbuf.h      |   32 +-----
+ arch/h8300/include/asm/page.h        |   77 +-------------
+ arch/h8300/include/asm/pgalloc.h     |    9 +--
+ arch/h8300/include/asm/pgtable.h     |   62 +----------
+ arch/h8300/include/asm/posix_types.h |   61 +----------
+ arch/h8300/include/asm/processor.h   |    1 -
+ arch/h8300/include/asm/scatterlist.h |   19 +---
+ arch/h8300/include/asm/sembuf.h      |   26 +----
+ arch/h8300/include/asm/shm.h         |   31 -----
+ arch/h8300/include/asm/shmbuf.h      |   42 +-------
+ arch/h8300/include/asm/shmparam.h    |    7 +-
+ arch/h8300/include/asm/socket.h      |   66 +-----------
+ arch/h8300/include/asm/sockios.h     |   14 +--
+ arch/h8300/include/asm/stat.h        |   62 +----------
+ arch/h8300/include/asm/swab.h        |   11 +--
+ arch/h8300/include/asm/termbits.h    |  201 +---------------------------------
+ arch/h8300/include/asm/termios.h     |   93 +----------------
+ arch/h8300/include/asm/tlb.h         |   11 --
+ arch/h8300/include/asm/tlbflush.h    |   56 +---------
+ arch/h8300/include/asm/types.h       |   34 +------
+ arch/h8300/include/asm/uaccess.h     |   24 ++++-
+ arch/h8300/include/asm/ucontext.h    |   13 +--
+ arch/h8300/include/asm/virtconvert.h |   20 ----
+ arch/h8300/kernel/asm-offsets.c      |    1 -
+ arch/h8300/kernel/sys_h8300.c        |    1 -
+ 40 files changed, 58 insertions(+), 1225 deletions(-)
  delete mode 100644 arch/h8300/include/asm/bootinfo.h
  delete mode 100644 arch/h8300/include/asm/cachectl.h
  delete mode 100644 arch/h8300/include/asm/dbg.h
@@ -107,6 +82,1591 @@ Yoshinori Sato (5):
  delete mode 100644 arch/h8300/include/asm/shm.h
  delete mode 100644 arch/h8300/include/asm/virtconvert.h
 
+diff --git a/arch/h8300/include/asm/bootinfo.h b/arch/h8300/include/asm/bootinfo.h
+deleted file mode 100644
+index 5bed7e7..0000000
+--- a/arch/h8300/include/asm/bootinfo.h
++++ /dev/null
+@@ -1,2 +0,0 @@
+-
+-/* Nothing for h8300 */
+diff --git a/arch/h8300/include/asm/bugs.h b/arch/h8300/include/asm/bugs.h
+index 1cb4afb..61791e1 100644
+--- a/arch/h8300/include/asm/bugs.h
++++ b/arch/h8300/include/asm/bugs.h
+@@ -1,16 +1 @@
+-/*
+- *  include/asm-h8300/bugs.h
+- *
+- *  Copyright (C) 1994  Linus Torvalds
+- */
+-
+-/*
+- * This is included by init/main.c to check for architecture-dependent bugs.
+- *
+- * Needs:
+- *	void check_bugs(void);
+- */
+-
+-static void check_bugs(void)
+-{
+-}
++#include <asm-generic/bugs.h>
+diff --git a/arch/h8300/include/asm/cachectl.h b/arch/h8300/include/asm/cachectl.h
+deleted file mode 100644
+index c464022..0000000
+--- a/arch/h8300/include/asm/cachectl.h
++++ /dev/null
+@@ -1,14 +0,0 @@
+-#ifndef _H8300_CACHECTL_H
+-#define _H8300_CACHECTL_H
+-
+-/* Definitions for the cacheflush system call.  */
+-
+-#define FLUSH_SCOPE_LINE    0	/* Flush a cache line */
+-#define FLUSH_SCOPE_PAGE    0	/* Flush a page */
+-#define FLUSH_SCOPE_ALL     0	/* Flush the whole cache -- superuser only */
+-
+-#define FLUSH_CACHE_DATA    0	/* Writeback and flush data cache */
+-#define FLUSH_CACHE_INSN    0	/* Flush instruction cache */
+-#define FLUSH_CACHE_BOTH    0	/* Flush both caches */
+-
+-#endif /* _H8300_CACHECTL_H */
+diff --git a/arch/h8300/include/asm/cacheflush.h b/arch/h8300/include/asm/cacheflush.h
+index 4cf2df2..7ce581b 100644
+--- a/arch/h8300/include/asm/cacheflush.h
++++ b/arch/h8300/include/asm/cacheflush.h
+@@ -1,40 +1 @@
+-/*
+- * (C) Copyright 2002, Yoshinori Sato <ysato@users.sourceforge.jp>
+- */
+-
+-#ifndef _ASM_H8300_CACHEFLUSH_H
+-#define _ASM_H8300_CACHEFLUSH_H
+-
+-/*
+- * Cache handling functions
+- * No Cache memory all dummy functions
+- */
+-
+-#define flush_cache_all()
+-#define	flush_cache_mm(mm)
+-#define	flush_cache_dup_mm(mm)		do { } while (0)
+-#define	flush_cache_range(vma,a,b)
+-#define	flush_cache_page(vma,p,pfn)
+-#define ARCH_IMPLEMENTS_FLUSH_DCACHE_PAGE 0
+-#define	flush_dcache_page(page)
+-#define	flush_dcache_mmap_lock(mapping)
+-#define	flush_dcache_mmap_unlock(mapping)
+-#define	flush_icache()
+-#define	flush_icache_page(vma,page)
+-#define	flush_icache_range(start,len)
+-#define flush_cache_vmap(start, end)
+-#define flush_cache_vunmap(start, end)
+-#define	cache_push_v(vaddr,len)
+-#define	cache_push(paddr,len)
+-#define	cache_clear(paddr,len)
+-
+-#define	flush_dcache_range(a,b)
+-
+-#define	flush_icache_user_range(vma,page,addr,len)
+-
+-#define copy_to_user_page(vma, page, vaddr, dst, src, len) \
+-	memcpy(dst, src, len)
+-#define copy_from_user_page(vma, page, vaddr, dst, src, len) \
+-	memcpy(dst, src, len)
+-
+-#endif /* _ASM_H8300_CACHEFLUSH_H */
++#include <asm-generic/cacheflush.h>
+diff --git a/arch/h8300/include/asm/current.h b/arch/h8300/include/asm/current.h
+index 57d74ee..4c51401 100644
+--- a/arch/h8300/include/asm/current.h
++++ b/arch/h8300/include/asm/current.h
+@@ -1,25 +1 @@
+-#ifndef _H8300_CURRENT_H
+-#define _H8300_CURRENT_H
+-/*
+- *	current.h
+- *	(C) Copyright 2000, Lineo, David McCullough <davidm@lineo.com>
+- *	(C) Copyright 2002, Greg Ungerer (gerg@snapgear.com)
+- *
+- *	rather than dedicate a register (as the m68k source does), we
+- *	just keep a global,  we should probably just change it all to be
+- *	current and lose _current_task.
+- */
+-
+-#include <linux/thread_info.h>
+-#include <asm/thread_info.h>
+-
+-struct task_struct;
+-
+-static inline struct task_struct *get_current(void)
+-{
+-	return(current_thread_info()->task);
+-}
+-
+-#define	current	get_current()
+-
+-#endif /* _H8300_CURRENT_H */
++#include <asm-generic/current.h>
+diff --git a/arch/h8300/include/asm/dbg.h b/arch/h8300/include/asm/dbg.h
+deleted file mode 100644
+index 2c6d1cb..0000000
+--- a/arch/h8300/include/asm/dbg.h
++++ /dev/null
+@@ -1,2 +0,0 @@
+-#define DEBUG 1
+-#define	BREAK asm volatile ("trap #3")
+diff --git a/arch/h8300/include/asm/dma.h b/arch/h8300/include/asm/dma.h
+index 3edbaaa..7ce20d9 100644
+--- a/arch/h8300/include/asm/dma.h
++++ b/arch/h8300/include/asm/dma.h
+@@ -1,15 +1 @@
+-#ifndef _H8300_DMA_H
+-#define _H8300_DMA_H 
+- 
+-
+-/*
+- * Set number of channels of DMA on ColdFire for different implementations.
+- */
+-#define MAX_DMA_CHANNELS 0
+-#define MAX_DMA_ADDRESS PAGE_OFFSET
+-
+-/* These are in kernel/dma.c: */
+-extern int request_dma(unsigned int dmanr, const char *device_id);	/* reserve a DMA channel */
+-extern void free_dma(unsigned int dmanr);	/* release it again */
+- 
+-#endif /* _H8300_DMA_H */
++#include <asm-generic/dma.h>
+diff --git a/arch/h8300/include/asm/fb.h b/arch/h8300/include/asm/fb.h
+deleted file mode 100644
+index c7df380..0000000
+--- a/arch/h8300/include/asm/fb.h
++++ /dev/null
+@@ -1,12 +0,0 @@
+-#ifndef _ASM_FB_H_
+-#define _ASM_FB_H_
+-#include <linux/fb.h>
+-
+-#define fb_pgprotect(...) do {} while (0)
+-
+-static inline int fb_is_primary_device(struct fb_info *info)
+-{
+-	return 0;
+-}
+-
+-#endif /* _ASM_FB_H_ */
+diff --git a/arch/h8300/include/asm/fpu.h b/arch/h8300/include/asm/fpu.h
+deleted file mode 100644
+index 4fc416e..0000000
+--- a/arch/h8300/include/asm/fpu.h
++++ /dev/null
+@@ -1 +0,0 @@
+-/* Nothing do */
+diff --git a/arch/h8300/include/asm/io.h b/arch/h8300/include/asm/io.h
+index a16f15e..073c30c 100644
+--- a/arch/h8300/include/asm/io.h
++++ b/arch/h8300/include/asm/io.h
+@@ -3,8 +3,6 @@
+ 
+ #ifdef __KERNEL__
+ 
+-#include <asm/virtconvert.h>
+-
+ #if defined(CONFIG_H83007) || defined(CONFIG_H83068)
+ #include <asm/regs306x.h>
+ #elif defined(CONFIG_H8S2678)
+@@ -336,9 +334,11 @@ static __inline__ void ctrl_bset(int b, unsigned long addr)
+ 		__asm__("bset %w0,@%1"::"r"(b), "r"(addr));
+ }
+ 
++#if 0
+ /* Pages to physical address... */
+ #define page_to_phys(page)      ((page - mem_map) << PAGE_SHIFT)
+ #define page_to_bus(page)       ((page - mem_map) << PAGE_SHIFT)
++#endif
+ 
+ /*
+  * Macros used for converting between virtual and physical mappings.
+@@ -348,7 +348,6 @@ static __inline__ void ctrl_bset(int b, unsigned long addr)
+ 
+ #define virt_to_bus virt_to_phys
+ #define bus_to_virt phys_to_virt
+-
+ /*
+  * Convert a physical pointer to a virtual kernel pointer for /dev/mem
+  * access
+diff --git a/arch/h8300/include/asm/ioctls.h b/arch/h8300/include/asm/ioctls.h
+index 98a53d0..ec34c76 100644
+--- a/arch/h8300/include/asm/ioctls.h
++++ b/arch/h8300/include/asm/ioctls.h
+@@ -1,85 +1 @@
+-#ifndef __ARCH_H8300_IOCTLS_H__
+-#define __ARCH_H8300_IOCTLS_H__
+-
+-#include <asm/ioctl.h>
+-
+-/* 0x54 is just a magic number to make these relatively unique ('T') */
+-
+-#define TCGETS		0x5401
+-#define TCSETS		0x5402
+-#define TCSETSW		0x5403
+-#define TCSETSF		0x5404
+-#define TCGETA		0x5405
+-#define TCSETA		0x5406
+-#define TCSETAW		0x5407
+-#define TCSETAF		0x5408
+-#define TCSBRK		0x5409
+-#define TCXONC		0x540A
+-#define TCFLSH		0x540B
+-#define TIOCEXCL	0x540C
+-#define TIOCNXCL	0x540D
+-#define TIOCSCTTY	0x540E
+-#define TIOCGPGRP	0x540F
+-#define TIOCSPGRP	0x5410
+-#define TIOCOUTQ	0x5411
+-#define TIOCSTI		0x5412
+-#define TIOCGWINSZ	0x5413
+-#define TIOCSWINSZ	0x5414
+-#define TIOCMGET	0x5415
+-#define TIOCMBIS	0x5416
+-#define TIOCMBIC	0x5417
+-#define TIOCMSET	0x5418
+-#define TIOCGSOFTCAR	0x5419
+-#define TIOCSSOFTCAR	0x541A
+-#define FIONREAD	0x541B
+-#define TIOCINQ		FIONREAD
+-#define TIOCLINUX	0x541C
+-#define TIOCCONS	0x541D
+-#define TIOCGSERIAL	0x541E
+-#define TIOCSSERIAL	0x541F
+-#define TIOCPKT		0x5420
+-#define FIONBIO		0x5421
+-#define TIOCNOTTY	0x5422
+-#define TIOCSETD	0x5423
+-#define TIOCGETD	0x5424
+-#define TCSBRKP		0x5425	/* Needed for POSIX tcsendbreak() */
+-#define TIOCTTYGSTRUCT	0x5426  /* For debugging only */
+-#define TIOCSBRK	0x5427  /* BSD compatibility */
+-#define TIOCCBRK	0x5428  /* BSD compatibility */
+-#define TIOCGSID	0x5429  /* Return the session ID of FD */
+-#define TCGETS2		_IOR('T',0x2A, struct termios2)
+-#define TCSETS2		_IOW('T',0x2B, struct termios2)
+-#define TCSETSW2	_IOW('T',0x2C, struct termios2)
+-#define TCSETSF2	_IOW('T',0x2D, struct termios2)
+-#define TIOCGPTN	_IOR('T',0x30, unsigned int) /* Get Pty Number (of pty-mux device) */
+-#define TIOCSPTLCK	_IOW('T',0x31, int)  /* Lock/unlock Pty */
+-
+-#define FIONCLEX	0x5450  /* these numbers need to be adjusted. */
+-#define FIOCLEX		0x5451
+-#define FIOASYNC	0x5452
+-#define TIOCSERCONFIG	0x5453
+-#define TIOCSERGWILD	0x5454
+-#define TIOCSERSWILD	0x5455
+-#define TIOCGLCKTRMIOS	0x5456
+-#define TIOCSLCKTRMIOS	0x5457
+-#define TIOCSERGSTRUCT	0x5458 /* For debugging only */
+-#define TIOCSERGETLSR   0x5459 /* Get line status register */
+-#define TIOCSERGETMULTI 0x545A /* Get multiport config  */
+-#define TIOCSERSETMULTI 0x545B /* Set multiport config */
+-
+-#define TIOCMIWAIT	0x545C	/* wait for a change on serial input line(s) */
+-#define TIOCGICOUNT	0x545D	/* read serial port inline interrupt counts */
+-#define FIOQSIZE	0x545E
+-
+-/* Used for packet mode */
+-#define TIOCPKT_DATA		 0
+-#define TIOCPKT_FLUSHREAD	 1
+-#define TIOCPKT_FLUSHWRITE	 2
+-#define TIOCPKT_STOP		 4
+-#define TIOCPKT_START		 8
+-#define TIOCPKT_NOSTOP		16
+-#define TIOCPKT_DOSTOP		32
+-
+-#define TIOCSER_TEMT    0x01	/* Transmitter physically empty */
+-
+-#endif /* __ARCH_H8300_IOCTLS_H__ */
++#include <asm-generic/ioctls.h>
+diff --git a/arch/h8300/include/asm/ipcbuf.h b/arch/h8300/include/asm/ipcbuf.h
+index 2cd1ebc..84c7e51 100644
+--- a/arch/h8300/include/asm/ipcbuf.h
++++ b/arch/h8300/include/asm/ipcbuf.h
+@@ -1,29 +1 @@
+-#ifndef __H8300_IPCBUF_H__
+-#define __H8300_IPCBUF_H__
+-
+-/*
+- * The user_ipc_perm structure for H8/300 architecture.
+- * Note extra padding because this structure is passed back and forth
+- * between kernel and user space.
+- *
+- * Pad space is left for:
+- * - 32-bit mode_t and seq
+- * - 2 miscellaneous 32-bit values
+- */
+-
+-struct ipc64_perm
+-{
+-	__kernel_key_t		key;
+-	__kernel_uid32_t	uid;
+-	__kernel_gid32_t	gid;
+-	__kernel_uid32_t	cuid;
+-	__kernel_gid32_t	cgid;
+-	__kernel_mode_t		mode;
+-	unsigned short		__pad1;
+-	unsigned short		seq;
+-	unsigned short		__pad2;
+-	unsigned long		__unused1;
+-	unsigned long		__unused2;
+-};
+-
+-#endif /* __H8300_IPCBUF_H__ */
++#include <asm-generic/ipcbuf.h>
+diff --git a/arch/h8300/include/asm/md.h b/arch/h8300/include/asm/md.h
+deleted file mode 100644
+index 1b7300e..0000000
+--- a/arch/h8300/include/asm/md.h
++++ /dev/null
+@@ -1,13 +0,0 @@
+-/*
+- * md.h: High speed xor_block operation for RAID4/5 
+- *
+- */
+- 
+-#ifndef __ASM_MD_H
+-#define __ASM_MD_H
+-
+-/* #define HAVE_ARCH_XORBLOCK */
+-
+-#define MD_XORBLOCK_ALIGNMENT	sizeof(long)
+-
+-#endif /* __ASM_MD_H */
+diff --git a/arch/h8300/include/asm/mmu.h b/arch/h8300/include/asm/mmu.h
+index 3130996..2caa6ed 100644
+--- a/arch/h8300/include/asm/mmu.h
++++ b/arch/h8300/include/asm/mmu.h
+@@ -1,10 +1 @@
+-#ifndef __MMU_H
+-#define __MMU_H
+-
+-/* Copyright (C) 2002, David McCullough <davidm@snapgear.com> */
+-
+-typedef struct {
+-	unsigned long		end_brk;
+-} mm_context_t;
+-
+-#endif
++#include <asm-generic/mmu.h>
+diff --git a/arch/h8300/include/asm/mmu_context.h b/arch/h8300/include/asm/mmu_context.h
+index f44b730..7739fe1 100644
+--- a/arch/h8300/include/asm/mmu_context.h
++++ b/arch/h8300/include/asm/mmu_context.h
+@@ -1,32 +1 @@
+-#ifndef __H8300_MMU_CONTEXT_H
+-#define __H8300_MMU_CONTEXT_H
+-
+-#include <asm/setup.h>
+-#include <asm/page.h>
+-#include <asm/pgalloc.h>
+-#include <asm-generic/mm_hooks.h>
+-
+-static inline void enter_lazy_tlb(struct mm_struct *mm, struct task_struct *tsk)
+-{
+-}
+-
+-static inline int
+-init_new_context(struct task_struct *tsk, struct mm_struct *mm)
+-{
+-	// mm->context = virt_to_phys(mm->pgd);
+-	return(0);
+-}
+-
+-#define destroy_context(mm)		do { } while(0)
+-#define deactivate_mm(tsk,mm)           do { } while(0)
+-
+-static inline void switch_mm(struct mm_struct *prev, struct mm_struct *next, struct task_struct *tsk)
+-{
+-}
+-
+-static inline void activate_mm(struct mm_struct *prev_mm,
+-			       struct mm_struct *next_mm)
+-{
+-}
+-
+-#endif
++#include <asm-generic/mmu_context.h>
+diff --git a/arch/h8300/include/asm/msgbuf.h b/arch/h8300/include/asm/msgbuf.h
+index 6b148cd..809134c 100644
+--- a/arch/h8300/include/asm/msgbuf.h
++++ b/arch/h8300/include/asm/msgbuf.h
+@@ -1,31 +1 @@
+-#ifndef _H8300_MSGBUF_H
+-#define _H8300_MSGBUF_H
+-
+-/* 
+- * The msqid64_ds structure for H8/300 architecture.
+- * Note extra padding because this structure is passed back and forth
+- * between kernel and user space.
+- *
+- * Pad space is left for:
+- * - 64-bit time_t to solve y2038 problem
+- * - 2 miscellaneous 32-bit values
+- */
+-
+-struct msqid64_ds {
+-	struct ipc64_perm msg_perm;
+-	__kernel_time_t msg_stime;	/* last msgsnd time */
+-	unsigned long	__unused1;
+-	__kernel_time_t msg_rtime;	/* last msgrcv time */
+-	unsigned long	__unused2;
+-	__kernel_time_t msg_ctime;	/* last change time */
+-	unsigned long	__unused3;
+-	unsigned long  msg_cbytes;	/* current number of bytes on queue */
+-	unsigned long  msg_qnum;	/* number of messages in queue */
+-	unsigned long  msg_qbytes;	/* max number of bytes on queue */
+-	__kernel_pid_t msg_lspid;	/* pid of last msgsnd */
+-	__kernel_pid_t msg_lrpid;	/* last receive pid */
+-	unsigned long  __unused4;
+-	unsigned long  __unused5;
+-};
+-
+-#endif /* _H8300_MSGBUF_H */
++#include <asm-generic/msgbuf.h>
+diff --git a/arch/h8300/include/asm/page.h b/arch/h8300/include/asm/page.h
+index 837381a..d98c96c 100644
+--- a/arch/h8300/include/asm/page.h
++++ b/arch/h8300/include/asm/page.h
+@@ -1,78 +1,5 @@
+ #ifndef _H8300_PAGE_H
+ #define _H8300_PAGE_H
+-
+-/* PAGE_SHIFT determines the page size */
+-
+-#define PAGE_SHIFT	(12)
+-#define PAGE_SIZE	(1UL << PAGE_SHIFT)
+-#define PAGE_MASK	(~(PAGE_SIZE-1))
+-
+-#include <asm/setup.h>
+-
+-#ifndef __ASSEMBLY__
+- 
+-#define get_user_page(vaddr)		__get_free_page(GFP_KERNEL)
+-#define free_user_page(page, addr)	free_page(addr)
+-
+-#define clear_page(page)	memset((page), 0, PAGE_SIZE)
+-#define copy_page(to,from)	memcpy((to), (from), PAGE_SIZE)
+-
+-#define clear_user_page(page, vaddr, pg)	clear_page(page)
+-#define copy_user_page(to, from, vaddr, pg)	copy_page(to, from)
+-
+-#define __alloc_zeroed_user_highpage(movableflags, vma, vaddr) \
+-	alloc_page_vma(GFP_HIGHUSER | __GFP_ZERO | movableflags, vma, vaddr)
+-#define __HAVE_ARCH_ALLOC_ZEROED_USER_HIGHPAGE
+-
+-/*
+- * These are used to make use of C type-checking..
+- */
+-typedef struct { unsigned long pte; } pte_t;
+-typedef struct { unsigned long pmd[16]; } pmd_t;
+-typedef struct { unsigned long pgd; } pgd_t;
+-typedef struct { unsigned long pgprot; } pgprot_t;
+-typedef struct page *pgtable_t;
+-
+-#define pte_val(x)	((x).pte)
+-#define pmd_val(x)	((&x)->pmd[0])
+-#define pgd_val(x)	((x).pgd)
+-#define pgprot_val(x)	((x).pgprot)
+-
+-#define __pte(x)	((pte_t) { (x) } )
+-#define __pmd(x)	((pmd_t) { (x) } )
+-#define __pgd(x)	((pgd_t) { (x) } )
+-#define __pgprot(x)	((pgprot_t) { (x) } )
+-
+-extern unsigned long memory_start;
+-extern unsigned long memory_end;
+-
+-#endif /* !__ASSEMBLY__ */
+-
+-#include <asm/page_offset.h>
+-
+-#define PAGE_OFFSET		(PAGE_OFFSET_RAW)
+-
+-#ifndef __ASSEMBLY__
+-
+-#define __pa(vaddr)		virt_to_phys(vaddr)
+-#define __va(paddr)		phys_to_virt((unsigned long)paddr)
+-
+-#define virt_to_pfn(kaddr)	(__pa(kaddr) >> PAGE_SHIFT)
+-#define pfn_to_virt(pfn)	__va((pfn) << PAGE_SHIFT)
+-
++#include <asm-generic/page.h>
+ #define MAP_NR(addr)		(((unsigned long)(addr)-PAGE_OFFSET) >> PAGE_SHIFT)
+-#define virt_to_page(addr)	(mem_map + (((unsigned long)(addr)-PAGE_OFFSET) >> PAGE_SHIFT))
+-#define page_to_virt(page)	((((page) - mem_map) << PAGE_SHIFT) + PAGE_OFFSET)
+-#define pfn_valid(page)	        (page < max_mapnr)
+-
+-#define ARCH_PFN_OFFSET		(PAGE_OFFSET >> PAGE_SHIFT)
+-
+-#define	virt_addr_valid(kaddr)	(((void *)(kaddr) >= (void *)PAGE_OFFSET) && \
+-				((void *)(kaddr) < (void *)memory_end))
+-
+-#endif /* __ASSEMBLY__ */
+-
+-#include <asm-generic/memory_model.h>
+-#include <asm-generic/getorder.h>
+-
+-#endif /* _H8300_PAGE_H */
++#endif
+diff --git a/arch/h8300/include/asm/pgalloc.h b/arch/h8300/include/asm/pgalloc.h
+index c2e89a2..f261cb7 100644
+--- a/arch/h8300/include/asm/pgalloc.h
++++ b/arch/h8300/include/asm/pgalloc.h
+@@ -1,8 +1 @@
+-#ifndef _H8300_PGALLOC_H
+-#define _H8300_PGALLOC_H
+-
+-#include <asm/setup.h>
+-
+-#define check_pgt_cache()	do { } while (0)
+-
+-#endif /* _H8300_PGALLOC_H */
++#include <asm-generic/pgalloc.h>
+diff --git a/arch/h8300/include/asm/pgtable.h b/arch/h8300/include/asm/pgtable.h
+index 0755116..c09f545 100644
+--- a/arch/h8300/include/asm/pgtable.h
++++ b/arch/h8300/include/asm/pgtable.h
+@@ -1,32 +1,14 @@
+ #ifndef _H8300_PGTABLE_H
+ #define _H8300_PGTABLE_H
+-
+-#include <asm-generic/4level-fixup.h>
+-
+-#include <linux/slab.h>
+-#include <asm/processor.h>
+-#include <asm/page.h>
+-#include <asm/io.h>
+-
+-#define pgd_present(pgd)     (1)       /* pages are always present on NO_MM */
+-#define pgd_none(pgd)		(0)
+-#define pgd_bad(pgd)		(0)
+-#define pgd_clear(pgdp)
+-#define kern_addr_valid(addr)	(1)
+-#define	pmd_offset(a, b)	((void *)0)
+-#define pmd_none(pmd)           (1)
+-#define pgd_offset_k(adrdress)  ((pgd_t *)0)
+-#define pte_offset_kernel(dir, address) ((pte_t *)0)
+-
++#include <asm-generic/pgtable-nopud.h>
++#include <asm-generic/pgtable.h>
++#define pgtable_cache_init()   do { } while (0)
++extern void paging_init(void);
+ #define PAGE_NONE		__pgprot(0)    /* these mean nothing to NO_MM */
+ #define PAGE_SHARED		__pgprot(0)    /* these mean nothing to NO_MM */
+ #define PAGE_COPY		__pgprot(0)    /* these mean nothing to NO_MM */
+ #define PAGE_READONLY	__pgprot(0)    /* these mean nothing to NO_MM */
+ #define PAGE_KERNEL		__pgprot(0)    /* these mean nothing to NO_MM */
+-
+-extern void paging_init(void);
+-#define swapper_pg_dir ((pgd_t *) 0)
+-
+ #define __swp_type(x)		(0)
+ #define __swp_offset(x)		(0)
+ #define __swp_entry(typ,off)	((swp_entry_t) { ((typ) | ((off) << 7)) })
+@@ -34,42 +16,10 @@ extern void paging_init(void);
+ #define __swp_entry_to_pte(x)	((pte_t) { (x).val })
+ 
+ static inline int pte_file(pte_t pte) { return 0; }
+-
++#define swapper_pg_dir ((pgd_t *) 0)
+ /*
+  * ZERO_PAGE is a global shared page that is always zero: used
+  * for zero-mapped memory areas etc..
+  */
+ #define ZERO_PAGE(vaddr)	(virt_to_page(0))
+-
+-/*
+- * These would be in other places but having them here reduces the diffs.
+- */
+-extern unsigned int kobjsize(const void *objp);
+-extern int is_in_rom(unsigned long);
+-
+-/*
+- * No page table caches to initialise
+- */
+-#define pgtable_cache_init()   do { } while (0)
+-
+-#define io_remap_pfn_range(vma, vaddr, pfn, size, prot)		\
+-		remap_pfn_range(vma, vaddr, pfn, size, prot)
+-
+-/*
+- * All 32bit addresses are effectively valid for vmalloc...
+- * Sort of meaningless for non-VM targets.
+- */
+-#define	VMALLOC_START	0
+-#define	VMALLOC_END	0xffffffff
+-
+-/*
+- * All 32bit addresses are effectively valid for vmalloc...
+- * Sort of meaningless for non-VM targets.
+- */
+-#define	VMALLOC_START	0
+-#define	VMALLOC_END	0xffffffff
+-
+-#define arch_enter_lazy_cpu_mode()    do {} while (0)
+-
+-#include <asm-generic/pgtable.h>
+-#endif /* _H8300_PGTABLE_H */
++#endif
+diff --git a/arch/h8300/include/asm/posix_types.h b/arch/h8300/include/asm/posix_types.h
+index 5c55392..22cae62 100644
+--- a/arch/h8300/include/asm/posix_types.h
++++ b/arch/h8300/include/asm/posix_types.h
+@@ -1,60 +1 @@
+-#ifndef __ARCH_H8300_POSIX_TYPES_H
+-#define __ARCH_H8300_POSIX_TYPES_H
+-
+-/*
+- * This file is generally used by user-level software, so you need to
+- * be a little careful about namespace pollution etc.  Also, we cannot
+- * assume GCC is being used.
+- */
+-
+-typedef unsigned long	__kernel_ino_t;
+-typedef unsigned short	__kernel_mode_t;
+-typedef unsigned short	__kernel_nlink_t;
+-typedef long		__kernel_off_t;
+-typedef int		__kernel_pid_t;
+-typedef unsigned short	__kernel_ipc_pid_t;
+-typedef unsigned short	__kernel_uid_t;
+-typedef unsigned short	__kernel_gid_t;
+-typedef unsigned int	__kernel_size_t;
+-typedef int		__kernel_ssize_t;
+-typedef int		__kernel_ptrdiff_t;
+-typedef long		__kernel_time_t;
+-typedef long		__kernel_suseconds_t;
+-typedef long		__kernel_clock_t;
+-typedef int		__kernel_timer_t;
+-typedef int		__kernel_clockid_t;
+-typedef int		__kernel_daddr_t;
+-typedef char *		__kernel_caddr_t;
+-typedef unsigned short	__kernel_uid16_t;
+-typedef unsigned short	__kernel_gid16_t;
+-typedef unsigned int	__kernel_uid32_t;
+-typedef unsigned int	__kernel_gid32_t;
+-
+-typedef unsigned short	__kernel_old_uid_t;
+-typedef unsigned short	__kernel_old_gid_t;
+-
+-#ifdef __GNUC__
+-typedef long long	__kernel_loff_t;
+-#endif
+-
+-typedef struct {
+-	int	val[2];
+-} __kernel_fsid_t;
+-
+-#if defined(__KERNEL__)
+-
+-#undef	__FD_SET
+-#define	__FD_SET(d, set)	((set)->fds_bits[__FDELT(d)] |= __FDMASK(d))
+-
+-#undef	__FD_CLR
+-#define	__FD_CLR(d, set)	((set)->fds_bits[__FDELT(d)] &= ~__FDMASK(d))
+-
+-#undef	__FD_ISSET
+-#define	__FD_ISSET(d, set)	((set)->fds_bits[__FDELT(d)] & __FDMASK(d))
+-
+-#undef	__FD_ZERO
+-#define __FD_ZERO(fdsetp) (memset (fdsetp, 0, sizeof(*(fd_set *)fdsetp)))
+-
+-#endif /* defined(__KERNEL__) */
+-
+-#endif
++#include <asm-generic/posix_types.h>
+diff --git a/arch/h8300/include/asm/processor.h b/arch/h8300/include/asm/processor.h
+index 69e8a34..c1c16cd 100644
+--- a/arch/h8300/include/asm/processor.h
++++ b/arch/h8300/include/asm/processor.h
+@@ -19,7 +19,6 @@
+ 
+ #include <linux/compiler.h>
+ #include <asm/segment.h>
+-#include <asm/fpu.h>
+ #include <asm/ptrace.h>
+ #include <asm/current.h>
+ 
+diff --git a/arch/h8300/include/asm/scatterlist.h b/arch/h8300/include/asm/scatterlist.h
+index d3ecdd8..35d786f 100644
+--- a/arch/h8300/include/asm/scatterlist.h
++++ b/arch/h8300/include/asm/scatterlist.h
+@@ -1,18 +1 @@
+-#ifndef _H8300_SCATTERLIST_H
+-#define _H8300_SCATTERLIST_H
+-
+-#include <asm/types.h>
+-
+-struct scatterlist {
+-#ifdef CONFIG_DEBUG_SG
+-	unsigned long	sg_magic;
+-#endif
+-	unsigned long	page_link;
+-	unsigned int	offset;
+-	dma_addr_t	dma_address;
+-	unsigned int	length;
+-};
+-
+-#define ISA_DMA_THRESHOLD	(0xffffffff)
+-
+-#endif /* !(_H8300_SCATTERLIST_H) */
++#include <asm-generic/scatterlist.h>
+diff --git a/arch/h8300/include/asm/sembuf.h b/arch/h8300/include/asm/sembuf.h
+index e04a3ec..7673b83 100644
+--- a/arch/h8300/include/asm/sembuf.h
++++ b/arch/h8300/include/asm/sembuf.h
+@@ -1,25 +1 @@
+-#ifndef _H8300_SEMBUF_H
+-#define _H8300_SEMBUF_H
+-
+-/* 
+- * The semid64_ds structure for m68k architecture.
+- * Note extra padding because this structure is passed back and forth
+- * between kernel and user space.
+- *
+- * Pad space is left for:
+- * - 64-bit time_t to solve y2038 problem
+- * - 2 miscellaneous 32-bit values
+- */
+-
+-struct semid64_ds {
+-	struct ipc64_perm sem_perm;		/* permissions .. see ipc.h */
+-	__kernel_time_t	sem_otime;		/* last semop time */
+-	unsigned long	__unused1;
+-	__kernel_time_t	sem_ctime;		/* last change time */
+-	unsigned long	__unused2;
+-	unsigned long	sem_nsems;		/* no. of semaphores in array */
+-	unsigned long	__unused3;
+-	unsigned long	__unused4;
+-};
+-
+-#endif /* _H8300_SEMBUF_H */
++#include <asm-generic/sembuf.h>
+diff --git a/arch/h8300/include/asm/shm.h b/arch/h8300/include/asm/shm.h
+deleted file mode 100644
+index ed6623c..0000000
+--- a/arch/h8300/include/asm/shm.h
++++ /dev/null
+@@ -1,31 +0,0 @@
+-#ifndef _H8300_SHM_H
+-#define _H8300_SHM_H
+-
+-
+-/* format of page table entries that correspond to shared memory pages
+-   currently out in swap space (see also mm/swap.c):
+-   bits 0-1 (PAGE_PRESENT) is  = 0
+-   bits 8..2 (SWP_TYPE) are = SHM_SWP_TYPE
+-   bits 31..9 are used like this:
+-   bits 15..9 (SHM_ID) the id of the shared memory segment
+-   bits 30..16 (SHM_IDX) the index of the page within the shared memory segment
+-                    (actually only bits 25..16 get used since SHMMAX is so low)
+-   bit 31 (SHM_READ_ONLY) flag whether the page belongs to a read-only attach
+-*/
+-/* on the m68k both bits 0 and 1 must be zero */
+-/* format on the sun3 is similar, but bits 30, 31 are set to zero and all
+-   others are reduced by 2. --m */
+-
+-#ifndef CONFIG_SUN3
+-#define SHM_ID_SHIFT	9
+-#else
+-#define SHM_ID_SHIFT	7
+-#endif
+-#define _SHM_ID_BITS	7
+-#define SHM_ID_MASK	((1<<_SHM_ID_BITS)-1)
+-
+-#define SHM_IDX_SHIFT	(SHM_ID_SHIFT+_SHM_ID_BITS)
+-#define _SHM_IDX_BITS	15
+-#define SHM_IDX_MASK	((1<<_SHM_IDX_BITS)-1)
+-
+-#endif /* _H8300_SHM_H */
+diff --git a/arch/h8300/include/asm/shmbuf.h b/arch/h8300/include/asm/shmbuf.h
+index 64e7799..a39cb7e 100644
+--- a/arch/h8300/include/asm/shmbuf.h
++++ b/arch/h8300/include/asm/shmbuf.h
+@@ -1,42 +1,2 @@
+-#ifndef _H8300_SHMBUF_H
+-#define _H8300_SHMBUF_H
++#include <asm-generic/shmbuf.h>
+ 
+-/* 
+- * The shmid64_ds structure for m68k architecture.
+- * Note extra padding because this structure is passed back and forth
+- * between kernel and user space.
+- *
+- * Pad space is left for:
+- * - 64-bit time_t to solve y2038 problem
+- * - 2 miscellaneous 32-bit values
+- */
+-
+-struct shmid64_ds {
+-	struct ipc64_perm	shm_perm;	/* operation perms */
+-	size_t			shm_segsz;	/* size of segment (bytes) */
+-	__kernel_time_t		shm_atime;	/* last attach time */
+-	unsigned long		__unused1;
+-	__kernel_time_t		shm_dtime;	/* last detach time */
+-	unsigned long		__unused2;
+-	__kernel_time_t		shm_ctime;	/* last change time */
+-	unsigned long		__unused3;
+-	__kernel_pid_t		shm_cpid;	/* pid of creator */
+-	__kernel_pid_t		shm_lpid;	/* pid of last operator */
+-	unsigned long		shm_nattch;	/* no. of current attaches */
+-	unsigned long		__unused4;
+-	unsigned long		__unused5;
+-};
+-
+-struct shminfo64 {
+-	unsigned long	shmmax;
+-	unsigned long	shmmin;
+-	unsigned long	shmmni;
+-	unsigned long	shmseg;
+-	unsigned long	shmall;
+-	unsigned long	__unused1;
+-	unsigned long	__unused2;
+-	unsigned long	__unused3;
+-	unsigned long	__unused4;
+-};
+-
+-#endif /* _H8300_SHMBUF_H */
+diff --git a/arch/h8300/include/asm/shmparam.h b/arch/h8300/include/asm/shmparam.h
+index d186395..93f30de 100644
+--- a/arch/h8300/include/asm/shmparam.h
++++ b/arch/h8300/include/asm/shmparam.h
+@@ -1,6 +1 @@
+-#ifndef _H8300_SHMPARAM_H
+-#define _H8300_SHMPARAM_H
+-
+-#define	SHMLBA PAGE_SIZE		 /* attach addr a multiple of this */
+-
+-#endif /* _H8300_SHMPARAM_H */
++#include <asm-generic/shmparam.h>
+diff --git a/arch/h8300/include/asm/socket.h b/arch/h8300/include/asm/socket.h
+index 04c0f45..6b71384 100644
+--- a/arch/h8300/include/asm/socket.h
++++ b/arch/h8300/include/asm/socket.h
+@@ -1,65 +1 @@
+-#ifndef _ASM_SOCKET_H
+-#define _ASM_SOCKET_H
+-
+-#include <asm/sockios.h>
+-
+-/* For setsockoptions(2) */
+-#define SOL_SOCKET	1
+-
+-#define SO_DEBUG	1
+-#define SO_REUSEADDR	2
+-#define SO_TYPE		3
+-#define SO_ERROR	4
+-#define SO_DONTROUTE	5
+-#define SO_BROADCAST	6
+-#define SO_SNDBUF	7
+-#define SO_RCVBUF	8
+-#define SO_SNDBUFFORCE	32
+-#define SO_RCVBUFFORCE	33
+-#define SO_KEEPALIVE	9
+-#define SO_OOBINLINE	10
+-#define SO_NO_CHECK	11
+-#define SO_PRIORITY	12
+-#define SO_LINGER	13
+-#define SO_BSDCOMPAT	14
+-/* To add :#define SO_REUSEPORT 15 */
+-#define SO_PASSCRED	16
+-#define SO_PEERCRED	17
+-#define SO_RCVLOWAT	18
+-#define SO_SNDLOWAT	19
+-#define SO_RCVTIMEO	20
+-#define SO_SNDTIMEO	21
+-
+-/* Security levels - as per NRL IPv6 - don't actually do anything */
+-#define SO_SECURITY_AUTHENTICATION		22
+-#define SO_SECURITY_ENCRYPTION_TRANSPORT	23
+-#define SO_SECURITY_ENCRYPTION_NETWORK		24
+-
+-#define SO_BINDTODEVICE	25
+-
+-/* Socket filtering */
+-#define SO_ATTACH_FILTER        26
+-#define SO_DETACH_FILTER        27
+-
+-#define SO_PEERNAME             28
+-#define SO_TIMESTAMP		29
+-#define SCM_TIMESTAMP		SO_TIMESTAMP
+-
+-#define SO_ACCEPTCONN		30
+-
+-#define SO_PEERSEC		31
+-#define SO_PASSSEC		34
+-#define SO_TIMESTAMPNS		35
+-#define SCM_TIMESTAMPNS		SO_TIMESTAMPNS
+-
+-#define SO_MARK			36
+-
+-#define SO_TIMESTAMPING		37
+-#define SCM_TIMESTAMPING	SO_TIMESTAMPING
+-
+-#define SO_PROTOCOL		38
+-#define SO_DOMAIN		39
+-
+-#define SO_RXQ_OVFL             40
+-
+-#endif /* _ASM_SOCKET_H */
++#include <asm-generic/socket.h>
+diff --git a/arch/h8300/include/asm/sockios.h b/arch/h8300/include/asm/sockios.h
+index e9c7ec8..def6d47 100644
+--- a/arch/h8300/include/asm/sockios.h
++++ b/arch/h8300/include/asm/sockios.h
+@@ -1,13 +1 @@
+-#ifndef __ARCH_H8300_SOCKIOS__
+-#define __ARCH_H8300_SOCKIOS__
+-
+-/* Socket-level I/O control calls. */
+-#define FIOSETOWN 	0x8901
+-#define SIOCSPGRP	0x8902
+-#define FIOGETOWN	0x8903
+-#define SIOCGPGRP	0x8904
+-#define SIOCATMARK	0x8905
+-#define SIOCGSTAMP	0x8906		/* Get stamp (timeval) */
+-#define SIOCGSTAMPNS	0x8907		/* Get stamp (timespec) */
+-
+-#endif /* __ARCH_H8300_SOCKIOS__ */
++#include <asm-generic/sockios.h>
+diff --git a/arch/h8300/include/asm/stat.h b/arch/h8300/include/asm/stat.h
+index 62c3cc2..489e182 100644
+--- a/arch/h8300/include/asm/stat.h
++++ b/arch/h8300/include/asm/stat.h
+@@ -1,6 +1,8 @@
+ #ifndef _H8300_STAT_H
+ #define _H8300_STAT_H
+ 
++#include <asm-generic/stat.h>
++
+ struct __old_kernel_stat {
+ 	unsigned short st_dev;
+ 	unsigned short st_ino;
+@@ -15,64 +17,4 @@ struct __old_kernel_stat {
+ 	unsigned long  st_ctime;
+ };
+ 
+-struct stat {
+-	unsigned short st_dev;
+-	unsigned short __pad1;
+-	unsigned long st_ino;
+-	unsigned short st_mode;
+-	unsigned short st_nlink;
+-	unsigned short st_uid;
+-	unsigned short st_gid;
+-	unsigned short st_rdev;
+-	unsigned short __pad2;
+-	unsigned long  st_size;
+-	unsigned long  st_blksize;
+-	unsigned long  st_blocks;
+-	unsigned long  st_atime;
+-	unsigned long  __unused1;
+-	unsigned long  st_mtime;
+-	unsigned long  __unused2;
+-	unsigned long  st_ctime;
+-	unsigned long  __unused3;
+-	unsigned long  __unused4;
+-	unsigned long  __unused5;
+-};
+-
+-/* This matches struct stat64 in glibc2.1, hence the absolutely
+- * insane amounts of padding around dev_t's.
+- */
+-struct stat64 {
+-	unsigned long long	st_dev;
+-	unsigned char	__pad1[2];
+-
+-#define STAT64_HAS_BROKEN_ST_INO	1
+-	unsigned long	__st_ino;
+-
+-	unsigned int	st_mode;
+-	unsigned int	st_nlink;
+-
+-	unsigned long	st_uid;
+-	unsigned long	st_gid;
+-
+-	unsigned long long	st_rdev;
+-	unsigned char	__pad3[2];
+-
+-	long long	st_size;
+-	unsigned long	st_blksize;
+-
+-	unsigned long	__pad4;		/* future possible st_blocks high bits */
+-	unsigned long	st_blocks;	/* Number 512-byte blocks allocated. */
+-
+-	unsigned long	st_atime;
+-	unsigned long	st_atime_nsec;
+-
+-	unsigned long	st_mtime;
+-	unsigned long	st_mtime_nsec;
+-
+-	unsigned long	st_ctime;
+-	unsigned long	st_ctime_nsec;
+-
+-	unsigned long long	st_ino;
+-};
+-
+ #endif /* _H8300_STAT_H */
+diff --git a/arch/h8300/include/asm/swab.h b/arch/h8300/include/asm/swab.h
+index 39abbf5..7847e56 100644
+--- a/arch/h8300/include/asm/swab.h
++++ b/arch/h8300/include/asm/swab.h
+@@ -1,10 +1 @@
+-#ifndef _H8300_SWAB_H
+-#define _H8300_SWAB_H
+-
+-#include <linux/types.h>
+-
+-#if defined(__GNUC__) && !defined(__STRICT_ANSI__) || defined(__KERNEL__)
+-#  define __SWAB_64_THRU_32__
+-#endif
+-
+-#endif /* _H8300_SWAB_H */
++#include <asm-generic/swab.h>
+diff --git a/arch/h8300/include/asm/termbits.h b/arch/h8300/include/asm/termbits.h
+index 31eca81..3935b10 100644
+--- a/arch/h8300/include/asm/termbits.h
++++ b/arch/h8300/include/asm/termbits.h
+@@ -1,200 +1 @@
+-#ifndef __ARCH_H8300_TERMBITS_H__
+-#define __ARCH_H8300_TERMBITS_H__
+-
+-#include <linux/posix_types.h>
+-
+-typedef unsigned char	cc_t;
+-typedef unsigned int	speed_t;
+-typedef unsigned int	tcflag_t;
+-
+-#define NCCS 19
+-struct termios {
+-	tcflag_t c_iflag;		/* input mode flags */
+-	tcflag_t c_oflag;		/* output mode flags */
+-	tcflag_t c_cflag;		/* control mode flags */
+-	tcflag_t c_lflag;		/* local mode flags */
+-	cc_t c_line;			/* line discipline */
+-	cc_t c_cc[NCCS];		/* control characters */
+-};
+-
+-struct termios2 {
+-	tcflag_t c_iflag;		/* input mode flags */
+-	tcflag_t c_oflag;		/* output mode flags */
+-	tcflag_t c_cflag;		/* control mode flags */
+-	tcflag_t c_lflag;		/* local mode flags */
+-	cc_t c_line;			/* line discipline */
+-	cc_t c_cc[NCCS];		/* control characters */
+-	speed_t c_ispeed;		/* input speed */
+-	speed_t c_ospeed;		/* output speed */
+-};
+-
+-struct ktermios {
+-	tcflag_t c_iflag;		/* input mode flags */
+-	tcflag_t c_oflag;		/* output mode flags */
+-	tcflag_t c_cflag;		/* control mode flags */
+-	tcflag_t c_lflag;		/* local mode flags */
+-	cc_t c_line;			/* line discipline */
+-	cc_t c_cc[NCCS];		/* control characters */
+-	speed_t c_ispeed;		/* input speed */
+-	speed_t c_ospeed;		/* output speed */
+-};
+-
+-/* c_cc characters */
+-#define VINTR 0
+-#define VQUIT 1
+-#define VERASE 2
+-#define VKILL 3
+-#define VEOF 4
+-#define VTIME 5
+-#define VMIN 6
+-#define VSWTC 7
+-#define VSTART 8
+-#define VSTOP 9
+-#define VSUSP 10
+-#define VEOL 11
+-#define VREPRINT 12
+-#define VDISCARD 13
+-#define VWERASE 14
+-#define VLNEXT 15
+-#define VEOL2 16
+-
+-
+-/* c_iflag bits */
+-#define IGNBRK	0000001
+-#define BRKINT	0000002
+-#define IGNPAR	0000004
+-#define PARMRK	0000010
+-#define INPCK	0000020
+-#define ISTRIP	0000040
+-#define INLCR	0000100
+-#define IGNCR	0000200
+-#define ICRNL	0000400
+-#define IUCLC	0001000
+-#define IXON	0002000
+-#define IXANY	0004000
+-#define IXOFF	0010000
+-#define IMAXBEL	0020000
+-#define IUTF8	0040000
+-
+-/* c_oflag bits */
+-#define OPOST	0000001
+-#define OLCUC	0000002
+-#define ONLCR	0000004
+-#define OCRNL	0000010
+-#define ONOCR	0000020
+-#define ONLRET	0000040
+-#define OFILL	0000100
+-#define OFDEL	0000200
+-#define NLDLY	0000400
+-#define   NL0	0000000
+-#define   NL1	0000400
+-#define CRDLY	0003000
+-#define   CR0	0000000
+-#define   CR1	0001000
+-#define   CR2	0002000
+-#define   CR3	0003000
+-#define TABDLY	0014000
+-#define   TAB0	0000000
+-#define   TAB1	0004000
+-#define   TAB2	0010000
+-#define   TAB3	0014000
+-#define   XTABS	0014000
+-#define BSDLY	0020000
+-#define   BS0	0000000
+-#define   BS1	0020000
+-#define VTDLY	0040000
+-#define   VT0	0000000
+-#define   VT1	0040000
+-#define FFDLY	0100000
+-#define   FF0	0000000
+-#define   FF1	0100000
+-
+-/* c_cflag bit meaning */
+-#define CBAUD	0010017
+-#define  B0	0000000		/* hang up */
+-#define  B50	0000001
+-#define  B75	0000002
+-#define  B110	0000003
+-#define  B134	0000004
+-#define  B150	0000005
+-#define  B200	0000006
+-#define  B300	0000007
+-#define  B600	0000010
+-#define  B1200	0000011
+-#define  B1800	0000012
+-#define  B2400	0000013
+-#define  B4800	0000014
+-#define  B9600	0000015
+-#define  B19200	0000016
+-#define  B38400	0000017
+-#define EXTA B19200
+-#define EXTB B38400
+-#define CSIZE	0000060
+-#define   CS5	0000000
+-#define   CS6	0000020
+-#define   CS7	0000040
+-#define   CS8	0000060
+-#define CSTOPB	0000100
+-#define CREAD	0000200
+-#define PARENB	0000400
+-#define PARODD	0001000
+-#define HUPCL	0002000
+-#define CLOCAL	0004000
+-#define CBAUDEX 0010000
+-#define    BOTHER 0010000
+-#define    B57600 0010001
+-#define   B115200 0010002
+-#define   B230400 0010003
+-#define   B460800 0010004
+-#define   B500000 0010005
+-#define   B576000 0010006
+-#define   B921600 0010007
+-#define  B1000000 0010010
+-#define  B1152000 0010011
+-#define  B1500000 0010012
+-#define  B2000000 0010013
+-#define  B2500000 0010014
+-#define  B3000000 0010015
+-#define  B3500000 0010016
+-#define  B4000000 0010017
+-#define CIBAUD	  002003600000		/* input baud rate */
+-#define CMSPAR	  010000000000		/* mark or space (stick) parity */
+-#define CRTSCTS	  020000000000		/* flow control */
+-
+-#define IBSHIFT	  16			/* shift from CBAUD to CIBAUD */
+-
+-/* c_lflag bits */
+-#define ISIG	0000001
+-#define ICANON	0000002
+-#define XCASE	0000004
+-#define ECHO	0000010
+-#define ECHOE	0000020
+-#define ECHOK	0000040
+-#define ECHONL	0000100
+-#define NOFLSH	0000200
+-#define TOSTOP	0000400
+-#define ECHOCTL	0001000
+-#define ECHOPRT	0002000
+-#define ECHOKE	0004000
+-#define FLUSHO	0010000
+-#define PENDIN	0040000
+-#define IEXTEN	0100000
+-
+-
+-/* tcflow() and TCXONC use these */
+-#define	TCOOFF		0
+-#define	TCOON		1
+-#define	TCIOFF		2
+-#define	TCION		3
+-
+-/* tcflush() and TCFLSH use these */
+-#define	TCIFLUSH	0
+-#define	TCOFLUSH	1
+-#define	TCIOFLUSH	2
+-
+-/* tcsetattr uses these */
+-#define	TCSANOW		0
+-#define	TCSADRAIN	1
+-#define	TCSAFLUSH	2
+-
+-#endif /* __ARCH_H8300_TERMBITS_H__ */
++#include <asm-generic/termbits.h>
+diff --git a/arch/h8300/include/asm/termios.h b/arch/h8300/include/asm/termios.h
+index 70eea64..280d78a 100644
+--- a/arch/h8300/include/asm/termios.h
++++ b/arch/h8300/include/asm/termios.h
+@@ -1,92 +1 @@
+-#ifndef _H8300_TERMIOS_H
+-#define _H8300_TERMIOS_H
+-
+-#include <asm/termbits.h>
+-#include <asm/ioctls.h>
+- 
+-struct winsize {
+-	unsigned short ws_row;
+-	unsigned short ws_col;
+-	unsigned short ws_xpixel;
+-	unsigned short ws_ypixel;
+-};
+-
+-#define NCC 8
+-struct termio {
+-	unsigned short c_iflag;		/* input mode flags */
+-	unsigned short c_oflag;		/* output mode flags */
+-	unsigned short c_cflag;		/* control mode flags */
+-	unsigned short c_lflag;		/* local mode flags */
+-	unsigned char c_line;		/* line discipline */
+-	unsigned char c_cc[NCC];	/* control characters */
+-};
+-
+-#ifdef __KERNEL__
+-/*	intr=^C		quit=^|		erase=del	kill=^U
+-	eof=^D		vtime=\0	vmin=\1		sxtc=\0
+-	start=^Q	stop=^S		susp=^Z		eol=\0
+-	reprint=^R	discard=^U	werase=^W	lnext=^V
+-	eol2=\0
+-*/
+-#define INIT_C_CC "\003\034\177\025\004\0\1\0\021\023\032\0\022\017\027\026\0"
+-#endif
+-
+-/* modem lines */
+-#define TIOCM_LE	0x001
+-#define TIOCM_DTR	0x002
+-#define TIOCM_RTS	0x004
+-#define TIOCM_ST	0x008
+-#define TIOCM_SR	0x010
+-#define TIOCM_CTS	0x020
+-#define TIOCM_CAR	0x040
+-#define TIOCM_RNG	0x080
+-#define TIOCM_DSR	0x100
+-#define TIOCM_CD	TIOCM_CAR
+-#define TIOCM_RI	TIOCM_RNG
+-#define TIOCM_OUT1	0x2000
+-#define TIOCM_OUT2	0x4000
+-#define TIOCM_LOOP	0x8000
+-
+-/* ioctl (fd, TIOCSERGETLSR, &result) where result may be as below */
+-
+-#ifdef __KERNEL__
+-
+-/*
+- * Translate a "termio" structure into a "termios". Ugh.
+- */
+-#define user_termio_to_kernel_termios(termios, termio) \
+-({ \
+-	unsigned short tmp; \
+-	get_user(tmp, &(termio)->c_iflag); \
+-	(termios)->c_iflag = (0xffff0000 & ((termios)->c_iflag)) | tmp; \
+-	get_user(tmp, &(termio)->c_oflag); \
+-	(termios)->c_oflag = (0xffff0000 & ((termios)->c_oflag)) | tmp; \
+-	get_user(tmp, &(termio)->c_cflag); \
+-	(termios)->c_cflag = (0xffff0000 & ((termios)->c_cflag)) | tmp; \
+-	get_user(tmp, &(termio)->c_lflag); \
+-	(termios)->c_lflag = (0xffff0000 & ((termios)->c_lflag)) | tmp; \
+-	get_user((termios)->c_line, &(termio)->c_line); \
+-	copy_from_user((termios)->c_cc, (termio)->c_cc, NCC); \
+-})
+-
+-/*
+- * Translate a "termios" structure into a "termio". Ugh.
+- */
+-#define kernel_termios_to_user_termio(termio, termios) \
+-({ \
+-	put_user((termios)->c_iflag, &(termio)->c_iflag); \
+-	put_user((termios)->c_oflag, &(termio)->c_oflag); \
+-	put_user((termios)->c_cflag, &(termio)->c_cflag); \
+-	put_user((termios)->c_lflag, &(termio)->c_lflag); \
+-	put_user((termios)->c_line,  &(termio)->c_line); \
+-	copy_to_user((termio)->c_cc, (termios)->c_cc, NCC); \
+-})
+-
+-#define user_termios_to_kernel_termios(k, u) copy_from_user(k, u, sizeof(struct termios2))
+-#define kernel_termios_to_user_termios(u, k) copy_to_user(u, k, sizeof(struct termios2))
+-#define user_termios_to_kernel_termios_1(k, u) copy_from_user(k, u, sizeof(struct termios))
+-#define kernel_termios_to_user_termios_1(u, k) copy_to_user(u, k, sizeof(struct termios))
+-
+-#endif	/* __KERNEL__ */
+-
+-#endif /* _H8300_TERMIOS_H */
++#include <asm-generic/termios.h>
+diff --git a/arch/h8300/include/asm/tlb.h b/arch/h8300/include/asm/tlb.h
+index 3dea80a..4178f46 100644
+--- a/arch/h8300/include/asm/tlb.h
++++ b/arch/h8300/include/asm/tlb.h
+@@ -7,17 +7,6 @@
+ 
+ #define tlb_flush(tlb)	do { } while(0)
+ 
+-/* 
+-  include/asm-h8300/tlb.h 
+-*/
+-
+-#ifndef __H8300_TLB_H__
+-#define __H8300_TLB_H__
+-
+-#define tlb_flush(tlb)	do { } while(0)
+-
+ #include <asm-generic/tlb.h>
+ 
+ #endif
+-
+-#endif
+diff --git a/arch/h8300/include/asm/tlbflush.h b/arch/h8300/include/asm/tlbflush.h
+index 41c148a..f1a06c0 100644
+--- a/arch/h8300/include/asm/tlbflush.h
++++ b/arch/h8300/include/asm/tlbflush.h
+@@ -1,55 +1 @@
+-#ifndef _H8300_TLBFLUSH_H
+-#define _H8300_TLBFLUSH_H
+-
+-/*
+- * Copyright (C) 2000 Lineo, David McCullough <davidm@uclinux.org>
+- * Copyright (C) 2000-2002, Greg Ungerer <gerg@snapgear.com>
+- */
+-
+-#include <asm/setup.h>
+-
+-/*
+- * flush all user-space atc entries.
+- */
+-static inline void __flush_tlb(void)
+-{
+-	BUG();
+-}
+-
+-static inline void __flush_tlb_one(unsigned long addr)
+-{
+-	BUG();
+-}
+-
+-#define flush_tlb() __flush_tlb()
+-
+-/*
+- * flush all atc entries (both kernel and user-space entries).
+- */
+-static inline void flush_tlb_all(void)
+-{
+-	BUG();
+-}
+-
+-static inline void flush_tlb_mm(struct mm_struct *mm)
+-{
+-	BUG();
+-}
+-
+-static inline void flush_tlb_page(struct vm_area_struct *vma, unsigned long addr)
+-{
+-	BUG();
+-}
+-
+-static inline void flush_tlb_range(struct mm_struct *mm,
+-				   unsigned long start, unsigned long end)
+-{
+-	BUG();
+-}
+-
+-static inline void flush_tlb_kernel_page(unsigned long addr)
+-{
+-	BUG();
+-}
+-
+-#endif /* _H8300_TLBFLUSH_H */
++#include <asm-generic/tlbflush.h>
+diff --git a/arch/h8300/include/asm/types.h b/arch/h8300/include/asm/types.h
+index 1287519..b9e79bc 100644
+--- a/arch/h8300/include/asm/types.h
++++ b/arch/h8300/include/asm/types.h
+@@ -1,33 +1 @@
+-#ifndef _H8300_TYPES_H
+-#define _H8300_TYPES_H
+-
+-#include <asm-generic/int-ll64.h>
+-
+-#if !defined(__ASSEMBLY__)
+-
+-/*
+- * This file is never included by application software unless
+- * explicitly requested (e.g., via linux/types.h) in which case the
+- * application is Linux specific so (user-) name space pollution is
+- * not a major issue.  However, for interoperability, libraries still
+- * need to be careful to avoid a name clashes.
+- */
+-
+-typedef unsigned short umode_t;
+-
+-/*
+- * These aren't exported outside the kernel to avoid name space clashes
+- */
+-#ifdef __KERNEL__
+-
+-#define BITS_PER_LONG 32
+-
+-/* Dma addresses are 32-bits wide.  */
+-
+-typedef u32 dma_addr_t;
+-
+-#endif /* __KERNEL__ */
+-
+-#endif /* __ASSEMBLY__ */
+-
+-#endif /* _H8300_TYPES_H */
++#include <asm-generic/types.h>
+diff --git a/arch/h8300/include/asm/uaccess.h b/arch/h8300/include/asm/uaccess.h
+index 352c193..6b0aed4 100644
+--- a/arch/h8300/include/asm/uaccess.h
++++ b/arch/h8300/include/asm/uaccess.h
+@@ -91,7 +91,28 @@ extern int __put_user_bad(void);
+ #define get_user(x, ptr)					\
+ ({								\
+     int __gu_err = 0;						\
+-    typeof(*(ptr)) __gu_val = *ptr;				\
++    typeof(*(ptr)) *__gu_addr = (ptr);				\
++    switch (sizeof(*(ptr))) {					\
++    case 1:							\
++    case 2:							\
++    case 4:							\
++    case 8:							\
++	break;							\
++    default:							\
++	__gu_err = __get_user_bad();				\
++	__gu_addr = NULL;					\
++	break;							\
++    }								\
++    if(__gu_addr)						\
++        (x) = *__gu_addr;					\
++    __gu_err;							\
++})
++#define __get_user(x, ptr) get_user(x, ptr)
++#if 0
++#define get_user(x, ptr)					\
++({								\
++    int __gu_err = 0;						\
++    typeof(*(ptr)) __gu_val = *(ptr);				\
+     switch (sizeof(*(ptr))) {					\
+     case 1:							\
+     case 2:							\
+@@ -107,6 +128,7 @@ extern int __put_user_bad(void);
+     __gu_err;							\
+ })
+ #define __get_user(x, ptr) get_user(x, ptr)
++#endif
+ 
+ extern int __get_user_bad(void);
+ 
+diff --git a/arch/h8300/include/asm/ucontext.h b/arch/h8300/include/asm/ucontext.h
+index 0bcf8f8..9bc07b9 100644
+--- a/arch/h8300/include/asm/ucontext.h
++++ b/arch/h8300/include/asm/ucontext.h
+@@ -1,12 +1 @@
+-#ifndef _H8300_UCONTEXT_H
+-#define _H8300_UCONTEXT_H
+-
+-struct ucontext {
+-	unsigned long	  uc_flags;
+-	struct ucontext  *uc_link;
+-	stack_t		  uc_stack;
+-	struct sigcontext uc_mcontext;
+-	sigset_t	  uc_sigmask;	/* mask last for extensibility */
+-};
+-
+-#endif
++#include <asm-generic/ucontext.h>
+diff --git a/arch/h8300/include/asm/virtconvert.h b/arch/h8300/include/asm/virtconvert.h
+deleted file mode 100644
+index 19cfd62..0000000
+--- a/arch/h8300/include/asm/virtconvert.h
++++ /dev/null
+@@ -1,20 +0,0 @@
+-#ifndef __H8300_VIRT_CONVERT__
+-#define __H8300_VIRT_CONVERT__
+-
+-/*
+- * Macros used for converting between virtual and physical mappings.
+- */
+-
+-#ifdef __KERNEL__
+-
+-#include <asm/setup.h>
+-#include <asm/page.h>
+-
+-#define phys_to_virt(vaddr)	((void *) (vaddr))
+-#define virt_to_phys(vaddr)	((unsigned long) (vaddr))
+-
+-#define virt_to_bus virt_to_phys
+-#define bus_to_virt phys_to_virt
+-
+-#endif
+-#endif
+diff --git a/arch/h8300/kernel/asm-offsets.c b/arch/h8300/kernel/asm-offsets.c
+index fd961e0..0491fb0 100644
+--- a/arch/h8300/kernel/asm-offsets.c
++++ b/arch/h8300/kernel/asm-offsets.c
+@@ -14,7 +14,6 @@
+ #include <linux/ptrace.h>
+ #include <linux/hardirq.h>
+ #include <linux/kbuild.h>
+-#include <asm/bootinfo.h>
+ #include <asm/irq.h>
+ #include <asm/ptrace.h>
+ 
+diff --git a/arch/h8300/kernel/sys_h8300.c b/arch/h8300/kernel/sys_h8300.c
+index b5969db..0209b38 100644
+--- a/arch/h8300/kernel/sys_h8300.c
++++ b/arch/h8300/kernel/sys_h8300.c
+@@ -22,7 +22,6 @@
+ 
+ #include <asm/setup.h>
+ #include <asm/uaccess.h>
+-#include <asm/cachectl.h>
+ #include <asm/traps.h>
+ #include <asm/unistd.h>
+ 
 -- 
-Yoshinori Sato
-<ysato@users.sourceforge.jp>
+1.6.5.3
+
