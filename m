@@ -1,60 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752967Ab0AKBrq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753162Ab0AKBta@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752967Ab0AKBrq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jan 2010 20:47:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752827Ab0AKBrq
+	id S1753162Ab0AKBta (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jan 2010 20:49:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752827Ab0AKBt3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jan 2010 20:47:46 -0500
-Received: from mga09.intel.com ([134.134.136.24]:63787 "EHLO mga09.intel.com"
+	Sun, 10 Jan 2010 20:49:29 -0500
+Received: from mga01.intel.com ([192.55.52.88]:57717 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750919Ab0AKBrp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jan 2010 20:47:45 -0500
+	id S1751134Ab0AKBt2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Jan 2010 20:49:28 -0500
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,252,1262592000"; 
-   d="scan'208";a="482919968"
-Date: Mon, 11 Jan 2010 09:47:30 +0800
+X-IronPort-AV: E=Sophos;i="4.49,251,1262592000"; 
+   d="scan'208";a="530098198"
+Date: Mon, 11 Jan 2010 09:49:27 +0800
 From: Shaohua Li <shaohua.li@intel.com>
 To: Corrado Zoccolo <czoccolo@gmail.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>,
-       Jeff Moyer <jmoyer@redhat.com>, Vivek Goyal <vgoyal@redhat.com>,
-       Gui Jianfeng <guijianfeng@cn.fujitsu.com>,
-       Yanmin Zhang <yanmin_zhang@linux.intel.com>
-Subject: Re: [PATCH] cfq-iosched: rework seeky detection
-Message-ID: <20100111014730.GA22362@sli10-desk.sh.intel.com>
-References: <1263052757-23436-1-git-send-email-czoccolo@gmail.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
+       "Zhang, Yanmin" <yanmin.zhang@intel.com>
+Subject: Re: [RFC]cfq-iosched: quantum check tweak
+Message-ID: <20100111014927.GB22362@sli10-desk.sh.intel.com>
+References: <20091225091030.GA28365@sli10-desk.sh.intel.com>
+ <4e5e476b0912250144l96c4d34v300910216e5c7a08@mail.gmail.com>
+ <20091228033554.GB15242@sli10-desk.sh.intel.com>
+ <4e5e476b0912280102t2278d7a5ld3e8784f52f2be31@mail.gmail.com>
+ <1262829893.4984.13.camel@sli10-desk.sh.intel.com>
+ <4e5e476b1001071344i4f702496y22f33bc2d4bc834d@mail.gmail.com>
+ <20100108005725.GA3083@sli10-desk.sh.intel.com>
+ <4e5e476b1001081222s179db0a8ob5dc0bf75e11b03e@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <1263052757-23436-1-git-send-email-czoccolo@gmail.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <4e5e476b1001081222s179db0a8ob5dc0bf75e11b03e@mail.gmail.com>
 User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jan 09, 2010 at 11:59:17PM +0800, Corrado Zoccolo wrote:
-> Current seeky detection is based on average seek lenght.
-> This is suboptimal, since the average will not distinguish between:
-> * a process doing medium sized seeks
-> * a process doing some sequential requests interleaved with larger seeks
-> and even a medium seek can take lot of time, if the requested sector
-> happens to be behind the disk head in the rotation (50% probability).
-> 
-> Therefore, we change the seeky queue detection to work as follows:
-> * each request can be classified as sequential if it is very close to
->   the current head position, i.e. it is likely in the disk cache (disks
->   usually read more data than requested, and put it in cache for
->   subsequent reads). Otherwise, the request is classified as seeky.
-> * an history window of the last 32 requests is kept, storing the
->   classification result.
-> * A queue is marked as seeky if more than 1/8 of the last 32 requests
->   were seeky.
-> 
-> This patch fixes a regression reported by Yanmin, on mmap 64k random
-> reads.
-Can we not count a big request (say the request data is >= 32k) as seeky
-regardless the seek distance? In this way we can also make a 64k random sync
-read not as seeky.
+On Sat, Jan 09, 2010 at 04:22:47AM +0800, Corrado Zoccolo wrote:
+> On Fri, Jan 8, 2010 at 1:57 AM, Shaohua Li <shaohua.li@intel.com> wrote:
+> > On Fri, Jan 08, 2010 at 05:44:27AM +0800, Corrado Zoccolo wrote:
+> >> Hi Shahoua,
+> >>
+> >> On Thu, Jan 7, 2010 at 3:04 AM, Shaohua Li <shaohua.li@intel.com> wrote:
+> >> > On Mon, 2009-12-28 at 17:02 +0800, Corrado Zoccolo wrote:
+> >> >> Hi Shaohua,
+> >> >> On Mon, Dec 28, 2009 at 4:35 AM, Shaohua Li <shaohua.li@intel.com> wrote:
+> >> >> > On Fri, Dec 25, 2009 at 05:44:40PM +0800, Corrado Zoccolo wrote:
+> >> >> >> On Fri, Dec 25, 2009 at 10:10 AM, Shaohua Li <shaohua.li@intel.com> wrote:
+> >> >> >> > Currently a queue can only dispatch up to 4 requests if there are other queues.
+> >> >> >> > This isn't optimal, device can handle more requests, for example, AHCI can
+> >> >> >> > handle 31 requests. I can understand the limit is for fairness, but we could
+> >> >> >> > do some tweaks:
+> >> >> >> > 1. if the queue still has a lot of slice left, sounds we could ignore the limit
+> >> >> >> ok. You can even scale the limit proportionally to the remaining slice
+> >> >> >> (see below).
+> >> >> > I can't understand the meaning of below scale. cfq_slice_used_soon() means
+> >> >> > dispatched requests can finish before slice is used, so other queues will not be
+> >> >> > impacted. I thought/hope a cfq_slice_idle time is enough to finish the
+> >> >> > dispatched requests.
+> >> >> cfq_slice_idle is 8ms, that is the average time to complete 1 request
+> >> >> on most disks. If you have more requests dispatched on a
+> >> >> NCQ-rotational disk (non-RAID), it will take more time. Probably a
+> >> >> linear formula is not the most accurate, but still more accurate than
+> >> >> taking just 1 cfq_slice_idle. If you can experiment a bit, you could
+> >> >> also try:
+> >> >>  cfq_slice_idle * ilog2(nr_dispatched+1)
+> >> >>  cfq_slice_idle * (1<<(ilog2(nr_dispatched+1)>>1))
+> >> >>
+> >> >> >
+> >> >> >> > 2. we could keep the check only when cfq_latency is on. For uses who don't care
+> >> >> >> > about latency should be happy to have device fully piped on.
+> >> >> >> I wouldn't overload low_latency with this meaning. You can obtain the
+> >> >> >> same by setting the quantum to 32.
+> >> >> > As this impact fairness, so natually thought we could use low_latency. I'll remove
+> >> >> > the check in next post.
+> >> >> Great.
+> >> >> >> > I have a test of random direct io of two threads, each has 32 requests one time
+> >> >> >> > without patch: 78m/s
+> >> >> >> > with tweak 1: 138m/s
+> >> >> >> > with two tweaks and disable latency: 156m/s
+> >> >> >>
+> >> >> >> Please, test also with competing seq/random(depth1)/async workloads,
+> >> >> >> and measure also introduced latencies.
+> >> >> > depth1 should be ok, as if device can only send one request, it should not require
+> >> >> > more requests from ioscheduler.
+> >> >> I mean have a run with, at the same time:
+> >> >> * one seq reader,
+> >> >> * h random readers with depth 1 (non-aio)
+> >> >> * one async seq writer
+> >> >> * k random readers with large depth.
+> >> >> In this way, you can see if the changes you introduce to boost your
+> >> >> workload affect more realistic scenarios, in which various workloads
+> >> >> are mixed.
+> >> >> I explicitly add the depth1 random readers, since they are sceduled
+> >> >> differently than the large (>4) depth ones.
+> >> > I tried a fio script which does like your description, but the data
+> >> > isn't stable, especially the write speed, other kind of io speed is
+> >> > stable. Apply below patch doesn't make things worse (still write speed
+> >> > isn't stable, other io is stable), so I can't say if the patch passes
+> >> > the test, but it appears latency reported by fio hasn't change. I adopt
+> >> > the slice_idle * dispatched approach, which I thought should be safe.
+> >>
+> >> I'm doing some tests right now on a single ncq rotational disk, and
+> >> the average service time when submitting with a high depth is halved
+> >> w.r.t. depth 1, so I think you could test also with the formula :
+> >> slice_idle * dispatched / 2. It should give a performance boost,
+> >> without noticeable impact on latency
+> > Thanks for looking at it. can you forward your tests to me so I can
+> > check here?
+> Sure, you can find them at:
+> * simple seek time: http://dl.dropbox.com/u/3525644/stride.c
+> * avg seek time with NCQ: http://dl.dropbox.com/u/3525644/ncq.c
+great, I'll do some tests.
+
+> > I'll do more aggressive formula next. It shouldn't impact
+> > my SSD which is very fast, each request takes less than 1ms. We'd better
+> > have a mechanism to measure device speed, but jiffies isn't good. I'm thinking
+> > using sched_clock() which has its issue too like having drift between CPUs.
+> I'm using ktime_get() successfully. Measuring is the easy part. The
+> difficult one is decide what to do with the value :)
+If we can get the average time a request takes, we can further tweak the quantum check.
+In fast device, a slice_idle can finish 100 requests.
 
 Thanks,
 Shaohua
