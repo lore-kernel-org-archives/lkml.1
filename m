@@ -1,116 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751978Ab0AKEfc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751799Ab0AKEkt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751978Ab0AKEfc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jan 2010 23:35:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751808Ab0AKEfb
+	id S1751799Ab0AKEkt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jan 2010 23:40:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751350Ab0AKEkt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jan 2010 23:35:31 -0500
-Received: from tomts40.bellnexxia.net ([209.226.175.97]:39709 "EHLO
-	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751451Ab0AKEfZ (ORCPT
+	Sun, 10 Jan 2010 23:40:49 -0500
+Received: from mail-ew0-f214.google.com ([209.85.219.214]:49571 "EHLO
+	mail-ew0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750876Ab0AKEks (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jan 2010 23:35:25 -0500
-Date: Sun, 10 Jan 2010 23:25:21 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>, Oleg Nesterov <oleg@redhat.com>,
-       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org,
-       josh@joshtriplett.org, tglx@linutronix.de, Valdis.Kletnieks@vt.edu,
-       dhowells@redhat.com, laijs@cn.fujitsu.com, dipankar@in.ibm.com
-Subject: Re: [RFC PATCH] introduce sys_membarrier(): process-wide memory
-	barrier
-Message-ID: <20100111042521.GB32213@Krystal>
-References: <1263079000.28171.3795.camel@gandalf.stny.rr.com> <20100110000318.GD9044@linux.vnet.ibm.com> <1263084099.2231.5.camel@frodo> <20100110014456.GG25790@Krystal> <1263089578.2231.22.camel@frodo> <20100110052508.GG9044@linux.vnet.ibm.com> <1263124209.28171.3798.camel@gandalf.stny.rr.com> <20100110174512.GH9044@linux.vnet.ibm.com> <20100110182423.GA22821@Krystal> <20100111011705.GJ9044@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20100111011705.GJ9044@linux.vnet.ibm.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.27.31-grsec (i686)
-X-Uptime: 22:13:29 up 25 days, 11:31,  4 users,  load average: 0.14, 0.15,
-	0.10
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sun, 10 Jan 2010 23:40:48 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=td+bSTYNcGmD9mOBIAygU4SFtzUGNIfwBarBN1+/IqHmrmmBlzVKoLfT05ylPuUBg7
+         5Lbj6GB5wDk4d5ZkNEudApf+l7g63Ppef3uzG0i+uNJX77yx8oRaJtyOGoRvbP3rLcrN
+         l2EvX1Ef8n4M2jrPs7t4+WE9Rtqa0oacagHyA=
+MIME-Version: 1.0
+In-Reply-To: <13bb8ce11001101730w640f99p72ecb1204e59f139@mail.gmail.com>
+References: <13bb8ce11001101156g3cd88a6bn7c6ce657850ab534@mail.gmail.com>
+	 <20100111001745.21d28340@lxorguk.ukuu.org.uk>
+	 <13bb8ce11001101730w640f99p72ecb1204e59f139@mail.gmail.com>
+Date: Sun, 10 Jan 2010 22:40:46 -0600
+Message-ID: <13bb8ce11001102040j37e061fn976ec74595f30232@mail.gmail.com>
+Subject: Re: staging/et131x Driver Transmits but does not Receive Packets
+From: Daniel Goller <morfic@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: alan@lxorguk.ukuu.org.uk
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
-[...]
-> > Even when taking the spinlocks, efficient iteration on active threads is
-> > done with for_each_cpu(cpu, mm_cpumask(current->mm)), which depends on
-> > the same cpumask, and thus requires the same memory barriers around the
-> > updates.
-> 
-> Ouch!!!  Good point and good catch!!!
-> 
-> > We could switch to an inefficient iteration on all online CPUs instead,
-> > and check read runqueue ->mm with the spinlock held. Is that what you
-> > propose ? This will cause reading of large amounts of runqueue
-> > information, especially on large systems running few threads. The other
-> > way around is to iterate on all the process threads: in this case, small
-> > systems running many threads will have to read information about many
-> > inactive threads, which is not much better.
-> 
-> I am not all that worried about exactly what we do as long as it is
-> pretty obviously correct.  We can then improve performance when and as
-> the need arises.  We might need to use any of the strategies you
-> propose, or perhaps even choose among them depending on the number of
-> threads in the process, the number of CPUs, and so forth.  (I hope not,
-> but...)
-> 
-> My guess is that an obviously correct approach would work well for a
-> slowpath.  If someone later runs into performance problems, we can fix
-> them with the added knowledge of what they are trying to do.
-> 
+>
+> Going to get 2.6.29 and 2.6.30 now.
 
-OK, here is what I propose. Let's choose between two implementations
-(v3a and v3b), which implement two "obviously correct" approaches. In
-summary:
+This is going to be a lot of fun...
 
-* baseline (based on 2.6.32.2)
-   text	   data	    bss	    dec	    hex	filename
-  76887	   8782	   2044	  87713	  156a1	kernel/sched.o
+2.6.29.6 did nothing, but TX Packets count ever so slightly
+increasing, all attempts ended in a "Destination host unreachable"
+2.6.30.10 actually allowed me to ping another host in the network,
+(the restarted by kde) xchat meanwhile reconnected to the znc instance
+on the host i was pinging.
+I got replies to pings 4, 13 and all else was lost by the time i
+pinged the host.
 
-* v3a: ipi to many using mm_cpumask
+I then blacklisted iwlagn and r8169 and rebooted, retrying 2.6.29.6
+and 2.6.30.10 but was no longer able to ping anything. So when it
+works and when not is still intermittent. (And the only interfaces up
+were eth1 and lo, not eth0 (r8169) or wlan0 (iwlagn) in case someone
+wonders)
 
-- adds smp_mb__before_clear_bit()/smp_mb__after_clear_bit() before and
-  after mm_cpumask stores in context_switch(). They are only executed
-  when oldmm and mm are different. (it's my turn to hide behind an
-  appropriately-sized boulder for touching the scheduler). ;) Note that
-  it's not that bad, as these barriers turn into simple compiler barrier()
-  on:
-    avr32, blackfin, cris, frb, h8300, m32r, m68k, mn10300, score, sh,
-    sparc, x86 and xtensa.
-  The less lucky architectures gaining two smp_mb() are:
-    alpha, arm, ia64, mips, parisc, powerpc and s390.
-  ia64 is gaining only one smp_mb() thanks to its acquire semantic.
-- size
-   text	   data	    bss	    dec	    hex	filename
-  77239	   8782	   2044	  88065	  15801	kernel/sched.o
-  -> adds 352 bytes of text
-- Number of lines (system call source code, w/o comments) : 18
+2.6.29.6 and 2.6.30.10 would allow me to modprobe et131x with
+additional debugging info, if you let me know what debug level you
+need and what i should be trying on the interface to produce useful
+info.
 
-* v3b: iteration on min(num_online_cpus(), nr threads in the process),
-  taking runqueue spinlocks, allocating a cpumask, ipi to many to the
-  cpumask. Does not allocate the cpumask if only a single IPI is needed.
+[ 1386.009039] et131x.ko:WARNING:et131x_ioctl Unhandled IOCTL Code: 0x8b27
+[ 1386.009859] et131x.ko:WARNING:et131x_ioctl Unhandled IOCTL Code: 0x8b14
+[ 1386.010994] et131x.ko:WARNING:et131x_ioctl Unhandled IOCTL Code: 0x8b1a
+[ 1386.011943] et131x.ko:WARNING:et131x_ioctl Unhandled IOCTL Code: 0x8b26
 
-- only adds sys_membarrier() and related functions.
-- size
-   text	   data	    bss	    dec	    hex	filename
-  78047	   8782	   2044	  88873	  15b29	kernel/sched.o
-  -> adds 1160 bytes of text
-- Number of lines (system call source code, w/o comments) : 163
+I see this repeating a few times now in 2.6.30.6
 
-I'll reply to this email with the two implementations. Comments are
-welcome.
+The one time i did get a reply on my pings and xchat, was just after
+trying to switch network cables around. But i have not been able to
+reproduce anything in subsequent attempts of replugging/restarting the
+interface.
+
+I do not think i am yet at a point where git bisect would be useful.
+
 
 Thanks,
 
-Mathieu
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Daniel
