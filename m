@@ -1,125 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752459Ab0AKBNz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752335Ab0AKBRH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752459Ab0AKBNz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jan 2010 20:13:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752079Ab0AKBNy
+	id S1752335Ab0AKBRH (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jan 2010 20:17:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751243Ab0AKBRF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jan 2010 20:13:54 -0500
-Received: from hera.kernel.org ([140.211.167.34]:45368 "EHLO hera.kernel.org"
+	Sun, 10 Jan 2010 20:17:05 -0500
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:46968 "EHLO e1.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751038Ab0AKBNy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jan 2010 20:13:54 -0500
-Message-ID: <4B4A7BC7.6060106@kernel.org>
-Date: Mon, 11 Jan 2010 10:15:51 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
+	id S1751095Ab0AKBRD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Jan 2010 20:17:03 -0500
+Date: Sun, 10 Jan 2010 17:17:05 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Steven Rostedt <rostedt@goodmis.org>, Oleg Nesterov <oleg@redhat.com>,
+       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org,
+       josh@joshtriplett.org, tglx@linutronix.de, Valdis.Kletnieks@vt.edu,
+       dhowells@redhat.com, laijs@cn.fujitsu.com, dipankar@in.ibm.com
+Subject: Re: [RFC PATCH] introduce sys_membarrier(): process-wide memory
+	barrier
+Message-ID: <20100111011705.GJ9044@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <1263078327.28171.3792.camel@gandalf.stny.rr.com> <1263079000.28171.3795.camel@gandalf.stny.rr.com> <20100110000318.GD9044@linux.vnet.ibm.com> <1263084099.2231.5.camel@frodo> <20100110014456.GG25790@Krystal> <1263089578.2231.22.camel@frodo> <20100110052508.GG9044@linux.vnet.ibm.com> <1263124209.28171.3798.camel@gandalf.stny.rr.com> <20100110174512.GH9044@linux.vnet.ibm.com> <20100110182423.GA22821@Krystal>
 MIME-Version: 1.0
-To: Torsten Kaiser <just.for.lkml@googlemail.com>
-CC: linux-kernel@vger.kernel.org, Jeff Garzik <jgarzik@pobox.com>,
-       linux-ide@vger.kernel.org
-Subject: Re: MSI broken in libata?
-References: <64bb37e0912250122n4e0e1842q88c0dad7e99ec6a7@mail.gmail.com>	 <4B484829.6060405@kernel.org> <64bb37e1001092033r1f0b4defw46c1a07101bb2d1b@mail.gmail.com>
-In-Reply-To: <64bb37e1001092033r1f0b4defw46c1a07101bb2d1b@mail.gmail.com>
-X-Enigmail-Version: 1.0
-Content-Type: multipart/mixed;
- boundary="------------080004010404040205070605"
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Mon, 11 Jan 2010 01:13:47 +0000 (UTC)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100110182423.GA22821@Krystal>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------080004010404040205070605
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-
-On 01/10/2010 01:33 PM, Torsten Kaiser wrote:
-> I did try the patch from Robert Hancock in
-> http://lkml.org/lkml/2010/1/6/417 ,but without success.
+On Sun, Jan 10, 2010 at 01:24:23PM -0500, Mathieu Desnoyers wrote:
+> * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
+> > On Sun, Jan 10, 2010 at 06:50:09AM -0500, Steven Rostedt wrote:
+> > > On Sat, 2010-01-09 at 21:25 -0800, Paul E. McKenney wrote:
+> > > > On Sat, Jan 09, 2010 at 09:12:58PM -0500, Steven Rostedt wrote:
+> > > 
+> > > > > >         < user space >
+> > > > > > 
+> > > > > >         < misses that CPU 2 is in rcu section >
+> > > > > 
+> > > > > 
+> > > > > If the TLB flush misses that CPU 2 has a threaded task, and does not
+> > > > > flush CPU 2s TLB, it can also risk the same type of crash.
+> > > > 
+> > > > But isn't the VM's locking helping us out in that case?
+> > > > 
+> > > > > >         [CPU 2's ->curr update now visible]
+> > > > > > 
+> > > > > >         [CPU 2's rcu_read_lock() store now visible]
+> > > > > > 
+> > > > > >         free(obj);
+> > > > > > 
+> > > > > >                                         use_object(obj); <=== crash!
+> > > > > > 
+> > > > > 
+> > > > > Think about it. If you change a process mmap, say you updated a mmap of
+> > > > > a file by flushing out one page and replacing it with another. If the
+> > > > > above missed sending to CPU 2, then CPU 2 may still be accessing the old
+> > > > > page of the file, and not the new one.
+> > > > > 
+> > > > > I think this may be the safe bet.
+> > > > 
+> > > > You might well be correct that we can access that bitmap locklessly,
+> > > > but there are additional things (like the loading of the arch-specific
+> > > > page-table register) that are likely to be helping in the VM case, but
+> > > > not necessarily helping in this case.
+> > > 
+> > > Then perhaps the sys_membarrier() should just do a flush_tlb()? That
+> > > should guarantee the synchronization, right?
+> > 
+> > Isn't just grabbing the runqueue locks a bit more straightforward and
+> > more clearly correct?  Again, this is the URCU slowpath, so it is hard
+> > to get too excited about a 15% performance penalty.
 > 
-> if you need any more information, or have something for me to try,
-> please just ask. I did look at the code and the documentation about
-> enabling MSI, but did not see anything (obvious) wrong, so I don't
-> know what to try next.
+> Even when taking the spinlocks, efficient iteration on active threads is
+> done with for_each_cpu(cpu, mm_cpumask(current->mm)), which depends on
+> the same cpumask, and thus requires the same memory barriers around the
+> updates.
 
-Can you please try the attached patch?
+Ouch!!!  Good point and good catch!!!
 
-Thanks.
+> We could switch to an inefficient iteration on all online CPUs instead,
+> and check read runqueue ->mm with the spinlock held. Is that what you
+> propose ? This will cause reading of large amounts of runqueue
+> information, especially on large systems running few threads. The other
+> way around is to iterate on all the process threads: in this case, small
+> systems running many threads will have to read information about many
+> inactive threads, which is not much better.
 
--- 
-tejun
+I am not all that worried about exactly what we do as long as it is
+pretty obviously correct.  We can then improve performance when and as
+the need arises.  We might need to use any of the strategies you
+propose, or perhaps even choose among them depending on the number of
+threads in the process, the number of CPUs, and so forth.  (I hope not,
+but...)
 
---------------080004010404040205070605
-Content-Type: text/x-patch;
- name="sil24-msi-possible-fix.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
- filename="sil24-msi-possible-fix.patch"
+My guess is that an obviously correct approach would work well for a
+slowpath.  If someone later runs into performance problems, we can fix
+them with the added knowledge of what they are trying to do.
 
-diff --git a/drivers/ata/sata_sil24.c b/drivers/ata/sata_sil24.c
-index 1370df6..b03bc5b 100644
---- a/drivers/ata/sata_sil24.c
-+++ b/drivers/ata/sata_sil24.c
-@@ -102,6 +102,7 @@ enum {
- 	HOST_CTRL_STOP		= (1 << 18), /* latched PCI STOP */
- 	HOST_CTRL_DEVSEL	= (1 << 19), /* latched PCI DEVSEL */
- 	HOST_CTRL_REQ64		= (1 << 20), /* latched PCI REQ64 */
-+	HOST_CTRL_MSIACK        = (1 << 30), /* MSI acknowledge */
- 	HOST_CTRL_GLOBAL_RST	= (1 << 31), /* global reset */
- 
- 	/*
-@@ -248,6 +249,7 @@ enum {
- 				  ATA_FLAG_NCQ | ATA_FLAG_ACPI_SATA |
- 				  ATA_FLAG_AN | ATA_FLAG_PMP,
- 	SIL24_FLAG_PCIX_IRQ_WOC	= (1 << 24), /* IRQ loss errata on PCI-X */
-+	SIL24_FLAG_MSI		= (1 << 25), /* MSI enabled */
- 
- 	IRQ_STAT_4PORTS		= 0xf,
- };
-@@ -1144,18 +1146,22 @@ static irqreturn_t sil24_interrupt(int irq, void *dev_instance)
- 	u32 status;
- 	int i;
- 
-+	spin_lock(&host->lock);
-+
-+	if (host->ports[0]->flags & SIL24_FLAG_MSI)
-+		writel(IRQ_STAT_4PORTS | HOST_CTRL_MSIACK,
-+		       host_base + HOST_CTRL);
-+
- 	status = readl(host_base + HOST_IRQ_STAT);
- 
- 	if (status == 0xffffffff) {
- 		printk(KERN_ERR DRV_NAME ": IRQ status == 0xffffffff, "
- 		       "PCI fault or device removal?\n");
--		goto out;
-+		goto out_unlock;
- 	}
- 
- 	if (!(status & IRQ_STAT_4PORTS))
--		goto out;
--
--	spin_lock(&host->lock);
-+		goto out_unlock;
- 
- 	for (i = 0; i < host->n_ports; i++)
- 		if (status & (1 << i)) {
-@@ -1168,8 +1174,8 @@ static irqreturn_t sil24_interrupt(int irq, void *dev_instance)
- 				       ": interrupt from disabled port %d\n", i);
- 		}
- 
-+ out_unlock:
- 	spin_unlock(&host->lock);
-- out:
- 	return IRQ_RETVAL(handled);
- }
- 
-@@ -1347,6 +1353,7 @@ static int sil24_init_one(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	if (sata_sil24_msi && !pci_enable_msi(pdev)) {
- 		dev_printk(KERN_INFO, &pdev->dev, "Using MSI\n");
- 		pci_intx(pdev, 0);
-+		host->ports[0]->flags |= SIL24_FLAG_MSI;
- 	}
- 
- 	pci_set_master(pdev);
+							Thanx, Paul
 
---------------080004010404040205070605--
+							Thanx, Paul
