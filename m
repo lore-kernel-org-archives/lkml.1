@@ -1,61 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752954Ab0AKJPo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753022Ab0AKJQA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752954Ab0AKJPo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jan 2010 04:15:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752920Ab0AKJPm
+	id S1753022Ab0AKJQA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jan 2010 04:16:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752949Ab0AKJPn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jan 2010 04:15:42 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:23292 "EHLO mx1.redhat.com"
+	Mon, 11 Jan 2010 04:15:43 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:1026 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752921Ab0AKJPk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jan 2010 04:15:40 -0500
+	id S1752613Ab0AKJPl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jan 2010 04:15:41 -0500
 From: Steven Whitehouse <swhiteho@redhat.com>
 To: linux-kernel@vger.kernel.org, cluster-devel@redhat.com
 Cc: Steven Whitehouse <swhiteho@redhat.com>
-Subject: [PATCH 2/4] GFS2: Fix locking bug in rename
-Date: Mon, 11 Jan 2010 09:11:38 +0000
-Message-Id: <1263201100-6904-3-git-send-email-swhiteho@redhat.com>
-In-Reply-To: <1263201100-6904-2-git-send-email-swhiteho@redhat.com>
+Subject: [PATCH 4/4] GFS2: Use MAX_LFS_FILESIZE for meta inode size
+Date: Mon, 11 Jan 2010 09:11:40 +0000
+Message-Id: <1263201100-6904-5-git-send-email-swhiteho@redhat.com>
+In-Reply-To: <1263201100-6904-4-git-send-email-swhiteho@redhat.com>
 References: <1263201100-6904-1-git-send-email-swhiteho@redhat.com>
  <1263201100-6904-2-git-send-email-swhiteho@redhat.com>
+ <1263201100-6904-3-git-send-email-swhiteho@redhat.com>
+ <1263201100-6904-4-git-send-email-swhiteho@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The rename code was taking a resource group lock in cases where
-it wasn't actually needed, this caused problems if the rename
-was resulting in an inode being unlinked. The patch ensures that
-we only take the rgrp lock early if it is really needed.
+Using ~0ULL was cauing sign issues in filemap_fdatawrite_range, so
+use MAX_LFS_FILESIZE instead.
 
 Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
 ---
- fs/gfs2/ops_inode.c |    6 ++++--
- 1 files changed, 4 insertions(+), 2 deletions(-)
+ fs/gfs2/meta_io.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/fs/gfs2/ops_inode.c b/fs/gfs2/ops_inode.c
-index 247436c..78f73ca 100644
---- a/fs/gfs2/ops_inode.c
-+++ b/fs/gfs2/ops_inode.c
-@@ -748,7 +748,7 @@ static int gfs2_rename(struct inode *odir, struct dentry *odentry,
- 	struct gfs2_rgrpd *nrgd;
- 	unsigned int num_gh;
- 	int dir_rename = 0;
--	int alloc_required;
-+	int alloc_required = 0;
- 	unsigned int x;
- 	int error;
- 
-@@ -867,7 +867,9 @@ static int gfs2_rename(struct inode *odir, struct dentry *odentry,
- 			goto out_gunlock;
- 	}
- 
--	alloc_required = error = gfs2_diradd_alloc_required(ndir, &ndentry->d_name);
-+	if (nip == NULL)
-+		alloc_required = gfs2_diradd_alloc_required(ndir, &ndentry->d_name);
-+	error = alloc_required;
- 	if (error < 0)
- 		goto out_gunlock;
- 	error = 0;
+diff --git a/fs/gfs2/meta_io.c b/fs/gfs2/meta_io.c
+index cb8d7a9..6f68a5f 100644
+--- a/fs/gfs2/meta_io.c
++++ b/fs/gfs2/meta_io.c
+@@ -121,7 +121,7 @@ struct inode *gfs2_aspace_get(struct gfs2_sbd *sdp)
+ 	if (aspace) {
+ 		mapping_set_gfp_mask(aspace->i_mapping, GFP_NOFS);
+ 		aspace->i_mapping->a_ops = &aspace_aops;
+-		aspace->i_size = ~0ULL;
++		aspace->i_size = MAX_LFS_FILESIZE;
+ 		ip = GFS2_I(aspace);
+ 		clear_bit(GIF_USER, &ip->i_flags);
+ 		insert_inode_hash(aspace);
 -- 
 1.6.2.5
 
