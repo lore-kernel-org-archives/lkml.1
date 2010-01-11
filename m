@@ -1,44 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751290Ab0AKKtS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751387Ab0AKKvd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751290Ab0AKKtS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jan 2010 05:49:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751179Ab0AKKtR
+	id S1751387Ab0AKKvd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jan 2010 05:51:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751028Ab0AKKvc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jan 2010 05:49:17 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:58672 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750712Ab0AKKtQ (ORCPT
+	Mon, 11 Jan 2010 05:51:32 -0500
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:60305 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750755Ab0AKKvb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jan 2010 05:49:16 -0500
-Date: Mon, 11 Jan 2010 10:52:01 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Masami Hiramatsu <mhiramat@redhat.com>, Michal Marek <mmarek@suse.cz>,
-       Simon Horman <horms@verge.net.au>, Roland Dreier <rdreier@cisco.com>,
-       Sam Ravnborg <sam@ravnborg.org>, Sergei Trofimovich <slyfox@inbox.ru>,
-       linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-sh@vger.kernel.org
-Subject: Re: [PATCH] Makefile: do not override LC_CTYPE
-Message-ID: <20100111105201.2d86135b@lxorguk.ukuu.org.uk>
-In-Reply-To: <4B47CACA.7080103@zytor.com>
-References: <20100108115745.GA14758@sepie.suse.cz>
-	<1262952988-16563-1-git-send-email-mmarek@suse.cz>
-	<4B47C94E.8070302@redhat.com>
-	<4B47CACA.7080103@zytor.com>
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.18.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 11 Jan 2010 05:51:31 -0500
+Date: Mon, 11 Jan 2010 10:51:26 +0000
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Samuel Ortiz <sameo@linux.intel.com>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Haojian Zhuang <haojian.zhuang@gmail.com>
+Subject: Re: linux-next: mfd tree build failure
+Message-ID: <20100111105126.GD3440@sirena.org.uk>
+References: <20100111160232.e37e5393.sfr@canb.auug.org.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100111160232.e37e5393.sfr@canb.auug.org.au>
+X-Cookie: What is the sound of one hand clapping?
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: broonie@sirena.org.uk
+X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> This is tolower/toupper()?  Do there exist locales where tolower/toupper
-> on ASCII input do weird things, or are we merely hypothesizing?
+On Mon, Jan 11, 2010 at 04:02:32PM +1100, Stephen Rothwell wrote:
+> Hi Sam,
 
-Turkish is the famous one for this and usually causes
-internationalisation chaos. So yes they exist, and there are worse more
-esoteric cases. There are good reasons sed and friends support classes as
-well as old C locale style ranges.
+> Today's linux-next build (x86_64_allmodconfig, gcc 4.4.0, binutils
+> 2.19.1) failed like this:
 
-Alan
+> ERROR: "max8925_set_bits" [drivers/video/backlight/max8925_bl.ko] undefined!
+> ERROR: "max8925_reg_write" [drivers/video/backlight/max8925_bl.ko] undefined!
+> ERROR: "max8925_reg_read" [drivers/video/backlight/max8925_bl.ko] undefined!
+> ERROR: "max8925_set_bits" [drivers/regulator/max8925.ko] undefined!
+> ERROR: "max8925_reg_read" [drivers/regulator/max8925.ko] undefined!
+
+> I am not sure what caused this, so I have used the version of the mfd
+> tree from next-20100108 for today.
+
+CCing in Haojian who did the driver.  I've not looked but I'd guess that
+the issue is missing EXPORT_SYMBOL{,_GPL}s on the symbols above.
