@@ -1,50 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751387Ab0AKKvd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751737Ab0AKKvw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751387Ab0AKKvd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jan 2010 05:51:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751028Ab0AKKvc
+	id S1751737Ab0AKKvw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jan 2010 05:51:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751496Ab0AKKvv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jan 2010 05:51:32 -0500
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:60305 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750755Ab0AKKvb (ORCPT
+	Mon, 11 Jan 2010 05:51:51 -0500
+Received: from stinky.trash.net ([213.144.137.162]:59879 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751028Ab0AKKvu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jan 2010 05:51:31 -0500
-Date: Mon, 11 Jan 2010 10:51:26 +0000
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Samuel Ortiz <sameo@linux.intel.com>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Haojian Zhuang <haojian.zhuang@gmail.com>
-Subject: Re: linux-next: mfd tree build failure
-Message-ID: <20100111105126.GD3440@sirena.org.uk>
-References: <20100111160232.e37e5393.sfr@canb.auug.org.au>
+	Mon, 11 Jan 2010 05:51:50 -0500
+Message-ID: <4B4B02BE.5060209@trash.net>
+Date: Mon, 11 Jan 2010 11:51:42 +0100
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090701)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100111160232.e37e5393.sfr@canb.auug.org.au>
-X-Cookie: What is the sound of one hand clapping?
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: broonie@sirena.org.uk
-X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
+To: Joe Perches <joe@perches.com>
+CC: linux-kernel@vger.kernel.org, "David S. Miller" <davem@davemloft.net>,
+       Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>,
+       "Pekka Savola (ipv6)" <pekkas@netcore.fi>,
+       James Morris <jmorris@namei.org>,
+       Hideaki YOSHIFUJI <yoshfuji@linux-ipv6.org>,
+       netfilter-devel@vger.kernel.org, netfilter@vger.kernel.org,
+       coreteam@netfilter.org, netdev@vger.kernel.org
+Subject: Re: [PATCH v2 5/8] net/ipv4/netfilter/nf_nat_ftp.c: Remove (*mangle[])
+ array and functions, use %pI4
+References: <cover.1262726222.git.joe@perches.com>	 <bccf36219f3ea5a9b7565734bc87095bc986dbe0.1262726222.git.joe@perches.com> <1262805798.1952.105.camel@Joe-Laptop.home>
+In-Reply-To: <1262805798.1952.105.camel@Joe-Laptop.home>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 11, 2010 at 04:02:32PM +1100, Stephen Rothwell wrote:
-> Hi Sam,
+Joe Perches wrote:
+> These functions merely exist to format a buffer and call
+> nf_nat_mangle_tcp_packet.
+> 
+> Format the buffer and perform the call in nf_nat_ftp instead.
+> 
+> Use %pI4 for the IP address.
+> 
+> Saves ~600 bytes of text
+> 
+> old:
+> $ size net/ipv4/netfilter/nf_nat_ftp.o
+>    text	   data	    bss	    dec	    hex	filename
+>    2187	    160	    408	   2755	    ac3	net/ipv4/netfilter/nf_nat_ftp.o
+> new:
+> $ size net/ipv4/netfilter/nf_nat_ftp.o
+>    text    data     bss     dec     hex filename
+>    1532     112     288    1932     78c net/ipv4/netfilter/nf_nat_ftp.o
 
-> Today's linux-next build (x86_64_allmodconfig, gcc 4.4.0, binutils
-> 2.19.1) failed like this:
+Applied, thanks. BTW, its enough to CC netfilter-devel and optionally
+netdev on patches, netfilter and netfilter-core are unnecessary.
 
-> ERROR: "max8925_set_bits" [drivers/video/backlight/max8925_bl.ko] undefined!
-> ERROR: "max8925_reg_write" [drivers/video/backlight/max8925_bl.ko] undefined!
-> ERROR: "max8925_reg_read" [drivers/video/backlight/max8925_bl.ko] undefined!
-> ERROR: "max8925_set_bits" [drivers/regulator/max8925.ko] undefined!
-> ERROR: "max8925_reg_read" [drivers/regulator/max8925.ko] undefined!
-
-> I am not sure what caused this, so I have used the version of the mfd
-> tree from next-20100108 for today.
-
-CCing in Haojian who did the driver.  I've not looked but I'd guess that
-the issue is missing EXPORT_SYMBOL{,_GPL}s on the symbols above.
