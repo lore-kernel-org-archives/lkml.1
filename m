@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752076Ab0AKF3i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752167Ab0AKF3k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752076Ab0AKF3i (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jan 2010 00:29:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751890Ab0AKF3g
+	id S1752167Ab0AKF3k (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jan 2010 00:29:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752008Ab0AKF3h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jan 2010 00:29:36 -0500
-Received: from cdptpa-omtalb.mail.rr.com ([75.180.132.121]:55636 "EHLO
+	Mon, 11 Jan 2010 00:29:37 -0500
+Received: from cdptpa-omtalb.mail.rr.com ([75.180.132.121]:62521 "EHLO
 	cdptpa-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751637Ab0AKF3f (ORCPT
+	with ESMTP id S1751791Ab0AKF3g (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jan 2010 00:29:35 -0500
-X-Authority-Analysis: v=1.0 c=1 a=awULm0XNCoGg5Mg0WHkA:9 a=vs-GuJvuGSAdk4bjkppFAT0FrYUA:4
+	Mon, 11 Jan 2010 00:29:36 -0500
+X-Authority-Analysis: v=1.0 c=1 a=p8W1oCF-dHCkkUFJbJwA:9 a=7VPFhxyLXgd0Wop_9Bw6swzWJBcA:4
 X-Cloudmark-Score: 0
 X-Originating-IP: 71.70.78.104
-Date: Mon, 11 Jan 2010 00:29:11 -0500
-Message-ID: <87ljg5ryzc.wl%ysato@users.sourceforge.jp>
+Date: Mon, 11 Jan 2010 00:29:14 -0500
+Message-ID: <87k4vpryz9.wl%ysato@users.sourceforge.jp>
 From: Yoshinori Sato <ysato@users.sourceforge.jp>
 To: tovalds@linux-foundation.org
 Cc: lkml <linux-kernel@vger.kernel.org>
@@ -28,26 +28,77 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-h8300's gcc build faild '-g' and '-fomit-stack-frame'
-CONFIG_FRAME_POINER selectable.
+Wire up new syscalls.
 
 Signed-off-by: Yoshinori Sato <ysato@users.sourceforge.jp>
 ---
- arch/h8300/Kconfig |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+ arch/h8300/include/asm/unistd.h |   20 +++++++++++++++++++-
+ arch/h8300/kernel/syscalls.S    |   18 ++++++++++++++++++
+ 2 files changed, 37 insertions(+), 1 deletions(-)
 
-diff --git a/arch/h8300/Kconfig b/arch/h8300/Kconfig
-index 53cc669..3b1b7db 100644
---- a/arch/h8300/Kconfig
-+++ b/arch/h8300/Kconfig
-@@ -9,6 +9,7 @@ config H8300
- 	bool
- 	default y
- 	select HAVE_IDE
-+	select ARCH_WANT_FRAME_POINTERS
+diff --git a/arch/h8300/include/asm/unistd.h b/arch/h8300/include/asm/unistd.h
+index 99f3c35..1d54776 100644
+--- a/arch/h8300/include/asm/unistd.h
++++ b/arch/h8300/include/asm/unistd.h
+@@ -325,10 +325,28 @@
+ #define __NR_move_pages		317
+ #define __NR_getcpu		318
+ #define __NR_epoll_pwait	319
++#define __NR_utimensat		320
++#define __NR_signalfd		321
++#define __NR_timerfd_create	322
++#define __NR_eventfd		323
++#define __NR_fallocate		324
++#define __NR_timerfd_settime	325
++#define __NR_timerfd_gettime	326
++#define __NR_signalfd4		327
++#define __NR_eventfd2		328
++#define __NR_epoll_create1	329
++#define __NR_dup3		330
++#define __NR_pipe2		331
++#define __NR_inotify_init1	332
++#define __NR_preadv		333
++#define __NR_pwritev		334
++#define __NR_rt_tgsigqueueinfo	335
++#define __NR_perf_event_open	336
++#define __NR_recvmmsg		337
  
- config SYMBOL_PREFIX
- 	string
+ #ifdef __KERNEL__
+ 
+-#define NR_syscalls 320
++#define NR_syscalls 338
+ 
+ #define __ARCH_WANT_IPC_PARSE_VERSION
+ #define __ARCH_WANT_OLD_READDIR
+diff --git a/arch/h8300/kernel/syscalls.S b/arch/h8300/kernel/syscalls.S
+index 2d69881..a208ee7 100644
+--- a/arch/h8300/kernel/syscalls.S
++++ b/arch/h8300/kernel/syscalls.S
+@@ -333,6 +333,24 @@ SYMBOL_NAME_LABEL(sys_call_table)
+ 	.long SYMBOL_NAME(sys_ni_syscall)	/* sys_move_pages */
+ 	.long SYMBOL_NAME(sys_getcpu)
+ 	.long SYMBOL_NAME(sys_ni_syscall)	/* sys_epoll_pwait */
++	.long SYMBOL_NAME(sys_utimensat)		/* 320 */
++	.long SYMBOL_NAME(sys_signalfd)
++	.long SYMBOL_NAME(sys_timerfd_create)
++	.long SYMBOL_NAME(sys_eventfd)
++	.long SYMBOL_NAME(sys_fallocate)
++	.long SYMBOL_NAME(sys_timerfd_settime)	/* 325 */
++	.long SYMBOL_NAME(sys_timerfd_gettime)
++	.long SYMBOL_NAME(sys_signalfd4)
++	.long SYMBOL_NAME(sys_eventfd2)
++	.long SYMBOL_NAME(sys_epoll_create1)
++	.long SYMBOL_NAME(sys_dup3)			/* 330 */
++	.long SYMBOL_NAME(sys_pipe2)
++	.long SYMBOL_NAME(sys_inotify_init1)
++	.long SYMBOL_NAME(sys_preadv)
++	.long SYMBOL_NAME(sys_pwritev)
++	.long SYMBOL_NAME(sys_rt_tgsigqueueinfo)	/* 335 */
++	.long SYMBOL_NAME(sys_perf_event_open)
++	.long SYMBOL_NAME(sys_recvmmsg)
+ 
+ 	.macro	call_sp addr
+ 	mov.l	#SYMBOL_NAME(\addr),er6
 -- 
 1.6.5.3
 
