@@ -1,94 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753122Ab0AKXAH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753202Ab0AKXAX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753122Ab0AKXAH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jan 2010 18:00:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752356Ab0AKXAF
+	id S1753202Ab0AKXAX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jan 2010 18:00:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753159Ab0AKXAT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jan 2010 18:00:05 -0500
-Received: from e37.co.us.ibm.com ([32.97.110.158]:43126 "EHLO
-	e37.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751592Ab0AKXAD (ORCPT
+	Mon, 11 Jan 2010 18:00:19 -0500
+Received: from out02.mta.xmission.com ([166.70.13.232]:39545 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752456Ab0AKXAO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jan 2010 18:00:03 -0500
-Subject: Re: [RFC] [PATCH 0/7] UBP, XOL and Uprobes
-From: Jim Keniston <jkenisto@us.ibm.com>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Arnaldo Carvalho de Melo <acme@infradead.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       utrace-devel <utrace-devel@redhat.com>, Mark Wielaard <mjw@redhat.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Maneesh Soni <maneesh@in.ibm.com>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <4B4B373B.5010802@redhat.com>
-References: <20100111122521.22050.3654.sendpatchset@srikar.in.ibm.com>
-	 <4B4B373B.5010802@redhat.com>
-Content-Type: text/plain
-Date: Mon, 11 Jan 2010 14:59:32 -0800
-Message-Id: <1263250772.5094.41.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.3) 
-Content-Transfer-Encoding: 7bit
+	Mon, 11 Jan 2010 18:00:14 -0500
+To: Suresh Siddha <suresh.b.siddha@intel.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, Yinghai Lu <yinghai@kernel.org>,
+       "Maciej W. Rozycki" <macro@linux-mips.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [patch] x86, apic: use 0x20 for the IRQ_MOVE_CLEANUP_VECTOR instead of 0x1f
+References: <1263002989.2879.664.camel@sbs-t61.sc.intel.com>
+	<4B47E7A9.6090904@zytor.com>
+	<1263250418.2859.681.camel@sbs-t61.sc.intel.com>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Mon, 11 Jan 2010 15:00:00 -0800
+In-Reply-To: <1263250418.2859.681.camel@sbs-t61.sc.intel.com> (Suresh Siddha's message of "Mon\, 11 Jan 2010 14\:53\:38 -0800")
+Message-ID: <m1zl4k8cy7.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Scanned: No (on in01.mta.xmission.com); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Suresh Siddha <suresh.b.siddha@intel.com> writes:
 
-On Mon, 2010-01-11 at 09:35 -0500, Masami Hiramatsu wrote:
-> Srikar Dronamraju wrote:
-> > Hi, 
-> > 
-> > This patchset implements Uprobes which enables you to dynamically
-> > break into any routine in a user space application and collect
-> > information non-disruptively.  Uprobes is based on utrace and uses
-> > x86 instruction decoder.
-...
-> 
-> > - Return probes.
-> 
-> Hmm, I think we need some symbol information for supporting
-> return probes in user space. Could you tell me how to work it?
-> is that requires some user-space helper?
+> On Fri, 2010-01-08 at 18:19 -0800, H. Peter Anvin wrote:
+>> On 01/08/2010 06:09 PM, Suresh Siddha wrote:
+>> > 
+>> > So change the IRQ_MOVE_CLEANUP_VECTOR to 0x20 and  allow 0x21-0x2f to be used
+>> > for device interrupts. 0x30-0x3f will be used for ISA interrupts (these
+>> > also can be migrated in the context of IOAPIC and hence need to be at a higher
+>> > priority level than IRQ_MOVE_CLEANUP_VECTOR).
+>> > 
+>> 
+>> You're referring to when they're accessed as IOAPIC interrupts as
+>> opposed to ExtInt interrupts?
+>
+> yes.
+>
+>> > -/*
+>> > - * First APIC vector available to drivers: (vectors 0x30-0xee).  We
+>> > - * start allocating at 0x31 to spread out vectors evenly between
+>> > - * priority levels. (0x80 is the syscall vector)
+>> > - */
+>> > -#define FIRST_DEVICE_VECTOR		(IRQ15_VECTOR + 1)
+>> > -#define VECTOR_OFFSET_START		1
+>> > -
+>> >  #define NR_VECTORS			 256
+>> >  
+>> >  #define FPU_IRQ				  13
+>> > diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
+>> > index d5bfa29..5c090a1 100644
+>> > --- a/arch/x86/kernel/apic/io_apic.c
+>> > +++ b/arch/x86/kernel/apic/io_apic.c
+>> > @@ -1162,8 +1162,8 @@ __assign_irq_vector(int irq, struct irq_cfg *cfg, const struct cpumask *mask)
+>> >  	 * Also, we've got to be careful not to trash gate
+>> >  	 * 0x80, because int 0x80 is hm, kind of importantish. ;)
+>> >  	 */
+>> > -	static int current_vector = FIRST_DEVICE_VECTOR + VECTOR_OFFSET_START;
+>> > -	static int current_offset = VECTOR_OFFSET_START % 8;
+>> > +	static int current_vector = FIRST_DEVICE_VECTOR;
+>> > +	static int current_offset = 0;
+>> >  	unsigned int old_vector;
+>> >  	int cpu, err;
+>> >  	cpumask_var_t tmp_mask;
+>> > 
+>> 
+>> I'm not entirely sure I like losing this bit, even though it isn't
+>> really necessary with your changes (VECTOR_OFFSET_START would be 0).
+>> I'm afraid we might end up with the same buglet being "reinvented" later.
+>
+> Ok. We should be able to retain that bit. I will send another version
+> shortly.
+>
+>> However, my most serious concern with this patch is that there is a
+>> fairly significant change due to this patch, which is that the legacy
+>> IRQ vectors now fall *inside* the FIRST_DEVICE_VECTOR range.  This isn't
+>> a bad thing -- in fact, it is fundamentally the right thing to do
+>> especially once we consider platforms which *don't* have the legacy IRQs
+>> -- but it makes me scared of unexpected behavior changes as a result.
+>> If you feel confident that that is not the case, could you outline why
+>> it shouldn't be a problem?
+>
+> In irqinit.c, we statically pre-assign the per-cpu vector to irq
+> mappings (vector_irq) for all the legacy IRQ vectors. Similarly irq_cfg
+> is statically initialized for legacy IRQ's in io_apic.c. So we won't be
+> able to use this space for anything else.
 
-Return probes are on the TODO list, but we actually already have a
-pretty solid implementation of that.  It's held out for now because
-Srikar's patch set is already big, and we want get a review of the basic
-ubp/xol/uprobes feature.
+Last I looked when we switched legacy irqs irqs from pic mode to io_apic mode
+we continue to use the same vector.
 
-For the most part, we don't need special symbol information for return
-probes.  We just do as we did in kretprobes: hijack the return address
-and replace it with the address of a trampoline.  In user-space return
-probes, the trampoline is one of the instruction slots in the XOL vma,
-and contains a breakpoint to trap us into the kernel.  (Of course, as in
-kretprobes, we need to know the address of the function so we can hijack
-the return address upon entry to the function.)
+Which means we should not be wasting those vectors and that it is dangerous
+to play lowest priority irq games in that range.
 
-One place where symbol info would come in handy is when a function
-returns in a weird way.  We handle longjmps by noticing that the task's
-stack is smaller than expected, and presumably missing stack frames that
-were bypassed by the longjmp.  But this heuristic gets dicey when you
-consider that in a 32-bit x86 app, a struct-returning function pops not
-only the return address upon return, but also the address of the
-returned struct value.  So it'd be nice to know if a function returns a
-struct.
-
-Does this answer your question, or did I miss something?
-
-> 
-> > - Support for Other Architectures.
-> > - Jump optimization.
-> 
-> I assume that you meant this is "uprobe-booster" to skip
-> just single stepping after probing, isn't it?
-
-Yes, I think that's what Srikar meant: avoid single-stepping by adding a
-jump instruction after the instruction-copy in the XOL slot -- as you
-did in your kprobes-booster work.  Your instruction-analysis work makes
-this much more feasible.
-
-> 
-> 
-> Thank you,
-
-Jim Keniston
-
+Eric
