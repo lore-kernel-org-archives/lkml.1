@@ -1,59 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754148Ab0AKUFv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754162Ab0AKUGL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754148Ab0AKUFv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jan 2010 15:05:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750895Ab0AKUFt
+	id S1754162Ab0AKUGL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jan 2010 15:06:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754142Ab0AKUGJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jan 2010 15:05:49 -0500
-Received: from mail-iw0-f197.google.com ([209.85.223.197]:47841 "EHLO
-	mail-iw0-f197.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754137Ab0AKUFr convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jan 2010 15:05:47 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=grGNT6HFfjBmhWIzuMZmold7al/AB9F4DyvMEyjWO8CRZSwpOrLCdUOd9AdHJXoxBW
-         uGIJwSC8n9ojlF8pzkYl/UmZOrA0WP49GzseUXc9YenDo5F3oI7lSnaFBbkj1GFK8PV6
-         xAbQVBxdyEletdiZLvehht8zEMqayfkrQrVoY=
+	Mon, 11 Jan 2010 15:06:09 -0500
+Received: from cantor.suse.de ([195.135.220.2]:60778 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754082Ab0AKUGI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jan 2010 15:06:08 -0500
+Date: Mon, 11 Jan 2010 12:01:36 -0800
+From: Greg KH <gregkh@suse.de>
+To: Tilman Schmidt <tilman@imap.cc>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+       LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
+       Karsten Keil <isdn@linux-pingi.de>, isdn4linux@listserv.isdn4linux.de
+Subject: Re: Can we remove pci_find_device() yet?
+Message-ID: <20100111200136.GA29955@suse.de>
+References: <20100108112236.462a3da2.sfr@canb.auug.org.au>
+ <20100108044646.GC6611@suse.de>
+ <4B4B802A.2010709@imap.cc>
 MIME-Version: 1.0
-In-Reply-To: <201001112101.36950.rjw@sisk.pl>
-References: <wnS54-l8PVO.A.TlF.oMlSLB@chimera> <omZ8aBZReyD.A.1h.vNlSLB@chimera> 
-	<43e72e891001110705w43524cc6pac1ff6c971926eaf@mail.gmail.com> 
-	<201001112101.36950.rjw@sisk.pl>
-From: "Luis R. Rodriguez" <mcgrof@gmail.com>
-Date: Mon, 11 Jan 2010 12:05:27 -0800
-Message-ID: <43e72e891001111205x32fd367dlbb1f7c8a777d2f73@mail.gmail.com>
-Subject: Re: [Bug #14874] Ath5k regression with commit 8bf3d79bc401ca417ccf9fc076d3295d1a71dbf5
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Joshua Covington <joshuacov@googlemail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B4B802A.2010709@imap.cc>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 11, 2010 at 12:01 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Monday 11 January 2010, Luis R. Rodriguez wrote:
->> On Sun, Jan 10, 2010 at 2:32 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
->> > This message has been generated automatically as a part of a report
->> > of recent regressions.
->> >
->> > The following bug entry is on the current list of known regressions
->> > from 2.6.32.  Please verify if it still should be listed and let me know
->> > (either way).
->>
->> This should be closed now.
->
-> The patch linked below is not present in the Linus' tree at the moment AFAICS.
-> Has it been fixed in a different way?
+On Mon, Jan 11, 2010 at 08:46:50PM +0100, Tilman Schmidt wrote:
+> Am 08.01.2010 05:46 schrieb Greg KH:
+> > On Fri, Jan 08, 2010 at 11:22:36AM +1100, Stephen Rothwell wrote:
+> >>
+> >> This interface has been deprecated since November 2006, so can something
+> >> be done about the last users (I think only some ISDN drivers)?
+> 
+> That would be the HiSax I4L drivers.
+> 
+> > Ick, the "new" isdn drivers are still not merged that replace those
+> > older ones?  I thought that happened a while ago.
+> 
+> mISDN, which is the designated successor to HiSax, has indeed been
+> merged in 2008.
+> 
+> Trouble is, mISDN's userspace interface is completely different from I4L.
+> Removing HiSax would therefore break userspace compatibility for current
+> users of HiSax supported devices. In order to switch to mISDN they'll
+> have to replace all of their ISDN4Linux applications with equivalent
+> mISDN ones, and I'm not even sure there is a replacement for everything.
+> 
+> Just an idea - as a stopgap measure, couldn't pci_find_device() be made
+> a private function of the HiSax drivers? That way, the remainder of the
+> kernel won't be polluted by it anymore, and the PCI_LEGACY config option
+> can be dropped. Something like this quick and dirty hack:
 
-That patch is just a debug patch Michael worked on to actually get
-some message from ath5k as to what is happening instead of it dying
-without notice. A patch that actually fixes the issue would still be
-needed, and that remains to be determined.
+Close, but if you do this, please name the function
+hisax_find_pci_device() or something, and change the drivers to use it
+instead.  Also put a big fat warning in the function that calling this
+is unsafe for any PCI hotplug type machine.
 
-  Luis
+thanks,
+
+greg k-h
