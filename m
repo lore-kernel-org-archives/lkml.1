@@ -1,61 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752961Ab0AKDrH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752433Ab0AKDtA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752961Ab0AKDrH (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jan 2010 22:47:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751578Ab0AKDrG
+	id S1752433Ab0AKDtA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jan 2010 22:49:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751968Ab0AKDs6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jan 2010 22:47:06 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:59420 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751496Ab0AKDrF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jan 2010 22:47:05 -0500
-Message-ID: <4B4A9F12.8020200@redhat.com>
-Date: Sun, 10 Jan 2010 22:46:26 -0500
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Lightning/1.0pre Thunderbird/3.0
+	Sun, 10 Jan 2010 22:48:58 -0500
+Received: from rex.securecomputing.com ([203.24.151.4]:59329 "EHLO
+	cyberguard.com.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751737Ab0AKDs5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Jan 2010 22:48:57 -0500
+Message-ID: <4B4A9FAB.5020109@snapgear.com>
+Date: Mon, 11 Jan 2010 13:48:59 +1000
+From: Greg Ungerer <gerg@snapgear.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-To: Minchan Kim <minchan.kim@gmail.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Mel Gorman <mel@csn.ul.ie>, linux-mm <linux-mm@kvack.org>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Wu Fengguang <fengguang.wu@intel.com>
-Subject: Re: [PATCH v2 -mmotm-2010-01-06-14-34] check high watermark after
- shrink zone
-References: <20100111084816.81bc7ebd.minchan.kim@barrios-desktop>
-In-Reply-To: <20100111084816.81bc7ebd.minchan.kim@barrios-desktop>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Steven King <sfking@fdwdc.com>
+CC: uClinux development list <uclinux-dev@uclinux.org>,
+       linux-m68k <linux-m68k@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] m68knommu: get rid of __do_IRQ and add support for using
+ gpio irqs.
+References: <200912161915.39692.sfking@fdwdc.com>
+In-Reply-To: <200912161915.39692.sfking@fdwdc.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/10/2010 06:48 PM, Minchan Kim wrote:
->
->
->   * V2
->    * Add reviewed-by singed-off (Thanks Kosaki, Wu)
->    * Fix typo of changelog
->
-> == CUT HERE ==
->
-> Kswapd check that zone have enough free by zone_water_mark.
-> If any zone doesn't have enough page, it set all_zones_ok to zero.
-> !all_zone_ok makes kswapd retry not sleeping.
->
-> I think the watermark check before shrink zone is pointless.
-> Kswapd try to shrink zone then the check is meaninful.
->
-> This patch move the check after shrink zone.
->
-> Signed-off-by: Minchan Kim<minchan.kim@gmail.com>
-> Reviewed-by: KOSAKI Motohiro<kosaki.motohiro@jp.fujitsu.com>
-> Reviewed-by: Wu Fengguang<fengguang.wu@intel.com>
-> CC: Mel Gorman<mel@csn.ul.ie>
-> CC: Rik van Riel<riel@redhat.com>
 
-Acked-by: Rik van Riel <riel@redhat.com>
+Hi Steven,
+
+Steven King wrote:
+> Since we now have generic irq support for m68knommu and as __do_IRQ is
+> supposed to go away real soon now, I added config GENERIC_HARDIRQS_NO__DO_IRQ
+> to m68knommu/Kconfig.  Unfortunately, that produced an unbootable kernel --
+> looking at the code for generic_handle_irq in linux/irq.h, the NO__DO_IRQ
+> version unconditionally calls desc->handle_irq, which suggests that an irq's
+> handle_irq isnt getting initialized in the early boot and indeed, adding an
+> initialization of handle_irq in init_IRQ produced a working system.
+> 
+> I'm not entirely satisfied with that solution as it ignores why we are getting
+> an irq when no handler has been setup for it, but in any case, using
+> set_irq_chip_and_handler in init_IRQ to initialize all the handlers is the
+> right thing to do (or atleast, its what all the other arches do) (and I didnt
+> feel like digging out the BDM pod to figure out where the mystery irq is
+> coming from).
+> 
+> Then the real reason I was digging into the irq code is to add support for
+> using gpio irqs on the gpios of the parts that support that.  The following
+> patch is against 
+> 
+> git://git.kernel.org/pub/scm/linux/kernel/git/gerg/m68knommu.git for-next
+> 
+> only the intc-2 gpio irqs have been tested on real hardware.
+> 
+> ------------------------------
+> 
+> Get rid of __do_IRQ; use set_irq_chip_and_handler to initialize irqs.  Add
+> support for using gpio irqs and setting the edge on external irqs generally.
+> 
+> Signed-off-by: Steven King <sfking@fdwdc.com>
+
+Applied to the for-linus and for-next branches of the m68knommu git
+tree.
+
+Thanks
+Greg
+
+
+
+> --
+> 
+>  arch/m68k/include/asm/m520xsim.h             |    3 +
+>  arch/m68k/include/asm/m523xsim.h             |    3 +
+>  arch/m68k/include/asm/m5249sim.h             |    4 +-
+>  arch/m68k/include/asm/m527xsim.h             |    3 +
+>  arch/m68knommu/Kconfig                       |    4 ++
+>  arch/m68knommu/platform/5272/intc.c          |   39 +++++++++++---
+>  arch/m68knommu/platform/68328/ints.c         |    8 +--
+>  arch/m68knommu/platform/68360/ints.c         |    8 +--
+>  arch/m68knommu/platform/coldfire/intc-2.c    |   76 ++++++++++++++++++++++++--
+>  arch/m68knommu/platform/coldfire/intc-simr.c |   68 ++++++++++++++++++++++--
+>  arch/m68knommu/platform/coldfire/intc.c      |   59 +++++++++++++++++++--
+>  11 files changed, 239 insertions(+), 36 deletions(-)
+> 
 
 -- 
-All rights reversed.
+------------------------------------------------------------------------
+Greg Ungerer  --  Principal Engineer        EMAIL:     gerg@snapgear.com
+SnapGear Group, McAfee                      PHONE:       +61 7 3435 2888
+8 Gardner Close                             FAX:         +61 7 3217 5323
+Milton, QLD, 4064, Australia                WEB: http://www.SnapGear.com
