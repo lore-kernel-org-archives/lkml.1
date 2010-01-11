@@ -1,168 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753882Ab0AKTJl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753895Ab0AKTPt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753882Ab0AKTJl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jan 2010 14:09:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752274Ab0AKTJk
+	id S1753895Ab0AKTPt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jan 2010 14:15:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753879Ab0AKTPs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jan 2010 14:09:40 -0500
-Received: from mail-ew0-f209.google.com ([209.85.219.209]:53650 "EHLO
-	mail-ew0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750702Ab0AKTJj convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jan 2010 14:09:39 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=ATeVyENdHRiTmfElp93rjweeiViTfpvNjNUt8ddm+TrxtmLjP1Jq+uVW37osVz8x4c
-         DxYyKSc/BxKW4ehFCTqfd8qv7DM94DegN2gmqjo/kGdMEyXT6w3yCHrRajnb464Heb3D
-         ZNYxthvp1z3kX8qrG9Jp8bPJJ6kBx48nXaEfs=
+	Mon, 11 Jan 2010 14:15:48 -0500
+Received: from david.siemens.de ([192.35.17.14]:19657 "EHLO david.siemens.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753598Ab0AKTPs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jan 2010 14:15:48 -0500
+Message-ID: <4B4B78D1.2080606@siemens.com>
+Date: Mon, 11 Jan 2010 20:15:29 +0100
+From: Jan Kiszka <jan.kiszka@siemens.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); de; rv:1.8.1.12) Gecko/20080226 SUSE/2.0.0.12-1.1 Thunderbird/2.0.0.12 Mnenhy/0.7.5.666
 MIME-Version: 1.0
-In-Reply-To: <20100111171149.GE22899@redhat.com>
-References: <1262211768-10858-1-git-send-email-czoccolo@gmail.com>
-	 <1263157461-12294-1-git-send-email-czoccolo@gmail.com>
-	 <4B4B0AA9.5020900@garzik.org>
-	 <4e5e476b1001110426t2afa0502p7f19a9b24e48ba82@mail.gmail.com>
-	 <20100111131317.GB4489@kernel.dk> <4B4B250D.8020205@garzik.org>
-	 <4e5e476b1001110653x397a8008gfea2f62497be1f42@mail.gmail.com>
-	 <20100111164433.GB22899@redhat.com>
-	 <4e5e476b1001110900v579054cam246775a74cf1e854@mail.gmail.com>
-	 <20100111171149.GE22899@redhat.com>
-Date: Mon, 11 Jan 2010 20:09:37 +0100
-Message-ID: <4e5e476b1001111109l34f1398dha2f369cdd525596d@mail.gmail.com>
-Subject: Re: [PATCH] cfq-iosched: NCQ SSDs do not need read queue merging
-From: Corrado Zoccolo <czoccolo@gmail.com>
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: Jeff Garzik <jeff@garzik.org>, Jens Axboe <jens.axboe@oracle.com>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>,
-       Jeff Moyer <jmoyer@redhat.com>, Shaohua Li <shaohua.li@intel.com>,
-       Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+To: Frederic Weisbecker <fweisbec@gmail.com>
+CC: "K.Prasad" <prasad@linux.vnet.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [RFC Patch 2/2][Bugfix][x86][hw-breakpoint] Fix return-code to
+   notifier chain in hw_breakpoint_handler
+References: <20091226175533.149765731@linux.vnet.ibm.com> <20091226182833.GC9494@in.ibm.com> <20091231003808.GC23808@nowhere> <20091231190217.GC3676@in.ibm.com> <20100110031857.GB15195@nowhere>
+In-Reply-To: <20100110031857.GB15195@nowhere>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 11, 2010 at 6:11 PM, Vivek Goyal <vgoyal@redhat.com> wrote:
-> On Mon, Jan 11, 2010 at 06:00:51PM +0100, Corrado Zoccolo wrote:
->> On Mon, Jan 11, 2010 at 5:44 PM, Vivek Goyal <vgoyal@redhat.com> wrote:
->> > On Mon, Jan 11, 2010 at 03:53:00PM +0100, Corrado Zoccolo wrote:
->> >> On Mon, Jan 11, 2010 at 2:18 PM, Jeff Garzik <jeff@garzik.org> wrote:
->> >> > On 01/11/2010 08:13 AM, Jens Axboe wrote:
->> >> >>
->> >> >> On Mon, Jan 11 2010, Corrado Zoccolo wrote:
->> >> >>>
->> >> >>> On Mon, Jan 11, 2010 at 12:25 PM, Jeff Garzik<jeff@garzik.org>  wrote:
->> >> >>>>
->> >> >>>> On 01/10/2010 04:04 PM, Corrado Zoccolo wrote:
->> >> >>>>>
->> >> >>>>> NCQ SSDs' performances are not affected by
->> >> >>>>> distance of read requests, so there is no point in having
->> >> >>>>> overhead to merge such queues.
->> >> >>>>>
->> >> >>>>> Non-NCQ SSDs showed regression in some special cases, so
->> >> >>>>> they are ruled out by this patch.
->> >> >>>>>
->> >> >>>>> This patch intentionally doesn't affect writes, so
->> >> >>>>> it changes the queued[] field, to be indexed by
->> >> >>>>> READ/WRITE instead of SYNC/ASYNC, and only compute proximity
->> >> >>>>> for queues with WRITE requests.
->> >> >>>>>
->> >> >>>>> Signed-off-by: Corrado Zoccolo<czoccolo@gmail.com>
->> >> >>>>
->> >> >>>> That's not really true.  Overhead always increases as the total number
->> >> >>>> of
->> >> >>>> ATA commands issued increases.
->> >> >>>
->> >> >>> Jeff Moyer tested the patch on the workload that mostly benefit of
->> >> >>> queue merging, and found that
->> >> >>> the performance was improved by the patch.
->> >> >>> So removing the CPU overhead helps much more than the marginal gain
->> >> >>> given by merging on this hardware.
->> >> >>
->> >> >> It's not always going to be true. On SATA the command overhead is fairly
->> >> >> low, but on other hardware that may not be the case. Unless you are CPU
->> >> >> bound by your IO device, then merging will always be beneficial. I'm a
->> >> >> little behind on emails after my vacation, Jeff what numbers did you
->> >> >> generate and on what hardware?
->> >> >
->> >> >  ...and on what workload?   "the workload that mostly benefit of queue
->> >> > merging" is highly subjective, and likely does not cover most workloads SSDs
->> >> > will see in the field.
->> >> Hi Jeff,
->> >> exactly.
->> >> The workloads that benefits from queue merging are the ones in which a
->> >> sequential
->> >> read is actually splitt, and carried out by different processes in
->> >> different I/O context, each
->> >> sending requests with strides. This is clearly not the best way of
->> >> doing sequential access
->> >> (I would happily declare those programs as buggy).
->> >> CFQ has code that merges queues in this case. I'm disabling the READ
->> >> part for NCQ SSDs,
->> >> since, as Jeff measured, the code overhead outweight the gain from
->> >> merging (if any).
->> >
->> > Hi Corrado,
->> >
->> > In Jeff's test case of running read-test2, I am not even sure if any
->> > merging between the queues took place or not as on NCQ SSD, we are driving
->> > deeper queue depths and unless read-test2 is creating more than 32
->> > threads, there might not be any merging taking place at all.
->>
->> Jeff's test was modeled after real use cases: widely used, legacy
->> programs like dump.
->> Since we often said that splitting the sequential stream in multiple
->> threads was not the
->> correct approach, and we did introduce the change in the kernel just
->> to support those
->> programs (not to encourage writing more of this league), we can assume
->> that if they
->> do not drive deeper queues, no one will. So the overhead is just
->> overhead, and will never
->> give any benefit.
->
-> Two things come to mind.
->
-> - Even if dump/read-test2 is not driving deeper queue depths, but other
->  competing programs might be driving deeper queue depths, which can give
->  queue merging opportunity in case of dump program on NCQ SSD.
+Frederic Weisbecker wrote:
+> On Fri, Jan 01, 2010 at 12:32:17AM +0530, K.Prasad wrote:
+>> On Thu, Dec 31, 2009 at 01:38:09AM +0100, Frederic Weisbecker wrote:
+>>> On Sat, Dec 26, 2009 at 11:58:33PM +0530, K.Prasad wrote:
+>>>> The hw-breakpoint handler will return NOTIFY_DONE for user-space breakpoints
+>>>> to generate SIGTRAP signal (and not for kernel-space addresses). 
+>>>>
+>>>> Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
+>>>> ---
+>>>>  arch/x86/kernel/hw_breakpoint.c |    9 +++++++--
+>>>>  1 file changed, 7 insertions(+), 2 deletions(-)
+>>>>
+>>>> Index: linux-2.6-tip/arch/x86/kernel/hw_breakpoint.c
+>>>> ===================================================================
+>>>> --- linux-2.6-tip.orig/arch/x86/kernel/hw_breakpoint.c
+>>>> +++ linux-2.6-tip/arch/x86/kernel/hw_breakpoint.c
+>>>> @@ -502,8 +502,6 @@ static int __kprobes hw_breakpoint_handl
+>>>>  		rcu_read_lock();
+>>>>  
+>>>>  		bp = per_cpu(bp_per_reg[i], cpu);
+>>>> -		if (bp)
+>>>> -			rc = NOTIFY_DONE;
+>>>>  		/*
+>>>>  		 * Reset the 'i'th TRAP bit in dr6 to denote completion of
+>>>>  		 * exception handling
+>>>> @@ -517,6 +515,13 @@ static int __kprobes hw_breakpoint_handl
+>>>>  			rcu_read_unlock();
+>>>>  			break;
+>>>>  		}
+>>>> +		/*
+>>>> +		 * Further processing in do_debug() is needed for a) user-space
+>>>> +		 * breakpoints (to generate signals) and b) when the system has
+>>>> +		 * taken exception due to multiple causes
+>>>> +		 */
+>>>> +		if (bp->attr.bp_addr < TASK_SIZE)
+>>>> +			rc = NOTIFY_DONE;
+>>>>  
+>>>>  		perf_bp_event(bp, args->regs);
+>>>>  
+>>>>
+>>>
+>>> Oh and now that I see this patch, the previous one indeed makes sense
+>>> with this check:
+>>>
+>>> if (dr6 & (~DR_TRAP_BITS))
+>>> 	rc = NOTIFY_DONE;
+>>>
+>>> That said, it means thread.debugreg6 won't get the reserved bits anymore.
+>>> I see some use of them from kvm (it restores the reserved bits on guest<->host
+>>> switch). Not sure if this inconsistency could affect kvm...
+>>>
+>> Can you point me to the relevant code?
+> 
+> 
+> I see various uses of DR6_VOLATILE and DR6_FIXED_1 in arch/x86/kvm/,
+> DR6_FIXED_1 being the fixed unused bits in dr6. Not sure how
+> this patch would affect what's set there.
+> 
+> I'll wait for Jan's answer.
+> 
 
-Correct. We need a better test to determine if those merges can happen.
+You may need to synchronize me: What does the patch change, the shadow
+register KVM will restore into DR6 on return to the host? Or the
+register content KVM finds on guest entry?
 
->
-> - If we are thinking that on NCQ SSD we practically don't have queue
->  merging opportunity then there is no point in keeping it enabled for
->  WRITES also?
+The rules are simple: On entry, KVM assumes nothing about the register
+state, just overwrites it (on demand) with the guest state. On exit, it
+calls into hw_breakpoint_restore to ensure the host sees a proper state
+(if required). But there is at no time an architecturally invalid state
+loaded into the real register (that's basically what DR6_VOLATILE and
+DR6_FIXED_1 are used for while in guest mode).
 
-Probably. Needs test here, too.
+Jan
 
-Corrado
-
-
->
-> Vivek
->
->>
->> I therefore want to remove it, since for SSD it matters.
->> >
->> > We also don't have any data/numbers what kind of cpu savings does this
->> > patch bring in.
->>
->> Jeff's test showed larger bandwidth with merge disabled, so it implies
->> some saving is present.
->>
->> Thanks,
->> Corrado
->>
->> >
->> > Vivek
->> >
->> >>
->> >> As you said, most workloads don't benefit from queue merging. On those
->> >> ones, the patch
->> >> just removes an overhead.
->> >>
->> >> Thanks,
->> >> Corrado
->> >>
+-- 
+Siemens AG, Corporate Technology, CT T DE IT 1
+Corporate Competence Center Embedded Linux
