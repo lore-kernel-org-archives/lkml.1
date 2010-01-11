@@ -1,31 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752558Ab0AKV1l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752398Ab0AKVa1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752558Ab0AKV1l (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jan 2010 16:27:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751852Ab0AKV1g
+	id S1752398Ab0AKVa1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jan 2010 16:30:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752312Ab0AKV11
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jan 2010 16:27:36 -0500
-Received: from mail-ew0-f209.google.com ([209.85.219.209]:60356 "EHLO
-	mail-ew0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752426Ab0AKV1e (ORCPT
+	Mon, 11 Jan 2010 16:27:27 -0500
+Received: from ey-out-2122.google.com ([74.125.78.24]:34876 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752270Ab0AKV1Z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jan 2010 16:27:34 -0500
+	Mon, 11 Jan 2010 16:27:25 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=sender:from:to:cc:subject:date:message-id:x-mailer:in-reply-to
          :references;
-        b=fsfvoEIpywfvfsFy7WQcSoTpreBapI/GXO7CFxh9ipARAFRRwUG63MusNg7W6irCYq
-         6wcSsIhc+GZN8wp32zH0J4ugFoJiB9eWUcuiUJzqUkVgqs/nZ5Xd4uuu0P96Jz3sB9VH
-         KUpr83jrJNXumvTFTYMh20BIEtHNhofQZ4yLc=
+        b=v4GPxSYd/8d7D4/Px62k6hktYukcbU7yyWOUVSTCyNjJVVxZ+lrdImJEfR+M+/b0ID
+         //EeP7zohpudJcTXUPDAndleBgRbLylXr8iZD+yVfLYJA6Br2w3Zjm0W4GZRgRrjuynt
+         MnFMdBCM+fmp2Q28PMxfiXKSz2ccGMSLwVO8Q=
 From: John Kacur <jkacur@redhat.com>
 To: Thomas Gleixner <tglx@linutronix.de>, lkml <linux-kernel@vger.kernel.org>,
        Ingo Molnar <mingo@elte.hu>
 Cc: Clark Williams <williams@redhat.com>, John Kacur <jkacur@redhat.com>
-Subject: [PATCH 17/26] x86: kvm: Convert i8254/i8259 locks to raw_spinlock
-Date: Mon, 11 Jan 2010 22:26:47 +0100
-Message-Id: <1263245216-14754-18-git-send-email-jkacur@redhat.com>
+Subject: [PATCH 12/26] printk: Convert lock to raw_spinlock
+Date: Mon, 11 Jan 2010 22:26:42 +0100
+Message-Id: <1263245216-14754-13-git-send-email-jkacur@redhat.com>
 X-Mailer: git-send-email 1.6.5.2
-In-Reply-To: <1263245216-14754-17-git-send-email-jkacur@redhat.com>
+In-Reply-To: <1263245216-14754-12-git-send-email-jkacur@redhat.com>
 References: <1263245216-14754-1-git-send-email-jkacur@redhat.com>
  <1263245216-14754-2-git-send-email-jkacur@redhat.com>
  <1263245216-14754-3-git-send-email-jkacur@redhat.com>
@@ -38,242 +38,222 @@ References: <1263245216-14754-1-git-send-email-jkacur@redhat.com>
  <1263245216-14754-10-git-send-email-jkacur@redhat.com>
  <1263245216-14754-11-git-send-email-jkacur@redhat.com>
  <1263245216-14754-12-git-send-email-jkacur@redhat.com>
- <1263245216-14754-13-git-send-email-jkacur@redhat.com>
- <1263245216-14754-14-git-send-email-jkacur@redhat.com>
- <1263245216-14754-15-git-send-email-jkacur@redhat.com>
- <1263245216-14754-16-git-send-email-jkacur@redhat.com>
- <1263245216-14754-17-git-send-email-jkacur@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Convert locks which cannot sleep in preempt-rt to raw_spinlocks.
+Convert locks that cannot sleep in preempt-rt to raw_spinlocks.
 
-See also 4b064e4f9ec7a5befcab91b9b1f2b0314c5a051a
+See also: 0835f1f82a88e366d8dd20874c94133915dcccdb
 
 Signed-off-by: John Kacur <jkacur@redhat.com>
 ---
- arch/x86/kvm/i8254.c |   10 +++++-----
- arch/x86/kvm/i8254.h |    2 +-
- arch/x86/kvm/i8259.c |   30 +++++++++++++++---------------
- arch/x86/kvm/irq.h   |    2 +-
- arch/x86/kvm/x86.c   |    8 ++++----
- 5 files changed, 26 insertions(+), 26 deletions(-)
+ include/linux/ratelimit.h |    4 ++--
+ kernel/printk.c           |   42 +++++++++++++++++++++---------------------
+ lib/ratelimit.c           |    4 ++--
+ 3 files changed, 25 insertions(+), 25 deletions(-)
 
-diff --git a/arch/x86/kvm/i8254.c b/arch/x86/kvm/i8254.c
-index 296aba4..23265ee 100644
---- a/arch/x86/kvm/i8254.c
-+++ b/arch/x86/kvm/i8254.c
-@@ -242,11 +242,11 @@ static void kvm_pit_ack_irq(struct kvm_irq_ack_notifier *kian)
- {
- 	struct kvm_kpit_state *ps = container_of(kian, struct kvm_kpit_state,
- 						 irq_ack_notifier);
--	spin_lock(&ps->inject_lock);
-+	raw_spin_lock(&ps->inject_lock);
- 	if (atomic_dec_return(&ps->pit_timer.pending) < 0)
- 		atomic_inc(&ps->pit_timer.pending);
- 	ps->irq_ack = 1;
--	spin_unlock(&ps->inject_lock);
-+	raw_spin_unlock(&ps->inject_lock);
- }
+diff --git a/include/linux/ratelimit.h b/include/linux/ratelimit.h
+index 668cf1b..7596e38 100644
+--- a/include/linux/ratelimit.h
++++ b/include/linux/ratelimit.h
+@@ -8,7 +8,7 @@
+ #define DEFAULT_RATELIMIT_BURST		10
  
- void __kvm_migrate_pit_timer(struct kvm_vcpu *vcpu)
-@@ -621,7 +621,7 @@ struct kvm_pit *kvm_create_pit(struct kvm *kvm, u32 flags)
+ struct ratelimit_state {
+-	spinlock_t	lock;		/* protect the state */
++	raw_spinlock_t	lock;		/* protect the state */
  
- 	mutex_init(&pit->pit_state.lock);
- 	mutex_lock(&pit->pit_state.lock);
--	spin_lock_init(&pit->pit_state.inject_lock);
-+	raw_spin_lock_init(&pit->pit_state.inject_lock);
+ 	int		interval;
+ 	int		burst;
+@@ -20,7 +20,7 @@ struct ratelimit_state {
+ #define DEFINE_RATELIMIT_STATE(name, interval_init, burst_init)		\
+ 									\
+ 	struct ratelimit_state name = {					\
+-		.lock		= __SPIN_LOCK_UNLOCKED(name.lock),	\
++		.lock		= __RAW_SPIN_LOCK_UNLOCKED(name.lock),	\
+ 		.interval	= interval_init,			\
+ 		.burst		= burst_init,				\
+ 	}
+diff --git a/kernel/printk.c b/kernel/printk.c
+index 17463ca..4ebb6e0 100644
+--- a/kernel/printk.c
++++ b/kernel/printk.c
+@@ -102,7 +102,7 @@ static int console_locked, console_suspended;
+  * It is also used in interesting ways to provide interlocking in
+  * release_console_sem().
+  */
+-static DEFINE_SPINLOCK(logbuf_lock);
++static DEFINE_RAW_SPINLOCK(logbuf_lock);
  
- 	kvm->arch.vpit = pit;
- 	pit->kvm = kvm;
-@@ -720,12 +720,12 @@ void kvm_inject_pit_timer_irqs(struct kvm_vcpu *vcpu)
- 		/* Try to inject pending interrupts when
- 		 * last one has been acked.
- 		 */
--		spin_lock(&ps->inject_lock);
-+		raw_spin_lock(&ps->inject_lock);
- 		if (atomic_read(&ps->pit_timer.pending) && ps->irq_ack) {
- 			ps->irq_ack = 0;
- 			inject = 1;
+ #define LOG_BUF_MASK (log_buf_len-1)
+ #define LOG_BUF(idx) (log_buf[(idx) & LOG_BUF_MASK])
+@@ -181,7 +181,7 @@ static int __init log_buf_len_setup(char *str)
+ 			goto out;
  		}
--		spin_unlock(&ps->inject_lock);
-+		raw_spin_unlock(&ps->inject_lock);
- 		if (inject)
- 			__inject_pit_timer_intr(kvm);
+ 
+-		spin_lock_irqsave(&logbuf_lock, flags);
++		raw_spin_lock_irqsave(&logbuf_lock, flags);
+ 		log_buf_len = size;
+ 		log_buf = new_log_buf;
+ 
+@@ -195,7 +195,7 @@ static int __init log_buf_len_setup(char *str)
+ 		log_start -= offset;
+ 		con_start -= offset;
+ 		log_end -= offset;
+-		spin_unlock_irqrestore(&logbuf_lock, flags);
++		raw_spin_unlock_irqrestore(&logbuf_lock, flags);
+ 
+ 		printk(KERN_NOTICE "log_buf_len: %d\n", log_buf_len);
  	}
-diff --git a/arch/x86/kvm/i8254.h b/arch/x86/kvm/i8254.h
-index d4c1c7f..900d6b0 100644
---- a/arch/x86/kvm/i8254.h
-+++ b/arch/x86/kvm/i8254.h
-@@ -27,7 +27,7 @@ struct kvm_kpit_state {
- 	u32    speaker_data_on;
- 	struct mutex lock;
- 	struct kvm_pit *pit;
--	spinlock_t inject_lock;
-+	raw_spinlock_t inject_lock;
- 	unsigned long irq_ack;
- 	struct kvm_irq_ack_notifier irq_ack_notifier;
- };
-diff --git a/arch/x86/kvm/i8259.c b/arch/x86/kvm/i8259.c
-index d057c0c..3271405 100644
---- a/arch/x86/kvm/i8259.c
-+++ b/arch/x86/kvm/i8259.c
-@@ -44,18 +44,18 @@ static void pic_clear_isr(struct kvm_kpic_state *s, int irq)
- 	 * Other interrupt may be delivered to PIC while lock is dropped but
- 	 * it should be safe since PIC state is already updated at this stage.
+@@ -305,18 +305,18 @@ int do_syslog(int type, char __user *buf, int len)
+ 		if (error)
+ 			goto out;
+ 		i = 0;
+-		spin_lock_irq(&logbuf_lock);
++		raw_spin_lock_irq(&logbuf_lock);
+ 		while (!error && (log_start != log_end) && i < len) {
+ 			c = LOG_BUF(log_start);
+ 			log_start++;
+-			spin_unlock_irq(&logbuf_lock);
++			raw_spin_unlock_irq(&logbuf_lock);
+ 			error = __put_user(c,buf);
+ 			buf++;
+ 			i++;
+ 			cond_resched();
+-			spin_lock_irq(&logbuf_lock);
++			raw_spin_lock_irq(&logbuf_lock);
+ 		}
+-		spin_unlock_irq(&logbuf_lock);
++		raw_spin_unlock_irq(&logbuf_lock);
+ 		if (!error)
+ 			error = i;
+ 		break;
+@@ -337,7 +337,7 @@ int do_syslog(int type, char __user *buf, int len)
+ 		count = len;
+ 		if (count > log_buf_len)
+ 			count = log_buf_len;
+-		spin_lock_irq(&logbuf_lock);
++		raw_spin_lock_irq(&logbuf_lock);
+ 		if (count > logged_chars)
+ 			count = logged_chars;
+ 		if (do_clear)
+@@ -354,12 +354,12 @@ int do_syslog(int type, char __user *buf, int len)
+ 			if (j + log_buf_len < log_end)
+ 				break;
+ 			c = LOG_BUF(j);
+-			spin_unlock_irq(&logbuf_lock);
++			raw_spin_unlock_irq(&logbuf_lock);
+ 			error = __put_user(c,&buf[count-1-i]);
+ 			cond_resched();
+-			spin_lock_irq(&logbuf_lock);
++			raw_spin_lock_irq(&logbuf_lock);
+ 		}
+-		spin_unlock_irq(&logbuf_lock);
++		raw_spin_unlock_irq(&logbuf_lock);
+ 		if (error)
+ 			break;
+ 		error = i;
+@@ -542,7 +542,7 @@ static void zap_locks(void)
+ 	oops_timestamp = jiffies;
+ 
+ 	/* If a crash is occurring, make sure we can't deadlock */
+-	spin_lock_init(&logbuf_lock);
++	raw_spin_lock_init(&logbuf_lock);
+ 	/* And make sure that we print immediately */
+ 	init_MUTEX(&console_sem);
+ }
+@@ -646,7 +646,7 @@ static int acquire_console_semaphore_for_printk(unsigned int cpu)
+ 		}
+ 	}
+ 	printk_cpu = UINT_MAX;
+-	spin_unlock(&logbuf_lock);
++	raw_spin_unlock(&logbuf_lock);
+ 	return retval;
+ }
+ static const char recursion_bug_msg [] =
+@@ -704,7 +704,7 @@ asmlinkage int vprintk(const char *fmt, va_list args)
+ 	}
+ 
+ 	lockdep_off();
+-	spin_lock(&logbuf_lock);
++	raw_spin_lock(&logbuf_lock);
+ 	printk_cpu = this_cpu;
+ 
+ 	if (recursion_bug) {
+@@ -1053,14 +1053,14 @@ void release_console_sem(void)
+ 	console_may_schedule = 0;
+ 
+ 	for ( ; ; ) {
+-		spin_lock_irqsave(&logbuf_lock, flags);
++		raw_spin_lock_irqsave(&logbuf_lock, flags);
+ 		wake_klogd |= log_start - log_end;
+ 		if (con_start == log_end)
+ 			break;			/* Nothing to print */
+ 		_con_start = con_start;
+ 		_log_end = log_end;
+ 		con_start = log_end;		/* Flush */
+-		spin_unlock(&logbuf_lock);
++		raw_spin_unlock(&logbuf_lock);
+ 		stop_critical_timings();	/* don't trace print latency */
+ 		call_console_drivers(_con_start, _log_end);
+ 		start_critical_timings();
+@@ -1068,7 +1068,7 @@ void release_console_sem(void)
+ 	}
+ 	console_locked = 0;
+ 	up(&console_sem);
+-	spin_unlock_irqrestore(&logbuf_lock, flags);
++	raw_spin_unlock_irqrestore(&logbuf_lock, flags);
+ 	if (wake_klogd)
+ 		wake_up_klogd();
+ }
+@@ -1286,9 +1286,9 @@ void register_console(struct console *newcon)
+ 		 * release_console_sem() will print out the buffered messages
+ 		 * for us.
+ 		 */
+-		spin_lock_irqsave(&logbuf_lock, flags);
++		raw_spin_lock_irqsave(&logbuf_lock, flags);
+ 		con_start = log_start;
+-		spin_unlock_irqrestore(&logbuf_lock, flags);
++		raw_spin_unlock_irqrestore(&logbuf_lock, flags);
+ 	}
+ 	release_console_sem();
+ 
+@@ -1496,10 +1496,10 @@ void kmsg_dump(enum kmsg_dump_reason reason)
+ 	/* Theoretically, the log could move on after we do this, but
+ 	   there's not a lot we can do about that. The new messages
+ 	   will overwrite the start of what we dump. */
+-	spin_lock_irqsave(&logbuf_lock, flags);
++	raw_spin_lock_irqsave(&logbuf_lock, flags);
+ 	end = log_end & LOG_BUF_MASK;
+ 	chars = logged_chars;
+-	spin_unlock_irqrestore(&logbuf_lock, flags);
++	raw_spin_unlock_irqrestore(&logbuf_lock, flags);
+ 
+ 	if (logged_chars > end) {
+ 		s1 = log_buf + log_buf_len - logged_chars + end;
+diff --git a/lib/ratelimit.c b/lib/ratelimit.c
+index 09f5ce1..39588b3 100644
+--- a/lib/ratelimit.c
++++ b/lib/ratelimit.c
+@@ -34,7 +34,7 @@ int ___ratelimit(struct ratelimit_state *rs, const char *func)
+ 	 * in addition to the one that will be printed by
+ 	 * the entity that is holding the lock already:
  	 */
--	spin_unlock(&s->pics_state->lock);
-+	raw_spin_unlock(&s->pics_state->lock);
- 	kvm_notify_acked_irq(s->pics_state->kvm, SELECT_PIC(irq), irq);
--	spin_lock(&s->pics_state->lock);
-+	raw_spin_lock(&s->pics_state->lock);
- }
+-	if (!spin_trylock_irqsave(&rs->lock, flags))
++	if (!raw_spin_trylock_irqsave(&rs->lock, flags))
+ 		return 1;
  
- void kvm_pic_clear_isr_ack(struct kvm *kvm)
- {
- 	struct kvm_pic *s = pic_irqchip(kvm);
--	spin_lock(&s->lock);
-+	raw_spin_lock(&s->lock);
- 	s->pics[0].isr_ack = 0xff;
- 	s->pics[1].isr_ack = 0xff;
--	spin_unlock(&s->lock);
-+	raw_spin_unlock(&s->lock);
- }
- 
- /*
-@@ -156,9 +156,9 @@ static void pic_update_irq(struct kvm_pic *s)
- 
- void kvm_pic_update_irq(struct kvm_pic *s)
- {
--	spin_lock(&s->lock);
-+	raw_spin_lock(&s->lock);
- 	pic_update_irq(s);
--	spin_unlock(&s->lock);
-+	raw_spin_unlock(&s->lock);
- }
- 
- int kvm_pic_set_irq(void *opaque, int irq, int level)
-@@ -166,14 +166,14 @@ int kvm_pic_set_irq(void *opaque, int irq, int level)
- 	struct kvm_pic *s = opaque;
- 	int ret = -1;
- 
--	spin_lock(&s->lock);
-+	raw_spin_lock(&s->lock);
- 	if (irq >= 0 && irq < PIC_NUM_PINS) {
- 		ret = pic_set_irq1(&s->pics[irq >> 3], irq & 7, level);
- 		pic_update_irq(s);
- 		trace_kvm_pic_set_irq(irq >> 3, irq & 7, s->pics[irq >> 3].elcr,
- 				      s->pics[irq >> 3].imr, ret == 0);
+ 	if (!rs->begin)
+@@ -55,7 +55,7 @@ int ___ratelimit(struct ratelimit_state *rs, const char *func)
+ 		rs->missed++;
+ 		ret = 0;
  	}
--	spin_unlock(&s->lock);
-+	raw_spin_unlock(&s->lock);
+-	spin_unlock_irqrestore(&rs->lock, flags);
++	raw_spin_unlock_irqrestore(&rs->lock, flags);
  
  	return ret;
  }
-@@ -203,7 +203,7 @@ int kvm_pic_read_irq(struct kvm *kvm)
- 	int irq, irq2, intno;
- 	struct kvm_pic *s = pic_irqchip(kvm);
- 
--	spin_lock(&s->lock);
-+	raw_spin_lock(&s->lock);
- 	irq = pic_get_irq(&s->pics[0]);
- 	if (irq >= 0) {
- 		pic_intack(&s->pics[0], irq);
-@@ -228,7 +228,7 @@ int kvm_pic_read_irq(struct kvm *kvm)
- 		intno = s->pics[0].irq_base + irq;
- 	}
- 	pic_update_irq(s);
--	spin_unlock(&s->lock);
-+	raw_spin_unlock(&s->lock);
- 
- 	return intno;
- }
-@@ -442,7 +442,7 @@ static int picdev_write(struct kvm_io_device *this,
- 			printk(KERN_ERR "PIC: non byte write\n");
- 		return 0;
- 	}
--	spin_lock(&s->lock);
-+	raw_spin_lock(&s->lock);
- 	switch (addr) {
- 	case 0x20:
- 	case 0x21:
-@@ -455,7 +455,7 @@ static int picdev_write(struct kvm_io_device *this,
- 		elcr_ioport_write(&s->pics[addr & 1], addr, data);
- 		break;
- 	}
--	spin_unlock(&s->lock);
-+	raw_spin_unlock(&s->lock);
- 	return 0;
- }
- 
-@@ -472,7 +472,7 @@ static int picdev_read(struct kvm_io_device *this,
- 			printk(KERN_ERR "PIC: non byte read\n");
- 		return 0;
- 	}
--	spin_lock(&s->lock);
-+	raw_spin_lock(&s->lock);
- 	switch (addr) {
- 	case 0x20:
- 	case 0x21:
-@@ -486,7 +486,7 @@ static int picdev_read(struct kvm_io_device *this,
- 		break;
- 	}
- 	*(unsigned char *)val = data;
--	spin_unlock(&s->lock);
-+	raw_spin_unlock(&s->lock);
- 	return 0;
- }
- 
-@@ -520,7 +520,7 @@ struct kvm_pic *kvm_create_pic(struct kvm *kvm)
- 	s = kzalloc(sizeof(struct kvm_pic), GFP_KERNEL);
- 	if (!s)
- 		return NULL;
--	spin_lock_init(&s->lock);
-+	raw_spin_lock_init(&s->lock);
- 	s->kvm = kvm;
- 	s->pics[0].elcr_mask = 0xf8;
- 	s->pics[1].elcr_mask = 0xde;
-diff --git a/arch/x86/kvm/irq.h b/arch/x86/kvm/irq.h
-index be399e2..b994083 100644
---- a/arch/x86/kvm/irq.h
-+++ b/arch/x86/kvm/irq.h
-@@ -62,7 +62,7 @@ struct kvm_kpic_state {
- };
- 
- struct kvm_pic {
--	spinlock_t lock;
-+	raw_spinlock_t lock;
- 	unsigned pending_acks;
- 	struct kvm *kvm;
- 	struct kvm_kpic_state pics[2]; /* 0 is master pic, 1 is slave pic */
-diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index 6651dbf..920d5c0 100644
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -2274,18 +2274,18 @@ static int kvm_vm_ioctl_set_irqchip(struct kvm *kvm, struct kvm_irqchip *chip)
- 	r = 0;
- 	switch (chip->chip_id) {
- 	case KVM_IRQCHIP_PIC_MASTER:
--		spin_lock(&pic_irqchip(kvm)->lock);
-+		raw_spin_lock(&pic_irqchip(kvm)->lock);
- 		memcpy(&pic_irqchip(kvm)->pics[0],
- 			&chip->chip.pic,
- 			sizeof(struct kvm_pic_state));
--		spin_unlock(&pic_irqchip(kvm)->lock);
-+		raw_spin_unlock(&pic_irqchip(kvm)->lock);
- 		break;
- 	case KVM_IRQCHIP_PIC_SLAVE:
--		spin_lock(&pic_irqchip(kvm)->lock);
-+		raw_spin_lock(&pic_irqchip(kvm)->lock);
- 		memcpy(&pic_irqchip(kvm)->pics[1],
- 			&chip->chip.pic,
- 			sizeof(struct kvm_pic_state));
--		spin_unlock(&pic_irqchip(kvm)->lock);
-+		raw_spin_unlock(&pic_irqchip(kvm)->lock);
- 		break;
- 	case KVM_IRQCHIP_IOAPIC:
- 		r = kvm_set_ioapic(kvm, &chip->chip.ioapic);
 -- 
 1.6.5.2
 
