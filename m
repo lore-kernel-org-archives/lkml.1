@@ -1,41 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753445Ab0AKPPX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753517Ab0AKPPn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753445Ab0AKPPX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jan 2010 10:15:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753193Ab0AKPPX
+	id S1753517Ab0AKPPn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jan 2010 10:15:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753499Ab0AKPPl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jan 2010 10:15:23 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:45179 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752951Ab0AKPPW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jan 2010 10:15:22 -0500
-Date: Mon, 11 Jan 2010 10:15:20 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Fruhwirth Clemens <clemens@endorphin.org>
-Subject: Re: [linux-pm] 2.6.33-rc3-git3: Reported regressions 2.6.31 -> 2.6.32
-In-Reply-To: <nzLqtSp97aP.A.RGB.hglSLB@chimera>
-Message-ID: <Pine.LNX.4.44L0.1001111008080.2873-100000@iolanthe.rowland.org>
+	Mon, 11 Jan 2010 10:15:41 -0500
+Received: from 0122700014.0.fullrate.dk ([95.166.99.235]:51971 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753139Ab0AKPPk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jan 2010 10:15:40 -0500
+Date: Mon, 11 Jan 2010 16:15:39 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Divyesh Shah <dpshah@google.com>
+Cc: czoccolo@gmail.com, linux-kernel@vger.kernel.org, nauman@google.com,
+       mikew@google.com, ctalbott@google.com
+Subject: Re: [PATCH] cfq-iosched: Respect ioprio_class when preempting
+Message-ID: <20100111151539.GP4489@kernel.dk>
+References: <20100107025413.27610.48801.stgit@austin.mtv.corp.google.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100107025413.27610.48801.stgit@austin.mtv.corp.google.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 10 Jan 2010, Rafael J. Wysocki wrote:
+On Wed, Jan 06 2010, Divyesh Shah wrote:
+> In cfq_should_preempt(), we currently allow some cases where a non-RT request
+> can preempt an ongoing RT cfqq timeslice. This should not happen.
+> Examples include:
+> 
+> o A sync_noidle wl type non-RT request pre-empting a sync_noidle wl type cfqq
+>   on which we are idling.
+> o Once we have per-cgroup async queues, a non-RT sync request pre-empting a RT
+>   async cfqq.
+> 
+> Signed-off-by: Divyesh Shah<dpshah@google.com>
+> ---
+> 
+>  block/cfq-iosched.c |    6 ++++++
+>  1 files changed, 6 insertions(+), 0 deletions(-)
+> 
+> diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+> index 7d6cef9..e9e6610 100644
+> --- a/block/cfq-iosched.c
+> +++ b/block/cfq-iosched.c
+> @@ -3104,6 +3104,12 @@ cfq_should_preempt(struct cfq_data *cfqd, struct cfq_queue *new_cfqq,
+>  		return true;
+>  
+>  	/*
+> +	 * Don't allow a non-RT request to preempt an ongoing RT cfqq timeslice.
+> +	 */
+> +	if (cfq_class_rt(cfqq) && !cfq_class_rt(new_cfqq))
+> +		return false;
 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14841
-> Subject	: unable to enumerate USB device on port X after suspend/resume
-> Submitter	: Fruhwirth Clemens <clemens@endorphin.org>
-> Date		: 2009-12-19 11:45 (23 days old)
+It would be nice to just be able to do
 
-This bug has been resolved as WILL NOT FIX.  It ended up having nothing
-to do with suspend or resume, it was caused by strange behavior in the
-device hardware.
+        if (new_cfqq->ioprio_class > cfqq->ioprio_class)
+                return false;
 
-Alan Stern
+but that doesn't quite work given IOPRIO_CLASS_NONE < _RT. So I think
+your patch is fine, I've added it. Thanks.
+
+-- 
+Jens Axboe
 
