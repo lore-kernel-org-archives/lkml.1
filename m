@@ -1,47 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753184Ab0AKKWi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753193Ab0AKK2B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753184Ab0AKKWi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jan 2010 05:22:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753144Ab0AKKWi
+	id S1753193Ab0AKK2B (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jan 2010 05:28:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753111Ab0AKK2A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jan 2010 05:22:38 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:39452 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753142Ab0AKKWh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jan 2010 05:22:37 -0500
-Date: Mon, 11 Jan 2010 10:26:20 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Daniel Goller <morfic@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: staging/et131x Driver Transmits but does not Receive Packets
-Message-ID: <20100111102620.732b574f@lxorguk.ukuu.org.uk>
-In-Reply-To: <13bb8ce11001102040j37e061fn976ec74595f30232@mail.gmail.com>
-References: <13bb8ce11001101156g3cd88a6bn7c6ce657850ab534@mail.gmail.com>
-	<20100111001745.21d28340@lxorguk.ukuu.org.uk>
-	<13bb8ce11001101730w640f99p72ecb1204e59f139@mail.gmail.com>
-	<13bb8ce11001102040j37e061fn976ec74595f30232@mail.gmail.com>
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.18.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 11 Jan 2010 05:28:00 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:2100 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752915Ab0AKK2A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jan 2010 05:28:00 -0500
+Message-ID: <4B4AFD25.1080001@redhat.com>
+Date: Mon, 11 Jan 2010 12:27:49 +0200
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
+MIME-Version: 1.0
+To: Stephen Rothwell <Stephen@Rothwell.id.au>
+CC: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Alexander Graf <agraf@suse.de>
+Subject: Re: linux-next: kvm tree build failure
+References: <20100111190749.0a74d445.Stephen@Rothwell.id.au>
+In-Reply-To: <20100111190749.0a74d445.Stephen@Rothwell.id.au>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I then blacklisted iwlagn and r8169 and rebooted, retrying 2.6.29.6
-> and 2.6.30.10 but was no longer able to ping anything. So when it
-> works and when not is still intermittent. (And the only interfaces up
-> were eth1 and lo, not eth0 (r8169) or wlan0 (iwlagn) in case someone
-> wonders)
+On 01/11/2010 10:07 AM, Stephen Rothwell wrote:
+> Hi Avi,
+>
+> Today's linux-next build (powerpc ppc44x_defconfig) failed like this:
+>
+>    
 
-That looks like an interrupt problem. With iwlagn and r8169 blacklisted
-see what interrupt number the et131x gets (cat /proc/interrupts) and see
-if it goes up whenever you send/receive stuff.
+I pushed out a fix from Alex.
 
-If not then I don't think its an et131x problem but an IRQ routing
-problem (eg a bad BIOS table, or a kernel bug elsewhere)
+-- 
+error compiling committee.c: too many arguments to function
 
-> I do not think i am yet at a point where git bisect would be useful.
-
-Agreed.
