@@ -1,72 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752187Ab0AKHyY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752205Ab0AKH4x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752187Ab0AKHyY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jan 2010 02:54:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752038Ab0AKHyY
+	id S1752205Ab0AKH4x (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jan 2010 02:56:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751444Ab0AKH4x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jan 2010 02:54:24 -0500
-Received: from bld-mail12.adl6.internode.on.net ([150.101.137.97]:34021 "EHLO
-	mail.internode.on.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751545Ab0AKHyX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jan 2010 02:54:23 -0500
-Date: Mon, 11 Jan 2010 18:54:16 +1100
-From: Dave Chinner <david@fromorbit.com>
-To: linux-kernel@vger.kernel.org
-Subject: [lockdep, sysfs]: lockdep compliant when chaging io schedulers
-Message-ID: <20100111075416.GF4019@discord.disaster>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 11 Jan 2010 02:56:53 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:51949 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751651Ab0AKH4w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jan 2010 02:56:52 -0500
+Date: Mon, 11 Jan 2010 18:56:45 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: David Miller <davem@davemloft.net>
+Cc: netdev@vger.kernel.org, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, hawk@comx.dk, hadi@cyberus.ca
+Subject: Re: linux-next: manual merge of the net tree with Linus' tree
+Message-Id: <20100111185645.a66c6c8a.sfr@canb.auug.org.au>
+In-Reply-To: <20100110.225055.167520274.davem@davemloft.net>
+References: <20100111133109.a191ee64.sfr@canb.auug.org.au>
+	<20100110.225055.167520274.davem@davemloft.net>
+X-Mailer: Sylpheed 3.0.0beta4 (GTK+ 2.18.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Mon__11_Jan_2010_18_56_45_+1100_FCvLUpN6y=Y5Iowp"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--Signature=_Mon__11_Jan_2010_18_56_45_+1100_FCvLUpN6y=Y5Iowp
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-This output occurred on 2.6.33-rc3 when changing the schedler from cfq to noop.
+Hi Dave,
 
-[  129.838942] =============================================
-[  129.839006] [ INFO: possible recursive locking detected ]
-[  129.839006] 2.6.33-rc3-dgc #14                           
-[  129.839006] ---------------------------------------------
-[  129.839006] sh/3921 is trying to acquire lock:           
-[  129.839006]  (s_active){++++.+}, at: [<ffffffff8117fa7e>] sysfs_remove_dir+0x7e/0xa0
-[  129.839006]                                                                         
-[  129.839006] but task is already holding lock:                                       
-[  129.839006]  (s_active){++++.+}, at: [<ffffffff8117f4fd>] sysfs_get_active_two+0x3d/0x60
-[  129.839006]                                                                             
-[  129.839006] other info that might help us debug this:                                   
-[  129.839006] 4 locks held by sh/3921:
-[  129.839006]  #0:  (&buffer->mutex){+.+.+.}, at: [<ffffffff8117e0b9>] sysfs_write_file+0x49/0x150
-[  129.839006]  #1:  (s_active){++++.+}, at: [<ffffffff8117f4fd>] sysfs_get_active_two+0x3d/0x60
-[  129.839006]  #2:  (s_active){++++.+}, at: [<ffffffff8117f4e7>] sysfs_get_active_two+0x27/0x60
-[  129.839006]  #3:  (&q->sysfs_lock){+.+.+.}, at: [<ffffffff813cb1e4>] queue_attr_store+0x54/0xb0
-[  129.839006]
-[  129.839006] stack backtrace:
-[  129.839006] Pid: 3921, comm: sh Not tainted 2.6.33-rc3-dgc #14
-[  129.839006] Call Trace:
-[  129.839006]  [<ffffffff81084563>] __lock_acquire+0x1503/0x17a0
-[  129.839006]  [<ffffffff81082ea2>] ? debug_check_no_locks_freed+0xa2/0x160
-[  129.839006]  [<ffffffff81082795>] ? trace_hardirqs_on_caller+0x135/0x180
-[  129.839006]  [<ffffffff810848ce>] lock_acquire+0xce/0x100
-[  129.839006]  [<ffffffff8117fa7e>] ? sysfs_remove_dir+0x7e/0xa0
-[  129.839006]  [<ffffffff8117f90c>] sysfs_addrm_finish+0xec/0x180
-[  129.839006]  [<ffffffff8117fa7e>] ? sysfs_remove_dir+0x7e/0xa0
-[  129.839006]  [<ffffffff810824c3>] ? mark_held_locks+0x73/0x90
-[  129.839006]  [<ffffffff81073180>] ? cpu_clock+0x50/0x60
-[  129.839006]  [<ffffffff8117fa7e>] sysfs_remove_dir+0x7e/0xa0
-[  129.839006]  [<ffffffff813dd606>] kobject_del+0x16/0x40
-[  129.839006]  [<ffffffff813c2246>] elv_iosched_store+0xf6/0x260
-[  129.839006]  [<ffffffff813cb1fa>] queue_attr_store+0x6a/0xb0
-[  129.839006]  [<ffffffff8117e149>] sysfs_write_file+0xd9/0x150
-[  129.839006]  [<ffffffff8111c072>] vfs_write+0xb2/0xf0
-[  129.839006]  [<ffffffff8111c1a5>] sys_write+0x55/0x90
-[  129.839006]  [<ffffffff81002fdb>] system_call_fastpath+0x16/0x1b
+On Sun, 10 Jan 2010 22:50:55 -0800 (PST) David Miller <davem@davemloft.net>=
+ wrote:
+>
+> That latter commit is specially in the net-next-2.6 tree not the
+> net-2.6 tree.
 
+What you call "net-next-2.6", I have always called "net".  What you call
+"net-2.6", I have always called "net-current".  Would you like me to
+change the names?
+
+> I'll merge net-2.6 into net-next-2.6 to resolve this, thanks!
+
+Thanks.
+
+--=20
 Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-Dave.
--- 
-Dave Chinner
-david@fromorbit.com
+--Signature=_Mon__11_Jan_2010_18_56_45_+1100_FCvLUpN6y=Y5Iowp
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAktK2b0ACgkQjjKRsyhoI8wb9gCgrW4lQuWPRFEo4l/rnS4PFr+G
+InEAnRtMnUgl/Fb3rOMv+sW/97DTvnsq
+=J45b
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__11_Jan_2010_18_56_45_+1100_FCvLUpN6y=Y5Iowp--
