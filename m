@@ -1,85 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753298Ab0AKMBe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753314Ab0AKMCR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753298Ab0AKMBe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jan 2010 07:01:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753077Ab0AKMBd
+	id S1753314Ab0AKMCR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jan 2010 07:02:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753280Ab0AKMCQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jan 2010 07:01:33 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:58160 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753006Ab0AKMBc (ORCPT
+	Mon, 11 Jan 2010 07:02:16 -0500
+Received: from mail-px0-f174.google.com ([209.85.216.174]:34644 "EHLO
+	mail-px0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753217Ab0AKMCP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jan 2010 07:01:32 -0500
-Date: Mon, 11 Jan 2010 13:01:31 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Michael Stone <michael@laptop.org>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       linux-security-module@vger.kernel.org, Andi Kleen <andi@firstfloor.org>,
-       David Lang <david@lang.hm>, Oliver Hartkopp <socketcan@hartkopp.net>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Valdis Kletnieks <Valdis.Kletnieks@vt.edu>,
-       Bryan Donlan <bdonlan@gmail.com>, Evgeniy Polyakov <zbr@ioremap.net>,
-       "C. Scott Ananian" <cscott@cscott.net>,
-       James Morris <jmorris@namei.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Bernie Innocenti <bernie@codewiz.org>,
-       Mark Seaborn <mrs@mythic-beasts.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Am?rico Wang <xiyou.wangcong@gmail.com>,
-       Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
-       Samir Bellabes <sam@synack.fr>,
-       Casey Schaufler <casey@schaufler-ca.com>,
-       "Serge E. Hallyn" <serue@us.ibm.com>, Al Viro <viro@ZenIV.linux.org.uk>
-Subject: Re: [PATCH 2/3] Security: Implement disablenetwork semantics. (v4)
-Message-ID: <20100111120131.GB1697@atrey.karlin.mff.cuni.cz>
-References: <20100110215848.GA26609@elf.ucw.cz> <20100110224010.GA3825@heat>
+	Mon, 11 Jan 2010 07:02:15 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=hGe5oi/I/r5nXMepURYYyfAchNbkVLVtEOhGf18GWRTe9jtwrNWsFMiwY6DpdfdoIt
+         J2QRZYwNsUtPdRUyaC08NbuMqAiLaYbBkI5Qzh2FYVZqJoVj1wJxyL5zW3EtnZXANaB4
+         7M4/6+CeAsWx/JefQrqjveiwlUg/yvGW3usg0=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100110224010.GA3825@heat>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20100111105126.GD3440@sirena.org.uk>
+References: <20100111160232.e37e5393.sfr@canb.auug.org.au>
+	 <20100111105126.GD3440@sirena.org.uk>
+Date: Mon, 11 Jan 2010 07:02:14 -0500
+Message-ID: <771cded01001110402p1d2c475bgdde077f066e7f22d@mail.gmail.com>
+Subject: Re: linux-next: mfd tree build failure
+From: Haojian Zhuang <haojian.zhuang@gmail.com>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+       Samuel Ortiz <sameo@linux.intel.com>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Content-Type: multipart/mixed; boundary=005045029625e36550047ce24e69
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+--005045029625e36550047ce24e69
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-> >You can trivialy make disablenetwork disable setuid exec, too. That
-> >will introduce better isolation facilities, but not introduce any new
-> >security problems.
-> >
-> >For some reason, you don't want to do the obviously right thing.
-> 
-> I don't want to do it because it's not "obviously right" to me: I *have* 
-> setuid
-> programs that I want to be able to raise privileges when network-disabled.
-> I *don't have* any setuid programs that will be harmed by disablenetwork.
+On Mon, Jan 11, 2010 at 5:51 AM, Mark Brown
+<broonie@opensource.wolfsonmicro.com> wrote:
+> On Mon, Jan 11, 2010 at 04:02:32PM +1100, Stephen Rothwell wrote:
+>> Hi Sam,
+>
+>> Today's linux-next build (x86_64_allmodconfig, gcc 4.4.0, binutils
+>> 2.19.1) failed like this:
+>
+>> ERROR: "max8925_set_bits" [drivers/video/backlight/max8925_bl.ko] undefi=
+ned!
+>> ERROR: "max8925_reg_write" [drivers/video/backlight/max8925_bl.ko] undef=
+ined!
+>> ERROR: "max8925_reg_read" [drivers/video/backlight/max8925_bl.ko] undefi=
+ned!
+>> ERROR: "max8925_set_bits" [drivers/regulator/max8925.ko] undefined!
+>> ERROR: "max8925_reg_read" [drivers/regulator/max8925.ko] undefined!
+>
+>> I am not sure what caused this, so I have used the version of the mfd
+>> tree from next-20100108 for today.
+>
+> CCing in Haojian who did the driver. =A0I've not looked but I'd guess tha=
+t
+> the issue is missing EXPORT_SYMBOL{,_GPL}s on the symbols above.
+>
 
-Well, I do not have any desire to use disablenetwork, but I do not
-want my users to use it and DoS sendmail.
+I'm sorry on inconvience. Now I attache the fix.
 
-> Examples of software that I want to be able to gain privileges normally 
-> include:
+Samuel,
+Could you help to review and merge this patch?
 
-You'll have to make sure those are not accessed from the
-disablenetworked parts, I'd say. Pre-existing unix domain socket
-should be the way to go.
+It's not caused by EXPORT_SYMBOL{,_GPL}. If I build in max8925 mfd
+driver, issue is resolved.
+Regulator subsystem could only be built in. And 8925 regulator driver
+calls i2c operations that is defined in mfd driver. If 8925 regulator
+is built it and mfd 8925 is built as module, it will cause linking
+error.
 
->   rainbow, which requires privilege in order to add new accounts to the 
->   system
->   and in order to call setuid() but which does not require networking
->   privileges.
-> 
->   qmail-queue, which uses setuid to deliver mail that it reads from fd 0 to
->   local users
-> 
->   and other old favorites like mount, fusermount, X, and, presumably, any 
->   audio
->   software that wants to go realtime.
+Thanks
+Haojian
 
-mount certainly wants network access for NFS.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+--005045029625e36550047ce24e69
+Content-Type: text/x-patch; charset=US-ASCII; name="0001-mfd-set-max8925-as-built-in.patch"
+Content-Disposition: attachment; 
+	filename="0001-mfd-set-max8925-as-built-in.patch"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_g4bntwn00
+
+RnJvbSBjYzA4YWFlOTUyMzAyY2JjNDQ0NWY0ZGI0OWZkZmFiNWY5ZDc3OWVkIE1vbiBTZXAgMTcg
+MDA6MDA6MDAgMjAwMQpGcm9tOiBIYW9qaWFuIFpodWFuZyA8aGFvamlhbi56aHVhbmdAbWFydmVs
+bC5jb20+CkRhdGU6IE1vbiwgMTEgSmFuIDIwMTAgMTQ6Mzg6MzkgLTA1MDAKU3ViamVjdDogW1BB
+VENIXSBtZmQ6IHNldCBtYXg4OTI1IGFzIGJ1aWx0IGluCgpTaW5jZSByZWd1bGF0b3IgbW9kdWxl
+IGlzIGFsd2F5cyBidWlsdC1pbiwgTUZEIGRyaXZlciBoYXZlIHRvIGJlIGJ1aWx0IGluLgpJZiBN
+RkQgZHJpdmVyIGlzIGJ1aWx0IGFzIG1vZHVsZSwgbGlua2luZyBlcnJvciB3aWxsIG9jY3VyLgoK
+U2lnbmVkLW9mZi1ieTogSGFvamlhbiBaaHVhbmcgPGhhb2ppYW4uemh1YW5nQG1hcnZlbGwuY29t
+PgotLS0KIGRyaXZlcnMvbWZkL0tjb25maWcgfCAgICAyICstCiAxIGZpbGVzIGNoYW5nZWQsIDEg
+aW5zZXJ0aW9ucygrKSwgMSBkZWxldGlvbnMoLSkKCmRpZmYgLS1naXQgYS9kcml2ZXJzL21mZC9L
+Y29uZmlnIGIvZHJpdmVycy9tZmQvS2NvbmZpZwppbmRleCA5NGU0ZDVlLi5iODkyYzM4IDEwMDY0
+NAotLS0gYS9kcml2ZXJzL21mZC9LY29uZmlnCisrKyBiL2RyaXZlcnMvbWZkL0tjb25maWcKQEAg
+LTE4Niw3ICsxODYsNyBAQCBjb25maWcgUE1JQ19BRFA1NTIwCiAKIGNvbmZpZyBNRkRfTUFYODky
+NQogCXRyaXN0YXRlICJNYXhpbSBTZW1pY29uZHVjdG9yIE1BWDg5MjUgUE1JQyBTdXBwb3J0Igot
+CWRlcGVuZHMgb24gSTJDCisJZGVwZW5kcyBvbiBJMkM9eQogCXNlbGVjdCBNRkRfQ09SRQogCWhl
+bHAKIAkgIFNheSB5ZXMgaGVyZSB0byBzdXBwb3J0IGZvciBNYXhpbSBTZW1pY29uZHVjdG9yIE1B
+WDg5MjUuIFRoaXMgaXMKLS0gCjEuNS42LjUKCg==
+--005045029625e36550047ce24e69--
