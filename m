@@ -1,70 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754260Ab0AKURp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754321Ab0AKUVV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754260Ab0AKURp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jan 2010 15:17:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754243Ab0AKURn
+	id S1754321Ab0AKUVV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jan 2010 15:21:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754293Ab0AKUVS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jan 2010 15:17:43 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:38378 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754230Ab0AKURl (ORCPT
+	Mon, 11 Jan 2010 15:21:18 -0500
+Received: from mail-fx0-f225.google.com ([209.85.220.225]:47909 "EHLO
+	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754273Ab0AKUVO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jan 2010 15:17:41 -0500
-Date: Mon, 11 Jan 2010 21:17:34 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Karel Zak <kzak@redhat.com>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, util-linux-ng@vger.kernel.org
-Subject: Re: [ANNOUNCE] util-linux-ng v2.17 (stable)
-Message-ID: <20100111201734.GA11674@elf.ucw.cz>
-References: <20100108093302.GS1969@nb.net.home>
- <4B47A713.9060405@zytor.com>
- <20100111140255.GA1416@ucw.cz>
- <4B4B5768.2040005@zytor.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B4B5768.2040005@zytor.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Mon, 11 Jan 2010 15:21:14 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:from:to:cc:subject:date:message-id:x-mailer:in-reply-to
+         :references;
+        b=pm4ow8dw6n01a91v1G1A72U+uplV3ebc2WASs2gKe2xRxWXSdmzv8tQ4lxyr0KmBfW
+         ncvRTw6ZrhWXXLgVPS+EggAXbiZNtW9Uxjb+eP8x4vMqZdqK3jcl022u1RtCyHJpQKl2
+         /jDRFLML6Xb0h0VGKUWrrVHvRGIp0QvraKZ18=
+From: John Kacur <jkacur@redhat.com>
+To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       lkml <linux-kernel@vger.kernel.org>
+Cc: John Kacur <jkacur@redhat.com>
+Subject: [PATCH 1/2] plist: Fix grammar mistake, and c-style mistake.
+Date: Mon, 11 Jan 2010 21:21:06 +0100
+Message-Id: <1263241267-25204-2-git-send-email-jkacur@redhat.com>
+X-Mailer: git-send-email 1.6.5.2
+In-Reply-To: <1263241267-25204-1-git-send-email-jkacur@redhat.com>
+References: <1263241267-25204-1-git-send-email-jkacur@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 2010-01-11 08:52:56, H. Peter Anvin wrote:
-> On 01/11/2010 06:05 AM, Pavel Machek wrote:
-> >On Fri 2010-01-08 13:43:47, H. Peter Anvin wrote:
-> >>On 01/08/2010 01:33 AM, Karel Zak wrote:
-> >>>
-> >>>fdisk:
-> >>>    - the fdisk command aligns newly created partitions to minimum_io_size
-> >>>      boundary ("minimum_io_size" is physical sector size or stripe chunk
-> >>>      size on RAIDs).
-> >>>
-> >>>    - the fdisk command supports disks with alignment_offset now.
-> >>>
-> >>
-> >>I think we should align, by default, much more aggressively than that --
-> >>because frequently we just don't know what the real physical alignment
-> >>is (think of flash media, which uses large erase blocks underneath.)
-> >
-> >Flash has special mapping layer, and does not care (SD/MMC), or is a
-> >raw nand and can't be used as block device (smartmedia).
-> >
-> 
-> Uhm, that's just plain wrong.
-> 
-> It doesn't matter if there is a "special mapping layer" -- if you're
-> crossing multiple erase blocks you're still having more churn in
-> your flash translation layer, with more wear on the device, and
-> lower performance than if you didn't.
+Signed-off-by: John Kacur <jkacur@redhat.com>
+---
+ include/linux/plist.h |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-Eraseblocks really should not matter. It is not as if each logical
-sector belongs to one eraseblock....
-
-(OTOH, maybe the eraseblock *groups* that are basis for wear-leveling
-do, or maybe firmware is doing something really really strange.)
-								Pavel
+diff --git a/include/linux/plist.h b/include/linux/plist.h
+index 8227f71..6898985 100644
+--- a/include/linux/plist.h
++++ b/include/linux/plist.h
+@@ -45,7 +45,7 @@
+  * the insertion of new nodes. There are no nodes with duplicate
+  * priorites on the list.
+  *
+- * The nodes on the node_list is ordered by priority and can contain
++ * The nodes on the node_list are ordered by priority and can contain
+  * entries which have the same priority. Those entries are ordered
+  * FIFO
+  *
+@@ -265,7 +265,7 @@ static inline int plist_node_empty(const struct plist_node *node)
+  *
+  * Assumes the plist is _not_ empty.
+  */
+-static inline struct plist_node* plist_first(const struct plist_head *head)
++static inline struct plist_node *plist_first(const struct plist_head *head)
+ {
+ 	return list_entry(head->node_list.next,
+ 			  struct plist_node, plist.node_list);
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+1.6.5.2
+
