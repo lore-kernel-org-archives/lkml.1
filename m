@@ -1,50 +1,164 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753348Ab0AKBvy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753442Ab0AKBwA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753348Ab0AKBvy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Jan 2010 20:51:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752602Ab0AKBvx
+	id S1753442Ab0AKBwA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Jan 2010 20:52:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753417Ab0AKBv6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Jan 2010 20:51:53 -0500
-Received: from mga11.intel.com ([192.55.52.93]:55886 "EHLO mga11.intel.com"
+	Sun, 10 Jan 2010 20:51:58 -0500
+Received: from mga14.intel.com ([143.182.124.37]:2056 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751387Ab0AKBvw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Jan 2010 20:51:52 -0500
+	id S1753378Ab0AKBv4 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 Jan 2010 20:51:56 -0500
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,249,1262592000"; 
-   d="scan'208";a="763017157"
-Subject: Re: [PATCH] iwl-debugfs.c: remove unnecessary casts of void *
-From: Zhu Yi <yi.zhu@intel.com>
-To: H Hartley Sweeten <hartleys@visionengravers.com>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
-       "ilw@linux.intel.com" <ilw@linux.intel.com>,
-       "Chatre, Reinette" <reinette.chatre@intel.com>,
-       "linville@tuxdriver.com" <linville@tuxdriver.com>
-In-Reply-To: <201001081614.10343.hartleys@visionengravers.com>
-References: <201001081614.10343.hartleys@visionengravers.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 11 Jan 2010 09:51:50 +0800
-Message-ID: <1263174710.15653.242.camel@debian>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
+   d="scan'208";a="231231905"
+From: "Zheng, Shaohui" <shaohui.zheng@intel.com>
+To: "Wu, Fengguang" <fengguang.wu@intel.com>
+CC: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "ak@linux.intel.com" <ak@linux.intel.com>,
+       "y-goto@jp.fujitsu.com" <y-goto@jp.fujitsu.com>,
+       Dave Hansen <haveblue@us.ibm.com>, "x86@kernel.org" <x86@kernel.org>
+Date: Mon, 11 Jan 2010 09:51:27 +0800
+Subject: RE: [PATCH - resend ] memory-hotplug: create /sys/firmware/memmap
+	entry for new memory(v3)
+Thread-Topic: [PATCH - resend ] memory-hotplug: create /sys/firmware/memmap
+	entry for new memory(v3)
+Thread-Index: AcqQYz/GXymS3/PzT/mHshfQs1WbQwB/E1pw
+Message-ID: <DA586906BA1FFC4384FCFD6429ECE86031560F78@shzsmsx502.ccr.corp.intel.com>
+References: <DA586906BA1FFC4384FCFD6429ECE86031560B8D@shzsmsx502.ccr.corp.intel.com>
+ <20100108110810.GA6153@localhost>
+In-Reply-To: <20100108110810.GA6153@localhost>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2010-01-09 at 07:14 +0800, H Hartley Sweeten wrote:
-> iwl-debugfs.c: remove unnecessary casts of void *
-> 
-> void pointers do not need to be cast to other pointer types.
-> 
-> Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
-> Cc: Zhu Yi <yi.zhu@intel.com>
-> Cc: Reinette Chatre <reinette.chatre@intel.com>
-> Cc: John W. Linville <linville@tuxdriver.com>
+Thanks for fengguang's careful review, I will send out the modified patch soon.
 
-Acked-by: Zhu Yi <yi.zhu@intel.com>
+Thanks & Regards,
+Shaohui
+
+
+-----Original Message-----
+From: Wu, Fengguang 
+Sent: Friday, January 08, 2010 7:08 PM
+To: Zheng, Shaohui
+Cc: linux-mm@kvack.org; akpm@linux-foundation.org; linux-kernel@vger.kernel.org; ak@linux.intel.com; y-goto@jp.fujitsu.com; Dave Hansen; x86@kernel.org
+Subject: Re: [PATCH - resend ] memory-hotplug: create /sys/firmware/memmap entry for new memory(v3)
+
+On Fri, Jan 08, 2010 at 11:16:13AM +0800, Zheng, Shaohui wrote:
+> Resend the patch to the mailing-list, the original patch URL is at 
+> http://patchwork.kernel.org/patch/69071/. It is already reviewed, but It is still not 
+> accepted and no comments, I guess that it should be ignored since we have so many 
+> patches each day, send it again.  
+> 
+> memory-hotplug: create /sys/firmware/memmap entry for hot-added memory
+> 
+> Interface firmware_map_add was not called in explicit, Remove it and add function
+> firmware_map_add_hotplug as hotplug interface of memmap.
+> 
+> When we hot-add new memory, sysfs does not export memmap entry for it. we add
+>  a call in function add_memory to function firmware_map_add_hotplug.
+> 
+> Add a new function add_sysfs_fw_map_entry to create memmap entry, it can avoid 
+> duplicated codes.
+> 
+> Thanks for the careful review from Fengguang Wu and Dave Hansen.
+> 
+> Signed-off-by: Shaohui Zheng <shaohui.zheng@intel.com>
+> Acked-by: Andi Kleen <ak@linux.intel.com>
+> Acked-by: Yasunori Goto <y-goto@jp.fujitsu.com>
+> Acked-by: Dave Hansen <dave@linux.vnet.ibm.com>
+> Reviewed-by: Wu Fengguang <fengguang.wu@intel.com>
+> ---
+> diff --git a/drivers/firmware/memmap.c b/drivers/firmware/memmap.c
+> index 56f9234..ec8c3d4 100644
+> --- a/drivers/firmware/memmap.c
+> +++ b/drivers/firmware/memmap.c
+> @@ -123,52 +123,75 @@ static int firmware_map_add_entry(u64 start, u64 end,
+>  }
+>  
+>  /**
+> - * firmware_map_add() - Adds a firmware mapping entry.
+> + * Add memmap entry on sysfs
+> + */
+> +static int add_sysfs_fw_map_entry(struct firmware_map_entry *entry) {
+
+Minor style issue:
+
+ERROR: open brace '{' following function declarations go on the next line
+#31: FILE: drivers/firmware/memmap.c:128:
++static int add_sysfs_fw_map_entry(struct firmware_map_entry *entry) {
+
+total: 1 errors, 0 warnings, 145 lines checked
+
+patches/memory-hotplug-create-sys-firmware-memmap-entry-for-new-memory-v3.patch
+has style problems, please review.  If any of these e rrors
+are false positives report them to the maintainer, see CHECKPATCH in
+MAINTAINERS.
+[Zheng, Shaohui] My carelessness, will change it in new patch.
+
+> +	static int map_entries_nr;
+> +	static struct kset *mmap_kset;
+> +
+> +	if (!mmap_kset) {
+> +		mmap_kset = kset_create_and_add("memmap", NULL, firmware_kobj);
+> +		if (WARN_ON(!mmap_kset))
+
+This WARN_ON() may never trigger, or when things go terribly wrong it
+repeatedly produce a dozen stack dumps, which don't really help
+diagnose the root cause.  Better to just remove it.
+[Zheng, Shaohui] Agree.
+
+> +			return -ENOMEM;
+> +	}
+> +
+> +	entry->kobj.kset = mmap_kset;
+> +	if (kobject_add(&entry->kobj, NULL, "%d", map_entries_nr++))
+> +		kobject_put(&entry->kobj);
+> +
+> +	return 0;
+> +}
+> +
+> +/**
+> + * firmware_map_add_early() - Adds a firmware mapping entry.
+>   * @start: Start of the memory range.
+>   * @end:   End of the memory range (inclusive).
+>   * @type:  Type of the memory range.
+>   *
+> - * This function uses kmalloc() for memory
+> - * allocation. Use firmware_map_add_early() if you want to use the bootmem
+> - * allocator.
+> + * Adds a firmware mapping entry. This function uses the bootmem allocator
+> + * for memory allocation.
+>   *
+>   * That function must be called before late_initcall.
+>   *
+>   * Returns 0 on success, or -ENOMEM if no memory could be allocated.
+>   **/
+> -int firmware_map_add(u64 start, u64 end, const char *type)
+> +int __init firmware_map_add_early(u64 start, u64 end, const char *type)
+>  {
+>  	struct firmware_map_entry *entry;
+>  
+> -	entry = kmalloc(sizeof(struct firmware_map_entry), GFP_ATOMIC);
+> -	if (!entry)
+> +	entry = alloc_bootmem(sizeof(struct firmware_map_entry));
+> +	if (WARN_ON(!entry))
+
+Ditto.
+[Zheng, Shaohui] Agree.
 
 Thanks,
--yi
+Fengguang
 
