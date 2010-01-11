@@ -1,76 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752751Ab0AKVsk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752828Ab0AKVtS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752751Ab0AKVsk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jan 2010 16:48:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751685Ab0AKVsj
+	id S1752828Ab0AKVtS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jan 2010 16:49:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752218Ab0AKVtQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jan 2010 16:48:39 -0500
-Received: from mail.elliptictech.com ([209.217.122.41]:34495 "EHLO
-	emergent.ellipticsemi.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751476Ab0AKVsi (ORCPT
+	Mon, 11 Jan 2010 16:49:16 -0500
+Received: from pc-249.acfr.usyd.edu.au ([129.78.210.249]:57887 "EHLO
+	rosaceae.acfr.usyd.edu.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751685Ab0AKVtQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jan 2010 16:48:38 -0500
-Date: Mon, 11 Jan 2010 16:47:10 -0500
-From: Nick Bowler <nbowler@elliptictech.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Network Development <netdev@vger.kernel.org>,
-       Linux ACPI <linux-acpi@vger.kernel.org>,
-       Linux PM List <linux-pm@lists.linux-foundation.org>,
-       Linux SCSI List <linux-scsi@vger.kernel.org>,
-       Linux Wireless List <linux-wireless@vger.kernel.org>,
-       DRI <dri-devel@lists.sourceforge.net>
-Subject: Re: 2.6.33-rc3-git3: Reported regressions from 2.6.32
-Message-ID: <20100111214603.GA4335@emergent.ellipticsemi.com>
-Mail-Followup-To: "Rafael J. Wysocki" <rjw@sisk.pl>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Adrian Bunk <bunk@kernel.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Natalie Protasevich <protasnb@gmail.com>,
-	Kernel Testers List <kernel-testers@vger.kernel.org>,
-	Network Development <netdev@vger.kernel.org>,
-	Linux ACPI <linux-acpi@vger.kernel.org>,
-	Linux PM List <linux-pm@lists.linux-foundation.org>,
-	Linux SCSI List <linux-scsi@vger.kernel.org>,
-	Linux Wireless List <linux-wireless@vger.kernel.org>,
-	DRI <dri-devel@lists.sourceforge.net>
-References: <wnS54-l8PVO.A.TlF.oMlSLB@chimera>
+	Mon, 11 Jan 2010 16:49:16 -0500
+From: Alex Brooks <a.brooks@marathon-robotics.com>
+Organization: Marathon Robotics
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Subject: Re: BAR 0: can't allocate resource
+Date: Tue, 12 Jan 2010 08:47:47 +1100
+User-Agent: KMail/1.9.9
+Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <201001061305.31635.a.brooks@marathon-robotics.com> <201001101407.26930.a.brooks@marathon-robotics.com> <201001111427.03777.bjorn.helgaas@hp.com>
+In-Reply-To: <201001111427.03777.bjorn.helgaas@hp.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <wnS54-l8PVO.A.TlF.oMlSLB@chimera>
-Organization: Elliptic Technologies Inc.
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Message-Id: <201001120847.47684.a.brooks@marathon-robotics.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 23:27 Sun 10 Jan     , Rafael J. Wysocki wrote:
-> This message contains a list of some regressions from 2.6.32, for which there
-> are no fixes in the mainline I know of.  If any of them have been fixed already,
-> please let me know.
-> 
-> If you know of any other unresolved regressions from 2.6.32, please let me know
-> either and I'll add them to the list.  Also, please let me know if any of the
-> entries below are invalid.
+> > including some new
+> > information about an address collision for the recalcitrant device:
+> >
+> > pci 0000:01:04.0: address space collision: [mem 0x00800000-0x00800fff]
+> > already in use
+> > pci 0000:01:04.0: can't reserve [mem 0x00800000-0x00800fff]
+> >
+> > Does this shed any more light on things (or can you tell me what I could
+> > modify to get better debug info)?
+>
+> It shows that we think the octal UART is at 0x00800000, which
+> doesn't seem valid (I think it's in the middle of your system RAM).
+>
+> This is before Linux moves anything around, so normally this would
+> be what BIOS left in the BAR.  But BIOS puts it at 0xfebff000 in the
+> working case (without the Mini PCI adapter), and the adapter shouldn't
+> even be visible to the BIOS, so I would expect the octal UART to still
+> be at the same address.
+>
+> I'm afraid I still don't see a software problem here.  To me (and I'm
+> certainly not a hardware person), it feels like an electrical problem
+> on the PCI bus: we read a BAR and it has a nonsensical value, we write
+> the BAR and can't read that value back, we read the vendor/device/class
+> codes and get nonsense.  It's also interesting that most of these
+> nonsense values we read seem to have only one bit set.
 
-Here are two that I don't see in the list:
+OK, at this point I think I'll look into switching hardware.  Thanks very much 
+for all the help.
 
- * LVDS downclocking breaks on G45/thinkpad T500
 
-     LKML: http://lkml.org/lkml/2009/12/26/40
-     FDO:  http://bugs.freedesktop.org/show_bug.cgi?id=25809
- 
- * Receive failure in et131x (Alan Cox sent me a patch for this but
-                              it's not in mainline yet)
-
-     LKML: http://lkml.org/lkml/2009/12/29/210
-
--- 
-Nick Bowler, Elliptic Technologies (http://www.elliptictech.com/)
+Alex
