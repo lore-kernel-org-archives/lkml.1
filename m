@@ -1,162 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752177Ab0AKXwQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753199Ab0AKX6M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752177Ab0AKXwQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jan 2010 18:52:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751422Ab0AKXwQ
+	id S1753199Ab0AKX6M (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jan 2010 18:58:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752365Ab0AKX6L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jan 2010 18:52:16 -0500
-Received: from mga02.intel.com ([134.134.136.20]:48897 "EHLO mga02.intel.com"
+	Mon, 11 Jan 2010 18:58:11 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:46161 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751249Ab0AKXwP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jan 2010 18:52:15 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,258,1262592000"; 
-   d="scan'208";a="483183635"
-Subject: Re: [PATCH] Revert 2fbd07a5f so machines with BSPs phsyical apic
- id != 0 can boot
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-Reply-To: Suresh Siddha <suresh.b.siddha@intel.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "ananth@in.ibm.com" <ananth@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Yinghai Lu <yinghai@kernel.org>, lkml <linux-kernel@vger.kernel.org>,
-       "stable@kernel.org" <stable@kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-In-Reply-To: <1263253513.2859.833.camel@sbs-t61.sc.intel.com>
-References: <20100109101038.GA17555@in.ibm.com>
-	 <86802c441001091313y1f64f011t616f08cd282a7123@mail.gmail.com>
-	 <20100110023015.GA2253@in.ibm.com>
-	 <86802c441001092235j79092e6fse18b61e3d7b0ac6@mail.gmail.com>
-	 <20100110102638.GA7838@elte.hu>  <20100111045326.GA11725@in.ibm.com>
-	 <1263245985.2859.497.camel@sbs-t61.sc.intel.com>
-	 <alpine.LFD.2.00.1001111454060.17145@localhost.localdomain>
-	 <1263253513.2859.833.camel@sbs-t61.sc.intel.com>
-Content-Type: text/plain
-Organization: Intel Corp
-Date: Mon, 11 Jan 2010 15:51:04 -0800
-Message-Id: <1263253864.2859.846.camel@sbs-t61.sc.intel.com>
+	id S1752139Ab0AKX6L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jan 2010 18:58:11 -0500
+Date: Tue, 12 Jan 2010 10:58:05 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Linus <torvalds@linux-foundation.org>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Joakim Tjernlund <Joakim.Tjernlund@transmode.se>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Paul Mackerras <paulus@samba.org>, <linuxppc-dev@lists.ozlabs.org>
+Subject: linux-next: origin tree build failure
+Message-Id: <20100112105805.50e39a77.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 3.0.0beta4 (GTK+ 2.18.5; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2010-01-11 at 15:45 -0800, Suresh Siddha wrote:
-> On Mon, 2010-01-11 at 14:55 -0800, Linus Torvalds wrote:
-> > 
-> > On Mon, 11 Jan 2010, Suresh Siddha wrote:
-> > > 
-> > > So far, I don't see a need for the revert.
-> > 
-> > It's very easy. It breaks. You don't have a fix. We'll revert it.
-> 
-> Linus, We are in -rc3 and thought we have few days atleast to sort it
-> out and post the correct fix to the problem, rather than do a quick
-> revert (as we know that the current code is not fundamentally broken).
-> 
-> But if you want to revert, I have appended a patch to revert this, which
-> has the correct subject, description etc atleast. I can work with Ananth
-> and re-submit this for the next release.
-> 
+Hi all,
 
-hmm. This time with the actual "reverted" patch.
+Today's linux-next build (powerpc ppc64_defconfig) failed like this:
 
+cc1: error: include/linux/autoconf.h: No such file or directory
+
+(while building the boot wrappers - lots more of the same)
+
+Caused by commit ac4c2a3bbe5db5fc570b1d0ee1e474db7cb22585 ("zlib:
+optimize inffast when copying direct from output").  autoconf.h moved
+from include/linux to include/generated in commit
+264a26838056fc2d759f58bec2e720e01fcb1bdb ("kbuild: move autoconf.h to
+include/generated") which was in linux-next since 14 Dec 2009 and in
+Linus' tree since 18 Dec 2009.
+
+I added the following patch for today:
+
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Tue, 12 Jan 2010 10:23:43 +1100
+Subject: [PATCH] powerpc: fix boot Makefile for autoconf.h moving
+
+autoconf.h moved from include/linux to include/generated
+
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
-From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Subject: Revert "x86, apic: Use logical flat on intel with <= 8 logical cpus"
+ arch/powerpc/boot/Makefile |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Revert commit 2fbd07a5f5d1295fa9b0c0564ec27da7c276a75a, as this commit breaks
-an IBM platform with quad-core Xeon cpu's.
-
-According to Suresh, this might be an IBM platform issue, as on other Intel
-platforms with <= 8 logical cpu's, logical flat mode works fine irespective of
-physical apic id values (inline with the xapic architecture).
-    
-Revert this for now because of the IBM platform breakage.
-
-Another version will be re-submitted after the complete analysis.
-
-Signed-off-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Acked-by: Suresh Siddha <suresh.b.siddha@intel.com>
----
-
-diff --git a/arch/x86/kernel/apic/apic.c b/arch/x86/kernel/apic/apic.c
-index aa57c07..e80f291 100644
---- a/arch/x86/kernel/apic/apic.c
-+++ b/arch/x86/kernel/apic/apic.c
-@@ -62,7 +62,7 @@ unsigned int boot_cpu_physical_apicid = -1U;
- /*
-  * The highest APIC ID seen during enumeration.
-  *
-- * On AMD, this determines the messaging protocol we can use: if all APIC IDs
-+ * This determines the messaging protocol we can use: if all APIC IDs
-  * are in the 0 ... 7 range, then we can use logical addressing which
-  * has some performance advantages (better broadcasting).
-  *
-@@ -1898,14 +1898,24 @@ void __cpuinit generic_processor_info(int apicid, int version)
- 		max_physical_apicid = apicid;
+diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
+index 826a30a..fb32a8e 100644
+--- a/arch/powerpc/boot/Makefile
++++ b/arch/powerpc/boot/Makefile
+@@ -34,7 +34,7 @@ BOOTCFLAGS	+= -fno-stack-protector
+ endif
  
- #ifdef CONFIG_X86_32
--	switch (boot_cpu_data.x86_vendor) {
--	case X86_VENDOR_INTEL:
--		if (num_processors > 8)
--			def_to_bigsmp = 1;
--		break;
--	case X86_VENDOR_AMD:
--		if (max_physical_apicid >= 8)
-+	/*
-+	 * Would be preferable to switch to bigsmp when CONFIG_HOTPLUG_CPU=y
-+	 * but we need to work other dependencies like SMP_SUSPEND etc
-+	 * before this can be done without some confusion.
-+	 * if (CPU_HOTPLUG_ENABLED || num_processors > 8)
-+	 *       - Ashok Raj <ashok.raj@intel.com>
-+	 */
-+	if (max_physical_apicid >= 8) {
-+		switch (boot_cpu_data.x86_vendor) {
-+		case X86_VENDOR_INTEL:
-+			if (!APIC_XAPIC(version)) {
-+				def_to_bigsmp = 0;
-+				break;
-+			}
-+			/* If P4 and above fall through */
-+		case X86_VENDOR_AMD:
- 			def_to_bigsmp = 1;
-+		}
- 	}
- #endif
+ BOOTCFLAGS	+= -I$(obj) -I$(srctree)/$(obj)
+-BOOTCFLAGS	+= -include include/linux/autoconf.h -Iarch/powerpc/include
++BOOTCFLAGS	+= -include include/generated/autoconf.h -Iarch/powerpc/include
+ BOOTCFLAGS	+= -Iinclude
  
-diff --git a/arch/x86/kernel/apic/probe_64.c b/arch/x86/kernel/apic/probe_64.c
-index c4cbd30..65edc18 100644
---- a/arch/x86/kernel/apic/probe_64.c
-+++ b/arch/x86/kernel/apic/probe_64.c
-@@ -64,23 +64,16 @@ void __init default_setup_apic_routing(void)
- 			apic = &apic_x2apic_phys;
- 		else
- 			apic = &apic_x2apic_cluster;
-+		printk(KERN_INFO "Setting APIC routing to %s\n", apic->name);
- 	}
- #endif
- 
- 	if (apic == &apic_flat) {
--		switch (boot_cpu_data.x86_vendor) {
--		case X86_VENDOR_INTEL:
--			if (num_processors > 8)
--				apic = &apic_physflat;
--			break;
--		case X86_VENDOR_AMD:
--			if (max_physical_apicid >= 8)
--				apic = &apic_physflat;
--		}
-+		if (max_physical_apicid >= 8)
-+			apic = &apic_physflat;
-+		printk(KERN_INFO "Setting APIC routing to %s\n", apic->name);
- 	}
- 
--	printk(KERN_INFO "Setting APIC routing to %s\n", apic->name);
--
- 	if (is_vsmp_box()) {
- 		/* need to update phys_pkg_id */
- 		apic->phys_pkg_id = apicid_phys_pkg_id;
+ DTS_FLAGS	?= -p 1024
+-- 
+1.6.6
 
+However, this then produced these errors:
 
+arch/powerpc/boot/inffast.c:7:27: error: asm/unaligned.h: No such file or directory
+arch/powerpc/boot/inffast.c:8:27: error: asm/byteorder.h: No such file or directory
+arch/powerpc/boot/inffast.c: In function 'inflate_fast':
+arch/powerpc/boot/inffast.c:263: warning: implicit declaration of function 'get_unaligned'
+arch/powerpc/boot/inffast.c:277:2: error: #error __BIG_ENDIAN nor __LITTLE_ENDIAN is defined
+
+So I just reverted the original commit (after removing my fix above).
+
+This latter build problem is probably only noticed if you build with a
+separate object directory (i.e. with O=.. on the make command).  The
+previous PowerPC maintainer tells me that defining __KERNEL__ in the
+BOOTFLAGS is wrong and should have been noticed.
+
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
