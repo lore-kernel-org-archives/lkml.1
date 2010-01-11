@@ -1,49 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753108Ab0AKQrm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753193Ab0AKQtj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753108Ab0AKQrm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jan 2010 11:47:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752939Ab0AKQrl
+	id S1753193Ab0AKQtj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jan 2010 11:49:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753140Ab0AKQti
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jan 2010 11:47:41 -0500
-Received: from mail-bw0-f227.google.com ([209.85.218.227]:37745 "EHLO
-	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750783Ab0AKQrk convert rfc822-to-8bit (ORCPT
+	Mon, 11 Jan 2010 11:49:38 -0500
+Received: from outbound-mail-07.bluehost.com ([69.89.17.207]:44130 "HELO
+	outbound-mail-07.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753054Ab0AKQth (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jan 2010 11:47:40 -0500
-MIME-Version: 1.0
-In-Reply-To: <Pine.LNX.4.44L0.1001111008080.2873-100000@iolanthe.rowland.org>
-References: <nzLqtSp97aP.A.RGB.hglSLB@chimera>
-	 <Pine.LNX.4.44L0.1001111008080.2873-100000@iolanthe.rowland.org>
-Date: Mon, 11 Jan 2010 17:47:38 +0100
-Message-ID: <2f83750a1001110847r2b65b433q2ff6f6714d42861a@mail.gmail.com>
-Subject: Re: [linux-pm] 2.6.33-rc3-git3: Reported regressions 2.6.31 -> 2.6.32
-From: Clemens Fruhwirth <clemens@endorphin.org>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Mon, 11 Jan 2010 11:49:37 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=sRg/OhhcIwt8RUGinQWqPeRE5DmiPnaCzMtUZWfCSHrv7rycvSg0zMloLVeT/mv+qhKhmqQityHqRLP0vrG+r+sJjkbZ+tjDxOdcedCRBx0DKE9rnCC3JBLsGWhI7E/0;
+Date: Mon, 11 Jan 2010 08:49:42 -0800
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Simon Horman <horms@verge.net.au>
+Cc: Marin Mitov <mitov@issp.bas.bg>, linux-kernel@vger.kernel.org,
+       linux-pci@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>
+Subject: Re: [BUG?]Section mismatch dmar_ir_support()
+Message-ID: <20100111084942.29900ef5@jbarnes-piketon>
+In-Reply-To: <20100111132022.GC5198@verge.net.au>
+References: <201001082127.22685.mitov@issp.bas.bg>
+	<20100111132022.GC5198@verge.net.au>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 11, 2010 at 4:15 PM, Alan Stern <stern@rowland.harvard.edu> wrote:
-> On Sun, 10 Jan 2010, Rafael J. Wysocki wrote:
->
->> Bug-Entry     : http://bugzilla.kernel.org/show_bug.cgi?id=14841
->> Subject       : unable to enumerate USB device on port X after suspend/resume
->> Submitter     : Fruhwirth Clemens <clemens@endorphin.org>
->> Date          : 2009-12-19 11:45 (23 days old)
->
-> This bug has been resolved as WILL NOT FIX.  It ended up having nothing
-> to do with suspend or resume, it was caused by strange behavior in the
-> device hardware.
+On Tue, 12 Jan 2010 00:20:22 +1100
+Simon Horman <horms@verge.net.au> wrote:
 
-Should we track "automatic fallback to USB 1.1" as feature request?
-You already said that this isn't easily possible with the way the USB
-stack is structured at the moment (connect-centric-view instead of
-port-centric-view). However, Windows does that fallback and I'm afraid
-that this is the default device testing scenario.
+> [ PCI list and maintainer CC added ]
+> 
+> On Fri, Jan 08, 2010 at 09:27:22PM +0200, Marin Mitov wrote:
+> > Hi all,
+> > 
+> > Please, look at how many times the same patch is proposed, 
+> > but still not fixed:-)
+> > 
+> > http://lkml.org/lkml/2009/10/3/3
+> > http://lkml.org/lkml/2009/11/13/271
+> > http://lkml.org/lkml/2009/12/4/462
+> > http://lkml.org/lkml/2009/12/16/424
+> > http://lkml.org/lkml/2009/12/20/21
+> > 
+> > Sure I could be missing some other postings :-)
+> > 
+> > Who could take care of it? And should we?
+> 
+> I've been wondering about that too.
+> The patch seems correct to me.
+
+Oh I was thinking David would pick it up.
+
 -- 
-Fruhwirth Clemens http://clemens.endorphin.org
+Jesse Barnes, Intel Open Source Technology Center
