@@ -1,63 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751320Ab0AKFCm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751476Ab0AKFOd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751320Ab0AKFCm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jan 2010 00:02:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750946Ab0AKFCl
+	id S1751476Ab0AKFOd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jan 2010 00:14:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751208Ab0AKFOc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jan 2010 00:02:41 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:33033 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750928Ab0AKFCk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jan 2010 00:02:40 -0500
-Date: Mon, 11 Jan 2010 16:02:32 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Samuel Ortiz <sameo@linux.intel.com>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: linux-next: mfd tree build failure
-Message-Id: <20100111160232.e37e5393.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 3.0.0beta4 (GTK+ 2.18.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__11_Jan_2010_16_02_32_+1100_0/2=oCIWkuoy=N_="
+	Mon, 11 Jan 2010 00:14:32 -0500
+Received: from mail-px0-f174.google.com ([209.85.216.174]:45827 "EHLO
+	mail-px0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750958Ab0AKFOc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jan 2010 00:14:32 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type;
+        b=YZXHbpmO3OdBTnPfO3Q78h2/Lq4/4M5lMraDdjSZASiB0/TXG2SBjpkxJ9j/7o31FW
+         /bZRjrSiqzdcXWSazdGYqxe9XfjEpJgYkp84eI4pNzMdUp4haFOVx2cwJ9dcaR+UKFYO
+         ngWfaqZu/GxZ+okZB8ly8mwFsmF8n4qBgfavQ=
+MIME-Version: 1.0
+Date: Mon, 11 Jan 2010 13:14:31 +0800
+Message-ID: <1fd295ee1001102114p1b74336q16bb35d973b40c1c@mail.gmail.com>
+Subject: A QUESTION ABOUT USB DRIVER
+From: Steven Xu <linuxkernel.xxz@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__11_Jan_2010_16_02_32_+1100_0/2=oCIWkuoy=N_=
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+output: usb 1-1: device descriptor read/64, error -71
 
-Hi Sam,
 
-Today's linux-next build (x86_64_allmodconfig, gcc 4.4.0, binutils
-2.19.1) failed like this:
+in drivers/usb/core/hub.c  line 2250
+when a udisk inserted run to here
+                        for (j = 0; j < 3; ++j) {
+                                buf->bMaxPacketSize0 = 0;
 
-ERROR: "max8925_set_bits" [drivers/video/backlight/max8925_bl.ko] undefined!
-ERROR: "max8925_reg_write" [drivers/video/backlight/max8925_bl.ko] undefine=
-d!
-ERROR: "max8925_reg_read" [drivers/video/backlight/max8925_bl.ko] undefined!
-ERROR: "max8925_set_bits" [drivers/regulator/max8925.ko] undefined!
-ERROR: "max8925_reg_read" [drivers/regulator/max8925.ko] undefined!
+                                r = usb_control_msg(udev, usb_rcvaddr0pipe(),
+                                        USB_REQ_GET_DESCRIPTOR, USB_DIR_IN,
+                                        USB_DT_DEVICE << 8, 0,
+                                        buf, GET_DESCRIPTOR_BUFSIZE,
+                                        (i ? USB_CTRL_GET_TIMEOUT : 1000));
+ return r=-74,
 
-I am not sure what caused this, so I have used the version of the mfd
-tree from next-20100108 for today.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Mon__11_Jan_2010_16_02_32_+1100_0/2=oCIWkuoy=N_=
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAktKsOgACgkQjjKRsyhoI8xlmwCdGNlW99sqfRQUqXp9rMioIPqT
-zCEAoLP59fsQuMtivo7hAYxFlygeSz3M
-=FlAT
------END PGP SIGNATURE-----
-
---Signature=_Mon__11_Jan_2010_16_02_32_+1100_0/2=oCIWkuoy=N_=--
+WHAT IS THE POSSIBEL REASON FOR THIS?
+THANKS!
