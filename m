@@ -1,54 +1,281 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753358Ab0AKMuB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753445Ab0AKNCw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753358Ab0AKMuB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jan 2010 07:50:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753026Ab0AKMt7
+	id S1753445Ab0AKNCw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jan 2010 08:02:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753334Ab0AKNCv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jan 2010 07:49:59 -0500
-Received: from mail-ew0-f214.google.com ([209.85.219.214]:63614 "EHLO
-	mail-ew0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751850Ab0AKMt5 convert rfc822-to-8bit (ORCPT
+	Mon, 11 Jan 2010 08:02:51 -0500
+Received: from e23smtp03.au.ibm.com ([202.81.31.145]:51306 "EHLO
+	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753329Ab0AKNCu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jan 2010 07:49:57 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=Y+2Z8vSyzBPuD093GiFG+GpikbnZeznlmVXJRx+v08n8PQWJXn3x8TLSRJCNvxJqdr
-         0aaToLw1EN0TErx41zJCIL0lfu0R8sXyuxxM7ksISRLHrsFcFT/q0XDbccOd/TNYjsgA
-         C2Rtd11HXPWTxxsxSP7VC3pzs+lu8JMFHUx/I=
+	Mon, 11 Jan 2010 08:02:50 -0500
+Date: Mon, 11 Jan 2010 18:32:10 +0530
+From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: Ingo Molnar <mingo@elte.hu>, linuxppc-dev@ozlabs.org,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Michael Neuling <mikey@neuling.org>, systemtap@sources.redhat.com,
+       Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>
+Subject: [PATCH -tip tracing/kprobes v2] Powerpc port of the kprobe-based
+ event tracer
+Message-ID: <20100111130210.GA31980@in.ibm.com>
+References: <20100111125952.604518521@mars.in.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <nzLqtSp97aP.A.RGB.hglSLB@chimera>
-References: <nzLqtSp97aP.A.RGB.hglSLB@chimera>
-Date: Mon, 11 Jan 2010 13:49:54 +0100
-Message-ID: <b170af451001110449w134af1f9we804205a5febcaca@mail.gmail.com>
-Subject: Re: 2.6.33-rc3-git3: Reported regressions 2.6.31 -> 2.6.32
-From: =?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Network Development <netdev@vger.kernel.org>,
-       Linux ACPI <linux-acpi@vger.kernel.org>,
-       Linux PM List <linux-pm@lists.linux-foundation.org>,
-       Linux SCSI List <linux-scsi@vger.kernel.org>,
-       Linux Wireless List <linux-wireless@vger.kernel.org>,
-       DRI <dri-devel@lists.sourceforge.net>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline; filename="kprobes.ppc.patch"
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2010/1/10 Rafael J. Wysocki <rjw@sisk.pl>:
-> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=14747
-> Subject         : bisected 2.6.32 regression: synaptics touchpad doesn't work
-> Submitter       : François Valenduc <francois.valenduc@tvcablenet.be>
-> Date            : 2009-12-06 11:16 (36 days old)
+This patch ports the kprobe-based event tracer to powerpc. This patch
+is based in x86 port. This brings powerpc on par with x86.
 
-Not sure if this is hackish or not, but some patch exists.
+ChangeLog - v2:
+- Removed regs_get_argument_nth() API as function argument access syntax
+  is dropped from kprobe-tracer. Please refer to patches below on Linux PPC
+  mailing list:
+  http://lists.ozlabs.org/pipermail/linuxppc-dev/2010-January/079331.html
+  http://lists.ozlabs.org/pipermail/linuxppc-dev/2010-January/079332.html
+- Rebased to commit f61d6b1dcb06d62bc20d40e51c7a1e80275a80ab of -tip
 
--- 
-Rafał
+This patch is dependent on following patch:
+  http://lists.ozlabs.org/pipermail/linuxppc-dev/2010-January/079331.html
+
+Port the following API's to ppc for accessing registers and stack entries
+from pt_regs.
+
+- regs_query_register_offset(const char *name)
+   Query the offset of "name" register.
+
+- regs_query_register_name(unsigned int offset)
+   Query the name of register by its offset.
+
+- regs_get_register(struct pt_regs *regs, unsigned int offset)
+   Get the value of a register by its offset.
+
+- regs_within_kernel_stack(struct pt_regs *regs, unsigned long addr)
+   Check the address is in the kernel stack.
+
+- regs_get_kernel_stack_nth(struct pt_regs *reg, unsigned int nth)
+   Get Nth entry of the kernel stack. (N >= 0)
+
+Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+Acked-by: Masami Hiramatsu <mhiramat@redhat.com>
+---
+
+ arch/powerpc/include/asm/ptrace.h |   61 ++++++++++++++++++++++
+ arch/powerpc/kernel/ptrace.c      |  102 +++++++++++++++++++++++++++++++++++++
+ kernel/trace/Kconfig              |    2 -
+ 3 files changed, 164 insertions(+), 1 deletions(-)
+
+
+diff --git a/arch/powerpc/include/asm/ptrace.h b/arch/powerpc/include/asm/ptrace.h
+index cbd759e..cb2eeda 100644
+--- a/arch/powerpc/include/asm/ptrace.h
++++ b/arch/powerpc/include/asm/ptrace.h
+@@ -83,6 +83,7 @@ struct pt_regs {
+ 
+ #define instruction_pointer(regs) ((regs)->nip)
+ #define user_stack_pointer(regs) ((regs)->gpr[1])
++#define kernel_stack_pointer(regs) ((regs)->gpr[1])
+ #define regs_return_value(regs) ((regs)->gpr[3])
+ 
+ #ifdef CONFIG_SMP
+@@ -131,6 +132,66 @@ do {									      \
+ } while (0)
+ #endif /* __powerpc64__ */
+ 
++/* Query offset/name of register from its name/offset */
++#include <linux/stddef.h>
++#include <linux/thread_info.h>
++extern int regs_query_register_offset(const char *name);
++extern const char *regs_query_register_name(unsigned int offset);
++#define MAX_REG_OFFSET (offsetof(struct pt_regs, result))
++
++/**
++ * regs_get_register() - get register value from its offset
++ * @regs:	   pt_regs from which register value is gotten
++ * @offset:    offset number of the register.
++ *
++ * regs_get_register returns the value of a register whose offset from @regs.
++ * The @offset is the offset of the register in struct pt_regs.
++ * If @offset is bigger than MAX_REG_OFFSET, this returns 0.
++ */
++static inline unsigned long regs_get_register(struct pt_regs *regs,
++						unsigned int offset)
++{
++	if (unlikely(offset > MAX_REG_OFFSET))
++		return 0;
++	return *(unsigned long *)((unsigned long)regs + offset);
++}
++
++/**
++ * regs_within_kernel_stack() - check the address in the stack
++ * @regs:      pt_regs which contains kernel stack pointer.
++ * @addr:      address which is checked.
++ *
++ * regs_within_kernel_stack() checks @addr is within the kernel stack page(s).
++ * If @addr is within the kernel stack, it returns true. If not, returns false.
++ */
++
++static inline bool regs_within_kernel_stack(struct pt_regs *regs,
++						unsigned long addr)
++{
++	return ((addr & ~(THREAD_SIZE - 1))  ==
++		(kernel_stack_pointer(regs) & ~(THREAD_SIZE - 1)));
++}
++
++/**
++ * regs_get_kernel_stack_nth() - get Nth entry of the stack
++ * @regs:	pt_regs which contains kernel stack pointer.
++ * @n:		stack entry number.
++ *
++ * regs_get_kernel_stack_nth() returns @n th entry of the kernel stack which
++ * is specified by @regs. If the @n th entry is NOT in the kernel stack,
++ * this returns 0.
++ */
++static inline unsigned long regs_get_kernel_stack_nth(struct pt_regs *regs,
++						      unsigned int n)
++{
++	unsigned long *addr = (unsigned long *)kernel_stack_pointer(regs);
++	addr += n;
++	if (regs_within_kernel_stack(regs, (unsigned long)addr))
++		return *addr;
++	else
++		return 0;
++}
++
+ /*
+  * These are defined as per linux/ptrace.h, which see.
+  */
+diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
+index ef14988..e816aba 100644
+--- a/arch/powerpc/kernel/ptrace.c
++++ b/arch/powerpc/kernel/ptrace.c
+@@ -39,6 +39,108 @@
+ #include <asm/system.h>
+ 
+ /*
++ * The parameter save area on the stack is used to store arguments being passed
++ * to callee function and is located at fixed offset from stack pointer.
++ */
++#ifdef CONFIG_PPC32
++#define PARAMETER_SAVE_AREA_OFFSET	24  /* bytes */
++#else /* CONFIG_PPC32 */
++#define PARAMETER_SAVE_AREA_OFFSET	48  /* bytes */
++#endif
++
++struct pt_regs_offset {
++	const char *name;
++	int offset;
++};
++
++#define REG_OFFSET_NAME(r) {.name = #r, .offset = offsetof(struct pt_regs, r)}
++#define REG_OFFSET_END {.name = NULL, .offset = 0}
++
++static const struct pt_regs_offset regoffset_table[] = {
++	REG_OFFSET_NAME(gpr[0]),
++	REG_OFFSET_NAME(gpr[1]),
++	REG_OFFSET_NAME(gpr[2]),
++	REG_OFFSET_NAME(gpr[3]),
++	REG_OFFSET_NAME(gpr[4]),
++	REG_OFFSET_NAME(gpr[5]),
++	REG_OFFSET_NAME(gpr[6]),
++	REG_OFFSET_NAME(gpr[7]),
++	REG_OFFSET_NAME(gpr[8]),
++	REG_OFFSET_NAME(gpr[9]),
++	REG_OFFSET_NAME(gpr[10]),
++	REG_OFFSET_NAME(gpr[11]),
++	REG_OFFSET_NAME(gpr[12]),
++	REG_OFFSET_NAME(gpr[13]),
++	REG_OFFSET_NAME(gpr[14]),
++	REG_OFFSET_NAME(gpr[15]),
++	REG_OFFSET_NAME(gpr[16]),
++	REG_OFFSET_NAME(gpr[17]),
++	REG_OFFSET_NAME(gpr[18]),
++	REG_OFFSET_NAME(gpr[19]),
++	REG_OFFSET_NAME(gpr[20]),
++	REG_OFFSET_NAME(gpr[21]),
++	REG_OFFSET_NAME(gpr[22]),
++	REG_OFFSET_NAME(gpr[23]),
++	REG_OFFSET_NAME(gpr[24]),
++	REG_OFFSET_NAME(gpr[25]),
++	REG_OFFSET_NAME(gpr[26]),
++	REG_OFFSET_NAME(gpr[27]),
++	REG_OFFSET_NAME(gpr[28]),
++	REG_OFFSET_NAME(gpr[29]),
++	REG_OFFSET_NAME(gpr[30]),
++	REG_OFFSET_NAME(gpr[31]),
++	REG_OFFSET_NAME(nip),
++	REG_OFFSET_NAME(msr),
++	REG_OFFSET_NAME(orig_gpr3),
++	REG_OFFSET_NAME(ctr),
++	REG_OFFSET_NAME(link),
++	REG_OFFSET_NAME(xer),
++	REG_OFFSET_NAME(ccr),
++#ifdef CONFIG_PPC64
++	REG_OFFSET_NAME(softe),
++#else
++	REG_OFFSET_NAME(mq),
++#endif
++	REG_OFFSET_NAME(trap),
++	REG_OFFSET_NAME(dar),
++	REG_OFFSET_NAME(dsisr),
++	REG_OFFSET_NAME(result),
++	REG_OFFSET_END,
++};
++
++/**
++ * regs_query_register_offset() - query register offset from its name
++ * @name:	the name of a register
++ *
++ * regs_query_register_offset() returns the offset of a register in struct
++ * pt_regs from its name. If the name is invalid, this returns -EINVAL;
++ */
++int regs_query_register_offset(const char *name)
++{
++	const struct pt_regs_offset *roff;
++	for (roff = regoffset_table; roff->name != NULL; roff++)
++		if (!strcmp(roff->name, name))
++			return roff->offset;
++	return -EINVAL;
++}
++
++/**
++ * regs_query_register_name() - query register name from its offset
++ * @offset:	the offset of a register in struct pt_regs.
++ *
++ * regs_query_register_name() returns the name of a register from its
++ * offset in struct pt_regs. If the @offset is invalid, this returns NULL;
++ */
++const char *regs_query_register_name(unsigned int offset)
++{
++	const struct pt_regs_offset *roff;
++	for (roff = regoffset_table; roff->name != NULL; roff++)
++		if (roff->offset == offset)
++			return roff->name;
++	return NULL;
++}
++
++/*
+  * does not yet catch signals sent when the child dies.
+  * in exit.c or in signal.c.
+  */
+diff --git a/kernel/trace/Kconfig b/kernel/trace/Kconfig
+index 6c22d8a..4d95966 100644
+--- a/kernel/trace/Kconfig
++++ b/kernel/trace/Kconfig
+@@ -451,7 +451,7 @@ config BLK_DEV_IO_TRACE
+ 
+ config KPROBE_EVENT
+ 	depends on KPROBES
+-	depends on X86
++	depends on X86 || PPC
+ 	bool "Enable kprobes-based dynamic events"
+ 	select TRACING
+ 	default y
+
