@@ -1,47 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753312Ab0AKXtr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753374Ab0AKXus@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753312Ab0AKXtr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jan 2010 18:49:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752775Ab0AKXtq
+	id S1753374Ab0AKXus (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jan 2010 18:50:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751647Ab0AKXur
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jan 2010 18:49:46 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:35918 "EHLO ogre.sisk.pl"
+	Mon, 11 Jan 2010 18:50:47 -0500
+Received: from mail1.radix.net ([207.192.128.31]:50031 "EHLO mail1.radix.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752083Ab0AKXtp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jan 2010 18:49:45 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Subject: Re: [Bug #15033] drm: gem_object_free without struct_mutex
-Date: Tue, 12 Jan 2010 00:50:09 +0100
-User-Agent: KMail/1.12.3 (Linux/2.6.33-rc3-rjw; KDE/4.3.3; x86_64; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Chris Wilson <chris@chris-wilson.co.uk>
-References: <wnS54-l8PVO.A.TlF.oMlSLB@chimera> <omZ8aBZReyD.A.zcG.3MlSLB@chimera> <alpine.LSU.2.00.1001112304480.6409@sister.anvils>
-In-Reply-To: <alpine.LSU.2.00.1001112304480.6409@sister.anvils>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+	id S1751536Ab0AKXur (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jan 2010 18:50:47 -0500
+Subject: Re: [PATCH 1/1] media: video/cx18, fix potential null dereference
+From: Andy Walls <awalls@radix.net>
+To: Jiri Slaby <jslaby@suse.cz>
+Cc: mchehab@redhat.com, hverkuil@xs4all.nl, ivtv-devel@ivtvdriver.org,
+       linux-media@vger.kernel.org, linux-kernel@vger.kernel.org,
+       jirislaby@gmail.com
+In-Reply-To: <1263113806-7532-1-git-send-email-jslaby@suse.cz>
+References: <1263113806-7532-1-git-send-email-jslaby@suse.cz>
+Content-Type: text/plain
+Date: Mon, 11 Jan 2010 18:48:29 -0500
+Message-Id: <1263253709.4116.1.camel@palomino.walls.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
 Content-Transfer-Encoding: 7bit
-Message-Id: <201001120050.09451.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 12 January 2010, Hugh Dickins wrote:
-> On Sun, 10 Jan 2010, Rafael J. Wysocki wrote:
-> > 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=15033
-> > Subject		: drm: gem_object_free without struct_mutex
-> > Submitter	: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-> > Date		: 2009-12-30 19:45 (12 days old)
-> > References	: http://marc.info/?l=linux-kernel&m=126220236201529&w=4
-> > Handled-By	: Jesse Barnes <jbarnes@virtuousgeek.org>
+On Sun, 2010-01-10 at 09:56 +0100, Jiri Slaby wrote:
+> Stanse found a potential null dereference in cx18_dvb_start_feed
+> and cx18_dvb_stop_feed. There is a check for stream being NULL,
+> but it is dereferenced earlier. Move the dereference after the
+> check.
 > 
-> Thanks, Rafael: please close it now.  I just checked latest -git
-> and it is now fixed (but not fixed in 2.6.33-rc3) - thanks, Chris.
+> Signed-off-by: Jiri Slaby <jslaby@suse.cz>
 
-Thanks, closed.
+Reviewed-by: Andy Walls <awalls@radix.net>
+Acked-by: Andy Walls <awalls@radix.net>
 
-Rafael
+Regards,
+Andy
+
+> ---
+>  drivers/media/video/cx18/cx18-dvb.c |   18 ++++++++++--------
+>  1 files changed, 10 insertions(+), 8 deletions(-)
+> 
+> diff --git a/drivers/media/video/cx18/cx18-dvb.c b/drivers/media/video/cx18/cx18-dvb.c
+> index 71ad2d1..0ad5b63 100644
+> --- a/drivers/media/video/cx18/cx18-dvb.c
+> +++ b/drivers/media/video/cx18/cx18-dvb.c
+> @@ -213,10 +213,14 @@ static int cx18_dvb_start_feed(struct dvb_demux_feed *feed)
+>  {
+>  	struct dvb_demux *demux = feed->demux;
+>  	struct cx18_stream *stream = (struct cx18_stream *) demux->priv;
+> -	struct cx18 *cx = stream->cx;
+> +	struct cx18 *cx;
+>  	int ret;
+>  	u32 v;
+>  
+> +	if (!stream)
+> +		return -EINVAL;
+> +
+> +	cx = stream->cx;
+>  	CX18_DEBUG_INFO("Start feed: pid = 0x%x index = %d\n",
+>  			feed->pid, feed->index);
+>  
+> @@ -253,9 +257,6 @@ static int cx18_dvb_start_feed(struct dvb_demux_feed *feed)
+>  	if (!demux->dmx.frontend)
+>  		return -EINVAL;
+>  
+> -	if (!stream)
+> -		return -EINVAL;
+> -
+>  	mutex_lock(&stream->dvb.feedlock);
+>  	if (stream->dvb.feeding++ == 0) {
+>  		CX18_DEBUG_INFO("Starting Transport DMA\n");
+> @@ -279,13 +280,14 @@ static int cx18_dvb_stop_feed(struct dvb_demux_feed *feed)
+>  {
+>  	struct dvb_demux *demux = feed->demux;
+>  	struct cx18_stream *stream = (struct cx18_stream *)demux->priv;
+> -	struct cx18 *cx = stream->cx;
+> +	struct cx18 *cx;
+>  	int ret = -EINVAL;
+>  
+> -	CX18_DEBUG_INFO("Stop feed: pid = 0x%x index = %d\n",
+> -			feed->pid, feed->index);
+> -
+>  	if (stream) {
+> +		cx = stream->cx;
+> +		CX18_DEBUG_INFO("Stop feed: pid = 0x%x index = %d\n",
+> +				feed->pid, feed->index);
+> +
+>  		mutex_lock(&stream->dvb.feedlock);
+>  		if (--stream->dvb.feeding == 0) {
+>  			CX18_DEBUG_INFO("Stopping Transport DMA\n");
+
