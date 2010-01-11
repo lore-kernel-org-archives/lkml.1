@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753412Ab0AKRHs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753435Ab0AKRMG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753412Ab0AKRHs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jan 2010 12:07:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752956Ab0AKRHs
+	id S1753435Ab0AKRMG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jan 2010 12:12:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753327Ab0AKRMF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jan 2010 12:07:48 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:41298 "EHLO mx1.redhat.com"
+	Mon, 11 Jan 2010 12:12:05 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:48099 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752673Ab0AKRHr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jan 2010 12:07:47 -0500
-Date: Mon, 11 Jan 2010 12:07:35 -0500
+	id S1752983Ab0AKRMD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jan 2010 12:12:03 -0500
+Date: Mon, 11 Jan 2010 12:11:50 -0500
 From: Vivek Goyal <vgoyal@redhat.com>
 To: Corrado Zoccolo <czoccolo@gmail.com>
 Cc: Jeff Garzik <jeff@garzik.org>, Jens Axboe <jens.axboe@oracle.com>,
@@ -17,7 +17,7 @@ Cc: Jeff Garzik <jeff@garzik.org>, Jens Axboe <jens.axboe@oracle.com>,
        Jeff Moyer <jmoyer@redhat.com>, Shaohua Li <shaohua.li@intel.com>,
        Gui Jianfeng <guijianfeng@cn.fujitsu.com>
 Subject: Re: [PATCH] cfq-iosched: NCQ SSDs do not need read queue merging
-Message-ID: <20100111170735.GD22899@redhat.com>
+Message-ID: <20100111171149.GE22899@redhat.com>
 References: <1262211768-10858-1-git-send-email-czoccolo@gmail.com> <1263157461-12294-1-git-send-email-czoccolo@gmail.com> <4B4B0AA9.5020900@garzik.org> <4e5e476b1001110426t2afa0502p7f19a9b24e48ba82@mail.gmail.com> <20100111131317.GB4489@kernel.dk> <4B4B250D.8020205@garzik.org> <4e5e476b1001110653x397a8008gfea2f62497be1f42@mail.gmail.com> <20100111164433.GB22899@redhat.com> <4e5e476b1001110900v579054cam246775a74cf1e854@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
@@ -106,6 +106,19 @@ On Mon, Jan 11, 2010 at 06:00:51PM +0100, Corrado Zoccolo wrote:
 > do not drive deeper queues, no one will. So the overhead is just
 > overhead, and will never
 > give any benefit.
+
+Two things come to mind.
+
+- Even if dump/read-test2 is not driving deeper queue depths, but other
+  competing programs might be driving deeper queue depths, which can give
+  queue merging opportunity in case of dump program on NCQ SSD.
+
+- If we are thinking that on NCQ SSD we practically don't have queue
+  merging opportunity then there is no point in keeping it enabled for
+  WRITES also?
+
+Vivek
+
 > 
 > I therefore want to remove it, since for SSD it matters.
 > >
@@ -114,25 +127,6 @@ On Mon, Jan 11, 2010 at 06:00:51PM +0100, Corrado Zoccolo wrote:
 > 
 > Jeff's test showed larger bandwidth with merge disabled, so it implies
 > some saving is present.
-
-Following is what Jeff had posted.
-
-==> vanilla <==
-Mean: 163.22728
-Population Std. Dev.: 0.55401
-
-==> patched <==
-Mean: 162.91558
-Population Std. Dev.: 1.08612
-
-
-I see that with patched kernel(your patches), "Mean" BW of 50 runs has gone
-down slightly. So where is the improvement in terms of BW? (Are you referring
-to higher standard deviation, that means some of the runs observed higher BW
-and concluding something from that?)
-
-Vivek
-
 > 
 > Thanks,
 > Corrado
