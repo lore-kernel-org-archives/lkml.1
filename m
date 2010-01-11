@@ -1,88 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752530Ab0AKIVL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752555Ab0AKIZG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752530Ab0AKIVL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jan 2010 03:21:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752251Ab0AKIVJ
+	id S1752555Ab0AKIZG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jan 2010 03:25:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752187Ab0AKIZF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jan 2010 03:21:09 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:57128 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752196Ab0AKIVI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jan 2010 03:21:08 -0500
-Date: Mon, 11 Jan 2010 19:21:05 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Avi Kivity <avi@qumranet.com>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Alexander Graf <agraf@suse.de>
-Subject: Re: linux-next: kvm tree build failure
-Message-Id: <20100111192105.304382e4.sfr@canb.auug.org.au>
-In-Reply-To: <20100111190749.0a74d445.Stephen@Rothwell.id.au>
-References: <20100111190749.0a74d445.Stephen@Rothwell.id.au>
-X-Mailer: Sylpheed 3.0.0beta4 (GTK+ 2.18.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 11 Jan 2010 03:25:05 -0500
+Received: from smtp-out003.kontent.com ([81.88.40.217]:53754 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752132Ab0AKIZF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jan 2010 03:25:05 -0500
+From: Oliver Neukum <oliver@neukum.org>
+To: Steven Xu <linuxkernel.xxz@gmail.com>, linux-usb@vger.kernel.org
+Subject: Re: A QUESTION ABOUT USB DRIVER
+Date: Mon, 11 Jan 2010 09:25:53 +0100
+User-Agent: KMail/1.12.2 (Linux/2.6.32-0.1-default; KDE/4.3.1; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org
+References: <1fd295ee1001102114p1b74336q16bb35d973b40c1c@mail.gmail.com>
+In-Reply-To: <1fd295ee1001102114p1b74336q16bb35d973b40c1c@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <201001110925.53711.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Avi,
+Am Montag, 11. Januar 2010 06:14:31 schrieb Steven Xu:
+> output: usb 1-1: device descriptor read/64, error -71
+> 
+> 
+> in drivers/usb/core/hub.c  line 2250
+> when a udisk inserted run to here
+>                         for (j = 0; j < 3; ++j) {
+>                                 buf->bMaxPacketSize0 = 0;
+> 
+>                                 r = usb_control_msg(udev, usb_rcvaddr0pipe(),
+>                                         USB_REQ_GET_DESCRIPTOR, USB_DIR_IN,
+>                                         USB_DT_DEVICE << 8, 0,
+>                                         buf, GET_DESCRIPTOR_BUFSIZE,
+>                                         (i ? USB_CTRL_GET_TIMEOUT : 1000));
+>  return r=-74,
+> 
+> WHAT IS THE POSSIBEL REASON FOR THIS?
+> THANKS!
 
-On Mon, 11 Jan 2010 19:07:49 +1100 Stephen Rothwell <Stephen@Rothwell.id.au> wrote:
->
-> Caused by commit 7f31fad9aad3bb9df95793d72e037bb4d587ee83 ("KVM: PPC: Use
-> accessor functions for GPR access").  I couldn't easily revert that
-> commit, so I applied the following fixup patch instead.
+This is -EPROTO. It means that a low level error on the wire happened,
+for example a device sent a malformed package. This is a very unspecific
+error.
 
-After which I got this:
-
-arch/powerpc/kvm/built-in.o: In function `kvmppc_handler_0':
-(.text+0x69ba): undefined reference to `VCPU_GPRS'
-arch/powerpc/kvm/built-in.o: In function `kvmppc_handler_0':
-(.text+0x69be): undefined reference to `VCPU_GPRS'
-arch/powerpc/kvm/built-in.o: In function `kvmppc_handler_1':
-(.text+0x69e6): undefined reference to `VCPU_GPRS'
-arch/powerpc/kvm/built-in.o: In function `kvmppc_handler_1':
-(.text+0x69ea): undefined reference to `VCPU_GPRS'
-arch/powerpc/kvm/built-in.o: In function `kvmppc_handler_2':
-(.text+0x6a12): undefined reference to `VCPU_GPRS'
-arch/powerpc/kvm/built-in.o:(.text+0x6a16): more undefined references to `VCPU_GPRS' follow
-
-Caused by commit f38ae173fffd673d4bc5cb4062d9dc27146cfb4a ("KVM: PPC: Use
-PACA backed shadow vcpu").  I have applied the following fixup patch for
-today:
-
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Mon, 11 Jan 2010 19:15:02 +1100
-Subject: [PATCH] kvm: another PPC fixup (asm-offsets)
-
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- arch/powerpc/kernel/asm-offsets.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
-index be90ced..16dab65 100644
---- a/arch/powerpc/kernel/asm-offsets.c
-+++ b/arch/powerpc/kernel/asm-offsets.c
-@@ -437,11 +437,11 @@ int main(void)
- 	DEFINE(VCPU_HIGHMEM_HANDLER, offsetof(struct kvm_vcpu, arch.highmem_handler));
- 	DEFINE(VCPU_RMCALL, offsetof(struct kvm_vcpu, arch.rmcall));
- 	DEFINE(VCPU_HFLAGS, offsetof(struct kvm_vcpu, arch.hflags));
--	DEFINE(VCPU_GPRS, offsetof(struct kvm_vcpu, arch.gpr));
- #else
- 	DEFINE(VCPU_CR, offsetof(struct kvm_vcpu, arch.cr));
- 	DEFINE(VCPU_XER, offsetof(struct kvm_vcpu, arch.xer));
- #endif /* CONFIG_PPC64 */
-+	DEFINE(VCPU_GPRS, offsetof(struct kvm_vcpu, arch.gpr));
- #endif
- #ifdef CONFIG_44x
- 	DEFINE(PGD_T_LOG2, PGD_T_LOG2);
--- 
-1.6.5.7
-
-
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+	HTH
+		Oliver
