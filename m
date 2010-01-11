@@ -1,48 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752724Ab0AKW4V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752896Ab0AKW6M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752724Ab0AKW4V (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jan 2010 17:56:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751895Ab0AKW4V
+	id S1752896Ab0AKW6M (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jan 2010 17:58:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752083Ab0AKW6L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jan 2010 17:56:21 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:45512 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750951Ab0AKW4U (ORCPT
+	Mon, 11 Jan 2010 17:58:11 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:45290 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751459Ab0AKW6K (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jan 2010 17:56:20 -0500
-Date: Mon, 11 Jan 2010 14:55:17 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-cc: "ananth@in.ibm.com" <ananth@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Yinghai Lu <yinghai@kernel.org>, lkml <linux-kernel@vger.kernel.org>,
-       "stable@kernel.org" <stable@kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Subject: Re: [PATCH] Revert 2fbd07a5f so machines with BSPs phsyical apic id
- != 0 can boot
-In-Reply-To: <1263245985.2859.497.camel@sbs-t61.sc.intel.com>
-Message-ID: <alpine.LFD.2.00.1001111454060.17145@localhost.localdomain>
-References: <20100109101038.GA17555@in.ibm.com>  <86802c441001091313y1f64f011t616f08cd282a7123@mail.gmail.com>  <20100110023015.GA2253@in.ibm.com>  <86802c441001092235j79092e6fse18b61e3d7b0ac6@mail.gmail.com>  <20100110102638.GA7838@elte.hu> 
- <20100111045326.GA11725@in.ibm.com> <1263245985.2859.497.camel@sbs-t61.sc.intel.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Mon, 11 Jan 2010 17:58:10 -0500
+Message-ID: <4B4BACCA.2040805@zytor.com>
+Date: Mon, 11 Jan 2010 14:57:14 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Suresh Siddha <suresh.b.siddha@intel.com>
+CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "ebiederm@xmission.com" <ebiederm@xmission.com>,
+       Yinghai Lu <yinghai@kernel.org>,
+       "Maciej W. Rozycki" <macro@linux-mips.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [patch] x86, apic: use 0x20 for the IRQ_MOVE_CLEANUP_VECTOR instead
+ of 0x1f
+References: <1263002989.2879.664.camel@sbs-t61.sc.intel.com>	 <4B47E7A9.6090904@zytor.com> <1263250418.2859.681.camel@sbs-t61.sc.intel.com>
+In-Reply-To: <1263250418.2859.681.camel@sbs-t61.sc.intel.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Mon, 11 Jan 2010, Suresh Siddha wrote:
+On 01/11/2010 02:53 PM, Suresh Siddha wrote:
 > 
-> So far, I don't see a need for the revert.
+>> However, my most serious concern with this patch is that there is a
+>> fairly significant change due to this patch, which is that the legacy
+>> IRQ vectors now fall *inside* the FIRST_DEVICE_VECTOR range.  This isn't
+>> a bad thing -- in fact, it is fundamentally the right thing to do
+>> especially once we consider platforms which *don't* have the legacy IRQs
+>> -- but it makes me scared of unexpected behavior changes as a result.
+>> If you feel confident that that is not the case, could you outline why
+>> it shouldn't be a problem?
+> 
+> In irqinit.c, we statically pre-assign the per-cpu vector to irq
+> mappings (vector_irq) for all the legacy IRQ vectors. Similarly irq_cfg
+> is statically initialized for legacy IRQ's in io_apic.c. So we won't be
+> able to use this space for anything else.
+> 
 
-It's very easy. It breaks. You don't have a fix. We'll revert it.
+What enforces that, though?  The used_vector bitmap?  In the past it was
+enforced simply by being < FIRST_DEVICE_VECTOR.
 
-There's no need to "see a need". That's not how it works. It works the 
-other way around: I don't see a need for a known-broken patch, which is 
-why it will be reverted since apparently you don't understand why it is 
-broken.
+	-hpa
 
-		Linus
