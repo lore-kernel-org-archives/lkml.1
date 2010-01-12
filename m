@@ -1,35 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754776Ab0ALUWw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754790Ab0ALU1w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754776Ab0ALUWw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jan 2010 15:22:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754092Ab0ALUWv
+	id S1754790Ab0ALU1w (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jan 2010 15:27:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754227Ab0ALU1v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jan 2010 15:22:51 -0500
-Received: from mail-yw0-f176.google.com ([209.85.211.176]:36725 "EHLO
-	mail-yw0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932067Ab0ALUWu (ORCPT
+	Tue, 12 Jan 2010 15:27:51 -0500
+Received: from mail-fx0-f225.google.com ([209.85.220.225]:36732 "EHLO
+	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753949Ab0ALU1u (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jan 2010 15:22:50 -0500
+	Tue, 12 Jan 2010 15:27:50 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :content-type;
-        b=i8waD7kpaucL8ufi2pCVMwEYahvFGVM6SZD0xWJtcdSW+U9I3JErOPNVqrPh4gLx9v
-         k41jEAlCXQOXKjSwTQA8I9Gkp7GaqYB2Xl4sSwLxKX+bOKEse0QFrqTTpFR7bVebU3F2
-         ThDv8iKm37zBIXO+vYBOlostpQmy4xkPSPAAM=
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=v23g4z1LO8RMMe1y+zau3sU1C5zxtknIe4m9L8Mqo2G9Ho4/kuchnLH5IM/jEwYl94
+         g65cMAA/4vyOIXyse43KWJk3cyLENqYnn7RQbrF3dP/qLMeSrj2OzH2NL01Y9Z4s1PCL
+         nTXzICpu4iJGu4opjRkVA9bLysscIcCF7DIpk=
+Message-ID: <4B4CDB41.6030702@gmail.com>
+Date: Tue, 12 Jan 2010 21:27:45 +0100
+From: Jarek Poplawski <jarkao2@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090812)
 MIME-Version: 1.0
-In-Reply-To: <201001121520.55886.vapier@gentoo.org>
-References: <201001121520.55886.vapier@gentoo.org>
-From: Mike Frysinger <vapier.adi@gmail.com>
-Date: Tue, 12 Jan 2010 15:22:29 -0500
-Message-ID: <8bd0f97a1001121222u32191c09t6ae5f7f6b9df3787@mail.gmail.com>
-Subject: Re: unable to build util-linux-2.17 on glibc-2.10 due to fallocate64
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+To: Eric Dumazet <eric.dumazet@gmail.com>
+CC: William Allen Simpson <william.allen.simpson@gmail.com>,
+       Linux Kernel Developers <linux-kernel@vger.kernel.org>,
+       Linux Kernel Network Developers <netdev@vger.kernel.org>,
+       Michael Chan <mchan@broadcom.com>
+Subject: Re: [PATCH 1/2] net: tcp_header_len_th and tcp_option_len_th
+References: <4B44FE3C.6060809@gmail.com> <4B450065.4010108@gmail.com> <4B4C519E.2090207@gmail.com> <4B4CB46C.8020502@gmail.com> <4B4CB712.8030806@gmail.com>
+In-Reply-To: <4B4CB712.8030806@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-blah, wrong mailing list.  auto-complete picked this instead of the
-util-linux mailing list on me.
--mike
+Eric Dumazet wrote, On 01/12/2010 06:53 PM:
+
+> Its probably a bit odd, because I am stuck with a windows XP notebook here at work,
+> dont flame me :(
+
+You should be ashamed! (Linus promoted Windows 7 long time ago ;-)
+
+Jarek P.
