@@ -1,92 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753806Ab0ALEBV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753778Ab0ALEO5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753806Ab0ALEBV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jan 2010 23:01:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753787Ab0ALEBU
+	id S1753778Ab0ALEO5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jan 2010 23:14:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752999Ab0ALEO5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jan 2010 23:01:20 -0500
-Received: from smtp102.prem.mail.sp1.yahoo.com ([98.136.44.57]:20652 "HELO
-	smtp102.prem.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753781Ab0ALEBT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jan 2010 23:01:19 -0500
-X-Yahoo-SMTP: OIJXglSswBDfgLtXluJ6wiAYv6_cnw--
-X-YMail-OSG: 7.iE1SMVM1mFzUXwb2J4_tA5RJeHnyGibLH5u_Zi_WQomGLpg0UsSnhl7_n4UnHy_HpATXrZqBkB7jl_TcswxVWml4uBmxivJIfLH0iZDfOwzravcE_HmCvGSxJs058XJSLsOLt04zEUJQudSGBQD30OnkK8PTeRP42RLm_l4FRlIF4cVaVOL._4vUBn.trKO.aee9WnKiGxw.svaPMND_f6RGtoffPB1ooFxfAiyAOS.x68hXSQBv40.ul7i7ITooG6ljltv04fLAPKItjhvrkL95s6R3aNrYuGcN8rGPSZDyy4
-X-Yahoo-Newman-Property: ymail-3
-Message-ID: <4B4BF40D.4030407@schaufler-ca.com>
-Date: Mon, 11 Jan 2010 20:01:17 -0800
-From: Casey Schaufler <casey@schaufler-ca.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
-MIME-Version: 1.0
-To: Valdis.Kletnieks@vt.edu
-CC: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>, michael@laptop.org,
-       pavel@ucw.cz, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       linux-security-module@vger.kernel.org, andi@firstfloor.org,
-       david@lang.hm, socketcan@hartkopp.net, alan@lxorguk.ukuu.org.uk,
-       herbert@gondor.apana.org.au, bdonlan@gmail.com, zbr@ioremap.net,
-       cscott@cscott.net, jmorris@namei.org, ebiederm@xmission.com,
-       bernie@codewiz.org, mrs@mythic-beasts.com, randy.dunlap@oracle.com,
-       xiyou.wangcong@gmail.com, sam@synack.fr, serue@us.ibm.com,
-       viro@ZenIV.linux.org.uk, Casey Schaufler <casey@schaufler-ca.com>
-Subject: Re: [PATCH 2/3] Security: Implement disablenetwork semantics. (v4)
-References: <20100110215848.GA26609@elf.ucw.cz> <20100110224010.GA3825@heat> <201001111007.EAG82373.VHFQSLFOFMOOJt@I-love.SAKURA.ne.jp>            <4B4A8309.9090801@schaufler-ca.com> <6161.1263266388@localhost>
-In-Reply-To: <6161.1263266388@localhost>
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 11 Jan 2010 23:14:57 -0500
+Received: from mail.gmx.net ([213.165.64.20]:42731 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752085Ab0ALEO4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jan 2010 23:14:56 -0500
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1+R7hdKtX6RZqb4gIzeUOGrVSH5C+x6oGOB3BaDOf
+	M7hmS9wov79Ugi
+Subject: Re: tbench regression with 2.6.33-rc1
+From: Mike Galbraith <efault@gmx.de>
+To: Lin Ming <ming.m.lin@intel.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, "mingo@elte.hu" <mingo@elte.hu>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+In-Reply-To: <1263266016.3598.24.camel@minggr.sh.intel.com>
+References: <1261739467.10685.18.camel@minggr.sh.intel.com>
+	 <1263211680.4244.50.camel@laptop>
+	 <1263226612.6290.9.camel@marge.simson.net>
+	 <1263258546.3598.19.camel@minggr.sh.intel.com>
+	 <1263263621.5905.6.camel@marge.simson.net>
+	 <1263266016.3598.24.camel@minggr.sh.intel.com>
+Content-Type: text/plain
+Date: Tue, 12 Jan 2010 05:14:52 +0100
+Message-Id: <1263269692.5948.21.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
 Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.62
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Valdis.Kletnieks@vt.edu wrote:
-> On Sun, 10 Jan 2010 17:46:49 PST, Casey Schaufler said:
->   
->> It's much worse than that. A user that has been network disabled
->> who tries using ls may find that it goes looking for the network
->> on each name lookup and has to wait for a timeout for each.
->>     
->
-> Ya know Casey - I learned back in 1986 or so that if you set up a SunOS 3.2
-> cluster using Yellow Pages, professors who managed to unplug the AUI cable
-> on the back of their Sun 3/50 would notice things blowing chunks.  I have to
-> admit that 24 years ago I told them "Well don't do that then", and I have
-> to say the same thing for anybody running a login shell network-disabled.
->
-> Now, a more subtle point is that a *program* may call getuserbyname() or
-> getuserbyuid() and be surprised when it times out - but that's a
-> different issue than a network-deprived user calling /bin/ls.
->   
+On Tue, 2010-01-12 at 11:13 +0800, Lin Ming wrote:
+> On Tue, 2010-01-12 at 10:33 +0800, Mike Galbraith wrote:
+> > On Tue, 2010-01-12 at 09:09 +0800, Lin Ming wrote:
+> > > On Tue, 2010-01-12 at 00:16 +0800, Mike Galbraith wrote:
+> > 
+> > > > I've been all through it too, same result.  The below may make a bit of
+> > > > difference, but really has diddly spit to do with this oddity.
+> > > 
+> > > I test this patch applied to 2.6.33-rc3, but no help on tbench
+> > > regression.
+> > 
+> > Did you try it with the vmark fix also applied?  I would have expected
+> > at least a _little_ improvement.  (but then this regression _is_ a bit
+> > odd anyway)
+> 
+> I re-tested with both patches applied, but still no help.
 
-I was working at Sun when YP was introduced and was probably the
-first person who had to explain what would happen if the network
-got disconnected to "security experts". They weren't real happy
-then, and shouldn't be happier now. If anything, today's computer
-users are less well adapted to dealing with applications that
-behave differently when the network is unexpectedly absent because
-both the user and the programmer assume that the network will be
-there because it always is. They would never set up a situation
-where the network would be missing and the programs they use/write
-are unlikely to handle the situation. Lazy kids.
+OK, thanks.
 
->>          Then, if there are local file entries that differ
->> from the "official" network account values when the library
->> functions finally fall back on the local values you get the wrong
->> names for file owners.
->>     
->
-> The sysadmin who set that up already had the bullet in the chamber and
-> the gun pointed at their feet.  This is another "we knew better a quarter
-> century ago" issue - SunOS allowed '+:' at the end of /etc/passwd to merge
-> in the YP database, and Sun actively discouraged the sort of "local userid
-> overlaps the YP userid space" misconfiguration you mention.
->
->   
+> BTW, why do you call that patch "vmark" fix? :)
+> I just wonder what "vmark" means.
 
-Sysadmins are so busy fixing Sanborn-Oxley compliance issues (funded)
-that they are perfectly happy to put loaded guns in their pants as far
-as (unfunded) "real" security is concerned. Sure we knew better. We
-knew how to do lots of things back then that the Linux community is
-relearning today. Knowing better isn't going to help the current
-generation, as wisdom (like you and I have) can only be passed along
-by experience and exposure to the wise. I like secure systems myself,
-but I certainly understand why so many people don't.
+Oh, that's volanomark.  It put itself in directory vmark2.5.0.9, so it's
+vmark ;-)
+
+	-Mike
 
