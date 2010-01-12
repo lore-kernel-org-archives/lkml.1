@@ -1,61 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751388Ab0ALBX1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752300Ab0ALBY5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751388Ab0ALBX1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jan 2010 20:23:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751117Ab0ALBX1
+	id S1752300Ab0ALBY5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jan 2010 20:24:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751743Ab0ALBY5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jan 2010 20:23:27 -0500
-Received: from out02.mta.xmission.com ([166.70.13.232]:55004 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750786Ab0ALBX0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jan 2010 20:23:26 -0500
-To: Benjamin LaHaise <bcrl@lhnet.ca>
-Cc: Tejun Heo <tj@kernel.org>, Greg Kroah-Hartman <gregkh@suse.de>,
-       Kay Sievers <kay.sievers@vrfy.org>, linux-kernel@vger.kernel.org,
-       Cornelia Huck <cornelia.huck@de.ibm.com>, linux-fsdevel@vger.kernel.org,
-       Eric Dumazet <eric.dumazet@gmail.com>, Serge Hallyn <serue@us.ibm.com>,
-       "Eric W. Biederman" <ebiederm@aristanetworks.com>
-Subject: Re: [PATCH 3/7] sysfs: Keep an nlink count on sysfs directories.
-References: <m1d41g9z3q.fsf@fess.ebiederm.org>
-	<1263241315-19499-3-git-send-email-ebiederm@xmission.com>
-	<4B4BC683.7060508@kernel.org> <20100112005308.GL5524@kvack.org>
-	<m1vdf82ksy.fsf@fess.ebiederm.org> <20100112011245.GM5524@kvack.org>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Mon, 11 Jan 2010 17:23:19 -0800
-In-Reply-To: <20100112011245.GM5524@kvack.org> (Benjamin LaHaise's message of "Mon\, 11 Jan 2010 20\:12\:45 -0500")
-Message-ID: <m1hbqs2k1k.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Scanned: No (on in02.mta.xmission.com); SAEximRunCond expanded to false
+	Mon, 11 Jan 2010 20:24:57 -0500
+Received: from mga11.intel.com ([192.55.52.93]:33112 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751083Ab0ALBY4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jan 2010 20:24:56 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,258,1262592000"; 
+   d="scan'208";a="763356850"
+Subject: Re: tbench regression with 2.6.33-rc1
+From: Lin Ming <ming.m.lin@intel.com>
+To: Mike Galbraith <efault@gmx.de>
+Cc: Peter Zijlstra <peterz@infradead.org>, "mingo@elte.hu" <mingo@elte.hu>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+In-Reply-To: <1263226612.6290.9.camel@marge.simson.net>
+References: <1261739467.10685.18.camel@minggr.sh.intel.com>
+	 <1263211680.4244.50.camel@laptop>
+	 <1263226612.6290.9.camel@marge.simson.net>
+Content-Type: text/plain
+Date: Tue, 12 Jan 2010 09:09:06 +0800
+Message-Id: <1263258546.3598.19.camel@minggr.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 (2.24.1-2.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Benjamin LaHaise <bcrl@lhnet.ca> writes:
+On Tue, 2010-01-12 at 00:16 +0800, Mike Galbraith wrote:
+> On Mon, 2010-01-11 at 13:08 +0100, Peter Zijlstra wrote:
+> > On Fri, 2009-12-25 at 19:11 +0800, Lin Ming wrote:
+> > > Hi,
+> > > 
+> > > Test machine: 16 cpus (4P/2Core/HT), 8G mem
+> > > tbench test command:
+> > > tbench_srv &
+> > > tbench 32
+> > > 
+> > > Compared with 2.6.32, tbench has ~4% regression in 2.6.33-rc1.
+> > > 
+> > > >From vmstat data, the context switch number also drop ~4%.
+> > > perf top data does not show much differences.
+> > > 
+> > > But lockstat data shows huge difference in rq->lock, as below.
+> > > See the attachment for the full lockstat data.
+> > > 
+> > > Any clue of this regression?
+> > 
+> > Nope, I thought to see the same on a dual-socket machine, but when
+> > bisecting I ended up on a user-space perf commit, which is pretty much
+> > impossible.
+> > 
+> > I did notice some variance in the numbers between boots, maybe it was
+> > large enough to fool me.. (~2800 MB/s was the good one, ~2200 MB/s was
+> > the bad one).
+> > 
+> > perf itself also didn't really provide clue, perf record -ag on the
+> > workload didn't really show anything scheduler related. vmstat 1 did
+> > show a proportional drop in context switch rate between the kernels
+> > though.. most odd.
+> 
+> I've been all through it too, same result.  The below may make a bit of
+> difference, but really has diddly spit to do with this oddity.
 
-> On Mon, Jan 11, 2010 at 05:06:53PM -0800, Eric W. Biederman wrote:
->> I don't see the link count as interesting enough to store more than
->> 16bits for it.  Even with 32bits of storage for nlink sysfs would have
->> to have to handle the rollover case as I am doing now.  So I don't
->> see any advantage to storing more bits.
->
-> I'm not terribly concerned with what value gets returned, but rather about 
-> how long is spent calculating it.  Ideally, new sysfs directory entries 
-> can be inserted in an O(1) or other reasonable order operation.  I'll try 
-> to find some time to re-run my interface scaling tests with your latest 
-> changes.
+I test this patch applied to 2.6.33-rc3, but no help on tbench
+regression.
 
-Sounds good.  My changes so far have been the easy low hanging fruit.
+Lin Ming
 
-readdir should be at O(N) and stat etc should all be constant time.
-Lookups by name are still O(N), and I'm not ready to look at going
-better until after I have network namespace support into sysfs.
-
-Eric
-
+> 
+> netperf TCP_RR
+> tip          93445 RR/sec
+> tip+         99454 RR/sec
+>              1.064
+> 
+> tbench 8
+> tip          1144 MB/sec
+> tip+         1166 MB/sec
+>              1.019
+> 
+> sched: don't call wake_affine() when the result doesn't matter.
+> 
+> Signed-off-by: Mike Galbraith <efault@gmx.de>
+> Cc: Ingo Molnar <mingo@elte.hu>
+> Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> LKML-Reference: <new-submission>
+> 
+>  kernel/sched_fair.c |   12 ++++++++++--
+>  1 file changed, 10 insertions(+), 2 deletions(-)
+> 
+> Index: linux-2.6/kernel/sched_fair.c
+> ===================================================================
+> --- linux-2.6.orig/kernel/sched_fair.c
+> +++ linux-2.6/kernel/sched_fair.c
+> @@ -1530,6 +1530,7 @@ static int select_task_rq_fair(struct ta
+>  			sd = tmp;
+>  	}
+>  
+> +#ifdef CONFIG_GROUP_SCHED
+>  	if (sched_feat(LB_SHARES_UPDATE)) {
+>  		/*
+>  		 * Pick the largest domain to update shares over
+> @@ -1543,9 +1544,16 @@ static int select_task_rq_fair(struct ta
+>  		if (tmp)
+>  			update_shares(tmp);
+>  	}
+> +#endif
+>  
+> -	if (affine_sd && wake_affine(affine_sd, p, sync))
+> -		return cpu;
+> +	if (affine_sd) {
+> +		if (cpu == prev_cpu)
+> +			return cpu;
+> +		if (wake_affine(affine_sd, p, sync))
+> +			return cpu;
+> +		if (!(affine_sd->flags & SD_BALANCE_WAKE))
+> +			return prev_cpu;
+> +	}
+>  
+>  	while (sd) {
+>  		int load_idx = sd->forkexec_idx;
+> 
+> 
 
