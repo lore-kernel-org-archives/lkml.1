@@ -1,107 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752635Ab0ALFg5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752589Ab0ALFlr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752635Ab0ALFg5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jan 2010 00:36:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751245Ab0ALFg4
+	id S1752589Ab0ALFlr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jan 2010 00:41:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751445Ab0ALFlq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jan 2010 00:36:56 -0500
-Received: from mail-yw0-f176.google.com ([209.85.211.176]:35662 "EHLO
-	mail-yw0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751160Ab0ALFg4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jan 2010 00:36:56 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
-        b=WTQbA+IwdBhbmhvihP7ZxKCWsY8iqUgqCXD1YGI/Lrbxdj8yRpVsGqu/3dlrLN3I7e
-         FsRlNATzNIkvCiQ1YrPgCE/nOHw9yC3Dfk9vg2JLSSJeZBmlXSuTXkCdw2BW0D7WVsfs
-         7KI9lUO0y6TklyZW3cJ+nPf0BrIzcqZG72vAs=
+	Tue, 12 Jan 2010 00:41:46 -0500
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:56926 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751347Ab0ALFlp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jan 2010 00:41:45 -0500
+Date: Mon, 11 Jan 2010 23:41:41 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
+       linux-kernel@vger.kernel.org, Tejun Heo <tj@kernel.org>,
+       Cornelia Huck <cornelia.huck@de.ibm.com>, linux-fsdevel@vger.kernel.org,
+       Eric Dumazet <eric.dumazet@gmail.com>, Benjamin LaHaise <bcrl@lhnet.ca>,
+       "Eric W. Biederman" <ebiederm@aristanetworks.com>
+Subject: Re: [PATCH 1/7] sysfs: Serialize updates to the vfs inode
+Message-ID: <20100112054141.GA10756@us.ibm.com>
+References: <m1d41g9z3q.fsf@fess.ebiederm.org>
+ <1263241315-19499-1-git-send-email-ebiederm@xmission.com>
 MIME-Version: 1.0
-In-Reply-To: <4e5e476b1001070541y30cae741ofe16ab82670b2633@mail.gmail.com>
-References: <58965d8a1001050807l31ddf8d1l55ebcfbadbfc206d@mail.gmail.com>
-	 <4e5e476b1001070541y30cae741ofe16ab82670b2633@mail.gmail.com>
-Date: Mon, 11 Jan 2010 23:31:54 -0600
-X-Google-Sender-Auth: 8d00196f04c960c7
-Message-ID: <58965d8a1001112131o2d092016i4f83e97de45d2300@mail.gmail.com>
-Subject: Re: Multi-file USB mass-storage copy from PC to Nokia N900 slow when 
-	using CFQ
-From: Paul Hartman <paul.hartman+linux@gmail.com>
-To: Corrado Zoccolo <czoccolo@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1263241315-19499-1-git-send-email-ebiederm@xmission.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 7, 2010 at 7:41 AM, Corrado Zoccolo <czoccolo@gmail.com> wrote:
-> On Tue, Jan 5, 2010 at 5:07 PM, Paul Hartman
-> <paul.hartman+linux@gmail.com> wrote:
->> Hi,
->>
->> Copying more than one file from my PC (kernel 2.6.32) to my Nokia N900
->> over USB mass storage mode is very slow when CFQ is the i/o scheduler.
->> The target uses vfat filesystem.
->>
->> I am using iotop to monitor the I/O in general, plus I performed the
->> following test. file1 and file2 are each 700M and both housed on a
->> ramdrive for this test. They were deleted from the destination between
->> runs.
->>
->> # one file at a time with sync in-between, fast speeds:
->> $ sync; time sh -c "cp file1 /mnt/usb; sync; cp file2 /mnt/usb; sync"
->>
->> real    1m25.697s
->> user    0m0.005s
->> sys     0m2.509s
->>
->> # copy two files in a row, then sync, speed is bad:
->> $ sync; time sh -c "cp file1 file2 /mnt/usb; sync"
->>
->> real    6m51.439s
->> user    0m0.007s
->> sys     0m2.615s
->>
->>
->> Using all I/O schedulers, the speed of the first test was the same. So
->> it's only related to writing more than 1 file to the N900. The timing
->> results for the second test ended up as such:
->>
->> cfq: 6m51.439s
->> noop: 3m0.733s
->> anticipatory: 1m44.348s
->> deadline: 1m36.804s
->>
->>
->> Also, in 2.6.31 the speed was four times slower, so the removal of old
->> pdflush code may have made a difference in this case. Copying 1
->> gigabyte takes about 1 minute at optimal speed, about 5 minutes using
->> CFQ in kernel 2.6.32, and took about 20 minutes using CFQ in kernel
->> 2.6.31.
->>
->> I thought you may be interested in case there's room to improve the
->> scheduler.  If you want any other info let me know!
->
-> Can you try setting:
-> /sys/block/**your_device** /queue/iosched/fifo_expire_sync
-> to a large number, e.g. 5000 ?
-> CFQ operates pretty much like deadline w.r.t. normal writes, but uses
-> a much shorter interval to switch between two streams of writes, to
-> reduce latency of data hitting disk, and this could cause low
-> performance on flash devices, where writes that do not cover whole
-> blocks are painfully slow.
->
-> Corrado
+Quoting Eric W. Biederman (ebiederm@xmission.com):
+> From: Eric W. Biederman <ebiederm@aristanetworks.com>
+> 
+> The way the vfs is structured only calls to the filesystem
+> methods actually update the vfs inode.  We add to the
+> normal number of places where the vfs inode is updated by
+> also updating the vfs inode in sysfs_refresh_inode.
+> 
+> Grabbing the inode mutex in sysfs_permission and sysfs_getattr
+> causes deadlocks, because somtimes those operations are called
+> with the inode mutex held, but not always.  Therefore we can
+> not depend upon the inode mutex to serialize all updates
+> to the vfs inode.
+> 
+> We take the sysfs_mutex in all of those places so we can
+> also use it to protect the vfs inode.  To accomplish that
+> we simply requires extending the vfs inode in sysfs_setattr
+> over inode_change_ok (so we have an unchanging inode
+> when we perform the check), and inode_setattr.
+> 
+> Signed-off-by: Eric W. Biederman <ebiederm@aristanetworks.com>
 
-Hi Corrado,
+I'm a little confused about the patch intro:  it makes it sound
+like this is preparatory for a followup, but in fact it is a bugfix,
+right?  Hard to exploit i think, but should it go to -stable?
 
->From previous test this value was 125. Now I'll try 5000 as you suggest:
+Acked-by: Serge Hallyn <serue@us.ibm.com>
 
-real    6m25.435s
-user    0m0.006s
-sys     0m2.536s
-
-So it's about the same result 5000 as with 125.
-
-Thanks
-Paul
+> ---
+>  fs/sysfs/inode.c |    8 ++++----
+>  1 files changed, 4 insertions(+), 4 deletions(-)
+> 
+> diff --git a/fs/sysfs/inode.c b/fs/sysfs/inode.c
+> index 220b758..104cbc1 100644
+> --- a/fs/sysfs/inode.c
+> +++ b/fs/sysfs/inode.c
+> @@ -112,20 +112,20 @@ int sysfs_setattr(struct dentry *dentry, struct iattr *iattr)
+>  	if (!sd)
+>  		return -EINVAL;
+> 
+> +	mutex_lock(&sysfs_mutex);
+>  	error = inode_change_ok(inode, iattr);
+>  	if (error)
+> -		return error;
+> +		goto out;
+> 
+>  	iattr->ia_valid &= ~ATTR_SIZE; /* ignore size changes */
+> 
+>  	error = inode_setattr(inode, iattr);
+>  	if (error)
+> -		return error;
+> +		goto out;
+> 
+> -	mutex_lock(&sysfs_mutex);
+>  	error = sysfs_sd_setattr(sd, iattr);
+> +out:
+>  	mutex_unlock(&sysfs_mutex);
+> -
+>  	return error;
+>  }
+> 
+> -- 
+> 1.6.5.2.143.g8cc62
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-fsdevel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
