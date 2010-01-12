@@ -1,77 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753253Ab0ALPUt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751221Ab0ALPaX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753253Ab0ALPUt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jan 2010 10:20:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751448Ab0ALPUs
+	id S1751221Ab0ALPaX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jan 2010 10:30:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751768Ab0ALPaW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jan 2010 10:20:48 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:38136 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751402Ab0ALPUr (ORCPT
+	Tue, 12 Jan 2010 10:30:22 -0500
+Received: from fg-out-1718.google.com ([72.14.220.159]:18722 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751221Ab0ALPaW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jan 2010 10:20:47 -0500
-Date: Tue, 12 Jan 2010 07:19:43 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Yinghai Lu <yinghai@kernel.org>
-cc: Suresh Siddha <suresh.b.siddha@intel.com>,
-       "ananth@in.ibm.com" <ananth@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [RFC PATCH 2/4] x86: use dmi check to treat disabled cpus as 
- hotplug cpus.
-In-Reply-To: <86802c441001120059s46a2e93aydc76067960aa07e6@mail.gmail.com>
-Message-ID: <alpine.LFD.2.00.1001120719260.17145@localhost.localdomain>
-References: <1263264483-3959-1-git-send-email-yinghai@kernel.org>  <1263264483-3959-4-git-send-email-yinghai@kernel.org>  <alpine.LFD.2.00.1001111906300.17145@localhost.localdomain> <86802c441001120059s46a2e93aydc76067960aa07e6@mail.gmail.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Tue, 12 Jan 2010 10:30:22 -0500
+Date: Tue, 12 Jan 2010 23:32:08 +0800
+From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: 2.6.33 pagemap endless read loop
+Message-ID: <20100112153208.GF3925@hack>
+References: <20100110020955.GB25323@basil.fritz.box> <20100110063335.GA3005@hack> <20100110123702.GC25323@basil.fritz.box>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100110123702.GC25323@basil.fritz.box>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, Jan 10, 2010 at 01:37:02PM +0100, Andi Kleen wrote:
+>> Are you sure
+>
+>I don't know if it's really endless, but it's doing a good emulation
+>of it if it's not.
+>
+>> 
+>> On my 32bit machine, it runs for a long time, but finally exits.
+>
+>That was on 64bit.
+>
+>proc01 had accumulated several minutes of CPU time when I stopped it.
+>
+>> From the document of pagemap, it is the mapping of all the virtual pages
+>> of a process, on x86-32, it should be 4G/4K = 1024*1024 pages, also
+>
+>Only the mapped ones surely?
+>
+>Right now it looks like it dumps all the holes and that obviously
+>will never finish on 64bit which has 47bits of address space.
+>
 
-On Tue, 12 Jan 2010, Yinghai Lu wrote:
-> >
-> > Slightly more intelligent:
-> >
-> >  - Look at the ACPI socket count, and hey, if it says it might have more
-> >   sockets - whether they are really hotplug or not, don't use flat mode,
-> >   because we simply don't know. But do _not_ do some kind of DMI table to
-> >   say one way or the other.
-> 
-> that acpi could lie, for example, some system share one BIOS between 2
-> socket/4 socket/8 sockets
-> model. and BIOS could have bunch disabled entries in MADT. or MPTABLE.
+Hmm, could you please try:
 
-That's fine. So it would mean that sometimes we'd use non-flat mode even 
-if we strictly didn't need to (because we _think_ that there could be four 
-sockets even though there is only one, and three are disabled). But things 
-would still work without any special cases.
+     time cat /proc/self/pagemap >/dev/null
 
-> > And if it's _really_ important:
-> >
-> >  - if flat mode is so important that you want to enable it whenever
-> >   possible, what about enabling/disabling it dynamically at CPU hotplug
-> >   time? That does sound _very_ painful, but it's still better than having
-> >   to maintain some list of all systems that can ever hot-plug.
-> 
-> interesting, could be done.
-> init_apic_ldr is called even for physical flat on 64 bit.
-> could change apic on fly.
+? Is it much faster than:
 
-Quite frankly, while I suggested it as an option, I really suspect it's 
-too much complexity for very little real gain.
+     time cat /proc/self/pagemap
 
-Say that you have only four cores, but the kernel decided that it can't 
-use logical flat APIC mode because it sees three disabled sockets and 
-thinks "ok, we may end up with a total of 16 cores if those sockets are 
-hotplugged". Is that such a disaster?
+?
 
-Realistically, do we really care? Do you have performance numbers that say 
-that logical flat mode is so important that we really _really_ want to use 
-it, even at the cost of nasty run-time complexity with having to 
-re-program the APIC setup entirely when going from 8->9 CPU's?
-
-			Linus
+Thanks!
+-- 
+Live like a child, think like the god.
+ 
