@@ -1,65 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754458Ab0ALRji@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754411Ab0ALRmL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754458Ab0ALRji (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jan 2010 12:39:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754300Ab0ALRjg
+	id S1754411Ab0ALRmL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jan 2010 12:42:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753834Ab0ALRmJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jan 2010 12:39:36 -0500
-Received: from cantor.suse.de ([195.135.220.2]:48370 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754158Ab0ALRjg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jan 2010 12:39:36 -0500
-Date: Tue, 12 Jan 2010 09:39:47 -0800
-From: Greg KH <gregkh@suse.de>
-To: Tilman Schmidt <tilman@imap.cc>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-       LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
-       Karsten Keil <isdn@linux-pingi.de>, isdn4linux@listserv.isdn4linux.de
-Subject: Re: Can we remove pci_find_device() yet?
-Message-ID: <20100112173947.GA7784@suse.de>
-References: <20100108112236.462a3da2.sfr@canb.auug.org.au> <20100108044646.GC6611@suse.de> <4B4B802A.2010709@imap.cc> <20100111200136.GA29955@suse.de> <4B4CA666.1050505@imap.cc>
+	Tue, 12 Jan 2010 12:42:09 -0500
+Received: from mail-qy0-f194.google.com ([209.85.221.194]:49289 "EHLO
+	mail-qy0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753786Ab0ALRmI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jan 2010 12:42:08 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=hwJvzXENqayykJgjS/7mRs7LFjCnDFVHHB43OPvLtF2bqSZCN8HMekh+xLnEPjbLnj
+         /h83vwne6/yiVuA+WH2LSBaCucBLfj0P5HuTD8LHGN72m1V74r2dR04BDZFbgCOxfndo
+         HmZfKD8p0cpZ0LSMQ3jgrpbAnq9lE48bx4E2I=
+Message-ID: <4B4CB46C.8020502@gmail.com>
+Date: Tue, 12 Jan 2010 12:42:04 -0500
+From: William Allen Simpson <william.allen.simpson@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B4CA666.1050505@imap.cc>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Eric Dumazet <eric.dumazet@gmail.com>
+CC: Linux Kernel Developers <linux-kernel@vger.kernel.org>,
+       Linux Kernel Network Developers <netdev@vger.kernel.org>,
+       Michael Chan <mchan@broadcom.com>
+Subject: Re: [PATCH 1/2] net: tcp_header_len_th and tcp_option_len_th
+References: <4B44FE3C.6060809@gmail.com> <4B450065.4010108@gmail.com> <4B4C519E.2090207@gmail.com>
+In-Reply-To: <4B4C519E.2090207@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 12, 2010 at 05:42:14PM +0100, Tilman Schmidt wrote:
-> Am 2010-01-11 21:01 schrieb Greg KH:
-> > On Mon, Jan 11, 2010 at 08:46:50PM +0100, Tilman Schmidt wrote:
-> >>
-> >> Just an idea - as a stopgap measure, couldn't pci_find_device() be made
-> >> a private function of the HiSax drivers? That way, the remainder of the
-> >> kernel won't be polluted by it anymore, and the PCI_LEGACY config option
-> >> can be dropped. Something like this quick and dirty hack:
-> > 
-> > Close, but if you do this, please name the function
-> > hisax_find_pci_device() or something, and change the drivers to use it
+Eric Dumazet wrote:
+> Its better to inline your patches so that we can comment them, without copy/paste
 > 
-> Sorry, but no. That would drag me into the checkpatch.pl swamp,
-> a place I know well enough by now to avoid it whenever possible.
+> When I hit 'reply to', my mailer only quoted the ChangeLog, not the patch.
+> 
+Seeing that we're both using Mozilla, how to you do it?
 
-I don't understand, why?
+It took me many attempts to get this to work with Thunderbird on the Mac.
 
-> Many of the calls to pci_find_device() have checkpatch problems
-> which of course do not go away by just substituting another
-> function name, so I would be obliged to restructure all those
-> call sites by hand for the sake of "not introducing new code
-> with checkpatch problems". BTDT.
 
-No you would not, don't be crazy.  Modfying a single line to rename a
-function from one thing to another could never be decreed as a "don't
-add bad code".  And if someone says it is, well, you just found someone
-who doesn't know what they are doing :)
+> Anyway ..
+> 
+> +/* Length of standard options only.  This could be negative. */
+> +static inline int tcp_option_len_th(const struct tcphdr *th)
+> +{
+> +	return (int)(th->doff * 4) - sizeof(*th);
+> +}
+> 
+> 
+> The (int) cast is not necessary, since the function returns a signed int
+> 
+> ->
+> 	return th->doff * 4 - sizeof(*th);
+> 
+Then GCC must be smarter than it was in the past, as doff is an __u16
+bit slice -- once upon a time, a cast was required before subtraction.
+One of the dis/advantages of C programming for 30+ years is that my
+fingers remember some fairly old practices....
 
-> So I'll drop that idea. If someone else wants to pick it up,
-> feel free to do so.
+(But this still works properly!)
 
-Please continue with this idea, it's sane, and valid.
-
-thanks,
-
-greg k-h
