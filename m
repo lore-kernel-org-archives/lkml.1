@@ -1,104 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751978Ab0ALLQl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752773Ab0ALL24@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751978Ab0ALLQl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jan 2010 06:16:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751456Ab0ALLQk
+	id S1752773Ab0ALL24 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jan 2010 06:28:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751745Ab0ALL2z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jan 2010 06:16:40 -0500
-Received: from daytona.panasas.com ([67.152.220.89]:64427 "EHLO
-	daytona.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751346Ab0ALLQj (ORCPT
+	Tue, 12 Jan 2010 06:28:55 -0500
+Received: from mail-ew0-f209.google.com ([209.85.219.209]:40256 "EHLO
+	mail-ew0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751832Ab0ALL2y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jan 2010 06:16:39 -0500
-Message-ID: <4B4C5A13.6090709@panasas.com>
-Date: Tue, 12 Jan 2010 13:16:35 +0200
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
+	Tue, 12 Jan 2010 06:28:54 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=edH3wC+KqOEfsScDhWwhEvdQxQpzrw5rCDu0NvJpBZKgpJxMRkOZOWw1QJVaCVXhoq
+         Z3fYxTImY3JMMo0T4tvg+AQ7bMxqBooDy/6i1qvor5fM3UzAJgLNY665jhsZbnCX/614
+         QXqqK3UwSPFRQVEp/Q/5TBHcQys0tX+C2ooCc=
+Message-ID: <4B4C5CEF.5060601@gmail.com>
+Date: Tue, 12 Jan 2010 12:28:47 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-16.1 Thunderbird/3.0
 MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@suse.de>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       open-osd <osd-dev@open-osd.org>, Benny Halevy <bhalevy@panasas.com>,
-       Alan Stern <stern@rowland.harvard.edu>
-CC: Stable Tree <stable@kernel.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [osd-dev] [PATCH] scsi_lib: Bug in completion of bidi commands
-References: <4B27AA77.3040002@panasas.com>
-In-Reply-To: <4B27AA77.3040002@panasas.com>
-Content-Type: text/plain; charset=UTF-8
+To: Andy Walls <awalls@radix.net>
+CC: mchehab@redhat.com, hverkuil@xs4all.nl, ivtv-devel@ivtvdriver.org,
+       linux-media@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] media: video/cx18, fix potential null dereference
+References: <1263113806-7532-1-git-send-email-jslaby@suse.cz> <1263253709.4116.1.camel@palomino.walls.org>
+In-Reply-To: <1263253709.4116.1.camel@palomino.walls.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 12 Jan 2010 11:16:37.0851 (UTC) FILETIME=[B52DB2B0:01CA9378]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12/15/2009 05:25 PM, Boaz Harrosh wrote:
+On 01/12/2010 12:48 AM, Andy Walls wrote:
+> On Sun, 2010-01-10 at 09:56 +0100, Jiri Slaby wrote:
+>> Stanse found a potential null dereference in cx18_dvb_start_feed
+>> and cx18_dvb_stop_feed. There is a check for stream being NULL,
+>> but it is dereferenced earlier. Move the dereference after the
+>> check.
+>>
+>> Signed-off-by: Jiri Slaby <jslaby@suse.cz>
 > 
-> Because of the terrible structuring of scsi-bidi-commands
-> it breaks some of the life time rules of a scsi-command.
-> It is now not allowed to free up the block-request before
-> cleanup and partial deallocation of the scsi-command. (Which
-> is not so for none bidi commands)
-> 
-> The right fix to this problem would be to make bidi command
-> a first citizen by allocating a scsi_sdb pointer at scsi command
-> just like cmd->prot_sdb. The bidi sdb should be allocated/deallocated
-> as part of the get/put_command (Again like the prot_sdb) and the
-> current decoupling of scsi_cmnd and blk-request should be kept.
-> 
-> For now make sure scsi_release_buffers() is called before the
-> call to blk_end_request_all() which might cause the suicide of
-> the block requests. At best the leak of bidi buffers, at worse
-> a crash, as there is a race between the existence of the bidi_request
-> and the free of the associated bidi_sdb.
-> 
-> The reason this was never hit before is because only OSD has the potential
-> of doing asynchronous bidi commands. (So does bsg but it is never used)
-> And OSD clients just happen to do all their bidi commands synchronously, up
-> until recently.
-> 
-> CC: Stable Tree <stable@kernel.org>
+> Reviewed-by: Andy Walls <awalls@radix.net>
+> Acked-by: Andy Walls <awalls@radix.net>
 
-James hi.
-
-Have you had the chance on looking at this issue. It's a serious bug
-dated back a long time.
-
-Technically it is quite simple.
-
-It used to be:
-	blk_end_request_all(req, 0);
-	scsi_release_buffers(cmd);
-
-Now scsi_release_buffers tries to use cmd->req for inspecting the req->next
-pointer, but req was just freed by blk_end_request_all()
-
-Reversing the call to:
-	scsi_release_buffers(cmd);
-	blk_end_request_all(req, 0);
-
-Is the right thing to do and does not have any side effects what's so ever.
-
-Please put me out of my misery ;-)
-Boaz
-
-> Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
-> ---
->  drivers/scsi/scsi_lib.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/scsi/scsi_lib.c b/drivers/scsi/scsi_lib.c
-> index 5987da8..bc9a881 100644
-> --- a/drivers/scsi/scsi_lib.c
-> +++ b/drivers/scsi/scsi_lib.c
-> @@ -749,9 +749,9 @@ void scsi_io_completion(struct scsi_cmnd *cmd, unsigned int good_bytes)
->  			 */
->  			req->next_rq->resid_len = scsi_in(cmd)->resid;
->  
-> +			scsi_release_buffers(cmd);
->  			blk_end_request_all(req, 0);
->  
-> -			scsi_release_buffers(cmd);
->  			scsi_next_command(cmd);
->  			return;
->  		}
-
+You definitely know the code better, have you checked that it can happen
+at all? I mean may demux->priv be NULL?
