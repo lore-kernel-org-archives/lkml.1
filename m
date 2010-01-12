@@ -1,49 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752989Ab0ALUtW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753239Ab0ALUxa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752989Ab0ALUtW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jan 2010 15:49:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752259Ab0ALUtW
+	id S1753239Ab0ALUxa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jan 2010 15:53:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753063Ab0ALUx3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jan 2010 15:49:22 -0500
-Received: from nlpi129.sbcis.sbc.com ([207.115.36.143]:59659 "EHLO
-	nlpi129.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752041Ab0ALUtV (ORCPT
+	Tue, 12 Jan 2010 15:53:29 -0500
+Received: from exchange.solarflare.com ([216.237.3.220]:9762 "EHLO
+	exchange.solarflare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750944Ab0ALUx3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jan 2010 15:49:21 -0500
-Date: Tue, 12 Jan 2010 14:48:17 -0600 (CST)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@router.home
-To: Yinghai Lu <yinghai@kernel.org>
-cc: Suresh Siddha <suresh.b.siddha@intel.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "ananth@in.ibm.com" <ananth@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [RFC PATCH 1/5] use nr_cpus= to set nr_cpu_ids early
-In-Reply-To: <1263298146-25597-1-git-send-email-yinghai@kernel.org>
-Message-ID: <alpine.DEB.2.00.1001121436080.25925@router.home>
-References: <1263298146-25597-1-git-send-email-yinghai@kernel.org>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 12 Jan 2010 15:53:29 -0500
+Subject: Re: Can we remove pci_find_device() yet?
+From: Ben Hutchings <bhutchings@solarflare.com>
+To: Krzysztof Halasa <khc@pm.waw.pl>
+Cc: Greg KH <gregkh@suse.de>, Tilman Schmidt <tilman@imap.cc>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
+       Karsten Keil <isdn@linux-pingi.de>, isdn4linux@listserv.isdn4linux.de
+In-Reply-To: <m3fx6bxdt7.fsf@intrepid.localdomain>
+References: <20100108112236.462a3da2.sfr@canb.auug.org.au>
+	 <20100108044646.GC6611@suse.de> <4B4B802A.2010709@imap.cc>
+	 <20100111200136.GA29955@suse.de>  <m3fx6bxdt7.fsf@intrepid.localdomain>
+Content-Type: text/plain
+Organization: Solarflare Communications
+Date: Tue, 12 Jan 2010 20:53:25 +0000
+Message-Id: <1263329605.3011.8.camel@achroite.uk.solarflarecom.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 12 Jan 2010 20:53:55.0100 (UTC) FILETIME=[5A9675C0:01CA93C9]
+X-TM-AS-Product-Ver: SMEX-8.0.0.1181-6.000.1038-17126.005
+X-TM-AS-Result: No--34.249200-0.000000-31
+X-TM-AS-User-Approved-Sender: Yes
+X-TM-AS-User-Blocked-Sender: No
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Trouble is that NR_CPUS is used all over the place. If nr_cpu_ids <
-NR_CPUS at boot then there is a danger of for loops to NR_CPUS going out
-of
-bounds.
+On Tue, 2010-01-12 at 21:34 +0100, Krzysztof Halasa wrote:
+> Greg KH <gregkh@suse.de> writes:
+> 
+> > Close, but if you do this, please name the function
+> > hisax_find_pci_device() or something, and change the drivers to use it
+> > instead.  Also put a big fat warning in the function that calling this
+> > is unsafe for any PCI hotplug type machine.
+> 
+> BTW, I have a driver in the works which uses these functions, and I
+> wonder how to do it correctly. The problem is that the hardware is a
+> dual-function PCI card (two DEC Tulip Ethernet controllers) but part of
+> the first device (EEPROM interface or something like that) is used by
+> both (there is an FPGA connected there, serving both channels).
+> 
+> This means drivers for dev#0 and dev#1 (both "normal" PCI controllers)
+> need to register and access part of dev#0 BARs.
 
-CONFIG_NR_CPUS is used for various bitmaps so that seems to be
-okay.
+I hope you realise that this is a design error!  Linux is fairly
+forgiving and allows PCI drivers to do unusual things, but other OSes
+make it hard or impossible for PCI drivers to coordinate multiple
+functions.
 
-drivers/acpi/numa.c:acpi_numa_init probably should use nr_cpu_ids
-instead now.
+> How do I do that properly, in terms of PCI API?
 
-There is an octeon driver in staging that has some issues with NR_CPUS as
-well.
+One of our older controllers had a similar design error in that the two
+functions would sometimes have to be reset together.  The way we look
+for the second function is:
 
+	dev = pci_dev_get(dev1);
+	while ((dev = pci_get_device(vendor_id, device_id, dev))) {
+		if (dev->bus == dev1->bus &&
+		    dev->devfn == dev1->devfn + 1) {
+			dev2 = dev;
+			break;
+		}
+	}
 
+I assume this is 'properly' since no-one has told me otherwise.
 
+Ben.
+
+-- 
+Ben Hutchings, Senior Software Engineer, Solarflare Communications
+Not speaking for my employer; that's the marketing department's job.
+They asked us to note that Solarflare product names are trademarked.
 
