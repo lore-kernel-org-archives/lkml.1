@@ -1,63 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754543Ab0ALQsH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754218Ab0ALQst@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754543Ab0ALQsH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jan 2010 11:48:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754295Ab0ALQsF
+	id S1754218Ab0ALQst (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jan 2010 11:48:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752149Ab0ALQss
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jan 2010 11:48:05 -0500
-Received: from mail.lysator.liu.se ([130.236.254.3]:41012 "EHLO
-	mail.lysator.liu.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754221Ab0ALQsE (ORCPT
+	Tue, 12 Jan 2010 11:48:48 -0500
+Received: from mail-ew0-f209.google.com ([209.85.219.209]:39347 "EHLO
+	mail-ew0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751221Ab0ALQss convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jan 2010 11:48:04 -0500
-X-Greylist: delayed 1994 seconds by postgrey-1.27 at vger.kernel.org; Tue, 12 Jan 2010 11:48:03 EST
-From: paran@lysator.liu.se (=?utf-8?Q?P=C3=A4r?= Andersson)
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Eric Anholt" <eric@anholt.net>, "ykzhao" <yakui.zhao@intel.com>
-Subject: Re: [Bug #14860] No DP-DVI output when laptop is docked
-In-Reply-To: <omZ8aBZReyD.A.nn.1NlSLB@chimera> (Rafael J. Wysocki's message of
-	"Sun, 10 Jan 2010 23:32:53 +0100 (CET)")
-References: <wnS54-l8PVO.A.TlF.oMlSLB@chimera>
-	<omZ8aBZReyD.A.nn.1NlSLB@chimera>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
-Date: Tue, 12 Jan 2010 17:14:40 +0100
-Message-ID: <87vdf7e1vz.fsf@nsc.liu.se>
+	Tue, 12 Jan 2010 11:48:48 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=KowO5MD6k49RsOBHWtKi+8ZDPppKEBcbzhAp+1CPNCVsEkmNJMjxNSY8rdF9ngKooF
+         ik8ZpX91vPU0LBFyTfY7ziDK23b35qmKAvDcDt7HDn2GtrmbzPekH9VPD5vfthR+PYQz
+         JYMEJF345XKO7Nv3P3AzLWdjxlTfd3FyB2Y1k=
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="=-=-=";
-	micalg=pgp-sha1; protocol="application/pgp-signature"
+In-Reply-To: <1dec3f771001120819x2e9cad5dxf110952cc1347b92@mail.gmail.com>
+References: <1dec3f771001120819x2e9cad5dxf110952cc1347b92@mail.gmail.com>
+From: Bryan Donlan <bdonlan@gmail.com>
+Date: Tue, 12 Jan 2010 11:48:25 -0500
+Message-ID: <3e8340491001120848x6b892403m6f04ea1fc5c9d06d@mail.gmail.com>
+Subject: Re: dlopen in kernel mode
+To: mojtaba <kernelppc@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---=-=-=
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+On Tue, Jan 12, 2010 at 11:19 AM, mojtaba <kernelppc@gmail.com> wrote:
+> [please cc kernelppc@gmail.com]
+> Dear all,
+>
+> Are there any alternatives for dlopen(), dlsym() and dlclose() in
+> kernel mode? Basicly, I need to load an executable object file  and
+> execute an specific function in it.
 
-"Rafael J. Wysocki" <rjw@sisk.pl> writes:
-
-> The following bug entry is on the current list of known regressions
-> from 2.6.32.  Please verify if it still should be listed and let me know
-> (either way).
-
-It should still be listed.
-
-I was without Internet connection last week, but that have been fixed
-now so I will test the patch from ykzhao ASAP.
-
-Regards,
-
-P=C3=A4r Andersson
-
---=-=-=
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAktMn/AACgkQyi5LJcueYEvkogCcCWP10JEhpXah59kFdFn7gq5W
-KMEAn2VCvFthO7iUQWUDGOL4ulyulOu0
-=P6pC
------END PGP SIGNATURE-----
---=-=-=--
+You could create a kernel module; but the .so files used in userspace,
+in general, cannot be loaded.
