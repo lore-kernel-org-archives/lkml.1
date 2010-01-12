@@ -1,65 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754462Ab0ALAcm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754494Ab0ALAds@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754462Ab0ALAcm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jan 2010 19:32:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754315Ab0ALAcm
+	id S1754494Ab0ALAds (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jan 2010 19:33:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754419Ab0ALAdr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jan 2010 19:32:42 -0500
-Received: from out01.mta.xmission.com ([166.70.13.231]:60141 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751895Ab0ALAcl (ORCPT
+	Mon, 11 Jan 2010 19:33:47 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:45630 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754401Ab0ALAdr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jan 2010 19:32:41 -0500
-To: Tejun Heo <tj@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>,
-       Miles Lane <miles.lane@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>
-Subject: Re: 2.6.33-rc3 -- INFO: possible recursive locking --  (s_active){++++.+}, at: [<c10d2941>] sysfs_hash_and_remove+0x3d/0x4f
-References: <a44ae5cd1001060454g22fb5a0ay8185bc680cd4fc67@mail.gmail.com>
-	<2375c9f91001100058w4bac1cf9s183fc37eafbfde75@mail.gmail.com>
-	<m13a2dho1o.fsf@fess.ebiederm.org> <201001101935.31882.rjw@sisk.pl>
-	<m1wrzpbcmi.fsf@fess.ebiederm.org> <4B4BC2D3.7070003@kernel.org>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Mon, 11 Jan 2010 16:32:31 -0800
-In-Reply-To: <4B4BC2D3.7070003@kernel.org> (Tejun Heo's message of "Tue\, 12 Jan 2010 09\:31\:15 +0900")
-Message-ID: <m11vhw6u3k.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Scanned: No (on in02.mta.xmission.com); SAEximRunCond expanded to false
+	Mon, 11 Jan 2010 19:33:47 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Tue, 12 Jan 2010 09:30:31 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: "Zheng, Shaohui" <shaohui.zheng@intel.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "ak@linux.intel.com" <ak@linux.intel.com>,
+       "y-goto@jp.fujitsu.com" <y-goto@jp.fujitsu.com>,
+       Dave Hansen <haveblue@us.ibm.com>, "x86@kernel.org" <x86@kernel.org>
+Subject: Re: [PATCH - resend] Memory-Hotplug: Fix the bug on interface
+ /dev/mem for 64-bit kernel(v1)
+Message-Id: <20100112093031.0fc6877f.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20100111124303.GA21408@localhost>
+References: <DA586906BA1FFC4384FCFD6429ECE86031560BAC@shzsmsx502.ccr.corp.intel.com>
+	<20100108124851.GB6153@localhost>
+	<DA586906BA1FFC4384FCFD6429ECE86031560FC1@shzsmsx502.ccr.corp.intel.com>
+	<20100111124303.GA21408@localhost>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo <tj@kernel.org> writes:
+On Mon, 11 Jan 2010 20:43:03 +0800
+Wu Fengguang <fengguang.wu@intel.com> wrote:
 
-> On 01/11/2010 11:26 AM, Eric W. Biederman wrote:
->> From: Eric W. Biederman <ebiederm@xmission.com>
->> Date: Sun, 10 Jan 2010 18:13:35 -0800
->> Subject: [PATCH] sysfs: Add support for lockdep subclasses to s_active
->> 
->> We have apparently valid cases where the code for a sysfs attribute
->> removes other sysfs attributes.  Without support for subclasses
->> lockdep flags a possible recursive lock problem as it figures
->> the first sysfs attribute could be attempting to remove itself.
->> 
->> By adding support for sysfs subclasses we can teach lockdep to
->> distinguish between different types of sysfs attributes and not
->> get confused.
->> 
->> Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
->
-> Acked-by: Tejun Heo <tj@kernel.org>
+> > > +	/* if add to low memory, update max_low_pfn */
+> > > +	if (unlikely(start_pfn < limit_low_pfn)) {
+> > > +		if (end_pfn <= limit_low_pfn)
+> > > +			max_low_pfn = end_pfn;
+> > > +		else
+> > > +			max_low_pfn = limit_low_pfn;
+> > 
+> > X86_64 actually always set max_low_pfn=max_pfn, in setup_arch():
+> > [Zheng, Shaohui] there should be some misunderstanding, I read the
+> > code carefully, if the total memory is under 4G, it always
+> > max_low_pfn=max_pfn. If the total memory is larger than 4G,
+> > max_low_pfn means the end of low ram. It set
+> 
+> > max_low_pfn = e820_end_of_low_ram_pfn();.
+> 
+> The above line is very misleading.. In setup_arch(), it will be
+> overrode by the following block.
+> 
 
-Now if I can just get a Tested-by  this patch will be all set ;)
+Hmmm....could you rewrite /dev/mem to use kernel/resource.c other than
+modifing e820 maps. ?
+Two reasons.
+  - e820map is considerted to be stable, read-only after boot.
+  - We don't need to add more x86 special codes.
 
-Eric
+
+Thanks,
+-Kame
 
