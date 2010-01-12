@@ -1,34 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753754Ab0ALD7I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753806Ab0ALEBV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753754Ab0ALD7I (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jan 2010 22:59:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751448Ab0ALD7H
+	id S1753806Ab0ALEBV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jan 2010 23:01:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753787Ab0ALEBU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jan 2010 22:59:07 -0500
-Received: from toroondcbmts06.bellnexxia.net ([207.236.237.40]:50962 "EHLO
-	toroondcbmts06-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752691Ab0ALD7G (ORCPT
+	Mon, 11 Jan 2010 23:01:20 -0500
+Received: from smtp102.prem.mail.sp1.yahoo.com ([98.136.44.57]:20652 "HELO
+	smtp102.prem.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753781Ab0ALEBT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jan 2010 22:59:06 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AtcIAEpsS0vP7O0g/2dsb2JhbACDXotrjHmsT40ugSuCLlYE
-Message-ID: <20100111220900.LV04W.71589.root@toroondcbfep03>
-Date: Mon, 11 Jan 2010 22:09:00 -0500
-From: Mrs Rebbeca Coleman <avia@bellnet.ca>
-Reply-To: s.sw@sys-w.com
-Subject: My name is Mrs Rebbeca Coleman
+	Mon, 11 Jan 2010 23:01:19 -0500
+X-Yahoo-SMTP: OIJXglSswBDfgLtXluJ6wiAYv6_cnw--
+X-YMail-OSG: 7.iE1SMVM1mFzUXwb2J4_tA5RJeHnyGibLH5u_Zi_WQomGLpg0UsSnhl7_n4UnHy_HpATXrZqBkB7jl_TcswxVWml4uBmxivJIfLH0iZDfOwzravcE_HmCvGSxJs058XJSLsOLt04zEUJQudSGBQD30OnkK8PTeRP42RLm_l4FRlIF4cVaVOL._4vUBn.trKO.aee9WnKiGxw.svaPMND_f6RGtoffPB1ooFxfAiyAOS.x68hXSQBv40.ul7i7ITooG6ljltv04fLAPKItjhvrkL95s6R3aNrYuGcN8rGPSZDyy4
+X-Yahoo-Newman-Property: ymail-3
+Message-ID: <4B4BF40D.4030407@schaufler-ca.com>
+Date: Mon, 11 Jan 2010 20:01:17 -0800
+From: Casey Schaufler <casey@schaufler-ca.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+To: Valdis.Kletnieks@vt.edu
+CC: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>, michael@laptop.org,
+       pavel@ucw.cz, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       linux-security-module@vger.kernel.org, andi@firstfloor.org,
+       david@lang.hm, socketcan@hartkopp.net, alan@lxorguk.ukuu.org.uk,
+       herbert@gondor.apana.org.au, bdonlan@gmail.com, zbr@ioremap.net,
+       cscott@cscott.net, jmorris@namei.org, ebiederm@xmission.com,
+       bernie@codewiz.org, mrs@mythic-beasts.com, randy.dunlap@oracle.com,
+       xiyou.wangcong@gmail.com, sam@synack.fr, serue@us.ibm.com,
+       viro@ZenIV.linux.org.uk, Casey Schaufler <casey@schaufler-ca.com>
+Subject: Re: [PATCH 2/3] Security: Implement disablenetwork semantics. (v4)
+References: <20100110215848.GA26609@elf.ucw.cz> <20100110224010.GA3825@heat> <201001111007.EAG82373.VHFQSLFOFMOOJt@I-love.SAKURA.ne.jp>            <4B4A8309.9090801@schaufler-ca.com> <6161.1263266388@localhost>
+In-Reply-To: <6161.1263266388@localhost>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Priority: 3 (Normal)
-Sensitivity: Normal
-X-Originating-IP: from 65.49.2.154 by webmail.en.bellnet.ca; Mon, 11 Jan 2010 22:09:00 -0500
-To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-My name is Mrs Rebbeca Coleman I got your information while browsing through 
-Internet in search for a reliable/honest person who could be of help i have a
-charity project of 15.5Million GBP.I would prefer you contact me 
-on my most private and confidencial email address :(s.sww@admin.in.th)
+Valdis.Kletnieks@vt.edu wrote:
+> On Sun, 10 Jan 2010 17:46:49 PST, Casey Schaufler said:
+>   
+>> It's much worse than that. A user that has been network disabled
+>> who tries using ls may find that it goes looking for the network
+>> on each name lookup and has to wait for a timeout for each.
+>>     
+>
+> Ya know Casey - I learned back in 1986 or so that if you set up a SunOS 3.2
+> cluster using Yellow Pages, professors who managed to unplug the AUI cable
+> on the back of their Sun 3/50 would notice things blowing chunks.  I have to
+> admit that 24 years ago I told them "Well don't do that then", and I have
+> to say the same thing for anybody running a login shell network-disabled.
+>
+> Now, a more subtle point is that a *program* may call getuserbyname() or
+> getuserbyuid() and be surprised when it times out - but that's a
+> different issue than a network-deprived user calling /bin/ls.
+>   
+
+I was working at Sun when YP was introduced and was probably the
+first person who had to explain what would happen if the network
+got disconnected to "security experts". They weren't real happy
+then, and shouldn't be happier now. If anything, today's computer
+users are less well adapted to dealing with applications that
+behave differently when the network is unexpectedly absent because
+both the user and the programmer assume that the network will be
+there because it always is. They would never set up a situation
+where the network would be missing and the programs they use/write
+are unlikely to handle the situation. Lazy kids.
+
+>>          Then, if there are local file entries that differ
+>> from the "official" network account values when the library
+>> functions finally fall back on the local values you get the wrong
+>> names for file owners.
+>>     
+>
+> The sysadmin who set that up already had the bullet in the chamber and
+> the gun pointed at their feet.  This is another "we knew better a quarter
+> century ago" issue - SunOS allowed '+:' at the end of /etc/passwd to merge
+> in the YP database, and Sun actively discouraged the sort of "local userid
+> overlaps the YP userid space" misconfiguration you mention.
+>
+>   
+
+Sysadmins are so busy fixing Sanborn-Oxley compliance issues (funded)
+that they are perfectly happy to put loaded guns in their pants as far
+as (unfunded) "real" security is concerned. Sure we knew better. We
+knew how to do lots of things back then that the Linux community is
+relearning today. Knowing better isn't going to help the current
+generation, as wisdom (like you and I have) can only be passed along
+by experience and exposure to the wise. I like secure systems myself,
+but I certainly understand why so many people don't.
+
