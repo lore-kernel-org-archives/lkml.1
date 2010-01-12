@@ -1,96 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753470Ab0ALIju@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753761Ab0ALIrI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753470Ab0ALIju (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jan 2010 03:39:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753200Ab0ALIjt
+	id S1753761Ab0ALIrI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jan 2010 03:47:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753379Ab0ALIrH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jan 2010 03:39:49 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:64626 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751978Ab0ALIjr (ORCPT
+	Tue, 12 Jan 2010 03:47:07 -0500
+Received: from mail-px0-f174.google.com ([209.85.216.174]:35869 "EHLO
+	mail-px0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753302Ab0ALIrG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jan 2010 03:39:47 -0500
+	Tue, 12 Jan 2010 03:47:06 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=Lglv8iSqxl1oK6lQqYRfmdZBPu1MZFla37jJJR/luE7lC9hy92w5VTM+TUSU+qhhA/
-         OxAwoku4NFZxDb/ciF+tiPRZT3/XQzZ2eGN2KNDO38bGK9GfmnDlh5F4LPwRXTyT+UL6
-         1DcWD0au0lF6RLjqG+QBs2sZackmoPVSIyCLg=
-Date: Tue, 12 Jan 2010 00:39:43 -0800
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-input@vger.kernel.org
-Subject: [git pull] Input updates for 2.6.33-rc3
-Message-ID: <20100112083943.GA13714@core.coreip.homeip.net>
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
+        b=pZwbxUqBjVXnBDA8cNoZjsePEDCiQBjV4Li6bTRN3gx3JWOloEbaTWj6xVr63tdXRk
+         Vz2qLdfhA4+IBcWP6+w2GZHGHrv9NEvXRTdtrxKFRIZtiIw7Ni6vV8dsKwn350WFwChL
+         YwK3AfhigbrgjvmiowV38De0Xi2G2aBlLnKLg=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-08-17)
+In-Reply-To: <alpine.LFD.2.00.1001111913570.17145@localhost.localdomain>
+References: <1263264483-3959-1-git-send-email-yinghai@kernel.org>
+	 <1263264483-3959-2-git-send-email-yinghai@kernel.org>
+	 <alpine.LFD.2.00.1001111913570.17145@localhost.localdomain>
+Date: Tue, 12 Jan 2010 00:47:03 -0800
+X-Google-Sender-Auth: b506794aa5c6e6f1
+Message-ID: <86802c441001120047v5c303dfdh648ad8ebf2f538c1@mail.gmail.com>
+Subject: Re: [RFC PATCH 3/4] x86: using logical flat for amd cpu too.
+From: Yinghai Lu <yinghai@kernel.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Suresh Siddha <suresh.b.siddha@intel.com>,
+       "ananth@in.ibm.com" <ananth@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On Mon, Jan 11, 2010 at 7:16 PM, Linus Torvalds
+<torvalds@linux-foundation.org> wrote:
+>
+>
+> On Mon, 11 Jan 2010, Yinghai Lu wrote:
+>>
+>> tested that amd support logical flat too when cpus num <= 8 and even
+>> bsp apic id > 8
+>>
+>> so could remove vendor check...
+>
+> At least this one makes code simpler.
+>
+> What was the background for thinking that AMD didn't support the same APIC
+> addressing models? If there really is some issue external to the CPU's
+> themselves, whatever problem was attributed to AMD might be the same (or
+> similar) problem that Ananth had.
 
-Please pull from:
+not sure.
 
-	git://git.kernel.org/pub/scm/linux/kernel/git/dtor/input.git for-linus
-or
-	master.kernel.org:/pub/scm/linux/kernel/git/dtor/input.git for-linus
+i remembered that bios fix one apic dest apic id in ioapic register.
+before that that field
+is set to 0 always.
 
-to receive updates for the input subsystem.
-
-Changelog:
----------
-
-Adam Jackson (1):
-      Input: evdev - be less aggressive about sending SIGIO notifies
-
-Daniel Drake (1):
-      Input: psmouse - fix Synaptics detection when protocol is disabled
-
-Dmitry Torokhov (3):
-      Input: atkbd - fix canceling event_work in disconnect
-      Input: xbox - do not use GFP_KERNEL under spinlock
-      Input: add compat support for sysfs and /proc capabilities output
-
-Elliott Sales de Andrade (1):
-      Input: i8042 - add Dritek quirk for Acer Aspire 5610.
-
-Eric W. Biederman (1):
-      Input: serio - fix potential deadlock when unbinding drivers
-
-Henrik Rydberg (1):
-      Input: bcm5974 - report ABS_MT events
-
-Miguel Aguilar (1):
-      Input: davinci_keyscan - add device_enable method to platform data
-
-Roel Kluin (1):
-      Input: gf2k - fix &&/|| confusion in gf2k_connect()
-
-
-Diffstat:
---------
-
- arch/arm/mach-davinci/include/mach/keyscan.h |    1 +
- drivers/input/evdev.c                        |    3 +-
- drivers/input/input-compat.h                 |    2 +
- drivers/input/input.c                        |   74 ++++++++++++++++++++-----
- drivers/input/joystick/gf2k.c                |    2 +-
- drivers/input/joystick/xpad.c                |    4 +-
- drivers/input/keyboard/atkbd.c               |   69 +++++++++++------------
- drivers/input/keyboard/davinci_keyscan.c     |    8 +++
- drivers/input/mouse/bcm5974.c                |   44 +++++++++++++++-
- drivers/input/mouse/psmouse-base.c           |   41 ++++----------
- drivers/input/mouse/synaptics.c              |   10 ++++
- drivers/input/mouse/synaptics.h              |    1 +
- drivers/input/serio/i8042-x86ia64io.h        |    7 +++
- include/linux/serio.h                        |   19 -------
- 14 files changed, 180 insertions(+), 105 deletions(-)
-
--- 
-Dmitry
-
+YH
