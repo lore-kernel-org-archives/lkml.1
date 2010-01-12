@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753649Ab0ALDQf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753721Ab0ALDRu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753649Ab0ALDQf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jan 2010 22:16:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753114Ab0ALDQe
+	id S1753721Ab0ALDRu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jan 2010 22:17:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753340Ab0ALDRu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jan 2010 22:16:34 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:35813 "EHLO
+	Mon, 11 Jan 2010 22:17:50 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:44009 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752224Ab0ALDQd (ORCPT
+	by vger.kernel.org with ESMTP id S1753126Ab0ALDRt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jan 2010 22:16:33 -0500
-Date: Mon, 11 Jan 2010 19:13:32 -0800 (PST)
+	Mon, 11 Jan 2010 22:17:49 -0500
+Date: Mon, 11 Jan 2010 19:16:16 -0800 (PST)
 From: Linus Torvalds <torvalds@linux-foundation.org>
 X-X-Sender: torvalds@localhost.localdomain
 To: Yinghai Lu <yinghai@kernel.org>
@@ -18,11 +18,10 @@ cc: Suresh Siddha <suresh.b.siddha@intel.com>,
        "ananth@in.ibm.com" <ananth@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
        Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
        Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [RFC PATCH 2/4] x86: use dmi check to treat disabled cpus as
- hotplug cpus.
-In-Reply-To: <1263264483-3959-4-git-send-email-yinghai@kernel.org>
-Message-ID: <alpine.LFD.2.00.1001111906300.17145@localhost.localdomain>
-References: <1263264483-3959-1-git-send-email-yinghai@kernel.org> <1263264483-3959-4-git-send-email-yinghai@kernel.org>
+Subject: Re: [RFC PATCH 3/4] x86: using logical flat for amd cpu too.
+In-Reply-To: <1263264483-3959-2-git-send-email-yinghai@kernel.org>
+Message-ID: <alpine.LFD.2.00.1001111913570.17145@localhost.localdomain>
+References: <1263264483-3959-1-git-send-email-yinghai@kernel.org> <1263264483-3959-2-git-send-email-yinghai@kernel.org>
 User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -33,49 +32,17 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 On Mon, 11 Jan 2010, Yinghai Lu wrote:
->
-> some systems that have disable cpus entries because same
->   BIOS will support 2 sockets and 4 sockets and more at
->   same time, BIOS just leave some disable entries, but
->   those system do not support cpu hotplug. we don't need
->   treat disabled_cpus as hotplug cpus.
->
-> so we can make nr_cpu_ids smaller and save more space
->   (pcpu data allocations), and could make some systems run
->   with logical flat instead of physical flat apic mode
+> 
+> tested that amd support logical flat too when cpus num <= 8 and even
+> bsp apic id > 8
+> 
+> so could remove vendor check...
 
-.. but this one I detest.
+At least this one makes code simpler.
 
-We can't play games that depend on us always filling in some DMI table 
-correctly. Things need to "just work".
-
-So while 1/4 looks fine, 2/4 looks fundamentally unacceptable.
-
-Is the flat APIC mode really so important?
-
-I would suggest a few alternatives:
-
-Truly static:
-
- - only use that flat apic mode when you _know_ that you absolutely will 
-   never have more than 8 cpu's. Ie when CONFIG_NR_CPUS <= 8 (or, with 
-   1/3, when nr_cpu_ids <= 8) and/or when <= 8 CPU's were detected, and 
-   CPU hotplug is disabled entirely.
-
-Slightly more intelligent:
-
- - Look at the ACPI socket count, and hey, if it says it might have more 
-   sockets - whether they are really hotplug or not, don't use flat mode, 
-   because we simply don't know. But do _not_ do some kind of DMI table to 
-   say one way or the other.
-
-And if it's _really_ important:
-
- - if flat mode is so important that you want to enable it whenever 
-   possible, what about enabling/disabling it dynamically at CPU hotplug 
-   time? That does sound _very_ painful, but it's still better than having 
-   to maintain some list of all systems that can ever hot-plug. 
-
-Hmm?
+What was the background for thinking that AMD didn't support the same APIC 
+addressing models? If there really is some issue external to the CPU's 
+themselves, whatever problem was attributed to AMD might be the same (or 
+similar) problem that Ananth had.
 
 		Linus
