@@ -1,56 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754684Ab0ALSZU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754717Ab0ALSa6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754684Ab0ALSZU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jan 2010 13:25:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754273Ab0ALSZS
+	id S1754717Ab0ALSa6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jan 2010 13:30:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752150Ab0ALSa5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jan 2010 13:25:18 -0500
-Received: from mga01.intel.com ([192.55.52.88]:50617 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754221Ab0ALSZR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jan 2010 13:25:17 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,263,1262592000"; 
-   d="scan'208";a="763591576"
-Subject: Re: [RFC PATCH 2/4] x86: use dmi check to treat disabled cpus as
- hotplug cpus.
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-Reply-To: Suresh Siddha <suresh.b.siddha@intel.com>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       "ananth@in.ibm.com" <ananth@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <86802c441001121013o4b8775edl1bc36f120e072b75@mail.gmail.com>
-References: <1263264483-3959-1-git-send-email-yinghai@kernel.org>
-	 <1263264483-3959-4-git-send-email-yinghai@kernel.org>
-	 <alpine.LFD.2.00.1001111906300.17145@localhost.localdomain>
-	 <86802c441001120059s46a2e93aydc76067960aa07e6@mail.gmail.com>
-	 <alpine.LFD.2.00.1001120719260.17145@localhost.localdomain>
-	 <86802c441001121013o4b8775edl1bc36f120e072b75@mail.gmail.com>
-Content-Type: text/plain
-Organization: Intel Corp
-Date: Tue, 12 Jan 2010 10:24:07 -0800
-Message-Id: <1263320647.2854.295.camel@sbs-t61.sc.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 7bit
+	Tue, 12 Jan 2010 13:30:57 -0500
+Received: from taverner.CS.Berkeley.EDU ([128.32.153.193]:44223 "EHLO
+	taverner.cs.berkeley.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752542Ab0ALSa4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jan 2010 13:30:56 -0500
+To: linux-kernel@vger.kernel.org
+Path: not-for-mail
+From: daw@cs.berkeley.edu (David Wagner)
+Newsgroups: isaac.lists.linux-kernel
+Subject: Re: [PATCH 2/3] Security: Implement disablenetwork semantics. (v4)
+Date: Tue, 12 Jan 2010 18:30:56 +0000 (UTC)
+Organization: University of California, Berkeley
+Message-ID: <hiif50$l7r$1@taverner.cs.berkeley.edu>
+References: <201001111007.EAG82373.VHFQSLFOFMOOJt@I-love.SAKURA.ne.jp> <20100111174922.GA17285@us.ibm.com>
+Reply-To: daw-news@taverner.cs.berkeley.edu (David Wagner)
+NNTP-Posting-Host: taverner.cs.berkeley.edu
+X-Trace: taverner.cs.berkeley.edu 1263321056 21755 128.32.153.193 (12 Jan 2010 18:30:56 GMT)
+X-Complaints-To: news@taverner.cs.berkeley.edu
+NNTP-Posting-Date: Tue, 12 Jan 2010 18:30:56 +0000 (UTC)
+X-Newsreader: trn 4.0-test76 (Apr 2, 2001)
+Originator: daw@taverner.cs.berkeley.edu (David Wagner)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2010-01-12 at 10:13 -0800, Yinghai Lu wrote:
-> ok let stay with option 1.
->
-> and would like to use DMI to blacklist those systems that do need treat disabled
-> cpus MADT as hotplug cpus.
+Serge E. Hallyn wrote:
+>Michael, I'm sorry, I should go back and search the thread for the
+>answer, but don't have time right now - do you really need
+>disablenetwork to be available to unprivileged users?
 
-Yinghai, I don't think we have to worry about disabled cpu's etc using
-DMI etc. If we really come across such a system, they can use ACPI FADT
-flags (ACPI_FADT_APIC_PHYSICAL) to specify that they need to use
-physical mode.
-
-thanks,
-suresh
-
+I don't know about Michael's specific case, but answering more
+broadly, Yes.  There are important use cases for disablenetwork for
+unprivileged users.  Basically, it facilitates privilege separation,
+which is hard to do today.  A privilege-separated software architecture
+is useful for a broad variety of programs that talk to the network --
+some/many of which are unprivileged.  For instance, the very original
+post on this topic referred to a proposal by Dan Bernstein, where Dan
+points out that (for instance) it would make be useful if we could start
+a separate process for decompression (or image file transformation),
+running that separate process with no privileges (including no network
+access) to reduce the impact of vulnerabilities in that code.  Think
+of, say, a browser that needs to convert a .jpg to a bitmap; that
+would be an example of an unprivileged program that could benefit
+from the disablenetwork feature, because it could spawn a separate
+process to do the image conversion.
