@@ -1,52 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753980Ab0ALRjL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754458Ab0ALRji@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753980Ab0ALRjL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jan 2010 12:39:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751896Ab0ALRjK
+	id S1754458Ab0ALRji (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jan 2010 12:39:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754300Ab0ALRjg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jan 2010 12:39:10 -0500
-Received: from mail-fx0-f225.google.com ([209.85.220.225]:64601 "EHLO
-	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751221Ab0ALRjI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jan 2010 12:39:08 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=dgCTATcUaQAMksUf/pRR4U27E9sXhyNQn3ROO+5qbzbUapzUYNhcvS0EGYe2ohBYEu
-         cGXeUDkcvouBXMA2UqyfGs9r2aSud2ZF+SuA8AvXgl4z9Zri/Diu4eUKWKL9QoDKcn1o
-         uI5vjuA3Fz4mkbewk3tKzrPNCePFBqirOpEh0=
-Message-ID: <4B4CB3B5.3060900@googlemail.com>
-Date: Tue, 12 Jan 2010 18:39:01 +0100
-From: Johannes Engel <jcnengel@googlemail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; de; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-17.1 Thunderbird/3.0
+	Tue, 12 Jan 2010 12:39:36 -0500
+Received: from cantor.suse.de ([195.135.220.2]:48370 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754158Ab0ALRjg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jan 2010 12:39:36 -0500
+Date: Tue, 12 Jan 2010 09:39:47 -0800
+From: Greg KH <gregkh@suse.de>
+To: Tilman Schmidt <tilman@imap.cc>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+       LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
+       Karsten Keil <isdn@linux-pingi.de>, isdn4linux@listserv.isdn4linux.de
+Subject: Re: Can we remove pci_find_device() yet?
+Message-ID: <20100112173947.GA7784@suse.de>
+References: <20100108112236.462a3da2.sfr@canb.auug.org.au> <20100108044646.GC6611@suse.de> <4B4B802A.2010709@imap.cc> <20100111200136.GA29955@suse.de> <4B4CA666.1050505@imap.cc>
 MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       DRI <dri-devel@lists.sourceforge.net>,
-       Natalie Protasevich <protasnb@gmail.com>,
-       Linux ACPI <linux-acpi@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: 2.6.33-rc3-git3: Reported regressions 2.6.31 -> 2.6.32
-References: <nzLqtSp97aP.A.RGB.hglSLB@chimera>
-In-Reply-To: <nzLqtSp97aP.A.RGB.hglSLB@chimera>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B4CA666.1050505@imap.cc>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10.01.2010 23:45, Rafael J. Wysocki wrote:
-> This message contains a list of some regressions introduced between 2.6.31 and
-> 2.6.32, for which there are no fixes in the mainline I know of.  If any of them
-> have been fixed already, please let me know.
->
-> If you know of any other unresolved regressions introduced between 2.6.31
-> and 2.6.32, please let me know either and I'll add them to the list.
->   
-How about #15004?
+On Tue, Jan 12, 2010 at 05:42:14PM +0100, Tilman Schmidt wrote:
+> Am 2010-01-11 21:01 schrieb Greg KH:
+> > On Mon, Jan 11, 2010 at 08:46:50PM +0100, Tilman Schmidt wrote:
+> >>
+> >> Just an idea - as a stopgap measure, couldn't pci_find_device() be made
+> >> a private function of the HiSax drivers? That way, the remainder of the
+> >> kernel won't be polluted by it anymore, and the PCI_LEGACY config option
+> >> can be dropped. Something like this quick and dirty hack:
+> > 
+> > Close, but if you do this, please name the function
+> > hisax_find_pci_device() or something, and change the drivers to use it
+> 
+> Sorry, but no. That would drag me into the checkpatch.pl swamp,
+> a place I know well enough by now to avoid it whenever possible.
 
-Cheers, Johannes
+I don't understand, why?
+
+> Many of the calls to pci_find_device() have checkpatch problems
+> which of course do not go away by just substituting another
+> function name, so I would be obliged to restructure all those
+> call sites by hand for the sake of "not introducing new code
+> with checkpatch problems". BTDT.
+
+No you would not, don't be crazy.  Modfying a single line to rename a
+function from one thing to another could never be decreed as a "don't
+add bad code".  And if someone says it is, well, you just found someone
+who doesn't know what they are doing :)
+
+> So I'll drop that idea. If someone else wants to pick it up,
+> feel free to do so.
+
+Please continue with this idea, it's sane, and valid.
+
+thanks,
+
+greg k-h
