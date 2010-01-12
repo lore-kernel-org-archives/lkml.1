@@ -1,59 +1,194 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754185Ab0ALAOj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754226Ab0ALATU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754185Ab0ALAOj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jan 2010 19:14:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753438Ab0ALAOi
+	id S1754226Ab0ALATU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jan 2010 19:19:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752975Ab0ALATT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jan 2010 19:14:38 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:48549 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752691Ab0ALAOi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jan 2010 19:14:38 -0500
-Message-ID: <4B4BBEBA.4060403@zytor.com>
-Date: Mon, 11 Jan 2010 16:13:46 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
-MIME-Version: 1.0
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-CC: "Eric W. Biederman" <ebiederm@xmission.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, Yinghai Lu <yinghai@kernel.org>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [patch] x86, apic: use 0x20 for the IRQ_MOVE_CLEANUP_VECTOR instead
- of 0x1f
-References: <1263002989.2879.664.camel@sbs-t61.sc.intel.com>	 <4B47E7A9.6090904@zytor.com>	 <1263250418.2859.681.camel@sbs-t61.sc.intel.com>	 <4B4BACCA.2040805@zytor.com> <m1tyus8chc.fsf@fess.ebiederm.org>	 <4B4BB0B7.3000106@zytor.com> <1263254812.2859.890.camel@sbs-t61.sc.intel.com>
-In-Reply-To: <1263254812.2859.890.camel@sbs-t61.sc.intel.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 11 Jan 2010 19:19:19 -0500
+Received: from mga03.intel.com ([143.182.124.21]:33514 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752567Ab0ALATS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jan 2010 19:19:18 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
+   d="scan'208";a="231613503"
+Subject: Re: [Fdutils] DMA cache consistency bug introduced in 2.6.28
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+To: "markh@compro.net" <markh@compro.net>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "dmarkh@cfl.rr.com" <dmarkh@cfl.rr.com>, Alain Knaff <alain@knaff.lu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "fdutils@fdutils.linux.lu" <fdutils@fdutils.linux.lu>,
+       "Li, Shaohua" <shaohua.li@intel.com>, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <4B476E8D.1030308@compro.net>
+References: <alpine.LFD.2.00.0912220922250.31313@localhost.localdomain>
+	 <4B310879.9050701@compro.net>
+	 <1261525076.16916.4.camel@localhost.localdomain>
+	 <4B3162BC.9000508@cfl.rr.com> <4B3214EC.6020308@compro.net>
+	 <6598A4E21F1DB24D80BF72956484F59802EFD1C6@orsmsx001.amr.corp.intel.com>
+	 <4B32386B.2060509@compro.net>
+	 <alpine.LFD.2.00.0912230828230.6879@localhost.localdomain>
+	 <87bphpd4rt.fsf@basil.nowhere.org> <4B32565E.6000501@compro.net>
+	 <20091223191806.GA3336@linux-os.sc.intel.com> <4B3270FE.5090607@compro.net>
+	 <1261600243.16916.56.camel@localhost.localdomain>
+	 <4B476E8D.1030308@compro.net>
+Content-Type: text/plain
+Date: Mon, 11 Jan 2010 16:19:17 -0800
+Message-Id: <1263255557.16916.132.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 (2.24.3-1.fc10) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/11/2010 04:06 PM, Suresh Siddha wrote:
->>
->> Yes, that's what I said.  My question was to Suresh what enforces that
->> in the case of his patch, which moves the legacy range into the middle
->> of the device vectors.
+On Fri, 2010-01-08 at 09:42 -0800, Mark Hounschell wrote:
+> On 12/23/2009 03:30 PM, Pallipadi, Venkatesh wrote:
 > 
-> It's not the used_vector bitmap. That range will appear as used on all
-> the cpu's and hence we won't be allocating it for anything else.
+> >>> Can you try this one line patch either on .28 or .32 (with /proc/interrupts
+> >>> output).
+> >>> This disables hpet2 and lapic timer should then be used on CPU 0. If things
+> >>> work with this test patch, we will know that the failure is somehow related
+> >>> to HPET usage in MSI mode.
+> >>>
+> >>> Thanks,
+> >>> Venki
+> >>>
+> >>> Reduce the rating of percpu hpet timer
+> >>>
+> >>> Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+> >>> ---
+> >>>  arch/x86/kernel/hpet.c |    2 +-
+> >>>  1 files changed, 1 insertions(+), 1 deletions(-)
+> >>>
+> >>> diff --git a/arch/x86/kernel/hpet.c b/arch/x86/kernel/hpet.c
+> >>> index cafb1c6..f89d17a 100644
+> >>> --- a/arch/x86/kernel/hpet.c
+> >>> +++ b/arch/x86/kernel/hpet.c
+> >>> @@ -480,7 +480,7 @@ static void init_one_hpet_msi_clockevent(struct hpet_dev *hdev, int cpu)
+> >>>  	hpet_setup_irq(hdev);
+> >>>  	evt->irq = hdev->irq;
+> >>>  
+> >>> -	evt->rating = 110;
+> >>> +	evt->rating = 40;
+> >>>  	evt->features = CLOCK_EVT_FEAT_ONESHOT;
+> >>>  	if (hdev->flags & HPET_DEV_PERI_CAP)
+> >>>  		evt->features |= CLOCK_EVT_FEAT_PERIODIC;
+> >>
+> >> That made it work. Used 2.6.32.2
+> >>
+> >> cat /proc/interrupts
+> >>            CPU0       CPU1       CPU2       CPU3
+> >>   0:         82          0          0          1   IO-APIC-edge      timer
+> >>   1:          0          0          0         67   IO-APIC-edge      i8042
+> >>   3:          0          0          0          6   IO-APIC-edge
+> >>   4:          0          0          0          4   IO-APIC-edge
+> >>   6:          0          0          0          4   IO-APIC-edge      floppy
+> >>   8:          0          0          0          8   IO-APIC-edge      rtc0
+> >>   9:          0          0          0          0   IO-APIC-fasteoi   acpi
+> >>  12:          0          0         10       1519   IO-APIC-edge      i8042
+> >>  14:          0          0         39      10995   IO-APIC-edge
+> >> pata_atiixp
+> >>  15:          0          0          3        391   IO-APIC-edge
+> >> pata_atiixp
+> >>  16:          0          0          2        606   IO-APIC-fasteoi
+> >> aic79xx, ohci_hcd:usb3, ohci_hcd:usb4, HDA Intel, Digi DBX2, ni-pci-gpib
+> >>  17:          0          0          0          3   IO-APIC-fasteoi
+> >> ehci_hcd:usb1, parport0, ni-pci-gpib
+> >>  18:          0          0         10       2168   IO-APIC-fasteoi
+> >> ohci_hcd:usb5, ohci_hcd:usb6, ohci_hcd:usb7, Digi DBX2, nvidia
+> >>  19:          0          0          0        130   IO-APIC-fasteoi
+> >> aic7xxx, ehci_hcd:usb2, ttySLG0, eth1
+> >>  22:          0          0          8       1151   IO-APIC-fasteoi   ahci
+> >>  24:          0          0          0          0  HPET_MSI-edge      hpet2
+> >>  29:          0          0          0         48   PCI-MSI-edge
+> >> sky2@pci:0000:04:00.0
+> >> NMI:          0          0          0          0   Non-maskable interrupts
+> >> LOC:      34842      30177      29672      29632   Local timer interrupts
+> >> SPU:          0          0          0          0   Spurious interrupts
+> >> PMI:          0          0          0          0   Performance monitoring
+> >> interrupts
+> >> PND:          0          0          0          0   Performance pending work
+> >> RES:      17501      20449      16670      11224   Rescheduling interrupts
+> >> CAL:      10554       2336       1102       1071   Function call interrupts
+> >> TLB:        364        562        753        468   TLB shootdowns
+> >> ERR:          0
+> >> MIS:          0
+> >>
+> >>
+> >> # fdformat /dev/fd0u1440
+> >> Double-sided, 80 tracks, 18 sec/track. Total capacity 1440 kB.
+> >> Formatting ... done
+> >> Verifying ... done
+> > 
+> > Hmmm.. Thats very interesting indeed.
+> > 
+> > That clearly says that HPET MSI interrupts somehow is causing some
+> > caching side effect in the chipset that results in this floppy dma
+> > failure.
+> > 
+> > Here's is what we have until now.
+> > IRQ 0 is based on HPET legacy interrupt and HPET device is also capable
+> > of MSI on this platform. So we also have a percpu hpet (hpet2 tied to
+> > CPU0). percpu hpet was added to avoid the usage of IRQ0+LAPIC broadcast
+> > in cases where LAPIC timer will stop working in deep C-state. As we have
+> > only one HPET channel free for percpu HPET, we only have hpet2 tied to
+> > CPU 0 and other CPUs still have to go through IRQ0+LAPIC broadcast with
+> > deep C-state.
+> > 
+> > One problem here is that percpu hpet should only get used when LAPIC
+> > cannot be used (that is when CPU enters deep C-state). Using hpet2 in
+> > place of LAPIC timer even when deep C-state is not supported is not
+> > right in terms of performance. We need some changes here to fix that
+> > [Problem 1].
+> > 
+> > But, that still does not explain why we are seeing this problem in the
+> > first place. I mean, using hpet2 is not optimal, but should not have
+> > functionality issues like this. Even fixing [Problem 1] above, we may
+> > see this problem on some other platform that supports deep C-state and
+> > so has hpet2 enabled for a valid reason.
+> > 
+> > Also, I am not sure whether the problem also happens if legacy HPET
+> > interrupts are used during run time in place of LAPIC timer (May be
+> > worth to try this with a simple test patch, let me think about it). In
+> > this case, legacy HPET interrupt rightly goes quiet after boot, giving
+> > priority to LAPIC timer.
+> > 
+> > With hpet MSI interrupts, we do a write followed by read of HPET
+> > memmapped register to set a HPET channel timeout + read of global HPET
+> > timer. This happens on every timer interrupt on CPU 0. And we also have
+> > MSI interrupt being delivered to CPU 0. I cannot think of any reason why
+> > this can break dma. We can probably try adding some dummy HPET read
+> > after dma write, to see if that flushes things properly.
+> > 
 > 
+> Haven't seen any activity on this thread in a while. Just curious, are we
+> still working this?
+> Is there anything else I can do to help?
 
-OK, fair enough.
+Sorry for not following up on this. We have narrowed this down to HPET
+MSI and floppy DMA. I still don't know how HPET MSI interrupts are
+breaking floppy DMA.
 
-> Now the question is: for non-legacy (io-apic) case, instead of reserving
-> this range for all the cpu's, does it make sense to generalize like any
-> other vector?
+You are seeing the problem on two different systems. Correct? Do you
+have any system where this works with HPET MSI enabled?
 
-It sounds like something that we could experiment with -- after
-switching an IRQ to ioapic mode, make it a movable interrupt.  It
-*seems* it should work, but it's scary stuff to muck with.
+Couple of options on how we can go about this one:
+1) Change the HPET-MSI change to not get activated when there are no
+C-states with LAPIC stoppage involved. This will resolve the problem on
+the systems you reported as there are no deep C-states. But, I fear that
+with the actual problem unresolved, we may hit it in future with this or
+some other platform having same issue with CPUs that support deep
+C-state.
+2) Try this testcase on few other platforms that support HPET-MSI and
+deep C-states and check how widespread the problem is and then add a
+whitelist-blacklist for HPET MSI usage.
 
-Eric, do you see any reason why it wouldn't work?  I truly couldn't
-understand your previous remark, especially the bit about "it is
-dangerous to play lowest priority irq games in that range".
+I think, for 2.6.33 option 1 is better. Will work on that and send in
+patches for you test.
 
-	-hpa
-
+Thanks,
+Venki 
+ 
 
