@@ -1,68 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754760Ab0ALXXG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754356Ab0ALXhH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754760Ab0ALXXG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jan 2010 18:23:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754122Ab0ALXXE
+	id S1754356Ab0ALXhH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jan 2010 18:37:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752887Ab0ALXhF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jan 2010 18:23:04 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:46748 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753606Ab0ALXXD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jan 2010 18:23:03 -0500
-Date: Wed, 13 Jan 2010 10:22:54 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: albin.tonnerre@free-electrons.com, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Phillip Lougher <phillip@lougher.demon.co.uk>
-Subject: Re: linux-next: Tree for January 12 (unlzo)
-Message-Id: <20100113102254.332dbf33.sfr@canb.auug.org.au>
-In-Reply-To: <20100112083013.1dad8a8d.randy.dunlap@oracle.com>
-References: <20100112171739.2011a0eb.sfr@canb.auug.org.au>
-	<20100112083013.1dad8a8d.randy.dunlap@oracle.com>
-X-Mailer: Sylpheed 3.0.0beta4 (GTK+ 2.18.5; i486-pc-linux-gnu)
+	Tue, 12 Jan 2010 18:37:05 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:49723 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752131Ab0ALXhE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jan 2010 18:37:04 -0500
+Date: Tue, 12 Jan 2010 15:36:57 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Chaithrika U S <chaithrika@ti.com>
+Cc: linux-kernel@vger.kernel.org,
+       davinci-linux-open-source@linux.davincidsp.com,
+       khilman@deeprootsystems.com
+Subject: Re: [PATCH v3 1/2] davinci: MMC: Add a function to control reset
+ state of the controller
+Message-Id: <20100112153657.f3474ab8.akpm@linux-foundation.org>
+In-Reply-To: <1262950729-12502-1-git-send-email-chaithrika@ti.com>
+References: <1262950729-12502-1-git-send-email-chaithrika@ti.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__13_Jan_2010_10_22_54_+1100_+lz2xdQNFM4moxc/"
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__13_Jan_2010_10_22_54_+1100_+lz2xdQNFM4moxc/
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Fri,  8 Jan 2010 17:08:49 +0530
+Chaithrika U S <chaithrika@ti.com> wrote:
 
-Hi Randy,
+> -static void
+> -davinci_abort_data(struct mmc_davinci_host *host, struct mmc_data *data)
+> +static inline void mmc_davinci_reset_ctrl(struct mmc_davinci_host *host,
+> +								int val)
+>  {
+>  	u32 temp;
+>  
+> -	/* reset command and data state machines */
+>  	temp = readl(host->base + DAVINCI_MMCCTL);
+> -	writel(temp | MMCCTL_CMDRST | MMCCTL_DATRST,
+> -		host->base + DAVINCI_MMCCTL);
+> +	if (val)	/* reset */
+> +		temp |= MMCCTL_CMDRST | MMCCTL_DATRST;
+> +	else		/* enable */
+> +		temp &= ~(MMCCTL_CMDRST | MMCCTL_DATRST);
+>  
+> -	temp &= ~(MMCCTL_CMDRST | MMCCTL_DATRST);
+> -	udelay(10);
+>  	writel(temp, host->base + DAVINCI_MMCCTL);
+> +	udelay(10);
+> +}
 
-On Tue, 12 Jan 2010 08:30:13 -0800 Randy Dunlap <randy.dunlap@oracle.com> w=
-rote:
->
-> arch/x86/boot/compressed/../../../../lib/decompress_unlzo.c:53: error: ex=
-pected '=3D', ',', ';', 'asm' or '__attribute__' before 'parse_header'
-> arch/x86/boot/compressed/../../../../lib/decompress_unlzo.c:90: error: ex=
-pected '=3D', ',', ';', 'asm' or '__attribute__' before 'unlzo'
->=20
-> Problem is the "INIT" there, seems to be undefined.
+nit: it's hard for a reader of the code to work out why a udelay() such
+as the above was included.  Perhaps the data sheet for the hardware
+would tell him, if he has access to it.
 
-Caused by an interaction between Linus' tree and the squashfs tree that
-is being worked on.  It should not occur with today's linux-next as the
-squashfs changes have been removed pending a fix.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Wed__13_Jan_2010_10_22_54_+1100_+lz2xdQNFM4moxc/
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAktNBE4ACgkQjjKRsyhoI8x7qACdFhrnmNsTN/oWK493LSZkDuo4
-2iMAnjgAzjdfebNF5FDuiyI38d4T9NOh
-=sx/V
------END PGP SIGNATURE-----
-
---Signature=_Wed__13_Jan_2010_10_22_54_+1100_+lz2xdQNFM4moxc/--
+But generally speaking, the code is better code if it explains the
+reasoning to the reader.
