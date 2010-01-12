@@ -1,86 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754078Ab0ALK3i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754113Ab0ALKhE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754078Ab0ALK3i (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jan 2010 05:29:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754023Ab0ALK3i
+	id S1754113Ab0ALKhE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jan 2010 05:37:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754020Ab0ALKhD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jan 2010 05:29:38 -0500
-Received: from smtp.nokia.com ([192.100.105.134]:28503 "EHLO
-	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753883Ab0ALK3h (ORCPT
+	Tue, 12 Jan 2010 05:37:03 -0500
+Received: from mail-px0-f174.google.com ([209.85.216.174]:34871 "EHLO
+	mail-px0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754000Ab0ALKhB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jan 2010 05:29:37 -0500
-Subject: [GIT PULL] OMAP DSS fixes
-From: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-To: torvalds@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Organization: Nokia
-Date: Tue, 12 Jan 2010 12:30:10 +0200
-Message-ID: <1263292210.2087.67.camel@tubuntu.research.nokia.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 12 Jan 2010 10:28:55.0927 (UTC) FILETIME=[0B56C070:01CA9372]
-X-Nokia-AV: Clean
+	Tue, 12 Jan 2010 05:37:01 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:cc:content-type;
+        b=dmpf4+bsr466MbLGdOofax7xWt8pJCmWmAnp12Xch6JUvyIr/TaDj4zZw8hTF1mWFF
+         vfLgi8x+1ppyRDHc00rECJaO3fyI/fkMkts6z7Qgcz+17PkYhjy9uGFTl+3f3LOcqgM/
+         Fgfkor4ZIs+yxCVW0ZC0YsXxP/z8Uc3W3zcxM=
+MIME-Version: 1.0
+Date: Tue, 12 Jan 2010 16:37:00 +0600
+Message-ID: <b9df5fa11001120237o2461db60g1e0cfa97b3aef3@mail.gmail.com>
+Subject: [PATCH] smp: Fix documentation in include/linux/smp.h
+From: Rakib Mullick <rakib.mullick@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+	smp: Fix documentation.
 
-Some small fixes for OMAP display subsystem driver, and debugging
-feature to collect interrupt statistics.
+Fix documentation in include/linux/smp.h: smp_processor_id()
 
- Tomi
+Signed-off-by: Rakib Mullick <rakib.mullick@gmail.com>
+---
 
-
-The following changes since commit 6b7b284958d47b77d06745b36bc7f36dab769d9b:
-  Linus Torvalds (1):
-        Linux 2.6.33-rc2
-
-are available in the git repository at:
-
-  git://gitorious.org/linux-omap-dss2/linux.git for-linus
-
-Peter Huewe (1):
-      video/omap: add __init/__exit macros to drivers/video/omap/lcd_htcherald.c
-
-Tomi Valkeinen (12):
-      OMAP: DSS2: DSI: fix VC channels in send_short and send_null
-      OMAP: DSS2: DSI: print debug DCS cmd in hex
-      OMAP: DSS2: Collect interrupt statistics
-      OMAP: DSS2: Fix crash when panel doesn't define enable_te()
-      OMAP: DSS2: RFBI: convert to new kfifo API
-      OMAP: OMAPFB: fix clk_get for RFBI
-      OMAP: OMAPFB: add dummy release function for omapdss
-      MAINTAINERS: change omapfb maintainer
-      MAINTAINERS: Combine DSS2 and OMAPFB2 into one entry
-      OMAP: DSS2: OMAPFB: fix omapfb_free_fbmem()
-      OMAP: DSS2: Make check-delay-loops consistent
-      OMAP: DSS2: OMAPFB: fix crash when panel driver was not loaded
-
-Vaibhav Hiremath (1):
-      OMAP: DSS2: Fix compile warning
-
-Ville Syrjälä (1):
-      OMAP: DSS2: Reject scaling settings when they cannot be supported
-
- MAINTAINERS                              |   17 +---
- drivers/video/omap/dispc.c               |   18 +---
- drivers/video/omap/lcd_htcherald.c       |    4 +-
- drivers/video/omap/omapfb.h              |    2 +
- drivers/video/omap/omapfb_main.c         |   25 +++++
- drivers/video/omap/rfbi.c                |    4 +-
- drivers/video/omap2/dss/Kconfig          |    7 ++
- drivers/video/omap2/dss/core.c           |   10 ++
- drivers/video/omap2/dss/dispc.c          |   74 ++++++++++++++-
- drivers/video/omap2/dss/dsi.c            |  159 +++++++++++++++++++++++++++---
- drivers/video/omap2/dss/dss.c            |    6 +-
- drivers/video/omap2/dss/dss.h            |   14 +++
- drivers/video/omap2/dss/rfbi.c           |   30 +++---
- drivers/video/omap2/omapfb/omapfb-main.c |    6 +
- 14 files changed, 309 insertions(+), 67 deletions(-)
-
-
+--- linus/include/linux/smp.h	2010-01-06 20:11:08.000000000 +0600
++++ rakib/include/linux/smp.h	2010-01-12 16:22:33.000000000 +0600
+@@ -154,7 +154,7 @@ smp_call_function_any(const struct cpuma
+ /*
+  * smp_processor_id(): get the current CPU ID.
+  *
+- * if DEBUG_PREEMPT is enabled the we check whether it is
++ * if DEBUG_PREEMPT is enabled then we check whether it is
+  * used in a preemption-safe way. (smp_processor_id() is safe
+  * if it's used in a preemption-off critical section, or in
+  * a thread that is bound to the current CPU.)
