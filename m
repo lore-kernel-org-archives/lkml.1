@@ -1,154 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753126Ab0ALBtO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753340Ab0ALBuA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753126Ab0ALBtO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jan 2010 20:49:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752085Ab0ALBtN
+	id S1753340Ab0ALBuA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jan 2010 20:50:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751946Ab0ALBuA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jan 2010 20:49:13 -0500
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:41582 "EHLO e2.ny.us.ibm.com"
+	Mon, 11 Jan 2010 20:50:00 -0500
+Received: from mga09.intel.com ([134.134.136.24]:29385 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751204Ab0ALBtM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jan 2010 20:49:12 -0500
-Date: Mon, 11 Jan 2010 17:49:09 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Michael Breuer <mbreuer@majjas.com>
-Cc: linux-kernel@vger.kernel.org, Stephen Hemminger <shemminger@vyatta.com>,
-       netdev@vger.kernel.org
-Subject: Re: 2.6.33RC3 libvirtd ->sky2 & rcu oops (was Sky2 oops - Driver
-	tries to sync DMA memory it has not allocated)
-Message-ID: <20100112014909.GB10869@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <4B49015D.9000903@majjas.com> <4B4A341B.6010800@majjas.com>
+	id S1753218Ab0ALBt7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jan 2010 20:49:59 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,259,1262592000"; 
+   d="scan'208";a="483209113"
+Date: Tue, 12 Jan 2010 09:49:53 +0800
+From: Shaohua Li <shaohua.li@intel.com>
+To: Corrado Zoccolo <czoccolo@gmail.com>
+Cc: Jens Axboe <jens.axboe@oracle.com>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>,
+       Jeff Moyer <jmoyer@redhat.com>, Vivek Goyal <vgoyal@redhat.com>,
+       Gui Jianfeng <guijianfeng@cn.fujitsu.com>,
+       Yanmin Zhang <yanmin_zhang@linux.intel.com>
+Subject: Re: [PATCH] cfq-iosched: rework seeky detection
+Message-ID: <20100112014953.GA22606@sli10-desk.sh.intel.com>
+References: <1263052757-23436-1-git-send-email-czoccolo@gmail.com>
+ <20100111014730.GA22362@sli10-desk.sh.intel.com>
+ <4e5e476b1001110646i20c2bcf4n51380853820c29d8@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <4B4A341B.6010800@majjas.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <4e5e476b1001110646i20c2bcf4n51380853820c29d8@mail.gmail.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 10, 2010 at 03:10:03PM -0500, Michael Breuer wrote:
-> On 1/9/2010 5:21 PM, Michael Breuer wrote:
->> Hi,
->>
->> Attempting to move back to mainline after my recent 2.6.32 issues...
->> Config is make oldconfig from working 2.6.32 config. Patch for af_packet.c 
->> (for skb issue found in 2.6.32) included. Attaching .config and NMI 
->> backtraces.
->>
->> System becomes unusable after bringing up the network:
->>
->> Jan  9 16:36:50 mail kernel: ------------[ cut here ]------------
->> Jan  9 16:36:50 mail kernel: WARNING: at lib/dma-debug.c:902 
->> check_sync+0xbd/0x426()
->> Jan  9 16:36:50 mail kernel: Hardware name: System Product Name
->> Jan  9 16:36:50 mail kernel: sky2 0000:04:00.0: DMA-API: device driver 
->> tries to sync DMA memory it has not allocated [device 
->> address=0x0000000311686822] [size=60 bytes]
->> Jan  9 16:36:50 mail kernel: Modules linked in: bridge stp appletalk psnap 
->> llc nfsd lockd nfs_acl auth_rpcgss exportfs hwmon_vid coretemp sunrpc 
->> acpi_cpufreq sit tunnel4 ipt_LOG ipt_MASQUERADE iptable_nat nf_nat 
->> iptable_mangle iptable_raw nf_conntrack_netbios_ns nf_conntrack_ftp 
->> nf_conntrack_ipv6 xt_multiport ip6table_filter xt_DSCP xt_dscp xt_MARK 
->> ip6table_mangle ip6_tables ipv6 dm_multipath kvm_intel kvm 
->> snd_hda_codec_analog snd_ens1371 gameport snd_rawmidi snd_ac97_codec 
->> snd_hda_intel ac97_bus snd_hda_codec snd_hwdep snd_seq gspca_spca505 
->> snd_seq_device gspca_main snd_pcm videodev snd_timer snd v4l1_compat 
->> v4l2_compat_ioctl32 firewire_ohci soundcore snd_page_alloc iTCO_wdt 
->> i2c_i801 iTCO_vendor_support firewire_core crc_itu_t sky2 pcspkr wmi 
->> asus_atk0110 hwmon fbcon tileblit font bitblit softcursor raid456 
->> async_raid6_recov async_pq raid6_pq async_xor xor async_memcpy async_tx 
->> raid1 ata_generic pata_acpi pata_marvell nouveau ttm drm_kms_helper drm 
->> agpgart fb i2c_algo_bit cfbcopyarea i2c_core cfbimgblt cfbfil
->> Jan  9 16:36:50 mail kernel: lrect [last unloaded: scsi_wait_scan]
->> Jan  9 16:36:50 mail kernel: Pid: 5271, comm: libvirtd Not tainted 
->> 2.6.33-rc3WITHMMAPNODMAR-00147-g3c8ad49-dirty #1
->> Jan  9 16:36:50 mail kernel: Call Trace:
->> Jan  9 16:36:50 mail kernel: <IRQ>  [<ffffffff81049fe5>] 
->> warn_slowpath_common+0x7c/0x94
->> Jan  9 16:36:50 mail kernel: [<ffffffff8104a054>] 
->> warn_slowpath_fmt+0x41/0x43
->> Jan  9 16:36:50 mail kernel: [<ffffffff81261c0a>] check_sync+0xbd/0x426
->> Jan  9 16:36:50 mail kernel: [<ffffffff813b2aff>] ? 
->> __netdev_alloc_skb+0x34/0x50
->> Jan  9 16:36:50 mail kernel: [<ffffffff812622c6>] 
->> debug_dma_sync_single_for_cpu+0x42/0x44
->> Jan  9 16:36:50 mail kernel: [<ffffffff8125f6c7>] ? 
->> swiotlb_sync_single+0x2a/0xb6
->> Jan  9 16:36:50 mail kernel: [<ffffffff8125f823>] ? 
->> swiotlb_sync_single_for_cpu+0xc/0xe
->> Jan  9 16:36:50 mail kernel: [<ffffffffa018efcb>] sky2_poll+0x4d5/0xaf0 
->> [sky2]
->> Jan  9 16:36:50 mail kernel: [<ffffffff8106a1a3>] ? 
->> sched_clock_cpu+0x44/0xce
->> Jan  9 16:36:50 mail kernel: [<ffffffff81070573>] ? 
->> clockevents_program_event+0x7a/0x83
->> Jan  9 16:36:50 mail kernel: [<ffffffff813b9766>] net_rx_action+0xb5/0x1f0
->> Jan  9 16:36:50 mail kernel: [<ffffffff8105059c>] __do_softirq+0xf8/0x1cd
->> Jan  9 16:36:50 mail kernel: [<ffffffff8109389a>] ? 
->> handle_IRQ_event+0x119/0x12b
->> Jan  9 16:36:50 mail kernel: [<ffffffff8100ab1c>] call_softirq+0x1c/0x30
->> Jan  9 16:36:50 mail kernel: [<ffffffff8100c2b3>] do_softirq+0x4b/0xa3
->> Jan  9 16:36:50 mail kernel: [<ffffffff81050188>] irq_exit+0x4a/0x8c
->> Jan  9 16:36:50 mail kernel: [<ffffffff8145a83c>] do_IRQ+0xac/0xc3
->> Jan  9 16:36:50 mail kernel: [<ffffffff81455a93>] ret_from_intr+0x0/0x16
->> Jan  9 16:36:50 mail kernel: <EOI>  [<ffffffff8104474c>] ? 
->> set_cpus_allowed_ptr+0x22/0x14b
->> Jan  9 16:36:50 mail kernel: [<ffffffff81087aff>] 
->> cpuset_attach_task+0x27/0x9c
->> Jan  9 16:36:50 mail kernel: [<ffffffff81087bfe>] cpuset_attach+0x8a/0x133
->> Jan  9 16:36:50 mail kernel: [<ffffffff81042cba>] ? 
->> sched_move_task+0x104/0x110
->> Jan  9 16:36:50 mail kernel: [<ffffffff81085b4f>] 
->> cgroup_attach_task+0x4d5/0x533
->> Jan  9 16:36:50 mail kernel: [<ffffffff81085e05>] cgroup_clone+0x258/0x2ac
->> Jan  9 16:36:50 mail kernel: [<ffffffff81088a74>] 
->> ns_cgroup_clone+0x58/0x75
->> Jan  9 16:36:50 mail kernel: [<ffffffff81048ec1>] 
->> copy_process+0xcef/0x13af
->> Jan  9 16:36:50 mail kernel: [<ffffffff810d9044>] ? 
->> handle_mm_fault+0x355/0x7ff
->> Jan  9 16:36:50 mail kernel: [<ffffffff8108f769>] ? 
->> audit_filter_rules+0x19a/0x7c5
->> Jan  9 16:36:50 mail kernel: [<ffffffff810496ec>] do_fork+0x16b/0x309
->> Jan  9 16:36:50 mail kernel: [<ffffffff81251d12>] ? __up_read+0x82/0x8a
->> Jan  9 16:36:50 mail kernel: [<ffffffff81010f22>] sys_clone+0x28/0x2a
->> Jan  9 16:36:50 mail kernel: [<ffffffff81009f33>] stub_clone+0x13/0x20
->> Jan  9 16:36:50 mail kernel: [<ffffffff81009bf2>] ? 
->> system_call_fastpath+0x16/0x1b
->> Jan  9 16:36:50 mail kernel: ---[ end trace cd5e0588bad4ec83 ]---
->> Then... after a few more normal boot messages (samba starting up, etc.) I 
->> just see rcu stalls with NMI backtraces for each cpu. I've attached the 
->> first one - the rcu stall oops repeats until the reboot I forced.
-> Tracked this down to libvirtd. No idea why yet - but these oops occur when 
-> starting libvirtd. Version of libvirt is 0.7.0-15.fc12.x86_64.
+On Mon, Jan 11, 2010 at 10:46:23PM +0800, Corrado Zoccolo wrote:
+> Hi,
+> On Mon, Jan 11, 2010 at 2:47 AM, Shaohua Li <shaohua.li@intel.com> wrote:
+> > On Sat, Jan 09, 2010 at 11:59:17PM +0800, Corrado Zoccolo wrote:
+> >> Current seeky detection is based on average seek lenght.
+> >> This is suboptimal, since the average will not distinguish between:
+> >> * a process doing medium sized seeks
+> >> * a process doing some sequential requests interleaved with larger seeks
+> >> and even a medium seek can take lot of time, if the requested sector
+> >> happens to be behind the disk head in the rotation (50% probability).
+> >>
+> >> Therefore, we change the seeky queue detection to work as follows:
+> >> * each request can be classified as sequential if it is very close to
+> >>   the current head position, i.e. it is likely in the disk cache (disks
+> >>   usually read more data than requested, and put it in cache for
+> >>   subsequent reads). Otherwise, the request is classified as seeky.
+> >> * an history window of the last 32 requests is kept, storing the
+> >>   classification result.
+> >> * A queue is marked as seeky if more than 1/8 of the last 32 requests
+> >>   were seeky.
+> >>
+> >> This patch fixes a regression reported by Yanmin, on mmap 64k random
+> >> reads.
+> > Can we not count a big request (say the request data is >= 32k) as seeky
+> > regardless the seek distance? In this way we can also make a 64k random sync
+> > read not as seeky.
+> I think I understand what you are proposing, but I don't think request
+> size should
+> matter at all for rotational disk.
+randread a 32k bs  definitely has better throughput than a 4k bs. So the request
+size does matter. From iops point of view, 64k and 4k might not have difference
+in device, but from performance point of view, they have big difference.
 
-RCU stall warnings are usually due to an infinite loop somewhere in the
-kernel.  If you are running !CONFIG_PREEMPT, then any infinite loop not
-containing some call to schedule will get you a stall warning.  If you
-are running CONFIG_PREEMPT, then the infinite loop is in some section of
-code with preemption disabled (or irqs disabled).
+> Usually, the disk firmware will load a big chunk of data in its cache even when
+> requested to read a single sector, and will provide following ones
+> from the cache
+> if you read them sequentially.
+> 
+> Now, in CFQ, what we really mean by saying that a queue is seeky is that
+> waiting a bit in order to serve an other request from this queue doesn't
+> give any benefit w.r.t. switching to an other queue.
+If no idle, we might switch to a random 4k access or any kind of queues. Compared
+to continue big request access and switch to other queue with small block, no switching
+does give benefit.
 
-The stall-warning dump will normally finger one or more of the CPUs.
-Since you are getting repeated warnings, look at the stacks and see
-which of the most-recently-called functions stays the same in successive
-stack traces.  This information should help you finger the infinite (or
-longer than average) loop.
+> So, if you read a single 64k block from disk and then seek, then you can service
+> any other request without losing bandwidth.
+But the 64k bs queue loses its slice, which might means device serves more 4k access.
+As a result, reduce bandwidth.
 
-> Also, checking back to 2.6.32 - found that the sky2 oops listed above also 
-> occurs (started it seems after an update to 
-> libvirt-java-0.4.0-1.fc12.noarch two days ago). However the subsequent rcu 
-> stall doesn't happen on 2.6.32 - system behaves normally (which is why I 
-> missed the oops).
-> Now running OK on 2.6.33 w/o libvirtd.
+> Instead, if you are reading 4k, then the next ones (and so on up to 64k, as it
+> happens with mmap when you fault in a single page at a time), then it
+> is convenient
+> to wait for the next request, since it has 3/4 of changes to be
+> sequential, so be
+> serviced by cache.
+> 
+> I'm currently testing a patch to consider request size in SSDs, instead.
+> In SSDs, the location of the request doesn't mean anything, but the
+> size is meaningful.
+> Therefore, submitting together many small requests from different
+> queues can improve
+> the overall performance.
+Agree.
 
-Then if looking at the stack traces doesn't locate the offending loop,
-bisection might help.
-
-							Thanx, Paul
-
-> --
-> To unsubscribe from this list: send the line "unsubscribe netdev" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Thanks,
+Shaohua
