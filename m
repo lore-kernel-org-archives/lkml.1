@@ -1,107 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754506Ab0ALAiY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754501Ab0ALAjc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754506Ab0ALAiY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jan 2010 19:38:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754277Ab0ALAiX
+	id S1754501Ab0ALAjc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jan 2010 19:39:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754088Ab0ALAjb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jan 2010 19:38:23 -0500
-Received: from gw1.transmode.se ([213.115.205.20]:53366 "EHLO gw1.transmode.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751529Ab0ALAiW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jan 2010 19:38:22 -0500
-X-Greylist: delayed 371 seconds by postgrey-1.27 at vger.kernel.org; Mon, 11 Jan 2010 19:38:22 EST
-In-Reply-To: <20100112105805.50e39a77.sfr@canb.auug.org.au>
-References: <20100112105805.50e39a77.sfr@canb.auug.org.au>
-Subject: Re: linux-next: origin tree build failure
-X-KeepSent: B3421B84:8617A839-C12576A9:0002357B;
- type=4; name=$KeepSent
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
-       linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
-       Linus <torvalds@linux-foundation.org>
-X-Mailer: Lotus Notes Release 8.5.1 September 28, 2009
-Message-ID: <OFB3421B84.8617A839-ONC12576A9.0002357B-C12576A9.0002AB6A@transmode.se>
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Date: Tue, 12 Jan 2010 01:29:09 +0100
-X-MIMETrack: Serialize by Router on sesr04/Transmode(Release 8.5.1|September 28, 2009) at
- 2010-01-12 01:32:10
-MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
+	Mon, 11 Jan 2010 19:39:31 -0500
+Received: from rex.securecomputing.com ([203.24.151.4]:59355 "EHLO
+	cyberguard.com.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751249Ab0ALAja (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jan 2010 19:39:30 -0500
+Date: Tue, 12 Jan 2010 10:39:37 +1000
+From: Greg Ungerer <gerg@snapgear.com>
+Message-Id: <201001120039.o0C0dboQ031390@goober.internal.moreton.com.au>
+CC: <gerg@uclinux.org>, <linux-m68k@vger.kernel.org>,
+       <linux-kernel@vger.kernel.org>
+Subject: [PATCH] m68knommu: change definitions of __pa() and __va()
+To: <torvalds@linux-foundation.org>
+X-Mailer: mail (GNU Mailutils 2.0)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen Rothwell <sfr@canb.auug.org.au> wrote on 12/01/2010 00:58:05:
->
-> Hi all,
->
-> Today's linux-next build (powerpc ppc64_defconfig) failed like this:
->
-> cc1: error: include/linux/autoconf.h: No such file or directory
->
-> (while building the boot wrappers - lots more of the same)
->
-> Caused by commit ac4c2a3bbe5db5fc570b1d0ee1e474db7cb22585 ("zlib:
-> optimize inffast when copying direct from output").  autoconf.h moved
-> from include/linux to include/generated in commit
-> 264a26838056fc2d759f58bec2e720e01fcb1bdb ("kbuild: move autoconf.h to
-> include/generated") which was in linux-next since 14 Dec 2009 and in
-> Linus' tree since 18 Dec 2009.
->
-> I added the following patch for today:
->
-> From: Stephen Rothwell <sfr@canb.auug.org.au>
-> Date: Tue, 12 Jan 2010 10:23:43 +1100
-> Subject: [PATCH] powerpc: fix boot Makefile for autoconf.h moving
->
-> autoconf.h moved from include/linux to include/generated
->
-> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
-> ---
->  arch/powerpc/boot/Makefile |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
->
-> diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
-> index 826a30a..fb32a8e 100644
-> --- a/arch/powerpc/boot/Makefile
-> +++ b/arch/powerpc/boot/Makefile
-> @@ -34,7 +34,7 @@ BOOTCFLAGS   += -fno-stack-protector
->  endif
->
->  BOOTCFLAGS   += -I$(obj) -I$(srctree)/$(obj)
-> -BOOTCFLAGS   += -include include/linux/autoconf.h -Iarch/powerpc/include
-> +BOOTCFLAGS   += -include include/generated/autoconf.h -Iarch/powerpc/include
->  BOOTCFLAGS   += -Iinclude
->
->  DTS_FLAGS   ?= -p 1024
-> --
-> 1.6.6
->
-> However, this then produced these errors:
->
-> arch/powerpc/boot/inffast.c:7:27: error: asm/unaligned.h: No such file or directory
-> arch/powerpc/boot/inffast.c:8:27: error: asm/byteorder.h: No such file or directory
-> arch/powerpc/boot/inffast.c: In function 'inflate_fast':
-> arch/powerpc/boot/inffast.c:263: warning: implicit declaration of function
-> 'get_unaligned'
-> arch/powerpc/boot/inffast.c:277:2: error: #error __BIG_ENDIAN nor
-> __LITTLE_ENDIAN is defined
->
-> So I just reverted the original commit (after removing my fix above).
->
-> This latter build problem is probably only noticed if you build with a
-> separate object directory (i.e. with O=.. on the make command).  The
-> previous PowerPC maintainer tells me that defining __KERNEL__ in the
-> BOOTFLAGS is wrong and should have been noticed.
+m68knommu: change definitions of __pa() and __va()
 
-I guess that the above problem will fixed by adding $(srctree):
-BOOTCFLAGS   += -include include/generated/autoconf.h -I$(srctree)/arch/powerpc/include
-BOOTCFLAGS   += -I$(srctree)/include
+Fix compilation breakage of all m68knommu targets:
 
-But what to do with the __KERNEL__ define. If it isn't allowed I
-don't know what to do.
+  CC      arch/m68knommu/kernel/asm-offsets.s
+In file included from include/linux/sched.h:77,
+                 from arch/m68knommu/kernel/asm-offsets.c:12:
+include/linux/percpu.h: In function 'per_cpu_ptr_to_phys':
+include/linux/percpu.h:161: error: implicit declaration of function 'virt_to_phy
 
-  Jocke
+This is broken in linux-2.6.33-rc3.
 
+Change the definitions of __pa() and __va() to not use virt_to_phys()
+and phys_to_virt(). Trivial 1:1 conversion required for the non-MMU case.
+
+A side effect if this is that the m68knommu can now use asm/virtconvert.h
+for the definition of virt_to_phys() and phys_to_virt().
+
+Signed-off-by: Greg Ungerer <gerg@uclinux.org>
+---
+ arch/m68k/include/asm/io_no.h       |   14 +-------------
+ arch/m68k/include/asm/page_no.h     |    4 ++--
+ arch/m68k/include/asm/virtconvert.h |    5 +++++
+ 3 files changed, 8 insertions(+), 15 deletions(-)
+
+diff --git a/arch/m68k/include/asm/io_no.h b/arch/m68k/include/asm/io_no.h
+index 7f57436..359065d 100644
+--- a/arch/m68k/include/asm/io_no.h
++++ b/arch/m68k/include/asm/io_no.h
+@@ -3,6 +3,7 @@
+ 
+ #ifdef __KERNEL__
+ 
++#include <asm/virtconvert.h>
+ 
+ /*
+  * These are for ISA/PCI shared memory _only_ and should never be used
+@@ -165,19 +166,6 @@ static inline void *ioremap_fullcache(unsigned long physaddr, unsigned long size
+ 
+ extern void iounmap(void *addr);
+ 
+-/* Pages to physical address... */
+-#define page_to_phys(page)      ((page - mem_map) << PAGE_SHIFT)
+-#define page_to_bus(page)       ((page - mem_map) << PAGE_SHIFT)
+-
+-/*
+- * Macros used for converting between virtual and physical mappings.
+- */
+-#define phys_to_virt(vaddr)	((void *) (vaddr))
+-#define virt_to_phys(vaddr)	((unsigned long) (vaddr))
+-
+-#define virt_to_bus virt_to_phys
+-#define bus_to_virt phys_to_virt
+-
+ /*
+  * Convert a physical pointer to a virtual kernel pointer for /dev/mem
+  * access
+diff --git a/arch/m68k/include/asm/page_no.h b/arch/m68k/include/asm/page_no.h
+index 1f31b06..8029a33 100644
+--- a/arch/m68k/include/asm/page_no.h
++++ b/arch/m68k/include/asm/page_no.h
+@@ -56,8 +56,8 @@ extern unsigned long memory_end;
+ 
+ #ifndef __ASSEMBLY__
+ 
+-#define __pa(vaddr)		virt_to_phys((void *)(vaddr))
+-#define __va(paddr)		phys_to_virt((unsigned long)(paddr))
++#define __pa(vaddr)		((unsigned long)(vaddr))
++#define __va(paddr)		((void *)(paddr))
+ 
+ #define virt_to_pfn(kaddr)	(__pa(kaddr) >> PAGE_SHIFT)
+ #define pfn_to_virt(pfn)	__va((pfn) << PAGE_SHIFT)
+diff --git a/arch/m68k/include/asm/virtconvert.h b/arch/m68k/include/asm/virtconvert.h
+index 22ab05c..8700d04 100644
+--- a/arch/m68k/include/asm/virtconvert.h
++++ b/arch/m68k/include/asm/virtconvert.h
+@@ -26,6 +26,7 @@ static inline void *phys_to_virt(unsigned long address)
+ }
+ 
+ /* Permanent address of a page. */
++#ifdef CONFIG_MMU
+ #ifdef CONFIG_SINGLE_MEMORY_CHUNK
+ #define page_to_phys(page) \
+ 	__pa(PAGE_OFFSET + (((page) - pg_data_map[0].node_mem_map) << PAGE_SHIFT))
+@@ -37,6 +38,10 @@ static inline void *phys_to_virt(unsigned long address)
+ 	page_to_pfn(__page) << PAGE_SHIFT;				\
+ })
+ #endif
++#else
++#define page_to_phys(page)	((page - mem_map) << PAGE_SHIFT)
++#define page_to_bus(page)	((page - mem_map) << PAGE_SHIFT)
++#endif
+ 
+ /*
+  * IO bus memory addresses are 1:1 with the physical address,
