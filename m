@@ -1,61 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754128Ab0ALKkg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754156Ab0ALKmh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754128Ab0ALKkg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jan 2010 05:40:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754040Ab0ALKkf
+	id S1754156Ab0ALKmh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jan 2010 05:42:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754079Ab0ALKmg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jan 2010 05:40:35 -0500
-Received: from gw1.cosmosbay.com ([212.99.114.194]:46628 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751648Ab0ALKkf (ORCPT
+	Tue, 12 Jan 2010 05:42:36 -0500
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:33764 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754067Ab0ALKmf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jan 2010 05:40:35 -0500
-Message-ID: <4B4C519E.2090207@gmail.com>
-Date: Tue, 12 Jan 2010 11:40:30 +0100
-From: Eric Dumazet <eric.dumazet@gmail.com>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; fr; rv:1.9.1.5) Gecko/20091204 Thunderbird/3.0
+	Tue, 12 Jan 2010 05:42:35 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:cc:content-type;
+        b=bBMxvKduDDItjHoeYfy9C6+Z4UYkSTAnt7DJI9IZzvMrcabCiUf4wr0zSzM9K09unz
+         NsxR5QP7c2jUxK2IurJQg5iCqQqIgy+t0AyD4qRxKl3LPpIBP3/3ZQ0EucdOoUoiytSj
+         ioDAZGTHOoCTilyrcHXKqdA7RIK+SOv2dn+5w=
 MIME-Version: 1.0
-To: William Allen Simpson <william.allen.simpson@gmail.com>
-CC: Linux Kernel Developers <linux-kernel@vger.kernel.org>,
-       Linux Kernel Network Developers <netdev@vger.kernel.org>,
-       Michael Chan <mchan@broadcom.com>
-Subject: Re: [PATCH 1/2] net: tcp_header_len_th and tcp_option_len_th
-References: <4B44FE3C.6060809@gmail.com> <4B450065.4010108@gmail.com>
-In-Reply-To: <4B450065.4010108@gmail.com>
+Date: Tue, 12 Jan 2010 16:42:35 +0600
+Message-ID: <b9df5fa11001120242p46fa3d07rc005cf314bf0fd32@mail.gmail.com>
+Subject: [PATCH] sched: Move level 'again' after get_cpu() in sched_exec.
+From: Rakib Mullick <rakib.mullick@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Tue, 12 Jan 2010 11:40:31 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Le 06/01/2010 22:28, William Allen Simpson a écrit :
-> Redefine two TCP header functions to accept TCP header pointer.
-> When subtracting, return signed int to allow error checking.
-> 
-> These functions will be used in subsequent patches that implement
-> additional features.
-> 
-> Signed-off-by: William.Allen.Simpson@gmail.com
-> ---
->  include/linux/tcp.h |   12 ++++++++++++
->  1 files changed, 12 insertions(+), 0 deletions(-)
-> 
+            sched: move level again after get_cpu().
 
-Its better to inline your patches so that we can comment them, without copy/paste
+ We can get this_cpu by calling get_cpu() once and it remains
+same. We don't need to call it again.
 
-When I hit 'reply to', my mailer only quoted the ChangeLog, not the patch.
+Signed-off-by: Rakib Mullick <rakib.mullick@gmail.com>
+---
 
-Anyway ..
+--- linus/kernel/sched.c	2010-01-06 20:11:10.000000000 +0600
++++ rakib/kernel/sched.c	2010-01-12 16:01:54.000000000 +0600
+@@ -3143,8 +3143,8 @@ void sched_exec(void)
+ 	unsigned long flags;
+ 	struct rq *rq;
 
-+/* Length of standard options only.  This could be negative. */
-+static inline int tcp_option_len_th(const struct tcphdr *th)
-+{
-+	return (int)(th->doff * 4) - sizeof(*th);
-+}
-
-
-The (int) cast is not necessary, since the function returns a signed int
-
-->
-	return th->doff * 4 - sizeof(*th);
+-again:
+ 	this_cpu = get_cpu();
++again:
+ 	dest_cpu = select_task_rq(p, SD_BALANCE_EXEC, 0);
+ 	if (dest_cpu == this_cpu) {
+ 		put_cpu();
