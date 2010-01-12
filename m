@@ -1,119 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754501Ab0ALAjc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754556Ab0ALAjo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754501Ab0ALAjc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jan 2010 19:39:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754088Ab0ALAjb
+	id S1754556Ab0ALAjo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jan 2010 19:39:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754532Ab0ALAjl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jan 2010 19:39:31 -0500
-Received: from rex.securecomputing.com ([203.24.151.4]:59355 "EHLO
-	cyberguard.com.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751249Ab0ALAja (ORCPT
+	Mon, 11 Jan 2010 19:39:41 -0500
+Received: from acsinet12.oracle.com ([141.146.126.234]:62068 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754088Ab0ALAji (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jan 2010 19:39:30 -0500
-Date: Tue, 12 Jan 2010 10:39:37 +1000
-From: Greg Ungerer <gerg@snapgear.com>
-Message-Id: <201001120039.o0C0dboQ031390@goober.internal.moreton.com.au>
-CC: <gerg@uclinux.org>, <linux-m68k@vger.kernel.org>,
-       <linux-kernel@vger.kernel.org>
-Subject: [PATCH] m68knommu: change definitions of __pa() and __va()
-To: <torvalds@linux-foundation.org>
-X-Mailer: mail (GNU Mailutils 2.0)
+	Mon, 11 Jan 2010 19:39:38 -0500
+Date: Mon, 11 Jan 2010 16:38:03 -0800
+From: Joel Becker <Joel.Becker@oracle.com>
+To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Cc: Mark Fasheh <mfasheh@suse.com>, ocfs2-devel@oss.oracle.com,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH] ocfs2: Fix refcnt leak on ocfs2_fast_follow_link()
+ error path
+Message-ID: <20100112003803.GC20285@mail.oracle.com>
+Mail-Followup-To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+	Mark Fasheh <mfasheh@suse.com>, ocfs2-devel@oss.oracle.com,
+	linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+References: <87eilwjxmu.fsf@devron.myhome.or.jp>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <87eilwjxmu.fsf@devron.myhome.or.jp>
+X-Burt-Line: Trees are cool.
+X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever
+ come to perfection.
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-Source-IP: acsmt356.oracle.com [141.146.40.156]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090202.4B4BC4B8.0092:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-m68knommu: change definitions of __pa() and __va()
+On Tue, Jan 12, 2010 at 03:37:45AM +0900, OGAWA Hirofumi wrote:
+> 
+> If ->follow_link handler return the error, it should decrement
+> nd->path refcnt. But, ocfs2_fast_follow_link() doesn't decrement.
+> 
+> This patch fix it by using usual nd_set_link() style error handling,
+> instead of playing with nd->path.
+> 
+> Signed-off-by: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
 
-Fix compilation breakage of all m68knommu targets:
+This patch is now in the fixes branch of ocfs2.git.
 
-  CC      arch/m68knommu/kernel/asm-offsets.s
-In file included from include/linux/sched.h:77,
-                 from arch/m68knommu/kernel/asm-offsets.c:12:
-include/linux/percpu.h: In function 'per_cpu_ptr_to_phys':
-include/linux/percpu.h:161: error: implicit declaration of function 'virt_to_phy
+Joel
 
-This is broken in linux-2.6.33-rc3.
+-- 
 
-Change the definitions of __pa() and __va() to not use virt_to_phys()
-and phys_to_virt(). Trivial 1:1 conversion required for the non-MMU case.
+"Against stupidity the Gods themselves contend in vain."
+	- Friedrich von Schiller
 
-A side effect if this is that the m68knommu can now use asm/virtconvert.h
-for the definition of virt_to_phys() and phys_to_virt().
-
-Signed-off-by: Greg Ungerer <gerg@uclinux.org>
----
- arch/m68k/include/asm/io_no.h       |   14 +-------------
- arch/m68k/include/asm/page_no.h     |    4 ++--
- arch/m68k/include/asm/virtconvert.h |    5 +++++
- 3 files changed, 8 insertions(+), 15 deletions(-)
-
-diff --git a/arch/m68k/include/asm/io_no.h b/arch/m68k/include/asm/io_no.h
-index 7f57436..359065d 100644
---- a/arch/m68k/include/asm/io_no.h
-+++ b/arch/m68k/include/asm/io_no.h
-@@ -3,6 +3,7 @@
- 
- #ifdef __KERNEL__
- 
-+#include <asm/virtconvert.h>
- 
- /*
-  * These are for ISA/PCI shared memory _only_ and should never be used
-@@ -165,19 +166,6 @@ static inline void *ioremap_fullcache(unsigned long physaddr, unsigned long size
- 
- extern void iounmap(void *addr);
- 
--/* Pages to physical address... */
--#define page_to_phys(page)      ((page - mem_map) << PAGE_SHIFT)
--#define page_to_bus(page)       ((page - mem_map) << PAGE_SHIFT)
--
--/*
-- * Macros used for converting between virtual and physical mappings.
-- */
--#define phys_to_virt(vaddr)	((void *) (vaddr))
--#define virt_to_phys(vaddr)	((unsigned long) (vaddr))
--
--#define virt_to_bus virt_to_phys
--#define bus_to_virt phys_to_virt
--
- /*
-  * Convert a physical pointer to a virtual kernel pointer for /dev/mem
-  * access
-diff --git a/arch/m68k/include/asm/page_no.h b/arch/m68k/include/asm/page_no.h
-index 1f31b06..8029a33 100644
---- a/arch/m68k/include/asm/page_no.h
-+++ b/arch/m68k/include/asm/page_no.h
-@@ -56,8 +56,8 @@ extern unsigned long memory_end;
- 
- #ifndef __ASSEMBLY__
- 
--#define __pa(vaddr)		virt_to_phys((void *)(vaddr))
--#define __va(paddr)		phys_to_virt((unsigned long)(paddr))
-+#define __pa(vaddr)		((unsigned long)(vaddr))
-+#define __va(paddr)		((void *)(paddr))
- 
- #define virt_to_pfn(kaddr)	(__pa(kaddr) >> PAGE_SHIFT)
- #define pfn_to_virt(pfn)	__va((pfn) << PAGE_SHIFT)
-diff --git a/arch/m68k/include/asm/virtconvert.h b/arch/m68k/include/asm/virtconvert.h
-index 22ab05c..8700d04 100644
---- a/arch/m68k/include/asm/virtconvert.h
-+++ b/arch/m68k/include/asm/virtconvert.h
-@@ -26,6 +26,7 @@ static inline void *phys_to_virt(unsigned long address)
- }
- 
- /* Permanent address of a page. */
-+#ifdef CONFIG_MMU
- #ifdef CONFIG_SINGLE_MEMORY_CHUNK
- #define page_to_phys(page) \
- 	__pa(PAGE_OFFSET + (((page) - pg_data_map[0].node_mem_map) << PAGE_SHIFT))
-@@ -37,6 +38,10 @@ static inline void *phys_to_virt(unsigned long address)
- 	page_to_pfn(__page) << PAGE_SHIFT;				\
- })
- #endif
-+#else
-+#define page_to_phys(page)	((page - mem_map) << PAGE_SHIFT)
-+#define page_to_bus(page)	((page - mem_map) << PAGE_SHIFT)
-+#endif
- 
- /*
-  * IO bus memory addresses are 1:1 with the physical address,
+Joel Becker
+Principal Software Developer
+Oracle
+E-mail: joel.becker@oracle.com
+Phone: (650) 506-8127
