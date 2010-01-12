@@ -1,97 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754572Ab0ALR4Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754669Ab0ALR5K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754572Ab0ALR4Z (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jan 2010 12:56:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752356Ab0ALR4Y
+	id S1754669Ab0ALR5K (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jan 2010 12:57:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754630Ab0ALR5J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jan 2010 12:56:24 -0500
-Received: from mga11.intel.com ([192.55.52.93]:62975 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751160Ab0ALR4X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jan 2010 12:56:23 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,263,1262592000"; 
-   d="scan'208";a="530625439"
-Subject: Re: [RFC PATCH 2/4] x86: use dmi check to treat disabled cpus as
- hotplug cpus.
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-Reply-To: Suresh Siddha <suresh.b.siddha@intel.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Yinghai Lu <yinghai@kernel.org>, "ananth@in.ibm.com" <ananth@in.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <alpine.LFD.2.00.1001120719260.17145@localhost.localdomain>
-References: <1263264483-3959-1-git-send-email-yinghai@kernel.org>
-	 <1263264483-3959-4-git-send-email-yinghai@kernel.org>
-	 <alpine.LFD.2.00.1001111906300.17145@localhost.localdomain>
-	 <86802c441001120059s46a2e93aydc76067960aa07e6@mail.gmail.com>
-	 <alpine.LFD.2.00.1001120719260.17145@localhost.localdomain>
-Content-Type: text/plain
-Organization: Intel Corp
-Date: Tue, 12 Jan 2010 09:54:48 -0800
-Message-Id: <1263318889.2854.146.camel@sbs-t61.sc.intel.com>
+	Tue, 12 Jan 2010 12:57:09 -0500
+Received: from outbound-mail-123.bluehost.com ([67.222.38.23]:58544 "HELO
+	outbound-mail-123.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754229Ab0ALR5I (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jan 2010 12:57:08 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=PDB9J3tkmXmfEIJsQVn9jG37euefQUth6wRQrpJ67GE9ElN6kEEW6UJpS/t3FfJKF8QgkE2k5gw0kB4mbG710H68xNaCFaentmtzuTQjk0oC29a2G3D6E2tv0MqJXapJ;
+Date: Tue, 12 Jan 2010 09:57:02 -0800
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Thomas Meyer <thomas@m3y3r.de>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Eric Anholt <eric@anholt.net>
+Subject: Re: [Bug #14670] i915: playing video via XVideo extension makes the
+ screen flicker
+Message-ID: <20100112095702.4b22fcc1@jbarnes-piketon>
+In-Reply-To: <1263318189.3284.2.camel@localhost.localdomain>
+References: <nzLqtSp97aP.A.RGB.hglSLB@chimera>
+	<CXIfLt-ygXM.A.GGD.GilSLB@chimera>
+	<1263228784.12830.0.camel@localhost.localdomain>
+	<20100111085527.104f5c3e@jbarnes-piketon>
+	<8B599161-2977-4A43-B88F-36E87AFCF4EA@m3y3r.de>
+	<20100111111941.189eb41e@jbarnes-piketon>
+	<1263318189.3284.2.camel@localhost.localdomain>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2010-01-12 at 07:19 -0800, Linus Torvalds wrote:
-> On Tue, 12 Jan 2010, Yinghai Lu wrote:
-> > > And if it's _really_ important:
-> > >
-> > >  - if flat mode is so important that you want to enable it whenever
-> > >   possible, what about enabling/disabling it dynamically at CPU hotplug
-> > >   time? That does sound _very_ painful, but it's still better than having
-> > >   to maintain some list of all systems that can ever hot-plug.
+On Tue, 12 Jan 2010 18:43:09 +0100
+Thomas Meyer <thomas@m3y3r.de> wrote:
+
+> Am Montag, den 11.01.2010, 11:19 -0800 schrieb Jesse Barnes:
+> > On Mon, 11 Jan 2010 20:03:57 +0100
+> > Thomas Meyer <thomas@m3y3r.de> wrote:
 > > 
-> > interesting, could be done.
-> > init_apic_ldr is called even for physical flat on 64 bit.
-> > could change apic on fly.
+> > > 
+> > > 
+> > > Am 11.01.2010 um 17:55 schrieb Jesse Barnes
+> > > <jbarnes@virtuousgeek.org>:
+> > > 
+> > > > On Mon, 11 Jan 2010 17:53:04 +0100
+> > > > Thomas Meyer <thomas@m3y3r.de> wrote:
+> > > >
+> > > >> Am Sonntag, den 10.01.2010, 23:56 +0100 schrieb Rafael J.
+> > > >> Wysocki:
+> > > >>> This message has been generated automatically as a part of a
+> > > >>> report of regressions introduced between 2.6.31 and 2.6.32.
+> > > >>>
+> > > >>> The following bug entry is on the current list of known
+> > > >>> regressions introduced between 2.6.31 and 2.6.32.  Please
+> > > >>> verify if it still should be listed and let me know (either
+> > > >>> way).
+> > > >>>
+> > > >>
+> > > >> Yes, still should be listed.
+> > > >>
+> > > >> Problem still exists in 2.6.32.3 and 2.6.33-rc3-00097-g2c1f189,
+> > > >> that contains
+> > > >> this commit:
+> > > >> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=cda9d05c499093c67b4a376a15009923acc2127a
+> > > >>
+> > > >> The above commit removes the render reclock support, that
+> > > >> ought to fix a common kind of problem encountered on i915
+> > > >> hardware, but not on my machine.
+> > > >>
+> > > >> Still need to boot with "nomodeset" to have a workable system.
+> > > >
+> > > > Does this patch prevent the flicker?
+> > > 
+> > > By the way: how often and in what interval is the function   
+> > > intel_lvds_detect called?
+> > > 
+> > > How long will/can the function acpi_lid_open take to complete?
+> > > Maybe some acpi interpretation takes really long? Is this
+> > > possible?
+> > > 
+> > > Would this explain the flickering?
+> > 
+> > It should only be called when a client requests the connection
+> > status (e.g. xrandr or the GNOME display applet).
 > 
-> Quite frankly, while I suggested it as an option, I really suspect it's 
-> too much complexity for very little real gain.
+> how to check how often this function is called and it's duration? is
+> the function tracer capable of this?
 
-I agree.
+Yeah, the function tracer should be able to do it (though I don't know
+how to use it offhand, maybe through the perf tool?).  Or you could
+just add some DRM_ERROR lines. :)
 
-> Say that you have only four cores, but the kernel decided that it can't 
-> use logical flat APIC mode because it sees three disabled sockets and 
-> thinks "ok, we may end up with a total of 16 cores if those sockets are 
-> hotplugged". Is that such a disaster?
+> > The LVDS state will also be checked at ACPI LID event time, maybe
+> > your platforms is getting spurious LID events?
 > 
-> Realistically, do we really care? Do you have performance numbers that say 
-> that logical flat mode is so important that we really _really_ want to use 
-> it, 
+> maybe! where can I check this? acpid log file?
 
-We had some customers in the past who wanted to use logical flat mode
-when there are only 8 logical cpus mainly because they can use chipset
-based interrupt routing. I think in one case, they wanted to use HW's
-round-robin algorithm so that the interrupt load was uniformly
-distributed to all the logical cpu's etc. This is probably fine if all
-the logical cpu's are in the same socket (/under same memory
-controller). But this might be a bad idea if those 8 logical cpu's are
-spread across different sockets etc.
+Yeah or using acpi_listen I think.
 
-Also, sending IPI's becomes easier as we can target multiple logical
-cpu's in the logical IPI destination mask etc.
-
-> even at the cost of nasty run-time complexity with having to 
-> re-program the APIC setup entirely when going from 8->9 CPU's?
-
-No. I don't think it is worth it. As we have more and more cores, flat
-mode usage will reduce and perhaps will remain mainly for
-netbooks/laptops (before we have > 8 logical cpus in that space
-aswell...). Also future generations will start supporting x2apic, where
-we can use x2apic cluster mode.
-
-For now, I think we should just make sure that for smaller HW configs
-like laptops/desktops we should use flat mode when we have no more than
-8 logical cpu's and use physical mode when there is a potential of
-supporting more than 8 cpu's.
-
-thanks,
-suresh
-
+-- 
+Jesse Barnes, Intel Open Source Technology Center
