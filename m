@@ -1,40 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754036Ab0ALK0x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754045Ab0ALK2p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754036Ab0ALK0x (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jan 2010 05:26:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754000Ab0ALK0w
+	id S1754045Ab0ALK2p (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jan 2010 05:28:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754023Ab0ALK2o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jan 2010 05:26:52 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:36282 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753924Ab0ALK0v (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jan 2010 05:26:51 -0500
-Date: Tue, 12 Jan 2010 10:25:48 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, Yinghai Lu <yinghai@kernel.org>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [patch] x86, apic: use 0x20 for the IRQ_MOVE_CLEANUP_VECTOR
- instead of 0x1f
-Message-ID: <20100112102548.4de56c14@lxorguk.ukuu.org.uk>
-In-Reply-To: <4B4BDBBA.3090406@zytor.com>
-References: <1263002989.2879.664.camel@sbs-t61.sc.intel.com>
-	<4B47E7A9.6090904@zytor.com>
-	<1263250418.2859.681.camel@sbs-t61.sc.intel.com>
-	<4B4BACCA.2040805@zytor.com>
-	<m1tyus8chc.fsf@fess.ebiederm.org>
-	<4B4BB0B7.3000106@zytor.com>
-	<1263254812.2859.890.camel@sbs-t61.sc.intel.com>
-	<4B4BBEBA.4060403@zytor.com>
-	<m17hro6ua9.fsf@fess.ebiederm.org>
-	<4B4BC401.6010605@zytor.com>
-	<m1k4vo144h.fsf@fess.ebiederm.org>
-	<4B4BDBBA.3090406@zytor.com>
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.18.5; x86_64-redhat-linux-gnu)
+	Tue, 12 Jan 2010 05:28:44 -0500
+Received: from bamako.nerim.net ([62.4.17.28]:62766 "EHLO bamako.nerim.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753962Ab0ALK2o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jan 2010 05:28:44 -0500
+Date: Tue, 12 Jan 2010 11:28:39 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: "Ray Copeland" <ray.copeland@aprius.com>
+Cc: <linux-kernel@vger.kernel.org>, <lm-sensors@lm-sensors.org>
+Subject: Re: [lm-sensors] [PATCH 1/2] Wrong ADT7462_VOLT_COUNT for
+ linux-2.6.30  adt7462 hwmon driver
+Message-ID: <20100112112839.394a024a@hyperion.delvare>
+In-Reply-To: <AFEAE911EE22F64BACAB05ED86B4D4FC01C5CF2C@EXVBE012-13.exch012.intermedia.net>
+References: <AFEAE911EE22F64BACAB05ED86B4D4FC018DA312@EXVBE012-13.exch012.intermedia.net>
+	<AFEAE911EE22F64BACAB05ED86B4D4FC018DA31A@EXVBE012-13.exch012.intermedia.net>
+	<AFEAE911EE22F64BACAB05ED86B4D4FC018DA328@EXVBE012-13.exch012.intermedia.net>
+	<20091217171445.0bd28259@hyperion.delvare>
+	<AFEAE911EE22F64BACAB05ED86B4D4FC01C5CF2C@EXVBE012-13.exch012.intermedia.net>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -42,10 +30,16 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I'm wondering if what you're thinking of are the really old LAPICs which
-> could only remember two pending interrupts per priority level?
+On Thu, 17 Dec 2009 09:37:32 -0800, Ray Copeland wrote:
+> Hi, Jean, thanks for letting me know.  This is my first time sending a
+> patch, and I should have sent
+> it first to Darrick to have him review it before I posted directly to
+> the group.  He told me how to
+> rework it properly so that I will do it right next time.
 
-On the really old boards an IPI can arrive more than once which makes
-synchronization questions all the more interesting !
+Apparently this patch got lost? Ray, care to resubmit with proper
+formatting so that I can apply it?
 
-Alan
+Thanks,
+-- 
+Jean Delvare
