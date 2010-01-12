@@ -1,89 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753898Ab0ALNgR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753946Ab0ALNhI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753898Ab0ALNgR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jan 2010 08:36:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753834Ab0ALNgQ
+	id S1753946Ab0ALNhI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jan 2010 08:37:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753842Ab0ALNhE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jan 2010 08:36:16 -0500
-Received: from mga09.intel.com ([134.134.136.24]:15340 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753312Ab0ALNgP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jan 2010 08:36:15 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,262,1262592000"; 
-   d="scan'208";a="483337453"
-Date: Tue, 12 Jan 2010 21:35:56 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "Zheng, Shaohui" <shaohui.zheng@intel.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "ak@linux.intel.com" <ak@linux.intel.com>,
-       "y-goto@jp.fujitsu.com" <y-goto@jp.fujitsu.com>,
-       Dave Hansen <haveblue@us.ibm.com>, "x86@kernel.org" <x86@kernel.org>,
-       Yinghai Lu <yinghai@kernel.org>
-Subject: Re: [PATCH - resend] Memory-Hotplug: Fix the bug on interface
-	/dev/mem for 64-bit kernel(v1)
-Message-ID: <20100112133556.GB7647@localhost>
-References: <DA586906BA1FFC4384FCFD6429ECE86031560BAC@shzsmsx502.ccr.corp.intel.com> <20100108124851.GB6153@localhost> <DA586906BA1FFC4384FCFD6429ECE86031560FC1@shzsmsx502.ccr.corp.intel.com> <20100111124303.GA21408@localhost> <20100112093031.0fc6877f.kamezawa.hiroyu@jp.fujitsu.com> <20100112023307.GA16661@localhost> <20100112113903.89163c46.kamezawa.hiroyu@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100112113903.89163c46.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 12 Jan 2010 08:37:04 -0500
+Received: from smtp.nokia.com ([192.100.122.230]:20029 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753835Ab0ALNhD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jan 2010 08:37:03 -0500
+Subject: Re: [ANNOUNCE] util-linux-ng v2.17 (stable)
+From: Artem Bityutskiy <dedekind1@gmail.com>
+Reply-To: dedekind1@gmail.com
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Pavel Machek <pavel@ucw.cz>, Karel Zak <kzak@redhat.com>,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       util-linux-ng@vger.kernel.org
+In-Reply-To: <1263303206.1289.22.camel@localhost>
+References: <20100108093302.GS1969@nb.net.home> <4B47A713.9060405@zytor.com>
+	 <20100111140255.GA1416@ucw.cz> <4B4B5768.2040005@zytor.com>
+	 <20100111201734.GA11674@elf.ucw.cz>  <4B4BB397.5090500@zytor.com>
+	 <1263303206.1289.22.camel@localhost>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 12 Jan 2010 15:35:59 +0200
+Message-Id: <1263303359.1289.23.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 12 Jan 2010 13:36:04.0852 (UTC) FILETIME=[304CBB40:01CA938C]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 12, 2010 at 10:39:03AM +0800, KAMEZAWA Hiroyuki wrote:
-> On Tue, 12 Jan 2010 10:33:08 +0800
-> Wu Fengguang <fengguang.wu@intel.com> wrote:
-> 
-> > Sure, here it is :)
-> > ---
-> > x86: use the generic page_is_ram()
-> > 
-> > The generic resource based page_is_ram() works better with memory
-> > hotplug/hotremove. So switch the x86 e820map based code to it.
-> > 
-> > CC: Andi Kleen <andi@firstfloor.org> 
-> > CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> 
-> > Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
-> 
-> Ack.
+On Tue, 2010-01-12 at 15:33 +0200, Artem Bityutskiy wrote:
+> I think the other reason why alignment matters, at least on eMMC, is
 
-Thank you.
+s/eMMC/eMMC we tested/
 
-> 
-> > +#ifdef CONFIG_X86
-> > +	/*
-> > +	 * A special case is the first 4Kb of memory;
-> > +	 * This is a BIOS owned area, not kernel ram, but generally
-> > +	 * not listed as such in the E820 table.
-> > +	 */
-> > +	if (pfn == 0)
-> > +		return 0;
-> > +
-> > +	/*
-> > +	 * Second special case: Some BIOSen report the PC BIOS
-> > +	 * area (640->1Mb) as ram even though it is not.
-> > +	 */
-> > +	if (pfn >= (BIOS_BEGIN >> PAGE_SHIFT) &&
-> > +	    pfn <  (BIOS_END   >> PAGE_SHIFT))
-> > +		return 0;
-> > +#endif
-> 
-> I'm glad if this part is sorted out in clean way ;)
-
-Two possible solutions are:
-
-- to exclude the above two ranges directly in e820 map;
-- to not add the above two ranges into iomem_resource. 
-
-Yinghai, do you have any suggestions?
-We want to get rid of the two explicit tests from page_is_ram().
-
-Thanks,
-Fengguang
+-- 
+Best Regards,
+Artem Bityutskiy (Артём Битюцкий)
 
