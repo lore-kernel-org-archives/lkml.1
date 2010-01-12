@@ -1,72 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753559Ab0ALCSl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753384Ab0ALC1E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753559Ab0ALCSl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jan 2010 21:18:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753018Ab0ALCSl
+	id S1753384Ab0ALC1E (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jan 2010 21:27:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752775Ab0ALC1B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jan 2010 21:18:41 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:53713 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751635Ab0ALCSk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jan 2010 21:18:40 -0500
-Message-ID: <4B4BDBBA.3090406@zytor.com>
-Date: Mon, 11 Jan 2010 18:17:30 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
+	Mon, 11 Jan 2010 21:27:01 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:34843 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751075Ab0ALC1B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jan 2010 21:27:01 -0500
+Message-ID: <4B4BDD7B.2070308@redhat.com>
+Date: Tue, 12 Jan 2010 10:24:59 +0800
+From: Xiaotian Feng <dfeng@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Lightning/1.0pre Thunderbird/3.0
 MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Suresh Siddha <suresh.b.siddha@intel.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, Yinghai Lu <yinghai@kernel.org>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [patch] x86, apic: use 0x20 for the IRQ_MOVE_CLEANUP_VECTOR instead
- of 0x1f
-References: <1263002989.2879.664.camel@sbs-t61.sc.intel.com>	<4B47E7A9.6090904@zytor.com>	<1263250418.2859.681.camel@sbs-t61.sc.intel.com>	<4B4BACCA.2040805@zytor.com> <m1tyus8chc.fsf@fess.ebiederm.org>	<4B4BB0B7.3000106@zytor.com>	<1263254812.2859.890.camel@sbs-t61.sc.intel.com>	<4B4BBEBA.4060403@zytor.com> <m17hro6ua9.fsf@fess.ebiederm.org>	<4B4BC401.6010605@zytor.com> <m1k4vo144h.fsf@fess.ebiederm.org>
-In-Reply-To: <m1k4vo144h.fsf@fess.ebiederm.org>
-Content-Type: text/plain; charset=UTF-8
+To: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Magnus Damm <damm@igel.co.jp>,
+       H Hartley Sweeten <hsweeten@visionengravers.com>
+CC: Xiaotian Feng <dfeng@redhat.com>, stable@kernel.org
+Subject: Re: [PATCH] clockevent: don't remove broadcast device when cpu is
+ dead
+References: <1262834564-13033-1-git-send-email-dfeng@redhat.com>
+In-Reply-To: <1262834564-13033-1-git-send-email-dfeng@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/11/2010 05:52 PM, Eric W. Biederman wrote:
-> 
-> After having the documentation quoted at me.  I am having a distinct
-> memory of one piece of documentation saying:
-> "interrupts within a priority level can be delivered in any order"
-> 
-> So I am guessing there is not any ordering of interrupts in the same
-> priority level until they get to the local apic.
-> 
+Hi:
 
-There is no ordering of interrupts before they hit the local APIC, since
-the local APIC is what would serialize them...
+     Any comments on the patch? Marc confirmed this patch also fixed his 
+hang at suspend/resume stage. Thanks.
 
-> What guarantee we need is the interesting question.
-> 
-> The cleanup ipi is sent when we have seen an interrupt arrive at it's
-> newly configured location.  It is possible that there is still an
-> interrupt in flight to the old configured location (think NUMA where
-> the interrupt has been migrated from off node to on node).  We want
-> the guarantee that the ipi arrives after the inflight irq.  Which
-> means on the wire ordering as well as in the local apic ordering is
-> interesting.
+     (Cc'ed stable@kernel.org)
 
-I don't think there is any such guarantee possible, but that that has
-nothing to do with the interrupt priority.  Suresh tells me that that is
-handled by detecting and re-posting the migration IRQ.
+Regards
+Xiaotian
 
-> I am slammed with other stuff right now so I don't think I will have
-> time to find the old documentation I was looking at for a couple of
-> more days.
-
-I'm wondering if what you're thinking of are the really old LAPICs which
-could only remember two pending interrupts per priority level?
-
-	-hpa
-
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
+On 01/07/2010 11:22 AM, Xiaotian Feng wrote:
+> Marc reported BUG during shutdown, after debugging, kernel is trying
+> to remove a broadcast device which mode is CLOCK_EVT_MODE_ONESHOT.
+>
+> The root cause for this bug is that in clockevents_notify,
+> "cpumask_weight(dev->cpumask) == 1" is always true even if dev is a
+> broadcast device. We need to use tick_is_broadcast_device to check
+> if it is a broadcast device.
+>
+> Reported-by: Marc Dionne<marc.c.dionne@gmail.com>
+> Tested-by: Marc Dionne<marc.c.dionne@gmail.com>
+> Signed-off-by: Xiaotian Feng<dfeng@redhat.com>
+> Cc: Thomas Gleixner<tglx@linutronix.de>
+> Cc: Magnus Damm<damm@igel.co.jp>
+> Cc: H Hartley Sweeten<hsweeten@visionengravers.com>
+> ---
+>   kernel/time/clockevents.c |    2 +-
+>   1 files changed, 1 insertions(+), 1 deletions(-)
+>
+> diff --git a/kernel/time/clockevents.c b/kernel/time/clockevents.c
+> index 6f740d9..0223d83 100644
+> --- a/kernel/time/clockevents.c
+> +++ b/kernel/time/clockevents.c
+> @@ -259,7 +259,7 @@ void clockevents_notify(unsigned long reason, void *arg)
+>   		cpu = *((int *)arg);
+>   		list_for_each_entry_safe(dev, tmp,&clockevent_devices, list) {
+>   			if (cpumask_test_cpu(cpu, dev->cpumask)&&
+> -			    cpumask_weight(dev->cpumask) == 1) {
+> +			    !tick_is_broadcast_device(dev)) {
+>   				BUG_ON(dev->mode != CLOCK_EVT_MODE_UNUSED);
+>   				list_del(&dev->list);
+>   			}
+>    
 
