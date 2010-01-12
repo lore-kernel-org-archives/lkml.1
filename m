@@ -1,55 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754008Ab0ALPA7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752865Ab0ALPTT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754008Ab0ALPA7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jan 2010 10:00:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753924Ab0ALPA7
+	id S1752865Ab0ALPTT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jan 2010 10:19:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752132Ab0ALPTS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jan 2010 10:00:59 -0500
-Received: from mail-qy0-f185.google.com ([209.85.221.185]:43584 "EHLO
-	mail-qy0-f185.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751745Ab0ALPA6 convert rfc822-to-8bit (ORCPT
+	Tue, 12 Jan 2010 10:19:18 -0500
+Received: from fg-out-1718.google.com ([72.14.220.157]:45892 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751937Ab0ALPTR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jan 2010 10:00:58 -0500
+	Tue, 12 Jan 2010 10:19:17 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=ZQKDNY87MbS/gWmiXoL++8XTFAqkNaoWoP6F1GhyLO/TWuXQSsFFFAdbNOFvobJ6Tv
-         WJLUvqyg/WJGk083tsdKXEuB4A7RymUwbliRP/o/PMSbT0AHX0HKLxXG0lLdd9tXAUjS
-         UvOkYe7yM8pD8/M/HWYL6S7bZD1Np4v2PJD+A=
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=dzZnLNa49Tn7IcfGANf4CEpDbi2ircrz7I9ZWpTGJjpvX58ledFFaRg5aIGJQE2QHg
+         njinnOWZUP/NTg/SBRw/UofzDQ4RvMAx5DADFHDz08KruoKlGU5+kz6UrEKxiIdklLdb
+         VvuVEwkVfLbQNrBtWRic8May9i3mUNa8tPyeA=
+Date: Tue, 12 Jan 2010 23:21:03 +0800
+From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
+To: George Spelvin <linux@horizon.com>
+Cc: linux-kernel@vger.kernel.org, Eric Paris <eparis@redhat.com>
+Subject: Re: WARNING: at fs/notify/inotify/inotify_fsnotify.c:129
+Message-ID: <20100112152103.GE3925@hack>
+References: <20100108051219.3498.qmail@science.horizon.com>
 MIME-Version: 1.0
-In-Reply-To: <1263308127.4244.142.camel@laptop>
-References: <4B4C3E4F.9060001@memeplex.com> <20100112145213.GB3925@hack>
-	 <1263308127.4244.142.camel@laptop>
-Date: Tue, 12 Jan 2010 23:00:57 +0800
-Message-ID: <2375c9f91001120700r4c2e1e05l5e5be3ddc6a13da2@mail.gmail.com>
-Subject: Re: Futex hang/lockup problem in 2.6.30+ on AMD64
-From: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Andrew Athan <linux_kernel_aathan@memeplex.com>,
-       linux-kernel@vger.kernel.org, Darren Hart <dvhltc@us.ibm.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       Gong Cheng <chengg11@yahoo.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100108051219.3498.qmail@science.horizon.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 12, 2010 at 10:55 PM, Peter Zijlstra <peterz@infradead.org> wrote:
-> On Tue, 2010-01-12 at 22:52 +0800, Américo Wang wrote:
+On Fri, Jan 08, 2010 at 12:12:19AM -0500, George Spelvin wrote:
+>Like others, I've got this message, but with a more recent kernel:
+>2.6.33-rc2.  This is after almost 12 days of uptime, so it's not
+>exactly rapidly repeatable.
 >
->> > $ uname -a
->> > Linux UK22 2.6.30-2-amd64 #1 SMP Fri Sep 25 22:16:56 UTC 2009 x86_64
->> > GNU/Linux
+>x86-64 quad-core kernel, 32-bit (Debian/unstable) userland.  8GiB RAM.
 >
-> Does a recent kernel work?
->
->
+>------------[ cut here ]------------
+>WARNING: at fs/notify/inotify/inotify_fsnotify.c:129 idr_callback+0x36/0x58()
+>Hardware name: MS-7376
+>inotify closing but id=0 for entry=ffff880009762a10 in group=ffff880221a4a700 still in idr.  Probably leaking memory
+>Pid: 4171, comm: imap Not tainted 2.6.33-rc2 #95
+>Call Trace:
+> [<ffffffff8102f45a>] ? warn_slowpath_common+0x71/0x87
+> [<ffffffff8102f4c2>] ? warn_slowpath_fmt+0x40/0x45
+> [<ffffffff8102b6d5>] ? default_wake_function+0x0/0xf
+> [<ffffffff810ab03f>] ? idr_callback+0x36/0x58
+> [<ffffffff811551d8>] ? idr_for_each+0x64/0xa7
+> [<ffffffff8107ed4e>] ? virt_to_head_page+0x9/0x2b
+> [<ffffffff810aaff8>] ? inotify_free_group_priv+0x1a/0x2b
+> [<ffffffff810a9b2c>] ? fsnotify_final_destroy_group+0x1b/0x24
+> [<ffffffff810ab1c9>] ? inotify_release+0x24/0x2f
+> [<ffffffff8108610c>] ? __fput+0xef/0x17b
+> [<ffffffff8108389d>] ? filp_close+0x54/0x5f
+> [<ffffffff81083939>] ? sys_close+0x91/0xc4
+> [<ffffffff810233d4>] ? cstar_dispatch+0x7/0x2b
+>---[ end trace 5507e3370989315e ]---
+>entry->group=(null) inode=(null) wd=4096
 
-Ah, I just wanted to ask the same question, adding the original reporter
-Gong Cheng into Cc...
+inotify is going to be removed, I think.
 
-Gong, could you reproduce it on the latest kernel? And what is your .config?
+Adding Eric into Cc...
 
-Thanks!
+Anyway, thanks for reporting it!
+
+-- 
+Live like a child, think like the god.
+ 
