@@ -1,131 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752300Ab0ALBY5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752883Ab0ALB0p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752300Ab0ALBY5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jan 2010 20:24:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751743Ab0ALBY5
+	id S1752883Ab0ALB0p (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jan 2010 20:26:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751233Ab0ALB0o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jan 2010 20:24:57 -0500
-Received: from mga11.intel.com ([192.55.52.93]:33112 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751083Ab0ALBY4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jan 2010 20:24:56 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,258,1262592000"; 
-   d="scan'208";a="763356850"
-Subject: Re: tbench regression with 2.6.33-rc1
-From: Lin Ming <ming.m.lin@intel.com>
-To: Mike Galbraith <efault@gmx.de>
-Cc: Peter Zijlstra <peterz@infradead.org>, "mingo@elte.hu" <mingo@elte.hu>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-In-Reply-To: <1263226612.6290.9.camel@marge.simson.net>
-References: <1261739467.10685.18.camel@minggr.sh.intel.com>
-	 <1263211680.4244.50.camel@laptop>
-	 <1263226612.6290.9.camel@marge.simson.net>
-Content-Type: text/plain
-Date: Tue, 12 Jan 2010 09:09:06 +0800
-Message-Id: <1263258546.3598.19.camel@minggr.sh.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 (2.24.1-2.fc10) 
-Content-Transfer-Encoding: 7bit
+	Mon, 11 Jan 2010 20:26:44 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:48701 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751112Ab0ALB0m (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jan 2010 20:26:42 -0500
+Date: Mon, 11 Jan 2010 17:26:33 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       Albin Tonnerre <albin.tonnerre@free-electrons.com>
+Subject: Re: linux-next: origin tree build failure
+In-Reply-To: <20100112121434.49930eea.sfr@canb.auug.org.au>
+Message-ID: <alpine.LFD.2.00.1001111720290.17145@localhost.localdomain>
+References: <20100112121434.49930eea.sfr@canb.auug.org.au>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2010-01-12 at 00:16 +0800, Mike Galbraith wrote:
-> On Mon, 2010-01-11 at 13:08 +0100, Peter Zijlstra wrote:
-> > On Fri, 2009-12-25 at 19:11 +0800, Lin Ming wrote:
-> > > Hi,
-> > > 
-> > > Test machine: 16 cpus (4P/2Core/HT), 8G mem
-> > > tbench test command:
-> > > tbench_srv &
-> > > tbench 32
-> > > 
-> > > Compared with 2.6.32, tbench has ~4% regression in 2.6.33-rc1.
-> > > 
-> > > >From vmstat data, the context switch number also drop ~4%.
-> > > perf top data does not show much differences.
-> > > 
-> > > But lockstat data shows huge difference in rq->lock, as below.
-> > > See the attachment for the full lockstat data.
-> > > 
-> > > Any clue of this regression?
-> > 
-> > Nope, I thought to see the same on a dual-socket machine, but when
-> > bisecting I ended up on a user-space perf commit, which is pretty much
-> > impossible.
-> > 
-> > I did notice some variance in the numbers between boots, maybe it was
-> > large enough to fool me.. (~2800 MB/s was the good one, ~2200 MB/s was
-> > the bad one).
-> > 
-> > perf itself also didn't really provide clue, perf record -ag on the
-> > workload didn't really show anything scheduler related. vmstat 1 did
-> > show a proportional drop in context switch rate between the kernels
-> > though.. most odd.
-> 
-> I've been all through it too, same result.  The below may make a bit of
-> difference, but really has diddly spit to do with this oddity.
 
-I test this patch applied to 2.6.33-rc3, but no help on tbench
-regression.
 
-Lin Ming
+On Tue, 12 Jan 2010, Stephen Rothwell wrote:
+> 
+> I then got these:
+> 
+> lib/decompress_unlzo.c: In function 'unlzo':
+> lib/decompress_unlzo.c:106: error: 'error' undeclared (first use in this function)
+> lib/decompress_unlzo.c:111: error: implicit declaration of function 'error'
+> 
+> So I just reverted commit
+> cacb246f8db2b9eba89d44a0f0dd4f6ed93bc113 ("Add LZO compression support
+> for initramfs and old-style initrd") after removing my fix above.
 
-> 
-> netperf TCP_RR
-> tip          93445 RR/sec
-> tip+         99454 RR/sec
->              1.064
-> 
-> tbench 8
-> tip          1144 MB/sec
-> tip+         1166 MB/sec
->              1.019
-> 
-> sched: don't call wake_affine() when the result doesn't matter.
-> 
-> Signed-off-by: Mike Galbraith <efault@gmx.de>
-> Cc: Ingo Molnar <mingo@elte.hu>
-> Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> LKML-Reference: <new-submission>
-> 
->  kernel/sched_fair.c |   12 ++++++++++--
->  1 file changed, 10 insertions(+), 2 deletions(-)
-> 
-> Index: linux-2.6/kernel/sched_fair.c
-> ===================================================================
-> --- linux-2.6.orig/kernel/sched_fair.c
-> +++ linux-2.6/kernel/sched_fair.c
-> @@ -1530,6 +1530,7 @@ static int select_task_rq_fair(struct ta
->  			sd = tmp;
->  	}
->  
-> +#ifdef CONFIG_GROUP_SCHED
->  	if (sched_feat(LB_SHARES_UPDATE)) {
->  		/*
->  		 * Pick the largest domain to update shares over
-> @@ -1543,9 +1544,16 @@ static int select_task_rq_fair(struct ta
->  		if (tmp)
->  			update_shares(tmp);
->  	}
-> +#endif
->  
-> -	if (affine_sd && wake_affine(affine_sd, p, sync))
-> -		return cpu;
-> +	if (affine_sd) {
-> +		if (cpu == prev_cpu)
-> +			return cpu;
-> +		if (wake_affine(affine_sd, p, sync))
-> +			return cpu;
-> +		if (!(affine_sd->flags & SD_BALANCE_WAKE))
-> +			return prev_cpu;
-> +	}
->  
->  	while (sd) {
->  		int load_idx = sd->forkexec_idx;
-> 
-> 
+Hmm. I think the real problem is that it allowed LZO to be enabled at all, 
+despite HAVE_KERNEL_LZO not being enabled.
 
+In other words, I think the config dependencies for RD_LZO are just 
+totally broken.
+
+Does this work for you?
+
+(Totally untested and not very much thought about, this is just a "that 
+looks really _wrong_" kind of patch)
+
+		Linus
+
+---
+ usr/Kconfig |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/usr/Kconfig b/usr/Kconfig
+index e2721f5..0254cce 100644
+--- a/usr/Kconfig
++++ b/usr/Kconfig
+@@ -75,7 +75,7 @@ config RD_LZMA
+ config RD_LZO
+ 	bool "Support initial ramdisks compressed using LZO" if EMBEDDED
+ 	default !EMBEDDED
+-	depends on BLK_DEV_INITRD
++	depends on BLK_DEV_INITRD && HAVE_KERNEL_LZO
+ 	select DECOMPRESS_LZO
+ 	help
+ 	  Support loading of a LZO encoded initial ramdisk or cpio buffer
