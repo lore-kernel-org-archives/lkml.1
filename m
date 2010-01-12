@@ -1,61 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754032Ab0ALRxb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754300Ab0ALRzN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754032Ab0ALRxb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jan 2010 12:53:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751584Ab0ALRxa
+	id S1754300Ab0ALRzN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jan 2010 12:55:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753849Ab0ALRzM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jan 2010 12:53:30 -0500
-Received: from gw1.cosmosbay.com ([212.99.114.194]:53559 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750929Ab0ALRx2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jan 2010 12:53:28 -0500
-Message-ID: <4B4CB712.8030806@gmail.com>
-Date: Tue, 12 Jan 2010 18:53:22 +0100
-From: Eric Dumazet <eric.dumazet@gmail.com>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; fr; rv:1.9.1.5) Gecko/20091204 Thunderbird/3.0
+	Tue, 12 Jan 2010 12:55:12 -0500
+Received: from khc.piap.pl ([195.187.100.11]:33570 "EHLO khc.piap.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932067Ab0ALRzL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jan 2010 12:55:11 -0500
+From: Krzysztof Halasa <khc@pm.waw.pl>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: Crypto test results unused?
+References: <20100112111439.GA31504@gondor.apana.org.au>
+Date: Tue, 12 Jan 2010 18:55:07 +0100
+In-Reply-To: <20100112111439.GA31504@gondor.apana.org.au> (Herbert Xu's
+	message of "Tue, 12 Jan 2010 22:14:39 +1100")
+Message-ID: <m37hrn1a4k.fsf@intrepid.localdomain>
 MIME-Version: 1.0
-To: William Allen Simpson <william.allen.simpson@gmail.com>
-CC: Linux Kernel Developers <linux-kernel@vger.kernel.org>,
-       Linux Kernel Network Developers <netdev@vger.kernel.org>,
-       Michael Chan <mchan@broadcom.com>
-Subject: Re: [PATCH 1/2] net: tcp_header_len_th and tcp_option_len_th
-References: <4B44FE3C.6060809@gmail.com> <4B450065.4010108@gmail.com> <4B4C519E.2090207@gmail.com> <4B4CB46C.8020502@gmail.com>
-In-Reply-To: <4B4CB46C.8020502@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Tue, 12 Jan 2010 18:53:23 +0100 (CET)
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Le 12/01/2010 18:42, William Allen Simpson a écrit :
-> Eric Dumazet wrote:
->> Its better to inline your patches so that we can comment them, without
->> copy/paste
->>
->> When I hit 'reply to', my mailer only quoted the ChangeLog, not the
->> patch.
->>
-> Seeing that we're both using Mozilla, how to you do it?
-> 
-> It took me many attempts to get this to work with Thunderbird on the Mac.
-> 
+Herbert Xu <herbert@gondor.apana.org.au> writes:
 
-Hmm, I followed Documentation/email-clients.txt tricks, I dont remember exact details.
+>> On little-endian IXP4xx 3 hardware-assisted algorithms fail (due to
+>> apparently unrelated bug which I will take care of). It seems the kernel
+>> is still using these failing algorithms (my debugging code adds extra
+>> fields to the /proc output):
+>
+> How did you determine that it was still being used? When a kernel
+> user requests for an algorithm the system is supposed to skip
+> anything which failed the self-test.
 
-I type my Changelog text, add my signature, then copy/paste patch from external editor
-(this editor must preserve tabulations of course)
+cat /proc/crypto shows "selftest: unknown" for those failed tests. I
+don't know if that means it's used, but I'd expect "failed" or something
+like that. Maybe it's simply a problem in /proc/crypto output.
 
-Its probably a bit odd, because I am stuck with a windows XP notebook here at work,
-dont flame me :(
+> CRYPTO_ALG_DEAD is used to mark algorithms deleted from the
+> system.  However, we don't delete algorithms just because they
+> fail the self-test.  They remain in the system so you can come
+> back and diagnose the problem.  They just aren't used by anyone.
 
+Great.
 
+Currently the /proc/crypto contains:
 
-About cast games, maybe following way is the cleanest one.
+- for passed tests: "selftest: passed" (which is of course right)
 
-int tcp_options_len_th(struct tcphdr *th)
-{
-	return tcp_header_len_th(th) - sizeof(*th);
-}
+- for failed tests: "selftest: unknown" (which is a surprise for me):
 
+alg: skcipher: Test 1 failed on encryption for ecb(des)-ixp4xx
+00000000: 01 23 45 67 89 ab cd e7
+
+name         : ecb(des)
+driver       : ecb(des)-ixp4xx
+module       : ixp4xx_crypto
+priority     : 300
+refcnt       : 1
+selftest     : unknown
+type         : ablkcipher
+async        : yes
+blocksize    : 8
+min keysize  : 8
+max keysize  : 8
+ivsize       : 0
+geniv        : <default>
+
+- for routines without a test: "selftest: passed" (which isn't true
+  either)
+
+alg: No test for authenc(hmac(md5),cbc(des)) (authenc(hmac(md5),cbc(des))-ixp4xx)
+
+name         : authenc(hmac(md5),cbc(des))
+driver       : authenc(hmac(md5),cbc(des))-ixp4xx
+module       : ixp4xx_crypto
+priority     : 300
+refcnt       : 1
+selftest     : passed
+type         : aead
+async        : yes
+blocksize    : 8
+ivsize       : 8
+maxauthsize  : 16
+geniv        : <built-in>
+
+I think we need a way to differentiate between "really unknown" and
+"failed", do we need another flag for it?
+-- 
+Krzysztof Halasa
