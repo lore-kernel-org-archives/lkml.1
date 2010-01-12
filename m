@@ -1,70 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753708Ab0ALWBL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753981Ab0ALWCA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753708Ab0ALWBL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jan 2010 17:01:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752712Ab0ALWBK
+	id S1753981Ab0ALWCA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jan 2010 17:02:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753475Ab0ALWB7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jan 2010 17:01:10 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:29542 "EHLO mx1.redhat.com"
+	Tue, 12 Jan 2010 17:01:59 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:42942 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752309Ab0ALWBJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jan 2010 17:01:09 -0500
-Message-ID: <4B4CF0F4.3020706@redhat.com>
-Date: Tue, 12 Jan 2010 17:00:20 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
+	id S1752921Ab0ALWB6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jan 2010 17:01:58 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Johannes Engel <jcnengel@googlemail.com>
+Subject: Re: 2.6.33-rc3-git3: Reported regressions 2.6.31 -> 2.6.32
+Date: Tue, 12 Jan 2010 23:02:17 +0100
+User-Agent: KMail/1.12.3 (Linux/2.6.33-rc3-rjw; KDE/4.3.3; x86_64; ; )
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       DRI <dri-devel@lists.sourceforge.net>,
+       Natalie Protasevich <protasnb@gmail.com>,
+       Linux ACPI <linux-acpi@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+References: <nzLqtSp97aP.A.RGB.hglSLB@chimera> <4B4CB3B5.3060900@googlemail.com>
+In-Reply-To: <4B4CB3B5.3060900@googlemail.com>
 MIME-Version: 1.0
-To: "Frank Ch. Eigler" <fche@redhat.com>
-CC: Frederic Weisbecker <fweisbec@gmail.com>,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       Arnaldo Carvalho de Melo <acme@infradead.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       utrace-devel <utrace-devel@redhat.com>,
-       Jim Keniston <jkenisto@us.ibm.com>, Maneesh Soni <maneesh@in.ibm.com>,
-       Mark Wielaard <mjw@redhat.com>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC] [PATCH 7/7] Ftrace plugin for Uprobes
-References: <20100111122521.22050.3654.sendpatchset@srikar.in.ibm.com>	<20100111122608.22050.94088.sendpatchset@srikar.in.ibm.com>	<20100112045454.GJ5243@nowhere> <y0mhbqr40ja.fsf@fche.csb>
-In-Reply-To: <y0mhbqr40ja.fsf@fche.csb>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: Text/Plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Message-Id: <201001122302.17835.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Frank Ch. Eigler wrote:
-> 
-> Frederic Weisbecker <fweisbec@gmail.com> writes:
-> 
->> [...]
->> This is much more tricky in the case of uprobes as I see two
->> ways to work with it:
->> - probing on an already running process
->> - probing on a process we are about to run
->> [...]
-> 
-> As you might expect, in systemtap we've had to figure out this area
-> some time ago.  We use another utrace consumer called "task finder"
-> that registers interest in present / future processes, and gives us
-> kernel-space callbacks when these come and go.  You could merge it or
-> something like it.
+On Tuesday 12 January 2010, Johannes Engel wrote:
+> On 10.01.2010 23:45, Rafael J. Wysocki wrote:
+> > This message contains a list of some regressions introduced between 2.6.31 and
+> > 2.6.32, for which there are no fixes in the mainline I know of.  If any of them
+> > have been fixed already, please let me know.
+> >
+> > If you know of any other unresolved regressions introduced between 2.6.31
+> > and 2.6.32, please let me know either and I'll add them to the list.
+> >   
+> How about #15004?
 
-So, could you tell us how the task-finder works and is implemented?
-I think we'd better clarify what functions are required for uprobes
-and pmu, and I think we may be able to re-implement improved pmu
-on utrace.
+Qualifies, but I need to know the last working kernel.
 
-Thank you,
-
-
--- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
-
+Rafael
