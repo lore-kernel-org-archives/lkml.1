@@ -1,46 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754790Ab0ALU1w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754825Ab0ALUee@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754790Ab0ALU1w (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jan 2010 15:27:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754227Ab0ALU1v
+	id S1754825Ab0ALUee (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jan 2010 15:34:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754801Ab0ALUeb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jan 2010 15:27:51 -0500
-Received: from mail-fx0-f225.google.com ([209.85.220.225]:36732 "EHLO
-	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753949Ab0ALU1u (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jan 2010 15:27:50 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=v23g4z1LO8RMMe1y+zau3sU1C5zxtknIe4m9L8Mqo2G9Ho4/kuchnLH5IM/jEwYl94
-         g65cMAA/4vyOIXyse43KWJk3cyLENqYnn7RQbrF3dP/qLMeSrj2OzH2NL01Y9Z4s1PCL
-         nTXzICpu4iJGu4opjRkVA9bLysscIcCF7DIpk=
-Message-ID: <4B4CDB41.6030702@gmail.com>
-Date: Tue, 12 Jan 2010 21:27:45 +0100
-From: Jarek Poplawski <jarkao2@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090812)
+	Tue, 12 Jan 2010 15:34:31 -0500
+Received: from khc.piap.pl ([195.187.100.11]:38158 "EHLO khc.piap.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754772Ab0ALUeb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jan 2010 15:34:31 -0500
+From: Krzysztof Halasa <khc@pm.waw.pl>
+To: Greg KH <gregkh@suse.de>
+Cc: Tilman Schmidt <tilman@imap.cc>, Stephen Rothwell <sfr@canb.auug.org.au>,
+       LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
+       Karsten Keil <isdn@linux-pingi.de>, isdn4linux@listserv.isdn4linux.de
+Subject: Re: Can we remove pci_find_device() yet?
+References: <20100108112236.462a3da2.sfr@canb.auug.org.au>
+	<20100108044646.GC6611@suse.de> <4B4B802A.2010709@imap.cc>
+	<20100111200136.GA29955@suse.de>
+Date: Tue, 12 Jan 2010 21:34:28 +0100
+In-Reply-To: <20100111200136.GA29955@suse.de> (Greg KH's message of "Mon, 11
+	Jan 2010 12:01:36 -0800")
+Message-ID: <m3fx6bxdt7.fsf@intrepid.localdomain>
 MIME-Version: 1.0
-To: Eric Dumazet <eric.dumazet@gmail.com>
-CC: William Allen Simpson <william.allen.simpson@gmail.com>,
-       Linux Kernel Developers <linux-kernel@vger.kernel.org>,
-       Linux Kernel Network Developers <netdev@vger.kernel.org>,
-       Michael Chan <mchan@broadcom.com>
-Subject: Re: [PATCH 1/2] net: tcp_header_len_th and tcp_option_len_th
-References: <4B44FE3C.6060809@gmail.com> <4B450065.4010108@gmail.com> <4B4C519E.2090207@gmail.com> <4B4CB46C.8020502@gmail.com> <4B4CB712.8030806@gmail.com>
-In-Reply-To: <4B4CB712.8030806@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Dumazet wrote, On 01/12/2010 06:53 PM:
+Greg KH <gregkh@suse.de> writes:
 
-> Its probably a bit odd, because I am stuck with a windows XP notebook here at work,
-> dont flame me :(
+> Close, but if you do this, please name the function
+> hisax_find_pci_device() or something, and change the drivers to use it
+> instead.  Also put a big fat warning in the function that calling this
+> is unsafe for any PCI hotplug type machine.
 
-You should be ashamed! (Linus promoted Windows 7 long time ago ;-)
+BTW, I have a driver in the works which uses these functions, and I
+wonder how to do it correctly. The problem is that the hardware is a
+dual-function PCI card (two DEC Tulip Ethernet controllers) but part of
+the first device (EEPROM interface or something like that) is used by
+both (there is an FPGA connected there, serving both channels).
 
-Jarek P.
+This means drivers for dev#0 and dev#1 (both "normal" PCI controllers)
+need to register and access part of dev#0 BARs.
+
+How do I do that properly, in terms of PCI API?
+-- 
+Krzysztof Halasa
