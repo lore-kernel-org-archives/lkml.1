@@ -1,78 +1,167 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752923Ab0ALFxK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752986Ab0ALF4q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752923Ab0ALFxK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jan 2010 00:53:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751376Ab0ALFxJ
+	id S1752986Ab0ALF4q (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jan 2010 00:56:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751402Ab0ALF4p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jan 2010 00:53:09 -0500
-Received: from mga09.intel.com ([134.134.136.24]:61428 "EHLO mga09.intel.com"
+	Tue, 12 Jan 2010 00:56:45 -0500
+Received: from e7.ny.us.ibm.com ([32.97.182.137]:56789 "EHLO e7.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751087Ab0ALFxI convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jan 2010 00:53:08 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,260,1262592000"; 
-   d="scan'208";a="483248929"
-From: "Zheng, Shaohui" <shaohui.zheng@intel.com>
-To: "Wu, Fengguang" <fengguang.wu@intel.com>
-CC: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "ak@linux.intel.com" <ak@linux.intel.com>,
-       "y-goto@jp.fujitsu.com" <y-goto@jp.fujitsu.com>,
-       Dave Hansen <haveblue@us.ibm.com>, "x86@kernel.org" <x86@kernel.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Date: Tue, 12 Jan 2010 13:51:15 +0800
-Subject: RE: [PATCH - resend] Memory-Hotplug: Fix the bug on interface
-	/dev/mem for 64-bit kernel(v1)
-Thread-Topic: [PATCH - resend] Memory-Hotplug: Fix the bug on interface
-	/dev/mem for 64-bit kernel(v1)
-Thread-Index: AcqSu7hD6Q79KRLASCWpxZ0RhWbs5wAjsfNw
-Message-ID: <DA586906BA1FFC4384FCFD6429ECE860316C002A@shzsmsx502.ccr.corp.intel.com>
-References: <DA586906BA1FFC4384FCFD6429ECE86031560BAC@shzsmsx502.ccr.corp.intel.com>
- <20100108124851.GB6153@localhost>
- <DA586906BA1FFC4384FCFD6429ECE86031560FC1@shzsmsx502.ccr.corp.intel.com>
- <20100111124303.GA21408@localhost>
-In-Reply-To: <20100111124303.GA21408@localhost>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	id S1750834Ab0ALF4p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jan 2010 00:56:45 -0500
+Date: Mon, 11 Jan 2010 23:56:41 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
+       linux-kernel@vger.kernel.org, Tejun Heo <tj@kernel.org>,
+       Cornelia Huck <cornelia.huck@de.ibm.com>, linux-fsdevel@vger.kernel.org,
+       Eric Dumazet <eric.dumazet@gmail.com>, Benjamin LaHaise <bcrl@lhnet.ca>,
+       "Eric W. Biederman" <ebiederm@aristanetworks.com>
+Subject: Re: [PATCH 3/7] sysfs: Keep an nlink count on sysfs directories.
+Message-ID: <20100112055641.GB10756@us.ibm.com>
+References: <m1d41g9z3q.fsf@fess.ebiederm.org>
+ <1263241315-19499-3-git-send-email-ebiederm@xmission.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1263241315-19499-3-git-send-email-ebiederm@xmission.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > +	/* if add to low memory, update max_low_pfn */
-> > +	if (unlikely(start_pfn < limit_low_pfn)) {
-> > +		if (end_pfn <= limit_low_pfn)
-> > +			max_low_pfn = end_pfn;
-> > +		else
-> > +			max_low_pfn = limit_low_pfn;
+Quoting Eric W. Biederman (ebiederm@xmission.com):
+> From: Eric W. Biederman <ebiederm@aristanetworks.com>
 > 
-> X86_64 actually always set max_low_pfn=max_pfn, in setup_arch():
-> [Zheng, Shaohui] there should be some misunderstanding, I read the
-> code carefully, if the total memory is under 4G, it always
-> max_low_pfn=max_pfn. If the total memory is larger than 4G,
-> max_low_pfn means the end of low ram. It set
+> On large directories sysfs_count_nlinks can be a significant
+> bottleneck, so keep a count in sysfs_dirent.  If we exceed
+> the maximum number of directory entries we can store return
+> nlink of 1.  An nlink of 1 matches what reiserfs does in
+> this case, and it let's find and similar utlities know that
+> we have a the directory nlink can not be used for optimization
+> purposes.
+> 
+> Signed-off-by: Eric W. Biederman <ebiederm@aristanetworks.com>
+> ---
+>  fs/sysfs/dir.c   |   20 ++++++++++++++++++++
+>  fs/sysfs/inode.c |   15 +--------------
+>  fs/sysfs/mount.c |    1 +
+>  fs/sysfs/sysfs.h |    1 +
+>  4 files changed, 23 insertions(+), 14 deletions(-)
+> 
+> diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
+> index 5c4703d..1c364be 100644
+> --- a/fs/sysfs/dir.c
+> +++ b/fs/sysfs/dir.c
+> @@ -359,6 +359,7 @@ struct sysfs_dirent *sysfs_new_dirent(const char *name, umode_t mode, int type)
+>  	sd->s_name = name;
+>  	sd->s_mode = mode;
+>  	sd->s_flags = type;
+> +	sd->s_nlink = type == SYSFS_DIR? 2:1;
+> 
+>  	return sd;
+> 
+> @@ -392,6 +393,23 @@ void sysfs_addrm_start(struct sysfs_addrm_cxt *acxt,
+>  	mutex_lock(&sysfs_mutex);
+>  }
+> 
+> +static void sysfs_dir_inc_nlink(struct sysfs_dirent *sd)
+> +{
+> +	/* If we overflow force nlink to be 1 */
+> +	if (sd->s_nlink > 1) {
+> +		sd->s_nlink++;
+> +		if (sd->s_nlink == 0)
+> +			sd->s_nlink = 1;
+> +	}
+> +}
 
-> max_low_pfn = e820_end_of_low_ram_pfn();.
+Now, the original code only ups nlink on parent if child is a dir.
+IIUC your code will now inc nlink for files as well.  Is any userspace
+going to be confused by that?
 
-The above line is very misleading.. In setup_arch(), it will be
-overrode by the following block.
-[Zheng, Shaohui] yes, I misunderstand it because of this code. It seems that max_low_pfn == max_pfn is always true on x86_32 and x86_64.  Thanks fengguang to point it out.
-
->  899 #ifdef CONFIG_X86_64
->  900         if (max_pfn > max_low_pfn) {
->  901                 max_pfn_mapped = init_memory_mapping(1UL<<32,
->  902                                                      max_pfn<<PAGE_SHIFT);
->  903                 /* can we preseve max_low_pfn ?*/
->  904                 max_low_pfn = max_pfn;
->  905         }
->  906 #endif
- 
-Thanks,
-Fengguang
+> +
+> +static void sysfs_dir_dec_nlink(struct sysfs_dirent *sd)
+> +{
+> +	/* Don't decrement if we overflowed an increment */
+> +	if (sd->s_nlink != 1)
+> +		sd->s_nlink--;
+> +}
+> +
+>  /**
+>   *	__sysfs_add_one - add sysfs_dirent to parent without warning
+>   *	@acxt: addrm context to use
+> @@ -420,6 +438,7 @@ int __sysfs_add_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd)
+>  		return -EEXIST;
+> 
+>  	sd->s_parent = sysfs_get(acxt->parent_sd);
+> +	sysfs_dir_inc_nlink(sd->s_parent);
+> 
+>  	sysfs_link_sibling(sd);
+> 
+> @@ -512,6 +531,7 @@ void sysfs_remove_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd)
+> 
+>  	BUG_ON(sd->s_flags & SYSFS_FLAG_REMOVED);
+> 
+> +	sysfs_dir_dec_nlink(sd->s_parent);
+>  	sysfs_unlink_sibling(sd);
+> 
+>  	/* Update timestamps on the parent */
+> diff --git a/fs/sysfs/inode.c b/fs/sysfs/inode.c
+> index 104cbc1..f0172b3 100644
+> --- a/fs/sysfs/inode.c
+> +++ b/fs/sysfs/inode.c
+> @@ -201,18 +201,6 @@ static inline void set_inode_attr(struct inode * inode, struct iattr * iattr)
+>  	inode->i_ctime = iattr->ia_ctime;
+>  }
+> 
+> -static int sysfs_count_nlink(struct sysfs_dirent *sd)
+> -{
+> -	struct sysfs_dirent *child;
+> -	int nr = 0;
+> -
+> -	for (child = sd->s_dir.children; child; child = child->s_sibling)
+> -		if (sysfs_type(child) == SYSFS_DIR)
+> -			nr++;
+> -
+> -	return nr + 2;
+> -}
+> -
+>  static void sysfs_refresh_inode(struct sysfs_dirent *sd, struct inode *inode)
+>  {
+>  	struct sysfs_inode_attrs *iattrs = sd->s_iattr;
+> @@ -228,8 +216,7 @@ static void sysfs_refresh_inode(struct sysfs_dirent *sd, struct inode *inode)
+>  					    iattrs->ia_secdata_len);
+>  	}
+> 
+> -	if (sysfs_type(sd) == SYSFS_DIR)
+> -		inode->i_nlink = sysfs_count_nlink(sd);
+> +	inode->i_nlink = sd->s_nlink;
+>  }
+> 
+>  int sysfs_getattr(struct vfsmount *mnt, struct dentry *dentry, struct kstat *stat)
+> diff --git a/fs/sysfs/mount.c b/fs/sysfs/mount.c
+> index 4974995..372a32c 100644
+> --- a/fs/sysfs/mount.c
+> +++ b/fs/sysfs/mount.c
+> @@ -37,6 +37,7 @@ struct sysfs_dirent sysfs_root = {
+>  	.s_count	= ATOMIC_INIT(1),
+>  	.s_flags	= SYSFS_DIR,
+>  	.s_mode		= S_IFDIR | S_IRWXU | S_IRUGO | S_IXUGO,
+> +	.s_nlink	= 2,
+>  	.s_ino		= 1,
+>  };
+> 
+> diff --git a/fs/sysfs/sysfs.h b/fs/sysfs/sysfs.h
+> index 0417805..85d5c6c 100644
+> --- a/fs/sysfs/sysfs.h
+> +++ b/fs/sysfs/sysfs.h
+> @@ -67,6 +67,7 @@ struct sysfs_dirent {
+> 
+>  	unsigned int		s_flags;
+>  	unsigned short		s_mode;
+> +	unsigned short		s_nlink;
+>  	ino_t			s_ino;
+>  	struct sysfs_inode_attrs *s_iattr;
+>  };
+> -- 
+> 1.6.5.2.143.g8cc62
