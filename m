@@ -1,52 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754638Ab0ALQgN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754628Ab0ALQib@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754638Ab0ALQgN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jan 2010 11:36:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754560Ab0ALQgM
+	id S1754628Ab0ALQib (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jan 2010 11:38:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751509Ab0ALQia
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jan 2010 11:36:12 -0500
-Received: from gw1.cosmosbay.com ([212.99.114.194]:41245 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754255Ab0ALQgL (ORCPT
+	Tue, 12 Jan 2010 11:38:30 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:37389 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751160Ab0ALQi3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jan 2010 11:36:11 -0500
-Message-ID: <4B4CA4E5.7030800@gmail.com>
-Date: Tue, 12 Jan 2010 17:35:49 +0100
-From: Eric Dumazet <eric.dumazet@gmail.com>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; fr; rv:1.9.1.5) Gecko/20091204 Thunderbird/3.0
+	Tue, 12 Jan 2010 11:38:29 -0500
+Date: Tue, 12 Jan 2010 11:38:28 -0500
+From: Christoph Hellwig <hch@infradead.org>
+To: Michal Novotny <minovotn@redhat.com>
+Cc: Christoph Hellwig <hch@infradead.org>, Ric Wheeler <rwheeler@redhat.com>,
+       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] extend e2fsprogs functionality to add EXT2_FLAG_DIRECT
+	option
+Message-ID: <20100112163828.GA14633@infradead.org>
+References: <4B46FCB2.1090308@redhat.com> <4B4B84E2.1050508@redhat.com> <4B4C54DC.4040006@redhat.com> <4B4C6429.6090803@redhat.com> <4B4C67F5.1020009@redhat.com> <20100112122319.GA20596@infradead.org> <4B4C6B70.1050205@redhat.com> <20100112124600.GA7151@infradead.org> <4B4C7297.5030905@redhat.com>
 MIME-Version: 1.0
-To: James Kosin <JKosin@intcomgrp.com>
-CC: linux-kernel@vger.kernel.org, Linux Netdev List <netdev@vger.kernel.org>
-Subject: Re: arm: Optimization for ethernet MAC handling at91_ether.c
-References: <3DBBD805E3BA064A87F551C0E8BD3674028973F5@MAILSRV.intcomgrp.com>
-In-Reply-To: <3DBBD805E3BA064A87F551C0E8BD3674028973F5@MAILSRV.intcomgrp.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Tue, 12 Jan 2010 17:35:49 +0100 (CET)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B4C7297.5030905@redhat.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-CC to netdev
+Ok, I looked at the issue.  The problem is that the Xen backend drivers
+are (as expected) utterly braindead and submit bios directly from the
+virtualization backed without using proper abstractions and thus
+bypassing all the cache coherency features in the fileystems (the block
+device nodes are just another mini-filesystem in that respect).  So
+when you first have buffered access in the host pages may stay in cache
+and get overwritten directly on disk by a Xen guest, and once the guest
+is down the host may still use the now stale cached data.
 
-Le 12/01/2010 16:39, James Kosin a écrit :
-> Everyone,
-> 
-> Since, a AT91_EMAC_TUND only happens when the transmitter is unable to
-> transfer the frame in time for a frame to be sent.  It makes sense to
-> RETRY the packet in this condition in the ISR.
-> Or would this overcomplicate a simple task?
->                 ... see below ...
-> 
-...
-
-> 
-> ...
-> I do know there needs to be a bit more code then to handle the
-> successful case below this; but, this is enough to understand what I am
-> talking about.  The UNDERRUN error should happen infrequently and in
-> ideal circumstances not happen at all.
->  
-
-
-If this happens once in a while, why do you want driver to retry the transmit ?
+I would recommend to migrate your cutomers to KVM which uses the proper
+abtractions and thus doesn't have this problem.  There's a reason after
+all why all the Xen dom0 mess never got merged to mainline.
