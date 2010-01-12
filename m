@@ -1,50 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753691Ab0ALOyn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753955Ab0ALOzq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753691Ab0ALOyn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jan 2010 09:54:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752149Ab0ALOym
+	id S1753955Ab0ALOzq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jan 2010 09:55:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753288Ab0ALOzp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jan 2010 09:54:42 -0500
-Received: from kroah.org ([198.145.64.141]:34498 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752142Ab0ALOym (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jan 2010 09:54:42 -0500
-Date: Tue, 12 Jan 2010 06:45:53 -0800
-From: Greg KH <greg@kroah.com>
-To: Steven Xu <linuxkernel.xxz@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: A QUESTION ABOUT USB DRIVER
-Message-ID: <20100112144553.GA26050@kroah.com>
-References: <1fd295ee1001102114p1b74336q16bb35d973b40c1c@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1fd295ee1001102114p1b74336q16bb35d973b40c1c@mail.gmail.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Tue, 12 Jan 2010 09:55:45 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:52362 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751702Ab0ALOzn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jan 2010 09:55:43 -0500
+Subject: Re: Futex hang/lockup problem in 2.6.30+ on AMD64
+From: Peter Zijlstra <peterz@infradead.org>
+To: =?ISO-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>
+Cc: Andrew Athan <linux_kernel_aathan@memeplex.com>,
+       linux-kernel@vger.kernel.org, Darren Hart <dvhltc@us.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <20100112145213.GB3925@hack>
+References: <4B4C3E4F.9060001@memeplex.com>  <20100112145213.GB3925@hack>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 12 Jan 2010 15:55:27 +0100
+Message-ID: <1263308127.4244.142.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 11, 2010 at 01:14:31PM +0800, Steven Xu wrote:
-> output: usb 1-1: device descriptor read/64, error -71
-> 
-> 
-> in drivers/usb/core/hub.c  line 2250
-> when a udisk inserted run to here
->                         for (j = 0; j < 3; ++j) {
->                                 buf->bMaxPacketSize0 = 0;
-> 
->                                 r = usb_control_msg(udev, usb_rcvaddr0pipe(),
->                                         USB_REQ_GET_DESCRIPTOR, USB_DIR_IN,
->                                         USB_DT_DEVICE << 8, 0,
->                                         buf, GET_DESCRIPTOR_BUFSIZE,
->                                         (i ? USB_CTRL_GET_TIMEOUT : 1000));
->  return r=-74,
-> 
-> WHAT IS THE POSSIBEL REASON FOR THIS?
+On Tue, 2010-01-12 at 22:52 +0800, Américo Wang wrote:
 
-It is needed, why, are you having problems with it?
+> > $ uname -a
+> > Linux UK22 2.6.30-2-amd64 #1 SMP Fri Sep 25 22:16:56 UTC 2009 x86_64  
+> > GNU/Linux
 
-thanks,
+Does a recent kernel work?
 
-greg k-h
