@@ -1,48 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754113Ab0ALKhE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754128Ab0ALKkg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754113Ab0ALKhE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jan 2010 05:37:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754020Ab0ALKhD
+	id S1754128Ab0ALKkg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jan 2010 05:40:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754040Ab0ALKkf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jan 2010 05:37:03 -0500
-Received: from mail-px0-f174.google.com ([209.85.216.174]:34871 "EHLO
-	mail-px0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754000Ab0ALKhB (ORCPT
+	Tue, 12 Jan 2010 05:40:35 -0500
+Received: from gw1.cosmosbay.com ([212.99.114.194]:46628 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751648Ab0ALKkf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jan 2010 05:37:01 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:cc:content-type;
-        b=dmpf4+bsr466MbLGdOofax7xWt8pJCmWmAnp12Xch6JUvyIr/TaDj4zZw8hTF1mWFF
-         vfLgi8x+1ppyRDHc00rECJaO3fyI/fkMkts6z7Qgcz+17PkYhjy9uGFTl+3f3LOcqgM/
-         Fgfkor4ZIs+yxCVW0ZC0YsXxP/z8Uc3W3zcxM=
+	Tue, 12 Jan 2010 05:40:35 -0500
+Message-ID: <4B4C519E.2090207@gmail.com>
+Date: Tue, 12 Jan 2010 11:40:30 +0100
+From: Eric Dumazet <eric.dumazet@gmail.com>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; fr; rv:1.9.1.5) Gecko/20091204 Thunderbird/3.0
 MIME-Version: 1.0
-Date: Tue, 12 Jan 2010 16:37:00 +0600
-Message-ID: <b9df5fa11001120237o2461db60g1e0cfa97b3aef3@mail.gmail.com>
-Subject: [PATCH] smp: Fix documentation in include/linux/smp.h
-From: Rakib Mullick <rakib.mullick@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
+To: William Allen Simpson <william.allen.simpson@gmail.com>
+CC: Linux Kernel Developers <linux-kernel@vger.kernel.org>,
+       Linux Kernel Network Developers <netdev@vger.kernel.org>,
+       Michael Chan <mchan@broadcom.com>
+Subject: Re: [PATCH 1/2] net: tcp_header_len_th and tcp_option_len_th
+References: <4B44FE3C.6060809@gmail.com> <4B450065.4010108@gmail.com>
+In-Reply-To: <4B450065.4010108@gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Tue, 12 Jan 2010 11:40:31 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-	smp: Fix documentation.
+Le 06/01/2010 22:28, William Allen Simpson a écrit :
+> Redefine two TCP header functions to accept TCP header pointer.
+> When subtracting, return signed int to allow error checking.
+> 
+> These functions will be used in subsequent patches that implement
+> additional features.
+> 
+> Signed-off-by: William.Allen.Simpson@gmail.com
+> ---
+>  include/linux/tcp.h |   12 ++++++++++++
+>  1 files changed, 12 insertions(+), 0 deletions(-)
+> 
 
-Fix documentation in include/linux/smp.h: smp_processor_id()
+Its better to inline your patches so that we can comment them, without copy/paste
 
-Signed-off-by: Rakib Mullick <rakib.mullick@gmail.com>
----
+When I hit 'reply to', my mailer only quoted the ChangeLog, not the patch.
 
---- linus/include/linux/smp.h	2010-01-06 20:11:08.000000000 +0600
-+++ rakib/include/linux/smp.h	2010-01-12 16:22:33.000000000 +0600
-@@ -154,7 +154,7 @@ smp_call_function_any(const struct cpuma
- /*
-  * smp_processor_id(): get the current CPU ID.
-  *
-- * if DEBUG_PREEMPT is enabled the we check whether it is
-+ * if DEBUG_PREEMPT is enabled then we check whether it is
-  * used in a preemption-safe way. (smp_processor_id() is safe
-  * if it's used in a preemption-off critical section, or in
-  * a thread that is bound to the current CPU.)
+Anyway ..
+
++/* Length of standard options only.  This could be negative. */
++static inline int tcp_option_len_th(const struct tcphdr *th)
++{
++	return (int)(th->doff * 4) - sizeof(*th);
++}
+
+
+The (int) cast is not necessary, since the function returns a signed int
+
+->
+	return th->doff * 4 - sizeof(*th);
