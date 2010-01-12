@@ -1,144 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753588Ab0ALIxH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753693Ab0ALIyV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753588Ab0ALIxH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jan 2010 03:53:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752138Ab0ALIxG
+	id S1753693Ab0ALIyV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jan 2010 03:54:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752558Ab0ALIyU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jan 2010 03:53:06 -0500
-Received: from mail-ew0-f209.google.com ([209.85.219.209]:63703 "EHLO
-	mail-ew0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751797Ab0ALIxE convert rfc822-to-8bit (ORCPT
+	Tue, 12 Jan 2010 03:54:20 -0500
+Received: from e28smtp08.in.ibm.com ([122.248.162.8]:42554 "EHLO
+	e28smtp08.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750741Ab0ALIyT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jan 2010 03:53:04 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=S6/NomZngxKRrVHSQ42qWISOlkhyP8CF+U1ywILy25HvzvEMcwy+4YG/Ghd9SbOtut
-         C3DcqHqhK4a/KR3KNcEStJpcTxTGskfLvvsxyyoN8XI33c7oPJb4dz1BbJ6cJHfduPSQ
-         pOdyHUvcMzwJrbnaFwnyh8CdSbTNYJFTCivZU=
+	Tue, 12 Jan 2010 03:54:19 -0500
+Date: Tue, 12 Jan 2010 14:24:17 +0530
+From: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Arnaldo Carvalho de Melo <acme@infradead.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       utrace-devel <utrace-devel@redhat.com>, Mark Wielaard <mjw@redhat.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Maneesh Soni <maneesh@in.ibm.com>, Jim Keniston <jkenisto@us.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC] [PATCH 4/7] Uprobes Implementation
+Message-ID: <20100112085417.GA17299@linux.vnet.ibm.com>
+Reply-To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+References: <20100111122521.22050.3654.sendpatchset@srikar.in.ibm.com>
+ <20100111122553.22050.46895.sendpatchset@srikar.in.ibm.com>
+ <20100112053559.GL5243@nowhere>
 MIME-Version: 1.0
-In-Reply-To: <20100112014953.GA22606@sli10-desk.sh.intel.com>
-References: <1263052757-23436-1-git-send-email-czoccolo@gmail.com>
-	 <20100111014730.GA22362@sli10-desk.sh.intel.com>
-	 <4e5e476b1001110646i20c2bcf4n51380853820c29d8@mail.gmail.com>
-	 <20100112014953.GA22606@sli10-desk.sh.intel.com>
-Date: Tue, 12 Jan 2010 09:52:59 +0100
-Message-ID: <4e5e476b1001120052k7bb7396bsfc3eddf6ce28e6a5@mail.gmail.com>
-Subject: Re: [PATCH] cfq-iosched: rework seeky detection
-From: Corrado Zoccolo <czoccolo@gmail.com>
-To: Shaohua Li <shaohua.li@intel.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>,
-       Jeff Moyer <jmoyer@redhat.com>, Vivek Goyal <vgoyal@redhat.com>,
-       Gui Jianfeng <guijianfeng@cn.fujitsu.com>,
-       Yanmin Zhang <yanmin_zhang@linux.intel.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20100112053559.GL5243@nowhere>
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
-On Tue, Jan 12, 2010 at 2:49 AM, Shaohua Li <shaohua.li@intel.com> wrote:
-> On Mon, Jan 11, 2010 at 10:46:23PM +0800, Corrado Zoccolo wrote:
->> Hi,
->> On Mon, Jan 11, 2010 at 2:47 AM, Shaohua Li <shaohua.li@intel.com> wrote:
->> > On Sat, Jan 09, 2010 at 11:59:17PM +0800, Corrado Zoccolo wrote:
->> >> Current seeky detection is based on average seek lenght.
->> >> This is suboptimal, since the average will not distinguish between:
->> >> * a process doing medium sized seeks
->> >> * a process doing some sequential requests interleaved with larger seeks
->> >> and even a medium seek can take lot of time, if the requested sector
->> >> happens to be behind the disk head in the rotation (50% probability).
->> >>
->> >> Therefore, we change the seeky queue detection to work as follows:
->> >> * each request can be classified as sequential if it is very close to
->> >>   the current head position, i.e. it is likely in the disk cache (disks
->> >>   usually read more data than requested, and put it in cache for
->> >>   subsequent reads). Otherwise, the request is classified as seeky.
->> >> * an history window of the last 32 requests is kept, storing the
->> >>   classification result.
->> >> * A queue is marked as seeky if more than 1/8 of the last 32 requests
->> >>   were seeky.
->> >>
->> >> This patch fixes a regression reported by Yanmin, on mmap 64k random
->> >> reads.
->> > Can we not count a big request (say the request data is >= 32k) as seeky
->> > regardless the seek distance? In this way we can also make a 64k random sync
->> > read not as seeky.
->> I think I understand what you are proposing, but I don't think request
->> size should
->> matter at all for rotational disk.
-> randread a 32k bs  definitely has better throughput than a 4k bs. So the request
-> size does matter. From iops point of view, 64k and 4k might not have difference
-> in device, but from performance point of view, they have big difference.
-Assume we have two queues, one with 64k requests, and an other with 4k requests,
-and that our ideal disk will service them with the same IOPS 'v'.
-Then, servicing for 100ms the first, and then for 100ms the second, we
-will have, averaging on the
-200ms period of the schedule:
-first queue IOPS = v * 100/200 = v/2
-second queue IOPS = v * 100/200 = v/2
-Now the bandwidth will be simply IOPS * request size.
-If instead, you service one request from one queue, and one from the
-other (and keep switching for 200ms),
-with v IOPS, each queue will obtain again v/2 IOPS, i.e. exactly the
-same numbers.
 
-But, instead, if we have a 2-disk RAID 0, with stripe >= 64k, and the
-64k accesses are aligned (do not cross the stripe), we will have 50%
-probability that the requests from the 2 queues are serviced in
-parallel, thus increasing the total IOPS and bandwidth. This cannot
-happen if you service for 100ms a single depth-1 seeky queue.
-
->
->> Usually, the disk firmware will load a big chunk of data in its cache even when
->> requested to read a single sector, and will provide following ones
->> from the cache
->> if you read them sequentially.
->>
->> Now, in CFQ, what we really mean by saying that a queue is seeky is that
->> waiting a bit in order to serve an other request from this queue doesn't
->> give any benefit w.r.t. switching to an other queue.
-> If no idle, we might switch to a random 4k access or any kind of queues. Compared
-> to continue big request access and switch to other queue with small block, no switching
-> does give benefit.
-CFQ in 2.6.33 works differently than it worked before.
-Now, seeky queues have an aggregate time slice, and within this time
-slice, you will switch
-between seeky queues fairly. So it cannot happen that a seeky queue
-loses its time slice.
-
->
->> So, if you read a single 64k block from disk and then seek, then you can service
->> any other request without losing bandwidth.
-> But the 64k bs queue loses its slice, which might means device serves more 4k access.
-> As a result, reduce bandwidth.
-If both queues are backlogged and at the same priority, they will be
-serviced fairly.
-If one queue has large think time (or lower priority), the other will
-be serviced more often.
->
->> Instead, if you are reading 4k, then the next ones (and so on up to 64k, as it
->> happens with mmap when you fault in a single page at a time), then it
->> is convenient
->> to wait for the next request, since it has 3/4 of changes to be
->> sequential, so be
->> serviced by cache.
->>
->> I'm currently testing a patch to consider request size in SSDs, instead.
->> In SSDs, the location of the request doesn't mean anything, but the
->> size is meaningful.
->> Therefore, submitting together many small requests from different
->> queues can improve
->> the overall performance.
-> Agree.
->
-> Thanks,
-> Shaohua
->
+Hi Frederic,
 
 
-Thanks,
-Corrado
+> 
+> 
+> So, as stated before, uprobe seems to handle too much standalone
+> policies such as freeing on exec, always inherit on clone and never
+> on fork. Such rules should be decided from uprobe clients not
+> from uprobe itself and that makes it not enough flexible to
+> be usable for now.
+
+Lets say we were tracing process A and had inserted few breakpoints.
+If this process were to peform an exec, we would be loading a new
+process image. The old breakpoints are actually detrimental now 
+and hence all the breakpoints that we had installed would
+have to be removed anyway. And new breakpoints have to be installed at
+different locations. 
+
+If this process were to fork then we would have to create all the
+per process uprobes book-keeping including one page per process 
+instruction store. In most cases fork would be followed by exec.
+which would mean we would have to trash the breakpoints that we
+inherited.
+
+Tracing a newly exec-ed process or a forked process is similar to
+starting a new uprobes session.
+
+Also uprobes would allow more than one kernel module/plugin to trace
+the same process. i.e for the same process at the same breakpoint
+one client may want a follow-on-fork, or follow-on-exec, the other one
+may not be wanting it. 
+
+But I understand your requirements for tracing a session rather than
+just a process. And thats where the utrace based task-finder or
+something similar finds its application. So this layer(task-finder)
+would be able to tell uprobes to start tracing an process based on
+certain criteria.
+
+Since uprobes uses breakpoint instruction, all threads of a process
+which is being traced would take an exception when passing thro a
+breakpoint. Hence we have to always inherit on clone. If a client wants
+to trace only certain threads of a process, then he could filter them in
+the uprobe trace handler.
+
+I feel the current uprobes + task finder would be much more flexible.
+perf could probably use this combination. Also this approach would
+reduce un-necessary creation of uprobes book-keeping for process where
+we may never place probes. 
+
+> 
+> For example if we want it to be usable by perf, we have two ways:
+> 
+> - a trace event. Unfortunately, like I explained in a previous
+>   mail, this doesn't seem to be a suitable interface for this
+>   particular case.
+> 
+> - a performance monitoring unit, with the existing unified interface
+>   struct pmu, usable by perf.
+> 
+> 
+> Typically, to use it with perf toward a pmu, perf tools need to
+> create a uprobe on perf process and activate its hook on the next exec.
+> Thereafter, it's up to perf to decide if we inherit through clone
+> and fork.
+> 
+> Here I fear utrace and perf are going to collide.
+
+I am not sure why utrace and perf would collide. 
+I think utrace is a layer below uprobes so perf could use utrace
+directly(if it implements the task-finder logic) or use utrace thro
+uprobes.
+
+> 
+> See how could be the final struct pmu (we need to extend it
+> to support utrace):
+> 
+> struct pmu {
+> 	enable() -> called we schedule in a context where we want
+>                     a uprobe to be active. Called very often
+>         disable() -> the above opposite
+> 
+>         /* Not yet existing callbacks */
+> 
+>         hook_task() -> called when a process is created which
+>                        we want to activate our hook
+>                        would be typically called once on
+>                        exec if we have set enable_on_exec
+>                        and also on clone()/fork()
+>                        if we want to inherit.
+> }
+> 
+> 
+> The above hook_task (could be divided in more precise callback events
+> like hook_on_exec, hook_on_clone, etc...) would be needed by perf
+> to drive correctly utrace and this is going to collide with utrace
+> callbacks that notify execs and forks.
+
+As pointed by Ananth, this hook on exec, hook on fork is exactly what
+the taskfinder/perf would provide using the utrace api's.
+
+If there is any reason why utrace and perf could collide then can you
+please put in more details. In such a case, Roland and others may have
+more ideas on how to work around these issues.
+
+Please let me know your thoughts.
+
+
+--
+Thanks and Regards
+Srikar 
