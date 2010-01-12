@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754288Ab0AMAfK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754463Ab0AMAfl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754288Ab0AMAfK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jan 2010 19:35:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754092Ab0AMAfG
+	id S1754463Ab0AMAfl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jan 2010 19:35:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754217Ab0AMAfi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jan 2010 19:35:06 -0500
+	Tue, 12 Jan 2010 19:35:38 -0500
 Received: from UNIX37.ANDREW.CMU.EDU ([128.2.13.167]:54582 "EHLO
 	unix37.andrew.cmu.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753866Ab0AMAfB (ORCPT
+	with ESMTP id S1752356Ab0AMAfB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 12 Jan 2010 19:35:01 -0500
 X-Greylist: delayed 3553 seconds by postgrey-1.27 at vger.kernel.org; Tue, 12 Jan 2010 19:35:00 EST
-Date: Tue, 12 Jan 2010 18:37:09 -0500
+Date: Tue, 12 Jan 2010 18:36:30 -0500
 From: Ben Blum <bblum@andrew.cmu.edu>
 To: Ben Blum <bblum@andrew.cmu.edu>
 Cc: Vivek Goyal <vgoyal@redhat.com>, Li Zefan <lizf@cn.fujitsu.com>,
@@ -19,8 +19,8 @@ Cc: Vivek Goyal <vgoyal@redhat.com>, Li Zefan <lizf@cn.fujitsu.com>,
        KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
        Andrew Morton <akpm@linux-foundation.org>, menage@google.com,
        containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: [PATCH v2 2/2] cgroups: blkio subsystem as module
-Message-ID: <20100112233709.GD5098@unix37.andrew.cmu.edu>
+Subject: [PATCH v2 1/2] cgroups: modular subsystems support for use_id
+Message-ID: <20100112233630.GC5098@unix37.andrew.cmu.edu>
 References: <20091231051050.GA714@andrew.cmu.edu>
  <20100106160414.bd555474.akpm@linux-foundation.org>
  <20100107012606.GA25577@andrew.cmu.edu>
@@ -30,261 +30,89 @@ References: <20091231051050.GA714@andrew.cmu.edu>
  <20100112233453.GB5098@unix37.andrew.cmu.edu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: attachment; filename="cgroups-blkio-as-module.patch"
+Content-Disposition: attachment; filename="cgroups-module-use_id-support.patch"
 In-Reply-To: <20100112233453.GB5098@unix37.andrew.cmu.edu>
 User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Convert blk-cgroup to be buildable as a module
+This patch adds support for subsys.use_id in module-loadable subsystems.
 
 From: Ben Blum <bblum@andrew.cmu.edu>
 
-This patch modifies the Block I/O cgroup subsystem to be able to be built as a
-module. As the CFQ disk scheduler optionally depends on blk-cgroup, config
-options in block/Kconfig, block/Kconfig.iosched, and block/blk-cgroup.h are
-enhanced to support the new module dependency.
-
 Signed-off-by: Ben Blum <bblum@andrew.cmu.edu>
 ---
- block/Kconfig             |    2 +-
- block/Kconfig.iosched     |    2 +-
- block/blk-cgroup.c        |   53 +++++++++++++++++++++++++++++++++++----------
- block/blk-cgroup.h        |   10 +++++++-
- include/linux/iocontext.h |    2 +-
- kernel/cgroup.c           |    9 ++++++++
- 6 files changed, 61 insertions(+), 17 deletions(-)
+ kernel/cgroup.c |   25 +++++++++++++++++++------
+ 1 files changed, 19 insertions(+), 6 deletions(-)
 
-diff --git a/block/Kconfig b/block/Kconfig
-index e20fbde..62a5921 100644
---- a/block/Kconfig
-+++ b/block/Kconfig
-@@ -78,7 +78,7 @@ config BLK_DEV_INTEGRITY
- 	Protection.  If in doubt, say N.
- 
- config BLK_CGROUP
--	bool
-+	tristate
- 	depends on CGROUPS
- 	default n
- 	---help---
-diff --git a/block/Kconfig.iosched b/block/Kconfig.iosched
-index b71abfb..fc71cf0 100644
---- a/block/Kconfig.iosched
-+++ b/block/Kconfig.iosched
-@@ -23,6 +23,7 @@ config IOSCHED_DEADLINE
- 
- config IOSCHED_CFQ
- 	tristate "CFQ I/O scheduler"
-+	select BLK_CGROUP if CFQ_GROUP_IOSCHED
- 	default y
- 	---help---
- 	  The CFQ I/O scheduler tries to distribute bandwidth equally
-@@ -35,7 +36,6 @@ config IOSCHED_CFQ
- config CFQ_GROUP_IOSCHED
- 	bool "CFQ Group Scheduling support"
- 	depends on IOSCHED_CFQ && CGROUPS
--	select BLK_CGROUP
- 	default n
- 	---help---
- 	  Enable group IO scheduling in CFQ.
-diff --git a/block/blk-cgroup.c b/block/blk-cgroup.c
-index 1fa2654..6c73380 100644
---- a/block/blk-cgroup.c
-+++ b/block/blk-cgroup.c
-@@ -23,6 +23,31 @@ static LIST_HEAD(blkio_list);
- struct blkio_cgroup blkio_root_cgroup = { .weight = 2*BLKIO_WEIGHT_DEFAULT };
- EXPORT_SYMBOL_GPL(blkio_root_cgroup);
- 
-+static struct cgroup_subsys_state *blkiocg_create(struct cgroup_subsys *,
-+						  struct cgroup *);
-+static int blkiocg_can_attach(struct cgroup_subsys *, struct cgroup *,
-+			      struct task_struct *, bool);
-+static void blkiocg_attach(struct cgroup_subsys *, struct cgroup *,
-+			   struct cgroup *, struct task_struct *, bool);
-+static void blkiocg_destroy(struct cgroup_subsys *, struct cgroup *);
-+static int blkiocg_populate(struct cgroup_subsys *, struct cgroup *);
-+
-+struct cgroup_subsys blkio_subsys = {
-+	.name = "blkio",
-+	.create = blkiocg_create,
-+	.can_attach = blkiocg_can_attach,
-+	.attach = blkiocg_attach,
-+	.destroy = blkiocg_destroy,
-+	.populate = blkiocg_populate,
-+#ifdef CONFIG_BLK_CGROUP
-+	/* note: blkio_subsys_id is otherwise defined in blk-cgroup.h */
-+	.subsys_id = blkio_subsys_id,
-+#endif
-+	.use_id = 1,
-+	.module = THIS_MODULE,
-+};
-+EXPORT_SYMBOL_GPL(blkio_subsys);
-+
- bool blkiocg_css_tryget(struct blkio_cgroup *blkcg)
- {
- 	if (!css_tryget(&blkcg->css))
-@@ -267,7 +292,8 @@ remove_entry:
- done:
- 	free_css_id(&blkio_subsys, &blkcg->css);
- 	rcu_read_unlock();
--	kfree(blkcg);
-+	if (blkcg != &blkio_root_cgroup)
-+		kfree(blkcg);
- }
- 
- static struct cgroup_subsys_state *
-@@ -333,17 +359,6 @@ static void blkiocg_attach(struct cgroup_subsys *subsys, struct cgroup *cgroup,
- 	task_unlock(tsk);
- }
- 
--struct cgroup_subsys blkio_subsys = {
--	.name = "blkio",
--	.create = blkiocg_create,
--	.can_attach = blkiocg_can_attach,
--	.attach = blkiocg_attach,
--	.destroy = blkiocg_destroy,
--	.populate = blkiocg_populate,
--	.subsys_id = blkio_subsys_id,
--	.use_id = 1,
--};
--
- void blkio_policy_register(struct blkio_policy_type *blkiop)
- {
- 	spin_lock(&blkio_list_lock);
-@@ -359,3 +374,17 @@ void blkio_policy_unregister(struct blkio_policy_type *blkiop)
- 	spin_unlock(&blkio_list_lock);
- }
- EXPORT_SYMBOL_GPL(blkio_policy_unregister);
-+
-+static int __init init_cgroup_blkio(void)
-+{
-+	return cgroup_load_subsys(&blkio_subsys);
-+}
-+
-+static void __exit exit_cgroup_blkio(void)
-+{
-+	cgroup_unload_subsys(&blkio_subsys);
-+}
-+
-+module_init(init_cgroup_blkio);
-+module_exit(exit_cgroup_blkio);
-+MODULE_LICENSE("GPL");
-diff --git a/block/blk-cgroup.h b/block/blk-cgroup.h
-index 4d316df..57648c6 100644
---- a/block/blk-cgroup.h
-+++ b/block/blk-cgroup.h
-@@ -15,7 +15,13 @@
- 
- #include <linux/cgroup.h>
- 
--#ifdef CONFIG_BLK_CGROUP
-+#if defined(CONFIG_BLK_CGROUP) || defined(CONFIG_BLK_CGROUP_MODULE)
-+
-+#ifndef CONFIG_BLK_CGROUP
-+/* When blk-cgroup is a module, its subsys_id isn't a compile-time constant */
-+extern struct cgroup_subsys blkio_subsys;
-+#define blkio_subsys_id blkio_subsys.subsys_id
-+#endif
- 
- struct blkio_cgroup {
- 	struct cgroup_subsys_state css;
-@@ -94,7 +100,7 @@ static inline void blkiocg_update_blkio_group_dequeue_stats(
- 			struct blkio_group *blkg, unsigned long dequeue) {}
- #endif
- 
--#ifdef CONFIG_BLK_CGROUP
-+#if defined(CONFIG_BLK_CGROUP) || defined(CONFIG_BLK_CGROUP_MODULE)
- extern struct blkio_cgroup blkio_root_cgroup;
- extern struct blkio_cgroup *cgroup_to_blkio_cgroup(struct cgroup *cgroup);
- extern void blkiocg_add_blkio_group(struct blkio_cgroup *blkcg,
-diff --git a/include/linux/iocontext.h b/include/linux/iocontext.h
-index a632359..b9f109d 100644
---- a/include/linux/iocontext.h
-+++ b/include/linux/iocontext.h
-@@ -68,7 +68,7 @@ struct io_context {
- 	unsigned short ioprio;
- 	unsigned short ioprio_changed;
- 
--#ifdef CONFIG_BLK_CGROUP
-+#if defined(CONFIG_BLK_CGROUP) || defined(CONFIG_BLK_CGROUP_MODULE)
- 	unsigned short cgroup_changed;
- #endif
- 
 diff --git a/kernel/cgroup.c b/kernel/cgroup.c
-index b4ae6ef..845a2e7 100644
+index cc2e1f6..b4ae6ef 100644
 --- a/kernel/cgroup.c
 +++ b/kernel/cgroup.c
-@@ -690,6 +690,7 @@ void cgroup_lock(void)
- {
- 	mutex_lock(&cgroup_mutex);
- }
-+EXPORT_SYMBOL_GPL(cgroup_lock);
+@@ -240,7 +240,8 @@ struct cg_cgroup_link {
+ static struct css_set init_css_set;
+ static struct cg_cgroup_link init_css_set_link;
  
- /**
-  * cgroup_unlock - release lock on cgroup changes
-@@ -700,6 +701,7 @@ void cgroup_unlock(void)
- {
- 	mutex_unlock(&cgroup_mutex);
- }
-+EXPORT_SYMBOL_GPL(cgroup_unlock);
+-static int cgroup_subsys_init_idr(struct cgroup_subsys *ss);
++static int cgroup_init_idr(struct cgroup_subsys *ss,
++			   struct cgroup_subsys_state *css);
  
- /*
-  * A couple of forward declarations required, due to cyclic reference loop:
-@@ -1622,6 +1624,7 @@ int cgroup_path(const struct cgroup *cgrp, char *buf, int buflen)
- 	memmove(buf, start, buf + buflen - start);
- 	return 0;
- }
-+EXPORT_SYMBOL_GPL(cgroup_path);
+ /* css_set_lock protects the list of css_set objects, and the
+  * chain of tasks off each css_set.  Nests outside task->alloc_lock
+@@ -3396,6 +3397,18 @@ int __init_or_module cgroup_load_subsys(struct cgroup_subsys *ss)
  
- /**
-  * cgroup_attach_task - attach task 'tsk' to cgroup 'cgrp'
-@@ -1762,6 +1765,7 @@ bool cgroup_lock_live_group(struct cgroup *cgrp)
+ 	/* our new subsystem will be attached to the dummy hierarchy. */
+ 	init_cgroup_css(css, ss, dummytop);
++	/* init_idr must be after init_cgroup_css because it sets css->id. */
++	if (ss->use_id) {
++		int ret = cgroup_init_idr(ss, css);
++		if (ret) {
++			dummytop->subsys[ss->subsys_id] = NULL;
++			ss->destroy(ss, dummytop);
++			subsys[i] = NULL;
++			mutex_unlock(&cgroup_mutex);
++			return ret;
++		}
++	}
++
+ 	/*
+ 	 * Now we need to entangle the css into the existing css_sets. unlike
+ 	 * in cgroup_init_subsys, there are now multiple css_sets, so each one
+@@ -3484,7 +3497,8 @@ void cgroup_unload_subsys(struct cgroup_subsys *ss)
+ 	/*
+ 	 * remove subsystem's css from the dummytop and free it - need to free
+ 	 * before marking as null because ss->destroy needs the cgrp->subsys
+-	 * pointer to find their state.
++	 * pointer to find their state. note that this also takes care of
++	 * freeing the css_id.
+ 	 */
+ 	ss->destroy(ss, dummytop);
+ 	dummytop->subsys[ss->subsys_id] = NULL;
+@@ -3563,7 +3577,7 @@ int __init cgroup_init(void)
+ 		if (!ss->early_init)
+ 			cgroup_init_subsys(ss);
+ 		if (ss->use_id)
+-			cgroup_subsys_init_idr(ss);
++			cgroup_init_idr(ss, init_css_set.subsys[ss->subsys_id]);
  	}
- 	return true;
- }
-+EXPORT_SYMBOL_GPL(cgroup_lock_live_group);
  
- static int cgroup_release_agent_write(struct cgroup *cgrp, struct cftype *cft,
- 				      const char *buffer)
-@@ -4036,6 +4040,7 @@ void __css_put(struct cgroup_subsys_state *css)
- 	rcu_read_unlock();
- 	WARN_ON_ONCE(val < 1);
- }
-+EXPORT_SYMBOL_GPL(__css_put);
+ 	/* Add init_css_set to the hash table */
+@@ -4231,15 +4245,14 @@ err_out:
  
- /*
-  * Notify userspace when a cgroup is released, by running the
-@@ -4151,6 +4156,7 @@ unsigned short css_id(struct cgroup_subsys_state *css)
- 		return cssid->id;
- 	return 0;
  }
-+EXPORT_SYMBOL_GPL(css_id);
  
- unsigned short css_depth(struct cgroup_subsys_state *css)
+-static int __init cgroup_subsys_init_idr(struct cgroup_subsys *ss)
++static int __init_or_module cgroup_init_idr(struct cgroup_subsys *ss,
++					    struct cgroup_subsys_state *rootcss)
  {
-@@ -4160,6 +4166,7 @@ unsigned short css_depth(struct cgroup_subsys_state *css)
- 		return cssid->depth;
- 	return 0;
- }
-+EXPORT_SYMBOL_GPL(css_depth);
+ 	struct css_id *newid;
+-	struct cgroup_subsys_state *rootcss;
  
- bool css_is_ancestor(struct cgroup_subsys_state *child,
- 		    const struct cgroup_subsys_state *root)
-@@ -4196,6 +4203,7 @@ void free_css_id(struct cgroup_subsys *ss, struct cgroup_subsys_state *css)
- 	spin_unlock(&ss->id_lock);
- 	call_rcu(&id->rcu_head, __free_css_id_cb);
- }
-+EXPORT_SYMBOL_GPL(free_css_id);
+ 	spin_lock_init(&ss->id_lock);
+ 	idr_init(&ss->idr);
  
- /*
-  * This is called by init or create(). Then, calls to this function are
-@@ -4312,6 +4320,7 @@ struct cgroup_subsys_state *css_lookup(struct cgroup_subsys *ss, int id)
- 
- 	return rcu_dereference(cssid->css);
- }
-+EXPORT_SYMBOL_GPL(css_lookup);
- 
- /**
-  * css_get_next - lookup next cgroup under specified hierarchy.
+-	rootcss = init_css_set.subsys[ss->subsys_id];
+ 	newid = get_new_cssid(ss, 0);
+ 	if (IS_ERR(newid))
+ 		return PTR_ERR(newid);
