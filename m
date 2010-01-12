@@ -1,83 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754638Ab0ALBOi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754664Ab0ALBPI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754638Ab0ALBOi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jan 2010 20:14:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754440Ab0ALBOh
+	id S1754664Ab0ALBPI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jan 2010 20:15:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753067Ab0ALBPH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jan 2010 20:14:37 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:46765 "EHLO smtps.tip.net.au"
+	Mon, 11 Jan 2010 20:15:07 -0500
+Received: from kanga.kvack.org ([205.233.56.17]:56411 "EHLO kanga.kvack.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752896Ab0ALBOg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jan 2010 20:14:36 -0500
-Date: Tue, 12 Jan 2010 12:14:34 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Linus <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Albin Tonnerre <albin.tonnerre@free-electrons.com>
-Subject: linux-next: origin tree build failure
-Message-Id: <20100112121434.49930eea.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 3.0.0beta4 (GTK+ 2.18.5; i486-pc-linux-gnu)
+	id S1754440Ab0ALBPE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jan 2010 20:15:04 -0500
+Date: Mon, 11 Jan 2010 19:53:08 -0500
+From: Benjamin LaHaise <bcrl@lhnet.ca>
+To: Tejun Heo <tj@kernel.org>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
+       linux-kernel@vger.kernel.org, Cornelia Huck <cornelia.huck@de.ibm.com>,
+       linux-fsdevel@vger.kernel.org, Eric Dumazet <eric.dumazet@gmail.com>,
+       Serge Hallyn <serue@us.ibm.com>,
+       "Eric W. Biederman" <ebiederm@aristanetworks.com>
+Subject: Re: [PATCH 3/7] sysfs: Keep an nlink count on sysfs directories.
+Message-ID: <20100112005308.GL5524@kvack.org>
+References: <m1d41g9z3q.fsf@fess.ebiederm.org> <1263241315-19499-3-git-send-email-ebiederm@xmission.com> <4B4BC683.7060508@kernel.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B4BC683.7060508@kernel.org>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+On Tue, Jan 12, 2010 at 09:46:59AM +0900, Tejun Heo wrote:
+> Hello,
+> 
+> On 01/12/2010 05:21 AM, Eric W. Biederman wrote:
+> > On large directories sysfs_count_nlinks can be a significant
+> > bottleneck, so keep a count in sysfs_dirent.
+> 
+> I was about to suggest changing s_flags to ushort too.  Hmmm... adding
+> a new field to sysfs_dirent somewhat worries me but this doesn't add
+> to the size of the structure.  How significant bottlenect are we
+> talking about?
 
-Today's linux-next build (powerpc ppc64_defconfig) failed like this:
+100,000 entries in a sysfs directory is a requirement for network devices.
 
-lib/decompress_unlzo.c:53: error: expected '=', ',', ';', 'asm' or '__attribute__' before 'parse_header'
-lib/decompress_unlzo.c:90: error: expected '=', ',', ';', 'asm' or '__attribute__' before 'unlzo'
+> > If we exceed the maximum number of directory entries we can store
+> > return nlink of 1.  An nlink of 1 matches what reiserfs does in this
+> > case, and it let's find and similar utlities know that we have a the
+> > directory nlink can not be used for optimization purposes.
+> 
+> Hmmm... what's the limit on reiserfs?  Is it 64k too?
 
-Caused by commit 7dd65feb6c603e13eba501c34c662259ab38e70e ("lib: add
-support for LZO-compressed kernels") and commit
-cacb246f8db2b9eba89d44a0f0dd4f6ed93bc113 ("Add LZO compression support
-for initramfs and old-style initrd").
+64k is too small.  10 gig interfaces can currently service 50-100k users, 
+each of which requires their own network device.
 
-I can't figure out how that was supposed to build, so I added the
-following patch (which is most likely not correct).
-
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Tue, 12 Jan 2010 11:50:16 +1100
-Subject: [PATCH] lib: fixup for unlzo build
-
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- lib/decompress_unlzo.c |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
-
-diff --git a/lib/decompress_unlzo.c b/lib/decompress_unlzo.c
-index db521f4..b4d423f 100644
---- a/lib/decompress_unlzo.c
-+++ b/lib/decompress_unlzo.c
-@@ -50,6 +50,10 @@ static const unsigned char lzop_magic[] = {
- #define LZO_BLOCK_SIZE        (256*1024l)
- #define HEADER_HAS_FILTER      0x00000800L
- 
-+#ifndef INIT
-+#define INIT
-+#endif
-+
- STATIC inline int INIT parse_header(u8 *input, u8 *skip)
- {
- 	int l;
--- 
-1.6.6
-
-I then got these:
-
-lib/decompress_unlzo.c: In function 'unlzo':
-lib/decompress_unlzo.c:106: error: 'error' undeclared (first use in this function)
-lib/decompress_unlzo.c:111: error: implicit declaration of function 'error'
-
-So I just reverted commit
-cacb246f8db2b9eba89d44a0f0dd4f6ed93bc113 ("Add LZO compression support
-for initramfs and old-style initrd") after removing my fix above.
-
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+		-ben
