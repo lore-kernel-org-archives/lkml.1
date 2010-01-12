@@ -1,106 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752024Ab0ALFvN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752923Ab0ALFxK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752024Ab0ALFvN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jan 2010 00:51:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751277Ab0ALFvM
+	id S1752923Ab0ALFxK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jan 2010 00:53:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751376Ab0ALFxJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jan 2010 00:51:12 -0500
-Received: from mail-yx0-f187.google.com ([209.85.210.187]:60112 "EHLO
-	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751245Ab0ALFvM (ORCPT
+	Tue, 12 Jan 2010 00:53:09 -0500
+Received: from mga09.intel.com ([134.134.136.24]:61428 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751087Ab0ALFxI convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jan 2010 00:51:12 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=frrUP04LaMdnLjGAizApZpskroYIFZHXd55QUWrnhDCtFJIOl5S3D2/XdE0ycLIqKF
-         rz38xvpmV0dwqALW6KXmMIFyWsto6jp1aPmro8vyuHVan1Tny3G76xbYcaQI+BL5tc5M
-         arEd4HDs7u/QQ3EAJaIgwkMVne7ONP5BUPVug=
-Subject: Re: [PATCH] Fix reset of ramzswap
-From: Minchan Kim <minchan.kim@gmail.com>
-To: Nitin Gupta <ngupta@vflare.org>
-Cc: Greg KH <greg@kroah.com>, LKML <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>
-In-Reply-To: <d760cf2d1001112130p8489b93uccd6a4650ff4a4a8@mail.gmail.com>
-References: <1263271018.23507.8.camel@barrios-desktop>
-	 <d760cf2d1001112130p8489b93uccd6a4650ff4a4a8@mail.gmail.com>
-Content-Type: text/plain
-Date: Tue, 12 Jan 2010 14:48:28 +0900
-Message-Id: <1263275308.23507.18.camel@barrios-desktop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 12 Jan 2010 00:53:08 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,260,1262592000"; 
+   d="scan'208";a="483248929"
+From: "Zheng, Shaohui" <shaohui.zheng@intel.com>
+To: "Wu, Fengguang" <fengguang.wu@intel.com>
+CC: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "ak@linux.intel.com" <ak@linux.intel.com>,
+       "y-goto@jp.fujitsu.com" <y-goto@jp.fujitsu.com>,
+       Dave Hansen <haveblue@us.ibm.com>, "x86@kernel.org" <x86@kernel.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Date: Tue, 12 Jan 2010 13:51:15 +0800
+Subject: RE: [PATCH - resend] Memory-Hotplug: Fix the bug on interface
+	/dev/mem for 64-bit kernel(v1)
+Thread-Topic: [PATCH - resend] Memory-Hotplug: Fix the bug on interface
+	/dev/mem for 64-bit kernel(v1)
+Thread-Index: AcqSu7hD6Q79KRLASCWpxZ0RhWbs5wAjsfNw
+Message-ID: <DA586906BA1FFC4384FCFD6429ECE860316C002A@shzsmsx502.ccr.corp.intel.com>
+References: <DA586906BA1FFC4384FCFD6429ECE86031560BAC@shzsmsx502.ccr.corp.intel.com>
+ <20100108124851.GB6153@localhost>
+ <DA586906BA1FFC4384FCFD6429ECE86031560FC1@shzsmsx502.ccr.corp.intel.com>
+ <20100111124303.GA21408@localhost>
+In-Reply-To: <20100111124303.GA21408@localhost>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2010-01-12 at 11:00 +0530, Nitin Gupta wrote:
-> On Tue, Jan 12, 2010 at 10:06 AM, minchan.kim <minchan.kim@gmail.com> wrote:
-> > ioctl(cmd=reset)
-> >        -> bd_holder check (if whoever hold bdev, return -EBUSY)
-> >        -> ramzswap_ioctl_reset_device
-> >                -> reset_device
-> >                        -> bd_release
-> >
-> > bd_release is called by reset_device.
-> > but ramzswap_ioctl always checks bd_holder before
-> > reset_device. it means reset ioctl always fails.
+> > +	/* if add to low memory, update max_low_pfn */
+> > +	if (unlikely(start_pfn < limit_low_pfn)) {
+> > +		if (end_pfn <= limit_low_pfn)
+> > +			max_low_pfn = end_pfn;
+> > +		else
+> > +			max_low_pfn = limit_low_pfn;
 > 
-> Are you sure you checked this patch?
+> X86_64 actually always set max_low_pfn=max_pfn, in setup_arch():
+> [Zheng, Shaohui] there should be some misunderstanding, I read the
+> code carefully, if the total memory is under 4G, it always
+> max_low_pfn=max_pfn. If the total memory is larger than 4G,
+> max_low_pfn means the end of low ram. It set
 
-> This check makes sure that you cannot reset an active swap device.
-> When device in swapoff'ed the ioctl works as expected.
-> 
-It seems my test was wrong. 
-Maybe my test case don't swapoff swap device. 
-Sorry. Ignore this patch, pz.
-Thanks for the reivew, Nitin. 
+> max_low_pfn = e820_end_of_low_ram_pfn();.
 
-I have one more patch. But I don't want to conflict your pending
-patches. If it is right, pz, merge this patch with your pending series.
+The above line is very misleading.. In setup_arch(), it will be
+overrode by the following block.
+[Zheng, Shaohui] yes, I misunderstand it because of this code. It seems that max_low_pfn == max_pfn is always true on x86_32 and x86_64.  Thanks fengguang to point it out.
 
->From bf810ec09761b0f37eca7ba22d72fb2b1f2cba50 Mon Sep 17 00:00:00 2001
-From: Minchan Kim <minchan.kim@gmail.com>
-Date: Tue, 12 Jan 2010 14:46:46 +0900
-Subject: [PATCH] Remove unnecessary check of ramzswap_write
-
-Nitin already implement swap slot free callback.
-So, we don't need this test any more.
-
-Signed-off-by: Minchan Kim <minchan.kim@gmail.com>
----
- drivers/staging/ramzswap/ramzswap_drv.c |    8 --------
- 1 files changed, 0 insertions(+), 8 deletions(-)
-
-diff --git a/drivers/staging/ramzswap/ramzswap_drv.c
-b/drivers/staging/ramzswap/ramzswap_drv.c
-index 18196f3..575a147 100644
---- a/drivers/staging/ramzswap/ramzswap_drv.c
-+++ b/drivers/staging/ramzswap/ramzswap_drv.c
-@@ -784,14 +784,6 @@ static int ramzswap_write(struct ramzswap *rzs,
-struct bio *bio)
- 	src = rzs->compress_buffer;
+>  899 #ifdef CONFIG_X86_64
+>  900         if (max_pfn > max_low_pfn) {
+>  901                 max_pfn_mapped = init_memory_mapping(1UL<<32,
+>  902                                                      max_pfn<<PAGE_SHIFT);
+>  903                 /* can we preseve max_low_pfn ?*/
+>  904                 max_low_pfn = max_pfn;
+>  905         }
+>  906 #endif
  
- 	/*
--	 * System swaps to same sector again when the stored page
--	 * is no longer referenced by any process. So, its now safe
--	 * to free the memory that was allocated for this page.
--	 */
--	if (rzs->table[index].page)
--		ramzswap_free_page(rzs, index);
--
--	/*
- 	 * No memory ia allocated for zero filled pages.
- 	 * Simply clear zero page flag.
- 	 */
--- 
-1.5.6.3
-
-
-
-
--- 
-Kind regards,
-Minchan Kim
-
+Thanks,
+Fengguang
