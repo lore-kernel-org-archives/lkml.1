@@ -1,53 +1,201 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753668Ab0ALCdo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751895Ab0ALCfA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753668Ab0ALCdo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jan 2010 21:33:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752610Ab0ALCdn
+	id S1751895Ab0ALCfA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jan 2010 21:35:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750890Ab0ALCe7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jan 2010 21:33:43 -0500
-Received: from mail.gmx.net ([213.165.64.20]:36716 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752452Ab0ALCdn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jan 2010 21:33:43 -0500
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1+/a2o06Ny/P/yktopB0Ggq0sCotDiHnnwkq0q+eJ
-	0UdymAqttUzxs+
-Subject: Re: tbench regression with 2.6.33-rc1
-From: Mike Galbraith <efault@gmx.de>
-To: Lin Ming <ming.m.lin@intel.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, "mingo@elte.hu" <mingo@elte.hu>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-In-Reply-To: <1263258546.3598.19.camel@minggr.sh.intel.com>
-References: <1261739467.10685.18.camel@minggr.sh.intel.com>
-	 <1263211680.4244.50.camel@laptop>
-	 <1263226612.6290.9.camel@marge.simson.net>
-	 <1263258546.3598.19.camel@minggr.sh.intel.com>
-Content-Type: text/plain
-Date: Tue, 12 Jan 2010 03:33:41 +0100
-Message-Id: <1263263621.5905.6.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.6899999999999999
+	Mon, 11 Jan 2010 21:34:59 -0500
+Received: from mga11.intel.com ([192.55.52.93]:18590 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750783Ab0ALCe7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jan 2010 21:34:59 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,259,1262592000"; 
+   d="scan'208";a="763378561"
+Date: Tue, 12 Jan 2010 10:33:08 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "Zheng, Shaohui" <shaohui.zheng@intel.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "ak@linux.intel.com" <ak@linux.intel.com>,
+       "y-goto@jp.fujitsu.com" <y-goto@jp.fujitsu.com>,
+       Dave Hansen <haveblue@us.ibm.com>, "x86@kernel.org" <x86@kernel.org>
+Subject: Re: [PATCH - resend] Memory-Hotplug: Fix the bug on interface
+	/dev/mem for 64-bit kernel(v1)
+Message-ID: <20100112023307.GA16661@localhost>
+References: <DA586906BA1FFC4384FCFD6429ECE86031560BAC@shzsmsx502.ccr.corp.intel.com> <20100108124851.GB6153@localhost> <DA586906BA1FFC4384FCFD6429ECE86031560FC1@shzsmsx502.ccr.corp.intel.com> <20100111124303.GA21408@localhost> <20100112093031.0fc6877f.kamezawa.hiroyu@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100112093031.0fc6877f.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2010-01-12 at 09:09 +0800, Lin Ming wrote:
-> On Tue, 2010-01-12 at 00:16 +0800, Mike Galbraith wrote:
-
-> > I've been all through it too, same result.  The below may make a bit of
-> > difference, but really has diddly spit to do with this oddity.
+On Tue, Jan 12, 2010 at 08:30:31AM +0800, KAMEZAWA Hiroyuki wrote:
+> On Mon, 11 Jan 2010 20:43:03 +0800
+> Wu Fengguang <fengguang.wu@intel.com> wrote:
 > 
-> I test this patch applied to 2.6.33-rc3, but no help on tbench
-> regression.
+> > > > +	/* if add to low memory, update max_low_pfn */
+> > > > +	if (unlikely(start_pfn < limit_low_pfn)) {
+> > > > +		if (end_pfn <= limit_low_pfn)
+> > > > +			max_low_pfn = end_pfn;
+> > > > +		else
+> > > > +			max_low_pfn = limit_low_pfn;
+> > > 
+> > > X86_64 actually always set max_low_pfn=max_pfn, in setup_arch():
+> > > [Zheng, Shaohui] there should be some misunderstanding, I read the
+> > > code carefully, if the total memory is under 4G, it always
+> > > max_low_pfn=max_pfn. If the total memory is larger than 4G,
+> > > max_low_pfn means the end of low ram. It set
+> > 
+> > > max_low_pfn = e820_end_of_low_ram_pfn();.
+> > 
+> > The above line is very misleading.. In setup_arch(), it will be
+> > overrode by the following block.
+> > 
+> 
+> Hmmm....could you rewrite /dev/mem to use kernel/resource.c other than
+> modifing e820 maps. ?
+> Two reasons.
+>   - e820map is considerted to be stable, read-only after boot.
+>   - We don't need to add more x86 special codes.
 
-Did you try it with the vmark fix also applied?  I would have expected
-at least a _little_ improvement.  (but then this regression _is_ a bit
-odd anyway)
+Sure, here it is :)
+---
+x86: use the generic page_is_ram()
 
-	-Mike
+The generic resource based page_is_ram() works better with memory
+hotplug/hotremove. So switch the x86 e820map based code to it.
+
+CC: Andi Kleen <andi@firstfloor.org> 
+CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> 
+Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+---
+ arch/x86/include/asm/page_types.h |    1 
+ arch/x86/mm/ioremap.c             |   37 ----------------------------
+ kernel/resource.c                 |   17 ++++++++++++
+ 3 files changed, 17 insertions(+), 38 deletions(-)
+
+--- linux-mm.orig/arch/x86/include/asm/page_types.h	2010-01-12 10:31:01.000000000 +0800
++++ linux-mm/arch/x86/include/asm/page_types.h	2010-01-12 10:31:44.000000000 +0800
+@@ -34,19 +34,18 @@
+ 
+ #ifdef CONFIG_X86_64
+ #include <asm/page_64_types.h>
+ #else
+ #include <asm/page_32_types.h>
+ #endif	/* CONFIG_X86_64 */
+ 
+ #ifndef __ASSEMBLY__
+ 
+-extern int page_is_ram(unsigned long pagenr);
+ extern int devmem_is_allowed(unsigned long pagenr);
+ 
+ extern unsigned long max_low_pfn_mapped;
+ extern unsigned long max_pfn_mapped;
+ 
+ extern unsigned long init_memory_mapping(unsigned long start,
+ 					 unsigned long end);
+ 
+ extern void initmem_init(unsigned long start_pfn, unsigned long end_pfn,
+--- linux-mm.orig/arch/x86/mm/ioremap.c	2010-01-12 10:31:01.000000000 +0800
++++ linux-mm/arch/x86/mm/ioremap.c	2010-01-12 10:31:44.000000000 +0800
+@@ -18,55 +18,18 @@
+ #include <asm/e820.h>
+ #include <asm/fixmap.h>
+ #include <asm/pgtable.h>
+ #include <asm/tlbflush.h>
+ #include <asm/pgalloc.h>
+ #include <asm/pat.h>
+ 
+ #include "physaddr.h"
+ 
+-int page_is_ram(unsigned long pagenr)
+-{
+-	resource_size_t addr, end;
+-	int i;
+-
+-	/*
+-	 * A special case is the first 4Kb of memory;
+-	 * This is a BIOS owned area, not kernel ram, but generally
+-	 * not listed as such in the E820 table.
+-	 */
+-	if (pagenr == 0)
+-		return 0;
+-
+-	/*
+-	 * Second special case: Some BIOSen report the PC BIOS
+-	 * area (640->1Mb) as ram even though it is not.
+-	 */
+-	if (pagenr >= (BIOS_BEGIN >> PAGE_SHIFT) &&
+-		    pagenr < (BIOS_END >> PAGE_SHIFT))
+-		return 0;
+-
+-	for (i = 0; i < e820.nr_map; i++) {
+-		/*
+-		 * Not usable memory:
+-		 */
+-		if (e820.map[i].type != E820_RAM)
+-			continue;
+-		addr = (e820.map[i].addr + PAGE_SIZE-1) >> PAGE_SHIFT;
+-		end = (e820.map[i].addr + e820.map[i].size) >> PAGE_SHIFT;
+-
+-
+-		if ((pagenr >= addr) && (pagenr < end))
+-			return 1;
+-	}
+-	return 0;
+-}
+-
+ /*
+  * Fix up the linear direct mapping of the kernel to avoid cache attribute
+  * conflicts.
+  */
+ int ioremap_change_attr(unsigned long vaddr, unsigned long size,
+ 			       unsigned long prot_val)
+ {
+ 	unsigned long nrpages = size >> PAGE_SHIFT;
+ 	int err;
+--- linux-mm.orig/kernel/resource.c	2010-01-12 10:31:01.000000000 +0800
++++ linux-mm/kernel/resource.c	2010-01-12 10:31:44.000000000 +0800
+@@ -298,18 +298,35 @@ int walk_system_ram_range(unsigned long 
+ #endif
+ 
+ static int __is_ram(unsigned long pfn, unsigned long nr_pages, void *arg)
+ {
+ 	return 24;
+ }
+ 
+ int __attribute__((weak)) page_is_ram(unsigned long pfn)
+ {
++#ifdef CONFIG_X86
++	/*
++	 * A special case is the first 4Kb of memory;
++	 * This is a BIOS owned area, not kernel ram, but generally
++	 * not listed as such in the E820 table.
++	 */
++	if (pfn == 0)
++		return 0;
++
++	/*
++	 * Second special case: Some BIOSen report the PC BIOS
++	 * area (640->1Mb) as ram even though it is not.
++	 */
++	if (pfn >= (BIOS_BEGIN >> PAGE_SHIFT) &&
++	    pfn <  (BIOS_END   >> PAGE_SHIFT))
++		return 0;
++#endif
+ 	return 24 == walk_system_ram_range(pfn, 1, NULL, __is_ram);
+ }
+ 
+ /*
+  * Find empty slot in the resource tree given range and alignment.
+  */
+ static int find_resource(struct resource *root, struct resource *new,
+ 			 resource_size_t size, resource_size_t min,
+ 			 resource_size_t max, resource_size_t align,
 
