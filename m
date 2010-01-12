@@ -1,100 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751896Ab0ALOu0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753803Ab0ALOwY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751896Ab0ALOu0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jan 2010 09:50:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751402Ab0ALOuZ
+	id S1753803Ab0ALOwY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jan 2010 09:52:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752352Ab0ALOwX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jan 2010 09:50:25 -0500
-Received: from fg-out-1718.google.com ([72.14.220.154]:27707 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750741Ab0ALOuY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jan 2010 09:50:24 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=ugqy78O/gxVC41Lgny/z3kt1VjaGqdcQwA6Mejs6tNsisfXFgHxwmvPhzdTFe6Wpn3
-         rJVhKc1wfsxTXsjoB2yAW9vddTe28dpzg7CghvbvYOnlN9Geab4dbhBPex6MOTGO8gnn
-         4MTSsV89Q33k4fi1Ahcekhwly8hCBB3FHR8Tk=
-Date: Tue, 12 Jan 2010 22:52:13 +0800
-From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
-To: Andrew Athan <linux_kernel_aathan@memeplex.com>
-Cc: linux-kernel@vger.kernel.org, Darren Hart <dvhltc@us.ibm.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: Futex hang/lockup problem in 2.6.30+ on AMD64
-Message-ID: <20100112145213.GB3925@hack>
-References: <4B4C3E4F.9060001@memeplex.com>
+	Tue, 12 Jan 2010 09:52:23 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:10168 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752190Ab0ALOwV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jan 2010 09:52:21 -0500
+Date: Tue, 12 Jan 2010 16:51:45 +0200
+From: Gleb Natapov <gleb@redhat.com>
+To: linux-mm@kvack.org
+Cc: linux-kernel@vger.kernel.org, linux-api@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: [PATCH v4][RESENT] add MAP_UNLOCKED mmap flag
+Message-ID: <20100112145144.GQ7549@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4B4C3E4F.9060001@memeplex.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 12, 2010 at 04:18:07AM -0500, Andrew Athan wrote:
->
-> After some investigation I believe I am experiencing a problem similar
-> to the one described in this posting:
-> http://sourceware.org/ml/libc-help/2009-10/msg00026.html, in that the
-> poster suspects a problem in the futex implementation in 2.6.30 and
-> above kernels.  In my case, the problem is not a soft lockup in the
-> kernel, but it does result in an application lock up due to all threads
-> waiting for futex's.
->
-> For me this problem began to appear once I upgraded my Debian
-> squeeze/testing x86_64 installation (AMD) to a new kernel.  I'm not
-> sure what the prior kernel version was.  The same software running on
-> different machines with earlier kernels (lenny) does not seem to
-> experience the problem.
->
-> I'm really not sure if this is a libc or kernel problem, but due to
-> the stack trace, which shows what appears to be a hang on the internal
-> __lock of the condition variable, it appears likely this is not an
-> application bug.  Memory does not appear to be corrupt (I store
-> sentinels around the mutexes, and they have retained their values).
->
-> It appears that the cond var's __lock indicates there are waiters
-> even though there are/should-be none (assuming I'm interpreting the
-> __lock value of 2 correctly).  Since the __lock in question is a futex
-> primitive, and it must be held regardless of other libc/nptl state  
-> variables,
-> I don't believe this is a libc problem.
->
-> The problem occurs rarely, but innevitably, and sometimes only after
-> several hours of normal program operation.  I have not yet
-> successfully created a reduced test program that can faithfully
-> reproduce the hang in a short timeframe.
->
-> The application contains a thread pool where threads perform many
-> operations between pthread calls but can be summarized as one of three
-> cases below.  Due to the design of the thread pool, threads
-> round-robbin or at least are randomly assigned a workload (in contrast
-> to having one constant broadcast thread).
->
-> case 1:  while(1){ *A* pthread_lock();pthread_unlock();}
-> case 2:  pthread_lock();pthread_cond_wait();pthread_unlock();
-> case 3:  pthread_lock(); *B* pthread_cond_broadcast();pthread_unlock();
->
-> The application becomes hung with all threads but one stuck at *A*,
-> and one thread at *B*.
->
-> The stack trace and other details appear below.  I've saved the core
-> file in case I can provide additional information.
->
->
-> $ uname -a
-> Linux UK22 2.6.30-2-amd64 #1 SMP Fri Sep 25 22:16:56 UTC 2009 x86_64  
-> GNU/Linux
+If application does mlockall(MCL_FUTURE) it is no longer possible to mmap
+file bigger than main memory or allocate big area of anonymous memory
+in a thread safe manner. Sometimes it is desirable to lock everything
+related to program execution into memory, but still be able to mmap
+big file or allocate huge amount of memory and allow OS to swap them on
+demand. MAP_UNLOCKED allows to do that.
 
-Hmm, thanks for reporting this here.
+Signed-off-by: Gleb Natapov <gleb@redhat.com>
+---
 
-Adding futex experters into Cc...
+I get reports that people find this useful, so resending.
 
+v1->v2
+  - adding new flag to all archs
+  - fixing typo
+ v2->v3
+  - one more typo fix 
+ v3->v4
+  - return error if MAP_LOCKED | MAP_UNLOCKED is specified
 
--- 
-Live like a child, think like the god.
+diff --git a/arch/alpha/include/asm/mman.h b/arch/alpha/include/asm/mman.h
+index 99c56d4..cfc51ac 100644
+--- a/arch/alpha/include/asm/mman.h
++++ b/arch/alpha/include/asm/mman.h
+@@ -30,6 +30,7 @@
+ #define MAP_NONBLOCK	0x40000		/* do not block on IO */
+ #define MAP_STACK	0x80000		/* give out an address that is best suited for process/thread stacks */
+ #define MAP_HUGETLB	0x100000	/* create a huge page mapping */
++#define MAP_UNLOCKED	0x200000	/* force page unlocking */
  
+ #define MS_ASYNC	1		/* sync memory asynchronously */
+ #define MS_SYNC		2		/* synchronous memory sync */
+diff --git a/arch/mips/include/asm/mman.h b/arch/mips/include/asm/mman.h
+index c892bfb..3e4d108 100644
+--- a/arch/mips/include/asm/mman.h
++++ b/arch/mips/include/asm/mman.h
+@@ -48,6 +48,7 @@
+ #define MAP_NONBLOCK	0x20000		/* do not block on IO */
+ #define MAP_STACK	0x40000		/* give out an address that is best suited for process/thread stacks */
+ #define MAP_HUGETLB	0x80000		/* create a huge page mapping */
++#define MAP_UNLOCKED	0x100000	/* force page unlocking */
+ 
+ /*
+  * Flags for msync
+diff --git a/arch/parisc/include/asm/mman.h b/arch/parisc/include/asm/mman.h
+index 9749c8a..4e8b9bf 100644
+--- a/arch/parisc/include/asm/mman.h
++++ b/arch/parisc/include/asm/mman.h
+@@ -24,6 +24,7 @@
+ #define MAP_NONBLOCK	0x20000		/* do not block on IO */
+ #define MAP_STACK	0x40000		/* give out an address that is best suited for process/thread stacks */
+ #define MAP_HUGETLB	0x80000		/* create a huge page mapping */
++#define MAP_UNLOCKED	0x100000	/* force page unlocking */
+ 
+ #define MS_SYNC		1		/* synchronous memory sync */
+ #define MS_ASYNC	2		/* sync memory asynchronously */
+diff --git a/arch/powerpc/include/asm/mman.h b/arch/powerpc/include/asm/mman.h
+index d4a7f64..7d33f01 100644
+--- a/arch/powerpc/include/asm/mman.h
++++ b/arch/powerpc/include/asm/mman.h
+@@ -27,6 +27,7 @@
+ #define MAP_NONBLOCK	0x10000		/* do not block on IO */
+ #define MAP_STACK	0x20000		/* give out an address that is best suited for process/thread stacks */
+ #define MAP_HUGETLB	0x40000		/* create a huge page mapping */
++#define MAP_UNLOCKED	0x80000		/* force page unlocking */
+ 
+ #ifdef __KERNEL__
+ #ifdef CONFIG_PPC64
+diff --git a/arch/sparc/include/asm/mman.h b/arch/sparc/include/asm/mman.h
+index c3029ad..f80d203 100644
+--- a/arch/sparc/include/asm/mman.h
++++ b/arch/sparc/include/asm/mman.h
+@@ -22,6 +22,7 @@
+ #define MAP_NONBLOCK	0x10000		/* do not block on IO */
+ #define MAP_STACK	0x20000		/* give out an address that is best suited for process/thread stacks */
+ #define MAP_HUGETLB	0x40000		/* create a huge page mapping */
++#define MAP_UNLOCKED	0x80000		/* force page unlocking */
+ 
+ #ifdef __KERNEL__
+ #ifndef __ASSEMBLY__
+diff --git a/arch/xtensa/include/asm/mman.h b/arch/xtensa/include/asm/mman.h
+index fca4db4..c62bcd8 100644
+--- a/arch/xtensa/include/asm/mman.h
++++ b/arch/xtensa/include/asm/mman.h
+@@ -55,6 +55,7 @@
+ #define MAP_NONBLOCK	0x20000		/* do not block on IO */
+ #define MAP_STACK	0x40000		/* give out an address that is best suited for process/thread stacks */
+ #define MAP_HUGETLB	0x80000		/* create a huge page mapping */
++#define MAP_UNLOCKED	0x100000	/* force page unlocking */
+ 
+ /*
+  * Flags for msync
+diff --git a/include/asm-generic/mman.h b/include/asm-generic/mman.h
+index 32c8bd6..59e0f29 100644
+--- a/include/asm-generic/mman.h
++++ b/include/asm-generic/mman.h
+@@ -12,6 +12,7 @@
+ #define MAP_NONBLOCK	0x10000		/* do not block on IO */
+ #define MAP_STACK	0x20000		/* give out an address that is best suited for process/thread stacks */
+ #define MAP_HUGETLB	0x40000		/* create a huge page mapping */
++#define MAP_UNLOCKED	0x80000         /* force page unlocking */
+ 
+ #define MCL_CURRENT	1		/* lock all current mappings */
+ #define MCL_FUTURE	2		/* lock all future mappings */
+diff --git a/mm/mmap.c b/mm/mmap.c
+index ee22989..191dfc5 100644
+--- a/mm/mmap.c
++++ b/mm/mmap.c
+@@ -962,6 +962,12 @@ unsigned long do_mmap_pgoff(struct file *file, unsigned long addr,
+ 		if (!can_do_mlock())
+ 			return -EPERM;
+ 
++        if (flags & MAP_UNLOCKED)
++                vm_flags &= ~VM_LOCKED;
++
++        if (flags & MAP_UNLOCKED)
++                vm_flags &= ~VM_LOCKED;
++
+ 	/* mlock MCL_FUTURE? */
+ 	if (vm_flags & VM_LOCKED) {
+ 		unsigned long locked, lock_limit;
+--
+			Gleb.
