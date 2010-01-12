@@ -1,167 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752986Ab0ALF4q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751784Ab0ALGAK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752986Ab0ALF4q (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jan 2010 00:56:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751402Ab0ALF4p
+	id S1751784Ab0ALGAK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jan 2010 01:00:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751180Ab0ALGAJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jan 2010 00:56:45 -0500
-Received: from e7.ny.us.ibm.com ([32.97.182.137]:56789 "EHLO e7.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750834Ab0ALF4p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jan 2010 00:56:45 -0500
-Date: Mon, 11 Jan 2010 23:56:41 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
-       linux-kernel@vger.kernel.org, Tejun Heo <tj@kernel.org>,
-       Cornelia Huck <cornelia.huck@de.ibm.com>, linux-fsdevel@vger.kernel.org,
-       Eric Dumazet <eric.dumazet@gmail.com>, Benjamin LaHaise <bcrl@lhnet.ca>,
-       "Eric W. Biederman" <ebiederm@aristanetworks.com>
-Subject: Re: [PATCH 3/7] sysfs: Keep an nlink count on sysfs directories.
-Message-ID: <20100112055641.GB10756@us.ibm.com>
-References: <m1d41g9z3q.fsf@fess.ebiederm.org>
- <1263241315-19499-3-git-send-email-ebiederm@xmission.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1263241315-19499-3-git-send-email-ebiederm@xmission.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Tue, 12 Jan 2010 01:00:09 -0500
+Received: from mail.gmx.net ([213.165.64.20]:49082 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751070Ab0ALGAI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jan 2010 01:00:08 -0500
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX19EN1d+MgpEA5wK0FeisX1/ZhzWwIV+2/fO6xew09
+	cZu/hgloE2tVf7
+Subject: Re: 2.6.33 pagemap endless read loop
+From: Mike Galbraith <efault@gmx.de>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: =?ISO-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20100110123702.GC25323@basil.fritz.box>
+References: <20100110020955.GB25323@basil.fritz.box>
+	 <20100110063335.GA3005@hack>  <20100110123702.GC25323@basil.fritz.box>
+Content-Type: text/plain
+Date: Tue, 12 Jan 2010 06:59:59 +0100
+Message-Id: <1263275999.5987.26.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Eric W. Biederman (ebiederm@xmission.com):
-> From: Eric W. Biederman <ebiederm@aristanetworks.com>
+On Sun, 2010-01-10 at 13:37 +0100, Andi Kleen wrote:
+> > Are you sure
 > 
-> On large directories sysfs_count_nlinks can be a significant
-> bottleneck, so keep a count in sysfs_dirent.  If we exceed
-> the maximum number of directory entries we can store return
-> nlink of 1.  An nlink of 1 matches what reiserfs does in
-> this case, and it let's find and similar utlities know that
-> we have a the directory nlink can not be used for optimization
-> purposes.
+> I don't know if it's really endless, but it's doing a good emulation
+> of it if it's not.
 > 
-> Signed-off-by: Eric W. Biederman <ebiederm@aristanetworks.com>
-> ---
->  fs/sysfs/dir.c   |   20 ++++++++++++++++++++
->  fs/sysfs/inode.c |   15 +--------------
->  fs/sysfs/mount.c |    1 +
->  fs/sysfs/sysfs.h |    1 +
->  4 files changed, 23 insertions(+), 14 deletions(-)
+> > 
+> > On my 32bit machine, it runs for a long time, but finally exits.
 > 
-> diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
-> index 5c4703d..1c364be 100644
-> --- a/fs/sysfs/dir.c
-> +++ b/fs/sysfs/dir.c
-> @@ -359,6 +359,7 @@ struct sysfs_dirent *sysfs_new_dirent(const char *name, umode_t mode, int type)
->  	sd->s_name = name;
->  	sd->s_mode = mode;
->  	sd->s_flags = type;
-> +	sd->s_nlink = type == SYSFS_DIR? 2:1;
+> That was on 64bit.
 > 
->  	return sd;
+> proc01 had accumulated several minutes of CPU time when I stopped it.
 > 
-> @@ -392,6 +393,23 @@ void sysfs_addrm_start(struct sysfs_addrm_cxt *acxt,
->  	mutex_lock(&sysfs_mutex);
->  }
+> > From the document of pagemap, it is the mapping of all the virtual pages
+> > of a process, on x86-32, it should be 4G/4K = 1024*1024 pages, also
 > 
-> +static void sysfs_dir_inc_nlink(struct sysfs_dirent *sd)
-> +{
-> +	/* If we overflow force nlink to be 1 */
-> +	if (sd->s_nlink > 1) {
-> +		sd->s_nlink++;
-> +		if (sd->s_nlink == 0)
-> +			sd->s_nlink = 1;
-> +	}
-> +}
+> Only the mapped ones surely?
+> 
+> Right now it looks like it dumps all the holes and that obviously
+> will never finish on 64bit which has 47bits of address space.
 
-Now, the original code only ups nlink on parent if child is a dir.
-IIUC your code will now inc nlink for files as well.  Is any userspace
-going to be confused by that?
+Takes forever if you whack .pagemap_pte_hole too, just spends it's life
+in pagemap_pte_range() instead.
 
-> +
-> +static void sysfs_dir_dec_nlink(struct sysfs_dirent *sd)
-> +{
-> +	/* Don't decrement if we overflowed an increment */
-> +	if (sd->s_nlink != 1)
-> +		sd->s_nlink--;
-> +}
-> +
->  /**
->   *	__sysfs_add_one - add sysfs_dirent to parent without warning
->   *	@acxt: addrm context to use
-> @@ -420,6 +438,7 @@ int __sysfs_add_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd)
->  		return -EEXIST;
-> 
->  	sd->s_parent = sysfs_get(acxt->parent_sd);
-> +	sysfs_dir_inc_nlink(sd->s_parent);
-> 
->  	sysfs_link_sibling(sd);
-> 
-> @@ -512,6 +531,7 @@ void sysfs_remove_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd)
-> 
->  	BUG_ON(sd->s_flags & SYSFS_FLAG_REMOVED);
-> 
-> +	sysfs_dir_dec_nlink(sd->s_parent);
->  	sysfs_unlink_sibling(sd);
-> 
->  	/* Update timestamps on the parent */
-> diff --git a/fs/sysfs/inode.c b/fs/sysfs/inode.c
-> index 104cbc1..f0172b3 100644
-> --- a/fs/sysfs/inode.c
-> +++ b/fs/sysfs/inode.c
-> @@ -201,18 +201,6 @@ static inline void set_inode_attr(struct inode * inode, struct iattr * iattr)
->  	inode->i_ctime = iattr->ia_ctime;
->  }
-> 
-> -static int sysfs_count_nlink(struct sysfs_dirent *sd)
-> -{
-> -	struct sysfs_dirent *child;
-> -	int nr = 0;
-> -
-> -	for (child = sd->s_dir.children; child; child = child->s_sibling)
-> -		if (sysfs_type(child) == SYSFS_DIR)
-> -			nr++;
-> -
-> -	return nr + 2;
-> -}
-> -
->  static void sysfs_refresh_inode(struct sysfs_dirent *sd, struct inode *inode)
->  {
->  	struct sysfs_inode_attrs *iattrs = sd->s_iattr;
-> @@ -228,8 +216,7 @@ static void sysfs_refresh_inode(struct sysfs_dirent *sd, struct inode *inode)
->  					    iattrs->ia_secdata_len);
->  	}
-> 
-> -	if (sysfs_type(sd) == SYSFS_DIR)
-> -		inode->i_nlink = sysfs_count_nlink(sd);
-> +	inode->i_nlink = sd->s_nlink;
->  }
-> 
->  int sysfs_getattr(struct vfsmount *mnt, struct dentry *dentry, struct kstat *stat)
-> diff --git a/fs/sysfs/mount.c b/fs/sysfs/mount.c
-> index 4974995..372a32c 100644
-> --- a/fs/sysfs/mount.c
-> +++ b/fs/sysfs/mount.c
-> @@ -37,6 +37,7 @@ struct sysfs_dirent sysfs_root = {
->  	.s_count	= ATOMIC_INIT(1),
->  	.s_flags	= SYSFS_DIR,
->  	.s_mode		= S_IFDIR | S_IRWXU | S_IRUGO | S_IXUGO,
-> +	.s_nlink	= 2,
->  	.s_ino		= 1,
->  };
-> 
-> diff --git a/fs/sysfs/sysfs.h b/fs/sysfs/sysfs.h
-> index 0417805..85d5c6c 100644
-> --- a/fs/sysfs/sysfs.h
-> +++ b/fs/sysfs/sysfs.h
-> @@ -67,6 +67,7 @@ struct sysfs_dirent {
-> 
->  	unsigned int		s_flags;
->  	unsigned short		s_mode;
-> +	unsigned short		s_nlink;
->  	ino_t			s_ino;
->  	struct sysfs_inode_attrs *s_iattr;
->  };
-> -- 
-> 1.6.5.2.143.g8cc62
+start_vaddr:0x0 end_vaddr:0x7ffffffff000
+
+Hm, zillion paces ain't a walk.
+
+	-Mike
+
