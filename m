@@ -1,111 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754669Ab0ALR5K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754554Ab0ALR7n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754669Ab0ALR5K (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jan 2010 12:57:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754630Ab0ALR5J
+	id S1754554Ab0ALR7n (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jan 2010 12:59:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754158Ab0ALR7n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jan 2010 12:57:09 -0500
-Received: from outbound-mail-123.bluehost.com ([67.222.38.23]:58544 "HELO
-	outbound-mail-123.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754229Ab0ALR5I (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jan 2010 12:57:08 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=PDB9J3tkmXmfEIJsQVn9jG37euefQUth6wRQrpJ67GE9ElN6kEEW6UJpS/t3FfJKF8QgkE2k5gw0kB4mbG710H68xNaCFaentmtzuTQjk0oC29a2G3D6E2tv0MqJXapJ;
-Date: Tue, 12 Jan 2010 09:57:02 -0800
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Thomas Meyer <thomas@m3y3r.de>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Eric Anholt <eric@anholt.net>
-Subject: Re: [Bug #14670] i915: playing video via XVideo extension makes the
- screen flicker
-Message-ID: <20100112095702.4b22fcc1@jbarnes-piketon>
-In-Reply-To: <1263318189.3284.2.camel@localhost.localdomain>
-References: <nzLqtSp97aP.A.RGB.hglSLB@chimera>
-	<CXIfLt-ygXM.A.GGD.GilSLB@chimera>
-	<1263228784.12830.0.camel@localhost.localdomain>
-	<20100111085527.104f5c3e@jbarnes-piketon>
-	<8B599161-2977-4A43-B88F-36E87AFCF4EA@m3y3r.de>
-	<20100111111941.189eb41e@jbarnes-piketon>
-	<1263318189.3284.2.camel@localhost.localdomain>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
+	Tue, 12 Jan 2010 12:59:43 -0500
+Received: from web82105.mail.mud.yahoo.com ([209.191.84.218]:29617 "HELO
+	web82105.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753840Ab0ALR7m convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jan 2010 12:59:42 -0500
+X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Tue, 12 Jan 2010 12:59:42 EST
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=Message-ID:X-YMail-OSG:Received:X-Mailer:References:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding;
+  b=FmYbvY+yKR6jOwIb0sHbS8Iia9njtl2RHiAw2pfaY9V6PF3s9rz79+TKzDiAjLn+d/9Ak8PbmNeoGBTk19lyOYiyjZqa4aGR7f/diElsho8HVxZKOkDIG/PlkFibEch/xluesVqAm/Reg7E+UM9o1NvtsdUbPd0DPxjUl55LYwY=;
+Message-ID: <556048.68282.qm@web82105.mail.mud.yahoo.com>
+X-YMail-OSG: 2IjHaEEVM1lbHBAHqppW54KHrrpXXwfjj8eu6xXkxeOyDpqZqgZWfq8ab9FvvilmqHFD7f9CjDgfMeSF6HBWPiAgox543356u_MqJKTxd6HQikMiR9plipojySm1zBaocg5nXC3oQuUzSQRHs6illEmUVg5Gt7Dr9RZPVIxBQwoH5fBgplHirlsa4NGu5_D.PM_YXkuU9mKxgTs1xR4.IuTbAF7owQhCcVUsqKpLgtKkTxoxq21RBvxO_unRP1XjKKggyCAWAMC9XV4d2mtH9ZF0u.o0qT8et9g_H6t8V9_CSZrzENfM4G8_r6a40IRueou2ZiCPgF6oO1GNmj1uO3PQtp7ik7A773bOkA--
+X-Mailer: YahooMailRC/240.3 YahooMailWebService/0.8.100.260964
+References: <4B4C3E4F.9060001@memeplex.com> <20100112145213.GB3925@hack>  <1263308127.4244.142.camel@laptop> <2375c9f91001120700r4c2e1e05l5e5be3ddc6a13da2@mail.gmail.com>
+Date: Tue, 12 Jan 2010 09:53:01 -0800 (PST)
+From: Gong Cheng <chengg11@yahoo.com>
+Subject: Re: Futex hang/lockup problem in 2.6.30+ on AMD64
+To: =?iso-8859-1?Q?Am=E9rico_Wang?= <xiyou.wangcong@gmail.com>,
+       Peter Zijlstra <peterz@infradead.org>
+Cc: Andrew Athan <linux_kernel_aathan@memeplex.com>,
+       linux-kernel@vger.kernel.org, Darren Hart <dvhltc@us.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <2375c9f91001120700r4c2e1e05l5e5be3ddc6a13da2@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 12 Jan 2010 18:43:09 +0100
-Thomas Meyer <thomas@m3y3r.de> wrote:
+Hi guys,
+    It has been a little while when we were hit by the problem, and from then I didn't touch that area, so forgive me if I can not answer all your questions.
+    Basically after switching from 2.6.31.1 and 2.6.31.4, the problem seems to have gone away. 
+    It was very reproducible for us in 2.6.31.1 (if coupled with glibc 2.5.34.1 or any version around. I believe as long as it was after the private futex work in glibc).  
+After the switch, we might have had another similar occurrence but it was not clear if was the same problem. Since it didn't occur again, we let it go. 
+   now we are in 2.6.32.1, and it is still running fine. So the problem is either completely gone with the newer kernels. Or it is just much less likely to happen.
+That is pretty much all I can provide, and hope it helps.
 
-> Am Montag, den 11.01.2010, 11:19 -0800 schrieb Jesse Barnes:
-> > On Mon, 11 Jan 2010 20:03:57 +0100
-> > Thomas Meyer <thomas@m3y3r.de> wrote:
-> > 
-> > > 
-> > > 
-> > > Am 11.01.2010 um 17:55 schrieb Jesse Barnes
-> > > <jbarnes@virtuousgeek.org>:
-> > > 
-> > > > On Mon, 11 Jan 2010 17:53:04 +0100
-> > > > Thomas Meyer <thomas@m3y3r.de> wrote:
-> > > >
-> > > >> Am Sonntag, den 10.01.2010, 23:56 +0100 schrieb Rafael J.
-> > > >> Wysocki:
-> > > >>> This message has been generated automatically as a part of a
-> > > >>> report of regressions introduced between 2.6.31 and 2.6.32.
-> > > >>>
-> > > >>> The following bug entry is on the current list of known
-> > > >>> regressions introduced between 2.6.31 and 2.6.32.  Please
-> > > >>> verify if it still should be listed and let me know (either
-> > > >>> way).
-> > > >>>
-> > > >>
-> > > >> Yes, still should be listed.
-> > > >>
-> > > >> Problem still exists in 2.6.32.3 and 2.6.33-rc3-00097-g2c1f189,
-> > > >> that contains
-> > > >> this commit:
-> > > >> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=cda9d05c499093c67b4a376a15009923acc2127a
-> > > >>
-> > > >> The above commit removes the render reclock support, that
-> > > >> ought to fix a common kind of problem encountered on i915
-> > > >> hardware, but not on my machine.
-> > > >>
-> > > >> Still need to boot with "nomodeset" to have a workable system.
-> > > >
-> > > > Does this patch prevent the flicker?
-> > > 
-> > > By the way: how often and in what interval is the function   
-> > > intel_lvds_detect called?
-> > > 
-> > > How long will/can the function acpi_lid_open take to complete?
-> > > Maybe some acpi interpretation takes really long? Is this
-> > > possible?
-> > > 
-> > > Would this explain the flickering?
-> > 
-> > It should only be called when a client requests the connection
-> > status (e.g. xrandr or the GNOME display applet).
-> 
-> how to check how often this function is called and it's duration? is
-> the function tracer capable of this?
+-gong
 
-Yeah, the function tracer should be able to do it (though I don't know
-how to use it offhand, maybe through the perf tool?).  Or you could
-just add some DRM_ERROR lines. :)
 
-> > The LVDS state will also be checked at ACPI LID event time, maybe
-> > your platforms is getting spurious LID events?
-> 
-> maybe! where can I check this? acpid log file?
 
-Yeah or using acpi_listen I think.
 
--- 
-Jesse Barnes, Intel Open Source Technology Center
+----- Original Message ----
+From: Américo Wang <xiyou.wangcong@gmail.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Andrew Athan <linux_kernel_aathan@memeplex.com>; linux-kernel@vger.kernel.org; Darren Hart <dvhltc@us.ibm.com>; Thomas Gleixner <tglx@linutronix.de>; Ingo Molnar <mingo@elte.hu>; Gong Cheng <chengg11@yahoo.com>
+Sent: Tue, January 12, 2010 7:00:57 AM
+Subject: Re: Futex hang/lockup problem in 2.6.30+ on AMD64
+
+On Tue, Jan 12, 2010 at 10:55 PM, Peter Zijlstra <peterz@infradead.org> wrote:
+> On Tue, 2010-01-12 at 22:52 +0800, Américo Wang wrote:
+>
+>> > $ uname -a
+>> > Linux UK22 2.6.30-2-amd64 #1 SMP Fri Sep 25 22:16:56 UTC 2009 x86_64
+>> > GNU/Linux
+>
+> Does a recent kernel work?
+>
+>
+
+Ah, I just wanted to ask the same question, adding the original reporter
+Gong Cheng into Cc...
+
+Gong, could you reproduce it on the latest kernel? And what is your .config?
+
+Thanks!
+
