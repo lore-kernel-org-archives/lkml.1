@@ -1,101 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753899Ab0ALJTM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753679Ab0ALJWq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753899Ab0ALJTM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jan 2010 04:19:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751865Ab0ALJTL
+	id S1753679Ab0ALJWq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jan 2010 04:22:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751648Ab0ALJWp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jan 2010 04:19:11 -0500
-Received: from eu1sys200aog108.obsmtp.com ([207.126.144.125]:46488 "EHLO
-	eu1sys200aog108.obsmtp.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752154Ab0ALJTK (ORCPT
+	Tue, 12 Jan 2010 04:22:45 -0500
+Received: from out01.mta.xmission.com ([166.70.13.231]:54473 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753259Ab0ALJWo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jan 2010 04:19:10 -0500
-X-Greylist: delayed 1785 seconds by postgrey-1.27 at vger.kernel.org; Tue, 12 Jan 2010 04:19:09 EST
-Message-ID: <4B4C376C.6080705@st.com>
-Date: Tue, 12 Jan 2010 09:48:44 +0100
-From: Francesco VIRLINZI <francesco.virlinzi@st.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
+	Tue, 12 Jan 2010 04:22:44 -0500
+To: Dave Chinner <david@fromorbit.com>
+Cc: Tejun Heo <tj@kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>,
+       Miles Lane <miles.lane@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>
+Subject: Re: 2.6.33-rc3 -- INFO: possible recursive locking -- (s_active){++++.+}, at: [<c10d2941>] sysfs_hash_and_remove+0x3d/0x4f
+References: <a44ae5cd1001060454g22fb5a0ay8185bc680cd4fc67@mail.gmail.com>
+	<2375c9f91001100058w4bac1cf9s183fc37eafbfde75@mail.gmail.com>
+	<m13a2dho1o.fsf@fess.ebiederm.org> <201001101935.31882.rjw@sisk.pl>
+	<m1wrzpbcmi.fsf@fess.ebiederm.org> <4B4BC2D3.7070003@kernel.org>
+	<m11vhw6u3k.fsf@fess.ebiederm.org>
+	<20100112030134.GA17483@discord.disaster>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Tue, 12 Jan 2010 01:22:31 -0800
+In-Reply-To: <20100112030134.GA17483@discord.disaster> (Dave Chinner's message of "Tue\, 12 Jan 2010 14\:01\:34 +1100")
+Message-ID: <m1bpgz8yp4.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-To: Jeremy Kerr <jeremy.kerr@canonical.com>
-Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-       linuxppc-dev@lists.ozlabs.org
-Subject: Re: [RFC,PATCH 1/7 v2] Add a common struct clk
-References: <1263279511.160551.332624337260.1.gpush@pororo>
-In-Reply-To: <1263279511.160551.332624337260.1.gpush@pororo>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Scanned: No (on in02.mta.xmission.com); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jeremy
-In November I already sent a proposal on
-  a generic linux clk framework.
-On that I would suggest:
+Dave Chinner <david@fromorbit.com> writes:
 
+> On Mon, Jan 11, 2010 at 04:32:31PM -0800, Eric W. Biederman wrote:
+>> Tejun Heo <tj@kernel.org> writes:
+>> 
+>> > On 01/11/2010 11:26 AM, Eric W. Biederman wrote:
+>> >> From: Eric W. Biederman <ebiederm@xmission.com>
+>> >> Date: Sun, 10 Jan 2010 18:13:35 -0800
+>> >> Subject: [PATCH] sysfs: Add support for lockdep subclasses to s_active
+>> >> 
+>> >> We have apparently valid cases where the code for a sysfs attribute
+>> >> removes other sysfs attributes.  Without support for subclasses
+>> >> lockdep flags a possible recursive lock problem as it figures
+>> >> the first sysfs attribute could be attempting to remove itself.
+>> >> 
+>> >> By adding support for sysfs subclasses we can teach lockdep to
+>> >> distinguish between different types of sysfs attributes and not
+>> >> get confused.
+>> >> 
+>> >> Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+>> >
+>> > Acked-by: Tejun Heo <tj@kernel.org>
+>> 
+>> Now if I can just get a Tested-by  this patch will be all set ;)
 >
-> +struct clk {
-> +	const struct clk_operations *ops;
->    
-            spinlock_t lock;
-            const char *name;
-            int id;
-            unsigned long rate;
-> +};
-> +
-> +struct clk_operations {
->    
-                int (*init)(struc clk *);
-> +       int             (*enable)(struct clk *);
-> +       void            (*disable)(struct clk *);
-> +       unsigned long   (*get_rate)(struct clk *);
-> +       void            (*put)(struct clk *);
-> +       long            (*round_rate)(struct clk *, unsigned long);
-> +       int             (*set_rate)(struct clk *, unsigned long);
-> +       int             (*set_parent)(struct clk *, struct clk *);
-> +       struct clk*     (*get_parent)(struct clk *);
-> +};
->    
-
-+static inline int clk_enable(struct clk *clk)
-+{
-	unsigned long flags;
-	int ret = 0;
-+	if (clk->ops->enable) {
-		spinlock_irq_save(&clk->lock, flags);
-+		ret = clk->ops->enable(clk);
-		spinlock_irq_restore(&clk->lock, flags);
-	}
-+	return 0;
-+}
-
-Something similar in the other function...
-
-> +
-> +static inline unsigned long clk_get_rate(struct clk *clk)
-> +{
-> +	if (clk->ops->get_rate)
-> +		return clk->ops->get_rate(clk);
->    
-> 	return clk->rate;
-> +}
+> Hi Eric,
 >
->    
-Moreover if you support .set_parent and .get_parent  a .parent field in 
-the struct clk
-  is useful.
+> Is this the same locking problem that this patch fixes?
+>
+> http://lkml.org/lkml/2010/1/11/26
 
-As
+It certainly looks similar.   The sysfs file that is being written
+is different so I can't tell if that is a false positive because
+sysfs is used for everything, or if it is a real issue.
 
-struct clk {
-const struct clk_operations *ops;
-
-     spinlock_t lock;
-     const char *name;
-     int id;
-     unsigned long rate;
-     struct clk *parent;
-};
-
-Regards
-  Francesco
+Eric
