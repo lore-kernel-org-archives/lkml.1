@@ -1,106 +1,1003 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753124Ab0ALMnP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753352Ab0ALNQV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753124Ab0ALMnP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jan 2010 07:43:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752519Ab0ALMnO
+	id S1753352Ab0ALNQV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jan 2010 08:16:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753028Ab0ALNQV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jan 2010 07:43:14 -0500
-Received: from gw1.transmode.se ([213.115.205.20]:55204 "EHLO gw1.transmode.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751310Ab0ALMnN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jan 2010 07:43:13 -0500
-In-Reply-To: <20100112105805.50e39a77.sfr@canb.auug.org.au>
-References: <20100112105805.50e39a77.sfr@canb.auug.org.au>
-Subject: Re: linux-next: origin tree build failure
-X-KeepSent: C91015BA:3FA77D43-C12576A9:00453F87;
- type=4; name=$KeepSent
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
-       linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
-       Linus <torvalds@linux-foundation.org>
-X-Mailer: Lotus Notes Release 8.5.1 September 28, 2009
-Message-ID: <OFC91015BA.3FA77D43-ONC12576A9.00453F87-C12576A9.00457102@transmode.se>
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Date: Tue, 12 Jan 2010 13:38:29 +0100
-X-MIMETrack: Serialize by Router on sesr04/Transmode(Release 8.5.1|September 28, 2009) at
- 2010-01-12 13:43:12
-MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
+	Tue, 12 Jan 2010 08:16:21 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:32243 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752367Ab0ALNQT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jan 2010 08:16:19 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=message-id:from:date:to:reply-to:cc:subject:x-system-of-record;
+	b=FjV5xqhrBq2saMTEqJYwhyHeAhaYNwq0XZmgWc6iVbPMYRWMT1tQZ47RiapXqn76U
+	CSuFsGWdDvBjO5Q3XNBDw==
+Message-ID: <4b4c761b.0338560a.1eaa.ffff824d@mx.google.com>
+From: Stephane Eranian <eranian@google.com>
+Date: Tue, 12 Jan 2010 12:50:01 +0200
+To: linux-kernel@vger.kernel.org
+Reply-to: eranian@google.com
+Cc: peterz@infradead.org, mingo@elte.hu, paulus@samba.org, davem@davemloft.net,
+       perfmon2-devel@lists.sf.net, eranian@gmail.com, eranian@google.com
+Subject: [PATCH]  perf_events: improve x86 event scheduling
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen Rothwell <sfr@canb.auug.org.au> wrote on 12/01/2010 00:58:05:
->
-> Hi all,
->
-> Today's linux-next build (powerpc ppc64_defconfig) failed like this:
->
-> cc1: error: include/linux/autoconf.h: No such file or directory
->
-> (while building the boot wrappers - lots more of the same)
->
-> Caused by commit ac4c2a3bbe5db5fc570b1d0ee1e474db7cb22585 ("zlib:
-> optimize inffast when copying direct from output").  autoconf.h moved
-> from include/linux to include/generated in commit
-> 264a26838056fc2d759f58bec2e720e01fcb1bdb ("kbuild: move autoconf.h to
-> include/generated") which was in linux-next since 14 Dec 2009 and in
-> Linus' tree since 18 Dec 2009.
->
-[SNIP]
->
-> This latter build problem is probably only noticed if you build with a
-> separate object directory (i.e. with O=.. on the make command).  The
-> previous PowerPC maintainer tells me that defining __KERNEL__ in the
-> BOOTFLAGS is wrong and should have been noticed.
+	This patch improves event scheduling by maximizing the use
+	of PMU registers regardless of the order in which events are
+	created in a group.
 
-Is this any better w.r.t __KERNEL__?
+	The algorithm takes into account the list of counter constraints
+	for each event. It assigns events to counters from the most
+	constrained, i.e., works on only one counter, to the least
+	constrained, i.e., works on any counter.
 
->From 1a79993a42e17be665d3488663d81c0513b8bbfe Mon Sep 17 00:00:00 2001
-From: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
-Date: Tue, 12 Jan 2010 13:31:58 +0100
-Subject: [PATCH] powerpc: move __KERNEL__ define in bootwrapper.
+	Intel Fixed counter events and the BTS special event are also
+	handled via this algorithm which is designed to be fairly generic.
 
-Apparently using -D__KERNEL__ in BOOTCFLAGS is a bad thing.
-Move __KERNEL__ into inffast.c where it is needed.
+	The patch also updates the validation of an event to use the
+	scheduling algorithm. This will cause early failure in
+	perf_event_open().
 
-Signed-off-by: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
----
- arch/powerpc/boot/Makefile |    2 +-
- lib/zlib_inflate/inffast.c |    4 +++-
- 2 files changed, 4 insertions(+), 2 deletions(-)
+	This is the 2nd version of this patch. It follows the model used
+	by PPC, by running the scheduling algorithm and the actual
+	assignment separately. Actual assignment takes place in
+	hw_perf_enable() whereas scheduling is implemented in
+	hw_perf_group_sched_in() and x86_pmu_enable().
 
-diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
-index 79ebd6f..766fb88 100644
---- a/arch/powerpc/boot/Makefile
-+++ b/arch/powerpc/boot/Makefile
-@@ -20,7 +20,7 @@
- all: $(obj)/zImage
-
- BOOTCFLAGS    := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
--		 -fno-strict-aliasing -Os -msoft-float -pipe -D__KERNEL__\
-+		 -fno-strict-aliasing -Os -msoft-float -pipe \
- 		 -fomit-frame-pointer -fno-builtin -fPIC -nostdinc \
- 		 -isystem $(shell $(CROSS32CC) -print-file-name=include)
- BOOTAFLAGS	:= -D__ASSEMBLY__ $(BOOTCFLAGS) -traditional -nostdinc
-diff --git a/lib/zlib_inflate/inffast.c b/lib/zlib_inflate/inffast.c
-index 05e1559..919c162 100644
---- a/lib/zlib_inflate/inffast.c
-+++ b/lib/zlib_inflate/inffast.c
-@@ -2,7 +2,9 @@
-  * Copyright (C) 1995-2004 Mark Adler
-  * For conditions of distribution and use, see copyright notice in zlib.h
-  */
--
-+#ifndef __KERNEL__
-+#define __KERNEL__
-+#endif
- #include <linux/zutil.h>
- #include <asm/unaligned.h>
- #include <asm/byteorder.h>
+	Signed-off-by: Stephane Eranian <eranian@google.com>
 --
-1.6.4.4
+ include/asm/perf_event.h |   17 +
+ kernel/cpu/perf_event.c  |  694 ++++++++++++++++++++++++++++++++---------------
+ 2 files changed, 494 insertions(+), 217 deletions(-)
 
-
+diff --git a/arch/x86/include/asm/perf_event.h b/arch/x86/include/asm/perf_event.h
+index 8d9f854..16beb34 100644
+--- a/arch/x86/include/asm/perf_event.h
++++ b/arch/x86/include/asm/perf_event.h
+@@ -19,6 +19,7 @@
+ #define MSR_ARCH_PERFMON_EVENTSEL1			     0x187
+ 
+ #define ARCH_PERFMON_EVENTSEL0_ENABLE			  (1 << 22)
++#define ARCH_PERFMON_EVENTSEL_ANY			  (1 << 21)
+ #define ARCH_PERFMON_EVENTSEL_INT			  (1 << 20)
+ #define ARCH_PERFMON_EVENTSEL_OS			  (1 << 17)
+ #define ARCH_PERFMON_EVENTSEL_USR			  (1 << 16)
+@@ -26,7 +27,14 @@
+ /*
+  * Includes eventsel and unit mask as well:
+  */
+-#define ARCH_PERFMON_EVENT_MASK				    0xffff
++
++
++#define INTEL_ARCH_EVTSEL_MASK		0x000000FFULL
++#define INTEL_ARCH_UNIT_MASK		0x0000FF00ULL
++#define INTEL_ARCH_EDGE_MASK		0x00040000ULL
++#define INTEL_ARCH_INV_MASK		0x00800000ULL
++#define INTEL_ARCH_CNT_MASK		0xFF000000ULL
++#define INTEL_ARCH_EVENT_MASK	(INTEL_ARCH_UNIT_MASK|INTEL_ARCH_EVTSEL_MASK)
+ 
+ /*
+  * filter mask to validate fixed counter events.
+@@ -37,7 +45,12 @@
+  *  The other filters are supported by fixed counters.
+  *  The any-thread option is supported starting with v3.
+  */
+-#define ARCH_PERFMON_EVENT_FILTER_MASK			0xff840000
++#define INTEL_ARCH_FIXED_MASK \
++	(INTEL_ARCH_CNT_MASK| \
++	 INTEL_ARCH_INV_MASK| \
++	 INTEL_ARCH_EDGE_MASK|\
++	 INTEL_ARCH_UNIT_MASK|\
++	 INTEL_ARCH_EVENT_MASK)
+ 
+ #define ARCH_PERFMON_UNHALTED_CORE_CYCLES_SEL		      0x3c
+ #define ARCH_PERFMON_UNHALTED_CORE_CYCLES_UMASK		(0x00 << 8)
+diff --git a/arch/x86/kernel/cpu/perf_event.c b/arch/x86/kernel/cpu/perf_event.c
+index d616c06..d68c3e5 100644
+--- a/arch/x86/kernel/cpu/perf_event.c
++++ b/arch/x86/kernel/cpu/perf_event.c
+@@ -7,6 +7,7 @@
+  *  Copyright (C) 2009 Advanced Micro Devices, Inc., Robert Richter
+  *  Copyright (C) 2008-2009 Red Hat, Inc., Peter Zijlstra <pzijlstr@redhat.com>
+  *  Copyright (C) 2009 Intel Corporation, <markus.t.metzger@intel.com>
++ *  Copyright (C) 2009 Google Inc., Stephane Eranian
+  *
+  *  For licencing details see kernel-base/COPYING
+  */
+@@ -68,26 +69,37 @@ struct debug_store {
+ 	u64	pebs_event_reset[MAX_PEBS_EVENTS];
+ };
+ 
++#define BITS_TO_U64(nr) DIV_ROUND_UP(nr, BITS_PER_BYTE * sizeof(u64))
++
++struct event_constraint {
++	u64	idxmsk[BITS_TO_U64(X86_PMC_IDX_MAX)];
++	int	code;
++	int	cmask;
++};
++
+ struct cpu_hw_events {
+-	struct perf_event	*events[X86_PMC_IDX_MAX];
+-	unsigned long		used_mask[BITS_TO_LONGS(X86_PMC_IDX_MAX)];
++	struct perf_event	*events[X86_PMC_IDX_MAX]; /* in counter order */
+ 	unsigned long		active_mask[BITS_TO_LONGS(X86_PMC_IDX_MAX)];
+ 	unsigned long		interrupts;
+ 	int			enabled;
+ 	struct debug_store	*ds;
+-};
+ 
+-struct event_constraint {
+-	unsigned long	idxmsk[BITS_TO_LONGS(X86_PMC_IDX_MAX)];
+-	int		code;
++	int			n_events;
++	int			n_added;
++	int			assign[X86_PMC_IDX_MAX]; /* event to counter assignment */
++	struct perf_event	*event_list[X86_PMC_IDX_MAX]; /* in enabled order */
+ };
+ 
+-#define EVENT_CONSTRAINT(c, m) { .code = (c), .idxmsk[0] = (m) }
+-#define EVENT_CONSTRAINT_END  { .code = 0, .idxmsk[0] = 0 }
++#define EVENT_CONSTRAINT(c, n, m) { \
++	.code = (c),	\
++	.cmask = (m),	\
++	.idxmsk[0] = (n) }
+ 
+-#define for_each_event_constraint(e, c) \
+-	for ((e) = (c); (e)->idxmsk[0]; (e)++)
++#define EVENT_CONSTRAINT_END \
++	{ .code = 0, .cmask = 0, .idxmsk[0] = 0 }
+ 
++#define for_each_event_constraint(e, c) \
++	for ((e) = (c); (e)->cmask; (e)++)
+ 
+ /*
+  * struct x86_pmu - generic x86 pmu
+@@ -114,8 +126,8 @@ struct x86_pmu {
+ 	u64		intel_ctrl;
+ 	void		(*enable_bts)(u64 config);
+ 	void		(*disable_bts)(void);
+-	int		(*get_event_idx)(struct cpu_hw_events *cpuc,
+-					 struct hw_perf_event *hwc);
++	const struct event_constraint *(*get_event_constraints)(struct perf_event *event);
++	const struct event_constraint *event_constraints;
+ };
+ 
+ static struct x86_pmu x86_pmu __read_mostly;
+@@ -124,7 +136,8 @@ static DEFINE_PER_CPU(struct cpu_hw_events, cpu_hw_events) = {
+ 	.enabled = 1,
+ };
+ 
+-static const struct event_constraint *event_constraints;
++static int x86_perf_event_set_period(struct perf_event *event,
++			     struct hw_perf_event *hwc, int idx);
+ 
+ /*
+  * Not sure about some of these
+@@ -171,14 +184,14 @@ static u64 p6_pmu_raw_event(u64 hw_event)
+ 	return hw_event & P6_EVNTSEL_MASK;
+ }
+ 
+-static const struct event_constraint intel_p6_event_constraints[] =
++static struct event_constraint intel_p6_event_constraints[] =
+ {
+-	EVENT_CONSTRAINT(0xc1, 0x1),	/* FLOPS */
+-	EVENT_CONSTRAINT(0x10, 0x1),	/* FP_COMP_OPS_EXE */
+-	EVENT_CONSTRAINT(0x11, 0x1),	/* FP_ASSIST */
+-	EVENT_CONSTRAINT(0x12, 0x2),	/* MUL */
+-	EVENT_CONSTRAINT(0x13, 0x2),	/* DIV */
+-	EVENT_CONSTRAINT(0x14, 0x1),	/* CYCLES_DIV_BUSY */
++	EVENT_CONSTRAINT(0xc1, 0x1, INTEL_ARCH_EVENT_MASK),	/* FLOPS */
++	EVENT_CONSTRAINT(0x10, 0x1, INTEL_ARCH_EVENT_MASK),	/* FP_COMP_OPS_EXE */
++	EVENT_CONSTRAINT(0x11, 0x1, INTEL_ARCH_EVENT_MASK),	/* FP_ASSIST */
++	EVENT_CONSTRAINT(0x12, 0x2, INTEL_ARCH_EVENT_MASK),	/* MUL */
++	EVENT_CONSTRAINT(0x13, 0x2, INTEL_ARCH_EVENT_MASK),	/* DIV */
++	EVENT_CONSTRAINT(0x14, 0x1, INTEL_ARCH_EVENT_MASK),	/* CYCLES_DIV_BUSY */
+ 	EVENT_CONSTRAINT_END
+ };
+ 
+@@ -196,35 +209,43 @@ static const u64 intel_perfmon_event_map[] =
+   [PERF_COUNT_HW_BUS_CYCLES]		= 0x013c,
+ };
+ 
+-static const struct event_constraint intel_core_event_constraints[] =
+-{
+-	EVENT_CONSTRAINT(0x10, 0x1),	/* FP_COMP_OPS_EXE */
+-	EVENT_CONSTRAINT(0x11, 0x2),	/* FP_ASSIST */
+-	EVENT_CONSTRAINT(0x12, 0x2),	/* MUL */
+-	EVENT_CONSTRAINT(0x13, 0x2),	/* DIV */
+-	EVENT_CONSTRAINT(0x14, 0x1),	/* CYCLES_DIV_BUSY */
+-	EVENT_CONSTRAINT(0x18, 0x1),	/* IDLE_DURING_DIV */
+-	EVENT_CONSTRAINT(0x19, 0x2),	/* DELAYED_BYPASS */
+-	EVENT_CONSTRAINT(0xa1, 0x1),	/* RS_UOPS_DISPATCH_CYCLES */
+-	EVENT_CONSTRAINT(0xcb, 0x1),	/* MEM_LOAD_RETIRED */
++static struct event_constraint intel_core_event_constraints[] =
++{
++	EVENT_CONSTRAINT(0xc0, (0x3|(1ULL<<32)), INTEL_ARCH_FIXED_MASK), /* INSTRUCTIONS_RETIRED */
++	EVENT_CONSTRAINT(0x3c, (0x3|(1ULL<<33)), INTEL_ARCH_FIXED_MASK), /* UNHALTED_CORE_CYCLES */
++	EVENT_CONSTRAINT(0x10, 0x1, INTEL_ARCH_EVENT_MASK), /* FP_COMP_OPS_EXE */
++	EVENT_CONSTRAINT(0x11, 0x2, INTEL_ARCH_EVENT_MASK), /* FP_ASSIST */
++	EVENT_CONSTRAINT(0x12, 0x2, INTEL_ARCH_EVENT_MASK), /* MUL */
++	EVENT_CONSTRAINT(0x13, 0x2, INTEL_ARCH_EVENT_MASK), /* DIV */
++	EVENT_CONSTRAINT(0x14, 0x1, INTEL_ARCH_EVENT_MASK), /* CYCLES_DIV_BUSY */
++	EVENT_CONSTRAINT(0x18, 0x1, INTEL_ARCH_EVENT_MASK), /* IDLE_DURING_DIV */
++	EVENT_CONSTRAINT(0x19, 0x2, INTEL_ARCH_EVENT_MASK), /* DELAYED_BYPASS */
++	EVENT_CONSTRAINT(0xa1, 0x1, INTEL_ARCH_EVENT_MASK), /* RS_UOPS_DISPATCH_CYCLES */
++	EVENT_CONSTRAINT(0xcb, 0x1, INTEL_ARCH_EVENT_MASK), /* MEM_LOAD_RETIRED */
+ 	EVENT_CONSTRAINT_END
+ };
+ 
+-static const struct event_constraint intel_nehalem_event_constraints[] =
+-{
+-	EVENT_CONSTRAINT(0x40, 0x3),	/* L1D_CACHE_LD */
+-	EVENT_CONSTRAINT(0x41, 0x3),	/* L1D_CACHE_ST */
+-	EVENT_CONSTRAINT(0x42, 0x3),	/* L1D_CACHE_LOCK */
+-	EVENT_CONSTRAINT(0x43, 0x3),	/* L1D_ALL_REF */
+-	EVENT_CONSTRAINT(0x4e, 0x3),	/* L1D_PREFETCH */
+-	EVENT_CONSTRAINT(0x4c, 0x3),	/* LOAD_HIT_PRE */
+-	EVENT_CONSTRAINT(0x51, 0x3),	/* L1D */
+-	EVENT_CONSTRAINT(0x52, 0x3),	/* L1D_CACHE_PREFETCH_LOCK_FB_HIT */
+-	EVENT_CONSTRAINT(0x53, 0x3),	/* L1D_CACHE_LOCK_FB_HIT */
+-	EVENT_CONSTRAINT(0xc5, 0x3),	/* CACHE_LOCK_CYCLES */
++static struct event_constraint intel_nehalem_event_constraints[] = {
++	EVENT_CONSTRAINT(0xc0, (0x3|(1ULL<<32)), INTEL_ARCH_FIXED_MASK), /* INSTRUCTIONS_RETIRED */
++	EVENT_CONSTRAINT(0x3c, (0x3|(1ULL<<33)), INTEL_ARCH_FIXED_MASK), /* UNHALTED_CORE_CYCLES */
++	EVENT_CONSTRAINT(0x40, 0x3, INTEL_ARCH_EVENT_MASK), /* L1D_CACHE_LD */
++	EVENT_CONSTRAINT(0x41, 0x3, INTEL_ARCH_EVENT_MASK), /* L1D_CACHE_ST */
++	EVENT_CONSTRAINT(0x42, 0x3, INTEL_ARCH_EVENT_MASK), /* L1D_CACHE_LOCK */
++	EVENT_CONSTRAINT(0x43, 0x3, INTEL_ARCH_EVENT_MASK), /* L1D_ALL_REF */
++	EVENT_CONSTRAINT(0x4e, 0x3, INTEL_ARCH_EVENT_MASK), /* L1D_PREFETCH */
++	EVENT_CONSTRAINT(0x4c, 0x3, INTEL_ARCH_EVENT_MASK), /* LOAD_HIT_PRE */
++	EVENT_CONSTRAINT(0x51, 0x3, INTEL_ARCH_EVENT_MASK), /* L1D */
++	EVENT_CONSTRAINT(0x52, 0x3, INTEL_ARCH_EVENT_MASK), /* L1D_CACHE_PREFETCH_LOCK_FB_HIT */
++	EVENT_CONSTRAINT(0x53, 0x3, INTEL_ARCH_EVENT_MASK), /* L1D_CACHE_LOCK_FB_HIT */
++	EVENT_CONSTRAINT(0xc5, 0x3, INTEL_ARCH_EVENT_MASK), /* CACHE_LOCK_CYCLES */
+ 	EVENT_CONSTRAINT_END
+ };
+ 
++static struct event_constraint intel_gen_event_constraints[] = {
++	EVENT_CONSTRAINT(0xc0, (0x3|(1ULL<<32)), INTEL_ARCH_FIXED_MASK), /* INSTRUCTIONS_RETIRED */
++	EVENT_CONSTRAINT(0x3c, (0x3|(1ULL<<33)), INTEL_ARCH_FIXED_MASK), /* UNHALTED_CORE_CYCLES */
++};
++
+ static u64 intel_pmu_event_map(int hw_event)
+ {
+ 	return intel_perfmon_event_map[hw_event];
+@@ -527,11 +548,11 @@ static u64 intel_pmu_raw_event(u64 hw_event)
+ #define CORE_EVNTSEL_REG_MASK		0xFF000000ULL
+ 
+ #define CORE_EVNTSEL_MASK		\
+-	(CORE_EVNTSEL_EVENT_MASK |	\
+-	 CORE_EVNTSEL_UNIT_MASK  |	\
+-	 CORE_EVNTSEL_EDGE_MASK  |	\
+-	 CORE_EVNTSEL_INV_MASK  |	\
+-	 CORE_EVNTSEL_REG_MASK)
++	(INTEL_ARCH_EVTSEL_MASK |	\
++	 INTEL_ARCH_UNIT_MASK   |	\
++	 INTEL_ARCH_EDGE_MASK   |	\
++	 INTEL_ARCH_INV_MASK    |	\
++	 INTEL_ARCH_CNT_MASK)
+ 
+ 	return hw_event & CORE_EVNTSEL_MASK;
+ }
+@@ -1120,9 +1141,15 @@ static void amd_pmu_disable_all(void)
+ 
+ void hw_perf_disable(void)
+ {
++	struct cpu_hw_events *cpuc = &__get_cpu_var(cpu_hw_events);
++
+ 	if (!x86_pmu_initialized())
+ 		return;
+-	return x86_pmu.disable_all();
++
++	if (cpuc->enabled)
++		cpuc->n_added = 0;
++
++	x86_pmu.disable_all();
+ }
+ 
+ static void p6_pmu_enable_all(void)
+@@ -1189,10 +1216,219 @@ static void amd_pmu_enable_all(void)
+ 	}
+ }
+ 
++static int x86_schedule_events(struct cpu_hw_events *cpuc, int n, int *assign)
++{
++	int i, j , w, num, lim;
++	int weight, wmax;
++	const struct event_constraint *c;
++	const struct event_constraint *constraints[X86_PMC_IDX_MAX];
++	unsigned long used_mask[BITS_TO_LONGS(X86_PMC_IDX_MAX)];
++	struct hw_perf_event *hwc;
++
++	bitmap_zero(used_mask, X86_PMC_IDX_MAX);
++
++	for(i=0; i < n; i++)
++		constraints[i] = x86_pmu.get_event_constraints(cpuc->event_list[i]);
++
++	/*
++	 * weight = number of possible counters
++	 *
++	 * 1    = most constrained, only works on one counter
++	 * wmax = least constrained, works on 1 fixed counter
++	 *        or any generic counter
++	 *
++	 * assign events to counters starting with most
++	 * constrained events.
++	 */
++	wmax = 1 + x86_pmu.num_events;
++	num = n;
++	for(w=1; num && w <= wmax; w++) {
++
++		/* for each event */
++		for(i=0; i < n; i++) {
++			c = constraints[i];
++			hwc = &cpuc->event_list[i]->hw;
++
++			lim = X86_PMC_IDX_MAX;
++
++			weight = c ? bitmap_weight((unsigned long *)c->idxmsk, lim)
++			       : x86_pmu.num_events;
++
++			if (weight != w)
++				continue;
++
++			/*
++			 * try to reuse previous assignment
++			 *
++			 * This is possible despite the fact that
++			 * events or events order may have changed.
++			 *
++			 * What matters is the level of constraints
++			 * of an event and this is constant for now.
++			 *
++			 * This is possible also because we always
++			 * scan from most to least constrained. Thus,
++			 * if a counter can be reused, it means no,
++			 * more constrained events, needed it. And
++			 * next events will either compete for it
++			 * (which cannot be solved anyway) or they
++			 * have fewer constraints, and they can use
++			 * another counter.
++			 */
++			j = hwc->idx;
++			if (j != -1 && !test_bit(j, used_mask))
++				goto skip;
++
++			if (c) {
++				for_each_bit(j, (unsigned long *)c->idxmsk, lim)
++					if (!test_bit(j, used_mask))
++						break;
++
++			} else  {
++				lim = x86_pmu.num_events;
++				/*
++				 * fixed counter events have necessarily a
++				 * constraint thus we come here only for
++				 * generic counters and thus we limit the
++				 * scan to those
++				 */
++				j = find_first_zero_bit(used_mask, lim);
++			}
++			if (j == lim)
++				return -EAGAIN;
++skip:
++			set_bit(j, used_mask);
++
++			if (assign)
++				assign[i] = j;
++			num--;
++		}
++	}
++	if (num)
++		return -ENOSPC;
++
++	return 0;
++}
++
++/*
++ * dogrp: true if must collect siblings events (group)
++ * returns total number of events and error code
++ */
++static int collect_events(struct cpu_hw_events *cpuc, struct perf_event *leader, bool dogrp)
++{
++	struct perf_event *event;
++	int n, max_count;
++
++	max_count = x86_pmu.num_events + x86_pmu.num_events_fixed;
++
++	/* current number of events already accepted */
++	n = cpuc->n_events;
++
++	if (!is_software_event(leader)) {
++		if (n >= max_count)
++			return -ENOSPC;
++		cpuc->event_list[n] = leader;
++		n++;
++	}
++	if (!dogrp)
++		return n;
++
++	list_for_each_entry(event, &leader->sibling_list, group_entry) {
++		if (is_software_event(event) ||
++		    event->state == PERF_EVENT_STATE_OFF)
++			continue;
++
++		if (n >= max_count)
++			return -ENOSPC;
++
++		cpuc->event_list[n] = event;
++		n++;
++	}
++	return n;
++}
++
++
++static inline void x86_assign_hw_event(struct perf_event *event,
++				struct hw_perf_event *hwc, int idx)
++{
++	hwc->idx = idx;
++
++	if (hwc->idx == X86_PMC_IDX_FIXED_BTS) {
++		hwc->config_base = 0;
++		hwc->event_base	= 0;
++	} else if (hwc->idx >= X86_PMC_IDX_FIXED) {
++		hwc->config_base = MSR_ARCH_PERFMON_FIXED_CTR_CTRL;
++		/*
++		 * We set it so that event_base + idx in wrmsr/rdmsr maps to
++		 * MSR_ARCH_PERFMON_FIXED_CTR0 ... CTR2:
++		 */
++		hwc->event_base =
++			MSR_ARCH_PERFMON_FIXED_CTR0 - X86_PMC_IDX_FIXED;
++	} else {
++		hwc->config_base = x86_pmu.eventsel;
++		hwc->event_base  = x86_pmu.perfctr;
++	}
++}
++
+ void hw_perf_enable(void)
+ {
++	struct cpu_hw_events *cpuc = &__get_cpu_var(cpu_hw_events);
++	struct perf_event *event;
++	struct hw_perf_event *hwc;
++	int i;
++
+ 	if (!x86_pmu_initialized())
+ 		return;
++	if (cpuc->n_added) {
++		/*
++		 * apply assignment obtained either from
++		 * hw_perf_group_sched_in() or x86_pmu_enable()
++		 *
++		 * step1: save events moving to new counters
++		 * step2: reprogram moved events into new counters
++		 */
++		for(i=0; i < cpuc->n_events; i++) {
++
++			event = cpuc->event_list[i];
++			hwc = &event->hw;
++
++			if (hwc->idx == -1 || hwc->idx == cpuc->assign[i])
++				continue;
++
++			x86_pmu.disable(hwc, hwc->idx);
++
++			clear_bit(hwc->idx, cpuc->active_mask);
++			barrier();
++			cpuc->events[hwc->idx] = NULL;
++
++			x86_perf_event_update(event, hwc, hwc->idx);
++
++			hwc->idx = -1;
++		}
++
++		for(i=0; i < cpuc->n_events; i++) {
++
++			event = cpuc->event_list[i];
++			hwc = &event->hw;
++
++			if (hwc->idx == -1) {
++				x86_assign_hw_event(event, hwc, cpuc->assign[i]);
++				x86_perf_event_set_period(event, hwc, hwc->idx);
++			}
++			/*
++			 * need to mark as active because x86_pmu_disable()
++			 * clear active_mask and eventsp[] yet it preserves
++			 * idx
++			 */
++			set_bit(hwc->idx, cpuc->active_mask);
++			cpuc->events[hwc->idx] = event;
++
++			x86_pmu.enable(hwc, hwc->idx);
++			perf_event_update_userpage(event);
++		}
++		cpuc->n_added = 0;
++		perf_events_lapic_init();
++	}
+ 	x86_pmu.enable_all();
+ }
+ 
+@@ -1343,6 +1579,13 @@ intel_pmu_enable_fixed(struct hw_perf_event *hwc, int __idx)
+ 		bits |= 0x2;
+ 	if (hwc->config & ARCH_PERFMON_EVENTSEL_OS)
+ 		bits |= 0x1;
++
++	/*
++	 * ANY bit is supported in v3 and up
++	 */
++	if (x86_pmu.version > 2 && hwc->config & ARCH_PERFMON_EVENTSEL_ANY)
++		bits |= 0x4;
++
+ 	bits <<= (idx * 4);
+ 	mask = 0xfULL << (idx * 4);
+ 
+@@ -1391,148 +1634,43 @@ static void amd_pmu_enable_event(struct hw_perf_event *hwc, int idx)
+ 		x86_pmu_enable_event(hwc, idx);
+ }
+ 
+-static int fixed_mode_idx(struct hw_perf_event *hwc)
+-{
+-	unsigned int hw_event;
+-
+-	hw_event = hwc->config & ARCH_PERFMON_EVENT_MASK;
+-
+-	if (unlikely((hw_event ==
+-		      x86_pmu.event_map(PERF_COUNT_HW_BRANCH_INSTRUCTIONS)) &&
+-		     (hwc->sample_period == 1)))
+-		return X86_PMC_IDX_FIXED_BTS;
+-
+-	if (!x86_pmu.num_events_fixed)
+-		return -1;
+-
+-	/*
+-	 * fixed counters do not take all possible filters
+-	 */
+-	if (hwc->config & ARCH_PERFMON_EVENT_FILTER_MASK)
+-		return -1;
+-
+-	if (unlikely(hw_event == x86_pmu.event_map(PERF_COUNT_HW_INSTRUCTIONS)))
+-		return X86_PMC_IDX_FIXED_INSTRUCTIONS;
+-	if (unlikely(hw_event == x86_pmu.event_map(PERF_COUNT_HW_CPU_CYCLES)))
+-		return X86_PMC_IDX_FIXED_CPU_CYCLES;
+-	if (unlikely(hw_event == x86_pmu.event_map(PERF_COUNT_HW_BUS_CYCLES)))
+-		return X86_PMC_IDX_FIXED_BUS_CYCLES;
+-
+-	return -1;
+-}
+-
+-/*
+- * generic counter allocator: get next free counter
+- */
+-static int
+-gen_get_event_idx(struct cpu_hw_events *cpuc, struct hw_perf_event *hwc)
+-{
+-	int idx;
+-
+-	idx = find_first_zero_bit(cpuc->used_mask, x86_pmu.num_events);
+-	return idx == x86_pmu.num_events ? -1 : idx;
+-}
+-
+-/*
+- * intel-specific counter allocator: check event constraints
+- */
+-static int
+-intel_get_event_idx(struct cpu_hw_events *cpuc, struct hw_perf_event *hwc)
+-{
+-	const struct event_constraint *event_constraint;
+-	int i, code;
+-
+-	if (!event_constraints)
+-		goto skip;
+-
+-	code = hwc->config & CORE_EVNTSEL_EVENT_MASK;
+-
+-	for_each_event_constraint(event_constraint, event_constraints) {
+-		if (code == event_constraint->code) {
+-			for_each_bit(i, event_constraint->idxmsk, X86_PMC_IDX_MAX) {
+-				if (!test_and_set_bit(i, cpuc->used_mask))
+-					return i;
+-			}
+-			return -1;
+-		}
+-	}
+-skip:
+-	return gen_get_event_idx(cpuc, hwc);
+-}
+-
+-static int
+-x86_schedule_event(struct cpu_hw_events *cpuc, struct hw_perf_event *hwc)
+-{
+-	int idx;
+-
+-	idx = fixed_mode_idx(hwc);
+-	if (idx == X86_PMC_IDX_FIXED_BTS) {
+-		/* BTS is already occupied. */
+-		if (test_and_set_bit(idx, cpuc->used_mask))
+-			return -EAGAIN;
+-
+-		hwc->config_base	= 0;
+-		hwc->event_base		= 0;
+-		hwc->idx		= idx;
+-	} else if (idx >= 0) {
+-		/*
+-		 * Try to get the fixed event, if that is already taken
+-		 * then try to get a generic event:
+-		 */
+-		if (test_and_set_bit(idx, cpuc->used_mask))
+-			goto try_generic;
+-
+-		hwc->config_base = MSR_ARCH_PERFMON_FIXED_CTR_CTRL;
+-		/*
+-		 * We set it so that event_base + idx in wrmsr/rdmsr maps to
+-		 * MSR_ARCH_PERFMON_FIXED_CTR0 ... CTR2:
+-		 */
+-		hwc->event_base =
+-			MSR_ARCH_PERFMON_FIXED_CTR0 - X86_PMC_IDX_FIXED;
+-		hwc->idx = idx;
+-	} else {
+-		idx = hwc->idx;
+-		/* Try to get the previous generic event again */
+-		if (idx == -1 || test_and_set_bit(idx, cpuc->used_mask)) {
+-try_generic:
+-			idx = x86_pmu.get_event_idx(cpuc, hwc);
+-			if (idx == -1)
+-				return -EAGAIN;
+-
+-			set_bit(idx, cpuc->used_mask);
+-			hwc->idx = idx;
+-		}
+-		hwc->config_base = x86_pmu.eventsel;
+-		hwc->event_base  = x86_pmu.perfctr;
+-	}
+-
+-	return idx;
+-}
+-
+ /*
+- * Find a PMC slot for the freshly enabled / scheduled in event:
++ * activate a single event
++ *
++ * The event is added to the group of enabled events
++ * but only if it can be scehduled with existing events.
++ *
++ * Called with PMU disabled. If successful and return value 1,
++ * then guaranteed to call perf_enable() and hw_perf_enable()
+  */
+ static int x86_pmu_enable(struct perf_event *event)
+ {
+ 	struct cpu_hw_events *cpuc = &__get_cpu_var(cpu_hw_events);
+-	struct hw_perf_event *hwc = &event->hw;
+-	int idx;
++	struct hw_perf_event *hwc;
++	int assign[X86_PMC_IDX_MAX];
++	int n, n0, ret;
+ 
+-	idx = x86_schedule_event(cpuc, hwc);
+-	if (idx < 0)
+-		return idx;
++	hwc = &event->hw;
+ 
+-	perf_events_lapic_init();
++	n0 = cpuc->n_events;
++	n = collect_events(cpuc, event, false);
++	if (n < 0)
++		return n;
+ 
+-	x86_pmu.disable(hwc, idx);
++	ret = x86_schedule_events(cpuc, n, assign);
++	if (ret)
++		return ret;
++	/*
++	 * copy new assignment, now we know it is possible
++	 * will be used by hw_perf_enable()
++	 */
++	memcpy(cpuc->assign, assign, n*sizeof(int));
+ 
+-	cpuc->events[idx] = event;
+-	set_bit(idx, cpuc->active_mask);
++	cpuc->n_events = n;
++	cpuc->n_added  = n - n0;
+ 
+-	x86_perf_event_set_period(event, hwc, idx);
+-	x86_pmu.enable(hwc, idx);
+-
+-	perf_event_update_userpage(event);
++	if (hwc->idx != -1)
++		x86_perf_event_set_period(event, hwc, hwc->idx);
+ 
+ 	return 0;
+ }
+@@ -1576,7 +1714,7 @@ void perf_event_print_debug(void)
+ 		pr_info("CPU#%d: overflow:   %016llx\n", cpu, overflow);
+ 		pr_info("CPU#%d: fixed:      %016llx\n", cpu, fixed);
+ 	}
+-	pr_info("CPU#%d: used:       %016llx\n", cpu, *(u64 *)cpuc->used_mask);
++	pr_info("CPU#%d: active:       %016llx\n", cpu, *(u64 *)cpuc->active_mask);
+ 
+ 	for (idx = 0; idx < x86_pmu.num_events; idx++) {
+ 		rdmsrl(x86_pmu.eventsel + idx, pmc_ctrl);
+@@ -1664,7 +1802,7 @@ static void x86_pmu_disable(struct perf_event *event)
+ {
+ 	struct cpu_hw_events *cpuc = &__get_cpu_var(cpu_hw_events);
+ 	struct hw_perf_event *hwc = &event->hw;
+-	int idx = hwc->idx;
++	int i, idx = hwc->idx;
+ 
+ 	/*
+ 	 * Must be done before we disable, otherwise the nmi handler
+@@ -1690,8 +1828,14 @@ static void x86_pmu_disable(struct perf_event *event)
+ 		intel_pmu_drain_bts_buffer(cpuc);
+ 
+ 	cpuc->events[idx] = NULL;
+-	clear_bit(idx, cpuc->used_mask);
+ 
++	for(i=0; i < cpuc->n_events; i++) {
++		if (event == cpuc->event_list[i]) {
++			while (++i < cpuc->n_events)
++				cpuc->event_list[i-1] = cpuc->event_list[i];
++			--cpuc->n_events;
++		}
++	}
+ 	perf_event_update_userpage(event);
+ }
+ 
+@@ -1962,6 +2106,115 @@ perf_event_nmi_handler(struct notifier_block *self,
+ 	return NOTIFY_STOP;
+ }
+ 
++static struct event_constraint bts_constraint={
++	.code = 0,
++	.cmask = 0,
++	.idxmsk[0] = 1ULL << X86_PMC_IDX_FIXED_BTS
++};
++
++static struct event_constraint *intel_special_constraints(struct perf_event *event)
++{
++	unsigned int hw_event;
++
++	hw_event = event->hw.config & INTEL_ARCH_EVENT_MASK;
++
++	if (unlikely((hw_event ==
++		      x86_pmu.event_map(PERF_COUNT_HW_BRANCH_INSTRUCTIONS)) &&
++		     (event->hw.sample_period == 1)))
++		return &bts_constraint;
++
++	return NULL;
++}
++
++static const struct event_constraint *intel_get_event_constraints(struct perf_event *event)
++{
++	const struct event_constraint *c;
++
++	c = intel_special_constraints(event);
++	if (c)
++		return c;
++
++	if (x86_pmu.event_constraints)
++		for_each_event_constraint(c, x86_pmu.event_constraints) {
++			if ((event->hw.config & c->cmask) == c->code)
++				return c;
++		}
++
++	return NULL;
++}
++
++static const struct event_constraint *amd_get_event_constraints(struct perf_event *event)
++{
++	return NULL;
++}
++
++
++static void event_sched_in(struct perf_event *event, int cpu)
++{
++	event->state = PERF_EVENT_STATE_ACTIVE;
++	event->oncpu = cpu;
++	event->tstamp_running += event->ctx->time - event->tstamp_stopped;
++	if (is_software_event(event))
++		event->pmu->enable(event);
++}
++
++/*
++ * Called to enable a whole group of events.
++ * Returns 1 if the group was enabled, or -EAGAIN if it could not be.
++ * Assumes the caller has disabled interrupts and has
++ * frozen the PMU with hw_perf_save_disable.
++ *
++ * called with PMU disabled. If successful and return value 1,
++ * then guaranteed to call perf_enable() and hw_perf_enable()
++ */
++int hw_perf_group_sched_in(struct perf_event *leader,
++	       struct perf_cpu_context *cpuctx,
++	       struct perf_event_context *ctx, int cpu)
++{
++	struct cpu_hw_events *cpuc = &per_cpu(cpu_hw_events, cpu);
++	struct perf_event *sub;
++	int assign[X86_PMC_IDX_MAX];
++	int n, n0, ret;
++
++	n0 = cpuc->n_events;
++
++	n = collect_events(cpuc, leader, true);
++	if (n < 0)
++		return n;
++
++	ret = x86_schedule_events(cpuc, n, assign);
++	if (ret)
++		return ret;
++
++	/*
++	 * copy new assignment, now we know it is possible
++	 * will be used by hw_perf_enable()
++	 */
++	memcpy(cpuc->assign, assign, n*sizeof(int));
++
++	cpuc->n_events = n;
++	cpuc->n_added  = n - n0;
++
++	n = 1;
++	event_sched_in(leader, cpu);
++	list_for_each_entry(sub, &leader->sibling_list, group_entry) {
++		if (sub->state != PERF_EVENT_STATE_OFF) {
++			event_sched_in(sub, cpu);
++			++n;
++		}
++	}
++	ctx->nr_active += n;
++
++	/*
++	 * 1 means successful and events are active
++	 * This is not quite true because we defer
++	 * actual activation until hw_perf_enable() but
++	 * this way we* ensure caller won't try to enable
++	 * individual events
++	 */
++	return 1;
++}
++
+ static __read_mostly struct notifier_block perf_event_nmi_notifier = {
+ 	.notifier_call		= perf_event_nmi_handler,
+ 	.next			= NULL,
+@@ -1993,7 +2246,8 @@ static __initconst struct x86_pmu p6_pmu = {
+ 	 */
+ 	.event_bits		= 32,
+ 	.event_mask		= (1ULL << 32) - 1,
+-	.get_event_idx		= intel_get_event_idx,
++	.get_event_constraints	= intel_get_event_constraints,
++	.event_constraints	= intel_p6_event_constraints
+ };
+ 
+ static __initconst struct x86_pmu intel_pmu = {
+@@ -2017,7 +2271,7 @@ static __initconst struct x86_pmu intel_pmu = {
+ 	.max_period		= (1ULL << 31) - 1,
+ 	.enable_bts		= intel_pmu_enable_bts,
+ 	.disable_bts		= intel_pmu_disable_bts,
+-	.get_event_idx		= intel_get_event_idx,
++	.get_event_constraints	= intel_get_event_constraints
+ };
+ 
+ static __initconst struct x86_pmu amd_pmu = {
+@@ -2038,7 +2292,7 @@ static __initconst struct x86_pmu amd_pmu = {
+ 	.apic			= 1,
+ 	/* use highest bit to detect overflow */
+ 	.max_period		= (1ULL << 47) - 1,
+-	.get_event_idx		= gen_get_event_idx,
++	.get_event_constraints	= amd_get_event_constraints
+ };
+ 
+ static __init int p6_pmu_init(void)
+@@ -2051,12 +2305,9 @@ static __init int p6_pmu_init(void)
+ 	case 7:
+ 	case 8:
+ 	case 11: /* Pentium III */
+-		event_constraints = intel_p6_event_constraints;
+-		break;
+ 	case 9:
+ 	case 13:
+ 		/* Pentium M */
+-		event_constraints = intel_p6_event_constraints;
+ 		break;
+ 	default:
+ 		pr_cont("unsupported p6 CPU model %d ",
+@@ -2121,23 +2372,29 @@ static __init int intel_pmu_init(void)
+ 		memcpy(hw_cache_event_ids, core2_hw_cache_event_ids,
+ 		       sizeof(hw_cache_event_ids));
+ 
++		x86_pmu.event_constraints = intel_core_event_constraints;
+ 		pr_cont("Core2 events, ");
+-		event_constraints = intel_core_event_constraints;
+ 		break;
+-	default:
+ 	case 26:
+ 		memcpy(hw_cache_event_ids, nehalem_hw_cache_event_ids,
+ 		       sizeof(hw_cache_event_ids));
+ 
+-		event_constraints = intel_nehalem_event_constraints;
++		x86_pmu.event_constraints = intel_nehalem_event_constraints;
+ 		pr_cont("Nehalem/Corei7 events, ");
+ 		break;
+ 	case 28:
+ 		memcpy(hw_cache_event_ids, atom_hw_cache_event_ids,
+ 		       sizeof(hw_cache_event_ids));
+ 
++		x86_pmu.event_constraints = intel_gen_event_constraints;
+ 		pr_cont("Atom events, ");
+ 		break;
++	default:
++		/*
++		 * default constraints for v2 and up
++		 */
++		x86_pmu.event_constraints = intel_gen_event_constraints;
++		pr_cont("generic architected perfmon, ");
+ 	}
+ 	return 0;
+ }
+@@ -2234,36 +2491,43 @@ static const struct pmu pmu = {
+ 	.unthrottle	= x86_pmu_unthrottle,
+ };
+ 
+-static int
+-validate_event(struct cpu_hw_events *cpuc, struct perf_event *event)
+-{
+-	struct hw_perf_event fake_event = event->hw;
+-
+-	if (event->pmu && event->pmu != &pmu)
+-		return 0;
+-
+-	return x86_schedule_event(cpuc, &fake_event) >= 0;
+-}
+-
++/*
++ * validate a single event group
++ *
++ * validation include:
++ * 	- check events are compatible which each other
++ * 	- events do not compete for the same counter
++ * 	- number of events <= number of counters
++ *
++ * validation ensures the group can be loaded onto the
++ * PMU if it was the only group available.
++ */
+ static int validate_group(struct perf_event *event)
+ {
+-	struct perf_event *sibling, *leader = event->group_leader;
+-	struct cpu_hw_events fake_pmu;
++	struct perf_event *leader = event->group_leader;
++	struct cpu_hw_events fake_cpuc;
++	int n;
+ 
+-	memset(&fake_pmu, 0, sizeof(fake_pmu));
++	memset(&fake_cpuc, 0, sizeof(fake_cpuc));
+ 
+-	if (!validate_event(&fake_pmu, leader))
++	/*
++	 * the event is not yet connected with its
++	 * siblings therefore we must first collect
++	 * existing siblings, then add the new event
++	 * before we can simulate the scheduling
++	 */
++	n = collect_events(&fake_cpuc, leader, true);
++	if (n < 0)
+ 		return -ENOSPC;
+ 
+-	list_for_each_entry(sibling, &leader->sibling_list, group_entry) {
+-		if (!validate_event(&fake_pmu, sibling))
+-			return -ENOSPC;
+-	}
+-
+-	if (!validate_event(&fake_pmu, event))
++	fake_cpuc.n_events = n;
++	n = collect_events(&fake_cpuc, event, false);
++	if (n < 0)
+ 		return -ENOSPC;
+ 
+-	return 0;
++	fake_cpuc.n_events = n;
++
++	return x86_schedule_events(&fake_cpuc, n, NULL);
+ }
+ 
+ const struct pmu *hw_perf_event_init(struct perf_event *event)
