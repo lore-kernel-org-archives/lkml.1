@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753228Ab0ALMKn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753305Ab0ALMK7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753228Ab0ALMKn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jan 2010 07:10:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752410Ab0ALMK3
+	id S1753305Ab0ALMK7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jan 2010 07:10:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751949Ab0ALMK2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jan 2010 07:10:29 -0500
-Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:48324 "EHLO
+	Tue, 12 Jan 2010 07:10:28 -0500
+Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:48327 "EHLO
 	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932070Ab0ALMK1 (ORCPT
+	with ESMTP id S932067Ab0ALMK1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 12 Jan 2010 07:10:27 -0500
 MIME-version: 1.0
 Content-transfer-encoding: 7BIT
 Content-type: TEXT/PLAIN
-Date: Tue, 12 Jan 2010 04:09:05 -0800
+Date: Tue, 12 Jan 2010 04:09:04 -0800
 From: Yinghai Lu <yinghai@kernel.org>
-Subject: [RFC PATCH -v2 2/5] x86: use dmi check to treat disabled cpus as
- hotplug cpus.
+Subject: [RFC PATCH -v2 4/5] x86: according to nr_cpu_ids to decide if need to
+ leave logical flat
 In-reply-to: <1263298146-25597-1-git-send-email-yinghai@kernel.org>
 To: Suresh Siddha <suresh.b.siddha@intel.com>,
        Linus Torvalds <torvalds@linux-foundation.org>,
@@ -24,128 +24,115 @@ To: Suresh Siddha <suresh.b.siddha@intel.com>,
        Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
        Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org, Yinghai Lu <yinghai@kernel.org>
-Message-id: <1263298146-25597-4-git-send-email-yinghai@kernel.org>
+Message-id: <1263298146-25597-3-git-send-email-yinghai@kernel.org>
 X-Mailer: git-send-email 1.6.4.2
 References: <1263298146-25597-1-git-send-email-yinghai@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-some systems that have disable cpus entries because same
-  BIOS will support 2 sockets and 4 sockets and more at
-  same time, BIOS just leave some disable entries, but
-  those system do not support cpu hotplug. we don't need
-  treat disabled_cpus as hotplug cpus.
-so we can make nr_cpu_ids smaller and save more space
-  (pcpu data allocations), and could make some systems run
-  with logical flat instead of physical flat apic mode
+should use nr_cpu_ids instead of num_processor, in case we have hotplug cpus.
 
--v2: change to black list instead
+if current only have 8 cpus is up, but if we will have more cpus that
+will be hot added later, we should use physical flat at first.
+
+nr_cpu_ids is the total cpus that could be supported.
+
+-v2: per linus, chenage default_setup_apic_routing to _init, and call it for uni_processor
 
 Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 
 ---
- arch/x86/kernel/smpboot.c |   76 ++++++++++++++++++++++++++++++++++++++++++++--
- 1 file changed, 74 insertions(+), 2 deletions(-)
+ arch/x86/kernel/apic/apic.c     |    2 --
+ arch/x86/kernel/apic/probe_32.c |   20 ++++++++++++++++++--
+ arch/x86/kernel/apic/probe_64.c |    3 ++-
+ arch/x86/kernel/smpboot.c       |    2 --
+ 4 files changed, 20 insertions(+), 7 deletions(-)
 
+Index: linux-2.6/arch/x86/kernel/apic/probe_32.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/apic/probe_32.c
++++ linux-2.6/arch/x86/kernel/apic/probe_32.c
+@@ -52,7 +52,7 @@ static int __init print_ipi_mode(void)
+ }
+ late_initcall(print_ipi_mode);
+ 
+-void default_setup_apic_routing(void)
++static void local_default_setup_apic_routing(void)
+ {
+ #ifdef CONFIG_X86_IO_APIC
+ 	printk(KERN_INFO
+@@ -103,7 +103,7 @@ struct apic apic_default = {
+ 	.init_apic_ldr			= default_init_apic_ldr,
+ 
+ 	.ioapic_phys_id_map		= default_ioapic_phys_id_map,
+-	.setup_apic_routing		= default_setup_apic_routing,
++	.setup_apic_routing		= local_default_setup_apic_routing,
+ 	.multi_timer_check		= NULL,
+ 	.apicid_to_node			= default_apicid_to_node,
+ 	.cpu_to_logical_apicid		= default_cpu_to_logical_apicid,
+@@ -207,6 +207,22 @@ void __init generic_bigsmp_probe(void)
+ 			apic = &apic_bigsmp;
+ 			printk(KERN_INFO "Overriding APIC driver with %s\n",
+ 			       apic->name);
++		}
++	}
++#endif
++}
++
++void __init default_setup_apic_routing(void)
++{
++#ifdef CONFIG_X86_BIGSMP
++	/*
++	 * make sure we go to bigsmp according to real nr_cpu_ids
++	 */
++	if (!cmdline_apic && apic == &apic_default) {
++		if (nr_cpu_ids > 8) {
++			apic = &apic_bigsmp;
++			printk(KERN_INFO "Overriding APIC driver with %s\n",
++			       apic->name);
+ 		}
+ 	}
+ #endif
 Index: linux-2.6/arch/x86/kernel/smpboot.c
 ===================================================================
 --- linux-2.6.orig/arch/x86/kernel/smpboot.c
 +++ linux-2.6/arch/x86/kernel/smpboot.c
-@@ -47,6 +47,7 @@
- #include <linux/bootmem.h>
- #include <linux/err.h>
- #include <linux/nmi.h>
-+#include <linux/dmi.h>
- #include <linux/tboot.h>
+@@ -1084,9 +1084,7 @@ void __init native_smp_prepare_cpus(unsi
+ 	set_cpu_sibling_map(0);
  
- #include <asm/acpi.h>
-@@ -1180,6 +1181,59 @@ static int __init _setup_possible_cpus(c
- }
- early_param("possible_cpus", _setup_possible_cpus);
+ 	enable_IR_x2apic();
+-#ifdef CONFIG_X86_64
+ 	default_setup_apic_routing();
+-#endif
  
-+static __initdata int treat_disabled_cpus_as_hotplug = 1;
-+static __init int hotplug_cpus_check(const struct dmi_system_id *d)
-+{
-+        printk(KERN_NOTICE "%s detected: treat disabled cpus as hotplug ones\n", d->ident);
-+        treat_disabled_cpus_as_hotplug = 0;
-+
-+        return 0;
-+}
-+
-+static struct dmi_system_id hotplug_cpus_dmi_table[] __initdata = {
-+        {
-+                .callback = hotplug_cpus_check,
-+                .ident = "Sun Microsystems Sun Fire X4440",
-+                .matches = {
-+                        DMI_MATCH(DMI_SYS_VENDOR, "Sun Microsystems"),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "Sun Fire X4440"),
-+                },
-+        },
-+        {
-+                .callback = hotplug_cpus_check,
-+                .ident = "Sun Microsystems Sun Fire X4240",
-+                .matches = {
-+                        DMI_MATCH(DMI_SYS_VENDOR, "Sun Microsystems"),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "Sun Fire X4240"),
-+                },
-+        },
-+        {
-+                .callback = hotplug_cpus_check,
-+                .ident = "Sun Microsystems Sun Fire X4140",
-+                .matches = {
-+                        DMI_MATCH(DMI_SYS_VENDOR, "Sun Microsystems"),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "Sun Fire X4140"),
-+                },
-+        },
-+        {
-+                .callback = hotplug_cpus_check,
-+                .ident = "Sun Microsystems Sun Fire X4600",
-+                .matches = {
-+                        DMI_MATCH(DMI_SYS_VENDOR, "Sun Microsystems"),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "Sun Fire X4600"),
-+                },
-+        },
-+        {
-+                .callback = hotplug_cpus_check,
-+                .ident = "Sun Microsystems Sun Fire X4640",
-+                .matches = {
-+                        DMI_MATCH(DMI_SYS_VENDOR, "Sun Microsystems"),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "Sun Fire X4640"),
-+                },
-+        },
-+        { } /* NULL entry stops DMI scanning */
-+};
-+
+ 	if (smp_sanity_check(max_cpus) < 0) {
+ 		printk(KERN_INFO "SMP disabled\n");
+Index: linux-2.6/arch/x86/kernel/apic/probe_64.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/apic/probe_64.c
++++ linux-2.6/arch/x86/kernel/apic/probe_64.c
+@@ -67,7 +67,8 @@ void __init default_setup_apic_routing(v
+ 	}
+ #endif
  
- /*
-  * cpu_possible_mask should be static, it cannot change as cpu's
-@@ -1206,8 +1260,26 @@ __init void prefill_possible_map(void)
- 	if (!num_processors)
- 		num_processors = 1;
+-	if (apic == &apic_flat && num_processors > 8)
++	/* not just num_processors, we could have hotplug cpus */
++	if (apic == &apic_flat && nr_cpu_ids > 8)
+ 		apic = &apic_physflat;
  
--	if (setup_possible_cpus == -1)
--		possible = num_processors + disabled_cpus;
-+	if (setup_possible_cpus == -1) {
-+		possible = num_processors;
-+		/*
-+		 * do we have better way to detect hotplug cpus?
-+		 *
-+		 * some systems that have disable cpus entries because same
-+		 *  BIOS will support 2 sockets and 4 sockets and more at
-+		 *  same time, BIOS just leave some disabled entries with wild
-+		 *  apicid, but those system do not support cpu hotplug.
-+		 *  we don't need treat disabled_cpus as hotplug cpus.
-+		 * so we can make nr_cpu_ids smaller and save more space
-+		 *  (pcpu data allocations), and could make some systems run
-+		 *  with logical flat instead of physical flat apic mode
-+		 */
-+		if (disabled_cpus) {
-+			dmi_check_system(hotplug_cpus_dmi_table);
-+			if (treat_disabled_cpus_as_hotplug)
-+				possible += disabled_cpus;
-+		}
-+	}
- 	else
- 		possible = setup_possible_cpus;
+ 	printk(KERN_INFO "Setting APIC routing to %s\n", apic->name);
+Index: linux-2.6/arch/x86/kernel/apic/apic.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/apic/apic.c
++++ linux-2.6/arch/x86/kernel/apic/apic.c
+@@ -1647,9 +1647,7 @@ int __init APIC_init_uniprocessor(void)
+ #endif
  
+ 	enable_IR_x2apic();
+-#ifdef CONFIG_X86_64
+ 	default_setup_apic_routing();
+-#endif
+ 
+ 	verify_local_APIC();
+ 	connect_bsp_APIC();
