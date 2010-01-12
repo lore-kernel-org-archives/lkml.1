@@ -1,42 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754133Ab0ALQrv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754543Ab0ALQsH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754133Ab0ALQrv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jan 2010 11:47:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752089Ab0ALQru
+	id S1754543Ab0ALQsH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jan 2010 11:48:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754295Ab0ALQsF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jan 2010 11:47:50 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:52338 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751669Ab0ALQrt (ORCPT
+	Tue, 12 Jan 2010 11:48:05 -0500
+Received: from mail.lysator.liu.se ([130.236.254.3]:41012 "EHLO
+	mail.lysator.liu.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754221Ab0ALQsE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jan 2010 11:47:49 -0500
-Date: Tue, 12 Jan 2010 11:47:48 -0500
-From: Christoph Hellwig <hch@infradead.org>
-To: Michal Novotny <minovotn@redhat.com>
-Cc: Christoph Hellwig <hch@infradead.org>, Ric Wheeler <rwheeler@redhat.com>,
-       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] extend e2fsprogs functionality to add EXT2_FLAG_DIRECT
-	option
-Message-ID: <20100112164748.GA26895@infradead.org>
-References: <4B4B84E2.1050508@redhat.com> <4B4C54DC.4040006@redhat.com> <4B4C6429.6090803@redhat.com> <4B4C67F5.1020009@redhat.com> <20100112122319.GA20596@infradead.org> <4B4C6B70.1050205@redhat.com> <20100112124600.GA7151@infradead.org> <4B4C7297.5030905@redhat.com> <20100112163828.GA14633@infradead.org> <4B4CA6A9.3030401@redhat.com>
+	Tue, 12 Jan 2010 11:48:04 -0500
+X-Greylist: delayed 1994 seconds by postgrey-1.27 at vger.kernel.org; Tue, 12 Jan 2010 11:48:03 EST
+From: paran@lysator.liu.se (=?utf-8?Q?P=C3=A4r?= Andersson)
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "Eric Anholt" <eric@anholt.net>, "ykzhao" <yakui.zhao@intel.com>
+Subject: Re: [Bug #14860] No DP-DVI output when laptop is docked
+In-Reply-To: <omZ8aBZReyD.A.nn.1NlSLB@chimera> (Rafael J. Wysocki's message of
+	"Sun, 10 Jan 2010 23:32:53 +0100 (CET)")
+References: <wnS54-l8PVO.A.TlF.oMlSLB@chimera>
+	<omZ8aBZReyD.A.nn.1NlSLB@chimera>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
+Date: Tue, 12 Jan 2010 17:14:40 +0100
+Message-ID: <87vdf7e1vz.fsf@nsc.liu.se>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B4CA6A9.3030401@redhat.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: multipart/signed; boundary="=-=-=";
+	micalg=pgp-sha1; protocol="application/pgp-signature"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 12, 2010 at 05:43:21PM +0100, Michal Novotny wrote:
-> So, do you think the problem is in the Xen backend drivers and to make  
-> it working right in Xen the driver fix is needed?
+--=-=-=
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-Yes, the Xen blkback driver just submits I/O directly without using
-the right interfaces to force cache coherency.  It might be relatively
-easy to hack a call in to flush all caches when it starts up, but given
-how it bypasses all abstractions it's almost impossible to give full
-coherency as if using the normal block device interfaces.
+"Rafael J. Wysocki" <rjw@sisk.pl> writes:
 
+> The following bug entry is on the current list of known regressions
+> from 2.6.32.  Please verify if it still should be listed and let me know
+> (either way).
+
+It should still be listed.
+
+I was without Internet connection last week, but that have been fixed
+now so I will test the patch from ykzhao ASAP.
+
+Regards,
+
+P=C3=A4r Andersson
+
+--=-=-=
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAktMn/AACgkQyi5LJcueYEvkogCcCWP10JEhpXah59kFdFn7gq5W
+KMEAn2VCvFthO7iUQWUDGOL4ulyulOu0
+=P6pC
+-----END PGP SIGNATURE-----
+--=-=-=--
