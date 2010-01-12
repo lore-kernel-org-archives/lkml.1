@@ -1,66 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754299Ab0ALAV1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754329Ab0ALAWM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754299Ab0ALAV1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jan 2010 19:21:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753443Ab0ALAV0
+	id S1754329Ab0ALAWM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jan 2010 19:22:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754313Ab0ALAWK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jan 2010 19:21:26 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:41409 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753417Ab0ALAV0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jan 2010 19:21:26 -0500
-Date: Tue, 12 Jan 2010 11:21:15 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Greg KH <gregkh@suse.de>
-Cc: Tilman Schmidt <tilman@imap.cc>, LKML <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org, Karsten Keil <isdn@linux-pingi.de>,
-       isdn4linux@listserv.isdn4linux.de
-Subject: Re: Can we remove pci_find_device() yet?
-Message-Id: <20100112112115.98009d50.sfr@canb.auug.org.au>
-In-Reply-To: <20100111200136.GA29955@suse.de>
-References: <20100108112236.462a3da2.sfr@canb.auug.org.au>
-	<20100108044646.GC6611@suse.de>
-	<4B4B802A.2010709@imap.cc>
-	<20100111200136.GA29955@suse.de>
-X-Mailer: Sylpheed 3.0.0beta4 (GTK+ 2.18.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__12_Jan_2010_11_21_15_+1100_wPfjVLs1zsoYD1mn"
+	Mon, 11 Jan 2010 19:22:10 -0500
+Received: from mail.gmx.net ([213.165.64.20]:44802 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752893Ab0ALAWJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jan 2010 19:22:09 -0500
+X-Authenticated: #10250065
+X-Provags-ID: V01U2FsdGVkX18JyqcI5SoJmtm1KZauQvuWJ+g+DbUEF4k8cV8id0
+	SXqsEEm9aBsjmW
+Message-ID: <4B4BC0AA.5080209@gmx.de>
+Date: Tue, 12 Jan 2010 01:22:02 +0100
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090706)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       JosephChan@via.com.tw, ScottFang@viatech.com.cn,
+       Erik-Jan Post <ej.lfs@xs4all.nl>
+Subject: Re: [PATCH 3/4] viafb: do modesetting after updating variables
+References: <1262732399-3416-1-git-send-email-FlorianSchandinat@gmx.de>	<1262732399-3416-2-git-send-email-FlorianSchandinat@gmx.de>	<1262732399-3416-3-git-send-email-FlorianSchandinat@gmx.de> <20100111134644.bf26dd07.akpm@linux-foundation.org>
+In-Reply-To: <20100111134644.bf26dd07.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.48
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__12_Jan_2010_11_21_15_+1100_wPfjVLs1zsoYD1mn
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hi Andrew,
 
-Hi Greg,
+Andrew Morton schrieb:
+> On Tue,  5 Jan 2010 22:59:58 +0000
+> Florian Tobias Schandinat <FlorianSchandinat@gmx.de> wrote:
+> 
+>> viafb: do modesetting after updating variables
+>>
+>> Reorder viafb_set_par to allow using the updated variables in
+>> viafb_setmode. This fixes a regression that prevented proper
+>> runtime mode changes.
+>>
+>> Signed-off-by: Erik-Jan Post <ej.lfs@xs4all.nl>
+>> Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+>> ---
+>>  drivers/video/via/viafbdev.c |    6 +++---
+>>  1 files changed, 3 insertions(+), 3 deletions(-)
+>>
+>> diff --git a/drivers/video/via/viafbdev.c b/drivers/video/via/viafbdev.c
+>> index e16df84..f7ff4ea 100644
+>> --- a/drivers/video/via/viafbdev.c
+>> +++ b/drivers/video/via/viafbdev.c
+>> @@ -174,15 +174,15 @@ static int viafb_set_par(struct fb_info *info)
+>>  	}
+>>  
+>>  	if (vmode_entry) {
+>> -		viafb_setmode(vmode_entry, info->var.bits_per_pixel,
+>> -			vmode_entry1, viafb_bpp1);
+>> -
+>>  		viafb_update_fix(info);
+>>  		viafb_bpp = info->var.bits_per_pixel;
+>>  		if (info->var.accel_flags & FB_ACCELF_TEXT)
+>>  			info->flags &= ~FBINFO_HWACCEL_DISABLED;
+>>  		else
+>>  			info->flags |= FBINFO_HWACCEL_DISABLED;
+>> +
+>> +		viafb_setmode(vmode_entry, info->var.bits_per_pixel,
+>> +			vmode_entry1, viafb_bpp1);
+>>  	}
+>>  
+>>  	return 0;
+> 
+> Problem.
+> 
+> Patches 2, 3 and 4 are appropriate to 2.6.33 - they fix regressions. 
+> But all four patches are dependent upon patches which we already have
+> queued for 2.6.34!
 
-On Mon, 11 Jan 2010 12:01:36 -0800 Greg KH <gregkh@suse.de> wrote:
->
-> Close, but if you do this, please name the function
-> hisax_find_pci_device() or something, and change the drivers to use it
-> instead.  Also put a big fat warning in the function that calling this
-> is unsafe for any PCI hotplug type machine.
+That are good news.
 
-There is another implementation of pci_find_device in
-drivers/staging/dt3155/pci-compat.h (used by dt3155_drv.c).
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+> I redid patches 2, 3 and 4 so they apply to current mainline.  This
+> particular patch (3/4) needed fixing - please check the result.  
+> 
+> --- a/drivers/video/via/viafbdev.c~viafb-do-modesetting-after-updating-variables
+> +++ a/drivers/video/via/viafbdev.c
+> @@ -177,16 +177,15 @@ static int viafb_set_par(struct fb_info 
+>  	}
+>  
+>  	if (vmode_index != VIA_RES_INVALID) {
+> -		viafb_setmode(vmode_index, info->var.xres, info->var.yres,
+> -			info->var.bits_per_pixel, vmode_index1,
+> -			viafb_second_xres, viafb_second_yres, viafb_bpp1);
+> -
+>  		viafb_update_fix(info);
+>  		viafb_bpp = info->var.bits_per_pixel;
+>  		if (info->var.accel_flags & FB_ACCELF_TEXT)
+>  			info->flags &= ~FBINFO_HWACCEL_DISABLED;
+>  		else
+>  			info->flags |= FBINFO_HWACCEL_DISABLED;
+> +		viafb_setmode(vmode_index, info->var.xres, info->var.yres,
+> +			info->var.bits_per_pixel, vmode_index1,
+> +			viafb_second_xres, viafb_second_yres, viafb_bpp1);
+>  	}
+>  
+>  	return 0;
+> _
 
---Signature=_Tue__12_Jan_2010_11_21_15_+1100_wPfjVLs1zsoYD1mn
-Content-Type: application/pgp-signature
+This is correct.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+> This reordering broke viafb-split-global-index-up.patch, which I fixed up.
 
-iEYEARECAAYFAktLwHwACgkQjjKRsyhoI8zRiACfR+S4tL9GTzsSUPl9trNgRAfE
-BZYAn2oluFkU/kwDvE0CQZK3mqriNyML
-=lmE1
------END PGP SIGNATURE-----
+Thanks,
 
---Signature=_Tue__12_Jan_2010_11_21_15_+1100_wPfjVLs1zsoYD1mn--
+
+Florian Tobias Schandinat
