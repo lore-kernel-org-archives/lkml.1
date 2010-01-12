@@ -1,45 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753946Ab0ALNhI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753539Ab0ALNnh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753946Ab0ALNhI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jan 2010 08:37:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753842Ab0ALNhE
+	id S1753539Ab0ALNnh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jan 2010 08:43:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752264Ab0ALNng
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jan 2010 08:37:04 -0500
-Received: from smtp.nokia.com ([192.100.122.230]:20029 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753835Ab0ALNhD (ORCPT
+	Tue, 12 Jan 2010 08:43:36 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:34515 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751233Ab0ALNng (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jan 2010 08:37:03 -0500
-Subject: Re: [ANNOUNCE] util-linux-ng v2.17 (stable)
-From: Artem Bityutskiy <dedekind1@gmail.com>
-Reply-To: dedekind1@gmail.com
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Pavel Machek <pavel@ucw.cz>, Karel Zak <kzak@redhat.com>,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       util-linux-ng@vger.kernel.org
-In-Reply-To: <1263303206.1289.22.camel@localhost>
-References: <20100108093302.GS1969@nb.net.home> <4B47A713.9060405@zytor.com>
-	 <20100111140255.GA1416@ucw.cz> <4B4B5768.2040005@zytor.com>
-	 <20100111201734.GA11674@elf.ucw.cz>  <4B4BB397.5090500@zytor.com>
-	 <1263303206.1289.22.camel@localhost>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 12 Jan 2010 15:35:59 +0200
-Message-Id: <1263303359.1289.23.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 12 Jan 2010 13:36:04.0852 (UTC) FILETIME=[304CBB40:01CA938C]
-X-Nokia-AV: Clean
+	Tue, 12 Jan 2010 08:43:36 -0500
+Date: Tue, 12 Jan 2010 14:43:35 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: kernel list <linux-kernel@vger.kernel.org>
+Cc: linux-fbdev@vger.kernel.org
+Subject: 2.6.33 vs. NVIDIA GForce GT 220
+Message-ID: <20100112134335.GA21783@atrey.karlin.mff.cuni.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2010-01-12 at 15:33 +0200, Artem Bityutskiy wrote:
-> I think the other reason why alignment matters, at least on eMMC, is
+Hi!
 
-s/eMMC/eMMC we tested/
+I tried enabling staging nvidia driver on GT220, but apparently driver
+does not know about it. Unfortunately, I have one of those cards here.
 
+(I wonder... is there better mailing list? MAINTAINERS only lists
+linux-fbdev....)
+
+									Pavel
 -- 
-Best Regards,
-Artem Bityutskiy (Артём Битюцкий)
-
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
