@@ -1,48 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753481Ab0ALAjv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754527Ab0ALAnY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753481Ab0ALAjv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jan 2010 19:39:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754545Ab0ALAjn
+	id S1754527Ab0ALAnY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jan 2010 19:43:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754250Ab0ALAnX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jan 2010 19:39:43 -0500
-Received: from hera.kernel.org ([140.211.167.34]:48825 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754527Ab0ALAjl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jan 2010 19:39:41 -0500
-Message-ID: <4B4BC540.1090609@kernel.org>
-Date: Tue, 12 Jan 2010 09:41:36 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
+	Mon, 11 Jan 2010 19:43:23 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:46068 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752567Ab0ALAnX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jan 2010 19:43:23 -0500
+Message-ID: <4B4BC572.4070002@zytor.com>
+Date: Mon, 11 Jan 2010 16:42:26 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
 MIME-Version: 1.0
 To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Greg Kroah-Hartman <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
-       linux-kernel@vger.kernel.org, Cornelia Huck <cornelia.huck@de.ibm.com>,
-       linux-fsdevel@vger.kernel.org, Eric Dumazet <eric.dumazet@gmail.com>,
-       Benjamin LaHaise <bcrl@lhnet.ca>, Serge Hallyn <serue@us.ibm.com>,
-       "Eric W. Biederman" <ebiederm@aristanetworks.com>
-Subject: Re: [PATCH 2/7] sysfs: Pack sysfs_dirent more tightly.
-References: <m1d41g9z3q.fsf@fess.ebiederm.org> <1263241315-19499-2-git-send-email-ebiederm@xmission.com>
-In-Reply-To: <1263241315-19499-2-git-send-email-ebiederm@xmission.com>
-X-Enigmail-Version: 1.0
+CC: Suresh Siddha <suresh.b.siddha@intel.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, Yinghai Lu <yinghai@kernel.org>,
+       "Maciej W. Rozycki" <macro@linux-mips.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [patch] x86, apic: use 0x20 for the IRQ_MOVE_CLEANUP_VECTOR instead
+ of 0x1f
+References: <1263002989.2879.664.camel@sbs-t61.sc.intel.com>	<4B47E7A9.6090904@zytor.com>	<1263250418.2859.681.camel@sbs-t61.sc.intel.com>	<4B4BACCA.2040805@zytor.com> <m1tyus8chc.fsf@fess.ebiederm.org>	<4B4BB0B7.3000106@zytor.com>	<1263254812.2859.890.camel@sbs-t61.sc.intel.com>	<4B4BBEBA.4060403@zytor.com> <m17hro6ua9.fsf@fess.ebiederm.org>
+In-Reply-To: <m17hro6ua9.fsf@fess.ebiederm.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Tue, 12 Jan 2010 00:39:27 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/12/2010 05:21 AM, Eric W. Biederman wrote:
-> From: Eric W. Biederman <ebiederm@aristanetworks.com>
+On 01/11/2010 04:28 PM, Eric W. Biederman wrote:
 > 
-> Placing the 16bit s_mode between a pointer and a long doesn't pack well
-> especailly on 64bit where we wast 48 bits.  So move s_mode and
-> declare it as a unsigned short.  This is the sysfs backing store
-> after all we don't need fields extra large just in case someday
-> we want userspace to be able to use a larger value.
+> Without changes assign_irq_vector will reuse vectors in the range
+> IRQ0_VECTOR to IRQ15_VECTOR in the code as it we currently ship it,
+> when we switch irq0-15 into ioapic mode.
 > 
-> Signed-off-by: Eric W. Biederman <ebiederm@aristanetworks.com>
+> Switching the loop to cover IRQ0_VECTOR to IRQ15_VECTOR is not a
+> problem.  I don't think it will find anything free as we assign those
+> vectors on all cpus, but the data structures are fine.
+> 
 
-Acked-by: Tejun Heo <tj@kernel.org>
+The question there is if we can treat the resulting ioapic IRQs as
+normal movable IRQs, and just let the target-moving mechanism take care
+of it.  After all, there is a discrete event at which we decide that any
+particular interrupt is an IOAPIC interrupt instead of XT-PIC.
+Obviously, the vectors that remain XT-PIC vectors have to remain
+allocated on all vectors for all time.
 
--- 
-tejun
+Another question is why we reserve the legacy IRQ 2 vector at all --
+except when ACPI is present!  I don't think it could ever be tickled,
+and it sort of felt as a "just in case" thing that could be removed.
+
+	-hpa
