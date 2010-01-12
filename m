@@ -1,39 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754618Ab0ALQ6W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754588Ab0ALQ7g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754618Ab0ALQ6W (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jan 2010 11:58:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754497Ab0ALQ6V
+	id S1754588Ab0ALQ7g (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jan 2010 11:59:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752356Ab0ALQ7f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jan 2010 11:58:21 -0500
-Received: from mail-fx0-f225.google.com ([209.85.220.225]:62329 "EHLO
-	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754469Ab0ALQ6U (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jan 2010 11:58:20 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject
-         :content-type:content-transfer-encoding;
-        b=LS8BQgucE4cYljVgiFvXdFC4+UBc+3Fa+bKoK2Jfr6H3IvDnF01831jtc8XUZw/cdT
-         k9ChtAnFOB9EsEIANbQD0AhA5Ms95l/qfRqrOyFksriZOMcRvHpRyUa0JpV8XwBP/YZM
-         Ib2ksCtUqBWdGLwvk3PHKZ0HPQLrywXsLaDa8=
-Message-ID: <4B4CAA49.4090707@googlemail.com>
-Date: Tue, 12 Jan 2010 17:58:49 +0100
-From: =?ISO-8859-1?Q?Ren=E9_Bolldorf?= <xsecute@googlemail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.5) Gecko/20091204 Thunderbird/3.0
+	Tue, 12 Jan 2010 11:59:35 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:42665 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751937Ab0ALQ7e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jan 2010 11:59:34 -0500
+Message-ID: <4B4CAA84.5060603@redhat.com>
+Date: Tue, 12 Jan 2010 11:59:48 -0500
+From: Ric Wheeler <rwheeler@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc13 Lightning/1.0pre Thunderbird/3.0
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: [Question]  For what stand's __initdata, __devinit etc. ?
+To: Eric Sandeen <sandeen@redhat.com>
+CC: Michal Novotny <minovotn@redhat.com>,
+       Christoph Hellwig <hch@infradead.org>, linux-ext4@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] extend e2fsprogs functionality to add EXT2_FLAG_DIRECT
+ option
+References: <4B46FCB2.1090308@redhat.com> <4B4B84E2.1050508@redhat.com> <4B4C54DC.4040006@redhat.com> <4B4C6429.6090803@redhat.com> <4B4C67F5.1020009@redhat.com> <20100112122319.GA20596@infradead.org> <4B4C6B70.1050205@redhat.com> <20100112124600.GA7151@infradead.org> <4B4C7297.5030905@redhat.com> <20100112163828.GA14633@infradead.org> <4B4CA6A9.3030401@redhat.com> <4B4CA868.2080204@redhat.com> <4B4CA916.7060405@redhat.com> <4B4CA9A6.1080608@redhat.com>
+In-Reply-To: <4B4CA9A6.1080608@redhat.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-Do we really need this?
-It will be nice if someone can me explain this.
+On 01/12/2010 11:56 AM, Eric Sandeen wrote:
+> Michal Novotny wrote:
+>> On 01/12/2010 05:50 PM, Ric Wheeler wrote:
+>>> On 01/12/2010 11:43 AM, Michal Novotny wrote:
+>>>> On 01/12/2010 05:38 PM, Christoph Hellwig wrote:
+>>>>> Ok, I looked at the issue. The problem is that the Xen backend drivers
+>>>>> are (as expected) utterly braindead and submit bios directly from the
+>>>>> virtualization backed without using proper abstractions and thus
+>>>>> bypassing all the cache coherency features in the fileystems (the block
+>>>>> device nodes are just another mini-filesystem in that respect). So
+>>>>> when you first have buffered access in the host pages may stay in cache
+>>>>> and get overwritten directly on disk by a Xen guest, and once the guest
+>>>>> is down the host may still use the now stale cached data.
+>>>>>
+>>>>> I would recommend to migrate your cutomers to KVM which uses the proper
+>>>>> abtractions and thus doesn't have this problem. There's a reason after
+>>>>> all why all the Xen dom0 mess never got merged to mainline.
+>>>> So, do you think the problem is in the Xen backend drivers and to make
+>>>> it working right in Xen the driver fix is needed?
+>>>
+>>> If XEN drivers by pass the normal IO and FS stack on the host, then I
+>>> can understand why the hack to e2fsprogs works but it does not seem
+>>> like a good fix.
+>>>
+>>> Specifically, the data will continue to be cached (and if dirty, might
+>>> be written back to the storage eventually).
+>>>
+>>> If we need a work around, you need to drop VM caches for that device
+>>> before you update the guest's files and possibly again afterwards (and
+>>> make sure that nothing pulls the data into cache during the operation).
+>>>
+>>> Basically, this sounds like the backend drivers are doing something
+>>> really, really dangerous....
+>>>
+>>> ric
+>>>
+>> Ok, so you think this is not good to do this patch for e2fsprogs for
+>> direct access support? The only things we could do now is to fix the
+>> backend drivers or create a workaround to drop caches? I need to discuss
+>> this further with guys in my team...
+>
+> I do think that patching it up in e2fsprogs is unnecessarily invasive;
+> it's fixing it at the wrong spot.
+>
+> Any block dev IO from the host is dangerous; fixing it only in e2fsprogs
+> for this one case doesn't seem like the right course of action.
+>
+> -Eric
 
-Thx in advance.
+It actually could produce some nastier issues where it would work a bit, the bad 
+data gets flushed back to the backing store and then your O_DIRECT read would be 
+broken.
 
-René
+Also, for normal users of e2fsprogs, they should never bypass the cache...
+
+ric
