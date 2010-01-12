@@ -1,82 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754572Ab0ALXhl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754787Ab0ALXkj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754572Ab0ALXhl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jan 2010 18:37:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750929Ab0ALXhj
+	id S1754787Ab0ALXkj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jan 2010 18:40:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754054Ab0ALXki
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jan 2010 18:37:39 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:35857 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751444Ab0ALXhi (ORCPT
+	Tue, 12 Jan 2010 18:40:38 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:52022 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751444Ab0ALXki (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jan 2010 18:37:38 -0500
-Date: Tue, 12 Jan 2010 15:37:33 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Chaithrika U S <chaithrika@ti.com>
-Cc: linux-kernel@vger.kernel.org,
-       davinci-linux-open-source@linux.davincidsp.com,
-       khilman@deeprootsystems.com
-Subject: Re: [PATCH  v3 2/2] davinci: MMC: updates to suspend/resume
- implementation
-Message-Id: <20100112153733.fd182ed1.akpm@linux-foundation.org>
-In-Reply-To: <1262950740-12625-1-git-send-email-chaithrika@ti.com>
-References: <1262950740-12625-1-git-send-email-chaithrika@ti.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 12 Jan 2010 18:40:38 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH -mmotm-2010-01-06-14-34] check high watermark after shrink zone
+Cc: kosaki.motohiro@jp.fujitsu.com, Minchan Kim <minchan.kim@gmail.com>,
+       Mel Gorman <mel@csn.ul.ie>, Rik van Riel <riel@redhat.com>,
+       linux-mm <linux-mm@kvack.org>, lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <20100112150152.78604b78.akpm@linux-foundation.org>
+References: <20100108141235.ef56b567.minchan.kim@barrios-desktop> <20100112150152.78604b78.akpm@linux-foundation.org>
+Message-Id: <20100113083339.B3C5.A69D9226@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Wed, 13 Jan 2010 08:40:32 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri,  8 Jan 2010 17:09:00 +0530
-Chaithrika U S <chaithrika@ti.com> wrote:
+> >  mm/vmscan.c |   21 +++++++++++----------
+> >  1 files changed, 11 insertions(+), 10 deletions(-)
+> > 
+> > diff --git a/mm/vmscan.c b/mm/vmscan.c
+> > index 885207a..b81adf8 100644
+> > --- a/mm/vmscan.c
+> > +++ b/mm/vmscan.c
+> > @@ -2057,9 +2057,6 @@ loop_again:
+> >  					priority != DEF_PRIORITY)
+> >  				continue;
+> >  
+> > -			if (!zone_watermark_ok(zone, order,
+> > -					high_wmark_pages(zone), end_zone, 0))
+> > -				all_zones_ok = 0;
+> 
+> This will make kswapd stop doing reclaim if all zones have
+> zone_is_all_unreclaimable():
+> 
+> 			if (zone_is_all_unreclaimable(zone))
+> 				continue;
+> 
+> This seems bad.
 
-> -static int davinci_mmcsd_suspend(struct platform_device *pdev, pm_message_t msg)
-> +static int davinci_mmcsd_suspend(struct device *dev)
->  {
-> +	struct platform_device *pdev = to_platform_device(dev);
->  	struct mmc_davinci_host *host = platform_get_drvdata(pdev);
-> +	struct pm_message msg = { PM_EVENT_SUSPEND };
-> +	int ret;
->  
-> -	return mmc_suspend_host(host->mmc, msg);
-> +	mmc_host_enable(host->mmc);
-> +	ret = mmc_suspend_host(host->mmc, msg);
-> +	if (!ret) {
-> +		writel(0, host->base + DAVINCI_MMCIM);
-> +		mmc_davinci_reset_ctrl(host, 1);
-> +		mmc_host_disable(host->mmc);
-> +		clk_disable(host->clk);
-> +		host->suspended = 1;
-> +	} else {
-> +		host->suspended = 0;
-> +		mmc_host_disable(host->mmc);
-> +	}
-> +
-> +	return ret;
->  }
->  
-> -static int davinci_mmcsd_resume(struct platform_device *pdev)
-> +static int davinci_mmcsd_resume(struct device *dev)
->  {
-> +	struct platform_device *pdev = to_platform_device(dev);
->  	struct mmc_davinci_host *host = platform_get_drvdata(pdev);
-> +	int ret;
->  
-> -	return mmc_resume_host(host->mmc);
-> +	if (!host->suspended)
-> +		return 0;
-> +
-> +	clk_enable(host->clk);
-> +	mmc_host_enable(host->mmc);
-> +
-> +	mmc_davinci_reset_ctrl(host, 0);
-> +	ret = mmc_resume_host(host->mmc);
-> +	if (!ret)
-> +		host->suspended = 0;
-> +
-> +	return ret;
->  }
+No. That's intentional, I think. All zones of small asymmetric numa
+node are always unreclaimable typically. stopping kswapd prevent to
+waste 100% cpu time such situation.
 
-Was it proper to ignore the mmc_host_enable() return values?
+In the other hand, This logic doesn't cause disaster to symmetric numa.
+it merely cause direct reclaim and re-wakeup kswapd.
+
+
+
