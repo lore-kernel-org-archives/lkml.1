@@ -1,118 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754523Ab0ALRn5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754591Ab0ALRoG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754523Ab0ALRn5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jan 2010 12:43:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753649Ab0ALRn4
+	id S1754591Ab0ALRoG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jan 2010 12:44:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751475Ab0ALRoB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jan 2010 12:43:56 -0500
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:50056 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753527Ab0ALRn4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jan 2010 12:43:56 -0500
-Date: Tue, 12 Jan 2010 11:43:53 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
-       linux-kernel@vger.kernel.org, Tejun Heo <tj@kernel.org>,
-       Cornelia Huck <cornelia.huck@de.ibm.com>, linux-fsdevel@vger.kernel.org,
-       Eric Dumazet <eric.dumazet@gmail.com>, Benjamin LaHaise <bcrl@lhnet.ca>,
-       "Eric W. Biederman" <ebiederm@aristanetworks.com>
-Subject: Re: [PATCH 6/7] sysfs: Pass super_block to sysfs_get_inode
-Message-ID: <20100112174353.GC13506@us.ibm.com>
-References: <m1d41g9z3q.fsf@fess.ebiederm.org>
- <1263241315-19499-6-git-send-email-ebiederm@xmission.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1263241315-19499-6-git-send-email-ebiederm@xmission.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Tue, 12 Jan 2010 12:44:01 -0500
+Received: from www17.your-server.de ([213.133.104.17]:54527 "EHLO
+	www17.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753649Ab0ALRn7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jan 2010 12:43:59 -0500
+Subject: Re: [Bug #14670] i915: playing video via XVideo extension makes
+ the screen flicker
+From: Thomas Meyer <thomas@m3y3r.de>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Eric Anholt <eric@anholt.net>
+In-Reply-To: <20100111111941.189eb41e@jbarnes-piketon>
+References: <nzLqtSp97aP.A.RGB.hglSLB@chimera>
+	 <CXIfLt-ygXM.A.GGD.GilSLB@chimera>
+	 <1263228784.12830.0.camel@localhost.localdomain>
+	 <20100111085527.104f5c3e@jbarnes-piketon>
+	 <8B599161-2977-4A43-B88F-36E87AFCF4EA@m3y3r.de>
+	 <20100111111941.189eb41e@jbarnes-piketon>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 12 Jan 2010 18:43:09 +0100
+Message-ID: <1263318189.3284.2.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.2 (2.28.2-1.fc12) 
+Content-Transfer-Encoding: 7bit
+X-Authenticated-Sender: thomas@m3y3r.de
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Eric W. Biederman (ebiederm@xmission.com):
-> From: Eric W. Biederman <ebiederm@xmission.com>
+Am Montag, den 11.01.2010, 11:19 -0800 schrieb Jesse Barnes:
+> On Mon, 11 Jan 2010 20:03:57 +0100
+> Thomas Meyer <thomas@m3y3r.de> wrote:
 > 
-> Currently sysfs_get_inode magically returns an inode on
-> sysfs_sb.  Make the super_block parameter explicit and
-> the code becomes clearer.
+> > 
+> > 
+> > Am 11.01.2010 um 17:55 schrieb Jesse Barnes
+> > <jbarnes@virtuousgeek.org>:
+> > 
+> > > On Mon, 11 Jan 2010 17:53:04 +0100
+> > > Thomas Meyer <thomas@m3y3r.de> wrote:
+> > >
+> > >> Am Sonntag, den 10.01.2010, 23:56 +0100 schrieb Rafael J. Wysocki:
+> > >>> This message has been generated automatically as a part of a
+> > >>> report of regressions introduced between 2.6.31 and 2.6.32.
+> > >>>
+> > >>> The following bug entry is on the current list of known
+> > >>> regressions introduced between 2.6.31 and 2.6.32.  Please verify
+> > >>> if it still should be listed and let me know (either way).
+> > >>>
+> > >>
+> > >> Yes, still should be listed.
+> > >>
+> > >> Problem still exists in 2.6.32.3 and 2.6.33-rc3-00097-g2c1f189,
+> > >> that contains
+> > >> this commit:
+> > >> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=cda9d05c499093c67b4a376a15009923acc2127a
+> > >>
+> > >> The above commit removes the render reclock support, that ought to
+> > >> fix a common kind of problem encountered on i915 hardware, but not
+> > >> on my machine.
+> > >>
+> > >> Still need to boot with "nomodeset" to have a workable system.
+> > >
+> > > Does this patch prevent the flicker?
+> > 
+> > By the way: how often and in what interval is the function   
+> > intel_lvds_detect called?
+> > 
+> > How long will/can the function acpi_lid_open take to complete?
+> > Maybe some acpi interpretation takes really long? Is this possible?
+> > 
+> > Would this explain the flickering?
 > 
-> Acked-by: Tejun Heo <tj@kernel.org>
-> Signed-off-by: Eric W. Biederman <ebiederm@aristanetworks.com>
+> It should only be called when a client requests the connection status
+> (e.g. xrandr or the GNOME display applet).
 
-Acked-by: Serge Hallyn <serue@us.ibm.com>
+how to check how often this function is called and it's duration? is the
+function tracer capable of this?
 
-> ---
->  fs/sysfs/dir.c   |    2 +-
->  fs/sysfs/inode.c |    5 +++--
->  fs/sysfs/mount.c |    2 +-
->  fs/sysfs/sysfs.h |    2 +-
->  4 files changed, 6 insertions(+), 5 deletions(-)
 > 
-> diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
-> index 1c364be..a491c72 100644
-> --- a/fs/sysfs/dir.c
-> +++ b/fs/sysfs/dir.c
-> @@ -701,7 +701,7 @@ static struct dentry * sysfs_lookup(struct inode *dir, struct dentry *dentry,
->  	}
+> The LVDS state will also be checked at ACPI LID event time, maybe your
+> platforms is getting spurious LID events?
+
+maybe! where can I check this? acpid log file?
+
 > 
->  	/* attach dentry and inode */
-> -	inode = sysfs_get_inode(sd);
-> +	inode = sysfs_get_inode(dir->i_sb, sd);
->  	if (!inode) {
->  		ret = ERR_PTR(-ENOMEM);
->  		goto out_unlock;
-> diff --git a/fs/sysfs/inode.c b/fs/sysfs/inode.c
-> index f0172b3..487e33c 100644
-> --- a/fs/sysfs/inode.c
-> +++ b/fs/sysfs/inode.c
-> @@ -271,6 +271,7 @@ static void sysfs_init_inode(struct sysfs_dirent *sd, struct inode *inode)
-> 
->  /**
->   *	sysfs_get_inode - get inode for sysfs_dirent
-> + *	@sb: super block
->   *	@sd: sysfs_dirent to allocate inode for
->   *
->   *	Get inode for @sd.  If such inode doesn't exist, a new inode
-> @@ -283,11 +284,11 @@ static void sysfs_init_inode(struct sysfs_dirent *sd, struct inode *inode)
->   *	RETURNS:
->   *	Pointer to allocated inode on success, NULL on failure.
->   */
-> -struct inode * sysfs_get_inode(struct sysfs_dirent *sd)
-> +struct inode * sysfs_get_inode(struct super_block *sb, struct sysfs_dirent *sd)
->  {
->  	struct inode *inode;
-> 
-> -	inode = iget_locked(sysfs_sb, sd->s_ino);
-> +	inode = iget_locked(sb, sd->s_ino);
->  	if (inode && (inode->i_state & I_NEW))
->  		sysfs_init_inode(sd, inode);
-> 
-> diff --git a/fs/sysfs/mount.c b/fs/sysfs/mount.c
-> index 372a32c..77bce54 100644
-> --- a/fs/sysfs/mount.c
-> +++ b/fs/sysfs/mount.c
-> @@ -55,7 +55,7 @@ static int sysfs_fill_super(struct super_block *sb, void *data, int silent)
-> 
->  	/* get root inode, initialize and unlock it */
->  	mutex_lock(&sysfs_mutex);
-> -	inode = sysfs_get_inode(&sysfs_root);
-> +	inode = sysfs_get_inode(sb, &sysfs_root);
->  	mutex_unlock(&sysfs_mutex);
->  	if (!inode) {
->  		pr_debug("sysfs: could not get root inode\n");
-> diff --git a/fs/sysfs/sysfs.h b/fs/sysfs/sysfs.h
-> index 85d5c6c..1ae6009 100644
-> --- a/fs/sysfs/sysfs.h
-> +++ b/fs/sysfs/sysfs.h
-> @@ -169,7 +169,7 @@ static inline void __sysfs_put(struct sysfs_dirent *sd)
->  /*
->   * inode.c
->   */
-> -struct inode *sysfs_get_inode(struct sysfs_dirent *sd);
-> +struct inode *sysfs_get_inode(struct super_block *sb, struct sysfs_dirent *sd);
->  void sysfs_delete_inode(struct inode *inode);
->  int sysfs_sd_setattr(struct sysfs_dirent *sd, struct iattr *iattr);
->  int sysfs_permission(struct inode *inode, int mask);
-> -- 
-> 1.6.5.2.143.g8cc62
+> If not, this bisection really confuses me...
+
+
+
