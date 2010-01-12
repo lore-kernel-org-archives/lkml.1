@@ -1,386 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753196Ab0ALMLH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751498Ab0ALMXq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753196Ab0ALMLH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jan 2010 07:11:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753293Ab0ALMK7
+	id S1751498Ab0ALMXq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jan 2010 07:23:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751233Ab0ALMXq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jan 2010 07:10:59 -0500
-Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:48325 "EHLO
-	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932071Ab0ALMK1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jan 2010 07:10:27 -0500
-MIME-version: 1.0
-Content-transfer-encoding: 7BIT
-Content-type: TEXT/PLAIN
-Date: Tue, 12 Jan 2010 04:09:06 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-Subject: [RFC PATCH 5/5] x86: make 32bit apic flat to physflat switch like 64bit
-In-reply-to: <1263298146-25597-1-git-send-email-yinghai@kernel.org>
-To: Suresh Siddha <suresh.b.siddha@intel.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "ananth@in.ibm.com" <ananth@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Yinghai Lu <yinghai@kernel.org>
-Message-id: <1263298146-25597-5-git-send-email-yinghai@kernel.org>
-X-Mailer: git-send-email 1.6.4.2
-References: <1263298146-25597-1-git-send-email-yinghai@kernel.org>
+	Tue, 12 Jan 2010 07:23:46 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:59944 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750951Ab0ALMXp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jan 2010 07:23:45 -0500
+Date: Tue, 12 Jan 2010 13:23:46 +0100
+From: Jan Kara <jack@suse.cz>
+To: Greg KH <gregkh@suse.de>
+Cc: Jan Kara <jack@suse.cz>, Dmitry Monakhov <dmonakhov@openvz.org>,
+       Dmitry Monakhov <rjevskiy@gmail.com>, Thomas Voegtle <tv@lio96.de>,
+       "Theodore Ts'o" <tytso@mit.edu>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org, stable@kernel.org
+Subject: Re: [PATCH] quota: fix reserved space management for ordinary fs
+Message-ID: <20100112122346.GD3125@quack.suse.cz>
+References: <20100107180449.GA17495@suse.de>
+ <alpine.LNX.2.00.1001072033301.26784@er-systems.de>
+ <20100107194131.GA22983@suse.de>
+ <alpine.LNX.2.00.1001072125040.26784@er-systems.de>
+ <alpine.LNX.2.00.1001072141340.26784@er-systems.de>
+ <20100107220213.GA24882@suse.de>
+ <c18d6aa21001071603hbe4935clf78984fc837e4bd@mail.gmail.com>
+ <87wrztpgbh.fsf_-_@openvz.org>
+ <20100108124139.GC3354@quack.suse.cz>
+ <20100108155215.GA11358@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100108155215.GA11358@suse.de>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-kill def_to_bigsmp
-and move switch from default to bigsmp at default_setup_apic_routing...
-so make default_setup_apic_routing more like 64 bit
-also make the dmi relate code to be __init/__initdata
+On Fri 08-01-10 07:52:15, Greg KH wrote:
+> On Fri, Jan 08, 2010 at 01:41:39PM +0100, Jan Kara wrote:
+> > On Fri 08-01-10 03:53:54, Dmitry Monakhov wrote:
+> > > 
+> > > In fact inode_get_rsv_space() function is special in comparison
+> > > with inode_{add,sub,claim}_rsv_space() functions, because
+> > > it may return correct result even for fs without reserved space
+> > > support(correct val == 0). Add trivial check for that case.
+> > > The patch fix regression(BUG at fs/quota/dquot.c:1350) introduced
+> > > in following commit: fd8fbfc1709822bd94247c5b2ab15a5f5041e103
+> > > 
+> > > Signed-off-by: Dmitry Monakhov <dmonakhov@openvz.org>
+> >   Acked-by: Jan Kara <jack@suse.cz>
+> > 
+> > Greg, please merge this patch to stable series. I'll push the same
+> > patch I have in my tree to Linus on Monday.
+> 
+> I can't merge it to the -stable tree until it shows up in Linus's tree,
+> so I'll wait for that to happen.
+  OK, Linus has pulled. It's commit
+05b5d898235401c489c68e1f3bc5706a29ad5713. Please include it in both stable
+trees that have the commit fd8fbfc1709822bd94247c5b2ab15a5f5041e103.
+Thanks!
 
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-
----
- arch/x86/include/asm/apic.h      |    3 -
- arch/x86/include/asm/mpspec.h    |    1 
- arch/x86/kernel/acpi/boot.c      |    3 -
- arch/x86/kernel/apic/apic.c      |    5 --
- arch/x86/kernel/apic/bigsmp_32.c |   48 -----------------------
- arch/x86/kernel/apic/probe_32.c  |   80 ++++++++++++++++++++-------------------
- arch/x86/kernel/mpparse.c        |    4 -
- arch/x86/kernel/setup.c          |    2 
- arch/x86/kernel/smpboot.c        |    2 
- 9 files changed, 46 insertions(+), 102 deletions(-)
-
-Index: linux-2.6/arch/x86/include/asm/mpspec.h
-===================================================================
---- linux-2.6.orig/arch/x86/include/asm/mpspec.h
-+++ linux-2.6/arch/x86/include/asm/mpspec.h
-@@ -23,7 +23,6 @@ extern int pic_mode;
- 
- #define MAX_IRQ_SOURCES		256
- 
--extern unsigned int def_to_bigsmp;
- extern u8 apicid_2_node[];
- 
- #ifdef CONFIG_X86_NUMAQ
-Index: linux-2.6/arch/x86/kernel/apic/apic.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/apic/apic.c
-+++ linux-2.6/arch/x86/kernel/apic/apic.c
-@@ -1895,11 +1895,6 @@ void __cpuinit generic_processor_info(in
- 	if (apicid > max_physical_apicid)
- 		max_physical_apicid = apicid;
- 
--#ifdef CONFIG_X86_32
--	if (num_processors > 8)
--		def_to_bigsmp = 1;
--#endif
--
- #if defined(CONFIG_SMP) || defined(CONFIG_X86_64)
- 	early_per_cpu(x86_cpu_to_apicid, cpu) = apicid;
- 	early_per_cpu(x86_bios_cpu_apicid, cpu) = apicid;
-Index: linux-2.6/arch/x86/kernel/apic/bigsmp_32.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/apic/bigsmp_32.c
-+++ linux-2.6/arch/x86/kernel/apic/bigsmp_32.c
-@@ -7,7 +7,6 @@
- #include <linux/cpumask.h>
- #include <linux/kernel.h>
- #include <linux/init.h>
--#include <linux/dmi.h>
- #include <linux/smp.h>
- 
- #include <asm/apicdef.h>
-@@ -73,13 +72,6 @@ static void bigsmp_init_apic_ldr(void)
- 	apic_write(APIC_LDR, val);
- }
- 
--static void bigsmp_setup_apic_routing(void)
--{
--	printk(KERN_INFO
--		"Enabling APIC mode:  Physflat.  Using %d I/O APICs\n",
--		nr_ioapics);
--}
--
- static int bigsmp_apicid_to_node(int logical_apicid)
- {
- 	return apicid_2_node[hard_smp_processor_id()];
-@@ -154,52 +146,16 @@ static void bigsmp_send_IPI_all(int vect
- 	bigsmp_send_IPI_mask(cpu_online_mask, vector);
- }
- 
--static int dmi_bigsmp; /* can be set by dmi scanners */
--
--static int hp_ht_bigsmp(const struct dmi_system_id *d)
--{
--	printk(KERN_NOTICE "%s detected: force use of apic=bigsmp\n", d->ident);
--	dmi_bigsmp = 1;
--
--	return 0;
--}
--
--
--static const struct dmi_system_id bigsmp_dmi_table[] = {
--	{ hp_ht_bigsmp, "HP ProLiant DL760 G2",
--		{	DMI_MATCH(DMI_BIOS_VENDOR, "HP"),
--			DMI_MATCH(DMI_BIOS_VERSION, "P44-"),
--		}
--	},
--
--	{ hp_ht_bigsmp, "HP ProLiant DL740",
--		{	DMI_MATCH(DMI_BIOS_VENDOR, "HP"),
--			DMI_MATCH(DMI_BIOS_VERSION, "P47-"),
--		}
--	},
--	{ } /* NULL entry stops DMI scanning */
--};
--
- static void bigsmp_vector_allocation_domain(int cpu, struct cpumask *retmask)
- {
- 	cpumask_clear(retmask);
- 	cpumask_set_cpu(cpu, retmask);
- }
- 
--static int probe_bigsmp(void)
--{
--	if (def_to_bigsmp)
--		dmi_bigsmp = 1;
--	else
--		dmi_check_system(bigsmp_dmi_table);
--
--	return dmi_bigsmp;
--}
--
- struct apic apic_bigsmp = {
- 
- 	.name				= "bigsmp",
--	.probe				= probe_bigsmp,
-+	.probe				= NULL,
- 	.acpi_madt_oem_check		= NULL,
- 	.apic_id_registered		= bigsmp_apic_id_registered,
- 
-@@ -217,7 +173,7 @@ struct apic apic_bigsmp = {
- 	.init_apic_ldr			= bigsmp_init_apic_ldr,
- 
- 	.ioapic_phys_id_map		= bigsmp_ioapic_phys_id_map,
--	.setup_apic_routing		= bigsmp_setup_apic_routing,
-+	.setup_apic_routing		= NULL,
- 	.multi_timer_check		= NULL,
- 	.apicid_to_node			= bigsmp_apicid_to_node,
- 	.cpu_to_logical_apicid		= bigsmp_cpu_to_logical_apicid,
-Index: linux-2.6/arch/x86/kernel/apic/probe_32.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/apic/probe_32.c
-+++ linux-2.6/arch/x86/kernel/apic/probe_32.c
-@@ -14,6 +14,8 @@
- #include <linux/ctype.h>
- #include <linux/init.h>
- #include <linux/errno.h>
-+#include <linux/dmi.h>
-+
- #include <asm/fixmap.h>
- #include <asm/mpspec.h>
- #include <asm/apicdef.h>
-@@ -52,15 +54,6 @@ static int __init print_ipi_mode(void)
- }
- late_initcall(print_ipi_mode);
- 
--static void local_default_setup_apic_routing(void)
--{
--#ifdef CONFIG_X86_IO_APIC
--	printk(KERN_INFO
--		"Enabling APIC mode:  Flat.  Using %d I/O APICs\n",
--		nr_ioapics);
--#endif
--}
--
- static void default_vector_allocation_domain(int cpu, struct cpumask *retmask)
- {
- 	/*
-@@ -76,16 +69,10 @@ static void default_vector_allocation_do
- 	cpumask_bits(retmask)[0] = APIC_ALL_CPUS;
- }
- 
--/* should be called last. */
--static int probe_default(void)
--{
--	return 1;
--}
--
- struct apic apic_default = {
- 
- 	.name				= "default",
--	.probe				= probe_default,
-+	.probe				= NULL,
- 	.acpi_madt_oem_check		= NULL,
- 	.apic_id_registered		= default_apic_id_registered,
- 
-@@ -103,7 +90,7 @@ struct apic apic_default = {
- 	.init_apic_ldr			= default_init_apic_ldr,
- 
- 	.ioapic_phys_id_map		= default_ioapic_phys_id_map,
--	.setup_apic_routing		= local_default_setup_apic_routing,
-+	.setup_apic_routing		= NULL,
- 	.multi_timer_check		= NULL,
- 	.apicid_to_node			= default_apicid_to_node,
- 	.cpu_to_logical_apicid		= default_cpu_to_logical_apicid,
-@@ -192,24 +179,40 @@ static int __init parse_apic(char *arg)
- }
- early_param("apic", parse_apic);
- 
--void __init generic_bigsmp_probe(void)
-+static int dmi_bigsmp __initdata; /* can be set by dmi scanners */
-+
-+static int __init hp_ht_bigsmp(const struct dmi_system_id *d)
- {
--#ifdef CONFIG_X86_BIGSMP
--	/*
--	 * This routine is used to switch to bigsmp mode when
--	 * - There is no apic= option specified by the user
--	 * - generic_apic_probe() has chosen apic_default as the sub_arch
--	 * - we find more than 8 CPUs in acpi LAPIC listing with xAPIC support
--	 */
-+	printk(KERN_NOTICE "%s detected: force use of apic=bigsmp\n", d->ident);
-+	dmi_bigsmp = 1;
- 
--	if (!cmdline_apic && apic == &apic_default) {
--		if (apic_bigsmp.probe()) {
--			apic = &apic_bigsmp;
--			printk(KERN_INFO "Overriding APIC driver with %s\n",
--			       apic->name);
-+	return 0;
-+}
-+
-+static struct dmi_system_id bigsmp_dmi_table[] __initdata = {
-+	{ hp_ht_bigsmp, "HP ProLiant DL760 G2",
-+		{	DMI_MATCH(DMI_BIOS_VENDOR, "HP"),
-+			DMI_MATCH(DMI_BIOS_VERSION, "P44-"),
- 		}
--	}
-+	},
-+
-+	{ hp_ht_bigsmp, "HP ProLiant DL740",
-+		{	DMI_MATCH(DMI_BIOS_VENDOR, "HP"),
-+			DMI_MATCH(DMI_BIOS_VERSION, "P47-"),
-+		}
-+	},
-+	{ } /* NULL entry stops DMI scanning */
-+};
-+
-+static inline const char *get_apic_name(struct apic *apic)
-+{
-+	if (apic == &apic_default)
-+		return "flat";
-+#ifdef CONFIG_X86_BIGSMP
-+	if (apic == &apic_bigsmp);
-+		return "physical flat";
- #endif
-+	return apic->name;
- }
- 
- void __init default_setup_apic_routing(void)
-@@ -219,13 +222,19 @@ void __init default_setup_apic_routing(v
- 	 * make sure we go to bigsmp according to real nr_cpu_ids
- 	 */
- 	if (!cmdline_apic && apic == &apic_default) {
--		if (nr_cpu_ids > 8) {
-+		dmi_check_system(bigsmp_dmi_table);
-+		if (nr_cpu_ids > 8 || dmi_bigsmp) {
- 			apic = &apic_bigsmp;
- 			printk(KERN_INFO "Overriding APIC driver with %s\n",
--			       apic->name);
-+			       get_apic_name(apic));
- 		}
- 	}
- #endif
-+#ifdef CONFIG_X86_IO_APIC
-+	printk(KERN_INFO
-+		"Enabling APIC mode:  %s.  Using %d I/O APICs\n",
-+		get_apic_name(apic), nr_ioapics);
-+#endif
- }
- 
- void __init generic_apic_probe(void)
-@@ -233,14 +242,11 @@ void __init generic_apic_probe(void)
- 	if (!cmdline_apic) {
- 		int i;
- 		for (i = 0; apic_probe[i]; i++) {
--			if (apic_probe[i]->probe()) {
-+			if (apic_probe[i]->probe && apic_probe[i]->probe()) {
- 				apic = apic_probe[i];
- 				break;
- 			}
- 		}
--		/* Not visible without early console */
--		if (!apic_probe[i])
--			panic("Didn't find an APIC driver");
- 	}
- 	printk(KERN_INFO "Using APIC driver %s\n", apic->name);
- }
-Index: linux-2.6/arch/x86/kernel/setup.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/setup.c
-+++ linux-2.6/arch/x86/kernel/setup.c
-@@ -184,8 +184,6 @@ static void set_mca_bus(int x)
- #endif
- }
- 
--unsigned int def_to_bigsmp;
--
- /* for MCA, but anyone else can use it if they want */
- unsigned int machine_id;
- unsigned int machine_submodel_id;
-Index: linux-2.6/arch/x86/kernel/smpboot.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/smpboot.c
-+++ linux-2.6/arch/x86/kernel/smpboot.c
-@@ -947,7 +947,7 @@ static int __init smp_sanity_check(unsig
- 	preempt_disable();
- 
- #if !defined(CONFIG_X86_BIGSMP) && defined(CONFIG_X86_32)
--	if (def_to_bigsmp && nr_cpu_ids > 8) {
-+	if (apic == &apic_default && nr_cpu_ids > 8) {
- 		unsigned int cpu;
- 		unsigned nr;
- 
-Index: linux-2.6/arch/x86/include/asm/apic.h
-===================================================================
---- linux-2.6.orig/arch/x86/include/asm/apic.h
-+++ linux-2.6/arch/x86/include/asm/apic.h
-@@ -456,9 +456,6 @@ static inline void default_wait_for_init
- 	return;
- }
- 
--extern void generic_bigsmp_probe(void);
--
--
- #ifdef CONFIG_X86_LOCAL_APIC
- 
- #include <asm/smp.h>
-Index: linux-2.6/arch/x86/kernel/acpi/boot.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/acpi/boot.c
-+++ linux-2.6/arch/x86/kernel/acpi/boot.c
-@@ -1185,9 +1185,6 @@ static void __init acpi_process_madt(voi
- 		if (!error) {
- 			acpi_lapic = 1;
- 
--#ifdef CONFIG_X86_BIGSMP
--			generic_bigsmp_probe();
--#endif
- 			/*
- 			 * Parse MADT IO-APIC entries
- 			 */
-Index: linux-2.6/arch/x86/kernel/mpparse.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/mpparse.c
-+++ linux-2.6/arch/x86/kernel/mpparse.c
-@@ -359,10 +359,6 @@ static int __init smp_read_mpc(struct mp
- 		x86_init.mpparse.mpc_record(1);
- 	}
- 
--#ifdef CONFIG_X86_BIGSMP
--	generic_bigsmp_probe();
--#endif
--
- 	if (apic->setup_apic_routing)
- 		apic->setup_apic_routing();
- 
+								Honza
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
