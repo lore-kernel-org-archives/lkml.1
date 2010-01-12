@@ -1,62 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754736Ab0ALUV4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754776Ab0ALUWw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754736Ab0ALUV4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jan 2010 15:21:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753949Ab0ALUVz
+	id S1754776Ab0ALUWw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jan 2010 15:22:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754092Ab0ALUWv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jan 2010 15:21:55 -0500
-Received: from mga02.intel.com ([134.134.136.20]:21030 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753937Ab0ALUVy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jan 2010 15:21:54 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,264,1262592000"; 
-   d="scan'208";a="586557310"
-Subject: Re: [PATCH] Make Intel 8-way Xeons boot again
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-Reply-To: Suresh Siddha <suresh.b.siddha@intel.com>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>,
-       "stable@kernel.org" <stable@kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-In-Reply-To: <86802c441001121110u2f3dcfbpafb0d9c4bb6a4e4d@mail.gmail.com>
-References: <20100109101038.GA17555@in.ibm.com>
-	 <86802c441001091313y1f64f011t616f08cd282a7123@mail.gmail.com>
-	 <20100110023015.GA2253@in.ibm.com>
-	 <86802c441001092235j79092e6fse18b61e3d7b0ac6@mail.gmail.com>
-	 <20100110102638.GA7838@elte.hu>
-	 <86802c441001111343p2afaafb7o702884e632260bf7@mail.gmail.com>
-	 <1263246829.2859.537.camel@sbs-t61.sc.intel.com>
-	 <86802c441001121110u2f3dcfbpafb0d9c4bb6a4e4d@mail.gmail.com>
-Content-Type: text/plain
-Organization: Intel Corp
-Date: Tue, 12 Jan 2010 12:20:30 -0800
-Message-Id: <1263327630.2854.448.camel@sbs-t61.sc.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 7bit
+	Tue, 12 Jan 2010 15:22:51 -0500
+Received: from mail-yw0-f176.google.com ([209.85.211.176]:36725 "EHLO
+	mail-yw0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932067Ab0ALUWu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jan 2010 15:22:50 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :content-type;
+        b=i8waD7kpaucL8ufi2pCVMwEYahvFGVM6SZD0xWJtcdSW+U9I3JErOPNVqrPh4gLx9v
+         k41jEAlCXQOXKjSwTQA8I9Gkp7GaqYB2Xl4sSwLxKX+bOKEse0QFrqTTpFR7bVebU3F2
+         ThDv8iKm37zBIXO+vYBOlostpQmy4xkPSPAAM=
+MIME-Version: 1.0
+In-Reply-To: <201001121520.55886.vapier@gentoo.org>
+References: <201001121520.55886.vapier@gentoo.org>
+From: Mike Frysinger <vapier.adi@gmail.com>
+Date: Tue, 12 Jan 2010 15:22:29 -0500
+Message-ID: <8bd0f97a1001121222u32191c09t6ae5f7f6b9df3787@mail.gmail.com>
+Subject: Re: unable to build util-linux-2.17 on glibc-2.10 due to fallocate64
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2010-01-12 at 11:10 -0800, Yinghai Lu wrote:
-> if the system can not use logical flat.
-> 
-> should have some bit set in FADT...
-
-Yinghai, Sorry. I am not sure what you are referring to here. I have
-mentioned about FADT in another thread, so not sure what you mean by
-this here.
-
-Are you referring that bios for the IBM system can use this to fix their
-problem? Once we understand what the problem is with IBM platform, then
-we can propose a solution (using FADT perhaps) that is acceptable to
-everyone.
-
-thanks,
-suresh
-
+blah, wrong mailing list.  auto-complete picked this instead of the
+util-linux mailing list on me.
+-mike
