@@ -1,83 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754376Ab0ALA2i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754426Ab0ALA3x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754376Ab0ALA2i (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jan 2010 19:28:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753308Ab0ALA2i
+	id S1754426Ab0ALA3x (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jan 2010 19:29:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754270Ab0ALA3x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jan 2010 19:28:38 -0500
-Received: from out01.mta.xmission.com ([166.70.13.231]:55023 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752828Ab0ALA2h (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jan 2010 19:28:37 -0500
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Suresh Siddha <suresh.b.siddha@intel.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, Yinghai Lu <yinghai@kernel.org>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [patch] x86, apic: use 0x20 for the IRQ_MOVE_CLEANUP_VECTOR instead of 0x1f
-References: <1263002989.2879.664.camel@sbs-t61.sc.intel.com>
-	<4B47E7A9.6090904@zytor.com>
-	<1263250418.2859.681.camel@sbs-t61.sc.intel.com>
-	<4B4BACCA.2040805@zytor.com> <m1tyus8chc.fsf@fess.ebiederm.org>
-	<4B4BB0B7.3000106@zytor.com>
-	<1263254812.2859.890.camel@sbs-t61.sc.intel.com>
-	<4B4BBEBA.4060403@zytor.com>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Mon, 11 Jan 2010 16:28:30 -0800
-In-Reply-To: <4B4BBEBA.4060403@zytor.com> (H. Peter Anvin's message of "Mon\, 11 Jan 2010 16\:13\:46 -0800")
-Message-ID: <m17hro6ua9.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Mon, 11 Jan 2010 19:29:53 -0500
+Received: from hera.kernel.org ([140.211.167.34]:46264 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751536Ab0ALA3w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jan 2010 19:29:52 -0500
+Message-ID: <4B4BC2D3.7070003@kernel.org>
+Date: Tue, 12 Jan 2010 09:31:15 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Scanned: No (on in01.mta.xmission.com); SAEximRunCond expanded to false
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       =?ISO-8859-1?Q?Am=E9rico_Wang?= <xiyou.wangcong@gmail.com>,
+       Miles Lane <miles.lane@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>
+Subject: Re: 2.6.33-rc3 -- INFO: possible recursive locking --  (s_active){++++.+},
+ at: [<c10d2941>] sysfs_hash_and_remove+0x3d/0x4f
+References: <a44ae5cd1001060454g22fb5a0ay8185bc680cd4fc67@mail.gmail.com>	<2375c9f91001100058w4bac1cf9s183fc37eafbfde75@mail.gmail.com>	<m13a2dho1o.fsf@fess.ebiederm.org> <201001101935.31882.rjw@sisk.pl> <m1wrzpbcmi.fsf@fess.ebiederm.org>
+In-Reply-To: <m1wrzpbcmi.fsf@fess.ebiederm.org>
+X-Enigmail-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Tue, 12 Jan 2010 00:29:06 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"H. Peter Anvin" <hpa@zytor.com> writes:
+On 01/11/2010 11:26 AM, Eric W. Biederman wrote:
+> From: Eric W. Biederman <ebiederm@xmission.com>
+> Date: Sun, 10 Jan 2010 18:13:35 -0800
+> Subject: [PATCH] sysfs: Add support for lockdep subclasses to s_active
+> 
+> We have apparently valid cases where the code for a sysfs attribute
+> removes other sysfs attributes.  Without support for subclasses
+> lockdep flags a possible recursive lock problem as it figures
+> the first sysfs attribute could be attempting to remove itself.
+> 
+> By adding support for sysfs subclasses we can teach lockdep to
+> distinguish between different types of sysfs attributes and not
+> get confused.
+> 
+> Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 
-> On 01/11/2010 04:06 PM, Suresh Siddha wrote:
->>>
->>> Yes, that's what I said.  My question was to Suresh what enforces that
->>> in the case of his patch, which moves the legacy range into the middle
->>> of the device vectors.
->> 
->> It's not the used_vector bitmap. That range will appear as used on all
->> the cpu's and hence we won't be allocating it for anything else.
->> 
->
-> OK, fair enough.
->
->> Now the question is: for non-legacy (io-apic) case, instead of reserving
->> this range for all the cpu's, does it make sense to generalize like any
->> other vector?
->
-> It sounds like something that we could experiment with -- after
-> switching an IRQ to ioapic mode, make it a movable interrupt.  It
-> *seems* it should work, but it's scary stuff to muck with.
->
-> Eric, do you see any reason why it wouldn't work?  I truly couldn't
-> understand your previous remark, especially the bit about "it is
-> dangerous to play lowest priority irq games in that range".
+Acked-by: Tejun Heo <tj@kernel.org>
 
-Sorry.  I suck at multitasking.
-
-Without changes assign_irq_vector will reuse vectors in the range
-IRQ0_VECTOR to IRQ15_VECTOR in the code as it we currently ship it,
-when we switch irq0-15 into ioapic mode.
-
-Switching the loop to cover IRQ0_VECTOR to IRQ15_VECTOR is not a
-problem.  I don't think it will find anything free as we assign those
-vectors on all cpus, but the data structures are fine.
-
-I am uncomfortable with the suggestion of sharing the priority of the
-IRQ_MOVE_CLEANUP_VECTOR with other interrupts.  I know if it had be
-clear from the documentation that it was safe to share the irq level
-with other interrupts I would not have reserved the entire interrupt
-level for the IRQ_MOVE_CLEANUP_VECTOR.
-
-Eric
+-- 
+tejun
