@@ -1,67 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753851Ab0ALJPe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753899Ab0ALJTM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753851Ab0ALJPe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jan 2010 04:15:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751509Ab0ALJPd
+	id S1753899Ab0ALJTM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jan 2010 04:19:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751865Ab0ALJTL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jan 2010 04:15:33 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:42050 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751424Ab0ALJPc convert rfc822-to-8bit (ORCPT
+	Tue, 12 Jan 2010 04:19:11 -0500
+Received: from eu1sys200aog108.obsmtp.com ([207.126.144.125]:46488 "EHLO
+	eu1sys200aog108.obsmtp.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752154Ab0ALJTK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jan 2010 04:15:32 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=wsdSG8yOgRgOGbMsgj63dwgZdbll4rbQPs9mfYjv4g5O2HGQalhxk+Ikszj8Mm63D+
-         X53yDU3e/dZtMUzJfF6Hp3VvcS+/+mR9r1ZFSm9/BAZQBMpcIAD5ZLqU5kSnMh3AnUVc
-         hBGW5Ed0Lim1OSPa5ywVaU0wgldSNtUE4MEZo=
+	Tue, 12 Jan 2010 04:19:10 -0500
+X-Greylist: delayed 1785 seconds by postgrey-1.27 at vger.kernel.org; Tue, 12 Jan 2010 04:19:09 EST
+Message-ID: <4B4C376C.6080705@st.com>
+Date: Tue, 12 Jan 2010 09:48:44 +0100
+From: Francesco VIRLINZI <francesco.virlinzi@st.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
 MIME-Version: 1.0
-In-Reply-To: <alpine.LFD.2.00.1001111906300.17145@localhost.localdomain>
-References: <1263264483-3959-1-git-send-email-yinghai@kernel.org>
-	 <1263264483-3959-4-git-send-email-yinghai@kernel.org>
-	 <alpine.LFD.2.00.1001111906300.17145@localhost.localdomain>
-Date: Tue, 12 Jan 2010 01:15:31 -0800
-X-Google-Sender-Auth: 338d6b0e6b3c31cc
-Message-ID: <86802c441001120115g44a0198fub708d85439ef09ec@mail.gmail.com>
-Subject: Re: [RFC PATCH 2/4] x86: use dmi check to treat disabled cpus as 
-	hotplug cpus.
-From: Yinghai Lu <yinghai@kernel.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Suresh Siddha <suresh.b.siddha@intel.com>,
-       "ananth@in.ibm.com" <ananth@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: Jeremy Kerr <jeremy.kerr@canonical.com>
+Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+       linuxppc-dev@lists.ozlabs.org
+Subject: Re: [RFC,PATCH 1/7 v2] Add a common struct clk
+References: <1263279511.160551.332624337260.1.gpush@pororo>
+In-Reply-To: <1263279511.160551.332624337260.1.gpush@pororo>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 11, 2010 at 7:13 PM, Linus Torvalds
-<torvalds@linux-foundation.org> wrote:
->
->
-> On Mon, 11 Jan 2010, Yinghai Lu wrote:
->>
->> some systems that have disable cpus entries because same
->>   BIOS will support 2 sockets and 4 sockets and more at
->>   same time, BIOS just leave some disable entries, but
->>   those system do not support cpu hotplug. we don't need
->>   treat disabled_cpus as hotplug cpus.
->>
->> so we can make nr_cpu_ids smaller and save more space
->>   (pcpu data allocations), and could make some systems run
->>   with logical flat instead of physical flat apic mode
->
-> .. but this one I detest.
->
-> We can't play games that depend on us always filling in some DMI table
-> correctly. Things need to "just work".
+Hi Jeremy
+In November I already sent a proposal on
+  a generic linux clk framework.
+On that I would suggest:
 
-maybe could change to list that doesn't need to treat disabled cpus as
-hotplug cpus?
+>
+> +struct clk {
+> +	const struct clk_operations *ops;
+>    
+            spinlock_t lock;
+            const char *name;
+            int id;
+            unsigned long rate;
+> +};
+> +
+> +struct clk_operations {
+>    
+                int (*init)(struc clk *);
+> +       int             (*enable)(struct clk *);
+> +       void            (*disable)(struct clk *);
+> +       unsigned long   (*get_rate)(struct clk *);
+> +       void            (*put)(struct clk *);
+> +       long            (*round_rate)(struct clk *, unsigned long);
+> +       int             (*set_rate)(struct clk *, unsigned long);
+> +       int             (*set_parent)(struct clk *, struct clk *);
+> +       struct clk*     (*get_parent)(struct clk *);
+> +};
+>    
 
-YH
++static inline int clk_enable(struct clk *clk)
++{
+	unsigned long flags;
+	int ret = 0;
++	if (clk->ops->enable) {
+		spinlock_irq_save(&clk->lock, flags);
++		ret = clk->ops->enable(clk);
+		spinlock_irq_restore(&clk->lock, flags);
+	}
++	return 0;
++}
+
+Something similar in the other function...
+
+> +
+> +static inline unsigned long clk_get_rate(struct clk *clk)
+> +{
+> +	if (clk->ops->get_rate)
+> +		return clk->ops->get_rate(clk);
+>    
+> 	return clk->rate;
+> +}
+>
+>    
+Moreover if you support .set_parent and .get_parent  a .parent field in 
+the struct clk
+  is useful.
+
+As
+
+struct clk {
+const struct clk_operations *ops;
+
+     spinlock_t lock;
+     const char *name;
+     int id;
+     unsigned long rate;
+     struct clk *parent;
+};
+
+Regards
+  Francesco
