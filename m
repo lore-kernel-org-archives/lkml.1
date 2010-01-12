@@ -1,78 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754090Ab0ALPxQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753995Ab0ALPxM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754090Ab0ALPxQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jan 2010 10:53:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754052Ab0ALPxP
+	id S1753995Ab0ALPxM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jan 2010 10:53:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753548Ab0ALPxL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jan 2010 10:53:15 -0500
-Received: from lennier.cc.vt.edu ([198.82.162.213]:38640 "EHLO
-	lennier.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753699Ab0ALPxN (ORCPT
+	Tue, 12 Jan 2010 10:53:11 -0500
+Received: from e36.co.us.ibm.com ([32.97.110.154]:45179 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752927Ab0ALPxJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jan 2010 10:53:13 -0500
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Benjamin LaHaise <bcrl@lhnet.ca>
-Cc: Tejun Heo <tj@kernel.org>, "Eric W. Biederman" <ebiederm@xmission.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
-       linux-kernel@vger.kernel.org, Cornelia Huck <cornelia.huck@de.ibm.com>,
-       linux-fsdevel@vger.kernel.org, Eric Dumazet <eric.dumazet@gmail.com>,
-       Serge Hallyn <serue@us.ibm.com>,
-       "Eric W. Biederman" <ebiederm@aristanetworks.com>
-Subject: Re: [PATCH 3/7] sysfs: Keep an nlink count on sysfs directories.
-In-Reply-To: Your message of "Mon, 11 Jan 2010 19:53:08 EST."
-             <20100112005308.GL5524@kvack.org>
-From: Valdis.Kletnieks@vt.edu
-References: <m1d41g9z3q.fsf@fess.ebiederm.org> <1263241315-19499-3-git-send-email-ebiederm@xmission.com> <4B4BC683.7060508@kernel.org>
-            <20100112005308.GL5524@kvack.org>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1263311385_4706P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Tue, 12 Jan 2010 10:49:45 -0500
-Message-ID: <5460.1263311385@localhost>
-X-Mirapoint-Received-SPF: 128.173.14.107 localhost Valdis.Kletnieks@vt.edu 2 pass
-X-Mirapoint-IP-Reputation: reputation=neutral-1,
-	source=Fixed,
-	refid=n/a,
-	actions=MAILHURDLE SPF TAG
-X-Junkmail-Info: (45) HELO_LOCALHOST
-X-Junkmail-Status: score=45/50, host=dagger.cc.vt.edu
-X-Junkmail-SD-Raw: score=unknown,
-	refid=str=0001.0A020201.4B4C9A1A.01F8,ss=1,fgs=0,
-	ip=0.0.0.0,
-	so=2009-09-22 00:05:22,
-	dmn=2009-09-10 00:05:08,
-	mode=multiengine
-X-Junkmail-IWF: false
+	Tue, 12 Jan 2010 10:53:09 -0500
+Date: Tue, 12 Jan 2010 09:52:46 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Michael Stone <michael@laptop.org>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       linux-security-module@vger.kernel.org, Andi Kleen <andi@firstfloor.org>,
+       David Lang <david@lang.hm>, Oliver Hartkopp <socketcan@hartkopp.net>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Valdis Kletnieks <Valdis.Kletnieks@vt.edu>,
+       Bryan Donlan <bdonlan@gmail.com>, Evgeniy Polyakov <zbr@ioremap.net>,
+       "C. Scott Ananian" <cscott@cscott.net>,
+       James Morris <jmorris@namei.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Bernie Innocenti <bernie@codewiz.org>,
+       Mark Seaborn <mrs@mythic-beasts.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       =?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>,
+       Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
+       Samir Bellabes <sam@synack.fr>,
+       Casey Schaufler <casey@schaufler-ca.com>, Pavel Machek <pavel@ucw.cz>,
+       Al Viro <viro@ZenIV.linux.org.uk>, Kyle Moffett <kyle@moffetthome.net>
+Subject: Re: [PATCH 2/3] Security: Implement disablenetwork semantics. (v4)
+Message-ID: <20100112155246.GA9255@us.ibm.com>
+References: <20100111174922.GA17285@us.ibm.com>
+ <20100112061058.GA5231@heat>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100112061058.GA5231@heat>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1263311385_4706P
-Content-Type: text/plain; charset=us-ascii
+Quoting Michael Stone (michael@laptop.org):
+> Serge Hallyn wrote:
+> >Michael, I'm sorry, I should go back and search the thread for the
+> >answer, but don't have time right now - do you really need
+> >disablenetwork to be available to unprivileged users?
+> 
+> Rainbow can only drop the networking privileges when we know at app launch time
+> (e.g. based on a manifest or from the human operator) that privileges can be
+> dropped. Unfortunately, most of the really interesting uses of disablenetwork
+> happen *after* rainbow has dropped privilege and handed control the app.
+> Therefore, having an API which can be used by at least some low-privilege
+> processes is important to me.
+> 
+> >is it ok to require CAP_SETPCAP (same thing required for dropping privs from
+> >bounding set)?
+> 
+> Let me try to restate your idea:
+> 
+>   We can make disablenetwork safer by permitting its use only where explicitly
+>   permitted by some previously privileged ancestor. The securebits facility
+>   described in
+> 
+>     http://lwn.net/Articles/280279/
+> 
+>   may be a good framework in which to implement this control.
+> 
+> Did I understand correctly? If so, then yes, this approach seems like it would
+> work for me.
 
-On Mon, 11 Jan 2010 19:53:08 EST, Benjamin LaHaise said:
-> 64k is too small.  10 gig interfaces can currently service 50-100k users,
+That is a little more than I was saying this time though I think I
+suggested it earlier.
 
-I'll certainly buy that.
+But really I don't think anyone would care to separate a system into
+some processes allowed to do unprivileged disablenetwork and other
+processes not allowed to, so a (root-owned mode 644) sysctl seems just
+as useful.
 
-> each of which requires their own network device.
-
-You throwing each user into their own separate network namespace?
-
-
-
---==_Exmh_1263311385_4706P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFLTJoZcC3lWbTT17ARAqKQAJwM9/HnK16Gf5PtEZnJh56qSAfAkwCgvgiI
-ipkbXGj9pBBTMA4lNPXHoEQ=
-=iR6w
------END PGP SIGNATURE-----
-
---==_Exmh_1263311385_4706P--
-
+> Regards, and thanks very much for your help,
+> 
+> Michael
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-security-module" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
