@@ -1,54 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753787Ab0ALVLL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754087Ab0ALVUT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753787Ab0ALVLL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jan 2010 16:11:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752432Ab0ALVLK
+	id S1754087Ab0ALVUT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jan 2010 16:20:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753239Ab0ALVUS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jan 2010 16:11:10 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:51709 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751029Ab0ALVLJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jan 2010 16:11:09 -0500
-Message-ID: <4B4CE35D.4040801@zytor.com>
-Date: Tue, 12 Jan 2010 13:02:21 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
+	Tue, 12 Jan 2010 16:20:18 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:49661 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752259Ab0ALVUR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jan 2010 16:20:17 -0500
+Date: Tue, 12 Jan 2010 13:18:01 -0800
+From: Greg KH <gregkh@suse.de>
+To: Ben Hutchings <bhutchings@solarflare.com>
+Cc: Krzysztof Halasa <khc@pm.waw.pl>, Tilman Schmidt <tilman@imap.cc>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
+       Karsten Keil <isdn@linux-pingi.de>, isdn4linux@listserv.isdn4linux.de
+Subject: Re: Can we remove pci_find_device() yet?
+Message-ID: <20100112211801.GA27999@suse.de>
+References: <20100108112236.462a3da2.sfr@canb.auug.org.au>
+ <20100108044646.GC6611@suse.de>
+ <4B4B802A.2010709@imap.cc>
+ <20100111200136.GA29955@suse.de>
+ <m3fx6bxdt7.fsf@intrepid.localdomain>
+ <1263329605.3011.8.camel@achroite.uk.solarflarecom.com>
 MIME-Version: 1.0
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-CC: Yinghai Lu <yinghai@kernel.org>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>,
-       "stable@kernel.org" <stable@kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Subject: Re: [PATCH] Make Intel 8-way Xeons boot again
-References: <20100109101038.GA17555@in.ibm.com>	 <86802c441001091313y1f64f011t616f08cd282a7123@mail.gmail.com>	 <20100110023015.GA2253@in.ibm.com>	 <86802c441001092235j79092e6fse18b61e3d7b0ac6@mail.gmail.com>	 <20100110102638.GA7838@elte.hu>	 <86802c441001111343p2afaafb7o702884e632260bf7@mail.gmail.com>	 <1263246829.2859.537.camel@sbs-t61.sc.intel.com>	 <86802c441001121110u2f3dcfbpafb0d9c4bb6a4e4d@mail.gmail.com> <1263327630.2854.448.camel@sbs-t61.sc.intel.com>
-In-Reply-To: <1263327630.2854.448.camel@sbs-t61.sc.intel.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1263329605.3011.8.camel@achroite.uk.solarflarecom.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/12/2010 12:20 PM, Suresh Siddha wrote:
-> On Tue, 2010-01-12 at 11:10 -0800, Yinghai Lu wrote:
->> if the system can not use logical flat.
->>
->> should have some bit set in FADT...
+On Tue, Jan 12, 2010 at 08:53:25PM +0000, Ben Hutchings wrote:
+> > How do I do that properly, in terms of PCI API?
 > 
-> Yinghai, Sorry. I am not sure what you are referring to here. I have
-> mentioned about FADT in another thread, so not sure what you mean by
-> this here.
+> One of our older controllers had a similar design error in that the two
+> functions would sometimes have to be reset together.  The way we look
+> for the second function is:
 > 
-> Are you referring that bios for the IBM system can use this to fix their
-> problem? Once we understand what the problem is with IBM platform, then
-> we can propose a solution (using FADT perhaps) that is acceptable to
-> everyone.
+> 	dev = pci_dev_get(dev1);
+> 	while ((dev = pci_get_device(vendor_id, device_id, dev))) {
+> 		if (dev->bus == dev1->bus &&
+> 		    dev->devfn == dev1->devfn + 1) {
+> 			dev2 = dev;
+> 			break;
+> 		}
+> 	}
 > 
+> I assume this is 'properly' since no-one has told me otherwise.
 
-Does the IBM platform set this bit in FADT?
+As of right now, yes, this is the "correct" way to do this.
 
-	-hpa
+I need to dig up the "let multiple drivers bind to a single device"
+patch set to make this not necessary in the future.
+
+thanks,
+
+greg k-h
