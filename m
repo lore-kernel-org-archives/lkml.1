@@ -1,58 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753580Ab0ALCp5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754426Ab0ALCrR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753580Ab0ALCp5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jan 2010 21:45:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752224Ab0ALCp4
+	id S1754426Ab0ALCrR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jan 2010 21:47:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753644Ab0ALCrQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jan 2010 21:45:56 -0500
-Received: from mga03.intel.com ([143.182.124.21]:22032 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752177Ab0ALCp4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jan 2010 21:45:56 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
-   d="scan'208";a="231653437"
-Date: Tue, 12 Jan 2010 10:45:52 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Andi Kleen <ak@linux.intel.com>,
-       "Zheng, Shaohui" <shaohui.zheng@intel.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "y-goto@jp.fujitsu.com" <y-goto@jp.fujitsu.com>,
-       Dave Hansen <haveblue@us.ibm.com>, "x86@kernel.org" <x86@kernel.org>
-Subject: Re: [PATCH - resend] Memory-Hotplug: Fix the bug on interface
-	/dev/mem for 64-bit kernel(v1)
-Message-ID: <20100112024552.GA19425@localhost>
-References: <DA586906BA1FFC4384FCFD6429ECE86031560BAC@shzsmsx502.ccr.corp.intel.com> <20100108124851.GB6153@localhost> <DA586906BA1FFC4384FCFD6429ECE86031560FC1@shzsmsx502.ccr.corp.intel.com> <20100111124303.GA21408@localhost> <20100112093031.0fc6877f.kamezawa.hiroyu@jp.fujitsu.com> <4B4BD281.4080009@linux.intel.com> <20100112103944.a9b1db76.kamezawa.hiroyu@jp.fujitsu.com> <20100112105012.4a210a1c.kamezawa.hiroyu@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100112105012.4a210a1c.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 11 Jan 2010 21:47:16 -0500
+Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:62515 "EHLO
+	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753379Ab0ALCrN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jan 2010 21:47:13 -0500
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-type: TEXT/PLAIN
+Date: Mon, 11 Jan 2010 18:45:57 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+Subject: 
+In-reply-to: <1263264358-3896-1-git-send-email-yinghai@kernel.org>
+To: Suresh Siddha <suresh.b.siddha@intel.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "ananth@in.ibm.com" <ananth@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Yinghai Lu <yinghai@kernel.org>
+Message-id: <1263264358-3896-3-git-send-email-yinghai@kernel.org>
+X-Mailer: git-send-email 1.6.4.2
+References: <1263264358-3896-1-git-send-email-yinghai@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 12, 2010 at 09:50:12AM +0800, KAMEZAWA Hiroyuki wrote:
+should use nr_cpu_ids instead of num_processor, in case we have hotplug cpus.
 
-> Just an information.
-> 
-> We already check kenerke/resource.c's resource information, here.
-> 
-> read_mem()
-> 	-> range_is_allowed()
-> 		-> devmem_is_allowd()
-> 			-> iomem_is_exclusive()
-> 
-> extra calls of page_is_ram() to ask architecture's map seems redundunt.
-> 
-> But, I know PPC guys doesn't use ioresource.c, hehe.
+if current only have 8 cpus is up, but if we will have more cpus that
+will be hot added later, we should use physical flat at first.
 
-Another exception is !CONFIG_STRICT_DEVMEM, which makes
-range_is_allowed()==1. So we still need the page_is_ram() :)
+nr_cpu_ids is the total cpus that could be supported.
 
-Thanks,
-Fengguang
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 
+---
+ arch/x86/kernel/apic/probe_32.c |   20 ++++++++++++++++++--
+ arch/x86/kernel/apic/probe_64.c |    3 ++-
+ arch/x86/kernel/smpboot.c       |    2 --
+ 3 files changed, 20 insertions(+), 5 deletions(-)
+
+Index: linux-2.6/arch/x86/kernel/apic/probe_32.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/apic/probe_32.c
++++ linux-2.6/arch/x86/kernel/apic/probe_32.c
+@@ -52,7 +52,7 @@ static int __init print_ipi_mode(void)
+ }
+ late_initcall(print_ipi_mode);
+ 
+-void default_setup_apic_routing(void)
++static void local_default_setup_apic_routing(void)
+ {
+ #ifdef CONFIG_X86_IO_APIC
+ 	printk(KERN_INFO
+@@ -103,7 +103,7 @@ struct apic apic_default = {
+ 	.init_apic_ldr			= default_init_apic_ldr,
+ 
+ 	.ioapic_phys_id_map		= default_ioapic_phys_id_map,
+-	.setup_apic_routing		= default_setup_apic_routing,
++	.setup_apic_routing		= local_default_setup_apic_routing,
+ 	.multi_timer_check		= NULL,
+ 	.apicid_to_node			= default_apicid_to_node,
+ 	.cpu_to_logical_apicid		= default_cpu_to_logical_apicid,
+@@ -207,6 +207,22 @@ void __init generic_bigsmp_probe(void)
+ 			apic = &apic_bigsmp;
+ 			printk(KERN_INFO "Overriding APIC driver with %s\n",
+ 			       apic->name);
++		}
++	}
++#endif
++}
++
++void default_setup_apic_routing(void)
++{
++#ifdef CONFIG_X86_BIGSMP
++	/*
++	 * make sure we go to bigsmp according to real nr_cpu_ids
++	 */
++	if (!cmdline_apic && apic == &apic_default) {
++		if (nr_cpu_ids > 8) {
++			apic = &apic_bigsmp;
++			printk(KERN_INFO "Overriding APIC driver with %s\n",
++			       apic->name);
+ 		}
+ 	}
+ #endif
+Index: linux-2.6/arch/x86/kernel/smpboot.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/smpboot.c
++++ linux-2.6/arch/x86/kernel/smpboot.c
+@@ -1084,9 +1084,7 @@ void __init native_smp_prepare_cpus(unsi
+ 	set_cpu_sibling_map(0);
+ 
+ 	enable_IR_x2apic();
+-#ifdef CONFIG_X86_64
+ 	default_setup_apic_routing();
+-#endif
+ 
+ 	if (smp_sanity_check(max_cpus) < 0) {
+ 		printk(KERN_INFO "SMP disabled\n");
+Index: linux-2.6/arch/x86/kernel/apic/probe_64.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/apic/probe_64.c
++++ linux-2.6/arch/x86/kernel/apic/probe_64.c
+@@ -67,7 +67,8 @@ void __init default_setup_apic_routing(v
+ 	}
+ #endif
+ 
+-	if (apic == &apic_flat && num_processors > 8)
++	/* not just num_processors, we could have hotplug cpus */
++	if (apic == &apic_flat && nr_cpu_ids > 8)
+ 		apic = &apic_physflat;
+ 
+ 	printk(KERN_INFO "Setting APIC routing to %s\n", apic->name);
