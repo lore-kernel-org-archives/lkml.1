@@ -1,82 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753266Ab0ALVo5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753547Ab0ALVyX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753266Ab0ALVo5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jan 2010 16:44:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752479Ab0ALVo4
+	id S1753547Ab0ALVyX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jan 2010 16:54:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752475Ab0ALVyW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jan 2010 16:44:56 -0500
-Received: from www84.your-server.de ([213.133.104.84]:41137 "EHLO
-	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752555Ab0ALVoz (ORCPT
+	Tue, 12 Jan 2010 16:54:22 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:34015 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752282Ab0ALVyW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jan 2010 16:44:55 -0500
-Subject: Re: [PATCH] checkpatch.pl: add union and struct to the exceptions
- list
-From: Stefani Seibold <stefani@seibold.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, apw@canonical.com,
-       jschopp@austin.ibm.com, davej@redhat.com
-In-Reply-To: <20100111144204.f52568d6.akpm@linux-foundation.org>
-References: <1262796360.1011.9.camel@wall-e>
-	 <20100111144204.f52568d6.akpm@linux-foundation.org>
-Content-Type: text/plain; charset="ISO-8859-15"
-Date: Tue, 12 Jan 2010 22:44:32 +0100
-Message-ID: <1263332672.4373.12.camel@wall-e>
+	Tue, 12 Jan 2010 16:54:22 -0500
+Date: Tue, 12 Jan 2010 13:54:10 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: roel kluin <roel.kluin@gmail.com>
+Cc: "Moore, Eric" <Eric.Moore@lsi.com>,
+       "James E.J. Bottomley" <James.Bottomley@suse.de>,
+       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Desai, Kashyap" <Kashyap.Desai@lsi.com>
+Subject: Re: [PATCH] mpt2sas: Fix &&/|| confusion in
+ _scsih_sas_device_status_change_event()
+Message-Id: <20100112135410.1506be72.akpm@linux-foundation.org>
+In-Reply-To: <25e057c01001071158n1755ee99iae17522e269aa1ff@mail.gmail.com>
+References: <4B3B86CC.5010205@gmail.com>
+	<4565AEA676113A449269C2F3A549520F04463B74@cosmail03.lsi.com>
+	<25e057c01001071158n1755ee99iae17522e269aa1ff@mail.gmail.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Authenticated-Sender: stefani@seibold.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Montag, den 11.01.2010, 14:42 -0800 schrieb Andrew Morton:
-> On Wed, 06 Jan 2010 17:46:00 +0100
-> Stefani Seibold <stefani@seibold.net> wrote:
+On Thu, 7 Jan 2010 20:58:10 +0100
+roel kluin <roel.kluin@gmail.com> wrote:
+
+> On Thu, Jan 7, 2010 at 8:31 PM, Moore, Eric <Eric.Moore@lsi.com> wrote:
+> > nack
+> >
+> > The code beyond this check is intended for either INTERNAL_DEVICE_RESET or CMP_DEVICE_RESET. __ If the reason code is something else, we will want to return. __There are 10 other types of reason codes besides these two. This proposed patch means we return only when the reason code is either INTERNAL_DEVICE_RESET or CMP_INTERNAL_RESET.
+> >
+> > Eric Moore
 > 
-> > This patch add the struct and union keywords to the exceptions list of
-> > the checkpatch.pl script, to prevent error message "Macros with multiple
-> > statements should be enclosed in a do - while loop". Otherwise it is not
-> > possible to build a struct or union with a macro. 
-> > 
-> > Signed-off-by: Stefani Seibold <stefani@seibold.net>
-> > ---
-> >  checkpatch.pl |    2 ++
-> >  1 file changed, 2 insertions(+)
-> > 
-> > --- linux-2.6.33-rc2.orig/scripts/checkpatch.pl	2009-12-03 04:51:21.000000000 +0100
-> > +++ linux-2.6.33-rc2.new/scripts/checkpatch.pl	2010-01-06 17:35:29.747634447 +0100
-> > @@ -2348,6 +2348,8 @@ sub process {
-> >  				DECLARE_PER_CPU|
-> >  				DEFINE_PER_CPU|
-> >  				__typeof__\(|
-> > +				union|
-> > +				struct|
-> >  				\.$Ident\s*=\s*|
-> >  				^\"|\"$
-> >  			}x;
+> my patch is correct but my changelog was wrong. Sorry for the
+> confusion. It should have been:
 > 
-> hm.  Perhaps it would help if you could provide a snippet of code which
-> triggers the incorrect warning?
+> Even if the ReasonCode is not INTERNAL_DEVICE_RESET nor CMP_DEVICE_RESET
+> this still evaluates to true.
 > 
 
-Here is a small code snippet, which will be complained by the
-checkpatch.pl:
+yup, the current code is wrong.
 
-#define __STRUCT_KFIFO_COMMON(recsize, ptrtype) \
-	union { \
-		struct { \
-			unsigned int	in; \
-			unsigned int	out; \
-		}; \
-		char		rectype[recsize]; \
-		ptrtype		*ptr; \
-		const ptrtype	*ptr_const; \
-	};
+	if (!(event_data->ReasonCode ==
+	    MPI2_EVENT_SAS_DEV_STAT_RC_INTERNAL_DEVICE_RESET &&
+	   event_data->ReasonCode ==
+	    MPI2_EVENT_SAS_DEV_STAT_RC_CMP_INTERNAL_DEV_RESET))
+		return;
 
-This construct is legal an save, so checkpatch.pl should accept this. It
-should be also true for struct defined in a macro.
+ReasonCode cannot equal two different things at the same time.
 
-Stefani
+This is what we want:
+
+	if (event_data->ReasonCode !=
+	      MPI2_EVENT_SAS_DEV_STAT_RC_INTERNAL_DEVICE_RESET &&
+	    event_data->ReasonCode !=
+	      MPI2_EVENT_SAS_DEV_STAT_RC_CMP_INTERNAL_DEV_RESET)
+		return;
+
+Eric, the fix needs runtime testing please - it enables code which
+hasn't been executed in a long time, if ever.
+
+In fact the compiler wasn't even emitting any code for the second half
+of _scsih_sas_device_status_change_event() because it worked out that
+there was no path to it.
 
 
