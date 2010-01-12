@@ -1,91 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754815Ab0ALTiH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754836Ab0ALTii@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754815Ab0ALTiH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jan 2010 14:38:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754778Ab0ALTiG
+	id S1754836Ab0ALTii (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jan 2010 14:38:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754776Ab0ALTih
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jan 2010 14:38:06 -0500
-Received: from server109h.appriver.com ([72.32.253.92]:2548 "EHLO
-	server109.appriver.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754721Ab0ALTiF convert rfc822-to-8bit (ORCPT
+	Tue, 12 Jan 2010 14:38:37 -0500
+Received: from nlpi129.sbcis.sbc.com ([207.115.36.143]:44935 "EHLO
+	nlpi129.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754784Ab0ALTig (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jan 2010 14:38:05 -0500
-X-Policy: GLOBAL - intcomgrp.com
-X-Policy: GLOBAL - intcomgrp.com
-X-Primary: jkosin@intcomgrp.com
-X-Note: This Email was scanned by AppRiver SecureTide
-X-ALLOW: JKosin@intcomgrp.com ALLOWED
-X-Virus-Scan: V-
-X-Note: Spam Tests Failed: 
-X-Country-Path: UNITED STATES->UNITED STATES
-X-Note-Sending-IP: 216.54.13.100
-X-Note-Reverse-DNS: mail.intcomgrp.com
-X-Note-WHTLIST: JKosin@intcomgrp.com
-X-Note: User Rule Hits: 
-X-Note: Global Rule Hits: G113 G114 G115 G116 G120 G121 G132 G219 
-X-Note: Encrypt Rule Hits: 
-X-Note: Mail Class: ALLOWEDSENDER
-X-Note: Headers Injected
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Tue, 12 Jan 2010 14:38:36 -0500
+Date: Tue, 12 Jan 2010 13:32:43 -0600 (CST)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@router.home
+To: Yinghai Lu <yinghai@kernel.org>
+cc: Suresh Siddha <suresh.b.siddha@intel.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "ananth@in.ibm.com" <ananth@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCH 1/5] use nr_cpus= to set nr_cpu_ids early
+In-Reply-To: <1263298146-25597-1-git-send-email-yinghai@kernel.org>
+Message-ID: <alpine.DEB.2.00.1001121331590.25925@router.home>
+References: <1263298146-25597-1-git-send-email-yinghai@kernel.org>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: arm: Optimization for ethernet MAC handling at91_ether.c
-Date: Tue, 12 Jan 2010 14:39:43 -0500
-Message-ID: <3DBBD805E3BA064A87F551C0E8BD367402897428@MAILSRV.intcomgrp.com>
-In-Reply-To: <4B4CCC7B.8040609@gmail.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: arm: Optimization for ethernet MAC handling at91_ether.c
-Thread-Index: AcqTvSYnsqXGpyumS4KDf5cw0FCxngAAMOfA
-References: <3DBBD805E3BA064A87F551C0E8BD3674028973F5@MAILSRV.intcomgrp.com> <4B4CA4E5.7030800@gmail.com> <3DBBD805E3BA064A87F551C0E8BD36740289740E@MAILSRV.intcomgrp.com> <4B4CBA93.4090909@gmail.com> <3DBBD805E3BA064A87F551C0E8BD367402897418@MAILSRV.intcomgrp.com> <3DBBD805E3BA064A87F551C0E8BD36740289741C@MAILSRV.intcomgrp.com> <4B4CCC7B.8040609@gmail.com>
-From: "James Kosin" <JKosin@intcomgrp.com>
-To: "Eric Dumazet" <eric.dumazet@gmail.com>
-Cc: <linux-kernel@vger.kernel.org>,
-       "Linux Netdev List" <netdev@vger.kernel.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------Original Message-----
->From: Eric Dumazet [mailto:eric.dumazet@gmail.com] 
->Sent: Tuesday, January 12, 2010 2:25 PM
->To: James Kosin
->Cc: linux-kernel@vger.kernel.org; Linux Netdev List
->Subject: Re: arm: Optimization for ethernet MAC handling at91_ether.c
->
->Le 12/01/2010 20:03, James Kosin a écrit :
->> 
->> Scratch that.  The interrupt doesn't queue up or send another packet directly.  So, it wouldn't help on performance here.  But, may in other implementations that queue/transmit packets in the ISR.  At least in the case where the transmitter is limited to one.
->> 
->
->It could, at least on SMP. tx completion wakes a blocked sender, while
->this cpu continue with RX handling (possibly expensive)
->
->But even on UP, doing tx completion before rx handling allows
->a better reuse of skb just freed (and partly present in cpu cache, if available).
->
->Start of IRQ
->
->1) tx completion
->    -> free a skb
->
->2) rx handling:
->    -> allocate an skb, kmalloc() reuses previous one, still in cpu cache.
->
->End of IRQ
 
-I think this may work to improve things slightly; since, the transmitter always frees the skb regardless of error or success currently.
+On Tue, 12 Jan 2010, Yinghai Lu wrote:
 
-What I was proposing was to modify the sequence slightly to be more like this:
+> on x86, before prefill_possible_map(), nr_cpu_ids will be NR_CPUS aka CONFIG_NR_CPUS
+>
+> add nr_cpus= to set nr_cpu_ids. so we can simulate cpus <=8 on normal config.
+> instead of change NR_CPUS directly.
 
-1) tx completion
-	-> test for TX TUND error
-		-> resend the current skb (to avoid having to re-do)
-	-> else
-		-> test for TX RTRY error
-			-> increment error count as before
-		-> free the skb
+We already have
+
+maxcpus=x?
+
+Why do we need this twice?
 
