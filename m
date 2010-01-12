@@ -1,54 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754642Ab0ALBJy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754645Ab0ALBMs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754642Ab0ALBJy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jan 2010 20:09:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754593Ab0ALBJx
+	id S1754645Ab0ALBMs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jan 2010 20:12:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754541Ab0ALBMr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jan 2010 20:09:53 -0500
-Received: from ozlabs.org ([203.10.76.45]:48342 "EHLO ozlabs.org"
+	Mon, 11 Jan 2010 20:12:47 -0500
+Received: from kanga.kvack.org ([205.233.56.17]:57189 "EHLO kanga.kvack.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751172Ab0ALBJx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jan 2010 20:09:53 -0500
-Date: Tue, 12 Jan 2010 12:07:21 +1100
-From: Anton Blanchard <anton@samba.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>,
-       David Rientjes <rientjes@google.com>
-Subject: Re: [patch 0/6] cpumask_of_node() should handle -1 as a node
-Message-ID: <20100112010721.GC12666@kryten>
-References: <20100106045509.245662398@samba.org>
- <20100111141136.0ee352b3.akpm@linux-foundation.org>
-MIME-Version: 1.0
+	id S1752818Ab0ALBMr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jan 2010 20:12:47 -0500
+X-Greylist: delayed 1177 seconds by postgrey-1.27 at vger.kernel.org; Mon, 11 Jan 2010 20:12:47 EST
+Date: Mon, 11 Jan 2010 20:12:45 -0500
+From: Benjamin LaHaise <bcrl@lhnet.ca>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Tejun Heo <tj@kernel.org>, Greg Kroah-Hartman <gregkh@suse.de>,
+       Kay Sievers <kay.sievers@vrfy.org>, linux-kernel@vger.kernel.org,
+       Cornelia Huck <cornelia.huck@de.ibm.com>, linux-fsdevel@vger.kernel.org,
+       Eric Dumazet <eric.dumazet@gmail.com>, Serge Hallyn <serue@us.ibm.com>,
+       "Eric W. Biederman" <ebiederm@aristanetworks.com>
+Subject: Re: [PATCH 3/7] sysfs: Keep an nlink count on sysfs directories.
+Message-ID: <20100112011245.GM5524@kvack.org>
+References: <m1d41g9z3q.fsf@fess.ebiederm.org> <1263241315-19499-3-git-send-email-ebiederm@xmission.com> <4B4BC683.7060508@kernel.org> <20100112005308.GL5524@kvack.org> <m1vdf82ksy.fsf@fess.ebiederm.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20100111141136.0ee352b3.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <m1vdf82ksy.fsf@fess.ebiederm.org>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Jan 11, 2010 at 05:06:53PM -0800, Eric W. Biederman wrote:
+> I don't see the link count as interesting enough to store more than
+> 16bits for it.  Even with 32bits of storage for nlink sysfs would have
+> to have to handle the rollover case as I am doing now.  So I don't
+> see any advantage to storing more bits.
 
-Hi Andrew,
+I'm not terribly concerned with what value gets returned, but rather about 
+how long is spent calculating it.  Ideally, new sysfs directory entries 
+can be inserted in an O(1) or other reasonable order operation.  I'll try 
+to find some time to re-run my interface scaling tests with your latest 
+changes.
 
-> > A number of places in the kernel use cpumask_of_node(-1), but most arch
-> > NUMA implementations are broken. The following patches fix this.
-> 
-> So..  what's happening here?  Nobody has applied the patches anywhere,
-> you later said "the scheduler oopses in a number of places with
-> CPUMASK_OFFSTACK and sparse node ids" and mention of a -stable backport
-> was mentioned.
-
-That scheduler issue doesn't appear in mainline as no one is allocating sparse
-node IDs yet.
-
-There is still the opportunity for an Oops with CPUMASK_OFFSTACK and
-/sys/.../local_cpus and even with CPUMASK_OFFSTACK disabled it will return
-random data.
-
-Ralph has picked up the mips bit, Ben is sucking in the powerpc bit.
-Davem has acked the sparc bit. I'll roll up a -stable patch once they
-hit.
-
-No answer from alpha and ia64.
-
-Anton
+		=ben
