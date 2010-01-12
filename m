@@ -1,86 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754588Ab0ALQ7g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754672Ab0ALRAJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754588Ab0ALQ7g (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jan 2010 11:59:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752356Ab0ALQ7f
+	id S1754672Ab0ALRAJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jan 2010 12:00:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754645Ab0ALRAF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jan 2010 11:59:35 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:42665 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751937Ab0ALQ7e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jan 2010 11:59:34 -0500
-Message-ID: <4B4CAA84.5060603@redhat.com>
-Date: Tue, 12 Jan 2010 11:59:48 -0500
-From: Ric Wheeler <rwheeler@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc13 Lightning/1.0pre Thunderbird/3.0
-MIME-Version: 1.0
-To: Eric Sandeen <sandeen@redhat.com>
-CC: Michal Novotny <minovotn@redhat.com>,
-       Christoph Hellwig <hch@infradead.org>, linux-ext4@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] extend e2fsprogs functionality to add EXT2_FLAG_DIRECT
- option
-References: <4B46FCB2.1090308@redhat.com> <4B4B84E2.1050508@redhat.com> <4B4C54DC.4040006@redhat.com> <4B4C6429.6090803@redhat.com> <4B4C67F5.1020009@redhat.com> <20100112122319.GA20596@infradead.org> <4B4C6B70.1050205@redhat.com> <20100112124600.GA7151@infradead.org> <4B4C7297.5030905@redhat.com> <20100112163828.GA14633@infradead.org> <4B4CA6A9.3030401@redhat.com> <4B4CA868.2080204@redhat.com> <4B4CA916.7060405@redhat.com> <4B4CA9A6.1080608@redhat.com>
-In-Reply-To: <4B4CA9A6.1080608@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 12 Jan 2010 12:00:05 -0500
+Received: from ey-out-2122.google.com ([74.125.78.25]:53598 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751669Ab0ALRAD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jan 2010 12:00:03 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=q6F9gKQARXbm6iiIcmGhB7OUVzfBizMddZ1YOYAWOqMBS/l/XKrgPrpX+KuT3Abr9Q
+         teTOIJfAOMyDI520wo4r/kkzpCU6oJb3wI+sIaa25SWxBwFv8YL90btvvY9Xqcegj15z
+         Levo1kmeyWpxRqGPikEqAoV5PoPJYcPswF3DY=
+Subject: Re: [RFC] [rt-tests] change to cyclictest behavior
+From: Sven-Thorsten Dietrich <thebigcorporation@gmail.com>
+To: Clark Williams <williams@redhat.com>
+Cc: RT <linux-rt-users@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20100106130400.7f30ae55@torg>
+References: <20100106130400.7f30ae55@torg>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 12 Jan 2010 11:59:50 -0500
+Message-Id: <1263315590.374.6.camel@sven.thebigcorporation.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.0 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/12/2010 11:56 AM, Eric Sandeen wrote:
-> Michal Novotny wrote:
->> On 01/12/2010 05:50 PM, Ric Wheeler wrote:
->>> On 01/12/2010 11:43 AM, Michal Novotny wrote:
->>>> On 01/12/2010 05:38 PM, Christoph Hellwig wrote:
->>>>> Ok, I looked at the issue. The problem is that the Xen backend drivers
->>>>> are (as expected) utterly braindead and submit bios directly from the
->>>>> virtualization backed without using proper abstractions and thus
->>>>> bypassing all the cache coherency features in the fileystems (the block
->>>>> device nodes are just another mini-filesystem in that respect). So
->>>>> when you first have buffered access in the host pages may stay in cache
->>>>> and get overwritten directly on disk by a Xen guest, and once the guest
->>>>> is down the host may still use the now stale cached data.
->>>>>
->>>>> I would recommend to migrate your cutomers to KVM which uses the proper
->>>>> abtractions and thus doesn't have this problem. There's a reason after
->>>>> all why all the Xen dom0 mess never got merged to mainline.
->>>> So, do you think the problem is in the Xen backend drivers and to make
->>>> it working right in Xen the driver fix is needed?
->>>
->>> If XEN drivers by pass the normal IO and FS stack on the host, then I
->>> can understand why the hack to e2fsprogs works but it does not seem
->>> like a good fix.
->>>
->>> Specifically, the data will continue to be cached (and if dirty, might
->>> be written back to the storage eventually).
->>>
->>> If we need a work around, you need to drop VM caches for that device
->>> before you update the guest's files and possibly again afterwards (and
->>> make sure that nothing pulls the data into cache during the operation).
->>>
->>> Basically, this sounds like the backend drivers are doing something
->>> really, really dangerous....
->>>
->>> ric
->>>
->> Ok, so you think this is not good to do this patch for e2fsprogs for
->> direct access support? The only things we could do now is to fix the
->> backend drivers or create a workaround to drop caches? I need to discuss
->> this further with guys in my team...
->
-> I do think that patching it up in e2fsprogs is unnecessarily invasive;
-> it's fixing it at the wrong spot.
->
-> Any block dev IO from the host is dangerous; fixing it only in e2fsprogs
-> for this one case doesn't seem like the right course of action.
->
-> -Eric
+On Wed, 2010-01-06 at 13:04 -0600, Clark Williams wrote:
+> RT-ers,
 
-It actually could produce some nastier issues where it would work a bit, the bad 
-data gets flushed back to the backing store and then your O_DIRECT read would be 
-broken.
+Hi Clark,
 
-Also, for normal users of e2fsprogs, they should never bypass the cache...
+sorry to be late to this, I have been out on a sailboat in the Bahamas.
 
-ric
+When using the histogram feature, cyclictest already behaves the way you
+describe below.
+
+Sven
+
+> 
+> I have a problem with the way cyclictest sets up measurement threads,
+> but before I went and changed things I thought I would ask if people
+> cherished this particular behavior. 
+> 
+> Currently, when cyclictest is run with multiple threads (i.e. -t
+> option) it distributes both the sample interval and the realtime
+> priority by adding the 'distance' parameter to the interval and
+> decrementing the priority by one. This means if you have a distance of
+> 500us (default), a specified RT priority of 95 and start four threads,
+> they will be started with the following parameters:
+> 
+> $ cyclictest -t4 -p95
+> 
+> Will give you:
+> 
+> thread		priority	sample interval
+> 0		95		500
+> 1		94		1000
+> 2		93		1500
+> 3		92		2000
+> 
+> What I'd like to do is modify this logic so that when '-a' (affinity) is
+> specified, the priority and sample interval will not be altered. I
+> don't think there's any point in distributing the priority's and
+> sample intervals when the measurement threads are pinned to their own
+> CPU. 
+> 
+> So:
+> 
+> $ cyclictest -t4 -p95 -a
+> 
+> Would have each thread at SCHED_FIFO 95 and a sample interval of 500us.
+> 
+> Note that this behavior also occurs when the histogram (-h) option is
+> specified).
+> 
+> Thoughts?
+> 
+> Clark
+
+
