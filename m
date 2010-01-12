@@ -1,82 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752828Ab0ALCmV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753549Ab0ALCn0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752828Ab0ALCmV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jan 2010 21:42:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751536Ab0ALCmU
+	id S1753549Ab0ALCn0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jan 2010 21:43:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751264Ab0ALCnZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jan 2010 21:42:20 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:52134 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751529Ab0ALCmT (ORCPT
+	Mon, 11 Jan 2010 21:43:25 -0500
+Received: from mga05.intel.com ([192.55.52.89]:51387 "EHLO
+	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751172Ab0ALCnZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jan 2010 21:42:19 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Tue, 12 Jan 2010 11:39:03 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: "Zheng, Shaohui" <shaohui.zheng@intel.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+	Mon, 11 Jan 2010 21:43:25 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,259,1262592000"; 
+   d="scan'208";a="763380299"
+Subject: Re: [PATCH]cfq-iosched: don't take requests with long distence as 
+ close
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: Corrado Zoccolo <czoccolo@gmail.com>
+Cc: Jeff Moyer <jmoyer@redhat.com>, Shaohua Li <shaohua.li@intel.com>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "ak@linux.intel.com" <ak@linux.intel.com>,
-       "y-goto@jp.fujitsu.com" <y-goto@jp.fujitsu.com>,
-       Dave Hansen <haveblue@us.ibm.com>, "x86@kernel.org" <x86@kernel.org>
-Subject: Re: [PATCH - resend] Memory-Hotplug: Fix the bug on interface
- /dev/mem for 64-bit kernel(v1)
-Message-Id: <20100112113903.89163c46.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20100112023307.GA16661@localhost>
-References: <DA586906BA1FFC4384FCFD6429ECE86031560BAC@shzsmsx502.ccr.corp.intel.com>
-	<20100108124851.GB6153@localhost>
-	<DA586906BA1FFC4384FCFD6429ECE86031560FC1@shzsmsx502.ccr.corp.intel.com>
-	<20100111124303.GA21408@localhost>
-	<20100112093031.0fc6877f.kamezawa.hiroyu@jp.fujitsu.com>
-	<20100112023307.GA16661@localhost>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.10.14; i686-pc-mingw32)
+       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
+       "Zhang, Yanmin" <yanmin.zhang@intel.com>
+In-Reply-To: <4e5e476b1001110705y6c3319ducf6a15c2a2be5670@mail.gmail.com>
+References: <20091224005506.GA7879@sli10-desk.sh.intel.com>
+	 <20091228020348.GB28115@sli10-desk.sh.intel.com>
+	 <4e5e476b0912280036r6e55587dj66952fcd6ff4d08b@mail.gmail.com>
+	 <20091228084659.GA31389@sli10-desk.sh.intel.com>
+	 <4e5e476b0912280111s6a977251m3416341b4bd2c272@mail.gmail.com>
+	 <20091228092844.GA9710@sli10-desk.sh.intel.com>
+	 <x493a2k8d7x.fsf@segfault.boston.devel.redhat.com>
+	 <4e5e476b1001070544w88a387dkfb48847f4f95a9b1@mail.gmail.com>
+	 <x49hbqy3s3m.fsf@segfault.boston.devel.redhat.com>
+	 <1263187209.29897.33.camel@localhost>
+	 <4e5e476b1001110705y6c3319ducf6a15c2a2be5670@mail.gmail.com>
+Content-Type: text/plain; charset="ISO-8859-1"
+Date: Tue, 12 Jan 2010 10:43:38 +0800
+Message-Id: <1263264218.29897.41.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.28.0 (2.28.0-2.fc12) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 12 Jan 2010 10:33:08 +0800
-Wu Fengguang <fengguang.wu@intel.com> wrote:
-
-> Sure, here it is :)
-> ---
-> x86: use the generic page_is_ram()
+On Mon, 2010-01-11 at 16:05 +0100, Corrado Zoccolo wrote: 
+> On Mon, Jan 11, 2010 at 6:20 AM, Zhang, Yanmin
+> <yanmin_zhang@linux.intel.com> wrote:
+> > On Thu, 2010-01-07 at 09:30 -0500, Jeff Moyer wrote:
+> >> Corrado Zoccolo <czoccolo@gmail.com> writes:
+> >>
+> >> > On Tue, Jan 5, 2010 at 10:16 PM, Jeff Moyer <jmoyer@redhat.com> wrote:
+> >> >>
+> >> >> For now, I'm leaning towards asking Jens to revert this.  It may still
+> >> >> be worth making sure that we don't merge a seeky queue with a non-seeky
+> >> >> queue.  I have a patch for that if folks are interested.
+> >> > Jeff, can you send this patch to Yanmin, that is investigating a
+> >> > regression apparently caused by excessive queue merge?
+> >> >
+> >> > http://lkml.org/lkml/2010/1/4/194
+> >>
+> >>
+> >> You first have to back out Shaohua's patch, then apply this one.
+> > Thanks for forwarding me the patches.
+> > Actually, we found tiobench randread has about 20% regression since kernel
+> > 2.6.33-rc1, and fio randread has more than 40% regression.
+> >
+> >>
+> >> Cheers,
+> >> Jeff
+> >>
+> >> cfq-iosched: don't allow merging with seeky queues
+> > With your new patch applied on 2.6.33-rc1, I don't see improvement on
+> > both tiobench and fio randread regression. I know unexpected merge/unmerge
+> > is just one root cause of the regressions. A couple of other patches
+> > are also related to them.
 > 
-> The generic resource based page_is_ram() works better with memory
-> hotplug/hotremove. So switch the x86 e820map based code to it.
+> Hi Yanmin,
+> are you testing Jeff's patch with your full fio script, instead of the
+> simplified one?
+Thanks for your reminder. I tested the patch with simplified one.
+
+> Since they are fixing the merging part, that happens only with the
+> full fio script.
+Ok. I tested the full fio script a moment ago and didn't find improvement.
+
 > 
-> CC: Andi Kleen <andi@firstfloor.org> 
-> CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> 
-> Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+> >
+> > I also tried to apply both your patch and Corrado's patch at
+> > http://lkml.org/lkml/2010/1/9/57. The result seems like the one when I just apply
+> > Corrado's patch, with which regression almost disappears when low_latency=0. But
+> > when low_latency=1, there is still about 25% regression.
+> >
+> Yes, low_latency is supposed to bring some regression.
+> http://lkml.org/lkml/2009/12/30/47
+> 
+> Thanks,
+> Corrado
+> >
+> >>
+> >> Shaohua Li noticed that cfq currently can merge with seeky queues, which
+> >> causes unwanted merge/unmerge activity.  We already know that the
+> >> cur_cfqq is not seeky, so this patch just makes sure that the non-seeky
+> >> queue is not merged with a seeky one.
+> >>
+> >> Signed-off-by: Jeff Moyer <jmoyer@redhat.com>
+> >>
+> >> diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+> >> index 8df4fe5..3db9050 100644
+> >> --- a/block/cfq-iosched.c
+> >> +++ b/block/cfq-iosched.c
+> >> @@ -1677,6 +1677,10 @@ static inline int cfq_rq_close(struct cfq_data *cfqd, struct cfq_queue *cfqq,
+> >>       return cfq_dist_from_last(cfqd, rq) <= sdist;
+> >>  }
+> >>
+> >> +/*
+> >> + * Search for a cfqq that is issuing non-seeky I/Os within the seek
+> >> + * mean of the current cfqq.
+> >> + */
+> >>  static struct cfq_queue *cfqq_close(struct cfq_data *cfqd,
+> >>                                   struct cfq_queue *cur_cfqq)
+> >>  {
+> >> @@ -1701,7 +1705,14 @@ static struct cfq_queue *cfqq_close(struct cfq_data *cfqd,
+> >>        * will contain the closest sector.
+> >>        */
+> >>       __cfqq = rb_entry(parent, struct cfq_queue, p_node);
+> >> -     if (cfq_rq_close(cfqd, cur_cfqq, __cfqq->next_rq))
+> >> +     /*
+> >> +      * If the cfqq does not have enough seek samples, assume it is
+> >> +      * sequential until proven otherwise.  If it is assumed that the
+> >> +      * queue is seeky first, then the close cooperator detection logic
+> >> +      * may never trigger as one queue strays further from the other(s).
+> >> +      */
+> >> +     if (cfq_rq_close(cfqd, cur_cfqq, __cfqq->next_rq) &&
+> >> +         (!sample_valid(__cfqq->seek_samples) || !CFQQ_SEEKY(__cfqq)))
+> >>               return __cfqq;
+> >>
+> >>       if (blk_rq_pos(__cfqq->next_rq) < sector)
+> >> @@ -1712,7 +1723,8 @@ static struct cfq_queue *cfqq_close(struct cfq_data *cfqd,
+> >>               return NULL;
+> >>
+> >>       __cfqq = rb_entry(node, struct cfq_queue, p_node);
+> >> -     if (cfq_rq_close(cfqd, cur_cfqq, __cfqq->next_rq))
+> >> +     if (cfq_rq_close(cfqd, cur_cfqq, __cfqq->next_rq) &&
+> >> +         (!sample_valid(__cfqq->seek_samples) || !CFQQ_SEEKY(__cfqq)))
+> >>               return __cfqq;
+> >>
+> >>       return NULL;
 
-Ack.
 
-
-> +#ifdef CONFIG_X86
-> +	/*
-> +	 * A special case is the first 4Kb of memory;
-> +	 * This is a BIOS owned area, not kernel ram, but generally
-> +	 * not listed as such in the E820 table.
-> +	 */
-> +	if (pfn == 0)
-> +		return 0;
-> +
-> +	/*
-> +	 * Second special case: Some BIOSen report the PC BIOS
-> +	 * area (640->1Mb) as ram even though it is not.
-> +	 */
-> +	if (pfn >= (BIOS_BEGIN >> PAGE_SHIFT) &&
-> +	    pfn <  (BIOS_END   >> PAGE_SHIFT))
-> +		return 0;
-> +#endif
-
-I'm glad if this part is sorted out in clean way ;)
-
-Thanks,
--Kame
 
