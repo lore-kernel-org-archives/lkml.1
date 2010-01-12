@@ -1,88 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754631Ab0ALWck@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754727Ab0ALWdM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754631Ab0ALWck (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jan 2010 17:32:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753841Ab0ALWck
+	id S1754727Ab0ALWdM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jan 2010 17:33:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754233Ab0ALWdM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jan 2010 17:32:40 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:40204 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751535Ab0ALWcj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jan 2010 17:32:39 -0500
-Message-ID: <4B4CF803.1020602@redhat.com>
-Date: Tue, 12 Jan 2010 17:30:27 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
+	Tue, 12 Jan 2010 17:33:12 -0500
+Received: from gabe.freedesktop.org ([131.252.210.177]:50315 "EHLO
+	gabe.freedesktop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753959Ab0ALWdL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jan 2010 17:33:11 -0500
+From: Eric Anholt <eric@anholt.net>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Zhenyu Wang <zhenyuw@linux.intel.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       dri-devel@lists.sourceforge.net
+Subject: Re: [PATCH] DRM / i915: Fix resume regression on MSI Wind U100 w/o
+ KMS
+In-Reply-To: <201001090045.33784.rjw@sisk.pl>
+References: <201001090045.33784.rjw@sisk.pl>
+Date: Tue, 12 Jan 2010 14:33:21 -0800
+Message-ID: <878wc3j6mm.fsf@pollan.anholt.net>
 MIME-Version: 1.0
-To: "Frank Ch. Eigler" <fche@redhat.com>
-CC: Frederic Weisbecker <fweisbec@gmail.com>,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       Arnaldo Carvalho de Melo <acme@infradead.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       utrace-devel <utrace-devel@redhat.com>,
-       Jim Keniston <jkenisto@us.ibm.com>, Maneesh Soni <maneesh@in.ibm.com>,
-       Mark Wielaard <mjw@redhat.com>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC] [PATCH 7/7] Ftrace plugin for Uprobes
-References: <20100111122521.22050.3654.sendpatchset@srikar.in.ibm.com> <20100111122608.22050.94088.sendpatchset@srikar.in.ibm.com> <20100112045454.GJ5243@nowhere> <y0mhbqr40ja.fsf@fche.csb> <4B4CF0F4.3020706@redhat.com> <20100112221554.GI4822@redhat.com>
-In-Reply-To: <20100112221554.GI4822@redhat.com>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; boundary="=-=-=";
+	micalg=pgp-sha1; protocol="application/pgp-signature"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Frank Ch. Eigler wrote:
-> Hi -
-> 
->>> As you might expect, in systemtap we've had to figure out this area
->>> some time ago.  We use another utrace consumer called "task finder" [...]
->>
->> So, could you tell us how the task-finder works and is implemented?
-> 
-> The code may be found at runtime/task_finder* in the systemtap sources.
-> There is a simple interest-registration structure/API that identifies
-> processes / shared libraries of interest, and a set of callbacks to be
-> invoked when said processes/shared libraries are mapped or unmapped.
-> 
-> It is implemented in terms of utrace callbacks for process/thread
-> lifetime monitoring, and utrace syscall callbacks for tracking shared
-> library segments being mapped and unmapped.
-> 
-> http://sourceware.org/git/?p=systemtap.git;a=tree;f=runtime
+--=-=-=
+Content-Transfer-Encoding: quoted-printable
 
-Nice! so we can set a probe by the relative address in the library
-segments.
+On Sat, 9 Jan 2010 00:45:33 +0100, "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+>=20
+> Commit cbda12d77ea590082edb6d30bd342a67ebc459e0 (drm/i915: implement
+> new pm ops for i915), among other things, removed the .suspend and
+> .resume pointers from the struct drm_driver object in i915_drv.c,
+> which broke resume without KMS on my MSI Wind U100.
+>=20
+> Fix this by reverting that part of commit cbda12d77ea59.
+>=20
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 
->> I think we'd better clarify what functions are required for uprobes
->> and pmu, and I think we may be able to re-implement improved pmu on
->> utrace.
-> 
-> I don't see any collision between pmu / perf / utrace, so nothing is
-> really "required" for them or simple usage of uprobes.  If you wish to
-> track dynamic process/shared-library lifetimes, then you need extra
-> code somewhere to respond to those changes.
+Applied, with a little comment for the next poor person having to figure
+out the difference between these two suspend/resume paths.
 
-And that code we can find in runtime/task_finder*, right? :-)
+(And yes, I'd love to see the stealth mode die sometime soonish.  It's
+not like attaching intelfb didn't make the user-mode 2D driver fail
+frequently, so it's not a great "feature" for us to be maintaining
+support for.  From what I understand most distros blacklisted the
+intelfb driver anyway.)
 
->  Layering this dynamic
-> capability seems like the natural way to go, and is easily done with
-> utrace and/or tracepoints.
+--=-=-=
+Content-Type: application/pgp-signature
 
-Sure, and I think that will allow us to use uprobe events as
-trace-events, because we can set probes before executing programs. :-)
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
 
-Thank you!
-
-
--- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
-
+iEYEARECAAYFAktM+LEACgkQHUdvYGzw6vesswCeLTaBN2l2S9rNp3o9iGb5KAdx
+NTMAoI1JZ40C+9GuZzrEualWRbkCWror
+=lIez
+-----END PGP SIGNATURE-----
+--=-=-=--
