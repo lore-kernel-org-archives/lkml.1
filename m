@@ -1,262 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753640Ab0ALDH7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753609Ab0ALDMt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753640Ab0ALDH7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jan 2010 22:07:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752939Ab0ALDH6
+	id S1753609Ab0ALDMt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jan 2010 22:12:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753067Ab0ALDMs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jan 2010 22:07:58 -0500
-Received: from mga11.intel.com ([192.55.52.93]:24851 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752392Ab0ALDH6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jan 2010 22:07:58 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,259,1262592000"; 
-   d="scan'208";a="763387149"
-Date: Tue, 12 Jan 2010 11:07:56 +0800
-From: Shaohua Li <shaohua.li@intel.com>
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: Corrado Zoccolo <czoccolo@gmail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
-       "Zhang, Yanmin" <yanmin.zhang@intel.com>
-Subject: Re: [RFC]cfq-iosched: quantum check tweak
-Message-ID: <20100112030756.GB22606@sli10-desk.sh.intel.com>
-References: <4e5e476b0912250144l96c4d34v300910216e5c7a08@mail.gmail.com>
- <20091228033554.GB15242@sli10-desk.sh.intel.com>
- <4e5e476b0912280102t2278d7a5ld3e8784f52f2be31@mail.gmail.com>
- <1262829893.4984.13.camel@sli10-desk.sh.intel.com>
- <4e5e476b1001071344i4f702496y22f33bc2d4bc834d@mail.gmail.com>
- <20100108171535.GC22219@redhat.com>
- <4e5e476b1001081235wc2784c1s87c0c70662b5e267@mail.gmail.com>
- <20100108205948.GH22219@redhat.com>
- <20100111023409.GE22362@sli10-desk.sh.intel.com>
- <20100111170339.GC22899@redhat.com>
+	Mon, 11 Jan 2010 22:12:48 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:37586 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751853Ab0ALDMs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jan 2010 22:12:48 -0500
+Date: Mon, 11 Jan 2010 19:06:27 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Yinghai Lu <yinghai@kernel.org>
+cc: Suresh Siddha <suresh.b.siddha@intel.com>,
+       "ananth@in.ibm.com" <ananth@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCH 1/4] use nr_cpus= to set nr_cpu_ids early
+In-Reply-To: <1263264483-3959-1-git-send-email-yinghai@kernel.org>
+Message-ID: <alpine.LFD.2.00.1001111906120.17145@localhost.localdomain>
+References: <1263264483-3959-1-git-send-email-yinghai@kernel.org>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20100111170339.GC22899@redhat.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 12, 2010 at 01:03:39AM +0800, Vivek Goyal wrote:
-> On Mon, Jan 11, 2010 at 10:34:09AM +0800, Shaohua Li wrote:
-> > On Sat, Jan 09, 2010 at 04:59:48AM +0800, Vivek Goyal wrote:
-> > > On Fri, Jan 08, 2010 at 09:35:33PM +0100, Corrado Zoccolo wrote:
-> > > > On Fri, Jan 8, 2010 at 6:15 PM, Vivek Goyal <vgoyal@redhat.com> wrote:
-> > > > > On Thu, Jan 07, 2010 at 10:44:27PM +0100, Corrado Zoccolo wrote:
-> > > > >> Hi Shahoua,
-> > > > >>
-> > > > >> On Thu, Jan 7, 2010 at 3:04 AM, Shaohua Li <shaohua.li@intel.com> wrote:
-> > > > >> > On Mon, 2009-12-28 at 17:02 +0800, Corrado Zoccolo wrote:
-> > > > >> >> Hi Shaohua,
-> > > > >> >> On Mon, Dec 28, 2009 at 4:35 AM, Shaohua Li <shaohua.li@intel.com> wrote:
-> > > > >> >> > On Fri, Dec 25, 2009 at 05:44:40PM +0800, Corrado Zoccolo wrote:
-> > > > >> >> >> On Fri, Dec 25, 2009 at 10:10 AM, Shaohua Li <shaohua.li@intel.com> wrote:
-> > > > >> >> >> > Currently a queue can only dispatch up to 4 requests if there are other queues.
-> > > > >> >> >> > This isn't optimal, device can handle more requests, for example, AHCI can
-> > > > >> >> >> > handle 31 requests. I can understand the limit is for fairness, but we could
-> > > > >> >> >> > do some tweaks:
-> > > > >> >> >> > 1. if the queue still has a lot of slice left, sounds we could ignore the limit
-> > > > >> >> >> ok. You can even scale the limit proportionally to the remaining slice
-> > > > >> >> >> (see below).
-> > > > >> >> > I can't understand the meaning of below scale. cfq_slice_used_soon() means
-> > > > >> >> > dispatched requests can finish before slice is used, so other queues will not be
-> > > > >> >> > impacted. I thought/hope a cfq_slice_idle time is enough to finish the
-> > > > >> >> > dispatched requests.
-> > > > >> >> cfq_slice_idle is 8ms, that is the average time to complete 1 request
-> > > > >> >> on most disks. If you have more requests dispatched on a
-> > > > >> >> NCQ-rotational disk (non-RAID), it will take more time. Probably a
-> > > > >> >> linear formula is not the most accurate, but still more accurate than
-> > > > >> >> taking just 1 cfq_slice_idle. If you can experiment a bit, you could
-> > > > >> >> also try:
-> > > > >> >>  cfq_slice_idle * ilog2(nr_dispatched+1)
-> > > > >> >>  cfq_slice_idle * (1<<(ilog2(nr_dispatched+1)>>1))
-> > > > >> >>
-> > > > >> >> >
-> > > > >> >> >> > 2. we could keep the check only when cfq_latency is on. For uses who don't care
-> > > > >> >> >> > about latency should be happy to have device fully piped on.
-> > > > >> >> >> I wouldn't overload low_latency with this meaning. You can obtain the
-> > > > >> >> >> same by setting the quantum to 32.
-> > > > >> >> > As this impact fairness, so natually thought we could use low_latency. I'll remove
-> > > > >> >> > the check in next post.
-> > > > >> >> Great.
-> > > > >> >> >> > I have a test of random direct io of two threads, each has 32 requests one time
-> > > > >> >> >> > without patch: 78m/s
-> > > > >> >> >> > with tweak 1: 138m/s
-> > > > >> >> >> > with two tweaks and disable latency: 156m/s
-> > > > >> >> >>
-> > > > >> >> >> Please, test also with competing seq/random(depth1)/async workloads,
-> > > > >> >> >> and measure also introduced latencies.
-> > > > >> >> > depth1 should be ok, as if device can only send one request, it should not require
-> > > > >> >> > more requests from ioscheduler.
-> > > > >> >> I mean have a run with, at the same time:
-> > > > >> >> * one seq reader,
-> > > > >> >> * h random readers with depth 1 (non-aio)
-> > > > >> >> * one async seq writer
-> > > > >> >> * k random readers with large depth.
-> > > > >> >> In this way, you can see if the changes you introduce to boost your
-> > > > >> >> workload affect more realistic scenarios, in which various workloads
-> > > > >> >> are mixed.
-> > > > >> >> I explicitly add the depth1 random readers, since they are sceduled
-> > > > >> >> differently than the large (>4) depth ones.
-> > > > >> > I tried a fio script which does like your description, but the data
-> > > > >> > isn't stable, especially the write speed, other kind of io speed is
-> > > > >> > stable. Apply below patch doesn't make things worse (still write speed
-> > > > >> > isn't stable, other io is stable), so I can't say if the patch passes
-> > > > >> > the test, but it appears latency reported by fio hasn't change. I adopt
-> > > > >> > the slice_idle * dispatched approach, which I thought should be safe.
-> > > > >>
-> > > > >> I'm doing some tests right now on a single ncq rotational disk, and
-> > > > >> the average service time when submitting with a high depth is halved
-> > > > >> w.r.t. depth 1, so I think you could test also with the formula :
-> > > > >> slice_idle * dispatched / 2. It should give a performance boost,
-> > > > >> without noticeable impact on latency.
-> > > > >>
-> > > > >
-> > > > > But I guess the right comparison here would service times vary when we
-> > > > > push queue depths from 4 to higher (as done by this patch).
-> > > > 
-> > > > I think here we want to determine the average cost of a request, when
-> > > > there are many submitted.
-> > > > 
-> > > > > Were you
-> > > > > running deep seeky queues or sequential queues. Curious to know whether
-> > > > > service times reduced even in case of deep seeky queues on this single
-> > > > > disk.
-> > > > 
-> > > > Seeky queues. Seeks where rather small (not more than 1/64 of the
-> > > > whole disk), but already meaningful for comparison.
-> > > > 
-> > > > >
-> > > > > I think this patch breaks the meaning of cfq_quantum? Now we can allow
-> > > > > dispatch of more requests from the same queue. I had kind of liked the
-> > > > > idea of respecting cfq_quantum. Especially it can help in testing. With
-> > > > > this patch cfq_quantum will more or less loose its meaning.
-> > > > cfq_quantum will still be enforced at the end of the slice, so its
-> > > > meaning of how many requests can be still pending when you finish your
-> > > > slice is preserved.
-> > > 
-> > > Not always and it will depend how accurate your approximation of service
-> > > time is. If per request completion time is more than approximation (in
-> > > this case slice_idle), than you will end up with more requests in dispatch
-> > > queue from one cfqq at the time of slice expiry.
-> > we use slice_idle for a long time and no complain. So assume the approximation
-> > of service time is good.
+
+
+On Mon, 11 Jan 2010, Yinghai Lu wrote:
+>
+> on x86, before prefill_possible_map(), nr_cpu_ids will be NR_CPUS aka CONFIG_NR_CPUS
 > 
-> slice_idle is a variable and user can easily change it to 1ms and even 0.
-> In that case you will be theoritically be ready to dispatch 100/1 requests
-> from the cfqq?
-User changing it should know what he does. A less-experienced user can mess a lot
-of things, which we don't care. 
+> add nr_cpus= to set nr_cpu_ids. so we can simulate cpus <=8 on normal config.
+> instead of change NR_CPUS directly.
 
-> > > > One can argue, instead, that this reduces a bit the effectiveness of
-> > > > preemption on ncq disks.
-> > > > However, I don't think preemption is the solution for low latency,
-> > > > while cfq_quantum reduction is.
-> > > > With this change in place, we could change the default cfq_quantum to
-> > > > a smaller number (ideally 1), to have lowest number of leftovers when
-> > > > the slice finishes, while still driving deep queues at the beginning
-> > > > of the slice.
-> > > 
-> > > I think using cfq_quantum as hard limit might be a better idea as it gives
-> > > more predictable control. Instead of treating it as soft limit and trying
-> > > to meet it at the end of slice expiry based on our approximation of
-> > > predicted completion time.
-> > Current patch has such hard limit too (100ms/8m = 12 for sync io and 40ms/8
-> >  = 5 for async io).
-> 
-> This is software logic driven and not cfq_quantum driven. We can always
-> keep on changing how to approximate service time completions. So a user
-> first needs to read the code, derive internal limits and then do testing?
-> 
-> I think than tunable looses its significance. That's why I am advocating
-> of treating cfq_quantum as hard limit and derive an internal soft limit
-> based on certain % of hard limit and use that as default max queue depth
-> for cfqq.
-> 
-> In this case user knows no matter what, you are not dispatching more than
-> cfq_quantum requests from a queue at a time.
-ok, then the question is which value should cfq_quantum have. I have a test with
-below patch. Its performance still is good. With hard limit 8, speed is 100m/s.
-without hard limit, speed is 102m/s.
+Looks sane.
 
-
-Currently a queue can only dispatch up to 4 requests if there are other queues.
-This isn't optimal, device can handle more requests, for example, AHCI can
-handle 31 requests. I can understand the limit is for fairness, but we could
-do a tweak: if the queue still has a lot of slice left, sounds we could
-ignore the limit.
-Test shows this boost my workload (two thread randread of a SSD) from 78m/s
-to 100m/s.
-
-Signed-off-by: Shaohua Li <shaohua.li@intel.com>
----
- block/cfq-iosched.c |   24 +++++++++++++++++++++---
- 1 file changed, 21 insertions(+), 3 deletions(-)
-
-Index: linux-2.6/block/cfq-iosched.c
-===================================================================
---- linux-2.6.orig/block/cfq-iosched.c
-+++ linux-2.6/block/cfq-iosched.c
-@@ -19,7 +19,7 @@
-  * tunables
-  */
- /* max queue in one round of service */
--static const int cfq_quantum = 4;
-+static const int cfq_quantum = 8;
- static const int cfq_fifo_expire[2] = { HZ / 4, HZ / 8 };
- /* maximum backwards seek, in KiB */
- static const int cfq_back_max = 16 * 1024;
-@@ -32,6 +32,8 @@ static int cfq_slice_idle = HZ / 125;
- static const int cfq_target_latency = HZ * 3/10; /* 300 ms */
- static const int cfq_hist_divisor = 4;
- 
-+#define CFQ_SOFT_QUANTUM (4)
-+
- /*
-  * offset from end of service tree
-  */
-@@ -2242,6 +2244,19 @@ static int cfq_forced_dispatch(struct cf
- 	return dispatched;
- }
- 
-+static inline bool cfq_slice_used_soon(struct cfq_data *cfqd,
-+	struct cfq_queue *cfqq)
-+{
-+	/* the queue hasn't finished any request, can't estimate */
-+	if (cfq_cfqq_slice_new(cfqq) || cfqq->dispatched >= cfqd->cfq_quantum)
-+		return 1;
-+	if (time_after(jiffies + cfqd->cfq_slice_idle * cfqq->dispatched,
-+		cfqq->slice_end))
-+		return 1;
-+
-+	return 0;
-+}
-+
- static bool cfq_may_dispatch(struct cfq_data *cfqd, struct cfq_queue *cfqq)
- {
- 	unsigned int max_dispatch;
-@@ -2258,7 +2273,10 @@ static bool cfq_may_dispatch(struct cfq_
- 	if (cfqd->sync_flight && !cfq_cfqq_sync(cfqq))
- 		return false;
- 
--	max_dispatch = cfqd->cfq_quantum;
-+	max_dispatch = cfqd->cfq_quantum / 2;
-+	if (max_dispatch < CFQ_SOFT_QUANTUM)
-+		max_dispatch = min_t(unsigned int, CFQ_SOFT_QUANTUM,
-+			cfqd->cfq_quantum);
- 	if (cfq_class_idle(cfqq))
- 		max_dispatch = 1;
- 
-@@ -2275,7 +2293,7 @@ static bool cfq_may_dispatch(struct cfq_
- 		/*
- 		 * We have other queues, don't allow more IO from this one
- 		 */
--		if (cfqd->busy_queues > 1)
-+		if (cfqd->busy_queues > 1 && cfq_slice_used_soon(cfqd, cfqq))
- 			return false;
- 
- 		/*
+		Linus
