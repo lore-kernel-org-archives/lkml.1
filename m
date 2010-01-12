@@ -1,45 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752479Ab0ALGFw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751943Ab0ALGIl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752479Ab0ALGFw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jan 2010 01:05:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751095Ab0ALGFv
+	id S1751943Ab0ALGIl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jan 2010 01:08:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751180Ab0ALGIk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jan 2010 01:05:51 -0500
-Received: from stu.ykes.tpc.edu.tw ([163.20.10.2]:4992 "EHLO
-	stu.ykes.tpc.edu.tw" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750916Ab0ALGFu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jan 2010 01:05:50 -0500
-From: "reddot company" <infor@wins.com>
-Reply-To: reddot.company36@gmail.com
-Subject: N/A
-Date: Tue, 12 Jan 2010 13:26:12 +0800
-Message-Id: <20100112052613.M94889@wins.com>
-X-Mailer: OpenWebMail 2.52 20060502
-X-OriginatingIP: 65.49.2.154 (91213)
+	Tue, 12 Jan 2010 01:08:40 -0500
+Received: from lists.laptop.org ([18.85.2.145]:59952 "EHLO mail.laptop.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751095Ab0ALGIj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jan 2010 01:08:39 -0500
+Date: Tue, 12 Jan 2010 01:10:58 -0500
+From: Michael Stone <michael@laptop.org>
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       linux-security-module@vger.kernel.org, Andi Kleen <andi@firstfloor.org>,
+       David Lang <david@lang.hm>, Oliver Hartkopp <socketcan@hartkopp.net>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Valdis Kletnieks <Valdis.Kletnieks@vt.edu>,
+       Bryan Donlan <bdonlan@gmail.com>, Evgeniy Polyakov <zbr@ioremap.net>,
+       "C. Scott Ananian" <cscott@cscott.net>,
+       James Morris <jmorris@namei.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Bernie Innocenti <bernie@codewiz.org>,
+       Mark Seaborn <mrs@mythic-beasts.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       =?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>,
+       Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
+       Samir Bellabes <sam@synack.fr>,
+       Casey Schaufler <casey@schaufler-ca.com>, Pavel Machek <pavel@ucw.cz>,
+       Al Viro <viro@ZenIV.linux.org.uk>, Kyle Moffett <kyle@moffetthome.net>,
+       Michael Stone <michael@laptop.org>
+Subject: Re: [PATCH 2/3] Security: Implement disablenetwork semantics. (v4)
+Message-ID: <20100112061058.GA5231@heat>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset=iso-8859-1
-To: undisclosed-recipients:;
-X-NetStation-Status: PASS
-X-NetStation-SPAM: 0.00/4.00-10.00
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Disposition: inline
+In-Reply-To: <20100111174922.GA17285@us.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We the staffs of Red Dot Company are happy to announce to you of your e-mail 
-address which was selected from the database of your email account provider 
-have been awarded the sum of hundred thousand dollars ($100,000.00).
+Serge Hallyn wrote:
+> Michael, I'm sorry, I should go back and search the thread for the
+> answer, but don't have time right now - do you really need
+> disablenetwork to be available to unprivileged users? 
 
-To claim this money you are advice to reply back with the details below
+Rainbow can only drop the networking privileges when we know at app launch time
+(e.g. based on a manifest or from the human operator) that privileges can be
+dropped. Unfortunately, most of the really interesting uses of disablenetwork
+happen *after* rainbow has dropped privilege and handed control the app.
+Therefore, having an API which can be used by at least some low-privilege
+processes is important to me.
 
-1, Email address that won you the award
-2, Full name and address so the money can be sent to you via western union 
-money transfer
-3, Phone Number
+> is it ok to require CAP_SETPCAP (same thing required for dropping privs from
+> bounding set)?  
 
-Note: This claim process normally takes 2 working days, all depends on you.
+Let me try to restate your idea:
 
-Red Dot Company
-http://en.red-dot.org/
+   We can make disablenetwork safer by permitting its use only where explicitly
+   permitted by some previously privileged ancestor. The securebits facility
+   described in 
 
+     http://lwn.net/Articles/280279/
+
+   may be a good framework in which to implement this control.
+
+Did I understand correctly? If so, then yes, this approach seems like it would
+work for me.
+
+Regards, and thanks very much for your help,
+
+Michael
