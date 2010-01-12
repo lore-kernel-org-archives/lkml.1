@@ -1,102 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753801Ab0ALI7g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753823Ab0ALJAl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753801Ab0ALI7g (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jan 2010 03:59:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753573Ab0ALI7f
+	id S1753823Ab0ALJAl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jan 2010 04:00:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753736Ab0ALJAk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jan 2010 03:59:35 -0500
-Received: from mail-pz0-f171.google.com ([209.85.222.171]:48293 "EHLO
-	mail-pz0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753539Ab0ALI7e convert rfc822-to-8bit (ORCPT
+	Tue, 12 Jan 2010 04:00:40 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:47277 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753266Ab0ALJAk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jan 2010 03:59:34 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=GOXTKLYKzAfEmo2EAz6qoH5qPNJwiFnNF0/rN5TkcykRyIDHVzjwN61udXCkb6S/Qz
-         IoRS9TDIoia5DhxhwoxXV/pzyz2+4FSydh34j+EsdW62h6cRSadhgW6S0ngps7bKdqZG
-         u6+BVO6QGCzofiUnJUF9idocHfp8HCYanStaQ=
-MIME-Version: 1.0
-In-Reply-To: <alpine.LFD.2.00.1001111906300.17145@localhost.localdomain>
-References: <1263264483-3959-1-git-send-email-yinghai@kernel.org>
-	 <1263264483-3959-4-git-send-email-yinghai@kernel.org>
-	 <alpine.LFD.2.00.1001111906300.17145@localhost.localdomain>
-Date: Tue, 12 Jan 2010 00:59:31 -0800
-X-Google-Sender-Auth: 5449840ab0bbd754
-Message-ID: <86802c441001120059s46a2e93aydc76067960aa07e6@mail.gmail.com>
-Subject: Re: [RFC PATCH 2/4] x86: use dmi check to treat disabled cpus as 
-	hotplug cpus.
-From: Yinghai Lu <yinghai@kernel.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Suresh Siddha <suresh.b.siddha@intel.com>,
-       "ananth@in.ibm.com" <ananth@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Tue, 12 Jan 2010 04:00:40 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Tue, 12 Jan 2010 17:57:24 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: "Zheng, Shaohui" <shaohui.zheng@intel.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "ak@linux.intel.com" <ak@linux.intel.com>,
+       "y-goto@jp.fujitsu.com" <y-goto@jp.fujitsu.com>,
+       Dave Hansen <haveblue@us.ibm.com>, "x86@kernel.org" <x86@kernel.org>
+Subject: Re: [ RESEND PATCH v3] Memory-Hotplug: Fix the bug on interface
+ /dev/mem for 64-bit kernel
+Message-Id: <20100112175724.adfa04d6.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <DA586906BA1FFC4384FCFD6429ECE860316C01D6@shzsmsx502.ccr.corp.intel.com>
+References: <DA586906BA1FFC4384FCFD6429ECE860316C0133@shzsmsx502.ccr.corp.intel.com>
+	<20100112170433.394be31b.kamezawa.hiroyu@jp.fujitsu.com>
+	<DA586906BA1FFC4384FCFD6429ECE860316C01D6@shzsmsx502.ccr.corp.intel.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 11, 2010 at 7:13 PM, Linus Torvalds
-<torvalds@linux-foundation.org> wrote:
->
->
-> On Mon, 11 Jan 2010, Yinghai Lu wrote:
->>
->> some systems that have disable cpus entries because same
->>   BIOS will support 2 sockets and 4 sockets and more at
->>   same time, BIOS just leave some disable entries, but
->>   those system do not support cpu hotplug. we don't need
->>   treat disabled_cpus as hotplug cpus.
->>
->> so we can make nr_cpu_ids smaller and save more space
->>   (pcpu data allocations), and could make some systems run
->>   with logical flat instead of physical flat apic mode
->
-> .. but this one I detest.
->
-> We can't play games that depend on us always filling in some DMI table
-> correctly. Things need to "just work".
->
-> So while 1/4 looks fine, 2/4 looks fundamentally unacceptable.
->
-> Is the flat APIC mode really so important?
->
-> I would suggest a few alternatives:
->
-> Truly static:
->
->  - only use that flat apic mode when you _know_ that you absolutely will
->   never have more than 8 cpu's. Ie when CONFIG_NR_CPUS <= 8 (or, with
->   1/3, when nr_cpu_ids <= 8) and/or when <= 8 CPU's were detected, and
->   CPU hotplug is disabled entirely.
-that is this patch try to do. but can not find out the system that does support
-real hw support hotadd cpus.
->
-> Slightly more intelligent:
->
->  - Look at the ACPI socket count, and hey, if it says it might have more
->   sockets - whether they are really hotplug or not, don't use flat mode,
->   because we simply don't know. But do _not_ do some kind of DMI table to
->   say one way or the other.
+On Tue, 12 Jan 2010 16:57:40 +0800
+"Zheng, Shaohui" <shaohui.zheng@intel.com> wrote:
 
-that acpi could lie, for example, some system share one BIOS between 2
-socket/4 socket/8 sockets
-model. and BIOS could have bunch disabled entries in MADT. or MPTABLE.
+> 
+> 3 points...
+> 1. I think this patch cannot be compiled in archs other than x86. Right ?
+>    IOW, please add static inline dummy...
+> [Zheng, Shaohui] Agree, I will add a static dummy function
+> 
+> 2. pgdat->[start,end], totalram_pages etc...are updated at memory hotplug.
+>    Please place the hook nearby them.
+> [Zheng, Shaohui] Agree.
+> 
+> 3. I recommend you yo use memory hotplug notifier.
+>    If it's allowed, it will be cleaner.
+>    It seems there are no strict ordering to update parameters this patch touches.
+> 
+> [Zheng, Shaohui] Kame, do you means put the hook into function slab_mem_going_online_callback, it seems a good idea. If we select this method, we will need not to update these variable in function add_memory explicitly.
+> 
+yes. I think callback is the best.
 
->
-> And if it's _really_ important:
->
->  - if flat mode is so important that you want to enable it whenever
->   possible, what about enabling/disabling it dynamically at CPU hotplug
->   time? That does sound _very_ painful, but it's still better than having
->   to maintain some list of all systems that can ever hot-plug.
+Thanks,
+-Kame
 
-interesting, could be done.
-init_apic_ldr is called even for physical flat on 64 bit.
-could change apic on fly.
-
-YH
