@@ -1,99 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754501Ab0ALTBr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754714Ab0ALTCI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754501Ab0ALTBr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jan 2010 14:01:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753879Ab0ALTBq
+	id S1754714Ab0ALTCI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jan 2010 14:02:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754645Ab0ALTCG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jan 2010 14:01:46 -0500
-Received: from tomts5-srv.bellnexxia.net ([209.226.175.25]:43090 "EHLO
-	tomts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753293Ab0ALTBq (ORCPT
+	Tue, 12 Jan 2010 14:02:06 -0500
+Received: from server109h.appriver.com ([72.32.253.92]:4285 "EHLO
+	server109.appriver.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754597Ab0ALTCF convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jan 2010 14:01:46 -0500
-Date: Tue, 12 Jan 2010 13:56:41 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>, Oleg Nesterov <oleg@redhat.com>,
-       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org,
-       josh@joshtriplett.org, tglx@linutronix.de, Valdis.Kletnieks@vt.edu,
-       dhowells@redhat.com, laijs@cn.fujitsu.com, dipankar@in.ibm.com
-Subject: Re: [RFC PATCH] introduce sys_membarrier(): process-wide memory
-	barrier (v3b)
-Message-ID: <20100112185641.GA26731@Krystal>
-References: <20100110052508.GG9044@linux.vnet.ibm.com> <1263124209.28171.3798.camel@gandalf.stny.rr.com> <20100110174512.GH9044@linux.vnet.ibm.com> <20100110182423.GA22821@Krystal> <20100111011705.GJ9044@linux.vnet.ibm.com> <20100111042521.GB32213@Krystal> <20100111043016.GD32213@Krystal> <20100111224355.GH6632@linux.vnet.ibm.com> <20100112153854.GA8122@Krystal> <20100112181212.GC6812@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20100112181212.GC6812@linux.vnet.ibm.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.27.31-grsec (i686)
-X-Uptime: 13:45:42 up 27 days,  3:04,  5 users,  load average: 0.24, 0.17,
-	0.10
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 12 Jan 2010 14:02:05 -0500
+X-Policy: GLOBAL - intcomgrp.com
+X-Policy: GLOBAL - intcomgrp.com
+X-Primary: jkosin@intcomgrp.com
+X-Note: This Email was scanned by AppRiver SecureTide
+X-ALLOW: JKosin@intcomgrp.com ALLOWED
+X-Virus-Scan: V-
+X-Note: Spam Tests Failed: 
+X-Country-Path: UNITED STATES->UNITED STATES
+X-Note-Sending-IP: 216.54.13.100
+X-Note-Reverse-DNS: mail.intcomgrp.com
+X-Note-WHTLIST: JKosin@intcomgrp.com
+X-Note: User Rule Hits: 
+X-Note: Global Rule Hits: G113 G114 G115 G116 G120 G121 G132 G219 
+X-Note: Encrypt Rule Hits: 
+X-Note: Mail Class: ALLOWEDSENDER
+X-Note: Headers Injected
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: arm: Optimization for ethernet MAC handling at91_ether.c
+Date: Tue, 12 Jan 2010 14:03:46 -0500
+Message-ID: <3DBBD805E3BA064A87F551C0E8BD36740289741C@MAILSRV.intcomgrp.com>
+In-Reply-To: <3DBBD805E3BA064A87F551C0E8BD367402897418@MAILSRV.intcomgrp.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: arm: Optimization for ethernet MAC handling at91_ether.c
+Thread-Index: AcqTspWCmnn7FjRuR3SQzPFeTMxe6wAANsBQAAGbhMA=
+References: <3DBBD805E3BA064A87F551C0E8BD3674028973F5@MAILSRV.intcomgrp.com> <4B4CA4E5.7030800@gmail.com> <3DBBD805E3BA064A87F551C0E8BD36740289740E@MAILSRV.intcomgrp.com> <4B4CBA93.4090909@gmail.com> <3DBBD805E3BA064A87F551C0E8BD367402897418@MAILSRV.intcomgrp.com>
+From: "James Kosin" <JKosin@intcomgrp.com>
+To: "James Kosin" <JKosin@intcomgrp.com>,
+       "Eric Dumazet" <eric.dumazet@gmail.com>
+Cc: <linux-kernel@vger.kernel.org>,
+       "Linux Netdev List" <netdev@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
-> On Tue, Jan 12, 2010 at 10:38:54AM -0500, Mathieu Desnoyers wrote:
-> > * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
-> > > On Sun, Jan 10, 2010 at 11:30:16PM -0500, Mathieu Desnoyers wrote:
-> > > > Here is an implementation of a new system call, sys_membarrier(), which
-> > > > executes a memory barrier on all threads of the current process.
-> > > > 
-> > > > It aims at greatly simplifying and enhancing the current signal-based
-> > > > liburcu userspace RCU synchronize_rcu() implementation.
-> > > > (found at http://lttng.org/urcu)
-> > > 
-> > > I didn't expect quite this comprehensive of an implementation from the
-> > > outset, but I guess I cannot complain.  ;-)
-> > > 
-> > > Overall, good stuff.
-> > > 
-> > > Interestingly enough, what you have implemented is analogous to
-> > > synchronize_rcu_expedited() and friends that have recently been added
-> > > to the in-kernel RCU API.  By this analogy, my earlier semi-suggestion
-> > > of synchronize_rcu(0 would be a candidate non-expedited implementation.
-> > > Long latency, but extremely low CPU consumption, full batching of
-> > > concurrent requests (even unrelated ones), and so on.
-> > 
-> > Yes, the main different I think is that the sys_membarrier
-> > infrastructure focuses on IPI-ing only the current process running
-> > threads.
+On 1/12/2010 1:50 PM, James Kosin wrote:
+> -----Original Message-----
+> From: linux-kernel-owner@vger.kernel.org [mailto:linux-kernel-owner@vger.kernel.org] On Behalf Of Eric Dumazet
+> Sent: Tuesday, January 12, 2010 1:08 PM
+> To: James Kosin
+> Cc: linux-kernel@vger.kernel.org; Linux Netdev List
+> Subject: Re: arm: Optimization for ethernet MAC handling at91_ether.c
 > 
-> Which does indeed make sense for the expedited interface.  On the other
-> hand, if you have a bunch of concurrent non-expedited requests from
-> different processes, covering all CPUs efficiently satisfies all of
-> the requests in one go.  And, if you use synchronize_sched() for the
-> non-expedited case, there will be no IPIs in the common case.
-
-So are you proposing we add a "int expedited" parameter to the
-system call, and let the caller choose between the ipi and
-synchronize_sched() schemes ?
-
-[...]
-> > > Also, is "top"
-> > > accurate given that the IPI handler will have interrupts disabled?
-> > 
-> > Probably not. AFAIK. "top" does not really consider interrupts into its
-> > accounting. So, better take this top output with a grain of salt or two.
+> Le 12/01/2010 18:51, James Kosin a écrit :
+>> On 1/12/2010 11:40 AM, Eric Dumazet wrote:
 > 
-> Might need something like oprofile to get good info?
+> 
+> I know.  Actually, I am using the hardware; and the part is capable of more than this driver is displaying.
+> 
+> 1)  The part is able to queue up two packets (1) actively being transmitted, and (1) queued up behind that packet.  The driver doesn't exploit this; probably because this would cause some confusion, since we wouldn't really know which packet failed when this happens.
+> 
+> 2)  TX performance is so..so.  With bing on another computer using '-z' option it is reporting a fairly good value of 74Mbps.  I'll have to try with a re-compiled kernel at some point to give better feedback if we can improve this more.
+> 
+> Your interpretation makes some sense on the transmit side.  The RX currently has a DMA queue that extends to a depth of 9 (currently).  So getting one transmit out before checking the RX may improve things a bit.
+> 
 
-Could be. Although I just wanted to point out the kind of pattern we
-should expect. I'm not convinced it's so useful to give the detailed
-oprofile info. I'm rephrasing the above paragraph to state that top is
-not super-accurate here.
+Scratch that.  The interrupt doesn't queue up or send another packet directly.  So, it wouldn't help on performance here.  But, may in other implementations that queue/transmit packets in the ISR.  At least in the case where the transmitter is limited to one.
 
-[...]
-
-Thanks,
-
-Mathieu
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+James
