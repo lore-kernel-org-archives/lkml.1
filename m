@@ -1,134 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754265Ab0ALLJi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754411Ab0ALLOq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754265Ab0ALLJi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jan 2010 06:09:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754144Ab0ALLJh
+	id S1754411Ab0ALLOq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jan 2010 06:14:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754245Ab0ALLOo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jan 2010 06:09:37 -0500
-Received: from mail-pz0-f171.google.com ([209.85.222.171]:60002 "EHLO
-	mail-pz0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754120Ab0ALLJg convert rfc822-to-8bit (ORCPT
+	Tue, 12 Jan 2010 06:14:44 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:57244 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754132Ab0ALLOo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jan 2010 06:09:36 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=k3QOVRjm0Fz7cHpOgadVeVVsKJMX7b/KJSu3do2fTM+EfCBBJCkEaUh35itjAs9r0y
-         uHA1kTHENo5hkphuanBv9AQuAK7xSS+2GOeJA9nVj89tsmeviqQhd6TZSR4kHbzFlmBc
-         Qjsma7FXEcoLz2sXI4T/Kqi0OjvS7/stCTrgw=
+	Tue, 12 Jan 2010 06:14:44 -0500
+Date: Tue, 12 Jan 2010 22:14:39 +1100
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Krzysztof Halasa <khc@pm.waw.pl>
+Cc: linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: Crypto test results unused?
+Message-ID: <20100112111439.GA31504@gondor.apana.org.au>
 MIME-Version: 1.0
-Date: Tue, 12 Jan 2010 19:09:35 +0800
-Message-ID: <ce2c83091001120309q19d58b45kc27610fc31ce01dc@mail.gmail.com>
-Subject: Did we really need to clear the IF flag at prepare_singlestep() of 
-	x86 kprobes?
-From: Dongdong Deng <libfetion@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: ananth@in.ibm.com, anil.s.keshavamurthy@intel.com, davem@davemloft.net,
-       mhiramat@redhat.com, arjan@infradead.org, jkenisto@us.ibm.com
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m3ws07q865.fsf@intrepid.localdomain>
+Organization: Core
+X-Newsgroups: apana.lists.os.linux.cryptoapi,apana.lists.os.linux.kernel
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Kprobe experts,
+Krzysztof Halasa <khc@pm.waw.pl> wrote:
+> 
+> On little-endian IXP4xx 3 hardware-assisted algorithms fail (due to
+> apparently unrelated bug which I will take care of). It seems the kernel
+> is still using these failing algorithms (my debugging code adds extra
+> fields to the /proc output):
 
-I have a doubt about the handling "X86_EFLAGS_IF" at prepare_singlestep(),
-Could you give me some suggestions?
+How did you determine that it was still being used? When a kernel
+user requests for an algorithm the system is supposed to skip
+anything which failed the self-test.
+ 
+> At this point alg->cra_flags includes CRYPTO_ALG_DEAD (due to failed
+> test), but larval->alg.cra_flags has only the original flags (0x85).
 
+CRYPTO_ALG_DEAD is used to mark algorithms deleted from the
+system.  However, we don't delete algorithms just because they
+fail the self-test.  They remain in the system so you can come
+back and diagnose the problem.  They just aren't used by anyone.
 
-arch/x86/kernel/kprobes.c:
-406 static void __kprobes prepare_singlestep(struct kprobe *p, struct
-pt_regs *regs)
-407 {
-408    clear_btf();
-409    regs->flags |= X86_EFLAGS_TF;
-410    regs->flags &= ~X86_EFLAGS_IF;
-  ...
-}
-
-
-for 410 line: Kprobe is intend to disable interrupt during the single step.
-
-I think it is enough that just setting X86_EFLAGS_TF as following reasons.
-
-
-******************
-Reason 1: "debug trap" was initalized as an interrupt gate
-
-arch/x86/kernel/traps.c:892: set_intr_gate_ist(1, &debug, DEBUG_STACK);
-
-The "debug trap" was initalized as an interrupt gate, thereby during the
-hanld function of debug exceptions, the X86_EFLAGS_IF have been
-cleared automatically.
-
-
-******************
-Reason 2: the priority among debug exceptions and interrupts
-
-Intel® 64 and IA-32 Architectures Software Developer’s Manual Volume
-3A, page 5-11:
-
-If more than one exception or interrupt is pending at an instruction
-boundary, the
-processor services them in a predictable order. Table 5-2 shows the
-priority among
-classes of exception and interrupt sources.
-          Table 5-2. Priority Among Simultaneous Exceptions and Interrupts
-Priority       Description
-1 (Highest)    Hardware Reset and Machine Checks
-               - RESET
-               - Machine Check
-2              Trap on Task Switch
-               - T flag in TSS is set
-3              External Hardware Interventions
-               - FLUSH
-               - STOPCLK
-               - SMI
-               - INIT
-4              Traps on the Previous Instruction
-               - Breakpoints
-               - Debug Trap Exceptions (TF flag set or data/I-O breakpoint)
-5             Nonmaskable Interrupts (NMI)
-6             Maskable Hardware Interrupts
-
-
->From the table we could see debug exceptions lies in priority 4 and
-external interrupt lies
-in priority 6.
-
-Thereby the processor will handle Debug Trap Exceptions first, then
-handle external interrupt.
-
-
-
-
-******************
-
-Combining those reasons: maybe we could remove "regs->flags &= ~X86_EFLAGS_IF;".
-
-(It just a example about X86_EFLAGS_IF and kprobe here.)
-diff --git a/arch/x86/kernel/kprobes.c b/arch/x86/kernel/kprobes.c
-index 5b8c750..dfd719a 100644
---- a/arch/x86/kernel/kprobes.c
-+++ b/arch/x86/kernel/kprobes.c
-@@ -407,7 +407,6 @@ static void __kprobes prepare_singlestep(struct
-kprobe *p, struct pt_regs *regs)
-{
-       clear_btf();
-       regs->flags |= X86_EFLAGS_TF;
--       regs->flags &= ~X86_EFLAGS_IF;
-       /* single step inline if the instruction is an int3 */
-       if (p->opcode == BREAKPOINT_INSTRUCTION)
-               regs->ip = (unsigned long)p->addr;
-
-
-
-What do you think about it?
-
-I know I must be make a mistake here, could you correct me?
-
-
-Thanks,
-Dongdong.
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
