@@ -1,73 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753424Ab0ALNTP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753533Ab0ALNUy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753424Ab0ALNTP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jan 2010 08:19:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752943Ab0ALNTO
+	id S1753533Ab0ALNUy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jan 2010 08:20:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753071Ab0ALNUx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jan 2010 08:19:14 -0500
-Received: from mga02.intel.com ([134.134.136.20]:17373 "EHLO mga02.intel.com"
+	Tue, 12 Jan 2010 08:20:53 -0500
+Received: from www.tglx.de ([62.245.132.106]:32791 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752773Ab0ALNTO convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jan 2010 08:19:14 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,262,1262592000"; 
-   d="scan'208";a="586443963"
-From: "Zheng, Shaohui" <shaohui.zheng@intel.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-CC: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "ak@linux.intel.com" <ak@linux.intel.com>,
-       "y-goto@jp.fujitsu.com" <y-goto@jp.fujitsu.com>,
-       Dave Hansen <haveblue@us.ibm.com>, "x86@kernel.org" <x86@kernel.org>
-Date: Tue, 12 Jan 2010 21:17:40 +0800
-Subject: RE: [ RESEND PATCH v3] Memory-Hotplug: Fix the bug on interface
- /dev/mem for 64-bit kernel
-Thread-Topic: [ RESEND PATCH v3] Memory-Hotplug: Fix the bug on interface
- /dev/mem for 64-bit kernel
-Thread-Index: AcqTZbuTmdV7v9ZzQia6d7Cb3MStJgAIpV5w
-Message-ID: <DA586906BA1FFC4384FCFD6429ECE860316C0269@shzsmsx502.ccr.corp.intel.com>
-References: <DA586906BA1FFC4384FCFD6429ECE860316C0133@shzsmsx502.ccr.corp.intel.com>
-	<20100112170433.394be31b.kamezawa.hiroyu@jp.fujitsu.com>
-	<DA586906BA1FFC4384FCFD6429ECE860316C01D6@shzsmsx502.ccr.corp.intel.com>
- <20100112175724.adfa04d6.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20100112175724.adfa04d6.kamezawa.hiroyu@jp.fujitsu.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	id S1752367Ab0ALNUx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jan 2010 08:20:53 -0500
+Date: Tue, 12 Jan 2010 14:20:26 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Xiaotian Feng <dfeng@redhat.com>
+cc: linux-kernel@vger.kernel.org, Magnus Damm <damm@igel.co.jp>,
+       H Hartley Sweeten <hsweeten@visionengravers.com>
+Subject: Re: [PATCH] clockevent: don't remove broadcast device when cpu is
+ dead
+In-Reply-To: <1262834564-13033-1-git-send-email-dfeng@redhat.com>
+Message-ID: <alpine.LFD.2.00.1001121300190.6420@localhost.localdomain>
+References: <1262834564-13033-1-git-send-email-dfeng@redhat.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 7 Jan 2010, Xiaotian Feng wrote:
 
+> Marc reported BUG during shutdown, after debugging, kernel is trying
+> to remove a broadcast device which mode is CLOCK_EVT_MODE_ONESHOT.
 > 
-> 3 points...
-> 1. I think this patch cannot be compiled in archs other than x86. Right ?
->    IOW, please add static inline dummy...
-> [Zheng, Shaohui] Agree, I will add a static dummy function
-> 
-> 2. pgdat->[start,end], totalram_pages etc...are updated at memory hotplug.
->    Please place the hook nearby them.
-> [Zheng, Shaohui] Agree.
-> 
-> 3. I recommend you yo use memory hotplug notifier.
->    If it's allowed, it will be cleaner.
->    It seems there are no strict ordering to update parameters this patch touches.
-> 
-> [Zheng, Shaohui] Kame, do you means put the hook into function slab_mem_going_online_callback, it seems a good idea. If we select this method, we will need not to update these variable in function add_memory explicitly.
-> 
-yes. I think callback is the best.
-[Zheng, Shaohui] Kame, I check the code carefully and write a simple patch, I found the callback will never be executed. The only entrance of this callback is in function online_pages/offline_pages, but I did not found explicit call to these 2 functions. Do we need to add a memory_notify to trigger this callback in function add_memory? 
+> The root cause for this bug is that in clockevents_notify,
+> "cpumask_weight(dev->cpumask) == 1" is always true even if dev is a
 
+Why is cpumask_weight(dev->cpumask) == 1 always true when we shutdown
+a non boot cpu ?
+
+The broadcast device is not a per cpu device and the cpumask should
+not only contain the CPU which is shut down !
+
+The patch is papering over the real problem.
+
+Marc, can you please apply the following debug patch and provide the
+dmesg outputs from boot and shutdown ?
 
 Thanks,
--Kame
 
-Thanks & Regards,
-Shaohui
+	tglx
+---
+
+Index: linux-2.6-tip/kernel/time/clockevents.c
+===================================================================
+--- linux-2.6-tip.orig/kernel/time/clockevents.c
++++ linux-2.6-tip/kernel/time/clockevents.c
+@@ -186,7 +186,7 @@ void clockevents_register_device(struct 
+ 	BUG_ON(!dev->cpumask);
+ 
+ 	raw_spin_lock_irqsave(&clockevents_lock, flags);
+-
++	printk(KERN_ERR "CE register %p %s\n", dev, dev->name);
+ 	list_add(&dev->list, &clockevent_devices);
+ 	clockevents_do_notify(CLOCK_EVT_NOTIFY_ADD, dev);
+ 	clockevents_notify_released();
+@@ -220,6 +220,7 @@ void clockevents_exchange_device(struct 
+ 	 * released list and do a notify add later.
+ 	 */
+ 	if (old) {
++		printk(KERN_INFO "CE Release %p %s\n", old, old->name);
+ 		clockevents_set_mode(old, CLOCK_EVT_MODE_UNUSED);
+ 		list_del(&old->list);
+ 		list_add(&old->list, &clockevents_released);
+@@ -260,6 +261,13 @@ void clockevents_notify(unsigned long re
+ 		list_for_each_entry_safe(dev, tmp, &clockevent_devices, list) {
+ 			if (cpumask_test_cpu(cpu, dev->cpumask) &&
+ 			    cpumask_weight(dev->cpumask) == 1) {
++				if (dev->mode != CLOCK_EVT_MODE_UNUSED) {
++					printk(KERN_INFO
++					       "CE Remove %p %s bc: %d\n",
++					       dev, dev->name,
++					       tick_is_broadcast_device(dev));
++					continue;
++				}
+ 				BUG_ON(dev->mode != CLOCK_EVT_MODE_UNUSED);
+ 				list_del(&dev->list);
+ 			}
+Index: linux-2.6-tip/kernel/time/tick-broadcast.c
+===================================================================
+--- linux-2.6-tip.orig/kernel/time/tick-broadcast.c
++++ linux-2.6-tip/kernel/time/tick-broadcast.c
+@@ -72,6 +72,8 @@ int tick_check_broadcast_device(struct c
+ 	     (dev->features & CLOCK_EVT_FEAT_C3STOP))
+ 		return 0;
+ 
++	printk(KERN_INFO "CE set broadcast %p %s\n", dev, dev->name);
++
+ 	clockevents_exchange_device(NULL, dev);
+ 	tick_broadcast_device.evtdev = dev;
+ 	if (!cpumask_empty(tick_get_broadcast_mask()))
