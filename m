@@ -1,26 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754466Ab0ALXCm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754199Ab0ALXKA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754466Ab0ALXCm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jan 2010 18:02:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753887Ab0ALXCl
+	id S1754199Ab0ALXKA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jan 2010 18:10:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752419Ab0ALXJ7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jan 2010 18:02:41 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:58655 "EHLO
+	Tue, 12 Jan 2010 18:09:59 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:34229 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752392Ab0ALXCk (ORCPT
+	by vger.kernel.org with ESMTP id S1751560Ab0ALXJ7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jan 2010 18:02:40 -0500
-Date: Tue, 12 Jan 2010 15:01:52 -0800
+	Tue, 12 Jan 2010 18:09:59 -0500
+Date: Tue, 12 Jan 2010 15:09:52 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Minchan Kim <minchan.kim@gmail.com>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Mel Gorman <mel@csn.ul.ie>, Rik van Riel <riel@redhat.com>,
-       linux-mm <linux-mm@kvack.org>, lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH -mmotm-2010-01-06-14-34] check high watermark after
- shrink zone
-Message-Id: <20100112150152.78604b78.akpm@linux-foundation.org>
-In-Reply-To: <20100108141235.ef56b567.minchan.kim@barrios-desktop>
-References: <20100108141235.ef56b567.minchan.kim@barrios-desktop>
+To: Eric Miao <eric.y.miao@gmail.com>
+Cc: David Brownell <david-b@pacbell.net>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] gpio: introduce gpio_request_one() and friends
+Message-Id: <20100112150952.aa224e20.akpm@linux-foundation.org>
+In-Reply-To: <f17812d71001072128g63361e74q74cf06ae1e1eb3d6@mail.gmail.com>
+References: <f17812d71001072114g95c267cpa6dc06a636c6d9a@mail.gmail.com>
+	<f17812d71001072128g63361e74q74cf06ae1e1eb3d6@mail.gmail.com>
 X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -29,84 +28,110 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 8 Jan 2010 14:12:35 +0900
-Minchan Kim <minchan.kim@gmail.com> wrote:
+On Fri, 8 Jan 2010 13:28:57 +0800
+Eric Miao <eric.y.miao@gmail.com> wrote:
 
-> Kswapd check that zone have enough free by zone_water_mark.
-> If any zone doesn't have enough page, it set all_zones_ok to zero.
-> all_zone_ok makes kswapd retry not sleeping.
+> Typo in GPIOF_* definitions, updated patch follows:
 > 
-> I think the watermark check before shrink zone is pointless.
-> Kswapd try to shrink zone then the check is meaningul.
+> commit 29cd35f57699fd93a12132186d52109a55ed57e7
+> Author: Eric Miao <eric.y.miao@gmail.com>
+> Date:   Fri Jan 8 12:16:28 2010 +0800
 > 
-> This patch move the check after shrink zone.
-
-The changelog is rather hard to understand.  I changed it to
-
-: Kswapd checks that zone has sufficient pages free via zone_watermark_ok().
-: 
-: If any zone doesn't have enough pages, we set all_zones_ok to zero. 
-: !all_zone_ok makes kswapd retry rather than sleeping.
-: 
-: I think the watermark check before shrink_zone() is pointless.  Only after
-: kswapd has tried to shrink the zone is the check meaningful.
-: 
-: Move the check to after the call to shrink_zone().
-
-
-> Signed-off-by: Minchan Kim <minchan.kim@gmail.com>
-> CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> CC: Mel Gorman <mel@csn.ul.ie>
-> CC: Rik van Riel <riel@redhat.com>
-> ---
->  mm/vmscan.c |   21 +++++++++++----------
->  1 files changed, 11 insertions(+), 10 deletions(-)
+>     gpio: introduce gpio_request_one() and friends
 > 
-> diff --git a/mm/vmscan.c b/mm/vmscan.c
-> index 885207a..b81adf8 100644
-> --- a/mm/vmscan.c
-> +++ b/mm/vmscan.c
-> @@ -2057,9 +2057,6 @@ loop_again:
->  					priority != DEF_PRIORITY)
->  				continue;
->  
-> -			if (!zone_watermark_ok(zone, order,
-> -					high_wmark_pages(zone), end_zone, 0))
-> -				all_zones_ok = 0;
+>     gpio_request() without initial configuration of the GPIO is normally
+>     useless, introduce gpio_request_one() together with GPIOF_ flags for
+>     input/output direction and initial output level.
+> 
+>     gpio_{request,free}_array() for multiple GPIOs.
+> 
+>     Cc: David Brownell <dbrownell@users.sourceforge.net>
+>     Signed-off-by: Eric Miao <eric.y.miao@gmail.com>
+> 
+> diff --git a/drivers/gpio/gpiolib.c b/drivers/gpio/gpiolib.c
+> index a25ad28..e80a1f8 100644
+> --- a/drivers/gpio/gpiolib.c
+> +++ b/drivers/gpio/gpiolib.c
+> @@ -1239,6 +1239,48 @@ void gpio_free(unsigned gpio)
+>  }
+>  EXPORT_SYMBOL_GPL(gpio_free);
+> 
+> +int gpio_request_one(unsigned gpio, unsigned long flags, const char *label)
+> +{
+> +	int err;
+> +
+> +	err = gpio_request(gpio, label);
+> +	if (err)
+> +		return err;
+> +
+> +	if (flags & GPIOF_DIR_IN)
+> +		err = gpio_direction_input(gpio);
+> +	else
+> +		err = gpio_direction_output(gpio,
+> +				(flags & GPIOF_INIT_HIGH) ? 1 : 0);
+> +
+> +	return err;
+> +}
+> +EXPORT_SYMBOL_GPL(gpio_request_one);
+> +
+> +int gpio_request_array(struct gpio *array, size_t num)
+> +{
+> +	int i, err;
+> +
+> +	for (i = 0; i < num; i++, array++) {
+> +		err = gpio_request_one(array->gpio, array->flags, array->label);
+> +		if (err)
+> +			goto err_free;
+> +	}
+> +	return 0;
+> +
+> +err_free:
+> +	while (i--)
+> +		gpio_free((--array)->gpio);
+> +	return err;
+> +}
+> +EXPORT_SYMBOL_GPL(gpio_request_array);
+> +
+> +void gpio_free_array(struct gpio *array, size_t num)
+> +{
+> +	while (num--)
+> +		gpio_free((array++)->gpio);
+> +}
+> +EXPORT_SYMBOL_GPL(gpio_free_array);
 
-This will make kswapd stop doing reclaim if all zones have
-zone_is_all_unreclaimable():
+Global, exported-to-modules interfaces should be documented, IMO.
 
-			if (zone_is_all_unreclaimable(zone))
-				continue;
+>  /**
+>   * gpiochip_is_requested - return string iff signal was requested
+> diff --git a/include/asm-generic/gpio.h b/include/asm-generic/gpio.h
+> index 485eeb6..a9e0b94 100644
+> --- a/include/asm-generic/gpio.h
+> +++ b/include/asm-generic/gpio.h
+> @@ -136,6 +136,26 @@ extern int __gpio_cansleep(unsigned gpio);
+> 
+>  extern int __gpio_to_irq(unsigned gpio);
+> 
+> +#define GPIOF_DIR_OUT	(0 << 0)
+> +#define GPIOF_DIR_IN	(1 << 0)
+> +
+> +#define GPIOF_INIT_LOW	(0 << 1)
+> +#define GPIOF_INIT_HIGH	(1 << 1)
+> +
+> +#define GPIOF_IN		(GPIOF_DIR_IN)
+> +#define GPIOF_OUT_INIT_LOW	(GPIOF_DIR_OUT | GPIOF_INIT_LOW)
+> +#define GPIOF_OUT_INIT_HIGH	(GPIOF_DIR_OUT | GPIOF_INIT_HIGH)
+> +
+> +struct gpio {
+> +	unsigned	gpio;
+> +	unsigned long	flags;
+> +	const char	*label;
+> +};
 
-This seems bad.
+hm.  Was "struct gpio" a well-chosen identifier?  The name implies that
+this structure is the definitive, unified, generic kernel-wide
+representation of a "gpio", whatever that is.
 
->  			temp_priority[i] = priority;
->  			sc.nr_scanned = 0;
->  			note_zone_scanning_priority(zone, priority);
-> @@ -2099,13 +2096,17 @@ loop_again:
->  			    total_scanned > sc.nr_reclaimed + sc.nr_reclaimed / 2)
->  				sc.may_writepage = 1;
->  
-> -			/*
-> -			 * We are still under min water mark. it mean we have
-> -			 * GFP_ATOMIC allocation failure risk. Hurry up!
-> -			 */
-> -			if (!zone_watermark_ok(zone, order, min_wmark_pages(zone),
-> -					      end_zone, 0))
-> -				has_under_min_watermark_zone = 1;
-> +			if (!zone_watermark_ok(zone, order,
-> +					high_wmark_pages(zone), end_zone, 0)) {
-> +				all_zones_ok = 0;
-> +				/*
-> +				 * We are still under min water mark. it mean we have
-> +				 * GFP_ATOMIC allocation failure risk. Hurry up!
-> +				 */
-> +				if (!zone_watermark_ok(zone, order, min_wmark_pages(zone),
-> +						      end_zone, 0))
-> +					has_under_min_watermark_zone = 1;
-> +			}
->  
+> +extern int gpio_request_one(unsigned gpio, unsigned long flags, const
+> char *label);
 
-The vmscan.c code makes an effort to look nice in an 80-col display.
+Your email client is wordwrapping the patches.
