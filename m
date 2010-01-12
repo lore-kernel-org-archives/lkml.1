@@ -1,113 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753637Ab0ALPhn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754032Ab0ALPmP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753637Ab0ALPhn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jan 2010 10:37:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752562Ab0ALPhm
+	id S1754032Ab0ALPmP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jan 2010 10:42:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753988Ab0ALPmO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jan 2010 10:37:42 -0500
-Received: from server109b.appriver.com ([72.32.253.86]:4678 "EHLO
-	server109.appriver.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752266Ab0ALPhl convert rfc822-to-8bit (ORCPT
+	Tue, 12 Jan 2010 10:42:14 -0500
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:44592 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753997Ab0ALPmN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jan 2010 10:37:41 -0500
-X-Policy: GLOBAL - intcomgrp.com
-X-Primary: jkosin@intcomgrp.com
-X-Note: This Email was scanned by AppRiver SecureTide
-X-ALLOW: JKosin@intcomgrp.com ALLOWED
-X-Virus-Scan: V-
-X-Note: Spam Tests Failed: 
-X-Country-Path: UNITED STATES->UNITED STATES
-X-Note-Sending-IP: 216.54.13.100
-X-Note-Reverse-DNS: mail.intcomgrp.com
-X-Note-WHTLIST: JKosin@intcomgrp.com
-X-Note: User Rule Hits: 
-X-Note: Global Rule Hits: G113 G114 G115 G116 G120 G121 G132 G219 
-X-Note: Encrypt Rule Hits: 
-X-Note: Mail Class: ALLOWEDSENDER
-X-Note: Headers Injected
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Tue, 12 Jan 2010 10:42:13 -0500
+From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+To: linux-kernel@vger.kernel.org
+Cc: David Brownell <dbrownell@users.sourceforge.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
+       Nicolas Pitre <nico@marvell.com>, Eric Miao <eric.y.miao@gmail.com>,
+       John Stultz <johnstul@us.ibm.com>,
+       Rusty Russell <rusty@rustcorp.com.au>, Remy Bohmer <linux@bohmer.net>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Andrea Gallo <andrea.gallo@stericsson.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Jamie Lokier <jamie@shareable.org>,
+       linux-arm-kernel@lists.infradead.org
+Subject: [RESEND PATCH] genirq: warn about IRQF_SHARED|IRQF_DISABLED at the right place
+Date: Tue, 12 Jan 2010 16:42:02 +0100
+Message-Id: <1263310922-5251-1-git-send-email-u.kleine-koenig@pengutronix.de>
+X-Mailer: git-send-email 1.6.6
+In-Reply-To: <1259578067-29169-1-git-send-email-u.kleine-koenig@pengutronix.de>
+References: <1259578067-29169-1-git-send-email-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Content-Transfer-Encoding: 8BIT
-Subject: arm: Optimization for ethernet MAC handling at91_ether.c
-Date: Tue, 12 Jan 2010 10:39:25 -0500
-Message-ID: <3DBBD805E3BA064A87F551C0E8BD3674028973F5@MAILSRV.intcomgrp.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: arm: Optimization for ethernet MAC handling at91_ether.c
-Thread-Index: AcqTnWuda+i8z3DoRiOtF72IH6eohQ==
-From: "James Kosin" <JKosin@intcomgrp.com>
-To: <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Everyone,
+For shared irqs IRQF_DISABLED is only guaranteed for the first handler.
+So only warn starting at the second registration.
 
-Since, a AT91_EMAC_TUND only happens when the transmitter is unable to
-transfer the frame in time for a frame to be sent.  It makes sense to
-RETRY the packet in this condition in the ISR.
-Or would this overcomplicate a simple task?
-                ... see below ...
+The warning is moved to __setup_irq having the additional benefit of
+catching actions registered using setup_irq not only register_irq.
 
-James
+This doesn't fix the cases where setup order is wrong but it should
+report the broken cases more reliably.
 
----- code snippet ----
+Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+Cc: David Brownell <dbrownell@users.sourceforge.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Nicolas Pitre <nico@marvell.com>
+Cc: Eric Miao <eric.y.miao@gmail.com>
+Cc: John Stultz <johnstul@us.ibm.com>
+Cc: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Remy Bohmer <linux@bohmer.net>
+Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Cc: Andrea Gallo <andrea.gallo@stericsson.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Jamie Lokier <jamie@shareable.org>
+Cc: linux-arm-kernel@lists.infradead.org
+---
+Hello,
 
-/*
- * MAC interrupt handler
- */
-static irqreturn_t at91ether_interrupt(int irq, void *dev_id) { ...
+until Thomas or Peter get round to dump IRQF_DISABLED completely this
+patch removes some false positive warnings and adds a valid warning in
+some situations that weren't catched before.
 
-                if (intstatus & AT91_EMAC_TCOM) {       /* Transmit
-complete */
-                                /* The TCOM bit is set even if the
-transmission failed. */
-                                if (intstatus & (AT91_EMAC_TUND |
-AT91_EMAC_RTRY))
-                                                dev->stats.tx_errors +=
-1;
+Best regards
+Uwe
 
-                                if (lp->skb) {
+ kernel/irq/manage.c |   23 ++++++++++-------------
+ 1 files changed, 10 insertions(+), 13 deletions(-)
+
+diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
+index bde4c66..d8f7415 100644
+--- a/kernel/irq/manage.c
++++ b/kernel/irq/manage.c
+@@ -702,6 +702,16 @@ __setup_irq(unsigned int irq, struct irq_desc *desc, struct irqaction *new)
+ 			goto mismatch;
+ #endif
  
-dev_kfree_skb_irq(lp->skb);
-                                                lp->skb = NULL;
-                                                dma_unmap_single(NULL,
-lp->skb_physaddr, lp->skb_length, DMA_TO_DEVICE);
-                                }
-                                netif_wake_queue(dev);
-                }
-...
-
----- Alternate approach ----
-
-                                /* The TCOM bit is set even if the
-transmission failed. */
-                                if (intstatus & (AT91_EMAC_TUND)) {
-                                                /* Set address of the
-data in the Transmit Address register */
++		/*
++		 * handle_IRQ_event() only honors IRQF_DISABLED for the _first_
++		 * irqaction.  As the first handler might reenable irqs all bets
++		 * are off for the later handlers even if the first one has
++		 * IRQF_DISABLED, too.
++		 */
++		if (new->flags & IRQF_DISABLED)
++			pr_warning("IRQ %d/%s: IRQF_DISABLED is not guaranteed "
++					"on shared IRQs\n", irq, new->name);
++
+ 		/* add new interrupt at end of irq queue */
+ 		do {
+ 			old_ptr = &old->next;
+@@ -1008,19 +1018,6 @@ int request_threaded_irq(unsigned int irq, irq_handler_t handler,
+ 	struct irq_desc *desc;
+ 	int retval;
  
-at91_emac_write(AT91_EMAC_TAR, lp->skb_physaddr);
-                                                /* Set length of the
-packet in the Transmit Control register */
- 
-at91_emac_write(AT91_EMAC_TCR, skb->len);
-                                }
-                                else if (intstatus & (AT91_EMAC_RTRY))
-                                                dev->stats.tx_errors +=
-1;
+-	/*
+-	 * handle_IRQ_event() always ignores IRQF_DISABLED except for
+-	 * the _first_ irqaction (sigh).  That can cause oopsing, but
+-	 * the behavior is classified as "will not fix" so we need to
+-	 * start nudging drivers away from using that idiom.
+-	 */
+-	if ((irqflags & (IRQF_SHARED|IRQF_DISABLED)) ==
+-					(IRQF_SHARED|IRQF_DISABLED)) {
+-		pr_warning(
+-		  "IRQ %d/%s: IRQF_DISABLED is not guaranteed on shared IRQs\n",
+-			irq, devname);
+-	}
+-
+ #ifdef CONFIG_LOCKDEP
+ 	/*
+ 	 * Lockdep wants atomic interrupt handlers:
+-- 
+1.6.6
 
-...
-I do know there needs to be a bit more code then to handle the
-successful case below this; but, this is enough to understand what I am
-talking about.  The UNDERRUN error should happen infrequently and in
-ideal circumstances not happen at all.
- 
- 
-
-
-----
-James Kosin
-Software Engineer
