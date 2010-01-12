@@ -1,199 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753038Ab0ALHrL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753266Ab0ALHtW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753038Ab0ALHrL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jan 2010 02:47:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751095Ab0ALHrJ
+	id S1753266Ab0ALHtW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jan 2010 02:49:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752589Ab0ALHtV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jan 2010 02:47:09 -0500
-Received: from mga02.intel.com ([134.134.136.20]:30938 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752113Ab0ALHrI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jan 2010 02:47:08 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,261,1262592000"; 
-   d="scan'208";a="483272030"
-From: "Zheng, Shaohui" <shaohui.zheng@intel.com>
-To: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "ak@linux.intel.com" <ak@linux.intel.com>,
-       "y-goto@jp.fujitsu.com" <y-goto@jp.fujitsu.com>,
-       Dave Hansen <haveblue@us.ibm.com>, "x86@kernel.org" <x86@kernel.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Date: Tue, 12 Jan 2010 15:45:54 +0800
-Subject: [ RESEND PATCH v3] Memory-Hotplug: Fix the bug on interface
- /dev/mem for 64-bit kernel
-Thread-Topic: [ RESEND PATCH v3] Memory-Hotplug: Fix the bug on interface
- /dev/mem for 64-bit kernel
-Thread-Index: AcqTW0U4V9wp3/wXQwG7gYUYaTUX1Q==
-Message-ID: <DA586906BA1FFC4384FCFD6429ECE860316C0133@shzsmsx502.ccr.corp.intel.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: yes
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: multipart/mixed;
-	boundary="_002_DA586906BA1FFC4384FCFD6429ECE860316C0133shzsmsx502ccrco_"
+	Tue, 12 Jan 2010 02:49:21 -0500
+Received: from mail02d.mail.t-online.hu ([84.2.42.7]:50244 "EHLO
+	mail02d.mail.t-online.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752479Ab0ALHtV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jan 2010 02:49:21 -0500
+Message-ID: <4B4C297A.5090405@freemail.hu>
+Date: Tue, 12 Jan 2010 08:49:14 +0100
+From: =?UTF-8?B?TsOpbWV0aCBNw6FydG9u?= <nm127@freemail.hu>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; hu-HU; rv:1.8.1.21) Gecko/20090402 SeaMonkey/1.1.16
 MIME-Version: 1.0
+To: David Vrabel <david.vrabel@csr.com>
+CC: linux-usb@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Julia Lawall <julia@diku.dk>, cocci@diku.dk
+Subject: [PATCH] uwb: make USB device id constant
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-DCC-mail.t-online.hu-Metrics: mail02d.mail.t-online.hu 32711; Body=5 Fuz1=5
+	Fuz2=5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---_002_DA586906BA1FFC4384FCFD6429ECE860316C0133shzsmsx502ccrco_
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+From: Márton Németh <nm127@freemail.hu>
 
-Resend the v3 patch after reviewed by KAMEZAWA Hiroyuki. We still keep the=
-=20
-Old e820map, update variable max_pfn, max_low_pfn and high_memory only.=20
-It is dependent on Fenguang's page_is_ram patch.
+The id_table field of the struct usb_device_id is constant in <linux/usb.h>
+so it is worth to make the initialization data also constant.
 
-Memory-Hotplug: Fix the bug on interface /dev/mem for 64-bit kernel
+The semantic match that finds this kind of pattern is as follows:
+(http://coccinelle.lip6.fr/)
 
-The new added memory can not be access by interface /dev/mem, because we do=
- not
- update the variable high_memory, max_pfn and max_low_pfn.
+// <smpl>
+@r@
+disable decl_init,const_decl_init;
+identifier I1, I2, x;
+@@
+	struct I1 {
+	  ...
+	  const struct I2 *x;
+	  ...
+	};
+@s@
+identifier r.I1, y;
+identifier r.x, E;
+@@
+	struct I1 y = {
+	  .x = E,
+	};
+@c@
+identifier r.I2;
+identifier s.E;
+@@
+	const struct I2 E[] = ... ;
+@depends on !c@
+identifier r.I2;
+identifier s.E;
+@@
++	const
+	struct I2 E[] = ...;
+// </smpl>
 
-Memory hotplug still has critical issues for 32-bit kernel, and it is more=
-=20
-important for 64-bit kernel, we fix it on 64-bit first. We add a function=20
-update_end_of_memory_vars in file arch/x86/mm/init.c to update these variab=
-les.
-
-CC: Andi Kleen <ak@linux.intel.com>
-CC: Li Haicheng <haicheng.li@intel.com>
-Reviewed-by: Wu Fengguang <fengguang.wu@intel.com>
-Reviewed-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Signed-off-by: Shaohui Zheng <shaohui.zheng@intel.com>
-diff --git a/arch/x86/mm/init.c b/arch/x86/mm/init.c
-index d406c52..b6a85cc 100644
---- a/arch/x86/mm/init.c
-+++ b/arch/x86/mm/init.c
-@@ -1,6 +1,7 @@
- #include <linux/initrd.h>
- #include <linux/ioport.h>
- #include <linux/swap.h>
-+#include <linux/bootmem.h>
-=20
- #include <asm/cacheflush.h>
- #include <asm/e820.h>
-@@ -386,3 +387,24 @@ void free_initrd_mem(unsigned long start, unsigned lon=
-g end)
- 	free_init_pages("initrd memory", start, end);
+Signed-off-by: Márton Németh <nm127@freemail.hu>
+Cc: Julia Lawall <julia@diku.dk>
+Cc: cocci@diku.dk
+---
+diff -u -p a/drivers/uwb/hwa-rc.c b/drivers/uwb/hwa-rc.c
+--- a/drivers/uwb/hwa-rc.c 2009-12-03 04:51:21.000000000 +0100
++++ b/drivers/uwb/hwa-rc.c 2010-01-08 11:17:49.000000000 +0100
+@@ -891,7 +891,7 @@ static int hwarc_post_reset(struct usb_i
  }
- #endif
-+
-+/**
-+ * After memory hotplug, the variable max_pfn, max_low_pfn and high_memory=
- will
-+ * be affected, it will be updated in this function. Memory hotplug still =
-has
-+ * critical issues on 32-bit kennel, it was more important on 64-bit kerne=
-l,
-+ * so we update the variables for 64-bit kernel first, fix me in future fo=
-r
-+ * 32-bit kenrel.
-+ */
-+void __meminit __attribute__((weak)) update_end_of_memory_vars(u64 start,
-+		u64 size)
-+{
-+#ifdef CONFIG_X86_64
-+	unsigned long start_pfn =3D start >> PAGE_SHIFT;
-+	unsigned long end_pfn =3D PFN_UP(start + size);
-+
-+	if (end_pfn > max_pfn) {
-+		max_low_pfn =3D max_pfn =3D end_pfn;
-+		high_memory =3D (void *)__va(max_pfn * PAGE_SIZE - 1) + 1;
-+	}
-+#endif /* CONFIG_X86_64 */
-+}
-diff --git a/include/linux/bootmem.h b/include/linux/bootmem.h
-index b10ec49..84533a5 100644
---- a/include/linux/bootmem.h
-+++ b/include/linux/bootmem.h
-@@ -13,6 +13,7 @@
-=20
- extern unsigned long max_low_pfn;
- extern unsigned long min_low_pfn;
-+extern void update_end_of_memory_vars(u64 start, u64 size);
-=20
- /*
-  * highest page
-diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
-index 030ce8a..3e94b23 100644
---- a/mm/memory_hotplug.c
-+++ b/mm/memory_hotplug.c
-@@ -523,6 +523,9 @@ int __ref add_memory(int nid, u64 start, u64 size)
- 		BUG_ON(ret);
- 	}
-=20
-+	/* update max_pfn, max_low_pfn and high_memory */
-+	update_end_of_memory_vars(start, size);
-+
- 	goto out;
-=20
- error:
 
-Thanks & Regards,
-Shaohui
+ /** USB device ID's that we handle */
+-static struct usb_device_id hwarc_id_table[] = {
++static const struct usb_device_id hwarc_id_table[] = {
+ 	/* D-Link DUB-1210 */
+ 	{ USB_DEVICE_AND_INTERFACE_INFO(0x07d1, 0x3d02, 0xe0, 0x01, 0x02),
+ 	  .driver_info = WUSB_QUIRK_WHCI_CMD_EVT },
+diff -u -p a/drivers/uwb/i1480/dfu/usb.c b/drivers/uwb/i1480/dfu/usb.c
+--- a/drivers/uwb/i1480/dfu/usb.c 2010-01-07 19:08:47.000000000 +0100
++++ b/drivers/uwb/i1480/dfu/usb.c 2010-01-08 11:18:26.000000000 +0100
+@@ -430,7 +430,7 @@ error:
 
 
-
-
---_002_DA586906BA1FFC4384FCFD6429ECE860316C0133shzsmsx502ccrco_
-Content-Type: application/octet-stream;
-	name="memory-hotplug-fix-the-bug-on-interface-dev-mem-v3.patch"
-Content-Description: memory-hotplug-fix-the-bug-on-interface-dev-mem-v3.patch
-Content-Disposition: attachment;
-	filename="memory-hotplug-fix-the-bug-on-interface-dev-mem-v3.patch";
-	size=2529; creation-date="Tue, 12 Jan 2010 15:40:51 GMT";
-	modification-date="Tue, 12 Jan 2010 23:21:09 GMT"
-Content-Transfer-Encoding: base64
-
-TWVtb3J5LUhvdHBsdWc6IEZpeCB0aGUgYnVnIG9uIGludGVyZmFjZSAvZGV2L21lbSBmb3IgNjQt
-Yml0IGtlcm5lbAoKVGhlIG5ldyBhZGRlZCBtZW1vcnkgY2FuIG5vdCBiZSBhY2Nlc3MgYnkgaW50
-ZXJmYWNlIC9kZXYvbWVtLCBiZWNhdXNlIHdlIGRvIG5vdAogdXBkYXRlIHRoZSB2YXJpYWJsZSBo
-aWdoX21lbW9yeSwgbWF4X3BmbiBhbmQgbWF4X2xvd19wZm4uCgpNZW1vcnkgaG90cGx1ZyBzdGls
-bCBoYXMgY3JpdGljYWwgaXNzdWVzIGZvciAzMi1iaXQga2VybmVsLCBhbmQgaXQgaXMgbW9yZSAK
-aW1wb3J0YW50IGZvciA2NC1iaXQga2VybmVsLCB3ZSBmaXggaXQgb24gNjQtYml0IGZpcnN0LiBX
-ZSBhZGQgYSBmdW5jdGlvbiAKdXBkYXRlX2VuZF9vZl9tZW1vcnlfdmFycyBpbiBmaWxlIGFyY2gv
-eDg2L21tL2luaXQuYyB0byB1cGRhdGUgdGhlc2UgdmFyaWFibGVzLgoKU2lnbmVkLW9mZi1ieTog
-U2hhb2h1aSBaaGVuZyA8c2hhb2h1aS56aGVuZ0BpbnRlbC5jb20+CkNDOiBBbmRpIEtsZWVuIDxh
-a0BsaW51eC5pbnRlbC5jb20+CkNDOiBMaSBIYWljaGVuZyA8aGFpY2hlbmcubGlAaW50ZWwuY29t
-PgpSZXZpZXdlZC1ieTogV3UgRmVuZ2d1YW5nIDxmZW5nZ3Vhbmcud3VAaW50ZWwuY29tPgpSZXZp
-ZXdlZC1ieTogS0FNRVpBV0EgSGlyb3l1a2kgPGthbWV6YXdhLmhpcm95dUBqcC5mdWppdHN1LmNv
-bT4KZGlmZiAtLWdpdCBhL2FyY2gveDg2L21tL2luaXQuYyBiL2FyY2gveDg2L21tL2luaXQuYwpp
-bmRleCBkNDA2YzUyLi5iNmE4NWNjIDEwMDY0NAotLS0gYS9hcmNoL3g4Ni9tbS9pbml0LmMKKysr
-IGIvYXJjaC94ODYvbW0vaW5pdC5jCkBAIC0xLDYgKzEsNyBAQAogI2luY2x1ZGUgPGxpbnV4L2lu
-aXRyZC5oPgogI2luY2x1ZGUgPGxpbnV4L2lvcG9ydC5oPgogI2luY2x1ZGUgPGxpbnV4L3N3YXAu
-aD4KKyNpbmNsdWRlIDxsaW51eC9ib290bWVtLmg+CiAKICNpbmNsdWRlIDxhc20vY2FjaGVmbHVz
-aC5oPgogI2luY2x1ZGUgPGFzbS9lODIwLmg+CkBAIC0zODYsMyArMzg3LDI0IEBAIHZvaWQgZnJl
-ZV9pbml0cmRfbWVtKHVuc2lnbmVkIGxvbmcgc3RhcnQsIHVuc2lnbmVkIGxvbmcgZW5kKQogCWZy
-ZWVfaW5pdF9wYWdlcygiaW5pdHJkIG1lbW9yeSIsIHN0YXJ0LCBlbmQpOwogfQogI2VuZGlmCisK
-Ky8qKgorICogQWZ0ZXIgbWVtb3J5IGhvdHBsdWcsIHRoZSB2YXJpYWJsZSBtYXhfcGZuLCBtYXhf
-bG93X3BmbiBhbmQgaGlnaF9tZW1vcnkgd2lsbAorICogYmUgYWZmZWN0ZWQsIGl0IHdpbGwgYmUg
-dXBkYXRlZCBpbiB0aGlzIGZ1bmN0aW9uLiBNZW1vcnkgaG90cGx1ZyBzdGlsbCBoYXMKKyAqIGNy
-aXRpY2FsIGlzc3VlcyBvbiAzMi1iaXQga2VubmVsLCBpdCB3YXMgbW9yZSBpbXBvcnRhbnQgb24g
-NjQtYml0IGtlcm5lbCwKKyAqIHNvIHdlIHVwZGF0ZSB0aGUgdmFyaWFibGVzIGZvciA2NC1iaXQg
-a2VybmVsIGZpcnN0LCBmaXggbWUgaW4gZnV0dXJlIGZvcgorICogMzItYml0IGtlbnJlbC4KKyAq
-Lwordm9pZCBfX21lbWluaXQgX19hdHRyaWJ1dGVfXygod2VhaykpIHVwZGF0ZV9lbmRfb2ZfbWVt
-b3J5X3ZhcnModTY0IHN0YXJ0LAorCQl1NjQgc2l6ZSkKK3sKKyNpZmRlZiBDT05GSUdfWDg2XzY0
-CisJdW5zaWduZWQgbG9uZyBzdGFydF9wZm4gPSBzdGFydCA+PiBQQUdFX1NISUZUOworCXVuc2ln
-bmVkIGxvbmcgZW5kX3BmbiA9IFBGTl9VUChzdGFydCArIHNpemUpOworCisJaWYgKGVuZF9wZm4g
-PiBtYXhfcGZuKSB7CisJCW1heF9sb3dfcGZuID0gbWF4X3BmbiA9IGVuZF9wZm47CisJCWhpZ2hf
-bWVtb3J5ID0gKHZvaWQgKilfX3ZhKG1heF9wZm4gKiBQQUdFX1NJWkUgLSAxKSArIDE7CisJfQor
-I2VuZGlmIC8qIENPTkZJR19YODZfNjQgKi8KK30KZGlmZiAtLWdpdCBhL2luY2x1ZGUvbGludXgv
-Ym9vdG1lbS5oIGIvaW5jbHVkZS9saW51eC9ib290bWVtLmgKaW5kZXggYjEwZWM0OS4uODQ1MzNh
-NSAxMDA2NDQKLS0tIGEvaW5jbHVkZS9saW51eC9ib290bWVtLmgKKysrIGIvaW5jbHVkZS9saW51
-eC9ib290bWVtLmgKQEAgLTEzLDYgKzEzLDcgQEAKIAogZXh0ZXJuIHVuc2lnbmVkIGxvbmcgbWF4
-X2xvd19wZm47CiBleHRlcm4gdW5zaWduZWQgbG9uZyBtaW5fbG93X3BmbjsKK2V4dGVybiB2b2lk
-IHVwZGF0ZV9lbmRfb2ZfbWVtb3J5X3ZhcnModTY0IHN0YXJ0LCB1NjQgc2l6ZSk7CiAKIC8qCiAg
-KiBoaWdoZXN0IHBhZ2UKZGlmZiAtLWdpdCBhL21tL21lbW9yeV9ob3RwbHVnLmMgYi9tbS9tZW1v
-cnlfaG90cGx1Zy5jCmluZGV4IDAzMGNlOGEuLjNlOTRiMjMgMTAwNjQ0Ci0tLSBhL21tL21lbW9y
-eV9ob3RwbHVnLmMKKysrIGIvbW0vbWVtb3J5X2hvdHBsdWcuYwpAQCAtNTIzLDYgKzUyMyw5IEBA
-IGludCBfX3JlZiBhZGRfbWVtb3J5KGludCBuaWQsIHU2NCBzdGFydCwgdTY0IHNpemUpCiAJCUJV
-R19PTihyZXQpOwogCX0KIAorCS8qIHVwZGF0ZSBtYXhfcGZuLCBtYXhfbG93X3BmbiBhbmQgaGln
-aF9tZW1vcnkgKi8KKwl1cGRhdGVfZW5kX29mX21lbW9yeV92YXJzKHN0YXJ0LCBzaXplKTsKKwog
-CWdvdG8gb3V0OwogCiBlcnJvcjoK
-
---_002_DA586906BA1FFC4384FCFD6429ECE860316C0133shzsmsx502ccrco_--
+ /** USB device ID's that we handle */
+-static struct usb_device_id i1480_usb_id_table[] = {
++static const struct usb_device_id i1480_usb_id_table[] = {
+ 	i1480_USB_DEV(0x8086, 0xdf3b),
+ 	i1480_USB_DEV(0x15a9, 0x0005),
+ 	i1480_USB_DEV(0x07d1, 0x3802),
