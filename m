@@ -1,25 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754749Ab0ALTak@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754758Ab0ALTbG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754749Ab0ALTak (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jan 2010 14:30:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754580Ab0ALTak
+	id S1754758Ab0ALTbG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jan 2010 14:31:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752154Ab0ALTbE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jan 2010 14:30:40 -0500
-Received: from fg-out-1718.google.com ([72.14.220.153]:52497 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754336Ab0ALTaj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jan 2010 14:30:39 -0500
-Subject: [PATCH 2/9] MTD: create lockless versions of {get,put}_mtd_device
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Cc: linux-mtd <linux-mtd@lists.infradead.org>, joern <joern@logfs.org>,
-       Alex Dubov <oakad@yahoo.com>
-In-Reply-To: <1263324518.6236.18.camel@maxim-laptop>
-References: <1263324518.6236.18.camel@maxim-laptop>
+	Tue, 12 Jan 2010 14:31:04 -0500
+Received: from mail.perches.com ([173.55.12.10]:1071 "EHLO mail.perches.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754401Ab0ALTbD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jan 2010 14:31:03 -0500
+Subject: [PATCH V3] MAINTAINERS: Document list types, add "A:" section
+ type, update NETFILTER
+From: Joe Perches <joe@perches.com>
+To: Jan Engelhardt <jengelh@medozas.de>
+Cc: Patrick McHardy <kaber@trash.net>, linux-kernel@vger.kernel.org,
+       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org
+In-Reply-To: <alpine.LSU.2.01.1001111229460.26235@obet.zrqbmnf.qr>
+References: <cover.1262726222.git.joe@perches.com>
+	 <bccf36219f3ea5a9b7565734bc87095bc986dbe0.1262726222.git.joe@perches.com>
+	 <1262805798.1952.105.camel@Joe-Laptop.home>  <4B4B02BE.5060209@trash.net>
+	 <1263208183.1907.50.camel@Joe-Laptop.home>  <4B4B0806.40801@trash.net>
+	 <1263209269.1907.61.camel@Joe-Laptop.home>
+	 <alpine.LSU.2.01.1001111229460.26235@obet.zrqbmnf.qr>
 Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 12 Jan 2010 21:30:34 +0200
-Message-ID: <1263324634.6236.20.camel@maxim-laptop>
+Date: Tue, 12 Jan 2010 10:46:34 -0800
+Message-ID: <1263321994.25973.15.camel@Joe-Laptop.home>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
@@ -27,134 +32,60 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 1531249dd2c0e33d727ed8cbd0719eb4e9af2266 Mon Sep 17 00:00:00 2001
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-Date: Fri, 8 Jan 2010 15:51:22 +0200
-Subject: [PATCH 2/9] MTD: create lockless versions of {get,put}_mtd_device
+On Mon, 2010-01-11 at 12:31 +0100, Jan Engelhardt wrote:
+> This is a little stab-through-the-back -
+> rather than "subscribers-only", I'd use "subscriber-free" or FFA,
+> or just leave it blank and use "subscribers-only" instead
+> for these.
 
-This will be used to resolve deadlock in block translation layer.
+Here's another option:
 
-Signed-off-by: Maxim Levitsky <maximlevitsky@gmail.com>
----
- drivers/mtd/mtdcore.c   |   61 ++++++++++++++++++++++++++++++-----------------
- include/linux/mtd/mtd.h |    3 +-
- 2 files changed, 41 insertions(+), 23 deletions(-)
+Signed-off-by: Joe Perches <joe@perches.com>
 
-diff --git a/drivers/mtd/mtdcore.c b/drivers/mtd/mtdcore.c
-index 87ff83f..96b4a05 100644
---- a/drivers/mtd/mtdcore.c
-+++ b/drivers/mtd/mtdcore.c
-@@ -454,27 +454,38 @@ struct mtd_info *get_mtd_device(struct mtd_info *mtd, int num)
- 			ret = NULL;
- 	}
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 745643b..8abf3be 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -69,7 +69,20 @@ Descriptions of section entries:
  
--	if (!ret)
--		goto out_unlock;
--
--	if (!try_module_get(ret->owner))
--		goto out_unlock;
--
--	if (ret->get_device) {
--		err = ret->get_device(ret);
--		if (err)
--			goto out_put;
-+	if (!ret) {
-+		ret = ERR_PTR(err);
-+		goto out;
- 	}
+ 	P: Person (obsolete)
+ 	M: Mail patches to: FullName <address@domain>
+-	L: Mailing list that is relevant to this area
++	L: Mailing list that should receive patches, bug reports or
++	   developer questions.
++	   Mailing lists can be one of:
++	   (open list):	the default, unmarked case
++			Subscription to the list is not required, but emails
++			may be rejected by spam filters without notification.
++	   (moderated for non-subscribers):
++			emails from non-subscribers are actively filtered
++			and may be arbitrarily delayed or rejected without
++			notification if off-topic.  Upon receipt of the email,
++			a moderation notification email may be automatically
++			sent by the list manager.
++	   (subscribers-only):
++			emails from non-subscribers are not accepted.
+ 	W: Web-page with status/info
+ 	T: SCM tree type and location.  Type is one of: git, hg, quilt, stgit.
+ 	S: Status, one of the following:
+@@ -102,6 +115,7 @@ Descriptions of section entries:
+ 	      matches patches or files that contain one or more of the words
+ 	      printk, pr_info or pr_err
+ 	   One regex pattern per line.  Multiple K: lines acceptable.
++	A: Additional useful unstructured information.
  
--	ret->usecount++;
-+	err = __get_mtd_device(ret);
-+	if (err)
-+		ret = ERR_PTR(err);
-+out:
- 	mutex_unlock(&mtd_table_mutex);
- 	return ret;
-+}
- 
--out_put:
--	module_put(ret->owner);
--out_unlock:
--	mutex_unlock(&mtd_table_mutex);
--	return ERR_PTR(err);
-+
-+int __get_mtd_device(struct mtd_info *mtd)
-+{
-+	int err;
-+
-+	if (!try_module_get(mtd->owner))
-+		return -ENODEV;
-+
-+	if (mtd->get_device) {
-+
-+		err = mtd->get_device(mtd);
-+
-+		if (err) {
-+			module_put(mtd->owner);
-+			return err;
-+		}
-+	}
-+	mtd->usecount++;
-+	return 0;
- }
- 
- /**
-@@ -525,18 +536,22 @@ out_unlock:
- 
- void put_mtd_device(struct mtd_info *mtd)
- {
--	int c;
--
- 	mutex_lock(&mtd_table_mutex);
--	c = --mtd->usecount;
--	if (mtd->put_device)
--		mtd->put_device(mtd);
-+	__put_mtd_device(mtd);
- 	mutex_unlock(&mtd_table_mutex);
--	BUG_ON(c < 0);
- 
- 	module_put(mtd->owner);
- }
- 
-+void __put_mtd_device(struct mtd_info *mtd)
-+{
-+	--mtd->usecount;
-+	BUG_ON(mtd->usecount < 0);
-+
-+	if (mtd->put_device)
-+		mtd->put_device(mtd);
-+}
-+
- /* default_mtd_writev - default mtd writev method for MTD devices that
-  *			don't implement their own
-  */
-@@ -570,7 +585,9 @@ EXPORT_SYMBOL_GPL(add_mtd_device);
- EXPORT_SYMBOL_GPL(del_mtd_device);
- EXPORT_SYMBOL_GPL(get_mtd_device);
- EXPORT_SYMBOL_GPL(get_mtd_device_nm);
-+EXPORT_SYMBOL_GPL(__get_mtd_device);
- EXPORT_SYMBOL_GPL(put_mtd_device);
-+EXPORT_SYMBOL_GPL(__put_mtd_device);
- EXPORT_SYMBOL_GPL(register_mtd_user);
- EXPORT_SYMBOL_GPL(unregister_mtd_user);
- EXPORT_SYMBOL_GPL(default_mtd_writev);
-diff --git a/include/linux/mtd/mtd.h b/include/linux/mtd/mtd.h
-index 0f32a9b..662d747 100644
---- a/include/linux/mtd/mtd.h
-+++ b/include/linux/mtd/mtd.h
-@@ -290,8 +290,9 @@ extern int add_mtd_device(struct mtd_info *mtd);
- extern int del_mtd_device (struct mtd_info *mtd);
- 
- extern struct mtd_info *get_mtd_device(struct mtd_info *mtd, int num);
-+extern int __get_mtd_device(struct mtd_info *mtd);
-+extern void __put_mtd_device(struct mtd_info *mtd);
- extern struct mtd_info *get_mtd_device_nm(const char *name);
--
- extern void put_mtd_device(struct mtd_info *mtd);
- 
-
--- 
-1.6.3.3
-
+ Note: For the hard of thinking, this list is meant to remain in alphabetical
+ order. If you could add yourselves to it in alphabetical order that would be
+@@ -3742,8 +3756,8 @@ P:	Harald Welte
+ P:	Jozsef Kadlecsik
+ M:	Patrick McHardy <kaber@trash.net>
+ L:	netfilter-devel@vger.kernel.org
+-L:	netfilter@vger.kernel.org
+-L:	coreteam@netfilter.org
++A:	netfilter@vger.kernel.org	(email list for user issues)
++A:	coreteam@netfilter.org		(private emails to core developers)
+ W:	http://www.netfilter.org/
+ W:	http://www.iptables.org/
+ T:	git git://git.kernel.org/pub/scm/linux/kernel/git/kaber/nf-2.6.git
 
 
