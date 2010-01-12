@@ -1,72 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753865Ab0ALJHG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753891Ab0ALJHd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753865Ab0ALJHG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jan 2010 04:07:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753804Ab0ALJHE
+	id S1753891Ab0ALJHd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jan 2010 04:07:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753804Ab0ALJHb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jan 2010 04:07:04 -0500
-Received: from mga11.intel.com ([192.55.52.93]:44229 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753087Ab0ALJHA convert rfc822-to-8bit (ORCPT
+	Tue, 12 Jan 2010 04:07:31 -0500
+Received: from smtpauth.net4india.com ([202.71.129.41]:46999 "EHLO
+	smtpauth.net4india.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751978Ab0ALJH3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jan 2010 04:07:00 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,259,1262592000"; 
-   d="scan'208";a="763455571"
-From: "Zheng, Shaohui" <shaohui.zheng@intel.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-CC: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "ak@linux.intel.com" <ak@linux.intel.com>,
-       "y-goto@jp.fujitsu.com" <y-goto@jp.fujitsu.com>,
-       Dave Hansen <haveblue@us.ibm.com>, "x86@kernel.org" <x86@kernel.org>
-Date: Tue, 12 Jan 2010 17:05:19 +0800
-Subject: RE: [ RESEND PATCH v3] Memory-Hotplug: Fix the bug on interface
- /dev/mem for 64-bit kernel
-Thread-Topic: [ RESEND PATCH v3] Memory-Hotplug: Fix the bug on interface
- /dev/mem for 64-bit kernel
-Thread-Index: AcqTZbuTmdV7v9ZzQia6d7Cb3MStJgAAHJVA
-Message-ID: <DA586906BA1FFC4384FCFD6429ECE860316C01EA@shzsmsx502.ccr.corp.intel.com>
-References: <DA586906BA1FFC4384FCFD6429ECE860316C0133@shzsmsx502.ccr.corp.intel.com>
-	<20100112170433.394be31b.kamezawa.hiroyu@jp.fujitsu.com>
-	<DA586906BA1FFC4384FCFD6429ECE860316C01D6@shzsmsx502.ccr.corp.intel.com>
- <20100112175724.adfa04d6.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20100112175724.adfa04d6.kamezawa.hiroyu@jp.fujitsu.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Tue, 12 Jan 2010 04:07:29 -0500
+Message-ID: <4B4C3BCF.8030501@xenontk.org>
+Date: Tue, 12 Jan 2010 14:37:27 +0530
+From: David John <davidjon@xenontk.org>
+Reply-To: davidjon@xenontk.org
+User-Agent: Mozilla/5.0 (X11; X; Linux x86_64; rv:1.9.1.5) Gecko/20091209 Thunderbird/3.0
 MIME-Version: 1.0
+To: luiz.dentz@openbossa.org
+CC: marcel@holtmann.org, linux-bluetooth@vger.kernel.org,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: BUG: Commit 9e726b17 (Bluetooth: Fix rejected connection not disconnecting
+ ACL link) causes trace
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> 
-> 3 points...
-> 1. I think this patch cannot be compiled in archs other than x86. Right ?
->    IOW, please add static inline dummy...
-> [Zheng, Shaohui] Agree, I will add a static dummy function
-> 
-> 2. pgdat->[start,end], totalram_pages etc...are updated at memory hotplug.
->    Please place the hook nearby them.
-> [Zheng, Shaohui] Agree.
-> 
-> 3. I recommend you yo use memory hotplug notifier.
->    If it's allowed, it will be cleaner.
->    It seems there are no strict ordering to update parameters this patch touches.
-> 
-> [Zheng, Shaohui] Kame, do you means put the hook into function slab_mem_going_online_callback, it seems a good idea. If we select this method, we will need not to update these variable in function add_memory explicitly.
-> 
-yes. I think callback is the best.
-[Zheng, Shaohui] it is okay for me, I will rewrite my patch and test it in local, thanks Kame :).
+Hi,
 
-Thanks,
--Kame
+The commit 9e726b17 (Bluetooth: Fix rejected connection not
+disconnecting ACL link) causes the following trace:
 
+BUG: sleeping function called from invalid context at net/core/sock.c:1897
+in_atomic(): 1, irqs_disabled(): 0, pid: 0, name: swapper
+Pid: 0, comm: swapper Tainted: P           2.6.32 #31
+Call Trace:
+ <IRQ>  [<ffffffff81036455>] __might_sleep+0xf8/0xfa
+ [<ffffffff8138ef1d>] lock_sock_nested+0x29/0xc4
+ [<ffffffffa03921b3>] lock_sock+0xb/0xd [l2cap]
+ [<ffffffffa03948e6>] l2cap_sock_shutdown+0x1c/0x76 [l2cap]
+ [<ffffffff8106adea>] ? clockevents_program_event+0x75/0x7e
+ [<ffffffff8106bea2>] ? tick_dev_program_event+0x37/0xa5
+ [<ffffffffa0394967>] l2cap_sock_release+0x27/0x67 [l2cap]
+ [<ffffffff8138c971>] sock_release+0x1a/0x67
+ [<ffffffffa03d2492>] rfcomm_session_del+0x34/0x53 [rfcomm]
+ [<ffffffffa03d24c5>] rfcomm_session_put+0x14/0x16 [rfcomm]
+ [<ffffffffa03d28b4>] rfcomm_session_timeout+0xe/0x1a [rfcomm]
+ [<ffffffff810554a8>] run_timer_softirq+0x1e2/0x29a
+ [<ffffffffa03d28a6>] ? rfcomm_session_timeout+0x0/0x1a [rfcomm]
+ [<ffffffff8104e0f6>] __do_softirq+0xfe/0x1c5
+ [<ffffffff8100e8ce>] ? timer_interrupt+0x1a/0x21
+ [<ffffffff8100cc4c>] call_softirq+0x1c/0x28
+ [<ffffffff8100e05b>] do_softirq+0x33/0x6b
+ [<ffffffff8104daf6>] irq_exit+0x36/0x85
+ [<ffffffff8100d7a9>] do_IRQ+0xa6/0xbd
+ [<ffffffff8100c493>] ret_from_intr+0x0/0xa
+ <EOI>  [<ffffffff812585b3>] ? acpi_idle_enter_bm+0x269/0x294
+ [<ffffffff812585a9>] ? acpi_idle_enter_bm+0x25f/0x294
+ [<ffffffff81373ddc>] ? cpuidle_idle_call+0x97/0x107
+ [<ffffffff8100aca0>] ? cpu_idle+0x53/0xaa
+ [<ffffffff81429006>] ? rest_init+0x7a/0x7c
+ [<ffffffff8177bc8c>] ? start_kernel+0x389/0x394
+ [<ffffffff8177b29c>] ? x86_64_start_reservations+0xac/0xb0
+ [<ffffffff8177b384>] ? x86_64_start_kernel+0xe4/0xeb
 
-Thanks & Regards,
-Shaohui
+since lock_sock is called from the timer function rfcomm_session_timeout.
+
+Regards,
+David.
