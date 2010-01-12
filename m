@@ -1,75 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753038Ab0ALHAO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753126Ab0ALHBP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753038Ab0ALHAO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jan 2010 02:00:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751180Ab0ALG74
+	id S1753126Ab0ALHBP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jan 2010 02:01:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751402Ab0ALHBO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jan 2010 01:59:56 -0500
-Received: from ozlabs.org ([203.10.76.45]:45455 "EHLO ozlabs.org"
+	Tue, 12 Jan 2010 02:01:14 -0500
+Received: from m50-111.126.com ([123.125.50.111]:59222 "EHLO m50-111.126.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751183Ab0ALG6p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jan 2010 01:58:45 -0500
-Content-Type: text/plain; charset="us-ascii"
+	id S1750979Ab0ALHBO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jan 2010 02:01:14 -0500
+X-Greylist: delayed 1876 seconds by postgrey-1.27 at vger.kernel.org; Tue, 12 Jan 2010 02:01:13 EST
+Message-ID: <4B4C16CA.4010401@126.com>
+Date: Tue, 12 Jan 2010 14:29:30 +0800
+From: "Figo.zhang" <figo1802@126.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.5) Gecko/20091215 Shredder/3.0
 MIME-Version: 1.0
+To: gregkh@suse.de, hjanssen@microsoft.com, haiyangz@microsoft.com,
+       torvalds@linux-foundation.org
+CC: linux-kernel@vger.kernel.org
+Subject: [staging/hv] why it not follow kernel codingstyle?
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Subject: [RFC,PATCH 4/7 v2] arm/versatile: remove oscoff from clk_versatile
-Message-Id: <1263279511.161599.615234274711.4.gpush@pororo>
-In-Reply-To: <1263279511.160127.576969496193.0.gpush@pororo>
-To: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-       linuxppc-dev@lists.ozlabs.org
-From: Jeremy Kerr <jeremy.kerr@canonical.com>
-Date: Tue, 12 Jan 2010 17:58:31 +1100
+X-CM-TRANSID: jtKowLB7YyPRFkxLAC0xAQ--.16429S2
+X-Coremail-Antispam: 1UD129KBjDUn29KB7ZKAUJUUUUU529EdanIXcx71UUUUU7v73
+	VFW2AGmfu7bjvjm3AaLaJ3UjIYCTnIWjp_UUUeA7k042IE42xK82IY6r45ZwAYjxAI6xAI
+	w28IcVAK0I8IjxAxM7k042IE4IxYO2xFxVAqjxCEw4Av424lb7Iv0xC_Jr1lb4IE77IF4w
+	AFYI0v6xAqj4kS57xkM7AC8VAFwI0_Jr0_Gr1l1xkIjI8I6I8E6xAIw20EY4v20xvaj40_
+	Wr0E3s1l1IIY67AEw4v_Jr0_Jr4l84ACjcxK6xIIjxv20xvE14v26w1j6s0DM28EF7xvwV
+	C0I7IYx2IY6xkF7I0E14v26rxl6s0DM28EF7xvwVC2z280aVAFwI0_GcCE3s1l84ACjcxK
+	6I8E87Iv6xkF7I0E14v26rxl6s0DM2kK67kvxFCE548m6r1fGryUXwAac4AC62xK8xCEY4
+	vEwIxC4wAqjxCEc2xF0cIa020Ex4CE44I27wAqx4xG64xvF2IEw4CE5I8CrVC2j2WlYx0E
+	x4A2jsIE14v26r1j6r4UM4x0Y48IcVAKI48JM4IEnf9ElVAFpTB2q-sK649IAas0WaI_Gw
+	CjxxvEa2IrMxkIecxEwVAFwVW8AwCY0x0Ix7I2Y4AK6F4j6FyUMxAIw28IcxkI7VAKI48J
+	MxCjnVAqn7xvrwC2zVAF1VAY17CE14v26r126r1DMIIF0xvE42xK8VAvwI8IcIk0rVWrZr
+	1j6s0DYxBIdaVFxhVjvjDU0xZFpf9x0pEo7K3UUUUU=
+X-CM-SenderInfo: 5ilj0iqyqsqiyswou0bp/1tbi3RJVmEsL7vIFawABsx
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We only use one value for oscoff, so remove it from the struct.
+hi all,
 
-Signed-off-by: Jeremy Kerr <jeremy.kerr@canonical.com>
+i read the driver/staging/hv code, why it will apply into kernel tree 
+that it not fellow the kernel codingstyle?
 
----
- arch/arm/mach-versatile/clock.h |    1 -
- arch/arm/mach-versatile/core.c  |    6 +++---
- 2 files changed, 3 insertions(+), 4 deletions(-)
+it ruin the kernel tree, it had better let the author rewrite it fellow 
+the "linux kernel CodingStyle".
 
-diff --git a/arch/arm/mach-versatile/clock.h b/arch/arm/mach-versatile/clock.h
-index d1c8791..6ac30c5 100644
---- a/arch/arm/mach-versatile/clock.h
-+++ b/arch/arm/mach-versatile/clock.h
-@@ -15,7 +15,6 @@ struct clk_versatile {
- 	struct clk			clk;
- 	unsigned long			rate;
- 	const struct icst307_params	params;
--	u32				oscoff;
- 	void				(*setvco)(struct clk_versatile *,
- 						  struct icst307_vco);
- };
-diff --git a/arch/arm/mach-versatile/core.c b/arch/arm/mach-versatile/core.c
-index b6964bc..2b670bb 100644
---- a/arch/arm/mach-versatile/core.c
-+++ b/arch/arm/mach-versatile/core.c
-@@ -384,13 +384,14 @@ static void versatile_oscvco_set(struct clk_versatile *clk, struct icst307_vco v
- {
- 	void __iomem *sys = __io_address(VERSATILE_SYS_BASE);
- 	void __iomem *sys_lock = sys + VERSATILE_SYS_LOCK_OFFSET;
-+	void __iomem *sys_osc = sys + VERSATILE_SYS_OSCCLCD_OFFSET;
- 	u32 val;
- 
--	val = readl(sys + clk->oscoff) & ~0x7ffff;
-+	val = readl(sys_osc) & ~0x7ffff;
- 	val |= vco.v | (vco.r << 9) | (vco.s << 16);
- 
- 	writel(0xa05f, sys_lock);
--	writel(val, sys + clk->oscoff);
-+	writel(val, sys_osc);
- 	writel(0, sys_lock);
- }
- 
-@@ -406,7 +407,6 @@ static struct clk_versatile osc4_clk = {
- 		.rd_min		= 1 + 2,
- 		.rd_max		= 127 + 2,
- 	},
--	.oscoff = VERSATILE_SYS_OSCCLCD_OFFSET,
- 	.setvco = versatile_oscvco_set,
- };
- 
+see Documentation/CodingStyle.
+
+Best,
+Figo.zhang
+
