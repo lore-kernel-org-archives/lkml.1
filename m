@@ -1,85 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754173Ab0ALROY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754000Ab0ALRTB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754173Ab0ALROY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jan 2010 12:14:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753485Ab0ALROX
+	id S1754000Ab0ALRTB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jan 2010 12:19:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753490Ab0ALRTA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jan 2010 12:14:23 -0500
-Received: from mail-qy0-f194.google.com ([209.85.221.194]:44040 "EHLO
-	mail-qy0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753480Ab0ALROV (ORCPT
+	Tue, 12 Jan 2010 12:19:00 -0500
+Received: from lennier.cc.vt.edu ([198.82.162.213]:38604 "EHLO
+	lennier.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751578Ab0ALRTA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jan 2010 12:14:21 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=wwX4k9zKDeNnh7tc70Q+LrSkOiLOI9+SqLMMhm49pL/0c9aWNWvVbWY2UEOYsS0u9O
-         DfRUH3G0QVdFqcDXbhMWzgDKPZgoaVzaq0NT9Noc1qDHMsyjrC6y7/tIXWb21/6X+PrO
-         sfmigdnsC+MZOVunP3Umv25U4GggiWrdNxkCE=
-Message-ID: <4B4CADE9.3090302@gmail.com>
-Date: Tue, 12 Jan 2010 12:14:17 -0500
-From: William Allen Simpson <william.allen.simpson@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
-MIME-Version: 1.0
-To: Eric Dumazet <eric.dumazet@gmail.com>
-CC: Linux Kernel Developers <linux-kernel@vger.kernel.org>,
-       Linux Kernel Network Developers <netdev@vger.kernel.org>,
-       =?ISO-8859-1?Q?Ilpo_J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>,
-       Andi Kleen <andi@firstfloor.org>
-Subject: Re: [PATCH] tcp: harmonize tcp_vx_rcv header length assumptions
-References: <4B49D001.4000302@gmail.com> <4B4C4962.8040207@gmail.com> <4B4C52EA.6070705@gmail.com>
-In-Reply-To: <4B4C52EA.6070705@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 12 Jan 2010 12:19:00 -0500
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Roman Zippel <zippel@linux-m68k.org>, linux-kbuild@vger.kernel.org
+Cc: Yinghai Lu <yinghai@kernel.org>, Suresh Siddha <suresh.b.siddha@intel.com>,
+       "ananth@in.ibm.com" <ananth@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCH 2/4] x86: use dmi check to treat disabled cpus as hotplug cpus.
+In-Reply-To: Your message of "Tue, 12 Jan 2010 08:26:22 PST."
+             <alpine.LFD.2.00.1001120823120.17145@localhost.localdomain>
+From: Valdis.Kletnieks@vt.edu
+References: <1263264483-3959-1-git-send-email-yinghai@kernel.org> <1263264483-3959-4-git-send-email-yinghai@kernel.org> <alpine.LFD.2.00.1001111906300.17145@localhost.localdomain> <6686.1263312874@localhost>
+            <alpine.LFD.2.00.1001120823120.17145@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1263316641_4706P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
+Date: Tue, 12 Jan 2010 12:17:21 -0500
+Message-ID: <23825.1263316641@localhost>
+X-Mirapoint-Received-SPF: 128.173.14.107 localhost Valdis.Kletnieks@vt.edu 2 pass
+X-Mirapoint-IP-Reputation: reputation=neutral-1,
+	source=Fixed,
+	refid=n/a,
+	actions=MAILHURDLE SPF TAG
+X-Junkmail-Info: (45) HELO_LOCALHOST
+X-Junkmail-Status: score=45/50, host=vivi.cc.vt.edu
+X-Junkmail-SD-Raw: score=unknown,
+	refid=str=0001.0A020208.4B4CAEA2.005C,ss=1,fgs=0,
+	ip=0.0.0.0,
+	so=2009-09-22 00:05:22,
+	dmn=2009-09-10 00:05:08,
+	mode=multiengine
+X-Junkmail-IWF: false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Dumazet wrote:
-> 2) This part :
-> 
-> -	th = tcp_hdr(skb);
-> -
-> -	if (th->doff < sizeof(struct tcphdr)/4)
-> +	/* Check bad doff, compare doff directly to constant value */
-> +	tcp_header_len = tcp_hdr(skb)->doff;
-> +	if (tcp_header_len < (sizeof(struct tcphdr) / 4))
->  		goto bad_packet;
-> -	if (!pskb_may_pull(skb, th->doff*4))
-> +
-> +	/* Check too short header and options */
-> +	tcp_header_len *= 4;
-> +	if (!pskb_may_pull(skb, tcp_header_len))
->  		goto discard_it;
+--==_Exmh_1263316641_4706P
+Content-Type: text/plain; charset=us-ascii
+
+On Tue, 12 Jan 2010 08:26:22 PST, Linus Torvalds said:
 > 
 > 
-> could be :  (no need for 4 multiplies/divides)
+> On Tue, 12 Jan 2010, Valdis.Kletnieks@vt.edu wrote:
+> > 
+> > OK, I'll bite - how do you build an X86-64 kernel that doesn't have
+> > CONFIG_HOTPLUG_CPU selected?  Try as I might, even if I have PM_SLEEP=n,
+> > PM_SLEEP_SMP insists on being set, and then selecting HOTPLUG_SMP.
 > 
-> 	tcp_header_len = tcp_header_len_th(tcp_hdr(skb));
-> 	if (tcp_header_len < sizeof(struct tcphdr))
-> 		goto bad_packet;
-> 	/* Check too short header and options */
-> 	if (!pskb_may_pull(skb, tcp_header_len))
-> 		goto discard_it;
-> 
-Actually, tcp_header_len_th() has a multiply by 4 in it, too.
+> If that is true, then there is some bug in the kconfig parser. 
+> PM_SLEEP_SMP depends on PM_SLEEP, so with PM_SLEEP=n it should never be 
+> set.
 
-My code exactly parallels the existing code.  That is slightly faster
-for bad packets, as it does the raw comparison first, saving the
-multiply by 4 until it has passed that test.
+So now I go back and check, and it *was* possible to get a PM_SLEEP_SMP=n.
+Apparently in my previous attempts, I tried turning stuff off and PM_SLEEP_SMP
+stayed on just like this time as long as I was puttering around in menuconfig.
+But turning it off, *exiting menuconfig*, and then re-starting menuconfig made
+it work.  Weird.  It seems like if something does a 'select' on something
+that isn't a visible symbol, and the symbol gets toggled, the selects
+aren't redriven - and since it's not a visible symbol, you can't toggle it
+yourself. But saving and restarting menuconfig forces a refresh and things
+start acting right. Adding Roman and the kbuild list to the cc:
 
-My change just saves a store (and maybe a register load) over the
-existing code.  This is supposed to be "fast path" after all....
+And turning off PM_SLEEP and HOTPLUG_CPU ended up saving a chunk of memory:
 
-Also adds comments that explain what we're doing.  As I mentioned
-earlier in the thread:
+Before:
+% size vmlinux
+   text    data     bss     dec     hex filename
+8964445 1377200 6094320 16435965         facafd vmlinux
 
-                  ... back on Nov 10th, Ilpo brought to my attention --
-   *hidden* inside the pskb_may_pull() -- the tcp header length is range
-   checked for being too short (skb->len < th->doff * 4).
+After:
+% size vmlinux
+   text    data     bss     dec     hex filename
+8889523 1378768 6089648 16357939         f99a33 vmlinux
 
-Anytime I find the code isn't obvious to me, I figure the next person
-will benefit from some more comments....
 
-(Of course, this patch also fixes existing comments that are not true!)
+--==_Exmh_1263316641_4706P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFLTK6hcC3lWbTT17ARAoRvAJ0TW6Evs7m772oGTjSLAVp9mO6GRgCgi8wI
+3xMwgbNim8z1Z6H/4xNeGaM=
+=v/5Z
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1263316641_4706P--
+
