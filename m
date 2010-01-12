@@ -1,131 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754330Ab0ALVFG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753159Ab0ALVJF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754330Ab0ALVFG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jan 2010 16:05:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754155Ab0ALVFF
+	id S1753159Ab0ALVJF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jan 2010 16:09:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752326Ab0ALVJE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jan 2010 16:05:05 -0500
-Received: from smtp-vbr16.xs4all.nl ([194.109.24.36]:3686 "EHLO
-	smtp-vbr16.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754115Ab0ALVFE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jan 2010 16:05:04 -0500
-X-Greylist: delayed 386 seconds by postgrey-1.27 at vger.kernel.org; Tue, 12 Jan 2010 16:05:03 EST
-Message-ID: <4B4CE259.2070705@xs4all.nl>
-Date: Tue, 12 Jan 2010 21:58:01 +0100
-From: Erik-Jan <ej.post@xs4all.nl>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080808)
-MIME-Version: 1.0
-To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-fbdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, JosephChan@via.com.tw,
-       ScottFang@viatech.com.cn
-Subject: Re: [PATCH 3/4] viafb: do modesetting after updating variables
-References: <1262732399-3416-1-git-send-email-FlorianSchandinat@gmx.de>	<1262732399-3416-2-git-send-email-FlorianSchandinat@gmx.de>	<1262732399-3416-3-git-send-email-FlorianSchandinat@gmx.de> <20100111134644.bf26dd07.akpm@linux-foundation.org> <4B4BC0AA.5080209@gmx.de>
-In-Reply-To: <4B4BC0AA.5080209@gmx.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 12 Jan 2010 16:09:04 -0500
+Received: from mga01.intel.com ([192.55.52.88]:32983 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752256Ab0ALVJE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jan 2010 16:09:04 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,264,1262592000"; 
+   d="scan'208";a="530677441"
+Subject: Re: [PATCH] Make Intel 8-way Xeons boot again
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+Reply-To: Suresh Siddha <suresh.b.siddha@intel.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Yinghai Lu <yinghai@kernel.org>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       "stable@kernel.org" <stable@kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+In-Reply-To: <4B4CE35D.4040801@zytor.com>
+References: <20100109101038.GA17555@in.ibm.com>
+	 <86802c441001091313y1f64f011t616f08cd282a7123@mail.gmail.com>
+	 <20100110023015.GA2253@in.ibm.com>
+	 <86802c441001092235j79092e6fse18b61e3d7b0ac6@mail.gmail.com>
+	 <20100110102638.GA7838@elte.hu>
+	 <86802c441001111343p2afaafb7o702884e632260bf7@mail.gmail.com>
+	 <1263246829.2859.537.camel@sbs-t61.sc.intel.com>
+	 <86802c441001121110u2f3dcfbpafb0d9c4bb6a4e4d@mail.gmail.com>
+	 <1263327630.2854.448.camel@sbs-t61.sc.intel.com>
+	 <4B4CE35D.4040801@zytor.com>
+Content-Type: text/plain
+Organization: Intel Corp
+Date: Tue, 12 Jan 2010 13:07:54 -0800
+Message-Id: <1263330474.2854.548.camel@sbs-t61.sc.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 2010-01-12 at 13:02 -0800, H. Peter Anvin wrote:
+> On 01/12/2010 12:20 PM, Suresh Siddha wrote:
+> > On Tue, 2010-01-12 at 11:10 -0800, Yinghai Lu wrote:
+> >> if the system can not use logical flat.
+> >>
+> >> should have some bit set in FADT...
+> > 
+> > Yinghai, Sorry. I am not sure what you are referring to here. I have
+> > mentioned about FADT in another thread, so not sure what you mean by
+> > this here.
+> > 
+> > Are you referring that bios for the IBM system can use this to fix their
+> > problem? Once we understand what the problem is with IBM platform, then
+> > we can propose a solution (using FADT perhaps) that is acceptable to
+> > everyone.
+> > 
+> 
+> Does the IBM platform set this bit in FADT?
 
+No. If they had set it, kernel would have used physical mode and
+wouldn't have seen this issue.
 
-Florian Tobias Schandinat wrote:
-> Hi Andrew,
-> 
-> Andrew Morton schrieb:
->> On Tue,  5 Jan 2010 22:59:58 +0000
->> Florian Tobias Schandinat <FlorianSchandinat@gmx.de> wrote:
->>
->>> viafb: do modesetting after updating variables
->>>
->>> Reorder viafb_set_par to allow using the updated variables in
->>> viafb_setmode. This fixes a regression that prevented proper
->>> runtime mode changes.
->>>
->>> Signed-off-by: Erik-Jan Post <ej.lfs@xs4all.nl>
->>> Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
->>> ---
->>>  drivers/video/via/viafbdev.c |    6 +++---
->>>  1 files changed, 3 insertions(+), 3 deletions(-)
->>>
->>> diff --git a/drivers/video/via/viafbdev.c b/drivers/video/via/viafbdev.c
->>> index e16df84..f7ff4ea 100644
->>> --- a/drivers/video/via/viafbdev.c
->>> +++ b/drivers/video/via/viafbdev.c
->>> @@ -174,15 +174,15 @@ static int viafb_set_par(struct fb_info *info)
->>>      }
->>>  
->>>      if (vmode_entry) {
->>> -        viafb_setmode(vmode_entry, info->var.bits_per_pixel,
->>> -            vmode_entry1, viafb_bpp1);
->>> -
->>>          viafb_update_fix(info);
->>>          viafb_bpp = info->var.bits_per_pixel;
->>>          if (info->var.accel_flags & FB_ACCELF_TEXT)
->>>              info->flags &= ~FBINFO_HWACCEL_DISABLED;
->>>          else
->>>              info->flags |= FBINFO_HWACCEL_DISABLED;
->>> +
->>> +        viafb_setmode(vmode_entry, info->var.bits_per_pixel,
->>> +            vmode_entry1, viafb_bpp1);
->>>      }
->>>  
->>>      return 0;
->>
->> Problem.
->>
->> Patches 2, 3 and 4 are appropriate to 2.6.33 - they fix regressions. 
->> But all four patches are dependent upon patches which we already have
->> queued for 2.6.34!
-> 
-> That are good news.
-> 
->> I redid patches 2, 3 and 4 so they apply to current mainline.  This
->> particular patch (3/4) needed fixing - please check the result. 
->> --- 
->> a/drivers/video/via/viafbdev.c~viafb-do-modesetting-after-updating-variables 
->>
->> +++ a/drivers/video/via/viafbdev.c
->> @@ -177,16 +177,15 @@ static int viafb_set_par(struct fb_info      }
->>  
->>      if (vmode_index != VIA_RES_INVALID) {
->> -        viafb_setmode(vmode_index, info->var.xres, info->var.yres,
->> -            info->var.bits_per_pixel, vmode_index1,
->> -            viafb_second_xres, viafb_second_yres, viafb_bpp1);
->> -
->>          viafb_update_fix(info);
->>          viafb_bpp = info->var.bits_per_pixel;
->>          if (info->var.accel_flags & FB_ACCELF_TEXT)
->>              info->flags &= ~FBINFO_HWACCEL_DISABLED;
->>          else
->>              info->flags |= FBINFO_HWACCEL_DISABLED;
->> +        viafb_setmode(vmode_index, info->var.xres, info->var.yres,
->> +            info->var.bits_per_pixel, vmode_index1,
->> +            viafb_second_xres, viafb_second_yres, viafb_bpp1);
->>      }
->>  
->>      return 0;
->> _
-> 
-> This is correct.
-
-Yep, it is correct.
-
-Bye,
-Erik-Jan
-
-> 
->> This reordering broke viafb-split-global-index-up.patch, which I fixed 
->> up.
-> 
-> Thanks,
-> 
-> 
-> Florian Tobias Schandinat
-> -- 
-> To unsubscribe from this list: send the line "unsubscribe linux-fbdev" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
