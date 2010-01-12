@@ -1,54 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754411Ab0ALLOq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751978Ab0ALLQl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754411Ab0ALLOq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jan 2010 06:14:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754245Ab0ALLOo
+	id S1751978Ab0ALLQl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jan 2010 06:16:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751456Ab0ALLQk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jan 2010 06:14:44 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:57244 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754132Ab0ALLOo (ORCPT
+	Tue, 12 Jan 2010 06:16:40 -0500
+Received: from daytona.panasas.com ([67.152.220.89]:64427 "EHLO
+	daytona.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751346Ab0ALLQj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jan 2010 06:14:44 -0500
-Date: Tue, 12 Jan 2010 22:14:39 +1100
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Krzysztof Halasa <khc@pm.waw.pl>
-Cc: linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: Crypto test results unused?
-Message-ID: <20100112111439.GA31504@gondor.apana.org.au>
+	Tue, 12 Jan 2010 06:16:39 -0500
+Message-ID: <4B4C5A13.6090709@panasas.com>
+Date: Tue, 12 Jan 2010 13:16:35 +0200
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m3ws07q865.fsf@intrepid.localdomain>
-Organization: Core
-X-Newsgroups: apana.lists.os.linux.cryptoapi,apana.lists.os.linux.kernel
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: James Bottomley <James.Bottomley@suse.de>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       open-osd <osd-dev@open-osd.org>, Benny Halevy <bhalevy@panasas.com>,
+       Alan Stern <stern@rowland.harvard.edu>
+CC: Stable Tree <stable@kernel.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [osd-dev] [PATCH] scsi_lib: Bug in completion of bidi commands
+References: <4B27AA77.3040002@panasas.com>
+In-Reply-To: <4B27AA77.3040002@panasas.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 12 Jan 2010 11:16:37.0851 (UTC) FILETIME=[B52DB2B0:01CA9378]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Krzysztof Halasa <khc@pm.waw.pl> wrote:
+On 12/15/2009 05:25 PM, Boaz Harrosh wrote:
 > 
-> On little-endian IXP4xx 3 hardware-assisted algorithms fail (due to
-> apparently unrelated bug which I will take care of). It seems the kernel
-> is still using these failing algorithms (my debugging code adds extra
-> fields to the /proc output):
+> Because of the terrible structuring of scsi-bidi-commands
+> it breaks some of the life time rules of a scsi-command.
+> It is now not allowed to free up the block-request before
+> cleanup and partial deallocation of the scsi-command. (Which
+> is not so for none bidi commands)
+> 
+> The right fix to this problem would be to make bidi command
+> a first citizen by allocating a scsi_sdb pointer at scsi command
+> just like cmd->prot_sdb. The bidi sdb should be allocated/deallocated
+> as part of the get/put_command (Again like the prot_sdb) and the
+> current decoupling of scsi_cmnd and blk-request should be kept.
+> 
+> For now make sure scsi_release_buffers() is called before the
+> call to blk_end_request_all() which might cause the suicide of
+> the block requests. At best the leak of bidi buffers, at worse
+> a crash, as there is a race between the existence of the bidi_request
+> and the free of the associated bidi_sdb.
+> 
+> The reason this was never hit before is because only OSD has the potential
+> of doing asynchronous bidi commands. (So does bsg but it is never used)
+> And OSD clients just happen to do all their bidi commands synchronously, up
+> until recently.
+> 
+> CC: Stable Tree <stable@kernel.org>
 
-How did you determine that it was still being used? When a kernel
-user requests for an algorithm the system is supposed to skip
-anything which failed the self-test.
- 
-> At this point alg->cra_flags includes CRYPTO_ALG_DEAD (due to failed
-> test), but larval->alg.cra_flags has only the original flags (0x85).
+James hi.
 
-CRYPTO_ALG_DEAD is used to mark algorithms deleted from the
-system.  However, we don't delete algorithms just because they
-fail the self-test.  They remain in the system so you can come
-back and diagnose the problem.  They just aren't used by anyone.
+Have you had the chance on looking at this issue. It's a serious bug
+dated back a long time.
 
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+Technically it is quite simple.
+
+It used to be:
+	blk_end_request_all(req, 0);
+	scsi_release_buffers(cmd);
+
+Now scsi_release_buffers tries to use cmd->req for inspecting the req->next
+pointer, but req was just freed by blk_end_request_all()
+
+Reversing the call to:
+	scsi_release_buffers(cmd);
+	blk_end_request_all(req, 0);
+
+Is the right thing to do and does not have any side effects what's so ever.
+
+Please put me out of my misery ;-)
+Boaz
+
+> Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
+> ---
+>  drivers/scsi/scsi_lib.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/scsi/scsi_lib.c b/drivers/scsi/scsi_lib.c
+> index 5987da8..bc9a881 100644
+> --- a/drivers/scsi/scsi_lib.c
+> +++ b/drivers/scsi/scsi_lib.c
+> @@ -749,9 +749,9 @@ void scsi_io_completion(struct scsi_cmnd *cmd, unsigned int good_bytes)
+>  			 */
+>  			req->next_rq->resid_len = scsi_in(cmd)->resid;
+>  
+> +			scsi_release_buffers(cmd);
+>  			blk_end_request_all(req, 0);
+>  
+> -			scsi_release_buffers(cmd);
+>  			scsi_next_command(cmd);
+>  			return;
+>  		}
+
