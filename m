@@ -1,82 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753887Ab0ALAIL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754129Ab0ALAJd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753887Ab0ALAIL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jan 2010 19:08:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752340Ab0ALAIK
+	id S1754129Ab0ALAJd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jan 2010 19:09:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753985Ab0ALAJc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jan 2010 19:08:10 -0500
-Received: from mga14.intel.com ([143.182.124.37]:62800 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751853Ab0ALAIJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jan 2010 19:08:09 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
-   d="scan'208";a="231609596"
-Subject: Re: [patch] x86, apic: use 0x20 for the IRQ_MOVE_CLEANUP_VECTOR
- instead of 0x1f
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-Reply-To: Suresh Siddha <suresh.b.siddha@intel.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, Yinghai Lu <yinghai@kernel.org>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <4B4BB0B7.3000106@zytor.com>
-References: <1263002989.2879.664.camel@sbs-t61.sc.intel.com>
-	 <4B47E7A9.6090904@zytor.com>
-	 <1263250418.2859.681.camel@sbs-t61.sc.intel.com>
-	 <4B4BACCA.2040805@zytor.com> <m1tyus8chc.fsf@fess.ebiederm.org>
-	 <4B4BB0B7.3000106@zytor.com>
-Content-Type: text/plain
-Organization: Intel Corp
-Date: Mon, 11 Jan 2010 16:06:47 -0800
-Message-Id: <1263254812.2859.890.camel@sbs-t61.sc.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 7bit
+	Mon, 11 Jan 2010 19:09:32 -0500
+Received: from ey-out-2122.google.com ([74.125.78.26]:58905 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752972Ab0ALAJb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Jan 2010 19:09:31 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type;
+        b=twNfHsL6Z+CckOruceRLvFN7VmJNIZZRFpX1RyexO9tdTMI0ZLdhoIaAlsB3lUPBqN
+         me0SFc//6G4uc/GmYn/Png1MKTzWqW0wyljneG1QsO8amwjw1wVfCtgHQiuhkTO4NVIT
+         qvg0LBSYRdh8vnSu0xP69zMbcQRl1kbnwP5dc=
+Message-ID: <4B4BBDA5.8010808@gmail.com>
+Date: Tue, 12 Jan 2010 01:09:09 +0100
+From: Daniel Borkmann <danborkmann@googlemail.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090706)
+MIME-Version: 1.0
+To: Matt Mackall <mpm@selenic.com>
+CC: David Miller <davem@davemloft.net>, danborkmann@googlemail.com,
+       linux-kernel@vger.kernel.org, jmoyer@redhat.com, netdev@vger.kernel.org,
+       netdev@oss.sgi.com
+Subject: Re: [PATCH] netpoll: allow execution of multiple rx_hooks per interface
+References: <4B4630C0.6090206@gmail.com> <4B467A4D.9070708@gmail.com>	 <1263252108.29868.4774.camel@calx>	 <20100111.155912.68138954.davem@davemloft.net> <1263254625.29868.4777.camel@calx>
+In-Reply-To: <1263254625.29868.4777.camel@calx>
+X-Enigmail-Version: 0.96.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig8D877BCA6BA24570F9167579"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2010-01-11 at 15:13 -0800, H. Peter Anvin wrote:
-> On 01/11/2010 03:10 PM, Eric W. Biederman wrote:
-> > "H. Peter Anvin" <hpa@zytor.com> writes:
-> > 
-> >> On 01/11/2010 02:53 PM, Suresh Siddha wrote:
-> >>>
-> >>>> However, my most serious concern with this patch is that there is a
-> >>>> fairly significant change due to this patch, which is that the legacy
-> >>>> IRQ vectors now fall *inside* the FIRST_DEVICE_VECTOR range.  This isn't
-> >>>> a bad thing -- in fact, it is fundamentally the right thing to do
-> >>>> especially once we consider platforms which *don't* have the legacy IRQs
-> >>>> -- but it makes me scared of unexpected behavior changes as a result.
-> >>>> If you feel confident that that is not the case, could you outline why
-> >>>> it shouldn't be a problem?
-> >>>
-> >>> In irqinit.c, we statically pre-assign the per-cpu vector to irq
-> >>> mappings (vector_irq) for all the legacy IRQ vectors. Similarly irq_cfg
-> >>> is statically initialized for legacy IRQ's in io_apic.c. So we won't be
-> >>> able to use this space for anything else.
-> >>>
-> >>
-> >> What enforces that, though?  The used_vector bitmap?  In the past it was
-> >> enforced simply by being < FIRST_DEVICE_VECTOR.
-> > 
-> > I believe historically it was simply that we did not loop over that set of vectors,
-> > in assign_irq_vector.
-> > 
-> 
-> Yes, that's what I said.  My question was to Suresh what enforces that
-> in the case of his patch, which moves the legacy range into the middle
-> of the device vectors.
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig8D877BCA6BA24570F9167579
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-It's not the used_vector bitmap. That range will appear as used on all
-the cpu's and hence we won't be allocating it for anything else.
+Matt Mackall wrote:
+> On Mon, 2010-01-11 at 15:59 -0800, David Miller wrote:
+>> From: Matt Mackall <mpm@selenic.com>
+>> Date: Mon, 11 Jan 2010 17:21:48 -0600
+>>
+>>> Looks pretty good. Dave?
+>>>
+>>> Acked-by: Matt Mackall <mpm@selenic.com>
+>> I don't like the loop for RX ARP processing.
+>>
+>> The packet contents aren't going to change, so doing basic
+>> packet validation inside of the "for each RX client" loop
+>> of arp_reply() doesn't make any sense.
+>=20
+> True. Dan, please help our poor compilers with some manual loop
+> invariant motion.
 
-Now the question is: for non-legacy (io-apic) case, instead of reserving
-this range for all the cpu's, does it make sense to generalize like any
-other vector?
+Okay, true. I'll fix this by tomorrow and resend the patch.
 
-thanks,
-suresh
+Best regards,
+Daniel
 
+
+--------------enig8D877BCA6BA24570F9167579
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
+
+iEYEARECAAYFAktLvaUACgkQ5AxJm1m3CC8DEACgmoly7e3ugTj87vcvytfdJPyP
+1KsAniSKXoLfTOQTAIYBqaOaZNSNOvvX
+=6nem
+-----END PGP SIGNATURE-----
+
+--------------enig8D877BCA6BA24570F9167579--
