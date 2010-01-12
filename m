@@ -1,76 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754714Ab0ALTCI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753578Ab0ALTKV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754714Ab0ALTCI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jan 2010 14:02:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754645Ab0ALTCG
+	id S1753578Ab0ALTKV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jan 2010 14:10:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751445Ab0ALTKU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jan 2010 14:02:06 -0500
-Received: from server109h.appriver.com ([72.32.253.92]:4285 "EHLO
-	server109.appriver.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754597Ab0ALTCF convert rfc822-to-8bit (ORCPT
+	Tue, 12 Jan 2010 14:10:20 -0500
+Received: from mail-pz0-f171.google.com ([209.85.222.171]:58601 "EHLO
+	mail-pz0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753170Ab0ALTKU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jan 2010 14:02:05 -0500
-X-Policy: GLOBAL - intcomgrp.com
-X-Policy: GLOBAL - intcomgrp.com
-X-Primary: jkosin@intcomgrp.com
-X-Note: This Email was scanned by AppRiver SecureTide
-X-ALLOW: JKosin@intcomgrp.com ALLOWED
-X-Virus-Scan: V-
-X-Note: Spam Tests Failed: 
-X-Country-Path: UNITED STATES->UNITED STATES
-X-Note-Sending-IP: 216.54.13.100
-X-Note-Reverse-DNS: mail.intcomgrp.com
-X-Note-WHTLIST: JKosin@intcomgrp.com
-X-Note: User Rule Hits: 
-X-Note: Global Rule Hits: G113 G114 G115 G116 G120 G121 G132 G219 
-X-Note: Encrypt Rule Hits: 
-X-Note: Mail Class: ALLOWEDSENDER
-X-Note: Headers Injected
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Tue, 12 Jan 2010 14:10:20 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
+        b=YWSwmEjAvASesuCGhJrDNo7kRR0J5oGmjal3d+elr0JFuCUkNE6uoOdoVMCZQu11Xz
+         UtfDyWsJBMGq9tnAPai/jbOmtUW+cvoTxYZY1lL4tgnMFl4T+dOEQ2u5hwxjI17+ZGNE
+         h7oaQv0V8UUUYeOd5ct3jn80bTrWEmiT5lKIY=
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: arm: Optimization for ethernet MAC handling at91_ether.c
-Date: Tue, 12 Jan 2010 14:03:46 -0500
-Message-ID: <3DBBD805E3BA064A87F551C0E8BD36740289741C@MAILSRV.intcomgrp.com>
-In-Reply-To: <3DBBD805E3BA064A87F551C0E8BD367402897418@MAILSRV.intcomgrp.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: arm: Optimization for ethernet MAC handling at91_ether.c
-Thread-Index: AcqTspWCmnn7FjRuR3SQzPFeTMxe6wAANsBQAAGbhMA=
-References: <3DBBD805E3BA064A87F551C0E8BD3674028973F5@MAILSRV.intcomgrp.com> <4B4CA4E5.7030800@gmail.com> <3DBBD805E3BA064A87F551C0E8BD36740289740E@MAILSRV.intcomgrp.com> <4B4CBA93.4090909@gmail.com> <3DBBD805E3BA064A87F551C0E8BD367402897418@MAILSRV.intcomgrp.com>
-From: "James Kosin" <JKosin@intcomgrp.com>
-To: "James Kosin" <JKosin@intcomgrp.com>,
-       "Eric Dumazet" <eric.dumazet@gmail.com>
-Cc: <linux-kernel@vger.kernel.org>,
-       "Linux Netdev List" <netdev@vger.kernel.org>
+In-Reply-To: <1263246829.2859.537.camel@sbs-t61.sc.intel.com>
+References: <20100109101038.GA17555@in.ibm.com>
+	 <86802c441001091313y1f64f011t616f08cd282a7123@mail.gmail.com>
+	 <20100110023015.GA2253@in.ibm.com>
+	 <86802c441001092235j79092e6fse18b61e3d7b0ac6@mail.gmail.com>
+	 <20100110102638.GA7838@elte.hu>
+	 <86802c441001111343p2afaafb7o702884e632260bf7@mail.gmail.com>
+	 <1263246829.2859.537.camel@sbs-t61.sc.intel.com>
+Date: Tue, 12 Jan 2010 11:10:19 -0800
+X-Google-Sender-Auth: 9670e8bd49b573d7
+Message-ID: <86802c441001121110u2f3dcfbpafb0d9c4bb6a4e4d@mail.gmail.com>
+Subject: Re: [PATCH] Make Intel 8-way Xeons boot again
+From: Yinghai Lu <yinghai@kernel.org>
+To: Suresh Siddha <suresh.b.siddha@intel.com>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       "stable@kernel.org" <stable@kernel.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 1/12/2010 1:50 PM, James Kosin wrote:
-> -----Original Message-----
-> From: linux-kernel-owner@vger.kernel.org [mailto:linux-kernel-owner@vger.kernel.org] On Behalf Of Eric Dumazet
-> Sent: Tuesday, January 12, 2010 1:08 PM
-> To: James Kosin
-> Cc: linux-kernel@vger.kernel.org; Linux Netdev List
-> Subject: Re: arm: Optimization for ethernet MAC handling at91_ether.c
-> 
-> Le 12/01/2010 18:51, James Kosin a écrit :
->> On 1/12/2010 11:40 AM, Eric Dumazet wrote:
-> 
-> 
-> I know.  Actually, I am using the hardware; and the part is capable of more than this driver is displaying.
-> 
-> 1)  The part is able to queue up two packets (1) actively being transmitted, and (1) queued up behind that packet.  The driver doesn't exploit this; probably because this would cause some confusion, since we wouldn't really know which packet failed when this happens.
-> 
-> 2)  TX performance is so..so.  With bing on another computer using '-z' option it is reporting a fairly good value of 74Mbps.  I'll have to try with a re-compiled kernel at some point to give better feedback if we can improve this more.
-> 
-> Your interpretation makes some sense on the transmit side.  The RX currently has a DMA queue that extends to a depth of 9 (currently).  So getting one transmit out before checking the RX may improve things a bit.
-> 
+if the system can not use logical flat.
 
-Scratch that.  The interrupt doesn't queue up or send another packet directly.  So, it wouldn't help on performance here.  But, may in other implementations that queue/transmit packets in the ISR.  At least in the case where the transmitter is limited to one.
+should have some bit set in FADT...
 
-James
+static int physflat_acpi_madt_oem_check(char *oem_id, char *oem_table_id)
+{
+#ifdef CONFIG_ACPI
+        /*
+         * Quirk: some x86_64 machines can only use physical APIC mode
+         * regardless of how many processors are present (x86_64 ES7000
+         * is an example).
+         */
+        if (acpi_gbl_FADT.header.revision >= FADT2_REVISION_ID &&
+                (acpi_gbl_FADT.flags & ACPI_FADT_APIC_PHYSICAL)) {
+                printk(KERN_DEBUG "system APIC only can use physical flat");
+                return 1;
+        }
+#endif
+
+        return 0;
+}
