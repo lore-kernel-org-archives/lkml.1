@@ -1,62 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754578Ab0ALAzt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754506Ab0ALBCW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754578Ab0ALAzt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Jan 2010 19:55:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753308Ab0ALAzs
+	id S1754506Ab0ALBCW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Jan 2010 20:02:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751249Ab0ALBCV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Jan 2010 19:55:48 -0500
-Received: from mail-ew0-f209.google.com ([209.85.219.209]:41411 "EHLO
-	mail-ew0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753202Ab0ALAzr convert rfc822-to-8bit (ORCPT
+	Mon, 11 Jan 2010 20:02:21 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:49490 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750940Ab0ALBCU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Jan 2010 19:55:47 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=RXMjtxgTJaPDBED2OCKOnTp8JAWd/6LD2erSTXuGMNyGNMyD+DBUmJGhtiXAnd0iQ5
-         mXyszftIjuy60jEc8USEoFY47kww00kzGdmEbYR3R3CvwGfm5+tr9NFn+R1hEEL7jf0T
-         rFXlbCgqg+xF8xbZMNFl46VIiaUcUBQ3bfB+c=
-MIME-Version: 1.0
-In-Reply-To: <4B4B877A.8060106@googlemail.com>
-References: <5543f88f1001111129u362be554kd97027d977b5dff3@mail.gmail.com>
-	 <5543f88f1001111141r5375d2a3kd726d2b70e124b94@mail.gmail.com>
-	 <4B4B877A.8060106@googlemail.com>
-Date: Mon, 11 Jan 2010 16:55:45 -0800
-X-Google-Sender-Auth: d9045f46a0460882
-Message-ID: <5543f88f1001111655t7ae4a4eamd4f010b5ab7e7c82@mail.gmail.com>
-Subject: Re: [PATCH]drivers/ata/libata-eh.c:1509 unneeded memset()
-From: Marc Bejarano <beej@beej.org>
-To: =?ISO-8859-1?Q?Ren=E9_Bolldorf?= <xsecute@googlemail.com>
-Cc: linux-scsi@vger.kernel.org, linux-ide@vger.kernel.org,
-       James Bottomley <James.Bottomley@suse.de>, linux-kernel@vger.kernel.org,
-       jgarzik@pobox.com
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Mon, 11 Jan 2010 20:02:20 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Tue, 12 Jan 2010 09:58:48 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Andi Kleen <ak@linux.intel.com>
+Cc: "H. Peter Anvin" <hpa@kernel.org>,
+       "Zheng, Shaohui" <shaohui.zheng@intel.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "y-goto@jp.fujitsu.com" <y-goto@jp.fujitsu.com>,
+       Dave Hansen <haveblue@us.ibm.com>,
+       "Wu, Fengguang" <fengguang.wu@intel.com>,
+       "x86@kernel.org" <x86@kernel.org>
+Subject: Re: [PATCH - resend] Memory-Hotplug: Fix the bug on interface
+ /dev/mem for 64-bit kernel(v1)
+Message-Id: <20100112095848.b2cee1f3.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <4B478BEA.1010504@linux.intel.com>
+References: <DA586906BA1FFC4384FCFD6429ECE86031560BAC@shzsmsx502.ccr.corp.intel.com>
+	<4B46BC6F.5060607@kernel.org>
+	<4B478BEA.1010504@linux.intel.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2010/1/11 René Bolldorf <xsecute@googlemail.com>:
-> I hope that's good enough explained :-).
+On Fri, 08 Jan 2010 20:47:54 +0100
+Andi Kleen <ak@linux.intel.com> wrote:
 
-definitely an improvement, but i think jeff is going to want your
-S-O-B and at least a patch title, if no description :)
+> H. Peter Anvin wrote:
+> > On 01/07/2010 07:32 PM, Zheng, Shaohui wrote:
+> >> Resend the patch to the mailing-list, the original patch URL is 
+> >> http://patchwork.kernel.org/patch/69075/, it is not accepted without comments,
+> >> sent it again to review.
+> >>
+> >> Memory-Hotplug: Fix the bug on interface /dev/mem for 64-bit kernel
+> >>
+> >> The new added memory can not be access by interface /dev/mem, because we do not
+> >>  update the variable high_memory. This patch add a new e820 entry in e820 table,
+> >>  and update max_pfn, max_low_pfn and high_memory.
+> >>
+> >> We add a function update_pfn in file arch/x86/mm/init.c to udpate these
+> >>  varibles. Memory hotplug does not make sense on 32-bit kernel, so we did not
+> >>  concern it in this function.
+> >>
+> > 
+> > Memory hotplug makes sense on 32-bit kernels, at least in virtual
+> > environments.
+> 
+> No VM currently supports it to my knowledge. They all use traditional
+> balooning.
+> 
+> If someone adds that they can still fix it, but right now fixing it on 64bit
+> is the important part.
+> 
+I wonder...with some modification, memory hotplug (or Mel's page coalescing)
+can be used for balloning in MAX_ORDER page size.
+I'm sorry if VM' baloon drivers has no fragmentaion problem.
 
+Thanks,
+-Kame
 
-> +       /* make sure sense_buf is cleared then atapi_eh_request_sense is
-> called.
-
-s/then/when/ ?
-
-> +        * (to make sure nothing get's reused.)
-
-probably not necessary
-
-> +        * thanks to James Bottomley
-
-this may be better in a patch description
-
-cheers,
-marc
