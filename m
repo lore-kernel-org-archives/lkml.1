@@ -1,120 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755894Ab0AMLLM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755918Ab0AMLLz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755894Ab0AMLLM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 06:11:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755560Ab0AMLLL
+	id S1755918Ab0AMLLz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 06:11:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755661Ab0AMLLy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 06:11:11 -0500
-Received: from ms01.sssup.it ([193.205.80.99]:54550 "EHLO sssup.it"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755478Ab0AMLLJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 06:11:09 -0500
-Subject: Re: [RFC 0/12][PATCH] SCHED_DEADLINE: fork and terminate task logic
-From: Raistlin <raistlin@linux.it>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       michael trimarchi <michael@evidence.eu.com>,
-       Fabio Checconi <fabio@gandalf.sssup.it>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Dhaval Giani <dhaval.giani@gmail.com>,
-       Johan Eker <johan.eker@ericsson.com>, "p.faure" <p.faure@akatech.ch>,
-       Chris Friesen <cfriesen@nortel.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Henrik Austad <henrik@austad.us>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Darren Hart <darren@dvhart.com>,
-       Sven-Thorsten Dietrich <sven@thebigcorporation.com>,
-       Claudio Scordino <claudio@evidence.eu.com>,
-       Tommaso Cucinotta <tommaso.cucinotta@sssup.it>,
-       "giuseppe.lipari" <giuseppe.lipari@sssup.it>,
-       Juri Lelli <juri.lelli@gmail.com>
-In-Reply-To: <1262100041.7135.157.camel@laptop>
-References: <1255707324.6228.448.camel@Palantir>
-	 <1255707661.6228.455.camel@Palantir>  <1262100041.7135.157.camel@laptop>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-KeI/jbzXv7SNv3OOKKQD"
-Date: Wed, 13 Jan 2010 12:11:07 +0100
-Message-ID: <1263381067.3853.103.camel@Palantir>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	Wed, 13 Jan 2010 06:11:54 -0500
+Received: from mail-yx0-f187.google.com ([209.85.210.187]:65397 "EHLO
+	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755620Ab0AMLLx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jan 2010 06:11:53 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=Ja/d8Pa9PbtUjAoOmyGWGlJOZEPRJBEjcvopSWErZLY1IKlqnnlyXYL5wpxhQrGAKe
+         Xr4recxB1xoDMcEG5qpVus7ghlYZgJzHM4AuS90AdCeFSNvLiAGHLgYf6SlOA6qQBeNs
+         6NJwxz9ZcDoADsoxFr2AqicsOHIsvnozXZsVE=
+Message-ID: <4B4DAA68.60608@pobox.com>
+Date: Wed, 13 Jan 2010 06:11:36 -0500
+From: Jeff Garzik <jgarzik@pobox.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
+MIME-Version: 1.0
+To: Robert Hancock <hancockrwd@gmail.com>
+CC: Seth Heasley <seth.heasley@intel.com>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2.6.32.3] ahci: AHCI and RAID mode SATA patch for Intel
+ Cougar Point DeviceIDs
+References: <201001121700.18234.seth.heasley@intel.com> <4B4D4EAA.2010109@gmail.com>
+In-Reply-To: <4B4D4EAA.2010109@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
---=-KeI/jbzXv7SNv3OOKKQD
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-
-On Tue, 2009-12-29 at 16:20 +0100, Peter Zijlstra wrote:
-> > -       if (!rt_prio(p->prio))
-> > +               /*
-> > +                * the child will be SCHED_DEADLINE, but with zero band=
-width.
-> > +                * The parent (or some other task) must call setschedul=
-er_ex
-> > +                * on it, or it won't ever start.
-> > +                */
-> > +               init_deadline_task(p);
-> > +               p->dl.flags &=3D ~DL_NEW;
-> > +               p->dl.flags |=3D DL_THROTTLED;
->=20
-> I recently added ->task_fork(), which is called after the class
-> assignment.
->=20
-Saw that, and it is being of great help! :-P
-
-> > +       } else if (rt_prio(p->prio))
-> > +               p->sched_class =3D &rt_sched_class;
-> > +       else
-> >                 p->sched_class =3D &fair_sched_class;
-> > =20
-> >  #ifdef CONFIG_SMP
-> > @@ -2744,6 +2756,10 @@ static void finish_task_switch(struct rq *rq, st=
-ruct task_struct *prev)
-> >         if (mm)
-> >                 mmdrop(mm);
-> >         if (unlikely(prev_state =3D=3D TASK_DEAD)) {
-> > +               /* a deadline task is dying: stop the bandwidth timer *=
-/
-> > +               if (deadline_task(prev))
-> > +                       hrtimer_cancel(&prev->dl.dl_timer);
-> > +
-> >                 /*
-> >                  * Remove function-return probe instances associated wi=
-th this
-> >                  * task and put them back on the free list.=20
->=20
-> Shouldn't this be done in the ->dequeue_task() callback?
+On 01/12/2010 11:40 PM, Robert Hancock wrote:
+> On 01/12/2010 07:00 PM, Seth Heasley wrote:
+>> This patch adds the Intel Cougar Point (PCH) SATA AHCI and RAID
+>> Controller DeviceIDs.
+>>
+>> Signed-off-by: Seth Heasley<seth.heasley@intel.com>
+>>
+>> --- linux-2.6.32.3/drivers/ata/ahci.c.orig 2010-01-06
+>> 15:07:45.000000000 -0800
+>> +++ linux-2.6.32.3/drivers/ata/ahci.c 2010-01-07 13:55:23.000000000 -0800
+>> @@ -560,6 +560,12 @@
+>> { PCI_VDEVICE(INTEL, 0x3b2b), board_ahci }, /* PCH RAID */
+>> { PCI_VDEVICE(INTEL, 0x3b2c), board_ahci }, /* PCH RAID */
+>> { PCI_VDEVICE(INTEL, 0x3b2f), board_ahci }, /* PCH AHCI */
+>> + { PCI_VDEVICE(INTEL, 0x1c02), board_ahci }, /* CPT AHCI */
+>> + { PCI_VDEVICE(INTEL, 0x1c03), board_ahci }, /* CPT AHCI */
+>> + { PCI_VDEVICE(INTEL, 0x1c04), board_ahci }, /* CPT RAID */
+>> + { PCI_VDEVICE(INTEL, 0x1c05), board_ahci }, /* CPT RAID */
+>> + { PCI_VDEVICE(INTEL, 0x1c06), board_ahci }, /* CPT RAID */
+>> + { PCI_VDEVICE(INTEL, 0x1c07), board_ahci }, /* CPT RAID */
+>>
+>> /* JMicron 360/1/3/5/6, match class to avoid IDE function */
+>> { PCI_VENDOR_ID_JMICRON, PCI_ANY_ID, PCI_ANY_ID, PCI_ANY_ID,
 >
-Not sure of this snippet... Actually, it is one of the most disturbing
-piece of code of this whole scheduler. :-(
+> The RAID mode entries would be needed if the device indicates RAID class
+> in that mode, but in plain AHCI mode it should indicate SATA AHCI class
+> which will get picked up by this catch-all so those entries shouldn't be
+> needed:
+>
+> /* Generic, PCI class code for AHCI */
+> { PCI_ANY_ID, PCI_ANY_ID, PCI_ANY_ID, PCI_ANY_ID,
+> PCI_CLASS_STORAGE_SATA_AHCI, 0xffffff, board_ahci },
+>
+> Likely a lot of the existing specific PCI IDs could be removed from the
+> driver because of this (many likely predate the addition of the
+> class-based catch-all). The only reason to need a specific entry if the
+> device uses AHCI class is if it needs special handling or workarounds,
+> which isn't the case here.
 
-The reason why it is here is that I think it is needed to call
-hrtimer_cancel() _without_ holding the rq->lock, is that correct?
+Well, two lines of thinking here:
 
-It is=20
+* some of lines of Intel chips do not separate AHCI into a separate PCI 
+ID rather legacy IDE interface.  When an AHCI interface exists and 
+AHCI/IDE share the same PCI ID, we default to using AHCI.  Thus, some of 
+those PCI ID matches in ahci.c's PCI table may not get caught by the 
+generic PCI class match at the end of the table.
 
-Thanks and regards,
-Dario
+* the cost carrying redundant PCI IDs seems low, harmless, and 
+potentially helpful.
 
---=20
-<<This happens because I choose it to happen!>> (Raistlin Majere)
-----------------------------------------------------------------------
-Dario Faggioli, ReTiS Lab, Scuola Superiore Sant'Anna, Pisa  (Italy)
+Comments welcome, though...
 
-http://blog.linux.it/raistlin / raistlin@ekiga.net /
-dario.faggioli@jabber.org
+	Jeff
 
---=-KeI/jbzXv7SNv3OOKKQD
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
 
-iEYEABECAAYFAktNqkoACgkQk4XaBE3IOsQ2UwCfTGdQQ7ecHa1zxMNZU/Iad8BX
-LQoAnAokYD5tSVSAEnIgHtULbUtsm3od
-=gXt2
------END PGP SIGNATURE-----
-
---=-KeI/jbzXv7SNv3OOKKQD--
 
