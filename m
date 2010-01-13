@@ -1,92 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753231Ab0AMTgI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753632Ab0AMTmQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753231Ab0AMTgI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 14:36:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752281Ab0AMTgG
+	id S1753632Ab0AMTmQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 14:42:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753412Ab0AMTmP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 14:36:06 -0500
-Received: from tomts13-srv.bellnexxia.net ([209.226.175.34]:46306 "EHLO
-	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752629Ab0AMTgF (ORCPT
+	Wed, 13 Jan 2010 14:42:15 -0500
+Received: from mail3.caviumnetworks.com ([12.108.191.235]:12204 "EHLO
+	mail3.caviumnetworks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751482Ab0AMTmP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 14:36:05 -0500
-Date: Wed, 13 Jan 2010 14:36:03 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: linux-kernel@vger.kernel.org,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Oleg Nesterov <oleg@redhat.com>,
+	Wed, 13 Jan 2010 14:42:15 -0500
+Message-ID: <4B4E2208.4030307@caviumnetworks.com>
+Date: Wed, 13 Jan 2010 11:42:00 -0800
+From: David Daney <ddaney@caviumnetworks.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: Nicholas Miell <nmiell@comcast.net>, paulmck@linux.vnet.ibm.com,
+       linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>,
+       Oleg Nesterov <oleg@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
        Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org,
        josh@joshtriplett.org, tglx@linutronix.de, Valdis.Kletnieks@vt.edu,
        dhowells@redhat.com, laijs@cn.fujitsu.com, dipankar@in.ibm.com
-Subject: Re: [RFC PATCH] introduce sys_membarrier(): process-wide memory
-	barrier (v5)
-Message-ID: <20100113193603.GA27327@Krystal>
-References: <20100113013757.GA29314@Krystal> <1263400738.4244.242.camel@laptop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Subject: Re: [RFC PATCH] introduce sys_membarrier(): process-wide memory	barrier
+ (v5)
+References: <20100113013757.GA29314@Krystal> <1263358823.3874.10.camel@entropy> <20100113053126.GC6781@linux.vnet.ibm.com> <1263361196.3874.12.camel@entropy> <20100113143805.GC30875@Krystal> <1263406071.3874.16.camel@entropy> <20100113182442.GA20704@Krystal> <1263408098.3874.19.camel@entropy> <20100113191727.GA24742@Krystal>
+In-Reply-To: <20100113191727.GA24742@Krystal>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <1263400738.4244.242.camel@laptop>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.27.31-grsec (i686)
-X-Uptime: 14:24:03 up 28 days,  3:42,  4 users,  load average: 0.11, 0.14,
-	0.10
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-OriginalArrivalTime: 13 Jan 2010 19:42:04.0739 (UTC) FILETIME=[7BD35130:01CA9488]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Peter Zijlstra (peterz@infradead.org) wrote:
-> On Tue, 2010-01-12 at 20:37 -0500, Mathieu Desnoyers wrote:
-> > +       for_each_cpu(cpu, tmpmask) {
-> > +               spin_lock_irq(&cpu_rq(cpu)->lock);
-> > +               mm = cpu_curr(cpu)->mm;
-> > +               spin_unlock_irq(&cpu_rq(cpu)->lock);
-> > +               if (current->mm != mm)
-> > +                       cpumask_clear_cpu(cpu, tmpmask);
-> > +       } 
+Mathieu Desnoyers wrote:
+> * Nicholas Miell (nmiell@comcast.net) wrote:
+>> On Wed, 2010-01-13 at 13:24 -0500, Mathieu Desnoyers wrote:
+>>> * Nicholas Miell (nmiell@comcast.net) wrote:
+>>>
+>>>> The whole point of compat and incompat flags is that it allows new
+>>>> applications to run on old kernels and either work or fail as
+>>>> appropriate, depending on whether the new features they're using must be
+>>>> implemented or can be silently ignored.
+>>> I see. Thanks for the explanation. Then the expedited flag should
+>>> clearly be part of the mandatory flags.
+>>>
+>>> Can you point me to other system calls that are doing this ?
+>>>
+>>> Thanks,
+>>>
+>>> Mathieu
+>> Not off the top of my head, but I did steal the idea from the ext2/3/4
+>> disk format.
 > 
-> Why not:
-> 
->   rcu_read_lock();
->   if (current->mm != cpu_curr(cpu)->mm)
->     cpumask_clear_cpu(cpu, tmpmask);
->   rcu_read_unlock();
-> 
-> the RCU read lock ensures the task_struct obtained remains valid, and it
-> avoids taking the rq->lock.
+> Sounds a bit over-engineered to me for system calls, but who knows if we
+> eventually have to extend sys_membarrier(). This involves that, right
+> now, I'd have to add a header to include/linux to define these flags.
+> Also, "int expedited" is a bit clearer, but less flexible, than "int
+> flags". Anyone else have comments about this ?
 > 
 
-If we go for a simple rcu_read_lock, I think that we need a smp_mb()
-after switch_to() updates the current task on the remote CPU, before it
-returns to user-space. Do we have this guarantee for all architectures ?
+It doesn't bother me that you have to do extra work to add the flag 
+definitions to a header file. :-)
 
-So what I'm looking for, overall, is:
+As I understand it, the proposal is to have the option to extend the ABI 
+based on as yet undefined flag bits.  This doesn't seem like a bad thing.
 
-schedule()
-  ...
-  switch_mm()
-    smp_mb()
-    clear mm_cpumask
-    set mm_cpumask
-  switch_to()
-    update current task
-    smp_mb()
+The runtime overhead of testing a single bit vs. non-zero in the 
+parameter shouldn't be an issue.
 
-If we have that, then the rcu_read_lock should work.
-
-What the rq lock currently gives us is the guarantee that if the current
-thread changes on a remote CPU while we are not holding this lock, then
-a full scheduler execution is performed, which implies a memory barrier
-if we change the current thread (it does, right ?).
-
-Thanks,
-
-Mathieu
-
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+David Daney
