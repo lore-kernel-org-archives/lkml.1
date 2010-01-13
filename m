@@ -1,33 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755957Ab0AMPxw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755954Ab0AMPxa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755957Ab0AMPxw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 10:53:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755290Ab0AMPxv
+	id S1755954Ab0AMPxa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 10:53:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755696Ab0AMPx3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 10:53:51 -0500
-Received: from pldtsmtp.vitro.epldt.net ([125.5.121.130]:20572 "EHLO
-	sophos2.vitro.epldt.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753446Ab0AMPxu (ORCPT
+	Wed, 13 Jan 2010 10:53:29 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:46361 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932128Ab0AMPx0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 10:53:50 -0500
-X-Greylist: delayed 620 seconds by postgrey-1.27 at vger.kernel.org; Wed, 13 Jan 2010 10:53:50 EST
-Date: Wed, 13 Jan 2010 23:35:20 +0800 (PHT)
-From: Asia Petronas Oil and Gas Company Sdn Bhd <cefenet@info.com.ph>
-Reply-To: missslyvialee@yahoo.com.hk
-Message-ID: <500297348.88383.1263396920526.JavaMail.root@mbox2.zimbra.epldt.net>
-Subject: Restoration 2010 ATM CARD!!!!
+	Wed, 13 Jan 2010 10:53:26 -0500
+Date: Wed, 13 Jan 2010 16:53:23 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: William Allen Simpson <william.allen.simpson@gmail.com>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Linux Kernel Developers <linux-kernel@vger.kernel.org>,
+       Linux Kernel Network Developers <netdev@vger.kernel.org>,
+       Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>,
+       Eric Dumazet <eric.dumazet@gmail.com>
+Subject: Re: [PATCH v4] tcp: harmonize tcp_vx_rcv header length assumptions
+Message-ID: <20100113155323.GB24818@basil.fritz.box>
+References: <4B49D001.4000302@gmail.com> <4B4DA4F4.6060007@gmail.com> <20100113115617.GA24818@basil.fritz.box> <4B4DE887.6030602@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-X-Originating-IP: [172.17.22.21]
-X-Mailer: Zimbra 6.0.2_GA_1912.RHEL5_64 (zclient/6.0.2_GA_1912.RHEL5_64)
-To: undisclosed-recipients:;
-X-PMX-Spam: Gauge=XXXXXXXIIIIIIIII, Probability=79%, Report='
- FRAUD_X3_SUBJ 5.5, FRAUD_X3 1.667, WEBMAIL_REPLYTO_NOT_FROM 0.5, BODY_SIZE_1000_LESS 0, BODY_SIZE_2000_LESS 0, BODY_SIZE_200_299 0, BODY_SIZE_5000_LESS 0, BODY_SIZE_7000_LESS 0, ECARD_WORD 0, SMALL_BODY 0, TO_UNDISCLOSED_RECIPIENTS 0, WEBMAIL_SOURCE 0, WEBMAIL_XOIP 0, WEBMAIL_X_IP_HDR 0, __CT 0, __CTE 0, __CT_TEXT_PLAIN 0, __FRAUD_BODY_WEBMAIL 0, __FRAUD_CONTACT_NUM 0, __FRAUD_LOC 0, __FRAUD_MONEY 0, __FRAUD_MONEY_VALUE 0, __FRAUD_SUBJ_B 0, __FRAUD_WEBMAIL 0, __FRAUD_WEBMAIL_REPLYTO 0, __HAS_MSGID 0, __HAS_XOIP 0, __HAS_X_MAILER 0, __MIME_TEXT_ONLY 0, __MIME_VERSION 0, __PHISH_SPEAR_STRUCTURE_1 0, __PHISH_SPEAR_STRUCTURE_2 0, __SANE_MSGID 0, __STOCK_PHRASE_7 0, __TO_MALFORMED_3 0'
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B4DE887.6030602@gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Jan 13, 2010 at 10:36:39AM -0500, William Allen Simpson wrote:
+> Andi Kleen wrote:
+>> It's difficult to benchmark this code, but did you check that the code 
+>> shrinks after applying this patch at least?
+>>
+> Good question.  Only on a gross scale with ls -l.
+>
+> Before: 332612
+> After:  332384
 
+size is better.
 
-$2.6 Million worth of ATM card has been accredited in your favor by the Tourism Malaysia 2010.Ms.Sylvia Lee&nbsp; Email:( mssylvialee@live.com.my )&nbsp; &nbsp;with your Full Name; Address; Telephone number.
+>
+> I've just spent an hour Googling and then trying to decipher the make file
+> looking for a standard way to generate the -S (.s output), but no joy.
+>
+> What make command would you suggest to get the interleaved asm?
+
+make path/to/file.lst
+
+(or .S -- you might need uptodate binutils if the lst listing is messed up)
+
+-Andi
+
+-- 
+ak@linux.intel.com -- Speaking for myself only.
