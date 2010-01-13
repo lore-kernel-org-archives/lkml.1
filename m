@@ -1,30 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755091Ab0AMI1Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755140Ab0AMI3r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755091Ab0AMI1Z (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 03:27:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754827Ab0AMI1Y
+	id S1755140Ab0AMI3r (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 03:29:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755117Ab0AMI3p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 03:27:24 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:59208 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754445Ab0AMI1X (ORCPT
+	Wed, 13 Jan 2010 03:29:45 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:37556 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755056Ab0AMI3o (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 03:27:23 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Wed, 13 Jan 2010 17:24:04 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Rik van Riel <riel@redhat.com>, Minchan Kim <minchan.kim@gmail.com>
-Subject: Re: [PATCH 3/3] [v2] memcg: add anon_scan_ratio to memory.stat file
-Message-Id: <20100113172404.339b31dc.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20100113172143.B3E8.A69D9226@jp.fujitsu.com>
-References: <20100113171734.B3E2.A69D9226@jp.fujitsu.com>
-	<20100113172143.B3E8.A69D9226@jp.fujitsu.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.10.14; i686-pc-mingw32)
+	Wed, 13 Jan 2010 03:29:44 -0500
+Date: Wed, 13 Jan 2010 00:29:39 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Eric Miao <eric.y.miao@gmail.com>
+Cc: David Brownell <david-b@pacbell.net>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] gpio: introduce gpio_request_one() and friends
+Message-Id: <20100113002939.2d2c489d.akpm@linux-foundation.org>
+In-Reply-To: <f17812d71001130023n491879cakc02dfcf26ec0fe43@mail.gmail.com>
+References: <f17812d71001072114g95c267cpa6dc06a636c6d9a@mail.gmail.com>
+	<f17812d71001072128g63361e74q74cf06ae1e1eb3d6@mail.gmail.com>
+	<20100112150952.aa224e20.akpm@linux-foundation.org>
+	<f17812d71001121923k5a67c42flb92cf7bb2c8a0b5a@mail.gmail.com>
+	<f17812d71001130023n491879cakc02dfcf26ec0fe43@mail.gmail.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -32,26 +31,12 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 13 Jan 2010 17:22:37 +0900 (JST)
-KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+On Wed, 13 Jan 2010 16:23:35 +0800 Eric Miao <eric.y.miao@gmail.com> wrote:
 
-> Changelog
->   since v1: cancel to remove "recent_xxx" debug statistics as bilbir's
->   mention
-> 
-> ===========================================
-> 
-> anon_scan_ratio feature doesn't only useful for global VM pressure
-> analysis, but it also useful for memcg memroy pressure analysis.
-> 
-> Then, this patch add anon_scan_ratio field to memory.stat file too.
-> 
-> Cc: Balbir Singh <balbir@linux.vnet.ibm.com>
-> Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> Attached is the patch against Documentation/gpio.txt
 
-Acked-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Thanks.
 
-Thanks,
--Kame
+I was thinking kerneldoc in the .c file actually - most/all of the
+other interface functions in gpiolib.c seem to be done that way.
 
