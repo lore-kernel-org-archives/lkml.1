@@ -1,61 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755927Ab0AMLRJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755741Ab0AMLSO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755927Ab0AMLRJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 06:17:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755551Ab0AMLRH
+	id S1755741Ab0AMLSO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 06:18:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755506Ab0AMLSN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 06:17:07 -0500
-Received: from mail.dev.rtsoft.ru ([213.79.90.226]:46571 "HELO
-	mail.dev.rtsoft.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1755646Ab0AMLRG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 06:17:06 -0500
-Date: Wed, 13 Jan 2010 14:17:03 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
-Cc: linux-kernel@vger.kernel.org, David Vrabel <dvrabel@arcom.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Grant Likely <grant.likely@secretlab.ca>,
-       Kumar Gala <galak@kernel.crashing.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       spi-devel-general@lists.sourceforge.net
-Subject: Re: [RESEND PATCH 5/5] spi/mpc8xxx: don't check platform_get_irq's
- return value against zero
-Message-ID: <20100113111702.GA5004@oksana.dev.rtsoft.ru>
-Reply-To: avorontsov@ru.mvista.com
-References: <1260979809-24811-1-git-send-email-u.kleine-koenig@pengutronix.de>
- <1263380746-27803-5-git-send-email-u.kleine-koenig@pengutronix.de>
+	Wed, 13 Jan 2010 06:18:13 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:23366 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754922Ab0AMLSN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jan 2010 06:18:13 -0500
+Date: Wed, 13 Jan 2010 06:18:07 -0500
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Shaohua Li <shaohua.li@intel.com>
+Cc: Corrado Zoccolo <czoccolo@gmail.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
+       "Zhang, Yanmin" <yanmin.zhang@intel.com>
+Subject: Re: [RFC]cfq-iosched: quantum check tweak
+Message-ID: <20100113111807.GC3087@redhat.com>
+References: <1262829893.4984.13.camel@sli10-desk.sh.intel.com> <4e5e476b1001071344i4f702496y22f33bc2d4bc834d@mail.gmail.com> <20100108171535.GC22219@redhat.com> <4e5e476b1001081235wc2784c1s87c0c70662b5e267@mail.gmail.com> <20100108205948.GH22219@redhat.com> <20100111023409.GE22362@sli10-desk.sh.intel.com> <20100111170339.GC22899@redhat.com> <20100112030756.GB22606@sli10-desk.sh.intel.com> <20100112154820.GB3065@redhat.com> <20100113081735.GD10492@sli10-desk.sh.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1263380746-27803-5-git-send-email-u.kleine-koenig@pengutronix.de>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <20100113081735.GD10492@sli10-desk.sh.intel.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 13, 2010 at 12:05:46PM +0100, Uwe Kleine-König wrote:
-> platform_get_irq returns -ENXIO on failure, so !irq was probably
-> always true.  Make irq a signed variable and compare irq <= 0.  Note
-> that a return value of zero is still handled as error even though this
-> could mean irq0.
-> 
-> This is a followup to 305b3228f9ff4d59f49e6d34a7034d44ee8ce2f0 that
-> changed the return value of platform_get_irq from 0 to -ENXIO on error.
-> 
-> Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-> Cc: David Vrabel <dvrabel@arcom.com>
-> Cc: Greg Kroah-Hartman <gregkh@suse.de>
-> Cc: David Brownell <dbrownell@users.sourceforge.net>
-> Cc: Grant Likely <grant.likely@secretlab.ca>
-> Cc: Kumar Gala <galak@kernel.crashing.org>
-> Cc: Anton Vorontsov <avorontsov@ru.mvista.com>
-> Cc: Andrew Morton <akpm@linux-foundation.org>
-> Cc: spi-devel-general@lists.sourceforge.net
-> ---
+On Wed, Jan 13, 2010 at 04:17:35PM +0800, Shaohua Li wrote:
+[..]
+> > >  static bool cfq_may_dispatch(struct cfq_data *cfqd, struct cfq_queue *cfqq)
+> > >  {
+> > >  	unsigned int max_dispatch;
+> > > @@ -2258,7 +2273,10 @@ static bool cfq_may_dispatch(struct cfq_
+> > >  	if (cfqd->sync_flight && !cfq_cfqq_sync(cfqq))
+> > >  		return false;
+> > >  
+> > > -	max_dispatch = cfqd->cfq_quantum;
+> > > +	max_dispatch = cfqd->cfq_quantum / 2;
+> > > +	if (max_dispatch < CFQ_SOFT_QUANTUM)
+> > 
+> > We don't have to hardcode CFQ_SOFT_QUANTUM or in fact we don't need it. We can
+> > derive the soft limit from hard limit (cfq_quantum). Say soft limit will be
+> > 50% of cfq_quantum value.
+> I'm hoping this doesn't give user a surprise. Say cfq_quantum sets to 7, then we
+> start doing throttling from 3 requests. Adding the CFQ_SOFT_QUANTUM gives a compatibility
+> against old behavior at least. Am I over thinking?
+>  
 
-Acked-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+I would not worry too much about that. If you are really worried about
+that, then create one Documentation/block/cfq-iosched.txt and document
+how cfq_quantum works so that users know that cfq_quantum is upper hard
+limit and internal soft limit is cfq_quantum/2.
 
-Thanks!
+Thanks
+Vivek
+
+> > > +		max_dispatch = min_t(unsigned int, CFQ_SOFT_QUANTUM,
+> > > +			cfqd->cfq_quantum);
+> > >  	if (cfq_class_idle(cfqq))
+> > >  		max_dispatch = 1;
+> > >  
+> > > @@ -2275,7 +2293,7 @@ static bool cfq_may_dispatch(struct cfq_
+> > >  		/*
+> > >  		 * We have other queues, don't allow more IO from this one
+> > >  		 */
+> > > -		if (cfqd->busy_queues > 1)
+> > > +		if (cfqd->busy_queues > 1 && cfq_slice_used_soon(cfqd, cfqq))
+> > >  			return false;
+> > 
+> > So I guess here we can write something as follows.
+> > 
+> > 		if (cfqd->busy_queues > 1 && cfq_slice_used_soon(cfqd, cfqq))
+> > 			return false;
+> > 
+> > 		if (cfqd->busy_queues == 1)
+> > 			max_dispatch = -1;
+> > 		else
+> > 			/*
+> > 			 * Normally we start throttling cfqq when cfq_quantum/2
+> > 			 * requests have been dispatched. But we can drive
+> > 			 * deeper queue depths at the beginning of slice
+> > 			 * subjected to upper limit of cfq_quantum.
+> > 			 */
+> > 			max_dispatch = cfqd->cfq_quantum;
+> ok.
+> 
+> Thanks,
+> Shaohua
