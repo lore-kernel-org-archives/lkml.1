@@ -1,59 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756572Ab0AMWJR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756608Ab0AMWNP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756572Ab0AMWJR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 17:09:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756529Ab0AMWJQ
+	id S1756608Ab0AMWNP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 17:13:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756368Ab0AMWNO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 17:09:16 -0500
-Received: from www.tglx.de ([62.245.132.106]:42056 "EHLO www.tglx.de"
+	Wed, 13 Jan 2010 17:13:14 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:16987 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756414Ab0AMWJQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 17:09:16 -0500
-Date: Wed, 13 Jan 2010 23:08:49 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Xiaotian Feng <dfeng@redhat.com>
-cc: linux-kernel@vger.kernel.org, Magnus Damm <damm@igel.co.jp>,
-       H Hartley Sweeten <hsweeten@visionengravers.com>
-Subject: Re: [PATCH] clockevent: don't remove broadcast device when cpu is
- dead
-In-Reply-To: <4B4D2678.5090601@redhat.com>
-Message-ID: <alpine.LFD.2.00.1001132305280.6420@localhost.localdomain>
-References: <1262834564-13033-1-git-send-email-dfeng@redhat.com> <alpine.LFD.2.00.1001121300190.6420@localhost.localdomain> <4B4D2678.5090601@redhat.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	id S1755540Ab0AMWNN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jan 2010 17:13:13 -0500
+Message-ID: <4B4E4551.2010302@redhat.com>
+Date: Wed, 13 Jan 2010 17:12:33 -0500
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: rostedt@goodmis.org
+CC: Frederic Weisbecker <fweisbec@gmail.com>,
+       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>,
+       Arnaldo Carvalho de Melo <acme@infradead.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       utrace-devel <utrace-devel@redhat.com>,
+       Jim Keniston <jkenisto@us.ibm.com>, Maneesh Soni <maneesh@in.ibm.com>,
+       Mark Wielaard <mjw@redhat.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC] [PATCH 7/7] Ftrace plugin for Uprobes
+References: <20100111122521.22050.3654.sendpatchset@srikar.in.ibm.com>	 <20100111122608.22050.94088.sendpatchset@srikar.in.ibm.com>	 <20100112045454.GJ5243@nowhere> <1263272933.28171.3804.camel@gandalf.stny.rr.com> <4B4E41FF.4020800@redhat.com>
+In-Reply-To: <4B4E41FF.4020800@redhat.com>
+X-Enigmail-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 13 Jan 2010, Xiaotian Feng wrote:
-> On 01/12/2010 09:20 PM, Thomas Gleixner wrote:
-> > On Thu, 7 Jan 2010, Xiaotian Feng wrote:
-> > 
-> > > Marc reported BUG during shutdown, after debugging, kernel is trying
-> > > to remove a broadcast device which mode is CLOCK_EVT_MODE_ONESHOT.
-> > > 
-> > > The root cause for this bug is that in clockevents_notify,
-> > > "cpumask_weight(dev->cpumask) == 1" is always true even if dev is a
-> > 
-> > Why is cpumask_weight(dev->cpumask) == 1 always true when we shutdown
-> > a non boot cpu ?
-> > 
-> > The broadcast device is not a per cpu device and the cpumask should
-> > not only contain the CPU which is shut down !
+Masami Hiramatsu wrote:
+> Steven Rostedt wrote:
+>> On Tue, 2010-01-12 at 05:54 +0100, Frederic Weisbecker wrote:
+>>
+>>> Now what if I want to launch ls and want to profile a function
+>>> inside. What can I do with a trace event. I can't create the
+>>> probe event based on a pid as I don't know it in advance.
+>>> I could give it the ls cmdline and it manages to activate
+>>> on the next ls launched. This is racy as another ls can
+>>> be launched concurrently.
+>>
+>> You make a wrapper script:
+>>
+>> #!/bin/sh
+>> <add probe to ls with pid> $$
+>> exec $*
+>>
+>> I do this all the time to limit the function tracer to a specific app.
+>>
+>> #!/bin/sh
+>> echo $$ > /debug/tracing/set_ftrace_pid
+>> echo function > /debug/tracing/current_tracer
+>> exec $*
 > 
-> At least for hpet broadcast dev, it's dev->cpumask is only contain the CPU
-> which it is initialized from.
+> I recommend you to add below line at the end of the script,
+> from my experience. :)
+> 
+> echo nop > /debug/tracing/current_tracer
 
-Which is fundamentaly wrong and the root cause of the problem. I'll
-have a look tomorrow morning when my brain is more awake than now.
+Oops, my bad, it doesn't work after exec...
+But, it is very important to disable function tracer after
+tracing target process.
 
-> And for broadcast device, kernel is using tick_broadcast_mask not
-> dev->cpumask, right?
+So, perhaps, below script may work.
 
-No, tick_broadcast_mask is the bitmask which tells us which cpus get
-the broadcast IPI.
+#!/bin/sh
+(echo $BASHPID > /debug/tracing/set_ftrace_pid
+ echo function > /debug/tracing/current_tracer
+ exec $*)
+echo nop > /debug/tracing/current_tracer
 
 Thanks,
 
-	tglx
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
+
