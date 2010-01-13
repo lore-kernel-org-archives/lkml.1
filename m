@@ -1,52 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756568Ab0AMV5Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756494Ab0AMV67@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756568Ab0AMV5Y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 16:57:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756494Ab0AMV4K
+	id S1756494Ab0AMV67 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 16:58:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755555Ab0AMV66
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 16:56:10 -0500
-Received: from mail.perches.com ([173.55.12.10]:1130 "EHLO mail.perches.com"
+	Wed, 13 Jan 2010 16:58:58 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:9873 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756522Ab0AMV4I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 16:56:08 -0500
-From: Joe Perches <joe@perches.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 2/5] MAINTAINERS: Remove HAYES ESP SERIAL DRIVER
-Date: Wed, 13 Jan 2010 13:56:04 -0800
-Message-Id: <1e3d9e25bef4db66aeeef48395d76d9205b3922c.1263419518.git.joe@perches.com>
-X-Mailer: git-send-email 1.6.6.rc0.57.gad7a
-In-Reply-To: <cover.1263419518.git.joe@perches.com>
-References: <cover.1263419518.git.joe@perches.com>
+	id S1752192Ab0AMV65 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jan 2010 16:58:57 -0500
+Message-ID: <4B4E41FF.4020800@redhat.com>
+Date: Wed, 13 Jan 2010 16:58:23 -0500
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
+MIME-Version: 1.0
+To: rostedt@goodmis.org
+CC: Frederic Weisbecker <fweisbec@gmail.com>,
+       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>,
+       Arnaldo Carvalho de Melo <acme@infradead.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       utrace-devel <utrace-devel@redhat.com>,
+       Jim Keniston <jkenisto@us.ibm.com>, Maneesh Soni <maneesh@in.ibm.com>,
+       Mark Wielaard <mjw@redhat.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC] [PATCH 7/7] Ftrace plugin for Uprobes
+References: <20100111122521.22050.3654.sendpatchset@srikar.in.ibm.com>	 <20100111122608.22050.94088.sendpatchset@srikar.in.ibm.com>	 <20100112045454.GJ5243@nowhere> <1263272933.28171.3804.camel@gandalf.stny.rr.com>
+In-Reply-To: <1263272933.28171.3804.camel@gandalf.stny.rr.com>
+X-Enigmail-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit f53a2ade0bb9f2a81f473e6469155172a96b7c38 removed it
+Steven Rostedt wrote:
+> On Tue, 2010-01-12 at 05:54 +0100, Frederic Weisbecker wrote:
+> 
+>> Now what if I want to launch ls and want to profile a function
+>> inside. What can I do with a trace event. I can't create the
+>> probe event based on a pid as I don't know it in advance.
+>> I could give it the ls cmdline and it manages to activate
+>> on the next ls launched. This is racy as another ls can
+>> be launched concurrently.
+> 
+> You make a wrapper script:
+> 
+> #!/bin/sh
+> <add probe to ls with pid> $$
+> exec $*
+> 
+> I do this all the time to limit the function tracer to a specific app.
+> 
+> #!/bin/sh
+> echo $$ > /debug/tracing/set_ftrace_pid
+> echo function > /debug/tracing/current_tracer
+> exec $*
 
-Signed-off-by: Joe Perches <joe@perches.com>
----
- MAINTAINERS |    7 -------
- 1 files changed, 0 insertions(+), 7 deletions(-)
+I recommend you to add below line at the end of the script,
+from my experience. :)
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index e461c0a..5747aaf 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -2469,13 +2469,6 @@ L:	linux-parisc@vger.kernel.org
- S:	Maintained
- F:	sound/parisc/harmony.*
- 
--HAYES ESP SERIAL DRIVER
--M:	"Andrew J. Robinson" <arobinso@nyx.net>
--W:	http://www.nyx.net/~arobinso
--S:	Maintained
--F:	Documentation/serial/hayes-esp.txt
--F:	drivers/char/esp.c
--
- HEWLETT-PACKARD SMART2 RAID DRIVER
- M:	Chirag Kantharia <chirag.kantharia@hp.com>
- L:	iss_storagedev@hp.com
+echo nop > /debug/tracing/current_tracer
+
+Thank you,
+
+
 -- 
-1.6.6.rc0.57.gad7a
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
 
