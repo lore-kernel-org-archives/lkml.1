@@ -1,89 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756149Ab0AMRIr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756171Ab0AMRMJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756149Ab0AMRIr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 12:08:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756106Ab0AMRIq
+	id S1756171Ab0AMRMJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 12:12:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756137Ab0AMRMI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 12:08:46 -0500
-Received: from mail-yx0-f187.google.com ([209.85.210.187]:59356 "EHLO
-	mail-yx0-f187.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756078Ab0AMRIp (ORCPT
+	Wed, 13 Jan 2010 12:12:08 -0500
+Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:40794 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756087Ab0AMRMH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 12:08:45 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=mRwlVOs5KqENWbND2S7DE8AGHMf3fhdgGizvFfUWcssIiRLBn0NQLUm9tJCyJBI8X+
-         CBV/xrUTlz2ezhumUW6qW0n7ozQ9drrUc/0PImzLHRJjJqkpDpH0gPJ1p+OniMpkDIuv
-         DitwUP2ARVmqxog22DMZbegZYMbBHnb+/OGUE=
-Message-ID: <4B4DFE1A.4000606@pobox.com>
-Date: Wed, 13 Jan 2010 12:08:42 -0500
-From: Jeff Garzik <jgarzik@pobox.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
+	Wed, 13 Jan 2010 12:12:07 -0500
+Message-ID: <4B4DFE84.2080304@s5r6.in-berlin.de>
+Date: Wed, 13 Jan 2010 18:10:28 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.23) Gecko/20090825 SeaMonkey/1.1.18
 MIME-Version: 1.0
-To: Krzysztof Halasa <khc@pm.waw.pl>
-CC: Robert Hancock <hancockrwd@gmail.com>,
-       Seth Heasley <seth.heasley@intel.com>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2.6.32.3] ahci: AHCI and RAID mode SATA patch for Intel
- Cougar Point DeviceIDs
-References: <201001121700.18234.seth.heasley@intel.com>	<4B4D4EAA.2010109@gmail.com> <4B4DAA68.60608@pobox.com> <m3my0i6nou.fsf@intrepid.localdomain>
-In-Reply-To: <m3my0i6nou.fsf@intrepid.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Joe Perches <joe@perches.com>
+CC: Jan Engelhardt <jengelh@medozas.de>, Patrick McHardy <kaber@trash.net>,
+       linux-kernel@vger.kernel.org, netfilter-devel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH V3] MAINTAINERS: Document list types, add "A:" section
+ type, update NETFILTER
+References: <cover.1262726222.git.joe@perches.com>	 <bccf36219f3ea5a9b7565734bc87095bc986dbe0.1262726222.git.joe@perches.com>	 <1262805798.1952.105.camel@Joe-Laptop.home>  <4B4B02BE.5060209@trash.net>	 <1263208183.1907.50.camel@Joe-Laptop.home>  <4B4B0806.40801@trash.net>	 <1263209269.1907.61.camel@Joe-Laptop.home>	 <alpine.LSU.2.01.1001111229460.26235@obet.zrqbmnf.qr>	 <1263321994.25973.15.camel@Joe-Laptop.home>	 <4B4DE32F.7030708@s5r6.in-berlin.de> <1263399300.8011.68.camel@Joe-Laptop.home>
+In-Reply-To: <1263399300.8011.68.camel@Joe-Laptop.home>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/13/2010 10:15 AM, Krzysztof Halasa wrote:
-> Jeff Garzik<jgarzik@pobox.com>  writes:
->
->> Well, two lines of thinking here:
->>
->> * some of lines of Intel chips do not separate AHCI into a separate
->> PCI ID rather legacy IDE interface.  When an AHCI interface exists and
->> AHCI/IDE share the same PCI ID, we default to using AHCI.  Thus, some
->> of those PCI ID matches in ahci.c's PCI table may not get caught by
->> the generic PCI class match at the end of the table.
->>
->> * the cost carrying redundant PCI IDs seems low, harmless, and
->> potentially helpful.
->
-> Also people may use things like this:
->
-> diff --git a/drivers/ata/ahci.c b/drivers/ata/ahci.c
-> index a3241a1..0616bbb 100644
-> --- a/drivers/ata/ahci.c
-> +++ b/drivers/ata/ahci.c
-> @@ -561,9 +561,11 @@ static const struct pci_device_id ahci_pci_tbl[] = {
->   	{ PCI_VDEVICE(INTEL, 0x3b2c), board_ahci }, /* PCH RAID */
->   	{ PCI_VDEVICE(INTEL, 0x3b2f), board_ahci }, /* PCH AHCI */
->
-> +#ifdef DOESNT_WORK_FOR_ME
->   	/* JMicron 360/1/3/5/6, match class to avoid IDE function */
->   	{ PCI_VENDOR_ID_JMICRON, PCI_ANY_ID, PCI_ANY_ID, PCI_ANY_ID,
->   	  PCI_CLASS_STORAGE_SATA_AHCI, 0xffffff, board_ahci_ign_iferr },
-> +#endif
->
->   	/* ATI */
->   	{ PCI_VDEVICE(ATI, 0x4380), board_ahci_sb600 }, /* ATI SB600 */
-> @@ -667,9 +669,11 @@ static const struct pci_device_id ahci_pci_tbl[] = {
->   	/* Promise */
->   	{ PCI_VDEVICE(PROMISE, 0x3f20), board_ahci },	/* PDC42819 */
->
-> +#ifdef DOESNT_WORK_FOR_ME
->   	/* Generic, PCI class code for AHCI */
->   	{ PCI_ANY_ID, PCI_ANY_ID, PCI_ANY_ID, PCI_ANY_ID,
->   	  PCI_CLASS_STORAGE_SATA_AHCI, 0xffffff, board_ahci },
-> +#endif
->
+Joe Perches wrote:
+> On Wed, 2010-01-13 at 16:13 +0100, Stefan Richter wrote:
+>> Joe Perches wrote:
+>> > +	A: Additional useful unstructured information.
+>> Can be implemented with a level of indirection via the W: entries.
+> 
+> Mailing lists aren't web addresses.
 
-I'm not sure I understand your point.  Are there ahci problems with the 
-generic entries, that remain unresolved?
+Project web sites typically contain contact pages (which is what you
+used the first two proposed A: entries for --- contacts that apparently
+do not play a role for patch submission), and web sites can carry any
+other "unstructured information".
 
-	Jeff
-
-
-
-
+Keep redundancy low.
+-- 
+Stefan Richter
+-=====-==-=- ---= -==-=
+http://arcgraph.de/sr/
