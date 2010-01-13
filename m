@@ -1,88 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753850Ab0AMNkJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755269Ab0AMNlh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753850Ab0AMNkJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 08:40:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755182Ab0AMNkG
+	id S1755269Ab0AMNlh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 08:41:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755166Ab0AMNlf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 08:40:06 -0500
-Received: from casper.infradead.org ([85.118.1.10]:36231 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754993Ab0AMNkF (ORCPT
+	Wed, 13 Jan 2010 08:41:35 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:43784 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754965Ab0AMNle (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 08:40:05 -0500
-Date: Wed, 13 Jan 2010 11:39:52 -0200
-From: Arnaldo Carvalho de Melo <acme@infradead.org>
-To: Kirill Smelkov <kirr@landau.phys.spbu.ru>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Mike Galbraith <efault@gmx.de>, Masami Hiramatsu <mhiramat@redhat.com>
-Subject: Re: [PATCH 1/6] perf top: teach it to autolocate vmlinux
-Message-ID: <20100113133952.GD2934@ghostprotocols.net>
-References: <cover.1262952612.git.kirr@landau.phys.spbu.ru>
- <de6bae3b8d61ea3db1a797f31ebea6e3ed8c00a8.1262952612.git.kirr@landau.phys.spbu.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <de6bae3b8d61ea3db1a797f31ebea6e3ed8c00a8.1262952612.git.kirr@landau.phys.spbu.ru>
-X-Url: http://acmel.wordpress.com
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <acme@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Wed, 13 Jan 2010 08:41:34 -0500
+Date: Wed, 13 Jan 2010 13:44:45 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Chaithrika U S <chaithrika@ti.com>
+Cc: linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org,
+       davinci-linux-open-source@linux.davincidsp.com,
+       khilman@deeprootsystems.com, akpm@linux-foundation.org,
+       Chaithrika U S <chaithrika@ti.com>
+Subject: Re: [PATCH] serial: 8250: Add cpufreq support
+Message-ID: <20100113134445.010d4f1c@lxorguk.ukuu.org.uk>
+In-Reply-To: <1263386121-6644-1-git-send-email-chaithrika@ti.com>
+References: <1263386121-6644-1-git-send-email-chaithrika@ti.com>
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.18.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Fri, Jan 08, 2010 at 03:23:04PM +0300, Kirill Smelkov escreveu:
-> By relying on logic in dso__load_kernel_sym(), we can automatically load
-> vmlinux.
-> 
-> The only thing which needs to be adjusted, is how --sym-annotate option
-> is handled - now we can't rely on vmlinux been loaded until full
-> successful pass of dso__load_vmlinux(), but that's not the case if we'll
-> do sym_filter_entry setup in symbol_filter().
-> 
-> So move this step right after event__process_sample() where we know the
-> whole dso__load_kernel_sym() pass is done.
-> 
-> By the way, though conceptually similar `perf top` still can't annotate
-> userspace - see next patches with fixes.
-> 
-> Signed-off-by: Kirill Smelkov <kirr@landau.phys.spbu.ru>
-> Cc: Mike Galbraith <efault@gmx.de>
-> ---
+> +static int serial8250_cpufreq_transition(struct notifier_block *nb,
+> +					     unsigned long val, void *data)
+> +{
+> +	struct uart_8250_port *p;
+> +	struct uart_port *uport;
+> +
+> +	p = container_of(nb, struct uart_8250_port, freq_transition);
+> +	uport = &p->port;
+> +
+> +	if (IS_ERR(p->clk))
+> +		goto cpu_freq_exit;
+> +
+> +	if (p->port.uartclk == clk_get_rate(p->clk))
+> +		goto cpu_freq_exit;
+> +
+> +	p->port.uartclk = clk_get_rate(p->clk);
+> +	if (val == CPUFREQ_POSTCHANGE) {
+> +		struct ktermios *termios;
+> +		struct tty_struct *tty;
+> +		if (uport->state == NULL)
+> +			goto cpu_freq_exit;
+> +
+> +		tty = uport->state->port.tty;
 
-<SNIP>
+Need locking on port->tty.
 
-> @@ -951,6 +953,13 @@ static void event__process_sample(const event_t *self,
->  	    al.sym == NULL || al.filtered)
->  		return;
->  
-> +	/* let's see, whether we need to install initial sym_filter_entry */
-> +	if (sym_filter_entry_sched) {
-> +		sym_filter_entry = sym_filter_entry_sched;
-> +		sym_filter_entry_sched = NULL;
-> +		parse_source(sym_filter_entry);
-> +	}
+> +		if (tty == NULL)
+> +			goto cpu_freq_exit;
 > +
 
-You're assuming that the first sample is for the kernel, right? It may
-be not and then the vmlinux won't be loaded at this point.
+Need locking on tty->termios
 
-I think that the right way is to force it to be loaded by calling:
+I'd say this is also probably at the wrong level - why not do it at the
+uart_port level instead (ie move the code you have into serial_core using
+uart_port) - you've made it all nicely generic already.
 
-	map__load(session->vmlinux_maps[MAP__FUNCTION], session, filter);
-
-after perf_session__create_kernel_maps and before parse_source(), ok?
-
-	You can even create a helper:
-
-int perf_session__load_vmlinux(struct perf_session *self,
-                               symbol_filter_t filter)
-{
-	return map__load(session->vmlinux_maps[MAP__FUNCTION],
-			 session, filter);
-}
-
-	As this probably will be of interest for tools such as 'perf
-probe', etc.
-
-- Arnaldo
+Alan
