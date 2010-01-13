@@ -1,170 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756446Ab0AMVbe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755527Ab0AMVeB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756446Ab0AMVbe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 16:31:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756134Ab0AMVbd
+	id S1755527Ab0AMVeB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 16:34:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752707Ab0AMVeA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 16:31:33 -0500
-Received: from outpost1.zedat.fu-berlin.de ([130.133.4.66]:50365 "EHLO
-	outpost1.zedat.fu-berlin.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751809Ab0AMVbd (ORCPT
+	Wed, 13 Jan 2010 16:34:00 -0500
+Received: from outbound-mail-303.bluehost.com ([67.222.53.10]:53304 "HELO
+	outbound-mail-303.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751911Ab0AMVd7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 16:31:33 -0500
-Date: Wed, 13 Jan 2010 22:31:19 +0100
-From: Benjamin Valentin <benpicco@zedat.fu-berlin.de>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] drivers/input/joystick/xpad.c: Add rumble support for
- original xbox controller
-Message-ID: <20100113223119.56532356@rechenknecht2k7>
-In-Reply-To: <20100110195641.GA27553@core.coreip.homeip.net>
-References: <20100108033215.447c814e@rechenknecht2k7>
-	<20100108075054.GA3696@core.coreip.homeip.net>
-	<20100108112610.0b78785b@piBook>
-	<20100110075615.GC16057@core.coreip.homeip.net>
-	<20100110191112.5c66dc94@rechenknecht2k7>
-	<20100110195641.GA27553@core.coreip.homeip.net>
+	Wed, 13 Jan 2010 16:33:59 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=ZnAN2y2C/p9CLhO6PkttOKK6Dgnxx4MRb75kBN+s0WKT6/YN3ADDQBuKNBk72ItsDBaLW12LWsxnYWnzqey+KN5kpkO9rf+nfvWU0u7RCFC0zeBZg+DlrnWwHJPR/Xqr;
+Date: Wed, 13 Jan 2010 13:33:57 -0800
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       airlied@linux.ie
+Subject: Re: Linux 2.6.33-rc4
+Message-ID: <20100113133357.67f9df6d@jbarnes-piketon>
+In-Reply-To: <84144f021001131303u56fa5470ua1c27dfef9f3de81@mail.gmail.com>
+References: <alpine.LFD.2.00.1001122139411.17145@localhost.localdomain>
+	<84144f021001131303u56fa5470ua1c27dfef9f3de81@mail.gmail.com>
 X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=PGP-SHA1;
- boundary="Sig_/m8EEHk3j_5FnDqtM8Gl4gmi"; protocol="application/pgp-signature"
-X-Originating-IP: 87.123.121.33
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Sig_/m8EEHk3j_5FnDqtM8Gl4gmi
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+On Wed, 13 Jan 2010 23:03:00 +0200
+Pekka Enberg <penberg@cs.helsinki.fi> wrote:
 
-To avoid confusion, I am resubmitting a cleaned up version of the patch
-against 2.6.33-r4.
-I have changed GFP_KERNEL to GFP_ATOMIC as you did in your tree [1],
-this seems to clear the oops in Virtualbox when unplugging the device
-while sending an effect.
+> On Wed, Jan 13, 2010 at 7:44 AM, Linus Torvalds
+> <torvalds@linux-foundation.org> wrote:
+> > Hmm. Odd release. Something like 40% of the patches are in DRM
+> > (mostly nouveau and radeon, both staging, so it's a bit less scary
+> > than it sounds. But there's a noticeable i915 component too).
+> > That's all pretty unusual, afaik.
+> 
+> 2.6.33-rc4 still suffers from an annoying screen flicker with i915 and
+> KMS on my machine. I *think* it started with 2.6.33-rc1 but I haven't
+> had the time to dig deeper.
 
-[1]
-http://git.kernel.org/gitweb.cgi?p=3Dlinux/kernel/git/dtor/input.git;a=3Dco=
-mmit;h=3Ddd38d6889dc5dae2014d9eac72fae32f477f294e)
+Does this patch fix it?  If so I'll queue something like this up for
+-rc5.
 
-Signed-off-by: Benjamin Valentin <benpicco@zedat.fu-berlin.de>
---- a/drivers/input/joystick/xpad.c	2010-01-13 21:35:35.081651802 +0100
-+++ b/drivers/input/joystick/xpad.c	2010-01-13 22:02:29.313757056 +0100
-@@ -446,7 +446,7 @@ static void xpad_irq_in(struct urb *urb)
- 	}
-=20
- exit:
--	retval =3D usb_submit_urb (urb, GFP_ATOMIC);
-+	retval =3D usb_submit_urb(urb, GFP_ATOMIC);
- 	if (retval)
- 		err ("%s - usb_submit_urb failed with result %d",
- 		     __func__, retval);
-@@ -505,7 +505,7 @@ static int xpad_init_output(struct usb_i
- 	struct usb_endpoint_descriptor *ep_irq_out;
- 	int error =3D -ENOMEM;
-=20
--	if (xpad->xtype !=3D XTYPE_XBOX360)
-+	if (xpad->xtype !=3D XTYPE_XBOX360 && xpad->xtype !=3D XTYPE_XBOX)
- 		return 0;
-=20
- 	xpad->odata =3D usb_buffer_alloc(xpad->udev, XPAD_PKT_LEN,
-@@ -535,13 +535,13 @@ static int xpad_init_output(struct usb_i
-=20
- static void xpad_stop_output(struct usb_xpad *xpad)
- {
--	if (xpad->xtype =3D=3D XTYPE_XBOX360)
-+	if (xpad->xtype =3D=3D XTYPE_XBOX360 || xpad->xtype =3D=3D XTYPE_XBOX)
- 		usb_kill_urb(xpad->irq_out);
- }
-=20
- static void xpad_deinit_output(struct usb_xpad *xpad)
- {
--	if (xpad->xtype =3D=3D XTYPE_XBOX360) {
-+	if (xpad->xtype =3D=3D XTYPE_XBOX360 || xpad->xtype =3D=3D XTYPE_XBOX) {
- 		usb_free_urb(xpad->irq_out);
- 		usb_buffer_free(xpad->udev, XPAD_PKT_LEN,
- 				xpad->odata, xpad->odata_dma);
-@@ -554,24 +554,45 @@ static void xpad_stop_output(struct usb_
- #endif
-=20
- #ifdef CONFIG_JOYSTICK_XPAD_FF
--static int xpad_play_effect(struct input_dev *dev, void *data,
--			    struct ff_effect *effect)
-+static int xpad_send_rumble(struct usb_xpad *xpad, __u8 left, __u8 right) {
-+	switch(xpad->xtype) {
-+		case XTYPE_XBOX:
-+			xpad->odata[0] =3D 0x00;
-+			xpad->odata[1] =3D 0x06;
-+			xpad->odata[2] =3D 0x00;
-+			xpad->odata[3] =3D left;  // left actuator (strong)
-+			xpad->odata[4] =3D 0x00;
-+			xpad->odata[5] =3D right; // right actuator (weak)
-+			xpad->irq_out->transfer_buffer_length =3D 6;
-+			break;
-+		case XTYPE_XBOX360:
-+			xpad->odata[0] =3D 0x00;
-+			xpad->odata[1] =3D 0x08;
-+			xpad->odata[2] =3D 0x00;
-+			xpad->odata[3] =3D left;  // left actuator (strong)
-+			xpad->odata[4] =3D right; // right actuator (weak)
-+			xpad->odata[5] =3D 0x00;
-+			xpad->odata[6] =3D 0x00;
-+			xpad->odata[7] =3D 0x00;
-+			xpad->irq_out->transfer_buffer_length =3D 8;
-+			break;
-+		default:
-+			dbg("%s - rumble command sent to unsupported xpad type: %d",=20
-+				__func__, xpad->xtype);
-+			return 0;
-+		}
-+	=09
-+		return usb_submit_urb(xpad->irq_out, GFP_ATOMIC);
-+}
-+
-+static int xpad_play_effect(struct input_dev *dev, void *data, struct ff_e=
-ffect *effect)
- {
- 	struct usb_xpad *xpad =3D input_get_drvdata(dev);
-=20
- 	if (effect->type =3D=3D FF_RUMBLE) {
--		__u16 strong =3D effect->u.rumble.strong_magnitude;
--		__u16 weak =3D effect->u.rumble.weak_magnitude;
--		xpad->odata[0] =3D 0x00;
--		xpad->odata[1] =3D 0x08;
--		xpad->odata[2] =3D 0x00;
--		xpad->odata[3] =3D strong / 256;
--		xpad->odata[4] =3D weak / 256;
--		xpad->odata[5] =3D 0x00;
--		xpad->odata[6] =3D 0x00;
--		xpad->odata[7] =3D 0x00;
--		xpad->irq_out->transfer_buffer_length =3D 8;
--		usb_submit_urb(xpad->irq_out, GFP_KERNEL);
-+		__u8 strong =3D effect->u.rumble.strong_magnitude / 256;
-+		__u8 weak   =3D effect->u.rumble.weak_magnitude / 256;
-+		xpad_send_rumble(xpad, strong, weak);
- 	}
-=20
- 	return 0;
-@@ -579,7 +600,7 @@ static int xpad_play_effect(struct input
-=20
- static int xpad_init_ff(struct usb_xpad *xpad)
- {
--	if (xpad->xtype !=3D XTYPE_XBOX360)
-+	if (xpad->xtype !=3D XTYPE_XBOX360 && xpad->xtype !=3D XTYPE_XBOX)
- 		return 0;
-=20
- 	input_set_capability(xpad->dev, EV_FF, FF_RUMBLE);
+-- 
+Jesse Barnes, Intel Open Source Technology Center
 
---Sig_/m8EEHk3j_5FnDqtM8Gl4gmi
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAktOO6cACgkQg4D7JNscH9pyfgCeICgfnRbZcpGaI/aD1rj6jquQ
-fqIAnjA4BXdecr44BFWSzSAtCnxa7dRy
-=CvxJ
------END PGP SIGNATURE-----
-
---Sig_/m8EEHk3j_5FnDqtM8Gl4gmi--
+diff --git a/drivers/gpu/drm/i915/intel_display.c b/drivers/gpu/drm/i915/intel_display.c
+index 9187a17..0ab1bef 100644
+--- a/drivers/gpu/drm/i915/intel_display.c
++++ b/drivers/gpu/drm/i915/intel_display.c
+@@ -3806,7 +3806,7 @@ static void intel_increase_pllclock(struct drm_crtc *crtc, bool schedule)
+ 	if (IS_IRONLAKE(dev))
+ 		return;
+ 
+-	if (!dev_priv->lvds_downclock_avail)
++	if (!dev_priv->lvds_downclock_avail || 1)
+ 		return;
+ 
+ 	if (!HAS_PIPE_CXSR(dev) && (dpll & DISPLAY_RATE_SELECT_FPA1)) {
+@@ -3845,7 +3845,7 @@ static void intel_decrease_pllclock(struct drm_crtc *crtc)
+ 	if (IS_IRONLAKE(dev))
+ 		return;
+ 
+-	if (!dev_priv->lvds_downclock_avail)
++	if (!dev_priv->lvds_downclock_avail || 1)
+ 		return;
+ 
+ 	/*
