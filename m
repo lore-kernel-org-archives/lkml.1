@@ -1,72 +1,187 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756645Ab0AMWa0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932191Ab0AMWah@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756645Ab0AMWa0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 17:30:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756629Ab0AMWaZ
+	id S932191Ab0AMWah (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 17:30:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756649Ab0AMWag
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 17:30:25 -0500
-Received: from mga02.intel.com ([134.134.136.20]:41237 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756551Ab0AMWaY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 17:30:24 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,270,1262592000"; 
-   d="scan'208";a="483782299"
-Subject: Re: [PATCH -v2 5/5] x86: use dmi check to treat disabled cpus as
- hotplug cpus.
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-Reply-To: Suresh Siddha <suresh.b.siddha@intel.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Yinghai Lu <yinghai@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "ananth@in.ibm.com" <ananth@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <4B4E48BB.5030902@zytor.com>
-References: <1263338274-6485-1-git-send-email-yinghai@kernel.org>
-	 <1263338274-6485-5-git-send-email-yinghai@kernel.org>
-	 <1263340563.2854.1011.camel@sbs-t61.sc.intel.com>
-	 <4B4D0E39.10200@kernel.org> <87tyupfzk8.fsf@basil.nowhere.org>
-	 <4B4E427D.9090207@zytor.com> <20100113222348.GE24818@basil.fritz.box>
-	 <4B4E48BB.5030902@zytor.com>
-Content-Type: text/plain
-Organization: Intel Corp
-Date: Wed, 13 Jan 2010 14:29:13 -0800
-Message-Id: <1263421753.2865.103.camel@sbs-t61.sc.intel.com>
+	Wed, 13 Jan 2010 17:30:36 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:44127 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756629Ab0AMWae (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jan 2010 17:30:34 -0500
+Date: Wed, 13 Jan 2010 14:28:27 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Zheng, Shaohui" <shaohui.zheng@intel.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "ak@linux.intel.com" <ak@linux.intel.com>,
+       "y-goto@jp.fujitsu.com" <y-goto@jp.fujitsu.com>,
+       Dave Hansen <haveblue@us.ibm.com>,
+       "Wu, Fengguang" <fengguang.wu@intel.com>,
+       "x86@kernel.org" <x86@kernel.org>
+Subject: Re: [PATCH-RESEND v4] memory-hotplug: create /sys/firmware/memmap
+ entry for new memory
+Message-Id: <20100113142827.26b2269e.akpm@linux-foundation.org>
+In-Reply-To: <DA586906BA1FFC4384FCFD6429ECE86031560F92@shzsmsx502.ccr.corp.intel.com>
+References: <DA586906BA1FFC4384FCFD6429ECE86031560F92@shzsmsx502.ccr.corp.intel.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2010-01-13 at 14:27 -0800, H. Peter Anvin wrote:
-> On 01/13/2010 02:23 PM, Andi Kleen wrote:
-> >> There are configurations in which percpu memory is in the megabytes.
-> > 
-> > There used to be some like this (with some broken debug code), but they
-> > got all fixed i believe to only allocate on real cpu hotplug. 
-> > 
-> > If not the right way is to fix them, not add DMI blacklists.
-> > 
-> > Beside when you enable debug code you probably don't care about 
-> > a few MB too much.
-> > 
-> >> This is exactly why we need high water mark allocation of percpu memory:
-> > 
-> > No we just need to fix any percpu pigs (if there are really any left,
-> > I did a couple of patches some time ago)
-> > 
-> > "Don't work around broken code -- fix it"
-> > 
+On Mon, 11 Jan 2010 10:00:11 +0800
+"Zheng, Shaohui" <shaohui.zheng@intel.com> wrote:
+
+> Resend the memmap patch v4 to mailing-list after follow up fengguang's review 
+> comments. 
 > 
-> Well, that *is* working around broken code, in this case the broken code
-> is the percpu allocation strategy.
+> memory-hotplug: create /sys/firmware/memmap entry for hot-added memory
+> 
+> Interface firmware_map_add was not called in explict, Remove it and add function
+> firmware_map_add_hotplug as hotplug interface of memmap.
+> 
+> When we hot-add new memory, sysfs does not export memmap entry for it. we add
+>  a call in function add_memory to function firmware_map_add_hotplug.
+> 
+> Add a new function add_sysfs_fw_map_entry to create memmap entry, it can avoid 
+> duplicated codes.
+> 
+> Thanks for the careful review from Fengguang Wu and Dave Hansen.
+> 
 
-Andi, Recently percpu folks changed the per-cpu static first chunk to
-PMD SIZE right. I think that is what causing all this issue.
+Please describe the format of the proposed sysfs file.  Example output
+would be suitable.
 
-thanks,
-suresh
+> @@ -123,20 +123,40 @@ static int firmware_map_add_entry(u64 start, u64 end,
+>  }
+>  
+>  /**
+> - * firmware_map_add() - Adds a firmware mapping entry.
+> + * Add memmap entry on sysfs
+> + */
+> +static int add_sysfs_fw_map_entry(struct firmware_map_entry *entry)
+> +{
+> +	static int map_entries_nr;
+> +	static struct kset *mmap_kset;
+> +
+> +	if (!mmap_kset) {
+> +		mmap_kset = kset_create_and_add("memmap", NULL, firmware_kobj);
+> +		if (!mmap_kset)
+> +			return -ENOMEM;
+> +	}
 
+This is a bit racy if two threads execute it at the same time.  I guess
+it doesn't matter.
+
+
+> +	entry->kobj.kset = mmap_kset;
+> +	if (kobject_add(&entry->kobj, NULL, "%d", map_entries_nr++))
+> +		kobject_put(&entry->kobj);
+
+hm.  Is this refcounting correct?
+
+> +
+> +	return 0;
+> +}
+
+One caller of add_sysfs_fw_map_entry() is __meminit and the other is
+__init.  So this function can be __meminit?
+
+> +/**
+> + * firmware_map_add_early() - Adds a firmware mapping entry.
+>   * @start: Start of the memory range.
+>   * @end:   End of the memory range (inclusive).
+>   * @type:  Type of the memory range.
+>   *
+> - * This function uses kmalloc() for memory
+> - * allocation. Use firmware_map_add_early() if you want to use the bootmem
+> - * allocator.
+> + * Adds a firmware mapping entry. This function uses the bootmem allocator
+> + * for memory allocation.
+>   *
+>   * That function must be called before late_initcall.
+>   *
+>   * Returns 0 on success, or -ENOMEM if no memory could be allocated.
+>   **/
+> -int firmware_map_add(u64 start, u64 end, const char *type)
+> +int __init firmware_map_add_early(u64 start, u64 end, const char *type)
+>  {
+>  	struct firmware_map_entry *entry;
+>  
+> @@ -148,27 +168,31 @@ int firmware_map_add(u64 start, u64 end, const char *type)
+>  }
+>  
+>  /**
+> - * firmware_map_add_early() - Adds a firmware mapping entry.
+> + * firmware_map_add_hotplug() - Adds a firmware mapping entry when we do
+> + * memory hotplug.
+>   * @start: Start of the memory range.
+>   * @end:   End of the memory range (inclusive).
+>   * @type:  Type of the memory range.
+>   *
+> - * Adds a firmware mapping entry. This function uses the bootmem allocator
+> - * for memory allocation. Use firmware_map_add() if you want to use kmalloc().
+> - *
+> - * That function must be called before late_initcall.
+> + * Adds a firmware mapping entry. This function is for memory hotplug, it is
+> + * simiar with function firmware_map_add_early. the only difference is that
+
+s/simiar/similar/
+s/with/to/
+s/the/The/
+s/function firmware_map_add_early/firmware_map_add_early()/
+
+> + * it will create the syfs entry dynamically.
+>   *
+>   * Returns 0 on success, or -ENOMEM if no memory could be allocated.
+>   **/
+> -int __init firmware_map_add_early(u64 start, u64 end, const char *type)
+> +int __meminit firmware_map_add_hotplug(u64 start, u64 end, const char *type)
+>  {
+>  	struct firmware_map_entry *entry;
+>  
+> -	entry = alloc_bootmem(sizeof(struct firmware_map_entry));
+> -	if (WARN_ON(!entry))
+> +	entry = kzalloc(sizeof(struct firmware_map_entry), GFP_ATOMIC);
+> +	if (!entry)
+>  		return -ENOMEM;
+>  
+> -	return firmware_map_add_entry(start, end, type, entry);
+> +	firmware_map_add_entry(start, end, type, entry);
+> +	/* create the memmap entry */
+> +	add_sysfs_fw_map_entry(entry);
+> +
+> +	return 0;
+>  }
+>  
+>  /*
+> @@ -214,18 +238,10 @@ static ssize_t memmap_attr_show(struct kobject *kobj,
+>   */
+>  static int __init memmap_init(void)
+>  {
+> -	int i = 0;
+>  	struct firmware_map_entry *entry;
+> -	struct kset *memmap_kset;
+> -
+> -	memmap_kset = kset_create_and_add("memmap", NULL, firmware_kobj);
+> -	if (WARN_ON(!memmap_kset))
+> -		return -ENOMEM;
+>  
+>  	list_for_each_entry(entry, &map_entries, list) {
+> -		entry->kobj.kset = memmap_kset;
+> -		if (kobject_add(&entry->kobj, NULL, "%d", i++))
+> -			kobject_put(&entry->kobj);
+> +		add_sysfs_fw_map_entry(entry);
+>  	}
+
+The braces are now unneeded.  checkpatch used to warn about this I
+think.  Either someone broke checkpatch or it doesn't understand
+list_for_each_entry().
+
+>
+> ...
+>
