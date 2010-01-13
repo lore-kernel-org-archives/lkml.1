@@ -1,163 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754257Ab0AMCIu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754527Ab0AMCJH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754257Ab0AMCIu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jan 2010 21:08:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752403Ab0AMCIu
+	id S1754527Ab0AMCJH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jan 2010 21:09:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754326Ab0AMCJF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jan 2010 21:08:50 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:41240 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751500Ab0AMCIt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jan 2010 21:08:49 -0500
-Message-ID: <4B4D2AD3.9000902@redhat.com>
-Date: Wed, 13 Jan 2010 10:07:15 +0800
-From: Xiaotian Feng <dfeng@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Lightning/1.0pre Thunderbird/3.0
+	Tue, 12 Jan 2010 21:09:05 -0500
+Received: from mail-qy0-f194.google.com ([209.85.221.194]:53966 "EHLO
+	mail-qy0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753622Ab0AMCJE convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jan 2010 21:09:04 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=xm3MDhPld4a3eNyyA+5jRxCvTDQm5cQYmJVH+OYiyP0OjiZ/6KOvniFoJJg4NAt9/1
+         uzeP9sgehtsEnL/VoMMbZ3apbLjn+dKD3tfMuebB/ppgiHH1AEWYBnbXtOJTtROs3ZqH
+         At54De5x1uLeZmivyn8EYKSyBDQMe/AKKn5wI=
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>, mrb74@gmx.at
-CC: bugzilla-daemon@bugzilla.kernel.org, bugme-daemon@bugzilla.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, stable@kernel.org,
-       linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [Bugme-new] [Bug 15005] New: Segmentation fault when shutting
- down
-References: <bug-15005-10286@http.bugzilla.kernel.org/> <20100112140754.fe75f501.akpm@linux-foundation.org>
-In-Reply-To: <20100112140754.fe75f501.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20100112162823.GC7363@basil.fritz.box>
+References: <20100110020955.GB25323@basil.fritz.box>
+	 <20100110063335.GA3005@hack> <20100110123702.GC25323@basil.fritz.box>
+	 <20100112153208.GF3925@hack> <20100112162823.GC7363@basil.fritz.box>
+Date: Wed, 13 Jan 2010 10:08:59 +0800
+Message-ID: <2375c9f91001121808y7c4cbe3es802f5ddd433b7bc3@mail.gmail.com>
+Subject: Re: 2.6.33 pagemap endless read loop
+From: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm not sure, but I can't see the start of the seg fault. Is it a kernel 
-NULL pointer deref or trigger the BUG?
-Mind to try patch in http://bugzilla.kernel.org/show_bug.cgi?id=15037?
-
-
-
-On 01/13/2010 06:07 AM, Andrew Morton wrote:
->
-> (switched to email.  Please respond via emailed reply-to-all, not via the
-> bugzilla web interface).
->
-> On Thu, 7 Jan 2010 20:59:20 GMT
-> bugzilla-daemon@bugzilla.kernel.org wrote:
->
->> http://bugzilla.kernel.org/show_bug.cgi?id=15005
+On Wed, Jan 13, 2010 at 12:28 AM, Andi Kleen <andi@firstfloor.org> wrote:
+>> Hmm, could you please try:
 >>
->>             Summary: Segmentation fault when shutting down
->>             Product: ACPI
->>             Version: 2.5
->>      Kernel Version: 2.6.32.3
->>            Platform: All
->>          OS/Version: Linux
->>                Tree: Mainline
->>              Status: NEW
->>            Severity: blocking
->>            Priority: P1
->>           Component: Power-Off
->>          AssignedTo: acpi_power-off@kernel-bugs.osdl.org
->>          ReportedBy: mrb74@gmx.at
->>          Regression: Yes
->>
->>
->> Created an attachment (id=24479)
->>   -->  (http://bugzilla.kernel.org/attachment.cgi?id=24479)
->> Screenshot of segmentation fault
->>
->> Currently compiled newest kernel 2.6.32.3 for Atom based netbook (datacask
->> Jupiter 1014a). Compiled the kernel with optimizations for Atom CPUs and also
->> with optimizations for i586.
->> When shutting down the system the kernel produces a segmentation fault at the
->> end of the shutdown process. Powering off fails. Both kernel fail with the same
->> error.
->> Last working kernel was 2.6.32.2.
+>>      time cat /proc/self/pagemap >/dev/null
 >>
 >
-> It's a shutdown-time oops in clockevents_notify().  A 2.6.32.2 ->
-> 2.6.32.3 regression.
+> I stopped it after a minute of CPU time...
 >
-> 2.6.32.3 included this prime suspect:
->
-> : commit fa3f5a5c1c8e6a2cbc7e21755ea7c215f8cf0577
-> : Author: Thomas Gleixner<tglx@linutronix.de>
-> : Date:   Thu Dec 10 15:35:10 2009 +0100
-> :
-> :     clockevents: Prevent clockevent_devices list corruption on cpu hotplug
-> :
-> :     commit bb6eddf7676e1c1f3e637aa93c5224488d99036f upstream.
-> :
-> : which
->
-> So we may well have the same regression in 2.6.33-rcX.
->
-> Martin, can you please check whether the below revert fixes things up?
->
-> Thanks.
->
->
-> From: Andrew Morton<akpm@linux-foundation.org>
->
-> Revert
->
-> : commit bb6eddf7676e1c1f3e637aa93c5224488d99036f
-> : Author:     Thomas Gleixner<tglx@linutronix.de>
-> : AuthorDate: Thu Dec 10 15:35:10 2009 +0100
-> : Commit:     Thomas Gleixner<tglx@linutronix.de>
-> : CommitDate: Fri Dec 11 10:28:08 2009 +0100
-> :
-> :     clockevents: Prevent clockevent_devices list corruption on cpu hotplug
->
-> due to the regression reported in
-> http://bugzilla.kernel.org/show_bug.cgi?id=15005
->
-> Cc: Xiaotian Feng<dfeng@redhat.com>
-> Cc: Thomas Gleixner<tglx@linutronix.de>
-> Cc: "Rafael J. Wysocki"<rjw@sisk.pl>
-> Reported-by: Martin Bammer<mrb74@gmx.at>
-> Cc:<stable@kernel.org>
-> Signed-off-by: Andrew Morton<akpm@linux-foundation.org>
-> ---
->
->   kernel/time/clockevents.c |   18 +++---------------
->   1 file changed, 3 insertions(+), 15 deletions(-)
->
-> diff -puN kernel/time/clockevents.c~revert-clockevents-prevent-clockevent_devices-list-corruption-on-cpu-hotplug kernel/time/clockevents.c
-> --- a/kernel/time/clockevents.c~revert-clockevents-prevent-clockevent_devices-list-corruption-on-cpu-hotplug
-> +++ a/kernel/time/clockevents.c
-> @@ -238,9 +238,8 @@ void clockevents_exchange_device(struct
->    */
->   void clockevents_notify(unsigned long reason, void *arg)
->   {
-> -	struct clock_event_device *dev, *tmp;
-> +	struct list_head *node, *tmp;
->   	unsigned long flags;
-> -	int cpu;
->
->   	raw_spin_lock_irqsave(&clockevents_lock, flags);
->   	clockevents_do_notify(reason, arg);
-> @@ -251,19 +250,8 @@ void clockevents_notify(unsigned long re
->   		 * Unregister the clock event devices which were
->   		 * released from the users in the notify chain.
->   		 */
-> -		list_for_each_entry_safe(dev, tmp,&clockevents_released, list)
-> -			list_del(&dev->list);
-> -		/*
-> -		 * Now check whether the CPU has left unused per cpu devices
-> -		 */
-> -		cpu = *((int *)arg);
-> -		list_for_each_entry_safe(dev, tmp,&clockevent_devices, list) {
-> -			if (cpumask_test_cpu(cpu, dev->cpumask)&&
-> -			    cpumask_weight(dev->cpumask) == 1) {
-> -				BUG_ON(dev->mode != CLOCK_EVT_MODE_UNUSED);
-> -				list_del(&dev->list);
-> -			}
-> -		}
-> +		list_for_each_safe(node, tmp,&clockevents_released)
-> +			list_del(node);
->   		break;
->   	default:
->   		break;
-> _
->
+> Obviously reading 47bits of zeroes take a long time.
 >
 
+Yeah, but this just proves it is not endless, doesn't it? :)
+
+Thanks.
