@@ -1,100 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755252Ab0AMJac@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755273Ab0AMJb3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755252Ab0AMJac (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 04:30:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751402Ab0AMJaa
+	id S1755273Ab0AMJb3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 04:31:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755201Ab0AMJb0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 04:30:30 -0500
-Received: from ms01.sssup.it ([193.205.80.99]:45414 "EHLO sssup.it"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755213Ab0AMJa1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 04:30:27 -0500
-Subject: Re: [RFC 7/12][PATCH] SCHED_DEADLINE: signal delivery when
- overrunning
-From: Raistlin <raistlin@linux.it>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       michael trimarchi <michael@evidence.eu.com>,
-       Fabio Checconi <fabio@gandalf.sssup.it>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Dhaval Giani <dhaval.giani@gmail.com>,
-       Johan Eker <johan.eker@ericsson.com>, "p.faure" <p.faure@akatech.ch>,
-       Chris Friesen <cfriesen@nortel.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Henrik Austad <henrik@austad.us>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Darren Hart <darren@dvhart.com>,
-       Sven-Thorsten Dietrich <sven@thebigcorporation.com>,
-       Claudio Scordino <claudio@evidence.eu.com>,
-       Tommaso Cucinotta <tommaso.cucinotta@sssup.it>,
-       "giuseppe.lipari" <giuseppe.lipari@sssup.it>,
-       Juri Lelli <juri.lelli@gmail.com>
-In-Reply-To: <1262009964.7135.109.camel@laptop>
-References: <1255707324.6228.448.camel@Palantir>
-	 <1255707856.6228.461.camel@Palantir>  <1262009964.7135.109.camel@laptop>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-8DpthYMcEpVeLKdxbH7q"
-Date: Wed, 13 Jan 2010 10:30:23 +0100
-Message-ID: <1263375023.3853.3.camel@Palantir>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	Wed, 13 Jan 2010 04:31:26 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:52524 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751402Ab0AMJb0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jan 2010 04:31:26 -0500
+Date: Wed, 13 Jan 2010 11:31:19 +0200
+From: Gleb Natapov <gleb@redhat.com>
+To: linux-mm@kvack.org
+Cc: linux-kernel@vger.kernel.org, linux-api@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: [PATCH v5] add MAP_UNLOCKED mmap flag
+Message-ID: <20100113093119.GT7549@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+If application does mlockall(MCL_FUTURE) it is no longer possible to mmap
+file bigger than main memory or allocate big area of anonymous memory
+in a thread safe manner. Sometimes it is desirable to lock everything
+related to program execution into memory, but still be able to mmap
+big file or allocate huge amount of memory and allow OS to swap them on
+demand. MAP_UNLOCKED allows to do that.
+ 
+Signed-off-by: Gleb Natapov <gleb@redhat.com>
+---
 
---=-8DpthYMcEpVeLKdxbH7q
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+I get reports that people find this useful, so resending.
+ 
+ v1->v2
+   - adding new flag to all archs
+   - fixing typo
+ v2->v3
+   - one more typo fix 
+ v3->v4
+   - return error if MAP_LOCKED | MAP_UNLOCKED is specified
+ v4->v5
+  - rebase to latest head 
 
-On Mon, 2009-12-28 at 15:19 +0100, Peter Zijlstra wrote:=20
-> > A runtime overrun will be quite common, e.g. due to coarse execution ti=
-me
-> > accounting, wrong parameter assignement, etc.
-> > A deadline miss --since the deadlines the scheduler sees are ``scheduli=
-ng
-> > deadlines'' which have not necessarily to be equal to task's deadlines-=
-- is
-> > much more unlikely, and should only happen in an overloaded system.
->=20
-> Right, I think its much better to not do this in posix-cpu-timers.c,
-> that code is shite.
->=20
-> Its probably possible to set SIGXCPU pending and raise TIF_SIGPENDING
-> from within the scheduler code, and that will be triggered when we
-> return to userspace.
->=20
-Ok, this sounds a lot better to me too... I'll go for this!
-
-> That also gets rid of that coarse execution time accounting muck, since
-> the scheduler has ns accurate accounting.
->=20
-Yes --at least when the hrtick is enabled-- I agree that this is another
-very interesting benefit of this approach.
-
-It'll be done like this in the next version of the patchset I'm
-preparing.
-
-Thanks for the answer and regards,
-Dario
-
---=20
-<<This happens because I choose it to happen!>> (Raistlin Majere)
-----------------------------------------------------------------------
-Dario Faggioli, ReTiS Lab, Scuola Superiore Sant'Anna, Pisa  (Italy)
-
-http://blog.linux.it/raistlin / raistlin@ekiga.net /
-dario.faggioli@jabber.org
-
---=-8DpthYMcEpVeLKdxbH7q
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAktNkpMACgkQk4XaBE3IOsQeUACdH1mREXh229OJ5S1jcDtVMq2G
-OKkAnRltb6qZsxXCf6Pb5E/Yu8rsyekO
-=rSYj
------END PGP SIGNATURE-----
-
---=-8DpthYMcEpVeLKdxbH7q--
-
+diff --git a/arch/alpha/include/asm/mman.h b/arch/alpha/include/asm/mman.h
+index 99c56d4..cfc51ac 100644
+--- a/arch/alpha/include/asm/mman.h
++++ b/arch/alpha/include/asm/mman.h
+@@ -30,6 +30,7 @@
+ #define MAP_NONBLOCK	0x40000		/* do not block on IO */
+ #define MAP_STACK	0x80000		/* give out an address that is best suited for process/thread stacks */
+ #define MAP_HUGETLB	0x100000	/* create a huge page mapping */
++#define MAP_UNLOCKED	0x200000	/* force page unlocking */
+ 
+ #define MS_ASYNC	1		/* sync memory asynchronously */
+ #define MS_SYNC		2		/* synchronous memory sync */
+diff --git a/arch/mips/include/asm/mman.h b/arch/mips/include/asm/mman.h
+index c892bfb..3e4d108 100644
+--- a/arch/mips/include/asm/mman.h
++++ b/arch/mips/include/asm/mman.h
+@@ -48,6 +48,7 @@
+ #define MAP_NONBLOCK	0x20000		/* do not block on IO */
+ #define MAP_STACK	0x40000		/* give out an address that is best suited for process/thread stacks */
+ #define MAP_HUGETLB	0x80000		/* create a huge page mapping */
++#define MAP_UNLOCKED	0x100000	/* force page unlocking */
+ 
+ /*
+  * Flags for msync
+diff --git a/arch/parisc/include/asm/mman.h b/arch/parisc/include/asm/mman.h
+index 9749c8a..4e8b9bf 100644
+--- a/arch/parisc/include/asm/mman.h
++++ b/arch/parisc/include/asm/mman.h
+@@ -24,6 +24,7 @@
+ #define MAP_NONBLOCK	0x20000		/* do not block on IO */
+ #define MAP_STACK	0x40000		/* give out an address that is best suited for process/thread stacks */
+ #define MAP_HUGETLB	0x80000		/* create a huge page mapping */
++#define MAP_UNLOCKED	0x100000	/* force page unlocking */
+ 
+ #define MS_SYNC		1		/* synchronous memory sync */
+ #define MS_ASYNC	2		/* sync memory asynchronously */
+diff --git a/arch/powerpc/include/asm/mman.h b/arch/powerpc/include/asm/mman.h
+index d4a7f64..7d33f01 100644
+--- a/arch/powerpc/include/asm/mman.h
++++ b/arch/powerpc/include/asm/mman.h
+@@ -27,6 +27,7 @@
+ #define MAP_NONBLOCK	0x10000		/* do not block on IO */
+ #define MAP_STACK	0x20000		/* give out an address that is best suited for process/thread stacks */
+ #define MAP_HUGETLB	0x40000		/* create a huge page mapping */
++#define MAP_UNLOCKED	0x80000		/* force page unlocking */
+ 
+ #ifdef __KERNEL__
+ #ifdef CONFIG_PPC64
+diff --git a/arch/sparc/include/asm/mman.h b/arch/sparc/include/asm/mman.h
+index c3029ad..f80d203 100644
+--- a/arch/sparc/include/asm/mman.h
++++ b/arch/sparc/include/asm/mman.h
+@@ -22,6 +22,7 @@
+ #define MAP_NONBLOCK	0x10000		/* do not block on IO */
+ #define MAP_STACK	0x20000		/* give out an address that is best suited for process/thread stacks */
+ #define MAP_HUGETLB	0x40000		/* create a huge page mapping */
++#define MAP_UNLOCKED	0x80000		/* force page unlocking */
+ 
+ #ifdef __KERNEL__
+ #ifndef __ASSEMBLY__
+diff --git a/arch/xtensa/include/asm/mman.h b/arch/xtensa/include/asm/mman.h
+index fca4db4..c62bcd8 100644
+--- a/arch/xtensa/include/asm/mman.h
++++ b/arch/xtensa/include/asm/mman.h
+@@ -55,6 +55,7 @@
+ #define MAP_NONBLOCK	0x20000		/* do not block on IO */
+ #define MAP_STACK	0x40000		/* give out an address that is best suited for process/thread stacks */
+ #define MAP_HUGETLB	0x80000		/* create a huge page mapping */
++#define MAP_UNLOCKED	0x100000	/* force page unlocking */
+ 
+ /*
+  * Flags for msync
+diff --git a/include/asm-generic/mman.h b/include/asm-generic/mman.h
+index 32c8bd6..59e0f29 100644
+--- a/include/asm-generic/mman.h
++++ b/include/asm-generic/mman.h
+@@ -12,6 +12,7 @@
+ #define MAP_NONBLOCK	0x10000		/* do not block on IO */
+ #define MAP_STACK	0x20000		/* give out an address that is best suited for process/thread stacks */
+ #define MAP_HUGETLB	0x40000		/* create a huge page mapping */
++#define MAP_UNLOCKED	0x80000         /* force page unlocking */
+ 
+ #define MCL_CURRENT	1		/* lock all current mappings */
+ #define MCL_FUTURE	2		/* lock all future mappings */
+diff --git a/mm/mmap.c b/mm/mmap.c
+index ee22989..4bda220 100644
+--- a/mm/mmap.c
++++ b/mm/mmap.c
+@@ -962,6 +962,9 @@ unsigned long do_mmap_pgoff(struct file *file, unsigned long addr,
+ 		if (!can_do_mlock())
+ 			return -EPERM;
+ 
++        if (flags & MAP_UNLOCKED)
++                vm_flags &= ~VM_LOCKED;
++
+ 	/* mlock MCL_FUTURE? */
+ 	if (vm_flags & VM_LOCKED) {
+ 		unsigned long locked, lock_limit;
+@@ -1050,7 +1053,10 @@ SYSCALL_DEFINE6(mmap_pgoff, unsigned long, addr, unsigned long, len,
+ 	struct file *file = NULL;
+ 	unsigned long retval = -EBADF;
+ 
+-	if (!(flags & MAP_ANONYMOUS)) {
++	if (unlikely((flags & (MAP_LOCKED | MAP_UNLOCKED)) ==
++			(MAP_LOCKED | MAP_UNLOCKED))) {
++		return -EINVAL;
++	} else if (!(flags & MAP_ANONYMOUS)) {
+ 		if (unlikely(flags & MAP_HUGETLB))
+ 			return -EINVAL;
+ 		file = fget(fd);
+--
+			Gleb.
