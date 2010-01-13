@@ -1,139 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756332Ab0AMVta@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756497Ab0AMVuA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756332Ab0AMVta (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 16:49:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754812Ab0AMVt3
+	id S1756497Ab0AMVuA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 16:50:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756069Ab0AMVt7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 16:49:29 -0500
-Received: from www17.your-server.de ([213.133.104.17]:59046 "EHLO
-	www17.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753347Ab0AMVt2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 16:49:28 -0500
-Subject: Re: [Bug #14670] i915: playing video via XVideo extension makes
- the screen flicker
-From: Thomas Meyer <thomas@m3y3r.de>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Eric Anholt <eric@anholt.net>
-In-Reply-To: <20100112095702.4b22fcc1@jbarnes-piketon>
-References: <nzLqtSp97aP.A.RGB.hglSLB@chimera>
-	 <CXIfLt-ygXM.A.GGD.GilSLB@chimera>
-	 <1263228784.12830.0.camel@localhost.localdomain>
-	 <20100111085527.104f5c3e@jbarnes-piketon>
-	 <8B599161-2977-4A43-B88F-36E87AFCF4EA@m3y3r.de>
-	 <20100111111941.189eb41e@jbarnes-piketon>
-	 <1263318189.3284.2.camel@localhost.localdomain>
-	 <20100112095702.4b22fcc1@jbarnes-piketon>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 13 Jan 2010 22:48:40 +0100
-Message-ID: <1263419320.2250.6.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 (2.28.2-1.fc12) 
-Content-Transfer-Encoding: 7bit
-X-Authenticated-Sender: thomas@m3y3r.de
+	Wed, 13 Jan 2010 16:49:59 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:34226 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754792Ab0AMVt6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jan 2010 16:49:58 -0500
+Date: Wed, 13 Jan 2010 13:45:16 -0800
+From: Greg KH <gregkh@suse.de>
+To: Ozan =?utf-8?B?w4dhxJ9sYXlhbg==?= <ozan@pardus.org.tr>
+Cc: Thomas Voegtle <tv@lio96.de>, Jan Kara <jack@suse.cz>,
+       "Theodore Ts'o" <tytso@mit.edu>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org, stable@kernel.org, dmonakhov@openvz.org
+Subject: Re: Linux 2.6.31.10
+Message-ID: <20100113214516.GC11701@suse.de>
+References: <20100106234533.GC1960@kroah.com>
+ <alpine.LNX.2.00.1001071522480.5426@er-systems.de>
+ <20100107180449.GA17495@suse.de>
+ <alpine.LNX.2.00.1001072033301.26784@er-systems.de>
+ <20100107194131.GA22983@suse.de>
+ <alpine.LNX.2.00.1001072125040.26784@er-systems.de>
+ <alpine.LNX.2.00.1001072141340.26784@er-systems.de>
+ <20100107220213.GA24882@suse.de>
+ <4B4E37D7.3010706@pardus.org.tr>
+ <4B4E387B.2050900@pardus.org.tr>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <4B4E387B.2050900@pardus.org.tr>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Dienstag, den 12.01.2010, 09:57 -0800 schrieb Jesse Barnes:
-> On Tue, 12 Jan 2010 18:43:09 +0100
-> Thomas Meyer <thomas@m3y3r.de> wrote:
+On Wed, Jan 13, 2010 at 11:17:47PM +0200, Ozan Çağlayan wrote:
+> Ozan Çağlayan wrote:
 > 
-> > Am Montag, den 11.01.2010, 11:19 -0800 schrieb Jesse Barnes:
-> > > On Mon, 11 Jan 2010 20:03:57 +0100
-> > > Thomas Meyer <thomas@m3y3r.de> wrote:
-> > > 
-> > > > 
-> > > > 
-> > > > Am 11.01.2010 um 17:55 schrieb Jesse Barnes
-> > > > <jbarnes@virtuousgeek.org>:
-> > > > 
-> > > > > On Mon, 11 Jan 2010 17:53:04 +0100
-> > > > > Thomas Meyer <thomas@m3y3r.de> wrote:
-> > > > >
-> > > > >> Am Sonntag, den 10.01.2010, 23:56 +0100 schrieb Rafael J.
-> > > > >> Wysocki:
-> > > > >>> This message has been generated automatically as a part of a
-> > > > >>> report of regressions introduced between 2.6.31 and 2.6.32.
-> > > > >>>
-> > > > >>> The following bug entry is on the current list of known
-> > > > >>> regressions introduced between 2.6.31 and 2.6.32.  Please
-> > > > >>> verify if it still should be listed and let me know (either
-> > > > >>> way).
-> > > > >>>
-> > > > >>
-> > > > >> Yes, still should be listed.
-> > > > >>
-> > > > >> Problem still exists in 2.6.32.3 and 2.6.33-rc3-00097-g2c1f189,
-> > > > >> that contains
-> > > > >> this commit:
-> > > > >> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=cda9d05c499093c67b4a376a15009923acc2127a
-> > > > >>
-> > > > >> The above commit removes the render reclock support, that
-> > > > >> ought to fix a common kind of problem encountered on i915
-> > > > >> hardware, but not on my machine.
-> > > > >>
-> > > > >> Still need to boot with "nomodeset" to have a workable system.
-> > > > >
-> > > > > Does this patch prevent the flicker?
-> > > > 
-> > > > By the way: how often and in what interval is the function   
-> > > > intel_lvds_detect called?
-> > > > 
-> > > > How long will/can the function acpi_lid_open take to complete?
-> > > > Maybe some acpi interpretation takes really long? Is this
-> > > > possible?
-> > > > 
-> > > > Would this explain the flickering?
-> > > 
-> > > It should only be called when a client requests the connection
-> > > status (e.g. xrandr or the GNOME display applet).
-> > 
-> > how to check how often this function is called and it's duration? is
-> > the function tracer capable of this?
+> > This causes kernel panic upon boot on one of our users' ext3 system (on 2.6.31.11) so I think 2.6.30.y deserves another
+> > stable update to fix this critical issue.
 > 
-> Yeah, the function tracer should be able to do it (though I don't know
-> how to use it offhand, maybe through the perf tool?).  Or you could
-> just add some DRM_ERROR lines. :)
+> oops, 2.6.30.y should be 2.6.31.y, sorry.
 
+Yes, .31 will be getting another release with this fix in it, sorry for
+the delay, been stuck debugging other things these past few days...
 
-After recompiling the kernel without optimize for size I could use the
-function graph tracer and set the function to "intel_lvds_detect".
+thanks,
 
-Here is an example of the output:
-
- 0)   0.365 us    |                up();
- 0)   1.092 us    |              }
- 0)   1.824 us    |            }
- 0)   2.486 us    |          }
- 0)   0.376 us    |          kfree();
- 0) ! 9759.012 us |        }
- 0) ! 9759.813 us |      }
- 0) ! 9761.096 us |    }
- 0) ! 9764.483 us |  }
- 0)               |  intel_lvds_detect() {
- 0)               |    acpi_lid_open() {
- 0)               |      acpi_evaluate_integer() {
- 0)               |        acpi_evaluate_object() {
- 0)               |          acpi_os_allocate_zeroed() {
- 0)               |            __kmalloc() {
- 0)   0.366 us    |              get_slab();
- 0)   0.336 us    |              _cond_resched();
- 0)   0.396 us    |              memset();
- 0)   2.796 us    |            }
- 0)   3.447 us    |          }
- 0)   0.531 us    |          acpi_ns_validate_handle();
-
-So the call to "intel_lvds_detect" seems to take around 10000us, i.e.
-10ms (I guess this is long), thanks to heavy ACPI interpretation.
-
-So the question still is: Why is the drm_ioctl (that in turn calls
-intel_lvds_detect) called so often by Xorg?
-
-greets
-thomas
-
-
+greg k-h
