@@ -1,187 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755479Ab0AMOeQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755431Ab0AMOiL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755479Ab0AMOeQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 09:34:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932073Ab0AMOeP
+	id S1755431Ab0AMOiL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 09:38:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752185Ab0AMOiJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 09:34:15 -0500
-Received: from mail-pz0-f171.google.com ([209.85.222.171]:33847 "EHLO
-	mail-pz0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755384Ab0AMOeN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 09:34:13 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=tqVgygmOfC7bv/Ap5glM1Fzy6mKvCPTCoS7Zr++0eWiCFCpBO2HAfjWJ0/0MiG144N
-         6H1RnvMdEZEBXyOg6y0zQuRX5uyfVWpiiazwzlfLiDHe8wxQEsyidqdqQY8cnIP6FMSd
-         oyjVKkPY1FEx6L5+JqMvvi3HPbS1I2VqljtxU=
-Date: Wed, 13 Jan 2010 22:36:05 +0800
-From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
-To: Gleb Natapov <gleb@redhat.com>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       linux-api@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [PATCH v5] add MAP_UNLOCKED mmap flag
-Message-ID: <20100113143605.GC4038@hack>
-References: <20100113093119.GT7549@redhat.com>
+	Wed, 13 Jan 2010 09:38:09 -0500
+Received: from tomts13.bellnexxia.net ([209.226.175.34]:50149 "EHLO
+	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751319Ab0AMOiI convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jan 2010 09:38:08 -0500
+Date: Wed, 13 Jan 2010 09:38:05 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Nicholas Miell <nmiell@comcast.net>
+Cc: paulmck@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+       Steven Rostedt <rostedt@goodmis.org>, Oleg Nesterov <oleg@redhat.com>,
+       Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       akpm@linux-foundation.org, josh@joshtriplett.org, tglx@linutronix.de,
+       Valdis.Kletnieks@vt.edu, dhowells@redhat.com, laijs@cn.fujitsu.com,
+       dipankar@in.ibm.com
+Subject: Re: [RFC PATCH] introduce sys_membarrier(): process-wide memory
+	barrier (v5)
+Message-ID: <20100113143805.GC30875@Krystal>
+References: <20100113013757.GA29314@Krystal> <1263358823.3874.10.camel@entropy> <20100113053126.GC6781@linux.vnet.ibm.com> <1263361196.3874.12.camel@entropy>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20100113093119.GT7549@redhat.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Transfer-Encoding: 8BIT
+In-Reply-To: <1263361196.3874.12.camel@entropy>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.27.31-grsec (i686)
+X-Uptime: 09:33:28 up 27 days, 22:51,  4 users,  load average: 0.02, 0.11,
+	0.11
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 13, 2010 at 11:31:19AM +0200, Gleb Natapov wrote:
->If application does mlockall(MCL_FUTURE) it is no longer possible to mmap
->file bigger than main memory or allocate big area of anonymous memory
->in a thread safe manner. Sometimes it is desirable to lock everything
->related to program execution into memory, but still be able to mmap
->big file or allocate huge amount of memory and allow OS to swap them on
->demand. MAP_UNLOCKED allows to do that.
+* Nicholas Miell (nmiell@comcast.net) wrote:
+> On Tue, 2010-01-12 at 21:31 -0800, Paul E. McKenney wrote:
+> > Why is it OK to ignore the developer's request for an expedited
+> > membarrer()?  The guy who expected the syscall to complete in a few
+> > microseconds might not be so happy to have it take many milliseconds.
+> > By the same token, the guy who specified non-expedited so as to minimally
+> > disturb other threads in the system might not be so happy to see them
+> > all be IPIed for no good reason.  ;-)
+> > 
+> > 							Thanx, Paul
 > 
->Signed-off-by: Gleb Natapov <gleb@redhat.com>
+> Because the behavior is still correct, even if it is slower than you'd
+> expect. It doesn't really matter where the expedited flag goes, though,
+> because every future kernel will understand it.
 
-Thanks for keeping working on it.
+16ms vs few µs is such a huge performance difference that it's barely
+adequate to say that the behavior is still correct, but we definitely
+cannot say it is unchanged. It can really render some applications
+unusable.
 
-This version looks fine for me.
+If, for some reason, the expedited version of the system call happens to
+be unimplemented, we should return -EINVAL, so the application can deal
+with it in the approproate way (which could be, for instance, to use a
+fall-back doing memory barriers on the RCU read-side).
 
-Acked-by: WANG Cong <xiyou.wangcong@gmail.com>
+But I don't see any reason for not implementing the expedited version
+properly in the first place.
 
->---
->
->I get reports that people find this useful, so resending.
+Thanks,
+
+Mathieu
+
 > 
-> v1->v2
->   - adding new flag to all archs
->   - fixing typo
-> v2->v3
->   - one more typo fix 
-> v3->v4
->   - return error if MAP_LOCKED | MAP_UNLOCKED is specified
-> v4->v5
->  - rebase to latest head 
->
->diff --git a/arch/alpha/include/asm/mman.h b/arch/alpha/include/asm/mman.h
->index 99c56d4..cfc51ac 100644
->--- a/arch/alpha/include/asm/mman.h
->+++ b/arch/alpha/include/asm/mman.h
->@@ -30,6 +30,7 @@
-> #define MAP_NONBLOCK	0x40000		/* do not block on IO */
-> #define MAP_STACK	0x80000		/* give out an address that is best suited for process/thread stacks */
-> #define MAP_HUGETLB	0x100000	/* create a huge page mapping */
->+#define MAP_UNLOCKED	0x200000	/* force page unlocking */
+> -- 
+> Nicholas Miell <nmiell@comcast.net>
 > 
-> #define MS_ASYNC	1		/* sync memory asynchronously */
-> #define MS_SYNC		2		/* synchronous memory sync */
->diff --git a/arch/mips/include/asm/mman.h b/arch/mips/include/asm/mman.h
->index c892bfb..3e4d108 100644
->--- a/arch/mips/include/asm/mman.h
->+++ b/arch/mips/include/asm/mman.h
->@@ -48,6 +48,7 @@
-> #define MAP_NONBLOCK	0x20000		/* do not block on IO */
-> #define MAP_STACK	0x40000		/* give out an address that is best suited for process/thread stacks */
-> #define MAP_HUGETLB	0x80000		/* create a huge page mapping */
->+#define MAP_UNLOCKED	0x100000	/* force page unlocking */
-> 
-> /*
->  * Flags for msync
->diff --git a/arch/parisc/include/asm/mman.h b/arch/parisc/include/asm/mman.h
->index 9749c8a..4e8b9bf 100644
->--- a/arch/parisc/include/asm/mman.h
->+++ b/arch/parisc/include/asm/mman.h
->@@ -24,6 +24,7 @@
-> #define MAP_NONBLOCK	0x20000		/* do not block on IO */
-> #define MAP_STACK	0x40000		/* give out an address that is best suited for process/thread stacks */
-> #define MAP_HUGETLB	0x80000		/* create a huge page mapping */
->+#define MAP_UNLOCKED	0x100000	/* force page unlocking */
-> 
-> #define MS_SYNC		1		/* synchronous memory sync */
-> #define MS_ASYNC	2		/* sync memory asynchronously */
->diff --git a/arch/powerpc/include/asm/mman.h b/arch/powerpc/include/asm/mman.h
->index d4a7f64..7d33f01 100644
->--- a/arch/powerpc/include/asm/mman.h
->+++ b/arch/powerpc/include/asm/mman.h
->@@ -27,6 +27,7 @@
-> #define MAP_NONBLOCK	0x10000		/* do not block on IO */
-> #define MAP_STACK	0x20000		/* give out an address that is best suited for process/thread stacks */
-> #define MAP_HUGETLB	0x40000		/* create a huge page mapping */
->+#define MAP_UNLOCKED	0x80000		/* force page unlocking */
-> 
-> #ifdef __KERNEL__
-> #ifdef CONFIG_PPC64
->diff --git a/arch/sparc/include/asm/mman.h b/arch/sparc/include/asm/mman.h
->index c3029ad..f80d203 100644
->--- a/arch/sparc/include/asm/mman.h
->+++ b/arch/sparc/include/asm/mman.h
->@@ -22,6 +22,7 @@
-> #define MAP_NONBLOCK	0x10000		/* do not block on IO */
-> #define MAP_STACK	0x20000		/* give out an address that is best suited for process/thread stacks */
-> #define MAP_HUGETLB	0x40000		/* create a huge page mapping */
->+#define MAP_UNLOCKED	0x80000		/* force page unlocking */
-> 
-> #ifdef __KERNEL__
-> #ifndef __ASSEMBLY__
->diff --git a/arch/xtensa/include/asm/mman.h b/arch/xtensa/include/asm/mman.h
->index fca4db4..c62bcd8 100644
->--- a/arch/xtensa/include/asm/mman.h
->+++ b/arch/xtensa/include/asm/mman.h
->@@ -55,6 +55,7 @@
-> #define MAP_NONBLOCK	0x20000		/* do not block on IO */
-> #define MAP_STACK	0x40000		/* give out an address that is best suited for process/thread stacks */
-> #define MAP_HUGETLB	0x80000		/* create a huge page mapping */
->+#define MAP_UNLOCKED	0x100000	/* force page unlocking */
-> 
-> /*
->  * Flags for msync
->diff --git a/include/asm-generic/mman.h b/include/asm-generic/mman.h
->index 32c8bd6..59e0f29 100644
->--- a/include/asm-generic/mman.h
->+++ b/include/asm-generic/mman.h
->@@ -12,6 +12,7 @@
-> #define MAP_NONBLOCK	0x10000		/* do not block on IO */
-> #define MAP_STACK	0x20000		/* give out an address that is best suited for process/thread stacks */
-> #define MAP_HUGETLB	0x40000		/* create a huge page mapping */
->+#define MAP_UNLOCKED	0x80000         /* force page unlocking */
-> 
-> #define MCL_CURRENT	1		/* lock all current mappings */
-> #define MCL_FUTURE	2		/* lock all future mappings */
->diff --git a/mm/mmap.c b/mm/mmap.c
->index ee22989..4bda220 100644
->--- a/mm/mmap.c
->+++ b/mm/mmap.c
->@@ -962,6 +962,9 @@ unsigned long do_mmap_pgoff(struct file *file, unsigned long addr,
-> 		if (!can_do_mlock())
-> 			return -EPERM;
-> 
->+        if (flags & MAP_UNLOCKED)
->+                vm_flags &= ~VM_LOCKED;
->+
-> 	/* mlock MCL_FUTURE? */
-> 	if (vm_flags & VM_LOCKED) {
-> 		unsigned long locked, lock_limit;
->@@ -1050,7 +1053,10 @@ SYSCALL_DEFINE6(mmap_pgoff, unsigned long, addr, unsigned long, len,
-> 	struct file *file = NULL;
-> 	unsigned long retval = -EBADF;
-> 
->-	if (!(flags & MAP_ANONYMOUS)) {
->+	if (unlikely((flags & (MAP_LOCKED | MAP_UNLOCKED)) ==
->+			(MAP_LOCKED | MAP_UNLOCKED))) {
->+		return -EINVAL;
->+	} else if (!(flags & MAP_ANONYMOUS)) {
-> 		if (unlikely(flags & MAP_HUGETLB))
-> 			return -EINVAL;
-> 		file = fget(fd);
->--
->			Gleb.
->--
->To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->the body of a message to majordomo@vger.kernel.org
->More majordomo info at  http://vger.kernel.org/majordomo-info.html
->Please read the FAQ at  http://www.tux.org/lkml/
 
 -- 
-Live like a child, think like the god.
- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
