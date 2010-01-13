@@ -1,137 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752642Ab0AMIAu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753189Ab0AMIFZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752642Ab0AMIAu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 03:00:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751278Ab0AMIAt
+	id S1753189Ab0AMIFZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 03:05:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751238Ab0AMIFY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 03:00:49 -0500
-Received: from mga02.intel.com ([134.134.136.20]:30305 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751068Ab0AMIAs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 03:00:48 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,267,1262592000"; 
-   d="scan'208";a="483575866"
-Date: Wed, 13 Jan 2010 16:00:45 +0800
-From: Shaohua Li <shaohua.li@intel.com>
-To: Corrado Zoccolo <czoccolo@gmail.com>
+	Wed, 13 Jan 2010 03:05:24 -0500
+Received: from mail-ew0-f209.google.com ([209.85.219.209]:63479 "EHLO
+	mail-ew0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750908Ab0AMIFX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jan 2010 03:05:23 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=B52sDzw8AO+hnAt16SY+SJFR+v8qciP6ycDtMglSV8D/xbC9ICH0LOcn/bjde8nhKz
+         3hw9tpBVlbliLZ7nm1asm8NweSEXmwZ8qiXwgTl988LvXCH7PgY1zutRgPsPEb/41djw
+         VOAcuLMaSUmL6xb5DyWilHQEabWUX9Lnm/T2s=
+MIME-Version: 1.0
+In-Reply-To: <4e5e476b1001121517y5ebdd6ebt7ade0b4ac068655b@mail.gmail.com>
+References: <1263052757-23436-1-git-send-email-czoccolo@gmail.com>
+	 <20100112191257.GE3065@redhat.com>
+	 <4e5e476b1001121205u4fd487b7o2ee6dd42c8740955@mail.gmail.com>
+	 <20100112223638.GH3065@redhat.com>
+	 <4e5e476b1001121517y5ebdd6ebt7ade0b4ac068655b@mail.gmail.com>
+Date: Wed, 13 Jan 2010 09:05:21 +0100
+Message-ID: <4e5e476b1001130005p4acfdd55na387f925ad6078f3@mail.gmail.com>
+Subject: Re: [PATCH] cfq-iosched: rework seeky detection
+From: Corrado Zoccolo <czoccolo@gmail.com>
+To: Vivek Goyal <vgoyal@redhat.com>
 Cc: Jens Axboe <jens.axboe@oracle.com>,
        Linux-Kernel <linux-kernel@vger.kernel.org>,
-       Jeff Moyer <jmoyer@redhat.com>, Vivek Goyal <vgoyal@redhat.com>,
+       Jeff Moyer <jmoyer@redhat.com>, Shaohua Li <shaohua.li@intel.com>,
        Gui Jianfeng <guijianfeng@cn.fujitsu.com>,
        Yanmin Zhang <yanmin_zhang@linux.intel.com>
-Subject: Re: [PATCH] cfq-iosched: rework seeky detection
-Message-ID: <20100113080045.GC10492@sli10-desk.sh.intel.com>
-References: <1263052757-23436-1-git-send-email-czoccolo@gmail.com>
- <20100111014730.GA22362@sli10-desk.sh.intel.com>
- <4e5e476b1001110646i20c2bcf4n51380853820c29d8@mail.gmail.com>
- <20100112014953.GA22606@sli10-desk.sh.intel.com>
- <4e5e476b1001120052k7bb7396bsfc3eddf6ce28e6a5@mail.gmail.com>
- <20100113034557.GA26135@sli10-desk.sh.intel.com>
- <4e5e476b1001122309k66e5dd74h4dfdaadf15c3cfad@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <4e5e476b1001122309k66e5dd74h4dfdaadf15c3cfad@mail.gmail.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 13, 2010 at 03:09:31PM +0800, Corrado Zoccolo wrote:
-> On Wed, Jan 13, 2010 at 4:45 AM, Shaohua Li <shaohua.li@intel.com> wrote:
-> > On Tue, Jan 12, 2010 at 04:52:59PM +0800, Corrado Zoccolo wrote:
-> >> Hi
-> >> On Tue, Jan 12, 2010 at 2:49 AM, Shaohua Li <shaohua.li@intel.com> wrote:
-> >> > On Mon, Jan 11, 2010 at 10:46:23PM +0800, Corrado Zoccolo wrote:
-> >> >> Hi,
-> >> >> On Mon, Jan 11, 2010 at 2:47 AM, Shaohua Li <shaohua.li@intel.com> wrote:
-> >> >> > On Sat, Jan 09, 2010 at 11:59:17PM +0800, Corrado Zoccolo wrote:
-> >> >> >> Current seeky detection is based on average seek lenght.
-> >> >> >> This is suboptimal, since the average will not distinguish between:
-> >> >> >> * a process doing medium sized seeks
-> >> >> >> * a process doing some sequential requests interleaved with larger seeks
-> >> >> >> and even a medium seek can take lot of time, if the requested sector
-> >> >> >> happens to be behind the disk head in the rotation (50% probability).
-> >> >> >>
-> >> >> >> Therefore, we change the seeky queue detection to work as follows:
-> >> >> >> * each request can be classified as sequential if it is very close to
-> >> >> >>   the current head position, i.e. it is likely in the disk cache (disks
-> >> >> >>   usually read more data than requested, and put it in cache for
-> >> >> >>   subsequent reads). Otherwise, the request is classified as seeky.
-> >> >> >> * an history window of the last 32 requests is kept, storing the
-> >> >> >>   classification result.
-> >> >> >> * A queue is marked as seeky if more than 1/8 of the last 32 requests
-> >> >> >>   were seeky.
-> >> >> >>
-> >> >> >> This patch fixes a regression reported by Yanmin, on mmap 64k random
-> >> >> >> reads.
-> >> >> > Can we not count a big request (say the request data is >= 32k) as seeky
-> >> >> > regardless the seek distance? In this way we can also make a 64k random sync
-> >> >> > read not as seeky.
-> >> >> I think I understand what you are proposing, but I don't think request
-> >> >> size should
-> >> >> matter at all for rotational disk.
-> >> > randread a 32k bs  definitely has better throughput than a 4k bs. So the request
-> >> > size does matter. From iops point of view, 64k and 4k might not have difference
-> >> > in device, but from performance point of view, they have big difference.
-> >> Assume we have two queues, one with 64k requests, and an other with 4k requests,
-> >> and that our ideal disk will service them with the same IOPS 'v'.
-> >> Then, servicing for 100ms the first, and then for 100ms the second, we
-> >> will have, averaging on the
-> >> 200ms period of the schedule:
-> >> first queue IOPS = v * 100/200 = v/2
-> >> second queue IOPS = v * 100/200 = v/2
-> >> Now the bandwidth will be simply IOPS * request size.
-> >> If instead, you service one request from one queue, and one from the
-> >> other (and keep switching for 200ms),
-> >> with v IOPS, each queue will obtain again v/2 IOPS, i.e. exactly the
-> >> same numbers.
-> >>
-> >> But, instead, if we have a 2-disk RAID 0, with stripe >= 64k, and the
-> >> 64k accesses are aligned (do not cross the stripe), we will have 50%
-> >> probability that the requests from the 2 queues are serviced in
-> >> parallel, thus increasing the total IOPS and bandwidth. This cannot
-> >> happen if you service for 100ms a single depth-1 seeky queue.
-> >>
-> >> >
-> >> >> Usually, the disk firmware will load a big chunk of data in its cache even when
-> >> >> requested to read a single sector, and will provide following ones
-> >> >> from the cache
-> >> >> if you read them sequentially.
-> >> >>
-> >> >> Now, in CFQ, what we really mean by saying that a queue is seeky is that
-> >> >> waiting a bit in order to serve an other request from this queue doesn't
-> >> >> give any benefit w.r.t. switching to an other queue.
-> >> > If no idle, we might switch to a random 4k access or any kind of queues. Compared
-> >> > to continue big request access and switch to other queue with small block, no switching
-> >> > does give benefit.
-> >> CFQ in 2.6.33 works differently than it worked before.
-> >> Now, seeky queues have an aggregate time slice, and within this time
-> >> slice, you will switch
-> >> between seeky queues fairly. So it cannot happen that a seeky queue
-> >> loses its time slice.
-> > Sorry for my ignorance here, from the code, I know we have a forced slice for a domain and
-> > service tree, but for a queue, it appears we haven't an aggregate time slice.
-> By aggregate time slice for seeky queues, I mean the time slice
-> assigned to the sync-noidle service tree.
-> 
-> > From my understanding,
-> > we don't add a queue's remaining slice to its next run, and queue might not even init its slice if
-> > it's non-timedout preempted before it finishes its first request, which is normal for a seeky
-> > queue with a ncq device.
-> 
-> Exactly for this reason, a seeky queue has no private time slice (it
-> is meaningless, since we want multiple seeky queues working in
-> parallel), but it participates fairly to the service tree's slice. The
-> service tree's slice is computed proportionally to the number of seeky
-> queues w.r.t. all queues in the domain, so you also have that seeky
-> queues are serviced fairly w.r.t. other queues as well.
-Ok, I got your point. An off topic issue:
-For a queue with iodepth 1 and a queue with iodepth 32, looks this mechanism can't
-guanantee fairness. the queue with big iodepth can submit more requests
-in every switch.
+On Wed, Jan 13, 2010 at 12:17 AM, Corrado Zoccolo <czoccolo@gmail.com> wrote:
+> On Tue, Jan 12, 2010 at 11:36 PM, Vivek Goyal <vgoyal@redhat.com> wrote:
+>>> The fact is, can we reliably determine which of those two setups we
+>>> have from cfq?
+>>
+>> I have no idea at this point of time but it looks like determining this
+>> will help.
+>>
+>> May be something like keep a track of number of processes on "sync-noidle"
+>> tree and average read times when sync-noidle tree is being served. Over a
+>> period of time we need to monitor what's the number of processes
+>> (threshold), after which average read time goes up. For sync-noidle we can
+>> then drive "queue_depth=nr_thrshold" and once queue depth reaches that,
+>> then idle on the process. So for single spindle, I guess tipping point
+>> will be 2 processes and we can idle on sync-noidle process. For more
+>> spindles, tipping point will be higher.
+>>
+>> These are just some random thoughts.
+> It seems reasonable.
+I think, though, that the implementation will be complex.
+We should limit this to request sizes that are <= stripe size (larger
+requests will hit more disks, and have a much lower optimal queue
+depth), so we need to add a new service_tree (they will become:
+SYNC_IDLE_LARGE, SYNC_IDLE_SMALL, SYNC_NOIDLE, ASYNC), and the
+optimization will apply only to the SYNC_IDLE_SMALL tree.
+Moreover, we can't just dispatch K queues and then idle on the last
+one. We need to have a set of K active queues, and wait on any of
+them. This makes this optimization very complex, and I think for
+little gain. In fact, usually we don't have sequential streams of
+small requests, unless we misuse mmap or direct I/O.
+BTW, the mmap problem could be easily fixed adding madvise(WILL_NEED)
+to the userspace program, when dealing with data.
+I think we only have to worry about binaries, here.
+
+> Something similar to what we do to reduce depth for async writes.
+> Can you see if you get similar BW improvements also for parallel
+> sequential direct I/Os with block size < stripe size?
 
 Thanks,
-Shaohua
+Corrado
