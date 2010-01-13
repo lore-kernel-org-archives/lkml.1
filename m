@@ -1,57 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756584Ab0AMWCL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756605Ab0AMWGl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756584Ab0AMWCL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 17:02:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756463Ab0AMWCK
+	id S1756605Ab0AMWGl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 17:06:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756594Ab0AMWGk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 17:02:10 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:50772 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756420Ab0AMWCK (ORCPT
+	Wed, 13 Jan 2010 17:06:40 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:54209 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756418Ab0AMWGj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 17:02:10 -0500
-Message-ID: <4B4E427D.9090207@zytor.com>
-Date: Wed, 13 Jan 2010 14:00:29 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
+	Wed, 13 Jan 2010 17:06:39 -0500
+To: Alexander Shishkin <virtuoso@slind.org>
+Cc: Valdis.Kletnieks@vt.edu, linux-fsdevel@vger.kernel.org,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       viro@zeniv.linux.org.uk
+Subject: Re: [RFC][PATCHv3] List per-process file descriptor consumption when hitting file-max
+From: Andi Kleen <andi@firstfloor.org>
+References: <28675.1248957636@turing-police.cc.vt.edu>
+	<1263202687-18529-1-git-send-email-virtuoso@slind.org>
+Date: Wed, 13 Jan 2010 23:06:37 +0100
+In-Reply-To: <1263202687-18529-1-git-send-email-virtuoso@slind.org> (Alexander Shishkin's message of "Mon, 11 Jan 2010 11:38:07 +0200")
+Message-ID: <87pr5dfymq.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Yinghai Lu <yinghai@kernel.org>, Suresh Siddha <suresh.b.siddha@intel.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "ananth@in.ibm.com" <ananth@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH -v2 5/5] x86: use dmi check to treat disabled cpus as
- hotplug cpus.
-References: <1263338274-6485-1-git-send-email-yinghai@kernel.org>	<1263338274-6485-5-git-send-email-yinghai@kernel.org>	<1263340563.2854.1011.camel@sbs-t61.sc.intel.com>	<4B4D0E39.10200@kernel.org> <87tyupfzk8.fsf@basil.nowhere.org>
-In-Reply-To: <87tyupfzk8.fsf@basil.nowhere.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/13/2010 01:46 PM, Andi Kleen wrote:
-> Yinghai Lu <yinghai@kernel.org> writes:
->>
->> so you want to treat those disabled cpus in the those system as hotplug cpus or not?
-> 
-> Why not? It's not that a hotplug cpu is particularly expensive.
-> It's just a bunch of memory and not even very much of it.
-> 
-> White and blacklists just to save a small amount of memory
-> seem like a bad idea.
-> 
+Alexander Shishkin <virtuoso@slind.org> writes:
 
-There are configurations in which percpu memory is in the megabytes.
-This is exactly why we need high water mark allocation of percpu memory:
-for configurations where there are possible hotpluggable CPU sockets
-(which may be virtual, and a lot larger number than necessary) we
-shouldn't need to allocate memory for a processor which has never been
-added and is net unlikely to ever be added.  The only alternative is to
-go to great length to keep the
-(percpu memory) x (possible cpus - actual cpus) product as small as
-possible, which is shortchanging the utility of the percpu memory system.
+> When a file descriptor limit is hit, display the top consumers of
+> descriptors so that it is possible to identify and fix those which
+> leak them.
 
-	-hpa
+Can't you get that information from /proc/*/fd/ ? 
+
+Doing it in user space would be much saner.
+
+-Andi
+
+-- 
+ak@linux.intel.com -- Speaking for myself only.
