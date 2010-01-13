@@ -1,105 +1,171 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755424Ab0AMKYZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755063Ab0AMKZS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755424Ab0AMKYZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 05:24:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932070Ab0AMKYX
+	id S1755063Ab0AMKZS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 05:25:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752497Ab0AMKZP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 05:24:23 -0500
-Received: from hera.kernel.org ([140.211.167.34]:37932 "EHLO hera.kernel.org"
+	Wed, 13 Jan 2010 05:25:15 -0500
+Received: from hera.kernel.org ([140.211.167.34]:37966 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755369Ab0AMKYV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 05:24:21 -0500
-Date: Wed, 13 Jan 2010 10:23:55 GMT
-From: tip-bot for Wolfram Sang <w.sang@pengutronix.de>
+	id S1752445Ab0AMKZO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jan 2010 05:25:14 -0500
+Date: Wed, 13 Jan 2010 10:24:29 GMT
+From: tip-bot for Dave Jones <davej@redhat.com>
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       rostedt@goodmis.org, w.sang@pengutronix.de, tglx@linutronix.de
+       davej@redhat.com, tglx@linutronix.de, mingo@elte.hu
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       rostedt@goodmis.org, w.sang@pengutronix.de, tglx@linutronix.de
-In-Reply-To: <1262724082-9517-1-git-send-email-w.sang@pengutronix.de>
-References: <1262724082-9517-1-git-send-email-w.sang@pengutronix.de>
+       tglx@linutronix.de, davej@redhat.com, mingo@elte.hu
+In-Reply-To: <20100104144735.GA18390@redhat.com>
+References: <20100104144735.GA18390@redhat.com>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:tracing/core] tracing: Use appropriate perl constructs in recordmcount.pl
-Message-ID: <tip-dfaa9e2c5707b2c217c0121aac796e0fa3051482@git.kernel.org>
-Git-Commit-ID: dfaa9e2c5707b2c217c0121aac796e0fa3051482
+Subject: [tip:x86/asm] x86: Macroise x86 cache descriptors
+Message-ID: <tip-2ca49b2fcf5813571663c3c4c894b78148c43690@git.kernel.org>
+Git-Commit-ID: 2ca49b2fcf5813571663c3c4c894b78148c43690
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Wed, 13 Jan 2010 10:23:56 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Wed, 13 Jan 2010 10:24:29 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  dfaa9e2c5707b2c217c0121aac796e0fa3051482
-Gitweb:     http://git.kernel.org/tip/dfaa9e2c5707b2c217c0121aac796e0fa3051482
-Author:     Wolfram Sang <w.sang@pengutronix.de>
-AuthorDate: Tue, 5 Jan 2010 21:41:22 +0100
-Committer:  Steven Rostedt <rostedt@goodmis.org>
-CommitDate: Wed, 6 Jan 2010 18:08:58 -0500
+Commit-ID:  2ca49b2fcf5813571663c3c4c894b78148c43690
+Gitweb:     http://git.kernel.org/tip/2ca49b2fcf5813571663c3c4c894b78148c43690
+Author:     Dave Jones <davej@redhat.com>
+AuthorDate: Mon, 4 Jan 2010 09:47:35 -0500
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Wed, 13 Jan 2010 08:57:38 +0100
 
-tracing: Use appropriate perl constructs in recordmcount.pl
+x86: Macroise x86 cache descriptors
 
-Modified recordmcount.pl to use perl constructs that are still
-understandable by C hackers that are not perl programmers.
+Use a macro to define the cache sizes when cachesize > 1 MB.
 
-Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
-LKML-Reference: <1262724082-9517-1-git-send-email-w.sang@pengutronix.de>
-Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+This is less typing, and less prone to introducing bugs like we
+saw in e02e0e1a130b9ca37c5186d38ad4b3aaf58bb149, and means we
+don't have to do maths when adding new non-power-of-2 updates
+like those seen recently.
+
+Signed-off-by: Dave Jones <davej@redhat.com>
+LKML-Reference: <20100104144735.GA18390@redhat.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- scripts/recordmcount.pl |   29 +++++++++++------------------
- 1 files changed, 11 insertions(+), 18 deletions(-)
+ arch/x86/kernel/cpu/intel_cacheinfo.c |   84 +++++++++++++++++----------------
+ 1 files changed, 43 insertions(+), 41 deletions(-)
 
-diff --git a/scripts/recordmcount.pl b/scripts/recordmcount.pl
-index 5de12c7..545fe71 100755
---- a/scripts/recordmcount.pl
-+++ b/scripts/recordmcount.pl
-@@ -136,13 +136,14 @@ my %text_sections = (
-      ".text.unlikely" => 1,
- );
+diff --git a/arch/x86/kernel/cpu/intel_cacheinfo.c b/arch/x86/kernel/cpu/intel_cacheinfo.c
+index fc6c8ef..c2b722d 100644
+--- a/arch/x86/kernel/cpu/intel_cacheinfo.c
++++ b/arch/x86/kernel/cpu/intel_cacheinfo.c
+@@ -31,6 +31,8 @@ struct _cache_table {
+ 	short size;
+ };
  
--$objdump = "objdump" if ((length $objdump) == 0);
--$objcopy = "objcopy" if ((length $objcopy) == 0);
--$cc = "gcc" if ((length $cc) == 0);
--$ld = "ld" if ((length $ld) == 0);
--$nm = "nm" if ((length $nm) == 0);
--$rm = "rm" if ((length $rm) == 0);
--$mv = "mv" if ((length $mv) == 0);
-+# Note: we are nice to C-programmers here, thus we skip the '||='-idiom.
-+$objdump = 'objdump' if (!$objdump);
-+$objcopy = 'objcopy' if (!$objcopy);
-+$cc = 'gcc' if (!$cc);
-+$ld = 'ld' if (!$ld);
-+$nm = 'nm' if (!$nm);
-+$rm = 'rm' if (!$rm);
-+$mv = 'mv' if (!$mv);
++#define MB(x)	((x) * 1024)
++
+ /* All the cache descriptor types we care about (no TLB or
+    trace cache entries) */
  
- #print STDERR "running: $P '$arch' '$objdump' '$objcopy' '$cc' '$ld' " .
- #    "'$nm' '$rm' '$mv' '$inputfile'\n";
-@@ -194,12 +195,8 @@ sub check_objcopy
-     }
- }
- 
--if ($arch eq "x86") {
--    if ($bits == 64) {
--	$arch = "x86_64";
--    } else {
--	$arch = "i386";
--    }
-+if ($arch eq 'x86') {
-+    $arch = ($bits == 64) ? 'x86_64' : 'i386';
- }
- 
- #
-@@ -476,11 +473,7 @@ while (<IN>) {
- 	$read_headers = 0;
- 
- 	# Only record text sections that we know are safe
--	if (defined($text_sections{$1})) {
--	    $read_function = 1;
--	} else {
--	    $read_function = 0;
--	}
-+	$read_function = defined($text_sections{$1});
- 	# print out any recorded offsets
- 	update_funcs();
+@@ -44,9 +46,9 @@ static const struct _cache_table __cpuinitconst cache_table[] =
+ 	{ 0x0d, LVL_1_DATA, 16 },	/* 4-way set assoc, 64 byte line size */
+ 	{ 0x21, LVL_2,      256 },	/* 8-way set assoc, 64 byte line size */
+ 	{ 0x22, LVL_3,      512 },	/* 4-way set assoc, sectored cache, 64 byte line size */
+-	{ 0x23, LVL_3,      1024 },	/* 8-way set assoc, sectored cache, 64 byte line size */
+-	{ 0x25, LVL_3,      2048 },	/* 8-way set assoc, sectored cache, 64 byte line size */
+-	{ 0x29, LVL_3,      4096 },	/* 8-way set assoc, sectored cache, 64 byte line size */
++	{ 0x23, LVL_3,      MB(1) },	/* 8-way set assoc, sectored cache, 64 byte line size */
++	{ 0x25, LVL_3,      MB(2) },	/* 8-way set assoc, sectored cache, 64 byte line size */
++	{ 0x29, LVL_3,      MB(4) },	/* 8-way set assoc, sectored cache, 64 byte line size */
+ 	{ 0x2c, LVL_1_DATA, 32 },	/* 8-way set assoc, 64 byte line size */
+ 	{ 0x30, LVL_1_INST, 32 },	/* 8-way set assoc, 64 byte line size */
+ 	{ 0x39, LVL_2,      128 },	/* 4-way set assoc, sectored cache, 64 byte line size */
+@@ -59,16 +61,16 @@ static const struct _cache_table __cpuinitconst cache_table[] =
+ 	{ 0x41, LVL_2,      128 },	/* 4-way set assoc, 32 byte line size */
+ 	{ 0x42, LVL_2,      256 },	/* 4-way set assoc, 32 byte line size */
+ 	{ 0x43, LVL_2,      512 },	/* 4-way set assoc, 32 byte line size */
+-	{ 0x44, LVL_2,      1024 },	/* 4-way set assoc, 32 byte line size */
+-	{ 0x45, LVL_2,      2048 },	/* 4-way set assoc, 32 byte line size */
+-	{ 0x46, LVL_3,      4096 },	/* 4-way set assoc, 64 byte line size */
+-	{ 0x47, LVL_3,      8192 },	/* 8-way set assoc, 64 byte line size */
+-	{ 0x49, LVL_3,      4096 },	/* 16-way set assoc, 64 byte line size */
+-	{ 0x4a, LVL_3,      6144 },	/* 12-way set assoc, 64 byte line size */
+-	{ 0x4b, LVL_3,      8192 },	/* 16-way set assoc, 64 byte line size */
+-	{ 0x4c, LVL_3,     12288 },	/* 12-way set assoc, 64 byte line size */
+-	{ 0x4d, LVL_3,     16384 },	/* 16-way set assoc, 64 byte line size */
+-	{ 0x4e, LVL_2,      6144 },	/* 24-way set assoc, 64 byte line size */
++	{ 0x44, LVL_2,      MB(1) },	/* 4-way set assoc, 32 byte line size */
++	{ 0x45, LVL_2,      MB(2) },	/* 4-way set assoc, 32 byte line size */
++	{ 0x46, LVL_3,      MB(4) },	/* 4-way set assoc, 64 byte line size */
++	{ 0x47, LVL_3,      MB(8) },	/* 8-way set assoc, 64 byte line size */
++	{ 0x49, LVL_3,      MB(4) },	/* 16-way set assoc, 64 byte line size */
++	{ 0x4a, LVL_3,      MB(6) },	/* 12-way set assoc, 64 byte line size */
++	{ 0x4b, LVL_3,      MB(8) },	/* 16-way set assoc, 64 byte line size */
++	{ 0x4c, LVL_3,      MB(12) },	/* 12-way set assoc, 64 byte line size */
++	{ 0x4d, LVL_3,      MB(16) },	/* 16-way set assoc, 64 byte line size */
++	{ 0x4e, LVL_2,      MB(6) },	/* 24-way set assoc, 64 byte line size */
+ 	{ 0x60, LVL_1_DATA, 16 },	/* 8-way set assoc, sectored cache, 64 byte line size */
+ 	{ 0x66, LVL_1_DATA, 8 },	/* 4-way set assoc, sectored cache, 64 byte line size */
+ 	{ 0x67, LVL_1_DATA, 16 },	/* 4-way set assoc, sectored cache, 64 byte line size */
+@@ -77,34 +79,34 @@ static const struct _cache_table __cpuinitconst cache_table[] =
+ 	{ 0x71, LVL_TRACE,  16 },	/* 8-way set assoc */
+ 	{ 0x72, LVL_TRACE,  32 },	/* 8-way set assoc */
+ 	{ 0x73, LVL_TRACE,  64 },	/* 8-way set assoc */
+-	{ 0x78, LVL_2,    1024 },	/* 4-way set assoc, 64 byte line size */
+-	{ 0x79, LVL_2,     128 },	/* 8-way set assoc, sectored cache, 64 byte line size */
+-	{ 0x7a, LVL_2,     256 },	/* 8-way set assoc, sectored cache, 64 byte line size */
+-	{ 0x7b, LVL_2,     512 },	/* 8-way set assoc, sectored cache, 64 byte line size */
+-	{ 0x7c, LVL_2,    1024 },	/* 8-way set assoc, sectored cache, 64 byte line size */
+-	{ 0x7d, LVL_2,    2048 },	/* 8-way set assoc, 64 byte line size */
+-	{ 0x7f, LVL_2,     512 },	/* 2-way set assoc, 64 byte line size */
+-	{ 0x82, LVL_2,     256 },	/* 8-way set assoc, 32 byte line size */
+-	{ 0x83, LVL_2,     512 },	/* 8-way set assoc, 32 byte line size */
+-	{ 0x84, LVL_2,    1024 },	/* 8-way set assoc, 32 byte line size */
+-	{ 0x85, LVL_2,    2048 },	/* 8-way set assoc, 32 byte line size */
+-	{ 0x86, LVL_2,     512 },	/* 4-way set assoc, 64 byte line size */
+-	{ 0x87, LVL_2,    1024 },	/* 8-way set assoc, 64 byte line size */
+-	{ 0xd0, LVL_3,     512 },	/* 4-way set assoc, 64 byte line size */
+-	{ 0xd1, LVL_3,    1024 },	/* 4-way set assoc, 64 byte line size */
+-	{ 0xd2, LVL_3,    2048 },	/* 4-way set assoc, 64 byte line size */
+-	{ 0xd6, LVL_3,    1024 },	/* 8-way set assoc, 64 byte line size */
+-	{ 0xd7, LVL_3,    2048 },	/* 8-way set assoc, 64 byte line size */
+-	{ 0xd8, LVL_3,    4096 },	/* 12-way set assoc, 64 byte line size */
+-	{ 0xdc, LVL_3,    2048 },	/* 12-way set assoc, 64 byte line size */
+-	{ 0xdd, LVL_3,    4096 },	/* 12-way set assoc, 64 byte line size */
+-	{ 0xde, LVL_3,    8192 },	/* 12-way set assoc, 64 byte line size */
+-	{ 0xe2, LVL_3,    2048 },	/* 16-way set assoc, 64 byte line size */
+-	{ 0xe3, LVL_3,    4096 },	/* 16-way set assoc, 64 byte line size */
+-	{ 0xe4, LVL_3,    8192 },	/* 16-way set assoc, 64 byte line size */
+-	{ 0xea, LVL_3,    12288 },	/* 24-way set assoc, 64 byte line size */
+-	{ 0xeb, LVL_3,    18432 },	/* 24-way set assoc, 64 byte line size */
+-	{ 0xec, LVL_3,    24576 },	/* 24-way set assoc, 64 byte line size */
++	{ 0x78, LVL_2,      MB(1) },	/* 4-way set assoc, 64 byte line size */
++	{ 0x79, LVL_2,      128 },	/* 8-way set assoc, sectored cache, 64 byte line size */
++	{ 0x7a, LVL_2,      256 },	/* 8-way set assoc, sectored cache, 64 byte line size */
++	{ 0x7b, LVL_2,      512 },	/* 8-way set assoc, sectored cache, 64 byte line size */
++	{ 0x7c, LVL_2,      MB(1) },	/* 8-way set assoc, sectored cache, 64 byte line size */
++	{ 0x7d, LVL_2,      MB(2) },	/* 8-way set assoc, 64 byte line size */
++	{ 0x7f, LVL_2,      512 },	/* 2-way set assoc, 64 byte line size */
++	{ 0x82, LVL_2,      256 },	/* 8-way set assoc, 32 byte line size */
++	{ 0x83, LVL_2,      512 },	/* 8-way set assoc, 32 byte line size */
++	{ 0x84, LVL_2,      MB(1) },	/* 8-way set assoc, 32 byte line size */
++	{ 0x85, LVL_2,      MB(2) },	/* 8-way set assoc, 32 byte line size */
++	{ 0x86, LVL_2,      512 },	/* 4-way set assoc, 64 byte line size */
++	{ 0x87, LVL_2,      MB(1) },	/* 8-way set assoc, 64 byte line size */
++	{ 0xd0, LVL_3,      512 },	/* 4-way set assoc, 64 byte line size */
++	{ 0xd1, LVL_3,      MB(1) },	/* 4-way set assoc, 64 byte line size */
++	{ 0xd2, LVL_3,      MB(2) },	/* 4-way set assoc, 64 byte line size */
++	{ 0xd6, LVL_3,      MB(1) },	/* 8-way set assoc, 64 byte line size */
++	{ 0xd7, LVL_3,      MB(2) },	/* 8-way set assoc, 64 byte line size */
++	{ 0xd8, LVL_3,      MB(4) },	/* 12-way set assoc, 64 byte line size */
++	{ 0xdc, LVL_3,      MB(2) },	/* 12-way set assoc, 64 byte line size */
++	{ 0xdd, LVL_3,      MB(4) },	/* 12-way set assoc, 64 byte line size */
++	{ 0xde, LVL_3,      MB(8) },	/* 12-way set assoc, 64 byte line size */
++	{ 0xe2, LVL_3,      MB(2) },	/* 16-way set assoc, 64 byte line size */
++	{ 0xe3, LVL_3,      MB(4) },	/* 16-way set assoc, 64 byte line size */
++	{ 0xe4, LVL_3,      MB(8) },	/* 16-way set assoc, 64 byte line size */
++	{ 0xea, LVL_3,      MB(12) },	/* 24-way set assoc, 64 byte line size */
++	{ 0xeb, LVL_3,      MB(18) },	/* 24-way set assoc, 64 byte line size */
++	{ 0xec, LVL_3,      MB(24) },	/* 24-way set assoc, 64 byte line size */
+ 	{ 0x00, 0, 0}
+ };
  
