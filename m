@@ -1,85 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754505Ab0AMXUj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753918Ab0AMXXy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754505Ab0AMXUj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 18:20:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754120Ab0AMXUg
+	id S1753918Ab0AMXXy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 18:23:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753712Ab0AMXXy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 18:20:36 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:36910 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753835Ab0AMXUP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 18:20:15 -0500
-Date: Wed, 13 Jan 2010 15:19:23 -0800
-From: Greg KH <gregkh@suse.de>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>,
-       linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: Re: [PATCH 5/5] lockdep: Fix the way to initialize class_mutex for
- information of file and line
-Message-ID: <20100113231923.GB12325@suse.de>
-References: <4B45B9C1.2040900@dcl.info.waseda.ac.jp>
- <1262860795-5745-6-git-send-email-mitake@dcl.info.waseda.ac.jp>
- <20100113100022.GA11386@elte.hu>
- <20100113231755.GA12325@suse.de>
+	Wed, 13 Jan 2010 18:23:54 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:43260 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751713Ab0AMXXx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jan 2010 18:23:53 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=BwM9rvDOEfiFqYYIRR1VUvG7rPxwS3X45B6Hk87nHi91WRnE1ompLiYu7uUG2bjQW
+	fG/4tV9IPuocQFFKl7IKg==
+Date: Wed, 13 Jan 2010 15:23:44 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Mel Gorman <mel@csn.ul.ie>
+cc: Andrea Arcangeli <aarcange@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Adam Litke <agl@us.ibm.com>, Avi Kivity <avi@redhat.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH 5/7] Add /proc trigger for memory compaction
+In-Reply-To: <alpine.DEB.2.00.1001071352100.23894@chino.kir.corp.google.com>
+Message-ID: <alpine.DEB.2.00.1001131518240.10201@chino.kir.corp.google.com>
+References: <1262795169-9095-1-git-send-email-mel@csn.ul.ie> <1262795169-9095-6-git-send-email-mel@csn.ul.ie> <alpine.DEB.2.00.1001071352100.23894@chino.kir.corp.google.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100113231755.GA12325@suse.de>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 13, 2010 at 03:17:55PM -0800, Greg KH wrote:
-> On Wed, Jan 13, 2010 at 11:00:22AM +0100, Ingo Molnar wrote:
-> > 
-> > * Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp> wrote:
-> > 
-> > > This patch adds __FILE__ and __LINE__ to arguments passed for
-> > > __mutex_init() called in __class_register().
-> > > This affects to lockdep_map of class_mutex of struct class_private,
-> > > and these will be used to make trace lock events more human friendly.
-> > > 
-> > > Signed-off-by: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
-> > > Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> > > Cc: Paul Mackerras <paulus@samba.org>
-> > > Cc: Frederic Weisbecker <fweisbec@gmail.com>
-> > > Cc: Greg Kroah-Hartman <gregkh@suse.de>
-> > > ---
-> > >  drivers/base/class.c |    3 ++-
-> > >  1 files changed, 2 insertions(+), 1 deletions(-)
-> > > 
-> > > diff --git a/drivers/base/class.c b/drivers/base/class.c
-> > > index 161746d..cc0630f 100644
-> > > --- a/drivers/base/class.c
-> > > +++ b/drivers/base/class.c
-> > > @@ -162,7 +162,8 @@ int __class_register(struct class *cls, struct lock_class_key *key)
-> > >  	klist_init(&cp->class_devices, klist_class_dev_get, klist_class_dev_put);
-> > >  	INIT_LIST_HEAD(&cp->class_interfaces);
-> > >  	kset_init(&cp->class_dirs);
-> > > -	__mutex_init(&cp->class_mutex, "struct class mutex", key);
-> > > +	__mutex_init(&cp->class_mutex, "struct class mutex", key,
-> > > +		     __FILE__, __LINE__);
-> > >  	error = kobject_set_name(&cp->class_subsys.kobj, "%s", cls->name);
-> > >  	if (error) {
-> > >  		kfree(cp);
-> > 
-> > Greg, any objection to this type of embellishment of lock data that comes from 
-> > the driver core?
+On Thu, 7 Jan 2010, David Rientjes wrote:
+
+> > diff --git a/include/linux/compaction.h b/include/linux/compaction.h
+> > index 6201371..5965ef2 100644
+> > --- a/include/linux/compaction.h
+> > +++ b/include/linux/compaction.h
+> > @@ -5,4 +5,9 @@
+> >  #define COMPACT_INCOMPLETE	0
+> >  #define COMPACT_COMPLETE	1
+> >  
+> > +#ifdef CONFIG_MIGRATION
+> > +extern int sysctl_compaction_handler(struct ctl_table *table, int write,
+> > +			void __user *buffer, size_t *length, loff_t *ppos);
+> > +#endif /* CONFIG_MIGRATION */
+> > +
+> >  #endif /* _LINUX_COMPACTION_H */
+
+This should be CONFIG_COMPACTION since mm/compaction.c won't be compiled 
+without it; the later additions to this ifdef, fragmentation_index() and 
+try_to_compact_pages(), can also be under CONFIG_COMPACTION since neither 
+are used outside of the compaction core directly (__fragmentation_index() 
+from vmstat uses its wrapped function at file scope).
+
+> > diff --git a/kernel/sysctl.c b/kernel/sysctl.c
+> > index 8a68b24..6202e95 100644
+> > --- a/kernel/sysctl.c
+> > +++ b/kernel/sysctl.c
+> > @@ -50,6 +50,7 @@
+> >  #include <linux/ftrace.h>
+> >  #include <linux/slow-work.h>
+> >  #include <linux/perf_event.h>
+> > +#include <linux/compaction.h>
+> >  
+> >  #include <asm/uaccess.h>
+> >  #include <asm/processor.h>
+> > @@ -80,6 +81,7 @@ extern int pid_max;
+> >  extern int min_free_kbytes;
+> >  extern int pid_max_min, pid_max_max;
+> >  extern int sysctl_drop_caches;
+> > +extern int sysctl_compact_node;
+> >  extern int percpu_pagelist_fraction;
+> >  extern int compat_log;
+> >  extern int latencytop_enabled;
+> > @@ -1109,6 +1111,15 @@ static struct ctl_table vm_table[] = {
+> >  		.mode		= 0644,
+> >  		.proc_handler	= drop_caches_sysctl_handler,
+> >  	},
+> > +#ifdef CONFIG_MIGRATION
+> > +	{
+> > +		.procname	= "compact_node",
+> > +		.data		= &sysctl_compact_node,
+> > +		.maxlen		= sizeof(int),
+> > +		.mode		= 0644,
 > 
-> No, I'll queue it up in my tree.
+> This should only need 0200?
+> 
 
-Er, oops, sorry, that would go through your tree, not mine :)
-
-Feel free to add:
-	Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
-
-In looking at it, this might solve the lockdep issue with the device
-tree as well, I'll have to play with it once this makes it into Linus's
-tree.
-
-thanks,
-
-greg k-h
+This needs to be CONFIG_COMPACTION as well, we won't have the handler 
+without mm/compaction.c.
