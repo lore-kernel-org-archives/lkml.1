@@ -1,114 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754537Ab0AMNSn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754892Ab0AMNUM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754537Ab0AMNSn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 08:18:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754365Ab0AMNSm
+	id S1754892Ab0AMNUM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 08:20:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754838Ab0AMNUK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 08:18:42 -0500
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:51482 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754268Ab0AMNSl (ORCPT
+	Wed, 13 Jan 2010 08:20:10 -0500
+Received: from astoria.ccjclearline.com ([64.235.106.9]:37651 "EHLO
+	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754811Ab0AMNUJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 08:18:41 -0500
-Date: Wed, 13 Jan 2010 13:18:40 +0000
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Adrian Hunter <adrian.hunter@nokia.com>
-Cc: Liam Girdwood <lrg@slimlogic.co.uk>,
-       "Quadros Roger (Nokia-D/Helsinki)" <roger.quadros@nokia.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] regulator: Add 'start-up time' to fixed voltage
- regulators
-Message-ID: <20100113131840.GF27473@rakim.wolfsonmicro.main>
-References: <4B4DB562.2080601@nokia.com>
- <20100113120327.GB27473@rakim.wolfsonmicro.main>
- <4B4DB94E.8080602@nokia.com>
- <20100113122612.GC27473@rakim.wolfsonmicro.main>
- <4B4DC66C.5050106@nokia.com>
+	Wed, 13 Jan 2010 08:20:09 -0500
+Date: Wed, 13 Jan 2010 08:19:20 -0500 (EST)
+From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+X-X-Sender: rpjday@localhost
+To: Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>
+cc: linux-kernel@vger.kernel.org, Linus Walleij <linus.walleij@stericsson.com>,
+       sameo@linux.intel.com, Reinhard.Tartler@informatik.uni-erlangen.de
+Subject: Re: [PATCH] typo in kernel source (DEBUGFS)
+In-Reply-To: <20100113131539.GA3141@stud.informatik.uni-erlangen.de>
+Message-ID: <alpine.LFD.2.00.1001130815530.13515@localhost>
+References: <20100113115712.GA7398@faui49.informatik.uni-erlangen.de> <alpine.LFD.2.00.1001130704190.532@localhost> <20100113131539.GA3141@stud.informatik.uni-erlangen.de>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B4DC66C.5050106@nokia.com>
-X-Cookie: Kiss me twice.  I'm schizophrenic.
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - crashcourse.ca
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 13, 2010 at 03:11:08PM +0200, Adrian Hunter wrote:
-> From bd97e65b280be528239e3932da8be512ce7785ed Mon Sep 17 00:00:00 2001
-> From: Adrian Hunter <adrian.hunter@nokia.com>
-> Date: Tue, 12 Jan 2010 12:25:13 +0200
-> Subject: [PATCH] regulator: Add 'start-up time' to fixed voltage regulators
-> 
-> Add a field to specify a delay for the start-up time of
-> a fixed voltage regulator.
-> 
-> Signed-off-by: Adrian Hunter <adrian.hunter@nokia.com>
+On Wed, 13 Jan 2010, Christoph Egger wrote:
 
-Looks good, thanks.
+> On Wed, Jan 13, 2010 at 07:05:33AM -0500, Robert P. J. Day wrote:
+> >
+> >   just FYI, the same information can be found where i post the
+> > output from my kernel scanning scripts.  specifically, that very
+> > typo is already documented here:
+> >
+> > http://www.crashcourse.ca/wiki/index.php/Badref_CONFIG_variables#mfd
+> >
+> > rday
+>
+> 	Jep I stumbled upon your reports while having a closer look at
+> what we found. Strangely while you did find somewhere around 250
+> such Issues we are at 90[0] if you count #define-ed CONFIG_* to the
+> errors. I'll probably try to look at the difference between our
+> results.
+>
+> [0] http://vamos1.informatik.uni-erlangen.de/graph.html
 
-Acked-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+  it's entirely possible that i have false positives in my listings;
+anyone who wants to look at them is responsible for checking them out
+more carefully, but i believe i catch most of the errors.
 
-> ---
-> drivers/regulator/fixed.c       |    5 +++++
-> include/linux/regulator/fixed.h |    2 ++
-> 2 files changed, 7 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/regulator/fixed.c b/drivers/regulator/fixed.c
-> index f9f516a..40d4080 100644
-> --- a/drivers/regulator/fixed.c
-> +++ b/drivers/regulator/fixed.c
-> @@ -24,12 +24,14 @@
-> #include <linux/regulator/driver.h>
-> #include <linux/regulator/fixed.h>
-> #include <linux/gpio.h>
-> +#include <linux/delay.h>
-> 
-> struct fixed_voltage_data {
-> 	struct regulator_desc desc;
-> 	struct regulator_dev *dev;
-> 	int microvolts;
-> 	int gpio;
-> +	unsigned startup_delay;
-> 	unsigned enable_high:1;
-> 	unsigned is_enabled:1;
-> };
-> @@ -48,6 +50,8 @@ static int fixed_voltage_enable(struct regulator_dev *dev)
-> 	if (gpio_is_valid(data->gpio)) {
-> 		gpio_set_value_cansleep(data->gpio, data->enable_high);
-> 		data->is_enabled = 1;
-> +		if (data->startup_delay)
-> +			udelay(data->startup_delay);
-> 	}
-> 
-> 	return 0;
-> @@ -117,6 +121,7 @@ static int regulator_fixed_voltage_probe(struct platform_device *pdev)
-> 
-> 	drvdata->microvolts = config->microvolts;
-> 	drvdata->gpio = config->gpio;
-> +	drvdata->startup_delay = config->startup_delay;
-> 
-> 	if (gpio_is_valid(config->gpio)) {
-> 		drvdata->enable_high = config->enable_high;
-> diff --git a/include/linux/regulator/fixed.h b/include/linux/regulator/fixed.h
-> index e94a4a1..02edef1 100644
-> --- a/include/linux/regulator/fixed.h
-> +++ b/include/linux/regulator/fixed.h
-> @@ -25,6 +25,7 @@ struct regulator_init_data;
->  * @microvolts:		Output voltage of regulator
->  * @gpio:		GPIO to use for enable control
->  * 			set to -EINVAL if not used
-> + * @startup_delay:	Start-up time in microseconds
->  * @enable_high:	Polarity of enable GPIO
->  *			1 = Active high, 0 = Active low
->  * @enabled_at_boot:	Whether regulator has been enabled at
-> @@ -41,6 +42,7 @@ struct fixed_voltage_config {
-> 	const char *supply_name;
-> 	int microvolts;
-> 	int gpio;
-> +	unsigned startup_delay;
-> 	unsigned enable_high:1;
-> 	unsigned enabled_at_boot:1;
-> 	struct regulator_init_data *init_data;
-> -- 
-> 1.6.0.4
+rday
+--
+
+========================================================================
+Robert P. J. Day                               Waterloo, Ontario, CANADA
+
+            Linux Consulting, Training and Kernel Pedantry.
+
+Web page:                                          http://crashcourse.ca
+Twitter:                                       http://twitter.com/rpjday
+========================================================================
