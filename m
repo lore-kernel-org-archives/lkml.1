@@ -1,167 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753940Ab0AMByy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754063Ab0AMB5A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753940Ab0AMByy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jan 2010 20:54:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752323Ab0AMByy
+	id S1754063Ab0AMB5A (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jan 2010 20:57:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753170Ab0AMB47
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jan 2010 20:54:54 -0500
-Received: from mail-yw0-f176.google.com ([209.85.211.176]:55160 "EHLO
-	mail-yw0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750822Ab0AMByx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jan 2010 20:54:53 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=c/O0TcpUgugg07y9sqjUEbp5U/FpVkioVHHntRGEE8VuOVLkC4h1+ZnI559j36n1md
-         gORMJ8yit0lc6xrlKrZ5QF/kyAy50jPa8sshWC57bOynwdjxmmJ5In4qYtqN9e80evWt
-         GRKZflvNzy3QkyZU/XqQszQB3IyLMX7bEiMI0=
-Subject: Re: [PATCH -mmotm-2010-01-06-14-34] check high watermark after
- shrink zone
-From: Minchan Kim <minchan.kim@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Mel Gorman <mel@csn.ul.ie>, Rik van Riel <riel@redhat.com>,
-       linux-mm <linux-mm@kvack.org>, lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <20100112150152.78604b78.akpm@linux-foundation.org>
-References: <20100108141235.ef56b567.minchan.kim@barrios-desktop>
-	 <20100112150152.78604b78.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Wed, 13 Jan 2010 10:51:47 +0900
-Message-Id: <1263347507.23507.108.camel@barrios-desktop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Tue, 12 Jan 2010 20:56:59 -0500
+Received: from hera.kernel.org ([140.211.167.34]:42713 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753159Ab0AMB47 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jan 2010 20:56:59 -0500
+Message-ID: <4B4D2811.7000001@kernel.org>
+Date: Tue, 12 Jan 2010 17:55:29 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
+MIME-Version: 1.0
+To: Suresh Siddha <suresh.b.siddha@intel.com>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       "ananth@in.ibm.com" <ananth@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH -v2 5/5] x86: use dmi check to treat disabled cpus as
+ hotplug cpus.
+References: <1263338274-6485-1-git-send-email-yinghai@kernel.org>	 <1263338274-6485-5-git-send-email-yinghai@kernel.org>	 <1263340563.2854.1011.camel@sbs-t61.sc.intel.com>	 <4B4D0E39.10200@kernel.org> <1263347315.2854.1296.camel@sbs-t61.sc.intel.com>
+In-Reply-To: <1263347315.2854.1296.camel@sbs-t61.sc.intel.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2010-01-12 at 15:01 -0800, Andrew Morton wrote:
-> On Fri, 8 Jan 2010 14:12:35 +0900
-> Minchan Kim <minchan.kim@gmail.com> wrote:
+On 01/12/2010 05:48 PM, Suresh Siddha wrote:
+> On Tue, 2010-01-12 at 16:05 -0800, Yinghai Lu wrote:
+>> On 01/12/2010 03:56 PM, Suresh Siddha wrote:
+>>> On Tue, 2010-01-12 at 15:17 -0800, Yinghai Lu wrote:
+>>>> some systems that have disable cpus entries because same
+>>>>   BIOS will support 2 sockets and 4 sockets and more at
+>>>>   same time, BIOS just leave some disable entries, but
+>>>>   those system do not support cpu hotplug. we don't need
+>>>>   treat disabled_cpus as hotplug cpus.
+>>>> so we can make nr_cpu_ids smaller and save more space
+>>>>   (pcpu data allocations), and could make some systems run
+>>>>   with logical flat instead of physical flat apic mode
+>>>>
+>>>> -v2: change to black list instead
+>>>
+>>> I don't think this list will work because every HT system with HT
+>>> disabled in the bios shows that logical cpu as disabled.
+>>
+>> so you want to treat those disabled cpus in the those system as hotplug cpus or not?
 > 
-> > Kswapd check that zone have enough free by zone_water_mark.
-> > If any zone doesn't have enough page, it set all_zones_ok to zero.
-> > all_zone_ok makes kswapd retry not sleeping.
-> > 
-> > I think the watermark check before shrink zone is pointless.
-> > Kswapd try to shrink zone then the check is meaningul.
-> > 
-> > This patch move the check after shrink zone.
-> 
-> The changelog is rather hard to understand.  I changed it to
-> 
-> : Kswapd checks that zone has sufficient pages free via zone_watermark_ok().
-> : 
-> : If any zone doesn't have enough pages, we set all_zones_ok to zero. 
-> : !all_zone_ok makes kswapd retry rather than sleeping.
-> : 
-> : I think the watermark check before shrink_zone() is pointless.  Only after
-> : kswapd has tried to shrink the zone is the check meaningful.
-> : 
-> : Move the check to after the call to shrink_zone().
-> 
+> They are really not hot plug cpus, so they can also take advantage of
+> what you are trying to provide with this patch.
 
-Thanks, Andrew. 
+you mean this blacklist could be too long?
 
-> > Signed-off-by: Minchan Kim <minchan.kim@gmail.com>
-> > CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> > CC: Mel Gorman <mel@csn.ul.ie>
-> > CC: Rik van Riel <riel@redhat.com>
-> > ---
-> >  mm/vmscan.c |   21 +++++++++++----------
-> >  1 files changed, 11 insertions(+), 10 deletions(-)
-> > 
-> > diff --git a/mm/vmscan.c b/mm/vmscan.c
-> > index 885207a..b81adf8 100644
-> > --- a/mm/vmscan.c
-> > +++ b/mm/vmscan.c
-> > @@ -2057,9 +2057,6 @@ loop_again:
-> >  					priority != DEF_PRIORITY)
-> >  				continue;
-> >  
-> > -			if (!zone_watermark_ok(zone, order,
-> > -					high_wmark_pages(zone), end_zone, 0))
-> > -				all_zones_ok = 0;
-> 
-> This will make kswapd stop doing reclaim if all zones have
-> zone_is_all_unreclaimable():
-> 
-> 			if (zone_is_all_unreclaimable(zone))
-> 				continue;
-> 
-> This seems bad.
-
-Do you mean zone_is_all_unreclaimable in front of if (nr_slab ==0 && ..)?
-
-                        reclaim_state->reclaimed_slab = 0;
-                        nr_slab = shrink_slab(sc.nr_scanned, GFP_KERNEL,
-                                                lru_pages);
-                        sc.nr_reclaimed += reclaim_state->reclaimed_slab;
-                        total_scanned += sc.nr_scanned;
-                        if (zone_is_all_unreclaimable(zone)) <=== 
-                                continue;
-
-
-Actually I think the check is pointless, too. 
-We set ZONE_ALL_UNRECLAIMABLE after the check and increase next zone in
-loop. 
-The check is a little bit effective in just case concurrent zone
-reclaim. But if we remove the check, it's one more call
-zone_watermark_ok and it's okay, I think. 
-
-In addition, we check zone_is_all_unreclaimable in start in loop
-following as. 
-
-                for (i = 0; i <= end_zone; i++) {
-                        struct zone *zone = pgdat->node_zones + i; 
-                        int nr_slab;
-                        int nid, zid; 
-
-                        if (!populated_zone(zone))
-                                continue;
-
-                        if (zone_is_all_unreclaimable(zone) && <===
-                                        priority != DEF_PRIORITY)
-                                continue;
-
-so the check in higher priority is effective if anyone doesn't free any
-page. 
-
+switch to whitelist for the box can treat disabled cpus as hotplug cpus?
 
 > 
-> >  			temp_priority[i] = priority;
-> >  			sc.nr_scanned = 0;
-> >  			note_zone_scanning_priority(zone, priority);
-> > @@ -2099,13 +2096,17 @@ loop_again:
-> >  			    total_scanned > sc.nr_reclaimed + sc.nr_reclaimed / 2)
-> >  				sc.may_writepage = 1;
-> >  
-> > -			/*
-> > -			 * We are still under min water mark. it mean we have
-> > -			 * GFP_ATOMIC allocation failure risk. Hurry up!
-> > -			 */
-> > -			if (!zone_watermark_ok(zone, order, min_wmark_pages(zone),
-> > -					      end_zone, 0))
-> > -				has_under_min_watermark_zone = 1;
-> > +			if (!zone_watermark_ok(zone, order,
-> > +					high_wmark_pages(zone), end_zone, 0)) {
-> > +				all_zones_ok = 0;
-> > +				/*
-> > +				 * We are still under min water mark. it mean we have
-> > +				 * GFP_ATOMIC allocation failure risk. Hurry up!
-> > +				 */
-> > +				if (!zone_watermark_ok(zone, order, min_wmark_pages(zone),
-> > +						      end_zone, 0))
-> > +					has_under_min_watermark_zone = 1;
-> > +			}
-> >  
+> Also I am very confused with what exactly you are doing with the dmi
+> list..
 > 
-> The vmscan.c code makes an effort to look nice in an 80-col display.
+> +        printk(KERN_NOTICE "%s detected: treat disabled cpus as hotplug ones\n", d->ident);
+> +        treat_disabled_cpus_as_hotplug = 0;
+> 
+sorry, forget to change the print out.
 
-Okay. I will keep in mind. 
--- 
-Kind regards,
-Minchan Kim
-
+YH
