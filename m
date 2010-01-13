@@ -1,69 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755357Ab0AMKQZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755355Ab0AMKWK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755357Ab0AMKQZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 05:16:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755346Ab0AMKQX
+	id S1755355Ab0AMKWK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 05:22:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755335Ab0AMKWJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 05:16:23 -0500
-Received: from smtp02.citrix.com ([66.165.176.63]:49265 "EHLO
-	SMTP02.CITRIX.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755188Ab0AMKQP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 05:16:15 -0500
-X-IronPort-AV: E=Sophos;i="4.49,267,1262581200"; 
-   d="scan'208";a="79804931"
-From: Ian Campbell <ian.campbell@citrix.com>
-To: x86@kernel.org, linux-kernel@vger.kernel.org
-Cc: Christian Kujau <lists@nerdbynature.de>,
-       Jeremy Fitzhardinge <Jeremy.Fitzhardinge@citrix.com>,
-       Cyrill Gorcunov <gorcunov@gmail.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Brian Gerst <brgerst@gmail.com>, Ian Campbell <ian.campbell@citrix.com>
-Subject: [PATCH] xen: 64 bit kernel RPL should be 0.
-Date: Wed, 13 Jan 2010 10:16:08 +0000
-Message-Id: <1263377768-19600-2-git-send-email-ian.campbell@citrix.com>
-X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <1263377706.16526.12062.camel@zakaz.uk.xensource.com>
-References: <1263377706.16526.12062.camel@zakaz.uk.xensource.com>
-X-OriginalArrivalTime: 13 Jan 2010 10:16:14.0491 (UTC) FILETIME=[6FE696B0:01CA9439]
+	Wed, 13 Jan 2010 05:22:09 -0500
+Received: from hera.kernel.org ([140.211.167.34]:37817 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755301Ab0AMKWI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jan 2010 05:22:08 -0500
+Date: Wed, 13 Jan 2010 10:21:33 GMT
+From: tip-bot for Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       rostedt@goodmis.org, tglx@linutronix.de, laijs@cn.fujitsu.com
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       rostedt@goodmis.org, tglx@linutronix.de, laijs@cn.fujitsu.com
+In-Reply-To: <4B273D36.8090100@cn.fujitsu.com>
+References: <4B273D36.8090100@cn.fujitsu.com>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:tracing/core] tracing: Have __dynamic_array() define a field
+Message-ID: <tip-809826a389040e0ad9d646b587bccc0e34691afd@git.kernel.org>
+Git-Commit-ID: 809826a389040e0ad9d646b587bccc0e34691afd
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Wed, 13 Jan 2010 10:21:36 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Under Xen 64 bit guests actually run their kernel in ring 3, however the
-hypervisor takes care of squashing descriptor the RPLs transparently (in
-order to allow them to continue to differentiate between user and kernel
-space CS using the RPL). Therefore the Xen paravirt backend should use
-RPL==0 instead of 1 (or 3). Using RPL==1 causes generic arch code to
-take incorrect code paths because it uses "testl $3, <CS>, je foo" type
-tests for a userspace CS and this considers 1==userspace.
+Commit-ID:  809826a389040e0ad9d646b587bccc0e34691afd
+Gitweb:     http://git.kernel.org/tip/809826a389040e0ad9d646b587bccc0e34691afd
+Author:     Lai Jiangshan <laijs@cn.fujitsu.com>
+AuthorDate: Tue, 15 Dec 2009 15:39:34 +0800
+Committer:  Steven Rostedt <rostedt@goodmis.org>
+CommitDate: Wed, 6 Jan 2010 11:30:02 -0500
 
-This issue was previously masked because get_kernel_rpl() was omitted
-when setting CS in kernel_thread(). This was fixed when kernel_thread()
-was unified with 32 bit in f443ff4201dd25cd4dec183f9919ecba90c8edc2.
+tracing: Have __dynamic_array() define a field
 
-Signed-off-by: Ian Campbell <ian.campbell@citrix.com>
+This is part of a patch set that removes the show_format method
+in the ftrace event macros.
+
+This patch set requires that all fields are added to the
+ftrace_event_call->fields. This patch changes __dynamic_array()
+to call trace_define_field() to include fields that use __dynamic_array().
+
+Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+LKML-Reference: <4B273D36.8090100@cn.fujitsu.com>
+Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 ---
- arch/x86/xen/enlighten.c |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
+ kernel/trace/trace_export.c |    7 ++++++-
+ 1 files changed, 6 insertions(+), 1 deletions(-)
 
-diff --git a/arch/x86/xen/enlighten.c b/arch/x86/xen/enlighten.c
-index 2b26dd5..36daccb 100644
---- a/arch/x86/xen/enlighten.c
-+++ b/arch/x86/xen/enlighten.c
-@@ -1151,9 +1151,13 @@ asmlinkage void __init xen_start_kernel(void)
+diff --git a/kernel/trace/trace_export.c b/kernel/trace/trace_export.c
+index d4fa5dc..9978a4f 100644
+--- a/kernel/trace/trace_export.c
++++ b/kernel/trace/trace_export.c
+@@ -175,7 +175,12 @@ ftrace_format_##name(struct ftrace_event_call *unused,			\
+ 		return ret;
  
- 	/* keep using Xen gdt for now; no urgent need to change it */
+ #undef __dynamic_array
+-#define __dynamic_array(type, item)
++#define __dynamic_array(type, item)					\
++	ret = trace_define_field(event_call, #type, #item,		\
++				 offsetof(typeof(field), item),		\
++				 0, is_signed_type(type), FILTER_OTHER);\
++	if (ret)							\
++		return ret;
  
-+#ifdef CONFIG_X86_32
- 	pv_info.kernel_rpl = 1;
- 	if (xen_feature(XENFEAT_supervisor_mode_kernel))
- 		pv_info.kernel_rpl = 0;
-+#else
-+	pv_info.kernel_rpl = 0;
-+#endif
- 
- 	/* set the limit of our address space */
- 	xen_reserve_top();
--- 
-1.5.6.5
-
+ #undef FTRACE_ENTRY
+ #define FTRACE_ENTRY(name, struct_name, id, tstruct, print)		\
