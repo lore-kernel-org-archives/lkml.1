@@ -1,58 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756514Ab0AMVyA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756557Ab0AMV4O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756514Ab0AMVyA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 16:54:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756460Ab0AMVx7
+	id S1756557Ab0AMV4O (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 16:56:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756529Ab0AMV4L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 16:53:59 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:48943 "EHLO ogre.sisk.pl"
+	Wed, 13 Jan 2010 16:56:11 -0500
+Received: from mail.perches.com ([173.55.12.10]:1135 "EHLO mail.perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751346Ab0AMVx6 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 16:53:58 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: =?utf-8?q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
-Subject: Re: [Bug #14903] Kernel panic - not syncing: Attempted to kill init!
-Date: Wed, 13 Jan 2010 22:54:39 +0100
-User-Agent: KMail/1.12.3 (Linux/2.6.33-rc3-rjw; KDE/4.3.3; x86_64; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Zhiyong Wu <zwu.kernel@gmail.com>
-References: <nzLqtSp97aP.A.RGB.hglSLB@chimera> <CXIfLt-ygXM.A.zyB.vglSLB@chimera> <2375c9f91001121855j2884e594nd6f9801231c1bb83@mail.gmail.com>
-In-Reply-To: <2375c9f91001121855j2884e594nd6f9801231c1bb83@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Message-Id: <201001132254.39976.rjw@sisk.pl>
+	id S1756526Ab0AMV4I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jan 2010 16:56:08 -0500
+From: Joe Perches <joe@perches.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH 4/5] MAINTAINERS: STARMODE RADIO IP (STRIP) moved to staging
+Date: Wed, 13 Jan 2010 13:56:06 -0800
+Message-Id: <42271a56643ee39c969ed57007410eb3cccb1c00.1263419518.git.joe@perches.com>
+X-Mailer: git-send-email 1.6.6.rc0.57.gad7a
+In-Reply-To: <cover.1263419518.git.joe@perches.com>
+References: <cover.1263419518.git.joe@perches.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 13 January 2010, Américo Wang wrote:
-> On Mon, Jan 11, 2010 at 6:56 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > This message has been generated automatically as a part of a report
-> > of regressions introduced between 2.6.31 and 2.6.32.
-> >
-> > The following bug entry is on the current list of known regressions
-> > introduced between 2.6.31 and 2.6.32.  Please verify if it still should
-> > be listed and let me know (either way).
-> >
-> >
-> > Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=14903
-> > Subject         : Kernel panic - not syncing: Attempted to kill init!
-> > Submitter       : Zhiyong Wu <zwu.kernel@gmail.com>
-> > Date            : 2009-12-18 4:08 (24 days old)
-> > References      : http://marc.info/?l=linux-kernel&m=126110931124738&w=4
-> > Handled-By      : Américo Wang <xiyou.wangcong@gmail.com>
-> >
-> 
-> Hi,
-> 
-> I don't think this is a kernel problem, it should be a problem of Zhiyong's
-> initrd, or Zhiyong may not configure his kernel properly, in any case,
-> this is not a bug of kernel.
+by commit 955015bb0b42167d14f776ff5947ae2463a974dc
 
-Thanks, closing.
+Signed-off-by: Joe Perches <joe@perches.com>
+---
+ MAINTAINERS |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Rafael
+diff --git a/MAINTAINERS b/MAINTAINERS
+index abd548e..80520a3 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -5146,7 +5146,7 @@ F:	drivers/net/starfire*
+ 
+ STARMODE RADIO IP (STRIP) PROTOCOL DRIVER
+ S:	Orphan
+-F:	drivers/net/wireless/strip.c
++F:	drivers/staging/strip/strip.c
+ F:	include/linux/if_strip.h
+ 
+ STRADIS MPEG-2 DECODER DRIVER
+-- 
+1.6.6.rc0.57.gad7a
+
