@@ -1,49 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755535Ab0AMK3f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755516Ab0AMK2f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755535Ab0AMK3f (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 05:29:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755501Ab0AMK3d
+	id S1755516Ab0AMK2f (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 05:28:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755464Ab0AMK2E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 05:29:33 -0500
-Received: from hera.kernel.org ([140.211.167.34]:58815 "EHLO hera.kernel.org"
+	Wed, 13 Jan 2010 05:28:04 -0500
+Received: from hera.kernel.org ([140.211.167.34]:58715 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755534Ab0AMK3b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 05:29:31 -0500
-Date: Wed, 13 Jan 2010 10:28:45 GMT
+	id S1755485Ab0AMK2A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jan 2010 05:28:00 -0500
+Date: Wed, 13 Jan 2010 10:27:42 GMT
 From: "tip-bot for Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 Cc: linux-kernel@vger.kernel.org, paulmck@linux.vnet.ibm.com, hpa@zytor.com,
        mingo@redhat.com, tglx@linutronix.de, mingo@elte.hu
 Reply-To: mingo@redhat.com, hpa@zytor.com, paulmck@linux.vnet.ibm.com,
        linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <12626570513792-git-send-email->
-References: <12626570513792-git-send-email->
+In-Reply-To: <12626498422334-git-send-email->
+References: <12626498422334-git-send-email->
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:core/rcu] rcu: Add lockdep-enabled variants of rcu_dereference()
-Message-ID: <tip-e57a1749d66bad155bee013523c36a745f6a9598@git.kernel.org>
-Git-Commit-ID: e57a1749d66bad155bee013523c36a745f6a9598
+Subject: [tip:core/rcu] rcu: Make MAINTAINERS file match new RCU reality
+Message-ID: <tip-f9094d8e5587cf21091a9516628147c0b55e4264@git.kernel.org>
+Git-Commit-ID: f9094d8e5587cf21091a9516628147c0b55e4264
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Wed, 13 Jan 2010 10:28:46 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Wed, 13 Jan 2010 10:27:43 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  e57a1749d66bad155bee013523c36a745f6a9598
-Gitweb:     http://git.kernel.org/tip/e57a1749d66bad155bee013523c36a745f6a9598
+Commit-ID:  f9094d8e5587cf21091a9516628147c0b55e4264
+Gitweb:     http://git.kernel.org/tip/f9094d8e5587cf21091a9516628147c0b55e4264
 Author:     Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-AuthorDate: Mon, 4 Jan 2010 18:04:05 -0800
+AuthorDate: Mon, 4 Jan 2010 16:04:00 -0800
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 13 Jan 2010 09:06:08 +0100
+CommitDate: Wed, 13 Jan 2010 09:06:06 +0100
 
-rcu: Add lockdep-enabled variants of rcu_dereference()
+rcu: Make MAINTAINERS file match new RCU reality
 
-Make rcu_dereference() check for being in an RCU read-side
-critical section, and create rcu_dereference_bh(),
-rcu_dereference_sched(), and srcu_dereference() to check for the
-other flavors of RCU.  Also create rcu_dereference_raw() to
-avoid checking.
+Both rcutorture and RCU are supported.  Also, update the files
+to match the new layout.
 
 Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 Cc: laijs@cn.fujitsu.com
@@ -56,110 +53,40 @@ Cc: peterz@infradead.org
 Cc: rostedt@goodmis.org
 Cc: Valdis.Kletnieks@vt.edu
 Cc: dhowells@redhat.com
-LKML-Reference: <12626570513792-git-send-email->
+LKML-Reference: <12626498422334-git-send-email->
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- include/linux/rcupdate.h |   45 ++++++++++++++++++++++++++++++++++-----------
- include/linux/srcu.h     |    8 ++++++++
- 2 files changed, 42 insertions(+), 11 deletions(-)
+ MAINTAINERS |   13 +++++++------
+ 1 files changed, 7 insertions(+), 6 deletions(-)
 
-diff --git a/include/linux/rcupdate.h b/include/linux/rcupdate.h
-index aa6c738..a52af93 100644
---- a/include/linux/rcupdate.h
-+++ b/include/linux/rcupdate.h
-@@ -156,7 +156,7 @@ static inline int rcu_read_lock_sched_held(void)
- 	({ \
- 		if (debug_locks) \
- 			WARN_ON_ONCE(!(c)); \
--		rcu_dereference(p); \
-+		rcu_dereference_raw(p); \
- 	})
+diff --git a/MAINTAINERS b/MAINTAINERS
+index c8f47bf..175da7c 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -4509,7 +4509,7 @@ F:	drivers/net/wireless/ray*
+ RCUTORTURE MODULE
+ M:	Josh Triplett <josh@freedesktop.org>
+ M:	"Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+-S:	Maintained
++S:	Supported
+ F:	Documentation/RCU/torture.txt
+ F:	kernel/rcutorture.c
  
- #else /* #ifdef CONFIG_DEBUG_LOCK_ALLOC */
-@@ -183,11 +183,7 @@ static inline int rcu_read_lock_sched_held(void)
- 	return preempt_count() != 0;
- }
+@@ -4534,11 +4534,12 @@ M:	Dipankar Sarma <dipankar@in.ibm.com>
+ M:	"Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+ W:	http://www.rdrop.com/users/paulmck/rclock/
+ S:	Supported
+-F:	Documentation/RCU/rcu.txt
+-F:	Documentation/RCU/rcuref.txt
+-F:	include/linux/rcupdate.h
+-F:	include/linux/srcu.h
+-F:	kernel/rcupdate.c
++F:	Documentation/RCU/
++F:	include/linux/rcu*
++F:	include/linux/srcu*
++F:	kernel/rcu*
++F:	kernel/srcu*
++X:	kernel/rcutorture.c
  
--#define rcu_dereference_check(p, c) \
--	({ \
--		(void)(c); \
--		rcu_dereference(p); \
--	})
-+#define rcu_dereference_check(p, c)	rcu_dereference_raw(p)
- 
- #endif /* #else #ifdef CONFIG_DEBUG_LOCK_ALLOC */
- 
-@@ -323,22 +319,49 @@ static inline notrace void rcu_read_unlock_sched_notrace(void)
- 
- 
- /**
-- * rcu_dereference - fetch an RCU-protected pointer in an
-- * RCU read-side critical section.  This pointer may later
-- * be safely dereferenced.
-+ * rcu_dereference_raw - fetch an RCU-protected pointer
-+ *
-+ * The caller must be within some flavor of RCU read-side critical
-+ * section, or must be otherwise preventing the pointer from changing,
-+ * for example, by holding an appropriate lock.  This pointer may later
-+ * be safely dereferenced.  It is the caller's responsibility to have
-+ * done the right thing, as this primitive does no checking of any kind.
-  *
-  * Inserts memory barriers on architectures that require them
-  * (currently only the Alpha), and, more importantly, documents
-  * exactly which pointers are protected by RCU.
-  */
--
--#define rcu_dereference(p)     ({ \
-+#define rcu_dereference_raw(p)	({ \
- 				typeof(p) _________p1 = ACCESS_ONCE(p); \
- 				smp_read_barrier_depends(); \
- 				(_________p1); \
- 				})
- 
- /**
-+ * rcu_dereference - fetch an RCU-protected pointer, checking for RCU
-+ *
-+ * Makes rcu_dereference_check() do the dirty work.
-+ */
-+#define rcu_dereference(p) \
-+	rcu_dereference_check(p, rcu_read_lock_held())
-+
-+/**
-+ * rcu_dereference_bh - fetch an RCU-protected pointer, checking for RCU-bh
-+ *
-+ * Makes rcu_dereference_check() do the dirty work.
-+ */
-+#define rcu_dereference_bh(p) \
-+		rcu_dereference_check(p, rcu_read_lock_bh_held())
-+
-+/**
-+ * rcu_dereference_sched - fetch RCU-protected pointer, checking for RCU-sched
-+ *
-+ * Makes rcu_dereference_check() do the dirty work.
-+ */
-+#define rcu_dereference_sched(p) \
-+		rcu_dereference_check(p, rcu_read_lock_sched_held())
-+
-+/**
-  * rcu_assign_pointer - assign (publicize) a pointer to a newly
-  * initialized structure that will be dereferenced by RCU read-side
-  * critical sections.  Returns the value assigned.
-diff --git a/include/linux/srcu.h b/include/linux/srcu.h
-index adbe167..3084f80 100644
---- a/include/linux/srcu.h
-+++ b/include/linux/srcu.h
-@@ -106,6 +106,14 @@ static inline int srcu_read_lock_held(struct srcu_struct *sp)
- #endif /* #else #ifdef CONFIG_DEBUG_LOCK_ALLOC */
- 
- /**
-+ * srcu_dereference - fetch SRCU-protected pointer with checking
-+ *
-+ * Makes rcu_dereference_check() do the dirty work.
-+ */
-+#define srcu_dereference(p, sp) \
-+		rcu_dereference_check(p, srcu_read_lock_held(sp))
-+
-+/**
-  * srcu_read_lock - register a new reader for an SRCU-protected structure.
-  * @sp: srcu_struct in which to register the new reader.
-  *
+ REAL TIME CLOCK DRIVER
+ M:	Paul Gortmaker <p_gortmaker@yahoo.com>
