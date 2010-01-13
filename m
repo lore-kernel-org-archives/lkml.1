@@ -1,23 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755585Ab0AMLF6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755886Ab0AMLGR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755585Ab0AMLF6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 06:05:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754946Ab0AMLF6
+	id S1755886Ab0AMLGR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 06:06:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755747Ab0AMLGM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 06:05:58 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:58060 "EHLO
+	Wed, 13 Jan 2010 06:06:12 -0500
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:58088 "EHLO
 	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755479Ab0AMLF5 (ORCPT
+	with ESMTP id S932070Ab0AMLGK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 06:05:57 -0500
+	Wed, 13 Jan 2010 06:06:10 -0500
 From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
 	<u.kleine-koenig@pengutronix.de>
 To: linux-kernel@vger.kernel.org
 Cc: David Vrabel <dvrabel@arcom.com>, Greg Kroah-Hartman <gregkh@suse.de>,
-       Haavard Skinnemoen <hskinnemoen@atmel.com>
-Subject: [RESEND PATCH 1/5] [AVR32] don't check platform_get_irq's return value against zero
-Date: Wed, 13 Jan 2010 12:05:42 +0100
-Message-Id: <1263380746-27803-1-git-send-email-u.kleine-koenig@pengutronix.de>
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
+       Antonio Ospite <ospite@studenti.unina.it>,
+       Paulius Zaleckas <paulius.zaleckas@teltonika.lt>,
+       linux-media@vger.kernel.org
+Subject: [RESEND PATCH 2/5] V4L/DVB mx1_camera: don't check platform_get_irq's return value against zero
+Date: Wed, 13 Jan 2010 12:05:43 +0100
+Message-Id: <1263380746-27803-2-git-send-email-u.kleine-koenig@pengutronix.de>
 X-Mailer: git-send-email 1.6.6
 In-Reply-To: <1260979809-24811-1-git-send-email-u.kleine-koenig@pengutronix.de>
 References: <1260979809-24811-1-git-send-email-u.kleine-koenig@pengutronix.de>
@@ -32,8 +36,8 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-platform_get_irq returns -ENXIO on failure, so !int_irq was probably
-always true.  Better use (int)int_irq <= 0.  Note that a return value of
+platform_get_irq returns -ENXIO on failure, so !irq was probably
+always true.  Better use (int)irq <= 0.  Note that a return value of
 zero is still handled as error even though this could mean irq0.
 
 This is a followup to 305b3228f9ff4d59f49e6d34a7034d44ee8ce2f0 that
@@ -42,23 +46,27 @@ changed the return value of platform_get_irq from 0 to -ENXIO on error.
 Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
 Cc: David Vrabel <dvrabel@arcom.com>
 Cc: Greg Kroah-Hartman <gregkh@suse.de>
-Cc: Haavard Skinnemoen <hskinnemoen@atmel.com>
+Cc: Mauro Carvalho Chehab <mchehab@infradead.org>
+Cc: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Cc: Antonio Ospite <ospite@studenti.unina.it>
+Cc: Paulius Zaleckas <paulius.zaleckas@teltonika.lt>
+Cc: linux-media@vger.kernel.org
 ---
- arch/avr32/mach-at32ap/extint.c |    2 +-
+ drivers/media/video/mx1_camera.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/arch/avr32/mach-at32ap/extint.c b/arch/avr32/mach-at32ap/extint.c
-index 310477b..033f693 100644
---- a/arch/avr32/mach-at32ap/extint.c
-+++ b/arch/avr32/mach-at32ap/extint.c
-@@ -198,7 +198,7 @@ static int __init eic_probe(struct platform_device *pdev)
+diff --git a/drivers/media/video/mx1_camera.c b/drivers/media/video/mx1_camera.c
+index 2ba14fb..c167cc3 100644
+--- a/drivers/media/video/mx1_camera.c
++++ b/drivers/media/video/mx1_camera.c
+@@ -718,7 +718,7 @@ static int __init mx1_camera_probe(struct platform_device *pdev)
  
- 	regs = platform_get_resource(pdev, IORESOURCE_MEM, 0);
- 	int_irq = platform_get_irq(pdev, 0);
--	if (!regs || !int_irq) {
-+	if (!regs || (int)int_irq <= 0) {
- 		dev_dbg(&pdev->dev, "missing regs and/or irq resource\n");
- 		return -ENXIO;
+ 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+ 	irq = platform_get_irq(pdev, 0);
+-	if (!res || !irq) {
++	if (!res || (int)irq <= 0) {
+ 		err = -ENODEV;
+ 		goto exit;
  	}
 -- 
 1.6.6
