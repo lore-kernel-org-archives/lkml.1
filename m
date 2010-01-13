@@ -1,160 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752474Ab0AMBQ3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752914Ab0AMBRv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752474Ab0AMBQ3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jan 2010 20:16:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751560Ab0AMBQ2
+	id S1752914Ab0AMBRv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jan 2010 20:17:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752001Ab0AMBRv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jan 2010 20:16:28 -0500
-Received: from smtp-out.google.com ([216.239.44.51]:33763 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751180Ab0AMBQ1 (ORCPT
+	Tue, 12 Jan 2010 20:17:51 -0500
+Received: from adelie.canonical.com ([91.189.90.139]:37521 "EHLO
+	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751535Ab0AMBRu convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jan 2010 20:16:27 -0500
-From: Mike Chan <mike@android.com>
-To: cpufreq@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Mike Chan <mike@android.com>
-Subject: [PATCH] cpufreq: stats: Do not account for idle time when tracking time_in_state
-Date: Tue, 12 Jan 2010 17:15:50 -0800
-Message-Id: <1263345350-25975-1-git-send-email-mike@android.com>
-X-Mailer: git-send-email 1.6.6
-X-System-Of-Record: true
+	Tue, 12 Jan 2010 20:17:50 -0500
+From: Jeremy Kerr <jeremy.kerr@canonical.com>
+To: linux-arm-kernel@lists.infradead.org
+Subject: Re: [RFC,PATCH 0/7 v2] Common struct clk implementation
+Date: Wed, 13 Jan 2010 12:17:36 +1100
+User-Agent: KMail/1.12.2 (Linux/2.6.31-16-generic; KDE/4.3.2; x86_64; ; )
+Cc: "Russell King - ARM Linux" <linux@arm.linux.org.uk>,
+       linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+References: <1263279511.160127.576969496193.0.gpush@pororo> <20100112091324.GC26435@n2100.arm.linux.org.uk>
+In-Reply-To: <20100112091324.GC26435@n2100.arm.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: Text/Plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-Id: <201001131217.36575.jeremy.kerr@canonical.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Setting ignore_idle to 1 ignores idle time from time_in_state accounting.
+Hi Russell,
 
-Currently cpufreq stats accounts for idle time time_in_state for each
-cpu speed. For cpu's that have a low power idle state this improperly
-accounts for time spent at each speed.
+> But the point I was trying to convey is that OMAP doesn't work with
+> _either_ a pure operations struct _or_ a bunch of per-clock function
+> pointers - it currently uses a mixture of the two.
 
-The most relevant case is when the system is idle yet cpu time is still
-accounted for at the lowest speed. This results in heavily skewed statistics
-(towards the lowest speed) which makes these statistics useless when tuning
-cpufreq scaling with cpuidle.
+With the common clk, you can do exactly that:
 
-Signed-off-by: Mike Chan <mike@android.com>
----
- drivers/cpufreq/cpufreq_stats.c |   42 +++++++++++++++++++++++++++++++++++---
- include/linux/cpufreq.h         |    5 ++++
- kernel/sched.c                  |    2 +
- 3 files changed, 45 insertions(+), 4 deletions(-)
+struct clk_foo {
+	/* ->ops provides functions common to clk_foo */
+	struct clk;
 
-diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
-index 5a62d67..8add3ac 100644
---- a/drivers/cpufreq/cpufreq_stats.c
-+++ b/drivers/cpufreq/cpufreq_stats.c
-@@ -23,10 +23,11 @@
- 
- static spinlock_t cpufreq_stats_lock;
- 
--#define CPUFREQ_STATDEVICE_ATTR(_name, _mode, _show) \
-+#define CPUFREQ_STATDEVICE_ATTR(_name, _mode, _show, _store) \
- static struct freq_attr _attr_##_name = {\
- 	.attr = {.name = __stringify(_name), .mode = _mode, }, \
- 	.show = _show,\
-+	.store = _store,\
- };
- 
- struct cpufreq_stats {
-@@ -43,6 +44,8 @@ struct cpufreq_stats {
- #endif
- };
- 
-+static int ignore_idle;
-+
- static DEFINE_PER_CPU(struct cpufreq_stats *, cpufreq_stats_table);
- 
- struct cpufreq_stats_attribute {
-@@ -136,11 +139,27 @@ static ssize_t show_trans_table(struct cpufreq_policy *policy, char *buf)
- 		return PAGE_SIZE;
- 	return len;
- }
--CPUFREQ_STATDEVICE_ATTR(trans_table, 0444, show_trans_table);
-+CPUFREQ_STATDEVICE_ATTR(trans_table, 0444, show_trans_table, NULL);
- #endif
- 
--CPUFREQ_STATDEVICE_ATTR(total_trans, 0444, show_total_trans);
--CPUFREQ_STATDEVICE_ATTR(time_in_state, 0444, show_time_in_state);
-+static ssize_t store_ignore_idle(struct cpufreq_policy *policy, char *buf)
-+{
-+	int input;
-+	if (sscanf(buf, "%d", &input) != 1)
-+		return -EINVAL;
-+
-+	ignore_idle = input;
-+	return 1;
-+}
-+
-+static ssize_t show_ignore_idle(struct cpufreq_policy *policy, char *buf)
-+{
-+	return sprintf(buf, "%d\n", ignore_idle);
-+}
-+
-+CPUFREQ_STATDEVICE_ATTR(total_trans, 0444, show_total_trans, NULL);
-+CPUFREQ_STATDEVICE_ATTR(time_in_state, 0444, show_time_in_state, NULL);
-+CPUFREQ_STATDEVICE_ATTR(ignore_idle, 0664, show_ignore_idle, store_ignore_idle);
- 
- static struct attribute *default_attrs[] = {
- 	&_attr_total_trans.attr,
-@@ -304,6 +323,21 @@ static int cpufreq_stat_notifier_trans(struct notifier_block *nb,
- 	return 0;
- }
- 
-+void cpufreq_exit_idle(int cpu, unsigned long ticks)
-+{
-+	struct cpufreq_stats *stat;
-+	stat = per_cpu(cpufreq_stats_table, cpu);
-+
-+	/* Wait until cpu stats is initalized */
-+	if (!ignore_idle || !stat || !stat->time_in_state)
-+		return;
-+
-+	spin_lock(&cpufreq_stats_lock);
-+	stat->time_in_state[stat->last_index] =
-+		cputime_sub(stat->time_in_state[stat->last_index], ticks);
-+	spin_unlock(&cpufreq_stats_lock);
-+}
-+
- static int __cpuinit cpufreq_stat_cpu_callback(struct notifier_block *nfb,
- 					       unsigned long action,
- 					       void *hcpu)
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index 4de02b1..e3f1363 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -256,6 +256,11 @@ int cpufreq_unregister_driver(struct cpufreq_driver *driver_data);
- 
- void cpufreq_notify_transition(struct cpufreq_freqs *freqs, unsigned int state);
- 
-+#ifdef CONFIG_CPU_FREQ_STAT
-+extern void cpufreq_exit_idle(int cpu, unsigned long ticks);
-+#else
-+#define cpufreq_exit_idle(int cpu, unsigned long ticks) do {} while (0)
-+#endif
- 
- static inline void cpufreq_verify_within_limits(struct cpufreq_policy *policy, unsigned int min, unsigned int max) 
- {
-diff --git a/kernel/sched.c b/kernel/sched.c
-index c535cc4..feef94c 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -54,6 +54,7 @@
- #include <linux/rcupdate.h>
- #include <linux/cpu.h>
- #include <linux/cpuset.h>
-+#include <linux/cpufreq.h>
- #include <linux/percpu.h>
- #include <linux/kthread.h>
- #include <linux/proc_fs.h>
-@@ -5187,6 +5188,7 @@ void account_steal_ticks(unsigned long ticks)
-  */
- void account_idle_ticks(unsigned long ticks)
- {
-+	cpufreq_exit_idle(smp_processor_id(), ticks);
- 	account_idle_time(jiffies_to_cputime(ticks));
- }
- 
--- 
-1.6.6
+	/* provides a function for only this clock */
+	int (*single_clock_func)(struct clk_foo *);
+}
 
+The only real difference is that the public API is provided through struct clk 
+rather than redefined clk_* functions; whatever is implementing the clock-
+type-specific struct clk can add whatever fields necessary.
+
+>From your earlier mail about sizes on omap:
+
+> There are two function pointers in the struct clk which would be
+> identical to the versions proposed in this generic struct clk.
+> There's a total of 219 clk structures in OMAP3.  So, 219 * (4 + 8)
+> = 2628.  Switching OMAP means 219 * (4 + 32) = 7884, which is an
+> increase in overhead of 3x.
+
+But we also can reduce the size of the struct clk in most cases; I believe the 
+separate clk_operations in v2 of this series will help with this.
+
+Taking OMAP3 for example (I'm not very familiar with that platform, so am 
+basing this on a brief look through the clock code), the first step to a 
+common clk port would be to wrap the existing struct clk:
+
+struct clk_omap {
+	struct clk			clk;
+	struct list_head		node;
+	const struct clkops	*ops;
+    [...]
+};
+
+and define the clk_operations to be the current omap clk_* functions.
+
+This results in one extra pointer per clock, plus the clk_operations, so 908 
+bytes (4 * 219 + 32) overhead.
+
+Next, we can start removing fields that are not used by all clocks; the fixed 
+top-level clocks would be a good start; it looks like we can represent those 
+with a:
+
+struct clk_omap_fixed {
+	struct clk	clk;
+	char			*name;
+	unsigned long	rate;
+}
+
+[For these fixed clocks, we don't need to propagate changes to children, hence 
+I'm assuming no child/sibling members]
+
+The original struct clk is 96 bytes; clk_omap_fixed is 12, but we still need 
+one clk_operations (32 bytes). Since there are 8 of these, we save 640 bytes 
+((96 - 12) * 8 - 32).
+
+If we then take the 'follow parent' clocks, it looks like we can represent 
+those with something like:
+
+struct clk_omap_followparent = {
+	struct clk	clk;
+	char			*name;
+	struct clk	*parent;
+	struct list_head children, siblings;
+	unsigned long	rate;
+	void __iomem	*enable_reg;
+	__u8			enable_bit;
+	char			*clkdm_name;
+	int			flags;
+};
+
+This would be 48 bytes, there are 140 of these, saving 6688 bytes ( (96 - 48) 
+* 140 - 32).
+
+Now, we could stop here, or keep looking for common usage patterns of struct 
+clk to find cases where creating another clock type makes sense.
+
+I know I've only looked at the easy OMAP cases here, but the principle still 
+applies: keep the original struct clk around as a fallback, but use the 
+smaller struct clks where possible.
+
+Cheers,
+
+
+Jeremy
