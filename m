@@ -1,52 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753271Ab0AML5R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932128Ab0AML6x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753271Ab0AML5R (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 06:57:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753133Ab0AML5Q
+	id S932128Ab0AML6x (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 06:58:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932116Ab0AML6w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 06:57:16 -0500
-Received: from mail.gmx.net ([213.165.64.20]:55918 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751834Ab0AML5O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 06:57:14 -0500
-X-Authenticated: #20450766
-X-Provags-ID: V01U2FsdGVkX1+qbjtd19GqYgclzzqFhfjti5fzXtL/bpRS194tE8
-	cvGOeasy827WF7
-Date: Wed, 13 Jan 2010 12:57:19 +0100 (CET)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-cc: linux-kernel@vger.kernel.org, David Vrabel <dvrabel@arcom.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       Magnus Damm <damm@igel.co.jp>,
-       Kuninori Morimoto <morimoto.kuninori@renesas.com>,
-       Paul Mundt <lethal@linux-sh.org>,
-       Linux Media Mailing List <linux-media@vger.kernel.org>,
-       Antonio Ospite <ospite@studenti.unina.it>,
-       Paulius Zaleckas <paulius.zaleckas@teltonika.lt>
-Subject: Re: platform_get_irq() v4l fixes
-In-Reply-To: <1263380746-27803-2-git-send-email-u.kleine-koenig@pengutronix.de>
-Message-ID: <Pine.LNX.4.64.1001131255290.4844@axis700.grange>
-References: <1260979809-24811-1-git-send-email-u.kleine-koenig@pengutronix.de>
- <1263380746-27803-2-git-send-email-u.kleine-koenig@pengutronix.de>
+	Wed, 13 Jan 2010 06:58:52 -0500
+Received: from smtp.nokia.com ([192.100.122.230]:27438 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932118Ab0AML6v (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jan 2010 06:58:51 -0500
+Message-ID: <4B4DB562.2080601@nokia.com>
+Date: Wed, 13 Jan 2010 13:58:26 +0200
+From: Adrian Hunter <adrian.hunter@nokia.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.73
+To: Liam Girdwood <lrg@slimlogic.co.uk>
+CC: Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       Roger Quadros <ext-roger.quadros@nokia.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] regulator: Add 'start-up time' to fixed voltage regulators
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 13 Jan 2010 11:58:25.0785 (UTC) FILETIME=[B66FCE90:01CA9447]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Uwe
+>From bd97e65b280be528239e3932da8be512ce7785ed Mon Sep 17 00:00:00 2001
+From: Adrian Hunter <adrian.hunter@nokia.com>
+Date: Tue, 12 Jan 2010 12:25:13 +0200
+Subject: [PATCH] regulator: Add 'start-up time' to fixed voltage regulators
 
-Your patches have been included in my pull request of 10.01.2010:
+Add a field to specify a delay for the start-up time of
+a fixed voltage regulator.
 
-http://www.spinics.net/lists/linux-media/msg14449.html
-
-Thanks
-Guennadi
+Signed-off-by: Adrian Hunter <adrian.hunter@nokia.com>
 ---
-Guennadi Liakhovetski, Ph.D.
-Freelance Open-Source Software Developer
-http://www.open-technology.de/
+ drivers/regulator/fixed.c       |    5 +++++
+ include/linux/regulator/fixed.h |    2 ++
+ 2 files changed, 7 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/regulator/fixed.c b/drivers/regulator/fixed.c
+index f9f516a..40d4080 100644
+--- a/drivers/regulator/fixed.c
++++ b/drivers/regulator/fixed.c
+@@ -24,12 +24,14 @@
+ #include <linux/regulator/driver.h>
+ #include <linux/regulator/fixed.h>
+ #include <linux/gpio.h>
++#include <linux/delay.h>
+ 
+ struct fixed_voltage_data {
+ 	struct regulator_desc desc;
+ 	struct regulator_dev *dev;
+ 	int microvolts;
+ 	int gpio;
++	unsigned delay;
+ 	unsigned enable_high:1;
+ 	unsigned is_enabled:1;
+ };
+@@ -48,6 +50,8 @@ static int fixed_voltage_enable(struct regulator_dev *dev)
+ 	if (gpio_is_valid(data->gpio)) {
+ 		gpio_set_value_cansleep(data->gpio, data->enable_high);
+ 		data->is_enabled = 1;
++		if (data->delay)
++			udelay(data->delay);
+ 	}
+ 
+ 	return 0;
+@@ -117,6 +121,7 @@ static int regulator_fixed_voltage_probe(struct platform_device *pdev)
+ 
+ 	drvdata->microvolts = config->microvolts;
+ 	drvdata->gpio = config->gpio;
++	drvdata->delay = config->delay;
+ 
+ 	if (gpio_is_valid(config->gpio)) {
+ 		drvdata->enable_high = config->enable_high;
+diff --git a/include/linux/regulator/fixed.h b/include/linux/regulator/fixed.h
+index e94a4a1..02edef1 100644
+--- a/include/linux/regulator/fixed.h
++++ b/include/linux/regulator/fixed.h
+@@ -25,6 +25,7 @@ struct regulator_init_data;
+  * @microvolts:		Output voltage of regulator
+  * @gpio:		GPIO to use for enable control
+  * 			set to -EINVAL if not used
++ * @delay:		Start-up time in microseconds
+  * @enable_high:	Polarity of enable GPIO
+  *			1 = Active high, 0 = Active low
+  * @enabled_at_boot:	Whether regulator has been enabled at
+@@ -41,6 +42,7 @@ struct fixed_voltage_config {
+ 	const char *supply_name;
+ 	int microvolts;
+ 	int gpio;
++	unsigned delay;
+ 	unsigned enable_high:1;
+ 	unsigned enabled_at_boot:1;
+ 	struct regulator_init_data *init_data;
+-- 
+1.6.0.4
+
