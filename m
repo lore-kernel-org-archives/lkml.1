@@ -1,51 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755567Ab0AMK3l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755535Ab0AMK3f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755567Ab0AMK3l (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 05:29:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755557Ab0AMK3k
+	id S1755535Ab0AMK3f (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 05:29:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755501Ab0AMK3d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 05:29:40 -0500
-Received: from hera.kernel.org ([140.211.167.34]:58824 "EHLO hera.kernel.org"
+	Wed, 13 Jan 2010 05:29:33 -0500
+Received: from hera.kernel.org ([140.211.167.34]:58815 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755501Ab0AMK3h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 05:29:37 -0500
-Date: Wed, 13 Jan 2010 10:29:00 GMT
+	id S1755534Ab0AMK3b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jan 2010 05:29:31 -0500
+Date: Wed, 13 Jan 2010 10:28:45 GMT
 From: "tip-bot for Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 Cc: linux-kernel@vger.kernel.org, paulmck@linux.vnet.ibm.com, hpa@zytor.com,
        mingo@redhat.com, tglx@linutronix.de, mingo@elte.hu
 Reply-To: mingo@redhat.com, hpa@zytor.com, paulmck@linux.vnet.ibm.com,
        linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <12626570513455-git-send-email->
-References: <12626570513455-git-send-email->
+In-Reply-To: <12626570513792-git-send-email->
+References: <12626570513792-git-send-email->
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:core/rcu] rcu: Disable lockdep checking in RCU list-traversal primitives
-Message-ID: <tip-dd7eec1c517430d5c9cfc94e1a7af24dc273b987@git.kernel.org>
-Git-Commit-ID: dd7eec1c517430d5c9cfc94e1a7af24dc273b987
+Subject: [tip:core/rcu] rcu: Add lockdep-enabled variants of rcu_dereference()
+Message-ID: <tip-e57a1749d66bad155bee013523c36a745f6a9598@git.kernel.org>
+Git-Commit-ID: e57a1749d66bad155bee013523c36a745f6a9598
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Wed, 13 Jan 2010 10:29:01 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Wed, 13 Jan 2010 10:28:46 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  dd7eec1c517430d5c9cfc94e1a7af24dc273b987
-Gitweb:     http://git.kernel.org/tip/dd7eec1c517430d5c9cfc94e1a7af24dc273b987
+Commit-ID:  e57a1749d66bad155bee013523c36a745f6a9598
+Gitweb:     http://git.kernel.org/tip/e57a1749d66bad155bee013523c36a745f6a9598
 Author:     Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-AuthorDate: Mon, 4 Jan 2010 18:04:06 -0800
+AuthorDate: Mon, 4 Jan 2010 18:04:05 -0800
 Committer:  Ingo Molnar <mingo@elte.hu>
 CommitDate: Wed, 13 Jan 2010 09:06:08 +0100
 
-rcu: Disable lockdep checking in RCU list-traversal primitives
+rcu: Add lockdep-enabled variants of rcu_dereference()
 
-The theory is that use of bare rcu_dereference() is more prone
-to error than use of the RCU list-traversal primitives.
-Therefore, disable lockdep RCU read-side critical-section
-checking in these primitives for the time being.  Once all of
-the rcu_dereference() uses have been dealt with, it may be time
-to re-enable lockdep checking for the RCU list-traversal
-primitives.
+Make rcu_dereference() check for being in an RCU read-side
+critical section, and create rcu_dereference_bh(),
+rcu_dereference_sched(), and srcu_dereference() to check for the
+other flavors of RCU.  Also create rcu_dereference_raw() to
+avoid checking.
 
 Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 Cc: laijs@cn.fujitsu.com
@@ -58,77 +56,110 @@ Cc: peterz@infradead.org
 Cc: rostedt@goodmis.org
 Cc: Valdis.Kletnieks@vt.edu
 Cc: dhowells@redhat.com
-LKML-Reference: <12626570513455-git-send-email->
+LKML-Reference: <12626570513792-git-send-email->
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- include/linux/rculist.h       |   14 +++++++-------
- include/linux/rculist_nulls.h |    4 ++--
- 2 files changed, 9 insertions(+), 9 deletions(-)
+ include/linux/rcupdate.h |   45 ++++++++++++++++++++++++++++++++++-----------
+ include/linux/srcu.h     |    8 ++++++++
+ 2 files changed, 42 insertions(+), 11 deletions(-)
 
-diff --git a/include/linux/rculist.h b/include/linux/rculist.h
-index 1bf0f70..779d707 100644
---- a/include/linux/rculist.h
-+++ b/include/linux/rculist.h
-@@ -208,7 +208,7 @@ static inline void list_splice_init_rcu(struct list_head *list,
-  * primitives such as list_add_rcu() as long as it's guarded by rcu_read_lock().
-  */
- #define list_entry_rcu(ptr, type, member) \
--	container_of(rcu_dereference(ptr), type, member)
-+	container_of(rcu_dereference_raw(ptr), type, member)
+diff --git a/include/linux/rcupdate.h b/include/linux/rcupdate.h
+index aa6c738..a52af93 100644
+--- a/include/linux/rcupdate.h
++++ b/include/linux/rcupdate.h
+@@ -156,7 +156,7 @@ static inline int rcu_read_lock_sched_held(void)
+ 	({ \
+ 		if (debug_locks) \
+ 			WARN_ON_ONCE(!(c)); \
+-		rcu_dereference(p); \
++		rcu_dereference_raw(p); \
+ 	})
+ 
+ #else /* #ifdef CONFIG_DEBUG_LOCK_ALLOC */
+@@ -183,11 +183,7 @@ static inline int rcu_read_lock_sched_held(void)
+ 	return preempt_count() != 0;
+ }
+ 
+-#define rcu_dereference_check(p, c) \
+-	({ \
+-		(void)(c); \
+-		rcu_dereference(p); \
+-	})
++#define rcu_dereference_check(p, c)	rcu_dereference_raw(p)
+ 
+ #endif /* #else #ifdef CONFIG_DEBUG_LOCK_ALLOC */
+ 
+@@ -323,22 +319,49 @@ static inline notrace void rcu_read_unlock_sched_notrace(void)
+ 
  
  /**
-  * list_first_entry_rcu - get the first element from a list
-@@ -225,9 +225,9 @@ static inline void list_splice_init_rcu(struct list_head *list,
- 	list_entry_rcu((ptr)->next, type, member)
- 
- #define __list_for_each_rcu(pos, head) \
--	for (pos = rcu_dereference((head)->next); \
-+	for (pos = rcu_dereference_raw((head)->next); \
- 		pos != (head); \
--		pos = rcu_dereference(pos->next))
-+		pos = rcu_dereference_raw(pos->next))
- 
- /**
-  * list_for_each_entry_rcu	-	iterate over rcu list of given type
-@@ -257,9 +257,9 @@ static inline void list_splice_init_rcu(struct list_head *list,
-  * as long as the traversal is guarded by rcu_read_lock().
-  */
- #define list_for_each_continue_rcu(pos, head) \
--	for ((pos) = rcu_dereference((pos)->next); \
-+	for ((pos) = rcu_dereference_raw((pos)->next); \
- 		prefetch((pos)->next), (pos) != (head); \
--		(pos) = rcu_dereference((pos)->next))
-+		(pos) = rcu_dereference_raw((pos)->next))
- 
- /**
-  * list_for_each_entry_continue_rcu - continue iteration over list of given type
-@@ -418,10 +418,10 @@ static inline void hlist_add_after_rcu(struct hlist_node *prev,
-  * as long as the traversal is guarded by rcu_read_lock().
-  */
- #define hlist_for_each_entry_rcu(tpos, pos, head, member)		 \
--	for (pos = rcu_dereference((head)->first);			 \
-+	for (pos = rcu_dereference_raw((head)->first);			 \
- 		pos && ({ prefetch(pos->next); 1; }) &&			 \
- 		({ tpos = hlist_entry(pos, typeof(*tpos), member); 1; }); \
--		pos = rcu_dereference(pos->next))
-+		pos = rcu_dereference_raw(pos->next))
- 
- #endif	/* __KERNEL__ */
- #endif
-diff --git a/include/linux/rculist_nulls.h b/include/linux/rculist_nulls.h
-index 589a409..b70ffe5 100644
---- a/include/linux/rculist_nulls.h
-+++ b/include/linux/rculist_nulls.h
-@@ -101,10 +101,10 @@ static inline void hlist_nulls_add_head_rcu(struct hlist_nulls_node *n,
+- * rcu_dereference - fetch an RCU-protected pointer in an
+- * RCU read-side critical section.  This pointer may later
+- * be safely dereferenced.
++ * rcu_dereference_raw - fetch an RCU-protected pointer
++ *
++ * The caller must be within some flavor of RCU read-side critical
++ * section, or must be otherwise preventing the pointer from changing,
++ * for example, by holding an appropriate lock.  This pointer may later
++ * be safely dereferenced.  It is the caller's responsibility to have
++ * done the right thing, as this primitive does no checking of any kind.
   *
+  * Inserts memory barriers on architectures that require them
+  * (currently only the Alpha), and, more importantly, documents
+  * exactly which pointers are protected by RCU.
   */
- #define hlist_nulls_for_each_entry_rcu(tpos, pos, head, member) \
--	for (pos = rcu_dereference((head)->first);			 \
-+	for (pos = rcu_dereference_raw((head)->first);			 \
- 		(!is_a_nulls(pos)) &&			\
- 		({ tpos = hlist_nulls_entry(pos, typeof(*tpos), member); 1; }); \
--		pos = rcu_dereference(pos->next))
-+		pos = rcu_dereference_raw(pos->next))
+-
+-#define rcu_dereference(p)     ({ \
++#define rcu_dereference_raw(p)	({ \
+ 				typeof(p) _________p1 = ACCESS_ONCE(p); \
+ 				smp_read_barrier_depends(); \
+ 				(_________p1); \
+ 				})
  
- #endif
- #endif
+ /**
++ * rcu_dereference - fetch an RCU-protected pointer, checking for RCU
++ *
++ * Makes rcu_dereference_check() do the dirty work.
++ */
++#define rcu_dereference(p) \
++	rcu_dereference_check(p, rcu_read_lock_held())
++
++/**
++ * rcu_dereference_bh - fetch an RCU-protected pointer, checking for RCU-bh
++ *
++ * Makes rcu_dereference_check() do the dirty work.
++ */
++#define rcu_dereference_bh(p) \
++		rcu_dereference_check(p, rcu_read_lock_bh_held())
++
++/**
++ * rcu_dereference_sched - fetch RCU-protected pointer, checking for RCU-sched
++ *
++ * Makes rcu_dereference_check() do the dirty work.
++ */
++#define rcu_dereference_sched(p) \
++		rcu_dereference_check(p, rcu_read_lock_sched_held())
++
++/**
+  * rcu_assign_pointer - assign (publicize) a pointer to a newly
+  * initialized structure that will be dereferenced by RCU read-side
+  * critical sections.  Returns the value assigned.
+diff --git a/include/linux/srcu.h b/include/linux/srcu.h
+index adbe167..3084f80 100644
+--- a/include/linux/srcu.h
++++ b/include/linux/srcu.h
+@@ -106,6 +106,14 @@ static inline int srcu_read_lock_held(struct srcu_struct *sp)
+ #endif /* #else #ifdef CONFIG_DEBUG_LOCK_ALLOC */
+ 
+ /**
++ * srcu_dereference - fetch SRCU-protected pointer with checking
++ *
++ * Makes rcu_dereference_check() do the dirty work.
++ */
++#define srcu_dereference(p, sp) \
++		rcu_dereference_check(p, srcu_read_lock_held(sp))
++
++/**
+  * srcu_read_lock - register a new reader for an SRCU-protected structure.
+  * @sp: srcu_struct in which to register the new reader.
+  *
