@@ -1,49 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756205Ab0AMR3L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932193Ab0AMRbr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756205Ab0AMR3L (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 12:29:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932167Ab0AMR3J
+	id S932193Ab0AMRbr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 12:31:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932181Ab0AMRbq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 12:29:09 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:58781 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1756165Ab0AMR3I (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 12:29:08 -0500
-Date: Wed, 13 Jan 2010 12:29:07 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-cc: Julia Lawall <julia@diku.dk>,
-       =?ISO-8859-1?Q?N=E9meth_M=E1rton?= <nm127@freemail.hu>,
-       David Vrabel <david.vrabel@csr.com>, <linux-usb@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, <cocci@diku.dk>
-Subject: Re: Changelog quality
-In-Reply-To: <4B4DFD87.3000904@s5r6.in-berlin.de>
-Message-ID: <Pine.LNX.4.44L0.1001131225160.3518-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 13 Jan 2010 12:31:46 -0500
+Received: from mail.perches.com ([173.55.12.10]:1105 "EHLO mail.perches.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932173Ab0AMRbq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jan 2010 12:31:46 -0500
+Subject: Re: [PATCH] Makefile: Document ability to make file.lst and file.S
+From: Joe Perches <joe@perches.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Michal Marek <mmarek@suse.cz>,
+       William Allen Simpson <william.allen.simpson@gmail.com>,
+       Linux Kernel Developers <linux-kernel@vger.kernel.org>,
+       Linux Kernel Network Developers <netdev@vger.kernel.org>,
+       Ilpo =?ISO-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>,
+       Eric Dumazet <eric.dumazet@gmail.com>, linux-kbuild@vger.kernel.org
+In-Reply-To: <20100113171411.GC24818@basil.fritz.box>
+References: <4B49D001.4000302@gmail.com> <4B4DA4F4.6060007@gmail.com>
+	 <20100113115617.GA24818@basil.fritz.box> <4B4DE887.6030602@gmail.com>
+	 <20100113155323.GB24818@basil.fritz.box>
+	 <1263400835.8011.73.camel@Joe-Laptop.home>
+	 <20100113171411.GC24818@basil.fritz.box>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 13 Jan 2010 09:31:44 -0800
+Message-ID: <1263403904.8011.83.camel@Joe-Laptop.home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 13 Jan 2010, Stefan Richter wrote:
+On Wed, 2010-01-13 at 18:14 +0100, Andi Kleen wrote:
+> On Wed, Jan 13, 2010 at 08:40:35AM -0800, Joe Perches wrote:
+> > On Wed, 2010-01-13 at 16:53 +0100, Andi Kleen wrote:
+> > > On Wed, Jan 13, 2010 at 10:36:39AM -0500, William Allen Simpson wrote:
+> > > > What make command would you suggest to get the interleaved asm?
+> > > make path/to/file.lst
+> > > (or .S -- you might need uptodate binutils if the lst listing is messed up)
+> > I didn't know that was possible.
+> The trap is that it doesn't work well on most systems with too 
+> old binutils (unless the gcc is really ancient)
 
-> If it was by mistake, inclusion of the find-and-replace script into the
-> patch posting *after the --- delimiter* might have increased the chance
-> that a patch reviewer becomes aware of a possible error source
-> (inadequate match patterns...).  So that could be useful during review
-> before commit, but not so much if the change is revisited some time
-> after commit.
+Then that might as well go into the help.
 
-Somewhat tangentially, it's worth mentioning that the comments
-appearing after the "---" delimiter exist only in the original patch
-submissions, not in the final commits.  Hence they are not available to
-anyone reviewing the changes after acceptance.
+Signed-off-by: Joe Perches <joe@perches.com>
+---
+diff --git a/Makefile b/Makefile
+index 9f64552..484cff4 100644
+--- a/Makefile
++++ b/Makefile
+@@ -1248,7 +1248,9 @@ help:
+ 	@echo  '  firmware_install- Install all firmware to INSTALL_FW_PATH'
+ 	@echo  '                    (default: $$(INSTALL_MOD_PATH)/lib/firmware)'
+ 	@echo  '  dir/            - Build all files in dir and below'
+-	@echo  '  dir/file.[ois]  - Build specified target only'
++	@echo  '  dir/file.[oisS] - Build specified target only'
++	@echo  '  dir/file.lst    - Build specified mixed source/assembly target only'
++	@echo  '                    (requires a recent binutils and recent build (System.map))'
+ 	@echo  '  dir/file.ko     - Build module including final link'
+ 	@echo  '  modules_prepare - Set up for building external modules'
+ 	@echo  '  tags/TAGS	  - Generate tags file for editors'
 
-It would be nice if there was a way to link automatically a git commit
-to an archived copy of the email message in which it was originally 
-submitted.
-
-Alan Stern
 
