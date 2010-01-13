@@ -1,71 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753550Ab0AMEkS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753630Ab0AMEmM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753550Ab0AMEkS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jan 2010 23:40:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753320Ab0AMEkQ
+	id S1753630Ab0AMEmM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jan 2010 23:42:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753584Ab0AMEmM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jan 2010 23:40:16 -0500
-Received: from mail-iw0-f197.google.com ([209.85.223.197]:52372 "EHLO
-	mail-iw0-f197.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752970Ab0AMEkP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jan 2010 23:40:15 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=I07Twy3HgDKywdnwgthhMUZRAzxLKSft9WcygsabOcIpTU00rCqGWfCVm779Cu9Y+2
-         fW8sFPYG5xFqeiiGFhXe6uSEGveGIkzXhVQBd+xT+fZ1fHyneiWdjQTkIW+3Yicx4/LF
-         gAvLCI3ckLXCyKBeXYaIfIRe48vPxVz5V5C1M=
-Message-ID: <4B4D4EAA.2010109@gmail.com>
-Date: Tue, 12 Jan 2010 22:40:10 -0600
-From: Robert Hancock <hancockrwd@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
+	Tue, 12 Jan 2010 23:42:12 -0500
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:48107 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752895Ab0AMEmL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jan 2010 23:42:11 -0500
+Date: Wed, 13 Jan 2010 10:12:06 +0530
+From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+To: Suresh Siddha <suresh.b.siddha@intel.com>
+Cc: Yinghai Lu <yhlu.kernel@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, lkml <linux-kernel@vger.kernel.org>,
+       "stable@kernel.org" <stable@kernel.org>,
+       Gary Hade <garyhade@us.ibm.com>,
+       Chris McDermott <lcm@linux.vnet.ibm.com>
+Subject: Re: [PATCH] Make Intel 8-way Xeons boot again
+Message-ID: <20100113044206.GA24940@in.ibm.com>
+Reply-To: ananth@in.ibm.com
+References: <20100109101038.GA17555@in.ibm.com> <86802c441001091313y1f64f011t616f08cd282a7123@mail.gmail.com> <20100110023015.GA2253@in.ibm.com> <1263336361.2854.851.camel@sbs-t61.sc.intel.com>
 MIME-Version: 1.0
-To: Seth Heasley <seth.heasley@intel.com>
-CC: jgarzik@pobox.com, linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2.6.32.3] ahci: AHCI and RAID mode SATA patch for Intel
- Cougar Point DeviceIDs
-References: <201001121700.18234.seth.heasley@intel.com>
-In-Reply-To: <201001121700.18234.seth.heasley@intel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1263336361.2854.851.camel@sbs-t61.sc.intel.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/12/2010 07:00 PM, Seth Heasley wrote:
-> This patch adds the Intel Cougar Point (PCH) SATA AHCI and RAID Controller DeviceIDs.
->
-> Signed-off-by: Seth Heasley<seth.heasley@intel.com>
->
-> --- linux-2.6.32.3/drivers/ata/ahci.c.orig	2010-01-06 15:07:45.000000000 -0800
-> +++ linux-2.6.32.3/drivers/ata/ahci.c	2010-01-07 13:55:23.000000000 -0800
-> @@ -560,6 +560,12 @@
->   	{ PCI_VDEVICE(INTEL, 0x3b2b), board_ahci }, /* PCH RAID */
->   	{ PCI_VDEVICE(INTEL, 0x3b2c), board_ahci }, /* PCH RAID */
->   	{ PCI_VDEVICE(INTEL, 0x3b2f), board_ahci }, /* PCH AHCI */
-> +	{ PCI_VDEVICE(INTEL, 0x1c02), board_ahci }, /* CPT AHCI */
-> +	{ PCI_VDEVICE(INTEL, 0x1c03), board_ahci }, /* CPT AHCI */
-> +	{ PCI_VDEVICE(INTEL, 0x1c04), board_ahci }, /* CPT RAID */
-> +	{ PCI_VDEVICE(INTEL, 0x1c05), board_ahci }, /* CPT RAID */
-> +	{ PCI_VDEVICE(INTEL, 0x1c06), board_ahci }, /* CPT RAID */
-> +	{ PCI_VDEVICE(INTEL, 0x1c07), board_ahci }, /* CPT RAID */
->
->   	/* JMicron 360/1/3/5/6, match class to avoid IDE function */
->   	{ PCI_VENDOR_ID_JMICRON, PCI_ANY_ID, PCI_ANY_ID, PCI_ANY_ID,
+On Tue, Jan 12, 2010 at 02:46:00PM -0800, Suresh Siddha wrote:
+> On Sat, 2010-01-09 at 18:30 -0800, Ananth N Mavinakayanahalli wrote:
+> > Linux version 2.6.33-rc3-bsect (ananth@llm69.in.ibm.com) (gcc version 4.1.2 20080704 (Red Hat 4.1.2-46)) #1 SMP Sun Jan 10 07:36:02 IST 2010
+> > Command line: ro root=LABEL=/ rhgb console=tty0 console=ttyS0,9600n1 apic=debug
+> > BIOS-provided physical RAM map:
+> >  BIOS-e820: 0000000000000000 - 000000000009bc00 (usable)
+> >  BIOS-e820: 000000000009bc00 - 00000000000a0000 (reserved)
+> >  BIOS-e820: 00000000000e0000 - 0000000000100000 (reserved)
+> >  BIOS-e820: 0000000000100000 - 00000000bff4b480 (usable)
+> >  BIOS-e820: 00000000bff4b480 - 00000000bff57b40 (ACPI data)
+> >  BIOS-e820: 00000000bff57b40 - 00000000c0000000 (reserved)
+> >  BIOS-e820: 00000000d0000000 - 00000000e0000000 (reserved)
+> >  BIOS-e820: 00000000fec00000 - 0000000100000000 (reserved)
+> >  BIOS-e820: 0000000100000000 - 0000000840000000 (usable)
+> > NX (Execute Disable) protection: active
+> > DMI 2.4 present.
+> > No AGP bridge found
+> > last_pfn = 0x840000 max_arch_pfn = 0x400000000
+> > x86 PAT enabled: cpu 0, old 0x7040600070406, new 0x7010600070106
+> > last_pfn = 0xbff4b max_arch_pfn = 0x400000000
+> > Scan SMP from ffff880000000000 for 1024 bytes.
+> > Scan SMP from ffff88000009fc00 for 1024 bytes.
+> > Scan SMP from ffff8800000f0000 for 65536 bytes.
+> > Scan SMP from ffff88000009bc00 for 1024 bytes.
+> > found SMP MP-table at [ffff88000009bd40] 9bd40
+> >   mpc: 9d920-9dc84
+> > init_memory_mapping: 0000000000000000-00000000bff4b000
+> > init_memory_mapping: 0000000100000000-0000000840000000
+> > RAMDISK: 37d4d000 - 37fef9e3
+> > ACPI: RSDP 000000000009bde0 00014 (v00 M   IB)
+> > ACPI: RSDT 00000000bff57ac0 00044 (v01 IBM    EXA01ZEU 00001000 IBM  45444F43)
+> > ACPI: FACP 00000000bff57900 000F4 (v03 IBM    EXA01ZEU 00001000 IBM  45444F43)
+> > ACPI: DSDT 00000000bff4b480 021B5 (v01 IBM    EXA01ZEU 00001000 INTL 20060707)
+> > ACPI: FACS 00000000bff53780 00040
+> > ACPI: APIC 00000000bff57800 000F4 (v01 IBM    EXA01ZEU 00001000 IBM  45444F43)
+> 
+> Ananth, This is an IBM EXA system using hurricane chipset.
+> 
+> And from http://www.redbooks.ibm.com/redbooks/pdfs/sg247630.pdf page
+> 106, what is referred to as "special mode" in that page is the xapic's
+> logical flat mode and what is referred as "logical mode" on that page is
+> the xapic's logical cluster mode. And that page says that the logical
+> mode is not used on x3850 M2 / x3950 M2 (it is not very clear to me that
+> if the logical flat mode is fundamentally broken or not. but from your
+> data and from this page, it looks like it).
+> 
+> In the past (long time back which predates x86_64 architecture)
+> hurricane systems had issues with flat mode and hence 32bit architecture
+> uses summit-specific code to handle this platform.
+> 
+> /* Hook from generic ACPI tables.c */
+> static int summit_acpi_madt_oem_check(char *oem_id, char *oem_table_id)
+> {
+>         if (!strncmp(oem_id, "IBM", 3) &&
+>             (!strncmp(oem_table_id, "SERVIGIL", 8)
+>              || !strncmp(oem_table_id, "EXA", 3))){
+>                 mark_tsc_unstable("Summit based system");
+>                 use_cyclone = 1; /*enable cyclone-timer*/
+>                 setup_summit();
+>                 return 1;
+>         }
+>         return 0;
+> }
+> 
+> So I think if you boot today's 32bit kernel on this platform, it will
+> use this summit specific code which doesn't use logical flat mode.
+> 
+> I think we were just lucky why we haven't run into this problem before
+> in 64-bit kernels.
+> 
+> Even with the existing code (after yesterday's revert by Linus), if all
+> the apic id's happen to be less than or equal to 8, then 64-bit kernel
+> will use flat mode again and that will cause an issue on your system
+> again.
 
-The RAID mode entries would be needed if the device indicates RAID class 
-in that mode, but in plain AHCI mode it should indicate SATA AHCI class 
-which will get picked up by this catch-all so those entries shouldn't be 
-needed:
+Thank you for the extensive analysis Suresh.
 
-         /* Generic, PCI class code for AHCI */
-         { PCI_ANY_ID, PCI_ANY_ID, PCI_ANY_ID, PCI_ANY_ID,
-           PCI_CLASS_STORAGE_SATA_AHCI, 0xffffff, board_ahci },
+> Can you please check internally if the logical flat mode is broken on
+> this platform and if so, either kernel need to have a summit specific
+> check on 64bit too (just like 32bit) and not use flat mode or have the
+> bios on your platform set the ACPI_FADT_APIC_PHYSICAL fadt flag set.
+> Then the kernel will use physical mode irrespective of number of cpu's
+> or their apic id's.
 
-Likely a lot of the existing specific PCI IDs could be removed from the 
-driver because of this (many likely predate the addition of the 
-class-based catch-all). The only reason to need a specific entry if the 
-device uses AHCI class is if it needs special handling or workarounds, 
-which isn't the case here.
+I have already sounded Chris McDermott, our System X platform person
+about this issue. Chris should be able to give us more concrete answers
+to your queries.
+
+Ananth
