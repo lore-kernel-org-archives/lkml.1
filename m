@@ -1,118 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754463Ab0AMAfl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753527Ab0AMAjI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754463Ab0AMAfl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jan 2010 19:35:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754217Ab0AMAfi
+	id S1753527Ab0AMAjI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jan 2010 19:39:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752340Ab0AMAjH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jan 2010 19:35:38 -0500
-Received: from UNIX37.ANDREW.CMU.EDU ([128.2.13.167]:54582 "EHLO
-	unix37.andrew.cmu.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752356Ab0AMAfB (ORCPT
+	Tue, 12 Jan 2010 19:39:07 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52889 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751644Ab0AMAjE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jan 2010 19:35:01 -0500
-X-Greylist: delayed 3553 seconds by postgrey-1.27 at vger.kernel.org; Tue, 12 Jan 2010 19:35:00 EST
-Date: Tue, 12 Jan 2010 18:36:30 -0500
-From: Ben Blum <bblum@andrew.cmu.edu>
-To: Ben Blum <bblum@andrew.cmu.edu>
-Cc: Vivek Goyal <vgoyal@redhat.com>, Li Zefan <lizf@cn.fujitsu.com>,
-       axboe@kernel.dk, ryov@valinux.co.jp,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>, menage@google.com,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: [PATCH v2 1/2] cgroups: modular subsystems support for use_id
-Message-ID: <20100112233630.GC5098@unix37.andrew.cmu.edu>
-References: <20091231051050.GA714@andrew.cmu.edu>
- <20100106160414.bd555474.akpm@linux-foundation.org>
- <20100107012606.GA25577@andrew.cmu.edu>
- <20100107120732.97d502bd.kamezawa.hiroyu@jp.fujitsu.com>
- <4B45824B.9030108@cn.fujitsu.com>
- <20100108163352.GB22219@redhat.com>
- <20100112233453.GB5098@unix37.andrew.cmu.edu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: attachment; filename="cgroups-module-use_id-support.patch"
-In-Reply-To: <20100112233453.GB5098@unix37.andrew.cmu.edu>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Tue, 12 Jan 2010 19:39:04 -0500
+Date: Tue, 12 Jan 2010 16:38:16 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Moore, Eric" <Eric.Moore@lsi.com>
+Cc: roel kluin <roel.kluin@gmail.com>,
+       "James E.J. Bottomley" <James.Bottomley@suse.de>,
+       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Desai, Kashyap" <Kashyap.Desai@lsi.com>
+Subject: Re: [PATCH] mpt2sas: Fix &&/|| confusion in
+ _scsih_sas_device_status_change_event()
+Message-Id: <20100112163816.97a2cbc4.akpm@linux-foundation.org>
+In-Reply-To: <4565AEA676113A449269C2F3A549520F044646D4@cosmail03.lsi.com>
+References: <4B3B86CC.5010205@gmail.com>
+	<4565AEA676113A449269C2F3A549520F04463B74@cosmail03.lsi.com>
+	<25e057c01001071158n1755ee99iae17522e269aa1ff@mail.gmail.com>
+	<20100112135410.1506be72.akpm@linux-foundation.org>
+	<4565AEA676113A449269C2F3A549520F044646D4@cosmail03.lsi.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds support for subsys.use_id in module-loadable subsystems.
+On Tue, 12 Jan 2010 17:23:41 -0700
+"Moore, Eric" <Eric.Moore@lsi.com> wrote:
 
-From: Ben Blum <bblum@andrew.cmu.edu>
+> > -----Original Message-----
+> > From: Andrew Morton [mailto:akpm@linux-foundation.org] 
+> > Sent: Tuesday, January 12, 2010 2:54 PM
+> > To: roel kluin
+> > Cc: Moore, Eric; James E.J. Bottomley; linux-scsi@vger.kernel.org; LKML; Desai, Kashyap
+> > Subject: Re: [PATCH] mpt2sas: Fix &&/|| confusion in _scsih_sas_device_status_change_event()
+> > 
+> > On Thu, 7 Jan 2010 20:58:10 +0100
+> > roel kluin <roel.kluin@gmail.com> wrote:
+> > 
+> > > On Thu, Jan 7, 2010 at 8:31 PM, Moore, Eric <Eric.Moore@lsi.com> wrote:
+> > > > nack
+> > > >
+> > > > The code beyond this check is intended for either INTERNAL_DEVICE_RESET or CMP_DEVICE_RESET. __ If the reason code is something else, we will want to return. __There are 10 other types of reason codes besides these two. This proposed patch means we return only when the reason code is either INTERNAL_DEVICE_RESET or CMP_INTERNAL_RESET.
+> > > >
+> > > > Eric Moore
+> > > 
+> > > my patch is correct but my changelog was wrong. Sorry for the
+> > > confusion. It should have been:
+> > > 
+> > > Even if the ReasonCode is not INTERNAL_DEVICE_RESET nor CMP_DEVICE_RESET
+> > > this still evaluates to true.
+> > > 
+> > 
+> > yup, the current code is wrong.
+> > 
+> > 	if (!(event_data->ReasonCode ==
+> > 	    MPI2_EVENT_SAS_DEV_STAT_RC_INTERNAL_DEVICE_RESET &&
+> > 	   event_data->ReasonCode ==
+> > 	    MPI2_EVENT_SAS_DEV_STAT_RC_CMP_INTERNAL_DEV_RESET))
+> > 		return;
+> > 
+> > ReasonCode cannot equal two different things at the same time.
+> > 
+> > This is what we want:
+> > 
+> > 	if (event_data->ReasonCode !=
+> > 	      MPI2_EVENT_SAS_DEV_STAT_RC_INTERNAL_DEVICE_RESET &&
+> > 	    event_data->ReasonCode !=
+> > 	      MPI2_EVENT_SAS_DEV_STAT_RC_CMP_INTERNAL_DEV_RESET)
+> > 		return;
+> > 
+> > Eric, the fix needs runtime testing please - it enables code which
+> > hasn't been executed in a long time, if ever.
+> > 
+> > In fact the compiler wasn't even emitting any code for the second half
+> > of _scsih_sas_device_status_change_event() because it worked out that
+> > there was no path to it.
+> > 
+>
+> Yes your patch will work.  I just have tested it by sending INTERNAL_DEVICE_RESETS events, and the code is getting executed.
+> 
 
-Signed-off-by: Ben Blum <bblum@andrew.cmu.edu>
----
- kernel/cgroup.c |   25 +++++++++++++++++++------
- 1 files changed, 19 insertions(+), 6 deletions(-)
+(top-posting and quoting fixed)
 
-diff --git a/kernel/cgroup.c b/kernel/cgroup.c
-index cc2e1f6..b4ae6ef 100644
---- a/kernel/cgroup.c
-+++ b/kernel/cgroup.c
-@@ -240,7 +240,8 @@ struct cg_cgroup_link {
- static struct css_set init_css_set;
- static struct cg_cgroup_link init_css_set_link;
- 
--static int cgroup_subsys_init_idr(struct cgroup_subsys *ss);
-+static int cgroup_init_idr(struct cgroup_subsys *ss,
-+			   struct cgroup_subsys_state *css);
- 
- /* css_set_lock protects the list of css_set objects, and the
-  * chain of tasks off each css_set.  Nests outside task->alloc_lock
-@@ -3396,6 +3397,18 @@ int __init_or_module cgroup_load_subsys(struct cgroup_subsys *ss)
- 
- 	/* our new subsystem will be attached to the dummy hierarchy. */
- 	init_cgroup_css(css, ss, dummytop);
-+	/* init_idr must be after init_cgroup_css because it sets css->id. */
-+	if (ss->use_id) {
-+		int ret = cgroup_init_idr(ss, css);
-+		if (ret) {
-+			dummytop->subsys[ss->subsys_id] = NULL;
-+			ss->destroy(ss, dummytop);
-+			subsys[i] = NULL;
-+			mutex_unlock(&cgroup_mutex);
-+			return ret;
-+		}
-+	}
-+
- 	/*
- 	 * Now we need to entangle the css into the existing css_sets. unlike
- 	 * in cgroup_init_subsys, there are now multiple css_sets, so each one
-@@ -3484,7 +3497,8 @@ void cgroup_unload_subsys(struct cgroup_subsys *ss)
- 	/*
- 	 * remove subsystem's css from the dummytop and free it - need to free
- 	 * before marking as null because ss->destroy needs the cgrp->subsys
--	 * pointer to find their state.
-+	 * pointer to find their state. note that this also takes care of
-+	 * freeing the css_id.
- 	 */
- 	ss->destroy(ss, dummytop);
- 	dummytop->subsys[ss->subsys_id] = NULL;
-@@ -3563,7 +3577,7 @@ int __init cgroup_init(void)
- 		if (!ss->early_init)
- 			cgroup_init_subsys(ss);
- 		if (ss->use_id)
--			cgroup_subsys_init_idr(ss);
-+			cgroup_init_idr(ss, init_css_set.subsys[ss->subsys_id]);
- 	}
- 
- 	/* Add init_css_set to the hash table */
-@@ -4231,15 +4245,14 @@ err_out:
- 
- }
- 
--static int __init cgroup_subsys_init_idr(struct cgroup_subsys *ss)
-+static int __init_or_module cgroup_init_idr(struct cgroup_subsys *ss,
-+					    struct cgroup_subsys_state *rootcss)
- {
- 	struct css_id *newid;
--	struct cgroup_subsys_state *rootcss;
- 
- 	spin_lock_init(&ss->id_lock);
- 	idr_init(&ss->idr);
- 
--	rootcss = init_css_set.subsys[ss->subsys_id];
- 	newid = get_new_cssid(ss, 0);
- 	if (IS_ERR(newid))
- 		return PTR_ERR(newid);
+Thanks.  Was that an ack to merge?
