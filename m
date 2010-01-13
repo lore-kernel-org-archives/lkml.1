@@ -1,98 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754208Ab0AMAYE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753288Ab0AMA07@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754208Ab0AMAYE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jan 2010 19:24:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754030Ab0AMAYA
+	id S1753288Ab0AMA07 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jan 2010 19:26:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752154Ab0AMA06
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jan 2010 19:24:00 -0500
-Received: from na3sys009aog111.obsmtp.com ([74.125.149.205]:53541 "EHLO
-	na3sys009aog111.obsmtp.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751545Ab0AMAX7 convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jan 2010 19:23:59 -0500
-From: "Moore, Eric" <Eric.Moore@lsi.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       roel kluin <roel.kluin@gmail.com>
-CC: "James E.J. Bottomley" <James.Bottomley@suse.de>,
-       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Desai, Kashyap" <Kashyap.Desai@lsi.com>
-Date: Tue, 12 Jan 2010 17:23:41 -0700
-Subject: RE: [PATCH] mpt2sas: Fix &&/|| confusion in
- _scsih_sas_device_status_change_event()
-Thread-Topic: [PATCH] mpt2sas: Fix &&/|| confusion in
- _scsih_sas_device_status_change_event()
-Thread-Index: AcqT0cj0g5MXEGQ9QTCMupCvVfAHiAAFGGxQ
-Message-ID: <4565AEA676113A449269C2F3A549520F044646D4@cosmail03.lsi.com>
-References: <4B3B86CC.5010205@gmail.com>
-	<4565AEA676113A449269C2F3A549520F04463B74@cosmail03.lsi.com>
-	<25e057c01001071158n1755ee99iae17522e269aa1ff@mail.gmail.com>
- <20100112135410.1506be72.akpm@linux-foundation.org>
-In-Reply-To: <20100112135410.1506be72.akpm@linux-foundation.org>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Tue, 12 Jan 2010 19:26:58 -0500
+Received: from mail-fx0-f225.google.com ([209.85.220.225]:54534 "EHLO
+	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751029Ab0AMA05 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jan 2010 19:26:57 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=n6Sp6dxL7bfRbJf27SfCFx94nL5YBugTnMAkF4Alv0e6wHCs3lTQYIrxZ5RNFHmpr2
+         1aMa4NS0GlXQwawZYNzxQjh1sVMwiyZEgvVmTAYtPlMZ7LFqOqa9x/bpXxSaqQNzrYBp
+         4Dc/hT77nDMvFKj60Z5+gmkI+ivcGs2Uia9ko=
 MIME-Version: 1.0
+In-Reply-To: <20100113102254.332dbf33.sfr@canb.auug.org.au>
+References: <20100112171739.2011a0eb.sfr@canb.auug.org.au>
+	 <20100112083013.1dad8a8d.randy.dunlap@oracle.com>
+	 <20100113102254.332dbf33.sfr@canb.auug.org.au>
+Date: Wed, 13 Jan 2010 00:26:56 +0000
+Message-ID: <bffbecbb1001121626j61fab30aj87048a17a2b091ff@mail.gmail.com>
+Subject: Re: linux-next: Tree for January 12 (unlzo)
+From: Phillip Lougher <phillip.lougher@gmail.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, albin.tonnerre@free-electrons.com,
+       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Phillip Lougher <phillip@lougher.demon.co.uk>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yes your patch will work.  I just have tested it by sending INTERNAL_DEVICE_RESETS events, and the code is getting executed.
+On Tue, Jan 12, 2010 at 11:22 PM, Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+> Hi Randy,
+>
+> On Tue, 12 Jan 2010 08:30:13 -0800 Randy Dunlap <randy.dunlap@oracle.com> wrote:
+>>
+>> arch/x86/boot/compressed/../../../../lib/decompress_unlzo.c:53: error: expected '=', ',', ';', 'asm' or '__attribute__' before 'parse_header'
+>> arch/x86/boot/compressed/../../../../lib/decompress_unlzo.c:90: error: expected '=', ',', ';', 'asm' or '__attribute__' before 'unlzo'
+>>
+>> Problem is the "INIT" there, seems to be undefined.
+>
+> Caused by an interaction between Linus' tree and the squashfs tree that
+> is being worked on.  It should not occur with today's linux-next as the
+> squashfs changes have been removed pending a fix.
 
-Regards,
-Eric
+This problem is caused by the introduction of the unlzo code in Linus'
+tree, and some patches in
+the squashfs-next tree that move things out of
+include/linux/decompress/mm.h into separate
+xxx_mm.h files for each decompressor.  These parches were, obviously,
+done before the unlzo
+code was present.
 
------Original Message-----
-From: Andrew Morton [mailto:akpm@linux-foundation.org] 
-Sent: Tuesday, January 12, 2010 2:54 PM
-To: roel kluin
-Cc: Moore, Eric; James E.J. Bottomley; linux-scsi@vger.kernel.org; LKML; Desai, Kashyap
-Subject: Re: [PATCH] mpt2sas: Fix &&/|| confusion in _scsih_sas_device_status_change_event()
+I've fixed the patches in the squashfs-next tree for unlzo, and the
+breakage should be fixed :-)
 
-On Thu, 7 Jan 2010 20:58:10 +0100
-roel kluin <roel.kluin@gmail.com> wrote:
+Thanks
 
-> On Thu, Jan 7, 2010 at 8:31 PM, Moore, Eric <Eric.Moore@lsi.com> wrote:
-> > nack
-> >
-> > The code beyond this check is intended for either INTERNAL_DEVICE_RESET or CMP_DEVICE_RESET. __ If the reason code is something else, we will want to return. __There are 10 other types of reason codes besides these two. This proposed patch means we return only when the reason code is either INTERNAL_DEVICE_RESET or CMP_INTERNAL_RESET.
-> >
-> > Eric Moore
-> 
-> my patch is correct but my changelog was wrong. Sorry for the
-> confusion. It should have been:
-> 
-> Even if the ReasonCode is not INTERNAL_DEVICE_RESET nor CMP_DEVICE_RESET
-> this still evaluates to true.
-> 
-
-yup, the current code is wrong.
-
-	if (!(event_data->ReasonCode ==
-	    MPI2_EVENT_SAS_DEV_STAT_RC_INTERNAL_DEVICE_RESET &&
-	   event_data->ReasonCode ==
-	    MPI2_EVENT_SAS_DEV_STAT_RC_CMP_INTERNAL_DEV_RESET))
-		return;
-
-ReasonCode cannot equal two different things at the same time.
-
-This is what we want:
-
-	if (event_data->ReasonCode !=
-	      MPI2_EVENT_SAS_DEV_STAT_RC_INTERNAL_DEVICE_RESET &&
-	    event_data->ReasonCode !=
-	      MPI2_EVENT_SAS_DEV_STAT_RC_CMP_INTERNAL_DEV_RESET)
-		return;
-
-Eric, the fix needs runtime testing please - it enables code which
-hasn't been executed in a long time, if ever.
-
-In fact the compiler wasn't even emitting any code for the second half
-of _scsih_sas_device_status_change_event() because it worked out that
-there was no path to it.
-
-
+Phillip
