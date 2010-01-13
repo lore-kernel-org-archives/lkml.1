@@ -1,63 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932078Ab0AMNQ6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754378Ab0AMNSL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932078Ab0AMNQ6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 08:16:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752725Ab0AMNQ5
+	id S1754378Ab0AMNSL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 08:18:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753381Ab0AMNSJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 08:16:57 -0500
-Received: from mail-fx0-f225.google.com ([209.85.220.225]:55572 "EHLO
-	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751402Ab0AMNQ5 (ORCPT
+	Wed, 13 Jan 2010 08:18:09 -0500
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:51478 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752618Ab0AMNSJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 08:16:57 -0500
-Subject: Driver-Core: devtmpfs - reset inode permissions before unlinking
-From: Kay Sievers <kay.sievers@vrfy.org>
-To: Greg KH <greg@kroah.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 13 Jan 2010 14:16:36 +0100
-Message-ID: <1263388596.26006.1.camel@yio.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.29.4 
-Content-Transfer-Encoding: 7bit
+	Wed, 13 Jan 2010 08:18:09 -0500
+Date: Wed, 13 Jan 2010 13:18:07 +0000
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Adrian Hunter <adrian.hunter@nokia.com>
+Cc: Liam Girdwood <lrg@slimlogic.co.uk>,
+       "Quadros Roger (Nokia-D/Helsinki)" <roger.quadros@nokia.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] regulator: Add 'start-up time' to fixed voltage
+ regulators
+Message-ID: <20100113131806.GE27473@rakim.wolfsonmicro.main>
+References: <4B4DB562.2080601@nokia.com>
+ <20100113120327.GB27473@rakim.wolfsonmicro.main>
+ <4B4DB94E.8080602@nokia.com>
+ <20100113122612.GC27473@rakim.wolfsonmicro.main>
+ <4B4DC2A7.5030108@nokia.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B4DC2A7.5030108@nokia.com>
+X-Cookie: Kiss me twice.  I'm schizophrenic.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Kay Sievers <kay.sievers@vrfy.org>
-Subject: Driver-Core: devtmpfs - reset inode permissions before unlinking
+On Wed, Jan 13, 2010 at 02:55:03PM +0200, Adrian Hunter wrote:
+> Mark Brown wrote:
 
-Before unlinking the inode, reset the current permissions of possible
-references like hardlinks, so granted permissions can not be retained
-across the device lifetime by creating hardlinks, in the unusual case
-that there is a user-writable directory on the same filesystem.
+> >IIRC ie, a one character indent on the context as well as the changed
+> >lines.
 
-Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
----
- drivers/base/devtmpfs.c |   13 +++++++++++++
- 1 file changed, 13 insertions(+)
+> I meant that the space is, in fact, there.
+> e.g. see http://lkml.org/lkml/2010/1/13/186
 
---- a/drivers/base/devtmpfs.c
-+++ b/drivers/base/devtmpfs.c
-@@ -301,6 +301,19 @@ int devtmpfs_delete_node(struct device *
- 		if (dentry->d_inode) {
- 			err = vfs_getattr(nd.path.mnt, dentry, &stat);
- 			if (!err && dev_mynode(dev, dentry->d_inode, &stat)) {
-+				struct iattr newattrs;
-+				/*
-+				 * before unlinking this node, reset permissions
-+				 * of possible references like hardlinks
-+				 */
-+				newattrs.ia_uid = 0;
-+				newattrs.ia_gid = 0;
-+				newattrs.ia_mode = stat.mode & ~0777;
-+				newattrs.ia_valid =
-+					ATTR_UID|ATTR_GID|ATTR_MODE;
-+				mutex_lock(&dentry->d_inode->i_mutex);
-+				notify_change(dentry, &newattrs);
-+				mutex_unlock(&dentry->d_inode->i_mutex);
- 				err = vfs_unlink(nd.path.dentry->d_inode,
- 						 dentry);
- 				if (!err || err == -ENOENT)
-
-
+I see what the problem is here, you're sending in format=flowed which
+means that MUAs that understand format=flowed will reindent the text on
+reciept.  The indentation of the original mail will be ignored.
