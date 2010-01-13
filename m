@@ -1,39 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755182Ab0AMJXI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755221Ab0AMJYl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755182Ab0AMJXI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 04:23:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755088Ab0AMJXH
+	id S1755221Ab0AMJYl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 04:24:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755192Ab0AMJYj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 04:23:07 -0500
-Received: from ozlabs.org ([203.10.76.45]:34787 "EHLO ozlabs.org"
+	Wed, 13 Jan 2010 04:24:39 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:50132 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755069Ab0AMJXG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 04:23:06 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Subject: Re: [PATCH] Wrong cpumask_of_node usage in kernel/smp.c
-Date: Wed, 13 Jan 2010 19:52:59 +1030
-User-Agent: KMail/1.12.2 (Linux/2.6.31-17-generic; KDE/4.3.2; i686; ; )
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-References: <20100113001401.GA26192@linux-os.sc.intel.com>
-In-Reply-To: <20100113001401.GA26192@linux-os.sc.intel.com>
+	id S1755198Ab0AMJYj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jan 2010 04:24:39 -0500
+Date: Wed, 13 Jan 2010 10:24:33 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jack Steiner <steiner@sgi.com>, "H. Peter Anvin" <hpa@zytor.com>
+Cc: tglx@linutronix.de, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86, UV: Add function retrieving node controller
+ revision number
+Message-ID: <20100113092433.GB6739@elte.hu>
+References: <20100112210904.GA24546@sgi.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201001131953.00177.rusty@rustcorp.com.au>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100112210904.GA24546@sgi.com>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 13 Jan 2010 10:44:01 am Pallipadi, Venkatesh wrote:
+
+* Jack Steiner <steiner@sgi.com> wrote:
+
+> Add function for determining the revision id of the SGI UV
+> node controller chip (HUB). This function is needed in a
+> subsequent patch.
 > 
-> I am getting dump_stack from cpumask_of_node() with recent kernels.
-> Dump stack msg that repeats few times
-> [    6.504569] cpumask_of_node(2): node > nr_node_ids(1)
+> Signed-off-by: Jack Steiner <steiner@sgi.com>
+> 
+> ---
+>  arch/x86/include/asm/uv/uv_hub.h   |   12 ++++++++++++
+>  arch/x86/kernel/apic/x2apic_uv_x.c |    6 ++++++
+>  2 files changed, 18 insertions(+)
 
-Thanks, this fix is already queued.
+We'd need to see those two patches together i guess.
 
-Cheers,
-Rusty.
+	Ingo
