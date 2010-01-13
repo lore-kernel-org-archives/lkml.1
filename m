@@ -1,72 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754892Ab0AMNUM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754900Ab0AMNVn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754892Ab0AMNUM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 08:20:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754838Ab0AMNUK
+	id S1754900Ab0AMNVn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 08:21:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754299Ab0AMNVm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 08:20:10 -0500
-Received: from astoria.ccjclearline.com ([64.235.106.9]:37651 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754811Ab0AMNUJ (ORCPT
+	Wed, 13 Jan 2010 08:21:42 -0500
+Received: from smtp1.entryit.no ([212.4.42.179]:50170 "EHLO smtp1.entryit.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753849Ab0AMNVl convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 08:20:09 -0500
-Date: Wed, 13 Jan 2010 08:19:20 -0500 (EST)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost
-To: Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>
-cc: linux-kernel@vger.kernel.org, Linus Walleij <linus.walleij@stericsson.com>,
-       sameo@linux.intel.com, Reinhard.Tartler@informatik.uni-erlangen.de
-Subject: Re: [PATCH] typo in kernel source (DEBUGFS)
-In-Reply-To: <20100113131539.GA3141@stud.informatik.uni-erlangen.de>
-Message-ID: <alpine.LFD.2.00.1001130815530.13515@localhost>
-References: <20100113115712.GA7398@faui49.informatik.uni-erlangen.de> <alpine.LFD.2.00.1001130704190.532@localhost> <20100113131539.GA3141@stud.informatik.uni-erlangen.de>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Wed, 13 Jan 2010 08:21:41 -0500
+From: Eirik Aanonsen <EAA@wprmedical.com>
+To: Eirik Aanonsen <EAA@wprmedical.com>,
+       "kernel@avr32linux.org" <kernel@avr32linux.org>,
+       "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Date: Wed, 13 Jan 2010 14:20:40 +0100
+Subject: RE: [PATCH 1/1] atmel uaba : Adding invert vbus_pin
+Thread-Topic: [PATCH 1/1] atmel uaba : Adding invert vbus_pin
+Thread-Index: AcqN48dOrjX+1T2DTKONu97r3uR6wQGbqWNg
+Message-ID: <B5E0EDE940845B429B7ECCE186529F2C0641D17F76@dware2702>
+References: <B5E0EDE940845B429B7ECCE186529F2C0641D17873@dware2702>
+In-Reply-To: <B5E0EDE940845B429B7ECCE186529F2C0641D17873@dware2702>
+Accept-Language: nb-NO
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: nb-NO
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 13 Jan 2010, Christoph Egger wrote:
+> Subject: [PATCH 1/1] atmel uaba : Adding invert vbus_pin
+> 
+> Thanks to Ben Nizette [bn@niasdigital.com] and Sergei Shtylyov
+> [sshtylyov@ru.mvista.com] for good feedback
+> 
+> Adding vbus_pin_inverted so that the usb detect pin can be active high
+> or low.
+> This because depending on HW implementation it is better to have active
+> low.
+> Also replaced the pio_get_value(udc->vbus_pin); with a call to
+> vbus_is_present(udc);
+> 
+> Signed-off-by: Eirik Aanonsen <eaa@wprmedical.com>
+> ---
 
-> On Wed, Jan 13, 2010 at 07:05:33AM -0500, Robert P. J. Day wrote:
-> >
-> >   just FYI, the same information can be found where i post the
-> > output from my kernel scanning scripts.  specifically, that very
-> > typo is already documented here:
-> >
-> > http://www.crashcourse.ca/wiki/index.php/Badref_CONFIG_variables#mfd
-> >
-> > rday
->
-> 	Jep I stumbled upon your reports while having a closer look at
-> what we found. Strangely while you did find somewhere around 250
-> such Issues we are at 90[0] if you count #define-ed CONFIG_* to the
-> errors. I'll probably try to look at the difference between our
-> results.
->
-> [0] http://vamos1.informatik.uni-erlangen.de/graph.html
+...
 
-  it's entirely possible that i have false positives in my listings;
-anyone who wants to look at them is responsible for checking them out
-more carefully, but i believe i catch most of the errors.
+No one that have any comments on this? 
 
-rday
---
+Haavard is it possible to get this upstream?
 
-========================================================================
-Robert P. J. Day                               Waterloo, Ontario, CANADA
+The patch allows the USB driver to be active and when the USB bus is disconnected (with reversed signaling).
+I observe a drop in power consumption of 150mW, and for people dependent on battery that is a lot.
+And in our design we need to have this pin inverted.
 
-            Linux Consulting, Training and Kernel Pedantry.
+Regards
+____________________________________________________
+ 
+Eirik Aanonsen
+SW Developer
+E-mail: eaa@wprmedical.com 
+Phone: +47 90 68 11 92
+Fax: +47 37 03 56 77
+____________________________________________________
 
-Web page:                                          http://crashcourse.ca
-Twitter:                                       http://twitter.com/rpjday
-========================================================================
+
