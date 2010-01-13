@@ -1,64 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755317Ab0AMODZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932109Ab0AMOKJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755317Ab0AMODZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 09:03:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754960Ab0AMODY
+	id S932109Ab0AMOKJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 09:10:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754951Ab0AMOKI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 09:03:24 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:34383 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754847Ab0AMODX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 09:03:23 -0500
-Date: Wed, 13 Jan 2010 14:50:39 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, len.brown@intel.com,
-       ibm-acpi@hmh.eng.br, kernel list <linux-kernel@vger.kernel.org>,
-       ibm-acpi-devel@lists.sourceforge.net
-Subject: Re: [ibm-acpi-devel] 2.6.33-rc2: regression: gkrellm no longer
-	shows all the temperatures on thinkpad x60
-Message-ID: <20100113135039.GA1848@ucw.cz>
-References: <20091227215722.GN11737@elf.ucw.cz> <20091228130138.GA19362@khazad-dum.debian.net> <20100107214904.GB25538@elf.ucw.cz> <20100109134409.GA936@khazad-dum.debian.net> <20100109135919.GC936@khazad-dum.debian.net>
+	Wed, 13 Jan 2010 09:10:08 -0500
+Received: from mga09.intel.com ([134.134.136.24]:62423 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754072Ab0AMOKG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jan 2010 09:10:06 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,268,1262592000"; 
+   d="scan'208";a="586779654"
+Date: Wed, 13 Jan 2010 22:09:56 +0800
+From: "Wu, Fengguang" <fengguang.wu@intel.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "Wu, Fengguang" <fengguang.wu@intel.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Andi Kleen <andi@firstfloor.org>, Nick Piggin <npiggin@suse.de>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       linux-fsdevel@vger.kernel.org
+Subject: [PATCH 1/8] vfs: fix too big f_pos handling
+Message-ID: <20100113140955.GA18593@localhost>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20100109135919.GC936@khazad-dum.debian.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+user-agent: quilt/0.48-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+[CC fsdevel for opinions]
 
-> > > Well, I'm not sure its completely fixed. I got this in my syslog:
-> > > 
-> > > thinkpad_acpi: THERMAL EMERGENCY: a sensor reports something is
-> > > extremely hot!
-> > > thinkpad_acpi: temperatures (Celsius): 95 47 N/A 89 47 N/A 41 N/A 51
-> > > 61 N/A N/A N/A N/A N/A N/A
-> > 
-> > And the extremely hot sensor is that 89°C, which is the GPU I think (varies
-> > from thinkpad to thinkpad).  That is not normal, and I'd say it needs
-> > repair, probably a badly seated heatsink or failed thermal interface
-> > compound.
 
-Well, I'd prefer not to open it unless absolutely neccessary. It is my
-primary machine. 
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-> Hmm... come to think of it, the CPU is also quite hot (95°C), and it usually
-> shares the heatsink system with the GPU/north bridge, so the problem might
-> be on the CPU side of things.
-> 
-> While it can easily be a hardware problem in the heatsink, we could also
-> have a screwed up ACPI thermal control in our hands once again (either
-> kernel bug, or bogus ACPI firmware in the laptop).
+Now, rw_verify_area() checsk f_pos is negative or not. And if
+negative, returns -EINVAL.
 
-Well, galeon (web browser) started misbehaving -- eating 100% cpu --
-lately, so maybe that's it.
+But, some special files as /dev/(k)mem and /proc/<pid>/mem etc..
+has negative offsets. And we can't do any access via read/write
+to the file(device).
 
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+This patch introduce a flag S_VERYBIG and allow negative file
+offsets.
+
+Changelog: v4->v5
+ - clean up patches dor /dev/mem.
+ - rebased onto 2.6.32-rc1
+
+Changelog: v3->v4
+ - make changes in mem.c aligned.
+ - change __negative_fpos_check() to return int. 
+ - fixed bug in "pos" check.
+ - added comments.
+
+Changelog: v2->v3
+ - fixed bug in rw_verify_area (it cannot be compiled)
+
+CC: Heiko Carstens <heiko.carstens@de.ibm.com>
+Reviewed-by: Wu Fengguang <fengguang.wu@intel.com>
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+---
+ drivers/char/mem.c |    4 ++++
+ fs/proc/base.c     |    2 ++
+ fs/read_write.c    |   22 ++++++++++++++++++++--
+ include/linux/fs.h |    2 ++
+ 4 files changed, 28 insertions(+), 2 deletions(-)
+
+--- linux-mm.orig/fs/read_write.c	2010-01-13 21:23:04.000000000 +0800
++++ linux-mm/fs/read_write.c	2010-01-13 21:23:52.000000000 +0800
+@@ -205,6 +205,21 @@ bad:
+ }
+ #endif
+ 
++static int
++__negative_fpos_check(struct inode *inode, loff_t pos, size_t count)
++{
++	/*
++	 * pos or pos+count is negative here, check overflow.
++	 * too big "count" will be caught in rw_verify_area().
++	 */
++	if ((pos < 0) && (pos + count < pos))
++		return -EOVERFLOW;
++	/* If !VERYBIG inode, negative pos(pos+count) is not allowed */
++	if (!IS_VERYBIG(inode))
++		return -EINVAL;
++	return 0;
++}
++
+ /*
+  * rw_verify_area doesn't like huge counts. We limit
+  * them to something that fits in "int" so that others
+@@ -222,8 +237,11 @@ int rw_verify_area(int read_write, struc
+ 	if (unlikely((ssize_t) count < 0))
+ 		return retval;
+ 	pos = *ppos;
+-	if (unlikely((pos < 0) || (loff_t) (pos + count) < 0))
+-		return retval;
++	if (unlikely((pos < 0) || (loff_t) (pos + count) < 0)) {
++		retval = __negative_fpos_check(inode, pos, count);
++		if (retval)
++			return retval;
++	}
+ 
+ 	if (unlikely(inode->i_flock && mandatory_lock(inode))) {
+ 		retval = locks_mandatory_area(
+--- linux-mm.orig/include/linux/fs.h	2010-01-13 21:23:04.000000000 +0800
++++ linux-mm/include/linux/fs.h	2010-01-13 21:31:02.000000000 +0800
+@@ -235,6 +235,7 @@ struct inodes_stat_t {
+ #define S_NOCMTIME	128	/* Do not update file c/mtime */
+ #define S_SWAPFILE	256	/* Do not truncate: swapon got its bmaps */
+ #define S_PRIVATE	512	/* Inode is fs-internal */
++#define S_VERYBIG	1024	/* Inode is huge: treat loff_t as unsigned */
+ 
+ /*
+  * Note that nosuid etc flags are inode-specific: setting some file-system
+@@ -269,6 +270,7 @@ struct inodes_stat_t {
+ #define IS_NOCMTIME(inode)	((inode)->i_flags & S_NOCMTIME)
+ #define IS_SWAPFILE(inode)	((inode)->i_flags & S_SWAPFILE)
+ #define IS_PRIVATE(inode)	((inode)->i_flags & S_PRIVATE)
++#define IS_VERYBIG(inode)	((inode)->i_flags & S_VERYBIG)
+ 
+ /* the read-only stuff doesn't really belong here, but any other place is
+    probably as bad and I don't want to create yet another include file. */
+--- linux-mm.orig/drivers/char/mem.c	2010-01-13 21:23:11.000000000 +0800
++++ linux-mm/drivers/char/mem.c	2010-01-13 21:27:28.000000000 +0800
+@@ -861,6 +861,10 @@ static int memory_open(struct inode *ino
+ 	if (dev->dev_info)
+ 		filp->f_mapping->backing_dev_info = dev->dev_info;
+ 
++	/* Is /dev/mem or /dev/kmem ? */
++	if (dev->dev_info == &directly_mappable_cdev_bdi)
++		inode->i_flags |= S_VERYBIG;
++
+ 	if (dev->fops->open)
+ 		return dev->fops->open(inode, filp);
+ 
+--- linux-mm.orig/fs/proc/base.c	2010-01-13 21:23:04.000000000 +0800
++++ linux-mm/fs/proc/base.c	2010-01-13 21:27:51.000000000 +0800
+@@ -861,6 +861,8 @@ static const struct file_operations proc
+ static int mem_open(struct inode* inode, struct file* file)
+ {
+ 	file->private_data = (void*)((long)current->self_exec_id);
++	/* this file is read only and we can catch out-of-range */
++	inode->i_flags |= S_VERYBIG;
+ 	return 0;
+ }
+ 
+
