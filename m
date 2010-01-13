@@ -1,88 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753930Ab0AMAIb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753982Ab0AMAOG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753930Ab0AMAIb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jan 2010 19:08:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752475Ab0AMAIb
+	id S1753982Ab0AMAOG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jan 2010 19:14:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752475Ab0AMAOF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jan 2010 19:08:31 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:46564 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750757Ab0AMAIa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jan 2010 19:08:30 -0500
-Date: Tue, 12 Jan 2010 16:07:34 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Dimitrios Apostolou <jimis@gmx.net>
-Cc: Arjan van de Ven <arjan@infradead.org>, Alex Chiang <achiang@hp.com>,
-       Len Brown <lenb@kernel.org>, Bjorn Helgaas <bjorn.helgaas@hp.com>,
-       Yinghai Lu <yinghai@kernel.org>, linux-kernel@vger.kernel.org
-Subject: Re: High cpu temperature with 2.6.32, bisection shows commit 69d258
- (fwd)
-Message-Id: <20100112160734.89ee6b11.akpm@linux-foundation.org>
-In-Reply-To: <alpine.LNX.2.00.1001100251210.1334@localhost.localdomain>
-References: <alpine.LNX.2.00.1001071941470.1363@localhost.localdomain>
-	<20100108171513.GB22713@ldl.fc.hp.com>
-	<20100109134352.3dedd4ea@infradead.org>
-	<alpine.LNX.2.00.1001100155370.1325@localhost.localdomain>
-	<20100109160836.26a344a9@infradead.org>
-	<alpine.LNX.2.00.1001100226570.1325@localhost.localdomain>
-	<20100109164240.43b21247@infradead.org>
-	<alpine.LNX.2.00.1001100251210.1334@localhost.localdomain>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+	Tue, 12 Jan 2010 19:14:05 -0500
+Received: from mga02.intel.com ([134.134.136.20]:13248 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752416Ab0AMAOE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jan 2010 19:14:04 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,264,1262592000"; 
+   d="scan'208";a="586615094"
+Date: Tue, 12 Jan 2010 16:14:01 -0800
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+To: Rusty Russell <rusty@rustcorp.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] Wrong cpumask_of_node usage in kernel/smp.c
+Message-ID: <20100113001401.GA26192@linux-os.sc.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 10 Jan 2010 03:05:38 +0200 (EET)
-Dimitrios Apostolou <jimis@gmx.net> wrote:
 
-> On Sat, 9 Jan 2010, Arjan van de Ven wrote:
-> 
-> > On Sun, 10 Jan 2010 02:32:11 +0200 (EET)
-> > Dimitrios Apostolou <jimis@gmx.net> wrote:
-> >
-> >> On Sat, 9 Jan 2010, Arjan van de Ven wrote:
-> >>
-> >>> On Sun, 10 Jan 2010 01:55:42 +0200 (EET)
-> >>> Dimitrios Apostolou <jimis@gmx.net> wrote:
-> >>>
-> >>>> L8400B series Notebook PC
-> >>>
-> >>> can you try this patch?
-> >>>
-> >>
-> >> OK I'm compiling a new kernel right now but that will take a while, I
-> >> only have access to old hardware at the moment... What exactly this
-> >> patch does?
-> >>
-> >
-> > basically it appears that your machine, when the kernel asks for C2,
-> > exits C2 immediately again.
-> >
-> > The old algorithm somehow caught this and stopped asking for C2 most of
-> > the time; the new algorithm doesn't see any activity and asks for C2
-> > again.
-> >
-> > What the patch does is tell the kernel to just not use C2 at all...
-> 
-> Indeed, in the past powertop always showed my processor idling in C1 
-> state, and I wondered why it never entered C2. :-)
-> 
-> So thanks for the patch, I guess it works, and my bet is that this 
-> case applies to L8400* (not only B models), except if it is fixed by some 
-> old BIOS upgrade that I must have missed.
-> 
-> While testing your patch, indeed the temperature was not rising and 
-> everything was normal, but the tsc was not marked as unstable so it didn't 
-> switch to acpi_pm clocksource, so that was probably the reason.
-> 
+I am getting dump_stack from cpumask_of_node() with recent kernels.
+Dump stack msg that repeats few times
+[    6.504569] cpumask_of_node(2): node > nr_node_ids(1)
+[    6.504692] Pid: 1, comm: swapper Not tainted 2.6.33-rc3-00294-g99ad0b4 #1223
+[    6.504819] Call Trace:
+[    6.504937]  [<ffffffff81026628>] cpumask_of_node+0x28/0x5c
+[    6.505063]  [<ffffffff81071ad8>] smp_call_function_any+0x6a/0xff
+[    6.505193]  [<ffffffff81016c15>] ? do_drv_read+0x0/0x34
+[    6.505315]  [<ffffffff81016af9>] get_cur_val+0xb5/0x107
+[    6.505437]  [<ffffffff81016bc4>] get_cur_freq_on_cpu+0x79/0xca
+[    6.505561]  [<ffffffff8101747b>] acpi_cpufreq_cpu_init+0x463/0x561
+[    6.505689]  [<ffffffff814f8353>] cpufreq_add_dev+0x317/0x66d
+[    6.505813]  [<ffffffff8136fbaa>] sysdev_driver_register+0xcb/0x125
+[    6.505938]  [<ffffffff814f6a7c>] cpufreq_register_driver+0xcc/0x1ea
+[    6.506065]  [<ffffffff81c42962>] ? acpi_cpufreq_init+0x0/0x128
+[    6.506193]  [<ffffffff81c42a78>] acpi_cpufreq_init+0x116/0x128
+[    6.506318]  [<ffffffff81c42962>] ? acpi_cpufreq_init+0x0/0x128
+[    6.506443]  [<ffffffff810001fa>] do_one_initcall+0x5f/0x154
+[    6.506569]  [<ffffffff81c3a6a3>] kernel_init+0x198/0x1ed
+[    6.506690]  [<ffffffff81003014>] kernel_thread_helper+0x4/0x10
+[    6.506816]  [<ffffffff815f41fc>] ? restore_args+0x0/0x30
+[    6.506938]  [<ffffffff81c3a50b>] ? kernel_init+0x0/0x1ed
+[    6.507060]  [<ffffffff81003010>] ? kernel_thread_helper+0x0/0x10
 
-Arjan, can you please prepare a formal version of the fix?  I guess the
-cc:stable will be needed as well.
+Looks like a bug from changeset
+commit 2ea6dec4a22a6f66f6633876212fd4d195cf8277
+Author: Rusty Russell <rusty@rustcorp.com.au>
+Date:   Tue Nov 17 14:27:27 2009 -0800
 
-I assume that the effects which Dimitrios described above were the
-intended ones?
+    generic-ipi: Add smp_call_function_any()
+    
+    Andrew points out that acpi-cpufreq uses cpumask_any, when it really
+    would prefer to use the same CPU if possible (to avoid an IPI).  In
+    general, this seems a good idea to offer.
+    
+
+Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+---
+ kernel/smp.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/kernel/smp.c b/kernel/smp.c
+index de735a6..f104084 100644
+--- a/kernel/smp.c
++++ b/kernel/smp.c
+@@ -347,7 +347,7 @@ int smp_call_function_any(const struct cpumask *mask,
+ 		goto call;
+ 
+ 	/* Try for same node. */
+-	nodemask = cpumask_of_node(cpu);
++	nodemask = cpumask_of_node(cpu_to_node(cpu));
+ 	for (cpu = cpumask_first_and(nodemask, mask); cpu < nr_cpu_ids;
+ 	     cpu = cpumask_next_and(cpu, nodemask, mask)) {
+ 		if (cpu_online(cpu))
+-- 
+1.6.0.6
 
