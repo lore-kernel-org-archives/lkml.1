@@ -1,84 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755282Ab0AMKAX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755293Ab0AMKCd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755282Ab0AMKAX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 05:00:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753907Ab0AMKAW
+	id S1755293Ab0AMKCd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 05:02:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755227Ab0AMKCd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 05:00:22 -0500
-Received: from gw1.cosmosbay.com ([212.99.114.194]:57099 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755235Ab0AMKAW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 05:00:22 -0500
-Message-ID: <4B4D99B0.8090102@gmail.com>
-Date: Wed, 13 Jan 2010 11:00:16 +0100
-From: Eric Dumazet <eric.dumazet@gmail.com>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; fr; rv:1.9.1.5) Gecko/20091204 Thunderbird/3.0
+	Wed, 13 Jan 2010 05:02:33 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:35287 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755212Ab0AMKCc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jan 2010 05:02:32 -0500
+Date: Wed, 13 Jan 2010 11:00:22 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>, Greg KH <gregkh@suse.de>
+Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Mackerras <paulus@samba.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: Re: [PATCH 5/5] lockdep: Fix the way to initialize class_mutex for
+ information of file and line
+Message-ID: <20100113100022.GA11386@elte.hu>
+References: <4B45B9C1.2040900@dcl.info.waseda.ac.jp>
+ <1262860795-5745-6-git-send-email-mitake@dcl.info.waseda.ac.jp>
 MIME-Version: 1.0
-To: William Allen Simpson <william.allen.simpson@gmail.com>
-CC: Linux Kernel Developers <linux-kernel@vger.kernel.org>,
-       Linux Kernel Network Developers <netdev@vger.kernel.org>,
-       Michael Chan <mchan@broadcom.com>
-Subject: Re: [PATCH 1/2] net: tcp_header_len_th and tcp_option_len_th
-References: <4B44FE3C.6060809@gmail.com> <4B450065.4010108@gmail.com> <4B4C519E.2090207@gmail.com> <4B4CB46C.8020502@gmail.com> <4B4CB712.8030806@gmail.com> <4B4D8A24.4070108@gmail.com>
-In-Reply-To: <4B4D8A24.4070108@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Wed, 13 Jan 2010 11:00:17 +0100 (CET)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1262860795-5745-6-git-send-email-mitake@dcl.info.waseda.ac.jp>
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Le 13/01/2010 09:53, William Allen Simpson a écrit :
-> Eric Dumazet wrote:
+
+* Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp> wrote:
+
+> This patch adds __FILE__ and __LINE__ to arguments passed for
+> __mutex_init() called in __class_register().
+> This affects to lockdep_map of class_mutex of struct class_private,
+> and these will be used to make trace lock events more human friendly.
 > 
->> About cast games, maybe following way is the cleanest one.
->>
->> int tcp_options_len_th(struct tcphdr *th)
->> {
->>     return tcp_header_len_th(th) - sizeof(*th);
->> }
->>
-> If you'd have been one of my C students, you'd have failed the exam
-> question.  That's unsigned int tcp_header_len_th() -- subtracting an
-> untyped constant could be a negative number (stored in an unsigned).
-> Then demotion to int (which many compilers truncate to a very large
-> positive number).
-
-Thats simply not true, you are very confused.
-
-Once again you type too much text and ignore my comments.
-I really would hate being your student, thanks God it wont happen in this life.
-
-1) You wrote tcp_header_len_th(), you should know that it
-returns an unsigned int.
-
-2) You also should know that sizeof() is *strongly* typed (size_t),
-not an "untyped constant".
-
-unsigned int arg = some_expression;
-size_t sz = sizeof(something)
-int res = arg - sz;
-return res;
-
-is *perfectly* legal and very well defined by C standards.
-
-It *will* return a negative value is arg < sz
-
-
-
+> Signed-off-by: Hitoshi Mitake <mitake@dcl.info.waseda.ac.jp>
+> Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: Frederic Weisbecker <fweisbec@gmail.com>
+> Cc: Greg Kroah-Hartman <gregkh@suse.de>
+> ---
+>  drivers/base/class.c |    3 ++-
+>  1 files changed, 2 insertions(+), 1 deletions(-)
 > 
-> It's one of the reasons that folks used to do all this with macros, so
-> that the types and truncation were handled well by the compiler.
-> 
-> Of course, this is an inline function, which is more like macros.  I've
-> not studied how gcc works internally since egcs.
-> 
-> Let's keep (int)(th->doff * 4) - sizeof(*th) -- self documenting, and
-> should work with a wide variety of compilers.
+> diff --git a/drivers/base/class.c b/drivers/base/class.c
+> index 161746d..cc0630f 100644
+> --- a/drivers/base/class.c
+> +++ b/drivers/base/class.c
+> @@ -162,7 +162,8 @@ int __class_register(struct class *cls, struct lock_class_key *key)
+>  	klist_init(&cp->class_devices, klist_class_dev_get, klist_class_dev_put);
+>  	INIT_LIST_HEAD(&cp->class_interfaces);
+>  	kset_init(&cp->class_dirs);
+> -	__mutex_init(&cp->class_mutex, "struct class mutex", key);
+> +	__mutex_init(&cp->class_mutex, "struct class mutex", key,
+> +		     __FILE__, __LINE__);
+>  	error = kobject_set_name(&cp->class_subsys.kobj, "%s", cls->name);
+>  	if (error) {
+>  		kfree(cp);
 
-So you wrote tcp_header_len_th(), but you keep (th->doff * 4) thing all over
-the code...
+Greg, any objection to this type of embellishment of lock data that comes from 
+the driver core?
 
-The (int) cast it not only _not_ needed, its also confusing.
+Thanks,
 
+	Ingo
