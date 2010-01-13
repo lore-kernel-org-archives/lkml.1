@@ -1,70 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754025Ab0AMCzR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754356Ab0AMCzs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754025Ab0AMCzR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jan 2010 21:55:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753161Ab0AMCzQ
+	id S1754356Ab0AMCzs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jan 2010 21:55:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751694Ab0AMCzr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jan 2010 21:55:16 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:38690 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753009Ab0AMCzP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jan 2010 21:55:15 -0500
-Date: Wed, 13 Jan 2010 13:55:07 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Phillip Lougher <phillip@lougher.demon.co.uk>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       Albin Tonnerre <albin.tonnerre@free-electrons.com>
-Subject: Re: linux-next: origin tree build failure
-Message-Id: <20100113135507.165a2e3a.sfr@canb.auug.org.au>
-In-Reply-To: <4B4D1055.7070605@lougher.demon.co.uk>
-References: <20100112121434.49930eea.sfr@canb.auug.org.au>
-	<alpine.LFD.2.00.1001111720290.17145@localhost.localdomain>
-	<20100112133252.8b4591bd.sfr@canb.auug.org.au>
-	<20100112133900.f22b3b72.sfr@canb.auug.org.au>
-	<4B4D1055.7070605@lougher.demon.co.uk>
-X-Mailer: Sylpheed 3.0.0beta4 (GTK+ 2.18.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__13_Jan_2010_13_55_07_+1100_mwRUewf1KuEhzviA"
+	Tue, 12 Jan 2010 21:55:47 -0500
+Received: from mail-qy0-f202.google.com ([209.85.221.202]:55111 "EHLO
+	mail-qy0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753161Ab0AMCzf convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jan 2010 21:55:35 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=yFYt/G0QJ+H2TvdxQQ20LsRQkR5sUnmIJ0Q4Fz+CcMu39LADp9YGgMybgTnNpDptL3
+         Od4uanMnhls7iQVihvICi9/c5jFej6/AHnfrgDOpUBRaSH/SGZ00yJFKIhZKmmsm7iPs
+         Y4z3Jo290zFN39LqvtC41aeCTo/6P4m4WyGzE=
+MIME-Version: 1.0
+In-Reply-To: <CXIfLt-ygXM.A.zyB.vglSLB@chimera>
+References: <nzLqtSp97aP.A.RGB.hglSLB@chimera>
+	 <CXIfLt-ygXM.A.zyB.vglSLB@chimera>
+Date: Wed, 13 Jan 2010 10:55:34 +0800
+Message-ID: <2375c9f91001121855j2884e594nd6f9801231c1bb83@mail.gmail.com>
+Subject: Re: [Bug #14903] Kernel panic - not syncing: Attempted to kill init!
+From: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Zhiyong Wu <zwu.kernel@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__13_Jan_2010_13_55_07_+1100_mwRUewf1KuEhzviA
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hi Phillip,
-
-On Wed, 13 Jan 2010 00:14:13 +0000 Phillip Lougher <phillip@lougher.demon.c=
-o.uk> wrote:
+On Mon, Jan 11, 2010 at 6:56 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> This message has been generated automatically as a part of a report
+> of regressions introduced between 2.6.31 and 2.6.32.
 >
-> > Phillip, you need to merge Linus' tree (or rebase on it) and fix those =
-up
-> > for the introduction of the LZO decompression stuff.
->=20
-> Done.
+> The following bug entry is on the current list of known regressions
+> introduced between 2.6.31 and 2.6.32.  Please verify if it still should
+> be listed and let me know (either way).
+>
+>
+> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=14903
+> Subject         : Kernel panic - not syncing: Attempted to kill init!
+> Submitter       : Zhiyong Wu <zwu.kernel@gmail.com>
+> Date            : 2009-12-18 4:08 (24 days old)
+> References      : http://marc.info/?l=linux-kernel&m=126110931124738&w=4
+> Handled-By      : Américo Wang <xiyou.wangcong@gmail.com>
+>
 
-Excellent, thanks.  I will pick it up tomorrow.
+Hi,
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+I don't think this is a kernel problem, it should be a problem of Zhiyong's
+initrd, or Zhiyong may not configure his kernel properly, in any case,
+this is not a bug of kernel.
 
---Signature=_Wed__13_Jan_2010_13_55_07_+1100_mwRUewf1KuEhzviA
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAktNNgsACgkQjjKRsyhoI8zvSQCeI5lOun5Ib+s5j5RIXfMcCC9Z
-x9UAn2FdTqRsjuSr/Xy1/dk+b9bC5/Et
-=iR8S
------END PGP SIGNATURE-----
-
---Signature=_Wed__13_Jan_2010_13_55_07_+1100_mwRUewf1KuEhzviA--
+Thanks.
