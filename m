@@ -1,122 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753672Ab0AMEzr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753763Ab0AME4s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753672Ab0AMEzr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jan 2010 23:55:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752774Ab0AMEzq
+	id S1753763Ab0AME4s (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jan 2010 23:56:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752897Ab0AME4s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jan 2010 23:55:46 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:60420 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752642Ab0AMEzq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jan 2010 23:55:46 -0500
-Date: Wed, 13 Jan 2010 15:55:38 +1100
-From: Nick Piggin <npiggin@suse.de>
-To: Yongseok Koh <yongseok.koh@samsung.com>
-Cc: "'Andrew Morton'" <akpm@linux-foundation.org>, gregkh@suse.de,
-       vegard.nossum@gmail.com, mingo@elte.hu, penberg@cs.helsinki.fi,
-       paulmck@linux.vnet.ibm.com, torvalds@linux-foundation.org,
-       =?utf-8?B?J++/ve+/ve+/ve+/ve+/ve+/vSc=?= <mw78.jang@samsung.com>,
-       =?utf-8?B?J++/ve+/ve+/ve+/ve+/ve+/vSc=?= 
-	<jongwook.moon@samsung.com>,
-       =?utf-8?B?J++/ve+/ve+/ve+/ve+/ve+/vSc=?= <wonyong.cho@samsung.com>,
-       =?utf-8?B?J++/ve+/ve+/ve+/vcijJw==?= <jh.81.lee@samsung.com>,
-       =?utf-8?B?J++/ve+/ve+/ve+/ve+/ve+/vSc=?= <heemoon.bae@samsung.com>,
-       =?utf-8?B?J++/ve+/vci/w6In?= <hyochang.nam@samsung.com>,
-       =?utf-8?B?J++/ve+/ve+/ve+/ve+/ve+/vSc=?= 
-	<hyunjun79.lee@samsung.com>,
-       =?utf-8?B?J++/ve+/ve+/ve+/ve+/ve+/vSc=?= 
-	<dragonwine.kim@samsung.com>,
-       =?utf-8?B?J++/ve+/ve+/ve+/ve+/ve+/vSc=?= <yg76.jung@samsung.com>,
-       =?utf-8?B?J++/ve+/ve+/ve+/ve+/ve+/vSc=?= <tj.cho@samsung.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: I found a synchronization problem in mm/vmalloc.c
-Message-ID: <20100113045538.GA3901@nick>
-References: <006d01ca8f8b$b62c8ec0$2285ac40$%koh@samsung.com> <20100111163205.4d013e86.akpm@linux-foundation.org> <002201ca936a$1fc06780$5f413680$@koh@samsung.com>
+	Tue, 12 Jan 2010 23:56:48 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:35136 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752356Ab0AME4r (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jan 2010 23:56:47 -0500
+Message-ID: <4B4D525A.5020101@zytor.com>
+Date: Tue, 12 Jan 2010 20:55:54 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <002201ca936a$1fc06780$5f413680$@koh@samsung.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: Jason Baron <jbaron@redhat.com>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, tglx@linutronix.de, rostedt@goodmis.org,
+       andi@firstfloor.org, roland@redhat.com, rth@redhat.com,
+       mhiramat@redhat.com
+Subject: Re: [RFC PATCH 2/8] jump label v4 - x86: Introduce generic jump	patching
+ without stop_machine
+References: <cover.1263247113.git.jbaron@redhat.com> <a4aa5bbcf5e62eaa5dd156d318a370236f28be09.1263247114.git.jbaron@redhat.com> <4B4D02B8.5020801@zytor.com> <20100113020610.GB29314@Krystal>
+In-Reply-To: <20100113020610.GB29314@Krystal>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 12, 2010 at 06:32:09PM +0900, Yongseok Koh wrote:
-> Sorry, Mr. Morton.
+On 01/12/2010 06:06 PM, Mathieu Desnoyers wrote:
+> * H. Peter Anvin (hpa@zytor.com) wrote:
+>> On 01/12/2010 08:26 AM, Jason Baron wrote:
+>>> Add text_poke_fixup() which takes a fixup address to where a processor
+>>> jumps if it hits the modifying address while code modifying.
+>>> text_poke_fixup() does following steps for this purpose.
+>>>
+>>>  1. Setup int3 handler for fixup.
+>>>  2. Put a breakpoint (int3) on the first byte of modifying region,
+>>>     and synchronize code on all CPUs.
+>>>  3. Modify other bytes of modifying region, and synchronize code on all CPUs.
+>>>  4. Modify the first byte of modifying region, and synchronize code
+>>>     on all CPUs.
+>>>  5. Clear int3 handler.
+>>>
+>>
+>> We (Intel OTC) have been able to get an *unofficial* answer as to the
+>> validity of this procedure; specifically as it applies to Intel hardware
+>> (obviously).  We are working on getting an officially approved answer,
+>> but as far as we currently know, the procedure as outlined above should
+>> work on all Intel hardware.  In fact, we believe the synchronization in
+>> step 3 is in fact unnecessary (as the synchronization in step 4 provides
+>> sufficient guard.)
 > 
-> Even though it is somewhat late, I am doing cc the mailing list.
+> Hi Peter,
 > 
-> Thanks.
+> This is great news! Thanks to Intel OTC and yourself for looking into
+> this. In the immediate values patches, I am doing the synchronization at
+> the end of step (3) to ensure that all remote CPUs issue read memory
+> barriers, so the stores to the instruction are done in this order:
 > 
-> -----Original Message-----
+> spin lock
+> store int3 to 1st byte
+> smp_wmb()
+> sync all cores
+> store new instruction in all but 1st byte
+> smp_wmb()
+> issue smp_rmb() on all cores (a sync all cores has this effect)
+> store new instruction to 1st byte
+> send IPI to all cores (or call synchronize_sched()) to wait for all
+>   breakpoint handlers to complete.
+> spin unlock
 > 
-> On Thu, 7 Jan 2010 20:22:30 +0900
-> "Yongseok Koh" <yongseok.koh@samsung.com> wrote:
+> So the question is: are these wmb/rmb pairs actually needed ?  As the
+> instruction fetch is not performed by instructions per se, I doubt a
+> rmb() will have any effect on them. I always prefer to stay on the safe
+> side, but it wouldn't hurt to know.
 > 
-> > Dear all,
-> > 
-> > I___m Yongseok Koh in Korea.
-> > 
-> 
-> Thanks for the report.
-> 
-> Please do cc a mailing list when reporting bugs so that everyone else knows
-> what's going on.
-> 
-> > 
-> > I just got a new message in linux-2.6.28.10 (plz refer to the below)
-> > 
-> > And, one of my colleagues found that there is a synchronization 
-> > problem in mm/vmalloc.c
-> > 
-> >  
-> > 
-> > In free_unmap_area_noflush(), va->flags is marked as VM_LAZY_FREE 
-> > first, and then vmap_lazy_nr is increased atomically.
-> > 
-> > But, in __purge_vmap_area_lazy(), while traversing of vmap_are_list, 
-> > nr is counted by checking VM_LAZY_FREE is set to va->flags.
-> > 
-> > After counting the variable nr, kernel reads vmap_lazy_nr atomically 
-> > and checks a BUG_ON condition whether nr is greater than vmap_lazy_nr.
-> > 
-> >  
-> > 
-> > The problem is that, if interrupted right after marking VM_LAZY_FREE, 
-> > increment of vmap_lazy_nr can be delayed.
-> > 
-> > Consequently, BUG_ON condition can be met because nr is counted more 
-> > than vmap_lazy_nr.
-> > 
-> >  
-> > 
-> > What I mentioned is highly probable when vmalloc/vfree are called 
-> > frequently.
-> > 
-> > And my colleagues have verified this scenario by adding delay between 
-> > marking VM_LAZY_FREE and increasing vmap_lazy_nr in 
-> > free_unmap_area_noflush().
-> > 
-> >  
-> > 
-> > Am I right ?
-> > 
-> 
-> Looks plausible to me and as far as I can tell, current code has the same
-> issue.
 
-Yes, I think it's a good catch.
+I don't think the smp_rmb() has any function.
 
- 
-> Wakey wakey, Nick!  What makes that BUG_ON() safe?  Not purge_lock afacit?
+However, you're being quite inconsistent in your terminology here.  The
+assumption above is that the "synchronize code on all CPU" step is
+sending an IPI to all cores and waiting for it to return, so that each
+core has executed IPI/IRET before continuation.
 
-No I think it is a bug. I would say that we can just get rid of the BUG_ON
-now. atomic_t is signed, so it should be OK if it momentarily goes negative
-(and anyway it's only used in a heuristic).
+It is *not* necessary to wait for the breakpoint handlers to return, as
+long as they will get to IRET eventually, since IRET is a jump and a
+serializing instruction.
 
-So, thanks for the report. Would you care to send a patch, or propose
-another way to fix the problem?
+> Hrm. Assuming we have a spinlock protecting all this, given that we
+> synchronize all cores at step (4) _after_ removing the breakpoint, and
+> given that the breakpoint handler is an interrupt gate (thus executes
+> with interrupts off), I am inclined to think that sending the IPIs at
+> the end of step (4) (and waiting for them to complete) should be enough
+> to ensure that all in-flight breakpoint handlers for this site have
+> completed their execution. This would mean that we only have to keep
+> track of a single site at a time. Or am I missing something ?
 
-Thanks,
-Nick
+Yes: the whole point was that you can omit the synchronization in step 4
+if you leave the breakpoint handler in place (I said "omit step 5", but
+that wasn't really what I meant.)
+
+That means that at the cost of two compares in the standard #BP handler,
+we can get away with only one IPI per atomic instruction poke.
+
+	-hpa
+
+
+
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
