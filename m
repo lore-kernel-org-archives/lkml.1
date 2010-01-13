@@ -1,61 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756369Ab0AMUpk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755663Ab0AMUvZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756369Ab0AMUpk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 15:45:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755427Ab0AMUpj
+	id S1755663Ab0AMUvZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 15:51:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755273Ab0AMUvY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 15:45:39 -0500
-Received: from mail.issp.bas.bg ([195.96.236.10]:43271 "EHLO mail.issp.bas.bg"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755301Ab0AMUpj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 15:45:39 -0500
-From: Marin Mitov <mitov@issp.bas.bg>
-Organization: Institute of Solid State Physics
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] Section mismatch: acpi_early_processor_set_pdc()
-Date: Wed, 13 Jan 2010 22:44:48 +0200
-User-Agent: KMail/1.11.4 (Linux/2.6.33-rc4; KDE/4.2.4; x86_64; ; )
-Cc: Rusty Russell <rusty@rustycorp.com.au>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       Ashok Raj <ashok.raj@intel.com>
+	Wed, 13 Jan 2010 15:51:24 -0500
+Received: from smtp-out.google.com ([216.239.44.51]:17332 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755258Ab0AMUvX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jan 2010 15:51:23 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=ruFvT+qgMmI4FvOpx1A8Y8ylTmWURD/118MkTqHUdw7foPM3e585VbwcbeiYs0Ygm
+	MZSBfMf6GtV8RpWkA5/jQ==
+Date: Wed, 13 Jan 2010 12:51:16 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Jeff Mahoney <jeffm@suse.com>, Andrew Morton <akpm@linux-foundation.org>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux-MM <linux-mm@kvack.org>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+Subject: Re: [patch] hugetlb: Fix section mismatches #2
+In-Reply-To: <4B4DE0C1.7080709@suse.com>
+Message-ID: <alpine.DEB.2.00.1001131250510.24847@chino.kir.corp.google.com>
+References: <20100113004855.550486769@suse.com> <20100113004938.715904356@suse.com> <alpine.DEB.2.00.1001130127450.469@chino.kir.corp.google.com> <4B4DE0C1.7080709@suse.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <201001132244.49209.mitov@issp.bas.bg>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+On Wed, 13 Jan 2010, Jeff Mahoney wrote:
 
-kernel-2.6.33-rc4, compiler output:
+>  hugetlb_register_node calls hugetlb_sysfs_add_hstate, which is marked with
+>  __init. Since hugetlb_register_node is only called by
+>  hugetlb_register_all_nodes, which in turn is only called by hugetlb_init,
+>  it's safe to mark both of them as __init.
+> 
+> Signed-off-by: Jeff Mahoney <jeffm@suse.com>
 
-WARNING: Section mismatch in reference from the function 
-acpi_early_processor_set_pdc() to the variable .cpuinit.data:processor_idle_dmi_table                                                                                           
-The function acpi_early_processor_set_pdc() references                                                                            
-the variable __cpuinitdata processor_idle_dmi_table.                                                                              
-This is often because acpi_early_processor_set_pdc lacks a __cpuinitdata                                                          
-annotation or the annotation of processor_idle_dmi_table is wrong.   
-
-acpi_early_processor_set_pdc() is invoked only from __init acpi_bus_init()  
-Mark it __cpuinit.
-
-The patch is against 2.6.33-rc4
-
-Signed-off-by: Marin Mitov <mitov@issp.bas.bg>
-
-===========================================================================
---- a/drivers/acpi/processor_pdc.c	2010-01-13 21:53:14.000000000 +0200
-+++ b/drivers/acpi/processor_pdc.c	2010-01-13 21:58:39.000000000 +0200
-@@ -151,7 +151,7 @@
- 	return AE_OK;
- }
- 
--void acpi_early_processor_set_pdc(void)
-+void __cpuinit acpi_early_processor_set_pdc(void)
- {
- 	/*
- 	 * Check whether the system is DMI table. If yes, OSPM
+Acked-by: David Rientjes <rientjes@google.com>
