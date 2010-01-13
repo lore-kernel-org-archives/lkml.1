@@ -1,131 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755958Ab0AMPrh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755488Ab0AMPxU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755958Ab0AMPrh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 10:47:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755314Ab0AMPrg
+	id S1755488Ab0AMPxU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 10:53:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755131Ab0AMPxT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 10:47:36 -0500
-Received: from liberdade.minaslivre.org ([72.232.254.139]:49006 "EHLO
-	liberdade.minaslivre.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755173Ab0AMPrg (ORCPT
+	Wed, 13 Jan 2010 10:53:19 -0500
+Received: from mail-ew0-f209.google.com ([209.85.219.209]:40746 "EHLO
+	mail-ew0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755010Ab0AMPxS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 10:47:36 -0500
-Date: Wed, 13 Jan 2010 13:45:45 -0200
-From: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
-To: Jean Delvare <khali@linux-fr.org>
-Cc: linux-i2c@vger.kernel.org,
-       "Ben Dooks (embedded platforms)" <ben-linux@fluff.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] i2c: do not use device name after device_unregister
-Message-ID: <20100113154544.GA1400@holoscopio.com>
-References: <1263332203-5542-1-git-send-email-cascardo@holoscopio.com>
- <20100113112515.3c73ceee@hyperion.delvare>
+	Wed, 13 Jan 2010 10:53:18 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=GEKSVuWEugoyhg6MENOfSbeayN/tVkV8UdVSGImdMhxZYnC+yoN+BLphOAtjd2MYl8
+         IQr+UeYjYzFaM29s6dweWm2xX2C7D5HHTCX9JaiM+YJLDM7WuWo+8V9DrgXFvxDQOKW3
+         mLIyR6nj6LgSTYESck6iZAHJUVRAka+JOsEgY=
+Date: Wed, 13 Jan 2010 23:55:03 +0800
+From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
+To: Li Hong <lihong.hi@gmail.com>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+Subject: Re: [PATCH 3/3] mm: remove function free_hot_page
+Message-ID: <20100113155503.GA2902@hack>
+References: <3a3680031001130654q1928df60pde0e3706ea2461c@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="FL5UXtIhxfXey3p5"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20100113112515.3c73ceee@hyperion.delvare>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <3a3680031001130654q1928df60pde0e3706ea2461c@mail.gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Jan 13, 2010 at 10:54:50PM +0800, Li Hong wrote:
+>Now fuction 'free_hot_page' is just a wrap of ' free_hot_cold_page' with
+>parameter 'cold = 0'. After adding a clear comment for 'free_hot_cold_page', it
+>is reasonable to remove a level of call.
 
---FL5UXtIhxfXey3p5
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+How? The compiler can certainly inline it.
 
-On Wed, Jan 13, 2010 at 11:25:15AM +0100, Jean Delvare wrote:
-> Hi Thadeu,
->=20
-> On Tue, 12 Jan 2010 19:36:43 -0200, Thadeu Lima de Souza Cascardo wrote:
-> > dev_dbg outputs dev_name, which is released with device_unregister. Thi=
-s bug
-> > resulted in output like this:
-> >=20
-> > [ 7860.470713] i2c Xy2=EF=BF=BD0: adapter [SMBus I801 adapter at 1880] =
-unregistered
-> >=20
-> > The right output would be:
-> > [   60.639233] i2c i2c-0: adapter [SMBus I801 adapter at 1880] unregist=
-ered
->=20
-> I can't reproduce this bug. Do you have a specific memory poisoning
-> option enabled by any chance? And which kernel version are you running
-> exactly?
->=20
+>
+>Signed-off-by: Li Hong <lihong.hi@gmail.com>
+>---
+> mm/page_alloc.c |    8 ++------
+> mm/swap.c       |    2 +-
+> 2 files changed, 3 insertions(+), 7 deletions(-)
+>
+>diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+>index 175dd36..c88e03d 100644
+>--- a/mm/page_alloc.c
+>+++ b/mm/page_alloc.c
+>@@ -1073,6 +1073,7 @@ void mark_free_pages(struct zone *zone)
+>
+> /*
+>  * Free a 0-order page
+>+ * cold == 1 ? free a cold page : free a hot page
+>  */
+> static void free_hot_cold_page(struct page *page, int cold)
+> {
+>@@ -1135,11 +1136,6 @@ out:
+>        put_cpu();
+> }
+>
+>-void free_hot_page(struct page *page)
+>-{
+>-       free_hot_cold_page(page, 0);
+>-}
+>-
+> /*
+>  * split_page takes a non-compound higher-order page, and splits it into
+>  * n (1<<order) sub-pages: page[0..n]
+>@@ -2014,7 +2010,7 @@ void __free_pages(struct page *page, unsigned int order)
+> {
+>        if (put_page_testzero(page)) {
+>                if (order == 0)
+>-                       free_hot_page(page);
+>+                       free_hot_cold_page(page, 0);
+>                else
+>                        __free_pages_ok(page, order);
+>        }
+>diff --git a/mm/swap.c b/mm/swap.c
+>index 308e57d..9036b89 100644
+>--- a/mm/swap.c
+>+++ b/mm/swap.c
+>@@ -55,7 +55,7 @@ static void __page_cache_release(struct page *page)
+>                del_page_from_lru(zone, page);
+>                spin_unlock_irqrestore(&zone->lru_lock, flags);
+>        }
+>-       free_hot_page(page);
+>+       free_hot_cold_page(page, 0);
+> }
+>
+> static void put_compound_page(struct page *page)
+>-- 
+>1.6.3.3
+>--
+>To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>the body of a message to majordomo@vger.kernel.org
+>More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>Please read the FAQ at  http://www.tux.org/lkml/
 
-I'm not using any memory poisoning option that I'm aware of. However, I've =
-been
-using SLOB as an allocator, which may make a pretty difference, I guess.
-
-I was running some of Linus' latest published git versions, something on to=
-p of
-v2.6.33-rc3, commit 2c1f1895ef2aa8f0e5497893eff71304aef332e1.
-
-> >=20
-> > Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
-> > ---
-> >  drivers/i2c/i2c-core.c |    5 +++--
-> >  1 files changed, 3 insertions(+), 2 deletions(-)
-> >=20
-> > diff --git a/drivers/i2c/i2c-core.c b/drivers/i2c/i2c-core.c
-> > index 0ac2f90..d5db0f4 100644
-> > --- a/drivers/i2c/i2c-core.c
-> > +++ b/drivers/i2c/i2c-core.c
-> > @@ -843,6 +843,9 @@ int i2c_del_adapter(struct i2c_adapter *adap)
-> >  				 adap->dev.parent);
-> >  #endif
-> > =20
-> > +	/* device name is gone after device_unregister */
-> > +	dev_dbg(&adap->dev, "adapter [%s] unregistered\n", adap->name);
-> > +
-> >  	/* clean up the sysfs representation */
-> >  	init_completion(&adap->dev_released);
-> >  	device_unregister(&adap->dev);
-> > @@ -855,8 +858,6 @@ int i2c_del_adapter(struct i2c_adapter *adap)
-> >  	idr_remove(&i2c_adapter_idr, adap->nr);
-> >  	mutex_unlock(&core_lock);
-> > =20
-> > -	dev_dbg(&adap->dev, "adapter [%s] unregistered\n", adap->name);
-> > -
-> >  	/* Clear the device structure in case this adapter is ever going to be
-> >  	   added again */
-> >  	memset(&adap->dev, 0, sizeof(adap->dev));
->=20
-> The device structure is embedded in struct i2c_adapter, so its memory
-> can't be reused before the i2c_adapter itself is freed, which can't
-> happen before the end of function i2c_del_adapter(). Until recently,
-> the device name was embedded in the device structure so the code above
-> was fine. But apparently this changed some 9 months ago...
->=20
-
-The device may not be reused, but it's name is in its kobject, which alloca=
-tes
-memory using kvasprintf, and releases it when device_del ends up calling
-kobject_put. So, anyway, we should not access memory that has been released=
-=2E I
-guess trying some poisoning option or changing to SLOB may help you hit the
-bug.
-
-> --=20
-> Jean Delvare
-
-Best Regards,
-Cascardo.
-
---FL5UXtIhxfXey3p5
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAktN6qgACgkQyTpryRcqtS2T3QCfbR8cvmrQM0cnCJImKJW8KgGy
-RtEAn11dr7xxXlCeT+/kDyze5kvIvr5r
-=LqjR
------END PGP SIGNATURE-----
-
---FL5UXtIhxfXey3p5--
+-- 
+Live like a child, think like the god.
+ 
