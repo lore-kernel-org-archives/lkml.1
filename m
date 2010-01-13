@@ -1,104 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753606Ab0AMNLr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753519Ab0AMNOF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753606Ab0AMNLr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 08:11:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753363Ab0AMNLq
+	id S1753519Ab0AMNOF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 08:14:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752519Ab0AMNOE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 08:11:46 -0500
-Received: from smtp.nokia.com ([192.100.105.134]:33752 "EHLO
-	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752794Ab0AMNLp (ORCPT
+	Wed, 13 Jan 2010 08:14:04 -0500
+Received: from casper.infradead.org ([85.118.1.10]:41579 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752400Ab0AMNOC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 08:11:45 -0500
-Message-ID: <4B4DC66C.5050106@nokia.com>
-Date: Wed, 13 Jan 2010 15:11:08 +0200
-From: Adrian Hunter <adrian.hunter@nokia.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-CC: Liam Girdwood <lrg@slimlogic.co.uk>,
-       "Quadros Roger (Nokia-D/Helsinki)" <roger.quadros@nokia.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] regulator: Add 'start-up time' to fixed voltage regulators
-References: <4B4DB562.2080601@nokia.com> <20100113120327.GB27473@rakim.wolfsonmicro.main> <4B4DB94E.8080602@nokia.com> <20100113122612.GC27473@rakim.wolfsonmicro.main>
-In-Reply-To: <20100113122612.GC27473@rakim.wolfsonmicro.main>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 13 Jan 2010 08:14:02 -0500
+Subject: Re: introduce NMI_AUTO as nmi_watchdog option
+From: Peter Zijlstra <peterz@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Don Zickus <dzickus@redhat.com>, Cyrill Gorcunov <gorcunov@gmail.com>,
+       aris@redhat.com, linux-kernel@vger.kernel.org
+In-Reply-To: <20100113093240.GC6739@elte.hu>
+References: <20100111191633.GT24885@redhat.com>
+	 <20100111202729.GI4923@lenovo> <20100111203356.GU24885@redhat.com>
+	 <20100113093240.GC6739@elte.hu>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 13 Jan 2010 14:13:42 +0100
+Message-ID: <1263388422.4244.214.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 13 Jan 2010 13:11:08.0347 (UTC) FILETIME=[DEB9F0B0:01CA9451]
-X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From bd97e65b280be528239e3932da8be512ce7785ed Mon Sep 17 00:00:00 2001
-From: Adrian Hunter <adrian.hunter@nokia.com>
-Date: Tue, 12 Jan 2010 12:25:13 +0200
-Subject: [PATCH] regulator: Add 'start-up time' to fixed voltage regulators
+On Wed, 2010-01-13 at 10:32 +0100, Ingo Molnar wrote:
+> other architectures have NMI concepts as well, such as Sparc64. 
 
-Add a field to specify a delay for the start-up time of
-a fixed voltage regulator.
+I think both sparc64 and ppc64 fake NMIs by playing games with hw IRQ
+priorities and partial masks. But yes.
 
-Signed-off-by: Adrian Hunter <adrian.hunter@nokia.com>
----
- drivers/regulator/fixed.c       |    5 +++++
- include/linux/regulator/fixed.h |    2 ++
- 2 files changed, 7 insertions(+), 0 deletions(-)
+One interesting 'feature' for the perf-nmi interaction is creating an
+idle scheduling class for counters, because as long as there is a
+counter present you can use his NMIs to drive the watchdog, but as soon
+as there are non left, you need to install one.
 
-diff --git a/drivers/regulator/fixed.c b/drivers/regulator/fixed.c
-index f9f516a..40d4080 100644
---- a/drivers/regulator/fixed.c
-+++ b/drivers/regulator/fixed.c
-@@ -24,12 +24,14 @@
- #include <linux/regulator/driver.h>
- #include <linux/regulator/fixed.h>
- #include <linux/gpio.h>
-+#include <linux/delay.h>
- 
- struct fixed_voltage_data {
- 	struct regulator_desc desc;
- 	struct regulator_dev *dev;
- 	int microvolts;
- 	int gpio;
-+	unsigned startup_delay;
- 	unsigned enable_high:1;
- 	unsigned is_enabled:1;
- };
-@@ -48,6 +50,8 @@ static int fixed_voltage_enable(struct regulator_dev *dev)
- 	if (gpio_is_valid(data->gpio)) {
- 		gpio_set_value_cansleep(data->gpio, data->enable_high);
- 		data->is_enabled = 1;
-+		if (data->startup_delay)
-+			udelay(data->startup_delay);
- 	}
- 
- 	return 0;
-@@ -117,6 +121,7 @@ static int regulator_fixed_voltage_probe(struct platform_device *pdev)
- 
- 	drvdata->microvolts = config->microvolts;
- 	drvdata->gpio = config->gpio;
-+	drvdata->startup_delay = config->startup_delay;
- 
- 	if (gpio_is_valid(config->gpio)) {
- 		drvdata->enable_high = config->enable_high;
-diff --git a/include/linux/regulator/fixed.h b/include/linux/regulator/fixed.h
-index e94a4a1..02edef1 100644
---- a/include/linux/regulator/fixed.h
-+++ b/include/linux/regulator/fixed.h
-@@ -25,6 +25,7 @@ struct regulator_init_data;
-  * @microvolts:		Output voltage of regulator
-  * @gpio:		GPIO to use for enable control
-  * 			set to -EINVAL if not used
-+ * @startup_delay:	Start-up time in microseconds
-  * @enable_high:	Polarity of enable GPIO
-  *			1 = Active high, 0 = Active low
-  * @enabled_at_boot:	Whether regulator has been enabled at
-@@ -41,6 +42,7 @@ struct fixed_voltage_config {
- 	const char *supply_name;
- 	int microvolts;
- 	int gpio;
-+	unsigned startup_delay;
- 	unsigned enable_high:1;
- 	unsigned enabled_at_boot:1;
- 	struct regulator_init_data *init_data;
--- 
-1.6.0.4
+
+
