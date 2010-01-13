@@ -1,414 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753578Ab0AMBiA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752340Ab0AMBrh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753578Ab0AMBiA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jan 2010 20:38:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752416Ab0AMBiA
+	id S1752340Ab0AMBrh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jan 2010 20:47:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751245Ab0AMBrh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jan 2010 20:38:00 -0500
-Received: from tomts40.bellnexxia.net ([209.226.175.97]:57498 "EHLO
-	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751038Ab0AMBh7 (ORCPT
+	Tue, 12 Jan 2010 20:47:37 -0500
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:53195 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750781Ab0AMBrg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jan 2010 20:37:59 -0500
-Date: Tue, 12 Jan 2010 20:37:57 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: linux-kernel@vger.kernel.org
-Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Oleg Nesterov <oleg@redhat.com>,
-       Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       akpm@linux-foundation.org, josh@joshtriplett.org, tglx@linutronix.de,
-       Valdis.Kletnieks@vt.edu, dhowells@redhat.com, laijs@cn.fujitsu.com,
-       dipankar@in.ibm.com
-Subject: [RFC PATCH] introduce sys_membarrier(): process-wide memory
-	barrier (v5)
-Message-ID: <20100113013757.GA29314@Krystal>
+	Tue, 12 Jan 2010 20:47:36 -0500
+Date: Wed, 13 Jan 2010 10:30:06 +0900
+From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       stable <stable@kernel.org>, Balbir Singh <balbir@linux.vnet.ibm.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Subject: [BUGFIX][PATCH] memcg: ensure list is empty at rmdir
+Message-Id: <20100113103006.8cf3b23c.nishimura@mxp.nes.nec.co.jp>
+In-Reply-To: <20100112140836.45e7fabb.nishimura@mxp.nes.nec.co.jp>
+References: <20100112140836.45e7fabb.nishimura@mxp.nes.nec.co.jp>
+Organization: NEC Soft, Ltd.
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.27.31-grsec (i686)
-X-Uptime: 20:35:34 up 27 days,  9:54,  4 users,  load average: 0.22, 0.20,
-	0.14
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here is an implementation of a new system call, sys_membarrier(), which
-executes a memory barrier on all threads of the current process.
- 
-It aims at greatly simplifying and enhancing the current signal-based
-liburcu userspace RCU synchronize_rcu() implementation.
-(found at http://lttng.org/urcu)
+Current mem_cgroup_force_empty() only ensures mem->res.usage == 0 on success.
+So there can be a case that the usage is zero but some of the LRUs are not
+empty if all of those pages have already been uncharged by the owner process.
 
-Changelog since v1:
+OTOH, mem_cgroup_del_lru_list(), which can be called asynchronously with rmdir,
+accesses the mem_cgroup, so this access can cause a problem if it races with
+rmdir because the mem_cgroup might have been freed by rmdir.
 
-- Only perform the IPI in CONFIG_SMP.
-- Only perform the IPI if the process has more than one thread.
-- Only send IPIs to CPUs involved with threads belonging to our process.
-- Adaptative IPI scheme (single vs many IPI with threshold).
-- Issue smp_mb() at the beginning and end of the system call.
+Actually, I saw a bug which seems to be caused by this race.
 
-Changelog since v2:
-- simply send-to-many to the mm_cpumask. It contains the list of processors we
-  have to IPI to (which use the mm), and this mask is updated atomically.
+	[1530745.949906] BUG: unable to handle kernel NULL pointer dereference at 0000000000000230
+	[1530745.950651] IP: [<ffffffff810fbc11>] mem_cgroup_del_lru_list+0x30/0x80
+	[1530745.950651] PGD 3863de067 PUD 3862c7067 PMD 0
+	[1530745.950651] Oops: 0002 [#1] SMP
+	[1530745.950651] last sysfs file: /sys/devices/system/cpu/cpu7/cache/index1/shared_cpu_map
+	[1530745.950651] CPU 3
+	[1530745.950651] Modules linked in: configs ipt_REJECT xt_tcpudp iptable_filter ip_tables x_tables bridge stp nfsd nfs_acl auth_rpcgss exportfs autofs4 hidp rfcomm l2cap crc16 bluetooth lockd sunrpc ib_iser rdma_cm ib_cm iw_cm ib_sa ib_mad ib_core ib_addr iscsi_tcp bnx2i cnic uio ipv6 cxgb3i cxgb3 mdio libiscsi_tcp libiscsi scsi_transport_iscsi dm_mirror dm_multipath scsi_dh video output sbs sbshc battery ac lp kvm_intel kvm sg ide_cd_mod cdrom serio_raw tpm_tis tpm tpm_bios acpi_memhotplug button parport_pc parport rtc_cmos rtc_core rtc_lib e1000 i2c_i801 i2c_core pcspkr dm_region_hash dm_log dm_mod ata_piix libata shpchp megaraid_mbox sd_mod scsi_mod megaraid_mm ext3 jbd uhci_hcd ohci_hcd ehci_hcd [last unloaded: freq_table]
+	[1530745.950651] Pid: 19653, comm: shmem_test_02 Tainted: G   M       2.6.32-mm1-00701-g2b04386 #3 Express5800/140Rd-4 [N8100-1065]
+	[1530745.950651] RIP: 0010:[<ffffffff810fbc11>]  [<ffffffff810fbc11>] mem_cgroup_del_lru_list+0x30/0x80
+	[1530745.950651] RSP: 0018:ffff8803863ddcb8  EFLAGS: 00010002
+	[1530745.950651] RAX: 00000000000001e0 RBX: ffff8803abc02238 RCX: 00000000000001e0
+	[1530745.950651] RDX: 0000000000000000 RSI: ffff88038611a000 RDI: ffff8803abc02238
+	[1530745.950651] RBP: ffff8803863ddcc8 R08: 0000000000000002 R09: ffff8803a04c8643
+	[1530745.950651] R10: 0000000000000000 R11: ffffffff810c7333 R12: 0000000000000000
+	[1530745.950651] R13: ffff880000017f00 R14: 0000000000000092 R15: ffff8800179d0310
+	[1530745.950651] FS:  0000000000000000(0000) GS:ffff880017800000(0000) knlGS:0000000000000000
+	[1530745.950651] CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+	[1530745.950651] CR2: 0000000000000230 CR3: 0000000379d87000 CR4: 00000000000006e0
+	[1530745.950651] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+	[1530745.950651] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+	[1530745.950651] Process shmem_test_02 (pid: 19653, threadinfo ffff8803863dc000, task ffff88038612a8a0)
+	[1530745.950651] Stack:
+	[1530745.950651]  ffffea00040c2fe8 0000000000000000 ffff8803863ddd98 ffffffff810c739a
+	[1530745.950651] <0> 00000000863ddd18 000000000000000c 0000000000000000 0000000000000000
+	[1530745.950651] <0> 0000000000000002 0000000000000000 ffff8803863ddd68 0000000000000046
+	[1530745.950651] Call Trace:
+	[1530745.950651]  [<ffffffff810c739a>] release_pages+0x142/0x1e7
+	[1530745.950651]  [<ffffffff810c778f>] ? pagevec_move_tail+0x6e/0x112
+	[1530745.950651]  [<ffffffff810c781e>] pagevec_move_tail+0xfd/0x112
+	[1530745.950651]  [<ffffffff810c78a9>] lru_add_drain+0x76/0x94
+	[1530745.950651]  [<ffffffff810dba0c>] exit_mmap+0x6e/0x145
+	[1530745.950651]  [<ffffffff8103f52d>] mmput+0x5e/0xcf
+	[1530745.950651]  [<ffffffff81043ea8>] exit_mm+0x11c/0x129
+	[1530745.950651]  [<ffffffff8108fb29>] ? audit_free+0x196/0x1c9
+	[1530745.950651]  [<ffffffff81045353>] do_exit+0x1f5/0x6b7
+	[1530745.950651]  [<ffffffff8106133f>] ? up_read+0x2b/0x2f
+	[1530745.950651]  [<ffffffff8137d187>] ? lockdep_sys_exit_thunk+0x35/0x67
+	[1530745.950651]  [<ffffffff81045898>] do_group_exit+0x83/0xb0
+	[1530745.950651]  [<ffffffff810458dc>] sys_exit_group+0x17/0x1b
+	[1530745.950651]  [<ffffffff81002c1b>] system_call_fastpath+0x16/0x1b
+	[1530745.950651] Code: 54 53 0f 1f 44 00 00 83 3d cc 29 7c 00 00 41 89 f4 75 63 eb 4e 48 83 7b 08 00 75 04 0f 0b eb fe 48 89 df e8 18 f3 ff ff 44 89 e2 <48> ff 4c d0 50 48 8b 05 2b 2d 7c 00 48 39 43 08 74 39 48 8b 4b
+	[1530745.950651] RIP  [<ffffffff810fbc11>] mem_cgroup_del_lru_list+0x30/0x80
+	[1530745.950651]  RSP <ffff8803863ddcb8>
+	[1530745.950651] CR2: 0000000000000230
+	[1530745.950651] ---[ end trace c3419c1bb8acc34f ]---
+	[1530745.950651] Fixing recursive fault but reboot is needed!
 
-Changelog since v3a:
-- Confirm that each CPU indeed runs the current task's ->mm before sending an
-  IPI. Ensures that we do not disturn RT tasks in the presence of lazy TLB
-  shootdown.
-- Document memory barriers needed in switch_mm().
-- Surround helper functions with #ifdef CONFIG_SMP.
+This patch tries to fix this bug by ensuring not only the usage is zero but also
+all of the LRUs are empty. mem_cgroup_force_empty_list() checks the list is empty
+or not, so we can make use of it.
 
-Changelog since v4:
-- Add "int expedited" parameter, use synchronize_sched() in this case.
-- Check num_online_cpus() == 1, quickly return without doing nothing.
-
-Both the signal-based and the sys_membarrier userspace RCU schemes
-permit us to remove the memory barrier from the userspace RCU
-rcu_read_lock() and rcu_read_unlock() primitives, thus significantly
-accelerating them. These memory barriers are replaced by compiler
-barriers on the read-side, and all matching memory barriers on the 
-write-side are turned into an invokation of a memory barrier on all
-active threads in the process. By letting the kernel perform this
-synchronization rather than dumbly sending a signal to every process
-threads (as we currently do), we diminish the number of unnecessary wake
-ups and only issue the memory barriers on active threads. Non-running
-threads do not need to execute such barrier anyway, because these are
-implied by the scheduler context switches.
-
-To explain the benefit of this scheme, let's introduce two example threads:
- 
-Thread A (non-frequent, e.g. executing liburcu synchronize_rcu())
-Thread B (frequent, e.g. executing liburcu rcu_read_lock()/rcu_read_unlock())
-
-In a scheme where all smp_mb() in thread A synchronize_rcu() are
-ordering memory accesses with respect to smp_mb() present in 
-rcu_read_lock/unlock(), we can change all smp_mb() from
-synchronize_rcu() into calls to sys_membarrier() and all smp_mb() from
-rcu_read_lock/unlock() into compiler barriers "barrier()".
-
-Before the change, we had, for each smp_mb() pairs:
-
-Thread A                    Thread B
-prev mem accesses           prev mem accesses
-smp_mb()                    smp_mb()
-follow mem accesses         follow mem accesses
-
-After the change, these pairs become:
-
-Thread A                    Thread B
-prev mem accesses           prev mem accesses
-sys_membarrier()            barrier()
-follow mem accesses         follow mem accesses
-
-As we can see, there are two possible scenarios: either Thread B memory
-accesses do not happen concurrently with Thread A accesses (1), or they
-do (2).
-
-1) Non-concurrent Thread A vs Thread B accesses:
-
-Thread A                    Thread B
-prev mem accesses
-sys_membarrier()
-follow mem accesses
-                            prev mem accesses
-                            barrier()
-                            follow mem accesses
-
-In this case, thread B accesses will be weakly ordered. This is OK,
-because at that point, thread A is not particularly interested in
-ordering them with respect to its own accesses.
-
-2) Concurrent Thread A vs Thread B accesses
-
-Thread A                    Thread B
-prev mem accesses           prev mem accesses
-sys_membarrier()            barrier()
-follow mem accesses         follow mem accesses
-
-In this case, thread B accesses, which are ensured to be in program
-order thanks to the compiler barrier, will be "upgraded" to full
-smp_mb() thanks to the IPIs executing memory barriers on each active
-system threads. Each non-running process threads are intrinsically
-serialized by the scheduler.
-
-For my Intel Xeon E5405
-(one thread is doing the sys_membarrier, the others are busy looping)
-
-* expedited
-
-10,000,000 sys_membarrier calls:
-
-T=1: 0m20.173s
-T=2: 0m20.506s
-T=3: 0m22.632s
-T=4: 0m24.759s
-T=5: 0m26.633s
-T=6: 0m29.654s
-T=7: 0m30.669s
-
-For a 2-3 microseconds/call.
-
-* non-expedited
-
-1000 sys_membarrier calls:
-
-T=1-7: 0m16.002s
-
-For a 16 milliseconds/call. (~5000-8000 times slower than expedited)
-
-The expected top pattern for the expedited scheme, when using 1 CPU for a thread
-doing sys_membarrier() in a loop and other 7 threads busy-waiting in user-space
-on a variable shows that the thread doing sys_membarrier is doing mostly system
-calls, and other threads are mostly running in user-space. Note that IPI
-handlers are not taken into account in the cpu time sampling.
-
-Cpu0  :100.0%us,  0.0%sy,  0.0%ni,  0.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
-Cpu1  : 99.7%us,  0.0%sy,  0.0%ni,  0.0%id,  0.0%wa,  0.3%hi,  0.0%si,  0.0%st
-Cpu2  : 99.3%us,  0.0%sy,  0.0%ni,  0.0%id,  0.0%wa,  0.7%hi,  0.0%si,  0.0%st
-Cpu3  :100.0%us,  0.0%sy,  0.0%ni,  0.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
-Cpu4  :100.0%us,  0.0%sy,  0.0%ni,  0.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
-Cpu5  : 96.0%us,  1.3%sy,  0.0%ni,  0.0%id,  0.0%wa,  0.0%hi,  2.6%si,  0.0%st
-Cpu6  :  1.3%us, 98.7%sy,  0.0%ni,  0.0%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
-Cpu7  : 96.1%us,  3.3%sy,  0.0%ni,  0.0%id,  0.0%wa,  0.3%hi,  0.3%si,  0.0%st
-
-Results in liburcu:
-
-Operations in 10s, 6 readers, 2 writers:
-
-(what we previously had)
-memory barriers in reader: 973494744 reads, 892368 writes
-signal-based scheme:      6289946025 reads,   1251 writes
-
-(what we have now, with dynamic sys_membarrier check, expedited scheme)
-memory barriers in reader: 907693804 reads, 817793 writes
-sys_membarrier scheme:    4316818891 reads, 503790 writes
-
-(dynamic sys_membarrier check, non-expedited scheme)
-memory barriers in reader: 907693804 reads, 817793 writes
-sys_membarrier scheme:    8698725501 reads,    313 writes
-
-So the dynamic sys_membarrier availability check adds some overhead to the
-read-side, but besides that, with the expedited scheme, we can see that we are
-close to the read-side performance of the signal-based scheme and also close
-(5/8) to the performance of the memory-barrier write-side. We have a write-side
-speedup of 400:1 over the signal-based scheme by using the sys_membarrier system
-call. This allows a 4.5:1 read-side speedup over the memory barrier scheme.
-
-The non-expedited scheme adds indeed a much lower overhead on the read-side
-both because we do not send IPIs and because we perform less updates, which in
-turn generates less cache-line exchanges. The write-side latency becomes even
-higher than with the signal-based scheme. The advantage of the non-expedited
-sys_membarrier() scheme over signal-based scheme is that it does not require to
-wake up all the process threads.
-
-The system call number is only assigned for x86_64 in this RFC patch. Note that
-switch_mm() memory barrier audit is required for each architecture before
-assigning a system call number.
-
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-CC: mingo@elte.hu
-CC: laijs@cn.fujitsu.com
-CC: dipankar@in.ibm.com
-CC: akpm@linux-foundation.org
-CC: josh@joshtriplett.org
-CC: dvhltc@us.ibm.com
-CC: niv@us.ibm.com
-CC: tglx@linutronix.de
-CC: peterz@infradead.org
-CC: rostedt@goodmis.org
-CC: Valdis.Kletnieks@vt.edu
-CC: dhowells@redhat.com
+Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Acked-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Balbir Singh <balbir@linux.vnet.ibm.com>
+Cc: stable@kernel.org
 ---
- arch/x86/include/asm/mmu_context.h |   18 +++++-
- arch/x86/include/asm/unistd_64.h   |    2 
- kernel/sched.c                     |  111 +++++++++++++++++++++++++++++++++++++
- 3 files changed, 129 insertions(+), 2 deletions(-)
+This patch is based on 2.6.33-rc3, and can be applied to older versions too.
 
-Index: linux-2.6-lttng/arch/x86/include/asm/unistd_64.h
-===================================================================
---- linux-2.6-lttng.orig/arch/x86/include/asm/unistd_64.h	2010-01-12 10:25:47.000000000 -0500
-+++ linux-2.6-lttng/arch/x86/include/asm/unistd_64.h	2010-01-12 10:25:57.000000000 -0500
-@@ -661,6 +661,8 @@ __SYSCALL(__NR_pwritev, sys_pwritev)
- __SYSCALL(__NR_rt_tgsigqueueinfo, sys_rt_tgsigqueueinfo)
- #define __NR_perf_event_open			298
- __SYSCALL(__NR_perf_event_open, sys_perf_event_open)
-+#define __NR_membarrier				299
-+__SYSCALL(__NR_membarrier, sys_membarrier)
+ mm/memcontrol.c |   11 ++++-------
+ 1 files changed, 4 insertions(+), 7 deletions(-)
+
+diff --git a/mm/memcontrol.c b/mm/memcontrol.c
+index 488b644..954032b 100644
+--- a/mm/memcontrol.c
++++ b/mm/memcontrol.c
+@@ -2586,7 +2586,7 @@ static int mem_cgroup_force_empty(struct mem_cgroup *mem, bool free_all)
+ 	if (free_all)
+ 		goto try_to_free;
+ move_account:
+-	while (mem->res.usage > 0) {
++	do {
+ 		ret = -EBUSY;
+ 		if (cgroup_task_count(cgrp) || !list_empty(&cgrp->children))
+ 			goto out;
+@@ -2614,8 +2614,8 @@ move_account:
+ 		if (ret == -ENOMEM)
+ 			goto try_to_free;
+ 		cond_resched();
+-	}
+-	ret = 0;
++	/* "ret" should also be checked to ensure all lists are empty. */
++	} while (mem->res.usage > 0 || ret);
+ out:
+ 	css_put(&mem->css);
+ 	return ret;
+@@ -2648,10 +2648,7 @@ try_to_free:
+ 	}
+ 	lru_add_drain();
+ 	/* try move_account...there may be some *locked* pages. */
+-	if (mem->res.usage)
+-		goto move_account;
+-	ret = 0;
+-	goto out;
++	goto move_account;
+ }
  
- #ifndef __NO_STUBS
- #define __ARCH_WANT_OLD_READDIR
-Index: linux-2.6-lttng/kernel/sched.c
-===================================================================
---- linux-2.6-lttng.orig/kernel/sched.c	2010-01-12 10:25:47.000000000 -0500
-+++ linux-2.6-lttng/kernel/sched.c	2010-01-12 14:33:20.000000000 -0500
-@@ -10822,6 +10822,117 @@ struct cgroup_subsys cpuacct_subsys = {
- };
- #endif	/* CONFIG_CGROUP_CPUACCT */
- 
-+#ifdef CONFIG_SMP
-+
-+/*
-+ * Execute a memory barrier on all active threads from the current process
-+ * on SMP systems. Do not rely on implicit barriers in IPI handler execution,
-+ * because batched IPI lists are synchronized with spinlocks rather than full
-+ * memory barriers. This is not the bulk of the overhead anyway, so let's stay
-+ * on the safe side.
-+ */
-+static void membarrier_ipi(void *unused)
-+{
-+	smp_mb();
-+}
-+
-+/*
-+ * Handle out-of-mem by sending per-cpu IPIs instead.
-+ */
-+static void membarrier_retry(void)
-+{
-+	struct mm_struct *mm;
-+	int cpu;
-+
-+	for_each_cpu(cpu, mm_cpumask(current->mm)) {
-+		spin_lock_irq(&cpu_rq(cpu)->lock);
-+		mm = cpu_curr(cpu)->mm;
-+		spin_unlock_irq(&cpu_rq(cpu)->lock);
-+		if (current->mm == mm)
-+			smp_call_function_single(cpu, membarrier_ipi, NULL, 1);
-+	}
-+}
-+
-+#endif /* #ifdef CONFIG_SMP */
-+
-+/*
-+ * sys_membarrier - issue memory barrier on current process running threads
-+ * @expedited: (0) Lowest overhead. Few milliseconds latency.
-+ *             (1) Few microseconds latency.
-+ *
-+ * Execute a memory barrier on all running threads of the current process.
-+ * Upon completion, the caller thread is ensured that all process threads
-+ * have passed through a state where memory accesses match program order.
-+ * (non-running threads are de facto in such a state)
-+ *
-+ * mm_cpumask is used as an approximation. It is a superset of the cpumask to
-+ * which we must send IPIs, mainly due to lazy TLB shootdown. Therefore,
-+ * we check each runqueue to make sure our ->mm is indeed running on them. This
-+ * reduces the risk of disturbing a RT task by sending unnecessary IPIs. There
-+ * is still a slight chance to disturb an unrelated task, because we do not lock
-+ * the runqueues while sending IPIs, but the real-time effect of this heavy
-+ * locking would be worse than the comparatively small disruption of an IPI.
-+ *
-+ * RED PEN: before assinging a system call number for sys_membarrier() to an
-+ * architecture, we must ensure that switch_mm issues full memory barriers (or a
-+ * synchronizing instruction having the same effect) between:
-+ * - user-space code execution and clear mm_cpumask.
-+ * - set mm_cpumask and user-space code execution.
-+ * In some case adding a comment to this effect will suffice, in others we will
-+ * need to add smp_mb__before_clear_bit()/smp_mb__after_clear_bit() or simply
-+ * smp_mb(). These barriers are required to ensure we do not _miss_ a CPU that
-+ * need to receive an IPI, which would be a bug.
-+ *
-+ * On uniprocessor systems, this system call simply returns 0 without doing
-+ * anything, so user-space knows it is implemented.
-+ */
-+SYSCALL_DEFINE1(membarrier, int, expedited)
-+{
-+#ifdef CONFIG_SMP
-+	cpumask_var_t tmpmask;
-+	struct mm_struct *mm;
-+	int cpu;
-+
-+	if (unlikely(thread_group_empty(current) || (num_online_cpus() == 1)))
-+		return 0;
-+	if (!unlikely(expedited)) {
-+		synchronize_sched();
-+		return 0;
-+	}
-+	/*
-+	 * Memory barrier on the caller thread _before_ sending first
-+	 * IPI. Matches memory barriers around mm_cpumask modification in
-+	 * switch_mm().
-+	 */
-+	smp_mb();
-+	if (!alloc_cpumask_var(&tmpmask, GFP_KERNEL)) {
-+		membarrier_retry();
-+		goto unlock;
-+	}
-+	cpumask_copy(tmpmask, mm_cpumask(current->mm));
-+	preempt_disable();
-+	cpumask_clear_cpu(smp_processor_id(), tmpmask);
-+	for_each_cpu(cpu, tmpmask) {
-+		spin_lock_irq(&cpu_rq(cpu)->lock);
-+		mm = cpu_curr(cpu)->mm;
-+		spin_unlock_irq(&cpu_rq(cpu)->lock);
-+		if (current->mm != mm)
-+			cpumask_clear_cpu(cpu, tmpmask);
-+	}
-+	smp_call_function_many(tmpmask, membarrier_ipi, NULL, 1);
-+	preempt_enable();
-+	free_cpumask_var(tmpmask);
-+unlock:
-+	/*
-+	 * Memory barrier on the caller thread _after_ we finished
-+	 * waiting for the last IPI. Matches memory barriers around mm_cpumask
-+	 * modification in switch_mm().
-+	 */
-+	smp_mb();
-+#endif /* #ifdef CONFIG_SMP */
-+	return 0;
-+}
-+
- #ifndef CONFIG_SMP
- 
- int rcu_expedited_torture_stats(char *page)
-Index: linux-2.6-lttng/arch/x86/include/asm/mmu_context.h
-===================================================================
---- linux-2.6-lttng.orig/arch/x86/include/asm/mmu_context.h	2010-01-12 10:59:31.000000000 -0500
-+++ linux-2.6-lttng/arch/x86/include/asm/mmu_context.h	2010-01-12 11:59:49.000000000 -0500
-@@ -36,6 +36,11 @@ static inline void switch_mm(struct mm_s
- 	unsigned cpu = smp_processor_id();
- 
- 	if (likely(prev != next)) {
-+		/*
-+		 * smp_mb() between user-space thread execution and
-+		 * mm_cpumask clear is required by sys_membarrier().
-+		 */
-+		smp_mb__before_clear_bit();
- 		/* stop flush ipis for the previous mm */
- 		cpumask_clear_cpu(cpu, mm_cpumask(prev));
- #ifdef CONFIG_SMP
-@@ -43,7 +48,11 @@ static inline void switch_mm(struct mm_s
- 		percpu_write(cpu_tlbstate.active_mm, next);
- #endif
- 		cpumask_set_cpu(cpu, mm_cpumask(next));
--
-+		/*
-+		 * smp_mb() between mm_cpumask set and user-space thread
-+		 * execution is required by sys_membarrier(). Implied by
-+		 * load_cr3.
-+		 */
- 		/* Re-load page tables */
- 		load_cr3(next->pgd);
- 
-@@ -59,9 +68,14 @@ static inline void switch_mm(struct mm_s
- 		BUG_ON(percpu_read(cpu_tlbstate.active_mm) != next);
- 
- 		if (!cpumask_test_and_set_cpu(cpu, mm_cpumask(next))) {
--			/* We were in lazy tlb mode and leave_mm disabled
-+			/*
-+			 * We were in lazy tlb mode and leave_mm disabled
- 			 * tlb flush IPI delivery. We must reload CR3
- 			 * to make sure to use no freed page tables.
-+			 *
-+			 * smp_mb() between mm_cpumask set and user-space
-+			 * thread execution is required by sys_membarrier().
-+			 * Implied by load_cr3.
- 			 */
- 			load_cr3(next->pgd);
- 			load_LDT_nolock(&next->context);
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+ int mem_cgroup_force_empty_write(struct cgroup *cont, unsigned int event)
+
