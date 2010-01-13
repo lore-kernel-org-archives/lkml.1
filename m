@@ -1,48 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756592Ab0AMXke@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756648Ab0AMXms@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756592Ab0AMXke (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 18:40:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755689Ab0AMXkd
+	id S1756648Ab0AMXms (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 18:42:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755133Ab0AMXmr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 18:40:33 -0500
-Received: from shadbolt.e.decadent.org.uk ([88.96.1.126]:35858 "EHLO
-	shadbolt.e.decadent.org.uk" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755201Ab0AMXkc convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 18:40:32 -0500
-From: Ben Hutchings <ben@decadent.org.uk>
-To: linux-fbdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
-Date: Wed, 13 Jan 2010 23:40:29 +0000
-Message-ID: <1263426029.3852.126.camel@localhost>
+	Wed, 13 Jan 2010 18:42:47 -0500
+Received: from tomts10.bellnexxia.net ([209.226.175.54]:43865 "EHLO
+	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753875Ab0AMXmq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jan 2010 18:42:46 -0500
+Date: Wed, 13 Jan 2010 18:42:44 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Nicholas Miell <nmiell@comcast.net>
+Cc: David Daney <ddaney@caviumnetworks.com>, paulmck@linux.vnet.ibm.com,
+       linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>,
+       Oleg Nesterov <oleg@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
+       Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org,
+       josh@joshtriplett.org, tglx@linutronix.de, Valdis.Kletnieks@vt.edu,
+       dhowells@redhat.com, laijs@cn.fujitsu.com, dipankar@in.ibm.com
+Subject: Re: [RFC PATCH] introduce sys_membarrier(): process-wide memory
+	barrier (v5)
+Message-ID: <20100113234244.GA15897@Krystal>
+References: <1263358823.3874.10.camel@entropy> <20100113053126.GC6781@linux.vnet.ibm.com> <1263361196.3874.12.camel@entropy> <20100113143805.GC30875@Krystal> <1263406071.3874.16.camel@entropy> <20100113182442.GA20704@Krystal> <1263408098.3874.19.camel@entropy> <20100113191727.GA24742@Krystal> <4B4E2208.4030307@caviumnetworks.com> <1263412407.3874.21.camel@entropy>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 
-X-SA-Exim-Connect-IP: 192.168.4.185
-X-SA-Exim-Mail-From: ben@decadent.org.uk
-Subject: [PATCH 09/11] metronomefb: declare MODULE_FIRMWARE
-X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
-X-SA-Exim-Scanned: Yes (on shadbolt.decadent.org.uk)
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <1263412407.3874.21.camel@entropy>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.27.31-grsec (i686)
+X-Uptime: 18:34:54 up 28 days,  7:53,  5 users,  load average: 0.14, 0.09,
+	0.08
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Ben Hutchings <ben@decadent.org.uk>
----
- drivers/video/metronomefb.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+* Nicholas Miell (nmiell@comcast.net) wrote:
+> On Wed, 2010-01-13 at 11:42 -0800, David Daney wrote:
+> > Mathieu Desnoyers wrote:
+> > > * Nicholas Miell (nmiell@comcast.net) wrote:
+> > >> On Wed, 2010-01-13 at 13:24 -0500, Mathieu Desnoyers wrote:
+> > >>> * Nicholas Miell (nmiell@comcast.net) wrote:
+> > >>>
+> > >>>> The whole point of compat and incompat flags is that it allows new
+> > >>>> applications to run on old kernels and either work or fail as
+> > >>>> appropriate, depending on whether the new features they're using must be
+> > >>>> implemented or can be silently ignored.
+> > >>> I see. Thanks for the explanation. Then the expedited flag should
+> > >>> clearly be part of the mandatory flags.
+> > >>>
+> > >>> Can you point me to other system calls that are doing this ?
+> > >>>
+> > >>> Thanks,
+> > >>>
+> > >>> Mathieu
+> > >> Not off the top of my head, but I did steal the idea from the ext2/3/4
+> > >> disk format.
+> > > 
+> > > Sounds a bit over-engineered to me for system calls, but who knows if we
+> > > eventually have to extend sys_membarrier(). This involves that, right
+> > > now, I'd have to add a header to include/linux to define these flags.
+> > > Also, "int expedited" is a bit clearer, but less flexible, than "int
+> > > flags". Anyone else have comments about this ?
+> > > 
+> > 
+> > It doesn't bother me that you have to do extra work to add the flag 
+> > definitions to a header file. :-)
+> > 
 
-diff --git a/drivers/video/metronomefb.c b/drivers/video/metronomefb.c
-index 661bfd2..7b89532 100644
---- a/drivers/video/metronomefb.c
-+++ b/drivers/video/metronomefb.c
-@@ -792,3 +792,4 @@ module_exit(metronomefb_exit);
- MODULE_DESCRIPTION("fbdev driver for Metronome controller");
- MODULE_AUTHOR("Jaya Kumar");
- MODULE_LICENSE("GPL");
-+MODULE_FIRMWARE("metronome.wbf");
+Work is not a problem. I just wanted to make sure I would not be going
+in circles. :)
+
+> > As I understand it, the proposal is to have the option to extend the ABI 
+> > based on as yet undefined flag bits.  This doesn't seem like a bad thing.
+> > 
+> > The runtime overhead of testing a single bit vs. non-zero in the 
+> > parameter shouldn't be an issue.
+> > 
+> 
+> The recent introduction of accept4(), signalfd4(), eventfd2(),
+> epoll_create1(), dup3(), pipe2(), and inotify_init1() suggest that this
+> is the kind of thing you want to plan for, because you're probably going
+> to end up doing it anyway.
+
+Yes, that's a very convincing argument. OK, I'll cook something for v6.
+
+Thanks a lot,
+
+Mathieu
+
+> 
+> -- 
+> Nicholas Miell <nmiell@comcast.net>
+> 
+
 -- 
-1.6.5.7
-
-
-
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
