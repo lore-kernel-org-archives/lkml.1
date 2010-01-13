@@ -1,81 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754920Ab0AMHfm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754984Ab0AMHgE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754920Ab0AMHfm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 02:35:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754766Ab0AMHfl
+	id S1754984Ab0AMHgE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 02:36:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754954Ab0AMHgB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 02:35:41 -0500
-Received: from mail-px0-f174.google.com ([209.85.216.174]:42697 "EHLO
-	mail-px0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752323Ab0AMHfl convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 02:35:41 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=Sj5VcsKXjHimVkkyKT1F9jyd7VpIxfxlxKxxEpbFT9E/dAU6PxMl1laoECfGNp7H7F
-         3HlBwCOrMHpgQDM+H42OtNyzmFaUR8E4duSogNiak0i4XuzpPz9uqjg1LtCbyi8jdG7+
-         dxh0cwDHdYv0UkjtaB3t49hecAUcX6pzr3+sQ=
+	Wed, 13 Jan 2010 02:36:01 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:51557 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754897Ab0AMHgA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jan 2010 02:36:00 -0500
+Date: Wed, 13 Jan 2010 08:35:40 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Randy Dunlap <randy.dunlap@oracle.com>,
+       "David S. Miller" <davem@davemloft.net>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, netdev@vger.kernel.org,
+       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Arnd Bergmann <arnd@arndb.de>
+Subject: Re: linux-next: Tree for January 8 (net/ip.h, BUG=n)
+Message-ID: <20100113073540.GA30577@elte.hu>
+References: <20100108164232.d3e1a164.sfr@canb.auug.org.au>
+ <20100108092505.4f4e1ac3.randy.dunlap@oracle.com>
 MIME-Version: 1.0
-In-Reply-To: <200912210955.00086.vl@fidra.de>
-References: <200912071856.48125.vl@fidra.de> <4B1D8A27.6050008@kernel.org>
-	 <200912080213.20502.vl@fidra.de> <200912210955.00086.vl@fidra.de>
-Date: Tue, 12 Jan 2010 23:35:39 -0800
-X-Google-Sender-Auth: 79bafbc3f79bd5d1
-Message-ID: <86802c441001122335gda44dd2v93c613609dac7584@mail.gmail.com>
-Subject: Re: [BISECTED, REGRESSION] Successful resume from suspend but freezes 
-	after I/O
-From: Yinghai Lu <yinghai@kernel.org>
-To: Volker Lanz <vl@fidra.de>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100108092505.4f4e1ac3.randy.dunlap@oracle.com>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 21, 2009 at 12:54 AM, Volker Lanz <vl@fidra.de> wrote:
-> On Tuesday 08 December 2009 02:13:20 Volker Lanz wrote:
->> On Tuesday 08 December 2009 00:05:11 Yinghai Lu wrote:
->> > the updated e820 table is the same to the one for 2.6.29...
->> >
->> > so could be some other patch cause the problem.
->> >
->> > please check if revert
->> > 2547089ca2db132e307ef68848ba029a8ec2f341
->> > could help.
->>
->> I reverted to one commit before that, which would be
->> eaa959df299157e2640fcb3321537501b6afd9e6
->> if I am not mistaken. I built and booted that kernel and could reproduce
->>  the freeze with it (TBH this was not surprising to me, because I
->>  originally pinned down the problem by bisecting the commits and this
->>  commit is after the one bisecting found. Am I missing a detail here?)
->>
->> But strangely enough the freeze this time produced an oops before it locked
->> the machine. I couldn't save it to a file but took a picture. The
->>  screenshot is here:
->> http://banane.volker-lanz.de/08122009013.jpg
->> The oops is _not _reproducable. After a reboot with this same kernel, a
->> suspend/resume cycle and some I/O the machine locks again without showing
->>  the oops.
->>
->> Volker
->>
->
-> Any news on this problem? Anything else I can do to help debug the situation?
-> The prospect of being confined to distros with kernels < 2.6.29 for the next
-> couple of years on this machine worries me, obviously.
->
 
-as 6d794 said that is used fix exposed bug.
-...
-please checkout out
+* Randy Dunlap <randy.dunlap@oracle.com> wrote:
 
-c61cf4cfe7c73c7aa62dde3ff82cd475b9c41481
+> On Fri, 8 Jan 2010 16:42:32 +1100 Stephen Rothwell wrote:
+> 
+> > Hi all,
+> > 
+> > Changes since 20100107:
+> 
+> 
+> When CONFIG_BUG=n, CONFIG_GENERIC_BUG=n:
+> 
+> include/net/ip.h:341: error: implicit declaration of function '__WARN'
+> 
+> This affects:
+> make[3]: *** [security/selinux/hooks.o] Error 1
+> make[3]: *** [fs/ceph/messenger.o] Error 1
+> make[3]: *** [net/core/sock.o] Error 1
+> make[4]: *** [drivers/net/benet/be_main.o] Error 1
 
-and boot with debug.
+FYI, this new build bug is now upstream and triggers in -tip testing as well.
 
-YH
+	Ingo
