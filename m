@@ -1,46 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755812Ab0AML0K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932081Ab0AMLdp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755812Ab0AML0K (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 06:26:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755650Ab0AML0J
+	id S932081Ab0AMLdp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 06:33:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755487Ab0AMLdo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 06:26:09 -0500
-Received: from e28smtp03.in.ibm.com ([122.248.162.3]:46098 "EHLO
-	e28smtp03.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755485Ab0AML0G (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 06:26:06 -0500
-From: Chandru <chandru@in.ibm.com>
-Organization: ibm
-To: Greg KH <gregkh@suse.de>
-Subject: Re: [PATCH] ibmphp : read the length of ebda and map entire ebda region
-Date: Wed, 13 Jan 2010 16:56:02 +0530
-User-Agent: KMail/1.11.2 (Linux/2.6.30.9-90.fc11.x86_64; KDE/4.2.2; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-References: <201001091712.25655.chandru@in.ibm.com> <20100109182343.GA4695@suse.de>
-In-Reply-To: <20100109182343.GA4695@suse.de>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+	Wed, 13 Jan 2010 06:33:44 -0500
+Received: from mail1.radix.net ([207.192.128.31]:59814 "EHLO mail1.radix.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754945Ab0AMLdo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jan 2010 06:33:44 -0500
+Subject: Re: [PATCH 1/1] media: video/cx18, fix potential null dereference
+From: Andy Walls <awalls@radix.net>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: mchehab@redhat.com, hverkuil@xs4all.nl, ivtv-devel@ivtvdriver.org,
+       linux-media@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <4B4C5CEF.5060601@gmail.com>
+References: <1263113806-7532-1-git-send-email-jslaby@suse.cz>
+	 <1263253709.4116.1.camel@palomino.walls.org>  <4B4C5CEF.5060601@gmail.com>
+Content-Type: text/plain
+Date: Wed, 13 Jan 2010 06:32:27 -0500
+Message-Id: <1263382347.3057.11.camel@palomino.walls.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <201001131656.03396.chandru@in.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 09 January 2010 23:53:43 Greg KH wrote:
-> >  drivers/pci/hotplug/ibmphp_ebda.c |   11 +++++++++--
+On Tue, 2010-01-12 at 12:28 +0100, Jiri Slaby wrote:
+> On 01/12/2010 12:48 AM, Andy Walls wrote:
+> > On Sun, 2010-01-10 at 09:56 +0100, Jiri Slaby wrote:
+> >> Stanse found a potential null dereference in cx18_dvb_start_feed
+> >> and cx18_dvb_stop_feed. There is a check for stream being NULL,
+> >> but it is dereferenced earlier. Move the dereference after the
+> >> check.
+> >>
+> >> Signed-off-by: Jiri Slaby <jslaby@suse.cz>
+> > 
+> > Reviewed-by: Andy Walls <awalls@radix.net>
+> > Acked-by: Andy Walls <awalls@radix.net>
 > 
-> Please use the scripts/get_maintainer.pl script to get the proper person
-> and mailing list to send this patch to (hint, it's not me.)
-> 
-> thanks,
-> 
-> greg k-h
+> You definitely know the code better, have you checked that it can happen
+> at all? I mean may demux->priv be NULL?
 
-Thanks Greg, thanks for pointing. Your name showed up in the source file as 'send feedback to Greg KH' , so I cc'ed you on this. 
+I'm wasn't sure, and that's the one reason I didn't NAK the patch.
+I can tell you no one has ever reported an Ooops or Bug due to that
+condition.
 
-thanks,
-Chandru
+
+I know the cx18 code very well.  However, I am less familiar with the
+dvb core code and any bad behavior that may exist there.  When relying
+on data structures the dvb core accesses I would have to research what
+could happen in the dvb core to possibly generate that condition.
+
+Since I'm busy this week with work related to my day job (nothing to do
+with Linux), it was easiest to let the NULL check stay in for now.
+
+If you don't mind a delay of until Sunday or so to get the patch applied
+to the V4L-DVB tree, I can take the patch and work it in my normal path
+through Mauro.  Let me know.
+
+Regards,
+Andy
+
 
