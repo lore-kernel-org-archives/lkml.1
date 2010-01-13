@@ -1,49 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756171Ab0AMRMJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756183Ab0AMRMX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756171Ab0AMRMJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 12:12:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756137Ab0AMRMI
+	id S1756183Ab0AMRMX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 12:12:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756174Ab0AMRMV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 12:12:08 -0500
-Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:40794 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756087Ab0AMRMH (ORCPT
+	Wed, 13 Jan 2010 12:12:21 -0500
+Received: from mail-fx0-f225.google.com ([209.85.220.225]:40662 "EHLO
+	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756143Ab0AMRMI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 12:12:07 -0500
-Message-ID: <4B4DFE84.2080304@s5r6.in-berlin.de>
-Date: Wed, 13 Jan 2010 18:10:28 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.23) Gecko/20090825 SeaMonkey/1.1.18
+	Wed, 13 Jan 2010 12:12:08 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=yCsQVXQlMabKW1Af22JIjuP7VssVDmHFB5iciCTLUtGDe/qUaw09vxC12EOJuxir6N
+         rpWiTD+jhcP7gYirk06ogVXos/qFMDj1ZUBWZ+9YFaaifPV/DwhnYyhj/bhc/X4E40mS
+         /sgwi5vEMwk7yb2BPlC3RhhzlL+24nqob7IXo=
+Message-ID: <4B4DFF04.2070109@googlemail.com>
+Date: Wed, 13 Jan 2010 18:12:36 +0100
+From: =?ISO-8859-1?Q?Ren=E9_Bolldorf?= <xsecute@googlemail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.5) Gecko/20091204 Thunderbird/3.0
 MIME-Version: 1.0
-To: Joe Perches <joe@perches.com>
-CC: Jan Engelhardt <jengelh@medozas.de>, Patrick McHardy <kaber@trash.net>,
-       linux-kernel@vger.kernel.org, netfilter-devel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH V3] MAINTAINERS: Document list types, add "A:" section
- type, update NETFILTER
-References: <cover.1262726222.git.joe@perches.com>	 <bccf36219f3ea5a9b7565734bc87095bc986dbe0.1262726222.git.joe@perches.com>	 <1262805798.1952.105.camel@Joe-Laptop.home>  <4B4B02BE.5060209@trash.net>	 <1263208183.1907.50.camel@Joe-Laptop.home>  <4B4B0806.40801@trash.net>	 <1263209269.1907.61.camel@Joe-Laptop.home>	 <alpine.LSU.2.01.1001111229460.26235@obet.zrqbmnf.qr>	 <1263321994.25973.15.camel@Joe-Laptop.home>	 <4B4DE32F.7030708@s5r6.in-berlin.de> <1263399300.8011.68.camel@Joe-Laptop.home>
-In-Reply-To: <1263399300.8011.68.camel@Joe-Laptop.home>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+CC: Tilman Schmidt <tilman@imap.cc>,
+       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [Question]  For what stand's __initdata, __devinit etc. ?
+References: <4B4CAA49.4090707@googlemail.com> <20100112234228.GA21777@khazad-dum.debian.net> <4B4DB0E3.9020707@imap.cc> <4B4DF6B1.406@s5r6.in-berlin.de>
+In-Reply-To: <4B4DF6B1.406@s5r6.in-berlin.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Joe Perches wrote:
-> On Wed, 2010-01-13 at 16:13 +0100, Stefan Richter wrote:
->> Joe Perches wrote:
->> > +	A: Additional useful unstructured information.
->> Can be implemented with a level of indirection via the W: entries.
-> 
-> Mailing lists aren't web addresses.
+On 01/13/10 17:37, Stefan Richter wrote:
+> Tilman Schmidt wrote:
+>> Am 2010-01-13 00:42 schrieb Henrique de Moraes Holschuh:
+>>> On Tue, 12 Jan 2010, René Bolldorf wrote:
+>>>> Hi,
+>>>> Do we really need this?
+>>>> It will be nice if someone can me explain this.
+>>>
+>>> http://kernelnewbies.org/FAQ/InitExitMacros
+>>
+>> That's far from complete. It does not, for example, mention __devinit.
+>
+> This wiki contains also somewhat misleadingly worded text:  "But why
+> must you use these macros ?"  This should read:  "But why would you want
+> to use these macros?"
+>
+> Answer:  They are a micro-optimization which allows the kernel to free
+> memory that was occupied by this code at some point, because that code
+> won't be used after that point anymore.  (In case of exit macros:  These
+> are hints to discard some code from a build in case of certain kernel
+> configurations.)  These macros only affect code which is statically
+> linked into the kernel.
+>
+> Some macros, like for example __devinit, have so obscure uses and
+> marginal benefits that a normal developer should not bother about them.
+> __devinit in particular does not have any effect at all --- except if
+> CONFIG_HOTPLUG is not defined.  This may happen in configurations for
+> embedded systems.  But the majority of device drivers that you can find
+> in the kernel tree are irrelevant (i.e. configured off) on such systems
+> anyway.
+>
+> Some more information on these macros can be found in Corbet, Rubini,
+> Kroah-Hartman: Linux Device Drivers, 3rd edition a.k.a. LDD3, which is
+> also gratis available on the Web.
 
-Project web sites typically contain contact pages (which is what you
-used the first two proposed A: entries for --- contacts that apparently
-do not play a role for patch submission), and web sites can carry any
-other "unstructured information".
-
-Keep redundancy low.
--- 
-Stefan Richter
--=====-==-=- ---= -==-=
-http://arcgraph.de/sr/
+Thanks @all :-)
