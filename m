@@ -1,46 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755457Ab0AMKZ4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755438Ab0AMKZg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755457Ab0AMKZ4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 05:25:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755335Ab0AMKZa
+	id S1755438Ab0AMKZg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 05:25:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755420Ab0AMKZb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 05:25:30 -0500
-Received: from hera.kernel.org ([140.211.167.34]:37984 "EHLO hera.kernel.org"
+	Wed, 13 Jan 2010 05:25:31 -0500
+Received: from hera.kernel.org ([140.211.167.34]:37979 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932070Ab0AMKZ3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 05:25:29 -0500
-Date: Wed, 13 Jan 2010 10:25:01 GMT
+	id S1755333Ab0AMKZ1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jan 2010 05:25:27 -0500
+Date: Wed, 13 Jan 2010 10:24:45 GMT
 From: "tip-bot for Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 Cc: linux-kernel@vger.kernel.org, paulmck@linux.vnet.ibm.com, hpa@zytor.com,
        mingo@redhat.com, tglx@linutronix.de, mingo@elte.hu
 Reply-To: mingo@redhat.com, hpa@zytor.com, paulmck@linux.vnet.ibm.com,
        linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <12626465501994-git-send-email->
-References: <12626465501994-git-send-email->
+In-Reply-To: <12626465501455-git-send-email->
+References: <12626465501455-git-send-email->
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:core/rcu] rcu: Adjust force_quiescent_state() locking, step 2
-Message-ID: <tip-559569acf94f538b56bd6eead80b439d6a78cdff@git.kernel.org>
-Git-Commit-ID: 559569acf94f538b56bd6eead80b439d6a78cdff
+Subject: [tip:core/rcu] rcu: Adjust force_quiescent_state() locking, step 1
+Message-ID: <tip-f96e9232e04856c781d4f71923a46dd3f7b429fa@git.kernel.org>
+Git-Commit-ID: f96e9232e04856c781d4f71923a46dd3f7b429fa
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Wed, 13 Jan 2010 10:25:02 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Wed, 13 Jan 2010 10:24:46 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  559569acf94f538b56bd6eead80b439d6a78cdff
-Gitweb:     http://git.kernel.org/tip/559569acf94f538b56bd6eead80b439d6a78cdff
+Commit-ID:  f96e9232e04856c781d4f71923a46dd3f7b429fa
+Gitweb:     http://git.kernel.org/tip/f96e9232e04856c781d4f71923a46dd3f7b429fa
 Author:     Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-AuthorDate: Mon, 4 Jan 2010 15:09:01 -0800
+AuthorDate: Mon, 4 Jan 2010 15:09:00 -0800
 Committer:  Ingo Molnar <mingo@elte.hu>
 CommitDate: Wed, 13 Jan 2010 09:06:01 +0100
 
-rcu: Adjust force_quiescent_state() locking, step 2
+rcu: Adjust force_quiescent_state() locking, step 1
 
-This patch releases rnp->lock after the end of
-force_quiescent_state()'s switch statement.  This is a second
+This causes rnp->lock to be held on entry to
+force_quiescent_state()'s switch statement.  This is a first
 step towards prohibiting starting grace periods while
 force_quiescent_state() is executing, which will reduce the
 number and complexity of races that force_quiescent_state() is
@@ -57,50 +57,95 @@ Cc: peterz@infradead.org
 Cc: rostedt@goodmis.org
 Cc: Valdis.Kletnieks@vt.edu
 Cc: dhowells@redhat.com
-LKML-Reference: <12626465501994-git-send-email->
+LKML-Reference: <12626465501455-git-send-email->
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- kernel/rcutree.c |   13 +++----------
- 1 files changed, 3 insertions(+), 10 deletions(-)
+ kernel/rcutree.c |   27 ++++++++++++++++++---------
+ 1 files changed, 18 insertions(+), 9 deletions(-)
 
 diff --git a/kernel/rcutree.c b/kernel/rcutree.c
-index eae331d..d42ad30 100644
+index 53ae959..eae331d 100644
 --- a/kernel/rcutree.c
 +++ b/kernel/rcutree.c
-@@ -1219,7 +1219,6 @@ static void force_quiescent_state(struct rcu_state *rsp, int relaxed)
+@@ -1204,7 +1204,7 @@ static void force_quiescent_state(struct rcu_state *rsp, int relaxed)
+ 	}
+ 	if (relaxed &&
+ 	    (long)(rsp->jiffies_force_qs - jiffies) >= 0)
+-		goto unlock_ret; /* no emergency and done recently. */
++		goto unlock_fqs_ret; /* no emergency and done recently. */
+ 	rsp->n_force_qs++;
+ 	spin_lock(&rnp->lock);
+ 	lastcomp = rsp->gpnum - 1;
+@@ -1213,31 +1213,32 @@ static void force_quiescent_state(struct rcu_state *rsp, int relaxed)
+ 	if(!rcu_gp_in_progress(rsp)) {
+ 		rsp->n_force_qs_ngp++;
+ 		spin_unlock(&rnp->lock);
+-		goto unlock_ret;  /* no GP in progress, time updated. */
++		goto unlock_fqs_ret;  /* no GP in progress, time updated. */
+ 	}
+-	spin_unlock(&rnp->lock);
+ 	switch (signaled) {
  	case RCU_GP_IDLE:
  	case RCU_GP_INIT:
  
--		spin_unlock(&rnp->lock);
++		spin_unlock(&rnp->lock);
  		break; /* grace period idle or initializing, ignore. */
  
  	case RCU_SAVE_DYNTICK:
-@@ -1246,10 +1245,8 @@ static void force_quiescent_state(struct rcu_state *rsp, int relaxed)
+ 
++		spin_unlock(&rnp->lock);
+ 		if (RCU_SIGNAL_INIT != RCU_SAVE_DYNTICK)
+ 			break; /* So gcc recognizes the dead code. */
+ 
+ 		/* Record dyntick-idle state. */
+ 		if (rcu_process_dyntick(rsp, lastcomp,
+ 					dyntick_save_progress_counter))
+-			goto unlock_ret;
++			goto unlock_fqs_ret;
++		spin_lock(&rnp->lock);
+ 		/* fall into next case. */
+ 
+ 	case RCU_SAVE_COMPLETED:
+ 
+ 		/* Update state, record completion counter. */
+ 		forcenow = 0;
+-		spin_lock(&rnp->lock);
+ 		if (lastcomp + 1 == rsp->gpnum &&
+ 		    lastcomp == rsp->completed &&
+ 		    rsp->signaled == signaled) {
+@@ -1245,23 +1246,31 @@ static void force_quiescent_state(struct rcu_state *rsp, int relaxed)
  			rsp->completed_fqs = lastcomp;
  			forcenow = signaled == RCU_SAVE_COMPLETED;
  		}
--		if (!forcenow) {
--			spin_unlock(&rnp->lock);
-+		if (!forcenow)
+-		spin_unlock(&rnp->lock);
+-		if (!forcenow)
++		if (!forcenow) {
++			spin_unlock(&rnp->lock);
  			break;
--		}
++		}
  		/* fall into next case. */
  
  	case RCU_FORCE_QS:
-@@ -1262,14 +1259,10 @@ static void force_quiescent_state(struct rcu_state *rsp, int relaxed)
+ 
+ 		/* Check dyntick-idle state, send IPI to laggarts. */
++		spin_unlock(&rnp->lock);
+ 		if (rcu_process_dyntick(rsp, rsp->completed_fqs,
+ 					rcu_implicit_dynticks_qs))
+-			goto unlock_ret;
++			goto unlock_fqs_ret;
  
  		/* Leave state in case more forcing is required. */
  
--		break;
--
--	default:
--
--		spin_unlock(&rnp->lock);
--		WARN_ON_ONCE(1);
-+		spin_lock(&rnp->lock);
  		break;
++
++	default:
++
++		spin_unlock(&rnp->lock);
++		WARN_ON_ONCE(1);
++		break;
  	}
-+	spin_unlock(&rnp->lock);
- unlock_fqs_ret:
+-unlock_ret:
++unlock_fqs_ret:
  	spin_unlock_irqrestore(&rsp->fqslock, flags);
  }
+ 
