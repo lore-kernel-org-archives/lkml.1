@@ -1,55 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756602Ab0AMWXw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756631Ab0AMWYa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756602Ab0AMWXw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 17:23:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756400Ab0AMWXv
+	id S1756631Ab0AMWYa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 17:24:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756549Ab0AMWY3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 17:23:51 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:58369 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756487Ab0AMWXu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 17:23:50 -0500
-Date: Wed, 13 Jan 2010 23:23:48 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Yinghai Lu <yinghai@kernel.org>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "ananth@in.ibm.com" <ananth@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH -v2 5/5] x86: use dmi check to treat disabled cpus as
-	hotplug cpus.
-Message-ID: <20100113222348.GE24818@basil.fritz.box>
-References: <1263338274-6485-1-git-send-email-yinghai@kernel.org> <1263338274-6485-5-git-send-email-yinghai@kernel.org> <1263340563.2854.1011.camel@sbs-t61.sc.intel.com> <4B4D0E39.10200@kernel.org> <87tyupfzk8.fsf@basil.nowhere.org> <4B4E427D.9090207@zytor.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B4E427D.9090207@zytor.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Wed, 13 Jan 2010 17:24:29 -0500
+Received: from waste.org ([173.11.57.241]:60887 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756519Ab0AMWY2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jan 2010 17:24:28 -0500
+Subject: Re: [Bug #15041] Pagemap endless read loop with LTP
+From: Matt Mackall <mpm@selenic.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: =?ISO-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>,
+       Andi Kleen <andi@firstfloor.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+In-Reply-To: <201001132257.34123.rjw@sisk.pl>
+References: <wnS54-l8PVO.A.TlF.oMlSLB@chimera>
+	 <omZ8aBZReyD.A.tvF.tMlSLB@chimera>
+	 <2375c9f91001121904h2857760akbf2dd2c9f7441fc5@mail.gmail.com>
+	 <201001132257.34123.rjw@sisk.pl>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 13 Jan 2010 16:24:14 -0600
+Message-ID: <1263421454.29868.4997.camel@calx>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> There are configurations in which percpu memory is in the megabytes.
+On Wed, 2010-01-13 at 22:57 +0100, Rafael J. Wysocki wrote:
+> On Wednesday 13 January 2010, Américo Wang wrote:
+> > On Mon, Jan 11, 2010 at 6:32 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > > This message has been generated automatically as a part of a report
+> > > of recent regressions.
+> > >
+> > > The following bug entry is on the current list of known regressions
+> > > from 2.6.32.  Please verify if it still should be listed and let me know
+> > > (either way).
+> > >
+> > >
+> > > Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=15041
+> > > Subject         : Pagemap endless read loop with LTP
+> > > Submitter       : Andi Kleen <andi@firstfloor.org>
+> > > Date            : 2010-01-10 2:09 (1 days old)
+> > > References      : http://marc.info/?l=linux-kernel&m=126308941423848&w=4
+> > >
+> > 
+> > According to Andi's later reply, it shoud not be an endless loop,
+> > it just takes a rather long time.
+> 
+> Andi?
 
-There used to be some like this (with some broken debug code), but they
-got all fixed i believe to only allocate on real cpu hotplug. 
+This is expected. Pagemap contains 64 bits per page of _address space_.
+Sane users will consult ./maps first and then seek.
 
-If not the right way is to fix them, not add DMI blacklists.
-
-Beside when you enable debug code you probably don't care about 
-a few MB too much.
-
-> This is exactly why we need high water mark allocation of percpu memory:
-
-No we just need to fix any percpu pigs (if there are really any left,
-I did a couple of patches some time ago)
-
-"Don't work around broken code -- fix it"
-
--Andi
 -- 
-ak@linux.intel.com -- Speaking for myself only.
+http://selenic.com : development and support for Mercurial and Linux
+
+
