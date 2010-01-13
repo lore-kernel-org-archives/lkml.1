@@ -1,72 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751902Ab0AMFbb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752087Ab0AMFcS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751902Ab0AMFbb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 00:31:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751191Ab0AMFba
+	id S1752087Ab0AMFcS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 00:32:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751402Ab0AMFcR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 00:31:30 -0500
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:33635 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750864Ab0AMFb3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 00:31:29 -0500
-Date: Tue, 12 Jan 2010 21:31:26 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Nicholas Miell <nmiell@comcast.net>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>,
-       Oleg Nesterov <oleg@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
-       Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org,
-       josh@joshtriplett.org, tglx@linutronix.de, Valdis.Kletnieks@vt.edu,
-       dhowells@redhat.com, laijs@cn.fujitsu.com, dipankar@in.ibm.com
-Subject: Re: [RFC PATCH] introduce sys_membarrier(): process-wide memory
-	barrier (v5)
-Message-ID: <20100113053126.GC6781@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20100113013757.GA29314@Krystal> <1263358823.3874.10.camel@entropy>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1263358823.3874.10.camel@entropy>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	Wed, 13 Jan 2010 00:32:17 -0500
+Received: from casper.infradead.org ([85.118.1.10]:50468 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751118Ab0AMFcQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jan 2010 00:32:16 -0500
+Date: Tue, 12 Jan 2010 21:32:05 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Dimitrios Apostolou <jimis@gmx.net>, Alex Chiang <achiang@hp.com>,
+       Len Brown <lenb@kernel.org>, Bjorn Helgaas <bjorn.helgaas@hp.com>,
+       Yinghai Lu <yinghai@kernel.org>, linux-kernel@vger.kernel.org
+Subject: Re: High cpu temperature with 2.6.32, bisection shows commit 69d258
+ (fwd)
+Message-ID: <20100112213205.7d74808a@infradead.org>
+In-Reply-To: <20100112160734.89ee6b11.akpm@linux-foundation.org>
+References: <alpine.LNX.2.00.1001071941470.1363@localhost.localdomain>
+	<20100108171513.GB22713@ldl.fc.hp.com>
+	<20100109134352.3dedd4ea@infradead.org>
+	<alpine.LNX.2.00.1001100155370.1325@localhost.localdomain>
+	<20100109160836.26a344a9@infradead.org>
+	<alpine.LNX.2.00.1001100226570.1325@localhost.localdomain>
+	<20100109164240.43b21247@infradead.org>
+	<alpine.LNX.2.00.1001100251210.1334@localhost.localdomain>
+	<20100112160734.89ee6b11.akpm@linux-foundation.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.6; i586-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 12, 2010 at 09:00:23PM -0800, Nicholas Miell wrote:
-> On Tue, 2010-01-12 at 20:37 -0500, Mathieu Desnoyers wrote:
-> > + * sys_membarrier - issue memory barrier on current process running threads
-> > + * @expedited: (0) Lowest overhead. Few milliseconds latency.
-> > + *             (1) Few microseconds latency.
-> > + *
-> 
-> Alternate ABI proposal, keeping the possibility of future expansion in
-> mind:
-> 
-> /*
-> Mandatory flags to the membarrier system call that the kernel must
-> understand are in the high 16 bits.
-> */
-> #define MEMBARRIER_MANDATORY_MASK 0xFFFF0000
-> 
-> /*
-> Optional hints that the kernel can ignore are in the low 16 bits.
-> */
-> #define MEMBARRIER_OPTIONAL_MASK 0x0000FFFF
-> 
-> #define MEMBARRIER_EXPEDITED 1
-> 
-> extern int membarrier(unsigned int flags);
-> 
-> And then add to the system call itself:
-> 
-> if ((flags & MEMBARRIER_MANDATORY_MASK) != 0)
-> 	return -EINVAL;
+On Tue, 12 Jan 2010 16:07:34 -0800
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-Why is it OK to ignore the developer's request for an expedited
-membarrer()?  The guy who expected the syscall to complete in a few
-microseconds might not be so happy to have it take many milliseconds.
-By the same token, the guy who specified non-expedited so as to minimally
-disturb other threads in the system might not be so happy to see them
-all be IPIed for no good reason.  ;-)
+> > While testing your patch, indeed the temperature was not rising and 
+> > everything was normal, but the tsc was not marked as unstable so it
+> > didn't switch to acpi_pm clocksource, so that was probably the
+> > reason.
+> > 
+> 
+> Arjan, can you please prepare a formal version of the fix?  I guess
+> the cc:stable will be needed as well.
 
-							Thanx, Paul
+sure see below
+> 
+> I assume that the effects which Dimitrios described above were the
+> intended ones?
+
+yes absolutely; having a stable tsc is a good thing, and totally expected
+if you don't have C2.
+
+
+Subject: Add two laptops to the C-state DMI table
+From: Arjan van de Ven <arjan@linux.intel.com>
+
+CC: stable@kernel.org
+
+Since the rewrite of the CPU idle governor in 2.6.32, two laptops have surfaced
+where the BIOS advertises a C2 power state, but for some reason this state is not
+functioning (as verified in both cases by powertop before the patch in .32).
+
+The old governor had the accidental behavior that if a non-working state was chosen
+too many times, it would end up falling back to C1. The new governor works differently
+and this accidental behavior is no longer there; the result is a high temperature
+on these two machines.
+
+This patch adds these 2 machines to the DMI table for C state anomalies; by just not using
+C2 both these machines are better off (the TSC can be used instead of the pm timer, giving
+a performance boost for example).
+
+Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+
+
+
+diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
+index d1676b1..6c3145b 100644
+--- a/drivers/acpi/processor_idle.c
++++ b/drivers/acpi/processor_idle.c
+@@ -110,6 +110,14 @@ static struct dmi_system_id __cpuinitdata processor_power_dmi_table[] = {
+ 	  DMI_MATCH(DMI_BIOS_VENDOR,"Phoenix Technologies LTD"),
+ 	  DMI_MATCH(DMI_BIOS_VERSION,"SHE845M0.86C.0013.D.0302131307")},
+ 	 (void *)2},
++	{ set_max_cstate, "Pavilion zv5000", {
++	  DMI_MATCH(DMI_SYS_VENDOR, "Hewlett-Packard"),
++	  DMI_MATCH(DMI_PRODUCT_NAME,"Pavilion zv5000 (DS502A#ABA)")},
++	 (void *)1},
++	{ set_max_cstate, "Asus L8400B", {
++	  DMI_MATCH(DMI_SYS_VENDOR, "ASUSTeK Computer Inc."),
++	  DMI_MATCH(DMI_PRODUCT_NAME,"L8400B series Notebook PC")},
++	 (void *)1},
+ 	{},
+ };
+ 
+
+
+
+
+
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
