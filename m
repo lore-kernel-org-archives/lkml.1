@@ -1,598 +1,356 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755400Ab0AMKXg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755410Ab0AMKXx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755400Ab0AMKXg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 05:23:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755301Ab0AMKXe
+	id S1755410Ab0AMKXx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 05:23:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755368Ab0AMKXv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 05:23:34 -0500
-Received: from hera.kernel.org ([140.211.167.34]:37898 "EHLO hera.kernel.org"
+	Wed, 13 Jan 2010 05:23:51 -0500
+Received: from hera.kernel.org ([140.211.167.34]:37910 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755288Ab0AMKXd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 05:23:33 -0500
-Date: Wed, 13 Jan 2010 10:23:08 GMT
+	id S1755188Ab0AMKXu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jan 2010 05:23:50 -0500
+Date: Wed, 13 Jan 2010 10:23:24 GMT
 From: tip-bot for Lai Jiangshan <laijs@cn.fujitsu.com>
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       rostedt@goodmis.org, tglx@linutronix.de, mhiramat@redhat.com,
-       laijs@cn.fujitsu.com
+       rostedt@goodmis.org, tglx@linutronix.de, laijs@cn.fujitsu.com
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       rostedt@goodmis.org, tglx@linutronix.de, laijs@cn.fujitsu.com,
-       mhiramat@redhat.com
-In-Reply-To: <4B273D4D.40604@cn.fujitsu.com>
-References: <4B273D4D.40604@cn.fujitsu.com>
+       rostedt@goodmis.org, tglx@linutronix.de, laijs@cn.fujitsu.com
+In-Reply-To: <4B447D52.1050602@cn.fujitsu.com>
+References: <4B447D52.1050602@cn.fujitsu.com>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:tracing/core] tracing: Remove show_format and related macros from TRACE_EVENT
-Message-ID: <tip-0fa0edaf32b9a78b9854f1da98d4511a501089b0@git.kernel.org>
-Git-Commit-ID: 0fa0edaf32b9a78b9854f1da98d4511a501089b0
+Subject: [tip:tracing/core] tracing: Consolidate protection of reader access to the ring buffer
+Message-ID: <tip-7e53bd42d14c75192b99674c40fcc359392da59d@git.kernel.org>
+Git-Commit-ID: 7e53bd42d14c75192b99674c40fcc359392da59d
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Wed, 13 Jan 2010 10:23:08 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Wed, 13 Jan 2010 10:23:24 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  0fa0edaf32b9a78b9854f1da98d4511a501089b0
-Gitweb:     http://git.kernel.org/tip/0fa0edaf32b9a78b9854f1da98d4511a501089b0
+Commit-ID:  7e53bd42d14c75192b99674c40fcc359392da59d
+Gitweb:     http://git.kernel.org/tip/7e53bd42d14c75192b99674c40fcc359392da59d
 Author:     Lai Jiangshan <laijs@cn.fujitsu.com>
-AuthorDate: Tue, 15 Dec 2009 15:39:57 +0800
+AuthorDate: Wed, 6 Jan 2010 20:08:50 +0800
 Committer:  Steven Rostedt <rostedt@goodmis.org>
-CommitDate: Wed, 6 Jan 2010 12:08:46 -0500
+CommitDate: Wed, 6 Jan 2010 12:51:34 -0500
 
-tracing: Remove show_format and related macros from TRACE_EVENT
+tracing: Consolidate protection of reader access to the ring buffer
 
-The previous patches added the use of print_fmt string and changes
-the trace_define_field() function to also create the fields and
-format output for the event format files.
+At the beginning, access to the ring buffer was fully serialized
+by trace_types_lock. Patch d7350c3f4569 gives more freedom to readers,
+and patch b04cc6b1f6 adds code to protect trace_pipe and cpu#/trace_pipe.
 
-   text	   data	    bss	    dec	    hex	filename
-5857201	1355780	9336808	16549789	 fc879d	vmlinux
-5884589	1351684	9337896	16574169	 fce6d9	vmlinux-orig
+But actually it is not enough, ring buffer readers are not always
+read-only, they may consume data.
 
-The above shows the size of the vmlinux after this patch set
-compared to the vmlinux-orig which is before the patch set.
+This patch makes accesses to trace, trace_pipe, trace_pipe_raw
+cpu#/trace, cpu#/trace_pipe and cpu#/trace_pipe_raw serialized.
+And removes tracing_reader_cpumask which is used to protect trace_pipe.
 
-This saves us 27k on text, 1k on bss and adds just 4k of data.
+Details:
 
-The total savings of 24k in size.
+Ring buffer serializes readers, but it is low level protection.
+The validity of the events (which returns by ring_buffer_peek() ..etc)
+are not protected by ring buffer.
+
+The content of events may become garbage if we allow another process to consume
+these events concurrently:
+  A) the page of the consumed events may become a normal page
+     (not reader page) in ring buffer, and this page will be rewritten
+     by the events producer.
+  B) The page of the consumed events may become a page for splice_read,
+     and this page will be returned to system.
+
+This patch adds trace_access_lock() and trace_access_unlock() primitives.
+
+These primitives allow multi process access to different cpu ring buffers
+concurrently.
+
+These primitives don't distinguish read-only and read-consume access.
+Multi read-only access is also serialized.
+
+And we don't use these primitives when we open files,
+we only use them when we read files.
 
 Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
-LKML-Reference: <4B273D4D.40604@cn.fujitsu.com>
-Acked-by: Masami Hiramatsu <mhiramat@redhat.com>
+LKML-Reference: <4B447D52.1050602@cn.fujitsu.com>
 Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 ---
- include/linux/ftrace_event.h  |    2 -
- include/linux/syscalls.h      |    2 -
- include/trace/ftrace.h        |  133 ++---------------------------------------
- include/trace/syscall.h       |    4 -
- kernel/trace/trace_events.c   |   12 ----
- kernel/trace/trace_export.c   |   73 ----------------------
- kernel/trace/trace_kprobe.c   |   78 ------------------------
- kernel/trace/trace_syscalls.c |   66 --------------------
- 8 files changed, 6 insertions(+), 364 deletions(-)
+ kernel/trace/trace.c |  136 +++++++++++++++++++++++++++++++++++--------------
+ 1 files changed, 97 insertions(+), 39 deletions(-)
 
-diff --git a/include/linux/ftrace_event.h b/include/linux/ftrace_event.h
-index bd23d8e..84a5629 100644
---- a/include/linux/ftrace_event.h
-+++ b/include/linux/ftrace_event.h
-@@ -123,8 +123,6 @@ struct ftrace_event_call {
- 	int			id;
- 	const char		*print_fmt;
- 	int			(*raw_init)(struct ftrace_event_call *);
--	int			(*show_format)(struct ftrace_event_call *,
--					       struct trace_seq *);
- 	int			(*define_fields)(struct ftrace_event_call *);
- 	struct list_head	fields;
- 	int			filter_active;
-diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
-index ed353d2..7b21969 100644
---- a/include/linux/syscalls.h
-+++ b/include/linux/syscalls.h
-@@ -144,7 +144,6 @@ struct perf_event_attr;
- 		.system                 = "syscalls",			\
- 		.event                  = &enter_syscall_print_##sname,	\
- 		.raw_init		= init_syscall_trace,		\
--		.show_format		= syscall_enter_format,		\
- 		.define_fields		= syscall_enter_define_fields,	\
- 		.regfunc		= reg_event_syscall_enter,	\
- 		.unregfunc		= unreg_event_syscall_enter,	\
-@@ -166,7 +165,6 @@ struct perf_event_attr;
- 		.system                 = "syscalls",			\
- 		.event                  = &exit_syscall_print_##sname,	\
- 		.raw_init		= init_syscall_trace,		\
--		.show_format		= syscall_exit_format,		\
- 		.define_fields		= syscall_exit_define_fields,	\
- 		.regfunc		= reg_event_syscall_exit,	\
- 		.unregfunc		= unreg_event_syscall_exit,	\
-diff --git a/include/trace/ftrace.h b/include/trace/ftrace.h
-index 3351d85..df65b99 100644
---- a/include/trace/ftrace.h
-+++ b/include/trace/ftrace.h
-@@ -131,130 +131,6 @@
- #include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
+diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+index 0df1b0f..abdd333 100644
+--- a/kernel/trace/trace.c
++++ b/kernel/trace/trace.c
+@@ -32,6 +32,7 @@
+ #include <linux/splice.h>
+ #include <linux/kdebug.h>
+ #include <linux/string.h>
++#include <linux/rwsem.h>
+ #include <linux/ctype.h>
+ #include <linux/init.h>
+ #include <linux/poll.h>
+@@ -102,9 +103,6 @@ static inline void ftrace_enable_cpu(void)
+ 
+ static cpumask_var_t __read_mostly	tracing_buffer_mask;
+ 
+-/* Define which cpu buffers are currently read in trace_pipe */
+-static cpumask_var_t			tracing_reader_cpumask;
+-
+ #define for_each_tracing_cpu(cpu)	\
+ 	for_each_cpu(cpu, tracing_buffer_mask)
+ 
+@@ -243,12 +241,91 @@ static struct tracer		*current_trace __read_mostly;
  
  /*
-- * Setup the showing format of trace point.
-- *
-- * int
-- * ftrace_format_##call(struct trace_seq *s)
-- * {
-- *	struct ftrace_raw_##call field;
-- *	int ret;
-- *
-- *	ret = trace_seq_printf(s, #type " " #item ";"
-- *			       " offset:%u; size:%u;\n",
-- *			       offsetof(struct ftrace_raw_##call, item),
-- *			       sizeof(field.type));
-- *
-- * }
-- */
--
--#undef TP_STRUCT__entry
--#define TP_STRUCT__entry(args...) args
--
--#undef __field
--#define __field(type, item)					\
--	ret = trace_seq_printf(s, "\tfield:" #type " " #item ";\t"	\
--			       "offset:%u;\tsize:%u;\tsigned:%u;\n",	\
--			       (unsigned int)offsetof(typeof(field), item), \
--			       (unsigned int)sizeof(field.item),	\
--			       (unsigned int)is_signed_type(type));	\
--	if (!ret)							\
--		return 0;
--
--#undef __field_ext
--#define __field_ext(type, item, filter_type)	__field(type, item)
--
--#undef __array
--#define __array(type, item, len)						\
--	ret = trace_seq_printf(s, "\tfield:" #type " " #item "[" #len "];\t"	\
--			       "offset:%u;\tsize:%u;\tsigned:%u;\n",	\
--			       (unsigned int)offsetof(typeof(field), item), \
--			       (unsigned int)sizeof(field.item),	\
--			       (unsigned int)is_signed_type(type));	\
--	if (!ret)							\
--		return 0;
--
--#undef __dynamic_array
--#define __dynamic_array(type, item, len)				       \
--	ret = trace_seq_printf(s, "\tfield:__data_loc " #type "[] " #item ";\t"\
--			       "offset:%u;\tsize:%u;\tsigned:%u;\n",	       \
--			       (unsigned int)offsetof(typeof(field),	       \
--					__data_loc_##item),		       \
--			       (unsigned int)sizeof(field.__data_loc_##item), \
--			       (unsigned int)is_signed_type(type));	\
--	if (!ret)							       \
--		return 0;
--
--#undef __string
--#define __string(item, src) __dynamic_array(char, item, -1)
--
--#undef __entry
--#define __entry REC
--
--#undef __print_symbolic
--#undef __get_dynamic_array
--#undef __get_str
--
--#undef TP_printk
--#define TP_printk(fmt, args...) "\"%s\", %s\n", fmt, __stringify(args)
--
--#undef TP_fast_assign
--#define TP_fast_assign(args...) args
--
--#undef TP_perf_assign
--#define TP_perf_assign(args...)
--
--#undef DECLARE_EVENT_CLASS
--#define DECLARE_EVENT_CLASS(call, proto, args, tstruct, func, print)	\
--static int								\
--ftrace_format_setup_##call(struct ftrace_event_call *unused,		\
--			   struct trace_seq *s)				\
--{									\
--	struct ftrace_raw_##call field __attribute__((unused));		\
--	int ret = 0;							\
--									\
--	tstruct;							\
--									\
--	return ret;							\
--}									\
--									\
--static int								\
--ftrace_format_##call(struct ftrace_event_call *unused,			\
--		     struct trace_seq *s)				\
--{									\
--	int ret = 0;							\
--									\
--	ret = ftrace_format_setup_##call(unused, s);			\
--	if (!ret)							\
--		return ret;						\
--									\
--	ret = trace_seq_printf(s, "\nprint fmt: " print);		\
--									\
--	return ret;							\
--}
--
--#undef DEFINE_EVENT
--#define DEFINE_EVENT(template, name, proto, args)
--
--#undef DEFINE_EVENT_PRINT
--#define DEFINE_EVENT_PRINT(template, name, proto, args, print)		\
--static int								\
--ftrace_format_##name(struct ftrace_event_call *unused,			\
--		      struct trace_seq *s)				\
--{									\
--	int ret = 0;							\
--									\
--	ret = ftrace_format_setup_##template(unused, s);		\
--	if (!ret)							\
--		return ret;						\
--									\
--	trace_seq_printf(s, "\nprint fmt: " print);			\
--									\
--	return ret;							\
--}
--
--#include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
--
--/*
-  * Stage 3 of the trace events.
-  *
-  * Override the macros in <trace/trace_events.h> to include the following:
-@@ -622,7 +498,6 @@ static void ftrace_profile_disable_##name(struct ftrace_event_call *unused)\
-  *	.raw_init		= trace_event_raw_init,
-  *	.regfunc		= ftrace_reg_event_<call>,
-  *	.unregfunc		= ftrace_unreg_event_<call>,
-- *	.show_format		= ftrace_format_<call>,
-  * }
-  *
+  * trace_types_lock is used to protect the trace_types list.
+- * This lock is also used to keep user access serialized.
+- * Accesses from userspace will grab this lock while userspace
+- * activities happen inside the kernel.
   */
-@@ -657,6 +532,12 @@ static void ftrace_profile_disable_##name(struct ftrace_event_call *unused)\
- #define __assign_str(dst, src)						\
- 	strcpy(__get_str(dst), src);
+ static DEFINE_MUTEX(trace_types_lock);
  
-+#undef TP_fast_assign
-+#define TP_fast_assign(args...) args
++/*
++ * serialize the access of the ring buffer
++ *
++ * ring buffer serializes readers, but it is low level protection.
++ * The validity of the events (which returns by ring_buffer_peek() ..etc)
++ * are not protected by ring buffer.
++ *
++ * The content of events may become garbage if we allow other process consumes
++ * these events concurrently:
++ *   A) the page of the consumed events may become a normal page
++ *      (not reader page) in ring buffer, and this page will be rewrited
++ *      by events producer.
++ *   B) The page of the consumed events may become a page for splice_read,
++ *      and this page will be returned to system.
++ *
++ * These primitives allow multi process access to different cpu ring buffer
++ * concurrently.
++ *
++ * These primitives don't distinguish read-only and read-consume access.
++ * Multi read-only access are also serialized.
++ */
 +
-+#undef TP_perf_assign
-+#define TP_perf_assign(args...)
++#ifdef CONFIG_SMP
++static DECLARE_RWSEM(all_cpu_access_lock);
++static DEFINE_PER_CPU(struct mutex, cpu_access_lock);
 +
- #undef DECLARE_EVENT_CLASS
- #define DECLARE_EVENT_CLASS(call, proto, args, tstruct, assign, print)	\
- 									\
-@@ -750,7 +631,6 @@ __attribute__((section("_ftrace_events"))) event_##call = {		\
- 	.regfunc		= ftrace_raw_reg_event_##call,		\
- 	.unregfunc		= ftrace_raw_unreg_event_##call,	\
- 	.print_fmt		= print_fmt_##template,			\
--	.show_format		= ftrace_format_##template,		\
- 	.define_fields		= ftrace_define_fields_##template,	\
- 	_TRACE_PROFILE_INIT(call)					\
- }
-@@ -770,7 +650,6 @@ __attribute__((section("_ftrace_events"))) event_##call = {		\
- 	.regfunc		= ftrace_raw_reg_event_##call,		\
- 	.unregfunc		= ftrace_raw_unreg_event_##call,	\
- 	.print_fmt		= print_fmt_##call,			\
--	.show_format		= ftrace_format_##call,			\
- 	.define_fields		= ftrace_define_fields_##template,	\
- 	_TRACE_PROFILE_INIT(call)					\
- }
-diff --git a/include/trace/syscall.h b/include/trace/syscall.h
-index 961fda3..8cd4102 100644
---- a/include/trace/syscall.h
-+++ b/include/trace/syscall.h
-@@ -34,10 +34,6 @@ struct syscall_metadata {
- extern unsigned long arch_syscall_addr(int nr);
- extern int init_syscall_trace(struct ftrace_event_call *call);
++static inline void trace_access_lock(int cpu)
++{
++	if (cpu == TRACE_PIPE_ALL_CPU) {
++		/* gain it for accessing the whole ring buffer. */
++		down_write(&all_cpu_access_lock);
++	} else {
++		/* gain it for accessing a cpu ring buffer. */
++
++		/* Firstly block other trace_access_lock(TRACE_PIPE_ALL_CPU). */
++		down_read(&all_cpu_access_lock);
++
++		/* Secondly block other access to this @cpu ring buffer. */
++		mutex_lock(&per_cpu(cpu_access_lock, cpu));
++	}
++}
++
++static inline void trace_access_unlock(int cpu)
++{
++	if (cpu == TRACE_PIPE_ALL_CPU) {
++		up_write(&all_cpu_access_lock);
++	} else {
++		mutex_unlock(&per_cpu(cpu_access_lock, cpu));
++		up_read(&all_cpu_access_lock);
++	}
++}
++
++static inline void trace_access_lock_init(void)
++{
++	int cpu;
++
++	for_each_possible_cpu(cpu)
++		mutex_init(&per_cpu(cpu_access_lock, cpu));
++}
++
++#else
++
++static DEFINE_MUTEX(access_lock);
++
++static inline void trace_access_lock(int cpu)
++{
++	(void)cpu;
++	mutex_lock(&access_lock);
++}
++
++static inline void trace_access_unlock(int cpu)
++{
++	(void)cpu;
++	mutex_unlock(&access_lock);
++}
++
++static inline void trace_access_lock_init(void)
++{
++}
++
++#endif
++
+ /* trace_wait is a waitqueue for tasks blocked on trace_poll */
+ static DECLARE_WAIT_QUEUE_HEAD(trace_wait);
  
--extern int syscall_enter_format(struct ftrace_event_call *call,
--				struct trace_seq *s);
--extern int syscall_exit_format(struct ftrace_event_call *call,
--				struct trace_seq *s);
- extern int syscall_enter_define_fields(struct ftrace_event_call *call);
- extern int syscall_exit_define_fields(struct ftrace_event_call *call);
- extern int reg_event_syscall_enter(struct ftrace_event_call *call);
-diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
-index 250ec86..c2a3077 100644
---- a/kernel/trace/trace_events.c
-+++ b/kernel/trace/trace_events.c
-@@ -520,14 +520,6 @@ out:
- 	return ret;
+@@ -1580,12 +1657,6 @@ static void tracing_iter_reset(struct trace_iterator *iter, int cpu)
  }
  
--extern char *__bad_type_size(void);
--
--#undef FIELD
--#define FIELD(type, name)						\
--	sizeof(type) != sizeof(field.name) ? __bad_type_size() :	\
--	#type, "common_" #name, offsetof(typeof(field), name),		\
--		sizeof(field.name), is_signed_type(type)
--
- static ssize_t
- event_format_read(struct file *filp, char __user *ubuf, size_t cnt,
- 		  loff_t *ppos)
-@@ -965,10 +957,6 @@ event_create_dir(struct ftrace_event_call *call, struct dentry *d_events,
- 				  filter);
+ /*
+- * No necessary locking here. The worst thing which can
+- * happen is loosing events consumed at the same time
+- * by a trace_pipe reader.
+- * Other than that, we don't risk to crash the ring buffer
+- * because it serializes the readers.
+- *
+  * The current tracer is copied to avoid a global locking
+  * all around.
+  */
+@@ -1640,12 +1711,16 @@ static void *s_start(struct seq_file *m, loff_t *pos)
  	}
  
--	/* A trace may not want to export its format */
--	if (!call->show_format)
--		return 0;
--
- 	trace_create_file("format", 0444, call->dir, call,
- 			  format);
+ 	trace_event_read_lock();
++	trace_access_lock(cpu_file);
+ 	return p;
+ }
  
-diff --git a/kernel/trace/trace_export.c b/kernel/trace/trace_export.c
-index 95d14b6..e091f64 100644
---- a/kernel/trace/trace_export.c
-+++ b/kernel/trace/trace_export.c
-@@ -62,78 +62,6 @@ static void __always_unused ____ftrace_check_##name(void)	\
+ static void s_stop(struct seq_file *m, void *p)
+ {
++	struct trace_iterator *iter = m->private;
++
+ 	atomic_dec(&trace_record_cmdline_disabled);
++	trace_access_unlock(iter->cpu_file);
+ 	trace_event_read_unlock();
+ }
  
- #include "trace_entries.h"
+@@ -2836,22 +2911,6 @@ static int tracing_open_pipe(struct inode *inode, struct file *filp)
  
--
--#undef __field
--#define __field(type, item)						\
--	ret = trace_seq_printf(s, "\tfield:" #type " " #item ";\t"	\
--			       "offset:%zu;\tsize:%zu;\tsigned:%u;\n",	\
--			       offsetof(typeof(field), item),		\
--			       sizeof(field.item), is_signed_type(type)); \
--	if (!ret)							\
--		return 0;
--
--#undef __field_desc
--#define __field_desc(type, container, item)				\
--	ret = trace_seq_printf(s, "\tfield:" #type " " #item ";\t"	\
--			       "offset:%zu;\tsize:%zu;\tsigned:%u;\n",	\
--			       offsetof(typeof(field), container.item),	\
--			       sizeof(field.container.item),		\
--			       is_signed_type(type));			\
--	if (!ret)							\
--		return 0;
--
--#undef __array
--#define __array(type, item, len)					\
--	ret = trace_seq_printf(s, "\tfield:" #type " " #item "[" #len "];\t" \
--			       "offset:%zu;\tsize:%zu;\tsigned:%u;\n",	\
--			       offsetof(typeof(field), item),		\
--			       sizeof(field.item), is_signed_type(type)); \
--	if (!ret)							\
--		return 0;
--
--#undef __array_desc
--#define __array_desc(type, container, item, len)			\
--	ret = trace_seq_printf(s, "\tfield:" #type " " #item "[" #len "];\t" \
--			       "offset:%zu;\tsize:%zu;\tsigned:%u;\n",	\
--			       offsetof(typeof(field), container.item),	\
--			       sizeof(field.container.item),		\
--			       is_signed_type(type));			\
--	if (!ret)							\
--		return 0;
--
--#undef __dynamic_array
--#define __dynamic_array(type, item)					\
--	ret = trace_seq_printf(s, "\tfield:" #type " " #item ";\t"	\
--			       "offset:%zu;\tsize:0;\tsigned:%u;\n",	\
--			       offsetof(typeof(field), item),		\
--			       is_signed_type(type));			\
--	if (!ret)							\
--		return 0;
--
--#undef F_printk
--#define F_printk(fmt, args...) "%s, %s\n", #fmt, __stringify(args)
--
--#undef __entry
--#define __entry REC
--
--#undef FTRACE_ENTRY
--#define FTRACE_ENTRY(name, struct_name, id, tstruct, print)		\
--static int								\
--ftrace_format_##name(struct ftrace_event_call *unused,			\
--		     struct trace_seq *s)				\
--{									\
--	struct struct_name field __attribute__((unused));		\
--	int ret = 0;							\
--									\
--	tstruct;							\
--									\
--	trace_seq_printf(s, "\nprint fmt: " print);			\
--									\
--	return ret;							\
--}
--
--#include "trace_entries.h"
--
- #undef __field
- #define __field(type, item)						\
- 	ret = trace_define_field(event_call, #type, #item,		\
-@@ -235,7 +163,6 @@ __attribute__((section("_ftrace_events"))) event_##call = {		\
- 	.system			= __stringify(TRACE_SYSTEM),		\
- 	.raw_init		= ftrace_raw_init_event,		\
- 	.print_fmt		= print,				\
--	.show_format		= ftrace_format_##call,			\
- 	.define_fields		= ftrace_define_fields_##call,		\
- };									\
+ 	mutex_lock(&trace_types_lock);
  
-diff --git a/kernel/trace/trace_kprobe.c b/kernel/trace/trace_kprobe.c
-index 147491d..c990299 100644
---- a/kernel/trace/trace_kprobe.c
-+++ b/kernel/trace/trace_kprobe.c
-@@ -1174,82 +1174,6 @@ static int kretprobe_event_define_fields(struct ftrace_event_call *event_call)
+-	/* We only allow one reader per cpu */
+-	if (cpu_file == TRACE_PIPE_ALL_CPU) {
+-		if (!cpumask_empty(tracing_reader_cpumask)) {
+-			ret = -EBUSY;
+-			goto out;
+-		}
+-		cpumask_setall(tracing_reader_cpumask);
+-	} else {
+-		if (!cpumask_test_cpu(cpu_file, tracing_reader_cpumask))
+-			cpumask_set_cpu(cpu_file, tracing_reader_cpumask);
+-		else {
+-			ret = -EBUSY;
+-			goto out;
+-		}
+-	}
+-
+ 	/* create a buffer to store the information to pass to userspace */
+ 	iter = kzalloc(sizeof(*iter), GFP_KERNEL);
+ 	if (!iter) {
+@@ -2907,12 +2966,6 @@ static int tracing_release_pipe(struct inode *inode, struct file *file)
+ 
+ 	mutex_lock(&trace_types_lock);
+ 
+-	if (iter->cpu_file == TRACE_PIPE_ALL_CPU)
+-		cpumask_clear(tracing_reader_cpumask);
+-	else
+-		cpumask_clear_cpu(iter->cpu_file, tracing_reader_cpumask);
+-
+-
+ 	if (iter->trace->pipe_close)
+ 		iter->trace->pipe_close(iter);
+ 
+@@ -3074,6 +3127,7 @@ waitagain:
+ 	iter->pos = -1;
+ 
+ 	trace_event_read_lock();
++	trace_access_lock(iter->cpu_file);
+ 	while (find_next_entry_inc(iter) != NULL) {
+ 		enum print_line_t ret;
+ 		int len = iter->seq.len;
+@@ -3090,6 +3144,7 @@ waitagain:
+ 		if (iter->seq.len >= cnt)
+ 			break;
+ 	}
++	trace_access_unlock(iter->cpu_file);
+ 	trace_event_read_unlock();
+ 
+ 	/* Now copy what we have to the user */
+@@ -3215,6 +3270,7 @@ static ssize_t tracing_splice_read_pipe(struct file *filp,
+ 	}
+ 
+ 	trace_event_read_lock();
++	trace_access_lock(iter->cpu_file);
+ 
+ 	/* Fill as many pages as possible. */
+ 	for (i = 0, rem = len; i < PIPE_BUFFERS && rem; i++) {
+@@ -3238,6 +3294,7 @@ static ssize_t tracing_splice_read_pipe(struct file *filp,
+ 		trace_seq_init(&iter->seq);
+ 	}
+ 
++	trace_access_unlock(iter->cpu_file);
+ 	trace_event_read_unlock();
+ 	mutex_unlock(&iter->mutex);
+ 
+@@ -3539,10 +3596,12 @@ tracing_buffers_read(struct file *filp, char __user *ubuf,
+ 
+ 	info->read = 0;
+ 
++	trace_access_lock(info->cpu);
+ 	ret = ring_buffer_read_page(info->tr->buffer,
+ 				    &info->spare,
+ 				    count,
+ 				    info->cpu, 0);
++	trace_access_unlock(info->cpu);
+ 	if (ret < 0)
+ 		return 0;
+ 
+@@ -3670,6 +3729,7 @@ tracing_buffers_splice_read(struct file *file, loff_t *ppos,
+ 		len &= PAGE_MASK;
+ 	}
+ 
++	trace_access_lock(info->cpu);
+ 	entries = ring_buffer_entries_cpu(info->tr->buffer, info->cpu);
+ 
+ 	for (i = 0; i < PIPE_BUFFERS && len && entries; i++, len -= PAGE_SIZE) {
+@@ -3717,6 +3777,7 @@ tracing_buffers_splice_read(struct file *file, loff_t *ppos,
+ 		entries = ring_buffer_entries_cpu(info->tr->buffer, info->cpu);
+ 	}
+ 
++	trace_access_unlock(info->cpu);
+ 	spd.nr_pages = i;
+ 
+ 	/* did we read anything? */
+@@ -4153,6 +4214,8 @@ static __init int tracer_init_debugfs(void)
+ 	struct dentry *d_tracer;
+ 	int cpu;
+ 
++	trace_access_lock_init();
++
+ 	d_tracer = tracing_init_dentry();
+ 
+ 	trace_create_file("tracing_enabled", 0644, d_tracer,
+@@ -4387,9 +4450,6 @@ __init static int tracer_alloc_buffers(void)
+ 	if (!alloc_cpumask_var(&tracing_cpumask, GFP_KERNEL))
+ 		goto out_free_buffer_mask;
+ 
+-	if (!zalloc_cpumask_var(&tracing_reader_cpumask, GFP_KERNEL))
+-		goto out_free_tracing_cpumask;
+-
+ 	/* To save memory, keep the ring buffer size to its minimum */
+ 	if (ring_buffer_expanded)
+ 		ring_buf_size = trace_buf_size;
+@@ -4447,8 +4507,6 @@ __init static int tracer_alloc_buffers(void)
  	return 0;
- }
  
--static int __probe_event_show_format(struct trace_seq *s,
--				     struct trace_probe *tp, const char *fmt,
--				     const char *arg)
--{
--	int i;
--
--	/* Show format */
--	if (!trace_seq_printf(s, "\nprint fmt: \"%s", fmt))
--		return 0;
--
--	for (i = 0; i < tp->nr_args; i++)
--		if (!trace_seq_printf(s, " %s=%%lx", tp->args[i].name))
--			return 0;
--
--	if (!trace_seq_printf(s, "\", %s", arg))
--		return 0;
--
--	for (i = 0; i < tp->nr_args; i++)
--		if (!trace_seq_printf(s, ", REC->%s", tp->args[i].name))
--			return 0;
--
--	return trace_seq_puts(s, "\n");
--}
--
--#undef SHOW_FIELD
--#define SHOW_FIELD(type, item, name)					\
--	do {								\
--		ret = trace_seq_printf(s, "\tfield:" #type " %s;\t"	\
--				"offset:%u;\tsize:%u;\tsigned:%d;\n", name,\
--				(unsigned int)offsetof(typeof(field), item),\
--				(unsigned int)sizeof(type),		\
--				is_signed_type(type));			\
--		if (!ret)						\
--			return 0;					\
--	} while (0)
--
--static int kprobe_event_show_format(struct ftrace_event_call *call,
--				    struct trace_seq *s)
--{
--	struct kprobe_trace_entry field __attribute__((unused));
--	int ret, i;
--	struct trace_probe *tp = (struct trace_probe *)call->data;
--
--	SHOW_FIELD(unsigned long, ip, FIELD_STRING_IP);
--	SHOW_FIELD(int, nargs, FIELD_STRING_NARGS);
--
--	/* Show fields */
--	for (i = 0; i < tp->nr_args; i++)
--		SHOW_FIELD(unsigned long, args[i], tp->args[i].name);
--	trace_seq_puts(s, "\n");
--
--	return __probe_event_show_format(s, tp, "(%lx)",
--					 "REC->" FIELD_STRING_IP);
--}
--
--static int kretprobe_event_show_format(struct ftrace_event_call *call,
--				       struct trace_seq *s)
--{
--	struct kretprobe_trace_entry field __attribute__((unused));
--	int ret, i;
--	struct trace_probe *tp = (struct trace_probe *)call->data;
--
--	SHOW_FIELD(unsigned long, func, FIELD_STRING_FUNC);
--	SHOW_FIELD(unsigned long, ret_ip, FIELD_STRING_RETIP);
--	SHOW_FIELD(int, nargs, FIELD_STRING_NARGS);
--
--	/* Show fields */
--	for (i = 0; i < tp->nr_args; i++)
--		SHOW_FIELD(unsigned long, args[i], tp->args[i].name);
--	trace_seq_puts(s, "\n");
--
--	return __probe_event_show_format(s, tp, "(%lx <- %lx)",
--					 "REC->" FIELD_STRING_FUNC
--					 ", REC->" FIELD_STRING_RETIP);
--}
--
- static int __set_print_fmt(struct trace_probe *tp, char *buf, int len)
- {
- 	int i;
-@@ -1504,12 +1428,10 @@ static int register_probe_event(struct trace_probe *tp)
- 	if (probe_is_return(tp)) {
- 		tp->event.trace = print_kretprobe_event;
- 		call->raw_init = probe_event_raw_init;
--		call->show_format = kretprobe_event_show_format;
- 		call->define_fields = kretprobe_event_define_fields;
- 	} else {
- 		tp->event.trace = print_kprobe_event;
- 		call->raw_init = probe_event_raw_init;
--		call->show_format = kprobe_event_show_format;
- 		call->define_fields = kprobe_event_define_fields;
- 	}
- 	if (set_print_fmt(tp) < 0)
-diff --git a/kernel/trace/trace_syscalls.c b/kernel/trace/trace_syscalls.c
-index a78e863..49cea70 100644
---- a/kernel/trace/trace_syscalls.c
-+++ b/kernel/trace/trace_syscalls.c
-@@ -143,54 +143,6 @@ extern char *__bad_type_size(void);
- 		#type, #name, offsetof(typeof(trace), name),		\
- 		sizeof(trace.name), is_signed_type(type)
- 
--int syscall_enter_format(struct ftrace_event_call *call, struct trace_seq *s)
--{
--	int i;
--	int ret;
--	struct syscall_metadata *entry = call->data;
--	struct syscall_trace_enter trace;
--	int offset = offsetof(struct syscall_trace_enter, args);
--
--	ret = trace_seq_printf(s, "\tfield:%s %s;\toffset:%zu;\tsize:%zu;"
--			       "\tsigned:%u;\n",
--			       SYSCALL_FIELD(int, nr));
--	if (!ret)
--		return 0;
--
--	for (i = 0; i < entry->nb_args; i++) {
--		ret = trace_seq_printf(s, "\tfield:%s %s;", entry->types[i],
--				        entry->args[i]);
--		if (!ret)
--			return 0;
--		ret = trace_seq_printf(s, "\toffset:%d;\tsize:%zu;"
--				       "\tsigned:%u;\n", offset,
--				       sizeof(unsigned long),
--				       is_signed_type(unsigned long));
--		if (!ret)
--			return 0;
--		offset += sizeof(unsigned long);
--	}
--
--	trace_seq_puts(s, "\nprint fmt: \"");
--	for (i = 0; i < entry->nb_args; i++) {
--		ret = trace_seq_printf(s, "%s: 0x%%0%zulx%s", entry->args[i],
--				        sizeof(unsigned long),
--					i == entry->nb_args - 1 ? "" : ", ");
--		if (!ret)
--			return 0;
--	}
--	trace_seq_putc(s, '"');
--
--	for (i = 0; i < entry->nb_args; i++) {
--		ret = trace_seq_printf(s, ", ((unsigned long)(REC->%s))",
--				       entry->args[i]);
--		if (!ret)
--			return 0;
--	}
--
--	return trace_seq_putc(s, '\n');
--}
--
- static
- int  __set_enter_print_fmt(struct syscall_metadata *entry, char *buf, int len)
- {
-@@ -252,24 +204,6 @@ static void free_syscall_print_fmt(struct ftrace_event_call *call)
- 		kfree(call->print_fmt);
- }
- 
--int syscall_exit_format(struct ftrace_event_call *call, struct trace_seq *s)
--{
--	int ret;
--	struct syscall_trace_exit trace;
--
--	ret = trace_seq_printf(s,
--			       "\tfield:%s %s;\toffset:%zu;\tsize:%zu;"
--			       "\tsigned:%u;\n"
--			       "\tfield:%s %s;\toffset:%zu;\tsize:%zu;"
--			       "\tsigned:%u;\n",
--			       SYSCALL_FIELD(int, nr),
--			       SYSCALL_FIELD(long, ret));
--	if (!ret)
--		return 0;
--
--	return trace_seq_printf(s, "\nprint fmt: \"0x%%lx\", REC->ret\n");
--}
--
- int syscall_enter_define_fields(struct ftrace_event_call *call)
- {
- 	struct syscall_trace_enter trace;
+ out_free_cpumask:
+-	free_cpumask_var(tracing_reader_cpumask);
+-out_free_tracing_cpumask:
+ 	free_cpumask_var(tracing_cpumask);
+ out_free_buffer_mask:
+ 	free_cpumask_var(tracing_buffer_mask);
