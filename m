@@ -1,66 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755911Ab0AMLGx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932078Ab0AMLH3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755911Ab0AMLGx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 06:06:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755359Ab0AMLGu
+	id S932078Ab0AMLH3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 06:07:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755259Ab0AMLH2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 06:06:50 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:58064 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755482Ab0AMLF6 (ORCPT
+	Wed, 13 Jan 2010 06:07:28 -0500
+Received: from mtagate5.de.ibm.com ([195.212.17.165]:51947 "EHLO
+	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755478Ab0AMLH1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 06:05:58 -0500
-From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-To: linux-kernel@vger.kernel.org
-Cc: David Vrabel <dvrabel@arcom.com>, Greg Kroah-Hartman <gregkh@suse.de>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pcmcia@lists.infradead.org
-Subject: [RESEND PATCH 4/5] pcmcia/bfin_cf: don't check platform_get_irq's return value against zero
-Date: Wed, 13 Jan 2010 12:05:45 +0100
-Message-Id: <1263380746-27803-4-git-send-email-u.kleine-koenig@pengutronix.de>
-X-Mailer: git-send-email 1.6.6
-In-Reply-To: <1260979809-24811-1-git-send-email-u.kleine-koenig@pengutronix.de>
-References: <1260979809-24811-1-git-send-email-u.kleine-koenig@pengutronix.de>
+	Wed, 13 Jan 2010 06:07:27 -0500
+Date: Wed, 13 Jan 2010 12:07:23 +0100
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: linux-kernel@vger.kernel.org,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Oleg Nesterov <oleg@redhat.com>,
+       Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       akpm@linux-foundation.org, josh@joshtriplett.org, tglx@linutronix.de,
+       Valdis.Kletnieks@vt.edu, dhowells@redhat.com, laijs@cn.fujitsu.com,
+       dipankar@in.ibm.com
+Subject: Re: [RFC PATCH] introduce sys_membarrier(): process-wide memory
+	barrier (v5)
+Message-ID: <20100113110723.GA4181@osiris.boeblingen.de.ibm.com>
+References: <20100113013757.GA29314@Krystal>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100113013757.GA29314@Krystal>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-platform_get_irq returns -ENXIO on failure, so !irq was probably
-always true.  Better use irq <= 0.  Note that a return value of
-zero is still handled as error even though this could mean irq0.
+On Tue, Jan 12, 2010 at 08:37:57PM -0500, Mathieu Desnoyers wrote:
+> +static void membarrier_retry(void)
+> +{
+> +	struct mm_struct *mm;
+> +	int cpu;
+> +
+> +	for_each_cpu(cpu, mm_cpumask(current->mm)) {
+> +		spin_lock_irq(&cpu_rq(cpu)->lock);
+> +		mm = cpu_curr(cpu)->mm;
+> +		spin_unlock_irq(&cpu_rq(cpu)->lock);
+> +		if (current->mm == mm)
+> +			smp_call_function_single(cpu, membarrier_ipi, NULL, 1);
+> +	}
 
-This is a followup to 305b3228f9ff4d59f49e6d34a7034d44ee8ce2f0 that
-changed the return value of platform_get_irq from 0 to -ENXIO on error.
+You would need to disable cpu unplug operations while doing this
+or you might end up sending IPIs to offline cpus.
 
-Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-Cc: David Vrabel <dvrabel@arcom.com>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>
-Cc: Rafael J. Wysocki <rjw@sisk.pl>
-Cc: linux-pcmcia@lists.infradead.org
----
- drivers/pcmcia/bfin_cf_pcmcia.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+> +	cpumask_copy(tmpmask, mm_cpumask(current->mm));
+> +	preempt_disable();
+> +	cpumask_clear_cpu(smp_processor_id(), tmpmask);
+> +	for_each_cpu(cpu, tmpmask) {
+> +		spin_lock_irq(&cpu_rq(cpu)->lock);
+> +		mm = cpu_curr(cpu)->mm;
 
-diff --git a/drivers/pcmcia/bfin_cf_pcmcia.c b/drivers/pcmcia/bfin_cf_pcmcia.c
-index 300b368..2482ce7 100644
---- a/drivers/pcmcia/bfin_cf_pcmcia.c
-+++ b/drivers/pcmcia/bfin_cf_pcmcia.c
-@@ -205,7 +205,7 @@ static int __devinit bfin_cf_probe(struct platform_device *pdev)
- 	dev_info(&pdev->dev, "Blackfin CompactFlash/PCMCIA Socket Driver\n");
- 
- 	irq = platform_get_irq(pdev, 0);
--	if (!irq)
-+	if (irq <= 0)
- 		return -EINVAL;
- 
- 	cd_pfx = platform_get_irq(pdev, 1);	/*Card Detect GPIO PIN */
--- 
-1.6.6
-
+This might access the rq of an offline cpu.
+But maybe it's intended since offline cpus "run" idle?
