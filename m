@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755871Ab0AMUyq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756070Ab0AMVAA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755871Ab0AMUyq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 15:54:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932087Ab0AMUyn
+	id S1756070Ab0AMVAA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 16:00:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755469Ab0AMVAA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 15:54:43 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:44214 "EHLO
+	Wed, 13 Jan 2010 16:00:00 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:46181 "EHLO
 	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755532Ab0AMUym (ORCPT
+	with ESMTP id S1751754Ab0AMU77 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 15:54:42 -0500
-Message-ID: <4B4E32B3.6090400@zytor.com>
-Date: Wed, 13 Jan 2010 12:53:07 -0800
+	Wed, 13 Jan 2010 15:59:59 -0500
+Message-ID: <4B4E340F.7080106@zytor.com>
+Date: Wed, 13 Jan 2010 12:58:55 -0800
 From: "H. Peter Anvin" <hpa@zytor.com>
 User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
 MIME-Version: 1.0
@@ -52,9 +52,14 @@ On 01/13/2010 12:36 PM, Eric W. Biederman wrote:
 > before you get to the local apic.
 > 
 
->From the looks of the original 82093AA spec, the 2-wire bus did
-round-robin between different APICs (including IOAPICs), and the IOAPIC
-had no ordering guarantees whatsoever.
+Specifically, from the 82093AA spec:
+
+"The interrupt number or the vector does not imply a particular priority
+for being sent.  The IOAPIC continually polls the 24 interrupts in a
+rotating fashion, one at a time.  The pending interrupt polled first is
+the one sent."
+
+In other words, the prioritization is all done at the LAPIC.
 
 	-hpa
 
