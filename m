@@ -1,187 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932191Ab0AMWah@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756653Ab0AMWcW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932191Ab0AMWah (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 17:30:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756649Ab0AMWag
+	id S1756653Ab0AMWcW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 17:32:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756638Ab0AMWcW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 17:30:36 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:44127 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756629Ab0AMWae (ORCPT
+	Wed, 13 Jan 2010 17:32:22 -0500
+Received: from [206.15.93.42] ([206.15.93.42]:11119 "EHLO
+	visionfs1.visionengravers.com" rhost-flags-FAIL-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752032Ab0AMWcV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 17:30:34 -0500
-Date: Wed, 13 Jan 2010 14:28:27 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Zheng, Shaohui" <shaohui.zheng@intel.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "ak@linux.intel.com" <ak@linux.intel.com>,
-       "y-goto@jp.fujitsu.com" <y-goto@jp.fujitsu.com>,
-       Dave Hansen <haveblue@us.ibm.com>,
-       "Wu, Fengguang" <fengguang.wu@intel.com>,
-       "x86@kernel.org" <x86@kernel.org>
-Subject: Re: [PATCH-RESEND v4] memory-hotplug: create /sys/firmware/memmap
- entry for new memory
-Message-Id: <20100113142827.26b2269e.akpm@linux-foundation.org>
-In-Reply-To: <DA586906BA1FFC4384FCFD6429ECE86031560F92@shzsmsx502.ccr.corp.intel.com>
-References: <DA586906BA1FFC4384FCFD6429ECE86031560F92@shzsmsx502.ccr.corp.intel.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 13 Jan 2010 17:32:21 -0500
+From: H Hartley Sweeten <hartleys@visionengravers.com>
+To: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: [PATCH] init/main.c: make setup_max_cpus static for !SMP
+Date: Wed, 13 Jan 2010 15:32:22 -0700
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <201001131532.22596.hartleys@visionengravers.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 11 Jan 2010 10:00:11 +0800
-"Zheng, Shaohui" <shaohui.zheng@intel.com> wrote:
+init/main.c: make setup_max_cpus static for !SMP
 
-> Resend the memmap patch v4 to mailing-list after follow up fengguang's review 
-> comments. 
-> 
-> memory-hotplug: create /sys/firmware/memmap entry for hot-added memory
-> 
-> Interface firmware_map_add was not called in explict, Remove it and add function
-> firmware_map_add_hotplug as hotplug interface of memmap.
-> 
-> When we hot-add new memory, sysfs does not export memmap entry for it. we add
->  a call in function add_memory to function firmware_map_add_hotplug.
-> 
-> Add a new function add_sysfs_fw_map_entry to create memmap entry, it can avoid 
-> duplicated codes.
-> 
-> Thanks for the careful review from Fengguang Wu and Dave Hansen.
-> 
+The only in tree external users of the symbol setup_max_cpus are in
+arch/x86/. The files ./kernel/alternative.c, ./kernel/visws_quirks.c, and
+./mm/kmemcheck/kmemcheck.c are all guarded by CONFIG_SMP
+being defined. For this case the symbol is an unsigned int and
+declared as an extern in include/linux/smp.h.
 
-Please describe the format of the proposed sysfs file.  Example output
-would be suitable.
+When CONFIG_SMP is not defined the symbol setup_max_cpus is
+a constant value that is only used in init/main.c.  Make the symbol
+static for this case.
 
-> @@ -123,20 +123,40 @@ static int firmware_map_add_entry(u64 start, u64 end,
->  }
->  
->  /**
-> - * firmware_map_add() - Adds a firmware mapping entry.
-> + * Add memmap entry on sysfs
-> + */
-> +static int add_sysfs_fw_map_entry(struct firmware_map_entry *entry)
-> +{
-> +	static int map_entries_nr;
-> +	static struct kset *mmap_kset;
-> +
-> +	if (!mmap_kset) {
-> +		mmap_kset = kset_create_and_add("memmap", NULL, firmware_kobj);
-> +		if (!mmap_kset)
-> +			return -ENOMEM;
-> +	}
+Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
 
-This is a bit racy if two threads execute it at the same time.  I guess
-it doesn't matter.
+---
 
-
-> +	entry->kobj.kset = mmap_kset;
-> +	if (kobject_add(&entry->kobj, NULL, "%d", map_entries_nr++))
-> +		kobject_put(&entry->kobj);
-
-hm.  Is this refcounting correct?
-
-> +
-> +	return 0;
-> +}
-
-One caller of add_sysfs_fw_map_entry() is __meminit and the other is
-__init.  So this function can be __meminit?
-
-> +/**
-> + * firmware_map_add_early() - Adds a firmware mapping entry.
->   * @start: Start of the memory range.
->   * @end:   End of the memory range (inclusive).
->   * @type:  Type of the memory range.
->   *
-> - * This function uses kmalloc() for memory
-> - * allocation. Use firmware_map_add_early() if you want to use the bootmem
-> - * allocator.
-> + * Adds a firmware mapping entry. This function uses the bootmem allocator
-> + * for memory allocation.
->   *
->   * That function must be called before late_initcall.
->   *
->   * Returns 0 on success, or -ENOMEM if no memory could be allocated.
->   **/
-> -int firmware_map_add(u64 start, u64 end, const char *type)
-> +int __init firmware_map_add_early(u64 start, u64 end, const char *type)
->  {
->  	struct firmware_map_entry *entry;
->  
-> @@ -148,27 +168,31 @@ int firmware_map_add(u64 start, u64 end, const char *type)
->  }
->  
->  /**
-> - * firmware_map_add_early() - Adds a firmware mapping entry.
-> + * firmware_map_add_hotplug() - Adds a firmware mapping entry when we do
-> + * memory hotplug.
->   * @start: Start of the memory range.
->   * @end:   End of the memory range (inclusive).
->   * @type:  Type of the memory range.
->   *
-> - * Adds a firmware mapping entry. This function uses the bootmem allocator
-> - * for memory allocation. Use firmware_map_add() if you want to use kmalloc().
-> - *
-> - * That function must be called before late_initcall.
-> + * Adds a firmware mapping entry. This function is for memory hotplug, it is
-> + * simiar with function firmware_map_add_early. the only difference is that
-
-s/simiar/similar/
-s/with/to/
-s/the/The/
-s/function firmware_map_add_early/firmware_map_add_early()/
-
-> + * it will create the syfs entry dynamically.
->   *
->   * Returns 0 on success, or -ENOMEM if no memory could be allocated.
->   **/
-> -int __init firmware_map_add_early(u64 start, u64 end, const char *type)
-> +int __meminit firmware_map_add_hotplug(u64 start, u64 end, const char *type)
->  {
->  	struct firmware_map_entry *entry;
->  
-> -	entry = alloc_bootmem(sizeof(struct firmware_map_entry));
-> -	if (WARN_ON(!entry))
-> +	entry = kzalloc(sizeof(struct firmware_map_entry), GFP_ATOMIC);
-> +	if (!entry)
->  		return -ENOMEM;
->  
-> -	return firmware_map_add_entry(start, end, type, entry);
-> +	firmware_map_add_entry(start, end, type, entry);
-> +	/* create the memmap entry */
-> +	add_sysfs_fw_map_entry(entry);
-> +
-> +	return 0;
->  }
->  
->  /*
-> @@ -214,18 +238,10 @@ static ssize_t memmap_attr_show(struct kobject *kobj,
->   */
->  static int __init memmap_init(void)
->  {
-> -	int i = 0;
->  	struct firmware_map_entry *entry;
-> -	struct kset *memmap_kset;
-> -
-> -	memmap_kset = kset_create_and_add("memmap", NULL, firmware_kobj);
-> -	if (WARN_ON(!memmap_kset))
-> -		return -ENOMEM;
->  
->  	list_for_each_entry(entry, &map_entries, list) {
-> -		entry->kobj.kset = memmap_kset;
-> -		if (kobject_add(&entry->kobj, NULL, "%d", i++))
-> -			kobject_put(&entry->kobj);
-> +		add_sysfs_fw_map_entry(entry);
->  	}
-
-The braces are now unneeded.  checkpatch used to warn about this I
-think.  Either someone broke checkpatch or it doesn't understand
-list_for_each_entry().
-
->
-> ...
->
+diff --git a/init/main.c b/init/main.c
+index dac44a9..7110851 100644
+--- a/init/main.c
++++ b/init/main.c
+@@ -160,7 +160,7 @@ static int __init maxcpus(char *str)
+ 
+ early_param("maxcpus", maxcpus);
+ #else
+-const unsigned int setup_max_cpus = NR_CPUS;
++static const unsigned int setup_max_cpus = NR_CPUS;
+ #endif
+ 
+ /*
