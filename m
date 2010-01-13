@@ -1,61 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755335Ab0AMTzP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755403Ab0AMT6h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755335Ab0AMTzP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 14:55:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754765Ab0AMTzN
+	id S1755403Ab0AMT6h (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 14:58:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755141Ab0AMT6h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 14:55:13 -0500
-Received: from kroah.org ([198.145.64.141]:60465 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754901Ab0AMTzL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 14:55:11 -0500
-Date: Wed, 13 Jan 2010 11:52:26 -0800
-From: Greg KH <greg@kroah.com>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>, Julia Lawall <julia@diku.dk>,
-       N?meth M?rton <nm127@freemail.hu>, David Vrabel <david.vrabel@csr.com>,
-       linux-usb@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       cocci@diku.dk
-Subject: Re: Changelog quality
-Message-ID: <20100113195226.GD8438@kroah.com>
-References: <20100113174446.GA20754@kroah.com>
- <Pine.LNX.4.44L0.1001131301180.3518-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.1001131301180.3518-100000@iolanthe.rowland.org>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Wed, 13 Jan 2010 14:58:37 -0500
+Received: from science.horizon.com ([71.41.210.146]:24325 "HELO
+	science.horizon.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754288Ab0AMT6g (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jan 2010 14:58:36 -0500
+Date: 13 Jan 2010 14:58:28 -0500
+Message-ID: <20100113195828.2611.qmail@science.horizon.com>
+From: "George Spelvin" <linux@horizon.com>
+To: hpa@zytor.com
+Subject: Re: x86-32: clean up rwsem inline asm statements
+Cc: linux@horizon.com, linux-kernel@vger.kernel.org, schwab@linux-m68k.org,
+       torvalds@linux-foundation.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 13, 2010 at 01:04:52PM -0500, Alan Stern wrote:
-> On Wed, 13 Jan 2010, Greg KH wrote:
-> 
-> > > It would be nice if there was a way to link automatically a git commit
-> > > to an archived copy of the email message in which it was originally 
-> > > submitted.
-> > 
-> > Ingo has been doing this on some patches by putting a message-id field
-> > in the signed-off-by area showing what lkml message a patch came from.
-> > 
-> > See git commit id 6432e734c99ed685e3cad72f7dcae4c65008fcab in Linus's
-> > tree as an example of this.
-> > 
-> > I have no objection if people want to do this for any patches going
-> > through my tree as well.
-> 
-> If it has to be included manually by the patch submitter then it isn't
-> automatic.  Not to mention that the submitter would need to know the
-> email's message-id before the email message was sent!
-> 
-> Something like this should belong in a maintainer's script.
+> As far as I can tell, very few of these assembly statements actually
+> need a size at all -- the very first inc statement is purely to memory,
+> and as such it needs a size marker, but almost any operation which is
+> register-register or register-memory will simply take its size from the
+> register operand.  For those, it seems cleaner to simply drop the size
+> suffix, and in fact this is the style we have been pushing people
+> towards (use the suffix where mandatory or where the size is fixed
+> anyway, to help catch bugs; use no suffix where the size can vary and is
+> implied by the operands.)
 
-Yeah, that would get messy, as usually a patch happens in a different
-thread than the original problem occurs, so it would take a lot more
-work on my part to try to match things up.  If I notice it, I will try
-to in the future.
+The one thing is that for a register-memory operation, using the
+size of the memory operand can catch bugs where it doesn't match
+the size of the register operand.
 
-thanks,
+GCC's inline asm doesn't make operand size very implicit, and it's
+awkward to cast output operands, so there's a potential for bugs.
+I especially get nervous when the operand itself is an immediate
+constant, as I can't remember the ANSI rules for the type very well.
+(Quick: is 0x80000000 an unsigned 32-bit int or a signed 64-bit one?
+What about 2147483648 or 1<<31?)
 
-greg k-h
+Since this is mostly inline functions, it's not so big a problem, but
+I'd consider something like:
+
+static inline void __up_write(struct rw_semaphore *sem)
+{
+       unsigned long tmp;
+	asm volatile("# beginning __up_write\n\t"
+		     LOCK_PREFIX "  xadd%z0	%1,(%2)\n\t"
+		     /* tries to transition
+			0xffff0001 -> 0x00000000 */
+		     "  jz	1f\n"
+		     "  call call_rwsem_wake\n"
+		     "1:\n\t"
+		     "# ending __up_write\n"
+       	     : "+m" (sem->count), "=d" (tmp)
+       	     : "a" (sem), "1" (-RWSEM_ACTIVE_WRITE_BIAS)
+       	     : "memory", "cc");
+}
+
+Just in case the size of -RWSEM_ACTIVE_WRITE_BIAS doesn't match that
+of sem->count.  It'll explode when you try to run it, of course, but
+there's something to be said for compile-time errors.
