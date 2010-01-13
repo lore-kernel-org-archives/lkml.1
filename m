@@ -1,105 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755544Ab0AMOBU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755524Ab0AMOBj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755544Ab0AMOBU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 09:01:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755408Ab0AMOAk
+	id S1755524Ab0AMOBj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 09:01:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755408Ab0AMOBh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 09:00:40 -0500
-Received: from mga09.intel.com ([134.134.136.24]:2699 "EHLO mga09.intel.com"
+	Wed, 13 Jan 2010 09:01:37 -0500
+Received: from mga03.intel.com ([143.182.124.21]:43568 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755412Ab0AMOAj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 09:00:39 -0500
+	id S1755013Ab0AMOAh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jan 2010 09:00:37 -0500
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,268,1262592000"; 
-   d="scan'208";a="483648896"
-Message-Id: <20100113135957.680223335@intel.com>
+X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
+   d="scan'208";a="232258966"
+Message-Id: <20100113135957.242612284@intel.com>
 User-Agent: quilt/0.48-1
-Date: Wed, 13 Jan 2010 21:53:09 +0800
+Date: Wed, 13 Jan 2010 21:53:06 +0800
 From: Wu Fengguang <fengguang.wu@intel.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Wu Fengguang <fengguang.wu@intel.com>, LKML <linux-kernel@vger.kernel.org>,
-       Chen Liqin <liqin.chen@sunplusct.com>, Lennox Wu <lennox.wu@gmail.com>,
-       Ralf Baechle <ralf@linux-mips.org>, linux-mips@linux-mips.org,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
        KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 CC: Andi Kleen <andi@firstfloor.org>
 CC: Nick Piggin <npiggin@suse.de>
 CC: Hugh Dickins <hugh.dickins@tiscali.co.uk>
 cc: Linux Memory Management List <linux-mm@kvack.org>
-Subject: [PATCH 4/8] resources: introduce generic page_is_ram()
+Subject: [PATCH 1/8] vfs: fix too big f_pos handling
 References: <20100113135305.013124116@intel.com>
-Content-Disposition: inline; filename=page-is-ram.patch
+Content-Disposition: inline; filename=f_pos-fix
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It's based on walk_system_ram_range(), for archs that don't have
-their own page_is_ram().
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-The static verions in MIPS and SCORE are also made global.
+Now, rw_verify_area() checsk f_pos is negative or not. And if
+negative, returns -EINVAL.
 
-CC: Chen Liqin <liqin.chen@sunplusct.com>
-CC: Lennox Wu <lennox.wu@gmail.com>
-CC: Ralf Baechle <ralf@linux-mips.org>
-CC: linux-mips@linux-mips.org
-CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> 
-Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+But, some special files as /dev/(k)mem and /proc/<pid>/mem etc..
+has negative offsets. And we can't do any access via read/write
+to the file(device).
+
+This patch introduce a flag S_VERYBIG and allow negative file
+offsets.
+
+Changelog: v4->v5
+ - clean up patches dor /dev/mem.
+ - rebased onto 2.6.32-rc1
+
+Changelog: v3->v4
+ - make changes in mem.c aligned.
+ - change __negative_fpos_check() to return int. 
+ - fixed bug in "pos" check.
+ - added comments.
+
+Changelog: v2->v3
+ - fixed bug in rw_verify_area (it cannot be compiled)
+
+CC: Heiko Carstens <heiko.carstens@de.ibm.com>
+Reviewed-by: Wu Fengguang <fengguang.wu@intel.com>
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 ---
- arch/mips/mm/init.c    |    2 +-
- arch/score/mm/init.c   |    2 +-
- include/linux/ioport.h |    2 ++
- kernel/resource.c      |   10 ++++++++++
- 4 files changed, 14 insertions(+), 2 deletions(-)
+ drivers/char/mem.c |    4 ++++
+ fs/proc/base.c     |    2 ++
+ fs/read_write.c    |   22 ++++++++++++++++++++--
+ include/linux/fs.h |    2 ++
+ 4 files changed, 28 insertions(+), 2 deletions(-)
 
---- linux-mm.orig/kernel/resource.c	2010-01-10 10:11:53.000000000 +0800
-+++ linux-mm/kernel/resource.c	2010-01-10 10:15:33.000000000 +0800
-@@ -297,6 +297,16 @@ int walk_system_ram_range(unsigned long 
- 
+--- linux-mm.orig/fs/read_write.c	2010-01-13 21:23:04.000000000 +0800
++++ linux-mm/fs/read_write.c	2010-01-13 21:23:52.000000000 +0800
+@@ -205,6 +205,21 @@ bad:
+ }
  #endif
  
-+static int __is_ram(unsigned long pfn, unsigned long nr_pages, void *arg)
++static int
++__negative_fpos_check(struct inode *inode, loff_t pos, size_t count)
 +{
-+	return 24;
-+}
-+
-+int __attribute__((weak)) page_is_ram(unsigned long pfn)
-+{
-+	return 24 == walk_system_ram_range(pfn, 1, NULL, __is_ram);
++	/*
++	 * pos or pos+count is negative here, check overflow.
++	 * too big "count" will be caught in rw_verify_area().
++	 */
++	if ((pos < 0) && (pos + count < pos))
++		return -EOVERFLOW;
++	/* If !VERYBIG inode, negative pos(pos+count) is not allowed */
++	if (!IS_VERYBIG(inode))
++		return -EINVAL;
++	return 0;
 +}
 +
  /*
-  * Find empty slot in the resource tree given range and alignment.
-  */
---- linux-mm.orig/include/linux/ioport.h	2010-01-10 10:11:53.000000000 +0800
-+++ linux-mm/include/linux/ioport.h	2010-01-10 10:11:54.000000000 +0800
-@@ -188,5 +188,7 @@ extern int
- walk_system_ram_range(unsigned long start_pfn, unsigned long nr_pages,
- 		void *arg, int (*func)(unsigned long, unsigned long, void *));
+  * rw_verify_area doesn't like huge counts. We limit
+  * them to something that fits in "int" so that others
+@@ -222,8 +237,11 @@ int rw_verify_area(int read_write, struc
+ 	if (unlikely((ssize_t) count < 0))
+ 		return retval;
+ 	pos = *ppos;
+-	if (unlikely((pos < 0) || (loff_t) (pos + count) < 0))
+-		return retval;
++	if (unlikely((pos < 0) || (loff_t) (pos + count) < 0)) {
++		retval = __negative_fpos_check(inode, pos, count);
++		if (retval)
++			return retval;
++	}
  
-+extern int page_is_ram(unsigned long pfn);
+ 	if (unlikely(inode->i_flock && mandatory_lock(inode))) {
+ 		retval = locks_mandatory_area(
+--- linux-mm.orig/include/linux/fs.h	2010-01-13 21:23:04.000000000 +0800
++++ linux-mm/include/linux/fs.h	2010-01-13 21:31:02.000000000 +0800
+@@ -235,6 +235,7 @@ struct inodes_stat_t {
+ #define S_NOCMTIME	128	/* Do not update file c/mtime */
+ #define S_SWAPFILE	256	/* Do not truncate: swapon got its bmaps */
+ #define S_PRIVATE	512	/* Inode is fs-internal */
++#define S_VERYBIG	1024	/* Inode is huge: treat loff_t as unsigned */
+ 
+ /*
+  * Note that nosuid etc flags are inode-specific: setting some file-system
+@@ -269,6 +270,7 @@ struct inodes_stat_t {
+ #define IS_NOCMTIME(inode)	((inode)->i_flags & S_NOCMTIME)
+ #define IS_SWAPFILE(inode)	((inode)->i_flags & S_SWAPFILE)
+ #define IS_PRIVATE(inode)	((inode)->i_flags & S_PRIVATE)
++#define IS_VERYBIG(inode)	((inode)->i_flags & S_VERYBIG)
+ 
+ /* the read-only stuff doesn't really belong here, but any other place is
+    probably as bad and I don't want to create yet another include file. */
+--- linux-mm.orig/drivers/char/mem.c	2010-01-13 21:23:11.000000000 +0800
++++ linux-mm/drivers/char/mem.c	2010-01-13 21:27:28.000000000 +0800
+@@ -861,6 +861,10 @@ static int memory_open(struct inode *ino
+ 	if (dev->dev_info)
+ 		filp->f_mapping->backing_dev_info = dev->dev_info;
+ 
++	/* Is /dev/mem or /dev/kmem ? */
++	if (dev->dev_info == &directly_mappable_cdev_bdi)
++		inode->i_flags |= S_VERYBIG;
 +
- #endif /* __ASSEMBLY__ */
- #endif	/* _LINUX_IOPORT_H */
---- linux-mm.orig/arch/score/mm/init.c	2010-01-10 10:35:38.000000000 +0800
-+++ linux-mm/arch/score/mm/init.c	2010-01-10 10:38:04.000000000 +0800
-@@ -59,7 +59,7 @@ static unsigned long setup_zero_page(voi
- }
+ 	if (dev->fops->open)
+ 		return dev->fops->open(inode, filp);
  
- #ifndef CONFIG_NEED_MULTIPLE_NODES
--static int __init page_is_ram(unsigned long pagenr)
-+int page_is_ram(unsigned long pagenr)
+--- linux-mm.orig/fs/proc/base.c	2010-01-13 21:23:04.000000000 +0800
++++ linux-mm/fs/proc/base.c	2010-01-13 21:27:51.000000000 +0800
+@@ -861,6 +861,8 @@ static const struct file_operations proc
+ static int mem_open(struct inode* inode, struct file* file)
  {
- 	if (pagenr >= min_low_pfn && pagenr < max_low_pfn)
- 		return 1;
---- linux-mm.orig/arch/mips/mm/init.c	2010-01-10 10:37:22.000000000 +0800
-+++ linux-mm/arch/mips/mm/init.c	2010-01-10 10:37:26.000000000 +0800
-@@ -298,7 +298,7 @@ void __init fixrange_init(unsigned long 
+ 	file->private_data = (void*)((long)current->self_exec_id);
++	/* this file is read only and we can catch out-of-range */
++	inode->i_flags |= S_VERYBIG;
+ 	return 0;
  }
- 
- #ifndef CONFIG_NEED_MULTIPLE_NODES
--static int __init page_is_ram(unsigned long pagenr)
-+int page_is_ram(unsigned long pagenr)
- {
- 	int i;
  
 
 
