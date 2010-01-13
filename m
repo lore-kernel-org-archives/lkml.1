@@ -1,66 +1,392 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753288Ab0AMA07@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753764Ab0AMA15@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753288Ab0AMA07 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jan 2010 19:26:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752154Ab0AMA06
+	id S1753764Ab0AMA15 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jan 2010 19:27:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752326Ab0AMA14
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jan 2010 19:26:58 -0500
-Received: from mail-fx0-f225.google.com ([209.85.220.225]:54534 "EHLO
-	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751029Ab0AMA05 convert rfc822-to-8bit (ORCPT
+	Tue, 12 Jan 2010 19:27:56 -0500
+Received: from mail-ew0-f209.google.com ([209.85.219.209]:58887 "EHLO
+	mail-ew0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751160Ab0AMA1z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jan 2010 19:26:57 -0500
+	Tue, 12 Jan 2010 19:27:55 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=n6Sp6dxL7bfRbJf27SfCFx94nL5YBugTnMAkF4Alv0e6wHCs3lTQYIrxZ5RNFHmpr2
-         1aMa4NS0GlXQwawZYNzxQjh1sVMwiyZEgvVmTAYtPlMZ7LFqOqa9x/bpXxSaqQNzrYBp
-         4Dc/hT77nDMvFKj60Z5+gmkI+ivcGs2Uia9ko=
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type;
+        b=uDDueucRMrBiQ8O0W+RVzth8ZjDAuw/gfuParojJebcG5OrU0VueCw8C4hV8OW6wum
+         HJZMDxjt76q5pXUSR9fWGEvlmWil6N1EFVMWBeaQETWFAi4RhZqmwixFTtzPfuFYNJln
+         ULqna+nfp85/KSYz9jS4z7hzzp9G2FQrG9kpg=
+Message-ID: <4B4D1372.9060702@gmail.com>
+Date: Wed, 13 Jan 2010 01:27:30 +0100
+From: Daniel Borkmann <danborkmann@googlemail.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090706)
 MIME-Version: 1.0
-In-Reply-To: <20100113102254.332dbf33.sfr@canb.auug.org.au>
-References: <20100112171739.2011a0eb.sfr@canb.auug.org.au>
-	 <20100112083013.1dad8a8d.randy.dunlap@oracle.com>
-	 <20100113102254.332dbf33.sfr@canb.auug.org.au>
-Date: Wed, 13 Jan 2010 00:26:56 +0000
-Message-ID: <bffbecbb1001121626j61fab30aj87048a17a2b091ff@mail.gmail.com>
-Subject: Re: linux-next: Tree for January 12 (unlzo)
-From: Phillip Lougher <phillip.lougher@gmail.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>, albin.tonnerre@free-electrons.com,
-       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Phillip Lougher <phillip@lougher.demon.co.uk>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: Matt Mackall <mpm@selenic.com>
+CC: David Miller <davem@davemloft.net>, danborkmann@googlemail.com,
+       linux-kernel@vger.kernel.org, jmoyer@redhat.com, netdev@vger.kernel.org,
+       netdev@oss.sgi.com
+Subject: Re: [PATCH] netpoll: allow execution of multiple rx_hooks per interface
+References: <4B4630C0.6090206@gmail.com> <4B467A4D.9070708@gmail.com>	 <1263252108.29868.4774.camel@calx>	 <20100111.155912.68138954.davem@davemloft.net> <1263254625.29868.4777.camel@calx> <4B4BBDA5.8010808@gmail.com>
+In-Reply-To: <4B4BBDA5.8010808@gmail.com>
+X-Enigmail-Version: 0.96.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigA0C8D4E1BD57FB96C653A6ED"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 12, 2010 at 11:22 PM, Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-> Hi Randy,
->
-> On Tue, 12 Jan 2010 08:30:13 -0800 Randy Dunlap <randy.dunlap@oracle.com> wrote:
->>
->> arch/x86/boot/compressed/../../../../lib/decompress_unlzo.c:53: error: expected '=', ',', ';', 'asm' or '__attribute__' before 'parse_header'
->> arch/x86/boot/compressed/../../../../lib/decompress_unlzo.c:90: error: expected '=', ',', ';', 'asm' or '__attribute__' before 'unlzo'
->>
->> Problem is the "INIT" there, seems to be undefined.
->
-> Caused by an interaction between Linus' tree and the squashfs tree that
-> is being worked on.  It should not occur with today's linux-next as the
-> squashfs changes have been removed pending a fix.
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigA0C8D4E1BD57FB96C653A6ED
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-This problem is caused by the introduction of the unlzo code in Linus'
-tree, and some patches in
-the squashfs-next tree that move things out of
-include/linux/decompress/mm.h into separate
-xxx_mm.h files for each decompressor.  These parches were, obviously,
-done before the unlzo
-code was present.
+Daniel Borkmann wrote:
+> Matt Mackall wrote:
+>> On Mon, 2010-01-11 at 15:59 -0800, David Miller wrote:
+>>> From: Matt Mackall <mpm@selenic.com>
+>>> Date: Mon, 11 Jan 2010 17:21:48 -0600
+>>>
+>>>> Looks pretty good. Dave?
+>>>>
+>>>> Acked-by: Matt Mackall <mpm@selenic.com>
+>>> I don't like the loop for RX ARP processing.
+>>>
+>>> The packet contents aren't going to change, so doing basic
+>>> packet validation inside of the "for each RX client" loop
+>>> of arp_reply() doesn't make any sense.
+>> True. Dan, please help our poor compilers with some manual loop
+>> invariant motion.
+>=20
+> Okay, true. I'll fix this by tomorrow and resend the patch.
 
-I've fixed the patches in the squashfs-next tree for unlzo, and the
-breakage should be fixed :-)
+Here the fix of the RX ARP processing routine. Content that isn't
+going to change is out-of-loop.
+Successfully tested on my machines.
 
-Thanks
+Signed-off-by: Daniel Borkmann <danborkmann@googlemail.com>
 
-Phillip
+diff -Nur a/include/linux/netpoll.h b/include/linux/netpoll.h
+--- a/include/linux/netpoll.h	2010-01-05 23:52:58.000000000 +0100
++++ b/include/linux/netpoll.h	2010-01-07 23:19:25.000000000 +0100
+@@ -21,15 +21,20 @@
+ 	__be32 local_ip, remote_ip;
+ 	u16 local_port, remote_port;
+ 	u8 remote_mac[ETH_ALEN];
++
++	struct list_head rx; /* rx_np list element */
+ };
+
+ struct netpoll_info {
+ 	atomic_t refcnt;
++
+ 	int rx_flags;
+ 	spinlock_t rx_lock;
+-	struct netpoll *rx_np; /* netpoll that registered an rx_hook */
++	struct list_head rx_np; /* netpolls that registered an rx_hook */
++
+ 	struct sk_buff_head arp_tx; /* list of arp requests to reply to */
+ 	struct sk_buff_head txq;
++
+ 	struct delayed_work tx_work;
+ };
+
+@@ -51,7 +56,7 @@
+ 	unsigned long flags;
+ 	int ret =3D 0;
+
+-	if (!npinfo || (!npinfo->rx_np && !npinfo->rx_flags))
++	if (!npinfo || (list_empty(&npinfo->rx_np) && !npinfo->rx_flags))
+ 		return 0;
+
+ 	spin_lock_irqsave(&npinfo->rx_lock, flags);
+@@ -67,7 +72,7 @@
+ {
+ 	struct netpoll_info *npinfo =3D skb->dev->npinfo;
+
+-	return npinfo && (npinfo->rx_np || npinfo->rx_flags);
++	return npinfo && (!list_empty(&npinfo->rx_np) || npinfo->rx_flags);
+ }
+
+ static inline int netpoll_receive_skb(struct sk_buff *skb)
+diff -Nur a/net/core/netpoll.c b/net/core/netpoll.c
+--- a/net/core/netpoll.c	2010-01-05 23:53:07.000000000 +0100
++++ b/net/core/netpoll.c	2010-01-12 23:36:48.000000000 +0100
+@@ -407,11 +407,24 @@
+ 	__be32 sip, tip;
+ 	unsigned char *sha;
+ 	struct sk_buff *send_skb;
+-	struct netpoll *np =3D NULL;
++	struct netpoll *np, *tmp;
++	unsigned long flags;
++	int hits =3D 0;
++
++	if (list_empty(&npinfo->rx_np))
++		return;
++
++	/* Before checking the packet, we do some early
++	   inspection whether this is interesting at all */
++	spin_lock_irqsave(&npinfo->rx_lock, flags);
++	list_for_each_entry_safe(np, tmp, &npinfo->rx_np, rx) {
++		if (np->dev =3D=3D skb->dev)
++			hits++;
++	}
++	spin_unlock_irqrestore(&npinfo->rx_lock, flags);
+
+-	if (npinfo->rx_np && npinfo->rx_np->dev =3D=3D skb->dev)
+-		np =3D npinfo->rx_np;
+-	if (!np)
++	/* No netpoll struct is using this dev */
++	if (!hits)
+ 		return;
+
+ 	/* No arp on this interface */
+@@ -437,77 +450,91 @@
+ 	arp_ptr +=3D skb->dev->addr_len;
+ 	memcpy(&sip, arp_ptr, 4);
+ 	arp_ptr +=3D 4;
+-	/* if we actually cared about dst hw addr, it would get copied here */
++	/* If we actually cared about dst hw addr,
++	   it would get copied here */
+ 	arp_ptr +=3D skb->dev->addr_len;
+ 	memcpy(&tip, arp_ptr, 4);
+
+ 	/* Should we ignore arp? */
+-	if (tip !=3D np->local_ip ||
+-	    ipv4_is_loopback(tip) || ipv4_is_multicast(tip))
++	if (ipv4_is_loopback(tip) || ipv4_is_multicast(tip))
+ 		return;
+
+ 	size =3D arp_hdr_len(skb->dev);
+-	send_skb =3D find_skb(np, size + LL_ALLOCATED_SPACE(np->dev),
+-			    LL_RESERVED_SPACE(np->dev));
+-
+-	if (!send_skb)
+-		return;
+-
+-	skb_reset_network_header(send_skb);
+-	arp =3D (struct arphdr *) skb_put(send_skb, size);
+-	send_skb->dev =3D skb->dev;
+-	send_skb->protocol =3D htons(ETH_P_ARP);
+-
+-	/* Fill the device header for the ARP frame */
+-	if (dev_hard_header(send_skb, skb->dev, ptype,
+-			    sha, np->dev->dev_addr,
+-			    send_skb->len) < 0) {
+-		kfree_skb(send_skb);
+-		return;
+-	}
+
+-	/*
+-	 * Fill out the arp protocol part.
+-	 *
+-	 * we only support ethernet device type,
+-	 * which (according to RFC 1390) should always equal 1 (Ethernet).
+-	 */
++	spin_lock_irqsave(&npinfo->rx_lock, flags);
++	list_for_each_entry_safe(np, tmp, &npinfo->rx_np, rx) {
++		if (tip !=3D np->local_ip)
++			continue;
++
++		send_skb =3D find_skb(np, size + LL_ALLOCATED_SPACE(np->dev),
++				    LL_RESERVED_SPACE(np->dev));
++		if (!send_skb)
++			continue;
++
++		skb_reset_network_header(send_skb);
++		arp =3D (struct arphdr *) skb_put(send_skb, size);
++		send_skb->dev =3D skb->dev;
++		send_skb->protocol =3D htons(ETH_P_ARP);
++
++		/* Fill the device header for the ARP frame */
++		if (dev_hard_header(send_skb, skb->dev, ptype,
++				    sha, np->dev->dev_addr,
++				    send_skb->len) < 0) {
++			kfree_skb(send_skb);
++			continue;
++		}
+
+-	arp->ar_hrd =3D htons(np->dev->type);
+-	arp->ar_pro =3D htons(ETH_P_IP);
+-	arp->ar_hln =3D np->dev->addr_len;
+-	arp->ar_pln =3D 4;
+-	arp->ar_op =3D htons(type);
+-
+-	arp_ptr=3D(unsigned char *)(arp + 1);
+-	memcpy(arp_ptr, np->dev->dev_addr, np->dev->addr_len);
+-	arp_ptr +=3D np->dev->addr_len;
+-	memcpy(arp_ptr, &tip, 4);
+-	arp_ptr +=3D 4;
+-	memcpy(arp_ptr, sha, np->dev->addr_len);
+-	arp_ptr +=3D np->dev->addr_len;
+-	memcpy(arp_ptr, &sip, 4);
++		/*
++		 * Fill out the arp protocol part.
++		 *
++		 * we only support ethernet device type,
++		 * which (according to RFC 1390) should
++		 * always equal 1 (Ethernet).
++		 */
+
+-	netpoll_send_skb(np, send_skb);
++		arp->ar_hrd =3D htons(np->dev->type);
++		arp->ar_pro =3D htons(ETH_P_IP);
++		arp->ar_hln =3D np->dev->addr_len;
++		arp->ar_pln =3D 4;
++		arp->ar_op =3D htons(type);
++
++		arp_ptr =3D (unsigned char *)(arp + 1);
++		memcpy(arp_ptr, np->dev->dev_addr, np->dev->addr_len);
++		arp_ptr +=3D np->dev->addr_len;
++		memcpy(arp_ptr, &tip, 4);
++		arp_ptr +=3D 4;
++		memcpy(arp_ptr, sha, np->dev->addr_len);
++		arp_ptr +=3D np->dev->addr_len;
++		memcpy(arp_ptr, &sip, 4);
++
++		netpoll_send_skb(np, send_skb);
++
++		/* If there are several rx_hooks for the same address,
++		   we're fine by sending a single reply */
++		break;
++	}
++	spin_unlock_irqrestore(&npinfo->rx_lock, flags);
+ }
+
+ int __netpoll_rx(struct sk_buff *skb)
+ {
+ 	int proto, len, ulen;
++	int hits =3D 0;
+ 	struct iphdr *iph;
+ 	struct udphdr *uh;
+-	struct netpoll_info *npi =3D skb->dev->npinfo;
+-	struct netpoll *np =3D npi->rx_np;
++	struct netpoll_info *npinfo =3D skb->dev->npinfo;
++	struct netpoll *np, *tmp;
+
+-	if (!np)
++	if (list_empty(&npinfo->rx_np))
+ 		goto out;
++
+ 	if (skb->dev->type !=3D ARPHRD_ETHER)
+ 		goto out;
+
+ 	/* check if netpoll clients need ARP */
+ 	if (skb->protocol =3D=3D htons(ETH_P_ARP) &&
+ 	    atomic_read(&trapped)) {
+-		skb_queue_tail(&npi->arp_tx, skb);
++		skb_queue_tail(&npinfo->arp_tx, skb);
+ 		return 1;
+ 	}
+
+@@ -551,16 +578,23 @@
+ 		goto out;
+ 	if (checksum_udp(skb, uh, ulen, iph->saddr, iph->daddr))
+ 		goto out;
+-	if (np->local_ip && np->local_ip !=3D iph->daddr)
+-		goto out;
+-	if (np->remote_ip && np->remote_ip !=3D iph->saddr)
+-		goto out;
+-	if (np->local_port && np->local_port !=3D ntohs(uh->dest))
+-		goto out;
+
+-	np->rx_hook(np, ntohs(uh->source),
+-		    (char *)(uh+1),
+-		    ulen - sizeof(struct udphdr));
++	list_for_each_entry_safe(np, tmp, &npinfo->rx_np, rx) {
++		if (np->local_ip && np->local_ip !=3D iph->daddr)
++			continue;
++		if (np->remote_ip && np->remote_ip !=3D iph->saddr)
++			continue;
++		if (np->local_port && np->local_port !=3D ntohs(uh->dest))
++			continue;
++
++		np->rx_hook(np, ntohs(uh->source),
++			       (char *)(uh+1),
++			       ulen - sizeof(struct udphdr));
++		hits++;
++	}
++
++	if (!hits)
++		goto out;
+
+ 	kfree_skb(skb);
+ 	return 1;
+@@ -684,6 +718,7 @@
+ 	struct net_device *ndev =3D NULL;
+ 	struct in_device *in_dev;
+ 	struct netpoll_info *npinfo;
++	struct netpoll *npe, *tmp;
+ 	unsigned long flags;
+ 	int err;
+
+@@ -704,7 +739,7 @@
+ 		}
+
+ 		npinfo->rx_flags =3D 0;
+-		npinfo->rx_np =3D NULL;
++		INIT_LIST_HEAD(&npinfo->rx_np);
+
+ 		spin_lock_init(&npinfo->rx_lock);
+ 		skb_queue_head_init(&npinfo->arp_tx);
+@@ -785,7 +820,7 @@
+ 	if (np->rx_hook) {
+ 		spin_lock_irqsave(&npinfo->rx_lock, flags);
+ 		npinfo->rx_flags |=3D NETPOLL_RX_ENABLED;
+-		npinfo->rx_np =3D np;
++		list_add_tail(&np->rx, &npinfo->rx_np);
+ 		spin_unlock_irqrestore(&npinfo->rx_lock, flags);
+ 	}
+
+@@ -801,9 +836,16 @@
+ 	return 0;
+
+  release:
+-	if (!ndev->npinfo)
++	if (!ndev->npinfo) {
++		spin_lock_irqsave(&npinfo->rx_lock, flags);
++		list_for_each_entry_safe(npe, tmp, &npinfo->rx_np, rx) {
++			npe->dev =3D NULL;
++		}
++		spin_unlock_irqrestore(&npinfo->rx_lock, flags);
++
+ 		kfree(npinfo);
+-	np->dev =3D NULL;
++	}
++
+ 	dev_put(ndev);
+ 	return err;
+ }
+@@ -823,10 +865,11 @@
+ 	if (np->dev) {
+ 		npinfo =3D np->dev->npinfo;
+ 		if (npinfo) {
+-			if (npinfo->rx_np =3D=3D np) {
++			if (!list_empty(&npinfo->rx_np)) {
+ 				spin_lock_irqsave(&npinfo->rx_lock, flags);
+-				npinfo->rx_np =3D NULL;
+-				npinfo->rx_flags &=3D ~NETPOLL_RX_ENABLED;
++				list_del(&np->rx);
++				if (list_empty(&npinfo->rx_np))
++					npinfo->rx_flags &=3D ~NETPOLL_RX_ENABLED;
+ 				spin_unlock_irqrestore(&npinfo->rx_lock, flags);
+ 			}
+
+
+
+--------------enigA0C8D4E1BD57FB96C653A6ED
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
+
+iEYEARECAAYFAktNE3IACgkQ5AxJm1m3CC8JUACfZYu+KMNmoi1wggcgZzugfjqF
+jHcAn19IOYG/HadXh23FMHCUrDSg2PaV
+=I1xP
+-----END PGP SIGNATURE-----
+
+--------------enigA0C8D4E1BD57FB96C653A6ED--
