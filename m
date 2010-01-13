@@ -1,74 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754968Ab0AMTRc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932118Ab0AMTTK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754968Ab0AMTRc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 14:17:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754921Ab0AMTRb
+	id S932118Ab0AMTTK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 14:19:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754901Ab0AMTTJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 14:17:31 -0500
-Received: from tomts16.bellnexxia.net ([209.226.175.4]:54313 "EHLO
-	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754867Ab0AMTRa (ORCPT
+	Wed, 13 Jan 2010 14:19:09 -0500
+Received: from mail-pz0-f171.google.com ([209.85.222.171]:35417 "EHLO
+	mail-pz0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753990Ab0AMTTH convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 14:17:30 -0500
-Date: Wed, 13 Jan 2010 14:17:27 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Nicholas Miell <nmiell@comcast.net>
-Cc: paulmck@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
-       Steven Rostedt <rostedt@goodmis.org>, Oleg Nesterov <oleg@redhat.com>,
-       Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       akpm@linux-foundation.org, josh@joshtriplett.org, tglx@linutronix.de,
-       Valdis.Kletnieks@vt.edu, dhowells@redhat.com, laijs@cn.fujitsu.com,
-       dipankar@in.ibm.com
-Subject: Re: [RFC PATCH] introduce sys_membarrier(): process-wide memory
-	barrier (v5)
-Message-ID: <20100113191727.GA24742@Krystal>
-References: <20100113013757.GA29314@Krystal> <1263358823.3874.10.camel@entropy> <20100113053126.GC6781@linux.vnet.ibm.com> <1263361196.3874.12.camel@entropy> <20100113143805.GC30875@Krystal> <1263406071.3874.16.camel@entropy> <20100113182442.GA20704@Krystal> <1263408098.3874.19.camel@entropy>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <1263408098.3874.19.camel@entropy>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.27.31-grsec (i686)
-X-Uptime: 14:14:00 up 28 days,  3:32,  4 users,  load average: 0.70, 0.23,
-	0.13
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 13 Jan 2010 14:19:07 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=J1dH6HAWs6EQmOOGNLcb6bbFxjvXKjna4uL7taEtm86wAyD9eXweL9zAuF4SHHlBS3
+         4ilURYS6+4fnuGmmQFhDDJjp7p2UffZD+cFH7OoHNLOrhHC4YHiS3lIWIG5pu2vxULjd
+         eqk9VYsvbu5PqnHbgKPZh+UW0ZpJ/GErTNyZs=
+MIME-Version: 1.0
+In-Reply-To: <20100113174446.GA20754@kroah.com>
+References: <4B4DFD87.3000904@s5r6.in-berlin.de>
+	 <Pine.LNX.4.44L0.1001131225160.3518-100000@iolanthe.rowland.org>
+	 <20100113174446.GA20754@kroah.com>
+Date: Wed, 13 Jan 2010 20:19:04 +0100
+X-Google-Sender-Auth: f71584d30eda0462
+Message-ID: <10f740e81001131119m54ec29b4x91786456d9eab062@mail.gmail.com>
+Subject: Re: Changelog quality
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Greg KH <greg@kroah.com>
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Julia Lawall <julia@diku.dk>, "N?meth M?rton" <nm127@freemail.hu>,
+       David Vrabel <david.vrabel@csr.com>, linux-usb@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, cocci@diku.dk,
+       Ingo Molnar <mingo@elte.hu>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Nicholas Miell (nmiell@comcast.net) wrote:
-> On Wed, 2010-01-13 at 13:24 -0500, Mathieu Desnoyers wrote:
-> > * Nicholas Miell (nmiell@comcast.net) wrote:
-> > 
-> > > The whole point of compat and incompat flags is that it allows new
-> > > applications to run on old kernels and either work or fail as
-> > > appropriate, depending on whether the new features they're using must be
-> > > implemented or can be silently ignored.
-> > 
-> > I see. Thanks for the explanation. Then the expedited flag should
-> > clearly be part of the mandatory flags.
-> > 
-> > Can you point me to other system calls that are doing this ?
-> > 
-> > Thanks,
-> > 
-> > Mathieu
-> 
-> Not off the top of my head, but I did steal the idea from the ext2/3/4
-> disk format.
+On Wed, Jan 13, 2010 at 18:44, Greg KH <greg@kroah.com> wrote:
+> On Wed, Jan 13, 2010 at 12:29:07PM -0500, Alan Stern wrote:
+>> On Wed, 13 Jan 2010, Stefan Richter wrote:
+>>
+>> > If it was by mistake, inclusion of the find-and-replace script into the
+>> > patch posting *after the --- delimiter* might have increased the chance
+>> > that a patch reviewer becomes aware of a possible error source
+>> > (inadequate match patterns...).  So that could be useful during review
+>> > before commit, but not so much if the change is revisited some time
+>> > after commit.
+>>
+>> Somewhat tangentially, it's worth mentioning that the comments
+>> appearing after the "---" delimiter exist only in the original patch
+>> submissions, not in the final commits.  Hence they are not available to
+>> anyone reviewing the changes after acceptance.
+>>
+>> It would be nice if there was a way to link automatically a git commit
+>> to an archived copy of the email message in which it was originally
+>> submitted.
+>
+> Ingo has been doing this on some patches by putting a message-id field
+> in the signed-off-by area showing what lkml message a patch came from.
+>
+> See git commit id 6432e734c99ed685e3cad72f7dcae4c65008fcab in Linus's
+> tree as an example of this.
+>
+> I have no objection if people want to do this for any patches going
+> through my tree as well.
 
-Sounds a bit over-engineered to me for system calls, but who knows if we
-eventually have to extend sys_membarrier(). This involves that, right
-now, I'd have to add a header to include/linux to define these flags.
-Also, "int expedited" is a bit clearer, but less flexible, than "int
-flags". Anyone else have comments about this ?
+While the idea behind this is definitely nice, I don't like the
+current implementation: it's not really an `lkml reference', but just
+the message ID of the email that contained the patch.
+Which means it doesn't contain any reference to an lkml archive, but
+instead it casts into `git-stone' the host and domain names of my
+private machines at home ;-)
 
-Thanks,
+Gr{oetje,eeting}s,
 
-Mathieu
+						Geert
 
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
