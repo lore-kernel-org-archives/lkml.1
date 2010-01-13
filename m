@@ -1,50 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754527Ab0AMCJH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754356Ab0AMCOh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754527Ab0AMCJH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jan 2010 21:09:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754326Ab0AMCJF
+	id S1754356Ab0AMCOh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jan 2010 21:14:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753211Ab0AMCOg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jan 2010 21:09:05 -0500
-Received: from mail-qy0-f194.google.com ([209.85.221.194]:53966 "EHLO
-	mail-qy0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753622Ab0AMCJE convert rfc822-to-8bit (ORCPT
+	Tue, 12 Jan 2010 21:14:36 -0500
+Received: from smtp-out.google.com ([216.239.44.51]:46883 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750977Ab0AMCOg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jan 2010 21:09:04 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=xm3MDhPld4a3eNyyA+5jRxCvTDQm5cQYmJVH+OYiyP0OjiZ/6KOvniFoJJg4NAt9/1
-         uzeP9sgehtsEnL/VoMMbZ3apbLjn+dKD3tfMuebB/ppgiHH1AEWYBnbXtOJTtROs3ZqH
-         At54De5x1uLeZmivyn8EYKSyBDQMe/AKKn5wI=
-MIME-Version: 1.0
-In-Reply-To: <20100112162823.GC7363@basil.fritz.box>
-References: <20100110020955.GB25323@basil.fritz.box>
-	 <20100110063335.GA3005@hack> <20100110123702.GC25323@basil.fritz.box>
-	 <20100112153208.GF3925@hack> <20100112162823.GC7363@basil.fritz.box>
-Date: Wed, 13 Jan 2010 10:08:59 +0800
-Message-ID: <2375c9f91001121808y7c4cbe3es802f5ddd433b7bc3@mail.gmail.com>
-Subject: Re: 2.6.33 pagemap endless read loop
-From: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Tue, 12 Jan 2010 21:14:36 -0500
+From: Mike Chan <mike@android.com>
+To: cpufreq@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org,
+       Jocelyn Falempe <jocelyn.falempe@motorola.com>,
+       Mike Chan <mike@android.com>
+Subject: [PATCH] cpufreq: ondemand: Don't synchronize sample rate unless mulitple cpus present
+Date: Tue, 12 Jan 2010 18:14:30 -0800
+Message-Id: <1263348870-2269-1-git-send-email-mike@android.com>
+X-Mailer: git-send-email 1.6.6
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 13, 2010 at 12:28 AM, Andi Kleen <andi@firstfloor.org> wrote:
->> Hmm, could you please try:
->>
->>      time cat /proc/self/pagemap >/dev/null
->>
->
-> I stopped it after a minute of CPU time...
->
-> Obviously reading 47bits of zeroes take a long time.
->
+From: Jocelyn Falempe <jocelyn.falempe@motorola.com>
 
-Yeah, but this just proves it is not endless, doesn't it? :)
+For UP systems this is not required, and results in a more consistent
+sample interval.
 
-Thanks.
+Signed-off-by: Jocelyn Falempe <jocelyn.falempe@motorola.com>
+Signed-off-by: Mike Chan <mike@android.com>
+---
+ drivers/cpufreq/cpufreq_ondemand.c |    8 ++++++--
+ 1 files changed, 6 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
+index 4b34ade..d139558 100644
+--- a/drivers/cpufreq/cpufreq_ondemand.c
++++ b/drivers/cpufreq/cpufreq_ondemand.c
+@@ -576,7 +576,9 @@ static void do_dbs_timer(struct work_struct *work)
+ 	/* We want all CPUs to do sampling nearly on same jiffy */
+ 	int delay = usecs_to_jiffies(dbs_tuners_ins.sampling_rate);
+ 
+-	delay -= jiffies % delay;
++	if (num_online_cpus() > 1)
++		delay -= jiffies % delay;
++
+ 	mutex_lock(&dbs_info->timer_mutex);
+ 
+ 	/* Common NORMAL_SAMPLE setup */
+@@ -601,7 +603,9 @@ static inline void dbs_timer_init(struct cpu_dbs_info_s *dbs_info)
+ {
+ 	/* We want all CPUs to do sampling nearly on same jiffy */
+ 	int delay = usecs_to_jiffies(dbs_tuners_ins.sampling_rate);
+-	delay -= jiffies % delay;
++
++	if (num_online_cpus() > 1)
++ 		delay -= jiffies % delay;
+ 
+ 	dbs_info->sample_type = DBS_NORMAL_SAMPLE;
+ 	INIT_DELAYED_WORK_DEFERRABLE(&dbs_info->work, do_dbs_timer);
+-- 
+1.6.6
+
