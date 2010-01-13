@@ -1,79 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755100Ab0AMI0b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755091Ab0AMI1Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755100Ab0AMI0b (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 03:26:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755084Ab0AMI0a
+	id S1755091Ab0AMI1Z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 03:27:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754827Ab0AMI1Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 03:26:30 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:60713 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755047Ab0AMI0a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 03:26:30 -0500
-Date: Wed, 13 Jan 2010 09:26:19 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: Re: [PATCH 0/11][GIT PULL] tracing: various updates for 2.6.34
-Message-ID: <20100113082619.GA23541@elte.hu>
-References: <20100106231349.107649729@goodmis.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100106231349.107649729@goodmis.org>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+	Wed, 13 Jan 2010 03:27:24 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:59208 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754445Ab0AMI1X (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jan 2010 03:27:23 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Wed, 13 Jan 2010 17:24:04 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Rik van Riel <riel@redhat.com>, Minchan Kim <minchan.kim@gmail.com>
+Subject: Re: [PATCH 3/3] [v2] memcg: add anon_scan_ratio to memory.stat file
+Message-Id: <20100113172404.339b31dc.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20100113172143.B3E8.A69D9226@jp.fujitsu.com>
+References: <20100113171734.B3E2.A69D9226@jp.fujitsu.com>
+	<20100113172143.B3E8.A69D9226@jp.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 13 Jan 2010 17:22:37 +0900 (JST)
+KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
+> Changelog
+>   since v1: cancel to remove "recent_xxx" debug statistics as bilbir's
+>   mention
+> 
+> ===========================================
+> 
+> anon_scan_ratio feature doesn't only useful for global VM pressure
+> analysis, but it also useful for memcg memroy pressure analysis.
+> 
+> Then, this patch add anon_scan_ratio field to memory.stat file too.
+> 
+> Cc: Balbir Singh <balbir@linux.vnet.ibm.com>
+> Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 
-> 
-> Ingo,
-> 
-> Please pull the latest tip/tracing/core tree, which can be found at:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
-> tip/tracing/core
-> 
-> 
-> Lai Jiangshan (7):
->       tracing: Have __dynamic_array() define a field
->       tracing: Add print_fmt field
->       tracing/syscalls: Init print_fmt for syscall events
->       tracing/kprobes: Init print_fmt for kprobe events
->       tracing: Use defined fields and print_fmt to print formats
->       tracing: Remove show_format and related macros from TRACE_EVENT
->       tracing: Consolidate protection of reader access to the ring buffer
-> 
-> Steven Rostedt (2):
->       tracing: Have syscall tracing call its own init function
->       tracing: Add stack dump to trace_printk if stacktrace option is set
-> 
-> Wolfram Sang (2):
->       tracing: optimize recordmcount.pl for offsets-handling
->       tracing: Use appropriate perl constructs in recordmcount.pl
-> 
-> ----
->  include/linux/ftrace_event.h  |    3 +-
->  include/linux/syscalls.h      |    6 +-
->  include/trace/ftrace.h        |  161 +++++++++--------------------------------
->  include/trace/syscall.h       |    4 -
->  kernel/trace/trace.c          |  144 ++++++++++++++++++++++++++-----------
->  kernel/trace/trace_events.c   |   77 +++++++++++---------
->  kernel/trace/trace_export.c   |   87 ++++-------------------
->  kernel/trace/trace_kprobe.c   |  104 +++++++++++---------------
->  kernel/trace/trace_syscalls.c |  106 ++++++++++++++--------------
->  scripts/recordmcount.pl       |   47 +++++-------
->  10 files changed, 310 insertions(+), 429 deletions(-)
+Acked-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-Pulled, thanks a lot Steve!
+Thanks,
+-Kame
 
-	Ingo
