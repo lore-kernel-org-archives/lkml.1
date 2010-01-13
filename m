@@ -1,55 +1,280 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755076Ab0AMIX0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755096Ab0AMIX5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755076Ab0AMIX0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 03:23:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754991Ab0AMIX0
+	id S1755096Ab0AMIX5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 03:23:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755047Ab0AMIX4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 03:23:26 -0500
-Received: from mga14.intel.com ([143.182.124.37]:58472 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755047Ab0AMIXZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 03:23:25 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
-   d="scan'208";a="232171965"
-Date: Wed, 13 Jan 2010 16:23:22 +0800
-From: Shaohua Li <shaohua.li@intel.com>
-To: Corrado Zoccolo <czoccolo@gmail.com>
-Cc: "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "jmoyer@redhat.com" <jmoyer@redhat.com>,
-       "vgoyal@redhat.com" <vgoyal@redhat.com>,
-       "guijianfeng@cn.fujitsu.com" <guijianfeng@cn.fujitsu.com>,
-       "yanmin_zhang@linux.intel.com" <yanmin_zhang@linux.intel.com>
-Subject: Re: [PATCH]cfq-iosched: don't stop async queue with async requests
- pending
-Message-ID: <20100113082322.GA24345@sli10-desk.sh.intel.com>
-References: <20100113074442.GA10492@sli10-desk.sh.intel.com>
- <4e5e476b1001130018n2ad9e830s4a20d922abd4c7bb@mail.gmail.com>
+	Wed, 13 Jan 2010 03:23:56 -0500
+Received: from mail-qy0-f194.google.com ([209.85.221.194]:42826 "EHLO
+	mail-qy0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752499Ab0AMIX4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jan 2010 03:23:56 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type;
+        b=V+ofIMAp9WJixwhDx+dYpJBuEVsCFK29m0oFG5t3GhX+mIzKvmY4sFd36ZDo3w0Npb
+         PhxHUUF+H9ihWpT8bLXgf4VQjGL4e5hUWe3d/okvwgcIibDNGAvMaSrdkE2IBEGaUE7p
+         E06q7vxop+ij4z7mUQgQSC/9PdTHkVX0CGUyw=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4e5e476b1001130018n2ad9e830s4a20d922abd4c7bb@mail.gmail.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <f17812d71001121923k5a67c42flb92cf7bb2c8a0b5a@mail.gmail.com>
+References: <f17812d71001072114g95c267cpa6dc06a636c6d9a@mail.gmail.com> 
+	<f17812d71001072128g63361e74q74cf06ae1e1eb3d6@mail.gmail.com> 
+	<20100112150952.aa224e20.akpm@linux-foundation.org> <f17812d71001121923k5a67c42flb92cf7bb2c8a0b5a@mail.gmail.com>
+From: Eric Miao <eric.y.miao@gmail.com>
+Date: Wed, 13 Jan 2010 16:23:35 +0800
+Message-ID: <f17812d71001130023n491879cakc02dfcf26ec0fe43@mail.gmail.com>
+Subject: Re: [PATCH] gpio: introduce gpio_request_one() and friends
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: David Brownell <david-b@pacbell.net>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: multipart/mixed; boundary=00c09f90580dc60c44047d077dd6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 13, 2010 at 04:18:47PM +0800, Corrado Zoccolo wrote:
-> On Wed, Jan 13, 2010 at 8:44 AM, Shaohua Li <shaohua.li@intel.com> wrote:
-> > My SSD speed of direct write is about 80m/s, while I test page writeback,
-> > the speed can only go to 68m/s. Below patch fixes this.
-> > It appears we missused cfq_should_idle in cfq_may_dispatch. cfq_should_idle
-> > means a queue should idle because it's seekless sync queue or it's the last queue,
-> > which is to maintain service tree time slice. So it doesn't mean the
-> > last queue is always a sync queue. If the last queue is asyn queue,
-> > we definitely shouldn't stop dispatch requests because of pending async
-> > requests.
-> 
-> An other option is that cfq_should_idle returns false for async
-> queues, since cfq will never idle on them.
-I'm considering this option too, but it appears we need make async queue
-idle to maintain domain time slice.
+--00c09f90580dc60c44047d077dd6
+Content-Type: text/plain; charset=UTF-8
 
-Thanks,
-Shaohua
+> > Global, exported-to-modules interfaces should be documented, IMO.
+> >
+>
+> OK, will do.
+>
+
+Andrew,
+
+Attached is the patch against Documentation/gpio.txt (also inlined),
+which you may either use as an incremental patch, or merge with
+the last one, or if you want, use the other one attached for a merged
+version.
+
+diff --git a/Documentation/gpio.txt b/Documentation/gpio.txt
+index 1866c27..c2c6e9b 100644
+--- a/Documentation/gpio.txt
++++ b/Documentation/gpio.txt
+@@ -253,6 +253,70 @@ pin setup (e.g. controlling which pin the GPIO
+uses, pullup/pulldown).
+ Also note that it's your responsibility to have stopped using a GPIO
+ before you free it.
+
++Considering in most cases GPIOs are actually configured right after they
++are claimed, three additional calls are defined:
++
++	/* request a single GPIO, with initial configuration specified by
++	 * 'flags', identical to gpio_request() wrt other arguments and
++	 * return value
++	 */
++	int gpio_request_one(unsigned gpio, unsigned long flags, const char *label);
++
++	/* request multiple GPIOs in a single call
++	 */
++	int gpio_request_array(struct gpio *array, size_t num);
++
++	/* release multiple GPIOs in a single call
++	 */
++	void gpio_free_array(struct gpio *array, size_t num);
++
++where 'flags' is currently defined to specify the following properties:
++
++	* GPIOF_DIR_IN		- to configure direction as input
++	* GPIOF_DIR_OUT		- to configure direction as output
++
++	* GPIOF_INIT_LOW	- as output, set initial level to LOW
++	* GPIOF_INIT_HIGH	- as output, set initial level to HIGH
++
++since GPIOF_INIT_* are only valid when configured as output, so group valid
++combinations as:
++
++	* GPIOF_IN		- configure as input
++	* GPIOF_OUT_INIT_LOW	- configured as output, initial level LOW
++	* GPIOF_OUT_INIT_HIGH	- configured as output, initial level HIGH
++
++In the future, these flags can be extended to support more properties such
++as open-drain status.
++
++Further more, to ease the claim/release of multiple GPIOs, 'struct gpio' is
++introduced to encapsulate all three fields as:
++
++	struct gpio {
++		unsigned	gpio;
++		unsigned long	flags;
++		const char	*label;
++	};
++
++A typical example of usage:
++
++	static struct gpio leds_gpios[] = {
++		{ 32, GPIOF_OUT_INIT_HIGH, "Power LED" }, /* default to ON */
++		{ 33, GPIOF_OUT_INIT_LOW,  "Green LED" }, /* default to OFF */
++		{ 34, GPIOF_OUT_INIT_LOW,  "Red LED"   }, /* default to OFF */
++		{ 35, GPIOF_OUT_INIT_LOW,  "Blue LED"  }, /* default to OFF */
++		{ ... },
++	};
++
++	err = gpio_request_one(31, GPIOF_IN, "Reset Button");
++	if (err)
++		...
++
++	err = gpio_request_array(leds_gpios, ARRAY_SIZE(leds_gpios));
++	if (err)
++		...
++
++	gpio_free_array(leds_gpios, ARRAY_SIZE(leds_gpios));
++
+
+ GPIOs mapped to IRQs
+ --------------------
+
+--00c09f90580dc60c44047d077dd6
+Content-Type: text/x-patch; charset=US-ASCII; name="Documentation_gpio_txt.diff"
+Content-Disposition: attachment; filename="Documentation_gpio_txt.diff"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_g4dugeg80
+
+ZGlmZiAtLWdpdCBhL0RvY3VtZW50YXRpb24vZ3Bpby50eHQgYi9Eb2N1bWVudGF0aW9uL2dwaW8u
+dHh0CmluZGV4IDE4NjZjMjcuLmMyYzZlOWIgMTAwNjQ0Ci0tLSBhL0RvY3VtZW50YXRpb24vZ3Bp
+by50eHQKKysrIGIvRG9jdW1lbnRhdGlvbi9ncGlvLnR4dApAQCAtMjUzLDYgKzI1Myw3MCBAQCBw
+aW4gc2V0dXAgKGUuZy4gY29udHJvbGxpbmcgd2hpY2ggcGluIHRoZSBHUElPIHVzZXMsIHB1bGx1
+cC9wdWxsZG93bikuCiBBbHNvIG5vdGUgdGhhdCBpdCdzIHlvdXIgcmVzcG9uc2liaWxpdHkgdG8g
+aGF2ZSBzdG9wcGVkIHVzaW5nIGEgR1BJTwogYmVmb3JlIHlvdSBmcmVlIGl0LgogCitDb25zaWRl
+cmluZyBpbiBtb3N0IGNhc2VzIEdQSU9zIGFyZSBhY3R1YWxseSBjb25maWd1cmVkIHJpZ2h0IGFm
+dGVyIHRoZXkKK2FyZSBjbGFpbWVkLCB0aHJlZSBhZGRpdGlvbmFsIGNhbGxzIGFyZSBkZWZpbmVk
+OgorCisJLyogcmVxdWVzdCBhIHNpbmdsZSBHUElPLCB3aXRoIGluaXRpYWwgY29uZmlndXJhdGlv
+biBzcGVjaWZpZWQgYnkKKwkgKiAnZmxhZ3MnLCBpZGVudGljYWwgdG8gZ3Bpb19yZXF1ZXN0KCkg
+d3J0IG90aGVyIGFyZ3VtZW50cyBhbmQKKwkgKiByZXR1cm4gdmFsdWUKKwkgKi8KKwlpbnQgZ3Bp
+b19yZXF1ZXN0X29uZSh1bnNpZ25lZCBncGlvLCB1bnNpZ25lZCBsb25nIGZsYWdzLCBjb25zdCBj
+aGFyICpsYWJlbCk7CisKKwkvKiByZXF1ZXN0IG11bHRpcGxlIEdQSU9zIGluIGEgc2luZ2xlIGNh
+bGwKKwkgKi8KKwlpbnQgZ3Bpb19yZXF1ZXN0X2FycmF5KHN0cnVjdCBncGlvICphcnJheSwgc2l6
+ZV90IG51bSk7CisKKwkvKiByZWxlYXNlIG11bHRpcGxlIEdQSU9zIGluIGEgc2luZ2xlIGNhbGwK
+KwkgKi8KKwl2b2lkIGdwaW9fZnJlZV9hcnJheShzdHJ1Y3QgZ3BpbyAqYXJyYXksIHNpemVfdCBu
+dW0pOworCit3aGVyZSAnZmxhZ3MnIGlzIGN1cnJlbnRseSBkZWZpbmVkIHRvIHNwZWNpZnkgdGhl
+IGZvbGxvd2luZyBwcm9wZXJ0aWVzOgorCisJKiBHUElPRl9ESVJfSU4JCS0gdG8gY29uZmlndXJl
+IGRpcmVjdGlvbiBhcyBpbnB1dAorCSogR1BJT0ZfRElSX09VVAkJLSB0byBjb25maWd1cmUgZGly
+ZWN0aW9uIGFzIG91dHB1dAorCisJKiBHUElPRl9JTklUX0xPVwktIGFzIG91dHB1dCwgc2V0IGlu
+aXRpYWwgbGV2ZWwgdG8gTE9XCisJKiBHUElPRl9JTklUX0hJR0gJLSBhcyBvdXRwdXQsIHNldCBp
+bml0aWFsIGxldmVsIHRvIEhJR0gKKworc2luY2UgR1BJT0ZfSU5JVF8qIGFyZSBvbmx5IHZhbGlk
+IHdoZW4gY29uZmlndXJlZCBhcyBvdXRwdXQsIHNvIGdyb3VwIHZhbGlkCitjb21iaW5hdGlvbnMg
+YXM6CisKKwkqIEdQSU9GX0lOCQktIGNvbmZpZ3VyZSBhcyBpbnB1dAorCSogR1BJT0ZfT1VUX0lO
+SVRfTE9XCS0gY29uZmlndXJlZCBhcyBvdXRwdXQsIGluaXRpYWwgbGV2ZWwgTE9XCisJKiBHUElP
+Rl9PVVRfSU5JVF9ISUdICS0gY29uZmlndXJlZCBhcyBvdXRwdXQsIGluaXRpYWwgbGV2ZWwgSElH
+SAorCitJbiB0aGUgZnV0dXJlLCB0aGVzZSBmbGFncyBjYW4gYmUgZXh0ZW5kZWQgdG8gc3VwcG9y
+dCBtb3JlIHByb3BlcnRpZXMgc3VjaAorYXMgb3Blbi1kcmFpbiBzdGF0dXMuCisKK0Z1cnRoZXIg
+bW9yZSwgdG8gZWFzZSB0aGUgY2xhaW0vcmVsZWFzZSBvZiBtdWx0aXBsZSBHUElPcywgJ3N0cnVj
+dCBncGlvJyBpcworaW50cm9kdWNlZCB0byBlbmNhcHN1bGF0ZSBhbGwgdGhyZWUgZmllbGRzIGFz
+OgorCisJc3RydWN0IGdwaW8geworCQl1bnNpZ25lZAlncGlvOworCQl1bnNpZ25lZCBsb25nCWZs
+YWdzOworCQljb25zdCBjaGFyCSpsYWJlbDsKKwl9OworCitBIHR5cGljYWwgZXhhbXBsZSBvZiB1
+c2FnZToKKworCXN0YXRpYyBzdHJ1Y3QgZ3BpbyBsZWRzX2dwaW9zW10gPSB7CisJCXsgMzIsIEdQ
+SU9GX09VVF9JTklUX0hJR0gsICJQb3dlciBMRUQiIH0sIC8qIGRlZmF1bHQgdG8gT04gKi8KKwkJ
+eyAzMywgR1BJT0ZfT1VUX0lOSVRfTE9XLCAgIkdyZWVuIExFRCIgfSwgLyogZGVmYXVsdCB0byBP
+RkYgKi8KKwkJeyAzNCwgR1BJT0ZfT1VUX0lOSVRfTE9XLCAgIlJlZCBMRUQiICAgfSwgLyogZGVm
+YXVsdCB0byBPRkYgKi8KKwkJeyAzNSwgR1BJT0ZfT1VUX0lOSVRfTE9XLCAgIkJsdWUgTEVEIiAg
+fSwgLyogZGVmYXVsdCB0byBPRkYgKi8KKwkJeyAuLi4gfSwKKwl9OworCisJZXJyID0gZ3Bpb19y
+ZXF1ZXN0X29uZSgzMSwgR1BJT0ZfSU4sICJSZXNldCBCdXR0b24iKTsKKwlpZiAoZXJyKQorCQku
+Li4KKworCWVyciA9IGdwaW9fcmVxdWVzdF9hcnJheShsZWRzX2dwaW9zLCBBUlJBWV9TSVpFKGxl
+ZHNfZ3Bpb3MpKTsKKwlpZiAoZXJyKQorCQkuLi4KKworCWdwaW9fZnJlZV9hcnJheShsZWRzX2dw
+aW9zLCBBUlJBWV9TSVpFKGxlZHNfZ3Bpb3MpKTsKKwogCiBHUElPcyBtYXBwZWQgdG8gSVJRcwog
+LS0tLS0tLS0tLS0tLS0tLS0tLS0K
+--00c09f90580dc60c44047d077dd6
+Content-Type: text/x-patch; charset=US-ASCII; 
+	name="0001-gpio-introduce-gpio_request_one-and-friends.patch"
+Content-Disposition: attachment; 
+	filename="0001-gpio-introduce-gpio_request_one-and-friends.patch"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_g4dugn531
+
+RnJvbSBjNDZkYzE2NWI2ZjhlNzIwYTlmMDQ1NTkxNDBiMzhjMjBlNzUwNTE2IE1vbiBTZXAgMTcg
+MDA6MDA6MDAgMjAwMQpGcm9tOiBFcmljIE1pYW8gPGVyaWMueS5taWFvQGdtYWlsLmNvbT4KRGF0
+ZTogRnJpLCA4IEphbiAyMDEwIDEyOjE2OjI4ICswODAwClN1YmplY3Q6IFtQQVRDSF0gZ3Bpbzog
+aW50cm9kdWNlIGdwaW9fcmVxdWVzdF9vbmUoKSBhbmQgZnJpZW5kcwoKZ3Bpb19yZXF1ZXN0KCkg
+d2l0aG91dCBpbml0aWFsIGNvbmZpZ3VyYXRpb24gb2YgdGhlIEdQSU8gaXMgbm9ybWFsbHkKdXNl
+bGVzcywgaW50cm9kdWNlIGdwaW9fcmVxdWVzdF9vbmUoKSB0b2dldGhlciB3aXRoIEdQSU9GXyBm
+bGFncyBmb3IKaW5wdXQvb3V0cHV0IGRpcmVjdGlvbiBhbmQgaW5pdGlhbCBvdXRwdXQgbGV2ZWwu
+CgpncGlvX3tyZXF1ZXN0LGZyZWV9X2FycmF5KCkgZm9yIG11bHRpcGxlIEdQSU9zLgoKQ2M6IERh
+dmlkIEJyb3duZWxsIDxkYnJvd25lbGxAdXNlcnMuc291cmNlZm9yZ2UubmV0PgpTaWduZWQtb2Zm
+LWJ5OiBFcmljIE1pYW8gPGVyaWMueS5taWFvQGdtYWlsLmNvbT4KLS0tCiBEb2N1bWVudGF0aW9u
+L2dwaW8udHh0ICAgICB8ICAgNjQgKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysr
+KysrKysrKysKIGRyaXZlcnMvZ3Bpby9ncGlvbGliLmMgICAgIHwgICA0MiArKysrKysrKysrKysr
+KysrKysrKysrKysrKysrCiBpbmNsdWRlL2FzbS1nZW5lcmljL2dwaW8uaCB8ICAgMjAgKysrKysr
+KysrKysrKwogMyBmaWxlcyBjaGFuZ2VkLCAxMjYgaW5zZXJ0aW9ucygrKSwgMCBkZWxldGlvbnMo
+LSkKCmRpZmYgLS1naXQgYS9Eb2N1bWVudGF0aW9uL2dwaW8udHh0IGIvRG9jdW1lbnRhdGlvbi9n
+cGlvLnR4dAppbmRleCAxODY2YzI3Li5jMmM2ZTliIDEwMDY0NAotLS0gYS9Eb2N1bWVudGF0aW9u
+L2dwaW8udHh0CisrKyBiL0RvY3VtZW50YXRpb24vZ3Bpby50eHQKQEAgLTI1Myw2ICsyNTMsNzAg
+QEAgcGluIHNldHVwIChlLmcuIGNvbnRyb2xsaW5nIHdoaWNoIHBpbiB0aGUgR1BJTyB1c2VzLCBw
+dWxsdXAvcHVsbGRvd24pLgogQWxzbyBub3RlIHRoYXQgaXQncyB5b3VyIHJlc3BvbnNpYmlsaXR5
+IHRvIGhhdmUgc3RvcHBlZCB1c2luZyBhIEdQSU8KIGJlZm9yZSB5b3UgZnJlZSBpdC4KIAorQ29u
+c2lkZXJpbmcgaW4gbW9zdCBjYXNlcyBHUElPcyBhcmUgYWN0dWFsbHkgY29uZmlndXJlZCByaWdo
+dCBhZnRlciB0aGV5CithcmUgY2xhaW1lZCwgdGhyZWUgYWRkaXRpb25hbCBjYWxscyBhcmUgZGVm
+aW5lZDoKKworCS8qIHJlcXVlc3QgYSBzaW5nbGUgR1BJTywgd2l0aCBpbml0aWFsIGNvbmZpZ3Vy
+YXRpb24gc3BlY2lmaWVkIGJ5CisJICogJ2ZsYWdzJywgaWRlbnRpY2FsIHRvIGdwaW9fcmVxdWVz
+dCgpIHdydCBvdGhlciBhcmd1bWVudHMgYW5kCisJICogcmV0dXJuIHZhbHVlCisJICovCisJaW50
+IGdwaW9fcmVxdWVzdF9vbmUodW5zaWduZWQgZ3BpbywgdW5zaWduZWQgbG9uZyBmbGFncywgY29u
+c3QgY2hhciAqbGFiZWwpOworCisJLyogcmVxdWVzdCBtdWx0aXBsZSBHUElPcyBpbiBhIHNpbmds
+ZSBjYWxsCisJICovCisJaW50IGdwaW9fcmVxdWVzdF9hcnJheShzdHJ1Y3QgZ3BpbyAqYXJyYXks
+IHNpemVfdCBudW0pOworCisJLyogcmVsZWFzZSBtdWx0aXBsZSBHUElPcyBpbiBhIHNpbmdsZSBj
+YWxsCisJICovCisJdm9pZCBncGlvX2ZyZWVfYXJyYXkoc3RydWN0IGdwaW8gKmFycmF5LCBzaXpl
+X3QgbnVtKTsKKword2hlcmUgJ2ZsYWdzJyBpcyBjdXJyZW50bHkgZGVmaW5lZCB0byBzcGVjaWZ5
+IHRoZSBmb2xsb3dpbmcgcHJvcGVydGllczoKKworCSogR1BJT0ZfRElSX0lOCQktIHRvIGNvbmZp
+Z3VyZSBkaXJlY3Rpb24gYXMgaW5wdXQKKwkqIEdQSU9GX0RJUl9PVVQJCS0gdG8gY29uZmlndXJl
+IGRpcmVjdGlvbiBhcyBvdXRwdXQKKworCSogR1BJT0ZfSU5JVF9MT1cJLSBhcyBvdXRwdXQsIHNl
+dCBpbml0aWFsIGxldmVsIHRvIExPVworCSogR1BJT0ZfSU5JVF9ISUdICS0gYXMgb3V0cHV0LCBz
+ZXQgaW5pdGlhbCBsZXZlbCB0byBISUdICisKK3NpbmNlIEdQSU9GX0lOSVRfKiBhcmUgb25seSB2
+YWxpZCB3aGVuIGNvbmZpZ3VyZWQgYXMgb3V0cHV0LCBzbyBncm91cCB2YWxpZAorY29tYmluYXRp
+b25zIGFzOgorCisJKiBHUElPRl9JTgkJLSBjb25maWd1cmUgYXMgaW5wdXQKKwkqIEdQSU9GX09V
+VF9JTklUX0xPVwktIGNvbmZpZ3VyZWQgYXMgb3V0cHV0LCBpbml0aWFsIGxldmVsIExPVworCSog
+R1BJT0ZfT1VUX0lOSVRfSElHSAktIGNvbmZpZ3VyZWQgYXMgb3V0cHV0LCBpbml0aWFsIGxldmVs
+IEhJR0gKKworSW4gdGhlIGZ1dHVyZSwgdGhlc2UgZmxhZ3MgY2FuIGJlIGV4dGVuZGVkIHRvIHN1
+cHBvcnQgbW9yZSBwcm9wZXJ0aWVzIHN1Y2gKK2FzIG9wZW4tZHJhaW4gc3RhdHVzLgorCitGdXJ0
+aGVyIG1vcmUsIHRvIGVhc2UgdGhlIGNsYWltL3JlbGVhc2Ugb2YgbXVsdGlwbGUgR1BJT3MsICdz
+dHJ1Y3QgZ3BpbycgaXMKK2ludHJvZHVjZWQgdG8gZW5jYXBzdWxhdGUgYWxsIHRocmVlIGZpZWxk
+cyBhczoKKworCXN0cnVjdCBncGlvIHsKKwkJdW5zaWduZWQJZ3BpbzsKKwkJdW5zaWduZWQgbG9u
+ZwlmbGFnczsKKwkJY29uc3QgY2hhcgkqbGFiZWw7CisJfTsKKworQSB0eXBpY2FsIGV4YW1wbGUg
+b2YgdXNhZ2U6CisKKwlzdGF0aWMgc3RydWN0IGdwaW8gbGVkc19ncGlvc1tdID0geworCQl7IDMy
+LCBHUElPRl9PVVRfSU5JVF9ISUdILCAiUG93ZXIgTEVEIiB9LCAvKiBkZWZhdWx0IHRvIE9OICov
+CisJCXsgMzMsIEdQSU9GX09VVF9JTklUX0xPVywgICJHcmVlbiBMRUQiIH0sIC8qIGRlZmF1bHQg
+dG8gT0ZGICovCisJCXsgMzQsIEdQSU9GX09VVF9JTklUX0xPVywgICJSZWQgTEVEIiAgIH0sIC8q
+IGRlZmF1bHQgdG8gT0ZGICovCisJCXsgMzUsIEdQSU9GX09VVF9JTklUX0xPVywgICJCbHVlIExF
+RCIgIH0sIC8qIGRlZmF1bHQgdG8gT0ZGICovCisJCXsgLi4uIH0sCisJfTsKKworCWVyciA9IGdw
+aW9fcmVxdWVzdF9vbmUoMzEsIEdQSU9GX0lOLCAiUmVzZXQgQnV0dG9uIik7CisJaWYgKGVycikK
+KwkJLi4uCisKKwllcnIgPSBncGlvX3JlcXVlc3RfYXJyYXkobGVkc19ncGlvcywgQVJSQVlfU0la
+RShsZWRzX2dwaW9zKSk7CisJaWYgKGVycikKKwkJLi4uCisKKwlncGlvX2ZyZWVfYXJyYXkobGVk
+c19ncGlvcywgQVJSQVlfU0laRShsZWRzX2dwaW9zKSk7CisKIAogR1BJT3MgbWFwcGVkIHRvIElS
+UXMKIC0tLS0tLS0tLS0tLS0tLS0tLS0tCmRpZmYgLS1naXQgYS9kcml2ZXJzL2dwaW8vZ3Bpb2xp
+Yi5jIGIvZHJpdmVycy9ncGlvL2dwaW9saWIuYwppbmRleCBhMjVhZDI4Li5lODBhMWY4IDEwMDY0
+NAotLS0gYS9kcml2ZXJzL2dwaW8vZ3Bpb2xpYi5jCisrKyBiL2RyaXZlcnMvZ3Bpby9ncGlvbGli
+LmMKQEAgLTEyMzksNiArMTIzOSw0OCBAQCB2b2lkIGdwaW9fZnJlZSh1bnNpZ25lZCBncGlvKQog
+fQogRVhQT1JUX1NZTUJPTF9HUEwoZ3Bpb19mcmVlKTsKIAoraW50IGdwaW9fcmVxdWVzdF9vbmUo
+dW5zaWduZWQgZ3BpbywgdW5zaWduZWQgbG9uZyBmbGFncywgY29uc3QgY2hhciAqbGFiZWwpCit7
+CisJaW50IGVycjsKKworCWVyciA9IGdwaW9fcmVxdWVzdChncGlvLCBsYWJlbCk7CisJaWYgKGVy
+cikKKwkJcmV0dXJuIGVycjsKKworCWlmIChmbGFncyAmIEdQSU9GX0RJUl9JTikKKwkJZXJyID0g
+Z3Bpb19kaXJlY3Rpb25faW5wdXQoZ3Bpbyk7CisJZWxzZQorCQllcnIgPSBncGlvX2RpcmVjdGlv
+bl9vdXRwdXQoZ3BpbywKKwkJCQkoZmxhZ3MgJiBHUElPRl9JTklUX0hJR0gpID8gMSA6IDApOwor
+CisJcmV0dXJuIGVycjsKK30KK0VYUE9SVF9TWU1CT0xfR1BMKGdwaW9fcmVxdWVzdF9vbmUpOwor
+CitpbnQgZ3Bpb19yZXF1ZXN0X2FycmF5KHN0cnVjdCBncGlvICphcnJheSwgc2l6ZV90IG51bSkK
+K3sKKwlpbnQgaSwgZXJyOworCisJZm9yIChpID0gMDsgaSA8IG51bTsgaSsrLCBhcnJheSsrKSB7
+CisJCWVyciA9IGdwaW9fcmVxdWVzdF9vbmUoYXJyYXktPmdwaW8sIGFycmF5LT5mbGFncywgYXJy
+YXktPmxhYmVsKTsKKwkJaWYgKGVycikKKwkJCWdvdG8gZXJyX2ZyZWU7CisJfQorCXJldHVybiAw
+OworCitlcnJfZnJlZToKKwl3aGlsZSAoaS0tKQorCQlncGlvX2ZyZWUoKC0tYXJyYXkpLT5ncGlv
+KTsKKwlyZXR1cm4gZXJyOworfQorRVhQT1JUX1NZTUJPTF9HUEwoZ3Bpb19yZXF1ZXN0X2FycmF5
+KTsKKwordm9pZCBncGlvX2ZyZWVfYXJyYXkoc3RydWN0IGdwaW8gKmFycmF5LCBzaXplX3QgbnVt
+KQoreworCXdoaWxlIChudW0tLSkKKwkJZ3Bpb19mcmVlKChhcnJheSsrKS0+Z3Bpbyk7Cit9CitF
+WFBPUlRfU1lNQk9MX0dQTChncGlvX2ZyZWVfYXJyYXkpOwogCiAvKioKICAqIGdwaW9jaGlwX2lz
+X3JlcXVlc3RlZCAtIHJldHVybiBzdHJpbmcgaWZmIHNpZ25hbCB3YXMgcmVxdWVzdGVkCmRpZmYg
+LS1naXQgYS9pbmNsdWRlL2FzbS1nZW5lcmljL2dwaW8uaCBiL2luY2x1ZGUvYXNtLWdlbmVyaWMv
+Z3Bpby5oCmluZGV4IDQ4NWVlYjYuLjVhYWE1NmUgMTAwNjQ0Ci0tLSBhL2luY2x1ZGUvYXNtLWdl
+bmVyaWMvZ3Bpby5oCisrKyBiL2luY2x1ZGUvYXNtLWdlbmVyaWMvZ3Bpby5oCkBAIC0xMzYsNiAr
+MTM2LDI2IEBAIGV4dGVybiBpbnQgX19ncGlvX2NhbnNsZWVwKHVuc2lnbmVkIGdwaW8pOwogCiBl
+eHRlcm4gaW50IF9fZ3Bpb190b19pcnEodW5zaWduZWQgZ3Bpbyk7CiAKKyNkZWZpbmUgR1BJT0Zf
+RElSX09VVAkoMCA8PCAwKQorI2RlZmluZSBHUElPRl9ESVJfSU4JKDEgPDwgMCkKKworI2RlZmlu
+ZSBHUElPRl9JTklUX0xPVwkoMCA8PCAxKQorI2RlZmluZSBHUElPRl9JTklUX0hJR0gJKDEgPDwg
+MSkKKworI2RlZmluZSBHUElPRl9JTgkJKEdQSU9GX0RJUl9JTikKKyNkZWZpbmUgR1BJT0ZfT1VU
+X0lOSVRfTE9XCShHUElPRl9ESVJfT1VUIHwgR1BJT0ZfSU5JVF9MT1cpCisjZGVmaW5lIEdQSU9G
+X09VVF9JTklUX0hJR0gJKEdQSU9GX0RJUl9PVVQgfCBHUElPRl9JTklUX0hJR0gpCisKK3N0cnVj
+dCBncGlvIHsKKwl1bnNpZ25lZAlncGlvOworCXVuc2lnbmVkIGxvbmcJZmxhZ3M7CisJY29uc3Qg
+Y2hhcgkqbGFiZWw7Cit9OworCitleHRlcm4gaW50IGdwaW9fcmVxdWVzdF9vbmUodW5zaWduZWQg
+Z3BpbywgdW5zaWduZWQgbG9uZyBmbGFncywgY29uc3QgY2hhciAqbGFiZWwpOworZXh0ZXJuIGlu
+dCBncGlvX3JlcXVlc3RfYXJyYXkoc3RydWN0IGdwaW8gKmFycmF5LCBzaXplX3QgbnVtKTsKK2V4
+dGVybiB2b2lkIGdwaW9fZnJlZV9hcnJheShzdHJ1Y3QgZ3BpbyAqYXJyYXksIHNpemVfdCBudW0p
+OworCiAjaWZkZWYgQ09ORklHX0dQSU9fU1lTRlMKIAogLyoKLS0gCjEuNi4zLjMKCg==
+--00c09f90580dc60c44047d077dd6--
