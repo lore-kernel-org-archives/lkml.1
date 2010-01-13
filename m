@@ -1,115 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756006Ab0AMQaO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756023Ab0AMQc0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756006Ab0AMQaO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 11:30:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751224Ab0AMQaN
+	id S1756023Ab0AMQc0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 11:32:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755967Ab0AMQcZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 11:30:13 -0500
-Received: from casper.infradead.org ([85.118.1.10]:48295 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755874Ab0AMQaN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 11:30:13 -0500
-Subject: Re: [PATCH] perf_events: improve x86 event scheduling
-From: Peter Zijlstra <peterz@infradead.org>
-To: Stephane Eranian <eranian@google.com>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, paulus@samba.org,
-       davem@davemloft.net, perfmon2-devel@lists.sf.net,
-       =?ISO-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
-In-Reply-To: <bd4cb8901001130154p732672b6x56e758c1ab33a8e8@mail.gmail.com>
-References: <4b4c761b.0338560a.1eaa.ffff824d@mx.google.com>
-	 <1263312616.4244.153.camel@laptop>
-	 <bd4cb8901001130154p732672b6x56e758c1ab33a8e8@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 13 Jan 2010 17:29:53 +0100
-Message-ID: <1263400193.4244.238.camel@laptop>
+	Wed, 13 Jan 2010 11:32:25 -0500
+Received: from ms01.sssup.it ([193.205.80.99]:50253 "EHLO sssup.it"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752299Ab0AMQcY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jan 2010 11:32:24 -0500
+Subject: Re: [RFC 0/12][PATCH] SCHED_DEADLINE: core of the scheduling class
+From: Dario Faggioli <faggioli@gandalf.sssup.it>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       michael trimarchi <michael@evidence.eu.com>,
+       Fabio Checconi <fabio@gandalf.sssup.it>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Dhaval Giani <dhaval.giani@gmail.com>,
+       Johan Eker <johan.eker@ericsson.com>, "p.faure" <p.faure@akatech.ch>,
+       Chris Friesen <cfriesen@nortel.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Henrik Austad <henrik@austad.us>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Darren Hart <darren@dvhart.com>,
+       Sven-Thorsten Dietrich <sven@thebigcorporation.com>,
+       Claudio Scordino <claudio@evidence.eu.com>,
+       Tommaso Cucinotta <tommaso.cucinotta@sssup.it>,
+       "giuseppe.lipari" <giuseppe.lipari@sssup.it>,
+       Juri Lelli <juri.lelli@gmail.com>
+In-Reply-To: <1262097042.7135.150.camel@laptop>
+References: <1255707324.6228.448.camel@Palantir>
+	 <1255707614.6228.453.camel@Palantir>  <1262097042.7135.150.camel@laptop>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-eN2cqnnqwjUW1aQpW+Gs"
+Date: Wed, 13 Jan 2010 17:32:21 +0100
+Message-ID: <1263400341.3853.287.camel@Palantir>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2010-01-13 at 10:54 +0100, Stephane Eranian wrote:
 
-> > One concern I do have is the loss of error checking on
-> > event_sched_in()'s event->pmu->enable(), that could be another
-> > 'hardware' PMU like breakpoints, in which case it could fail.
-> >
-> Well, x86_pmu_enable() does return an error code, so it is up
-> to the upper layer to handle the error gracefully and in particular
-> in perf_ctx_adjust_freq().
+--=-eN2cqnnqwjUW1aQpW+Gs
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-> +static void event_sched_in(struct perf_event *event, int cpu)
-> +{
-> +       event->state = PERF_EVENT_STATE_ACTIVE;
-> +       event->oncpu = cpu;
-> +       event->tstamp_running += event->ctx->time - event->tstamp_stopped;
-> +       if (is_software_event(event))
-> +               event->pmu->enable(event);
-> +}
-> +
-> +/*
-> + * Called to enable a whole group of events.
-> + * Returns 1 if the group was enabled, or -EAGAIN if it could not be.
-> + * Assumes the caller has disabled interrupts and has
-> + * frozen the PMU with hw_perf_save_disable.
-> + *
-> + * called with PMU disabled. If successful and return value 1,
-> + * then guaranteed to call perf_enable() and hw_perf_enable()
-> + */
-> +int hw_perf_group_sched_in(struct perf_event *leader,
-> +              struct perf_cpu_context *cpuctx,
-> +              struct perf_event_context *ctx, int cpu)
-> +{
-> +       struct cpu_hw_events *cpuc = &per_cpu(cpu_hw_events, cpu);
-> +       struct perf_event *sub;
-> +       int assign[X86_PMC_IDX_MAX];
-> +       int n, n0, ret;
-> +
-> +       n0 = cpuc->n_events;
-> +
-> +       n = collect_events(cpuc, leader, true);
-> +       if (n < 0)
-> +               return n;
-> +
-> +       ret = x86_schedule_events(cpuc, n, assign);
-> +       if (ret)
-> +               return ret;
-> +
-> +       /*
-> +        * copy new assignment, now we know it is possible
-> +        * will be used by hw_perf_enable()
-> +        */
-> +       memcpy(cpuc->assign, assign, n*sizeof(int));
-> +
-> +       cpuc->n_events = n;
-> +       cpuc->n_added  = n - n0;
-> +
-> +       n = 1;
-> +       event_sched_in(leader, cpu);
-> +       list_for_each_entry(sub, &leader->sibling_list, group_entry) {
-> +               if (sub->state != PERF_EVENT_STATE_OFF) {
-> +                       event_sched_in(sub, cpu);
-> +                       ++n;
-> +               }
-> +       }
-> +       ctx->nr_active += n;
-> +
-> +       /*
-> +        * 1 means successful and events are active
-> +        * This is not quite true because we defer
-> +        * actual activation until hw_perf_enable() but
-> +        * this way we* ensure caller won't try to enable
-> +        * individual events
-> +        */
-> +       return 1;
-> +}
+On Tue, 2009-12-29 at 15:30 +0100, Peter Zijlstra wrote:
+> On Fri, 2009-10-16 at 17:40 +0200, Raistlin wrote:
+> > +struct task_struct *pick_next_task_deadline(struct rq *rq)
+> > +{
+> > +       struct sched_dl_entity *dl_se;
+> > +       struct task_struct *p;
+> > +       struct dl_rq *dl_rq;
+> > +
+> > +       dl_rq =3D &rq->dl;
+> > +
+> > +       if (likely(!dl_rq->dl_nr_running))
+> > +               return NULL;
+> > +
+> > +       dl_se =3D pick_next_deadline_entity(rq, dl_rq);
+> > +       BUG_ON(!dl_se);
+> > +
+> > +       p =3D deadline_task_of(dl_se);
+> > +       p->se.exec_start =3D rq->clock;
+> > +#ifdef CONFIG_SCHED_HRTICK
+> > +       if (hrtick_enabled(rq))
+> > +               start_hrtick_deadline(rq, p);
+> > +#endif
+> > +       return p;
+> > +}=20
+>=20
+> I'm not sure about actually using hrtick like this, I'd expect
+> SCHED_DEADLINE to always use hrtimers when available.  The only reason
+> to use some of the hrtick infrastructure is to re-use the hrtick_start()
+> logic which uses IPIs to ensure we program the timer on the right cpu
+> (so we can schedule from it).
+>=20
+Yeah, that and the fact that it seemed to me very easy and clean to:
+- check for runtime enforcement inside the task_tick_deadline function,
+  as other scheduling classes do, and then
+- if possible, ask that task_tick_deadline function to be called right=20
+  at the time instant I expect my runtime to be depleted. If that won't=20
+  happen --because of no-hrtick or no-hires-hrtimers-- the check will
+  still be performed during the next tick.
 
-That most certainly looses error codes for all !is_x86_event() events in
-the group.
+> The whole IPI mess requires USE_GENERIC_SMP_HELPERS, which makes
+> CONFIG_HRTICK useful (ensures we have hrtimers enabled and have generic
+> IPI bits)
+>=20
+> The problem is that things like hrtick_enabled() also check
+> sched_feat(HRTICK) which is disabled by default (because programming the
+> clock hw on each schedule was found too expensive) but that should not
+> stop SCHED_DEADLINE from using it.
+>=20
+Mmm... I might have lost you here... :-(
 
-So you either need to deal with that event_sched_in() failing, or
-guarantee that it always succeeds (forcing software events only for
-example).
+Do you think that keep using hrtick_start and alike, even if
+sched_feat(HRTICK) is disabled, could be good enough? Or are you
+suggesting something different?
+IOTH, should I simply bypass the sched_feat()/hrtick_enabled() check or
+you think I need something more?
+
+Thanks and regards,
+Dario
+
+--=20
+<<This happens because I choose it to happen!>> (Raistlin Majere)
+----------------------------------------------------------------------
+Dario Faggioli, ReTiS Lab, Scuola Superiore Sant'Anna, Pisa  (Italy)
+
+http://blog.linux.it/raistlin / raistlin@ekiga.net /
+dario.faggioli@jabber.org
+
+--=-eN2cqnnqwjUW1aQpW+Gs
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAktN9ZUACgkQk4XaBE3IOsR/dACfZvUNB+az9AgOZ787ma8bdp7V
+jpsAniloRKO8fNVKhyuXn5L3H15kSlkt
+=LM2F
+-----END PGP SIGNATURE-----
+
+--=-eN2cqnnqwjUW1aQpW+Gs--
 
