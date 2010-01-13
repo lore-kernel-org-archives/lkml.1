@@ -1,80 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756115Ab0AMRBS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756139Ab0AMRBd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756115Ab0AMRBS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 12:01:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756117Ab0AMRBQ
+	id S1756139Ab0AMRBd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 12:01:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756129Ab0AMRBc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 12:01:16 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:41334 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756115Ab0AMRBM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 12:01:12 -0500
-Date: Wed, 13 Jan 2010 18:58:09 +0200
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Avi Kivity <avi@redhat.com>, Marcelo Tosatti <mtosatti@redhat.com>,
-       "Michael S. Tsirkin" <mst@redhat.com>,
-       Gregory Haskins <ghaskins@novell.com>, Gleb Natapov <gleb@redhat.com>,
-       Julia Lawall <julia@diku.dk>, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] kvm: only allow one gsi per fd
-Message-ID: <20100113165809.GA13334@redhat.com>
+	Wed, 13 Jan 2010 12:01:32 -0500
+Received: from mail-ew0-f209.google.com ([209.85.219.209]:57401 "EHLO
+	mail-ew0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756105Ab0AMRBa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jan 2010 12:01:30 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject
+         :content-type:content-transfer-encoding;
+        b=Xea4S33OGhkaHPhDRyL/9/FBxhNK+vCzKsDtFK8tmYSSFFN9JI2LUBD/4LAaPE0lBG
+         1nxUMXlj/lCUnqffXSMBsxLXwU49GMv8L1SKZcNfDnw1/Ys3sYDBs7AQiTz6Fl6bAo7c
+         fc5hsaS0jcSGgcJMXHlpXz2xh0nELOtfyAmKw=
+Message-ID: <4B4DFD6B.8000904@gmail.com>
+Date: Wed, 13 Jan 2010 18:05:47 +0100
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.19 (2009-01-05)
+To: Corentin Chary <corentincj@iksaif.net>,
+       Karol Kozimor <sziwan@users.sourceforge.net>,
+       acpi4asus-user@lists.sourceforge.net,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] asus-acpi: duplicate comparison of asus_model strings
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Looks like repeatedly binding same fd to multiple gsi's with irqfd can
-use up a ton of kernel memory for irqfd structures.
+These tests already occur elsewhere
 
-A simple fix is to allow each fd to only trigger one gsi: triggering a
-srorm of interrupts in guest is likely useless anyway, and we can do it
-by binding a single gsi to many interrupts if we really want to.
-
-Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
 ---
+Does this remove the right duplicates?
 
-This patch is IMO a good candidate for 2.6.33 and 2.6.32.x.
-
- virt/kvm/eventfd.c |   15 +++++++++++++--
- 1 files changed, 13 insertions(+), 2 deletions(-)
-
-diff --git a/virt/kvm/eventfd.c b/virt/kvm/eventfd.c
-index 30f70fd..62e4cd9 100644
---- a/virt/kvm/eventfd.c
-+++ b/virt/kvm/eventfd.c
-@@ -166,7 +166,7 @@ irqfd_ptable_queue_proc(struct file *file, wait_queue_head_t *wqh,
- static int
- kvm_irqfd_assign(struct kvm *kvm, int fd, int gsi)
- {
--	struct _irqfd *irqfd;
-+	struct _irqfd *irqfd, *tmp;
- 	struct file *file = NULL;
- 	struct eventfd_ctx *eventfd = NULL;
- 	int ret;
-@@ -203,9 +203,20 @@ kvm_irqfd_assign(struct kvm *kvm, int fd, int gsi)
- 	init_waitqueue_func_entry(&irqfd->wait, irqfd_wakeup);
- 	init_poll_funcptr(&irqfd->pt, irqfd_ptable_queue_proc);
- 
-+	spin_lock_irq(&kvm->irqfds.lock);
-+
-+	ret = 0;
-+	list_for_each_entry(tmp, &kvm->irqfds.items, list) {
-+		if (irqfd->eventfd != tmp->eventfd)
-+			continue;
-+		/* This fd is used for another irq already. */
-+		ret = -EBUSY;
-+		spin_unlock_irq(&kvm->irqfds.lock);
-+		goto fail;
-+	}
-+
- 	events = file->f_op->poll(file, &irqfd->pt);
- 
--	spin_lock_irq(&kvm->irqfds.lock);
- 	list_add_tail(&irqfd->list, &kvm->irqfds.items);
- 	spin_unlock_irq(&kvm->irqfds.lock);
- 
--- 
-1.6.6.144.g5c3af
+diff --git a/drivers/platform/x86/asus_acpi.c b/drivers/platform/x86/asus_acpi.c
+index c1d2aee..1381430 100644
+--- a/drivers/platform/x86/asus_acpi.c
++++ b/drivers/platform/x86/asus_acpi.c
+@@ -1225,9 +1225,8 @@ static int asus_model_match(char *model)
+ 	else if (strncmp(model, "M2N", 3) == 0 ||
+ 		 strncmp(model, "M3N", 3) == 0 ||
+ 		 strncmp(model, "M5N", 3) == 0 ||
+-		 strncmp(model, "M6N", 3) == 0 ||
+ 		 strncmp(model, "S1N", 3) == 0 ||
+-		 strncmp(model, "S5N", 3) == 0 || strncmp(model, "W1N", 3) == 0)
++		 strncmp(model, "S5N", 3) == 0)
+ 		return xxN;
+ 	else if (strncmp(model, "M1", 2) == 0)
+ 		return M1A;
