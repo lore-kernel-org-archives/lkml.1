@@ -1,218 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932200Ab0AMRek@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756238Ab0AMRoX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932200Ab0AMRek (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 12:34:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932177Ab0AMRei
+	id S1756238Ab0AMRoX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 12:44:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756200Ab0AMRoW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 12:34:38 -0500
-Received: from x35.xmailserver.org ([64.71.152.41]:46411 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932167Ab0AMReh (ORCPT
+	Wed, 13 Jan 2010 12:44:22 -0500
+Received: from server109d.appriver.com ([72.32.253.88]:2277 "EHLO
+	server109.appriver.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756041Ab0AMRoV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 12:34:37 -0500
-X-AuthUser: davidel@xmailserver.org
-Date: Wed, 13 Jan 2010 09:34:36 -0800 (PST)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@makko.or.mcafeemobile.com
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-cc: Andrew Morton <akpm@linux-foundation.org>, Avi Kivity <avi@redhat.com>,
-       "Michael S. Tsirkin" <mst@redhat.com>, kvm@vger.kernel.org
-Subject: [patch] eventfd - allow atomic read and waitqueue remove
-Message-ID: <alpine.DEB.2.00.1001130927590.2775@makko.or.mcafeemobile.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Wed, 13 Jan 2010 12:44:21 -0500
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: multipart/mixed;
+	boundary="----_=_NextPart_001_01CA9478.47EDFB13"
+Subject: [PATCH 2/2] net: at91_ether.c - Allow transmitter interrupt to be handled first in ISR
+Date: Wed, 13 Jan 2010 12:46:05 -0500
+Message-ID: <3DBBD805E3BA064A87F551C0E8BD367402897491@MAILSRV.intcomgrp.com>
+X-MS-Has-Attach: yes
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 2/2] net: at91_ether.c - Allow transmitter interrupt to be handled first in ISR
+Thread-Index: AcqUeEeEjbPJNBktRFuCwJQ/aIwf3A==
+From: "James Kosin" <JKosin@intcomgrp.com>
+To: <linux-kernel@vger.kernel.org>
+Cc: "Linux Netdev List" <netdev@vger.kernel.org>,
+       "Eric Dumazet" <eric.dumazet@gmail.com>
+X-Policy: GLOBAL - intcomgrp.com
+X-Policy: GLOBAL - intcomgrp.com
+X-Primary: jkosin@intcomgrp.com
+X-Note: This Email was scanned by AppRiver SecureTide
+X-ALLOW: JKosin@intcomgrp.com ALLOWED
+X-Note: VCH-CT/SI:0-854/SG:1 1/13/2010 11:43:31 AM
+X-Virus-Scan: V-X0M0
+X-Note: Spam Tests Failed: 
+X-Country-Path: UNITED STATES->UNITED STATES
+X-Note-Sending-IP: 216.54.13.100
+X-Note-Reverse-DNS: mail.intcomgrp.com
+X-Note-WHTLIST: JKosin@intcomgrp.com
+X-Note: User Rule Hits: 
+X-Note: Global Rule Hits: G113 G114 G115 G116 G120 G121 G132 G219 
+X-Note: Encrypt Rule Hits: 
+X-Note: Mail Class: ALLOWEDSENDER
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KVM needs a wait to atomically remove themselves from the eventfd ->poll() 
-wait queue head, in order to handle correctly their IRQfd deassign 
-operation.
-This patch introduces such API, plus a way to read an eventfd from its 
-context.
-Andrew, they prefer to have this go through Avi's KVM tree, in order to 
-keep dependencies localized. So you just ignore this.
-Avi, this fixes a few checkpatch warnings, so you should get this instead 
-of the one posted previously.
+This is a multi-part message in MIME format.
+
+------_=_NextPart_001_01CA9478.47EDFB13
+Content-Type: text/plain;
+	charset="US-ASCII"
+Content-Transfer-Encoding: quoted-printable
+
+Ok,
+
+This next patch is optional....
+
+The idea is TUND should only happen on occasions when the PHY is unable
+to receive the transmitter data in a timely fashion to successfully send
+the data in a single burst.  This is not a hard error; so, why do we
+treat it as such.
+
+This patch allows the transmitter to resend the failed skb inside the
+ISR without having to deal with the overhead of freeing the skb then
+having the main task re-allocate a new skb for the failed packet.
+
+James Kosin
 
 
+------_=_NextPart_001_01CA9478.47EDFB13
+Content-Type: application/octet-stream;
+	name="ether_patch_2.patch"
+Content-Transfer-Encoding: base64
+Content-Description: ether_patch_2.patch
+Content-Disposition: attachment;
+	filename="ether_patch_2.patch"
 
-Signed-off-by: Davide Libenzi <davidel@xmailserver.org>
+LS0tIEM6L0RvY3VtZW50cyBhbmQgU2V0dGluZ3Mvamtvc2luL015IERvY3VtZW50cy9qdW5rL2tl
+cm5lbC9Db3B5IG9mIGxpbnV4LTIuNi4zMS41L2RyaXZlcnMvbmV0L2FybS9hdDkxX2V0aGVyLmMJ
+V2VkIEphbiAxMyAxMjoyNjoxMyAyMDEwDQorKysgQzovRG9jdW1lbnRzIGFuZCBTZXR0aW5ncy9q
+a29zaW4vTXkgRG9jdW1lbnRzL2p1bmsva2VybmVsL2xpbnV4LTIuNi4zMS41L2RyaXZlcnMvbmV0
+L2FybS9hdDkxX2V0aGVyLmMJV2VkIEphbiAxMyAxMjozODo1NSAyMDEwDQpAQCAtOTI3LDE1ICs5
+MjcsMjQgQEANCiANCiAJaWYgKGludHN0YXR1cyAmIEFUOTFfRU1BQ19UQ09NKSB7CS8qIFRyYW5z
+bWl0IGNvbXBsZXRlICovDQogCQkvKiBUaGUgVENPTSBiaXQgaXMgc2V0IGV2ZW4gaWYgdGhlIHRy
+YW5zbWlzc2lvbiBmYWlsZWQuICovDQotCQlpZiAoaW50c3RhdHVzICYgKEFUOTFfRU1BQ19UVU5E
+IHwgQVQ5MV9FTUFDX1JUUlkpKQ0KLQkJCWRldi0+c3RhdHMudHhfZXJyb3JzICs9IDE7DQorCQlp
+ZiAoaW50c3RhdHVzICYgQVQ5MV9FTUFDX1RVTkQpIHsNCisJCQlpZiAobHAtPnNrYikgew0KKwkJ
+CQkvKiBTZXQgYWRkcmVzcyBvZiB0aGUgZGF0YSBpbiB0aGUgVHJhbnNtaXQgQWRkcmVzcyByZWdp
+c3RlciAqLw0KKwkJCQlhdDkxX2VtYWNfd3JpdGUoQVQ5MV9FTUFDX1RBUiwgbHAtPnNrYl9waHlz
+YWRkcik7DQorCQkJCS8qIFNldCBsZW5ndGggb2YgdGhlIHBhY2tldCBpbiB0aGUgVHJhbnNtaXQg
+Q29udHJvbCByZWdpc3RlciAqLw0KKwkJCQlhdDkxX2VtYWNfd3JpdGUoQVQ5MV9FTUFDX1RDUiwg
+bHAtPnNrYi0+bGVuKTsNCisJCQl9DQorCQl9IGVsc2Ugew0KKwkJCWlmIChpbnRzdGF0dXMgJiBB
+VDkxX0VNQUNfUlRSWSkNCisJCQkJZGV2LT5zdGF0cy50eF9lcnJvcnMgKz0gMTsNCiANCi0JCWlm
+IChscC0+c2tiKSB7DQotCQkJZGV2X2tmcmVlX3NrYl9pcnEobHAtPnNrYik7DQotCQkJbHAtPnNr
+YiA9IE5VTEw7DQotCQkJZG1hX3VubWFwX3NpbmdsZShOVUxMLCBscC0+c2tiX3BoeXNhZGRyLCBs
+cC0+c2tiX2xlbmd0aCwgRE1BX1RPX0RFVklDRSk7DQorCQkJaWYgKGxwLT5za2IpIHsNCisJCQkJ
+ZGV2X2tmcmVlX3NrYl9pcnEobHAtPnNrYik7DQorCQkJCWxwLT5za2IgPSBOVUxMOw0KKwkJCQlk
+bWFfdW5tYXBfc2luZ2xlKE5VTEwsIGxwLT5za2JfcGh5c2FkZHIsIGxwLT5za2JfbGVuZ3RoLCBE
+TUFfVE9fREVWSUNFKTsNCisJCQl9DQorCQkJbmV0aWZfd2FrZV9xdWV1ZShkZXYpOw0KIAkJfQ0K
+LQkJbmV0aWZfd2FrZV9xdWV1ZShkZXYpOw0KIAl9DQogDQogCWlmIChpbnRzdGF0dXMgJiBBVDkx
+X0VNQUNfUkNPTSkJCS8qIFJlY2VpdmUgY29tcGxldGUgKi8NCg==
 
-
-- Davide
-
-
----
- fs/eventfd.c            |   89 +++++++++++++++++++++++++++++++++++++++---------
- include/linux/eventfd.h |   16 ++++++++
- 2 files changed, 90 insertions(+), 15 deletions(-)
-
-Index: linux-2.6.mod/fs/eventfd.c
-===================================================================
---- linux-2.6.mod.orig/fs/eventfd.c	2010-01-10 11:04:44.000000000 -0800
-+++ linux-2.6.mod/fs/eventfd.c	2010-01-13 09:23:56.000000000 -0800
-@@ -135,26 +135,71 @@ static unsigned int eventfd_poll(struct 
- 	return events;
- }
- 
--static ssize_t eventfd_read(struct file *file, char __user *buf, size_t count,
--			    loff_t *ppos)
-+static void eventfd_ctx_do_read(struct eventfd_ctx *ctx, __u64 *cnt)
-+{
-+	*cnt = (ctx->flags & EFD_SEMAPHORE) ? 1 : ctx->count;
-+	ctx->count -= *cnt;
-+}
-+
-+/**
-+ * eventfd_ctx_remove_wait_queue - Read the current counter and removes wait queue.
-+ * @ctx: [in] Pointer to eventfd context.
-+ * @wait: [in] Wait queue to be removed.
-+ * @cnt: [out] Pointer to the 64bit conter value.
-+ *
-+ * Returns zero if successful, or the following error codes:
-+ *
-+ * -EAGAIN      : The operation would have blocked.
-+ *
-+ * This is used to atomically remove a wait queue entry from the eventfd wait
-+ * queue head, and read/reset the counter value.
-+ */
-+int eventfd_ctx_remove_wait_queue(struct eventfd_ctx *ctx, wait_queue_t *wait,
-+				  __u64 *cnt)
-+{
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&ctx->wqh.lock, flags);
-+	eventfd_ctx_do_read(ctx, cnt);
-+	__remove_wait_queue(&ctx->wqh, wait);
-+	if (*cnt != 0 && waitqueue_active(&ctx->wqh))
-+		wake_up_locked_poll(&ctx->wqh, POLLOUT);
-+	spin_unlock_irqrestore(&ctx->wqh.lock, flags);
-+
-+	return *cnt != 0 ? 0 : -EAGAIN;
-+}
-+EXPORT_SYMBOL_GPL(eventfd_ctx_remove_wait_queue);
-+
-+/**
-+ * eventfd_ctx_read - Reads the eventfd counter or wait if it is zero.
-+ * @ctx: [in] Pointer to eventfd context.
-+ * @no_wait: [in] Different from zero if the operation should not block.
-+ * @cnt: [out] Pointer to the 64bit conter value.
-+ *
-+ * Returns zero if successful, or the following error codes:
-+ *
-+ * -EAGAIN      : The operation would have blocked but @no_wait was nonzero.
-+ * -ERESTARTSYS : A signal interrupted the wait operation.
-+ *
-+ * If @no_wait is zero, the function might sleep until the eventfd internal
-+ * counter becomes greater than zero.
-+ */
-+ssize_t eventfd_ctx_read(struct eventfd_ctx *ctx, int no_wait, __u64 *cnt)
- {
--	struct eventfd_ctx *ctx = file->private_data;
- 	ssize_t res;
--	__u64 ucnt = 0;
- 	DECLARE_WAITQUEUE(wait, current);
- 
--	if (count < sizeof(ucnt))
--		return -EINVAL;
- 	spin_lock_irq(&ctx->wqh.lock);
-+	*cnt = 0;
- 	res = -EAGAIN;
- 	if (ctx->count > 0)
--		res = sizeof(ucnt);
--	else if (!(file->f_flags & O_NONBLOCK)) {
-+		res = 0;
-+	else if (!no_wait) {
- 		__add_wait_queue(&ctx->wqh, &wait);
--		for (res = 0;;) {
-+		for (;;) {
- 			set_current_state(TASK_INTERRUPTIBLE);
- 			if (ctx->count > 0) {
--				res = sizeof(ucnt);
-+				res = 0;
- 				break;
- 			}
- 			if (signal_pending(current)) {
-@@ -168,18 +213,32 @@ static ssize_t eventfd_read(struct file 
- 		__remove_wait_queue(&ctx->wqh, &wait);
- 		__set_current_state(TASK_RUNNING);
- 	}
--	if (likely(res > 0)) {
--		ucnt = (ctx->flags & EFD_SEMAPHORE) ? 1 : ctx->count;
--		ctx->count -= ucnt;
-+	if (likely(res == 0)) {
-+		eventfd_ctx_do_read(ctx, cnt);
- 		if (waitqueue_active(&ctx->wqh))
- 			wake_up_locked_poll(&ctx->wqh, POLLOUT);
- 	}
- 	spin_unlock_irq(&ctx->wqh.lock);
--	if (res > 0 && put_user(ucnt, (__u64 __user *) buf))
--		return -EFAULT;
- 
- 	return res;
- }
-+EXPORT_SYMBOL_GPL(eventfd_ctx_read);
-+
-+static ssize_t eventfd_read(struct file *file, char __user *buf, size_t count,
-+			    loff_t *ppos)
-+{
-+	struct eventfd_ctx *ctx = file->private_data;
-+	ssize_t res;
-+	__u64 cnt;
-+
-+	if (count < sizeof(cnt))
-+		return -EINVAL;
-+	res = eventfd_ctx_read(ctx, file->f_flags & O_NONBLOCK, &cnt);
-+	if (res < 0)
-+		return res;
-+
-+	return put_user(cnt, (__u64 __user *) buf) ? -EFAULT : sizeof(cnt);
-+}
- 
- static ssize_t eventfd_write(struct file *file, const char __user *buf, size_t count,
- 			     loff_t *ppos)
-Index: linux-2.6.mod/include/linux/eventfd.h
-===================================================================
---- linux-2.6.mod.orig/include/linux/eventfd.h	2010-01-10 11:04:44.000000000 -0800
-+++ linux-2.6.mod/include/linux/eventfd.h	2010-01-13 09:20:54.000000000 -0800
-@@ -10,6 +10,7 @@
- 
- #include <linux/fcntl.h>
- #include <linux/file.h>
-+#include <linux/wait.h>
- 
- /*
-  * CAREFUL: Check include/asm-generic/fcntl.h when defining
-@@ -34,6 +35,9 @@ struct file *eventfd_fget(int fd);
- struct eventfd_ctx *eventfd_ctx_fdget(int fd);
- struct eventfd_ctx *eventfd_ctx_fileget(struct file *file);
- int eventfd_signal(struct eventfd_ctx *ctx, int n);
-+ssize_t eventfd_ctx_read(struct eventfd_ctx *ctx, int no_wait, __u64 *cnt);
-+int eventfd_ctx_remove_wait_queue(struct eventfd_ctx *ctx, wait_queue_t *wait,
-+				  __u64 *cnt);
- 
- #else /* CONFIG_EVENTFD */
- 
-@@ -61,6 +65,18 @@ static inline void eventfd_ctx_put(struc
- 
- }
- 
-+static inline ssize_t eventfd_ctx_read(struct eventfd_ctx *ctx, int no_wait,
-+				       __u64 *cnt)
-+{
-+	return -ENOSYS;
-+}
-+
-+static inline int eventfd_ctx_remove_wait_queue(struct eventfd_ctx *ctx,
-+						wait_queue_t *wait, __u64 *cnt)
-+{
-+	return -ENOSYS;
-+}
-+
- #endif
- 
- #endif /* _LINUX_EVENTFD_H */
+------_=_NextPart_001_01CA9478.47EDFB13--
