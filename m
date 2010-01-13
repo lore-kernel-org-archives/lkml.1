@@ -1,109 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756347Ab0AMUjN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932197Ab0AMUkM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756347Ab0AMUjN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 15:39:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755274Ab0AMUjM
+	id S932197Ab0AMUkM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 15:40:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932118Ab0AMUkK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 15:39:12 -0500
-Received: from smtp.mujha-vel.cz ([81.30.225.246]:54108 "EHLO
-	smtp.mujha-vel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755253Ab0AMUjL (ORCPT
+	Wed, 13 Jan 2010 15:40:10 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:41192 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932079Ab0AMUkK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 15:39:11 -0500
-From: Jiri Slaby <jslaby@suse.cz>
-To: jkosina@suse.cz
-Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-media@vger.kernel.org, jirislaby@gmail.com,
-       Pekka Sarnila <sarnila@adit.fi>
-Subject: [PATCH v2 1/1] HID: ignore afatech 9016
-Date: Wed, 13 Jan 2010 21:39:06 +0100
-Message-Id: <1263415146-26321-1-git-send-email-jslaby@suse.cz>
-X-Mailer: git-send-email 1.6.5.7
-In-Reply-To: <alpine.LNX.2.00.1001132111570.30977@pobox.suse.cz>
-References: <alpine.LNX.2.00.1001132111570.30977@pobox.suse.cz>
+	Wed, 13 Jan 2010 15:40:10 -0500
+Message-ID: <4B4E2F63.6060800@zytor.com>
+Date: Wed, 13 Jan 2010 12:38:59 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
+MIME-Version: 1.0
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Suresh Siddha <suresh.b.siddha@intel.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, Yinghai Lu <yinghai@kernel.org>,
+       "Maciej W. Rozycki" <macro@linux-mips.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [patch] x86, apic: use 0x20 for the IRQ_MOVE_CLEANUP_VECTOR instead
+ of 0x1f
+References: <1263002989.2879.664.camel@sbs-t61.sc.intel.com>	<4B47E7A9.6090904@zytor.com>	<1263250418.2859.681.camel@sbs-t61.sc.intel.com>	<4B4BACCA.2040805@zytor.com> <m1tyus8chc.fsf@fess.ebiederm.org>	<4B4BB0B7.3000106@zytor.com>	<1263254812.2859.890.camel@sbs-t61.sc.intel.com>	<4B4BBEBA.4060403@zytor.com> <m17hro6ua9.fsf@fess.ebiederm.org>	<4B4BC401.6010605@zytor.com> <m1k4vo144h.fsf@fess.ebiederm.org>	<4B4BDBBA.3090406@zytor.com> <m1vdf57nel.fsf@fess.ebiederm.org>
+In-Reply-To: <m1vdf57nel.fsf@fess.ebiederm.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Let's ignore the device altogether by the HID layer. It's handled
-by dvb-usb-remote driver already.
+On 01/13/2010 12:36 PM, Eric W. Biederman wrote:
+> "H. Peter Anvin" <hpa@zytor.com> writes:
+> 
+>> On 01/11/2010 05:52 PM, Eric W. Biederman wrote:
+>>>
+>>> After having the documentation quoted at me.  I am having a distinct
+>>> memory of one piece of documentation saying:
+>>> "interrupts within a priority level can be delivered in any order"
+>>>
+>>> So I am guessing there is not any ordering of interrupts in the same
+>>> priority level until they get to the local apic.
+>>>
+>>
+>> There is no ordering of interrupts before they hit the local APIC, since
+>> the local APIC is what would serialize them...
+> 
+> The io apic serializes them, and sends them over either the 2-wire
+> bus or the front side bus.   How much serialization and prioritization
+> happens at that point I am not certain, but some certainly happens
+> before you get to the local apic.
+> 
 
-By now, FULLSPEED_INTERVAL quirk was used. It probably made things
-better, but the remote controller was still a perfect X killer.
-This was the last user of the particular quirk. So remove the quirk
-as well.
+If you *have* a front side bus, that is!  With QPI or HyperTransport,
+you don't have a single serializing bus in the same way, but you have a
+mesh network instead.
 
-With input going through dvb-usb-remote, the remote works
-perfectly.
-
-The device is 15a4:9016.
-
-Signed-off-by: Jiri Slaby <jslaby@suse.cz>
-Cc: Jiri Kosina <jkosina@suse.cz>
-Cc: Pekka Sarnila <sarnila@adit.fi>
----
- drivers/hid/hid-core.c          |    1 +
- drivers/hid/usbhid/hid-core.c   |    8 --------
- drivers/hid/usbhid/hid-quirks.c |    2 --
- include/linux/hid.h             |    1 -
- 4 files changed, 1 insertions(+), 11 deletions(-)
-
-diff --git a/drivers/hid/hid-core.c b/drivers/hid/hid-core.c
-index 08f8f23..0ae0bfd 100644
---- a/drivers/hid/hid-core.c
-+++ b/drivers/hid/hid-core.c
-@@ -1534,6 +1534,7 @@ static const struct hid_device_id hid_ignore_list[] = {
- 	{ HID_USB_DEVICE(USB_VENDOR_ID_ACECAD, USB_DEVICE_ID_ACECAD_FLAIR) },
- 	{ HID_USB_DEVICE(USB_VENDOR_ID_ACECAD, USB_DEVICE_ID_ACECAD_302) },
- 	{ HID_USB_DEVICE(USB_VENDOR_ID_ADS_TECH, USB_DEVICE_ID_ADS_TECH_RADIO_SI470X) },
-+	{ HID_USB_DEVICE(USB_VENDOR_ID_AFATECH, USB_DEVICE_ID_AFATECH_AF9016) },
- 	{ HID_USB_DEVICE(USB_VENDOR_ID_AIPTEK, USB_DEVICE_ID_AIPTEK_01) },
- 	{ HID_USB_DEVICE(USB_VENDOR_ID_AIPTEK, USB_DEVICE_ID_AIPTEK_10) },
- 	{ HID_USB_DEVICE(USB_VENDOR_ID_AIPTEK, USB_DEVICE_ID_AIPTEK_20) },
-diff --git a/drivers/hid/usbhid/hid-core.c b/drivers/hid/usbhid/hid-core.c
-index e2997a8..36a1561 100644
---- a/drivers/hid/usbhid/hid-core.c
-+++ b/drivers/hid/usbhid/hid-core.c
-@@ -938,14 +938,6 @@ static int usbhid_start(struct hid_device *hid)
- 
- 		interval = endpoint->bInterval;
- 
--		/* Some vendors give fullspeed interval on highspeed devides */
--		if (hid->quirks & HID_QUIRK_FULLSPEED_INTERVAL &&
--		    dev->speed == USB_SPEED_HIGH) {
--			interval = fls(endpoint->bInterval*8);
--			printk(KERN_INFO "%s: Fixing fullspeed to highspeed interval: %d -> %d\n",
--			       hid->name, endpoint->bInterval, interval);
--		}
--
- 		/* Change the polling interval of mice. */
- 		if (hid->collection->usage == HID_GD_MOUSE && hid_mousepoll_interval > 0)
- 			interval = hid_mousepoll_interval;
-diff --git a/drivers/hid/usbhid/hid-quirks.c b/drivers/hid/usbhid/hid-quirks.c
-index 38773dc..f2ae8a7 100644
---- a/drivers/hid/usbhid/hid-quirks.c
-+++ b/drivers/hid/usbhid/hid-quirks.c
-@@ -41,8 +41,6 @@ static const struct hid_blacklist {
- 	{ USB_VENDOR_ID_SAITEK, USB_DEVICE_ID_SAITEK_RUMBLEPAD, HID_QUIRK_BADPAD },
- 	{ USB_VENDOR_ID_TOPMAX, USB_DEVICE_ID_TOPMAX_COBRAPAD, HID_QUIRK_BADPAD },
- 
--	{ USB_VENDOR_ID_AFATECH, USB_DEVICE_ID_AFATECH_AF9016, HID_QUIRK_FULLSPEED_INTERVAL },
--
- 	{ USB_VENDOR_ID_PANTHERLORD, USB_DEVICE_ID_PANTHERLORD_TWIN_USB_JOYSTICK, HID_QUIRK_MULTI_INPUT | HID_QUIRK_SKIP_OUTPUT_REPORTS },
- 	{ USB_VENDOR_ID_PLAYDOTCOM, USB_DEVICE_ID_PLAYDOTCOM_EMS_USBII, HID_QUIRK_MULTI_INPUT },
- 
-diff --git a/include/linux/hid.h b/include/linux/hid.h
-index 8709365..4a33e16 100644
---- a/include/linux/hid.h
-+++ b/include/linux/hid.h
-@@ -311,7 +311,6 @@ struct hid_item {
- #define HID_QUIRK_BADPAD			0x00000020
- #define HID_QUIRK_MULTI_INPUT			0x00000040
- #define HID_QUIRK_SKIP_OUTPUT_REPORTS		0x00010000
--#define HID_QUIRK_FULLSPEED_INTERVAL		0x10000000
- #define HID_QUIRK_NO_INIT_REPORTS		0x20000000
- 
- /*
--- 
-1.6.5.7
+	-hpa
 
