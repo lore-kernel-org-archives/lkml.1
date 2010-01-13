@@ -1,68 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752674Ab0AMFjS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752895Ab0AMFjm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752674Ab0AMFjS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 00:39:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752411Ab0AMFjR
+	id S1752895Ab0AMFjm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 00:39:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750715Ab0AMFjl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 00:39:17 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:36753 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751612Ab0AMFjP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 00:39:15 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Wed, 13 Jan 2010 14:35:55 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       stable <stable@kernel.org>, Balbir Singh <balbir@linux.vnet.ibm.com>
-Subject: Re: [BUGFIX][PATCH] memcg: ensure list is empty at rmdir
-Message-Id: <20100113143555.df2cb1cc.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20100113142707.1c857d1d.nishimura@mxp.nes.nec.co.jp>
-References: <20100112140836.45e7fabb.nishimura@mxp.nes.nec.co.jp>
-	<20100113103006.8cf3b23c.nishimura@mxp.nes.nec.co.jp>
-	<20100113122754.d390d0a2.kamezawa.hiroyu@jp.fujitsu.com>
-	<20100113142707.1c857d1d.nishimura@mxp.nes.nec.co.jp>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 13 Jan 2010 00:39:41 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:3444 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932070Ab0AMFjl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jan 2010 00:39:41 -0500
+Message-ID: <4B4D5C6F.6020702@redhat.com>
+Date: Wed, 13 Jan 2010 00:38:55 -0500
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
+MIME-Version: 1.0
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Jason Baron <jbaron@redhat.com>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, mathieu.desnoyers@polymtl.ca, tglx@linutronix.de,
+       rostedt@goodmis.org, andi@firstfloor.org, roland@redhat.com,
+       rth@redhat.com
+Subject: Re: [RFC PATCH 2/8] jump label v4 - x86: Introduce generic jump patching
+ without stop_machine
+References: <cover.1263247113.git.jbaron@redhat.com> <a4aa5bbcf5e62eaa5dd156d318a370236f28be09.1263247114.git.jbaron@redhat.com> <4B4D02B8.5020801@zytor.com>
+In-Reply-To: <4B4D02B8.5020801@zytor.com>
+X-Enigmail-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 13 Jan 2010 14:27:07 +0900
-Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
-> For example:
-> - Pages can be uncharged by its owner process while they are on LRU.
-> - race between mem_cgroup_add_lru_list() and __mem_cgroup_uncharge_common().
+H. Peter Anvin wrote:
+> On 01/12/2010 08:26 AM, Jason Baron wrote:
+>> Add text_poke_fixup() which takes a fixup address to where a processor
+>> jumps if it hits the modifying address while code modifying.
+>> text_poke_fixup() does following steps for this purpose.
+>>
+>>  1. Setup int3 handler for fixup.
+>>  2. Put a breakpoint (int3) on the first byte of modifying region,
+>>     and synchronize code on all CPUs.
+>>  3. Modify other bytes of modifying region, and synchronize code on all CPUs.
+>>  4. Modify the first byte of modifying region, and synchronize code
+>>     on all CPUs.
+>>  5. Clear int3 handler.
+>>
 > 
-> So there can be a case in which the usage is zero but some of the LRUs are not empty.
-> 
-> OTOH, mem_cgroup_del_lru_list(), which can be called asynchronously with rmdir,
-> accesses the mem_cgroup, so this access can cause a problem if it races with
-> rmdir because the mem_cgroup might have been freed by rmdir.
-> 
- 
-> The problem here is pages on LRU may contain pointer to stale memcg.
-> To make res->usage to be 0, all pages on memcg must be uncharged or moved to
-> another(parent) memcg. Moved page_cgroup have already removed from original LRU,
-> but uncharged page_cgroup contains pointer to memcg withou PCG_USED bit. (This
-> asynchronous LRU work is for improving performance.) If PCG_USED bit is not set,
-> page_cgroup will never be added to memcg's LRU. So, about pages not on LRU, they
-> never access stale pointer. Then, what we have to take care of is page_cgroup
-> _on_ LRU list. This patch fixes this problem by making mem_cgroup_force_empty()
-> visit all LRUs before exiting its loop and guarantee there are no pages on its LRU.
-> 
-> Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-> Acked-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> Cc: Balbir Singh <balbir@linux.vnet.ibm.com>
-> Cc: stable@kernel.org
+> We (Intel OTC) have been able to get an *unofficial* answer as to the
+> validity of this procedure; specifically as it applies to Intel hardware
+> (obviously).  We are working on getting an officially approved answer,
+> but as far as we currently know, the procedure as outlined above should
+> work on all Intel hardware.  In fact, we believe the synchronization in
+> step 3 is in fact unnecessary (as the synchronization in step 4 provides
+> sufficient guard.)
 
-Thank you. very nice.
+Good news! Thank you very much, Peter!
 
-Regards,
--Kame
+And actually, this patch is a bit older than I previously posted on LKML.
+
+http://lkml.org/lkml/2009/12/18/312
+
+Oops, I've forgotten update comment on patch... anyway, patch implementation
+itself is updated and removed second sync_core_all.
+I'll post it again with updated comment.
+
+> In fact, if a suitable int3 handler is left permanently in place then
+> step 5 is unnecessary as well.  This would slow down other uses of int3
+> slightly, but might be a worthwhile tradeoff.
+
+OK.
+
+> Such a permanent int3 handler would need to keep track of two
+> potentially-spurious breakpoints: the current and the previous.  The
+> reason for needing two is that one could get a #BP from either the
+> current or the previous modification site between the insertion of int3
+> and the synchronization in step 2.  This, of course, assumes that the
+> actual code poking is forcibly single-threaded (running under a spinlock
+> or other mutex) -- if modifications are allowed to run in parallel you
+> need to consider all possible current or stale #BP sites.
+
+Sure, and since we are using fixmap for poking, we need to do this
+under locking text_mutex.
+
+Thank you!
+
+
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
 
