@@ -1,100 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756649Ab0AMXge@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756662Ab0AMXgl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756649Ab0AMXge (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 18:36:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756638Ab0AMXgb
+	id S1756662Ab0AMXgl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 18:36:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756643Ab0AMXgd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Wed, 13 Jan 2010 18:36:33 -0500
+Received: from shadbolt.e.decadent.org.uk ([88.96.1.126]:35824 "EHLO
+	shadbolt.e.decadent.org.uk" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756637Ab0AMXgb convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 13 Jan 2010 18:36:31 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:61472 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756577Ab0AMXgb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 18:36:31 -0500
-X-Authority-Analysis: v=1.0 c=1 a=g2MyM69NJrgA:10 a=7U3hwN5JcxgA:10 a=nUN8mt6XobZj91-GOjUA:9 a=TsIIgr700hBpY5sEwjgA:7 a=D60AG33OuecLzq4EmG1fIbEq5HIA:4
-X-Cloudmark-Score: 0
-X-Originating-IP: 74.67.89.75
-Subject: Re: [RFC] [PATCH 7/7] Ftrace plugin for Uprobes
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>,
-       Arnaldo Carvalho de Melo <acme@infradead.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       utrace-devel <utrace-devel@redhat.com>,
-       Jim Keniston <jkenisto@us.ibm.com>, Maneesh Soni <maneesh@in.ibm.com>,
-       Mark Wielaard <mjw@redhat.com>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <4B4E4551.2010302@redhat.com>
-References: <20100111122521.22050.3654.sendpatchset@srikar.in.ibm.com>
-	 <20100111122608.22050.94088.sendpatchset@srikar.in.ibm.com>
-	 <20100112045454.GJ5243@nowhere>
-	 <1263272933.28171.3804.camel@gandalf.stny.rr.com>
-	 <4B4E41FF.4020800@redhat.com>  <4B4E4551.2010302@redhat.com>
-Content-Type: text/plain; charset="ISO-8859-15"
-Organization: Kihon Technologies Inc.
-Date: Wed, 13 Jan 2010 18:36:27 -0500
-Message-ID: <1263425787.28171.3830.camel@gandalf.stny.rr.com>
+From: Ben Hutchings <ben@decadent.org.uk>
+To: Greg Kroah-Hartman <gregkh@suse.de>
+Cc: devel@driverdev.osuosl.org, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
+Date: Wed, 13 Jan 2010 23:36:27 +0000
+Message-ID: <1263425787.3852.120.camel@localhost>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.28.2 
+X-SA-Exim-Connect-IP: 192.168.4.185
+X-SA-Exim-Mail-From: ben@decadent.org.uk
+Subject: [PATCH 04/11] sep: include driver name in firmware filenames
+X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
+X-SA-Exim-Scanned: Yes (on shadbolt.decadent.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2010-01-13 at 17:12 -0500, Masami Hiramatsu wrote:
-> Masami Hiramatsu wrote:
-> > Steven Rostedt wrote:
-> >> On Tue, 2010-01-12 at 05:54 +0100, Frederic Weisbecker wrote:
-> >>
-> >>> Now what if I want to launch ls and want to profile a function
-> >>> inside. What can I do with a trace event. I can't create the
-> >>> probe event based on a pid as I don't know it in advance.
-> >>> I could give it the ls cmdline and it manages to activate
-> >>> on the next ls launched. This is racy as another ls can
-> >>> be launched concurrently.
-> >>
-> >> You make a wrapper script:
-> >>
-> >> #!/bin/sh
-> >> <add probe to ls with pid> $$
-> >> exec $*
-> >>
-> >> I do this all the time to limit the function tracer to a specific app.
-> >>
-> >> #!/bin/sh
-> >> echo $$ > /debug/tracing/set_ftrace_pid
-> >> echo function > /debug/tracing/current_tracer
-> >> exec $*
-> > 
-> > I recommend you to add below line at the end of the script,
-> > from my experience. :)
-> > 
-> > echo nop > /debug/tracing/current_tracer
-> 
-> Oops, my bad, it doesn't work after exec...
-> But, it is very important to disable function tracer after
-> tracing target process.
-> 
-> So, perhaps, below script may work.
-> 
-> #!/bin/sh
-> (echo $BASHPID > /debug/tracing/set_ftrace_pid
->  echo function > /debug/tracing/current_tracer
->  exec $*)
-> echo nop > /debug/tracing/current_tracer
+The current names "cache.image.bin" and "resident.image.bin" are far
+too generic.
 
-Unfortunately, that would lose the entire trace you just recorded.
+Signed-off-by: Ben Hutchings <ben@decadent.org.uk>
+---
+ drivers/staging/sep/sep_driver.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-So perhaps adding:
+diff --git a/drivers/staging/sep/sep_driver.c b/drivers/staging/sep/sep_driver.c
+index e7bc9ec..6b763b7 100644
+--- a/drivers/staging/sep/sep_driver.c
++++ b/drivers/staging/sep/sep_driver.c
+@@ -182,8 +182,8 @@ static DECLARE_WAIT_QUEUE_HEAD(sep_event);
+ static int sep_load_firmware(struct sep_device *sep)
+ {
+ 	const struct firmware *fw;
+-	char *cache_name = "cache.image.bin";
+-	char *res_name = "resident.image.bin";
++	char *cache_name = "sep/cache.image.bin";
++	char *res_name = "sep/resident.image.bin";
+ 	int error;
+ 
+ 	edbg("SEP Driver:rar_virtual is %p\n", sep->rar_addr);
+-- 
+1.6.5.7
 
- trace-cmd extract
- echo nop > /debug/tracing/current_tracer
-
-would work better. The extract feature of trace-cmd pulls the data from
-the kernel buffer and saves it in a file format.
-
--- Steve
 
 
