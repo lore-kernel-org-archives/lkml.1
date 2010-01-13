@@ -1,46 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756166Ab0AMROS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756177Ab0AMRPW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756166Ab0AMROS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 12:14:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756122Ab0AMROR
+	id S1756177Ab0AMRPW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 12:15:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756137Ab0AMRPU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 12:14:17 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:40568 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756023Ab0AMROQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 12:14:16 -0500
-Date: Wed, 13 Jan 2010 18:14:11 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Joe Perches <joe@perches.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Michal Marek <mmarek@suse.cz>,
-       William Allen Simpson <william.allen.simpson@gmail.com>,
-       Linux Kernel Developers <linux-kernel@vger.kernel.org>,
-       Linux Kernel Network Developers <netdev@vger.kernel.org>,
-       Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>,
-       Eric Dumazet <eric.dumazet@gmail.com>, linux-kbuild@vger.kernel.org
-Subject: Re: [PATCH] Makefile: Document ability to make file.lst and file.S
-Message-ID: <20100113171411.GC24818@basil.fritz.box>
-References: <4B49D001.4000302@gmail.com> <4B4DA4F4.6060007@gmail.com> <20100113115617.GA24818@basil.fritz.box> <4B4DE887.6030602@gmail.com> <20100113155323.GB24818@basil.fritz.box> <1263400835.8011.73.camel@Joe-Laptop.home>
+	Wed, 13 Jan 2010 12:15:20 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:51064 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755927Ab0AMRPT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jan 2010 12:15:19 -0500
+Date: Wed, 13 Jan 2010 19:12:22 +0200
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: Davide Libenzi <davidel@xmailserver.org>,
+       "Michael S. Tsirkin" <mst@redhat.com>, Avi Kivity <avi@redhat.com>,
+       kvm@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH 0/2] kvm: fix spurious interrupt with irqfd
+Message-ID: <20100113171222.GA19798@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1263400835.8011.73.camel@Joe-Laptop.home>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 13, 2010 at 08:40:35AM -0800, Joe Perches wrote:
-> On Wed, 2010-01-13 at 16:53 +0100, Andi Kleen wrote:
-> > On Wed, Jan 13, 2010 at 10:36:39AM -0500, William Allen Simpson wrote:
-> > > What make command would you suggest to get the interleaved asm?
-> > make path/to/file.lst
-> > (or .S -- you might need uptodate binutils if the lst listing is messed up)
-> 
-> I didn't know that was possible.
 
-The trap is that it doesn't work well on most systems with too 
-old binutils (unless the gcc is really ancient)
+Deassigning irqfd and assigning back caused spurious interrupt. fix this
+by clearing the counter on deassign.  This is on top of davidel's patch
+which makes clearing eventfd counter from modules possible.
 
--Andi
+Michael S. Tsirkin (2):
+  kvm: fix spurious interrupt with irqfd
+  kvm: do not store wqh in irqfd
+
+ virt/kvm/eventfd.c |    6 ++----
+ 1 files changed, 2 insertions(+), 4 deletions(-)
