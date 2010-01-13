@@ -1,73 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755784Ab0AMPeV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755933Ab0AMPea@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755784Ab0AMPeV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 10:34:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755579Ab0AMPeU
+	id S1755933Ab0AMPea (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 10:34:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755903Ab0AMPe2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 10:34:20 -0500
-Received: from mail-pz0-f171.google.com ([209.85.222.171]:54998 "EHLO
-	mail-pz0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755214Ab0AMPeT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 10:34:19 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:subject:message-id:reply-to:mail-followup-to
-         :mime-version:content-type:content-disposition:x-operating-system
-         :user-agent;
-        b=jmjZIi4DE/6znvqcOHkSRECAlGcod0/2AoJ/g2P2U12w2dBy7ikdpBW4AyZ+42k5M/
-         r4G4AoJd5d/ikgeGSAo3orJPUdWMygwmtjmj578LOXCtyW8VXm5KsNKIUacoUp2bSZZS
-         gDJFtRPnGb2TY/Rxxi58FCeazmkotUHCmqGcM=
-Date: Wed, 13 Jan 2010 23:34:12 +0800
-From: Li Hong <lihong.hi@gmail.com>
-To: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-Subject: [PATCH 2/3] mm: page_alloc.c Adjust a call site to
- trace_mm_page_free_direct
-Message-ID: <20100113153412.GA12398@xhl>
-Reply-To: 20100113144917.GA11934@xhl
-Mail-Followup-To: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+	Wed, 13 Jan 2010 10:34:28 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:50544 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755889Ab0AMPe1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jan 2010 10:34:27 -0500
+Date: Wed, 13 Jan 2010 07:33:29 -0800
+From: Greg KH <gregkh@suse.de>
+To: Stanislav Brabec <utx@penguin.cz>
+Cc: Daniel Mack <daniel@caiaq.de>, Haojian Zhuang <haojian.zhuang@gmail.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Eric <eric.y.miao@gmail.com>,
+       Pavel Machek <pavel@ucw.cz>, dbaryshkov@gmail.com,
+       Cyril Hrubis <metan@ucw.cz>, arminlitzel@web.de,
+       Haojian Zhuang <haojian.zhuang@marvell.com>,
+       kernel list <linux-kernel@vger.kernel.org>, dsaxena@laptop.org,
+       lenz@cs.wisc.edu, rpurdie@rpsys.net, omegamoon@gmail.com,
+       thommycheck@gmail.com, Dirk@opfer-online.de,
+       linux-arm-kernel@lists.infradead.org, alan@linux.intel.com
+Subject: Re: Possible suspend/resume regression in .32-rc?
+Message-ID: <20100113153329.GA1276@suse.de>
+References: <20091101205449.GT14091@buzzloop.caiaq.de>
+ <20091101213343.GA31345@elf.ucw.cz>
+ <20091101220341.GA16698@elf.ucw.cz>
+ <771cded00911020122o3bb5cc96q957c8be1ce7cae46@mail.gmail.com>
+ <1257155873.5642.14.camel@utx.utx.cz>
+ <771cded00911021931x41cfa51bh2959d3748db5ac0@mail.gmail.com>
+ <1257241821.4269.5.camel@utx.utx.cz>
+ <771cded00911042106u39fd3655mae50a89bd419411b@mail.gmail.com>
+ <20100113114651.GJ8970@buzzloop.caiaq.de>
+ <1263390161.5419.9.camel@hammer.suse.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Operating-System: Linux xhl 2.6.31-14-generic
+In-Reply-To: <1263390161.5419.9.camel@hammer.suse.cz>
 User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Move a call of 'trace_mm_page_free_direct' from 'free_hot_page' to
-'free_hot_cold_page'. It is clearer and close to 'kmemcheck_free_shadow', as it
-is done in function '__free_pages_ok'.
+On Wed, Jan 13, 2010 at 02:42:41PM +0100, Stanislav Brabec wrote:
+> Daniel Mack wrote:
+> 
+> > It seems Stanislav's patch is still unmerged in the current git HEAD.
+> > Any idea why it is held back? I have it applied locally since quite a
+> > while here, and it works well. So if it helps, take my Tested-by: for
+> > it.
+> 
+> It seems to be on the right way:
+> 
+> From: gregkh@suse.de
+> Subject: patch serial-core-resume-serial-hardware-with-no_console_suspend.patch added to gregkh-2.6 tree
+> Date: Tue, 22 Dec 2009 12:22:35 -0800
+> 
+> This is a note to let you know that I've just added the patch titled
+> 
+>     Subject: serial-core: resume serial hardware with no_console_suspend
+> 
+> to my gregkh-2.6 tree.  Its filename is
+> 
+>     serial-core-resume-serial-hardware-with-no_console_suspend.patch
+> 
+> This tree can be found at 
+> 
+> http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
 
-Signed-off-by: Li Hong <lihong.hi@gmail.com>
----
- mm/page_alloc.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Ah, I missed that this was fixing a regression, so I'll move it to my
+"apply before .32 is out" queue.  Sorry about that.
 
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index 24344cd..175dd36 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -1082,6 +1082,7 @@ static void free_hot_cold_page(struct page *page, int cold)
-        int migratetype;
-        int wasMlocked = __TestClearPageMlocked(page);
- 
-+       trace_mm_page_free_direct(page, 0);
-        kmemcheck_free_shadow(page, 0);
- 
-        if (PageAnon(page))
-@@ -1136,7 +1137,6 @@ out:
- 
- void free_hot_page(struct page *page)
- {
--       trace_mm_page_free_direct(page, 0);
-        free_hot_cold_page(page, 0);
- }
-        
--- 
-1.6.3.3
-
+greg k-h
