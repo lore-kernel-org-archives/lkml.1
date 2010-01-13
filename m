@@ -1,122 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752914Ab0AMBRv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753686Ab0AMBYP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752914Ab0AMBRv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jan 2010 20:17:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752001Ab0AMBRv
+	id S1753686Ab0AMBYP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jan 2010 20:24:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752384Ab0AMBYO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jan 2010 20:17:51 -0500
-Received: from adelie.canonical.com ([91.189.90.139]:37521 "EHLO
-	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751535Ab0AMBRu convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jan 2010 20:17:50 -0500
-From: Jeremy Kerr <jeremy.kerr@canonical.com>
-To: linux-arm-kernel@lists.infradead.org
-Subject: Re: [RFC,PATCH 0/7 v2] Common struct clk implementation
-Date: Wed, 13 Jan 2010 12:17:36 +1100
-User-Agent: KMail/1.12.2 (Linux/2.6.31-16-generic; KDE/4.3.2; x86_64; ; )
-Cc: "Russell King - ARM Linux" <linux@arm.linux.org.uk>,
-       linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-References: <1263279511.160127.576969496193.0.gpush@pororo> <20100112091324.GC26435@n2100.arm.linux.org.uk>
-In-Reply-To: <20100112091324.GC26435@n2100.arm.linux.org.uk>
-MIME-Version: 1.0
-Content-Type: Text/Plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-Id: <201001131217.36575.jeremy.kerr@canonical.com>
+	Tue, 12 Jan 2010 20:24:14 -0500
+Received: from usul.overt.org ([204.11.33.43]:60097 "EHLO usul.overt.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751221Ab0AMBYN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jan 2010 20:24:13 -0500
+Date: Tue, 12 Jan 2010 17:23:59 -0800
+From: Philip Langdale <philipl@overt.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Maxim Levitsky <maximlevitsky@gmail.com>, Pierre Ossman <pierre@ossman.eu>,
+       linux-kernel <linux-kernel@vger.kernel.org>, linux-mmc@vger.kernel.org
+Subject: Re: [PATCH v2] port ricoh_mmc to be pci quirk
+Message-ID: <20100112172359.7ae7b30b@fido2.homeip.net>
+In-Reply-To: <20100112154350.8fa96829.akpm@linux-foundation.org>
+References: <1259021583.16650.9.camel@maxim-laptop>
+	<20091123162119.3777e14d@fido2.homeip.net>
+	<1259160947.10147.1.camel@maxim-laptop>
+	<1259161121.10147.4.camel@maxim-laptop>
+	<20091125085324.1ef9ae1f@fido2.homeip.net>
+	<20091125113501.1f4d42b9.akpm@linux-foundation.org>
+	<1259192401.15916.48.camel@maxim-laptop>
+	<20091125173019.74d0ddb9@fido2.homeip.net>
+	<1259279520.3991.5.camel@maxim-laptop>
+	<1259279584.3991.6.camel@maxim-laptop>
+	<20091126235551.2db699e3@fido2.homeip.net>
+	<1262964284.12577.27.camel@maxim-laptop>
+	<20100108074001.5df6c997@fido2.homeip.net>
+	<20100112154350.8fa96829.akpm@linux-foundation.org>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; i486-slackware-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SA-Do-Not-RunX1: Yes
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Russell,
+On Tue, 12 Jan 2010 15:43:50 -0800
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-> But the point I was trying to convey is that OMAP doesn't work with
-> _either_ a pure operations struct _or_ a bunch of per-clock function
-> pointers - it currently uses a mixture of the two.
+> (cc linux-mmc)
+> 
+> On Fri, 8 Jan 2010 07:40:01 -0800
+> Philip Langdale <philipl@overt.org> wrote:
+> 
+> > On Fri, 08 Jan 2010 17:24:44 +0200
+> > Maxim Levitsky <maximlevitsky@gmail.com> wrote:
+> > 
+> > > On Thu, 2009-11-26 at 23:55 -0800, Philip Langdale wrote: 
+> > > > On Fri, 27 Nov 2009 01:53:04 +0200
+> > > > Maxim Levitsky <maximlevitsky@gmail.com> wrote:
+> > > > 
+> > > > > >From 2d3002e29c329d76ca4e26d9f427814151a9648c Mon Sep 17
+> > > > > >00:00:00 2001
+> > > > > From: Maxim Levitsky <maximlevitsky@gmail.com>
+> > > > > Date: Fri, 27 Nov 2009 00:53:28 +0200
+> > > > > Subject: [PATCH] port ricoh_mmc to be pci quirk
+> > > > > 
+> > > > > This patch solves nasty problem original driver has.
+> > > > > Original goal of the ricoh_mmc was to disable this device
+> > > > > because then, mmc cards can be read using standard SDHCI
+> > > > > controller, thus avoiding writing of yet another driver.
+> > > > > However, the act of disablement, makes other pci functions
+> > > > > that belong to this controller (xD and memstick) shift up one
+> > > > > level, thus pci core has now wrong idea about these devices.
+> > > > > 
+> > > > > To fix this issue, this patch moves the driver into pci quirk
+> > > > > section, thus it is executes before the pci is enumerated, and
+> > > > > therefore solving that issue, also same sequence of commands
+> > > > > is performed on resume for same reasons.
+> > > > > 
+> > > > > Also regardless of the above, this way is cleaner.
+> > > > > 
+> > > > > You still need to set CONFIG_MMC_RICOH_MMC
+> > > > > to enable this quirk
+> > > > 
+> > > > I like it. Only comment is that I'd like the printks to identify
+> > > > which controller is involved. If Andrew is happy with the CONFIG
+> > > > mechanism, then you've got an ack from me.
+> > > > 
+> > > > Thanks for doing this.
+> > > 
+> > > Hi, do you plan to include this patch in the kernel?
+> > 
+> > That's Andrew's call, but to the extent that my opinion matters, I
+> > support it being included.
+> >  
+> 
+> I have a note here that Pierre had issues with the patch.  I'm
+> uncertain whether those are now resolved?
 
-With the common clk, you can do exactly that:
+The last comment from Pierre I have is from the 25th of November and
+says:
 
-struct clk_foo {
-	/* ->ops provides functions common to clk_foo */
-	struct clk;
+> I have no objections to this patch.
 
-	/* provides a function for only this clock */
-	int (*single_clock_func)(struct clk_foo *);
-}
+:-)
 
-The only real difference is that the public API is provided through struct clk 
-rather than redefined clk_* functions; whatever is implementing the clock-
-type-specific struct clk can add whatever fields necessary.
-
->From your earlier mail about sizes on omap:
-
-> There are two function pointers in the struct clk which would be
-> identical to the versions proposed in this generic struct clk.
-> There's a total of 219 clk structures in OMAP3.  So, 219 * (4 + 8)
-> = 2628.  Switching OMAP means 219 * (4 + 32) = 7884, which is an
-> increase in overhead of 3x.
-
-But we also can reduce the size of the struct clk in most cases; I believe the 
-separate clk_operations in v2 of this series will help with this.
-
-Taking OMAP3 for example (I'm not very familiar with that platform, so am 
-basing this on a brief look through the clock code), the first step to a 
-common clk port would be to wrap the existing struct clk:
-
-struct clk_omap {
-	struct clk			clk;
-	struct list_head		node;
-	const struct clkops	*ops;
-    [...]
-};
-
-and define the clk_operations to be the current omap clk_* functions.
-
-This results in one extra pointer per clock, plus the clk_operations, so 908 
-bytes (4 * 219 + 32) overhead.
-
-Next, we can start removing fields that are not used by all clocks; the fixed 
-top-level clocks would be a good start; it looks like we can represent those 
-with a:
-
-struct clk_omap_fixed {
-	struct clk	clk;
-	char			*name;
-	unsigned long	rate;
-}
-
-[For these fixed clocks, we don't need to propagate changes to children, hence 
-I'm assuming no child/sibling members]
-
-The original struct clk is 96 bytes; clk_omap_fixed is 12, but we still need 
-one clk_operations (32 bytes). Since there are 8 of these, we save 640 bytes 
-((96 - 12) * 8 - 32).
-
-If we then take the 'follow parent' clocks, it looks like we can represent 
-those with something like:
-
-struct clk_omap_followparent = {
-	struct clk	clk;
-	char			*name;
-	struct clk	*parent;
-	struct list_head children, siblings;
-	unsigned long	rate;
-	void __iomem	*enable_reg;
-	__u8			enable_bit;
-	char			*clkdm_name;
-	int			flags;
-};
-
-This would be 48 bytes, there are 140 of these, saving 6688 bytes ( (96 - 48) 
-* 140 - 32).
-
-Now, we could stop here, or keep looking for common usage patterns of struct 
-clk to find cases where creating another clock type makes sense.
-
-I know I've only looked at the easy OMAP cases here, but the principle still 
-applies: keep the original struct clk around as a fallback, but use the 
-smaller struct clks where possible.
-
-Cheers,
-
-
-Jeremy
+--phil
