@@ -1,80 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755140Ab0AMNjk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753850Ab0AMNkJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755140Ab0AMNjk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 08:39:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754993Ab0AMNji
+	id S1753850Ab0AMNkJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 08:40:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755182Ab0AMNkG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 08:39:38 -0500
-Received: from ns.penguin.cz ([84.21.108.25]:53717 "EHLO ns.penguin.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754989Ab0AMNji (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 08:39:38 -0500
-Subject: Re: Possible suspend/resume regression in .32-rc?
-From: Stanislav Brabec <utx@penguin.cz>
-To: Daniel Mack <daniel@caiaq.de>
-Cc: Haojian Zhuang <haojian.zhuang@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Eric <eric.y.miao@gmail.com>,
-       Pavel Machek <pavel@ucw.cz>, dbaryshkov@gmail.com,
-       Cyril Hrubis <metan@ucw.cz>, arminlitzel@web.de, gregkh@suse.de,
-       Haojian Zhuang <haojian.zhuang@marvell.com>,
-       kernel list <linux-kernel@vger.kernel.org>, dsaxena@laptop.org,
-       lenz@cs.wisc.edu, rpurdie@rpsys.net, omegamoon@gmail.com,
-       thommycheck@gmail.com, Dirk@opfer-online.de,
-       linux-arm-kernel@lists.infradead.org, alan@linux.intel.com
-In-Reply-To: <20100113114651.GJ8970@buzzloop.caiaq.de>
-References: <20091031013427.GL14091@buzzloop.caiaq.de>
-	 <20091101205449.GT14091@buzzloop.caiaq.de>
-	 <20091101213343.GA31345@elf.ucw.cz> <20091101220341.GA16698@elf.ucw.cz>
-	 <771cded00911020122o3bb5cc96q957c8be1ce7cae46@mail.gmail.com>
-	 <1257155873.5642.14.camel@utx.utx.cz>
-	 <771cded00911021931x41cfa51bh2959d3748db5ac0@mail.gmail.com>
-	 <1257241821.4269.5.camel@utx.utx.cz>
-	 <771cded00911042106u39fd3655mae50a89bd419411b@mail.gmail.com>
-	 <20100113114651.GJ8970@buzzloop.caiaq.de>
-Content-Type: text/plain; charset="ISO-8859-2"
-Date: Wed, 13 Jan 2010 14:42:41 +0100
-Message-Id: <1263390161.5419.9.camel@hammer.suse.cz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.0 
-Content-Transfer-Encoding: 8bit
+	Wed, 13 Jan 2010 08:40:06 -0500
+Received: from casper.infradead.org ([85.118.1.10]:36231 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754993Ab0AMNkF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jan 2010 08:40:05 -0500
+Date: Wed, 13 Jan 2010 11:39:52 -0200
+From: Arnaldo Carvalho de Melo <acme@infradead.org>
+To: Kirill Smelkov <kirr@landau.phys.spbu.ru>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Mike Galbraith <efault@gmx.de>, Masami Hiramatsu <mhiramat@redhat.com>
+Subject: Re: [PATCH 1/6] perf top: teach it to autolocate vmlinux
+Message-ID: <20100113133952.GD2934@ghostprotocols.net>
+References: <cover.1262952612.git.kirr@landau.phys.spbu.ru>
+ <de6bae3b8d61ea3db1a797f31ebea6e3ed8c00a8.1262952612.git.kirr@landau.phys.spbu.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <de6bae3b8d61ea3db1a797f31ebea6e3ed8c00a8.1262952612.git.kirr@landau.phys.spbu.ru>
+X-Url: http://acmel.wordpress.com
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <acme@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Daniel Mack wrote:
+Em Fri, Jan 08, 2010 at 03:23:04PM +0300, Kirill Smelkov escreveu:
+> By relying on logic in dso__load_kernel_sym(), we can automatically load
+> vmlinux.
+> 
+> The only thing which needs to be adjusted, is how --sym-annotate option
+> is handled - now we can't rely on vmlinux been loaded until full
+> successful pass of dso__load_vmlinux(), but that's not the case if we'll
+> do sym_filter_entry setup in symbol_filter().
+> 
+> So move this step right after event__process_sample() where we know the
+> whole dso__load_kernel_sym() pass is done.
+> 
+> By the way, though conceptually similar `perf top` still can't annotate
+> userspace - see next patches with fixes.
+> 
+> Signed-off-by: Kirill Smelkov <kirr@landau.phys.spbu.ru>
+> Cc: Mike Galbraith <efault@gmx.de>
+> ---
 
-> It seems Stanislav's patch is still unmerged in the current git HEAD.
-> Any idea why it is held back? I have it applied locally since quite a
-> while here, and it works well. So if it helps, take my Tested-by: for
-> it.
+<SNIP>
 
-It seems to be on the right way:
+> @@ -951,6 +953,13 @@ static void event__process_sample(const event_t *self,
+>  	    al.sym == NULL || al.filtered)
+>  		return;
+>  
+> +	/* let's see, whether we need to install initial sym_filter_entry */
+> +	if (sym_filter_entry_sched) {
+> +		sym_filter_entry = sym_filter_entry_sched;
+> +		sym_filter_entry_sched = NULL;
+> +		parse_source(sym_filter_entry);
+> +	}
+> +
 
-From: gregkh@suse.de
-Subject: patch serial-core-resume-serial-hardware-with-no_console_suspend.patch added to gregkh-2.6 tree
-Date: Tue, 22 Dec 2009 12:22:35 -0800
+You're assuming that the first sample is for the kernel, right? It may
+be not and then the vmlinux won't be loaded at this point.
 
-This is a note to let you know that I've just added the patch titled
+I think that the right way is to force it to be loaded by calling:
 
-    Subject: serial-core: resume serial hardware with no_console_suspend
+	map__load(session->vmlinux_maps[MAP__FUNCTION], session, filter);
 
-to my gregkh-2.6 tree.  Its filename is
+after perf_session__create_kernel_maps and before parse_source(), ok?
 
-    serial-core-resume-serial-hardware-with-no_console_suspend.patch
+	You can even create a helper:
 
-This tree can be found at 
+int perf_session__load_vmlinux(struct perf_session *self,
+                               symbol_filter_t filter)
+{
+	return map__load(session->vmlinux_maps[MAP__FUNCTION],
+			 session, filter);
+}
 
-http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
+	As this probably will be of interest for tools such as 'perf
+probe', etc.
 
-
--- 
-Best Regards / S pozdravem,
-
-Stanislav Brabec
-software developer
----------------------------------------------------------------------
-SUSE LINUX, s. r. o.                          e-mail: sbrabec@suse.cz
-Lihovarská 1060/12           tel: +420 284 028 966, +49 911 740538747
-190 00 Praha 9                                  fax: +420 284 028 951
-Czech Republic                                    http://www.suse.cz/
-
+- Arnaldo
