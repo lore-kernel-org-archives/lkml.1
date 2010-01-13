@@ -1,59 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754618Ab0AMBBQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754121Ab0AMBA7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754618Ab0AMBBQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jan 2010 20:01:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754482Ab0AMBBL
+	id S1754121Ab0AMBA7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jan 2010 20:00:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751396Ab0AMBA5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jan 2010 20:01:11 -0500
-Received: from mga14.intel.com ([143.182.124.37]:50907 "EHLO mga14.intel.com"
+	Tue, 12 Jan 2010 20:00:57 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:55311 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754543Ab0AMBBI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jan 2010 20:01:08 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
-   d="scan'208";a="232067535"
-From: Seth Heasley <seth.heasley@intel.com>
-Organization: Intel Corporation
-To: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
-       jbarnes@virtuousgeek.org, khali@linux-fr.org
-Subject: [PATCH 2.6.32.3] irq: irq and pci_ids patch for Intel Cougar Point DeviceIDs
-Date: Tue, 12 Jan 2010 16:56:37 -0800
-User-Agent: KMail/1.10.3 (Linux/2.6.27.7-9-default; KDE/4.1.3; x86_64; ; )
-Cc: seth.heasley@intel.com
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <201001121656.37664.seth.heasley@intel.com>
+	id S1752154Ab0AMBAz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jan 2010 20:00:55 -0500
+Message-Id: <20100113004939.103771236@suse.com>
+User-Agent: quilt/0.48-4.4
+Date: Tue, 12 Jan 2010 19:48:59 -0500
+From: Jeff Mahoney <jeffm@suse.com>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Alex Chiang <achiang@hp.com>
+Subject: [patch 4/6] acpi: Fix section mismatch
+References: <20100113004855.550486769@suse.com>
+Content-Disposition: inline; filename=patches.rpmify/acpi-fix-section-mismatch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds the Intel Cougar Point (PCH) LPC and SMBus Controller DeviceIDs.
+ acpi_early_processor_set_pdc uses processor_idle_dmi_table, which is
+ marked __cpuinitdata. It's only called by acpi_bus_init, which is __init.
+ We mark it __cpuinit.
 
-Signed-off-by: Seth Heasley <seth.heasley@intel.com>
+Signed-off-by: Jeff Mahoney <jeffm@suse.com>
+---
+ drivers/acpi/processor_pdc.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- linux-2.6.32.3/arch/x86/pci/irq.c.orig	2010-01-06 15:07:45.000000000 -0800
-+++ linux-2.6.32.3/arch/x86/pci/irq.c	2010-01-07 13:10:28.000000000 -0800
-@@ -590,6 +590,8 @@
- 	case PCI_DEVICE_ID_INTEL_ICH10_1:
- 	case PCI_DEVICE_ID_INTEL_ICH10_2:
- 	case PCI_DEVICE_ID_INTEL_ICH10_3:
-+	case PCI_DEVICE_ID_INTEL_CPT_LPC1:
-+	case PCI_DEVICE_ID_INTEL_CPT_LPC2:
- 		r->name = "PIIX/ICH";
- 		r->get = pirq_piix_get;
- 		r->set = pirq_piix_set;
---- linux-2.6.32.3/include/linux/pci_ids.h.orig	2010-01-06 15:07:45.000000000 -0800
-+++ linux-2.6.32.3/include/linux/pci_ids.h	2010-01-07 13:10:28.000000000 -0800
-@@ -2398,6 +2398,9 @@
- #define PCI_DEVICE_ID_INTEL_82840_HB	0x1a21
- #define PCI_DEVICE_ID_INTEL_82845_HB	0x1a30
- #define PCI_DEVICE_ID_INTEL_IOAT	0x1a38
-+#define PCI_DEVICE_ID_INTEL_CPT_SMBUS	0x1c22
-+#define PCI_DEVICE_ID_INTEL_CPT_LPC1	0x1c42
-+#define PCI_DEVICE_ID_INTEL_CPT_LPC2	0x1c43
- #define PCI_DEVICE_ID_INTEL_82801AA_0	0x2410
- #define PCI_DEVICE_ID_INTEL_82801AA_1	0x2411
- #define PCI_DEVICE_ID_INTEL_82801AA_3	0x2413
+--- a/drivers/acpi/processor_pdc.c
++++ b/drivers/acpi/processor_pdc.c
+@@ -151,7 +151,7 @@ early_init_pdc(acpi_handle handle, u32 l
+ 	return AE_OK;
+ }
+ 
+-void acpi_early_processor_set_pdc(void)
++void __cpuinit acpi_early_processor_set_pdc(void)
+ {
+ 	/*
+ 	 * Check whether the system is DMI table. If yes, OSPM
+
+
