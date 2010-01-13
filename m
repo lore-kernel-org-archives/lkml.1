@@ -1,132 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755494Ab0AMK1m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755499Ab0AMK1v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755494Ab0AMK1m (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 05:27:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755436Ab0AMK1j
+	id S1755499Ab0AMK1v (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 05:27:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755333Ab0AMK1t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 05:27:39 -0500
-Received: from ms01.sssup.it ([193.205.80.99]:48886 "EHLO sssup.it"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755346Ab0AMK1g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 05:27:36 -0500
-Subject: Re: [RFC 12/12][PATCH] SCHED_DEADLINE: modified sched_*_ex API
-From: Raistlin <raistlin@linux.it>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       michael trimarchi <michael@evidence.eu.com>,
-       Fabio Checconi <fabio@gandalf.sssup.it>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Dhaval Giani <dhaval.giani@gmail.com>,
-       Johan Eker <johan.eker@ericsson.com>, "p.faure" <p.faure@akatech.ch>,
-       Chris Friesen <cfriesen@nortel.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Henrik Austad <henrik@austad.us>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Darren Hart <darren@dvhart.com>,
-       Sven-Thorsten Dietrich <sven@thebigcorporation.com>,
-       Bjoern Brandenburg <bbb@cs.unc.edu>,
-       Tommaso Cucinotta <tommaso.cucinotta@sssup.it>,
-       "giuseppe.lipari" <giuseppe.lipari@sssup.it>,
-       Juri Lelli <juri.lelli@gmail.com>
-In-Reply-To: <1262012958.7135.124.camel@laptop>
-References: <1255707324.6228.448.camel@Palantir>
-	 <1255708086.6228.469.camel@Palantir>  <1262012958.7135.124.camel@laptop>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-emk/v7IVF6PE4wX8qu6J"
-Date: Wed, 13 Jan 2010 11:27:32 +0100
-Message-ID: <1263378452.3853.61.camel@Palantir>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	Wed, 13 Jan 2010 05:27:49 -0500
+Received: from hera.kernel.org ([140.211.167.34]:58696 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755436Ab0AMK1p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jan 2010 05:27:45 -0500
+Date: Wed, 13 Jan 2010 10:26:56 GMT
+From: "tip-bot for Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, paulmck@linux.vnet.ibm.com, hpa@zytor.com,
+       mingo@redhat.com, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulmck@linux.vnet.ibm.com,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <1262646550562-git-send-email->
+References: <1262646550562-git-send-email->
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:core/rcu] rcu: Remove redundant grace-period check
+Message-ID: <tip-45f014c52eef022873b19d6a20eb0ec9668f2b09@git.kernel.org>
+Git-Commit-ID: 45f014c52eef022873b19d6a20eb0ec9668f2b09
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Wed, 13 Jan 2010 10:26:56 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Commit-ID:  45f014c52eef022873b19d6a20eb0ec9668f2b09
+Gitweb:     http://git.kernel.org/tip/45f014c52eef022873b19d6a20eb0ec9668f2b09
+Author:     Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+AuthorDate: Mon, 4 Jan 2010 15:09:08 -0800
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Wed, 13 Jan 2010 09:06:04 +0100
 
---=-emk/v7IVF6PE4wX8qu6J
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+rcu: Remove redundant grace-period check
 
-On Mon, 2009-12-28 at 16:09 +0100, Peter Zijlstra wrote:
-> On Fri, 2009-10-16 at 17:48 +0200, Raistlin wrote:
-> > @@ -6807,9 +6811,10 @@ out_unlock:
-> >  /**
-> >   * sys_sched_getparam - get the DEADLINE task parameters of a thread
-> >   * @pid: the pid in question.
-> > + * @len: size of data pointed by param_ex.
-> >   * @param_ex: structure containing the new parameters (deadline, runti=
-me, etc.).
-> >   */
-> > -SYSCALL_DEFINE2(sched_getparam_ex, pid_t, pid,
-> > +SYSCALL_DEFINE3(sched_getparam_ex, pid_t, pid, unsigned, len,
-> >                 struct sched_param_ex __user *, param_ex)
-> >  {
-> >         struct sched_param_ex lp;
-> > @@ -6818,6 +6823,8 @@ SYSCALL_DEFINE2(sched_getparam_ex, pid_t, pid,
-> > =20
-> >         if (!param_ex || pid < 0)
-> >                 return -EINVAL;
-> > +       if (len < sizeof(struct sched_param_ex))
-> > +               return -EINVAL;
-> > =20
-> >         read_lock(&tasklist_lock);
-> >         p =3D find_process_by_pid(pid);
->=20
-> This allows len > sizeof().
->=20
-Yes...
+The rcu_process_dyntick() function checks twice for the end of
+the current grace period.  However, it holds the current
+rcu_node structure's ->lock field throughout, and doesn't get to
+the second call to rcu_gp_in_progress() unless there is at least
+one CPU corresponding to this rcu_node structure that has not
+yet checked in for the current grace period, which would prevent
+the current grace period from ending. So the current grace
+period cannot have ended, and the second check is redundant, so
+remove it.
 
-> > @@ -6837,7 +6844,7 @@ SYSCALL_DEFINE2(sched_getparam_ex, pid_t, pid,
-> >         /*
-> >          * This one might sleep, we cannot do it with a spinlock held .=
-..
-> >          */
-> > -       retval =3D copy_to_user(param_ex, &lp, sizeof(*param_ex)) ? -EF=
-AULT : 0;
-> > +       retval =3D copy_to_user(param_ex, &lp, len) ? -EFAULT : 0;
-> > =20
-> >         return retval;=20
->=20
-> Which would copy more than lp, resulting in a stack leak, right?
->=20
-... And yes again! :-)
+Also, given that this function is used even with !CONFIG_NO_HZ,
+its name is quite misleading.  Change from rcu_process_dyntick()
+to force_qs_rnp().
 
-This has been done bearing in mind that the _kernel_side_ sched_param_ex
---once stabilized-- will never lower its size. I.e., it should always
-grow and, if/when it does, it should retain the position of existing
-fields, for the sake of backward compatibility.
+Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+Cc: laijs@cn.fujitsu.com
+Cc: dipankar@in.ibm.com
+Cc: mathieu.desnoyers@polymtl.ca
+Cc: josh@joshtriplett.org
+Cc: dvhltc@us.ibm.com
+Cc: niv@us.ibm.com
+Cc: peterz@infradead.org
+Cc: rostedt@goodmis.org
+Cc: Valdis.Kletnieks@vt.edu
+Cc: dhowells@redhat.com
+LKML-Reference: <1262646550562-git-send-email->
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ kernel/rcutree.c |    9 ++++-----
+ 1 files changed, 4 insertions(+), 5 deletions(-)
 
-In that case, I think, the only possible case we have to face is the one
-where the "old" userspace program/library uses a version of
-sched_param_ex which is smaller than the one in the kernel, and what we
-want is the kernel to fill only the fields existing in the userspace
-code.
-
-Does all this make sense?
-
-If yes, I guess I just have to flip the inequality in the if() turning
-it into "if (len > sizeof())" (, then apologize for the glaring
-bug! :-P) and then I'm done, am I?
-
-Thanks and regards,
-Dario
-
---=20
-<<This happens because I choose it to happen!>> (Raistlin Majere)
-----------------------------------------------------------------------
-Dario Faggioli, ReTiS Lab, Scuola Superiore Sant'Anna, Pisa  (Italy)
-
-http://blog.linux.it/raistlin / raistlin@ekiga.net /
-dario.faggioli@jabber.org
-
---=-emk/v7IVF6PE4wX8qu6J
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAktNoBQACgkQk4XaBE3IOsQebQCfYRofWzuIGGUkABvBu3W/75ga
-r/IAmwfE7Cb7EU2LUksuKNoU8PjXAaaY
-=xFRO
------END PGP SIGNATURE-----
-
---=-emk/v7IVF6PE4wX8qu6J--
-
+diff --git a/kernel/rcutree.c b/kernel/rcutree.c
+index 6268f37..d920285 100644
+--- a/kernel/rcutree.c
++++ b/kernel/rcutree.c
+@@ -1146,8 +1146,7 @@ void rcu_check_callbacks(int cpu, int user)
+  * have not yet encountered a quiescent state, using the function specified.
+  * The caller must have suppressed start of new grace periods.
+  */
+-static void rcu_process_dyntick(struct rcu_state *rsp,
+-				int (*f)(struct rcu_data *))
++static void force_qs_rnp(struct rcu_state *rsp, int (*f)(struct rcu_data *))
+ {
+ 	unsigned long bit;
+ 	int cpu;
+@@ -1172,7 +1171,7 @@ static void rcu_process_dyntick(struct rcu_state *rsp,
+ 			if ((rnp->qsmask & bit) != 0 && f(rsp->rda[cpu]))
+ 				mask |= bit;
+ 		}
+-		if (mask != 0 && rcu_gp_in_progress(rsp)) {
++		if (mask != 0) {
+ 
+ 			/* rcu_report_qs_rnp() releases rnp->lock. */
+ 			rcu_report_qs_rnp(mask, rsp, rnp, flags);
+@@ -1222,7 +1221,7 @@ static void force_quiescent_state(struct rcu_state *rsp, int relaxed)
+ 			break; /* So gcc recognizes the dead code. */
+ 
+ 		/* Record dyntick-idle state. */
+-		rcu_process_dyntick(rsp, dyntick_save_progress_counter);
++		force_qs_rnp(rsp, dyntick_save_progress_counter);
+ 		spin_lock(&rnp->lock);  /* irqs already disabled */
+ 		if (rcu_gp_in_progress(rsp))
+ 			rsp->signaled = RCU_FORCE_QS;
+@@ -1232,7 +1231,7 @@ static void force_quiescent_state(struct rcu_state *rsp, int relaxed)
+ 
+ 		/* Check dyntick-idle state, send IPI to laggarts. */
+ 		spin_unlock(&rnp->lock);  /* irqs remain disabled */
+-		rcu_process_dyntick(rsp, rcu_implicit_dynticks_qs);
++		force_qs_rnp(rsp, rcu_implicit_dynticks_qs);
+ 
+ 		/* Leave state in case more forcing is required. */
+ 
