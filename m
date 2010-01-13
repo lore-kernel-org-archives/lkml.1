@@ -1,51 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756025Ab0AMWhq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932208Ab0AMWpF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756025Ab0AMWhq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 17:37:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755757Ab0AMWho
+	id S932208Ab0AMWpF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 17:45:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932121Ab0AMWpD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 17:37:44 -0500
-Received: from mail.fem.tu-ilmenau.de ([141.24.101.79]:57389 "EHLO
-	mail.fem.tu-ilmenau.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755982Ab0AMWhn (ORCPT
+	Wed, 13 Jan 2010 17:45:03 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:40064 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932103Ab0AMWpD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 17:37:43 -0500
-From: Johannes Hirte <johannes.hirte@fem.tu-ilmenau.de>
-To: Chris Mason <chris.mason@oracle.com>
-Subject: Re: task imap:2958 blocked for more than 120 seconds
-Date: Wed, 13 Jan 2010 23:37:33 +0100
-User-Agent: KMail/1.13.0 (Linux/2.6.33-rc2-00302-gc5974b8-dirty; KDE/4.3.90; x86_64; ; )
-Cc: linux-btrfs@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <201001102105.47192.johannes.hirte@fem.tu-ilmenau.de> <20100110201926.GC32195@think>
-In-Reply-To: <20100110201926.GC32195@think>
+	Wed, 13 Jan 2010 17:45:03 -0500
+Date: Wed, 13 Jan 2010 22:44:59 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Alexander Shishkin <virtuoso@slind.org>
+Cc: Valdis.Kletnieks@vt.edu, linux-fsdevel@vger.kernel.org,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCHv3] List per-process file descriptor consumption when
+ hitting file-max
+Message-ID: <20100113224459.GA21934@ZenIV.linux.org.uk>
+References: <28675.1248957636@turing-police.cc.vt.edu>
+ <1263202687-18529-1-git-send-email-virtuoso@slind.org>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <201001132337.34909.johannes.hirte@fem.tu-ilmenau.de>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1263202687-18529-1-git-send-email-virtuoso@slind.org>
+User-Agent: Mutt/1.5.20 (2009-08-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Sonntag 10 Januar 2010 21:19:26 schrieb Chris Mason:
-> On Sun, Jan 10, 2010 at 09:05:46PM +0100, Johannes Hirte wrote:
-> > I've observed this hanging task now several times. Not sure when this
-> > started, but 2.6.32 is affected too, IIRC. I don't have a test pattern
-> > for this. Dovecot imap triggers this from time to time. I've enabled
-> > CONFIG_DETECT_HUNG_TASK now
+On Mon, Jan 11, 2010 at 11:38:07AM +0200, Alexander Shishkin wrote:
+> When a file descriptor limit is hit, display the top consumers of
+> descriptors so that it is possible to identify and fix those which
+> leak them.
 > 
-> > and got this two tasks which hang:
-> You're stuck on a read, could you please do a sysrq-w when this happens?
+> Two new sysctl tunables are introduced:
+>   * file-max-consumers -- number of processes to display (defaults
+>     to 10);
+>   * file-max-rate-limit -- time interval between subsequent dumps
+>     (defaults to 10 seconds).
 
-Will do so when it happens again.
-
-> Also, do you eventually recover or are you stuck forever?
-
-I didn't wait too long when it happened, so I'm not sure.  The longest time 
-I've waited was 20-30min, until reboot without recover. So either it's stuck 
-forever or it takes really long to recover.
-
-And one question I have: How do you identify a read in this call trace? 
-
-regards,
-  Johannes
+That *still* doesn't answer the most important question: what for?
