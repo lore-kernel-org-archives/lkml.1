@@ -1,60 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756028Ab0AMQgL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756032Ab0AMQio@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756028Ab0AMQgL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 11:36:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756009Ab0AMQgK
+	id S1756032Ab0AMQio (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 11:38:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755722Ab0AMQio
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 11:36:10 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:42328 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755974Ab0AMQgJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 11:36:09 -0500
-Date: Wed, 13 Jan 2010 17:35:51 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Don Zickus <dzickus@redhat.com>, Cyrill Gorcunov <gorcunov@gmail.com>,
-       aris@redhat.com, linux-kernel@vger.kernel.org
-Subject: Re: introduce NMI_AUTO as nmi_watchdog option
-Message-ID: <20100113163551.GA10643@elte.hu>
-References: <20100111191633.GT24885@redhat.com>
- <20100111202729.GI4923@lenovo>
- <20100111203356.GU24885@redhat.com>
- <20100113093240.GC6739@elte.hu>
- <1263388422.4244.214.camel@laptop>
+	Wed, 13 Jan 2010 11:38:44 -0500
+Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:40718 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753196Ab0AMQin (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jan 2010 11:38:43 -0500
+Message-ID: <4B4DF6B1.406@s5r6.in-berlin.de>
+Date: Wed, 13 Jan 2010 17:37:05 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.23) Gecko/20090825 SeaMonkey/1.1.18
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1263388422.4244.214.camel@laptop>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
+To: Tilman Schmidt <tilman@imap.cc>
+CC: Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       =?ISO-8859-1?Q?Ren=E9_?= =?ISO-8859-1?Q?Bolldorf?= 
+	<xsecute@googlemail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [Question]  For what stand's __initdata, __devinit etc. ?
+References: <4B4CAA49.4090707@googlemail.com> <20100112234228.GA21777@khazad-dum.debian.net> <4B4DB0E3.9020707@imap.cc>
+In-Reply-To: <4B4DB0E3.9020707@imap.cc>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Peter Zijlstra <peterz@infradead.org> wrote:
-
-> On Wed, 2010-01-13 at 10:32 +0100, Ingo Molnar wrote:
-> > other architectures have NMI concepts as well, such as Sparc64. 
+Tilman Schmidt wrote:
+> Am 2010-01-13 00:42 schrieb Henrique de Moraes Holschuh:
+>> On Tue, 12 Jan 2010, René Bolldorf wrote:
+>>> Hi,
+>>> Do we really need this?
+>>> It will be nice if someone can me explain this.
+>> 
+>> http://kernelnewbies.org/FAQ/InitExitMacros
 > 
-> I think both sparc64 and ppc64 fake NMIs by playing games with hw IRQ 
-> priorities and partial masks. But yes.
-> 
-> One interesting 'feature' for the perf-nmi interaction is creating an idle 
-> scheduling class for counters, because as long as there is a counter present 
-> you can use his NMIs to drive the watchdog, but as soon as there are non 
-> left, you need to install one.
+> That's far from complete. It does not, for example, mention __devinit.
 
-Yeah. I'd suggest to not complicate things with that initially - but to simply 
-create a standalone event for it and 'waste' a counter on NMI generation. 
+This wiki contains also somewhat misleadingly worded text:  "But why
+must you use these macros ?"  This should read:  "But why would you want
+to use these macros?"
 
-Later on it can indeed be a good feature to make the NMI watchdog 'seemless' 
-in the sense of it not causing any wasted hw resources - it can piggyback on 
-any existing NMI event. (as long as that event is at least ~1 HZ strong or so)
+Answer:  They are a micro-optimization which allows the kernel to free
+memory that was occupied by this code at some point, because that code
+won't be used after that point anymore.  (In case of exit macros:  These
+are hints to discard some code from a build in case of certain kernel
+configurations.)  These macros only affect code which is statically
+linked into the kernel.
 
-	Ingo
+Some macros, like for example __devinit, have so obscure uses and
+marginal benefits that a normal developer should not bother about them.
+__devinit in particular does not have any effect at all --- except if
+CONFIG_HOTPLUG is not defined.  This may happen in configurations for
+embedded systems.  But the majority of device drivers that you can find
+in the kernel tree are irrelevant (i.e. configured off) on such systems
+anyway.
+
+Some more information on these macros can be found in Corbet, Rubini,
+Kroah-Hartman: Linux Device Drivers, 3rd edition a.k.a. LDD3, which is
+also gratis available on the Web.
+-- 
+Stefan Richter
+-=====-==-=- ---= -==-=
+http://arcgraph.de/sr/
