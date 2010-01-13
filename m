@@ -1,38 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756234Ab0AMUTl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756284Ab0AMUUM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756234Ab0AMUTl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 15:19:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756016Ab0AMUTi
+	id S1756284Ab0AMUUM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 15:20:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756035Ab0AMUUJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 15:19:38 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:59998 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755991Ab0AMUTg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 15:19:36 -0500
-Date: Wed, 13 Jan 2010 21:19:32 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: William Allen Simpson <william.allen.simpson@gmail.com>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Linux Kernel Developers <linux-kernel@vger.kernel.org>,
-       Linux Kernel Network Developers <netdev@vger.kernel.org>,
-       Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>,
-       Eric Dumazet <eric.dumazet@gmail.com>
-Subject: Re: [PATCH v4] tcp: harmonize tcp_vx_rcv header length assumptions
-Message-ID: <20100113201931.GD24818@basil.fritz.box>
-References: <4B49D001.4000302@gmail.com> <4B4DA4F4.6060007@gmail.com> <20100113115617.GA24818@basil.fritz.box> <4B4DE887.6030602@gmail.com> <20100113155323.GB24818@basil.fritz.box> <4B4E23E0.4000007@gmail.com>
+	Wed, 13 Jan 2010 15:20:09 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:59830 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755208Ab0AMUUH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jan 2010 15:20:07 -0500
+Date: Wed, 13 Jan 2010 21:20:05 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Jiri Slaby <jslaby@suse.cz>
+Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-media@vger.kernel.org, jirislaby@gmail.com,
+       Pekka Sarnila <sarnila@adit.fi>
+Subject: Re: [PATCH 1/1] HID: ignore afatech 9016
+In-Reply-To: <1263412773-23220-1-git-send-email-jslaby@suse.cz>
+Message-ID: <alpine.LNX.2.00.1001132111570.30977@pobox.suse.cz>
+References: <1263412773-23220-1-git-send-email-jslaby@suse.cz>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4B4E23E0.4000007@gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> The short answer is yes, it saves a bit more than I'd expected!
 
-Thanks for checking.
+[ Adding Pekka (the author of the patch that added this quirk for AF9016) to 
+  CC ... ]
 
--Andi
+On Wed, 13 Jan 2010, Jiri Slaby wrote:
 
+> Let's ignore the device altogether by HID layer. It's handled by
+> dvb-usb-remote driver properly already.
+> 
+> By now, FULLSPEED_INTERVAL quirk was used. It probably made things
+> better, but the remote ctrl was still a perfect X killer. This was
+> the last user of the particular quirk. So remove the quirk as well.
+> 
+> With input going through dvb-usb-remote, the remote works
+> perfectly.
+> 
+> Signed-off-by: Jiri Slaby <jslaby@suse.cz>
+> Cc: Jiri Kosina <jkosina@suse.cz>
+> ---
+>  drivers/hid/usbhid/hid-core.c   |    8 --------
+>  drivers/hid/usbhid/hid-quirks.c |    2 +-
+>  include/linux/hid.h             |    1 -
+>  3 files changed, 1 insertions(+), 10 deletions(-)
+> 
+> diff --git a/drivers/hid/usbhid/hid-core.c b/drivers/hid/usbhid/hid-core.c
+> index e2997a8..36a1561 100644
+> --- a/drivers/hid/usbhid/hid-core.c
+> +++ b/drivers/hid/usbhid/hid-core.c
+> @@ -938,14 +938,6 @@ static int usbhid_start(struct hid_device *hid)
+>  
+>  		interval = endpoint->bInterval;
+>  
+> -		/* Some vendors give fullspeed interval on highspeed devides */
+> -		if (hid->quirks & HID_QUIRK_FULLSPEED_INTERVAL &&
+> -		    dev->speed == USB_SPEED_HIGH) {
+> -			interval = fls(endpoint->bInterval*8);
+> -			printk(KERN_INFO "%s: Fixing fullspeed to highspeed interval: %d -> %d\n",
+> -			       hid->name, endpoint->bInterval, interval);
+> -		}
+> -
+>  		/* Change the polling interval of mice. */
+>  		if (hid->collection->usage == HID_GD_MOUSE && hid_mousepoll_interval > 0)
+>  			interval = hid_mousepoll_interval;
+> diff --git a/drivers/hid/usbhid/hid-quirks.c b/drivers/hid/usbhid/hid-quirks.c
+> index 38773dc..788d9a3 100644
+> --- a/drivers/hid/usbhid/hid-quirks.c
+> +++ b/drivers/hid/usbhid/hid-quirks.c
+> @@ -41,7 +41,7 @@ static const struct hid_blacklist {
+>  	{ USB_VENDOR_ID_SAITEK, USB_DEVICE_ID_SAITEK_RUMBLEPAD, HID_QUIRK_BADPAD },
+>  	{ USB_VENDOR_ID_TOPMAX, USB_DEVICE_ID_TOPMAX_COBRAPAD, HID_QUIRK_BADPAD },
+>  
+> -	{ USB_VENDOR_ID_AFATECH, USB_DEVICE_ID_AFATECH_AF9016, HID_QUIRK_FULLSPEED_INTERVAL },
+> +	{ USB_VENDOR_ID_AFATECH, USB_DEVICE_ID_AFATECH_AF9016, HID_QUIRK_IGNORE },
+
+Hmm, why do we keep HID_QUIRK_IGNORE anyway, when we already have generic 
+hid_ignore_list[]?
+
+We don't set it for any device in the current codebase any more.
+
+Thanks,x
+
+-- 
+Jiri Kosina
+SUSE Labs, Novell Inc.
