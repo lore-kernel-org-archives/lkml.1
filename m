@@ -1,64 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755806Ab0AMPl6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755711Ab0AMPnF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755806Ab0AMPl6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 10:41:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755224Ab0AMPl6
+	id S1755711Ab0AMPnF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 10:43:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754972Ab0AMPnE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 10:41:58 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:39816 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755191Ab0AMPl5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 10:41:57 -0500
-X-Authority-Analysis: v=1.0 c=1 a=xpLpJGNBBNoA:10 a=7U3hwN5JcxgA:10 a=dm3pRbNqHM6X-_Mu1SIA:9 a=kd_tJaiLV7LY-f9REdUA:7 a=zhpf4LOhasn_2DU29zJrFUZBP04A:4
-X-Cloudmark-Score: 0
-X-Originating-IP: 74.67.89.75
-Subject: Re: [PATCH 14/26] trace: Convert various locks to raw_spinlock
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: John Kacur <jkacur@redhat.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       lkml <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Clark Williams <williams@redhat.com>
-In-Reply-To: <alpine.LFD.2.00.1001131632350.5665@localhost.localdomain>
-References: <1263245216-14754-7-git-send-email-jkacur@redhat.com>
-	 <1263245216-14754-8-git-send-email-jkacur@redhat.com>
-	 <1263245216-14754-9-git-send-email-jkacur@redhat.com>
-	 <1263245216-14754-10-git-send-email-jkacur@redhat.com>
-	 <1263245216-14754-11-git-send-email-jkacur@redhat.com>
-	 <1263245216-14754-12-git-send-email-jkacur@redhat.com>
-	 <1263245216-14754-13-git-send-email-jkacur@redhat.com>
-	 <1263245216-14754-14-git-send-email-jkacur@redhat.com>
-	 <1263245216-14754-15-git-send-email-jkacur@redhat.com>
-	 <20100112033931.GF5243@nowhere> <20100113152824.GA15301@goodmis.org>
-	 <alpine.LFD.2.00.1001131632350.5665@localhost.localdomain>
-Content-Type: text/plain; charset="ISO-8859-15"
-Organization: Kihon Technologies Inc.
-Date: Wed, 13 Jan 2010 10:41:55 -0500
-Message-ID: <1263397315.28171.3827.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	Wed, 13 Jan 2010 10:43:04 -0500
+Received: from cantor.suse.de ([195.135.220.2]:56539 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752972Ab0AMPnC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jan 2010 10:43:02 -0500
+Message-ID: <4B4DE9D6.7070500@suse.com>
+Date: Wed, 13 Jan 2010 10:42:14 -0500
+From: Jeff Mahoney <jeffm@suse.com>
+Organization: SUSE Labs, Novell, Inc
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
+MIME-Version: 1.0
+To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux-MM <linux-mm@kvack.org>
+Subject: Re: [patch 2/6] hugetlb: Fix section mismatches
+References: <20100113004855.550486769@suse.com>	 <20100113004938.715904356@suse.com> <1263397212.11942.97.camel@useless.americas.hpqcorp.net>
+In-Reply-To: <1263397212.11942.97.camel@useless.americas.hpqcorp.net>
+X-Enigmail-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2010-01-13 at 16:36 +0100, John Kacur wrote:
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
+
+On 01/13/2010 10:40 AM, Lee Schermerhorn wrote:
+> On Tue, 2010-01-12 at 19:48 -0500, Jeff Mahoney wrote:
+>> plain text document attachment (patches.rpmify)
+>> hugetlb_register_node calls hugetlb_sysfs_add_hstate, which is marked with
+>>  __init. Since hugetlb_register_node is only called by
+>>  hugetlb_register_all_nodes, which in turn is only called by hugetlb_init,
+>>  it's safe to mark both of them as __init.
 > 
-> On Wed, 13 Jan 2010, Steven Rostedt wrote:
+> Actually, hugetlb_register_node() also called, via a function pointer
+> that hugetlb registers with the sysfs node driver, when a node is hot
+> plugged.  So, I think the correct approach is to remove the '__init'
+> from hugetlb_sysfs_add_hstate() as this is also used at runtime.  I
+> missed this in the original submittal.
 
-> > 
-> Thanks for the review Steve and Frederic - I'll spin a new patch that 
-> doesn't convert tracing_start_lock.
+Yep. You're right. Sorry for the noise.
+
+- -Jeff
+
+> Regards,
+> Lee Schermerhorn
 > 
-> However, let's give it some good testing in preempt-rt, because we may 
-> have forgotten over time, why we converted these locks.
+>>
+>> Signed-off-by: Jeff Mahoney <jeffm@suse.com>
+>> ---
+>>  mm/hugetlb.c |    4 ++--
+>>  1 file changed, 2 insertions(+), 2 deletions(-)
+>>
+>> --- a/mm/hugetlb.c
+>> +++ b/mm/hugetlb.c
+>> @@ -1630,7 +1630,7 @@ void hugetlb_unregister_node(struct node
+>>   * hugetlb module exit:  unregister hstate attributes from node sysdevs
+>>   * that have them.
+>>   */
+>> -static void hugetlb_unregister_all_nodes(void)
+>> +static void __init hugetlb_unregister_all_nodes(void)
+>>  {
+>>  	int nid;
+>>  
+>> @@ -1650,7 +1650,7 @@ static void hugetlb_unregister_all_nodes
+>>   * Register hstate attributes for a single node sysdev.
+>>   * No-op if attributes already registered.
+>>   */
+>> -void hugetlb_register_node(struct node *node)
+>> +void __init hugetlb_register_node(struct node *node)
+>>  {
+>>  	struct hstate *h;
+>>  	struct node_hstate *nhs = &node_hstates[node->sysdev.id];
+>>
+>>
+>> --
+>> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+>> the body to majordomo@kvack.org.  For more info on Linux MM,
+>> see: http://www.linux-mm.org/ .
+>> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+> 
 
-Well, I think we just never unconverted them :-)  I think we took the
-paranoid approach and converted all locks in the trace directory to raw.
-In fact, I think I even had a script to do it.
 
--- Steve
+- -- 
+Jeff Mahoney
+SUSE Labs
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.12 (GNU/Linux)
+Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org/
 
-
+iEYEARECAAYFAktN6dYACgkQLPWxlyuTD7JzEgCfXZKyPnW9VKO7OTatSm5k5WSI
+l6sAoIVB0cTvz1AwN2mG7ANGPt6VVuTi
+=TYGp
+-----END PGP SIGNATURE-----
