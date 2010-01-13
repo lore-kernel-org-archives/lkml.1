@@ -1,71 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755038Ab0AMIyB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755166Ab0AMIya@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755038Ab0AMIyB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 03:54:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754840Ab0AMIyA
+	id S1755166Ab0AMIya (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 03:54:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755012Ab0AMIy2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 03:54:00 -0500
-Received: from mail-yw0-f176.google.com ([209.85.211.176]:33533 "EHLO
-	mail-yw0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753384Ab0AMIx7 (ORCPT
+	Wed, 13 Jan 2010 03:54:28 -0500
+Received: from mail-fx0-f225.google.com ([209.85.220.225]:33006 "EHLO
+	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753343Ab0AMIy1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 03:53:59 -0500
+	Wed, 13 Jan 2010 03:54:27 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=YmqKRVApqFquBgPXATCEJCHibejIy+gkU04RDSKhxYmTgMA1dKZ3J3wX8k38NuAdnk
-         UcYf8NLfprkGIH5b96th4gC30Y8x3Khgxl4Zn0+ioN2HRSq7kcbvbWHbpLbC8XWoV2D3
-         4OnLEGEBicEf3JAJeVkLZZkg10PwoXFgfaQxU=
-Message-ID: <4B4D8A24.4070108@gmail.com>
-Date: Wed, 13 Jan 2010 03:53:56 -0500
-From: William Allen Simpson <william.allen.simpson@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:in-reply-to:user-agent;
+        b=i18yb4XwaHCmnf6NQQ9ea3w3pHfU422Zan5n2V6+KaiL1NRPfYRNBzf4DuansojWL8
+         +qLFu2OE5KJ50jabI6jVykGi7zLhsLceNCShh3Zm6QG7s3kK4TeYvdwXGWlw7gG66Z5S
+         2TjmdfmEG4yWTG/TleFRuxfLlGNccnaOFhZeA=
+Date: Wed, 13 Jan 2010 08:54:18 +0000
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, netdev@vger.kernel.org,
+       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Arnd Bergmann <arnd@arndb.de>, Octavian Purdila <opurdila@ixiacom.com>
+Subject: Re: linux-next: Tree for January 8 (net/ip.h, BUG=n)
+Message-ID: <20100113085418.GB6053@ff.dom.local>
 MIME-Version: 1.0
-To: Eric Dumazet <eric.dumazet@gmail.com>
-CC: Linux Kernel Developers <linux-kernel@vger.kernel.org>,
-       Linux Kernel Network Developers <netdev@vger.kernel.org>,
-       Michael Chan <mchan@broadcom.com>
-Subject: Re: [PATCH 1/2] net: tcp_header_len_th and tcp_option_len_th
-References: <4B44FE3C.6060809@gmail.com> <4B450065.4010108@gmail.com> <4B4C519E.2090207@gmail.com> <4B4CB46C.8020502@gmail.com> <4B4CB712.8030806@gmail.com>
-In-Reply-To: <4B4CB712.8030806@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100113073540.GA30577@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Dumazet wrote:
-> I type my Changelog text, add my signature, then copy/paste patch from external editor
-> (this editor must preserve tabulations of course)
+Octavian added to cc.
+
+Jarek P.
+
+On 13-01-2010 08:35, Ingo Molnar wrote:
+> * Randy Dunlap <randy.dunlap@oracle.com> wrote:
 > 
-That doesn't work properly on a Mac, copying from BBEdit to Thunderbird.
-
-BBEdit preserves tabs and even understands and preserves Unix LF (and
-I've been using it for a Unix editor since it was included with Xinu in
-early '90s), but the MacOS copy and paste seems to mangle it.
-
-I'll try again someday with Thunderbird 3, when it's had time to mature.
-
-
-> About cast games, maybe following way is the cleanest one.
+>> On Fri, 8 Jan 2010 16:42:32 +1100 Stephen Rothwell wrote:
+>>
+>>> Hi all,
+>>>
+>>> Changes since 20100107:
+>>
+>> When CONFIG_BUG=n, CONFIG_GENERIC_BUG=n:
+>>
+>> include/net/ip.h:341: error: implicit declaration of function '__WARN'
+>>
+>> This affects:
+>> make[3]: *** [security/selinux/hooks.o] Error 1
+>> make[3]: *** [fs/ceph/messenger.o] Error 1
+>> make[3]: *** [net/core/sock.o] Error 1
+>> make[4]: *** [drivers/net/benet/be_main.o] Error 1
 > 
-> int tcp_options_len_th(struct tcphdr *th)
-> {
-> 	return tcp_header_len_th(th) - sizeof(*th);
-> }
+> FYI, this new build bug is now upstream and triggers in -tip testing as well.
 > 
-If you'd have been one of my C students, you'd have failed the exam
-question.  That's unsigned int tcp_header_len_th() -- subtracting an
-untyped constant could be a negative number (stored in an unsigned).
-Then demotion to int (which many compilers truncate to a very large
-positive number).
-
-It's one of the reasons that folks used to do all this with macros, so
-that the types and truncation were handled well by the compiler.
-
-Of course, this is an inline function, which is more like macros.  I've
-not studied how gcc works internally since egcs.
-
-Let's keep (int)(th->doff * 4) - sizeof(*th) -- self documenting, and
-should work with a wide variety of compilers.
+> 	Ingo
