@@ -1,138 +1,240 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755573Ab0AMKcI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755615Ab0AMKc3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755573Ab0AMKcI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 05:32:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754967Ab0AMKcB
+	id S1755615Ab0AMKc3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 05:32:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755593Ab0AMKc1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 05:32:01 -0500
-Received: from hera.kernel.org ([140.211.167.34]:34306 "EHLO hera.kernel.org"
+	Wed, 13 Jan 2010 05:32:27 -0500
+Received: from hera.kernel.org ([140.211.167.34]:34351 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754951Ab0AMKb6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 05:31:58 -0500
-Date: Wed, 13 Jan 2010 10:31:37 GMT
-From: tip-bot for Frederic Weisbecker <fweisbec@gmail.com>
-Cc: linux-kernel@vger.kernel.org, paulus@samba.org, acme@redhat.com,
-       hpa@zytor.com, mingo@redhat.com, peterz@infradead.org,
-       fweisbec@gmail.com, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, acme@redhat.com, paulus@samba.org,
+	id S1754981Ab0AMKc0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jan 2010 05:32:26 -0500
+Date: Wed, 13 Jan 2010 10:31:52 GMT
+From: tip-bot for Liming Wang <liming.wang@windriver.com>
+Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
+       mingo@redhat.com, peterz@infradead.org, fweisbec@gmail.com,
+       tglx@linutronix.de, liming.wang@windriver.com, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
        linux-kernel@vger.kernel.org, fweisbec@gmail.com, peterz@infradead.org,
-       tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <1262235183-5320-2-git-send-regression-fweisbec@gmail.com>
-References: <1262235183-5320-2-git-send-regression-fweisbec@gmail.com>
+       tglx@linutronix.de, liming.wang@windriver.com, mingo@elte.hu
+In-Reply-To: <1262246750-2191-1-git-send-email-liming.wang@windriver.com>
+References: <1262246750-2191-1-git-send-email-liming.wang@windriver.com>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perf/core] perf: Drop useless check for ignored frame
-Message-ID: <tip-0fb8ee48d9dfff6a0913ceb0be2068d8be203763@git.kernel.org>
-Git-Commit-ID: 0fb8ee48d9dfff6a0913ceb0be2068d8be203763
+Subject: [tip:perf/core] perf tools: Fix --pid option for stat
+Message-ID: <tip-60666c630bdb33983a894b050b588b663f38f368@git.kernel.org>
+Git-Commit-ID: 60666c630bdb33983a894b050b588b663f38f368
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Wed, 13 Jan 2010 10:31:37 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Wed, 13 Jan 2010 10:31:53 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  0fb8ee48d9dfff6a0913ceb0be2068d8be203763
-Gitweb:     http://git.kernel.org/tip/0fb8ee48d9dfff6a0913ceb0be2068d8be203763
-Author:     Frederic Weisbecker <fweisbec@gmail.com>
-AuthorDate: Thu, 31 Dec 2009 05:53:03 +0100
+Commit-ID:  60666c630bdb33983a894b050b588b663f38f368
+Gitweb:     http://git.kernel.org/tip/60666c630bdb33983a894b050b588b663f38f368
+Author:     Liming Wang <liming.wang@windriver.com>
+AuthorDate: Thu, 31 Dec 2009 16:05:50 +0800
 Committer:  Ingo Molnar <mingo@elte.hu>
 CommitDate: Wed, 13 Jan 2010 10:09:08 +0100
 
-perf: Drop useless check for ignored frame
+perf tools: Fix --pid option for stat
 
-The check that ignores the debug and nmi stack frames is useless
-now that we have a frame pointer that makes us start at the
-right place. We don't anymore have to deal with these.
+current pid option doesn't work for perf stat. Change it to what
+perf record --pid acts as.
 
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+Signed-off-by: Liming Wang <liming.wang@windriver.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
 Cc: Paul Mackerras <paulus@samba.org>
-LKML-Reference: <1262235183-5320-2-git-send-regression-fweisbec@gmail.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+LKML-Reference: <1262246750-2191-1-git-send-email-liming.wang@windriver.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- arch/x86/include/asm/stacktrace.h |    2 --
- arch/x86/kernel/cpu/perf_event.c  |    8 --------
- arch/x86/kernel/dumpstack_32.c    |    5 -----
- arch/x86/kernel/dumpstack_64.c    |    5 -----
- 4 files changed, 0 insertions(+), 20 deletions(-)
+ tools/perf/builtin-stat.c |  106 ++++++++++++++++++++++++++-------------------
+ 1 files changed, 61 insertions(+), 45 deletions(-)
 
-diff --git a/arch/x86/include/asm/stacktrace.h b/arch/x86/include/asm/stacktrace.h
-index 35e8912..4dab78e 100644
---- a/arch/x86/include/asm/stacktrace.h
-+++ b/arch/x86/include/asm/stacktrace.h
-@@ -3,8 +3,6 @@
+diff --git a/tools/perf/builtin-stat.c b/tools/perf/builtin-stat.c
+index c70d720..e8c85d5 100644
+--- a/tools/perf/builtin-stat.c
++++ b/tools/perf/builtin-stat.c
+@@ -44,6 +44,7 @@
+ #include "util/parse-events.h"
+ #include "util/event.h"
+ #include "util/debug.h"
++#include "util/header.h"
  
- extern int kstack_depth_to_print;
+ #include <sys/prctl.h>
+ #include <math.h>
+@@ -79,6 +80,8 @@ static int			fd[MAX_NR_CPUS][MAX_COUNTERS];
  
--int x86_is_stack_id(int id, char *name);
--
- struct thread_info;
- struct stacktrace_ops;
+ static int			event_scaled[MAX_COUNTERS];
  
-diff --git a/arch/x86/kernel/cpu/perf_event.c b/arch/x86/kernel/cpu/perf_event.c
-index d616c06..b1bb8c5 100644
---- a/arch/x86/kernel/cpu/perf_event.c
-+++ b/arch/x86/kernel/cpu/perf_event.c
-@@ -2297,7 +2297,6 @@ void callchain_store(struct perf_callchain_entry *entry, u64 ip)
- 
- static DEFINE_PER_CPU(struct perf_callchain_entry, pmc_irq_entry);
- static DEFINE_PER_CPU(struct perf_callchain_entry, pmc_nmi_entry);
--static DEFINE_PER_CPU(int, in_ignored_frame);
- 
- 
- static void
-@@ -2313,10 +2312,6 @@ static void backtrace_warning(void *data, char *msg)
- 
- static int backtrace_stack(void *data, char *name)
++static volatile int done = 0;
++
+ struct stats
  {
--	per_cpu(in_ignored_frame, smp_processor_id()) =
--			x86_is_stack_id(NMI_STACK, name) ||
--			x86_is_stack_id(DEBUG_STACK, name);
+ 	double n, mean, M2;
+@@ -247,61 +250,64 @@ static int run_perf_stat(int argc __used, const char **argv)
+ 	unsigned long long t0, t1;
+ 	int status = 0;
+ 	int counter;
+-	int pid;
++	int pid = target_pid;
+ 	int child_ready_pipe[2], go_pipe[2];
++	const bool forks = (target_pid == -1 && argc > 0);
+ 	char buf;
+ 
+ 	if (!system_wide)
+ 		nr_cpus = 1;
+ 
+-	if (pipe(child_ready_pipe) < 0 || pipe(go_pipe) < 0) {
++	if (forks && (pipe(child_ready_pipe) < 0 || pipe(go_pipe) < 0)) {
+ 		perror("failed to create pipes");
+ 		exit(1);
+ 	}
+ 
+-	if ((pid = fork()) < 0)
+-		perror("failed to fork");
++	if (forks) {
++		if ((pid = fork()) < 0)
++			perror("failed to fork");
++
++		if (!pid) {
++			close(child_ready_pipe[0]);
++			close(go_pipe[1]);
++			fcntl(go_pipe[0], F_SETFD, FD_CLOEXEC);
++
++			/*
++			 * Do a dummy execvp to get the PLT entry resolved,
++			 * so we avoid the resolver overhead on the real
++			 * execvp call.
++			 */
++			execvp("", (char **)argv);
++
++			/*
++			 * Tell the parent we're ready to go
++			 */
++			close(child_ready_pipe[1]);
++
++			/*
++			 * Wait until the parent tells us to go.
++			 */
++			if (read(go_pipe[0], &buf, 1) == -1)
++				perror("unable to read pipe");
++
++			execvp(argv[0], (char **)argv);
++
++			perror(argv[0]);
++			exit(-1);
++		}
+ 
+-	if (!pid) {
+-		close(child_ready_pipe[0]);
+-		close(go_pipe[1]);
+-		fcntl(go_pipe[0], F_SETFD, FD_CLOEXEC);
++		child_pid = pid;
+ 
+ 		/*
+-		 * Do a dummy execvp to get the PLT entry resolved,
+-		 * so we avoid the resolver overhead on the real
+-		 * execvp call.
+-		 */
+-		execvp("", (char **)argv);
 -
- 	return 0;
+-		/*
+-		 * Tell the parent we're ready to go
++		 * Wait for the child to be ready to exec.
+ 		 */
+ 		close(child_ready_pipe[1]);
+-
+-		/*
+-		 * Wait until the parent tells us to go.
+-		 */
+-		if (read(go_pipe[0], &buf, 1) == -1)
++		close(go_pipe[0]);
++		if (read(child_ready_pipe[0], &buf, 1) == -1)
+ 			perror("unable to read pipe");
+-
+-		execvp(argv[0], (char **)argv);
+-
+-		perror(argv[0]);
+-		exit(-1);
++		close(child_ready_pipe[0]);
+ 	}
+ 
+-	child_pid = pid;
+-
+-	/*
+-	 * Wait for the child to be ready to exec.
+-	 */
+-	close(child_ready_pipe[1]);
+-	close(go_pipe[0]);
+-	if (read(child_ready_pipe[0], &buf, 1) == -1)
+-		perror("unable to read pipe");
+-	close(child_ready_pipe[0]);
+-
+ 	for (counter = 0; counter < nr_counters; counter++)
+ 		create_perf_stat_counter(counter, pid);
+ 
+@@ -310,8 +316,12 @@ static int run_perf_stat(int argc __used, const char **argv)
+ 	 */
+ 	t0 = rdclock();
+ 
+-	close(go_pipe[1]);
+-	wait(&status);
++	if (forks) {
++		close(go_pipe[1]);
++		wait(&status);
++	} else {
++		while(!done);
++	}
+ 
+ 	t1 = rdclock();
+ 
+@@ -417,10 +427,13 @@ static void print_stat(int argc, const char **argv)
+ 	fflush(stdout);
+ 
+ 	fprintf(stderr, "\n");
+-	fprintf(stderr, " Performance counter stats for \'%s", argv[0]);
+-
+-	for (i = 1; i < argc; i++)
+-		fprintf(stderr, " %s", argv[i]);
++	fprintf(stderr, " Performance counter stats for ");
++	if(target_pid == -1) {
++		fprintf(stderr, "\'%s", argv[0]);
++		for (i = 1; i < argc; i++)
++			fprintf(stderr, " %s", argv[i]);
++	}else
++		fprintf(stderr, "task pid \'%d", target_pid);
+ 
+ 	fprintf(stderr, "\'");
+ 	if (run_count > 1)
+@@ -445,6 +458,9 @@ static volatile int signr = -1;
+ 
+ static void skip_signal(int signo)
+ {
++	if(target_pid != -1)
++		done = 1;
++
+ 	signr = signo;
  }
  
-@@ -2324,9 +2319,6 @@ static void backtrace_address(void *data, unsigned long addr, int reliable)
- {
- 	struct perf_callchain_entry *entry = data;
- 
--	if (per_cpu(in_ignored_frame, smp_processor_id()))
--		return;
--
- 	if (reliable)
- 		callchain_store(entry, addr);
+@@ -461,7 +477,7 @@ static void sig_atexit(void)
  }
-diff --git a/arch/x86/kernel/dumpstack_32.c b/arch/x86/kernel/dumpstack_32.c
-index ae775ca..11540a1 100644
---- a/arch/x86/kernel/dumpstack_32.c
-+++ b/arch/x86/kernel/dumpstack_32.c
-@@ -18,11 +18,6 @@
  
- #include "dumpstack.h"
- 
--/* Just a stub for now */
--int x86_is_stack_id(int id, char *name)
--{
--	return 0;
--}
- 
- void dump_trace(struct task_struct *task, struct pt_regs *regs,
- 		unsigned long *stack, unsigned long bp,
-diff --git a/arch/x86/kernel/dumpstack_64.c b/arch/x86/kernel/dumpstack_64.c
-index 0ad9597..676bc05 100644
---- a/arch/x86/kernel/dumpstack_64.c
-+++ b/arch/x86/kernel/dumpstack_64.c
-@@ -33,11 +33,6 @@ static char x86_stack_ids[][8] = {
- #endif
+ static const char * const stat_usage[] = {
+-	"perf stat [<options>] <command>",
++	"perf stat [<options>] [<command>]",
+ 	NULL
  };
  
--int x86_is_stack_id(int id, char *name)
--{
--	return x86_stack_ids[id - 1] == name;
--}
--
- static unsigned long *in_exception_stack(unsigned cpu, unsigned long stack,
- 					 unsigned *usedp, char **idp)
- {
+@@ -492,7 +508,7 @@ int cmd_stat(int argc, const char **argv, const char *prefix __used)
+ 
+ 	argc = parse_options(argc, argv, options, stat_usage,
+ 		PARSE_OPT_STOP_AT_NON_OPTION);
+-	if (!argc)
++	if (!argc && target_pid == -1)
+ 		usage_with_options(stat_usage, options);
+ 	if (run_count <= 0)
+ 		usage_with_options(stat_usage, options);
