@@ -1,66 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755403Ab0AMT6h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755506Ab0AMT6t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755403Ab0AMT6h (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 14:58:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755141Ab0AMT6h
+	id S1755506Ab0AMT6t (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 14:58:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754625Ab0AMT6r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 14:58:37 -0500
-Received: from science.horizon.com ([71.41.210.146]:24325 "HELO
-	science.horizon.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754288Ab0AMT6g (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 14:58:36 -0500
-Date: 13 Jan 2010 14:58:28 -0500
-Message-ID: <20100113195828.2611.qmail@science.horizon.com>
-From: "George Spelvin" <linux@horizon.com>
-To: hpa@zytor.com
-Subject: Re: x86-32: clean up rwsem inline asm statements
-Cc: linux@horizon.com, linux-kernel@vger.kernel.org, schwab@linux-m68k.org,
-       torvalds@linux-foundation.org
+	Wed, 13 Jan 2010 14:58:47 -0500
+Received: from hera.kernel.org ([140.211.167.34]:52448 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755441Ab0AMT6q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jan 2010 14:58:46 -0500
+Message-ID: <4B4E25A1.5010303@kernel.org>
+Date: Wed, 13 Jan 2010 11:57:21 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
+MIME-Version: 1.0
+To: Volker Lanz <vl@fidra.de>
+CC: linux-kernel@vger.kernel.org, mingo@elte.hu
+Subject: Re: [BISECTED, REGRESSION] Successful resume from suspend but freezes
+ after I/O
+References: <200912071856.48125.vl@fidra.de> <200912210955.00086.vl@fidra.de> <86802c441001122335gda44dd2v93c613609dac7584@mail.gmail.com> <201001131904.39254.vl@fidra.de>
+In-Reply-To: <201001131904.39254.vl@fidra.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> As far as I can tell, very few of these assembly statements actually
-> need a size at all -- the very first inc statement is purely to memory,
-> and as such it needs a size marker, but almost any operation which is
-> register-register or register-memory will simply take its size from the
-> register operand.  For those, it seems cleaner to simply drop the size
-> suffix, and in fact this is the style we have been pushing people
-> towards (use the suffix where mandatory or where the size is fixed
-> anyway, to help catch bugs; use no suffix where the size can vary and is
-> implied by the operands.)
+On 01/13/2010 10:04 AM, Volker Lanz wrote:
+> On Wednesday 13 January 2010 08:35:39 Yinghai Lu wrote:
+>> On Mon, Dec 21, 2009 at 12:54 AM, Volker Lanz <vl@fidra.de> wrote:
+>>> Any news on this problem? Anything else I can do to help debug the
+>>> situation? The prospect of being confined to distros with kernels <
+>>> 2.6.29 for the next couple of years on this machine worries me,
+>>> obviously.
+>>
+>> as 6d794 said that is used fix exposed bug.
+> 
+> I beg your pardon?
+> 
+>> please checkout out
+>>
+>> c61cf4cfe7c73c7aa62dde3ff82cd475b9c41481
+>>
+>> and boot with debug.
+> 
+> This is the boot log:
+> 
+> -----------------------------------------------------------------------------
+> 
+> [    0.000000] Initializing cgroup subsys cpuset
+> [    0.000000] Initializing cgroup subsys cpu
+> [    0.000000] Linux version 2.6.29-rc7 (vl@trevor) (gcc version 4.4.1 (Ubuntu 
+> 4.4.1-4ubuntu8) ) #2 SMP Wed Jan 13 18:04:42 CET 2010
+> [    0.000000] Command line: BOOT_IMAGE=/boot/vmlinuz-2.6.29-rc7 
+> root=UUID=160351ee-c9b0-4a72-9fd5-9962c8137a7e ro debug nosplash
+> [    0.000000] KERNEL supported cpus:
+> [    0.000000]   Intel GenuineIntel
+> [    0.000000]   AMD AuthenticAMD
+> [    0.000000]   Centaur CentaurHauls
+> [    0.000000] BIOS-provided physical RAM map:
+> [    0.000000]  BIOS-e820: 0000000000000000 - 000000000009f800 (usable)
+> [    0.000000]  BIOS-e820: 000000000009f800 - 00000000000a0000 (reserved)
+> [    0.000000]  BIOS-e820: 00000000000f0000 - 0000000000100000 (reserved)
+> [    0.000000]  BIOS-e820: 0000000000100000 - 00000000cfee0000 (usable)
+> [    0.000000]  BIOS-e820: 00000000cfee0000 - 00000000cfee2000 (ACPI NVS)
+> [    0.000000]  BIOS-e820: 00000000cfee2000 - 00000000cfef0000 (ACPI data)
+> [    0.000000]  BIOS-e820: 00000000cfef0000 - 00000000cff00000 (reserved)
+> [    0.000000]  BIOS-e820: 00000000e0000000 - 00000000e4000000 (reserved)
+> [    0.000000]  BIOS-e820: 00000000fec00000 - 0000000100000000 (reserved)
+> [    0.000000]  BIOS-e820: 0000000100000000 - 00000001b0000000 (usable)
+> [    0.000000] DMI 2.4 present.
+> [    0.000000] last_pfn = 0x1b0000 max_arch_pfn = 0x100000000
+> [    0.000000] e820 update range: 00000000cff00000 - 0000000100000000 (usable) 
+> ==> (reserved)
+> [    0.000000] last_pfn = 0xcfee0 max_arch_pfn = 0x100000000
+> [    0.000000] e820 update range: 0000000000001000 - 0000000000006000 (usable) 
+> ==> (reserved)
+> [    0.000000] Scanning 1 areas for low memory corruption
+> [    0.000000] modified physical RAM map:
+> [    0.000000]  modified: 0000000000000000 - 0000000000001000 (usable)
+> [    0.000000]  modified: 0000000000001000 - 0000000000006000 (reserved)
+> [    0.000000]  modified: 0000000000006000 - 000000000009f800 (usable)
+> [    0.000000]  modified: 000000000009f800 - 00000000000a0000 (reserved)
+> [    0.000000]  modified: 00000000000f0000 - 0000000000100000 (reserved)
+> [    0.000000]  modified: 0000000000100000 - 00000000cfee0000 (usable)
+> [    0.000000]  modified: 00000000cfee0000 - 00000000cfee2000 (ACPI NVS)
+> [    0.000000]  modified: 00000000cfee2000 - 00000000cfef0000 (ACPI data)
+> [    0.000000]  modified: 00000000cfef0000 - 00000000cff00000 (reserved)
+> [    0.000000]  modified: 00000000e0000000 - 00000000e4000000 (reserved)
+> [    0.000000]  modified: 00000000fec00000 - 0000000100000000 (reserved)
+> [    0.000000]  modified: 0000000100000000 - 00000001b0000000 (usable)
 
-The one thing is that for a register-memory operation, using the
-size of the memory operand can catch bugs where it doesn't match
-the size of the register operand.
+so e820_update_range does right job...
 
-GCC's inline asm doesn't make operand size very implicit, and it's
-awkward to cast output operands, so there's a potential for bugs.
-I especially get nervous when the operand itself is an immediate
-constant, as I can't remember the ANSI rules for the type very well.
-(Quick: is 0x80000000 an unsigned 32-bit int or a signed 64-bit one?
-What about 2147483648 or 1<<31?)
+please you try to disable
 
-Since this is mostly inline functions, it's not so big a problem, but
-I'd consider something like:
+X86_CHECK_BIOS_CORRUPTION
 
-static inline void __up_write(struct rw_semaphore *sem)
-{
-       unsigned long tmp;
-	asm volatile("# beginning __up_write\n\t"
-		     LOCK_PREFIX "  xadd%z0	%1,(%2)\n\t"
-		     /* tries to transition
-			0xffff0001 -> 0x00000000 */
-		     "  jz	1f\n"
-		     "  call call_rwsem_wake\n"
-		     "1:\n\t"
-		     "# ending __up_write\n"
-       	     : "+m" (sem->count), "=d" (tmp)
-       	     : "a" (sem), "1" (-RWSEM_ACTIVE_WRITE_BIAS)
-       	     : "memory", "cc");
-}
+and
 
-Just in case the size of -RWSEM_ACTIVE_WRITE_BIAS doesn't match that
-of sem->count.  It'll explode when you try to run it, of course, but
-there's something to be said for compile-time errors.
+CONFIG_X86_RESERVE_LOW_64K
+
+YH
