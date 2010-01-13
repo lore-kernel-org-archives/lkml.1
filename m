@@ -1,192 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754202Ab0AMCRR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754530Ab0AMCWU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754202Ab0AMCRR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jan 2010 21:17:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753486Ab0AMCRQ
+	id S1754530Ab0AMCWU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jan 2010 21:22:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751644Ab0AMCWU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jan 2010 21:17:16 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:44841 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753462Ab0AMCRQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jan 2010 21:17:16 -0500
-Date: Tue, 12 Jan 2010 18:16:42 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: "H. Peter Anvin" <hpa@zytor.com>
-cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: x86: clean up rwsem type system
-In-Reply-To: <alpine.LFD.2.00.1001121755220.17145@localhost.localdomain>
-Message-ID: <alpine.LFD.2.00.1001121810410.17145@localhost.localdomain>
-References: <alpine.LFD.2.00.1001121613560.17145@localhost.localdomain> <4B4D1865.5000107@zytor.com> <alpine.LFD.2.00.1001121659220.17145@localhost.localdomain> <alpine.LFD.2.00.1001121708100.17145@localhost.localdomain>
- <alpine.LFD.2.00.1001121755220.17145@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 12 Jan 2010 21:22:20 -0500
+Received: from mga11.intel.com ([192.55.52.93]:36774 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751221Ab0AMCWT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jan 2010 21:22:19 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,264,1262592000"; 
+   d="scan'208";a="530755140"
+Subject: Re: [PATCH -v2 5/5] x86: use dmi check to treat disabled cpus as
+ hotplug cpus.
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+Reply-To: Suresh Siddha <suresh.b.siddha@intel.com>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       "ananth@in.ibm.com" <ananth@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <4B4D2C44.2060709@kernel.org>
+References: <1263338274-6485-1-git-send-email-yinghai@kernel.org>
+	 <1263338274-6485-5-git-send-email-yinghai@kernel.org>
+	 <1263340563.2854.1011.camel@sbs-t61.sc.intel.com>
+	 <4B4D0E39.10200@kernel.org>
+	 <1263347315.2854.1296.camel@sbs-t61.sc.intel.com>
+	 <4B4D2811.7000001@kernel.org>
+	 <1263348363.2854.1360.camel@sbs-t61.sc.intel.com>
+	 <4B4D2C44.2060709@kernel.org>
+Content-Type: text/plain
+Organization: Intel Corp
+Date: Tue, 12 Jan 2010 18:21:08 -0800
+Message-Id: <1263349268.2854.1386.camel@sbs-t61.sc.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 12 Jan 2010, Linus Torvalds wrote:
+On Tue, 2010-01-12 at 18:13 -0800, Yinghai Lu wrote:
+> On 01/12/2010 06:06 PM, Suresh Siddha wrote:
+> > On Tue, 2010-01-12 at 17:55 -0800, Yinghai Lu wrote:
+> >> you mean this blacklist could be too long?
+> > 
+> > yes.
+> > 
+> >>
+> >> switch to whitelist for the box can treat disabled cpus as hotplug
+> >> cpus?
+> > 
+> > Do we really need all this? Systems which support physical hotplug
+> > typically have lot's of cpu's (mostly will have atleast > 8). Even if we
+> > really need to identify, then perhaps we can check if ACPI has any hints
+> > regarding the physical hotplug support at boot time (we should check
+> > with Andi Kleen or Len Brown on this).
+> > 
+> > For now, I think we can keep it simple by using the detected enabled
+> > cpu's.
 > 
-> Ok, this is the final cleanup. With this, the <asm/rwsem.h> header file 
-> should be usable on x86-64 too. It needs some more support functions (the 
-> actual rwsem asm->C trampoline functions that save/restore all the 
-> clobbered registers etc), but that's a separate thing.
+> sth like this ?
+
+Well, I was referring more to the apic model selection than the prefill
+case. About this possible cpu's, will the wastage be more than few kb
+for few disabled cpu's.
+
+thanks,
+suresh
+
+> ---
+>  arch/x86/kernel/smpboot.c |    3 +--
+>  1 file changed, 1 insertion(+), 2 deletions(-)
 > 
-> Similarly, this will need further changes for actual 64-bit counters. The 
-> 32767-thread limit is fine on x86-32 (we're thread-limited by lowmem 
-> anyway), but likely not on x86-64.
+> Index: linux-2.6/arch/x86/kernel/smpboot.c
+> ===================================================================
+> --- linux-2.6.orig/arch/x86/kernel/smpboot.c
+> +++ linux-2.6/arch/x86/kernel/smpboot.c
+> @@ -1190,7 +1190,6 @@ early_param("possible_cpus", _setup_poss
+>   * - Ashok Raj
+>   *
+>   * Three ways to find out the number of additional hotplug CPUs:
+> - * - If the BIOS specified disabled CPUs in ACPI/mptables use that.
+>   * - The user can overwrite it with possible_cpus=NUM
+>   * - Otherwise don't reserve additional CPUs.
+>   * We do this because additional CPUs waste a lot of memory.
+> @@ -1205,7 +1204,7 @@ __init void prefill_possible_map(void)
+>  		num_processors = 1;
+>  
+>  	if (setup_possible_cpus == -1)
+> -		possible = num_processors + disabled_cpus;
+> +		possible = num_processors;
+>  	else
+>  		possible = setup_possible_cpus;
+>  
 
-In case anybody wants to test, the final piece is appended.
-
-Again, note the 32767-thread limit here. So this really does need that 
-whole "make rwsem_count_t be 64-bit and fix the BIAS values to match" 
-extension on top of it, but that is conceptually a totally independent 
-issue.
-
-NOT TESTED! The original patch that this all was based on were tested by 
-KAMEZAWA Hiroyuki, but maybe I screwed up something when I created the 
-cleaned-up series, so caveat emptor..
-
-Also note that it _may_ be a good idea to mark some more registers 
-clobbered on x86-64 in the inline asms instead of saving/restoring them. 
-They are inline functions, but they are only used in places where there 
-are not a lot of live registers _anyway_, so doing for example the 
-clobbers of %r8-%r11 in the asm wouldn't make the fast-path code any 
-worse, and would make the slow-path code smaller. 
-
-(Not that the slow-path really matters to that degree. Saving a few 
-unnecessary registers is the _least_ of our problems when we hit the slow 
-path. The instruction/cycle counting really only matters in the fast 
-path).
-
-		Linus
-
----
-x86-64: support native xadd rwsem implementation
-
-This one is much faster than the spinlock based fallback rwsem code,
-with certain artifical benchmarks having shown 300%+ improvement on
-threaded page faults etc.
-
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
----
- arch/x86/Kconfig.cpu    |    2 +-
- arch/x86/lib/Makefile   |    1 +
- arch/x86/lib/rwsem_64.S |   81 +++++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 83 insertions(+), 1 deletions(-)
-
-diff --git a/arch/x86/Kconfig.cpu b/arch/x86/Kconfig.cpu
-index f20ddf8..a198293 100644
---- a/arch/x86/Kconfig.cpu
-+++ b/arch/x86/Kconfig.cpu
-@@ -319,7 +319,7 @@ config X86_L1_CACHE_SHIFT
- 
- config X86_XADD
- 	def_bool y
--	depends on X86_32 && !M386
-+	depends on X86_64 || !M386
- 
- config X86_PPRO_FENCE
- 	bool "PentiumPro memory ordering errata workaround"
-diff --git a/arch/x86/lib/Makefile b/arch/x86/lib/Makefile
-index cffd754..c802451 100644
---- a/arch/x86/lib/Makefile
-+++ b/arch/x86/lib/Makefile
-@@ -39,4 +39,5 @@ else
-         lib-y += thunk_64.o clear_page_64.o copy_page_64.o
-         lib-y += memmove_64.o memset_64.o
-         lib-y += copy_user_64.o rwlock_64.o copy_user_nocache_64.o
-+	lib-$(CONFIG_RWSEM_XCHGADD_ALGORITHM) += rwsem_64.o
- endif
-diff --git a/arch/x86/lib/rwsem_64.S b/arch/x86/lib/rwsem_64.S
-new file mode 100644
-index 0000000..15acecf
---- /dev/null
-+++ b/arch/x86/lib/rwsem_64.S
-@@ -0,0 +1,81 @@
-+/*
-+ * x86-64 rwsem wrappers
-+ *
-+ * This interfaces the inline asm code to the slow-path
-+ * C routines. We need to save the call-clobbered regs
-+ * that the asm does not mark as clobbered, and move the
-+ * argument from %rax to %rdi.
-+ *
-+ * NOTE! We don't need to save %rax, because the functions
-+ * will always return the semaphore pointer in %rax (which
-+ * is also the input argument to these helpers)
-+ *
-+ * The following can clobber %rdx because the asm clobbers it:
-+ *   call_rwsem_down_write_failed
-+ *   call_rwsem_wake
-+ * but %rdi, %rsi, %rcx, %r8-r11 always need saving.
-+ */
-+
-+#include <linux/linkage.h>
-+#include <asm/rwlock.h>
-+#include <asm/alternative-asm.h>
-+#include <asm/frame.h>
-+#include <asm/dwarf2.h>
-+
-+#define save_common_regs \
-+	pushq %rdi; \
-+	pushq %rsi; \
-+	pushq %rcx; \
-+	pushq %r8; \
-+	pushq %r9; \
-+	pushq %r10; \
-+	pushq %r11
-+
-+#define restore_common_regs \
-+	popq %r11; \
-+	popq %r10; \
-+	popq %r9; \
-+	popq %r8; \
-+	popq %rcx; \
-+	popq %rsi; \
-+	popq %rdi
-+
-+/* Fix up special calling conventions */
-+ENTRY(call_rwsem_down_read_failed)
-+	save_common_regs
-+	pushq %rdx
-+	movq %rax,%rdi
-+	call rwsem_down_read_failed
-+	popq %rdx
-+	restore_common_regs
-+	ret
-+	ENDPROC(call_rwsem_down_read_failed)
-+
-+ENTRY(call_rwsem_down_write_failed)
-+	save_common_regs
-+	movq %rax,%rdi
-+	call rwsem_down_write_failed
-+	restore_common_regs
-+	ret
-+	ENDPROC(call_rwsem_down_write_failed)
-+
-+ENTRY(call_rwsem_wake)
-+	decw %dx    /* do nothing if still outstanding active readers */
-+	jnz 1f
-+	save_common_regs
-+	movq %rax,%rdi
-+	call rwsem_wake
-+	restore_common_regs
-+1:	ret
-+	ENDPROC(call_rwsem_wake)
-+
-+/* Fix up special calling conventions */
-+ENTRY(call_rwsem_downgrade_wake)
-+	save_common_regs
-+	pushq %rdx
-+	movq %rax,%rdi
-+	call rwsem_downgrade_wake
-+	popq %rdx
-+	restore_common_regs
-+	ret
-+	ENDPROC(call_rwsem_downgrade_wake)
