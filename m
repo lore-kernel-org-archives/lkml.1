@@ -1,165 +1,282 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751089Ab0AMFEk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751555Ab0AMFEt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751089Ab0AMFEk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 00:04:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750908Ab0AMFEj
+	id S1751555Ab0AMFEt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 00:04:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751279Ab0AMFEr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 00:04:39 -0500
-Received: from hera.kernel.org ([140.211.167.34]:59103 "EHLO hera.kernel.org"
+	Wed, 13 Jan 2010 00:04:47 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:50926 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750815Ab0AMFEi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 00:04:38 -0500
-Date: Wed, 13 Jan 2010 05:03:39 GMT
-From: tip-bot for Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       torvalds@linux-foundation.org, tglx@linutronix.de
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org, tglx@linutronix.de
-In-Reply-To: <alpine.LFD.2.00.1001121613560.17145@localhost.localdomain>
-References: <alpine.LFD.2.00.1001121613560.17145@localhost.localdomain>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:x86/asm] x86-32: clean up rwsem inline asm statements
-Message-ID: <tip-59c33fa7791e9948ba467c2b83e307a0d087ab49@git.kernel.org>
-Git-Commit-ID: 59c33fa7791e9948ba467c2b83e307a0d087ab49
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Wed, 13 Jan 2010 05:03:40 +0000 (UTC)
+	id S1751238Ab0AMFEo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jan 2010 00:04:44 -0500
+Date: Wed, 13 Jan 2010 16:04:38 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-next@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: linux-next: Tree for January 13
+Message-Id: <20100113160438.d1826ee0.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 3.0.0beta4 (GTK+ 2.18.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__13_Jan_2010_16_04_38_+1100_ffhJnnSj616nRRol"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  59c33fa7791e9948ba467c2b83e307a0d087ab49
-Gitweb:     http://git.kernel.org/tip/59c33fa7791e9948ba467c2b83e307a0d087ab49
-Author:     Linus Torvalds <torvalds@linux-foundation.org>
-AuthorDate: Tue, 12 Jan 2010 16:21:09 -0800
-Committer:  H. Peter Anvin <hpa@zytor.com>
-CommitDate: Tue, 12 Jan 2010 20:43:04 -0800
+--Signature=_Wed__13_Jan_2010_16_04_38_+1100_ffhJnnSj616nRRol
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-x86-32: clean up rwsem inline asm statements
+Hi all,
 
-This makes gcc use the right register names and instruction operand sizes
-automatically for the rwsem inline asm statements.
+Changes since 20100112:
 
-So instead of using "(%%eax)" to specify the memory address that is the
-semaphore, we use "(%1)" or similar. And instead of forcing the operation
-to always be 32-bit, we use "%z0", taking the size from the actual
-semaphore data structure itself.
+Linus' tree still has a build failure for which I reverted a commit.
 
-This doesn't actually matter on x86-32, but if we want to use the same
-inline asm for x86-64, we'll need to have the compiler generate the proper
-64-bit names for the registers (%rax instead of %eax), and if we want to
-use a 64-bit counter too (in order to avoid the 15-bit limit on the
-write counter that limits concurrent users to 32767 threads), we'll need
-to be able to generate instructions with "q" accesses rather than "l".
+The gfs2 tree lost its conflict.
 
-Since this header currently isn't enabled on x86-64, none of that matters,
-but we do want to use the xadd version of the semaphores rather than have
-to take spinlocks to do a rwsem. The mm->mmap_sem can be heavily contended
-when you have lots of threads all taking page faults, and the fallback
-rwsem code that uses a spinlock performs abysmally badly in that case.
+The squashfs tree lost its conflicts.
 
-[ hpa: modified the patch to skip size suffixes entirely when they are
-  redundant due to register operands. ]
+----------------------------------------------------------------------------
 
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-LKML-Reference: <alpine.LFD.2.00.1001121613560.17145@localhost.localdomain>
-Signed-off-by: H. Peter Anvin <hpa@zytor.com>
----
- arch/x86/include/asm/rwsem.h |   30 +++++++++++++++---------------
- 1 files changed, 15 insertions(+), 15 deletions(-)
+I have created today's linux-next tree at
+git://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
+(patches at http://www.kernel.org/pub/linux/kernel/v2.6/next/ ).  If you
+are tracking the linux-next tree using git, you should not use "git pull"
+to do so as that will try to merge the new linux-next release with the
+old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
+(see below).
 
-diff --git a/arch/x86/include/asm/rwsem.h b/arch/x86/include/asm/rwsem.h
-index ca7517d..4136200 100644
---- a/arch/x86/include/asm/rwsem.h
-+++ b/arch/x86/include/asm/rwsem.h
-@@ -105,7 +105,7 @@ do {								\
- static inline void __down_read(struct rw_semaphore *sem)
- {
- 	asm volatile("# beginning down_read\n\t"
--		     LOCK_PREFIX "  incl      (%%eax)\n\t"
-+		     LOCK_PREFIX "  inc%z0      (%1)\n\t"
- 		     /* adds 0x00000001, returns the old value */
- 		     "  jns        1f\n"
- 		     "  call call_rwsem_down_read_failed\n"
-@@ -123,12 +123,12 @@ static inline int __down_read_trylock(struct rw_semaphore *sem)
- {
- 	__s32 result, tmp;
- 	asm volatile("# beginning __down_read_trylock\n\t"
--		     "  movl      %0,%1\n\t"
-+		     "  mov          %0,%1\n\t"
- 		     "1:\n\t"
--		     "  movl	     %1,%2\n\t"
--		     "  addl      %3,%2\n\t"
-+		     "  mov          %1,%2\n\t"
-+		     "  add          %3,%2\n\t"
- 		     "  jle	     2f\n\t"
--		     LOCK_PREFIX "  cmpxchgl  %2,%0\n\t"
-+		     LOCK_PREFIX "  cmpxchg  %2,%0\n\t"
- 		     "  jnz	     1b\n\t"
- 		     "2:\n\t"
- 		     "# ending __down_read_trylock\n\t"
-@@ -147,9 +147,9 @@ static inline void __down_write_nested(struct rw_semaphore *sem, int subclass)
- 
- 	tmp = RWSEM_ACTIVE_WRITE_BIAS;
- 	asm volatile("# beginning down_write\n\t"
--		     LOCK_PREFIX "  xadd      %%edx,(%%eax)\n\t"
-+		     LOCK_PREFIX "  xadd      %1,(%2)\n\t"
- 		     /* subtract 0x0000ffff, returns the old value */
--		     "  testl     %%edx,%%edx\n\t"
-+		     "  test      %1,%1\n\t"
- 		     /* was the count 0 before? */
- 		     "  jz        1f\n"
- 		     "  call call_rwsem_down_write_failed\n"
-@@ -185,7 +185,7 @@ static inline void __up_read(struct rw_semaphore *sem)
- {
- 	__s32 tmp = -RWSEM_ACTIVE_READ_BIAS;
- 	asm volatile("# beginning __up_read\n\t"
--		     LOCK_PREFIX "  xadd      %%edx,(%%eax)\n\t"
-+		     LOCK_PREFIX "  xadd      %1,(%2)\n\t"
- 		     /* subtracts 1, returns the old value */
- 		     "  jns        1f\n\t"
- 		     "  call call_rwsem_wake\n"
-@@ -201,18 +201,18 @@ static inline void __up_read(struct rw_semaphore *sem)
-  */
- static inline void __up_write(struct rw_semaphore *sem)
- {
-+	unsigned long tmp;
- 	asm volatile("# beginning __up_write\n\t"
--		     "  movl      %2,%%edx\n\t"
--		     LOCK_PREFIX "  xaddl     %%edx,(%%eax)\n\t"
-+		     LOCK_PREFIX "  xadd      %1,(%2)\n\t"
- 		     /* tries to transition
- 			0xffff0001 -> 0x00000000 */
- 		     "  jz       1f\n"
- 		     "  call call_rwsem_wake\n"
- 		     "1:\n\t"
- 		     "# ending __up_write\n"
--		     : "+m" (sem->count)
--		     : "a" (sem), "i" (-RWSEM_ACTIVE_WRITE_BIAS)
--		     : "memory", "cc", "edx");
-+		     : "+m" (sem->count), "=d" (tmp)
-+		     : "a" (sem), "1" (-RWSEM_ACTIVE_WRITE_BIAS)
-+		     : "memory", "cc");
- }
- 
- /*
-@@ -221,7 +221,7 @@ static inline void __up_write(struct rw_semaphore *sem)
- static inline void __downgrade_write(struct rw_semaphore *sem)
- {
- 	asm volatile("# beginning __downgrade_write\n\t"
--		     LOCK_PREFIX "  addl      %2,(%%eax)\n\t"
-+		     LOCK_PREFIX "  add%z0    %2,(%1)\n\t"
- 		     /* transitions 0xZZZZ0001 -> 0xYYYY0001 */
- 		     "  jns       1f\n\t"
- 		     "  call call_rwsem_downgrade_wake\n"
-@@ -237,7 +237,7 @@ static inline void __downgrade_write(struct rw_semaphore *sem)
-  */
- static inline void rwsem_atomic_add(int delta, struct rw_semaphore *sem)
- {
--	asm volatile(LOCK_PREFIX "addl %1,%0"
-+	asm volatile(LOCK_PREFIX "add%z0 %1,%0"
- 		     : "+m" (sem->count)
- 		     : "ir" (delta));
- }
+You can see which trees have been included by looking in the Next/Trees
+file in the source.  There are also quilt-import.log and merge.log files
+in the Next directory.  Between each merge, the tree was built with
+a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
+final fixups (if any), it is also built with powerpc allnoconfig (32 and
+64 bit), ppc44x_defconfig and allyesconfig (minus
+CONFIG_PROFILE_ALL_BRANCHES - this fails its final link) and i386, sparc
+and sparc64 defconfig. These builds also have
+CONFIG_ENABLE_WARN_DEPRECATED, CONFIG_ENABLE_MUST_CHECK and
+CONFIG_DEBUG_INFO disabled when necessary.
+
+Below is a summary of the state of the merge.
+
+We are up to 155 trees (counting Linus' and 22 trees of patches pending
+for Linus' tree), more are welcome (even if they are currently empty).
+Thanks to those who have contributed, and to those who haven't, please do.
+
+Status of my local build tests will be at
+http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
+advice about cross compilers/configs that work, we are always open to add
+more builds.
+
+Thanks to Jan Dittmer for adding the linux-next tree to his build tests
+at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
+Dunlap for doing many randconfig builds.
+
+There is a wiki covering stuff to do with linux-next at
+http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+$ git checkout master
+$ git reset --hard stable
+Merging origin/master
+[master 9f80cf1] Revert "zlib: optimize inffast when copying direct from ou=
+tput"
+Merging fixes/fixes
+Merging arm-current/master
+Merging m68k-current/for-linus
+Merging powerpc-merge/merge
+Merging sparc-current/master
+Merging scsi-rc-fixes/master
+Merging net-current/master
+CONFLICT (content): Merge conflict in drivers/scsi/cxgb3i/cxgb3i_offload.c
+Merging sound-current/for-linus
+Merging pci-current/for-linus
+Merging wireless-current/master
+Merging kbuild-current/for-linus
+Merging quilt/driver-core.current
+Merging quilt/tty.current
+Merging quilt/usb.current
+Merging quilt/staging.current
+Merging cpufreq-current/fixes
+Merging input-current/for-linus
+Merging md-current/for-linus
+Merging audit-current/for-linus
+Merging crypto-current/master
+Merging ide-curent/master
+Merging dwmw2/master
+Merging arm/devel
+Merging davinci/davinci-next
+Merging msm/for-next
+Merging omap/for-next
+Merging pxa/for-next
+Merging samsung/next-samsung
+Merging avr32/avr32-arch
+Merging blackfin/for-linus
+Merging cris/for-next
+Merging ia64/test
+Merging m68k/for-next
+Merging m68knommu/for-next
+Merging microblaze/next
+Merging mips/mips-for-linux-next
+Merging parisc/next
+Merging powerpc/next
+Merging 4xx/next
+Merging 52xx-and-virtex/next
+Merging galak/next
+Merging s390/features
+Merging sh/master
+Merging sparc/master
+Merging xtensa/master
+Merging ceph/for-next
+CONFLICT (content): Merge conflict in Documentation/ioctl/ioctl-number.txt
+Merging cifs/master
+Merging configfs/linux-next
+Merging ecryptfs/next
+Merging ext3/for_next
+Merging ext4/next
+Merging fatfs/master
+Merging fuse/for-next
+Merging gfs2/master
+Merging jfs/next
+Merging logfs/master
+Merging nfs/linux-next
+Applying: ceph: update for BDI_RECLAIMABLE change
+Merging nfsd/nfsd-next
+Merging nilfs2/for-next
+Merging ocfs2/linux-next
+Merging squashfs/master
+Merging udf/for_next
+Merging v9fs/for-next
+CONFLICT (add/add): Merge conflict in fs/9p/cache.c
+Merging ubifs/linux-next
+Merging xfs/master
+Merging reiserfs-bkl/reiserfs/kill-bkl
+Merging vfs/for-next
+Merging pci/linux-next
+Merging hid/for-next
+Merging quilt/i2c
+Merging bjdooks-i2c/next-i2c
+Merging quilt/jdelvare-hwmon
+Merging quilt/kernel-doc
+Merging v4l-dvb/master
+Merging kbuild/for-next
+Merging kconfig/for-next
+Merging ide/master
+Merging libata/NEXT
+Merging infiniband/for-next
+Merging acpi/test
+Merging ieee1394/for-next
+Merging ubi/linux-next
+Merging kvm/linux-next
+Merging dlm/next
+Merging scsi/master
+Merging async_tx/next
+Merging net/master
+CONFLICT (content): Merge conflict in net/mac80211/iface.c
+CONFLICT (content): Merge conflict in net/mac80211/scan.c
+Merging wireless/master
+CONFLICT (content): Merge conflict in drivers/net/wireless/iwlwifi/iwl-core=
+.h
+Merging mtd/master
+Merging crypto/master
+Merging sound/for-next
+Merging cpufreq/next
+Merging quilt/rr
+CONFLICT (content): Merge conflict in include/linux/kmemcheck.h
+Merging mmc/next
+Merging tmio-mmc/linux-next
+Merging input/next
+Merging lsm/for-next
+Merging block/for-next
+Merging quilt/device-mapper
+Merging embedded/master
+Merging firmware/master
+Merging pcmcia/master
+Merging battery/master
+Merging leds/for-mm
+Merging backlight/for-mm
+Merging kgdb/kgdb-next
+Merging slab/for-next
+Merging uclinux/for-next
+Merging md/for-next
+Merging mfd/for-next
+CONFLICT (content): Merge conflict in drivers/mfd/asic3.c
+CONFLICT (content): Merge conflict in drivers/mfd/t7l66xb.c
+CONFLICT (content): Merge conflict in drivers/mfd/tc6387xb.c
+CONFLICT (content): Merge conflict in drivers/mfd/tc6393xb.c
+CONFLICT (add/add): Merge conflict in drivers/mfd/tmio_core.c
+CONFLICT (content): Merge conflict in drivers/mmc/host/tmio_mmc.c
+CONFLICT (content): Merge conflict in drivers/mmc/host/tmio_mmc.h
+CONFLICT (content): Merge conflict in include/linux/mfd/tmio.h
+Merging hdlc/hdlc-next
+Merging drm/drm-next
+Merging voltage/for-next
+Merging security-testing/next
+Merging lblnet/master
+Merging agp/agp-next
+Merging uwb/for-upstream
+Merging watchdog/master
+Merging bdev/master
+Merging dwmw2-iommu/master
+Merging cputime/cputime
+Merging osd/linux-next
+Merging jc_docs/docs-next
+Merging nommu/master
+Merging trivial/for-next
+Merging audit/for-next
+Merging quilt/aoe
+Merging suspend/linux-next
+Merging bluetooth/master
+Merging fsnotify/for-next
+Merging irda/for-next
+CONFLICT (content): Merge conflict in drivers/net/irda/irda-usb.c
+Merging hwlat/for-linus
+CONFLICT (content): Merge conflict in MAINTAINERS
+CONFLICT (content): Merge conflict in drivers/misc/Makefile
+Merging drbd/for-jens
+Merging catalin/for-next
+Merging alacrity/linux-next
+CONFLICT (content): Merge conflict in lib/Kconfig
+Merging i7core_edac/linux_next
+Merging devicetree/next-devicetree
+Merging spi/next-spi
+Merging limits/writable_limits
+CONFLICT (content): Merge conflict in arch/x86/ia32/ia32entry.S
+CONFLICT (content): Merge conflict in arch/x86/include/asm/unistd_32.h
+CONFLICT (content): Merge conflict in arch/x86/include/asm/unistd_64.h
+CONFLICT (content): Merge conflict in arch/x86/kernel/syscall_table_32.S
+Merging omap_dss2/for-next
+Merging tip/auto-latest
+Merging edac-amd/for-next
+Merging oprofile/for-next
+Merging percpu/for-next
+Applying: slab: update for percpu API change
+Merging workqueues/for-next
+Merging sfi/sfi-test
+Merging asm-generic/next
+Merging hwpoison/hwpoison
+Merging sysctl/master
+Merging quilt/driver-core
+Merging quilt/tty
+Merging quilt/usb
+Merging quilt/staging
+Merging scsi-post-merge/master
+
+--Signature=_Wed__13_Jan_2010_16_04_38_+1100_ffhJnnSj616nRRol
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAktNVGYACgkQjjKRsyhoI8zNlACdH09ss7wP/fiM54zoq4MFnOqJ
+VpIAoJcfXTvZMv2Qp+A2+YdLk+JpIWfD
+=HSqA
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__13_Jan_2010_16_04_38_+1100_ffhJnnSj616nRRol--
