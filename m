@@ -1,565 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755630Ab0AMPWc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755876Ab0AMPWn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755630Ab0AMPWc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 10:22:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755561Ab0AMPWb
+	id S1755876Ab0AMPWn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 10:22:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755747Ab0AMPWj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 10:22:31 -0500
-Received: from casper.infradead.org ([85.118.1.10]:56584 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755190Ab0AMPWb (ORCPT
+	Wed, 13 Jan 2010 10:22:39 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:33356 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755655Ab0AMPWh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 10:22:31 -0500
+	Wed, 13 Jan 2010 10:22:37 -0500
 From: Arnaldo Carvalho de Melo <acme@infradead.org>
 To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, Arnaldo Carvalho de Melo <acme@redhat.com>,
-       =?utf-8?q?Fr=C3=A9d=C3=A9ric=20Weisbecker?= <fweisbec@gmail.com>,
-       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 1/3 v2] perf tools: Encode kernel module mappings in perf.data
-Date: Wed, 13 Jan 2010 13:22:17 -0200
-Message-Id: <1263396139-4798-1-git-send-email-acme@infradead.org>
+Cc: linux-kernel@vger.kernel.org, Kirill Smelkov <kirr@landau.phys.spbu.ru>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>
+Subject: [PATCH 2/3] perf: fix few typos + cosmetics
+Date: Wed, 13 Jan 2010 13:22:18 -0200
+Message-Id: <1263396139-4798-2-git-send-email-acme@infradead.org>
 X-Mailer: git-send-email 1.6.2.5
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <acme@infradead.org> by casper.infradead.org
+In-Reply-To: <1263396139-4798-1-git-send-email-acme@infradead.org>
+References: <1263396139-4798-1-git-send-email-acme@infradead.org>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <acme@infradead.org> by bombadil.infradead.org
 	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
+From: Kirill Smelkov <kirr@landau.phys.spbu.ru>
 
-We were always looking at the running machine /proc/modules, even when
-processing a perf.data file, which only makes sense when we're doing
-'perf record' and 'perf report' on the same machine, and in close
-sucession, or if we don't use modules at all, right Peter? ;-)
-
-Now, at 'perf record' time we read /proc/modules, find the long path for
-modules, and put them as PERF_MMAP events, just like we did to encode
-the reloc reference symbol for vmlinux. Talking about that now it is
-encoded in .pgoff, so that we can use .{start,len} to store the address
-boundaries for the kernel so that when we reconstruct the kmaps tree we
-can do lookups right away, without having to fixup the end of the kernel
-maps like we did in the past (and now only in perf record).
-
-One more step in the 'perf archive' direction when we'll finally be able
-to collect data in one machine and analyse in another.
-
-Cc: Frédéric Weisbecker <fweisbec@gmail.com>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Paul Mackerras <paulus@samba.org>
+Signed-off-by: Kirill Smelkov <kirr@landau.phys.spbu.ru>
 Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
 ---
- tools/perf/builtin-kmem.c   |    5 ++
- tools/perf/builtin-record.c |   11 ++++
- tools/perf/builtin-top.c    |    5 ++
- tools/perf/util/event.c     |  106 ++++++++++++++++++++++++++++++++++-----
- tools/perf/util/event.h     |    2 +
- tools/perf/util/session.c   |    8 ++--
- tools/perf/util/symbol.c    |  116 +++++++++++++++++++++++++++++++------------
- tools/perf/util/symbol.h    |    3 +
- tools/perf/util/thread.h    |    4 ++
- 9 files changed, 212 insertions(+), 48 deletions(-)
+ tools/perf/Documentation/perf.txt |    2 +-
+ tools/perf/design.txt             |    8 ++++----
+ 2 files changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/tools/perf/builtin-kmem.c b/tools/perf/builtin-kmem.c
-index 88c570c..4af7199 100644
---- a/tools/perf/builtin-kmem.c
-+++ b/tools/perf/builtin-kmem.c
-@@ -494,6 +494,11 @@ static int __cmd_kmem(void)
- 	if (!perf_session__has_traces(session, "kmem record"))
- 		goto out_delete;
+diff --git a/tools/perf/Documentation/perf.txt b/tools/perf/Documentation/perf.txt
+index 69c8325..0eeb247 100644
+--- a/tools/perf/Documentation/perf.txt
++++ b/tools/perf/Documentation/perf.txt
+@@ -12,7 +12,7 @@ SYNOPSIS
  
-+	if (perf_session__create_kernel_maps(session) < 0) {
-+		pr_err("Problems creating kernel maps\n");
-+		return -1;
-+	}
-+
- 	setup_pager();
- 	err = perf_session__process_events(session, &event_ops);
- 	if (err != 0)
-diff --git a/tools/perf/builtin-record.c b/tools/perf/builtin-record.c
-index 8f88420..c130df2 100644
---- a/tools/perf/builtin-record.c
-+++ b/tools/perf/builtin-record.c
-@@ -465,6 +465,11 @@ static int __cmd_record(int argc, const char **argv)
- 		return -1;
- 	}
+ DESCRIPTION
+ -----------
+-Performance counters for Linux are are a new kernel-based subsystem
++Performance counters for Linux are a new kernel-based subsystem
+ that provide a framework for all things performance analysis. It
+ covers hardware level (CPU/PMU, Performance Monitoring Unit) features
+ and software features (software counters, tracepoints) as well.
+diff --git a/tools/perf/design.txt b/tools/perf/design.txt
+index 8d0de51..bd0bb1b 100644
+--- a/tools/perf/design.txt
++++ b/tools/perf/design.txt
+@@ -101,10 +101,10 @@ enum hw_event_ids {
+ 	 */
+ 	PERF_COUNT_HW_CPU_CYCLES		= 0,
+ 	PERF_COUNT_HW_INSTRUCTIONS		= 1,
+-	PERF_COUNT_HW_CACHE_REFERENCES	= 2,
++	PERF_COUNT_HW_CACHE_REFERENCES		= 2,
+ 	PERF_COUNT_HW_CACHE_MISSES		= 3,
+ 	PERF_COUNT_HW_BRANCH_INSTRUCTIONS	= 4,
+-	PERF_COUNT_HW_BRANCH_MISSES	= 5,
++	PERF_COUNT_HW_BRANCH_MISSES		= 5,
+ 	PERF_COUNT_HW_BUS_CYCLES		= 6,
+ };
  
-+	if (perf_session__create_kernel_maps(session) < 0) {
-+		pr_err("Problems creating kernel maps\n");
-+		return -1;
-+	}
-+
- 	if (!file_new) {
- 		err = perf_header__read(&session->header, output);
- 		if (err < 0)
-@@ -558,6 +563,12 @@ static int __cmd_record(int argc, const char **argv)
- 		return err;
- 	}
- 
-+	err = event__synthesize_modules(process_synthesized_event, session);
-+	if (err < 0) {
-+		pr_err("Couldn't record kernel reference relocation symbol.\n");
-+		return err;
-+	}
-+
- 	if (!system_wide && profile_cpu == -1)
- 		event__synthesize_thread(pid, process_synthesized_event,
- 					 session);
-diff --git a/tools/perf/builtin-top.c b/tools/perf/builtin-top.c
-index ddc584b..6822b44 100644
---- a/tools/perf/builtin-top.c
-+++ b/tools/perf/builtin-top.c
-@@ -1165,6 +1165,11 @@ static int __cmd_top(void)
- 	if (session == NULL)
- 		return -ENOMEM;
- 
-+	if (perf_session__create_kernel_maps(session) < 0) {
-+		pr_err("Problems creating kernel maps\n");
-+		return -1;
-+	}
-+
- 	if (target_pid != -1)
- 		event__synthesize_thread(target_pid, event__process, session);
- 	else
-diff --git a/tools/perf/util/event.c b/tools/perf/util/event.c
-index bfb3d87..4f3e7ef 100644
---- a/tools/perf/util/event.c
-+++ b/tools/perf/util/event.c
-@@ -154,6 +154,36 @@ static int event__synthesize_mmap_events(pid_t pid, pid_t tgid,
- 	return 0;
- }
- 
-+int event__synthesize_modules(event__handler_t process,
-+			      struct perf_session *session)
-+{
-+	struct rb_node *nd;
-+
-+	for (nd = rb_first(&session->kmaps.maps[MAP__FUNCTION]);
-+	     nd; nd = rb_next(nd)) {
-+		event_t ev;
-+		size_t size;
-+		struct map *pos = rb_entry(nd, struct map, rb_node);
-+
-+		if (pos->dso->kernel)
-+			continue;
-+
-+		size = ALIGN(pos->dso->long_name_len + 1, sizeof(u64));
-+		memset(&ev, 0, sizeof(ev));
-+		ev.mmap.header.type = PERF_RECORD_MMAP;
-+		ev.mmap.header.size = (sizeof(ev.mmap) -
-+				        (sizeof(ev.mmap.filename) - size));
-+		ev.mmap.start = pos->start;
-+		ev.mmap.len   = pos->end - pos->start;
-+
-+		memcpy(ev.mmap.filename, pos->dso->long_name,
-+		       pos->dso->long_name_len + 1);
-+		process(&ev, session);
-+	}
-+
-+	return 0;
-+}
-+
- int event__synthesize_thread(pid_t pid, event__handler_t process,
- 			     struct perf_session *session)
- {
-@@ -222,7 +252,9 @@ int event__synthesize_kernel_mmap(event__handler_t process,
- 			"[kernel.kallsyms.%s]", symbol_name) + 1;
- 	size = ALIGN(size, sizeof(u64));
- 	ev.mmap.header.size = (sizeof(ev.mmap) - (sizeof(ev.mmap.filename) - size));
--	ev.mmap.start = args.start;
-+	ev.mmap.pgoff = args.start;
-+	ev.mmap.start = session->vmlinux_maps[MAP__FUNCTION]->start;
-+	ev.mmap.len   = session->vmlinux_maps[MAP__FUNCTION]->end - ev.mmap.start ;
- 
- 	return process(&ev, session);
- }
-@@ -280,7 +312,6 @@ int event__process_mmap(event_t *self, struct perf_session *session)
- {
- 	struct thread *thread;
- 	struct map *map;
--	static const char kmmap_prefix[] = "[kernel.kallsyms.";
- 
- 	dump_printf(" %d/%d: [%p(%p) @ %p]: %s\n",
- 		    self->mmap.pid, self->mmap.tid,
-@@ -289,13 +320,61 @@ int event__process_mmap(event_t *self, struct perf_session *session)
- 		    (void *)(long)self->mmap.pgoff,
- 		    self->mmap.filename);
- 
--	if (self->mmap.pid == 0 &&
--	    memcmp(self->mmap.filename, kmmap_prefix,
--		   sizeof(kmmap_prefix) - 1) == 0) {
--		const char *symbol_name = (self->mmap.filename +
--					   sizeof(kmmap_prefix) - 1);
--		perf_session__set_kallsyms_ref_reloc_sym(session, symbol_name,
--							 self->mmap.start);
-+	if (self->mmap.pid == 0) {
-+		static const char kmmap_prefix[] = "[kernel.kallsyms.";
-+
-+		if (self->mmap.filename[0] == '/') {
-+			char short_module_name[1024];
-+			char *name = strrchr(self->mmap.filename, '/'), *dot;
-+
-+			if (name == NULL)
-+				goto out_problem;
-+
-+			++name; /* skip / */
-+			dot = strrchr(name, '.');
-+			if (dot == NULL)
-+				goto out_problem;
-+
-+			snprintf(short_module_name, sizeof(short_module_name),
-+				 "[%.*s]", (int)(dot - name), name);
-+			strxfrchar(short_module_name, '-', '_');
-+
-+			map = perf_session__new_module_map(session,
-+							   self->mmap.start,
-+							   short_module_name);
-+			if (map == NULL)
-+				goto out_problem;
-+
-+			name = strdup(self->mmap.filename);
-+			if (name == NULL)
-+				goto out_problem;
-+
-+			dso__set_long_name(map->dso, name);
-+			map->end = map->start + self->mmap.len;
-+		} else if (memcmp(self->mmap.filename, kmmap_prefix,
-+				sizeof(kmmap_prefix) - 1) == 0) {
-+			const char *symbol_name = (self->mmap.filename +
-+						   sizeof(kmmap_prefix) - 1);
-+			/*
-+			 * Should be there already, from the build-id table in
-+			 * the header.
-+			 */
-+			struct dso *kernel = __dsos__findnew(&dsos__kernel,
-+							     "[kernel.kallsyms]");
-+			if (kernel == NULL)
-+				goto out_problem;
-+
-+			if (__map_groups__create_kernel_maps(&session->kmaps,
-+							     session->vmlinux_maps,
-+							     kernel) < 0)
-+				goto out_problem;
-+
-+			session->vmlinux_maps[MAP__FUNCTION]->start = self->mmap.start;
-+			session->vmlinux_maps[MAP__FUNCTION]->end   = self->mmap.start + self->mmap.len;
-+
-+			perf_session__set_kallsyms_ref_reloc_sym(session, symbol_name,
-+								 self->mmap.pgoff);
-+		}
- 		return 0;
- 	}
- 
-@@ -304,10 +383,13 @@ int event__process_mmap(event_t *self, struct perf_session *session)
- 		       session->cwd, session->cwdlen);
- 
- 	if (thread == NULL || map == NULL)
--		dump_printf("problem processing PERF_RECORD_MMAP, skipping event.\n");
--	else
--		thread__insert_map(thread, map);
-+		goto out_problem;
-+
-+	thread__insert_map(thread, map);
-+	return 0;
- 
-+out_problem:
-+	dump_printf("problem processing PERF_RECORD_MMAP, skipping event.\n");
- 	return 0;
- }
- 
-diff --git a/tools/perf/util/event.h b/tools/perf/util/event.h
-index 80356da..50a7132 100644
---- a/tools/perf/util/event.h
-+++ b/tools/perf/util/event.h
-@@ -112,6 +112,8 @@ void event__synthesize_threads(event__handler_t process,
- int event__synthesize_kernel_mmap(event__handler_t process,
- 				  struct perf_session *session,
- 				  const char *symbol_name);
-+int event__synthesize_modules(event__handler_t process,
-+			      struct perf_session *session);
- 
- int event__process_comm(event_t *self, struct perf_session *session);
- int event__process_lost(event_t *self, struct perf_session *session);
-diff --git a/tools/perf/util/session.c b/tools/perf/util/session.c
-index 378ac54..fd1c5a3 100644
---- a/tools/perf/util/session.c
-+++ b/tools/perf/util/session.c
-@@ -69,9 +69,6 @@ struct perf_session *perf_session__new(const char *filename, int mode, bool forc
- 	self->unknown_events = 0;
- 	map_groups__init(&self->kmaps);
- 
--	if (perf_session__create_kernel_maps(self) < 0)
--		goto out_delete;
--
- 	if (mode == O_RDONLY && perf_session__open(self, force) < 0)
- 		goto out_delete;
- 
-@@ -268,8 +265,11 @@ int perf_header__read_build_ids(int input, u64 offset, u64 size)
- 			head = &dsos__kernel;
- 
- 		dso = __dsos__findnew(head, filename);
--		if (dso != NULL)
-+		if (dso != NULL) {
- 			dso__set_build_id(dso, &bev.build_id);
-+			if (head == &dsos__kernel && filename[0] == '[')
-+				dso->kernel = 1;
-+		}
- 
- 		offset += bev.header.size;
- 	}
-diff --git a/tools/perf/util/symbol.c b/tools/perf/util/symbol.c
-index 8e6627e..381999d 100644
---- a/tools/perf/util/symbol.c
-+++ b/tools/perf/util/symbol.c
-@@ -161,7 +161,7 @@ static size_t symbol__fprintf(struct symbol *self, FILE *fp)
- 		       self->start, self->end, self->name);
- }
- 
--static void dso__set_long_name(struct dso *self, char *name)
-+void dso__set_long_name(struct dso *self, char *name)
- {
- 	if (name == NULL)
- 		return;
-@@ -176,7 +176,7 @@ static void dso__set_basename(struct dso *self)
- 
- struct dso *dso__new(const char *name)
- {
--	struct dso *self = malloc(sizeof(*self) + strlen(name) + 1);
-+	struct dso *self = zalloc(sizeof(*self) + strlen(name) + 1);
- 
- 	if (self != NULL) {
- 		int i;
-@@ -500,13 +500,17 @@ static int dso__split_kallsyms(struct dso *self, struct map *map,
- 
- 			*module++ = '\0';
- 
--			if (strcmp(self->name, module)) {
-+			if (strcmp(curr_map->dso->short_name, module)) {
- 				curr_map = map_groups__find_by_name(&session->kmaps, map->type, module);
- 				if (curr_map == NULL) {
- 					pr_debug("/proc/{kallsyms,modules} "
--					         "inconsistency!\n");
-+					         "inconsistency while looking "
-+						 "for \"%s\" module!\n", module);
- 					return -1;
- 				}
-+
-+				if (curr_map->dso->loaded)
-+					goto discard_symbol;
- 			}
- 			/*
- 			 * So that we look just like we get from .ko files,
-@@ -1343,13 +1347,33 @@ struct map *map_groups__find_by_name(struct map_groups *self,
- 	for (nd = rb_first(&self->maps[type]); nd; nd = rb_next(nd)) {
- 		struct map *map = rb_entry(nd, struct map, rb_node);
- 
--		if (map->dso && strcmp(map->dso->name, name) == 0)
-+		if (map->dso && strcmp(map->dso->short_name, name) == 0)
- 			return map;
- 	}
- 
- 	return NULL;
- }
- 
-+static int dso__kernel_module_get_build_id(struct dso *self)
-+{
-+	char filename[PATH_MAX];
-+	/*
-+	 * kernel module short names are of the form "[module]" and
-+	 * we need just "module" here.
-+	 */
-+	const char *name = self->short_name + 1;
-+
-+	snprintf(filename, sizeof(filename),
-+		 "/sys/module/%.*s/notes/.note.gnu.build-id",
-+		 (int)strlen(name - 1), name);
-+
-+	if (sysfs__read_build_id(filename, self->build_id,
-+				 sizeof(self->build_id)) == 0)
-+		self->has_build_id = true;
-+
-+	return 0;
-+}
-+
- static int perf_session__set_modules_path_dir(struct perf_session *self, char *dirname)
- {
- 	struct dirent *dent;
-@@ -1395,6 +1419,7 @@ static int perf_session__set_modules_path_dir(struct perf_session *self, char *d
- 			if (long_name == NULL)
- 				goto failure;
- 			dso__set_long_name(map->dso, long_name);
-+			dso__kernel_module_get_build_id(map->dso);
- 		}
- 	}
- 
-@@ -1437,6 +1462,24 @@ static struct map *map__new2(u64 start, struct dso *dso, enum map_type type)
- 	return self;
- }
- 
-+struct map *perf_session__new_module_map(struct perf_session *self, u64 start,
-+					 const char *filename)
-+{
-+	struct map *map;
-+	struct dso *dso = __dsos__findnew(&dsos__kernel, filename);
-+
-+	if (dso == NULL)
-+		return NULL;
-+
-+	map = map__new2(start, dso, MAP__FUNCTION);
-+	if (map == NULL)
-+		return NULL;
-+
-+	dso->origin = DSO__ORIG_KMODULE;
-+	map_groups__insert(&self->kmaps, map);
-+	return map;
-+}
-+
- static int perf_session__create_module_maps(struct perf_session *self)
- {
- 	char *line = NULL;
-@@ -1450,7 +1493,6 @@ static int perf_session__create_module_maps(struct perf_session *self)
- 	while (!feof(file)) {
- 		char name[PATH_MAX];
- 		u64 start;
--		struct dso *dso;
- 		char *sep;
- 		int line_len;
- 
-@@ -1476,26 +1518,10 @@ static int perf_session__create_module_maps(struct perf_session *self)
- 		*sep = '\0';
- 
- 		snprintf(name, sizeof(name), "[%s]", line);
--		dso = dso__new(name);
--
--		if (dso == NULL)
--			goto out_delete_line;
--
--		map = map__new2(start, dso, MAP__FUNCTION);
--		if (map == NULL) {
--			dso__delete(dso);
-+		map = perf_session__new_module_map(self, start, name);
-+		if (map == NULL)
- 			goto out_delete_line;
--		}
--
--		snprintf(name, sizeof(name),
--			 "/sys/module/%s/notes/.note.gnu.build-id", line);
--		if (sysfs__read_build_id(name, dso->build_id,
--					 sizeof(dso->build_id)) == 0)
--			dso->has_build_id = true;
--
--		dso->origin = DSO__ORIG_KMODULE;
--		map_groups__insert(&self->kmaps, map);
--		dsos__add(&dsos__kernel, dso);
-+		dso__kernel_module_get_build_id(map->dso);
- 	}
- 
- 	free(line);
-@@ -1573,10 +1599,28 @@ static int dso__load_kernel_sym(struct dso *self, struct map *map,
- 		}
- 	}
- 
-+	/*
-+	 * Say the kernel DSO was created when processing the build-id header table,
-+	 * we have a build-id, so check if it is the same as the running kernel,
-+	 * using it if it is.
-+	 */
-+	if (self->has_build_id) {
-+		u8 kallsyms_build_id[BUILD_ID_SIZE];
-+
-+		if (sysfs__read_build_id("/sys/kernel/notes", kallsyms_build_id,
-+					 sizeof(kallsyms_build_id)) == 0)
-+
-+		is_kallsyms = dso__build_id_equal(self, kallsyms_build_id);
-+		if (is_kallsyms)
-+			goto do_kallsyms;
-+		goto do_vmlinux;
-+	}
-+
- 	is_kallsyms = self->long_name[0] == '[';
- 	if (is_kallsyms)
- 		goto do_kallsyms;
- 
-+do_vmlinux:
- 	err = dso__load_vmlinux(self, map, session, self->long_name, filter);
- 	if (err <= 0) {
- 		pr_info("The file %s cannot be used, "
-@@ -1694,16 +1738,12 @@ out_delete_kernel_dso:
- 	return NULL;
- }
- 
--static int map_groups__create_kernel_maps(struct map_groups *self,
--					  struct map *vmlinux_maps[MAP__NR_TYPES],
--					  const char *vmlinux)
-+int __map_groups__create_kernel_maps(struct map_groups *self,
-+				     struct map *vmlinux_maps[MAP__NR_TYPES],
-+				     struct dso *kernel)
- {
--	struct dso *kernel = dsos__create_kernel(vmlinux);
- 	enum map_type type;
- 
--	if (kernel == NULL)
--		return -1;
--
- 	for (type = 0; type < MAP__NR_TYPES; ++type) {
- 		vmlinux_maps[type] = map__new2(0, kernel, type);
- 		if (vmlinux_maps[type] == NULL)
-@@ -1717,6 +1757,18 @@ static int map_groups__create_kernel_maps(struct map_groups *self,
- 	return 0;
- }
- 
-+static int map_groups__create_kernel_maps(struct map_groups *self,
-+					  struct map *vmlinux_maps[MAP__NR_TYPES],
-+					  const char *vmlinux)
-+{
-+	struct dso *kernel = dsos__create_kernel(vmlinux);
-+
-+	if (kernel == NULL)
-+		return -1;
-+
-+	return __map_groups__create_kernel_maps(self, vmlinux_maps, kernel);
-+}
-+
- static void vmlinux_path__exit(void)
- {
- 	while (--vmlinux_path__nr_entries >= 0) {
-diff --git a/tools/perf/util/symbol.h b/tools/perf/util/symbol.h
-index ee0b459..594156e 100644
---- a/tools/perf/util/symbol.h
-+++ b/tools/perf/util/symbol.h
-@@ -134,6 +134,7 @@ size_t dsos__fprintf_buildid(FILE *fp);
- size_t dso__fprintf_buildid(struct dso *self, FILE *fp);
- size_t dso__fprintf(struct dso *self, enum map_type type, FILE *fp);
- char dso__symtab_origin(const struct dso *self);
-+void dso__set_long_name(struct dso *self, char *name);
- void dso__set_build_id(struct dso *self, void *build_id);
- struct symbol *dso__find_symbol(struct dso *self, enum map_type type, u64 addr);
- struct symbol *dso__find_symbol_by_name(struct dso *self, enum map_type type,
-@@ -151,5 +152,7 @@ bool symbol_type__is_a(char symbol_type, enum map_type map_type);
- 
- int perf_session__create_kernel_maps(struct perf_session *self);
- 
-+struct map *perf_session__new_module_map(struct perf_session *self, u64 start,
-+					 const char *filename);
- extern struct dso *vdso;
- #endif /* __PERF_SYMBOL */
-diff --git a/tools/perf/util/thread.h b/tools/perf/util/thread.h
-index c206f72..c06c135 100644
---- a/tools/perf/util/thread.h
-+++ b/tools/perf/util/thread.h
-@@ -67,4 +67,8 @@ map_groups__find_function(struct map_groups *self, struct perf_session *session,
- 
- struct map *map_groups__find_by_name(struct map_groups *self,
- 				     enum map_type type, const char *name);
-+
-+int __map_groups__create_kernel_maps(struct map_groups *self,
-+				     struct map *vmlinux_maps[MAP__NR_TYPES],
-+				     struct dso *kernel);
- #endif	/* __PERF_THREAD_H */
+@@ -131,8 +131,8 @@ software events, selected by 'event_id':
+  */
+ enum sw_event_ids {
+ 	PERF_COUNT_SW_CPU_CLOCK		= 0,
+-	PERF_COUNT_SW_TASK_CLOCK		= 1,
+-	PERF_COUNT_SW_PAGE_FAULTS		= 2,
++	PERF_COUNT_SW_TASK_CLOCK	= 1,
++	PERF_COUNT_SW_PAGE_FAULTS	= 2,
+ 	PERF_COUNT_SW_CONTEXT_SWITCHES	= 3,
+ 	PERF_COUNT_SW_CPU_MIGRATIONS	= 4,
+ 	PERF_COUNT_SW_PAGE_FAULTS_MIN	= 5,
 -- 
 1.6.2.5
 
