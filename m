@@ -1,49 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755586Ab0AMPi1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755896Ab0AMPkT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755586Ab0AMPi1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 10:38:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755150Ab0AMPi0
+	id S1755896Ab0AMPkT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 10:40:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755292Ab0AMPkS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 10:38:26 -0500
-Received: from mgw2.diku.dk ([130.225.96.92]:55061 "EHLO mgw2.diku.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754959Ab0AMPiZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 10:38:25 -0500
-Date: Wed, 13 Jan 2010 16:38:22 +0100 (CET)
-From: Julia Lawall <julia@diku.dk>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: =?UTF-8?B?TsOpbWV0aCBNw6FydG9u?= <nm127@freemail.hu>,
-       David Vrabel <david.vrabel@csr.com>, linux-usb@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, cocci@diku.dk
-Subject: Re: Changelog quality (was Re: [PATCH] uwb: make USB device id
- constant)
-In-Reply-To: <4B4DDFDB.2000408@s5r6.in-berlin.de>
-Message-ID: <Pine.LNX.4.64.1001131633490.26518@ask.diku.dk>
-References: <4B4C297A.5090405@freemail.hu> <4B4C9ED9.60905@csr.com>
- <4B4CAA15.4030200@freemail.hu> <4B4DDFDB.2000408@s5r6.in-berlin.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 13 Jan 2010 10:40:18 -0500
+Received: from g4t0016.houston.hp.com ([15.201.24.19]:31750 "EHLO
+	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752696Ab0AMPkR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jan 2010 10:40:17 -0500
+Subject: Re: [patch 2/6] hugetlb: Fix section mismatches
+From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+To: Jeff Mahoney <jeffm@suse.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux-MM <linux-mm@kvack.org>
+In-Reply-To: <20100113004938.715904356@suse.com>
+References: <20100113004855.550486769@suse.com>
+	 <20100113004938.715904356@suse.com>
+Content-Type: text/plain
+Organization: HP/LKTT
+Date: Wed, 13 Jan 2010 10:40:12 -0500
+Message-Id: <1263397212.11942.97.camel@useless.americas.hpqcorp.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> When you write a changelog, keep your audience in mind:
-> 
->   - Developers, distributors, advanced users want to learn what a new
->     release brings.  (OK, this audience stops reading after the initial
->     headline of a "make XYZ table constant" commit.  Which just means
->     that all the rest of the changelog is fluff that can be omitted.)
-> 
->   - Developers, maintainers etc. want to understand years later why the
->     code is how it is.  (For them, a commit like that is sufficiently
->     described by the headline as well.)
+On Tue, 2010-01-12 at 19:48 -0500, Jeff Mahoney wrote:
+> plain text document attachment (patches.rpmify)
+> hugetlb_register_node calls hugetlb_sysfs_add_hstate, which is marked with
+>  __init. Since hugetlb_register_node is only called by
+>  hugetlb_register_all_nodes, which in turn is only called by hugetlb_init,
+>  it's safe to mark both of them as __init.
 
-Not surprisingly, I don't agree about this one.  I recall a series of 
-patches that said something like "used a script to change down/up to 
-mutexes".  The script wasn't included, not all down/ups were changed to 
-mutexes, and in short there was no understandable trace of why the change 
-was made where it was.  Perhaps that is a pathological example, but it is 
-not necessarily obvious in advance what needs precise documentation and 
-what does not.
+Actually, hugetlb_register_node() also called, via a function pointer
+that hugetlb registers with the sysfs node driver, when a node is hot
+plugged.  So, I think the correct approach is to remove the '__init'
+from hugetlb_sysfs_add_hstate() as this is also used at runtime.  I
+missed this in the original submittal.
 
-julia
+Regards,
+Lee Schermerhorn
+
+> 
+> Signed-off-by: Jeff Mahoney <jeffm@suse.com>
+> ---
+>  mm/hugetlb.c |    4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> --- a/mm/hugetlb.c
+> +++ b/mm/hugetlb.c
+> @@ -1630,7 +1630,7 @@ void hugetlb_unregister_node(struct node
+>   * hugetlb module exit:  unregister hstate attributes from node sysdevs
+>   * that have them.
+>   */
+> -static void hugetlb_unregister_all_nodes(void)
+> +static void __init hugetlb_unregister_all_nodes(void)
+>  {
+>  	int nid;
+>  
+> @@ -1650,7 +1650,7 @@ static void hugetlb_unregister_all_nodes
+>   * Register hstate attributes for a single node sysdev.
+>   * No-op if attributes already registered.
+>   */
+> -void hugetlb_register_node(struct node *node)
+> +void __init hugetlb_register_node(struct node *node)
+>  {
+>  	struct hstate *h;
+>  	struct node_hstate *nhs = &node_hstates[node->sysdev.id];
+> 
+> 
+> --
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+
