@@ -1,110 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753462Ab0AMBtJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753891Ab0AMBtr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753462Ab0AMBtJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jan 2010 20:49:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752154Ab0AMBtH
+	id S1753891Ab0AMBtr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jan 2010 20:49:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752323Ab0AMBtq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jan 2010 20:49:07 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:63702 "EHLO mx1.redhat.com"
+	Tue, 12 Jan 2010 20:49:46 -0500
+Received: from mga01.intel.com ([192.55.52.88]:21136 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752131Ab0AMBtH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jan 2010 20:49:07 -0500
-Message-ID: <4B4D2678.5090601@redhat.com>
-Date: Wed, 13 Jan 2010 09:48:40 +0800
-From: Xiaotian Feng <dfeng@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Lightning/1.0pre Thunderbird/3.0
-MIME-Version: 1.0
-To: Thomas Gleixner <tglx@linutronix.de>
-CC: linux-kernel@vger.kernel.org, Magnus Damm <damm@igel.co.jp>,
-       H Hartley Sweeten <hsweeten@visionengravers.com>
-Subject: Re: [PATCH] clockevent: don't remove broadcast device when cpu is
- dead
-References: <1262834564-13033-1-git-send-email-dfeng@redhat.com> <alpine.LFD.2.00.1001121300190.6420@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.1001121300190.6420@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S1750929Ab0AMBtp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jan 2010 20:49:45 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,264,1262592000"; 
+   d="scan'208";a="530746891"
+Subject: Re: [PATCH -v2 5/5] x86: use dmi check to treat disabled cpus as
+ hotplug cpus.
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+Reply-To: Suresh Siddha <suresh.b.siddha@intel.com>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       "ananth@in.ibm.com" <ananth@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <4B4D0E39.10200@kernel.org>
+References: <1263338274-6485-1-git-send-email-yinghai@kernel.org>
+	 <1263338274-6485-5-git-send-email-yinghai@kernel.org>
+	 <1263340563.2854.1011.camel@sbs-t61.sc.intel.com>
+	 <4B4D0E39.10200@kernel.org>
+Content-Type: text/plain
+Organization: Intel Corp
+Date: Tue, 12 Jan 2010 17:48:35 -0800
+Message-Id: <1263347315.2854.1296.camel@sbs-t61.sc.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/12/2010 09:20 PM, Thomas Gleixner wrote:
-> On Thu, 7 Jan 2010, Xiaotian Feng wrote:
->
->> Marc reported BUG during shutdown, after debugging, kernel is trying
->> to remove a broadcast device which mode is CLOCK_EVT_MODE_ONESHOT.
->>
->> The root cause for this bug is that in clockevents_notify,
->> "cpumask_weight(dev->cpumask) == 1" is always true even if dev is a
->
-> Why is cpumask_weight(dev->cpumask) == 1 always true when we shutdown
-> a non boot cpu ?
->
-> The broadcast device is not a per cpu device and the cpumask should
-> not only contain the CPU which is shut down !
+On Tue, 2010-01-12 at 16:05 -0800, Yinghai Lu wrote:
+> On 01/12/2010 03:56 PM, Suresh Siddha wrote:
+> > On Tue, 2010-01-12 at 15:17 -0800, Yinghai Lu wrote:
+> >> some systems that have disable cpus entries because same
+> >>   BIOS will support 2 sockets and 4 sockets and more at
+> >>   same time, BIOS just leave some disable entries, but
+> >>   those system do not support cpu hotplug. we don't need
+> >>   treat disabled_cpus as hotplug cpus.
+> >> so we can make nr_cpu_ids smaller and save more space
+> >>   (pcpu data allocations), and could make some systems run
+> >>   with logical flat instead of physical flat apic mode
+> >>
+> >> -v2: change to black list instead
+> > 
+> > I don't think this list will work because every HT system with HT
+> > disabled in the bios shows that logical cpu as disabled.
+> 
+> so you want to treat those disabled cpus in the those system as hotplug cpus or not?
 
-At least for hpet broadcast dev, it's dev->cpumask is only contain the 
-CPU which it is initialized from.
-And for broadcast device, kernel is using tick_broadcast_mask not 
-dev->cpumask, right?
+They are really not hot plug cpus, so they can also take advantage of
+what you are trying to provide with this patch.
 
->
-> The patch is papering over the real problem.
->
-> Marc, can you please apply the following debug patch and provide the
-> dmesg outputs from boot and shutdown ?
->
-> Thanks,
->
-> 	tglx
-> ---
->
-> Index: linux-2.6-tip/kernel/time/clockevents.c
-> ===================================================================
-> --- linux-2.6-tip.orig/kernel/time/clockevents.c
-> +++ linux-2.6-tip/kernel/time/clockevents.c
-> @@ -186,7 +186,7 @@ void clockevents_register_device(struct
->   	BUG_ON(!dev->cpumask);
->
->   	raw_spin_lock_irqsave(&clockevents_lock, flags);
-> -
-> +	printk(KERN_ERR "CE register %p %s\n", dev, dev->name);
->   	list_add(&dev->list,&clockevent_devices);
->   	clockevents_do_notify(CLOCK_EVT_NOTIFY_ADD, dev);
->   	clockevents_notify_released();
-> @@ -220,6 +220,7 @@ void clockevents_exchange_device(struct
->   	 * released list and do a notify add later.
->   	 */
->   	if (old) {
-> +		printk(KERN_INFO "CE Release %p %s\n", old, old->name);
->   		clockevents_set_mode(old, CLOCK_EVT_MODE_UNUSED);
->   		list_del(&old->list);
->   		list_add(&old->list,&clockevents_released);
-> @@ -260,6 +261,13 @@ void clockevents_notify(unsigned long re
->   		list_for_each_entry_safe(dev, tmp,&clockevent_devices, list) {
->   			if (cpumask_test_cpu(cpu, dev->cpumask)&&
->   			cpumask_weight(dev->cpumask) == 1) {
-> +				if (dev->mode != CLOCK_EVT_MODE_UNUSED) {
-> +					printk(KERN_INFO
-> +					       "CE Remove %p %s bc: %d\n",
-> +					       dev, dev->name,
-> +					       tick_is_broadcast_device(dev));
-> +					continue;
-> +				}
->   				BUG_ON(dev->mode != CLOCK_EVT_MODE_UNUSED);
->   				list_del(&dev->list);
->   			}
-> Index: linux-2.6-tip/kernel/time/tick-broadcast.c
-> ===================================================================
-> --- linux-2.6-tip.orig/kernel/time/tick-broadcast.c
-> +++ linux-2.6-tip/kernel/time/tick-broadcast.c
-> @@ -72,6 +72,8 @@ int tick_check_broadcast_device(struct c
->   	     (dev->features&  CLOCK_EVT_FEAT_C3STOP))
->   		return 0;
->
-> +	printk(KERN_INFO "CE set broadcast %p %s\n", dev, dev->name);
-> +
->   	clockevents_exchange_device(NULL, dev);
->   	tick_broadcast_device.evtdev = dev;
->   	if (!cpumask_empty(tick_get_broadcast_mask()))
->
+Also I am very confused with what exactly you are doing with the dmi
+list..
+
++        printk(KERN_NOTICE "%s detected: treat disabled cpus as hotplug ones\n", d->ident);
++        treat_disabled_cpus_as_hotplug = 0;
+
+???
 
