@@ -1,88 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756608Ab0AMWNP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756620Ab0AMWQ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756608Ab0AMWNP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 17:13:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756368Ab0AMWNO
+	id S1756620Ab0AMWQ0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 17:16:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756599Ab0AMWQZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 17:13:14 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:16987 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755540Ab0AMWNN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 17:13:13 -0500
-Message-ID: <4B4E4551.2010302@redhat.com>
-Date: Wed, 13 Jan 2010 17:12:33 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
-MIME-Version: 1.0
-To: rostedt@goodmis.org
-CC: Frederic Weisbecker <fweisbec@gmail.com>,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>,
-       Arnaldo Carvalho de Melo <acme@infradead.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       utrace-devel <utrace-devel@redhat.com>,
-       Jim Keniston <jkenisto@us.ibm.com>, Maneesh Soni <maneesh@in.ibm.com>,
-       Mark Wielaard <mjw@redhat.com>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC] [PATCH 7/7] Ftrace plugin for Uprobes
-References: <20100111122521.22050.3654.sendpatchset@srikar.in.ibm.com>	 <20100111122608.22050.94088.sendpatchset@srikar.in.ibm.com>	 <20100112045454.GJ5243@nowhere> <1263272933.28171.3804.camel@gandalf.stny.rr.com> <4B4E41FF.4020800@redhat.com>
-In-Reply-To: <4B4E41FF.4020800@redhat.com>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-15
+	Wed, 13 Jan 2010 17:16:25 -0500
+Received: from lennier.cc.vt.edu ([198.82.162.213]:51255 "EHLO
+	lennier.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751612Ab0AMWQY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jan 2010 17:16:24 -0500
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: mmotm 2010-01-13-12-17 - 'make oldconfig' dies
+In-Reply-To: Your message of "Wed, 13 Jan 2010 12:17:36 PST."
+             <201001132042.o0DKgaSR027272@imap1.linux-foundation.org>
+From: Valdis.Kletnieks@vt.edu
+References: <201001132042.o0DKgaSR027272@imap1.linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1263420974_4424P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
+Date: Wed, 13 Jan 2010 17:16:14 -0500
+Message-ID: <22290.1263420974@localhost>
+X-Mirapoint-Received-SPF: 128.173.14.107 localhost Valdis.Kletnieks@vt.edu 2 pass
+X-Mirapoint-IP-Reputation: reputation=neutral-1,
+	source=Fixed,
+	refid=n/a,
+	actions=MAILHURDLE SPF TAG
+X-Junkmail-Info: (45) HELO_LOCALHOST
+X-Junkmail-Status: score=45/50, host=dagger.cc.vt.edu
+X-Junkmail-SD-Raw: score=unknown,
+	refid=str=0001.0A020207.4B4E462F.0075,ss=1,fgs=0,
+	ip=0.0.0.0,
+	so=2009-09-22 00:05:22,
+	dmn=2009-09-10 00:05:08,
+	mode=multiengine
+X-Junkmail-IWF: false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Masami Hiramatsu wrote:
-> Steven Rostedt wrote:
->> On Tue, 2010-01-12 at 05:54 +0100, Frederic Weisbecker wrote:
->>
->>> Now what if I want to launch ls and want to profile a function
->>> inside. What can I do with a trace event. I can't create the
->>> probe event based on a pid as I don't know it in advance.
->>> I could give it the ls cmdline and it manages to activate
->>> on the next ls launched. This is racy as another ls can
->>> be launched concurrently.
->>
->> You make a wrapper script:
->>
->> #!/bin/sh
->> <add probe to ls with pid> $$
->> exec $*
->>
->> I do this all the time to limit the function tracer to a specific app.
->>
->> #!/bin/sh
->> echo $$ > /debug/tracing/set_ftrace_pid
->> echo function > /debug/tracing/current_tracer
->> exec $*
+--==_Exmh_1263420974_4424P
+Content-Type: text/plain; charset=us-ascii
+
+On Wed, 13 Jan 2010 12:17:36 PST, akpm@linux-foundation.org said:
+> The mm-of-the-moment snapshot 2010-01-13-12-17 has been uploaded to
 > 
-> I recommend you to add below line at the end of the script,
-> from my experience. :)
-> 
-> echo nop > /debug/tracing/current_tracer
+>    http://userweb.kernel.org/~akpm/mmotm/
 
-Oops, my bad, it doesn't work after exec...
-But, it is very important to disable function tracer after
-tracing target process.
+Yow.
 
-So, perhaps, below script may work.
+% make oldconfig
+  HOSTCC  scripts/basic/fixdep
+  HOSTCC  scripts/basic/docproc
+In file included from scripts/basic/docproc.c:44:
+/usr/include/sys/wait.h:67: error: conflicting types for '__WAIT_STATUS'
+/usr/include/stdlib.h:72: note: previous declaration of '__WAIT_STATUS' was here
+In file included from /usr/include/sys/wait.h:80,
+                 from scripts/basic/docproc.c:44:
+/usr/include/bits/waitstatus.h:68: error: redefinition of 'union wait'
+make[1]: *** [scripts/basic/docproc] Error 1
+make: *** [scripts_basic] Error 2
 
-#!/bin/sh
-(echo $BASHPID > /debug/tracing/set_ftrace_pid
- echo function > /debug/tracing/current_tracer
- exec $*)
-echo nop > /debug/tracing/current_tracer
+Looks to be busticated Fedora header files though. Heads up to anybody else
+foolish enough to build -mm kernels under Fedora Rawhide. ;)
 
-Thanks,
+https://bugzilla.redhat.com/show_bug.cgi?id=554643
 
--- 
-Masami Hiramatsu
 
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
+--==_Exmh_1263420974_4424P
+Content-Type: application/pgp-signature
 
-e-mail: mhiramat@redhat.com
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFLTkYucC3lWbTT17ARApRWAJ9hRUyV5vH3DudJC5DEGlbVnEnSBwCfbXVw
+K+q/1nO6DVmkzrs86Uq/Lcg=
+=YslC
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1263420974_4424P--
 
