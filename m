@@ -1,51 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753418Ab0AMAGt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753930Ab0AMAIb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753418Ab0AMAGt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jan 2010 19:06:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752403Ab0AMAGs
+	id S1753930Ab0AMAIb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jan 2010 19:08:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752475Ab0AMAIb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jan 2010 19:06:48 -0500
-Received: from hera.kernel.org ([140.211.167.34]:57301 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752282Ab0AMAGs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jan 2010 19:06:48 -0500
-Message-ID: <4B4D0E39.10200@kernel.org>
-Date: Tue, 12 Jan 2010 16:05:13 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.1.1 Thunderbird/3.0
-MIME-Version: 1.0
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       "ananth@in.ibm.com" <ananth@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH -v2 5/5] x86: use dmi check to treat disabled cpus as
- hotplug cpus.
-References: <1263338274-6485-1-git-send-email-yinghai@kernel.org>	 <1263338274-6485-5-git-send-email-yinghai@kernel.org> <1263340563.2854.1011.camel@sbs-t61.sc.intel.com>
-In-Reply-To: <1263340563.2854.1011.camel@sbs-t61.sc.intel.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 12 Jan 2010 19:08:31 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:46564 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750757Ab0AMAIa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jan 2010 19:08:30 -0500
+Date: Tue, 12 Jan 2010 16:07:34 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Dimitrios Apostolou <jimis@gmx.net>
+Cc: Arjan van de Ven <arjan@infradead.org>, Alex Chiang <achiang@hp.com>,
+       Len Brown <lenb@kernel.org>, Bjorn Helgaas <bjorn.helgaas@hp.com>,
+       Yinghai Lu <yinghai@kernel.org>, linux-kernel@vger.kernel.org
+Subject: Re: High cpu temperature with 2.6.32, bisection shows commit 69d258
+ (fwd)
+Message-Id: <20100112160734.89ee6b11.akpm@linux-foundation.org>
+In-Reply-To: <alpine.LNX.2.00.1001100251210.1334@localhost.localdomain>
+References: <alpine.LNX.2.00.1001071941470.1363@localhost.localdomain>
+	<20100108171513.GB22713@ldl.fc.hp.com>
+	<20100109134352.3dedd4ea@infradead.org>
+	<alpine.LNX.2.00.1001100155370.1325@localhost.localdomain>
+	<20100109160836.26a344a9@infradead.org>
+	<alpine.LNX.2.00.1001100226570.1325@localhost.localdomain>
+	<20100109164240.43b21247@infradead.org>
+	<alpine.LNX.2.00.1001100251210.1334@localhost.localdomain>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/12/2010 03:56 PM, Suresh Siddha wrote:
-> On Tue, 2010-01-12 at 15:17 -0800, Yinghai Lu wrote:
->> some systems that have disable cpus entries because same
->>   BIOS will support 2 sockets and 4 sockets and more at
->>   same time, BIOS just leave some disable entries, but
->>   those system do not support cpu hotplug. we don't need
->>   treat disabled_cpus as hotplug cpus.
->> so we can make nr_cpu_ids smaller and save more space
->>   (pcpu data allocations), and could make some systems run
->>   with logical flat instead of physical flat apic mode
->>
->> -v2: change to black list instead
+On Sun, 10 Jan 2010 03:05:38 +0200 (EET)
+Dimitrios Apostolou <jimis@gmx.net> wrote:
+
+> On Sat, 9 Jan 2010, Arjan van de Ven wrote:
 > 
-> I don't think this list will work because every HT system with HT
-> disabled in the bios shows that logical cpu as disabled.
+> > On Sun, 10 Jan 2010 02:32:11 +0200 (EET)
+> > Dimitrios Apostolou <jimis@gmx.net> wrote:
+> >
+> >> On Sat, 9 Jan 2010, Arjan van de Ven wrote:
+> >>
+> >>> On Sun, 10 Jan 2010 01:55:42 +0200 (EET)
+> >>> Dimitrios Apostolou <jimis@gmx.net> wrote:
+> >>>
+> >>>> L8400B series Notebook PC
+> >>>
+> >>> can you try this patch?
+> >>>
+> >>
+> >> OK I'm compiling a new kernel right now but that will take a while, I
+> >> only have access to old hardware at the moment... What exactly this
+> >> patch does?
+> >>
+> >
+> > basically it appears that your machine, when the kernel asks for C2,
+> > exits C2 immediately again.
+> >
+> > The old algorithm somehow caught this and stopped asking for C2 most of
+> > the time; the new algorithm doesn't see any activity and asks for C2
+> > again.
+> >
+> > What the patch does is tell the kernel to just not use C2 at all...
+> 
+> Indeed, in the past powertop always showed my processor idling in C1 
+> state, and I wondered why it never entered C2. :-)
+> 
+> So thanks for the patch, I guess it works, and my bet is that this 
+> case applies to L8400* (not only B models), except if it is fixed by some 
+> old BIOS upgrade that I must have missed.
+> 
+> While testing your patch, indeed the temperature was not rising and 
+> everything was normal, but the tsc was not marked as unstable so it didn't 
+> switch to acpi_pm clocksource, so that was probably the reason.
+> 
 
-so you want to treat those disabled cpus in the those system as hotplug cpus or not?
+Arjan, can you please prepare a formal version of the fix?  I guess the
+cc:stable will be needed as well.
 
-YH
+I assume that the effects which Dimitrios described above were the
+intended ones?
+
