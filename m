@@ -1,70 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755978Ab0AMQQq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756000Ab0AMQRb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755978Ab0AMQQq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 11:16:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755570Ab0AMQQq
+	id S1756000Ab0AMQRb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 11:17:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755932Ab0AMQRa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 11:16:46 -0500
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:51157 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S932109Ab0AMQQp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 11:16:45 -0500
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Andrew Morton <akpm@linux-foundation.org>, Ben Dooks <ben-linux@fluff.org>
-Cc: linux-kernel@vger.kernel.org,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>, stable@kernel.org
-Subject: [PATCH 2.6.33] s3c-fb: Fix handling of missing refresh in platform data
-Date: Wed, 13 Jan 2010 16:16:42 +0000
-Message-Id: <1263399402-5912-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-X-Mailer: git-send-email 1.6.6
+	Wed, 13 Jan 2010 11:17:30 -0500
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:37983 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755488Ab0AMQR3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jan 2010 11:17:29 -0500
+Date: Wed, 13 Jan 2010 08:17:21 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
+       akpm@linux-foundation.org, mathieu.desnoyers@polymtl.ca,
+       josh@joshtriplett.org, dvhltc@us.ibm.com, niv@us.ibm.com,
+       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
+       Valdis.Kletnieks@vt.edu, dhowells@redhat.com
+Subject: Re: [PATCH tip/core/rcu 0/8] rcu: add lockdep-based diagnostics to
+	rcu_dereference()
+Message-ID: <20100113161721.GC6803@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20100105020345.GA32114@linux.vnet.ibm.com> <20100113092242.GA6739@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100113092242.GA6739@elte.hu>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit 600ce1a0faafeed1ce6bcfd421bc040b941cbbc1 ("fix clock setting
-for Samsung SoC Framebuffer") introduced a mandatory refresh parameter
-to the platform data for the S3C framebuffer but did not introduce any
-validation code, causing existing platforms to divide by zero whenever
-the framebuffer is configured, generating warnings and unusable output.
+On Wed, Jan 13, 2010 at 10:22:42AM +0100, Ingo Molnar wrote:
+> 
+> FYI, i'm getting various runtime warnings triggered by the new RCU checks:
+> 
+>  [   20.630034] WARNING: at net/core/sock.c:1076 __sk_free+0x108/0x140()
+> 
+> bootlog and config attached.
 
-Add a WARN_ON(), in line with similar parameters, and check that we
-have a non-zero refresh before we dividing by it. This gets usable
-output on at least the SMDK6410, though without specifying a refresh
-we see visible issues on some boots.
+Gah!!!  I forgot to label the RCU-lockdep stuff "RFC"!!!  Could you
+please rewind tip/core/rcu back to b6407e8639 ("rcu: Give different
+levels of the rcu_node hierarchy distinct lockdep names")?
 
-Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: stable@kernel.org
----
+I have fixes for many of the warnings below, both as modifications to
+uses of RCU and as modifications to the check code itself.  But I have
+been building a new patchsets rather than keeping patches on top of this
+patchset.  I also have modifications in the works to ease transition,
+for example, but having a separate CONFIG_PROVE_RCU.
 
-All mainline users of the s3c-fb driver are affected by this, none
-provide refresh.
+Please accept my apologies for the mislabeling!!!
 
- drivers/video/s3c-fb.c |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
+							Thanx, Paul
 
-diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
-index adf9632..0f2e8f6 100644
---- a/drivers/video/s3c-fb.c
-+++ b/drivers/video/s3c-fb.c
-@@ -224,7 +224,8 @@ static int s3c_fb_calc_pixclk(unsigned char id, struct s3c_fb *sfb, unsigned int
- 	unsigned long clk = clk_get_rate(sfb->bus_clk);
- 	unsigned int result;
- 
--	pixclk *= win->win_mode.refresh;
-+	if (win->win_mode.refresh)
-+		pixclk *= win->win_mode.refresh;
- 	result = clk / pixclk;
- 
- 	dev_dbg(sfb->dev, "pixclk=%u, clk=%lu, div=%d (%lu)\n",
-@@ -766,6 +767,7 @@ static int __devinit s3c_fb_probe_win(struct s3c_fb *sfb, unsigned int win_no,
- 	WARN_ON(windata->max_bpp == 0);
- 	WARN_ON(windata->win_mode.xres == 0);
- 	WARN_ON(windata->win_mode.yres == 0);
-+	WARN_ON(windata->win_mode.refresh == 0);
- 
- 	win = fbinfo->par;
- 	var = &fbinfo->var;
--- 
-1.6.6
+> Thanks,
+> 
+> 	Ingo
 
+> #
+> # Automatically generated make config: don't edit
+> # Linux kernel version: 2.6.33-rc4
+> # Wed Jan 13 11:44:27 2010
+> #
+> # CONFIG_64BIT is not set
+> CONFIG_X86_32=y
+> # CONFIG_X86_64 is not set
+> CONFIG_X86=y
