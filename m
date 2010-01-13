@@ -1,42 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755140Ab0AMI3r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754856Ab0AMIew@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755140Ab0AMI3r (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 03:29:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755117Ab0AMI3p
+	id S1754856Ab0AMIew (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 03:34:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752707Ab0AMIev
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 03:29:45 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:37556 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755056Ab0AMI3o (ORCPT
+	Wed, 13 Jan 2010 03:34:51 -0500
+Received: from citadel.icyb.net.ua ([212.40.38.140]:3613 "EHLO
+	citadel.icyb.net.ua" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752085Ab0AMIeu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 03:29:44 -0500
-Date: Wed, 13 Jan 2010 00:29:39 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Eric Miao <eric.y.miao@gmail.com>
-Cc: David Brownell <david-b@pacbell.net>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] gpio: introduce gpio_request_one() and friends
-Message-Id: <20100113002939.2d2c489d.akpm@linux-foundation.org>
-In-Reply-To: <f17812d71001130023n491879cakc02dfcf26ec0fe43@mail.gmail.com>
-References: <f17812d71001072114g95c267cpa6dc06a636c6d9a@mail.gmail.com>
-	<f17812d71001072128g63361e74q74cf06ae1e1eb3d6@mail.gmail.com>
-	<20100112150952.aa224e20.akpm@linux-foundation.org>
-	<f17812d71001121923k5a67c42flb92cf7bb2c8a0b5a@mail.gmail.com>
-	<f17812d71001130023n491879cakc02dfcf26ec0fe43@mail.gmail.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 13 Jan 2010 03:34:50 -0500
+X-Greylist: delayed 805 seconds by postgrey-1.27 at vger.kernel.org; Wed, 13 Jan 2010 03:34:49 EST
+Message-ID: <4B4D8212.6080806@icyb.net.ua>
+Date: Wed, 13 Jan 2010 10:19:30 +0200
+From: Andriy Gapon <avg@icyb.net.ua>
+User-Agent: Thunderbird 2.0.0.23 (X11/20091128)
+MIME-Version: 1.0
+To: Gabriel C <nix.or.die@googlemail.com>
+CC: Justin Piszcz <jpiszcz@lucidpixels.com>, Gabriel C <crazy@frugalware.org>,
+       Maxim Levitsky <maximlevitsky@gmail.com>,
+       Dan Williams <dan.j.williams@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "lm-sensors@lm-sensors.org" <lm-sensors@lm-sensors.org>
+Subject: Re: [lm-sensors] Status/support for Linux HECI from Intel? (for 
+ temp/voltage monitoring)
+References: <alpine.DEB.1.10.0812300700410.11356@p34.internal.lan>	 <4964DB3E.6080908@intel.com>	 <alpine.DEB.1.10.0901071142200.29147@p34.internal.lan>	 <1231356111.6648.2.camel@maxim-laptop> <49937CDF.10307@frugalware.org>	 <alpine.DEB.1.10.0902121236120.19381@p34.internal.lan> <1820d69d1001040551k26cfd925q4ada6b226740ac30@mail.gmail.com>
+In-Reply-To: <1820d69d1001040551k26cfd925q4ada6b226740ac30@mail.gmail.com>
+X-Enigmail-Version: 0.96.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 13 Jan 2010 16:23:35 +0800 Eric Miao <eric.y.miao@gmail.com> wrote:
+on 04/01/2010 15:51 Gabriel C said the following:
+> @Andriy there is a smallish bug in your original code .. you should
+> use ..... , abs(value) ...., abs(value) ...);
+> that will solve the negative CPU TEMP values you get with your version.
 
-> Attached is the patch against Documentation/gpio.txt
+I wasn't sure about this, my impression was that negative temperatures were
+offsets from some threshold.  E.g. Tcur - Tcrit.  In my case I saw negative
+temperature only for CPU which fitted the hypothesis.
 
-Thanks.
-
-I was thinking kerneldoc in the .c file actually - most/all of the
-other interface functions in gpiolib.c seem to be done that way.
-
+-- 
+Andriy Gapon
