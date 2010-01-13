@@ -1,81 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753189Ab0AMIFZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754824Ab0AMIGO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753189Ab0AMIFZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 03:05:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751238Ab0AMIFY
+	id S1754824Ab0AMIGO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 03:06:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752085Ab0AMIGN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 03:05:24 -0500
-Received: from mail-ew0-f209.google.com ([209.85.219.209]:63479 "EHLO
-	mail-ew0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750908Ab0AMIFX (ORCPT
+	Wed, 13 Jan 2010 03:06:13 -0500
+Received: from smtpauth.net4india.com ([202.71.129.41]:33568 "EHLO
+	smtpauth.net4india.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750998Ab0AMIGM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 03:05:23 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=B52sDzw8AO+hnAt16SY+SJFR+v8qciP6ycDtMglSV8D/xbC9ICH0LOcn/bjde8nhKz
-         3hw9tpBVlbliLZ7nm1asm8NweSEXmwZ8qiXwgTl988LvXCH7PgY1zutRgPsPEb/41djw
-         VOAcuLMaSUmL6xb5DyWilHQEabWUX9Lnm/T2s=
+	Wed, 13 Jan 2010 03:06:12 -0500
+Message-ID: <4B4D7EED.7010207@xenontk.org>
+Date: Wed, 13 Jan 2010 13:36:05 +0530
+From: David John <davidjon@xenontk.org>
+Reply-To: davidjon@xenontk.org
+User-Agent: Mozilla/5.0 (X11; X; Linux x86_64; rv:1.9.1.5) Gecko/20091209 Thunderbird/3.0
 MIME-Version: 1.0
-In-Reply-To: <4e5e476b1001121517y5ebdd6ebt7ade0b4ac068655b@mail.gmail.com>
-References: <1263052757-23436-1-git-send-email-czoccolo@gmail.com>
-	 <20100112191257.GE3065@redhat.com>
-	 <4e5e476b1001121205u4fd487b7o2ee6dd42c8740955@mail.gmail.com>
-	 <20100112223638.GH3065@redhat.com>
-	 <4e5e476b1001121517y5ebdd6ebt7ade0b4ac068655b@mail.gmail.com>
-Date: Wed, 13 Jan 2010 09:05:21 +0100
-Message-ID: <4e5e476b1001130005p4acfdd55na387f925ad6078f3@mail.gmail.com>
-Subject: Re: [PATCH] cfq-iosched: rework seeky detection
-From: Corrado Zoccolo <czoccolo@gmail.com>
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>,
-       Jeff Moyer <jmoyer@redhat.com>, Shaohua Li <shaohua.li@intel.com>,
-       Gui Jianfeng <guijianfeng@cn.fujitsu.com>,
-       Yanmin Zhang <yanmin_zhang@linux.intel.com>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+CC: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Eric Anholt <eric@anholt.net>, yakui.zhao@intel.com
+Subject: Re: [Bug #14897] i915: Commit 0e442c60 causes flickering
+References: <nzLqtSp97aP.A.RGB.hglSLB@chimera>	<CXIfLt-ygXM.A.DAC.zglSLB@chimera>	<4B4AB589.7080004@xenontk.org>	<201001112052.57339.rjw@sisk.pl> <20100112101446.7fac096e@jbarnes-piketon>
+In-Reply-To: <20100112101446.7fac096e@jbarnes-piketon>
 Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 13, 2010 at 12:17 AM, Corrado Zoccolo <czoccolo@gmail.com> wrote:
-> On Tue, Jan 12, 2010 at 11:36 PM, Vivek Goyal <vgoyal@redhat.com> wrote:
->>> The fact is, can we reliably determine which of those two setups we
->>> have from cfq?
+On 01/12/2010 11:44 PM, Jesse Barnes wrote:
+> On Mon, 11 Jan 2010 20:52:57 +0100
+> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> 
+>> On Monday 11 January 2010, David John wrote:
+>>> On 01/11/2010 04:26 AM, Rafael J. Wysocki wrote:
+>>>> This message has been generated automatically as a part of a
+>>>> report of regressions introduced between 2.6.31 and 2.6.32.
+>>>>
+>>>> The following bug entry is on the current list of known
+>>>> regressions introduced between 2.6.31 and 2.6.32.  Please verify
+>>>> if it still should be listed and let me know (either way).
+>>>>
+>>>>
+>>>> Bug-Entry	:
+>>>> http://bugzilla.kernel.org/show_bug.cgi?id=14897
+>>>> Subject		: i915: Commit 0e442c60 causes flickering
+>>>> Submitter	: David John <davidjon@xenontk.org>
+>>>> Date		: 2009-12-09 17:26 (33 days old)
+>>>> First-Bad-Commit:
+>>>> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=0e442c60dd39ac6924b11a20497734bd2303744c
+>>>> References	:
+>>>> http://marc.info/?l=linux-kernel&m=126037889600769&w=4
+>>>>
+>>>>
+>>>>
+>>>
+>>> Still present in 2.6.33-rc3.
 >>
->> I have no idea at this point of time but it looks like determining this
->> will help.
->>
->> May be something like keep a track of number of processes on "sync-noidle"
->> tree and average read times when sync-noidle tree is being served. Over a
->> period of time we need to monitor what's the number of processes
->> (threshold), after which average read time goes up. For sync-noidle we can
->> then drive "queue_depth=nr_thrshold" and once queue depth reaches that,
->> then idle on the process. So for single spindle, I guess tipping point
->> will be 2 processes and we can idle on sync-noidle process. For more
->> spindles, tipping point will be higher.
->>
->> These are just some random thoughts.
-> It seems reasonable.
-I think, though, that the implementation will be complex.
-We should limit this to request sizes that are <= stripe size (larger
-requests will hit more disks, and have a much lower optimal queue
-depth), so we need to add a new service_tree (they will become:
-SYNC_IDLE_LARGE, SYNC_IDLE_SMALL, SYNC_NOIDLE, ASYNC), and the
-optimization will apply only to the SYNC_IDLE_SMALL tree.
-Moreover, we can't just dispatch K queues and then idle on the last
-one. We need to have a set of K active queues, and wait on any of
-them. This makes this optimization very complex, and I think for
-little gain. In fact, usually we don't have sequential streams of
-small requests, unless we misuse mmap or direct I/O.
-BTW, the mmap problem could be easily fixed adding madvise(WILL_NEED)
-to the userspace program, when dealing with data.
-I think we only have to worry about binaries, here.
+>> Thanks for the update.
+> 
+> David I guess you weren't on the bug cc list so you didn't see Yakui's
+> question.  I just attached a patch to it as well.  Please check it out.
+> 
 
-> Something similar to what we do to reduce depth for async writes.
-> Can you see if you get similar BW improvements also for parallel
-> sequential direct I/Os with block size < stripe size?
+Hi Jesse,
 
-Thanks,
-Corrado
+I've updated the bug report with more info. If you have any other ideas,
+I can test those also.
+
+Regards,
+David.
