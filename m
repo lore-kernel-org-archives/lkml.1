@@ -1,61 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754984Ab0AMHgE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754960Ab0AMHop@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754984Ab0AMHgE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 02:36:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754954Ab0AMHgB
+	id S1754960Ab0AMHop (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 02:44:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750864Ab0AMHoo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 02:36:01 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:51557 "EHLO mx2.mail.elte.hu"
+	Wed, 13 Jan 2010 02:44:44 -0500
+Received: from mga11.intel.com ([192.55.52.93]:50696 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754897Ab0AMHgA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 02:36:00 -0500
-Date: Wed, 13 Jan 2010 08:35:40 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Randy Dunlap <randy.dunlap@oracle.com>,
-       "David S. Miller" <davem@davemloft.net>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, netdev@vger.kernel.org,
-       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Arnd Bergmann <arnd@arndb.de>
-Subject: Re: linux-next: Tree for January 8 (net/ip.h, BUG=n)
-Message-ID: <20100113073540.GA30577@elte.hu>
-References: <20100108164232.d3e1a164.sfr@canb.auug.org.au>
- <20100108092505.4f4e1ac3.randy.dunlap@oracle.com>
+	id S1750815Ab0AMHoo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jan 2010 02:44:44 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.49,265,1262592000"; 
+   d="scan'208";a="763784163"
+Date: Wed, 13 Jan 2010 15:44:42 +0800
+From: Shaohua Li <shaohua.li@intel.com>
+To: jens.axboe@oracle.com
+Cc: linux-kernel@vger.kernel.org, jmoyer@redhat.com, vgoyal@redhat.com,
+       guijianfeng@cn.fujitsu.com, yanmin_zhang@linux.intel.com
+Subject: [PATCH]cfq-iosched: don't stop async queue with async requests
+ pending
+Message-ID: <20100113074442.GA10492@sli10-desk.sh.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20100108092505.4f4e1ac3.randy.dunlap@oracle.com>
-User-Agent: Mutt/1.5.20 (2009-08-17)
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+My SSD speed of direct write is about 80m/s, while I test page writeback,
+the speed can only go to 68m/s. Below patch fixes this.
+It appears we missused cfq_should_idle in cfq_may_dispatch. cfq_should_idle
+means a queue should idle because it's seekless sync queue or it's the last queue,
+which is to maintain service tree time slice. So it doesn't mean the
+last queue is always a sync queue. If the last queue is asyn queue,
+we definitely shouldn't stop dispatch requests because of pending async
+requests.
 
-* Randy Dunlap <randy.dunlap@oracle.com> wrote:
+Signed-off-by: Shaohua Li <shaohua.li@intel.com>
 
-> On Fri, 8 Jan 2010 16:42:32 +1100 Stephen Rothwell wrote:
-> 
-> > Hi all,
-> > 
-> > Changes since 20100107:
-> 
-> 
-> When CONFIG_BUG=n, CONFIG_GENERIC_BUG=n:
-> 
-> include/net/ip.h:341: error: implicit declaration of function '__WARN'
-> 
-> This affects:
-> make[3]: *** [security/selinux/hooks.o] Error 1
-> make[3]: *** [fs/ceph/messenger.o] Error 1
-> make[3]: *** [net/core/sock.o] Error 1
-> make[4]: *** [drivers/net/benet/be_main.o] Error 1
-
-FYI, this new build bug is now upstream and triggers in -tip testing as well.
-
-	Ingo
+diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+index 918c7fd..8198079 100644
+--- a/block/cfq-iosched.c
++++ b/block/cfq-iosched.c
+@@ -2222,7 +2222,8 @@ static bool cfq_may_dispatch(struct cfq_data *cfqd, struct cfq_queue *cfqq)
+ 	/*
+ 	 * Drain async requests before we start sync IO
+ 	 */
+-	if (cfq_should_idle(cfqd, cfqq) && cfqd->rq_in_driver[BLK_RW_ASYNC])
++	if (cfq_cfqq_sync(cfqq) && cfq_should_idle(cfqd, cfqq)
++		&& cfqd->rq_in_driver[BLK_RW_ASYNC])
+ 		return false;
+ 
+ 	/*
