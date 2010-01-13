@@ -1,52 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755795Ab0AMSE6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756207Ab0AMSJK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755795Ab0AMSE6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 13:04:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755576Ab0AMSE5
+	id S1756207Ab0AMSJK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 13:09:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750998Ab0AMSJJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 13:04:57 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:56290 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753769Ab0AMSEx (ORCPT
+	Wed, 13 Jan 2010 13:09:09 -0500
+Received: from gw1.cosmosbay.com ([212.99.114.194]:58138 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751243Ab0AMSJI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 13:04:53 -0500
-Date: Wed, 13 Jan 2010 13:04:52 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Greg KH <greg@kroah.com>
-cc: Stefan Richter <stefanr@s5r6.in-berlin.de>, Julia Lawall <julia@diku.dk>,
-       N?meth M?rton <nm127@freemail.hu>, David Vrabel <david.vrabel@csr.com>,
-       <linux-usb@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-       <cocci@diku.dk>
-Subject: Re: Changelog quality
-In-Reply-To: <20100113174446.GA20754@kroah.com>
-Message-ID: <Pine.LNX.4.44L0.1001131301180.3518-100000@iolanthe.rowland.org>
+	Wed, 13 Jan 2010 13:09:08 -0500
+Message-ID: <4B4E0C2C.1000101@gmail.com>
+Date: Wed, 13 Jan 2010 19:08:44 +0100
+From: Eric Dumazet <eric.dumazet@gmail.com>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; fr; rv:1.9.1.5) Gecko/20091204 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: James Kosin <JKosin@intcomgrp.com>
+CC: linux-kernel@vger.kernel.org, Linux Netdev List <netdev@vger.kernel.org>
+Subject: Re: [PATCH 2/2] net: at91_ether.c - Allow transmitter interrupt to
+ be handled first in ISR
+References: <3DBBD805E3BA064A87F551C0E8BD367402897491@MAILSRV.intcomgrp.com>
+In-Reply-To: <3DBBD805E3BA064A87F551C0E8BD367402897491@MAILSRV.intcomgrp.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Wed, 13 Jan 2010 19:08:46 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 13 Jan 2010, Greg KH wrote:
-
-> > It would be nice if there was a way to link automatically a git commit
-> > to an archived copy of the email message in which it was originally 
-> > submitted.
+Le 13/01/2010 18:46, James Kosin a écrit :
+> Ok,
 > 
-> Ingo has been doing this on some patches by putting a message-id field
-> in the signed-off-by area showing what lkml message a patch came from.
+> This next patch is optional....
 > 
-> See git commit id 6432e734c99ed685e3cad72f7dcae4c65008fcab in Linus's
-> tree as an example of this.
+> The idea is TUND should only happen on occasions when the PHY is unable
+> to receive the transmitter data in a timely fashion to successfully send
+> the data in a single burst.  This is not a hard error; so, why do we
+> treat it as such.
 > 
-> I have no objection if people want to do this for any patches going
-> through my tree as well.
+> This patch allows the transmitter to resend the failed skb inside the
+> ISR without having to deal with the overhead of freeing the skb then
+> having the main task re-allocate a new skb for the failed packet.
 
-If it has to be included manually by the patch submitter then it isn't
-automatic.  Not to mention that the submitter would need to know the
-email's message-id before the email message was sent!
+Are we sure chip doesnt report TUND forever in some situations ?
+Should'nt we have a retry limit for each skb ?
 
-Something like this should belong in a maintainer's script.
+> 
+> James Kosin
+> 
+--- C:/Documents and Settings/jkosin/My Documents/junk/kernel/Copy of linux-2.6.31.5/drivers/net/arm/at91_ether.c	Wed Jan 13 12:26:13 2010
++++ C:/Documents and Settings/jkosin/My Documents/junk/kernel/linux-2.6.31.5/drivers/net/arm/at91_ether.c	Wed Jan 13 12:38:55 2010
 
-Alan Stern
+Oh well :)
 
+Please read Documentation/SubmittingPatches
+
+
+1) Should be in "diff -u" form
+9) Your patch should be based on latest kernel (preferrably on David net-next-2.6 git tree)
+
+12) Should be Signed-off-by
+
+
+You said in a previous mail the chip was capable of queueing two frames,
+it would be nice to exploit this in driver, since at91 has only one frame
+in transmit queue.
