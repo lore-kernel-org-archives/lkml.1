@@ -1,63 +1,163 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754209Ab0AMCHQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754257Ab0AMCIu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754209Ab0AMCHQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jan 2010 21:07:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751896Ab0AMCHO
+	id S1754257Ab0AMCIu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jan 2010 21:08:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752403Ab0AMCIu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jan 2010 21:07:14 -0500
-Received: from mga11.intel.com ([192.55.52.93]:57538 "EHLO mga11.intel.com"
+	Tue, 12 Jan 2010 21:08:50 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:41240 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751535Ab0AMCHO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jan 2010 21:07:14 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,264,1262592000"; 
-   d="scan'208";a="530752263"
-Subject: Re: [PATCH -v2 5/5] x86: use dmi check to treat disabled cpus as
- hotplug cpus.
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-Reply-To: Suresh Siddha <suresh.b.siddha@intel.com>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       "ananth@in.ibm.com" <ananth@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <4B4D2811.7000001@kernel.org>
-References: <1263338274-6485-1-git-send-email-yinghai@kernel.org>
-	 <1263338274-6485-5-git-send-email-yinghai@kernel.org>
-	 <1263340563.2854.1011.camel@sbs-t61.sc.intel.com>
-	 <4B4D0E39.10200@kernel.org>
-	 <1263347315.2854.1296.camel@sbs-t61.sc.intel.com>
-	 <4B4D2811.7000001@kernel.org>
-Content-Type: text/plain
-Organization: Intel Corp
-Date: Tue, 12 Jan 2010 18:06:03 -0800
-Message-Id: <1263348363.2854.1360.camel@sbs-t61.sc.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+	id S1751500Ab0AMCIt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jan 2010 21:08:49 -0500
+Message-ID: <4B4D2AD3.9000902@redhat.com>
+Date: Wed, 13 Jan 2010 10:07:15 +0800
+From: Xiaotian Feng <dfeng@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Lightning/1.0pre Thunderbird/3.0
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>, mrb74@gmx.at
+CC: bugzilla-daemon@bugzilla.kernel.org, bugme-daemon@bugzilla.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, stable@kernel.org,
+       linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [Bugme-new] [Bug 15005] New: Segmentation fault when shutting
+ down
+References: <bug-15005-10286@http.bugzilla.kernel.org/> <20100112140754.fe75f501.akpm@linux-foundation.org>
+In-Reply-To: <20100112140754.fe75f501.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2010-01-12 at 17:55 -0800, Yinghai Lu wrote:
-> you mean this blacklist could be too long?
+I'm not sure, but I can't see the start of the seg fault. Is it a kernel 
+NULL pointer deref or trigger the BUG?
+Mind to try patch in http://bugzilla.kernel.org/show_bug.cgi?id=15037?
 
-yes.
 
-> 
-> switch to whitelist for the box can treat disabled cpus as hotplug
-> cpus?
 
-Do we really need all this? Systems which support physical hotplug
-typically have lot's of cpu's (mostly will have atleast > 8). Even if we
-really need to identify, then perhaps we can check if ACPI has any hints
-regarding the physical hotplug support at boot time (we should check
-with Andi Kleen or Len Brown on this).
-
-For now, I think we can keep it simple by using the detected enabled
-cpu's.
-
-thanks,
-suresh
+On 01/13/2010 06:07 AM, Andrew Morton wrote:
+>
+> (switched to email.  Please respond via emailed reply-to-all, not via the
+> bugzilla web interface).
+>
+> On Thu, 7 Jan 2010 20:59:20 GMT
+> bugzilla-daemon@bugzilla.kernel.org wrote:
+>
+>> http://bugzilla.kernel.org/show_bug.cgi?id=15005
+>>
+>>             Summary: Segmentation fault when shutting down
+>>             Product: ACPI
+>>             Version: 2.5
+>>      Kernel Version: 2.6.32.3
+>>            Platform: All
+>>          OS/Version: Linux
+>>                Tree: Mainline
+>>              Status: NEW
+>>            Severity: blocking
+>>            Priority: P1
+>>           Component: Power-Off
+>>          AssignedTo: acpi_power-off@kernel-bugs.osdl.org
+>>          ReportedBy: mrb74@gmx.at
+>>          Regression: Yes
+>>
+>>
+>> Created an attachment (id=24479)
+>>   -->  (http://bugzilla.kernel.org/attachment.cgi?id=24479)
+>> Screenshot of segmentation fault
+>>
+>> Currently compiled newest kernel 2.6.32.3 for Atom based netbook (datacask
+>> Jupiter 1014a). Compiled the kernel with optimizations for Atom CPUs and also
+>> with optimizations for i586.
+>> When shutting down the system the kernel produces a segmentation fault at the
+>> end of the shutdown process. Powering off fails. Both kernel fail with the same
+>> error.
+>> Last working kernel was 2.6.32.2.
+>>
+>
+> It's a shutdown-time oops in clockevents_notify().  A 2.6.32.2 ->
+> 2.6.32.3 regression.
+>
+> 2.6.32.3 included this prime suspect:
+>
+> : commit fa3f5a5c1c8e6a2cbc7e21755ea7c215f8cf0577
+> : Author: Thomas Gleixner<tglx@linutronix.de>
+> : Date:   Thu Dec 10 15:35:10 2009 +0100
+> :
+> :     clockevents: Prevent clockevent_devices list corruption on cpu hotplug
+> :
+> :     commit bb6eddf7676e1c1f3e637aa93c5224488d99036f upstream.
+> :
+> : which
+>
+> So we may well have the same regression in 2.6.33-rcX.
+>
+> Martin, can you please check whether the below revert fixes things up?
+>
+> Thanks.
+>
+>
+> From: Andrew Morton<akpm@linux-foundation.org>
+>
+> Revert
+>
+> : commit bb6eddf7676e1c1f3e637aa93c5224488d99036f
+> : Author:     Thomas Gleixner<tglx@linutronix.de>
+> : AuthorDate: Thu Dec 10 15:35:10 2009 +0100
+> : Commit:     Thomas Gleixner<tglx@linutronix.de>
+> : CommitDate: Fri Dec 11 10:28:08 2009 +0100
+> :
+> :     clockevents: Prevent clockevent_devices list corruption on cpu hotplug
+>
+> due to the regression reported in
+> http://bugzilla.kernel.org/show_bug.cgi?id=15005
+>
+> Cc: Xiaotian Feng<dfeng@redhat.com>
+> Cc: Thomas Gleixner<tglx@linutronix.de>
+> Cc: "Rafael J. Wysocki"<rjw@sisk.pl>
+> Reported-by: Martin Bammer<mrb74@gmx.at>
+> Cc:<stable@kernel.org>
+> Signed-off-by: Andrew Morton<akpm@linux-foundation.org>
+> ---
+>
+>   kernel/time/clockevents.c |   18 +++---------------
+>   1 file changed, 3 insertions(+), 15 deletions(-)
+>
+> diff -puN kernel/time/clockevents.c~revert-clockevents-prevent-clockevent_devices-list-corruption-on-cpu-hotplug kernel/time/clockevents.c
+> --- a/kernel/time/clockevents.c~revert-clockevents-prevent-clockevent_devices-list-corruption-on-cpu-hotplug
+> +++ a/kernel/time/clockevents.c
+> @@ -238,9 +238,8 @@ void clockevents_exchange_device(struct
+>    */
+>   void clockevents_notify(unsigned long reason, void *arg)
+>   {
+> -	struct clock_event_device *dev, *tmp;
+> +	struct list_head *node, *tmp;
+>   	unsigned long flags;
+> -	int cpu;
+>
+>   	raw_spin_lock_irqsave(&clockevents_lock, flags);
+>   	clockevents_do_notify(reason, arg);
+> @@ -251,19 +250,8 @@ void clockevents_notify(unsigned long re
+>   		 * Unregister the clock event devices which were
+>   		 * released from the users in the notify chain.
+>   		 */
+> -		list_for_each_entry_safe(dev, tmp,&clockevents_released, list)
+> -			list_del(&dev->list);
+> -		/*
+> -		 * Now check whether the CPU has left unused per cpu devices
+> -		 */
+> -		cpu = *((int *)arg);
+> -		list_for_each_entry_safe(dev, tmp,&clockevent_devices, list) {
+> -			if (cpumask_test_cpu(cpu, dev->cpumask)&&
+> -			    cpumask_weight(dev->cpumask) == 1) {
+> -				BUG_ON(dev->mode != CLOCK_EVT_MODE_UNUSED);
+> -				list_del(&dev->list);
+> -			}
+> -		}
+> +		list_for_each_safe(node, tmp,&clockevents_released)
+> +			list_del(node);
+>   		break;
+>   	default:
+>   		break;
+> _
+>
+>
 
