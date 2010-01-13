@@ -1,104 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755743Ab0AMKgt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755775Ab0AMKhE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755743Ab0AMKgt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 05:36:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755004Ab0AMKgr
+	id S1755775Ab0AMKhE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 05:37:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755712Ab0AMKg5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 05:36:47 -0500
-Received: from ms01.sssup.it ([193.205.80.99]:37107 "EHLO sssup.it"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755703Ab0AMKgg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 05:36:36 -0500
-Subject: Re: [RFC 1/12][PATCH] Extended scheduling parameters structure
- added.
-From: Raistlin <raistlin@linux.it>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       michael trimarchi <michael@evidence.eu.com>,
-       Fabio Checconi <fabio@gandalf.sssup.it>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Dhaval Giani <dhaval.giani@gmail.com>,
-       Johan Eker <johan.eker@ericsson.com>, "p.faure" <p.faure@akatech.ch>,
-       Chris Friesen <cfriesen@nortel.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Henrik Austad <henrik@austad.us>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Darren Hart <darren@dvhart.com>,
-       Sven-Thorsten Dietrich <sven@thebigcorporation.com>,
-       Claudio Scordino <claudio@evidence.eu.com>,
-       Tommaso Cucinotta <tommaso.cucinotta@sssup.it>,
-       "giuseppe.lipari" <giuseppe.lipari@sssup.it>,
-       Juri Lelli <juri.lelli@gmail.com>
-In-Reply-To: <1262088943.7135.137.camel@laptop>
-References: <1255707324.6228.448.camel@Palantir>
-	 <1255707535.6228.451.camel@Palantir>  <1262088943.7135.137.camel@laptop>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-iaBeWhvdSnnK5sAq6ehN"
-Date: Wed, 13 Jan 2010 11:36:34 +0100
-Message-ID: <1263378994.3853.71.camel@Palantir>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	Wed, 13 Jan 2010 05:36:57 -0500
+Received: from hera.kernel.org ([140.211.167.34]:38497 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755693Ab0AMKgz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jan 2010 05:36:55 -0500
+Date: Wed, 13 Jan 2010 10:34:59 GMT
+From: tip-bot for Masami Hiramatsu <mhiramat@redhat.com>
+Cc: linux-kernel@vger.kernel.org, paulus@samba.org, acme@redhat.com,
+       hpa@zytor.com, mingo@redhat.com, efault@gmx.de, peterz@infradead.org,
+       fweisbec@gmail.com, dle-develop@lists.sourceforge.net,
+       tglx@linutronix.de, mhiramat@redhat.com, mingo@elte.hu,
+       systemtap@sources.redhat.com
+Reply-To: mingo@redhat.com, hpa@zytor.com, acme@redhat.com, paulus@samba.org,
+       linux-kernel@vger.kernel.org, peterz@infradead.org, efault@gmx.de,
+       fweisbec@gmail.com, dle-develop@lists.sourceforge.net,
+       tglx@linutronix.de, mhiramat@redhat.com, systemtap@sources.redhat.com,
+       mingo@elte.hu
+In-Reply-To: <20100105224717.19431.68972.stgit@dhcp-100-2-132.bos.redhat.com>
+References: <20100105224717.19431.68972.stgit@dhcp-100-2-132.bos.redhat.com>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:perf/core] perf tools: Support tracepoint glob matching
+Message-ID: <tip-fb1d2edf7ee25a26ad0b238d0ee335a3b28b7aa3@git.kernel.org>
+Git-Commit-ID: fb1d2edf7ee25a26ad0b238d0ee335a3b28b7aa3
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Wed, 13 Jan 2010 10:35:00 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Commit-ID:  fb1d2edf7ee25a26ad0b238d0ee335a3b28b7aa3
+Gitweb:     http://git.kernel.org/tip/fb1d2edf7ee25a26ad0b238d0ee335a3b28b7aa3
+Author:     Masami Hiramatsu <mhiramat@redhat.com>
+AuthorDate: Tue, 5 Jan 2010 17:47:17 -0500
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Wed, 13 Jan 2010 10:09:13 +0100
 
---=-iaBeWhvdSnnK5sAq6ehN
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+perf tools: Support tracepoint glob matching
 
-On Tue, 2009-12-29 at 13:15 +0100, Peter Zijlstra wrote:
-> On Fri, 2009-10-16 at 17:38 +0200, Raistlin wrote:
->=20
-> >  include/linux/sched.h |    8 ++++++++
-> >  1 files changed, 8 insertions(+), 0 deletions(-)
-> >=20
-> > diff --git a/include/linux/sched.h b/include/linux/sched.h
-> > index 75e6e60..ac9837c 100644
-> > --- a/include/linux/sched.h
-> > +++ b/include/linux/sched.h
-> > @@ -94,6 +94,14 @@ struct sched_param {
-> > =20
-> >  #include <asm/processor.h>
-> > =20
-> > +struct sched_param_ex {
-> > +	int sched_priority;
-> > +	struct timespec sched_runtime;
-> > +	struct timespec sched_deadline;
-> > +	struct timespec sched_period;
-> > +	int sched_flags;
-> > +};
-> > +
-> >  struct exec_domain;
-> >  struct futex_pi_state;
-> >  struct robust_list_head;
->=20
-> Why separate this change from the introduction of the new system calls?
->=20
-Nothing particular... I was just thinking that the extended data
-structure might have sense even for other --more general-- purposes. But
-I can merge the two if it sounds better.
+Support glob wildcard when selecting tracepoint events by -e
+option. Without this patch, perf-tools supports 'GROUP:*:record'
+syntax for selecting all tracepoints under GROUP group.
 
-Thanks and regards,
-Dario
+With this patch, user can choose tracepoints more flexibly by using
+partial wildcards, e.g. 'block:*bio*:record'.
 
---=20
-<<This happens because I choose it to happen!>> (Raistlin Majere)
-----------------------------------------------------------------------
-Dario Faggioli, ReTiS Lab, Scuola Superiore Sant'Anna, Pisa  (Italy)
+Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: systemtap <systemtap@sources.redhat.com>
+Cc: DLE <dle-develop@lists.sourceforge.net>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Mike Galbraith <efault@gmx.de>
+LKML-Reference: <20100105224717.19431.68972.stgit@dhcp-100-2-132.bos.redhat.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ tools/perf/util/parse-events.c |   11 ++++++++---
+ 1 files changed, 8 insertions(+), 3 deletions(-)
 
-http://blog.linux.it/raistlin / raistlin@ekiga.net /
-dario.faggioli@jabber.org
-
---=-iaBeWhvdSnnK5sAq6ehN
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAktNojIACgkQk4XaBE3IOsS1xQCghSLMI1A0gmenAJtH4B+chZlV
-J08An2cCmUvze35/dZQmTgjwyH1Uxqfj
-=qRc5
------END PGP SIGNATURE-----
-
---=-iaBeWhvdSnnK5sAq6ehN--
-
+diff --git a/tools/perf/util/parse-events.c b/tools/perf/util/parse-events.c
+index 609d5a9..05d0c5c 100644
+--- a/tools/perf/util/parse-events.c
++++ b/tools/perf/util/parse-events.c
+@@ -450,7 +450,8 @@ parse_single_tracepoint_event(char *sys_name,
+ /* sys + ':' + event + ':' + flags*/
+ #define MAX_EVOPT_LEN	(MAX_EVENT_LENGTH * 2 + 2 + 128)
+ static enum event_result
+-parse_subsystem_tracepoint_event(char *sys_name, char *flags)
++parse_multiple_tracepoint_event(char *sys_name, const char *evt_exp,
++				char *flags)
+ {
+ 	char evt_path[MAXPATHLEN];
+ 	struct dirent *evt_ent;
+@@ -474,6 +475,9 @@ parse_subsystem_tracepoint_event(char *sys_name, char *flags)
+ 		    || !strcmp(evt_ent->d_name, "filter"))
+ 			continue;
+ 
++		if (!strglobmatch(evt_ent->d_name, evt_exp))
++			continue;
++
+ 		len = snprintf(event_opt, MAX_EVOPT_LEN, "%s:%s%s%s", sys_name,
+ 			       evt_ent->d_name, flags ? ":" : "",
+ 			       flags ?: "");
+@@ -522,9 +526,10 @@ static enum event_result parse_tracepoint_event(const char **strp,
+ 	if (evt_length >= MAX_EVENT_LENGTH)
+ 		return EVT_FAILED;
+ 
+-	if (!strcmp(evt_name, "*")) {
++	if (strpbrk(evt_name, "*?")) {
+ 		*strp = evt_name + evt_length;
+-		return parse_subsystem_tracepoint_event(sys_name, flags);
++		return parse_multiple_tracepoint_event(sys_name, evt_name,
++						       flags);
+ 	} else
+ 		return parse_single_tracepoint_event(sys_name, evt_name,
+ 						     evt_length, flags,
