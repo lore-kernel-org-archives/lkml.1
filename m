@@ -1,159 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755273Ab0AMJb3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755251Ab0AMJcw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755273Ab0AMJb3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 04:31:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755201Ab0AMJb0
+	id S1755251Ab0AMJcw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 04:32:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755215Ab0AMJcv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 04:31:26 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:52524 "EHLO mx1.redhat.com"
+	Wed, 13 Jan 2010 04:32:51 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:39651 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751402Ab0AMJb0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 04:31:26 -0500
-Date: Wed, 13 Jan 2010 11:31:19 +0200
-From: Gleb Natapov <gleb@redhat.com>
-To: linux-mm@kvack.org
-Cc: linux-kernel@vger.kernel.org, linux-api@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: [PATCH v5] add MAP_UNLOCKED mmap flag
-Message-ID: <20100113093119.GT7549@redhat.com>
+	id S1755088Ab0AMJcu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jan 2010 04:32:50 -0500
+Date: Wed, 13 Jan 2010 10:32:40 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Don Zickus <dzickus@redhat.com>
+Cc: Cyrill Gorcunov <gorcunov@gmail.com>, aris@redhat.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: introduce NMI_AUTO as nmi_watchdog option
+Message-ID: <20100113093240.GC6739@elte.hu>
+References: <20100111191633.GT24885@redhat.com>
+ <20100111202729.GI4923@lenovo>
+ <20100111203356.GU24885@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20100111203356.GU24885@redhat.com>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If application does mlockall(MCL_FUTURE) it is no longer possible to mmap
-file bigger than main memory or allocate big area of anonymous memory
-in a thread safe manner. Sometimes it is desirable to lock everything
-related to program execution into memory, but still be able to mmap
-big file or allocate huge amount of memory and allow OS to swap them on
-demand. MAP_UNLOCKED allows to do that.
- 
-Signed-off-by: Gleb Natapov <gleb@redhat.com>
----
 
-I get reports that people find this useful, so resending.
- 
- v1->v2
-   - adding new flag to all archs
-   - fixing typo
- v2->v3
-   - one more typo fix 
- v3->v4
-   - return error if MAP_LOCKED | MAP_UNLOCKED is specified
- v4->v5
-  - rebase to latest head 
+* Don Zickus <dzickus@redhat.com> wrote:
 
-diff --git a/arch/alpha/include/asm/mman.h b/arch/alpha/include/asm/mman.h
-index 99c56d4..cfc51ac 100644
---- a/arch/alpha/include/asm/mman.h
-+++ b/arch/alpha/include/asm/mman.h
-@@ -30,6 +30,7 @@
- #define MAP_NONBLOCK	0x40000		/* do not block on IO */
- #define MAP_STACK	0x80000		/* give out an address that is best suited for process/thread stacks */
- #define MAP_HUGETLB	0x100000	/* create a huge page mapping */
-+#define MAP_UNLOCKED	0x200000	/* force page unlocking */
- 
- #define MS_ASYNC	1		/* sync memory asynchronously */
- #define MS_SYNC		2		/* synchronous memory sync */
-diff --git a/arch/mips/include/asm/mman.h b/arch/mips/include/asm/mman.h
-index c892bfb..3e4d108 100644
---- a/arch/mips/include/asm/mman.h
-+++ b/arch/mips/include/asm/mman.h
-@@ -48,6 +48,7 @@
- #define MAP_NONBLOCK	0x20000		/* do not block on IO */
- #define MAP_STACK	0x40000		/* give out an address that is best suited for process/thread stacks */
- #define MAP_HUGETLB	0x80000		/* create a huge page mapping */
-+#define MAP_UNLOCKED	0x100000	/* force page unlocking */
- 
- /*
-  * Flags for msync
-diff --git a/arch/parisc/include/asm/mman.h b/arch/parisc/include/asm/mman.h
-index 9749c8a..4e8b9bf 100644
---- a/arch/parisc/include/asm/mman.h
-+++ b/arch/parisc/include/asm/mman.h
-@@ -24,6 +24,7 @@
- #define MAP_NONBLOCK	0x20000		/* do not block on IO */
- #define MAP_STACK	0x40000		/* give out an address that is best suited for process/thread stacks */
- #define MAP_HUGETLB	0x80000		/* create a huge page mapping */
-+#define MAP_UNLOCKED	0x100000	/* force page unlocking */
- 
- #define MS_SYNC		1		/* synchronous memory sync */
- #define MS_ASYNC	2		/* sync memory asynchronously */
-diff --git a/arch/powerpc/include/asm/mman.h b/arch/powerpc/include/asm/mman.h
-index d4a7f64..7d33f01 100644
---- a/arch/powerpc/include/asm/mman.h
-+++ b/arch/powerpc/include/asm/mman.h
-@@ -27,6 +27,7 @@
- #define MAP_NONBLOCK	0x10000		/* do not block on IO */
- #define MAP_STACK	0x20000		/* give out an address that is best suited for process/thread stacks */
- #define MAP_HUGETLB	0x40000		/* create a huge page mapping */
-+#define MAP_UNLOCKED	0x80000		/* force page unlocking */
- 
- #ifdef __KERNEL__
- #ifdef CONFIG_PPC64
-diff --git a/arch/sparc/include/asm/mman.h b/arch/sparc/include/asm/mman.h
-index c3029ad..f80d203 100644
---- a/arch/sparc/include/asm/mman.h
-+++ b/arch/sparc/include/asm/mman.h
-@@ -22,6 +22,7 @@
- #define MAP_NONBLOCK	0x10000		/* do not block on IO */
- #define MAP_STACK	0x20000		/* give out an address that is best suited for process/thread stacks */
- #define MAP_HUGETLB	0x40000		/* create a huge page mapping */
-+#define MAP_UNLOCKED	0x80000		/* force page unlocking */
- 
- #ifdef __KERNEL__
- #ifndef __ASSEMBLY__
-diff --git a/arch/xtensa/include/asm/mman.h b/arch/xtensa/include/asm/mman.h
-index fca4db4..c62bcd8 100644
---- a/arch/xtensa/include/asm/mman.h
-+++ b/arch/xtensa/include/asm/mman.h
-@@ -55,6 +55,7 @@
- #define MAP_NONBLOCK	0x20000		/* do not block on IO */
- #define MAP_STACK	0x40000		/* give out an address that is best suited for process/thread stacks */
- #define MAP_HUGETLB	0x80000		/* create a huge page mapping */
-+#define MAP_UNLOCKED	0x100000	/* force page unlocking */
- 
- /*
-  * Flags for msync
-diff --git a/include/asm-generic/mman.h b/include/asm-generic/mman.h
-index 32c8bd6..59e0f29 100644
---- a/include/asm-generic/mman.h
-+++ b/include/asm-generic/mman.h
-@@ -12,6 +12,7 @@
- #define MAP_NONBLOCK	0x10000		/* do not block on IO */
- #define MAP_STACK	0x20000		/* give out an address that is best suited for process/thread stacks */
- #define MAP_HUGETLB	0x40000		/* create a huge page mapping */
-+#define MAP_UNLOCKED	0x80000         /* force page unlocking */
- 
- #define MCL_CURRENT	1		/* lock all current mappings */
- #define MCL_FUTURE	2		/* lock all future mappings */
-diff --git a/mm/mmap.c b/mm/mmap.c
-index ee22989..4bda220 100644
---- a/mm/mmap.c
-+++ b/mm/mmap.c
-@@ -962,6 +962,9 @@ unsigned long do_mmap_pgoff(struct file *file, unsigned long addr,
- 		if (!can_do_mlock())
- 			return -EPERM;
- 
-+        if (flags & MAP_UNLOCKED)
-+                vm_flags &= ~VM_LOCKED;
-+
- 	/* mlock MCL_FUTURE? */
- 	if (vm_flags & VM_LOCKED) {
- 		unsigned long locked, lock_limit;
-@@ -1050,7 +1053,10 @@ SYSCALL_DEFINE6(mmap_pgoff, unsigned long, addr, unsigned long, len,
- 	struct file *file = NULL;
- 	unsigned long retval = -EBADF;
- 
--	if (!(flags & MAP_ANONYMOUS)) {
-+	if (unlikely((flags & (MAP_LOCKED | MAP_UNLOCKED)) ==
-+			(MAP_LOCKED | MAP_UNLOCKED))) {
-+		return -EINVAL;
-+	} else if (!(flags & MAP_ANONYMOUS)) {
- 		if (unlikely(flags & MAP_HUGETLB))
- 			return -EINVAL;
- 		file = fget(fd);
---
-			Gleb.
+> On Mon, Jan 11, 2010 at 11:27:29PM +0300, Cyrill Gorcunov wrote:
+> > On Mon, Jan 11, 2010 at 02:16:33PM -0500, Don Zickus wrote:
+> > > Hi Ingo,
+> > > 
+> > ...
+> > > I was going to jump in and try to do this work.  I wanted to make sure
+> > > what you were looking for here.  When you say convert nmi watchdog to perf
+> > > events, I assume you mean merging over the bits of perfctr-watchdog.c to
+> > > perf_events.c, modify nmi.c to just register as a normal perf event and
+> > > probably cleanup the oprofile stuff to match, correct?
+> > > 
+> > > Cheers,
+> > > Don
+> > >
+> > 
+> > As far as I know -- converting perfctr-watchdog.c to into perfevents
+> > style would be quite a desirable feature. But I still didn't manage to
+> > find time for this task :( If you're interested to start this work
+> > -- that would be just great!
+> 
+> After looking through the code I just had some questions, perhaps you have 
+> thought about this longer than me, what to do with the reservation code 
+> (just remove it I assume and let perf_events _be_ the only code that
+>  handles perf events) and what to do with some of the cpu quirks as noted in 
+> perfctr-watchdog.c (notable some of the Intel errata for the Core chipsets).
+
+Given the amount of quirks in the perctr code it might make sense to shape 
+this as a new feature initially: introduce a new NMI watchdog that is perf 
+based and has a different codebase.
+
+Then, once it's capable enough and has been in circulation long enough we can 
+simply drop the old NMI watchdog. (without users noticing anything [modulo 
+bugs])
+
+v1 should concentrate on x86 CPUs that are supported by perf currently. Note, 
+it _might_ make sense to do it via a new kernel/nmi_watchdog.c file - other 
+architectures have NMI concepts as well, such as Sparc64. A further idea would 
+be to maybe even merge it with the softlockup code in kernel/softlockup.c - so 
+that we dont have two sets of apis like touch_nmi_watchdog and 
+touch_softlockup_watchdog.
+
+So there's a wide spectrum of possibilities - the important thing is to start 
+small :-)
+
+	Ingo
