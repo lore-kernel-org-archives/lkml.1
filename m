@@ -1,93 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756100Ab0AMQpS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756087Ab0AMQr0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756100Ab0AMQpS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 11:45:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756086Ab0AMQpN
+	id S1756087Ab0AMQr0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 11:47:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756051Ab0AMQrZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 11:45:13 -0500
-Received: from hera.kernel.org ([140.211.167.34]:34940 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756085Ab0AMQpJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 11:45:09 -0500
-Date: Wed, 13 Jan 2010 16:42:47 GMT
-From: tip-bot for Kirill Smelkov <kirr@landau.phys.spbu.ru>
-Cc: linux-kernel@vger.kernel.org, acme@redhat.com, hpa@zytor.com,
-       mingo@redhat.com, kirr@landau.phys.spbu.ru, tglx@linutronix.de,
-       mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, acme@redhat.com,
-       linux-kernel@vger.kernel.org, kirr@landau.phys.spbu.ru,
-       tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <1263396139-4798-2-git-send-email-acme@infradead.org>
-References: <1263396139-4798-2-git-send-email-acme@infradead.org>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perf/core] perf: Fix few typos + cosmetics
-Message-ID: <tip-0895cf0a823e03ea6d79736611e90186006c805e@git.kernel.org>
-Git-Commit-ID: 0895cf0a823e03ea6d79736611e90186006c805e
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Wed, 13 Jan 2010 16:42:48 +0000 (UTC)
+	Wed, 13 Jan 2010 11:47:25 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:56976 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752302Ab0AMQrZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jan 2010 11:47:25 -0500
+Subject: Re: [RFC 0/12][PATCH] SCHED_DEADLINE: core of the scheduling class
+From: Peter Zijlstra <peterz@infradead.org>
+To: Dario Faggioli <faggioli@gandalf.sssup.it>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       michael trimarchi <michael@evidence.eu.com>,
+       Fabio Checconi <fabio@gandalf.sssup.it>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Dhaval Giani <dhaval.giani@gmail.com>,
+       Johan Eker <johan.eker@ericsson.com>, "p.faure" <p.faure@akatech.ch>,
+       Chris Friesen <cfriesen@nortel.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Henrik Austad <henrik@austad.us>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Darren Hart <darren@dvhart.com>,
+       Sven-Thorsten Dietrich <sven@thebigcorporation.com>,
+       Claudio Scordino <claudio@evidence.eu.com>,
+       Tommaso Cucinotta <tommaso.cucinotta@sssup.it>,
+       "giuseppe.lipari" <giuseppe.lipari@sssup.it>,
+       Juri Lelli <juri.lelli@gmail.com>
+In-Reply-To: <1263400341.3853.287.camel@Palantir>
+References: <1255707324.6228.448.camel@Palantir>
+	 <1255707614.6228.453.camel@Palantir>  <1262097042.7135.150.camel@laptop>
+	 <1263400341.3853.287.camel@Palantir>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 13 Jan 2010 17:47:01 +0100
+Message-ID: <1263401221.4244.250.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  0895cf0a823e03ea6d79736611e90186006c805e
-Gitweb:     http://git.kernel.org/tip/0895cf0a823e03ea6d79736611e90186006c805e
-Author:     Kirill Smelkov <kirr@landau.phys.spbu.ru>
-AuthorDate: Wed, 13 Jan 2010 13:22:18 -0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 13 Jan 2010 17:39:44 +0100
+On Wed, 2010-01-13 at 17:32 +0100, Dario Faggioli wrote:
+> On Tue, 2009-12-29 at 15:30 +0100, Peter Zijlstra wrote:
+> > On Fri, 2009-10-16 at 17:40 +0200, Raistlin wrote:
+> > > +struct task_struct *pick_next_task_deadline(struct rq *rq)
+> > > +{
+> > > +       struct sched_dl_entity *dl_se;
+> > > +       struct task_struct *p;
+> > > +       struct dl_rq *dl_rq;
+> > > +
+> > > +       dl_rq = &rq->dl;
+> > > +
+> > > +       if (likely(!dl_rq->dl_nr_running))
+> > > +               return NULL;
+> > > +
+> > > +       dl_se = pick_next_deadline_entity(rq, dl_rq);
+> > > +       BUG_ON(!dl_se);
+> > > +
+> > > +       p = deadline_task_of(dl_se);
+> > > +       p->se.exec_start = rq->clock;
+> > > +#ifdef CONFIG_SCHED_HRTICK
+> > > +       if (hrtick_enabled(rq))
+> > > +               start_hrtick_deadline(rq, p);
+> > > +#endif
+> > > +       return p;
+> > > +} 
+> > 
+> > I'm not sure about actually using hrtick like this, I'd expect
+> > SCHED_DEADLINE to always use hrtimers when available.  The only reason
+> > to use some of the hrtick infrastructure is to re-use the hrtick_start()
+> > logic which uses IPIs to ensure we program the timer on the right cpu
+> > (so we can schedule from it).
+> > 
+> Yeah, that and the fact that it seemed to me very easy and clean to:
+> - check for runtime enforcement inside the task_tick_deadline function,
+>   as other scheduling classes do, and then
+> - if possible, ask that task_tick_deadline function to be called right 
+>   at the time instant I expect my runtime to be depleted. If that won't 
+>   happen --because of no-hrtick or no-hires-hrtimers-- the check will
+>   still be performed during the next tick.
+> 
+> > The whole IPI mess requires USE_GENERIC_SMP_HELPERS, which makes
+> > CONFIG_HRTICK useful (ensures we have hrtimers enabled and have generic
+> > IPI bits)
+> > 
+> > The problem is that things like hrtick_enabled() also check
+> > sched_feat(HRTICK) which is disabled by default (because programming the
+> > clock hw on each schedule was found too expensive) but that should not
+> > stop SCHED_DEADLINE from using it.
+> > 
+> Mmm... I might have lost you here... :-(
 
-perf: Fix few typos + cosmetics
+I had a little chat with fabio around new-years and I think we ended up
+agreeing that your current usage is ok, we can always fix it up later.
 
-Signed-off-by: Kirill Smelkov <kirr@landau.phys.spbu.ru>
-Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
-LKML-Reference: <1263396139-4798-2-git-send-email-acme@infradead.org>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- tools/perf/Documentation/perf.txt |    2 +-
- tools/perf/design.txt             |    8 ++++----
- 2 files changed, 5 insertions(+), 5 deletions(-)
+Its an unfortunate complicated dance of hrtimer being configured in,
+having capable hardware and dealing with all the fallout cases.
 
-diff --git a/tools/perf/Documentation/perf.txt b/tools/perf/Documentation/perf.txt
-index 69c8325..0eeb247 100644
---- a/tools/perf/Documentation/perf.txt
-+++ b/tools/perf/Documentation/perf.txt
-@@ -12,7 +12,7 @@ SYNOPSIS
- 
- DESCRIPTION
- -----------
--Performance counters for Linux are are a new kernel-based subsystem
-+Performance counters for Linux are a new kernel-based subsystem
- that provide a framework for all things performance analysis. It
- covers hardware level (CPU/PMU, Performance Monitoring Unit) features
- and software features (software counters, tracepoints) as well.
-diff --git a/tools/perf/design.txt b/tools/perf/design.txt
-index 8d0de51..bd0bb1b 100644
---- a/tools/perf/design.txt
-+++ b/tools/perf/design.txt
-@@ -101,10 +101,10 @@ enum hw_event_ids {
- 	 */
- 	PERF_COUNT_HW_CPU_CYCLES		= 0,
- 	PERF_COUNT_HW_INSTRUCTIONS		= 1,
--	PERF_COUNT_HW_CACHE_REFERENCES	= 2,
-+	PERF_COUNT_HW_CACHE_REFERENCES		= 2,
- 	PERF_COUNT_HW_CACHE_MISSES		= 3,
- 	PERF_COUNT_HW_BRANCH_INSTRUCTIONS	= 4,
--	PERF_COUNT_HW_BRANCH_MISSES	= 5,
-+	PERF_COUNT_HW_BRANCH_MISSES		= 5,
- 	PERF_COUNT_HW_BUS_CYCLES		= 6,
- };
- 
-@@ -131,8 +131,8 @@ software events, selected by 'event_id':
-  */
- enum sw_event_ids {
- 	PERF_COUNT_SW_CPU_CLOCK		= 0,
--	PERF_COUNT_SW_TASK_CLOCK		= 1,
--	PERF_COUNT_SW_PAGE_FAULTS		= 2,
-+	PERF_COUNT_SW_TASK_CLOCK	= 1,
-+	PERF_COUNT_SW_PAGE_FAULTS	= 2,
- 	PERF_COUNT_SW_CONTEXT_SWITCHES	= 3,
- 	PERF_COUNT_SW_CPU_MIGRATIONS	= 4,
- 	PERF_COUNT_SW_PAGE_FAULTS_MIN	= 5,
+The only thing which is unfortunate for your current usage is the
+sched_feat(HRTICK) thing, we generally do not want HRTICK for
+SCHED_OTHER, whereas we'd always (when configured and having capable
+hardware) want if for SCHED_DEADLINE..
+
