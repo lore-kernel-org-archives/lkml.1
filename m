@@ -1,61 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756075Ab0AMQmz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756082Ab0AMQpG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756075Ab0AMQmz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 11:42:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755967Ab0AMQmy
+	id S1756082Ab0AMQpG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 11:45:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756062Ab0AMQpE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 11:42:54 -0500
-Received: from casper.infradead.org ([85.118.1.10]:57515 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755876Ab0AMQmx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 11:42:53 -0500
-Subject: Re: introduce NMI_AUTO as nmi_watchdog option
-From: Peter Zijlstra <peterz@infradead.org>
-To: Don Zickus <dzickus@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Cyrill Gorcunov <gorcunov@gmail.com>,
-       aris@redhat.com, linux-kernel@vger.kernel.org
-In-Reply-To: <20100113162534.GX24885@redhat.com>
-References: <20100111191633.GT24885@redhat.com>
-	 <20100111202729.GI4923@lenovo> <20100111203356.GU24885@redhat.com>
-	 <20100113093240.GC6739@elte.hu> <1263388422.4244.214.camel@laptop>
-	 <20100113162534.GX24885@redhat.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 13 Jan 2010 17:42:47 +0100
-Message-ID: <1263400967.4244.246.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 13 Jan 2010 11:45:04 -0500
+Received: from hera.kernel.org ([140.211.167.34]:34935 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756035Ab0AMQpD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jan 2010 11:45:03 -0500
+Date: Wed, 13 Jan 2010 16:43:03 GMT
+From: tip-bot for Kirill Smelkov <kirr@landau.phys.spbu.ru>
+Cc: linux-kernel@vger.kernel.org, acme@redhat.com, hpa@zytor.com,
+       mingo@redhat.com, kirr@landau.phys.spbu.ru, tglx@linutronix.de,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, acme@redhat.com,
+       linux-kernel@vger.kernel.org, kirr@landau.phys.spbu.ru,
+       tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <1263396139-4798-3-git-send-email-acme@infradead.org>
+References: <1263396139-4798-3-git-send-email-acme@infradead.org>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:perf/core] perf top: Fix code typo in prompt_symbol()
+Message-ID: <tip-66aeb6d5cb701aedd508187e08612bfd1e108e2e@git.kernel.org>
+Git-Commit-ID: 66aeb6d5cb701aedd508187e08612bfd1e108e2e
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Wed, 13 Jan 2010 16:43:04 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2010-01-13 at 11:25 -0500, Don Zickus wrote:
-> On Wed, Jan 13, 2010 at 02:13:42PM +0100, Peter Zijlstra wrote:
-> > On Wed, 2010-01-13 at 10:32 +0100, Ingo Molnar wrote:
-> > > other architectures have NMI concepts as well, such as Sparc64. 
-> > 
-> > I think both sparc64 and ppc64 fake NMIs by playing games with hw IRQ
-> > priorities and partial masks. But yes.
-> > 
-> > One interesting 'feature' for the perf-nmi interaction is creating an
-> > idle scheduling class for counters, because as long as there is a
-> > counter present you can use his NMIs to drive the watchdog, but as soon
-> > as there are non left, you need to install one.
-> 
-> Interesting idea.  How can I guarantee the frequency of the NMI I want to
-> piggyback off of?  A breakpoint that takes an hour to trigger may not be
-> the best NMI to use?  Then again I am still trying to understand the perf
-> event code a little better.
+Commit-ID:  66aeb6d5cb701aedd508187e08612bfd1e108e2e
+Gitweb:     http://git.kernel.org/tip/66aeb6d5cb701aedd508187e08612bfd1e108e2e
+Author:     Kirill Smelkov <kirr@landau.phys.spbu.ru>
+AuthorDate: Wed, 13 Jan 2010 13:22:19 -0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Wed, 13 Jan 2010 17:39:44 +0100
 
-You could play games with the period, we can handle getting more NMIs
-than are needed. This is how we implement a period larger than the
-physical counter for example.
+perf top: Fix code typo in prompt_symbol()
 
-But yeah, its a tricky game since a tight loop might never generate the
-event we're counting.. we could limit this to things like
-cycles/ins/bus-cycles etc.. those will always tick.
+sym_filter is what was (if ever) passed with -s option. What was
+typed by user, and what we were looking for, is in buf.
 
-Anyway, its all an optimization, the simple/first implementation would
-simply install a kernel cpu perf counter and hook the overflow handler.
+Signed-off-by: Kirill Smelkov <kirr@landau.phys.spbu.ru>
+Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+LKML-Reference: <1263396139-4798-3-git-send-email-acme@infradead.org>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ tools/perf/builtin-top.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
+diff --git a/tools/perf/builtin-top.c b/tools/perf/builtin-top.c
+index 6822b44..7a8a77e 100644
+--- a/tools/perf/builtin-top.c
++++ b/tools/perf/builtin-top.c
+@@ -667,7 +667,7 @@ static void prompt_symbol(struct sym_entry **target, const char *msg)
+ 	}
+ 
+ 	if (!found) {
+-		fprintf(stderr, "Sorry, %s is not active.\n", sym_filter);
++		fprintf(stderr, "Sorry, %s is not active.\n", buf);
+ 		sleep(1);
+ 		return;
+ 	} else
