@@ -1,27 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755901Ab0AMLG0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755911Ab0AMLGx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755901Ab0AMLG0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 06:06:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755885Ab0AMLGQ
+	id S1755911Ab0AMLGx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 06:06:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755359Ab0AMLGu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 06:06:16 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:58093 "EHLO
+	Wed, 13 Jan 2010 06:06:50 -0500
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:58064 "EHLO
 	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755776Ab0AMLGO (ORCPT
+	with ESMTP id S1755482Ab0AMLF6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 06:06:14 -0500
+	Wed, 13 Jan 2010 06:05:58 -0500
 From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
 	<u.kleine-koenig@pengutronix.de>
 To: linux-kernel@vger.kernel.org
 Cc: David Vrabel <dvrabel@arcom.com>, Greg Kroah-Hartman <gregkh@suse.de>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
-       Magnus Damm <damm@igel.co.jp>,
-       Kuninori Morimoto <morimoto.kuninori@renesas.com>,
-       Paul Mundt <lethal@linux-sh.org>, linux-media@vger.kernel.org
-Subject: [RESEND PATCH 3/5] V4L/DVB sh_mobile_ceu: don't check platform_get_irq's return value against zero
-Date: Wed, 13 Jan 2010 12:05:44 +0100
-Message-Id: <1263380746-27803-3-git-send-email-u.kleine-koenig@pengutronix.de>
+       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pcmcia@lists.infradead.org
+Subject: [RESEND PATCH 4/5] pcmcia/bfin_cf: don't check platform_get_irq's return value against zero
+Date: Wed, 13 Jan 2010 12:05:45 +0100
+Message-Id: <1263380746-27803-4-git-send-email-u.kleine-koenig@pengutronix.de>
 X-Mailer: git-send-email 1.6.6
 In-Reply-To: <1260979809-24811-1-git-send-email-u.kleine-koenig@pengutronix.de>
 References: <1260979809-24811-1-git-send-email-u.kleine-koenig@pengutronix.de>
@@ -37,7 +33,7 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 platform_get_irq returns -ENXIO on failure, so !irq was probably
-always true.  Better use (int)irq <= 0.  Note that a return value of
+always true.  Better use irq <= 0.  Note that a return value of
 zero is still handled as error even though this could mean irq0.
 
 This is a followup to 305b3228f9ff4d59f49e6d34a7034d44ee8ce2f0 that
@@ -46,29 +42,25 @@ changed the return value of platform_get_irq from 0 to -ENXIO on error.
 Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
 Cc: David Vrabel <dvrabel@arcom.com>
 Cc: Greg Kroah-Hartman <gregkh@suse.de>
-Cc: Mauro Carvalho Chehab <mchehab@infradead.org>
-Cc: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: Magnus Damm <damm@igel.co.jp>
-Cc: Kuninori Morimoto <morimoto.kuninori@renesas.com>
-Cc: Paul Mundt <lethal@linux-sh.org>
-Cc: linux-media@vger.kernel.org
+Cc: Rafael J. Wysocki <rjw@sisk.pl>
+Cc: linux-pcmcia@lists.infradead.org
 ---
- drivers/media/video/sh_mobile_ceu_camera.c |    2 +-
+ drivers/pcmcia/bfin_cf_pcmcia.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/media/video/sh_mobile_ceu_camera.c b/drivers/media/video/sh_mobile_ceu_camera.c
-index d69363f..f09c714 100644
---- a/drivers/media/video/sh_mobile_ceu_camera.c
-+++ b/drivers/media/video/sh_mobile_ceu_camera.c
-@@ -1827,7 +1827,7 @@ static int __devinit sh_mobile_ceu_probe(struct platform_device *pdev)
+diff --git a/drivers/pcmcia/bfin_cf_pcmcia.c b/drivers/pcmcia/bfin_cf_pcmcia.c
+index 300b368..2482ce7 100644
+--- a/drivers/pcmcia/bfin_cf_pcmcia.c
++++ b/drivers/pcmcia/bfin_cf_pcmcia.c
+@@ -205,7 +205,7 @@ static int __devinit bfin_cf_probe(struct platform_device *pdev)
+ 	dev_info(&pdev->dev, "Blackfin CompactFlash/PCMCIA Socket Driver\n");
  
- 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
  	irq = platform_get_irq(pdev, 0);
--	if (!res || !irq) {
-+	if (!res || (int)irq <= 0) {
- 		dev_err(&pdev->dev, "Not enough CEU platform resources.\n");
- 		err = -ENODEV;
- 		goto exit;
+-	if (!irq)
++	if (irq <= 0)
+ 		return -EINVAL;
+ 
+ 	cd_pfx = platform_get_irq(pdev, 1);	/*Card Detect GPIO PIN */
 -- 
 1.6.6
 
