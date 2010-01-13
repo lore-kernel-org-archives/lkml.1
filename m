@@ -1,60 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932197Ab0AMUkM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932219Ab0AMUkq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932197Ab0AMUkM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 15:40:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932118Ab0AMUkK
+	id S932219Ab0AMUkq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 15:40:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932205Ab0AMUkn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 15:40:10 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:41192 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932079Ab0AMUkK (ORCPT
+	Wed, 13 Jan 2010 15:40:43 -0500
+Received: from mta5.srv.hcvlny.cv.net ([167.206.4.200]:65493 "EHLO
+	mta5.srv.hcvlny.cv.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932200Ab0AMUkl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 15:40:10 -0500
-Message-ID: <4B4E2F63.6060800@zytor.com>
-Date: Wed, 13 Jan 2010 12:38:59 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
-MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Suresh Siddha <suresh.b.siddha@intel.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, Yinghai Lu <yinghai@kernel.org>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [patch] x86, apic: use 0x20 for the IRQ_MOVE_CLEANUP_VECTOR instead
- of 0x1f
-References: <1263002989.2879.664.camel@sbs-t61.sc.intel.com>	<4B47E7A9.6090904@zytor.com>	<1263250418.2859.681.camel@sbs-t61.sc.intel.com>	<4B4BACCA.2040805@zytor.com> <m1tyus8chc.fsf@fess.ebiederm.org>	<4B4BB0B7.3000106@zytor.com>	<1263254812.2859.890.camel@sbs-t61.sc.intel.com>	<4B4BBEBA.4060403@zytor.com> <m17hro6ua9.fsf@fess.ebiederm.org>	<4B4BC401.6010605@zytor.com> <m1k4vo144h.fsf@fess.ebiederm.org>	<4B4BDBBA.3090406@zytor.com> <m1vdf57nel.fsf@fess.ebiederm.org>
-In-Reply-To: <m1vdf57nel.fsf@fess.ebiederm.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 13 Jan 2010 15:40:41 -0500
+Date: Wed, 13 Jan 2010 15:39:37 -0500
+From: Michael Breuer <mbreuer@majjas.com>
+Subject: Re: [PATCH] af_packet: Don't use skb after dev_queue_xmit()
+In-reply-to: <4B48CC2C.2090403@majjas.com>
+To: Jarek Poplawski <jarkao2@gmail.com>
+Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
+       flyboy@gmail.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Message-id: <4B4E2F89.2050606@majjas.com>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7BIT
+References: <4B4625BD.3070202@majjas.com> <20100107183545.GA3208@del.dom.local>
+ <4B462B3C.90506@majjas.com> <20100107185040.GB3208@del.dom.local>
+ <4B466A26.5070506@majjas.com> <20100108074539.GA6205@ff.dom.local>
+ <4B475FF9.7000702@majjas.com> <20100108212923.GA3078@del.dom.local>
+ <4B47A81B.5040601@majjas.com> <4B4809EF.1070609@majjas.com>
+ <20100109122830.GA4386@del.dom.local> <4B48CC2C.2090403@majjas.com>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.5)
+ Gecko/20091204 Lightning/1.0b2pre Thunderbird/3.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/13/2010 12:36 PM, Eric W. Biederman wrote:
-> "H. Peter Anvin" <hpa@zytor.com> writes:
-> 
->> On 01/11/2010 05:52 PM, Eric W. Biederman wrote:
->>>
->>> After having the documentation quoted at me.  I am having a distinct
->>> memory of one piece of documentation saying:
->>> "interrupts within a priority level can be delivered in any order"
->>>
->>> So I am guessing there is not any ordering of interrupts in the same
->>> priority level until they get to the local apic.
->>>
->>
->> There is no ordering of interrupts before they hit the local APIC, since
->> the local APIC is what would serialize them...
-> 
-> The io apic serializes them, and sends them over either the 2-wire
-> bus or the front side bus.   How much serialization and prioritization
-> happens at that point I am not certain, but some certainly happens
-> before you get to the local apic.
-> 
-
-If you *have* a front side bus, that is!  With QPI or HyperTransport,
-you don't have a single serializing bus in the same way, but you have a
-mesh network instead.
-
-	-hpa
+On 1/9/2010 1:34 PM, Michael Breuer wrote:
+> On 1/9/2010 7:28 AM, Jarek Poplawski wrote:   ...
+>> It looks like DMAR is the main candidate for a new linux-kernel@ or
+>> bugzilla bug report. You should also consider reporting these ipv6
+>> problems, especially if you think they can trigger TX timeouts. (In
+>> both cases it would be good to try current mainline first, when you
+>> get it workable.)
+> Ok - I'll get onto mainline and then deal with DMAR.
+Just an FYI - 2.6.32.3 with alt 3 af_packet patch & sky2 pskb_may_pull 
+runs OK with DMAR (re)enabled and msi enabled.
+>> Thanks,
+>> Jarek P.
+>
+> -- 
+> To unsubscribe from this list: send the line "unsubscribe 
+> linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
