@@ -1,62 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755991Ab0AMUeW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756301Ab0AMUgc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755991Ab0AMUeW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 15:34:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755338Ab0AMUeV
+	id S1756301Ab0AMUgc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 15:36:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755810Ab0AMUgc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 15:34:21 -0500
-Received: from fg-out-1718.google.com ([72.14.220.159]:23294 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755007Ab0AMUeU (ORCPT
+	Wed, 13 Jan 2010 15:36:32 -0500
+Received: from out02.mta.xmission.com ([166.70.13.232]:33494 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755720Ab0AMUgb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 15:34:20 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=tZsJh5HqTiBfMRb0qvFTY1rBFK1C+1IiIPO+xSRWxysSOvF5Xwh29BOHfppOBmA3PT
-         G7l3GAdQsbUFTttPDsyyPrXH51ov/4oH2V1ZLYcR+ktF2dbBXOjJ9kpFdp4LpHW4sel3
-         cRNNqmuTulqHp1+srOwROVjpRQJVHtn3g5+5I=
-Message-ID: <4B4E2E48.1000509@gmail.com>
-Date: Wed, 13 Jan 2010 21:34:16 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-17.1 Thunderbird/3.0
+	Wed, 13 Jan 2010 15:36:31 -0500
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Suresh Siddha <suresh.b.siddha@intel.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, Yinghai Lu <yinghai@kernel.org>,
+       "Maciej W. Rozycki" <macro@linux-mips.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [patch] x86, apic: use 0x20 for the IRQ_MOVE_CLEANUP_VECTOR instead of 0x1f
+References: <1263002989.2879.664.camel@sbs-t61.sc.intel.com>
+	<4B47E7A9.6090904@zytor.com>
+	<1263250418.2859.681.camel@sbs-t61.sc.intel.com>
+	<4B4BACCA.2040805@zytor.com> <m1tyus8chc.fsf@fess.ebiederm.org>
+	<4B4BB0B7.3000106@zytor.com>
+	<1263254812.2859.890.camel@sbs-t61.sc.intel.com>
+	<4B4BBEBA.4060403@zytor.com> <m17hro6ua9.fsf@fess.ebiederm.org>
+	<4B4BC401.6010605@zytor.com> <m1k4vo144h.fsf@fess.ebiederm.org>
+	<4B4BDBBA.3090406@zytor.com>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Wed, 13 Jan 2010 12:36:18 -0800
+Message-ID: <m1vdf57nel.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-To: Jiri Kosina <jkosina@suse.cz>
-CC: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-media@vger.kernel.org, Pekka Sarnila <sarnila@adit.fi>
-Subject: Re: [PATCH 1/1] HID: ignore afatech 9016
-References: <1263412773-23220-1-git-send-email-jslaby@suse.cz> <alpine.LNX.2.00.1001132111570.30977@pobox.suse.cz>
-In-Reply-To: <alpine.LNX.2.00.1001132111570.30977@pobox.suse.cz>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Scanned: No (on in02.mta.xmission.com); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/13/2010 09:20 PM, Jiri Kosina wrote:
->> diff --git a/drivers/hid/usbhid/hid-quirks.c b/drivers/hid/usbhid/hid-quirks.c
->> index 38773dc..788d9a3 100644
->> --- a/drivers/hid/usbhid/hid-quirks.c
->> +++ b/drivers/hid/usbhid/hid-quirks.c
->> @@ -41,7 +41,7 @@ static const struct hid_blacklist {
->>  	{ USB_VENDOR_ID_SAITEK, USB_DEVICE_ID_SAITEK_RUMBLEPAD, HID_QUIRK_BADPAD },
->>  	{ USB_VENDOR_ID_TOPMAX, USB_DEVICE_ID_TOPMAX_COBRAPAD, HID_QUIRK_BADPAD },
->>  
->> -	{ USB_VENDOR_ID_AFATECH, USB_DEVICE_ID_AFATECH_AF9016, HID_QUIRK_FULLSPEED_INTERVAL },
->> +	{ USB_VENDOR_ID_AFATECH, USB_DEVICE_ID_AFATECH_AF9016, HID_QUIRK_IGNORE },
-> 
-> Hmm, why do we keep HID_QUIRK_IGNORE anyway, when we already have generic 
-> hid_ignore_list[]?
+"H. Peter Anvin" <hpa@zytor.com> writes:
 
-You returned it back because of dynamic quirks...
+> On 01/11/2010 05:52 PM, Eric W. Biederman wrote:
+>> 
+>> After having the documentation quoted at me.  I am having a distinct
+>> memory of one piece of documentation saying:
+>> "interrupts within a priority level can be delivered in any order"
+>> 
+>> So I am guessing there is not any ordering of interrupts in the same
+>> priority level until they get to the local apic.
+>> 
+>
+> There is no ordering of interrupts before they hit the local APIC, since
+> the local APIC is what would serialize them...
 
-> We don't set it for any device in the current codebase any more.
+The io apic serializes them, and sends them over either the 2-wire
+bus or the front side bus.   How much serialization and prioritization
+happens at that point I am not certain, but some certainly happens
+before you get to the local apic.
 
-Oh yeah, it's hard for people who don't remember code they wrote :).
-Will respin. Thanks for the reminder.
+Eric
 
--- 
-js
