@@ -1,74 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754167Ab0AMNQS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932078Ab0AMNQ6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754167Ab0AMNQS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 08:16:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752674Ab0AMNQR
+	id S932078Ab0AMNQ6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 08:16:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752725Ab0AMNQ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 08:16:17 -0500
-Received: from casper.infradead.org ([85.118.1.10]:41593 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751328Ab0AMNQR (ORCPT
+	Wed, 13 Jan 2010 08:16:57 -0500
+Received: from mail-fx0-f225.google.com ([209.85.220.225]:55572 "EHLO
+	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751402Ab0AMNQ5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 08:16:17 -0500
-Subject: Re: [PATCH 1/3] rbtree: Introduce rb_for_each_entry
-From: Peter Zijlstra <peterz@infradead.org>
-To: Arnaldo Carvalho de Melo <acme@infradead.org>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       =?ISO-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       Mike Galbraith <efault@gmx.de>, Paul Mackerras <paulus@samba.org>
-In-Reply-To: <1263387673-15231-1-git-send-email-acme@infradead.org>
-References: <1263387673-15231-1-git-send-email-acme@infradead.org>
+	Wed, 13 Jan 2010 08:16:57 -0500
+Subject: Driver-Core: devtmpfs - reset inode permissions before unlinking
+From: Kay Sievers <kay.sievers@vrfy.org>
+To: Greg KH <greg@kroah.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
 Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 13 Jan 2010 14:16:09 +0100
-Message-ID: <1263388569.4244.215.camel@laptop>
+Date: Wed, 13 Jan 2010 14:16:36 +0100
+Message-ID: <1263388596.26006.1.camel@yio.site>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 8bit
+X-Mailer: Evolution 2.29.4 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2010-01-13 at 11:01 -0200, Arnaldo Carvalho de Melo wrote:
-> From: Arnaldo Carvalho de Melo <acme@redhat.com>
-> 
-> Similar to list_for_each_entry, helps reducing boilerplate in many
-> places and makes rbtrees closer to list.h macros.
-> 
-> First conversion will be in the tools/perf.
+From: Kay Sievers <kay.sievers@vrfy.org>
+Subject: Driver-Core: devtmpfs - reset inode permissions before unlinking
 
-I'm still not sure you really want to do this, it might give people the
-impression its a sane thing to do ;-)
+Before unlinking the inode, reset the current permissions of possible
+references like hardlinks, so granted permissions can not be retained
+across the device lifetime by creating hardlinks, in the unusual case
+that there is a user-writable directory on the same filesystem.
 
-> Cc: Frédéric Weisbecker <fweisbec@gmail.com>
-> Cc: Mike Galbraith <efault@gmx.de>
-> Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
-> ---
->  include/linux/rbtree.h |   12 ++++++++++++
->  1 files changed, 12 insertions(+), 0 deletions(-)
-> 
-> diff --git a/include/linux/rbtree.h b/include/linux/rbtree.h
-> index 9c29541..044b150 100644
-> --- a/include/linux/rbtree.h
-> +++ b/include/linux/rbtree.h
-> @@ -158,4 +158,16 @@ static inline void rb_link_node(struct rb_node * node, struct rb_node * parent,
->  	*rb_link = node;
->  }
->  
-> +/**
-> + * rb_for_each_entry - iterate over rbtree of given type
-> + * @pos:	the type * to hold the current entry being traversed
-> + * @node:	the rb_node to hold the current entry being traversed
-> + * @root:	the root for your tree.
-> + * @member:	the name of the rb_node within the struct.
-> + */
-> +#define rb_for_each_entry(pos, node, root, member)			\
-> +	for (node = rb_first(root);					\
-> +	     node && (pos = rb_entry(node, typeof(*pos), member));	\
-> +	     node = rb_next(node))
-> +
->  #endif	/* _LINUX_RBTREE_H */
+Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
+---
+ drivers/base/devtmpfs.c |   13 +++++++++++++
+ 1 file changed, 13 insertions(+)
+
+--- a/drivers/base/devtmpfs.c
++++ b/drivers/base/devtmpfs.c
+@@ -301,6 +301,19 @@ int devtmpfs_delete_node(struct device *
+ 		if (dentry->d_inode) {
+ 			err = vfs_getattr(nd.path.mnt, dentry, &stat);
+ 			if (!err && dev_mynode(dev, dentry->d_inode, &stat)) {
++				struct iattr newattrs;
++				/*
++				 * before unlinking this node, reset permissions
++				 * of possible references like hardlinks
++				 */
++				newattrs.ia_uid = 0;
++				newattrs.ia_gid = 0;
++				newattrs.ia_mode = stat.mode & ~0777;
++				newattrs.ia_valid =
++					ATTR_UID|ATTR_GID|ATTR_MODE;
++				mutex_lock(&dentry->d_inode->i_mutex);
++				notify_change(dentry, &newattrs);
++				mutex_unlock(&dentry->d_inode->i_mutex);
+ 				err = vfs_unlink(nd.path.dentry->d_inode,
+ 						 dentry);
+ 				if (!err || err == -ENOENT)
 
 
