@@ -1,89 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755857Ab0AMLkW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755902Ab0AMLn6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755857Ab0AMLkW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 06:40:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755556Ab0AMLkV
+	id S1755902Ab0AMLn6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 06:43:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754969Ab0AMLn5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 06:40:21 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:60994 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1755550Ab0AMLkU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 06:40:20 -0500
-Message-ID: <4B4DB0B6.7040607@cn.fujitsu.com>
-Date: Wed, 13 Jan 2010 19:38:30 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Wed, 13 Jan 2010 06:43:57 -0500
+Received: from mail-fx0-f225.google.com ([209.85.220.225]:35975 "EHLO
+	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754946Ab0AMLn5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jan 2010 06:43:57 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=OFsxC1PIPfRNJbmAtzpsn2M5sdnJTyr+vLaciGGD33Vw1fEGSljkNGXAIOXIi3zVgD
+         p5Gu3aQ7a0hgsn7ekUrtz5IuGXHUjk6vHYPSAYk/nywmjfaOfMVYxLJKc/sMJkLxZd8j
+         P1YwaFY4NAXWwBJ4qW6112cAVKhKOVsNzqSIE=
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] tracing, function_graph: simplify test for tracing
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <4B4C5CEF.5060601@gmail.com>
+References: <1263113806-7532-1-git-send-email-jslaby@suse.cz>
+	 <1263253709.4116.1.camel@palomino.walls.org>
+	 <4B4C5CEF.5060601@gmail.com>
+Date: Wed, 13 Jan 2010 15:43:54 +0400
+Message-ID: <1a297b361001130343r9071b3fv93ade93264109f96@mail.gmail.com>
+Subject: Re: [PATCH 1/1] media: video/cx18, fix potential null dereference
+From: Manu Abraham <abraham.manu@gmail.com>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: Andy Walls <awalls@radix.net>, mchehab@redhat.com, hverkuil@xs4all.nl,
+       ivtv-devel@ivtvdriver.org, linux-media@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Jan 12, 2010 at 3:28 PM, Jiri Slaby <jirislaby@gmail.com> wrote:
+> On 01/12/2010 12:48 AM, Andy Walls wrote:
+>> On Sun, 2010-01-10 at 09:56 +0100, Jiri Slaby wrote:
+>>> Stanse found a potential null dereference in cx18_dvb_start_feed
+>>> and cx18_dvb_stop_feed. There is a check for stream being NULL,
+>>> but it is dereferenced earlier. Move the dereference after the
+>>> check.
+>>>
+>>> Signed-off-by: Jiri Slaby <jslaby@suse.cz>
+>>
+>> Reviewed-by: Andy Walls <awalls@radix.net>
+>> Acked-by: Andy Walls <awalls@radix.net>
+>
+> You definitely know the code better, have you checked that it can happen
+> at all? I mean may demux->priv be NULL?
 
-For function_graph, a calling function is to be traced only when
-it is enabled or it is nested in a enabled function.
+It is highly unlikely that demux->priv becoming NULL. The only time
+that could happen would be when there is a dvb register failed. But in
+which case, it wouldn't reach the stage where you want to start/stop a
+stream.
 
-Current code uses TSK_TRACE_FL_GRAPH to test whether it is nested or not.
-read the code, we can get this:
-(trace->depth > 0) <==> (TSK_TRACE_FL_GRAPH is set)
-
-trace->depth is more explicit to tell that it is nested.
-So we use trace->depth directly and simplify the code.
-
-No functionality is changed.
-TSK_TRACE_FL_GRAPH is not removed now, it is left for future usage.
-
-Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
----
-diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-index 3976520..9a69b9c 100644
---- a/kernel/trace/trace.h
-+++ b/kernel/trace/trace.h
-@@ -506,7 +506,7 @@ static inline int ftrace_graph_addr(unsigned long addr)
- {
- 	int i;
- 
--	if (!ftrace_graph_count || test_tsk_trace_graph(current))
-+	if (!ftrace_graph_count)
- 		return 1;
- 
- 	for (i = 0; i < ftrace_graph_count; i++) {
-diff --git a/kernel/trace/trace_functions_graph.c b/kernel/trace/trace_functions_graph.c
-index b1342c5..8e17a57 100644
---- a/kernel/trace/trace_functions_graph.c
-+++ b/kernel/trace/trace_functions_graph.c
-@@ -218,7 +218,8 @@ int trace_graph_entry(struct ftrace_graph_ent *trace)
- 	if (!ftrace_trace_task(current))
- 		return 0;
- 
--	if (!ftrace_graph_addr(trace->func))
-+	/* trace it when it is-nested-in or is a function enabled. */
-+	if (!(trace->depth || ftrace_graph_addr(trace->func)))
- 		return 0;
- 
- 	local_irq_save(flags);
-@@ -231,9 +232,6 @@ int trace_graph_entry(struct ftrace_graph_ent *trace)
- 	} else {
- 		ret = 0;
- 	}
--	/* Only do the atomic if it is not already set */
--	if (!test_tsk_trace_graph(current))
--		set_tsk_trace_graph(current);
- 
- 	atomic_dec(&data->disabled);
- 	local_irq_restore(flags);
-@@ -281,8 +279,6 @@ void trace_graph_return(struct ftrace_graph_ret *trace)
- 		pc = preempt_count();
- 		__trace_graph_return(tr, trace, flags, pc);
- 	}
--	if (!trace->depth)
--		clear_tsk_trace_graph(current);
- 	atomic_dec(&data->disabled);
- 	local_irq_restore(flags);
- }
-
+Regards,
+Manu
