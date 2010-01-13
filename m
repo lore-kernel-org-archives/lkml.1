@@ -1,100 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753084Ab0AMAXs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754208Ab0AMAYE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753084Ab0AMAXs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jan 2010 19:23:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751560Ab0AMAXr
+	id S1754208Ab0AMAYE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jan 2010 19:24:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754030Ab0AMAYA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jan 2010 19:23:47 -0500
-Received: from e9.ny.us.ibm.com ([32.97.182.139]:38432 "EHLO e9.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751245Ab0AMAXr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jan 2010 19:23:47 -0500
-Date: Tue, 12 Jan 2010 16:23:44 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Steven Rostedt <rostedt@goodmis.org>, Oleg Nesterov <oleg@redhat.com>,
-       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org,
-       josh@joshtriplett.org, tglx@linutronix.de, Valdis.Kletnieks@vt.edu,
-       dhowells@redhat.com, laijs@cn.fujitsu.com, dipankar@in.ibm.com
-Subject: Re: [RFC PATCH] introduce sys_membarrier(): process-wide memory
-	barrier (v3b)
-Message-ID: <20100113002344.GH13035@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <1263124209.28171.3798.camel@gandalf.stny.rr.com> <20100110174512.GH9044@linux.vnet.ibm.com> <20100110182423.GA22821@Krystal> <20100111011705.GJ9044@linux.vnet.ibm.com> <20100111042521.GB32213@Krystal> <20100111043016.GD32213@Krystal> <20100111224355.GH6632@linux.vnet.ibm.com> <20100112153854.GA8122@Krystal> <20100112181212.GC6812@linux.vnet.ibm.com> <20100112185641.GA26731@Krystal>
+	Tue, 12 Jan 2010 19:24:00 -0500
+Received: from na3sys009aog111.obsmtp.com ([74.125.149.205]:53541 "EHLO
+	na3sys009aog111.obsmtp.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751545Ab0AMAX7 convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Jan 2010 19:23:59 -0500
+From: "Moore, Eric" <Eric.Moore@lsi.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       roel kluin <roel.kluin@gmail.com>
+CC: "James E.J. Bottomley" <James.Bottomley@suse.de>,
+       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Desai, Kashyap" <Kashyap.Desai@lsi.com>
+Date: Tue, 12 Jan 2010 17:23:41 -0700
+Subject: RE: [PATCH] mpt2sas: Fix &&/|| confusion in
+ _scsih_sas_device_status_change_event()
+Thread-Topic: [PATCH] mpt2sas: Fix &&/|| confusion in
+ _scsih_sas_device_status_change_event()
+Thread-Index: AcqT0cj0g5MXEGQ9QTCMupCvVfAHiAAFGGxQ
+Message-ID: <4565AEA676113A449269C2F3A549520F044646D4@cosmail03.lsi.com>
+References: <4B3B86CC.5010205@gmail.com>
+	<4565AEA676113A449269C2F3A549520F04463B74@cosmail03.lsi.com>
+	<25e057c01001071158n1755ee99iae17522e269aa1ff@mail.gmail.com>
+ <20100112135410.1506be72.akpm@linux-foundation.org>
+In-Reply-To: <20100112135410.1506be72.akpm@linux-foundation.org>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100112185641.GA26731@Krystal>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 12, 2010 at 01:56:41PM -0500, Mathieu Desnoyers wrote:
-> * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
-> > On Tue, Jan 12, 2010 at 10:38:54AM -0500, Mathieu Desnoyers wrote:
-> > > * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
-> > > > On Sun, Jan 10, 2010 at 11:30:16PM -0500, Mathieu Desnoyers wrote:
-> > > > > Here is an implementation of a new system call, sys_membarrier(), which
-> > > > > executes a memory barrier on all threads of the current process.
-> > > > > 
-> > > > > It aims at greatly simplifying and enhancing the current signal-based
-> > > > > liburcu userspace RCU synchronize_rcu() implementation.
-> > > > > (found at http://lttng.org/urcu)
-> > > > 
-> > > > I didn't expect quite this comprehensive of an implementation from the
-> > > > outset, but I guess I cannot complain.  ;-)
-> > > > 
-> > > > Overall, good stuff.
-> > > > 
-> > > > Interestingly enough, what you have implemented is analogous to
-> > > > synchronize_rcu_expedited() and friends that have recently been added
-> > > > to the in-kernel RCU API.  By this analogy, my earlier semi-suggestion
-> > > > of synchronize_rcu(0 would be a candidate non-expedited implementation.
-> > > > Long latency, but extremely low CPU consumption, full batching of
-> > > > concurrent requests (even unrelated ones), and so on.
-> > > 
-> > > Yes, the main different I think is that the sys_membarrier
-> > > infrastructure focuses on IPI-ing only the current process running
-> > > threads.
-> > 
-> > Which does indeed make sense for the expedited interface.  On the other
-> > hand, if you have a bunch of concurrent non-expedited requests from
-> > different processes, covering all CPUs efficiently satisfies all of
-> > the requests in one go.  And, if you use synchronize_sched() for the
-> > non-expedited case, there will be no IPIs in the common case.
-> 
-> So are you proposing we add a "int expedited" parameter to the
-> system call, and let the caller choose between the ipi and
-> synchronize_sched() schemes ?
+Yes your patch will work.  I just have tested it by sending INTERNAL_DEVICE_RESETS events, and the code is getting executed.
 
-Sure, why not?
+Regards,
+Eric
 
-> [...]
-> > > > Also, is "top"
-> > > > accurate given that the IPI handler will have interrupts disabled?
-> > > 
-> > > Probably not. AFAIK. "top" does not really consider interrupts into its
-> > > accounting. So, better take this top output with a grain of salt or two.
-> > 
-> > Might need something like oprofile to get good info?
-> 
-> Could be. Although I just wanted to point out the kind of pattern we
-> should expect. I'm not convinced it's so useful to give the detailed
-> oprofile info. I'm rephrasing the above paragraph to state that top is
-> not super-accurate here.
+-----Original Message-----
+From: Andrew Morton [mailto:akpm@linux-foundation.org] 
+Sent: Tuesday, January 12, 2010 2:54 PM
+To: roel kluin
+Cc: Moore, Eric; James E.J. Bottomley; linux-scsi@vger.kernel.org; LKML; Desai, Kashyap
+Subject: Re: [PATCH] mpt2sas: Fix &&/|| confusion in _scsih_sas_device_status_change_event()
 
-K.
+On Thu, 7 Jan 2010 20:58:10 +0100
+roel kluin <roel.kluin@gmail.com> wrote:
 
-							Thanx, Paul
+> On Thu, Jan 7, 2010 at 8:31 PM, Moore, Eric <Eric.Moore@lsi.com> wrote:
+> > nack
+> >
+> > The code beyond this check is intended for either INTERNAL_DEVICE_RESET or CMP_DEVICE_RESET. __ If the reason code is something else, we will want to return. __There are 10 other types of reason codes besides these two. This proposed patch means we return only when the reason code is either INTERNAL_DEVICE_RESET or CMP_INTERNAL_RESET.
+> >
+> > Eric Moore
+> 
+> my patch is correct but my changelog was wrong. Sorry for the
+> confusion. It should have been:
+> 
+> Even if the ReasonCode is not INTERNAL_DEVICE_RESET nor CMP_DEVICE_RESET
+> this still evaluates to true.
+> 
 
-> [...]
-> 
-> Thanks,
-> 
-> Mathieu
-> 
-> -- 
-> Mathieu Desnoyers
-> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+yup, the current code is wrong.
+
+	if (!(event_data->ReasonCode ==
+	    MPI2_EVENT_SAS_DEV_STAT_RC_INTERNAL_DEVICE_RESET &&
+	   event_data->ReasonCode ==
+	    MPI2_EVENT_SAS_DEV_STAT_RC_CMP_INTERNAL_DEV_RESET))
+		return;
+
+ReasonCode cannot equal two different things at the same time.
+
+This is what we want:
+
+	if (event_data->ReasonCode !=
+	      MPI2_EVENT_SAS_DEV_STAT_RC_INTERNAL_DEVICE_RESET &&
+	    event_data->ReasonCode !=
+	      MPI2_EVENT_SAS_DEV_STAT_RC_CMP_INTERNAL_DEV_RESET)
+		return;
+
+Eric, the fix needs runtime testing please - it enables code which
+hasn't been executed in a long time, if ever.
+
+In fact the compiler wasn't even emitting any code for the second half
+of _scsih_sas_device_status_change_event() because it worked out that
+there was no path to it.
+
+
