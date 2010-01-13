@@ -1,61 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756469Ab0AMVRf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756502Ab0AMVRy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756469Ab0AMVRf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 16:17:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756418Ab0AMVRe
+	id S1756502Ab0AMVRy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 16:17:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755937Ab0AMVRw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 16:17:34 -0500
-Received: from mta1.srv.hcvlny.cv.net ([167.206.4.196]:34443 "EHLO
-	mta1.srv.hcvlny.cv.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756322Ab0AMVRe (ORCPT
+	Wed, 13 Jan 2010 16:17:52 -0500
+Received: from lider.pardus.org.tr ([193.140.100.216]:36381 "EHLO
+	lider.pardus.org.tr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756484Ab0AMVRw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 16:17:34 -0500
-Date: Wed, 13 Jan 2010 16:16:36 -0500
-From: Michael Breuer <mbreuer@majjas.com>
-Subject: Re: [PATCH] af_packet: Don't use skb after dev_queue_xmit()
-In-reply-to: <20100113210908.GA3065@del.dom.local>
-To: Jarek Poplawski <jarkao2@gmail.com>
-Cc: Stephen Hemminger <shemminger@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
-       flyboy@gmail.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Message-id: <4B4E3834.3000609@majjas.com>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7BIT
-References: <20100107185040.GB3208@del.dom.local> <4B466A26.5070506@majjas.com>
- <20100108074539.GA6205@ff.dom.local> <4B475FF9.7000702@majjas.com>
- <20100108212923.GA3078@del.dom.local> <4B47A81B.5040601@majjas.com>
- <4B4809EF.1070609@majjas.com> <20100109122830.GA4386@del.dom.local>
- <4B48CC2C.2090403@majjas.com> <4B4E2F89.2050606@majjas.com>
- <20100113210908.GA3065@del.dom.local>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.5)
- Gecko/20091204 Lightning/1.0b2pre Thunderbird/3.0
+	Wed, 13 Jan 2010 16:17:52 -0500
+Message-ID: <4B4E387B.2050900@pardus.org.tr>
+Date: Wed, 13 Jan 2010 23:17:47 +0200
+From: =?UTF-8?B?T3phbiDDh2HEn2xheWFu?= <ozan@pardus.org.tr>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+MIME-Version: 1.0
+To: Greg KH <gregkh@suse.de>
+CC: Thomas Voegtle <tv@lio96.de>, Jan Kara <jack@suse.cz>,
+       "Theodore Ts'o" <tytso@mit.edu>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org, stable@kernel.org, dmonakhov@openvz.org
+Subject: Re: Linux 2.6.31.10
+References: <20100106234533.GC1960@kroah.com> <alpine.LNX.2.00.1001071522480.5426@er-systems.de> <20100107180449.GA17495@suse.de> <alpine.LNX.2.00.1001072033301.26784@er-systems.de> <20100107194131.GA22983@suse.de> <alpine.LNX.2.00.1001072125040.26784@er-systems.de> <alpine.LNX.2.00.1001072141340.26784@er-systems.de> <20100107220213.GA24882@suse.de> <4B4E37D7.3010706@pardus.org.tr>
+In-Reply-To: <4B4E37D7.3010706@pardus.org.tr>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 1/13/2010 4:09 PM, Jarek Poplawski wrote:
-> On Wed, Jan 13, 2010 at 03:39:37PM -0500, Michael Breuer wrote:
->    
->> Just an FYI - 2.6.32.3 with alt 3 af_packet patch&  sky2
->> pskb_may_pull runs OK with DMAR (re)enabled and msi enabled.
->>      
-> Hmm... What a pity! It was such a useful debugging tool for
-> networking ;-) BTW, I'm not sure if "runs OK" means with or without
-> those DHCP drops&  large packets you described.
->
-> Thanks,
-> Jarek P.
->    
-As of now, no errors even when blasting traffic & forcing dhcp packets 
-as before. I haven't tried putting mtu back to 9k yet. OK means that 
-there are no obvious differences in behavior with or without DMAR all 
-else being equal.
+Ozan Çağlayan wrote:
 
-There were some updates made to stable that could have fixed this - I'd 
-guess intel_iommu fixes helped.
+> This causes kernel panic upon boot on one of our users' ext3 system (on 2.6.31.11) so I think 2.6.30.y deserves another
+> stable update to fix this critical issue.
 
-If it helps, I'm still getting one error without DMAR enabled - at 
-startup, there's a DMA sync oops - mismatch of 72 bytes coming from 
-sky2. That oops was posted previously - with DMAR (re) enabled, there's 
-no related oops.
+oops, 2.6.30.y should be 2.6.31.y, sorry.
