@@ -1,88 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751907Ab0AMFZY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751902Ab0AMFbb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751907Ab0AMFZY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 00:25:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932070Ab0AMFZX
+	id S1751902Ab0AMFbb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 00:31:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751191Ab0AMFba
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 00:25:23 -0500
-Received: from mail-px0-f174.google.com ([209.85.216.174]:38639 "EHLO
-	mail-px0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751157Ab0AMFZV convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 00:25:21 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=fvsrzpj5AU4TVtyiNV0kthIxQo3ketPafnyFwHZOX2jF5ok+OCEuX2mXIC7lOWvE+s
-         Us/CyQ0XrbSobEYfEnR7JLyD8Qu7k+GhGYgZhpOmKPrDHW4BTAM+W1Fhui0xtRhSXzbN
-         BYTqyHjzad7UTCHj+3L+jyZoCbTXoH6hL8k7g=
+	Wed, 13 Jan 2010 00:31:30 -0500
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:33635 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750864Ab0AMFb3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jan 2010 00:31:29 -0500
+Date: Tue, 12 Jan 2010 21:31:26 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Nicholas Miell <nmiell@comcast.net>
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>,
+       Oleg Nesterov <oleg@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
+       Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org,
+       josh@joshtriplett.org, tglx@linutronix.de, Valdis.Kletnieks@vt.edu,
+       dhowells@redhat.com, laijs@cn.fujitsu.com, dipankar@in.ibm.com
+Subject: Re: [RFC PATCH] introduce sys_membarrier(): process-wide memory
+	barrier (v5)
+Message-ID: <20100113053126.GC6781@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20100113013757.GA29314@Krystal> <1263358823.3874.10.camel@entropy>
 MIME-Version: 1.0
-In-Reply-To: <20100112080600.392c14cd@infradead.org>
-References: <ce2c83091001120309q19d58b45kc27610fc31ce01dc@mail.gmail.com>
-	 <20100112080600.392c14cd@infradead.org>
-Date: Wed, 13 Jan 2010 13:25:20 +0800
-Message-ID: <ce2c83091001122125i6aac119fk470621fb6b1c2b4c@mail.gmail.com>
-Subject: Re: Did we really need to clear the IF flag at prepare_singlestep() 
-	of x86 kprobes?
-From: Dongdong Deng <libfetion@gmail.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: linux-kernel@vger.kernel.org, ananth@in.ibm.com,
-       anil.s.keshavamurthy@intel.com, davem@davemloft.net,
-       mhiramat@redhat.com, jkenisto@us.ibm.com
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1263358823.3874.10.camel@entropy>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 13, 2010 at 12:06 AM, Arjan van de Ven <arjan@infradead.org> wrote:
-> On Tue, 12 Jan 2010 19:09:35 +0800
-> Dongdong Deng <libfetion@gmail.com> wrote:
->
->> Hi Kprobe experts,
->>
->> I have a doubt about the handling "X86_EFLAGS_IF" at
->> prepare_singlestep(), Could you give me some suggestions?
->
->
-> iirc it was a security thing; we used to have some exploits
-> due to the linux-abi entry points which caused a mess, and this
-> was put there as defensive programming.
+On Tue, Jan 12, 2010 at 09:00:23PM -0800, Nicholas Miell wrote:
+> On Tue, 2010-01-12 at 20:37 -0500, Mathieu Desnoyers wrote:
+> > + * sys_membarrier - issue memory barrier on current process running threads
+> > + * @expedited: (0) Lowest overhead. Few milliseconds latency.
+> > + *             (1) Few microseconds latency.
+> > + *
+> 
+> Alternate ABI proposal, keeping the possibility of future expansion in
+> mind:
+> 
+> /*
+> Mandatory flags to the membarrier system call that the kernel must
+> understand are in the high 16 bits.
+> */
+> #define MEMBARRIER_MANDATORY_MASK 0xFFFF0000
+> 
+> /*
+> Optional hints that the kernel can ignore are in the low 16 bits.
+> */
+> #define MEMBARRIER_OPTIONAL_MASK 0x0000FFFF
+> 
+> #define MEMBARRIER_EXPEDITED 1
+> 
+> extern int membarrier(unsigned int flags);
+> 
+> And then add to the system call itself:
+> 
+> if ((flags & MEMBARRIER_MANDATORY_MASK) != 0)
+> 	return -EINVAL;
 
-Hi Arjan,
+Why is it OK to ignore the developer's request for an expedited
+membarrer()?  The guy who expected the syscall to complete in a few
+microseconds might not be so happy to have it take many milliseconds.
+By the same token, the guy who specified non-expedited so as to minimally
+disturb other threads in the system might not be so happy to see them
+all be IPIed for no good reason.  ;-)
 
-Thanks for your explain. :)
-
-Do you means that the user will modify the IF? for example: through
-"p->pre_handler(p, regs)" .
-
-But I couldn't image the affect that if user modify the IF flag, could
-you give me a detail info about security thing?
-
-
-BTW:
-
-Before linux 2.5, the debug tarp was initalized as trap gate:
-
-linux-2.4.37/arch/i386/kernel/traps.c:966:	set_trap_gate(1,&debug);
-
-I know kprobes have a long history,  Is it possible that the interrupt
-flag of kprobes was introduced at that time?
-
-
-Thanks,
-Dongdong
-
-
-
-
->
-> I could totally misremember this as well of course.
->
->
-> --
-> Arjan van de Ven        Intel Open Source Technology Centre
-> For development, discussion and tips for power savings,
-> visit http://www.lesswatts.org
->
+							Thanx, Paul
