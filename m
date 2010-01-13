@@ -1,104 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755624Ab0AMKcq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755633Ab0AMKdL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755624Ab0AMKcq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 05:32:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755628Ab0AMKco
+	id S1755633Ab0AMKdL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 05:33:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755635Ab0AMKdI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 05:32:44 -0500
-Received: from hera.kernel.org ([140.211.167.34]:34372 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755485Ab0AMKcl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 05:32:41 -0500
-Date: Wed, 13 Jan 2010 10:30:34 GMT
-From: "tip-bot for Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, paulmck@linux.vnet.ibm.com, hpa@zytor.com,
-       mingo@redhat.com, tglx@linutronix.de, viro@zeniv.linux.org.uk,
-       mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulmck@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de,
-       viro@zeniv.linux.org.uk, mingo@elte.hu
-In-Reply-To: <12626570514009-git-send-email->
-References: <12626570514009-git-send-email->
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:core/rcu] vfs: Apply lockdep-based checking to rcu_dereference() uses
-Message-ID: <tip-9080561f06a244fdc3c644c2524d87e819c45232@git.kernel.org>
-Git-Commit-ID: 9080561f06a244fdc3c644c2524d87e819c45232
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.3 (hera.kernel.org [127.0.0.1]); Wed, 13 Jan 2010 10:30:35 +0000 (UTC)
+	Wed, 13 Jan 2010 05:33:08 -0500
+Received: from ms01.sssup.it ([193.205.80.99]:59747 "EHLO sssup.it"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755654Ab0AMKdG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jan 2010 05:33:06 -0500
+Subject: Re: [RFC 12/12][PATCH] SCHED_DEADLINE: modified sched_*_ex API
+From: Raistlin <raistlin@linux.it>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       michael trimarchi <michael@evidence.eu.com>,
+       Fabio Checconi <fabio@gandalf.sssup.it>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Dhaval Giani <dhaval.giani@gmail.com>,
+       Johan Eker <johan.eker@ericsson.com>, "p.faure" <p.faure@akatech.ch>,
+       Chris Friesen <cfriesen@nortel.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Henrik Austad <henrik@austad.us>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Darren Hart <darren@dvhart.com>,
+       Sven-Thorsten Dietrich <sven@thebigcorporation.com>,
+       Bjoern Brandenburg <bbb@cs.unc.edu>,
+       Tommaso Cucinotta <tommaso.cucinotta@sssup.it>,
+       "giuseppe.lipari" <giuseppe.lipari@sssup.it>,
+       Juri Lelli <juri.lelli@gmail.com>
+In-Reply-To: <1262088909.7135.136.camel@laptop>
+References: <1255707324.6228.448.camel@Palantir>
+	 <1255708086.6228.469.camel@Palantir>  <1262088909.7135.136.camel@laptop>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-kw2SoB0Sez0oPLHZ2E9G"
+Date: Wed, 13 Jan 2010 11:33:04 +0100
+Message-ID: <1263378784.3853.67.camel@Palantir>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  9080561f06a244fdc3c644c2524d87e819c45232
-Gitweb:     http://git.kernel.org/tip/9080561f06a244fdc3c644c2524d87e819c45232
-Author:     Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-AuthorDate: Mon, 4 Jan 2010 18:04:09 -0800
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 13 Jan 2010 09:42:36 +0100
 
-vfs: Apply lockdep-based checking to rcu_dereference() uses
+--=-kw2SoB0Sez0oPLHZ2E9G
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Add lockdep-ified RCU primitives to alloc_fd(), files_fdtable()
-and fcheck_files().
+On Tue, 2009-12-29 at 13:15 +0100, Peter Zijlstra wrote:
+> >  	if (!param_ex || pid < 0)
+> >  		return -EINVAL;
+> > +	if (len < sizeof(struct sched_param_ex))
+> > +		return -EINVAL;
+> > =20
+> >  	read_lock(&tasklist_lock);
+> >  	p =3D find_process_by_pid(pid);
+> > @@ -6837,7 +6844,7 @@ SYSCALL_DEFINE2(sched_getparam_ex, pid_t, pid,
+> >  	/*
+> >  	 * This one might sleep, we cannot do it with a spinlock held ...
+> >  	 */
+> > -	retval =3D copy_to_user(param_ex, &lp, sizeof(*param_ex)) ? -EFAULT :=
+ 0;
+> > +	retval =3D copy_to_user(param_ex, &lp, len) ? -EFAULT : 0;
+> > =20
+> >  	return retval;
+> > =20
+>=20
+> I think this doesn't even do what it claims to do, namely provide a
+> flexible ABI, since you fail the operation when there is not enough room
+> provided. Hence, when we grow the struct an older program that was
+> compiled against the smaller one will become an insta-fail.
+>=20
+> What this should do is deal with smaller structs by ensuring the tail is
+> 0 and simply copying out the head.
+>=20
+Yep... As said in the previous mail I wanted to do so, and I'll do it
+now that I see how odd was what I wrote! :-P
 
-Cc: Alexander Viro <viro@zeniv.linux.org.uk>
-Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-Cc: laijs@cn.fujitsu.com
-Cc: dipankar@in.ibm.com
-Cc: mathieu.desnoyers@polymtl.ca
-Cc: josh@joshtriplett.org
-Cc: dvhltc@us.ibm.com
-Cc: niv@us.ibm.com
-Cc: peterz@infradead.org
-Cc: rostedt@goodmis.org
-Cc: Valdis.Kletnieks@vt.edu
-Cc: dhowells@redhat.com
-Cc: Alexander Viro <viro@zeniv.linux.org.uk>
-LKML-Reference: <12626570514009-git-send-email->
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- fs/file.c               |    2 +-
- include/linux/fdtable.h |    7 +++++--
- 2 files changed, 6 insertions(+), 3 deletions(-)
+> New bits in the flags field are also an interesting challenge.
+>=20
+Right... I think that a (partial?) solution could be to properly choose
+default values for newcomer flags, could that be right?
 
-diff --git a/fs/file.c b/fs/file.c
-index 87e1290..38039af 100644
---- a/fs/file.c
-+++ b/fs/file.c
-@@ -478,7 +478,7 @@ repeat:
- 	error = fd;
- #if 1
- 	/* Sanity check */
--	if (rcu_dereference(fdt->fd[fd]) != NULL) {
-+	if (rcu_dereference_raw(fdt->fd[fd]) != NULL) {
- 		printk(KERN_WARNING "alloc_fd: slot %d not NULL!\n", fd);
- 		rcu_assign_pointer(fdt->fd[fd], NULL);
- 	}
-diff --git a/include/linux/fdtable.h b/include/linux/fdtable.h
-index a2ec74b..e498a0c 100644
---- a/include/linux/fdtable.h
-+++ b/include/linux/fdtable.h
-@@ -57,7 +57,10 @@ struct files_struct {
- 	struct file * fd_array[NR_OPEN_DEFAULT];
- };
- 
--#define files_fdtable(files) (rcu_dereference((files)->fdt))
-+#define files_fdtable(files) \
-+	(rcu_dereference_check((files)->fdt, \
-+			       rcu_read_lock_held() || \
-+			       lockdep_is_held(&(files)->file_lock)))
- 
- struct file_operations;
- struct vfsmount;
-@@ -78,7 +81,7 @@ static inline struct file * fcheck_files(struct files_struct *files, unsigned in
- 	struct fdtable *fdt = files_fdtable(files);
- 
- 	if (fd < fdt->max_fds)
--		file = rcu_dereference(fdt->fd[fd]);
-+		file = rcu_dereference_check(fdt->fd[fd], rcu_read_lock_held() || lockdep_is_held(&files->file_lock));
- 	return file;
- }
- 
+Thanks and regards,
+Dario
+
+--=20
+<<This happens because I choose it to happen!>> (Raistlin Majere)
+----------------------------------------------------------------------
+Dario Faggioli, ReTiS Lab, Scuola Superiore Sant'Anna, Pisa  (Italy)
+
+http://blog.linux.it/raistlin / raistlin@ekiga.net /
+dario.faggioli@jabber.org
+
+--=-kw2SoB0Sez0oPLHZ2E9G
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAktNoV8ACgkQk4XaBE3IOsQioACcCpQdWjdf0UyG5lW6kTVfozAz
+qxsAn0AD4fSTsjCMSGwsXRLUIXdesqrR
+=PaqL
+-----END PGP SIGNATURE-----
+
+--=-kw2SoB0Sez0oPLHZ2E9G--
+
