@@ -1,89 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755573Ab0AMOyw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755655Ab0AMOzG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755573Ab0AMOyw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 09:54:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755464Ab0AMOyv
+	id S1755655Ab0AMOzG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 09:55:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755630Ab0AMOzE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 09:54:51 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:53201 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755448Ab0AMOyu (ORCPT
+	Wed, 13 Jan 2010 09:55:04 -0500
+Received: from mail-ew0-f209.google.com ([209.85.219.209]:55810 "EHLO
+	mail-ew0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755627Ab0AMOzB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 09:54:50 -0500
+	Wed, 13 Jan 2010 09:55:01 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type;
-        b=uqInvK+9yplRH/eBdpn/rY9kqeIdzd56+mbtER9/aRwzu/k4ofgiyUApFQV1VIPR+J
-         Kra+NpgJ1zW6VNzwHxH/U6gfOB77HWgZJ7voUzb/gt0pA/dU8l4Y/z8kEAdjMAnIdwmU
-         bWkN8bZTwEL4kteWR58OCoL36tdNXdnqTeeNI=
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=YC8zpHQ1B8+ZtH+ZSEUoEPSpKi1977UHu39UXzXElwr27y1JetBCEdokmlJihaBtMs
+         8FdG/YIsLGkS0wu+hfXC5/W1rTr2YghPFIiAt6uGuJPtKvPp+5OertQG+QvI6jtfDh1D
+         kl9297nfOa/O2O9fxL3c3pBWKkKd80C2lDS3k=
+Date: Wed, 13 Jan 2010 15:54:56 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] tracing, function_graph: simplify test for tracing
+Message-ID: <20100113145454.GE5036@nowhere>
+References: <4B4DB0B6.7040607@cn.fujitsu.com>
 MIME-Version: 1.0
-Date: Wed, 13 Jan 2010 22:54:50 +0800
-Message-ID: <3a3680031001130654q1928df60pde0e3706ea2461c@mail.gmail.com>
-Subject: [PATCH 3/3] mm: remove function free_hot_page
-From: Li Hong <lihong.hi@gmail.com>
-To: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4B4DB0B6.7040607@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Now fuction 'free_hot_page' is just a wrap of ' free_hot_cold_page' with
-parameter 'cold = 0'. After adding a clear comment for 'free_hot_cold_page', it
-is reasonable to remove a level of call.
+On Wed, Jan 13, 2010 at 07:38:30PM +0800, Lai Jiangshan wrote:
+> 
+> For function_graph, a calling function is to be traced only when
+> it is enabled or it is nested in a enabled function.
+> 
+> Current code uses TSK_TRACE_FL_GRAPH to test whether it is nested or not.
+> read the code, we can get this:
+> (trace->depth > 0) <==> (TSK_TRACE_FL_GRAPH is set)
+> 
+> trace->depth is more explicit to tell that it is nested.
+> So we use trace->depth directly and simplify the code.
+> 
+> No functionality is changed.
+> TSK_TRACE_FL_GRAPH is not removed now, it is left for future usage.
+> 
+> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+> ---
 
-Signed-off-by: Li Hong <lihong.hi@gmail.com>
----
- mm/page_alloc.c |    8 ++------
- mm/swap.c       |    2 +-
- 2 files changed, 3 insertions(+), 7 deletions(-)
 
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index 175dd36..c88e03d 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -1073,6 +1073,7 @@ void mark_free_pages(struct zone *zone)
+Looks prety good to me. Nice simplification, the less checks we
+have in this hot path, the better.
 
- /*
-  * Free a 0-order page
-+ * cold == 1 ? free a cold page : free a hot page
-  */
- static void free_hot_cold_page(struct page *page, int cold)
- {
-@@ -1135,11 +1136,6 @@ out:
-        put_cpu();
- }
+Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
 
--void free_hot_page(struct page *page)
--{
--       free_hot_cold_page(page, 0);
--}
--
- /*
-  * split_page takes a non-compound higher-order page, and splits it into
-  * n (1<<order) sub-pages: page[0..n]
-@@ -2014,7 +2010,7 @@ void __free_pages(struct page *page, unsigned int order)
- {
-        if (put_page_testzero(page)) {
-                if (order == 0)
--                       free_hot_page(page);
-+                       free_hot_cold_page(page, 0);
-                else
-                        __free_pages_ok(page, order);
-        }
-diff --git a/mm/swap.c b/mm/swap.c
-index 308e57d..9036b89 100644
---- a/mm/swap.c
-+++ b/mm/swap.c
-@@ -55,7 +55,7 @@ static void __page_cache_release(struct page *page)
-                del_page_from_lru(zone, page);
-                spin_unlock_irqrestore(&zone->lru_lock, flags);
-        }
--       free_hot_page(page);
-+       free_hot_cold_page(page, 0);
- }
-
- static void put_compound_page(struct page *page)
--- 
-1.6.3.3
