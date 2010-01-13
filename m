@@ -1,88 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755580Ab0AMVUa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756400Ab0AMV0c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755580Ab0AMVUa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 16:20:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755518Ab0AMVU3
+	id S1756400Ab0AMV0c (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 16:26:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755523Ab0AMV0b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 16:20:29 -0500
-Received: from ms01.sssup.it ([193.205.80.99]:45919 "EHLO sssup.it"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755504Ab0AMVU3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 16:20:29 -0500
-Date: Wed, 13 Jan 2010 22:30:55 +0100
-From: Fabio Checconi <fchecconi@gmail.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Raistlin <raistlin@linux.it>, linux-kernel <linux-kernel@vger.kernel.org>,
-       michael trimarchi <michael@evidence.eu.com>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Dhaval Giani <dhaval.giani@gmail.com>,
-       Johan Eker <johan.eker@ericsson.com>, "p.faure" <p.faure@akatech.ch>,
-       Chris Friesen <cfriesen@nortel.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Henrik Austad <henrik@austad.us>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Darren Hart <darren@dvhart.com>,
-       Sven-Thorsten Dietrich <sven@thebigcorporation.com>,
-       Claudio Scordino <claudio@evidence.eu.com>,
-       Tommaso Cucinotta <tommaso.cucinotta@sssup.it>,
-       "giuseppe.lipari" <giuseppe.lipari@sssup.it>,
-       Juri Lelli <juri.lelli@gmail.com>
-Subject: Re: [RFC 0/12][PATCH] SCHED_DEADLINE: fork and terminate task logic
-Message-ID: <20100113213055.GB4126@gandalf.sssup.it>
-References: <1255707324.6228.448.camel@Palantir>
- <1255707661.6228.455.camel@Palantir>
- <1262100041.7135.157.camel@laptop>
- <1263381067.3853.103.camel@Palantir>
- <1263399311.4244.230.camel@laptop>
+	Wed, 13 Jan 2010 16:26:31 -0500
+Received: from mail-fx0-f225.google.com ([209.85.220.225]:52388 "EHLO
+	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755489Ab0AMV0a (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jan 2010 16:26:30 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type:content-transfer-encoding;
+        b=FKycw+RSl4jO6ovPYuXZOe/QHZN/Tk9841Mjm0U1Ylt/2W4P7RbQ/MiYyB9VmausBS
+         lQur5e6SZmjslYdyL9/Fxs9w6pLNNm93G/a3W9cuJlfnO8XLYdUUBAuGiztw5OgkZeG1
+         BGuAKurU8ZgKagln+DlMq1V5gm4zZo2kIKbjY=
+Message-ID: <4B4E3AA2.3000605@googlemail.com>
+Date: Wed, 13 Jan 2010 22:26:58 +0100
+From: =?ISO-8859-1?Q?Ren=E9_Bolldorf?= <xsecute@googlemail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.5) Gecko/20091204 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1263399311.4244.230.camel@laptop>
-User-Agent: Mutt/1.5.20 (2009-10-28)
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+CC: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] section mismatch:  pcibios_scan_specific_bus()
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> From: Peter Zijlstra <peterz@infradead.org>
-> Date: Wed, Jan 13, 2010 05:15:11PM +0100
->
-> On Wed, 2010-01-13 at 12:11 +0100, Raistlin wrote:
-> 
-> > > > +       } else if (rt_prio(p->prio))
-> > > > +               p->sched_class = &rt_sched_class;
-> > > > +       else
-> > > >                 p->sched_class = &fair_sched_class;
-> > > >  
-> > > >  #ifdef CONFIG_SMP
-> > > > @@ -2744,6 +2756,10 @@ static void finish_task_switch(struct rq *rq, struct task_struct *prev)
-> > > >         if (mm)
-> > > >                 mmdrop(mm);
-> > > >         if (unlikely(prev_state == TASK_DEAD)) {
-> > > > +               /* a deadline task is dying: stop the bandwidth timer */
-> > > > +               if (deadline_task(prev))
-> > > > +                       hrtimer_cancel(&prev->dl.dl_timer);
-> > > > +
-> > > >                 /*
-> > > >                  * Remove function-return probe instances associated with this
-> > > >                  * task and put them back on the free list. 
-> > > 
-> > > Shouldn't this be done in the ->dequeue_task() callback?
-> > >
-> > Not sure of this snippet... Actually, it is one of the most disturbing
-> > piece of code of this whole scheduler. :-(
-> > 
-> > The reason why it is here is that I think it is needed to call
-> > hrtimer_cancel() _without_ holding the rq->lock, is that correct?
-> 
-> I think we can nest the hrtimer base lock inside the rq->lock these
-> days, so it should be safe to call while holding it, anyway, lockdep
-> will quickly tell you if you try ;-)
-> 
+Hi all,
+pcibios_scan_specific_bus() is only invoked from
+__devinit pcibios_fixup_peer_bridges(void).
 
-I may be wrong, but the race here should be between the hrtimer_cancel()
-and the handler itself (which takes rq->lock): if the timer handler is
-running on a different cpu and still it has not entered its critical section
-we may end up here waiting for it to terminate, but that will never happen.
+Mark it as __init.
 
-If we are able to enforce that both hrtimer_cancel() and the timer
-handler are always executed on the same cpu then we should be safe, because
-this code would never be executed with a running handler.
+
+diff --git a/arch/x86/pci/legacy.c b/arch/x86/pci/legacy.c
+--- a/arch/x86/pci/legacy.c
++++ b/arch/x86/pci/legacy.c
+@@ -39,7 +39,7 @@ static int __init pci_legacy_init(void)
+         return 0;
+  }
+
+-void pcibios_scan_specific_bus(int busn)
++void __init pcibios_scan_specific_bus(int busn)
+  {
+         int devfn;
+         long node;
