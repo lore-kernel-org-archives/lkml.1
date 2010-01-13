@@ -1,167 +1,201 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754420Ab0AMAtB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753462Ab0AMAvG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754420Ab0AMAtB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Jan 2010 19:49:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753793Ab0AMAtA
+	id S1753462Ab0AMAvG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Jan 2010 19:51:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753055Ab0AMAvF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Jan 2010 19:49:00 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:59404 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753055Ab0AMAtA (ORCPT
+	Tue, 12 Jan 2010 19:51:05 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:55604 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751694Ab0AMAvB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Jan 2010 19:49:00 -0500
-Message-ID: <4B4D1865.5000107@zytor.com>
-Date: Tue, 12 Jan 2010 16:48:37 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
+	Tue, 12 Jan 2010 19:51:01 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Message-ID: <4B4D18D9.1030609@jp.fujitsu.com>
+Date: Wed, 13 Jan 2010 09:50:33 +0900
+From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: x86-32: clean up rwsem inline asm statements
-References: <alpine.LFD.2.00.1001121613560.17145@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.1001121613560.17145@localhost.localdomain>
-Content-Type: multipart/mixed;
- boundary="------------000803050501090609020003"
+To: Yinghai Lu <yinghai@kernel.org>
+CC: Jesse Barnes <jbarnes@virtuousgeek.org>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       Alex Chiang <achiang@hp.com>, Bjorn Helgaas <bjorn.helgaas@hp.com>,
+       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
+Subject: Re: [PATCH 09/14] pci: introduce pci_assign_unassigned_bridge_resources
+References: <1261522954-12591-1-git-send-email-yinghai@kernel.org> <1261522954-12591-10-git-send-email-yinghai@kernel.org>
+In-Reply-To: <1261522954-12591-10-git-send-email-yinghai@kernel.org>
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------000803050501090609020003
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-
-On 01/12/2010 04:21 PM, Linus Torvalds wrote:
+Yinghai Lu wrote:
+> for pciehp to use it later
 > 
-> So instead of using "(%%eax)" to specify the memory address that is the 
-> semaphore, we use "(%1)" or similar. And instead of forcing the operation 
-> to always be 32-bit, we use "%z0", taking the size from the actual 
-> semaphore data structure itself.
+> pci_setup_bridge() will not check enabled for the slot bridge, otherwise
+> update res is not updated to bridge BAR. that is bridge is enabled already for
+> port service.
 > 
-> This doesn't actually matter on x86-32, but if we want to use the same 
-> inline asm for x86-64, we'll need to have the compiler generate the proper 
-> 64-bit names for the registers (%rax instead of %eax), and if we want to 
-> use a 64-bit counter too (in order to avoid the 15-bit limit on the 
-> write counter that limits concurrent users to 32767 threads), we'll need 
-> to be able to generate instructions with "q" accesses rather than "l".
+> -v2: update it with resource_list_x
 > 
+> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+> ---
+>  drivers/pci/setup-bus.c |   93 +++++++++++++++++++++++++++++++++++++++++++++--
+>  include/linux/pci.h     |    1 +
+>  2 files changed, 90 insertions(+), 4 deletions(-)
+> 
+> diff --git a/drivers/pci/setup-bus.c b/drivers/pci/setup-bus.c
+> index 6b8491d..056b98d 100644
+> --- a/drivers/pci/setup-bus.c
+> +++ b/drivers/pci/setup-bus.c
+> @@ -71,6 +71,50 @@ static void free_failed_list(struct resource_list_x *head)
+>  	head->next = NULL;
+>  }
+>  
+> +static void pdev_assign_resources_sorted(struct pci_dev *dev,
+> +				 struct resource_list_x *fail_head)
+> +{
+> +	struct resource *res;
+> +	struct resource_list head, *list, *tmp;
+> +	int idx;
+> +	u16 class = dev->class >> 8;
+> +
+> +	head.next = NULL;
+> +
+> +	/* Don't touch classless devices or host bridges or ioapics.  */
+> +	if (class == PCI_CLASS_NOT_DEFINED || class == PCI_CLASS_BRIDGE_HOST)
+> +		return;
+> +
+> +	/* Don't touch ioapic devices already enabled by firmware */
+> +	if (class == PCI_CLASS_SYSTEM_PIC) {
+> +		u16 command;
+> +		pci_read_config_word(dev, PCI_COMMAND, &command);
+> +		if (command & (PCI_COMMAND_IO | PCI_COMMAND_MEMORY))
+> +			return;
+> +	}
+> +
+> +	pdev_sort_resources(dev, &head);
+> +
+> +	for (list = head.next; list;) {
+> +		res = list->res;
+> +		idx = res - &list->dev->resource[0];
+> +		if (pci_assign_resource(list->dev, idx)) {
+> +			if (fail_head && !pci_is_root_bus(list->dev->bus)) {
+> +				/*
+> +				 * device need to keep flags and size
+> +				 * for second try
+> +				 */
+> +				add_to_failed_list(fail_head, list->dev, res);
+> +			}
+> +			res->start = 0;
+> +			res->end = 0;
+> +			res->flags = 0;
+> +		}
+> +		tmp = list;
+> +		list = list->next;
+> +		kfree(tmp);
+> +	}
+> +}
+>  static void pbus_assign_resources_sorted(const struct pci_bus *bus,
+>  					 struct resource_list_x *fail_head)
+>  {
+> @@ -278,9 +322,6 @@ static void __pci_setup_bridge(struct pci_bus *bus, unsigned long type)
+>  {
+>  	struct pci_dev *bridge = bus->self;
+>  
+> -	if (pci_is_enabled(bridge))
+> -		return;
+> -
+>  	dev_info(&bridge->dev, "PCI bridge to [bus %02x-%02x]\n",
+>  		 bus->secondary, bus->subordinate);
+>  
+> @@ -651,7 +692,8 @@ static void __ref __pci_bus_assign_resources(const struct pci_bus *bus,
+>  
+>  		switch (dev->class >> 8) {
+>  		case PCI_CLASS_BRIDGE_PCI:
+> -			pci_setup_bridge(b);
+> +			if (!pci_is_enabled(dev))
+> +				pci_setup_bridge(b);
+>  			break;
+>  
+>  		case PCI_CLASS_BRIDGE_CARDBUS:
+> @@ -672,6 +714,34 @@ void __ref pci_bus_assign_resources(const struct pci_bus *bus)
+>  }
+>  EXPORT_SYMBOL(pci_bus_assign_resources);
+>  
+> +static void __ref __pci_bridge_assign_resources(const struct pci_dev *bridge,
+> +					 struct resource_list_x *fail_head)
+> +{
+> +	struct pci_bus *b;
+> +
+> +	pdev_assign_resources_sorted((struct pci_dev *)bridge, fail_head);
+> +
+> +	b = bridge->subordinate;
+> +	if (!b)
+> +		return;
+> +
+> +	__pci_bus_assign_resources(b, fail_head);
+> +
+> +	switch (bridge->class >> 8) {
+> +	case PCI_CLASS_BRIDGE_PCI:
+> +		pci_setup_bridge(b);
+> +		break;
+> +
+> +	case PCI_CLASS_BRIDGE_CARDBUS:
+> +		pci_setup_cardbus(b);
+> +		break;
+> +
+> +	default:
+> +		dev_info(&bridge->dev, "not setting up bridge for bus "
+> +			 "%04x:%02x\n", pci_domain_nr(b), b->number);
+> +		break;
+> +	}
+> +}
+>  static void pci_bridge_release_unused_res(struct pci_bus *bus,
+>  					  unsigned long type)
+>  {
+> @@ -932,3 +1002,18 @@ enable_and_dump:
+>  		pci_bus_dump_resources(bus);
+>  	}
+>  }
+> +
+> +void pci_assign_unassigned_bridge_resources(struct pci_dev *bridge)
+> +{
+> +	struct pci_bus *bus;
+> +	struct pci_bus *parent = bridge->subordinate;
+> +	int retval;
+> +
+> +	pci_bus_size_bridges(parent);
+> +	pci_clear_master(bridge);
 
-As far as I can tell, very few of these assembly statements actually
-need a size at all -- the very first inc statement is purely to memory,
-and as such it needs a size marker, but almost any operation which is
-register-register or register-memory will simply take its size from the
-register operand.  For those, it seems cleaner to simply drop the size
-suffix, and in fact this is the style we have been pushing people
-towards (use the suffix where mandatory or where the size is fixed
-anyway, to help catch bugs; use no suffix where the size can vary and is
-implied by the operands.)
+I have a concern about clearing bus master enable bit here, though
+I'm not sure about it. I'm wondering if clearing bus master enable
+bit might have some bad effect for the port services to work. For
+example, does MSI interrupt work without enabling bus mastering?
 
-So, proposed alternate version of your patch attached.
+Thanks,
+Kenji Kaneshige
 
-(Also changed cmpxchgl -> cmpxchg.)
 
-	-hpa
+> +	__pci_bridge_assign_resources(bridge, NULL);
+> +	retval = pci_reenable_device(bridge);
+> +	pci_set_master(bridge);
+> +	pci_enable_bridges(parent);
+> +}
+> +EXPORT_SYMBOL_GPL(pci_assign_unassigned_bridge_resources);
+> diff --git a/include/linux/pci.h b/include/linux/pci.h
+> index 5da0690..31fec6f 100644
+> --- a/include/linux/pci.h
+> +++ b/include/linux/pci.h
+> @@ -771,6 +771,7 @@ void pci_bus_assign_resources(const struct pci_bus *bus);
+>  void pci_bus_size_bridges(struct pci_bus *bus);
+>  int pci_claim_resource(struct pci_dev *, int);
+>  void pci_assign_unassigned_resources(void);
+> +void pci_assign_unassigned_bridge_resources(struct pci_dev *bridge);
+>  void pdev_enable_device(struct pci_dev *);
+>  void pdev_sort_resources(struct pci_dev *, struct resource_list *);
+>  int pci_enable_resources(struct pci_dev *, int mask);
 
---------------000803050501090609020003
-Content-Type: text/plain;
- name="diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
- filename="diff"
 
-diff --git a/arch/x86/include/asm/rwsem.h b/arch/x86/include/asm/rwsem.h
-index ca7517d..4136200 100644
---- a/arch/x86/include/asm/rwsem.h
-+++ b/arch/x86/include/asm/rwsem.h
-@@ -105,7 +105,7 @@ do {								\
- static inline void __down_read(struct rw_semaphore *sem)
- {
- 	asm volatile("# beginning down_read\n\t"
--		     LOCK_PREFIX "  incl      (%%eax)\n\t"
-+		     LOCK_PREFIX "  inc%z0      (%1)\n\t"
- 		     /* adds 0x00000001, returns the old value */
- 		     "  jns        1f\n"
- 		     "  call call_rwsem_down_read_failed\n"
-@@ -123,12 +123,12 @@ static inline int __down_read_trylock(struct rw_semaphore *sem)
- {
- 	__s32 result, tmp;
- 	asm volatile("# beginning __down_read_trylock\n\t"
--		     "  movl      %0,%1\n\t"
-+		     "  mov          %0,%1\n\t"
- 		     "1:\n\t"
--		     "  movl	     %1,%2\n\t"
--		     "  addl      %3,%2\n\t"
-+		     "  mov          %1,%2\n\t"
-+		     "  add          %3,%2\n\t"
- 		     "  jle	     2f\n\t"
--		     LOCK_PREFIX "  cmpxchgl  %2,%0\n\t"
-+		     LOCK_PREFIX "  cmpxchg  %2,%0\n\t"
- 		     "  jnz	     1b\n\t"
- 		     "2:\n\t"
- 		     "# ending __down_read_trylock\n\t"
-@@ -147,9 +147,9 @@ static inline void __down_write_nested(struct rw_semaphore *sem, int subclass)
- 
- 	tmp = RWSEM_ACTIVE_WRITE_BIAS;
- 	asm volatile("# beginning down_write\n\t"
--		     LOCK_PREFIX "  xadd      %%edx,(%%eax)\n\t"
-+		     LOCK_PREFIX "  xadd      %1,(%2)\n\t"
- 		     /* subtract 0x0000ffff, returns the old value */
--		     "  testl     %%edx,%%edx\n\t"
-+		     "  test      %1,%1\n\t"
- 		     /* was the count 0 before? */
- 		     "  jz        1f\n"
- 		     "  call call_rwsem_down_write_failed\n"
-@@ -185,7 +185,7 @@ static inline void __up_read(struct rw_semaphore *sem)
- {
- 	__s32 tmp = -RWSEM_ACTIVE_READ_BIAS;
- 	asm volatile("# beginning __up_read\n\t"
--		     LOCK_PREFIX "  xadd      %%edx,(%%eax)\n\t"
-+		     LOCK_PREFIX "  xadd      %1,(%2)\n\t"
- 		     /* subtracts 1, returns the old value */
- 		     "  jns        1f\n\t"
- 		     "  call call_rwsem_wake\n"
-@@ -201,18 +201,18 @@ static inline void __up_read(struct rw_semaphore *sem)
-  */
- static inline void __up_write(struct rw_semaphore *sem)
- {
-+	unsigned long tmp;
- 	asm volatile("# beginning __up_write\n\t"
--		     "  movl      %2,%%edx\n\t"
--		     LOCK_PREFIX "  xaddl     %%edx,(%%eax)\n\t"
-+		     LOCK_PREFIX "  xadd      %1,(%2)\n\t"
- 		     /* tries to transition
- 			0xffff0001 -> 0x00000000 */
- 		     "  jz       1f\n"
- 		     "  call call_rwsem_wake\n"
- 		     "1:\n\t"
- 		     "# ending __up_write\n"
--		     : "+m" (sem->count)
--		     : "a" (sem), "i" (-RWSEM_ACTIVE_WRITE_BIAS)
--		     : "memory", "cc", "edx");
-+		     : "+m" (sem->count), "=d" (tmp)
-+		     : "a" (sem), "1" (-RWSEM_ACTIVE_WRITE_BIAS)
-+		     : "memory", "cc");
- }
- 
- /*
-@@ -221,7 +221,7 @@ static inline void __up_write(struct rw_semaphore *sem)
- static inline void __downgrade_write(struct rw_semaphore *sem)
- {
- 	asm volatile("# beginning __downgrade_write\n\t"
--		     LOCK_PREFIX "  addl      %2,(%%eax)\n\t"
-+		     LOCK_PREFIX "  add%z0    %2,(%1)\n\t"
- 		     /* transitions 0xZZZZ0001 -> 0xYYYY0001 */
- 		     "  jns       1f\n\t"
- 		     "  call call_rwsem_downgrade_wake\n"
-@@ -237,7 +237,7 @@ static inline void __downgrade_write(struct rw_semaphore *sem)
-  */
- static inline void rwsem_atomic_add(int delta, struct rw_semaphore *sem)
- {
--	asm volatile(LOCK_PREFIX "addl %1,%0"
-+	asm volatile(LOCK_PREFIX "add%z0 %1,%0"
- 		     : "+m" (sem->count)
- 		     : "ir" (delta));
- }
-
---------------000803050501090609020003--
