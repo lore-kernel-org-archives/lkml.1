@@ -1,154 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932073Ab0AMOCA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755317Ab0AMODZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932073Ab0AMOCA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 09:02:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755384Ab0AMOAh
+	id S1755317Ab0AMODZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 09:03:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754960Ab0AMODY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 09:00:37 -0500
-Received: from mga11.intel.com ([192.55.52.93]:2955 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754951Ab0AMOAg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 09:00:36 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.49,264,1262592000"; 
-   d="scan'208";a="530908914"
-Message-Id: <20100113135958.144557405@intel.com>
-User-Agent: quilt/0.48-1
-Date: Wed, 13 Jan 2010 21:53:12 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Wu Fengguang <fengguang.wu@intel.com>, LKML <linux-kernel@vger.kernel.org>,
-       Kelly Bowa <kmb@tuxedu.org>, Greg KH <greg@kroah.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-CC: Andi Kleen <andi@firstfloor.org>
-CC: Nick Piggin <npiggin@suse.de>
-CC: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-cc: Linux Memory Management List <linux-mm@kvack.org>
-Subject: [PATCH 7/8] hwpoison: prevent /dev/mem from accessing hwpoison pages
-References: <20100113135305.013124116@intel.com>
-Content-Disposition: inline; filename=hwpoison-dev-mem.patch
+	Wed, 13 Jan 2010 09:03:24 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:34383 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754847Ab0AMODX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jan 2010 09:03:23 -0500
+Date: Wed, 13 Jan 2010 14:50:39 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, len.brown@intel.com,
+       ibm-acpi@hmh.eng.br, kernel list <linux-kernel@vger.kernel.org>,
+       ibm-acpi-devel@lists.sourceforge.net
+Subject: Re: [ibm-acpi-devel] 2.6.33-rc2: regression: gkrellm no longer
+	shows all the temperatures on thinkpad x60
+Message-ID: <20100113135039.GA1848@ucw.cz>
+References: <20091227215722.GN11737@elf.ucw.cz> <20091228130138.GA19362@khazad-dum.debian.net> <20100107214904.GB25538@elf.ucw.cz> <20100109134409.GA936@khazad-dum.debian.net> <20100109135919.GC936@khazad-dum.debian.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20100109135919.GC936@khazad-dum.debian.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Return EIO when user space tries to read/write/mmap hwpoison pages
-via the /dev/mem interface.
+Hi!
 
-The approach: rename range_is_allowed() to devmem_check_pfn_range(), and
-add PageHWPoison() test in it. This function will be called for the whole
-mmap() range, or page by page for read()/write(). So it would fail the
-mmap() request as a whole, and return partial results for read()/write().
+> > > Well, I'm not sure its completely fixed. I got this in my syslog:
+> > > 
+> > > thinkpad_acpi: THERMAL EMERGENCY: a sensor reports something is
+> > > extremely hot!
+> > > thinkpad_acpi: temperatures (Celsius): 95 47 N/A 89 47 N/A 41 N/A 51
+> > > 61 N/A N/A N/A N/A N/A N/A
+> > 
+> > And the extremely hot sensor is that 89°C, which is the GPU I think (varies
+> > from thinkpad to thinkpad).  That is not normal, and I'd say it needs
+> > repair, probably a badly seated heatsink or failed thermal interface
+> > compound.
 
-CC: Kelly Bowa <kmb@tuxedu.org>
-CC: Greg KH <greg@kroah.com>
-CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Reviewed-by: Andi Kleen <andi@firstfloor.org>
-Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
----
- drivers/char/mem.c |   39 +++++++++++++++++++++------------------
- 1 file changed, 21 insertions(+), 18 deletions(-)
+Well, I'd prefer not to open it unless absolutely neccessary. It is my
+primary machine. 
 
---- linux-mm.orig/drivers/char/mem.c	2009-12-29 10:47:00.000000000 +0800
-+++ linux-mm/drivers/char/mem.c	2009-12-29 10:54:07.000000000 +0800
-@@ -89,31 +89,28 @@ static inline int valid_mmap_phys_addr_r
- }
- #endif
- 
--#ifdef CONFIG_STRICT_DEVMEM
--static inline int range_is_allowed(unsigned long pfn, unsigned long size)
-+static int devmem_check_pfn_range(unsigned long pfn, unsigned long bytes)
- {
- 	u64 from = ((u64)pfn) << PAGE_SHIFT;
--	u64 to = from + size;
-+	u64 to = from + bytes;
- 	u64 cursor = from;
- 
- 	while (cursor < to) {
-+#ifdef CONFIG_STRICT_DEVMEM
- 		if (!devmem_is_allowed(pfn)) {
- 			printk(KERN_INFO
- 		"Program %s tried to access /dev/mem between %Lx->%Lx.\n",
- 				current->comm, from, to);
--			return 0;
-+			return -EPERM;
- 		}
-+#endif
-+		if (pfn_valid(pfn) && PageHWPoison(pfn_to_page(pfn)))
-+			return -EIO;
- 		cursor += PAGE_SIZE;
- 		pfn++;
- 	}
--	return 1;
--}
--#else
--static inline int range_is_allowed(unsigned long pfn, unsigned long size)
--{
--	return 1;
-+	return 0;
- }
--#endif
- 
- void __attribute__((weak)) unxlate_dev_mem_ptr(unsigned long phys, void *addr)
- {
-@@ -150,11 +147,13 @@ static ssize_t read_mem(struct file * fi
- 
- 	while (count > 0) {
- 		unsigned long remaining;
-+		int err;
- 
- 		sz = size_inside_page(p, count);
- 
--		if (!range_is_allowed(p >> PAGE_SHIFT, count))
--			return -EPERM;
-+		err = devmem_check_pfn_range(p >> PAGE_SHIFT, count);
-+		if (err)
-+			return err;
- 
- 		/*
- 		 * On ia64 if a page has been mapped somewhere as
-@@ -184,9 +183,10 @@ static ssize_t write_mem(struct file * f
- 			 size_t count, loff_t *ppos)
- {
- 	unsigned long p = *ppos;
--	ssize_t written, sz;
- 	unsigned long copied;
-+	ssize_t written, sz;
- 	void *ptr;
-+	int err;
- 
- 	if (!valid_phys_addr_range(p, count))
- 		return -EFAULT;
-@@ -208,8 +208,9 @@ static ssize_t write_mem(struct file * f
- 	while (count > 0) {
- 		sz = size_inside_page(p, count);
- 
--		if (!range_is_allowed(p >> PAGE_SHIFT, sz))
--			return -EPERM;
-+		err = devmem_check_pfn_range(p >> PAGE_SHIFT, sz);
-+		if (err)
-+			return err;
- 
- 		/*
- 		 * On ia64 if a page has been mapped somewhere as
-@@ -297,6 +298,7 @@ static const struct vm_operations_struct
- static int mmap_mem(struct file * file, struct vm_area_struct * vma)
- {
- 	size_t size = vma->vm_end - vma->vm_start;
-+	int err;
- 
- 	if (!valid_mmap_phys_addr_range(vma->vm_pgoff, size))
- 		return -EINVAL;
-@@ -304,8 +306,9 @@ static int mmap_mem(struct file * file, 
- 	if (!private_mapping_ok(vma))
- 		return -ENOSYS;
- 
--	if (!range_is_allowed(vma->vm_pgoff, size))
--		return -EPERM;
-+	err = devmem_check_pfn_range(vma->vm_pgoff, size);
-+	if (err)
-+		return err;
- 
- 	if (!phys_mem_access_prot_allowed(file, vma->vm_pgoff, size,
- 						&vma->vm_page_prot))
+> Hmm... come to think of it, the CPU is also quite hot (95°C), and it usually
+> shares the heatsink system with the GPU/north bridge, so the problem might
+> be on the CPU side of things.
+> 
+> While it can easily be a hardware problem in the heatsink, we could also
+> have a screwed up ACPI thermal control in our hands once again (either
+> kernel bug, or bogus ACPI firmware in the laptop).
 
+Well, galeon (web browser) started misbehaving -- eating 100% cpu --
+lately, so maybe that's it.
 
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
