@@ -1,659 +1,163 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753635Ab0ANWZn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753980Ab0ANW07@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753635Ab0ANWZn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 17:25:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751887Ab0ANWZm
+	id S1753980Ab0ANW07 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 17:26:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752027Ab0ANW06
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 17:25:42 -0500
-Received: from gimli.pxnet.com ([195.227.45.7]:34974 "EHLO mail.pxnet.com"
+	Thu, 14 Jan 2010 17:26:58 -0500
+Received: from cantor.suse.de ([195.135.220.2]:56903 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751852Ab0ANWZl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 17:25:41 -0500
-From: Tilman Schmidt <tilman@imap.cc>
-Subject: [PATCH/REPOST] pci: push deprecated pci_find_device() function to last user
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-CC: David Miller <davem@davemloft.net>, Greg KH <gregkh@suse.de>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
-       Karsten Keil <isdn@linux-pingi.de>, isdn4linux@listserv.isdn4linux.de
-References: <20100113142328.5DE2F40107@xenon.ts.pxnet.com>
-	<20100113.203338.52448956.davem@davemloft.net>
-	<20100114044331.GA29008@suse.de>
-	<20100114.001204.203918209.davem@davemloft.net>
-	<20100114082823.63379b3d@jbarnes-piketon>
-In-Reply-To: <20100114082823.63379b3d@jbarnes-piketon>
-Message-Id: <20100114221841.D282640108@xenon.ts.pxnet.com>
-Date: Thu, 14 Jan 2010 23:18:41 +0100 (CET)
-X-Spam-Score: -2.183 () AWL,BAYES_00,RDNS_NONE
+	id S1753281Ab0ANW05 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jan 2010 17:26:57 -0500
+Date: Thu, 14 Jan 2010 14:25:51 -0800
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
+Subject: [00/52] 2.6.32.4-stable review
+Message-ID: <20100114222551.GA7839@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am 14.01.2010 17:28 schrieb Jesse Barnes:
-> I can take it, but I lost the original patch.  Tilman, can you resend?
+This is the start of the stable review cycle for the 2.6.32.4 release.
+There are 52 patches in this series, all will be posted as a response to
+this one.  If anyone has any issues with these being applied, please let
+us know.  If anyone is a maintainer of the proper subsystem, and wants
+to add a Signed-off-by: line to the patch, please respond with it.
 
-Sure, here you are:
+Responses should be made by Saturday, January 16, 22:00:00 UTC.
+Anything received after that time might be too late.
 
-Subject: [PATCH] pci: push deprecated pci_find_device() function to last user
+The whole patch series can be found in one patch at:
+	kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.32.4-rc1.gz
+and the diffstat can be found below.
 
-The ISDN4Linux HiSax driver family contains the last remaining users
-of the deprecated pci_find_device() function. This patch creates a
-private copy of that function in HiSax, and removes the now unused
-global function together with its controlling configuration option,
-CONFIG_PCI_LEGACY.
+thanks,
 
-Impact: code reorganization, no functional change
-Signed-off-by: Tilman Schmidt <tilman@imap.cc>
----
-Note: This patch is not, nor does it intend to be, checkpatch.pl clean.
-The issues checkpatch.pl reports on it were already present before, and
-are unrelated to the topic of this patch.
+greg k-h
 
- drivers/isdn/hisax/Kconfig        |   18 +++++++++---------
- drivers/isdn/hisax/avm_pci.c      |   13 +------------
- drivers/isdn/hisax/bkm_a4t.c      |    2 +-
- drivers/isdn/hisax/bkm_a8.c       |    2 +-
- drivers/isdn/hisax/diva.c         |   18 ++++--------------
- drivers/isdn/hisax/elsa.c         |   14 ++------------
- drivers/isdn/hisax/enternow_pci.c |    2 +-
- drivers/isdn/hisax/gazel.c        |   10 +---------
- drivers/isdn/hisax/hfc_pci.c      |    2 +-
- drivers/isdn/hisax/hisax.h        |   23 +++++++++++++++++++++++
- drivers/isdn/hisax/niccy.c        |    8 +-------
- drivers/isdn/hisax/nj_s.c         |    2 +-
- drivers/isdn/hisax/nj_u.c         |    2 +-
- drivers/isdn/hisax/sedlbauer.c    |   13 +------------
- drivers/isdn/hisax/telespci.c     |    2 +-
- drivers/isdn/hisax/w6692.c        |    2 +-
- drivers/pci/Kconfig               |   11 -----------
- drivers/pci/Makefile              |    3 ---
- drivers/pci/legacy.c              |   34 ----------------------------------
- include/linux/pci.h               |   13 -------------
- 20 files changed, 50 insertions(+), 144 deletions(-)
- delete mode 100644 drivers/pci/legacy.c
 
-diff --git a/drivers/isdn/hisax/Kconfig b/drivers/isdn/hisax/Kconfig
-index 3464ebc..452fde9 100644
---- a/drivers/isdn/hisax/Kconfig
-+++ b/drivers/isdn/hisax/Kconfig
-@@ -109,7 +109,7 @@ config HISAX_16_3
- 
- config HISAX_TELESPCI
- 	bool "Teles PCI"
--	depends on PCI && PCI_LEGACY && (BROKEN || !(SPARC || PPC || PARISC || M68K || (MIPS && !CPU_LITTLE_ENDIAN) || FRV))
-+	depends on PCI && (BROKEN || !(SPARC || PPC || PARISC || M68K || (MIPS && !CPU_LITTLE_ENDIAN) || FRV))
- 	help
- 	  This enables HiSax support for the Teles PCI.
- 	  See <file:Documentation/isdn/README.HiSax> on how to configure it.
-@@ -237,7 +237,7 @@ config HISAX_MIC
- 
- config HISAX_NETJET
- 	bool "NETjet card"
--	depends on PCI && PCI_LEGACY && (BROKEN || !(SPARC || PPC || PARISC || M68K || (MIPS && !CPU_LITTLE_ENDIAN) || FRV))
-+	depends on PCI && (BROKEN || !(SPARC || PPC || PARISC || M68K || (MIPS && !CPU_LITTLE_ENDIAN) || FRV))
- 	help
- 	  This enables HiSax support for the NetJet from Traverse
- 	  Technologies.
-@@ -248,7 +248,7 @@ config HISAX_NETJET
- 
- config HISAX_NETJET_U
- 	bool "NETspider U card"
--	depends on PCI && PCI_LEGACY && (BROKEN || !(SPARC || PPC || PARISC || M68K || (MIPS && !CPU_LITTLE_ENDIAN) || FRV))
-+	depends on PCI && (BROKEN || !(SPARC || PPC || PARISC || M68K || (MIPS && !CPU_LITTLE_ENDIAN) || FRV))
- 	help
- 	  This enables HiSax support for the Netspider U interface ISDN card
- 	  from Traverse Technologies.
-@@ -287,7 +287,7 @@ config HISAX_HSTSAPHIR
- 
- config HISAX_BKM_A4T
- 	bool "Telekom A4T card"
--	depends on PCI && PCI_LEGACY
-+	depends on PCI
- 	help
- 	  This enables HiSax support for the Telekom A4T card.
- 
-@@ -297,7 +297,7 @@ config HISAX_BKM_A4T
- 
- config HISAX_SCT_QUADRO
- 	bool "Scitel Quadro card"
--	depends on PCI && PCI_LEGACY
-+	depends on PCI
- 	help
- 	  This enables HiSax support for the Scitel Quadro card.
- 
-@@ -316,7 +316,7 @@ config HISAX_GAZEL
- 
- config HISAX_HFC_PCI
- 	bool "HFC PCI-Bus cards"
--	depends on PCI && PCI_LEGACY && (BROKEN || !(SPARC || PPC || PARISC || M68K || (MIPS && !CPU_LITTLE_ENDIAN) || FRV))
-+	depends on PCI && (BROKEN || !(SPARC || PPC || PARISC || M68K || (MIPS && !CPU_LITTLE_ENDIAN) || FRV))
- 	help
- 	  This enables HiSax support for the HFC-S PCI 2BDS0 based cards.
- 
-@@ -325,7 +325,7 @@ config HISAX_HFC_PCI
- 
- config HISAX_W6692
- 	bool "Winbond W6692 based cards"
--	depends on PCI && PCI_LEGACY
-+	depends on PCI
- 	help
- 	  This enables HiSax support for Winbond W6692 based PCI ISDN cards.
- 
-@@ -341,7 +341,7 @@ config HISAX_HFC_SX
- 
- config HISAX_ENTERNOW_PCI
- 	bool "Formula-n enter:now PCI card"
--	depends on HISAX_NETJET && PCI && PCI_LEGACY && (BROKEN || !(SPARC || PPC || PARISC || M68K || (MIPS && !CPU_LITTLE_ENDIAN) || FRV))
-+	depends on HISAX_NETJET && PCI && (BROKEN || !(SPARC || PPC || PARISC || M68K || (MIPS && !CPU_LITTLE_ENDIAN) || FRV))
- 	help
- 	  This enables HiSax support for the Formula-n enter:now PCI
- 	  ISDN card.
-@@ -412,7 +412,7 @@ config HISAX_HFC4S8S
- 
- config HISAX_FRITZ_PCIPNP
- 	tristate "AVM Fritz!Card PCI/PCIv2/PnP support (EXPERIMENTAL)"
--	depends on PCI && PCI_LEGACY && EXPERIMENTAL
-+	depends on PCI && EXPERIMENTAL
- 	help
- 	  This enables the driver for the AVM Fritz!Card PCI,
- 	  Fritz!Card PCI v2 and Fritz!Card PnP.
-diff --git a/drivers/isdn/hisax/avm_pci.c b/drivers/isdn/hisax/avm_pci.c
-index 7cabc5a..e1563a6 100644
---- a/drivers/isdn/hisax/avm_pci.c
-+++ b/drivers/isdn/hisax/avm_pci.c
-@@ -822,20 +822,11 @@ static int __devinit avm_pnp_setup(struct IsdnCardState *cs)
- 
- #endif /* __ISAPNP__ */
- 
--#ifndef CONFIG_PCI_LEGACY
--
--static int __devinit avm_pci_setup(struct IsdnCardState *cs)
--{
--	return(1);	/* no-op: success */
--}
--
--#else
--
- static struct pci_dev *dev_avm __devinitdata = NULL;
- 
- static int __devinit avm_pci_setup(struct IsdnCardState *cs)
- {
--	if ((dev_avm = pci_find_device(PCI_VENDOR_ID_AVM,
-+	if ((dev_avm = hisax_find_pci_device(PCI_VENDOR_ID_AVM,
- 		PCI_DEVICE_ID_AVM_A1, dev_avm))) {
- 
- 		if (pci_enable_device(dev_avm))
-@@ -864,8 +855,6 @@ static int __devinit avm_pci_setup(struct IsdnCardState *cs)
- 	return (1);
- }
- 
--#endif /* CONFIG_PCI_LEGACY */
--
- int __devinit
- setup_avm_pcipnp(struct IsdnCard *card)
- {
-diff --git a/drivers/isdn/hisax/bkm_a4t.c b/drivers/isdn/hisax/bkm_a4t.c
-index 9ca2ee5..9f2009c 100644
---- a/drivers/isdn/hisax/bkm_a4t.c
-+++ b/drivers/isdn/hisax/bkm_a4t.c
-@@ -340,7 +340,7 @@ setup_bkm_a4t(struct IsdnCard *card)
- 	} else
- 		return (0);
- 
--	while ((dev_a4t = pci_find_device(PCI_VENDOR_ID_ZORAN,
-+	while ((dev_a4t = hisax_find_pci_device(PCI_VENDOR_ID_ZORAN,
- 		PCI_DEVICE_ID_ZORAN_36120, dev_a4t))) {
- 		ret = a4t_pci_probe(dev_a4t, cs, &found, &pci_memaddr);
- 		if (!ret)
-diff --git a/drivers/isdn/hisax/bkm_a8.c b/drivers/isdn/hisax/bkm_a8.c
-index e1ff471..e775706 100644
---- a/drivers/isdn/hisax/bkm_a8.c
-+++ b/drivers/isdn/hisax/bkm_a8.c
-@@ -301,7 +301,7 @@ setup_sct_quadro(struct IsdnCard *card)
- 		(sub_vendor_id != PCI_VENDOR_ID_BERKOM)))
- 		return (0);
- 	if (cs->subtyp == SCT_1) {
--		while ((dev_a8 = pci_find_device(PCI_VENDOR_ID_PLX,
-+		while ((dev_a8 = hisax_find_pci_device(PCI_VENDOR_ID_PLX,
- 			PCI_DEVICE_ID_PLX_9050, dev_a8))) {
- 			
- 			sub_vendor_id = dev_a8->subsystem_vendor;
-diff --git a/drivers/isdn/hisax/diva.c b/drivers/isdn/hisax/diva.c
-index 0b0c2e5..dd51ad4 100644
---- a/drivers/isdn/hisax/diva.c
-+++ b/drivers/isdn/hisax/diva.c
-@@ -1148,7 +1148,6 @@ static int __devinit setup_diva_isapnp(struct IsdnCard *card)
- 
- #endif	/* ISAPNP */
- 
--#ifdef CONFIG_PCI_LEGACY
- static struct pci_dev *dev_diva __devinitdata = NULL;
- static struct pci_dev *dev_diva_u __devinitdata = NULL;
- static struct pci_dev *dev_diva201 __devinitdata = NULL;
-@@ -1159,21 +1158,21 @@ static int __devinit setup_diva_pci(struct IsdnCard *card)
- 	struct IsdnCardState *cs = card->cs;
- 
- 	cs->subtyp = 0;
--	if ((dev_diva = pci_find_device(PCI_VENDOR_ID_EICON,
-+	if ((dev_diva = hisax_find_pci_device(PCI_VENDOR_ID_EICON,
- 		PCI_DEVICE_ID_EICON_DIVA20, dev_diva))) {
- 		if (pci_enable_device(dev_diva))
- 			return(0);
- 		cs->subtyp = DIVA_PCI;
- 		cs->irq = dev_diva->irq;
- 		cs->hw.diva.cfg_reg = pci_resource_start(dev_diva, 2);
--	} else if ((dev_diva_u = pci_find_device(PCI_VENDOR_ID_EICON,
-+	} else if ((dev_diva_u = hisax_find_pci_device(PCI_VENDOR_ID_EICON,
- 		PCI_DEVICE_ID_EICON_DIVA20_U, dev_diva_u))) {
- 		if (pci_enable_device(dev_diva_u))
- 			return(0);
- 		cs->subtyp = DIVA_PCI;
- 		cs->irq = dev_diva_u->irq;
- 		cs->hw.diva.cfg_reg = pci_resource_start(dev_diva_u, 2);
--	} else if ((dev_diva201 = pci_find_device(PCI_VENDOR_ID_EICON,
-+	} else if ((dev_diva201 = hisax_find_pci_device(PCI_VENDOR_ID_EICON,
- 		PCI_DEVICE_ID_EICON_DIVA201, dev_diva201))) {
- 		if (pci_enable_device(dev_diva201))
- 			return(0);
-@@ -1183,7 +1182,7 @@ static int __devinit setup_diva_pci(struct IsdnCard *card)
- 			(ulong) ioremap(pci_resource_start(dev_diva201, 0), 4096);
- 		cs->hw.diva.cfg_reg =
- 			(ulong) ioremap(pci_resource_start(dev_diva201, 1), 4096);
--	} else if ((dev_diva202 = pci_find_device(PCI_VENDOR_ID_EICON,
-+	} else if ((dev_diva202 = hisax_find_pci_device(PCI_VENDOR_ID_EICON,
- 		PCI_DEVICE_ID_EICON_DIVA202, dev_diva202))) {
- 		if (pci_enable_device(dev_diva202))
- 			return(0);
-@@ -1229,15 +1228,6 @@ static int __devinit setup_diva_pci(struct IsdnCard *card)
- 	return (1);		/* card found */
- }
- 
--#else	/* if !CONFIG_PCI_LEGACY */
--
--static int __devinit setup_diva_pci(struct IsdnCard *card)
--{
--	return (-1);	/* card not found; continue search */
--}
--
--#endif	/* CONFIG_PCI_LEGACY */
--
- int __devinit
- setup_diva(struct IsdnCard *card)
- {
-diff --git a/drivers/isdn/hisax/elsa.c b/drivers/isdn/hisax/elsa.c
-index aa29d1c..71aa8a1 100644
---- a/drivers/isdn/hisax/elsa.c
-+++ b/drivers/isdn/hisax/elsa.c
-@@ -1025,7 +1025,6 @@ setup_elsa_pcmcia(struct IsdnCard *card)
- 	       cs->irq);
- }
- 
--#ifdef CONFIG_PCI_LEGACY
- static 	struct pci_dev *dev_qs1000 __devinitdata = NULL;
- static 	struct pci_dev *dev_qs3000 __devinitdata = NULL;
- 
-@@ -1035,7 +1034,7 @@ setup_elsa_pci(struct IsdnCard *card)
- 	struct IsdnCardState *cs = card->cs;
- 
- 	cs->subtyp = 0;
--	if ((dev_qs1000 = pci_find_device(PCI_VENDOR_ID_ELSA,
-+	if ((dev_qs1000 = hisax_find_pci_device(PCI_VENDOR_ID_ELSA,
- 		PCI_DEVICE_ID_ELSA_MICROLINK, dev_qs1000))) {
- 		if (pci_enable_device(dev_qs1000))
- 			return(0);
-@@ -1043,7 +1042,7 @@ setup_elsa_pci(struct IsdnCard *card)
- 		cs->irq = dev_qs1000->irq;
- 		cs->hw.elsa.cfg = pci_resource_start(dev_qs1000, 1);
- 		cs->hw.elsa.base = pci_resource_start(dev_qs1000, 3);
--	} else if ((dev_qs3000 = pci_find_device(PCI_VENDOR_ID_ELSA,
-+	} else if ((dev_qs3000 = hisax_find_pci_device(PCI_VENDOR_ID_ELSA,
- 		PCI_DEVICE_ID_ELSA_QS3000, dev_qs3000))) {
- 		if (pci_enable_device(dev_qs3000))
- 			return(0);
-@@ -1086,15 +1085,6 @@ setup_elsa_pci(struct IsdnCard *card)
- 	return (1);
- }
- 
--#else
--
--static int __devinit
--setup_elsa_pci(struct IsdnCard *card)
--{
--	return (1);
--}
--#endif /* CONFIG_PCI_LEGACY */
--
- static int __devinit
- setup_elsa_common(struct IsdnCard *card)
- {
-diff --git a/drivers/isdn/hisax/enternow_pci.c b/drivers/isdn/hisax/enternow_pci.c
-index 39f421e..26264ab 100644
---- a/drivers/isdn/hisax/enternow_pci.c
-+++ b/drivers/isdn/hisax/enternow_pci.c
-@@ -406,7 +406,7 @@ setup_enternow_pci(struct IsdnCard *card)
- 
- 	for ( ;; )
- 	{
--		if ((dev_netjet = pci_find_device(PCI_VENDOR_ID_TIGERJET,
-+		if ((dev_netjet = hisax_find_pci_device(PCI_VENDOR_ID_TIGERJET,
- 			PCI_DEVICE_ID_TIGERJET_300,  dev_netjet))) {
- 			ret = en_pci_probe(dev_netjet, cs);
- 			if (!ret)
-diff --git a/drivers/isdn/hisax/gazel.c b/drivers/isdn/hisax/gazel.c
-index 0ea3b46..8a6fd8b 100644
---- a/drivers/isdn/hisax/gazel.c
-+++ b/drivers/isdn/hisax/gazel.c
-@@ -531,7 +531,6 @@ setup_gazelisa(struct IsdnCard *card, struct IsdnCardState *cs)
- 	return (0);
- }
- 
--#ifdef CONFIG_PCI_LEGACY
- static struct pci_dev *dev_tel __devinitdata = NULL;
- 
- static int __devinit
-@@ -546,7 +545,7 @@ setup_gazelpci(struct IsdnCardState *cs)
- 	found = 0;
- 	seekcard = PCI_DEVICE_ID_PLX_R685;
- 	for (nbseek = 0; nbseek < 4; nbseek++) {
--		if ((dev_tel = pci_find_device(PCI_VENDOR_ID_PLX,
-+		if ((dev_tel = hisax_find_pci_device(PCI_VENDOR_ID_PLX,
- 					seekcard, dev_tel))) {
- 			if (pci_enable_device(dev_tel))
- 				return 1;
-@@ -620,7 +619,6 @@ setup_gazelpci(struct IsdnCardState *cs)
- 
- 	return (0);
- }
--#endif /* CONFIG_PCI_LEGACY */
- 
- int __devinit
- setup_gazel(struct IsdnCard *card)
-@@ -639,14 +637,8 @@ setup_gazel(struct IsdnCard *card)
- 		if (setup_gazelisa(card, cs))
- 			return (0);
- 	} else {
--
--#ifdef CONFIG_PCI_LEGACY
- 		if (setup_gazelpci(cs))
- 			return (0);
--#else
--		printk(KERN_WARNING "Gazel: Card PCI requested and NO_PCI_BIOS, unable to config\n");
--		return (0);
--#endif				/* CONFIG_PCI */
- 	}
- 
- 	if (reserve_regions(card, cs)) {
-diff --git a/drivers/isdn/hisax/hfc_pci.c b/drivers/isdn/hisax/hfc_pci.c
-index 1091473..917cc84 100644
---- a/drivers/isdn/hisax/hfc_pci.c
-+++ b/drivers/isdn/hisax/hfc_pci.c
-@@ -1658,7 +1658,7 @@ setup_hfcpci(struct IsdnCard *card)
- 
- 	i = 0;
- 	while (id_list[i].vendor_id) {
--		tmp_hfcpci = pci_find_device(id_list[i].vendor_id,
-+		tmp_hfcpci = hisax_find_pci_device(id_list[i].vendor_id,
- 					     id_list[i].device_id,
- 					     dev_hfcpci);
- 		i++;
-diff --git a/drivers/isdn/hisax/hisax.h b/drivers/isdn/hisax/hisax.h
-index 0685c19..832a878 100644
---- a/drivers/isdn/hisax/hisax.h
-+++ b/drivers/isdn/hisax/hisax.h
-@@ -1323,3 +1323,26 @@ void release_tei(struct IsdnCardState *cs);
- char *HiSax_getrev(const char *revision);
- int TeiNew(void);
- void TeiFree(void);
-+
-+#ifdef CONFIG_PCI
-+
-+#include <linux/pci.h>
-+
-+/* adaptation wrapper for old usage
-+ * WARNING! This is unfit for use in a PCI hotplug environment,
-+ * as the returned PCI device can disappear at any moment in time.
-+ * Callers should be converted to use pci_get_device() instead.
-+ */
-+static inline struct pci_dev *hisax_find_pci_device(unsigned int vendor,
-+						    unsigned int device,
-+						    struct pci_dev *from)
-+{
-+	struct pci_dev *pdev;
-+
-+	pci_dev_get(from);
-+	pdev = pci_get_subsys(vendor, device, PCI_ANY_ID, PCI_ANY_ID, from);
-+	pci_dev_put(pdev);
-+	return pdev;
-+}
-+
-+#endif
-diff --git a/drivers/isdn/hisax/niccy.c b/drivers/isdn/hisax/niccy.c
-index ef00633..91c4241 100644
---- a/drivers/isdn/hisax/niccy.c
-+++ b/drivers/isdn/hisax/niccy.c
-@@ -297,12 +297,11 @@ int __devinit setup_niccy(struct IsdnCard *card)
- 			return 0;
- 		}
- 	} else {
--#ifdef CONFIG_PCI_LEGACY
- 		static struct pci_dev *niccy_dev __devinitdata;
- 
- 		u_int pci_ioaddr;
- 		cs->subtyp = 0;
--		if ((niccy_dev = pci_find_device(PCI_VENDOR_ID_SATSAGEM,
-+		if ((niccy_dev = hisax_find_pci_device(PCI_VENDOR_ID_SATSAGEM,
- 						 PCI_DEVICE_ID_SATSAGEM_NICCY,
- 						 niccy_dev))) {
- 			if (pci_enable_device(niccy_dev))
-@@ -350,11 +349,6 @@ int __devinit setup_niccy(struct IsdnCard *card)
- 			release_region(cs->hw.niccy.isac, 4);
- 			return 0;
- 		}
--#else
--		printk(KERN_WARNING "Niccy: io0 0 and NO_PCI_BIOS\n");
--		printk(KERN_WARNING "Niccy: unable to config NICCY PCI\n");
--		return 0;
--#endif				/* CONFIG_PCI_LEGACY */
- 	}
- 	printk(KERN_INFO "HiSax: NICCY %s config irq:%d data:0x%X ale:0x%X\n",
- 		(cs->subtyp == 1) ? "PnP" : "PCI",
-diff --git a/drivers/isdn/hisax/nj_s.c b/drivers/isdn/hisax/nj_s.c
-index 8d36ccc..2344e7b 100644
---- a/drivers/isdn/hisax/nj_s.c
-+++ b/drivers/isdn/hisax/nj_s.c
-@@ -276,7 +276,7 @@ setup_netjet_s(struct IsdnCard *card)
- 
- 	for ( ;; )
- 	{
--		if ((dev_netjet = pci_find_device(PCI_VENDOR_ID_TIGERJET,
-+		if ((dev_netjet = hisax_find_pci_device(PCI_VENDOR_ID_TIGERJET,
- 			PCI_DEVICE_ID_TIGERJET_300,  dev_netjet))) {
- 			ret = njs_pci_probe(dev_netjet, cs);
- 			if (!ret)
-diff --git a/drivers/isdn/hisax/nj_u.c b/drivers/isdn/hisax/nj_u.c
-index d306c94..095e974 100644
---- a/drivers/isdn/hisax/nj_u.c
-+++ b/drivers/isdn/hisax/nj_u.c
-@@ -240,7 +240,7 @@ setup_netjet_u(struct IsdnCard *card)
- 
- 	for ( ;; )
- 	{
--		if ((dev_netjet = pci_find_device(PCI_VENDOR_ID_TIGERJET,
-+		if ((dev_netjet = hisax_find_pci_device(PCI_VENDOR_ID_TIGERJET,
- 			PCI_DEVICE_ID_TIGERJET_300,  dev_netjet))) {
- 			ret = nju_pci_probe(dev_netjet, cs);
- 			if (!ret)
-diff --git a/drivers/isdn/hisax/sedlbauer.c b/drivers/isdn/hisax/sedlbauer.c
-index 5569a52..b90abd9 100644
---- a/drivers/isdn/hisax/sedlbauer.c
-+++ b/drivers/isdn/hisax/sedlbauer.c
-@@ -598,7 +598,6 @@ setup_sedlbauer_isapnp(struct IsdnCard *card, int *bytecnt)
- }
- #endif /* __ISAPNP__ */
- 
--#ifdef CONFIG_PCI_LEGACY
- static struct pci_dev *dev_sedl __devinitdata = NULL;
- 
- static int __devinit
-@@ -607,7 +606,7 @@ setup_sedlbauer_pci(struct IsdnCard *card)
- 	struct IsdnCardState *cs = card->cs;
- 	u16 sub_vendor_id, sub_id;
- 
--	if ((dev_sedl = pci_find_device(PCI_VENDOR_ID_TIGERJET,
-+	if ((dev_sedl = hisax_find_pci_device(PCI_VENDOR_ID_TIGERJET,
- 			PCI_DEVICE_ID_TIGERJET_100, dev_sedl))) {
- 		if (pci_enable_device(dev_sedl))
- 			return(0);
-@@ -665,16 +664,6 @@ setup_sedlbauer_pci(struct IsdnCard *card)
- 	return (1);
- }
- 
--#else
--
--static int __devinit
--setup_sedlbauer_pci(struct IsdnCard *card)
--{
--	return (1);
--}
--
--#endif /* CONFIG_PCI_LEGACY */
--
- int __devinit
- setup_sedlbauer(struct IsdnCard *card)
- {
-diff --git a/drivers/isdn/hisax/telespci.c b/drivers/isdn/hisax/telespci.c
-index 28b08de..b85ceb3 100644
---- a/drivers/isdn/hisax/telespci.c
-+++ b/drivers/isdn/hisax/telespci.c
-@@ -300,7 +300,7 @@ setup_telespci(struct IsdnCard *card)
- 	if (cs->typ != ISDN_CTYPE_TELESPCI)
- 		return (0);
- 
--	if ((dev_tel = pci_find_device (PCI_VENDOR_ID_ZORAN, PCI_DEVICE_ID_ZORAN_36120, dev_tel))) {
-+	if ((dev_tel = hisax_find_pci_device (PCI_VENDOR_ID_ZORAN, PCI_DEVICE_ID_ZORAN_36120, dev_tel))) {
- 		if (pci_enable_device(dev_tel))
- 			return(0);
- 		cs->irq = dev_tel->irq;
-diff --git a/drivers/isdn/hisax/w6692.c b/drivers/isdn/hisax/w6692.c
-index c4d862c..9d6e864 100644
---- a/drivers/isdn/hisax/w6692.c
-+++ b/drivers/isdn/hisax/w6692.c
-@@ -1007,7 +1007,7 @@ setup_w6692(struct IsdnCard *card)
- 		return (0);
- 
- 	while (id_list[id_idx].vendor_id) {
--		dev_w6692 = pci_find_device(id_list[id_idx].vendor_id,
-+		dev_w6692 = hisax_find_pci_device(id_list[id_idx].vendor_id,
- 					    id_list[id_idx].device_id,
- 					    dev_w6692);
- 		if (dev_w6692) {
-diff --git a/drivers/pci/Kconfig b/drivers/pci/Kconfig
-index b1ecefa..7858a11 100644
---- a/drivers/pci/Kconfig
-+++ b/drivers/pci/Kconfig
-@@ -21,17 +21,6 @@ config PCI_MSI
- 
- 	   If you don't know what to do here, say N.
- 
--config PCI_LEGACY
--	bool "Enable deprecated pci_find_* API"
--	depends on PCI
--	default y
--	help
--	  Say Y here if you want to include support for the deprecated
--	  pci_find_device() API.  Most drivers have been converted over
--	  to using the proper hotplug APIs, so this option serves to
--	  include/exclude only a few drivers that are still using this
--	  API.
--
- config PCI_DEBUG
- 	bool "PCI Debugging"
- 	depends on PCI && DEBUG_KERNEL
-diff --git a/drivers/pci/Makefile b/drivers/pci/Makefile
-index 4df48d5..f635608 100644
---- a/drivers/pci/Makefile
-+++ b/drivers/pci/Makefile
-@@ -8,9 +8,6 @@ obj-y		+= access.o bus.o probe.o remove.o pci.o quirks.o \
- obj-$(CONFIG_PROC_FS) += proc.o
- obj-$(CONFIG_SYSFS) += slot.o
- 
--obj-$(CONFIG_PCI_LEGACY) += legacy.o
--CFLAGS_legacy.o += -Wno-deprecated-declarations
--
- # Build PCI Express stuff if needed
- obj-$(CONFIG_PCIEPORTBUS) += pcie/
- 
-diff --git a/drivers/pci/legacy.c b/drivers/pci/legacy.c
-deleted file mode 100644
-index 871f65c..0000000
---- a/drivers/pci/legacy.c
-+++ /dev/null
-@@ -1,34 +0,0 @@
--#include <linux/init.h>
--#include <linux/pci.h>
--#include <linux/module.h>
--#include <linux/interrupt.h>
--#include "pci.h"
--
--/**
-- * pci_find_device - begin or continue searching for a PCI device by vendor/device id
-- * @vendor: PCI vendor id to match, or %PCI_ANY_ID to match all vendor ids
-- * @device: PCI device id to match, or %PCI_ANY_ID to match all device ids
-- * @from: Previous PCI device found in search, or %NULL for new search.
-- *
-- * Iterates through the list of known PCI devices.  If a PCI device is found
-- * with a matching @vendor and @device, a pointer to its device structure is
-- * returned.  Otherwise, %NULL is returned.
-- * A new search is initiated by passing %NULL as the @from argument.
-- * Otherwise if @from is not %NULL, searches continue from next device
-- * on the global list.
-- *
-- * NOTE: Do not use this function any more; use pci_get_device() instead, as
-- * the PCI device returned by this function can disappear at any moment in
-- * time.
-- */
--struct pci_dev *pci_find_device(unsigned int vendor, unsigned int device,
--				struct pci_dev *from)
--{
--	struct pci_dev *pdev;
--
--	pci_dev_get(from);
--	pdev = pci_get_subsys(vendor, device, PCI_ANY_ID, PCI_ANY_ID, from);
--	pci_dev_put(pdev);
--	return pdev;
--}
--EXPORT_SYMBOL(pci_find_device);
-diff --git a/include/linux/pci.h b/include/linux/pci.h
-index 174e539..dd9682c 100644
---- a/include/linux/pci.h
-+++ b/include/linux/pci.h
-@@ -615,12 +615,6 @@ extern void pci_sort_breadthfirst(void);
- 
- /* Generic PCI functions exported to card drivers */
- 
--#ifdef CONFIG_PCI_LEGACY
--struct pci_dev __deprecated *pci_find_device(unsigned int vendor,
--					     unsigned int device,
--					     struct pci_dev *from);
--#endif /* CONFIG_PCI_LEGACY */
--
- enum pci_lost_interrupt_reason {
- 	PCI_LOST_IRQ_NO_INFORMATION = 0,
- 	PCI_LOST_IRQ_DISABLE_MSI,
-@@ -973,13 +967,6 @@ static inline int pci_proc_domain(struct pci_bus *bus)
- _PCI_NOP_ALL(read, *)
- _PCI_NOP_ALL(write,)
- 
--static inline struct pci_dev *pci_find_device(unsigned int vendor,
--					      unsigned int device,
--					      struct pci_dev *from)
--{
--	return NULL;
--}
--
- static inline struct pci_dev *pci_get_device(unsigned int vendor,
- 					     unsigned int device,
- 					     struct pci_dev *from)
--- 
-1.6.5.3.298.g39add
-
+ Makefile                                  |    2 +-
+ arch/alpha/kernel/osf_sys.c               |   19 +--
+ arch/arm/include/asm/mman.h               |    3 +
+ arch/arm/kernel/calls.S                   |    2 +-
+ arch/arm/kernel/entry-common.S            |    4 +-
+ arch/arm/kernel/sys_arm.c                 |   55 +-------
+ arch/arm/mm/mmap.c                        |    3 +-
+ arch/avr32/include/asm/syscalls.h         |    4 -
+ arch/avr32/kernel/sys_avr32.c             |   31 ----
+ arch/avr32/kernel/syscall-stubs.S         |    2 +-
+ arch/blackfin/kernel/sys_bfin.c           |   33 ----
+ arch/blackfin/mach-common/entry.S         |    2 +-
+ arch/cris/kernel/sys_cris.c               |   30 +----
+ arch/frv/kernel/sys_frv.c                 |   66 +--------
+ arch/h8300/kernel/sys_h8300.c             |   83 +----------
+ arch/h8300/kernel/syscalls.S              |    2 +-
+ arch/ia64/ia32/sys_ia32.c                 |    3 +
+ arch/ia64/kernel/sys_ia64.c               |   83 +----------
+ arch/m32r/kernel/sys_m32r.c               |   24 ---
+ arch/m32r/kernel/syscall_table.S          |    2 +-
+ arch/m68k/kernel/sys_m68k.c               |   83 +---------
+ arch/m68knommu/kernel/sys_m68k.c          |   38 +-----
+ arch/m68knommu/kernel/syscalltable.S      |    2 +-
+ arch/microblaze/kernel/sys_microblaze.c   |   38 +----
+ arch/microblaze/kernel/syscall_table.S    |    2 +-
+ arch/mips/kernel/linux32.c                |   19 +--
+ arch/mips/kernel/syscall.c                |   32 +----
+ arch/mn10300/include/asm/mman.h           |    5 +
+ arch/mn10300/kernel/entry.S               |    2 +-
+ arch/mn10300/kernel/sys_mn10300.c         |   36 +----
+ arch/parisc/kernel/sys_parisc.c           |   30 +---
+ arch/powerpc/include/asm/module.h         |    5 +
+ arch/powerpc/kernel/syscalls.c            |   15 +--
+ arch/powerpc/kernel/vmlinux.lds.S         |    3 +
+ arch/s390/kernel/compat_linux.c           |   37 +----
+ arch/s390/kernel/sys_s390.c               |   30 +----
+ arch/score/kernel/sys_score.c             |   28 +---
+ arch/sh/kernel/sys_sh.c                   |   28 +---
+ arch/sh/mm/mmap.c                         |    3 +-
+ arch/sparc/kernel/sys_sparc_32.c          |   64 +-------
+ arch/sparc/kernel/sys_sparc_64.c          |   50 ++-----
+ arch/sparc/kernel/systbls.h               |    1 -
+ arch/sparc/kernel/systbls_32.S            |    4 +-
+ arch/sparc/kernel/systbls_64.S            |    4 +-
+ arch/um/kernel/syscall.c                  |   28 +---
+ arch/um/sys-i386/shared/sysdep/syscalls.h |    4 -
+ arch/x86/Kconfig.cpu                      |    2 +-
+ arch/x86/ia32/ia32entry.S                 |    2 +-
+ arch/x86/ia32/sys_ia32.c                  |   43 +-----
+ arch/x86/include/asm/sys_ia32.h           |    3 -
+ arch/x86/include/asm/syscalls.h           |    2 -
+ arch/x86/kernel/sys_i386_32.c             |   27 +---
+ arch/x86/kernel/sys_x86_64.c              |   17 +--
+ arch/x86/kernel/syscall_table_32.S        |    2 +-
+ arch/xtensa/include/asm/syscall.h         |    2 -
+ arch/xtensa/include/asm/unistd.h          |    2 +-
+ arch/xtensa/kernel/syscall.c              |   25 ---
+ drivers/cpuidle/governors/menu.c          |   12 +-
+ drivers/gpu/drm/ati_pcigart.c             |   10 +-
+ drivers/gpu/drm/drm_bufs.c                |    4 +-
+ drivers/gpu/drm/drm_pci.c                 |    8 +-
+ drivers/gpu/drm/i915/i915_dma.c           |    5 +-
+ drivers/gpu/drm/i915/i915_drv.h           |    1 +
+ drivers/gpu/drm/i915/i915_gem.c           |   12 +-
+ drivers/gpu/drm/i915/i915_reg.h           |    4 +
+ drivers/gpu/drm/i915/intel_display.c      |  180 ++++++---------------
+ drivers/gpu/drm/i915/intel_lvds.c         |    9 +
+ drivers/hwmon/Kconfig                     |    2 +-
+ drivers/hwmon/adt7462.c                   |    2 +-
+ drivers/hwmon/coretemp.c                  |   16 ++-
+ drivers/mmc/card/block.c                  |    8 +
+ drivers/mmc/card/queue.c                  |   18 +-
+ drivers/net/wireless/ath/ath5k/eeprom.c   |   32 ++++-
+ drivers/net/wireless/ath/ath5k/eeprom.h   |    8 +
+ drivers/net/wireless/iwlwifi/iwl-4965.c   |    2 +-
+ drivers/net/wireless/iwlwifi/iwl-dev.h    |    2 +-
+ drivers/net/wireless/libertas/scan.c      |   22 +--
+ drivers/rtc/rtc-cmos.c                    |    9 +-
+ drivers/xen/manage.c                      |    8 +-
+ fs/exofs/inode.c                          |   17 ++-
+ fs/fcntl.c                                |  102 ++++++++-----
+ fs/nfsd/vfs.c                             |    5 +-
+ fs/quota/dquot.c                          |    3 +
+ include/drm/drmP.h                        |    2 +-
+ include/linux/syscalls.h                  |    4 +
+ ipc/shm.c                                 |   31 ++--
+ kernel/audit_tree.c                       |   13 +-
+ kernel/cgroup.c                           |    1 -
+ kernel/module.c                           |   45 ++++--
+ kernel/signal.c                           |    3 +-
+ kernel/sysctl.c                           |    2 +-
+ lib/dma-debug.c                           |    7 +-
+ lib/rational.c                            |    1 +
+ mm/mmap.c                                 |   42 ++----
+ mm/mremap.c                               |  241 +++++++++++++++++++----------
+ mm/util.c                                 |   44 ++++++
+ net/bridge/netfilter/ebtables.c           |    6 +
+ net/ipv6/exthdrs.c                        |    7 +-
+ net/mac80211/iface.c                      |   40 +++++-
+ net/mac80211/mlme.c                       |    4 +-
+ net/mac80211/rx.c                         |    8 +-
+ net/mac80211/tx.c                         |    5 +-
+ net/mac80211/util.c                       |   12 ++
+ net/mac80211/wme.c                        |   89 ++++++++---
+ net/mac80211/wme.h                        |    8 +-
+ net/netfilter/nf_conntrack_ftp.c          |   18 +-
+ net/sunrpc/auth_gss/auth_gss.c            |   17 ++-
+ net/sunrpc/auth_gss/gss_krb5_mech.c       |    4 +-
+ net/sunrpc/auth_gss/gss_mech_switch.c     |    2 +-
+ net/sunrpc/svc_xprt.c                     |    3 +-
+ net/wireless/reg.c                        |    2 +-
+ sound/pci/ac97/ac97_patch.c               |    1 +
+ sound/pci/atiixp.c                        |    1 +
+ sound/pci/hda/patch_realtek.c             |    2 +-
+ sound/soc/codecs/wm8350.c                 |    2 +-
+ sound/soc/codecs/wm8510.c                 |   14 +-
+ sound/soc/codecs/wm8940.c                 |   14 +-
+ sound/soc/codecs/wm8974.c                 |   14 +-
+ 118 files changed, 867 insertions(+), 1514 deletions(-)
