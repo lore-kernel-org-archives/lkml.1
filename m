@@ -1,69 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754249Ab0ANEso@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753483Ab0ANE5x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754249Ab0ANEso (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 23:48:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752273Ab0ANEso
+	id S1753483Ab0ANE5x (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 23:57:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752698Ab0ANE5v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 23:48:44 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:3446 "EHLO mx1.redhat.com"
+	Wed, 13 Jan 2010 23:57:51 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:7349 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752115Ab0ANEsn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 23:48:43 -0500
-Message-ID: <4B4EA2BC.9000307@redhat.com>
-Date: Wed, 13 Jan 2010 23:51:08 -0500
+	id S1752696Ab0ANE5u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jan 2010 23:57:50 -0500
+Message-ID: <4B4EA4F3.6090401@redhat.com>
+Date: Thu, 14 Jan 2010 00:00:35 -0500
 From: Masami Hiramatsu <mhiramat@redhat.com>
 User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
 MIME-Version: 1.0
-To: Li Zefan <lizf@cn.fujitsu.com>
-CC: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] perf probe: Fix build failure
-References: <4B4E8993.5080404@cn.fujitsu.com>
-In-Reply-To: <4B4E8993.5080404@cn.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+CC: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [resend][PATCH 1/2] kprobetrace,doc: shell need single quote
+ to use $ character
+References: <20100114111032.D720.A69D9226@jp.fujitsu.com>
+In-Reply-To: <20100114111032.D720.A69D9226@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-Thank you, the patch code looks good to me.
-
-Li Zefan wrote:
-> builtin-probe.c:121: error: 'opt_show_lines' defined but not used
-
-Please add some comment for explanation, like:
-
-This build error occurs when compiling perf-tools without dwarf
-support (no libdwarf).
-
+KOSAKI Motohiro wrote:
+> shell interpret $val is as shell variable. thus we need quote if
+> we use echo command.
 > 
-> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> Acked-by: Masami Hiramatsu <mhiramat@redhat.com>
+
+Hi Ingo and KOSAKI-san,
+
+Sorry, now this patch conflicts with my patch(commit 1464010) on the
+latest -tip tree. The patch drops $argN support, so I updated the
+1st example command.
+
+Thank you,
+
 > ---
->  tools/perf/builtin-probe.c |    3 +++
->  1 files changed, 3 insertions(+), 0 deletions(-)
+>  Documentation/trace/kprobetrace.txt |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
 > 
-> diff --git a/tools/perf/builtin-probe.c b/tools/perf/builtin-probe.c
-> index 1d3a99e..9be8063 100644
-> --- a/tools/perf/builtin-probe.c
-> +++ b/tools/perf/builtin-probe.c
-> @@ -118,6 +118,7 @@ static int opt_del_probe_event(const struct option *opt __used,
->  	return 0;
->  }
+> diff --git a/Documentation/trace/kprobetrace.txt b/Documentation/trace/kprobetrace.txt
+> index 47aabee..2be6e19 100644
+> --- a/Documentation/trace/kprobetrace.txt
+> +++ b/Documentation/trace/kprobetrace.txt
+> @@ -82,13 +82,13 @@ Usage examples
+>  To add a probe as a new event, write a new definition to kprobe_events
+>  as below.
 >  
-> +#ifndef NO_LIBDWARF
->  static int opt_show_lines(const struct option *opt __used,
->  			  const char *str, int unset __used)
->  {
-> @@ -127,6 +128,8 @@ static int opt_show_lines(const struct option *opt __used,
->  	session.show_lines = true;
->  	return 0;
->  }
-> +#endif
-> +
->  /* Currently just checking function name from symbol map */
->  static void evaluate_probe_point(struct probe_point *pp)
->  {
+> -  echo p:myprobe do_sys_open dfd=$arg0 filename=$arg1 flags=$arg2 mode=$arg3 > /sys/kernel/debug/tracing/kprobe_events
+> +  echo 'p:myprobe do_sys_open dfd=$arg0 filename=$arg1 flags=$arg2 mode=$arg3' > /sys/kernel/debug/tracing/kprobe_events
+>  
+>   This sets a kprobe on the top of do_sys_open() function with recording
+>  1st to 4th arguments as "myprobe" event. As this example shows, users can
+>  choose more familiar names for each arguments.
+>  
+> -  echo r:myretprobe do_sys_open $retval >> /sys/kernel/debug/tracing/kprobe_events
+> +  echo 'r:myretprobe do_sys_open $retval' >> /sys/kernel/debug/tracing/kprobe_events
+>  
+>   This sets a kretprobe on the return point of do_sys_open() function with
+>  recording return value as "myretprobe" event.
 
 -- 
 Masami Hiramatsu
