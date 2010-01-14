@@ -1,91 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756502Ab0ANIj4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756544Ab0ANIor@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756502Ab0ANIj4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 03:39:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755974Ab0ANIjz
+	id S1756544Ab0ANIor (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 03:44:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756519Ab0ANIoq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 03:39:55 -0500
-Received: from ey-out-2122.google.com ([74.125.78.25]:51547 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753528Ab0ANIjy (ORCPT
+	Thu, 14 Jan 2010 03:44:46 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:34620 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756473Ab0ANIop (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 03:39:54 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=M9xJQ1yHLfdLrqQnpG1fMGqOur4xFjzrFswojdabHZRfThyCuoBwp30l+9L2K6XaYh
-         QKoAMAXEhwuwaRHas7ZGOlkoLor46AD045N0Gw+pwrlUgY6aHrxpk63UvrJ811c6x7OP
-         kBKU8a6lK9fDQUB8I3PN0bp65NQsyRtsiZVMk=
-MIME-Version: 1.0
-In-Reply-To: <1263154093.2987.34.camel@localhost>
-References: <6278d2221001090632m7fdd77qc73c203840a2a78e@mail.gmail.com>
-	 <1263154093.2987.34.camel@localhost>
-Date: Thu, 14 Jan 2010 08:39:52 +0000
-Message-ID: <6278d2221001140039m711f2ae4o163d6c7f8d5b98d0@mail.gmail.com>
-Subject: Re: [2.6.33-rc3] NFS4 and dentry issues...
-From: Daniel J Blueman <daniel.blueman@gmail.com>
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-Cc: linux-nfs@vger.kernel.org, Linux Kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 14 Jan 2010 03:44:45 -0500
+Subject: Re: HW breakpoints perf_events request
+From: Peter Zijlstra <peterz@infradead.org>
+To: Joshua Pincus <joshua.pincus@gmail.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>,
+       "K.Prasad" <prasad@linux.vnet.ibm.com>, paulus@samba.org,
+       acme@redhat.com, linux-kernel@vger.kernel.org
+In-Reply-To: <bc915a051001131745m6fb70dcbx29b9d35f6fd7106c@mail.gmail.com>
+References: <bc915a051001131745m6fb70dcbx29b9d35f6fd7106c@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 14 Jan 2010 09:44:25 +0100
+Message-ID: <1263458665.4244.256.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Trond,
+On Wed, 2010-01-13 at 17:45 -0800, Joshua Pincus wrote:
+> However, there's nothing yet in place to allow a
+> signal to be sent to the thread when a breakpoint
+> has been hit.  Put another way, there's nothing here
+> which affects execution flow of the user-app when the CPU
+> traps due to a HW breakpoint.
+> 
+> Currently, the perf events infrastructure allows me
+> to mmap() a block of memory and to poll() on it, waiting
+> and watching for events to be described in that mmap'd
+> buffer.  That will not be sufficient for what we need
+> to do.  We need to have the ability to specify that
+> execution of the thread should be interrupted, just as it
+> would under ptrace(), and have a signal be delivered.
+> Delivery of the signal must be received and processed
+> by the application before the thread will be allowed to
+> proceed to the nPC after the PC which caused the
+> HW breakpoint event.
+> 
+> Is this possible?  Can we architect this feature into
+> the perf_events infrastructure? 
 
-On Sun, Jan 10, 2010 at 8:08 PM, Trond Myklebust
-<trond.myklebust@fys.uio.no> wrote:
-> On Sat, 2010-01-09 at 14:32 +0000, Daniel J Blueman wrote:
->> When synchronising files (unison, like a two way rsync) over an NFS4
->> mount (server with 2.6.32.2) on a client running 2.6.33-rc3 (also
->> -rc2), I ran into dcache issues [1].
->>
->> I've been unable to consistently reproduce this for bisecting, and
->> filesystem benchmarks via NFS on tmpfs over localhost fails to
->> reproduce it either.
->>
->> What additional information may be useful?
->
-> There is a known issue in 2.6.33-rc3 with rename causing corruption of
-> the dentry lookup hash lists.
->
-> A fix for that problem has already been merged into mainline as
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git&a=commitdiff&h=56335936de1a41c8978fde62b2158af77ddc7258
->
-> Could you see if you can reproduce your problem with that fix applied?
+We have fnctl() managing signal support, but that will only interrupt
+the observing thread, not the threads being observed (unless they are
+one and the same -- but using inheritance precludes that from being
+true).
 
-2.6.33-rc4 with the fix does address this issue, though I am now
-occasionally seeing 'Stale NFS file handle' during parallel kernel
-compilation over NFS4 [1], seemingly when stat(2) is called.
+I'm not sure I'm willing to go in this direction with perf, the idea is
+to have a minimum impact on the observed threads, explicitly sending
+them signals and disturbing their execution goes against this.
 
-Client mount options are:
 
-x1:/ /net nfs4 rw,relatime,vers=4,rsize=262144,wsize=262144,namlen=255,acregmin=30,hard,proto=tcp,timeo=600,retrans=2,sec=sys,clientaddr=192.168.10.2,addr=192.168.10.250
-0 0
-
-I'll see which -rc this was introduced in, from limited time.
-
-Thanks,
-  Daniel
-
---- [1]
-
-$ CONCURRENCY_LEVEL=4 fakeroot make-kpkg --append-to-version -308cd
---initrd kernel-image
-...
-  CC [M]  drivers/net/wireless/rt2x00/rt2500usb.o
-  CC [M]  drivers/net/wireless/rt2x00/rt73usb.o
-  CC [M]  drivers/net/wireless/rt2x00/rt2800usb.o
-  LD [M]  drivers/net/wireless/rt2x00/rt2x00lib.o
-  Building modules, stage 2.
-make[2]: stat: arch/x86/crypto/aes-x86_64.o: Stale NFS file handle
-make[2]: stat: arch/x86/crypto/aesni-intel.o: Stale NFS file handle
-make[2]: stat: arch/x86/crypto/salsa20-x86_64.o: Stale NFS file handle
-make[2]: stat: arch/x86/crypto/twofish-x86_64.o: Stale NFS file handle
-make[2]: stat: arch/x86/kernel/cpu/cpufreq/p4-clockmod.o: Stale NFS file handle
-make[2]: stat: arch/x86/kernel/cpu/cpufreq/speedstep-lib.o: Stale NFS
-file handle
-....
--- 
-Daniel J Blueman
