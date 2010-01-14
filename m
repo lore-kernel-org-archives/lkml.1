@@ -1,60 +1,346 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757087Ab0ANPJW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757208Ab0ANPKx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757087Ab0ANPJW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 10:09:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757106Ab0ANPJS
+	id S1757208Ab0ANPKx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 10:10:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756846Ab0ANPKt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 10:09:18 -0500
-Received: from mail.windriver.com ([147.11.1.11]:47617 "EHLO
-	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756625Ab0ANPAx (ORCPT
+	Thu, 14 Jan 2010 10:10:49 -0500
+Received: from qw-out-2122.google.com ([74.125.92.26]:38243 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756625Ab0ANPKq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 10:00:53 -0500
-From: Jason Wessel <jason.wessel@windriver.com>
-To: linux-kernel@vger.kernel.org
-Cc: kgdb-bugreport@lists.sourceforge.net, mingo@elte.hu,
-       Jason Wessel <jason.wessel@windriver.com>
-Subject: [PATCH 13/40] sh,sh-sci: Use NO_POLL_CHAR in the SCIF polled console code
-Date: Thu, 14 Jan 2010 08:59:09 -0600
-Message-Id: <1263481176-1897-14-git-send-email-jason.wessel@windriver.com>
-X-Mailer: git-send-email 1.6.3.1.9.g95405b
-In-Reply-To: <1263481176-1897-1-git-send-email-jason.wessel@windriver.com>
-References: <1263481176-1897-1-git-send-email-jason.wessel@windriver.com>
-X-OriginalArrivalTime: 14 Jan 2010 15:00:30.0006 (UTC) FILETIME=[50316560:01CA952A]
+	Thu, 14 Jan 2010 10:10:46 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type;
+        b=jrnxOr4Orh2DNWNgwyiJFZf72U31Hd4Mu5q8iTVnTgfeM0EYqcDsNp2aCFlWHl7fMK
+         SJhxJAH5zojlXLnPJmYPTdUcoXpZf7aDqTh65DZOqQpPmbO3Gj5r5szr52oPTpOoW6xa
+         76klgpnh31qYAt79lbdZaKle873nH0wsXILjE=
+Message-ID: <4B4F33F3.3000509@gmail.com>
+Date: Thu, 14 Jan 2010 10:10:43 -0500
+From: William Allen Simpson <william.allen.simpson@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+MIME-Version: 1.0
+To: Linux Kernel Developers <linux-kernel@vger.kernel.org>
+CC: Linux Kernel Network Developers <netdev@vger.kernel.org>,
+       =?ISO-8859-1?Q?Ilpo_J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>,
+       Joe Perches <joe@perches.com>, Andi Kleen <andi@firstfloor.org>
+Subject: [PATCH v5] tcp: harmonize tcp_vx_rcv header length assumptions
+References: <4B49D001.4000302@gmail.com>
+In-Reply-To: <4B49D001.4000302@gmail.com>
+Content-Type: multipart/mixed;
+ boundary="------------060302050902050907070401"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The sci_poll_get_char() needs to return immediately if there is no
-input from the chip to process, and must return a value of
-NO_POLL_CHAR.
+This is a multi-part message in MIME format.
+--------------060302050902050907070401
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-This allows kgdboc to process multiple polled devices while kgdb is
-active.
+Harmonize tcp_v4_rcv() and tcp_v6_rcv() -- better document tcp doff
+and header length assumptions, and carefully compare implementations.
 
-Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
-Acked-by: Paul Mundt <lethal@linux-sh.org>
+Reduces multiply/shifts, marginally improving speed.
+
+Removes redundant tcp header length checks before checksumming.
+
+Instead, assumes (and documents) that any backlog processing and
+transform policies will carefully preserve the header, and will
+ensure the socket buffer length remains >= the header size.
+
+Stand-alone patch, originally developed for TCPCT.
+
+Signed-off-by: William.Allen.Simpson@gmail.com
 ---
- drivers/serial/sh-sci.c |    6 +++++-
- 1 files changed, 5 insertions(+), 1 deletions(-)
+  include/net/xfrm.h  |    7 ++++++
+  net/ipv4/tcp_ipv4.c |   45 +++++++++++++++++++++-----------------
+  net/ipv6/tcp_ipv6.c |   59 ++++++++++++++++++++++++++++----------------------
+  3 files changed, 65 insertions(+), 46 deletions(-)
 
-diff --git a/drivers/serial/sh-sci.c b/drivers/serial/sh-sci.c
-index 37f0de9..d29b3fe 100644
---- a/drivers/serial/sh-sci.c
-+++ b/drivers/serial/sh-sci.c
-@@ -126,7 +126,11 @@ static int sci_poll_get_char(struct uart_port *port)
- 			handle_error(port);
- 			continue;
- 		}
--	} while (!(status & SCxSR_RDxF(port)));
-+		break;
-+	} while (1);
+--------------060302050902050907070401
+Content-Type: text/plain; x-mac-type="54455854"; x-mac-creator="0";
+ name="len_th+3v5.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="len_th+3v5.patch"
+
+diff --git a/include/net/xfrm.h b/include/net/xfrm.h
+index 6d85861..89c5465 100644
+--- a/include/net/xfrm.h
++++ b/include/net/xfrm.h
+@@ -975,6 +975,13 @@ xfrm_state_addr_cmp(struct xfrm_tmpl *tmpl, struct xfrm_state *x, unsigned short
+ }
+ 
+ #ifdef CONFIG_XFRM
++/*
++ * For transport, the policy is checked before the presumed more expensive
++ * checksum. The transport header has already been checked for size, and is
++ * guaranteed to be contiguous. These policies must not alter the header or
++ * its position in the buffer, and should not shorten the buffer length
++ * without ensuring the length remains >= the header size.
++ */
+ extern int __xfrm_policy_check(struct sock *, int dir, struct sk_buff *skb, unsigned short family);
+ 
+ static inline int __xfrm_policy_check2(struct sock *sk, int dir,
+diff --git a/net/ipv4/tcp_ipv4.c b/net/ipv4/tcp_ipv4.c
+index 65b8ebf..0a76e41 100644
+--- a/net/ipv4/tcp_ipv4.c
++++ b/net/ipv4/tcp_ipv4.c
+@@ -1559,7 +1559,8 @@ int tcp_v4_do_rcv(struct sock *sk, struct sk_buff *skb)
+ 		return 0;
+ 	}
+ 
+-	if (skb->len < tcp_hdrlen(skb) || tcp_checksum_complete(skb))
++	/* Assumes header and options unchanged since checksum_init() */
++	if (tcp_checksum_complete(skb))
+ 		goto csum_err;
+ 
+ 	if (sk->sk_state == TCP_LISTEN) {
+@@ -1601,14 +1602,13 @@ csum_err:
+ }
+ 
+ /*
+- *	From tcp_input.c
++ *	Called by ip_input.c: ip_local_deliver_finish()
+  */
+-
+ int tcp_v4_rcv(struct sk_buff *skb)
+ {
+-	const struct iphdr *iph;
+ 	struct tcphdr *th;
+ 	struct sock *sk;
++	int tcp_header_len;
+ 	int ret;
+ 	struct net *net = dev_net(skb->dev);
+ 
+@@ -1618,31 +1618,33 @@ int tcp_v4_rcv(struct sk_buff *skb)
+ 	/* Count it even if it's bad */
+ 	TCP_INC_STATS_BH(net, TCP_MIB_INSEGS);
+ 
++	/* Check too short header */
+ 	if (!pskb_may_pull(skb, sizeof(struct tcphdr)))
+ 		goto discard_it;
+ 
+-	th = tcp_hdr(skb);
+-
+-	if (th->doff < sizeof(struct tcphdr) / 4)
++	/* Check bad doff, compare doff directly to constant value */
++	tcp_header_len = tcp_hdr(skb)->doff;
++	if (tcp_header_len < (sizeof(struct tcphdr) / 4))
+ 		goto bad_packet;
+-	if (!pskb_may_pull(skb, th->doff * 4))
 +
-+	if (!(status & SCxSR_RDxF(port)))
-+		return NO_POLL_CHAR;
++	/* Check too short header and options */
++	tcp_header_len *= 4;
++	if (!pskb_may_pull(skb, tcp_header_len))
+ 		goto discard_it;
  
- 	c = sci_in(port, SCxRDR);
+-	/* An explanation is required here, I think.
+-	 * Packet length and doff are validated by header prediction,
+-	 * provided case of th->doff==0 is eliminated.
+-	 * So, we defer the checks. */
++	/* Packet length and doff are validated by header prediction,
++	 * provided case of th->doff == 0 is eliminated (above).
++	 */
+ 	if (!skb_csum_unnecessary(skb) && tcp_v4_checksum_init(skb))
+ 		goto bad_packet;
  
+ 	th = tcp_hdr(skb);
+-	iph = ip_hdr(skb);
+ 	TCP_SKB_CB(skb)->seq = ntohl(th->seq);
+ 	TCP_SKB_CB(skb)->end_seq = (TCP_SKB_CB(skb)->seq + th->syn + th->fin +
+-				    skb->len - th->doff * 4);
++				    skb->len - tcp_header_len);
+ 	TCP_SKB_CB(skb)->ack_seq = ntohl(th->ack_seq);
+ 	TCP_SKB_CB(skb)->when	 = 0;
+-	TCP_SKB_CB(skb)->flags	 = iph->tos;
++	TCP_SKB_CB(skb)->flags	 = ip_hdr(skb)->tos;
+ 	TCP_SKB_CB(skb)->sacked	 = 0;
+ 
+ 	sk = __inet_lookup_skb(&tcp_hashinfo, skb, th->source, th->dest);
+@@ -1682,14 +1684,14 @@ process:
+ 	bh_unlock_sock(sk);
+ 
+ 	sock_put(sk);
+-
+ 	return ret;
+ 
+ no_tcp_socket:
+ 	if (!xfrm4_policy_check(NULL, XFRM_POLICY_IN, skb))
+ 		goto discard_it;
+ 
+-	if (skb->len < (th->doff << 2) || tcp_checksum_complete(skb)) {
++	/* Assumes header and options unchanged since checksum_init() */
++	if (tcp_checksum_complete(skb)) {
+ bad_packet:
+ 		TCP_INC_STATS_BH(net, TCP_MIB_INERRS);
+ 	} else {
+@@ -1711,18 +1713,21 @@ do_time_wait:
+ 		goto discard_it;
+ 	}
+ 
+-	if (skb->len < (th->doff << 2) || tcp_checksum_complete(skb)) {
++	/* Assumes header and options unchanged since checksum_init() */
++	if (tcp_checksum_complete(skb)) {
+ 		TCP_INC_STATS_BH(net, TCP_MIB_INERRS);
+ 		inet_twsk_put(inet_twsk(sk));
+ 		goto discard_it;
+ 	}
++
+ 	switch (tcp_timewait_state_process(inet_twsk(sk), skb, th)) {
+ 	case TCP_TW_SYN: {
+ 		struct sock *sk2 = inet_lookup_listener(dev_net(skb->dev),
+ 							&tcp_hashinfo,
+-							iph->daddr, th->dest,
++							ip_hdr(skb)->daddr,
++							th->dest,
+ 							inet_iif(skb));
+-		if (sk2) {
++		if (sk2 != NULL) {
+ 			inet_twsk_deschedule(inet_twsk(sk), &tcp_death_row);
+ 			inet_twsk_put(inet_twsk(sk));
+ 			sk = sk2;
+diff --git a/net/ipv6/tcp_ipv6.c b/net/ipv6/tcp_ipv6.c
+index febfd59..b76939a 100644
+--- a/net/ipv6/tcp_ipv6.c
++++ b/net/ipv6/tcp_ipv6.c
+@@ -1594,7 +1594,8 @@ static int tcp_v6_do_rcv(struct sock *sk, struct sk_buff *skb)
+ 		return 0;
+ 	}
+ 
+-	if (skb->len < tcp_hdrlen(skb) || tcp_checksum_complete(skb))
++	/* Assumes header and options unchanged since checksum_init() */
++	if (tcp_checksum_complete(skb))
+ 		goto csum_err;
+ 
+ 	if (sk->sk_state == TCP_LISTEN) {
+@@ -1664,38 +1665,47 @@ ipv6_pktoptions:
+ 	return 0;
+ }
+ 
++/*
++ *	Called by ip6_input.c: ip6_input_finish()
++ */
+ static int tcp_v6_rcv(struct sk_buff *skb)
+ {
+ 	struct tcphdr *th;
+ 	struct sock *sk;
++	int tcp_header_len;
+ 	int ret;
+ 	struct net *net = dev_net(skb->dev);
+ 
+ 	if (skb->pkt_type != PACKET_HOST)
+ 		goto discard_it;
+ 
+-	/*
+-	 *	Count it even if it's bad.
+-	 */
++	/* Count it even if it's bad */
+ 	TCP_INC_STATS_BH(net, TCP_MIB_INSEGS);
+ 
++	/* Check too short header */
+ 	if (!pskb_may_pull(skb, sizeof(struct tcphdr)))
+ 		goto discard_it;
+ 
+-	th = tcp_hdr(skb);
+-
+-	if (th->doff < sizeof(struct tcphdr)/4)
++	/* Check bad doff, compare doff directly to constant value */
++	tcp_header_len = tcp_hdr(skb)->doff;
++	if (tcp_header_len < (sizeof(struct tcphdr) / 4))
+ 		goto bad_packet;
+-	if (!pskb_may_pull(skb, th->doff*4))
++
++	/* Check too short header and options */
++	tcp_header_len *= 4;
++	if (!pskb_may_pull(skb, tcp_header_len))
+ 		goto discard_it;
+ 
++	/* Packet length and doff are validated by header prediction,
++	 * provided case of th->doff == 0 is eliminated (above).
++	 */
+ 	if (!skb_csum_unnecessary(skb) && tcp_v6_checksum_init(skb))
+ 		goto bad_packet;
+ 
+ 	th = tcp_hdr(skb);
+ 	TCP_SKB_CB(skb)->seq = ntohl(th->seq);
+ 	TCP_SKB_CB(skb)->end_seq = (TCP_SKB_CB(skb)->seq + th->syn + th->fin +
+-				    skb->len - th->doff*4);
++				    skb->len - tcp_header_len);
+ 	TCP_SKB_CB(skb)->ack_seq = ntohl(th->ack_seq);
+ 	TCP_SKB_CB(skb)->when = 0;
+ 	TCP_SKB_CB(skb)->flags = ipv6_get_dsfield(ipv6_hdr(skb));
+@@ -1711,6 +1721,7 @@ process:
+ 
+ 	if (!xfrm6_policy_check(sk, XFRM_POLICY_IN, skb))
+ 		goto discard_and_relse;
++	/* nf_reset(skb); in ip6_input.c ip6_input_finish() */
+ 
+ 	if (sk_filter(sk, skb))
+ 		goto discard_and_relse;
+@@ -1743,7 +1754,8 @@ no_tcp_socket:
+ 	if (!xfrm6_policy_check(NULL, XFRM_POLICY_IN, skb))
+ 		goto discard_it;
+ 
+-	if (skb->len < (th->doff<<2) || tcp_checksum_complete(skb)) {
++	/* Assumes header and options unchanged since checksum_init() */
++	if (tcp_checksum_complete(skb)) {
+ bad_packet:
+ 		TCP_INC_STATS_BH(net, TCP_MIB_INERRS);
+ 	} else {
+@@ -1751,11 +1763,7 @@ bad_packet:
+ 	}
+ 
+ discard_it:
+-
+-	/*
+-	 *	Discard frame
+-	 */
+-
++	/* Discard frame. */
+ 	kfree_skb(skb);
+ 	return 0;
+ 
+@@ -1769,24 +1777,23 @@ do_time_wait:
+ 		goto discard_it;
+ 	}
+ 
+-	if (skb->len < (th->doff<<2) || tcp_checksum_complete(skb)) {
++	/* Assumes header and options unchanged since checksum_init() */
++	if (tcp_checksum_complete(skb)) {
+ 		TCP_INC_STATS_BH(net, TCP_MIB_INERRS);
+ 		inet_twsk_put(inet_twsk(sk));
+ 		goto discard_it;
+ 	}
+ 
+ 	switch (tcp_timewait_state_process(inet_twsk(sk), skb, th)) {
+-	case TCP_TW_SYN:
+-	{
+-		struct sock *sk2;
+-
+-		sk2 = inet6_lookup_listener(dev_net(skb->dev), &tcp_hashinfo,
+-					    &ipv6_hdr(skb)->daddr,
+-					    ntohs(th->dest), inet6_iif(skb));
++	case TCP_TW_SYN: {
++		struct sock *sk2 = inet6_lookup_listener(dev_net(skb->dev),
++							 &tcp_hashinfo,
++							 &ipv6_hdr(skb)->daddr,
++							 ntohs(th->dest),
++							 inet6_iif(skb));
+ 		if (sk2 != NULL) {
+-			struct inet_timewait_sock *tw = inet_twsk(sk);
+-			inet_twsk_deschedule(tw, &tcp_death_row);
+-			inet_twsk_put(tw);
++			inet_twsk_deschedule(inet_twsk(sk), &tcp_death_row);
++			inet_twsk_put(inet_twsk(sk));
+ 			sk = sk2;
+ 			goto process;
+ 		}
 -- 
-1.6.3.1.9.g95405b
+1.6.3.3
 
+
+--------------060302050902050907070401--
