@@ -1,204 +1,195 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757712Ab0ANWk4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757741Ab0ANWlI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757712Ab0ANWk4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 17:40:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753604Ab0ANW2S
+	id S1757741Ab0ANWlI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 17:41:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757731Ab0ANWlE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 17:28:18 -0500
-Received: from kroah.org ([198.145.64.141]:60488 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751920Ab0ANW2R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 17:28:17 -0500
-From: Greg Kroah-Hartman <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org, stable-review@kernel.org
-Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       Jeff Dike <jdike@addtoit.com>, Matt Mackall <mpm@selenic.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 02/52] fasync: split 'fasync_helper()' into separate add/remove functions
-Date: Thu, 14 Jan 2010 14:26:41 -0800
-Message-Id: <1263508051-7868-2-git-send-email-gregkh@suse.de>
-X-Mailer: git-send-email 1.6.6
-In-Reply-To: <1263508051-7868-1-git-send-email-gregkh@suse.de>
-References: <20100114222551.GA7839@suse.de>
- <1263508051-7868-1-git-send-email-gregkh@suse.de>
+	Thu, 14 Jan 2010 17:41:04 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:43521 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757721Ab0ANWk7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jan 2010 17:40:59 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Thu, 14 Jan 2010 23:39:46 +0100 (CET)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [PATCH] HOWTO: Updates on subsystem trees, patchwork, -next (vs. -mm)
+To: Randy Dunlap <rdunlap@xenotime.net>, Greg Kroah-Hartman <greg@kroah.com>
+cc: Joe Perches <joe@perches.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.30.1001141303230.3979-100000@mail.perches.com>
+Message-ID: <tkrat.e8ba67441fb65247@s5r6.in-berlin.de>
+References: <4B4F7304.5050401@s5r6.in-berlin.de>
+ <Pine.LNX.4.30.1001141303230.3979-100000@mail.perches.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Linus Torvalds <torvalds@linux-foundation.org>
+One of the roles which -mm fulfilled some time ago (to offer an
+integration testing ground) has been taken over by -next.  This is still
+news to Documentation/HOWTO, so mention it there.
 
-commit 53281b6d34d44308372d16acb7fb5327609f68b6 upstream.
+Also add a word on how patchwork is used to track patches as they make
+their way into subsystem trees.  Remove some arbitrary links to
+subsystem repositories; they can all be found in the MAINTAINERS
+database.
 
-Yes, the add and remove cases do share the same basic loop and the
-locking, but the compiler can inline and then CSE some of the end result
-anyway.  And splitting it up makes the code way easier to follow,
-and makes it clearer exactly what the semantics are.
-
-In particular, we must make sure that the FASYNC flag in file->f_flags
-exactly matches the state of "is this file on any fasync list", since
-not only is that flag visible to user space (F_GETFL), but we also use
-that flag to check whether we need to remove any fasync entries on file
-close.
-
-We got that wrong for the case of a mixed use of file locking (which
-tries to remove any fasync entries for file leases) and fasync.
-
-Splitting the function up also makes it possible to do some future
-optimizations without making the function even messier.  In particular,
-since the FASYNC flag has to match the state of "is this on a list", we
-can do the following future optimizations:
-
- - on remove, we don't even need to get the locks and traverse the list
-   if FASYNC isn't set, since we can know a priori that there is no
-   point (this is effectively the same optimization that we already do
-   in __fput() wrt removing fasync on file close)
-
- - on add, we can use the FASYNC flag to decide whether we are changing
-   an existing entry or need to allocate a new one.
-
-but this is just the cleanup + fix for the FASYNC flag.
-
-Acked-by: Al Viro <viro@ZenIV.linux.org.uk>
-Tested-by: Tavis Ormandy <taviso@google.com>
-Cc: Jeff Dike <jdike@addtoit.com>
-Cc: Matt Mackall <mpm@selenic.com>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
 ---
- fs/fcntl.c |  102 ++++++++++++++++++++++++++++++++++++++---------------------
- 1 files changed, 66 insertions(+), 36 deletions(-)
 
-diff --git a/fs/fcntl.c b/fs/fcntl.c
-index 2cf93ec..97e01dc 100644
---- a/fs/fcntl.c
-+++ b/fs/fcntl.c
-@@ -618,60 +618,90 @@ static DEFINE_RWLOCK(fasync_lock);
- static struct kmem_cache *fasync_cache __read_mostly;
+This supersedes
+[PATCH] HOWTO: Point to patchwork.kernel.org and patchwork.ozlabs.org
+
+ Documentation/HOWTO |  112 ++++++++++++++++-----------------------------------
+ 1 files changed, 35 insertions(+), 77 deletions(-)
+
+diff --git a/Documentation/HOWTO b/Documentation/HOWTO
+index 8495fc9..085d281 100644
+--- a/Documentation/HOWTO
++++ b/Documentation/HOWTO
+@@ -221,8 +221,8 @@ branches.  These different branches are:
+   - main 2.6.x kernel tree
+   - 2.6.x.y -stable kernel tree
+   - 2.6.x -git kernel patches
+-  - 2.6.x -mm kernel patches
+   - subsystem specific kernel trees and patches
++  - the 2.6.x -next kernel tree for integration tests
  
- /*
-- * fasync_helper() is used by almost all character device drivers
-- * to set up the fasync queue. It returns negative on error, 0 if it did
-- * no changes and positive if it added/deleted the entry.
-+ * Remove a fasync entry. If successfully removed, return
-+ * positive and clear the FASYNC flag. If no entry exists,
-+ * do nothing and return 0.
-+ *
-+ * NOTE! It is very important that the FASYNC flag always
-+ * match the state "is the filp on a fasync list".
-+ *
-+ * We always take the 'filp->f_lock', in since fasync_lock
-+ * needs to be irq-safe.
-  */
--int fasync_helper(int fd, struct file * filp, int on, struct fasync_struct **fapp)
-+static int fasync_remove_entry(struct file *filp, struct fasync_struct **fapp)
- {
- 	struct fasync_struct *fa, **fp;
--	struct fasync_struct *new = NULL;
- 	int result = 0;
+ 2.6.x kernel tree
+ -----------------
+@@ -232,7 +232,7 @@ process is as follows:
+   - As soon as a new kernel is released a two weeks window is open,
+     during this period of time maintainers can submit big diffs to
+     Linus, usually the patches that have already been included in the
+-    -mm kernel for a few weeks.  The preferred way to submit big changes
++    -next kernel for a few weeks.  The preferred way to submit big changes
+     is using git (the kernel's source management tool, more information
+     can be found at http://git.or.cz/) but plain patches are also just
+     fine.
+@@ -293,84 +293,42 @@ daily and represent the current state of Linus' tree.  They are more
+ experimental than -rc kernels since they are generated automatically
+ without even a cursory glance to see if they are sane.
  
--	if (on) {
--		new = kmem_cache_alloc(fasync_cache, GFP_KERNEL);
--		if (!new)
--			return -ENOMEM;
-+	spin_lock(&filp->f_lock);
-+	write_lock_irq(&fasync_lock);
-+	for (fp = fapp; (fa = *fp) != NULL; fp = &fa->fa_next) {
-+		if (fa->fa_file != filp)
-+			continue;
-+		*fp = fa->fa_next;
-+		kmem_cache_free(fasync_cache, fa);
-+		filp->f_flags &= ~FASYNC;
-+		result = 1;
-+		break;
- 	}
-+	write_unlock_irq(&fasync_lock);
-+	spin_unlock(&filp->f_lock);
-+	return result;
-+}
+-2.6.x -mm kernel patches
+-------------------------
+-These are experimental kernel patches released by Andrew Morton.  Andrew
+-takes all of the different subsystem kernel trees and patches and mushes
+-them together, along with a lot of patches that have been plucked from
+-the linux-kernel mailing list.  This tree serves as a proving ground for
+-new features and patches.  Once a patch has proved its worth in -mm for
+-a while Andrew or the subsystem maintainer pushes it on to Linus for
+-inclusion in mainline.
+-
+-It is heavily encouraged that all new patches get tested in the -mm tree
+-before they are sent to Linus for inclusion in the main kernel tree.  Code
+-which does not make an appearance in -mm before the opening of the merge
+-window will prove hard to merge into the mainline.
+-
+-These kernels are not appropriate for use on systems that are supposed
+-to be stable and they are more risky to run than any of the other
+-branches.
+-
+-If you wish to help out with the kernel development process, please test
+-and use these kernel releases and provide feedback to the linux-kernel
+-mailing list if you have any problems, and if everything works properly.
+-
+-In addition to all the other experimental patches, these kernels usually
+-also contain any changes in the mainline -git kernels available at the
+-time of release.
+-
+-The -mm kernels are not released on a fixed schedule, but usually a few
+--mm kernels are released in between each -rc kernel (1 to 3 is common).
+-
+ Subsystem Specific kernel trees and patches
+ -------------------------------------------
+-A number of the different kernel subsystem developers expose their
+-development trees so that others can see what is happening in the
+-different areas of the kernel.  These trees are pulled into the -mm
+-kernel releases as described above.
+-
+-Here is a list of some of the different kernel trees available:
+-  git trees:
+-    - Kbuild development tree, Sam Ravnborg <sam@ravnborg.org>
+-	git.kernel.org:/pub/scm/linux/kernel/git/sam/kbuild.git
+-
+-    - ACPI development tree, Len Brown <len.brown@intel.com>
+-	git.kernel.org:/pub/scm/linux/kernel/git/lenb/linux-acpi-2.6.git
+-
+-    - Block development tree, Jens Axboe <jens.axboe@oracle.com>
+-	git.kernel.org:/pub/scm/linux/kernel/git/axboe/linux-2.6-block.git
+-
+-    - DRM development tree, Dave Airlie <airlied@linux.ie>
+-	git.kernel.org:/pub/scm/linux/kernel/git/airlied/drm-2.6.git
+-
+-    - ia64 development tree, Tony Luck <tony.luck@intel.com>
+-	git.kernel.org:/pub/scm/linux/kernel/git/aegl/linux-2.6.git
+-
+-    - infiniband, Roland Dreier <rolandd@cisco.com>
+-	git.kernel.org:/pub/scm/linux/kernel/git/roland/infiniband.git
+-
+-    - libata, Jeff Garzik <jgarzik@pobox.com>
+-	git.kernel.org:/pub/scm/linux/kernel/git/jgarzik/libata-dev.git
+-
+-    - network drivers, Jeff Garzik <jgarzik@pobox.com>
+-	git.kernel.org:/pub/scm/linux/kernel/git/jgarzik/netdev-2.6.git
+-
+-    - pcmcia, Dominik Brodowski <linux@dominikbrodowski.net>
+-	git.kernel.org:/pub/scm/linux/kernel/git/brodo/pcmcia-2.6.git
+-
+-    - SCSI, James Bottomley <James.Bottomley@hansenpartnership.com>
+-	git.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-misc-2.6.git
+-
+-    - x86, Ingo Molnar <mingo@elte.hu>
+-	git://git.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-x86.git
+-
+-  quilt trees:
+-    - USB, Driver Core, and I2C, Greg Kroah-Hartman <gregkh@suse.de>
+-	kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/
++The maintainers of the various kernel subsystems --- and also many
++kernel subsystem developers --- expose their current state of
++development in source repositories.  That way, others can see what is
++happening in the different areas of the kernel.  In areas where
++development is rapid, a developer may be asked to base his submissions
++onto such a subsystem kernel tree so that conflicts between the
++submission and other already ongoing work are avoided.
 +
-+/*
-+ * Add a fasync entry. Return negative on error, positive if
-+ * added, and zero if did nothing but change an existing one.
-+ *
-+ * NOTE! It is very important that the FASYNC flag always
-+ * match the state "is the filp on a fasync list".
-+ */
-+static int fasync_add_entry(int fd, struct file *filp, struct fasync_struct **fapp)
-+{
-+	struct fasync_struct *new, *fa, **fp;
-+	int result = 0;
++Most of these repositories are git trees, but there are also other SCMs
++in use, or patch queues being published as quilt series.  Addresses of
++these subsystem repositories are listed in the MAINTAINERS file.
 +
-+	new = kmem_cache_alloc(fasync_cache, GFP_KERNEL);
-+	if (!new)
-+		return -ENOMEM;
- 
--	/*
--	 * We need to take f_lock first since it's not an IRQ-safe
--	 * lock.
--	 */
- 	spin_lock(&filp->f_lock);
- 	write_lock_irq(&fasync_lock);
- 	for (fp = fapp; (fa = *fp) != NULL; fp = &fa->fa_next) {
--		if (fa->fa_file == filp) {
--			if(on) {
--				fa->fa_fd = fd;
--				kmem_cache_free(fasync_cache, new);
--			} else {
--				*fp = fa->fa_next;
--				kmem_cache_free(fasync_cache, fa);
--				result = 1;
--			}
--			goto out;
--		}
-+		if (fa->fa_file != filp)
-+			continue;
-+		fa->fa_fd = fd;
-+		kmem_cache_free(fasync_cache, new);
-+		goto out;
- 	}
- 
--	if (on) {
--		new->magic = FASYNC_MAGIC;
--		new->fa_file = filp;
--		new->fa_fd = fd;
--		new->fa_next = *fapp;
--		*fapp = new;
--		result = 1;
--	}
-+	new->magic = FASYNC_MAGIC;
-+	new->fa_file = filp;
-+	new->fa_fd = fd;
-+	new->fa_next = *fapp;
-+	*fapp = new;
-+	result = 1;
-+	filp->f_flags |= FASYNC;
++Before a proposed patch is committed to such a subsystem tree, it is
++subject to review which primarily happens on the on mailing lists (see
++the respective section below).  For several kernel subsystems, this
++submission and review process is tracked with the tool patchwork.
++Patchwork offers a web interface which shows patch postings, any
++comments on a patch or revisions to it, and maintainers can mark patches
++as under review, accepted, or rejected.  Most of these patchwork sites
++are listed at http://patchwork.kernel.org/ or http://patchwork.ozlabs.org/.
 +
- out:
--	if (on)
--		filp->f_flags |= FASYNC;
--	else
--		filp->f_flags &= ~FASYNC;
- 	write_unlock_irq(&fasync_lock);
- 	spin_unlock(&filp->f_lock);
- 	return result;
- }
- 
-+/*
-+ * fasync_helper() is used by almost all character device drivers
-+ * to set up the fasync queue, and for regular files by the file
-+ * lease code. It returns negative on error, 0 if it did no changes
-+ * and positive if it added/deleted the entry.
-+ */
-+int fasync_helper(int fd, struct file * filp, int on, struct fasync_struct **fapp)
-+{
-+	if (!on)
-+		return fasync_remove_entry(filp, fapp);
-+	return fasync_add_entry(fd, filp, fapp);
-+}
++2.6.x -next kernel tree for integration tests
++---------------------------------------------
++Before updates from subsystem trees are merged into the mainline 2.6.x
++tree, they need to be integration-tested.  For this purpose, a special
++testing repository exists into which virtually all subsystem trees are
++pulled on an almost daily basis:
++	http://git.kernel.org/?p=linux/kernel/git/sfr/linux-next.git
++	http://linux.f-seidel.de/linux-next/pmwiki/
 +
- EXPORT_SYMBOL(fasync_helper);
++This way, the -next kernel gives a summary outlook onto what will be
++expected to go into the mainline kernel at the next merge period.
++Adventurous testers are very welcome to runtime-test the -next kernel.
  
- void __kill_fasync(struct fasync_struct *fa, int sig, int band)
+-  Other kernel trees can be found listed at http://git.kernel.org/ and in
+-  the MAINTAINERS file.
+ 
+ Bug Reporting
+ -------------
+
 -- 
-1.6.6
+Stefan Richter
+-=====-==-=- ---= -===-
+http://arcgraph.de/sr/
 
