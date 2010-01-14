@@ -1,83 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756158Ab0ANHa4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756026Ab0ANHgb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756158Ab0ANHa4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 02:30:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755982Ab0ANHaz
+	id S1756026Ab0ANHgb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 02:36:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755686Ab0ANHg3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 02:30:55 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:34397 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755903Ab0ANHay (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 02:30:54 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Gleb Natapov <gleb@redhat.com>
-Subject: Re: [PATCH v5] add MAP_UNLOCKED mmap flag
-Cc: kosaki.motohiro@jp.fujitsu.com, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, linux-api@vger.kernel.org,
-       akpm@linux-foundation.org
-In-Reply-To: <20100114072210.GK18808@redhat.com>
-References: <20100114155229.6735.A69D9226@jp.fujitsu.com> <20100114072210.GK18808@redhat.com>
-Message-Id: <20100114162327.673E.A69D9226@jp.fujitsu.com>
+	Thu, 14 Jan 2010 02:36:29 -0500
+Received: from trinity.fluff.org ([89.16.178.74]:60349 "EHLO trinity.fluff.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755137Ab0ANHg3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jan 2010 02:36:29 -0500
+Date: Thu, 14 Jan 2010 07:36:17 +0000
+From: Ben Dooks <ben-linux@fluff.org>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ben Dooks <ben-linux@fluff.org>,
+       linux-kernel@vger.kernel.org, stable@kernel.org
+Subject: Re: [PATCH 2.6.33] s3c-fb: Fix handling of missing refresh in
+	platform data
+Message-ID: <20100114073617.GT3738@trinity.fluff.org>
+References: <1263399402-5912-1-git-send-email-broonie@opensource.wolfsonmicro.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Thu, 14 Jan 2010 16:30:51 +0900 (JST)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1263399402-5912-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+X-Disclaimer: These are my views alone.
+X-URL: http://www.fluff.org/
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: ben@trinity.fluff.org
+X-SA-Exim-Scanned: No (on trinity.fluff.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Thu, Jan 14, 2010 at 04:02:42PM +0900, KOSAKI Motohiro wrote:
-> > > On Thu, Jan 14, 2010 at 09:31:03AM +0900, KOSAKI Motohiro wrote:
-> > > > > If application does mlockall(MCL_FUTURE) it is no longer possible to mmap
-> > > > > file bigger than main memory or allocate big area of anonymous memory
-> > > > > in a thread safe manner. Sometimes it is desirable to lock everything
-> > > > > related to program execution into memory, but still be able to mmap
-> > > > > big file or allocate huge amount of memory and allow OS to swap them on
-> > > > > demand. MAP_UNLOCKED allows to do that.
-> > > > >  
-> > > > > Signed-off-by: Gleb Natapov <gleb@redhat.com>
-> > > > > ---
-> > > > > 
-> > > > > I get reports that people find this useful, so resending.
-> > > > 
-> > > > This description is still wrong. It doesn't describe why this patch is useful.
-> > > > 
-> > > I think the text above describes the feature it adds and its use
-> > > case quite well. Can you elaborate what is missing in your opinion,
-> > > or suggest alternative text please?
-> > 
-> > My point is, introducing mmap new flags need strong and clearly use-case.
-> > All patch should have good benefit/cost balance. the code can describe the cost,
-> > but the benefit can be only explained by the patch description.
-> > 
-> > I don't think this poor description explained bit benefit rather than cost.
-> > you should explain why this patch is useful and not just pretty toy.
-> > 
-> The benefit is that with this patch I can lock all of my application in
-> memory except some very big memory areas. My use case is that I want to
-> run virtual machine in such a way that everything related to machine
-> emulator is locked into the memory, but guest address space can be
-> swapped out at will. Guest address space is so huge that it is not
-> possible to allocated it locked and then unlock. I was very surprised
-> that current Linux API has no way to do it hence this patch. It may look
-> like a pretty toy to you until some day you need this and has no way to
-> do it.
+On Wed, Jan 13, 2010 at 04:16:42PM +0000, Mark Brown wrote:
+> Commit 600ce1a0faafeed1ce6bcfd421bc040b941cbbc1 ("fix clock setting
+> for Samsung SoC Framebuffer") introduced a mandatory refresh parameter
+> to the platform data for the S3C framebuffer but did not introduce any
+> validation code, causing existing platforms to divide by zero whenever
+> the framebuffer is configured, generating warnings and unusable output.
 
-Hmm..
-Your answer didn't match I wanted.
-few additional questions.
+Hmm, having just read 600ce1a0faafeed1ce6bcfd421bc040b941cbbc1 it seems
+the the original authour has has missed the point of what is happening
+and thus possibly broken the driver.
 
-- Why don't you change your application? It seems natural way than kernel change.
-- Why do you want your virtual machine have mlockall? AFAIK, current majority
-  virtual machine doesn't.
-- If this feature added, average distro user can get any benefit?
+We get passed the pixclk in the fb settings to produce the required
+refresh rate for the given parameters. We do not need to think about
+the refresh rate in the driver itself, the caller should have deal with
+it!.
 
-I mean, many application developrs want to add their specific feature
-into kernel. but if we allow it unlimitedly, major syscall become
-the trushbox of pretty toy feature soon.
+Secondly, s3c_fb_calc_pixclk() can only be called from the root fb,
+as there is only one divider in the block used to generate the output
+pixel clock for the LCD bus. Adding a window id to the s3c_fb_calc_pixclk()
+is useless as the subordinate framebuffers for the overlay windows do not
+have their own dividers. as noted in the code it only ever uses this
+in the case of win_no == 0, so it was unecessarey.
 
+Thirdly he's changed the code to calculate the divider to assume pixclk
+is a frequency, and not a time-period. It clearly stats in the docs
+that pixclk is in picoseconds. Our clock rate is in Hz.
 
+It seems I wasn't cc'd on the original submission or I'd have said no.
+
+I'd rather see this one reverted.
+
+> Add a WARN_ON(), in line with similar parameters, and check that we
+> have a non-zero refresh before we dividing by it. This gets usable
+> output on at least the SMDK6410, though without specifying a refresh
+> we see visible issues on some boots.
+> 
+> Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+> Cc: stable@kernel.org
+> ---
+> 
+> All mainline users of the s3c-fb driver are affected by this, none
+> provide refresh.
+> 
+>  drivers/video/s3c-fb.c |    4 +++-
+>  1 files changed, 3 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
+> index adf9632..0f2e8f6 100644
+> --- a/drivers/video/s3c-fb.c
+> +++ b/drivers/video/s3c-fb.c
+> @@ -224,7 +224,8 @@ static int s3c_fb_calc_pixclk(unsigned char id, struct s3c_fb *sfb, unsigned int
+>  	unsigned long clk = clk_get_rate(sfb->bus_clk);
+>  	unsigned int result;
+>  
+> -	pixclk *= win->win_mode.refresh;
+> +	if (win->win_mode.refresh)
+> +		pixclk *= win->win_mode.refresh;
+>  	result = clk / pixclk;
+>  
+>  	dev_dbg(sfb->dev, "pixclk=%u, clk=%lu, div=%d (%lu)\n",
+> @@ -766,6 +767,7 @@ static int __devinit s3c_fb_probe_win(struct s3c_fb *sfb, unsigned int win_no,
+>  	WARN_ON(windata->max_bpp == 0);
+>  	WARN_ON(windata->win_mode.xres == 0);
+>  	WARN_ON(windata->win_mode.yres == 0);
+> +	WARN_ON(windata->win_mode.refresh == 0);
+>  
+>  	win = fbinfo->par;
+>  	var = &fbinfo->var;
+> -- 
+> 1.6.6
+> 
+
+-- 
+-- 
+Ben
+
+Q:      What's a light-year?
+A:      One-third less calories than a regular year.
 
