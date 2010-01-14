@@ -1,51 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754953Ab0ANFS4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755162Ab0ANFXf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754953Ab0ANFS4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 00:18:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751411Ab0ANFS4
+	id S1755162Ab0ANFXf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 00:23:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751831Ab0ANFXe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 00:18:56 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:56318 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750973Ab0ANFSz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 00:18:55 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Minchan Kim <minchan.kim@gmail.com>
-Subject: Re: [PATCH 2/3][v2] vmstat: add anon_scan_ratio field to zoneinfo
-Cc: kosaki.motohiro@jp.fujitsu.com, LKML <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Rik van Riel <riel@redhat.com>
-In-Reply-To: <28c262361001132112i7f50fd66qcd24dc2ddb4d78d8@mail.gmail.com>
-References: <20100114084659.D713.A69D9226@jp.fujitsu.com> <28c262361001132112i7f50fd66qcd24dc2ddb4d78d8@mail.gmail.com>
-Message-Id: <20100114141735.672B.A69D9226@jp.fujitsu.com>
+	Thu, 14 Jan 2010 00:23:34 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:63418 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751166Ab0ANFXe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jan 2010 00:23:34 -0500
+Message-ID: <4B4EAA54.9000109@cn.fujitsu.com>
+Date: Thu, 14 Jan 2010 13:23:32 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Thu, 14 Jan 2010 14:18:52 +0900 (JST)
+To: Masami Hiramatsu <mhiramat@redhat.com>
+CC: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] perf probe: Fix build failure
+References: <4B4E8993.5080404@cn.fujitsu.com> <4B4EA2BC.9000307@redhat.com>
+In-Reply-To: <4B4EA2BC.9000307@redhat.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > Well. zone->lock and zone->lru_lock should be not taked at the same time.
+Masami Hiramatsu wrote:
+> Hi,
 > 
-> I looked over the code since I am out of office.
-> I can't find any locking problem zone->lock and zone->lru_lock.
-> Do you know any locking order problem?
-> Could you explain it with call graph if you don't mind?
+> Thank you, the patch code looks good to me.
 > 
-> I am out of office by tomorrow so I can't reply quickly.
-> Sorry for late reponse.
+> Li Zefan wrote:
+>> builtin-probe.c:121: error: 'opt_show_lines' defined but not used
+> 
+> Please add some comment for explanation, like:
+> 
+> This build error occurs when compiling perf-tools without dwarf
+> support (no libdwarf).
+> 
 
-This is not lock order issue. both zone->lock and zone->lru_lock are
-hotpath lock. then, same tame grabbing might cause performance impact.
-
-thanks.
-
-
+But as simple as this patch, the code itself has explained
+the cause of this compile error.
 
