@@ -1,75 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753321Ab0ANLnW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754839Ab0ANLnf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753321Ab0ANLnW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 06:43:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751822Ab0ANLnV
+	id S1754839Ab0ANLnf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 06:43:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753907Ab0ANLnd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 06:43:21 -0500
-Received: from casper.infradead.org ([85.118.1.10]:39559 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751481Ab0ANLnV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 06:43:21 -0500
-Subject: Re: [RFC] [PATCH 7/7] Ftrace plugin for Uprobes
-From: Peter Zijlstra <peterz@infradead.org>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Arnaldo Carvalho de Melo <acme@infradead.org>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       utrace-devel <utrace-devel@redhat.com>,
-       Jim Keniston <jkenisto@us.ibm.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Maneesh Soni <maneesh@in.ibm.com>, Mark Wielaard <mjw@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20100114113509.GB5033@nowhere>
-References: <20100111122521.22050.3654.sendpatchset@srikar.in.ibm.com>
-	 <20100111122608.22050.94088.sendpatchset@srikar.in.ibm.com>
-	 <1263468191.4244.300.camel@laptop>  <20100114113509.GB5033@nowhere>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 14 Jan 2010 12:43:01 +0100
-Message-ID: <1263469381.4244.308.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 14 Jan 2010 06:43:33 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:47047 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753738Ab0ANLnd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jan 2010 06:43:33 -0500
+Date: Thu, 14 Jan 2010 06:42:43 -0500
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Balbir Singh <bsingharora@gmail.com>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Li Zefan <lizf@cn.fujitsu.com>, axboe@kernel.dk, ryov@valinux.co.jp,
+       Andrew Morton <akpm@linux-foundation.org>, menage@google.com,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC] [PATCH 2/2] cgroups: blkio subsystem as module
+Message-ID: <20100114114243.GC15559@redhat.com>
+References: <20091231051050.GA714@andrew.cmu.edu> <20100106160414.bd555474.akpm@linux-foundation.org> <20100107012606.GA25577@andrew.cmu.edu> <20100107120732.97d502bd.kamezawa.hiroyu@jp.fujitsu.com> <4B45824B.9030108@cn.fujitsu.com> <20100108052734.GA13168@andrew.cmu.edu> <20100108053021.GC13168@andrew.cmu.edu> <20100108151038.GA22219@redhat.com> <20100112092106.9ac4e535.kamezawa.hiroyu@jp.fujitsu.com> <661de9471001140132o23f44a4fjb1849d865f96d19a@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <661de9471001140132o23f44a4fjb1849d865f96d19a@mail.gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2010-01-14 at 12:35 +0100, Frederic Weisbecker wrote:
-> On Thu, Jan 14, 2010 at 12:23:11PM +0100, Peter Zijlstra wrote:
-> > On Mon, 2010-01-11 at 17:56 +0530, Srikar Dronamraju wrote:
-> > > This patch implements ftrace plugin for uprobes.
-> > 
-> > Right, like others have said, trace events is a much saner interface.
-> > 
-> > So the easiest way I can see that working is to register uprobes against
-> > a file (not a pid). Then on creation it uses rmap to find all current
-> > maps of that file and install the probe if there is a consumer for that
-> > map.
-> > 
-> > Then for each new mmap() of that file, we also need to check if there's
-> > a consumer ready and install the probe.
+On Thu, Jan 14, 2010 at 03:02:09PM +0530, Balbir Singh wrote:
+> On Tue, Jan 12, 2010 at 5:51 AM, KAMEZAWA Hiroyuki
+> <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> > On Fri, 8 Jan 2010 10:10:38 -0500
+> > Vivek Goyal <vgoyal@redhat.com> wrote:
+> >
+> >> On Fri, Jan 08, 2010 at 12:30:21AM -0500, Ben Blum wrote:
+> >> > Convert blk-cgroup to be buildable as a module
+> >> >
+> >> > From: Ben Blum <bblum@andrew.cmu.edu>
+> >> >
+> >> > This patch modifies the Block I/O cgroup subsystem to be able to be built as a
+> >> > module. As the CFQ disk scheduler optionally depends on blk-cgroup, config
+> >> > options in block/Kconfig, block/Kconfig.iosched, and block/blk-cgroup.h are
+> >> > enhanced to support the new module dependency.
+> >> >
+> >>
+> >> Hi Ben,
+> >>
+> >> I will give this patch a try.
+> >>
+> >> So from blk-cgroup perspective, the advantage of allowing it as module
+> >> will be that we can save some memory if we are not using the controller?
+> >>
+> > Is "moduled" blkio cgroup safe after page-tracking by page_cgroup is
+> > introduced ?
+> >
 > 
-> 
-> 
-> That looks racy.
-> 
-> Say you first create a probe on /bin/ls:
-> 
-> perf probe p addr_in_ls /bin/ls
-> 
-> then something else launches /bin/ls behind you, probe
-> is set on it
-> 
-> then you launch:
-> 
-> perf record -e "probe:...." /bin/ls
-> 
-> Then it goes recording the previous instance.
+> My guess is it won't be, unless we start exposing page_cgroup API and
+> then make the module depend on memcg.
 
-Uhm, why? Only the perf /bin/ls instance has a consumer and will thus
-have a probe installed.
+I think I agree. When we introduce page_cgroup based page tracking, either
+we need to export page_cgroup API or we can force blkio controller to
+compile as in-kernel if user selects the CONFIG_PAGE_TRACKING option.
 
-(Or if you want to use ftrace you need to always have all instances
-probed anyway)
+So as of now, I can't think why we should not we allow compiling blkio as
+module as long as core cgroup functionality supports it safely.
 
+Thanks
+Vivek
