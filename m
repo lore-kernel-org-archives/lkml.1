@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757104Ab0ANXKU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756932Ab0ANXKR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757104Ab0ANXKU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 18:10:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756958Ab0ANXKR
-	(ORCPT <rfc822;linux-kernel-outgoing>);
+	id S1756932Ab0ANXKR (ORCPT <rfc822;w@1wt.eu>);
 	Thu, 14 Jan 2010 18:10:17 -0500
-Received: from kroah.org ([198.145.64.141]:41910 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756663Ab0ANXKI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756742Ab0ANXKI
+	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Thu, 14 Jan 2010 18:10:08 -0500
-X-Mailbox-Line: From gregkh@mini.kroah.org Thu Jan 14 15:06:21 2010
-Message-Id: <20100114230620.960894210@mini.kroah.org>
+Received: from kroah.org ([198.145.64.141]:41902 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754554Ab0ANXKH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jan 2010 18:10:07 -0500
+X-Mailbox-Line: From gregkh@mini.kroah.org Thu Jan 14 15:06:20 2010
+Message-Id: <20100114230620.830938718@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 14 Jan 2010 15:04:50 -0800
+Date: Thu, 14 Jan 2010 15:04:49 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Florian Westphal <fwestphal@astaro.com>,
-       Patrick McHardy <kaber@trash.net>
-Subject: [2/6] netfilter: ebtables: enforce CAP_NET_ADMIN
+       Andi Kleen <ak@linux.intel.com>, Ingo Molnar <mingo@elte.hu>,
+       Oleg Nesterov <oleg@redhat.com>
+Subject: [1/6] kernel/signal.c: fix kernel information leak with print-fatal-signals=1
 In-Reply-To: <20100114230640.GA7259@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -29,45 +29,50 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Florian Westphal <fwestphal@astaro.com>
+From: Andi Kleen <andi@firstfloor.org>
 
-commit dce766af541f6605fa9889892c0280bab31c66ab upstream.
+commit b45c6e76bc2c72f6426c14bed64fdcbc9bf37cb0 upstream.
 
-normal users are currently allowed to set/modify ebtables rules.
-Restrict it to processes with CAP_NET_ADMIN.
+When print-fatal-signals is enabled it's possible to dump any memory
+reachable by the kernel to the log by simply jumping to that address from
+user space.
 
-Note that this cannot be reproduced with unmodified ebtables binary
-because it uses SOCK_RAW.
+Or crash the system if there's some hardware with read side effects.
 
-Signed-off-by: Florian Westphal <fwestphal@astaro.com>
-Signed-off-by: Patrick McHardy <kaber@trash.net>
+The fatal signals handler will dump 16 bytes at the execution address,
+which is fully controlled by ring 3.
+
+In addition when something jumps to a unmapped address there will be up to
+16 additional useless page faults, which might be potentially slow (and at
+least is not very efficient)
+
+Fortunately this option is off by default and only there on i386.
+
+But fix it by checking for kernel addresses and also stopping when there's
+a page fault.
+
+Signed-off-by: Andi Kleen <ak@linux.intel.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Oleg Nesterov <oleg@redhat.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/bridge/netfilter/ebtables.c |    6 ++++++
- 1 file changed, 6 insertions(+)
+ kernel/signal.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
---- a/net/bridge/netfilter/ebtables.c
-+++ b/net/bridge/netfilter/ebtables.c
-@@ -1436,6 +1436,9 @@ static int do_ebt_set_ctl(struct sock *s
- {
- 	int ret;
+--- a/kernel/signal.c
++++ b/kernel/signal.c
+@@ -884,7 +884,8 @@ static void print_fatal_signal(struct pt
+ 		for (i = 0; i < 16; i++) {
+ 			unsigned char insn;
  
-+	if (!capable(CAP_NET_ADMIN))
-+		return -EPERM;
-+
- 	switch(cmd) {
- 	case EBT_SO_SET_ENTRIES:
- 		ret = do_replace(user, len);
-@@ -1455,6 +1458,9 @@ static int do_ebt_get_ctl(struct sock *s
- 	struct ebt_replace tmp;
- 	struct ebt_table *t;
- 
-+	if (!capable(CAP_NET_ADMIN))
-+		return -EPERM;
-+
- 	if (copy_from_user(&tmp, user, sizeof(tmp)))
- 		return -EFAULT;
- 
+-			__get_user(insn, (unsigned char *)(regs->ip + i));
++			if (get_user(insn, (unsigned char *)(regs->ip + i)))
++				break;
+ 			printk("%02x ", insn);
+ 		}
+ 	}
 
 
