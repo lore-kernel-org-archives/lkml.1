@@ -1,143 +1,262 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932255Ab0ANPB6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932229Ab0ANPBi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932255Ab0ANPB6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 10:01:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932234Ab0ANPBu
+	id S932229Ab0ANPBi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 10:01:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932217Ab0ANPBd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 10:01:50 -0500
-Received: from mail.windriver.com ([147.11.1.11]:47924 "EHLO
+	Thu, 14 Jan 2010 10:01:33 -0500
+Received: from mail.windriver.com ([147.11.1.11]:47835 "EHLO
 	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932217Ab0ANPBr (ORCPT
+	with ESMTP id S932210Ab0ANPBb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 10:01:47 -0500
+	Thu, 14 Jan 2010 10:01:31 -0500
 From: Jason Wessel <jason.wessel@windriver.com>
 To: linux-kernel@vger.kernel.org
 Cc: kgdb-bugreport@lists.sourceforge.net, mingo@elte.hu,
        Jason Wessel <jason.wessel@windriver.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       David Airlie <airlied@linux.ie>
-Subject: [PATCH 36/40] drm,i915 - atomic mutex hacks
-Date: Thu, 14 Jan 2010 08:59:32 -0600
-Message-Id: <1263481176-1897-37-git-send-email-jason.wessel@windriver.com>
+       David Airlie <airlied@linux.ie>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: [PATCH 33/40] kms,kdb: Force unblank a console device
+Date: Thu, 14 Jan 2010 08:59:29 -0600
+Message-Id: <1263481176-1897-34-git-send-email-jason.wessel@windriver.com>
 X-Mailer: git-send-email 1.6.3.1.9.g95405b
 In-Reply-To: <1263481176-1897-1-git-send-email-jason.wessel@windriver.com>
 References: <1263481176-1897-1-git-send-email-jason.wessel@windriver.com>
-X-OriginalArrivalTime: 14 Jan 2010 15:01:21.0788 (UTC) FILETIME=[6F0EB3C0:01CA952A]
+X-OriginalArrivalTime: 14 Jan 2010 15:01:13.0241 (UTC) FILETIME=[69F68890:01CA952A]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here are some hacks to work around mutex crashes in the drm / i915
-code.
+The kgdboc pre exception handler must atomically save the state of the
+existing VC console and activate it, if it is blanked.
 
-For now, this is the only way to make the kms / kgdb path safe on an
-SMP system.
+Before restoring the kernel to a running state, the kgdboc post
+exception handler will restore the state of the VC variables that got
+changed while atomic.
 
-CC: Jesse Barnes <jbarnes@virtuousgeek.org>
+Helper macros were added to allow kms code to declare debugger safe
+mutexes which can be used so long as the debugger restores the state
+before resuming.
+
 CC: David Airlie <airlied@linux.ie>
+CC: Jesse Barnes <jbarnes@virtuousgeek.org>
 Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
 ---
- drivers/gpu/drm/drm_fb_helper.c      |   12 ++++++------
- drivers/gpu/drm/i915/intel_display.c |   17 ++++++++++++-----
- 2 files changed, 18 insertions(+), 11 deletions(-)
+ drivers/serial/kgdboc.c       |   26 ++++++++++++----
+ drivers/video/console/fbcon.c |    7 ++++
+ include/linux/kgdb.h          |   19 ++++++++++++
+ kernel/debug/Makefile         |    1 +
+ kernel/debug/debug_core.c     |    1 +
+ kernel/debug/kms_hooks.c      |   62 +++++++++++++++++++++++++++++++++++++++++
+ 6 files changed, 109 insertions(+), 7 deletions(-)
+ create mode 100644 kernel/debug/kms_hooks.c
 
-diff --git a/drivers/gpu/drm/drm_fb_helper.c b/drivers/gpu/drm/drm_fb_helper.c
-index 1097a47..e00301f 100644
---- a/drivers/gpu/drm/drm_fb_helper.c
-+++ b/drivers/gpu/drm/drm_fb_helper.c
-@@ -396,9 +396,9 @@ static void drm_fb_helper_on(struct fb_info *info)
- 			    !crtc->enabled)
- 				continue;
- 
--			mutex_lock(&dev->mode_config.mutex);
-+			dbg_safe_mutex_lock(&dev->mode_config.mutex);
- 			crtc_funcs->dpms(crtc, DRM_MODE_DPMS_ON);
--			mutex_unlock(&dev->mode_config.mutex);
-+			dbg_safe_mutex_unlock(&dev->mode_config.mutex);
- 
- 			/* Found a CRTC on this fb, now find encoders */
- 			list_for_each_entry(encoder, &dev->mode_config.encoder_list, head) {
-@@ -406,9 +406,9 @@ static void drm_fb_helper_on(struct fb_info *info)
- 					struct drm_encoder_helper_funcs *encoder_funcs;
- 
- 					encoder_funcs = encoder->helper_private;
--					mutex_lock(&dev->mode_config.mutex);
-+					dbg_safe_mutex_lock(&dev->mode_config.mutex);
- 					encoder_funcs->dpms(encoder, DRM_MODE_DPMS_ON);
--					mutex_unlock(&dev->mode_config.mutex);
-+					dbg_safe_mutex_unlock(&dev->mode_config.mutex);
- 				}
- 			}
- 		}
-@@ -819,9 +819,9 @@ int drm_fb_helper_pan_display(struct fb_var_screeninfo *var,
- 		modeset->y = var->yoffset;
- 
- 		if (modeset->num_connectors) {
--			mutex_lock(&dev->mode_config.mutex);
-+			dbg_safe_mutex_lock(&dev->mode_config.mutex);
- 			ret = crtc->funcs->set_config(modeset);
--			mutex_unlock(&dev->mode_config.mutex);
-+			dbg_safe_mutex_unlock(&dev->mode_config.mutex);
- 			if (!ret) {
- 				info->var.xoffset = var->xoffset;
- 				info->var.yoffset = var->yoffset;
-diff --git a/drivers/gpu/drm/i915/intel_display.c b/drivers/gpu/drm/i915/intel_display.c
-index 11beb0f..0378840 100644
---- a/drivers/gpu/drm/i915/intel_display.c
-+++ b/drivers/gpu/drm/i915/intel_display.c
-@@ -929,6 +929,13 @@ intel_find_pll_g4x_dp(const intel_limit_t *limit, struct drm_crtc *crtc,
- void
- intel_wait_for_vblank(struct drm_device *dev)
- {
-+	if (in_dbg_master()) {
-+		/* When in the kernel debugger we cannot sleep */
-+		preempt_disable();
-+		mdelay(20);
-+		preempt_enable();
-+		return;
-+	}
- 	/* Wait for 20ms, i.e. one cycle at 50hz. */
- 	msleep(20);
+diff --git a/drivers/serial/kgdboc.c b/drivers/serial/kgdboc.c
+index 93b18f9..05d1605 100644
+--- a/drivers/serial/kgdboc.c
++++ b/drivers/serial/kgdboc.c
+@@ -204,13 +204,19 @@ static int param_set_kgdboc_var(const char *kmessage, struct kernel_param *kp)
+ 	return configure_kgdboc();
  }
-@@ -1351,17 +1358,17 @@ intel_pipe_set_base(struct drm_crtc *crtc, int x, int y,
- 	obj = intel_fb->obj;
- 	obj_priv = obj->driver_private;
  
--	mutex_lock(&dev->struct_mutex);
-+	dbg_safe_mutex_lock(&dev->struct_mutex);
- 	ret = intel_pin_and_fence_fb_obj(dev, obj);
- 	if (ret != 0) {
--		mutex_unlock(&dev->struct_mutex);
-+		dbg_safe_mutex_unlock(&dev->struct_mutex);
- 		return ret;
++static int dbg_restore_graphics;
++
+ static void kgdboc_pre_exp_handler(void)
+ {
+-	if (kgdboc_use_kms && dbg_kms_console_core &&
+-	    dbg_kms_console_core->activate_console)
+-		if (dbg_kms_console_core->activate_console(dbg_kms_console_core))
++	if (!dbg_restore_graphics && kgdboc_use_kms && dbg_kms_console_core &&
++	    dbg_kms_console_core->activate_console) {
++		if (dbg_kms_console_core->activate_console(dbg_kms_console_core)) {
+ 			printk(KERN_ERR "kgdboc: kernel mode switch error\n");
+-
++		} else {
++			dbg_restore_graphics = 1;
++			dbg_pre_vt_hook();
++		}
++	}
+ 	/* Increment the module count when the debugger is active */
+ 	if (!kgdb_connected)
+ 		try_module_get(THIS_MODULE);
+@@ -222,9 +228,15 @@ static void kgdboc_post_exp_handler(void)
+ 	if (!kgdb_connected)
+ 		module_put(THIS_MODULE);
+ 	if (kgdboc_use_kms && dbg_kms_console_core &&
+-	    dbg_kms_console_core->restore_console)
+-		if (dbg_kms_console_core->restore_console(dbg_kms_console_core))
+-			printk(KERN_ERR "kgdboc: graphics restore failed\n");
++	    dbg_kms_console_core->restore_console) {
++		if (dbg_restore_graphics) {
++			if (dbg_kms_console_core->restore_console(dbg_kms_console_core))
++				printk(KERN_ERR "kgdboc: graphics restore failed\n");
++			dbg_restore_graphics = 0;
++			dbg_post_vt_hook();
++		}
++	}
++
+ #ifdef CONFIG_KDB_KEYBOARD
+ 	/* If using the kdb keyboard driver release all the keys. */
+ 	if (kgdboc_use_kbd)
+diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
+index 3681c6a..6f2ed5a 100644
+--- a/drivers/video/console/fbcon.c
++++ b/drivers/video/console/fbcon.c
+@@ -75,6 +75,7 @@
+ #include <linux/init.h>
+ #include <linux/interrupt.h>
+ #include <linux/crc32.h> /* For counting font checksums */
++#include <linux/kgdb.h>
+ #include <asm/fb.h>
+ #include <asm/irq.h>
+ #include <asm/system.h>
+@@ -2318,6 +2319,12 @@ static int fbcon_blank(struct vc_data *vc, int blank, int mode_switch)
+ 		}
  	}
  
- 	ret = i915_gem_object_set_to_gtt_domain(obj, 1);
- 	if (ret != 0) {
- 		i915_gem_object_unpin(obj);
--		mutex_unlock(&dev->struct_mutex);
-+		dbg_safe_mutex_unlock(&dev->struct_mutex);
- 		return ret;
- 	}
++	if (in_dbg_master()) {
++		if (info->fbops->fb_blank)
++			info->fbops->fb_blank(blank, info);
++		return 0;
++	}
++
+  	if (!fbcon_is_inactive(vc, info)) {
+ 		if (ops->blank_state != blank) {
+ 			ops->blank_state = blank;
+diff --git a/include/linux/kgdb.h b/include/linux/kgdb.h
+index 68fa243..df67f05 100644
+--- a/include/linux/kgdb.h
++++ b/include/linux/kgdb.h
+@@ -288,6 +288,14 @@ extern void __init early_kgdboc_init(void);
+ #endif /* CONFIG_KGDB */
  
-@@ -1388,7 +1395,7 @@ intel_pipe_set_base(struct drm_crtc *crtc, int x, int y,
- 	default:
- 		DRM_ERROR("Unknown color depth\n");
- 		i915_gem_object_unpin(obj);
--		mutex_unlock(&dev->struct_mutex);
-+		dbg_safe_mutex_unlock(&dev->struct_mutex);
- 		return -EINVAL;
- 	}
- 	if (IS_I965G(dev)) {
-@@ -1432,7 +1439,7 @@ intel_pipe_set_base(struct drm_crtc *crtc, int x, int y,
- 	}
- 	intel_increase_pllclock(crtc, true);
+ /* Common to all that include kgdb.h */
++#ifdef CONFIG_VT
++extern void dbg_pre_vt_hook(void);
++extern void dbg_post_vt_hook(void);
++#else /* ! CONFIG_VT */
++#define dbg_pre_vt_hook()
++#define dbg_post_vt_hook()
++#endif /* CONFIG_VT */
++
+ struct dbg_kms_console_ops {
+ 	int (*activate_console) (struct dbg_kms_console_ops *ops);
+ 	int (*restore_console) (struct dbg_kms_console_ops *ops);
+@@ -297,6 +305,14 @@ struct dbg_kms_console_ops {
+ extern struct dbg_kms_console_ops *dbg_kms_console_core;
+ extern int dbg_kms_console_ops_register(struct dbg_kms_console_ops *ops);
+ extern int dbg_kms_console_ops_unregister(struct dbg_kms_console_ops *ops);
++#define in_dbg_master() \
++	(raw_smp_processor_id() == atomic_read(&kgdb_active))
++#define dbg_safe_mutex_lock(x) \
++	if (!in_dbg_master()) \
++		mutex_lock(x)
++#define dbg_safe_mutex_unlock(x) \
++	if (!in_dbg_master()) \
++		mutex_unlock(x)
+ #else /* ! CONFIG_KGDB */
+ static inline int dbg_kms_console_ops_register(struct dbg_kms_console_ops *ops)
+ {
+@@ -306,5 +322,8 @@ static inline int dbg_kms_console_ops_unregister(struct dbg_kms_console_ops *ops
+ {
+        return 0;
+ }
++#define in_dbg_master() (0)
++#define dbg_safe_mutex_lock(x) mutex_lock(x)
++#define dbg_safe_mutex_unlock(x) mutex_unlock(x)
+ #endif /* ! CONFIG_KGDB */
+ #endif /* _KGDB_H_ */
+diff --git a/kernel/debug/Makefile b/kernel/debug/Makefile
+index c72de00..fe342c0 100644
+--- a/kernel/debug/Makefile
++++ b/kernel/debug/Makefile
+@@ -3,5 +3,6 @@
+ #
  
--	mutex_unlock(&dev->struct_mutex);
-+	dbg_safe_mutex_unlock(&dev->struct_mutex);
+ obj-$(CONFIG_KGDB) += debug_core.o gdbstub.o
++obj-$(CONFIG_VT) += kms_hooks.o
+ obj-$(CONFIG_KGDB_KDB) += kdb/
  
- 	if (!dev->primary->master)
- 		return 0;
+diff --git a/kernel/debug/debug_core.c b/kernel/debug/debug_core.c
+index 82c7c47..6ca3f7c 100644
+--- a/kernel/debug/debug_core.c
++++ b/kernel/debug/debug_core.c
+@@ -106,6 +106,7 @@ static struct kgdb_bkpt		kgdb_break[KGDB_MAX_BREAKPOINTS] = {
+  * The CPU# of the active CPU, or -1 if none:
+  */
+ atomic_t			kgdb_active = ATOMIC_INIT(-1);
++EXPORT_SYMBOL_GPL(kgdb_active);
+ 
+ /*
+  * We use NR_CPUs not PERCPU, in case kgdb is used to debug early
+diff --git a/kernel/debug/kms_hooks.c b/kernel/debug/kms_hooks.c
+new file mode 100644
+index 0000000..c56b7ce
+--- /dev/null
++++ b/kernel/debug/kms_hooks.c
+@@ -0,0 +1,62 @@
++/*
++ * Created by: Jason Wessel <jason.wessel@windriver.com>
++ *
++ * Copyright (c) 2009 Wind River Systems, Inc.  All Rights Reserved.
++ *
++ * This file is licensed under the terms of the GNU General Public
++ * License version 2. This program is licensed "as is" without any
++ * warranty of any kind, whether express or implied.
++ */
++
++#ifdef CONFIG_VT
++#include <linux/kgdb.h>
++#include <linux/console.h>
++#include <linux/vt_kern.h>
++#include <linux/selection.h>
++#include <linux/kdb.h>
++#include "kdb/kdb_private.h"
++
++static int dbg_orig_vc_mode;
++static int saved_fg_con;
++static int saved_last_con;
++static int saved_want_con;
++
++void dbg_pre_vt_hook(void)
++{
++	struct vc_data *vc = vc_cons[fg_console].d;
++	saved_fg_con = fg_console;
++	saved_last_con = last_console;
++	saved_want_con = want_console;
++	dbg_orig_vc_mode = vc->vc_mode;
++	vc->vc_mode = KD_TEXT;
++	console_blanked = 0;
++	vc->vc_sw->con_blank(vc, 0, 1);
++	vc->vc_sw->con_set_palette(vc, color_table);
++#ifdef CONFIG_KGDB_KDB
++	/* Set the initial LINES variable if it is not already set */
++	if (vc->vc_rows < 999) {
++		int linecount;
++		char lns[4];
++		const char *setargs[3] = {
++			"set",
++			"LINES",
++			lns,
++		};
++		if (kdbgetintenv(setargs[0], &linecount)) {
++			snprintf(lns, 4, "%i", vc->vc_rows);
++			kdb_set(2, setargs);
++		}
++	}
++#endif /* CONFIG_KGDB_KDB */
++}
++EXPORT_SYMBOL_GPL(dbg_pre_vt_hook);
++
++void dbg_post_vt_hook(void)
++{
++	fg_console = saved_fg_con;
++	last_console = saved_last_con;
++	want_console = saved_want_con;
++	vc_cons[fg_console].d->vc_mode = dbg_orig_vc_mode;
++}
++EXPORT_SYMBOL_GPL(dbg_post_vt_hook);
++#endif /* CONFIG_VT */
 -- 
 1.6.3.1.9.g95405b
 
