@@ -1,162 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753612Ab0ANA4R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754970Ab0ANBB5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753612Ab0ANA4R (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 19:56:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752642Ab0ANA4Q
+	id S1754970Ab0ANBB5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 20:01:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754825Ab0ANBB4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 19:56:16 -0500
-Received: from mail-yw0-f182.google.com ([209.85.211.182]:55930 "EHLO
-	mail-yw0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752591Ab0ANA4Q (ORCPT
+	Wed, 13 Jan 2010 20:01:56 -0500
+Received: from comsrv.aao.GOV.AU ([192.231.167.2]:33452 "HELO
+	comsrv.aao.gov.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754652Ab0ANBBz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 19:56:16 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=APHHY4+JeN49zPat15ZJywQmllg/rE+lH9r9eht5zFIOqpgjCIyPNnyNjLZb/QSFCu
-         w2W9NE4rW23F6acArVO/865OXUNcerofacEJdYpMxhXkRt9hNrEJmM/WQEZlYmnBi+Oe
-         rHMCqKQrufcCBftwTuyxNpUaNecLa3PSplhNQ=
-Message-ID: <4B4E6BAC.6030907@gmail.com>
-Date: Wed, 13 Jan 2010 18:56:12 -0600
-From: Robert Hancock <hancockrwd@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
+	Wed, 13 Jan 2010 20:01:55 -0500
+Date: Thu, 14 Jan 2010 12:03:36 +1100
+From: Scott Smedley <ss@aao.gov.au>
+To: Marin Mitov <mitov@issp.bas.bg>
+Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC] Yet another dt3155 driver for drivers/staging
+Message-ID: <20100114010335.GB20569@aao.gov.au>
+Reply-To: ss@aao.gov.au
+References: <201001122242.22774.mitov@issp.bas.bg> <20100112235221.GA20761@aao.gov.au> <20100113001724.GB29904@kroah.com> <201001130816.43855.mitov@issp.bas.bg>
 MIME-Version: 1.0
-To: greg@enjellic.com
-CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: Memory leak makes 'Blast the Bubbles' problematic.
-References: <201001131548.o0DFmtrD004610@wind.enjellic.com>
-In-Reply-To: <201001131548.o0DFmtrD004610@wind.enjellic.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <201001130816.43855.mitov@issp.bas.bg>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/13/2010 09:48 AM, greg@enjellic.com wrote:
-> Hi, hope the week is going well for everyone.
->
-> Unless I miss my guess there is some type of leak or other memory
-> anomaly starting in at least late model 2.6.31.x kernels.  I took a
-> snapshot of the behavior on 2.6.32.3 as well since I knew that
-> 2.6.31.11 would be considered long in the tooth by all the informed
-> intelligentia who would be looking at this...... :-)
->
-> The machine in question is an older Dell desktop machine with a 1.7Ghz
-> Pentium 4 and 756 megabytes of RAM.  My wife uses it to run X and play
-> her Flash games in Firefox.  She started chewing on my rear end about
-> a month ago complaining that her games were running so slow she
-> couldn't stand it.  Rebooting the machine would restore proper
-> behavior for a short period of time.  She logs in and out of X from
-> text mode so the issue isn't with X and/or Firefox chewing up all the
-> memory.
->
-> I booted up a fresh copy of 2.6.32.3 yesterday morning and dropped all
-> the caches (/proc/sys/vm/drop_caches).  I told my wife to play some
-> games last night so I could instrument the change.  This morning I
-> dropped all the caches and took another snapshot of memory status and
-> the impact of whatever is happening seems clear, ie:
->
->
-> Before:
->               total       used       free     shared    buffers     cached
-> Mem:        774644     308284     466360          0      19116     270120
-> -/+ buffers/cache:      19048     755596
-> Swap:       125368          0     125368
->
-> After:
->               total       used       free     shared    buffers     cached
-> Mem:        774644     645648     128996          0     155772     294664
-> -/+ buffers/cache:     195212     579432
-> Swap:       125368          0     125368
->
->
-> I did a little bit more investigating and I'm suspicious the behavior
-> is secondary to updatedb running rather anything secondary to X having
-> been run.
->
-> The 'Before' snapshot was taken from logs the system mails me every
-> night at midnight.  That would have been after my wife spent a few
-> hours playing her Flash games but before updatedb ran.
->
-> The kernel is custom compiled for the machine.  I'm including the
-> .config below along with diffs showing before/after memory consumption
-> status.  I also included a 'ps fax' listing of what was running at the
-> time I took the snapshots.  I'd be happy to grab any additional
-> instrumentation people feel they might need.
->
-> I hope all this is helpful since whatever behavior is being tickled
-> makes recent kernels problematic on this caliber of hardware.  Let
-> alone the effects on my rear end from my beloved not being able to
-> play 'Blast the Bubbles' the way she would like.
->
-> Let me know if I can provide any additional information.
->
-> Best wishes for a pleasant afternoon to everyone.
->
-> Greg
->
->
-> /proc/meminfo diff: -------------------------------------------------------
-> --- meminfo.txt Tue Jan 12 11:31:48 2010
-> +++ -   Wed Jan 13 09:25:11 2010
-> @@ -1,35 +1,35 @@
->   MemTotal:         774644 kB
-> -MemFree:          719848 kB
-> -Buffers:            3124 kB
-> -Cached:            39832 kB
-> +MemFree:          128800 kB
-> +Buffers:          155784 kB
-> +Cached:           294768 kB
->   SwapCached:            0 kB
-> -Active:            15968 kB
-> -Inactive:          30900 kB
-> -Active(anon):       3912 kB
-> +Active:           173152 kB
-> +Inactive:         281488 kB
-> +Active(anon):       4088 kB
->   Inactive(anon):        0 kB
-> -Active(file):      12056 kB
-> -Inactive(file):    30900 kB
-> +Active(file):     169064 kB
-> +Inactive(file):   281488 kB
->   Unevictable:           0 kB
->   Mlocked:               0 kB
->   SwapTotal:        125368 kB
->   SwapFree:         125368 kB
-> -Dirty:                12 kB
-> +Dirty:                 4 kB
->   Writeback:             0 kB
-> -AnonPages:          3928 kB
-> -Mapped:             4172 kB
-> +AnonPages:          4108 kB
-> +Mapped:             4260 kB
->   Shmem:                 0 kB
-> -Slab:               4312 kB
-> -SReclaimable:       1244 kB
-> -SUnreclaim:         3068 kB
-> -KernelStack:         536 kB
-> -PageTables:          400 kB
-> +Slab:             187472 kB
-> +SReclaimable:     184256 kB
-> +SUnreclaim:         3216 kB
-> +KernelStack:         592 kB
-> +PageTables:          444 kB
->   NFS_Unstable:          0 kB
->   Bounce:                0 kB
->   WritebackTmp:          0 kB
->   CommitLimit:      512688 kB
-> -Committed_AS:       9804 kB
-> +Committed_AS:      11676 kB
->   VmallocTotal:     254124 kB
->   VmallocUsed:         212 kB
->   VmallocChunk:     247300 kB
-> -DirectMap4k:        5596 kB
-> -DirectMap2M:      780288 kB
-> +DirectMap4k:       40412 kB
-> +DirectMap2M:      745472 kB
+Hi Greg & Marin,
 
-It looks like the system accumulated some more dcache entries, but those 
-should presumably get freed up if the system needs the memory. The 
-output of "vmstat 1" while the slowness is occurring might be more 
-interesting..
+> > Scott, any comparison between the two of them as to which one actually
+> > works better?
+
+I'd be interested in Marin's opinion as he appears to have used both
+drivers extensively.
+
+I'd like a userspace program to actually try out Marin's driver, but
+I can still make some general comments:
+
+Things I like about Marin's driver:
+- It is only ~1/3rd the size. (by counting new lines)
+- The code is much neater.
+- It can acquire frames at 25 fps (real-time), according to Marin.
+- At least 1 person with intimate knowledge of the code seems keen to
+  maintain it.
+
+Things I like about the sourceforge (SF) driver:
+- It works in CCIR mode (768x576) or 640x480 mode.
+- It is well tested.
+- It works with most kernel versions. ie. 2.2, 2.4, & 2.6. (mostly)
+- It works with multiple boards.
+- The code is moderately well commented.
+- It includes simple (user space) example programs.
+
+
+Clearly each driver has strengths over the other.
+
+It would probably be easier to upgrade Marin's driver to match the
+strengths of the SF driver than the other way around. The only
+difficulty might be in making Marin's driver work with older kernel
+versions. IMO, that's probably an acceptable sacrifice to make. (For
+users of legacy systems, we could point them to the (unmaintained)
+driver on SF.)
+
+> if you have 2 or more boards, could you check if
+> my driver is working with more than one board?
+
+Sorry, I only have 1 board available to test with.
+
+Marin, if you are considering upgrading your driver, I propose
+we send an email to the DT3155 SF mailing list & ask for help
+testing. (I already know of 1 other person who is happy to help
+test.) I recommend making userspace programs (like examples/acquire
+& examples/Xview in the SF driver) available first. Ideally, these
+example programs & user space libraries would become the major
+component of the evolved DT3155 SF project.
+
+What do you think?
+
+Scott. :)
