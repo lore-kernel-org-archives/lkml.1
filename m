@@ -1,79 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756717Ab0ANAPp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932188Ab0ANAZi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756717Ab0ANAPp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 19:15:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756676Ab0ANAPo
+	id S932188Ab0ANAZi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 19:25:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756711Ab0ANAZh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 19:15:44 -0500
-Received: from waste.org ([173.11.57.241]:58930 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755392Ab0ANAPn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 19:15:43 -0500
-Subject: Re: [Bug #15041] Pagemap endless read loop with LTP
-From: Matt Mackall <mpm@selenic.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       =?ISO-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-In-Reply-To: <20100113235010.GF24818@basil.fritz.box>
-References: <wnS54-l8PVO.A.TlF.oMlSLB@chimera>
-	 <omZ8aBZReyD.A.tvF.tMlSLB@chimera>
-	 <2375c9f91001121904h2857760akbf2dd2c9f7441fc5@mail.gmail.com>
-	 <201001132257.34123.rjw@sisk.pl>  <20100113235010.GF24818@basil.fritz.box>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 13 Jan 2010 18:15:36 -0600
-Message-ID: <1263428136.29868.5058.camel@calx>
+	Wed, 13 Jan 2010 19:25:37 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:56808 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756660Ab0ANAZg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jan 2010 19:25:36 -0500
+Date: Wed, 13 Jan 2010 16:25:04 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH] procfs: Fix refcnt leak on proc_self_follow_link()
+ error path
+Message-Id: <20100113162504.1c06c5e6.akpm@linux-foundation.org>
+In-Reply-To: <20100113194300.GA4673@ZenIV.linux.org.uk>
+References: <87aawkjxlf.fsf@devron.myhome.or.jp>
+	<20100113194300.GA4673@ZenIV.linux.org.uk>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2010-01-14 at 00:50 +0100, Andi Kleen wrote:
-> On Wed, Jan 13, 2010 at 10:57:34PM +0100, Rafael J. Wysocki wrote:
-> > On Wednesday 13 January 2010, Américo Wang wrote:
-> > > On Mon, Jan 11, 2010 at 6:32 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > > > This message has been generated automatically as a part of a report
-> > > > of recent regressions.
-> > > >
-> > > > The following bug entry is on the current list of known regressions
-> > > > from 2.6.32.  Please verify if it still should be listed and let me know
-> > > > (either way).
-> > > >
-> > > >
-> > > > Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=15041
-> > > > Subject         : Pagemap endless read loop with LTP
-> > > > Submitter       : Andi Kleen <andi@firstfloor.org>
-> > > > Date            : 2010-01-10 2:09 (1 days old)
-> > > > References      : http://marc.info/?l=linux-kernel&m=126308941423848&w=4
-> > > >
-> > > 
-> > > According to Andi's later reply, it shoud not be an endless loop,
-> > > it just takes a rather long time.
+On Wed, 13 Jan 2010 19:43:01 +0000
+Al Viro <viro@ZenIV.linux.org.uk> wrote:
+
+> On Tue, Jan 12, 2010 at 03:38:36AM +0900, OGAWA Hirofumi wrote:
 > > 
-> > Andi?
+> > If ->follow_link handler return the error, it should decrement
+> > nd->path refcnt.
+> > 
+> > This patch fix it.
 > 
-> It'll try to read 47 bits worth of 0s on 64bit x86-64. 
-> 
-> I haven't tried to wait until that finishes, but I estimate a few months of 
-> CPU time at least.
-> 
-> The interface is just misdesigned, but I guess we cannot do
-> anything about that for now.
+> It's OK for -stable, but for the next tree... not really.  I'd rather
+> kill vfs_follow_link() uses here and in gfs2; see #untested in vfs-2.6.git
+> for details.
 
-It's perfectly sensible. What's not sensible is reading the entirety of
-everything you find in /proc, something that just about every Linux
-admin figures out moments after running their first recursive grep.
-
->  LTP will just need to do a workaround.
-
-Or they could actually, you know, add a test of pagemap. Not much chance
-of that, though - CVS reports it took them until 2005 to figure out that
-skipping /proc/kcore was a good idea.
-
--- 
-http://selenic.com : development and support for Mercurial and Linux
-
-
+Confused.  Is #untested planned for 2.6.33?  If not, how do we fix this
+bug in .33?
