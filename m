@@ -1,28 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757571Ab0ANWg7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757441Ab0ANWgP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757571Ab0ANWg7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 17:36:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756126Ab0ANWg5
+	id S1757441Ab0ANWgP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 17:36:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756144Ab0ANWgL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 17:36:57 -0500
-Received: from kroah.org ([198.145.64.141]:60562 "EHLO coco.kroah.org"
+	Thu, 14 Jan 2010 17:36:11 -0500
+Received: from kroah.org ([198.145.64.141]:60589 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755710Ab0ANW2e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 17:28:34 -0500
+	id S1755895Ab0ANW2j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jan 2010 17:28:39 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, stable-review@kernel.org
 Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Bjorn Helgaas <bjorn.helgaas@hp.com>,
-       David Hardeman <david@hardeman.nu>, Dmitry Torokhov <dtor@mail.ru>,
-       Alessandro Zummo <a.zummo@towertech.it>,
-       Paul Gortmaker <p_gortmaker@yahoo.com>,
+       Andi Kleen <andi@firstfloor.org>, Andi Kleen <ak@linux.intel.com>,
+       Ingo Molnar <mingo@elte.hu>, Oleg Nesterov <oleg@redhat.com>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 20/52] rtc_cmos: convert shutdown to new pnp_driver->shutdown
-Date: Thu, 14 Jan 2010 14:26:59 -0800
-Message-Id: <1263508051-7868-20-git-send-email-gregkh@suse.de>
+Subject: [PATCH 25/52] kernel/signal.c: fix kernel information leak with print-fatal-signals=1
+Date: Thu, 14 Jan 2010 14:27:04 -0800
+Message-Id: <1263508051-7868-25-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.6
-In-Reply-To: <1263508051-7868-19-git-send-email-gregkh@suse.de>
+In-Reply-To: <1263508051-7868-24-git-send-email-gregkh@suse.de>
 References: <20100114222551.GA7839@suse.de>
  <1263508051-7868-1-git-send-email-gregkh@suse.de>
  <1263508051-7868-2-git-send-email-gregkh@suse.de>
@@ -43,73 +40,61 @@ References: <20100114222551.GA7839@suse.de>
  <1263508051-7868-17-git-send-email-gregkh@suse.de>
  <1263508051-7868-18-git-send-email-gregkh@suse.de>
  <1263508051-7868-19-git-send-email-gregkh@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+ <1263508051-7868-20-git-send-email-gregkh@suse.de>
+ <1263508051-7868-21-git-send-email-gregkh@suse.de>
+ <1263508051-7868-22-git-send-email-gregkh@suse.de>
+ <1263508051-7868-23-git-send-email-gregkh@suse.de>
+ <1263508051-7868-24-git-send-email-gregkh@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+From: Andi Kleen <andi@firstfloor.org>
 
-commit 004731b2c7c658d36bee167cb1e1a399c2cbccc9 upstream.
+commit b45c6e76bc2c72f6426c14bed64fdcbc9bf37cb0 upstream.
 
-commit abd6633c67925f90775bb74755f9c547e30f1f20 ("pnp: add a shutdown
-method to pnp drivers") adds shutdown method to bus driver blindly.  With
-it, driver->shutdown is no longer valid.
+When print-fatal-signals is enabled it's possible to dump any memory
+reachable by the kernel to the log by simply jumping to that address from
+user space.
 
-Use pnp_driver->shutdown instead.
+Or crash the system if there's some hardware with read side effects.
 
-Addresses http://bugzilla.kernel.org/show_bug.cgi?id=14889
+The fatal signals handler will dump 16 bytes at the execution address,
+which is fully controlled by ring 3.
 
-Signed-off-by: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-Reported-by: Malte Schröder <maltesch@gmx.de>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Cc: David Hardeman <david@hardeman.nu>
-Cc: Dmitry Torokhov <dtor@mail.ru>
-Cc: Alessandro Zummo <a.zummo@towertech.it>
-Cc: Paul Gortmaker <p_gortmaker@yahoo.com>
+In addition when something jumps to a unmapped address there will be up to
+16 additional useless page faults, which might be potentially slow (and at
+least is not very efficient)
+
+Fortunately this option is off by default and only there on i386.
+
+But fix it by checking for kernel addresses and also stopping when there's
+a page fault.
+
+Signed-off-by: Andi Kleen <ak@linux.intel.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Oleg Nesterov <oleg@redhat.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/rtc/rtc-cmos.c |    9 +++------
- 1 files changed, 3 insertions(+), 6 deletions(-)
+ kernel/signal.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/rtc/rtc-cmos.c b/drivers/rtc/rtc-cmos.c
-index f7a4701..473e5f2 100644
---- a/drivers/rtc/rtc-cmos.c
-+++ b/drivers/rtc/rtc-cmos.c
-@@ -1099,9 +1099,9 @@ static int cmos_pnp_resume(struct pnp_dev *pnp)
- #define	cmos_pnp_resume		NULL
- #endif
+diff --git a/kernel/signal.c b/kernel/signal.c
+index 6705320..4d0658d 100644
+--- a/kernel/signal.c
++++ b/kernel/signal.c
+@@ -939,7 +939,8 @@ static void print_fatal_signal(struct pt_regs *regs, int signr)
+ 		for (i = 0; i < 16; i++) {
+ 			unsigned char insn;
  
--static void cmos_pnp_shutdown(struct device *pdev)
-+static void cmos_pnp_shutdown(struct pnp_dev *pnp)
- {
--	if (system_state == SYSTEM_POWER_OFF && !cmos_poweroff(pdev))
-+	if (system_state == SYSTEM_POWER_OFF && !cmos_poweroff(&pnp->dev))
- 		return;
- 
- 	cmos_do_shutdown();
-@@ -1120,15 +1120,12 @@ static struct pnp_driver cmos_pnp_driver = {
- 	.id_table	= rtc_ids,
- 	.probe		= cmos_pnp_probe,
- 	.remove		= __exit_p(cmos_pnp_remove),
-+	.shutdown	= cmos_pnp_shutdown,
- 
- 	/* flag ensures resume() gets called, and stops syslog spam */
- 	.flags		= PNP_DRIVER_RES_DO_NOT_CHANGE,
- 	.suspend	= cmos_pnp_suspend,
- 	.resume		= cmos_pnp_resume,
--	.driver		= {
--		.name	  = (char *)driver_name,
--		.shutdown = cmos_pnp_shutdown,
--	}
- };
- 
- #endif	/* CONFIG_PNP */
+-			__get_user(insn, (unsigned char *)(regs->ip + i));
++			if (get_user(insn, (unsigned char *)(regs->ip + i)))
++				break;
+ 			printk("%02x ", insn);
+ 		}
+ 	}
 -- 
 1.6.6
 
