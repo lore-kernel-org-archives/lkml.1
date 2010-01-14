@@ -1,24 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757393Ab0ANWdg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757052Ab0ANWd4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757393Ab0ANWdg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 17:33:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756742Ab0ANWdb
+	id S1757052Ab0ANWd4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 17:33:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757346Ab0ANWdf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 17:33:31 -0500
-Received: from kroah.org ([198.145.64.141]:60642 "EHLO coco.kroah.org"
+	Thu, 14 Jan 2010 17:33:35 -0500
+Received: from kroah.org ([198.145.64.141]:60624 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756772Ab0ANW2v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 17:28:51 -0500
+	id S1756743Ab0ANW2t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jan 2010 17:28:49 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, stable-review@kernel.org
 Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       Ian Campbell <ian.campbell@citrix.com>,
+       Yong Wang <yong.y.wang@linux.intel.com>,
+       Yong Wang <yong.y.wang@intel.com>, Jean Delvare <khali@linux-fr.org>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 38/52] xen: fix hang on suspend.
-Date: Thu, 14 Jan 2010 14:27:17 -0800
-Message-Id: <1263508051-7868-38-git-send-email-gregkh@suse.de>
+Subject: [PATCH 35/52] hwmon: (coretemp) Fix TjMax for Atom N450/D410/D510 CPUs
+Date: Thu, 14 Jan 2010 14:27:14 -0800
+Message-Id: <1263508051-7868-35-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.6
-In-Reply-To: <1263508051-7868-37-git-send-email-gregkh@suse.de>
+In-Reply-To: <1263508051-7868-34-git-send-email-gregkh@suse.de>
 References: <20100114222551.GA7839@suse.de>
  <1263508051-7868-1-git-send-email-gregkh@suse.de>
  <1263508051-7868-2-git-send-email-gregkh@suse.de>
@@ -54,88 +55,85 @@ References: <20100114222551.GA7839@suse.de>
  <1263508051-7868-32-git-send-email-gregkh@suse.de>
  <1263508051-7868-33-git-send-email-gregkh@suse.de>
  <1263508051-7868-34-git-send-email-gregkh@suse.de>
- <1263508051-7868-35-git-send-email-gregkh@suse.de>
- <1263508051-7868-36-git-send-email-gregkh@suse.de>
- <1263508051-7868-37-git-send-email-gregkh@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ian Campbell <ian.campbell@citrix.com>
+From: Yong Wang <yong.y.wang@linux.intel.com>
 
-commit c5cae661d6cf808b6984762f763261adf35f3eb7 upstream.
+commit 1fe63ab47a617ee95f562eaa7ddbbc59981ff8c6 upstream.
 
-In 65f63384 "xen: improve error handling in do_suspend" I said:
-    - xs_suspend()/xs_resume() and dpm_suspend_noirq()/dpm_resume_noirq() were not
-      nested in the obvious way.
-and changed the ordering of the calls as so:
-    BEFORE		AFTER
-    xs_suspend		dpm_suspend_noirq
-    dpm_suspend_noirq	xs_suspend
-    *SUSPEND*		*SUSPEND*
-    dpm_resume_noirq	dpm_resume_noirq
-    xs_resume		xs_resume
-Clearly this is not an improvement and I was talking rubbish.
+The max junction temperature of Atom N450/D410/D510 CPUs is 100 degrees
+Celsius. Since these CPUs are always coupled with Intel NM10 chipset in
+one package, the best way to verify whether an Atom CPU is N450/D410/D510
+is to check the host bridge device.
 
-In particular the new ordering is susceptible to a hang if a xenstore write is
-in progress at the point at which the suspend kicks in. When the suspend
-process calls xs_suspend it tries to take the request_mutex but if a write is
-in progress it could be looping in xenbus_xs.c:read_reply() waiting for
-something to arrive on &xs_state.reply_list while holding the request_mutex
-(taken in the caller of read_reply).
-
-However if we have done dpm_suspend_noirq before xs_suspend then we won't get
-any more xenstore interrupts and process_msg() will never be woken up to add
-anything to the reply_list.
-
-Fix this by calling xs_suspend before dpm_suspend_noirq. If dpm_suspend_noirq
-fails then make sure we go through the xs_suspend_cancel() code path.
-
-Signed-off-by: Ian Campbell <ian.campbell@citrix.com>
-Acked-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Signed-off-by: Yong Wang <yong.y.wang@intel.com>
+Acked-by: Huaxu Wan <huaxu.wan@intel.com>
+Signed-off-by: Jean Delvare <khali@linux-fr.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/xen/manage.c |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
+ drivers/hwmon/Kconfig    |    2 +-
+ drivers/hwmon/coretemp.c |   16 ++++++++++++++--
+ 2 files changed, 15 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/xen/manage.c b/drivers/xen/manage.c
-index c499793..5d42d55 100644
---- a/drivers/xen/manage.c
-+++ b/drivers/xen/manage.c
-@@ -102,15 +102,15 @@ static void do_suspend(void)
- 		goto out_thaw;
+diff --git a/drivers/hwmon/Kconfig b/drivers/hwmon/Kconfig
+index 700e93a..c1f7ea0 100644
+--- a/drivers/hwmon/Kconfig
++++ b/drivers/hwmon/Kconfig
+@@ -374,7 +374,7 @@ config SENSORS_GL520SM
+ 
+ config SENSORS_CORETEMP
+ 	tristate "Intel Core/Core2/Atom temperature sensor"
+-	depends on X86 && EXPERIMENTAL
++	depends on X86 && PCI && EXPERIMENTAL
+ 	help
+ 	  If you say yes here you get support for the temperature
+ 	  sensor inside your CPU. Most of the family 6 CPUs
+diff --git a/drivers/hwmon/coretemp.c b/drivers/hwmon/coretemp.c
+index caef39c..2d7bcee 100644
+--- a/drivers/hwmon/coretemp.c
++++ b/drivers/hwmon/coretemp.c
+@@ -33,6 +33,7 @@
+ #include <linux/list.h>
+ #include <linux/platform_device.h>
+ #include <linux/cpu.h>
++#include <linux/pci.h>
+ #include <asm/msr.h>
+ #include <asm/processor.h>
+ 
+@@ -161,6 +162,7 @@ static int __devinit adjust_tjmax(struct cpuinfo_x86 *c, u32 id, struct device *
+ 	int usemsr_ee = 1;
+ 	int err;
+ 	u32 eax, edx;
++	struct pci_dev *host_bridge;
+ 
+ 	/* Early chips have no MSR for TjMax */
+ 
+@@ -168,11 +170,21 @@ static int __devinit adjust_tjmax(struct cpuinfo_x86 *c, u32 id, struct device *
+ 		usemsr_ee = 0;
  	}
  
-+	printk(KERN_DEBUG "suspending xenstore...\n");
-+	xs_suspend();
+-	/* Atoms seems to have TjMax at 90C */
++	/* Atom CPUs */
+ 
+ 	if (c->x86_model == 0x1c) {
+ 		usemsr_ee = 0;
+-		tjmax = 90000;
 +
- 	err = dpm_suspend_noirq(PMSG_SUSPEND);
- 	if (err) {
- 		printk(KERN_ERR "dpm_suspend_noirq failed: %d\n", err);
- 		goto out_resume;
++		host_bridge = pci_get_bus_and_slot(0, PCI_DEVFN(0, 0));
++
++		if (host_bridge && host_bridge->vendor == PCI_VENDOR_ID_INTEL
++		    && (host_bridge->device == 0xa000	/* NM10 based nettop */
++		    || host_bridge->device == 0xa010))	/* NM10 based netbook */
++			tjmax = 100000;
++		else
++			tjmax = 90000;
++
++		pci_dev_put(host_bridge);
  	}
  
--	printk(KERN_DEBUG "suspending xenstore...\n");
--	xs_suspend();
--
- 	err = stop_machine(xen_suspend, &cancelled, cpumask_of(0));
- 
- 	dpm_resume_noirq(PMSG_RESUME);
-@@ -120,13 +120,13 @@ static void do_suspend(void)
- 		cancelled = 1;
- 	}
- 
-+out_resume:
- 	if (!cancelled) {
- 		xen_arch_resume();
- 		xs_resume();
- 	} else
- 		xs_suspend_cancel();
- 
--out_resume:
- 	dpm_resume_end(PMSG_RESUME);
- 
- 	/* Make sure timer events get retriggered on all CPUs */
+ 	if ((c->x86_model > 0xe) && (usemsr_ee)) {
 -- 
 1.6.6
 
