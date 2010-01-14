@@ -1,24 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757873Ab0ANWxE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757839Ab0ANWx0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757873Ab0ANWxE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 17:53:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757831Ab0ANWwP
+	id S1757839Ab0ANWx0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 17:53:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756894Ab0ANWxU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 17:52:15 -0500
-Received: from kroah.org ([198.145.64.141]:58196 "EHLO coco.kroah.org"
+	Thu, 14 Jan 2010 17:53:20 -0500
+Received: from kroah.org ([198.145.64.141]:58185 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757261Ab0ANWwN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 17:52:13 -0500
-X-Mailbox-Line: From gregkh@mini.kroah.org Thu Jan 14 14:48:07 2010
-Message-Id: <20100114224807.227254692@mini.kroah.org>
+	id S1757814Ab0ANWwJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jan 2010 17:52:09 -0500
+X-Mailbox-Line: From gregkh@mini.kroah.org Thu Jan 14 14:48:06 2010
+Message-Id: <20100114224806.743281302@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 14 Jan 2010 14:46:43 -0800
+Date: Thu, 14 Jan 2010 14:46:40 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Al Viro <viro@zeniv.linux.org.uk>
-Subject: [7/9] fix braindamage in audit_tree.c untag_chunk()
+       Florian Westphal <fwestphal@astaro.com>,
+       Patrick McHardy <kaber@trash.net>
+Subject: [4/9] netfilter: ebtables: enforce CAP_NET_ADMIN
 In-Reply-To: <20100114224848.GA532@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -28,59 +29,45 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Al Viro <viro@ZenIV.linux.org.uk>
+From: Florian Westphal <fwestphal@astaro.com>
 
-commit 6f5d51148921c242680a7a1d9913384a30ab3cbe upstream.
+commit dce766af541f6605fa9889892c0280bab31c66ab upstream.
 
-... aka "Al had badly fscked up when writing that thing and nobody
-noticed until Eric had fixed leaks that used to mask the breakage".
+normal users are currently allowed to set/modify ebtables rules.
+Restrict it to processes with CAP_NET_ADMIN.
 
-The function essentially creates a copy of old array sans one element
-and replaces the references to elements of original (they are on cyclic
-lists) with those to corresponding elements of new one.  After that the
-old one is fair game for freeing.
+Note that this cannot be reproduced with unmodified ebtables binary
+because it uses SOCK_RAW.
 
-First of all, there's a dumb braino: when we get to list_replace_init we
-use indices for wrong arrays - position in new one with the old array
-and vice versa.
-
-Another bug is more subtle - termination condition is wrong if the
-element to be excluded happens to be the last one.  We shouldn't go
-until we fill the new array, we should go until we'd finished the old
-one.  Otherwise the element we are trying to kill will remain on the
-cyclic lists...
-
-That crap used to be masked by several leaks, so it was not quite
-trivial to hit.  Eric had fixed some of those leaks a while ago and the
-shit had hit the fan...
-
-Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Florian Westphal <fwestphal@astaro.com>
+Signed-off-by: Patrick McHardy <kaber@trash.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- kernel/audit_tree.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ net/bridge/netfilter/ebtables.c |    6 ++++++
+ 1 file changed, 6 insertions(+)
 
---- a/kernel/audit_tree.c
-+++ b/kernel/audit_tree.c
-@@ -277,7 +277,7 @@ static void untag_chunk(struct node *p)
- 		owner->root = NULL;
- 	}
+--- a/net/bridge/netfilter/ebtables.c
++++ b/net/bridge/netfilter/ebtables.c
+@@ -1405,6 +1405,9 @@ static int do_ebt_set_ctl(struct sock *s
+ {
+ 	int ret;
  
--	for (i = j = 0; i < size; i++, j++) {
-+	for (i = j = 0; j <= size; i++, j++) {
- 		struct audit_tree *s;
- 		if (&chunk->owners[j] == p) {
- 			list_del_init(&p->list);
-@@ -290,7 +290,7 @@ static void untag_chunk(struct node *p)
- 		if (!s) /* result of earlier fallback */
- 			continue;
- 		get_tree(s);
--		list_replace_init(&chunk->owners[i].list, &new->owners[j].list);
-+		list_replace_init(&chunk->owners[j].list, &new->owners[i].list);
- 	}
++	if (!capable(CAP_NET_ADMIN))
++		return -EPERM;
++
+ 	switch(cmd) {
+ 	case EBT_SO_SET_ENTRIES:
+ 		ret = do_replace(sock_net(sk), user, len);
+@@ -1424,6 +1427,9 @@ static int do_ebt_get_ctl(struct sock *s
+ 	struct ebt_replace tmp;
+ 	struct ebt_table *t;
  
- 	list_replace_rcu(&chunk->hash, &new->hash);
++	if (!capable(CAP_NET_ADMIN))
++		return -EPERM;
++
+ 	if (copy_from_user(&tmp, user, sizeof(tmp)))
+ 		return -EFAULT;
+ 
 
 
