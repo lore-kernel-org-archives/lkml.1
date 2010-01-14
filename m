@@ -1,71 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754824Ab0ANDly@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754929Ab0ANDnQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754824Ab0ANDly (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 22:41:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752642Ab0ANDly
+	id S1754929Ab0ANDnQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 22:43:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753656Ab0ANDnP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 22:41:54 -0500
-Received: from mga03.intel.com ([143.182.124.21]:60075 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751292Ab0ANDlx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 22:41:53 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
-   d="scan'208";a="232549447"
-Date: Thu, 14 Jan 2010 11:41:50 +0800
-From: Shaohua Li <shaohua.li@intel.com>
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: Corrado Zoccolo <czoccolo@gmail.com>,
-       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "jmoyer@redhat.com" <jmoyer@redhat.com>,
-       "guijianfeng@cn.fujitsu.com" <guijianfeng@cn.fujitsu.com>,
-       "yanmin_zhang@linux.intel.com" <yanmin_zhang@linux.intel.com>
-Subject: Re: [PATCH]cfq-iosched: don't stop async queue with async requests
- pending
-Message-ID: <20100114034150.GA3922@sli10-desk.sh.intel.com>
-References: <20100113074442.GA10492@sli10-desk.sh.intel.com>
- <4e5e476b1001130018n2ad9e830s4a20d922abd4c7bb@mail.gmail.com>
- <20100113082322.GA24345@sli10-desk.sh.intel.com>
- <20100113111341.GB3087@redhat.com>
+	Wed, 13 Jan 2010 22:43:15 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:39363 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752646Ab0ANDnP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jan 2010 22:43:15 -0500
+Date: Thu, 14 Jan 2010 03:43:10 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Cc: Tyler Hicks <tyhicks@linux.vnet.ibm.com>,
+       Dustin Kirkland <kirkland@canonical.com>,
+       ecryptfs-devel@lists.launchpad.net, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH] ecryptfs: Fix refcnt leak on ecryptfs_follow_link()
+	error path
+Message-ID: <20100114034310.GG19799@ZenIV.linux.org.uk>
+References: <87my0kjxpd.fsf@devron.myhome.or.jp> <20100113194458.GB4673@ZenIV.linux.org.uk> <87tyupfjk2.fsf@devron.myhome.or.jp>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20100113111341.GB3087@redhat.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <87tyupfjk2.fsf@devron.myhome.or.jp>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 13, 2010 at 07:13:41PM +0800, Vivek Goyal wrote:
-> On Wed, Jan 13, 2010 at 04:23:22PM +0800, Shaohua Li wrote:
-> > On Wed, Jan 13, 2010 at 04:18:47PM +0800, Corrado Zoccolo wrote:
-> > > On Wed, Jan 13, 2010 at 8:44 AM, Shaohua Li <shaohua.li@intel.com> wrote:
-> > > > My SSD speed of direct write is about 80m/s, while I test page writeback,
-> > > > the speed can only go to 68m/s. Below patch fixes this.
-> > > > It appears we missused cfq_should_idle in cfq_may_dispatch. cfq_should_idle
-> > > > means a queue should idle because it's seekless sync queue or it's the last queue,
-> > > > which is to maintain service tree time slice. So it doesn't mean the
-> > > > last queue is always a sync queue. If the last queue is asyn queue,
-> > > > we definitely shouldn't stop dispatch requests because of pending async
-> > > > requests.
-> > > 
-> > > An other option is that cfq_should_idle returns false for async
-> > > queues, since cfq will never idle on them.
-> > I'm considering this option too, but it appears we need make async queue
-> > idle to maintain domain time slice.
+On Thu, Jan 14, 2010 at 12:32:13PM +0900, OGAWA Hirofumi wrote:
+> Al Viro <viro@ZenIV.linux.org.uk> writes:
 > 
-> IMHO, we don't have to wait on async write service tree. Generally aysnc
-> write queus contain many requests and they are not like reads where next
-> request is expected. So idling on aysnc write service tree is waste of
-> time and will lead to reduced throughput.
-I fully agree async queue doesn't need wait. I thought the purpose we add the last
-queue check in cfq_should_idle is we want a service tree or a group has dedicated
-slice, because before the service tree/group slice is expired, new queue can jump
-in and if we don't idle, the new queue can only run at next slice. Not sure if I
-understand the code correctly.
-you are the expert of iogroup. If I'm wrong, I'll be happy to change
-cfq_should_idle(), which is the ideal place to be changed at my first glance.
+> > On Tue, Jan 12, 2010 at 03:36:14AM +0900, OGAWA Hirofumi wrote:
+> >> 
+> >> If ->follow_link handler return the error, it should decrement
+> >> nd->path refcnt. But, ecryptfs_follow_link() doesn't decrement.
+> >> 
+> >> This patch fix it by using usual nd_set_link() style error handling,
+> >> instead of playing with nd->path.
+> >
+> > Applied.
+> 
+> Sigh, sorry. I introduced new bug by this patch. Please apply this too.
 
-Thanks,
-Shaohua
+I'll fold it.  BTW, while we are at it, there's a leak in configfs/symlink.c
+get_target() as well ;-/
