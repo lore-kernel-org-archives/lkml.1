@@ -1,94 +1,190 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756809Ab0ANPEc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756867Ab0ANPCR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756809Ab0ANPEc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 10:04:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756873Ab0ANPEF
+	id S1756867Ab0ANPCR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 10:02:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756870Ab0ANPCJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 10:04:05 -0500
-Received: from mail.windriver.com ([147.11.1.11]:47810 "EHLO
+	Thu, 14 Jan 2010 10:02:09 -0500
+Received: from mail.windriver.com ([147.11.1.11]:47969 "EHLO
 	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756860Ab0ANPB0 (ORCPT
+	with ESMTP id S1756843Ab0ANPCF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 10:01:26 -0500
+	Thu, 14 Jan 2010 10:02:05 -0500
 From: Jason Wessel <jason.wessel@windriver.com>
 To: linux-kernel@vger.kernel.org
 Cc: kgdb-bugreport@lists.sourceforge.net, mingo@elte.hu,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
        Jason Wessel <jason.wessel@windriver.com>
-Subject: [PATCH 31/40] kgdb: add ops arg to kgdb console active & restore hooks
-Date: Thu, 14 Jan 2010 08:59:27 -0600
-Message-Id: <1263481176-1897-32-git-send-email-jason.wessel@windriver.com>
+Subject: [PATCH 37/40] kgdb,docs: Update the kgdb docs to include kms
+Date: Thu, 14 Jan 2010 08:59:33 -0600
+Message-Id: <1263481176-1897-38-git-send-email-jason.wessel@windriver.com>
 X-Mailer: git-send-email 1.6.3.1.9.g95405b
 In-Reply-To: <1263481176-1897-1-git-send-email-jason.wessel@windriver.com>
 References: <1263481176-1897-1-git-send-email-jason.wessel@windriver.com>
-X-OriginalArrivalTime: 14 Jan 2010 15:01:08.0929 (UTC) FILETIME=[67649310:01CA952A]
+X-OriginalArrivalTime: 14 Jan 2010 15:01:23.0491 (UTC) FILETIME=[70128F30:01CA952A]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
+Update the kgdb docs to include information about kernel mode setting support.
 
-This allows callers to store the ops structure in a parent device structure.
-
-Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
 Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
 ---
- drivers/serial/kgdboc.c |    4 ++--
- include/linux/kgdb.h    |   17 ++++++++++++++---
- 2 files changed, 16 insertions(+), 5 deletions(-)
+ Documentation/DocBook/kgdb.tmpl     |   82 +++++++++++++++++++++++++++++++----
+ Documentation/kernel-parameters.txt |    9 +++-
+ 2 files changed, 79 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/serial/kgdboc.c b/drivers/serial/kgdboc.c
-index 34b0306..93b18f9 100644
---- a/drivers/serial/kgdboc.c
-+++ b/drivers/serial/kgdboc.c
-@@ -208,7 +208,7 @@ static void kgdboc_pre_exp_handler(void)
- {
- 	if (kgdboc_use_kms && dbg_kms_console_core &&
- 	    dbg_kms_console_core->activate_console)
--		if (dbg_kms_console_core->activate_console())
-+		if (dbg_kms_console_core->activate_console(dbg_kms_console_core))
- 			printk(KERN_ERR "kgdboc: kernel mode switch error\n");
+diff --git a/Documentation/DocBook/kgdb.tmpl b/Documentation/DocBook/kgdb.tmpl
+index ebae961..bbf4a22 100644
+--- a/Documentation/DocBook/kgdb.tmpl
++++ b/Documentation/DocBook/kgdb.tmpl
+@@ -200,12 +200,29 @@
+    only make use of <constant>kgdbwait</constant> and early debugging
+    if you build kgdboc into the kernel as a builtins.
+    </para>
++   <para>Optionally you can elect to activate kms (Kernel Mode
++   Setting) integration.  When you use kms with kgdboc and you have a
++   video driver that has atomic mode setting hooks, it is possible to
++   enter the debugger on the graphics console.  When the kernel
++   execution is resumed, the graphics previous graphics mode will get
++   restored.  This integration can serve as a useful tool to aid in
++   dianosing crashes or doing analysis of memory with kdb while
++   allowing the full graphics console applications to run.
++   </para>
+    <sect2 id="kgdbocArgs">
+    <title>kgdboc arguments</title>
+-   <para>Usage: <constant>kgdboc=[kbd][[,]serial_device][,baud]</constant></para>
+-   <para>You can configure kgdboc to use the keyboard, and or a serial device
+-   depending on if you are using kdb and or kgdb, in one of the
+-   following scenarios.
++   <para>Usage: <constant>kgdboc=[kms][[,]kbd][[,]serial_device][,baud]</constant></para>
++   <para>Abreviations:
++   <itemizedlist>
++   <listitem><para>kms = Kernel Mode Setting</para></listitem>
++   <listitem><para>kbd = Keyboard</para></listitem>
++   </itemizedlist>
++   </para>
++   <para>You can configure kgdboc to use the keyboard, and or a serial
++   device depending on if you are using kdb and or kgdb, in one of the
++   following scenarios.  The order listed above must be observed if
++   you use any of the optional configurations together.  Using kms +
++   only gdb is generally not a usful combination.
+    <orderedlist>
+    <listitem><para>kdb and kgdb over only a serial port</para>
+    <para><constant>kgdboc=&lt;serial_device&gt;[,baud]</constant></para>
+@@ -218,6 +235,12 @@
+    <listitem><para>kdb with a keyboard</para>
+    <para><constant>kgdboc=kbd</constant></para>
+    </listitem>
++   <listitem><para>kdb with kernel modesetting</para>
++   <para><constant>kgdboc=kms,kbd</constant></para>
++   </listitem>
++   <listitem><para>kdb with kernel modesetting and kgdb over a serial port</para>
++   <para><constant>kgdboc=kbd,kbd,ttyS0,115200</constant></para>
++   </listitem>
+    </orderedlist>
+    </para>
+    <para>You can configure kgdboc via sysfs or a module or kernel boot line
+@@ -612,6 +635,8 @@ Task Addr       Pid   Parent [*] cpu State Thread     Command
+       <listitem><para>The logic to perform safe memory reads and writes to memory while using the debugger</para></listitem>
+       <listitem><para>A full implementation for software breakpoints unless overridden by the arch</para></listitem>
+       <listitem><para>The API to invoke either the kdb or kgdb frontend to the debug core.</para></listitem>
++      <listitem><para>The structures and call back API for atomic kernel mode setting.</para>
++      <para>NOTE: kgdboc is where the kms callbacks are invoked.</para></listitem>
+       </itemizedlist>
+       </para>
+       </listitem>
+@@ -719,6 +744,8 @@ Task Addr       Pid   Parent [*] cpu State Thread     Command
+   </sect1>
+   <sect1 id="kgdbocDesign">
+   <title>kgdboc internals</title>
++  <sect2>
++  <title>kgdboc and uarts</title>
+   <para>
+   The kgdboc driver is actually a very thin driver that relies on the
+   underlying low level to the hardware driver having "polling hooks"
+@@ -727,10 +754,7 @@ Task Addr       Pid   Parent [*] cpu State Thread     Command
+   low level uart hook for doing polled mode reading and writing of a
+   single character while in an atomic context.  When kgdb makes an I/O
+   request to the debugger, kgdboc invokes a call back in the serial
+-  core which in turn uses the call back in the uart driver.  It is
+-  certainly possible to extend kgdboc to work with non-uart based
+-  consoles in the future.
+-  </para>
++  core which in turn uses the call back in the uart driver.</para>
+   <para>
+   When using kgdboc with a uart, the uart driver must implement two callbacks in the <constant>struct uart_ops</constant>. Example from drivers/8250.c:<programlisting>
+ #ifdef CONFIG_CONSOLE_POLL
+@@ -744,9 +768,49 @@ Task Addr       Pid   Parent [*] cpu State Thread     Command
+   that they can be called from an atomic context and have to restore
+   the state of the uart chip on return such that the system can return
+   to normal when the debugger detaches.  You need to be very careful
+-  with any kind of lock you consider, because failing here is most
++  with any kind of lock you consider, because failing here is most likely
+   going to mean pressing the reset button.
+   </para>
++  </sect2>
++  <sect2 id="kgdbocKbd">
++  <title>kgdboc and keyboards</title>
++  <para>The kgdboc driver contains logic to configure communications
++  with an attached keyboard.  The keyboard infrastructure is only
++  compiled into the kernel when CONFIG_KDB_KEYBOARD=y is set in the
++  kernel configuration.</para>
++  <para>The core polled keyboard driver driver for PS/2 type keyboards
++  is in drivers/char/kdb_keyboard.c.  This driver is hooked into the
++  debug core when kgdboc populates the callback in the arrary
++  called <constant>kdb_poll_funcs[]</constant>.  The
++  kdb_get_kbd_char() is the top level function which polls hardware
++  for single character input.
++  </para>
++  </sect2>
++  <sect2 id="kgdbocKms">
++  <title>kgdboc and kms</title>
++  <para>The kgdboc driver contains logic to request the grpahics
++  display to switch to a text context if you are using
++  kgdboc=kms,... and you have a video driver which has a framebuffer
++  console and atomic kernel mode setting support.  Every time kernel
++  debugger is entered it calls kgdboc_pre_exp_handler() which in turn
++  calls dbg_kms_console_core->activate_console().  On resuming kernel
++  execution, the kernel debugger calls kgdboc_post_exp_handler() which
++  in turn calls dbg_kms_console_core->restore_console().</para>
++  <para>Any video driver that wants to be compatible with the kernel
++  debugger and the atomic kms callbacks must implement the
++  mode_set_base_atomic operation.  The following is an example from
++  drivers/gpu/drm/i915/intel_display.c:
++  <informalexample>
++  <programlisting>
++static const struct drm_crtc_helper_funcs intel_helper_funcs = {
++[...]
++        .mode_set_base_atomic = intel_pipe_set_base_atomic,
++[...]
++};
++  </programlisting>
++  </informalexample>
++  </para>
++  </sect2>
+   </sect1>
+   </chapter>
+   <chapter id="credits">
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index af8b8e8..b340445 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -1106,9 +1106,12 @@ and is between 256 and 4096 characters. It is defined in the file
+ 	kgdboc=		[KGDB,HW] kgdb over consoles.
+ 			Requires a tty driver that supports console polling,
+ 			or a supported polling keyboard driver (non-usb).
+-			Serial only format: <serial_device>[,baud]
+-			keyboard only format: kbd
+-			keyboard and serial format: kbd,<serial_device>[,baud]
++			 Serial only format: <serial_device>[,baud]
++			 keyboard only format: kbd
++			 keyboard and serial format: kbd,<serial_device>[,baud]
++			Optional Kernal mode setting:
++			 kms, kbd format: kms,kbd
++			 kms, kbd and serial format: kms,kbd,<ser_dev>[,baud]
  
- 	/* Increment the module count when the debugger is active */
-@@ -223,7 +223,7 @@ static void kgdboc_post_exp_handler(void)
- 		module_put(THIS_MODULE);
- 	if (kgdboc_use_kms && dbg_kms_console_core &&
- 	    dbg_kms_console_core->restore_console)
--		if (dbg_kms_console_core->restore_console())
-+		if (dbg_kms_console_core->restore_console(dbg_kms_console_core))
- 			printk(KERN_ERR "kgdboc: graphics restore failed\n");
- #ifdef CONFIG_KDB_KEYBOARD
- 	/* If using the kdb keyboard driver release all the keys. */
-diff --git a/include/linux/kgdb.h b/include/linux/kgdb.h
-index 35ad419..68fa243 100644
---- a/include/linux/kgdb.h
-+++ b/include/linux/kgdb.h
-@@ -289,11 +289,22 @@ extern void __init early_kgdboc_init(void);
- 
- /* Common to all that include kgdb.h */
- struct dbg_kms_console_ops {
--	int (*activate_console) (void);
--	int (*restore_console) (void);
-+	int (*activate_console) (struct dbg_kms_console_ops *ops);
-+	int (*restore_console) (struct dbg_kms_console_ops *ops);
- };
- 
- #ifdef CONFIG_KGDB
- extern struct dbg_kms_console_ops *dbg_kms_console_core;
--#endif
-+extern int dbg_kms_console_ops_register(struct dbg_kms_console_ops *ops);
-+extern int dbg_kms_console_ops_unregister(struct dbg_kms_console_ops *ops);
-+#else /* ! CONFIG_KGDB */
-+static inline int dbg_kms_console_ops_register(struct dbg_kms_console_ops *ops)
-+{
-+       return 0;
-+}
-+static inline int dbg_kms_console_ops_unregister(struct dbg_kms_console_ops *ops)
-+{
-+       return 0;
-+}
-+#endif /* ! CONFIG_KGDB */
- #endif /* _KGDB_H_ */
+ 	kgdbwait	[KGDB] Stop kernel execution and enter the
+ 			kernel debugger at the earliest opportunity if
 -- 
 1.6.3.1.9.g95405b
 
