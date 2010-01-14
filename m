@@ -1,69 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755248Ab0ANLxH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755152Ab0ANMR1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755248Ab0ANLxH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 06:53:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755092Ab0ANLxF
+	id S1755152Ab0ANMR1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 07:17:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754839Ab0ANMR0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 06:53:05 -0500
-Received: from www.tglx.de ([62.245.132.106]:43777 "EHLO www.tglx.de"
+	Thu, 14 Jan 2010 07:17:26 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:22813 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752305Ab0ANLxE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 06:53:04 -0500
-Date: Thu, 14 Jan 2010 12:52:38 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Xiaotian Feng <dfeng@redhat.com>
-cc: linux-kernel@vger.kernel.org, Magnus Damm <damm@igel.co.jp>,
-       H Hartley Sweeten <hsweeten@visionengravers.com>
-Subject: Re: [PATCH] clockevent: don't remove broadcast device when cpu is
- dead
-In-Reply-To: <4B4F0376.3090906@redhat.com>
-Message-ID: <alpine.LFD.2.00.1001141248510.6420@localhost.localdomain>
-References: <1262834564-13033-1-git-send-email-dfeng@redhat.com> <alpine.LFD.2.00.1001121300190.6420@localhost.localdomain> <4B4D2678.5090601@redhat.com> <alpine.LFD.2.00.1001132305280.6420@localhost.localdomain> <4B4F0376.3090906@redhat.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1751166Ab0ANMR0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jan 2010 07:17:26 -0500
+Subject: Re: [RFC] [PATCH 7/7] Ftrace plugin for Uprobes
+From: Mark Wielaard <mjw@redhat.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Arnaldo Carvalho de Melo <acme@infradead.org>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       utrace-devel <utrace-devel@redhat.com>,
+       Jim Keniston <jkenisto@us.ibm.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Maneesh Soni <maneesh@in.ibm.com>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1263468575.4244.306.camel@laptop>
+References: <20100111122521.22050.3654.sendpatchset@srikar.in.ibm.com>
+	 <20100111122608.22050.94088.sendpatchset@srikar.in.ibm.com>
+	 <1263468191.4244.300.camel@laptop>  <1263468575.4244.306.camel@laptop>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 14 Jan 2010 13:16:51 +0100
+Message-ID: <1263471411.23962.13.camel@springer.wildebeest.org>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 14 Jan 2010, Xiaotian Feng wrote:
-> On 01/14/2010 06:08 AM, Thomas Gleixner wrote:
-> > On Wed, 13 Jan 2010, Xiaotian Feng wrote:
-> > > On 01/12/2010 09:20 PM, Thomas Gleixner wrote:
-> > > > On Thu, 7 Jan 2010, Xiaotian Feng wrote:
-> > > > 
-> > > > > Marc reported BUG during shutdown, after debugging, kernel is trying
-> > > > > to remove a broadcast device which mode is CLOCK_EVT_MODE_ONESHOT.
-> > > > > 
-> > > > > The root cause for this bug is that in clockevents_notify,
-> > > > > "cpumask_weight(dev->cpumask) == 1" is always true even if dev is a
-> > > > 
-> > > > Why is cpumask_weight(dev->cpumask) == 1 always true when we shutdown
-> > > > a non boot cpu ?
-> > > > 
-> > > > The broadcast device is not a per cpu device and the cpumask should
-> > > > not only contain the CPU which is shut down !
-> > > 
-> > > At least for hpet broadcast dev, it's dev->cpumask is only contain the CPU
-> > > which it is initialized from.
+On Thu, 2010-01-14 at 12:29 +0100, Peter Zijlstra wrote:
+> On Thu, 2010-01-14 at 12:23 +0100, Peter Zijlstra wrote:
+> > On Mon, 2010-01-11 at 17:56 +0530, Srikar Dronamraju wrote:
+> > > This patch implements ftrace plugin for uprobes.
 > > 
-> > Which is fundamentaly wrong and the root cause of the problem. I'll
-> > have a look tomorrow morning when my brain is more awake than now.
+> > Right, like others have said, trace events is a much saner interface.
+> > 
+> > So the easiest way I can see that working is to register uprobes against
+> > a file (not a pid).
 > 
-> hpet_legacy_clockevent_register is trying to register new CE, but replace
-> failed,
-> then in tick_check_new_device -> tick_check_broadcast_device, the legacy hpet
-> CE
-> was registered as multicast device, but its dev->cpumask is cpumask of
-> smp_processor_id().
+> Just to clarify, this means you can do things like:
 > 
-> on my system its dev->cpumask is cpumask of 0, but in Marc's, dev->cpumask is
-> cpumask of 4.
-> So when kernel is trying to offline cpu 4, the broadcast hpet is removed.
+>  p:uprobe_event dso:symbol[+offs]
+> 
+> Irrespective of whether there are any current user of that file.
 
-I know, but the point is that a broadcast device should not be bound
-to the CPU which is registering it. Working on a fix.
+Yes, that is a good idea, you can then also refine that with a filter on
+a target pid. That is what systemtap also does, you define files
+(whether they are executables or shared libraries, etc) plus
+symbols/offsets/etc as targets and monitor when they get mapped in
+(either system wide, per executable or pid based).
 
-Thanks,
+Cheers,
 
-	tglx
+Mark
+
