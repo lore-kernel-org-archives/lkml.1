@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757441Ab0ANWgP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757519Ab0ANWge@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757441Ab0ANWgP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 17:36:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756144Ab0ANWgL
+	id S1757519Ab0ANWge (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 17:36:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752083Ab0ANWgb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 17:36:11 -0500
-Received: from kroah.org ([198.145.64.141]:60589 "EHLO coco.kroah.org"
+	Thu, 14 Jan 2010 17:36:31 -0500
+Received: from kroah.org ([198.145.64.141]:60583 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755895Ab0ANW2j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 17:28:39 -0500
+	id S1755787Ab0ANW2i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jan 2010 17:28:38 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, stable-review@kernel.org
 Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       Andi Kleen <andi@firstfloor.org>, Andi Kleen <ak@linux.intel.com>,
-       Ingo Molnar <mingo@elte.hu>, Oleg Nesterov <oleg@redhat.com>,
+       Krzysztof Halasa <khc@pm.waw.pl>, David Miller <davem@davemloft.net>,
+       Joerg Roedel <joerg.roedel@amd.com>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 25/52] kernel/signal.c: fix kernel information leak with print-fatal-signals=1
-Date: Thu, 14 Jan 2010 14:27:04 -0800
-Message-Id: <1263508051-7868-25-git-send-email-gregkh@suse.de>
+Subject: [PATCH 24/52] dma-debug: allow DMA_BIDIRECTIONAL mappings to be synced with DMA_FROM_DEVICE and
+Date: Thu, 14 Jan 2010 14:27:03 -0800
+Message-Id: <1263508051-7868-24-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.6
-In-Reply-To: <1263508051-7868-24-git-send-email-gregkh@suse.de>
+In-Reply-To: <1263508051-7868-23-git-send-email-gregkh@suse.de>
 References: <20100114222551.GA7839@suse.de>
  <1263508051-7868-1-git-send-email-gregkh@suse.de>
  <1263508051-7868-2-git-send-email-gregkh@suse.de>
@@ -44,57 +44,63 @@ References: <20100114222551.GA7839@suse.de>
  <1263508051-7868-21-git-send-email-gregkh@suse.de>
  <1263508051-7868-22-git-send-email-gregkh@suse.de>
  <1263508051-7868-23-git-send-email-gregkh@suse.de>
- <1263508051-7868-24-git-send-email-gregkh@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Andi Kleen <andi@firstfloor.org>
+From: Krzysztof Halasa <khc@pm.waw.pl>
 
-commit b45c6e76bc2c72f6426c14bed64fdcbc9bf37cb0 upstream.
+commit 42d53b4ff7d61487d18274ebdf1f70c1aef6f122 upstream.
 
-When print-fatal-signals is enabled it's possible to dump any memory
-reachable by the kernel to the log by simply jumping to that address from
-user space.
+There is no need to perform full BIDIR sync (copying the buffers in case
+of swiotlb and similar schemes) if we know that the owner (CPU or device)
+hasn't altered the data.
 
-Or crash the system if there's some hardware with read side effects.
+Addresses the false-positive reported at
+http://bugzilla.kernel.org/show_bug.cgi?id=14169
 
-The fatal signals handler will dump 16 bytes at the execution address,
-which is fully controlled by ring 3.
-
-In addition when something jumps to a unmapped address there will be up to
-16 additional useless page faults, which might be potentially slow (and at
-least is not very efficient)
-
-Fortunately this option is off by default and only there on i386.
-
-But fix it by checking for kernel addresses and also stopping when there's
-a page fault.
-
-Signed-off-by: Andi Kleen <ak@linux.intel.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Oleg Nesterov <oleg@redhat.com>
+Signed-off-by: Krzysztof Halasa <khc@pm.waw.pl>
+Cc: David Miller <davem@davemloft.net>
+Cc: Joerg Roedel <joerg.roedel@amd.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- kernel/signal.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+ lib/dma-debug.c |    7 +++----
+ 1 files changed, 3 insertions(+), 4 deletions(-)
 
-diff --git a/kernel/signal.c b/kernel/signal.c
-index 6705320..4d0658d 100644
---- a/kernel/signal.c
-+++ b/kernel/signal.c
-@@ -939,7 +939,8 @@ static void print_fatal_signal(struct pt_regs *regs, int signr)
- 		for (i = 0; i < 16; i++) {
- 			unsigned char insn;
- 
--			__get_user(insn, (unsigned char *)(regs->ip + i));
-+			if (get_user(insn, (unsigned char *)(regs->ip + i)))
-+				break;
- 			printk("%02x ", insn);
- 		}
+diff --git a/lib/dma-debug.c b/lib/dma-debug.c
+index 5a77c7c..084e879 100644
+--- a/lib/dma-debug.c
++++ b/lib/dma-debug.c
+@@ -913,6 +913,9 @@ static void check_sync(struct device *dev,
+ 				ref->size);
  	}
+ 
++	if (entry->direction == DMA_BIDIRECTIONAL)
++		goto out;
++
+ 	if (ref->direction != entry->direction) {
+ 		err_printk(dev, entry, "DMA-API: device driver syncs "
+ 				"DMA memory with different direction "
+@@ -923,9 +926,6 @@ static void check_sync(struct device *dev,
+ 				dir2name[ref->direction]);
+ 	}
+ 
+-	if (entry->direction == DMA_BIDIRECTIONAL)
+-		goto out;
+-
+ 	if (to_cpu && !(entry->direction == DMA_FROM_DEVICE) &&
+ 		      !(ref->direction == DMA_TO_DEVICE))
+ 		err_printk(dev, entry, "DMA-API: device driver syncs "
+@@ -948,7 +948,6 @@ static void check_sync(struct device *dev,
+ 
+ out:
+ 	put_hash_bucket(bucket, &flags);
+-
+ }
+ 
+ void debug_dma_map_page(struct device *dev, struct page *page, size_t offset,
 -- 
 1.6.6
 
