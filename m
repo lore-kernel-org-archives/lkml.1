@@ -1,25 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756818Ab0ANWfn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756007Ab0ANW2k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756818Ab0ANWfn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 17:35:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756585Ab0ANWfi
+	id S1756007Ab0ANW2k (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 17:28:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753047Ab0ANW2h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 17:35:38 -0500
-Received: from kroah.org ([198.145.64.141]:60597 "EHLO coco.kroah.org"
+	Thu, 14 Jan 2010 17:28:37 -0500
+Received: from kroah.org ([198.145.64.141]:60570 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755945Ab0ANW2l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 17:28:41 -0500
+	id S1755787Ab0ANW2f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jan 2010 17:28:35 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, stable-review@kernel.org
 Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       Jarkko Lavinen <jarkko.lavinen@nokia.com>,
-       Adrian Hunter <adrian.hunter@nokia.com>, <linux-mmc@vger.kernel.org>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       Stephen Hemminger <shemminger@vyatta.com>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       Len Brown <len.brown@intel.com>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 27/52] mmc_block: fix probe error cleanup bug
-Date: Thu, 14 Jan 2010 14:27:06 -0800
-Message-Id: <1263508051-7868-27-git-send-email-gregkh@suse.de>
+Subject: [PATCH 21/52] drivers/cpuidle/governors/menu.c: fix undefined reference to `__udivdi3'
+Date: Thu, 14 Jan 2010 14:27:00 -0800
+Message-Id: <1263508051-7868-21-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.6
-In-Reply-To: <1263508051-7868-26-git-send-email-gregkh@suse.de>
+In-Reply-To: <1263508051-7868-20-git-send-email-gregkh@suse.de>
 References: <20100114222551.GA7839@suse.de>
  <1263508051-7868-1-git-send-email-gregkh@suse.de>
  <1263508051-7868-2-git-send-email-gregkh@suse.de>
@@ -41,46 +44,67 @@ References: <20100114222551.GA7839@suse.de>
  <1263508051-7868-18-git-send-email-gregkh@suse.de>
  <1263508051-7868-19-git-send-email-gregkh@suse.de>
  <1263508051-7868-20-git-send-email-gregkh@suse.de>
- <1263508051-7868-21-git-send-email-gregkh@suse.de>
- <1263508051-7868-22-git-send-email-gregkh@suse.de>
- <1263508051-7868-23-git-send-email-gregkh@suse.de>
- <1263508051-7868-24-git-send-email-gregkh@suse.de>
- <1263508051-7868-25-git-send-email-gregkh@suse.de>
- <1263508051-7868-26-git-send-email-gregkh@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jarkko Lavinen <jarkko.lavinen@nokia.com>
+From: Stephen Hemminger <shemminger@linux-foundation.org>
 
-commit 0a74ff29b8dd8b748f8856352f9a9b5c6cc362cc upstream.
+commit 5787536edf18e33d06e2bf038bfd0910f4def213 upstream.
 
-If mmc_blk_set_blksize() fails mmc_blk_probe() the request queue and its
-thread have been set up and they need to be shut down properly before
-putting the disk.
+menu: use proper 64 bit math
 
-Signed-off-by: Jarkko Lavinen <jarkko.lavinen@nokia.com>
-Signed-off-by: Adrian Hunter <adrian.hunter@nokia.com>
-Cc: <linux-mmc@vger.kernel.org>
+The new menu governor is incorrectly doing a 64 bit divide.  Compile
+tested only
+
+Signed-off-by: Stephen Hemminger <shemminger@vyatta.com>
+Cc: Arjan van de Ven <arjan@linux.intel.com>
+Cc: Len Brown <len.brown@intel.com>
+Cc: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/mmc/card/block.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+ drivers/cpuidle/governors/menu.c |   12 +++++++++---
+ 1 files changed, 9 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/mmc/card/block.c b/drivers/mmc/card/block.c
-index 5988573..ee87911 100644
---- a/drivers/mmc/card/block.c
-+++ b/drivers/mmc/card/block.c
-@@ -618,6 +618,7 @@ static int mmc_blk_probe(struct mmc_card *card)
- 	return 0;
+diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
+index 6810443..73655ae 100644
+--- a/drivers/cpuidle/governors/menu.c
++++ b/drivers/cpuidle/governors/menu.c
+@@ -18,6 +18,7 @@
+ #include <linux/hrtimer.h>
+ #include <linux/tick.h>
+ #include <linux/sched.h>
++#include <linux/math64.h>
  
-  out:
-+	mmc_cleanup_queue(&md->queue);
- 	mmc_blk_put(md);
+ #define BUCKETS 12
+ #define RESOLUTION 1024
+@@ -169,6 +170,12 @@ static DEFINE_PER_CPU(struct menu_device, menu_devices);
  
- 	return err;
+ static void menu_update(struct cpuidle_device *dev);
+ 
++/* This implements DIV_ROUND_CLOSEST but avoids 64 bit division */
++static u64 div_round64(u64 dividend, u32 divisor)
++{
++	return div_u64(dividend + (divisor / 2), divisor);
++}
++
+ /**
+  * menu_select - selects the next idle state to enter
+  * @dev: the CPU
+@@ -209,9 +216,8 @@ static int menu_select(struct cpuidle_device *dev)
+ 		data->correction_factor[data->bucket] = RESOLUTION * DECAY;
+ 
+ 	/* Make sure to round up for half microseconds */
+-	data->predicted_us = DIV_ROUND_CLOSEST(
+-		data->expected_us * data->correction_factor[data->bucket],
+-		RESOLUTION * DECAY);
++	data->predicted_us = div_round64(data->expected_us * data->correction_factor[data->bucket],
++					 RESOLUTION * DECAY);
+ 
+ 	/*
+ 	 * We want to default to C1 (hlt), not to busy polling
 -- 
 1.6.6
 
