@@ -1,79 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755622Ab0ANSuf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757028Ab0ANSur@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755622Ab0ANSuf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 13:50:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754305Ab0ANSue
+	id S1757028Ab0ANSur (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 13:50:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756818Ab0ANSuo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 13:50:34 -0500
-Received: from mk-filter-1-a-1.mail.uk.tiscali.com ([212.74.100.52]:47282 "EHLO
-	mk-filter-1-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751160Ab0ANSue (ORCPT
+	Thu, 14 Jan 2010 13:50:44 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:64143 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756780Ab0ANSul (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 13:50:34 -0500
-X-Trace: 327786222/mk-filter-1.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.28.176/None/hugh.dickins@tiscali.co.uk
-X-SBRS: None
-X-RemoteIP: 79.69.28.176
-X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
-X-SMTP-AUTH: 
-X-Originating-Country: GB/UNITED KINGDOM
-X-MUA: Alpine 2.00 (LSU 1167 2008-08-23)
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AiMBAOv1TktPRRyw/2dsb2JhbAAI2T6EMAQ
-X-IronPort-AV: E=Sophos;i="4.49,276,1262563200"; 
-   d="scan'208";a="327786222"
-Date: Thu, 14 Jan 2010 18:50:22 +0000 (GMT)
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-X-X-Sender: hugh@sister.anvils
-To: Nitin Gupta <ngupta@vflare.org>
-cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Al Viro <viro@ZenIV.linux.org.uk>,
-       Christoph Hellwig <hch@infradead.org>,
-       Jens Axboe <jens.axboe@oracle.com>, Andi Kleen <andi@firstfloor.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] [mmotm v2] comment on swap notify locking constraints
-In-Reply-To: <1263492602-3052-1-git-send-email-ngupta@vflare.org>
-Message-ID: <alpine.LSU.2.00.1001141845110.15495@sister.anvils>
-References: <1263492602-3052-1-git-send-email-ngupta@vflare.org>
-User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 14 Jan 2010 13:50:41 -0500
+X-Authority-Analysis: v=1.0 c=1 a=r_nf4N-T2GkA:10 a=7U3hwN5JcxgA:10 a=JfrnYn6hAAAA:8 a=janDXopcNaOkoCyVAv0A:9 a=jVOpznDCxVTdsWYommxkIIUvA0gA:4 a=3Rfx1nUSh_UA:10
+X-Cloudmark-Score: 0
+X-Originating-IP: 74.67.89.75
+Subject: Re: [RFC PATCH] introduce sys_membarrier(): process-wide memory
+ barrier (v5)
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Oleg Nesterov <oleg@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       akpm@linux-foundation.org, josh@joshtriplett.org, tglx@linutronix.de,
+       Valdis.Kletnieks@vt.edu, dhowells@redhat.com, laijs@cn.fujitsu.com,
+       dipankar@in.ibm.com
+In-Reply-To: <20100114175449.GA15387@Krystal>
+References: <20100113013757.GA29314@Krystal>
+	 <1263400738.4244.242.camel@laptop> <20100113193603.GA27327@Krystal>
+	 <1263460096.4244.282.camel@laptop> <20100114162609.GC3487@Krystal>
+	 <1263488625.4244.333.camel@laptop>  <20100114175449.GA15387@Krystal>
+Content-Type: text/plain; charset="ISO-8859-15"
+Organization: Kihon Technologies Inc.
+Date: Thu, 14 Jan 2010 13:50:37 -0500
+Message-ID: <1263495037.28171.3860.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Nitin Gupta <ngupta@vflare.org>
+On Thu, 2010-01-14 at 12:54 -0500, Mathieu Desnoyers wrote:
+> * Peter Zijlstra (peterz@infradead.org) wrote:
+> > On Thu, 2010-01-14 at 11:26 -0500, Mathieu Desnoyers wrote:
+> > 
+> > > It's this scenario that is causing problem. Let's consider this
+> > > execution:
+> > > 
+> 
+> (slightly augmented)
+> 
+>        CPU 0 (membarrier)                  CPU 1 (another mm -> our mm)
+>        <user-space>
+>                                            <kernel-space>
+>                                            switch_mm()
+>                                              smp_mb()
+>                                              clear_mm_cpumask()
+>                                              set_mm_cpumask()
+>                                              smp_mb() (by load_cr3() on x86)
+>                                            switch_to()
+>        memory access before membarrier
+>        <call sys_membarrier()>
+>        smp_mb()
+>        mm_cpumask includes CPU 1
+>        rcu_read_lock()
+>        if (CPU 1 mm != our mm)
 
-A block device makes swap_slot_free_notify() callback
-when the last reference to a swap slot is dropped.
+			But here, CPU 1 updated its mm already and did a
+			smp_mb, won't that make us send the smp_mb
+			anyway?
 
-This callback is made under swap_lock and sometimes page table
-lock. This is a note of warning for registered callback
-function which must meet these constraints.
+-- Steve
 
-Signed-off-by: Nitin Gupta <ngupta@vflare.org>
-Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
----
-I've added "sometimes " in the comment above and the comment below:
-sorry, I should have made that clearer when I made this point.
+>          skip CPU 1.
+>        rcu_read_unlock()
+>        smp_mb()
+>        <return to user-space>
+>                                              current = next (1)
+>                                            <switch back to user-space>
+>                                            urcu read lock()
+>                                              read gp
+>                                              store local gp (2)
+>                                              barrier()
+>                                              access critical section data (3)
+>        memory access after membarrier
 
-Hugh
 
- include/linux/blkdev.h |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
-
-diff --git a/include/linux/blkdev.h b/include/linux/blkdev.h
-index f86df8b..fb7b3c2 100644
---- a/include/linux/blkdev.h
-+++ b/include/linux/blkdev.h
-@@ -1294,6 +1294,7 @@ struct block_device_operations {
- 						unsigned long long);
- 	int (*revalidate_disk) (struct gendisk *);
- 	int (*getgeo)(struct block_device *, struct hd_geometry *);
-+	/* this callback is with swap_lock and sometimes page table lock held */
- 	void (*swap_slot_free_notify) (struct block_device *, unsigned long);
- 	struct module *owner;
- };
--- 
-1.6.2.5
