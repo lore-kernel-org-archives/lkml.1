@@ -1,298 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756866Ab0ANPEL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756809Ab0ANPEc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756866Ab0ANPEL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 10:04:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756899Ab0ANPEG
+	id S1756809Ab0ANPEc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 10:04:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756873Ab0ANPEF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 10:04:06 -0500
-Received: from mail.windriver.com ([147.11.1.11]:47804 "EHLO
+	Thu, 14 Jan 2010 10:04:05 -0500
+Received: from mail.windriver.com ([147.11.1.11]:47810 "EHLO
 	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756858Ab0ANPBZ (ORCPT
+	with ESMTP id S1756860Ab0ANPB0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 10:01:25 -0500
+	Thu, 14 Jan 2010 10:01:26 -0500
 From: Jason Wessel <jason.wessel@windriver.com>
 To: linux-kernel@vger.kernel.org
 Cc: kgdb-bugreport@lists.sourceforge.net, mingo@elte.hu,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: [PATCH 32/40] drm: add KGDB/KDB support Add support for KDB entry/exit.
-Date: Thu, 14 Jan 2010 08:59:28 -0600
-Message-Id: <1263481176-1897-33-git-send-email-jason.wessel@windriver.com>
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Jason Wessel <jason.wessel@windriver.com>
+Subject: [PATCH 31/40] kgdb: add ops arg to kgdb console active & restore hooks
+Date: Thu, 14 Jan 2010 08:59:27 -0600
+Message-Id: <1263481176-1897-32-git-send-email-jason.wessel@windriver.com>
 X-Mailer: git-send-email 1.6.3.1.9.g95405b
 In-Reply-To: <1263481176-1897-1-git-send-email-jason.wessel@windriver.com>
 References: <1263481176-1897-1-git-send-email-jason.wessel@windriver.com>
-X-OriginalArrivalTime: 14 Jan 2010 15:01:10.0898 (UTC) FILETIME=[68910520:01CA952A]
+X-OriginalArrivalTime: 14 Jan 2010 15:01:08.0929 (UTC) FILETIME=[67649310:01CA952A]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Jesse Barnes <jbarnes@virtuousgeek.org>
 
----
- drivers/gpu/drm/drm_fb_helper.c      |   79 ++++++++++++++++++++++++++++
- drivers/gpu/drm/i915/intel_display.c |   93 ++++++++++++++++++++++++++++++++++
- include/drm/drm_crtc_helper.h        |    2 +
- include/drm/drm_fb_helper.h          |    4 ++
- 4 files changed, 178 insertions(+), 0 deletions(-)
+This allows callers to store the ops structure in a parent device structure.
 
-diff --git a/drivers/gpu/drm/drm_fb_helper.c b/drivers/gpu/drm/drm_fb_helper.c
-index 1c2b7d4..f65aa4d 100644
---- a/drivers/gpu/drm/drm_fb_helper.c
-+++ b/drivers/gpu/drm/drm_fb_helper.c
-@@ -29,6 +29,7 @@
-  */
- #include <linux/sysrq.h>
- #include <linux/fb.h>
-+#include <linux/kgdb.h>
- #include "drmP.h"
- #include "drm_crtc.h"
- #include "drm_fb_helper.h"
-@@ -233,6 +234,80 @@ int drm_fb_helper_parse_command_line(struct drm_device *dev)
- 	return 0;
- }
- 
-+#define to_fb_helper(ops) (container_of((ops), struct drm_fb_helper, kdb_ops))
-+
-+static int drm_fb_kdb_enter(struct dbg_kms_console_ops *ops)
-+{
-+	struct drm_fb_helper *helper = to_fb_helper(ops);
-+	struct drm_crtc_helper_funcs *funcs;
-+	int i;
-+
-+	if (list_empty(&kernel_fb_helper_list))
-+		return false;
-+
-+	list_for_each_entry(helper, &kernel_fb_helper_list, kernel_fb_list) {
-+		for (i = 0; i < helper->crtc_count; i++) {
-+			struct drm_mode_set *mode_set =
-+				&helper->crtc_info[i].mode_set;
-+
-+			if (!mode_set->crtc->enabled)
-+				continue;
-+
-+			funcs =	mode_set->crtc->helper_private;
-+			funcs->mode_set_base_atomic(mode_set->crtc,
-+						    mode_set->fb,
-+						    mode_set->x,
-+						    mode_set->y);
-+
-+		}
-+	}
-+
-+	return 0;
-+}
-+
-+/* Find the real fb for a given fb helper CRTC */
-+static struct drm_framebuffer *drm_mode_config_fb(struct drm_crtc *crtc)
-+{
-+	struct drm_device *dev = crtc->dev;
-+	struct drm_crtc *c;
-+
-+	list_for_each_entry(c, &dev->mode_config.crtc_list, head) {
-+		if (crtc->base.id == c->base.id)
-+			return c->fb;
-+	}
-+
-+	return NULL;
-+}
-+
-+static int drm_fb_kdb_exit(struct dbg_kms_console_ops *ops)
-+{
-+	struct drm_fb_helper *helper = to_fb_helper(ops);
-+	struct drm_crtc *crtc;
-+	struct drm_crtc_helper_funcs *funcs;
-+	struct drm_framebuffer *fb;
-+	int i;
-+
-+	for (i = 0; i < helper->crtc_count; i++) {
-+		struct drm_mode_set *mode_set = &helper->crtc_info[i].mode_set;
-+		crtc = mode_set->crtc;
-+		funcs = crtc->helper_private;
-+		fb = drm_mode_config_fb(crtc);
-+
-+		if (!crtc->enabled)
-+			continue;
-+
-+		if (!fb) {
-+			DRM_ERROR("no fb to restore??\n");
-+			continue;
-+		}
-+
-+		funcs->mode_set_base_atomic(mode_set->crtc, fb, crtc->x,
-+					    crtc->y);
-+	}
-+
-+	return 0;
-+}
-+
- bool drm_fb_helper_force_kernel_mode(void)
+Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
+Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
+---
+ drivers/serial/kgdboc.c |    4 ++--
+ include/linux/kgdb.h    |   17 ++++++++++++++---
+ 2 files changed, 16 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/serial/kgdboc.c b/drivers/serial/kgdboc.c
+index 34b0306..93b18f9 100644
+--- a/drivers/serial/kgdboc.c
++++ b/drivers/serial/kgdboc.c
+@@ -208,7 +208,7 @@ static void kgdboc_pre_exp_handler(void)
  {
- 	int i = 0;
-@@ -923,6 +998,9 @@ int drm_fb_helper_single_fb_probe(struct drm_device *dev,
- 	/* Switch back to kernel console on panic */
- 	/* multi card linked list maybe */
- 	if (list_empty(&kernel_fb_helper_list)) {
-+		fb_helper->kdb_ops.activate_console = drm_fb_kdb_enter;
-+		fb_helper->kdb_ops.restore_console = drm_fb_kdb_exit;
-+		dbg_kms_console_ops_register(&fb_helper->kdb_ops);
- 		printk(KERN_INFO "registered panic notifier\n");
- 		atomic_notifier_chain_register(&panic_notifier_list,
- 					       &paniced);
-@@ -937,6 +1015,7 @@ void drm_fb_helper_free(struct drm_fb_helper *helper)
- {
- 	list_del(&helper->kernel_fb_list);
- 	if (list_empty(&kernel_fb_helper_list)) {
-+		dbg_kms_console_ops_unregister(&helper->kdb_ops);
- 		printk(KERN_INFO "unregistered panic notifier\n");
- 		atomic_notifier_chain_unregister(&panic_notifier_list,
- 						 &paniced);
-diff --git a/drivers/gpu/drm/i915/intel_display.c b/drivers/gpu/drm/i915/intel_display.c
-index 002612f..d54df76 100644
---- a/drivers/gpu/drm/i915/intel_display.c
-+++ b/drivers/gpu/drm/i915/intel_display.c
-@@ -1214,6 +1214,98 @@ intel_pin_and_fence_fb_obj(struct drm_device *dev, struct drm_gem_object *obj)
- 	return 0;
- }
+ 	if (kgdboc_use_kms && dbg_kms_console_core &&
+ 	    dbg_kms_console_core->activate_console)
+-		if (dbg_kms_console_core->activate_console())
++		if (dbg_kms_console_core->activate_console(dbg_kms_console_core))
+ 			printk(KERN_ERR "kgdboc: kernel mode switch error\n");
  
-+/* Assume fb object is pinned & idle & fenced and just update base pointers */
-+static int
-+intel_pipe_set_base_atomic(struct drm_crtc *crtc, struct drm_framebuffer *fb,
-+			   int x, int y)
+ 	/* Increment the module count when the debugger is active */
+@@ -223,7 +223,7 @@ static void kgdboc_post_exp_handler(void)
+ 		module_put(THIS_MODULE);
+ 	if (kgdboc_use_kms && dbg_kms_console_core &&
+ 	    dbg_kms_console_core->restore_console)
+-		if (dbg_kms_console_core->restore_console())
++		if (dbg_kms_console_core->restore_console(dbg_kms_console_core))
+ 			printk(KERN_ERR "kgdboc: graphics restore failed\n");
+ #ifdef CONFIG_KDB_KEYBOARD
+ 	/* If using the kdb keyboard driver release all the keys. */
+diff --git a/include/linux/kgdb.h b/include/linux/kgdb.h
+index 35ad419..68fa243 100644
+--- a/include/linux/kgdb.h
++++ b/include/linux/kgdb.h
+@@ -289,11 +289,22 @@ extern void __init early_kgdboc_init(void);
+ 
+ /* Common to all that include kgdb.h */
+ struct dbg_kms_console_ops {
+-	int (*activate_console) (void);
+-	int (*restore_console) (void);
++	int (*activate_console) (struct dbg_kms_console_ops *ops);
++	int (*restore_console) (struct dbg_kms_console_ops *ops);
+ };
+ 
+ #ifdef CONFIG_KGDB
+ extern struct dbg_kms_console_ops *dbg_kms_console_core;
+-#endif
++extern int dbg_kms_console_ops_register(struct dbg_kms_console_ops *ops);
++extern int dbg_kms_console_ops_unregister(struct dbg_kms_console_ops *ops);
++#else /* ! CONFIG_KGDB */
++static inline int dbg_kms_console_ops_register(struct dbg_kms_console_ops *ops)
 +{
-+	struct drm_device *dev = crtc->dev;
-+	struct drm_i915_private *dev_priv = dev->dev_private;
-+	struct intel_crtc *intel_crtc = to_intel_crtc(crtc);
-+	struct intel_framebuffer *intel_fb;
-+	struct drm_i915_gem_object *obj_priv;
-+	struct drm_gem_object *obj;
-+	int plane = intel_crtc->plane;
-+	unsigned long Start, Offset;
-+	int dspbase = (plane == 0 ? DSPAADDR : DSPBADDR);
-+	int dspsurf = (plane == 0 ? DSPASURF : DSPBSURF);
-+	int dspstride = (plane == 0) ? DSPASTRIDE : DSPBSTRIDE;
-+	int dsptileoff = (plane == 0 ? DSPATILEOFF : DSPBTILEOFF);
-+	int dspcntr_reg = (plane == 0) ? DSPACNTR : DSPBCNTR;
-+	u32 dspcntr;
-+
-+	switch (plane) {
-+	case 0:
-+	case 1:
-+		break;
-+	default:
-+		DRM_ERROR("Can't update plane %d in SAREA\n", plane);
-+		return -EINVAL;
-+	}
-+
-+	intel_fb = to_intel_framebuffer(fb);
-+	obj = intel_fb->obj;
-+	obj_priv = obj->driver_private;
-+
-+	dspcntr = I915_READ(dspcntr_reg);
-+	/* Mask out pixel format bits in case we change it */
-+	dspcntr &= ~DISPPLANE_PIXFORMAT_MASK;
-+	switch (fb->bits_per_pixel) {
-+	case 8:
-+		dspcntr |= DISPPLANE_8BPP;
-+		break;
-+	case 16:
-+		if (fb->depth == 15)
-+			dspcntr |= DISPPLANE_15_16BPP;
-+		else
-+			dspcntr |= DISPPLANE_16BPP;
-+		break;
-+	case 24:
-+	case 32:
-+		dspcntr |= DISPPLANE_32BPP_NO_ALPHA;
-+		break;
-+	default:
-+		DRM_ERROR("Unknown color depth\n");
-+		return -EINVAL;
-+	}
-+	if (IS_I965G(dev)) {
-+		if (obj_priv->tiling_mode != I915_TILING_NONE)
-+			dspcntr |= DISPPLANE_TILED;
-+		else
-+			dspcntr &= ~DISPPLANE_TILED;
-+	}
-+
-+	if (IS_IRONLAKE(dev))
-+		/* must disable */
-+		dspcntr |= DISPPLANE_TRICKLE_FEED_DISABLE;
-+
-+	I915_WRITE(dspcntr_reg, dspcntr);
-+
-+	Start = obj_priv->gtt_offset;
-+	Offset = y * fb->pitch + x * (fb->bits_per_pixel / 8);
-+
-+	DRM_DEBUG("Writing base %08lX %08lX %d %d\n", Start, Offset, x, y);
-+	I915_WRITE(dspstride, fb->pitch);
-+	if (IS_I965G(dev)) {
-+		I915_WRITE(dspbase, Offset);
-+		I915_READ(dspbase);
-+		I915_WRITE(dspsurf, Start);
-+		I915_READ(dspsurf);
-+		I915_WRITE(dsptileoff, (y << 16) | x);
-+	} else {
-+		I915_WRITE(dspbase, Start + Offset);
-+		I915_READ(dspbase);
-+	}
-+
-+	if ((IS_I965G(dev) || plane == 0))
-+		intel_update_fbc(crtc, &crtc->mode);
-+
-+	intel_wait_for_vblank(dev);
-+	intel_increase_pllclock(crtc, true);
-+
-+	return 0;
++       return 0;
 +}
-+
- static int
- intel_pipe_set_base(struct drm_crtc *crtc, int x, int y,
- 		    struct drm_framebuffer *old_fb)
-@@ -4145,6 +4237,7 @@ static const struct drm_crtc_helper_funcs intel_helper_funcs = {
- 	.mode_fixup = intel_crtc_mode_fixup,
- 	.mode_set = intel_crtc_mode_set,
- 	.mode_set_base = intel_pipe_set_base,
-+	.mode_set_base_atomic = intel_pipe_set_base_atomic,
- 	.prepare = intel_crtc_prepare,
- 	.commit = intel_crtc_commit,
- 	.load_lut = intel_crtc_load_lut,
-diff --git a/include/drm/drm_crtc_helper.h b/include/drm/drm_crtc_helper.h
-index b29e201..4c12319 100644
---- a/include/drm/drm_crtc_helper.h
-+++ b/include/drm/drm_crtc_helper.h
-@@ -61,6 +61,8 @@ struct drm_crtc_helper_funcs {
- 	/* Move the crtc on the current fb to the given position *optional* */
- 	int (*mode_set_base)(struct drm_crtc *crtc, int x, int y,
- 			     struct drm_framebuffer *old_fb);
-+	int (*mode_set_base_atomic)(struct drm_crtc *crtc,
-+				    struct drm_framebuffer *fb, int x, int y);
- 
- 	/* reload the current crtc LUT */
- 	void (*load_lut)(struct drm_crtc *crtc);
-diff --git a/include/drm/drm_fb_helper.h b/include/drm/drm_fb_helper.h
-index 58c892a..c4f87a5 100644
---- a/include/drm/drm_fb_helper.h
-+++ b/include/drm/drm_fb_helper.h
-@@ -30,6 +30,8 @@
- #ifndef DRM_FB_HELPER_H
- #define DRM_FB_HELPER_H
- 
-+#include <linux/kgdb.h>
-+
- struct drm_fb_helper_crtc {
- 	uint32_t crtc_id;
- 	struct drm_mode_set mode_set;
-@@ -63,8 +65,10 @@ struct drm_fb_helper_connector {
- 
- struct drm_fb_helper {
- 	struct drm_framebuffer *fb;
-+	struct drm_framebuffer *saved_fb;
- 	struct drm_device *dev;
- 	struct drm_display_mode *mode;
-+	struct dbg_kms_console_ops kdb_ops;
- 	int crtc_count;
- 	struct drm_fb_helper_crtc *crtc_info;
- 	struct drm_fb_helper_funcs *funcs;
++static inline int dbg_kms_console_ops_unregister(struct dbg_kms_console_ops *ops)
++{
++       return 0;
++}
++#endif /* ! CONFIG_KGDB */
+ #endif /* _KGDB_H_ */
 -- 
 1.6.3.1.9.g95405b
 
