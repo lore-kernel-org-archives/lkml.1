@@ -1,107 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755322Ab0ANBp0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755408Ab0ANBp5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755322Ab0ANBp0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 20:45:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751724Ab0ANBpZ
+	id S1755408Ab0ANBp5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 20:45:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755197Ab0ANBp4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 20:45:25 -0500
-Received: from [206.15.93.42] ([206.15.93.42]:20762 "EHLO
-	visionfs1.visionengravers.com" rhost-flags-FAIL-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751286Ab0ANBpZ (ORCPT
+	Wed, 13 Jan 2010 20:45:56 -0500
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:36442 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751724Ab0ANBp4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 20:45:25 -0500
-From: H Hartley Sweeten <hartleys@visionengravers.com>
-To: Linux Kernel <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org
-Subject: [PATCH] scsi/sd.c: quiet all sparse noise
-Date: Wed, 13 Jan 2010 18:45:31 -0700
-Cc: James.Bottomley@suse.de
+	Wed, 13 Jan 2010 20:45:56 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:cc:content-type;
+        b=N2w/hH+AE8qhNvsY0LStYw/lvpCHIvy99Wi0WJNkJCz2lnHmR+Slnrp2E4No4RCavw
+         L1d1S2v9JbROCqW/SRq0mJVea0iMUWj0db6Cp4ahzmyAESmm+K+30Bw3iVa0Z/oNBw+/
+         B11ror7LkUBNYlOK4J8OQO9A/Utvj81Dz7VPI=
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <201001131845.32125.hartleys@visionengravers.com>
+Date: Wed, 13 Jan 2010 17:45:55 -0800
+Message-ID: <bc915a051001131745m6fb70dcbx29b9d35f6fd7106c@mail.gmail.com>
+Subject: HW breakpoints perf_events request
+From: Joshua Pincus <joshua.pincus@gmail.com>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: "K.Prasad" <prasad@linux.vnet.ibm.com>, peterz@infradead.org,
+       paulus@samba.org, acme@redhat.com, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-scsi/sd.c: quiet all sparse noise
+Hi,
 
-In sd_store_cache_type the symbol 'len' is declared twice.
-Remove the second declaration to quiet the following
-sparse warning.
+I have a request for an additional feature to be included
+in the recent hardware breakpoints work soon to be delivered
+in kernel 2.6.33.
 
-warning: symbol 'len' shadows an earlier one
+Frederic Weisbecker, Prasad Krishnan and I have shared an ongoing
+private discussion on this topic.  Frederic recommended that we take
+the discussion to a wider audience.  Hence this email.  I would like
+to thank both
+of those two engineers for their patience, quick response,
+and help in this process.  They've been stellar.
 
-In sd_probe the variable 'index' is declared as a u32. This variable is
-used in a call to ida_get_new which is expecting an int *. Make
-the variable an int to quiet the following sparse warning.
+I work for a company which would like to make heavy use
+of the new HW breakpoints perf_event work.  Essentially,
+we need to be able to do the following:
 
-warning: incorrect type in argument 2 (different signedness)
+1) When executed, a user-land application must be able to program 4
+pinned hardware
+breakpoint registers.  I need 1 byte granularity (address length
+specificity) and the ability
+to set RWX event triggers.
 
-There are 4 symbols in the file that are not exported and produce
-the following sparse warnings.
+2) All calls to clone() or fork() will propagate the
+debug register settings from parent to child(ren).
 
-warning: symbol 'sd_cdb_cache' was not declared. Should it be static?
-warning: symbol 'sd_cdb_pool' was not declared. Should it be static?
-warning: symbol 'sd_read_protection_type' was not declared. Should it be static?
-warning: symbol 'sd_read_app_tag_own' was not declared. Should it be static?
+3) When a breakpoint is triggered, the application
+thread currently running which triggered the breakpoint
+immediately stops execution and is sent a SIGTRAP.
 
-Make them static to quiet the warnings.
+4) The thread transitions from the PC that triggered the breakpoint to
+the signal handler for SIGTRAP.
 
-H Hartley Sweeten <hsweeten@visionengravers.com>
-James E.J. Bottomley <James.Bottomley@suse.de>
+5) The signal handler does some work.  (This "work" is outside the
+scope of my request, but you may have some insights.  I need to be
+able to change the PC and nPC for the thread that triggered a
+breakpoint such that when it
+returns from the signal handler it doesn't return to the instruction
+that triggered the breakpoint but to the one after it.  If I were
+using ptrace(8), I would just have the parent
+process use the ptrace(8) syscall to modify the PC and
+nPC of the child.  I'm not using ptrace(8).)
 
----
+6) The signal handler returns and the thread returns to normal
+execution at the new
+PC and nPC.
 
-diff --git a/drivers/scsi/sd.c b/drivers/scsi/sd.c
-index 255da53..987a12e 100644
---- a/drivers/scsi/sd.c
-+++ b/drivers/scsi/sd.c
-@@ -116,8 +116,8 @@ static DEFINE_IDA(sd_index_ida);
-  * object after last put) */
- static DEFINE_MUTEX(sd_ref_mutex);
- 
--struct kmem_cache *sd_cdb_cache;
--mempool_t *sd_cdb_pool;
-+static struct kmem_cache *sd_cdb_cache;
-+static mempool_t *sd_cdb_pool;
- 
- static const char *sd_cache_types[] = {
- 	"write through", "none", "write back",
-@@ -144,7 +144,7 @@ sd_store_cache_type(struct device *dev, struct device_attribute *attr,
- 		return -EINVAL;
- 
- 	for (i = 0; i < ARRAY_SIZE(sd_cache_types); i++) {
--		const int len = strlen(sd_cache_types[i]);
-+		len = strlen(sd_cache_types[i]);
- 		if (strncmp(sd_cache_types[i], buf, len) == 0 &&
- 		    buf[len] == '\n') {
- 			ct = i;
-@@ -1369,7 +1369,7 @@ sd_spinup_disk(struct scsi_disk *sdkp)
- /*
-  * Determine whether disk supports Data Integrity Field.
-  */
--void sd_read_protection_type(struct scsi_disk *sdkp, unsigned char *buffer)
-+static void sd_read_protection_type(struct scsi_disk *sdkp, unsigned char *buffer)
- {
- 	struct scsi_device *sdp = sdkp->device;
- 	u8 type;
-@@ -1896,7 +1896,7 @@ defaults:
-  * The ATO bit indicates whether the DIF application tag is available
-  * for use by the operating system.
-  */
--void sd_read_app_tag_own(struct scsi_disk *sdkp, unsigned char *buffer)
-+static void sd_read_app_tag_own(struct scsi_disk *sdkp, unsigned char *buffer)
- {
- 	int res, offset;
- 	struct scsi_device *sdp = sdkp->device;
-@@ -2217,7 +2217,7 @@ static int sd_probe(struct device *dev)
- 	struct scsi_device *sdp = to_scsi_device(dev);
- 	struct scsi_disk *sdkp;
- 	struct gendisk *gd;
--	u32 index;
-+	int index;
- 	int error;
- 
- 	error = -ENODEV;
+>From my discussions with Frederic and Prasad, I know
+that requirements (1) and (2), as described above,
+are already being met by the current work.  I can use
+the perf_event_attr structure and the perf_event syscall
+to program breakpoints for a thread in exactly
+the way I've specified AND be able to have debug
+settings inherited from parent to child in the case of a
+fork() or clone().
+
+However, there's nothing yet in place to allow a
+signal to be sent to the thread when a breakpoint
+has been hit.  Put another way, there's nothing here
+which affects execution flow of the user-app when the CPU
+traps due to a HW breakpoint.
+
+Currently, the perf events infrastructure allows me
+to mmap() a block of memory and to poll() on it, waiting
+and watching for events to be described in that mmap'd
+buffer.  That will not be sufficient for what we need
+to do.  We need to have the ability to specify that
+execution of the thread should be interrupted, just as it
+would under ptrace(), and have a signal be delivered.
+Delivery of the signal must be received and processed
+by the application before the thread will be allowed to
+proceed to the nPC after the PC which caused the
+HW breakpoint event.
+
+Is this possible?  Can we architect this feature into
+the perf_events infrastructure?
+
+At first glance, it would seem that this is a fairly
+easy thing to do.  Right now, these same HW breakpoints
+triggers under ptrace() merely call a previously registered
+user handler which modifies the debug registers to
+record the event and to propagate a signal to the child
+process being traced.  We want to do something similar
+w/o using ptrace.  Perhaps it is as simple as providing a
+perf_event_attr setting which indicates that SIGTRAP signals
+should be sent to the thread which triggered the breakpoint
+exception.
+
+Thanks in advance for your help,
+JP
