@@ -1,43 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753288Ab0ANSIr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753084Ab0ANSMP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753288Ab0ANSIr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 13:08:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752866Ab0ANSIn
+	id S1753084Ab0ANSMP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 13:12:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751791Ab0ANSMO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 13:08:43 -0500
-Received: from khc.piap.pl ([195.187.100.11]:58373 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750984Ab0ANSIm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 13:08:42 -0500
-From: Krzysztof Halasa <khc@pm.waw.pl>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>
-Subject: Re: SATA_SIL on IXP425 workaround
-References: <m33a4nfvva.fsf@intrepid.localdomain>
-	<201001141659.19687.bzolnier@gmail.com>
-Date: Thu, 14 Jan 2010 19:08:39 +0100
-In-Reply-To: <201001141659.19687.bzolnier@gmail.com> (Bartlomiej
-	Zolnierkiewicz's message of "Thu, 14 Jan 2010 16:59:19 +0100")
-Message-ID: <m3y6k0h848.fsf@intrepid.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 14 Jan 2010 13:12:14 -0500
+Received: from fg-out-1718.google.com ([72.14.220.154]:24895 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751310Ab0ANSMN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jan 2010 13:12:13 -0500
+From: Nitin Gupta <ngupta@vflare.org>
+To: Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Al Viro <viro@ZenIV.linux.org.uk>,
+       Christoph Hellwig <hch@infradead.org>,
+       Jens Axboe <jens.axboe@oracle.com>, Andi Kleen <andi@firstfloor.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: [PATCH] [mmotm v2] comment on swap notify locking constraints
+Date: Thu, 14 Jan 2010 23:40:02 +0530
+Message-Id: <1263492602-3052-1-git-send-email-ngupta@vflare.org>
+X-Mailer: git-send-email 1.6.2.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> writes:
+A block device makes swap_slot_free_notify() callback
+when the last reference to a swap slot is dropped.
 
-> FWIW your patch is now in my atang tree (I'm aware that Jeff is working
-> on generic solution but in the meantime this non-intrusive patch allows
-> sata_sil to work on IXP425).
+This callback is made under swap_lock and page table
+lock. This is a note of warning for registered callback
+function which must meet these constraints.
 
-Thanks. BTW I could help with the "general solution", but I wonder if
-what we need is simply adding those other ARM archs to IXP4xx (through
-Kconfig)? If they have the same problem, namely inability to do
-readb/readw only, while being able to write[bwl] and all kinds of non-MM
-I/O.
+Signed-off-by: Nitin Gupta <ngupta@vflare.org>
+---
+ include/linux/blkdev.h |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-writeb() is important since it starts the "large PRD" transfers (it has
-to use MMIO BAR to be "large").
+diff --git a/include/linux/blkdev.h b/include/linux/blkdev.h
+index f86df8b..fb7b3c2 100644
+--- a/include/linux/blkdev.h
++++ b/include/linux/blkdev.h
+@@ -1294,6 +1294,7 @@ struct block_device_operations {
+ 						unsigned long long);
+ 	int (*revalidate_disk) (struct gendisk *);
+ 	int (*getgeo)(struct block_device *, struct hd_geometry *);
++	/* this callback is with swap_lock and page table lock held */
+ 	void (*swap_slot_free_notify) (struct block_device *, unsigned long);
+ 	struct module *owner;
+ };
 -- 
-Krzysztof Halasa
+1.6.2.5
+
