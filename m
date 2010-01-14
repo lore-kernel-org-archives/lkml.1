@@ -1,71 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757347Ab0ANX1Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757046Ab0ANXbv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757347Ab0ANX1Z (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 18:27:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755636Ab0ANX1Y
+	id S1757046Ab0ANXbv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 18:31:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756830Ab0ANXbu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 18:27:24 -0500
-Received: from mail-fx0-f225.google.com ([209.85.220.225]:45635 "EHLO
-	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754859Ab0ANX1X (ORCPT
+	Thu, 14 Jan 2010 18:31:50 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:56142 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754214Ab0ANXbu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 18:27:23 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=k98i0aasVkGjxr8fojSaMdk0WoxRAdnxkFWz1XjO3CRDsClWSR4Far62vl/eUR/vws
-         LxiJmzb8G+96wxj4L4jUB7kmEfI3dStNAhdrB4QdleKnzvZPHO1bEIeZewDa87HXZPIv
-         FqlCjUv5wzWe3FqsInCSijKwtCqVRPwi+ZMp4=
-Subject: Re: RFC: [PATCH V3 0/9 Integration of SmartMedia/xD into mtd
- subsystem
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Cc: linux-mtd <linux-mtd@lists.infradead.org>, joern <joern@logfs.org>,
-       Alex Dubov <oakad@yahoo.com>
-In-Reply-To: <1263324518.6236.18.camel@maxim-laptop>
-References: <1263324518.6236.18.camel@maxim-laptop>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 15 Jan 2010 01:27:17 +0200
-Message-ID: <1263511637.4780.4.camel@maxim-laptop>
+	Thu, 14 Jan 2010 18:31:50 -0500
+Date: Thu, 14 Jan 2010 23:34:57 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Neil Schemenauer <nas@arctrix.com>
+Cc: linux-kernel@vger.kernel.org, Alan Cox <alan@linux.intel.com>
+Subject: Re: ATA error with Asus A7VX board
+Message-ID: <20100114233457.1af3e06a@lxorguk.ukuu.org.uk>
+In-Reply-To: <20100114232037.GA17411@arctrix.com>
+References: <20100114232037.GA17411@arctrix.com>
+X-Mailer: Claws Mail 3.7.3 (GTK+ 2.18.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2010-01-12 at 21:28 +0200, Maxim Levitsky wrote: 
-> This is third version of my patches.
-> 
-> Changes since V2:
-> 
-> * Resolved write speed problem, now write speed is around 1 MB/s
-> more that twice the speed of windows driver.
-> 
-> * Made the FTL less dependent on mtd driver.
-> It now uses standard mtd functions for bad block handling.
-> Also made initial device scan be safer against damaged media.
-> 
-> * FTL doesn't depend on common module any more.
-> This makes Kconfig much cleaner, and makes it possible to use the FTl
-> without enabling the nand support.
-> Common module is cleaned up a lot.
-> 
-> Now, everything works, everything is fast (except maybe initial zone
-> scan which takes around 2 seconds...)
-> 
-> Still bear in mind that FTL can destroy data, especially if your flash
-> card is worn out.
-> 
-> I consider this version to be merge worthy.
-> 
-> Best regards,
-> Maxim Levitsky
+> [  366.463909] spurious 8259A interrupt: IRQ7.
+> [ 5432.078546] hda: task_no_data_intr: status=0x30 { DeviceFault SeekComplete }
+> [ 5432.078555] hda: possibly failed opcode: 0xb0
+> [ 5462.224012] hda: lost interrupt
 
+DeviceFault comes from the drive
 
-Now that everything works fine, what shall I do next to get that merged?
+> ata4.00: failed command: READ DMA
+> ata4.00: cmd c8/00:18:4f:27:1b/00:00:00:00:00/e0 tag 0 dma 12288 in
+>          res 51/10:18:4f:27:1b/00:00:00:00:00/a0 Emask 0x81 (invalid argument)
+> ata4.00: status: { DRDY ERR }
+> ata4.00: error: { IDNF }
 
-Best regards,
-Maxim Levitsky
+IDNF - ID not found. The drive couldn't find the sector you requested.
+Some drives do this if they get an invalid sector number in the command
+but that doesn't look to be the case this time.
 
+> I'm attaching the kernel log for the pata_via and ide setups and the
+> output from lspci.
+
+I'd say its a busted drive. If you had bad cables I'd expect to see CRC
+errors not IDNF.
+
+Alan
