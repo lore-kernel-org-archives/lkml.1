@@ -1,102 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756327Ab0ANIB7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756310Ab0ANIIY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756327Ab0ANIB7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 03:01:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754923Ab0ANIB6
+	id S1756310Ab0ANIIY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 03:08:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756026Ab0ANIIX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 03:01:58 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:8184 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751957Ab0ANIB6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 03:01:58 -0500
-Date: Thu, 14 Jan 2010 10:01:17 +0200
-From: Gleb Natapov <gleb@redhat.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       linux-api@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [PATCH v5] add MAP_UNLOCKED mmap flag
-Message-ID: <20100114080117.GL18808@redhat.com>
-References: <20100114155229.6735.A69D9226@jp.fujitsu.com>
- <20100114072210.GK18808@redhat.com>
- <20100114162327.673E.A69D9226@jp.fujitsu.com>
+	Thu, 14 Jan 2010 03:08:23 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:59730 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755392Ab0ANIIW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jan 2010 03:08:22 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <4B4ED0D8.3060401@s5r6.in-berlin.de>
+Date: Thu, 14 Jan 2010 09:07:52 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.23) Gecko/20100102 SeaMonkey/1.1.18
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100114162327.673E.A69D9226@jp.fujitsu.com>
+To: Julia Lawall <julia@diku.dk>
+CC: =?ISO-8859-1?Q?N=E9meth_M=E1rton?= <nm127@freemail.hu>,
+       Greg KH <greg@kroah.com>, Alan Stern <stern@rowland.harvard.edu>,
+       David Vrabel <david.vrabel@csr.com>, linux-usb@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, cocci@diku.dk
+Subject: Re: Changelog quality
+References: <20100113174446.GA20754@kroah.com> <Pine.LNX.4.44L0.1001131301180.3518-100000@iolanthe.rowland.org> <20100113195226.GD8438@kroah.com> <4B4EAA73.5060103@freemail.hu> <Pine.LNX.4.64.1001140704410.18724@ask.diku.dk>
+In-Reply-To: <Pine.LNX.4.64.1001140704410.18724@ask.diku.dk>
+X-Enigmail-Version: 0.96.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 14, 2010 at 04:30:51PM +0900, KOSAKI Motohiro wrote:
-> > On Thu, Jan 14, 2010 at 04:02:42PM +0900, KOSAKI Motohiro wrote:
-> > > > On Thu, Jan 14, 2010 at 09:31:03AM +0900, KOSAKI Motohiro wrote:
-> > > > > > If application does mlockall(MCL_FUTURE) it is no longer possible to mmap
-> > > > > > file bigger than main memory or allocate big area of anonymous memory
-> > > > > > in a thread safe manner. Sometimes it is desirable to lock everything
-> > > > > > related to program execution into memory, but still be able to mmap
-> > > > > > big file or allocate huge amount of memory and allow OS to swap them on
-> > > > > > demand. MAP_UNLOCKED allows to do that.
-> > > > > >  
-> > > > > > Signed-off-by: Gleb Natapov <gleb@redhat.com>
-> > > > > > ---
-> > > > > > 
-> > > > > > I get reports that people find this useful, so resending.
-> > > > > 
-> > > > > This description is still wrong. It doesn't describe why this patch is useful.
-> > > > > 
-> > > > I think the text above describes the feature it adds and its use
-> > > > case quite well. Can you elaborate what is missing in your opinion,
-> > > > or suggest alternative text please?
-> > > 
-> > > My point is, introducing mmap new flags need strong and clearly use-case.
-> > > All patch should have good benefit/cost balance. the code can describe the cost,
-> > > but the benefit can be only explained by the patch description.
-> > > 
-> > > I don't think this poor description explained bit benefit rather than cost.
-> > > you should explain why this patch is useful and not just pretty toy.
-> > > 
-> > The benefit is that with this patch I can lock all of my application in
-> > memory except some very big memory areas. My use case is that I want to
-> > run virtual machine in such a way that everything related to machine
-> > emulator is locked into the memory, but guest address space can be
-> > swapped out at will. Guest address space is so huge that it is not
-> > possible to allocated it locked and then unlock. I was very surprised
-> > that current Linux API has no way to do it hence this patch. It may look
-> > like a pretty toy to you until some day you need this and has no way to
-> > do it.
-> 
-> Hmm..
-> Your answer didn't match I wanted.
-Then I don't get what you want.
+Julia Lawall wrote:
+> On Thu, 14 Jan 2010, Németh Márton wrote:
+>> What about introducing a new tag like 'SmPL-Used:'? The used SmPL could
+>> be placed somewhere in the web.
+[...]
+> There is no guarantee that this URL will be valid 5 or 10 years from now.
 
-> few additional questions.
-> 
-> - Why don't you change your application? It seems natural way than kernel change.
-There is no way to change my application and achieve what I've described
-in a multithreaded app.
+Németh et al, what is it with your obsession with your scripts?  Just
+look them up in your dedicated mailinglist.
 
-> - Why do you want your virtual machine have mlockall? AFAIK, current majority
->   virtual machine doesn't.
-It is absolutely irrelevant for that patch, but just because you ask I
-want to measure the cost of swapping out of a guest memory.
+The topic of the kernel source changelog is the kernel source.
 
-> - If this feature added, average distro user can get any benefit?
-> 
-?! Is this some kind of new measure? There are plenty of much more
-invasive features that don't bring benefits to an average distro user.
-This feature can bring benefit to embedded/RT developers.
-
-> I mean, many application developrs want to add their specific feature
-> into kernel. but if we allow it unlimitedly, major syscall become
-> the trushbox of pretty toy feature soon.
-> 
-And if application developer wants to extend kernel in a way that it
-will be possible to do something that was not possible before why is
-this a bad thing? I would agree with you if for my problem was userspace
-solution, but there is none. The mmap interface is asymmetric in regards
-to mlock currently. There is MAP_LOCKED, but no MAP_UNLOCKED. Why
-MAP_LOCKED is useful then?
-
-
---
-			Gleb.
+Also, everybody and his dog seems to be keen on inventing new tag lines
+for the changelog.  We already have all tag lines that we need for the
+kernel development and maintenance processes:  Sign-off, Ack, and Cc to
+stable.
+-- 
+Stefan Richter
+-=====-==-=- ---= -===-
+http://arcgraph.de/sr/
