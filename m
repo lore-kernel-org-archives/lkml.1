@@ -1,55 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757464Ab0ANTJi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757483Ab0ANTNs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757464Ab0ANTJi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 14:09:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756902Ab0ANTJh
+	id S1757483Ab0ANTNs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 14:13:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757448Ab0ANTNs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 14:09:37 -0500
-Received: from mail.kapsi.fi ([217.30.184.167]:59314 "EHLO mail.kapsi.fi"
+	Thu, 14 Jan 2010 14:13:48 -0500
+Received: from mail.perches.com ([173.55.12.10]:1215 "EHLO mail.perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751937Ab0ANTJg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 14:09:36 -0500
-Message-ID: <4B4F6BE5.2040102@iki.fi>
-Date: Thu, 14 Jan 2010 21:09:25 +0200
-From: Antti Palosaari <crope@iki.fi>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
-MIME-Version: 1.0
-To: Jiri Slaby <jslaby@suse.cz>
-CC: mchehab@infradead.org, linux-kernel@vger.kernel.org, jirislaby@gmail.com,
-       linux-media@vger.kernel.org
-Subject: Re: [PATCH 1/1] media: dvb-usb/af9015, add IR support for digivox
- mini II
-References: <1263412807-23350-1-git-send-email-jslaby@suse.cz>
-In-Reply-To: <1263412807-23350-1-git-send-email-jslaby@suse.cz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S1757431Ab0ANTNr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jan 2010 14:13:47 -0500
+Subject: Re: [PATCH 01/24] MAINTAINERS: Document new "Q:" patchwork queue
+ type
+From: Joe Perches <joe@perches.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <20100114190534.57eb7326@lxorguk.ukuu.org.uk>
+References: <cover.1263452908.git.joe@perches.com>
+	 <dad0b9fe4d42d6523c16edfc5275a01de1272fd4.1263452908.git.joe@perches.com>
+	 <4B4F20B3.703@s5r6.in-berlin.de> <4B4F2402.9040008@s5r6.in-berlin.de>
+	 <1263490722.1903.12.camel@Joe-Laptop.home>
+	 <4B4F5CC8.7020107@s5r6.in-berlin.de>
+	 <1263492789.1903.19.camel@Joe-Laptop.home>
+	 <4B4F63C4.1040602@s5r6.in-berlin.de>
+	 <1263494720.1903.21.camel@Joe-Laptop.home>
+	 <20100114190534.57eb7326@lxorguk.ukuu.org.uk>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 14 Jan 2010 11:13:45 -0800
+Message-ID: <1263496425.1903.27.camel@Joe-Laptop.home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
-X-SA-Exim-Connect-IP: 82.128.186.220
-X-SA-Exim-Mail-From: crope@iki.fi
-X-SA-Exim-Scanned: No (on mail.kapsi.fi); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/13/2010 10:00 PM, Jiri Slaby wrote:
-> MSI digivox mini II works even with remote=2 module parameter. Check
-> for manufacturer and if it is Afatech, use af9015_ir_table_msi and
-> af9015_rc_keys_msi.
->
-> The device itself is 15a4:9016.
+On Thu, 2010-01-14 at 19:05 +0000, Alan Cox wrote:
+> > www.google.com gives an easy interface to search for links.
+> > How about we remove all other links in kernel sources?
+> 
+> What happens when google is down, someone googlebombs the reference you
+> want, or if you are in China and Google decide to pull out ?
 
-NACK
+Exactly my point.
 
-Device ID 15a4:9016 is reference design ID and it is used by vary many 
-devices. Also manufacturer string "Afatech" is chipset default one. This 
-leads MSI remote in question configured for many devices using default / 
-reference values which I don't like good idea. Strings and other USB 
-settings are stored to the device eeprom.
+Removing links is not a good idea.
+Redundancy is not a bad idea.
+Asking people to perform unnecessary searches
+is not a good idea.
 
-Empia (em28xx) driver uses eeprom hashing for identifying reference ID 
-devices. This approach is better because it uses all eeprom bytes. I 
-hope you could implement similar eeprom hashing to af9015.
+When Stefan proposed a good patch to HOWTO, he failed
+to notice the section immediately above his modification
+includes git tree links which are also duplicated in
+MAINTAINERS.  The duplication is fairly cost-free.
 
-regards
-Antti
--- 
-http://palosaari.fi/
+cheers, Joe
+
+
