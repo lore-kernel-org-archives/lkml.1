@@ -1,158 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757253Ab0ANQ0P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757270Ab0ANQ2c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757253Ab0ANQ0P (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 11:26:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757213Ab0ANQ0M
+	id S1757270Ab0ANQ2c (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 11:28:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756961Ab0ANQ2b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 11:26:12 -0500
-Received: from tomts40.bellnexxia.net ([209.226.175.97]:42692 "EHLO
-	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1757118Ab0ANQ0L (ORCPT
+	Thu, 14 Jan 2010 11:28:31 -0500
+Received: from outbound-mail-126.bluehost.com ([67.222.38.26]:39375 "HELO
+	outbound-mail-126.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754215Ab0ANQ2a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 11:26:11 -0500
-Date: Thu, 14 Jan 2010 11:26:09 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: linux-kernel@vger.kernel.org,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Oleg Nesterov <oleg@redhat.com>,
-       Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org,
-       josh@joshtriplett.org, tglx@linutronix.de, Valdis.Kletnieks@vt.edu,
-       dhowells@redhat.com, laijs@cn.fujitsu.com, dipankar@in.ibm.com
-Subject: Re: [RFC PATCH] introduce sys_membarrier(): process-wide memory
-	barrier (v5)
-Message-ID: <20100114162609.GC3487@Krystal>
-References: <20100113013757.GA29314@Krystal> <1263400738.4244.242.camel@laptop> <20100113193603.GA27327@Krystal> <1263460096.4244.282.camel@laptop>
+	Thu, 14 Jan 2010 11:28:30 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=rDdeDN9YPdl/b9/MYYJKdzPGTtLASG8w07goyB0HqEP42JUI1jkm55bSIvlcVeVQYtk3bP9b4MjMuZyC76Huv5sOSg2DtuiK56to5PpWCH6kC8R9PNU4y8haNFHLMOmx;
+Date: Thu, 14 Jan 2010 08:28:23 -0800
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: David Miller <davem@davemloft.net>
+Cc: gregkh@suse.de, tilman@imap.cc, sfr@canb.auug.org.au,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       isdn@linux-pingi.de, isdn4linux@listserv.isdn4linux.de
+Subject: Re: [PATCH] pci: push deprecated pci_find_device() function to last
+ user
+Message-ID: <20100114082823.63379b3d@jbarnes-piketon>
+In-Reply-To: <20100114.001204.203918209.davem@davemloft.net>
+References: <20100113142328.5DE2F40107@xenon.ts.pxnet.com>
+	<20100113.203338.52448956.davem@davemloft.net>
+	<20100114044331.GA29008@suse.de>
+	<20100114.001204.203918209.davem@davemloft.net>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <1263460096.4244.282.camel@laptop>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.27.31-grsec (i686)
-X-Uptime: 11:12:45 up 29 days, 31 min,  4 users,  load average: 0.02, 0.10,
-	0.10
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Peter Zijlstra (peterz@infradead.org) wrote:
-> On Wed, 2010-01-13 at 14:36 -0500, Mathieu Desnoyers wrote:
-> > * Peter Zijlstra (peterz@infradead.org) wrote:
-> > > On Tue, 2010-01-12 at 20:37 -0500, Mathieu Desnoyers wrote:
-> > > > +       for_each_cpu(cpu, tmpmask) {
-> > > > +               spin_lock_irq(&cpu_rq(cpu)->lock);
-> > > > +               mm = cpu_curr(cpu)->mm;
-> > > > +               spin_unlock_irq(&cpu_rq(cpu)->lock);
-> > > > +               if (current->mm != mm)
-> > > > +                       cpumask_clear_cpu(cpu, tmpmask);
-> > > > +       } 
-> > > 
-> > > Why not:
-> > > 
-> > >   rcu_read_lock();
-> > >   if (current->mm != cpu_curr(cpu)->mm)
-> > >     cpumask_clear_cpu(cpu, tmpmask);
-> > >   rcu_read_unlock();
-> > > 
-> > > the RCU read lock ensures the task_struct obtained remains valid, and it
-> > > avoids taking the rq->lock.
-> > > 
-> > 
-> > If we go for a simple rcu_read_lock, I think that we need a smp_mb()
-> > after switch_to() updates the current task on the remote CPU, before it
-> > returns to user-space. Do we have this guarantee for all architectures ?
-> > 
-> > So what I'm looking for, overall, is:
-> > 
-> > schedule()
-> >   ...
-> >   switch_mm()
-> >     smp_mb()
-> >     clear mm_cpumask
-> >     set mm_cpumask
-> >   switch_to()
-> >     update current task
-> >     smp_mb()
-> > 
-> > If we have that, then the rcu_read_lock should work.
-> > 
-> > What the rq lock currently gives us is the guarantee that if the current
-> > thread changes on a remote CPU while we are not holding this lock, then
-> > a full scheduler execution is performed, which implies a memory barrier
-> > if we change the current thread (it does, right ?).
-> 
-> I'm not quite seeing it, we have 4 possibilities, switches between
-> threads with:
-> 
->  a) our mm, another mm
-> 
->    - if we observe the former, we'll send an IPI (redundant)
->    - if we observe the latter, the switch_mm will have issued an mb
-> 
->  b) another mm, our mm
-> 
->    - if we observe the former, we're good because the cpu didn't run our
->      thread when we called sys_membarrier()
->    - if we observe the latter, we'll send an IPI (redundant)
+On Thu, 14 Jan 2010 00:12:04 -0800 (PST)
+David Miller <davem@davemloft.net> wrote:
 
-It's this scenario that is causing problem. Let's consider this
-execution:
+> From: Greg KH <gregkh@suse.de>
+> Date: Wed, 13 Jan 2010 20:43:31 -0800
+> 
+> > On Wed, Jan 13, 2010 at 08:33:38PM -0800, David Miller wrote:
+> >> From: Tilman Schmidt <tilman@imap.cc>
+> >> Date: Wed, 13 Jan 2010 15:23:28 +0100 (CET)
+> >> 
+> >> > The ISDN4Linux HiSax driver family contains the last remaining
+> >> > users of the deprecated pci_find_device() function. This patch
+> >> > creates a private copy of that function in HiSax, and removes
+> >> > the now unused global function together with its controlling
+> >> > configuration option, CONFIG_PCI_LEGACY.
+> >> > 
+> >> > Impact: code reorganization, no functional change
+> >> > Signed-off-by: Tilman Schmidt <tilman@imap.cc>
+> >> > ---
+> >> > Note: This patch is not, nor does it intend to be, checkpatch.pl
+> >> > clean. The issues checkpatch.pl reports on it were already
+> >> > present before, and are unrelated to the topic of this patch.
+> >> 
+> >> I'm fine with this, and Greg or whoever else can take this
+> >> through a driver or PCI specific tree if they want:
+> >> 
+> >> Acked-by: David S. Miller <davem@davemloft.net>
+> > 
+> > Where do ISDN patches go through, the network tree?
+> > 
+> > Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
+> 
+> Yeah usually, but I thought the PCI tree might want this one
+> because it tosses things from drivers/pci
 
-       CPU 0 (membarrier)                  CPU 1 (another mm -> our mm)
-       <kernel-space>                      <kernel-space>
-                                           switch_mm()
-                                             smp_mb()
-                                             clear_mm_cpumask()
-                                             set_mm_cpumask()
-                                             smp_mb() (by load_cr3() on x86)
-                                           switch_to()
-       mm_cpumask includes CPU 1
-       rcu_read_lock()
-       if (CPU 1 mm != our mm)
-         skip CPU 1.
-       rcu_read_unlock()
-                                             current = next (1)
-                                           <switch back to user-space>
-                                           read-lock()
-                                             read gp, store local gp
-                                             barrier()
-                                             access critical section (2)
-
-So if we don't have any memory barrier between (1) and (2), the memory
-operations can be reordered in such a way that CPU 0 will not send IPI
-to a CPU that would need to have it's barrier() promoted into a
-smp_mb().
-
-Replacing these kernel rcu_read_lock/unlock() by rq locks ensures that
-when the scheduler runs concurrently on another CPU, _all_ the scheduling
-code is executed atomically wrt the spin lock taken on cpu 0.
-
-When x86 uses iret to return to user-space, then we have a serializing
-instruction. But if it uses sysexit, or if we are on a different
-architecture, are we sure that a memory barrier is issued before
-returning to user-space ?
+I can take it, but I lost the original patch.  Tilman, can you resend?
 
 Thanks,
-
-Mathieu
-
-> 
->  c) our mm, our mm
-> 
->    - no matter which task we observe, we'll match and send an IPI
-> 
->  d) another mm, another mm
-> 
->    - no matter which task we observe, we'll not match and not send an
->      IPI.
-> 
-> 
-> Or am I missing something?
-> 
-
 -- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Jesse Barnes, Intel Open Source Technology Center
