@@ -1,24 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757025Ab0ANW3i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757204Ab0ANWar@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757025Ab0ANW3i (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 17:29:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932361Ab0ANW3I
+	id S1757204Ab0ANWar (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 17:30:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757154Ab0ANWag
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 17:29:08 -0500
-Received: from kroah.org ([198.145.64.141]:60731 "EHLO coco.kroah.org"
+	Thu, 14 Jan 2010 17:30:36 -0500
+Received: from kroah.org ([198.145.64.141]:60715 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756900Ab0ANW3D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 17:29:03 -0500
+	id S932274Ab0ANW3A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jan 2010 17:29:00 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, stable-review@kernel.org
 Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       Al Viro <viro@ZenIV.linux.org.uk>, Al Viro <viro@ZenIV.linux.org.uk>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 49/52] fix more leaks in audit_tree.c tag_chunk()
-Date: Thu, 14 Jan 2010 14:27:28 -0800
-Message-Id: <1263508051-7868-49-git-send-email-gregkh@suse.de>
+       Mike Frysinger <vapier@gentoo.org>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 46/52] kernel/sysctl.c: fix stable merge error in NOMMU mmap_min_addr
+Date: Thu, 14 Jan 2010 14:27:25 -0800
+Message-Id: <1263508051-7868-46-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.6
-In-Reply-To: <1263508051-7868-48-git-send-email-gregkh@suse.de>
+In-Reply-To: <1263508051-7868-45-git-send-email-gregkh@suse.de>
 References: <20100114222551.GA7839@suse.de>
  <1263508051-7868-1-git-send-email-gregkh@suse.de>
  <1263508051-7868-2-git-send-email-gregkh@suse.de>
@@ -65,62 +64,42 @@ References: <20100114222551.GA7839@suse.de>
  <1263508051-7868-43-git-send-email-gregkh@suse.de>
  <1263508051-7868-44-git-send-email-gregkh@suse.de>
  <1263508051-7868-45-git-send-email-gregkh@suse.de>
- <1263508051-7868-46-git-send-email-gregkh@suse.de>
- <1263508051-7868-47-git-send-email-gregkh@suse.de>
- <1263508051-7868-48-git-send-email-gregkh@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Al Viro <viro@ZenIV.linux.org.uk>
+From: Mike Frysinger <vapier@gentoo.org>
 
-commit b4c30aad39805902cf5b855aa8a8b22d728ad057 upstream.
+Stable commit 0399123f3dcce1a515d021107ec0fb4413ca3efa didn't match the
+original upstream commit.  The CONFIG_MMU check was added much too early
+in the list disabling a lot of proc entries in the process.
 
-Several leaks in audit_tree didn't get caught by commit
-318b6d3d7ddbcad3d6867e630711b8a705d873d7, including the leak on normal
-exit in case of multiple rules refering to the same chunk.
-
-Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Mike Frysinger <vapier@gentoo.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- kernel/audit_tree.c |    9 ++++++---
- 1 files changed, 6 insertions(+), 3 deletions(-)
+ kernel/sysctl.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/kernel/audit_tree.c b/kernel/audit_tree.c
-index b36aa96..4b05bd9 100644
---- a/kernel/audit_tree.c
-+++ b/kernel/audit_tree.c
-@@ -373,15 +373,17 @@ static int tag_chunk(struct inode *inode, struct audit_tree *tree)
- 	for (n = 0; n < old->count; n++) {
- 		if (old->owners[n].owner == tree) {
- 			spin_unlock(&hash_lock);
--			put_inotify_watch(watch);
-+			put_inotify_watch(&old->watch);
- 			return 0;
- 		}
- 	}
- 	spin_unlock(&hash_lock);
- 
- 	chunk = alloc_chunk(old->count + 1);
--	if (!chunk)
-+	if (!chunk) {
-+		put_inotify_watch(&old->watch);
- 		return -ENOMEM;
-+	}
- 
- 	mutex_lock(&inode->inotify_mutex);
- 	if (inotify_clone_watch(&old->watch, &chunk->watch) < 0) {
-@@ -425,7 +427,8 @@ static int tag_chunk(struct inode *inode, struct audit_tree *tree)
- 	spin_unlock(&hash_lock);
- 	inotify_evict_watch(&old->watch);
- 	mutex_unlock(&inode->inotify_mutex);
--	put_inotify_watch(&old->watch);
-+	put_inotify_watch(&old->watch); /* pair to inotify_find_watch */
-+	put_inotify_watch(&old->watch); /* and kill it */
- 	return 0;
- }
- 
+diff --git a/kernel/sysctl.c b/kernel/sysctl.c
+index dd84be9..b8bd058 100644
+--- a/kernel/sysctl.c
++++ b/kernel/sysctl.c
+@@ -1200,7 +1200,6 @@ static struct ctl_table vm_table[] = {
+ 		.extra2		= (void *)&hugetlb_infinity,
+ 	},
+ #endif
+-#ifdef CONFIG_MMU
+ 	{
+ 		.ctl_name	= VM_LOWMEM_RESERVE_RATIO,
+ 		.procname	= "lowmem_reserve_ratio",
+@@ -1346,6 +1345,7 @@ static struct ctl_table vm_table[] = {
+ 		.strategy	= &sysctl_jiffies,
+ 	},
+ #endif
++#ifdef CONFIG_MMU
+ 	{
+ 		.ctl_name	= CTL_UNNUMBERED,
+ 		.procname	= "mmap_min_addr",
 -- 
 1.6.6
 
