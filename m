@@ -1,78 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753277Ab0ANDVp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754065Ab0AND0K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753277Ab0ANDVp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 22:21:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751993Ab0ANDVo
+	id S1754065Ab0AND0K (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 22:26:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752700Ab0AND0I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 22:21:44 -0500
-Received: from [206.15.93.42] ([206.15.93.42]:20763 "EHLO
-	visionfs1.visionengravers.com" rhost-flags-FAIL-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751612Ab0ANDVo (ORCPT
+	Wed, 13 Jan 2010 22:26:08 -0500
+Received: from mail-qy0-f194.google.com ([209.85.221.194]:56560 "EHLO
+	mail-qy0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752145Ab0AND0F convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 22:21:44 -0500
-From: H Hartley Sweeten <hartleys@visionengravers.com>
-To: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH] kernel/sched: don't expose local functions
-Date: Wed, 13 Jan 2010 20:21:52 -0700
-Cc: mingo@elte.hu, peterz@infradead.org
+	Wed, 13 Jan 2010 22:26:05 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=LRM91Qtz/dBXBaZLqLH4mzy7iZxtwIPQsFNeSq8plQFrDQWFY2x8lTECxcvSe0wa5N
+         gmptiZ6iccci2SYLghBzIEWfs9qbTVysWO6+WrXhXQiqETmwQoCswanhtPuJg2Ho8VTr
+         StfLsqccsFYygsdJ/hbR596mNGcfbFBACiN50=
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <201001132021.53253.hartleys@visionengravers.com>
+In-Reply-To: <1263403904.8011.83.camel@Joe-Laptop.home>
+References: <4B49D001.4000302@gmail.com> <4B4DA4F4.6060007@gmail.com>
+	 <20100113115617.GA24818@basil.fritz.box> <4B4DE887.6030602@gmail.com>
+	 <20100113155323.GB24818@basil.fritz.box>
+	 <1263400835.8011.73.camel@Joe-Laptop.home>
+	 <20100113171411.GC24818@basil.fritz.box>
+	 <1263403904.8011.83.camel@Joe-Laptop.home>
+Date: Thu, 14 Jan 2010 11:26:01 +0800
+Message-ID: <2375c9f91001131926o15a52e1cx936932c587dccdb5@mail.gmail.com>
+Subject: Re: [PATCH] Makefile: Document ability to make file.lst and file.S
+From: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
+To: Joe Perches <joe@perches.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Michal Marek <mmarek@suse.cz>,
+       William Allen Simpson <william.allen.simpson@gmail.com>,
+       Linux Kernel Developers <linux-kernel@vger.kernel.org>,
+       Linux Kernel Network Developers <netdev@vger.kernel.org>,
+       =?UTF-8?Q?Ilpo_J=C3=A4rvinen?= <ilpo.jarvinen@helsinki.fi>,
+       Eric Dumazet <eric.dumazet@gmail.com>, linux-kbuild@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-kernel/sched: don't expose local functions
+On Thu, Jan 14, 2010 at 1:31 AM, Joe Perches <joe@perches.com> wrote:
+> On Wed, 2010-01-13 at 18:14 +0100, Andi Kleen wrote:
+>> On Wed, Jan 13, 2010 at 08:40:35AM -0800, Joe Perches wrote:
+>> > On Wed, 2010-01-13 at 16:53 +0100, Andi Kleen wrote:
+>> > > On Wed, Jan 13, 2010 at 10:36:39AM -0500, William Allen Simpson wrote:
+>> > > > What make command would you suggest to get the interleaved asm?
+>> > > make path/to/file.lst
+>> > > (or .S -- you might need uptodate binutils if the lst listing is messed up)
+>> > I didn't know that was possible.
+>> The trap is that it doesn't work well on most systems with too
+>> old binutils (unless the gcc is really ancient)
+>
+> Then that might as well go into the help.
+>
+> Signed-off-by: Joe Perches <joe@perches.com>
 
-The get_rr_interval_* functions are all class methods of
-struct sched_class. They are not exported so make them
-static.
+Good patch,
 
-Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <peterz@infradead.org>
+Acked-by: WANG Cong <xiyou.wangcong@gmail.com>
 
----
-
-diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
-index 42ac3c9..7177860 100644
---- a/kernel/sched_fair.c
-+++ b/kernel/sched_fair.c
-@@ -2076,7 +2076,7 @@ static void moved_group_fair(struct task_struct *p, int on_rq)
- }
- #endif
- 
--unsigned int get_rr_interval_fair(struct rq *rq, struct task_struct *task)
-+static unsigned int get_rr_interval_fair(struct rq *rq, struct task_struct *task)
- {
- 	struct sched_entity *se = &task->se;
- 	unsigned int rr_interval = 0;
-diff --git a/kernel/sched_idletask.c b/kernel/sched_idletask.c
-index 5f93b57..01332bf 100644
---- a/kernel/sched_idletask.c
-+++ b/kernel/sched_idletask.c
-@@ -97,7 +97,7 @@ static void prio_changed_idle(struct rq *rq, struct task_struct *p,
- 		check_preempt_curr(rq, p, 0);
- }
- 
--unsigned int get_rr_interval_idle(struct rq *rq, struct task_struct *task)
-+static unsigned int get_rr_interval_idle(struct rq *rq, struct task_struct *task)
- {
- 	return 0;
- }
-diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
-index f48328a..072b3fc 100644
---- a/kernel/sched_rt.c
-+++ b/kernel/sched_rt.c
-@@ -1721,7 +1721,7 @@ static void set_curr_task_rt(struct rq *rq)
- 	dequeue_pushable_task(rq, p);
- }
- 
--unsigned int get_rr_interval_rt(struct rq *rq, struct task_struct *task)
-+static unsigned int get_rr_interval_rt(struct rq *rq, struct task_struct *task)
- {
- 	/*
- 	 * Time slice is 0 for SCHED_FIFO tasks
+> ---
+> diff --git a/Makefile b/Makefile
+> index 9f64552..484cff4 100644
+> --- a/Makefile
+> +++ b/Makefile
+> @@ -1248,7 +1248,9 @@ help:
+>        @echo  '  firmware_install- Install all firmware to INSTALL_FW_PATH'
+>        @echo  '                    (default: $$(INSTALL_MOD_PATH)/lib/firmware)'
+>        @echo  '  dir/            - Build all files in dir and below'
+> -       @echo  '  dir/file.[ois]  - Build specified target only'
+> +       @echo  '  dir/file.[oisS] - Build specified target only'
+> +       @echo  '  dir/file.lst    - Build specified mixed source/assembly target only'
+> +       @echo  '                    (requires a recent binutils and recent build (System.map))'
+>        @echo  '  dir/file.ko     - Build module including final link'
+>        @echo  '  modules_prepare - Set up for building external modules'
+>        @echo  '  tags/TAGS       - Generate tags file for editors'
+>
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
