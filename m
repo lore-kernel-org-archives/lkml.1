@@ -1,179 +1,219 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757492Ab0ANXeK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757602Ab0ANXgW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757492Ab0ANXeK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 18:34:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756997Ab0ANXeI
+	id S1757602Ab0ANXgW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 18:36:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757539Ab0ANXgV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 18:34:08 -0500
-Received: from mail-fx0-f225.google.com ([209.85.220.225]:39851 "EHLO
-	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751338Ab0ANXeE convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 18:34:04 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=BeGB0JQGEt9/VttJAbKEVLD8DhcxriQoXYbCffNrq3JKs8LMOjEYfjOA+sLhPN//mK
-         5F9tAHNHrVJ2MpMQtvRlOE57cMKm6fWnDs1C3qgDSbC/HJiA9VFRu3EQ7EeMucg/nfVc
-         9Fi1CqcD3x2HrLPgSA0FPQ5A8mJUGqfVsKGno=
-MIME-Version: 1.0
-In-Reply-To: <8f404284c29a6e7736de49ede9a44a2c.squirrel@intranet.cs.nmsu.edu>
-References: <200912142122.nBELMW7d001243@mustang.cs.nmsu.edu>
-	 <20091216103423.GE1377@ucw.cz>
-	 <alpine.LNX.2.00.0912161504360.3755@pobox.suse.cz>
-	 <7f9100aac5f9b06ec78efff25c7a5a71.squirrel@intranet.cs.nmsu.edu>
-	 <20100104224817.GA21695@elf.ucw.cz>
-	 <45a44e481001041614i35ceef84q5f12a068e2f0b97b@mail.gmail.com>
-	 <ca2dc2821001141308s5a552447yb887f619231f449@mail.gmail.com>
-	 <044387d146c2f91cb7f593736fcce28f.squirrel@intranet.cs.nmsu.edu>
-	 <ca2dc2821001141434u5216161bk8c34e1572c0ae260@mail.gmail.com>
-	 <8f404284c29a6e7736de49ede9a44a2c.squirrel@intranet.cs.nmsu.edu>
-Date: Fri, 15 Jan 2010 00:34:02 +0100
-Message-ID: <ca2dc2821001141534r94976dcs5c6b01fb2ef86afd@mail.gmail.com>
-Subject: Re: [PATCH] Logitech G13 driver (fixed cc list --- ignore others)
-From: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
-To: "Rick L. Vinyard, Jr." <rvinyard@cs.nmsu.edu>
-Cc: Jaya Kumar <jayakumar.lkml@gmail.com>, Pavel Machek <pavel@ucw.cz>,
-       Jiri Kosina <jkosina@suse.cz>, linux-kernel@vger.kernel.org,
-       krzysztof.h1@wp.pl, Andrew Morton <akpm@linux-foundation.org>,
-       linux-usb@vger.kernel.org, Oliver Neukum <oliver@neukum.org>,
-       linux-input@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Thu, 14 Jan 2010 18:36:21 -0500
+Received: from xenotime.net ([72.52.64.118]:53254 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1753418Ab0ANXgT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jan 2010 18:36:19 -0500
+Date: Thu, 14 Jan 2010 15:36:16 -0800
+From: Randy Dunlap <rdunlap@xenotime.net>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: Greg Kroah-Hartman <greg@kroah.com>, Joe Perches <joe@perches.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] HOWTO: Updates on subsystem trees, patchwork, -next
+ (vs. -mm)
+Message-Id: <20100114153616.1a8f00be.rdunlap@xenotime.net>
+In-Reply-To: <tkrat.e8ba67441fb65247@s5r6.in-berlin.de>
+References: <4B4F7304.5050401@s5r6.in-berlin.de>
+	<Pine.LNX.4.30.1001141303230.3979-100000@mail.perches.com>
+	<tkrat.e8ba67441fb65247@s5r6.in-berlin.de>
+Organization: YPO4
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.6; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 15, 2010 at 12:03 AM, Rick L. Vinyard, Jr.
-<rvinyard@cs.nmsu.edu> wrote:
-> Miguel Ojeda wrote:
->> On Thu, Jan 14, 2010 at 10:48 PM, Rick L. Vinyard, Jr.
->> <rvinyard@cs.nmsu.edu> wrote:
->>> Miguel Ojeda wrote:
->>>> On Tue, Jan 5, 2010 at 1:14 AM, Jaya Kumar <jayakumar.lkml@gmail.com>
->>>> wrote:
->>>>> On Tue, Jan 5, 2010 at 6:48 AM, Pavel Machek <pavel@ucw.cz> wrote:
->>>>>>
->>>>>> Ok, but I guess you should cc auxdisplay people in future.
->>>>>
->>>>> Hi Pavel,
->>>>>
->>>>> I just looked at the drivers/auxdisplay directory and got a bit
->>>>> confused. The reason I got confused is because auxdisplay is actually
->>>>> an fbdev driver but it is outside of the drivers/video directory. It
->>>>> looks like there has only been 1 commit and that was for the Samsung
->>>>> KS0108 controller. It also sort of uses platform support but the way
->>>>> it is abstracted is odd to my thinking. The controller is ks0108, so
->>>>> in my mind that would be the code that would be platform independent,
->>>>> and then that would use a board specific IO driver to push data (eg:
->>>>> parport or gpio or usb). I think in the long term it would probably
->>>>> make sense to write a cleaner approach with a drivers/video/ks0108.c
->>>>> which is cleanly platform independent (and back within fbdev proper)
->>>>> and then a board specific driver in the appropriate location that
->>>>> handles the IO.
->>>>
->>>> I wrote long ago the driver(s) and people that reviewed it thought it
->>>> was better to keep it outside. I think that if someone else is going
->>>> to need ks0108, then I agree: we should write a independent driver.
->>>>
->>>> It should not be hard, it is an easy controller to play with and the
->>>> code is already there. I would try to do it; however, I am not sure if
->>>> I would be the most appropriate person to code such generic driver, as
->>>> I know almost nothing about all drivers/video/* stuff and the ways of
->>>> making it truly generic for future video/ users. Still, I will help
->>>> gladly.
->>>>
->>>
->>> When I started to look at writing the G13 framebuffer the first code I
->>> looked at was the cfag12864b, and started off trying to adapt it.
->>>
->>
->> I hope it was useful, at least at first. : )
->>
->>> However, as I was digging through the video/* directory looking for
->>> something (I forget now what) I came across the hecubafb and patterned
->>> the
->>> G13 after it instead.
->>>
->>> In moving between the two, the biggest difference was that I was able to
->>> strip out alot of the workqueue code you had since all that was provided
->>> by defio. Otherwise, the general structure was almost identical.
->>>
->>> In particular, what would change is the lower half of cfag12864b.c and
->>> you
->>> would be able to eliminate almost everything from the /* Update work */
->>> and below comment with the exception of cfag12864b_update().
->>>
->>> cfag12864b_update() would become almost analogous to the g13_fb_update()
->>> I
->>> have in the G13 driver which is triggered by the deferred_io member of
->>> the
->>> fb_deferred_io structure.
->>>
->>> You would have something like:
->>>
->>> /* Callback from deferred IO workqueue */
->>> static void cfag12864b_deferred_io(struct fb_info *info, struct
->>> list_head
->>> *pagelist)
->>> {
->>>        cfag12864b_update(info->par);
->>> }
->>>
->>> static struct fb_deferred_io cfag12864b_defio = {
->>>        .delay = HZ / CFAG12864B_UPDATE_RATE_DEFAULT,
->>>        .deferred_io = cfag12864b_deferred_io,
->>> };
->>>
->>
->> Thank you for the analysis of cfag12864b. See below.
->>
->>>
->>> The other major change is that you could eliminate the periodic memcmp()
->>> to see if the buffer has change since the deferred_io is only going to
->>> trigger on a page write fault.
->>
->> Yeah, I admit the memcmp() is pretty ugly knowing about deferred_io,
->> which I did not. It is strange that anyone pointed it out long before,
->> is it new? Are there any known drawbacks?
->>
->
-> Not sure how old it is... I don't know of any drawbacks.
->
->>>
->>> But, that isn't a major change in the code... only in performance.
->>>
->>
->> So less code and greater performance. That sounds like a winning deal!
->>
->> About ks0108, have you got any thoughts on how to write a generic
->> driver? Do you need something special about ks0108? I only needed raw
->> output operations so I just implemented that. Also, cfag12864b uses
->> two ks0108 controllers and I suppose other LCD's use many more, so
->> there are many points that may need a "research".
->>
->
-> Actually, I don't need the ks0108 code. Way back when Alan Cox suggested
-> taking a framebuffer approach for the G13, Pavel suggested looking at the
-> auxdisplay code.
->
-> But, the LCD in the G13 is really a USB device that ships the image out as
-> an interrupt message with the framebuffer image as the payload. So, in
-> essence, the callback in the G13 is really a usbhid_submit_message() after
-> some other work to massage the bits from an xbm format to a format
-> specific to the Logitech game panel.
->
+On Thu, 14 Jan 2010 23:39:46 +0100 (CET) Stefan Richter wrote:
 
-Oh, excuse me, I started reading from your first message in this
-thread after a search for "ks0108" on my inbox and I thought Jaya was
-referring to your code.
+> One of the roles which -mm fulfilled some time ago (to offer an
+> integration testing ground) has been taken over by -next.  This is still
+> news to Documentation/HOWTO, so mention it there.
+> 
+> Also add a word on how patchwork is used to track patches as they make
+> their way into subsystem trees.  Remove some arbitrary links to
+> subsystem repositories; they can all be found in the MAINTAINERS
+> database.
+> 
+> Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
 
-Miguel Ojeda
+Hi Stefan,
+
+I like the patch, but since that particular file is maintained by GregKH,
+I'll leave it to him to merge it.
+
+Acked-by: Randy Dunlap <rdunlap@xenotime.net>
+
+Thanks.
 
 > ---
->
-> Rick
->
->
->
+> 
+> This supersedes
+> [PATCH] HOWTO: Point to patchwork.kernel.org and patchwork.ozlabs.org
+> 
+>  Documentation/HOWTO |  112 ++++++++++++++++-----------------------------------
+>  1 files changed, 35 insertions(+), 77 deletions(-)
+> 
+> diff --git a/Documentation/HOWTO b/Documentation/HOWTO
+> index 8495fc9..085d281 100644
+> --- a/Documentation/HOWTO
+> +++ b/Documentation/HOWTO
+> @@ -221,8 +221,8 @@ branches.  These different branches are:
+>    - main 2.6.x kernel tree
+>    - 2.6.x.y -stable kernel tree
+>    - 2.6.x -git kernel patches
+> -  - 2.6.x -mm kernel patches
+>    - subsystem specific kernel trees and patches
+> +  - the 2.6.x -next kernel tree for integration tests
+>  
+>  2.6.x kernel tree
+>  -----------------
+> @@ -232,7 +232,7 @@ process is as follows:
+>    - As soon as a new kernel is released a two weeks window is open,
+>      during this period of time maintainers can submit big diffs to
+>      Linus, usually the patches that have already been included in the
+> -    -mm kernel for a few weeks.  The preferred way to submit big changes
+> +    -next kernel for a few weeks.  The preferred way to submit big changes
+>      is using git (the kernel's source management tool, more information
+>      can be found at http://git.or.cz/) but plain patches are also just
+>      fine.
+> @@ -293,84 +293,42 @@ daily and represent the current state of Linus' tree.  They are more
+>  experimental than -rc kernels since they are generated automatically
+>  without even a cursory glance to see if they are sane.
+>  
+> -2.6.x -mm kernel patches
+> -------------------------
+> -These are experimental kernel patches released by Andrew Morton.  Andrew
+> -takes all of the different subsystem kernel trees and patches and mushes
+> -them together, along with a lot of patches that have been plucked from
+> -the linux-kernel mailing list.  This tree serves as a proving ground for
+> -new features and patches.  Once a patch has proved its worth in -mm for
+> -a while Andrew or the subsystem maintainer pushes it on to Linus for
+> -inclusion in mainline.
+> -
+> -It is heavily encouraged that all new patches get tested in the -mm tree
+> -before they are sent to Linus for inclusion in the main kernel tree.  Code
+> -which does not make an appearance in -mm before the opening of the merge
+> -window will prove hard to merge into the mainline.
+> -
+> -These kernels are not appropriate for use on systems that are supposed
+> -to be stable and they are more risky to run than any of the other
+> -branches.
+> -
+> -If you wish to help out with the kernel development process, please test
+> -and use these kernel releases and provide feedback to the linux-kernel
+> -mailing list if you have any problems, and if everything works properly.
+> -
+> -In addition to all the other experimental patches, these kernels usually
+> -also contain any changes in the mainline -git kernels available at the
+> -time of release.
+> -
+> -The -mm kernels are not released on a fixed schedule, but usually a few
+> --mm kernels are released in between each -rc kernel (1 to 3 is common).
+> -
+>  Subsystem Specific kernel trees and patches
+>  -------------------------------------------
+> -A number of the different kernel subsystem developers expose their
+> -development trees so that others can see what is happening in the
+> -different areas of the kernel.  These trees are pulled into the -mm
+> -kernel releases as described above.
+> -
+> -Here is a list of some of the different kernel trees available:
+> -  git trees:
+> -    - Kbuild development tree, Sam Ravnborg <sam@ravnborg.org>
+> -	git.kernel.org:/pub/scm/linux/kernel/git/sam/kbuild.git
+> -
+> -    - ACPI development tree, Len Brown <len.brown@intel.com>
+> -	git.kernel.org:/pub/scm/linux/kernel/git/lenb/linux-acpi-2.6.git
+> -
+> -    - Block development tree, Jens Axboe <jens.axboe@oracle.com>
+> -	git.kernel.org:/pub/scm/linux/kernel/git/axboe/linux-2.6-block.git
+> -
+> -    - DRM development tree, Dave Airlie <airlied@linux.ie>
+> -	git.kernel.org:/pub/scm/linux/kernel/git/airlied/drm-2.6.git
+> -
+> -    - ia64 development tree, Tony Luck <tony.luck@intel.com>
+> -	git.kernel.org:/pub/scm/linux/kernel/git/aegl/linux-2.6.git
+> -
+> -    - infiniband, Roland Dreier <rolandd@cisco.com>
+> -	git.kernel.org:/pub/scm/linux/kernel/git/roland/infiniband.git
+> -
+> -    - libata, Jeff Garzik <jgarzik@pobox.com>
+> -	git.kernel.org:/pub/scm/linux/kernel/git/jgarzik/libata-dev.git
+> -
+> -    - network drivers, Jeff Garzik <jgarzik@pobox.com>
+> -	git.kernel.org:/pub/scm/linux/kernel/git/jgarzik/netdev-2.6.git
+> -
+> -    - pcmcia, Dominik Brodowski <linux@dominikbrodowski.net>
+> -	git.kernel.org:/pub/scm/linux/kernel/git/brodo/pcmcia-2.6.git
+> -
+> -    - SCSI, James Bottomley <James.Bottomley@hansenpartnership.com>
+> -	git.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-misc-2.6.git
+> -
+> -    - x86, Ingo Molnar <mingo@elte.hu>
+> -	git://git.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-x86.git
+> -
+> -  quilt trees:
+> -    - USB, Driver Core, and I2C, Greg Kroah-Hartman <gregkh@suse.de>
+> -	kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/
+> +The maintainers of the various kernel subsystems --- and also many
+> +kernel subsystem developers --- expose their current state of
+> +development in source repositories.  That way, others can see what is
+> +happening in the different areas of the kernel.  In areas where
+> +development is rapid, a developer may be asked to base his submissions
+> +onto such a subsystem kernel tree so that conflicts between the
+> +submission and other already ongoing work are avoided.
+> +
+> +Most of these repositories are git trees, but there are also other SCMs
+> +in use, or patch queues being published as quilt series.  Addresses of
+> +these subsystem repositories are listed in the MAINTAINERS file.
+> +
+> +Before a proposed patch is committed to such a subsystem tree, it is
+> +subject to review which primarily happens on the on mailing lists (see
+> +the respective section below).  For several kernel subsystems, this
+> +submission and review process is tracked with the tool patchwork.
+> +Patchwork offers a web interface which shows patch postings, any
+> +comments on a patch or revisions to it, and maintainers can mark patches
+> +as under review, accepted, or rejected.  Most of these patchwork sites
+> +are listed at http://patchwork.kernel.org/ or http://patchwork.ozlabs.org/.
+> +
+> +2.6.x -next kernel tree for integration tests
+> +---------------------------------------------
+> +Before updates from subsystem trees are merged into the mainline 2.6.x
+> +tree, they need to be integration-tested.  For this purpose, a special
+> +testing repository exists into which virtually all subsystem trees are
+> +pulled on an almost daily basis:
+> +	http://git.kernel.org/?p=linux/kernel/git/sfr/linux-next.git
+> +	http://linux.f-seidel.de/linux-next/pmwiki/
+> +
+> +This way, the -next kernel gives a summary outlook onto what will be
+> +expected to go into the mainline kernel at the next merge period.
+> +Adventurous testers are very welcome to runtime-test the -next kernel.
+>  
+> -  Other kernel trees can be found listed at http://git.kernel.org/ and in
+> -  the MAINTAINERS file.
+>  
+>  Bug Reporting
+>  -------------
+> 
+> -- 
+> Stefan Richter
+> -=====-==-=- ---= -===-
+> http://arcgraph.de/sr/
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+
+
+---
+~Randy
