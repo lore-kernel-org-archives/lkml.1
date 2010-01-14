@@ -1,102 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757332Ab0ANRBx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757336Ab0ANRCR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757332Ab0ANRBx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 12:01:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756962Ab0ANRBw
+	id S1757336Ab0ANRCR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 12:02:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757329Ab0ANRCP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 12:01:52 -0500
-Received: from mail-ew0-f209.google.com ([209.85.219.209]:42661 "EHLO
-	mail-ew0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756851Ab0ANRBv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 12:01:51 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :content-type:content-transfer-encoding;
-        b=u3NenAfKaqzQymNRNnDHq/cDnYpkYTALN46D7qEvP5V3JZ/sTUGtPSG4//z++YLhka
-         3Q3TJqib0nao/zUzkhlQ3hjGetulcoKeYRtZwZGwgKw9TBKYea6T7tID+jXyt8nNQ5Ke
-         ZUL21zSQWPLjp5kJUOoAb6jJrL1wbyJqYyujY=
-Message-ID: <4B4F4EF6.2050202@gmail.com>
-Date: Thu, 14 Jan 2010 18:05:58 +0100
-From: Roel Kluin <roel.kluin@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
-MIME-Version: 1.0
-To: Xiantao Zhang <xiantao.zhang@intel.com>, kvm-ia64@vger.kernel.org,
+	Thu, 14 Jan 2010 12:02:15 -0500
+Received: from waste.org ([173.11.57.241]:54455 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757322Ab0ANRCO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jan 2010 12:02:14 -0500
+Subject: Re: [PATCH] pagemap: early return on unmapped areas
+From: Matt Mackall <mpm@selenic.com>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Andi Kleen <andi@firstfloor.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-CC: Avi Kivity <avi@redhat.com>, kvm@vger.kernel.org
-Subject: [PATCH] KVM: remove redundant NULL tests
-Content-Type: text/plain; charset=ISO-8859-1
+       LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
+In-Reply-To: <20100114085230.GA12078@localhost>
+References: <20100110020955.GB25323@basil.fritz.box>
+	 <20100113141648.42eff724.akpm@linux-foundation.org>
+	 <1263421562.29868.5000.camel@calx>
+	 <20100113143055.7bea30c5.akpm@linux-foundation.org>
+	 <1263423916.29868.5009.camel@calx>
+	 <20100113151502.fa425247.akpm@linux-foundation.org>
+	 <20100114055319.GA17671@localhost>
+	 <20100113221013.b1beecb4.akpm@linux-foundation.org>
+	 <20100114080600.GA4739@localhost> <20100114083048.GC12241@basil.fritz.box>
+	 <20100114085230.GA12078@localhost>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 14 Jan 2010 11:02:11 -0600
+Message-ID: <1263488531.29868.5151.camel@calx>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-kvm_get_exit_data() cannot return a NULL pointer.
+On Thu, 2010-01-14 at 16:52 +0800, Wu Fengguang wrote:
+> On Thu, Jan 14, 2010 at 04:30:48PM +0800, Andi Kleen wrote:
+> > > ---
+> > > pagemap: early return on unmapped areas
+> > 
+> > Yes seems like a reasonable idea.
+> 
+> Thanks!
+> 
+> I just changed the ">" to ">=", because it happen to make a difference
+> for cp/cat, which does 4k sized read:
+> 
+>         4k read buffer = 4k/8 pages = 512 pages = NR_PMD_PAGES
+> 
+> So the change to ">=" makes cp exit immediately (4k buffer matches
+> exactly one PMD hole).
+> 
+> before
+>         dd if=/proc/$$/pagemap of=/dev/null bs=4k
+>         512+0 records in
+>         512+0 records out
+>         2097152 bytes (2.1 MB) copied, 0.0225796 s, 92.9 MB/s
+> 
+> after
+>         dd if=/proc/$$/pagemap of=/dev/null bs=4k
+>         0+0 records in
+>         0+0 records out
+>         0 bytes (0 B) copied, 2.8029e-05 s, 0.0 kB/s
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
----
- arch/ia64/kvm/kvm_fw.c |   28 +++++++++++++---------------
- 1 files changed, 13 insertions(+), 15 deletions(-)
+Have you guys lost your minds?
 
-diff --git a/arch/ia64/kvm/kvm_fw.c b/arch/ia64/kvm/kvm_fw.c
-index e4b8231..cb548ee 100644
---- a/arch/ia64/kvm/kvm_fw.c
-+++ b/arch/ia64/kvm/kvm_fw.c
-@@ -75,7 +75,7 @@ static void set_pal_result(struct kvm_vcpu *vcpu,
- 	struct exit_ctl_data *p;
- 
- 	p = kvm_get_exit_data(vcpu);
--	if (p && p->exit_reason == EXIT_REASON_PAL_CALL) {
-+	if (p->exit_reason == EXIT_REASON_PAL_CALL) {
- 		p->u.pal_data.ret = result;
- 		return ;
- 	}
-@@ -87,7 +87,7 @@ static void set_sal_result(struct kvm_vcpu *vcpu,
- 	struct exit_ctl_data *p;
- 
- 	p = kvm_get_exit_data(vcpu);
--	if (p && p->exit_reason == EXIT_REASON_SAL_CALL) {
-+	if (p->exit_reason == EXIT_REASON_SAL_CALL) {
- 		p->u.sal_data.ret = result;
- 		return ;
- 	}
-@@ -322,7 +322,7 @@ static  u64 kvm_get_pal_call_index(struct kvm_vcpu *vcpu)
- 	struct exit_ctl_data *p;
- 
- 	p = kvm_get_exit_data(vcpu);
--	if (p && (p->exit_reason == EXIT_REASON_PAL_CALL))
-+	if (p->exit_reason == EXIT_REASON_PAL_CALL)
- 		index = p->u.pal_data.gr28;
- 
- 	return index;
-@@ -646,18 +646,16 @@ static void kvm_get_sal_call_data(struct kvm_vcpu *vcpu, u64 *in0, u64 *in1,
- 
- 	p = kvm_get_exit_data(vcpu);
- 
--	if (p) {
--		if (p->exit_reason == EXIT_REASON_SAL_CALL) {
--			*in0 = p->u.sal_data.in0;
--			*in1 = p->u.sal_data.in1;
--			*in2 = p->u.sal_data.in2;
--			*in3 = p->u.sal_data.in3;
--			*in4 = p->u.sal_data.in4;
--			*in5 = p->u.sal_data.in5;
--			*in6 = p->u.sal_data.in6;
--			*in7 = p->u.sal_data.in7;
--			return ;
--		}
-+	if (p->exit_reason == EXIT_REASON_SAL_CALL) {
-+		*in0 = p->u.sal_data.in0;
-+		*in1 = p->u.sal_data.in1;
-+		*in2 = p->u.sal_data.in2;
-+		*in3 = p->u.sal_data.in3;
-+		*in4 = p->u.sal_data.in4;
-+		*in5 = p->u.sal_data.in5;
-+		*in6 = p->u.sal_data.in6;
-+		*in7 = p->u.sal_data.in7;
-+		return ;
- 	}
- 	*in0 = 0;
- }
+I regularly used the exact standard tool you just broke above to test
+pagemap when I was developing it. There's no doubt that this patch (or
+any similarly misguided ones) WILL regress existing naive or not
+intended to be portable 32-bit users. And if I was some poor future
+bastard trying to write a program against pagemap with your patch, odds
+of getting a concussion banging my head against the wall trying to
+figure out its highly non-file-like behavior would be quite high. 
+
+Why are we even still on this. There's no regression. LTP + pagemap +
+64-bit has always behaved thus. Nor are large virtual files new. And
+LTP's n00b assumption that it can just read all of any file in /proc has
+always been wrong. LTP had the exact same problem on 64-bit /proc/kcore
+(how long has that existed?) and finally fixed it in 2005.
+
+-- 
+http://selenic.com : development and support for Mercurial and Linux
+
+
