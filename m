@@ -1,63 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757217Ab0ANQSt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757234Ab0ANQYd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757217Ab0ANQSt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 11:18:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757174Ab0ANQSs
+	id S1757234Ab0ANQYd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 11:24:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756986Ab0ANQYc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 11:18:48 -0500
-Received: from acsinet11.oracle.com ([141.146.126.233]:48144 "EHLO
-	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757118Ab0ANQSr (ORCPT
+	Thu, 14 Jan 2010 11:24:32 -0500
+Received: from liberdade.minaslivre.org ([72.232.254.139]:45009 "EHLO
+	liberdade.minaslivre.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756961Ab0ANQYc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 11:18:47 -0500
-Date: Thu, 14 Jan 2010 08:18:19 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: akpm@linux-foundation.org
-Cc: mm-commits@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH -mmotm] tty.h: make function static
-Message-Id: <20100114081819.e9ff37a0.randy.dunlap@oracle.com>
-In-Reply-To: <201001132042.o0DKgaSR027272@imap1.linux-foundation.org>
-References: <201001132042.o0DKgaSR027272@imap1.linux-foundation.org>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.6; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt358.oracle.com [141.146.40.158]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090209.4B4F43DD.00D1:SCFMA4539814,ss=1,fgs=0
+	Thu, 14 Jan 2010 11:24:32 -0500
+Date: Thu, 14 Jan 2010 14:22:31 -0200
+From: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: alsa-devel@alsa-project.org, ibm-acpi@hmh.eng.br,
+       Jaroslav Kysela <perex@perex.cz>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] alsa: use subsys_initcall for sound core instead of
+ module_init
+Message-ID: <20100114162230.GB1396@holoscopio.com>
+References: <1263334840-6118-1-git-send-email-cascardo@holoscopio.com>
+ <s5h63765wm0.wl%tiwai@suse.de>
+ <20100114155342.GA1396@holoscopio.com>
+ <s5hd41ck6ct.wl%tiwai@suse.de>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="+pHx0qQiF2pBVqBT"
+Content-Disposition: inline
+In-Reply-To: <s5hd41ck6ct.wl%tiwai@suse.de>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
 
-I get a few dozen of these warnings when using
-  gcc (GCC) 4.4.1 20090725 (Red Hat 4.4.1-2):
+--+pHx0qQiF2pBVqBT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-In file included from mmotm-2010-0113-1217/init/do_mounts.c:5:
-mmotm-2010-0113-1217/include/linux/tty.h: In function 'tty_port_get':
-mmotm-2010-0113-1217/include/linux/tty.h:469: warning: '______f' is static but declared in inline function 'tty_port_get' which is not static
+On Thu, Jan 14, 2010 at 05:18:26PM +0100, Takashi Iwai wrote:
+> At Thu, 14 Jan 2010 13:53:43 -0200,
+> Thadeu Lima de Souza Cascardo wrote:
+> >=20
+> > On Wed, Jan 13, 2010 at 07:48:07AM +0100, Takashi Iwai wrote:
+> > > At Tue, 12 Jan 2010 20:20:39 -0200,
+> > > Thadeu Lima de Souza Cascardo wrote:
+> > > >=20
+> > > > This is needed for built-in drivers which are built before the soun=
+d directory,
+> > > > like thinkpad_acpi.
+> > > >=20
+> > > > Otherwise, registering a card fails.
+> > >=20
+> > > Oh well, this kind of problem hits again.
+> > >=20
+> > > I don't remember why subsys_init() wasn't taken before...  Maybe some
+> > > dependency between sound and V4L or so.  But, it's worth to check aga=
+in.
+> > >=20
+> >=20
+> > Any references to this dependency problem, so I can try to help and inv=
+estigate
+> > about it and do some tests?
+>=20
+> I also don't remember.  That was a long long ago... :)
+>=20
+> > > I'll apply this after some testing.
+> > >=20
+> >=20
+> > Built-in thinkpad-acpi started working for me after these changes. I ca=
+n't tell
+> > you about any subsystem that stopped working, like some V4L driver.
+>=20
+> Did you test whether the sound subsystem still works as modules?
+>=20
 
-so make the function static inline.
+It does. I've just reapplied those patches on top of rc4, and I'm currently
+running it with CONFIG_SOUND=3Dm, and my sound card works nicely, thanks.
 
-(may be needed in mainline also; or a gcc problem?)
+>=20
+> Takashi
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- include/linux/tty.h |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+--+pHx0qQiF2pBVqBT
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
---- mmotm-2010-0113-1217.orig/include/linux/tty.h
-+++ mmotm-2010-0113-1217/include/linux/tty.h
-@@ -464,7 +464,7 @@ extern int tty_port_alloc_xmit_buf(struc
- extern void tty_port_free_xmit_buf(struct tty_port *port);
- extern void tty_port_put(struct tty_port *port);
- 
--extern inline struct tty_port *tty_port_get(struct tty_port *port)
-+static inline struct tty_port *tty_port_get(struct tty_port *port)
- {
- 	if (port)
- 		kref_get(&port->kref);
----
-~Randy
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAktPRMYACgkQyTpryRcqtS1W3gCfYh0RT7J1iJvT5Drtzi+kXdmc
+vFMAn1cvygZe7MQV7IsaI+hPZPRPy0Nx
+=5LlF
+-----END PGP SIGNATURE-----
+
+--+pHx0qQiF2pBVqBT--
