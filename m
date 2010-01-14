@@ -1,131 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751092Ab0ANFKs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751139Ab0ANFLf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751092Ab0ANFKs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 00:10:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750984Ab0ANFKr
+	id S1751139Ab0ANFLf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 00:11:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751016Ab0ANFLe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 00:10:47 -0500
-Received: from mail-ew0-f209.google.com ([209.85.219.209]:59368 "EHLO
-	mail-ew0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750968Ab0ANFKr (ORCPT
+	Thu, 14 Jan 2010 00:11:34 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:42591 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750973Ab0ANFLd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 00:10:47 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=nwJBTxdJvBoZk/743QxvLePTLQ7WgPwOdOillWC5BSXfIJdihUV997KWnWrEdxYVrc
-         sD+n/2Ld51KuLPYDHLDYrYN3FMPvg6teNSG7Lo1yJP39ifAJskPOegW18Om9F1k9XSJu
-         v8H1neKmMOTXFWQH9htBy42HI57UEgEcgaTcM=
-Date: Thu, 14 Jan 2010 06:10:43 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Joshua Pincus <joshua.pincus@gmail.com>, Ingo Molnar <mingo@elte.hu>
-Cc: "K.Prasad" <prasad@linux.vnet.ibm.com>, peterz@infradead.org,
-       paulus@samba.org, acme@redhat.com, linux-kernel@vger.kernel.org
-Subject: Re: HW breakpoints perf_events request
-Message-ID: <20100114051038.GA5033@nowhere>
-References: <bc915a051001131745m6fb70dcbx29b9d35f6fd7106c@mail.gmail.com>
+	Thu, 14 Jan 2010 00:11:33 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <bc915a051001131745m6fb70dcbx29b9d35f6fd7106c@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20100114034909.GB27634@kroah.com>
+References: <1263388596.26006.1.camel@yio.site> <20100114034909.GB27634@kroah.com>
+From: Kay Sievers <kay.sievers@vrfy.org>
+Date: Thu, 14 Jan 2010 06:11:16 +0100
+Message-ID: <ac3eb2511001132111t7ac93f97xe1e54d93e3a43b02@mail.gmail.com>
+Subject: Re: Driver-Core: devtmpfs - reset inode permissions before unlinking
+To: Greg KH <greg@kroah.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(Adding Ingo in Cc)
+On Thu, Jan 14, 2010 at 04:49, Greg KH <greg@kroah.com> wrote:
+> On Wed, Jan 13, 2010 at 02:16:36PM +0100, Kay Sievers wrote:
+>> From: Kay Sievers <kay.sievers@vrfy.org>
+>> Subject: Driver-Core: devtmpfs - reset inode permissions before unlinking
+>>
+>> Before unlinking the inode, reset the current permissions of possible
+>> references like hardlinks, so granted permissions can not be retained
+>> across the device lifetime by creating hardlinks, in the unusual case
+>> that there is a user-writable directory on the same filesystem.
+>
+> Is this something that we need to worry about for existing users
+> (2.6.32 and .33), or can it wait until 2.6.34?
 
+Should be fine for .34 only.
 
-On Wed, Jan 13, 2010 at 05:45:55PM -0800, Joshua Pincus wrote:
-> Hi,
-> 
-> I have a request for an additional feature to be included
-> in the recent hardware breakpoints work soon to be delivered
-> in kernel 2.6.33.
-> 
-> Frederic Weisbecker, Prasad Krishnan and I have shared an ongoing
-> private discussion on this topic.  Frederic recommended that we take
-> the discussion to a wider audience.  Hence this email.  I would like
-> to thank both
-> of those two engineers for their patience, quick response,
-> and help in this process.  They've been stellar.
-> 
-> I work for a company which would like to make heavy use
-> of the new HW breakpoints perf_event work.  Essentially,
-> we need to be able to do the following:
-> 
-> 1) When executed, a user-land application must be able to program 4
-> pinned hardware
-> breakpoint registers.  I need 1 byte granularity (address length
-> specificity) and the ability
-> to set RWX event triggers.
-> 
-> 2) All calls to clone() or fork() will propagate the
-> debug register settings from parent to child(ren).
-> 
-> 3) When a breakpoint is triggered, the application
-> thread currently running which triggered the breakpoint
-> immediately stops execution and is sent a SIGTRAP.
-> 
-> 4) The thread transitions from the PC that triggered the breakpoint to
-> the signal handler for SIGTRAP.
-> 
-> 5) The signal handler does some work.  (This "work" is outside the
-> scope of my request, but you may have some insights.  I need to be
-> able to change the PC and nPC for the thread that triggered a
-> breakpoint such that when it
-> returns from the signal handler it doesn't return to the instruction
-> that triggered the breakpoint but to the one after it.  If I were
-> using ptrace(8), I would just have the parent
-> process use the ptrace(8) syscall to modify the PC and
-> nPC of the child.  I'm not using ptrace(8).)
-> 
-> 6) The signal handler returns and the thread returns to normal
-> execution at the new
-> PC and nPC.
-> 
-> From my discussions with Frederic and Prasad, I know
-> that requirements (1) and (2), as described above,
-> are already being met by the current work.  I can use
-> the perf_event_attr structure and the perf_event syscall
-> to program breakpoints for a thread in exactly
-> the way I've specified AND be able to have debug
-> settings inherited from parent to child in the case of a
-> fork() or clone().
-> 
-> However, there's nothing yet in place to allow a
-> signal to be sent to the thread when a breakpoint
-> has been hit.  Put another way, there's nothing here
-> which affects execution flow of the user-app when the CPU
-> traps due to a HW breakpoint.
-> 
-> Currently, the perf events infrastructure allows me
-> to mmap() a block of memory and to poll() on it, waiting
-> and watching for events to be described in that mmap'd
-> buffer.  That will not be sufficient for what we need
-> to do.  We need to have the ability to specify that
-> execution of the thread should be interrupted, just as it
-> would under ptrace(), and have a signal be delivered.
-> Delivery of the signal must be received and processed
-> by the application before the thread will be allowed to
-> proceed to the nPC after the PC which caused the
-> HW breakpoint event.
-> 
-> Is this possible?  Can we architect this feature into
-> the perf_events infrastructure?
-> 
-> At first glance, it would seem that this is a fairly
-> easy thing to do.  Right now, these same HW breakpoints
-> triggers under ptrace() merely call a previously registered
-> user handler which modifies the debug registers to
-> record the event and to propagate a signal to the child
-> process being traced.  We want to do something similar
-> w/o using ptrace.  Perhaps it is as simple as providing a
-> perf_event_attr setting which indicates that SIGTRAP signals
-> should be sent to the thread which triggered the breakpoint
-> exception.
-> 
-> Thanks in advance for your help,
-> JP
-
+Thanks,
+Kay
