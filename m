@@ -1,48 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757452Ab0ANSfg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757457Ab0ANShm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757452Ab0ANSfg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 13:35:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757369Ab0ANSfe
+	id S1757457Ab0ANShm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 13:37:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757390Ab0ANShl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 13:35:34 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:57065 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757357Ab0ANSfd (ORCPT
+	Thu, 14 Jan 2010 13:37:41 -0500
+Received: from tomts43-srv.bellnexxia.net ([209.226.175.110]:57280 "EHLO
+	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757369Ab0ANShl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 13:35:33 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=vIr/KpQdKeD39dbjsn9/OO4yBrnpvzNPzpX4uVPH7fs97Tw/bu0ExJcJqK4ZxB9+Mw
-         2RkbWSYDrCyzr/N2E8XC/lBnt/wBFNaMNHf9iRvOifglASWdpW+NH36VOywq5vul9H9h
-         CAhZb+If/SXWo38TA6GcYLrQWmNA9iROSP0s4=
-MIME-Version: 1.0
-In-Reply-To: <4B4A2DAA.2050104@superbug.co.uk>
-References: <bd8e30a41001091057t97f90abgffe9cca329ace477@mail.gmail.com>
-	 <4B4A2DAA.2050104@superbug.co.uk>
-Date: Thu, 14 Jan 2010 10:35:32 -0800
-Message-ID: <bd8e30a41001141035v7ff6ba74pba23fa07728a6da8@mail.gmail.com>
-Subject: Re: Linux Serial Performance
-From: "Paul G. Allen" <pgallen@gmail.com>
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Cc: dbarto@quakeglobal.com
-Content-Type: text/plain; charset=UTF-8
+	Thu, 14 Jan 2010 13:37:41 -0500
+Date: Thu, 14 Jan 2010 13:37:39 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: linux-kernel@vger.kernel.org,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Oleg Nesterov <oleg@redhat.com>,
+       Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org,
+       josh@joshtriplett.org, tglx@linutronix.de, Valdis.Kletnieks@vt.edu,
+       dhowells@redhat.com, laijs@cn.fujitsu.com, dipankar@in.ibm.com
+Subject: Re: [RFC PATCH] introduce sys_membarrier(): process-wide memory
+	barrier (v5)
+Message-ID: <20100114183739.GA18435@Krystal>
+References: <20100113013757.GA29314@Krystal> <1263400738.4244.242.camel@laptop> <20100113193603.GA27327@Krystal> <1263460096.4244.282.camel@laptop> <20100114162609.GC3487@Krystal> <1263488625.4244.333.camel@laptop> <20100114175449.GA15387@Krystal>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20100114175449.GA15387@Krystal>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.27.31-grsec (i686)
+X-Uptime: 13:11:37 up 29 days,  2:30,  5 users,  load average: 0.31, 0.15,
+	0.11
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From some of the responses I've gotten both on and off list, it
-appears the problem is most likely in the .so provided by Sun and
-Seriaio. Others are getting great performance using other methods (C
-applications, PC-PC connections, etc) which indicates that the Linux
-serial driver is just fine. I am going to ping on Sun about this and
-see about either getting it fixed or doing it myself.
+* Mathieu Desnoyers (mathieu.desnoyers@polymtl.ca) wrote:
+> * Peter Zijlstra (peterz@infradead.org) wrote:
+> > On Thu, 2010-01-14 at 11:26 -0500, Mathieu Desnoyers wrote:
+> > 
+> > > It's this scenario that is causing problem. Let's consider this
+> > > execution:
+> > > 
+> 
+> (slightly augmented)
+> 
+>        CPU 0 (membarrier)                  CPU 1 (another mm -> our mm)
+>        <user-space>
+>                                            <kernel-space>
+>                                            switch_mm()
+>                                              smp_mb()
+>                                              clear_mm_cpumask()
+>                                              set_mm_cpumask()
+>                                              smp_mb() (by load_cr3() on x86)
+>                                            switch_to()
+>        memory access before membarrier
+>        <call sys_membarrier()>
+>        smp_mb()
+>        mm_cpumask includes CPU 1
+>        rcu_read_lock()
+>        if (CPU 1 mm != our mm)
+>          skip CPU 1.
+>        rcu_read_unlock()
+>        smp_mb()
+>        <return to user-space>
+>                                              current = next (1)
+>                                            <switch back to user-space>
+>                                            urcu read lock()
+>                                              read gp
+>                                              store local gp (2)
+>                                              barrier()
+>                                              access critical section data (3)
+>        memory access after membarrier
+> 
+> So if we don't have any memory barrier between (1) and (3), the memory
+> operations can be reordered in such a way that CPU 0 will not send IPI
+> to a CPU that would need to have it's barrier() promoted into a
+> smp_mb().
+> 
+> > 
+> > I'm still not getting it, sure we don't send an IPI, but it will have
+> > done an mb() in switch_mm() to become our mm, so even without the IPI it
+> > will have executed that mb we were after.
+> 
+> The augmented race window above shows that it would be possible for (2)
+> and (3) to be reordered across the barrier(), and therefore the critical
+> section access could spill over a rcu-unlocked state.
+
+To make this painfully clear, I'll reorder the accesses to match that of
+the CPU to memory:
+
+       CPU 0 (membarrier)                  CPU 1 (another mm -our mm)
+       <user-space>
+                                           <kernel-space>
+                                           switch_mm()
+                                             smp_mb()
+                                             clear_mm_cpumask()
+                                             set_mm_cpumask()
+                                             smp_mb() (by load_cr3() on x86)
+                                           switch_to()
+                                             <buffered current = next>
+                                           <switch back to user-space>
+                                           urcu read lock()
+                                             access critical section data (3)
+       memory access before membarrier
+       <call sys_membarrier()>
+       smp_mb()
+       mm_cpumask includes CPU 1
+       rcu_read_lock()
+       if (CPU 1 mm != our mm)
+         skip CPU 1.
+       rcu_read_unlock()
+       smp_mb()
+       <return to user-space>
+       memory access after membarrier
+                                             current = next (1) (buffer flush)
+                                             read gp
+                                             store local gp (2)
+
+This should make the problem a bit more evident. Access (3) is done
+outside of the read-side C.S. as far as the userspace synchronize_rcu()
+is concerned.
 
 Thanks,
 
-PGA
+Mathieu
+
+
 -- 
-Paul G. Allen
-Random Logic Consulting
-www.randomlogic.net
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
