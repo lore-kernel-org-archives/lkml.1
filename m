@@ -1,76 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756675Ab0ANNTU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755937Ab0ANNhP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756675Ab0ANNTU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 08:19:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756226Ab0ANNTT
+	id S1755937Ab0ANNhP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 08:37:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753142Ab0ANNhO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 08:19:19 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:59895 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756598Ab0ANNTS (ORCPT
+	Thu, 14 Jan 2010 08:37:14 -0500
+Received: from lider.pardus.org.tr ([193.140.100.216]:50117 "EHLO
+	lider.pardus.org.tr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752558Ab0ANNhN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 08:19:18 -0500
-Subject: Re: [GIT PULL] Please pull NFS client bugfixes....
-From: Peter Zijlstra <peterz@infradead.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Trond Myklebust <Trond.Myklebust@netapp.com>,
-       Andi Kleen <andi@firstfloor.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <alpine.LFD.2.00.1001071752240.7821@localhost.localdomain>
-References: <1262896174.2659.3.camel@localhost>
-	 <87zl4pmxzp.fsf@basil.nowhere.org> <1262901198.2659.38.camel@localhost>
-	 <20100107235149.GD16076@basil.fritz.box>
-	 <1262909682.2659.45.camel@localhost>
-	 <alpine.LFD.2.00.1001071633200.7821@localhost.localdomain>
-	 <1262912601.2659.89.camel@localhost>
-	 <alpine.LFD.2.00.1001071707430.7821@localhost.localdomain>
-	 <1262913752.2659.100.camel@localhost>
-	 <alpine.LFD.2.00.1001071727490.7821@localhost.localdomain>
-	 <alpine.LFD.2.00.1001071731440.7821@localhost.localdomain>
-	 <alpine.LFD.2.00.1001071752240.7821@localhost.localdomain>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 14 Jan 2010 14:18:47 +0100
-Message-ID: <1263475127.4244.327.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 14 Jan 2010 08:37:13 -0500
+Message-ID: <4B4F1DE7.307@pardus.org.tr>
+Date: Thu, 14 Jan 2010 15:36:39 +0200
+From: =?UTF-8?B?T3phbiDDh2HEn2xheWFu?= <ozan@pardus.org.tr>
+User-Agent: Thunderbird 2.0.0.23 (X11/20071115)
+MIME-Version: 1.0
+To: Yinghai Lu <yinghai@kernel.org>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       hpa@zytor.com, mingo@elte.hu, a.p.zijlstra@chello.nl,
+       jaswinder@kernel.org, stable@kernel.org
+Subject: Re: Boot hangs after "Freeing initrd memory" with 2.6.31.11
+References: <4B4E1633.8010700@pardus.org.tr> <4B4EC0A1.3090503@pardus.org.tr> <4B4ECB1C.6070000@kernel.org> <4B4EF35D.3040203@pardus.org.tr> <4B4F1764.2040406@pardus.org.tr>
+In-Reply-To: <4B4F1764.2040406@pardus.org.tr>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2010-01-07 at 18:00 -0800, Linus Torvalds wrote:
+Ozan Çağlayan wrote On 14-01-2010 15:08:
+
+(CC'ing stable)
+
+>>
+>> From 5095f59bda6793a7b8f0856096d6893fe98e0e51 Mon Sep 17 00:00:00 2001
+>> From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+>> Date: Fri, 5 Jun 2009 23:27:17 +0530
+>> Subject: [PATCH] x86: cpu_debug: Remove model information to reduce encoding-decoding
 > 
-> On Thu, 7 Jan 2010, Linus Torvalds wrote:
-> > 
-> > You cannot mmap a directory (and you can't readdir a non-directory), so if 
-> > it's a per-inode NFS lock, then the simplest fix _might_ be to just put 
-> > directory locks in a different lockdep class from non-directory locks. 
-> > That might fix it.
-> > 
-> > Of course, if it's not a per-inode lock, that doesn't help.
-> 
-> Hmm. I notice that we already do this in unlock_new_inode() for i_mutex. 
-> And I googled for the problem, and it does indeed seem to be about the 
-> normal i_mutex <-> mmap_sem thing with filldir-vs-mmap.
-> 
-> Is there perhaps some path where NFS creates new inodes without going 
-> through the normal path? Like the root inode or something? So then you'd 
-> have a root inode with i_mutex annotated as being in the same class as a 
-> regular file, which completes the lockdep chain.
+> Reverting this commit on top of 2.6.31.11 fixes the boot hangs with AMD Athlon XP processors.
+> I'll double check with other reporters in a day or two.
 
-Quite possible, but I got lost trying to find anything like the root
-inode.
+OK we've verified on 2 separate systems with Athlon XP that reverting the commit fixes the issue.
+Here's proc/cpuinfo and relevant dmesg output for reference:
 
-> Or maybe there is something else I'm missing.
-> 
-> I'm adding Peter and Ingo to the Cc as the "lockdep guys". Maybe they see 
-> what I am missing.
-
-Not really, nfs_fhget() seems to know about directories as it has a
-S_ISDIR() check of itself before doing unlock_new_inode(), so I would
-expect unlock_new_inode() to indeed set the
-file_system_type::i_mutex_dir_key.
+processor    : 0
+vendor_id    : AuthenticAMD
+cpu family    : 6
+model        : 10
+model name    : AMD Athlon(tm) XP 2600+
+stepping    : 0
+cpu MHz        : 1920.500
+cache size    : 512 KB
+fdiv_bug    : no
+hlt_bug        : no
+f00f_bug    : no
+coma_bug    : no
+fpu        : yes
+fpu_exception    : yes
+cpuid level    : 1
+wp        : yes
+flags        : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov
+pat pse36 mmx fxsr sse syscall mmxext 3dnowext 3dnow up
+bogomips    : 3842.29
+clflush size    : 32
+power management: ts
 
 
+
+[    0.461404] Freeing initrd memory: 5191k freed
+[    0.467844] initcall populate_rootfs+0x0/0x62 returned 0 after 217975 usecs
+[    0.467947] calling  i8259A_init_sysfs+0x0/0x1d @ 1
+[    0.468093] initcall i8259A_init_sysfs+0x0/0x1d returned 0 after 41 usecs
+[    0.468190] calling  sbf_init+0x0/0xda @ 1
+[    0.468282] initcall sbf_init+0x0/0xda returned 0 after 0 usecs
+[    0.468378] calling  i8237A_init_sysfs+0x0/0x1d @ 1
+[    0.468484] initcall i8237A_init_sysfs+0x0/0x1d returned 0 after 12 usecs
+[    0.468582] calling  add_rtc_cmos+0x0/0x94 @ 1
+[    0.468679] initcall add_rtc_cmos+0x0/0x94 returned 0 after 4 usecs
+[    0.468780] calling  cache_sysfs_init+0x0/0x55 @ 1
+[    0.468940] initcall cache_sysfs_init+0x0/0x55 returned 0 after 64 usecs
+[    0.469041] calling  cpu_debug_init+0x0/0x1f @ 1
+[    0.469190] cpu0(1) debug files 5
+[    0.469282] initcall cpu_debug_init+0x0/0x1f returned 0 after 143 usecs <-- That call wasn't returning at all
+
+I think that the commit should be reverted or a fix should be released for linux-2.6 tree,
+as well as .31 and .32 stable trees.
+
+
+Thanks,
+Ozan Caglayan
 
