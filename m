@@ -1,47 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757569Ab0ANXmf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757706Ab0ANXpN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757569Ab0ANXmf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 18:42:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754280Ab0ANXme
+	id S1757706Ab0ANXpN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 18:45:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757593Ab0ANXpK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 18:42:34 -0500
-Received: from mail-pw0-f42.google.com ([209.85.160.42]:44016 "EHLO
-	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752309Ab0ANXmd (ORCPT
+	Thu, 14 Jan 2010 18:45:10 -0500
+Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:48587 "EHLO
+	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757174Ab0ANXpJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 18:42:33 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:from:date:message-id:subject:to:cc:content-type;
-        b=V/wLfrdS7Sij97N6Q24FK+ObVJwWclWZlFlTflkUYPDdlzpK96ZRUv1ElFNTQfDHqY
-         9sN+iN9X4HHIQrcPOAcF71RtX3raPQOrwh+EqPXoEUcETfWukXkI79rRTQFEgJiugd+G
-         OyUDXjelnz8xpjzcspAzydVSyFBq/edK5OUIg=
+	Thu, 14 Jan 2010 18:45:09 -0500
+Date: Fri, 15 Jan 2010 08:45:04 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [GIT PULL] sh updates for 2.6.33-rc5
+Message-ID: <20100114234504.GC25018@linux-sh.org>
 MIME-Version: 1.0
-From: "Luis R. Rodriguez" <mcgrof@gmail.com>
-Date: Thu, 14 Jan 2010 15:42:12 -0800
-Message-ID: <43e72e891001141542j4a6c1cdfr715ff092b01bb03e@mail.gmail.com>
-Subject: ath3k driver for older kernels
-To: linux-bluetooth <linux-bluetooth@vger.kernel.org>
-Cc: linux-kernel@vger.kernel.org,
-       Vikram Kandukuri <vikram.kandukuri@atheros.com>,
-       Alicke Xu <sxu@atheros.com>, Marcel Holtmann <marcel@holtmann.org>,
-       Bala Shanmugam <sbalashanmugam@atheros.com>,
-       "Luis R. Rodriguez" <lrodriguez@atheros.com>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The ath3k bluetooth driver is now merged on bluetooth-testing and
-linux-next trees. The firmware is also now merged onto the
-linux-firmware git tree. However if you're on older kernels you won't
-have it available. If you're stuck on older kernels you can use this
-git tree which just has the ath3k driver alone along with the
-firmware:
+Please pull from:
 
-git://git.kernel.org/pub/scm/linux/kernel/git/mcgrof/ath3k.git
+	master.kernel.org:/pub/scm/linux/kernel/git/lethal/sh-2.6.git sh/for-2.6.33
 
-Marcel, you OK with us pushing ath3k into for the 2.6.33-rc5? Its a
-relatively small and simple driver.
+Which contains:
 
-  Luis
+Markus Pietrek (1):
+      serial: sh-sci: using correct fifo size for SCIF and SCIFA ports.
+
+NISHIMOTO Hiroki (1):
+      sh: mach-ecovec24: Add motion sensor driver support.
+
+ arch/sh/boards/mach-ecovec24/setup.c |    8 ++++++++
+ drivers/serial/sh-sci.c              |   13 ++++++++++++-
+ 2 files changed, 20 insertions(+), 1 deletions(-)
