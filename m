@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756885Ab0ANWcs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756999Ab0ANWdl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756885Ab0ANWcs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 17:32:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756797Ab0ANW2x
+	id S1756999Ab0ANWdl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 17:33:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756873Ab0ANWdd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 17:28:53 -0500
-Received: from kroah.org ([198.145.64.141]:60629 "EHLO coco.kroah.org"
+	Thu, 14 Jan 2010 17:33:33 -0500
+Received: from kroah.org ([198.145.64.141]:60637 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756742Ab0ANW2u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1756758Ab0ANW2u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 14 Jan 2010 17:28:50 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, stable-review@kernel.org
 Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       Roger Blofeld <blofeldus@yahoo.com>, Jean Delvare <khali@linux-fr.org>,
+       Jan Kara <jack@suse.cz>, Dmitry Monakhov <dmonakhov@openvz.org>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 36/52] hwmon: (adt7462) Fix pin 28 monitoring
-Date: Thu, 14 Jan 2010 14:27:15 -0800
-Message-Id: <1263508051-7868-36-git-send-email-gregkh@suse.de>
+Subject: [PATCH 37/52] quota: Fix dquot_transfer for filesystems different from ext4
+Date: Thu, 14 Jan 2010 14:27:16 -0800
+Message-Id: <1263508051-7868-37-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.6
-In-Reply-To: <1263508051-7868-35-git-send-email-gregkh@suse.de>
+In-Reply-To: <1263508051-7868-36-git-send-email-gregkh@suse.de>
 References: <20100114222551.GA7839@suse.de>
  <1263508051-7868-1-git-send-email-gregkh@suse.de>
  <1263508051-7868-2-git-send-email-gregkh@suse.de>
@@ -55,37 +55,45 @@ References: <20100114222551.GA7839@suse.de>
  <1263508051-7868-33-git-send-email-gregkh@suse.de>
  <1263508051-7868-34-git-send-email-gregkh@suse.de>
  <1263508051-7868-35-git-send-email-gregkh@suse.de>
+ <1263508051-7868-36-git-send-email-gregkh@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Roger Blofeld <blofeldus@yahoo.com>
+From: Jan Kara <jack@suse.cz>
 
-commit bb595c923bc51dff9cdd112de18deb57ac7945d2 upstream.
+commit 05b5d898235401c489c68e1f3bc5706a29ad5713 upstream.
 
-The ADT7462_PIN28_VOLT value is a 4-bit field, so the corresponding
-shift must be 4.
+Commit fd8fbfc1 modified the way we find amount of reserved space
+belonging to an inode. The amount of reserved space is checked
+from dquot_transfer and thus inode_reserved_space gets called
+even for filesystems that don't provide get_reserved_space callback
+which results in a BUG.
 
-Signed-off-by: Roger Blofeld <blofeldus@yahoo.com>
-Signed-off-by: Jean Delvare <khali@linux-fr.org>
+Fix the problem by checking get_reserved_space callback and return 0 if
+the filesystem does not provide it.
+
+CC: Dmitry Monakhov <dmonakhov@openvz.org>
+Signed-off-by: Jan Kara <jack@suse.cz>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/hwmon/adt7462.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ fs/quota/dquot.c |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/hwmon/adt7462.c b/drivers/hwmon/adt7462.c
-index 1852f27..262c133 100644
---- a/drivers/hwmon/adt7462.c
-+++ b/drivers/hwmon/adt7462.c
-@@ -97,7 +97,7 @@ I2C_CLIENT_INSMOD_1(adt7462);
- #define		ADT7462_PIN24_SHIFT		6
- #define		ADT7462_PIN26_VOLT_INPUT	0x08
- #define		ADT7462_PIN25_VOLT_INPUT	0x20
--#define		ADT7462_PIN28_SHIFT		6	/* cfg3 */
-+#define		ADT7462_PIN28_SHIFT		4	/* cfg3 */
- #define		ADT7462_PIN28_VOLT		0x5
- 
- #define ADT7462_REG_ALARM1			0xB8
+diff --git a/fs/quota/dquot.c b/fs/quota/dquot.c
+index c4d07a8..2534987 100644
+--- a/fs/quota/dquot.c
++++ b/fs/quota/dquot.c
+@@ -1425,6 +1425,9 @@ static void inode_sub_rsv_space(struct inode *inode, qsize_t number)
+ static qsize_t inode_get_rsv_space(struct inode *inode)
+ {
+ 	qsize_t ret;
++
++	if (!inode->i_sb->dq_op->get_reserved_space)
++		return 0;
+ 	spin_lock(&inode->i_lock);
+ 	ret = *inode_reserved_space(inode);
+ 	spin_unlock(&inode->i_lock);
 -- 
 1.6.6
 
