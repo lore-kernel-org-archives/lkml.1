@@ -1,47 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756724Ab0ANAbL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753907Ab0ANAj6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756724Ab0ANAbL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 19:31:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756346Ab0ANAbJ
+	id S1753907Ab0ANAj6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 19:39:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751501Ab0ANAj5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 19:31:09 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:42198 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752696Ab0ANAbI (ORCPT
+	Wed, 13 Jan 2010 19:39:57 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:33911 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751013Ab0ANAj5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 19:31:08 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Gleb Natapov <gleb@redhat.com>
-Subject: Re: [PATCH v5] add MAP_UNLOCKED mmap flag
-Cc: kosaki.motohiro@jp.fujitsu.com, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, linux-api@vger.kernel.org,
-       akpm@linux-foundation.org
-In-Reply-To: <20100113093119.GT7549@redhat.com>
-References: <20100113093119.GT7549@redhat.com>
-Message-Id: <20100114092845.D719.A69D9226@jp.fujitsu.com>
+	Wed, 13 Jan 2010 19:39:57 -0500
+Message-ID: <4B4E67C8.501@zytor.com>
+Date: Wed, 13 Jan 2010 16:39:36 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+To: George Spelvin <linux@horizon.com>
+CC: linux-kernel@vger.kernel.org, schwab@linux-m68k.org,
+       torvalds@linux-foundation.org
+Subject: Re: x86-32: clean up rwsem inline asm statements
+References: <20100114002708.4154.qmail@science.horizon.com>
+In-Reply-To: <20100114002708.4154.qmail@science.horizon.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Thu, 14 Jan 2010 09:31:03 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> If application does mlockall(MCL_FUTURE) it is no longer possible to mmap
-> file bigger than main memory or allocate big area of anonymous memory
-> in a thread safe manner. Sometimes it is desirable to lock everything
-> related to program execution into memory, but still be able to mmap
-> big file or allocate huge amount of memory and allow OS to swap them on
-> demand. MAP_UNLOCKED allows to do that.
->  
-> Signed-off-by: Gleb Natapov <gleb@redhat.com>
-> ---
+On 01/13/2010 04:27 PM, George Spelvin wrote:
+>> There are a number of things that can be done better... for one thing,
+>> "+m" (sem->count) and "a" (sem) is just bloody wrong.  The right thing
+>> would be "a" (&sem->count) for proper robustness.
 > 
-> I get reports that people find this useful, so resending.
+> Actually, no.  The "+m" (sem->count) is telling GCC that sem->count is
+> updated; "a" (&sem->count) does *not* tell it to invalidate cached
+> copies of sem->count that it may have lying around.
+> 
+> However, we can't just use "+m" (sem->count) because GCC has a poor
+> grasp on the concept of atomic operations; as far as it is concerned,
+> it is exactly equivalent to copying the value into a stack slot, do the
+> operation there, and copy it back.
 
-This description is still wrong. It doesn't describe why this patch is useful.
+You completely missed the point.
 
+The reason we need both "+m" (sem->count) and "a" (sem) is because we
+need the address of the semaphore in %eax in case we hit the slow path.
+ They're actually orthogonal requirements, and we could implement them as:
 
+	LOCK_PREFIX xadd %1,%0
+	jz 1f
+	call call_rwsem_wake
+1:
 
+	: "+m" (sem->count), "=d" (tmp)
+       	: "a" (sem)
+
+... just fine, and arguably that would be more correct in the sense that
+if sem->count isn't the first member of *sem, then we still pass the
+address of sem in %eax to call_rwsem_wake.  In practice, with the
+zero-offset sem->count, gcc will typically generate (%eax) as the
+argument since it has it available anyway, but it wouldn't have to.
+
+The code as it currently is:
+
+	LOCK_PREFIX xadd %1,(%2)
+	jz 1f
+	call call_rwsem_wake
+1:
+
+	: "+m" (sem->count), "=d" (tmp)
+       	: "a" (sem)
+
+... implicitly assumes the offset of "count" is zero but doesn't enforce
+it in any way.  My comment was that since the assumption is clearly that
+arguments 0 and 2 point to the same memory object, it should be
+(&sem->count) in the second case, but that's actually not really the
+"proper" fix because call_rwsem_wake presumably expects the value of sem.
+	
+	-hpa
