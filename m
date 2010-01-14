@@ -1,72 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757353Ab0ANRER@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757359Ab0ANRZp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757353Ab0ANRER (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 12:04:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757344Ab0ANREQ
+	id S1757359Ab0ANRZp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 12:25:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757342Ab0ANRZp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 12:04:16 -0500
-Received: from casper.infradead.org ([85.118.1.10]:60132 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756788Ab0ANREQ (ORCPT
+	Thu, 14 Jan 2010 12:25:45 -0500
+Received: from mail3.caviumnetworks.com ([12.108.191.235]:15188 "EHLO
+	mail3.caviumnetworks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756901Ab0ANRZo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 12:04:16 -0500
-Subject: Re: [RFC PATCH] introduce sys_membarrier(): process-wide memory
- barrier (v5)
-From: Peter Zijlstra <peterz@infradead.org>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: linux-kernel@vger.kernel.org,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Oleg Nesterov <oleg@redhat.com>,
-       Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org,
-       josh@joshtriplett.org, tglx@linutronix.de, Valdis.Kletnieks@vt.edu,
-       dhowells@redhat.com, laijs@cn.fujitsu.com, dipankar@in.ibm.com
-In-Reply-To: <20100114162609.GC3487@Krystal>
-References: <20100113013757.GA29314@Krystal>
-	 <1263400738.4244.242.camel@laptop> <20100113193603.GA27327@Krystal>
-	 <1263460096.4244.282.camel@laptop>  <20100114162609.GC3487@Krystal>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 14 Jan 2010 18:03:45 +0100
-Message-ID: <1263488625.4244.333.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	Thu, 14 Jan 2010 12:25:44 -0500
+Message-ID: <4B4F534B.5050007@caviumnetworks.com>
+Date: Thu, 14 Jan 2010 09:24:27 -0800
+From: David Daney <ddaney@caviumnetworks.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: Joe Perches <joe@perches.com>, Ralf Baechle <ralf@linux-mips.org>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mips <linux-mips@linux-mips.org>
+Subject: Re: [PATCH 00/24] MAINTAINERS: Add "Q" patchwork entries
+References: <cover.1263452908.git.joe@perches.com>
+In-Reply-To: <cover.1263452908.git.joe@perches.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 14 Jan 2010 17:24:30.0139 (UTC) FILETIME=[6E1D10B0:01CA953E]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2010-01-14 at 11:26 -0500, Mathieu Desnoyers wrote:
-
-> It's this scenario that is causing problem. Let's consider this
-> execution:
+Joe Perches wrote:
+> Keep the patchwork site entries in MAINTAINERS
 > 
->        CPU 0 (membarrier)                  CPU 1 (another mm -> our mm)
->        <kernel-space>                      <kernel-space>
->                                            switch_mm()
->                                              smp_mb()
->                                              clear_mm_cpumask()
->                                              set_mm_cpumask()
->                                              smp_mb() (by load_cr3() on x86)
->                                            switch_to()
->        mm_cpumask includes CPU 1
->        rcu_read_lock()
->        if (CPU 1 mm != our mm)
->          skip CPU 1.
->        rcu_read_unlock()
->                                              current = next (1)
->                                            <switch back to user-space>
->                                            read-lock()
->                                              read gp, store local gp
->                                              barrier()
->                                              access critical section (2)
+> Joe Perches (24):
+>   MAINTAINERS: Document new "Q:" patchwork queue type
+>   MAINTAINERS: 9P FILE SYSTEM - Add "Q" patchwork entry
+>   MAINTAINERS: ACPI - Add "Q" patchwork entry
+>   MAINTAINERS: BTRFS FILE SYSTEM - Add "Q" patchwork entry
+>   MAINTAINERS: CIFS - Add "Q" patchwork entry
+>   MAINTAINERS: DEVICE-MAPPER - Add "Q" patchwork entry
+>   MAINTAINERS: EXT4 FILE SYSTEM - Add "Q" patchwork entry
+>   MAINTAINERS: IDE SUBSYSTEM - Add "Q" patchwork entry
+>   MAINTAINERS: INFINIBAND SUBSYSTEM - Add "Q" patchwork entry
+>   MAINTAINERS: INPUT DRIVERS - Add "Q" patchwork entry
+>   MAINTAINERS: KCONFIG - Add "Q" patchwork entry
+>   MAINTAINERS: LINUX FOR POWERPC - Add "Q" patchwork entry
+>   MAINTAINERS: V4L/DVB - Add "Q" patchwork entry
+>   MAINTAINERS: MTD - Add "Q" patchwork entry
+>   MAINTAINERS: NETWORKING [WIRELESS] - Add "Q" patchwork entry
+>   MAINTAINERS: OMAP - Add "Q" patchwork entry
+>   MAINTAINERS: PARISC ARCHITECTURE - Add "Q" patchwork entry
+>   MAINTAINERS: PCI SUBSYSTEM - Add "Q" patchwork entry
+>   MAINTAINERS: REAL TIME CLOCK - Add "Q" patchwork entry
+>   MAINTAINERS: TI DAVINCI - Add "Q" patchwork entry
+>   MAINTAINERS: SPARC - Add "Q" patchwork entry
+>   MAINTAINERS: SPI SUBSYSTEM - Add "Q" patchwork entry
+>   MAINTAINERS: SUPERH - Add "Q" patchwork entry
+>   MAINTAINERS: THE REST (LKML) - Add "Q" patchwork entry
 > 
-> So if we don't have any memory barrier between (1) and (2), the memory
-> operations can be reordered in such a way that CPU 0 will not send IPI
-> to a CPU that would need to have it's barrier() promoted into a
-> smp_mb().
+>  MAINTAINERS |   26 +++++++++++++++++++++++++-
+>  1 files changed, 25 insertions(+), 1 deletions(-)
+> 
 
-I'm still not getting it, sure we don't send an IPI, but it will have
-done an mb() in switch_mm() to become our mm, so even without the IPI it
-will have executed that mb we were after.
+I wonder if the MIPS patchwork site should also be included:
 
+http://patchwork.linux-mips.org/project/linux-mips/list/
 
 
+David Daney
