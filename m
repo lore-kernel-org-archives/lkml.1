@@ -1,84 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757404Ab0ANRtH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757425Ab0ANRyx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757404Ab0ANRtH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 12:49:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757253Ab0ANRtF
+	id S1757425Ab0ANRyx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 12:54:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757338Ab0ANRyw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 12:49:05 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:2833 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757353Ab0ANRtE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 12:49:04 -0500
-Date: Thu, 14 Jan 2010 15:48:23 -0200
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
-To: Ulrich Drepper <drepper@redhat.com>
-Cc: a.p.zijlstra@chello.nl, eranian@google.com, fweisbec@gmail.com,
-       linux-kernel@vger.kernel.org, lizf@cn.fujitsu.com, mingo@elte.hu,
-       paulus@samba.org
-Subject: Re: perf: don't use obsolete getpagesize
-Message-ID: <20100114174823.GA2600@ghostprotocols.net>
-References: <201001141743.o0EHhKUV023427@hs20-bc2-1.build.redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Thu, 14 Jan 2010 12:54:52 -0500
+Received: from tomts5.bellnexxia.net ([209.226.175.25]:59001 "EHLO
+	tomts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756962Ab0ANRyv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jan 2010 12:54:51 -0500
+Date: Thu, 14 Jan 2010 12:54:49 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: linux-kernel@vger.kernel.org,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Oleg Nesterov <oleg@redhat.com>,
+       Ingo Molnar <mingo@elte.hu>, akpm@linux-foundation.org,
+       josh@joshtriplett.org, tglx@linutronix.de, Valdis.Kletnieks@vt.edu,
+       dhowells@redhat.com, laijs@cn.fujitsu.com, dipankar@in.ibm.com
+Subject: Re: [RFC PATCH] introduce sys_membarrier(): process-wide memory
+	barrier (v5)
+Message-ID: <20100114175449.GA15387@Krystal>
+References: <20100113013757.GA29314@Krystal> <1263400738.4244.242.camel@laptop> <20100113193603.GA27327@Krystal> <1263460096.4244.282.camel@laptop> <20100114162609.GC3487@Krystal> <1263488625.4244.333.camel@laptop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <201001141743.o0EHhKUV023427@hs20-bc2-1.build.redhat.com>
-X-Url: http://acmel.wordpress.com
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <1263488625.4244.333.camel@laptop>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.27.31-grsec (i686)
+X-Uptime: 12:39:40 up 29 days,  1:58,  5 users,  load average: 0.26, 0.16,
+	0.11
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Thu, Jan 14, 2010 at 12:43:20PM -0500, Ulrich Drepper escreveu:
-> perf uses the obsolete getpagesize function.  Let's do better and use the
-> correct POSIX interface to get the information: sysconf.
+* Peter Zijlstra (peterz@infradead.org) wrote:
+> On Thu, 2010-01-14 at 11:26 -0500, Mathieu Desnoyers wrote:
 > 
+> > It's this scenario that is causing problem. Let's consider this
+> > execution:
+> > 
+
+(slightly augmented)
+
+       CPU 0 (membarrier)                  CPU 1 (another mm -> our mm)
+       <user-space>
+                                           <kernel-space>
+                                           switch_mm()
+                                             smp_mb()
+                                             clear_mm_cpumask()
+                                             set_mm_cpumask()
+                                             smp_mb() (by load_cr3() on x86)
+                                           switch_to()
+       memory access before membarrier
+       <call sys_membarrier()>
+       smp_mb()
+       mm_cpumask includes CPU 1
+       rcu_read_lock()
+       if (CPU 1 mm != our mm)
+         skip CPU 1.
+       rcu_read_unlock()
+       smp_mb()
+       <return to user-space>
+                                             current = next (1)
+                                           <switch back to user-space>
+                                           urcu read lock()
+                                             read gp
+                                             store local gp (2)
+                                             barrier()
+                                             access critical section data (3)
+       memory access after membarrier
+
+So if we don't have any memory barrier between (1) and (3), the memory
+operations can be reordered in such a way that CPU 0 will not send IPI
+to a CPU that would need to have it's barrier() promoted into a
+smp_mb().
+
 > 
-> Signed-off-by: Ulrich Drepper <drepper@redhat.com>
+> I'm still not getting it, sure we don't send an IPI, but it will have
+> done an mb() in switch_mm() to become our mm, so even without the IPI it
+> will have executed that mb we were after.
 
-I have this already in my queue, thanks!
+The augmented race window above shows that it would be possible for (2)
+and (3) to be reordered across the barrier(), and therefore the critical
+section access could spill over a rcu-unlocked state.
 
-acme@parisc:~/git/linux-2.6-tip$ git show 578bb387c17692896a2a7c6b8bcba2c3945c33f4
-commit 578bb387c17692896a2a7c6b8bcba2c3945c33f4
-Author: Arnaldo Carvalho de Melo <acme@redhat.com>
-Date:   Thu Jan 14 14:10:35 2010 -0200
+Thanks,
 
-    perf tools: Convert getpagesize() uses to sysconf(_SC_GETPAGESIZE)
-    
-    Using the more portable and equivalent sysconf call.
-    
-    Reported-by: Aristeu Rozanski <aris@redhat.com>
-    Cc: Aristeu Rozanski <aris@redhat.com>
-    Cc: Frédéric Weisbecker <fweisbec@gmail.com>
-    Cc: Mike Galbraith <efault@gmx.de>
-    Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-    Cc: Paul Mackerras <paulus@samba.org>
-    Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+Mathieu
 
-diff --git a/tools/perf/util/session.c b/tools/perf/util/session.c
-index 604e14f..1951e33 100644
---- a/tools/perf/util/session.c
-+++ b/tools/perf/util/session.c
-@@ -384,7 +384,7 @@ int perf_session__process_events(struct perf_session *self,
- 
-        perf_event_ops__fill_defaults(ops);
- 
--       page_size = getpagesize();
-+       page_size = sysconf(_SC_PAGESIZE);
- 
-        head = self->header.data_offset;
- 
-diff --git a/tools/perf/util/trace-event-info.c b/tools/perf/util/trace-event-info.c
-index 407fd65..5ea8973 100644
---- a/tools/perf/util/trace-event-info.c
-+++ b/tools/perf/util/trace-event-info.c
-@@ -515,7 +515,7 @@ int read_tracing_data(int fd, struct perf_event_attr *pattrs, int nb_events)
-        write_or_die(buf, 1);
- 
-        /* save page_size */
--       page_size = getpagesize();
-+       page_size = sysconf(_SC_PAGESIZE);
-        write_or_die(&page_size, 4);
- 
-        read_header_files();
-acme@parisc:~/git/linux-2.6-tip$
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
