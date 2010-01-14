@@ -1,83 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756495Ab0ANIRl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756442Ab0ANI0h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756495Ab0ANIRl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 03:17:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756403Ab0ANIRk
+	id S1756442Ab0ANI0h (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 03:26:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753018Ab0ANI0g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 03:17:40 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:36737 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755627Ab0ANIRj (ORCPT
+	Thu, 14 Jan 2010 03:26:36 -0500
+Received: from mail-pw0-f42.google.com ([209.85.160.42]:54850 "EHLO
+	mail-pw0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751917Ab0ANI0f convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 03:17:39 -0500
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Gleb Natapov <gleb@redhat.com>
-Subject: Re: [PATCH v5] add MAP_UNLOCKED mmap flag
-Cc: kosaki.motohiro@jp.fujitsu.com, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, linux-api@vger.kernel.org,
-       akpm@linux-foundation.org
-In-Reply-To: <20100114080117.GL18808@redhat.com>
-References: <20100114162327.673E.A69D9226@jp.fujitsu.com> <20100114080117.GL18808@redhat.com>
-Message-Id: <20100114170247.6747.A69D9226@jp.fujitsu.com>
+	Thu, 14 Jan 2010 03:26:35 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding:message-id;
+        b=FSBaDuao9b5DrqP4+xP4temYGe81upwcelX3S9gbVv1Y2PWwjjLDsDM/CRQGlsw2w9
+         hWQPpIyv42yLvhTeb+9XOJkkHR4I6S9vWTsdo/nQrAsVr+aBm6O3qgzVgRnlQFM5VxJJ
+         nYFycH9fshnpnosMleVPacAVKEchkKgepQNPE=
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: =?iso-8859-1?q?N=E9meth_M=E1rton?= <nm127@freemail.hu>
+Subject: Re: Changelog quality
+Date: Thu, 14 Jan 2010 00:26:30 -0800
+User-Agent: KMail/1.12.4 (Linux/2.6.33-rc4; KDE/4.3.4; x86_64; ; )
+Cc: Greg KH <greg@kroah.com>, Julia Lawall <julia@diku.dk>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       David Vrabel <david.vrabel@csr.com>, linux-usb@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, cocci@diku.dk
+References: <20100113174446.GA20754@kroah.com> <20100113195226.GD8438@kroah.com> <4B4EAA73.5060103@freemail.hu>
+In-Reply-To: <4B4EAA73.5060103@freemail.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Thu, 14 Jan 2010 17:17:36 +0900 (JST)
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Message-Id: <201001140026.31195.dmitry.torokhov@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > Hmm..
-> > Your answer didn't match I wanted.
-> Then I don't get what you want.
+On Wednesday 13 January 2010 09:24:03 pm Németh Márton wrote:
+> Greg KH wrote:
+> > On Wed, Jan 13, 2010 at 01:04:52PM -0500, Alan Stern wrote:
+> >> On Wed, 13 Jan 2010, Greg KH wrote:
+> >>>> It would be nice if there was a way to link automatically a git commit
+> >>>> to an archived copy of the email message in which it was originally
+> >>>> submitted.
+> >>>
+> >>> Ingo has been doing this on some patches by putting a message-id field
+> >>> in the signed-off-by area showing what lkml message a patch came from.
+> >>>
+> >>> See git commit id 6432e734c99ed685e3cad72f7dcae4c65008fcab in Linus's
+> >>> tree as an example of this.
+> >>>
+> >>> I have no objection if people want to do this for any patches going
+> >>> through my tree as well.
+> >>
+> >> If it has to be included manually by the patch submitter then it isn't
+> >> automatic.  Not to mention that the submitter would need to know the
+> >> email's message-id before the email message was sent!
+> >>
+> >> Something like this should belong in a maintainer's script.
+> >
+> > Yeah, that would get messy, as usually a patch happens in a different
+> > thread than the original problem occurs, so it would take a lot more
+> > work on my part to try to match things up.  If I notice it, I will try
+> > to in the future.
+> 
+> What about introducing a new tag like 'SmPL-Used:'? The used SmPL could
+> be placed somewhere in the web. This would require only one line in
+> the changelog: e.g.:
+> 
+> SmPL-Used: http://coccinelle.lip6.fr/sp.php#usb_submit_urb
+> 
+> Usually when an SmPL is created in a general manner it can easily
+> match 100+ places. These can be combined in groups which for example
+> belong to one maintainter. That was what I did with adding const to
+> the different ID tables.
+> 
 
-I want to know the benefit of the patch for patch reviewing.
+Hm, I usually am only marginally interested in how patch was generated,
+you may have used a script to 'ed' to generate it for all I care.
+I do care however about rationale behind the change and that is what
+should go into changelogs.
 
+So if these scripts could go below the "---" separator I'm all for it.
 
-> > few additional questions.
-> > 
-> > - Why don't you change your application? It seems natural way than kernel change.
-> There is no way to change my application and achieve what I've described
-> in a multithreaded app.
+Thanks.
 
-Then, we don't recommend to use mlockall(). I don't hope to hear your conclusion,
-it is not objectivization. I hope to hear why you reached such conclusion.
-
-
-> > - Why do you want your virtual machine have mlockall? AFAIK, current majority
-> >   virtual machine doesn't.
-> It is absolutely irrelevant for that patch, but just because you ask I
-> want to measure the cost of swapping out of a guest memory.
-
-No. if you stop to use mlockall, the issue is vanished.
-
-
-> > - If this feature added, average distro user can get any benefit?
-> > 
-> ?! Is this some kind of new measure? There are plenty of much more
-> invasive features that don't bring benefits to an average distro user.
-> This feature can bring benefit to embedded/RT developers.
-
-I mean who get benifit?
-
-
-> > I mean, many application developrs want to add their specific feature
-> > into kernel. but if we allow it unlimitedly, major syscall become
-> > the trushbox of pretty toy feature soon.
-> > 
-> And if application developer wants to extend kernel in a way that it
-> will be possible to do something that was not possible before why is
-> this a bad thing? I would agree with you if for my problem was userspace
-> solution, but there is none. The mmap interface is asymmetric in regards
-> to mlock currently. There is MAP_LOCKED, but no MAP_UNLOCKED. Why
-> MAP_LOCKED is useful then?
-
-Why? Because this is formal LKML reviewing process. I'm reviewing your
-patch for YOU.
-
-If there is no objective reason, I don't want to continue reviewing.
-
-
-
+-- 
+Dmitry
