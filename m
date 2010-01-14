@@ -1,112 +1,204 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757725Ab0ANWk6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757712Ab0ANWk4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757725Ab0ANWk6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 17:40:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757664Ab0ANWky
+	id S1757712Ab0ANWk4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 17:40:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753604Ab0ANW2S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 17:40:54 -0500
-Received: from kroah.org ([198.145.64.141]:60500 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753847Ab0ANW2S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 14 Jan 2010 17:28:18 -0500
+Received: from kroah.org ([198.145.64.141]:60488 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751920Ab0ANW2R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jan 2010 17:28:17 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, stable-review@kernel.org
 Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       Ben Hutchings <ben@decadent.org.uk>,
-       Rusty Russell <rusty@rustcorp.com.au>,
+       Jeff Dike <jdike@addtoit.com>, Matt Mackall <mpm@selenic.com>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 04/52] modules: Skip empty sections when exporting section notes
-Date: Thu, 14 Jan 2010 14:26:43 -0800
-Message-Id: <1263508051-7868-4-git-send-email-gregkh@suse.de>
+Subject: [PATCH 02/52] fasync: split 'fasync_helper()' into separate add/remove functions
+Date: Thu, 14 Jan 2010 14:26:41 -0800
+Message-Id: <1263508051-7868-2-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.6
-In-Reply-To: <1263508051-7868-3-git-send-email-gregkh@suse.de>
+In-Reply-To: <1263508051-7868-1-git-send-email-gregkh@suse.de>
 References: <20100114222551.GA7839@suse.de>
  <1263508051-7868-1-git-send-email-gregkh@suse.de>
- <1263508051-7868-2-git-send-email-gregkh@suse.de>
- <1263508051-7868-3-git-send-email-gregkh@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ben Hutchings <ben@decadent.org.uk>
+From: Linus Torvalds <torvalds@linux-foundation.org>
 
-commit 10b465aaf9536ee5a16652fa0700740183d48ec9 upstream.
+commit 53281b6d34d44308372d16acb7fb5327609f68b6 upstream.
 
-Commit 35dead4 "modules: don't export section names of empty sections
-via sysfs" changed the set of sections that have attributes, but did
-not change the iteration over these attributes in add_notes_attrs().
-This can lead to add_notes_attrs() creating attributes with the wrong
-names or with null name pointers.
+Yes, the add and remove cases do share the same basic loop and the
+locking, but the compiler can inline and then CSE some of the end result
+anyway.  And splitting it up makes the code way easier to follow,
+and makes it clearer exactly what the semantics are.
 
-Introduce a sect_empty() function and use it in both add_sect_attrs()
-and add_notes_attrs().
+In particular, we must make sure that the FASYNC flag in file->f_flags
+exactly matches the state of "is this file on any fasync list", since
+not only is that flag visible to user space (F_GETFL), but we also use
+that flag to check whether we need to remove any fasync entries on file
+close.
 
-Reported-by: Martin Michlmayr <tbm@cyrius.com>
-Signed-off-by: Ben Hutchings <ben@decadent.org.uk>
-Tested-by: Martin Michlmayr <tbm@cyrius.com>
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+We got that wrong for the case of a mixed use of file locking (which
+tries to remove any fasync entries for file leases) and fasync.
+
+Splitting the function up also makes it possible to do some future
+optimizations without making the function even messier.  In particular,
+since the FASYNC flag has to match the state of "is this on a list", we
+can do the following future optimizations:
+
+ - on remove, we don't even need to get the locks and traverse the list
+   if FASYNC isn't set, since we can know a priori that there is no
+   point (this is effectively the same optimization that we already do
+   in __fput() wrt removing fasync on file close)
+
+ - on add, we can use the FASYNC flag to decide whether we are changing
+   an existing entry or need to allocate a new one.
+
+but this is just the cleanup + fix for the FASYNC flag.
+
+Acked-by: Al Viro <viro@ZenIV.linux.org.uk>
+Tested-by: Tavis Ormandy <taviso@google.com>
+Cc: Jeff Dike <jdike@addtoit.com>
+Cc: Matt Mackall <mpm@selenic.com>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- kernel/module.c |   17 ++++++++++-------
- 1 files changed, 10 insertions(+), 7 deletions(-)
+ fs/fcntl.c |  102 ++++++++++++++++++++++++++++++++++++++---------------------
+ 1 files changed, 66 insertions(+), 36 deletions(-)
 
-diff --git a/kernel/module.c b/kernel/module.c
-index 5842a71..37caef0 100644
---- a/kernel/module.c
-+++ b/kernel/module.c
-@@ -1146,6 +1146,12 @@ static const struct kernel_symbol *resolve_symbol(Elf_Shdr *sechdrs,
-  * J. Corbet <corbet@lwn.net>
+diff --git a/fs/fcntl.c b/fs/fcntl.c
+index 2cf93ec..97e01dc 100644
+--- a/fs/fcntl.c
++++ b/fs/fcntl.c
+@@ -618,60 +618,90 @@ static DEFINE_RWLOCK(fasync_lock);
+ static struct kmem_cache *fasync_cache __read_mostly;
+ 
+ /*
+- * fasync_helper() is used by almost all character device drivers
+- * to set up the fasync queue. It returns negative on error, 0 if it did
+- * no changes and positive if it added/deleted the entry.
++ * Remove a fasync entry. If successfully removed, return
++ * positive and clear the FASYNC flag. If no entry exists,
++ * do nothing and return 0.
++ *
++ * NOTE! It is very important that the FASYNC flag always
++ * match the state "is the filp on a fasync list".
++ *
++ * We always take the 'filp->f_lock', in since fasync_lock
++ * needs to be irq-safe.
   */
- #if defined(CONFIG_KALLSYMS) && defined(CONFIG_SYSFS)
-+
-+static inline bool sect_empty(const Elf_Shdr *sect)
-+{
-+	return !(sect->sh_flags & SHF_ALLOC) || sect->sh_size == 0;
+-int fasync_helper(int fd, struct file * filp, int on, struct fasync_struct **fapp)
++static int fasync_remove_entry(struct file *filp, struct fasync_struct **fapp)
+ {
+ 	struct fasync_struct *fa, **fp;
+-	struct fasync_struct *new = NULL;
+ 	int result = 0;
+ 
+-	if (on) {
+-		new = kmem_cache_alloc(fasync_cache, GFP_KERNEL);
+-		if (!new)
+-			return -ENOMEM;
++	spin_lock(&filp->f_lock);
++	write_lock_irq(&fasync_lock);
++	for (fp = fapp; (fa = *fp) != NULL; fp = &fa->fa_next) {
++		if (fa->fa_file != filp)
++			continue;
++		*fp = fa->fa_next;
++		kmem_cache_free(fasync_cache, fa);
++		filp->f_flags &= ~FASYNC;
++		result = 1;
++		break;
+ 	}
++	write_unlock_irq(&fasync_lock);
++	spin_unlock(&filp->f_lock);
++	return result;
 +}
 +
- struct module_sect_attr
- {
- 	struct module_attribute mattr;
-@@ -1187,8 +1193,7 @@ static void add_sect_attrs(struct module *mod, unsigned int nsect,
++/*
++ * Add a fasync entry. Return negative on error, positive if
++ * added, and zero if did nothing but change an existing one.
++ *
++ * NOTE! It is very important that the FASYNC flag always
++ * match the state "is the filp on a fasync list".
++ */
++static int fasync_add_entry(int fd, struct file *filp, struct fasync_struct **fapp)
++{
++	struct fasync_struct *new, *fa, **fp;
++	int result = 0;
++
++	new = kmem_cache_alloc(fasync_cache, GFP_KERNEL);
++	if (!new)
++		return -ENOMEM;
  
- 	/* Count loaded sections and allocate structures */
- 	for (i = 0; i < nsect; i++)
--		if (sechdrs[i].sh_flags & SHF_ALLOC
--		    && sechdrs[i].sh_size)
-+		if (!sect_empty(&sechdrs[i]))
- 			nloaded++;
- 	size[0] = ALIGN(sizeof(*sect_attrs)
- 			+ nloaded * sizeof(sect_attrs->attrs[0]),
-@@ -1206,9 +1211,7 @@ static void add_sect_attrs(struct module *mod, unsigned int nsect,
- 	sattr = &sect_attrs->attrs[0];
- 	gattr = &sect_attrs->grp.attrs[0];
- 	for (i = 0; i < nsect; i++) {
--		if (! (sechdrs[i].sh_flags & SHF_ALLOC))
--			continue;
--		if (!sechdrs[i].sh_size)
-+		if (sect_empty(&sechdrs[i]))
- 			continue;
- 		sattr->address = sechdrs[i].sh_addr;
- 		sattr->name = kstrdup(secstrings + sechdrs[i].sh_name,
-@@ -1292,7 +1295,7 @@ static void add_notes_attrs(struct module *mod, unsigned int nsect,
- 	/* Count notes sections and allocate structures.  */
- 	notes = 0;
- 	for (i = 0; i < nsect; i++)
--		if ((sechdrs[i].sh_flags & SHF_ALLOC) &&
-+		if (!sect_empty(&sechdrs[i]) &&
- 		    (sechdrs[i].sh_type == SHT_NOTE))
- 			++notes;
+-	/*
+-	 * We need to take f_lock first since it's not an IRQ-safe
+-	 * lock.
+-	 */
+ 	spin_lock(&filp->f_lock);
+ 	write_lock_irq(&fasync_lock);
+ 	for (fp = fapp; (fa = *fp) != NULL; fp = &fa->fa_next) {
+-		if (fa->fa_file == filp) {
+-			if(on) {
+-				fa->fa_fd = fd;
+-				kmem_cache_free(fasync_cache, new);
+-			} else {
+-				*fp = fa->fa_next;
+-				kmem_cache_free(fasync_cache, fa);
+-				result = 1;
+-			}
+-			goto out;
+-		}
++		if (fa->fa_file != filp)
++			continue;
++		fa->fa_fd = fd;
++		kmem_cache_free(fasync_cache, new);
++		goto out;
+ 	}
  
-@@ -1308,7 +1311,7 @@ static void add_notes_attrs(struct module *mod, unsigned int nsect,
- 	notes_attrs->notes = notes;
- 	nattr = &notes_attrs->attrs[0];
- 	for (loaded = i = 0; i < nsect; ++i) {
--		if (!(sechdrs[i].sh_flags & SHF_ALLOC))
-+		if (sect_empty(&sechdrs[i]))
- 			continue;
- 		if (sechdrs[i].sh_type == SHT_NOTE) {
- 			nattr->attr.name = mod->sect_attrs->attrs[loaded].name;
+-	if (on) {
+-		new->magic = FASYNC_MAGIC;
+-		new->fa_file = filp;
+-		new->fa_fd = fd;
+-		new->fa_next = *fapp;
+-		*fapp = new;
+-		result = 1;
+-	}
++	new->magic = FASYNC_MAGIC;
++	new->fa_file = filp;
++	new->fa_fd = fd;
++	new->fa_next = *fapp;
++	*fapp = new;
++	result = 1;
++	filp->f_flags |= FASYNC;
++
+ out:
+-	if (on)
+-		filp->f_flags |= FASYNC;
+-	else
+-		filp->f_flags &= ~FASYNC;
+ 	write_unlock_irq(&fasync_lock);
+ 	spin_unlock(&filp->f_lock);
+ 	return result;
+ }
+ 
++/*
++ * fasync_helper() is used by almost all character device drivers
++ * to set up the fasync queue, and for regular files by the file
++ * lease code. It returns negative on error, 0 if it did no changes
++ * and positive if it added/deleted the entry.
++ */
++int fasync_helper(int fd, struct file * filp, int on, struct fasync_struct **fapp)
++{
++	if (!on)
++		return fasync_remove_entry(filp, fapp);
++	return fasync_add_entry(fd, filp, fapp);
++}
++
+ EXPORT_SYMBOL(fasync_helper);
+ 
+ void __kill_fasync(struct fasync_struct *fa, int sig, int band)
 -- 
 1.6.6
 
