@@ -1,71 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756179Ab0ANLFo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756201Ab0ANLIr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756179Ab0ANLFo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 06:05:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756163Ab0ANLFn
+	id S1756201Ab0ANLIr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 06:08:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755884Ab0ANLIq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 06:05:43 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:55286 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756160Ab0ANLFm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 06:05:42 -0500
-Message-ID: <4B4EFA82.1090506@suse.cz>
-Date: Thu, 14 Jan 2010 12:05:38 +0100
-From: Michal Marek <mmarek@suse.cz>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091130 SUSE/3.0.0-1.2 Thunderbird/3.0
-MIME-Version: 1.0
-To: Jonathan Nieder <jrnieder@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Michael Tokarev <mjt@tls.msk.ru>, Oliver Hartkopp <oliver@hartkopp.net>,
-       Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [Bug #14907] Commit "kbuild: fix bzImage build for x86" breaks
- build
-References: <wnS54-l8PVO.A.TlF.oMlSLB@chimera> <omZ8aBZReyD.A.lV.kNlSLB@chimera> <20100111013606.GA7031@progeny.tock> <4B4DBD8B.6000002@suse.cz>
-In-Reply-To: <4B4DBD8B.6000002@suse.cz>
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 14 Jan 2010 06:08:46 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:58366 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755989Ab0ANLIo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jan 2010 06:08:44 -0500
+Subject: Re: [RFC] [PATCH 1/7] User Space Breakpoint Assistance Layer (UBP)
+From: Peter Zijlstra <peterz@infradead.org>
+To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Arnaldo Carvalho de Melo <acme@infradead.org>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       utrace-devel <utrace-devel@redhat.com>,
+       Jim Keniston <jkenisto@us.ibm.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Maneesh Soni <maneesh@in.ibm.com>, Mark Wielaard <mjw@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20100111122529.22050.32596.sendpatchset@srikar.in.ibm.com>
+References: <20100111122521.22050.3654.sendpatchset@srikar.in.ibm.com>
+	 <20100111122529.22050.32596.sendpatchset@srikar.in.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 14 Jan 2010 12:08:09 +0100
+Message-ID: <1263467289.4244.288.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 13.1.2010 13:33, Michal Marek wrote:
-> On 11.1.2010 02:36, Jonathan Nieder wrote:
->> Rafael J. Wysocki wrote:
->>
->>> The following bug entry is on the current list of known regressions
->>> from 2.6.32.  Please verify if it still should be listed and let me know
->>> (either way).
->>>
->>>
->>> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14907
->>> Subject		: Commit "kbuild: fix bzImage build for x86" breaks build
->>> Submitter	: Oliver Hartkopp <oliver@hartkopp.net>
->>> Date		: 2009-12-19 19:21 (23 days old)
->>> First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=4a2ff67c88211026afcbdbc190c13f705dae1b59
->>> References	: http://marc.info/?l=linux-kernel&m=126125050622195&w=4
->>> 		  http://marc.info/?l=linux-kernel&m=126114565103300&w=4
->>> 		  http://marc.info/?l=linux-kbuild&m=126202819526623&w=2
->>> Handled-By	: Jonathan Nieder <jrnieder@gmail.com>
->>> Patch		: http://thread.gmane.org/gmane.linux.kbuild.devel/4313/focus=4319
->>> 		  http://patchwork.kernel.org/patch/71957/
->>
->> I am using the patch without problems, but it is not in the mainline
->> as of v2.6.33-rc3-git3.  So please do keep the bug listed.
+On Mon, 2010-01-11 at 17:55 +0530, Srikar Dronamraju wrote:
+> User Space Breakpoint Assistance Layer (UBP)
 > 
-> I resent the pull request (http://lkml.org/lkml/2010/1/13/194), let's see.
+> User space breakpointing Infrastructure provides kernel subsystems
+> with architecture independent interface to establish breakpoints in
+> user applications. This patch provides core implementation of ubp and
+> also wrappers for architecture dependent methods.
 
-FYI:
-commit 04e9e5c7659ee07f0387ddb663913fadcca88d5f
-Merge: cedabed 0710520
-Author: Linus Torvalds <torvalds@linux-foundation.org>
-Date:   Wed Jan 13 16:09:59 2010 -0800
+So if this is the basic infrastructure to set userspace breakpoints,
+then why not call this uprobe?
 
-    Merge branch 'for-33' of git://repo.or.cz/linux-kbuild
+> UBP currently supports both single stepping inline and execution out
+> of line strategies. Two different probepoints in the same process can
+> have two different strategies.
 
-    * 'for-33' of git://repo.or.cz/linux-kbuild:
-      Makefile: do not override LC_CTYPE
-      kbuild: really fix bzImage build with non-bash sh
+maybe explain wth these are?
 
-Michal
