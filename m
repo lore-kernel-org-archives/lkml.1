@@ -1,41 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932270Ab0ANRk7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757407Ab0ANRn4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932270Ab0ANRk7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 12:40:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757342Ab0ANRk6
+	id S1757407Ab0ANRn4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 12:43:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757389Ab0ANRnz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 12:40:58 -0500
-Received: from mail.perches.com ([173.55.12.10]:1205 "EHLO mail.perches.com"
+	Thu, 14 Jan 2010 12:43:55 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:9854 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755413Ab0ANRk5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 12:40:57 -0500
-Subject: Re: [PATCH 00/24] MAINTAINERS: Add "Q" patchwork entries
-From: Joe Perches <joe@perches.com>
-To: David Daney <ddaney@caviumnetworks.com>
-Cc: Ralf Baechle <ralf@linux-mips.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mips <linux-mips@linux-mips.org>
-In-Reply-To: <4B4F534B.5050007@caviumnetworks.com>
-References: <cover.1263452908.git.joe@perches.com>
-	 <4B4F534B.5050007@caviumnetworks.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 14 Jan 2010 09:40:56 -0800
-Message-ID: <1263490856.1903.14.camel@Joe-Laptop.home>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	id S1751411Ab0ANRny (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jan 2010 12:43:54 -0500
+Date: Thu, 14 Jan 2010 12:43:20 -0500
+From: Ulrich Drepper <drepper@redhat.com>
+Message-Id: <201001141743.o0EHhKUV023427@hs20-bc2-1.build.redhat.com>
+To: a.p.zijlstra@chello.nl, acme@redhat.com, eranian@google.com,
+       fweisbec@gmail.com, linux-kernel@vger.kernel.org, lizf@cn.fujitsu.com,
+       mingo@elte.hu, paulus@samba.org
+Subject: perf: don't use obsolete getpagesize
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2010-01-14 at 09:24 -0800, David Daney wrote:
-> I wonder if the MIPS patchwork site should also be included:
-> http://patchwork.linux-mips.org/project/linux-mips/list/
+perf uses the obsolete getpagesize function.  Let's do better and use the
+correct POSIX interface to get the information: sysconf.
 
-Thanks.  I think it should.
 
-If Andrew accepts the series, I'll add a patch
-if you don't first.
+Signed-off-by: Ulrich Drepper <drepper@redhat.com>
 
-cheers,
-
+diff --git a/tools/perf/util/data_map.c b/tools/perf/util/data_map.c
+index b557b83..cc8b396 100644
+--- a/tools/perf/util/data_map.c
++++ b/tools/perf/util/data_map.c
+@@ -153,7 +153,7 @@ int perf_session__process_events(struct perf_session *self,
+ 
+ 	perf_event_ops__fill_defaults(ops);
+ 
+-	page_size = getpagesize();
++	page_size = sysconf(_SC_PAGESIZE);
+ 
+ 	head = self->header.data_offset;
+ 	self->sample_type = perf_header__sample_type(&self->header);
+diff --git a/tools/perf/util/trace-event-info.c b/tools/perf/util/trace-event-info.c
+index cace355..948dc9e 100644
+--- a/tools/perf/util/trace-event-info.c
++++ b/tools/perf/util/trace-event-info.c
+@@ -533,7 +533,7 @@ int read_tracing_data(int fd, struct perf_event_attr *pattrs, int nb_events)
+ 	write_or_die(buf, 1);
+ 
+ 	/* save page_size */
+-	page_size = getpagesize();
++	page_size = sysconf(_SC_PAGESIZE);
+ 	write_or_die(&page_size, 4);
+ 
+ 	read_header_files();
