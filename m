@@ -1,51 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932379Ab0ANVx4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756585Ab0ANVyk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932379Ab0ANVx4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 16:53:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932345Ab0ANVxn
+	id S1756585Ab0ANVyk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 16:54:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751852Ab0ANVyi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 16:53:43 -0500
-Received: from victor.provo.novell.com ([137.65.250.26]:48194 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932276Ab0ANVxf (ORCPT
-	<rfc822;groupwise-PMullaney@novell.com:0:0>);
-	Thu, 14 Jan 2010 16:53:35 -0500
-From: Patrick Mullaney <pmullaney@novell.com>
-Subject: [PATCH 2/3] macvlan: add GRO bit to features mask
-To: alacrityvm-devel@lists.sourceforge.net
-Cc: linux-kernel@vger.kernel.org, kaber@trash.net, arnd@arndb.de,
-       netdev@vger.kernel.org
-Date: Thu, 14 Jan 2010 16:53:10 -0500
-Message-ID: <20100114215310.4958.46657.stgit@mimic.site>
-In-Reply-To: <20100114215058.4958.87746.stgit@mimic.site>
-References: <20100114215058.4958.87746.stgit@mimic.site>
-User-Agent: StGIT/0.14.3
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+	Thu, 14 Jan 2010 16:54:38 -0500
+Received: from mail-fx0-f225.google.com ([209.85.220.225]:37542 "EHLO
+	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756058Ab0ANVyg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jan 2010 16:54:36 -0500
+Subject: Driver-Core: require valid action string in uevent trigger
+From: Kay Sievers <kay.sievers@vrfy.org>
+To: Greg KH <greg@kroah.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 14 Jan 2010 22:54:37 +0100
+Message-ID: <1263506077.2074.8.camel@yio.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.29.4 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Allow macvlan devices to support GRO.
+From: Kay Sievers <kay.sievers@vrfy.org>
+Subject: Driver-Core: require valid action string in uevent trigger
 
-Signed-off-by: Patrick Mullaney <pmullaney@novell.com>
+No longer fall back to "add" and warn, but always require a valid
+action-string written to the "uevent" file. 
+
+Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
 ---
+ drivers/base/core.c |   11 +++--------
+ 1 file changed, 3 insertions(+), 8 deletions(-)
 
- drivers/net/macvlan.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/net/macvlan.c b/drivers/net/macvlan.c
-index 0a389b8..94bb135 100644
---- a/drivers/net/macvlan.c
-+++ b/drivers/net/macvlan.c
-@@ -316,7 +316,7 @@ static struct lock_class_key macvlan_netdev_addr_lock_key;
- #define MACVLAN_FEATURES \
- 	(NETIF_F_SG | NETIF_F_ALL_CSUM | NETIF_F_HIGHDMA | NETIF_F_FRAGLIST | \
- 	 NETIF_F_GSO | NETIF_F_TSO | NETIF_F_UFO | NETIF_F_GSO_ROBUST | \
--	 NETIF_F_TSO_ECN | NETIF_F_TSO6)
-+	 NETIF_F_TSO_ECN | NETIF_F_TSO6 | NETIF_F_GRO)
+--- a/drivers/base/core.c
++++ b/drivers/base/core.c
+@@ -306,15 +306,10 @@ static ssize_t store_uevent(struct devic
+ {
+ 	enum kobject_action action;
  
- #define MACVLAN_STATE_MASK \
- 	((1<<__LINK_STATE_NOCARRIER) | (1<<__LINK_STATE_DORMANT))
+-	if (kobject_action_type(buf, count, &action) == 0) {
++	if (kobject_action_type(buf, count, &action) == 0)
+ 		kobject_uevent(&dev->kobj, action);
+-		goto out;
+-	}
+-
+-	dev_err(dev, "uevent: unsupported action-string; this will "
+-		     "be ignored in a future kernel version\n");
+-	kobject_uevent(&dev->kobj, KOBJ_ADD);
+-out:
++	else
++		dev_err(dev, "uevent: unknown action-string\n");
+ 	return count;
+ }
+ 
+
 
