@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757817Ab0ANWwJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757856Ab0ANWwt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757817Ab0ANWwJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 17:52:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757261Ab0ANWwG
+	id S1757856Ab0ANWwt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 17:52:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757838Ab0ANWwQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 17:52:06 -0500
-Received: from kroah.org ([198.145.64.141]:58169 "EHLO coco.kroah.org"
+	Thu, 14 Jan 2010 17:52:16 -0500
+Received: from kroah.org ([198.145.64.141]:58197 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754755Ab0ANWwE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 17:52:04 -0500
-X-Mailbox-Line: From gregkh@mini.kroah.org Thu Jan 14 14:48:06 2010
-Message-Id: <20100114224806.492063117@mini.kroah.org>
+	id S1757827Ab0ANWwO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jan 2010 17:52:14 -0500
+X-Mailbox-Line: From gregkh@mini.kroah.org Thu Jan 14 14:48:07 2010
+Message-Id: <20100114224807.352150724@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 14 Jan 2010 14:46:38 -0800
+Date: Thu, 14 Jan 2010 14:46:44 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Roger Blofeld <blofeldus@yahoo.com>, Jean Delvare <khali@linux-fr.org>
-Subject: [2/9] hwmon: (adt7462) Fix pin 28 monitoring
+       Al Viro <viro@zeniv.linux.org.uk>
+Subject: [8/9] fix more leaks in audit_tree.c tag_chunk()
 In-Reply-To: <20100114224848.GA532@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -28,31 +28,53 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Roger Blofeld <blofeldus@yahoo.com>
+From: Al Viro <viro@ZenIV.linux.org.uk>
 
-commit bb595c923bc51dff9cdd112de18deb57ac7945d2 upstream.
+commit b4c30aad39805902cf5b855aa8a8b22d728ad057 upstream.
 
-The ADT7462_PIN28_VOLT value is a 4-bit field, so the corresponding
-shift must be 4.
+Several leaks in audit_tree didn't get caught by commit
+318b6d3d7ddbcad3d6867e630711b8a705d873d7, including the leak on normal
+exit in case of multiple rules refering to the same chunk.
 
-Signed-off-by: Roger Blofeld <blofeldus@yahoo.com>
-Signed-off-by: Jean Delvare <khali@linux-fr.org>
+Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/hwmon/adt7462.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ kernel/audit_tree.c |    9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
 
---- a/drivers/hwmon/adt7462.c
-+++ b/drivers/hwmon/adt7462.c
-@@ -97,7 +97,7 @@ I2C_CLIENT_INSMOD_1(adt7462);
- #define		ADT7462_PIN24_SHIFT		6
- #define		ADT7462_PIN26_VOLT_INPUT	0x08
- #define		ADT7462_PIN25_VOLT_INPUT	0x20
--#define		ADT7462_PIN28_SHIFT		6	/* cfg3 */
-+#define		ADT7462_PIN28_SHIFT		4	/* cfg3 */
- #define		ADT7462_PIN28_VOLT		0x5
+--- a/kernel/audit_tree.c
++++ b/kernel/audit_tree.c
+@@ -373,15 +373,17 @@ static int tag_chunk(struct inode *inode
+ 	for (n = 0; n < old->count; n++) {
+ 		if (old->owners[n].owner == tree) {
+ 			spin_unlock(&hash_lock);
+-			put_inotify_watch(watch);
++			put_inotify_watch(&old->watch);
+ 			return 0;
+ 		}
+ 	}
+ 	spin_unlock(&hash_lock);
  
- #define ADT7462_REG_ALARM1			0xB8
+ 	chunk = alloc_chunk(old->count + 1);
+-	if (!chunk)
++	if (!chunk) {
++		put_inotify_watch(&old->watch);
+ 		return -ENOMEM;
++	}
+ 
+ 	mutex_lock(&inode->inotify_mutex);
+ 	if (inotify_clone_watch(&old->watch, &chunk->watch) < 0) {
+@@ -425,7 +427,8 @@ static int tag_chunk(struct inode *inode
+ 	spin_unlock(&hash_lock);
+ 	inotify_evict_watch(&old->watch);
+ 	mutex_unlock(&inode->inotify_mutex);
+-	put_inotify_watch(&old->watch);
++	put_inotify_watch(&old->watch); /* pair to inotify_find_watch */
++	put_inotify_watch(&old->watch); /* and kill it */
+ 	return 0;
+ }
+ 
 
 
