@@ -1,25 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756932Ab0ANXKR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757251Ab0ANXKl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756932Ab0ANXKR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 18:10:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756742Ab0ANXKI
+	id S1757251Ab0ANXKl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 18:10:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756931Ab0ANXKR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 18:10:08 -0500
-Received: from kroah.org ([198.145.64.141]:41902 "EHLO coco.kroah.org"
+	Thu, 14 Jan 2010 18:10:17 -0500
+Received: from kroah.org ([198.145.64.141]:41914 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754554Ab0ANXKH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 18:10:07 -0500
-X-Mailbox-Line: From gregkh@mini.kroah.org Thu Jan 14 15:06:20 2010
-Message-Id: <20100114230620.830938718@mini.kroah.org>
+	id S1756757Ab0ANXKJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jan 2010 18:10:09 -0500
+X-Mailbox-Line: From gregkh@mini.kroah.org Thu Jan 14 15:06:21 2010
+Message-Id: <20100114230621.084598004@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 14 Jan 2010 15:04:49 -0800
+Date: Thu, 14 Jan 2010 15:04:51 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Andi Kleen <ak@linux.intel.com>, Ingo Molnar <mingo@elte.hu>,
-       Oleg Nesterov <oleg@redhat.com>
-Subject: [1/6] kernel/signal.c: fix kernel information leak with print-fatal-signals=1
+       Al Viro <viro@zeniv.linux.org.uk>
+Subject: [3/6] fix braindamage in audit_tree.c untag_chunk()
 In-Reply-To: <20100114230640.GA7259@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -29,50 +28,59 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Andi Kleen <andi@firstfloor.org>
+From: Al Viro <viro@ZenIV.linux.org.uk>
 
-commit b45c6e76bc2c72f6426c14bed64fdcbc9bf37cb0 upstream.
+commit 6f5d51148921c242680a7a1d9913384a30ab3cbe upstream.
 
-When print-fatal-signals is enabled it's possible to dump any memory
-reachable by the kernel to the log by simply jumping to that address from
-user space.
+... aka "Al had badly fscked up when writing that thing and nobody
+noticed until Eric had fixed leaks that used to mask the breakage".
 
-Or crash the system if there's some hardware with read side effects.
+The function essentially creates a copy of old array sans one element
+and replaces the references to elements of original (they are on cyclic
+lists) with those to corresponding elements of new one.  After that the
+old one is fair game for freeing.
 
-The fatal signals handler will dump 16 bytes at the execution address,
-which is fully controlled by ring 3.
+First of all, there's a dumb braino: when we get to list_replace_init we
+use indices for wrong arrays - position in new one with the old array
+and vice versa.
 
-In addition when something jumps to a unmapped address there will be up to
-16 additional useless page faults, which might be potentially slow (and at
-least is not very efficient)
+Another bug is more subtle - termination condition is wrong if the
+element to be excluded happens to be the last one.  We shouldn't go
+until we fill the new array, we should go until we'd finished the old
+one.  Otherwise the element we are trying to kill will remain on the
+cyclic lists...
 
-Fortunately this option is off by default and only there on i386.
+That crap used to be masked by several leaks, so it was not quite
+trivial to hit.  Eric had fixed some of those leaks a while ago and the
+shit had hit the fan...
 
-But fix it by checking for kernel addresses and also stopping when there's
-a page fault.
-
-Signed-off-by: Andi Kleen <ak@linux.intel.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Oleg Nesterov <oleg@redhat.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- kernel/signal.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ kernel/audit_tree.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
---- a/kernel/signal.c
-+++ b/kernel/signal.c
-@@ -884,7 +884,8 @@ static void print_fatal_signal(struct pt
- 		for (i = 0; i < 16; i++) {
- 			unsigned char insn;
- 
--			__get_user(insn, (unsigned char *)(regs->ip + i));
-+			if (get_user(insn, (unsigned char *)(regs->ip + i)))
-+				break;
- 			printk("%02x ", insn);
- 		}
+--- a/kernel/audit_tree.c
++++ b/kernel/audit_tree.c
+@@ -276,7 +276,7 @@ static void untag_chunk(struct node *p)
+ 		owner->root = NULL;
  	}
+ 
+-	for (i = j = 0; i < size; i++, j++) {
++	for (i = j = 0; j <= size; i++, j++) {
+ 		struct audit_tree *s;
+ 		if (&chunk->owners[j] == p) {
+ 			list_del_init(&p->list);
+@@ -289,7 +289,7 @@ static void untag_chunk(struct node *p)
+ 		if (!s) /* result of earlier fallback */
+ 			continue;
+ 		get_tree(s);
+-		list_replace_init(&chunk->owners[i].list, &new->owners[j].list);
++		list_replace_init(&chunk->owners[j].list, &new->owners[i].list);
+ 	}
+ 
+ 	list_replace_rcu(&chunk->hash, &new->hash);
 
 
