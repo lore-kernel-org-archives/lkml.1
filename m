@@ -1,74 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756174Ab0ANV0A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932213Ab0ANV07@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756174Ab0ANV0A (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 16:26:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752903Ab0ANVZ7
+	id S932213Ab0ANV07 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 16:26:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754679Ab0ANV06
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 16:25:59 -0500
-Received: from mail-fx0-f225.google.com ([209.85.220.225]:48332 "EHLO
-	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753332Ab0ANVZ6 convert rfc822-to-8bit (ORCPT
+	Thu, 14 Jan 2010 16:26:58 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:63445 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753028Ab0ANV05 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 16:25:58 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=UGHEIIXdFzZHTLeXyh5wjCVo8cn8G0tggf66iPXHnKi4Vq767Un2KCd2dx2VH/V6wM
-         B6xGAs/F4FghdKu1/Lshv9ZQ7PAksLLZtYT4/mUdWj2RJQ5ARpHC31gM/ortbX1gQe72
-         BfAiL5hp9eCbILueM/YX0gEfa9gL6FBiKUdTo=
-MIME-Version: 1.0
-In-Reply-To: <20100114124802.025bbcae@jbarnes-piketon>
-References: <alpine.LFD.2.00.1001122139411.17145@localhost.localdomain>
-	 <84144f021001131303u56fa5470ua1c27dfef9f3de81@mail.gmail.com>
-	 <20100113133357.67f9df6d@jbarnes-piketon>
-	 <4B4E403C.1050509@cs.helsinki.fi>
-	 <20100113165530.2a7e7645@jbarnes-piketon>
-	 <4B4F6D5F.10008@cs.helsinki.fi>
-	 <20100114193118.GA1203@emergent.ellipticsemi.com>
-	 <84144f021001141218pa3cd71co76165532618145a8@mail.gmail.com>
-	 <20100114202803.GA1749@emergent.ellipticsemi.com>
-	 <20100114124802.025bbcae@jbarnes-piketon>
-Date: Thu, 14 Jan 2010 23:25:57 +0200
-X-Google-Sender-Auth: d06efd923fd3fbed
-Message-ID: <84144f021001141325o4b54b5fdj84ee5d39fd8ddff3@mail.gmail.com>
-Subject: Re: [PATCH] drm/i915: disable LVDS downclock by default
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Nick Bowler <nbowler@elliptictech.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       airlied@linux.ie, eric@anholt.net, intel-gfx@lists.freedesktop.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Thu, 14 Jan 2010 16:26:57 -0500
+X-Authority-Analysis: v=1.0 c=1 a=r_nf4N-T2GkA:10 a=7U3hwN5JcxgA:10 a=_W-BoW2mSRrbvTZicGEA:9 a=OX1cvzyp1ykmmntX2wKhV2_6BZgA:4
+X-Cloudmark-Score: 0
+X-Originating-IP: 74.67.89.75
+Subject: Re: [RFC PATCH] introduce sys_membarrier(): process-wide memory
+ barrier (v5)
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Oleg Nesterov <oleg@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       akpm@linux-foundation.org, josh@joshtriplett.org, tglx@linutronix.de,
+       Valdis.Kletnieks@vt.edu, dhowells@redhat.com, laijs@cn.fujitsu.com,
+       dipankar@in.ibm.com
+In-Reply-To: <20100114193355.GA23436@Krystal>
+References: <20100113013757.GA29314@Krystal>
+	 <1263400738.4244.242.camel@laptop> <20100113193603.GA27327@Krystal>
+	 <1263460096.4244.282.camel@laptop> <20100114162609.GC3487@Krystal>
+	 <1263488625.4244.333.camel@laptop> <20100114175449.GA15387@Krystal>
+	 <20100114183739.GA18435@Krystal>
+	 <1263495132.28171.3861.camel@gandalf.stny.rr.com>
+	 <20100114193355.GA23436@Krystal>
+Content-Type: text/plain; charset="ISO-8859-15"
+Organization: Kihon Technologies Inc.
+Date: Thu, 14 Jan 2010 16:26:54 -0500
+Message-ID: <1263504414.28171.3962.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jesse,
+On Thu, 2010-01-14 at 14:33 -0500, Mathieu Desnoyers wrote:
 
-On Thu, Jan 14, 2010 at 10:48 PM, Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
-> Many platform support this feature, and it can provide significant
-> power savings when the reduced refresh rate is low.  However, on some
-> platforms a secondary (reduced) timing is provided but not actually
-> supported by the hardware.  This results in undesirable flicker at
-> runtime.
->
-> So disable the feature by default, but allow users to opt-in to the
-> reduced clock behavior with a new module parameter, lvds_downclock,
-> that can be set to 1 to enable the feature.
->
-> Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
->
-> --
->
-> Nick and Pekka, please try this out and reply with your Tested-by
-> (assuming it works, if not I'll fix it up).
+> It's a case where CPU 1 switches from our mm to another mm:
+> 
+>        CPU 0 (membarrier)                  CPU 1 (another mm -our mm)
+>        <user-space>                        <user-space>
+>                                            <buffered access C.S. data>
+>                                            urcu read unlock()
+>                                              barrier()
+>                                              store local gp
+>                                            <kernel-space>
+>                                            rq->curr = next (1)
+>        memory access before membarrier
+>        <call sys_membarrier()>
+>        smp_mb()
+>        mm_cpumask includes CPU 1
+>        rcu_read_lock()
+>        if (cpu_curr(1)->mm != our mm)
+>          skip CPU 1     -> here, rq->curr new version is already visible
+>        rcu_read_unlock()
+>        smp_mb()
+>        <return to user-space>
+>        memory access after membarrier
+>        -> this is where we allow freeing
+>           the old structure although the
+>           buffered access C.S. data is
+>           still in flight.
 
-This gives me pretty much identical results as your original patch.
-That is, the "shakes" are gone but I still see the occasional "flash".
-Should I give Nick's patch a try to see if we're looking at the same
-issue or wait for your new patch?
+OK, yeah this makes much more sense.
 
-                        Pekka
+-- Steve
+
+>                                            User-space access C.S. data (2)
+>                                              (buffer flush)
+>                                            switch_mm()
+>                                              smp_mb()
+>                                              clear_mm_cpumask()
+>                                              set_mm_cpumask()
+>                                              smp_mb() (by load_cr3() on x86)
+>                                            switch_to()
+>                                              <buffered current = next>
+>                                            <switch back to user-space>
+>                                              current = next (1) (buffer flush)
+>                                            access critical section data (3)
+> 
+> As we can see, the reordering of (1) and (2) is problematic, as it lets
+> the check skip over a CPU that have global side-effects not committed to
+> memory yet.
+
+
