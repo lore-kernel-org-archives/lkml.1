@@ -1,62 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756696Ab0ANJZV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756631Ab0ANJ0a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756696Ab0ANJZV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 04:25:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756663Ab0ANJZT
+	id S1756631Ab0ANJ0a (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 04:26:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756676Ab0ANJ02
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 04:25:19 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:51743 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756662Ab0ANJZR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 04:25:17 -0500
-Date: Thu, 14 Jan 2010 10:25:15 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <andi@firstfloor.org>,
-       Yinghai Lu <yinghai@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "ananth@in.ibm.com" <ananth@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH -v2 5/5] x86: use dmi check to treat disabled cpus as
-	hotplug cpus.
-Message-ID: <20100114092515.GG12241@basil.fritz.box>
-References: <1263338274-6485-5-git-send-email-yinghai@kernel.org> <1263340563.2854.1011.camel@sbs-t61.sc.intel.com> <4B4D0E39.10200@kernel.org> <87tyupfzk8.fsf@basil.nowhere.org> <4B4E427D.9090207@zytor.com> <20100113222348.GE24818@basil.fritz.box> <4B4E48BB.5030902@zytor.com> <1263421753.2865.103.camel@sbs-t61.sc.intel.com> <4B4E4AE3.1030608@zytor.com> <1263422958.2865.107.camel@sbs-t61.sc.intel.com>
+	Thu, 14 Jan 2010 04:26:28 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:37350 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756667Ab0ANJ00 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jan 2010 04:26:26 -0500
+Date: Thu, 14 Jan 2010 10:26:00 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Peter Zijlstra <peterz@infradead.org>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Jason Wessel <jason.wessel@windriver.com>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Fr??d??ric Weisbecker <fweisbec@gmail.com>
+Subject: Re: linux-next: manual merge of the tip tree with the kgdb tree
+Message-ID: <20100114092600.GA13503@elte.hu>
+References: <20100114161302.285ebe27.sfr@canb.auug.org.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1263422958.2865.107.camel@sbs-t61.sc.intel.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20100114161302.285ebe27.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.5.20 (2009-08-17)
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 13, 2010 at 02:49:18PM -0800, Suresh Siddha wrote:
-> On Wed, 2010-01-13 at 14:36 -0800, H. Peter Anvin wrote:
-> > On 01/13/2010 02:29 PM, Suresh Siddha wrote:
-> > >>
-> > >> Well, that *is* working around broken code, in this case the broken code
-> > >> is the percpu allocation strategy.
-> > > 
-> > > Andi, Recently percpu folks changed the per-cpu static first chunk to
-> > > PMD SIZE right. I think that is what causing all this issue.
-> > > 
-> > 
-> > Please don't tell me we're allocating 2 MB per CPU and throwing away
-> > most of it...
+
+* Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+
+> Hi all,
 > 
-> Looking at the percpu code, they do seem to free the unused memory in
-> that hole.
+> Today's linux-next merge of the tip tree got a conflict in
+> kernel/trace/trace.c between commit
+> d304af88a0105ff5b64cffc9108636ecad1fdd78 ("ftrace,kdb: Extend kdb to be
+> able to dump the ftrace buffer") from the kgdb tree and commit
+> 7e53bd42d14c75192b99674c40fcc359392da59d ("tracing: Consolidate
+> protection of reader access to the ring buffer") from the tip tree.
 
-I took a look at alloc_percpu() at least and it seems to always
-allocate for all possible cpus.
+Hm, Jason, what is that large commit to kernel/trace/ doing in the KGDB tree, 
+without any apparent acks from the affected people?
 
-Unfortunately we don't have a nice accounting mechanism for it in /proc,
-perhaps we should. So it's unclear right now if that is a problem or not.
+I dont see it anywhere on lkml nor in my mbox. Please submit it to the 
+affected maintainers - for the Cc: line see the output of:
 
--Andi
+  scripts/get_maintainer.pl -f kernel/trace/trace.c
 
--- 
-ak@linux.intel.com -- Speaking for myself only.
+Thanks,
+
+	Ingo
