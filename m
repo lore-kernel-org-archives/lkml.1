@@ -1,322 +1,433 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755351Ab0ANPAO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932201Ab0ANPAY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755351Ab0ANPAO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 10:00:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754797Ab0ANPAN
+	id S932201Ab0ANPAY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 10:00:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755725Ab0ANPAS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 10:00:13 -0500
-Received: from mail.windriver.com ([147.11.1.11]:47355 "EHLO
+	Thu, 14 Jan 2010 10:00:18 -0500
+Received: from mail.windriver.com ([147.11.1.11]:47374 "EHLO
 	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754383Ab0ANPAM (ORCPT
+	with ESMTP id S1754810Ab0ANPAO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 10:00:12 -0500
+	Thu, 14 Jan 2010 10:00:14 -0500
 From: Jason Wessel <jason.wessel@windriver.com>
 To: linux-kernel@vger.kernel.org
-Cc: kgdb-bugreport@lists.sourceforge.net, mingo@elte.hu
-Subject: [PATCH 0/40] kgdb, kdb and atomic kernel modesetting series
-Date: Thu, 14 Jan 2010 08:58:56 -0600
-Message-Id: <1263481176-1897-1-git-send-email-jason.wessel@windriver.com>
+Cc: kgdb-bugreport@lists.sourceforge.net, mingo@elte.hu,
+       Jason Wessel <jason.wessel@windriver.com>
+Subject: [PATCH 02/40] x86,hw_breakpoint,kgdb: kgdb to use hw_breakpoint API
+Date: Thu, 14 Jan 2010 08:58:58 -0600
+Message-Id: <1263481176-1897-3-git-send-email-jason.wessel@windriver.com>
 X-Mailer: git-send-email 1.6.3.1.9.g95405b
-X-OriginalArrivalTime: 14 Jan 2010 14:59:43.0365 (UTC) FILETIME=[34648B50:01CA952A]
+In-Reply-To: <1263481176-1897-1-git-send-email-jason.wessel@windriver.com>
+References: <1263481176-1897-1-git-send-email-jason.wessel@windriver.com>
+X-OriginalArrivalTime: 14 Jan 2010 14:59:49.0678 (UTC) FILETIME=[3827D4E0:01CA952A]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is version 2 of the series posted in December.
+In the 2.6.33 kernel, the hw_breakpoint API is now used for the
+performance event counters.  The hw_breakpoint_handler() now consumes
+the hw breakpoints that were previously set by kgdb arch specific
+code.  In order for kgdb to work in conjunction with this core API
+change, kgdb must use some of the low level functions of the
+hw_breakpoint API to install, uninstall, and receive call backs for hw
+breakpoints.
 
-Thank you very much to everyone who provided feedback on the original
-patch set.
+The kgdb core needs to call kgdb_disable_hw_debug anytime a slave cpu
+enters kgdb_wait() in order to keep all the hw breakpoints in sync as
+well as to prevent hitting a hw breakpoint while kgdb is active.
 
-The new patch set is more stable, cleaned up based on feedback and now
-includes documentation.
+During the architecture specific initialization of kgdb, it will
+pre-allocate 4 disabled (struct perf event **) structures.  Kgdb will
+use these to manage the capabilities for the 4 hw breakpoint
+registers.  Right now the hw_breakpoint API does not have a way to ask
+how many breakpoints are available, on each CPU so it is possible that
+the install of a breakpoint might fail when kgdb restores the system
+to the run state.  The intent of this patch is to first get the basic
+functionality of hw breakpoints working and leave it to the person
+debugging the kernel to understand what hw breakpoints are in use and
+what restrictions have been imposed as a result.
 
-The following is a list of differences between since the last time the
-kdb / kgdb series was posted:
+While atomic, the x86 specific kgdb code will call
+arch_uninstall_hw_breakpoint() and arch_install_hw_breakpoint() to
+manage the cpu specific hw breakpoints.
 
-* All the code is now in linux-next via kgdb-next
-  * 6 different build breakages were repaired around different .config
-    options not compiling
-  * kms / kdb / kgdb was built tested as kernel modules
-* The kdb core was split into 2 patches, 1 for the core, and one for all
-  the files touched outside the kdb core
-* kdb_seq_printf added to eliminate the duplicate meminfo commands in procfs
-* kdb breakpoint code refactored to remove unused globals and struct members
-* Fixed the possibility to loop infinitely in the kdb md command
-* Cleaned up the kdb kernel/modules.c patch
-* Removed the unused kdb report helper function in kernel/sched.c
-* HW instruction and data access breakpoints implementation completed
-* The kdb keyboard code no longer modifies include/linux/keyboard.h
-* The kernel_probe_read and kernel_probe_write were cleaned up for blackfin
-* The blackfin arch specific kgdb implementation was cleaned up and merged
-* The debug core now turns off tracing while the kernel debugger is active
-* New in the series is a command for kdb called ftdump, which allows
-  dumping the ftrace buffer
-* kdb will automatically set the correct number of rows on the display
-  via the information from the vt_console when using kms
-* There is preliminary documentation for kdb and kms
-* The drm hacks patch is still a hack, but cleaned up and using macros
+The arch specific hw_breakpoint_handler() was changed to restore the
+cpu specific dr7 instead of the dr7 that was locally saved, because
+the dr7 can be modified while in a call back to kgdb.
 
-The acks were added for the blackfin, sparc and sh arch specific code by the
-respective maintainers.
+The net result of these changes allow kgdb to use the same pool of
+hw_breakpoints that are used by the perf event API, but neither knows
+about future reservations for the available hw breakpoint slots.
 
-
--- From v1 patch set --
-
-Back in May 2009 an initial kdb prototype was posted to lkml as an RFC
-to see if there was sufficient interest to merge kdb and kgdb together.
-
-There was enough interest to continue on with the project, and it is
-now in a state where further work can occur to review, and hopefully
-merge the code into a future kernel.
-
-If this is the first time you have heard about kgdb or kdb, you might
-consider taking a look at the presentation slides from LPC 2009.
-
-http://kgdb.wiki.kernel.org/index.php/Main_Page#Linux_Plumbers_Conference_presentation_2009
-
-The code included in this series does not include any of the USB code
-referenced in the presentation.
-
-Several changes have occurred since the original prototype was posted.
-All of the architectures using the kgdb core today have had the
-functions implemented to make use of the kdb shell.  This list
-includes x86, arm, ppc, mips, sh, sparc, and blackfin.  The proposed
-atomic kernel modesetting project now has an initial implementation
-for the intel i915 driver, and it should be possible to add atomic
-mode setting hooks for any other video driver which makes use of
-builtin kernel mode setting.  All the dead code and functions that
-were not previously implemented in the RFC have been removed or
-implemented.
-
-The directory of the kernel debugger changed as well.  All the kernel
-debugger pieces, the debug core, gdbstub and kdb now live under
-kernel/debug.
-
-While the patch set may be slightly large, it is broken down into
-logical, incremental functionality.  Only the first 12 patches are
-needed to see kdb in action on a serial port which has a kgdboc driver
-for example.
-
-It is important to understand that this work was directly derived from
-the original kdb, and the intent is to deprecate the out of tree kdb
-and move all its functionality to this code base.  This version of kdb
-is completely wired into the debug core and the kgdboc polled I/O
-model using the same API used by the gdbstub (which people call kgdb).
-
-The kdb front end in this patch series works a little differently than
-if you were to take the original kdb patch set from:
-
-ftp://oss.sgi.com/projects/kdb/download/v4.4/
-
-In the kernel .config you should enable the following options:
-
-CONFIG_KGDB=y
-CONFIG_KGDB_SERIAL_CONSOLE=y
-CONFIG_KGDB_LOW_LEVEL_TRAP=y
-CONFIG_KGDB_KDB=y
-CONFIG_KDB_KEYBOARD=y
-
-To use kdb with a serial port you would use the kgdb/kgdboc way of
-doing things.  You would used a kernel command line with:
-
-   console=ttyS0,115200 kgdboc=ttyS0 kgdbwait
-
-That will get you access to kdb just after the console has been
-registered.  If you want to use the keyboard, you could use the
-following (NOTE it is kbd and not kdb, kbd is short for keyboard):
-
-   console=tty0 kgdboc=kbd kgdbwait
-
-You can also use the keyboard and or serial console:
-
-   console=ttyS0,115200 console=tty0 kgdboc=kbd,ttyS0
-
-
-In terms of breaking into the debugger after the system is up, you
-must use the sysrq-g sequence.  That means you could run:
-   echo g > /proc/sysrq-trigger
-
-Or you can use the SysRq key on your key board.  On a typical laptop
-you might have to do the following:
-
-press and hold ALT    -- You will be holding this the whole time
-press and hold FN
-press and release the key with the SysRq label
-release FN
-press and release g
-release ALT
-
-Once you are in kdb you can run help to see a limited list of
-commands.
-
-You can also still connect gdb or re-enter kdb without leaving the
-exception state, if you are using a serial port.  To get out of kgdb
-mode you can type "$3#33", or to get into kgdb mode from kdb, you can
-type "kgdb".
-
->From gdb you can issue commands to the kdb front end, via gdb's
-monitor command.  For instance you could issue "monitor lsmod".
-Allowing the gdb monitor extension was certainly another motivation
-behind the prototype.
-
-Included among the kdb patches are some kgdb specific fixes for the
-next kernel merge window, and if kdb were to not make the cut, these
-patches will be split out of the series.  Anything too ugly for a
-possible merge is also a candidate to get removed from the series.
-
-Thanks,
-Jason.
-
-You can find the development branch for this here:
-
-http://git.kernel.org/?p=linux/kernel/git/jwessel/linux-2.6-kgdb.git;a=shortlog;h=kdb_prototype11
-
-or grab a static version of the patches here:
-
-http://kernel.org/pub/linux/kernel/people/jwessel/branches/kdb_prototype11.tar.bz2
-
+Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
 ---
+ arch/x86/kernel/hw_breakpoint.c |    5 +-
+ arch/x86/kernel/kgdb.c          |  191 +++++++++++++++++++++++++++------------
+ kernel/kgdb.c                   |    3 +
+ 3 files changed, 139 insertions(+), 60 deletions(-)
 
-Jason Wessel (38):
-      softlockup: add sched_clock_tick() to avoid kernel warning on kgdb resume
-      x86,hw_breakpoint,kgdb: kgdb to use hw_breakpoint API
-      Move kernel/kgdb.c to kernel/debug/debug_core.c
-      Separate the gdbstub from the debug core
-      kgdb: eliminate kgdb_wait(), all cpus enter the same way
-      kgdb,sparc: Add in kgdb_arch_set_pc for sparc
-      kgdb,sh: update superh kgdb exception handling
-      kgdb,blackfin: Add in kgdb_arch_set_pc for blackfin
-      kdb: core for kgdb back end (1 of 2)
-      kdb: core for kgdb back end (2 of 2)
-      kgdb: core changes to support kdb
-      kgdb,8250,pl011: Return immediately from console poll
-      sh,sh-sci: Use NO_POLL_CHAR in the SCIF polled console code
-      sparc,sunzilog: Add console polling support for sunzilog serial driver
-      kgdb: gdb "monitor" -> kdb passthrough
-      kgdboc,keyboard: Keyboard driver for kdb with kgdb
-      kgdb,docs: Update the kgdb docs to include kdb
-      kgdb: remove post_primary_code references
-      x86,kgdb: Add low level debug hook
-      arm,kgdb: Add hook to catch an oops with debugger
-      powerpc,kgdb: Introduce low level trap catching
-      mips,kgdb: kdb low level trap catch and stack trace
-      kgdb: Add the ability to schedule a breakpoint via a tasklet
-      kgdboc,kdb: Allow kdb to work on a non open console port
-      printk,kdb: capture printk() when in kdb shell
-      keyboard, input: Add hook to input to allow low level event clear
-      debug_core,kdb: Allow the debug core to process a recursive debug entry
-      kdb,panic,debug_core: Allow the debug core to receive a panic before smp_send_stop()
-      MAINTAINERS: update kgdb, kdb, and debug_core info
-      kgdboc,debug_core: Add call backs to allow kernel mode switching
-      kms,kdb: Force unblank a console device
-      i915: when kgdb is active display compression should be off
-      drm_fb_helper: Preserve capability to use atomic kms
-      drm,i915 - atomic mutex hacks
-      kgdb,docs: Update the kgdb docs to include kms
-      kgdbts,sh: Add in breakpoint pc offset for superh
-      debug_core: Turn off tracing while in the debugger
-      ftrace,kdb: Extend kdb to be able to dump the ftrace buffer
+diff --git a/arch/x86/kernel/hw_breakpoint.c b/arch/x86/kernel/hw_breakpoint.c
+index 05d5fec..cbf19e0 100644
+--- a/arch/x86/kernel/hw_breakpoint.c
++++ b/arch/x86/kernel/hw_breakpoint.c
+@@ -466,7 +466,7 @@ static int __kprobes hw_breakpoint_handler(struct die_args *args)
+ {
+ 	int i, cpu, rc = NOTIFY_STOP;
+ 	struct perf_event *bp;
+-	unsigned long dr7, dr6;
++	unsigned long dr6;
+ 	unsigned long *dr6_p;
+ 
+ 	/* The DR6 value is pointed by args->err */
+@@ -477,7 +477,6 @@ static int __kprobes hw_breakpoint_handler(struct die_args *args)
+ 	if ((dr6 & DR_TRAP_BITS) == 0)
+ 		return NOTIFY_DONE;
+ 
+-	get_debugreg(dr7, 7);
+ 	/* Disable breakpoints during exception handling */
+ 	set_debugreg(0UL, 7);
+ 	/*
+@@ -525,7 +524,7 @@ static int __kprobes hw_breakpoint_handler(struct die_args *args)
+ 	if (dr6 & (~DR_TRAP_BITS))
+ 		rc = NOTIFY_DONE;
+ 
+-	set_debugreg(dr7, 7);
++	set_debugreg(__get_cpu_var(cpu_dr7), 7);
+ 	put_cpu();
+ 
+ 	return rc;
+diff --git a/arch/x86/kernel/kgdb.c b/arch/x86/kernel/kgdb.c
+index dd74fe7..48384fa 100644
+--- a/arch/x86/kernel/kgdb.c
++++ b/arch/x86/kernel/kgdb.c
+@@ -42,6 +42,7 @@
+ #include <linux/init.h>
+ #include <linux/smp.h>
+ #include <linux/nmi.h>
++#include <linux/hw_breakpoint.h>
+ 
+ #include <asm/debugreg.h>
+ #include <asm/apicdef.h>
+@@ -204,40 +205,27 @@ void gdb_regs_to_pt_regs(unsigned long *gdb_regs, struct pt_regs *regs)
+ 
+ static struct hw_breakpoint {
+ 	unsigned		enabled;
+-	unsigned		type;
+-	unsigned		len;
+ 	unsigned long		addr;
++	struct perf_event	**pev;
+ } breakinfo[4];
+ 
+ static void kgdb_correct_hw_break(void)
+ {
+-	unsigned long dr7;
+-	int correctit = 0;
+-	int breakbit;
+ 	int breakno;
+ 
+-	get_debugreg(dr7, 7);
+ 	for (breakno = 0; breakno < 4; breakno++) {
+-		breakbit = 2 << (breakno << 1);
+-		if (!(dr7 & breakbit) && breakinfo[breakno].enabled) {
+-			correctit = 1;
+-			dr7 |= breakbit;
+-			dr7 &= ~(0xf0000 << (breakno << 2));
+-			dr7 |= ((breakinfo[breakno].len << 2) |
+-				 breakinfo[breakno].type) <<
+-			       ((breakno << 2) + 16);
+-			set_debugreg(breakinfo[breakno].addr, breakno);
+-
+-		} else {
+-			if ((dr7 & breakbit) && !breakinfo[breakno].enabled) {
+-				correctit = 1;
+-				dr7 &= ~breakbit;
+-				dr7 &= ~(0xf0000 << (breakno << 2));
+-			}
+-		}
++		struct perf_event *bp;
++		int val;
++		int cpu = raw_smp_processor_id();
++		if (!breakinfo[breakno].enabled)
++			continue;
++		bp = *per_cpu_ptr(breakinfo[breakno].pev, cpu);
++		if (bp->attr.disabled != 1)
++			continue;
++		val = arch_install_hw_breakpoint(bp);
++		if (!val)
++			bp->attr.disabled = 0;
+ 	}
+-	if (correctit)
+-		set_debugreg(dr7, 7);
+ }
+ 
+ static int
+@@ -259,46 +247,74 @@ kgdb_remove_hw_break(unsigned long addr, int len, enum kgdb_bptype bptype)
+ static void kgdb_remove_all_hw_break(void)
+ {
+ 	int i;
++	int cpu = raw_smp_processor_id();
++	struct perf_event *bp;
+ 
+-	for (i = 0; i < 4; i++)
+-		memset(&breakinfo[i], 0, sizeof(struct hw_breakpoint));
++	for (i = 0; i < 4; i++) {
++		if (!breakinfo[i].enabled)
++			continue;
++		bp = *per_cpu_ptr(breakinfo[i].pev, cpu);
++		if (bp->attr.disabled == 1)
++			continue;
++		arch_uninstall_hw_breakpoint(bp);
++		bp->attr.disabled = 1;
++	}
+ }
+ 
+ static int
+ kgdb_set_hw_break(unsigned long addr, int len, enum kgdb_bptype bptype)
+ {
+-	unsigned type;
+ 	int i;
++	struct perf_event *bp;
++	struct arch_hw_breakpoint *info;
+ 
+ 	for (i = 0; i < 4; i++)
+ 		if (!breakinfo[i].enabled)
+ 			break;
+ 	if (i == 4)
+ 		return -1;
+-
++	bp = *per_cpu_ptr(breakinfo[i].pev, raw_smp_processor_id());
++	info = counter_arch_bp(bp);
+ 	switch (bptype) {
+ 	case BP_HARDWARE_BREAKPOINT:
+-		type = 0;
+-		len  = 1;
++		len = 1;
++		info->type = X86_BREAKPOINT_EXECUTE;
+ 		break;
+ 	case BP_WRITE_WATCHPOINT:
+-		type = 1;
++		info->type = X86_BREAKPOINT_WRITE;
+ 		break;
+ 	case BP_ACCESS_WATCHPOINT:
+-		type = 3;
++		info->type = X86_BREAKPOINT_RW;
+ 		break;
+ 	default:
+ 		return -1;
+ 	}
+ 
+-	if (len == 1 || len == 2 || len == 4)
+-		breakinfo[i].len  = len - 1;
+-	else
++	switch (len) {
++	case 1:
++		info->len = X86_BREAKPOINT_LEN_1;
++		break;
++	case 2:
++		info->len = X86_BREAKPOINT_LEN_2;
++		break;
++	case 4:
++		info->len = X86_BREAKPOINT_LEN_4;
++		break;
++#ifdef CONFIG_X86_64
++	case 8:
++		info->len = X86_BREAKPOINT_LEN_8;
++		break;
++#endif
++	default:
+ 		return -1;
++	}
+ 
+-	breakinfo[i].enabled = 1;
+ 	breakinfo[i].addr = addr;
+-	breakinfo[i].type = type;
++	info->address = addr;
++	bp->attr.bp_addr = info->address;
++	bp->attr.bp_len = info->len;
++	bp->attr.bp_type = info->type;
++	breakinfo[i].enabled = 1;
+ 
+ 	return 0;
+ }
+@@ -313,8 +329,21 @@ kgdb_set_hw_break(unsigned long addr, int len, enum kgdb_bptype bptype)
+  */
+ void kgdb_disable_hw_debug(struct pt_regs *regs)
+ {
++	int i;
++	int cpu = raw_smp_processor_id();
++	struct perf_event *bp;
++
+ 	/* Disable hardware debugging while we are in kgdb: */
+ 	set_debugreg(0UL, 7);
++	for (i = 0; i < 4; i++) {
++		if (!breakinfo[i].enabled)
++			continue;
++		bp = *per_cpu_ptr(breakinfo[i].pev, cpu);
++		if (bp->attr.disabled == 1)
++			continue;
++		arch_uninstall_hw_breakpoint(bp);
++		bp->attr.disabled = 1;
++	}
+ }
+ 
+ /**
+@@ -378,7 +407,6 @@ int kgdb_arch_handle_exception(int e_vector, int signo, int err_code,
+ 			       struct pt_regs *linux_regs)
+ {
+ 	unsigned long addr;
+-	unsigned long dr6;
+ 	char *ptr;
+ 	int newPC;
+ 
+@@ -404,20 +432,6 @@ int kgdb_arch_handle_exception(int e_vector, int signo, int err_code,
+ 				   raw_smp_processor_id());
+ 		}
+ 
+-		get_debugreg(dr6, 6);
+-		if (!(dr6 & 0x4000)) {
+-			int breakno;
+-
+-			for (breakno = 0; breakno < 4; breakno++) {
+-				if (dr6 & (1 << breakno) &&
+-				    breakinfo[breakno].type == 0) {
+-					/* Set restore flag: */
+-					linux_regs->flags |= X86_EFLAGS_RF;
+-					break;
+-				}
+-			}
+-		}
+-		set_debugreg(0UL, 6);
+ 		kgdb_correct_hw_break();
+ 
+ 		return 0;
+@@ -448,6 +462,7 @@ single_step_cont(struct pt_regs *regs, struct die_args *args)
+ }
+ 
+ static int was_in_debug_nmi[NR_CPUS];
++static int recieved_hw_brk[NR_CPUS];
+ 
+ static int __kgdb_notify(struct die_args *args, unsigned long cmd)
+ {
+@@ -485,16 +500,19 @@ static int __kgdb_notify(struct die_args *args, unsigned long cmd)
+ 		break;
+ 
+ 	case DIE_DEBUG:
+-		if (atomic_read(&kgdb_cpu_doing_single_step) ==
+-		    raw_smp_processor_id()) {
++		if (atomic_read(&kgdb_cpu_doing_single_step) != -1) {
+ 			if (user_mode(regs))
+ 				return single_step_cont(regs, args);
+ 			break;
+-		} else if (test_thread_flag(TIF_SINGLESTEP))
++		} else if (test_thread_flag(TIF_SINGLESTEP)) {
+ 			/* This means a user thread is single stepping
+ 			 * a system call which should be ignored
+ 			 */
+ 			return NOTIFY_DONE;
++		} else if (recieved_hw_brk[raw_smp_processor_id()] == 1) {
++			recieved_hw_brk[raw_smp_processor_id()] = 0;
++			return NOTIFY_STOP;
++		}
+ 		/* fall through */
+ 	default:
+ 		if (user_mode(regs))
+@@ -531,6 +549,23 @@ static struct notifier_block kgdb_notifier = {
+ 	.priority	= -INT_MAX,
+ };
+ 
++static void kgdb_hw_bp(struct perf_event *bp, int nmi,
++		       struct perf_sample_data *data,
++		       struct pt_regs *regs)
++{
++	struct die_args args;
++
++	args.trapnr = 0;
++	args.signr = 5;
++	args.err = 0;
++	args.regs = regs;
++	args.str = "debug";
++	if (__kgdb_notify(&args, DIE_DEBUG) == NOTIFY_STOP)
++		recieved_hw_brk[raw_smp_processor_id()] = 1;
++	else
++		recieved_hw_brk[raw_smp_processor_id()] = 0;
++}
++
+ /**
+  *	kgdb_arch_init - Perform any architecture specific initalization.
+  *
+@@ -539,7 +574,42 @@ static struct notifier_block kgdb_notifier = {
+  */
+ int kgdb_arch_init(void)
+ {
+-	return register_die_notifier(&kgdb_notifier);
++	int i, cpu;
++	int ret;
++	struct perf_event_attr attr;
++	struct perf_event **pevent;
++
++	ret = register_die_notifier(&kgdb_notifier);
++	if (ret != 0)
++		return ret;
++	/*
++	 * Pre-allocate the hw breakpoint structions in the non-atomic
++	 * portion of kgdb because this operation requires mutexs to
++	 * complete.
++	 */
++	attr.bp_addr = (unsigned long)kgdb_arch_init;
++	attr.type = PERF_TYPE_BREAKPOINT;
++	attr.bp_len = HW_BREAKPOINT_LEN_1;
++	attr.bp_type = HW_BREAKPOINT_X;
++	attr.disabled = 1;
++	for (i = 0; i < 4; i++) {
++		breakinfo[i].pev = register_wide_hw_breakpoint(&attr,
++							       kgdb_hw_bp);
++		if (IS_ERR(breakinfo[i].pev)) {
++			printk(KERN_ERR "kgdb: Could not allocate hw breakpoints\n");
++			breakinfo[i].pev = NULL;
++			kgdb_arch_exit();
++			return -1;
++		}
++		for_each_online_cpu(cpu) {
++			pevent = per_cpu_ptr(breakinfo[i].pev, cpu);
++			if (pevent[0]->destroy != NULL) {
++				pevent[0]->destroy = NULL;
++				release_bp_slot(*pevent);
++			}
++		}
++	}
++	return ret;
+ }
+ 
+ /**
+@@ -550,6 +620,13 @@ int kgdb_arch_init(void)
+  */
+ void kgdb_arch_exit(void)
+ {
++	int i;
++	for (i = 0; i < 4; i++) {
++		if (breakinfo[i].pev) {
++			unregister_wide_hw_breakpoint(breakinfo[i].pev);
++			breakinfo[i].pev = NULL;
++		}
++	}
+ 	unregister_die_notifier(&kgdb_notifier);
+ }
+ 
+diff --git a/kernel/kgdb.c b/kernel/kgdb.c
+index 87f2cc5..761fdd2 100644
+--- a/kernel/kgdb.c
++++ b/kernel/kgdb.c
+@@ -583,6 +583,9 @@ static void kgdb_wait(struct pt_regs *regs)
+ 	smp_wmb();
+ 	atomic_set(&cpu_in_kgdb[cpu], 1);
+ 
++	/* Disable any cpu specific hw breakpoints */
++	kgdb_disable_hw_debug(regs);
++
+ 	/* Wait till primary CPU is done with debugging */
+ 	while (atomic_read(&passive_cpu_wait[cpu]))
+ 		cpu_relax();
+-- 
+1.6.3.1.9.g95405b
 
-Jesse Barnes (2):
-      kgdb: add ops arg to kgdb console active & restore hooks
-      drm: add KGDB/KDB support Add support for KDB entry/exit.
-
- Documentation/DocBook/kgdb.tmpl       |  713 +++++++--
- Documentation/kernel-parameters.txt   |   18 +-
- MAINTAINERS                           |    6 +-
- arch/arm/include/asm/kgdb.h           |   11 +
- arch/arm/include/asm/kmap_types.h     |    1 +
- arch/arm/kernel/kgdb.c                |   13 +
- arch/arm/kernel/traps.c               |    5 +
- arch/blackfin/kernel/kgdb.c           |    5 +
- arch/mips/include/asm/kgdb.h          |    2 +
- arch/mips/kernel/kgdb.c               |   27 +-
- arch/mips/kernel/traps.c              |   14 +
- arch/powerpc/include/asm/kmap_types.h |    1 +
- arch/powerpc/kernel/kgdb.c            |   12 +-
- arch/powerpc/kernel/traps.c           |    7 +
- arch/sh/kernel/kgdb.c                 |   14 +-
- arch/sparc/kernel/kgdb_32.c           |    6 +
- arch/sparc/kernel/kgdb_64.c           |    6 +
- arch/x86/include/asm/kgdb.h           |    3 +
- arch/x86/kernel/hw_breakpoint.c       |    5 +-
- arch/x86/kernel/kgdb.c                |  247 ++-
- arch/x86/kernel/traps.c               |    6 +
- drivers/char/Makefile                 |    1 +
- drivers/char/kdb_keyboard.c           |  204 +++
- drivers/char/kdb_keyboard.h           |  143 ++
- drivers/char/keyboard.c               |   30 +-
- drivers/gpu/drm/drm_fb_helper.c       |   93 +-
- drivers/gpu/drm/i915/intel_display.c  |  114 ++-
- drivers/input/input.c                 |   15 +
- drivers/misc/kgdbts.c                 |    6 +
- drivers/serial/8250.c                 |    4 +-
- drivers/serial/amba-pl011.c           |    6 +-
- drivers/serial/kgdboc.c               |  117 ++-
- drivers/serial/sh-sci.c               |    6 +-
- drivers/serial/sunzilog.c             |   50 +
- drivers/video/console/fbcon.c         |    7 +
- fs/proc/internal.h                    |    4 +-
- fs/proc/meminfo.c                     |   15 +-
- fs/proc/mmu.c                         |    8 +-
- include/asm-generic/kmap_types.h      |    3 +-
- include/drm/drm_crtc_helper.h         |    2 +
- include/drm/drm_fb_helper.h           |    4 +
- include/linux/input.h                 |   10 +
- include/linux/kdb.h                   |  118 ++
- include/linux/kgdb.h                  |   77 +-
- include/linux/sched.h                 |    4 +
- include/linux/serial_core.h           |    1 +
- include/linux/swap.h                  |    2 +
- init/main.c                           |    6 +
- kernel/Makefile                       |    2 +-
- kernel/debug/Makefile                 |    8 +
- kernel/debug/debug_core.c             |  985 ++++++++++++
- kernel/debug/debug_core.h             |   82 +
- kernel/debug/gdbstub.c                | 1022 ++++++++++++
- kernel/debug/kdb/.gitignore           |    1 +
- kernel/debug/kdb/Makefile             |   24 +
- kernel/debug/kdb/kdb_bp.c             |  567 +++++++
- kernel/debug/kdb/kdb_bt.c             |  217 +++
- kernel/debug/kdb/kdb_cmds             |   32 +
- kernel/debug/kdb/kdb_debugger.c       |  167 ++
- kernel/debug/kdb/kdb_io.c             |  825 ++++++++++
- kernel/debug/kdb/kdb_main.c           | 2857 +++++++++++++++++++++++++++++++++
- kernel/debug/kdb/kdb_private.h        |  399 +++++
- kernel/debug/kdb/kdb_support.c        | 1007 ++++++++++++
- kernel/debug/kms_hooks.c              |   62 +
- kernel/kallsyms.c                     |   21 +
- kernel/kgdb.c                         | 1760 --------------------
- kernel/module.c                       |    4 +
- kernel/panic.c                        |    7 +-
- kernel/printk.c                       |   25 +
- kernel/sched.c                        |    7 +-
- kernel/signal.c                       |   42 +
- kernel/softlockup.c                   |   16 +
- kernel/trace/Makefile                 |    3 +
- kernel/trace/trace.c                  |   48 +-
- kernel/trace/trace.h                  |   17 +
- kernel/trace/trace_kdb.c              |  116 ++
- lib/Kconfig.kgdb                      |   24 +-
- mm/swapfile.c                         |   10 +-
- 78 files changed, 10412 insertions(+), 2117 deletions(-)
- create mode 100644 drivers/char/kdb_keyboard.c
- create mode 100644 drivers/char/kdb_keyboard.h
- create mode 100644 include/linux/kdb.h
- create mode 100644 kernel/debug/Makefile
- create mode 100644 kernel/debug/debug_core.c
- create mode 100644 kernel/debug/debug_core.h
- create mode 100644 kernel/debug/gdbstub.c
- create mode 100644 kernel/debug/kdb/.gitignore
- create mode 100644 kernel/debug/kdb/Makefile
- create mode 100644 kernel/debug/kdb/kdb_bp.c
- create mode 100644 kernel/debug/kdb/kdb_bt.c
- create mode 100644 kernel/debug/kdb/kdb_cmds
- create mode 100644 kernel/debug/kdb/kdb_debugger.c
- create mode 100644 kernel/debug/kdb/kdb_io.c
- create mode 100644 kernel/debug/kdb/kdb_main.c
- create mode 100644 kernel/debug/kdb/kdb_private.h
- create mode 100644 kernel/debug/kdb/kdb_support.c
- create mode 100644 kernel/debug/kms_hooks.c
- delete mode 100644 kernel/kgdb.c
- create mode 100644 kernel/trace/trace_kdb.c
