@@ -1,81 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754970Ab0ANBB5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755162Ab0ANBDO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754970Ab0ANBB5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 20:01:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754825Ab0ANBB4
+	id S1755162Ab0ANBDO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 20:03:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754914Ab0ANBDN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 20:01:56 -0500
-Received: from comsrv.aao.GOV.AU ([192.231.167.2]:33452 "HELO
-	comsrv.aao.gov.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754652Ab0ANBBz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 20:01:55 -0500
-Date: Thu, 14 Jan 2010 12:03:36 +1100
-From: Scott Smedley <ss@aao.gov.au>
-To: Marin Mitov <mitov@issp.bas.bg>
-Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org
-Subject: Re: [RFC] Yet another dt3155 driver for drivers/staging
-Message-ID: <20100114010335.GB20569@aao.gov.au>
-Reply-To: ss@aao.gov.au
-References: <201001122242.22774.mitov@issp.bas.bg> <20100112235221.GA20761@aao.gov.au> <20100113001724.GB29904@kroah.com> <201001130816.43855.mitov@issp.bas.bg>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <201001130816.43855.mitov@issp.bas.bg>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Wed, 13 Jan 2010 20:03:13 -0500
+Received: from mail.perches.com ([173.55.12.10]:1148 "EHLO mail.perches.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754825Ab0ANBDM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jan 2010 20:03:12 -0500
+Subject: Re: [PATCH v4] tcp: harmonize tcp_vx_rcv header length assumptions
+From: Joe Perches <joe@perches.com>
+To: William Allen Simpson <william.allen.simpson@gmail.com>,
+       Patrick McHardy <kaber@trash.net>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Linux Kernel Developers <linux-kernel@vger.kernel.org>,
+       Linux Kernel Network Developers <netdev@vger.kernel.org>,
+       Ilpo =?ISO-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>,
+       Eric Dumazet <eric.dumazet@gmail.com>
+In-Reply-To: <4B4E378A.7040506@gmail.com>
+References: <4B49D001.4000302@gmail.com> <4B4DA4F4.6060007@gmail.com>
+	 <20100113115617.GA24818@basil.fritz.box> <4B4DE887.6030602@gmail.com>
+	 <20100113155323.GB24818@basil.fritz.box> <4B4E23E0.4000007@gmail.com>
+	 <4B4E378A.7040506@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 13 Jan 2010 17:03:10 -0800
+Message-ID: <1263430990.1966.12.camel@Joe-Laptop.home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Greg & Marin,
+On Wed, 2010-01-13 at 16:13 -0500, William Allen Simpson wrote:
+> I did today's tests on tcp_ipv4, but part of this harmonization is to
+> make v4 and v6 match up better.  As I was examining line by line, one of
+> the things that leaps out is that ipv4 has nf_reset(skb):
+> 
+> tcp_ipv4:
+> 	if (!xfrm4_policy_check(sk, XFRM_POLICY_IN, skb))
+> 		goto discard_and_relse;
+> 	nf_reset(skb);
+> 
+> 	if (sk_filter(sk, skb))
+> 		goto discard_and_relse;
+> 
+> tcp_ipv6:
+> 	if (!xfrm6_policy_check(sk, XFRM_POLICY_IN, skb))
+> 		goto discard_and_relse;
+> 
+> 	if (sk_filter(sk, skb))
+> 		goto discard_and_relse;
+> 
+> Does anybody know why?  Should ipv6 have it?  Or at least a comment
+> explaining the reasoning for the omission?
 
-> > Scott, any comparison between the two of them as to which one actually
-> > works better?
+You should ask the person that put the line in, but
+it might be because no IPv6 NAT support exists.
 
-I'd be interested in Marin's opinion as he appears to have used both
-drivers extensively.
+$ git blame -L 1658,1658 net/ipv4/tcp_ipv4.c
+b59c2701 (Patrick McHardy 2006-01-06 23:06:10 -0800 1658)       nf_reset(skb);
 
-I'd like a userspace program to actually try out Marin's driver, but
-I can still make some general comments:
+And
 
-Things I like about Marin's driver:
-- It is only ~1/3rd the size. (by counting new lines)
-- The code is much neater.
-- It can acquire frames at 25 fps (real-time), according to Marin.
-- At least 1 person with intimate knowledge of the code seems keen to
-  maintain it.
+$ git log -p -1 b59c2701
+commit b59c270104f03960069596722fea70340579244d
+Author: Patrick McHardy <kaber@trash.net>
+Date:   Fri Jan 6 23:06:10 2006 -0800
 
-Things I like about the sourceforge (SF) driver:
-- It works in CCIR mode (768x576) or 640x480 mode.
-- It is well tested.
-- It works with most kernel versions. ie. 2.2, 2.4, & 2.6. (mostly)
-- It works with multiple boards.
-- The code is moderately well commented.
-- It includes simple (user space) example programs.
+    [NETFILTER]: Keep conntrack reference until IPsec policy checks are done
+    
+    Keep the conntrack reference until policy checks have been performed for
+    IPsec NAT support. The reference needs to be dropped before a packet is
+    queued to avoid having the conntrack module unloadable.
+    
+    Signed-off-by: Patrick McHardy <kaber@trash.net>
+    Signed-off-by: David S. Miller <davem@davemloft.net>
 
 
-Clearly each driver has strengths over the other.
 
-It would probably be easier to upgrade Marin's driver to match the
-strengths of the SF driver than the other way around. The only
-difficulty might be in making Marin's driver work with older kernel
-versions. IMO, that's probably an acceptable sacrifice to make. (For
-users of legacy systems, we could point them to the (unmaintained)
-driver on SF.)
 
-> if you have 2 or more boards, could you check if
-> my driver is working with more than one board?
 
-Sorry, I only have 1 board available to test with.
-
-Marin, if you are considering upgrading your driver, I propose
-we send an email to the DT3155 SF mailing list & ask for help
-testing. (I already know of 1 other person who is happy to help
-test.) I recommend making userspace programs (like examples/acquire
-& examples/Xview in the SF driver) available first. Ideally, these
-example programs & user space libraries would become the major
-component of the evolved DT3155 SF project.
-
-What do you think?
-
-Scott. :)
