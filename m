@@ -1,46 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757597Ab0ANUMw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757595Ab0ANUSG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757597Ab0ANUMw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 15:12:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753937Ab0ANUMv
+	id S1757595Ab0ANUSG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 15:18:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757572Ab0ANUSF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 15:12:51 -0500
-Received: from khc.piap.pl ([195.187.100.11]:56868 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753832Ab0ANUMu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 15:12:50 -0500
-From: Krzysztof Halasa <khc@pm.waw.pl>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, linux-ide@vger.kernel.org,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: SATA_SIL on IXP425 workaround
-References: <m33a4nfvva.fsf@intrepid.localdomain>
-	<201001141659.19687.bzolnier@gmail.com>
-	<20100114192210.62593ead@lxorguk.ukuu.org.uk>
-Date: Thu, 14 Jan 2010 21:12:47 +0100
-In-Reply-To: <20100114192210.62593ead@lxorguk.ukuu.org.uk> (Alan Cox's message
-	of "Thu, 14 Jan 2010 19:22:10 +0000")
-Message-ID: <m3my0gh2dc.fsf@intrepid.localdomain>
+	Thu, 14 Jan 2010 15:18:05 -0500
+Received: from mail-fx0-f213.google.com ([209.85.220.213]:37032 "EHLO
+	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757550Ab0ANUSE convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jan 2010 15:18:04 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=uW1h5K2kbHuQFZNFOiACZXR7p0WnBSwEhL7sewE9tchY0b64eud82Q41Hq2Bq/6+L6
+         hsNWWINWpzqbCZfPNALcm2V5U3y/R0CLgfTRi+/15icZQttL55bONsDNw2uKFzEm/rPw
+         /POT7NUbEw7U19/9u5tnmzFsNVWPc/ECrJmHU=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20100114193118.GA1203@emergent.ellipticsemi.com>
+References: <alpine.LFD.2.00.1001122139411.17145@localhost.localdomain>
+	 <84144f021001131303u56fa5470ua1c27dfef9f3de81@mail.gmail.com>
+	 <20100113133357.67f9df6d@jbarnes-piketon>
+	 <4B4E403C.1050509@cs.helsinki.fi>
+	 <20100113165530.2a7e7645@jbarnes-piketon>
+	 <4B4F6D5F.10008@cs.helsinki.fi>
+	 <20100114193118.GA1203@emergent.ellipticsemi.com>
+Date: Thu, 14 Jan 2010 22:18:00 +0200
+X-Google-Sender-Auth: 7b46ab5106601d0d
+Message-ID: <84144f021001141218pa3cd71co76165532618145a8@mail.gmail.com>
+Subject: Re: Linux 2.6.33-rc4
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Pekka Enberg <penberg@cs.helsinki.fi>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       airlied@linux.ie
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox <alan@lxorguk.ukuu.org.uk> writes:
+On Thu, Jan 14, 2010 at 9:31 PM, Nick Bowler <nbowler@elliptictech.com> wrote:
+> On 21:15 Thu 14 Jan     , Pekka Enberg wrote:
+>> OK, I think I am seeing a different kind of flicker now. It doesn't
+>> happen anywhere as often as before (which is probably why I missed it
+>> last night). The flicker is more like a flash of some other window
+>> whereas the flicker before used to "shake" the screen.
+>>
+>> Does this ring a bell?
+>
+> Your symptoms sound identical to mine on my ThinkPad T500 laptop, as
+> described in http://bugs.freedesktop.org/show_bug.cgi?id=25809.
+>
+> This is the patch I am currently applying locally which solves all my
+> problems.
+>
+> diff --git a/drivers/gpu/drm/i915/intel_lvds.c b/drivers/gpu/drm/i915/intel_lvds.c
+> index f4b4aa2..4fb5911 100644
+> --- a/drivers/gpu/drm/i915/intel_lvds.c
+> +++ b/drivers/gpu/drm/i915/intel_lvds.c
+> @@ -914,7 +914,7 @@ static void intel_find_lvds_downclock(struct drm_device *dev,
+>        mutex_unlock(&dev->mode_config.mutex);
+>        if (temp_downclock < panel_fixed_mode->clock) {
+>                /* We found the downclock for LVDS. */
+> -               dev_priv->lvds_downclock_avail = 1;
+> +               dev_priv->lvds_downclock_avail = 0;
+>                dev_priv->lvds_downclock = temp_downclock;
+>                DRM_DEBUG_KMS("LVDS downclock is found in EDID. "
+>                                "Normal clock %dKhz, downclock %dKhz\n",
 
-> I think this is the wrong place. If your platform can't do MMIO properly
-> then the platform pci_iomap or pci quirk code should do the needed
-> cleaning up, not put turds into the drivers. Why not just quirk it on your
-> specific platform and clear the MMIO mapping.
-
-We need to use the MMIO BAR at least for starting DMA transfers, the
-I/O ones are 64KB-limited. We can't just use read[bw] if reading all
-32 bits has side effects.
-
-Most of the time there are no problems with MMIO on IXP4xx as modern
-devices usually use 32-bit registers anyway, or at least they have no
-problem with read[bw] always driving all four PCI byte enable lines
-(write[bw] doesn't have this issue).
--- 
-Krzysztof Halasa
+Should I try just this or combine it with Jesse's patch?
