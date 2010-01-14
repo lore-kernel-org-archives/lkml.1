@@ -1,285 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755937Ab0ANGUz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755467Ab0ANGa2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755937Ab0ANGUz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 01:20:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751915Ab0ANGUy
+	id S1755467Ab0ANGa2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 01:30:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751411Ab0ANGa1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 01:20:54 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:59686 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751306Ab0ANGUx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 01:20:53 -0500
-Date: Thu, 14 Jan 2010 17:20:47 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linux-next@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: linux-next: Tree for January 14
-Message-Id: <20100114172047.406ebda8.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 3.0.0beta4 (GTK+ 2.18.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__14_Jan_2010_17_20_47_+1100_X29NK4NbphmejWXy"
+	Thu, 14 Jan 2010 01:30:27 -0500
+Received: from mailx.hitachi.co.jp ([133.145.228.49]:51941 "EHLO
+	mailx.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751244Ab0ANGa0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jan 2010 01:30:26 -0500
+X-Greylist: delayed 1080 seconds by postgrey-1.27 at vger.kernel.org; Thu, 14 Jan 2010 01:30:26 EST
+X-AuditID: b753bd60-ad649ba000006009-29-4b4eb5c74e6e
+Message-ID: <4B4EB5B9.4020809@hitachi.com>
+Date: Thu, 14 Jan 2010 15:12:09 +0900
+From: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja-JP; rv:1.4) Gecko/20030624 Netscape/7.1 (ax)
+X-Accept-Language: ja
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Andreas Dilger <adilger@sun.com>, "Theodore Ts'o" <tytso@mit.edu>,
+       Jan Kara <jack@suse.cz>
+Cc: Nick Piggin <npiggin@suse.de>, dle-develop@lists.sourceforge.net,
+       Satoshi OSHIMA <satoshi.oshima.fk@hitachi.com>
+Subject: [PATCH] ext3: prevent reread after write IO error
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAA==
+X-FMFTCR: RANGEC
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__14_Jan_2010_17_20_47_+1100_X29NK4NbphmejWXy
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+This patch fixes the similar bug fixed by commit 95450f5a.
 
-Hi all,
+If a directory is modified, its data block is journaled as metadata
+and finally written back to the right place.  Now, we assume a
+transient write erorr happens on that writeback.  Uptodate flag of
+the buffer is cleared by write error, so next access on the buffer
+causes a reread from disk.  This means it breaks the filesystems
+consistency.
 
-Changes since 20100113:
+To prevent old directory data from being reread, this patch set
+uptodate flag again in the case of after write error before issuing
+the read operation.  The write error on the directory's data block
+is detected at the time of journal checkpointing or discarded if a
+rewrite by another modification succeeds, so no problem.
 
-New tree: mtd-current
+I tested this patch by using fault injection approach.
 
-Linus' tree still has a build failure for which I reverted a commit.
+By the way, I think the right fix is to keep uptodate flag on write
+error, but it gives a big impact.  We have to confirm whether
+over 200 buffer_uptodate's are used for real uptodate check or write
+error check.  For now, I adopt the quick-fix solution.
 
-The net-current tree lost its conflict.
+Signed-off-by: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+---
+ fs/ext3/inode.c |   13 +++++++++++++
+ fs/ext3/namei.c |   15 ++++++++++++++-
+ 2 files changed, 27 insertions(+), 1 deletions(-)
 
-The tip tree gained a conflict against the kgdb tree.
+diff --git a/fs/ext3/inode.c b/fs/ext3/inode.c
+index 455e6e6..17c7a5f 100644
+--- a/fs/ext3/inode.c
++++ b/fs/ext3/inode.c
+@@ -1077,10 +1077,23 @@ struct buffer_head *ext3_bread(handle_t *handle, struct inode *inode,
+ 		return bh;
+ 	if (buffer_uptodate(bh))
+ 		return bh;
++
++	/*
++	 * uptodate flag may have been cleared by a previous (transient)
++	 * write IO error.  In this case, we don't want to re-read its
++	 * old on-disk data.  Actually the buffer has the latest data,
++	 * so set uptodate flag again.
++	 */
++	if (buffer_write_io_error(bh)) {
++		set_buffer_uptodate(bh);
++		return bh;
++	}
++
+ 	ll_rw_block(READ_META, 1, &bh);
+ 	wait_on_buffer(bh);
+ 	if (buffer_uptodate(bh))
+ 		return bh;
++
+ 	put_bh(bh);
+ 	*err = -EIO;
+ 	return NULL;
+diff --git a/fs/ext3/namei.c b/fs/ext3/namei.c
+index 7b0e44f..2f18797 100644
+--- a/fs/ext3/namei.c
++++ b/fs/ext3/namei.c
+@@ -909,7 +909,20 @@ restart:
+ 				num++;
+ 				bh = ext3_getblk(NULL, dir, b++, 0, &err);
+ 				bh_use[ra_max] = bh;
+-				if (bh)
++				if (!bh || buffer_uptodate(bh))
++					continue;
++
++				/*
++				 * uptodate flag may have been cleared by a
++				 * previous (transient) write IO error.  In
++				 * this case, we don't want to re-read its
++				 * old on-disk data.  Actually the buffer
++				 * has the latest data, so set uptodate flag
++				 * again.
++				 */
++				if (buffer_write_io_error(bh))
++					set_buffer_uptodate(bh);
++				else
+ 					ll_rw_block(READ_META, 1, &bh);
+ 			}
+ 		}
+-- 
+1.6.0.3
 
-----------------------------------------------------------------------------
+-- 
+Hidehiro Kawai
+Hitachi, Systems Development Laboratory
+Linux Technology Center
 
-I have created today's linux-next tree at
-git://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
-(patches at http://www.kernel.org/pub/linux/kernel/v2.6/next/ ).  If you
-are tracking the linux-next tree using git, you should not use "git pull"
-to do so as that will try to merge the new linux-next release with the
-old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
-(see below).
 
-You can see which trees have been included by looking in the Next/Trees
-file in the source.  There are also quilt-import.log and merge.log files
-in the Next directory.  Between each merge, the tree was built with
-a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
-final fixups (if any), it is also built with powerpc allnoconfig (32 and
-64 bit), ppc44x_defconfig and allyesconfig (minus
-CONFIG_PROFILE_ALL_BRANCHES - this fails its final link) and i386, sparc
-and sparc64 defconfig. These builds also have
-CONFIG_ENABLE_WARN_DEPRECATED, CONFIG_ENABLE_MUST_CHECK and
-CONFIG_DEBUG_INFO disabled when necessary.
-
-Below is a summary of the state of the merge.
-
-We are up to 156 trees (counting Linus' and 23 trees of patches pending
-for Linus' tree), more are welcome (even if they are currently empty).
-Thanks to those who have contributed, and to those who haven't, please do.
-
-Status of my local build tests will be at
-http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
-advice about cross compilers/configs that work, we are always open to add
-more builds.
-
-Thanks to Jan Dittmer for adding the linux-next tree to his build tests
-at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
-Dunlap for doing many randconfig builds.
-
-There is a wiki covering stuff to do with linux-next at
-http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-$ git checkout master
-$ git reset --hard stable
-Merging origin/master
-[master e002fab] Revert "zlib: optimize inffast when copying direct from ou=
-tput"
-Merging fixes/fixes
-Merging arm-current/master
-Merging m68k-current/for-linus
-Merging powerpc-merge/merge
-Merging sparc-current/master
-Merging scsi-rc-fixes/master
-Merging net-current/master
-Merging sound-current/for-linus
-Merging pci-current/for-linus
-Merging wireless-current/master
-Merging kbuild-current/for-linus
-Merging quilt/driver-core.current
-Merging quilt/tty.current
-Merging quilt/usb.current
-Merging quilt/staging.current
-Merging cpufreq-current/fixes
-Merging input-current/for-linus
-Merging md-current/for-linus
-Merging audit-current/for-linus
-Merging crypto-current/master
-Merging ide-curent/master
-Merging mtd-current/master
-Merging dwmw2/master
-Merging arm/devel
-Merging davinci/davinci-next
-Merging msm/for-next
-Merging omap/for-next
-Merging pxa/for-next
-Merging samsung/next-samsung
-Merging avr32/avr32-arch
-Merging blackfin/for-linus
-Merging cris/for-next
-Merging ia64/test
-Merging m68k/for-next
-Merging m68knommu/for-next
-Merging microblaze/next
-Merging mips/mips-for-linux-next
-Merging parisc/next
-Merging powerpc/next
-Merging 4xx/next
-Merging 52xx-and-virtex/next
-Merging galak/next
-Merging s390/features
-Merging sh/master
-Merging sparc/master
-Merging xtensa/master
-Merging ceph/for-next
-CONFLICT (content): Merge conflict in Documentation/ioctl/ioctl-number.txt
-Merging cifs/master
-Merging configfs/linux-next
-Merging ecryptfs/next
-Merging ext3/for_next
-Merging ext4/next
-Merging fatfs/master
-Merging fuse/for-next
-Merging gfs2/master
-Merging jfs/next
-Merging logfs/master
-Merging nfs/linux-next
-Applying: ceph: update for BDI_RECLAIMABLE change
-Merging nfsd/nfsd-next
-Merging nilfs2/for-next
-Merging ocfs2/linux-next
-Merging squashfs/master
-Merging udf/for_next
-Merging v9fs/for-next
-CONFLICT (add/add): Merge conflict in fs/9p/cache.c
-Merging ubifs/linux-next
-Merging xfs/master
-Merging reiserfs-bkl/reiserfs/kill-bkl
-Merging vfs/for-next
-Merging pci/linux-next
-Merging hid/for-next
-Merging quilt/i2c
-Merging bjdooks-i2c/next-i2c
-Merging quilt/jdelvare-hwmon
-Merging quilt/kernel-doc
-Merging v4l-dvb/master
-Merging kbuild/for-next
-Merging kconfig/for-next
-Merging ide/master
-Merging libata/NEXT
-Merging infiniband/for-next
-Merging acpi/test
-Merging ieee1394/for-next
-Merging ubi/linux-next
-Merging kvm/linux-next
-Merging dlm/next
-Merging scsi/master
-Merging async_tx/next
-Merging net/master
-CONFLICT (content): Merge conflict in net/mac80211/iface.c
-CONFLICT (content): Merge conflict in net/mac80211/scan.c
-Merging wireless/master
-CONFLICT (content): Merge conflict in drivers/net/wireless/iwlwifi/iwl-core=
-.h
-Merging mtd/master
-Merging crypto/master
-Merging sound/for-next
-Merging cpufreq/next
-Merging quilt/rr
-CONFLICT (content): Merge conflict in include/linux/kmemcheck.h
-Merging mmc/next
-Merging tmio-mmc/linux-next
-Merging input/next
-Merging lsm/for-next
-Merging block/for-next
-Merging quilt/device-mapper
-Merging embedded/master
-Merging firmware/master
-Merging pcmcia/master
-Merging battery/master
-Merging leds/for-mm
-Merging backlight/for-mm
-Merging kgdb/kgdb-next
-Merging slab/for-next
-Merging uclinux/for-next
-Merging md/for-next
-Merging mfd/for-next
-CONFLICT (content): Merge conflict in drivers/mfd/asic3.c
-CONFLICT (content): Merge conflict in drivers/mfd/t7l66xb.c
-CONFLICT (content): Merge conflict in drivers/mfd/tc6387xb.c
-CONFLICT (content): Merge conflict in drivers/mfd/tc6393xb.c
-CONFLICT (add/add): Merge conflict in drivers/mfd/tmio_core.c
-CONFLICT (content): Merge conflict in drivers/mmc/host/tmio_mmc.c
-CONFLICT (content): Merge conflict in drivers/mmc/host/tmio_mmc.h
-CONFLICT (content): Merge conflict in include/linux/mfd/tmio.h
-Merging hdlc/hdlc-next
-Merging drm/drm-next
-Merging voltage/for-next
-Merging security-testing/next
-Merging lblnet/master
-Merging agp/agp-next
-Merging uwb/for-upstream
-Merging watchdog/master
-Merging bdev/master
-Merging dwmw2-iommu/master
-Merging cputime/cputime
-Merging osd/linux-next
-Merging jc_docs/docs-next
-Merging nommu/master
-Merging trivial/for-next
-Merging audit/for-next
-Merging quilt/aoe
-Merging suspend/linux-next
-Merging bluetooth/master
-Merging fsnotify/for-next
-Merging irda/for-next
-CONFLICT (content): Merge conflict in drivers/net/irda/irda-usb.c
-Merging hwlat/for-linus
-CONFLICT (content): Merge conflict in MAINTAINERS
-CONFLICT (content): Merge conflict in drivers/misc/Makefile
-Merging drbd/for-jens
-Merging catalin/for-next
-Merging alacrity/linux-next
-CONFLICT (content): Merge conflict in lib/Kconfig
-Merging i7core_edac/linux_next
-Merging devicetree/next-devicetree
-Merging spi/next-spi
-Merging limits/writable_limits
-CONFLICT (content): Merge conflict in arch/x86/ia32/ia32entry.S
-CONFLICT (content): Merge conflict in arch/x86/include/asm/unistd_32.h
-CONFLICT (content): Merge conflict in arch/x86/include/asm/unistd_64.h
-CONFLICT (content): Merge conflict in arch/x86/kernel/syscall_table_32.S
-Merging omap_dss2/for-next
-Merging tip/auto-latest
-CONFLICT (content): Merge conflict in kernel/trace/trace.c
-Merging edac-amd/for-next
-Merging oprofile/for-next
-Merging percpu/for-next
-Applying: slab: update for percpu API change
-Merging workqueues/for-next
-Merging sfi/sfi-test
-Merging asm-generic/next
-Merging hwpoison/hwpoison
-Merging sysctl/master
-Merging quilt/driver-core
-Merging quilt/tty
-Merging quilt/usb
-Merging quilt/staging
-Merging scsi-post-merge/master
-
---Signature=_Thu__14_Jan_2010_17_20_47_+1100_X29NK4NbphmejWXy
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAktOt78ACgkQjjKRsyhoI8yDTgCfYvfaUuhK2EmUfRDpl/Vpv3pG
-FuEAoI3N1cbvwHK83lVEsnPxzD++zCRf
-=9yn7
------END PGP SIGNATURE-----
-
---Signature=_Thu__14_Jan_2010_17_20_47_+1100_X29NK4NbphmejWXy--
