@@ -1,78 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757777Ab0ANWs0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757784Ab0ANWuS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757777Ab0ANWs0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 17:48:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757125Ab0ANWsY
+	id S1757784Ab0ANWuS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 17:50:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757228Ab0ANWuQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 17:48:24 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:47515 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757088Ab0ANWsX (ORCPT
+	Thu, 14 Jan 2010 17:50:16 -0500
+Received: from e33.co.us.ibm.com ([32.97.110.151]:42956 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757088Ab0ANWuN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 17:48:23 -0500
-Date: Thu, 14 Jan 2010 14:47:32 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Li Hong <lihong.hi@gmail.com>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-Subject: Re: [PATCH 1/3] mm: page_alloc.c Remove duplicate call to
- trace_mm_page_free_direct
-Message-Id: <20100114144732.6f0f82a6.akpm@linux-foundation.org>
-In-Reply-To: <20100113144917.GA11934@xhl>
-References: <20100113144917.GA11934@xhl>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+	Thu, 14 Jan 2010 17:50:13 -0500
+Subject: Re: [RFC] [PATCH 4/7] Uprobes Implementation
+From: Jim Keniston <jkenisto@us.ibm.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Arnaldo Carvalho de Melo <acme@infradead.org>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       utrace-devel <utrace-devel@redhat.com>, Mark Wielaard <mjw@redhat.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Maneesh Soni <maneesh@in.ibm.com>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1263467394.4244.291.camel@laptop>
+References: <20100111122521.22050.3654.sendpatchset@srikar.in.ibm.com>
+	 <20100111122553.22050.46895.sendpatchset@srikar.in.ibm.com>
+	 <1263467394.4244.291.camel@laptop>
+Content-Type: text/plain
+Date: Thu, 14 Jan 2010 14:49:40 -0800
+Message-Id: <1263509380.4875.35.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.3) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 13 Jan 2010 22:49:17 +0800
-Li Hong <lihong.hi@gmail.com> wrote:
 
-> Function 'trace_mm_page_free_direct' is called in function '__free_pages'.
-> But it is called again in 'free_hot_page' if order == 0 and produce duplicate
-> records in trace file for mm_page_free_direct event. As below:
-
-When naming functions in changelogs you can just use the name of the
-function followed by (), such as trace_mm_page_free_direct().  There's
-no need to call it "function 'trace_mm_page_free_direct'".
-
-> K-PID    CPU#    TIMESTAMP  FUNCTION
->   gnome-terminal-1567  [000]  4415.246466: mm_page_free_direct: page=ffffea0003db9f40 pfn=1155800 order=0
->   gnome-terminal-1567  [000]  4415.246468: mm_page_free_direct: page=ffffea0003db9f40 pfn=1155800 order=0
->   gnome-terminal-1567  [000]  4415.246506: mm_page_alloc: page=ffffea0003db9f40 pfn=1155800 order=0 migratetype=0 gfp_flags=GFP_KERNEL
->   gnome-terminal-1567  [000]  4415.255557: mm_page_free_direct: page=ffffea0003db9f40 pfn=1155800 order=0
->   gnome-terminal-1567  [000]  4415.255557: mm_page_free_direct: page=ffffea0003db9f40 pfn=1155800 order=0
+On Thu, 2010-01-14 at 12:09 +0100, Peter Zijlstra wrote:
+> On Mon, 2010-01-11 at 17:55 +0530, Srikar Dronamraju wrote:
+> > 
+> > Uprobes Infrastructure enables user to dynamically establish
+> > probepoints in user applications and collect information by executing
+> > a handler functions when the probepoints are hit.
+> > Please refer Documentation/uprobes.txt for more details.
+> > 
+> > This patch provides the core implementation of uprobes.
+> > This patch builds on utrace infrastructure.
+> > 
+> > You need to follow this up with the uprobes patch for your
+> > architecture. 
 > 
-> This patch removes the first call and add a call to 'trace_mm_page_free_direct'
-> in '__free_pages_ok'.
+> So all this is basically some glue between what you call ubp (the real
+> userspace breakpoint stuff) and utrace? Or does it do more?
 > 
-> Signed-off-by: Li Hong <lihong.hi@gmail.com>
-> ---
->  mm/page_alloc.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-> index 4e9f5cc..24344cd 100644
-> --- a/mm/page_alloc.c
-> +++ b/mm/page_alloc.c
-> @@ -582,6 +582,7 @@ static void __free_pages_ok(struct page *page, unsigned int order)
->         int bad = 0;
->         int wasMlocked = __TestClearPageMlocked(page);
->  
-> +       trace_mm_page_free_direct(page, order);
->         kmemcheck_free_shadow(page, order);
->  
->         for (i = 0 ; i < (1 << order) ; ++i)
-> @@ -2012,7 +2013,6 @@ void __pagevec_free(struct pagevec *pvec)
->  void __free_pages(struct page *page, unsigned int order)
->  {
->         if (put_page_testzero(page)) {
-> -               trace_mm_page_free_direct(page, order);
 
-Your email client replaces tabs with spaces.  I can fix that up, but
-please do repair that email client.  Documentation/email-clients.txt
-has some help for gmail, but it's ugly.
+My reply in
+http://lkml.indiana.edu/hypermail/linux/kernel/1001.1/02483.html
+addresses this.
+
+Jim
 
