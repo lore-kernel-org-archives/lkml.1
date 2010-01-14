@@ -1,160 +1,204 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754802Ab0ANLb1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754405Ab0ANLcm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754802Ab0ANLb1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 06:31:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753738Ab0ANLb0
+	id S1754405Ab0ANLcm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 06:32:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751956Ab0ANLcl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 06:31:26 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:64696 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753653Ab0ANLbZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 06:31:25 -0500
-Date: Thu, 14 Jan 2010 06:31:03 -0500
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Shaohua Li <shaohua.li@intel.com>
-Cc: Corrado Zoccolo <czoccolo@gmail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
-       "Zhang, Yanmin" <yanmin.zhang@intel.com>
-Subject: Re: [RFC]cfq-iosched: quantum check tweak
-Message-ID: <20100114113103.GB15559@redhat.com>
-References: <20100108171535.GC22219@redhat.com> <4e5e476b1001081235wc2784c1s87c0c70662b5e267@mail.gmail.com> <20100108205948.GH22219@redhat.com> <20100111023409.GE22362@sli10-desk.sh.intel.com> <20100111170339.GC22899@redhat.com> <20100112030756.GB22606@sli10-desk.sh.intel.com> <20100112154820.GB3065@redhat.com> <20100113081735.GD10492@sli10-desk.sh.intel.com> <20100113111807.GC3087@redhat.com> <20100114041624.GA10276@sli10-desk.sh.intel.com>
+	Thu, 14 Jan 2010 06:32:41 -0500
+Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:43007 "EHLO
+	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751056Ab0ANLcl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jan 2010 06:32:41 -0500
+Date: Thu, 14 Jan 2010 20:32:35 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Alessandro Zummo <a.zummo@towertech.it>,
+       Dale Farnsworth <dale@farnsworth.org>
+Cc: rtc-linux@googlegroups.com, linux-kernel@vger.kernel.org
+Subject: [PATCH] rtc: rtc-max6900: SMBus support.
+Message-ID: <20100114113235.GA20473@linux-sh.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20100114041624.GA10276@sli10-desk.sh.intel.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 14, 2010 at 12:16:24PM +0800, Shaohua Li wrote:
-> On Wed, Jan 13, 2010 at 07:18:07PM +0800, Vivek Goyal wrote:
-> > On Wed, Jan 13, 2010 at 04:17:35PM +0800, Shaohua Li wrote:
-> > [..]
-> > > > >  static bool cfq_may_dispatch(struct cfq_data *cfqd, struct cfq_queue *cfqq)
-> > > > >  {
-> > > > >  	unsigned int max_dispatch;
-> > > > > @@ -2258,7 +2273,10 @@ static bool cfq_may_dispatch(struct cfq_
-> > > > >  	if (cfqd->sync_flight && !cfq_cfqq_sync(cfqq))
-> > > > >  		return false;
-> > > > >  
-> > > > > -	max_dispatch = cfqd->cfq_quantum;
-> > > > > +	max_dispatch = cfqd->cfq_quantum / 2;
-> > > > > +	if (max_dispatch < CFQ_SOFT_QUANTUM)
-> > > > 
-> > > > We don't have to hardcode CFQ_SOFT_QUANTUM or in fact we don't need it. We can
-> > > > derive the soft limit from hard limit (cfq_quantum). Say soft limit will be
-> > > > 50% of cfq_quantum value.
-> > > I'm hoping this doesn't give user a surprise. Say cfq_quantum sets to 7, then we
-> > > start doing throttling from 3 requests. Adding the CFQ_SOFT_QUANTUM gives a compatibility
-> > > against old behavior at least. Am I over thinking?
-> > >  
-> > 
-> > I would not worry too much about that. If you are really worried about
-> > that, then create one Documentation/block/cfq-iosched.txt and document
-> > how cfq_quantum works so that users know that cfq_quantum is upper hard
-> > limit and internal soft limit is cfq_quantum/2.
-> Good idea. Looks we don't document cfq tunnables, I'll try to do it later.
-> 
-> Currently a queue can only dispatch up to 4 requests if there are other queues.
-> This isn't optimal, device can handle more requests, for example, AHCI can
-> handle 31 requests. I can understand the limit is for fairness, but we could
-> do a tweak: if the queue still has a lot of slice left, sounds we could
-> ignore the limit.
+The current rtc-max6900 driver only supports getting and setting the time
+through bursting, which requires a controller capable of such. As
+bursting is merely an optimization, we can also opt for the non-burst
+fallback path that pokes at the date/time registers individually.
 
-Hi Shaohua,
+By opting for the fallback solution, it's possible to fully support the
+RTC on controllers that only implement I2C_FUNC_SMBUS_BYTE_DATA instead
+of requiring master transfers via I2C_FUNC_I2C.
 
-This looks much better. Though usage of "slice_idle" as measure of service
-times, I find little un-intutive. Especially, I do some testing with
-slice_idle=0, in that case, we will be allowing dispatch of 8 requests
-from each queue even if slice is about to expire.
+This was tested with an I2C_FUNC_SMBUS_BYTE_DATA controller with a MAX6909
+attached. Currently only a subset of the MAX6909 functionality is supported,
+patches to extend the current driver to be forthcoming.
 
-But I guess that's fine for the time being as upper limit is still
-controlld by cfq_quantum.
+There are no functional changes for I2C_FUNC_I2C controllers.
 
-> Test shows this boost my workload (two thread randread of a SSD) from 78m/s
-> to 100m/s.
+Signed-off-by: Paul Mundt <lethal@linux-sh.org>
 
-Are these deep queue random reads (with higher iodepths, using libaio)?
+---
 
-Have you done similar test on some slower NCQ rotational hardware also and
-seen the impact on throughput and *max latency* of readers, especially in
-the presence of buffered writers.
+ drivers/rtc/Kconfig       |    4 +-
+ drivers/rtc/rtc-max6900.c |   83 ++++++++++++++++++++++++++++++++++++++++++----
+ 2 files changed, 79 insertions(+), 8 deletions(-)
 
-Thanks
-Vivek
-
-> 
-> Signed-off-by: Shaohua Li <shaohua.li@intel.com>
-> ---
->  block/cfq-iosched.c |   30 ++++++++++++++++++++++++++----
->  1 file changed, 26 insertions(+), 4 deletions(-)
-> 
-> Index: linux-2.6/block/cfq-iosched.c
-> ===================================================================
-> --- linux-2.6.orig/block/cfq-iosched.c
-> +++ linux-2.6/block/cfq-iosched.c
-> @@ -19,7 +19,7 @@
->   * tunables
->   */
->  /* max queue in one round of service */
-> -static const int cfq_quantum = 4;
-> +static const int cfq_quantum = 8;
->  static const int cfq_fifo_expire[2] = { HZ / 4, HZ / 8 };
->  /* maximum backwards seek, in KiB */
->  static const int cfq_back_max = 16 * 1024;
-> @@ -2215,6 +2215,19 @@ static int cfq_forced_dispatch(struct cf
->  	return dispatched;
->  }
->  
-> +static inline bool cfq_slice_used_soon(struct cfq_data *cfqd,
-> +	struct cfq_queue *cfqq)
-> +{
-> +	/* the queue hasn't finished any request, can't estimate */
-> +	if (cfq_cfqq_slice_new(cfqq))
-> +		return 1;
-> +	if (time_after(jiffies + cfqd->cfq_slice_idle * cfqq->dispatched,
-> +		cfqq->slice_end))
-> +		return 1;
-> +
-> +	return 0;
-> +}
-> +
->  static bool cfq_may_dispatch(struct cfq_data *cfqd, struct cfq_queue *cfqq)
->  {
->  	unsigned int max_dispatch;
-> @@ -2231,7 +2244,7 @@ static bool cfq_may_dispatch(struct cfq_
->  	if (cfqd->sync_flight && !cfq_cfqq_sync(cfqq))
->  		return false;
->  
-> -	max_dispatch = cfqd->cfq_quantum;
-> +	max_dispatch = max_t(unsigned int, cfqd->cfq_quantum / 2, 1);
->  	if (cfq_class_idle(cfqq))
->  		max_dispatch = 1;
->  
-> @@ -2248,13 +2261,22 @@ static bool cfq_may_dispatch(struct cfq_
->  		/*
->  		 * We have other queues, don't allow more IO from this one
->  		 */
-> -		if (cfqd->busy_queues > 1)
-> +		if (cfqd->busy_queues > 1 && cfq_slice_used_soon(cfqd, cfqq))
->  			return false;
->  
->  		/*
->  		 * Sole queue user, no limit
->  		 */
-> -		max_dispatch = -1;
-> +		if (cfqd->busy_queues == 1)
-> +			max_dispatch = -1;
-> +		else
-> +			/*
-> +			 * Normally we start throttling cfqq when cfq_quantum/2
-> +			 * requests have been dispatched. But we can drive
-> +			 * deeper queue depths at the beginning of slice
-> +			 * subjected to upper limit of cfq_quantum.
-> +			 * */
-> +			max_dispatch = cfqd->cfq_quantum;
->  	}
->  
->  	/*
+diff --git a/drivers/rtc/Kconfig b/drivers/rtc/Kconfig
+index 8167e9e..1f74b46 100644
+--- a/drivers/rtc/Kconfig
++++ b/drivers/rtc/Kconfig
+@@ -167,10 +167,10 @@ config RTC_DRV_DS1672
+ 	  will be called rtc-ds1672.
+ 
+ config RTC_DRV_MAX6900
+-	tristate "Maxim MAX6900"
++	tristate "Maxim MAX6900/MAX6909"
+ 	help
+ 	  If you say yes here you will get support for the
+-	  Maxim MAX6900 I2C RTC chip.
++	  Maxim MAX6900 and MAX6909 I2C RTC chips.
+ 
+ 	  This driver can also be built as a module. If so, the module
+ 	  will be called rtc-max6900.
+diff --git a/drivers/rtc/rtc-max6900.c b/drivers/rtc/rtc-max6900.c
+index a4f6665..5e0c289 100644
+--- a/drivers/rtc/rtc-max6900.c
++++ b/drivers/rtc/rtc-max6900.c
+@@ -1,8 +1,10 @@
+ /*
+- * rtc class driver for the Maxim MAX6900 chip
++ * rtc class driver for the Maxim MAX6900/MAX6909 chip
+  *
+  * Author: Dale Farnsworth <dale@farnsworth.org>
+  *
++ * SMBus support by Paul Mundt.
++ *
+  * based on previously existing rtc class drivers
+  *
+  * 2007 (c) MontaVista, Software, Inc.  This file is licensed under
+@@ -17,7 +19,7 @@
+ #include <linux/rtc.h>
+ #include <linux/delay.h>
+ 
+-#define DRV_VERSION "0.2"
++#define DRV_VERSION "0.3"
+ 
+ /*
+  * register indices
+@@ -39,6 +41,12 @@
+ #define MAX6900_REG_CT_WP		(1 << 7)	/* Write Protect */
+ 
+ /*
++ * index to command wrappers
++ */
++#define MAX6900_REG_WRITE(reg)		(0x80 + ((reg) * sizeof(u16)))
++#define MAX6900_REG_READ(reg)		(0x81 + ((reg) * sizeof(u16)))
++
++/*
+  * register read/write commands
+  */
+ #define MAX6900_REG_CONTROL_WRITE	0x8e
+@@ -52,7 +60,9 @@
+ 
+ static struct i2c_driver max6900_driver;
+ 
+-static int max6900_i2c_read_regs(struct i2c_client *client, u8 *buf)
++static unsigned int smbus_mode;	/* disabled by default, prefer bursting */
++
++static int max6900_i2c_burst_read(struct i2c_client *client, u8 *buf)
+ {
+ 	u8 reg_burst_read[1] = { MAX6900_REG_BURST_READ };
+ 	u8 reg_century_read[1] = { MAX6900_REG_CENTURY_READ };
+@@ -92,7 +102,7 @@ static int max6900_i2c_read_regs(struct i2c_client *client, u8 *buf)
+ 	return 0;
+ }
+ 
+-static int max6900_i2c_write_regs(struct i2c_client *client, u8 const *buf)
++static int max6900_i2c_burst_write(struct i2c_client *client, u8 const *buf)
+ {
+ 	u8 i2c_century_buf[1 + 1] = { MAX6900_REG_CENTURY_WRITE };
+ 	struct i2c_msg century_msgs[1] = {
+@@ -141,6 +151,58 @@ static int max6900_i2c_write_regs(struct i2c_client *client, u8 const *buf)
+ 	return -EIO;
+ }
+ 
++static int max6900_i2c_smbus_read(struct i2c_client *client, u8 *buf)
++{
++	int rc = 0, i;
++
++	for (i = 0; i < MAX6900_REG_LEN; i++) {
++		rc = i2c_smbus_read_byte_data(client, MAX6900_REG_READ(i));
++		if (rc < 0) {
++			dev_err(&client->dev, "%s: register read failed\n",
++				__func__);
++			return rc;
++		}
++		buf[i] = rc;
++	}
++
++	return 0;
++}
++
++static int max6900_i2c_smbus_write(struct i2c_client *client, u8 const *buf)
++{
++	int rc = 0, i;
++
++	for (i = 0; i < MAX6900_REG_LEN; i++)
++		rc |= i2c_smbus_write_byte_data(client,
++				MAX6900_REG_WRITE(i), buf[i]);
++
++	if (rc < 0) {
++		dev_err(&client->dev, "%s: register write failed\n",
++			__func__);
++		return -EIO;
++	}
++
++	return 0;
++}
++
++static inline int
++max6900_i2c_read_regs(struct i2c_client *client, u8 *buf)
++{
++	if (smbus_mode)
++		return max6900_i2c_smbus_read(client, buf);
++
++	return max6900_i2c_burst_read(client, buf);
++}
++
++static inline int
++max6900_i2c_write_regs(struct i2c_client *client, u8 const *buf)
++{
++	if (smbus_mode)
++		return max6900_i2c_smbus_write(client, buf);
++
++	return max6900_i2c_burst_write(client, buf);
++}
++
+ static int max6900_i2c_read_time(struct i2c_client *client, struct rtc_time *tm)
+ {
+ 	int rc;
+@@ -232,8 +294,17 @@ max6900_probe(struct i2c_client *client, const struct i2c_device_id *id)
+ {
+ 	struct rtc_device *rtc;
+ 
+-	if (!i2c_check_functionality(client->adapter, I2C_FUNC_I2C))
+-		return -ENODEV;
++	/*
++	 * Prefer burst mode if there's a fully functional I2C adapter to
++	 * work with, otherwise scrape by with SMBus.
++	 */
++	if (!i2c_check_functionality(client->adapter, I2C_FUNC_I2C)) {
++		if (i2c_check_functionality(client->adapter,
++				    I2C_FUNC_SMBUS_BYTE_DATA))
++			smbus_mode = 1;
++		else
++			return -ENODEV;
++	}
+ 
+ 	dev_info(&client->dev, "chip found, driver version " DRV_VERSION "\n");
+ 
