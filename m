@@ -1,114 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756790Ab0ANOGw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756825Ab0ANOIh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756790Ab0ANOGw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 09:06:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756773Ab0ANOGv
+	id S1756825Ab0ANOIh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 09:08:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756776Ab0ANOIg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 09:06:51 -0500
-Received: from shadbolt.e.decadent.org.uk ([88.96.1.126]:48655 "EHLO
-	shadbolt.e.decadent.org.uk" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756743Ab0ANOGu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 09:06:50 -0500
-From: Ben Hutchings <ben@decadent.org.uk>
-To: Rob Landley <rob@landley.net>
-Cc: kernel list <linux-kernel@vger.kernel.org>,
-       David Miller <davem@davemloft.net>
-In-Reply-To: <201001140457.00696.rob@landley.net>
-References: <201001140457.00696.rob@landley.net>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-mvhU4xIvC8KARoc+j0kI"
-Date: Thu, 14 Jan 2010 14:06:45 +0000
-Message-ID: <1263478005.17815.19.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 
-X-SA-Exim-Connect-IP: 192.168.4.185
-X-SA-Exim-Mail-From: ben@decadent.org.uk
-Subject: Re: git 9c501935a3cd broke the strace build.
-X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
-X-SA-Exim-Scanned: Yes (on shadbolt.decadent.org.uk)
+	Thu, 14 Jan 2010 09:08:36 -0500
+Received: from mga03.intel.com ([143.182.124.21]:36613 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756775Ab0ANOIg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jan 2010 09:08:36 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
+   d="scan'208";a="232699893"
+Date: Thu, 14 Jan 2010 22:08:15 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "Zheng, Shaohui" <shaohui.zheng@intel.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "ak@linux.intel.com" <ak@linux.intel.com>,
+       "y-goto@jp.fujitsu.com" <y-goto@jp.fujitsu.com>,
+       Dave Hansen <haveblue@us.ibm.com>, "x86@kernel.org" <x86@kernel.org>
+Subject: Re: [ RESEND PATCH v3] Memory-Hotplug: Fix the bug on interface
+	/dev/mem for 64-bit kernel
+Message-ID: <20100114140815.GA18580@localhost>
+References: <DA586906BA1FFC4384FCFD6429ECE860316C0133@shzsmsx502.ccr.corp.intel.com> <20100112170433.394be31b.kamezawa.hiroyu@jp.fujitsu.com> <20100114132451.GA2546@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100114132451.GA2546@localhost>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> > 2. pgdat->[start,end], totalram_pages etc...are updated at memory hotplug.
+> >    Please place the hook nearby them.
+> 
+> arch/x86/mm/init_64.c:arch_add_memory() updates max_pfn_mapped, in
+> this sense it's equally OK to update max_pfn/max_low_pfn etc before
+> the call to arch_add_memory() ;)
 
---=-mvhU4xIvC8KARoc+j0kI
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Shaohui, I'd suggest to update max_pfn/max_low_pfn/high_memory in
+arch/x86/mm/init_64.c:arch_add_memory() now, for X86_64.
 
-On Thu, 2010-01-14 at 04:57 -0600, Rob Landley wrote:
-> >    net: Support inclusion of <linux/socket.h> before <sys/socket.h>
-> >  =20
-> >    The following user-space program fails to compile:
-> >   =20
-> >        #include <linux/socket.h>
-> >        #include <sys/socket.h>
->=20
-> Did it ever?  Isn't #including both sys/thingy and a linux/thingy in the =
-same=20
-> program considered bad form?
+Later on we can add code to arch/x86/mm/init_32.c:arch_add_memory()
+for X86_32.
 
-I don't see why.
+The code cannot be shared anyway.
 
-Even if a source file doesn't include both of them directly, they may
-both be included indirectly.
-
-[...]
-> Now under 2.6.32 it dies with:
->=20
->   linux/netlink.h:35: error: expected specifier-qualifier-list before
->   'sa_family_t'
-
-I did actually ask for this to be reverted when I saw that it causes
-breakage elsewhere, but David Miller insisted that my change was
-correct.
-
-> And later on the strace build breaks because it doesn't #include=20
-> linux/netlink.h when it needs to.  (Why yes, autoconf _is_ brittle and ne=
-ar-
-> useless, thanks for noticing.)
->=20
-> *shrug*  I can patch the strace ./configure to include bits/socket.h inst=
-ead of=20
-> linux/socket.h,
-
-Including libc headers under 'bits' is a bad idea.
-
-> but what I can't understand is why _you_ couldn't.  (What use=20
-> case did this patch actually fix?  Would reversing the order of those two=
-=20
-> headers have helped?)
-
-I think that reversing the order of the two headers should work for
-kernel headers before and after this change.
-
-Ben.
-
---=20
-Ben Hutchings
-The generation of random numbers is too important to be left to chance.
-                                                            - Robert Coveyo=
-u
-
---=-mvhU4xIvC8KARoc+j0kI
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iQIVAwUAS08k7ee/yOyVhhEJAQL3YBAAqCN2S0NImJ/3gn1LwVkG44pa8xxEHrKl
-7pzbhHOMbIKsBO6pdpN0WB7idUY1Mq5UWT4D7bCI4bLqrtZCzb/3+w3C32MW7Kw4
-OG9uWHLgsi/JWbsejFAjos4y7TuWJ9SCSgOivdj/lJ7YSiGl9YOGCLskGMZHgkWv
-gXJnsIL/2Y7bK9Hyfp8MpKpTjfv3aZ1MOK5zROdqo3YHyX40mBsILARlY5ycDDua
-E426b2XZm83nBXRtkwK3xFoJTO5aq8XDH8M7aKHd54QxnVhMNij0F3L8SWf3XUjf
-LyeqUoeN4F5TVgUxtyvWMS73RGiC6NSzj+OrhzJ6aRw0NHBgAF0zJ1d3dXc0GyGP
-SGi+XfXIUnOiLjn/HhMKLrmPpXwJ8mbHBXRMwx8QK8+WBv1Kzype+DqQoXqzgTlB
-/q5E+dd5KEY/LOCd/Q4JDy5i+5zkjoegbFw9CzNPMz2TZlWfvnTcVQJWaVHHLsM8
-FlWX/O+ovbEzpkYXxa5+h03qhjBRyjDa5fxfA9drjM97PMHBcUvoY3KalTQvN5hA
-832T/799x+WKJtXW1gETbYINwU8zAmSDN1987sZCzaXaDML7sgX5Orf3sw8KHb8K
-Rp+plBveyBwJ9NGv+k64nWsYRLi5mhcLZF6xCu/rF/Xl/sfva2l3NwKYlR4lSCyL
-rl1H1XEyzck=
-=tM8/
------END PGP SIGNATURE-----
-
---=-mvhU4xIvC8KARoc+j0kI--
+Thanks,
+Fengguang
