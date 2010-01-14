@@ -1,58 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756229Ab0ANPkl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756752Ab0ANPmP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756229Ab0ANPkl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 10:40:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754132Ab0ANPkk
+	id S1756752Ab0ANPmP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 10:42:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754583Ab0ANPmO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 10:40:40 -0500
-Received: from khc.piap.pl ([195.187.100.11]:33505 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753548Ab0ANPkj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 10:40:39 -0500
-From: Krzysztof Halasa <khc@pm.waw.pl>
-To: Robert Hancock <hancockrwd@gmail.com>
-Cc: Jeff Garzik <jgarzik@pobox.com>, Seth Heasley <seth.heasley@intel.com>,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2.6.32.3] ahci: AHCI and RAID mode SATA patch for Intel  Cougar Point DeviceIDs
-References: <201001121700.18234.seth.heasley@intel.com>
-	<4B4D4EAA.2010109@gmail.com> <4B4DAA68.60608@pobox.com>
-	<51f3faa71001131611y343ad225n1acc73900fd49894@mail.gmail.com>
-Date: Thu, 14 Jan 2010 16:40:36 +0100
-In-Reply-To: <51f3faa71001131611y343ad225n1acc73900fd49894@mail.gmail.com>
-	(Robert Hancock's message of "Wed, 13 Jan 2010 18:11:43 -0600")
-Message-ID: <m3eilsitjf.fsf@intrepid.localdomain>
+	Thu, 14 Jan 2010 10:42:14 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:47471 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754348Ab0ANPmO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jan 2010 10:42:14 -0500
+Message-ID: <4B4F3A1A.2030906@zytor.com>
+Date: Thu, 14 Jan 2010 07:36:58 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: rostedt@goodmis.org
+CC: Jason Baron <jbaron@redhat.com>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, mathieu.desnoyers@polymtl.ca, tglx@linutronix.de,
+       andi@firstfloor.org, roland@redhat.com, rth@redhat.com,
+       mhiramat@redhat.com, Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [RFC PATCH 2/8] jump label v4 - x86: Introduce generic jump patching
+ without stop_machine
+References: <cover.1263247113.git.jbaron@redhat.com>	 <a4aa5bbcf5e62eaa5dd156d318a370236f28be09.1263247114.git.jbaron@redhat.com> <1263483139.28171.3857.camel@gandalf.stny.rr.com>
+In-Reply-To: <1263483139.28171.3857.camel@gandalf.stny.rr.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert Hancock <hancockrwd@gmail.com> writes:
+On 01/14/2010 07:32 AM, Steven Rostedt wrote:
+>> +
+>> +	/* Replacing 1 byte can be done atomically. */
+>> +	if (unlikely(len <= 1))
+>> +		return text_poke(addr, opcode, len);
+> 
+> This part bothers me. The text_poke just writes over the text directly
+> (using a separate mapping). But if that memory is in the pipeline of
+> another CPU, I think this could cause a GPF.
+> 
 
-> Well, ata_piix does have a couple of entries that are listed in ahci
-> as well, for ICH6 device IDs 0x2652 and 0x2653. For 0x2653 ata_piix
-> checks the class code to make sure it's IDE, but for the 0x2652 entry,
-> and in both cases in ahci, the class code isn't checked. Deleting the
-> specific entries from ahci for those controllers would seemingly
-> actually improve the situation, since then ahci wouldn't try and
-> attach to those devices when they indicate IDE class. ata_piix should
-> also should be checking for IDE class on 0x2652 as well.
+Could you clarify why you think that?
 
-Interestingly the ICH6* datasheet says:
-2651 is plain ICH6 (not RAID/AHCI capable)
-2652 is ICH6R
-2553 is ICH6-M
+	-hpa
 
-The subclass code is:
-for plain ICH6: 01 (IDE controller)
-for ICH6R: 04 (RAID controller)
-for ICH6-M: 01 (IDE) or 06 (SATA=AHCI)
-
-I think later chips change their subclass depending on
-IDE/AHCI/RAID BIOS setting, wasn't it the ICH6R case as well?
-
-Not checking the subclass for ICH6-M in ahci driver may be a bug,
-unless ahci can handle the chip in BIOS-set IDE mode. Not checking
-ICH6R code (or checking only for RAID) seems right, though.
 -- 
-Krzysztof Halasa
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
+
