@@ -1,126 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754888Ab0ANCqP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755087Ab0ANCrP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754888Ab0ANCqP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 21:46:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751560Ab0ANCqO
+	id S1755087Ab0ANCrP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 21:47:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753318Ab0ANCrO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 21:46:14 -0500
-Received: from gate.crashing.org ([63.228.1.57]:45154 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751351Ab0ANCqO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 21:46:14 -0500
-Subject: Re: drm/radeon/kms: fix up LVDS handling on macs (v2)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Alex Deucher <alexdeucher@gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Dave Airlie <airlied@redhat.com>,
-       Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
-In-Reply-To: <201001140059.o0E0x4wS006650@hera.kernel.org>
-References: <201001140059.o0E0x4wS006650@hera.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 14 Jan 2010 13:45:42 +1100
-Message-ID: <1263437142.724.320.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 8bit
+	Wed, 13 Jan 2010 21:47:14 -0500
+Received: from mail-ew0-f219.google.com ([209.85.219.219]:43603 "EHLO
+	mail-ew0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752642Ab0ANCrN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jan 2010 21:47:13 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=D3D4P9GUB6541Ik3CPT8kggawkaSK1ycfBXONuErzzXrDNtKP9ABldTBcGlhTPpSvK
+         3C63VFJCfOKHHZnbhhLqKGxtRz2ALnSjdmvTZMJmxwYnOsDNwFjYdRsluaX2ITrpJhIz
+         Zrnkm4pCwATuujurgQLmZ6K+mUHEshEoTlYVw=
+MIME-Version: 1.0
+In-Reply-To: <m1wrzpbcmi.fsf@fess.ebiederm.org>
+References: <a44ae5cd1001060454g22fb5a0ay8185bc680cd4fc67@mail.gmail.com>
+	 <2375c9f91001100058w4bac1cf9s183fc37eafbfde75@mail.gmail.com>
+	 <m13a2dho1o.fsf@fess.ebiederm.org> <201001101935.31882.rjw@sisk.pl>
+	 <m1wrzpbcmi.fsf@fess.ebiederm.org>
+Date: Wed, 13 Jan 2010 21:47:11 -0500
+Message-ID: <a44ae5cd1001131847l582ad373j9a5c944327a06a0a@mail.gmail.com>
+Subject: Re: 2.6.33-rc3 -- INFO: possible recursive locking -- 
+	(s_active){++++.+}, at: [<c10d2941>] sysfs_hash_and_remove+0x3d/0x4f
+From: Miles Lane <miles.lane@gmail.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       =?ISO-8859-1?Q?Am=E9rico_Wang?= <xiyou.wangcong@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>,
+       Arjan van de Ven <arjan@infradead.org>, Tejun Heo <tj@kernel.org>,
+       Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2010-01-14 at 00:59 +0000, Linux Kernel Mailing List wrote:
-> Gitweb:     http://git.kernel.org/linus/3890ddf56dbc0f804953198e65a7e406ed654576
-> Commit:     3890ddf56dbc0f804953198e65a7e406ed654576
-> Parent:     804c7559e9376c3ba78ae15a30337b1e24f8ae80
-> Author:     Alex Deucher <alexdeucher@gmail.com>
-> AuthorDate: Tue Jan 12 11:16:57 2010 -0500
-> Committer:  Dave Airlie <airlied@redhat.com>
-> CommitDate: Wed Jan 13 13:25:08 2010 +1000
-> 
->     drm/radeon/kms: fix up LVDS handling on macs (v2)
->     
->     Based on radeonfb code and recent ddx fix.
->     
->     v2: minor formatting fix from Michel Dänzer
->     
->     Signed-off-by: Alex Deucher <alexdeucher@gmail.com>
->     Reviewed-by: Michel Dänzer <michel@daenzer.net>
->     Tested-by: Michel Dänzer <michel@daenzer.net>
->     Signed-off-by: Dave Airlie <airlied@redhat.com>
+Hmm.  I tried your patch applied to a clean 2.6.33-rc4 tree, and used
+the same .config file.  This time the INFO looks a lot like my
+original bug report.  Weird.  Maybe I am doing something wrong!
 
-I have to dbl check that ... but I think the "Real" issue is that some
-panel have inverted polarity on the PWM signal. Thus if BLON is turned
-off the panels goes full backlight instead among other things :-)
-
-However, not all macs are the same. If you look at the radeonfb code,
-we do things differently depending on the mac model...
-
-I don't know if there's a "proper" way to figure out how the panel is
-really wired on these. Here, the ATI "mac" guys might be able to help
-by telling us how the Mac driver figures it out :-)
-
-Cheers,
-Ben.
-
-> ---
->  drivers/gpu/drm/radeon/radeon_legacy_encoders.c |   21 ++++++++++++++++++++-
->  1 files changed, 20 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/gpu/drm/radeon/radeon_legacy_encoders.c b/drivers/gpu/drm/radeon/radeon_legacy_encoders.c
-> index 981508f..38e45e2 100644
-> --- a/drivers/gpu/drm/radeon/radeon_legacy_encoders.c
-> +++ b/drivers/gpu/drm/radeon/radeon_legacy_encoders.c
-> @@ -46,6 +46,7 @@ static void radeon_legacy_lvds_dpms(struct drm_encoder *encoder, int mode)
->  	struct radeon_encoder *radeon_encoder = to_radeon_encoder(encoder);
->  	uint32_t lvds_gen_cntl, lvds_pll_cntl, pixclks_cntl, disp_pwr_man;
->  	int panel_pwr_delay = 2000;
-> +	bool is_mac = false;
->  	DRM_DEBUG("\n");
->  
->  	if (radeon_encoder->enc_priv) {
-> @@ -58,6 +59,15 @@ static void radeon_legacy_lvds_dpms(struct drm_encoder *encoder, int mode)
->  		}
->  	}
->  
-> +	/* macs (and possibly some x86 oem systems?) wire up LVDS strangely
-> +	 * Taken from radeonfb.
-> +	 */
-> +	if ((rdev->mode_info.connector_table == CT_IBOOK) ||
-> +	    (rdev->mode_info.connector_table == CT_POWERBOOK_EXTERNAL) ||
-> +	    (rdev->mode_info.connector_table == CT_POWERBOOK_INTERNAL) ||
-> +	    (rdev->mode_info.connector_table == CT_POWERBOOK_VGA))
-> +		is_mac = true;
-> +
->  	switch (mode) {
->  	case DRM_MODE_DPMS_ON:
->  		disp_pwr_man = RREG32(RADEON_DISP_PWR_MAN);
-> @@ -74,6 +84,8 @@ static void radeon_legacy_lvds_dpms(struct drm_encoder *encoder, int mode)
->  
->  		lvds_gen_cntl = RREG32(RADEON_LVDS_GEN_CNTL);
->  		lvds_gen_cntl |= (RADEON_LVDS_ON | RADEON_LVDS_EN | RADEON_LVDS_DIGON | RADEON_LVDS_BLON);
-> +		if (is_mac)
-> +			lvds_gen_cntl |= RADEON_LVDS_BL_MOD_EN;
->  		lvds_gen_cntl &= ~(RADEON_LVDS_DISPLAY_DIS);
->  		udelay(panel_pwr_delay * 1000);
->  		WREG32(RADEON_LVDS_GEN_CNTL, lvds_gen_cntl);
-> @@ -85,7 +97,14 @@ static void radeon_legacy_lvds_dpms(struct drm_encoder *encoder, int mode)
->  		WREG32_PLL_P(RADEON_PIXCLKS_CNTL, 0, ~RADEON_PIXCLK_LVDS_ALWAYS_ONb);
->  		lvds_gen_cntl = RREG32(RADEON_LVDS_GEN_CNTL);
->  		lvds_gen_cntl |= RADEON_LVDS_DISPLAY_DIS;
-> -		lvds_gen_cntl &= ~(RADEON_LVDS_ON | RADEON_LVDS_BLON | RADEON_LVDS_EN | RADEON_LVDS_DIGON);
-> +		if (is_mac) {
-> +			lvds_gen_cntl &= ~RADEON_LVDS_BL_MOD_EN;
-> +			WREG32(RADEON_LVDS_GEN_CNTL, lvds_gen_cntl);
-> +			lvds_gen_cntl &= ~(RADEON_LVDS_ON | RADEON_LVDS_EN);
-> +		} else {
-> +			WREG32(RADEON_LVDS_GEN_CNTL, lvds_gen_cntl);
-> +			lvds_gen_cntl &= ~(RADEON_LVDS_ON | RADEON_LVDS_BLON | RADEON_LVDS_EN | RADEON_LVDS_DIGON);
-> +		}
->  		udelay(panel_pwr_delay * 1000);
->  		WREG32(RADEON_LVDS_GEN_CNTL, lvds_gen_cntl);
->  		WREG32_PLL(RADEON_PIXCLKS_CNTL, pixclks_cntl);
-> --
-> To unsubscribe from this list: send the line "unsubscribe git-commits-head" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-
-
+[  291.124830] =============================================
+[  291.124837] [ INFO: possible recursive locking detected ]
+[  291.124846] 2.6.33-rc4 #3
+[  291.124851] ---------------------------------------------
+[  291.124858] pm-suspend/4725 is trying to acquire lock:
+[  291.124865]  (s_active){++++.+}, at: [<c10f6115>]
+sysfs_hash_and_remove+0x3d/0x4f
+[  291.124888]
+[  291.124890] but task is already holding lock:
+[  291.124896]  (s_active){++++.+}, at: [<c10f792d>]
+sysfs_get_active_two+0x16/0x34
+[  291.124914]
+[  291.124917] other info that might help us debug this:
+[  291.124925] 6 locks held by pm-suspend/4725:
+[  291.124930]  #0:  (&buffer->mutex){+.+.+.}, at: [<c10f68d0>]
+sysfs_write_file+0x25/0xeb
+[  291.124949]  #1:  (s_active){++++.+}, at: [<c10f792d>]
+sysfs_get_active_two+0x16/0x34
+[  291.124968]  #2:  (s_active/1){.+.+.+}, at: [<c10f7938>]
+sysfs_get_active_two+0x21/0x34
+[  291.124990]  #3:  (pm_mutex){+.+.+.}, at: [<c1066f92>] enter_state+0x26/0x114
+[  291.125010]  #4:  (cpu_add_remove_lock){+.+.+.}, at: [<c10359dc>]
+cpu_maps_update_begin+0xf/0x11
+[  291.125030]  #5:  (cpu_hotplug.lock){+.+.+.}, at: [<c1035a0a>]
+cpu_hotplug_begin+0x1d/0x40
+[  291.125049]
+[  291.125051] stack backtrace:
+[  291.125060] Pid: 4725, comm: pm-suspend Not tainted 2.6.33-rc4 #3
+[  291.125067] Call Trace:
+[  291.125081]  [<c12f458f>] ? printk+0xf/0x18
+[  291.125094]  [<c105c00d>] __lock_acquire+0x811/0xb67
+[  291.125108]  [<c105ae18>] ? mark_held_locks+0x43/0x5b
+[  291.125121]  [<c105b1f6>] ? debug_check_no_locks_freed+0x108/0x126
+[  291.125134]  [<c105b0b9>] ? trace_hardirqs_on_caller+0x119/0x141
+[  291.125147]  [<c10f6115>] ? sysfs_hash_and_remove+0x3d/0x4f
+[  291.125160]  [<c105c406>] lock_acquire+0xa3/0xcd
+[  291.125172]  [<c10f6115>] ? sysfs_hash_and_remove+0x3d/0x4f
+[  291.125186]  [<c10f77c2>] sysfs_addrm_finish+0xa6/0x10a
+[  291.125198]  [<c10f6115>] ? sysfs_hash_and_remove+0x3d/0x4f
+[  291.125214]  [<c10f6115>] sysfs_hash_and_remove+0x3d/0x4f
+[  291.125227]  [<c10f867d>] sysfs_remove_group+0x52/0x81
+[  291.125240]  [<c12f2b05>] mc_cpu_callback+0x73/0x9a
+[  291.125253]  [<c104fa68>] notifier_call_chain+0x51/0x78
+[  291.125266]  [<c104faf4>] __raw_notifier_call_chain+0xe/0x10
+[  291.125278]  [<c12e6cad>] _cpu_down+0x7a/0x235
+[  291.125291]  [<c1035a85>] disable_nonboot_cpus+0x58/0xe0
+[  291.125305]  [<c1066e90>] suspend_devices_and_enter+0xc1/0x19d
+[  291.125318]  [<c1067034>] enter_state+0xc8/0x114
+[  291.125330]  [<c1066899>] state_store+0x93/0xa7
+[  291.125342]  [<c1066806>] ? state_store+0x0/0xa7
+[  291.125355]  [<c1165ad5>] kobj_attr_store+0x16/0x22
+[  291.125368]  [<c10f696b>] sysfs_write_file+0xc0/0xeb
+[  291.125381]  [<c10f68ab>] ? sysfs_write_file+0x0/0xeb
+[  291.125394]  [<c10b749e>] vfs_write+0x80/0xdf
+[  291.125407]  [<c10b7591>] sys_write+0x3b/0x5d
+[  291.125420]  [<c10031e3>] sysenter_do_call+0x12/0x3c
+[  291.228068] CPU 1 is now offline
