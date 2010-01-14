@@ -1,48 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755077Ab0ANLty@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755248Ab0ANLxH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755077Ab0ANLty (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 06:49:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754120Ab0ANLtx
+	id S1755248Ab0ANLxH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 06:53:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755092Ab0ANLxF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 06:49:53 -0500
-Received: from poutre.nerim.net ([62.4.16.124]:56040 "EHLO poutre.nerim.net"
+	Thu, 14 Jan 2010 06:53:05 -0500
+Received: from www.tglx.de ([62.245.132.106]:43777 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751427Ab0ANLtw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 06:49:52 -0500
-Date: Thu, 14 Jan 2010 12:49:48 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Dan Carpenter <error27@gmail.com>
-Cc: Tomaz Mertelj <tomaz.mertelj@guest.arnes.si>, linux-kernel@vger.kernel.org,
-       lm-sensors@lm-sensors.org
-Subject: Re: [lm-sensors] [patch] hwmon/amc6821: double unlock bug
-Message-ID: <20100114124948.79c9d4d3@hyperion.delvare>
-In-Reply-To: <20100114103020.GA4939@bicker>
-References: <20100114103020.GA4939@bicker>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1752305Ab0ANLxE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jan 2010 06:53:04 -0500
+Date: Thu, 14 Jan 2010 12:52:38 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Xiaotian Feng <dfeng@redhat.com>
+cc: linux-kernel@vger.kernel.org, Magnus Damm <damm@igel.co.jp>,
+       H Hartley Sweeten <hsweeten@visionengravers.com>
+Subject: Re: [PATCH] clockevent: don't remove broadcast device when cpu is
+ dead
+In-Reply-To: <4B4F0376.3090906@redhat.com>
+Message-ID: <alpine.LFD.2.00.1001141248510.6420@localhost.localdomain>
+References: <1262834564-13033-1-git-send-email-dfeng@redhat.com> <alpine.LFD.2.00.1001121300190.6420@localhost.localdomain> <4B4D2678.5090601@redhat.com> <alpine.LFD.2.00.1001132305280.6420@localhost.localdomain> <4B4F0376.3090906@redhat.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 14 Jan 2010 13:30:20 +0300, Dan Carpenter wrote:
-> The mutex gets unlocked after we goto EXIT.
+On Thu, 14 Jan 2010, Xiaotian Feng wrote:
+> On 01/14/2010 06:08 AM, Thomas Gleixner wrote:
+> > On Wed, 13 Jan 2010, Xiaotian Feng wrote:
+> > > On 01/12/2010 09:20 PM, Thomas Gleixner wrote:
+> > > > On Thu, 7 Jan 2010, Xiaotian Feng wrote:
+> > > > 
+> > > > > Marc reported BUG during shutdown, after debugging, kernel is trying
+> > > > > to remove a broadcast device which mode is CLOCK_EVT_MODE_ONESHOT.
+> > > > > 
+> > > > > The root cause for this bug is that in clockevents_notify,
+> > > > > "cpumask_weight(dev->cpumask) == 1" is always true even if dev is a
+> > > > 
+> > > > Why is cpumask_weight(dev->cpumask) == 1 always true when we shutdown
+> > > > a non boot cpu ?
+> > > > 
+> > > > The broadcast device is not a per cpu device and the cpumask should
+> > > > not only contain the CPU which is shut down !
+> > > 
+> > > At least for hpet broadcast dev, it's dev->cpumask is only contain the CPU
+> > > which it is initialized from.
+> > 
+> > Which is fundamentaly wrong and the root cause of the problem. I'll
+> > have a look tomorrow morning when my brain is more awake than now.
 > 
-> Signed-off-by: Dan Carpenter <error27@gmail.com>
+> hpet_legacy_clockevent_register is trying to register new CE, but replace
+> failed,
+> then in tick_check_new_device -> tick_check_broadcast_device, the legacy hpet
+> CE
+> was registered as multicast device, but its dev->cpumask is cpumask of
+> smp_processor_id().
 > 
-> --- orig/drivers/hwmon/amc6821.c	2010-01-14 13:22:23.000000000 +0300
-> +++ devel/drivers/hwmon/amc6821.c	2010-01-14 13:22:30.000000000 +0300
-> @@ -686,7 +686,6 @@ static ssize_t set_fan1_div(
->  		data->fan1_div = 4;
->  		break;
->  	default:
-> -		mutex_unlock(&data->update_lock);
->  		count = -EINVAL;
->  		goto EXIT;
->  	}
+> on my system its dev->cpumask is cpumask of 0, but in Marc's, dev->cpumask is
+> cpumask of 4.
+> So when kernel is trying to offline cpu 4, the broadcast hpet is removed.
 
-Good catch. Applied, thanks.
+I know, but the point is that a broadcast device should not be bound
+to the CPU which is registering it. Working on a fix.
 
--- 
-Jean Delvare
+Thanks,
+
+	tglx
