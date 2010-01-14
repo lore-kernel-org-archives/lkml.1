@@ -1,54 +1,179 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756825Ab0ANOIh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756848Ab0ANOSK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756825Ab0ANOIh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 09:08:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756776Ab0ANOIg
+	id S1756848Ab0ANOSK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 09:18:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756776Ab0ANOSJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 09:08:36 -0500
-Received: from mga03.intel.com ([143.182.124.21]:36613 "EHLO mga03.intel.com"
+	Thu, 14 Jan 2010 09:18:09 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:32819 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756775Ab0ANOIg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 09:08:36 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
-   d="scan'208";a="232699893"
-Date: Thu, 14 Jan 2010 22:08:15 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "Zheng, Shaohui" <shaohui.zheng@intel.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "ak@linux.intel.com" <ak@linux.intel.com>,
-       "y-goto@jp.fujitsu.com" <y-goto@jp.fujitsu.com>,
-       Dave Hansen <haveblue@us.ibm.com>, "x86@kernel.org" <x86@kernel.org>
-Subject: Re: [ RESEND PATCH v3] Memory-Hotplug: Fix the bug on interface
-	/dev/mem for 64-bit kernel
-Message-ID: <20100114140815.GA18580@localhost>
-References: <DA586906BA1FFC4384FCFD6429ECE860316C0133@shzsmsx502.ccr.corp.intel.com> <20100112170433.394be31b.kamezawa.hiroyu@jp.fujitsu.com> <20100114132451.GA2546@localhost>
+	id S1756782Ab0ANOSI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jan 2010 09:18:08 -0500
+Date: Thu, 14 Jan 2010 15:18:04 +0100
+From: Jan Kara <jack@suse.cz>
+To: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+Cc: linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Andreas Dilger <adilger@sun.com>, "Theodore Ts'o" <tytso@mit.edu>,
+       Jan Kara <jack@suse.cz>, Nick Piggin <npiggin@suse.de>,
+       dle-develop@lists.sourceforge.net,
+       Satoshi OSHIMA <satoshi.oshima.fk@hitachi.com>
+Subject: Re: [PATCH] ext3: prevent reread after write IO error v2
+Message-ID: <20100114141803.GB3146@quack.suse.cz>
+References: <4B4EB5B9.4020809@hitachi.com>
+ <4B4EDE5C.8040600@hitachi.com>
+ <4B4EEE86.7080807@hitachi.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20100114132451.GA2546@localhost>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <4B4EEE86.7080807@hitachi.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > 2. pgdat->[start,end], totalram_pages etc...are updated at memory hotplug.
-> >    Please place the hook nearby them.
+On Thu 14-01-10 19:14:30, Hidehiro Kawai wrote:
+> This patch fixes the similar bug fixed by commit 95450f5a.
 > 
-> arch/x86/mm/init_64.c:arch_add_memory() updates max_pfn_mapped, in
-> this sense it's equally OK to update max_pfn/max_low_pfn etc before
-> the call to arch_add_memory() ;)
+> If a directory is modified, its data block is journaled as metadata
+> and finally written back to the right place.  Now, we assume a
+> transient write erorr happens on that writeback.  Uptodate flag of
+> the buffer is cleared by write error, so next access on the buffer
+> causes a reread from disk.  This means it breaks the filesystems
+> consistency.
+> 
+> To prevent old directory data from being reread, this patch set
+> uptodate flag again in the case of after write error before issuing
+> the read operation.  The write error on the directory's data block
+> is detected at the time of journal checkpointing or discarded if a
+> rewrite by another modification succeeds, so no problem.
+> 
+> Similarly, this kind of consistency breakage can be caused by
+> a transient write error on a bitmap block.
+  Good catch, that's indeed a problem.
 
-Shaohui, I'd suggest to update max_pfn/max_low_pfn/high_memory in
-arch/x86/mm/init_64.c:arch_add_memory() now, for X86_64.
+> I tested this patch by using fault injection approach.
+> 
+> By the way, I think the right fix is to keep uptodate flag on write
+> error, but it gives a big impact.  We have to confirm whether
+> over 200 buffer_uptodate's are used for real uptodate check or write
+> error check.  For now, I adopt the quick-fix solution.
+  Yes that needs to be solved. I also looked into it and it's too much work
+to do it in a one big sweep. But I think we could do the conversion
+filesystem by filesystem - see below.
+  Admittedly, I don't like your solution very much. It looks strange to
+check write_io_error when *reading* the buffer and I'm afraid we could
+introduce bugs e.g. by clearing write_io_error bit so that ext3_bread would
+then fail to detect the error condition or by some other code deciding to
+read the buffer from disk via other function than just ext3_bread. So I
+think it would be much better to set back uptodate flag shortly after the
+failed write or not clear it at all.
+  Now here's how I think we could achieve that without having to change all
+other filesystems: We could create a new superblock flag which would mean
+that "this filesystem handles write_io_error and doesn't want to clear
+uptodate flag". Filesystems with this capability would set this flag when
+calling get_sb_bdev. And if write IO fails we check this flag
+(via bh->b_bdev->bd_super->s_flags) and clear / not clear uptodate flag
+accordingly. What do you think?
+  I know it's more work than your quick fix but it should fix all these
+problems for ext3 once for all and it would be much cleaner...
 
-Later on we can add code to arch/x86/mm/init_32.c:arch_add_memory()
-for X86_32.
-
-The code cannot be shared anyway.
-
-Thanks,
-Fengguang
+									Honza
+> 
+> Signed-off-by: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+> ---
+>  fs/ext3/balloc.c |   12 ++++++++++++
+>  fs/ext3/inode.c  |   13 +++++++++++++
+>  fs/ext3/namei.c  |   15 ++++++++++++++-
+>  3 files changed, 39 insertions(+), 1 deletions(-)
+> 
+> diff --git a/fs/ext3/balloc.c b/fs/ext3/balloc.c
+> index 27967f9..5dc5ccf 100644
+> --- a/fs/ext3/balloc.c
+> +++ b/fs/ext3/balloc.c
+> @@ -156,6 +156,18 @@ read_block_bitmap(struct super_block *sb, unsigned int block_group)
+>  	if (likely(bh_uptodate_or_lock(bh)))
+>  		return bh;
+>  
+> +	/*
+> +	 * uptodate flag may have been cleared by a previous (transient)
+> +	 * write IO error.  In this case, we don't want to reread its
+> +	 * old on-disk data.  Actually the buffer has the latest data,
+> +	 * so set uptodate flag again.
+> +	 */
+> +	if (buffer_write_io_error(bh)) {
+> +		set_buffer_uptodate(bh);
+> +		unlock_buffer(bh);
+> +		return bh;
+> +	}
+> +
+>  	if (bh_submit_read(bh) < 0) {
+>  		brelse(bh);
+>  		ext3_error(sb, __func__,
+> diff --git a/fs/ext3/inode.c b/fs/ext3/inode.c
+> index 455e6e6..67d7849 100644
+> --- a/fs/ext3/inode.c
+> +++ b/fs/ext3/inode.c
+> @@ -1077,10 +1077,23 @@ struct buffer_head *ext3_bread(handle_t *handle, struct inode *inode,
+>  		return bh;
+>  	if (buffer_uptodate(bh))
+>  		return bh;
+> +
+> +	/*
+> +	 * uptodate flag may have been cleared by a previous (transient)
+> +	 * write IO error.  In this case, we don't want to reread its
+> +	 * old on-disk data.  Actually the buffer has the latest data,
+> +	 * so set uptodate flag again.
+> +	 */
+> +	if (buffer_write_io_error(bh)) {
+> +		set_buffer_uptodate(bh);
+> +		return bh;
+> +	}
+> +
+>  	ll_rw_block(READ_META, 1, &bh);
+>  	wait_on_buffer(bh);
+>  	if (buffer_uptodate(bh))
+>  		return bh;
+> +
+>  	put_bh(bh);
+>  	*err = -EIO;
+>  	return NULL;
+> diff --git a/fs/ext3/namei.c b/fs/ext3/namei.c
+> index 7b0e44f..7ed8e45 100644
+> --- a/fs/ext3/namei.c
+> +++ b/fs/ext3/namei.c
+> @@ -909,7 +909,20 @@ restart:
+>  				num++;
+>  				bh = ext3_getblk(NULL, dir, b++, 0, &err);
+>  				bh_use[ra_max] = bh;
+> -				if (bh)
+> +				if (!bh || buffer_uptodate(bh))
+> +					continue;
+> +
+> +				/*
+> +				 * uptodate flag may have been cleared by a
+> +				 * previous (transient) write IO error.  In
+> +				 * this case, we don't want to reread its
+> +				 * old on-disk data.  Actually the buffer
+> +				 * has the latest data, so set uptodate flag
+> +				 * again.
+> +				 */
+> +				if (buffer_write_io_error(bh))
+> +					set_buffer_uptodate(bh);
+> +				else
+>  					ll_rw_block(READ_META, 1, &bh);
+>  			}
+>  		}
+> -- 
+> 1.6.0.3
+> 
+> 
+> 
+> -- 
+> Hidehiro Kawai
+> Hitachi, Systems Development Laboratory
+> Linux Technology Center
+> 
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
