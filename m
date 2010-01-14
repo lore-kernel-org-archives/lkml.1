@@ -1,69 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757359Ab0ANRZp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757369Ab0ANR3S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757359Ab0ANRZp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 12:25:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757342Ab0ANRZp
+	id S1757369Ab0ANR3S (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 12:29:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757337Ab0ANR3R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 12:25:45 -0500
-Received: from mail3.caviumnetworks.com ([12.108.191.235]:15188 "EHLO
-	mail3.caviumnetworks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756901Ab0ANRZo (ORCPT
+	Thu, 14 Jan 2010 12:29:17 -0500
+Received: from GHC07.GHC.ANDREW.CMU.EDU ([128.2.100.140]:48239 "EHLO
+	ghc07.ghc.andrew.cmu.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757323Ab0ANR3Q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 12:25:44 -0500
-Message-ID: <4B4F534B.5050007@caviumnetworks.com>
-Date: Thu, 14 Jan 2010 09:24:27 -0800
-From: David Daney <ddaney@caviumnetworks.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Thu, 14 Jan 2010 12:29:16 -0500
+X-Greylist: delayed 511 seconds by postgrey-1.27 at vger.kernel.org; Thu, 14 Jan 2010 12:29:16 EST
+Date: Thu, 14 Jan 2010 12:20:06 -0500
+From: Ben Blum <bblum@andrew.cmu.edu>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: akpm@linux-foundation.org, Ben Blum <bblum@andrew.cmu.edu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: mmotm 2010-01-13-12-17 uploaded (cgroup)
+Message-ID: <20100114172006.GA8081@ghc07.ghc.andrew.cmu.edu>
+References: <201001132042.o0DKgaSR027272@imap1.linux-foundation.org>
+ <20100114080748.4eaf91d6.randy.dunlap@oracle.com>
 MIME-Version: 1.0
-To: Joe Perches <joe@perches.com>, Ralf Baechle <ralf@linux-mips.org>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mips <linux-mips@linux-mips.org>
-Subject: Re: [PATCH 00/24] MAINTAINERS: Add "Q" patchwork entries
-References: <cover.1263452908.git.joe@perches.com>
-In-Reply-To: <cover.1263452908.git.joe@perches.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 14 Jan 2010 17:24:30.0139 (UTC) FILETIME=[6E1D10B0:01CA953E]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100114080748.4eaf91d6.randy.dunlap@oracle.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Joe Perches wrote:
-> Keep the patchwork site entries in MAINTAINERS
+On Thu, Jan 14, 2010 at 08:07:48AM -0800, Randy Dunlap wrote:
+> On Wed, 13 Jan 2010 12:17:36 -0800 akpm@linux-foundation.org wrote:
 > 
-> Joe Perches (24):
->   MAINTAINERS: Document new "Q:" patchwork queue type
->   MAINTAINERS: 9P FILE SYSTEM - Add "Q" patchwork entry
->   MAINTAINERS: ACPI - Add "Q" patchwork entry
->   MAINTAINERS: BTRFS FILE SYSTEM - Add "Q" patchwork entry
->   MAINTAINERS: CIFS - Add "Q" patchwork entry
->   MAINTAINERS: DEVICE-MAPPER - Add "Q" patchwork entry
->   MAINTAINERS: EXT4 FILE SYSTEM - Add "Q" patchwork entry
->   MAINTAINERS: IDE SUBSYSTEM - Add "Q" patchwork entry
->   MAINTAINERS: INFINIBAND SUBSYSTEM - Add "Q" patchwork entry
->   MAINTAINERS: INPUT DRIVERS - Add "Q" patchwork entry
->   MAINTAINERS: KCONFIG - Add "Q" patchwork entry
->   MAINTAINERS: LINUX FOR POWERPC - Add "Q" patchwork entry
->   MAINTAINERS: V4L/DVB - Add "Q" patchwork entry
->   MAINTAINERS: MTD - Add "Q" patchwork entry
->   MAINTAINERS: NETWORKING [WIRELESS] - Add "Q" patchwork entry
->   MAINTAINERS: OMAP - Add "Q" patchwork entry
->   MAINTAINERS: PARISC ARCHITECTURE - Add "Q" patchwork entry
->   MAINTAINERS: PCI SUBSYSTEM - Add "Q" patchwork entry
->   MAINTAINERS: REAL TIME CLOCK - Add "Q" patchwork entry
->   MAINTAINERS: TI DAVINCI - Add "Q" patchwork entry
->   MAINTAINERS: SPARC - Add "Q" patchwork entry
->   MAINTAINERS: SPI SUBSYSTEM - Add "Q" patchwork entry
->   MAINTAINERS: SUPERH - Add "Q" patchwork entry
->   MAINTAINERS: THE REST (LKML) - Add "Q" patchwork entry
+> > The mm-of-the-moment snapshot 2010-01-13-12-17 has been uploaded to
+> > 
+> >    http://userweb.kernel.org/~akpm/mmotm/
+> > 
+> > and will soon be available at
+> > 
+> >    git://zen-kernel.org/kernel/mmotm.git
 > 
->  MAINTAINERS |   26 +++++++++++++++++++++++++-
->  1 files changed, 25 insertions(+), 1 deletions(-)
+> 
+> patch:  cgroups-subsystem-module-unloading.patch
+> 
+> When CONFIG_MODULE_UNLOAD is not enabled:
+> 
+> kernel/cgroup.c:1013: error: implicit declaration of function 'module_refcount'
+> 
+> 
+> 
+> ---
+> ~Randy
 > 
 
-I wonder if the MIPS patchwork site should also be included:
+Argh, my fault. try_module_get and module_put tricked me by not
+depending on that config option while module_refcount did. Fix here:
 
-http://patchwork.linux-mips.org/project/linux-mips/list/
+From: Ben Blum <bblum@andrew.cmu.edu>
+Signed-off-by: Ben Blum <bblum@andrew.cmu.edu>
 
-
-David Daney
+diff --git a/kernel/cgroup.c b/kernel/cgroup.c
+index 391ff41..32e001e 100644
+--- a/kernel/cgroup.c
++++ b/kernel/cgroup.c
+@@ -964,7 +964,9 @@ static int rebind_subsystems(struct cgroupfs_root *root,
+ 			 * drop the extra reference.
+ 			 */
+ 			module_put(ss->module);
++#ifdef CONFIG_MODULE_UNLOAD
+ 			BUG_ON(ss->module && !module_refcount(ss->module));
++#endif
+ 		} else {
+ 			/* Subsystem state shouldn't exist */
+ 			BUG_ON(cgrp->subsys[i]);
