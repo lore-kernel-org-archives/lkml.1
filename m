@@ -1,86 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756473Ab0ANIPI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756495Ab0ANIRl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756473Ab0ANIPI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 03:15:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756257Ab0ANIPG
+	id S1756495Ab0ANIRl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 03:17:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756403Ab0ANIRk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 03:15:06 -0500
-Received: from mga14.intel.com ([143.182.124.37]:60518 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756132Ab0ANIPG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 03:15:06 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
-   d="scan'208";a="232610208"
-Date: Thu, 14 Jan 2010 16:06:01 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Matt Mackall <mpm@selenic.com>, Andi Kleen <andi@firstfloor.org>,
-       LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.33 pagemap endless read loop
-Message-ID: <20100114080600.GA4739@localhost>
-References: <20100110020955.GB25323@basil.fritz.box> <20100113141648.42eff724.akpm@linux-foundation.org> <1263421562.29868.5000.camel@calx> <20100113143055.7bea30c5.akpm@linux-foundation.org> <1263423916.29868.5009.camel@calx> <20100113151502.fa425247.akpm@linux-foundation.org> <20100114055319.GA17671@localhost> <20100113221013.b1beecb4.akpm@linux-foundation.org>
+	Thu, 14 Jan 2010 03:17:40 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:36737 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755627Ab0ANIRj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jan 2010 03:17:39 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Gleb Natapov <gleb@redhat.com>
+Subject: Re: [PATCH v5] add MAP_UNLOCKED mmap flag
+Cc: kosaki.motohiro@jp.fujitsu.com, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, linux-api@vger.kernel.org,
+       akpm@linux-foundation.org
+In-Reply-To: <20100114080117.GL18808@redhat.com>
+References: <20100114162327.673E.A69D9226@jp.fujitsu.com> <20100114080117.GL18808@redhat.com>
+Message-Id: <20100114170247.6747.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20100113221013.b1beecb4.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Thu, 14 Jan 2010 17:17:36 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 14, 2010 at 02:10:13PM +0800, Andrew Morton wrote:
-> On Thu, 14 Jan 2010 13:53:19 +0800 Wu Fengguang <fengguang.wu@intel.com> wrote:
-> 
-> > On Thu, Jan 14, 2010 at 07:15:02AM +0800, Andrew Morton wrote:
+> > Hmm..
+> > Your answer didn't match I wanted.
+> Then I don't get what you want.
 
-> > @@ -740,6 +740,11 @@ static ssize_t pagemap_read(struct file 
-> >  	if (!ptrace_may_access(task, PTRACE_MODE_READ))
-> >  		goto out_task;
-> >  
-> > +	/* stop dumb cp/cat */
-> > +	ret = -EFAULT;
-> > +	if (!*ppos)
-> > +		goto out_task;
-> > +
-> >  	ret = -EINVAL;
-> >  	/* file position must be aligned */
-> >  	if ((*ppos % PM_ENTRY_BYTES) || (count % PM_ENTRY_BYTES))
-> 
-> Seems simple.  But is there a usecase for reading at that offset? 
-> I think it's possible to map a page at 0 with MAP_FIXED.  I forget..
+I want to know the benefit of the patch for patch reviewing.
 
-How about this trick?
-Tests show that cp/cat will exit if read nothing :)
 
----
-pagemap: early return on unmapped areas
+> > few additional questions.
+> > 
+> > - Why don't you change your application? It seems natural way than kernel change.
+> There is no way to change my application and achieve what I've described
+> in a multithreaded app.
 
-This helps stop dumb cp/cat early instead of loop for days:
+Then, we don't recommend to use mlockall(). I don't hope to hear your conclusion,
+it is not objectivization. I hope to hear why you reached such conclusion.
 
-http://bugzilla.kernel.org/show_bug.cgi?id=15041
 
-This also serves as an optimization to normal pagemap users (eg.
-page-types).
+> > - Why do you want your virtual machine have mlockall? AFAIK, current majority
+> >   virtual machine doesn't.
+> It is absolutely irrelevant for that patch, but just because you ask I
+> want to measure the cost of swapping out of a guest memory.
 
-CC: Andi Kleen <andi@firstfloor.org> 
-CC: Matt Mackall <mpm@selenic.com>
-CC: <stable@kernel.org>
-Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
----
- fs/proc/task_mmu.c |    4 ++++
- 1 file changed, 4 insertions(+)
+No. if you stop to use mlockall, the issue is vanished.
 
---- linux-mm.orig/fs/proc/task_mmu.c	2010-01-14 13:38:44.000000000 +0800
-+++ linux-mm/fs/proc/task_mmu.c	2010-01-14 15:54:28.000000000 +0800
-@@ -586,6 +586,10 @@ static int pagemap_pte_hole(unsigned lon
- 	struct pagemapread *pm = walk->private;
- 	unsigned long addr;
- 	int err = 0;
-+
-+	if ((end - start) / PAGE_SIZE > pm->end - pm->out)
-+		return PM_END_OF_BUFFER;
-+
- 	for (addr = start; addr < end; addr += PAGE_SIZE) {
- 		err = add_to_pagemap(addr, PM_NOT_PRESENT, pm);
- 		if (err)
+
+> > - If this feature added, average distro user can get any benefit?
+> > 
+> ?! Is this some kind of new measure? There are plenty of much more
+> invasive features that don't bring benefits to an average distro user.
+> This feature can bring benefit to embedded/RT developers.
+
+I mean who get benifit?
+
+
+> > I mean, many application developrs want to add their specific feature
+> > into kernel. but if we allow it unlimitedly, major syscall become
+> > the trushbox of pretty toy feature soon.
+> > 
+> And if application developer wants to extend kernel in a way that it
+> will be possible to do something that was not possible before why is
+> this a bad thing? I would agree with you if for my problem was userspace
+> solution, but there is none. The mmap interface is asymmetric in regards
+> to mlock currently. There is MAP_LOCKED, but no MAP_UNLOCKED. Why
+> MAP_LOCKED is useful then?
+
+Why? Because this is formal LKML reviewing process. I'm reviewing your
+patch for YOU.
+
+If there is no objective reason, I don't want to continue reviewing.
+
+
+
