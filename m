@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757012Ab0ANWbU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756881Ab0ANWbs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757012Ab0ANWbU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 17:31:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756881Ab0ANWbN
+	id S1756881Ab0ANWbs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 17:31:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750715Ab0ANWbm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 17:31:13 -0500
-Received: from kroah.org ([198.145.64.141]:60673 "EHLO coco.kroah.org"
+	Thu, 14 Jan 2010 17:31:42 -0500
+Received: from kroah.org ([198.145.64.141]:60667 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756874Ab0ANW24 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 17:28:56 -0500
+	id S1756843Ab0ANW2z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jan 2010 17:28:55 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, stable-review@kernel.org
 Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       Felix Fietkau <nbd@openwrt.org>,
+       Dan Carpenter <error27@gmail.com>,
        "John W. Linville" <linville@tuxdriver.com>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 43/52] mac80211: add missing sanity checks for action frames
-Date: Thu, 14 Jan 2010 14:27:22 -0800
-Message-Id: <1263508051-7868-43-git-send-email-gregkh@suse.de>
+Subject: [PATCH 42/52] iwl: off by one bug
+Date: Thu, 14 Jan 2010 14:27:21 -0800
+Message-Id: <1263508051-7868-42-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.6
-In-Reply-To: <1263508051-7868-42-git-send-email-gregkh@suse.de>
+In-Reply-To: <1263508051-7868-41-git-send-email-gregkh@suse.de>
 References: <20100114222551.GA7839@suse.de>
  <1263508051-7868-1-git-send-email-gregkh@suse.de>
  <1263508051-7868-2-git-send-email-gregkh@suse.de>
@@ -62,60 +62,44 @@ References: <20100114222551.GA7839@suse.de>
  <1263508051-7868-39-git-send-email-gregkh@suse.de>
  <1263508051-7868-40-git-send-email-gregkh@suse.de>
  <1263508051-7868-41-git-send-email-gregkh@suse.de>
- <1263508051-7868-42-git-send-email-gregkh@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Felix Fietkau <nbd@openwrt.org>
+From: Dan Carpenter <error27@gmail.com>
 
-commit d79074488083ec0d7ecd15352192dc1631f25643 upstream.
+commit 8a9ac160e844c7ce8074f6aa531feefb4acdee7c upstream.
 
-Various missing sanity checks caused rejected action frames to be
-interpreted as channel switch announcements, which can cause a client
-mode interface to switch away from its operating channel, thereby losing
-connectivity. This patch ensures that only spectrum management action
-frames are processed by the CSA handling function and prevents rejected
-action frames from getting processed by the MLME code.
+tid is used as an array offset.
+	agg = &priv->stations[sta_id].tid[tid].agg;
+	iwl4965_tx_status_reply_tx(priv, agg, tx_resp, txq_id, index);
 
-Signed-off-by: Felix Fietkau <nbd@openwrt.org>
+It should be limitted to MAX_TID_COUNT - 1;
+        struct iwl_tid_data tid[MAX_TID_COUNT];
+
+regards,
+dan carpenter
+
+Signed-off-by: Dan Carpenter <error27@gmail.com>
 Signed-off-by: John W. Linville <linville@tuxdriver.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- net/mac80211/mlme.c |    4 +++-
- net/mac80211/rx.c   |    4 ++++
- 2 files changed, 7 insertions(+), 1 deletions(-)
+ drivers/net/wireless/iwlwifi/iwl-4965.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/net/mac80211/mlme.c b/net/mac80211/mlme.c
-index f13d181..6cae295 100644
---- a/net/mac80211/mlme.c
-+++ b/net/mac80211/mlme.c
-@@ -1953,7 +1953,9 @@ static void ieee80211_sta_rx_queued_mgmt(struct ieee80211_sub_if_data *sdata,
- 			rma = ieee80211_rx_mgmt_disassoc(sdata, mgmt, skb->len);
- 			break;
- 		case IEEE80211_STYPE_ACTION:
--			/* XXX: differentiate, can only happen for CSA now! */
-+			if (mgmt->u.action.category != WLAN_CATEGORY_SPECTRUM_MGMT)
-+				break;
-+
- 			ieee80211_sta_process_chanswitch(sdata,
- 					&mgmt->u.action.u.chan_switch.sw_elem,
- 					ifmgd->associated);
-diff --git a/net/mac80211/rx.c b/net/mac80211/rx.c
-index 4e14754..674d8c2 100644
---- a/net/mac80211/rx.c
-+++ b/net/mac80211/rx.c
-@@ -1808,6 +1808,10 @@ ieee80211_rx_h_action(struct ieee80211_rx_data *rx)
- 		}
- 		break;
- 	default:
-+		/* do not process rejected action frames */
-+		if (mgmt->u.action.category & 0x80)
-+			return RX_DROP_MONITOR;
-+
- 		return RX_CONTINUE;
- 	}
- 
+diff --git a/drivers/net/wireless/iwlwifi/iwl-4965.c b/drivers/net/wireless/iwlwifi/iwl-4965.c
+index f4e2e84..99331ed 100644
+--- a/drivers/net/wireless/iwlwifi/iwl-4965.c
++++ b/drivers/net/wireless/iwlwifi/iwl-4965.c
+@@ -2087,7 +2087,7 @@ static void iwl4965_rx_reply_tx(struct iwl_priv *priv,
+ 	struct ieee80211_tx_info *info;
+ 	struct iwl4965_tx_resp *tx_resp = (void *)&pkt->u.raw[0];
+ 	u32  status = le32_to_cpu(tx_resp->u.status);
+-	int tid = MAX_TID_COUNT;
++	int tid = MAX_TID_COUNT - 1;
+ 	int sta_id;
+ 	int freed;
+ 	u8 *qc = NULL;
 -- 
 1.6.6
 
