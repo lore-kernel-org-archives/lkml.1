@@ -1,60 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756585Ab0ANVyk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753065Ab0ANWFs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756585Ab0ANVyk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 16:54:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751852Ab0ANVyi
+	id S1753065Ab0ANWFs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 17:05:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751920Ab0ANWFr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 16:54:38 -0500
-Received: from mail-fx0-f225.google.com ([209.85.220.225]:37542 "EHLO
-	mail-fx0-f225.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756058Ab0ANVyg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 16:54:36 -0500
-Subject: Driver-Core: require valid action string in uevent trigger
-From: Kay Sievers <kay.sievers@vrfy.org>
-To: Greg KH <greg@kroah.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 14 Jan 2010 22:54:37 +0100
-Message-ID: <1263506077.2074.8.camel@yio.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.29.4 
-Content-Transfer-Encoding: 7bit
+	Thu, 14 Jan 2010 17:05:47 -0500
+Received: from cantor.suse.de ([195.135.220.2]:56349 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751259Ab0ANWFq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jan 2010 17:05:46 -0500
+Date: Thu, 14 Jan 2010 23:05:43 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+To: "Rick L. Vinyard, Jr." <rvinyard@cs.nmsu.edu>
+Cc: Jaya Kumar <jayakumar.lkml@gmail.com>, linux-kernel@vger.kernel.org,
+       felipe.balbi@nokia.com, Pavel Machek <pavel@ucw.cz>,
+       linux-fbdev@vger.kernel.org, krzysztof.h1@wp.pl,
+       Andrew Morton <akpm@linux-foundation.org>, linux-usb@vger.kernel.org,
+       Oliver Neukum <oliver@neukum.org>, linux-input@vger.kernel.org,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: Re: Best way to post Logitech G13 driver 0.0.4?
+In-Reply-To: <fbd89f64a86fc72184658fe9b27509f3.squirrel@intranet.cs.nmsu.edu>
+Message-ID: <alpine.LNX.2.00.1001142305010.30977@pobox.suse.cz>
+References: <201001071623.o07GNOB4022157@mustang.cs.nmsu.edu>    <45a44e481001071832q40d6f913w2ccf89c4c45a692a@mail.gmail.com>    <5370b38ca0c149470c0e364627c56ee4.squirrel@intranet.cs.nmsu.edu>    <alpine.LNX.2.00.1001091441180.7275@pobox.suse.cz>   
+ <cf0603d7c734f836f0b4a64815d649ae.squirrel@intranet.cs.nmsu.edu> <fbd89f64a86fc72184658fe9b27509f3.squirrel@intranet.cs.nmsu.edu>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Kay Sievers <kay.sievers@vrfy.org>
-Subject: Driver-Core: require valid action string in uevent trigger
+On Thu, 14 Jan 2010, Rick L. Vinyard, Jr. wrote:
 
-No longer fall back to "add" and warn, but always require a valid
-action-string written to the "uevent" file. 
+> What would be the best way to post 0.0.4 of the driver; as a diff against
+> the previous 0.0.3 patch to emphasize the changes or as a diff against the
+> torvalds tree to show the patch in its entirety?
 
-Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
----
- drivers/base/core.c |   11 +++--------
- 1 file changed, 3 insertions(+), 8 deletions(-)
+Diff against current Linus' tree (or linux-next tree) is much preferred 
+over any other options.
 
---- a/drivers/base/core.c
-+++ b/drivers/base/core.c
-@@ -306,15 +306,10 @@ static ssize_t store_uevent(struct devic
- {
- 	enum kobject_action action;
- 
--	if (kobject_action_type(buf, count, &action) == 0) {
-+	if (kobject_action_type(buf, count, &action) == 0)
- 		kobject_uevent(&dev->kobj, action);
--		goto out;
--	}
--
--	dev_err(dev, "uevent: unsupported action-string; this will "
--		     "be ignored in a future kernel version\n");
--	kobject_uevent(&dev->kobj, KOBJ_ADD);
--out:
-+	else
-+		dev_err(dev, "uevent: unknown action-string\n");
- 	return count;
- }
- 
+Thanks,
 
-
+-- 
+Jiri Kosina
+SUSE Labs, Novell Inc.
