@@ -1,47 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756544Ab0ANNJ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756631Ab0ANNJy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756544Ab0ANNJ2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 08:09:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756214Ab0ANNJ1
+	id S1756631Ab0ANNJy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 08:09:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756390Ab0ANNJx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 08:09:27 -0500
-Received: from lider.pardus.org.tr ([193.140.100.216]:45067 "EHLO
-	lider.pardus.org.tr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755956Ab0ANNJ0 (ORCPT
+	Thu, 14 Jan 2010 08:09:53 -0500
+Received: from mail-ew0-f209.google.com ([209.85.219.209]:62447 "EHLO
+	mail-ew0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756214Ab0ANNJw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 08:09:26 -0500
-Message-ID: <4B4F1764.2040406@pardus.org.tr>
-Date: Thu, 14 Jan 2010 15:08:52 +0200
-From: =?UTF-8?B?T3phbiDDh2HEn2xheWFu?= <ozan@pardus.org.tr>
-User-Agent: Thunderbird 2.0.0.23 (X11/20071115)
+	Thu, 14 Jan 2010 08:09:52 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=uBu2XROCqpFfh8WYjQwkuvo+Nihj0qrF1864e+I1mqL9BOyigRPKyi1SrEbrQ6r/Lb
+         Qvjzj6qLmuMqiSpBKLt6aobYpJl+tIr806VqwJhymGXiJcfWJhRw5wx2pA+rVGaMHTG9
+         erf9kTpFRUMNjJRziWM0AOHSbnXjzAe2V/ejc=
+Date: Thu, 14 Jan 2010 14:09:45 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH 0/6] perf: Various event scheduling improvements
+Message-ID: <20100114130943.GE5033@nowhere>
+References: <1263087500-14215-1-git-send-regression-fweisbec@gmail.com> <1263473354.4244.316.camel@laptop>
 MIME-Version: 1.0
-To: Yinghai Lu <yinghai@kernel.org>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       hpa@zytor.com, mingo@elte.hu, a.p.zijlstra@chello.nl,
-       jaswinder@kernel.org
-Subject: Re: Boot hangs after "Freeing initrd memory" with 2.6.31.11
-References: <4B4E1633.8010700@pardus.org.tr> <4B4EC0A1.3090503@pardus.org.tr> <4B4ECB1C.6070000@kernel.org> <4B4EF35D.3040203@pardus.org.tr>
-In-Reply-To: <4B4EF35D.3040203@pardus.org.tr>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1263473354.4244.316.camel@laptop>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ozan Çağlayan wrote On 14-01-2010 12:35:
-> Yinghai Lu wrote On 14-01-2010 09:43:
->> On 01/13/2010 10:58 PM, Ozan Çağlayan wrote:
->>> Ozan Çağlayan wrote On 13-01-2010 20:51:
+On Thu, Jan 14, 2010 at 01:49:14PM +0100, Peter Zijlstra wrote:
+> On Sun, 2010-01-10 at 02:38 +0100, Frederic Weisbecker wrote:
+> > Hi,
+> > 
+> > These patches bring (I hope) a bit more scalability and fairness
+> > to the perf events scheduling.
+> > 
+> > But this is only an introduction as there is still some work to
+> > do, like ensuring all pinned events have been scheduled before
+> > flexible ones (for now we schedule in order cpu pinned, cpu flexible,
+> > task pinned, task flexible), among other improvements.
 > 
->> can you just deselect CONFIG_X86_CPU_DEBUG in your .config ?
-> 
-> Yes that fixed the issue. I now reenabled it and reverted the following commit which is 1/2 commits
-> modifying cpu_debug code between 2.6.30..2.6.31:
-> 
-> From 5095f59bda6793a7b8f0856096d6893fe98e0e51 Mon Sep 17 00:00:00 2001
-> From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-> Date: Fri, 5 Jun 2009 23:27:17 +0530
-> Subject: [PATCH] x86: cpu_debug: Remove model information to reduce encoding-decoding
+> Right, so 1-5 look fine (although I'd have folded 5 into 3), thanks!
 
-Reverting this commit on top of 2.6.31.11 fixes the boot hangs with AMD Athlon XP processors.
-I'll double check with other reporters in a day or two.
+
+Ok, I'll merge 5 into 3 and send it as a pull request to Ingo
+with your ack.
+
+Thanks.
+
