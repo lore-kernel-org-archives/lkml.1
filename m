@@ -1,50 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753765Ab0ANEVN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754576Ab0ANEXO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753765Ab0ANEVN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 23:21:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752642Ab0ANEVK
+	id S1754576Ab0ANEXO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 23:23:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752192Ab0ANEXO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 23:21:10 -0500
-Received: from gate.crashing.org ([63.228.1.57]:35698 "EHLO gate.crashing.org"
+	Wed, 13 Jan 2010 23:23:14 -0500
+Received: from kroah.org ([198.145.64.141]:56050 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751386Ab0ANEVJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 23:21:09 -0500
-Subject: Re: sys_recvmmsg: wire up or not?
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>, linux-arch@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Linux/m68k <linux-m68k@vger.kernel.org>
-In-Reply-To: <200912261212.14264.arnd@arndb.de>
-References: <10f740e80912260239n17bbbd08w6c3065c12bde9c95@mail.gmail.com>
-	 <200912261212.14264.arnd@arndb.de>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 14 Jan 2010 15:20:33 +1100
-Message-ID: <1263442833.724.325.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
-Content-Transfer-Encoding: 7bit
+	id S1751798Ab0ANEXN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jan 2010 23:23:13 -0500
+Date: Wed, 13 Jan 2010 19:49:09 -0800
+From: Greg KH <greg@kroah.com>
+To: Kay Sievers <kay.sievers@vrfy.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Driver-Core: devtmpfs - reset inode permissions before
+	unlinking
+Message-ID: <20100114034909.GB27634@kroah.com>
+References: <1263388596.26006.1.camel@yio.site>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1263388596.26006.1.camel@yio.site>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-> It's also rather inconsistent with the last socket call that was added, sys_accept4.
-> Some architectures that normally define socket calls (parisc, sh) are missing both
-> accept4 and recvmmsg, while others that don't have recvmsg now get recvmmsg.
+On Wed, Jan 13, 2010 at 02:16:36PM +0100, Kay Sievers wrote:
+> From: Kay Sievers <kay.sievers@vrfy.org>
+> Subject: Driver-Core: devtmpfs - reset inode permissions before unlinking
 > 
-> In particular, i386 has recvmmsg now, which caused the warning that you saw.
-> I guess that one should be removed, and maybe we need a better logic for
-> determining which syscalls you actually want. Deriving it from asm-generic/unistd.h
-> instead of arch/x86/include/asm/unistd_32.h is probably better, but would still
-> give the wrong answer for multiplexed system calls like socketcall or ipc on 
-> existing architectures.
+> Before unlinking the inode, reset the current permissions of possible
+> references like hardlinks, so granted permissions can not be retained
+> across the device lifetime by creating hardlinks, in the unusual case
+> that there is a user-writable directory on the same filesystem.
 
-Anything happening here ? We're getting that warning on ppc too despite
-the fact that we use socketcall like x86... Should checksyscall be made
-smarter or the syscall just removed from x86 ? :-)
+Is this something that we need to worry about for existing users
+(2.6.32 and .33), or can it wait until 2.6.34?
 
-Cheers,
-Ben.
+thanks,
 
-
+greg k-h
