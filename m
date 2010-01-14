@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756007Ab0ANW2k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757571Ab0ANWg7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756007Ab0ANW2k (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 17:28:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753047Ab0ANW2h
+	id S1757571Ab0ANWg7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 17:36:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756126Ab0ANWg5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 17:28:37 -0500
-Received: from kroah.org ([198.145.64.141]:60570 "EHLO coco.kroah.org"
+	Thu, 14 Jan 2010 17:36:57 -0500
+Received: from kroah.org ([198.145.64.141]:60562 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755787Ab0ANW2f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 17:28:35 -0500
+	id S1755710Ab0ANW2e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jan 2010 17:28:34 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, stable-review@kernel.org
 Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       Stephen Hemminger <shemminger@vyatta.com>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       Len Brown <len.brown@intel.com>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Bjorn Helgaas <bjorn.helgaas@hp.com>,
+       David Hardeman <david@hardeman.nu>, Dmitry Torokhov <dtor@mail.ru>,
+       Alessandro Zummo <a.zummo@towertech.it>,
+       Paul Gortmaker <p_gortmaker@yahoo.com>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 21/52] drivers/cpuidle/governors/menu.c: fix undefined reference to `__udivdi3'
-Date: Thu, 14 Jan 2010 14:27:00 -0800
-Message-Id: <1263508051-7868-21-git-send-email-gregkh@suse.de>
+Subject: [PATCH 20/52] rtc_cmos: convert shutdown to new pnp_driver->shutdown
+Date: Thu, 14 Jan 2010 14:26:59 -0800
+Message-Id: <1263508051-7868-20-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.6
-In-Reply-To: <1263508051-7868-20-git-send-email-gregkh@suse.de>
+In-Reply-To: <1263508051-7868-19-git-send-email-gregkh@suse.de>
 References: <20100114222551.GA7839@suse.de>
  <1263508051-7868-1-git-send-email-gregkh@suse.de>
  <1263508051-7868-2-git-send-email-gregkh@suse.de>
@@ -43,68 +43,73 @@ References: <20100114222551.GA7839@suse.de>
  <1263508051-7868-17-git-send-email-gregkh@suse.de>
  <1263508051-7868-18-git-send-email-gregkh@suse.de>
  <1263508051-7868-19-git-send-email-gregkh@suse.de>
- <1263508051-7868-20-git-send-email-gregkh@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Stephen Hemminger <shemminger@linux-foundation.org>
+From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
 
-commit 5787536edf18e33d06e2bf038bfd0910f4def213 upstream.
+commit 004731b2c7c658d36bee167cb1e1a399c2cbccc9 upstream.
 
-menu: use proper 64 bit math
+commit abd6633c67925f90775bb74755f9c547e30f1f20 ("pnp: add a shutdown
+method to pnp drivers") adds shutdown method to bus driver blindly.  With
+it, driver->shutdown is no longer valid.
 
-The new menu governor is incorrectly doing a 64 bit divide.  Compile
-tested only
+Use pnp_driver->shutdown instead.
 
-Signed-off-by: Stephen Hemminger <shemminger@vyatta.com>
-Cc: Arjan van de Ven <arjan@linux.intel.com>
-Cc: Len Brown <len.brown@intel.com>
-Cc: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Addresses http://bugzilla.kernel.org/show_bug.cgi?id=14889
+
+Signed-off-by: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Reported-by: Malte Schröder <maltesch@gmx.de>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Cc: David Hardeman <david@hardeman.nu>
+Cc: Dmitry Torokhov <dtor@mail.ru>
+Cc: Alessandro Zummo <a.zummo@towertech.it>
+Cc: Paul Gortmaker <p_gortmaker@yahoo.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/cpuidle/governors/menu.c |   12 +++++++++---
- 1 files changed, 9 insertions(+), 3 deletions(-)
+ drivers/rtc/rtc-cmos.c |    9 +++------
+ 1 files changed, 3 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
-index 6810443..73655ae 100644
---- a/drivers/cpuidle/governors/menu.c
-+++ b/drivers/cpuidle/governors/menu.c
-@@ -18,6 +18,7 @@
- #include <linux/hrtimer.h>
- #include <linux/tick.h>
- #include <linux/sched.h>
-+#include <linux/math64.h>
+diff --git a/drivers/rtc/rtc-cmos.c b/drivers/rtc/rtc-cmos.c
+index f7a4701..473e5f2 100644
+--- a/drivers/rtc/rtc-cmos.c
++++ b/drivers/rtc/rtc-cmos.c
+@@ -1099,9 +1099,9 @@ static int cmos_pnp_resume(struct pnp_dev *pnp)
+ #define	cmos_pnp_resume		NULL
+ #endif
  
- #define BUCKETS 12
- #define RESOLUTION 1024
-@@ -169,6 +170,12 @@ static DEFINE_PER_CPU(struct menu_device, menu_devices);
+-static void cmos_pnp_shutdown(struct device *pdev)
++static void cmos_pnp_shutdown(struct pnp_dev *pnp)
+ {
+-	if (system_state == SYSTEM_POWER_OFF && !cmos_poweroff(pdev))
++	if (system_state == SYSTEM_POWER_OFF && !cmos_poweroff(&pnp->dev))
+ 		return;
  
- static void menu_update(struct cpuidle_device *dev);
+ 	cmos_do_shutdown();
+@@ -1120,15 +1120,12 @@ static struct pnp_driver cmos_pnp_driver = {
+ 	.id_table	= rtc_ids,
+ 	.probe		= cmos_pnp_probe,
+ 	.remove		= __exit_p(cmos_pnp_remove),
++	.shutdown	= cmos_pnp_shutdown,
  
-+/* This implements DIV_ROUND_CLOSEST but avoids 64 bit division */
-+static u64 div_round64(u64 dividend, u32 divisor)
-+{
-+	return div_u64(dividend + (divisor / 2), divisor);
-+}
-+
- /**
-  * menu_select - selects the next idle state to enter
-  * @dev: the CPU
-@@ -209,9 +216,8 @@ static int menu_select(struct cpuidle_device *dev)
- 		data->correction_factor[data->bucket] = RESOLUTION * DECAY;
+ 	/* flag ensures resume() gets called, and stops syslog spam */
+ 	.flags		= PNP_DRIVER_RES_DO_NOT_CHANGE,
+ 	.suspend	= cmos_pnp_suspend,
+ 	.resume		= cmos_pnp_resume,
+-	.driver		= {
+-		.name	  = (char *)driver_name,
+-		.shutdown = cmos_pnp_shutdown,
+-	}
+ };
  
- 	/* Make sure to round up for half microseconds */
--	data->predicted_us = DIV_ROUND_CLOSEST(
--		data->expected_us * data->correction_factor[data->bucket],
--		RESOLUTION * DECAY);
-+	data->predicted_us = div_round64(data->expected_us * data->correction_factor[data->bucket],
-+					 RESOLUTION * DECAY);
- 
- 	/*
- 	 * We want to default to C1 (hlt), not to busy polling
+ #endif	/* CONFIG_PNP */
 -- 
 1.6.6
 
