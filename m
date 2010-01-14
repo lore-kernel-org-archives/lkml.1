@@ -1,262 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932229Ab0ANPBi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756865Ab0ANPB2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932229Ab0ANPBi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 10:01:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932217Ab0ANPBd
+	id S1756865Ab0ANPB2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 10:01:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756767Ab0ANPBS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 10:01:33 -0500
-Received: from mail.windriver.com ([147.11.1.11]:47835 "EHLO
+	Thu, 14 Jan 2010 10:01:18 -0500
+Received: from mail.windriver.com ([147.11.1.11]:47760 "EHLO
 	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932210Ab0ANPBb (ORCPT
+	with ESMTP id S1756688Ab0ANPBQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 10:01:31 -0500
+	Thu, 14 Jan 2010 10:01:16 -0500
 From: Jason Wessel <jason.wessel@windriver.com>
 To: linux-kernel@vger.kernel.org
 Cc: kgdb-bugreport@lists.sourceforge.net, mingo@elte.hu,
-       Jason Wessel <jason.wessel@windriver.com>,
-       David Airlie <airlied@linux.ie>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: [PATCH 33/40] kms,kdb: Force unblank a console device
-Date: Thu, 14 Jan 2010 08:59:29 -0600
-Message-Id: <1263481176-1897-34-git-send-email-jason.wessel@windriver.com>
+       Jason Wessel <jason.wessel@windriver.com>
+Subject: [PATCH 27/40] debug_core,kdb: Allow the debug core to process a recursive debug entry
+Date: Thu, 14 Jan 2010 08:59:23 -0600
+Message-Id: <1263481176-1897-28-git-send-email-jason.wessel@windriver.com>
 X-Mailer: git-send-email 1.6.3.1.9.g95405b
 In-Reply-To: <1263481176-1897-1-git-send-email-jason.wessel@windriver.com>
 References: <1263481176-1897-1-git-send-email-jason.wessel@windriver.com>
-X-OriginalArrivalTime: 14 Jan 2010 15:01:13.0241 (UTC) FILETIME=[69F68890:01CA952A]
+X-OriginalArrivalTime: 14 Jan 2010 15:01:01.0007 (UTC) FILETIME=[62ABC5F0:01CA952A]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The kgdboc pre exception handler must atomically save the state of the
-existing VC console and activate it, if it is blanked.
+This allows kdb to debug a crash with in the kms code with a
+single level recursive re-entry.
 
-Before restoring the kernel to a running state, the kgdboc post
-exception handler will restore the state of the VC variables that got
-changed while atomic.
-
-Helper macros were added to allow kms code to declare debugger safe
-mutexes which can be used so long as the debugger restores the state
-before resuming.
-
-CC: David Airlie <airlied@linux.ie>
-CC: Jesse Barnes <jbarnes@virtuousgeek.org>
 Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
 ---
- drivers/serial/kgdboc.c       |   26 ++++++++++++----
- drivers/video/console/fbcon.c |    7 ++++
- include/linux/kgdb.h          |   19 ++++++++++++
- kernel/debug/Makefile         |    1 +
- kernel/debug/debug_core.c     |    1 +
- kernel/debug/kms_hooks.c      |   62 +++++++++++++++++++++++++++++++++++++++++
- 6 files changed, 109 insertions(+), 7 deletions(-)
- create mode 100644 kernel/debug/kms_hooks.c
+ kernel/debug/debug_core.c |    7 +++++++
+ 1 files changed, 7 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/serial/kgdboc.c b/drivers/serial/kgdboc.c
-index 93b18f9..05d1605 100644
---- a/drivers/serial/kgdboc.c
-+++ b/drivers/serial/kgdboc.c
-@@ -204,13 +204,19 @@ static int param_set_kgdboc_var(const char *kmessage, struct kernel_param *kp)
- 	return configure_kgdboc();
- }
- 
-+static int dbg_restore_graphics;
-+
- static void kgdboc_pre_exp_handler(void)
- {
--	if (kgdboc_use_kms && dbg_kms_console_core &&
--	    dbg_kms_console_core->activate_console)
--		if (dbg_kms_console_core->activate_console(dbg_kms_console_core))
-+	if (!dbg_restore_graphics && kgdboc_use_kms && dbg_kms_console_core &&
-+	    dbg_kms_console_core->activate_console) {
-+		if (dbg_kms_console_core->activate_console(dbg_kms_console_core)) {
- 			printk(KERN_ERR "kgdboc: kernel mode switch error\n");
--
-+		} else {
-+			dbg_restore_graphics = 1;
-+			dbg_pre_vt_hook();
-+		}
-+	}
- 	/* Increment the module count when the debugger is active */
- 	if (!kgdb_connected)
- 		try_module_get(THIS_MODULE);
-@@ -222,9 +228,15 @@ static void kgdboc_post_exp_handler(void)
- 	if (!kgdb_connected)
- 		module_put(THIS_MODULE);
- 	if (kgdboc_use_kms && dbg_kms_console_core &&
--	    dbg_kms_console_core->restore_console)
--		if (dbg_kms_console_core->restore_console(dbg_kms_console_core))
--			printk(KERN_ERR "kgdboc: graphics restore failed\n");
-+	    dbg_kms_console_core->restore_console) {
-+		if (dbg_restore_graphics) {
-+			if (dbg_kms_console_core->restore_console(dbg_kms_console_core))
-+				printk(KERN_ERR "kgdboc: graphics restore failed\n");
-+			dbg_restore_graphics = 0;
-+			dbg_post_vt_hook();
-+		}
-+	}
-+
- #ifdef CONFIG_KDB_KEYBOARD
- 	/* If using the kdb keyboard driver release all the keys. */
- 	if (kgdboc_use_kbd)
-diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
-index 3681c6a..6f2ed5a 100644
---- a/drivers/video/console/fbcon.c
-+++ b/drivers/video/console/fbcon.c
-@@ -75,6 +75,7 @@
- #include <linux/init.h>
- #include <linux/interrupt.h>
- #include <linux/crc32.h> /* For counting font checksums */
-+#include <linux/kgdb.h>
- #include <asm/fb.h>
- #include <asm/irq.h>
- #include <asm/system.h>
-@@ -2318,6 +2319,12 @@ static int fbcon_blank(struct vc_data *vc, int blank, int mode_switch)
- 		}
- 	}
- 
-+	if (in_dbg_master()) {
-+		if (info->fbops->fb_blank)
-+			info->fbops->fb_blank(blank, info);
-+		return 0;
-+	}
-+
-  	if (!fbcon_is_inactive(vc, info)) {
- 		if (ops->blank_state != blank) {
- 			ops->blank_state = blank;
-diff --git a/include/linux/kgdb.h b/include/linux/kgdb.h
-index 68fa243..df67f05 100644
---- a/include/linux/kgdb.h
-+++ b/include/linux/kgdb.h
-@@ -288,6 +288,14 @@ extern void __init early_kgdboc_init(void);
- #endif /* CONFIG_KGDB */
- 
- /* Common to all that include kgdb.h */
-+#ifdef CONFIG_VT
-+extern void dbg_pre_vt_hook(void);
-+extern void dbg_post_vt_hook(void);
-+#else /* ! CONFIG_VT */
-+#define dbg_pre_vt_hook()
-+#define dbg_post_vt_hook()
-+#endif /* CONFIG_VT */
-+
- struct dbg_kms_console_ops {
- 	int (*activate_console) (struct dbg_kms_console_ops *ops);
- 	int (*restore_console) (struct dbg_kms_console_ops *ops);
-@@ -297,6 +305,14 @@ struct dbg_kms_console_ops {
- extern struct dbg_kms_console_ops *dbg_kms_console_core;
- extern int dbg_kms_console_ops_register(struct dbg_kms_console_ops *ops);
- extern int dbg_kms_console_ops_unregister(struct dbg_kms_console_ops *ops);
-+#define in_dbg_master() \
-+	(raw_smp_processor_id() == atomic_read(&kgdb_active))
-+#define dbg_safe_mutex_lock(x) \
-+	if (!in_dbg_master()) \
-+		mutex_lock(x)
-+#define dbg_safe_mutex_unlock(x) \
-+	if (!in_dbg_master()) \
-+		mutex_unlock(x)
- #else /* ! CONFIG_KGDB */
- static inline int dbg_kms_console_ops_register(struct dbg_kms_console_ops *ops)
- {
-@@ -306,5 +322,8 @@ static inline int dbg_kms_console_ops_unregister(struct dbg_kms_console_ops *ops
- {
-        return 0;
- }
-+#define in_dbg_master() (0)
-+#define dbg_safe_mutex_lock(x) mutex_lock(x)
-+#define dbg_safe_mutex_unlock(x) mutex_unlock(x)
- #endif /* ! CONFIG_KGDB */
- #endif /* _KGDB_H_ */
-diff --git a/kernel/debug/Makefile b/kernel/debug/Makefile
-index c72de00..fe342c0 100644
---- a/kernel/debug/Makefile
-+++ b/kernel/debug/Makefile
-@@ -3,5 +3,6 @@
- #
- 
- obj-$(CONFIG_KGDB) += debug_core.o gdbstub.o
-+obj-$(CONFIG_VT) += kms_hooks.o
- obj-$(CONFIG_KGDB_KDB) += kdb/
- 
 diff --git a/kernel/debug/debug_core.c b/kernel/debug/debug_core.c
-index 82c7c47..6ca3f7c 100644
+index e02c552..344e332 100644
 --- a/kernel/debug/debug_core.c
 +++ b/kernel/debug/debug_core.c
-@@ -106,6 +106,7 @@ static struct kgdb_bkpt		kgdb_break[KGDB_MAX_BREAKPOINTS] = {
-  * The CPU# of the active CPU, or -1 if none:
-  */
- atomic_t			kgdb_active = ATOMIC_INIT(-1);
-+EXPORT_SYMBOL_GPL(kgdb_active);
+@@ -443,6 +443,10 @@ static int kgdb_reenter_check(struct kgdb_state *ks)
+ 	}
  
- /*
-  * We use NR_CPUs not PERCPU, in case kgdb is used to debug early
-diff --git a/kernel/debug/kms_hooks.c b/kernel/debug/kms_hooks.c
-new file mode 100644
-index 0000000..c56b7ce
---- /dev/null
-+++ b/kernel/debug/kms_hooks.c
-@@ -0,0 +1,62 @@
-+/*
-+ * Created by: Jason Wessel <jason.wessel@windriver.com>
-+ *
-+ * Copyright (c) 2009 Wind River Systems, Inc.  All Rights Reserved.
-+ *
-+ * This file is licensed under the terms of the GNU General Public
-+ * License version 2. This program is licensed "as is" without any
-+ * warranty of any kind, whether express or implied.
-+ */
-+
-+#ifdef CONFIG_VT
-+#include <linux/kgdb.h>
-+#include <linux/console.h>
-+#include <linux/vt_kern.h>
-+#include <linux/selection.h>
-+#include <linux/kdb.h>
-+#include "kdb/kdb_private.h"
-+
-+static int dbg_orig_vc_mode;
-+static int saved_fg_con;
-+static int saved_last_con;
-+static int saved_want_con;
-+
-+void dbg_pre_vt_hook(void)
-+{
-+	struct vc_data *vc = vc_cons[fg_console].d;
-+	saved_fg_con = fg_console;
-+	saved_last_con = last_console;
-+	saved_want_con = want_console;
-+	dbg_orig_vc_mode = vc->vc_mode;
-+	vc->vc_mode = KD_TEXT;
-+	console_blanked = 0;
-+	vc->vc_sw->con_blank(vc, 0, 1);
-+	vc->vc_sw->con_set_palette(vc, color_table);
+ 	printk(KERN_CRIT "KGDB: re-enter exception: ALL breakpoints killed\n");
 +#ifdef CONFIG_KGDB_KDB
-+	/* Set the initial LINES variable if it is not already set */
-+	if (vc->vc_rows < 999) {
-+		int linecount;
-+		char lns[4];
-+		const char *setargs[3] = {
-+			"set",
-+			"LINES",
-+			lns,
-+		};
-+		if (kdbgetintenv(setargs[0], &linecount)) {
-+			snprintf(lns, 4, "%i", vc->vc_rows);
-+			kdb_set(2, setargs);
-+		}
-+	}
-+#endif /* CONFIG_KGDB_KDB */
-+}
-+EXPORT_SYMBOL_GPL(dbg_pre_vt_hook);
++	/* Allow kdb to debug itself one level */
++	return 0;
++#endif
+ 	dump_stack();
+ 	panic("Recursive entry to debugger");
+ 
+@@ -487,6 +491,9 @@ acquirelock:
+ 	smp_wmb();
+ 	atomic_set(&cpu_in_kgdb[cpu], 1);
+ 
++	if (exception_level == 1)
++		goto cpu_master_loop;
 +
-+void dbg_post_vt_hook(void)
-+{
-+	fg_console = saved_fg_con;
-+	last_console = saved_last_con;
-+	want_console = saved_want_con;
-+	vc_cons[fg_console].d->vc_mode = dbg_orig_vc_mode;
-+}
-+EXPORT_SYMBOL_GPL(dbg_post_vt_hook);
-+#endif /* CONFIG_VT */
+ 	/*
+ 	 * CPU will loop if it is a slave or request to become a kgdb
+ 	 * master cpu and acquire the kgdb_active lock:
 -- 
 1.6.3.1.9.g95405b
 
