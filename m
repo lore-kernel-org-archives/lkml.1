@@ -1,74 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757727Ab0ANWmq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932389Ab0ANWn4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757727Ab0ANWmq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 17:42:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757332Ab0ANWmo
+	id S932389Ab0ANWn4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 17:43:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932356Ab0ANWny
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 17:42:44 -0500
-Received: from mail-out2.uio.no ([129.240.10.58]:45125 "EHLO mail-out2.uio.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756144Ab0ANWmm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 17:42:42 -0500
-Subject: Re: [PATCH] xprtsock.c: make bc_{malloc/free} static
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: H Hartley Sweeten <hartleys@visionengravers.com>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
-       linux-nfs@vger.kernel.org, bfields@fieldses.org, neilb@suse.de,
-       davem@davemloft.net
-In-Reply-To: <201001141538.31496.hartleys@visionengravers.com>
-References: <201001141538.31496.hartleys@visionengravers.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 14 Jan 2010 17:42:36 -0500
-Message-ID: <1263508956.2724.1.camel@localhost>
+	Thu, 14 Jan 2010 17:43:54 -0500
+Received: from e37.co.us.ibm.com ([32.97.110.158]:59587 "EHLO
+	e37.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932365Ab0ANWnx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jan 2010 17:43:53 -0500
+Subject: Re: [RFC] [PATCH 3/7] Execution out of line (XOL)
+From: Jim Keniston <jkenisto@us.ibm.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Arnaldo Carvalho de Melo <acme@infradead.org>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       utrace-devel <utrace-devel@redhat.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Maneesh Soni <maneesh@in.ibm.com>, Mark Wielaard <mjw@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1263467318.4244.289.camel@laptop>
+References: <20100111122521.22050.3654.sendpatchset@srikar.in.ibm.com>
+	 <20100111122545.22050.64994.sendpatchset@srikar.in.ibm.com>
+	 <1263467318.4244.289.camel@laptop>
+Content-Type: text/plain
+Date: Thu, 14 Jan 2010 14:43:17 -0800
+Message-Id: <1263508997.4875.32.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.28.2 (2.28.2-1.fc12) 
+X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.3) 
 Content-Transfer-Encoding: 7bit
-X-UiO-Ratelimit-Test: rcpts/h 12 msgs/h 4 sum rcpts/h 14 sum msgs/h 4 total rcpts 2239 max rcpts/h 27 ratelimit 0
-X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
-X-UiO-Scanned: 96E1E6645AB3E0CADE27D566EE45FC91397281C5
-X-UiO-SPAM-Test: remote_host: 68.40.206.115 spam_score: -49 maxlevel 80 minaction 2 bait 0 mail/h: 4 total 102 max/h 7 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2010-01-14 at 15:38 -0700, H Hartley Sweeten wrote: 
-> xprtsock.c: make bc_{malloc/free} static
-> 
-> The server backchannel buf_alloc and buf_free methods should
-> be static since they are not used outside this file.
-> 
-> Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
-> Cc: J. Bruce Fields <bfields@fieldses.org>
-> Cc: Neil Brown <neilb@suse.de>
-> Cc: Trond Myklebust <Trond.Myklebust@netapp.com>
-> Cc: David S. Miller <davem@davemloft.net>
-> 
-> ---
-> 
-> diff --git a/net/sunrpc/xprtsock.c b/net/sunrpc/xprtsock.c
-> index 3d739e5..721bafd 100644
-> --- a/net/sunrpc/xprtsock.c
-> +++ b/net/sunrpc/xprtsock.c
-> @@ -2100,7 +2100,7 @@ static void xs_tcp_print_stats(struct rpc_xprt *xprt, struct seq_file *seq)
->   * we allocate pages instead doing a kmalloc like rpc_malloc is because we want
->   * to use the server side send routines.
->   */
-> -void *bc_malloc(struct rpc_task *task, size_t size)
-> +static void *bc_malloc(struct rpc_task *task, size_t size)
->  {
->  	struct page *page;
->  	struct rpc_buffer *buf;
-> @@ -2120,7 +2120,7 @@ void *bc_malloc(struct rpc_task *task, size_t size)
->  /*
->   * Free the space allocated in the bc_alloc routine
->   */
-> -void bc_free(void *buffer)
-> +static void bc_free(void *buffer)
->  {
->  	struct rpc_buffer *buf;
->  
 
-Thanks! I'll put this in the sunrpc-for-next branch.
+On Thu, 2010-01-14 at 12:08 +0100, Peter Zijlstra wrote:
+> On Mon, 2010-01-11 at 17:55 +0530, Srikar Dronamraju wrote:
+> > Execution out of line (XOL)
+> > 
+> > Slot allocation mechanism for Execution Out of Line strategy in User
+> > space breakpointing Inftrastructure. (XOL)
+> > 
+> > This patch provides slot allocation mechanism for execution out of
+> > line strategy for use with user space breakpoint infrastructure.
+> > This patch requires utrace support in kernel.
+> > 
+> > This patch provides five functions xol_get_insn_slot(),
+> > xol_free_insn_slot(), xol_put_area(), xol_get_area() and
+> > xol_validate_vaddr().
+> > 
+> > Current slot allocation mechanism:
+> > 1. Allocate one dedicated slot per user breakpoint.
+> > 2. If the allocated vma is completely used, expand current vma.
+> > 3. If we cant expand the vma, allocate a new vma.
+> 
+> 
+> Say what?
+> 
+> I see the text, but non of it makes any sense at all.
+> 
 
-Trond
+Yeah, there's not a lot of context there.  I hope it will make more
+sense if you read section 1.1 of Documentation/uprobes.txt (patch #6).
+Or look at get_insn_slot() in kprobes, and understand that we're trying
+to do something similar in uprobes, where the instruction copies have to
+reside in the user address space of the probed process.
+
+Jim
 
