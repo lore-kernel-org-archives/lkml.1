@@ -1,45 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756403Ab0ANHsy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756327Ab0ANIB7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756403Ab0ANHsy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 02:48:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756080Ab0ANHsx
+	id S1756327Ab0ANIB7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 03:01:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754923Ab0ANIB6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 02:48:53 -0500
-Received: from lider.pardus.org.tr ([193.140.100.216]:57311 "EHLO
-	lider.pardus.org.tr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756048Ab0ANHsx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 02:48:53 -0500
-Message-ID: <4B4ECC41.3080104@pardus.org.tr>
-Date: Thu, 14 Jan 2010 09:48:17 +0200
-From: =?UTF-8?B?T3phbiDDh2HEn2xheWFu?= <ozan@pardus.org.tr>
-User-Agent: Thunderbird 2.0.0.23 (X11/20071115)
+	Thu, 14 Jan 2010 03:01:58 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:8184 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751957Ab0ANIB6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jan 2010 03:01:58 -0500
+Date: Thu, 14 Jan 2010 10:01:17 +0200
+From: Gleb Natapov <gleb@redhat.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       linux-api@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [PATCH v5] add MAP_UNLOCKED mmap flag
+Message-ID: <20100114080117.GL18808@redhat.com>
+References: <20100114155229.6735.A69D9226@jp.fujitsu.com>
+ <20100114072210.GK18808@redhat.com>
+ <20100114162327.673E.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-To: Yinghai Lu <yinghai@kernel.org>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       hpa@zytor.com, mingo@elte.hu, a.p.zijlstra@chello.nl
-Subject: Re: Boot hangs after "Freeing initrd memory" with 2.6.31.11
-References: <4B4E1633.8010700@pardus.org.tr> <4B4EC0A1.3090503@pardus.org.tr> <4B4ECB1C.6070000@kernel.org>
-In-Reply-To: <4B4ECB1C.6070000@kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100114162327.673E.A69D9226@jp.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yinghai Lu wrote On 14-01-2010 09:43:
-> On 01/13/2010 10:58 PM, Ozan Çağlayan wrote:
->> Ozan Çağlayan wrote On 13-01-2010 20:51:
->>
-
->>
->> The users all have an AMD Athlon XP series processor. There are 576 changes in arch/x86/kernel and 291
->> in arch/x86/kernel/cpu between 2.6.30 and 2.6.31. Need some hands where to start to debug the problem.
+On Thu, Jan 14, 2010 at 04:30:51PM +0900, KOSAKI Motohiro wrote:
+> > On Thu, Jan 14, 2010 at 04:02:42PM +0900, KOSAKI Motohiro wrote:
+> > > > On Thu, Jan 14, 2010 at 09:31:03AM +0900, KOSAKI Motohiro wrote:
+> > > > > > If application does mlockall(MCL_FUTURE) it is no longer possible to mmap
+> > > > > > file bigger than main memory or allocate big area of anonymous memory
+> > > > > > in a thread safe manner. Sometimes it is desirable to lock everything
+> > > > > > related to program execution into memory, but still be able to mmap
+> > > > > > big file or allocate huge amount of memory and allow OS to swap them on
+> > > > > > demand. MAP_UNLOCKED allows to do that.
+> > > > > >  
+> > > > > > Signed-off-by: Gleb Natapov <gleb@redhat.com>
+> > > > > > ---
+> > > > > > 
+> > > > > > I get reports that people find this useful, so resending.
+> > > > > 
+> > > > > This description is still wrong. It doesn't describe why this patch is useful.
+> > > > > 
+> > > > I think the text above describes the feature it adds and its use
+> > > > case quite well. Can you elaborate what is missing in your opinion,
+> > > > or suggest alternative text please?
+> > > 
+> > > My point is, introducing mmap new flags need strong and clearly use-case.
+> > > All patch should have good benefit/cost balance. the code can describe the cost,
+> > > but the benefit can be only explained by the patch description.
+> > > 
+> > > I don't think this poor description explained bit benefit rather than cost.
+> > > you should explain why this patch is useful and not just pretty toy.
+> > > 
+> > The benefit is that with this patch I can lock all of my application in
+> > memory except some very big memory areas. My use case is that I want to
+> > run virtual machine in such a way that everything related to machine
+> > emulator is locked into the memory, but guest address space can be
+> > swapped out at will. Guest address space is so huge that it is not
+> > possible to allocated it locked and then unlock. I was very surprised
+> > that current Linux API has no way to do it hence this patch. It may look
+> > like a pretty toy to you until some day you need this and has no way to
+> > do it.
 > 
-> can you just deselect CONFIG_X86_CPU_DEBUG in your .config ?
+> Hmm..
+> Your answer didn't match I wanted.
+Then I don't get what you want.
 
-I just made that and waiting for feedback from the users as I can't find an Athlon XP. If it correctly boots, I'll disable
-that temporarily until we bisect it.
+> few additional questions.
+> 
+> - Why don't you change your application? It seems natural way than kernel change.
+There is no way to change my application and achieve what I've described
+in a multithreaded app.
+
+> - Why do you want your virtual machine have mlockall? AFAIK, current majority
+>   virtual machine doesn't.
+It is absolutely irrelevant for that patch, but just because you ask I
+want to measure the cost of swapping out of a guest memory.
+
+> - If this feature added, average distro user can get any benefit?
+> 
+?! Is this some kind of new measure? There are plenty of much more
+invasive features that don't bring benefits to an average distro user.
+This feature can bring benefit to embedded/RT developers.
+
+> I mean, many application developrs want to add their specific feature
+> into kernel. but if we allow it unlimitedly, major syscall become
+> the trushbox of pretty toy feature soon.
+> 
+And if application developer wants to extend kernel in a way that it
+will be possible to do something that was not possible before why is
+this a bad thing? I would agree with you if for my problem was userspace
+solution, but there is none. The mmap interface is asymmetric in regards
+to mlock currently. There is MAP_LOCKED, but no MAP_UNLOCKED. Why
+MAP_LOCKED is useful then?
 
 
-
+--
+			Gleb.
