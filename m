@@ -1,219 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757602Ab0ANXgW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757632Ab0ANXi5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757602Ab0ANXgW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 18:36:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757539Ab0ANXgV
+	id S1757632Ab0ANXi5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 18:38:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757018Ab0ANXi4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 18:36:21 -0500
-Received: from xenotime.net ([72.52.64.118]:53254 "HELO xenotime.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753418Ab0ANXgT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 18:36:19 -0500
-Date: Thu, 14 Jan 2010 15:36:16 -0800
-From: Randy Dunlap <rdunlap@xenotime.net>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: Greg Kroah-Hartman <greg@kroah.com>, Joe Perches <joe@perches.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] HOWTO: Updates on subsystem trees, patchwork, -next
- (vs. -mm)
-Message-Id: <20100114153616.1a8f00be.rdunlap@xenotime.net>
-In-Reply-To: <tkrat.e8ba67441fb65247@s5r6.in-berlin.de>
-References: <4B4F7304.5050401@s5r6.in-berlin.de>
-	<Pine.LNX.4.30.1001141303230.3979-100000@mail.perches.com>
-	<tkrat.e8ba67441fb65247@s5r6.in-berlin.de>
-Organization: YPO4
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.6; x86_64-redhat-linux-gnu)
+	Thu, 14 Jan 2010 18:38:56 -0500
+Received: from shadbolt.e.decadent.org.uk ([88.96.1.126]:58936 "EHLO
+	shadbolt.e.decadent.org.uk" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756842Ab0ANXi4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jan 2010 18:38:56 -0500
+From: Ben Hutchings <ben@decadent.org.uk>
+To: Greg Kroah-Hartman <gregkh@suse.de>
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org, stable-review@kernel.org,
+       Zhenyu Wang <zhenyu.z.wang@intel.com>,
+       Zhenyu Wang <zhenyuw@linux.intel.com>, Dave Airlie <airlied@redhat.com>,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org,
+       David Woodhouse <dwmw2@infradead.org>
+In-Reply-To: <1263508051-7868-15-git-send-email-gregkh@suse.de>
+References: <20100114222551.GA7839@suse.de>
+	 <1263508051-7868-1-git-send-email-gregkh@suse.de>
+	 <1263508051-7868-2-git-send-email-gregkh@suse.de>
+	 <1263508051-7868-3-git-send-email-gregkh@suse.de>
+	 <1263508051-7868-4-git-send-email-gregkh@suse.de>
+	 <1263508051-7868-5-git-send-email-gregkh@suse.de>
+	 <1263508051-7868-6-git-send-email-gregkh@suse.de>
+	 <1263508051-7868-7-git-send-email-gregkh@suse.de>
+	 <1263508051-7868-8-git-send-email-gregkh@suse.de>
+	 <1263508051-7868-9-git-send-email-gregkh@suse.de>
+	 <1263508051-7868-10-git-send-email-gregkh@suse.de>
+	 <1263508051-7868-11-git-send-email-gregkh@suse.de>
+	 <1263508051-7868-12-git-send-email-gregkh@suse.de>
+	 <1263508051-7868-13-git-send-email-gregkh@suse.de>
+	 <1263508051-7868-14-git-send-email-gregkh@suse.de>
+	 <1263508051-7868-15-git-send-email-gregkh@suse.de>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-Idok3jyHuGGowS+uypLY"
+Date: Thu, 14 Jan 2010 23:38:48 +0000
+Message-ID: <1263512328.17815.103.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.28.2 
+X-SA-Exim-Connect-IP: 192.168.4.185
+X-SA-Exim-Mail-From: ben@decadent.org.uk
+Subject: Re: [Stable-review] [PATCH 15/52] drm: remove address mask param
+ for drm_pci_alloc()
+X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
+X-SA-Exim-Scanned: Yes (on shadbolt.decadent.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 14 Jan 2010 23:39:46 +0100 (CET) Stefan Richter wrote:
 
-> One of the roles which -mm fulfilled some time ago (to offer an
-> integration testing ground) has been taken over by -next.  This is still
-> news to Documentation/HOWTO, so mention it there.
-> 
-> Also add a word on how patchwork is used to track patches as they make
-> their way into subsystem trees.  Remove some arbitrary links to
-> subsystem repositories; they can all be found in the MAINTAINERS
-> database.
-> 
-> Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+--=-Idok3jyHuGGowS+uypLY
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Hi Stefan,
+On Thu, 2010-01-14 at 14:26 -0800, Greg Kroah-Hartman wrote:
+> From: Zhenyu Wang <zhenyu.z.wang@intel.com>
+>=20
+> commit e6be8d9d17bd44061116f601fe2609b3ace7aa69 upstream.
+>=20
+> drm_pci_alloc() has input of address mask for setting pci dma
+> mask on the device, which should be properly setup by drm driver.
+> And leave it as a param for drm_pci_alloc() would cause confusion
+> or mistake would corrupt the correct dma mask setting, as seen on
+> intel hw which set wrong dma mask for hw status page. So remove
+> it from drm_pci_alloc() function.
 
-I like the patch, but since that particular file is maintained by GregKH,
-I'll leave it to him to merge it.
+Based on comments at <http://bugs.freedesktop.org/show_bug.cgi?id=3D25510>
+I think we also need this fix:
 
-Acked-by: Randy Dunlap <rdunlap@xenotime.net>
+commit fc61901373987ad61851ed001fe971f3ee8d96a3
+Author: David Woodhouse <dwmw2@infradead.org>
+Date:   Wed Dec 2 11:00:05 2009 +0000
 
-Thanks.
+    agp/intel-agp: Clear entire GTT on startup
 
-> ---
-> 
-> This supersedes
-> [PATCH] HOWTO: Point to patchwork.kernel.org and patchwork.ozlabs.org
-> 
->  Documentation/HOWTO |  112 ++++++++++++++++-----------------------------------
->  1 files changed, 35 insertions(+), 77 deletions(-)
-> 
-> diff --git a/Documentation/HOWTO b/Documentation/HOWTO
-> index 8495fc9..085d281 100644
-> --- a/Documentation/HOWTO
-> +++ b/Documentation/HOWTO
-> @@ -221,8 +221,8 @@ branches.  These different branches are:
->    - main 2.6.x kernel tree
->    - 2.6.x.y -stable kernel tree
->    - 2.6.x -git kernel patches
-> -  - 2.6.x -mm kernel patches
->    - subsystem specific kernel trees and patches
-> +  - the 2.6.x -next kernel tree for integration tests
->  
->  2.6.x kernel tree
->  -----------------
-> @@ -232,7 +232,7 @@ process is as follows:
->    - As soon as a new kernel is released a two weeks window is open,
->      during this period of time maintainers can submit big diffs to
->      Linus, usually the patches that have already been included in the
-> -    -mm kernel for a few weeks.  The preferred way to submit big changes
-> +    -next kernel for a few weeks.  The preferred way to submit big changes
->      is using git (the kernel's source management tool, more information
->      can be found at http://git.or.cz/) but plain patches are also just
->      fine.
-> @@ -293,84 +293,42 @@ daily and represent the current state of Linus' tree.  They are more
->  experimental than -rc kernels since they are generated automatically
->  without even a cursory glance to see if they are sane.
->  
-> -2.6.x -mm kernel patches
-> -------------------------
-> -These are experimental kernel patches released by Andrew Morton.  Andrew
-> -takes all of the different subsystem kernel trees and patches and mushes
-> -them together, along with a lot of patches that have been plucked from
-> -the linux-kernel mailing list.  This tree serves as a proving ground for
-> -new features and patches.  Once a patch has proved its worth in -mm for
-> -a while Andrew or the subsystem maintainer pushes it on to Linus for
-> -inclusion in mainline.
-> -
-> -It is heavily encouraged that all new patches get tested in the -mm tree
-> -before they are sent to Linus for inclusion in the main kernel tree.  Code
-> -which does not make an appearance in -mm before the opening of the merge
-> -window will prove hard to merge into the mainline.
-> -
-> -These kernels are not appropriate for use on systems that are supposed
-> -to be stable and they are more risky to run than any of the other
-> -branches.
-> -
-> -If you wish to help out with the kernel development process, please test
-> -and use these kernel releases and provide feedback to the linux-kernel
-> -mailing list if you have any problems, and if everything works properly.
-> -
-> -In addition to all the other experimental patches, these kernels usually
-> -also contain any changes in the mainline -git kernels available at the
-> -time of release.
-> -
-> -The -mm kernels are not released on a fixed schedule, but usually a few
-> --mm kernels are released in between each -rc kernel (1 to 3 is common).
-> -
->  Subsystem Specific kernel trees and patches
->  -------------------------------------------
-> -A number of the different kernel subsystem developers expose their
-> -development trees so that others can see what is happening in the
-> -different areas of the kernel.  These trees are pulled into the -mm
-> -kernel releases as described above.
-> -
-> -Here is a list of some of the different kernel trees available:
-> -  git trees:
-> -    - Kbuild development tree, Sam Ravnborg <sam@ravnborg.org>
-> -	git.kernel.org:/pub/scm/linux/kernel/git/sam/kbuild.git
-> -
-> -    - ACPI development tree, Len Brown <len.brown@intel.com>
-> -	git.kernel.org:/pub/scm/linux/kernel/git/lenb/linux-acpi-2.6.git
-> -
-> -    - Block development tree, Jens Axboe <jens.axboe@oracle.com>
-> -	git.kernel.org:/pub/scm/linux/kernel/git/axboe/linux-2.6-block.git
-> -
-> -    - DRM development tree, Dave Airlie <airlied@linux.ie>
-> -	git.kernel.org:/pub/scm/linux/kernel/git/airlied/drm-2.6.git
-> -
-> -    - ia64 development tree, Tony Luck <tony.luck@intel.com>
-> -	git.kernel.org:/pub/scm/linux/kernel/git/aegl/linux-2.6.git
-> -
-> -    - infiniband, Roland Dreier <rolandd@cisco.com>
-> -	git.kernel.org:/pub/scm/linux/kernel/git/roland/infiniband.git
-> -
-> -    - libata, Jeff Garzik <jgarzik@pobox.com>
-> -	git.kernel.org:/pub/scm/linux/kernel/git/jgarzik/libata-dev.git
-> -
-> -    - network drivers, Jeff Garzik <jgarzik@pobox.com>
-> -	git.kernel.org:/pub/scm/linux/kernel/git/jgarzik/netdev-2.6.git
-> -
-> -    - pcmcia, Dominik Brodowski <linux@dominikbrodowski.net>
-> -	git.kernel.org:/pub/scm/linux/kernel/git/brodo/pcmcia-2.6.git
-> -
-> -    - SCSI, James Bottomley <James.Bottomley@hansenpartnership.com>
-> -	git.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-misc-2.6.git
-> -
-> -    - x86, Ingo Molnar <mingo@elte.hu>
-> -	git://git.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-x86.git
-> -
-> -  quilt trees:
-> -    - USB, Driver Core, and I2C, Greg Kroah-Hartman <gregkh@suse.de>
-> -	kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/
-> +The maintainers of the various kernel subsystems --- and also many
-> +kernel subsystem developers --- expose their current state of
-> +development in source repositories.  That way, others can see what is
-> +happening in the different areas of the kernel.  In areas where
-> +development is rapid, a developer may be asked to base his submissions
-> +onto such a subsystem kernel tree so that conflicts between the
-> +submission and other already ongoing work are avoided.
-> +
-> +Most of these repositories are git trees, but there are also other SCMs
-> +in use, or patch queues being published as quilt series.  Addresses of
-> +these subsystem repositories are listed in the MAINTAINERS file.
-> +
-> +Before a proposed patch is committed to such a subsystem tree, it is
-> +subject to review which primarily happens on the on mailing lists (see
-> +the respective section below).  For several kernel subsystems, this
-> +submission and review process is tracked with the tool patchwork.
-> +Patchwork offers a web interface which shows patch postings, any
-> +comments on a patch or revisions to it, and maintainers can mark patches
-> +as under review, accepted, or rejected.  Most of these patchwork sites
-> +are listed at http://patchwork.kernel.org/ or http://patchwork.ozlabs.org/.
-> +
-> +2.6.x -next kernel tree for integration tests
-> +---------------------------------------------
-> +Before updates from subsystem trees are merged into the mainline 2.6.x
-> +tree, they need to be integration-tested.  For this purpose, a special
-> +testing repository exists into which virtually all subsystem trees are
-> +pulled on an almost daily basis:
-> +	http://git.kernel.org/?p=linux/kernel/git/sfr/linux-next.git
-> +	http://linux.f-seidel.de/linux-next/pmwiki/
-> +
-> +This way, the -next kernel gives a summary outlook onto what will be
-> +expected to go into the mainline kernel at the next merge period.
-> +Adventurous testers are very welcome to runtime-test the -next kernel.
->  
-> -  Other kernel trees can be found listed at http://git.kernel.org/ and in
-> -  the MAINTAINERS file.
->  
->  Bug Reporting
->  -------------
-> 
-> -- 
-> Stefan Richter
-> -=====-==-=- ---= -===-
-> http://arcgraph.de/sr/
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Ben.
 
+--=20
+Ben Hutchings
+The generation of random numbers is too important to be left to chance.
+                                                            - Robert Coveyo=
+u
 
----
-~Randy
+--=-Idok3jyHuGGowS+uypLY
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iQIVAwUAS0+rA+e/yOyVhhEJAQJZnRAAsoIaqYnrDv+duOO7ApiZss2NZBHrA0EF
+ggRvKOuFHFMpleyTfMb/ftlPi86jcvqdZXxaSaGpzMSMJRb+8ap+08V1G8ntpLe9
+Cm3lXuwhDr3/bpl8XlE5G6OpBeq10FWlNwL1mfFdMclb2Dk4q8EWS8W5YGIE9nhd
+AC5z4MycZyZjyj/hNY4z8RaKOdykydlf5Zf0nQoYCIOgLXC1Y14+C4mc/2XkBCXJ
+MORV0bI+v/mB/7G4eqSuiqmaqYGIBvWwCTrHnAIoIcQoHLftlsYnx/c7yKY2C9NN
+aDmWpZObD3ImFe40r73u7H+XWKPcHpZipTSfQWZuaNMqICI0l8AJsyYjEChd1VxQ
+kScp10SHPlApE4D0DbLBdhg7PZVRTSM1tmLfo5HBdW5qmivrdZxdXnG+seP3jAMA
+OsGmNAaC8+XGK/r5gDJFNeE7Tvfh3zH9hT7oDH9kVexd239hE66z5aZjwJDx79K3
+yOh3qDOGzJUcpcGdeEDcCrRJr70QuUrVkubXQVk8cY+sY6mAzYuWvzx9tM5/6KOy
+/c2Dc0AlCcm1psimHx47mib8eaVHuLz0U5M6+qComul4nNasXwAiDXMS14QsPCrg
+7moSEhh9Vtq874Vs0XRtgiiWxDro5Zgs7QTVI62qJRtHeFKawfVvKuvB1MGAc1Tl
+tKVpk/0SX5w=
+=dquK
+-----END PGP SIGNATURE-----
+
+--=-Idok3jyHuGGowS+uypLY--
