@@ -1,52 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756548Ab0ANNIY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756544Ab0ANNJ2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756548Ab0ANNIY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 08:08:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932145Ab0ANNIX
+	id S1756544Ab0ANNJ2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 08:09:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756214Ab0ANNJ1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 08:08:23 -0500
-Received: from smtp.nokia.com ([192.100.122.230]:31451 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756522Ab0ANNIU (ORCPT
+	Thu, 14 Jan 2010 08:09:27 -0500
+Received: from lider.pardus.org.tr ([193.140.100.216]:45067 "EHLO
+	lider.pardus.org.tr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755956Ab0ANNJ0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 08:08:20 -0500
-From: Andy Shevchenko <andy.shevchenko@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: Andy Shevchenko <ext-andriy.shevchenko@nokia.com>
-Subject: [PATCH 1/3] Fix minor spelling error in comments
-Date: Thu, 14 Jan 2010 15:07:21 +0200
-Message-Id: <8c5b5f9532bdb31baa11432bea0039bf39854596.1263473812.git.ext-andriy.shevchenko@nokia.com>
-X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <cover.1263473812.git.ext-andriy.shevchenko@nokia.com>
-References: <cover.1263473812.git.ext-andriy.shevchenko@nokia.com>
-In-Reply-To: <cover.1263473812.git.ext-andriy.shevchenko@nokia.com>
-References: <cover.1263473812.git.ext-andriy.shevchenko@nokia.com>
-X-OriginalArrivalTime: 14 Jan 2010 13:08:05.0608 (UTC) FILETIME=[9C37EE80:01CA951A]
-X-Nokia-AV: Clean
+	Thu, 14 Jan 2010 08:09:26 -0500
+Message-ID: <4B4F1764.2040406@pardus.org.tr>
+Date: Thu, 14 Jan 2010 15:08:52 +0200
+From: =?UTF-8?B?T3phbiDDh2HEn2xheWFu?= <ozan@pardus.org.tr>
+User-Agent: Thunderbird 2.0.0.23 (X11/20071115)
+MIME-Version: 1.0
+To: Yinghai Lu <yinghai@kernel.org>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       hpa@zytor.com, mingo@elte.hu, a.p.zijlstra@chello.nl,
+       jaswinder@kernel.org
+Subject: Re: Boot hangs after "Freeing initrd memory" with 2.6.31.11
+References: <4B4E1633.8010700@pardus.org.tr> <4B4EC0A1.3090503@pardus.org.tr> <4B4ECB1C.6070000@kernel.org> <4B4EF35D.3040203@pardus.org.tr>
+In-Reply-To: <4B4EF35D.3040203@pardus.org.tr>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Andy Shevchenko <ext-andriy.shevchenko@nokia.com>
+Ozan Çağlayan wrote On 14-01-2010 12:35:
+> Yinghai Lu wrote On 14-01-2010 09:43:
+>> On 01/13/2010 10:58 PM, Ozan Çağlayan wrote:
+>>> Ozan Çağlayan wrote On 13-01-2010 20:51:
+> 
+>> can you just deselect CONFIG_X86_CPU_DEBUG in your .config ?
+> 
+> Yes that fixed the issue. I now reenabled it and reverted the following commit which is 1/2 commits
+> modifying cpu_debug code between 2.6.30..2.6.31:
+> 
+> From 5095f59bda6793a7b8f0856096d6893fe98e0e51 Mon Sep 17 00:00:00 2001
+> From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+> Date: Fri, 5 Jun 2009 23:27:17 +0530
+> Subject: [PATCH] x86: cpu_debug: Remove model information to reduce encoding-decoding
 
-Signed-off-by: Andy Shevchenko <ext-andriy.shevchenko@nokia.com>
----
- arch/x86/mm/gup.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/arch/x86/mm/gup.c b/arch/x86/mm/gup.c
-index 71da1bc..738e659 100644
---- a/arch/x86/mm/gup.c
-+++ b/arch/x86/mm/gup.c
-@@ -18,7 +18,7 @@ static inline pte_t gup_get_pte(pte_t *ptep)
- #else
- 	/*
- 	 * With get_user_pages_fast, we walk down the pagetables without taking
--	 * any locks.  For this we would like to load the pointers atoimcally,
-+	 * any locks.  For this we would like to load the pointers atomically,
- 	 * but that is not possible (without expensive cmpxchg8b) on PAE.  What
- 	 * we do have is the guarantee that a pte will only either go from not
- 	 * present to present, or present to not present or both -- it will not
--- 
-1.5.6.5
-
+Reverting this commit on top of 2.6.31.11 fixes the boot hangs with AMD Athlon XP processors.
+I'll double check with other reporters in a day or two.
