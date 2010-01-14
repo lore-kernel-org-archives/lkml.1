@@ -1,120 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756672Ab0ANPHU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757134Ab0ANPIq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756672Ab0ANPHU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 10:07:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932270Ab0ANPHN
+	id S1757134Ab0ANPIq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 10:08:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932248Ab0ANPHK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 10:07:13 -0500
-Received: from mail.windriver.com ([147.11.1.11]:47676 "EHLO
-	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756822Ab0ANPBD (ORCPT
+	Thu, 14 Jan 2010 10:07:10 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:41287 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756905Ab0ANPGw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 10:01:03 -0500
-From: Jason Wessel <jason.wessel@windriver.com>
-To: linux-kernel@vger.kernel.org
-Cc: kgdb-bugreport@lists.sourceforge.net, mingo@elte.hu,
-       Jason Wessel <jason.wessel@windriver.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 21/40] powerpc,kgdb: Introduce low level trap catching
-Date: Thu, 14 Jan 2010 08:59:17 -0600
-Message-Id: <1263481176-1897-22-git-send-email-jason.wessel@windriver.com>
-X-Mailer: git-send-email 1.6.3.1.9.g95405b
-In-Reply-To: <1263481176-1897-1-git-send-email-jason.wessel@windriver.com>
-References: <1263481176-1897-1-git-send-email-jason.wessel@windriver.com>
-X-OriginalArrivalTime: 14 Jan 2010 15:00:47.0475 (UTC) FILETIME=[5A9AF430:01CA952A]
+	Thu, 14 Jan 2010 10:06:52 -0500
+X-Authority-Analysis: v=1.0 c=1 a=Nora_UQfvSMA:10 a=7U3hwN5JcxgA:10 a=pGLkceISAAAA:8 a=meVymXHHAAAA:8 a=omOdbC7AAAAA:8 a=VnNF1IyMAAAA:8 a=rzlYJIk-HrhOc_vsxusA:9 a=RkMuDUgsPLePwPGYVSm6vhM3HMsA:4 a=MSl-tDqOz04A:10 a=jeBq3FmKZ4MA:10
+X-Cloudmark-Score: 0
+X-Originating-IP: 74.67.89.75
+Subject: Re: [PATCH] tracing: Drop the tr check from the graph tracing path
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+In-Reply-To: <1263453795-7496-1-git-send-regression-fweisbec@gmail.com>
+References: <1263453795-7496-1-git-send-regression-fweisbec@gmail.com>
+Content-Type: text/plain; charset="ISO-8859-15"
+Organization: Kihon Technologies Inc.
+Date: Thu, 14 Jan 2010 10:06:49 -0500
+Message-ID: <1263481609.28171.3845.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.28.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The only way the debugger can handle a trap in inside rcu_lock,
-notify_die, or atomic_notifier_call_chain without a recursive fault is
-to have a low level "first opportunity handler" low level
-program_check_exception() handler.
+On Thu, 2010-01-14 at 08:23 +0100, Frederic Weisbecker wrote:
+> Each time we save a function entry from the function graph tracer,
+> we check if the trace array is set, which is wasteful because it is
+> set anyway before we start the tracer. All we need is to ensure we
+> have good read and write orderings. When we set the trace array, we
+> just need to guarantee it to be visible before starting tracing.
+> 
+> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
 
-The other change here is to make sure that kgdb_handle_exception() is
-called with correct parameters when catching an oops, because kdb
-needs to know if the entry was an oops, single step, or breakpoint
-exception.
+Acked-by: Steven Rostedt <rostedt@goodmis.org>
 
-CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-CC: Paul Mackerras <paulus@samba.org>
-Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
----
- arch/powerpc/kernel/kgdb.c  |    7 +++++--
- arch/powerpc/kernel/traps.c |    7 +++++++
- lib/Kconfig.kgdb            |    2 +-
- 3 files changed, 13 insertions(+), 3 deletions(-)
+-- Steve
 
-diff --git a/arch/powerpc/kernel/kgdb.c b/arch/powerpc/kernel/kgdb.c
-index 7aafcc5..c06fe55 100644
---- a/arch/powerpc/kernel/kgdb.c
-+++ b/arch/powerpc/kernel/kgdb.c
-@@ -20,6 +20,7 @@
- #include <linux/smp.h>
- #include <linux/signal.h>
- #include <linux/ptrace.h>
-+#include <linux/kdebug.h>
- #include <asm/current.h>
- #include <asm/processor.h>
- #include <asm/machdep.h>
-@@ -115,7 +116,9 @@ void kgdb_roundup_cpus(unsigned long flags)
- /* KGDB functions to use existing PowerPC64 hooks. */
- static int kgdb_debugger(struct pt_regs *regs)
- {
--	return kgdb_handle_exception(0, computeSignal(TRAP(regs)), 0, regs);
-+	if (kgdb_handle_exception(1, computeSignal(TRAP(regs)), DIE_OOPS, regs))
-+		return 0;
-+	return 1;
- }
- 
- static int kgdb_handle_breakpoint(struct pt_regs *regs)
-@@ -123,7 +126,7 @@ static int kgdb_handle_breakpoint(struct pt_regs *regs)
- 	if (user_mode(regs))
- 		return 0;
- 
--	if (kgdb_handle_exception(0, SIGTRAP, 0, regs) != 0)
-+	if (kgdb_handle_exception(1, SIGTRAP, 0, regs) != 0)
- 		return 0;
- 
- 	if (*(u32 *) (regs->nip) == *(u32 *) (&arch_kgdb_ops.gdb_bpt_instr))
-diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-index d069ff8..379104a 100644
---- a/arch/powerpc/kernel/traps.c
-+++ b/arch/powerpc/kernel/traps.c
-@@ -809,12 +809,19 @@ void __kprobes program_check_exception(struct pt_regs *regs)
- 		return;
- 	}
- 	if (reason & REASON_TRAP) {
-+
-+#ifdef CONFIG_KGDB_LOW_LEVEL_TRAP
-+		if (debugger_bpt(regs))
-+			return;
-+#endif /* CONFIG_KGDB_LOW_LEVEL_TRAP */
- 		/* trap exception */
- 		if (notify_die(DIE_BPT, "breakpoint", regs, 5, 5, SIGTRAP)
- 				== NOTIFY_STOP)
- 			return;
-+#ifndef CONFIG_KGDB_LOW_LEVEL_TRAP
- 		if (debugger_bpt(regs))
- 			return;
-+#endif /* ! CONFIG_KGDB_LOW_LEVEL_TRAP */
- 
- 		if (!(regs->msr & MSR_PR) &&  /* not user-mode */
- 		    report_bug(regs->nip, regs) == BUG_TRAP_TYPE_WARN) {
-diff --git a/lib/Kconfig.kgdb b/lib/Kconfig.kgdb
-index 0a0e049..2b1601b 100644
---- a/lib/Kconfig.kgdb
-+++ b/lib/Kconfig.kgdb
-@@ -59,7 +59,7 @@ config KGDB_TESTS_BOOT_STRING
- 
- config KGDB_LOW_LEVEL_TRAP
-        bool "KGDB: Allow debugging with traps in notifiers"
--       depends on X86
-+       depends on X86 || PPC
-        default n
-        help
-          This will add an extra call back to kgdb for the breakpoint
--- 
-1.6.3.1.9.g95405b
+> Cc: Lai Jiangshan <laijs@cn.fujitsu.com>
+> Cc: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> ---
+>  kernel/trace/trace_functions_graph.c |   19 ++++++++++---------
+>  1 files changed, 10 insertions(+), 9 deletions(-)
+
 
