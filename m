@@ -1,79 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932167Ab0ANIjT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756502Ab0ANIj4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932167Ab0ANIjT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 03:39:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932112Ab0ANIjT
+	id S1756502Ab0ANIj4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 03:39:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755974Ab0ANIjz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 03:39:19 -0500
-Received: from stinky.trash.net ([213.144.137.162]:59982 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932110Ab0ANIjS (ORCPT
+	Thu, 14 Jan 2010 03:39:55 -0500
+Received: from ey-out-2122.google.com ([74.125.78.25]:51547 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753528Ab0ANIjy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 03:39:18 -0500
-Message-ID: <4B4ED830.4040407@trash.net>
-Date: Thu, 14 Jan 2010 09:39:12 +0100
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090701)
+	Thu, 14 Jan 2010 03:39:54 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=M9xJQ1yHLfdLrqQnpG1fMGqOur4xFjzrFswojdabHZRfThyCuoBwp30l+9L2K6XaYh
+         QKoAMAXEhwuwaRHas7ZGOlkoLor46AD045N0Gw+pwrlUgY6aHrxpk63UvrJ811c6x7OP
+         kBKU8a6lK9fDQUB8I3PN0bp65NQsyRtsiZVMk=
 MIME-Version: 1.0
-To: Joe Perches <joe@perches.com>
-CC: William Allen Simpson <william.allen.simpson@gmail.com>,
-       Andi Kleen <andi@firstfloor.org>,
-       Linux Kernel Developers <linux-kernel@vger.kernel.org>,
-       Linux Kernel Network Developers <netdev@vger.kernel.org>,
-       =?ISO-8859-15?Q?Ilpo_J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>,
-       Eric Dumazet <eric.dumazet@gmail.com>
-Subject: Re: [PATCH v4] tcp: harmonize tcp_vx_rcv header length assumptions
-References: <4B49D001.4000302@gmail.com> <4B4DA4F4.6060007@gmail.com>	 <20100113115617.GA24818@basil.fritz.box> <4B4DE887.6030602@gmail.com>	 <20100113155323.GB24818@basil.fritz.box> <4B4E23E0.4000007@gmail.com>	 <4B4E378A.7040506@gmail.com> <1263430990.1966.12.camel@Joe-Laptop.home>
-In-Reply-To: <1263430990.1966.12.camel@Joe-Laptop.home>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <1263154093.2987.34.camel@localhost>
+References: <6278d2221001090632m7fdd77qc73c203840a2a78e@mail.gmail.com>
+	 <1263154093.2987.34.camel@localhost>
+Date: Thu, 14 Jan 2010 08:39:52 +0000
+Message-ID: <6278d2221001140039m711f2ae4o163d6c7f8d5b98d0@mail.gmail.com>
+Subject: Re: [2.6.33-rc3] NFS4 and dentry issues...
+From: Daniel J Blueman <daniel.blueman@gmail.com>
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+Cc: linux-nfs@vger.kernel.org, Linux Kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Joe Perches wrote:
-> On Wed, 2010-01-13 at 16:13 -0500, William Allen Simpson wrote:
->> I did today's tests on tcp_ipv4, but part of this harmonization is to
->> make v4 and v6 match up better.  As I was examining line by line, one of
->> the things that leaps out is that ipv4 has nf_reset(skb):
->>
->> tcp_ipv4:
->> 	if (!xfrm4_policy_check(sk, XFRM_POLICY_IN, skb))
->> 		goto discard_and_relse;
->> 	nf_reset(skb);
->>
->> 	if (sk_filter(sk, skb))
->> 		goto discard_and_relse;
->>
->> tcp_ipv6:
->> 	if (!xfrm6_policy_check(sk, XFRM_POLICY_IN, skb))
->> 		goto discard_and_relse;
->>
->> 	if (sk_filter(sk, skb))
->> 		goto discard_and_relse;
->>
->> Does anybody know why?  Should ipv6 have it?  Or at least a comment
->> explaining the reasoning for the omission?
-> 
-> You should ask the person that put the line in, but
-> it might be because no IPv6 NAT support exists.
-> 
-> $ git blame -L 1658,1658 net/ipv4/tcp_ipv4.c
-> b59c2701 (Patrick McHardy 2006-01-06 23:06:10 -0800 1658)       nf_reset(skb);
-> 
-> And
-> 
-> $ git log -p -1 b59c2701
-> commit b59c270104f03960069596722fea70340579244d
-> Author: Patrick McHardy <kaber@trash.net>
-> Date:   Fri Jan 6 23:06:10 2006 -0800
-> 
->     [NETFILTER]: Keep conntrack reference until IPsec policy checks are done
->     
->     Keep the conntrack reference until policy checks have been performed for
->     IPsec NAT support. The reference needs to be dropped before a packet is
->     queued to avoid having the conntrack module unloadable.
+Hi Trond,
 
-In IPv6 it is released in ip6_input.c before the packet is handed to
-the protocol handler.
+On Sun, Jan 10, 2010 at 8:08 PM, Trond Myklebust
+<trond.myklebust@fys.uio.no> wrote:
+> On Sat, 2010-01-09 at 14:32 +0000, Daniel J Blueman wrote:
+>> When synchronising files (unison, like a two way rsync) over an NFS4
+>> mount (server with 2.6.32.2) on a client running 2.6.33-rc3 (also
+>> -rc2), I ran into dcache issues [1].
+>>
+>> I've been unable to consistently reproduce this for bisecting, and
+>> filesystem benchmarks via NFS on tmpfs over localhost fails to
+>> reproduce it either.
+>>
+>> What additional information may be useful?
+>
+> There is a known issue in 2.6.33-rc3 with rename causing corruption of
+> the dentry lookup hash lists.
+>
+> A fix for that problem has already been merged into mainline as
+> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git&a=commitdiff&h=56335936de1a41c8978fde62b2158af77ddc7258
+>
+> Could you see if you can reproduce your problem with that fix applied?
+
+2.6.33-rc4 with the fix does address this issue, though I am now
+occasionally seeing 'Stale NFS file handle' during parallel kernel
+compilation over NFS4 [1], seemingly when stat(2) is called.
+
+Client mount options are:
+
+x1:/ /net nfs4 rw,relatime,vers=4,rsize=262144,wsize=262144,namlen=255,acregmin=30,hard,proto=tcp,timeo=600,retrans=2,sec=sys,clientaddr=192.168.10.2,addr=192.168.10.250
+0 0
+
+I'll see which -rc this was introduced in, from limited time.
+
+Thanks,
+  Daniel
+
+--- [1]
+
+$ CONCURRENCY_LEVEL=4 fakeroot make-kpkg --append-to-version -308cd
+--initrd kernel-image
+...
+  CC [M]  drivers/net/wireless/rt2x00/rt2500usb.o
+  CC [M]  drivers/net/wireless/rt2x00/rt73usb.o
+  CC [M]  drivers/net/wireless/rt2x00/rt2800usb.o
+  LD [M]  drivers/net/wireless/rt2x00/rt2x00lib.o
+  Building modules, stage 2.
+make[2]: stat: arch/x86/crypto/aes-x86_64.o: Stale NFS file handle
+make[2]: stat: arch/x86/crypto/aesni-intel.o: Stale NFS file handle
+make[2]: stat: arch/x86/crypto/salsa20-x86_64.o: Stale NFS file handle
+make[2]: stat: arch/x86/crypto/twofish-x86_64.o: Stale NFS file handle
+make[2]: stat: arch/x86/kernel/cpu/cpufreq/p4-clockmod.o: Stale NFS file handle
+make[2]: stat: arch/x86/kernel/cpu/cpufreq/speedstep-lib.o: Stale NFS
+file handle
+....
+-- 
+Daniel J Blueman
