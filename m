@@ -1,159 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754917Ab0ANGyx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754958Ab0ANG7U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754917Ab0ANGyx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 01:54:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754356Ab0ANGyx
+	id S1754958Ab0ANG7U (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 01:59:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754773Ab0ANG7U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 01:54:53 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:28262 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754530Ab0ANGyw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 01:54:52 -0500
-Message-ID: <4B4EC048.4090107@redhat.com>
-Date: Thu, 14 Jan 2010 01:57:12 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
+	Thu, 14 Jan 2010 01:59:20 -0500
+Received: from lider.pardus.org.tr ([193.140.100.216]:46187 "EHLO
+	lider.pardus.org.tr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750856Ab0ANG7T (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jan 2010 01:59:19 -0500
+Message-ID: <4B4EC0A1.3090503@pardus.org.tr>
+Date: Thu, 14 Jan 2010 08:58:41 +0200
+From: =?UTF-8?B?T3phbiDDh2HEn2xheWFu?= <ozan@pardus.org.tr>
+User-Agent: Thunderbird 2.0.0.23 (X11/20071115)
 MIME-Version: 1.0
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: "H. Peter Anvin" <hpa@zytor.com>, Jason Baron <jbaron@redhat.com>,
-       linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de,
-       rostedt@goodmis.org, andi@firstfloor.org, roland@redhat.com,
-       rth@redhat.com
-Subject: Re: [RFC PATCH 2/8] jump label v4 - x86: Introduce generic jump	patching
- without stop_machine
-References: <cover.1263247113.git.jbaron@redhat.com> <a4aa5bbcf5e62eaa5dd156d318a370236f28be09.1263247114.git.jbaron@redhat.com> <4B4D02B8.5020801@zytor.com> <20100113020610.GB29314@Krystal> <4B4D525A.5020101@zytor.com> <20100113143050.GB30875@Krystal>
-In-Reply-To: <20100113143050.GB30875@Krystal>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+CC: hpa@zytor.com, mingo@elte.hu, yinghai@kernel.org, a.p.zijlstra@chello.nl
+Subject: Re: Boot hangs after "Freeing initrd memory" with 2.6.31.11
+References: <4B4E1633.8010700@pardus.org.tr>
+In-Reply-To: <4B4E1633.8010700@pardus.org.tr>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mathieu Desnoyers wrote:
-> * H. Peter Anvin (hpa@zytor.com) wrote:
->> On 01/12/2010 06:06 PM, Mathieu Desnoyers wrote:
->>> * H. Peter Anvin (hpa@zytor.com) wrote:
->>>> On 01/12/2010 08:26 AM, Jason Baron wrote:
->>>>> Add text_poke_fixup() which takes a fixup address to where a processor
->>>>> jumps if it hits the modifying address while code modifying.
->>>>> text_poke_fixup() does following steps for this purpose.
->>>>>
->>>>>  1. Setup int3 handler for fixup.
->>>>>  2. Put a breakpoint (int3) on the first byte of modifying region,
->>>>>     and synchronize code on all CPUs.
->>>>>  3. Modify other bytes of modifying region, and synchronize code on all CPUs.
->>>>>  4. Modify the first byte of modifying region, and synchronize code
->>>>>     on all CPUs.
->>>>>  5. Clear int3 handler.
->>>>>
->>>>
->>>> We (Intel OTC) have been able to get an *unofficial* answer as to the
->>>> validity of this procedure; specifically as it applies to Intel hardware
->>>> (obviously).  We are working on getting an officially approved answer,
->>>> but as far as we currently know, the procedure as outlined above should
->>>> work on all Intel hardware.  In fact, we believe the synchronization in
->>>> step 3 is in fact unnecessary (as the synchronization in step 4 provides
->>>> sufficient guard.)
->>>
->>> Hi Peter,
->>>
->>> This is great news! Thanks to Intel OTC and yourself for looking into
->>> this. In the immediate values patches, I am doing the synchronization at
->>> the end of step (3) to ensure that all remote CPUs issue read memory
->>> barriers, so the stores to the instruction are done in this order:
->>>
->>> spin lock
->>> store int3 to 1st byte
->>> smp_wmb()
->>> sync all cores
->>> store new instruction in all but 1st byte
->>> smp_wmb()
->>> issue smp_rmb() on all cores (a sync all cores has this effect)
->>> store new instruction to 1st byte
->>> send IPI to all cores (or call synchronize_sched()) to wait for all
->>>   breakpoint handlers to complete.
->>> spin unlock
->>>
->>> So the question is: are these wmb/rmb pairs actually needed ?  As the
->>> instruction fetch is not performed by instructions per se, I doubt a
->>> rmb() will have any effect on them. I always prefer to stay on the safe
->>> side, but it wouldn't hurt to know.
->>>
->>
->> I don't think the smp_rmb() has any function.
+Ozan Çağlayan wrote On 13-01-2010 20:51:
+
+(CC'ing relevant people)
+
+> Hi,
 > 
-> OK, that's good to know.
+> A lot of our users complains about the problem in $subject. Here are some clues:
 > 
->>
->> However, you're being quite inconsistent in your terminology here.  The
->> assumption above is that the "synchronize code on all CPU" step is
->> sending an IPI to all cores and waiting for it to return, so that each
->> core has executed IPI/IRET before continuation.
+> - All users have mainboards with nForce2 chipset:
+>   nVidia Corporation nForce2 IGP2 [10de:01e0] (rev c1)
+> - The last working kernel for them is 2.6.30.9. They can't boot into 2.6.31.9-11,
+> - They all tried several boot parameters to disable acpi, lapic, mce, etc. none of them works,
 > 
-> To be strictly correct, we cannot assume that the IPI handler issues IRET
-> before signaling its completion. It's rather the other way around.
-> This is why I add a smp_mb() in the IPI handler for the "synchronize
-> code on all CPUs" step.
-> 
->>
->> It is *not* necessary to wait for the breakpoint handlers to return, as
->> long as they will get to IRET eventually, since IRET is a jump and a
->> serializing instruction.
-> 
-> Ah, I see. So the added smp_mb() would not be needed then, as long as we
-> know that the other CPUs either are currently running the IPI handler or
-> have executed it. IOW: they will execute IRET very soon or they just
-> executed it since the int3 have been written. I am a bit concerned about
-> NMIs coming in this race window, but as they need to have started after
-> we have put the breakpoint, that should be OK. (note: entry_*.S
-> modifications are needed to support nesting breakpoint handlers in NMIs)
-> 
->>
->>> Hrm. Assuming we have a spinlock protecting all this, given that we
->>> synchronize all cores at step (4) _after_ removing the breakpoint, and
->>> given that the breakpoint handler is an interrupt gate (thus executes
->>> with interrupts off), I am inclined to think that sending the IPIs at
->>> the end of step (4) (and waiting for them to complete) should be enough
->>> to ensure that all in-flight breakpoint handlers for this site have
->>> completed their execution. This would mean that we only have to keep
->>> track of a single site at a time. Or am I missing something ?
->>
->> Yes: the whole point was that you can omit the synchronization in step 4
->> if you leave the breakpoint handler in place (I said "omit step 5", but
->> that wasn't really what I meant.)
 
-Hmm, in that case, how can we reuse the breakpoint handler for another
-text poke site? Even if we leave the handler, I think we need to clear
-fixup information for next poking...
+I just made them boot with:
 
->>
->> That means that at the cost of two compares in the standard #BP handler,
->> we can get away with only one IPI per atomic instruction poke.
-> 
-> OK. That makes sense now.
+bootmem_debug debug debugpat dynamic_printk earlyprintk=vga initcall_debug
+loglevel=7 mminit_loglevel=4 pnp.debug sched_debug apic=debug
 
-So, let me check the actual replacement steps.
+and we had more relevant messages:
 
-(1) lock text_mutex
-(2) setup breakpoint fixup addresses (source and destination)
-(3) store int3 to 1st byte, and smp_wmb()
-(4) send IPI and issue smp_mb() (or cpuid) with for sync all cores.
-(5) store new instruction except 1st byte, and smp_wmb()
-(6) store 1st byte of new instruction
-(7) send IPI to all cores for waiting for all running breakpoint handlers.
-(8) clear fixup addresses
-(9) unlock text_mutex
+TCP established hash table entries: 131072 (order: 8, 1048576 bytes)
+TCP bind hash table entries: 65536 (order: 7, 524288 bytes)
+TCP: Hash tables configured (established 131072 bind 65536)
+TCP reno registered
+initcall inet_init+0x0/0x199 returned 0 after 3585 usecs
+calling af_unix_init+0x0/0x47 @ 1
+NET: Registered protocol family 1
+initcall af_unix_init+0x0/0x47 returned 0 after 101 usecs
+calling populate_rootfs+0x0/0x62 @ 1
+Unpacking initramfs...
+Freeing initrd memory: 5109k freed
+initcall populate_rootfs+0x0/0x62 returned 0 after 215338 usecs
+calling i8259A_init_sysfs+0x0/0x1d @ 1
+initcall i8259A_init_sysfs+0x0/0x1d returned 0 after 42 usecs
+calling sbf_init+0x0/0xda @ 1
+initcall sbf_init+0x0/0xda returned 0 after 0 usecs
+calling i8237A_init_sysfs+0x0/0x1d @ 1
+initcall i8237A_init_sysfs+0x0/0x1d returned 0 after 13 usecs
+calling add_rtc_cmos+0x0/0x94 @ 1
+initcall add_rtc_cmos+0x0/0x94 returned 0 after 4 usecs
+calling cache_sysfs_init+0x0/0x55 @ 1
+initcall cache_sysfs_init+0x0/0x55 returned 0 after 64 usecs
+calling cpu_debug_init+0x0/0xe3 @ 1
 
-Is this correct?
+and it hangs. Not that this is the place where on 2.6.30.9 it continues with:
 
-Thank you,
+[    0.404102] cpu0(1) debug files 5 <--
+[    0.404109] Machine check exception polling timer started.
+[    0.404119] cpufreq-nforce2: Detected nForce2 chipset revision C1
+[    0.404122] cpufreq-nforce2: FSB changing is maybe unstable and can lead to
+crashes and data loss.
+[    0.404135] cpufreq-nforce2: FSB currently at 167 MHz, FID 11.5
+[    0.404155] ondemand governor failed, too long transition latency of HW,
+fallback to performance governor
 
--- 
-Masami Hiramatsu
+The users all have an AMD Athlon XP series processor. There are 576 changes in arch/x86/kernel and 291
+in arch/x86/kernel/cpu between 2.6.30 and 2.6.31. Need some hands where to start to debug the problem.
 
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
-
+Regards,
+Ozan Caglayan
