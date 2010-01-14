@@ -1,64 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756251Ab0ANMvq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756316Ab0ANNDG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756251Ab0ANMvq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 07:51:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756017Ab0ANMvq
+	id S1756316Ab0ANNDG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 08:03:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751754Ab0ANNDF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 07:51:46 -0500
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:35393 "EHLO
-	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755593Ab0ANMvo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 07:51:44 -0500
-X-Greylist: delayed 744 seconds by postgrey-1.27 at vger.kernel.org; Thu, 14 Jan 2010 07:51:44 EST
-X-Sasl-enc: gl/IMtp9E1Fz4YH6G6OJarzhSytGLzYuk9fRsJ7Ujunc 1263472759
-Message-ID: <4B4F1073.5060903@imap.cc>
-Date: Thu, 14 Jan 2010 13:39:15 +0100
-From: Tilman Schmidt <tilman@imap.cc>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; de; rv:1.9.1.7) Gecko/20100104 SeaMonkey/2.0.2
+	Thu, 14 Jan 2010 08:03:05 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:58694 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756175Ab0ANNDD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jan 2010 08:03:03 -0500
+Date: Fri, 15 Jan 2010 00:02:57 +1100
+From: Nick Piggin <npiggin@suse.de>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Jeff Dike <jdike@addtoit.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>
+Subject: Re: [PATCH] oom: OOM-Killed process don't invoke pagefault-oom
+Message-ID: <20100114130257.GB8381@laptop>
+References: <20100114191940.6749.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, Greg KH <gregkh@suse.de>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
-       Karsten Keil <isdn@linux-pingi.de>, isdn4linux@listserv.isdn4linux.de
-Subject: Re: Can we remove pci_find_device() yet?
-References: <20100108112236.462a3da2.sfr@canb.auug.org.au> <20100108044646.GC6611@suse.de> <4B4B802A.2010709@imap.cc> <20100111200136.GA29955@suse.de> <877hrlf0rf.fsf@basil.nowhere.org> <20100114110214.37d7ffc9@lxorguk.ukuu.org.uk> <20100114110354.GJ12241@basil.fritz.box>
-In-Reply-To: <20100114110354.GJ12241@basil.fritz.box>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100114191940.6749.A69D9226@jp.fujitsu.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+Hi,
 
-Am 2010-01-14 12:03 schrieb Andi Kleen:
-> On Thu, Jan 14, 2010 at 11:02:14AM +0000, Alan Cox wrote:
-[It would be better to enforce this constraint at runtime.]
->> There is a simpler way to do that, which is to just leak a reference in
->> the hisax_find_pci_device hack. The pci_dev won't be going anywhere then.
+I don't think this should be required, because the oom killer does not
+kill a new task if there is already one in memdie state.
+
+If you have any further tweaks to the heuristic (such as a fatal signal
+pending), then it should probably go in select_bad_process() or
+somewhere like that.
+
+Thanks,
+Nick
+
+On Thu, Jan 14, 2010 at 07:22:34PM +0900, KOSAKI Motohiro wrote:
 > 
-> You just have to do it once, otherwise it'll fail after 4 billion times.
-
-I guess we could live with that. pci_find_device() or its successor, the
-hisax_find_pci_device() hack, is only called during device setup, once
-for most drivers and at the very most 24 times for hfc_pci. Someone
-would have to rmmod/insmod a HiSax module more than a hundred million
-times to accumulate four billion calls.
-
-- -- 
-Tilman Schmidt                    E-Mail: tilman@imap.cc
-Bonn, Germany
-Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
-Ungeöffnet mindestens haltbar bis: (siehe Rückseite)
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.12 (MingW32)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
-
-iEYEARECAAYFAktPEHMACgkQQ3+did9BuFuQ/gCgkhu6RJIwrpIDAJMWbO1mZgOd
-BKwAnAh6kX5F/+dFPIrK/XLovEAv/R7O
-=fflE
------END PGP SIGNATURE-----
+> Nick, I've found this issue by code review. I'm glad if you review this
+> patch.
+> 
+> Thanks.
+> 
+> =============================
+> commit 1c0fe6e3 (invoke oom-killer from page fault) created
+> page fault specific oom handler.
+> 
+> But If OOM occur, alloc_pages() in page fault might return
+> NULL. It mean page fault return VM_FAULT_OOM. But OOM Killer
+> itself sholdn't invoke next OOM Kill. it is obviously strange.
+> 
+> Plus, process exiting itself makes some free memory. we
+> don't need kill another process.
+> 
+> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> Cc: Nick Piggin <npiggin@suse.de>
+> Cc: Jeff Dike <jdike@addtoit.com>
+> Cc: Ingo Molnar <mingo@elte.hu>
+> Cc: Thomas Gleixner <tglx@linutronix.de>
+> Cc: Andrew Morton <akpm@linux-foundation.org>
+> ---
+>  mm/oom_kill.c |    9 +++++++++
+>  1 files changed, 9 insertions(+), 0 deletions(-)
+> 
+> diff --git a/mm/oom_kill.c b/mm/oom_kill.c
+> index 4f167b8..86cecdf 100644
+> --- a/mm/oom_kill.c
+> +++ b/mm/oom_kill.c
+> @@ -596,6 +596,15 @@ void pagefault_out_of_memory(void)
+>  {
+>  	unsigned long freed = 0;
+>  
+> +	/*
+> +	 * If the task was received SIGKILL while memory allocation, alloc_pages
+> +	 * might return NULL and it cause page fault return VM_FAULT_OOM. But
+> +	 * in such case, the task don't need kill any another task, it need
+> +	 * just die.
+> +	 */
+> +	if (fatal_signal_pending(current))
+> +		return;
+> +
+>  	blocking_notifier_call_chain(&oom_notify_list, 0, &freed);
+>  	if (freed > 0)
+>  		/* Got some memory back in the last second. */
+> -- 
+> 1.6.5.2
+> 
+> 
