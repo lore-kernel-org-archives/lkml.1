@@ -1,25 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756939Ab0ANW3L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756830Ab0ANW2z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756939Ab0ANW3L (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 17:29:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756920Ab0ANW3F
+	id S1756830Ab0ANW2z (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 17:28:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756734Ab0ANW2q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 17:29:05 -0500
-Received: from kroah.org ([198.145.64.141]:60722 "EHLO coco.kroah.org"
+	Thu, 14 Jan 2010 17:28:46 -0500
+Received: from kroah.org ([198.145.64.141]:60609 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932297Ab0ANW3B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 17:29:01 -0500
+	id S1755888Ab0ANW2p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jan 2010 17:28:45 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, stable-review@kernel.org
 Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       Johannes Berg <johannes@sipsolutions.net>,
-       "John W. Linville" <linville@tuxdriver.com>,
+       Daniel T Chen <crimsun@ubuntu.com>, Takashi Iwai <tiwai@suse.de>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 47/52] mac80211: fix skb buffering issue (and fixes to that)
-Date: Thu, 14 Jan 2010 14:27:26 -0800
-Message-Id: <1263508051-7868-47-git-send-email-gregkh@suse.de>
+Subject: [PATCH 31/52] ALSA: atiixp: Specify codec for Foxconn RC4107MA-RS2
+Date: Thu, 14 Jan 2010 14:27:10 -0800
+Message-Id: <1263508051-7868-31-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.6
-In-Reply-To: <1263508051-7868-46-git-send-email-gregkh@suse.de>
+In-Reply-To: <1263508051-7868-30-git-send-email-gregkh@suse.de>
 References: <20100114222551.GA7839@suse.de>
  <1263508051-7868-1-git-send-email-gregkh@suse.de>
  <1263508051-7868-2-git-send-email-gregkh@suse.de>
@@ -51,384 +50,38 @@ References: <20100114222551.GA7839@suse.de>
  <1263508051-7868-28-git-send-email-gregkh@suse.de>
  <1263508051-7868-29-git-send-email-gregkh@suse.de>
  <1263508051-7868-30-git-send-email-gregkh@suse.de>
- <1263508051-7868-31-git-send-email-gregkh@suse.de>
- <1263508051-7868-32-git-send-email-gregkh@suse.de>
- <1263508051-7868-33-git-send-email-gregkh@suse.de>
- <1263508051-7868-34-git-send-email-gregkh@suse.de>
- <1263508051-7868-35-git-send-email-gregkh@suse.de>
- <1263508051-7868-36-git-send-email-gregkh@suse.de>
- <1263508051-7868-37-git-send-email-gregkh@suse.de>
- <1263508051-7868-38-git-send-email-gregkh@suse.de>
- <1263508051-7868-39-git-send-email-gregkh@suse.de>
- <1263508051-7868-40-git-send-email-gregkh@suse.de>
- <1263508051-7868-41-git-send-email-gregkh@suse.de>
- <1263508051-7868-42-git-send-email-gregkh@suse.de>
- <1263508051-7868-43-git-send-email-gregkh@suse.de>
- <1263508051-7868-44-git-send-email-gregkh@suse.de>
- <1263508051-7868-45-git-send-email-gregkh@suse.de>
- <1263508051-7868-46-git-send-email-gregkh@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Johannes Berg <johannes@sipsolutions.net>
+From: Daniel T Chen <crimsun@ubuntu.com>
 
-This is a backport of the mainline patches
+commit dfb12eeb0f04b37e5eb3858864d074af4ecd2ac7 upstream.
 
- cf0277e714a0db302a8f80e1b85fd61c32cf00b3
- 045cfb71a3901005bf6dcedae98cecb3360a0bfc
- b49bb574e44226b332c28439999d196ddec2f643
+BugLink: https://bugs.launchpad.net/ubuntu/+bug/498863
 
-Here is the description of the first of
-those patches (the other two just fixed
-bugs added by that patch):
+This mainboard needs ac97_codec=0.
 
-Since I removed the master netdev, we've been
-keeping internal queues only, and even before
-that we never told the networking stack above
-the virtual interfaces about congestion. This
-means that packets are queued in mac80211 and
-the upper layers never know, possibly leading
-to memory exhaustion and other problems.
-
-This patch makes all interfaces multiqueue and
-uses ndo_select_queue to put the packets into
-queues per AC. Additionally, when the driver
-stops a queue, we now stop all corresponding
-queues for the virtual interfaces as well.
-
-The injection case will use VO by default for
-non-data frames, and BE for data frames, but
-downgrade any data frames according to ACM. It
-needs to be fleshed out in the future to allow
-chosing the queue/AC in radiotap.
-
-Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
-Cc: John W. Linville <linville@tuxdriver.com>
+Tested-by: Apoorv Parle <apparle@yahoo.co.in>
+Signed-off-by: Daniel T Chen <crimsun@ubuntu.com>
+Signed-off-by: Takashi Iwai <tiwai@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- net/mac80211/iface.c |   40 +++++++++++++++++++++-
- net/mac80211/rx.c    |    4 ++-
- net/mac80211/tx.c    |    5 ++-
- net/mac80211/util.c  |   12 +++++++
- net/mac80211/wme.c   |   89 +++++++++++++++++++++++++++++++++++--------------
- net/mac80211/wme.h   |    8 +++-
- 6 files changed, 126 insertions(+), 32 deletions(-)
+ sound/pci/atiixp.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-diff --git a/net/mac80211/iface.c b/net/mac80211/iface.c
-index b8295cb..079c500 100644
---- a/net/mac80211/iface.c
-+++ b/net/mac80211/iface.c
-@@ -15,12 +15,14 @@
- #include <linux/netdevice.h>
- #include <linux/rtnetlink.h>
- #include <net/mac80211.h>
-+#include <net/ieee80211_radiotap.h>
- #include "ieee80211_i.h"
- #include "sta_info.h"
- #include "debugfs_netdev.h"
- #include "mesh.h"
- #include "led.h"
- #include "driver-ops.h"
-+#include "wme.h"
+diff --git a/sound/pci/atiixp.c b/sound/pci/atiixp.c
+index d6752df..42b4fbb 100644
+--- a/sound/pci/atiixp.c
++++ b/sound/pci/atiixp.c
+@@ -297,6 +297,7 @@ static struct pci_device_id snd_atiixp_ids[] = {
+ MODULE_DEVICE_TABLE(pci, snd_atiixp_ids);
  
- /**
-  * DOC: Interface list locking
-@@ -642,6 +644,12 @@ static void ieee80211_teardown_sdata(struct net_device *dev)
- 	WARN_ON(flushed);
- }
- 
-+static u16 ieee80211_netdev_select_queue(struct net_device *dev,
-+					 struct sk_buff *skb)
-+{
-+	return ieee80211_select_queue(IEEE80211_DEV_TO_SUB_IF(dev), skb);
-+}
-+
- static const struct net_device_ops ieee80211_dataif_ops = {
- 	.ndo_open		= ieee80211_open,
- 	.ndo_stop		= ieee80211_stop,
-@@ -650,8 +658,35 @@ static const struct net_device_ops ieee80211_dataif_ops = {
- 	.ndo_set_multicast_list = ieee80211_set_multicast_list,
- 	.ndo_change_mtu 	= ieee80211_change_mtu,
- 	.ndo_set_mac_address 	= eth_mac_addr,
-+	.ndo_select_queue	= ieee80211_netdev_select_queue,
+ static struct snd_pci_quirk atiixp_quirks[] __devinitdata = {
++	SND_PCI_QUIRK(0x105b, 0x0c81, "Foxconn RC4107MA-RS2", 0),
+ 	SND_PCI_QUIRK(0x15bd, 0x3100, "DFI RS482", 0),
+ 	{ } /* terminator */
  };
- 
-+static u16 ieee80211_monitor_select_queue(struct net_device *dev,
-+					  struct sk_buff *skb)
-+{
-+	struct ieee80211_sub_if_data *sdata = IEEE80211_DEV_TO_SUB_IF(dev);
-+	struct ieee80211_local *local = sdata->local;
-+	struct ieee80211_hdr *hdr;
-+	struct ieee80211_radiotap_header *rtap = (void *)skb->data;
-+
-+	if (local->hw.queues < 4)
-+		return 0;
-+
-+	if (skb->len < 4 ||
-+	    skb->len < le16_to_cpu(rtap->it_len) + 2 /* frame control */)
-+		return 0; /* doesn't matter, frame will be dropped */
-+
-+	hdr = (void *)((u8 *)skb->data + le16_to_cpu(rtap->it_len));
-+
-+	if (!ieee80211_is_data(hdr->frame_control)) {
-+		skb->priority = 7;
-+		return ieee802_1d_to_ac[skb->priority];
-+	}
-+
-+	skb->priority = 0;
-+	return ieee80211_downgrade_queue(local, skb);
-+}
-+
- static const struct net_device_ops ieee80211_monitorif_ops = {
- 	.ndo_open		= ieee80211_open,
- 	.ndo_stop		= ieee80211_stop,
-@@ -660,6 +695,7 @@ static const struct net_device_ops ieee80211_monitorif_ops = {
- 	.ndo_set_multicast_list = ieee80211_set_multicast_list,
- 	.ndo_change_mtu 	= ieee80211_change_mtu,
- 	.ndo_set_mac_address 	= eth_mac_addr,
-+	.ndo_select_queue	= ieee80211_monitor_select_queue,
- };
- 
- static void ieee80211_if_setup(struct net_device *dev)
-@@ -768,8 +804,8 @@ int ieee80211_if_add(struct ieee80211_local *local, const char *name,
- 
- 	ASSERT_RTNL();
- 
--	ndev = alloc_netdev(sizeof(*sdata) + local->hw.vif_data_size,
--			    name, ieee80211_if_setup);
-+	ndev = alloc_netdev_mq(sizeof(*sdata) + local->hw.vif_data_size,
-+			       name, ieee80211_if_setup, local->hw.queues);
- 	if (!ndev)
- 		return -ENOMEM;
- 	dev_net_set(ndev, wiphy_net(local->hw.wiphy));
-diff --git a/net/mac80211/rx.c b/net/mac80211/rx.c
-index 674d8c2..16c6cdc 100644
---- a/net/mac80211/rx.c
-+++ b/net/mac80211/rx.c
-@@ -1548,7 +1548,9 @@ ieee80211_rx_h_mesh_fwding(struct ieee80211_rx_data *rx)
- 			memset(info, 0, sizeof(*info));
- 			info->flags |= IEEE80211_TX_INTFL_NEED_TXPROCESSING;
- 			info->control.vif = &rx->sdata->vif;
--			ieee80211_select_queue(local, fwd_skb);
-+			skb_set_queue_mapping(skb,
-+				ieee80211_select_queue(rx->sdata, fwd_skb));
-+			ieee80211_set_qos_hdr(local, skb);
- 			if (is_multicast_ether_addr(fwd_hdr->addr1))
- 				IEEE80211_IFSTA_MESH_CTR_INC(&sdata->u.mesh,
- 								fwded_mcast);
-diff --git a/net/mac80211/tx.c b/net/mac80211/tx.c
-index d398197..441f68e 100644
---- a/net/mac80211/tx.c
-+++ b/net/mac80211/tx.c
-@@ -1482,7 +1482,7 @@ static void ieee80211_xmit(struct ieee80211_sub_if_data *sdata,
- 				return;
- 			}
- 
--	ieee80211_select_queue(local, skb);
-+	ieee80211_set_qos_hdr(local, skb);
- 	ieee80211_tx(sdata, skb, false);
- 	dev_put(sdata->dev);
- }
-@@ -2226,6 +2226,9 @@ void ieee80211_tx_skb(struct ieee80211_sub_if_data *sdata, struct sk_buff *skb,
- 	if (!encrypt)
- 		info->flags |= IEEE80211_TX_INTFL_DONT_ENCRYPT;
- 
-+	/* send all internal mgmt frames on VO */
-+	skb_set_queue_mapping(skb, 0);
-+
- 	/*
- 	 * The other path calling ieee80211_xmit is from the tasklet,
- 	 * and while we can handle concurrent transmissions locking
-diff --git a/net/mac80211/util.c b/net/mac80211/util.c
-index 51e0bd2..553cffe 100644
---- a/net/mac80211/util.c
-+++ b/net/mac80211/util.c
-@@ -269,6 +269,7 @@ static void __ieee80211_wake_queue(struct ieee80211_hw *hw, int queue,
- 				   enum queue_stop_reason reason)
- {
- 	struct ieee80211_local *local = hw_to_local(hw);
-+	struct ieee80211_sub_if_data *sdata;
- 
- 	if (WARN_ON(queue >= hw->queues))
- 		return;
-@@ -281,6 +282,11 @@ static void __ieee80211_wake_queue(struct ieee80211_hw *hw, int queue,
- 
- 	if (!skb_queue_empty(&local->pending[queue]))
- 		tasklet_schedule(&local->tx_pending_tasklet);
-+
-+	rcu_read_lock();
-+	list_for_each_entry_rcu(sdata, &local->interfaces, list)
-+		netif_tx_wake_queue(netdev_get_tx_queue(sdata->dev, queue));
-+	rcu_read_unlock();
- }
- 
- void ieee80211_wake_queue_by_reason(struct ieee80211_hw *hw, int queue,
-@@ -305,11 +311,17 @@ static void __ieee80211_stop_queue(struct ieee80211_hw *hw, int queue,
- 				   enum queue_stop_reason reason)
- {
- 	struct ieee80211_local *local = hw_to_local(hw);
-+	struct ieee80211_sub_if_data *sdata;
- 
- 	if (WARN_ON(queue >= hw->queues))
- 		return;
- 
- 	__set_bit(reason, &local->queue_stop_reasons[queue]);
-+
-+	rcu_read_lock();
-+	list_for_each_entry_rcu(sdata, &local->interfaces, list)
-+		netif_tx_stop_queue(netdev_get_tx_queue(sdata->dev, queue));
-+	rcu_read_unlock();
- }
- 
- void ieee80211_stop_queue_by_reason(struct ieee80211_hw *hw, int queue,
-diff --git a/net/mac80211/wme.c b/net/mac80211/wme.c
-index b19b769..6d32ebf 100644
---- a/net/mac80211/wme.c
-+++ b/net/mac80211/wme.c
-@@ -44,22 +44,62 @@ static int wme_downgrade_ac(struct sk_buff *skb)
- }
- 
- 
--/* Indicate which queue to use.  */
--static u16 classify80211(struct ieee80211_local *local, struct sk_buff *skb)
-+/* Indicate which queue to use. */
-+u16 ieee80211_select_queue(struct ieee80211_sub_if_data *sdata,
-+			   struct sk_buff *skb)
- {
--	struct ieee80211_hdr *hdr = (struct ieee80211_hdr *) skb->data;
-+	struct ieee80211_local *local = sdata->local;
-+	struct sta_info *sta = NULL;
-+	u32 sta_flags = 0;
-+	const u8 *ra = NULL;
-+	bool qos = false;
- 
--	if (!ieee80211_is_data(hdr->frame_control)) {
--		/* management frames go on AC_VO queue, but are sent
--		* without QoS control fields */
--		return 0;
-+	if (local->hw.queues < 4 || skb->len < 6) {
-+		skb->priority = 0; /* required for correct WPA/11i MIC */
-+		return min_t(u16, local->hw.queues - 1,
-+			     ieee802_1d_to_ac[skb->priority]);
- 	}
- 
--	if (0 /* injected */) {
--		/* use AC from radiotap */
-+	rcu_read_lock();
-+	switch (sdata->vif.type) {
-+	case NL80211_IFTYPE_AP_VLAN:
-+	case NL80211_IFTYPE_AP:
-+		ra = skb->data;
-+		break;
-+	case NL80211_IFTYPE_WDS:
-+		ra = sdata->u.wds.remote_addr;
-+		break;
-+#ifdef CONFIG_MAC80211_MESH
-+	case NL80211_IFTYPE_MESH_POINT:
-+		/*
-+		 * XXX: This is clearly broken ... but already was before,
-+		 * because ieee80211_fill_mesh_addresses() would clear A1
-+		 * except for multicast addresses.
-+		 */
-+		break;
-+#endif
-+	case NL80211_IFTYPE_STATION:
-+		ra = sdata->u.mgd.bssid;
-+		break;
-+	case NL80211_IFTYPE_ADHOC:
-+		ra = skb->data;
-+		break;
-+	default:
-+		break;
- 	}
- 
--	if (!ieee80211_is_data_qos(hdr->frame_control)) {
-+	if (!sta && ra && !is_multicast_ether_addr(ra)) {
-+		sta = sta_info_get(local, ra);
-+		if (sta)
-+			sta_flags = get_sta_flags(sta);
-+	}
-+
-+	if (sta_flags & WLAN_STA_WME)
-+		qos = true;
-+
-+	rcu_read_unlock();
-+
-+	if (!qos) {
- 		skb->priority = 0; /* required for correct WPA/11i MIC */
- 		return ieee802_1d_to_ac[skb->priority];
- 	}
-@@ -68,6 +108,12 @@ static u16 classify80211(struct ieee80211_local *local, struct sk_buff *skb)
- 	 * data frame has */
- 	skb->priority = cfg80211_classify8021d(skb);
- 
-+	return ieee80211_downgrade_queue(local, skb);
-+}
-+
-+u16 ieee80211_downgrade_queue(struct ieee80211_local *local,
-+			      struct sk_buff *skb)
-+{
- 	/* in case we are a client verify acm is not set for this ac */
- 	while (unlikely(local->wmm_acm & BIT(skb->priority))) {
- 		if (wme_downgrade_ac(skb)) {
-@@ -85,24 +131,17 @@ static u16 classify80211(struct ieee80211_local *local, struct sk_buff *skb)
- 	return ieee802_1d_to_ac[skb->priority];
- }
- 
--void ieee80211_select_queue(struct ieee80211_local *local, struct sk_buff *skb)
-+void ieee80211_set_qos_hdr(struct ieee80211_local *local, struct sk_buff *skb)
- {
--	struct ieee80211_hdr *hdr = (struct ieee80211_hdr *) skb->data;
--	u16 queue;
--	u8 tid;
--
--	queue = classify80211(local, skb);
--	if (unlikely(queue >= local->hw.queues))
--		queue = local->hw.queues - 1;
--
--	/*
--	 * Now we know the 1d priority, fill in the QoS header if
--	 * there is one (and we haven't done this before).
--	 */
-+	struct ieee80211_hdr *hdr = (void *)skb->data;
-+
-+	/* Fill in the QoS header if there is one. */
- 	if (ieee80211_is_data_qos(hdr->frame_control)) {
- 		u8 *p = ieee80211_get_qos_ctl(hdr);
--		u8 ack_policy = 0;
-+		u8 ack_policy = 0, tid;
-+
- 		tid = skb->priority & IEEE80211_QOS_CTL_TAG1D_MASK;
-+
- 		if (unlikely(local->wifi_wme_noack_test))
- 			ack_policy |= QOS_CONTROL_ACK_POLICY_NOACK <<
- 					QOS_CONTROL_ACK_POLICY_SHIFT;
-@@ -110,6 +149,4 @@ void ieee80211_select_queue(struct ieee80211_local *local, struct sk_buff *skb)
- 		*p++ = ack_policy | tid;
- 		*p = 0;
- 	}
--
--	skb_set_queue_mapping(skb, queue);
- }
-diff --git a/net/mac80211/wme.h b/net/mac80211/wme.h
-index d4fd87c..6053b1c 100644
---- a/net/mac80211/wme.h
-+++ b/net/mac80211/wme.h
-@@ -20,7 +20,11 @@
- 
- extern const int ieee802_1d_to_ac[8];
- 
--void ieee80211_select_queue(struct ieee80211_local *local,
--			    struct sk_buff *skb);
-+u16 ieee80211_select_queue(struct ieee80211_sub_if_data *sdata,
-+			   struct sk_buff *skb);
-+void ieee80211_set_qos_hdr(struct ieee80211_local *local, struct sk_buff *skb);
-+u16 ieee80211_downgrade_queue(struct ieee80211_local *local,
-+                              struct sk_buff *skb);
-+
- 
- #endif /* _WME_H */
 -- 
 1.6.6
 
