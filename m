@@ -1,55 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755058Ab0ANJxc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755306Ab0ANKHN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755058Ab0ANJxc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 04:53:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753672Ab0ANJxb
+	id S1755306Ab0ANKHN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 05:07:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754990Ab0ANKHM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 04:53:31 -0500
-Received: from casper.infradead.org ([85.118.1.10]:49951 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751411Ab0ANJxa (ORCPT
+	Thu, 14 Jan 2010 05:07:12 -0500
+Received: from mail-bw0-f227.google.com ([209.85.218.227]:62491 "EHLO
+	mail-bw0-f227.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751313Ab0ANKHL convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 04:53:30 -0500
-Date: Thu, 14 Jan 2010 01:53:29 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, tglx@tglx.de, mingo@elte.hu,
-       Cyrill Gorcunov <gorcunov@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH] timers: Introduce the concept of timer slack for legacy
- timers
-Message-ID: <20100114015329.402f7b01@infradead.org>
-In-Reply-To: <20100113220755.7ad6286f.akpm@linux-foundation.org>
-References: <20100109133744.29829988@infradead.org>
-	<20100113135219.f7e8a2f9.akpm@linux-foundation.org>
-	<20100113214528.41e2de4a@infradead.org>
-	<20100113220755.7ad6286f.akpm@linux-foundation.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.3 (GTK+ 2.16.6; i586-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Thu, 14 Jan 2010 05:07:11 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=p+PmtiOgJTRkYA7tmop/HPFOiSuSfBfOcP5DvrK54Hoanu2G1C4RdHaDOtXs3gItBo
+         K2NJiTljPVVfc7wib8l5Cw1HtywhvoFfQth7uBf5NDZzo6B8i7qQL9adQ424X/X2e550
+         V5M/vqCl1ksCtGoV8PaT3yPFCOgBS2McZJ7oA=
+MIME-Version: 1.0
+In-Reply-To: <20100113115712.GA7398@faui49.informatik.uni-erlangen.de>
+References: <20100113115712.GA7398@faui49.informatik.uni-erlangen.de>
+Date: Thu, 14 Jan 2010 11:07:08 +0100
+Message-ID: <63386a3d1001140207p5e2546fq2d8201ee87edfd46@mail.gmail.com>
+Subject: Re: [PATCH] typo in kernel source (DEBUGFS)
+From: Linus Walleij <linus.ml.walleij@gmail.com>
+To: Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>
+Cc: linux-kernel@vger.kernel.org, Linus Walleij <linus.walleij@stericsson.com>,
+       sameo@linux.intel.com, Reinhard.Tartler@informatik.uni-erlangen.de
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 13 Jan 2010 22:07:55 -0800
-Andrew Morton <akpm@linux-foundation.org> wrote:
-> hm.
-> 
-> Have you any feeling for how much power this sort of thing saves?  I
-> guess "change in interrupts per minute" would be easy to measure.
+2010/1/13 Christoph Egger <siccegge@stud.informatik.uni-erlangen.de>:
 
-depends on what kind of system obviously. For a laptop, it's not all
-that much, but for a cellphone it can be easily 30% to 40% extra
-standby power.... a few wakeups per second already is a huge power
-delta for those.
+>        While working on this we detected a spelling error in
+> drivers/mfd/ab3100-otp.c which can be corrected using the attached
+> patch.
 
+Acked-by: Linus Walleij <linus.walleij@stericsson.com>
 
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Linus Walleij
