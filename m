@@ -1,24 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756884Ab0ANW25@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932297Ab0ANW3I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756884Ab0ANW25 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 17:28:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756745Ab0ANW2t
+	id S932297Ab0ANW3I (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 17:29:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932299Ab0ANW3A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 17:28:49 -0500
-Received: from kroah.org ([198.145.64.141]:60615 "EHLO coco.kroah.org"
+	Thu, 14 Jan 2010 17:29:00 -0500
+Received: from kroah.org ([198.145.64.141]:60706 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756742Ab0ANW2r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 17:28:47 -0500
+	id S932247Ab0ANW26 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jan 2010 17:28:58 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, stable-review@kernel.org
 Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       Florian Westphal <fwestphal@astaro.com>,
-       Patrick McHardy <kaber@trash.net>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 33/52] netfilter: ebtables: enforce CAP_NET_ADMIN
-Date: Thu, 14 Jan 2010 14:27:12 -0800
-Message-Id: <1263508051-7868-33-git-send-email-gregkh@suse.de>
+       Samuel Ortiz <sameo@linux.intel.com>,
+       Holger Schurig <holgerschurig@gmail.com>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 45/52] libertas: Remove carrier signaling from the scan code
+Date: Thu, 14 Jan 2010 14:27:24 -0800
+Message-Id: <1263508051-7868-45-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.6
-In-Reply-To: <1263508051-7868-32-git-send-email-gregkh@suse.de>
+In-Reply-To: <1263508051-7868-44-git-send-email-gregkh@suse.de>
 References: <20100114222551.GA7839@suse.de>
  <1263508051-7868-1-git-send-email-gregkh@suse.de>
  <1263508051-7868-2-git-send-email-gregkh@suse.de>
@@ -52,51 +54,78 @@ References: <20100114222551.GA7839@suse.de>
  <1263508051-7868-30-git-send-email-gregkh@suse.de>
  <1263508051-7868-31-git-send-email-gregkh@suse.de>
  <1263508051-7868-32-git-send-email-gregkh@suse.de>
+ <1263508051-7868-33-git-send-email-gregkh@suse.de>
+ <1263508051-7868-34-git-send-email-gregkh@suse.de>
+ <1263508051-7868-35-git-send-email-gregkh@suse.de>
+ <1263508051-7868-36-git-send-email-gregkh@suse.de>
+ <1263508051-7868-37-git-send-email-gregkh@suse.de>
+ <1263508051-7868-38-git-send-email-gregkh@suse.de>
+ <1263508051-7868-39-git-send-email-gregkh@suse.de>
+ <1263508051-7868-40-git-send-email-gregkh@suse.de>
+ <1263508051-7868-41-git-send-email-gregkh@suse.de>
+ <1263508051-7868-42-git-send-email-gregkh@suse.de>
+ <1263508051-7868-43-git-send-email-gregkh@suse.de>
+ <1263508051-7868-44-git-send-email-gregkh@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Florian Westphal <fwestphal@astaro.com>
+From: Samuel Ortiz <sameo@linux.intel.com>
 
-commit dce766af541f6605fa9889892c0280bab31c66ab upstream.
+commit 659c8e5243caf14564155ad8421404f044dd8031 upstream.
 
-normal users are currently allowed to set/modify ebtables rules.
-Restrict it to processes with CAP_NET_ADMIN.
+There is no reason to signal a carrier off when doing a 802.11 scan.
 
-Note that this cannot be reproduced with unmodified ebtables binary
-because it uses SOCK_RAW.
-
-Signed-off-by: Florian Westphal <fwestphal@astaro.com>
-Signed-off-by: Patrick McHardy <kaber@trash.net>
+Cc: Holger Schurig <holgerschurig@gmail.com>
+Signed-off-by: Samuel Ortiz <sameo@linux.intel.com>
+Acked-by: Dan Williams <dcbw@redhat.com>
+Signed-off-by: John W. Linville <linville@tuxdriver.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- net/bridge/netfilter/ebtables.c |    6 ++++++
- 1 files changed, 6 insertions(+), 0 deletions(-)
+ drivers/net/wireless/libertas/scan.c |   22 ++++++++--------------
+ 1 files changed, 8 insertions(+), 14 deletions(-)
 
-diff --git a/net/bridge/netfilter/ebtables.c b/net/bridge/netfilter/ebtables.c
-index bd1c654..0b7f262 100644
---- a/net/bridge/netfilter/ebtables.c
-+++ b/net/bridge/netfilter/ebtables.c
-@@ -1406,6 +1406,9 @@ static int do_ebt_set_ctl(struct sock *sk,
- {
- 	int ret;
+diff --git a/drivers/net/wireless/libertas/scan.c b/drivers/net/wireless/libertas/scan.c
+index 6c95af3..06d66a1 100644
+--- a/drivers/net/wireless/libertas/scan.c
++++ b/drivers/net/wireless/libertas/scan.c
+@@ -399,11 +399,8 @@ int lbs_scan_networks(struct lbs_private *priv, int full_scan)
+ 	chan_count = lbs_scan_create_channel_list(priv, chan_list);
  
-+	if (!capable(CAP_NET_ADMIN))
-+		return -EPERM;
+ 	netif_stop_queue(priv->dev);
+-	netif_carrier_off(priv->dev);
+-	if (priv->mesh_dev) {
++	if (priv->mesh_dev)
+ 		netif_stop_queue(priv->mesh_dev);
+-		netif_carrier_off(priv->mesh_dev);
+-	}
+ 
+ 	/* Prepare to continue an interrupted scan */
+ 	lbs_deb_scan("chan_count %d, scan_channel %d\n",
+@@ -467,16 +464,13 @@ out2:
+ 	priv->scan_channel = 0;
+ 
+ out:
+-	if (priv->connect_status == LBS_CONNECTED) {
+-		netif_carrier_on(priv->dev);
+-		if (!priv->tx_pending_len)
+-			netif_wake_queue(priv->dev);
+-	}
+-	if (priv->mesh_dev && (priv->mesh_connect_status == LBS_CONNECTED)) {
+-		netif_carrier_on(priv->mesh_dev);
+-		if (!priv->tx_pending_len)
+-			netif_wake_queue(priv->mesh_dev);
+-	}
++	if (priv->connect_status == LBS_CONNECTED && !priv->tx_pending_len)
++		netif_wake_queue(priv->dev);
 +
- 	switch(cmd) {
- 	case EBT_SO_SET_ENTRIES:
- 		ret = do_replace(sock_net(sk), user, len);
-@@ -1425,6 +1428,9 @@ static int do_ebt_get_ctl(struct sock *sk, int cmd, void __user *user, int *len)
- 	struct ebt_replace tmp;
- 	struct ebt_table *t;
- 
-+	if (!capable(CAP_NET_ADMIN))
-+		return -EPERM;
++	if (priv->mesh_dev && (priv->mesh_connect_status == LBS_CONNECTED) &&
++	    !priv->tx_pending_len)
++		netif_wake_queue(priv->mesh_dev);
 +
- 	if (copy_from_user(&tmp, user, sizeof(tmp)))
- 		return -EFAULT;
+ 	kfree(chan_list);
  
+ 	lbs_deb_leave_args(LBS_DEB_SCAN, "ret %d", ret);
 -- 
 1.6.6
 
