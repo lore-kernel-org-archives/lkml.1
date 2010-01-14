@@ -1,69 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754286Ab0ANAn7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753196Ab0ANAzf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754286Ab0ANAn7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 19:43:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751243Ab0ANAn6
+	id S1753196Ab0ANAzf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 19:55:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752043Ab0ANAzf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 19:43:58 -0500
-Received: from mga14.intel.com ([143.182.124.37]:28366 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751191Ab0ANAn6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 19:43:58 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.47,316,1257148800"; 
-   d="scan'208";a="232502364"
-Message-Id: <20100114002118.436172066@sbs-t61.sc.intel.com>
-User-Agent: quilt/0.47-1
-Date: Wed, 13 Jan 2010 16:19:10 -0800
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-To: hpa@zytor.com, ebiederm@xmission.com, yinghai@kernel.org, mingo@elte.hu,
-       macro@linux-mips.org
-Cc: linux-kernel@vger.kernel.org, Suresh Siddha <suresh.b.siddha@intel.com>,
-       Alok N Kataria <akataria@vmware.com>, Zach Amsden <zach@vmware.com>
-Subject: [patch 1/2] x86, vmi: Fix vmi_get_timer_vector() to use IRQ0_VECTOR
-Content-Disposition: inline; filename=fix_vmi_vector.patch
+	Wed, 13 Jan 2010 19:55:35 -0500
+Received: from outbound-mail-139.bluehost.com ([67.222.39.29]:44723 "HELO
+	outbound-mail-139.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751885Ab0ANAze (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Jan 2010 19:55:34 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=doxccCcGO0Is4sJe3REcu/r5nF6BpFQRkYhUhRTPPexZFsA+fw0x7I4eSogvtGuW/tXQYulvCxPf77uBtd/IevivNG7K0dz45mFjgRTGxoAEtQtGIjNPi74+1OVEDM4W;
+Date: Wed, 13 Jan 2010 16:55:30 -0800
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       airlied@linux.ie
+Subject: Re: Linux 2.6.33-rc4
+Message-ID: <20100113165530.2a7e7645@jbarnes-piketon>
+In-Reply-To: <4B4E403C.1050509@cs.helsinki.fi>
+References: <alpine.LFD.2.00.1001122139411.17145@localhost.localdomain>
+	<84144f021001131303u56fa5470ua1c27dfef9f3de81@mail.gmail.com>
+	<20100113133357.67f9df6d@jbarnes-piketon>
+	<4B4E403C.1050509@cs.helsinki.fi>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.18.3; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-FIRST_DEVICE_VECTOR is going away and it looks like a bad hack to steal
-FIRST_DEVICE_VECTOR / FIRST_EXTERNAL_VECTOR, when it looks like it needs
-IRQ0_VECTOR.
+On Wed, 13 Jan 2010 23:50:52 +0200
+Pekka Enberg <penberg@cs.helsinki.fi> wrote:
 
-Fix vmi_get_timer_vector() to use IRQ0_VECTOR.
+> Jesse Barnes wrote:
+> > On Wed, 13 Jan 2010 23:03:00 +0200
+> > Pekka Enberg <penberg@cs.helsinki.fi> wrote:
+> > 
+> >> On Wed, Jan 13, 2010 at 7:44 AM, Linus Torvalds
+> >> <torvalds@linux-foundation.org> wrote:
+> >>> Hmm. Odd release. Something like 40% of the patches are in DRM
+> >>> (mostly nouveau and radeon, both staging, so it's a bit less scary
+> >>> than it sounds. But there's a noticeable i915 component too).
+> >>> That's all pretty unusual, afaik.
+> >> 2.6.33-rc4 still suffers from an annoying screen flicker with i915
+> >> and KMS on my machine. I *think* it started with 2.6.33-rc1 but I
+> >> haven't had the time to dig deeper.
+> > 
+> > Does this patch fix it?  If so I'll queue something like this up for
+> > -rc5.
+> 
+> Yes, it does. Thanks!
 
-Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: Alok N Kataria <akataria@vmware.com>
-Cc: Zach Amsden <zach@vmware.com>
----
- arch/x86/kernel/vmiclock_32.c |    8 +-------
- 1 file changed, 1 insertion(+), 7 deletions(-)
+Great, thanks for testing.  I'll send Eric a patch to disable this
+feature more properly.
 
-Index: tip/arch/x86/kernel/vmiclock_32.c
-===================================================================
---- tip.orig/arch/x86/kernel/vmiclock_32.c
-+++ tip/arch/x86/kernel/vmiclock_32.c
-@@ -79,11 +79,7 @@ unsigned long vmi_tsc_khz(void)
- 
- static inline unsigned int vmi_get_timer_vector(void)
- {
--#ifdef CONFIG_X86_IO_APIC
--	return FIRST_DEVICE_VECTOR;
--#else
--	return FIRST_EXTERNAL_VECTOR;
--#endif
-+	return IRQ0_VECTOR;
- }
- 
- /** vmi clockchip */
-@@ -239,8 +235,6 @@ void __init vmi_time_init(void)
- 
- 	vmi_time_init_clockevent();
- 	setup_irq(0, &vmi_clock_action);
--	for_each_possible_cpu(cpu)
--		per_cpu(vector_irq, cpu)[vmi_get_timer_vector()] = 0;
- }
- 
- #ifdef CONFIG_X86_LOCAL_APIC
-
-
+Thanks,
+-- 
+Jesse Barnes, Intel Open Source Technology Center
