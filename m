@@ -1,165 +1,468 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757600Ab0ANUHH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932337Ab0ANUMS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757600Ab0ANUHH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 15:07:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757585Ab0ANUHG
+	id S932337Ab0ANUMS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 15:12:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757573Ab0ANUMS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 15:07:06 -0500
-Received: from mx1.redhat.com ([209.132.183.28]:62065 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757526Ab0ANUHF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 15:07:05 -0500
-Message-ID: <4B4F7951.7090607@redhat.com>
-Date: Thu, 14 Jan 2010 15:06:41 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-3.fc11 Thunderbird/3.0
+	Thu, 14 Jan 2010 15:12:18 -0500
+Received: from g6t0184.atlanta.hp.com ([15.193.32.61]:5455 "EHLO
+	g6t0184.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757257Ab0ANUMR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jan 2010 15:12:17 -0500
+Date: Thu, 14 Jan 2010 13:12:14 -0700
+From: Alex Chiang <achiang@hp.com>
+To: lenb@kernel.org
+Cc: shemminger@linux-foundation.org, ming.m.lin@intel.com,
+       linux-acpi@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>
+Subject: [PATCH] ACPI: processor: only call _PDC on physically present
+	processors
+Message-ID: <20100114201214.GH4545@ldl.fc.hp.com>
 MIME-Version: 1.0
-To: Dongdong Deng <libfetion@gmail.com>
-CC: linux-kernel@vger.kernel.org, ananth@in.ibm.com,
-       anil.s.keshavamurthy@intel.com, davem@davemloft.net,
-       arjan@infradead.org, jkenisto@us.ibm.com, prasanna@in.ibm.com
-Subject: Re: Did we really need to clear the IF flag at prepare_singlestep()
- 	of x86 kprobes?
-References: <ce2c83091001120309q19d58b45kc27610fc31ce01dc@mail.gmail.com>	 <4B4D65B1.3010204@redhat.com> <ce2c83091001132245q2b42b533vd6519cb3fd0d01af@mail.gmail.com>
-In-Reply-To: <ce2c83091001132245q2b42b533vd6519cb3fd0d01af@mail.gmail.com>
-X-Enigmail-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dongdong Deng wrote:
-> On Wed, Jan 13, 2010 at 2:18 PM, Masami Hiramatsu <mhiramat@redhat.com> wrote:
->> Hi Dongdong,
->>
->> Hmm, can that be applied on other x86 compat cpus too?
->> And, when is the debug trap exception actually happened?
-> 
->> 1: int3 ->
->> 2:  -> pre_kprobe_handler
->> 3:  -> prepare_singlestep
->> 4: <- iret
->> 5: execute instruction
->> 6: debug trap ->
->> 7: -> post_kprobe_handler
->> ...
->>
->> If we have an interrupt before step4, does that interrupt
->> really executed *after* step5? or step4?
-> 
-> 
-> Hi Masami,
-> 
-> Thanks for your detail explain, it is the key of my question. :)
-> 
-> I write a test case to proving it.
-> 
-> The test case required run on uniprocessor systems,
-> 
-> My machine is intel Xeon-Dual, so I disable the SMP support when
-> building kernel.
-> 
-> 
-> The test case works.
-> 
-> 1: delay a long time during INT3 handler of kprobes.
-> 
-> 2: add a printk at the net driver interrupt handler.(I am using
-> e10000e net-card)
-> 
-> 3: startup system
-> 
-> 4: using other PC to ping current machine all the while, thereby it
-> could generate net-card interrupt during INT3.
-> 
-> 5: insmod the samples/kprobes/kprobe_example.ko .
-> 
-> 6: using the following script to trigger kprobe.
-> 
-> #!/bin/bash
-> a=0 ; while [ $a != 8000 ]; do(ls ./); a=$(( $a + 1 )); done
-> 
-> 
-> Test output result:
-> 
-> # cat /proc/cpuinfo
-> processor       : 0
-> vendor_id       : GenuineIntel
-> cpu family      : 6
-> model           : 15
-> model name      : Intel(R) Xeon(R) CPU            5138  @ 2.13GHz
-> stepping        : 11
-> cpu MHz         : 2133.324
-> cache size      : 4096 KB
-> fpu             : yes
-> fpu_exception   : yes
-> cpuid level     : 10
-> wp              : yes
-> flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge
-> mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe
-> syscall nx lm constant_tsc arch_perfmon pebs bts rep_good nopl pni
-> monitor ds_cpl vmx est tm2 ssse3 cx16 xtpr dca lahf_lm
-> bogomips        : 4266.64
-> clflush size    : 64
-> cache_alignment : 64
-> address sizes   : 38 bits physical, 48 bits virtual
-> power management:
-> 
-> # insmod  kprobe_example.ko
-> Planted kprobe at ffffffff8022df60
-> 
-> # /bin/bash 1.sh
-> pre_handler: p->addr = 0xffffffff8022df60, ip = ffffffff8022df61, flags = 0x246
-> prepare_singlestep didn't clear X86_EFLAGS_IF
-> Got a e1000 intrrupt during kprobe single step!!!!
-> post_handler: p->addr = 0xffffffff8022df60, ip = ffffffff8022df62, flags = 0x246
-> pre_handler: p->addr = 0xffffffff8022df60, ip = ffffffff8022df61, flags = 0x246
-> prepare_singlestep didn't clear X86_EFLAGS_IF
-> Got a e1000 intrrupt during kprobe single step!!!!
-> post_handler: p->addr = 0xffffffff8022df60, ip = ffffffff8022df62, flags = 0x246
-> 1.sh               kprobe_example.ko
-> pre_handler: p->addr = 0xffffffff8022df60, ip = ffffffff8022df61, flags = 0x246
-> prepare_singlestep didn't clear X86_EFLAGS_IF
-> Got a e1000 intrrupt during kprobe single step!!!!
-> post_handler: p->addr = 0xffffffff8022df60, ip = ffffffff8022df62, flags = 0x246
-> 1.sh               kprobe_example.ko
-> pre_handler: p->addr = 0xffffffff8022df60, ip = ffffffff8022df61, flags = 0x246
-> prepare_singlestep didn't clear X86_EFLAGS_IF
-> Got a e1000 intrrupt during kprobe single step!!!!
-> post_handler: p->addr = 0xffffffff8022df60, ip = ffffffff8022df62, flags = 0x246
-> 1.sh               kprobe_example.ko
-> pre_handler: p->addr = 0xffffffff8022df60, ip = ffffffff8022df61, flags = 0x246
-> prepare_singlestep didn't clear X86_EFLAGS_IF
-> Got a e1000 intrrupt during kprobe single step!!!!
-> post_handler: p->addr = 0xffffffff8022df60, ip = ffffffff8022df62, flags = 0x246
-> 1.sh               kprobe_example.ko
-> 
-> 
-> From the result of test cause,  the processor really tries to execute
-> interrupt right after step4.
+Commit 78f1699 (ACPI: processor: call _PDC early) blindly walks
+the namespace and calls _PDC on every processor object it finds.
 
-Thank you for testing it!
+Unfortunately, we've discovered at least one BIOS that declares
+bogus SSDTs on processors declared in the namespace but not
+physically present.
 
->>
->> If the processor really tries to execute interrupt
->> right after step5, your logic seems correct, but if it
->> is done right after step4, clearing IF seems correct.
-> 
-> But I couldn't make sure that this test case is suitable or not.
-> If the test case is OK, my logic seems wrong.
+The bogus SSDTs have both an invalid address and invalid length,
+both set to something huge (0x80000000).
 
-Hmm, your test case seems correct on up, so we can't remove
-IF clearing line. But anyway, thank you again for ensuring it!
+When the ACPI interpreter executes the Load() op on the bogus
+SSDT, we attempt to allocate memory to copy the table; the amount
+we try to allocate is determined by the length.
 
+Of course, passing a huge number to the allocator results in
+fail, and we get a warning.
 
-Thanks,
--- 
-Masami Hiramatsu
+The fix is to ensure each processor is physically present before
+attempting to call its _PDC method.
 
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
+Fixes:
+	http://bugzilla.kernel.org/show_bug.cgi?id=14954
 
-e-mail: mhiramat@redhat.com
-
+Reported-and-tested-by: Stephen Hemminger <shemminger@linux-foundation.org>
+Cc: Ling Min <ming.m.lin@intel.com>
+Signed-off-by: Alex Chiang <achiang@hp.com>
+---
+ drivers/acpi/processor_core.c |  163 -------------------------------------
+ drivers/acpi/processor_pdc.c  |  183 ++++++++++++++++++++++++++++++++++++++++++
+ include/acpi/processor.h      |    8 +
+ 3 files changed, 192 insertions(+), 162 deletions(-)
+---
+diff --git a/drivers/acpi/processor_core.c b/drivers/acpi/processor_core.c
+index 9863c98..11a51cc 100644
+--- a/drivers/acpi/processor_core.c
++++ b/drivers/acpi/processor_core.c
+@@ -357,162 +357,6 @@ static inline int acpi_processor_remove_fs(struct acpi_device *device)
+ }
+ #endif
+ 
+-/* Use the acpiid in MADT to map cpus in case of SMP */
+-
+-#ifndef CONFIG_SMP
+-static int get_cpu_id(acpi_handle handle, int type, u32 acpi_id) { return -1; }
+-#else
+-
+-static struct acpi_table_madt *madt;
+-
+-static int map_lapic_id(struct acpi_subtable_header *entry,
+-		 u32 acpi_id, int *apic_id)
+-{
+-	struct acpi_madt_local_apic *lapic =
+-		(struct acpi_madt_local_apic *)entry;
+-	if ((lapic->lapic_flags & ACPI_MADT_ENABLED) &&
+-	    lapic->processor_id == acpi_id) {
+-		*apic_id = lapic->id;
+-		return 1;
+-	}
+-	return 0;
+-}
+-
+-static int map_x2apic_id(struct acpi_subtable_header *entry,
+-			 int device_declaration, u32 acpi_id, int *apic_id)
+-{
+-	struct acpi_madt_local_x2apic *apic =
+-		(struct acpi_madt_local_x2apic *)entry;
+-	u32 tmp = apic->local_apic_id;
+-
+-	/* Only check enabled APICs*/
+-	if (!(apic->lapic_flags & ACPI_MADT_ENABLED))
+-		return 0;
+-
+-	/* Device statement declaration type */
+-	if (device_declaration) {
+-		if (apic->uid == acpi_id)
+-			goto found;
+-	}
+-
+-	return 0;
+-found:
+-	*apic_id = tmp;
+-	return 1;
+-}
+-
+-static int map_lsapic_id(struct acpi_subtable_header *entry,
+-		int device_declaration, u32 acpi_id, int *apic_id)
+-{
+-	struct acpi_madt_local_sapic *lsapic =
+-		(struct acpi_madt_local_sapic *)entry;
+-	u32 tmp = (lsapic->id << 8) | lsapic->eid;
+-
+-	/* Only check enabled APICs*/
+-	if (!(lsapic->lapic_flags & ACPI_MADT_ENABLED))
+-		return 0;
+-
+-	/* Device statement declaration type */
+-	if (device_declaration) {
+-		if (entry->length < 16)
+-			printk(KERN_ERR PREFIX
+-			    "Invalid LSAPIC with Device type processor (SAPIC ID %#x)\n",
+-			    tmp);
+-		else if (lsapic->uid == acpi_id)
+-			goto found;
+-	/* Processor statement declaration type */
+-	} else if (lsapic->processor_id == acpi_id)
+-		goto found;
+-
+-	return 0;
+-found:
+-	*apic_id = tmp;
+-	return 1;
+-}
+-
+-static int map_madt_entry(int type, u32 acpi_id)
+-{
+-	unsigned long madt_end, entry;
+-	int apic_id = -1;
+-
+-	if (!madt)
+-		return apic_id;
+-
+-	entry = (unsigned long)madt;
+-	madt_end = entry + madt->header.length;
+-
+-	/* Parse all entries looking for a match. */
+-
+-	entry += sizeof(struct acpi_table_madt);
+-	while (entry + sizeof(struct acpi_subtable_header) < madt_end) {
+-		struct acpi_subtable_header *header =
+-			(struct acpi_subtable_header *)entry;
+-		if (header->type == ACPI_MADT_TYPE_LOCAL_APIC) {
+-			if (map_lapic_id(header, acpi_id, &apic_id))
+-				break;
+-		} else if (header->type == ACPI_MADT_TYPE_LOCAL_X2APIC) {
+-			if (map_x2apic_id(header, type, acpi_id, &apic_id))
+-				break;
+-		} else if (header->type == ACPI_MADT_TYPE_LOCAL_SAPIC) {
+-			if (map_lsapic_id(header, type, acpi_id, &apic_id))
+-				break;
+-		}
+-		entry += header->length;
+-	}
+-	return apic_id;
+-}
+-
+-static int map_mat_entry(acpi_handle handle, int type, u32 acpi_id)
+-{
+-	struct acpi_buffer buffer = { ACPI_ALLOCATE_BUFFER, NULL };
+-	union acpi_object *obj;
+-	struct acpi_subtable_header *header;
+-	int apic_id = -1;
+-
+-	if (ACPI_FAILURE(acpi_evaluate_object(handle, "_MAT", NULL, &buffer)))
+-		goto exit;
+-
+-	if (!buffer.length || !buffer.pointer)
+-		goto exit;
+-
+-	obj = buffer.pointer;
+-	if (obj->type != ACPI_TYPE_BUFFER ||
+-	    obj->buffer.length < sizeof(struct acpi_subtable_header)) {
+-		goto exit;
+-	}
+-
+-	header = (struct acpi_subtable_header *)obj->buffer.pointer;
+-	if (header->type == ACPI_MADT_TYPE_LOCAL_APIC) {
+-		map_lapic_id(header, acpi_id, &apic_id);
+-	} else if (header->type == ACPI_MADT_TYPE_LOCAL_SAPIC) {
+-		map_lsapic_id(header, type, acpi_id, &apic_id);
+-	}
+-
+-exit:
+-	if (buffer.pointer)
+-		kfree(buffer.pointer);
+-	return apic_id;
+-}
+-
+-static int get_cpu_id(acpi_handle handle, int type, u32 acpi_id)
+-{
+-	int i;
+-	int apic_id = -1;
+-
+-	apic_id = map_mat_entry(handle, type, acpi_id);
+-	if (apic_id == -1)
+-		apic_id = map_madt_entry(type, acpi_id);
+-	if (apic_id == -1)
+-		return apic_id;
+-
+-	for_each_possible_cpu(i) {
+-		if (cpu_physical_id(i) == apic_id)
+-			return i;
+-	}
+-	return -1;
+-}
+-#endif
+-
+ /* --------------------------------------------------------------------------
+                                  Driver Interface
+    -------------------------------------------------------------------------- */
+@@ -577,7 +421,7 @@ static int acpi_processor_get_info(struct acpi_device *device)
+ 		device_declaration = 1;
+ 		pr->acpi_id = value;
+ 	}
+-	cpu_index = get_cpu_id(pr->handle, device_declaration, pr->acpi_id);
++	cpu_index = acpi_get_cpuid(pr->handle, device_declaration, pr->acpi_id);
+ 
+ 	/* Handle UP system running SMP kernel, with no LAPIC in MADT */
+ 	if (!cpu0_initialized && (cpu_index == -1) &&
+@@ -1071,11 +915,6 @@ static int __init acpi_processor_init(void)
+ 
+ 	memset(&errata, 0, sizeof(errata));
+ 
+-#ifdef CONFIG_SMP
+-	if (ACPI_FAILURE(acpi_get_table(ACPI_SIG_MADT, 0,
+-				(struct acpi_table_header **)&madt)))
+-		madt = NULL;
+-#endif
+ #ifdef CONFIG_ACPI_PROCFS
+ 	acpi_processor_dir = proc_mkdir(ACPI_PROCESSOR_CLASS, acpi_root_dir);
+ 	if (!acpi_processor_dir)
+diff --git a/drivers/acpi/processor_pdc.c b/drivers/acpi/processor_pdc.c
+index 30e4dc0..9da0635 100644
+--- a/drivers/acpi/processor_pdc.c
++++ b/drivers/acpi/processor_pdc.c
+@@ -42,6 +42,186 @@ static struct dmi_system_id __cpuinitdata processor_idle_dmi_table[] = {
+ 	{},
+ };
+ 
++#ifdef CONFIG_SMP
++static int map_lapic_id(struct acpi_subtable_header *entry,
++		 u32 acpi_id, int *apic_id)
++{
++	struct acpi_madt_local_apic *lapic;
++
++	lapic = (struct acpi_madt_local_apic *)entry;
++	if (!(lapic->lapic_flags & ACPI_MADT_ENABLED))
++		return 0;
++
++	if (lapic->processor_id != acpi_id)
++		return 0;
++
++	*apic_id = lapic->id;
++	return 1;
++}
++
++static int map_x2apic_id(struct acpi_subtable_header *entry,
++			 int device_declaration, u32 acpi_id, int *apic_id)
++{
++	struct acpi_madt_local_x2apic *lx2apic;
++
++	lx2apic = (struct acpi_madt_local_x2apic *)entry;
++	if (!(lx2apic->lapic_flags & ACPI_MADT_ENABLED))
++		return 0;
++
++	if (!device_declaration || (lx2apic->uid != acpi_id))
++		return 0;
++
++	*apic_id = lx2apic->local_apic_id;
++	return 1;
++}
++
++static int map_lsapic_id(struct acpi_subtable_header *entry,
++		int device_declaration, u32 acpi_id, int *apic_id)
++{
++	struct acpi_madt_local_sapic *lsapic;
++
++	lsapic = (struct acpi_madt_local_sapic *)entry;
++	if (!(lsapic->lapic_flags & ACPI_MADT_ENABLED))
++		return 0;
++
++	if (device_declaration) {
++		if ((entry->length < 16) || (lsapic->uid != acpi_id))
++			return 0;
++	} else if (lsapic->processor_id != acpi_id)
++			return 0;
++
++	*apic_id = (lsapic->id << 8) | lsapic->eid;
++	return 1;
++}
++
++static int map_madt_entry(int type, u32 acpi_id)
++{
++	unsigned long madt_end, entry;
++	struct acpi_subtable_header *header;
++	static struct acpi_table_madt *madt;
++	static int read_madt;
++	int apic_id = -1;
++
++	if (!read_madt) {
++		if (ACPI_FAILURE(acpi_get_table(ACPI_SIG_MADT, 0,
++					(struct acpi_table_header **)&madt)))
++			madt = NULL;
++		read_madt++;
++	}
++
++	if (!madt)
++		return apic_id;
++
++	entry = (unsigned long)madt;
++	madt_end = entry + madt->header.length;
++
++	entry += sizeof(struct acpi_table_madt);
++	while (entry + sizeof(struct acpi_subtable_header) < madt_end) {
++		header = (struct acpi_subtable_header *)entry;
++
++		if (header->type == ACPI_MADT_TYPE_LOCAL_APIC) {
++			if (map_lapic_id(header, acpi_id, &apic_id))
++				break;
++		} else if (header->type == ACPI_MADT_TYPE_LOCAL_X2APIC) {
++			if (map_x2apic_id(header, type, acpi_id, &apic_id))
++				break;
++		} else if (header->type == ACPI_MADT_TYPE_LOCAL_SAPIC) {
++			if (map_lsapic_id(header, type, acpi_id, &apic_id))
++				break;
++		}
++		entry += header->length;
++	}
++	return apic_id;
++}
++
++static int map_mat_entry(acpi_handle handle, int type, u32 acpi_id)
++{
++	struct acpi_buffer buffer = { ACPI_ALLOCATE_BUFFER, NULL };
++	union acpi_object *obj;
++	struct acpi_subtable_header *header;
++	int apic_id = -1;
++
++	if (ACPI_FAILURE(acpi_evaluate_object(handle, "_MAT", NULL, &buffer)))
++		goto exit;
++
++	if (!buffer.length || !buffer.pointer)
++		goto exit;
++
++	obj = buffer.pointer;
++	if (obj->type != ACPI_TYPE_BUFFER ||
++	    obj->buffer.length < sizeof(struct acpi_subtable_header))
++		goto exit;
++
++	header = (struct acpi_subtable_header *)obj->buffer.pointer;
++	if (header->type == ACPI_MADT_TYPE_LOCAL_APIC)
++		map_lapic_id(header, acpi_id, &apic_id);
++	else if (header->type == ACPI_MADT_TYPE_LOCAL_SAPIC)
++		map_lsapic_id(header, type, acpi_id, &apic_id);
++
++exit:
++	kfree(buffer.pointer);
++	return apic_id;
++}
++
++int acpi_get_cpuid(acpi_handle handle, int type, u32 acpi_id)
++{
++	int i;
++	int apic_id = -1;
++
++	apic_id = map_mat_entry(handle, type, acpi_id);
++	if (apic_id == -1)
++		apic_id = map_madt_entry(type, acpi_id);
++	if (apic_id == -1)
++		return apic_id;
++
++	for_each_possible_cpu(i)
++		if (cpu_physical_id(i) == apic_id)
++			return i;
++	return -1;
++}
++EXPORT_SYMBOL_GPL(acpi_get_cpuid);
++#endif
++
++static bool processor_physically_present(acpi_handle handle)
++{
++	int cpuid, type;
++	u32 acpi_id;
++	acpi_status status;
++	acpi_object_type acpi_type;
++	unsigned long long tmp;
++	union acpi_object object = { 0 };
++	struct acpi_buffer buffer = { sizeof(union acpi_object), &object };
++
++	status = acpi_get_type(handle, &acpi_type);
++	if (ACPI_FAILURE(status))
++		return false;
++
++	switch (acpi_type) {
++	case ACPI_TYPE_PROCESSOR:
++		status = acpi_evaluate_object(handle, NULL, NULL, &buffer);
++		if (ACPI_FAILURE(status))
++			return false;
++		acpi_id = object.processor.proc_id;
++		break;
++	case ACPI_TYPE_DEVICE:
++		status = acpi_evaluate_integer(handle, "_UID", NULL, &tmp);
++		if (ACPI_FAILURE(status))
++			return false;
++		acpi_id = tmp;
++		break;
++	default:
++		return false;
++	}
++
++	type = (acpi_type == ACPI_TYPE_DEVICE) ? 1 : 0;
++	cpuid = acpi_get_cpuid(handle, type, acpi_id);
++
++	if (cpuid == -1)
++		return false;
++
++	return true;
++}
++
+ static void acpi_set_pdc_bits(u32 *buf)
+ {
+ 	buf[0] = ACPI_PDC_REVISION_ID;
+@@ -147,6 +327,9 @@ EXPORT_SYMBOL_GPL(acpi_processor_set_pdc);
+ static acpi_status
+ early_init_pdc(acpi_handle handle, u32 lvl, void *context, void **rv)
+ {
++	if (processor_physically_present(handle) == false)
++		return AE_OK;
++
+ 	acpi_processor_set_pdc(handle);
+ 	return AE_OK;
+ }
+diff --git a/include/acpi/processor.h b/include/acpi/processor.h
+index 0ea5ef4..71901a5 100644
+--- a/include/acpi/processor.h
++++ b/include/acpi/processor.h
+@@ -322,6 +322,14 @@ static inline int acpi_processor_get_bios_limit(int cpu, unsigned int *limit)
+ 
+ /* in processor_pdc.c */
+ void acpi_processor_set_pdc(acpi_handle handle);
++#ifdef CONFIG_SMP
++int acpi_get_cpuid(acpi_handle, int type, u32 acpi_id);
++#else
++static inline int acpi_get_cpuid(acpi_handle, int type, u32 acpi_id)
++{
++	return -1;
++}
++#endif
+ 
+ /* in processor_throttling.c */
+ int acpi_processor_tstate_has_changed(struct acpi_processor *pr);
