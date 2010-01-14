@@ -1,47 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755301Ab0ANBld@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755322Ab0ANBp0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755301Ab0ANBld (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 20:41:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751993Ab0ANBlc
+	id S1755322Ab0ANBp0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 20:45:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751724Ab0ANBpZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 20:41:32 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:58097
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751191Ab0ANBlb (ORCPT
+	Wed, 13 Jan 2010 20:45:25 -0500
+Received: from [206.15.93.42] ([206.15.93.42]:20762 "EHLO
+	visionfs1.visionengravers.com" rhost-flags-FAIL-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751286Ab0ANBpZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 20:41:31 -0500
-Date: Wed, 13 Jan 2010 17:41:41 -0800 (PST)
-Message-Id: <20100113.174141.169192840.davem@davemloft.net>
-To: joe@perches.com
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: netdev: patchwork.ozlabs.org vs patchwork.kernel.org ?
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1263433237.1966.37.camel@Joe-Laptop.home>
-References: <3DBBD805E3BA064A87F551C0E8BD36740289748A@MAILSRV.intcomgrp.com>
-	<20100113.173253.223656114.davem@davemloft.net>
-	<1263433237.1966.37.camel@Joe-Laptop.home>
-X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Wed, 13 Jan 2010 20:45:25 -0500
+From: H Hartley Sweeten <hartleys@visionengravers.com>
+To: Linux Kernel <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org
+Subject: [PATCH] scsi/sd.c: quiet all sparse noise
+Date: Wed, 13 Jan 2010 18:45:31 -0700
+Cc: James.Bottomley@suse.de
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <201001131845.32125.hartleys@visionengravers.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Joe Perches <joe@perches.com>
-Date: Wed, 13 Jan 2010 17:40:37 -0800
+scsi/sd.c: quiet all sparse noise
 
-> On Wed, 2010-01-13 at 17:32 -0800, David Miller wrote:
->> Encoding your patches as base64 binary octet stream attachments
->> causes them to get missed by our automated patch tracking system:
->> 
->> 	http://patchwork.ozlabs.org/project/netdev/list/
-> 
-> What is the reason why netdev doesn't use patchwork.kernel.org?
-> 
-> It seems odd that it doesn't.  Odd like the arm mailing lists.
+In sd_store_cache_type the symbol 'len' is declared twice.
+Remove the second declaration to quiet the following
+sparse warning.
 
-ozlabs was the original, and so just like powerpc port that's where we
-started using the tool.
+warning: symbol 'len' shadows an earlier one
 
-I honestly don't care where it's hosted.
+In sd_probe the variable 'index' is declared as a u32. This variable is
+used in a call to ida_get_new which is expecting an int *. Make
+the variable an int to quiet the following sparse warning.
+
+warning: incorrect type in argument 2 (different signedness)
+
+There are 4 symbols in the file that are not exported and produce
+the following sparse warnings.
+
+warning: symbol 'sd_cdb_cache' was not declared. Should it be static?
+warning: symbol 'sd_cdb_pool' was not declared. Should it be static?
+warning: symbol 'sd_read_protection_type' was not declared. Should it be static?
+warning: symbol 'sd_read_app_tag_own' was not declared. Should it be static?
+
+Make them static to quiet the warnings.
+
+H Hartley Sweeten <hsweeten@visionengravers.com>
+James E.J. Bottomley <James.Bottomley@suse.de>
+
+---
+
+diff --git a/drivers/scsi/sd.c b/drivers/scsi/sd.c
+index 255da53..987a12e 100644
+--- a/drivers/scsi/sd.c
++++ b/drivers/scsi/sd.c
+@@ -116,8 +116,8 @@ static DEFINE_IDA(sd_index_ida);
+  * object after last put) */
+ static DEFINE_MUTEX(sd_ref_mutex);
+ 
+-struct kmem_cache *sd_cdb_cache;
+-mempool_t *sd_cdb_pool;
++static struct kmem_cache *sd_cdb_cache;
++static mempool_t *sd_cdb_pool;
+ 
+ static const char *sd_cache_types[] = {
+ 	"write through", "none", "write back",
+@@ -144,7 +144,7 @@ sd_store_cache_type(struct device *dev, struct device_attribute *attr,
+ 		return -EINVAL;
+ 
+ 	for (i = 0; i < ARRAY_SIZE(sd_cache_types); i++) {
+-		const int len = strlen(sd_cache_types[i]);
++		len = strlen(sd_cache_types[i]);
+ 		if (strncmp(sd_cache_types[i], buf, len) == 0 &&
+ 		    buf[len] == '\n') {
+ 			ct = i;
+@@ -1369,7 +1369,7 @@ sd_spinup_disk(struct scsi_disk *sdkp)
+ /*
+  * Determine whether disk supports Data Integrity Field.
+  */
+-void sd_read_protection_type(struct scsi_disk *sdkp, unsigned char *buffer)
++static void sd_read_protection_type(struct scsi_disk *sdkp, unsigned char *buffer)
+ {
+ 	struct scsi_device *sdp = sdkp->device;
+ 	u8 type;
+@@ -1896,7 +1896,7 @@ defaults:
+  * The ATO bit indicates whether the DIF application tag is available
+  * for use by the operating system.
+  */
+-void sd_read_app_tag_own(struct scsi_disk *sdkp, unsigned char *buffer)
++static void sd_read_app_tag_own(struct scsi_disk *sdkp, unsigned char *buffer)
+ {
+ 	int res, offset;
+ 	struct scsi_device *sdp = sdkp->device;
+@@ -2217,7 +2217,7 @@ static int sd_probe(struct device *dev)
+ 	struct scsi_device *sdp = to_scsi_device(dev);
+ 	struct scsi_disk *sdkp;
+ 	struct gendisk *gd;
+-	u32 index;
++	int index;
+ 	int error;
+ 
+ 	error = -ENODEV;
