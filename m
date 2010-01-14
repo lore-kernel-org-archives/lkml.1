@@ -1,25 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757346Ab0ANWfz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755832Ab0ANWhC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757346Ab0ANWfz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 17:35:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755945Ab0ANWfj
+	id S1755832Ab0ANWhC (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 17:37:02 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755598Ab0ANW2e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 17:35:39 -0500
-Received: from kroah.org ([198.145.64.141]:60591 "EHLO coco.kroah.org"
+	Thu, 14 Jan 2010 17:28:34 -0500
+Received: from kroah.org ([198.145.64.141]:60540 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755926Ab0ANW2k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 17:28:40 -0500
+	id S1754616Ab0ANW22 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jan 2010 17:28:28 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, stable-review@kernel.org
 Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       Anna Lemehova <EXT-Anna.Lemehova@nokia.com>,
-       Adrian Hunter <adrian.hunter@nokia.com>, <linux-mmc@vger.kernel.org>,
+       Chris Wilson <chris@chris-wilson.co.uk>, Eric Anholt <eric@anholt.net>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 26/52] mmc_block: add dev_t initialization check
-Date: Thu, 14 Jan 2010 14:27:05 -0800
-Message-Id: <1263508051-7868-26-git-send-email-gregkh@suse.de>
+Subject: [PATCH 14/52] drm/i915: Permit pinning whilst the device is 'suspended'
+Date: Thu, 14 Jan 2010 14:26:53 -0800
+Message-Id: <1263508051-7868-14-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.6
-In-Reply-To: <1263508051-7868-25-git-send-email-gregkh@suse.de>
+In-Reply-To: <1263508051-7868-13-git-send-email-gregkh@suse.de>
 References: <20100114222551.GA7839@suse.de>
  <1263508051-7868-1-git-send-email-gregkh@suse.de>
  <1263508051-7868-2-git-send-email-gregkh@suse.de>
@@ -34,59 +33,42 @@ References: <20100114222551.GA7839@suse.de>
  <1263508051-7868-11-git-send-email-gregkh@suse.de>
  <1263508051-7868-12-git-send-email-gregkh@suse.de>
  <1263508051-7868-13-git-send-email-gregkh@suse.de>
- <1263508051-7868-14-git-send-email-gregkh@suse.de>
- <1263508051-7868-15-git-send-email-gregkh@suse.de>
- <1263508051-7868-16-git-send-email-gregkh@suse.de>
- <1263508051-7868-17-git-send-email-gregkh@suse.de>
- <1263508051-7868-18-git-send-email-gregkh@suse.de>
- <1263508051-7868-19-git-send-email-gregkh@suse.de>
- <1263508051-7868-20-git-send-email-gregkh@suse.de>
- <1263508051-7868-21-git-send-email-gregkh@suse.de>
- <1263508051-7868-22-git-send-email-gregkh@suse.de>
- <1263508051-7868-23-git-send-email-gregkh@suse.de>
- <1263508051-7868-24-git-send-email-gregkh@suse.de>
- <1263508051-7868-25-git-send-email-gregkh@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Anna Lemehova <EXT-Anna.Lemehova@nokia.com>
+From: Chris Wilson <chris@chris-wilson.co.uk>
 
-commit 7d92df692994472cab6045bbd9d0e2c4afa4365f upstream.
+commit e3d8affb0d2d95f2da61e30ce86b33177feb91e8 upstream.
 
-When a card is removed before mmc_blk_probe() has called add_disk(), then
-the minor field is uninitialized and has value 0.  This caused
-mmc_blk_put() to always release devidx 0 even if 0 was still in use.  Then
-the next mmc_blk_probe() used the first free idx of 0, which oopses in
-sysfs, since it is used by another card.
+As pinning (allocating and binding GTT memory) does not actually invoke
+GPU commands, it is safe, and indeed is attempted, during resumption
+from suspension:
 
-Signed-off-by: Anna Lemehova <EXT-Anna.Lemehova@nokia.com>
-Signed-off-by: Adrian Hunter <adrian.hunter@nokia.com>
-Cc: <linux-mmc@vger.kernel.org>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+  [drm:intel_init_clock_gating] *ERROR* failed to pin power context: -16
+
+Signed-off-by: Chris Wilson <chris@chris-wilson.co.uk>
+Reported-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Signed-off-by: Eric Anholt <eric@anholt.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/mmc/card/block.c |    5 +++++
- 1 files changed, 5 insertions(+), 0 deletions(-)
+ drivers/gpu/drm/i915/i915_gem.c |    3 ---
+ 1 files changed, 0 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/mmc/card/block.c b/drivers/mmc/card/block.c
-index 85f0e8c..5988573 100644
---- a/drivers/mmc/card/block.c
-+++ b/drivers/mmc/card/block.c
-@@ -85,7 +85,12 @@ static void mmc_blk_put(struct mmc_blk_data *md)
- 	mutex_lock(&open_lock);
- 	md->usage--;
- 	if (md->usage == 0) {
-+		int devmaj = MAJOR(disk_devt(md->disk));
- 		int devidx = MINOR(disk_devt(md->disk)) >> MMC_SHIFT;
-+
-+		if (!devmaj)
-+			devidx = md->disk->first_minor >> MMC_SHIFT;
-+
- 		__clear_bit(devidx, dev_use);
+diff --git a/drivers/gpu/drm/i915/i915_gem.c b/drivers/gpu/drm/i915/i915_gem.c
+index 2e10b9a..3d75c67 100644
+--- a/drivers/gpu/drm/i915/i915_gem.c
++++ b/drivers/gpu/drm/i915/i915_gem.c
+@@ -2571,9 +2571,6 @@ i915_gem_object_bind_to_gtt(struct drm_gem_object *obj, unsigned alignment)
+ 	bool retry_alloc = false;
+ 	int ret;
  
- 		put_disk(md->disk);
+-	if (dev_priv->mm.suspended)
+-		return -EBUSY;
+-
+ 	if (obj_priv->madv != I915_MADV_WILLNEED) {
+ 		DRM_ERROR("Attempting to bind a purgeable object\n");
+ 		return -EINVAL;
 -- 
 1.6.6
 
