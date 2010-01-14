@@ -1,46 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755221Ab0ANCK6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755322Ab0ANCPC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755221Ab0ANCK6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Jan 2010 21:10:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753476Ab0ANCK5
+	id S1755322Ab0ANCPC (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Jan 2010 21:15:02 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751754Ab0ANCPB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Jan 2010 21:10:57 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:46155
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751115Ab0ANCK5 (ORCPT
+	Wed, 13 Jan 2010 21:15:01 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:44473 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751115Ab0ANCPA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Jan 2010 21:10:57 -0500
-Date: Wed, 13 Jan 2010 18:11:05 -0800 (PST)
-Message-Id: <20100113.181105.144771363.davem@davemloft.net>
-To: opurdila@ixiacom.com
-Cc: jarkao2@gmail.com, mingo@elte.hu, randy.dunlap@oracle.com,
-       sfr@canb.auug.org.au, netdev@vger.kernel.org,
-       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, arnd@arndb.de
-Subject: Re: linux-next: Tree for January 8 (net/ip.h, BUG=n)
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <201001132121.44763.opurdila@ixiacom.com>
-References: <20100113085418.GB6053@ff.dom.local>
-	<201001132121.44763.opurdila@ixiacom.com>
-X-Mailer: Mew version 6.3 on Emacs 23.1 / Mule 6.0 (HANACHIRUSATO)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Wed, 13 Jan 2010 21:15:00 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Masami Hiramatsu <mhiramat@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+Subject: [resend][PATCH 1/2] kprobetrace,doc: shell need single quote to use $ character
+Cc: kosaki.motohiro@jp.fujitsu.com
+Message-Id: <20100114111032.D720.A69D9226@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Thu, 14 Jan 2010 11:14:57 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Octavian Purdila <opurdila@ixiacom.com>
-Date: Wed, 13 Jan 2010 21:21:44 +0200
+shell interpret $val is as shell variable. thus we need quote if
+we use echo command.
 
-> [PATCH] net: fix build erros with CONFIG_BUG=n, CONFIG_GENERIC_BUG=n
-> 
-> Fixed build errors introduced by commit 7ad6848c (ip: fix mc_loop checks for
-> tunnels with multicast outer addresses)
-> 
-> Signed-off-by: Octavian Purdila <opurdila@ixiacom.com>
+Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Acked-by: Masami Hiramatsu <mhiramat@redhat.com>
+---
+ Documentation/trace/kprobetrace.txt |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-Applied, thanks.
+diff --git a/Documentation/trace/kprobetrace.txt b/Documentation/trace/kprobetrace.txt
+index 47aabee..2be6e19 100644
+--- a/Documentation/trace/kprobetrace.txt
++++ b/Documentation/trace/kprobetrace.txt
+@@ -82,13 +82,13 @@ Usage examples
+ To add a probe as a new event, write a new definition to kprobe_events
+ as below.
+ 
+-  echo p:myprobe do_sys_open dfd=$arg0 filename=$arg1 flags=$arg2 mode=$arg3 > /sys/kernel/debug/tracing/kprobe_events
++  echo 'p:myprobe do_sys_open dfd=$arg0 filename=$arg1 flags=$arg2 mode=$arg3' > /sys/kernel/debug/tracing/kprobe_events
+ 
+  This sets a kprobe on the top of do_sys_open() function with recording
+ 1st to 4th arguments as "myprobe" event. As this example shows, users can
+ choose more familiar names for each arguments.
+ 
+-  echo r:myretprobe do_sys_open $retval >> /sys/kernel/debug/tracing/kprobe_events
++  echo 'r:myretprobe do_sys_open $retval' >> /sys/kernel/debug/tracing/kprobe_events
+ 
+  This sets a kretprobe on the return point of do_sys_open() function with
+ recording return value as "myretprobe" event.
+-- 
+1.6.5.2
 
-Let's make sure netdev is CC:'d on networking patches next
-time.
+
+
+--
+To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Please read the FAQ at  http://www.tux.org/lkml/
+
 
