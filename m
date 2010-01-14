@@ -1,171 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756474Ab0ANPBO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756790Ab0ANPCi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756474Ab0ANPBO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 10:01:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756826Ab0ANPBF
+	id S1756790Ab0ANPCi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 10:02:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756898Ab0ANPCb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 10:01:05 -0500
-Received: from mail.windriver.com ([147.11.1.11]:47645 "EHLO
+	Thu, 14 Jan 2010 10:02:31 -0500
+Received: from mail.windriver.com ([147.11.1.11]:48083 "EHLO
 	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756815Ab0ANPA7 (ORCPT
+	with ESMTP id S1756896Ab0ANPC1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 10:00:59 -0500
+	Thu, 14 Jan 2010 10:02:27 -0500
+Message-ID: <4B4F31D4.1000707@windriver.com>
+Date: Thu, 14 Jan 2010 09:01:40 -0600
 From: Jason Wessel <jason.wessel@windriver.com>
-To: linux-kernel@vger.kernel.org
-Cc: kgdb-bugreport@lists.sourceforge.net, mingo@elte.hu,
-       Jason Wessel <jason.wessel@windriver.com>
-Subject: [PATCH 19/40] x86,kgdb: Add low level debug hook
-Date: Thu, 14 Jan 2010 08:59:15 -0600
-Message-Id: <1263481176-1897-20-git-send-email-jason.wessel@windriver.com>
-X-Mailer: git-send-email 1.6.3.1.9.g95405b
-In-Reply-To: <1263481176-1897-1-git-send-email-jason.wessel@windriver.com>
-References: <1263481176-1897-1-git-send-email-jason.wessel@windriver.com>
-X-OriginalArrivalTime: 14 Jan 2010 15:00:43.0210 (UTC) FILETIME=[58102AA0:01CA952A]
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Stephen Rothwell <sfr@canb.auug.org.au>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Peter Zijlstra <peterz@infradead.org>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Fr??d??ric Weisbecker <fweisbec@gmail.com>
+Subject: Re: linux-next: manual merge of the tip tree with the kgdb tree
+References: <20100114161302.285ebe27.sfr@canb.auug.org.au> <20100114092600.GA13503@elte.hu>
+In-Reply-To: <20100114092600.GA13503@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 14 Jan 2010 15:01:44.0085 (UTC) FILETIME=[7C58F450:01CA952A]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The only way the debugger can handle a trap in inside rcu_lock,
-notify_die, or atomic_notifier_call_chain without a triple fault is
-to have a low level "first opportunity handler" in the int3 exception
-handler.
+Ingo Molnar wrote:
+> * Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+>
+>   
+>> Hi all,
+>>
+>> Today's linux-next merge of the tip tree got a conflict in
+>> kernel/trace/trace.c between commit
+>> d304af88a0105ff5b64cffc9108636ecad1fdd78 ("ftrace,kdb: Extend kdb to be
+>> able to dump the ftrace buffer") from the kgdb tree and commit
+>> 7e53bd42d14c75192b99674c40fcc359392da59d ("tracing: Consolidate
+>> protection of reader access to the ring buffer") from the tip tree.
+>>     
+>
+> Hm, Jason, what is that large commit to kernel/trace/ doing in the KGDB tree, 
+> without any apparent acks from the affected people?
+>   
 
-Generally this will be something the vast majority of folks will not
-need, but for those who need it, it is added as a kernel .config
-option called KGDB_LOW_LEVEL_TRAP.
+I had been corresponding with Steven Rostedt directly.  This is actually
+the 3rd iteration of the patch (the first two never got checked in
+anywhere) and there is still an outstanding question, which I will
+inline at the bottom of this email.  The ftdump patch is at the very end
+of the kdb series, because this patch will get nuked if Steven or anyone
+else has a problem with it.
 
-CC: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
----
- arch/x86/include/asm/kgdb.h |    3 +++
- arch/x86/kernel/kgdb.c      |   22 +++++++++++++++++++++-
- arch/x86/kernel/traps.c     |    6 ++++++
- include/linux/kgdb.h        |    1 +
- kernel/debug/debug_core.c   |    2 +-
- lib/Kconfig.kgdb            |    9 +++++++++
- 6 files changed, 41 insertions(+), 2 deletions(-)
+As for what the patch does, it is routine for dumping the ftrace buffer
+while in the kernel debugger context.
 
-diff --git a/arch/x86/include/asm/kgdb.h b/arch/x86/include/asm/kgdb.h
-index e6c6c80..006da36 100644
---- a/arch/x86/include/asm/kgdb.h
-+++ b/arch/x86/include/asm/kgdb.h
-@@ -76,4 +76,7 @@ static inline void arch_kgdb_breakpoint(void)
- #define BREAK_INSTR_SIZE	1
- #define CACHE_FLUSH_IS_SAFE	1
- 
-+extern int kgdb_ll_trap(int cmd, const char *str,
-+			struct pt_regs *regs, long err, int trap, int sig);
-+
- #endif /* _ASM_X86_KGDB_H */
-diff --git a/arch/x86/kernel/kgdb.c b/arch/x86/kernel/kgdb.c
-index ce35f72..f4bf7a5 100644
---- a/arch/x86/kernel/kgdb.c
-+++ b/arch/x86/kernel/kgdb.c
-@@ -490,7 +490,7 @@ static int __kgdb_notify(struct die_args *args, unsigned long cmd)
- 			return NOTIFY_DONE;
- 	}
- 
--	if (kgdb_handle_exception(args->trapnr, args->signr, args->err, regs))
-+	if (kgdb_handle_exception(args->trapnr, args->signr, cmd, regs))
- 		return NOTIFY_DONE;
- 
- 	/* Must touch watchdog before return to normal operation */
-@@ -498,6 +498,26 @@ static int __kgdb_notify(struct die_args *args, unsigned long cmd)
- 	return NOTIFY_STOP;
- }
- 
-+#ifdef CONFIG_KGDB_LOW_LEVEL_TRAP
-+int kgdb_ll_trap(int cmd, const char *str,
-+		 struct pt_regs *regs, long err, int trap, int sig)
-+{
-+	struct die_args args = {
-+		.regs	= regs,
-+		.str	= str,
-+		.err	= err,
-+		.trapnr	= trap,
-+		.signr	= sig,
-+
-+	};
-+
-+	if (!kgdb_io_module_registered)
-+		return NOTIFY_DONE;
-+
-+	return __kgdb_notify(&args, cmd);
-+}
-+#endif /* CONFIG_KGDB_LOW_LEVEL_TRAP */
-+
- static int
- kgdb_notify(struct notifier_block *self, unsigned long cmd, void *ptr)
- {
-diff --git a/arch/x86/kernel/traps.c b/arch/x86/kernel/traps.c
-index 3339917..6ae2122 100644
---- a/arch/x86/kernel/traps.c
-+++ b/arch/x86/kernel/traps.c
-@@ -15,6 +15,7 @@
- #include <linux/kprobes.h>
- #include <linux/uaccess.h>
- #include <linux/kdebug.h>
-+#include <linux/kgdb.h>
- #include <linux/kernel.h>
- #include <linux/module.h>
- #include <linux/ptrace.h>
-@@ -460,6 +461,11 @@ void restart_nmi(void)
- /* May run on IST stack. */
- dotraplinkage void __kprobes do_int3(struct pt_regs *regs, long error_code)
- {
-+#ifdef CONFIG_KGDB_LOW_LEVEL_TRAP
-+	if (kgdb_ll_trap(DIE_INT3, "int3", regs, error_code, 3, SIGTRAP)
-+			== NOTIFY_STOP)
-+		return;
-+#endif /* CONFIG_KGDB_LOW_LEVEL_TRAP */
- #ifdef CONFIG_KPROBES
- 	if (notify_die(DIE_INT3, "int3", regs, error_code, 3, SIGTRAP)
- 			== NOTIFY_STOP)
-diff --git a/include/linux/kgdb.h b/include/linux/kgdb.h
-index a2cfd9f..e4e9206 100644
---- a/include/linux/kgdb.h
-+++ b/include/linux/kgdb.h
-@@ -60,6 +60,7 @@ struct uart_port;
- void kgdb_breakpoint(void);
- 
- extern int kgdb_connected;
-+extern int kgdb_io_module_registered;
- 
- extern atomic_t			kgdb_setting_breakpoint;
- extern atomic_t			kgdb_cpu_doing_single_step;
-diff --git a/kernel/debug/debug_core.c b/kernel/debug/debug_core.c
-index aefd660..5ceaa0f 100644
---- a/kernel/debug/debug_core.c
-+++ b/kernel/debug/debug_core.c
-@@ -65,7 +65,7 @@ int				kgdb_connected;
- EXPORT_SYMBOL_GPL(kgdb_connected);
- 
- /* All the KGDB handlers are installed */
--static int			kgdb_io_module_registered;
-+int			kgdb_io_module_registered;
- 
- /* Guard for recursive entry */
- static int			exception_level;
-diff --git a/lib/Kconfig.kgdb b/lib/Kconfig.kgdb
-index c80de7d..0a0e049 100644
---- a/lib/Kconfig.kgdb
-+++ b/lib/Kconfig.kgdb
-@@ -57,6 +57,15 @@ config KGDB_TESTS_BOOT_STRING
- 	  information about other strings you could use beyond the
- 	  default of V1F100.
- 
-+config KGDB_LOW_LEVEL_TRAP
-+       bool "KGDB: Allow debugging with traps in notifiers"
-+       depends on X86
-+       default n
-+       help
-+         This will add an extra call back to kgdb for the breakpoint
-+         exception handler on which will will allow kgdb to step
-+         through a notify handler.
-+
- config KGDB_KDB
- 	bool "KGDB_KDB: include kdb frontend for kgdb"
- 	default n
--- 
-1.6.3.1.9.g95405b
+> I dont see it anywhere on lkml nor in my mbox. Please submit it to the 
+> affected maintainers - for the Cc: line see the output of:
+>   
+
+The v2 version of the kdb  series was supposed to go out yesterday
+morning (also known as kdb_prototype11).   The new patch is included in
+the post, look for: "[PATCH 40/40] ftrace,kdb: Extend kdb to be able to
+dump the ftrace buffer"
+
+-- prior inlined correspondence --
+
+Steven Rostedt wrote:
+
+> > On Tue, 2010-01-05 at 23:57 -0600, Jason Wessel wrote:
+>   
+>> >> Here is another try at adding a dump function for kdb.  I had to
+>> >> changes some of the static -> global scope in kernel/trace/trace.c in
+>> >> order to be able to reference other semi-private via "trace.h".
+>>     
+> > 
+> > Actually, could you write access functions instead. If we make these
+> > items global in scope, then others will just start accessing them
+> > directly. I've had this issue before because others have tried to make
+> > the global_trace visible by all. But that variable may disappear and
+> > break all that use it.
+> > 
+>   
+
+Thanks for the insight.
+
+Here is v3.
+
+I added a function called trace_init_global_iter().  I'll rename it if
+you like.  I also changed the ftrace_dump() to make use of it as well
+so we are more likely to see an issue when it changes if there are
+more consumers of the function.
+
+The other question it brings up is if you want a helper function for
+the atomic_inc / atomic_dec of the tracing cpus.  That would move that
+for_each_tracing_cpu macro back into trace.c.
+
+Thanks,
+Jason.
+
+[..patch clipped..]
+
 
