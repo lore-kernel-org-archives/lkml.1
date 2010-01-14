@@ -1,865 +1,636 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756991Ab0ANPHY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932227Ab0ANPGy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756991Ab0ANPHY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 10:07:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932275Ab0ANPHO
+	id S932227Ab0ANPGy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 10:06:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756842Ab0ANPBH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 10:07:14 -0500
-Received: from mail.windriver.com ([147.11.1.11]:47672 "EHLO
+	Thu, 14 Jan 2010 10:01:07 -0500
+Received: from mail.windriver.com ([147.11.1.11]:47643 "EHLO
 	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754810Ab0ANPBD (ORCPT
+	with ESMTP id S1756793Ab0ANPA6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 10:01:03 -0500
+	Thu, 14 Jan 2010 10:00:58 -0500
 From: Jason Wessel <jason.wessel@windriver.com>
 To: linux-kernel@vger.kernel.org
 Cc: kgdb-bugreport@lists.sourceforge.net, mingo@elte.hu,
-       Jason Wessel <jason.wessel@windriver.com>
-Subject: [PATCH 17/40] kgdb,docs: Update the kgdb docs to include kdb
-Date: Thu, 14 Jan 2010 08:59:13 -0600
-Message-Id: <1263481176-1897-18-git-send-email-jason.wessel@windriver.com>
+       Jason Wessel <jason.wessel@windriver.com>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: [PATCH 16/40] kgdboc,keyboard: Keyboard driver for kdb with kgdb
+Date: Thu, 14 Jan 2010 08:59:12 -0600
+Message-Id: <1263481176-1897-17-git-send-email-jason.wessel@windriver.com>
 X-Mailer: git-send-email 1.6.3.1.9.g95405b
 In-Reply-To: <1263481176-1897-1-git-send-email-jason.wessel@windriver.com>
 References: <1263481176-1897-1-git-send-email-jason.wessel@windriver.com>
-X-OriginalArrivalTime: 14 Jan 2010 15:00:38.0038 (UTC) FILETIME=[54FAFB60:01CA952A]
+X-OriginalArrivalTime: 14 Jan 2010 15:00:35.0803 (UTC) FILETIME=[53A5F2B0:01CA952A]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Update the kgdb docs to reflect the new directory structure and API.
+This patch adds in the kdb PS/2 keyboard driver.  This was mostly a
+direct port from the original kdb where I cleaned up the code against
+checkpatch.pl and added the glue to stitch it into kgdb.
 
-Merge in the kdb shell information.
+This patch also enables early kdb debug via kgdbwait and the keyboard.
 
+All the access to configure kdb using either a serial console or the
+keyboard is done via kgdboc.
+
+If you want to use only the keyboard and want to break in early you
+would add to your kernel command arguments:
+
+    kgdboc=kbd kgdbwait
+
+If you wanted serial and or the keyboard access you could use:
+
+    kgdboc=kbd,ttyS0
+
+You can also configure kgdboc as a kernel module or at run time with
+the sysfs where you can activate and deactivate kgdb.
+
+Turn it on:
+    echo kbd,ttyS0 > /sys/module/kgdboc/parameters/kgdboc
+
+Turn it off:
+    echo "" > /sys/module/kgdboc/parameters/kgdboc
+
+CC: Dmitry Torokhov <dmitry.torokhov@gmail.com>
 Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
 ---
- Documentation/DocBook/kgdb.tmpl     |  638 ++++++++++++++++++++++++++---------
- Documentation/kernel-parameters.txt |    7 +-
- include/linux/kgdb.h                |   12 +-
- lib/Kconfig.kgdb                    |    2 +-
- 4 files changed, 493 insertions(+), 166 deletions(-)
+ Documentation/kernel-parameters.txt |    8 +-
+ drivers/char/Makefile               |    1 +
+ drivers/char/kdb_keyboard.c         |  204 +++++++++++++++++++++++++++++++++++
+ drivers/char/kdb_keyboard.h         |  143 ++++++++++++++++++++++++
+ drivers/serial/kgdboc.c             |   67 ++++++++++--
+ include/linux/kgdb.h                |    3 +
+ kernel/debug/kdb/kdb_main.c         |    3 +
+ lib/Kconfig.kgdb                    |    7 ++
+ 8 files changed, 426 insertions(+), 10 deletions(-)
+ create mode 100644 drivers/char/kdb_keyboard.c
+ create mode 100644 drivers/char/kdb_keyboard.h
 
-diff --git a/Documentation/DocBook/kgdb.tmpl b/Documentation/DocBook/kgdb.tmpl
-index 5cff41a..ebae961 100644
---- a/Documentation/DocBook/kgdb.tmpl
-+++ b/Documentation/DocBook/kgdb.tmpl
-@@ -4,7 +4,7 @@
- 
- <book id="kgdbOnLinux">
-  <bookinfo>
--  <title>Using kgdb and the kgdb Internals</title>
-+  <title>Using kgdb, kdb and the kernel debugger internals</title>
- 
-   <authorgroup>
-    <author>
-@@ -17,33 +17,8 @@
-     </affiliation>
-    </author>
-   </authorgroup>
--
--  <authorgroup>
--   <author>
--    <firstname>Tom</firstname>
--    <surname>Rini</surname>
--    <affiliation>
--     <address>
--      <email>trini@kernel.crashing.org</email>
--     </address>
--    </affiliation>
--   </author>
--  </authorgroup>
--
--  <authorgroup>
--   <author>
--    <firstname>Amit S.</firstname>
--    <surname>Kale</surname>
--    <affiliation>
--     <address>
--      <email>amitkale@linsyssoft.com</email>
--     </address>
--    </affiliation>
--   </author>
--  </authorgroup>
--
-   <copyright>
--   <year>2008</year>
-+   <year>2008,2010</year>
-    <holder>Wind River Systems, Inc.</holder>
-   </copyright>
-   <copyright>
-@@ -69,41 +44,76 @@
-   <chapter id="Introduction">
-     <title>Introduction</title>
-     <para>
--    kgdb is a source level debugger for linux kernel. It is used along
--    with gdb to debug a linux kernel.  The expectation is that gdb can
--    be used to "break in" to the kernel to inspect memory, variables
--    and look through call stack information similar to what an
--    application developer would use gdb for.  It is possible to place
--    breakpoints in kernel code and perform some limited execution
--    stepping.
-+    The kernel has two different debugger front ends (kdb and kgdb)
-+    which interface to the debug core.  It is possible to use either
-+    of the debugger front ends and dynamically transition between them
-+    if you configure the kernel properly at compile and runtime.
-+    </para>
-+    <para>
-+    Kdb is simplistic shell style interface which you can use on a
-+    system console with a keyboard or serial console.  You can use it
-+    to inspect memory, registers, process lists, dmesg, and even set
-+    breakpoints to stop in a certain location.  Kdb is not a source
-+    level debugger, although you can set breakpoints and execute some
-+    basic kernel run control.  Kdb is mainly aimed at doing some
-+    analysis to aid in development or diagnosing kernel problems.  You
-+    can access some symbols by name in kernel builtins or in kernel
-+    modules if the code was built
-+    with <symbol>CONFIG_KALLSYMS</symbol>.
-     </para>
-     <para>
--    Two machines are required for using kgdb. One of these machines is a
--    development machine and the other is a test machine.  The kernel
--    to be debugged runs on the test machine. The development machine
--    runs an instance of gdb against the vmlinux file which contains
--    the symbols (not boot image such as bzImage, zImage, uImage...).
--    In gdb the developer specifies the connection parameters and
--    connects to kgdb.  The type of connection a developer makes with
--    gdb depends on the availability of kgdb I/O modules compiled as
--    builtin's or kernel modules in the test machine's kernel.
-+    Kgdb was intended to be used as a source level debugger for the
-+    linux kernel. It is used along with gdb to debug a linux kernel.
-+    The expectation is that gdb can be used to "break in" to the
-+    kernel to inspect memory, variables and look through call stack
-+    information similar to the way an application developer would use
-+    gdb to debug an application.  It is possible to place breakpoints
-+    in kernel code and perform some limited execution stepping.
-+    </para>
-+    <para>
-+    Two machines are required for using kgdb. One of these machines is
-+    a development machine and the other is the target machine.  The
-+    kernel to be debugged runs on the target machine. The development
-+    machine runs an instance of gdb against the vmlinux file which
-+    contains the symbols (not boot image such as bzImage, zImage,
-+    uImage...).  In gdb the developer specifies the connection
-+    parameters and connects to kgdb.  The type of connection a
-+    developer makes with gdb depends on the availability of kgdb I/O
-+    modules compiled as builtins or kernel modules in the test
-+    machine's kernel.
-     </para>
-   </chapter>
-   <chapter id="CompilingAKernel">
--    <title>Compiling a kernel</title>
-+  <title>Compiling a kernel</title>
-+  <para>
-+  <itemizedlist>
-+  <listitem><para>In order to enable compilation of kdb, you must first enable kgdb.</para></listitem>
-+  <listitem><para>The kgdb test compile options are described in the kgdb test suite chapter.</para></listitem>
-+  </itemizedlist>
-+  </para>
-+  <sect1 id="CompileKGDB">
-+    <title>Kernel config options for kgdb</title>
-     <para>
-     To enable <symbol>CONFIG_KGDB</symbol> you should first turn on
-     "Prompt for development and/or incomplete code/drivers"
-     (CONFIG_EXPERIMENTAL) in  "General setup", then under the
--    "Kernel debugging" select "KGDB: kernel debugging with remote gdb".
-+    "Kernel debugging" select "KGDB: kernel debugger".
-+    </para>
-+    <para>
-+    While it is not a hard requirement that you have symbols in your
-+    vmlinux file, gdb tends not to be very useful without the symbolic
-+    data, so you will want to turn
-+    on <symbol>CONFIG_DEBUG_INFO</symbol> which is called "Compile the
-+    kernel with debug info" in the menu config.
-     </para>
-     <para>
-     It is advised, but not required that you turn on the
--    CONFIG_FRAME_POINTER kernel option.  This option inserts code to
--    into the compiled executable which saves the frame information in
--    registers or on the stack at different points which will allow a
--    debugger such as gdb to more accurately construct stack back traces
--    while debugging the kernel.
-+    <symbol>CONFIG_FRAME_POINTER</symbol> kernel option which is called "Compile the
-+    kernel with frame pointers" in the menu config.  This option
-+    inserts code to into the compiled executable which saves the frame
-+    information in registers or on the stack at different points which
-+    will allow a debugger such as gdb to more accurately construct
-+    stack back traces while debugging the kernel.
-     </para>
-     <para>
-     If the architecture that you are using supports the kernel option
-@@ -116,38 +126,145 @@
-     this option.
-     </para>
-     <para>
--    Next you should choose one of more I/O drivers to interconnect debugging
--    host and debugged target.  Early boot debugging requires a KGDB
--    I/O driver that supports early debugging and the driver must be
--    built into the kernel directly. Kgdb I/O driver configuration
--    takes place via kernel or module parameters, see following
--    chapter.
-+    Next you should choose one of more I/O drivers to interconnect
-+    debugging host and debugged target.  Early boot debugging requires
-+    a KGDB I/O driver that supports early debugging and the driver
-+    must be built into the kernel directly. Kgdb I/O driver
-+    configuration takes place via kernel or module parameters which
-+    you can learn more about in the in the section that describes the
-+    kernel parameter kgdboc.
-     </para>
--    <para>
--    The kgdb test compile options are described in the kgdb test suite chapter.
-+    <para>Here is an example set of .config to enable kgdb:
-+    <itemizedlist>
-+    <listitem><para># CONFIG_DEBUG_RODATA is not set</para></listitem>
-+    <listitem><para>CONFIG_FRAME_POINTER=y</para></listitem>
-+    <listitem><para>CONFIG_KGDB=y</para></listitem>
-+    <listitem><para>CONFIG_KGDB_SERIAL_CONSOLE=y</para></listitem>
-+    </itemizedlist>
-     </para>
--
-+  </sect1>
-+  <sect1 id="CompileKDB">
-+    <title>Kernel config options for kdb</title>
-+    <para>Kdb is quite a bit more complex than the simple gdbstub
-+    sitting on top of the kernel's debug core.  Kdb must implement an
-+    shell, and also adds some helper functions in other parts of the
-+    kernel, responsible for printing out interesting data such as what
-+    you would see if you ran "lsmod", or "ps".  In order to build kdb
-+    into the kernel you follow the same steps as you would for kgdb.
-+    </para>
-+    <para>The main config option for kdb
-+    is <symbol>CONFIG_KGDB_KDB</symbol> which is called "KGDB_KDB:
-+    include kdb frontend for kgdb" in the menu config.  In theory you
-+    would have already also selected an I/O driver such as the
-+    CONFIG_KGDB_SERIAL_CONSOLE interface if you plan on using kdb on a
-+    serial port, when you were configuring kgdb.
-+    </para>
-+    <para>If you want to use a ps/2 style keyboard with kdb you would
-+    select CONFIG_KDB_KEYBOARD which is called "KGDB_KDB: keyboard as
-+    input device" in the menu config.  This option really does do
-+    anything for the gdb interface to kgdb it only works with kdb,
-+    because it is not really meaningful to manually type in gdb
-+    remote protocol commands.
-+    </para>
-+    <para>Here is an example set of .config to enable kdb:
-+    <itemizedlist>
-+    <listitem><para># CONFIG_DEBUG_RODATA is not set</para></listitem>
-+    <listitem><para>CONFIG_FRAME_POINTER=y</para></listitem>
-+    <listitem><para>CONFIG_KGDB=y</para></listitem>
-+    <listitem><para>CONFIG_KGDB_SERIAL_CONSOLE=y</para></listitem>
-+    <listitem><para>CONFIG_KGDB_KDB=y</para></listitem>
-+    <listitem><para>CONFIG_KDB_KEYBOARD=y</para></listitem>
-+    </itemizedlist>
-+    </para>
-+  </sect1>
-   </chapter>
--  <chapter id="EnableKGDB">
--   <title>Enable kgdb for debugging</title>
--   <para>
--   In order to use kgdb you must activate it by passing configuration
--   information to one of the kgdb I/O drivers.  If you do not pass any
--   configuration information kgdb will not do anything at all.  Kgdb
--   will only actively hook up to the kernel trap hooks if a kgdb I/O
--   driver is loaded and configured.  If you unconfigure a kgdb I/O
--   driver, kgdb will unregister all the kernel hook points.
-+  <chapter id="kgdbKernelArgs">
-+  <title>Kernel Debugger Boot Arguments</title>
-+  <para>This section will describe the various runtime kernel
-+  parameters that affect the configuration of the kernel debugger.
-+  The following chapter will cover using kdb and kgdb as well as
-+  provide some examples of the configuration parameters.</para>
-+   <sect1 id="kgdboc">
-+   <title>Kernel parameter: kgdboc</title>
-+   <para>The kgdboc driver was originally an abbreviation meant to
-+   stand for "kgdb over console".  Today it is the primary mechanism
-+   to configure how to communicate from gdb to kgdb as well as the
-+   devices you want to use to interact with the kdb shell.
-    </para>
--   <para>
--   All drivers can be reconfigured at run time, if
--   <symbol>CONFIG_SYSFS</symbol> and <symbol>CONFIG_MODULES</symbol>
--   are enabled, by echo'ing a new config string to
--   <constant>/sys/module/&lt;driver&gt;/parameter/&lt;option&gt;</constant>.
--   The driver can be unconfigured by passing an empty string.  You cannot
--   change the configuration while the debugger is attached.  Make sure
--   to detach the debugger with the <constant>detach</constant> command
--   prior to trying unconfigure a kgdb I/O driver.
-+   <para>For kgdb/gdb, kgdboc is designed to work with a single serial
-+   port. It was meant to cover the circumstance where you wanted to
-+   use a serial console as your primary console as well as using it to
-+   perform kernel debugging.  It is also possible to use kgdb on a
-+   serial port which is not designated as a system console.  Kgdboc
-+   may be configured as a kernel built-in or a kernel module.  You can
-+   only make use of <constant>kgdbwait</constant> and early debugging
-+   if you build kgdboc into the kernel as a builtins.
-+   </para>
-+   <sect2 id="kgdbocArgs">
-+   <title>kgdboc arguments</title>
-+   <para>Usage: <constant>kgdboc=[kbd][[,]serial_device][,baud]</constant></para>
-+   <para>You can configure kgdboc to use the keyboard, and or a serial device
-+   depending on if you are using kdb and or kgdb, in one of the
-+   following scenarios.
-+   <orderedlist>
-+   <listitem><para>kdb and kgdb over only a serial port</para>
-+   <para><constant>kgdboc=&lt;serial_device&gt;[,baud]</constant></para>
-+   <para>Example: <constant>kgdboc=ttyS0,115200</constant></para>
-+   </listitem>
-+   <listitem><para>kdb and kgdb with keyboard and a serial port</para>
-+   <para><constant>kgdboc=kbd,&lt;serial_device&gt;[,baud]</constant></para>
-+   <para>Example: <constant>kgdboc=kbd,ttyS0,115200</constant></para>
-+   </listitem>
-+   <listitem><para>kdb with a keyboard</para>
-+   <para><constant>kgdboc=kbd</constant></para>
-+   </listitem>
-+   </orderedlist>
-+   </para>
-+   <para>You can configure kgdboc via sysfs or a module or kernel boot line
-+   parameter depending on if you build with CONFIG_KGDBOC as a module
-+   or built-in.
-+   <orderedlist>
-+   <listitem><para>From the module load or build-in</para>
-+   <para>As a kernel argument: <constant>kgdboc=&lt;tty-device&gt;,[baud]</constant></para>
-+   <para>As a kernel module: <constant>modprobe kgdboc kgdboc=&lt;tty-device&gt;,[baud]</constant></para>
-+   <para>Here are two examples, the first for an x86 target using the
-+   first serial port and the second for the ARM Versatile AB using the
-+   second serial port.
-+   <orderedlist>
-+   <listitem><para><constant>kgdboc=ttyS0,115200</constant></para></listitem>
-+   <listitem><para><constant>kgdboc=ttyAMA1,115200</constant></para></listitem>
-+   </orderedlist>
-+   </para>
-+   </listitem>
-+   <listitem><para>From sysfs</para>
-+   <para><constant>echo ttyS0 &gt; /sys/module/kgdboc/parameters/kgdboc</constant></para>
-+   <para>NOTE: You do not need to specify the baud if you are
-+   configuring the console on tty which is already configured or
-+   open.</para>
-+   </listitem>
-+   </orderedlist>
-+   </para>
-+   <para>NOTE: Kgdboc does not support interrupting the target via the
-+   gdb remote protocol.  You must manually send a sysrq-g unless you
-+   have a proxy that splits console output to a terminal problem and
-+   has a separate port for the debugger to connect to that sends the
-+   sysrq-g for you.
-    </para>
-+   <para>When using kgdboc with no debugger proxy, you can end up
-+    connecting the debugger for one of two entry points.  If an
-+    exception occurs after you have loaded kgdboc a message should
-+    print on the console stating it is waiting for the debugger.  In
-+    case you disconnect your terminal program and then connect the
-+    debugger in its place.  If you want to interrupt the target system
-+    and forcibly enter a debug session you have to issue a Sysrq
-+    sequence and then type the letter <constant>g</constant>.  Then
-+    you disconnect the terminal session and connect gdb.  Your options
-+    if you don't like this are to hack gdb to send the sysrq-g for you
-+    as well as on the initial connect, or to use a debugger proxy that
-+    allows an unmodified gdb to do the debugging.
-+   </para>
-+   </sect2>
-+   </sect1>
-    <sect1 id="kgdbwait">
-    <title>Kernel parameter: kgdbwait</title>
-    <para>
-@@ -166,99 +283,193 @@
-    kgdb I/O driver as a kernel module kgdbwait will not do anything.
-    </para>
-    </sect1>
--  <sect1 id="kgdboc">
--  <title>Kernel parameter: kgdboc</title>
--  <para>
--  The kgdboc driver was originally an abbreviation meant to stand for
--  "kgdb over console".  Kgdboc is designed to work with a single
--  serial port. It was meant to cover the circumstance
--  where you wanted to use a serial console as your primary console as
--  well as using it to perform kernel debugging.  Of course you can
--  also use kgdboc without assigning a console to the same port.
-+   <sect1 id="kgdbcon">
-+   <title>Kernel parameter: kgdbcon</title>
-+   <para> The kgdbcon feature allows you to see printk() messages
-+   inside gdb while gdb is connected to the kernel.  Kdb does not make
-+    use of the kgdbcon feature.
-+   </para>
-+   <para>Kgdb supports using the gdb serial protocol to send console
-+   messages to the debugger when the debugger is connected and running.
-+   There are two ways to activate this feature.
-+   <orderedlist>
-+   <listitem><para>Activate with the kernel command line option:</para>
-+   <para><constant>kgdbcon</constant></para>
-+   </listitem>
-+   <listitem><para>Use sysfs before configuring an io driver</para>
-+   <para>
-+   <constant>echo 1 &gt; /sys/module/kgdb/parameters/kgdb_use_con</constant>
-+   </para>
-+   <para>
-+   NOTE: If you do this after you configure the kgdb I/O driver, the
-+   setting will not take effect until the next point the I/O is
-+   reconfigured.
-+   </para>
-+   </listitem>
-+   </orderedlist>
-+   <para>IMPORTANT NOTE: You cannot use kgdboc + kgdbcon on a tty that is an
-+   active system console IE: console=ttyS0,115200 kgdboc=ttyS0 kgdbcon
-+   </para>
-+   <para>It is possible to use this option with kgdboc on a tty that is not a system console.
-+   </para>
-   </para>
--  <sect2 id="UsingKgdboc">
--  <title>Using kgdboc</title>
--  <para>
--  You can configure kgdboc via sysfs or a module or kernel boot line
--  parameter depending on if you build with CONFIG_KGDBOC as a module
--  or built-in.
--  <orderedlist>
--  <listitem><para>From the module load or build-in</para>
--  <para><constant>kgdboc=&lt;tty-device&gt;,[baud]</constant></para>
-+  </sect1>
-+  </chapter>
-+  <chapter id="usingKDB">
-+  <title>Using kdb</title>
-   <para>
--  The example here would be if your console port was typically ttyS0, you would use something like <constant>kgdboc=ttyS0,115200</constant> or on the ARM Versatile AB you would likely use <constant>kgdboc=ttyAMA0,115200</constant>
-+  </para>
-+  <sect1 id="quickKDBserial">
-+  <title>Quick start for kdb on a serial port</title>
-+  <para>This is a quick example of how to use kdb</para>
-+  <para><orderedlist>
-+  <listitem><para>Boot kernel with arguments:
-+  <itemizedlist>
-+  <listitem><para><constant>console=ttyS0,115200 kgdboc=ttyS0,115200</constant></para></listitem>
-+  </itemizedlist></para>
-+  <para>OR</para>
-+  <para>Configure kgdboc after the kernel booted assuming your are using a serial port console:
-+  <itemizedlist>
-+  <listitem><para><constant>echo ttyS0 &gt; /sys/module/kgdboc/parameters/kgdboc</constant></para></listitem>
-+  </itemizedlist>
-   </para>
-   </listitem>
--  <listitem><para>From sysfs</para>
--  <para><constant>echo ttyS0 &gt; /sys/module/kgdboc/parameters/kgdboc</constant></para>
-+  <listitem><para>Enter the kernel debugger manually or by waiting for an opps or fault.  There are several ways you can enter the kernel debugger manually, all involve using the sysrq-g, which means you have to enabled CONFIG_MAGIC_SYSRQ=y in your kernel config</para>
-+  <itemizedlist>
-+  <listitem><para>When logged in as root or with a super user session you can run:</para>
-+   <para><constant>echo g &gt; /proc/sysrq-trigger</constant></para></listitem>
-+  <listitem><para>Example using minicom 2.2</para>
-+  <para>Press: <constant>Control-a</constant></para>
-+  <para>Press: <constant>f</constant></para>
-+  <para>Press: <constant>g</constant></para>
-   </listitem>
--  </orderedlist>
--  </para>
--  <para>
--  NOTE: Kgdboc does not support interrupting the target via the
--  gdb remote protocol.  You must manually send a sysrq-g unless you
--  have a proxy that splits console output to a terminal problem and
--  has a separate port for the debugger to connect to that sends the
--  sysrq-g for you.
-+  <listitem><para>When you have telneted to a terminal server that supports sending a remote break</para>
-+  <para>Press: <constant>Control-]</constant></para>
-+  <para>Type in:<constant>send break</constant></para>
-+  <para>Press: <constant>Enter</constant></para>
-+  <para>Press: <constant>g</constant></para>
-+  </listitem>
-+  </itemizedlist>
-+  </listitem>
-+  <listitem><para>From the kdb prompt you can run the "help" command to see a complete list of the commands that are available.</para>
-+  <para>Some useful commands in kdb include:
-+  <itemizedlist>
-+  <listitem><para>lsmod  -- Shows where kernel modules are loaded</para></listitem>
-+  <listitem><para>ps -- Displays only the active processes</para></listitem>
-+  <listitem><para>ps A -- Shows all the processes</para></listitem>
-+  <listitem><para>summary -- Shows kernel version info and memory usage</para></listitem>
-+  <listitem><para>bt -- Get a backtrace of the current process using dump_stack()</para></listitem>
-+  <listitem><para>dmesg -- View the kernel syslog buffer</para></listitem>
-+  <listitem><para>go -- Continue the system</para></listitem>
-+  </itemizedlist>
-   </para>
--  <para>When using kgdboc with no debugger proxy, you can end up
--  connecting the debugger for one of two entry points.  If an
--  exception occurs after you have loaded kgdboc a message should print
--  on the console stating it is waiting for the debugger.  In case you
--  disconnect your terminal program and then connect the debugger in
--  its place.  If you want to interrupt the target system and forcibly
--  enter a debug session you have to issue a Sysrq sequence and then
--  type the letter <constant>g</constant>.  Then you disconnect the
--  terminal session and connect gdb.  Your options if you don't like
--  this are to hack gdb to send the sysrq-g for you as well as on the
--  initial connect, or to use a debugger proxy that allows an
--  unmodified gdb to do the debugging.
-+  </listitem>
-+  <listitem>
-+  <para>When you are done using kdb you need to consider rebooting the system or using the "go" command to resuming normal kernel execution.  If you have paused the kernel for a lengthy period of time, applications that rely on timely networking or anything to do with real wall clock time could get adversely affected, so you should take this into consideration when using the kernel debugger.</para>
-+  </listitem>
-+  </orderedlist></para>
-+  </sect1>
-+  <sect1 id="quickKDBkeyboard">
-+  <title>Quick start for kdb using a keyboard connected console</title>
-+  <para>This is a quick example of how to use kdb with a keyboard</para>
-+  <para><orderedlist>
-+  <listitem><para>Boot kernel with arguments:
-+  <itemizedlist>
-+  <listitem><para><constant>kgdboc=kbd</constant></para></listitem>
-+  </itemizedlist></para>
-+  <para>OR</para>
-+  <para>Configure kgdboc after the kernel booted:
-+  <itemizedlist>
-+  <listitem><para><constant>echo kbd &gt; /sys/module/kgdboc/parameters/kgdboc</constant></para></listitem>
-+  </itemizedlist>
-   </para>
--  </sect2>
-+  </listitem>
-+  <listitem><para>Enter the kernel debugger manually or by waiting for an opps or fault.  There are several ways you can enter the kernel debugger manually, all involve using the sysrq-g, which means you have to enabled CONFIG_MAGIC_SYSRQ=y in your kernel config</para>
-+  <itemizedlist>
-+  <listitem><para>When logged in as root or with a super user session you can run:</para>
-+   <para><constant>echo g &gt; /proc/sysrq-trigger</constant></para></listitem>
-+  <listitem><para>Example using a laptop keyboard</para>
-+  <para>Press and hold down: <constant>Alt</constant></para>
-+  <para>Press and hold down: <constant>Fn</constant></para>
-+  <para>Press and release the key with the label: <constant>SysRq</constant></para>
-+  <para>Release: <constant>Fn</constant></para>
-+  <para>Press and release: <constant>g</constant></para>
-+  <para>Release: <constant>Alt</constant></para>
-+  </listitem>
-+  <listitem><para>Example using a PS/2 101 keyboard</para>
-+  <para>Press and hold down: <constant>Alt</constant></para>
-+  <para>Press and release the key with the label: <constant>SysRq</constant></para>
-+  <para>Press and release: <constant>g</constant></para>
-+  <para>Release: <constant>Alt</constant></para>
-+  </listitem>
-+  </itemizedlist>
-+  </listitem>
-+  <listitem>
-+  <para>Now type in a kdb command such as "help", "dmesg", "bt" or "go" to continue kernel execution.</para>
-+  </listitem>
-+  </orderedlist></para>
-   </sect1>
--  <sect1 id="kgdbcon">
--  <title>Kernel parameter: kgdbcon</title>
--  <para>
--  Kgdb supports using the gdb serial protocol to send console messages
--  to the debugger when the debugger is connected and running.  There
--  are two ways to activate this feature.
-+  </chapter>
-+  <chapter id="EnableKGDB">
-+   <title>Using kgdb / gdb</title>
-+   <para>In order to use kgdb you must activate it by passing
-+   configuration information to one of the kgdb I/O drivers.  If you
-+   do not pass any configuration information kgdb will not do anything
-+   at all.  Kgdb will only actively hook up to the kernel trap hooks
-+   if a kgdb I/O driver is loaded and configured.  If you unconfigure
-+   a kgdb I/O driver, kgdb will unregister all the kernel hook points.
-+   </para>
-+   <para> All kgdb I/O drivers can be reconfigured at run time, if
-+   <symbol>CONFIG_SYSFS</symbol> and <symbol>CONFIG_MODULES</symbol>
-+   are enabled, by echo'ing a new config string to
-+   <constant>/sys/module/&lt;driver&gt;/parameter/&lt;option&gt;</constant>.
-+   The driver can be unconfigured by passing an empty string.  You cannot
-+   change the configuration while the debugger is attached.  Make sure
-+   to detach the debugger with the <constant>detach</constant> command
-+   prior to trying unconfigure a kgdb I/O driver.
-+   </para>
-+  <sect1 id="ConnectingGDB">
-+  <title>Connecting with gdb to a serial port</title>
-   <orderedlist>
--  <listitem><para>Activate with the kernel command line option:</para>
--  <para><constant>kgdbcon</constant></para>
-+  <listitem><para>Configure kgdboc</para>
-+   <para>Boot kernel with arguments:
-+   <itemizedlist>
-+    <listitem><para><constant>kgdboc=ttyS0,115200</constant></para></listitem>
-+   </itemizedlist></para>
-+   <para>OR</para>
-+   <para>Configure kgdboc after the kernel booted:
-+   <itemizedlist>
-+    <listitem><para><constant>echo ttyS0 &gt; /sys/module/kgdboc/parameters/kgdboc</constant></para></listitem>
-+   </itemizedlist></para>
-   </listitem>
--  <listitem><para>Use sysfs before configuring an io driver</para>
--  <para>
--  <constant>echo 1 &gt; /sys/module/kgdb/parameters/kgdb_use_con</constant>
--  </para>
--  <para>
--  NOTE: If you do this after you configure the kgdb I/O driver, the
--  setting will not take effect until the next point the I/O is
--  reconfigured.
--  </para>
-+  <listitem>
-+  <para>Stop kernel execution (break into the debugger)</para>
-+  <para>In order to connect to gdb to the via kgdboc the kernel must
-+  first be stopped.  There are several ways to stop the kernel which
-+  include using kgdbwait as a boot argument, via a sysrq-g, or running
-+  the kernel until it takes an an exception where it waits for the
-+  debugger to attach.
-+  <itemizedlist>
-+  <listitem><para>When logged in as root or with a super user session you can run:</para>
-+   <para><constant>echo g &gt; /proc/sysrq-trigger</constant></para></listitem>
-+  <listitem><para>Example using minicom 2.2</para>
-+  <para>Press: <constant>Control-a</constant></para>
-+  <para>Press: <constant>f</constant></para>
-+  <para>Press: <constant>g</constant></para>
-   </listitem>
--  </orderedlist>
--  </para>
--  <para>
--  IMPORTANT NOTE: Using this option with kgdb over the console
--  (kgdboc) is not supported.
-+  <listitem><para>When you have telneted to a terminal server that supports sending a remote break</para>
-+  <para>Press: <constant>Control-]</constant></para>
-+  <para>Type in:<constant>send break</constant></para>
-+  <para>Press: <constant>Enter</constant></para>
-+  <para>Press: <constant>g</constant></para>
-+  </listitem>
-+  </itemizedlist>
-   </para>
--  </sect1>
--  </chapter>
--  <chapter id="ConnectingGDB">
--  <title>Connecting gdb</title>
--    <para>
--    If you are using kgdboc, you need to have used kgdbwait as a boot
--    argument, issued a sysrq-g, or the system you are going to debug
--    has already taken an exception and is waiting for the debugger to
--    attach before you can connect gdb.
--    </para>
--    <para>
--    If you are not using different kgdb I/O driver other than kgdboc,
--    you should be able to connect and the target will automatically
--    respond.
--    </para>
-+  </listitem>
-+  <listitem>
-+    <para>Connect from from gdb</para>
-     <para>
--    Example (using a serial port):
-+    Example (using a directly connected port):
-     </para>
-     <programlisting>
-     % gdb ./vmlinux
-@@ -283,6 +494,82 @@
-     communications.  You do this prior to issuing the <constant>target
-     remote</constant> command by typing in: <constant>set debug remote 1</constant>
-     </para>
-+  </listitem>
-+  </orderedlist>
-+  <para>Remember if you continue in gdb, and need "break in" again,
-+  you need to issue an other sysrq.  It is easy to create an simple
-+  entry point by putting a breakpoint at <constant>sys_sync</constant>
-+  and then you can run "sync" from a shell or script to break into the
-+  debugger.</para>
-+  </sect1>
-+  </chapter>
-+  <chapter id="switchKdbKgdb">
-+  <title>kgdb and kdb interoperability</title>
-+  <para>It is possible to transition between kdb and kgdb dynamically.
-+  The debug core will remember which you used the last time and
-+  automatically start in the same mode.</para>
-+  <sect1>
-+  <title>Switching between kdb and kgdb</title>
-+  <sect2>
-+  <title>Switching from kgdb to kdb</title>
-+  <para>
-+  There are two ways to switch from kgdb to kdb, you can use gdb to
-+  issue a maintenance packet, or you can blindly type the command $3#33.
-+  When ever kernel debugger stops in kgdb mode it will print the
-+  message <constant>KGDB or $3#33 for KDB</constant>.  It is important
-+  to note, that you have to type the sequence correctly in one pass.
-+  You cannot type a backspace or delete because kgdb will interpret
-+  that as part of the debug stream.
-+  <orderedlist>
-+  <listitem><para>Change from kgdb to kdb by blindly typing:</para>
-+  <para><constant>$3#33</constant></para></listitem>
-+  <listitem><para>Change from kgdb to kdb with gdb</para>
-+  <para><constant>maintenance packet 3</constant></para>
-+  <para>NOTE: Now you must kill gdb</para></listitem>
-+  </orderedlist>
-+  </para>
-+  </sect2>
-+  <sect2>
-+  <title>Change from kdb to kgdb</title>
-+  <para>There are two ways you can change from kdb to kgdb.  You can
-+  manually enter kgdb mode by issuing the kgdb command from the kdb
-+  shell prompt, or you can connect gdb while the kdb shell prompt is
-+  active.  The kdb shell looks for the typical first commands that gdb
-+  would issue with the gdb remote protocol and if it sees one of those
-+  commands it automatically changes into kgdb mode.</para>
-+  <orderedlist>
-+  <listitem><para>From kdb issue the command:</para>
-+  <para><constant>kgdb</constant></para>
-+  <para>Now disconnect your terminal program and connect gdb in its place</para></listitem>
-+  <listitem><para>At the kdb prompt, disconnect the terminal program and connect gdb in its place.</para></listitem>
-+  </orderedlist>
-+  </sect2>
-+  </sect1>
-+  <sect1>
-+  <title>Running kdb commands from gdb</title>
-+  <para>It is possible to run a limited set of kdb commands from gdb,
-+  using the gdb monitor command.  You don't want to execute any of the
-+  run control or breakpoint operations, because it can disrupt the
-+  state of the kernel debugger.  You should be using gdb for
-+  breakpoints and run control operations if you have gdb connected.
-+  The more useful commands to run are things like lsmod, dmesg, ps or
-+  possibly some of the memory information.  To see all the kdb
-+  commands you can run <constant>monitor help</constant>.</para>
-+  <para>Example:
-+  <informalexample><programlisting>
-+(gdb) monitor ps
-+1 idle process (state I) and
-+27 sleeping system daemon (state M) processes suppressed,
-+use 'ps A' to see all.
-+Task Addr       Pid   Parent [*] cpu State Thread     Command
-+
-+0xc78291d0        1        0  0    0   S  0xc7829404  init
-+0xc7954150      942        1  0    0   S  0xc7954384  dropbear
-+0xc78789c0      944        1  0    0   S  0xc7878bf4  sh
-+(gdb)
-+  </programlisting></informalexample>
-+  </para>
-+  </sect1>
-   </chapter>
-   <chapter id="KGDBTestSuite">
-     <title>kgdb Test Suite</title>
-@@ -309,22 +596,22 @@
-     </para>
-   </chapter>
-   <chapter id="CommonBackEndReq">
--  <title>KGDB Internals</title>
-+  <title>Kernel Debugger Internals</title>
-   <sect1 id="kgdbArchitecture">
-     <title>Architecture Specifics</title>
-       <para>
--      Kgdb is organized into three basic components:
-+      The kernel debugger is organized into a number of components:
-       <orderedlist>
--      <listitem><para>kgdb core</para>
-+      <listitem><para>The debug core</para>
-       <para>
--      The kgdb core is found in kernel/kgdb.c.  It contains:
-+      The debug core is found in kernel/debugger/debug_core.c.  It contains:
-       <itemizedlist>
--      <listitem><para>All the logic to implement the gdb serial protocol</para></listitem>
-       <listitem><para>A generic OS exception handler which includes sync'ing the processors into a stopped state on an multi cpu system.</para></listitem>
-       <listitem><para>The API to talk to the kgdb I/O drivers</para></listitem>
-       <listitem><para>The API to make calls to the arch specific kgdb implementation</para></listitem>
-       <listitem><para>The logic to perform safe memory reads and writes to memory while using the debugger</para></listitem>
-       <listitem><para>A full implementation for software breakpoints unless overridden by the arch</para></listitem>
-+      <listitem><para>The API to invoke either the kdb or kgdb frontend to the debug core.</para></listitem>
-       </itemizedlist>
-       </para>
-       </listitem>
-@@ -347,9 +634,30 @@
-       </itemizedlist>
-       </para>
-       </listitem>
-+      <listitem><para>gdbstub frontend (aka kgdb)</para>
-+      <para>The gdbstub is located in kernel/debug/gdbstub.c. It contains:</para>
-+      <itemizedlist>
-+        <listitem><para>All the logic to implement the gdb serial protocol</para></listitem>
-+      </itemizedlist>
-+      </listitem>
-+      <listitem><para>kdb frontend</para>
-+      <para>The kdb debugger shell is broken down into a number of
-+      components.  The kdb core is located in kernel/debug/kdb.  There
-+      are number of helper functions in some of the other kernel
-+      components to make it possible for kdb to examine report
-+      information about the kernel without taking locks that could
-+      cause a kernel deadlock.  The kdb core contains implements the following functionality.</para>
-+      <itemizedlist>
-+        <listitem><para>A simple shell</para></listitem>
-+        <listitem><para>The kdb core command set</para></listitem>
-+        <listitem><para>A registration API to register additional kdb shell commands.</para></listitem>
-+        <listitem><para>The implementation for kdb_printf() which emit messages directly to I/O drivers, bypassing the kernel log.</para></listitem>
-+        <listitem><para>SW / HW breakpoint management for the kdb shell</para></listitem>
-+      </itemizedlist>
-+      </listitem>
-       <listitem><para>kgdb I/O driver</para>
-       <para>
--      Each kgdb I/O driver has to provide an implemenation for the following:
-+      Each kgdb I/O driver has to provide an implementation for the following:
-       <itemizedlist>
-       <listitem><para>configuration via builtin or module</para></listitem>
-       <listitem><para>dynamic configuration and kgdb hook registration calls</para></listitem>
-@@ -453,6 +761,10 @@
- 		<itemizedlist>
- 		<listitem><para>Jason Wessel<email>jason.wessel@windriver.com</email></para></listitem>
- 		</itemizedlist>
-+                In Jan 2010 this document was updated to include kdb.
-+		<itemizedlist>
-+		<listitem><para>Jason Wessel<email>jason.wessel@windriver.com</email></para></listitem>
-+		</itemizedlist>
- 	</para>
-   </chapter>
- </book>
 diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index f3be1e6..af8b8e8 100644
+index 736d456..f3be1e6 100644
 --- a/Documentation/kernel-parameters.txt
 +++ b/Documentation/kernel-parameters.txt
-@@ -57,6 +57,7 @@ parameter is applicable:
- 	ISAPNP	ISA PnP code is enabled.
- 	ISDN	Appropriate ISDN support is enabled.
- 	JOY	Appropriate joystick support is enabled.
-+	KGDB	Kernel debugger support is enabled.
- 	KVM	Kernel Virtual Machine support is enabled.
- 	LIBATA  Libata driver is enabled
- 	LP	Printer support is enabled.
-@@ -1102,13 +1103,17 @@ and is between 256 and 4096 characters. It is defined in the file
- 			use the HighMem zone if it exists, and the Normal
+@@ -1103,9 +1103,11 @@ and is between 256 and 4096 characters. It is defined in the file
  			zone if it does not.
  
--	kgdboc=		[HW] kgdb over consoles.
-+	kgdboc=		[KGDB,HW] kgdb over consoles.
- 			Requires a tty driver that supports console polling,
- 			or a supported polling keyboard driver (non-usb).
- 			Serial only format: <serial_device>[,baud]
- 			keyboard only format: kbd
- 			keyboard and serial format: kbd,<serial_device>[,baud]
+ 	kgdboc=		[HW] kgdb over consoles.
+-			Requires a tty driver that supports console polling.
+-			(only serial supported for now)
+-			Format: <serial_device>[,baud]
++			Requires a tty driver that supports console polling,
++			or a supported polling keyboard driver (non-usb).
++			Serial only format: <serial_device>[,baud]
++			keyboard only format: kbd
++			keyboard and serial format: kbd,<serial_device>[,baud]
  
-+	kgdbwait	[KGDB] Stop kernel execution and enter the
-+			kernel debugger at the earliest opportunity if
-+			kgdb was configured on as a boot argument.
-+
  	kmac=		[MIPS] korina ethernet MAC address.
  			Configure the RouterBoard 532 series on-chip
- 			Ethernet adapter MAC address.
+diff --git a/drivers/char/Makefile b/drivers/char/Makefile
+index f957edf..dbc579e 100644
+--- a/drivers/char/Makefile
++++ b/drivers/char/Makefile
+@@ -13,6 +13,7 @@ obj-$(CONFIG_LEGACY_PTYS)	+= pty.o
+ obj-$(CONFIG_UNIX98_PTYS)	+= pty.o
+ obj-y				+= misc.o
+ obj-$(CONFIG_VT)		+= vt_ioctl.o vc_screen.o selection.o keyboard.o
++obj-$(CONFIG_KDB_KEYBOARD)	+= kdb_keyboard.o
+ obj-$(CONFIG_BFIN_JTAG_COMM)	+= bfin_jtag_comm.o
+ obj-$(CONFIG_CONSOLE_TRANSLATIONS) += consolemap.o consolemap_deftbl.o
+ obj-$(CONFIG_HW_CONSOLE)	+= vt.o defkeymap.o
+diff --git a/drivers/char/kdb_keyboard.c b/drivers/char/kdb_keyboard.c
+new file mode 100644
+index 0000000..95aa102
+--- /dev/null
++++ b/drivers/char/kdb_keyboard.c
+@@ -0,0 +1,204 @@
++/*
++ * Kernel Debugger Architecture Dependent Console I/O handler
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License.
++ *
++ * Copyright (c) 1999-2006 Silicon Graphics, Inc.  All Rights Reserved.
++ * Copyright (c) 2009 Wind River Systems, Inc.  All Rights Reserved.
++ */
++
++#include <linux/kdb.h>
++#include <linux/keyboard.h>
++#include <linux/ctype.h>
++#include <linux/module.h>
++#include <linux/io.h>
++#include "kdb_keyboard.h"
++
++
++static int kbd_exists;
++
++/*
++ * Check if the keyboard controller has a keypress for us.
++ * Some parts (Enter Release, LED change) are still blocking polled here,
++ * but hopefully they are all short.
++ */
++int kdb_get_kbd_char(void)
++{
++	int scancode, scanstatus;
++	static int shift_lock;	/* CAPS LOCK state (0-off, 1-on) */
++	static int shift_key;	/* Shift next keypress */
++	static int ctrl_key;
++	u_short keychar;
++
++	if (KDB_FLAG(NO_I8042) || KDB_FLAG(NO_VT_CONSOLE) ||
++	    (inb(KBD_STATUS_REG) == 0xff && inb(KBD_DATA_REG) == 0xff)) {
++		kbd_exists = 0;
++		return -1;
++	}
++	kbd_exists = 1;
++
++	if ((inb(KBD_STATUS_REG) & KBD_STAT_OBF) == 0)
++		return -1;
++
++	/*
++	 * Fetch the scancode
++	 */
++	scancode = inb(KBD_DATA_REG);
++	scanstatus = inb(KBD_STATUS_REG);
++
++	/*
++	 * Ignore mouse events.
++	 */
++	if (scanstatus & KBD_STAT_MOUSE_OBF)
++		return -1;
++
++	/*
++	 * Ignore release, trigger on make
++	 * (except for shift keys, where we want to
++	 *  keep the shift state so long as the key is
++	 *  held down).
++	 */
++
++	if (((scancode&0x7f) == 0x2a) || ((scancode&0x7f) == 0x36)) {
++		/*
++		 * Next key may use shift table
++		 */
++		if ((scancode & 0x80) == 0)
++			shift_key = 1;
++		else
++			shift_key = 0;
++		return -1;
++	}
++
++	if ((scancode&0x7f) == 0x1d) {
++		/*
++		 * Left ctrl key
++		 */
++		if ((scancode & 0x80) == 0)
++			ctrl_key = 1;
++		else
++			ctrl_key = 0;
++		return -1;
++	}
++
++	if ((scancode & 0x80) != 0)
++		return -1;
++
++	scancode &= 0x7f;
++
++	/*
++	 * Translate scancode
++	 */
++
++	if (scancode == 0x3a) {
++		/*
++		 * Toggle caps lock
++		 */
++		shift_lock ^= 1;
++
++#ifdef	KDB_BLINK_LED
++		kdb_toggleled(0x4);
++#endif
++		return -1;
++	}
++
++	if (scancode == 0x0e) {
++		/*
++		 * Backspace
++		 */
++		return 8;
++	}
++
++	/* Special Key */
++	switch (scancode) {
++	case 0xF: /* Tab */
++		return 9;
++	case 0x53: /* Del */
++		return 4;
++	case 0x47: /* Home */
++		return 1;
++	case 0x4F: /* End */
++		return 5;
++	case 0x4B: /* Left */
++		return 2;
++	case 0x48: /* Up */
++		return 16;
++	case 0x50: /* Down */
++		return 14;
++	case 0x4D: /* Right */
++		return 6;
++	}
++
++	if (scancode == 0xe0)
++		return -1;
++
++	/*
++	 * For Japanese 86/106 keyboards
++	 * 	See comment in drivers/char/pc_keyb.c.
++	 * 	- Masahiro Adegawa
++	 */
++	if (scancode == 0x73)
++		scancode = 0x59;
++	else if (scancode == 0x7d)
++		scancode = 0x7c;
++
++	if (!shift_lock && !shift_key && !ctrl_key) {
++		keychar = plain_map[scancode];
++	} else if ((shift_lock || shift_key) && key_maps[1]) {
++		keychar = key_maps[1][scancode];
++	} else if (ctrl_key && key_maps[4]) {
++		keychar = key_maps[4][scancode];
++	} else {
++		keychar = 0x0020;
++		kdb_printf("Unknown state/scancode (%d)\n", scancode);
++	}
++	keychar &= 0x0fff;
++	if (keychar == '\t')
++		keychar = ' ';
++	switch (KTYP(keychar)) {
++	case KT_LETTER:
++	case KT_LATIN:
++		if (isprint(keychar))
++			break;		/* printable characters */
++		/* drop through */
++	case KT_SPEC:
++		if (keychar == K_ENTER)
++			break;
++		/* drop through */
++	default:
++		return -1;	/* ignore unprintables */
++	}
++
++	if ((scancode & 0x7f) == 0x1c) {
++		/*
++		 * enter key.  All done.  Absorb the release scancode.
++		 */
++		while ((inb(KBD_STATUS_REG) & KBD_STAT_OBF) == 0)
++			;
++
++		/*
++		 * Fetch the scancode
++		 */
++		scancode = inb(KBD_DATA_REG);
++		scanstatus = inb(KBD_STATUS_REG);
++
++		while (scanstatus & KBD_STAT_MOUSE_OBF) {
++			scancode = inb(KBD_DATA_REG);
++			scanstatus = inb(KBD_STATUS_REG);
++		}
++
++		if (scancode != 0x9c) {
++			/*
++			 * Wasn't an enter-release,  why not?
++			 */
++			kdb_printf("kdb: expected enter got 0x%x status 0x%x\n",
++			       scancode, scanstatus);
++		}
++
++		return 13;
++	}
++
++	return keychar & 0xff;
++}
++EXPORT_SYMBOL_GPL(kdb_get_kbd_char);
+diff --git a/drivers/char/kdb_keyboard.h b/drivers/char/kdb_keyboard.h
+new file mode 100644
+index 0000000..5541668
+--- /dev/null
++++ b/drivers/char/kdb_keyboard.h
+@@ -0,0 +1,143 @@
++/*
++ *	include/linux/pc_keyb.h
++ *
++ *	PC Keyboard And Keyboard Controller
++ *
++ *	(c) 1997 Martin Mares <mj@atrey.karlin.mff.cuni.cz>
++ */
++
++/*
++ *	Configuration Switches
++ */
++
++#undef	KBD_REPORT_ERR			/* Report keyboard errors */
++#define	KBD_REPORT_UNKN			/* Report unknown scan codes */
++#define	KBD_REPORT_TIMEOUTS		/* Report keyboard timeouts */
++#undef	KBD_IS_FOCUS_9000		/* We have the brain-damaged
++					 * FOCUS-9000 keyboard */
++#undef	INITIALIZE_MOUSE		/* Define if your PS/2 mouse
++					 * needs initialization. */
++
++#define KBD_INIT_TIMEOUT 1000		/* Timeout in ms for initializing the
++					 * keyboard */
++#define KBC_TIMEOUT 250			/* Timeout in ms for sending
++					 * to keyboard controller */
++#define KBD_TIMEOUT 1000		/* Timeout in ms for keyboard
++					 * command acknowledge */
++
++/*
++ *	Internal variables of the driver
++ */
++
++extern unsigned char pckbd_read_mask;
++extern unsigned char aux_device_present;
++
++/*
++ *	Keyboard Controller Registers on normal PCs.
++ */
++
++#define KBD_STATUS_REG		0x64	/* Status register (R) */
++#define KBD_CNTL_REG		0x64	/* Controller command register (W) */
++#define KBD_DATA_REG		0x60	/* Keyboard data register (R/W) */
++
++/*
++ *	Keyboard Controller Commands
++ */
++
++#define KBD_CCMD_READ_MODE	0x20	/* Read mode bits */
++#define KBD_CCMD_WRITE_MODE	0x60	/* Write mode bits */
++#define KBD_CCMD_GET_VERSION	0xA1	/* Get controller version */
++#define KBD_CCMD_MOUSE_DISABLE	0xA7	/* Disable mouse interface */
++#define KBD_CCMD_MOUSE_ENABLE	0xA8	/* Enable mouse interface */
++#define KBD_CCMD_TEST_MOUSE	0xA9	/* Mouse interface test */
++#define KBD_CCMD_SELF_TEST	0xAA	/* Controller self test */
++#define KBD_CCMD_KBD_TEST	0xAB	/* Keyboard interface test */
++#define KBD_CCMD_KBD_DISABLE	0xAD	/* Keyboard interface disable */
++#define KBD_CCMD_KBD_ENABLE	0xAE	/* Keyboard interface enable */
++#define KBD_CCMD_WRITE_AUX_OBUF	0xD3    /* Write to output buffer as if
++					   initiated by the auxiliary device */
++#define KBD_CCMD_WRITE_MOUSE	0xD4	/* Write the following byte to
++					 * the mouse */
++
++/*
++ *	Keyboard Commands
++ */
++
++#define KBD_CMD_SET_LEDS	0xED	/* Set keyboard leds */
++#define KBD_CMD_SET_RATE	0xF3	/* Set typematic rate */
++#define KBD_CMD_ENABLE		0xF4	/* Enable scanning */
++#define KBD_CMD_DISABLE		0xF5	/* Disable scanning */
++#define KBD_CMD_RESET		0xFF	/* Reset */
++
++/*
++ *	Keyboard Replies
++ */
++
++#define KBD_REPLY_POR		0xAA	/* Power on reset */
++#define KBD_REPLY_ACK		0xFA	/* Command ACK */
++#define KBD_REPLY_RESEND	0xFE	/* Command NACK, send the cmd again */
++
++/*
++ *	Status Register Bits
++ */
++
++#define KBD_STAT_OBF 		0x01	/* Keyboard output buffer full */
++#define KBD_STAT_IBF 		0x02	/* Keyboard input buffer full */
++#define KBD_STAT_SELFTEST	0x04	/* Self test successful */
++#define KBD_STAT_CMD		0x08	/* Last write was a command
++					 * write (0=data) */
++#define KBD_STAT_UNLOCKED	0x10	/* Zero if keyboard locked */
++#define KBD_STAT_MOUSE_OBF	0x20	/* Mouse output buffer full */
++#define KBD_STAT_GTO 		0x40	/* General receive/xmit timeout */
++#define KBD_STAT_PERR 		0x80	/* Parity error */
++
++#define AUX_STAT_OBF (KBD_STAT_OBF | KBD_STAT_MOUSE_OBF)
++
++/*
++ *	Controller Mode Register Bits
++ */
++
++#define KBD_MODE_KBD_INT	0x01	/* Keyboard data generate IRQ1 */
++#define KBD_MODE_MOUSE_INT	0x02	/* Mouse data generate IRQ12 */
++#define KBD_MODE_SYS 		0x04	/* The system flag (?) */
++#define KBD_MODE_NO_KEYLOCK	0x08	/* The keylock doesn't affect
++					 * the keyboard if set */
++#define KBD_MODE_DISABLE_KBD	0x10	/* Disable keyboard interface */
++#define KBD_MODE_DISABLE_MOUSE	0x20	/* Disable mouse interface */
++#define KBD_MODE_KCC 		0x40	/* Scan code conversion to PC format */
++#define KBD_MODE_RFU		0x80
++
++/*
++ *	Mouse Commands
++ */
++
++#define AUX_SET_RES		0xE8	/* Set resolution */
++#define AUX_SET_SCALE11		0xE6	/* Set 1:1 scaling */
++#define AUX_SET_SCALE21		0xE7	/* Set 2:1 scaling */
++#define AUX_GET_SCALE		0xE9	/* Get scaling factor */
++#define AUX_SET_STREAM		0xEA	/* Set stream mode */
++#define AUX_SET_SAMPLE		0xF3	/* Set sample rate */
++#define AUX_ENABLE_DEV		0xF4	/* Enable aux device */
++#define AUX_DISABLE_DEV		0xF5	/* Disable aux device */
++#define AUX_RESET		0xFF	/* Reset aux device */
++#define AUX_ACK			0xFA	/* Command byte ACK. */
++
++#define AUX_BUF_SIZE		2048	/* This might be better divisible by
++					   three to make overruns stay in sync
++					   but then the read function would need
++					   a lock etc - ick */
++
++struct aux_queue {
++	unsigned long head;
++	unsigned long tail;
++	wait_queue_head_t proc_list;
++	struct fasync_struct *fasync;
++	unsigned char buf[AUX_BUF_SIZE];
++};
++
++
++/* How to access the keyboard macros on this platform.  */
++#define kbd_read_input() inb(KBD_DATA_REG)
++#define kbd_read_status() inb(KBD_STATUS_REG)
++#define kbd_write_output(val) outb(val, KBD_DATA_REG)
++#define kbd_write_command(val) outb(val, KBD_CNTL_REG)
+diff --git a/drivers/serial/kgdboc.c b/drivers/serial/kgdboc.c
+index eadc1ab..f4066b3 100644
+--- a/drivers/serial/kgdboc.c
++++ b/drivers/serial/kgdboc.c
+@@ -14,6 +14,7 @@
+ #include <linux/kernel.h>
+ #include <linux/ctype.h>
+ #include <linux/kgdb.h>
++#include <linux/kdb.h>
+ #include <linux/tty.h>
+ 
+ #define MAX_CONFIG_LEN		40
+@@ -45,11 +46,32 @@ static int kgdboc_option_setup(char *opt)
+ 
+ __setup("kgdboc=", kgdboc_option_setup);
+ 
++static void cleanup_kgdboc(void)
++{
++#ifdef CONFIG_KDB_KEYBOARD
++	int i;
++
++	/* Unregister the keyboard poll hook, if registered */
++	for (i = 0; i < kdb_poll_idx; i++) {
++		if (kdb_poll_funcs[i] == kdb_get_kbd_char) {
++			kdb_poll_idx--;
++			kdb_poll_funcs[i] = kdb_poll_funcs[kdb_poll_idx];
++			kdb_poll_funcs[kdb_poll_idx] = NULL;
++			i--;
++		}
++	}
++#endif /* CONFIG_KDB_KEYBOARD */
++
++	if (configured == 1)
++		kgdb_unregister_io_module(&kgdboc_io_ops);
++}
++
+ static int configure_kgdboc(void)
+ {
+ 	struct tty_driver *p;
+ 	int tty_line = 0;
+ 	int err;
++	char *cptr = config;
+ 
+ 	err = kgdboc_option_setup(config);
+ 	if (err || !strlen(config) || isspace(config[0]))
+@@ -57,13 +79,32 @@ static int configure_kgdboc(void)
+ 
+ 	err = -ENODEV;
+ 
+-	p = tty_find_polling_driver(config, &tty_line);
++#ifdef CONFIG_KDB_KEYBOARD
++	kgdb_tty_driver = NULL;
++
++	if (strncmp(cptr, "kbd", 3) == 0) {
++		if (kdb_poll_idx < KDB_POLL_FUNC_MAX) {
++			kdb_poll_funcs[kdb_poll_idx] = kdb_get_kbd_char;
++			kdb_poll_idx++;
++			if (cptr[3] == ',')
++				cptr += 4;
++			else
++				goto do_register;
++		}
++	}
++#endif /* CONFIG_KDB_KEYBOARD */
++
++	p = tty_find_polling_driver(cptr, &tty_line);
+ 	if (!p)
+ 		goto noconfig;
+ 
+ 	kgdb_tty_driver = p;
+ 	kgdb_tty_line = tty_line;
+ 
++#ifdef CONFIG_KDB_KEYBOARD
++do_register:
++#endif /* CONFIG_KDB_KEYBOARD */
++
+ 	err = kgdb_register_io_module(&kgdboc_io_ops);
+ 	if (err)
+ 		goto noconfig;
+@@ -75,6 +116,7 @@ static int configure_kgdboc(void)
+ noconfig:
+ 	config[0] = 0;
+ 	configured = 0;
++	cleanup_kgdboc();
+ 
+ 	return err;
+ }
+@@ -88,20 +130,18 @@ static int __init init_kgdboc(void)
+ 	return configure_kgdboc();
+ }
+ 
+-static void cleanup_kgdboc(void)
+-{
+-	if (configured == 1)
+-		kgdb_unregister_io_module(&kgdboc_io_ops);
+-}
+-
+ static int kgdboc_get_char(void)
+ {
++	if (!kgdb_tty_driver)
++		return -1;
+ 	return kgdb_tty_driver->ops->poll_get_char(kgdb_tty_driver,
+ 						kgdb_tty_line);
+ }
+ 
+ static void kgdboc_put_char(u8 chr)
+ {
++	if (!kgdb_tty_driver)
++		return;
+ 	kgdb_tty_driver->ops->poll_put_char(kgdb_tty_driver,
+ 					kgdb_tty_line, chr);
+ }
+@@ -162,6 +202,19 @@ static struct kgdb_io kgdboc_io_ops = {
+ 	.post_exception		= kgdboc_post_exp_handler,
+ };
+ 
++#ifdef CONFIG_KGDB_SERIAL_CONSOLE
++/* This is only available if kgdboc is a built in for early debugging */
++void __init early_kgdboc_init(void)
++{
++	/* save the first character of the config string because the
++	 * init routine can destroy it.
++	 */
++	char save_ch = config[0];
++	init_kgdboc();
++	config[0] = save_ch;
++}
++#endif /* CONFIG_KGDB_SERIAL_CONSOLE */
++
+ module_init(init_kgdboc);
+ module_exit(cleanup_kgdboc);
+ module_param_call(kgdboc, param_set_kgdboc_var, param_get_string, &kps, 0644);
 diff --git a/include/linux/kgdb.h b/include/linux/kgdb.h
-index 97068ba..33b9f5e 100644
+index 4316447..97068ba 100644
 --- a/include/linux/kgdb.h
 +++ b/include/linux/kgdb.h
-@@ -204,6 +204,17 @@ kgdb_arch_handle_exception(int vector, int signo, int err_code,
-  */
- extern void kgdb_roundup_cpus(unsigned long flags);
+@@ -281,5 +281,8 @@ extern int kgdb_nmicallback(int cpu, void *regs);
  
-+/**
-+ *	kgdb_arch_set_pc - Generic call back to the program counter
-+ *	@regs: Current &struct pt_regs.
-+ *  @pc: The new value for the program counter
-+ *
-+ *	This function handles updating the program counter and requires an
-+ *	architecture specific implementation.
-+ */
-+extern void kgdb_arch_set_pc(struct pt_regs *regs, unsigned long pc);
-+
-+
- /* Optional functions. */
- extern int kgdb_validate_break_address(unsigned long addr);
- extern int kgdb_arch_set_breakpoint(unsigned long addr, char *saved_instr);
-@@ -264,7 +275,6 @@ extern struct kgdb_arch		arch_kgdb_ops;
- 
- extern unsigned long __weak kgdb_arch_pc(int exception, struct pt_regs *regs);
- 
--extern void kgdb_arch_set_pc(struct pt_regs *regs, unsigned long pc);
- extern int kgdb_register_io_module(struct kgdb_io *local_kgdb_io_ops);
- extern void kgdb_unregister_io_module(struct kgdb_io *local_kgdb_io_ops);
- 
+ extern int			kgdb_single_step;
+ extern atomic_t			kgdb_active;
++#ifdef CONFIG_KGDB_SERIAL_CONSOLE
++extern void __init early_kgdboc_init(void);
++#endif /* CONFIG_KGDB_SERIAL_CONSOLE */
+ #endif /* CONFIG_KGDB */
+ #endif /* _KGDB_H_ */
+diff --git a/kernel/debug/kdb/kdb_main.c b/kernel/debug/kdb/kdb_main.c
+index 6c9826a..59bb68d 100644
+--- a/kernel/debug/kdb/kdb_main.c
++++ b/kernel/debug/kdb/kdb_main.c
+@@ -2847,4 +2847,7 @@ void __init kdb_init(void)
+ 	kdb_initbptab();	/* Initialize Breakpoint Table */
+ 	kdb_cmd_init();		/* Preset commands from kdb_cmds */
+ 	kdb_initial_cpu = -1;	/* Avoid recursion problems */
++#if defined(CONFIG_KDB_KEYBOARD) && defined(CONFIG_KGDB_SERIAL_CONSOLE)
++	early_kgdboc_init();
++#endif /* CONFIG_KDB_KEYBOARD && CONFIG_KGDB_SERIAL_CONSOLE */
+ }
 diff --git a/lib/Kconfig.kgdb b/lib/Kconfig.kgdb
-index 0fb633c..c80de7d 100644
+index 02b46de..0fb633c 100644
 --- a/lib/Kconfig.kgdb
 +++ b/lib/Kconfig.kgdb
-@@ -3,7 +3,7 @@ config HAVE_ARCH_KGDB
- 	bool
- 
- menuconfig KGDB
--	bool "KGDB: kernel debugging with remote gdb"
-+	bool "KGDB: kernel debugger"
- 	depends on HAVE_ARCH_KGDB
- 	depends on DEBUG_KERNEL && EXPERIMENTAL
+@@ -63,4 +63,11 @@ config KGDB_KDB
  	help
+ 	  KDB frontend for kernel
+ 
++config KDB_KEYBOARD
++	bool "KGDB_KDB: keyboard as input device"
++	depends on VT && KGDB_KDB
++	default y
++	help
++	  KDB can use a PS/2 type keyboard for an input device
++
+ endif # KGDB
 -- 
 1.6.3.1.9.g95405b
 
