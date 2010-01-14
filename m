@@ -1,25 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757519Ab0ANWge@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757555Ab0ANWgi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757519Ab0ANWge (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 17:36:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752083Ab0ANWgb
+	id S1757555Ab0ANWgi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 17:36:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755761Ab0ANW2f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 17:36:31 -0500
-Received: from kroah.org ([198.145.64.141]:60583 "EHLO coco.kroah.org"
+	Thu, 14 Jan 2010 17:28:35 -0500
+Received: from kroah.org ([198.145.64.141]:60559 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755787Ab0ANW2i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 17:28:38 -0500
+	id S1755273Ab0ANW2d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jan 2010 17:28:33 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, stable-review@kernel.org
 Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       Krzysztof Halasa <khc@pm.waw.pl>, David Miller <davem@davemloft.net>,
-       Joerg Roedel <joerg.roedel@amd.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 24/52] dma-debug: allow DMA_BIDIRECTIONAL mappings to be synced with DMA_FROM_DEVICE and
-Date: Thu, 14 Jan 2010 14:27:03 -0800
-Message-Id: <1263508051-7868-24-git-send-email-gregkh@suse.de>
+       Jesse Barnes <jbarnes@virtuousgeek.org>, Eric Anholt <eric@anholt.net>,
+       Dave Airlie <airlied@linux.ie>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 19/52] drm/i915: fix unused var
+Date: Thu, 14 Jan 2010 14:26:58 -0800
+Message-Id: <1263508051-7868-19-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.6
-In-Reply-To: <1263508051-7868-23-git-send-email-gregkh@suse.de>
+In-Reply-To: <1263508051-7868-18-git-send-email-gregkh@suse.de>
 References: <20100114222551.GA7839@suse.de>
  <1263508051-7868-1-git-send-email-gregkh@suse.de>
  <1263508051-7868-2-git-send-email-gregkh@suse.de>
@@ -39,68 +38,44 @@ References: <20100114222551.GA7839@suse.de>
  <1263508051-7868-16-git-send-email-gregkh@suse.de>
  <1263508051-7868-17-git-send-email-gregkh@suse.de>
  <1263508051-7868-18-git-send-email-gregkh@suse.de>
- <1263508051-7868-19-git-send-email-gregkh@suse.de>
- <1263508051-7868-20-git-send-email-gregkh@suse.de>
- <1263508051-7868-21-git-send-email-gregkh@suse.de>
- <1263508051-7868-22-git-send-email-gregkh@suse.de>
- <1263508051-7868-23-git-send-email-gregkh@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Krzysztof Halasa <khc@pm.waw.pl>
+From: Andrew Morton <akpm@linux-foundation.org>
 
-commit 42d53b4ff7d61487d18274ebdf1f70c1aef6f122 upstream.
+commit 29bd0ae25f8cb96b63560c2cbccec77b425e1603 upstream.
 
-There is no need to perform full BIDIR sync (copying the buffers in case
-of swiotlb and similar schemes) if we know that the owner (CPU or device)
-hasn't altered the data.
+drivers/gpu/drm/i915/i915_dma.c: In function 'i915_driver_load':
+drivers/gpu/drm/i915/i915_dma.c:1114: warning: 'll_base' may be used uninitialized in this function
 
-Addresses the false-positive reported at
-http://bugzilla.kernel.org/show_bug.cgi?id=14169
+Partly this is because gcc isn't smart enough.  But `ll_base' does get used
+uninitialised in the DRM_DEBUG() call.
 
-Signed-off-by: Krzysztof Halasa <khc@pm.waw.pl>
-Cc: David Miller <davem@davemloft.net>
-Cc: Joerg Roedel <joerg.roedel@amd.com>
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Eric Anholt <eric@anholt.net>
+Cc: Dave Airlie <airlied@linux.ie>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Eric Anholt <eric@anholt.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- lib/dma-debug.c |    7 +++----
- 1 files changed, 3 insertions(+), 4 deletions(-)
+ drivers/gpu/drm/i915/i915_dma.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-diff --git a/lib/dma-debug.c b/lib/dma-debug.c
-index 5a77c7c..084e879 100644
---- a/lib/dma-debug.c
-+++ b/lib/dma-debug.c
-@@ -913,6 +913,9 @@ static void check_sync(struct device *dev,
- 				ref->size);
- 	}
+diff --git a/drivers/gpu/drm/i915/i915_dma.c b/drivers/gpu/drm/i915/i915_dma.c
+index 4a553ad..bc2db7d 100644
+--- a/drivers/gpu/drm/i915/i915_dma.c
++++ b/drivers/gpu/drm/i915/i915_dma.c
+@@ -1111,7 +1111,8 @@ static void i915_setup_compression(struct drm_device *dev, int size)
+ {
+ 	struct drm_i915_private *dev_priv = dev->dev_private;
+ 	struct drm_mm_node *compressed_fb, *compressed_llb;
+-	unsigned long cfb_base, ll_base;
++	unsigned long cfb_base;
++	unsigned long ll_base = 0;
  
-+	if (entry->direction == DMA_BIDIRECTIONAL)
-+		goto out;
-+
- 	if (ref->direction != entry->direction) {
- 		err_printk(dev, entry, "DMA-API: device driver syncs "
- 				"DMA memory with different direction "
-@@ -923,9 +926,6 @@ static void check_sync(struct device *dev,
- 				dir2name[ref->direction]);
- 	}
- 
--	if (entry->direction == DMA_BIDIRECTIONAL)
--		goto out;
--
- 	if (to_cpu && !(entry->direction == DMA_FROM_DEVICE) &&
- 		      !(ref->direction == DMA_TO_DEVICE))
- 		err_printk(dev, entry, "DMA-API: device driver syncs "
-@@ -948,7 +948,6 @@ static void check_sync(struct device *dev,
- 
- out:
- 	put_hash_bucket(bucket, &flags);
--
- }
- 
- void debug_dma_map_page(struct device *dev, struct page *page, size_t offset,
+ 	/* Leave 1M for line length buffer & misc. */
+ 	compressed_fb = drm_mm_search_free(&dev_priv->vram, size, 4096, 0);
 -- 
 1.6.6
 
