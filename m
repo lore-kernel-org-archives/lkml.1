@@ -1,93 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757578Ab0ANTqr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757547Ab0ANTsz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757578Ab0ANTqr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 14:46:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757548Ab0ANTqq
+	id S1757547Ab0ANTsz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 14:48:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756882Ab0ANTsy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 14:46:46 -0500
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:56044 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751791Ab0ANTqq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 14:46:46 -0500
-Subject: Re: [RFC] [PATCH 1/7] User Space Breakpoint Assistance Layer (UBP)
-From: Jim Keniston <jkenisto@us.ibm.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Arnaldo Carvalho de Melo <acme@infradead.org>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       utrace-devel <utrace-devel@redhat.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Maneesh Soni <maneesh@in.ibm.com>, Mark Wielaard <mjw@redhat.com>,
+	Thu, 14 Jan 2010 14:48:54 -0500
+Received: from mail-ew0-f209.google.com ([209.85.219.209]:39769 "EHLO
+	mail-ew0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756510Ab0ANTsx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jan 2010 14:48:53 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=pQGgKBVwJrWZ6z98fZPsygkkhNxoQ1/zS5BVaCb2C+WE9pKiKC5ox9oAZ3QrlhnSUw
+         GmOo40f31pSPj403Rhcz5bQ+IlKATjjL8BFQ5CWoEInszHniU48Rj4CgXW+5b6aJOxS1
+         yC6FPLpyp5D49iQypwjeAO/FMNUqhAf9PfgoA=
+Message-ID: <4B4F762A.20605@gmail.com>
+Date: Thu, 14 Jan 2010 20:53:14 +0100
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.5) Gecko/20091209 Fedora/3.0-4.fc12 Thunderbird/3.0
+MIME-Version: 1.0
+To: Marc Zyngier <maz@misterjones.org>
+CC: "David S. Miller" <davem@davemloft.net>, sparclinux@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
        LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1263467289.4244.288.camel@laptop>
-References: <20100111122521.22050.3654.sendpatchset@srikar.in.ibm.com>
-	 <20100111122529.22050.32596.sendpatchset@srikar.in.ibm.com>
-	 <1263467289.4244.288.camel@laptop>
-Content-Type: text/plain
-Date: Thu, 14 Jan 2010 11:46:06 -0800
-Message-Id: <1263498366.4875.25.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.3) 
+Subject: Re: [PATCH] sparc: leds_resource.end assigned to itself in clock_board_probe()
+References: <4B4F4C9B.9040202@gmail.com> <20100114183054.0b53c351@taxman.wild-wind.fr.eu.org>
+In-Reply-To: <20100114183054.0b53c351@taxman.wild-wind.fr.eu.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+It should be a 1 byte region.
 
-On Thu, 2010-01-14 at 12:08 +0100, Peter Zijlstra wrote:
-> On Mon, 2010-01-11 at 17:55 +0530, Srikar Dronamraju wrote:
-> > User Space Breakpoint Assistance Layer (UBP)
-> > 
-> > User space breakpointing Infrastructure provides kernel subsystems
-> > with architecture independent interface to establish breakpoints in
-> > user applications. This patch provides core implementation of ubp and
-> > also wrappers for architecture dependent methods.
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+>> Is there any reason to assign this to itself?
+
+>> @@ -99,7 +99,6 @@ static int __devinit clock_board_probe(struct
+>> of_device *op, 
+>>  	p->leds_resource.start = (unsigned long)
+>>  		(p->clock_regs + CLOCK_CTRL);
+>> -	p->leds_resource.end = p->leds_resource.end;
 > 
-> So if this is the basic infrastructure to set userspace breakpoints,
-> then why not call this uprobe?
-
-Ubp is for setting and removing breakpoints, and for supporting the two
-schemes (inline, out of line) for executing the probed instruction after
-you hit the breakpoint.
-
-Uprobes provides a higher-level API and deals with synchronization
-issues, process-vs-thread issues, execution of the client's (potentially
-buggy) probe handler, multiple probe clients, multiple probes at the
-same location, thread- and process-lifetime events, etc.
-
+> I have the feeling that the right fix is to have:
 > 
-> > UBP currently supports both single stepping inline and execution out
-> > of line strategies. Two different probepoints in the same process can
-> > have two different strategies.
+> 	p->leds_resource.end = p->leds_resource.start;
 > 
-> maybe explain wth these are?
-> 
+> hence describing a 1 byte region.
 
-Here's a partial explanation from patch #6,section 1.1:
-
-+When a CPU hits the breakpoint instruction, a trap occurs, the CPU's
-+user-mode registers are saved, and a SIGTRAP signal is generated.
-+Uprobes intercepts the SIGTRAP and finds the associated uprobe.
-+It then executes the handler associated with the uprobe, passing the
-+handler the addresses of the uprobe struct and the saved registers.
-+...
-+
-+Next, Uprobes single-steps its copy of the probed instruction and
-+resumes execution of the probed process at the instruction following
-+the probepoint.  (It would be simpler to single-step the actual
-+instruction in place, but then Uprobes would have to temporarily
-+remove the breakpoint instruction.  This would create problems in a
-+multithreaded application.  For example, it would open a time window
-+when another thread could sail right past the probepoint.)
-+
-+Instruction copies to be single-stepped are stored in a per-process
-+"single-step out of line (XOL) area," which is a little VM area
-+created by Uprobes in each probed process's address space.
-
-This (single-stepping out of line = SSOL) is essentially what kprobes
-does on most architectures.  XOL (execution out of line) is actually a
-broader category that could include other schemes, discussed elsewhere.
-
-Jim
-
+diff --git a/arch/sparc/kernel/central.c b/arch/sparc/kernel/central.c
+index f3b5466..4589ca3 100644
+--- a/arch/sparc/kernel/central.c
++++ b/arch/sparc/kernel/central.c
+@@ -99,7 +99,7 @@ static int __devinit clock_board_probe(struct of_device *op,
+ 
+ 	p->leds_resource.start = (unsigned long)
+ 		(p->clock_regs + CLOCK_CTRL);
+-	p->leds_resource.end = p->leds_resource.end;
++	p->leds_resource.end = p->leds_resource.start;
+ 	p->leds_resource.name = "leds";
+ 
+ 	p->leds_pdev.name = "sunfire-clockboard-leds";
+@@ -194,7 +194,7 @@ static int __devinit fhc_probe(struct of_device *op,
+ 	if (!p->central) {
+ 		p->leds_resource.start = (unsigned long)
+ 			(p->pregs + FHC_PREGS_CTRL);
+-		p->leds_resource.end = p->leds_resource.end;
++		p->leds_resource.end = p->leds_resource.start;
+ 		p->leds_resource.name = "leds";
+ 
+ 		p->leds_pdev.name = "sunfire-fhc-leds";
