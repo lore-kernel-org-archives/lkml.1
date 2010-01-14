@@ -1,185 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757022Ab0ANPGh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756715Ab0ANPFb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757022Ab0ANPGh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 10:06:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757043Ab0ANPGX
+	id S1756715Ab0ANPFb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 10:05:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932248Ab0ANPFU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 10:06:23 -0500
-Received: from mail.windriver.com ([147.11.1.11]:49037 "EHLO
+	Thu, 14 Jan 2010 10:05:20 -0500
+Received: from mail.windriver.com ([147.11.1.11]:47715 "EHLO
 	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757036Ab0ANPGU (ORCPT
+	with ESMTP id S1756839Ab0ANPBI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 10:06:20 -0500
+	Thu, 14 Jan 2010 10:01:08 -0500
 From: Jason Wessel <jason.wessel@windriver.com>
 To: linux-kernel@vger.kernel.org
 Cc: kgdb-bugreport@lists.sourceforge.net, mingo@elte.hu,
-       Jason Wessel <jason.wessel@windriver.com>,
-       Dongdong Deng <Dongdong.Deng@windriver.com>, peterz@infradead.org
-Subject: [PATCH 01/40] softlockup: add sched_clock_tick() to avoid kernel warning on kgdb resume
-Date: Thu, 14 Jan 2010 08:58:57 -0600
-Message-Id: <1263481176-1897-2-git-send-email-jason.wessel@windriver.com>
+       Jason Wessel <jason.wessel@windriver.com>
+Subject: [PATCH 18/40] kgdb: remove post_primary_code references
+Date: Thu, 14 Jan 2010 08:59:14 -0600
+Message-Id: <1263481176-1897-19-git-send-email-jason.wessel@windriver.com>
 X-Mailer: git-send-email 1.6.3.1.9.g95405b
 In-Reply-To: <1263481176-1897-1-git-send-email-jason.wessel@windriver.com>
 References: <1263481176-1897-1-git-send-email-jason.wessel@windriver.com>
-X-OriginalArrivalTime: 14 Jan 2010 14:59:45.0975 (UTC) FILETIME=[35F2CC70:01CA952A]
+X-OriginalArrivalTime: 14 Jan 2010 15:00:41.0444 (UTC) FILETIME=[5702B240:01CA952A]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When CONFIG_HAVE_UNSTABLE_SCHED_CLOCK is set sched_clock() gets the
-time from hardware, such as from TSC.  In this configuration kgdb will
-report a softlock warning messages on resuming or detaching from a
-debug session.
+Remove all the references to the kgdb_post_primary_code.  This
+function serves no useful purpose because you can obtain the same
+information from the "struct kgdb_state *ks" from with in the
+debugger, if for some reason you want the data.
 
-Sequence of events in the problem case:
-
-1) "cpu sched clock" and "hardware time" are at 100 sec prior
-   to a call to kgdb_handle_exception()
-
-2) Debugger waits in kgdb_handle_exception() for 80 sec and on exit
-   the following is called ...  touch_softlockup_watchdog() -->
-   __raw_get_cpu_var(touch_timestamp) = 0;
-
-3) "cpu sched clock" = 100s (it was not updated, because the interrupt
-   was disabled in kgdb) but the "hardware time" = 180 sec
-
-4) The first timer interrupt after resuming from kgdb_handle_exception
-   updates the watchdog from the "cpu sched clock"
-
-update_process_times() { ...  run_local_timers() --> softlockup_tick()
---> check (touch_timestamp == 0) (it is "YES" here, we have set
-"touch_timestamp = 0" at kgdb) --> __touch_softlockup_watchdog()
-***(A)--> reset "touch_timestamp" to "get_timestamp()" (Here, the
-"touch_timestamp" will still be set to 100s.)  ...
-
-    scheduler_tick() ***(B)--> sched_clock_tick() (update "cpu sched
-    clock" to "hardware time" = 180s) ...  }
-
-5) The Second timer interrupt handler appears to have a large jump and
-   trips the softlockup warning.
-
-update_process_times() { ...  run_local_timers() --> softlockup_tick()
---> "cpu sched clock" - "touch_timestamp" = 180s-100s > 60s --> printk
-"soft lockup error messages" ...  }
-
-note: ***(A) reset "touch_timestamp" to "get_timestamp(this_cpu)"
-
-Why "touch_timestamp" is 100 sec, instead of 180 sec?
-
-With the CONFIG_HAVE_UNSTABLE_SCHED_CLOCK" set the call trace of
-get_timestamp() is:
-
-get_timestamp(this_cpu) -->cpu_clock(this_cpu)
--->sched_clock_cpu(this_cpu) -->__update_sched_clock(sched_clock_data,
-now)
-
-The __update_sched_clock() function uses the GTOD tick value to create
-a window to normalize the "now" values.  So if "now" values is too big
-for sched_clock_data, it will be ignored.
-
-The fix is to invoke sched_clock_tick() to update "cpu sched clock" in
-order to recover from this state.  This is done by introducing the
-function touch_softlockup_watchdog_sync(), which allows kgdb to
-request that the sched clock is updated when the watchdog thread runs
-the first time after a resume from kgdb.
+Also remove the unintentional duplicate assignment for ks->ex_vector.
 
 Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
-Signed-off-by: Dongdong Deng <Dongdong.Deng@windriver.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: peterz@infradead.org
 ---
- include/linux/sched.h |    4 ++++
- kernel/kgdb.c         |    6 +++---
- kernel/softlockup.c   |   16 ++++++++++++++++
- 3 files changed, 23 insertions(+), 3 deletions(-)
+ arch/x86/kernel/kgdb.c    |   29 -----------------------------
+ include/linux/kgdb.h      |   14 --------------
+ kernel/debug/debug_core.c |    8 --------
+ 3 files changed, 0 insertions(+), 51 deletions(-)
 
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index 8d4991b..112c621 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -310,6 +310,7 @@ extern void sched_show_task(struct task_struct *p);
- #ifdef CONFIG_DETECT_SOFTLOCKUP
- extern void softlockup_tick(void);
- extern void touch_softlockup_watchdog(void);
-+extern void touch_softlockup_watchdog_sync(void);
- extern void touch_all_softlockup_watchdogs(void);
- extern int proc_dosoftlockup_thresh(struct ctl_table *table, int write,
- 				    void __user *buffer,
-@@ -323,6 +324,9 @@ static inline void softlockup_tick(void)
- static inline void touch_softlockup_watchdog(void)
- {
- }
-+static inline void touch_softlockup_watchdog_sync(void)
-+{
-+}
- static inline void touch_all_softlockup_watchdogs(void)
- {
- }
-diff --git a/kernel/kgdb.c b/kernel/kgdb.c
-index 2eb517e..87f2cc5 100644
---- a/kernel/kgdb.c
-+++ b/kernel/kgdb.c
-@@ -596,7 +596,7 @@ static void kgdb_wait(struct pt_regs *regs)
+diff --git a/arch/x86/kernel/kgdb.c b/arch/x86/kernel/kgdb.c
+index 135c3ec..ce35f72 100644
+--- a/arch/x86/kernel/kgdb.c
++++ b/arch/x86/kernel/kgdb.c
+@@ -47,20 +47,8 @@
+ #include <asm/debugreg.h>
+ #include <asm/apicdef.h>
+ #include <asm/system.h>
+-
+ #include <asm/apic.h>
  
- 	/* Signal the primary CPU that we are done: */
- 	atomic_set(&cpu_in_kgdb[cpu], 0);
--	touch_softlockup_watchdog();
-+	touch_softlockup_watchdog_sync();
- 	clocksource_touch_watchdog();
- 	local_irq_restore(flags);
- }
-@@ -1450,7 +1450,7 @@ acquirelock:
- 	    (kgdb_info[cpu].task &&
- 	     kgdb_info[cpu].task->pid != kgdb_sstep_pid) && --sstep_tries) {
- 		atomic_set(&kgdb_active, -1);
--		touch_softlockup_watchdog();
-+		touch_softlockup_watchdog_sync();
- 		clocksource_touch_watchdog();
- 		local_irq_restore(flags);
- 
-@@ -1550,7 +1550,7 @@ kgdb_restore:
+-/*
+- * Put the error code here just in case the user cares:
+- */
+-static int gdb_x86errcode;
+-
+-/*
+- * Likewise, the vector number here (since GDB only gets the signal
+- * number through the usual means, and that's not very specific):
+- */
+-static int gdb_x86vector = -1;
+-
+ /**
+  *	pt_regs_to_gdb_regs - Convert ptrace regs to GDB regs
+  *	@gdb_regs: A pointer to hold the registers in the order GDB wants.
+@@ -346,23 +334,6 @@ void kgdb_disable_hw_debug(struct pt_regs *regs)
  	}
- 	/* Free kgdb_active */
- 	atomic_set(&kgdb_active, -1);
--	touch_softlockup_watchdog();
-+	touch_softlockup_watchdog_sync();
- 	clocksource_touch_watchdog();
- 	local_irq_restore(flags);
- 
-diff --git a/kernel/softlockup.c b/kernel/softlockup.c
-index d225790..57f1295 100644
---- a/kernel/softlockup.c
-+++ b/kernel/softlockup.c
-@@ -79,6 +79,14 @@ void touch_softlockup_watchdog(void)
  }
- EXPORT_SYMBOL(touch_softlockup_watchdog);
  
-+static int softlock_touch_sync[NR_CPUS];
-+
-+void touch_softlockup_watchdog_sync(void)
-+{
-+	softlock_touch_sync[raw_smp_processor_id()] = 1;
-+	__raw_get_cpu_var(softlockup_touch_ts) = 0;
-+}
-+
- void touch_all_softlockup_watchdogs(void)
- {
- 	int cpu;
-@@ -118,6 +126,14 @@ void softlockup_tick(void)
- 	}
+-/**
+- *	kgdb_post_primary_code - Save error vector/code numbers.
+- *	@regs: Original pt_regs.
+- *	@e_vector: Original error vector.
+- *	@err_code: Original error code.
+- *
+- *	This is needed on architectures which support SMP and KGDB.
+- *	This function is called after all the slave cpus have been put
+- *	to a know spin state and the primary CPU has control over KGDB.
+- */
+-void kgdb_post_primary_code(struct pt_regs *regs, int e_vector, int err_code)
+-{
+-	/* primary processor is completely in the debugger */
+-	gdb_x86vector = e_vector;
+-	gdb_x86errcode = err_code;
+-}
+-
+ #ifdef CONFIG_SMP
+ /**
+  *	kgdb_roundup_cpus - Get other CPUs into a holding pattern
+diff --git a/include/linux/kgdb.h b/include/linux/kgdb.h
+index 33b9f5e..a2cfd9f 100644
+--- a/include/linux/kgdb.h
++++ b/include/linux/kgdb.h
+@@ -36,20 +36,6 @@ struct pt_regs;
+ extern int kgdb_skipexception(int exception, struct pt_regs *regs);
  
- 	if (touch_ts == 0) {
-+		if (unlikely(softlock_touch_sync[this_cpu])) {
-+			/*
-+			 * If the time stamp was touched atomically
-+			 * make sure the scheduler tick is up to date.
-+			 */
-+			softlock_touch_sync[this_cpu] = 0;
-+			sched_clock_tick();
-+		}
- 		__touch_softlockup_watchdog();
- 		return;
- 	}
+ /**
+- *	kgdb_post_primary_code - (optional) Save error vector/code numbers.
+- *	@regs: Original pt_regs.
+- *	@e_vector: Original error vector.
+- *	@err_code: Original error code.
+- *
+- *	This is usually needed on architectures which support SMP and
+- *	KGDB.  This function is called after all the secondary cpus have
+- *	been put to a know spin state and the primary CPU has control over
+- *	KGDB.
+- */
+-extern void kgdb_post_primary_code(struct pt_regs *regs, int e_vector,
+-				  int err_code);
+-
+-/**
+  *	kgdb_disable_hw_debug - (optional) Disable hardware debugging hook
+  *	@regs: Current &struct pt_regs.
+  *
+diff --git a/kernel/debug/debug_core.c b/kernel/debug/debug_core.c
+index 1281d1d..aefd660 100644
+--- a/kernel/debug/debug_core.c
++++ b/kernel/debug/debug_core.c
+@@ -201,12 +201,6 @@ int __weak kgdb_skipexception(int exception, struct pt_regs *regs)
+ 	return 0;
+ }
+ 
+-void __weak
+-kgdb_post_primary_code(struct pt_regs *regs, int e_vector, int err_code)
+-{
+-	return;
+-}
+-
+ /**
+  *	kgdb_disable_hw_debug - Disable hardware debugging while we in kgdb.
+  *	@regs: Current &struct pt_regs.
+@@ -584,7 +578,6 @@ return_normal:
+ 	 * At this point the primary processor is completely
+ 	 * in the debugger and all secondary CPUs are quiescent
+ 	 */
+-	kgdb_post_primary_code(ks->linux_regs, ks->ex_vector, ks->err_code);
+ 	dbg_deactivate_sw_breakpoints();
+ 	kgdb_single_step = 0;
+ 	kgdb_contthread = current;
+@@ -665,7 +658,6 @@ kgdb_handle_exception(int evector, int signo, int ecode, struct pt_regs *regs)
+ 	ks->cpu			= raw_smp_processor_id();
+ 	ks->ex_vector		= evector;
+ 	ks->signo		= signo;
+-	ks->ex_vector		= evector;
+ 	ks->err_code		= ecode;
+ 	ks->kgdb_usethreadid	= 0;
+ 	ks->linux_regs		= regs;
 -- 
 1.6.3.1.9.g95405b
 
