@@ -1,96 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756254Ab0ANHVk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756317Ab0ANHXO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756254Ab0ANHVk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 02:21:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755937Ab0ANHVi
+	id S1756317Ab0ANHXO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 02:23:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754844Ab0ANHXN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 02:21:38 -0500
-Received: from mail-pz0-f188.google.com ([209.85.222.188]:54072 "EHLO
-	mail-pz0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751957Ab0ANHVh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 02:21:37 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:from:date:message-id:subject:to:cc:content-type;
-        b=L3H7cA/MvP9sD66TxTgjH3JZBbNF9+d3KM9hbNhnHVxKW5pf0eEPOuIxeA9kEhnSRB
-         tzeK5I1Kwpfu+kDSux9PRcOPbSGeTt/VT5NaHMaGH7MgSR0Nyji5PHpDTEKqHlm9SeTS
-         H5J3D3uCP9vzxUFL+JpHFb5m0mH7AFrjeYFI0=
+	Thu, 14 Jan 2010 02:23:13 -0500
+Received: from mx1.redhat.com ([209.132.183.28]:62050 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751321Ab0ANHXM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jan 2010 02:23:12 -0500
+Date: Thu, 14 Jan 2010 09:22:10 +0200
+From: Gleb Natapov <gleb@redhat.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       linux-api@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [PATCH v5] add MAP_UNLOCKED mmap flag
+Message-ID: <20100114072210.GK18808@redhat.com>
+References: <20100114092845.D719.A69D9226@jp.fujitsu.com>
+ <20100114065008.GC18808@redhat.com>
+ <20100114155229.6735.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-From: "Luis R. Rodriguez" <mcgrof@gmail.com>
-Date: Wed, 13 Jan 2010 23:21:15 -0800
-Message-ID: <43e72e891001132321qccde01cnd7002d1f94bee1c0@mail.gmail.com>
-Subject: Compat / compat-wireless / bluetooth for 2.6.33-rc4 and 2.6.32.3
-To: linux-wireless <linux-wireless@vger.kernel.org>,
-       linux-bluetooth@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20100114155229.6735.A69D9226@jp.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The 2.6.33-rc4 and 2.6.32.3 kernels came out a few days ago, along
-with it comes the respective 2.6.33-rc4 [1] and 2.6.32.3 [2]
-compat-wireless releases [3]. As noted previously the
-compat-wireless-2.6.33 releases now also have bluetooth backported for
-kernels >= 2.6.27.
+On Thu, Jan 14, 2010 at 04:02:42PM +0900, KOSAKI Motohiro wrote:
+> > On Thu, Jan 14, 2010 at 09:31:03AM +0900, KOSAKI Motohiro wrote:
+> > > > If application does mlockall(MCL_FUTURE) it is no longer possible to mmap
+> > > > file bigger than main memory or allocate big area of anonymous memory
+> > > > in a thread safe manner. Sometimes it is desirable to lock everything
+> > > > related to program execution into memory, but still be able to mmap
+> > > > big file or allocate huge amount of memory and allow OS to swap them on
+> > > > demand. MAP_UNLOCKED allows to do that.
+> > > >  
+> > > > Signed-off-by: Gleb Natapov <gleb@redhat.com>
+> > > > ---
+> > > > 
+> > > > I get reports that people find this useful, so resending.
+> > > 
+> > > This description is still wrong. It doesn't describe why this patch is useful.
+> > > 
+> > I think the text above describes the feature it adds and its use
+> > case quite well. Can you elaborate what is missing in your opinion,
+> > or suggest alternative text please?
+> 
+> My point is, introducing mmap new flags need strong and clearly use-case.
+> All patch should have good benefit/cost balance. the code can describe the cost,
+> but the benefit can be only explained by the patch description.
+> 
+> I don't think this poor description explained bit benefit rather than cost.
+> you should explain why this patch is useful and not just pretty toy.
+> 
+The benefit is that with this patch I can lock all of my application in
+memory except some very big memory areas. My use case is that I want to
+run virtual machine in such a way that everything related to machine
+emulator is locked into the memory, but guest address space can be
+swapped out at will. Guest address space is so huge that it is not
+possible to allocated it locked and then unlock. I was very surprised
+that current Linux API has no way to do it hence this patch. It may look
+like a pretty toy to you until some day you need this and has no way to
+do it.
 
-A few release notes:
-
- * compat.git - generic kernel compatibility package. This is
-currently used on bleeding edge compat-wireless and the 2.6.33
-compat-wireless releases. Other external drivers are welcomed to take
-advantage of this though.
-  - gets pm-qos for kernels down to 2.6.23
-  - gets the new 2.6.33 firmware_class backported for older kernels
-which allows usage of
-    drivers with thew new request_firmware_nowait(). Users of this for
-802.11 right now are ar9170.
-    This actually goes only compile tested, please let me know if this worked.
-
-  * compat-wireless-2.6.32.3:
-    - now goes all the way down to 2.6.23 for ath5k and ath9k, should
-be easy to test/enable others
-    - gets pm-qos backport as well
-
-  * compat-wireless-2.6.33-rc4:
-    - The new debugfs_remove_recursive(), added as of 2.6.26 but used
-on 802.11 only until
-      2.6.32-rc4 on both mac80211 and cfg80211 cannot be backported as
-it relies on two
-      static variables on fs/debugfs/inode.c, to enable backporting
-for older kernels than
-      2.6.26 we'll need to relabel CONFIG_CFG80211_DEBUGFS and
-CONFIG_MAC80211_DEBUGFS
-      and disable them for older kernels.
-
-Due to the new multiqueue patch we only support kernels >= 2.6.27 on
-bleeding edge compat-wireless. This patch is due to go into stable
-down to 2.6.32 so both next releases 2.6.32.4 and 2.6.32-rc5 are
-expected to have this and as such will have backporting disabled for
-older kernels as well until we figure out how to properly backport
-this.
-
-The compat-wireless 2.6.32.3 release causes this harmless warning on
-older kernels < 2.6.24, it can safely be ingored, I see no way of
-avoiding it.
-
-  CC [M]  /home/mcgrof/devel/compat-wireless-2.6/net/rfkill/input.o
-In file included from
-/home/mcgrof/devel/compat-wireless-2.6/net/rfkill/input.c:16:
-include/linux/input.h:933:1: warning: "BIT" redefined
-In file included from include/asm-i386/cpufeature.h:11,
-                 from include/asm/cpufeature.h:10,
-                 from include/asm/alternative.h:43,
-                 from include/asm/atomic.h:4,
-                 from
-/home/mcgrof/devel/compat-wireless-2.6/include/net/compat-2.6.24.h:11,
-                 from
-/home/mcgrof/devel/compat-wireless-2.6/include/net/compat.h:15,
-                 from <command-line>:0:
-
- Luis
-
-[1] http://www.orbit-lab.org/kernel/compat-wireless-2.6-stable/v2.6.33/compat-wireless-2.6.33-rc4.tar.bz2
-[2] http://www.orbit-lab.org/kernel/compat-wireless-2.6-stable/v2.6.32/compat-wireless-2.6.32.3.tar.bz2
-[3] http://wireless.kernel.org/en/users/Download/stable
+--
+			Gleb.
