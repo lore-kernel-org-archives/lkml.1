@@ -1,58 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755029Ab0ANHAS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755080Ab0ANHCr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755029Ab0ANHAS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 02:00:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754827Ab0ANHAQ
+	id S1755080Ab0ANHCr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 02:02:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754904Ab0ANHCq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 02:00:16 -0500
-Received: from gate.crashing.org ([63.228.1.57]:51461 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751329Ab0ANHAO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 02:00:14 -0500
-Subject: Re: sys_recvmmsg: wire up or not?
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: David Miller <davem@davemloft.net>
-Cc: arnd@arndb.de, geert@linux-m68k.org, acme@redhat.com,
-       linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-m68k@vger.kernel.org
-In-Reply-To: <20100113.202807.233259060.davem@davemloft.net>
-References: <10f740e80912260239n17bbbd08w6c3065c12bde9c95@mail.gmail.com>
-	 <200912261212.14264.arnd@arndb.de> <1263442833.724.325.camel@pasglop>
-	 <20100113.202807.233259060.davem@davemloft.net>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 14 Jan 2010 17:59:39 +1100
-Message-ID: <1263452379.724.348.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.28.1 
+	Thu, 14 Jan 2010 02:02:46 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:55270 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751071Ab0ANHCp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Jan 2010 02:02:45 -0500
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Gleb Natapov <gleb@redhat.com>
+Subject: Re: [PATCH v5] add MAP_UNLOCKED mmap flag
+Cc: kosaki.motohiro@jp.fujitsu.com, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, linux-api@vger.kernel.org,
+       akpm@linux-foundation.org
+In-Reply-To: <20100114065008.GC18808@redhat.com>
+References: <20100114092845.D719.A69D9226@jp.fujitsu.com> <20100114065008.GC18808@redhat.com>
+Message-Id: <20100114155229.6735.A69D9226@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Thu, 14 Jan 2010 16:02:42 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2010-01-13 at 20:28 -0800, David Miller wrote:
-> > Anything happening here ? We're getting that warning on ppc too
-> despite
-> > the fact that we use socketcall like x86... Should checksyscall be
-> made
-> > smarter or the syscall just removed from x86 ? :-)
-> 
-> I think it's better to trap directly to the system call rather
-> than going through yet another demultiplexer.
-> 
-> I severely regretted using sys_socketcall initially on sparc32
-> because it added a few microseconds to socket syscall latency
-> (cpus back then were slow :-) 
+> On Thu, Jan 14, 2010 at 09:31:03AM +0900, KOSAKI Motohiro wrote:
+> > > If application does mlockall(MCL_FUTURE) it is no longer possible to mmap
+> > > file bigger than main memory or allocate big area of anonymous memory
+> > > in a thread safe manner. Sometimes it is desirable to lock everything
+> > > related to program execution into memory, but still be able to mmap
+> > > big file or allocate huge amount of memory and allow OS to swap them on
+> > > demand. MAP_UNLOCKED allows to do that.
+> > >  
+> > > Signed-off-by: Gleb Natapov <gleb@redhat.com>
+> > > ---
+> > > 
+> > > I get reports that people find this useful, so resending.
+> > 
+> > This description is still wrong. It doesn't describe why this patch is useful.
+> > 
+> I think the text above describes the feature it adds and its use
+> case quite well. Can you elaborate what is missing in your opinion,
+> or suggest alternative text please?
 
-Oh I definitely agree that a direct syscall is better, and I wonder in
-fact if I should add new syscalls in addition to socketcall for powerpc,
-for glibc to do a slow migration :-) I was just wondering about the
-inconsistency for archs like us who have socketcall today, to also have
-to define the syscall ...
+My point is, introducing mmap new flags need strong and clearly use-case.
+All patch should have good benefit/cost balance. the code can describe the cost,
+but the benefit can be only explained by the patch description.
 
-IE. I'd rather have them all duplicated into real syscalls than some of
-them only in socketcall and some on both since that will make any kind
-of userspace transition even more hellish.
+I don't think this poor description explained bit benefit rather than cost.
+you should explain why this patch is useful and not just pretty toy.
 
-Cheers,
-Ben.
 
