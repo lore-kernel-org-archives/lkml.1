@@ -1,60 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932244Ab0ANPBy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756930Ab0ANPD3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932244Ab0ANPBy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Jan 2010 10:01:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932217Ab0ANPBu
+	id S1756930Ab0ANPD3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Jan 2010 10:03:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756879Ab0ANPCO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Jan 2010 10:01:50 -0500
-Received: from mail.windriver.com ([147.11.1.11]:47839 "EHLO
-	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932212Ab0ANPBc (ORCPT
+	Thu, 14 Jan 2010 10:02:14 -0500
+Received: from mail-iw0-f194.google.com ([209.85.223.194]:56322 "EHLO
+	mail-iw0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756837Ab0ANPCG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Jan 2010 10:01:32 -0500
-From: Jason Wessel <jason.wessel@windriver.com>
-To: linux-kernel@vger.kernel.org
-Cc: kgdb-bugreport@lists.sourceforge.net, mingo@elte.hu,
-       Jason Wessel <jason.wessel@windriver.com>,
-       David Airlie <airlied@linux.ie>
-Subject: [PATCH 34/40] i915: when kgdb is active display compression should be off
-Date: Thu, 14 Jan 2010 08:59:30 -0600
-Message-Id: <1263481176-1897-35-git-send-email-jason.wessel@windriver.com>
-X-Mailer: git-send-email 1.6.3.1.9.g95405b
-In-Reply-To: <1263481176-1897-1-git-send-email-jason.wessel@windriver.com>
-References: <1263481176-1897-1-git-send-email-jason.wessel@windriver.com>
-X-OriginalArrivalTime: 14 Jan 2010 15:01:15.0819 (UTC) FILETIME=[6B7FE7B0:01CA952A]
+	Thu, 14 Jan 2010 10:02:06 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=Ukfs6nSo35c9WhQXD3ev+DOmT5a+grtd6SJT+q5eLzOQBzA+oH6FPz8RVq5EnjK4z9
+         dAoeqzysx/VVtvG+mGGbZo8syDHcMiPuwZ02YQxK5Zn0d9eyNnap3dTr4dUFJtkZEL2+
+         de6TjqUesWxGW8xbs4+lCaJzjr/UDfuCHM8NI=
+Message-ID: <4B4F31EB.1000004@gmail.com>
+Date: Thu, 14 Jan 2010 10:02:03 -0500
+From: William Allen Simpson <william.allen.simpson@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+MIME-Version: 1.0
+To: Patrick McHardy <kaber@trash.net>
+CC: Joe Perches <joe@perches.com>, Andi Kleen <andi@firstfloor.org>,
+       Linux Kernel Developers <linux-kernel@vger.kernel.org>,
+       Linux Kernel Network Developers <netdev@vger.kernel.org>,
+       =?ISO-8859-15?Q?Ilpo_J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>,
+       Eric Dumazet <eric.dumazet@gmail.com>
+Subject: Re: [PATCH v4] tcp: harmonize tcp_vx_rcv header length assumptions
+References: <4B49D001.4000302@gmail.com> <4B4DA4F4.6060007@gmail.com>	 <20100113115617.GA24818@basil.fritz.box> <4B4DE887.6030602@gmail.com>	 <20100113155323.GB24818@basil.fritz.box> <4B4E23E0.4000007@gmail.com>	 <4B4E378A.7040506@gmail.com> <1263430990.1966.12.camel@Joe-Laptop.home> <4B4ED830.4040407@trash.net>
+In-Reply-To: <4B4ED830.4040407@trash.net>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If the HW compression is left on, the call backs from the HW will
-crash the kernel.  The only time this code is called is when kernel
-mode setting is in use with kgdb and the kdb shell.
+Patrick McHardy wrote:
+> In IPv6 it is released in ip6_input.c before the packet is handed to
+> the protocol handler.
+> 
+Thanks, I made a note of it.
 
-The atomic display pipe handler callback will reset everything when
-kgdb restores kernel to the run state.
+Thanks to Andi, I've been using his suggestion to compare the IPv4 and
+IPv6 generated code.  Another minor difference between them was IPv4
+stored *iph.
 
-CC: David Airlie <airlied@linux.ie>
-Acked-by: Jesse Barnes <jbarnes@virtuousgeek.org>
-Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
----
- drivers/gpu/drm/i915/intel_display.c |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
+So, I added *ip6h, and discovered that it made the code longer.  Later
+inline function invocations had also calculated it, so adding it merely
+calculated it earlier and stored it.  The code thrashes registers
+making room for the additional variable.  I'm guessing that the IPv6
+folks had already looked at the issue....  Good work!
 
-diff --git a/drivers/gpu/drm/i915/intel_display.c b/drivers/gpu/drm/i915/intel_display.c
-index d54df76..11beb0f 100644
---- a/drivers/gpu/drm/i915/intel_display.c
-+++ b/drivers/gpu/drm/i915/intel_display.c
-@@ -1146,6 +1146,10 @@ static void intel_update_fbc(struct drm_crtc *crtc,
- 		goto out_disable;
- 	}
- 
-+	/* If the kernel debugger is active, always disable compression */
-+	if (in_dbg_master())
-+		goto out_disable;
-+
- 	if (dev_priv->display.fbc_enabled(crtc)) {
- 		/* We can re-enable it in this case, but need to update pitch */
- 		if (fb->pitch > dev_priv->cfb_pitch)
--- 
-1.6.3.1.9.g95405b
+So, I tried removing *iph, and that shrunk the IPv4 code some, too.
 
+Thanks to everybody for their comments and review.
